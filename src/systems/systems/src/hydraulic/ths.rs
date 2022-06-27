@@ -1,6 +1,5 @@
 use uom::si::{
     angle::{degree, radian},
-    angular_acceleration::radian_per_second_squared,
     angular_velocity::{degree_per_second, radian_per_second, revolution_per_minute},
     f64::*,
     power::watt,
@@ -17,6 +16,8 @@ use crate::simulation::{
 };
 
 use crate::shared::{interpolation, low_pass_filter::LowPassFilter};
+
+use super::linear_actuator::Actuator;
 
 use std::time::Duration;
 
@@ -48,11 +49,6 @@ impl TrimWheels {
 
     fn update(&mut self, pta: &PitchTrimActuator) {
         self.position = pta.position / self.trim_actuator_over_trim_wheel_ratio.get::<ratio>();
-
-        // println!(
-        //     "TRIM WHEEL NORM {:.3}",
-        //     self.position_normalized().get::<ratio>()
-        // );
     }
 
     fn position_normalized(&self) -> Ratio {
@@ -117,13 +113,6 @@ impl DriveMotor {
                 position_error.get::<degree>(),
             );
 
-            // println!(
-            //     "dmnd{:.1}, act {:.1}, err {:.1},SPED COEF {:.1}",
-            //     self.position_request.get::<degree>(),
-            //     measured_position.get::<degree>(),
-            //     position_error.get::<degree>(),
-            //     speed_coef
-            // );
             self.max_speed * speed_coef
         } else {
             AngularVelocity::default()
@@ -180,9 +169,19 @@ impl ElectricDriveMotor {
 
 #[derive(Clone, Copy)]
 struct HydraulicDriveMotor {
+    max_speed: AngularVelocity,
     motor: DriveMotor,
+
+    total_volume_to_actuator: Volume,
+    total_volume_to_reservoir: Volume,
 }
 impl HydraulicDriveMotor {
+    const FLOW_CONSTANT_RPM_CUBIC_INCH_TO_GPM: f64 = 231.;
+    const DISPLACEMENT_CUBIC_INCH: f64 = 0.4;
+
+    // Hyd pressure at which motor has its max speed
+    const MAX_SPEED_HYD_PRESSURE_PSI: f64 = 3000.;
+
     fn new(
         max_speed: AngularVelocity,
 
@@ -190,7 +189,11 @@ impl HydraulicDriveMotor {
         speed_regulation_coef_map: [f64; 7],
     ) -> Self {
         Self {
+            max_speed,
             motor: DriveMotor::new(max_speed, speed_error_breakpoint, speed_regulation_coef_map),
+
+            total_volume_to_actuator: Volume::default(),
+            total_volume_to_reservoir: Volume::default(),
         }
     }
 
@@ -205,11 +208,56 @@ impl HydraulicDriveMotor {
             .set_active_state(pressure > Pressure::new::<psi>(1450.));
 
         self.motor
+            .set_max_speed(self.current_max_speed_from_hydraulic_pressure(pressure));
+
+        self.motor
             .update(context, measured_position, position_requested);
+
+        self.update_flow(context);
+    }
+
+    fn update_flow(&mut self, context: &UpdateContext) {
+        let total_volume = self.flow() * context.delta_as_time();
+        self.total_volume_to_actuator += total_volume.abs();
+        self.total_volume_to_reservoir = self.total_volume_to_actuator;
+
+        println!(
+            "MOTOR FLOW {:.3} GPM",
+            self.flow().get::<gallon_per_minute>().abs()
+        );
+    }
+
+    fn current_max_speed_from_hydraulic_pressure(&self, pressure: Pressure) -> AngularVelocity {
+        let pressure_coefficient = (pressure.get::<psi>() / Self::MAX_SPEED_HYD_PRESSURE_PSI)
+            .min(1.)
+            .max(0.);
+
+        self.max_speed * pressure_coefficient
     }
 
     fn speed(&self) -> AngularVelocity {
         self.motor.speed()
+    }
+
+    fn flow(&self) -> VolumeRate {
+        VolumeRate::new::<gallon_per_minute>(
+            self.speed().get::<revolution_per_minute>() * Self::DISPLACEMENT_CUBIC_INCH
+                / Self::FLOW_CONSTANT_RPM_CUBIC_INCH_TO_GPM,
+        )
+    }
+}
+impl Actuator for HydraulicDriveMotor {
+    fn used_volume(&self) -> Volume {
+        self.total_volume_to_actuator
+    }
+
+    fn reservoir_return(&self) -> Volume {
+        self.total_volume_to_reservoir
+    }
+
+    fn reset_volumes(&mut self) {
+        self.total_volume_to_reservoir = Volume::new::<gallon>(0.);
+        self.total_volume_to_actuator = Volume::new::<gallon>(0.);
     }
 }
 
@@ -355,10 +403,6 @@ impl PitchTrimActuator {
             || ths_hydraulic_assembly.is_at_max_up_spool_valve
                 && self.speed.get::<radian_per_second>() > 0.
         {
-            // println!(
-            //     "TRIM LOCK END OF COURSE: speed dmnd {:2}",
-            //     self.speed.get::<radian_per_second>()
-            // );
             self.speed = AngularVelocity::default();
         }
     }
@@ -399,8 +443,6 @@ impl PitchTrimActuator {
                 * (self.max_actuator_angle - self.min_actuator_angle)
                 + self.min_actuator_angle;
 
-            //motor.set_position_request(final_trim_actuator_position_request);
-            //println!("ELEC motor");
             motor.update(context, self.position, final_trim_actuator_position_request);
         }
     }
@@ -491,6 +533,14 @@ impl ThsTrimAssembly {
     pub fn position_normalized(&self) -> Ratio {
         self.pitch_trim_actuator.position_normalized()
     }
+
+    pub fn left_motor(&mut self) -> &mut impl Actuator {
+        self.ths_assembly.left_motor()
+    }
+
+    pub fn right_motor(&mut self) -> &mut impl Actuator {
+        self.ths_assembly.right_motor()
+    }
 }
 impl SimulationElement for ThsTrimAssembly {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
@@ -515,7 +565,8 @@ struct ThsHydraulicAssembly {
     is_at_max_down_spool_valve: bool,
 }
 impl ThsHydraulicAssembly {
-    const HYDRAULIC_MOTOR_POSITION_ERROR_BREAKPOINT: [f64; 7] = [-50., -1., -0.1, 0., 0.1, 1., 50.];
+    const HYDRAULIC_MOTOR_POSITION_ERROR_BREAKPOINT: [f64; 7] =
+        [-50., -0.5, -0.1, 0., 0.1, 0.5, 50.];
     const HYDRAULIC_MOTOR_SPEED_REGULATION_COEF_MAP: [f64; 7] = [-1., -1., -0.6, 0., 0.6, 1., 1.];
 
     // Gain to convert hyd motor speed to ths deflection speed
@@ -527,7 +578,7 @@ impl ThsHydraulicAssembly {
         Self {
             deflection_id: context.get_identifier("HYD_FINAL_THS_DEFLECTION".to_owned()),
             hydraulic_motors: [HydraulicDriveMotor::new(
-                AngularVelocity::new::<revolution_per_minute>(2000.),
+                AngularVelocity::new::<revolution_per_minute>(2500.),
                 Self::HYDRAULIC_MOTOR_POSITION_ERROR_BREAKPOINT,
                 Self::HYDRAULIC_MOTOR_SPEED_REGULATION_COEF_MAP,
             ); 2],
@@ -556,7 +607,6 @@ impl ThsHydraulicAssembly {
         self.update_spool_valve_lock_position(deflection_demand);
 
         for (motor_index, motor) in self.hydraulic_motors.iter_mut().enumerate() {
-            // println!("HYD motor");
             motor.update(
                 context,
                 self.actual_deflection,
@@ -586,14 +636,6 @@ impl ThsHydraulicAssembly {
             > Self::MAX_DEFLECTION_FOR_FULL_OPEN_SPOOL_VALVE_DEGREES;
         self.is_at_max_down_spool_valve = deflection_error.get::<degree>()
             < -Self::MAX_DEFLECTION_FOR_FULL_OPEN_SPOOL_VALVE_DEGREES;
-
-        // println!(
-        //     "DEFLECT DEMAND {:.2} DEFLECT ERROR {:.2} is_max_up {:?} is_max_down {:?}",
-        //     deflection_demand.get::<degree>(),
-        //     deflection_error.get::<degree>(),
-        //     self.is_at_max_up_spool_valve,
-        //     self.is_at_max_down_spool_valve
-        // );
     }
 
     fn update_position(&mut self, context: &UpdateContext) {
@@ -602,6 +644,10 @@ impl ThsHydraulicAssembly {
                 self.speed.get::<radian_per_second>() * context.delta_as_secs_f64(),
             );
 
+        println!(
+            "THS SPEED deg/s {:.2}",
+            self.speed.get::<degree_per_second>()
+        );
         self.actual_deflection = self
             .actual_deflection
             .min(self.max_deflection)
@@ -610,6 +656,14 @@ impl ThsHydraulicAssembly {
 
     fn normalized_position_from_ths_deflection(&self, deflection: Angle) -> Ratio {
         (deflection - self.min_deflection) / self.deflection_range
+    }
+
+    pub fn left_motor(&mut self) -> &mut impl Actuator {
+        &mut self.hydraulic_motors[0]
+    }
+
+    pub fn right_motor(&mut self) -> &mut impl Actuator {
+        &mut self.hydraulic_motors[1]
     }
 }
 impl SimulationElement for ThsHydraulicAssembly {
@@ -741,11 +795,11 @@ mod tests {
         fn set_manual_trim_input(&mut self, trim_up: bool) {
             self.manual_trim_control = if trim_up {
                 TestManualTrimControl::with_manual_input(AngularVelocity::new::<degree_per_second>(
-                    30.,
+                    500.,
                 ))
             } else {
                 TestManualTrimControl::with_manual_input(AngularVelocity::new::<degree_per_second>(
-                    -30.,
+                    -500.,
                 ))
             }
         }
@@ -831,6 +885,9 @@ mod tests {
         let deflection: Angle = test_bed.read_by_name("HYD_FINAL_THS_DEFLECTION");
         assert!(deflection.get::<degree>() > 12.9);
         assert!(deflection.get::<degree>() < 13.1);
+
+        let man_override: f64 = test_bed.read_by_name("HYD_THS_TRIM_MANUAL_OVERRIDE");
+        assert!(man_override <= 0.5);
 
         test_bed.command(|a| a.set_elec_trim_demand(Angle::new::<degree>(-2.), motor_idx));
         test_bed.run_with_delta(Duration::from_millis(25000));
@@ -933,5 +990,20 @@ mod tests {
         let trim_wheel_position_percent: Ratio = test_bed.read_by_name("HYD_TRIM_WHEEL_PERCENT");
         assert!(trim_wheel_position_percent.get::<percent>() > -0.1);
         assert!(trim_wheel_position_percent.get::<percent>() < 0.1);
+    }
+
+    #[test]
+    fn trim_wheel_moves_with_hyd_press_if_moved_manually() {
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
+
+        test_bed.command(|a| {
+            a.set_hyd_pressure([Pressure::new::<psi>(3000.), Pressure::new::<psi>(3000.)])
+        });
+
+        test_bed.command(|a| a.set_manual_trim_input(true));
+        test_bed.run_with_delta(Duration::from_millis(5000));
+
+        let deflection: Angle = test_bed.read_by_name("HYD_FINAL_THS_DEFLECTION");
+        assert!(deflection.get::<degree>() > 2.);
     }
 }

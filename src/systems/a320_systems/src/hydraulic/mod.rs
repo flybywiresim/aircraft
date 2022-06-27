@@ -4,7 +4,7 @@ use std::time::Duration;
 use uom::si::{
     acceleration::meter_per_second_squared,
     angle::{degree, radian},
-    angular_velocity::{degree_per_second, radian_per_second, revolution_per_minute},
+    angular_velocity::{radian_per_second, revolution_per_minute},
     electric_current::ampere,
     f64::*,
     length::meter,
@@ -1896,6 +1896,9 @@ impl A320Hydraulic {
         for actuator in self.gear_system.all_actuators() {
             self.green_circuit.update_actuator_volumes(actuator);
         }
+
+        self.green_circuit
+            .update_actuator_volumes(self.trim_assembly.left_motor());
     }
 
     fn update_yellow_actuators_volume(&mut self) {
@@ -1931,6 +1934,9 @@ impl A320Hydraulic {
             .update_actuator_volumes(self.right_spoilers.actuator(1));
         self.yellow_circuit
             .update_actuator_volumes(self.right_spoilers.actuator(3));
+
+        self.yellow_circuit
+            .update_actuator_volumes(self.trim_assembly.right_motor());
     }
 
     fn update_blue_actuators_volume(&mut self) {
@@ -5480,7 +5486,8 @@ impl A320TrimInputController {
             motor2_position_id: context.get_identifier("THS_2_COMMANDED_POSITION".to_owned()),
             motor3_position_id: context.get_identifier("THS_3_COMMANDED_POSITION".to_owned()),
 
-            manual_control_active_id: context.get_identifier("THS_MANUAL_CONTROL".to_owned()),
+            manual_control_active_id: context
+                .get_identifier("THS_MANUAL_CONTROL_ACTIVE".to_owned()),
             manual_control_speed_id: context.get_identifier("THS_MANUAL_CONTROL_SPEED".to_owned()),
 
             motor_active: [false; 3],
@@ -5527,13 +5534,6 @@ impl SimulationElement for A320TrimInputController {
 
         self.manual_control = reader.read(&self.manual_control_active_id);
         self.manual_control_speed = reader.read(&self.manual_control_speed_id);
-
-        println!(
-            "MANUAL SPEED: {:.1} Motor0 act {:?}, Motor0pos {:.1}",
-            self.manual_control_speed.get::<degree_per_second>(),
-            self.motor_active[0],
-            self.motor_position[0].get::<degree>(),
-        );
     }
 }
 

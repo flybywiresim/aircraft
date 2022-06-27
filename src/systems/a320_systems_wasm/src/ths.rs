@@ -25,22 +25,15 @@ pub(super) fn ths(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>>
 
     builder.event_to_variable(
         "ELEVATOR_TRIM_SET",
-        EventToVariableMapping::EventDataToValue(|event_data| {
-            println!(
-                "EVENT TRIM SET {:?} converted {:.2}",
-                event_data,
-                (event_data as f64) / 16383.
-            );
-            (event_data as f64) / 16383.
-        }),
-        Variable::named("THS_MAN_POS_SET_16K"),
+        EventToVariableMapping::EventDataToValue(|event_data| (event_data as f64) / 16383.),
+        Variable::aspect("THS_MAN_POS_SET_16K"),
         |options| options.mask().afterwards_reset_to(-1.),
     )?;
 
     builder.event_to_variable(
         "AXIS_ELEV_TRIM_SET",
         EventToVariableMapping::EventData32kPosition,
-        Variable::named("THS_MAN_POS_SET_32K"),
+        Variable::aspect("THS_MAN_POS_SET_32K"),
         |options| options.mask().afterwards_reset_to(-1.),
     )?;
 
@@ -48,8 +41,8 @@ pub(super) fn ths(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>>
     builder.map_many(
         ExecuteOn::PreTick,
         vec![
-            Variable::named("THS_MAN_POS_SET_16K"),
-            Variable::named("THS_MAN_POS_SET_32K"),
+            Variable::aspect("THS_MAN_POS_SET_16K"),
+            Variable::aspect("THS_MAN_POS_SET_32K"),
             Variable::named("HYD_TRIM_WHEEL_PERCENT"),
         ],
         |values| {
@@ -68,8 +61,8 @@ pub(super) fn ths(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>>
     builder.map_many(
         ExecuteOn::PreTick,
         vec![
-            Variable::named("THS_MANUAL_CONTROL_SPEED_KEY"),
-            Variable::named("THS_MANUAL_CONTROL_SPEED_AXIS"),
+            Variable::aspect("THS_MANUAL_CONTROL_SPEED_KEY"),
+            Variable::aspect("THS_MANUAL_CONTROL_SPEED_AXIS"),
         ],
         |values| {
             if values[0].abs() > 0. {
@@ -81,13 +74,13 @@ pub(super) fn ths(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>>
         Variable::aspect("THS_MANUAL_CONTROL_SPEED"),
     );
 
-    // Sends manual control state when receiveing event even if position is not moving or when keys event used
+    // Sends manual control state when receiveing an event even if position is not moving or when keys event are used
     builder.map_many(
         ExecuteOn::PreTick,
         vec![
-            Variable::named("THS_MAN_POS_SET_16K"),
-            Variable::named("THS_MAN_POS_SET_32K"),
-            Variable::named("THS_MANUAL_CONTROL_SPEED_KEY"),
+            Variable::aspect("THS_MAN_POS_SET_16K"),
+            Variable::aspect("THS_MAN_POS_SET_32K"),
+            Variable::aspect("THS_MANUAL_CONTROL_SPEED_KEY"),
         ],
         |values| {
             if values[0] >= 0. || values[1] >= 0. || values[2].abs() > 0. {
@@ -121,7 +114,8 @@ impl VariablesToObject for PitchTrimSimOutput {
     fn write(&mut self, values: Vec<f64>) {
         self.elevator_trim = values[0];
 
-        // Not writing control feedback when in tracking mode
+        // TODO: needs another PR to be used
+        //Not writing control feedback when in tracking mode
         //ObjectWrite::on(!to_bool(values[1]))
     }
 
@@ -129,10 +123,5 @@ impl VariablesToObject for PitchTrimSimOutput {
 }
 
 fn pos_error_to_speed(error: f64) -> f64 {
-    //println!(
-    //    "ERROR {:.2} -> trim speed {:.2}",
-    //    error,
-    //    (1000. * error.powi(1)).min(45.).max(-45.)
-    //);
     (1000. * error).min(45.).max(-45.)
 }
