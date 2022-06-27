@@ -1,13 +1,11 @@
 use uom::si::{
     angle::{degree, radian},
-    angular_velocity::{degree_per_second, radian_per_second, revolution_per_minute},
+    angular_velocity::{radian_per_second, revolution_per_minute},
     f64::*,
-    power::watt,
     pressure::psi,
     ratio::ratio,
-    torque::{newton_meter, pound_force_inch},
-    volume::{cubic_inch, gallon},
-    volume_rate::{gallon_per_minute, gallon_per_second},
+    volume::gallon,
+    volume_rate::gallon_per_minute,
 };
 
 use crate::simulation::{
@@ -15,7 +13,9 @@ use crate::simulation::{
     VariableIdentifier, Write,
 };
 
-use crate::shared::{interpolation, low_pass_filter::LowPassFilter};
+use crate::shared::{
+    interpolation, low_pass_filter::LowPassFilter, ElectricalBusType, ElectricalBuses,
+};
 
 use super::linear_actuator::Actuator;
 
@@ -134,6 +134,9 @@ struct ElectricDriveMotor {
     motor: DriveMotor,
 
     is_powered: bool,
+
+    powered_by_bus_array: Vec<ElectricalBusType>,
+    powered_by_bus_index: usize,
 }
 impl ElectricDriveMotor {
     fn new(
@@ -141,10 +144,15 @@ impl ElectricDriveMotor {
 
         speed_error_breakpoint: [f64; 7],
         speed_regulation_coef_map: [f64; 7],
+
+        powered_by_bus_array: Vec<ElectricalBusType>,
     ) -> Self {
         Self {
             motor: DriveMotor::new(max_speed, speed_error_breakpoint, speed_regulation_coef_map),
             is_powered: true,
+
+            powered_by_bus_array,
+            powered_by_bus_index: 0,
         }
     }
 
@@ -164,6 +172,15 @@ impl ElectricDriveMotor {
 
     fn speed(&self) -> AngularVelocity {
         self.motor.speed()
+    }
+
+    fn set_power_bus_in_use(&mut self, bus_index: usize) {
+        self.powered_by_bus_index = bus_index.min(self.powered_by_bus_array.len() - 1);
+    }
+}
+impl SimulationElement for ElectricDriveMotor {
+    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
+        self.is_powered = buses.is_powered(self.powered_by_bus_array[self.powered_by_bus_index]);
     }
 }
 
@@ -325,16 +342,22 @@ impl PitchTrimActuator {
                     max_elec_motor_speed,
                     Self::ELECTRIC_MOTOR_POSITION_ERROR_BREAKPOINT,
                     Self::ELECTRIC_MOTOR_SPEED_REGULATION_COEF_MAP,
+                    vec![
+                        ElectricalBusType::DirectCurrent(2),
+                        ElectricalBusType::DirectCurrentHot(2),
+                    ],
                 ),
                 ElectricDriveMotor::new(
                     max_elec_motor_speed,
                     Self::ELECTRIC_MOTOR_POSITION_ERROR_BREAKPOINT,
                     Self::ELECTRIC_MOTOR_SPEED_REGULATION_COEF_MAP,
+                    vec![ElectricalBusType::DirectCurrentEssential],
                 ),
                 ElectricDriveMotor::new(
                     max_elec_motor_speed,
                     Self::ELECTRIC_MOTOR_POSITION_ERROR_BREAKPOINT,
                     Self::ELECTRIC_MOTOR_SPEED_REGULATION_COEF_MAP,
+                    vec![ElectricalBusType::DirectCurrent(2)],
                 ),
             ],
             electric_clutches: [ElectricMotorClutch::default(); 3],
@@ -454,6 +477,11 @@ impl PitchTrimActuator {
     }
 }
 impl SimulationElement for PitchTrimActuator {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        accept_iterable!(self.electric_motors, visitor);
+        visitor.visit(self);
+    }
+
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.manual_override_id, self.manual_override_active);
     }
