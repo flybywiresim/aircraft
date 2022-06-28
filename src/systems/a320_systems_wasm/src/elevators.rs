@@ -105,13 +105,11 @@ fn hyd_deflection_to_msfs_deflection(
     let msfs_angle_zero_offset = hyd_deflection * elevator_range;
     let msfs_angle = msfs_angle_zero_offset - min_msfs_angle;
 
-    let final_msfs_angle_output = if msfs_angle <= 0. {
+    if msfs_angle <= 0. {
         msfs_angle / min_msfs_angle
     } else {
         msfs_angle / max_msfs_angle
-    };
-
-    final_msfs_angle_output
+    }
 }
 
 fn msfs_deflection_to_hyd_demand(
@@ -129,7 +127,5 @@ fn msfs_deflection_to_hyd_demand(
 
     let msfs_angle_zero_offset = msfs_angle_demand + min_msfs_angle;
 
-    let final_hyd_demand = msfs_angle_zero_offset / elevator_range;
-
-    final_hyd_demand
+    msfs_angle_zero_offset / elevator_range
 }
