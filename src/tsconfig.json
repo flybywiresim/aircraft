@@ -11,6 +11,7 @@
       "@fmgc/*": ["./fmgc/src/*"],
       "@flybywiresim/failures": ["failures"],
       "@tcas/*": ["./tcas/src/*"],
+      "@payload/*": ["./payload/src/*"],
       "@typings/*": ["../typings"]
     }
   }

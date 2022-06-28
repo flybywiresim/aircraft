@@ -1,14 +1,15 @@
 import { usePersistentProperty } from '@instruments/common/persistence';
 import React, { useEffect, useRef, useState } from 'react';
-import { CanvasConst, PerformanceEnvelope } from './Constants';
+import { CanvasConst, PerformanceEnvelope, CgPoints } from './Constants';
 
 interface BalanceWeightProps {
     width: number,
     height: number,
     envelope: PerformanceEnvelope,
+    points: CgPoints
 }
 
-export const BalanceWeight: React.FC<BalanceWeightProps> = ({ width, height, envelope }) => {
+export const BalanceWeight: React.FC<BalanceWeightProps> = ({ width, height, envelope, points }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [ctx, setCtx] = useState<CanvasRenderingContext2D | null>(null);
     const [theme] = usePersistentProperty('EFB_UI_THEME', 'blue');
@@ -101,6 +102,7 @@ export const BalanceWeight: React.FC<BalanceWeightProps> = ({ width, height, env
                     ctx.lineTo(x, y);
                 }
                 ctx.stroke();
+                ctx.closePath();
             };
 
             const drawMlw = () => {
@@ -136,6 +138,55 @@ export const BalanceWeight: React.FC<BalanceWeightProps> = ({ width, height, env
             drawMzfw();
             drawMlw();
             drawMtow();
+            {
+                const zfwPoints = points.mzfw;
+
+                ctx.fillStyle = base;
+                ctx.strokeStyle = 'black';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                const [mzfwCgX, mzfwCgY] = cgWeightToXY(zfwPoints.cg, zfwPoints.weight);
+                ctx.moveTo(mzfwCgX, mzfwCgY - CanvasConst.diamondHeight);
+                ctx.lineTo(mzfwCgX - CanvasConst.diamondWidth, mzfwCgY);
+                ctx.lineTo(mzfwCgX, mzfwCgY + CanvasConst.diamondHeight);
+                ctx.lineTo(mzfwCgX + CanvasConst.diamondWidth, mzfwCgY);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+            }
+
+            {
+                const mlwPoints = points.mlw;
+
+                ctx.fillStyle = secondary;
+                ctx.strokeStyle = 'black';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                const [cgX, cgY] = cgWeightToXY(mlwPoints.cg, mlwPoints.weight);
+                ctx.moveTo(cgX, cgY - CanvasConst.diamondHeight);
+                ctx.lineTo(cgX - CanvasConst.diamondWidth, cgY);
+                ctx.lineTo(cgX, cgY + CanvasConst.diamondHeight);
+                ctx.lineTo(cgX + CanvasConst.diamondWidth, cgY);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+            }
+            {
+                const mtowPoints = points.mtow;
+
+                ctx.fillStyle = primary;
+                ctx.strokeStyle = 'black';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                const [cgX, cgY] = cgWeightToXY(mtowPoints.cg, mtowPoints.weight);
+                ctx.moveTo(cgX, cgY - CanvasConst.diamondHeight);
+                ctx.lineTo(cgX - CanvasConst.diamondWidth, cgY);
+                ctx.lineTo(cgX, cgY + CanvasConst.diamondHeight);
+                ctx.lineTo(cgX + CanvasConst.diamondWidth, cgY);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+            }
         }
     };
 
@@ -169,8 +220,8 @@ export const BalanceWeight: React.FC<BalanceWeightProps> = ({ width, height, env
     }, [draw]);
 
     const mtow = { transform: `translateX(${0.6 * width}px) translateY(${height * -0.02}px)` };
-    const mlw = { transform: `translateX(${0.6 * width}px) translateY(${height * 0.26}px)` };
-    const mzfw = { transform: `translateX(${0.6 * width}px) translateY(${height * 0.4}px)` };
+    const mlw = { transform: `translateX(${0.72 * width}px) translateY(${height * 0.26}px)` };
+    const mzfw = { transform: `translateX(${0.67 * width}px) translateY(${height * 0.4}px)` };
 
     const cgRow1 = { transform: `translateX(${0.04 * width}px) translateY(${height * -0.1}px)` };
     const cgRow2 = { transform: `translateX(${0.265 * width}px) translateY(${height * -0.1}px)` };

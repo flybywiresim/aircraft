@@ -6,6 +6,7 @@ import { Units } from '@shared/units';
 import { usePersistentProperty } from '@instruments/common/persistence';
 import { BitFlags } from '@shared/bitFlags';
 import { useBitFlags } from '@instruments/common/bitFlags';
+import { PayloadManager } from '@payload/index';
 import { BalanceWeight } from './BalanceWeight/BalanceWeight';
 import { RowInfo, SeatInfo, TYPE } from './Seating/Constants';
 import { PerformanceEnvelope } from './BalanceWeight/Constants';
@@ -32,13 +33,24 @@ const Label: React.FC<LabelProps> = ({ text, className, children }) => (
 export const Payload = () => {
     const { usingMetric } = Units;
     const [boardingRate, setBoardingRate] = usePersistentProperty('CONFIG_BOARDING_RATE', 'REAL');
-    const plane = 'A32NX';
     const [weightUnit, setWeightUnit] = usePersistentProperty('EFB_PREFERRED_WEIGHT_UNIT', usingMetric ? 'kg' : 'lb');
-    const [paxA, setPaxA] = useSimVar(`L:${plane}_PAX_TOTAL_ROWS_1_6_DESIRED`, 'Number');
-    const [paxB, setPaxB] = useSimVar(`L:${plane}_PAX_TOTAL_ROWS_7_13_DESIRED`, 'Number');
-    const [paxC, setPaxC] = useSimVar(`L:${plane}_PAX_TOTAL_ROWS_14_21_DESIRED`, 'Number');
-    const [paxD, setPaxD] = useSimVar(`L:${plane}_PAX_TOTAL_ROWS_22_29_DESIRED`, 'Number');
-    const [cargo, setCargo] = useSimVar('L:A32NX_CARGO', 'Number');
+    const [paxA, setPaxA] = useSimVar('L:A32NX_PAX_TOTAL_ROWS_1_6_DESIRED', 'Number');
+    const [paxB, setPaxB] = useSimVar('L:A32NX_PAX_TOTAL_ROWS_7_13_DESIRED', 'Number');
+    const [paxC, setPaxC] = useSimVar('L:A32NX_PAX_TOTAL_ROWS_14_21_DESIRED', 'Number');
+    const [paxD, setPaxD] = useSimVar('L:A32NX_PAX_TOTAL_ROWS_22_29_DESIRED', 'Number');
+    const [fwdBag, setFwdBag] = useSimVar('L:A32NX_CARGO_FWD_BAGGAGE_CONTAINER_DESIRED', 'Number');
+    const [aftCont, setAftCont] = useSimVar('L:A32NX_CARGO_FWD_BAGGAGE_CONTAINER_DESIRED', 'Number');
+    const [aftBag, setAftBag] = useSimVar('L:A32NX_CARGO_FWD_BAGGAGE_CONTAINER_DESIRED', 'Number');
+    const [aftBulk, setAftBulk] = useSimVar('L:A32NX_CARGO_FWD_BAGGAGE_CONTAINER_DESIRED', 'Number');
+    const [zfwCg, setZfwCg] = useState(0);
+    const [zfw, setZfw] = useState(0);
+    const [emptyWeight] = useSimVar('A:EMPTY WEIGHT', 'Number');
+
+    const cgPoints = {
+        mzfw: { cg: zfwCg, weight: zfw },
+        mlw: { cg: 26.5, weight: 64000 },
+        mtow: { cg: 26.7, weight: 74000 },
+    };
 
     const [stationSize, setSectionLen] = useState<number[]>([]);
 
@@ -229,6 +241,19 @@ export const Payload = () => {
         }
     }, [paxD]);
 
+    // Adjust CG Values
+    useEffect(() => {
+        const newZfwCg = PayloadManager.getZfwcg();
+        if (zfwCg !== newZfwCg) {
+            setZfw(newZfwCg);
+        }
+        setZfwCg(PayloadManager.getZfwcg());
+        const newZfw = PayloadManager.getZfw();
+        if (zfw !== newZfw) {
+            setZfw(newZfw);
+        }
+    }, [paxA, paxB, paxC, paxD, fwdBag, aftBag, aftCont, aftBulk, emptyWeight]);
+
     return (
         <div>
             <div className="h-content-section-reduced">
@@ -238,7 +263,7 @@ export const Payload = () => {
                 <div className="flex relative right-0 flex-row justify-between mt-24">
                     <div className="col-1" />
                     <div className="rounded-2xl border col-1 border-theme-accent">
-                        <BalanceWeight width={450} height={300} envelope={defaultEnvelope}/* x={750} y={350}  */ />
+                        <BalanceWeight width={450} height={300} envelope={defaultEnvelope} points={cgPoints}/* x={750} y={350}  */ />
                     </div>
                 </div>
             </div>
@@ -311,9 +336,9 @@ export const Payload = () => {
                                             number
                                             min={0}
                                             max={10000}
-                                            value={cargo}
-                                            onBlur={(x) => setCargo(parseInt(x))}
+                                            value={0}
                                         />
+                                        {/* onBlur={(x) => setCargo(parseInt(x))} */}
                                         <SelectInput
                                             value={weightUnit}
                                             className="my-1 w-20 rounded-l-none"
