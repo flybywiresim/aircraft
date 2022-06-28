@@ -9,7 +9,6 @@ class CDUAtcAtisAutoUpdate {
 
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
-        mcdu.page.Current = mcdu.page.ATCAtisAutoUpdate;
 
         let arrAtis = "{inop}\xa0[  ]/[ ]{end}";
         let arrAtisState = "";
@@ -58,7 +57,7 @@ class CDUAtcAtisAutoUpdate {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[5] = () => {
-            CDUAtcMenu.ShowPage2(mcdu);
+            CDUAtcMenu.ShowPage(mcdu);
         };
 
         mcdu.rightInputDelay[1] = () => {

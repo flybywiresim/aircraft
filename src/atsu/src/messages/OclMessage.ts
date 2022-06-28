@@ -26,6 +26,7 @@ export class OclMessage extends CpdlcMessage {
         super();
         this.Type = AtsuMessageType.OCL;
         this.Direction = AtsuMessageDirection.Downlink;
+        this.CloseAutomatically = false;
     }
 
     public serialize(format: AtsuMessageSerializationFormat) {
