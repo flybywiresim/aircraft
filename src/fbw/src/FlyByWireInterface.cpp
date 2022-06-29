@@ -479,8 +479,6 @@ void FlyByWireInterface::setupLocalVariables() {
 
   idSpoilersArmed = make_unique<LocalVariable>("A32NX_SPOILERS_ARMED");
   idSpoilersHandlePosition = make_unique<LocalVariable>("A32NX_SPOILERS_HANDLE_POSITION");
-  idSpoilersPositionLeft = make_unique<LocalVariable>("A32NX_SPOILERS_LEFT_DEFLECTION_DEMAND");
-  idSpoilersPositionRight = make_unique<LocalVariable>("A32NX_SPOILERS_RIGHT_DEFLECTION_DEMAND");
 
   idRadioReceiverUsageEnabled = make_unique<LocalVariable>("A32NX_RADIO_RECEIVER_USAGE_ENABLED");
   idRadioReceiverLocalizerValid = make_unique<LocalVariable>("A32NX_RADIO_RECEIVER_LOC_IS_VALID");
@@ -1672,6 +1670,19 @@ bool FlyByWireInterface::updateServoSolenoidStatus() {
     }
   }
 
+  double totalSpoilersLeftDeflection = idLeftSpoilerPosition[0]->get() + idLeftSpoilerPosition[1]->get() + idLeftSpoilerPosition[2]->get() +
+                                       idLeftSpoilerPosition[3]->get() + idLeftSpoilerPosition[4]->get();
+  double totalSpoilersRightDeflection = idRightSpoilerPosition[0]->get() + idRightSpoilerPosition[1]->get() +
+                                        idRightSpoilerPosition[2]->get() + idRightSpoilerPosition[3]->get() +
+                                        idRightSpoilerPosition[4]->get();
+  totalSpoilersLeftDeflection /= 5;
+  totalSpoilersRightDeflection /= 5;
+  double totalSpoilerDeflection = (totalSpoilersLeftDeflection + totalSpoilersRightDeflection) / 2;
+  double totalAssymmetricSpoilerDeflection = fabs(totalSpoilersLeftDeflection - totalSpoilersRightDeflection) / 2;
+
+  SimOutputSpoilers out = {fmax(totalSpoilerDeflection - totalAssymmetricSpoilerDeflection, 0)};
+  simConnectInterface.sendData(out);
+
   return true;
 }
 
@@ -2613,28 +2624,9 @@ bool FlyByWireInterface::updateSpoilers(double sampleTime) {
     spoilersHandler->setInitialPosition(idSpoilersArmed->get(), simData.spoilers_handle_position);
   }
 
-  // update simulation variables
-  spoilersHandler->setSimulationVariables(
-      simData.simulationTime, autopilotStateMachineOutput.enabled_AP1 == 1 || autopilotStateMachineOutput.enabled_AP2 == 1,
-      simData.V_gnd_kn, thrustLeverAngle_1->get(), thrustLeverAngle_2->get(), simData.gear_animation_pos_1, simData.gear_animation_pos_2,
-      flapsHandleIndexFlapConf->get(), flyByWireOutput.sim.data_computed.high_aoa_prot_active == 1, flyByWireOutput.output.xi_pos);
-
-  // update sim position
-  spoilersHandler->updateSimPosition(sampleTime);
-
-  // check state of spoilers and adapt if necessary
-  if (spoilersHandler->getSimPosition() != simData.spoilers_handle_position) {
-    SimOutputSpoilers out = {spoilersHandler->getSimPosition()};
-    simConnectInterface.sendData(out);
-  }
-
   // set 3D handle position
   idSpoilersArmed->set(spoilersHandler->getIsArmed() ? 1 : 0);
   idSpoilersHandlePosition->set(spoilersHandler->getHandlePosition());
-
-  // set spoiler demand as input for hydraulics
-  idSpoilersPositionLeft->set(spoilersHandler->getLeftPosition());
-  idSpoilersPositionRight->set(spoilersHandler->getRightPosition());
 
   // result
   return true;

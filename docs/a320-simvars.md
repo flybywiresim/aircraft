@@ -1119,7 +1119,8 @@
 
 - A32NX_SPOILERS_ARMED
     - Bool
-    - Indicates if the ground spoilers are armed
+    - Indicates if the ground spoiler handle is physically in the armed position.
+        DO NOT USE IN SYSTEMS, USE FCDC INSTEAD
       Value | Meaning
       --- | ---
       0 | disarmed
@@ -1127,19 +1128,12 @@
 
 - A32NX_SPOILERS_HANDLE_POSITION
     - Number
-    - Indicates the physical handler position without arm/disarm
+    - Indicates the physical handler position without arm/disarm.
+        DO NOT USE IN SYSTEMS, USE FCDC INSTEAD
       Value | Position
       --- | ---
       0 | Retracted
       1 | Full extension
-
-- A32NX_SPOILERS_GROUND_SPOILERS_ACTIVE
-    - Bool
-    - Indicates if the ground spoilers are active (fully deployed)
-      Value | Position
-      --- | ---
-      0 | Inactive
-      1 | Active
 
 - A32NX_PERFORMANCE_WARNING_ACTIVE
     - Bool
