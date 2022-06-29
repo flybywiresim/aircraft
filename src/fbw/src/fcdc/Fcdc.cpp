@@ -571,18 +571,25 @@ FcdcBus Fcdc::getBusOutputs() {
   output.efcsStatus4.setBit(23, isNo(busInputs.sec1.left_spoiler_1_position_deg) && isNo(busInputs.sec1.right_spoiler_1_position_deg));
   output.efcsStatus4.setBit(24, isNo(busInputs.sec1.left_spoiler_2_position_deg) && isNo(busInputs.sec1.right_spoiler_2_position_deg));
   output.efcsStatus4.setBit(25, isNo(busInputs.sec2.left_spoiler_1_position_deg) && isNo(busInputs.sec2.right_spoiler_1_position_deg));
-  output.efcsStatus4.setBit(26, false);
-  output.efcsStatus4.setBit(27, false);
-  output.efcsStatus4.setBit(28, false);
-  output.efcsStatus4.setBit(29, false);
+  output.efcsStatus4.setBit(26, bitFromValueOr(busInputs.sec1.discrete_status_word_1, 25, false) ||
+                                    bitFromValueOr(busInputs.sec2.discrete_status_word_1, 25, false) ||
+                                    bitFromValueOr(busInputs.sec3.discrete_status_word_1, 25, false));
+  output.efcsStatus4.setBit(27, bitFromValueOr(busInputs.sec1.discrete_status_word_1, 26, false) ||
+                                    bitFromValueOr(busInputs.sec2.discrete_status_word_1, 26, false) ||
+                                    bitFromValueOr(busInputs.sec3.discrete_status_word_1, 26, false));
+  output.efcsStatus4.setBit(28, valueOr(busInputs.sec1.speed_brake_lever_command_deg, 0) > 1.5 ||
+                                    valueOr(busInputs.sec2.speed_brake_lever_command_deg, 0) > 1.5 ||
+                                    valueOr(busInputs.sec3.speed_brake_lever_command_deg, 0) > 1.5);
+  output.efcsStatus4.setBit(29, bitFromValueOr(busInputs.elac1.discrete_status_word_2, 21, false) ||
+                                    bitFromValueOr(busInputs.elac2.discrete_status_word_2, 21, false));
 
   output.efcsStatus5.setSsm(Arinc429SignStatus::NormalOperation);
   output.efcsStatus5.setBit(11, !isNo(busInputs.sec1.speed_brake_lever_command_deg) && discreteInputs.sec1Valid);
   output.efcsStatus5.setBit(12, !isNo(busInputs.sec2.speed_brake_lever_command_deg) && discreteInputs.sec2Valid);
   output.efcsStatus5.setBit(13, !isNo(busInputs.sec3.speed_brake_lever_command_deg) && discreteInputs.sec3Valid);
-  output.efcsStatus5.setBit(14, false);
-  output.efcsStatus5.setBit(15, false);
-  output.efcsStatus5.setBit(16, false);
+  output.efcsStatus5.setBit(14, bitFromValueOr(busInputs.sec1.discrete_status_word_1, 24, false));
+  output.efcsStatus5.setBit(15, bitFromValueOr(busInputs.sec2.discrete_status_word_1, 24, false));
+  output.efcsStatus5.setBit(16, bitFromValueOr(busInputs.sec3.discrete_status_word_1, 24, false));
   output.efcsStatus5.setBit(17, false);
   output.efcsStatus5.setBit(18, false);
   output.efcsStatus5.setBit(19, false);
