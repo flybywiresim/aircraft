@@ -202,7 +202,10 @@ const PseudoFWC: React.FC = () => {
 
     /* OTHER STUFF */
 
-    const [spoilersArmed] = useSimVar('L:A32NX_SPOILERS_ARMED', 'bool', 500);
+    const fcdc1DiscreteWord4 = useArinc429Var('L:A32NX_FCDC_1_DISCRETE_WORD_4');
+    const fcdc2DiscreteWord4 = useArinc429Var('L:A32NX_FCDC_2_DISCRETE_WORD_4');
+
+    const spoilersArmed = fcdc1DiscreteWord4.getBitValueOr(27, false) || fcdc2DiscreteWord4.getBitValueOr(27, false);
     const [seatBelt] = useSimVar('A:CABIN SEATBELTS ALERT SWITCH', 'bool', 500);
     const [noSmoking] = useSimVar('L:A32NX_NO_SMOKING_MEMO', 'bool', 500);
     const [noSmokingSwitchPosition] = useSimVar('L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_Position', 'enum', 500);
@@ -240,7 +243,7 @@ const PseudoFWC: React.FC = () => {
     const [toconfigBtn] = useSimVar('L:A32NX_BTN_TOCONFIG', 'bool');
     const [flapsMcdu] = useSimVar('L:A32NX_TO_CONFIG_FLAPS', 'number', 500);
     const [flapsMcduEntered] = useSimVar('L:A32NX_TO_CONFIG_FLAPS_ENTERED', 'bool', 500);
-    const [speedBrake] = useSimVar('L:A32NX_SPOILERS_HANDLE_POSITION', 'number', 500);
+    const speedBrakeCommand = fcdc1DiscreteWord4.getBitValueOr(28, false) || fcdc2DiscreteWord4.getBitValueOr(28, false);
     const [parkBrake] = useSimVar('L:A32NX_PARK_BRAKE_LEVER_POS', 'bool', 500);
     const [brakesHot] = useSimVar('L:A32NX_BRAKES_HOT', 'bool', 500);
     const [v1Speed] = useSimVar('L:AIRLINER_V1_SPEED', 'knots', 500);
@@ -695,7 +698,7 @@ const PseudoFWC: React.FC = () => {
                 cabAltSetResetState2 ? 3 : null,
                 cabAltSetResetState1 ? 4 : null,
                 cabAltSetResetState2 && (throttle1Position !== 0 || throttle2Position !== 0) && autoThrustStatus !== 2 ? 5 : null,
-                cabAltSetResetState2 && speedBrake !== 1 ? 6 : null,
+                cabAltSetResetState2 && !speedBrakeCommand ? 6 : null,
                 cabAltSetResetState2 ? 7 : null,
                 cabAltSetResetState2 && engSelectorPosition !== 2 ? 8 : null,
                 cabAltSetResetState2 ? 9 : null,
@@ -1129,7 +1132,7 @@ const PseudoFWC: React.FC = () => {
         '0000060': // SPEED BRK
         {
             flightPhaseInhib: [],
-            simVarIsActive: speedBrake > 0 && ![1, 8, 9, 10].includes(flightPhase),
+            simVarIsActive: speedBrakeCommand && ![1, 8, 9, 10].includes(flightPhase),
             whichCodeToReturn: [![6, 7].includes(flightPhase) ? 1 : 0],
             codesToReturn: ['000006001', '000006002'],
             memoInhibit: false,
@@ -1404,7 +1407,7 @@ const PseudoFWC: React.FC = () => {
             const speeds = !!(v1Speed <= vrSpeed && vrSpeed <= v2Speed);
             const doors = !!(cabin === 0 && catering === 0 && cargoaftLocked && cargofwdLocked);
             const flapsAgree = !flapsMcduEntered || flapsHandle === flapsMcdu;
-            const sb = speedBrake === 0;
+            const sb = !speedBrakeCommand;
 
             if (systemStatus && speeds && !brakesHot && doors && flapsAgree && sb) {
                 SimVar.SetSimVarValue('L:A32NX_TO_CONFIG_NORMAL', 'bool', 1);
@@ -1416,7 +1419,7 @@ const PseudoFWC: React.FC = () => {
         }
     }, [
         engine1Generator, engine2Generator, blueLP, greenLP, yellowLP, eng1pumpPBisAuto, eng2pumpPBisAuto,
-        flapsMcdu, flapsMcduEntered, speedBrake, parkBrake, v1Speed, vrSpeed, v2Speed, cabin,
+        flapsMcdu, flapsMcduEntered, speedBrakeCommand, parkBrake, v1Speed, vrSpeed, v2Speed, cabin,
         catering, cargoaftLocked, cargofwdLocked, toconfigBtn, tomemo, flapsHandle, brakesHot,
     ]);
 
@@ -1682,7 +1685,7 @@ const PseudoFWC: React.FC = () => {
         showLandingInhibit,
         slatsInfD,
         slatsSupG,
-        speedBrake,
+        speedBrakeCommand,
         spoilersArmed,
         strobeLightsOn,
         tcasFault,
