@@ -455,13 +455,13 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idSplrFaultRight[5];
 
   // ELAC discrete input Lvars
-  std::unique_ptr<LocalVariable> idElacPushbuttonStatus[2];
+  std::unique_ptr<LocalVariable> idElacPushbuttonPressed[2];
 
   // ELAC discrete output Lvars
   std::unique_ptr<LocalVariable> idElacDigitalOpValidated[2];
 
   // SEC discrete input Lvars
-  std::unique_ptr<LocalVariable> idSecPushbuttonStatus[3];
+  std::unique_ptr<LocalVariable> idSecPushbuttonPressed[3];
 
   // SEC discrete output Lvars
   std::unique_ptr<LocalVariable> idSecFaultLightOn[3];
@@ -488,7 +488,7 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idRudderTravelLimCommandedPosition[2];
 
   // FAC discrete input Lvars
-  std::unique_ptr<LocalVariable> idFacPushbuttonStatus[2];
+  std::unique_ptr<LocalVariable> idFacPushbuttonPressed[2];
   // FAC discrete output Lvars
   std::unique_ptr<LocalVariable> idFacFaultLightOn[2];
 

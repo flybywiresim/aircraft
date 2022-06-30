@@ -582,14 +582,14 @@ void FlyByWireInterface::setupLocalVariables() {
   for (int i = 0; i < 2; i++) {
     string idString = std::to_string(i + 1);
 
-    idElacPushbuttonStatus[i] = make_unique<LocalVariable>("A32NX_ELAC_" + idString + "_PUSHBUTTON_STATUS");
+    idElacPushbuttonPressed[i] = make_unique<LocalVariable>("A32NX_ELAC_" + idString + "_PUSHBUTTON_PRESSED");
     idElacDigitalOpValidated[i] = make_unique<LocalVariable>("A32NX_ELAC_" + idString + "_DIGITAL_OP_VALIDATED");
   }
 
   for (int i = 0; i < 3; i++) {
     string idString = std::to_string(i + 1);
 
-    idSecPushbuttonStatus[i] = make_unique<LocalVariable>("A32NX_SEC_" + idString + "_PUSHBUTTON_STATUS");
+    idSecPushbuttonPressed[i] = make_unique<LocalVariable>("A32NX_SEC_" + idString + "_PUSHBUTTON_PRESSED");
     idSecFaultLightOn[i] = make_unique<LocalVariable>("A32NX_SEC_" + idString + "_FAULT_LIGHT_ON");
     idSecGroundSpoilersOut[i] = make_unique<LocalVariable>("A32NX_SEC_" + idString + "_GROUND_SPOILER_OUT");
   }
@@ -597,7 +597,7 @@ void FlyByWireInterface::setupLocalVariables() {
   for (int i = 0; i < 2; i++) {
     string idString = std::to_string(i + 1);
 
-    idFacPushbuttonStatus[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_PUSHBUTTON_STATUS");
+    idFacPushbuttonPressed[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_PUSHBUTTON_PRESSED");
     idFacFaultLightOn[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_FAULT_LIGHT_ON");
 
     idFacDiscreteWord1[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_DISCRETE_WORD_1");
@@ -1187,7 +1187,7 @@ bool FlyByWireInterface::updateElac(double sampleTime, int elacIndex) {
   elacs[elacIndex].modelInputs.in.discrete_inputs.fo_priority_takeover_pressed = idFoPriorityButtonPressed->get();
   elacs[elacIndex].modelInputs.in.discrete_inputs.blue_low_pressure = !idHydBluePressurised->get();
   elacs[elacIndex].modelInputs.in.discrete_inputs.green_low_pressure = !idHydGreenPressurised->get();
-  elacs[elacIndex].modelInputs.in.discrete_inputs.elac_engaged_from_switch = idElacPushbuttonStatus[elacIndex]->get();
+  elacs[elacIndex].modelInputs.in.discrete_inputs.elac_engaged_from_switch = idElacPushbuttonPressed[elacIndex]->get();
   elacs[elacIndex].modelInputs.in.discrete_inputs.normal_powersupply_lost = false;
 
   elacs[elacIndex].modelInputs.in.analog_inputs.capt_pitch_stick_pos = -simInput.inputs[0];
@@ -1266,7 +1266,7 @@ bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
   secs[secIndex].modelInputs.in.sim_data.tracking_mode_on_override = false;
   secs[secIndex].modelInputs.in.sim_data.tailstrike_protection_on = tailstrikeProtectionEnabled;
 
-  secs[secIndex].modelInputs.in.discrete_inputs.sec_engaged_from_switch = idSecPushbuttonStatus[secIndex]->get();
+  secs[secIndex].modelInputs.in.discrete_inputs.sec_engaged_from_switch = idSecPushbuttonPressed[secIndex]->get();
   secs[secIndex].modelInputs.in.discrete_inputs.sec_in_emergency_powersupply = false;
   secs[secIndex].modelInputs.in.discrete_inputs.is_unit_1 = secIndex == 0;
   secs[secIndex].modelInputs.in.discrete_inputs.is_unit_2 = secIndex == 1;
@@ -1402,20 +1402,20 @@ bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
 bool FlyByWireInterface::updateFcdc(double sampleTime, int fcdcIndex) {
   const int oppFcdcIndex = fcdcIndex == 0 ? 1 : 0;
 
-  fcdcs[fcdcIndex].discreteInputs.elac1Off = idElacPushbuttonStatus[0]->get();
+  fcdcs[fcdcIndex].discreteInputs.elac1Off = !idElacPushbuttonPressed[0]->get();
   fcdcs[fcdcIndex].discreteInputs.elac1Valid = elacsDiscreteOutputs[0].digital_output_validated;
   fcdcs[fcdcIndex].discreteInputs.elac2Valid = elacsDiscreteOutputs[1].digital_output_validated;
-  fcdcs[fcdcIndex].discreteInputs.sec1Off = idSecPushbuttonStatus[0]->get();
+  fcdcs[fcdcIndex].discreteInputs.sec1Off = !idSecPushbuttonPressed[0]->get();
   fcdcs[fcdcIndex].discreteInputs.sec1Valid = !secsDiscreteOutputs[0].sec_failed;
   fcdcs[fcdcIndex].discreteInputs.sec2Valid = !secsDiscreteOutputs[1].sec_failed;
   fcdcs[fcdcIndex].discreteInputs.eng1NotOnGroundAndNotLowOilPress = false;
   fcdcs[fcdcIndex].discreteInputs.eng2NotOnGroundAndNotLowOilPress = false;
   fcdcs[fcdcIndex].discreteInputs.noseGearPressed = idLgciuNoseGearCompressed[0]->get();
   fcdcs[fcdcIndex].discreteInputs.oppFcdcFailed = !fcdcsDiscreteOutputs[oppFcdcIndex].fcdcValid;
-  fcdcs[fcdcIndex].discreteInputs.sec3Off = idSecPushbuttonStatus[3]->get();
+  fcdcs[fcdcIndex].discreteInputs.sec3Off = !idSecPushbuttonPressed[2]->get();
   fcdcs[fcdcIndex].discreteInputs.sec3Valid = !secsDiscreteOutputs[2].sec_failed;
-  fcdcs[fcdcIndex].discreteInputs.elac2Off = idElacPushbuttonStatus[1]->get();
-  fcdcs[fcdcIndex].discreteInputs.sec2Off = idSecPushbuttonStatus[1]->get();
+  fcdcs[fcdcIndex].discreteInputs.elac2Off = !idElacPushbuttonPressed[1]->get();
+  fcdcs[fcdcIndex].discreteInputs.sec2Off = !idSecPushbuttonPressed[1]->get();
 
   fcdcs[fcdcIndex].busInputs.elac1 = elacsBusOutputs[0];
   fcdcs[fcdcIndex].busInputs.sec1 = secsBusOutputs[0];
@@ -1492,7 +1492,7 @@ bool FlyByWireInterface::updateFac(double sampleTime, int facIndex) {
   facs[facIndex].modelInputs.in.discrete_inputs.rudder_trim_switch_left = trimInput.rudderTrimSwitchLeft;
   facs[facIndex].modelInputs.in.discrete_inputs.rudder_trim_switch_right = trimInput.rudderTrimSwitchRight;
   facs[facIndex].modelInputs.in.discrete_inputs.rudder_trim_reset_button = trimInput.rudderTrimReset;
-  facs[facIndex].modelInputs.in.discrete_inputs.fac_engaged_from_switch = idFacPushbuttonStatus[facIndex]->get();
+  facs[facIndex].modelInputs.in.discrete_inputs.fac_engaged_from_switch = idFacPushbuttonPressed[facIndex]->get();
   facs[facIndex].modelInputs.in.discrete_inputs.fac_opp_healthy = facsDiscreteOutputs[oppFacIndex].fac_healthy;
   facs[facIndex].modelInputs.in.discrete_inputs.is_unit_1 = facIndex == 0;
   facs[facIndex].modelInputs.in.discrete_inputs.rudder_trim_actuator_healthy = true;
