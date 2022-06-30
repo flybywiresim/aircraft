@@ -739,6 +739,14 @@ pub trait HydraulicAssemblyController {
     fn requested_position(&self) -> Ratio;
     fn should_lock(&self) -> bool;
     fn requested_lock_position(&self) -> Ratio;
+
+    fn should_soft_lock(&self) -> bool {
+        false
+    }
+
+    fn soft_lock_velocity(&self) -> (AngularVelocity, AngularVelocity) {
+        (AngularVelocity::default(), AngularVelocity::default())
+    }
 }
 
 pub struct HydraulicLinearActuatorAssembly<const N: usize> {
@@ -875,6 +883,10 @@ pub struct LinearActuatedRigidBodyOnHingeAxis {
     rotation_transform: Rotation3<f64>,
 
     plane_acceleration_filtered: LowPassFilter<Vector3<f64>>,
+
+    is_soft_locked: bool,
+    min_soft_lock_velocity: AngularVelocity,
+    max_soft_lock_velocity: AngularVelocity,
 }
 impl LinearActuatedRigidBodyOnHingeAxis {
     // Rebound energy when hiting min or max position. 0.3 means the body rebounds at 30% of the speed it hit the min/max position
@@ -934,6 +946,10 @@ impl LinearActuatedRigidBodyOnHingeAxis {
             plane_acceleration_filtered: LowPassFilter::<Vector3<f64>>::new(
                 Self::PLANE_ACCELERATION_FILTERING_TIME_CONSTANT,
             ),
+
+            is_soft_locked: false,
+            min_soft_lock_velocity: AngularVelocity::default(),
+            max_soft_lock_velocity: AngularVelocity::default(),
         };
         // Make sure the new object has coherent structure by updating internal roations and positions once
         new_body.initialize_actuator_force_direction();
@@ -1086,6 +1102,8 @@ impl LinearActuatedRigidBodyOnHingeAxis {
                     * context.delta_as_secs_f64(),
             );
 
+            self.limit_angular_speed_from_soft_lock();
+
             self.angular_position += Angle::new::<radian>(
                 self.angular_speed.get::<radian_per_second>() * context.delta_as_secs_f64(),
             );
@@ -1114,6 +1132,16 @@ impl LinearActuatedRigidBodyOnHingeAxis {
         }
     }
 
+    /// If a soft lock is active, will limit the current angular velocity
+    fn limit_angular_speed_from_soft_lock(&mut self) {
+        if self.is_soft_locked {
+            self.angular_speed = self
+                .angular_speed
+                .min(self.max_soft_lock_velocity)
+                .max(self.min_soft_lock_velocity);
+        }
+    }
+
     fn limit_position_to_range(&mut self) {
         if self.angular_position >= self.max_angle {
             self.angular_position = self.max_angle;
@@ -1138,6 +1166,16 @@ impl LinearActuatedRigidBodyOnHingeAxis {
 
     pub fn is_locked(&self) -> bool {
         self.is_locked
+    }
+
+    pub fn soft_unlock(&mut self) {
+        self.is_soft_locked = false;
+    }
+
+    pub fn soft_lock(&mut self, min_velocity: AngularVelocity, max_velocity: AngularVelocity) {
+        self.is_soft_locked = true;
+        self.min_soft_lock_velocity = min_velocity;
+        self.max_soft_lock_velocity = max_velocity;
     }
 
     fn absolute_length_to_anchor_at_angle(&self, position: Angle) -> Length {
@@ -1250,6 +1288,14 @@ mod tests {
 
         fn requested_lock_position(&self) -> Ratio {
             self.lock_position
+        }
+
+        fn should_soft_lock(&self) -> bool {
+            false
+        }
+
+        fn soft_lock_velocity(&self) -> (AngularVelocity, AngularVelocity) {
+            (AngularVelocity::default(), AngularVelocity::default())
         }
     }
 
