@@ -97,9 +97,17 @@ const PseudoFWC: React.FC = () => {
     const [cabAltSetReset1] = useState(() => new NXLogicMemoryNode());
     const [cabAltSetReset2] = useState(() => new NXLogicMemoryNode());
     const [elac1HydConfirmNode] = useState(() => new NXLogicConfirmNode(3, false));
+    const [elac1FaultConfirmNode] = useState(() => new NXLogicConfirmNode(0.6, true));
     const [elac1HydConfirmNodeOutput, setElac1HydConfirmNodeOutput] = useState(false);
+    const [elac1FaultConfirmNodeOutput, setElac1FaultConfirmNodeOutput] = useState(false);
     const [elac2HydConfirmNode] = useState(() => new NXLogicConfirmNode(3, false));
+    const [elac2FaultConfirmNode] = useState(() => new NXLogicConfirmNode(0.6, true));
     const [elac2HydConfirmNodeOutput, setElac2HydConfirmNodeOutput] = useState(false);
+    const [elac2FaultConfirmNodeOutput, setElac2FaultConfirmNodeOutput] = useState(false);
+    const [altn1LawConfirmNode] = useState(() => new NXLogicConfirmNode(0.3, true));
+    const [altn1LawConfirmNodeOutput, setAltn1LawConfirmNodeOutput] = useState(false);
+    const [altn2LawConfirmNode] = useState(() => new NXLogicConfirmNode(0.3, true));
+    const [altn2LawConfirmNodeOutput, setAltn2LawConfirmNodeOutput] = useState(false);
 
     const [memoMessageLeft, setMemoMessageLeft] = useState<string[]>([]);
     const [memoMessageRight, setMemoMessageRight] = useState<string[]>([]);
@@ -571,9 +579,29 @@ const PseudoFWC: React.FC = () => {
             setElac1HydConfirmNodeOutput(elac1HydraulicResult);
         }
 
+        const elac1FaultResult = elac1FaultConfirmNode.write(elac1FaultCondition, deltaTime);
+        if (elac1FaultConfirmNodeOutput !== elac1FaultResult) {
+            setElac1FaultConfirmNodeOutput(elac1FaultResult);
+        }
+
         const elac2HydraulicResult = elac2HydConfirmNode.write((!greenSysPressurised || !yellowSysPressurised) && !blueSysPressurised, deltaTime);
         if (elac2HydConfirmNodeOutput !== elac2HydraulicResult) {
             setElac2HydConfirmNodeOutput(elac2HydraulicResult);
+        }
+
+        const elac2FaultResult = elac2FaultConfirmNode.write(elac2FaultCondition, deltaTime);
+        if (elac2FaultConfirmNodeOutput !== elac2FaultResult) {
+            setElac2FaultConfirmNodeOutput(elac2FaultResult);
+        }
+
+        const altn1Result = altn1LawConfirmNode.write(altn1Condition, deltaTime);
+        if (altn1LawConfirmNodeOutput !== altn1Result) {
+            setAltn1LawConfirmNodeOutput(altn1Result);
+        }
+
+        const altn2Result = altn2LawConfirmNode.write(altn2Condition, deltaTime);
+        if (altn2LawConfirmNodeOutput !== altn2Result) {
+            setAltn2LawConfirmNodeOutput(altn2Result);
         }
     });
 
@@ -777,7 +805,7 @@ const PseudoFWC: React.FC = () => {
         },
         2700110: { // ELAC 1 FAULT
             flightPhaseInhib: [3, 4, 5, 7, 8],
-            simVarIsActive: elac1FaultCondition,
+            simVarIsActive: elac1FaultConfirmNodeOutput,
             whichCodeToReturn: [
                 0,
                 elac1FaultLine123Display ? 1 : null,
@@ -794,7 +822,7 @@ const PseudoFWC: React.FC = () => {
         },
         2700120: { // ELAC 2 FAULT
             flightPhaseInhib: [3, 4, 5, 7, 8],
-            simVarIsActive: elac2FaultCondition,
+            simVarIsActive: elac2FaultConfirmNodeOutput,
             whichCodeToReturn: [
                 0,
                 elac2FaultLine123Display ? 1 : null,
@@ -877,8 +905,8 @@ const PseudoFWC: React.FC = () => {
         },
         2700375: { // ALTN 2
             flightPhaseInhib: [4, 5, 7, 8],
-            simVarIsActive: altn2Condition,
-            whichCodeToReturn: [0, 1, 2, 3, 4, null, 6],
+            simVarIsActive: altn2LawConfirmNodeOutput,
+            whichCodeToReturn: [0, 1, null, 3, 4, null, 6],
             codesToReturn: ['270037501', '270037502', '270037503', '270037504', '270037505', '270037506', '270037507'],
             memoInhibit: false,
             failure: 2,
@@ -887,8 +915,8 @@ const PseudoFWC: React.FC = () => {
         },
         2700390: { // ALTN 1
             flightPhaseInhib: [4, 5, 7, 8],
-            simVarIsActive: altn1Condition,
-            whichCodeToReturn: [0, 1, 2, 3, 4, null, 6],
+            simVarIsActive: altn1LawConfirmNodeOutput,
+            whichCodeToReturn: [0, 1, null, 3, 4, null, 6],
             codesToReturn: ['270039001', '270039002', '270039003', '270039004', '270039005', '270039006', '270039007'],
             memoInhibit: false,
             failure: 2,
@@ -1842,8 +1870,8 @@ const PseudoFWC: React.FC = () => {
         agent2Eng2Discharge,
         agentAPUDischarge,
         AIRKnob,
-        altn1Condition,
-        altn2Condition,
+        altn1LawConfirmNodeOutput,
+        altn2LawConfirmNodeOutput,
         antiskidActive,
         apuAgentPB,
         apuAvail,
@@ -1870,9 +1898,9 @@ const PseudoFWC: React.FC = () => {
         dcESSBusPowered,
         dmcSwitchingKnob,
         directLawCondition,
-        elac1FaultCondition,
+        elac1FaultConfirmNodeOutput,
         elac1FaultLine123Display,
-        elac2FaultCondition,
+        elac2FaultConfirmNodeOutput,
         elac2FaultLine123Display,
         sec1FaultCondition,
         sec1FaultLine123Display,
