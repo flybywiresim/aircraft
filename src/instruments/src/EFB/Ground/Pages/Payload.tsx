@@ -6,14 +6,14 @@ import { Units } from '@shared/units';
 import { usePersistentProperty } from '@instruments/common/persistence';
 import { BitFlags } from '@shared/bitFlags';
 import { useBitFlags } from '@instruments/common/bitFlags';
-import { PayloadManager } from '@payload/index';
 import { BalanceWeight } from './BalanceWeight/BalanceWeight';
-import { RowInfo, SeatInfo, TYPE } from './Seating/Constants';
+import { SeatInfo, PaxStationInfo, CargoStationInfo, TYPE } from './Seating/Constants';
 import { PerformanceEnvelope } from './BalanceWeight/Constants';
 import { t } from '../../translation';
 import { TooltipWrapper } from '../../UtilComponents/TooltipWrapper';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { SelectInput } from '../../UtilComponents/Form/SelectInput/SelectInput';
+// import Card from '../../UtilComponents/Card/Card';
 import { SelectGroup, SelectItem } from '../../UtilComponents/Form/Select';
 import { SeatMap } from './Seating/SeatMap';
 import { isSimbriefDataLoaded } from '../../Store/features/simBrief';
@@ -30,26 +30,189 @@ const Label: React.FC<LabelProps> = ({ text, className, children }) => (
     </div>
 );
 
+const Station = {
+    A: 0,
+    B: 1,
+    C: 2,
+    D: 3,
+    fwd: 0,
+    aftCont: 1,
+    aftBag: 2,
+    aftBulk: 3,
+};
+
+const defaultRow = (): SeatInfo[] => (
+    [
+        { type: TYPE.ECO, x: 0, y: 0, yOffset: 0 },
+        { type: TYPE.ECO, x: 0, y: 0, yOffset: 0 },
+        { type: TYPE.ECO, x: 0, y: 0, yOffset: 0 },
+        { type: TYPE.ECO, x: 0, y: 0, yOffset: 19 },
+        { type: TYPE.ECO, x: 0, y: 0, yOffset: 0 },
+        { type: TYPE.ECO, x: 0, y: 0, yOffset: 0 },
+    ]
+);
+
+const emergRow = (): SeatInfo[] => (
+    [
+        { type: TYPE.ECO_EMERG, x: 0, y: 0, yOffset: 0 },
+        { type: TYPE.ECO_EMERG, x: 0, y: 0, yOffset: 0 },
+        { type: TYPE.ECO_EMERG, x: 0, y: 0, yOffset: 0 },
+        { type: TYPE.ECO_EMERG, x: 0, y: 0, yOffset: 19 },
+        { type: TYPE.ECO_EMERG, x: 0, y: 0, yOffset: 0 },
+        { type: TYPE.ECO_EMERG, x: 0, y: 0, yOffset: 0 },
+    ]
+);
+
+const addRow = (
+    seats: SeatInfo[] = defaultRow(),
+    x: number = 0,
+    y: number = 0,
+    xOffset: number = 0,
+    yOffset: number = 0,
+) => ({ seats, x, y, xOffset, yOffset });
+
+const defaultSeatMap: PaxStationInfo[] = [
+    {
+        // A
+        name: 'ROWS [1-6]',
+        rows: [addRow(), addRow(), addRow(), addRow(), addRow(), addRow()],
+        stationIndex: 1,
+        position: 21.98,
+        simVar: 'A32NX_PAX_TOTAL_ROWS_1_6',
+    },
+    {
+        // B
+        name: 'ROWS [7-13]',
+        rows: [addRow(), addRow(), addRow(), addRow(), addRow(), addRow(emergRow()), addRow(emergRow())],
+        stationIndex: 2,
+        position: 2.86,
+        simVar: 'A32NX_PAX_TOTAL_ROWS_7_13',
+    },
+    {
+        // C
+        name: 'ROWS [14-21]',
+        rows: [addRow(), addRow(), addRow(), addRow(), addRow(), addRow(), addRow(), addRow()],
+        stationIndex: 3,
+        position: -15.34,
+        simVar: 'A32NX_PAX_TOTAL_ROWS_14_21',
+    },
+    {
+        // D
+        name: 'ROWS [22-29]',
+        rows: [addRow(), addRow(), addRow(), addRow(), addRow(), addRow(), addRow(), addRow()],
+        stationIndex: 4,
+        position: -32.81,
+        simVar: 'A32NX_PAX_TOTAL_ROWS_22_29',
+    },
+];
+
+const defaultCargoMap: CargoStationInfo[] = [
+    {
+        name: 'FWD BAGGAGE/CONTAINER',
+        stationIndex: 5,
+        position: 18.28,
+        simVar: 'A32NX_CARGO_FWD_BAGGAGE_CONTAINER',
+    },
+    {
+        name: 'AFT CONTAINER',
+        stationIndex: 6,
+        position: -15.96,
+        simVar: 'A32NX_CARGO_AFT_CONTAINER',
+    },
+    {
+        name: 'AFT BAGGAGE',
+        stationIndex: 7,
+        position: -27.10,
+        simVar: 'A32NX_CARGO_AFT_BAGGAGE',
+    },
+    {
+        name: 'AFT BULK/LOOSE',
+        stationIndex: 8,
+        position: -37.35,
+        simVar: 'A32NX_CARGO_AFT_BULK_LOOSE',
+    },
+];
+
+const defaultEnvelope: PerformanceEnvelope = {
+    mlw: [
+        [17, 67400],
+        [40, 67400],
+        [40, 50000],
+        [35, 46000],
+        [35, 40600],
+    ],
+    mzfw: [
+        [17, 64300],
+        [40, 64300],
+        [40, 73500],
+        [40, 50000],
+        [35, 46000],
+        [35, 40600],
+        [15, 40600],
+    ],
+    mtow: [
+        [15, 40600],
+        [15, 53000],
+        [17, 63000],
+        [17, 72000],
+        [27, 79000],
+        [36, 79000],
+        [40, 73500],
+        [40, 58000],
+        [32, 40600],
+    ],
+
+};
+
 export const Payload = () => {
     const { usingMetric } = Units;
     const [boardingRate, setBoardingRate] = usePersistentProperty('CONFIG_BOARDING_RATE', 'REAL');
     const [weightUnit, setWeightUnit] = usePersistentProperty('EFB_PREFERRED_WEIGHT_UNIT', usingMetric ? 'kg' : 'lb');
+    const [paxA, setPaxA] = useSimVar('L:A32NX_PAX_TOTAL_ROWS_1_6', 'Number');
+    const [paxB, setPaxB] = useSimVar('L:A32NX_PAX_TOTAL_ROWS_7_13', 'Number');
+    const [paxC, setPaxC] = useSimVar('L:A32NX_PAX_TOTAL_ROWS_14_21', 'Number');
+    const [paxD, setPaxD] = useSimVar('L:A32NX_PAX_TOTAL_ROWS_22_29', 'Number');
+    /*
     const [paxA, setPaxA] = useSimVar('L:A32NX_PAX_TOTAL_ROWS_1_6_DESIRED', 'Number');
     const [paxB, setPaxB] = useSimVar('L:A32NX_PAX_TOTAL_ROWS_7_13_DESIRED', 'Number');
     const [paxC, setPaxC] = useSimVar('L:A32NX_PAX_TOTAL_ROWS_14_21_DESIRED', 'Number');
     const [paxD, setPaxD] = useSimVar('L:A32NX_PAX_TOTAL_ROWS_22_29_DESIRED', 'Number');
+    */
+
+    /*
     const [fwdBag, setFwdBag] = useSimVar('L:A32NX_CARGO_FWD_BAGGAGE_CONTAINER_DESIRED', 'Number');
-    const [aftCont, setAftCont] = useSimVar('L:A32NX_CARGO_FWD_BAGGAGE_CONTAINER_DESIRED', 'Number');
-    const [aftBag, setAftBag] = useSimVar('L:A32NX_CARGO_FWD_BAGGAGE_CONTAINER_DESIRED', 'Number');
+    const [aftCont, setAftCont] = useSimVar('L:A32NX_CARGO_AFT_CONTAINER_DESIRED', 'Number');
+    const [aftBag, setAftBag] = useSimVar('L:A32NX_CARGO_AFT_BAGGAGE_DESIRED', 'Number');
     const [aftBulk, setAftBulk] = useSimVar('L:A32NX_CARGO_FWD_BAGGAGE_CONTAINER_DESIRED', 'Number');
-    const [zfwCg, setZfwCg] = useState(0);
+    */
+
+    /*
+    const fuelWeight = SimVar.GetSimVarValue("FUEL WEIGHT PER GALLON", "kilograms");
+    const centerCurrentSimVar = SimVar.GetSimVarValue("FUEL TANK CENTER QUANTITY", "Gallons");
+    const LInnCurrentSimVar = SimVar.GetSimVarValue("FUEL TANK LEFT MAIN QUANTITY", "Gallons");
+    const LOutCurrentSimVar = SimVar.GetSimVarValue("FUEL TANK LEFT AUX QUANTITY", "Gallons");
+    const RInnCurrentSimVar = SimVar.GetSimVarValue("FUEL TANK RIGHT MAIN QUANTITY", "Gallons");
+    const ROutCurrentSimVar = SimVar.GetSimVarValue("FUEL TANK RIGHT AUX QUANTITY", "Gallons");
+    */
+
+    const [fwdBag] = useSimVar('L:A32NX_CARGO_FWD_BAGGAGE_CONTAINER', 'Number');
+    const [aftCont] = useSimVar('L:A32NX_CARGO_AFT_CONTAINER', 'Number');
+    const [aftBag] = useSimVar('L:A32NX_CARGO_AFT_BAGGAGE', 'Number');
+    const [aftBulk] = useSimVar('L:A32NX_CARGO_AFT_BULK_LOOSE', 'Number');
+
+    const [paxWeight] = useSimVar('L:A32NX_WB_PER_PAX_WEIGHT', 'Number');
     const [zfw, setZfw] = useState(0);
-    const [emptyWeight] = useSimVar('A:EMPTY WEIGHT', 'Number');
+    const [zfwCg, setZfwCg] = useState(0);
+    const [emptyWeight] = useSimVar('A:EMPTY WEIGHT', usingMetric ? 'Kilograms' : 'Pounds');
+    const [cg] = useSimVar('A:CG PERCENT', 'percent');
+    const [totalWeight] = useSimVar('A:TOTAL WEIGHT', usingMetric ? 'Kilograms' : 'Pounds');
+    const [mlwCg, setMlwCg] = useState(0);
+    const [mlwWeight, setMlwWeight] = useState(0);
 
     const cgPoints = {
         mzfw: { cg: zfwCg, weight: zfw },
-        mlw: { cg: 26.5, weight: 64000 },
-        mtow: { cg: 26.7, weight: 74000 },
+        mlw: { cg: mlwCg, weight: mlwWeight },
+        mtow: { cg, weight: totalWeight },
     };
 
     const [stationSize, setSectionLen] = useState<number[]>([]);
@@ -67,82 +230,8 @@ export const Payload = () => {
 
     const simbriefDataLoaded = isSimbriefDataLoaded();
 
-    const Station = {
-        A: 0,
-        B: 1,
-        C: 2,
-        D: 3,
-    };
-
-    const defaultRow = (): SeatInfo[] => (
-        [
-            { type: TYPE.ECO, x: 0, y: 0, yOffset: 0 },
-            { type: TYPE.ECO, x: 0, y: 0, yOffset: 0 },
-            { type: TYPE.ECO, x: 0, y: 0, yOffset: 0 },
-            { type: TYPE.ECO, x: 0, y: 0, yOffset: 19 },
-            { type: TYPE.ECO, x: 0, y: 0, yOffset: 0 },
-            { type: TYPE.ECO, x: 0, y: 0, yOffset: 0 },
-        ]
-    );
-
-    const emergRow = (): SeatInfo[] => (
-        [
-            { type: TYPE.ECO_EMERG, x: 0, y: 0, yOffset: 0 },
-            { type: TYPE.ECO_EMERG, x: 0, y: 0, yOffset: 0 },
-            { type: TYPE.ECO_EMERG, x: 0, y: 0, yOffset: 0 },
-            { type: TYPE.ECO_EMERG, x: 0, y: 0, yOffset: 19 },
-            { type: TYPE.ECO_EMERG, x: 0, y: 0, yOffset: 0 },
-            { type: TYPE.ECO_EMERG, x: 0, y: 0, yOffset: 0 },
-        ]
-    );
-
-    const addRow = (
-        seats: SeatInfo[] = defaultRow(),
-        x: number = 0,
-        y: number = 0,
-        xOffset: number = 0,
-        yOffset: number = 0,
-    ) => ({ seats, x, y, xOffset, yOffset });
-
-    const defaultSeatMap: RowInfo[][] = [
-        [addRow(), addRow(), addRow(), addRow(), addRow(), addRow()], // Station A
-        [addRow(), addRow(), addRow(), addRow(), addRow(), addRow(emergRow()), addRow(emergRow())], // Station B
-        [addRow(), addRow(), addRow(), addRow(), addRow(), addRow(), addRow(), addRow()], // Station C
-        [addRow(), addRow(), addRow(), addRow(), addRow(), addRow(), addRow(), addRow()], // Station D
-    ];
-
-    const defaultEnvelope: PerformanceEnvelope = {
-        mlw: [
-            [20.4, 64500],
-            [38, 64500],
-        ],
-        mzfw: [
-            [22.8, 37000],
-            [20.5, 48000],
-            [21, 53000],
-            [20.8, 55900],
-            [21.3, 60000],
-            [21.2, 62500],
-            [39, 62500],
-            [37, 37000],
-        ],
-        mtow: [
-            [21.5, 37000],
-            [19, 53000],
-            [20.35, 63000],
-            [20, 72000],
-            [22, 73000],
-            [30.8, 77000],
-            [35.8, 77000],
-            [38.3, 72000],
-            [37.7, 58000],
-            [33, 47500],
-            [32, 37000],
-        ],
-
-    };
-
-    const [seatMap] = useState<RowInfo[][]>(defaultSeatMap);
+    const [seatMap] = useState<PaxStationInfo[]>(defaultSeatMap);
+    const [cargoMap] = useState<CargoStationInfo[]>(defaultCargoMap);
 
     const returnSeats = (station: number, increase: boolean): number[] => {
         const seats: number[] = [];
@@ -200,7 +289,7 @@ export const Payload = () => {
     useEffect(() => {
         const stationSize = [0, 0, 0, 0];
         seatMap.forEach((station, i) => {
-            station.forEach((row) => {
+            station.rows.forEach((row) => {
                 row.seats.forEach(() => {
                     stationSize[i]++;
                 });
@@ -243,27 +332,80 @@ export const Payload = () => {
 
     // Adjust CG Values
     useEffect(() => {
-        const newZfwCg = PayloadManager.getZfwcg();
+        const leMacZ = -5.386; // Accurate to 3 decimals, replaces debug weight values
+        const macSize = 13.454; // Accurate to 3 decimals, replaces debug weight values
+
+        const emptyPosition = -8.75; // Value from flight_model.cfg
+        const emptyMoment = emptyPosition * emptyWeight;
+
+        const paxTotalMass = (paxA + paxB + paxC + paxD) * paxWeight;
+        const paxTotalMoment = paxA * paxWeight * seatMap[Station.A].position
+            + paxB * paxWeight * seatMap[Station.B].position
+            + paxC * paxWeight * seatMap[Station.C].position
+            + paxD * paxWeight * seatMap[Station.D].position;
+
+        const cargoTotalMass = fwdBag + aftCont + aftBag + aftBulk;
+        const cargoTotalMoment = fwdBag * cargoMap[Station.fwd].position
+            + aftCont * cargoMap[Station.aftCont].position
+            + aftBag * cargoMap[Station.aftBag].position
+            + aftBulk * cargoMap[Station.aftBulk].position;
+
+        const totalMass = emptyWeight + paxTotalMass + cargoTotalMass;
+        const totalMoment = emptyMoment + paxTotalMoment + cargoTotalMoment;
+
+        const cgPosition = totalMoment / totalMass;
+        const cgPositionToLemac = cgPosition - leMacZ;
+        const newZfwCg = -100 * (cgPositionToLemac / macSize);
+
         if (zfwCg !== newZfwCg) {
-            setZfw(newZfwCg);
+            setZfwCg(newZfwCg);
         }
-        setZfwCg(PayloadManager.getZfwcg());
-        const newZfw = PayloadManager.getZfw();
+
+        const newZfw = emptyWeight + paxTotalMass + cargoTotalMass;
         if (zfw !== newZfw) {
             setZfw(newZfw);
         }
-    }, [paxA, paxB, paxC, paxD, fwdBag, aftBag, aftCont, aftBulk, emptyWeight]);
+    }, [paxA, paxB, paxC, paxD, fwdBag, aftBag, aftCont, aftBulk, paxWeight, emptyWeight]);
 
     return (
         <div>
             <div className="h-content-section-reduced">
-                <div className="mb-10">
+                <div className="mb-10 ">
                     <SeatMap seatMap={seatMap} activeFlags={activeFlags} />
                 </div>
-                <div className="flex relative right-0 flex-row justify-between mt-24">
-                    <div className="col-1" />
+                <div className="flex relative right-0 flex-row justify-between px-6 mt-24">
+                    {/*
+                    <Card>
+                        <table className="table-auto">
+                            <thead>
+                                <tr className="">
+                                    <th />
+                                    <th>Planned</th>
+                                    <th>Current</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Passengers</td>
+                                    <td>8</td>
+                                    <td>140</td>
+                                </tr>
+                                <tr>
+                                    <td>Cargo & Bags</td>
+                                    <td>1000 kg</td>
+                                    <td>4500 kg</td>
+                                </tr>
+                                <tr>
+                                    <td>Block Fuel</td>
+                                    <td>5800 kg</td>
+                                    <td>5800 kg</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </Card>
+                    */}
                     <div className="rounded-2xl border col-1 border-theme-accent">
-                        <BalanceWeight width={450} height={300} envelope={defaultEnvelope} points={cgPoints}/* x={750} y={350}  */ />
+                        <BalanceWeight width={450} height={350} envelope={defaultEnvelope} points={cgPoints} />
                     </div>
                 </div>
             </div>
@@ -337,8 +479,8 @@ export const Payload = () => {
                                             min={0}
                                             max={10000}
                                             value={0}
+                                            onBlur={(x) => setCargo(parseInt(x))}
                                         />
-                                        {/* onBlur={(x) => setCargo(parseInt(x))} */}
                                         <SelectInput
                                             value={weightUnit}
                                             className="my-1 w-20 rounded-l-none"

@@ -2,12 +2,12 @@ import React, { useEffect, useRef, useState } from 'react';
 import { BitFlags } from '@shared/bitFlags';
 import * as ReactDOMServer from 'react-dom/server';
 import { usePersistentProperty } from '@instruments/common/persistence';
-import { CanvasX, CanvasY, RowInfo, SeatConstants, SeatInfo, TYPE } from './Constants';
+import { CanvasConst, RowInfo, SeatConstants, SeatInfo, PaxStationInfo, TYPE } from './Constants';
 import { Seat } from '../../../Assets/Seat';
 import { SeatOutlineBg } from '../../../Assets/SeatOutlineBg';
 
 interface SeatMapProps {
-    seatMap: RowInfo[][],
+    seatMap: PaxStationInfo[],
     activeFlags: BitFlags[]
 }
 
@@ -41,10 +41,10 @@ export const SeatMap: React.FC<SeatMapProps> = ({ seatMap, activeFlags }) => {
 
     const addXOffset = (xOff: number, sec: number, row: number) => {
         let seatType = TYPE.ECO;
-        xOff += seatMap[sec][row].xOffset;
-        for (let seat = 0; seat < seatMap[sec][row].seats.length; seat++) {
-            if (seatType < seatMap[sec][row].seats[seat].type) {
-                seatType = seatMap[sec][row].seats[seat].type;
+        xOff += seatMap[sec].rows[row].xOffset;
+        for (let seat = 0; seat < seatMap[sec].rows[row].seats.length; seat++) {
+            if (seatType < seatMap[sec].rows[row].seats[seat].type) {
+                seatType = seatMap[sec].rows[row].seats[seat].type;
             }
         }
         if (row !== 0 || sec !== 0) {
@@ -54,9 +54,9 @@ export const SeatMap: React.FC<SeatMapProps> = ({ seatMap, activeFlags }) => {
     };
 
     const addYOffset = (yOff: number, sec: number, row: number, seat: number) => {
-        yOff += seatMap[sec][row].yOffset;
-        yOff += seatMap[sec][row].seats[seat].yOffset;
-        const seatType = seatMap[sec][row].seats[seat].type;
+        yOff += seatMap[sec].rows[row].yOffset;
+        yOff += seatMap[sec].rows[row].seats[seat].yOffset;
+        const seatType = seatMap[sec].rows[row].seats[seat].type;
         if (seat !== 0) {
             yOff += (SeatConstants[seatType].padY + SeatConstants[seatType].wid);
         }
@@ -72,10 +72,10 @@ export const SeatMap: React.FC<SeatMapProps> = ({ seatMap, activeFlags }) => {
             let xOff = 0;
             for (let sec = 0; sec < seatMap.length; sec++) {
                 let seatId = 0;
-                for (let row = 0; row < seatMap[sec].length; row++) {
+                for (let row = 0; row < seatMap[sec].rows.length; row++) {
                     xOff = addXOffset(xOff, sec, row);
-                    drawRow(xOff, sec, row, seatMap[sec][row], seatId);
-                    seatId += seatMap[sec][row].seats.length;
+                    drawRow(xOff, sec, row, seatMap[sec].rows[row], seatId);
+                    seatId += seatMap[sec].rows[row].seats.length;
                 }
             }
             ctx.fill();
@@ -118,8 +118,8 @@ export const SeatMap: React.FC<SeatMapProps> = ({ seatMap, activeFlags }) => {
         const canvas = canvasRef.current;
         let frameId;
         if (canvas) {
-            const width = CanvasX;
-            const height = CanvasY;
+            const width = CanvasConst.width;
+            const height = CanvasConst.height;
             const { devicePixelRatio: ratio = 1 } = window;
             setCtx(canvas.getContext('2d'));
             canvas.width = width * ratio;
@@ -146,7 +146,7 @@ export const SeatMap: React.FC<SeatMapProps> = ({ seatMap, activeFlags }) => {
     return (
         <div className="flex relative flex-col">
             <SeatOutlineBg stroke={getTheme(theme)[0]} highlight="#69BD45" />
-            <canvas className="absolute" ref={canvasRef} style={{ transform: 'translateX(243px) translateY(78px)' }} />
+            <canvas className="absolute" ref={canvasRef} style={{ transform: `translateX(${CanvasConst.xTransform}) translateY(${CanvasConst.yTransform})` }} />
         </div>
     );
 };

@@ -1,6 +1,8 @@
 export const CanvasConst = Object.freeze({
+    yScale: 200,
     weightLines: 10,
-    cgLines: 28,
+    cgLines: 35,
+    cgAngle: Math.PI / 224,
     diamondWidth: 10,
     diamondHeight: 10,
 });
@@ -21,3 +23,8 @@ interface CgWeight {
     cg: number,
     weight: number
 }
+
+export const Coord = Object.freeze({
+    x: 0,
+    y: 1,
+});

@@ -1,4 +1,11 @@
 export const TYPE = Object.freeze({ ECO: 0, ECO_EMERG: 1 });
+
+export const CanvasConst = Object.freeze({
+    xTransform: '243px',
+    yTransform: '78px',
+    width: 1000,
+    height: 150,
+});
 export interface SeatInfo {
     type: number,
     x: number,
@@ -14,8 +21,20 @@ export interface RowInfo {
     seats: SeatInfo[],
 }
 
-export const CanvasX = 1000;
-export const CanvasY = 150;
+export interface PaxStationInfo {
+    name: string,
+    rows: RowInfo[],
+    simVar: string,
+    stationIndex: number,
+    position: number,
+}
+
+export interface CargoStationInfo {
+    name: string,
+    simVar: string,
+    stationIndex: number,
+    position: number,
+}
 
 export const SeatConstants = Object.freeze({
     [TYPE.ECO]: {
