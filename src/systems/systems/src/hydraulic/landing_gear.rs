@@ -599,6 +599,11 @@ impl GearSystemComponentHydraulicController {
             Ratio::new::<ratio>(0.)
         };
 
+        self.update_jamming();
+    }
+
+    fn update_jamming(&mut self) {
+        // If jamming and actuator reaches jammed position, we activate the jamming
         if self.jammed_actuator_failure.is_active()
             && (self.jamming_position - self.actual_position)
                 .abs()
@@ -610,26 +615,16 @@ impl GearSystemComponentHydraulicController {
 
         if !self.jammed_actuator_failure.is_active() {
             self.jamming_is_effective = false;
+            // Taking a new random jamming position when failure is switched off for more new fun later
+            self.jamming_position = Ratio::new::<ratio>(random_from_range(0., 1.));
         }
     }
 }
 impl HydraulicAssemblyController for GearSystemComponentHydraulicController {
     fn requested_mode(&self) -> LinearActuatorMode {
-        //TO REMOVE
-        if self.jammed_actuator_failure.is_active() {
-            println!(
-                "JAMMING GEAR COMPONENT AT POS {:.2}, current pos {:.2} effective: {:?}",
-                self.jamming_position.get::<ratio>(),
-                self.actual_position.get::<ratio>(),
-                self.jamming_is_effective
-            );
-        }
-
         if self.jamming_is_effective {
             return LinearActuatorMode::ClosedValves;
         }
-
-        // TODO if vent valve opened -> damping else -> valve closed mode
 
         if self.is_soft_downlock {
             if (!self.is_inverted_control
