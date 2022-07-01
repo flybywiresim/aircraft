@@ -23,6 +23,12 @@ export const A320Failure = Object.freeze({
     GearProxSensorDamageDoorDownlockRight2: 32005,
     GearProxSensorDamageGearUplockNose1: 32006,
     GearProxSensorDamageDoorUplockLeft2: 32007,
+    GearActuatorJammedGearNose: 32020,
+    GearActuatorJammedGearLeft: 32021,
+    GearActuatorJammedGearRight: 32022,
+    GearActuatorJammedGearDoorNose: 32023,
+    GearActuatorJammedGearDoorLeft: 32024,
+    GearActuatorJammedGearDoorRight: 32025,
     RadioAltimeter1: 34000,
     RadioAltimeter2: 34001,
 });

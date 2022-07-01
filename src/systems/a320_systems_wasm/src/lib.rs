@@ -20,7 +20,9 @@ use rudder::rudder;
 use spoilers::spoilers;
 use std::error::Error;
 use systems::failures::FailureType;
-use systems::shared::{ElectricalBusType, HydraulicColor, LgciuId, ProximityDetectorId};
+use systems::shared::{
+    ElectricalBusType, GearActuatorId, HydraulicColor, LgciuId, ProximityDetectorId,
+};
 use systems_wasm::aspects::ExecuteOn;
 use systems_wasm::{MsfsSimulationBuilder, Variable};
 
@@ -95,6 +97,30 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
         (
             32_007,
             FailureType::GearProxSensorDamage(ProximityDetectorId::UplockDoorLeft2),
+        ),
+        (
+            32_020,
+            FailureType::GearActuatorJammed(GearActuatorId::GearNose),
+        ),
+        (
+            32_021,
+            FailureType::GearActuatorJammed(GearActuatorId::GearLeft),
+        ),
+        (
+            32_022,
+            FailureType::GearActuatorJammed(GearActuatorId::GearRight),
+        ),
+        (
+            32_023,
+            FailureType::GearActuatorJammed(GearActuatorId::GearDoorNose),
+        ),
+        (
+            32_024,
+            FailureType::GearActuatorJammed(GearActuatorId::GearDoorLeft),
+        ),
+        (
+            32_025,
+            FailureType::GearActuatorJammed(GearActuatorId::GearDoorRight),
         ),
         (34_000, FailureType::RadioAltimeter(1)),
         (34_001, FailureType::RadioAltimeter(2)),

@@ -36,6 +36,12 @@ const createOrchestrator = () => new FailuresOrchestrator('A32NX', [
     [32, A320Failure.GearProxSensorDamageDoorDownlockRight2, 'Proximity Sensor Downlock Damage Right Door #2'],
     [32, A320Failure.GearProxSensorDamageGearUplockNose1, 'Proximity Sensor Uplock Damage Center Gear #1'],
     [32, A320Failure.GearProxSensorDamageDoorUplockLeft2, 'Proximity Sensor Uplock Damage Left Door #2'],
+    [32, A320Failure.GearActuatorJammedGearNose, 'Nose gear jammed actuator'],
+    [32, A320Failure.GearActuatorJammedGearLeft, 'Main left gear jammed actuator'],
+    [32, A320Failure.GearActuatorJammedGearRight, 'Main right gear jammed actuator'],
+    [32, A320Failure.GearActuatorJammedGearDoorNose, 'Nose gear door jammed actuator'],
+    [32, A320Failure.GearActuatorJammedGearDoorLeft, 'Main left gear door jammed actuator'],
+    [32, A320Failure.GearActuatorJammedGearDoorRight, 'Main right gear door jammed actuator'],
 
     [34, A320Failure.RadioAltimeter1, 'RA 1'],
     [34, A320Failure.RadioAltimeter2, 'RA 2'],
