@@ -96,6 +96,10 @@ const PseudoFWC: React.FC = () => {
     const [packOffBleedAvailable2] = useState(() => new NXLogicConfirmNode(5, false));
     const [cabAltSetReset1] = useState(() => new NXLogicMemoryNode());
     const [cabAltSetReset2] = useState(() => new NXLogicMemoryNode());
+    const [elac1HydConfirmNode] = useState(() => new NXLogicConfirmNode(3, false));
+    const [elac1HydConfirmNodeOutput, setElac1HydConfirmNodeOutput] = useState(false);
+    const [elac2HydConfirmNode] = useState(() => new NXLogicConfirmNode(3, false));
+    const [elac2HydConfirmNodeOutput, setElac2HydConfirmNodeOutput] = useState(false);
 
     const [memoMessageLeft, setMemoMessageLeft] = useState<string[]>([]);
     const [memoMessageRight, setMemoMessageRight] = useState<string[]>([]);
@@ -176,15 +180,105 @@ const PseudoFWC: React.FC = () => {
 
     /* HYDRAULICS */
     const [greenLP] = useSimVar('L:A32NX_HYD_GREEN_EDPUMP_LOW_PRESS', 'bool', 500);
+    const [greenSysPressurised] = useSimVar('L:A32NX_HYD_GREEN_SYSTEM_1_SECTION_PRESSURE_SWITCH', 'bool', 500);
     const [greenHydEng1PBAuto] = useSimVar('L:A32NX_OVHD_HYD_ENG_1_PUMP_PB_IS_AUTO', 'bool', 500);
     const [blueLP] = useSimVar('L:A32NX_HYD_BLUE_EDPUMP_LOW_PRESS', 'bool', 500);
+    const [blueSysPressurised] = useSimVar('L:A32NX_HYD_BLUE_SYSTEM_1_SECTION_PRESSURE_SWITCH', 'bool', 500);
     const [blueRvrLow] = useSimVar('L:A32NX_HYD_BLUE_RESERVOIR_LEVEL_IS_LOW', 'bool', 500);
     const [blueElecPumpPBAuto] = useSimVar('L:A32NX_OVHD_HYD_EPUMPB_PB_IS_AUTO', 'bool', 500);
     const [yellowLP] = useSimVar('L:A32NX_HYD_YELLOW_EDPUMP_LOW_PRESS', 'bool', 500);
+    const [yellowSysPressurised] = useSimVar('L:A32NX_HYD_YELLOW_SYSTEM_1_SECTION_PRESSURE_SWITCH', 'bool', 500);
     const [eng1pumpPBisAuto] = useSimVar('L:A32NX_OVHD_HYD_ENG_1_PUMP_PB_IS_AUTO', 'bool', 500);
     const [eng2pumpPBisAuto] = useSimVar('L:A32NX_OVHD_HYD_ENG_2_PUMP_PB_IS_AUTO', 'bool', 500);
     const [hydPTU] = useSimVar('L:A32NX_HYD_PTU_ON_ECAM_MEMO', 'bool', 500);
     const [ratDeployed] = useSimVar('L:A32NX_HYD_RAT_STOW_POSITION', 'percent over 100', 500);
+
+    /* F/CTL */
+    const fcdc1DiscreteWord1 = useArinc429Var('L:A32NX_FCDC_1_DISCRETE_WORD_1');
+    const fcdc2DiscreteWord1 = useArinc429Var('L:A32NX_FCDC_2_DISCRETE_WORD_1');
+    const fcdc1DiscreteWord2 = useArinc429Var('L:A32NX_FCDC_1_DISCRETE_WORD_2');
+    const fcdc2DiscreteWord2 = useArinc429Var('L:A32NX_FCDC_2_DISCRETE_WORD_2');
+    const fcdc1DiscreteWord3 = useArinc429Var('L:A32NX_FCDC_1_DISCRETE_WORD_3');
+    const fcdc2DiscreteWord3 = useArinc429Var('L:A32NX_FCDC_2_DISCRETE_WORD_3');
+    const fcdc1DiscreteWord4 = useArinc429Var('L:A32NX_FCDC_1_DISCRETE_WORD_4');
+    const fcdc2DiscreteWord4 = useArinc429Var('L:A32NX_FCDC_2_DISCRETE_WORD_4');
+
+    const spoilersArmed = fcdc1DiscreteWord4.getBitValueOr(27, false) || fcdc2DiscreteWord4.getBitValueOr(27, false);
+    const speedBrakeCommand = fcdc1DiscreteWord4.getBitValueOr(28, false) || fcdc2DiscreteWord4.getBitValueOr(28, false);
+
+    // ELAC 1 FAULT computation
+    const se1f = (fcdc1DiscreteWord1.getBitValueOr(19, false) || fcdc2DiscreteWord1.getBitValueOr(19, false))
+    && (fcdc1DiscreteWord1.getBitValueOr(20, false) || fcdc2DiscreteWord1.getBitValueOr(20, false));
+    const elac1FaultCondition = !([1, 10].includes(flightPhase) && (fcdc1DiscreteWord3.getBitValueOr(19, false) || fcdc2DiscreteWord3.getBitValueOr(19, false)))
+    && dcESSBusPowered
+    && ((fcdc1DiscreteWord1.getBitValueOr(23, false) || fcdc2DiscreteWord1.getBitValueOr(23, false)) || (!elac1HydConfirmNodeOutput && se1f));
+    const elac1FaultLine123Display = !(fcdc1DiscreteWord3.getBitValueOr(19, false) || fcdc2DiscreteWord3.getBitValueOr(19, false))
+    && (fcdc1DiscreteWord1.getBitValueOr(23, false) || fcdc2DiscreteWord1.getBitValueOr(23, false));
+    const elac1FaultLine45Display = false;
+
+    // ELAC 2 FAULT computation
+    const se2f = (fcdc1DiscreteWord1.getBitValueOr(21, false) || fcdc2DiscreteWord1.getBitValueOr(21, false))
+        && (fcdc1DiscreteWord1.getBitValueOr(22, false) || fcdc2DiscreteWord1.getBitValueOr(22, false));
+    const elac2FaultCondition = !([1, 10].includes(flightPhase) && (fcdc1DiscreteWord3.getBitValueOr(20, false) || fcdc2DiscreteWord3.getBitValueOr(20, false)))
+        && dc2BusPowered
+        && ((fcdc1DiscreteWord1.getBitValueOr(24, false) || fcdc2DiscreteWord1.getBitValueOr(24, false))
+        || (!elac2HydConfirmNodeOutput && se2f));
+    const elac2FaultLine123Display = !(fcdc1DiscreteWord3.getBitValueOr(20, false) || fcdc2DiscreteWord3.getBitValueOr(20, false))
+        && (fcdc1DiscreteWord1.getBitValueOr(24, false) || fcdc2DiscreteWord1.getBitValueOr(24, false));
+    const elac2FaultLine45Display = false;
+
+    // SEC 1 FAULT computation
+    const ss1f = fcdc1DiscreteWord1.getBitValueOr(25, false) || fcdc2DiscreteWord1.getBitValueOr(25, false);
+    const sec1FaultCondition = !([1, 10].includes(flightPhase) && (fcdc1DiscreteWord3.getBitValueOr(27, false) || fcdc2DiscreteWord3.getBitValueOr(27, false)))
+        && dcESSBusPowered
+        && ss1f;
+    const sec1FaultLine123Display = !(fcdc1DiscreteWord3.getBitValueOr(27, false) || fcdc2DiscreteWord3.getBitValueOr(27, false));
+    const sec1FaultLine45Display = false;
+
+    // SEC 2 FAULT computation
+    const ss2f = fcdc1DiscreteWord1.getBitValueOr(26, false) || fcdc2DiscreteWord1.getBitValueOr(26, false);
+    const sec2FaultCondition = !([1, 10].includes(flightPhase) && (fcdc1DiscreteWord3.getBitValueOr(28, false) || fcdc2DiscreteWord3.getBitValueOr(28, false)))
+            && dc2BusPowered
+            && ss2f;
+    const sec2FaultLine123Display = !(fcdc1DiscreteWord3.getBitValueOr(28, false) || fcdc2DiscreteWord3.getBitValueOr(28, false));
+
+    // SEC 3 FAULT computation
+    const ss3f = fcdc1DiscreteWord1.getBitValueOr(29, false) || fcdc2DiscreteWord1.getBitValueOr(29, false);
+    const sec3FaultCondition = !([1, 10].includes(flightPhase) && (fcdc1DiscreteWord3.getBitValueOr(29, false) || fcdc2DiscreteWord3.getBitValueOr(29, false)))
+        && dc2BusPowered
+        && ss3f;
+    const sec3FaultLine123Display = !(fcdc1DiscreteWord3.getBitValueOr(29, false) || fcdc2DiscreteWord3.getBitValueOr(29, false));
+
+    // FCDC 1+2 FAULT computation
+    const SFCDC1FT = fcdc1DiscreteWord1.isFailureWarning() && fcdc1DiscreteWord2.isFailureWarning() && fcdc1DiscreteWord3.isFailureWarning();
+    const SFCDC2FT = fcdc2DiscreteWord1.isFailureWarning() && fcdc2DiscreteWord2.isFailureWarning() && fcdc2DiscreteWord3.isFailureWarning();
+    const SFCDC12FT = SFCDC1FT && SFCDC2FT;
+    const fcdc12FaultCondition = SFCDC12FT && dc2BusPowered;
+    const fcdc1FaultCondition = SFCDC1FT && !SFCDC12FT;
+    const fcdc2FaultCondition = SFCDC2FT && !(SFCDC12FT || !dc2BusPowered);
+
+    // ALTN LAW 2 computation
+    const SPA2 = fcdc1DiscreteWord1.getBitValueOr(13, false) || fcdc2DiscreteWord1.getBitValueOr(13, false);
+    const altn2Condition = SPA2 && ![1, 10].includes(flightPhase);
+
+    // ALTN LAW 1 computation
+    const SPA1 = fcdc1DiscreteWord1.getBitValueOr(12, false) || fcdc2DiscreteWord1.getBitValueOr(12, false);
+    const altn1Condition = SPA1 && ![1, 10].includes(flightPhase);
+
+    // DIRECT LAW computation
+    const SPBUL = (false && SFCDC12FT) || (fcdc1DiscreteWord1.getBitValueOr(15, false) || fcdc2DiscreteWord1.getBitValueOr(15, false));
+    const directLawCondition = SPBUL && ![1, 10].includes(flightPhase);
+
+    // L+R ELEV FAULT computation
+    const lhElevBlueFail = (fcdc1DiscreteWord3.isNormalOperation() && !fcdc1DiscreteWord3.getBitValueOr(15, false))
+    || (fcdc2DiscreteWord3.isNormalOperation() && !fcdc2DiscreteWord3.getBitValueOr(15, false));
+    const lhElevGreenFail = (fcdc1DiscreteWord3.isNormalOperation() && !fcdc1DiscreteWord3.getBitValueOr(16, false))
+    || (fcdc2DiscreteWord3.isNormalOperation() && !fcdc2DiscreteWord3.getBitValueOr(16, false));
+    const rhElevBlueFail = (fcdc1DiscreteWord3.isNormalOperation() && !fcdc1DiscreteWord3.getBitValueOr(17, false))
+    || (fcdc2DiscreteWord3.isNormalOperation() && !fcdc2DiscreteWord3.getBitValueOr(17, false));
+    const rhElevGreenFail = (fcdc1DiscreteWord3.isNormalOperation() && !fcdc1DiscreteWord3.getBitValueOr(18, false))
+    || (fcdc2DiscreteWord3.isNormalOperation() && !fcdc2DiscreteWord3.getBitValueOr(18, false));
+    const lrElevFaultCondition = lhElevBlueFail && lhElevGreenFail && rhElevBlueFail && rhElevGreenFail && ![1, 10].includes(flightPhase);
 
     /* LANDING GEAR AND LIGHTS */
     // const [left1LandingGear] = useSimVar('L:A32NX_LGCIU_1_LEFT_GEAR_COMPRESSED', 'bool', 500);
@@ -202,10 +296,6 @@ const PseudoFWC: React.FC = () => {
 
     /* OTHER STUFF */
 
-    const fcdc1DiscreteWord4 = useArinc429Var('L:A32NX_FCDC_1_DISCRETE_WORD_4');
-    const fcdc2DiscreteWord4 = useArinc429Var('L:A32NX_FCDC_2_DISCRETE_WORD_4');
-
-    const spoilersArmed = fcdc1DiscreteWord4.getBitValueOr(27, false) || fcdc2DiscreteWord4.getBitValueOr(27, false);
     const [seatBelt] = useSimVar('A:CABIN SEATBELTS ALERT SWITCH', 'bool', 500);
     const [noSmoking] = useSimVar('L:A32NX_NO_SMOKING_MEMO', 'bool', 500);
     const [noSmokingSwitchPosition] = useSimVar('L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_Position', 'enum', 500);
@@ -243,7 +333,6 @@ const PseudoFWC: React.FC = () => {
     const [toconfigBtn] = useSimVar('L:A32NX_BTN_TOCONFIG', 'bool');
     const [flapsMcdu] = useSimVar('L:A32NX_TO_CONFIG_FLAPS', 'number', 500);
     const [flapsMcduEntered] = useSimVar('L:A32NX_TO_CONFIG_FLAPS_ENTERED', 'bool', 500);
-    const speedBrakeCommand = fcdc1DiscreteWord4.getBitValueOr(28, false) || fcdc2DiscreteWord4.getBitValueOr(28, false);
     const [parkBrake] = useSimVar('L:A32NX_PARK_BRAKE_LEVER_POS', 'bool', 500);
     const [brakesHot] = useSimVar('L:A32NX_BRAKES_HOT', 'bool', 500);
     const [v1Speed] = useSimVar('L:AIRLINER_V1_SPEED', 'knots', 500);
@@ -476,6 +565,16 @@ const PseudoFWC: React.FC = () => {
         if (cabAltSetResetState2 !== cabAltSetReset2Node) {
             setCabAltSetResetState2(cabAltSetReset2Node);
         }
+
+        const elac1HydraulicResult = elac1HydConfirmNode.write(!greenSysPressurised && !blueSysPressurised, deltaTime);
+        if (elac1HydConfirmNodeOutput !== elac1HydraulicResult) {
+            setElac1HydConfirmNodeOutput(elac1HydraulicResult);
+        }
+
+        const elac2HydraulicResult = elac2HydConfirmNode.write((!greenSysPressurised || !yellowSysPressurised) && !blueSysPressurised, deltaTime);
+        if (elac2HydConfirmNodeOutput !== elac2HydraulicResult) {
+            setElac2HydConfirmNodeOutput(elac2HydraulicResult);
+        }
     });
 
     /* FAILURES, MEMOS AND SPECIAL LINES */
@@ -673,6 +772,156 @@ const PseudoFWC: React.FC = () => {
             codesToReturn: ['270009001', '270009002'],
             memoInhibit: false,
             failure: 3,
+            sysPage: -1,
+            side: 'LEFT',
+        },
+        2700110: { // ELAC 1 FAULT
+            flightPhaseInhib: [3, 4, 5, 7, 8],
+            simVarIsActive: elac1FaultCondition,
+            whichCodeToReturn: [
+                0,
+                elac1FaultLine123Display ? 1 : null,
+                elac1FaultLine123Display ? 2 : null,
+                elac1FaultLine123Display ? 3 : null,
+                elac1FaultLine45Display ? 4 : null,
+                elac1FaultLine45Display ? 5 : null,
+            ],
+            codesToReturn: ['270011001', '270011002', '270011003', '270011004', '270011005', '270011006'],
+            memoInhibit: false,
+            failure: 2,
+            sysPage: 10,
+            side: 'LEFT',
+        },
+        2700120: { // ELAC 2 FAULT
+            flightPhaseInhib: [3, 4, 5, 7, 8],
+            simVarIsActive: elac2FaultCondition,
+            whichCodeToReturn: [
+                0,
+                elac2FaultLine123Display ? 1 : null,
+                elac2FaultLine123Display ? 2 : null,
+                elac2FaultLine123Display ? 3 : null,
+                elac2FaultLine45Display ? 4 : null,
+                elac2FaultLine45Display ? 5 : null,
+            ],
+            codesToReturn: ['270012001', '270012002', '270012003', '270012004', '270012005', '270012006'],
+            memoInhibit: false,
+            failure: 2,
+            sysPage: 10,
+            side: 'LEFT',
+        },
+        2700210: { // SEC 1 FAULT
+            flightPhaseInhib: [3, 4, 5],
+            simVarIsActive: sec1FaultCondition,
+            whichCodeToReturn: [
+                0,
+                sec1FaultLine123Display ? 1 : null,
+                sec1FaultLine123Display ? 2 : null,
+                sec1FaultLine123Display ? 3 : null,
+                sec1FaultLine45Display ? 4 : null,
+            ],
+            codesToReturn: ['270021001', '270021002', '270021003', '270021004', '270021005'],
+            memoInhibit: false,
+            failure: 2,
+            sysPage: 10,
+            side: 'LEFT',
+        },
+        2700220: { // SEC 2 FAULT
+            flightPhaseInhib: [3, 4, 5],
+            simVarIsActive: sec2FaultCondition,
+            whichCodeToReturn: [
+                0,
+                sec2FaultLine123Display ? 1 : null,
+                sec2FaultLine123Display ? 2 : null,
+                sec2FaultLine123Display ? 3 : null,
+            ],
+            codesToReturn: ['270022001', '270022002', '270022003', '270022004'],
+            memoInhibit: false,
+            failure: 2,
+            sysPage: 10,
+            side: 'LEFT',
+        },
+        2700230: { // SEC 3 FAULT
+            flightPhaseInhib: [3, 4, 5],
+            simVarIsActive: sec3FaultCondition,
+            whichCodeToReturn: [
+                0,
+                sec3FaultLine123Display ? 1 : null,
+                sec3FaultLine123Display ? 2 : null,
+                sec3FaultLine123Display ? 3 : null,
+            ],
+            codesToReturn: ['270023001', '270023002', '270023003', '270023004'],
+            memoInhibit: false,
+            failure: 2,
+            sysPage: 10,
+            side: 'LEFT',
+        },
+        2700360: { // FCDC 1+2 FAULT
+            flightPhaseInhib: [3, 4, 5, 7],
+            simVarIsActive: fcdc12FaultCondition,
+            whichCodeToReturn: [0, 1],
+            codesToReturn: ['270036001', '270036002'],
+            memoInhibit: false,
+            failure: 2,
+            sysPage: 10,
+            side: 'LEFT',
+        },
+        2700365: { // DIRECT LAW
+            flightPhaseInhib: [4, 5, 7, 8],
+            simVarIsActive: directLawCondition,
+            whichCodeToReturn: [0, 1, 2, 3, 4, null, 6, 7],
+            codesToReturn: ['270036501', '270036502', '270036503', '270036504', '270036505', '270036506', '270036507', '270036508'],
+            memoInhibit: false,
+            failure: 2,
+            sysPage: 10,
+            side: 'LEFT',
+        },
+        2700375: { // ALTN 2
+            flightPhaseInhib: [4, 5, 7, 8],
+            simVarIsActive: altn2Condition,
+            whichCodeToReturn: [0, 1, 2, 3, 4, null, 6],
+            codesToReturn: ['270037501', '270037502', '270037503', '270037504', '270037505', '270037506', '270037507'],
+            memoInhibit: false,
+            failure: 2,
+            sysPage: 10,
+            side: 'LEFT',
+        },
+        2700390: { // ALTN 1
+            flightPhaseInhib: [4, 5, 7, 8],
+            simVarIsActive: altn1Condition,
+            whichCodeToReturn: [0, 1, 2, 3, 4, null, 6],
+            codesToReturn: ['270039001', '270039002', '270039003', '270039004', '270039005', '270039006', '270039007'],
+            memoInhibit: false,
+            failure: 2,
+            sysPage: 10,
+            side: 'LEFT',
+        },
+        2700400: { // L+R ELEV FAULT
+            flightPhaseInhib: [],
+            simVarIsActive: lrElevFaultCondition,
+            whichCodeToReturn: [0, 1, 2, null, null, 5],
+            codesToReturn: ['270040001', '270040002', '270040003', '270040004', '270040005', '270040006'],
+            memoInhibit: false,
+            failure: 3,
+            sysPage: 10,
+            side: 'LEFT',
+        },
+        2700555: { // FCDC 1 FAULT
+            flightPhaseInhib: [3, 4, 5, 7, 8],
+            simVarIsActive: fcdc1FaultCondition,
+            whichCodeToReturn: [0],
+            codesToReturn: ['270055501'],
+            memoInhibit: false,
+            failure: 1,
+            sysPage: -1,
+            side: 'LEFT',
+        },
+        2700557: { // FCDC 2 FAULT
+            flightPhaseInhib: [3, 4, 5, 7, 8],
+            simVarIsActive: fcdc2FaultCondition,
+            whichCodeToReturn: [0],
+            codesToReturn: ['270055701'],
+            memoInhibit: false,
+            failure: 1,
             sysPage: -1,
             side: 'LEFT',
         },
@@ -1593,6 +1842,8 @@ const PseudoFWC: React.FC = () => {
         agent2Eng2Discharge,
         agentAPUDischarge,
         AIRKnob,
+        altn1Condition,
+        altn2Condition,
         antiskidActive,
         apuAgentPB,
         apuAvail,
@@ -1618,6 +1869,21 @@ const PseudoFWC: React.FC = () => {
         dc2BusPowered,
         dcESSBusPowered,
         dmcSwitchingKnob,
+        directLawCondition,
+        elac1FaultCondition,
+        elac1FaultLine123Display,
+        elac2FaultCondition,
+        elac2FaultLine123Display,
+        sec1FaultCondition,
+        sec1FaultLine123Display,
+        sec2FaultCondition,
+        sec2FaultLine123Display,
+        sec3FaultCondition,
+        sec3FaultLine123Display,
+        lrElevFaultCondition,
+        fcdc12FaultCondition,
+        fcdc1FaultCondition,
+        fcdc2FaultCondition,
         emergencyGeneratorOn,
         engine1ValueSwitch,
         engine2ValueSwitch,
