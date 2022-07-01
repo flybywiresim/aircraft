@@ -12,7 +12,8 @@ use crate::{
 };
 
 use super::linear_actuator::{
-    Actuator, HydraulicAssemblyController, HydraulicLinearActuatorAssembly, LinearActuatorMode,
+    Actuator, HydraulicAssemblyController, HydraulicLinearActuatorAssembly, HydraulicLocking,
+    LinearActuatorMode,
 };
 
 use uom::si::{f64::*, pressure::psi, ratio::ratio};
@@ -620,6 +621,7 @@ impl HydraulicAssemblyController for GearSystemComponentHydraulicController {
         }
     }
 }
+impl HydraulicLocking for GearSystemComponentHydraulicController {}
 
 struct HydraulicLock {
     is_unlocked: bool,
@@ -1394,6 +1396,8 @@ mod tests {
             DEFAULT_I_GAIN,
             DEFAULT_FORCE_GAIN,
             true,
+            false,
+            None,
         )
     }
 
@@ -1448,6 +1452,8 @@ mod tests {
             DEFAULT_I_GAIN,
             DEFAULT_FORCE_GAIN,
             true,
+            false,
+            None,
         )
     }
 

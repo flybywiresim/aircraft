@@ -100,6 +100,10 @@ struct CoreHydraulicForce {
     max_control_force: LowPassFilter<Force>,
 
     has_flow_restriction: bool,
+
+    locks_position_in_closed_mode: bool,
+    is_soft_locked: bool,
+    soft_lock_velocity: (AngularVelocity, AngularVelocity),
 }
 impl CoreHydraulicForce {
     const MIN_MAX_FORCE_CONTROLLER_FILTER_TIME_CONSTANT: Duration = Duration::from_millis(30);
@@ -123,12 +127,16 @@ impl CoreHydraulicForce {
         min_flow: VolumeRate,
         bore_side_area: Area,
         rod_side_area: Area,
+
         flow_open_loop_modifier_map: [f64; 6],
         flow_open_loop_position_breakpoints: [f64; 6],
         flow_control_proportional_gain: f64,
         flow_control_integral_gain: f64,
         flow_control_force_gain: f64,
         has_flow_restriction: bool,
+
+        locks_position_in_closed_mode: bool,
+        soft_lock_velocity: Option<(AngularVelocity, AngularVelocity)>,
     ) -> Self {
         let max_force = Pressure::new::<psi>(3000.) * bore_side_area;
         let min_force = -Pressure::new::<psi>(3000.) * rod_side_area;
@@ -171,6 +179,10 @@ impl CoreHydraulicForce {
                 max_force,
             ),
             has_flow_restriction,
+
+            locks_position_in_closed_mode,
+            is_soft_locked: locks_position_in_closed_mode,
+            soft_lock_velocity: soft_lock_velocity.unwrap_or_default(),
         }
     }
 
@@ -289,22 +301,29 @@ impl CoreHydraulicForce {
         self.force_filtered.reset(self.force_raw);
         self.closed_valves_reference_position = position_normalized;
         self.current_mode = LinearActuatorMode::ClosedValves;
+        self.is_soft_locked = false;
     }
 
     fn go_to_position_control(&mut self) {
         self.pid_controller
             .reset_with_output(self.force_raw.get::<newton>());
         self.current_mode = LinearActuatorMode::PositionControl;
+        self.is_soft_locked = false;
     }
 
     fn go_to_active_damping(&mut self) {
         self.force_filtered.reset(self.force_raw);
         self.current_mode = LinearActuatorMode::ActiveDamping;
+        self.is_soft_locked = false;
     }
 
     fn go_to_closed_circuit_damping(&mut self) {
         self.force_filtered.reset(self.force_raw);
         self.current_mode = LinearActuatorMode::ClosedCircuitDamping;
+
+        if self.locks_position_in_closed_mode {
+            self.is_soft_locked = true;
+        }
     }
 
     fn update_force_from_current_mode(
@@ -476,6 +495,15 @@ impl CoreHydraulicForce {
         self.last_control_force
     }
 }
+impl HydraulicLocking for CoreHydraulicForce {
+    fn should_soft_lock(&self) -> bool {
+        self.is_soft_locked
+    }
+
+    fn soft_lock_velocity(&self) -> (AngularVelocity, AngularVelocity) {
+        self.soft_lock_velocity
+    }
+}
 
 /// Represents a classical linear actuator with a rod side area and a bore side area
 /// It is connected between an anchor point on the plane and a control arm of a rigid body
@@ -537,6 +565,9 @@ impl LinearActuator {
         flow_control_integral_gain: f64,
         flow_control_force_gain: f64,
         has_flow_restriction: bool,
+
+        locks_position_in_closed_mode: bool,
+        soft_lock_velocity: Option<(AngularVelocity, AngularVelocity)>,
     ) -> Self {
         let total_travel = (bounded_linear_length.max_absolute_length_to_anchor()
             - bounded_linear_length.min_absolute_length_to_anchor())
@@ -621,6 +652,8 @@ impl LinearActuator {
                 flow_control_integral_gain,
                 flow_control_force_gain,
                 has_flow_restriction,
+                locks_position_in_closed_mode,
+                soft_lock_velocity,
             ),
         }
     }
@@ -733,13 +766,24 @@ impl Actuator for LinearActuator {
         self.total_volume_to_actuator = Volume::new::<gallon>(0.);
     }
 }
+impl HydraulicLocking for LinearActuator {
+    fn should_soft_lock(&self) -> bool {
+        self.core_hydraulics.should_soft_lock()
+    }
+
+    fn soft_lock_velocity(&self) -> (AngularVelocity, AngularVelocity) {
+        self.core_hydraulics.soft_lock_velocity()
+    }
+}
 
 pub trait HydraulicAssemblyController {
     fn requested_mode(&self) -> LinearActuatorMode;
     fn requested_position(&self) -> Ratio;
     fn should_lock(&self) -> bool;
     fn requested_lock_position(&self) -> Ratio;
+}
 
+pub trait HydraulicLocking {
     fn should_soft_lock(&self) -> bool {
         false
     }
@@ -747,6 +791,22 @@ pub trait HydraulicAssemblyController {
     fn soft_lock_velocity(&self) -> (AngularVelocity, AngularVelocity) {
         (AngularVelocity::default(), AngularVelocity::default())
     }
+}
+
+fn get_more_restrictive_soft_lock_velocities(
+    controller1: &impl HydraulicLocking,
+    controller2: &impl HydraulicLocking,
+) -> (AngularVelocity, AngularVelocity) {
+    (
+        controller1
+            .soft_lock_velocity()
+            .0
+            .max(controller2.soft_lock_velocity().0),
+        controller1
+            .soft_lock_velocity()
+            .1
+            .min(controller2.soft_lock_velocity().1),
+    )
 }
 
 pub struct HydraulicLinearActuatorAssembly<const N: usize> {
@@ -776,7 +836,7 @@ impl<const N: usize> HydraulicLinearActuatorAssembly<N> {
     pub fn update(
         &mut self,
         context: &UpdateContext,
-        assembly_controllers: &[impl HydraulicAssemblyController],
+        assembly_controllers: &[impl HydraulicAssemblyController + HydraulicLocking],
         current_pressure: [Pressure; N],
     ) {
         for (index, actuator) in self.linear_actuators.iter_mut().enumerate() {
@@ -829,10 +889,7 @@ impl<const N: usize> HydraulicLinearActuatorAssembly<N> {
         }
     }
 
-    fn update_soft_lock_mechanism(
-        &mut self,
-        assembly_controllers: &[impl HydraulicAssemblyController],
-    ) {
+    fn update_soft_lock_mechanism(&mut self, assembly_controllers: &[impl HydraulicLocking]) {
         let mut no_lock = true;
 
         let mut min_velocity = AngularVelocity::new::<radian_per_second>(-10000.);
@@ -842,11 +899,23 @@ impl<const N: usize> HydraulicLinearActuatorAssembly<N> {
         // Max velocity will be the min one amongst all the limit velocities requested
         // This way we use the more restrictive speed limitation over all the controller demands
         for (idx, controller) in assembly_controllers.iter().enumerate() {
-            if controller.should_soft_lock() {
-                let (new_min, new_max) = controller.soft_lock_velocity();
+            if controller.should_soft_lock() || self.linear_actuators[idx].should_soft_lock() {
+                // If actuator itself already is locking we take the more restrictive locking speeds, else we only use external locking speeds
+                let (new_min, new_max) = if controller.should_soft_lock()
+                    && self.linear_actuators[idx].should_soft_lock()
+                {
+                    get_more_restrictive_soft_lock_velocities(
+                        controller,
+                        &self.linear_actuators[idx],
+                    )
+                } else if controller.should_soft_lock() {
+                    controller.soft_lock_velocity()
+                } else {
+                    self.linear_actuators[idx].soft_lock_velocity()
+                };
 
-                min_velocity = min_velocity.max(new_min);
                 max_velocity = max_velocity.min(new_max);
+                min_velocity = min_velocity.max(new_min);
 
                 no_lock = false;
 
@@ -1344,7 +1413,8 @@ mod tests {
         fn requested_lock_position(&self) -> Ratio {
             self.lock_position
         }
-
+    }
+    impl HydraulicLocking for TestHydraulicAssemblyController {
         fn should_soft_lock(&self) -> bool {
             self.soft_lock_request
         }
@@ -2490,10 +2560,10 @@ mod tests {
         });
 
         test_bed.command(|a| a.command_unlock());
-        test_bed.command(|a| a.command_closed_circuit_damping_mode(0));
+        test_bed.command(|a| a.command_active_damping_mode(0));
 
-        test_bed.command(|a| a.apply_up_aero_forces(Force::new::<newton>(5000.)));
-        test_bed.run_with_delta(Duration::from_secs_f64(2.));
+        test_bed.command(|a| a.apply_up_aero_forces(Force::new::<newton>(300.)));
+        test_bed.run_with_delta(Duration::from_secs_f64(1.));
 
         let position_before_lock = test_bed.query(|a| a.body_position());
 
@@ -2512,12 +2582,28 @@ mod tests {
         );
 
         println!("Aero force down");
-        test_bed.command(|a| a.apply_up_aero_forces(Force::new::<newton>(-5000.)));
+        test_bed.command(|a| a.apply_up_aero_forces(Force::new::<newton>(-300.)));
         test_bed.run_with_delta(Duration::from_secs_f64(1.));
 
         assert!(
             test_bed.query(|a| a.body_position() - position_before_lock) < Ratio::new::<ratio>(0.2)
         );
+    }
+
+    #[test]
+    fn spoiler_position_cant_go_up_when_not_pressurised() {
+        let mut test_bed = SimulationTestBed::new(|_| {
+            TestAircraft::new(Duration::from_millis(10), spoiler_assembly())
+        });
+
+        test_bed.command(|a| a.command_unlock());
+        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(1.), 0));
+        test_bed.command(|a| a.set_pressures([Pressure::new::<psi>(0.)]));
+
+        test_bed.command(|a| a.apply_up_aero_forces(Force::new::<newton>(5000.)));
+        test_bed.run_with_delta(Duration::from_secs_f64(2.));
+
+        assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.2));
     }
 
     fn cargo_door_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
@@ -2542,6 +2628,8 @@ mod tests {
             DEFAULT_I_GAIN,
             DEFAULT_FORCE_GAIN,
             false,
+            false,
+            None,
         )
     }
 
@@ -2617,6 +2705,8 @@ mod tests {
             DEFAULT_I_GAIN,
             DEFAULT_FORCE_GAIN,
             true,
+            false,
+            None,
         )
     }
 
@@ -2638,6 +2728,8 @@ mod tests {
             0.,
             0.,
             false,
+            false,
+            None,
         )
     }
 
@@ -2721,6 +2813,8 @@ mod tests {
             DEFAULT_I_GAIN,
             DEFAULT_FORCE_GAIN,
             true,
+            false,
+            None,
         )
     }
 
@@ -2797,6 +2891,8 @@ mod tests {
             DEFAULT_I_GAIN,
             DEFAULT_FORCE_GAIN,
             true,
+            false,
+            None,
         )
     }
 
@@ -2851,6 +2947,8 @@ mod tests {
             DEFAULT_I_GAIN,
             DEFAULT_FORCE_GAIN,
             true,
+            false,
+            None,
         )
     }
 
@@ -2905,6 +3003,8 @@ mod tests {
             DEFAULT_I_GAIN,
             DEFAULT_FORCE_GAIN,
             false,
+            false,
+            None,
         )
     }
 
@@ -2965,6 +3065,8 @@ mod tests {
             DEFAULT_I_GAIN,
             DEFAULT_FORCE_GAIN,
             false,
+            false,
+            None,
         )
     }
 
@@ -3019,6 +3121,11 @@ mod tests {
             DEFAULT_I_GAIN,
             DEFAULT_FORCE_GAIN,
             false,
+            true,
+            Some((
+                AngularVelocity::new::<radian_per_second>(-10000.),
+                AngularVelocity::new::<radian_per_second>(0.),
+            )),
         )
     }
 
