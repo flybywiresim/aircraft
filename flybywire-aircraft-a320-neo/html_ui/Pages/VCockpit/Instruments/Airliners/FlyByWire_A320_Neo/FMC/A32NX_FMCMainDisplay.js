@@ -1757,7 +1757,7 @@ class FMCMainDisplay extends BaseAirliners {
             this.addMessageToQueue(NXSystemMessages.checkWeight);
             this._checkWeightSettable = false;
         } else if (!gwMismatch) {
-            this.removeMessageFromQueue(NXSystemMessages.checkWeight);
+            this.removeMessageFromQueue(NXSystemMessages.checkWeight.text);
             this._checkWeightSettable = true;
         }
     }
