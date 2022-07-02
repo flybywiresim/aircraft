@@ -453,8 +453,8 @@
       "HomeCockpitMode": "Namų kabinos režimas",
       "McduFocusTimeout": "MCDU fokuso praradimas (sekundės)",
       "McduKeyboardInput": "MCDU duomenų įvedimas klaviatūra",
-      "PauseAtTod": "T/D Pause",
-      "PauseAtTodDistance": "T/D Pause Distance (nm)",
+      "PauseAtTod": "Pauzė prieš pradedant leistis",
+      "PauseAtTodDistance": "Pauzės atstumas nuo pradėjimo leistis taško",
       "SeparateTillerFromRudderInputs": "Išskirti tiller iš krypties vairo komandų",
       "Title": "Realizmas"
     },
