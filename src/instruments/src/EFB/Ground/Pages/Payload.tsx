@@ -6,6 +6,7 @@ import { Units } from '@shared/units';
 import { usePersistentProperty } from '@instruments/common/persistence';
 import { BitFlags } from '@shared/bitFlags';
 import { useBitFlags } from '@instruments/common/bitFlags';
+import { round } from 'lodash';
 import { BalanceWeight } from './BalanceWeight/BalanceWeight';
 import { SeatInfo, PaxStationInfo, CargoStationInfo, TYPE } from './Seating/Constants';
 import { PerformanceEnvelope } from './BalanceWeight/Constants';
@@ -161,17 +162,31 @@ const defaultEnvelope: PerformanceEnvelope = {
         [40, 58000],
         [32, 40600],
     ],
-
 };
 
 export const Payload = () => {
     const { usingMetric } = Units;
+    const simbriefDataLoaded = isSimbriefDataLoaded();
     const [boardingRate, setBoardingRate] = usePersistentProperty('CONFIG_BOARDING_RATE', 'REAL');
     const [weightUnit, setWeightUnit] = usePersistentProperty('EFB_PREFERRED_WEIGHT_UNIT', usingMetric ? 'kg' : 'lb');
+    const [paxWeight] = useSimVar('L:A32NX_WB_PER_PAX_WEIGHT', 'Number');
+    const [galToKg] = useSimVar('FUEL WEIGHT PER GALLON', 'kilograms', 1_000);
+
+    const [emptyWeight] = useSimVar('A:EMPTY WEIGHT', usingMetric ? 'Kilograms' : 'Pounds');
     const [paxA, setPaxA] = useSimVar('L:A32NX_PAX_TOTAL_ROWS_1_6', 'Number');
     const [paxB, setPaxB] = useSimVar('L:A32NX_PAX_TOTAL_ROWS_7_13', 'Number');
     const [paxC, setPaxC] = useSimVar('L:A32NX_PAX_TOTAL_ROWS_14_21', 'Number');
     const [paxD, setPaxD] = useSimVar('L:A32NX_PAX_TOTAL_ROWS_22_29', 'Number');
+    const [fwdBag] = useSimVar('L:A32NX_CARGO_FWD_BAGGAGE_CONTAINER', 'Number');
+    const [aftCont] = useSimVar('L:A32NX_CARGO_AFT_CONTAINER', 'Number');
+    const [aftBag] = useSimVar('L:A32NX_CARGO_AFT_BAGGAGE', 'Number');
+    const [aftBulk] = useSimVar('L:A32NX_CARGO_AFT_BULK_LOOSE', 'Number');
+    const [centerCurrent] = useSimVar('FUEL TANK CENTER QUANTITY', 'Gallons', 1_000);
+    const [LInnCurrent] = useSimVar('FUEL TANK LEFT MAIN QUANTITY', 'Gallons', 1_000);
+    const [LOutCurrent] = useSimVar('FUEL TANK LEFT AUX QUANTITY', 'Gallons', 1_000);
+    const [RInnCurrent] = useSimVar('FUEL TANK RIGHT MAIN QUANTITY', 'Gallons', 1_000);
+    const [ROutCurrent] = useSimVar('FUEL TANK RIGHT AUX QUANTITY', 'Gallons', 1_000);
+
     /*
     const [paxA, setPaxA] = useSimVar('L:A32NX_PAX_TOTAL_ROWS_1_6_DESIRED', 'Number');
     const [paxB, setPaxB] = useSimVar('L:A32NX_PAX_TOTAL_ROWS_7_13_DESIRED', 'Number');
@@ -195,23 +210,20 @@ export const Payload = () => {
     const ROutCurrentSimVar = SimVar.GetSimVarValue("FUEL TANK RIGHT AUX QUANTITY", "Gallons");
     */
 
-    const [fwdBag] = useSimVar('L:A32NX_CARGO_FWD_BAGGAGE_CONTAINER', 'Number');
-    const [aftCont] = useSimVar('L:A32NX_CARGO_AFT_CONTAINER', 'Number');
-    const [aftBag] = useSimVar('L:A32NX_CARGO_AFT_BAGGAGE', 'Number');
-    const [aftBulk] = useSimVar('L:A32NX_CARGO_AFT_BULK_LOOSE', 'Number');
-
-    const [paxWeight] = useSimVar('L:A32NX_WB_PER_PAX_WEIGHT', 'Number');
+    // Units
+    // Weight/CG
     const [zfw, setZfw] = useState(0);
     const [zfwCg, setZfwCg] = useState(0);
-    const [emptyWeight] = useSimVar('A:EMPTY WEIGHT', usingMetric ? 'Kilograms' : 'Pounds');
     const [cg] = useSimVar('A:CG PERCENT', 'percent');
     const [totalWeight] = useSimVar('A:TOTAL WEIGHT', usingMetric ? 'Kilograms' : 'Pounds');
     const [mlwCg, setMlwCg] = useState(0);
-    const [mlwWeight, setMlwWeight] = useState(0);
+    const [mlw, setMlw] = useState(0);
+
+    const [estFuelBurn] = useSimVar('L:A32NX_ESTIMATED_FUEL_BURN', 'Kilograms');
 
     const cgPoints = {
         mzfw: { cg: zfwCg, weight: zfw },
-        mlw: { cg: mlwCg, weight: mlwWeight },
+        mlw: { cg: mlwCg, weight: mlw },
         mtow: { cg, weight: totalWeight },
     };
 
@@ -228,10 +240,10 @@ export const Payload = () => {
     const pax = [paxA, paxB, paxC, paxD];
     const setPax = [setPaxA, setPaxB, setPaxC, setPaxD];
 
-    const simbriefDataLoaded = isSimbriefDataLoaded();
-
     const [seatMap] = useState<PaxStationInfo[]>(defaultSeatMap);
     const [cargoMap] = useState<CargoStationInfo[]>(defaultCargoMap);
+
+    const totalCurrentGallon = () => round(Math.max((LInnCurrent + (LOutCurrent) + (RInnCurrent) + (ROutCurrent) + (centerCurrent)), 0));
 
     const returnSeats = (station: number, increase: boolean): number[] => {
         const seats: number[] = [];
@@ -286,6 +298,13 @@ export const Payload = () => {
         fillStation(Station.A, 1, paxRemaining);
     };
 
+    const calculateCG = (mass, moment) => {
+        const leMacZ = -5.386;
+        const macSize = 13.454;
+        return -100 * ((moment / mass - leMacZ) / macSize);
+    };
+
+    // Init the seating map
     useEffect(() => {
         const stationSize = [0, 0, 0, 0];
         seatMap.forEach((station, i) => {
@@ -298,6 +317,7 @@ export const Payload = () => {
         setSectionLen(stationSize);
     }, [seatMap]);
 
+    // Adjust passenger seats to match station size on change
     useEffect(() => {
         const paxCount = returnSeats(Station.A, false).length;
         if (paxA !== paxCount) {
@@ -305,7 +325,6 @@ export const Payload = () => {
             chooseRandomSeats(Station.A, seats, Math.abs(paxCount - paxA));
         }
     }, [paxA]);
-
     useEffect(() => {
         const paxCount = returnSeats(Station.B, false).length;
         if (paxB !== paxCount) {
@@ -313,7 +332,6 @@ export const Payload = () => {
             chooseRandomSeats(Station.B, seats, Math.abs(paxCount - paxB));
         }
     }, [paxB]);
-
     useEffect(() => {
         const paxCount: number = returnSeats(Station.C, false).length;
         if (paxC !== paxCount) {
@@ -321,7 +339,6 @@ export const Payload = () => {
             chooseRandomSeats(Station.C, seats, Math.abs(paxCount - paxC));
         }
     }, [paxC]);
-
     useEffect(() => {
         const paxCount: number = returnSeats(Station.D, false).length;
         if (paxD !== paxCount) {
@@ -330,11 +347,8 @@ export const Payload = () => {
         }
     }, [paxD]);
 
-    // Adjust CG Values
+    // Adjust ZFW CG Values based on payload
     useEffect(() => {
-        const leMacZ = -5.386; // Accurate to 3 decimals, replaces debug weight values
-        const macSize = 13.454; // Accurate to 3 decimals, replaces debug weight values
-
         const emptyPosition = -8.75; // Value from flight_model.cfg
         const emptyMoment = emptyPosition * emptyWeight;
 
@@ -350,22 +364,64 @@ export const Payload = () => {
             + aftBag * cargoMap[Station.aftBag].position
             + aftBulk * cargoMap[Station.aftBulk].position;
 
-        const totalMass = emptyWeight + paxTotalMass + cargoTotalMass;
-        const totalMoment = emptyMoment + paxTotalMoment + cargoTotalMoment;
+        const newZfwMass = emptyWeight + paxTotalMass + cargoTotalMass;
+        const newZfwMoment = emptyMoment + paxTotalMoment + cargoTotalMoment;
 
-        const cgPosition = totalMoment / totalMass;
-        const cgPositionToLemac = cgPosition - leMacZ;
-        const newZfwCg = -100 * (cgPositionToLemac / macSize);
+        const newZfwCg = calculateCG(newZfwMass, newZfwMoment);
 
         if (zfwCg !== newZfwCg) {
             setZfwCg(newZfwCg);
         }
 
-        const newZfw = emptyWeight + paxTotalMass + cargoTotalMass;
-        if (zfw !== newZfw) {
-            setZfw(newZfw);
+        if (zfw !== newZfwMass) {
+            setZfw(newZfwMass);
         }
-    }, [paxA, paxB, paxC, paxD, fwdBag, aftBag, aftCont, aftBulk, paxWeight, emptyWeight]);
+
+        const OUTER_CELL_KG = 228 * galToKg;
+        const INNER_CELL_KG = 1816 * galToKg;
+
+        const centerTankMoment = -6;
+        const innerTankMoment = -8;
+        const outerTankMoment = -13;
+
+        const totalFuel = round(totalCurrentGallon() * galToKg);
+        let fuelRemain = totalFuel - estFuelBurn;
+
+        let centerTank = 0;
+        let outerTanks = 0;
+        let innerTanks = 0;
+
+        fuelRemain -= (OUTER_CELL_KG) * 2;
+        outerTanks = ((OUTER_CELL_KG) * 2) + Math.min(fuelRemain, 0);
+        if (fuelRemain > 0) {
+            fuelRemain -= (INNER_CELL_KG) * 2;
+            innerTanks = ((INNER_CELL_KG) * 2) + Math.min(fuelRemain, 0);
+            if (fuelRemain > 0) {
+                centerTank = fuelRemain;
+            }
+        }
+
+        const fuelRemainMoment = centerTank * centerTankMoment
+        + outerTanks * outerTankMoment + innerTanks * innerTankMoment;
+
+        const newLdgMass = newZfwMass + totalFuel - estFuelBurn;
+        const newLdgMoment = newZfwMoment + fuelRemainMoment;
+
+        const newLdgCg = calculateCG(newLdgMass, newLdgMoment);
+
+        if (mlwCg !== newLdgCg) {
+            setMlwCg(newLdgCg);
+        }
+        if (mlw !== newLdgMass) {
+            setMlw(newLdgMass);
+        }
+    }, [
+        paxA, paxB, paxC, paxD,
+        fwdBag, aftBag, aftCont,
+        aftBulk, paxWeight, emptyWeight,
+        LInnCurrent, LOutCurrent, RInnCurrent,
+        ROutCurrent, centerCurrent, estFuelBurn,
+    ]);
 
     return (
         <div>
@@ -403,7 +459,8 @@ export const Payload = () => {
                             </tbody>
                         </table>
                     </Card>
-                    */}
+                */}
+                    <div className="col-1" />
                     <div className="rounded-2xl border col-1 border-theme-accent">
                         <BalanceWeight width={450} height={350} envelope={defaultEnvelope} points={cgPoints} />
                     </div>
@@ -479,8 +536,8 @@ export const Payload = () => {
                                             min={0}
                                             max={10000}
                                             value={0}
-                                            onBlur={(x) => setCargo(parseInt(x))}
                                         />
+                                        {/* onBlur={(x) => setCargo(parseInt(x))} */}
                                         <SelectInput
                                             value={weightUnit}
                                             className="my-1 w-20 rounded-l-none"

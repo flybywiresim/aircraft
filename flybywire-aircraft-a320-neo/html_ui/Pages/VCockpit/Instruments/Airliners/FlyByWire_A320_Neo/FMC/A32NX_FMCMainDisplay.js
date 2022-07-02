@@ -595,6 +595,7 @@ class FMCMainDisplay extends BaseAirliners {
             this.navigation.update();
             this.getGW();
             this.checkGWParams();
+            this.getLandWeight();
         }
 
         this.A32NXCore.update();
@@ -4869,6 +4870,12 @@ class FMCMainDisplay extends BaseAirliners {
     //TODO: Can this be util?
     getCG() {
         return SimVar.GetSimVarValue("CG PERCENT", "Percent over 100") * 100;
+    }
+
+    getLandWeight() {
+        this.tryFuelPlanning();
+        // Set Destination WP Distance SimVar
+        SimVar.SetSimVarValue('L:A32NX_ESTIMATED_FUEL_BURN', 'Kilograms', this._routeTripFuelWeight * 1000);
     }
 
     //TODO: make this util or local var?
