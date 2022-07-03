@@ -84,7 +84,7 @@ class CDUAtcConnectionNotification {
             [notificationMessage],
             [notificationStatus],
             [""],
-            ["\xa0ATC MENU", "CONNECTION\xa0"],
+            ["\xa0CONNECTION", "CONNECTION\xa0"],
             ["<RETURN", "STATUS>"]
         ]);
 
@@ -126,7 +126,7 @@ class CDUAtcConnectionNotification {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[5] = () => {
-            CDUAtcMenu.ShowPage1(mcdu);
+            CDUAtcConnection.ShowPage(mcdu);
         };
 
         mcdu.rightInputDelay[1] = () => {

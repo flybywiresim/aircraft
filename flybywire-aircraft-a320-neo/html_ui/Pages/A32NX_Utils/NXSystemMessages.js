@@ -72,6 +72,8 @@ const NXSystemMessages = {
     formatError:            new TypeIMessage("FORMAT ERROR"),
     fplnElementRetained:    new TypeIMessage("F-PLN ELEMENT RETAINED"),
     initializeWeightOrCg:   new TypeIIMessage("INITIALIZE WEIGHT/CG", true),
+    keyNotActive:           new TypeIMessage("KEY NOT ACTIVE"),
+    latLonAbreviated:       new TypeIMessage("LAT/LON DISPL ABREVIATED"),
     listOf99InUse:          new TypeIMessage("LIST OF 99 IN USE"),
     newAtisReceived:        new TypeIMessage("NEW ATIS: READ AGAIN"),
     newCrzAlt:              new TypeIIMessage("NEW CRZ ALT - HHHHH", false, "HHHHH"),

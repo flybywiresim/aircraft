@@ -38,7 +38,7 @@ class CDUAtcConnectionStatus {
             ["\xa0SET OFF[color]inop"],
             [""],
             ["", "ADS-C DETAIL>[color]inop"],
-            ["\xa0ATC MENU", ""],
+            ["\xa0CONNECTION", ""],
             ["<RETURN", "NOTIFICATION>"]
         ]);
 
@@ -46,7 +46,7 @@ class CDUAtcConnectionStatus {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[5] = () => {
-            CDUAtcMenu.ShowPage1(mcdu);
+            CDUAtcConnection.ShowPage(mcdu);
         };
 
         mcdu.rightInputDelay[1] = () => {

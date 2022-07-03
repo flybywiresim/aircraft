@@ -11,7 +11,7 @@ import { Datalink } from './com/Datalink';
  * Defines the AOC
  */
 export class Aoc {
-    private datalink: Datalink | undefined = undefined;
+    private datalink: Datalink = null;
 
     private messageQueue: AtsuMessage[] = [];
 
