@@ -948,6 +948,8 @@ mod tests {
         let mut test_bed = SimulationTestBed::new(|context| TestAircraft::new(context));
 
         test_bed.command(|a| a.set_elec_trim_demand(Angle::new::<degree>(13.), motor_idx));
+        test_bed.command(|a| a.set_no_manual_input());
+
         test_bed.run_with_delta(Duration::from_millis(20000));
 
         let deflection: Angle = test_bed.read_by_name("HYD_FINAL_THS_DEFLECTION");
