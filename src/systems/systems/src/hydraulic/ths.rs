@@ -415,10 +415,9 @@ impl PitchTrimActuator {
     }
 
     fn update_position(&mut self, context: &UpdateContext) {
-        self.position = self.position
-            + Angle::new::<radian>(
-                self.speed.get::<radian_per_second>() * context.delta_as_secs_f64(),
-            );
+        self.position += Angle::new::<radian>(
+            self.speed.get::<radian_per_second>() * context.delta_as_secs_f64(),
+        );
 
         self.position = self
             .position
@@ -689,10 +688,9 @@ impl ThsHydraulicAssembly {
     }
 
     fn update_position(&mut self, context: &UpdateContext) {
-        self.actual_deflection = self.actual_deflection
-            + Angle::new::<radian>(
-                self.speed.get::<radian_per_second>() * context.delta_as_secs_f64(),
-            );
+        self.actual_deflection += Angle::new::<radian>(
+            self.speed.get::<radian_per_second>() * context.delta_as_secs_f64(),
+        );
 
         self.actual_deflection = self
             .actual_deflection

@@ -5506,7 +5506,7 @@ impl PitchTrimActuatorController for A320TrimInputController {
             }
         }
 
-        return Angle::default();
+        Angle::default()
     }
 
     fn energised_motor(&self) -> [bool; 3] {
