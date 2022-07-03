@@ -1516,12 +1516,6 @@ bool FlyByWireInterface::updateFlyByWire(double sampleTime) {
    } else {
       idThs1MotorActive->set(0);
    }
-  // if (!flyByWireOutput.sim.data_computed.tracking_mode_on) {
-  //   if (!simConnectInterface.sendData(outputEtaTrim)) {
-  //     cout << "WASM: Write data failed!" << endl;
-  //     return false;
-  //   }
-  // }
 
   SimOutputZetaTrim outputZetaTrim = {};
   rudderTrimHandler->update(sampleTime);
