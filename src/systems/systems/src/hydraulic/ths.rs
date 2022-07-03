@@ -130,13 +130,19 @@ impl DriveMotor {
     }
 }
 
+#[derive(PartialEq, Clone, Copy)]
+enum ElectricalTrimMotorElecBus {
+    _Norm = 0,
+    Standby = 1,
+}
+
 struct ElectricDriveMotor {
     motor: DriveMotor,
 
     is_powered: bool,
 
     powered_by_bus_array: Vec<ElectricalBusType>,
-    powered_by_bus_index: usize,
+    powered_by_bus: ElectricalTrimMotorElecBus,
 }
 impl ElectricDriveMotor {
     fn new(
@@ -152,7 +158,9 @@ impl ElectricDriveMotor {
             is_powered: true,
 
             powered_by_bus_array,
-            powered_by_bus_index: 0,
+
+            // TODO: Init with Standby to select most restrictive case until the bus selection logic is implemented
+            powered_by_bus: ElectricalTrimMotorElecBus::Standby,
         }
     }
 
@@ -174,8 +182,10 @@ impl ElectricDriveMotor {
         self.motor.speed()
     }
 
-    fn set_power_bus_in_use(&mut self, bus_index: usize) {
-        self.powered_by_bus_index = bus_index.min(self.powered_by_bus_array.len() - 1);
+    /// Selects which bus powers the motor (if more than one bus available for that motor)
+    // TODO: The logic to select this bus is not implemented yet in flight computers
+    fn _set_power_bus_in_use(&mut self, elec_bus_in_use: ElectricalTrimMotorElecBus) {
+        self.powered_by_bus = elec_bus_in_use;
     }
 
     fn is_powered(&self) -> bool {
@@ -184,7 +194,10 @@ impl ElectricDriveMotor {
 }
 impl SimulationElement for ElectricDriveMotor {
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
-        self.is_powered = buses.is_powered(self.powered_by_bus_array[self.powered_by_bus_index]);
+        let bus_selected_index: usize =
+            (self.powered_by_bus as usize).min(self.powered_by_bus_array.len() - 1);
+
+        self.is_powered = buses.is_powered(self.powered_by_bus_array[bus_selected_index]);
     }
 }
 
@@ -1040,6 +1053,7 @@ mod tests {
             a.set_hyd_pressure([Pressure::new::<psi>(3000.), Pressure::new::<psi>(3000.)])
         });
 
+        test_bed.command(|a| a.set_no_elec_input());
         test_bed.command(|a| a.set_manual_trim_input(true));
         test_bed.run_with_delta(Duration::from_millis(5000));
 
