@@ -34,14 +34,16 @@ const Line = ({ label, cols }) => (
     </div>
 );
 
-export const McduScreen = ({ content }) => {
+export const McduScreen = ({ content, aspect43 }) => {
     const lines = [];
     for (let i = 0; i < content.lines.length; i++) {
         lines.push(<Line label={i % 2 === 0} cols={content.lines[i] || ['', '', '']} />);
     }
     return (
         <div className="screen" xmlns="http://www.w3.org/1999/xhtml">
-            <Line cols={['', '', '']} />
+            {!aspect43 && (
+                <Line cols={['', '', '']} />
+            )}
             <span className="arrow-horizontal" dangerouslySetInnerHTML={{ __html: `${content.arrows[2] ? '←' : '\xa0'}${content.arrows[3] ? '→' : '\xa0'}\xa0` }} />
             <Line cols={[content.titleLeft, content.page, content.title]} />
             {lines}
