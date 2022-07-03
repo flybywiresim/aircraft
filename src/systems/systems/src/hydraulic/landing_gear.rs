@@ -353,8 +353,8 @@ enum GearSysComponentId {
     Door,
     Gear,
 }
-impl GearSysComponentId {
-    fn from_actuator_id(id: GearActuatorId) -> Self {
+impl From<GearActuatorId> for GearSysComponentId {
+    fn from(id: GearActuatorId) -> Self {
         match id {
             GearActuatorId::GearDoorLeft
             | GearActuatorId::GearDoorRight
@@ -392,7 +392,7 @@ impl GearSystemComponentAssembly {
         downlock_id: [ProximityDetectorId; 2],
     ) -> Self {
         let mut obj = Self {
-            component_id: GearSysComponentId::from_actuator_id(id),
+            component_id: GearSysComponentId::from(id),
             is_inverted_control,
             hydraulic_controller: GearSystemComponentHydraulicController::new(
                 id,
