@@ -145,6 +145,8 @@ struct ElectricDriveMotor {
     powered_by_bus: ElectricalTrimMotorElecBus,
 }
 impl ElectricDriveMotor {
+    /// Creates an electric motor driving the trim input system.
+    /// Power bus provided can contain only one main bus, or one main bus plus a secondary standby bus
     fn new(
         max_speed: AngularVelocity,
 
@@ -153,6 +155,9 @@ impl ElectricDriveMotor {
 
         powered_by_bus_array: Vec<ElectricalBusType>,
     ) -> Self {
+        // Only supports one main bus or one main plus one standby
+        assert!(powered_by_bus_array.len() <= 2);
+
         Self {
             motor: DriveMotor::new(max_speed, speed_error_breakpoint, speed_regulation_coef_map),
             is_powered: true,
