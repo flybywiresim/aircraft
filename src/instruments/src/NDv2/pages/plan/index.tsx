@@ -1,11 +1,11 @@
-import { FSComponent, DisplayComponent, Subscribable, VNode, Subject } from 'msfssdk';
+import { FSComponent, ComponentProps, DisplayComponent, Subscribable, VNode, Subject } from 'msfssdk';
 import { Arinc429Word } from '@shared/arinc429';
 import { Airplane } from '../../shared/Airplane';
 import { PlanModeUnderlay } from './PlanModeUnderlay';
 import { MapParameters } from '../../../ND/utils/MapParameters';
 import { NDPage } from '../NDPage';
 
-export interface PlanModePageProps {
+export interface PlanModePageProps extends ComponentProps {
     aircraftTrueHeading: Subscribable<Arinc429Word>,
     mapCenterLat: Subscribable<number>,
     mapCenterLong: Subscribable<number>,

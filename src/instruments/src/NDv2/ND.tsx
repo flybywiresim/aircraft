@@ -1,13 +1,5 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import {
-    ClockEvents,
-    DisplayComponent,
-    EventBus,
-    FSComponent,
-    MappedSubject,
-    Subject,
-    VNode,
-} from 'msfssdk';
+import { ClockEvents, DisplayComponent, EventBus, FSComponent, MappedSubject, Subject, VNode } from 'msfssdk';
 import { Arinc429Word } from '@shared/arinc429';
 import { SimVarString } from '@shared/simvar';
 import { EfisNdMode, EfisNdRangeValue, rangeSettings } from '@shared/NavigationDisplay';
@@ -25,6 +17,8 @@ import { NDPage } from './pages/NDPage';
 import { PlanModePage } from './pages/plan';
 import { RadioNavInfo } from './shared/RadioNavInfo';
 import { RoseNavPage } from './pages/rose/RoseNavPage';
+import { RoseLSPage } from './pages/rose/RoseLSPage';
+import { RoseVorPage } from './pages/rose/RoseVorPage';
 
 const PAGE_GENERATION_BASE_DELAY = 500;
 const PAGE_GENERATION_RANDOM_DELAY = 70;
@@ -34,11 +28,13 @@ export interface NDProps {
 }
 
 export class NDComponent extends DisplayComponent<NDProps> {
-    private readonly isUsingTrackUpMode = Subject.create(false);
+    private readonly isUsingTrackUpMode = Subject.create(true);
 
     private readonly magneticHeadingWord = Subject.create(Arinc429Word.empty());
 
     private readonly trueHeadingWord = Subject.create(Arinc429Word.empty());
+
+    private readonly magneticTrackWord = Subject.create(Arinc429Word.empty());
 
     private readonly trueTrackWord = Subject.create(Arinc429Word.empty());
 
@@ -53,6 +49,10 @@ export class NDComponent extends DisplayComponent<NDProps> {
     private readonly mapRotation = Subject.create(0);
 
     private readonly mapRangeRadius = Subject.create(0);
+
+    private readonly roseLSPage = FSComponent.createRef<RoseLSPage>();
+
+    private readonly roseVorPage = FSComponent.createRef<RoseVorPage>();
 
     private readonly roseNavPage = FSComponent.createRef<RoseNavPage>();
 
@@ -125,18 +125,24 @@ export class NDComponent extends DisplayComponent<NDProps> {
             this.selectedWaypointLong.set(value);
         });
 
-        sub.on('heading').whenChanged().handle((value) => {
+        sub.on('heading').whenChangedBy(0.01).handle((value) => {
             this.magneticHeadingWord.set(new Arinc429Word(value));
             this.handleMapRotation();
         });
 
-        sub.on('trueHeading').whenChanged().handle((value) => {
+        sub.on('trueHeading').whenChangedBy(0.01).handle((value) => {
             this.trueHeadingWord.set(new Arinc429Word(value));
             this.handleMapRotation();
         });
 
-        sub.on('trueGroundTrack').whenChanged().handle((value) => {
+        sub.on('groundTrack').whenChangedBy(0.01).handle((value) => {
+            this.magneticTrackWord.set(new Arinc429Word(value));
+            this.handleMapRotation();
+        });
+
+        sub.on('trueGroundTrack').whenChangedBy(0.01).handle((value) => {
             this.trueTrackWord.set(new Arinc429Word(value));
+            console.log(`magHeading: ${this.magneticHeadingWord.get().value.toFixed(1)}, trueHeading: ${this.trueHeadingWord.get().value.toFixed(1)}, magTrack: ${this.magneticTrackWord.get().value.toFixed(1)}, trueTrack: ${this.trueTrackWord.get().value.toFixed(1)}`);
             this.handleMapRotation();
         });
 
@@ -182,6 +188,12 @@ export class NDComponent extends DisplayComponent<NDProps> {
         this.currentPageMode.set(mode);
 
         switch (mode) {
+        case EfisNdMode.ROSE_ILS:
+            this.currentPageInstance = this.roseLSPage.instance;
+            break;
+        case EfisNdMode.ROSE_VOR:
+            this.currentPageInstance = this.roseVorPage.instance;
+            break;
         case EfisNdMode.ROSE_NAV:
             this.currentPageInstance = this.roseNavPage.instance;
             break;
@@ -252,21 +264,38 @@ export class NDComponent extends DisplayComponent<NDProps> {
                         MODE CHANGE
                     </Flag>
 
+                    <RoseLSPage
+                        bus={this.props.bus}
+                        ref={this.roseLSPage}
+                        heading={this.magneticHeadingWord}
+                        tcasMode={Subject.create(TcasMode.STBY)}
+                        rangeValue={this.mapRangeRadius as Subject<EfisNdRangeValue>}
+                        isUsingTrackUpMode={this.isUsingTrackUpMode}
+                    />
+                    <RoseVorPage
+                        bus={this.props.bus}
+                        ref={this.roseVorPage}
+                        heading={this.magneticHeadingWord}
+                        tcasMode={Subject.create(TcasMode.STBY)}
+                        rangeValue={this.mapRangeRadius as Subject<EfisNdRangeValue>}
+                        isUsingTrackUpMode={this.isUsingTrackUpMode}
+                    />
                     <RoseNavPage
-                        // @ts-ignore
+                        bus={this.props.bus}
                         ref={this.roseNavPage}
                         heading={this.magneticHeadingWord}
                         tcasMode={Subject.create(TcasMode.STBY)}
                         rangeValue={this.mapRangeRadius as Subject<EfisNdRangeValue>}
+                        isUsingTrackUpMode={this.isUsingTrackUpMode}
                     />
                     <ArcModePage
-                        // @ts-ignore
                         ref={this.arcPage}
                         bus={this.props.bus}
+                        headingWord={this.magneticHeadingWord}
+                        trackWord={this.magneticTrackWord}
                         isUsingTrackUpMode={this.isUsingTrackUpMode}
                     />
                     <PlanModePage
-                        // @ts-ignore
                         ref={this.planPage}
                         mapCenterLat={this.pposLatWord.map((v) => v.valueOr(0))}
                         mapCenterLong={this.pposLongWord.map((v) => v.valueOr(0))}

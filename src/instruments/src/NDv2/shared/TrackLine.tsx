@@ -5,10 +5,10 @@ import { MathUtils } from '@shared/MathUtils';
 import { NDSimvars } from '../NDSimvarPublisher';
 
 export interface TrackLineProps {
+    bus: EventBus,
     x: number,
     y: number,
     isUsingTrackUpMode: Subscribable<boolean>,
-    bus: EventBus,
 }
 
 // TODO hook up to lateral modes
@@ -54,15 +54,15 @@ export class TrackLine extends DisplayComponent<TrackLineProps> {
         if (headingInvalid || trackInvalid) {
             this.lineRef.instance.style.visibility = 'hidden';
         } else {
-            this.lineRef.instance.style.visibility = 'visible';
+            this.lineRef.instance.style.visibility = 'inherit';
         }
     }
 
     render(): VNode | null {
         return (
             <g ref={this.lineRef} transform={this.rotate.map((rotate) => `rotate(${rotate} ${this.props.x} ${this.props.y})`)}>
-                <line x1={384} y1={149} x2={this.props.x} y2={this.props.y} class="shadow rounded" strokeWidth={3.0} />
-                <line x1={384} y1={149} x2={this.props.x} y2={this.props.y} class="Green rounded" strokeWidth={2.5} />
+                <line x1={384} y1={149} x2={this.props.x} y2={this.props.y} class="rounded shadow" strokeWidth={3.0} />
+                <line x1={384} y1={149} x2={this.props.x} y2={this.props.y} class="rounded Green" strokeWidth={2.5} />
             </g>
         );
     }

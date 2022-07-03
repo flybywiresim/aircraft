@@ -1,11 +1,19 @@
-import { DisplayComponent, EventBus, FSComponent, MappedSubject, Subject, Subscribable, VNode } from 'msfssdk';
+import {
+    FSComponent,
+    ComponentProps,
+    DisplayComponent,
+    MappedSubject,
+    Subject,
+    Subscribable,
+    VNode,
+    EventBus,
+} from 'msfssdk';
 import { Arinc429Word } from '@shared/arinc429';
 import { EfisNdMode } from '@shared/NavigationDisplay';
 import { Airplane } from '../../shared/Airplane';
 import { TrackBug } from '../../shared/TrackBug';
 import { ArcModeUnderlay } from './ArcModeUnderlay';
 import { SelectedHeadingBug } from './SelectedHeadingBug';
-import { NDSimvars } from '../../NDSimvarPublisher';
 import { LubberLine } from './LubberLine';
 import { getSmallestAngle } from '../../../PFD/PFDUtils';
 import { Flag } from '../../shared/Flag';
@@ -13,13 +21,17 @@ import { NDPage } from '../NDPage';
 import { CrossTrackError } from '../../shared/CrossTrackError';
 import { RadioNeedle } from '../../shared/RadioNeedle';
 import { TcasWxrMessages } from '../../TcasWxrMessages';
+import { TrackLine } from '../../shared/TrackLine';
 
-export class ArcModePage extends DisplayComponent<{ bus: EventBus, isUsingTrackUpMode: Subscribable<boolean> }> implements NDPage {
+export interface ArcModePageProps extends ComponentProps {
+    bus: EventBus,
+    headingWord: Subscribable<Arinc429Word>,
+    trackWord: Subscribable<Arinc429Word>,
+    isUsingTrackUpMode: Subscribable<boolean>,
+}
+
+export class ArcModePage extends DisplayComponent<ArcModePageProps> implements NDPage {
     public isVisible = Subject.create(false);
-
-    private readonly headingWord = Subject.create(Arinc429Word.empty());
-
-    private readonly trackWord = Subject.create(Arinc429Word.empty());
 
     private readonly ringAvailable = MappedSubject.create(([isUsingTrackUpMode, headingWord, trackWord]) => {
         if (isUsingTrackUpMode) {
@@ -27,7 +39,7 @@ export class ArcModePage extends DisplayComponent<{ bus: EventBus, isUsingTrackU
         }
 
         return headingWord.isNormalOperation();
-    }, this.props.isUsingTrackUpMode, this.headingWord, this.trackWord);
+    }, this.props.isUsingTrackUpMode, this.props.headingWord, this.props.trackWord);
 
     private readonly ringRotation = Subject.create<number>(0);
 
@@ -39,7 +51,7 @@ export class ArcModePage extends DisplayComponent<{ bus: EventBus, isUsingTrackU
         }
 
         return 0;
-    }, this.props.isUsingTrackUpMode, this.headingWord, this.trackWord);
+    }, this.props.isUsingTrackUpMode, this.props.headingWord, this.props.trackWord);
 
     private readonly trkFlagShown = MappedSubject.create(([isUsingTrackUpMode, trackWord]) => {
         if (isUsingTrackUpMode) {
@@ -47,36 +59,29 @@ export class ArcModePage extends DisplayComponent<{ bus: EventBus, isUsingTrackU
         }
 
         return false;
-    }, this.props.isUsingTrackUpMode, this.trackWord);
+    }, this.props.isUsingTrackUpMode, this.props.trackWord);
 
-    private readonly hdgFlagShown = MappedSubject.create(([headingWord]) => !headingWord.isNormalOperation(), this.headingWord);
+    private readonly hdgFlagShown = MappedSubject.create(([headingWord]) => !headingWord.isNormalOperation(), this.props.headingWord);
 
-    private readonly mapFlagShown = MappedSubject.create(([headingWord]) => !headingWord.isNormalOperation(), this.headingWord);
+    private readonly mapFlagShown = MappedSubject.create(([headingWord]) => !headingWord.isNormalOperation(), this.props.headingWord);
 
     // eslint-disable-next-line
     private readonly airplaneShown = MappedSubject.create(([isVisible, headingWord]) => {
         return isVisible && headingWord.isNormalOperation();
-    }, this.isVisible, this.headingWord);
+    }, this.isVisible, this.props.headingWord);
 
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<NDSimvars>();
-
-        sub.on('heading').whenChanged().handle((v) => {
-            this.headingWord.set(new Arinc429Word(v));
-            this.handleRingRotation();
-        });
-
-        sub.on('groundTrack').whenChanged().handle((v) => {
-            this.trackWord.set(new Arinc429Word(v));
-        });
+        this.props.headingWord.sub(() => this.handleRingRotation());
+        this.props.trackWord.sub(() => this.handleRingRotation());
+        this.props.isUsingTrackUpMode.sub(() => this.handleRingRotation());
     }
 
     private handleRingRotation() {
         const isUsingTrackUpMode = this.props.isUsingTrackUpMode.get();
 
-        const rotationWord = isUsingTrackUpMode ? this.trackWord.get() : this.headingWord.get();
+        const rotationWord = isUsingTrackUpMode ? this.props.trackWord.get() : this.props.headingWord.get();
 
         if (rotationWord.isNormalOperation()) {
             this.ringRotation.set(rotationWord.value);
@@ -93,8 +98,24 @@ export class ArcModePage extends DisplayComponent<{ bus: EventBus, isUsingTrackU
                 />
 
                 <g clipPath="url(#arc-mode-map-clip)">
-                    <RadioNeedle bus={this.props.bus} index={1} side="L" mode={EfisNdMode.ARC} />
-                    <RadioNeedle bus={this.props.bus} index={2} side="L" mode={EfisNdMode.ARC} />
+                    <RadioNeedle
+                        bus={this.props.bus}
+                        headingWord={this.props.headingWord}
+                        trackWord={this.props.trackWord}
+                        isUsingTrackUpMode={this.props.isUsingTrackUpMode}
+                        index={1}
+                        side="L"
+                        mode={EfisNdMode.ARC}
+                    />
+                    <RadioNeedle
+                        bus={this.props.bus}
+                        headingWord={this.props.headingWord}
+                        trackWord={this.props.trackWord}
+                        isUsingTrackUpMode={this.props.isUsingTrackUpMode}
+                        index={2}
+                        side="L"
+                        mode={EfisNdMode.ARC}
+                    />
                 </g>
 
                 <SelectedHeadingBug
@@ -103,10 +124,15 @@ export class ArcModePage extends DisplayComponent<{ bus: EventBus, isUsingTrackU
                     visible={this.isVisible}
                 />
 
-                <TrackBug
-                    isUsingTrackUpMode={this.props.isUsingTrackUpMode}
+                <TrackLine
                     bus={this.props.bus}
-                    visible={this.isVisible}
+                    x={384}
+                    y={620}
+                    isUsingTrackUpMode={this.props.isUsingTrackUpMode}
+                />
+                <TrackBug
+                    bus={this.props.bus}
+                    isUsingTrackUpMode={this.props.isUsingTrackUpMode}
                 />
 
                 <Airplane
@@ -116,7 +142,7 @@ export class ArcModePage extends DisplayComponent<{ bus: EventBus, isUsingTrackU
                     rotation={this.planeRotation}
                 />
                 <LubberLine
-                    available={this.headingWord.map((it) => it.isNormalOperation())}
+                    available={this.props.headingWord.map((it) => it.isNormalOperation())}
                     rotation={this.planeRotation}
                 />
 

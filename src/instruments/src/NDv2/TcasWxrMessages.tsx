@@ -17,7 +17,7 @@ export class TcasWxrMessages extends DisplayComponent<TcasWXMessagesProps> {
 
     private readonly rightMessage = Subject.create<TcasWxrMessage | undefined>(undefined);
 
-    private readonly y = (this.props.mode === EfisNdMode.ROSE_VOR || this.props.mode === EfisNdMode.ROSE_ILS) ? 713 : 678;
+    private readonly y = (this.props.mode === EfisNdMode.ROSE_VOR || this.props.mode === EfisNdMode.ROSE_ILS) ? 713 : 680;
 
     private readonly backgroundFillShown = this.props.mode === EfisNdMode.ARC || this.props.mode === EfisNdMode.ROSE_NAV;
 
@@ -64,7 +64,7 @@ export class TcasWxrMessages extends DisplayComponent<TcasWXMessagesProps> {
                     x={0}
                     y={0}
                     width={440}
-                    height={30}
+                    height={27}
                     class="White BackgroundFill"
                     strokeWidth={1.75}
                 />

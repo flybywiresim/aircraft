@@ -70,7 +70,7 @@ export class FmMessages extends DisplayComponent<{ bus: EventBus }> {
     render(): VNode | null {
         return (
             <Layer x={164} y={707}>
-                <rect ref={this.boxRef} x={0} y={0} width={440} height={30} class="White BackgroundFill" strokeWidth={1.75} />
+                <rect ref={this.boxRef} x={0} y={0} width={440} height={27} class="White BackgroundFill" strokeWidth={1.75} />
 
                 { /* the text message is offset from centre on the real one...
                  guess by the width of the multiple message arrow... */ }

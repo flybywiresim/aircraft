@@ -7,7 +7,6 @@ import { getSmallestAngle } from '../../PFD/PFDUtils';
 export interface TrackBugProps {
     bus: EventBus,
     isUsingTrackUpMode: Subscribable<boolean>,
-    visible: Subscribable<boolean>,
 }
 
 export class TrackBug extends DisplayComponent<TrackBugProps> {
@@ -19,13 +18,13 @@ export class TrackBug extends DisplayComponent<TrackBugProps> {
 
     private readonly diffSubject = Subject.create(0);
 
-    private readonly bugShown = MappedSubject.create(([headingWord, trackWord, diff, visible]) => {
-        if (!visible || !headingWord.isNormalOperation() || !trackWord.isNormalOperation()) {
+    private readonly bugShown = MappedSubject.create(([headingWord, trackWord, diff]) => {
+        if (!headingWord.isNormalOperation() || !trackWord.isNormalOperation()) {
             return false;
         }
 
         return diff <= 40;
-    }, this.headingWord, this.trackWord, this.diffSubject, this.props.visible);
+    }, this.headingWord, this.trackWord, this.diffSubject);
 
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
@@ -62,17 +61,17 @@ export class TrackBug extends DisplayComponent<TrackBugProps> {
     render(): VNode | null {
         return (
             <g
-                visibility={this.bugShown.map((v) => (v ? 'visible' : 'hidden'))}
+                visibility={this.bugShown.map((v) => (v ? 'inherit' : 'hidden'))}
                 transform={this.diffSubject.map((diff) => `rotate(${diff} 384 620)`)}
             >
                 <path
                     d="M384,128 L378,138 L384,148 L390,138 L384,128"
-                    class="shadow rounded"
+                    class="rounded shadow"
                     strokeWidth={4.5}
                 />
                 <path
                     d="M384,128 L378,138 L384,148 L390,138 L384,128"
-                    class="Green rounded"
+                    class="rounded Green"
                     strokeWidth={3}
                 />
             </g>
