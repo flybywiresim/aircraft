@@ -694,10 +694,14 @@ impl SimulationElement for ThsHydraulicAssembly {
 #[cfg(test)]
 mod tests {
     use uom::si::angle::degree;
-    use uom::si::{angular_velocity::degree_per_second, ratio::percent};
+    use uom::si::{angular_velocity::degree_per_second, electric_potential::volt, ratio::percent};
+
+    use crate::electrical::test::TestElectricitySource;
+    use crate::electrical::ElectricalBus;
+    use crate::electrical::Electricity;
 
     use super::*;
-    use crate::shared::update_iterator::FixedStepLoop;
+    use crate::shared::{update_iterator::FixedStepLoop, PotentialOrigin};
     use crate::simulation::test::{ReadByName, SimulationTestBed, TestBed};
     use crate::simulation::{Aircraft, SimulationElement};
     use std::time::Duration;
@@ -783,6 +787,12 @@ mod tests {
         trim_assembly: ThsTrimAssembly,
 
         hydraulic_pressures: [Pressure; 2],
+
+        powered_source_dc: TestElectricitySource,
+        dc_2_bus: ElectricalBus,
+        dc_hot_bus: ElectricalBus,
+        dc_ess_bus: ElectricalBus,
+        is_elec_powered: bool,
     }
     impl TestAircraft {
         fn new(context: &mut InitContext) -> Self {
@@ -803,6 +813,16 @@ mod tests {
                 ),
 
                 hydraulic_pressures: [Pressure::new::<psi>(3000.); 2],
+
+                powered_source_dc: TestElectricitySource::powered(
+                    context,
+                    PotentialOrigin::Battery(2),
+                ),
+
+                dc_2_bus: ElectricalBus::new(context, ElectricalBusType::DirectCurrent(2)),
+                dc_hot_bus: ElectricalBus::new(context, ElectricalBusType::DirectCurrentHot(2)),
+                dc_ess_bus: ElectricalBus::new(context, ElectricalBusType::DirectCurrentEssential),
+                is_elec_powered: true,
             }
         }
 
@@ -836,6 +856,22 @@ mod tests {
         }
     }
     impl Aircraft for TestAircraft {
+        fn update_before_power_distribution(
+            &mut self,
+            _: &UpdateContext,
+            electricity: &mut Electricity,
+        ) {
+            self.powered_source_dc
+                .power_with_potential(ElectricPotential::new::<volt>(24.));
+            electricity.supplied_by(&self.powered_source_dc);
+
+            if self.is_elec_powered {
+                electricity.flow(&self.powered_source_dc, &self.dc_2_bus);
+                electricity.flow(&self.powered_source_dc, &self.dc_ess_bus);
+                electricity.flow(&self.powered_source_dc, &self.dc_hot_bus);
+            }
+        }
+
         fn update_after_power_distribution(&mut self, context: &UpdateContext) {
             self.updater_fixed_step.update(context);
 
