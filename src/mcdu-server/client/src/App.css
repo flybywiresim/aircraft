@@ -25,3 +25,7 @@
   --screen-scale: 1;
   cursor: pointer;
 }
+
+.aspect43 {
+  --aspect-ratio: 1.3;
+}
