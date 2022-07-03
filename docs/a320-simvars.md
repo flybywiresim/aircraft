@@ -1480,6 +1480,10 @@
       0.0 | neutral
       1.0 | full up
 
+- A32NX_HYD_THS_TRIM_MANUAL_OVERRIDE
+    - Boolean
+    - Feedback signal from the trim actuator system. True if pilot is moving or holding trim wheel
+
 ## ADIRS
 
 In the variables below, {number} should be replaced with one item in the set: { 1, 2, 3 }, unless declared otherwise.
