@@ -177,6 +177,10 @@ impl ElectricDriveMotor {
     fn set_power_bus_in_use(&mut self, bus_index: usize) {
         self.powered_by_bus_index = bus_index.min(self.powered_by_bus_array.len() - 1);
     }
+
+    fn is_powered(&self) -> bool {
+        self.is_powered
+    }
 }
 impl SimulationElement for ElectricDriveMotor {
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
@@ -292,6 +296,10 @@ impl ElectricMotorClutch {
 
     fn set_energized(&mut self, is_energized: bool) {
         self.is_energized = is_energized;
+    }
+
+    fn set_is_powered(&mut self, elec_motor_is_powered: bool) {
+        self.is_powered = elec_motor_is_powered;
     }
 }
 
@@ -440,6 +448,7 @@ impl PitchTrimActuator {
 
     fn update_clutches_state(&mut self, controller: &impl PitchTrimActuatorController) {
         for (clutch_index, clutch) in self.electric_clutches.iter_mut().enumerate() {
+            clutch.set_is_powered(self.electric_motors[clutch_index].is_powered());
             clutch.set_energized(controller.energised_motor()[clutch_index]);
         }
     }
@@ -854,6 +863,10 @@ mod tests {
         fn set_hyd_pressure(&mut self, pressures: [Pressure; 2]) {
             self.hydraulic_pressures = pressures;
         }
+
+        fn set_no_elec_power(&mut self) {
+            self.is_elec_powered = false;
+        }
     }
     impl Aircraft for TestAircraft {
         fn update_before_power_distribution(
@@ -986,6 +999,19 @@ mod tests {
         let trim_wheel_position_percent: Ratio = test_bed.read_by_name("HYD_TRIM_WHEEL_PERCENT");
         assert!(trim_wheel_position_percent.get::<percent>() > 99.9);
         assert!(trim_wheel_position_percent.get::<percent>() < 100.1);
+    }
+
+    #[test]
+    fn trim_assembly_motor_0_without_elec_is_stuck() {
+        let mut test_bed = SimulationTestBed::new(|context| TestAircraft::new(context));
+
+        test_bed.command(|a| a.set_elec_trim_demand(Angle::new::<degree>(13.5), 0));
+        test_bed.command(|a| a.set_no_elec_power());
+        test_bed.run_with_delta(Duration::from_millis(20000));
+
+        let deflection: Angle = test_bed.read_by_name("HYD_FINAL_THS_DEFLECTION");
+        assert!(deflection.get::<degree>() >= -0.1);
+        assert!(deflection.get::<degree>() <= 0.1);
     }
 
     #[test]
