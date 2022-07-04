@@ -392,7 +392,7 @@ impl GearSystemComponentAssembly {
         downlock_id: [ProximityDetectorId; 2],
     ) -> Self {
         let mut obj = Self {
-            component_id: GearSysComponentId::from(id),
+            component_id: id.into(),
             is_inverted_control,
             hydraulic_controller: GearSystemComponentHydraulicController::new(
                 id,
