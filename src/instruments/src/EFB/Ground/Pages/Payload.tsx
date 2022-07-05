@@ -14,7 +14,7 @@ import { t } from '../../translation';
 import { TooltipWrapper } from '../../UtilComponents/TooltipWrapper';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { SelectInput } from '../../UtilComponents/Form/SelectInput/SelectInput';
-// import Card from '../../UtilComponents/Card/Card';
+import Card from '../../UtilComponents/Card/Card';
 import { SelectGroup, SelectItem } from '../../UtilComponents/Form/Select';
 import { SeatMap } from './Seating/SeatMap';
 import { isSimbriefDataLoaded } from '../../Store/features/simBrief';
@@ -36,7 +36,7 @@ const Station = {
     B: 1,
     C: 2,
     D: 3,
-    fwd: 0,
+    fwdBag: 0,
     aftCont: 1,
     aftBag: 2,
     aftBulk: 3,
@@ -170,22 +170,23 @@ export const Payload = () => {
     const [boardingRate, setBoardingRate] = usePersistentProperty('CONFIG_BOARDING_RATE', 'REAL');
     const [weightUnit, setWeightUnit] = usePersistentProperty('EFB_PREFERRED_WEIGHT_UNIT', usingMetric ? 'kg' : 'lb');
     const [paxWeight] = useSimVar('L:A32NX_WB_PER_PAX_WEIGHT', 'Number');
-    const [galToKg] = useSimVar('FUEL WEIGHT PER GALLON', 'kilograms', 1_000);
+    const [paxBagWeight] = useSimVar('L:A32NX_WB_PER_BAG_WEIGHT', 'Number');
+    const [galToKg] = useSimVar('FUEL WEIGHT PER GALLON', 'kilograms');
 
     const [emptyWeight] = useSimVar('A:EMPTY WEIGHT', usingMetric ? 'Kilograms' : 'Pounds');
     const [paxA, setPaxA] = useSimVar('L:A32NX_PAX_TOTAL_ROWS_1_6', 'Number');
     const [paxB, setPaxB] = useSimVar('L:A32NX_PAX_TOTAL_ROWS_7_13', 'Number');
     const [paxC, setPaxC] = useSimVar('L:A32NX_PAX_TOTAL_ROWS_14_21', 'Number');
     const [paxD, setPaxD] = useSimVar('L:A32NX_PAX_TOTAL_ROWS_22_29', 'Number');
-    const [fwdBag] = useSimVar('L:A32NX_CARGO_FWD_BAGGAGE_CONTAINER', 'Number');
-    const [aftCont] = useSimVar('L:A32NX_CARGO_AFT_CONTAINER', 'Number');
-    const [aftBag] = useSimVar('L:A32NX_CARGO_AFT_BAGGAGE', 'Number');
-    const [aftBulk] = useSimVar('L:A32NX_CARGO_AFT_BULK_LOOSE', 'Number');
-    const [centerCurrent] = useSimVar('FUEL TANK CENTER QUANTITY', 'Gallons', 1_000);
-    const [LInnCurrent] = useSimVar('FUEL TANK LEFT MAIN QUANTITY', 'Gallons', 1_000);
-    const [LOutCurrent] = useSimVar('FUEL TANK LEFT AUX QUANTITY', 'Gallons', 1_000);
-    const [RInnCurrent] = useSimVar('FUEL TANK RIGHT MAIN QUANTITY', 'Gallons', 1_000);
-    const [ROutCurrent] = useSimVar('FUEL TANK RIGHT AUX QUANTITY', 'Gallons', 1_000);
+    const [fwdBag, setFwdBag] = useSimVar('L:A32NX_CARGO_FWD_BAGGAGE_CONTAINER', 'Number');
+    const [aftCont, setAftCont] = useSimVar('L:A32NX_CARGO_AFT_CONTAINER', 'Number');
+    const [aftBag, setAftBag] = useSimVar('L:A32NX_CARGO_AFT_BAGGAGE', 'Number');
+    const [aftBulk, setAftBulk] = useSimVar('L:A32NX_CARGO_AFT_BULK_LOOSE', 'Number');
+    const [centerCurrent] = useSimVar('FUEL TANK CENTER QUANTITY', 'Gallons');
+    const [LInnCurrent] = useSimVar('FUEL TANK LEFT MAIN QUANTITY', 'Gallons');
+    const [LOutCurrent] = useSimVar('FUEL TANK LEFT AUX QUANTITY', 'Gallons');
+    const [RInnCurrent] = useSimVar('FUEL TANK RIGHT MAIN QUANTITY', 'Gallons');
+    const [ROutCurrent] = useSimVar('FUEL TANK RIGHT AUX QUANTITY', 'Gallons');
 
     /*
     const [paxA, setPaxA] = useSimVar('L:A32NX_PAX_TOTAL_ROWS_1_6_DESIRED', 'Number');
@@ -199,15 +200,6 @@ export const Payload = () => {
     const [aftCont, setAftCont] = useSimVar('L:A32NX_CARGO_AFT_CONTAINER_DESIRED', 'Number');
     const [aftBag, setAftBag] = useSimVar('L:A32NX_CARGO_AFT_BAGGAGE_DESIRED', 'Number');
     const [aftBulk, setAftBulk] = useSimVar('L:A32NX_CARGO_FWD_BAGGAGE_CONTAINER_DESIRED', 'Number');
-    */
-
-    /*
-    const fuelWeight = SimVar.GetSimVarValue("FUEL WEIGHT PER GALLON", "kilograms");
-    const centerCurrentSimVar = SimVar.GetSimVarValue("FUEL TANK CENTER QUANTITY", "Gallons");
-    const LInnCurrentSimVar = SimVar.GetSimVarValue("FUEL TANK LEFT MAIN QUANTITY", "Gallons");
-    const LOutCurrentSimVar = SimVar.GetSimVarValue("FUEL TANK LEFT AUX QUANTITY", "Gallons");
-    const RInnCurrentSimVar = SimVar.GetSimVarValue("FUEL TANK RIGHT MAIN QUANTITY", "Gallons");
-    const ROutCurrentSimVar = SimVar.GetSimVarValue("FUEL TANK RIGHT AUX QUANTITY", "Gallons");
     */
 
     // Units
@@ -239,6 +231,10 @@ export const Payload = () => {
 
     const pax = [paxA, paxB, paxC, paxD];
     const setPax = [setPaxA, setPaxB, setPaxC, setPaxD];
+    const cargo = [fwdBag, aftCont, aftBag, aftBulk];
+    const setCargo = [setFwdBag, setAftCont, setAftBag, setAftBulk];
+    const totalPax = pax.reduce((a, b) => a + b);
+    const totalFuel = centerCurrent + LInnCurrent + LOutCurrent + RInnCurrent + ROutCurrent;
 
     const [seatMap] = useState<PaxStationInfo[]>(defaultSeatMap);
     const [cargoMap] = useState<CargoStationInfo[]>(defaultCargoMap);
@@ -296,6 +292,25 @@ export const Payload = () => {
         fillStation(Station.C, 0.28, numOfPax);
         fillStation(Station.B, 0.25, numOfPax);
         fillStation(Station.A, 1, paxRemaining);
+    };
+
+    const setTargetCargo = (numberOfPax, freight) => {
+        const bagWeight = numberOfPax * paxBagWeight;
+        const maxLoadInCargoHold = Math.round(Units.kilogramToUser(9435)); // from flight_model.cfg
+        const loadableCargoWeight = Math.min(bagWeight + parseInt(freight), maxLoadInCargoHold);
+
+        let remainingWeight = loadableCargoWeight;
+
+        async function fillCargo(station, percent, loadableCargoWeight) {
+            const cargo = Math.round(percent * loadableCargoWeight);
+            remainingWeight -= cargo;
+            setCargo[station](cargo);
+        }
+
+        fillCargo(Station.fwdBag, 0.361, loadableCargoWeight);
+        fillCargo(Station.aftBag, 0.220, loadableCargoWeight);
+        fillCargo(Station.aftCont, 0.251, loadableCargoWeight);
+        fillCargo(Station.aftBulk, 1, remainingWeight);
     };
 
     const calculateCG = (mass, moment) => {
@@ -359,7 +374,7 @@ export const Payload = () => {
             + paxD * paxWeight * seatMap[Station.D].position;
 
         const cargoTotalMass = fwdBag + aftCont + aftBag + aftBulk;
-        const cargoTotalMoment = fwdBag * cargoMap[Station.fwd].position
+        const cargoTotalMoment = fwdBag * cargoMap[Station.fwdBag].position
             + aftCont * cargoMap[Station.aftCont].position
             + aftBag * cargoMap[Station.aftBag].position
             + aftBulk * cargoMap[Station.aftBulk].position;
@@ -429,57 +444,152 @@ export const Payload = () => {
                 <div className="mb-10 ">
                     <SeatMap seatMap={seatMap} activeFlags={activeFlags} />
                 </div>
-                <div className="flex relative right-0 flex-row justify-between px-6 mt-24">
-                    {/*
-                    <Card>
-                        <table className="table-auto">
-                            <thead>
-                                <tr className="">
-                                    <th />
-                                    <th>Planned</th>
-                                    <th>Current</th>
+                <div className="flex relative right-0 flex-row justify-between px-4 mt-24 ">
+                    <Card className="pr-20 w-full col-1">
+                        <table className="w-full">
+                            <thead className="border-b">
+                                <tr className="py-2">
+                                    <th scope="col" className="px-4 pb-2 text-sm font-medium text-left" />
+                                    <th scope="col" className="px-4 pb-2 text-sm font-medium text-left">
+                                        <p>Maximum</p>
+                                    </th>
+                                    <th scope="col" className="px-4 pb-2 text-sm font-medium text-left">
+                                        <p>Planned</p>
+                                    </th>
+                                    <th scope="col" className="px-4 pb-2 text-sm font-medium text-left">
+                                        <p>Current</p>
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td>Passengers</td>
-                                    <td>8</td>
-                                    <td>140</td>
+                                <tr className="">
+                                    <td className="px-4 text-sm font-light text-center whitespace-nowrap">
+                                        <p><b>Passengers</b></p>
+                                    </td>
+                                    <td className="px-4 text-sm font-light whitespace-nowrap">
+                                        <p>{174}</p>
+                                    </td>
+                                    <td className="px-4 text-sm font-light whitespace-nowrap">
+                                        <SimpleInput
+                                            className="my-1 w-24"
+                                            number
+                                            min={0}
+                                            max={stationSize.length > 0 ? stationSize.reduce((a, b) => a + b, 0) : 999}
+                                            value={pax && pax.reduce((a, b) => a + b)}
+                                            onBlur={(x) => setTotalPax(parseInt(x))}
+                                        />
+                                    </td>
+                                    <td className="px-4 text-sm font-light whitespace-nowrap">
+                                        <p>{`${totalPax}`}</p>
+                                    </td>
                                 </tr>
-                                <tr>
-                                    <td>Cargo & Bags</td>
-                                    <td>1000 kg</td>
-                                    <td>4500 kg</td>
+                                <tr className="">
+                                    <td className="px-4 text-sm font-light text-center whitespace-nowrap">
+                                        <p><b>Payload</b></p>
+                                    </td>
+                                    <td className="px-4 text-sm font-light whitespace-nowrap">
+                                        <p>{`9435 ${usingMetric ? 'kg' : 'lb'}`}</p>
+                                    </td>
+                                    <td className="flex flex-row px-4 text-sm font-light whitespace-nowrap">
+                                        <SimpleInput
+                                            className="my-1 w-24"
+                                            number
+                                            min={0}
+                                            max={9435}
+                                            value={cargo && cargo.reduce((a, b) => a + b)}
+                                            onBlur={(x) => setTargetCargo(pax && pax.reduce((a, b) => a + b), parseInt(x))}
+                                        />
+                                    </td>
+                                    <td className="px-4 text-sm font-light whitespace-nowrap">
+                                        <p>{`${fwdBag + aftBag + aftCont + aftBulk} ${usingMetric ? 'kg' : 'lb'}`}</p>
+                                    </td>
                                 </tr>
-                                <tr>
-                                    <td>Block Fuel</td>
-                                    <td>5800 kg</td>
-                                    <td>5800 kg</td>
+                                <tr className="">
+                                    <td className="px-4 text-sm font-light text-center whitespace-nowrap">
+                                        <p><b>Block Fuel</b></p>
+                                    </td>
+                                    <td className="px-4 text-sm font-light whitespace-nowrap">
+                                        <p>6267 kg</p>
+                                    </td>
+                                    <td className="flex flex-row px-4 text-sm font-light whitespace-nowrap">
+                                        <SimpleInput
+                                            className="my-1 w-24"
+                                            number
+                                            min={0}
+                                            max={9435}
+                                            value={cargo && cargo.reduce((a, b) => a + b)}
+                                            onBlur={(x) => setTargetCargo(pax && pax.reduce((a, b) => a + b), parseInt(x))}
+                                        />
+                                    </td>
+                                    <td className="px-4 text-sm font-light whitespace-nowrap">
+                                        <p>{`${totalFuel} ${usingMetric ? 'kg' : 'lb'}`}</p>
+                                    </td>
+                                </tr>
+                                <tr className="">
+                                    <td className="px-4 text-sm font-light text-center whitespace-nowrap">
+                                        <p><b>ZFW CG</b></p>
+                                    </td>
+                                    <td className="px-4 text-sm font-light whitespace-nowrap">
+                                        <p>40 %</p>
+                                    </td>
+                                    <td className="px-4 text-sm font-light whitespace-nowrap">
+                                        <SimpleInput
+                                            className="my-1 w-24"
+                                            number
+                                            min={0}
+                                            max={stationSize.length > 0 ? stationSize.reduce((a, b) => a + b, 0) : 999}
+                                            value={zfwCg.toFixed(2)}
+                                            onBlur={(x) => setTotalPax(parseInt(x))}
+                                        />
+                                    </td>
+                                    <td className="px-4 text-sm font-light whitespace-nowrap">
+                                        <p>{`${zfwCg.toFixed(2)} %`}</p>
+                                    </td>
+                                </tr>
+                                <tr className="">
+                                    <td className="px-4 text-sm font-light text-center whitespace-nowrap">
+                                        <p><b>ZFW</b></p>
+                                    </td>
+                                    <td className="px-4 text-sm font-light whitespace-nowrap">
+                                        <p>64500 kg</p>
+                                    </td>
+                                    <td className="px-4 text-sm font-light whitespace-nowrap">
+                                        <SimpleInput
+                                            className="my-1 w-24"
+                                            number
+                                            min={0}
+                                            max={stationSize.length > 0 ? stationSize.reduce((a, b) => a + b, 0) : 999}
+                                            value={zfw.toFixed(0)}
+                                            onBlur={(x) => setTotalPax(parseInt(x))}
+                                        />
+                                    </td>
+                                    <td className="px-4 text-sm font-light whitespace-nowrap">
+                                        <p>{`${zfw.toFixed(0)} kg`}</p>
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>
                     </Card>
-                */}
-                    <div className="col-1" />
                     <div className="rounded-2xl border col-1 border-theme-accent">
-                        <BalanceWeight width={450} height={350} envelope={defaultEnvelope} points={cgPoints} />
+                        <BalanceWeight width={550} height={475} envelope={defaultEnvelope} points={cgPoints} />
                     </div>
                 </div>
             </div>
 
+            {/*
             <div className="flex overflow-hidden absolute bottom-0 left-0 flex-row rounded-2xl border border-theme-accent ">
                 <div className="py-3 px-5 space-y-4">
                     <div className="flex flex-row justify-between items-center">
                         <div className="flex flex-row items-center space-x-3">
                             <h2 className="font-medium">Boarding</h2>
-                            <p className={'text-theme-highlight' /* formatRefuelStatusClass() */}>{ `(${t('Ground.Fuel.ReadyToStart')})` /* formatRefuelStatusLabel() */ }</p>
+                            <p className="text-theme-highlight">{ `(${t('Ground.Fuel.ReadyToStart')})`}</p>
                         </div>
-                        <p>{`${t('Ground.Fuel.EstimatedDuration')}: ${0 /* calculateEta() */}`}</p>
+                        <p>{`${t('Ground.Fuel.EstimatedDuration')}: ${0}`}</p>
                     </div>
                     <div className="flex flex-row items-center space-x-12" style={{ width: '40rem' }}>
                         <div className="flex flex-row">
                             <div className="mr-8">
-                                <Label text="A">
+                             <Label text="A">
                                     <SimpleInput
                                         className="my-1 w-24"
                                         placeholder=""
@@ -527,7 +637,7 @@ export const Payload = () => {
                                 </Label>
                             </div>
                             <div className="mr-8">
-                                <Label text="Cargo">
+                            <Label text="Cargo">
                                     <div className="flex flex-row w-64">
                                         <SimpleInput
                                             className="my-1 w-24 rounded-r-none"
@@ -536,11 +646,11 @@ export const Payload = () => {
                                             min={0}
                                             max={10000}
                                             value={0}
+                                            onBlur={(x) => setCargo(parseInt(x))}
                                         />
-                                        {/* onBlur={(x) => setCargo(parseInt(x))} */}
                                         <SelectInput
                                             value={weightUnit}
-                                            className="my-1 w-20 rounded-l-none"
+                                            className="my-1 w-24 rounded-l-none"
                                             options={[
                                                 { value: 'kg', displayValue: 'kg' },
                                                 { value: 'lb', displayValue: 'lb' },
@@ -576,19 +686,19 @@ export const Payload = () => {
                         </div>
                     </div>
                 </div>
-
                 <div
-                    className={`flex justify-center items-center w-20 ${'text-theme-highlight' /* formatRefuelStatusClass() */} bg-current`}
-                    onClick={/* () => switchRefuelState() */ undefined}
+                    className={`flex justify-center items-center w-20 ${'text-theme-highlight'} bg-current`}
+                    onClick={undefined}
                 >
-                    <div className={`${/* airplaneCanRefuel() */ true ? 'text-white' : 'text-theme-unselected'}`}>
-                        <PlayFill size={50} className={/* refuelStartedByUser */ false ? 'hidden' : ''} />
-                        <StopCircleFill size={50} className={/* refuelStartedByUser */ false ? '' : 'hidden'} />
+                    <div className={`${true ? 'text-white' : 'text-theme-unselected'}`}>
+                        <PlayFill size={50} className={false ? 'hidden' : ''} />
+                        <StopCircleFill size={50} className={false ? '' : 'hidden'} />
                     </div>
                 </div>
             </div>
+            */}
 
-            <div className="flex overflow-x-hidden absolute right-6 bottom-0 z-30 flex-col justify-center items-center py-3 px-6 space-y-2 rounded-2xl border border-theme-accent">
+            <div className="flex overflow-x-hidden absolute bottom-0 left-6 z-30 flex-col justify-center items-center py-3 px-6 space-y-2 rounded-2xl border bg-theme-body border-theme-accent">
                 <h2 className="flex font-medium"> Boarding Time </h2>
 
                 <SelectGroup>

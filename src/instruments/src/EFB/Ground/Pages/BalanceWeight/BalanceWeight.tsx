@@ -144,22 +144,6 @@ export const BalanceWeight: React.FC<BalanceWeightProps> = ({ width, height, env
             drawMzfw();
             drawMlw();
             drawMtow();
-            {
-                const zfwPoints = points.mzfw;
-
-                ctx.fillStyle = base;
-                ctx.strokeStyle = alt;
-                ctx.lineWidth = 1;
-                ctx.beginPath();
-                const [mzfwCgX, mzfwCgY] = cgWeightToXY(zfwPoints.cg, zfwPoints.weight);
-                ctx.moveTo(mzfwCgX, mzfwCgY - CanvasConst.diamondHeight);
-                ctx.lineTo(mzfwCgX - CanvasConst.diamondWidth, mzfwCgY);
-                ctx.lineTo(mzfwCgX, mzfwCgY + CanvasConst.diamondHeight);
-                ctx.lineTo(mzfwCgX + CanvasConst.diamondWidth, mzfwCgY);
-                ctx.closePath();
-                ctx.fill();
-                ctx.stroke();
-            }
 
             {
                 const mlwPoints = points.mlw;
@@ -189,6 +173,22 @@ export const BalanceWeight: React.FC<BalanceWeightProps> = ({ width, height, env
                 ctx.lineTo(cgX - CanvasConst.diamondWidth, cgY);
                 ctx.lineTo(cgX, cgY + CanvasConst.diamondHeight);
                 ctx.lineTo(cgX + CanvasConst.diamondWidth, cgY);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+            }
+            {
+                const zfwPoints = points.mzfw;
+
+                ctx.fillStyle = base;
+                ctx.strokeStyle = alt;
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                const [mzfwCgX, mzfwCgY] = cgWeightToXY(zfwPoints.cg, zfwPoints.weight);
+                ctx.moveTo(mzfwCgX, mzfwCgY - CanvasConst.diamondHeight);
+                ctx.lineTo(mzfwCgX - CanvasConst.diamondWidth, mzfwCgY);
+                ctx.lineTo(mzfwCgX, mzfwCgY + CanvasConst.diamondHeight);
+                ctx.lineTo(mzfwCgX + CanvasConst.diamondWidth, mzfwCgY);
                 ctx.closePath();
                 ctx.fill();
                 ctx.stroke();
