@@ -58,11 +58,7 @@ pub(super) fn elevators(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn E
             Variable::named("ELEVATOR_DEFLECTION_DEMAND"),
             Variable::aircraft("ELEVATOR DEFLECTION PCT", "Percent", 0),
         ],
-        |values| {
-            let mean_elevator_position = (values[1] + values[0]) / 2.;
-
-            mean_elevator_position
-        },
+        |values| (values[1] + values[0]) / 2.,
         Variable::aspect("HYD_FINAL_ELEVATOR_FEEDBACK"),
     );
 
