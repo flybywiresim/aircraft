@@ -37,6 +37,7 @@ void Elac::update(double deltaTime, double simulationTime, bool faultActive, boo
   monitorSelf(faultActive);
 
   elacComputer.setExternalInputs(&modelInputs);
+  modelInputs.in.sim_data.computer_running = monitoringHealthy;
   elacComputer.step();
   modelOutputs = elacComputer.getExternalOutputs().out;
 }
@@ -45,7 +46,6 @@ void Elac::update(double deltaTime, double simulationTime, bool faultActive, boo
 void Elac::monitorSelf(bool faultActive) {
   if (faultActive || powerSupplyFault || !selfTestComplete || !modelInputs.in.discrete_inputs.elac_engaged_from_switch) {
     monitoringHealthy = false;
-    modelInputs.in.sim_data.computer_running = false;
   } else {
     monitoringHealthy = true;
   }
@@ -82,11 +82,6 @@ void Elac::monitorPowerSupply(double deltaTime, bool isPowered) {
 void Elac::updateSelfTest(double deltaTime) {
   if (selfTestTimer > 0) {
     selfTestTimer -= deltaTime;
-
-    // If the self-test sequence has just been completed, reset RAM.
-    if (selfTestTimer <= 0) {
-      modelInputs.in.sim_data.computer_running = true;
-    }
   }
   if (selfTestTimer <= 0) {
     selfTestComplete = true;
