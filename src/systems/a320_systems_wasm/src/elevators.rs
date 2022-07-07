@@ -55,8 +55,6 @@ pub(super) fn elevators(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn E
         vec![
             Variable::named("HYD_ELEVATOR_LEFT_DEFLECTION"),
             Variable::named("HYD_ELEVATOR_RIGHT_DEFLECTION"),
-            Variable::named("ELEVATOR_DEFLECTION_DEMAND"),
-            Variable::aircraft("ELEVATOR DEFLECTION PCT", "Percent", 0),
         ],
         |values| (values[1] + values[0]) / 2.,
         Variable::aspect("HYD_FINAL_ELEVATOR_FEEDBACK"),
