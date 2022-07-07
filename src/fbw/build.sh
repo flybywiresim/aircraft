@@ -130,7 +130,6 @@ clang++ \
   "${DIR}/src/Arinc429Utils.cpp" \
   "${DIR}/src/LocalVariable.cpp" \
   "${DIR}/src/InterpolatingLookupTable.cpp" \
-  "${DIR}/src/RudderTrimHandler.cpp" \
   "${DIR}/src/SpoilersHandler.cpp" \
   "${DIR}/src/ThrottleAxisMapping.cpp" \
   "${DIR}/src/CalculatedRadioReceiver.cpp" \

@@ -20,7 +20,6 @@ bool FlyByWireInterface::connect() {
   // setup handlers
   spoilersHandler = make_shared<SpoilersHandler>();
   elevatorTrimHandler = make_shared<ElevatorTrimHandler>();
-  rudderTrimHandler = make_shared<RudderTrimHandler>();
 
   // initialize failures handler
   failuresConsumer.initialize();
@@ -36,7 +35,7 @@ bool FlyByWireInterface::connect() {
 
   // connect to sim connect
   return simConnectInterface.connect(clientDataEnabled, autopilotStateMachineEnabled, autopilotLawsEnabled, flyByWireEnabled, elacDisabled,
-                                     secDisabled, facDisabled, throttleAxis, spoilersHandler, elevatorTrimHandler, rudderTrimHandler,
+                                     secDisabled, facDisabled, throttleAxis, spoilersHandler, elevatorTrimHandler,
                                      flightControlsKeyChangeAileron, flightControlsKeyChangeElevator, flightControlsKeyChangeRudder,
                                      disableXboxCompatibilityRudderAxisPlusMinus, idMinimumSimulationRate->get(),
                                      idMaximumSimulationRate->get(), limitSimulationRateByPerformance);
@@ -1243,7 +1242,7 @@ bool FlyByWireInterface::updateElac(double sampleTime, int elacIndex) {
     elacsBusOutputs[elacIndex] = elacs[elacIndex].getBusOutputs();
   }
 
-  if (oppElacIndex == elacDisabled || secDisabled != -1) {
+  if (oppElacIndex == elacDisabled || secDisabled != -1 || facDisabled != -1) {
     simConnectInterface.setClientDataElacBusInput(elacsBusOutputs[elacIndex], elacIndex);
   }
 
@@ -1641,12 +1640,20 @@ bool FlyByWireInterface::updateServoSolenoidStatus() {
                                   elacsAnalogOutputs[1].right_elev_pos_order_deg + secsAnalogOutputs[1].right_elev_pos_order_deg;
 
     SimInput simInput = simConnectInterface.getSimInput();
-    SimOutput output = {
-        (-leftElevatorCommand - rightElevatorCommand) / (2 * 30), (leftAileronCommand - rightAileronCommand) / (2 * 25),
-        -simInput.inputs[2] - (elacsBusOutputs[0].yaw_damper_command_deg.Data + elacsBusOutputs[1].yaw_damper_command_deg.Data) / 30};
+    SimOutput output = {(-leftElevatorCommand - rightElevatorCommand) / (2 * 30), (leftAileronCommand - rightAileronCommand) / (2 * 25),
+                        -simInput.inputs[2] - (facsAnalogOutputs[0].yaw_damper_order_deg + facsAnalogOutputs[1].yaw_damper_order_deg) / 30};
 
     // send data via sim connect
     if (!simConnectInterface.sendData(output)) {
+      cout << "WASM: Write data failed!" << endl;
+      return false;
+    }
+  }
+
+  SimOutputZetaTrim outputZetaTrim = {};
+  outputZetaTrim.zeta_trim_pos = -(facsAnalogOutputs[0].rudder_trim_order_deg + facsAnalogOutputs[1].rudder_trim_order_deg) / 20;
+  if (facsDiscreteOutputs[0].rudder_trim_engaged || facsDiscreteOutputs[1].rudder_trim_engaged) {
+    if (!simConnectInterface.sendData(outputZetaTrim)) {
       cout << "WASM: Write data failed!" << endl;
       return false;
     }
@@ -2380,21 +2387,6 @@ bool FlyByWireInterface::updateFlyByWire(double sampleTime) {
     idAutopilotNosewheelDemand->set(autopilotLawsOutput.Nosewheel_c);
   } else {
     idAutopilotNosewheelDemand->set(0);
-  }
-
-  SimOutputZetaTrim outputZetaTrim = {};
-  rudderTrimHandler->update(sampleTime);
-  if (flyByWireOutput.output.zeta_trim_pos_should_write) {
-    outputZetaTrim.zeta_trim_pos = flyByWireOutput.output.zeta_trim_pos;
-    rudderTrimHandler->synchronizeValue(outputZetaTrim.zeta_trim_pos);
-  } else {
-    outputZetaTrim.zeta_trim_pos = rudderTrimHandler->getPosition();
-  }
-  if (!flyByWireOutput.sim.data_computed.tracking_mode_on) {
-    if (!simConnectInterface.sendData(outputZetaTrim)) {
-      cout << "WASM: Write data failed!" << endl;
-      return false;
-    }
   }
 
   // calculate alpha max percentage

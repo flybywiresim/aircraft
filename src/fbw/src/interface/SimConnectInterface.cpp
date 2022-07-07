@@ -23,7 +23,6 @@ bool SimConnectInterface::connect(bool clientDataEnabled,
                                   const std::vector<std::shared_ptr<ThrottleAxisMapping>>& throttleAxis,
                                   std::shared_ptr<SpoilersHandler> spoilersHandler,
                                   std::shared_ptr<ElevatorTrimHandler> elevatorTrimHandler,
-                                  std::shared_ptr<RudderTrimHandler> rudderTrimHandler,
                                   double keyChangeAileron,
                                   double keyChangeElevator,
                                   double keyChangeRudder,
@@ -47,8 +46,6 @@ bool SimConnectInterface::connect(bool clientDataEnabled,
     this->spoilersHandler = spoilersHandler;
     // store elevator trim handler
     this->elevatorTrimHandler = elevatorTrimHandler;
-    // store rudder trim handler
-    this->rudderTrimHandler = rudderTrimHandler;
     // store maximum allowed simulation rate
     this->minSimulationRate = minSimulationRate;
     this->maxSimulationRate = maxSimulationRate;
@@ -1672,12 +1669,9 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
 
     case Events::RUDDER_TRIM_LEFT: {
       simInputRudderTrim.rudderTrimSwitchLeft = true;
-      rudderTrimHandler->onEventRudderTrimLeft(sampleTime);
       if (loggingFlightControlsEnabled) {
         cout << "WASM: RUDDER_TRIM_LEFT: ";
         cout << "(no data)";
-        cout << " -> ";
-        cout << rudderTrimHandler->getTargetPosition();
         cout << endl;
       }
       break;
@@ -1685,12 +1679,9 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
 
     case Events::RUDDER_TRIM_RESET: {
       simInputRudderTrim.rudderTrimReset = true;
-      rudderTrimHandler->onEventRudderTrimReset();
       if (loggingFlightControlsEnabled) {
         cout << "WASM: RUDDER_TRIM_RESET: ";
         cout << "(no data)";
-        cout << " -> ";
-        cout << rudderTrimHandler->getTargetPosition();
         cout << endl;
       }
       break;
@@ -1698,36 +1689,27 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
 
     case Events::RUDDER_TRIM_RIGHT: {
       simInputRudderTrim.rudderTrimSwitchRight = true;
-      rudderTrimHandler->onEventRudderTrimRight(sampleTime);
       if (loggingFlightControlsEnabled) {
         cout << "WASM: RUDDER_TRIM_RIGHT: ";
         cout << "(no data)";
-        cout << " -> ";
-        cout << rudderTrimHandler->getTargetPosition();
         cout << endl;
       }
       break;
     }
 
     case Events::RUDDER_TRIM_SET: {
-      rudderTrimHandler->onEventRudderTrimSet(static_cast<long>(event->dwData));
       if (loggingFlightControlsEnabled) {
         cout << "WASM: RUDDER_TRIM_SET: ";
         cout << static_cast<long>(event->dwData);
-        cout << " -> ";
-        cout << rudderTrimHandler->getTargetPosition();
         cout << endl;
       }
       break;
     }
 
     case Events::RUDDER_TRIM_SET_EX1: {
-      rudderTrimHandler->onEventRudderTrimSet(static_cast<long>(event->dwData));
       if (loggingFlightControlsEnabled) {
         cout << "WASM: RUDDER_TRIM_SET_EX1: ";
         cout << static_cast<long>(event->dwData);
-        cout << " -> ";
-        cout << rudderTrimHandler->getTargetPosition();
         cout << endl;
       }
       break;

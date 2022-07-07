@@ -460,6 +460,12 @@ class FacComputer final
     real_T RateLimiterVariableTs_InitialCondition;
     real_T DiscreteTimeIntegratorVariableTs_LowerLimit;
     real_T DiscreteTimeIntegratorVariableTs_UpperLimit;
+    real_T BitfromLabel_bit;
+    real_T BitfromLabel1_bit;
+    real_T BitfromLabel_bit_c;
+    real_T BitfromLabel1_bit_n;
+    real_T BitfromLabel3_bit;
+    real_T BitfromLabel4_bit;
     real_T CompareToConstant_const;
     real_T RateLimiterVariableTs_lo;
     real_T RateLimiterVariableTs_up;
@@ -472,9 +478,10 @@ class FacComputer final
     real_T uDLookupTable_bp01Data[11];
     real_T Saturation_UpperSat;
     real_T Saturation_LowerSat;
-    real_T Constant2_Value;
+    real_T Constant1_Value;
+    real_T Gain2_Gain;
     real_T Gain_Gain;
-    real_T Switch1_Threshold;
+    real_T Constant1_Value_a;
     real_T Delay1_InitialCondition;
     real_T Gain1_Gain;
     real_T Saturation_UpperSat_e;
@@ -487,13 +494,13 @@ class FacComputer final
     real_T Constant_Value_k;
     real_T Gain_Gain_m;
     real_T Constant_Value_b;
-    real32_T Constant1_Value;
+    real32_T Constant1_Value_k;
     real32_T Constant28_Value;
     real32_T Constant22_Value;
     real32_T Constant21_Value;
     real32_T Constant4_Value_b;
     real32_T Constant3_Value;
-    real32_T Constant2_Value_b;
+    real32_T Constant2_Value;
     real32_T Constant27_Value;
     real32_T Constant26_Value;
     real32_T Constant23_Value;
@@ -509,7 +516,6 @@ class FacComputer final
     real32_T Constant5_Value;
     real32_T Constant17_Value;
     real32_T Constant24_Value;
-    boolean_T Constant1_Value_c;
     boolean_T Logic_table[16];
     boolean_T Constant2_Value_o;
     boolean_T Constant1_Value_d;
@@ -545,7 +551,8 @@ class FacComputer final
   BlockIO_FacComputer_T FacComputer_B;
   D_Work_FacComputer_T FacComputer_DWork;
   static Parameters_FacComputer_T FacComputer_P;
-  static void FacComputer_MATLABFunction(const boolean_T rtu_u[19], real32_T *rty_y);
+  static void FacComputer_MATLABFunction(const base_arinc_429 *rtu_u, real_T rtu_bit, uint32_T *rty_y);
+  static void FacComputer_MATLABFunction_g(const boolean_T rtu_u[19], real32_T *rty_y);
 };
 
 #endif

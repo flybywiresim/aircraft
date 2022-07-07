@@ -70,6 +70,18 @@ FacComputer::Parameters_FacComputer_T FacComputer::FacComputer_P{
 
   20.0,
 
+  26.0,
+
+  26.0,
+
+  20.0,
+
+  26.0,
+
+  20.0,
+
+  26.0,
+
   0.05,
 
   -1.0,
@@ -1453,6 +1465,8 @@ FacComputer::Parameters_FacComputer_T FacComputer::FacComputer_P{
 
   0.0,
 
+  0.066666666666666666,
+
   1.0,
 
   0.0,
@@ -1524,8 +1538,6 @@ FacComputer::Parameters_FacComputer_T FacComputer::FacComputer_P{
   0.0F,
 
   0.0F,
-
-  false,
 
 
   { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
