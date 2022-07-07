@@ -144,7 +144,7 @@ const Rudder = ({ x, y }: ComponentPositionProps) => {
     }
 
     // Rudder trim
-    const [rudderTrimState] = useSimVar('RUDDER TRIM PCT', 'percent over 100', 500);
+    const [rudderTrimState] = useSimVar('RUDDER TRIM PCT', 'percent over 100', 100);
     const rudderTrimAngle = -rudderTrimState * 20;
 
     const hydraulics = useHydraulics();
@@ -172,7 +172,7 @@ const Rudder = ({ x, y }: ComponentPositionProps) => {
                 <path className="GreenLine" d="m0 151 l 0 21 l -7 0" />
             </g>
 
-            <g id="rudderCursor" transform={`rotate(${rudderAngle} 0 26)`}>
+            <g id="rudderCursor" transform={`rotate(${rudderAngle + rudderTrimAngle} 0 26)`}>
                 <path id="rudderCircle" className={hydraulicAvailableClass} d="M -9 93 A 9 9 0 0 1 9 93" />
                 <path id="rudderTail" className={hydraulicAvailableClass} d="M-9 93 l9 57 l9,-57" />
             </g>
