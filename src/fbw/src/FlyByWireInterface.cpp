@@ -1560,16 +1560,15 @@ bool FlyByWireInterface::updateFlyByWire(double sampleTime) {
   idAileronPositionLeft->set(animationAileronHandler->getPositionLeft());
   idAileronPositionRight->set(animationAileronHandler->getPositionRight());
 
-  // set elevator demand
-  idElevatorPosition->set(flyByWireOutput.output.eta_pos);
 
-  // set rudder demand
-  idRudderPosition->set(flyByWireOutput.output.zeta_pos);
-
-  // use direct signals from input when requested
-  if (idDevelopmentUseDirectLaw->get() == 1) {
-    idElevatorPosition->set(-1.0 * simInput.inputs[0]);
-    idRudderPosition->set(-1.0 * simInput.inputs[2]);
+  if (!idDevelopmentUseDirectLaw->get()) {
+    // set elevator demand
+    idElevatorPosition->set(flyByWireOutput.output.eta_pos);
+    // set rudder demand
+    idRudderPosition->set(flyByWireOutput.output.zeta_pos);
+  } else {   // use direct signals from input when requested
+      idElevatorPosition->set(-1.0 * simInput.inputs[0]);
+      idRudderPosition->set(-1.0 * simInput.inputs[2]);
   }
 
   // determine if beta target needs to be active (blue)
