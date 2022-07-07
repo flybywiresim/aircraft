@@ -41,7 +41,7 @@ pub(super) fn ailerons(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Er
 
     // AILERON POSITION FEEDBACK TO SIM
     // Here we separate ailerons from spoiler to build a unique roll torque
-    // Assymetry of elevator adds a part in roll torque
+    // Asymmetry of elevator adds a part in roll torque
     builder.map_many(
         ExecuteOn::PostTick,
         vec![
