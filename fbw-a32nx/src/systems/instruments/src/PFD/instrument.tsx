@@ -48,7 +48,7 @@ class A32NX_PFD extends BaseInstrument {
         this.simVarPublisher = new PFDSimvarPublisher(this.bus);
         this.hEventPublisher = new HEventPublisher(this.bus);
         this.arincProvider = new ArincValueProvider(this.bus);
-        this.simplaneValueProvider = new SimplaneValueProvider(this.bus);
+        this.simplaneValueProvider = new SimplaneValueProvider(this.bus, this.bus);
         this.clock = new Clock(this.bus);
         this.dmcPublisher = new DmcPublisher(this.bus);
     }

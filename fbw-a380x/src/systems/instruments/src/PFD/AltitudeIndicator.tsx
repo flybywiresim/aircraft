@@ -1,12 +1,12 @@
 import { ClockEvents, DisplayComponent, EventBus, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import { Arinc429Word } from '@shared/arinc429';
 import { VerticalMode } from '@shared/autopilot';
+import { BaroPressureMode } from 'instruments/src/PFD/shared/BaroPressureMode';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { DigitalAltitudeReadout } from './DigitalAltitudeReadout';
 import { VerticalTape } from './VerticalTape';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { ArincEventBus } from "@flybywiresim/fbw-sdk";
-import { BaroPressureMode } from 'instruments/src/PFD/shared/BaroPressureMode';
 
 const DisplayRange = 600;
 const ValueSpacing = 100;
@@ -473,7 +473,7 @@ interface AltimeterIndicatorProps {
 }
 
 class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
-    private mode = Subject.create(1);
+    private mode = Subject.create(BaroPressureMode.STD);
 
     private text = Subject.create('');
 
@@ -499,23 +499,24 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
         const sub = this.props.bus.getSubscriber<PFDSimvars>();
 
         sub.on('baroMode').whenChanged().handle((m) => {
+            console.log(m);
             if (m === 0) { // QFE
-                this.mode.set(m);
+                this.mode.set(BaroPressureMode.QFE);
                 this.stdGroup.instance.classList.add('HiddenElement');
                 this.qfeGroup.instance.classList.remove('HiddenElement');
                 this.qfeBorder.instance.classList.remove('HiddenElement');
-            } else if (m === 1) { //QNH
-                this.mode.set(m);
+            } else if (m === 1) { // QNH
+                this.mode.set(BaroPressureMode.QNH);
                 this.stdGroup.instance.classList.add('HiddenElement');
                 this.qfeGroup.instance.classList.remove('HiddenElement');
                 this.qfeBorder.instance.classList.add('HiddenElement');
-            } else if (m === 2) { // "STD"
-                this.mode.set(m);
+            } else if (m === 2 || m === 3) { // "STD"
+                this.mode.set(BaroPressureMode.STD);
                 this.stdGroup.instance.classList.remove('HiddenElement');
                 this.qfeGroup.instance.classList.add('HiddenElement');
                 this.qfeBorder.instance.classList.add('HiddenElement');
             } else {
-                this.mode.set(m);
+                this.mode.set(BaroPressureMode.STD);
                 this.stdGroup.instance.classList.add('HiddenElement');
                 this.qfeGroup.instance.classList.add('HiddenElement');
                 this.qfeBorder.instance.classList.add('HiddenElement');
@@ -559,7 +560,7 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
     }
 
     private handleBlink() {
-        if (this.mode.get() === 2) {
+        if (this.mode.get() === BaroPressureMode.STD) {
             if (this.flightPhase > 3 && this.transAltAppr > this.props.altitude.get() && this.transAltAppr !== 0) {
                 this.stdGroup.instance.classList.add('BlinkInfinite');
             } else {

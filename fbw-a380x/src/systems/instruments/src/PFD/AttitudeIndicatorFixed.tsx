@@ -170,6 +170,8 @@ class FDYawBar extends DisplayComponent<{ bus: EventBus }> {
 
     private yawRef = FSComponent.createRef<SVGPathElement>();
 
+    private visibilitySub = Subject.create('hidden');
+
     private isActive(): boolean {
         if (!this.fdActive || !(this.lateralMode === 40 || this.lateralMode === 33 || this.lateralMode === 34)) {
             return false;
@@ -180,7 +182,7 @@ class FDYawBar extends DisplayComponent<{ bus: EventBus }> {
     private setOffset() {
         const offset = -Math.max(Math.min(this.fdYawCommand, 45), -45) * 0.44;
         if (this.isActive()) {
-            this.yawRef.instance.style.visibility = 'visible';
+            this.visibilitySub.set('visible');
             this.yawRef.instance.style.transform = `translate3d(${offset}px, 0px, 0px)`;
         }
     }
@@ -190,13 +192,13 @@ class FDYawBar extends DisplayComponent<{ bus: EventBus }> {
 
         const sub = this.props.bus.getSubscriber<PFDSimvars>();
 
-        sub.on('fdYawCommand').handle((fy) => {
+        sub.on('fdYawCommand').withPrecision(2).handle((fy) => {
             this.fdYawCommand = fy;
 
             if (this.isActive()) {
                 this.setOffset();
             } else {
-                this.yawRef.instance.style.visibility = 'hidden';
+                this.visibilitySub.set('hidden');
             }
         });
 
@@ -206,7 +208,7 @@ class FDYawBar extends DisplayComponent<{ bus: EventBus }> {
             if (this.isActive()) {
                 this.setOffset();
             } else {
-                this.yawRef.instance.style.visibility = 'hidden';
+                this.visibilitySub.set('hidden');
             }
         });
 
@@ -218,7 +220,7 @@ class FDYawBar extends DisplayComponent<{ bus: EventBus }> {
                 if (this.isActive()) {
                     this.setOffset();
                 } else {
-                    this.yawRef.instance.style.visibility = 'hidden';
+                    this.visibilitySub.set('hidden');
                 }
             }
         });
@@ -230,7 +232,7 @@ class FDYawBar extends DisplayComponent<{ bus: EventBus }> {
                 if (this.isActive()) {
                     this.setOffset();
                 } else {
-                    this.yawRef.instance.style.visibility = 'hidden';
+                    this.visibilitySub.set('hidden');
                 }
             }
         });
@@ -238,7 +240,7 @@ class FDYawBar extends DisplayComponent<{ bus: EventBus }> {
 
     render(): VNode {
         return (
-            <path ref={this.yawRef} id="GroundYawSymbol" class="NormalStroke Green" d="m67.899 82.536v13.406h2.0147v-13.406l-1.0074-1.7135z" />
+            <path visibility={this.visibilitySub} ref={this.yawRef} id="GroundYawSymbol" class="NormalStroke Green" d="m67.899 82.536v13.406h2.0147v-13.406l-1.0074-1.7135z" />
         );
     }
 }
