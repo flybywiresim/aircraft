@@ -25,13 +25,16 @@ export interface PaxStationInfo {
     name: string,
     rows: RowInfo[],
     simVar: string,
+    index: number,
     stationIndex: number,
     position: number,
 }
 
 export interface CargoStationInfo {
     name: string,
+    weight: number,
     simVar: string,
+    index: number,
     stationIndex: number,
     position: number,
 }

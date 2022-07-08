@@ -1,5 +1,6 @@
 import { usePersistentProperty } from '@instruments/common/persistence';
 import { useSimVar } from '@instruments/common/simVars';
+import { Units } from '@shared/units';
 import React, { useEffect, useRef, useState } from 'react';
 import { CanvasConst, PerformanceEnvelope, CgPoints } from './Constants';
 
@@ -11,6 +12,7 @@ interface BalanceWeightProps {
 }
 
 export const BalanceWeight: React.FC<BalanceWeightProps> = ({ width, height, envelope, points }) => {
+    const { usingMetric } = Units;
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [ctx, setCtx] = useState<CanvasRenderingContext2D | null>(null);
 
@@ -139,60 +141,63 @@ export const BalanceWeight: React.FC<BalanceWeightProps> = ({ width, height, env
                 ctx.stroke();
             };
 
+            const drawPoints = () => {
+                {
+                    const mlwPoints = points.mlw;
+
+                    ctx.fillStyle = secondary;
+                    ctx.strokeStyle = alt;
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    const [cgX, cgY] = cgWeightToXY(mlwPoints.cg, mlwPoints.weight);
+                    ctx.moveTo(cgX, cgY - CanvasConst.diamondHeight);
+                    ctx.lineTo(cgX - CanvasConst.diamondWidth, cgY);
+                    ctx.lineTo(cgX, cgY + CanvasConst.diamondHeight);
+                    ctx.lineTo(cgX + CanvasConst.diamondWidth, cgY);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.stroke();
+                }
+                {
+                    const mtowPoints = points.mtow;
+
+                    ctx.fillStyle = primary;
+                    ctx.strokeStyle = alt;
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    const [cgX, cgY] = cgWeightToXY(mtowPoints.cg, mtowPoints.weight);
+                    ctx.moveTo(cgX, cgY - CanvasConst.diamondHeight);
+                    ctx.lineTo(cgX - CanvasConst.diamondWidth, cgY);
+                    ctx.lineTo(cgX, cgY + CanvasConst.diamondHeight);
+                    ctx.lineTo(cgX + CanvasConst.diamondWidth, cgY);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.stroke();
+                }
+                {
+                    const zfwPoints = points.mzfw;
+
+                    ctx.fillStyle = base;
+                    ctx.strokeStyle = alt;
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    const [mzfwCgX, mzfwCgY] = cgWeightToXY(zfwPoints.cg, zfwPoints.weight);
+                    ctx.moveTo(mzfwCgX, mzfwCgY - CanvasConst.diamondHeight);
+                    ctx.lineTo(mzfwCgX - CanvasConst.diamondWidth, mzfwCgY);
+                    ctx.lineTo(mzfwCgX, mzfwCgY + CanvasConst.diamondHeight);
+                    ctx.lineTo(mzfwCgX + CanvasConst.diamondWidth, mzfwCgY);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.stroke();
+                }
+            };
+
             drawWeightLines();
             drawCgLines();
             drawMzfw();
             drawMlw();
             drawMtow();
-
-            {
-                const mlwPoints = points.mlw;
-
-                ctx.fillStyle = secondary;
-                ctx.strokeStyle = alt;
-                ctx.lineWidth = 1;
-                ctx.beginPath();
-                const [cgX, cgY] = cgWeightToXY(mlwPoints.cg, mlwPoints.weight);
-                ctx.moveTo(cgX, cgY - CanvasConst.diamondHeight);
-                ctx.lineTo(cgX - CanvasConst.diamondWidth, cgY);
-                ctx.lineTo(cgX, cgY + CanvasConst.diamondHeight);
-                ctx.lineTo(cgX + CanvasConst.diamondWidth, cgY);
-                ctx.closePath();
-                ctx.fill();
-                ctx.stroke();
-            }
-            {
-                const mtowPoints = points.mtow;
-
-                ctx.fillStyle = primary;
-                ctx.strokeStyle = alt;
-                ctx.lineWidth = 1;
-                ctx.beginPath();
-                const [cgX, cgY] = cgWeightToXY(mtowPoints.cg, mtowPoints.weight);
-                ctx.moveTo(cgX, cgY - CanvasConst.diamondHeight);
-                ctx.lineTo(cgX - CanvasConst.diamondWidth, cgY);
-                ctx.lineTo(cgX, cgY + CanvasConst.diamondHeight);
-                ctx.lineTo(cgX + CanvasConst.diamondWidth, cgY);
-                ctx.closePath();
-                ctx.fill();
-                ctx.stroke();
-            }
-            {
-                const zfwPoints = points.mzfw;
-
-                ctx.fillStyle = base;
-                ctx.strokeStyle = alt;
-                ctx.lineWidth = 1;
-                ctx.beginPath();
-                const [mzfwCgX, mzfwCgY] = cgWeightToXY(zfwPoints.cg, zfwPoints.weight);
-                ctx.moveTo(mzfwCgX, mzfwCgY - CanvasConst.diamondHeight);
-                ctx.lineTo(mzfwCgX - CanvasConst.diamondWidth, mzfwCgY);
-                ctx.lineTo(mzfwCgX, mzfwCgY + CanvasConst.diamondHeight);
-                ctx.lineTo(mzfwCgX + CanvasConst.diamondWidth, mzfwCgY);
-                ctx.closePath();
-                ctx.fill();
-                ctx.stroke();
-            }
+            drawPoints();
         }
     };
 
@@ -227,8 +232,8 @@ export const BalanceWeight: React.FC<BalanceWeightProps> = ({ width, height, env
 
     // TODO FIXME: Make Dynamic
     const mtow = { transform: `translateX(${(actualCg < 32 ? 0.65 : 0.2) * width}px) translateY(${height * 0.02}px)` };
-    const mlw = { transform: `translateX(${(actualCg < 32 ? 0.65 : 0.2) * width}px) translateY(${height * 0.2}px)` };
-    const mzfw = { transform: `translateX(${(actualCg < 32 ? 0.65 : 0.2) * width}px) translateY(${height * 0.275}px)` };
+    const mlw = { transform: `translateX(${(actualCg < 32 ? 0.65 : 0.2) * width}px) translateY(${height * 0.22}px)` };
+    const mzfw = { transform: `translateX(${(actualCg < 32 ? 0.65 : 0.2) * width}px) translateY(${height * 0.29}px)` };
 
     const cgRow1 = { transform: `translateX(${0.02 * width}px) translateY(${height * -0.1}px)` };
     const cgRow2 = { transform: `translateX(${0.2 * width}px) translateY(${height * -0.1}px)` };
@@ -237,34 +242,36 @@ export const BalanceWeight: React.FC<BalanceWeightProps> = ({ width, height, env
     const cgRow5 = { transform: `translateX(${0.74 * width}px) translateY(${height * -0.1}px)` };
     const cgRow6 = { transform: `translateX(${0.92 * width}px) translateY(${height * -0.1}px)` };
 
-    const wRow1 = { transform: `translateX(${-0.065 * width}px) translateY(${height * -0.04}px)` };
-    const wRow2 = { transform: `translateX(${-0.065 * width}px) translateY(${height * 0.175}px)` };
-    const wRow3 = { transform: `translateX(${-0.065 * width}px) translateY(${height * 0.39}px)` };
-    const wRow4 = { transform: `translateX(${-0.065 * width}px) translateY(${height * 0.605}px)` };
-    const wRow5 = { transform: `translateX(${-0.065 * width}px) translateY(${height * 0.82}px)` };
+    const wRow1 = { transform: `translateX(${-0.1 * width}px) translateY(${height * -0.01}px)` };
+    const wRow2 = { transform: `translateX(${-0.1 * width}px) translateY(${height * 0.21}px)` };
+    const wRow3 = { transform: `translateX(${-0.1 * width}px) translateY(${height * 0.43}px)` };
+    const wRow4 = { transform: `translateX(${-0.1 * width}px) translateY(${height * 0.65}px)` };
+    const wRow5 = { transform: `translateX(${-0.1 * width}px) translateY(${height * 0.87}px)` };
+    const wUnits = { transform: `translateX(${-0.05 * width}px) translateY(${height * 0.95}px)` };
 
     return (
         <div>
             <canvas ref={canvasRef} />
-            <text className="font-medium">
-                <p className="absolute top-0" style={cgRow1}>15%</p>
-                <p className="absolute top-0" style={cgRow2}>20%</p>
-                <p className="absolute top-0" style={cgRow3}>25%</p>
-                <p className="absolute top-0" style={cgRow4}>30%</p>
-                <p className="absolute top-0" style={cgRow5}>35%</p>
-                <p className="absolute top-0" style={cgRow6}>40%</p>
+            <text className="text-sm font-medium">
+                <text className="absolute top-0" style={cgRow1}>15%</text>
+                <text className="absolute top-0" style={cgRow2}>20%</text>
+                <text className="absolute top-0" style={cgRow3}>25%</text>
+                <text className="absolute top-0" style={cgRow4}>30%</text>
+                <text className="absolute top-0" style={cgRow5}>35%</text>
+                <text className="absolute top-0" style={cgRow6}>40%</text>
 
-                <p className="absolute top-0" style={wRow1}>80</p>
-                <p className="absolute top-0" style={wRow2}>70</p>
-                <p className="absolute top-0" style={wRow3}>60</p>
-                <p className="absolute top-0" style={wRow4}>50</p>
-                <p className="absolute top-0" style={wRow5}>40</p>
+                <text className="absolute top-0" style={wRow1}>{Units.kilogramToUser(80000)}</text>
+                <text className="absolute top-0" style={wRow2}>{Units.kilogramToUser(70000)}</text>
+                <text className="absolute top-0" style={wRow3}>{Units.kilogramToUser(60000)}</text>
+                <text className="absolute top-0" style={wRow4}>{Units.kilogramToUser(50000)}</text>
+                <text className="absolute top-0" style={wRow5}>{Units.kilogramToUser(40000)}</text>
+                <text className="absolute top-0" style={wUnits}>{usingMetric ? 'kg' : 'lb'}</text>
 
             </text>
-            <text className="font-medium">
-                <p className="absolute top-0 text-theme-highlight" style={mtow}>MTOW</p>
-                <p className="absolute top-0 text-colors-lime-500" style={mlw}>MLDW</p>
-                <p className="absolute top-0 text-theme-text" style={mzfw}>MZFW</p>
+            <text className="font-medium text-md">
+                <text className="absolute top-0 text-theme-highlight" style={mtow}>MTOW</text>
+                <text className="absolute top-0 text-colors-lime-500" style={mlw}>MLW</text>
+                <text className="absolute top-0 text-theme-text" style={mzfw}>MZFW</text>
             </text>
         </div>
     );

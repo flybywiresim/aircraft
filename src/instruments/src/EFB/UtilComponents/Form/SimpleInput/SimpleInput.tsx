@@ -87,7 +87,6 @@ export const SimpleInput = (props: PropsWithChildren<SimpleInputProps>) => {
 
                 if (inputRef.current.getBoundingClientRect().bottom > spaceBeforeKeyboard) {
                     const offset = inputRef.current.getBoundingClientRect().bottom - spaceBeforeKeyboard;
-                    console.log('offset', offset);
 
                     dispatch(setOffsetY(offset));
                 }

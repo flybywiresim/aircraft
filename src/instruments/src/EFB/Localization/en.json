@@ -112,6 +112,25 @@
     "Title": "Failures"
   },
   "Ground": {
+    "Payload": {
+      "Passengers": "Passengers",
+      "Cargo": "Cargo",
+      "ZFW": "ZFW",
+      "ZFWCG": "ZFWCG",
+      "Planned": "Planned",
+      "Current": "Current",
+      "BoardingTime": "Boarding Time",
+      "TT": {
+        "MaxPassengers": "Maximum Passengers",
+        "MaxCargo": "Maximum Cargo",
+        "MaxZFW": "Maximum ZFW",
+        "MaxZFWCG": "Maximum ZFWCG",
+        "PerPaxWeight": "Per Passenger Weight",
+        "PerPaxBagWeight": "Per Passenger Bag Weight",
+        "FillPayloadFromSimbrief": "Fill Payload Information from Simbrief",
+        "StartBoarding": "Begin Boarding"
+      }
+    },
     "Fuel": {
       "CenterTank": "Center Tank",
       "Completed": "Completed",
