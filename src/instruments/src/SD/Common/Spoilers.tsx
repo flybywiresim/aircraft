@@ -47,6 +47,7 @@ const Spoiler = ({ x, y, number, side, fcdcWord3, fcdcWord4 }: SpoilerProps) => 
     return (
         <SvgGroup x={x} y={y}>
             <path
+                visibility={isPosValid ? 'visible' : 'hidden'}
                 className={`${isAvail ? 'GreenLine' : 'AmberLine'}`}
                 d={`M 0 0 l ${side === 'right' ? '-' : ''}19 0`}
             />
@@ -62,9 +63,9 @@ const Spoiler = ({ x, y, number, side, fcdcWord3, fcdcWord4 }: SpoilerProps) => 
             />
             <text
                 x={side === 'left' ? 12 : -7}
-                y={-4}
+                y={isPosValid ? -4 : -12}
                 visibility={isAvail && isPosValid ? 'hidden' : 'visible'}
-                className="Amber Huge Center"
+                className={`Amber ${isPosValid ? 'Huge' : 'Large'} Center`}
             >
                 {isPosValid ? number : 'X'}
             </text>
