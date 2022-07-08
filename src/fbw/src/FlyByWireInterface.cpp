@@ -1507,14 +1507,17 @@ bool FlyByWireInterface::updateFac(double sampleTime, int facIndex) {
   facs[facIndex].modelInputs.in.analog_inputs.rudder_trim_position_deg = 0;
   facs[facIndex].modelInputs.in.analog_inputs.rudder_travel_lim_position_deg = 0;
 
-  facs[facIndex].modelInputs.in.bus_inputs.fmgc_own_bus = {};
-  facs[facIndex].modelInputs.in.bus_inputs.fmgc_opp_bus = {};
+  facs[facIndex].modelInputs.in.bus_inputs.fac_opp_bus = facsBusOutputs[oppFacIndex];
   facs[facIndex].modelInputs.in.bus_inputs.adr_own_bus = facIndex == 0 ? adirsBusOutputs[0].adrBus : adirsBusOutputs[1].adrBus;
   facs[facIndex].modelInputs.in.bus_inputs.adr_opp_bus = facIndex == 0 ? adirsBusOutputs[1].adrBus : adirsBusOutputs[0].adrBus;
   facs[facIndex].modelInputs.in.bus_inputs.adr_3_bus = adirsBusOutputs[2].adrBus;
   facs[facIndex].modelInputs.in.bus_inputs.ir_own_bus = facIndex == 0 ? adirsBusOutputs[0].irsBus : adirsBusOutputs[1].irsBus;
   facs[facIndex].modelInputs.in.bus_inputs.ir_opp_bus = facIndex == 0 ? adirsBusOutputs[1].irsBus : adirsBusOutputs[0].irsBus;
   facs[facIndex].modelInputs.in.bus_inputs.ir_3_bus = adirsBusOutputs[2].irsBus;
+  facs[facIndex].modelInputs.in.bus_inputs.fmgc_own_bus = {};
+  facs[facIndex].modelInputs.in.bus_inputs.fmgc_opp_bus = {};
+  facs[facIndex].modelInputs.in.bus_inputs.sfcc_own_bus = sfccBusOutputs[facIndex];
+  facs[facIndex].modelInputs.in.bus_inputs.lgciu_own_bus = lgciuBusOutputs[facIndex];
   facs[facIndex].modelInputs.in.bus_inputs.elac_1_bus = elacsBusOutputs[0];
   facs[facIndex].modelInputs.in.bus_inputs.elac_2_bus = elacsBusOutputs[1];
 
