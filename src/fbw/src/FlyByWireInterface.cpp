@@ -1152,7 +1152,7 @@ bool FlyByWireInterface::updateElac(double sampleTime, int elacIndex) {
 
   elacs[elacIndex].modelInputs.in.sim_data.slew_on = simData.slew_on;
   elacs[elacIndex].modelInputs.in.sim_data.pause_on = pauseDetected;
-  elacs[elacIndex].modelInputs.in.sim_data.tracking_mode_on_override = false;
+  elacs[elacIndex].modelInputs.in.sim_data.tracking_mode_on_override = idExternalOverride->get() == 1;
   elacs[elacIndex].modelInputs.in.sim_data.tailstrike_protection_on = tailstrikeProtectionEnabled;
 
   elacs[elacIndex].modelInputs.in.discrete_inputs.ground_spoilers_active_1 = secsDiscreteOutputs[0].ground_spoiler_out;
@@ -1262,7 +1262,7 @@ bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
 
   secs[secIndex].modelInputs.in.sim_data.slew_on = simData.slew_on;
   secs[secIndex].modelInputs.in.sim_data.pause_on = pauseDetected;
-  secs[secIndex].modelInputs.in.sim_data.tracking_mode_on_override = false;
+  secs[secIndex].modelInputs.in.sim_data.tracking_mode_on_override = idExternalOverride->get() == 1;
   secs[secIndex].modelInputs.in.sim_data.tailstrike_protection_on = tailstrikeProtectionEnabled;
 
   secs[secIndex].modelInputs.in.discrete_inputs.sec_engaged_from_switch = idSecPushbuttonPressed[secIndex]->get();
@@ -1474,7 +1474,7 @@ bool FlyByWireInterface::updateFac(double sampleTime, int facIndex) {
 
   facs[facIndex].modelInputs.in.sim_data.slew_on = simData.slew_on;
   facs[facIndex].modelInputs.in.sim_data.pause_on = pauseDetected;
-  facs[facIndex].modelInputs.in.sim_data.tracking_mode_on_override = false;
+  facs[facIndex].modelInputs.in.sim_data.tracking_mode_on_override = idExternalOverride->get() == 1;
   facs[facIndex].modelInputs.in.sim_data.tailstrike_protection_on = tailstrikeProtectionEnabled;
 
   facs[facIndex].modelInputs.in.discrete_inputs.ap_own_engaged =
