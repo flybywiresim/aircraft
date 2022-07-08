@@ -2340,14 +2340,20 @@ struct A320HydraulicCircuitController {
     engine_number: Option<usize>,
     should_open_fire_shutoff_valve: bool,
     should_open_leak_measurement_valve: bool,
+    cargo_door_in_use: DelayedFalseLogicGate,
 }
 impl A320HydraulicCircuitController {
+    const DELAY_TO_REOPEN_LEAK_VALVE_AFTER_CARGO_DOOR_USE: Duration = Duration::from_secs(15);
+
     fn new(engine_number: Option<usize>, circuit_id: HydraulicColor) -> Self {
         Self {
             circuit_id,
             engine_number,
             should_open_fire_shutoff_valve: true,
             should_open_leak_measurement_valve: true,
+            cargo_door_in_use: DelayedFalseLogicGate::new(
+                Self::DELAY_TO_REOPEN_LEAK_VALVE_AFTER_CARGO_DOOR_USE,
+            ),
         }
     }
 
@@ -2358,24 +2364,28 @@ impl A320HydraulicCircuitController {
         overhead_panel: &A320HydraulicOverheadPanel,
         yellow_epump_controller: &A320YellowElectricPumpController,
     ) {
+        self.cargo_door_in_use.update(
+            context,
+            yellow_epump_controller.should_pressurise_for_cargo_door_operation(),
+        );
+
         if let Some(eng_number) = self.engine_number {
             self.should_open_fire_shutoff_valve = !engine_fire_push_buttons.is_released(eng_number);
         }
 
-        self.update_leak_measurement_valve(context, overhead_panel, yellow_epump_controller);
+        self.update_leak_measurement_valve(context, overhead_panel);
     }
 
     fn update_leak_measurement_valve(
         &mut self,
         context: &UpdateContext,
         overhead_panel: &A320HydraulicOverheadPanel,
-        yellow_epump_controller: &A320YellowElectricPumpController,
     ) {
         let measurement_valve_open_demand_raw = match &mut self.circuit_id {
             HydraulicColor::Green => overhead_panel.green_leak_measurement_valve_is_on(),
             HydraulicColor::Yellow => {
                 overhead_panel.yellow_leak_measurement_valve_is_on()
-                    && !yellow_epump_controller.should_pressurise_for_cargo_door_operation()
+                    && !self.cargo_door_in_use.output()
             }
             HydraulicColor::Blue => overhead_panel.blue_leak_measurement_valve_is_on(),
         };
@@ -10520,6 +10530,34 @@ mod tests {
             assert!(test_bed.get_right_elevator_position().get::<ratio>() < 0.45);
             assert!(test_bed.get_left_elevator_position().get::<ratio>() > 0.35);
             assert!(test_bed.get_right_elevator_position().get::<ratio>() > 0.35);
+        }
+
+        #[test]
+        fn leak_meas_valve_opens_after_yellow_pump_auto_shutdown_plus_a_delay_and_elevators_stay_drooped_down(
+        ) {
+            let mut test_bed = test_bed_on_ground_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
+
+            test_bed = test_bed
+                .open_fwd_cargo_door()
+                .run_waiting_for(Duration::from_secs_f64(45.));
+
+            // Cargo door no more powering yellow epump yet valve is still closed
+            assert!(!test_bed.is_yellow_leak_meas_valve_commanded_open());
+            assert!(!test_bed.query(|a| a.is_cargo_powering_yellow_epump()));
+
+            // Only reopens after a delay
+            test_bed = test_bed.run_waiting_for(
+                A320HydraulicCircuitController::DELAY_TO_REOPEN_LEAK_VALVE_AFTER_CARGO_DOOR_USE,
+            );
+            assert!(test_bed.is_yellow_leak_meas_valve_commanded_open());
+
+            // Check elevators did stay drooped down after valve reopening
+            assert!(test_bed.get_left_elevator_position().get::<ratio>() < 0.1);
+            assert!(test_bed.get_right_elevator_position().get::<ratio>() < 0.1);
         }
     }
 }
