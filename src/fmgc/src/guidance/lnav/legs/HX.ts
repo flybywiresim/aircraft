@@ -14,6 +14,8 @@ import { XFLeg } from '@fmgc/guidance/lnav/legs/XF';
 import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
 import { EntryState, HoldEntryTransition } from '@fmgc/guidance/lnav/transitions/HoldEntryTransition';
 import { PathVector, PathVectorType } from '../PathVector';
+import { GeometryNdSymbol, NdSymbolTypeFlags } from '@shared/NavigationDisplay';
+import { EfisSymbols } from '@fmgc/efis/EfisSymbols';
 
 interface HxGeometry {
     fixA: LatLongAlt,
@@ -96,6 +98,16 @@ abstract class HXLeg extends XFLeg {
 
     get ident(): string {
         return this.fix.ident;
+    }
+
+    get mapSymbols(): GeometryNdSymbol[] {
+        return [{
+            databaseId: this.fix.icao,
+            ident: this.fix.ident,
+            location: this.fix.infos.coordinates,
+            altConstraints: EfisSymbols.mapAltConstraintsFromMetadata(this.metadata.altitudeConstraint),
+            speedConstraint: EfisSymbols.mapSpeedConstraintFromMetadata(this.metadata.speedConstraint),
+        }];
     }
 
     /**

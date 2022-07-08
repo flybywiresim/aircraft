@@ -13,6 +13,8 @@ import { IFLeg } from '@fmgc/guidance/lnav/legs/IF';
 import { distanceTo } from 'msfs-geo';
 import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
 import { PathVector, PathVectorType } from '../PathVector';
+import { GeometryNdSymbol, NdSymbolTypeFlags } from '@shared/NavigationDisplay';
+import { EfisSymbols } from '@fmgc/efis/EfisSymbols';
 
 export class CALeg extends Leg {
     public estimatedTermination: Coordinates | undefined;
@@ -39,6 +41,17 @@ export class CALeg extends Leg {
 
     get ident(): string {
         return Math.round(this.altitude).toString();
+    }
+
+    get mapSymbols(): GeometryNdSymbol[] {
+        const ident = this.ident;
+        return [{
+            databaseId: EfisSymbols.tempDatabaseId(ident),
+            ident,
+            location: this.estimatedTermination,
+            altConstraints: [['+', this.altitude]],
+            speedConstraint: this.metadata.speedConstraint ? this.metadata.speedConstraint.speed : undefined,
+        }];
     }
 
     getPathStartPoint(): Coordinates | undefined {

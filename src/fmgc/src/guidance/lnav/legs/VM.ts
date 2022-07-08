@@ -9,6 +9,7 @@ import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
 import { PathVector, PathVectorType } from '@fmgc/guidance/lnav/PathVector';
 import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
+import { GeometryNdSymbol } from '@shared/NavigationDisplay';
 
 /**
  * Temporary - better solution is just to have an `InfiniteLine` vector...
@@ -36,7 +37,9 @@ export class VMLeg extends Leg {
         return 'MANUAL';
     }
 
-    displayedOnMap = false;
+    get mapSymbols(): GeometryNdSymbol[] {
+        return [];
+    }
 
     getPathStartPoint(): Coordinates | undefined {
         return this.inboundGuidable?.getPathEndPoint();

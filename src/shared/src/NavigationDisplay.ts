@@ -46,28 +46,31 @@ export enum NdSymbolTypeFlags {
     PwpTopOfDescent = 1 << 17,
     PwpCdaFlap1 = 1 << 18,
     PwpCdaFlap2 = 1 << 19,
-    FlightPlanVectorLine = 1 << 20,
-    FlightPlanVectorArc = 1 << 21,
-    FlightPlanVectorDebugPoint = 1 << 22,
-    ActiveFlightPlanVector = 1 << 23,
-    CourseReversalLeft = 1 << 24,
-    CourseReversalRight = 1 << 25,
+    CourseReversalLeft = 1 << 20,
+    CourseReversalRight = 1 << 21,
 }
 
-export interface NdSymbol {
+export interface BaseNdSymbol {
     databaseId: string,
     ident: string,
     location: Coordinates,
-    direction?: number, // true
-    length?: number, // nautical miles
-    lineEnd?: Coordinates,
-    arcRadius?: number,
-    arcSweepAngle?: Degrees,
-    arcEnd?: Coordinates,
     type: NdSymbolTypeFlags,
+    /** direction of runway or symbol, true degrees */
+    direction?: number,
+    /** runway length in metres */
+    length?: number,
+}
+
+export interface NdSymbol extends BaseNdSymbol {
     constraints?: string[],
+    // TODO factor these out into fix info symbol
     radials?: number[],
     radii?: number[],
+}
+
+export interface GeometryNdSymbol extends Omit<BaseNdSymbol, 'type'> {
+    altConstraints?: [string, number][],
+    speedConstraint?: number,
 }
 
 /**

@@ -16,6 +16,8 @@ import { DmeArcTransition } from '@fmgc/guidance/lnav/transitions/DmeArcTransiti
 import { distanceTo } from 'msfs-geo';
 import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
 import { PathVector, PathVectorType } from '../PathVector';
+import { GeometryNdSymbol } from '@shared/NavigationDisplay';
+import { EfisSymbols } from '@fmgc/efis/EfisSymbols';
 
 export class CILeg extends Leg {
     private computedPath: PathVector[] = [];
@@ -43,6 +45,16 @@ export class CILeg extends Leg {
 
     get ident(): string {
         return 'INTCPT';
+    }
+
+    get mapSymbols(): GeometryNdSymbol[] {
+        return [{
+            databaseId: EfisSymbols.tempDatabaseId(this.nextLeg.ident),
+            ident: this.ident,
+            location: this.intercept,
+            altConstraints: EfisSymbols.mapAltConstraintsFromMetadata(this.metadata.altitudeConstraint),
+            speedConstraint: EfisSymbols.mapSpeedConstraintFromMetadata(this.metadata.speedConstraint),
+        }];
     }
 
     getPathStartPoint(): Coordinates | undefined {

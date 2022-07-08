@@ -3,6 +3,7 @@ import { arcLength, pointOnArc, pointOnCourseToFix } from '@fmgc/guidance/lnav/C
 
 export enum PathVectorType {
     Line,
+    SemiInfiniteLine,
     Arc,
     DebugPoint,
 }
@@ -29,6 +30,12 @@ export interface LinePathVector {
     endPoint: Coordinates,
 }
 
+export interface SemiInfiniteLinePathVector {
+    type: PathVectorType.SemiInfiniteLine,
+    startPoint: Coordinates,
+    course: DegreesTrue,
+}
+
 export interface DebugPointPathVector {
     type: PathVectorType.DebugPoint,
     startPoint: Coordinates,
@@ -36,7 +43,7 @@ export interface DebugPointPathVector {
     colour?: DebugPointColour,
 }
 
-export type PathVector = LinePathVector | ArcPathVector | DebugPointPathVector
+export type PathVector = LinePathVector | SemiInfiniteLinePathVector | ArcPathVector | DebugPointPathVector
 
 export function pathVectorLength(vector: PathVector) {
     if (vector.type === PathVectorType.Line) {
@@ -56,6 +63,8 @@ export function pathVectorValid(vector: PathVector) {
     switch (vector.type) {
     case PathVectorType.Line:
         return !!(vector.startPoint?.lat && vector.endPoint?.lat);
+    case PathVectorType.SemiInfiniteLine:
+        return !!(vector.startPoint?.lat && vector.course);
     case PathVectorType.Arc:
         return !!(vector.endPoint?.lat && vector.centrePoint?.lat && vector.sweepAngle);
     case PathVectorType.DebugPoint:

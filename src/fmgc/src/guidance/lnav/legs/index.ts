@@ -5,7 +5,7 @@
 
 import { HALeg, HFLeg, HMLeg } from '@fmgc/guidance/lnav/legs/HX';
 import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
-import { TurnDirection } from '@fmgc/types/fstypes/FSEnums';
+import { AltitudeDescriptor, TurnDirection } from '@fmgc/types/fstypes/FSEnums';
 
 export enum AltitudeConstraintType {
     at,
@@ -42,19 +42,22 @@ export function getAltitudeConstraintFromWaypoint(wp: WayPoint): AltitudeConstra
         ac.altitude1 = wp.legAltitude1;
         ac.altitude2 = undefined;
         switch (wp.legAltitudeDescription) {
-        case 1:
+        case AltitudeDescriptor.At:
             ac.type = AltitudeConstraintType.at;
             break;
-        case 2:
+        case AltitudeDescriptor.AtOrAbove:
             ac.type = AltitudeConstraintType.atOrAbove;
             break;
-        case 3:
+        case AltitudeDescriptor.AtOrBelow:
             ac.type = AltitudeConstraintType.atOrBelow;
             break;
-        case 4:
+        case AltitudeDescriptor.Between:
             ac.type = AltitudeConstraintType.range;
             ac.altitude2 = wp.legAltitude2;
             break;
+        case AltitudeDescriptor.C:
+            ac.type = AltitudeConstraintType.atOrAbove;
+            ac.altitude1 = wp.legAltitude2;
         default:
             break;
         }

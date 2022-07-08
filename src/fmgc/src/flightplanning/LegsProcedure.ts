@@ -505,9 +505,6 @@ export class LegsProcedure {
       const coordinates = GeoMath.relativeBearingDistanceToCoords(course, 1, prevLeg.infos.coordinates);
 
       const waypoint = this.buildWaypoint(FixNamingScheme.vector(), coordinates);
-      waypoint.isVectors = true;
-      waypoint.endsInDiscontinuity = true;
-      waypoint.discontinuityCanBeCleared = false;
 
       return waypoint;
   }

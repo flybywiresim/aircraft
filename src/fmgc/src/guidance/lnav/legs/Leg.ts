@@ -9,6 +9,7 @@ import { Guidable } from '@fmgc/guidance/Guidable';
 import { distanceTo } from 'msfs-geo';
 import { TurnDirection } from '@fmgc/types/fstypes/FSEnums';
 import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
+import { GeometryNdSymbol } from '@shared/NavigationDisplay';
 
 export abstract class Leg extends Guidable {
     segment: SegmentType;
@@ -26,8 +27,6 @@ export abstract class Leg extends Guidable {
     abstract get ident(): string
 
     isNull = false
-
-    displayedOnMap = true
 
     predictedTas: Knots
 
@@ -61,4 +60,6 @@ export abstract class Leg extends Guidable {
     get overflyTermFix(): boolean {
         return false;
     }
+
+    abstract get mapSymbols(): GeometryNdSymbol[];
 }
