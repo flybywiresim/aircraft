@@ -496,18 +496,14 @@ FcdcBus Fcdc::getBusOutputs() {
   output.efcsStatus1.setBit(28, discreteInputs.oppFcdcFailed);
   output.efcsStatus1.setBit(29, !discreteInputs.sec3Valid);
 
-  bool leftElev1Fault = (!discreteInputs.elac1Valid && !discreteInputs.sec1Valid) ||
-                        bitFromValueOr(busInputs.elac1.discrete_status_word_1, 13, false) ||
-                        bitFromValueOr(busInputs.sec1.discrete_status_word_1, 13, false);
-  bool leftElev2Fault = (!discreteInputs.elac2Valid && !discreteInputs.sec2Valid) ||
-                        bitFromValueOr(busInputs.elac2.discrete_status_word_1, 13, false) ||
-                        bitFromValueOr(busInputs.sec2.discrete_status_word_1, 13, false);
-  bool rightElev1Fault = (!discreteInputs.elac1Valid && !discreteInputs.sec1Valid) ||
-                         bitFromValueOr(busInputs.elac1.discrete_status_word_1, 14, false) ||
-                         bitFromValueOr(busInputs.sec1.discrete_status_word_1, 14, false);
-  bool rightElev2Fault = (!discreteInputs.elac2Valid && !discreteInputs.sec2Valid) ||
-                         bitFromValueOr(busInputs.elac2.discrete_status_word_1, 14, false) ||
-                         bitFromValueOr(busInputs.sec2.discrete_status_word_1, 14, false);
+  bool leftElev1Fault = (!discreteInputs.elac1Valid || bitFromValueOr(busInputs.elac1.discrete_status_word_1, 21, false)) &&
+                        (!discreteInputs.sec1Valid || bitFromValueOr(busInputs.sec1.discrete_status_word_1, 13, false));
+  bool leftElev2Fault = (!discreteInputs.elac2Valid || bitFromValueOr(busInputs.elac2.discrete_status_word_1, 21, false)) &&
+                        (!discreteInputs.sec2Valid || bitFromValueOr(busInputs.sec2.discrete_status_word_1, 13, false));
+  bool rightElev1Fault = (!discreteInputs.elac1Valid || bitFromValueOr(busInputs.elac1.discrete_status_word_1, 21, false)) &&
+                         (!discreteInputs.sec1Valid || bitFromValueOr(busInputs.sec1.discrete_status_word_1, 14, false));
+  bool rightElev2Fault = (!discreteInputs.elac2Valid || bitFromValueOr(busInputs.elac2.discrete_status_word_1, 21, false)) &&
+                         (!discreteInputs.sec2Valid || bitFromValueOr(busInputs.sec2.discrete_status_word_1, 14, false));
 
   output.efcsStatus2.setSsm(Arinc429SignStatus::NormalOperation);
   output.efcsStatus2.setBit(11, bitFromValueOr(busInputs.elac1.discrete_status_word_1, 11, true));
