@@ -496,6 +496,7 @@ pub fn min(accumulator: f64, item: f64) -> f64 {
     accumulator.min(item)
 }
 
+#[derive(PartialEq)]
 pub enum ObjectWrite {
     Ignore,
     ToSim,
@@ -548,8 +549,9 @@ impl ExecutableVariableAction for ToObject {
             .map(|variable_identifier| variables.read(variable_identifier))
             .collect();
 
-        self.target_object.write(values);
-        self.target_object.set_data_on_sim_object(sim_connect)?;
+        if self.target_object.write(values) == ObjectWrite::ToSim {
+            self.target_object.set_data_on_sim_object(sim_connect)?;
+        }
 
         Ok(())
     }
