@@ -222,11 +222,11 @@ class CDUFlightPlanPage {
                             break;
                         case 8: // FA
                             fixAnnotation = `${wp.ident.substring(0, 3)}${magCourse}`;
+                            ident = wp.legAltitude1.toFixed(0);
                             break;
                         case 11: // FM
-                            if (wpPrev) {
-                                fixAnnotation = `${wpPrev.ident.substring(0,3)}${magCourse}`;
-                            }
+                            fixAnnotation = `${wp.ident.substring(0, 3)}${magCourse}`;
+                            ident = 'MANUAL';
                             break;
                         case 12: // HA
                             ident = wp.legAltitude1.toFixed(0);

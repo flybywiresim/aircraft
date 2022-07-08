@@ -56,6 +56,7 @@ class Runway {
             newRunway.thresholdCoordinates = Avionics.Utils.bearingDistanceToCoordinates(newRunway.direction - 180, (this.length * 0.5 - newRunway.thresholdLength) / 1852, this.latitude, this.longitude);
             newRunway.beginningCoordinates = Avionics.Utils.bearingDistanceToCoordinates(newRunway.direction - 180, this.length / 1852 * 0.5, this.latitude, this.longitude);
             newRunway.endCoordinates = Avionics.Utils.bearingDistanceToCoordinates(newRunway.direction, this.length / 1852 * 0.5, this.latitude, this.longitude);
+            newRunway.midCoordinates = new LatLongAlt(newRunway.latitude, newRunway.longitude, newRunway.elevation);
             splitRunways.push(newRunway);
         }
         return splitRunways;

@@ -4,6 +4,12 @@
 import { FlightPlanManager } from '@fmgc/index';
 import { RequiredPerformance } from '@fmgc/navigation/RequiredPerformance';
 
+let instance: Navigation;
+
+export function getNavigation(): Navigation | undefined {
+    return instance;
+}
+
 export class Navigation {
     requiredPerformance: RequiredPerformance;
 
@@ -11,14 +17,23 @@ export class Navigation {
 
     accuracyHigh: boolean = false;
 
+    currentAltitude: Feet = 0;
+
+    currentGroundSpeed: Knots = 0;
+
     constructor(private flightPlanManager: FlightPlanManager) {
         this.requiredPerformance = new RequiredPerformance(this.flightPlanManager);
+        instance = this;
     }
 
     // eslint-disable-next-line no-empty-function
     init(): void {}
 
     update(deltaTime: number): void {
+        this.currentAltitude = SimVar.GetSimVarValue('INDICATED ALTITUDE:1', 'feet');
+
+        this.currentGroundSpeed = SimVar.GetSimVarValue('GPS GROUND SPEED', 'knots');
+
         this.requiredPerformance.update(deltaTime);
 
         this.updateCurrentPerformance();

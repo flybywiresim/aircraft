@@ -5,6 +5,8 @@
 
 import { MathUtils } from '@shared/MathUtils';
 import { DFLeg } from '@fmgc/guidance/lnav/legs/DF';
+import { FALeg } from '@fmgc/guidance/lnav/legs/FA';
+import { FMLeg } from '@fmgc/guidance/lnav/legs/FM';
 import { TFLeg } from '@fmgc/guidance/lnav/legs/TF';
 import { Transition } from '@fmgc/guidance/lnav/Transition';
 import { PathCaptureTransition } from '@fmgc/guidance/lnav/transitions/PathCaptureTransition';
@@ -22,7 +24,7 @@ import { PathVector, PathVectorType } from '../PathVector';
 import { CFLeg } from '../legs/CF';
 
 type PrevLeg = CILeg | CFLeg | DFLeg | TFLeg;
-type NextLeg = CFLeg | /* FALeg | FMLeg | PILeg | */ TFLeg;
+type NextLeg = CFLeg | FALeg | FMLeg | /* PILeg | */ TFLeg;
 
 const mod = (x: number, n: number) => x - Math.floor(x / n) * n;
 
@@ -114,7 +116,8 @@ export class FixedRadiusTransition extends Transition {
         const forcedTurn = (this.nextLeg.metadata.turnDirection === TurnDirection.Left || this.nextLeg.metadata.turnDirection === TurnDirection.Right)
             && defaultTurnDirection !== this.nextLeg.metadata.turnDirection;
         const tooBigForPrevious = this.previousLeg.distanceToTermination < this.tad + 0.1;
-        const tooBigForNext = 'from' in this.nextLeg ? distanceTo(this.nextLeg.from.infos.coordinates, this.nextLeg.to.infos.coordinates) < this.tad + 0.1 : false;
+        const nextLegTermFix = this.nextLeg.terminationWaypoint instanceof WayPoint ? this.nextLeg.terminationWaypoint.infos.coordinates : this.nextLeg.terminationWaypoint;
+        const tooBigForNext = 'from' in this.nextLeg ? distanceTo(this.nextLeg.from.infos.coordinates, nextLegTermFix) < this.tad + 0.1 : false;
         const notLinedUp = Math.abs(prevLegTermDistanceToNextLeg) >= 0.25; // "reasonable" distance
 
         // in some circumstances we revert to a path capture transition where the fixed radius won't work well

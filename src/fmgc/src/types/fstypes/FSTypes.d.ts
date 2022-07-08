@@ -157,6 +157,7 @@ declare global {
         thresholdCoordinates: LatLongAlt;
         thresholdLength: number;
         thresholdElevation: number;
+        midCoordinates: LatLongAlt;
     }
 
     interface RawProcedureLeg {
