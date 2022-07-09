@@ -253,6 +253,7 @@ export class EfisSymbols {
 
             // TODO don't send the waypoint before active once FP sequencing is properly implemented
             // (currently sequences with guidance which is too early)
+            // TODO look at temp geom when tmpy in use
             for (const [fpIndex, leg] of this.guidanceController.activeGeometry.legs.entries()) {
                 const wp = activeFp.getWaypoint(fpIndex);
 
