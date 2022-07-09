@@ -1,4 +1,3 @@
-import { EfisSymbols } from '@fmgc/efis/EfisSymbols';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { GuidanceParameters } from '@fmgc/guidance/ControlLaws';
 import { courseToFixDistanceToGo, fixToFixGuidance, getAlongTrackDistanceTo } from '@fmgc/guidance/lnav/CommonGeometry';
@@ -82,7 +81,7 @@ export class FMLeg extends Leg {
         return true;
     }
 
-    recomputeWithParameters(isActive: boolean, tas: Knots, gs: Knots, ppos: Coordinates, trueTrack: DegreesTrue): void {
+    recomputeWithParameters(isActive: boolean, tas: Knots, gs: Knots, ppos: Coordinates, _trueTrack: DegreesTrue): void {
         this.isComputed = true;
 
         let inboundLeg: Leg;
@@ -109,7 +108,7 @@ export class FMLeg extends Leg {
         }
     }
 
-    getGuidanceParameters(ppos: Coordinates, trueTrack: Degrees, tas: Knots, gs: Knots): GuidanceParameters {
+    getGuidanceParameters(ppos: Coordinates, trueTrack: Degrees, _tas: Knots, _gs: Knots): GuidanceParameters {
         return fixToFixGuidance(ppos, trueTrack, this.fix.infos.coordinates, this.endPoint);
     }
 
@@ -117,7 +116,7 @@ export class FMLeg extends Leg {
         return courseToFixDistanceToGo(ppos, this.course, this.endPoint);
     }
 
-    isAbeam(ppos: Coordinates): boolean {
+    isAbeam(_ppos: Coordinates): boolean {
         return true; // TODO useless on leg?
     }
 
@@ -151,18 +150,17 @@ export class FMLeg extends Leg {
                     colour: DebugPointColour.Magenta,
                 },
             ];
-        } else {
-            return [
-                {
-                    type: PathVectorType.SemiInfiniteLine,
-                    startPoint: this.startPoint,
-                    course: this.course,
-                },
-            ];
         }
+        return [
+            {
+                type: PathVectorType.SemiInfiniteLine,
+                startPoint: this.startPoint,
+                course: this.course,
+            },
+        ];
     }
 
-    getNominalRollAngle(gs: MetresPerSecond): Degrees {
+    getNominalRollAngle(_gs: MetresPerSecond): Degrees {
         return 0;
     }
 

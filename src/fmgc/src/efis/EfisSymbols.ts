@@ -10,9 +10,9 @@ import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { SegmentType } from '@fmgc/wtsdk';
 import { FlowEventSync } from '@shared/FlowEventSync';
+import { AltitudeConstraint, AltitudeConstraintType, SpeedConstraint, SpeedConstraintType } from '@fmgc/guidance/lnav/legs';
 import { LegType, RunwaySurface, TurnDirection, VorType } from '../types/fstypes/FSEnums';
 import { NearbyFacilities } from './NearbyFacilities';
-import { AltitudeConstraint, AltitudeConstraintType, SpeedConstraint, SpeedConstraintType } from '@fmgc/guidance/lnav/legs';
 
 export class EfisSymbols {
     private blockUpdate = false;
@@ -256,7 +256,7 @@ export class EfisSymbols {
             for (const [fpIndex, leg] of this.guidanceController.activeGeometry.legs.entries()) {
                 const wp = activeFp.getWaypoint(fpIndex);
 
-                if (!leg || leg.isNull) {
+                if (!leg || !wp || leg.isNull) {
                     continue;
                 }
 
@@ -302,8 +302,6 @@ export class EfisSymbols {
                             const descent = wp.constraintType === WaypointConstraintType.DES;
                             const transAlt = descent ? activeFp.destinationTransitionLevel * 100 : activeFp.originTransitionAltitude;
                             constraints.push(...symbol.altConstraints.map(([prefix, alt]) => EfisSymbols.formatAltConstraint(prefix, alt, transAlt)));
-                            // TODO vnav should predict this
-                            type |= NdSymbolTypeFlags.ConstraintUnknown;
                         }
 
                         if (symbol.speedConstraint !== undefined) {
@@ -311,7 +309,15 @@ export class EfisSymbols {
                         }
                     }
 
-                    const isCourseReversal = wp.additionalData.legType === LegType.HA || wp.additionalData.legType === LegType.HF || wp.additionalData.legType === LegType.HM || wp.additionalData.legType === LegType.PI;
+                    if (symbol.altConstraints !== undefined) {
+                        // TODO vnav should predict this
+                        type |= NdSymbolTypeFlags.ConstraintUnknown;
+                    }
+
+                    const isCourseReversal = wp.additionalData.legType === LegType.HA
+                        || wp.additionalData.legType === LegType.HF
+                        || wp.additionalData.legType === LegType.HM
+                        || wp.additionalData.legType === LegType.PI;
                     let direction;
 
                     if (fpIndex === activeFp.activeWaypointIndex) {

@@ -59,7 +59,7 @@ export class FALeg extends Leg {
     get mapSymbols(): GeometryNdSymbol[] {
         const symbols = [];
 
-        const followingDiscont = !!this.inboundGuidable;
+        const followingDiscont = !this.inboundGuidable;
 
         if (followingDiscont) {
             symbols.push({
@@ -100,7 +100,7 @@ export class FALeg extends Leg {
         return true;
     }
 
-    recomputeWithParameters(isActive: boolean, tas: Knots, gs: Knots, ppos: Coordinates, trueTrack: DegreesTrue): void {
+    recomputeWithParameters(isActive: boolean, tas: Knots, gs: Knots, ppos: Coordinates, _trueTrack: DegreesTrue): void {
         this.isComputed = true;
 
         if (this.isNull) {
@@ -120,21 +120,22 @@ export class FALeg extends Leg {
         if (!this.wasActive && this.termConditionMet) {
             this.isNull = true;
             return;
-        } else if (this.termConditionMet) {
+        }
+        if (this.termConditionMet) {
             // freeze the leg once the term condition is met
             return;
         }
+
+        // TODO
+        const startAltitude = currentAltitude;
 
         let inboundLeg: Leg;
         if (this.inboundGuidable instanceof Leg) {
             inboundLeg = this.inboundGuidable;
         }
 
-        let startAltitude = currentAltitude;
-
         if (inboundLeg?.terminationWaypoint instanceof WayPoint && inboundLeg.terminationWaypoint.isRunway) {
             this.startPoint = inboundLeg.terminationWaypoint.additionalData.runwayMidpoint;
-            startAltitude = Math.max(startAltitude, inboundLeg.terminationWaypoint.additionalData.midCoordinates.alt);
         }
         if (this.inboundGuidable?.isComputed) {
             this.startPoint = this.inboundGuidable.getPathEndPoint();
@@ -173,7 +174,7 @@ export class FALeg extends Leg {
         this.fix.distanceInFP = this.predictedDistance;
     }
 
-    getGuidanceParameters(ppos: Coordinates, trueTrack: Degrees, tas: Knots, gs: Knots): GuidanceParameters {
+    getGuidanceParameters(ppos: Coordinates, trueTrack: Degrees, _tas: Knots, _gs: Knots): GuidanceParameters {
         return fixToFixGuidance(ppos, trueTrack, this.fix.infos.coordinates, this.endPoint);
     }
 
@@ -181,7 +182,7 @@ export class FALeg extends Leg {
         return courseToFixDistanceToGo(ppos, this.course, this.endPoint);
     }
 
-    isAbeam(ppos: Coordinates): boolean {
+    isAbeam(_ppos: Coordinates): boolean {
         return true; // TODO useless on leg?
     }
 
@@ -213,18 +214,17 @@ export class FALeg extends Leg {
                     annotation: 'FA END',
                 },
             ];
-        } else {
-            return [
-                {
-                    type: PathVectorType.Line,
-                    startPoint: this.getPathStartPoint(),
-                    endPoint: this.getPathEndPoint(),
-                },
-            ];
         }
+        return [
+            {
+                type: PathVectorType.Line,
+                startPoint: this.getPathStartPoint(),
+                endPoint: this.getPathEndPoint(),
+            },
+        ];
     }
 
-    getNominalRollAngle(gs: MetresPerSecond): Degrees {
+    getNominalRollAngle(_gs: MetresPerSecond): Degrees {
         return 0;
     }
 
