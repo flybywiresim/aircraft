@@ -67,9 +67,9 @@ export function getAltitudeConstraintFromWaypoint(wp: WayPoint): AltitudeConstra
 }
 
 export function getSpeedConstraintFromWaypoint(wp: WayPoint): SpeedConstraint | undefined {
-    if (wp.speedConstraint) {
+    if (wp.speedConstraint > 0) {
         const sc: Partial<SpeedConstraint> = {};
-        sc.type = SpeedConstraintType.at;
+        sc.type = SpeedConstraintType.atOrBelow;
         sc.speed = wp.speedConstraint;
         return sc as SpeedConstraint;
     }
