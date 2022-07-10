@@ -597,7 +597,7 @@ void FlyByWireInterface::setupLocalVariables() {
     string idString = std::to_string(i + 1);
 
     idFacPushbuttonPressed[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_PUSHBUTTON_PRESSED");
-    idFacFaultLightOn[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_FAULT_LIGHT_ON");
+    idFacHealthy[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_HEALTHY");
 
     idFacDiscreteWord1[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_DISCRETE_WORD_1");
     idFacGammaA[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_GAMMA_A");
@@ -1541,7 +1541,7 @@ bool FlyByWireInterface::updateFac(double sampleTime, int facIndex) {
     simConnectInterface.setClientDataFacBus(facsBusOutputs[facIndex], facIndex);
   }
 
-  idFacFaultLightOn[facIndex]->set(!facsDiscreteOutputs[facIndex].fac_healthy);
+  idFacHealthy[facIndex]->set(facsDiscreteOutputs[facIndex].fac_healthy);
 
   FacBus bus = *reinterpret_cast<FacBus*>(&facsBusOutputs[facIndex]);
 

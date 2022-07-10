@@ -488,7 +488,7 @@ class FlyByWireInterface {
   // FAC discrete input Lvars
   std::unique_ptr<LocalVariable> idFacPushbuttonPressed[2];
   // FAC discrete output Lvars
-  std::unique_ptr<LocalVariable> idFacFaultLightOn[2];
+  std::unique_ptr<LocalVariable> idFacHealthy[2];
 
   std::unique_ptr<LocalVariable> idFacDiscreteWord1[2];
   std::unique_ptr<LocalVariable> idFacGammaA[2];
