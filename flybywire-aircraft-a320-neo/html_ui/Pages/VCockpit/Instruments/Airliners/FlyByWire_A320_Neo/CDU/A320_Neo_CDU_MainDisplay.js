@@ -333,8 +333,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
     checkAocTimes() {
         if (!this.aocTimes.off) {
-            const isAirborne = !Simplane.getIsGrounded(); //TODO replace with proper flight mode in future
-            if (this.flightPhaseManager.phase === FmgcFlightPhases.TAKEOFF && isAirborne) {
+            if (this.flightPhaseManager.phase === FmgcFlightPhases.TAKEOFF && !this.isOnGround()) {
                 // Wheels off
                 // Off: remains blank until Take off time
                 this.aocTimes.off = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
@@ -350,8 +349,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         }
 
         if (!this.aocTimes.on) {
-            const isAirborne = !Simplane.getIsGrounded(); //TODO replace with proper flight mode in future
-            if (this.aocTimes.off && !isAirborne) {
+            if (this.aocTimes.off && !this.isOnGround()) {
                 // On: remains blank until Landing time
                 this.aocTimes.on = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
             }
