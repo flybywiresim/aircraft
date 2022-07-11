@@ -18,6 +18,6 @@
     }
   ],
   "content_type": "AIRCRAFT",
-  "minimum_game_version": "1.21.13",
+  "minimum_game_version": "1.26.5",
   "manufacturer": "Airbus"
 }
