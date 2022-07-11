@@ -73,7 +73,6 @@ export class FALeg extends Leg {
             databaseId: EfisSymbols.tempDatabaseId(this.ident),
             ident: this.ident,
             location: this.getPathEndPoint(),
-            altConstraints: EfisSymbols.mapAltConstraintsFromMetadata(this.metadata.altitudeConstraint),
             speedConstraint: EfisSymbols.mapSpeedConstraintFromMetadata(this.metadata.speedConstraint),
         });
 

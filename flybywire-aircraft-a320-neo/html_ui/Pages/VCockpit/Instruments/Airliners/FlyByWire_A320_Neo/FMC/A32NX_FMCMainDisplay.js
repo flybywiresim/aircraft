@@ -4613,6 +4613,14 @@ class FMCMainDisplay extends BaseAirliners {
         return false;
     }
 
+    /**
+     * @param {WayPoint} waypoint
+     * @returns {boolean}
+     */
+    isXaLeg(waypoint) {
+        return [2 /* CA */, 8 /* FA */, 12 /* HA */, 19 /* VA */].findIndex((legType) => legType === waypoint.additionalData.legType) !== -1;
+    }
+
     setGroundTempFromOrigin() {
         const origin = this.flightPlanManager.getPersistentOrigin(FlightPlans.Active);
         if (!origin) {

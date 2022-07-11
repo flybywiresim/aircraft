@@ -9,7 +9,10 @@ const Markers = {
 };
 
 class CDUFlightPlanPage {
-
+    /**
+     * @param {A320_Neo_CDU_MainDisplay} mcdu
+     * @param {number} offset
+     */
     static ShowPage(mcdu, offset = 0) {
 
         // INIT
@@ -280,7 +283,7 @@ class CDUFlightPlanPage {
                 let timeColor = color;
 
                 // Altitude
-                const hasAltConstraint = wp.legAltitudeDescription > 0 && wp.legAltitudeDescription < 6;
+                const hasAltConstraint = wp.legAltitudeDescription > 0 && wp.legAltitudeDescription < 6 && !mcdu.isXaLeg(wp);
                 let altitudeConstraint = "-----";
                 let altPrefix = "\xa0";
                 if (fpIndex === fpm.getDestinationIndex()) {

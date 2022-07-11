@@ -12,9 +12,9 @@ import { courseToFixDistanceToGo, courseToFixGuidance } from '@fmgc/guidance/lna
 import { IFLeg } from '@fmgc/guidance/lnav/legs/IF';
 import { distanceTo } from 'msfs-geo';
 import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
-import { PathVector, PathVectorType } from '../PathVector';
-import { GeometryNdSymbol, NdSymbolTypeFlags } from '@shared/NavigationDisplay';
+import { GeometryNdSymbol } from '@shared/NavigationDisplay';
 import { EfisSymbols } from '@fmgc/efis/EfisSymbols';
+import { PathVector, PathVectorType } from '../PathVector';
 
 export class CALeg extends Leg {
     public estimatedTermination: Coordinates | undefined;
@@ -49,7 +49,6 @@ export class CALeg extends Leg {
             databaseId: EfisSymbols.tempDatabaseId(ident),
             ident,
             location: this.estimatedTermination,
-            altConstraints: [['+', this.altitude]],
             speedConstraint: this.metadata.speedConstraint ? this.metadata.speedConstraint.speed : undefined,
         }];
     }
