@@ -92,6 +92,7 @@ const PitchTrim = ({ x, y, fcdcDiscreteWord2 }: PitchTrimProps) => {
     const fcdc1ThsPosition = useArinc429Var('L:A32NX_FCDC_1_ELEVATOR_TRIM_POS');
     const fcdc2ThsPosition = useArinc429Var('L:A32NX_FCDC_2_ELEVATOR_TRIM_POS');
     const thsPositionToUse = !fcdc1ThsPosition.isFailureWarning() ? fcdc1ThsPosition : fcdc2ThsPosition;
+    const posValid = thsPositionToUse.isNormalOperation();
 
     let pitchIntegral: string;
     let pitchFractional: string;
@@ -110,17 +111,28 @@ const PitchTrim = ({ x, y, fcdcDiscreteWord2 }: PitchTrimProps) => {
     return (
         <SvgGroup x={x} y={y}>
             <text className={`Large ${thsJam ? 'Amber ' : ''}Center`} x={0} y={22}>PITCH TRIM</text>
-            <text x={-1} y={53} className={`${hydraulicAvailableClass} Huge End`}>{pitchIntegral}</text>
-            <text x={4} y={53} className={`${hydraulicAvailableClass} Huge Center`}>.</text>
-            <text x={21} y={53} className={`${hydraulicAvailableClass} Standard Center`}>{pitchFractional}</text>
-            <text x={41} y={56} className="Cyan Title Center">°</text>
+            <g visibility={posValid ? 'visible' : 'hidden'}>
+                <text x={-1} y={53} className={`${hydraulicAvailableClass} Huge End`}>{pitchIntegral}</text>
+                <text x={4} y={53} className={`${hydraulicAvailableClass} Huge Center`}>.</text>
+                <text x={21} y={53} className={`${hydraulicAvailableClass} Standard Center`}>{pitchFractional}</text>
+                <text x={41} y={56} className="Cyan Title Center">°</text>
+                <text
+                    x={74}
+                    y={52}
+                    visibility={Math.abs(thsPositionToUse.valueOr(0)) > 0.05 ? 'visible' : 'hidden'}
+                    className={`${hydraulicAvailableClass} Standard Center`}
+                >
+                    {Math.sign(thsPositionToUse.valueOr(0)) === 1 ? 'DN' : 'UP'}
+                </text>
+            </g>
+
             <text
-                x={74}
-                y={52}
-                visibility={Math.abs(thsPositionToUse.valueOr(0)) > 0.05 ? 'visible' : 'hidden'}
-                className={`${hydraulicAvailableClass} Standard Center`}
+                x={28}
+                y={50}
+                visibility={!posValid ? 'visible' : 'hidden'}
+                className="Amber Large Center"
             >
-                {Math.sign(thsPositionToUse.valueOr(0)) === 1 ? 'DN' : 'UP'}
+                XX
             </text>
 
             <HydraulicIndicator x={102} y={0} type="G" />
@@ -204,10 +216,10 @@ const RudderTrim = () => {
             </g>
             <text
                 id="rudderTrimFailedFlag"
-                className="Medium Amber Center"
+                className="Large Amber Center"
                 visibility={trimPosWord.isNormalOperation() ? 'hidden' : 'visible'}
-                x="50"
-                y="150"
+                x="1"
+                y="190"
             >
                 XX
             </text>
@@ -237,9 +249,9 @@ const RudderTravelLimit = () => {
                     <path className={anyTluEngaged ? 'GreenLine' : 'AmberLine'} d="m0 151 l 0 21 l -7 0" />
                 </g>
             </g>
-            <g visibility={rtluPosWord.isNormalOperation() ? 'hidden' : 'visible'} className="Medium Amber Center">
-                <text x="-10" y="150">TLU</text>
-                <text x="110" y="150">TLU</text>
+            <g visibility={rtluPosWord.isNormalOperation() ? 'hidden' : 'visible'}>
+                <text x="-82" y="180" className="Large Amber Center">TLU</text>
+                <text x="84" y="180" className="Large Amber Center">TLU</text>
             </g>
         </>
     );
@@ -411,7 +423,7 @@ const Elevator = ({
 
             <text
                 x={side === 'left' ? 26 : -26}
-                y={86}
+                y={76}
                 visibility={!elevatorPositionValid ? 'visible' : 'hidden'}
                 className="Amber Large Center"
             >
