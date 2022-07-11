@@ -6,7 +6,8 @@ import { McduButtons } from './McduButtons';
 import { WebsocketContext } from './WebsocketContext';
 
 function App() {
-    const [fullscreen, setFullscreen] = useState(window.location.href.endsWith('fullscreen'));
+    const [fullscreen, setFullscreen] = useState(window.location.href.endsWith('fullscreen') || window.location.href.endsWith('43'));
+    const [aspect43] = useState(window.location.href.endsWith('43'));
     const [dark, setDark] = useState(false);
     const [sound] = useState(window.location.href.endsWith('sound'));
     const socketUrl = `ws://${window.location.hostname}:__WEBSOCKET_PORT__`;
@@ -88,11 +89,11 @@ function App() {
                 </div>
             )}
             {fullscreen && (
-                <div className="fullscreen">
+                <div className={aspect43 ? 'fullscreen aspect43' : 'fullscreen'}>
                     <div className="App">
                         <WebsocketContext.Provider value={{ sendMessage, lastMessage, readyState }}>
                             <div title="Exit fullscreen" onClick={() => setFullscreen(false)}>
-                                <McduScreen content={content} />
+                                <McduScreen content={content} aspect43={aspect43} />
                             </div>
                         </WebsocketContext.Provider>
                     </div>
