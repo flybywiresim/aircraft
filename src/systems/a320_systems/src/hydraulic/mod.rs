@@ -972,28 +972,28 @@ pub(super) struct A380Hydraulic {
     yellow_circuit_controller: A320HydraulicCircuitController,
 
     engine_driven_pump_1A: EngineDrivenPump,
-    engine_driven_pump_1A_controller: A320EngineDrivenPumpController,
+    engine_driven_pump_1A_controller: A380EngineDrivenPumpController,
 
     engine_driven_pump_2A: EngineDrivenPump,
-    engine_driven_pump_2A_controller: A320EngineDrivenPumpController,
+    engine_driven_pump_2A_controller: A380EngineDrivenPumpController,
 
     engine_driven_pump_3A: EngineDrivenPump,
-    engine_driven_pump_3A_controller: A320EngineDrivenPumpController,
+    engine_driven_pump_3A_controller: A380EngineDrivenPumpController,
 
     engine_driven_pump_4A: EngineDrivenPump,
-    engine_driven_pump_4A_controller: A320EngineDrivenPumpController,
+    engine_driven_pump_4A_controller: A380EngineDrivenPumpController,
 
     engine_driven_pump_1B: EngineDrivenPump,
-    engine_driven_pump_1B_controller: A320EngineDrivenPumpController,
+    engine_driven_pump_1B_controller: A380EngineDrivenPumpController,
 
     engine_driven_pump_2B: EngineDrivenPump,
-    engine_driven_pump_2B_controller: A320EngineDrivenPumpController,
+    engine_driven_pump_2B_controller: A380EngineDrivenPumpController,
 
     engine_driven_pump_3B: EngineDrivenPump,
-    engine_driven_pump_3B_controller: A320EngineDrivenPumpController,
+    engine_driven_pump_3B_controller: A380EngineDrivenPumpController,
 
     engine_driven_pump_4B: EngineDrivenPump,
-    engine_driven_pump_4B_controller: A320EngineDrivenPumpController,
+    engine_driven_pump_4B_controller: A380EngineDrivenPumpController,
 
     yellow_electric_pumpA: ElectricPump,
     yellow_electric_pumpA_controller: A320YellowElectricPumpController,
@@ -1119,65 +1119,65 @@ impl A380Hydraulic {
                 HydraulicColor::Yellow,
             ),
 
-            engine_driven_pump_1A: EngineDrivenPump::new(context, "GREEN1A"),
-            engine_driven_pump_1A_controller: A320EngineDrivenPumpController::new(
+            engine_driven_pump_1A: EngineDrivenPump::new(context, "GREEN_1A"),
+            engine_driven_pump_1A_controller: A380EngineDrivenPumpController::new(
                 context,
-                1,
+                A380EngineDrivenPumpId::Edp1a,
                 vec![Self::GREEN_EDP_CONTROL_POWER_BUS1],
             ),
 
-            engine_driven_pump_2A: EngineDrivenPump::new(context, "GREEN2A"),
-            engine_driven_pump_2A_controller: A320EngineDrivenPumpController::new(
+            engine_driven_pump_2A: EngineDrivenPump::new(context, "GREEN_2A"),
+            engine_driven_pump_2A_controller: A380EngineDrivenPumpController::new(
                 context,
-                2,
+                A380EngineDrivenPumpId::Edp2a,
                 vec![Self::GREEN_EDP_CONTROL_POWER_BUS1],
             ),
 
-            engine_driven_pump_3A: EngineDrivenPump::new(context, "YELLOW3A"),
-            engine_driven_pump_3A_controller: A320EngineDrivenPumpController::new(
+            engine_driven_pump_3A: EngineDrivenPump::new(context, "YELLOW_3A"),
+            engine_driven_pump_3A_controller: A380EngineDrivenPumpController::new(
                 context,
-                3,
+                A380EngineDrivenPumpId::Edp3a,
                 vec![Self::GREEN_EDP_CONTROL_POWER_BUS1],
             ),
 
-            engine_driven_pump_4A: EngineDrivenPump::new(context, "YELLOW4A"),
-            engine_driven_pump_4A_controller: A320EngineDrivenPumpController::new(
+            engine_driven_pump_4A: EngineDrivenPump::new(context, "YELLOW_4A"),
+            engine_driven_pump_4A_controller: A380EngineDrivenPumpController::new(
                 context,
-                4,
+                A380EngineDrivenPumpId::Edp4a,
                 vec![Self::GREEN_EDP_CONTROL_POWER_BUS1],
             ),
 
-            engine_driven_pump_1B: EngineDrivenPump::new(context, "GREEN1B"),
-            engine_driven_pump_1B_controller: A320EngineDrivenPumpController::new(
+            engine_driven_pump_1B: EngineDrivenPump::new(context, "GREEN_1B"),
+            engine_driven_pump_1B_controller: A380EngineDrivenPumpController::new(
                 context,
-                1,
+                A380EngineDrivenPumpId::Edp1b,
                 vec![Self::GREEN_EDP_CONTROL_POWER_BUS1],
             ),
 
-            engine_driven_pump_2B: EngineDrivenPump::new(context, "GREEN2B"),
-            engine_driven_pump_2B_controller: A320EngineDrivenPumpController::new(
+            engine_driven_pump_2B: EngineDrivenPump::new(context, "GREEN_2B"),
+            engine_driven_pump_2B_controller: A380EngineDrivenPumpController::new(
                 context,
-                2,
+                A380EngineDrivenPumpId::Edp2b,
                 vec![Self::GREEN_EDP_CONTROL_POWER_BUS1],
             ),
 
-            engine_driven_pump_3B: EngineDrivenPump::new(context, "YELLOW3B"),
-            engine_driven_pump_3B_controller: A320EngineDrivenPumpController::new(
+            engine_driven_pump_3B: EngineDrivenPump::new(context, "YELLOW_3B"),
+            engine_driven_pump_3B_controller: A380EngineDrivenPumpController::new(
                 context,
-                3,
+                A380EngineDrivenPumpId::Edp3b,
                 vec![Self::GREEN_EDP_CONTROL_POWER_BUS1],
             ),
 
-            engine_driven_pump_4B: EngineDrivenPump::new(context, "YELLOW4B"),
-            engine_driven_pump_4B_controller: A320EngineDrivenPumpController::new(
+            engine_driven_pump_4B: EngineDrivenPump::new(context, "YELLOW_4B"),
+            engine_driven_pump_4B_controller: A380EngineDrivenPumpController::new(
                 context,
-                4,
+                A380EngineDrivenPumpId::Edp4b,
                 vec![Self::GREEN_EDP_CONTROL_POWER_BUS1],
             ),
 
             yellow_electric_pumpA: ElectricPump::new(
                 context,
-                "YELLOWA",
+                "YELLOW_A",
                 Self::YELLOW_ELEC_PUMP_SUPPLY_POWER_BUS,
                 ElectricCurrent::new::<ampere>(Self::ELECTRIC_PUMP_MAX_CURRENT_AMPERE),
             ),
@@ -1189,7 +1189,7 @@ impl A380Hydraulic {
 
             yellow_electric_pumpB: ElectricPump::new(
                 context,
-                "YELLOWB",
+                "YELLOW_B",
                 Self::YELLOW_ELEC_PUMP_SUPPLY_POWER_BUS,
                 ElectricCurrent::new::<ampere>(Self::ELECTRIC_PUMP_MAX_CURRENT_AMPERE),
             ),
@@ -1201,7 +1201,7 @@ impl A380Hydraulic {
 
             green_electric_pumpA: ElectricPump::new(
                 context,
-                "GREENA",
+                "GREEN_A",
                 Self::YELLOW_ELEC_PUMP_SUPPLY_POWER_BUS,
                 ElectricCurrent::new::<ampere>(Self::ELECTRIC_PUMP_MAX_CURRENT_AMPERE),
             ),
@@ -1213,7 +1213,7 @@ impl A380Hydraulic {
 
             green_electric_pumpB: ElectricPump::new(
                 context,
-                "GREENB",
+                "GREEN_B",
                 Self::YELLOW_ELEC_PUMP_SUPPLY_POWER_BUS,
                 ElectricCurrent::new::<ampere>(Self::ELECTRIC_PUMP_MAX_CURRENT_AMPERE),
             ),
@@ -1327,8 +1327,7 @@ impl A380Hydraulic {
     pub(super) fn update(
         &mut self,
         context: &UpdateContext,
-        engine1: &impl Engine,
-        engine2: &impl Engine,
+        engines: [&impl Engine; 4],
         overhead_panel: &A380HydraulicOverheadPanel,
         autobrake_panel: &AutobrakePanel,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
@@ -1361,8 +1360,8 @@ impl A380Hydraulic {
             emergency_elec,
             lgcius.lgciu1(),
             lgcius.lgciu2(),
-            engine1,
-            engine2,
+            engines[0],
+            engines[1],
         );
 
         for cur_time_step in self.ultra_fast_physics_updater {
@@ -1372,8 +1371,7 @@ impl A380Hydraulic {
         for cur_time_step in self.core_hydraulic_updater {
             self.update_core_hydraulics(
                 &context.with_delta(cur_time_step),
-                engine1,
-                engine2,
+                engines,
                 overhead_panel,
                 engine_fire_push_buttons,
                 lgcius.lgciu1(),
@@ -1743,8 +1741,7 @@ impl A380Hydraulic {
     fn update_core_hydraulics(
         &mut self,
         context: &UpdateContext,
-        engine1: &impl Engine,
-        engine2: &impl Engine,
+        engines: [&impl Engine; 4],
         overhead_panel: &A380HydraulicOverheadPanel,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         lgciu1: &impl LgciuInterface,
@@ -1758,7 +1755,7 @@ impl A380Hydraulic {
         self.engine_driven_pump_1A_controller.update(
             overhead_panel,
             engine_fire_push_buttons,
-            engine1,
+            engines,
             &self.green_circuit,
             lgciu1,
             self.green_circuit.reservoir(),
@@ -1766,16 +1763,17 @@ impl A380Hydraulic {
 
         self.engine_driven_pump_1A.update(
             context,
-            self.green_circuit.pump_section(0),
+            self.green_circuit
+                .pump_section(A380EngineDrivenPumpId::Edp1a.into_pump_section_index()),
             self.green_circuit.reservoir(),
-            engine1.hydraulic_pump_output_speed(),
+            engines[0].hydraulic_pump_output_speed(),
             &self.engine_driven_pump_1A_controller,
         );
 
         self.engine_driven_pump_2A_controller.update(
             overhead_panel,
             engine_fire_push_buttons,
-            engine2,
+            engines,
             &self.green_circuit,
             lgciu2,
             self.green_circuit.reservoir(),
@@ -1783,16 +1781,17 @@ impl A380Hydraulic {
 
         self.engine_driven_pump_2A.update(
             context,
-            self.green_circuit.pump_section(1),
+            self.green_circuit
+                .pump_section(A380EngineDrivenPumpId::Edp2a.into_pump_section_index()),
             self.green_circuit.reservoir(),
-            engine2.hydraulic_pump_output_speed(),
+            engines[1].hydraulic_pump_output_speed(),
             &self.engine_driven_pump_2A_controller,
         );
 
         self.engine_driven_pump_3A_controller.update(
             overhead_panel,
             engine_fire_push_buttons,
-            engine1,
+            engines,
             &self.yellow_circuit,
             lgciu1,
             self.yellow_circuit.reservoir(),
@@ -1800,16 +1799,17 @@ impl A380Hydraulic {
 
         self.engine_driven_pump_3A.update(
             context,
-            self.yellow_circuit.pump_section(0),
+            self.yellow_circuit
+                .pump_section(A380EngineDrivenPumpId::Edp3a.into_pump_section_index()),
             self.yellow_circuit.reservoir(),
-            engine1.hydraulic_pump_output_speed(),
+            engines[2].hydraulic_pump_output_speed(),
             &self.engine_driven_pump_3A_controller,
         );
 
         self.engine_driven_pump_4A_controller.update(
             overhead_panel,
             engine_fire_push_buttons,
-            engine2,
+            engines,
             &self.yellow_circuit,
             lgciu2,
             self.yellow_circuit.reservoir(),
@@ -1817,10 +1817,83 @@ impl A380Hydraulic {
 
         self.engine_driven_pump_4A.update(
             context,
-            self.yellow_circuit.pump_section(1),
+            self.yellow_circuit
+                .pump_section(A380EngineDrivenPumpId::Edp4a.into_pump_section_index()),
             self.yellow_circuit.reservoir(),
-            engine2.hydraulic_pump_output_speed(),
+            engines[3].hydraulic_pump_output_speed(),
             &self.engine_driven_pump_4A_controller,
+        );
+
+        self.engine_driven_pump_1B_controller.update(
+            overhead_panel,
+            engine_fire_push_buttons,
+            engines,
+            &self.green_circuit,
+            lgciu1,
+            self.green_circuit.reservoir(),
+        );
+
+        self.engine_driven_pump_1B.update(
+            context,
+            self.green_circuit
+                .pump_section(A380EngineDrivenPumpId::Edp1b.into_pump_section_index()),
+            self.green_circuit.reservoir(),
+            engines[0].hydraulic_pump_output_speed(),
+            &self.engine_driven_pump_1B_controller,
+        );
+
+        self.engine_driven_pump_2B_controller.update(
+            overhead_panel,
+            engine_fire_push_buttons,
+            engines,
+            &self.green_circuit,
+            lgciu2,
+            self.green_circuit.reservoir(),
+        );
+
+        self.engine_driven_pump_2B.update(
+            context,
+            self.green_circuit
+                .pump_section(A380EngineDrivenPumpId::Edp2b.into_pump_section_index()),
+            self.green_circuit.reservoir(),
+            engines[1].hydraulic_pump_output_speed(),
+            &self.engine_driven_pump_2B_controller,
+        );
+
+        self.engine_driven_pump_3B_controller.update(
+            overhead_panel,
+            engine_fire_push_buttons,
+            engines,
+            &self.yellow_circuit,
+            lgciu1,
+            self.yellow_circuit.reservoir(),
+        );
+
+        self.engine_driven_pump_3B.update(
+            context,
+            self.yellow_circuit
+                .pump_section(A380EngineDrivenPumpId::Edp3b.into_pump_section_index()),
+            self.yellow_circuit.reservoir(),
+            engines[2].hydraulic_pump_output_speed(),
+            &self.engine_driven_pump_3B_controller,
+        );
+
+        self.engine_driven_pump_4B_controller.update(
+            overhead_panel,
+            engine_fire_push_buttons,
+            engines,
+            &self.yellow_circuit,
+            lgciu2,
+            self.yellow_circuit.reservoir(),
+        );
+
+        self.engine_driven_pump_4B.update(
+            context,
+            self.yellow_circuit
+                .pump_section(A380EngineDrivenPumpId::Edp4b.into_pump_section_index()),
+            self.yellow_circuit.reservoir(),
+            engines[3].hydraulic_pump_output_speed(),
+            &self.engine_driven_pump_4B_controller,
         );
 
         self.green_electric_pumpA_controller.update(
@@ -2173,34 +2246,88 @@ impl HydraulicCircuitController for A320HydraulicCircuitController {
     }
 }
 
-struct A320EngineDrivenPumpController {
-    green_pump_low_press_id: VariableIdentifier,
-    yellow_pump_low_press_id: VariableIdentifier,
+use std::fmt::Display;
+#[derive(Clone, Copy)]
+enum A380EngineDrivenPumpId {
+    Edp1a,
+    Edp1b,
+    Edp2a,
+    Edp2b,
+    Edp3a,
+    Edp3b,
+    Edp4a,
+    Edp4b,
+}
+impl A380EngineDrivenPumpId {
+    fn into_engine_num(&self) -> usize {
+        match self {
+            A380EngineDrivenPumpId::Edp1a => 1,
+            A380EngineDrivenPumpId::Edp1b => 1,
+            A380EngineDrivenPumpId::Edp2a => 2,
+            A380EngineDrivenPumpId::Edp2b => 2,
+            A380EngineDrivenPumpId::Edp3a => 3,
+            A380EngineDrivenPumpId::Edp3b => 3,
+            A380EngineDrivenPumpId::Edp4a => 4,
+            A380EngineDrivenPumpId::Edp4b => 4,
+        }
+    }
+
+    fn into_engine_index(&self) -> usize {
+        self.into_engine_num() - 1
+    }
+
+    fn into_pump_section_index(&self) -> usize {
+        match self {
+            A380EngineDrivenPumpId::Edp1a => 0,
+            A380EngineDrivenPumpId::Edp1b => 1,
+            A380EngineDrivenPumpId::Edp2a => 2,
+            A380EngineDrivenPumpId::Edp2b => 3,
+            A380EngineDrivenPumpId::Edp3a => 0,
+            A380EngineDrivenPumpId::Edp3b => 1,
+            A380EngineDrivenPumpId::Edp4a => 2,
+            A380EngineDrivenPumpId::Edp4b => 3,
+        }
+    }
+}
+impl Display for A380EngineDrivenPumpId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            A380EngineDrivenPumpId::Edp1a => write!(f, "1A"),
+            A380EngineDrivenPumpId::Edp1b => write!(f, "1B"),
+            A380EngineDrivenPumpId::Edp2a => write!(f, "2A"),
+            A380EngineDrivenPumpId::Edp2b => write!(f, "2B"),
+            A380EngineDrivenPumpId::Edp3a => write!(f, "3A"),
+            A380EngineDrivenPumpId::Edp3b => write!(f, "3B"),
+            A380EngineDrivenPumpId::Edp4a => write!(f, "4A"),
+            A380EngineDrivenPumpId::Edp4b => write!(f, "4B"),
+        }
+    }
+}
+
+struct A380EngineDrivenPumpController {
+    low_press_id: VariableIdentifier,
 
     is_powered: bool,
     powered_by: Vec<ElectricalBusType>,
-    engine_number: usize,
+    pump_id: A380EngineDrivenPumpId,
     should_pressurise: bool,
     has_pressure_low_fault: bool,
     has_air_pressure_low_fault: bool,
     has_low_level_fault: bool,
     is_pressure_low: bool,
 }
-impl A320EngineDrivenPumpController {
+impl A380EngineDrivenPumpController {
     fn new(
         context: &mut InitContext,
-        engine_number: usize,
+        pump_id: A380EngineDrivenPumpId,
         powered_by: Vec<ElectricalBusType>,
     ) -> Self {
         Self {
-            green_pump_low_press_id: context
-                .get_identifier("HYD_GREEN_EDPUMP_LOW_PRESS".to_owned()),
-            yellow_pump_low_press_id: context
-                .get_identifier("HYD_YELLOW_EDPUMP_LOW_PRESS".to_owned()),
+            low_press_id: context.get_identifier(format!("HYD_EDPUMP_{}_LOW_PRESS", pump_id)),
 
             is_powered: false,
             powered_by,
-            engine_number,
+            pump_id,
             should_pressurise: true,
 
             has_pressure_low_fault: false,
@@ -2213,16 +2340,17 @@ impl A320EngineDrivenPumpController {
 
     fn update_low_pressure(
         &mut self,
-        engine: &impl Engine,
+        engines: [&impl Engine; 4],
         hydraulic_circuit: &impl HydraulicPressureSensors,
         lgciu: &impl LgciuInterface,
     ) {
-        self.is_pressure_low =
-            self.should_pressurise() && !hydraulic_circuit.pump_section_switch_pressurised(0);
+        self.is_pressure_low = self.should_pressurise()
+            && !hydraulic_circuit
+                .pump_section_switch_pressurised(self.pump_id.into_pump_section_index());
 
-        // Fault inhibited if on ground AND engine oil pressure is low (11KS1 elec relay)
+        // TODO Fault inhibit copied from A320
         self.has_pressure_low_fault = self.is_pressure_low
-            && (!engine.oil_pressure_is_low()
+            && (!engines[self.pump_id.into_engine_index()].oil_pressure_is_low()
                 || !(lgciu.right_gear_compressed(false) && lgciu.left_gear_compressed(false)));
     }
 
@@ -2231,8 +2359,8 @@ impl A320EngineDrivenPumpController {
         reservoir: &Reservoir,
         overhead_panel: &A380HydraulicOverheadPanel,
     ) {
-        self.has_air_pressure_low_fault = reservoir.is_low_air_pressure()
-            && overhead_panel.edp_push_button_is_auto(self.engine_number);
+        self.has_air_pressure_low_fault =
+            reservoir.is_low_air_pressure() && overhead_panel.edp_push_button_is_auto(self.pump_id);
     }
 
     fn update_low_level(
@@ -2241,25 +2369,25 @@ impl A320EngineDrivenPumpController {
         overhead_panel: &A380HydraulicOverheadPanel,
     ) {
         self.has_low_level_fault =
-            reservoir.is_low_level() && overhead_panel.edp_push_button_is_auto(self.engine_number);
+            reservoir.is_low_level() && overhead_panel.edp_push_button_is_auto(self.pump_id);
     }
 
     fn update(
         &mut self,
         overhead_panel: &A380HydraulicOverheadPanel,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
-        engine: &impl Engine,
+        engines: [&impl Engine; 4],
         hydraulic_circuit: &impl HydraulicPressureSensors,
         lgciu: &impl LgciuInterface,
         reservoir: &Reservoir,
     ) {
         let mut should_pressurise_if_powered = false;
-        if overhead_panel.edp_push_button_is_auto(self.engine_number)
-            && !engine_fire_push_buttons.is_released(self.engine_number)
+        if overhead_panel.edp_push_button_is_auto(self.pump_id)
+            && !engine_fire_push_buttons.is_released(self.pump_id.into_engine_num())
         {
             should_pressurise_if_powered = true;
-        } else if overhead_panel.edp_push_button_is_off(self.engine_number)
-            || engine_fire_push_buttons.is_released(self.engine_number)
+        } else if overhead_panel.edp_push_button_is_off(self.pump_id)
+            || engine_fire_push_buttons.is_released(self.pump_id.into_engine_num())
         {
             should_pressurise_if_powered = false;
         }
@@ -2267,7 +2395,7 @@ impl A320EngineDrivenPumpController {
         // Inverted logic, no power means solenoid valve always leave pump in pressurise mode
         self.should_pressurise = !self.is_powered || should_pressurise_if_powered;
 
-        self.update_low_pressure(engine, hydraulic_circuit, lgciu);
+        self.update_low_pressure(engines, hydraulic_circuit, lgciu);
 
         self.update_low_air_pressure(reservoir, overhead_panel);
 
@@ -2286,20 +2414,14 @@ impl A320EngineDrivenPumpController {
         self.has_low_level_fault
     }
 }
-impl PumpController for A320EngineDrivenPumpController {
+impl PumpController for A380EngineDrivenPumpController {
     fn should_pressurise(&self) -> bool {
         self.should_pressurise
     }
 }
-impl SimulationElement for A320EngineDrivenPumpController {
+impl SimulationElement for A380EngineDrivenPumpController {
     fn write(&self, writer: &mut SimulatorWriter) {
-        if self.engine_number == 1 {
-            writer.write(&self.green_pump_low_press_id, self.is_pressure_low);
-        } else if self.engine_number == 2 {
-            writer.write(&self.yellow_pump_low_press_id, self.is_pressure_low);
-        } else {
-            panic!("The A320 only supports two engines.");
-        }
+        writer.write(&self.low_press_id, self.is_pressure_low);
     }
 
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
@@ -3716,19 +3838,29 @@ impl A380HydraulicOverheadPanel {
         self.yellow_epumpA_push_button.is_auto()
     }
 
-    fn edp_push_button_is_auto(&self, number: usize) -> bool {
-        match number {
-            1 => self.edp1A_push_button.is_auto(),
-            2 => self.edp2A_push_button.is_auto(),
-            _ => panic!("The A320 only supports two engines."),
+    fn edp_push_button_is_auto(&self, pump_id: A380EngineDrivenPumpId) -> bool {
+        match pump_id {
+            A380EngineDrivenPumpId::Edp1a => self.edp1A_push_button.is_auto(),
+            A380EngineDrivenPumpId::Edp2a => self.edp2A_push_button.is_auto(),
+            A380EngineDrivenPumpId::Edp3a => self.edp3A_push_button.is_auto(),
+            A380EngineDrivenPumpId::Edp4a => self.edp4A_push_button.is_auto(),
+            A380EngineDrivenPumpId::Edp1b => self.edp1B_push_button.is_auto(),
+            A380EngineDrivenPumpId::Edp2b => self.edp2B_push_button.is_auto(),
+            A380EngineDrivenPumpId::Edp3b => self.edp3B_push_button.is_auto(),
+            A380EngineDrivenPumpId::Edp4b => self.edp4B_push_button.is_auto(),
         }
     }
 
-    fn edp_push_button_is_off(&self, number: usize) -> bool {
-        match number {
-            1 => self.edp1A_push_button.is_off(),
-            2 => self.edp2A_push_button.is_off(),
-            _ => panic!("The A320 only supports two engines."),
+    fn edp_push_button_is_off(&self, pump_id: A380EngineDrivenPumpId) -> bool {
+        match pump_id {
+            A380EngineDrivenPumpId::Edp1a => self.edp1A_push_button.is_off(),
+            A380EngineDrivenPumpId::Edp2a => self.edp2A_push_button.is_off(),
+            A380EngineDrivenPumpId::Edp3a => self.edp3A_push_button.is_off(),
+            A380EngineDrivenPumpId::Edp4a => self.edp4A_push_button.is_off(),
+            A380EngineDrivenPumpId::Edp1b => self.edp1B_push_button.is_off(),
+            A380EngineDrivenPumpId::Edp2b => self.edp2B_push_button.is_off(),
+            A380EngineDrivenPumpId::Edp3b => self.edp3B_push_button.is_off(),
+            A380EngineDrivenPumpId::Edp4b => self.edp4B_push_button.is_off(),
         }
     }
 
@@ -5049,6 +5181,8 @@ mod tests {
             pneumatics: A320TestPneumatics,
             engine_1: LeapEngine,
             engine_2: LeapEngine,
+            engine_3: LeapEngine,
+            engine_4: LeapEngine,
             hydraulics: A380Hydraulic,
             overhead: A380HydraulicOverheadPanel,
             autobrake_panel: AutobrakePanel,
@@ -5088,6 +5222,8 @@ mod tests {
                     pneumatics: A320TestPneumatics::new(),
                     engine_1: LeapEngine::new(context, 1),
                     engine_2: LeapEngine::new(context, 2),
+                    engine_3: LeapEngine::new(context, 3),
+                    engine_4: LeapEngine::new(context, 4),
                     hydraulics: A380Hydraulic::new(context),
                     overhead: A380HydraulicOverheadPanel::new(context),
                     autobrake_panel: AutobrakePanel::new(context),
@@ -5312,8 +5448,12 @@ mod tests {
 
                 self.hydraulics.update(
                     context,
-                    &self.engine_1,
-                    &self.engine_2,
+                    [
+                        &self.engine_1,
+                        &self.engine_2,
+                        &self.engine_3,
+                        &self.engine_4,
+                    ],
                     &self.overhead,
                     &self.autobrake_panel,
                     &self.engine_fire_overhead,
@@ -5331,6 +5471,8 @@ mod tests {
             fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
                 self.engine_1.accept(visitor);
                 self.engine_2.accept(visitor);
+                self.engine_3.accept(visitor);
+                self.engine_4.accept(visitor);
                 self.landing_gear.accept(visitor);
                 self.lgcius.accept(visitor);
                 self.hydraulics.accept(visitor);

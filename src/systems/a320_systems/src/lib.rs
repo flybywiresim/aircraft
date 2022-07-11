@@ -52,6 +52,8 @@ pub struct A320 {
     fuel: A320Fuel,
     engine_1: LeapEngine,
     engine_2: LeapEngine,
+    engine_3: LeapEngine,
+    engine_4: LeapEngine,
     engine_fire_overhead: EngineFireOverheadPanel,
     electrical: A320Electrical,
     power_consumption: A320PowerConsumption,
@@ -87,6 +89,8 @@ impl A320 {
             fuel: A320Fuel::new(context),
             engine_1: LeapEngine::new(context, 1),
             engine_2: LeapEngine::new(context, 2),
+            engine_3: LeapEngine::new(context, 3),
+            engine_4: LeapEngine::new(context, 4),
             engine_fire_overhead: EngineFireOverheadPanel::new(context),
             electrical: A320Electrical::new(context),
             power_consumption: A320PowerConsumption::new(context),
@@ -170,8 +174,12 @@ impl Aircraft for A320 {
 
         self.hydraulic.update(
             context,
-            &self.engine_1,
-            &self.engine_2,
+            [
+                &self.engine_1,
+                &self.engine_2,
+                &self.engine_3,
+                &self.engine_4,
+            ],
             &self.hydraulic_overhead,
             &self.autobrake_panel,
             &self.engine_fire_overhead,
