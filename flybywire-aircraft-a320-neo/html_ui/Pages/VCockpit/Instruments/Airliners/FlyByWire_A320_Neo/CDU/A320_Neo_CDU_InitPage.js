@@ -355,10 +355,10 @@ class CDUInitPage {
             if (isFinite(mcdu.zeroFuelWeight)) {
                 zfwCell.update(NXUnits.kgToUser(mcdu.zeroFuelWeight).toFixed(1), Column.cyan);
             }
-            if (isFinite(getZfwcg())) {
-                zfwCgCell.update(getZfwcg().toFixed(1), Column.cyan);
+            if (isFinite(mcdu.zeroFuelWeightMassCenter)) {
+                zfwCgCell.update(mcdu.zeroFuelWeightMassCenter.toFixed(1), Column.cyan);
             }
-            if (isFinite(mcdu.zeroFuelWeight) && isFinite(getZfwcg())) {
+            if (isFinite(mcdu.zeroFuelWeight) && isFinite(mcdu.zeroFuelWeightMassCenter)) {
                 zfwCgCellDivider.updateAttributes(Column.cyan);
             }
         }

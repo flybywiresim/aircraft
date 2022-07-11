@@ -1546,7 +1546,7 @@ pub struct LeakMeasurementValve {
     downstream_pressure: Pressure,
 }
 impl LeakMeasurementValve {
-    const VALVE_RESPONSE_TIME_CONSTANT: Duration = Duration::from_millis(1500);
+    const VALVE_RESPONSE_TIME_CONSTANT: Duration = Duration::from_millis(500);
 
     fn new(powered_by: ElectricalBusType) -> Self {
         Self {
