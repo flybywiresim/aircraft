@@ -970,7 +970,7 @@ export class ManagedFlightPlan {
             if (runway) {
                 // Reference : AMM - 22-71-00 PB001, Page 4
                 if (departureIndex === -1 && transitionIndex === -1) {
-                    const altitudeFeet = (runway.elevation * 3.2808399) + 1500;
+                    const altitudeFeet = Math.round((runway.thresholdElevation / 0.3048)) + 1500;
                     const faLeg = procedure.buildWaypoint(`${airportInfo.ident}${runway.designation}`, runway.thresholdCoordinates);
                     faLeg.additionalData.legType = LegType.FA;
                     faLeg.additionalData.course = runway.direction;

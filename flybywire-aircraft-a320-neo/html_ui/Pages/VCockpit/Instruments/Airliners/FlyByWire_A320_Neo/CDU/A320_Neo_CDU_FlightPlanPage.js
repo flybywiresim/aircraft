@@ -30,7 +30,7 @@ class CDUFlightPlanPage {
             let runwayText, runwayAlt;
             if (runway) {
                 runwayText = Avionics.Utils.formatRunway(runway.designation);
-                runwayAlt = (runway.elevation * 3.280).toFixed(0).toString();
+                runwayAlt = (runway.thresholdElevation / 0.3048).toFixed(0).toString();
             }
             return [runwayText, runwayAlt];
         }
