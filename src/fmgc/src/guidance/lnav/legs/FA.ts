@@ -53,7 +53,7 @@ export class FALeg extends Leg {
     }
 
     get ident(): string {
-        return (Math.round(this.altitude / 10) * 10).toString();
+        return Math.round(this.altitude).toString();
     }
 
     get mapSymbols(): GeometryNdSymbol[] {
