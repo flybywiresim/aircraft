@@ -145,8 +145,11 @@ declare global {
     }
 
     interface OneWayRunway {
+        /** full runway name e.g. 23L, 05 */
         designation: string;
+        /** suffix char e.g. L, C, R */
         designator: RunwayDesignatorChar;
+        /** runway bearing in degrees true */
         direction: number;
         beginningCoordinates: LatLongAlt;
         endCoordinates: LatLongAlt;

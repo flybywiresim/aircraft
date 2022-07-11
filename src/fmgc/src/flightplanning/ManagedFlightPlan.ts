@@ -968,20 +968,15 @@ export class ManagedFlightPlan {
             const runway: OneWayRunway | null = this.getOriginRunway();
 
             if (runway) {
-                // console.error('bruh');
                 // Reference : AMM - 22-71-00 PB001, Page 4
                 if (departureIndex === -1 && transitionIndex === -1) {
-                    const TEMPORARY_VERTICAL_SPEED = 2000.0; // ft/min
-                    const TEMPORARY_GROUND_SPEED = 160; // knots
-
                     const altitudeFeet = (runway.elevation * 3.2808399) + 1500;
-                    const distanceInNM = altitudeFeet / TEMPORARY_VERTICAL_SPEED * (TEMPORARY_GROUND_SPEED / 60);
+                    const faLeg = procedure.buildWaypoint(`${airportInfo.ident}${runway.designation}`, runway.thresholdCoordinates);
+                    faLeg.additionalData.legType = LegType.FA;
+                    faLeg.additionalData.course = runway.direction;
+                    faLeg.legAltitude1 = altitudeFeet;
+                    faLeg.legAltitudeDescription = AltitudeDescriptor.AtOrAbove;
 
-                    const coordinates = GeoMath.relativeBearingDistanceToCoords(runway.direction, distanceInNM, runway.endCoordinates);
-
-                    // TODO fix and make actual FA leg...
-                    const faLeg = procedure.buildWaypoint(`${Math.round(altitudeFeet)}`, coordinates);
-                    // TODO should this check for unclr discont? (probs not)
                     faLeg.endsInDiscontinuity = true;
                     faLeg.discontinuityCanBeCleared = true;
 
