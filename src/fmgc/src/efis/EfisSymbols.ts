@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { FlightPlanManager, WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
+import { FlightPlanManager, FlightPlans, WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
 import { EfisOption, Mode, NdSymbol, NdSymbolTypeFlags, RangeSetting, rangeSettings } from '@shared/NavigationDisplay';
 import { GuidanceManager } from '@fmgc/guidance/GuidanceManager';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
@@ -11,6 +11,7 @@ import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { SegmentType } from '@fmgc/wtsdk';
 import { FlowEventSync } from '@shared/FlowEventSync';
 import { AltitudeConstraint, AltitudeConstraintType, SpeedConstraint, SpeedConstraintType } from '@fmgc/guidance/lnav/legs';
+import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
 import { LegType, RunwaySurface, TurnDirection, VorType } from '../types/fstypes/FSEnums';
 import { NearbyFacilities } from './NearbyFacilities';
 
@@ -88,9 +89,6 @@ export class EfisSymbols {
         const planCentre = this.flightPlanManager.getWaypoint(planCentreIndex)?.infos.coordinates;
         const planCentreChanged = planCentre?.lat !== this.lastPlanCentre?.lat || planCentre?.long !== this.lastPlanCentre?.long;
         this.lastPlanCentre = planCentre;
-
-        const activeFp = this.flightPlanManager.getCurrentFlightPlan();
-        // TODO temp f-pln
 
         const hasSuitableRunway = (airport: RawAirport): boolean => {
             for (const runway of airport.runways) {
@@ -251,13 +249,10 @@ export class EfisSymbols {
                 }
             }
 
-            // TODO don't send the waypoint before active once FP sequencing is properly implemented
-            // (currently sequences with guidance which is too early)
-            // TODO look at temp geom when tmpy in use
-            for (const [fpIndex, leg] of this.guidanceController.activeGeometry.legs.entries()) {
-                const wp = activeFp.getWaypoint(fpIndex);
+            const activeFp = this.flightPlanManager.getFlightPlan(FlightPlans.Active);
 
-                if (!leg || !wp || leg.isNull) {
+            for (const [_fp, fpIndex, wp, leg] of this.flightPlanEntries()) {
+                if (!leg) {
                     continue;
                 }
 
@@ -400,6 +395,40 @@ export class EfisSymbols {
                 this.blockUpdate = false;
             }, 200);
         }
+    }
+
+    private flightPlanEntries(): Iterable<[FlightPlans, number, WayPoint, Leg]> {
+        const activeLegs = this.guidanceController.activeGeometry?.legs ?? new Map();
+        const tmpyLegs = this.guidanceController.temporaryGeometry?.legs ?? new Map();
+        const activeFp = this.flightPlanManager.getFlightPlan(FlightPlans.Active);
+        const tmpyFp = this.flightPlanManager.getFlightPlan(FlightPlans.Temporary);
+        const tmpyActive = this.flightPlanManager.isCurrentFlightPlanTemporary();
+        let i = 0;
+
+        return {
+            [Symbol.iterator]: () => ({
+                next: () => {
+                    const activeFpLength = activeFp.length - activeFp.activeWaypointIndex;
+                    const tmpy = i >= activeFpLength && tmpyActive;
+                    const fpIndex = tmpy ? i - activeFpLength + tmpyFp.activeWaypointIndex : i + activeFp.activeWaypointIndex;
+                    i++;
+
+                    const wp = tmpy ? tmpyFp.getWaypoint(fpIndex) : activeFp.getWaypoint(fpIndex);
+                    if (!wp) {
+                        return { value: null, done: true };
+                    }
+
+                    return {
+                        value: [
+                            tmpy ? FlightPlans.Temporary : FlightPlans.Active,
+                            fpIndex,
+                            wp,
+                            tmpy ? tmpyLegs.get(fpIndex) : activeLegs.get(fpIndex),
+                        ],
+                    };
+                },
+            }),
+        };
     }
 
     private vorDmeTypeFlag(type: VorType): NdSymbolTypeFlags {
