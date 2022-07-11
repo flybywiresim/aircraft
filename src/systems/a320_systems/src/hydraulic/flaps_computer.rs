@@ -402,7 +402,7 @@ impl SimulationElement for SlatFlapComplex {
 
 #[cfg(test)]
 mod tests {
-    use crate::hydraulic::A320Hydraulic;
+    use crate::hydraulic::A380Hydraulic;
 
     use super::*;
     use ntest::assert_about_eq;
@@ -428,13 +428,13 @@ mod tests {
     impl FeedbackPositionPickoffUnit for SlatFlapGear {
         fn angle(&self) -> Angle {
             let synchro_gear_breakpoints = match self.surface_type.as_str() {
-                "FLAPS" => A320Hydraulic::FLAP_FPPU_TO_SURFACE_ANGLE_BREAKPTS,
-                "SLATS" => A320Hydraulic::SLAT_FPPU_TO_SURFACE_ANGLE_BREAKPTS,
+                "FLAPS" => A380Hydraulic::FLAP_FPPU_TO_SURFACE_ANGLE_BREAKPTS,
+                "SLATS" => A380Hydraulic::SLAT_FPPU_TO_SURFACE_ANGLE_BREAKPTS,
                 _ => panic!(),
             };
             let synchro_gear_degrees = match self.surface_type.as_str() {
-                "FLAPS" => A320Hydraulic::FLAP_FPPU_TO_SURFACE_ANGLE_DEGREES,
-                "SLATS" => A320Hydraulic::SLAT_FPPU_TO_SURFACE_ANGLE_DEGREES,
+                "FLAPS" => A380Hydraulic::FLAP_FPPU_TO_SURFACE_ANGLE_DEGREES,
+                "SLATS" => A380Hydraulic::SLAT_FPPU_TO_SURFACE_ANGLE_DEGREES,
                 _ => panic!(),
             };
             Angle::new::<degree>(interpolation(

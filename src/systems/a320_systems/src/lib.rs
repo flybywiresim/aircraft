@@ -17,7 +17,7 @@ use electrical::{
     A320Electrical, A320ElectricalOverheadPanel, A320EmergencyElectricalOverheadPanel,
     APU_START_MOTOR_BUS_TYPE,
 };
-use hydraulic::{A320Hydraulic, A320HydraulicOverheadPanel};
+use hydraulic::{A380Hydraulic, A380HydraulicOverheadPanel};
 use navigation::A320RadioAltimeters;
 use power_consumption::A320PowerConsumption;
 use systems::simulation::InitContext;
@@ -57,8 +57,8 @@ pub struct A320 {
     power_consumption: A320PowerConsumption,
     ext_pwr: ExternalPowerSource,
     lgcius: LandingGearControlInterfaceUnitSet,
-    hydraulic: A320Hydraulic,
-    hydraulic_overhead: A320HydraulicOverheadPanel,
+    hydraulic: A380Hydraulic,
+    hydraulic_overhead: A380HydraulicOverheadPanel,
     autobrake_panel: AutobrakePanel,
     landing_gear: LandingGear,
     pressurization: Pressurization,
@@ -96,8 +96,8 @@ impl A320 {
                 ElectricalBusType::DirectCurrentEssential,
                 ElectricalBusType::DirectCurrentGndFltService,
             ),
-            hydraulic: A320Hydraulic::new(context),
-            hydraulic_overhead: A320HydraulicOverheadPanel::new(context),
+            hydraulic: A380Hydraulic::new(context),
+            hydraulic_overhead: A380HydraulicOverheadPanel::new(context),
             autobrake_panel: AutobrakePanel::new(context),
             landing_gear: LandingGear::new(context),
             pressurization: Pressurization::new(context),
@@ -184,7 +184,6 @@ impl Aircraft for A320 {
 
         self.pneumatic.update_hydraulic_reservoir_spatial_volumes(
             self.hydraulic.green_reservoir(),
-            self.hydraulic.blue_reservoir(),
             self.hydraulic.yellow_reservoir(),
         );
 
