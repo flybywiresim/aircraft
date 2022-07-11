@@ -967,9 +967,9 @@ pub(super) struct A380Hydraulic {
     brake_steer_computer: A320HydraulicBrakeSteerComputerUnit,
 
     green_circuit: HydraulicCircuit,
-    green_circuit_controller: A320HydraulicCircuitController,
+    green_circuit_controller: A380HydraulicCircuitController,
     yellow_circuit: HydraulicCircuit,
-    yellow_circuit_controller: A320HydraulicCircuitController,
+    yellow_circuit_controller: A380HydraulicCircuitController,
 
     engine_driven_pump_1a: EngineDrivenPump,
     engine_driven_pump_1a_controller: A380EngineDrivenPumpController,
@@ -1109,15 +1109,9 @@ impl A380Hydraulic {
             brake_steer_computer: A320HydraulicBrakeSteerComputerUnit::new(context),
 
             green_circuit: A320HydraulicCircuitFactory::new_green_circuit(context),
-            green_circuit_controller: A320HydraulicCircuitController::new(
-                Some(1),
-                HydraulicColor::Green,
-            ),
+            green_circuit_controller: A380HydraulicCircuitController::new(HydraulicColor::Green),
             yellow_circuit: A320HydraulicCircuitFactory::new_yellow_circuit(context),
-            yellow_circuit_controller: A320HydraulicCircuitController::new(
-                Some(2),
-                HydraulicColor::Yellow,
-            ),
+            yellow_circuit_controller: A380HydraulicCircuitController::new(HydraulicColor::Yellow),
 
             engine_driven_pump_1a: EngineDrivenPump::new(context, "GREEN_1A"),
             engine_driven_pump_1a_controller: A380EngineDrivenPumpController::new(
@@ -2168,21 +2162,19 @@ impl GearSystemController for A320GearHydraulicController {
     }
 }
 
-struct A320HydraulicCircuitController {
+struct A380HydraulicCircuitController {
     circuit_id: HydraulicColor,
-    engine_number: Option<usize>,
-    should_open_fire_shutoff_valve: bool,
+    should_open_fire_shutoff_valve: [bool; 2],
     should_open_leak_measurement_valve: bool,
     cargo_door_in_use: DelayedFalseLogicGate,
 }
-impl A320HydraulicCircuitController {
+impl A380HydraulicCircuitController {
     const DELAY_TO_REOPEN_LEAK_VALVE_AFTER_CARGO_DOOR_USE: Duration = Duration::from_secs(15);
 
-    fn new(engine_number: Option<usize>, circuit_id: HydraulicColor) -> Self {
+    fn new(circuit_id: HydraulicColor) -> Self {
         Self {
             circuit_id,
-            engine_number,
-            should_open_fire_shutoff_valve: true,
+            should_open_fire_shutoff_valve: [true, true],
             should_open_leak_measurement_valve: true,
             cargo_door_in_use: DelayedFalseLogicGate::new(
                 Self::DELAY_TO_REOPEN_LEAK_VALVE_AFTER_CARGO_DOOR_USE,
@@ -2202,9 +2194,21 @@ impl A320HydraulicCircuitController {
             yellow_epump_controller.should_pressurise_for_cargo_door_operation(),
         );
 
-        if let Some(eng_number) = self.engine_number {
-            self.should_open_fire_shutoff_valve = !engine_fire_push_buttons.is_released(eng_number);
-        }
+        match self.circuit_id {
+            HydraulicColor::Green => {
+                self.should_open_fire_shutoff_valve = [
+                    !engine_fire_push_buttons.is_released(1),
+                    !engine_fire_push_buttons.is_released(2),
+                ];
+            }
+            HydraulicColor::Yellow => {
+                self.should_open_fire_shutoff_valve = [
+                    !engine_fire_push_buttons.is_released(3),
+                    !engine_fire_push_buttons.is_released(4),
+                ];
+            }
+            HydraulicColor::Blue => panic!("NO BLUE CIRCUIT IN A380"),
+        };
 
         self.update_leak_measurement_valve(context, overhead_panel);
     }
@@ -2231,10 +2235,17 @@ impl A320HydraulicCircuitController {
         context.indicated_airspeed() >= Velocity::new::<knot>(100.)
     }
 }
-impl HydraulicCircuitController for A320HydraulicCircuitController {
-    fn should_open_fire_shutoff_valve(&self, _: usize) -> bool {
-        // A320 only has one main pump per pump section thus index not useful
-        self.should_open_fire_shutoff_valve
+impl HydraulicCircuitController for A380HydraulicCircuitController {
+    fn should_open_fire_shutoff_valve(&self, fire_valve_index: usize) -> bool {
+        // There is one fire valve per pump section by hydraulic library design, so that's 2 per engine
+        // As A380 has only one fire valve per engine, we drive both engine fire valves at once
+        if fire_valve_index == 1 || fire_valve_index == 2 {
+            self.should_open_fire_shutoff_valve[0]
+        } else if fire_valve_index == 3 || fire_valve_index == 4 {
+            self.should_open_fire_shutoff_valve[1]
+        } else {
+            panic!("ERROR IN FIRE VALVE INDEX REQUEST")
+        }
     }
 
     fn should_open_leak_measurement_valve(&self) -> bool {
@@ -9311,7 +9322,7 @@ mod tests {
 
             // Only reopens after a delay
             test_bed = test_bed.run_waiting_for(
-                A320HydraulicCircuitController::DELAY_TO_REOPEN_LEAK_VALVE_AFTER_CARGO_DOOR_USE,
+                A380HydraulicCircuitController::DELAY_TO_REOPEN_LEAK_VALVE_AFTER_CARGO_DOOR_USE,
             );
             assert!(test_bed.is_yellow_leak_meas_valve_commanded_open());
 
