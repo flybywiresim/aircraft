@@ -26,6 +26,8 @@ class CDUVerticalRevisionPage {
                     if (destinationRunway) {
                         waypointIdent += Avionics.Utils.formatRunway(destinationRunway.designation);
                     }
+                } else if (mcdu.isXaLeg(waypoint)) {
+                    waypointIdent = Math.round(waypoint.legAltitude1).toString();
                 }
             }
             let coordinates = "---";
