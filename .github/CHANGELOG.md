@@ -34,6 +34,7 @@
 1. [MCDU] Added formatter to improve text alignment and ease integration - @derl30n (Leon)
 1. [EFB] Fix default unit to match UI and other consumers - @tracernz (Mike)
 1. [MCDU] Added 4:3 aspect ratio compatibility to remote mcdu client - @tyler58546 (tyler58546)
+1. [HYD] Fixed too slow leak measurement valves operation - @Crocket63 (crocket)
 
 ## 0.8.0
 
