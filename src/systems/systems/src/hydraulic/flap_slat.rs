@@ -134,12 +134,14 @@ pub struct FlapSlatAssembly {
 
     synchro_gear_breakpoints: [f64; 12],
     final_surface_angle_carac: [f64; 12],
+
+    circuit_target_pressure: Pressure,
 }
 impl FlapSlatAssembly {
     const LOW_PASS_FILTER_SURFACE_POSITION_TRANSIENT_TIME_CONSTANT: Duration =
         Duration::from_millis(300);
     const BRAKE_PRESSURE_MIN_TO_ALLOW_MOVEMENT_PSI: f64 = 500.;
-    const MAX_CIRCUIT_PRESSURE_PSI: f64 = 3000.;
+
     const ANGLE_THRESHOLD_FOR_REDUCED_SPEED_DEGREES: f64 = 6.69;
     const ANGULAR_SPEED_LIMIT_FACTOR_WHEN_APROACHING_POSITION: f64 = 0.5;
     const MIN_ANGULAR_SPEED_TO_REPORT_MOVING: f64 = 0.01;
@@ -155,6 +157,7 @@ impl FlapSlatAssembly {
         surface_gear_ratio: Ratio,
         synchro_gear_breakpoints: [f64; 12],
         final_surface_angle_carac: [f64; 12],
+        circuit_target_pressure: Pressure,
     ) -> Self {
         Self {
             position_left_percent_id: context
@@ -182,6 +185,7 @@ impl FlapSlatAssembly {
             right_motor: FlapSlatHydraulicMotor::new(motor_displacement),
             synchro_gear_breakpoints,
             final_surface_angle_carac,
+            circuit_target_pressure,
         }
     }
 
@@ -283,12 +287,18 @@ impl FlapSlatAssembly {
 
         let new_theoretical_max_speed_left_side = AngularVelocity::new::<radian_per_second>(
             0.5 * self.full_pressure_max_speed.get::<radian_per_second>()
-                * Self::max_speed_factor_from_pressure(final_left_pressure),
+                * Self::max_speed_factor_from_pressure(
+                    final_left_pressure,
+                    self.circuit_target_pressure,
+                ),
         );
 
         let new_theoretical_max_speed_right_side = AngularVelocity::new::<radian_per_second>(
             0.5 * self.full_pressure_max_speed.get::<radian_per_second>()
-                * Self::max_speed_factor_from_pressure(final_right_pressure),
+                * Self::max_speed_factor_from_pressure(
+                    final_right_pressure,
+                    self.circuit_target_pressure,
+                ),
         );
 
         let mut new_theoretical_max_speed =
@@ -303,12 +313,16 @@ impl FlapSlatAssembly {
             .update(context.delta(), new_theoretical_max_speed);
     }
 
-    fn max_speed_factor_from_pressure(current_pressure: Pressure) -> f64 {
+    fn max_speed_factor_from_pressure(
+        current_pressure: Pressure,
+        circuit_target_pressure: Pressure,
+    ) -> f64 {
         let press_corrected =
             current_pressure.get::<psi>() - Self::BRAKE_PRESSURE_MIN_TO_ALLOW_MOVEMENT_PSI;
         if current_pressure > Pressure::new::<psi>(Self::BRAKE_PRESSURE_MIN_TO_ALLOW_MOVEMENT_PSI) {
             (0.0004 * press_corrected.powi(2)
-                / (Self::MAX_CIRCUIT_PRESSURE_PSI - Self::BRAKE_PRESSURE_MIN_TO_ALLOW_MOVEMENT_PSI))
+                / (circuit_target_pressure.get::<psi>()
+                    - Self::BRAKE_PRESSURE_MIN_TO_ALLOW_MOVEMENT_PSI))
                 .min(1.)
                 .max(0.)
         } else {
@@ -493,6 +507,8 @@ mod tests {
 
     use crate::simulation::test::{SimulationTestBed, TestBed};
 
+    const MAX_CIRCUIT_PRESSURE_PSI: f64 = 3000.;
+
     #[derive(Default)]
     struct TestHydraulicSection {
         pressure: Pressure,
@@ -636,8 +652,8 @@ mod tests {
         test_bed.command(|a| a.set_angle_request(Some(Angle::new::<degree>(20.))));
         test_bed.command(|a| {
             a.set_current_pressure(
-                Pressure::new::<psi>(FlapSlatAssembly::MAX_CIRCUIT_PRESSURE_PSI),
-                Pressure::new::<psi>(FlapSlatAssembly::MAX_CIRCUIT_PRESSURE_PSI),
+                Pressure::new::<psi>(MAX_CIRCUIT_PRESSURE_PSI),
+                Pressure::new::<psi>(MAX_CIRCUIT_PRESSURE_PSI),
             )
         });
 
@@ -683,8 +699,8 @@ mod tests {
         test_bed.command(|a| a.set_angle_request(Some(Angle::new::<degree>(20.))));
         test_bed.command(|a| {
             a.set_current_pressure(
-                Pressure::new::<psi>(FlapSlatAssembly::MAX_CIRCUIT_PRESSURE_PSI),
-                Pressure::new::<psi>(FlapSlatAssembly::MAX_CIRCUIT_PRESSURE_PSI),
+                Pressure::new::<psi>(MAX_CIRCUIT_PRESSURE_PSI),
+                Pressure::new::<psi>(MAX_CIRCUIT_PRESSURE_PSI),
             )
         });
 
@@ -735,7 +751,7 @@ mod tests {
         test_bed.command(|a| {
             a.set_current_pressure(
                 Pressure::new::<psi>(0.),
-                Pressure::new::<psi>(FlapSlatAssembly::MAX_CIRCUIT_PRESSURE_PSI),
+                Pressure::new::<psi>(MAX_CIRCUIT_PRESSURE_PSI),
             )
         });
 
@@ -778,7 +794,7 @@ mod tests {
         test_bed.command(|a| a.set_angle_request(Some(Angle::new::<degree>(20.))));
         test_bed.command(|a| {
             a.set_current_pressure(
-                Pressure::new::<psi>(FlapSlatAssembly::MAX_CIRCUIT_PRESSURE_PSI),
+                Pressure::new::<psi>(MAX_CIRCUIT_PRESSURE_PSI),
                 Pressure::new::<psi>(0.),
             )
         });
@@ -823,8 +839,8 @@ mod tests {
         test_bed.command(|a| a.set_angle_request(Some(flap_position_request)));
         test_bed.command(|a| {
             a.set_current_pressure(
-                Pressure::new::<psi>(FlapSlatAssembly::MAX_CIRCUIT_PRESSURE_PSI),
-                Pressure::new::<psi>(FlapSlatAssembly::MAX_CIRCUIT_PRESSURE_PSI),
+                Pressure::new::<psi>(MAX_CIRCUIT_PRESSURE_PSI),
+                Pressure::new::<psi>(MAX_CIRCUIT_PRESSURE_PSI),
             )
         });
 
@@ -849,8 +865,8 @@ mod tests {
         test_bed.command(|a| a.set_angle_request(Some(flap_position_request)));
         test_bed.command(|a| {
             a.set_current_pressure(
-                Pressure::new::<psi>(FlapSlatAssembly::MAX_CIRCUIT_PRESSURE_PSI),
-                Pressure::new::<psi>(FlapSlatAssembly::MAX_CIRCUIT_PRESSURE_PSI),
+                Pressure::new::<psi>(MAX_CIRCUIT_PRESSURE_PSI),
+                Pressure::new::<psi>(MAX_CIRCUIT_PRESSURE_PSI),
             )
         });
 
@@ -915,8 +931,8 @@ mod tests {
         test_bed.command(|a| a.set_angle_per_sfcc(None, Some(flap_position_request)));
         test_bed.command(|a| {
             a.set_current_pressure(
-                Pressure::new::<psi>(FlapSlatAssembly::MAX_CIRCUIT_PRESSURE_PSI),
-                Pressure::new::<psi>(FlapSlatAssembly::MAX_CIRCUIT_PRESSURE_PSI),
+                Pressure::new::<psi>(MAX_CIRCUIT_PRESSURE_PSI),
+                Pressure::new::<psi>(MAX_CIRCUIT_PRESSURE_PSI),
             )
         });
 
@@ -945,8 +961,8 @@ mod tests {
         test_bed.command(|a| a.set_angle_request(Some(flap_position_request)));
         test_bed.command(|a| {
             a.set_current_pressure(
-                Pressure::new::<psi>(FlapSlatAssembly::MAX_CIRCUIT_PRESSURE_PSI),
-                Pressure::new::<psi>(FlapSlatAssembly::MAX_CIRCUIT_PRESSURE_PSI),
+                Pressure::new::<psi>(MAX_CIRCUIT_PRESSURE_PSI),
+                Pressure::new::<psi>(MAX_CIRCUIT_PRESSURE_PSI),
             )
         });
 
@@ -973,8 +989,8 @@ mod tests {
         test_bed.command(|a| a.set_angle_request(Some(flap_position_request)));
         test_bed.command(|a| {
             a.set_current_pressure(
-                Pressure::new::<psi>(FlapSlatAssembly::MAX_CIRCUIT_PRESSURE_PSI),
-                Pressure::new::<psi>(FlapSlatAssembly::MAX_CIRCUIT_PRESSURE_PSI),
+                Pressure::new::<psi>(MAX_CIRCUIT_PRESSURE_PSI),
+                Pressure::new::<psi>(MAX_CIRCUIT_PRESSURE_PSI),
             )
         });
 
@@ -1011,8 +1027,8 @@ mod tests {
         test_bed.command(|a| a.set_angle_request(Some(flap_position_request)));
         test_bed.command(|a| {
             a.set_current_pressure(
-                Pressure::new::<psi>(FlapSlatAssembly::MAX_CIRCUIT_PRESSURE_PSI),
-                Pressure::new::<psi>(FlapSlatAssembly::MAX_CIRCUIT_PRESSURE_PSI),
+                Pressure::new::<psi>(MAX_CIRCUIT_PRESSURE_PSI),
+                Pressure::new::<psi>(MAX_CIRCUIT_PRESSURE_PSI),
             )
         });
 
@@ -1064,6 +1080,7 @@ mod tests {
                 0., 10.318, 18.2561, 19.134, 21.59, 23.098, 24.13, 26.196, 26.72, 28.42, 36.703,
                 40.,
             ],
+            Pressure::new::<psi>(MAX_CIRCUIT_PRESSURE_PSI),
         )
     }
 }
