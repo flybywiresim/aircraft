@@ -5491,6 +5491,18 @@ mod tests {
                 );
 
                 self.overhead.update(&self.hydraulics);
+
+                println!(
+                    "GREEN PRESS {:.0} psi  YELLOW PRESS {:.0} psi",
+                    self.hydraulics
+                        .green_circuit
+                        .system_section_pressure()
+                        .get::<psi>(),
+                    self.hydraulics
+                        .yellow_circuit
+                        .system_section_pressure()
+                        .get::<psi>()
+                );
             }
         }
         impl SimulationElement for A320HydraulicsTestAircraft {
