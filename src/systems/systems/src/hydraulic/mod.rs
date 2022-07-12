@@ -1839,13 +1839,12 @@ impl Pump {
     }
 
     fn update_cavitation(&mut self, reservoir: &Reservoir) {
-        self.cavitation_efficiency = self
-            .pump_characteristics
-            .cavitation_efficiency(reservoir.air_pressure());
-
-        if reservoir.is_empty() {
-            self.cavitation_efficiency = Ratio::new::<ratio>(0.);
-        }
+        self.cavitation_efficiency = if !reservoir.is_empty() {
+            self.pump_characteristics
+                .cavitation_efficiency(reservoir.air_pressure())
+        } else {
+            Ratio::new::<ratio>(0.)
+        };
     }
 
     fn calculate_displacement<T: PumpController>(
