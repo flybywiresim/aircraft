@@ -11,7 +11,6 @@ export interface PFDSimvars {
     heading: number;
     altitude: number;
     speed: number;
-    alphaProt: number;
     noseGearCompressed: boolean;
     leftMainGearCompressed: boolean;
     rightMainGearCompressed: boolean;
@@ -90,7 +89,6 @@ export interface PFDSimvars {
     expediteMode: boolean;
     setHoldSpeed: boolean;
     vls: number;
-    alphaLim: number;
     trkFpaDeselectedTCAS: boolean;
     tcasRaInhibited: boolean;
     groundSpeed: number;
@@ -125,6 +123,14 @@ export interface PFDSimvars {
     xtk: number;
     ldevRequestLeft: boolean;
     ldevRequestRight: boolean;
+    fac1Healthy: boolean;
+    fac2Healthy: boolean;
+    fac1VAlphaProtRaw: number;
+    fac2VAlphaProtRaw: number;
+    fac1VAlphaMaxRaw: number;
+    fac2VAlphaMaxRaw: number;
+    fac1VStallWarnRaw: number;
+    fac2VStallWarnRaw: number;
   }
 
 export enum PFDVars {
@@ -138,7 +144,6 @@ export enum PFDVars {
     heading = 'L:A32NX_ADIRS_IR_1_HEADING',
     altitude = 'L:A32NX_ADIRS_ADR_1_ALTITUDE',
     speed = 'L:A32NX_ADIRS_ADR_1_COMPUTED_AIRSPEED',
-    alphaProt = 'L:A32NX_SPEEDS_ALPHA_PROTECTION',
     noseGearCompressed = 'L:A32NX_LGCIU_1_NOSE_GEAR_COMPRESSED',
     leftMainGearCompressed = 'L:A32NX_LGCIU_1_LEFT_GEAR_COMPRESSED',
     rightMainGearCompressed = 'L:A32NX_LGCIU_1_RIGHT_GEAR_COMPRESSED',
@@ -217,7 +222,6 @@ export enum PFDVars {
     expediteMode = 'L:A32NX_FMA_EXPEDITE_MODE',
     setHoldSpeed = 'L:A32NX_PFD_MSG_SET_HOLD_SPEED',
     vls = 'L:A32NX_SPEEDS_VLS',
-    alphaLim = 'L:A32NX_SPEEDS_ALPHA_MAX',
     trkFpaDeselectedTCAS= 'L:A32NX_AUTOPILOT_TCAS_MESSAGE_TRK_FPA_DESELECTION',
     tcasRaInhibited = 'L:A32NX_AUTOPILOT_TCAS_MESSAGE_RA_INHIBITED',
     groundSpeed = 'L:A32NX_ADIRS_IR_1_GROUND_SPEED',
@@ -252,6 +256,14 @@ export enum PFDVars {
     xtk = 'L:A32NX_FG_CROSS_TRACK_ERROR',
     ldevLeft = 'L:A32NX_FMGC_L_LDEV_REQUEST',
     ldevRight = 'L:A32NX_FMGC_R_LDEV_REQUEST',
+    fac1Healthy = 'L:A32NX_FAC_1_HEALTHY',
+    fac2Healthy = 'L:A32NX_FAC_2_HEALTHY',
+    fac1VAlphaProtRaw = 'L:A32NX_FAC_1_V_ALPHA_PROT',
+    fac2VAlphaProtRaw = 'L:A32NX_FAC_2_V_ALPHA_PROT',
+    fac1VAlphaMaxRaw = 'L:A32NX_FAC_1_V_ALPHA_LIM',
+    fac2VAlphaMaxRaw = 'L:A32NX_FAC_2_V_ALPHA_LIM',
+    fac1VStallWarnRaw = 'L:A32NX_FAC_1_V_STALL_WARN',
+    fac2VStallWarnRaw = 'L:A32NX_FAC_2_V_STALL_WARN',
   }
 
 /** A publisher to poll and publish nav/com simvars. */
@@ -267,7 +279,6 @@ export class PFDSimvarPublisher extends SimVarPublisher<PFDSimvars> {
         ['heading', { name: PFDVars.heading, type: SimVarValueType.Number }],
         ['altitude', { name: PFDVars.altitude, type: SimVarValueType.Number }],
         ['speed', { name: PFDVars.speed, type: SimVarValueType.Number }],
-        ['alphaProt', { name: PFDVars.alphaProt, type: SimVarValueType.Number }],
         ['noseGearCompressed', { name: PFDVars.noseGearCompressed, type: SimVarValueType.Bool }],
         ['leftMainGearCompressed', { name: PFDVars.leftMainGearCompressed, type: SimVarValueType.Bool }],
         ['rightMainGearCompressed', { name: PFDVars.rightMainGearCompressed, type: SimVarValueType.Bool }],
@@ -346,7 +357,6 @@ export class PFDSimvarPublisher extends SimVarPublisher<PFDSimvars> {
         ['expediteMode', { name: PFDVars.expediteMode, type: SimVarValueType.Bool }],
         ['setHoldSpeed', { name: PFDVars.setHoldSpeed, type: SimVarValueType.Bool }],
         ['vls', { name: PFDVars.vls, type: SimVarValueType.Number }],
-        ['alphaLim', { name: PFDVars.alphaLim, type: SimVarValueType.Number }],
         ['trkFpaDeselectedTCAS', { name: PFDVars.trkFpaDeselectedTCAS, type: SimVarValueType.Bool }],
         ['tcasRaInhibited', { name: PFDVars.tcasRaInhibited, type: SimVarValueType.Bool }],
         ['groundSpeed', { name: PFDVars.groundSpeed, type: SimVarValueType.Number }],
@@ -381,6 +391,14 @@ export class PFDSimvarPublisher extends SimVarPublisher<PFDSimvars> {
         ['xtk', { name: PFDVars.xtk, type: SimVarValueType.NM }],
         ['ldevRequestLeft', { name: PFDVars.ldevLeft, type: SimVarValueType.Bool }],
         ['ldevRequestRight', { name: PFDVars.ldevRight, type: SimVarValueType.Bool }],
+        ['fac1Healthy', { name: PFDVars.fac1Healthy, type: SimVarValueType.Bool }],
+        ['fac2Healthy', { name: PFDVars.fac2Healthy, type: SimVarValueType.Bool }],
+        ['fac1VAlphaProtRaw', { name: PFDVars.fac1VAlphaProtRaw, type: SimVarValueType.Number }],
+        ['fac2VAlphaProtRaw', { name: PFDVars.fac2VAlphaProtRaw, type: SimVarValueType.Number }],
+        ['fac1VAlphaMaxRaw', { name: PFDVars.fac1VAlphaMaxRaw, type: SimVarValueType.Number }],
+        ['fac2VAlphaMaxRaw', { name: PFDVars.fac2VAlphaMaxRaw, type: SimVarValueType.Number }],
+        ['fac1VStallWarnRaw', { name: PFDVars.fac1VStallWarnRaw, type: SimVarValueType.Number }],
+        ['fac2VStallWarnRaw', { name: PFDVars.fac2VStallWarnRaw, type: SimVarValueType.Number }],
     ])
 
     public constructor(bus: EventBus) {

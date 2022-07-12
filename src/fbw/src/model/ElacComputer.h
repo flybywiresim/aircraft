@@ -290,6 +290,8 @@ class ElacComputer final
     uint32_T SSM_ns;
     uint32_T SSM_bm;
     uint32_T SSM_nl;
+    uint32_T SSM_grm;
+    uint32_T SSM_gzm;
     real32_T Data;
     real32_T Data_f;
     real32_T Data_fw;
@@ -521,6 +523,8 @@ class ElacComputer final
     real32_T Data_fk;
     real32_T Data_bu;
     real32_T Data_o23;
+    real32_T Data_g3;
+    real32_T Data_icc;
     boolean_T ground_spoilers_active_2;
     boolean_T is_unit_1;
     boolean_T is_unit_2;

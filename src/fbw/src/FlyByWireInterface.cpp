@@ -624,6 +624,7 @@ void FlyByWireInterface::setupLocalVariables() {
     idFacVFeNext[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_V_FE_NEXT");
     idFacDiscreteWord3[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_DISCRETE_WORD_3");
     idFacDiscreteWord4[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_DISCRETE_WORD_4");
+    idFacDiscreteWord5[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_DISCRETE_WORD_5");
     idFacDeltaRRudderTrim[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_DELTA_R_RUDDER_TRIM");
     idFacRudderTrimPos[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_RUDDER_TRIM_POS");
   }
@@ -1504,8 +1505,8 @@ bool FlyByWireInterface::updateFac(double sampleTime, int facIndex) {
       facIndex == 0 ? idHydGreenPressurised->get() : idHydYellowPressurised->get();
 
   facs[facIndex].modelInputs.in.analog_inputs.yaw_damper_position_deg = 0;
-  facs[facIndex].modelInputs.in.analog_inputs.rudder_trim_position_deg = 0;
-  facs[facIndex].modelInputs.in.analog_inputs.rudder_travel_lim_position_deg = 0;
+  facs[facIndex].modelInputs.in.analog_inputs.rudder_trim_position_deg = -simData.zeta_trim_pos * 20;
+  facs[facIndex].modelInputs.in.analog_inputs.rudder_travel_lim_position_deg = rudderTravelLimiterPosition;
 
   facs[facIndex].modelInputs.in.bus_inputs.fac_opp_bus = facsBusOutputs[oppFacIndex];
   facs[facIndex].modelInputs.in.bus_inputs.adr_own_bus = facIndex == 0 ? adirsBusOutputs[0].adrBus : adirsBusOutputs[1].adrBus;
@@ -1660,6 +1661,10 @@ bool FlyByWireInterface::updateServoSolenoidStatus() {
       cout << "WASM: Write data failed!" << endl;
       return false;
     }
+  }
+
+  if (facsDiscreteOutputs[0].rudder_travel_lim_engaged || facsDiscreteOutputs[1].rudder_travel_lim_engaged) {
+    rudderTravelLimiterPosition = facsAnalogOutputs[0].rudder_travel_limit_order_deg + facsAnalogOutputs[1].rudder_travel_limit_order_deg;
   }
 
   // set trim values
@@ -2206,6 +2211,14 @@ bool FlyByWireInterface::updateAutopilotLaws(double sampleTime) {
     autopilotLawsOutput.flare_law.condition_Flare = clientDataLaws.conditionFlare;
   }
 
+  Arinc429NumericWord raToUse;
+  if (!raBusOutputs[0].radioHeight.isFw()) {
+    raToUse = raBusOutputs[0].radioHeight;
+  } else {
+    raToUse = raBusOutputs[1].radioHeight;
+  }
+
+  fmgcBBusOutputs.fgRadioHeight = raToUse;
   fmgcBBusOutputs.deltaPAileronCmd.setSsm(Arinc429SignStatus::NormalOperation);
   fmgcBBusOutputs.deltaPAileronCmd.setData(autopilotLawsOutput.autopilot.Phi_c_deg);
   fmgcBBusOutputs.deltaPSpoilerCmd.setSsm(Arinc429SignStatus::NormalOperation);
@@ -2392,13 +2405,6 @@ bool FlyByWireInterface::updateFlyByWire(double sampleTime) {
     idAutopilotNosewheelDemand->set(0);
   }
 
-  // calculate alpha max percentage
-  if (flyByWireOutput.sim.data_computed.on_ground) {
-    idAlphaMaxPercentage->set(0);
-  } else {
-    idAlphaMaxPercentage->set(flyByWireOutput.sim.data_speeds_aoa.alpha_filtered_deg / flyByWireOutput.sim.data_speeds_aoa.alpha_max_deg);
-  }
-
   // update speeds
   idSpeedAlphaProtection->set(flyByWireOutput.sim.data_speeds_aoa.v_alpha_prot_kn);
   idSpeedAlphaMax->set(flyByWireOutput.sim.data_speeds_aoa.v_alpha_max_kn);
@@ -2525,7 +2531,9 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
     autoThrustInput.in.input.flex_temperature_degC = idFmgcFlexTemperature->get();
     autoThrustInput.in.input.mode_requested = autopilotStateMachineOutput.autothrust_mode;
     autoThrustInput.in.input.is_mach_mode_active = simData.is_mach_mode_active;
-    autoThrustInput.in.input.alpha_floor_condition = flyByWireOutput.sim.data_computed.alpha_floor_command;
+    autoThrustInput.in.input.alpha_floor_condition =
+        reinterpret_cast<Arinc429DiscreteWord*>(&facsBusOutputs[0].discrete_word_5)->bitFromValueOr(29, false) ||
+        reinterpret_cast<Arinc429DiscreteWord*>(&facsBusOutputs[1].discrete_word_5)->bitFromValueOr(29, false);
     autoThrustInput.in.input.is_approach_mode_active =
         (autopilotStateMachineOutput.vertical_mode >= 30 && autopilotStateMachineOutput.vertical_mode <= 34) ||
         autopilotStateMachineOutput.vertical_mode == 24;

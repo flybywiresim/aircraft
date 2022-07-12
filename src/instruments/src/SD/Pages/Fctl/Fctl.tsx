@@ -145,16 +145,6 @@ const Rudder = ({ x, y }: ComponentPositionProps) => {
     const [rudderDeflectionState] = useSimVar('L:A32NX_HYD_RUDDER_DEFLECTION', 'Percent', 50);
     const rudderAngle = -rudderDeflectionState * 25 / 100;
 
-    // Rudder limits
-    const [indicatedAirspeedState] = useSimVar('AIRSPEED INDICATED', 'knots', 500);
-    let maxAngleNorm = 1;
-    if (indicatedAirspeedState > 380) {
-        maxAngleNorm = 3.4 / 25;
-    } else if (indicatedAirspeedState > 160) {
-        maxAngleNorm = (69.2667 - 0.351818 * indicatedAirspeedState
-            + 0.00047 * indicatedAirspeedState ** 2) / 25;
-    }
-
     // Rudder trim
     const [rudderTrimState] = useSimVar('RUDDER TRIM PCT', 'percent over 100', 100);
     const rudderTrimAngle = -rudderTrimState * 20;
@@ -176,27 +166,18 @@ const Rudder = ({ x, y }: ComponentPositionProps) => {
             <path id="rudderLeftBorder" className="WhiteLine" transform="rotate(25 0 26)" d="m-4.5 151 v 6 h 9 v-6" />
             <path id="rudderRightBorder" className="WhiteLine" transform="rotate(-25 0 26)" d="m-4.5 151 v 6 h 9 v-6" />
 
-            <g id="rudderLeftMaxAngle" transform={`rotate(${26.4 * maxAngleNorm} 0 26)`}>
-                <path className="GreenLine" d="m0 151 l 0 21 l 7 0" />
-            </g>
-
-            <g id="rudderRightMaxAngle" transform={`rotate(${-26.4 * maxAngleNorm} 0 26)`}>
-                <path className="GreenLine" d="m0 151 l 0 21 l -7 0" />
-            </g>
+            <RudderTravelLimit />
 
             <g id="rudderCursor" transform={`rotate(${rudderAngle + rudderTrimAngle} 0 26)`}>
                 <path id="rudderCircle" className={hydraulicAvailableClass} d="M -9 93 A 9 9 0 0 1 9 93" />
                 <path id="rudderTail" className={hydraulicAvailableClass} d="M-9 93 l9 57 l9,-57" />
             </g>
 
-            <g id="rudderTrimCursor" transform={`rotate(${rudderTrimAngle} 0 26)`}>
-                <path className="ThickCyanLine" d="m0 159 v 11" />
-            </g>
+            <RudderTrim />
         </SvgGroup>
     );
 };
 
-/* This will be used once the FAC is implemented. Saving the code here until that time
 const RudderTrim = () => {
     // Should use data from FAC through FWC, but since that is not implemented yet it is read directly
 
@@ -212,7 +193,7 @@ const RudderTrim = () => {
     return (
         <>
             <g id="rudderTrimCursor" transform={`rotate(${trimPosWord.value} 0 26)`} visibility={trimPosWord.isNormalOperation() ? 'visible' : 'hidden'}>
-                <path className={anyTrimEngaged ? 'ThickCyanLine' : 'RudderTrimWarning'} d="m0 159 v 11" />
+                <path className={anyTrimEngaged ? 'ThickCyanLine' : 'AmberLine'} d="m0 159 v 11" />
             </g>
             <text
                 id="rudderTrimFailedFlag"
@@ -256,7 +237,6 @@ const RudderTravelLimit = () => {
         </>
     );
 };
-*/
 
 const Stabilizer = ({ x, y }: ComponentPositionProps) => (
     <SvgGroup x={x} y={y}>

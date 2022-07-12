@@ -193,6 +193,7 @@ struct base_ir_bus
 
 struct base_fmgc_b_bus
 {
+  base_arinc_429 fg_radio_height_ft;
   base_arinc_429 delta_p_ail_cmd_deg;
   base_arinc_429 delta_p_splr_cmd_deg;
   base_arinc_429 delta_r_cmd_deg;
@@ -300,13 +301,55 @@ struct base_fac_laws_outputs
 
 #endif
 
+#ifndef DEFINED_TYPEDEF_FOR_base_fac_adr_computation_data_
+#define DEFINED_TYPEDEF_FOR_base_fac_adr_computation_data_
+
+struct base_fac_adr_computation_data
+{
+  real_T V_ias_kn;
+  real_T V_tas_kn;
+  real_T mach;
+  real_T alpha_deg;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_fac_ir_computation_data_
+#define DEFINED_TYPEDEF_FOR_base_fac_ir_computation_data_
+
+struct base_fac_ir_computation_data
+{
+  real_T theta_deg;
+  real_T phi_deg;
+  real_T q_deg_s;
+  real_T r_deg_s;
+  real_T n_x_g;
+  real_T n_y_g;
+  real_T n_z_g;
+  real_T theta_dot_deg_s;
+  real_T phi_dot_deg_s;
+};
+
+#endif
+
 #ifndef DEFINED_TYPEDEF_FOR_base_fac_logic_outputs_
 #define DEFINED_TYPEDEF_FOR_base_fac_logic_outputs_
 
 struct base_fac_logic_outputs
 {
+  boolean_T lgciu_own_valid;
+  boolean_T all_lgciu_lost;
+  boolean_T left_main_gear_pressed;
+  boolean_T right_main_gear_pressed;
+  boolean_T main_gear_out;
   boolean_T on_ground;
   boolean_T tracking_mode_on;
+  boolean_T double_self_detected_adr_failure;
+  boolean_T double_self_detected_ir_failure;
+  boolean_T double_not_self_detected_adr_failure;
+  boolean_T double_not_self_detected_ir_failure;
+  base_fac_adr_computation_data adr_computation_data;
+  base_fac_ir_computation_data ir_computation_data;
   boolean_T yaw_damper_engaged;
   boolean_T yaw_damper_can_engage;
   boolean_T yaw_damper_has_priority;
@@ -316,6 +359,8 @@ struct base_fac_logic_outputs
   boolean_T rudder_travel_lim_engaged;
   boolean_T rudder_travel_lim_can_engage;
   boolean_T rudder_travel_lim_has_priority;
+  boolean_T speed_scale_lost;
+  boolean_T speed_scale_visible;
 };
 
 #endif
@@ -325,6 +370,11 @@ struct base_fac_logic_outputs
 
 struct base_fac_flight_envelope_outputs
 {
+  real_T estimated_beta_deg;
+  real_T beta_target_deg;
+  boolean_T beta_target_visible;
+  boolean_T alpha_floor_condition;
+  real_T alpha_filtered_deg;
   real_T computed_weight_lbs;
   real_T computed_cg_percent;
   real_T v_alpha_max_kn;

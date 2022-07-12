@@ -83,6 +83,8 @@ class FlyByWireInterface {
   double flightControlsKeyChangeElevator = 0.0;
   double flightControlsKeyChangeRudder = 0.0;
 
+  double rudderTravelLimiterPosition = 25;
+
   bool disableXboxCompatibilityRudderAxisPlusMinus = false;
 
   bool clientDataEnabled = false;

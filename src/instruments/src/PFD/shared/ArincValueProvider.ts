@@ -23,6 +23,10 @@ export interface Arinc429Values {
     fcdcFoPitchCommand: Arinc429Word;
     fcdcCaptRollCommand: Arinc429Word;
     fcdcFoRollCommand: Arinc429Word;
+    facToUse: number;
+    vAlphaMax: Arinc429Word;
+    vAlphaProt: Arinc429Word;
+    vStallWarn: Arinc429Word;
 }
 export class ArincValueProvider {
     private roll = new Arinc429Word(0);
@@ -62,6 +66,16 @@ export class ArincValueProvider {
     private fcdc2DiscreteWord2 = new Arinc429Word(0);
 
     private fcdcToUse = 0;
+
+    private fac1Healthy = false;
+
+    private fac2Healthy = false;
+
+    private fac1VAlphaMax = new Arinc429Word(0);
+
+    private fac2VAlphaMax = new Arinc429Word(0);
+
+    private facToUse = 0;
 
     constructor(private readonly bus: EventBus) {
 
@@ -224,6 +238,62 @@ export class ArincValueProvider {
                 publisher.pub('fcdcFoRollCommand', new Arinc429Word(word));
             }
         });
+
+        subscriber.on('fac1Healthy').handle((val) => {
+            this.fac1Healthy = val;
+            this.determineFacToUse(publisher);
+        });
+
+        subscriber.on('fac2Healthy').handle((val) => {
+            this.fac2Healthy = val;
+            this.determineFacToUse(publisher);
+        });
+
+        subscriber.on('fac1VAlphaMaxRaw').handle((word) => {
+            this.fac1VAlphaMax = new Arinc429Word(word);
+            this.determineFacToUse(publisher);
+            if (this.facToUse === 1) {
+                publisher.pub('vAlphaMax', this.fac1VAlphaMax);
+            } else if (this.facToUse === 0) {
+                publisher.pub('vAlphaMax', new Arinc429Word(0));
+            }
+        });
+
+        subscriber.on('fac2VAlphaMaxRaw').handle((word) => {
+            this.fac2VAlphaMax = new Arinc429Word(word);
+            this.determineFacToUse(publisher);
+            if (this.facToUse === 2) {
+                publisher.pub('vAlphaMax', this.fac2VAlphaMax);
+            }
+        });
+
+        subscriber.on('fac1VAlphaProtRaw').handle((word) => {
+            if (this.facToUse === 1) {
+                publisher.pub('vAlphaProt', new Arinc429Word(word));
+            } else if (this.facToUse === 0) {
+                publisher.pub('vAlphaProt', new Arinc429Word(0));
+            }
+        });
+
+        subscriber.on('fac2VAlphaProtRaw').handle((word) => {
+            if (this.facToUse === 2) {
+                publisher.pub('vAlphaProt', new Arinc429Word(word));
+            }
+        });
+
+        subscriber.on('fac1VStallWarnRaw').handle((word) => {
+            if (this.facToUse === 1) {
+                publisher.pub('vStallWarn', new Arinc429Word(word));
+            } else if (this.facToUse === 0) {
+                publisher.pub('vStallWarn', new Arinc429Word(0));
+            }
+        });
+
+        subscriber.on('fac2VStallWarnRaw').handle((word) => {
+            if (this.facToUse === 2) {
+                publisher.pub('vStallWarn', new Arinc429Word(word));
+            }
+        });
     }
 
     private determineAndPublishChosenRadioAltitude(publisher: Publisher<Arinc429Values>) {
@@ -253,5 +323,28 @@ export class ArincValueProvider {
             return 2;
         }
         return 1;
+    }
+
+    // Determine which FAC bus to use for FE function. If FAC HEALTHY discrete is low or any word is coded FW,
+    // declare FAC as invalid. For simplicty reasons, only check SSM of words that use the same data, so all failure cases are
+    // handled while minimizing the words that have to be checked.
+    // Left PFD uses FAC 1 when both are valid, the right PFD uses FAC 2. In case of invalidity, switchover is performed.
+    // If no FAC is valid, set facToUse to 0. This causes the SPD LIM flag to be displayed.
+    private determineFacToUse(publisher: Publisher<Arinc429Values>) {
+        const fac1Valid = this.fac1Healthy && !this.fac1VAlphaMax.isFailureWarning();
+        const fac2Valid = this.fac2Healthy && !this.fac2VAlphaMax.isFailureWarning();
+        if (getDisplayIndex() === 1 && fac1Valid) {
+            this.facToUse = 1;
+        } else if (getDisplayIndex() === 2 && fac2Valid) {
+            this.facToUse = 1;
+        } else if (fac1Valid) {
+            this.facToUse = 1;
+        } else if (fac2Valid) {
+            this.facToUse = 2;
+        } else {
+            this.facToUse = 0;
+        }
+
+        publisher.pub('facToUse', this.facToUse);
     }
 }

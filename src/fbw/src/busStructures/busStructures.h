@@ -372,6 +372,8 @@ struct FmgcABus {
 };
 
 struct FmgcBBus {
+  // Label 164
+  Arinc429NumericWord fgRadioHeight;
   // Label 310
   Arinc429DiscreteWord deltaPAileronCmd;
   // Label 311

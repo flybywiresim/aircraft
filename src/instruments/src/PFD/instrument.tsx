@@ -70,7 +70,6 @@ class A32NX_PFD extends BaseInstrument {
         this.simVarPublisher.subscribe('heading');
         this.simVarPublisher.subscribe('altitude');
         this.simVarPublisher.subscribe('speed');
-        this.simVarPublisher.subscribe('alphaProt');
         this.simVarPublisher.subscribe('noseGearCompressed');
         this.simVarPublisher.subscribe('leftMainGearCompressed');
         this.simVarPublisher.subscribe('rightMainGearCompressed');
@@ -159,7 +158,6 @@ class A32NX_PFD extends BaseInstrument {
         this.simVarPublisher.subscribe('expediteMode');
         this.simVarPublisher.subscribe('setHoldSpeed');
         this.simVarPublisher.subscribe('vls');
-        this.simVarPublisher.subscribe('alphaLim');
         this.simVarPublisher.subscribe('trkFpaDeselectedTCAS');
         this.simVarPublisher.subscribe('tcasRaInhibited');
         this.simVarPublisher.subscribe('groundSpeed');
@@ -197,6 +195,15 @@ class A32NX_PFD extends BaseInstrument {
         this.simVarPublisher.subscribe('fcdc2CaptRollCommandRaw');
         this.simVarPublisher.subscribe('fcdc1FoRollCommandRaw');
         this.simVarPublisher.subscribe('fcdc2FoRollCommandRaw');
+
+        this.simVarPublisher.subscribe('fac1Healthy');
+        this.simVarPublisher.subscribe('fac2Healthy');
+        this.simVarPublisher.subscribe('fac1VAlphaProtRaw');
+        this.simVarPublisher.subscribe('fac2VAlphaProtRaw');
+        this.simVarPublisher.subscribe('fac1VAlphaMaxRaw');
+        this.simVarPublisher.subscribe('fac2VAlphaMaxRaw');
+        this.simVarPublisher.subscribe('fac1VStallWarnRaw');
+        this.simVarPublisher.subscribe('fac2VStallWarnRaw');
 
         FSComponent.render(<PFDComponent bus={this.bus} instrument={this} />, document.getElementById('PFD_CONTENT'));
     }

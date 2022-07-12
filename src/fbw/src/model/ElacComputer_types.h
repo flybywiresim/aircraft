@@ -204,6 +204,7 @@ struct base_ir_bus
 
 struct base_fmgc_b_bus
 {
+  base_arinc_429 fg_radio_height_ft;
   base_arinc_429 delta_p_ail_cmd_deg;
   base_arinc_429 delta_p_splr_cmd_deg;
   base_arinc_429 delta_r_cmd_deg;

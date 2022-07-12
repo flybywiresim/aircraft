@@ -3,36 +3,36 @@
 FacComputer::Parameters_FacComputer_T FacComputer::FacComputer_P{
 
   {
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0
-  },
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
 
+    {
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    },
 
-  {
-    0.0,
-    0.0,
-    0.0
-  },
-
-
-  {
-    0.0,
-    0.0,
-    0.0
-  },
-
-
-  {
+    {
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    },
     false,
     false,
     false,
@@ -48,6 +48,41 @@ FacComputer::Parameters_FacComputer_T FacComputer::FacComputer_P{
 
 
   {
+    0.0,
+    0.0,
+    false,
+    false,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  },
+
+
+  {
+    0.0,
+    0.0,
+    0.0
+  },
+
+
+  {
+    0.0,
+    0.0,
+    0.0
+  },
+
+
+  {
     false,
     false,
     false,
@@ -55,8 +90,36 @@ FacComputer::Parameters_FacComputer_T FacComputer::FacComputer_P{
     false,
     false
   },
+
+  0.2,
+
+  0.5,
+
+  0.5,
+
+  0.5,
+
+  0.5,
+
+  0.4,
+
+  20.0,
+
+  0.5,
 
   1.0,
+
+  0.0,
+
+  0.0,
+
+  0.0,
+
+  0.0,
+
+  0.0,
+
+  0.0,
 
   0.0,
 
@@ -70,7 +133,51 @@ FacComputer::Parameters_FacComputer_T FacComputer::FacComputer_P{
 
   20.0,
 
+  16.0,
+
+  18.0,
+
+  19.0,
+
+  20.0,
+
+  14.0,
+
+  11.0,
+
+  12.0,
+
+  15.0,
+
   26.0,
+
+  26.0,
+
+  23.0,
+
+  23.0,
+
+  17.0,
+
+  18.0,
+
+  19.0,
+
+  20.0,
+
+  21.0,
+
+  26.0,
+
+  17.0,
+
+  18.0,
+
+  19.0,
+
+  20.0,
+
+  21.0,
 
   26.0,
 
@@ -86,11 +193,39 @@ FacComputer::Parameters_FacComputer_T FacComputer::FacComputer_P{
 
   -1.0,
 
+  -1.0,
+
+  -1.0,
+
+  -1.0,
+
+  -1.0,
+
+  -1.0,
+
+  10.0,
+
+  1.0,
+
+  1.0,
+
+  1.0,
+
+  1.0,
+
+  1.0,
+
   1.0,
 
   SignStatusMatrix::NormalOperation,
 
+  SignStatusMatrix::FailureWarning,
+
+  SignStatusMatrix::NoComputedData,
+
   false,
+
+  true,
 
   true,
 
@@ -886,10 +1021,20 @@ FacComputer::Parameters_FacComputer_T FacComputer::FacComputer_P{
           {
             0U,
             0.0F
+          },
+
+          {
+            0U,
+            0.0F
           }
         },
 
         {
+          {
+            0U,
+            0.0F
+          },
+
           {
             0U,
             0.0F
@@ -1133,10 +1278,45 @@ FacComputer::Parameters_FacComputer_T FacComputer::FacComputer_P{
       false,
       false,
       false,
+      false,
+
+      {
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      },
+
+      {
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      },
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
       false
     },
 
     {
+      0.0,
+      0.0,
+      false,
+      false,
+      0.0,
       0.0,
       0.0,
       0.0,
@@ -1452,12 +1632,13 @@ FacComputer::Parameters_FacComputer_T FacComputer::FacComputer_P{
     }
   },
 
-
-  { -0.99990920426259511, -0.999329299739067, -0.99505475368673046, -0.9640275800758169, -0.76159415595576485, 0.0,
-    0.76159415595576485, 0.9640275800758169, 0.99505475368673046, 0.999329299739067, 0.99990920426259511 },
+  200.0,
 
 
-  { -5.0, -4.0, -3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0, 4.0, 5.0 },
+  { 25.0, 25.0, 14.5, 8.8, 4.8, 3.4, 3.4 },
+
+
+  { 100.0, 160.0, 200.0, 240.0, 320.0, 380.0, 400.0 },
 
   30.0,
 
@@ -1469,7 +1650,11 @@ FacComputer::Parameters_FacComputer_T FacComputer::FacComputer_P{
 
   1.0,
 
-  0.0,
+  1.0,
+
+  5.0,
+
+  -5.0,
 
   0.0,
 
@@ -1478,6 +1663,68 @@ FacComputer::Parameters_FacComputer_T FacComputer::FacComputer_P{
   1.5,
 
   -1.5,
+
+  0.0,
+
+  0.1101,
+
+  5.0,
+
+  -5.0,
+
+  0.0302,
+
+  1000.0,
+
+  1.0,
+
+  57.295779513082323,
+
+
+  { 7.6, 7.6, 6.03, 6.03, 12.5, 12.5, 12.5, 12.5, 12.7, 12.7, 12.7, 12.7, 13.1, 13.1, 13.1, 13.1, 12.1, 12.1, 12.1, 12.1,
+    11.8, 11.8, 11.8, 11.8 },
+
+
+  { 0.0, 0.5, 0.9, 1.0 },
+
+
+  { 0.0, 1.0, 2.0, 3.0, 4.0, 5.0 },
+
+
+  { -1.84, -1.84, -2.18, -4.72, -4.27, -6.94 },
+
+
+  { 0.0, 1.0, 2.0, 3.0, 4.0, 5.0 },
+
+
+  { 8.7, 8.7, 6.4, 6.4, 13.6, 13.6, 13.6, 13.6, 13.6, 13.6, 13.6, 13.6, 14.2, 14.2, 14.2, 14.2, 13.1, 13.1, 13.1, 13.1,
+    13.0, 13.0, 13.0, 13.0 },
+
+
+  { 0.0, 0.5, 0.9, 1.0 },
+
+
+  { 0.0, 1.0, 2.0, 3.0, 4.0, 5.0 },
+
+
+  { 6.5, 6.5, 4.6, 4.6, 11.7, 11.7, 11.7, 11.7, 11.7, 11.7, 11.7, 11.7, 11.9, 11.9, 11.9, 11.9, 11.0, 11.0, 11.0, 11.0,
+    10.6, 10.6, 10.6, 10.6 },
+
+
+  { 0.0, 0.5, 0.9, 1.0 },
+
+
+  { 0.0, 1.0, 2.0, 3.0, 4.0, 5.0 },
+
+
+  { 6.5, 6.5, 4.6, 4.6, 11.7, 11.7, 11.7, 11.7, 11.7, 11.7, 11.7, 11.7, 11.9, 11.9, 11.9, 11.9, 11.0, 11.0, 11.0, 11.0,
+    10.6, 10.6, 10.6, 10.6 },
+
+
+  { 0.0, 0.5, 0.9, 1.0 },
+
+
+  { 0.0, 1.0, 2.0, 3.0, 4.0, 5.0 },
 
   0.0,
 
@@ -1495,7 +1742,9 @@ FacComputer::Parameters_FacComputer_T FacComputer::FacComputer_P{
 
   0.0,
 
-  0.0F,
+  0.0,
+
+  0.0,
 
   0.0F,
 
@@ -1527,32 +1776,40 @@ FacComputer::Parameters_FacComputer_T FacComputer::FacComputer_P{
 
   0.0F,
 
-  0.0F,
 
-  0.0F,
+  { 3U, 5U },
 
-  0.0F,
 
-  0.0F,
+  { 3U, 5U },
 
-  0.0F,
 
-  0.0F,
+  { 3U, 5U },
+
+
+  { 3U, 5U },
+
+  false,
 
 
   { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
 
+  false,
+
+  false,
+
+  false,
+
+  false,
+
+  false,
+
+  false,
+
+  false,
+
+  false,
+
   true,
-
-  false,
-
-  false,
-
-  false,
-
-  false,
-
-  false,
 
   false
 };

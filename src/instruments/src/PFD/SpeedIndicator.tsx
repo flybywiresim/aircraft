@@ -238,14 +238,15 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
             });
         });
 
-        pf.on('alphaProt').withPrecision(2).handle((a) => {
+        pf.on('vAlphaProt').handle((a) => {
             this.alphaProtRef.forEach((el, index) => {
-                const elementValue = a + -1 * 2.923 * index;
+                const elementValue = a.value + -1 * 2.923 * index;
                 const offset = -elementValue * DistanceSpacing / ValueSpacing;
                 el.instance.style.transform = `translate3d(0px, ${offset}px, 0px)`;
+                el.instance.style.visibility = a.isNormalOperation() ? 'visible' : 'hidden';
             });
 
-            this.lastAlphaProtSub.set(a);
+            this.lastAlphaProtSub.set(a.value);
         });
 
         pf.on('vMax').whenChanged().handle((vMax) => {
@@ -287,7 +288,6 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
             group.push(
                 <g ref={apref}>
                     <path class="BarAmber" d="m21.952 82.254v1.5119m-0.94654-2.923h0.94654v1.4111h-2.9213v-1.4111z" />
-                    );
                 </g>,
             );
             this.alphaProtRef.push(apref);
@@ -336,6 +336,8 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
 
                         <g ref={this.barberPoleRef}>
                             {this.createVMaxBarberPole()}
+                        </g>
+                        <g>
                             {this.createAlphaProtBarberPole()}
                         </g>
                         <V1BugElement bus={this.props.bus} />
@@ -348,9 +350,8 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
 
                     <g ref={this.showBarsRef}>
                         <VLsBar bus={this.props.bus} />
-                        <VAlphaLimBar bus={this.props.bus} />
                     </g>
-
+                    <VAlphaLimBar bus={this.props.bus} />
                     <SpeedTrendArrow airspeed={this.speedSub} instrument={this.props.instrument} bus={this.props.bus} />
 
                     <V1Offtape bus={this.props.bus} />
@@ -438,6 +439,8 @@ export class AirspeedIndicatorOfftape extends DisplayComponent<{ bus: EventBus }
 
     private decelRef = FSComponent.createRef<SVGTextElement>();
 
+    private spdLimFlagRef = FSComponent.createRef<SVGTextElement>();
+
     private onGround = true;
 
     private leftMainGearCompressed = true;
@@ -493,6 +496,14 @@ export class AirspeedIndicatorOfftape extends DisplayComponent<{ bus: EventBus }
                 this.decelRef.instance.style.visibility = 'hidden';
             }
         });
+
+        sub.on('facToUse').whenChanged().handle((a) => {
+            if (a === 0) {
+                this.spdLimFlagRef.instance.style.visibility = 'visible';
+            } else {
+                this.spdLimFlagRef.instance.style.visibility = 'hidden';
+            }
+        });
     }
 
     render(): VNode {
@@ -509,6 +520,10 @@ export class AirspeedIndicatorOfftape extends DisplayComponent<{ bus: EventBus }
                     <path class="Fill Yellow SmallOutline" d="m13.994 80.46v0.7257h6.5478l3.1228 1.1491v-3.0238l-3.1228 1.1491z" />
                     <path class="Fill Yellow SmallOutline" d="m0.092604 81.185v-0.7257h2.0147v0.7257z" />
                     <path id="SpeedTapeOutlineLower" ref={this.lowerRef} class="NormalStroke White" d="m1.9058 123.56h21.859" />
+                    <g ref={this.spdLimFlagRef}>
+                        <text id="SpdLimFailTextUpper" x="32.077583" y="116.57941" class="FontMedium EndAlign Red Blink9Seconds">SPD</text>
+                        <text id="SpdLimFailTextLower" x="32.107349" y="122.14585" class="FontMedium EndAlign Red Blink9Seconds">LIM</text>
+                    </g>
                 </g>
             </>
 
@@ -621,8 +636,8 @@ class VLsBar extends DisplayComponent<{ bus: EventBus }> {
 
         const sub = this.props.bus.getSubscriber<Arinc429Values & PFDSimvars & ClockEvents>();
 
-        sub.on('alphaProt').handle((a) => {
-            this.vlsState.alphaProtSpeed = a;
+        sub.on('vAlphaProt').handle((a) => {
+            this.vlsState.alphaProtSpeed = a.value;
             this.setVlsPath(this.vlsState.vls);
         });
 
@@ -650,8 +665,10 @@ class VAlphaLimBar extends DisplayComponent<{ bus: EventBus }> {
 
     private vAlphaLim = 0;
 
+    private valid = false;
+
     private setAlphaLimBarPath() {
-        if (this.vAlphaLim - this.airSpeed.value < -DisplayRange) {
+        if (this.vAlphaLim - this.airSpeed.value < -DisplayRange || !this.valid) {
             this.VAlimIndicator.instance.style.visibility = 'hidden';
         } else {
             this.VAlimIndicator.instance.style.visibility = 'visible';
@@ -673,8 +690,9 @@ class VAlphaLimBar extends DisplayComponent<{ bus: EventBus }> {
             this.setAlphaLimBarPath();
         });
 
-        sub.on('alphaLim').withPrecision(2).handle((al) => {
-            this.vAlphaLim = al;
+        sub.on('vAlphaMax').handle((al) => {
+            this.vAlphaLim = al.value;
+            this.valid = al.isNormalOperation();
             this.setAlphaLimBarPath();
         });
     }
