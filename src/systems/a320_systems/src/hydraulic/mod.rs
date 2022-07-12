@@ -5214,6 +5214,7 @@ mod tests {
             autobrake_panel: AutobrakePanel,
             emergency_electrical_overhead: A320TestEmergencyElectricalOverheadPanel,
             engine_fire_overhead: EngineFireOverheadPanel<4>,
+
             landing_gear: LandingGear,
             lgcius: LandingGearControlInterfaceUnitSet,
             adirus: A320TestAdirus,
