@@ -252,27 +252,23 @@ export const BalanceWeight: React.FC<BalanceWeightProps> = ({ width, height, env
     return (
         <div>
             <canvas ref={canvasRef} />
-            <text className="text-sm font-medium">
-                <text className="absolute top-0" style={cgRow1}>15%</text>
-                <text className="absolute top-0" style={cgRow2}>20%</text>
-                <text className="absolute top-0" style={cgRow3}>25%</text>
-                <text className="absolute top-0" style={cgRow4}>30%</text>
-                <text className="absolute top-0" style={cgRow5}>35%</text>
-                <text className="absolute top-0" style={cgRow6}>40%</text>
+            <p className="absolute top-0 text-sm font-medium" style={cgRow1}>15%</p>
+            <p className="absolute top-0 text-sm font-medium" style={cgRow2}>20%</p>
+            <p className="absolute top-0 text-sm font-medium" style={cgRow3}>25%</p>
+            <p className="absolute top-0 text-sm font-medium" style={cgRow4}>30%</p>
+            <p className="absolute top-0 text-sm font-medium" style={cgRow5}>35%</p>
+            <p className="absolute top-0 text-sm font-medium" style={cgRow6}>40%</p>
 
-                <text className="absolute top-0" style={wRow1}>{Units.kilogramToUser(80000)}</text>
-                <text className="absolute top-0" style={wRow2}>{Units.kilogramToUser(70000)}</text>
-                <text className="absolute top-0" style={wRow3}>{Units.kilogramToUser(60000)}</text>
-                <text className="absolute top-0" style={wRow4}>{Units.kilogramToUser(50000)}</text>
-                <text className="absolute top-0" style={wRow5}>{Units.kilogramToUser(40000)}</text>
-                <text className="absolute top-0" style={wUnits}>{usingMetric ? 'kg' : 'lb'}</text>
+            <p className="absolute top-0 text-sm font-medium" style={wRow1}>{Units.kilogramToUser(80000)}</p>
+            <p className="absolute top-0 text-sm font-medium" style={wRow2}>{Units.kilogramToUser(70000)}</p>
+            <p className="absolute top-0 text-sm font-medium" style={wRow3}>{Units.kilogramToUser(60000)}</p>
+            <p className="absolute top-0 text-sm font-medium" style={wRow4}>{Units.kilogramToUser(50000)}</p>
+            <p className="absolute top-0 text-sm font-medium" style={wRow5}>{Units.kilogramToUser(40000)}</p>
+            <p className="absolute top-0 text-sm font-medium" style={wUnits}>{usingMetric ? 'kg' : 'lb'}</p>
 
-            </text>
-            <text className="font-medium text-md">
-                <text className="absolute top-0 text-theme-highlight" style={mtow}>MTOW</text>
-                <text className="absolute top-0 text-colors-lime-500" style={mlw}>MLW</text>
-                <text className="absolute top-0 text-theme-text" style={mzfw}>MZFW</text>
-            </text>
+            <p className="absolute top-0 font-medium text-theme-highlight" style={mtow}>MTOW</p>
+            <p className="absolute top-0 font-medium text-colors-lime-500" style={mlw}>MLW</p>
+            <p className="absolute top-0 font-medium text-theme-text" style={mzfw}>MZFW</p>
         </div>
     );
 };

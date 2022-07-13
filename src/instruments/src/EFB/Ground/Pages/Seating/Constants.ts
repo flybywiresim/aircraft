@@ -36,6 +36,7 @@ export interface CargoStationInfo {
     simVar: string,
     index: number,
     stationIndex: number,
+    progressBarWidth: number,
     position: number,
 }
 

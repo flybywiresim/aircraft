@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 import React, { useEffect, useState } from 'react';
-import { BagPlusFill, CloudArrowDown, PersonPlusFill, PlayFill, StopCircleFill } from 'react-bootstrap-icons';
+import { BriefcaseFill, CloudArrowDown, PersonPlusFill, PlayFill, StopCircleFill } from 'react-bootstrap-icons';
 import { useSimVar } from '@instruments/common/simVars';
 import { Units } from '@shared/units';
 import { usePersistentProperty } from '@instruments/common/persistence';
@@ -8,200 +8,77 @@ import { BitFlags } from '@shared/bitFlags';
 import { useBitFlags } from '@instruments/common/bitFlags';
 import { round } from 'lodash';
 import { BalanceWeight } from './BalanceWeight/BalanceWeight';
-import { SeatInfo, PaxStationInfo, CargoStationInfo, TYPE } from './Seating/Constants';
-import { PerformanceEnvelope } from './BalanceWeight/Constants';
+import { PaxStationInfo, CargoStationInfo } from './Seating/Constants';
 import { t } from '../../translation';
 import { TooltipWrapper } from '../../UtilComponents/TooltipWrapper';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
-import { SelectInput } from '../../UtilComponents/Form/SelectInput/SelectInput';
+import Loadsheet from './Loadsheet/a20nv55.json';
 import { ProgressBar } from '../../UtilComponents/Progress/Progress';
 import Card from '../../UtilComponents/Card/Card';
 import { SelectGroup, SelectItem } from '../../UtilComponents/Form/Select';
-import { SeatMap } from './Seating/SeatMap';
+import { SeatMapWidget } from './Seating/SeatMapWidget';
 import { isSimbriefDataLoaded } from '../../Store/features/simBrief';
 
-interface LabelProps {
-    className?: string;
-    text: string;
+enum PaxStation {
+    A,
+    B,
+    C,
+    D
 }
 
-const Label: React.FC<LabelProps> = ({ text, className, children }) => (
-    <div className="flex flex-row justify-between items-center">
-        <p className={`text-theme-text mx-4 ${className}`}>{text}</p>
-        {children}
-    </div>
-);
-
-const Station = {
-    A: 0,
-    B: 1,
-    C: 2,
-    D: 3,
-    fwdBag: 0,
-    aftCont: 1,
-    aftBag: 2,
-    aftBulk: 3,
-};
-
-const defaultRow = (): SeatInfo[] => (
-    [
-        { type: TYPE.ECO, x: 0, y: 0, yOffset: 0 },
-        { type: TYPE.ECO, x: 0, y: 0, yOffset: 0 },
-        { type: TYPE.ECO, x: 0, y: 0, yOffset: 0 },
-        { type: TYPE.ECO, x: 0, y: 0, yOffset: 19 },
-        { type: TYPE.ECO, x: 0, y: 0, yOffset: 0 },
-        { type: TYPE.ECO, x: 0, y: 0, yOffset: 0 },
-    ]
-);
-
-const emergRow = (): SeatInfo[] => (
-    [
-        { type: TYPE.ECO_EMERG, x: 0, y: 0, yOffset: 0 },
-        { type: TYPE.ECO_EMERG, x: 0, y: 0, yOffset: 0 },
-        { type: TYPE.ECO_EMERG, x: 0, y: 0, yOffset: 0 },
-        { type: TYPE.ECO_EMERG, x: 0, y: 0, yOffset: 19 },
-        { type: TYPE.ECO_EMERG, x: 0, y: 0, yOffset: 0 },
-        { type: TYPE.ECO_EMERG, x: 0, y: 0, yOffset: 0 },
-    ]
-);
-
-const addRow = (
-    seats: SeatInfo[] = defaultRow(),
-    x: number = 0,
-    y: number = 0,
-    xOffset: number = 0,
-    yOffset: number = 0,
-) => ({ seats, x, y, xOffset, yOffset });
-
-const defaultSeatMap: PaxStationInfo[] = [
-    {
-        // A
-        name: 'ROWS [1-6]',
-        rows: [addRow(), addRow(), addRow(), addRow(), addRow(), addRow()],
-        index: 0,
-        stationIndex: 1,
-        position: 21.98,
-        simVar: 'A32NX_PAX_TOTAL_ROWS_1_6',
-    },
-    {
-        // B
-        name: 'ROWS [7-13]',
-        rows: [addRow(), addRow(), addRow(), addRow(), addRow(), addRow(emergRow()), addRow(emergRow())],
-        index: 1,
-        stationIndex: 2,
-        position: 2.86,
-        simVar: 'A32NX_PAX_TOTAL_ROWS_7_13',
-    },
-    {
-        // C
-        name: 'ROWS [14-21]',
-        rows: [addRow(), addRow(), addRow(), addRow(), addRow(), addRow(), addRow(), addRow()],
-        index: 2,
-        stationIndex: 3,
-        position: -15.34,
-        simVar: 'A32NX_PAX_TOTAL_ROWS_14_21',
-    },
-    {
-        // D
-        name: 'ROWS [22-29]',
-        rows: [addRow(), addRow(), addRow(), addRow(), addRow(), addRow(), addRow(), addRow()],
-        index: 3,
-        stationIndex: 4,
-        position: -32.81,
-        simVar: 'A32NX_PAX_TOTAL_ROWS_22_29',
-    },
-];
-
-const defaultCargoMap: CargoStationInfo[] = [
-    {
-        name: 'FWD BAGGAGE/CONTAINER',
-        weight: 3402,
-        index: 0,
-        stationIndex: 5,
-        position: 18.28,
-        simVar: 'A32NX_CARGO_FWD_BAGGAGE_CONTAINER',
-    },
-    {
-        name: 'AFT CONTAINER',
-        weight: 2426,
-        index: 1,
-        stationIndex: 6,
-        position: -15.96,
-        simVar: 'A32NX_CARGO_AFT_CONTAINER',
-    },
-    {
-        name: 'AFT BAGGAGE',
-        weight: 2110,
-        index: 2,
-        stationIndex: 7,
-        position: -27.10,
-        simVar: 'A32NX_CARGO_AFT_BAGGAGE',
-    },
-    {
-        name: 'AFT BULK/LOOSE',
-        weight: 1497,
-        index: 3,
-        stationIndex: 8,
-        position: -37.35,
-        simVar: 'A32NX_CARGO_AFT_BULK_LOOSE',
-    },
-];
-
-const defaultEnvelope: PerformanceEnvelope = {
-    mlw: [
-        [17, 67400],
-        [40, 67400],
-        [40, 50000],
-        [35, 46000],
-        [35, 40600],
-    ],
-    mzfw: [
-        [17, 64300],
-        [40, 64300],
-        [40, 73500],
-        [40, 50000],
-        [35, 46000],
-        [35, 40600],
-        [15, 40600],
-    ],
-    mtow: [
-        [15, 40600],
-        [15, 53000],
-        [17, 63000],
-        [17, 72000],
-        [27, 79000],
-        [36, 79000],
-        [40, 73500],
-        [40, 58000],
-        [32, 40600],
-    ],
-};
-
-const leMacZ = -5.386;
-const macSize = 13.454;
-
-const emptyPosition = -8.75; // Value from flight_model.cfg
+enum CargoStation {
+    fwdBag,
+    aftCont,
+    aftBag,
+    aftBulk
+}
 
 export const Payload = () => {
     const { usingMetric } = Units;
     const simbriefDataLoaded = isSimbriefDataLoaded();
     const [boardingRate, setBoardingRate] = usePersistentProperty('CONFIG_BOARDING_RATE', 'REAL');
-    // const [weightUnit, setWeightUnit] = usePersistentProperty('EFB_PREFERRED_WEIGHT_UNIT', usingMetric ? 'kg' : 'lb');
-    const [paxWeight, setPaxWeight] = useSimVar('L:A32NX_WB_PER_PAX_WEIGHT', 'Number');
-    const [paxBagWeight, setPaxBagWeight] = useSimVar('L:A32NX_WB_PER_BAG_WEIGHT', 'Number');
+    const [paxWeight, setPaxWeight] = useSimVar(`L:${Loadsheet.specs.prefix}_WB_PER_PAX_WEIGHT`, 'Number');
+    const [paxBagWeight, setPaxBagWeight] = useSimVar(`L:${Loadsheet.specs.prefix}_WB_PER_BAG_WEIGHT`, 'Number');
     const [galToKg] = useSimVar('FUEL WEIGHT PER GALLON', 'kilograms');
-    const [estFuelBurn] = useSimVar('L:A32NX_ESTIMATED_FUEL_BURN', 'Kilograms');
+    const [estFuelBurn] = useSimVar(`L:${Loadsheet.specs.prefix}_ESTIMATED_FUEL_BURN`, 'Kilograms');
 
     const [emptyWeight] = useSimVar('A:EMPTY WEIGHT', usingMetric ? 'Kilograms' : 'Pounds');
 
-    const [paxA, setPaxA] = useSimVar('L:A32NX_PAX_TOTAL_ROWS_1_6', 'Number');
-    const [paxB, setPaxB] = useSimVar('L:A32NX_PAX_TOTAL_ROWS_7_13', 'Number');
-    const [paxC, setPaxC] = useSimVar('L:A32NX_PAX_TOTAL_ROWS_14_21', 'Number');
-    const [paxD, setPaxD] = useSimVar('L:A32NX_PAX_TOTAL_ROWS_22_29', 'Number');
-    const [fwdBag, setFwdBag] = useSimVar('L:A32NX_CARGO_FWD_BAGGAGE_CONTAINER', 'Number');
-    const [aftCont, setAftCont] = useSimVar('L:A32NX_CARGO_AFT_CONTAINER', 'Number');
-    const [aftBag, setAftBag] = useSimVar('L:A32NX_CARGO_AFT_BAGGAGE', 'Number');
-    const [aftBulk, setAftBulk] = useSimVar('L:A32NX_CARGO_AFT_BULK_LOOSE', 'Number');
+    const [paxA, setPaxA] = useSimVar(`L:${Loadsheet.specs.prefix}_PAX_TOTAL_ROWS_1_6`, 'Number');
+    const [paxB, setPaxB] = useSimVar(`L:${Loadsheet.specs.prefix}_PAX_TOTAL_ROWS_7_13`, 'Number');
+    const [paxC, setPaxC] = useSimVar(`L:${Loadsheet.specs.prefix}_PAX_TOTAL_ROWS_14_21`, 'Number');
+    const [paxD, setPaxD] = useSimVar(`L:${Loadsheet.specs.prefix}_PAX_TOTAL_ROWS_22_29`, 'Number');
+
+    const [stationSize, setStationLen] = useState<number[]>([]);
+
+    const pax = [paxA, paxB, paxC, paxD];
+    const setPax = [setPaxA, setPaxB, setPaxC, setPaxD];
+    const totalPax = pax && pax.length > 0 && pax.reduce((a, b) => a + b);
+    const maxPax = (stationSize && stationSize.length > 0) ? stationSize.reduce((a, b) => a + b) : -1;
+    const totalPaxWeight = totalPax * paxWeight;
+
+    const [aFlags, setAFlags] = useBitFlags('PAX_FLAGS_A');
+    const [bFlags, setBFlags] = useBitFlags('PAX_FLAGS_B');
+    const [cFlags, setCFlags] = useBitFlags('PAX_FLAGS_C');
+    const [dFlags, setDFlags] = useBitFlags('PAX_FLAGS_D');
+
+    const desiredFlags = [aFlags, bFlags, cFlags, dFlags];
+    const setActiveFlags = [setAFlags, setBFlags, setCFlags, setDFlags];
+
+    const [clicked, setClicked] = useState(false);
+
+    const [fwdBag, setFwdBag] = useSimVar(`L:${Loadsheet.specs.prefix}_CARGO_FWD_BAGGAGE_CONTAINER`, 'Number');
+    const [aftCont, setAftCont] = useSimVar(`L:${Loadsheet.specs.prefix}_CARGO_AFT_CONTAINER`, 'Number');
+    const [aftBag, setAftBag] = useSimVar(`L:${Loadsheet.specs.prefix}_CARGO_AFT_BAGGAGE`, 'Number');
+    const [aftBulk, setAftBulk] = useSimVar(`L:${Loadsheet.specs.prefix}_CARGO_AFT_BULK_LOOSE`, 'Number');
+
+    const [cargoStationSize, setCargoStationLen] = useState<number[]>([]);
+
+    const cargo = [fwdBag, aftCont, aftBag, aftBulk];
+    const setCargo = [setFwdBag, setAftCont, setAftBag, setAftBulk];
+    const maxCargo = (cargoStationSize && cargoStationSize.length > 0) ? cargoStationSize.reduce((a, b) => a + b) : -1;
+    const totalCargo = (cargo && cargo.length > 0) ? cargo.reduce((a, b) => a + b) : -1;
+
     const [centerCurrent] = useSimVar('FUEL TANK CENTER QUANTITY', 'Gallons');
     const [LInnCurrent] = useSimVar('FUEL TANK LEFT MAIN QUANTITY', 'Gallons');
     const [LOutCurrent] = useSimVar('FUEL TANK LEFT AUX QUANTITY', 'Gallons');
@@ -209,17 +86,17 @@ export const Payload = () => {
     const [ROutCurrent] = useSimVar('FUEL TANK RIGHT AUX QUANTITY', 'Gallons');
 
     /*
-    const [paxA, setPaxA] = useSimVar('L:A32NX_PAX_TOTAL_ROWS_1_6_DESIRED', 'Number');
-    const [paxB, setPaxB] = useSimVar('L:A32NX_PAX_TOTAL_ROWS_7_13_DESIRED', 'Number');
-    const [paxC, setPaxC] = useSimVar('L:A32NX_PAX_TOTAL_ROWS_14_21_DESIRED', 'Number');
-    const [paxD, setPaxD] = useSimVar('L:A32NX_PAX_TOTAL_ROWS_22_29_DESIRED', 'Number');
+    const [paxAInput, setPaxAInput] = useSimVar('L:${Loadsheet.specs.prefix}_PAX_TOTAL_ROWS_1_6_DESIRED', 'Number');
+    const [paxBInput, setPaxBInput] = useSimVar('L:${Loadsheet.specs.prefix}_PAX_TOTAL_ROWS_7_13_DESIRED', 'Number');
+    const [paxCInput, setPaxCInput] = useSimVar('L:${Loadsheet.specs.prefix}_PAX_TOTAL_ROWS_14_21_DESIRED', 'Number');
+    const [paxDInput, setPaxDInput] = useSimVar('L:${Loadsheet.specs.prefix}_PAX_TOTAL_ROWS_22_29_DESIRED', 'Number');
     */
 
     /*
-    const [fwdBag, setFwdBag] = useSimVar('L:A32NX_CARGO_FWD_BAGGAGE_CONTAINER_DESIRED', 'Number');
-    const [aftCont, setAftCont] = useSimVar('L:A32NX_CARGO_AFT_CONTAINER_DESIRED', 'Number');
-    const [aftBag, setAftBag] = useSimVar('L:A32NX_CARGO_AFT_BAGGAGE_DESIRED', 'Number');
-    const [aftBulk, setAftBulk] = useSimVar('L:A32NX_CARGO_FWD_BAGGAGE_CONTAINER_DESIRED', 'Number');
+    const [fwdBagInput, setFwdBagInput] = useSimVar('L:${Loadsheet.specs.prefix}_CARGO_FWD_BAGGAGE_CONTAINER_DESIRED', 'Number');
+    const [aftContInput, setAftContInput] = useSimVar('L:${Loadsheet.specs.prefix}_CARGO_AFT_CONTAINER_DESIRED', 'Number');
+    const [aftBagInput, setAftBagInput] = useSimVar('L:${Loadsheet.specs.prefix}_CARGO_AFT_BAGGAGE_DESIRED', 'Number');
+    const [aftBulkInput, setAftBulkInput] = useSimVar('L:${Loadsheet.specs.prefix}_CARGO_FWD_BAGGAGE_CONTAINER_DESIRED', 'Number');
     */
 
     // Units
@@ -237,35 +114,14 @@ export const Payload = () => {
         mtow: { cg, weight: totalWeight },
     };
 
-    const [stationSize, setStationLen] = useState<number[]>([]);
-    const [cargoStationSize, setCargoStationLen] = useState<number[]>([]);
-
-    const [aFlags, setAFlags] = useBitFlags('PAX_FLAGS_A');
-    const [bFlags, setBFlags] = useBitFlags('PAX_FLAGS_B');
-    const [cFlags, setCFlags] = useBitFlags('PAX_FLAGS_C');
-    const [dFlags, setDFlags] = useBitFlags('PAX_FLAGS_D');
-
-    const activeFlags = [aFlags, bFlags, cFlags, dFlags];
-    const setActiveFlags = [setAFlags, setBFlags, setCFlags, setDFlags];
-
-    const [seatMap] = useState<PaxStationInfo[]>(defaultSeatMap);
-    const [cargoMap] = useState<CargoStationInfo[]>(defaultCargoMap);
-
-    const pax = [paxA, paxB, paxC, paxD];
-    const setPax = [setPaxA, setPaxB, setPaxC, setPaxD];
-    const totalPax = pax && pax.length > 0 && pax.reduce((a, b) => a + b);
-    const maxPax = (stationSize && stationSize.length > 0) ? stationSize.reduce((a, b) => a + b) : -1;
-    const totalPaxWeight = totalPax * paxWeight;
-    const cargo = [fwdBag, aftCont, aftBag, aftBulk];
-    const setCargo = [setFwdBag, setAftCont, setAftBag, setAftBulk];
-    const maxCargo = (cargoStationSize && cargoStationSize.length > 0) ? cargoStationSize.reduce((a, b) => a + b) : -1;
-    const totalCargo = (cargo && cargo.length > 0) ? cargo.reduce((a, b) => a + b) : -1;
+    const [seatMap] = useState<PaxStationInfo[]>(Loadsheet.seatMap);
+    const [cargoMap] = useState<CargoStationInfo[]>(Loadsheet.cargoMap);
 
     const totalCurrentGallon = () => round(Math.max(LInnCurrent + LOutCurrent + RInnCurrent + ROutCurrent + centerCurrent, 0));
 
     const returnSeats = (station: number, increase: boolean): number[] => {
         const seats: number[] = [];
-        const bitFlags: BitFlags = activeFlags[station];
+        const bitFlags: BitFlags = desiredFlags[station];
         for (let seatId = 0; seatId < stationSize[station]; seatId++) {
             if (!increase && bitFlags.getBitIndex(seatId)) {
                 seats.push(seatId);
@@ -277,7 +133,7 @@ export const Payload = () => {
     };
 
     const chooseRandomSeats = (station: number, choices: number[], numChoose: number) => {
-        const bitFlags: BitFlags = activeFlags[station];
+        const bitFlags: BitFlags = desiredFlags[station];
         for (let i = 0; i < numChoose; i++) {
             if (choices.length > 0) {
                 const chosen = ~~(Math.random() * choices.length);
@@ -304,16 +160,20 @@ export const Payload = () => {
 
         let paxRemaining = numOfPax;
 
-        const fillStation = (station, percent, paxToFill) => {
-            const pax = Math.min(Math.trunc(percent * paxToFill), stationSize[station]);
-            setPax[station](pax);
+        const fillStation = (stationIndex, percent, paxToFill) => {
+            const pax = Math.min(Math.trunc(percent * paxToFill), stationSize[stationIndex]);
+            setPax[stationIndex](pax);
             paxRemaining -= pax;
+
+            const paxCount = returnSeats(stationIndex, false).length;
+            const seats: number[] = returnSeats(stationIndex, pax[stationIndex] > paxCount);
+            chooseRandomSeats(stationIndex, seats, Math.abs(paxCount - pax[stationIndex]));
         };
 
-        fillStation(Station.D, 0.28, numOfPax);
-        fillStation(Station.C, 0.28, numOfPax);
-        fillStation(Station.B, 0.25, numOfPax);
-        fillStation(Station.A, 1, paxRemaining);
+        for (let i = pax.length - 1; i > 0; i--) {
+            fillStation(i, stationSize[i] / maxPax, numOfPax);
+        }
+        fillStation(0, 1, paxRemaining);
     };
 
     const setTargetCargo = (numberOfPax, freight) => {
@@ -329,25 +189,29 @@ export const Payload = () => {
             setCargo[station](cargo);
         }
 
-        fillCargo(Station.fwdBag, 0.361, loadableCargoWeight);
-        fillCargo(Station.aftBag, 0.220, loadableCargoWeight);
-        fillCargo(Station.aftCont, 0.251, loadableCargoWeight);
-        fillCargo(Station.aftBulk, 1, remainingWeight);
+        for (let i = cargo.length - 1; i > 0; i--) {
+            fillCargo(i, cargoStationSize[i] / maxCargo, loadableCargoWeight);
+        }
+        fillCargo(0, 1, remainingWeight);
     };
 
-    // TODO FIXME: Refactor hard code
-    const calculatePaxMoment = () => paxA * paxWeight * seatMap[Station.A].position
-        + paxB * paxWeight * seatMap[Station.B].position
-        + paxC * paxWeight * seatMap[Station.C].position
-        + paxD * paxWeight * seatMap[Station.D].position;
+    const calculatePaxMoment = () => {
+        let paxMoment = 0;
+        pax.forEach((station, i) => {
+            paxMoment += station * paxWeight * seatMap[i].position;
+        });
+        return paxMoment;
+    };
 
-    const calculateCargoMoment = () => fwdBag * cargoMap[Station.fwdBag].position
-        + aftCont * cargoMap[Station.aftCont].position
-        + aftBag * cargoMap[Station.aftBag].position
-        + aftBulk * cargoMap[Station.aftBulk].position;
+    const calculateCargoMoment = () => {
+        let cargoMoment = 0;
+        cargo.forEach((station, i) => {
+            cargoMoment += station * cargoMap[i].position;
+        });
+        return cargoMoment;
+    };
 
-    const calculateCg = (mass, moment) => -100 * ((moment / mass - leMacZ) / macSize);
-    const calculateMomentFromCG = (cg, mass) => (leMacZ * mass - macSize * cg * mass / 100) - emptyPosition * emptyWeight;
+    const calculateCg = (mass, moment) => -100 * ((moment / mass - Loadsheet.specs.leMacZ) / Loadsheet.specs.macSize);
 
     const processZfw = (newZfw) => {
         let paxCargoWeight = newZfw - emptyWeight;
@@ -363,50 +227,33 @@ export const Payload = () => {
         setTargetCargo(newPax, newCargo);
     };
 
-    const processZfwCg = (newCg) => {
-        const originalMoment = calculatePaxMoment() + calculateCargoMoment();
-        const newMoment = calculateMomentFromCG(newCg, zfw);
+    const onClickCargo = (cargoStation, e) => {
+        const cargoPercent = Math.min(Math.max(0, e.nativeEvent.offsetX / cargoMap[cargoStation].progressBarWidth), 1);
+        setCargo[cargoStation](Math.round(cargoMap[cargoStation].weight * cargoPercent));
+    };
 
-        const deltaMoment = newMoment - originalMoment;
+    const onClickSeat = (station: number, seatId: number) => {
+        setClicked(true);
+        const bitFlags: BitFlags = desiredFlags[station];
 
-        // Shift Cargo first, then Pax
-        if (deltaMoment > 0) {
-            /*
-            const fwdCargo = cargoMap.filter((station) => station.position >= 0);
-            for (let i = 0; i < fwdCargo.length && deltaMoment > 0; i++) {
-                const shiftCargo = Math.round(Math.min(Math.round(Units.kilogramToUser(fwdCargo[i].weight), deltaMoment / fwdCargo[i].position));
-                setCargo[fwdCargo[i].index](shiftCargo);
-                deltaMoment -= shiftCargo * fwdCargo[i].position;
-            }
-            /*
-            const fwdPax = seatMap.filter((station) => station.position >= 0);
-            for (let i = 0; i < fwdPax.length && deltaMoment > 0; i++) {
-                const shiftPax = Math.min(stationSize[fwdPax[i].index], Math.round(deltaMoment / fwdPax[i].position / paxWeight));
-                setPax[fwdPax[i].index](shiftPax);
-                deltaMoment -= shiftPax * paxWeight * fwdPax[i].position;
-            }
-            */
+        if (bitFlags.getBitIndex(seatId)) {
+            setPax[station](pax[station] - 1);
         } else {
-            /*
-            const aftCargo = cargoMap.filter((station) => station.position < 0);
-            for (let i = 0; i < aftCargo.length; i++) {
-                const stationMax = aftCargo[i].weight * aftCargo[i].position;
-                const shiftCargo = deltaMoment / aftCargo[i].position;
-            }
-            const aftPax = seatMap.filter((station) => station.position < 0);
-            */
+            setPax[station](pax[station] + 1);
         }
+        bitFlags.toggleBitIndex(seatId);
+        setActiveFlags[station](bitFlags);
+        setClicked(false);
     };
 
     // Init
     useEffect(() => {
         // TODO: remove magic numbers
         if (paxWeight === 0) {
-            setPaxWeight(80);
+            setPaxWeight(Loadsheet.specs.pax.defaultPaxWeight);
         }
         if (paxBagWeight === 0) {
-            console.log('hello');
-            setPaxBagWeight(15);
+            setPaxBagWeight(Loadsheet.specs.pax.defaultBagWeight);
         }
     }, []);
 
@@ -439,39 +286,20 @@ export const Payload = () => {
     }, [cargoMap]);
 
     // Adjust passenger seats to match station size on change
-    useEffect(() => {
-        const paxCount = returnSeats(Station.A, false).length;
-        if (paxA !== paxCount) {
-            const seats: number[] = returnSeats(Station.A, paxA > paxCount);
-            chooseRandomSeats(Station.A, seats, Math.abs(paxCount - paxA));
-        }
-    }, [paxA]);
-    useEffect(() => {
-        const paxCount = returnSeats(Station.B, false).length;
-        if (paxB !== paxCount) {
-            const seats: number[] = returnSeats(Station.B, paxB > paxCount);
-            chooseRandomSeats(Station.B, seats, Math.abs(paxCount - paxB));
-        }
-    }, [paxB]);
-    useEffect(() => {
-        const paxCount: number = returnSeats(Station.C, false).length;
-        if (paxC !== paxCount) {
-            const seats: number[] = returnSeats(Station.C, paxC > paxCount);
-            chooseRandomSeats(Station.C, seats, Math.abs(paxCount - paxC));
-        }
-    }, [paxC]);
-    useEffect(() => {
-        const paxCount: number = returnSeats(Station.D, false).length;
-        if (paxD !== paxCount) {
-            const seats: number[] = returnSeats(Station.D, paxD > paxCount);
-            chooseRandomSeats(Station.D, seats, Math.abs(paxCount - paxD));
-        }
-    }, [paxD]);
+    pax.forEach((station, stationIndex) => {
+        useEffect(() => {
+            const paxCount = returnSeats(stationIndex, false).length;
+            if (!clicked && station !== paxCount) {
+                const seats: number[] = returnSeats(stationIndex, station > paxCount);
+                chooseRandomSeats(stationIndex, seats, Math.abs(paxCount - station));
+            }
+        }, [station]);
+    });
 
     useEffect(() => {
         // Adjust ZFW CG Values based on payload
         const newZfwMass = emptyWeight + totalPaxWeight + totalCargo;
-        const newZfwMoment = emptyPosition * emptyWeight + calculatePaxMoment() + calculateCargoMoment();
+        const newZfwMoment = Loadsheet.specs.emptyPosition * emptyWeight + calculatePaxMoment() + calculateCargoMoment();
         const newZfwCg = calculateCg(newZfwMass, newZfwMoment);
 
         if (zfwCg !== newZfwCg) {
@@ -534,47 +362,56 @@ export const Payload = () => {
         <div>
             <div className="h-content-section-reduced">
                 <div className="mb-10 ">
-                    <SeatMap seatMap={seatMap} activeFlags={activeFlags} />
+                    <SeatMapWidget seatMap={seatMap} desiredFlags={desiredFlags} onClickSeat={onClickSeat} />
                 </div>
                 <div className="flex absolute top-16 left-1/4 flex-row px-4 w-fit">
-                    <ProgressBar
-                        height="20px"
-                        width="180px"
-                        displayBar={false}
-                        completedBarBegin={100}
-                        isLabelVisible={false}
-                        bgcolor="var(--color-highlight)"
-                        completed={fwdBag / cargoStationSize[Station.fwdBag] * 100}
-                    />
+                    <BriefcaseFill size={25} className="my-1 mx-3" />
+                    <div className="cursor-pointer" onClick={(e) => onClickCargo(CargoStation.fwdBag, e)}>
+                        <ProgressBar
+                            height="20px"
+                            width={`${cargoMap[CargoStation.fwdBag].progressBarWidth}px`}
+                            displayBar={false}
+                            completedBarBegin={100}
+                            isLabelVisible={false}
+                            bgcolor="var(--color-highlight)"
+                            completed={fwdBag / cargoStationSize[CargoStation.fwdBag] * 100}
+                        />
+                    </div>
                 </div>
                 <div className="flex absolute top-16 left-2/3 flex-row px-4 w-fit">
-                    <ProgressBar
-                        height="20px"
-                        width="100px"
-                        displayBar={false}
-                        completedBarBegin={100}
-                        isLabelVisible={false}
-                        bgcolor="var(--color-highlight)"
-                        completed={aftCont / cargoStationSize[Station.aftCont] * 100}
-                    />
-                    <ProgressBar
-                        height="20px"
-                        width="100px"
-                        displayBar={false}
-                        completedBarBegin={100}
-                        isLabelVisible={false}
-                        bgcolor="var(--color-highlight)"
-                        completed={aftBag / cargoStationSize[Station.aftBag] * 100}
-                    />
-                    <ProgressBar
-                        height="20px"
-                        width="100px"
-                        displayBar={false}
-                        completedBarBegin={100}
-                        isLabelVisible={false}
-                        bgcolor="var(--color-highlight)"
-                        completed={aftBulk / cargoStationSize[Station.aftBulk] * 100}
-                    />
+                    <div className="flex flex-row cursor-pointer" onClick={(e) => onClickCargo(CargoStation.aftCont, e)}>
+                        <ProgressBar
+                            height="20px"
+                            width={`${cargoMap[CargoStation.aftCont].progressBarWidth}px`}
+                            displayBar={false}
+                            completedBarBegin={100}
+                            isLabelVisible={false}
+                            bgcolor="var(--color-highlight)"
+                            completed={aftCont / cargoStationSize[CargoStation.aftCont] * 100}
+                        />
+                    </div>
+                    <div className="flex flex-row cursor-pointer " onClick={(e) => onClickCargo(CargoStation.aftBag, e)}>
+                        <ProgressBar
+                            height="20px"
+                            width={`${cargoMap[CargoStation.aftBag].progressBarWidth}px`}
+                            displayBar={false}
+                            completedBarBegin={100}
+                            isLabelVisible={false}
+                            bgcolor="var(--color-highlight)"
+                            completed={aftBag / cargoStationSize[CargoStation.aftBag] * 100}
+                        />
+                    </div>
+                    <div className="flex flex-row cursor-pointer " onClick={(e) => onClickCargo(CargoStation.aftBulk, e)}>
+                        <ProgressBar
+                            height="20px"
+                            width={`${cargoMap[CargoStation.aftBulk].progressBarWidth}px`}
+                            displayBar={false}
+                            completedBarBegin={100}
+                            isLabelVisible={false}
+                            bgcolor="var(--color-highlight)"
+                            completed={aftBulk / cargoStationSize[CargoStation.aftBulk] * 100}
+                        />
+                    </div>
                 </div>
 
                 <div className="flex relative right-0 flex-row justify-between px-4 mt-16">
@@ -600,9 +437,9 @@ export const Payload = () => {
                                             </td>
                                             <div>
                                                 <TooltipWrapper text={`${t('Ground.Payload.TT.MaxPassengers')} ${maxPax}`}>
-                                                    <td className="px-4 font-light whitespace-nowrap text-md">
+                                                    <td className="relative px-4 font-light whitespace-nowrap text-md">
                                                         <SimpleInput
-                                                            className="my-2 w-24"
+                                                            className="my-2 w-32"
                                                             number
                                                             min={0}
                                                             max={maxPax > 0 ? maxPax : 999}
@@ -625,15 +462,18 @@ export const Payload = () => {
                                             </td>
                                             <div>
                                                 <TooltipWrapper text={`${t('Ground.Payload.TT.MaxCargo')} ${maxCargo} ${usingMetric ? 'kg' : 'lb'}`}>
-                                                    <td className="flex flex-row px-4 font-light whitespace-nowrap text-md">
-                                                        <SimpleInput
-                                                            className="my-2 w-24"
-                                                            number
-                                                            min={0}
-                                                            max={maxCargo > 0 ? maxCargo : 99999}
-                                                            value={cargo && totalCargo}
-                                                            onBlur={(x) => setTargetCargo(0, x)}
-                                                        />
+                                                    <td className="px-4 font-light whitespace-nowrap text-md">
+                                                        <div className="relative">
+                                                            <SimpleInput
+                                                                className="my-2 w-32"
+                                                                number
+                                                                min={0}
+                                                                max={maxCargo > 0 ? maxCargo : 99999}
+                                                                value={cargo && totalCargo}
+                                                                onBlur={(x) => setTargetCargo(0, x)}
+                                                            />
+                                                            <div className="absolute top-2 right-4 my-2 text-lg text-gray-400">{usingMetric ? 'KG' : 'LB'}</div>
+                                                        </div>
                                                     </td>
                                                 </TooltipWrapper>
                                             </div>
@@ -646,17 +486,19 @@ export const Payload = () => {
                                                 {t('Ground.Payload.ZFW')}
                                             </td>
                                             <div>
-                                                {/* TODO FIXME: Hardcode */}
-                                                <TooltipWrapper text={`${t('Ground.Payload.TT.MaxZFW')} ${64300} ${usingMetric ? 'kg' : 'lb'}`}>
+                                                <TooltipWrapper text={`${t('Ground.Payload.TT.MaxZFW')} ${Loadsheet.specs.weights.maxZfw} ${usingMetric ? 'kg' : 'lb'}`}>
                                                     <td className="px-4 font-light whitespace-nowrap text-md">
-                                                        <SimpleInput
-                                                            className="my-2 w-24"
-                                                            number
-                                                            min={emptyWeight.toFixed(0)}
-                                                            max={64300}
-                                                            value={zfw.toFixed(0)}
-                                                            onBlur={(x) => processZfw(parseInt(x))}
-                                                        />
+                                                        <div className="relative">
+                                                            <SimpleInput
+                                                                className="my-2 w-32"
+                                                                number
+                                                                min={emptyWeight.toFixed(0)}
+                                                                max={Loadsheet.specs.weights.maxZfw}
+                                                                value={zfw.toFixed(0)}
+                                                                onBlur={(x) => processZfw(parseInt(x))}
+                                                            />
+                                                            <div className="absolute top-2 right-4 my-2 text-lg text-gray-400">{usingMetric ? 'KG' : 'LB'}</div>
+                                                        </div>
                                                     </td>
                                                 </TooltipWrapper>
                                             </div>
@@ -669,17 +511,23 @@ export const Payload = () => {
                                                 {t('Ground.Payload.ZFWCG')}
                                             </td>
                                             <div>
-                                                {/* TODO FIXME: Hardcode */}
                                                 <TooltipWrapper text={`${t('Ground.Payload.TT.MaxZFWCG')} ${40}%`}>
                                                     <td className="px-4 font-light whitespace-nowrap text-md">
+                                                        {/* TODO FIXME: Setting pax/cargo given desired ZFWCG, ZFW, total pax, total cargo */}
+                                                        <div className="py-4 px-3 rounded-md transition">
+                                                            {`${zfwCg.toFixed(2)} %`}
+                                                        </div>
+                                                        {/*
                                                         <SimpleInput
                                                             className="my-2 w-24"
                                                             number
+                                                            disabled
                                                             min={0}
                                                             max={maxPax > 0 ? maxPax : 999}
                                                             value={zfwCg.toFixed(2)}
-                                                            onBlur={(x) => processZfwCg(x)}
+                                                            onBlur={undefined} // {(x) => processZfwCg(x)}
                                                         />
+                                                        */}
                                                     </td>
                                                 </TooltipWrapper>
                                             </div>
@@ -704,31 +552,35 @@ export const Payload = () => {
                         <div className="flex flex-row mt-4">
                             <Card className="pr-4 h-full" childrenContainerClassName="flex flex-col w-fit h-full">
                                 <TooltipWrapper text={t('Ground.Payload.TT.PerPaxWeight')}>
-                                    <div className="flex flex-row items-center font-light text-medium">
-                                        <PersonPlusFill size={25} className="mx-3" />
-                                        <SimpleInput
-                                            className="mt-1 w-24"
-                                            number
-                                            min={10}
-                                            max={250}
-                                            placeholder="80"
-                                            value={paxWeight}
-                                            onBlur={(x) => setPaxWeight(parseInt(x))}
-                                        />
+                                    <div className="flex flex-row">
+                                        <div className="flex relative flex-row items-center mt-1 font-light text-medium">
+                                            <PersonPlusFill size={25} className="mx-3" />
+                                            <SimpleInput
+                                                className="w-24"
+                                                number
+                                                min={Loadsheet.specs.pax.minPaxWeight}
+                                                max={Loadsheet.specs.pax.maxPaxWeight}
+                                                placeholder={Loadsheet.specs.pax.defaultPaxWeight.toString()}
+                                                value={paxWeight}
+                                                onBlur={(x) => setPaxWeight(parseInt(x))}
+                                            />
+                                            <div className="absolute top-2 right-3 text-lg text-gray-400">{usingMetric ? 'KG' : 'LB'}</div>
+                                        </div>
                                     </div>
                                 </TooltipWrapper>
                                 <TooltipWrapper text={t('Ground.Payload.TT.PerPaxBagWeight')}>
-                                    <div className="flex flex-row items-center font-light text-medium">
-                                        <BagPlusFill size={25} className="mx-3" />
+                                    <div className="flex relative flex-row items-center mt-1 font-light text-medium">
+                                        <BriefcaseFill size={25} className="mx-3" />
                                         <SimpleInput
-                                            className="mt-1 w-24"
+                                            className="w-24"
                                             number
-                                            min={10}
-                                            max={250}
-                                            placeholder="15"
+                                            min={Loadsheet.specs.pax.minBagWeight}
+                                            max={Loadsheet.specs.pax.maxBagWeight}
+                                            placeholder={Loadsheet.specs.pax.defaultBagWeight.toString()}
                                             value={paxBagWeight}
                                             onBlur={(x) => setPaxBagWeight(parseInt(x))}
                                         />
+                                        <div className="absolute top-2 right-3 text-lg text-gray-400">{usingMetric ? 'KG' : 'LB'}</div>
                                     </div>
                                 </TooltipWrapper>
                             </Card>
@@ -758,142 +610,10 @@ export const Payload = () => {
                         </div>
                     </div>
                     <div className="rounded-2xl border col-1 border-theme-accent">
-                        <BalanceWeight width={525} height={475} envelope={defaultEnvelope} points={cgPoints} />
+                        <BalanceWeight width={525} height={475} envelope={Loadsheet.performanceEnvelope} points={cgPoints} />
                     </div>
                 </div>
             </div>
-
-            {/*
-            <div className="flex overflow-hidden absolute bottom-0 left-0 flex-row rounded-2xl border border-theme-accent ">
-                <div className="py-3 px-5 space-y-4">
-                    <div className="flex flex-row justify-between items-center">
-                        <div className="flex flex-row items-center space-x-3">
-                            <h2 className="font-medium">Boarding</h2>
-                            <p className="text-theme-highlight">{ `(${t('Ground.Fuel.ReadyToStart')})`}</p>
-                        </div>
-                        <p>{`${t('Ground.Fuel.EstimatedDuration')}: ${0}`}</p>
-                    </div>
-                    <div className="flex flex-row items-center space-x-12" style={{ width: '40rem' }}>
-                        <div className="flex flex-row">
-                            <div className="mr-8">
-                             <Label text="A">
-                                    <SimpleInput
-                                        className="my-1 w-24"
-                                        placeholder=""
-                                        number
-                                        min={0}
-                                        max={(stationSize && stationSize[Station.A]) ?? 99}
-                                        value={paxA}
-                                        onBlur={(x) => setPaxA(parseInt(x))}
-                                    />
-                                </Label>
-                                <Label text="B">
-                                    <SimpleInput
-                                        className="my-1 w-24"
-                                        placeholder=""
-                                        number
-                                        min={0}
-                                        max={(stationSize && stationSize[Station.B]) ?? 99}
-                                        value={paxB}
-                                        onBlur={(x) => setPaxB(parseInt(x))}
-                                    />
-                                </Label>
-                            </div>
-                            <div className="mr-8">
-                                <Label text="C">
-                                    <SimpleInput
-                                        className="my-1 w-24"
-                                        placeholder=""
-                                        number
-                                        min={0}
-                                        max={(stationSize && stationSize[Station.C]) ?? 99}
-                                        value={paxC}
-                                        onBlur={(x) => setPaxC(parseInt(x))}
-                                    />
-                                </Label>
-                                <Label text="D">
-                                    <SimpleInput
-                                        className="my-1 w-24"
-                                        placeholder=""
-                                        number
-                                        min={0}
-                                        max={(stationSize && stationSize[Station.D]) ?? 99}
-                                        value={paxD}
-                                        onBlur={(x) => setPaxD(parseInt(x))}
-                                    />
-                                </Label>
-                            </div>
-                            <div className="mr-8">
-                            <Label text="Cargo">
-                                    <div className="flex flex-row w-64">
-                                        <SimpleInput
-                                            className="my-1 w-24 rounded-r-none"
-                                            placeholder=""
-                                            number
-                                            min={0}
-                                            max={10000}
-                                            value={0}
-                                            onBlur={(x) => setCargo(parseInt(x))}
-                                        />
-                                        <SelectInput
-                                            value={weightUnit}
-                                            className="my-1 w-24 rounded-l-none"
-                                            options={[
-                                                { value: 'kg', displayValue: 'kg' },
-                                                { value: 'lb', displayValue: 'lb' },
-                                            ]}
-                                            onChange={(newValue: 'kg' | 'lb') => setWeightUnit(newValue)}
-                                        />
-                                    </div>
-                                </Label>
-                                <Label text="Total">
-                                    <div className="flex flex-row w-64">
-                                        <SimpleInput
-                                            className={`${simbriefDataLoaded ? 'w-28' : 'w-44'} my-1 ${simbriefDataLoaded && 'rounded-r-none'}`}
-                                            placeholder=""
-                                            number
-                                            min={0}
-                                            max={stationSize.length > 0 ? stationSize.reduce((a, b) => a + b, 0) : 999}
-                                            value={pax && pax.reduce((a, b) => a + b)}
-                                            onBlur={(x) => setTotalPax(parseInt(x))}
-                                        />
-                                        {simbriefDataLoaded && (
-                                            <TooltipWrapper text={t('Ground.Payload.TT.FillPaxDataFromSimbrief')}>
-                                                <div
-                                                    className="flex justify-center items-center px-2 my-1 h-auto rounded-md rounded-l-none border-2 transition duration-100 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight"
-                                                    onClick={undefined}
-                                                >
-                                                    <CloudArrowDown size={26} />
-                                                </div>
-                                            </TooltipWrapper>
-                                        )}
-                                    </div>
-                                </Label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div
-                    className={`flex justify-center items-center w-20 ${'text-theme-highlight'} bg-current`}
-                    onClick={undefined}
-                >
-                    <div className={`${true ? 'text-white' : 'text-theme-unselected'}`}>
-                        <PlayFill size={50} className={false ? 'hidden' : ''} />
-                        <StopCircleFill size={50} className={false ? '' : 'hidden'} />
-                    </div>
-                </div>
-            </div>
-
-            <div className="flex overflow-x-hidden absolute right-4 bottom-0 flex-col justify-center items-center py-3 px-6 space-y-2 rounded-2xl border bg-theme-body border-theme-accent">
-                <h2 className="flex font-medium"> Boarding Time </h2>
-
-                <SelectGroup>
-                    <SelectItem selected={boardingRate === 'INSTANT'} onSelect={() => setBoardingRate('INSTANT')}>{t('Settings.Instant')}</SelectItem>
-                    <SelectItem selected={boardingRate === 'FAST'} onSelect={() => setBoardingRate('FAST')}>{t('Settings.Fast')}</SelectItem>
-                    <SelectItem selected={boardingRate === 'REAL'} onSelect={() => setBoardingRate('REAL')}>{t('Settings.Real')}</SelectItem>
-                </SelectGroup>
-            </div>
-            */}
         </div>
     );
 };
