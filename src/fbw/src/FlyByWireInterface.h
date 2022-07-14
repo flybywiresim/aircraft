@@ -95,10 +95,6 @@ class FlyByWireInterface {
 
   FailuresConsumer failuresConsumer;
 
-  FlyByWireModelClass flyByWire;
-  FlyByWireModelClass::ExternalInputs_FlyByWire_T flyByWireInput = {};
-  fbw_output flyByWireOutput;
-
   AutopilotStateMachineModelClass autopilotStateMachine;
   AutopilotStateMachineModelClass::ExternalInputs_AutopilotStateMachine_T autopilotStateMachineInput = {};
   ap_raw_laws_input autopilotStateMachineOutput;
@@ -111,15 +107,16 @@ class FlyByWireInterface {
   AutothrustModelClass::ExternalInputs_Autothrust_T autoThrustInput = {};
   athr_output autoThrustOutput;
 
-  RaBus raBusOutputs[2] = {};
+  base_ra_bus raBusOutputs[2] = {};
 
-  LgciuBus lgciuBusOutputs[2] = {};
+  base_lgciu_bus lgciuBusOutputs[2] = {};
 
-  SfccBus sfccBusOutputs[2] = {};
+  base_sfcc_bus sfccBusOutputs[2] = {};
 
-  FmgcBBus fmgcBBusOutputs = {};
+  base_fmgc_b_bus fmgcBBusOutputs = {};
 
-  AdirsBusses adirsBusOutputs[3] = {};
+  base_adr_bus adrBusOutputs[3] = {};
+  base_ir_bus irBusOutputs[3] = {};
 
   Elac elacs[2] = {Elac(true), Elac(false)};
   base_elac_discrete_outputs elacsDiscreteOutputs[2] = {};
@@ -133,7 +130,7 @@ class FlyByWireInterface {
 
   Fcdc fcdcs[2] = {Fcdc(true), Fcdc(false)};
   FcdcDiscreteOutputs fcdcsDiscreteOutputs[2] = {};
-  FcdcBus fcdcsBusOutputs[2] = {};
+  base_fcdc_bus fcdcsBusOutputs[2] = {};
 
   Fac facs[2] = {Fac(true), Fac(false)};
   base_fac_discrete_outputs facsDiscreteOutputs[2] = {};

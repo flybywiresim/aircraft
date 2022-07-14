@@ -17,4 +17,6 @@ float valueOr(base_arinc_429 word, float defaultVal);
 bool bitFromValue(base_arinc_429 word, int bit);
 
 bool bitFromValueOr(base_arinc_429 word, int bit, bool defaultVal);
+
+void setBit(base_arinc_429& word, int bit, bool value);
 };  // namespace Arinc429Utils

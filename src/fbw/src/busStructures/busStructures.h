@@ -34,8 +34,6 @@ struct DmeBus {};
 struct RaBus {
   // Label 164
   Arinc429NumericWord radioHeight;
-
-  operator base_ra_bus() { return *reinterpret_cast<base_ra_bus*>(this); }
 };
 
 struct FcdcBus {
@@ -89,8 +87,6 @@ struct FcdcBus {
   Arinc429NumericWord spoilerRight4Pos;
   // Label 375
   Arinc429NumericWord spoilerRight5Pos;
-
-  operator base_fcdc_bus() { return *reinterpret_cast<base_fcdc_bus*>(this); }
 };
 
 // These EFCS interconnect buses are only educated guesses.
@@ -221,8 +217,6 @@ struct ElacOutBus {
   Arinc429DiscreteWord discreteStatusWord1;
 
   Arinc429DiscreteWord discreteStatusWord2;
-
-  operator base_elac_out_bus() { return *reinterpret_cast<base_elac_out_bus*>(this); }
 };
 
 // Bit table for SEC discrete words
@@ -326,8 +320,6 @@ struct SecOutBus {
   Arinc429DiscreteWord discreteStatusWord1;
 
   Arinc429DiscreteWord discreteStatusWord2;
-
-  operator base_sec_out_bus() { return *reinterpret_cast<base_sec_out_bus*>(this); }
 };
 
 struct FmgcABus {
@@ -382,8 +374,6 @@ struct FmgcBBus {
   Arinc429DiscreteWord deltaRCmd;
   // Label 313
   Arinc429DiscreteWord deltaQCmd;
-
-  operator base_fmgc_b_bus() { return *reinterpret_cast<base_fmgc_b_bus*>(this); }
 };
 
 struct FacBus {
@@ -519,8 +509,6 @@ struct AirDataBus {
   Arinc429NumericWord verticalSpeed;
   // Label 241
   Arinc429NumericWord aoaCorrected;
-
-  operator base_adr_bus() { return *reinterpret_cast<base_adr_bus*>(this); }
 };
 
 // Same here
@@ -587,8 +575,6 @@ struct InertialReferenceBus {
   Arinc429NumericWord northSouthVelocity;
   // Label 367
   Arinc429NumericWord eastWestVelocity;
-
-  operator base_ir_bus() { return *reinterpret_cast<base_ir_bus*>(this); }
 };
 
 struct AdirsBusses {
@@ -608,8 +594,6 @@ struct SfccBus {
   Arinc429NumericWord slatActualPosition;
   // Label 137
   Arinc429NumericWord flapActualPosition;
-
-  operator base_sfcc_bus() { return *reinterpret_cast<base_sfcc_bus*>(this); }
 };
 
 struct LgciuBus {
@@ -621,6 +605,4 @@ struct LgciuBus {
   Arinc429DiscreteWord discreteWord3;
   // Label 23
   Arinc429DiscreteWord discreteWord4;
-
-  operator base_lgciu_bus() { return *reinterpret_cast<base_lgciu_bus*>(this); }
 };

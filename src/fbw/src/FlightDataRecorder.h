@@ -20,7 +20,6 @@ class FlightDataRecorder {
   void update(AutopilotStateMachineModelClass* autopilotStateMachine,
               AutopilotLawsModelClass* autopilotLaws,
               AutothrustModelClass* autoThrust,
-              FlyByWireModelClass* flyByWire,
               const EngineData& engineData,
               const AdditionalData& additionalData);
 

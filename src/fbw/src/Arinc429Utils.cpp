@@ -37,3 +37,7 @@ bool Arinc429Utils::bitFromValueOr(base_arinc_429 word, int bit, bool defaultVal
     return defaultVal;
   }
 }
+
+void Arinc429Utils::setBit(base_arinc_429& word, int bit, bool value) {
+  word.Data = static_cast<float>((static_cast<uint32_t>(word.Data) & ~(1 << (bit - 1))) | (value << (bit - 1)));
+}

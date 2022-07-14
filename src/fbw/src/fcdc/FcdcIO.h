@@ -49,7 +49,7 @@ struct FcdcBusInputs {
 
   base_sec_out_bus sec1;
 
-  FcdcBus fcdcOpp;
+  base_fcdc_bus fcdcOpp;
 
   base_elac_out_bus elac2;
 
