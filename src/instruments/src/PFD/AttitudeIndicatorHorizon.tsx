@@ -555,9 +555,9 @@ class SideslipIndicator extends DisplayComponent<SideslipIndicatorProps> {
         } else if (!this.onGround && !this.beta.isFailureWarning()) {
             offset = Math.max(Math.min(this.beta.value, 15), -15);
         } else {
-            const latAcc = Math.round(this.filteredLatAccSub.get() * multiplier) / multiplier;
+            const latAcc = this.filteredLatAccSub.get();
             const accInG = Math.min(0.3, Math.max(-0.3, latAcc));
-            offset = -accInG * 15 / 0.3;
+            offset = Math.round(-accInG * 15 / 0.3 * multiplier) / multiplier;
         }
 
         this.rollTriangle.instance.style.transform = `translate3d(0px, ${verticalOffset.toFixed(2)}px, 0px)`;
