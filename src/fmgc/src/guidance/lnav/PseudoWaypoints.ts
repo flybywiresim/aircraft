@@ -69,7 +69,7 @@ export class PseudoWaypoints implements GuidanceComponent {
             }
         }
 
-        if (VnavConfig.VNAV_EMIT_DECEL) {
+        if (VnavConfig.VNAV_EMIT_DECEL && this.guidanceController.vnavDriver.currentApproachProfile) {
             const decel = PseudoWaypoints.pointFromEndOfPath(geometry, wptCount, this.guidanceController.vnavDriver.currentApproachProfile.decel, DEBUG && PWP_IDENT_DECEL);
 
             if (decel) {
