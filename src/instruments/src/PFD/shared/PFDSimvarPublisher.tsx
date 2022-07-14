@@ -94,10 +94,6 @@ export interface PFDSimvars {
     groundSpeed: number;
     radioAltitude1: number;
     radioAltitude2: number;
-    beta: number;
-    betaTargetActive: number;
-    betaTarget: number;
-    latAcc: number;
     crzAltMode: boolean;
     tcasModeDisarmed: boolean;
     flexTemp: number;
@@ -106,6 +102,7 @@ export interface PFDSimvars {
     autoBrakeDecel: boolean;
     fpaRaw: number;
     daRaw: number;
+    latAccRaw: number;
     ls1Button: boolean;
     ls2Button: boolean;
     fcdc1DiscreteWord1Raw: number;
@@ -131,6 +128,10 @@ export interface PFDSimvars {
     fac2VAlphaMaxRaw: number;
     fac1VStallWarnRaw: number;
     fac2VStallWarnRaw: number;
+    fac1EstimatedBetaRaw: number;
+    fac2EstimatedBetaRaw: number;
+    fac1BetaTargetRaw: number;
+    fac2BetaTargetRaw: number;
   }
 
 export enum PFDVars {
@@ -227,10 +228,6 @@ export enum PFDVars {
     groundSpeed = 'L:A32NX_ADIRS_IR_1_GROUND_SPEED',
     radioAltitude1 = 'L:A32NX_RA_1_RADIO_ALTITUDE',
     radioAltitude2 = 'L:A32NX_RA_2_RADIO_ALTITUDE',
-    beta = 'INCIDENCE BETA',
-    betaTargetActive = 'L:A32NX_BETA_TARGET_ACTIVE',
-    betaTarget = 'L:A32NX_BETA_TARGET',
-    latAcc = 'ACCELERATION BODY X',
     crzAltMode = 'L:A32NX_FMA_CRUISE_ALT_MODE',
     tcasModeDisarmed = 'L:A32NX_AUTOPILOT_TCAS_MESSAGE_DISARM',
     flexTemp = 'L:AIRLINER_TO_FLEX_TEMP',
@@ -239,6 +236,7 @@ export enum PFDVars {
     autoBrakeDecel = 'L:A32NX_AUTOBRAKES_DECEL_LIGHT',
     fpaRaw = 'L:A32NX_ADIRS_IR_1_FLIGHT_PATH_ANGLE',
     daRaw = 'L:A32NX_ADIRS_IR_1_DRIFT_ANGLE',
+    latAccRaw = 'L:A32NX_ADIRS_IR_1_BODY_LATERAL_ACC',
     ls1Button = 'L:BTN_LS_1_FILTER_ACTIVE',
     ls2Button = 'L:BTN_LS_2_FILTER_ACTIVE',
     fcdc1DiscreteWord1Raw = 'L:A32NX_FCDC_1_DISCRETE_WORD_1',
@@ -264,6 +262,10 @@ export enum PFDVars {
     fac2VAlphaMaxRaw = 'L:A32NX_FAC_2_V_ALPHA_LIM',
     fac1VStallWarnRaw = 'L:A32NX_FAC_1_V_STALL_WARN',
     fac2VStallWarnRaw = 'L:A32NX_FAC_2_V_STALL_WARN',
+    fac1EstimatedBetaRaw = 'L:A32NX_FAC_1_ESTIMATED_SIDESLIP',
+    fac2EstimatedBetaRaw = 'L:A32NX_FAC_2_ESTIMATED_SIDESLIP',
+    fac1BetaTargetRaw = 'L:A32NX_FAC_1_SIDESLIP_TARGET',
+    fac2BetaTargetRaw = 'L:A32NX_FAC_2_SIDESLIP_TARGET',
   }
 
 /** A publisher to poll and publish nav/com simvars. */
@@ -362,10 +364,6 @@ export class PFDSimvarPublisher extends SimVarPublisher<PFDSimvars> {
         ['groundSpeed', { name: PFDVars.groundSpeed, type: SimVarValueType.Number }],
         ['radioAltitude1', { name: PFDVars.radioAltitude1, type: SimVarValueType.Number }],
         ['radioAltitude2', { name: PFDVars.radioAltitude2, type: SimVarValueType.Number }],
-        ['beta', { name: PFDVars.beta, type: SimVarValueType.Degree }],
-        ['betaTargetActive', { name: PFDVars.betaTargetActive, type: SimVarValueType.Number }],
-        ['betaTarget', { name: PFDVars.betaTarget, type: SimVarValueType.Number }],
-        ['latAcc', { name: PFDVars.latAcc, type: SimVarValueType.GForce }],
         ['crzAltMode', { name: PFDVars.crzAltMode, type: SimVarValueType.Bool }],
         ['tcasModeDisarmed', { name: PFDVars.tcasModeDisarmed, type: SimVarValueType.Bool }],
         ['flexTemp', { name: PFDVars.flexTemp, type: SimVarValueType.Number }],
@@ -374,6 +372,7 @@ export class PFDSimvarPublisher extends SimVarPublisher<PFDSimvars> {
         ['autoBrakeDecel', { name: PFDVars.autoBrakeDecel, type: SimVarValueType.Bool }],
         ['fpaRaw', { name: PFDVars.fpaRaw, type: SimVarValueType.Number }],
         ['daRaw', { name: PFDVars.daRaw, type: SimVarValueType.Number }],
+        ['latAccRaw', { name: PFDVars.latAccRaw, type: SimVarValueType.Number }],
         ['ls1Button', { name: PFDVars.ls1Button, type: SimVarValueType.Bool }],
         ['ls2Button', { name: PFDVars.ls2Button, type: SimVarValueType.Bool }],
         ['fcdc1DiscreteWord1Raw', { name: PFDVars.fcdc1DiscreteWord1Raw, type: SimVarValueType.Number }],
@@ -399,6 +398,10 @@ export class PFDSimvarPublisher extends SimVarPublisher<PFDSimvars> {
         ['fac2VAlphaMaxRaw', { name: PFDVars.fac2VAlphaMaxRaw, type: SimVarValueType.Number }],
         ['fac1VStallWarnRaw', { name: PFDVars.fac1VStallWarnRaw, type: SimVarValueType.Number }],
         ['fac2VStallWarnRaw', { name: PFDVars.fac2VStallWarnRaw, type: SimVarValueType.Number }],
+        ['fac1EstimatedBetaRaw', { name: PFDVars.fac1EstimatedBetaRaw, type: SimVarValueType.Number }],
+        ['fac2EstimatedBetaRaw', { name: PFDVars.fac2EstimatedBetaRaw, type: SimVarValueType.Number }],
+        ['fac1BetaTargetRaw', { name: PFDVars.fac1BetaTargetRaw, type: SimVarValueType.Number }],
+        ['fac2BetaTargetRaw', { name: PFDVars.fac2BetaTargetRaw, type: SimVarValueType.Number }],
     ])
 
     public constructor(bus: EventBus) {

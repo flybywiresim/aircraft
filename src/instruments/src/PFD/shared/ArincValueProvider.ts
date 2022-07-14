@@ -16,6 +16,7 @@ export interface Arinc429Values {
     chosenRa: Arinc429Word;
     fpa: Arinc429Word;
     da: Arinc429Word;
+    latAcc: Arinc429Word;
     fcdcDiscreteWord1: Arinc429Word;
     fcdc1DiscreteWord2: Arinc429Word;
     fcdc2DiscreteWord2: Arinc429Word;
@@ -27,6 +28,8 @@ export interface Arinc429Values {
     vAlphaMax: Arinc429Word;
     vAlphaProt: Arinc429Word;
     vStallWarn: Arinc429Word;
+    estimatedBeta: Arinc429Word;
+    betaTarget: Arinc429Word;
 }
 export class ArincValueProvider {
     private roll = new Arinc429Word(0);
@@ -56,6 +59,8 @@ export class ArincValueProvider {
     private fpa = new Arinc429Word(0);
 
     private da = new Arinc429Word(0);
+
+    private latAcc = new Arinc429Word(0);
 
     private fcdc1DiscreteWord1 = new Arinc429Word(0);
 
@@ -163,6 +168,11 @@ export class ArincValueProvider {
         subscriber.on('daRaw').handle((da) => {
             this.da = new Arinc429Word(da);
             publisher.pub('da', this.da);
+        });
+
+        subscriber.on('latAccRaw').handle((latAcc) => {
+            this.latAcc = new Arinc429Word(latAcc);
+            publisher.pub('latAcc', this.latAcc);
         });
 
         subscriber.on('fcdc1DiscreteWord1Raw').handle((discreteWord1) => {
@@ -292,6 +302,34 @@ export class ArincValueProvider {
         subscriber.on('fac2VStallWarnRaw').handle((word) => {
             if (this.facToUse === 2) {
                 publisher.pub('vStallWarn', new Arinc429Word(word));
+            }
+        });
+
+        subscriber.on('fac1EstimatedBetaRaw').handle((word) => {
+            if (this.facToUse === 1) {
+                publisher.pub('estimatedBeta', new Arinc429Word(word));
+            } else if (this.facToUse === 0) {
+                publisher.pub('estimatedBeta', new Arinc429Word(0));
+            }
+        });
+
+        subscriber.on('fac2EstimatedBetaRaw').handle((word) => {
+            if (this.facToUse === 2) {
+                publisher.pub('estimatedBeta', new Arinc429Word(word));
+            }
+        });
+
+        subscriber.on('fac1BetaTargetRaw').handle((word) => {
+            if (this.facToUse === 1) {
+                publisher.pub('betaTarget', new Arinc429Word(word));
+            } else if (this.facToUse === 0) {
+                publisher.pub('betaTarget', new Arinc429Word(0));
+            }
+        });
+
+        subscriber.on('fac2BetaTargetRaw').handle((word) => {
+            if (this.facToUse === 2) {
+                publisher.pub('betaTarget', new Arinc429Word(word));
             }
         });
     }

@@ -458,13 +458,21 @@ interface SideslipIndicatorProps {
 }
 
 class SideslipIndicator extends DisplayComponent<SideslipIndicatorProps> {
-    private sideslipIndicatorFilter = new LagFilter(0.8);
+    private latAccFilter = new LagFilter(0.5);
+
+    private estimatedBetaFilter = new LagFilter(2);
+
+    private betaTargetFilter = new LagFilter(2);
 
     private classNameSub = Subject.create('Yellow');
+
+    private filteredLatAccSub = Subject.create(0);
 
     private rollTriangle = FSComponent.createRef<SVGPathElement>();
 
     private slideSlip = FSComponent.createRef<SVGPathElement>();
+
+    private siFailFlag = FSComponent.createRef<SVGPathElement>();
 
     private onGround = true;
 
@@ -474,18 +482,16 @@ class SideslipIndicator extends DisplayComponent<SideslipIndicatorProps> {
 
     private roll = new Arinc429Word(0);
 
-    private betaTargetActive = 0;
+    private beta = new Arinc429Word(0);
 
-    private beta = 0;
+    private betaTarget = new Arinc429Word(0);
 
-    private betaTarget = 0;
-
-    private latAcc = 0;
+    private latAcc = new Arinc429Word(0);
 
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values>();
+        const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values & ClockEvents>();
 
         sub.on('leftMainGearCompressed').whenChanged().handle((og) => {
             this.leftMainGearCompressed = og;
@@ -504,23 +510,25 @@ class SideslipIndicator extends DisplayComponent<SideslipIndicatorProps> {
             this.determineSlideSlip();
         });
 
-        sub.on('beta').withPrecision(2).handle((beta) => {
+        sub.on('estimatedBeta').withArinc429Precision(2).handle((beta) => {
             this.beta = beta;
             this.determineSlideSlip();
         });
 
-        sub.on('betaTargetActive').whenChanged().handle((betaTargetActive) => {
-            this.betaTargetActive = betaTargetActive;
-            this.determineSlideSlip();
-        });
-
-        sub.on('betaTarget').withPrecision(2).handle((betaTarget) => {
+        sub.on('betaTarget').withArinc429Precision(2).handle((betaTarget) => {
             this.betaTarget = betaTarget;
             this.determineSlideSlip();
         });
 
-        sub.on('latAcc').atFrequency(2).handle((latAcc) => {
+        sub.on('latAcc').withArinc429Precision(2).handle((latAcc) => {
             this.latAcc = latAcc;
+        });
+
+        sub.on('realTime').handle(() => {
+            this.filteredLatAccSub.set(this.latAccFilter.step(this.latAcc.valueOr(0), this.props.instrument.deltaTime / 1000));
+        });
+
+        this.filteredLatAccSub.sub(() => {
             this.determineSlideSlip();
         });
     }
@@ -531,23 +539,30 @@ class SideslipIndicator extends DisplayComponent<SideslipIndicatorProps> {
         const verticalOffset = calculateVerticalOffsetFromRoll(currentValueAtPrecision);
         let offset = 0;
 
-        if (this.onGround) {
-            // on ground, lateral g is indicated. max 0.3g, max deflection is 15mm
-            const latAcc = Math.round(this.latAcc * multiplier) / multiplier;// SimVar.GetSimVarValue('ACCELERATION BODY X', 'G Force');
-            const accInG = Math.min(0.3, Math.max(-0.3, latAcc));
-            offset = -accInG * 15 / 0.3;
+        let betaTargetActive = false;
+
+        if (this.onGround && this.latAcc.isFailureWarning() || !this.onGround && this.latAcc.isFailureWarning() && this.beta.isFailureWarning()) {
+            this.slideSlip.instance.style.visibility = 'hidden';
+            this.siFailFlag.instance.style.display = 'block';
         } else {
-            const beta = this.beta;
-            const betaTarget = this.betaTarget;
-            offset = Math.max(Math.min(beta - betaTarget, 15), -15);
+            this.slideSlip.instance.style.visibility = 'visible';
+            this.siFailFlag.instance.style.display = 'none';
         }
 
-        const betaTargetActive = this.betaTargetActive === 1;
-        const SIIndexOffset = this.sideslipIndicatorFilter.step(offset, this.props.instrument.deltaTime / 1000);
+        if (!this.onGround && !this.beta.isFailureWarning() && !(this.betaTarget.isFailureWarning() || this.betaTarget.isNoComputedData())) {
+            offset = Math.max(Math.min(this.beta.value - this.betaTarget.value, 15), -15);
+            betaTargetActive = true;
+        } else if (!this.onGround && !this.beta.isFailureWarning()) {
+            offset = Math.max(Math.min(this.beta.value, 15), -15);
+        } else {
+            const latAcc = Math.round(this.filteredLatAccSub.get() * multiplier) / multiplier;
+            const accInG = Math.min(0.3, Math.max(-0.3, latAcc));
+            offset = -accInG * 15 / 0.3;
+        }
 
         this.rollTriangle.instance.style.transform = `translate3d(0px, ${verticalOffset.toFixed(2)}px, 0px)`;
-        this.classNameSub.set(`${betaTargetActive ? 'Cyan' : 'Yellow'}`);
-        this.slideSlip.instance.style.transform = `translate3d(${SIIndexOffset}px, 0px, 0px)`;
+        this.classNameSub.set(betaTargetActive ? 'Cyan' : 'Yellow');
+        this.slideSlip.instance.style.transform = `translate3d(${offset}px, 0px, 0px)`;
     }
 
     render(): VNode {
@@ -557,8 +572,10 @@ class SideslipIndicator extends DisplayComponent<SideslipIndicatorProps> {
                 <path
                     id="SideSlipIndicator"
                     ref={this.slideSlip}
+                    class={this.classNameSub}
                     d="m73.974 47.208-1.4983-2.2175h-7.0828l-1.4983 2.2175z"
                 />
+                <text id="SIFailText" ref={this.siFailFlag} x="72.315376" y="48.116844" class="FontSmall Red Blink9Seconds EndAlign">SI</text>
             </g>
         );
     }

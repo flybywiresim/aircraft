@@ -164,10 +164,6 @@ class A32NX_PFD extends BaseInstrument {
         this.simVarPublisher.subscribe('radioAltitude1');
         this.simVarPublisher.subscribe('radioAltitude2');
 
-        this.simVarPublisher.subscribe('beta');
-        this.simVarPublisher.subscribe('betaTargetActive');
-        this.simVarPublisher.subscribe('betaTarget');
-        this.simVarPublisher.subscribe('latAcc');
         this.simVarPublisher.subscribe('crzAltMode');
         this.simVarPublisher.subscribe('tcasModeDisarmed');
         this.simVarPublisher.subscribe('flexTemp');
@@ -176,6 +172,7 @@ class A32NX_PFD extends BaseInstrument {
         this.simVarPublisher.subscribe('autoBrakeDecel');
         this.simVarPublisher.subscribe('fpaRaw');
         this.simVarPublisher.subscribe('daRaw');
+        this.simVarPublisher.subscribe('latAccRaw');
         this.simVarPublisher.subscribe('ls1Button');
         this.simVarPublisher.subscribe('ls2Button');
         this.simVarPublisher.subscribe('xtk');
@@ -204,6 +201,10 @@ class A32NX_PFD extends BaseInstrument {
         this.simVarPublisher.subscribe('fac2VAlphaMaxRaw');
         this.simVarPublisher.subscribe('fac1VStallWarnRaw');
         this.simVarPublisher.subscribe('fac2VStallWarnRaw');
+        this.simVarPublisher.subscribe('fac1EstimatedBetaRaw');
+        this.simVarPublisher.subscribe('fac2EstimatedBetaRaw');
+        this.simVarPublisher.subscribe('fac1BetaTargetRaw');
+        this.simVarPublisher.subscribe('fac2BetaTargetRaw');
 
         FSComponent.render(<PFDComponent bus={this.bus} instrument={this} />, document.getElementById('PFD_CONTENT'));
     }
