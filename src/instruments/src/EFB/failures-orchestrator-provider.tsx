@@ -11,6 +11,9 @@ interface FailuresOrchestratorContext {
 }
 
 const createOrchestrator = () => new FailuresOrchestrator('A32NX', [
+    [22, A320Failure.Fac1Failure, 'FAC 1'],
+    [22, A320Failure.Fac2Failure, 'FAC 2'],
+
     [24, A320Failure.TransformerRectifier1, 'TR 1'],
     [24, A320Failure.TransformerRectifier2, 'TR 2'],
     [24, A320Failure.TransformerRectifierEssential, 'ESS TR'],
@@ -20,8 +23,6 @@ const createOrchestrator = () => new FailuresOrchestrator('A32NX', [
     [27, A320Failure.Sec1Failure, 'SEC 1'],
     [27, A320Failure.Sec2Failure, 'SEC 2'],
     [27, A320Failure.Sec3Failure, 'SEC 3'],
-    [27, A320Failure.Fac1Failure, 'FAC 1'],
-    [27, A320Failure.Fac2Failure, 'FAC 2'],
     [27, A320Failure.Fcdc1Failure, 'FCDC 1'],
     [27, A320Failure.Fcdc2Failure, 'FCDC 2'],
 
