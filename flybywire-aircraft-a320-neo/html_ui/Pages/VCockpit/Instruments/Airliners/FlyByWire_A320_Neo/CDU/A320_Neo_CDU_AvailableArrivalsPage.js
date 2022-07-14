@@ -116,22 +116,27 @@ class CDUAvailableArrivalsPage {
             } else {
                 if (selectedApproach) {
                     const selectedRunway = selectedApproach.runway;
-                    for (let i = 0; i < airportInfo.arrivals.length; i++) {
-                        const arrival = airportInfo.arrivals[i];
-                        if (arrival.runwayTransitions.length) {
-                            for (let j = 0; j < arrival.runwayTransitions.length; j++) {
-                                const runwayTransition = arrival.runwayTransitions[j];
-                                if (runwayTransition) {
+                    if (selectedRunway.length > 0) {
+                        for (let i = 0; i < airportInfo.arrivals.length; i++) {
+                            const arrival = airportInfo.arrivals[i];
+                            if (arrival.runwayTransitions.length) {
+                                for (let j = 0; j < arrival.runwayTransitions.length; j++) {
+                                    const runwayTransition = arrival.runwayTransitions[j];
+                                    if (runwayTransition) {
                                     // Check if selectedRunway matches a transition on the approach (and also checks for Center runways)
-                                    if (runwayTransition.name.match("^RW" + selectedRunway + "C?$")) {
-                                        matchingArrivals.push({ arrival: arrival, arrivalIndex: i });
+                                        if (runwayTransition.name.match("^RW" + selectedRunway + "C?$")) {
+                                            matchingArrivals.push({ arrival: arrival, arrivalIndex: i });
+                                        }
                                     }
                                 }
+                            } else {
+                                //add the arrival even if it isn't runway specific
+                                matchingArrivals.push({ arrival: arrival, arrivalIndex: i });
                             }
-                        } else {
-                            //add the arrival even if it isn't runway specific
-                            matchingArrivals.push({ arrival: arrival, arrivalIndex: i });
                         }
+                    } else {
+                        // the approach is not runway specific so don't attempt to filter arrivals
+                        matchingArrivals.push(...airportInfo.arrivals.map((arrival, arrivalIndex) => ({ arrival, arrivalIndex })));
                     }
                 } else {
                     for (let i = 0; i < airportInfo.arrivals.length; i++) {
