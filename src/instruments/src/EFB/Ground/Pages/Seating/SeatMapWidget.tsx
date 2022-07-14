@@ -9,6 +9,7 @@ import { SeatOutlineBg } from '../../../Assets/SeatOutlineBg';
 interface SeatMapProps {
     seatMap: PaxStationInfo[],
     desiredFlags: BitFlags[],
+    activeFlags: BitFlags[],
     onClickSeat: (paxStation: number, section: number) => void,
 }
 
@@ -22,33 +23,35 @@ const useCanvasEvent = (canvas: HTMLCanvasElement | null, event: string, handler
     });
 };
 
-export const SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, onClickSeat }) => {
+export const SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, activeFlags, onClickSeat }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [ctx, setCtx] = useState<CanvasRenderingContext2D | null>(null);
-    const [seatImg, setSeatImg] = useState<HTMLImageElement | null>(null);
+    const [seatEmptyImg, setSeatEmptyImg] = useState<HTMLImageElement | null>(null);
+    const [seatMinusImg, setSeatMinusImg] = useState<HTMLImageElement | null>(null);
     const [seatFilledImg, setSeatFilledImg] = useState<HTMLImageElement | null>(null);
+    const [seatAddImg, setSeatAddImg] = useState<HTMLImageElement | null>(null);
     const [theme] = usePersistentProperty('EFB_UI_THEME', 'blue');
     const [xYMap, setXYMap] = useState<number[][][]>([]);
 
     const getTheme = (theme) => {
         let base = '#fff';
         let primary = '#00C9E4';
-        let stationondary = '#84CC16';
+        let secondary = '#84CC16';
         switch (theme) {
         case 'dark':
             base = '#fff';
             primary = '#3B82F6';
-            stationondary = '#84CC16';
+            secondary = '#84CC16';
             break;
         case 'light':
             base = '#000000';
             primary = '#3B82F6';
-            stationondary = '#84CC16';
+            secondary = '#84CC16';
             break;
         default:
             break;
         }
-        return [base, primary, stationondary];
+        return [base, primary, secondary];
     };
 
     const addXOffset = (xOff: number, station: number, row: number) => {
@@ -108,11 +111,15 @@ export const SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, o
     };
 
     const drawSeat = (x: number, y: number, imageX: number, imageY: number, station: number, seatId: number) => {
-        if (ctx && seatImg && seatFilledImg) {
-            if (desiredFlags[station].getBitIndex(seatId)) {
+        if (ctx && seatEmptyImg && seatMinusImg && seatAddImg && seatFilledImg) {
+            if (desiredFlags[station].getBitIndex(seatId) && activeFlags[station].getBitIndex(seatId)) {
                 ctx.drawImage(seatFilledImg, x, y, imageX, imageY);
+            } else if (activeFlags[station].getBitIndex(seatId)) {
+                ctx.drawImage(seatMinusImg, x, y, imageX, imageY);
+            } else if (desiredFlags[station].getBitIndex(seatId)) {
+                ctx.drawImage(seatAddImg, x, y, imageX, imageY);
             } else {
-                ctx.drawImage(seatImg, x, y, imageX, imageY);
+                ctx.drawImage(seatEmptyImg, x, y, imageX, imageY);
             }
         }
     };
@@ -120,10 +127,20 @@ export const SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, o
     useEffect(() => {
         const [base, primary] = getTheme(theme);
 
-        const img = <Seat fill="none" stroke={base} opacity="1.0" />;
-        const imgElement = new Image();
-        imgElement.src = `data:image/svg+xml; charset=utf8, ${encodeURIComponent(ReactDOMServer.renderToStaticMarkup(img))}`;
-        setSeatImg(imgElement);
+        const seatEmpty = <Seat fill="none" stroke={base} opacity="1.0" />;
+        const seatEmptyElement = new Image();
+        seatEmptyElement.src = `data:image/svg+xml; charset=utf8, ${encodeURIComponent(ReactDOMServer.renderToStaticMarkup(seatEmpty))}`;
+        setSeatEmptyImg(seatEmptyElement);
+
+        const seatMinus = <Seat fill={base} stroke="none" opacity="0.25" />;
+        const seatMinusElement = new Image();
+        seatMinusElement.src = `data:image/svg+xml; charset=utf8, ${encodeURIComponent(ReactDOMServer.renderToStaticMarkup(seatMinus))}`;
+        setSeatMinusImg(seatMinusElement);
+
+        const seatAdd = <Seat fill={primary} stroke="none" opacity="0.6" />;
+        const seatAddElement = new Image();
+        seatAddElement.src = `data:image/svg+xml; charset=utf8, ${encodeURIComponent(ReactDOMServer.renderToStaticMarkup(seatAdd))}`;
+        setSeatAddImg(seatAddElement);
 
         const imgFilled = <Seat fill={primary} stroke="none" opacity="1.0" />;
         const imgFilledElement = new Image();

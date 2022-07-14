@@ -26,6 +26,7 @@ export interface PaxStationInfo {
     rows: RowInfo[],
     simVar: string,
     index: number,
+    fill: number,
     stationIndex: number,
     position: number,
 }

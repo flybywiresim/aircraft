@@ -11,12 +11,16 @@ export interface PerformanceEnvelope {
     mlw: number[][],
     mzfw: number[][],
     mtow: number[][],
+    flight: number[][],
 }
 
 export interface CgPoints {
-    mlw: CgWeight
-    mzfw: CgWeight
     mtow: CgWeight
+    mtowDesired: CgWeight
+    mzfw: CgWeight
+    mzfwDesired: CgWeight
+    mlw: CgWeight
+    mlwDesired: CgWeight
 }
 
 interface CgWeight {

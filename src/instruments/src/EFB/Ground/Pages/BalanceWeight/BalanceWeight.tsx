@@ -14,10 +14,10 @@ interface BalanceWeightProps {
 export const BalanceWeight: React.FC<BalanceWeightProps> = ({ width, height, envelope, points }) => {
     const { usingMetric } = Units;
     const canvasRef = useRef<HTMLCanvasElement>(null);
+    const [boardingStarted] = useSimVar('L:A32NX_BOARDING_STARTED_BY_USR', 'Bool');
     const [ctx, setCtx] = useState<CanvasRenderingContext2D | null>(null);
-
-    const [actualCg] = useSimVar('A:CG PERCENT', 'percent');
     const [theme] = usePersistentProperty('EFB_UI_THEME', 'blue');
+    const [flightPhase] = useSimVar('L:A32NX_FMGC_FLIGHT_PHASE', 'enum');
 
     const getTheme = (theme) => {
         let base = '#fff';
@@ -80,6 +80,7 @@ export const BalanceWeight: React.FC<BalanceWeightProps> = ({ width, height, env
 
             const drawCgLines = () => {
                 ctx.lineWidth = 1;
+                ctx.globalAlpha = (theme !== 'light') ? 0.5 : 0.25;
                 const cgWidth = width - shiftX;
                 for (let cgPercent = 12, x = 0; x < cgWidth; x += xStep, cgPercent++) {
                     if (x > 0 && (x < cgWidth)) {
@@ -95,10 +96,10 @@ export const BalanceWeight: React.FC<BalanceWeightProps> = ({ width, height, env
                         ctx.stroke();
                     }
                 }
+                ctx.globalAlpha = 1;
             };
 
             const drawMzfw = () => {
-                // MZFW
                 ctx.lineWidth = 2;
                 ctx.strokeStyle = base;
                 const mzfw = envelope.mzfw;
@@ -125,6 +126,7 @@ export const BalanceWeight: React.FC<BalanceWeightProps> = ({ width, height, env
                     ctx.lineTo(x, y);
                 }
                 ctx.stroke();
+                ctx.globalAlpha = 1;
             };
 
             const drawMtow = () => {
@@ -141,10 +143,36 @@ export const BalanceWeight: React.FC<BalanceWeightProps> = ({ width, height, env
                 ctx.stroke();
             };
 
-            const drawPoints = () => {
-                {
-                    const mlwPoints = points.mlw;
+            const drawFlight = () => {
+                ctx.lineWidth = 4;
+                ctx.strokeStyle = primary;
+                const mtow = envelope.flight;
+                const [x, y] = cgWeightToXY(mtow[0][0], mtow[0][1]);
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                for (let i = 1; i < mtow.length; i++) {
+                    const [x, y] = cgWeightToXY(mtow[i][0], mtow[i][1]);
+                    ctx.lineTo(x, y);
+                }
+                ctx.stroke();
+            };
 
+            const drawPoints = () => {
+                let mlwPoints;
+                let mtowPoints;
+                let mzfwPoints;
+
+                if (!boardingStarted) {
+                    mlwPoints = points.mlwDesired;
+                    mtowPoints = points.mtowDesired;
+                    mzfwPoints = points.mzfwDesired;
+                } else {
+                    mlwPoints = points.mlw;
+                    mtowPoints = points.mtow;
+                    mzfwPoints = points.mzfw;
+                }
+
+                {
                     ctx.fillStyle = secondary;
                     ctx.strokeStyle = alt;
                     ctx.lineWidth = 1;
@@ -159,8 +187,6 @@ export const BalanceWeight: React.FC<BalanceWeightProps> = ({ width, height, env
                     ctx.stroke();
                 }
                 {
-                    const mtowPoints = points.mtow;
-
                     ctx.fillStyle = primary;
                     ctx.strokeStyle = alt;
                     ctx.lineWidth = 1;
@@ -175,17 +201,15 @@ export const BalanceWeight: React.FC<BalanceWeightProps> = ({ width, height, env
                     ctx.stroke();
                 }
                 {
-                    const zfwPoints = points.mzfw;
-
                     ctx.fillStyle = base;
                     ctx.strokeStyle = alt;
                     ctx.lineWidth = 1;
                     ctx.beginPath();
-                    const [mzfwCgX, mzfwCgY] = cgWeightToXY(zfwPoints.cg, zfwPoints.weight);
-                    ctx.moveTo(mzfwCgX, mzfwCgY - CanvasConst.diamondHeight);
-                    ctx.lineTo(mzfwCgX - CanvasConst.diamondWidth, mzfwCgY);
-                    ctx.lineTo(mzfwCgX, mzfwCgY + CanvasConst.diamondHeight);
-                    ctx.lineTo(mzfwCgX + CanvasConst.diamondWidth, mzfwCgY);
+                    const [cgX, cgY] = cgWeightToXY(mzfwPoints.cg, mzfwPoints.weight);
+                    ctx.moveTo(cgX, cgY - CanvasConst.diamondHeight);
+                    ctx.lineTo(cgX - CanvasConst.diamondWidth, cgY);
+                    ctx.lineTo(cgX, cgY + CanvasConst.diamondHeight);
+                    ctx.lineTo(cgX + CanvasConst.diamondWidth, cgY);
                     ctx.closePath();
                     ctx.fill();
                     ctx.stroke();
@@ -194,9 +218,14 @@ export const BalanceWeight: React.FC<BalanceWeightProps> = ({ width, height, env
 
             drawWeightLines();
             drawCgLines();
+            if (flightPhase > 1 && flightPhase < 7) {
+                drawFlight();
+            }
             drawMzfw();
             drawMlw();
-            drawMtow();
+            if (flightPhase <= 1 || flightPhase >= 7) {
+                drawMtow();
+            }
             drawPoints();
         }
     };
@@ -231,9 +260,9 @@ export const BalanceWeight: React.FC<BalanceWeightProps> = ({ width, height, env
     }, [draw]);
 
     // TODO FIXME: Make Dynamic
-    const mtow = { transform: `translateX(${(actualCg < 32 ? 0.65 : 0.2) * width}px) translateY(${height * 0.02}px)` };
-    const mlw = { transform: `translateX(${(actualCg < 32 ? 0.65 : 0.2) * width}px) translateY(${height * 0.22}px)` };
-    const mzfw = { transform: `translateX(${(actualCg < 32 ? 0.65 : 0.2) * width}px) translateY(${height * 0.29}px)` };
+    const mtow = { transform: `translateX(${(points.mzfwDesired.cg < 32 ? 0.65 : 0.2) * width}px) translateY(${height * 0.02}px)` };
+    const mlw = { transform: `translateX(${(points.mzfwDesired.cg < 32 ? 0.65 : 0.2) * width}px) translateY(${height * 0.22}px)` };
+    const mzfw = { transform: `translateX(${(points.mzfwDesired.cg < 32 ? 0.65 : 0.2) * width}px) translateY(${height * 0.29}px)` };
 
     const cgRow1 = { transform: `translateX(${0.02 * width}px) translateY(${height * -0.1}px)` };
     const cgRow2 = { transform: `translateX(${0.2 * width}px) translateY(${height * -0.1}px)` };
@@ -266,7 +295,7 @@ export const BalanceWeight: React.FC<BalanceWeightProps> = ({ width, height, env
             <p className="absolute top-0 text-sm font-medium" style={wRow5}>{Units.kilogramToUser(40000)}</p>
             <p className="absolute top-0 text-sm font-medium" style={wUnits}>{usingMetric ? 'kg' : 'lb'}</p>
 
-            <p className="absolute top-0 font-medium text-theme-highlight" style={mtow}>MTOW</p>
+            <p className="absolute top-0 font-medium drop-shadow text-theme-highlight" style={mtow}>{flightPhase <= 1 || flightPhase >= 7 ? 'MTOW' : 'FLIGHT'}</p>
             <p className="absolute top-0 font-medium text-colors-lime-500" style={mlw}>MLW</p>
             <p className="absolute top-0 font-medium text-theme-text" style={mzfw}>MZFW</p>
         </div>
