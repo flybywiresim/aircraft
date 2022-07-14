@@ -338,6 +338,7 @@ export class EfisSymbols {
                 }
             }
 
+            // TODO runways... atm two runways at same airport are considered duplicate
             const airports: [WayPoint, OneWayRunway][] = [
                 [activeFp.originAirfield, activeFp.getOriginRunway()],
                 [activeFp.destinationAirfield, activeFp.getDestinationRunway()],
