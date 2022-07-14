@@ -324,9 +324,6 @@ void FlyByWireInterface::setupLocalVariables() {
   idFlightDirectorPitch = make_unique<LocalVariable>("A32NX_FLIGHT_DIRECTOR_PITCH");
   idFlightDirectorYaw = make_unique<LocalVariable>("A32NX_FLIGHT_DIRECTOR_YAW");
 
-  idBetaTarget = make_unique<LocalVariable>("A32NX_BETA_TARGET");
-  idBetaTargetActive = make_unique<LocalVariable>("A32NX_BETA_TARGET_ACTIVE");
-
   // register L variables for autoland warning
   idAutopilotAutolandWarning = make_unique<LocalVariable>("A32NX_AUTOPILOT_AUTOLAND_WARNING");
 
@@ -339,12 +336,6 @@ void FlyByWireInterface::setupLocalVariables() {
   idAutopilotActive_2 = make_unique<LocalVariable>("A32NX_AUTOPILOT_2_ACTIVE");
 
   idAutopilotAutothrustMode = make_unique<LocalVariable>("A32NX_AUTOPILOT_AUTOTHRUST_MODE");
-
-  // speeds
-  idSpeedAlphaProtection = make_unique<LocalVariable>("A32NX_SPEEDS_ALPHA_PROTECTION");
-  idSpeedAlphaMax = make_unique<LocalVariable>("A32NX_SPEEDS_ALPHA_MAX");
-
-  idAlphaMaxPercentage = make_unique<LocalVariable>("A32NX_ALPHA_MAX_PERCENTAGE");
 
   // register L variables for flight guidance
   idFwcFlightPhase = make_unique<LocalVariable>("A32NX_FWC_FLIGHT_PHASE");
@@ -2403,27 +2394,6 @@ bool FlyByWireInterface::updateFlyByWire(double sampleTime) {
     idAutopilotNosewheelDemand->set(autopilotLawsOutput.Nosewheel_c);
   } else {
     idAutopilotNosewheelDemand->set(0);
-  }
-
-  // update speeds
-  idSpeedAlphaProtection->set(flyByWireOutput.sim.data_speeds_aoa.v_alpha_prot_kn);
-  idSpeedAlphaMax->set(flyByWireOutput.sim.data_speeds_aoa.v_alpha_max_kn);
-
-  // determine if beta target needs to be active (blue)
-  bool conditionDifferenceEngineN1Larger35 = (abs(simData.engine_N1_1_percent - simData.engine_N1_2_percent) > 35);
-  bool conditionConfigruation123 = (flapsHandleIndexFlapConf->get() > 0 && flapsHandleIndexFlapConf->get() < 4);
-  bool conditionAnyEngineN1Above80 = (simData.engine_N1_1_percent > 80 || simData.engine_N1_2_percent > 80);
-  bool conditionAnyThrustLeverAboveMct = (thrustLeverAngle_1->get() > 35 || thrustLeverAngle_2->get() > 35);
-  bool conditionAnyThrustLeverInFlex = ((thrustLeverAngle_1->get() >= 35 || thrustLeverAngle_2->get() >= 35) &&
-                                        autoThrustOutput.thrust_limit_type == athr_thrust_limit_type_FLEX);
-
-  if (conditionDifferenceEngineN1Larger35 && conditionConfigruation123 &&
-      (conditionAnyEngineN1Above80 || conditionAnyThrustLeverAboveMct || conditionAnyThrustLeverInFlex)) {
-    idBetaTargetActive->set(1);
-    idBetaTarget->set(flyByWireOutput.roll.data_computed.beta_target_deg);
-  } else {
-    idBetaTargetActive->set(0);
-    idBetaTarget->set(0);
   }
 
   // success ----------------------------------------------------------------------------------------------------------

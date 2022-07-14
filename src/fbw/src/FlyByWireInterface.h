@@ -176,11 +176,6 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idRudderPedalAnimationPosition;
   std::unique_ptr<LocalVariable> idAutopilotNosewheelDemand;
 
-  std::unique_ptr<LocalVariable> idSpeedAlphaProtection;
-  std::unique_ptr<LocalVariable> idSpeedAlphaMax;
-
-  std::unique_ptr<LocalVariable> idAlphaMaxPercentage;
-
   std::unique_ptr<LocalVariable> idFmaLateralMode;
   std::unique_ptr<LocalVariable> idFmaLateralArmed;
   std::unique_ptr<LocalVariable> idFmaVerticalMode;
@@ -200,9 +195,6 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFlightDirectorBank;
   std::unique_ptr<LocalVariable> idFlightDirectorPitch;
   std::unique_ptr<LocalVariable> idFlightDirectorYaw;
-
-  std::unique_ptr<LocalVariable> idBetaTarget;
-  std::unique_ptr<LocalVariable> idBetaTargetActive;
 
   std::unique_ptr<LocalVariable> idAutopilotAutolandWarning;
 
