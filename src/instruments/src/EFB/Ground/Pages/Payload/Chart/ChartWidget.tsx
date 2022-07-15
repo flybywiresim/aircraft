@@ -271,7 +271,7 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({ width, height, envelop
     const wRow3 = { transform: `translateX(${-0.1 * width}px) translateY(${height * 0.43}px)` };
     const wRow4 = { transform: `translateX(${-0.1 * width}px) translateY(${height * 0.65}px)` };
     const wRow5 = { transform: `translateX(${-0.1 * width}px) translateY(${height * 0.87}px)` };
-    const wUnits = { transform: `translateX(${-0.05 * width}px) translateY(${height * 0.95}px)` };
+    const wUnits = { transform: `translateX(${-0.125 * width}px) translateY(${height * 0.95}px)` };
 
     return (
         <div>
@@ -283,12 +283,12 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({ width, height, envelop
             <p className="absolute top-0 text-sm font-medium" style={cgRow5}>35%</p>
             <p className="absolute top-0 text-sm font-medium" style={cgRow6}>40%</p>
 
-            <p className="absolute top-0 text-sm font-medium" style={wRow1}>{Math.round(Units.kilogramToUser(80000) / 1000) * 1000}</p>
-            <p className="absolute top-0 text-sm font-medium" style={wRow2}>{Math.round(Units.kilogramToUser(70000) / 1000) * 1000}</p>
-            <p className="absolute top-0 text-sm font-medium" style={wRow3}>{Math.round(Units.kilogramToUser(60000) / 1000) * 1000}</p>
-            <p className="absolute top-0 text-sm font-medium" style={wRow4}>{Math.round(Units.kilogramToUser(50000) / 1000) * 1000}</p>
-            <p className="absolute top-0 text-sm font-medium" style={wRow5}>{Math.round(Units.kilogramToUser(40000) / 1000) * 1000}</p>
-            <p className="absolute top-0 text-sm font-medium" style={wUnits}>{usingMetric ? 'kg' : 'lb'}</p>
+            <p className="absolute top-0 text-sm font-medium" style={wRow1}>{Math.round(Units.kilogramToUser(80000) / 1000)}</p>
+            <p className="absolute top-0 text-sm font-medium" style={wRow2}>{Math.round(Units.kilogramToUser(70000) / 1000)}</p>
+            <p className="absolute top-0 text-sm font-medium" style={wRow3}>{Math.round(Units.kilogramToUser(60000) / 1000)}</p>
+            <p className="absolute top-0 text-sm font-medium" style={wRow4}>{Math.round(Units.kilogramToUser(50000) / 1000)}</p>
+            <p className="absolute top-0 text-sm font-medium" style={wRow5}>{Math.round(Units.kilogramToUser(40000) / 1000)}</p>
+            <p className="absolute top-0 text-sm font-medium" style={wUnits}>{usingMetric ? 'x 1000 kg' : 'x 1000 lb'}</p>
 
             <p className="absolute top-0 font-medium drop-shadow text-theme-highlight" style={mtow}>{flightPhase <= 1 || flightPhase >= 7 ? 'MTOW' : 'FLIGHT'}</p>
             <p className="absolute top-0 font-medium text-colors-lime-500" style={mlw}>MLW</p>
