@@ -16,13 +16,14 @@ interface ChartWidgetProps {
     zfwCg: number,
 }
 
-export const ChartWidget: React.FC<ChartWidgetProps> = ({ width, height, envelope,
+export const ChartWidget: React.FC<ChartWidgetProps> = ({
+    width, height, envelope,
     totalWeight, cg,
     mldw, mldwCg,
-    zfw, zfwCg}) => {
+    zfw, zfwCg,
+}) => {
     const { usingMetric } = Units;
     const canvasRef = useRef<HTMLCanvasElement>(null);
-    const [boardingStarted] = useSimVar('L:A32NX_BOARDING_STARTED_BY_USR', 'Bool');
     const [ctx, setCtx] = useState<CanvasRenderingContext2D | null>(null);
     const [theme] = usePersistentProperty('EFB_UI_THEME', 'blue');
     const [flightPhase] = useSimVar('L:A32NX_FMGC_FLIGHT_PHASE', 'enum');
@@ -166,7 +167,6 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({ width, height, envelop
             };
 
             const drawPoints = () => {
-
                 {
                     ctx.fillStyle = secondary;
                     ctx.strokeStyle = alt;

@@ -22,15 +22,15 @@ import { useAppSelector } from '../../../Store/store';
 
 export const Payload = () => {
     const { usingMetric } = Units;
-    const [boardingStarted, setBoardingStarted] = useSimVar('L:A32NX_BOARDING_STARTED_BY_USR', 'Bool');
+    const [boardingStarted, setBoardingStarted] = useSimVar('L:A32NX_BOARDING_STARTED_BY_USR', 'Bool', 200);
     const simbriefDataLoaded = isSimbriefDataLoaded();
     const [boardingRate, setBoardingRate] = usePersistentProperty('CONFIG_BOARDING_RATE', 'REAL');
-    const [paxWeight, setPaxWeight] = useSimVar('L:A32NX_WB_PER_PAX_WEIGHT', 'Number');
-    const [paxBagWeight, setPaxBagWeight] = useSimVar('L:A32NX_WB_PER_BAG_WEIGHT', 'Number');
-    const [galToKg] = useSimVar('FUEL WEIGHT PER GALLON', 'kilograms');
-    const [estFuelBurn] = useSimVar('L:A32NX_ESTIMATED_FUEL_BURN', 'Kilograms');
+    const [paxWeight, setPaxWeight] = useSimVar('L:A32NX_WB_PER_PAX_WEIGHT', 'Number', 200);
+    const [paxBagWeight, setPaxBagWeight] = useSimVar('L:A32NX_WB_PER_BAG_WEIGHT', 'Number', 200);
+    const [galToKg] = useSimVar('FUEL WEIGHT PER GALLON', 'kilograms', 2_000);
+    const [estFuelBurn] = useSimVar('L:A32NX_ESTIMATED_FUEL_BURN', 'Kilograms', 2_000);
 
-    const [emptyWeight] = useSimVar('A:EMPTY WEIGHT', usingMetric ? 'Kilograms' : 'Pounds');
+    const [emptyWeight] = useSimVar('A:EMPTY WEIGHT', usingMetric ? 'Kilograms' : 'Pounds', 2_000);
 
     const [paxA] = useSimVar('L:A32NX_PAX_TOTAL_ROWS_1_6', 'Number');
     const [paxB] = useSimVar('L:A32NX_PAX_TOTAL_ROWS_7_13', 'Number');
@@ -69,15 +69,15 @@ export const Payload = () => {
 
     const [clicked, setClicked] = useState(false);
 
-    const [fwdBag] = useSimVar('L:A32NX_CARGO_FWD_BAGGAGE_CONTAINER', 'Number');
-    const [aftCont] = useSimVar('L:A32NX_CARGO_AFT_CONTAINER', 'Number');
-    const [aftBag] = useSimVar('L:A32NX_CARGO_AFT_BAGGAGE', 'Number');
-    const [aftBulk] = useSimVar('L:A32NX_CARGO_AFT_BULK_LOOSE', 'Number');
+    const [fwdBag] = useSimVar('L:A32NX_CARGO_FWD_BAGGAGE_CONTAINER', 'Number', 200);
+    const [aftCont] = useSimVar('L:A32NX_CARGO_AFT_CONTAINER', 'Number', 200);
+    const [aftBag] = useSimVar('L:A32NX_CARGO_AFT_BAGGAGE', 'Number', 200);
+    const [aftBulk] = useSimVar('L:A32NX_CARGO_AFT_BULK_LOOSE', 'Number', 200);
 
-    const [fwdBagDesired, setFwdBagDesired] = useSimVar('L:A32NX_CARGO_FWD_BAGGAGE_CONTAINER_DESIRED', 'Number');
-    const [aftContDesired, setAftContDesired] = useSimVar('L:A32NX_CARGO_AFT_CONTAINER_DESIRED', 'Number');
-    const [aftBagDesired, setAftBagDesired] = useSimVar('L:A32NX_CARGO_AFT_BAGGAGE_DESIRED', 'Number');
-    const [aftBulkDesired, setAftBulkDesired] = useSimVar('L:A32NX_CARGO_AFT_BULK_LOOSE_DESIRED', 'Number');
+    const [fwdBagDesired, setFwdBagDesired] = useSimVar('L:A32NX_CARGO_FWD_BAGGAGE_CONTAINER_DESIRED', 'Number', 200);
+    const [aftContDesired, setAftContDesired] = useSimVar('L:A32NX_CARGO_AFT_CONTAINER_DESIRED', 'Number', 200);
+    const [aftBagDesired, setAftBagDesired] = useSimVar('L:A32NX_CARGO_AFT_BAGGAGE_DESIRED', 'Number', 200);
+    const [aftBulkDesired, setAftBulkDesired] = useSimVar('L:A32NX_CARGO_AFT_BULK_LOOSE_DESIRED', 'Number', 200);
 
     const [cargoStationSize, setCargoStationLen] = useState<number[]>([]);
 
@@ -89,11 +89,11 @@ export const Payload = () => {
     const setCargoDesired = [setFwdBagDesired, setAftContDesired, setAftBagDesired, setAftBulkDesired];
     const totalCargoDesired = (cargoDesired && cargoDesired.length > 0) ? cargoDesired.reduce((a, b) => parseInt(a) + parseInt(b)) : -1;
 
-    const [centerCurrent] = useSimVar('FUEL TANK CENTER QUANTITY', 'Gallons');
-    const [LInnCurrent] = useSimVar('FUEL TANK LEFT MAIN QUANTITY', 'Gallons');
-    const [LOutCurrent] = useSimVar('FUEL TANK LEFT AUX QUANTITY', 'Gallons');
-    const [RInnCurrent] = useSimVar('FUEL TANK RIGHT MAIN QUANTITY', 'Gallons');
-    const [ROutCurrent] = useSimVar('FUEL TANK RIGHT AUX QUANTITY', 'Gallons');
+    const [centerCurrent] = useSimVar('FUEL TANK CENTER QUANTITY', 'Gallons', 2_000);
+    const [LInnCurrent] = useSimVar('FUEL TANK LEFT MAIN QUANTITY', 'Gallons', 2_000);
+    const [LOutCurrent] = useSimVar('FUEL TANK LEFT AUX QUANTITY', 'Gallons', 2_000);
+    const [RInnCurrent] = useSimVar('FUEL TANK RIGHT MAIN QUANTITY', 'Gallons', 2_000);
+    const [ROutCurrent] = useSimVar('FUEL TANK RIGHT AUX QUANTITY', 'Gallons', 2_000);
 
     // Units
     // Weight/CG
@@ -138,12 +138,12 @@ export const Payload = () => {
         }
     };
 
-    const [busDC2] = useSimVar('L:A32NX_ELEC_DC_2_BUS_IS_POWERED', 'Bool');
-    const [busDCHot1] = useSimVar('L:A32NX_ELEC_DC_HOT_1_BUS_IS_POWERED', 'Bool');
-    const [simGroundSpeed] = useSimVar('GPS GROUND SPEED', 'knots');
-    const [isOnGround] = useSimVar('SIM ON GROUND', 'Bool');
-    const [eng1Running] = useSimVar('ENG COMBUSTION:1', 'Bool');
-    const [eng2Running] = useSimVar('ENG COMBUSTION:2', 'Bool');
+    const [busDC2] = useSimVar('L:A32NX_ELEC_DC_2_BUS_IS_POWERED', 'Bool', 2_000);
+    const [busDCHot1] = useSimVar('L:A32NX_ELEC_DC_HOT_1_BUS_IS_POWERED', 'Bool', 2_000);
+    const [simGroundSpeed] = useSimVar('GPS GROUND SPEED', 'knots', 2_000);
+    const [isOnGround] = useSimVar('SIM ON GROUND', 'Bool', 2_000);
+    const [eng1Running] = useSimVar('ENG COMBUSTION:1', 'Bool', 2_000);
+    const [eng2Running] = useSimVar('ENG COMBUSTION:2', 'Bool', 2_000);
     const [coldAndDark, setColdAndDark] = useState<boolean>(true);
 
     const returnSeats = (stationIndex: number, empty: boolean, flags: BitFlags[]): number[] => {
@@ -212,8 +212,8 @@ export const Payload = () => {
         fillStation(0, 1, paxRemaining);
     };
 
-    const setTargetCargo = (numberOfPax, freight) => {
-        const bagWeight = numberOfPax * paxBagWeight;
+    const setTargetCargo = (numberOfPax, freight, perBagWeight = paxBagWeight) => {
+        const bagWeight = numberOfPax * perBagWeight;
         const loadableCargoWeight = Math.min(bagWeight + Math.round(freight), maxCargo);
 
         let remainingWeight = loadableCargoWeight;
@@ -383,7 +383,7 @@ export const Payload = () => {
 
         setTargetPax(totalPax);
         setTargetCargo(0, totalCargo);
-    }, [stationSize])
+    }, [stationSize]);
 
     // Adjusted desired passenger seating layout to match station passenger count on change
     paxDesired.forEach((stationNumPax, stationIndex) => {
@@ -749,13 +749,16 @@ export const Payload = () => {
                         </div>
                     </div>
                     <div className="border col-1 border-theme-accent">
-                        <ChartWidget width={525} height={475} envelope={Loadsheet.performanceEnvelope}
-                            cg={boardingStarted? cg : desiredCg}
+                        <ChartWidget
+                            width={525}
+                            height={475}
+                            envelope={Loadsheet.performanceEnvelope}
+                            cg={boardingStarted ? Math.round(cg * 100) / 100 : Math.round(desiredCg * 100) / 100}
                             totalWeight={boardingStarted ? Math.round(Units.userToKilogram(totalWeight)) : Math.round(Units.userToKilogram(totalDesiredWeight))}
-                            mldwCg={boardingStarted? mlwCg : mlwDesiredCg}
-                            mldw={boardingStarted? Math.round(Units.userToKilogram(mlw)) : Math.round(Units.userToKilogram(mlwDesired))}
-                            zfwCg={boardingStarted? zfwCg : zfwDesiredCg}
-                            zfw={boardingStarted? Units.userToKilogram(zfw) : Units.userToKilogram(zfwDesired)}
+                            mldwCg={boardingStarted ? Math.round(mlwCg * 100) / 100 : Math.round(mlwDesiredCg * 100) / 100}
+                            mldw={boardingStarted ? Math.round(Units.userToKilogram(mlw)) : Math.round(Units.userToKilogram(mlwDesired))}
+                            zfwCg={boardingStarted ? Math.round(zfwCg * 100) / 100 : Math.round(zfwDesiredCg * 100) / 100}
+                            zfw={boardingStarted ? Math.round(Units.userToKilogram(zfw)) : Math.round(Units.userToKilogram(zfwDesired))}
                         />
                     </div>
                 </div>
