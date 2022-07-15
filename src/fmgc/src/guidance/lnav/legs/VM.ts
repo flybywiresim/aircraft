@@ -10,11 +10,7 @@ import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
 import { PathVector, PathVectorType } from '@fmgc/guidance/lnav/PathVector';
 import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
 import { GeometryNdSymbol } from '@shared/NavigationDisplay';
-
-/**
- * Temporary - better solution is just to have an `InfiniteLine` vector...
- */
-const VM_LEG_SIZE = 321;
+import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 
 // TODO needs updated with wind prediction, and maybe local magvar if following for longer distances
 export class VMLeg extends Leg {
@@ -48,7 +44,7 @@ export class VMLeg extends Leg {
     getPathEndPoint(): Coordinates | undefined {
         return Avionics.Utils.bearingDistanceToCoordinates(
             this.heading,
-            VM_LEG_SIZE,
+            LnavConfig.MANUAL_LEG_EFIS_LENGTH,
             this.getPathStartPoint().lat,
             this.getPathStartPoint().long,
         );
