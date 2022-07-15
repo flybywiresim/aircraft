@@ -111,7 +111,13 @@ base_elac_discrete_outputs rtP_elac_discrete_output_MATLABStruct{
 
 ElacComputer::Parameters_ElacComputer_T ElacComputer::ElacComputer_P{
 
+  2.0,
+
   1.0,
+
+  1.0,
+
+  0.0,
 
   0.0,
 

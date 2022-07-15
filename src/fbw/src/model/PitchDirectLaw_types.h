@@ -22,7 +22,6 @@ struct pitch_direct_input
   base_time time;
   real_T eta_deg;
   real_T flaps_handle_index;
-  real_T tracking_mode_on_override;
   real_T delta_eta_pos;
   boolean_T tracking_mode_on;
 };

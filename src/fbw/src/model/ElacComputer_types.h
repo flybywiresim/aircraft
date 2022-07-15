@@ -634,7 +634,6 @@ struct pitch_alternate_input
   real_T Theta_deg;
   real_T Phi_deg;
   real_T qk_deg_s;
-  real_T qk_dot_deg_s2;
   real_T eta_deg;
   real_T eta_trim_deg;
   real_T V_ias_kn;
@@ -645,7 +644,6 @@ struct pitch_alternate_input
   real_T flaps_handle_index;
   real_T spoilers_left_pos;
   real_T spoilers_right_pos;
-  real_T tracking_mode_on_override;
   real_T delta_eta_pos;
   boolean_T on_ground;
   real_T in_flight;
@@ -730,7 +728,6 @@ struct pitch_direct_input
   base_time time;
   real_T eta_deg;
   real_T flaps_handle_index;
-  real_T tracking_mode_on_override;
   real_T delta_eta_pos;
   boolean_T tracking_mode_on;
 };
@@ -759,7 +756,6 @@ struct pitch_normal_input
   real_T flaps_handle_index;
   real_T spoilers_left_pos;
   real_T spoilers_right_pos;
-  real_T tracking_mode_on_override;
   real_T thrust_lever_1_pos;
   real_T thrust_lever_2_pos;
   boolean_T tailstrike_protection_on;

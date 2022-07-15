@@ -618,12 +618,15 @@ class ElacComputer final
 
   struct D_Work_ElacComputer_T {
     real_T Delay_DSTATE;
+    real_T Delay_DSTATE_b;
     real_T Delay_DSTATE_c;
     real_T configFullEventTime;
     real_T eventTime;
     real_T resetEventTime;
     real_T eventTime_g;
     real_T on_ground_time;
+    real_T pY;
+    real_T pU;
     boolean_T Delay_DSTATE_cc;
     boolean_T Delay1_DSTATE;
     uint8_T is_active_c28_ElacComputer;
@@ -643,6 +646,8 @@ class ElacComputer final
     boolean_T sProtActive_m;
     boolean_T eventTime_not_empty_a;
     boolean_T abnormalConditionWasActive;
+    boolean_T pY_not_empty;
+    boolean_T pU_not_empty;
     boolean_T Runtime_MODE;
     rtDW_MATLABFunction_ElacComputer_b_T sf_MATLABFunction_l0;
     rtDW_MATLABFunction_ElacComputer_b_T sf_MATLABFunction_nu;
@@ -675,6 +680,8 @@ class ElacComputer final
   };
 
   struct Parameters_ElacComputer_T {
+    real_T LagFilter_C1;
+    real_T DiscreteDerivativeVariableTs_Gain;
     real_T DiscreteTimeIntegratorVariableTsLimit_Gain;
     real_T RateLimiterVariableTs2_InitialCondition;
     real_T RateLimiterVariableTs_InitialCondition;
@@ -682,6 +689,7 @@ class ElacComputer final
     real_T RateLimiterVariableTs3_InitialCondition;
     real_T RateLimiterVariableTs_InitialCondition_e;
     real_T RateLimiterVariableTs1_InitialCondition;
+    real_T DiscreteDerivativeVariableTs_InitialCondition;
     real_T BitfromLabel_bit;
     real_T BitfromLabel1_bit;
     real_T BitfromLabel_bit_c;

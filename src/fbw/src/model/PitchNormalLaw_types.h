@@ -36,7 +36,6 @@ struct pitch_normal_input
   real_T flaps_handle_index;
   real_T spoilers_left_pos;
   real_T spoilers_right_pos;
-  real_T tracking_mode_on_override;
   real_T thrust_lever_1_pos;
   real_T thrust_lever_2_pos;
   boolean_T tailstrike_protection_on;
