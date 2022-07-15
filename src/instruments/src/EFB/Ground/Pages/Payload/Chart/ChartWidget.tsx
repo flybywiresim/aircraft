@@ -4,14 +4,14 @@ import { Units } from '@shared/units';
 import React, { useEffect, useRef, useState } from 'react';
 import { CanvasConst, PerformanceEnvelope, CgPoints } from './Constants';
 
-interface BalanceWeightProps {
+interface ChartWidgetProps {
     width: number,
     height: number,
     envelope: PerformanceEnvelope,
     points: CgPoints
 }
 
-export const BalanceWeight: React.FC<BalanceWeightProps> = ({ width, height, envelope, points }) => {
+export const ChartWidget: React.FC<ChartWidgetProps> = ({ width, height, envelope, points }) => {
     const { usingMetric } = Units;
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [boardingStarted] = useSimVar('L:A32NX_BOARDING_STARTED_BY_USR', 'Bool');
@@ -288,12 +288,12 @@ export const BalanceWeight: React.FC<BalanceWeightProps> = ({ width, height, env
             <p className="absolute top-0 text-sm font-medium" style={cgRow5}>35%</p>
             <p className="absolute top-0 text-sm font-medium" style={cgRow6}>40%</p>
 
-            <p className="absolute top-0 text-sm font-medium" style={wRow1}>{Units.kilogramToUser(80000)}</p>
-            <p className="absolute top-0 text-sm font-medium" style={wRow2}>{Units.kilogramToUser(70000)}</p>
-            <p className="absolute top-0 text-sm font-medium" style={wRow3}>{Units.kilogramToUser(60000)}</p>
-            <p className="absolute top-0 text-sm font-medium" style={wRow4}>{Units.kilogramToUser(50000)}</p>
-            <p className="absolute top-0 text-sm font-medium" style={wRow5}>{Units.kilogramToUser(40000)}</p>
-            <p className="absolute top-0 text-sm font-medium" style={wUnits}>{usingMetric ? 'kg' : 'lb'}</p>
+            <p className="absolute top-0 text-sm font-medium" style={wRow1}>{Units.kilogramToUser(80000).toFixed(0)}</p>
+            <p className="absolute top-0 text-sm font-medium" style={wRow2}>{Units.kilogramToUser(70000).toFixed(0)}</p>
+            <p className="absolute top-0 text-sm font-medium" style={wRow3}>{Units.kilogramToUser(60000).toFixed(0)}</p>
+            <p className="absolute top-0 text-sm font-medium" style={wRow4}>{Units.kilogramToUser(50000).toFixed(0)}</p>
+            <p className="absolute top-0 text-sm font-medium" style={wRow5}>{Units.kilogramToUser(40000).toFixed(0)}</p>
+            <p className="absolute top-0 text-sm font-medium" style={wUnits}>{usingMetric ? 'kg' : 'lbs'}</p>
 
             <p className="absolute top-0 font-medium drop-shadow text-theme-highlight" style={mtow}>{flightPhase <= 1 || flightPhase >= 7 ? 'MTOW' : 'FLIGHT'}</p>
             <p className="absolute top-0 font-medium text-colors-lime-500" style={mlw}>MLW</p>

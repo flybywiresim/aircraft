@@ -3,8 +3,8 @@ import { BitFlags } from '@shared/bitFlags';
 import * as ReactDOMServer from 'react-dom/server';
 import { usePersistentProperty } from '@instruments/common/persistence';
 import { CanvasConst, RowInfo, SeatConstants, SeatInfo, PaxStationInfo, TYPE } from './Constants';
-import { Seat } from '../../../Assets/Seat';
-import { SeatOutlineBg } from '../../../Assets/SeatOutlineBg';
+import { Seat } from '../../../../Assets/Seat';
+import { SeatOutlineBg } from '../../../../Assets/SeatOutlineBg';
 
 interface SeatMapProps {
     seatMap: PaxStationInfo[],

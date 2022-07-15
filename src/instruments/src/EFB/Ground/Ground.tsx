@@ -6,7 +6,7 @@ import { ServicesPage } from './Pages/ServicesPage';
 import { PushbackPage } from './Pages/PushbackPage';
 import { FuelPage } from './Pages/FuelPage';
 import { store, RootState } from '../Store/store';
-import { Payload } from './Pages/Payload';
+import { Payload } from './Pages/Payload/Payload';
 
 export interface StatefulButton {
     id: string,
