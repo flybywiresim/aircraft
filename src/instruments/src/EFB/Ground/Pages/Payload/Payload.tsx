@@ -124,15 +124,17 @@ export const Payload = () => {
 
     const setSimBriefValues = () => {
         if (simbriefUnits === 'kgs') {
-            setPaxBagWeight(Units.kilogramToUser(simbriefBagWeight));
+            const perBagWeight = Units.kilogramToUser(simbriefBagWeight);
+            setPaxBagWeight(perBagWeight);
             setPaxWeight(Units.kilogramToUser(simbriefPaxWeight));
             setTargetPax(simbriefPax);
-            setTargetCargo(simbriefBag, Units.kilogramToUser(simbriefFreight));
+            setTargetCargo(simbriefBag, Units.kilogramToUser(simbriefFreight), perBagWeight);
         } else {
-            setPaxBagWeight(Units.poundToUser(simbriefBagWeight));
+            const perBagWeight = Units.poundToUser(simbriefBagWeight);
+            setPaxBagWeight(perBagWeight);
             setPaxWeight(Units.poundToUser(simbriefPaxWeight));
             setTargetPax(simbriefPax);
-            setTargetCargo(simbriefBag, Units.poundToUser(simbriefFreight));
+            setTargetCargo(simbriefBag, Units.poundToUser(simbriefFreight), perBagWeight);
         }
     };
 
@@ -310,7 +312,6 @@ export const Payload = () => {
 
     // Init
     useEffect(() => {
-        // TODO: remove magic numbers
         if (paxWeight === 0) {
             setPaxWeight(Math.round(Units.kilogramToUser(Loadsheet.specs.pax.defaultPaxWeight)));
         }
@@ -580,18 +581,18 @@ export const Payload = () => {
                                                 {t('Ground.Payload.Cargo')}
                                             </td>
                                             <td>
-                                                <TooltipWrapper text={`${t('Ground.Payload.TT.MaxCargo')} ${Units.kilogramToUser(maxCargo).toFixed(0)} ${usingMetric ? 'kg' : 'lb'}`}>
+                                                <TooltipWrapper text={`${t('Ground.Payload.TT.MaxCargo')} ${maxCargo.toFixed(0)} ${usingMetric ? 'kg' : 'lb'}`}>
                                                     <div className="px-4 font-light whitespace-nowrap text-md">
                                                         <div className="relative">
                                                             <SimpleInput
                                                                 className="my-2 w-32"
                                                                 number
                                                                 min={0}
-                                                                max={maxCargo > 0 ? Math.round(Units.kilogramToUser(maxCargo)) : 99999}
-                                                                value={Units.kilogramToUser(totalCargoDesired).toFixed(0)}
+                                                                max={maxCargo > 0 ? Math.round(maxCargo) : 99999}
+                                                                value={totalCargoDesired.toFixed(0)}
                                                                 onBlur={(x) => {
                                                                     if (!Number.isNaN(parseInt(x)) || parseInt(x) === 0) {
-                                                                        setTargetCargo(0, Math.round(Units.userToKilogram(parseInt(x))));
+                                                                        setTargetCargo(0, parseInt(x));
                                                                     }
                                                                 }}
                                                             />
@@ -601,7 +602,7 @@ export const Payload = () => {
                                                 </TooltipWrapper>
                                             </td>
                                             <td className="px-4 font-light whitespace-nowrap text-md">
-                                                {`${Units.kilogramToUser(totalCargo).toFixed(0)} ${usingMetric ? 'kg' : 'lb'}`}
+                                                {`${totalCargo.toFixed(0)} ${usingMetric ? 'kg' : 'lb'}`}
                                             </td>
                                         </tr>
                                         <tr>
@@ -615,11 +616,11 @@ export const Payload = () => {
                                                             <SimpleInput
                                                                 className="my-2 w-32"
                                                                 number
-                                                                min={Math.round(Units.kilogramToUser(emptyWeight))}
+                                                                min={Math.round(emptyWeight)}
                                                                 max={Math.round(Units.kilogramToUser(Loadsheet.specs.weights.maxZfw))}
-                                                                value={Units.kilogramToUser(zfwDesired).toFixed(0)}
+                                                                value={zfwDesired.toFixed(0)}
                                                                 onBlur={(x) => {
-                                                                    if (!Number.isNaN(parseInt(x)) || parseInt(x) === 0) processZfw(Math.round(Units.kilogramToUser(parseInt(x))));
+                                                                    if (!Number.isNaN(parseInt(x)) || parseInt(x) === 0) processZfw(parseInt(x));
                                                                 }}
                                                             />
                                                             <div className="absolute top-2 right-10 my-2 text-lg text-gray-400">{usingMetric ? 'KG' : 'LB'}</div>
@@ -628,7 +629,7 @@ export const Payload = () => {
                                                 </TooltipWrapper>
                                             </td>
                                             <td className="px-4 font-light whitespace-nowrap text-md">
-                                                {`${Units.kilogramToUser(zfw).toFixed(0)} ${usingMetric ? 'kg' : 'lb'}`}
+                                                {`${zfw.toFixed(0)} ${usingMetric ? 'kg' : 'lb'}`}
                                             </td>
                                         </tr>
                                         <tr>
@@ -690,9 +691,9 @@ export const Payload = () => {
                                                 min={Math.round(Units.kilogramToUser(Loadsheet.specs.pax.minPaxWeight))}
                                                 max={Math.round(Units.kilogramToUser(Loadsheet.specs.pax.maxPaxWeight))}
                                                 placeholder={Math.round(Units.kilogramToUser(Loadsheet.specs.pax.defaultPaxWeight)).toString()}
-                                                value={Units.kilogramToUser(paxWeight).toFixed(0)}
+                                                value={paxWeight.toFixed(0)}
                                                 onBlur={(x) => {
-                                                    if (!Number.isNaN(parseInt(x)) || parseInt(x) === 0) setPaxWeight(Math.round(Units.userToKilogram(parseInt(x))));
+                                                    if (!Number.isNaN(parseInt(x)) || parseInt(x) === 0) setPaxWeight(parseInt(x));
                                                 }}
                                             />
                                             <div className="absolute top-2 right-3 text-lg text-gray-400">{usingMetric ? 'KG' : 'LB'}</div>
@@ -708,9 +709,9 @@ export const Payload = () => {
                                             min={Math.round(Units.kilogramToUser(Loadsheet.specs.pax.minBagWeight))}
                                             max={Math.round(Units.kilogramToUser(Loadsheet.specs.pax.maxBagWeight))}
                                             placeholder={Math.round(Units.kilogramToUser(Loadsheet.specs.pax.defaultBagWeight)).toString()}
-                                            value={Units.kilogramToUser(paxBagWeight).toFixed(0)}
+                                            value={paxBagWeight.toFixed(0)}
                                             onBlur={(x) => {
-                                                if (!Number.isNaN(parseInt(x)) || parseInt(x) === 0) setPaxBagWeight(Math.round(Units.userToKilogram(parseInt(x))));
+                                                if (!Number.isNaN(parseInt(x)) || parseInt(x) === 0) setPaxBagWeight(parseInt(x));
                                             }}
                                         />
                                         <div className="absolute top-2 right-3 text-lg text-gray-400">{usingMetric ? 'KG' : 'LB'}</div>
