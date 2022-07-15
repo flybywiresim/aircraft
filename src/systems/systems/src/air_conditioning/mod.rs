@@ -105,8 +105,14 @@ impl<const ZONES: usize> AirConditioningSystem<ZONES> {
             lgciu,
         );
 
-        for pack_fv in self.pack_flow_valves.iter_mut() {
-            pack_fv.update(context, &self.acsc, engines, pneumatic, pneumatic_overhead);
+        for (pfv, pack_id) in self.pack_flow_valves.iter_mut().zip([0, 1]) {
+            pfv.update(
+                context,
+                self.acsc.pack_flow_controller(pack_id),
+                engines,
+                pneumatic,
+                pneumatic_overhead,
+            )
         }
 
         self.acs_overhead
@@ -259,7 +265,7 @@ impl PackFlowValve {
     ) {
         if self.can_move_fcv(engines, pneumatic, pneumatic_overhead) {
             if let Some(signal) = open_fcv.signal() {
-                self.is_open = signal.target_open_amount(self.number) > Ratio::new::<percent>(0.)
+                self.is_open = signal.target_open_amount() > Ratio::new::<percent>(0.)
             }
             if self.is_open {
                 self.timer_open += context.delta();
@@ -601,7 +607,7 @@ mod air_conditioning_tests {
             } else {
                 Ratio::new::<percent>(0.)
             };
-            Some(PackFlowValveSignal::new([target_open, target_open]))
+            Some(PackFlowValveSignal::new(target_open))
         }
     }
 

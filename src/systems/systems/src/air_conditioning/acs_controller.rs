@@ -30,7 +30,7 @@ use uom::si::{
 pub(super) struct AirConditioningSystemController<const ZONES: usize> {
     aircraft_state: AirConditioningStateManager,
     zone_controller: Vec<ZoneController<ZONES>>,
-    pack_flow_controller: PackFlowController<ZONES>,
+    pack_flow_controller: [PackFlowController<ZONES>; 2],
 }
 
 impl<const ZONES: usize> AirConditioningSystemController<ZONES> {
@@ -42,7 +42,10 @@ impl<const ZONES: usize> AirConditioningSystemController<ZONES> {
         Self {
             aircraft_state: AirConditioningStateManager::new(),
             zone_controller,
-            pack_flow_controller: PackFlowController::new(context),
+            pack_flow_controller: [
+                PackFlowController::new(context, PackId::Pack1),
+                PackFlowController::new(context, PackId::Pack2),
+            ],
         }
     }
 
@@ -60,22 +63,22 @@ impl<const ZONES: usize> AirConditioningSystemController<ZONES> {
         lgciu: [&impl LgciuWeightOnWheels; 2],
     ) {
         self.aircraft_state = self.aircraft_state.update(context, adirs, engines, lgciu);
-        self.pack_flow_controller.update(
-            &self.aircraft_state,
-            acs_overhead,
-            engine_fire_push_buttons,
-            pneumatic,
-            pressurization,
-            pressurization_overhead,
-            pack_flow_valve,
-        );
-        for zone in self.zone_controller.iter_mut() {
-            zone.update(
-                context,
+
+        for pack_flow_controller in self.pack_flow_controller.iter_mut() {
+            pack_flow_controller.update(
+                &self.aircraft_state,
                 acs_overhead,
-                &self.pack_flow_controller,
+                engine_fire_push_buttons,
+                pneumatic,
                 pressurization,
-            )
+                pressurization_overhead,
+                pack_flow_valve,
+            );
+        }
+
+        let pack_flow = self.pack_flow();
+        for zone in self.zone_controller.iter_mut() {
+            zone.update(context, acs_overhead, pack_flow, pressurization)
         }
     }
 
@@ -83,8 +86,16 @@ impl<const ZONES: usize> AirConditioningSystemController<ZONES> {
         &self,
         pack_flow_valve: &[PackFlowValve; 2],
     ) -> [bool; 2] {
-        self.pack_flow_controller
-            .fcv_status_determination(pack_flow_valve)
+        [
+            self.pack_flow_controller[PackId::Pack1 as usize]
+                .fcv_status_determination(pack_flow_valve),
+            self.pack_flow_controller[PackId::Pack2 as usize]
+                .fcv_status_determination(pack_flow_valve),
+        ]
+    }
+
+    pub(super) fn pack_flow_controller(&self, pack_id: usize) -> &PackFlowController<ZONES> {
+        &self.pack_flow_controller[pack_id]
     }
 }
 
@@ -100,22 +111,14 @@ impl<const ZONES: usize> DuctTemperature for AirConditioningSystemController<ZON
 
 impl<const ZONES: usize> PackFlow for AirConditioningSystemController<ZONES> {
     fn pack_flow(&self) -> MassRate {
-        self.pack_flow_controller.pack_flow()
-    }
-}
-
-impl<const ZONES: usize> ControllerSignal<PackFlowValveSignal>
-    for AirConditioningSystemController<ZONES>
-{
-    fn signal(&self) -> Option<PackFlowValveSignal> {
-        self.pack_flow_controller.signal()
+        self.pack_flow_controller[0].pack_flow() + self.pack_flow_controller[1].pack_flow()
     }
 }
 
 impl<const ZONES: usize> SimulationElement for AirConditioningSystemController<ZONES> {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         accept_iterable!(self.zone_controller, visitor);
-        self.pack_flow_controller.accept(visitor);
+        accept_iterable!(self.pack_flow_controller, visitor);
 
         visitor.visit(self);
     }
@@ -419,20 +422,19 @@ impl<const ZONES: usize> ZoneController<ZONES> {
         &mut self,
         context: &UpdateContext,
         acs_overhead: &AirConditioningSystemOverhead<ZONES>,
-        pack_flow: &impl PackFlow,
+        pack_flow: MassRate,
         pressurization: &impl Cabin,
     ) {
         self.zone_selected_temperature = acs_overhead.selected_cabin_temperature(self.zone_id);
-        self.duct_demand_temperature =
-            if pack_flow.pack_flow() < MassRate::new::<kilogram_per_second>(0.01) {
-                // When there's no pack flow, duct temperature is mostly determined by cabin recirculated air and ambient temperature
-                ThermodynamicTemperature::new::<degree_celsius>(
-                    0.8 * self.zone_measured_temperature.get::<degree_celsius>()
-                        + 0.2 * context.ambient_temperature().get::<degree_celsius>(),
-                )
-            } else {
-                self.calculate_duct_temp_demand(context, pressurization)
-            };
+        self.duct_demand_temperature = if pack_flow < MassRate::new::<kilogram_per_second>(0.01) {
+            // When there's no pack flow, duct temperature is mostly determined by cabin recirculated air and ambient temperature
+            ThermodynamicTemperature::new::<degree_celsius>(
+                0.8 * self.zone_measured_temperature.get::<degree_celsius>()
+                    + 0.2 * context.ambient_temperature().get::<degree_celsius>(),
+            )
+        } else {
+            self.calculate_duct_temp_demand(context, pressurization)
+        };
     }
 
     fn calculate_duct_temp_demand(
@@ -533,26 +535,33 @@ impl<const ZONES: usize> SimulationElement for ZoneController<ZONES> {
 }
 
 pub struct PackFlowValveSignal {
-    target_open_amount: [Ratio; 2],
+    target_open_amount: Ratio,
 }
 
 impl PackFlowValveSignal {
-    pub fn new(target_open_amount: [Ratio; 2]) -> Self {
+    pub fn new(target_open_amount: Ratio) -> Self {
         Self { target_open_amount }
     }
 
-    pub fn target_open_amount(&self, pack_id: usize) -> Ratio {
-        self.target_open_amount[pack_id - 1]
+    pub fn target_open_amount(&self) -> Ratio {
+        self.target_open_amount
     }
 }
 
-struct PackFlowController<const ZONES: usize> {
+#[derive(Clone, Copy)]
+enum PackId {
+    Pack1 = 0,
+    Pack2 = 1,
+}
+
+#[derive(Copy, Clone)]
+pub struct PackFlowController<const ZONES: usize> {
     pack_flow_id: VariableIdentifier,
 
+    id: PackId,
     flow_demand: Ratio,
-    fcv_1_open_allowed: bool,
-    fcv_2_open_allowed: bool,
-    should_open_fcv: [bool; 2],
+    fcv_open_allowed: bool,
+    should_open_fcv: bool,
     pack_flow: MassRate,
 }
 
@@ -567,14 +576,14 @@ impl<const ZONES: usize> PackFlowController<ZONES> {
     const FLOW_CONSTANT_C: f64 = 0.5675; // kg/s
     const FLOW_CONSTANT_XCAB: f64 = 0.00001828; // kg(feet*s)
 
-    fn new(context: &mut InitContext) -> Self {
+    fn new(context: &mut InitContext, pack_id: PackId) -> Self {
         Self {
             pack_flow_id: context.get_identifier("COND_PACK_FLOW".to_owned()),
 
+            id: pack_id,
             flow_demand: Ratio::new::<percent>(0.),
-            fcv_1_open_allowed: false,
-            fcv_2_open_allowed: false,
-            should_open_fcv: [false, false],
+            fcv_open_allowed: false,
+            should_open_fcv: false,
             pack_flow: MassRate::new::<kilogram_per_second>(0.),
         }
     }
@@ -596,18 +605,19 @@ impl<const ZONES: usize> PackFlowController<ZONES> {
             acs_overhead,
             pneumatic,
         );
-        self.fcv_open_allowed_determination(
+        self.fcv_open_allowed = self.fcv_open_allowed_determination(
             acs_overhead,
             engine_fire_push_buttons,
             pressurization_overhead,
             pneumatic,
         );
-        self.should_open_fcv = [self.fcv_1_open_allowed, self.fcv_2_open_allowed];
-        self.pack_flow = self.pack_flow_calculation(pack_flow_valve, pressurization);
+        self.should_open_fcv = self.fcv_open_allowed;
+        self.pack_flow = self.absolute_flow_calculation(pack_flow_valve, pressurization);
     }
 
     fn pack_start_condition_determination(&self, pack_flow_valve: &[PackFlowValve; 2]) -> bool {
         // Returns true when one of the packs is in start condition
+        // TODO replace with new valve and new timer
         pack_flow_valve
             .iter()
             .any(|fcv| fcv.fcv_timer() <= Duration::from_secs_f64(Self::PACK_START_TIME_SECOND))
@@ -632,7 +642,9 @@ impl<const ZONES: usize> PackFlowController<ZONES> {
                 intermediate_flow.max(Ratio::new::<percent>(Self::APU_SUPPLY_FLOW_LIMIT));
         }
         // Single pack operation determination
-        if pack_flow_valve[0].fcv_is_open() != pack_flow_valve[1].fcv_is_open() {
+        if pack_flow_valve[self.id as usize].fcv_is_open()
+            != pack_flow_valve[1 - self.id as usize].fcv_is_open()
+        {
             intermediate_flow =
                 intermediate_flow.max(Ratio::new::<percent>(Self::ONE_PACK_FLOW_LIMIT));
         }
@@ -646,8 +658,8 @@ impl<const ZONES: usize> PackFlowController<ZONES> {
             intermediate_flow =
                 intermediate_flow.min(Ratio::new::<percent>(Self::FLOW_REDUCTION_LIMIT));
         }
-        // If both flow control valves are closed, the flow indication is in the Lo position
-        if pack_flow_valve.iter().all(|fcv| !fcv.fcv_is_open()) {
+        // If the flow control valve is closed the indication is in the Lo position
+        if !pack_flow_valve[self.id as usize].fcv_is_open() {
             OverheadFlowSelector::Lo.into()
         } else {
             intermediate_flow.max(Ratio::new::<percent>(Self::BACKFLOW_LIMIT))
@@ -656,11 +668,19 @@ impl<const ZONES: usize> PackFlowController<ZONES> {
 
     // This calculates the flow based on the demand, when the packs are modelled this needs to be changed
     // so the demand actuates the valve, and then the flow is calculated based on that
-    fn absolute_flow_calculation(&self, pressurization: &impl Cabin) -> MassRate {
+    fn absolute_flow_calculation(
+        &self,
+        pack_flow_valve: &[PackFlowValve; 2],
+        pressurization: &impl Cabin,
+    ) -> MassRate {
         let absolute_flow = self.flow_demand.get::<ratio>()
             * (Self::FLOW_CONSTANT_XCAB * pressurization.altitude().get::<foot>()
                 + Self::FLOW_CONSTANT_C);
-        MassRate::new::<kilogram_per_second>(absolute_flow)
+        if pack_flow_valve[self.id as usize].fcv_is_open() {
+            MassRate::new::<kilogram_per_second>(absolute_flow)
+        } else {
+            MassRate::new::<kilogram_per_second>(0.)
+        }
     }
 
     fn fcv_open_allowed_determination(
@@ -669,54 +689,38 @@ impl<const ZONES: usize> PackFlowController<ZONES> {
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         pressurization_overhead: &PressurizationOverheadPanel,
         pneumatic: &(impl PneumaticBleed + EngineStartState),
-    ) {
-        // Flow Control Valve 1
-        self.fcv_1_open_allowed = acs_overhead.pack_pushbuttons_state()[0]
-            && !(pneumatic.left_engine_state() == EngineState::Starting)
-            && (!(pneumatic.right_engine_state() == EngineState::Starting)
-                || !pneumatic.engine_crossbleed_is_on())
-            && (pneumatic.engine_mode_selector() != EngineModeSelector::Ignition
-                || (pneumatic.left_engine_state() != EngineState::Off
-                    && pneumatic.left_engine_state() != EngineState::Shutting))
-            && !engine_fire_push_buttons.is_released(1)
-            && !pressurization_overhead.ditching_is_on();
-        // && ! pack 1 overheat
-        // Flow Control Valve 2
-        self.fcv_2_open_allowed = acs_overhead.pack_pushbuttons_state()[1]
-            && !(pneumatic.right_engine_state() == EngineState::Starting)
-            && (!(pneumatic.left_engine_state() == EngineState::Starting)
-                || !pneumatic.engine_crossbleed_is_on())
-            && (pneumatic.engine_mode_selector() != EngineModeSelector::Ignition
-                || (pneumatic.right_engine_state() != EngineState::Off
-                    && pneumatic.right_engine_state() != EngineState::Shutting))
-            && !engine_fire_push_buttons.is_released(2)
-            && !pressurization_overhead.ditching_is_on();
-        // && ! pack 2 overheat
-    }
-
-    fn fcv_status_determination(&self, pack_flow_valve: &[PackFlowValve; 2]) -> [bool; 2] {
-        [
-            pack_flow_valve[0].fcv_is_open() != self.fcv_1_open_allowed,
-            pack_flow_valve[1].fcv_is_open() != self.fcv_2_open_allowed,
-        ]
-    }
-
-    fn pack_flow_calculation(
-        &self,
-        pack_flow_valve: &[PackFlowValve; 2],
-        pressurization: &impl Cabin,
-    ) -> MassRate {
-        let absolute_flow: MassRate = self.absolute_flow_calculation(pressurization);
-        if pack_flow_valve.iter().any(|fcv| fcv.fcv_is_open()) {
-            // Single pack operation determination
-            if pack_flow_valve[0].fcv_is_open() != pack_flow_valve[1].fcv_is_open() {
-                absolute_flow
-            } else {
-                absolute_flow * 2.
+    ) -> bool {
+        // TODO: Merge both blocks of code to make it generic
+        match self.id {
+            PackId::Pack1 => {
+                acs_overhead.pack_pushbuttons_state()[0]
+                    && !(pneumatic.left_engine_state() == EngineState::Starting)
+                    && (!(pneumatic.right_engine_state() == EngineState::Starting)
+                        || !pneumatic.engine_crossbleed_is_on())
+                    && (pneumatic.engine_mode_selector() != EngineModeSelector::Ignition
+                        || (pneumatic.left_engine_state() != EngineState::Off
+                            && pneumatic.left_engine_state() != EngineState::Shutting))
+                    && !engine_fire_push_buttons.is_released(1)
+                    && !pressurization_overhead.ditching_is_on()
+                // && ! pack 1 overheat
             }
-        } else {
-            MassRate::new::<kilogram_per_second>(0.)
+            PackId::Pack2 => {
+                acs_overhead.pack_pushbuttons_state()[1]
+                    && !(pneumatic.right_engine_state() == EngineState::Starting)
+                    && (!(pneumatic.left_engine_state() == EngineState::Starting)
+                        || !pneumatic.engine_crossbleed_is_on())
+                    && (pneumatic.engine_mode_selector() != EngineModeSelector::Ignition
+                        || (pneumatic.right_engine_state() != EngineState::Off
+                            && pneumatic.right_engine_state() != EngineState::Shutting))
+                    && !engine_fire_push_buttons.is_released(2)
+                    && !pressurization_overhead.ditching_is_on()
+                // && ! pack 2 overheat
+            }
         }
+    }
+
+    fn fcv_status_determination(&self, pack_flow_valve: &[PackFlowValve; 2]) -> bool {
+        pack_flow_valve[self.id as usize].fcv_is_open() != self.fcv_open_allowed
     }
 }
 
@@ -728,22 +732,17 @@ impl<const ZONES: usize> PackFlow for PackFlowController<ZONES> {
 
 impl<const ZONES: usize> ControllerSignal<PackFlowValveSignal> for PackFlowController<ZONES> {
     fn signal(&self) -> Option<PackFlowValveSignal> {
-        let target_open: Vec<Ratio> = self
-            .should_open_fcv
-            .iter()
-            .map(|&fcv| {
-                if fcv {
-                    Ratio::new::<percent>(100.)
-                } else {
-                    Ratio::new::<percent>(0.)
-                }
-            })
-            .collect();
-        Some(PackFlowValveSignal::new([target_open[0], target_open[1]]))
+        let target_open: Ratio = if self.should_open_fcv {
+            Ratio::new::<percent>(100.)
+        } else {
+            Ratio::new::<percent>(0.)
+        };
+        Some(PackFlowValveSignal::new(target_open))
     }
 }
 
 impl<const ZONES: usize> SimulationElement for PackFlowController<ZONES> {
+    // TODO: Separate this for each pack flow
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.pack_flow_id, self.flow_demand);
     }
@@ -1171,14 +1170,19 @@ mod acs_controller_tests {
             );
             self.test_cabin
                 .update(context, &self.acsc, &self.acsc, &self.pressurization);
-            for fcv in self.pack_flow_valve.iter_mut() {
-                fcv.update(
+
+            for (pfv, pack_id) in self
+                .pack_flow_valve
+                .iter_mut()
+                .zip([PackId::Pack1, PackId::Pack2])
+            {
+                pfv.update(
                     context,
-                    &self.acsc,
+                    self.acsc.pack_flow_controller(pack_id as usize),
                     [&self.engine_1, &self.engine_2],
                     &self.pneumatic,
                     &self.pneumatic_overhead,
-                );
+                )
             }
             self.acs_overhead.set_pack_pushbutton_fault(
                 self.acsc.pack_fault_determination(&self.pack_flow_valve),
