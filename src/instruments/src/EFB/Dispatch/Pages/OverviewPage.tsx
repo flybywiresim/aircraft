@@ -25,6 +25,7 @@ export const OverviewPage = () => {
     let [airline] = useSimVar('ATC AIRLINE', 'String', 1_000);
 
     airline ||= 'FlyByWire Simulations';
+    const [actualGrossWeight] = useSimVar('TOTAL WEIGHT', 'kilograms', 5_000);
 
     const getConvertedInfo = (metricValue: number, unitType: 'weight' |'volume' |'distance') => {
         const numberWithCommas = (x: number) => x.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
@@ -41,7 +42,7 @@ export const OverviewPage = () => {
     };
 
     return (
-        <div className="overflow-hidden p-6 mr-3 w-min h-content-section-reduced rounded-lg border-2 border-theme-accent">
+        <div className="overflow-hidden p-6 mr-3 w-min rounded-lg border-2 h-content-section-reduced border-theme-accent">
             <h1 className="font-bold">Airbus A320neo</h1>
             <p>{airline}</p>
 
@@ -59,7 +60,7 @@ export const OverviewPage = () => {
                         <Rulers size={23} />
                     </InformationEntry>
 
-                    <InformationEntry title={t('Dispatch.Overview.MRW')} info={getConvertedInfo(79400, 'weight')}>
+                    <InformationEntry title={t('Dispatch.Overview.ActualGW')} info={getConvertedInfo(actualGrossWeight, 'weight')}>
                         <Box size={23} />
                     </InformationEntry>
 

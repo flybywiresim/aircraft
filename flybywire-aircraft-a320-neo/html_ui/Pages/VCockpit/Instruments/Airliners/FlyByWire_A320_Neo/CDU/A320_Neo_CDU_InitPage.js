@@ -307,10 +307,10 @@ class CDUInitPage {
                 zfwCell = (NXUnits.kgToUser(mcdu.zeroFuelWeight)).toFixed(1);
                 zfwColor = "[color]cyan";
             }
-            if (isFinite(getZfwcg())) {
-                zfwCgCell = getZfwcg().toFixed(1);
+            if (isFinite(mcdu.zeroFuelWeightMassCenter)) {
+                zfwCgCell = mcdu.zeroFuelWeightMassCenter.toFixed(1);
             }
-            if (isFinite(mcdu.zeroFuelWeight) && isFinite(getZfwcg())) {
+            if (isFinite(mcdu.zeroFuelWeight) && isFinite(mcdu.zeroFuelWeightMassCenter)) {
                 zfwColor = "[color]cyan";
             }
         }
