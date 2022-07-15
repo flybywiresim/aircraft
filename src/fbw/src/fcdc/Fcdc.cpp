@@ -146,50 +146,84 @@ void Fcdc::consolidatePositionData() {
   // from the ELAC that is engaged in roll axis. If no ELAC is engaged in roll,
   // then all the SECs are engaged seperately in the roll axis. In that case, simply
   // choose the first one that has valid stick positions.
-  // If none are valid, set as invalid.
+  // If no computer is engaged in roll, choose the first computer that outputs valid stick positions.
+  // If no computer output valid stick positions, set them as invalid.
   if (elac1EngagedInRoll) {
     rollSidestickPosCapt = busInputs.elac1.left_sidestick_roll_command_deg.Data;
     rollSidestickPosCaptValid = isNo(busInputs.elac1.left_sidestick_roll_command_deg);
     rollSidestickPosFo = busInputs.elac1.right_sidestick_roll_command_deg.Data;
     rollSidestickPosFoValid = isNo(busInputs.elac1.right_sidestick_roll_command_deg);
-    rudderPedalPos = busInputs.elac1.rudder_pedal_position_deg.Data;
-    rudderPedalPosValid = isNo(busInputs.elac1.rudder_pedal_position_deg);
   } else if (elac2EngagedInRoll) {
     rollSidestickPosCapt = busInputs.elac2.left_sidestick_roll_command_deg.Data;
-    rollSidestickPosCaptValid = busInputs.elac2.left_sidestick_roll_command_deg.Data;
+    rollSidestickPosCaptValid = isNo(busInputs.elac2.left_sidestick_roll_command_deg);
     rollSidestickPosFo = busInputs.elac2.right_sidestick_roll_command_deg.Data;
     rollSidestickPosFoValid = isNo(busInputs.elac2.right_sidestick_roll_command_deg);
-    rudderPedalPos = busInputs.elac2.rudder_pedal_position_deg.Data;
-    rudderPedalPosValid = isNo(busInputs.elac2.rudder_pedal_position_deg);
   } else if (sec1EngagedInRoll &&
              (isNo(busInputs.sec1.left_sidestick_roll_command_deg) || isNo(busInputs.sec1.right_sidestick_roll_command_deg))) {
     rollSidestickPosCapt = busInputs.sec1.left_sidestick_roll_command_deg.Data;
-    rollSidestickPosCaptValid = busInputs.sec1.left_sidestick_roll_command_deg.Data;
+    rollSidestickPosCaptValid = isNo(busInputs.sec1.left_sidestick_roll_command_deg);
     rollSidestickPosFo = busInputs.sec1.right_sidestick_roll_command_deg.Data;
     rollSidestickPosFoValid = isNo(busInputs.sec1.right_sidestick_roll_command_deg);
-    rudderPedalPos = 0;
-    rudderPedalPosValid = false;
   } else if (sec2EngagedInRoll &&
              (isNo(busInputs.sec2.left_sidestick_roll_command_deg) || isNo(busInputs.sec2.right_sidestick_roll_command_deg))) {
     rollSidestickPosCapt = busInputs.sec2.left_sidestick_roll_command_deg.Data;
-    rollSidestickPosCaptValid = busInputs.sec2.left_sidestick_roll_command_deg.Data;
+    rollSidestickPosCaptValid = isNo(busInputs.sec2.left_sidestick_roll_command_deg);
     rollSidestickPosFo = busInputs.sec2.right_sidestick_roll_command_deg.Data;
     rollSidestickPosFoValid = isNo(busInputs.sec2.right_sidestick_roll_command_deg);
-    rudderPedalPos = 0;
-    rudderPedalPosValid = false;
   } else if (sec3EngagedInRoll &&
              (isNo(busInputs.sec3.left_sidestick_roll_command_deg) || isNo(busInputs.sec3.right_sidestick_roll_command_deg))) {
     rollSidestickPosCapt = busInputs.sec3.left_sidestick_roll_command_deg.Data;
     rollSidestickPosCaptValid = isNo(busInputs.sec3.left_sidestick_roll_command_deg);
     rollSidestickPosFo = busInputs.sec3.right_sidestick_roll_command_deg.Data;
     rollSidestickPosFoValid = isNo(busInputs.sec3.right_sidestick_roll_command_deg);
-    rudderPedalPos = 0;
-    rudderPedalPosValid = false;
+  } else if (isNo(busInputs.elac1.left_sidestick_roll_command_deg) || isNo(busInputs.elac1.right_sidestick_roll_command_deg)) {
+    rollSidestickPosCapt = busInputs.elac1.left_sidestick_roll_command_deg.Data;
+    rollSidestickPosCaptValid = isNo(busInputs.elac1.left_sidestick_roll_command_deg);
+    rollSidestickPosFo = busInputs.elac1.right_sidestick_roll_command_deg.Data;
+    rollSidestickPosFoValid = isNo(busInputs.elac1.right_sidestick_roll_command_deg);
+  } else if (isNo(busInputs.elac2.left_sidestick_roll_command_deg) || isNo(busInputs.elac2.right_sidestick_roll_command_deg)) {
+    rollSidestickPosCapt = busInputs.elac2.left_sidestick_roll_command_deg.Data;
+    rollSidestickPosCaptValid = isNo(busInputs.elac2.left_sidestick_roll_command_deg);
+    rollSidestickPosFo = busInputs.elac2.right_sidestick_roll_command_deg.Data;
+    rollSidestickPosFoValid = isNo(busInputs.elac2.right_sidestick_roll_command_deg);
+  } else if (isNo(busInputs.sec1.left_sidestick_roll_command_deg) || isNo(busInputs.sec1.right_sidestick_roll_command_deg)) {
+    rollSidestickPosCapt = busInputs.sec1.left_sidestick_roll_command_deg.Data;
+    rollSidestickPosCaptValid = isNo(busInputs.sec1.left_sidestick_roll_command_deg);
+    rollSidestickPosFo = busInputs.sec1.right_sidestick_roll_command_deg.Data;
+    rollSidestickPosFoValid = isNo(busInputs.sec1.right_sidestick_roll_command_deg);
+  } else if (isNo(busInputs.sec2.left_sidestick_roll_command_deg) || isNo(busInputs.sec2.right_sidestick_roll_command_deg)) {
+    rollSidestickPosCapt = busInputs.sec2.left_sidestick_roll_command_deg.Data;
+    rollSidestickPosCaptValid = isNo(busInputs.sec2.left_sidestick_roll_command_deg);
+    rollSidestickPosFo = busInputs.sec2.right_sidestick_roll_command_deg.Data;
+    rollSidestickPosFoValid = isNo(busInputs.sec2.right_sidestick_roll_command_deg);
+  } else if (isNo(busInputs.sec3.left_sidestick_roll_command_deg) || isNo(busInputs.sec3.right_sidestick_roll_command_deg)) {
+    rollSidestickPosCapt = busInputs.sec3.left_sidestick_roll_command_deg.Data;
+    rollSidestickPosCaptValid = isNo(busInputs.sec3.left_sidestick_roll_command_deg);
+    rollSidestickPosFo = busInputs.sec3.right_sidestick_roll_command_deg.Data;
+    rollSidestickPosFoValid = isNo(busInputs.sec3.right_sidestick_roll_command_deg);
   } else {
     rollSidestickPosCapt = 0;
     rollSidestickPosCaptValid = false;
     rollSidestickPosFo = 0;
     rollSidestickPosFoValid = false;
+  }
+
+  // Compute the rudder pedal position. First check if an ELAC is engaged in roll.
+  // If one is, take that data. If none is engaged in roll, take the first valid data.
+  // If none is valid, set data as invalid.
+  if (elac1EngagedInRoll) {
+    rudderPedalPos = busInputs.elac1.rudder_pedal_position_deg.Data;
+    rudderPedalPosValid = isNo(busInputs.elac1.rudder_pedal_position_deg);
+  } else if (elac2EngagedInRoll) {
+    rudderPedalPos = busInputs.elac2.rudder_pedal_position_deg.Data;
+    rudderPedalPosValid = isNo(busInputs.elac2.rudder_pedal_position_deg);
+  } else if (isNo(busInputs.elac1.rudder_pedal_position_deg)) {
+    rudderPedalPos = busInputs.elac1.rudder_pedal_position_deg.Data;
+    rudderPedalPosValid = isNo(busInputs.elac1.rudder_pedal_position_deg);
+  } else if (isNo(busInputs.elac2.rudder_pedal_position_deg)) {
+    rudderPedalPos = busInputs.elac2.rudder_pedal_position_deg.Data;
+    rudderPedalPosValid = isNo(busInputs.elac2.rudder_pedal_position_deg);
+  } else {
     rudderPedalPos = 0;
     rudderPedalPosValid = false;
   }
@@ -265,7 +299,8 @@ void Fcdc::consolidatePositionData() {
 
   // Compute the sidestick positions in pitch. Always take the sidestick data
   // from the computer that is engaged in pitch axis.
-  // If none are valid, set as invalid.
+  // If none is engaged in pitch, take the first valid data.
+  // If none is valid, set data as invalid.
   if (elac2EngagedInPitch) {
     pitchSidestickPosCapt = busInputs.elac2.left_sidestick_pitch_command_deg.Data;
     pitchSidestickPosCaptValid = isNo(busInputs.elac2.left_sidestick_pitch_command_deg);
@@ -282,6 +317,26 @@ void Fcdc::consolidatePositionData() {
     pitchSidestickPosFo = busInputs.sec2.right_sidestick_pitch_command_deg.Data;
     pitchSidestickPosFoValid = isNo(busInputs.sec2.right_sidestick_pitch_command_deg);
   } else if (sec1EngagedInPitch) {
+    pitchSidestickPosCapt = busInputs.sec1.left_sidestick_pitch_command_deg.Data;
+    pitchSidestickPosCaptValid = isNo(busInputs.sec1.left_sidestick_pitch_command_deg);
+    pitchSidestickPosFo = busInputs.sec1.right_sidestick_pitch_command_deg.Data;
+    pitchSidestickPosFoValid = isNo(busInputs.sec1.right_sidestick_pitch_command_deg);
+  } else if (isNo(busInputs.elac2.left_sidestick_pitch_command_deg) || isNo(busInputs.elac2.right_sidestick_pitch_command_deg)) {
+    pitchSidestickPosCapt = busInputs.elac2.left_sidestick_pitch_command_deg.Data;
+    pitchSidestickPosCaptValid = isNo(busInputs.elac2.left_sidestick_pitch_command_deg);
+    pitchSidestickPosFo = busInputs.elac2.right_sidestick_pitch_command_deg.Data;
+    pitchSidestickPosFoValid = isNo(busInputs.elac2.right_sidestick_pitch_command_deg);
+  } else if (isNo(busInputs.elac1.left_sidestick_pitch_command_deg) || isNo(busInputs.elac1.right_sidestick_pitch_command_deg)) {
+    pitchSidestickPosCapt = busInputs.elac1.left_sidestick_pitch_command_deg.Data;
+    pitchSidestickPosCaptValid = isNo(busInputs.elac1.left_sidestick_pitch_command_deg);
+    pitchSidestickPosFo = busInputs.elac1.right_sidestick_pitch_command_deg.Data;
+    pitchSidestickPosFoValid = isNo(busInputs.elac1.right_sidestick_pitch_command_deg);
+  } else if (isNo(busInputs.sec2.left_sidestick_pitch_command_deg) || isNo(busInputs.sec2.right_sidestick_pitch_command_deg)) {
+    pitchSidestickPosCapt = busInputs.sec2.left_sidestick_pitch_command_deg.Data;
+    pitchSidestickPosCaptValid = isNo(busInputs.sec2.left_sidestick_pitch_command_deg);
+    pitchSidestickPosFo = busInputs.sec2.right_sidestick_pitch_command_deg.Data;
+    pitchSidestickPosFoValid = isNo(busInputs.sec2.right_sidestick_pitch_command_deg);
+  } else if (isNo(busInputs.sec1.left_sidestick_pitch_command_deg) || isNo(busInputs.sec1.right_sidestick_pitch_command_deg)) {
     pitchSidestickPosCapt = busInputs.sec1.left_sidestick_pitch_command_deg.Data;
     pitchSidestickPosCaptValid = isNo(busInputs.sec1.left_sidestick_pitch_command_deg);
     pitchSidestickPosFo = busInputs.sec1.right_sidestick_pitch_command_deg.Data;
@@ -604,117 +659,117 @@ FcdcBus Fcdc::getBusOutputs() {
   if (leftAileronPosValid) {
     output.aileronLeftPos.setFromData(leftAileronPos, Arinc429SignStatus::NormalOperation);
   } else {
-    output.aileronLeftPos.setFromData(0, Arinc429SignStatus::NoComputedData);
+    output.aileronLeftPos.setFromData(0, Arinc429SignStatus::FailureWarning);
   }
 
   if (rightAileronPosValid) {
     output.aileronRightPos.setFromData(rightAileronPos, Arinc429SignStatus::NormalOperation);
   } else {
-    output.aileronRightPos.setFromData(0, Arinc429SignStatus::NoComputedData);
+    output.aileronRightPos.setFromData(0, Arinc429SignStatus::FailureWarning);
   }
 
   if (rollSidestickPosCaptValid) {
     output.captRollCommand.setFromData(rollSidestickPosCapt, Arinc429SignStatus::NormalOperation);
   } else {
-    output.captRollCommand.setFromData(0, Arinc429SignStatus::NoComputedData);
+    output.captRollCommand.setFromData(0, Arinc429SignStatus::FailureWarning);
   }
 
   if (rollSidestickPosFoValid) {
     output.foRollCommand.setFromData(rollSidestickPosFo, Arinc429SignStatus::NormalOperation);
   } else {
-    output.foRollCommand.setFromData(0, Arinc429SignStatus::NoComputedData);
+    output.foRollCommand.setFromData(0, Arinc429SignStatus::FailureWarning);
   }
 
   if (rudderPedalPosValid) {
     output.rudderPedalPosition.setFromData(rudderPedalPos, Arinc429SignStatus::NormalOperation);
   } else {
-    output.rudderPedalPosition.setFromData(0, Arinc429SignStatus::NoComputedData);
+    output.rudderPedalPosition.setFromData(0, Arinc429SignStatus::FailureWarning);
   }
 
   // Pitch Data
   if (leftElevatorPosValid) {
     output.elevatorLeftPos.setFromData(leftElevatorPos, Arinc429SignStatus::NormalOperation);
   } else {
-    output.elevatorLeftPos.setFromData(0, Arinc429SignStatus::NoComputedData);
+    output.elevatorLeftPos.setFromData(0, Arinc429SignStatus::FailureWarning);
   }
 
   if (rightElevatorPosValid) {
     output.elevatorRightPos.setFromData(rightElevatorPos, Arinc429SignStatus::NormalOperation);
   } else {
-    output.elevatorRightPos.setFromData(0, Arinc429SignStatus::NoComputedData);
+    output.elevatorRightPos.setFromData(0, Arinc429SignStatus::FailureWarning);
   }
 
   if (thsPosValid) {
     output.horizStabTrimPos.setFromData(thsPos, Arinc429SignStatus::NormalOperation);
   } else {
-    output.horizStabTrimPos.setFromData(0, Arinc429SignStatus::NoComputedData);
+    output.horizStabTrimPos.setFromData(0, Arinc429SignStatus::FailureWarning);
   }
 
   if (pitchSidestickPosCaptValid) {
     output.captPitchCommand.setFromData(pitchSidestickPosCapt, Arinc429SignStatus::NormalOperation);
   } else {
-    output.captPitchCommand.setFromData(0, Arinc429SignStatus::NoComputedData);
+    output.captPitchCommand.setFromData(0, Arinc429SignStatus::FailureWarning);
   }
 
   if (pitchSidestickPosFoValid) {
     output.foPitchCommand.setFromData(pitchSidestickPosFo, Arinc429SignStatus::NormalOperation);
   } else {
-    output.foPitchCommand.setFromData(0, Arinc429SignStatus::NoComputedData);
+    output.foPitchCommand.setFromData(0, Arinc429SignStatus::FailureWarning);
   }
 
   if (isNo(busInputs.sec3.left_spoiler_1_position_deg)) {
     output.spoilerLeft1Pos.setFromData(busInputs.sec3.left_spoiler_1_position_deg.Data, Arinc429SignStatus::NormalOperation);
   } else {
-    output.spoilerLeft1Pos.setFromData(0, Arinc429SignStatus::NoComputedData);
+    output.spoilerLeft1Pos.setFromData(0, Arinc429SignStatus::FailureWarning);
   }
   if (isNo(busInputs.sec3.right_spoiler_1_position_deg)) {
     output.spoilerRight1Pos.setFromData(busInputs.sec3.right_spoiler_1_position_deg.Data, Arinc429SignStatus::NormalOperation);
   } else {
-    output.spoilerRight1Pos.setFromData(0, Arinc429SignStatus::NoComputedData);
+    output.spoilerRight1Pos.setFromData(0, Arinc429SignStatus::FailureWarning);
   }
 
   if (isNo(busInputs.sec3.left_spoiler_2_position_deg)) {
     output.spoilerLeft2Pos.setFromData(busInputs.sec3.left_spoiler_2_position_deg.Data, Arinc429SignStatus::NormalOperation);
   } else {
-    output.spoilerLeft2Pos.setFromData(0, Arinc429SignStatus::NoComputedData);
+    output.spoilerLeft2Pos.setFromData(0, Arinc429SignStatus::FailureWarning);
   }
   if (isNo(busInputs.sec3.right_spoiler_2_position_deg)) {
     output.spoilerRight2Pos.setFromData(busInputs.sec3.right_spoiler_2_position_deg.Data, Arinc429SignStatus::NormalOperation);
   } else {
-    output.spoilerRight2Pos.setFromData(0, Arinc429SignStatus::NoComputedData);
+    output.spoilerRight2Pos.setFromData(0, Arinc429SignStatus::FailureWarning);
   }
 
   if (isNo(busInputs.sec1.left_spoiler_1_position_deg)) {
     output.spoilerLeft3Pos.setFromData(busInputs.sec1.left_spoiler_1_position_deg.Data, Arinc429SignStatus::NormalOperation);
   } else {
-    output.spoilerLeft3Pos.setFromData(0, Arinc429SignStatus::NoComputedData);
+    output.spoilerLeft3Pos.setFromData(0, Arinc429SignStatus::FailureWarning);
   }
   if (isNo(busInputs.sec1.right_spoiler_1_position_deg)) {
     output.spoilerRight3Pos.setFromData(busInputs.sec1.right_spoiler_1_position_deg.Data, Arinc429SignStatus::NormalOperation);
   } else {
-    output.spoilerRight3Pos.setFromData(0, Arinc429SignStatus::NoComputedData);
+    output.spoilerRight3Pos.setFromData(0, Arinc429SignStatus::FailureWarning);
   }
 
   if (isNo(busInputs.sec1.left_spoiler_2_position_deg)) {
     output.spoilerLeft4Pos.setFromData(busInputs.sec1.left_spoiler_2_position_deg.Data, Arinc429SignStatus::NormalOperation);
   } else {
-    output.spoilerLeft4Pos.setFromData(0, Arinc429SignStatus::NoComputedData);
+    output.spoilerLeft4Pos.setFromData(0, Arinc429SignStatus::FailureWarning);
   }
   if (isNo(busInputs.sec1.right_spoiler_2_position_deg)) {
     output.spoilerRight4Pos.setFromData(busInputs.sec1.right_spoiler_2_position_deg.Data, Arinc429SignStatus::NormalOperation);
   } else {
-    output.spoilerRight4Pos.setFromData(0, Arinc429SignStatus::NoComputedData);
+    output.spoilerRight4Pos.setFromData(0, Arinc429SignStatus::FailureWarning);
   }
 
   if (isNo(busInputs.sec2.left_spoiler_1_position_deg)) {
     output.spoilerLeft5Pos.setFromData(busInputs.sec2.left_spoiler_1_position_deg.Data, Arinc429SignStatus::NormalOperation);
   } else {
-    output.spoilerLeft5Pos.setFromData(0, Arinc429SignStatus::NoComputedData);
+    output.spoilerLeft5Pos.setFromData(0, Arinc429SignStatus::FailureWarning);
   }
   if (isNo(busInputs.sec2.right_spoiler_1_position_deg)) {
     output.spoilerRight5Pos.setFromData(busInputs.sec2.right_spoiler_1_position_deg.Data, Arinc429SignStatus::NormalOperation);
   } else {
-    output.spoilerRight5Pos.setFromData(0, Arinc429SignStatus::NoComputedData);
+    output.spoilerRight5Pos.setFromData(0, Arinc429SignStatus::FailureWarning);
   }
 
   return output;
