@@ -32,6 +32,8 @@ export abstract class Leg extends Guidable {
 
     predictedGs: Knots
 
+    predictedClimbStartAltitude: Feet
+
     get disableAutomaticSequencing(): boolean {
         return false;
     }

@@ -102,10 +102,6 @@ export class FALeg extends Leg {
     recomputeWithParameters(isActive: boolean, tas: Knots, gs: Knots, ppos: Coordinates, _trueTrack: DegreesTrue): void {
         this.isComputed = true;
 
-        if (this.isNull) {
-            return;
-        }
-
         this.wasActive = this.wasActive || isActive;
 
         if (this.wasActive && !isActive) {
@@ -125,9 +121,6 @@ export class FALeg extends Leg {
             return;
         }
 
-        // TODO
-        const startAltitude = currentAltitude;
-
         let inboundLeg: Leg;
         if (this.inboundGuidable instanceof Leg) {
             inboundLeg = this.inboundGuidable;
@@ -144,7 +137,7 @@ export class FALeg extends Leg {
 
         if (isActive) {
             // TODO vnav to calc the climb
-            const altDiff = Math.max(0, this.altitude - startAltitude);
+            const altDiff = Math.max(0, this.altitude - currentAltitude);
             const targetVs = 2000;
             const distToAltitude = altDiff / targetVs * (gs / 60);
 
@@ -155,12 +148,19 @@ export class FALeg extends Leg {
             this.predictedDistance += distToAltitude;
         } else {
             // TODO vnav to calc the climb
-            const altDiff = Math.max(0, this.altitude - startAltitude); // TODO get minimum altitude from previous legs
+            const altDiff = Math.max(0, this.altitude - this.predictedClimbStartAltitude);
             const targetVs = 2000;
             const distToAltitude = altDiff / targetVs * (gs / 60);
 
             this.predictedDistance += distToAltitude;
+
+            if (distToAltitude === 0) {
+                this.isNull = true;
+                return;
+            }
         }
+
+        this.isNull = false;
 
         this.endPoint = Avionics.Utils.bearingDistanceToCoordinates(
             this.course,
