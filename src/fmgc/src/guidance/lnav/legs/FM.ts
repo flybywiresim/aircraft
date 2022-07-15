@@ -15,7 +15,7 @@ export class FMLeg extends Leg {
     private endPoint: Coordinates;
 
     constructor(
-        private fix: WayPoint,
+        public fix: WayPoint,
         private course: DegreesTrue,
         public readonly metadata: Readonly<LegMetadata>,
         public segment: SegmentType,

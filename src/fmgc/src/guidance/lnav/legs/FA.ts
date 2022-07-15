@@ -22,7 +22,7 @@ export class FALeg extends Leg {
     private predictedDistance: NauticalMiles = 1;
 
     constructor(
-        private fix: WayPoint,
+        public fix: WayPoint,
         private course: DegreesTrue,
         private altitude: Feet,
         public readonly metadata: Readonly<LegMetadata>,

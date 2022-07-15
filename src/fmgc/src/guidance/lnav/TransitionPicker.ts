@@ -198,10 +198,10 @@ export class TransitionPicker {
             return new FixedRadiusTransition(from, to);
         }
         if (to instanceof FALeg) {
-            return new DirectToFixTransition(from, to);
+            return new FixedRadiusTransition(from, to);
         }
         if (to instanceof FMLeg) {
-            return new DirectToFixTransition(from, to);
+            return new FixedRadiusTransition(from, to);
         }
 
         if (DEBUG) {
