@@ -15,6 +15,8 @@ import { Coordinates } from '@fmgc/flightplanning/data/geo';
 const UPDATE_TIMER = 2_500;
 
 export class EfisVectors {
+    private readonly groups = [EfisVectorsGroup.ACTIVE, EfisVectorsGroup.DASHED, EfisVectorsGroup.TEMPORARY];
+
     private syncer: FlowEventSync = new FlowEventSync();
 
     constructor(
@@ -22,11 +24,10 @@ export class EfisVectors {
     ) {
     }
 
-    private currentActiveVectors: PathVector[] = [];
-
-    private currentDashedVectors: PathVector[] = [];
-
-    private currentTemporaryVectors: PathVector[] = [];
+    private currentVectors: Record<EfisSide, Map<EfisVectorsGroup, PathVector[]>> = {
+        L: new Map(),
+        R: new Map(),
+    };
 
     public forceUpdate() {
         this.updateTimer = UPDATE_TIMER + 1;
@@ -63,9 +64,31 @@ export class EfisVectors {
             this.guidanceController.efisStateForSide.R.legsCulled = false;
         }
 
-        // TODO ${side}
-        const range = rangeSettings[SimVar.GetSimVarValue('L:A32NX_EFIS_L_ND_RANGE', 'number')];
-        const mode: Mode = SimVar.GetSimVarValue('L:A32NX_EFIS_L_ND_MODE', 'number');
+        // active (solid) vectors are only sent in a "NAV" mode, otherwise dashed
+        const engagedLateralMode = SimVar.GetSimVarValue('L:A32NX_FMA_LATERAL_MODE', 'Number') as LateralMode;
+        const armedLateralMode = SimVar.GetSimVarValue('L:A32NX_FMA_LATERAL_ARMED', 'Enum');
+        const navArmed = isArmed(armedLateralMode, ArmedLateralMode.NAV);
+        const transmitActive = engagedLateralMode === LateralMode.NAV || engagedLateralMode === LateralMode.LOC_CPT || engagedLateralMode === LateralMode.LOC_TRACK || navArmed;
+
+        const transmitTemporary = this.guidanceController.hasTemporaryFlightPlan && this.guidanceController.temporaryGeometry?.legs?.size > 0;
+
+        const vectors: Partial<Record<EfisVectorsGroup, PathVector[]>> = {
+            [EfisVectorsGroup.ACTIVE]: transmitActive ? visibleActiveFlightPlanVectors : [],
+            [EfisVectorsGroup.DASHED]: transmitActive ? visibleActiveFlightPlanVectors : [],
+            [EfisVectorsGroup.TEMPORARY]: transmitTemporary ? visibleTemporaryFlightPlanVectors : [],
+        };
+
+        this.updateSide('L', vectors);
+        this.updateSide('R', vectors);
+
+        if (LnavConfig.DEBUG_PERF) {
+            console.timeEnd('vectors transmit');
+        }
+    }
+
+    private updateSide(side: EfisSide, vectors: Partial<Record<EfisVectorsGroup, PathVector[]>>): void {
+        const range = rangeSettings[SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_ND_RANGE`, 'number')];
+        const mode: Mode = SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_ND_MODE`, 'number');
 
         let mapCentre: Coordinates;
         let mapUp = 0;
@@ -81,67 +104,15 @@ export class EfisVectors {
             mapUp = SimVar.GetSimVarValue('PLANE HEADING DEGREES TRUE', 'degrees');
         }
 
-        // filter vectors outside edit area
-        const transmittedActiveFlightPlanVectors = EfisVectors.getVectorsWithinEditArea(visibleActiveFlightPlanVectors, range, mode, mapCentre, mapUp);
-        const transmittedTemporaryFlightPlanVectors = EfisVectors.getVectorsWithinEditArea(visibleTemporaryFlightPlanVectors, range, mode, mapCentre, mapUp);
+        for (const group of this.groups) {
+            const groupVectors = vectors[group] ? EfisVectors.getVectorsWithinEditArea(vectors[group], range, mode, mapCentre, mapUp) : [];
+            const clearGroup = groupVectors.length < 1 && (this.currentVectors[side][group]?.length ?? 0) > 1;
+            const transmitGroup = clearGroup || groupVectors.length > 0;
 
-        // ACTIVE
-
-        const engagedLateralMode = SimVar.GetSimVarValue('L:A32NX_FMA_LATERAL_MODE', 'Number') as LateralMode;
-        const armedLateralMode = SimVar.GetSimVarValue('L:A32NX_FMA_LATERAL_ARMED', 'Enum');
-        const navArmed = isArmed(armedLateralMode, ArmedLateralMode.NAV);
-
-        const transmitActive = engagedLateralMode === LateralMode.NAV || engagedLateralMode === LateralMode.LOC_CPT || engagedLateralMode === LateralMode.LOC_TRACK || navArmed;
-        const clearActive = !transmitActive && this.currentActiveVectors.length > 0;
-
-        if (transmitActive) {
-            this.currentActiveVectors = transmittedActiveFlightPlanVectors;
-
-            this.transmitGroup(this.currentActiveVectors, EfisVectorsGroup.ACTIVE);
-        }
-
-        if (clearActive) {
-            this.currentActiveVectors = [];
-
-            this.transmitGroup(this.currentActiveVectors, EfisVectorsGroup.ACTIVE);
-        }
-
-        // DASHED
-
-        const transmitDashed = !transmitActive;
-        const clearDashed = !transmitDashed && this.currentDashedVectors.length > 0;
-
-        if (transmitDashed) {
-            this.currentDashedVectors = transmittedActiveFlightPlanVectors;
-
-            this.transmitGroup(this.currentDashedVectors, EfisVectorsGroup.DASHED);
-        }
-
-        if (clearDashed) {
-            this.currentDashedVectors = [];
-
-            this.transmitGroup(this.currentDashedVectors, EfisVectorsGroup.DASHED);
-        }
-
-        // TEMPORARY
-
-        const transmitTemporary = this.guidanceController.hasTemporaryFlightPlan && this.guidanceController.temporaryGeometry?.legs?.size > 0;
-        const clearTemporary = !transmitTemporary && this.currentTemporaryVectors.length > 0;
-
-        if (transmitTemporary) {
-            this.currentTemporaryVectors = transmittedTemporaryFlightPlanVectors;
-
-            this.transmitGroup(this.currentTemporaryVectors, EfisVectorsGroup.TEMPORARY);
-        }
-
-        if (clearTemporary) {
-            this.currentTemporaryVectors = [];
-
-            this.transmitGroup(this.currentTemporaryVectors, EfisVectorsGroup.TEMPORARY);
-        }
-
-        if (LnavConfig.DEBUG_PERF) {
-            console.timeEnd('vectors transmit');
+            if (transmitGroup) {
+                this.currentVectors[side][group] = groupVectors;
+                this.transmit(groupVectors, group, side);
+            }
         }
     }
 
@@ -178,11 +149,6 @@ export class EfisVectors {
             }
             return allVectors;
         }, []);
-    }
-
-    private transmitGroup(vectors: PathVector[], group: EfisVectorsGroup): void {
-        this.transmit(vectors, group, 'L');
-        this.transmit(vectors, group, 'R');
     }
 
     private transmit(vectors: PathVector[], vectorsGroup: EfisVectorsGroup, side: EfisSide): void {
