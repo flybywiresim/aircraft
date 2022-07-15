@@ -13,22 +13,3 @@ export interface PerformanceEnvelope {
     mtow: number[][],
     flight: number[][],
 }
-
-export interface CgPoints {
-    mtow: CgWeight
-    mtowDesired: CgWeight
-    mzfw: CgWeight
-    mzfwDesired: CgWeight
-    mlw: CgWeight
-    mlwDesired: CgWeight
-}
-
-interface CgWeight {
-    cg: number,
-    weight: number
-}
-
-export const Coord = Object.freeze({
-    x: 0,
-    y: 1,
-});

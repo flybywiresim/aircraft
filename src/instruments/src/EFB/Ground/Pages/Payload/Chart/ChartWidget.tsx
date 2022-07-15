@@ -2,16 +2,24 @@ import { usePersistentProperty } from '@instruments/common/persistence';
 import { useSimVar } from '@instruments/common/simVars';
 import { Units } from '@shared/units';
 import React, { useEffect, useRef, useState } from 'react';
-import { CanvasConst, PerformanceEnvelope, CgPoints } from './Constants';
+import { CanvasConst, PerformanceEnvelope } from './Constants';
 
 interface ChartWidgetProps {
     width: number,
     height: number,
     envelope: PerformanceEnvelope,
-    points: CgPoints
+    totalWeight: number,
+    cg: number,
+    mldw: number,
+    mldwCg: number,
+    zfw: number,
+    zfwCg: number,
 }
 
-export const ChartWidget: React.FC<ChartWidgetProps> = ({ width, height, envelope, points }) => {
+export const ChartWidget: React.FC<ChartWidgetProps> = ({ width, height, envelope,
+    totalWeight, cg,
+    mldw, mldwCg,
+    zfw, zfwCg}) => {
     const { usingMetric } = Units;
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [boardingStarted] = useSimVar('L:A32NX_BOARDING_STARTED_BY_USR', 'Bool');
@@ -158,26 +166,13 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({ width, height, envelop
             };
 
             const drawPoints = () => {
-                let mlwPoints;
-                let mtowPoints;
-                let mzfwPoints;
-
-                if (!boardingStarted) {
-                    mlwPoints = points.mlwDesired;
-                    mtowPoints = points.mtowDesired;
-                    mzfwPoints = points.mzfwDesired;
-                } else {
-                    mlwPoints = points.mlw;
-                    mtowPoints = points.mtow;
-                    mzfwPoints = points.mzfw;
-                }
 
                 {
                     ctx.fillStyle = secondary;
                     ctx.strokeStyle = alt;
                     ctx.lineWidth = 1;
                     ctx.beginPath();
-                    const [cgX, cgY] = cgWeightToXY(mlwPoints.cg, mlwPoints.weight);
+                    const [cgX, cgY] = cgWeightToXY(mldwCg, mldw);
                     ctx.moveTo(cgX, cgY - CanvasConst.diamondHeight);
                     ctx.lineTo(cgX - CanvasConst.diamondWidth, cgY);
                     ctx.lineTo(cgX, cgY + CanvasConst.diamondHeight);
@@ -191,7 +186,7 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({ width, height, envelop
                     ctx.strokeStyle = alt;
                     ctx.lineWidth = 1;
                     ctx.beginPath();
-                    const [cgX, cgY] = cgWeightToXY(mtowPoints.cg, mtowPoints.weight);
+                    const [cgX, cgY] = cgWeightToXY(cg, totalWeight);
                     ctx.moveTo(cgX, cgY - CanvasConst.diamondHeight);
                     ctx.lineTo(cgX - CanvasConst.diamondWidth, cgY);
                     ctx.lineTo(cgX, cgY + CanvasConst.diamondHeight);
@@ -205,7 +200,7 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({ width, height, envelop
                     ctx.strokeStyle = alt;
                     ctx.lineWidth = 1;
                     ctx.beginPath();
-                    const [cgX, cgY] = cgWeightToXY(mzfwPoints.cg, mzfwPoints.weight);
+                    const [cgX, cgY] = cgWeightToXY(zfwCg, zfw);
                     ctx.moveTo(cgX, cgY - CanvasConst.diamondHeight);
                     ctx.lineTo(cgX - CanvasConst.diamondWidth, cgY);
                     ctx.lineTo(cgX, cgY + CanvasConst.diamondHeight);
@@ -260,9 +255,9 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({ width, height, envelop
     }, [draw]);
 
     // TODO FIXME: Make Dynamic
-    const mtow = { transform: `translateX(${(points.mzfwDesired.cg < 32 ? 0.65 : 0.2) * width}px) translateY(${height * 0.02}px)` };
-    const mlw = { transform: `translateX(${(points.mzfwDesired.cg < 32 ? 0.65 : 0.2) * width}px) translateY(${height * 0.22}px)` };
-    const mzfw = { transform: `translateX(${(points.mzfwDesired.cg < 32 ? 0.65 : 0.2) * width}px) translateY(${height * 0.29}px)` };
+    const mtow = { transform: `translateX(${(zfwCg < 32 ? 0.65 : 0.2) * width}px) translateY(${height * 0.02}px)` };
+    const mlw = { transform: `translateX(${(zfwCg < 32 ? 0.65 : 0.2) * width}px) translateY(${height * 0.22}px)` };
+    const mzfw = { transform: `translateX(${(zfwCg < 32 ? 0.65 : 0.2) * width}px) translateY(${height * 0.29}px)` };
 
     const cgRow1 = { transform: `translateX(${0.02 * width}px) translateY(${height * -0.1}px)` };
     const cgRow2 = { transform: `translateX(${0.2 * width}px) translateY(${height * -0.1}px)` };
@@ -288,12 +283,12 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({ width, height, envelop
             <p className="absolute top-0 text-sm font-medium" style={cgRow5}>35%</p>
             <p className="absolute top-0 text-sm font-medium" style={cgRow6}>40%</p>
 
-            <p className="absolute top-0 text-sm font-medium" style={wRow1}>{Units.kilogramToUser(80000).toFixed(0)}</p>
-            <p className="absolute top-0 text-sm font-medium" style={wRow2}>{Units.kilogramToUser(70000).toFixed(0)}</p>
-            <p className="absolute top-0 text-sm font-medium" style={wRow3}>{Units.kilogramToUser(60000).toFixed(0)}</p>
-            <p className="absolute top-0 text-sm font-medium" style={wRow4}>{Units.kilogramToUser(50000).toFixed(0)}</p>
-            <p className="absolute top-0 text-sm font-medium" style={wRow5}>{Units.kilogramToUser(40000).toFixed(0)}</p>
-            <p className="absolute top-0 text-sm font-medium" style={wUnits}>{usingMetric ? 'kg' : 'lbs'}</p>
+            <p className="absolute top-0 text-sm font-medium" style={wRow1}>{Math.round(Units.kilogramToUser(80000) / 1000) * 1000}</p>
+            <p className="absolute top-0 text-sm font-medium" style={wRow2}>{Math.round(Units.kilogramToUser(70000) / 1000) * 1000}</p>
+            <p className="absolute top-0 text-sm font-medium" style={wRow3}>{Math.round(Units.kilogramToUser(60000) / 1000) * 1000}</p>
+            <p className="absolute top-0 text-sm font-medium" style={wRow4}>{Math.round(Units.kilogramToUser(50000) / 1000) * 1000}</p>
+            <p className="absolute top-0 text-sm font-medium" style={wRow5}>{Math.round(Units.kilogramToUser(40000) / 1000) * 1000}</p>
+            <p className="absolute top-0 text-sm font-medium" style={wUnits}>{usingMetric ? 'kg' : 'lb'}</p>
 
             <p className="absolute top-0 font-medium drop-shadow text-theme-highlight" style={mtow}>{flightPhase <= 1 || flightPhase >= 7 ? 'MTOW' : 'FLIGHT'}</p>
             <p className="absolute top-0 font-medium text-colors-lime-500" style={mlw}>MLW</p>

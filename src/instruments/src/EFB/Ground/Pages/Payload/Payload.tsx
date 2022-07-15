@@ -18,7 +18,6 @@ import Card from '../../../UtilComponents/Card/Card';
 import { SelectGroup, SelectItem } from '../../../UtilComponents/Form/Select';
 import { SeatMapWidget } from './Seating/SeatMapWidget';
 import { isSimbriefDataLoaded } from '../../../Store/features/simBrief';
-import { CgPoints } from './Chart/Constants';
 import { useAppSelector } from '../../../Store/store';
 
 export const Payload = () => {
@@ -110,15 +109,6 @@ export const Payload = () => {
     const [mlwCg, setMlwCg] = useState(0);
     const [mlwDesired, setMlwDesired] = useState(0);
     const [mlwDesiredCg, setMlwDesiredCg] = useState(0);
-
-    const [cgPoints, setCgPoints] = useState<CgPoints>({
-        mzfw: { cg: zfwCg, weight: Units.userToKilogram(zfw) },
-        mzfwDesired: { cg: zfwDesiredCg, weight: Units.userToKilogram(zfwDesired) },
-        mlw: { cg: mlwCg, weight: Units.userToKilogram(mlw) },
-        mlwDesired: { cg: mlwDesiredCg, weight: Units.userToKilogram(mlwDesired) },
-        mtow: { cg, weight: Units.userToKilogram(totalWeight) },
-        mtowDesired: { cg: desiredCg, weight: Units.userToKilogram(totalDesiredWeight) },
-    });
 
     const [seatMap] = useState<PaxStationInfo[]>(Loadsheet.seatMap);
     const [cargoMap] = useState<CargoStationInfo[]>(Loadsheet.cargoMap);
@@ -374,17 +364,25 @@ export const Payload = () => {
         setCargoStationLen(cargoSize);
     }, [cargoMap]);
 
-    // Change CG Points
+    // Check that pax data and bitflags are valid
     useEffect(() => {
-        setCgPoints({
-            mzfw: { cg: zfwCg, weight: zfw },
-            mzfwDesired: { cg: zfwDesiredCg, weight: zfwDesired },
-            mlw: { cg: mlwCg, weight: mlw },
-            mlwDesired: { cg: mlwDesiredCg, weight: mlwDesired },
-            mtow: { cg, weight: totalWeight },
-            mtowDesired: { cg: desiredCg, weight: totalDesiredWeight },
+        pax.forEach((stationPaxNum: number, stationIndex: number) => {
+            const paxCount = returnSeats(stationIndex, false, activeFlags).length;
+            if (stationPaxNum === 0 && paxCount !== stationPaxNum) {
+                setActiveFlags[stationIndex](new BitFlags(0));
+            }
         });
-    }, [zfw, zfwCg, zfwDesired, zfwDesiredCg, mlwCg, mlw, cg, totalWeight]);
+
+        paxDesired.forEach((stationPaxNum, stationIndex) => {
+            const paxCount = returnSeats(stationIndex, false, desiredFlags).length;
+            if (stationPaxNum === 0 && paxCount !== stationPaxNum) {
+                setDesiredFlags[stationIndex](new BitFlags(0));
+            }
+        });
+
+        setTargetPax(totalPax);
+        setTargetCargo(0, totalCargo);
+    }, [stationSize])
 
     // Adjusted desired passenger seating layout to match station passenger count on change
     paxDesired.forEach((stationNumPax, stationIndex) => {
@@ -750,10 +748,38 @@ export const Payload = () => {
                         </div>
                     </div>
                     <div className="border col-1 border-theme-accent">
-                        <ChartWidget width={525} height={475} envelope={Loadsheet.performanceEnvelope} points={cgPoints} />
+                        <ChartWidget width={525} height={475} envelope={Loadsheet.performanceEnvelope}
+                            cg={boardingStarted? cg : desiredCg}
+                            totalWeight={boardingStarted ? Math.round(Units.userToKilogram(totalWeight)) : Math.round(Units.userToKilogram(totalDesiredWeight))}
+                            mldwCg={boardingStarted? mlwCg : mlwDesiredCg}
+                            mldw={boardingStarted? Math.round(Units.userToKilogram(mlw)) : Math.round(Units.userToKilogram(mlwDesired))}
+                            zfwCg={boardingStarted? zfwCg : zfwDesiredCg}
+                            zfw={boardingStarted? Units.userToKilogram(zfw) : Units.userToKilogram(zfwDesired)}
+                        />
                     </div>
                 </div>
             </div>
         </div>
     );
 };
+
+/*
+
+    // Change CG Points
+    useEffect(() => {
+        setCgPoints([
+            [
+                [ Units.userToKilogram(totalWeight), cg ],
+                [ Units.userToKilogram(totalDesiredWeight), desiredCg ],
+            ],
+            [
+                [ Units.userToKilogram(mlw), mlwCg ],
+                [ Units.userToKilogram(mlwDesired), mlwDesiredCg ],
+            ],
+            [
+                [ Units.userToKilogram(zfw), zfwCg],
+                [ Units.userToKilogram(zfwDesired), zfwDesiredCg],
+            ],
+        ]);
+    }, [zfw, zfwCg, zfwDesired, zfwDesiredCg, mlwCg, mlw, cg, totalWeight]);
+    */
