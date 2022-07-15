@@ -2219,7 +2219,7 @@ bool FlyByWireInterface::updateAutopilotLaws(double sampleTime) {
   fmgcBBusOutputs.delta_q_cmd_deg.SSM = Arinc429SignStatus::NormalOperation;
   fmgcBBusOutputs.delta_q_cmd_deg.Data = autopilotLawsOutput.autopilot.Theta_c_deg;
 
-  if (elacDisabled != -1) {
+  if (elacDisabled != -1 || facDisabled != -1) {
     simConnectInterface.setClientDataFmgcB(fmgcBBusOutputs, 0);
   }
 
