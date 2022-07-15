@@ -59,7 +59,7 @@ export const FuelPage = () => {
     const CenterTotalRefuelTimeSeconds = 180;
 
     const { usingMetric } = Units;
-    const [currentUnit] = useState(usingMetric ? 'KG' : 'LBS');
+    const [currentUnit] = useState(usingMetric ? 'KG' : 'LB');
     const [convertUnit] = useState(usingMetric ? 1 : (1 / 0.4535934));
 
     const [galToKg] = useSimVar('FUEL WEIGHT PER GALLON', 'kilograms', 1_000);
