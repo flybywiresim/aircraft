@@ -19,6 +19,11 @@ class SecComputer final
     boolean_T pY_not_empty;
   };
 
+  struct rtDW_RateLimiter_SecComputer_m_T {
+    real_T pY;
+    boolean_T pY_not_empty;
+  };
+
   struct rtDW_MATLABFunction_SecComputer_l_T {
     boolean_T output;
     boolean_T output_not_empty;
@@ -472,11 +477,11 @@ class SecComputer final
     rtDW_MATLABFunction_SecComputer_l_T sf_MATLABFunction_n;
     rtDW_MATLABFunction_SecComputer_l_T sf_MATLABFunction_a;
     rtDW_MATLABFunction_SecComputer_l_T sf_MATLABFunction_e3;
+    rtDW_RateLimiter_SecComputer_m_T sf_RateLimiter_b4;
+    rtDW_RateLimiter_SecComputer_m_T sf_RateLimiter_k;
+    rtDW_RateLimiter_SecComputer_m_T sf_RateLimiter_a;
+    rtDW_RateLimiter_SecComputer_m_T sf_RateLimiter_b;
     rtDW_RateLimiter_SecComputer_T sf_RateLimiter_c;
-    rtDW_RateLimiter_SecComputer_T sf_RateLimiter_d;
-    rtDW_RateLimiter_SecComputer_T sf_RateLimiter_j;
-    rtDW_RateLimiter_SecComputer_T sf_RateLimiter_f;
-    rtDW_RateLimiter_SecComputer_T sf_RateLimiter_b;
     rtDW_RateLimiter_SecComputer_T sf_RateLimiter;
   };
 
@@ -492,10 +497,6 @@ class SecComputer final
     real_T DiscreteTimeIntegratorVariableTsLimit_Gain;
     real_T RateLimiterVariableTs6_InitialCondition;
     real_T RateLimiterVariableTs1_InitialCondition;
-    real_T RateLimiterVariableTs2_InitialCondition;
-    real_T RateLimiterVariableTs3_InitialCondition;
-    real_T RateLimiterVariableTs4_InitialCondition;
-    real_T RateLimiterVariableTs5_InitialCondition;
     real_T BitfromLabel4_bit;
     real_T BitfromLabel6_bit;
     real_T BitfromLabel5_bit;
@@ -576,10 +577,10 @@ class SecComputer final
     real_T CompareToConstant1_const_p;
     real_T RateLimiterVariableTs6_lo;
     real_T RateLimiterVariableTs1_lo;
-    real_T RateLimiterVariableTs2_lo;
-    real_T RateLimiterVariableTs3_lo;
-    real_T RateLimiterVariableTs4_lo;
-    real_T RateLimiterVariableTs5_lo;
+    real_T RateLimiterGenericVariableTs_lo;
+    real_T RateLimiterGenericVariableTs1_lo;
+    real_T RateLimiterGenericVariableTs2_lo;
+    real_T RateLimiterGenericVariableTs3_lo;
     real_T ConfirmNode_timeDelay;
     real_T ConfirmNode1_timeDelay;
     real_T ConfirmNode_timeDelay_c;
@@ -590,10 +591,10 @@ class SecComputer final
     real_T ConfirmNode_timeDelay_e;
     real_T RateLimiterVariableTs6_up;
     real_T RateLimiterVariableTs1_up;
-    real_T RateLimiterVariableTs2_up;
-    real_T RateLimiterVariableTs3_up;
-    real_T RateLimiterVariableTs4_up;
-    real_T RateLimiterVariableTs5_up;
+    real_T RateLimiterGenericVariableTs_up;
+    real_T RateLimiterGenericVariableTs1_up;
+    real_T RateLimiterGenericVariableTs2_up;
+    real_T RateLimiterGenericVariableTs3_up;
     SignStatusMatrix EnumeratedConstant_Value;
     SignStatusMatrix EnumeratedConstant1_Value;
     pitch_efcs_law EnumeratedConstant_Value_f;
@@ -708,6 +709,9 @@ class SecComputer final
   static void SecComputer_RateLimiter_Reset(rtDW_RateLimiter_SecComputer_T *localDW);
   static void SecComputer_RateLimiter(real_T rtu_u, real_T rtu_up, real_T rtu_lo, real_T rtu_Ts, real_T rtu_init, real_T
     *rty_Y, rtDW_RateLimiter_SecComputer_T *localDW);
+  static void SecComputer_RateLimiter_n_Reset(rtDW_RateLimiter_SecComputer_m_T *localDW);
+  static void SecComputer_RateLimiter_b(real_T rtu_u, real_T rtu_up, real_T rtu_lo, real_T rtu_Ts, real_T rtu_init,
+    boolean_T rtu_reset, real_T *rty_Y, rtDW_RateLimiter_SecComputer_m_T *localDW);
   static void SecComputer_MATLABFunction_g_Reset(rtDW_MATLABFunction_SecComputer_l_T *localDW);
   static void SecComputer_MATLABFunction_e(boolean_T rtu_u, boolean_T rtu_isRisingEdge, boolean_T *rty_y,
     rtDW_MATLABFunction_SecComputer_l_T *localDW);

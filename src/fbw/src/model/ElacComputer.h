@@ -21,6 +21,11 @@ class ElacComputer final
     boolean_T pY_not_empty;
   };
 
+  struct rtDW_RateLimiter_ElacComputer_g_T {
+    real_T pY;
+    boolean_T pY_not_empty;
+  };
+
   struct rtDW_MATLABFunction_ElacComputer_kz_T {
     real_T timeSinceCondition;
     boolean_T output;
@@ -657,7 +662,7 @@ class ElacComputer final
     rtDW_MATLABFunction_ElacComputer_kz_T sf_MATLABFunction_lf;
     rtDW_MATLABFunction_ElacComputer_kz_T sf_MATLABFunction_jl;
     rtDW_MATLABFunction_ElacComputer_kz_T sf_MATLABFunction_jz;
-    rtDW_RateLimiter_ElacComputer_T sf_RateLimiter_p;
+    rtDW_RateLimiter_ElacComputer_T sf_RateLimiter_pi;
     rtDW_RateLimiter_ElacComputer_T sf_RateLimiter_e;
     rtDW_MATLABFunction_ElacComputer_o_T sf_MATLABFunction_br;
     rtDW_MATLABFunction_ElacComputer_o_T sf_MATLABFunction_jg;
@@ -665,9 +670,9 @@ class ElacComputer final
     rtDW_MATLABFunction_ElacComputer_kz_T sf_MATLABFunction_gfx;
     rtDW_MATLABFunction_ElacComputer_kz_T sf_MATLABFunction_g2;
     rtDW_MATLABFunction_ElacComputer_kz_T sf_MATLABFunction_cj;
+    rtDW_RateLimiter_ElacComputer_g_T sf_RateLimiter_p;
+    rtDW_RateLimiter_ElacComputer_g_T sf_RateLimiter_a;
     rtDW_RateLimiter_ElacComputer_T sf_RateLimiter_b;
-    rtDW_RateLimiter_ElacComputer_T sf_RateLimiter_c;
-    rtDW_RateLimiter_ElacComputer_T sf_RateLimiter_j;
     rtDW_RateLimiter_ElacComputer_T sf_RateLimiter;
   };
 
@@ -687,8 +692,6 @@ class ElacComputer final
     real_T RateLimiterVariableTs_InitialCondition;
     real_T RateLimiterVariableTs2_InitialCondition_f;
     real_T RateLimiterVariableTs3_InitialCondition;
-    real_T RateLimiterVariableTs_InitialCondition_e;
-    real_T RateLimiterVariableTs1_InitialCondition;
     real_T DiscreteDerivativeVariableTs_InitialCondition;
     real_T BitfromLabel_bit;
     real_T BitfromLabel1_bit;
@@ -750,8 +753,8 @@ class ElacComputer final
     real_T RateLimiterVariableTs_lo;
     real_T RateLimiterVariableTs2_lo_o;
     real_T RateLimiterVariableTs3_lo;
-    real_T RateLimiterVariableTs_lo_g;
-    real_T RateLimiterVariableTs1_lo;
+    real_T RateLimiterGenericVariableTs_lo;
+    real_T RateLimiterGenericVariableTs1_lo;
     real_T HysteresisNode2_lowTrigger;
     real_T HysteresisNode1_lowTrigger;
     real_T HysteresisNode3_lowTrigger;
@@ -767,8 +770,8 @@ class ElacComputer final
     real_T RateLimiterVariableTs_up;
     real_T RateLimiterVariableTs2_up_k;
     real_T RateLimiterVariableTs3_up;
-    real_T RateLimiterVariableTs_up_i;
-    real_T RateLimiterVariableTs1_up;
+    real_T RateLimiterGenericVariableTs_up;
+    real_T RateLimiterGenericVariableTs1_up;
     SignStatusMatrix EnumeratedConstant_Value;
     SignStatusMatrix EnumeratedConstant1_Value;
     lateral_efcs_law EnumeratedConstant2_Value;
@@ -835,10 +838,10 @@ class ElacComputer final
     real_T uDLookupTable2_tableData[4];
     real_T uDLookupTable2_bp01Data[4];
     real_T Constant_Value_c;
-    real_T Saturation1_UpperSat_g;
-    real_T Saturation1_LowerSat_n;
     real_T Saturation2_UpperSat;
     real_T Saturation2_LowerSat;
+    real_T Saturation1_UpperSat_g;
+    real_T Saturation1_LowerSat_n;
     real_T Gain1_Gain_b;
     real_T Constant_Value_a;
     real_T Delay_InitialCondition;
@@ -892,6 +895,9 @@ class ElacComputer final
   static void ElacComputer_RateLimiter_Reset(rtDW_RateLimiter_ElacComputer_T *localDW);
   static void ElacComputer_RateLimiter(real_T rtu_u, real_T rtu_up, real_T rtu_lo, real_T rtu_Ts, real_T rtu_init,
     real_T *rty_Y, rtDW_RateLimiter_ElacComputer_T *localDW);
+  static void ElacComputer_RateLimiter_o_Reset(rtDW_RateLimiter_ElacComputer_g_T *localDW);
+  static void ElacComputer_RateLimiter_a(real_T rtu_u, real_T rtu_up, real_T rtu_lo, real_T rtu_Ts, real_T rtu_init,
+    boolean_T rtu_reset, real_T *rty_Y, rtDW_RateLimiter_ElacComputer_g_T *localDW);
   static void ElacComputer_MATLABFunction_o(boolean_T rtu_bit1, boolean_T rtu_bit2, boolean_T rtu_bit3, boolean_T
     rtu_bit4, boolean_T rtu_bit5, boolean_T rtu_bit6, real_T *rty_handleIndex);
   static void ElacComputer_MATLABFunction_g5_Reset(rtDW_MATLABFunction_ElacComputer_kz_T *localDW);

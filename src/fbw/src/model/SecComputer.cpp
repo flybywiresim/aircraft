@@ -68,6 +68,29 @@ void SecComputer::SecComputer_RateLimiter(real_T rtu_u, real_T rtu_up, real_T rt
   *rty_Y = localDW->pY;
 }
 
+void SecComputer::SecComputer_RateLimiter_n_Reset(rtDW_RateLimiter_SecComputer_m_T *localDW)
+{
+  localDW->pY_not_empty = false;
+}
+
+void SecComputer::SecComputer_RateLimiter_b(real_T rtu_u, real_T rtu_up, real_T rtu_lo, real_T rtu_Ts, real_T rtu_init,
+  boolean_T rtu_reset, real_T *rty_Y, rtDW_RateLimiter_SecComputer_m_T *localDW)
+{
+  if ((!localDW->pY_not_empty) || rtu_reset) {
+    localDW->pY = rtu_init;
+    localDW->pY_not_empty = true;
+  }
+
+  if (rtu_reset) {
+    *rty_Y = rtu_init;
+  } else {
+    *rty_Y = std::fmax(std::fmin(rtu_u - localDW->pY, std::abs(rtu_up) * rtu_Ts), -std::abs(rtu_lo) * rtu_Ts) +
+      localDW->pY;
+  }
+
+  localDW->pY = *rty_Y;
+}
+
 void SecComputer::SecComputer_MATLABFunction_g_Reset(rtDW_MATLABFunction_SecComputer_l_T *localDW)
 {
   localDW->output_not_empty = false;
@@ -235,10 +258,10 @@ void SecComputer::step()
       SecComputer_RateLimiter_Reset(&SecComputer_DWork.sf_RateLimiter_c);
       SecComputer_RateLimiter_Reset(&SecComputer_DWork.sf_RateLimiter);
       LawMDLOBJ1.reset();
-      SecComputer_RateLimiter_Reset(&SecComputer_DWork.sf_RateLimiter_b);
-      SecComputer_RateLimiter_Reset(&SecComputer_DWork.sf_RateLimiter_f);
-      SecComputer_RateLimiter_Reset(&SecComputer_DWork.sf_RateLimiter_j);
-      SecComputer_RateLimiter_Reset(&SecComputer_DWork.sf_RateLimiter_d);
+      SecComputer_RateLimiter_n_Reset(&SecComputer_DWork.sf_RateLimiter_b);
+      SecComputer_RateLimiter_n_Reset(&SecComputer_DWork.sf_RateLimiter_a);
+      SecComputer_RateLimiter_n_Reset(&SecComputer_DWork.sf_RateLimiter_k);
+      SecComputer_RateLimiter_n_Reset(&SecComputer_DWork.sf_RateLimiter_b4);
       LawMDLOBJ2.reset();
       LawMDLOBJ3.reset();
       SecComputer_DWork.Runtime_MODE = true;
@@ -929,9 +952,9 @@ void SecComputer::step()
       pair2RollCommand = SecComputer_P.Saturation_LowerSat_n;
     }
 
-    SecComputer_RateLimiter(pair2RollCommand, SecComputer_P.RateLimiterVariableTs2_up,
-      SecComputer_P.RateLimiterVariableTs2_lo, SecComputer_U.in.time.dt,
-      SecComputer_P.RateLimiterVariableTs2_InitialCondition,
+    SecComputer_RateLimiter_b(pair2RollCommand, SecComputer_P.RateLimiterGenericVariableTs_up,
+      SecComputer_P.RateLimiterGenericVariableTs_lo, SecComputer_U.in.time.dt,
+      SecComputer_U.in.analog_inputs.left_spoiler_1_pos_deg, !SecComputer_B.logic.spoiler_pair_1_avail,
       &SecComputer_B.laws.lateral_law_outputs.left_spoiler_1_command_deg, &SecComputer_DWork.sf_RateLimiter_b);
     if (rtb_AND3_b) {
       pair2RollCommand = rtb_handleIndex;
@@ -945,10 +968,10 @@ void SecComputer::step()
       pair2RollCommand = SecComputer_P.Saturation1_LowerSat_f;
     }
 
-    SecComputer_RateLimiter(pair2RollCommand, SecComputer_P.RateLimiterVariableTs3_up,
-      SecComputer_P.RateLimiterVariableTs3_lo, SecComputer_U.in.time.dt,
-      SecComputer_P.RateLimiterVariableTs3_InitialCondition,
-      &SecComputer_B.laws.lateral_law_outputs.right_spoiler_1_command_deg, &SecComputer_DWork.sf_RateLimiter_f);
+    SecComputer_RateLimiter_b(pair2RollCommand, SecComputer_P.RateLimiterGenericVariableTs1_up,
+      SecComputer_P.RateLimiterGenericVariableTs1_lo, SecComputer_U.in.time.dt,
+      SecComputer_U.in.analog_inputs.right_spoiler_1_pos_deg, !SecComputer_B.logic.spoiler_pair_1_avail,
+      &SecComputer_B.laws.lateral_law_outputs.right_spoiler_1_command_deg, &SecComputer_DWork.sf_RateLimiter_a);
     if (rtb_AND3_b) {
       pair2RollCommand = rtb_handleIndex;
     } else {
@@ -961,10 +984,10 @@ void SecComputer::step()
       pair2RollCommand = SecComputer_P.Saturation2_LowerSat;
     }
 
-    SecComputer_RateLimiter(pair2RollCommand, SecComputer_P.RateLimiterVariableTs4_up,
-      SecComputer_P.RateLimiterVariableTs4_lo, SecComputer_U.in.time.dt,
-      SecComputer_P.RateLimiterVariableTs4_InitialCondition,
-      &SecComputer_B.laws.lateral_law_outputs.left_spoiler_2_command_deg, &SecComputer_DWork.sf_RateLimiter_j);
+    SecComputer_RateLimiter_b(pair2RollCommand, SecComputer_P.RateLimiterGenericVariableTs2_up,
+      SecComputer_P.RateLimiterGenericVariableTs2_lo, SecComputer_U.in.time.dt,
+      SecComputer_U.in.analog_inputs.left_spoiler_2_pos_deg, !SecComputer_B.logic.spoiler_pair_2_avail,
+      &SecComputer_B.laws.lateral_law_outputs.left_spoiler_2_command_deg, &SecComputer_DWork.sf_RateLimiter_k);
     if (!rtb_AND3_b) {
       rtb_handleIndex = std::fmax(rtb_Switch_o - (pair1RollCommand - std::fmax(pair1RollCommand, -50.0)), -50.0);
     }
@@ -975,10 +998,10 @@ void SecComputer::step()
       rtb_handleIndex = SecComputer_P.Saturation3_LowerSat;
     }
 
-    SecComputer_RateLimiter(rtb_handleIndex, SecComputer_P.RateLimiterVariableTs5_up,
-      SecComputer_P.RateLimiterVariableTs5_lo, SecComputer_U.in.time.dt,
-      SecComputer_P.RateLimiterVariableTs5_InitialCondition,
-      &SecComputer_B.laws.lateral_law_outputs.right_spoiler_2_command_deg, &SecComputer_DWork.sf_RateLimiter_d);
+    SecComputer_RateLimiter_b(rtb_handleIndex, SecComputer_P.RateLimiterGenericVariableTs3_up,
+      SecComputer_P.RateLimiterGenericVariableTs3_lo, SecComputer_U.in.time.dt,
+      SecComputer_U.in.analog_inputs.right_spoiler_2_pos_deg, !SecComputer_B.logic.spoiler_pair_2_avail,
+      &SecComputer_B.laws.lateral_law_outputs.right_spoiler_2_command_deg, &SecComputer_DWork.sf_RateLimiter_b4);
     SecComputer_MATLABFunction(&SecComputer_U.in.bus_inputs.sfcc_1_bus.slat_flap_system_status_word,
       SecComputer_P.BitfromLabel_bit_a1, &rtb_y_mx);
     SecComputer_MATLABFunction(&SecComputer_U.in.bus_inputs.sfcc_1_bus.slat_flap_system_status_word,
