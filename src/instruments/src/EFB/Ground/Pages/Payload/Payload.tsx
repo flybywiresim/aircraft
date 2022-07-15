@@ -212,7 +212,7 @@ export const Payload = () => {
 
     const setTargetCargo = (numberOfPax, freight) => {
         const bagWeight = numberOfPax * paxBagWeight;
-        const loadableCargoWeight = Math.min(bagWeight + parseInt(freight), maxCargo);
+        const loadableCargoWeight = Math.min(bagWeight + Math.round(freight), maxCargo);
 
         let remainingWeight = loadableCargoWeight;
 
