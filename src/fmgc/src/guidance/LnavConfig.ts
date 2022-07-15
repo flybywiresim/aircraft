@@ -69,4 +69,9 @@ export const LnavConfig = {
      */
     DEBUG_SAVE_FPLN_LOCAL_STORAGE: false,
 
+    /**
+     * Length in nautical miles for manual leg PathVectors
+     */
+    MANUAL_LEG_EFIS_LENGTH: 320,
+
 };

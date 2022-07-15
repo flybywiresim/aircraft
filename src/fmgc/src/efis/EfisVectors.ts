@@ -4,11 +4,13 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
-import { EfisSide, EfisVectorsGroup } from '@shared/NavigationDisplay';
-import { PathVector, pathVectorLength, pathVectorValid } from '@fmgc/guidance/lnav/PathVector';
+import { EfisSide, EfisVectorsGroup, Mode, RangeSetting, rangeSettings } from '@shared/NavigationDisplay';
+import { PathVector, pathVectorLength, PathVectorType, pathVectorValid } from '@fmgc/guidance/lnav/PathVector';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { ArmedLateralMode, isArmed, LateralMode } from '@shared/autopilot';
 import { FlowEventSync } from '@shared/FlowEventSync';
+import { linePortionWithinEditArea, withinEditArea } from '@fmgc/efis/EfisCommon';
+import { Coordinates } from '@fmgc/flightplanning/data/geo';
 
 const UPDATE_TIMER = 2_500;
 
@@ -20,11 +22,11 @@ export class EfisVectors {
     ) {
     }
 
-    private currentActiveVectors = [];
+    private currentActiveVectors: PathVector[] = [];
 
-    private currentDashedVectors = [];
+    private currentDashedVectors: PathVector[] = [];
 
-    private currentTemporaryVectors = [];
+    private currentTemporaryVectors: PathVector[] = [];
 
     public forceUpdate() {
         this.updateTimer = UPDATE_TIMER + 1;
@@ -61,6 +63,28 @@ export class EfisVectors {
             this.guidanceController.efisStateForSide.R.legsCulled = false;
         }
 
+        // TODO ${side}
+        const range = rangeSettings[SimVar.GetSimVarValue('L:A32NX_EFIS_L_ND_RANGE', 'number')];
+        const mode: Mode = SimVar.GetSimVarValue('L:A32NX_EFIS_L_ND_MODE', 'number');
+
+        let mapCentre: Coordinates;
+        let mapUp = 0;
+        if (mode === Mode.PLAN) {
+            const planCentreIndex = SimVar.GetSimVarValue('L:A32NX_SELECTED_WAYPOINT', 'number');
+            mapCentre = this.guidanceController.flightPlanManager.getWaypoint(planCentreIndex)?.infos.coordinates;
+        }
+        if (!mapCentre) {
+            mapCentre = {
+                lat: SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude'),
+                long: SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude'),
+            };
+            mapUp = SimVar.GetSimVarValue('PLANE HEADING DEGREES TRUE', 'degrees');
+        }
+
+        // filter vectors outside edit area
+        const transmittedActiveFlightPlanVectors = EfisVectors.getVectorsWithinEditArea(visibleActiveFlightPlanVectors, range, mode, mapCentre, mapUp);
+        const transmittedTemporaryFlightPlanVectors = EfisVectors.getVectorsWithinEditArea(visibleTemporaryFlightPlanVectors, range, mode, mapCentre, mapUp);
+
         // ACTIVE
 
         const engagedLateralMode = SimVar.GetSimVarValue('L:A32NX_FMA_LATERAL_MODE', 'Number') as LateralMode;
@@ -71,7 +95,7 @@ export class EfisVectors {
         const clearActive = !transmitActive && this.currentActiveVectors.length > 0;
 
         if (transmitActive) {
-            this.currentActiveVectors = visibleActiveFlightPlanVectors;
+            this.currentActiveVectors = transmittedActiveFlightPlanVectors;
 
             this.transmitGroup(this.currentActiveVectors, EfisVectorsGroup.ACTIVE);
         }
@@ -88,7 +112,7 @@ export class EfisVectors {
         const clearDashed = !transmitDashed && this.currentDashedVectors.length > 0;
 
         if (transmitDashed) {
-            this.currentDashedVectors = visibleActiveFlightPlanVectors;
+            this.currentDashedVectors = transmittedActiveFlightPlanVectors;
 
             this.transmitGroup(this.currentDashedVectors, EfisVectorsGroup.DASHED);
         }
@@ -105,7 +129,7 @@ export class EfisVectors {
         const clearTemporary = !transmitTemporary && this.currentTemporaryVectors.length > 0;
 
         if (transmitTemporary) {
-            this.currentTemporaryVectors = visibleTemporaryFlightPlanVectors;
+            this.currentTemporaryVectors = transmittedTemporaryFlightPlanVectors;
 
             this.transmitGroup(this.currentTemporaryVectors, EfisVectorsGroup.TEMPORARY);
         }
@@ -132,6 +156,28 @@ export class EfisVectors {
         const length = pathVectorLength(vector);
 
         return length <= 5_000;
+    }
+
+    private static getVectorsWithinEditArea(vectors: PathVector[], range: RangeSetting, mode: Mode, mapCentre: Coordinates, mapUp: DegreesTrue): PathVector[] {
+        return vectors.reduce((allVectors: PathVector[], vector: PathVector) => {
+            if (vector.type === PathVectorType.Line) {
+                const endpointsInEditArea = linePortionWithinEditArea(vector.startPoint, vector.endPoint, range, mode, mapCentre);
+                if (endpointsInEditArea !== undefined) {
+                    allVectors.push({
+                        type: PathVectorType.Line,
+                        startPoint: endpointsInEditArea[0],
+                        endPoint: endpointsInEditArea[1],
+                    });
+                }
+            } else if (
+                withinEditArea(vector.startPoint, range, mode, mapCentre, mapUp)
+                || 'endPoint' in vector && withinEditArea(vector.endPoint!, range, mode, mapCentre, mapUp)
+                || 'centrePoint' in vector && withinEditArea(vector.centrePoint!, range, mode, mapCentre, mapUp)
+            ) {
+                allVectors.push(vector);
+            }
+            return allVectors;
+        }, []);
     }
 
     private transmitGroup(vectors: PathVector[], group: EfisVectorsGroup): void {

@@ -50,30 +50,6 @@ export const FlightPlanVectors: FC<FlightPlanVectorsProps> = memo(({ x, y, mapPa
                             y2={ey}
                         />
                     );
-                case PathVectorType.SemiInfiniteLine:
-                    // TODO find intersection(s) with edit area boundaries
-                    // only draw the bit within the ND
-                    // need to do great circle stuffs
-                    const [six, siy] = mapParams.coordinatesToXYy(vector.startPoint);
-                    const [eix, eiy] = mapParams.coordinatesToXYy(
-                        Avionics.Utils.bearingDistanceToCoordinates(
-                            vector.course,
-                            40,
-                            vector.startPoint.lat,
-                            vector.startPoint.long,
-                        ),
-                    );
-                    return (
-                        <line
-                            {...lineStyle}
-                            fill="none"
-                            strokeWidth={2}
-                            x1={six}
-                            y1={siy}
-                            x2={eix}
-                            y2={eiy}
-                        />
-                    );
                 case PathVectorType.Arc:
                     const [ix, iy] = mapParams.coordinatesToXYy(vector.startPoint);
                     const [fx, fy] = mapParams.coordinatesToXYy(vector.endPoint);
@@ -128,8 +104,6 @@ function isVectorValid(vector: PathVector): boolean {
     switch (vector.type) {
     case PathVectorType.Line:
         return !!vector.startPoint && !!vector.endPoint;
-    case PathVectorType.SemiInfiniteLine:
-        return !!vector.startPoint && vector.course !== undefined;
     case PathVectorType.Arc:
         return !!vector.startPoint && !!vector.centrePoint && !!vector.endPoint;
     case PathVectorType.DebugPoint:

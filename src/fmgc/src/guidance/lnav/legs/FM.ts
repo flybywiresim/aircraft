@@ -3,10 +3,11 @@ import { GuidanceParameters } from '@fmgc/guidance/ControlLaws';
 import { courseToFixDistanceToGo, fixToFixGuidance, getAlongTrackDistanceTo } from '@fmgc/guidance/lnav/CommonGeometry';
 import { LegMetadata } from '@fmgc/guidance/lnav/legs';
 import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
-import { DebugPointColour, PathVector, PathVectorType } from '@fmgc/guidance/lnav/PathVector';
+import { PathVector, PathVectorType } from '@fmgc/guidance/lnav/PathVector';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { SegmentType } from '@fmgc/wtsdk';
 import { GeometryNdSymbol } from '@shared/NavigationDisplay';
+import { placeBearingDistance } from 'msfs-geo';
 
 export class FMLeg extends Leg {
     private startPoint: Coordinates;
@@ -48,7 +49,7 @@ export class FMLeg extends Leg {
     }
 
     get mapSymbols(): GeometryNdSymbol[] {
-        const followingDiscont = !!this.inboundGuidable;
+        const followingDiscont = !this.inboundGuidable;
 
         if (followingDiscont) {
             return [{
@@ -128,9 +129,9 @@ export class FMLeg extends Leg {
         if (LnavConfig.DEBUG_PREDICTED_PATH) {
             return [
                 {
-                    type: PathVectorType.SemiInfiniteLine,
-                    startPoint: this.getPathStartPoint(),
-                    course: this.course,
+                    type: PathVectorType.Line,
+                    startPoint: this.startPoint,
+                    endPoint: placeBearingDistance(this.startPoint, this.course, LnavConfig.MANUAL_LEG_EFIS_LENGTH),
                 },
                 {
                     type: PathVectorType.DebugPoint,
@@ -141,21 +142,19 @@ export class FMLeg extends Leg {
                     type: PathVectorType.DebugPoint,
                     startPoint: this.startPoint,
                     annotation: 'FM START',
-                    colour: DebugPointColour.Yellow,
                 },
                 {
                     type: PathVectorType.DebugPoint,
                     startPoint: this.endPoint,
                     annotation: 'FM END',
-                    colour: DebugPointColour.Magenta,
                 },
             ];
         }
         return [
             {
-                type: PathVectorType.SemiInfiniteLine,
+                type: PathVectorType.Line,
                 startPoint: this.startPoint,
-                course: this.course,
+                endPoint: placeBearingDistance(this.startPoint, this.course, LnavConfig.MANUAL_LEG_EFIS_LENGTH),
             },
         ];
     }
