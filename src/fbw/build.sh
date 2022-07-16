@@ -100,8 +100,6 @@ clang++ \
   "${DIR}/src/model/Autothrust_data.cpp" \
   "${DIR}/src/model/Autothrust.cpp" \
   "${DIR}/src/model/Double2MultiWord.cpp" \
-  "${DIR}/src/model/FlyByWire_data.cpp" \
-  "${DIR}/src/model/FlyByWire.cpp" \
   "${DIR}/src/model/ElacComputer_data.cpp" \
   "${DIR}/src/model/ElacComputer.cpp" \
   "${DIR}/src/model/SecComputer_data.cpp" \
