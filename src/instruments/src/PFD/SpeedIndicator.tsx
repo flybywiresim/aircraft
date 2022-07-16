@@ -131,13 +131,7 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
 
     private failedGroup: NodeReference<SVGGElement> = FSComponent.createRef();
 
-    private alphaProtRef: NodeReference<SVGGElement>[] = [];
-
-    private vMaxRef: NodeReference<SVGPathElement>[] = [];
-
     private showBarsRef = FSComponent.createRef<SVGGElement>();
-
-    private barberPoleRef = FSComponent.createRef<SVGGElement>();
 
     private vfeNext = FSComponent.createRef<SVGPathElement>();
 
@@ -145,15 +139,11 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
 
     private flapHandleIndex = 0;
 
-    private lastAlphaProtSub = Subject.create(0);
-
     private barTimeout= 0;
 
     private onGround = Subject.create(true);
 
     private airSpeed = new Arinc429Word(0);
-
-    private vMax = 0;
 
     private leftMainGearCompressed: boolean;
 
@@ -218,38 +208,6 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
         pf.on('speedAr').handle((airSpeed) => {
             this.airSpeed = airSpeed;
             this.setOutline();
-            this.vMaxRef.forEach((el, index) => {
-                const isInRange = this.vMax <= this.speedSub.get() + DisplayRange;
-                if (isInRange) {
-                    let elementValue = this.vMax + 5.040 * index;
-
-                    let offset = -elementValue * DistanceSpacing / ValueSpacing;
-                    // if the lowest bug is below the speedtape place it on top again
-                    if (-offset < this.speedSub.get() - 45) {
-                        elementValue = (this.vMax + 5.040 * (index + 30));
-
-                        offset = -elementValue * DistanceSpacing / ValueSpacing;
-                    }
-                    el.instance.style.transform = `translate3d(0px, ${offset}px, 0px)`;
-                    el.instance.style.visibility = 'visible';
-                } else {
-                    el.instance.style.visibility = 'hidden';
-                }
-            });
-        });
-
-        pf.on('alphaProt').withPrecision(2).handle((a) => {
-            this.alphaProtRef.forEach((el, index) => {
-                const elementValue = a + -1 * 2.923 * index;
-                const offset = -elementValue * DistanceSpacing / ValueSpacing;
-                el.instance.style.transform = `translate3d(0px, ${offset}px, 0px)`;
-            });
-
-            this.lastAlphaProtSub.set(a);
-        });
-
-        pf.on('vMax').whenChanged().handle((vMax) => {
-            this.vMax = vMax;
         });
 
         pf.on('leftMainGearCompressed').whenChanged().handle((g) => {
@@ -268,43 +226,14 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
         this.onGround.sub((g) => {
             if (g) {
                 this.showBarsRef.instance.style.display = 'none';
-                this.barberPoleRef.instance.style.display = 'none';
                 clearTimeout(this.barTimeout);
             } else {
                 this.barTimeout = setTimeout(() => {
                     this.showBarsRef.instance.style.display = 'block';
-                    this.barberPoleRef.instance.style.display = 'block';
                 }, 10000) as unknown as number;
             }
             this.setOutline();
         });
-    }
-
-    private createAlphaProtBarberPole() {
-        const group: SVGGElement[] = [];
-        for (let i = 0; i < 10; i++) {
-            const apref = FSComponent.createRef<SVGGElement>();
-            group.push(
-                <g ref={apref}>
-                    <path class="BarAmber" d="m21.952 82.254v1.5119m-0.94654-2.923h0.94654v1.4111h-2.9213v-1.4111z" />
-                    );
-                </g>,
-            );
-            this.alphaProtRef.push(apref);
-        }
-        return group;
-    }
-
-    private createVMaxBarberPole() {
-        const path: SVGGElement[] = [];
-        for (let i = 0; i < 30; i++) {
-            const vMaxRef = FSComponent.createRef<SVGPathElement>();
-            path.push(
-                <path ref={vMaxRef} class="BarRed" d="m22.053 78.381v-2.6206m-3.022 5.0397h3.022v-2.4191h-3.022z" />,
-            );
-            this.vMaxRef.push(vMaxRef);
-        }
-        return path;
     }
 
     render(): VNode {
@@ -334,10 +263,6 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
                         type="speed"
                     >
 
-                        <g ref={this.barberPoleRef}>
-                            {this.createVMaxBarberPole()}
-                            {this.createAlphaProtBarberPole()}
-                        </g>
                         <V1BugElement bus={this.props.bus} />
                         <VRBugElement bus={this.props.bus} />
                         <FlapsSpeedPointBugs bus={this.props.bus} />
@@ -347,6 +272,8 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
                     </VerticalTape>
 
                     <g ref={this.showBarsRef}>
+                        <VMaxBar bus={this.props.bus} />
+                        <VAlphaProtBar bus={this.props.bus} />
                         <VLsBar bus={this.props.bus} />
                         <VAlphaLimBar bus={this.props.bus} />
                     </g>
@@ -681,6 +608,104 @@ class VAlphaLimBar extends DisplayComponent<{ bus: EventBus }> {
 
     render(): VNode {
         return <path ref={this.VAlimIndicator} id="VAlimIndicator" class="Fill Red" />;
+    }
+}
+
+class VAlphaProtBar extends DisplayComponent<{ bus: EventBus }> {
+    private VAprotIndicator = FSComponent.createRef<SVGPathElement>();
+
+    private airSpeed = new Arinc429Word(0);
+
+    private vAlphaProt = 0;
+
+    private setAlphaProtBarPath() {
+        if (this.airSpeed.value - this.vAlphaProt > DisplayRange) {
+            this.VAprotIndicator.instance.style.visibility = 'hidden';
+        } else {
+            this.VAprotIndicator.instance.style.visibility = 'visible';
+
+            const delta = Math.max(this.airSpeed.value - this.vAlphaProt, -DisplayRange);
+            const offset = delta * DistanceSpacing / ValueSpacing;
+
+            this.VAprotIndicator.instance.style.transform = `translate3d(0px, ${offset}px, 0px)`;
+        }
+    }
+
+    onAfterRender(node: VNode): void {
+        super.onAfterRender(node);
+
+        const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values>();
+
+        sub.on('speedAr').withArinc429Precision(2).handle((s) => {
+            this.airSpeed = s;
+            this.setAlphaProtBarPath();
+        });
+
+        sub.on('alphaProt').withPrecision(2).handle((al) => {
+            this.vAlphaProt = al;
+            this.setAlphaProtBarPath();
+        });
+    }
+
+    render(): VNode {
+        return (
+            <path
+                id="VAlphaProtBarberpole"
+                ref={this.VAprotIndicator}
+                class="BarAmber"
+                // eslint-disable-next-line max-len
+                d="m19.031 169.9v-1.4111h2.9213v1.4111zm2.9213-2.923v1.5119m0-4.4349v1.5119m-2.9213 1.4111v-1.4111h2.9213v1.4111zm2.9213-5.8461v1.5119m-2.9213 1.4111v-1.4111h2.9213v1.4111zm2.9213-5.8461v1.5119m-2.9213 1.4111v-1.4111h2.9213v1.4111zm0-10.18h2.9213v1.4111h-2.9213zm2.9213 4.3341v1.5119m-2.9213 1.4111v-1.4111h2.9213v1.4111zm2.9213-5.846v1.5119m-2.9213 1.4111v-1.4111h2.9213v1.4111zm0-5.846v-1.4111h2.9213v1.4111zm2.9213 0v1.5119m0-4.4349v1.5119m0-4.4349v1.5119m-2.9213 1.4111v-1.4111h2.9213v1.4111zm2.9213-5.8461v1.5119m-2.9213 1.4111v-1.4111h2.9213v1.4111zm2.9213-5.8461v1.5119m-2.9213 1.4111v-1.4111h2.9213v1.4111zm0-10.18h2.9213v1.4111h-2.9213zm2.9213 4.3341v1.5119m-2.9213 1.4111v-1.4111h2.9213v1.4111zm2.9213-5.846v1.5119m-2.9213 1.4111v-1.4111h2.9213v1.4111zm0-5.846v-1.4111h2.9213v1.4111zm2.9213 0v1.5119m0-4.4349v1.5119m0-4.4349v1.5119m-2.9213 1.4111v-1.4111h2.9213v1.4111zm2.9213-5.8461v1.5119m-2.9213 1.4111v-1.4111h2.9213v1.4111zm2.9213-5.8461v1.5119m-2.9213 1.4111v-1.4111h2.9213v1.4111zm0-10.18h2.9213v1.4111h-2.9213zm2.9213 4.3341v1.5119m-2.9213 1.4111v-1.4111h2.9213v1.4111zm2.9213-5.846v1.5119m-2.9213 1.4111v-1.4111h2.9213v1.4111zm0-5.846v-1.4111h2.9213v1.4111zm2.9213 0v1.5119m0-4.4349v1.5119m0-4.4349v1.5119m-2.9213 1.4111v-1.4111h2.9213v1.4111zm2.9213-5.8461v1.5119m-2.9213 1.4111v-1.4111h2.9213v1.4111zm2.9213-5.8461v1.5119m-2.9213 1.4111v-1.4111h2.9213v1.4111zm0-10.18h2.9213v1.4111h-2.9213zm2.9213 4.3341v1.5119m-2.9213 1.4111v-1.4111h2.9213v1.4111zm2.9213-5.846v1.5119m-2.9213 1.4111v-1.4111h2.9213v1.4111zm0-5.846v-1.4111h2.9213v1.4111zm2.9213 0v1.5119m0-4.4349v1.5119m0-4.4349v1.5119m-2.9213 1.4111v-1.4111h2.9213v1.4111zm1.9748-4.3341h0.94654v1.4111h-2.9213v-1.4111z"
+            />
+        );
+    }
+}
+
+class VMaxBar extends DisplayComponent<{ bus: EventBus }> {
+    private VMaxIndicator = FSComponent.createRef<SVGPathElement>();
+
+    private airSpeed = new Arinc429Word(0);
+
+    private vMax = 0;
+
+    private setVMaxBarPath() {
+        if (this.airSpeed.value - this.vMax < -DisplayRange) {
+            this.VMaxIndicator.instance.style.visibility = 'hidden';
+        } else {
+            this.VMaxIndicator.instance.style.visibility = 'visible';
+
+            const delta = Math.min(this.airSpeed.value - this.vMax, DisplayRange);
+            const offset = delta * DistanceSpacing / ValueSpacing;
+
+            this.VMaxIndicator.instance.style.transform = `translate3d(0px, ${offset}px, 0px)`;
+        }
+    }
+
+    onAfterRender(node: VNode): void {
+        super.onAfterRender(node);
+
+        const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values>();
+
+        sub.on('speedAr').withArinc429Precision(2).handle((s) => {
+            this.airSpeed = s;
+            this.setVMaxBarPath();
+        });
+
+        sub.on('vMax').withPrecision(2).handle((v) => {
+            this.vMax = v;
+            this.setVMaxBarPath();
+        });
+    }
+
+    render(): VNode {
+        return (
+            <path
+                id="OverspeedBarberpole"
+                ref={this.VMaxIndicator}
+                class="BarRed"
+                // eslint-disable-next-line max-len
+                d="m22.053-2.2648v-2.6206m-3.022-2.419v2.419h3.022v-2.419zm3.022 10.079v-2.6206m0 7.6603v-2.6206m0 7.6603v-2.6206m0 7.6603v-2.6206m0-12.498h-3.022v2.4191h3.022zm0 12.498v-2.4191h-3.022v2.4191zm0-7.4588v2.4191h-3.022v-2.4191zm-3.022-10.079v2.419h3.022v-2.419zm3.022 25.198v-2.6206m0 7.6603v-2.6206m0 7.6603v-2.6206m0 7.6603v-2.6206m0-12.498h-3.022v2.4191h3.022zm0 12.498v-2.4191h-3.022v2.4191zm0-7.4588v2.4191h-3.022v-2.4191zm-3.022-10.079v2.419h3.022v-2.419zm3.022 25.198v-2.6206m0 7.6603v-2.6206m0 7.6603v-2.6206m0 7.6603v-2.6206m0-12.498h-3.022v2.4191h3.022zm0 12.498v-2.4191h-3.022v2.4191zm0-7.4588v2.4191h-3.022v-2.4191zm-3.022-10.079v2.419h3.022v-2.419zm3.022 25.198v-2.6206m0 7.6603v-2.6206m0 7.6603v-2.6206m0 7.6603v-2.6206m-3.022 5.0397h3.022v-2.4191h-3.022zm3.022-17.538h-3.022v2.4191h3.022zm0 12.498v-2.4191h-3.022v2.4191zm0-7.4588v2.4191h-3.022v-2.4191zm-3.022-10.079v2.419h3.022v-2.419z"
+            />
+        );
     }
 }
 
