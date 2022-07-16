@@ -88,9 +88,11 @@ export class PathCaptureTransition extends Transition {
 
     tad: NauticalMiles | undefined;
 
-    private forcedTurnRequired = false;
-
     private forcedTurnComplete = false;
+
+    private computedTurnDirection = TurnDirection.Either;
+
+    private computedTargetTrack: DegreesTrue = 0;
 
     recomputeWithParameters(_isActive: boolean, tas: Knots, gs: Knots, _ppos: Coordinates, _trueTrack: DegreesTrue) {
         if (this.isFrozen) {
@@ -104,6 +106,9 @@ export class PathCaptureTransition extends Transition {
         const targetTrack = this.inboundGuidable.outboundCourse;
 
         const naturalTurnDirectionSign = Math.sign(MathUtils.diffAngle(targetTrack, this.nextLeg.inboundCourse));
+
+        this.computedTurnDirection = TurnDirection.Either;
+        this.computedTargetTrack = this.nextLeg.inboundCourse;
 
         let prevLegTermFix: LatLongAlt | Coordinates;
         if (this.previousLeg instanceof AFLeg) {
@@ -144,8 +149,6 @@ export class PathCaptureTransition extends Transition {
         const deltaTrack: Degrees = MathUtils.diffAngle(targetTrack, this.nextLeg.inboundCourse, this.nextLeg.metadata.turnDirection);
 
         this.predictedPath.length = 0;
-
-        this.forcedTurnRequired = Math.abs(deltaTrack) > 130;
 
         if (Math.abs(deltaTrack) < 3 && distanceFromItp < 0.1) {
             this.itp = this.previousLeg.getPathEndPoint();
@@ -299,10 +302,14 @@ export class PathCaptureTransition extends Transition {
 
             if (isReverse) {
                 courseChange = CourseChange.reverse(turnDirection, turnCenterDistance, deltaTrack, radius);
+                this.computedTurnDirection = this.nextLeg.metadata.turnDirection;
             } else {
                 courseChange = CourseChange.normal(turnDirection, turnCenterDistance, deltaTrack, radius);
+                this.computedTurnDirection = turnDirection < 0 ? TurnDirection.Left : TurnDirection.Right;
             }
         }
+
+        this.computedTargetTrack = (360 + this.previousLeg.outboundCourse + courseChange) % 360;
 
         const finalTurningPoint = placeBearingDistance(turnCenter, targetTrack + courseChange - 90 * turnDirection, radius);
 
@@ -429,7 +436,7 @@ export class PathCaptureTransition extends Transition {
     }
 
     isAbeam(ppos: LatLongData): boolean {
-        return !this.isNull && this.forcedTurnRequired && !this.forcedTurnComplete && this.previousLeg.getDistanceToGo(ppos) <= 0;
+        return !this.isNull && this.computedTurnDirection !== TurnDirection.Either && !this.forcedTurnComplete && this.previousLeg.getDistanceToGo(ppos) <= 0;
     }
 
     distance = 0;
@@ -443,9 +450,9 @@ export class PathCaptureTransition extends Transition {
     }
 
     getGuidanceParameters(ppos: LatLongAlt, trueTrack: number, tas: Knots): GuidanceParameters | null {
-        if (this.forcedTurnRequired) {
-            const turnSign = this.nextLeg.metadata.turnDirection === TurnDirection.Left ? -1 : 1;
-            let trackAngleError = this.nextLeg.inboundCourse - trueTrack;
+        if (this.computedTurnDirection !== TurnDirection.Either) {
+            const turnSign = this.computedTurnDirection === TurnDirection.Left ? -1 : 1;
+            let trackAngleError = this.computedTargetTrack - trueTrack;
             if (turnSign !== Math.sign(trackAngleError)) {
                 trackAngleError += turnSign * 360;
             }
