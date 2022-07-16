@@ -37,6 +37,7 @@
 1. [HYD] Fixed too slow leak measurement valves operation - @Crocket63 (crocket)
 1. [ISIS] Added temporary ISIS font with arrows - @aweissoertel (Alexibexi#7550)
 1. [FMGC] Fix unnatural turn direction for path capture transition - @tracernz (Mike)
+1. [FMGC] Fix unnatural turn direction for course capture transition - @tracernz (Mike)
 
 ## 0.8.0
 
