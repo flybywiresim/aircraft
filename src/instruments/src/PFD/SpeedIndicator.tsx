@@ -959,11 +959,7 @@ export class MachNumber extends DisplayComponent<{bus: EventBus}> {
 class VProtBug extends DisplayComponent<{bus: EventBus}> {
     private vProtBug = FSComponent.createRef<SVGGElement>();
 
-    private vProtLostBug = FSComponent.createRef<SVGGElement>();
-
     private fcdcWord1 = new Arinc429Word(0);
-
-    private showVprotBug = false;
 
     private Vmax = 0;
 
@@ -976,14 +972,8 @@ class VProtBug extends DisplayComponent<{bus: EventBus}> {
         if (showVProt && isNormalLawActive) {
             this.vProtBug.instance.style.display = 'block';
             this.vProtBug.instance.style.transform = `translate3d(0px, ${offset}px, 0px)`;
-            this.vProtLostBug.instance.style.display = 'none';
-        } else if (showVProt && !isNormalLawActive) {
-            this.vProtBug.instance.style.display = 'none';
-            this.vProtLostBug.instance.style.display = 'block';
-            this.vProtLostBug.instance.style.transform = `translate3d(0px, ${offset}px, 0px)`;
         } else {
             this.vProtBug.instance.style.display = 'none';
-            this.vProtLostBug.instance.style.display = 'none';
         }
     }
 
@@ -1006,14 +996,10 @@ class VProtBug extends DisplayComponent<{bus: EventBus}> {
 
     render(): VNode {
         return (
-            <>
-                <path ref={this.vProtLostBug} style="display: none" class="NormalStroke Amber" d="m14.615 79.915 1.7808 1.7818m-1.7808 0 1.7808-1.7818" />
-                <g id="SpeedProtSymbol" ref={this.vProtBug} style="display: none">
-                    <path class="NormalOutline" d="m13.994 81.289h3.022m-3.022-1.0079h3.022" />
-                    <path class="NormalStroke Green" d="m13.994 81.289h3.022m-3.022-1.0079h3.022" />
-                </g>
-            </>
-
+            <g id="SpeedProtSymbol" ref={this.vProtBug} style="display: none">
+                <path class="NormalOutline" d="m13.994 81.289h3.022m-3.022-1.0079h3.022" />
+                <path class="NormalStroke Green" d="m13.994 81.289h3.022m-3.022-1.0079h3.022" />
+            </g>
         );
     }
 }
