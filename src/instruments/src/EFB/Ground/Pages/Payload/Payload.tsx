@@ -587,7 +587,7 @@ export const Payload = () => {
                                                 </TooltipWrapper>
                                             </td>
                                             <td className="px-4 font-light whitespace-nowrap text-md">
-                                                {`${totalPax} ${t('Ground.Payload.Passengers')}`}
+                                                {`${totalPax}`}
                                             </td>
                                         </tr>
                                         <tr>
