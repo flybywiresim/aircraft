@@ -780,24 +780,3 @@ export const Payload = () => {
         </div>
     );
 };
-
-/*
-
-    // Change CG Points
-    useEffect(() => {
-        setCgPoints([
-            [
-                [ Units.userToKilogram(totalWeight), cg ],
-                [ Units.userToKilogram(totalDesiredWeight), desiredCg ],
-            ],
-            [
-                [ Units.userToKilogram(mlw), mlwCg ],
-                [ Units.userToKilogram(mlwDesired), mlwDesiredCg ],
-            ],
-            [
-                [ Units.userToKilogram(zfw), zfwCg],
-                [ Units.userToKilogram(zfwDesired), zfwDesiredCg],
-            ],
-        ]);
-    }, [zfw, zfwCg, zfwDesired, zfwDesiredCg, mlwCg, mlw, cg, totalWeight]);
-    */
