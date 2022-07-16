@@ -284,6 +284,7 @@
 1. [FMGC] Added flight phase transition to DONE when on ground > 30 s and engines off - @aguther (Andreas Guther)
 1. [ATSU] Add FANS-C simulation for CPDLC - @Sven [de en] - (Sven Czarnian)
 1. [ATSU] Add VDL3-simulation of datalink transport protocol - @Sven [de en] - (Sven Czarnian)
+1. [FMGC] Improve robustness of ILS auto-tuning - @tracernz (Mike)
 
 ## 0.7.0
 
