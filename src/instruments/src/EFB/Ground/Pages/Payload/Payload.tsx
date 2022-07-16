@@ -159,6 +159,19 @@ export const Payload = () => {
         return seats;
     };
 
+    const returnNumSeats = (stationIndex: number, empty: boolean, flags: BitFlags[]): number => {
+        let count = 0;
+        const bitFlags: BitFlags = flags[stationIndex];
+        for (let seatId = 0; seatId < stationSize[stationIndex]; seatId++) {
+            if (!empty && bitFlags.getBitIndex(seatId)) {
+                count++;
+            } else if (empty && !bitFlags.getBitIndex(seatId)) {
+                count++;
+            }
+        }
+        return count;
+    };
+
     const chooseSeats = (stationIndex: number, choices: number[], numChoose: number) => {
         const bitFlags: BitFlags = activeFlags[stationIndex];
         for (let i = 0; i < numChoose; i++) {
@@ -201,7 +214,7 @@ export const Payload = () => {
             setPaxDesired[stationIndex](pax);
             paxRemaining -= pax;
 
-            const paxCount = returnSeats(stationIndex, false, activeFlags).length;
+            const paxCount = returnNumSeats(stationIndex, false, activeFlags);
             const seats: number[] = returnSeats(stationIndex, pax[stationIndex] > paxCount, activeFlags);
             chooseDesiredSeats(stationIndex, seats, Math.abs(paxCount - pax[stationIndex]));
         };
@@ -368,27 +381,28 @@ export const Payload = () => {
     // Check that pax data and bitflags are valid
     useEffect(() => {
         pax.forEach((stationPaxNum: number, stationIndex: number) => {
-            const paxCount = returnSeats(stationIndex, false, activeFlags).length;
+            const paxCount = returnNumSeats(stationIndex, false, activeFlags);
             if (stationPaxNum === 0 && paxCount !== stationPaxNum) {
                 setActiveFlags[stationIndex](new BitFlags(0));
             }
         });
 
         paxDesired.forEach((stationPaxNum, stationIndex) => {
-            const paxCount = returnSeats(stationIndex, false, desiredFlags).length;
+            const paxCount = returnNumSeats(stationIndex, false, desiredFlags);
             if (stationPaxNum === 0 && paxCount !== stationPaxNum) {
                 setDesiredFlags[stationIndex](new BitFlags(0));
             }
         });
-
-        setTargetPax(totalPax);
-        setTargetCargo(0, totalCargo);
+        if (!boardingStarted) {
+            setTargetPax(totalPax);
+            setTargetCargo(0, totalCargo);
+        }
     }, [stationSize]);
 
     // Adjusted desired passenger seating layout to match station passenger count on change
     paxDesired.forEach((stationNumPax, stationIndex) => {
         useEffect(() => {
-            const paxCount = returnSeats(stationIndex, false, desiredFlags).length;
+            const paxCount = returnNumSeats(stationIndex, false, desiredFlags);
             if (!clicked && stationNumPax !== paxCount) {
                 const seatOptions = calculateSeatOptions(stationIndex, stationNumPax > paxCount);
                 const seatDelta = Math.abs(paxCount - stationNumPax);
@@ -413,7 +427,7 @@ export const Payload = () => {
     // Adjust actual passenger seating layout to match station passenger count on change
     pax.forEach((stationNumPax: number, stationIndex: number) => {
         useEffect(() => {
-            const paxCount = returnSeats(stationIndex, false, activeFlags).length;
+            const paxCount = returnNumSeats(stationIndex, false, activeFlags);
             if (!clicked && stationNumPax !== paxCount) {
                 const seatOptions = calculateSeatOptions(stationIndex, stationNumPax < paxCount);
                 const seatDelta = Math.abs(paxCount - stationNumPax);
