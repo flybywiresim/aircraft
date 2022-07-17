@@ -26,14 +26,8 @@ const useCanvasEvent = (canvas: HTMLCanvasElement | null, event: string, handler
 export const SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, activeFlags, onClickSeat }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [ctx, setCtx] = useState<CanvasRenderingContext2D | null>(null);
-    const [seatEmptyImg, setSeatEmptyImg] = useState<HTMLImageElement | null>(null);
-    const [seatMinusImg, setSeatMinusImg] = useState<HTMLImageElement | null>(null);
-    const [seatFilledImg, setSeatFilledImg] = useState<HTMLImageElement | null>(null);
-    const [seatAddImg, setSeatAddImg] = useState<HTMLImageElement | null>(null);
-    const [theme] = usePersistentProperty('EFB_UI_THEME', 'blue');
-    const [xYMap, setXYMap] = useState<number[][][]>([]);
 
-    const getTheme = (theme) => {
+    const getTheme = (theme: string): [string, string, string] => {
         let base = '#fff';
         let primary = '#00C9E4';
         let secondary = '#84CC16';
@@ -53,6 +47,21 @@ export const SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, a
         }
         return [base, primary, secondary];
     };
+
+    const [theme] = usePersistentProperty('EFB_UI_THEME', 'blue');
+    const [base, primary] = getTheme(theme);
+
+    const getImageFromComponent = (component: React.ReactElement): HTMLImageElement => {
+        const imageElement = new Image();
+        imageElement.src = `data:image/svg+xml; charset=utf8, ${encodeURIComponent(ReactDOMServer.renderToStaticMarkup(component))}`;
+        return imageElement;
+    };
+    const seatEmptyImg = useRef(getImageFromComponent(<Seat fill="none" stroke={base} opacity="1.0" />));
+    const seatMinusImg = useRef(getImageFromComponent(<Seat fill={base} stroke="none" opacity="0.25" />));
+    const seatAddImg = useRef(getImageFromComponent(<Seat fill={primary} stroke="none" opacity="0.6" />));
+    const seatFilledImg = useRef(getImageFromComponent(<Seat fill={primary} stroke="none" opacity="1.0" />));
+
+    const [xYMap, setXYMap] = useState<number[][][]>([]);
 
     const addXOffset = (xOff: number, station: number, row: number) => {
         let seatType = TYPE.ECO;
@@ -113,40 +122,16 @@ export const SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, a
     const drawSeat = (x: number, y: number, imageX: number, imageY: number, station: number, seatId: number) => {
         if (ctx && seatEmptyImg && seatMinusImg && seatAddImg && seatFilledImg) {
             if (desiredFlags[station].getBitIndex(seatId) && activeFlags[station].getBitIndex(seatId)) {
-                ctx.drawImage(seatFilledImg, x, y, imageX, imageY);
+                ctx.drawImage(seatFilledImg.current, x, y, imageX, imageY);
             } else if (activeFlags[station].getBitIndex(seatId)) {
-                ctx.drawImage(seatMinusImg, x, y, imageX, imageY);
+                ctx.drawImage(seatMinusImg.current, x, y, imageX, imageY);
             } else if (desiredFlags[station].getBitIndex(seatId)) {
-                ctx.drawImage(seatAddImg, x, y, imageX, imageY);
+                ctx.drawImage(seatAddImg.current, x, y, imageX, imageY);
             } else {
-                ctx.drawImage(seatEmptyImg, x, y, imageX, imageY);
+                ctx.drawImage(seatEmptyImg.current, x, y, imageX, imageY);
             }
         }
     };
-
-    useEffect(() => {
-        const [base, primary] = getTheme(theme);
-
-        const seatEmpty = <Seat fill="none" stroke={base} opacity="1.0" />;
-        const seatEmptyElement = new Image();
-        seatEmptyElement.src = `data:image/svg+xml; charset=utf8, ${encodeURIComponent(ReactDOMServer.renderToStaticMarkup(seatEmpty))}`;
-        setSeatEmptyImg(seatEmptyElement);
-
-        const seatMinus = <Seat fill={base} stroke="none" opacity="0.25" />;
-        const seatMinusElement = new Image();
-        seatMinusElement.src = `data:image/svg+xml; charset=utf8, ${encodeURIComponent(ReactDOMServer.renderToStaticMarkup(seatMinus))}`;
-        setSeatMinusImg(seatMinusElement);
-
-        const seatAdd = <Seat fill={primary} stroke="none" opacity="0.6" />;
-        const seatAddElement = new Image();
-        seatAddElement.src = `data:image/svg+xml; charset=utf8, ${encodeURIComponent(ReactDOMServer.renderToStaticMarkup(seatAdd))}`;
-        setSeatAddImg(seatAddElement);
-
-        const imgFilled = <Seat fill={primary} stroke="none" opacity="1.0" />;
-        const imgFilledElement = new Image();
-        imgFilledElement.src = `data:image/svg+xml; charset=utf8, ${encodeURIComponent(ReactDOMServer.renderToStaticMarkup(imgFilled))}`;
-        setSeatFilledImg(imgFilledElement);
-    }, []);
 
     const mouseEvent = (e) => {
         let selectedStation = -1;
@@ -173,33 +158,34 @@ export const SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, a
     useEffect(() => {
         const canvas = canvasRef.current;
         let frameId;
-        if (canvas) {
-            const width = CanvasConst.width;
-            const height = CanvasConst.height;
-            const { devicePixelRatio: ratio = 1 } = window;
-            setCtx(canvas.getContext('2d'));
-            canvas.width = width * ratio;
-            canvas.height = height * ratio;
-            ctx?.scale(ratio, ratio);
-            const render = () => {
-                draw();
-                // workaround for bug
-                if (!frameId || frameId < 10) {
-                    frameId = window.requestAnimationFrame(render);
-                }
-            };
-            render();
-            return () => {
-                if (frameId) {
-                    window.cancelAnimationFrame(frameId);
-                }
-            };
+
+        if (!canvas) {
+            return undefined;
         }
+
+        const width = CanvasConst.width;
+        const height = CanvasConst.height;
+        const { devicePixelRatio: ratio = 1 } = window;
+        setCtx(canvas.getContext('2d'));
+        canvas.width = width * ratio;
+        canvas.height = height * ratio;
+        ctx?.scale(ratio, ratio);
+        const render = () => {
+            draw();
+            // workaround for bug
+            if (!frameId || frameId < 10) {
+                frameId = window.requestAnimationFrame(render);
+            }
+        };
+        render();
         return () => {
+            if (frameId) {
+                window.cancelAnimationFrame(frameId);
+            }
         };
     }, [draw]);
 
-    const distSquared = (x1, y1, x2, y2) => {
+    const distSquared = (x1: number, y1: number, x2: number, y2: number): number => {
         const diffX = x1 - x2;
         const diffY = y1 - y2;
         return (diffX * diffX + diffY * diffY);

@@ -2,7 +2,7 @@
 /* eslint-disable max-len */
 import React from 'react';
 
-export const Plane = ({ className }: {className: string}) => (
+export const Plane = ({ className }: { className: string }) => (
     <svg width="549" height="576" viewBox="0 0 549 576" fill="none" className={className} xmlns="http://www.w3.org/2000/svg">
         <g clipPath="url(#clip0)">
             <path d="M274.262 21.6523V29.4823L261.932 35.7423L259.972 29.4823L274.262 21.6523Z" stroke="currentColor" strokeWidth="0.75" strokeMiterlimit="10" />

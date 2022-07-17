@@ -275,7 +275,7 @@ export const Payload = () => {
         return cargoMoment;
     };
 
-    const calculateCg = (mass, moment) => -100 * ((moment / mass - Loadsheet.specs.leMacZ) / Loadsheet.specs.macSize);
+    const calculateCg = (mass: number, moment: number) => -100 * ((moment / mass - Loadsheet.specs.leMacZ) / Loadsheet.specs.macSize);
 
     const processZfw = (newZfw) => {
         let paxCargoWeight = newZfw - emptyWeight;
@@ -686,7 +686,7 @@ export const Payload = () => {
                                 <TooltipWrapper text={t('Ground.Payload.TT.FillPayloadFromSimbrief')}>
                                     <div
                                         className="flex justify-center items-center px-2 h-auto rounded-md rounded-l-none border-2 transition duration-100 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight"
-                                        onClick={() => setSimBriefValues()}
+                                        onClick={setSimBriefValues}
                                     >
                                         <CloudArrowDown size={26} />
                                     </div>

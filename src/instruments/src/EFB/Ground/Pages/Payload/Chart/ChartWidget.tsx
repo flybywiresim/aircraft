@@ -28,7 +28,7 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
     const [theme] = usePersistentProperty('EFB_UI_THEME', 'blue');
     const [flightPhase] = useSimVar('L:A32NX_FMGC_FLIGHT_PHASE', 'enum');
 
-    const getTheme = (theme) => {
+    const getTheme = (theme: string): [string, string, string, string] => {
         let base = '#fff';
         let primary = '#00C9E4';
         let secondary = '#84CC16';
@@ -53,176 +53,155 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
     };
 
     const draw = () => {
-        if (ctx) {
-            const [base, primary, secondary, alt] = getTheme(theme);
-            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-            ctx.fillStyle = '#C9C9C9';
-            ctx.strokeStyle = '#2B313B';
+        if (!ctx) return;
+
+        const [base, primary, secondary, alt] = getTheme(theme);
+        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        ctx.fillStyle = '#C9C9C9';
+        ctx.strokeStyle = '#2B313B';
+        ctx.lineWidth = 1;
+
+        const yStep = height / (CanvasConst.weightLines - 1);
+        const xStep = width / CanvasConst.cgLines;
+        const shiftX = (width / 18);
+
+        const weightToY = (weight) => (80 - (weight / 1000)) * yStep / 5;
+        const cgToX = (cg) => ((cg - 12) * xStep);
+
+        const cgWeightToXY = (cg, weight) => {
+            const xStart = cgToX(cg);
+            const y = weightToY(weight);
+
+            const x = shiftX + xStart + ((CanvasConst.yScale - y) * Math.tan(15 / 16 * Math.PI + (cg - 12) * CanvasConst.cgAngle));
+            return [x, y];
+        };
+
+        const drawWeightLines = () => {
             ctx.lineWidth = 1;
-
-            const yStep = height / (CanvasConst.weightLines - 1);
-            const xStep = width / CanvasConst.cgLines;
-            const shiftX = (width / 18);
-
-            const weightToY = (weight) => (80 - (weight / 1000)) * yStep / 5;
-            const cgToX = (cg) => ((cg - 12) * xStep);
-
-            const cgWeightToXY = (cg, weight) => {
-                const xStart = cgToX(cg);
-                const y = weightToY(weight);
-
-                const x = shiftX + xStart + ((CanvasConst.yScale - y) * Math.tan(15 / 16 * Math.PI + (cg - 12) * CanvasConst.cgAngle));
-                return [x, y];
-            };
-
-            const drawWeightLines = () => {
-                ctx.lineWidth = 1;
-                ctx.strokeStyle = '#394049';
-                for (let y = yStep; y < height; y += yStep) {
-                    ctx.beginPath();
-                    ctx.moveTo(0, y);
-                    ctx.lineTo(width, y);
-                    ctx.closePath();
-                    ctx.stroke();
-                }
-            };
-
-            const drawCgLines = () => {
-                ctx.lineWidth = 1;
-                ctx.globalAlpha = (theme !== 'light') ? 0.5 : 0.25;
-                const cgWidth = width - shiftX;
-                for (let cgPercent = 12, x = 0; x < cgWidth; x += xStep, cgPercent++) {
-                    if (x > 0 && (x < cgWidth)) {
-                        ctx.lineWidth = cgPercent % 5 ? 0.25 : 1;
-                        ctx.strokeStyle = cgPercent % 5 ? '#2B313B' : '#394049';
-
-                        const [x1, y1] = cgWeightToXY(cgPercent, 35000);
-                        const [x2, y2] = cgWeightToXY(cgPercent, 80000);
-                        ctx.beginPath();
-                        ctx.moveTo(x1, y1);
-                        ctx.lineTo(x2, y2);
-                        ctx.closePath();
-                        ctx.stroke();
-                    }
-                }
-                ctx.globalAlpha = 1;
-            };
-
-            const drawMzfw = () => {
-                ctx.lineWidth = 2;
-                ctx.strokeStyle = base;
-                const mzfw = envelope.mzfw;
-                const [x, y] = cgWeightToXY(mzfw[0][0], mzfw[0][1]);
+            ctx.strokeStyle = '#394049';
+            for (let y = yStep; y < height; y += yStep) {
                 ctx.beginPath();
-                ctx.moveTo(x, y);
-                for (let i = 1; i < mzfw.length; i++) {
-                    const [x, y] = cgWeightToXY(mzfw[i][0], mzfw[i][1]);
-                    ctx.lineTo(x, y);
-                }
-                ctx.stroke();
+                ctx.moveTo(0, y);
+                ctx.lineTo(width, y);
                 ctx.closePath();
-            };
-
-            const drawMlw = () => {
-                ctx.lineWidth = 4;
-                ctx.strokeStyle = secondary;
-                const mlw = envelope.mlw;
-                const [x, y] = cgWeightToXY(mlw[0][0], mlw[0][1]);
-                ctx.beginPath();
-                ctx.moveTo(x, y);
-                for (let i = 1; i < mlw.length; i++) {
-                    const [x, y] = cgWeightToXY(mlw[i][0], mlw[i][1]);
-                    ctx.lineTo(x, y);
-                }
                 ctx.stroke();
-                ctx.globalAlpha = 1;
-            };
-
-            const drawMtow = () => {
-                ctx.lineWidth = 4;
-                ctx.strokeStyle = primary;
-                const mtow = envelope.mtow;
-                const [x, y] = cgWeightToXY(mtow[0][0], mtow[0][1]);
-                ctx.beginPath();
-                ctx.moveTo(x, y);
-                for (let i = 1; i < mtow.length; i++) {
-                    const [x, y] = cgWeightToXY(mtow[i][0], mtow[i][1]);
-                    ctx.lineTo(x, y);
-                }
-                ctx.stroke();
-            };
-
-            const drawFlight = () => {
-                ctx.lineWidth = 4;
-                ctx.strokeStyle = primary;
-                const mtow = envelope.flight;
-                const [x, y] = cgWeightToXY(mtow[0][0], mtow[0][1]);
-                ctx.beginPath();
-                ctx.moveTo(x, y);
-                for (let i = 1; i < mtow.length; i++) {
-                    const [x, y] = cgWeightToXY(mtow[i][0], mtow[i][1]);
-                    ctx.lineTo(x, y);
-                }
-                ctx.stroke();
-            };
-
-            const drawPoints = () => {
-                {
-                    ctx.fillStyle = secondary;
-                    ctx.strokeStyle = alt;
-                    ctx.lineWidth = 1;
-                    ctx.beginPath();
-                    const [cgX, cgY] = cgWeightToXY(mldwCg, mldw);
-                    ctx.moveTo(cgX, cgY - CanvasConst.diamondHeight);
-                    ctx.lineTo(cgX - CanvasConst.diamondWidth, cgY);
-                    ctx.lineTo(cgX, cgY + CanvasConst.diamondHeight);
-                    ctx.lineTo(cgX + CanvasConst.diamondWidth, cgY);
-                    ctx.closePath();
-                    ctx.fill();
-                    ctx.stroke();
-                }
-                {
-                    ctx.fillStyle = primary;
-                    ctx.strokeStyle = alt;
-                    ctx.lineWidth = 1;
-                    ctx.beginPath();
-                    const [cgX, cgY] = cgWeightToXY(cg, totalWeight);
-                    ctx.moveTo(cgX, cgY - CanvasConst.diamondHeight);
-                    ctx.lineTo(cgX - CanvasConst.diamondWidth, cgY);
-                    ctx.lineTo(cgX, cgY + CanvasConst.diamondHeight);
-                    ctx.lineTo(cgX + CanvasConst.diamondWidth, cgY);
-                    ctx.closePath();
-                    ctx.fill();
-                    ctx.stroke();
-                }
-                {
-                    ctx.fillStyle = base;
-                    ctx.strokeStyle = alt;
-                    ctx.lineWidth = 1;
-                    ctx.beginPath();
-                    const [cgX, cgY] = cgWeightToXY(zfwCg, zfw);
-                    ctx.moveTo(cgX, cgY - CanvasConst.diamondHeight);
-                    ctx.lineTo(cgX - CanvasConst.diamondWidth, cgY);
-                    ctx.lineTo(cgX, cgY + CanvasConst.diamondHeight);
-                    ctx.lineTo(cgX + CanvasConst.diamondWidth, cgY);
-                    ctx.closePath();
-                    ctx.fill();
-                    ctx.stroke();
-                }
-            };
-
-            drawWeightLines();
-            drawCgLines();
-            if (flightPhase > 1 && flightPhase < 7) {
-                drawFlight();
             }
-            drawMzfw();
-            drawMlw();
-            if (flightPhase <= 1 || flightPhase >= 7) {
-                drawMtow();
+        };
+
+        const drawCgLines = () => {
+            ctx.lineWidth = 1;
+            ctx.globalAlpha = (theme !== 'light') ? 0.5 : 0.25;
+            const cgWidth = width - shiftX;
+            for (let cgPercent = 12, x = 0; x < cgWidth; x += xStep, cgPercent++) {
+                if (x > 0 && (x < cgWidth)) {
+                    ctx.lineWidth = cgPercent % 5 ? 0.25 : 1;
+                    ctx.strokeStyle = cgPercent % 5 ? '#2B313B' : '#394049';
+
+                    const [x1, y1] = cgWeightToXY(cgPercent, 35000);
+                    const [x2, y2] = cgWeightToXY(cgPercent, 80000);
+                    ctx.beginPath();
+                    ctx.moveTo(x1, y1);
+                    ctx.lineTo(x2, y2);
+                    ctx.closePath();
+                    ctx.stroke();
+                }
             }
-            drawPoints();
+            ctx.globalAlpha = 1;
+        };
+
+        const drawMzfw = () => {
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = base;
+            const mzfw = envelope.mzfw;
+            const [x, y] = cgWeightToXY(mzfw[0][0], mzfw[0][1]);
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            for (let i = 1; i < mzfw.length; i++) {
+                const [x, y] = cgWeightToXY(mzfw[i][0], mzfw[i][1]);
+                ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+            ctx.closePath();
+        };
+
+        const drawMlw = () => {
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = secondary;
+            const mlw = envelope.mlw;
+            const [x, y] = cgWeightToXY(mlw[0][0], mlw[0][1]);
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            for (let i = 1; i < mlw.length; i++) {
+                const [x, y] = cgWeightToXY(mlw[i][0], mlw[i][1]);
+                ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+            ctx.globalAlpha = 1;
+        };
+
+        const drawMtow = () => {
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = primary;
+            const mtow = envelope.mtow;
+            const [x, y] = cgWeightToXY(mtow[0][0], mtow[0][1]);
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            for (let i = 1; i < mtow.length; i++) {
+                const [x, y] = cgWeightToXY(mtow[i][0], mtow[i][1]);
+                ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+        };
+
+        const drawFlight = () => {
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = primary;
+            const mtow = envelope.flight;
+            const [x, y] = cgWeightToXY(mtow[0][0], mtow[0][1]);
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            for (let i = 1; i < mtow.length; i++) {
+                const [x, y] = cgWeightToXY(mtow[i][0], mtow[i][1]);
+                ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+        };
+
+        const drawPoints = () => {
+            const drawDiamond = (cg: number, weight: number, color: string) => {
+                ctx.fillStyle = color;
+                ctx.strokeStyle = alt;
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                const [cgX, cgY] = cgWeightToXY(cg, weight);
+                ctx.moveTo(cgX, cgY - CanvasConst.diamondHeight);
+                ctx.lineTo(cgX - CanvasConst.diamondWidth, cgY);
+                ctx.lineTo(cgX, cgY + CanvasConst.diamondHeight);
+                ctx.lineTo(cgX + CanvasConst.diamondWidth, cgY);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+            };
+
+            // MLW
+            drawDiamond(mldwCg, mldw, secondary);
+            // MTOW
+            drawDiamond(cg, totalWeight, primary);
+            // MZFW
+            drawDiamond(zfwCg, zfw, base);
+        };
+
+        drawWeightLines();
+        drawCgLines();
+        if (flightPhase > 1 && flightPhase < 7) {
+            drawFlight();
         }
+        drawMzfw();
+        drawMlw();
+        if (flightPhase <= 1 || flightPhase >= 7) {
+            drawMtow();
+        }
+        drawPoints();
     };
 
     useEffect(() => {
