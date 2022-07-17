@@ -207,29 +207,33 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
     useEffect(() => {
         const canvas = canvasRef.current;
         let frameId;
-        if (canvas) {
-            const w = width;
-            const h = height;
-            const { devicePixelRatio: ratio = 1 } = window;
-            setCtx(canvas.getContext('2d'));
-            canvas.width = w * ratio;
-            canvas.height = h * ratio;
-            ctx?.scale(ratio, ratio);
-            const render = () => {
-                draw();
-                // workaround for bug
-                if (!frameId || frameId < 10) {
-                    frameId = window.requestAnimationFrame(render);
-                }
-            };
-            render();
-            return () => {
-                if (frameId) {
-                    window.cancelAnimationFrame(frameId);
-                }
-            };
+
+        if (!canvas) {
+            return undefined;
         }
+
+        const w = width;
+        const h = height;
+        const { devicePixelRatio: ratio = 1 } = window;
+        setCtx(canvas.getContext('2d'));
+        canvas.width = w * ratio;
+        canvas.height = h * ratio;
+        ctx?.scale(ratio, ratio);
+
+        const render = () => {
+            draw();
+            // workaround for bug
+            if (!frameId || frameId < 10) {
+                frameId = window.requestAnimationFrame(render);
+            }
+        };
+
+        render();
+
         return () => {
+            if (frameId) {
+                window.cancelAnimationFrame(frameId);
+            }
         };
     }, [draw]);
 
