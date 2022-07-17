@@ -499,7 +499,6 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
         const sub = this.props.bus.getSubscriber<PFDSimvars>();
 
         sub.on('baroMode').whenChanged().handle((m) => {
-            console.log(m);
             if (m === 0) { // QFE
                 this.mode.set(BaroPressureMode.QFE);
                 this.stdGroup.instance.classList.add('HiddenElement');
