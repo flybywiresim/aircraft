@@ -18,6 +18,8 @@ export interface Arinc429Values {
     da: Arinc429Word;
     latAcc: Arinc429Word;
     fcdcDiscreteWord1: Arinc429Word;
+    fcdc1DiscreteWord1: Arinc429Word;
+    fcdc2DiscreteWord1: Arinc429Word;
     fcdc1DiscreteWord2: Arinc429Word;
     fcdc2DiscreteWord2: Arinc429Word;
     fcdcCaptPitchCommand: Arinc429Word;
@@ -178,6 +180,7 @@ export class ArincValueProvider {
         subscriber.on('fcdc1DiscreteWord1Raw').handle((discreteWord1) => {
             this.fcdc1DiscreteWord1 = new Arinc429Word(discreteWord1);
             this.fcdcToUse = this.determineFcdcToUse();
+            publisher.pub('fcdc1DiscreteWord1', this.fcdc1DiscreteWord1);
             if (this.fcdcToUse === 1) {
                 publisher.pub('fcdcDiscreteWord1', this.fcdc1DiscreteWord1);
             }
@@ -186,6 +189,7 @@ export class ArincValueProvider {
         subscriber.on('fcdc2DiscreteWord1Raw').handle((discreteWord1) => {
             this.fcdc2DiscreteWord1 = new Arinc429Word(discreteWord1);
             this.fcdcToUse = this.determineFcdcToUse();
+            publisher.pub('fcdc2DiscreteWord1', this.fcdc2DiscreteWord1);
             if (this.fcdcToUse === 2) {
                 publisher.pub('fcdcDiscreteWord1', this.fcdc2DiscreteWord1);
             }

@@ -273,6 +273,7 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
 
                     <VMaxBar bus={this.props.bus} />
                     <VAlphaProtBar bus={this.props.bus} />
+                    <VStallWarnBar bus={this.props.bus} />
                     <g ref={this.showBarsRef}>
                         <VLsBar bus={this.props.bus} />
                     </g>
@@ -521,37 +522,38 @@ class SpeedTrendArrow extends DisplayComponent<{ airspeed: Subscribable<number>,
     }
 }
 
-interface VLSState {
-    alphaProtSpeed: number;
-    airSpeed: number;
-    vls: number;
-}
 class VLsBar extends DisplayComponent<{ bus: EventBus }> {
     private previousTime = (new Date() as any).appTime();
 
     private vlsPath = Subject.create<string>('');
 
-    private vlsState: VLSState = {
-        alphaProtSpeed: 0,
-        airSpeed: 0,
-        vls: 0,
-    }
+    private vAlphaProt = new Arinc429Word(0);
+
+    private vStallWarn = new Arinc429Word(0);
+
+    private airSpeed= new Arinc429Word(0);
+
+    private vls= 0;
+
+    private fcdc1DiscreteWord1 = new Arinc429Word(0);
+
+    private fcdc2DiscreteWord1 = new Arinc429Word(0);
 
     private smoothSpeeds = (vlsDestination: number) => {
         const currentTime = (new Date() as any).appTime();
         const deltaTime = currentTime - this.previousTime;
 
         const seconds = deltaTime / 1000;
-        const vls = SmoothSin(this.vlsState.vls, vlsDestination, 0.5, seconds);
+        const vls = SmoothSin(this.vls, vlsDestination, 0.5, seconds);
         this.previousTime = currentTime;
         return vls;
     };
 
-    private setVlsPath(vls: number) {
-        const airSpeed = this.vlsState.airSpeed;
+    private setVlsPath() {
+        const normalLawActive = this.fcdc1DiscreteWord1.getBitValueOr(11, false) || this.fcdc2DiscreteWord1.getBitValueOr(11, false);
 
-        const VLsPos = (airSpeed - vls) * DistanceSpacing / ValueSpacing + 80.818;
-        const offset = (vls - this.vlsState.alphaProtSpeed) * DistanceSpacing / ValueSpacing;
+        const VLsPos = (this.airSpeed.value - this.vls) * DistanceSpacing / ValueSpacing + 80.818;
+        const offset = (this.vls - (normalLawActive ? this.vAlphaProt.valueOr(0) : this.vStallWarn.valueOr(0))) * DistanceSpacing / ValueSpacing;
 
         this.vlsPath.set(`m19.031 ${VLsPos}h 1.9748v${offset}`);
     }
@@ -561,20 +563,34 @@ class VLsBar extends DisplayComponent<{ bus: EventBus }> {
 
         const sub = this.props.bus.getSubscriber<Arinc429Values & PFDSimvars & ClockEvents>();
 
-        sub.on('vAlphaProt').handle((a) => {
-            this.vlsState.alphaProtSpeed = a.value;
-            this.setVlsPath(this.vlsState.vls);
+        sub.on('vAlphaProt').withArinc429Precision(2).handle((a) => {
+            this.vAlphaProt = a;
+            this.setVlsPath();
+        });
+
+        sub.on('vStallWarn').withArinc429Precision(2).handle((a) => {
+            this.vStallWarn = a;
+            this.setVlsPath();
         });
 
         sub.on('speedAr').withArinc429Precision(2).handle((s) => {
-            this.vlsState.airSpeed = s.value;
-            this.setVlsPath(this.vlsState.vls);
+            this.airSpeed = s;
+            this.setVlsPath();
         });
 
         sub.on('vls').handle((vls) => {
-            const smoothedVls = this.smoothSpeeds(vls);
-            this.setVlsPath(smoothedVls);
-            this.vlsState.vls = smoothedVls;
+            this.vls = this.smoothSpeeds(vls);
+            this.setVlsPath();
+        });
+
+        sub.on('fcdc1DiscreteWord1').handle((word) => {
+            this.fcdc1DiscreteWord1 = word;
+            this.setVlsPath();
+        });
+
+        sub.on('fcdc2DiscreteWord1').handle((word) => {
+            this.fcdc2DiscreteWord1 = word;
+            this.setVlsPath();
         });
     }
 
@@ -588,17 +604,20 @@ class VAlphaLimBar extends DisplayComponent<{ bus: EventBus }> {
 
     private airSpeed = new Arinc429Word(0);
 
-    private vAlphaLim = 0;
+    private vAlphaLim = new Arinc429Word(0);
 
-    private valid = false;
+    private fcdc1DiscreteWord1 = new Arinc429Word(0);
+
+    private fcdc2DiscreteWord1 = new Arinc429Word(0);
 
     private setAlphaLimBarPath() {
-        if (this.vAlphaLim - this.airSpeed.value < -DisplayRange || !this.valid) {
+        const normalLawActive = this.fcdc1DiscreteWord1.getBitValueOr(11, false) || this.fcdc2DiscreteWord1.getBitValueOr(11, false);
+        if (this.vAlphaLim.value - this.airSpeed.value < -DisplayRange || this.vAlphaLim.isFailureWarning() || this.vAlphaLim.isNoComputedData() || !normalLawActive) {
             this.VAlimIndicator.instance.style.visibility = 'hidden';
         } else {
             this.VAlimIndicator.instance.style.visibility = 'visible';
 
-            const delta = this.airSpeed.value - DisplayRange - this.vAlphaLim;
+            const delta = this.airSpeed.value - DisplayRange - this.vAlphaLim.value;
             const offset = delta * DistanceSpacing / ValueSpacing;
 
             this.VAlimIndicator.instance.setAttribute('d', `m19.031 123.56h3.425v${offset}h-3.425z`);
@@ -616,8 +635,17 @@ class VAlphaLimBar extends DisplayComponent<{ bus: EventBus }> {
         });
 
         sub.on('vAlphaMax').handle((al) => {
-            this.vAlphaLim = al.value;
-            this.valid = al.isNormalOperation();
+            this.vAlphaLim = al;
+            this.setAlphaLimBarPath();
+        });
+
+        sub.on('fcdc1DiscreteWord1').handle((word) => {
+            this.fcdc1DiscreteWord1 = word;
+            this.setAlphaLimBarPath();
+        });
+
+        sub.on('fcdc2DiscreteWord1').handle((word) => {
+            this.fcdc2DiscreteWord1 = word;
             this.setAlphaLimBarPath();
         });
     }
@@ -634,8 +662,13 @@ class VAlphaProtBar extends DisplayComponent<{ bus: EventBus }> {
 
     private vAlphaProt = new Arinc429Word(0);
 
+    private fcdc1DiscreteWord1 = new Arinc429Word(0);
+
+    private fcdc2DiscreteWord1 = new Arinc429Word(0);
+
     private setAlphaProtBarPath() {
-        if (this.airSpeed.value - this.vAlphaProt.value > DisplayRange || this.vAlphaProt.isFailureWarning() || this.vAlphaProt.isNoComputedData()) {
+        const normalLawActive = this.fcdc1DiscreteWord1.getBitValueOr(11, false) || this.fcdc2DiscreteWord1.getBitValueOr(11, false);
+        if (this.airSpeed.value - this.vAlphaProt.value > DisplayRange || this.vAlphaProt.isFailureWarning() || this.vAlphaProt.isNoComputedData() || !normalLawActive) {
             this.VAprotIndicator.instance.style.visibility = 'hidden';
         } else {
             this.VAprotIndicator.instance.style.visibility = 'visible';
@@ -659,6 +692,16 @@ class VAlphaProtBar extends DisplayComponent<{ bus: EventBus }> {
 
         sub.on('vAlphaProt').withArinc429Precision(2).handle((word) => {
             this.vAlphaProt = word;
+            this.setAlphaProtBarPath();
+        });
+
+        sub.on('fcdc1DiscreteWord1').handle((word) => {
+            this.fcdc1DiscreteWord1 = word;
+            this.setAlphaProtBarPath();
+        });
+
+        sub.on('fcdc2DiscreteWord1').handle((word) => {
+            this.fcdc2DiscreteWord1 = word;
             this.setAlphaProtBarPath();
         });
     }
@@ -720,6 +763,70 @@ class VMaxBar extends DisplayComponent<{ bus: EventBus }> {
                 class="BarRed"
                 // eslint-disable-next-line max-len
                 d="m22.053-2.2648v-2.6206m-3.022-2.419v2.419h3.022v-2.419zm3.022 10.079v-2.6206m0 7.6603v-2.6206m0 7.6603v-2.6206m0 7.6603v-2.6206m0-12.498h-3.022v2.4191h3.022zm0 12.498v-2.4191h-3.022v2.4191zm0-7.4588v2.4191h-3.022v-2.4191zm-3.022-10.079v2.419h3.022v-2.419zm3.022 25.198v-2.6206m0 7.6603v-2.6206m0 7.6603v-2.6206m0 7.6603v-2.6206m0-12.498h-3.022v2.4191h3.022zm0 12.498v-2.4191h-3.022v2.4191zm0-7.4588v2.4191h-3.022v-2.4191zm-3.022-10.079v2.419h3.022v-2.419zm3.022 25.198v-2.6206m0 7.6603v-2.6206m0 7.6603v-2.6206m0 7.6603v-2.6206m0-12.498h-3.022v2.4191h3.022zm0 12.498v-2.4191h-3.022v2.4191zm0-7.4588v2.4191h-3.022v-2.4191zm-3.022-10.079v2.419h3.022v-2.419zm3.022 25.198v-2.6206m0 7.6603v-2.6206m0 7.6603v-2.6206m0 7.6603v-2.6206m-3.022 5.0397h3.022v-2.4191h-3.022zm3.022-17.538h-3.022v2.4191h3.022zm0 12.498v-2.4191h-3.022v2.4191zm0-7.4588v2.4191h-3.022v-2.4191zm-3.022-10.079v2.419h3.022v-2.419z"
+            />
+        );
+    }
+}
+
+class VStallWarnBar extends DisplayComponent<{ bus: EventBus }> {
+    private VStallWarnIndicator = FSComponent.createRef<SVGPathElement>();
+
+    private airSpeed = new Arinc429Word(0);
+
+    private vStallWarn = new Arinc429Word(0);
+
+    private fcdc1DiscreteWord1 = new Arinc429Word(0);
+
+    private fcdc2DiscreteWord1 = new Arinc429Word(0);
+
+    private setVStallWarnBarPath() {
+        const normalLawActive = this.fcdc1DiscreteWord1.getBitValueOr(11, false) || this.fcdc2DiscreteWord1.getBitValueOr(11, false);
+        if (this.airSpeed.value - this.vStallWarn.value > DisplayRange || this.vStallWarn.isFailureWarning() || this.vStallWarn.isNoComputedData() || normalLawActive) {
+            this.VStallWarnIndicator.instance.style.visibility = 'hidden';
+        } else {
+            this.VStallWarnIndicator.instance.style.visibility = 'visible';
+
+            const delta = Math.max(this.airSpeed.value - this.vStallWarn.value, -DisplayRange);
+            const offset = delta * DistanceSpacing / ValueSpacing;
+
+            this.VStallWarnIndicator.instance.style.transform = `translate3d(0px, ${offset}px, 0px)`;
+        }
+    }
+
+    onAfterRender(node: VNode): void {
+        super.onAfterRender(node);
+
+        const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values>();
+
+        sub.on('speedAr').withArinc429Precision(2).handle((s) => {
+            this.airSpeed = s;
+            this.setVStallWarnBarPath();
+        });
+
+        sub.on('vStallWarn').withArinc429Precision(2).handle((v) => {
+            this.vStallWarn = v;
+            this.setVStallWarnBarPath();
+        });
+
+        sub.on('fcdc1DiscreteWord1').handle((word) => {
+            this.fcdc1DiscreteWord1 = word;
+            this.setVStallWarnBarPath();
+        });
+
+        sub.on('fcdc2DiscreteWord1').handle((word) => {
+            this.fcdc2DiscreteWord1 = word;
+            this.setVStallWarnBarPath();
+        });
+    }
+
+    render(): VNode {
+        return (
+            <path
+                id="StallWarnBarberpole"
+                ref={this.VStallWarnIndicator}
+                class="BarRed"
+                // eslint-disable-next-line max-len
+                d="m22.053 85.835v-2.6206m-3.022-2.419v2.419h3.022v-2.419zm3.022 10.079v-2.6206m0 7.6603v-2.6206m0 7.6603v-2.6206m0 7.6603v-2.6206m0-12.498h-3.022v2.4191h3.022zm0 12.498v-2.419h-3.022v2.419zm0-7.4588v2.4191h-3.022v-2.4191zm-3.022-10.079v2.419h3.022v-2.419zm3.022 25.198v-2.6206m0 7.6603v-2.6206m0 7.6603v-2.6206m0 7.6603v-2.6206m0-12.498h-3.022v2.419h3.022zm0 12.498v-2.4191h-3.022v2.4191zm0-7.4588v2.4191h-3.022v-2.4191zm-3.022-10.079v2.419h3.022v-2.419zm3.022 25.198v-2.6206m0 7.6603v-2.6206m0 7.6603v-2.6206m0 7.6603v-2.6206m0-12.498h-3.022v2.4191h3.022zm0 12.498v-2.4191h-3.022v2.4191zm0-7.4588v2.4191h-3.022v-2.4191zm-3.022-10.079v2.419h3.022v-2.419zm3.022 25.198v-2.6206m0 7.6603v-2.6206m0 7.6603v-2.6206m0 7.6603v-2.6206m-3.022 5.0397h3.022v-2.4191h-3.022zm3.022-17.538h-3.022v2.419h3.022zm0 12.498v-2.419h-3.022v2.419zm0-7.4588v2.4191h-3.022v-2.4191zm-3.022-10.079v2.419h3.022v-2.419z"
             />
         );
     }
