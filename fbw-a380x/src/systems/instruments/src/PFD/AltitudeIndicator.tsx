@@ -596,7 +596,7 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
 
                     <g ref={this.qfeGroup} id="QFEGroup">
                         <path ref={this.qfeBorder} class="NormalStroke White" d="m 116.83686,133.0668 h 13.93811 v 5.8933 h -13.93811 z" />
-                        <text id="AltimeterModeText" class="FontMedium White" x="118.23066" y="138.11342">{this.mode}</text>
+                        <text id="AltimeterModeText" class="FontMedium White" x="118.23066" y="138.11342">{this.mode.map((me) => BaroPressureMode[me])}</text>
                         <text id="AltimeterSettingText" class="FontMedium MiddleAlign Cyan" x="141.25583" y="138.09006">{this.text}</text>
                     </g>
                 </g>
