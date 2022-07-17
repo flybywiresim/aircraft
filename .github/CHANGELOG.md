@@ -33,6 +33,7 @@
 1. [SD] Improve F/CTL and WHEEL SD pages visuals - @lukecologne (luke)
 1. [MCDU] Added formatter to improve text alignment and ease integration - @derl30n (Leon)
 1. [EFB] Fix default unit to match UI and other consumers - @tracernz (Mike)
+1. [HYD] More prox sensors and gear actuator failures - @Crocket63 (crocket)
 1. [MCDU] Added 4:3 aspect ratio compatibility to remote mcdu client - @tyler58546 (tyler58546)
 1. [HYD] Fixed too slow leak measurement valves operation - @Crocket63 (crocket)
 1. [ISIS] Added temporary ISIS font with arrows - @aweissoertel (Alexibexi#7550)
