@@ -1,7 +1,6 @@
 import React from 'react';
 import { render } from '@instruments/common/index';
 import { useSimVar } from '@instruments/common/simVars';
-import { setIsEcamPage } from '@instruments/common/defaults';
 import { useArinc429Var } from '@instruments/common/arinc429';
 import { Arinc429Word } from '@shared/arinc429';
 import { HydraulicsProvider, useHydraulics } from '../../Common/HydraulicsProvider';
@@ -11,8 +10,6 @@ import { SvgGroup } from '../../Common/SvgGroup';
 import { Spoilers } from '../../Common/Spoilers';
 
 import '../../Common/CommonStyles.scss';
-
-setIsEcamPage('wheel_page');
 
 const maxStaleness = 300;
 

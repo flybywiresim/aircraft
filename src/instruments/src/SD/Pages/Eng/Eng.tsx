@@ -10,7 +10,7 @@ import { SvgGroup } from '../../Common/SvgGroup';
 
 import './Eng.scss';
 
-setIsEcamPage('eng_page');
+/* setIsEcamPage('eng_page'); */
 
 export const EngPage: FC = () => {
     const [weightUnit] = usePersistentProperty('CONFIG_USING_METRIC_UNIT', '1');

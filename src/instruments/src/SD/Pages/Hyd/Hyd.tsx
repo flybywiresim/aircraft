@@ -7,7 +7,7 @@ import { Triangle } from '../../Common/Shapes';
 
 import '../../Common/CommonStyles.scss';
 
-setIsEcamPage('hyd_page');
+/* setIsEcamPage('hyd_page'); */
 
 const litersPerGallon = 3.79;
 

@@ -1,15 +1,13 @@
 import classNames from 'classnames';
 import React from 'react';
+import './Elec.scss';
 import { render } from '@instruments/common/index';
 import { PageTitle } from '../../Common/PageTitle';
-import { setIsEcamPage } from '../../../Common/defaults';
 import { useSimVar } from '../../../Common/simVars';
 import { EcamPage } from '../../Common/EcamPage';
 import { SvgGroup } from '../../Common/SvgGroup';
 
-import './Elec.scss';
-
-setIsEcamPage('elec_page');
+// setIsEcamPage('elec_page');
 
 const maxStaleness = 300;
 
