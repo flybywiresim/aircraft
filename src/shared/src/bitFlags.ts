@@ -5,7 +5,7 @@ export class BitFlags {
 
     static u32View = new Uint32Array(BitFlags.f64View.buffer);
 
-    constructor(float) {
+    constructor(float: number) {
         this.setFlags(float);
     }
 
