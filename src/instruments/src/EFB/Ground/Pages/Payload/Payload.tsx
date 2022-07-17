@@ -231,7 +231,7 @@ export const Payload = () => {
 
         let remainingWeight = loadableCargoWeight;
 
-        async function fillCargo(station, percent, loadableCargoWeight) {
+        async function fillCargo(station: number, percent: number, loadableCargoWeight: number) {
             const c = Math.round(percent * loadableCargoWeight);
             remainingWeight -= c;
             setCargoDesired[station](c);
