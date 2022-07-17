@@ -135,23 +135,22 @@
       "Unavailable": "Nepasiekiama"
     },
     "Payload": {
-      "BoardingTime": "Laipinimo trukmė",
-      "Cargo": "Krovinys",
-      "Current": "Esamas",
-      "Passengers": "Keleiviai",
-      "Planned": "Suplanuotas",
+      "BoardingTime": "Boarding Time",
+      "Cargo": "Cargo",
+      "Current": "Current",
+      "Passengers": "Passengers",
+      "Planned": "Planned",
       "TT": {
-        "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Norint pakeisti laipinimo trukmę, orlaivis turi būti ant žemės, užgesintais varikliais",
-        "FillPayloadFromSimbrief": "Užpildyti informaciją apie krovinį iš Simbrief",
-        "MaxCargo": "Maksimalus krovinys",
-        "MaxPassengers": "Maksimalus keleivių skaičius",
-        "MaxZFW": "Maksimalus ZFW",
-        "MaxZFWCG": "Maximalus ZFWCG",
-        "PerPaxBagWeight": "Keleivio bagažo svoris",
-        "PerPaxWeight": "Keleivio svoris",
-        "StartBoarding": "Pradėti laipinimą"
+        "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Aircraft Must Be On the Ground and Have Engines Shutdown to Change Boarding Duration",
+        "FillPayloadFromSimbrief": "Fill Payload Information from Simbrief",
+        "MaxCargo": "Max Cargo",
+        "MaxPassengers": "Maximum Passengers",
+        "MaxZFW": "Maximum ZFW",
+        "MaxZFWCG": "Maximum ZFWCG",
+        "PerPaxBagWeight": "Per Passenger Bag Weight",
+        "PerPaxWeight": "Per Passenger Weight",
+        "StartBoarding": "Begin Boarding"
       },
-      "Title": "Krovinys",
       "ZFW": "ZFW",
       "ZFWCG": "ZFWCG"
     },
