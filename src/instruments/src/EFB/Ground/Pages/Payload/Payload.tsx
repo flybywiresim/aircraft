@@ -209,7 +209,7 @@ export const Payload = () => {
 
         let paxRemaining = numOfPax;
 
-        const fillStation = (stationIndex, percent, paxToFill) => {
+        const fillStation = (stationIndex: number, percent: number, paxToFill: number) => {
             const pax = Math.min(Math.trunc(percent * paxToFill), stationSize[stationIndex]);
             setPaxDesired[stationIndex](pax);
             paxRemaining -= pax;

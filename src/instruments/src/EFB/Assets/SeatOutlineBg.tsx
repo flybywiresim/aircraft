@@ -1,7 +1,12 @@
 /* eslint-disable max-len */
-import * as React from 'react';
+import React from 'react';
 
-export const SeatOutlineBg = ({ stroke, highlight }: {stroke: string, highlight: string}) => (
+interface SeatOutlineBgProps {
+    stroke: string;
+    highlight: string;
+}
+
+export const SeatOutlineBg = ({ stroke, highlight }: SeatOutlineBgProps) => (
     <svg id="Plane" xmlns="http://www.w3.org/2000/svg" x={0} y={0} viewBox="0 0 657 150" xmlSpace="preserve" fill="none">
         <g id="GALLEY___LAVATORY___WALLS">
             <path id="Cockpit_Door" className="st0" stroke="#D2D3D4" strokeWidth={0.5} strokeMiterlimit={10} d="M86.7 82.1V67.9" />
