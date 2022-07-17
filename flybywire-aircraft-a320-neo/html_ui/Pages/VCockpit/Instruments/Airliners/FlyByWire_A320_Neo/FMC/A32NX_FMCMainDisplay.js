@@ -2272,9 +2272,6 @@ class FMCMainDisplay extends BaseAirliners {
     async updateIls() {
         await this.updateIlsCourse();
 
-        let airport;
-        let runway;
-
         if (this.flightPhaseManager.phase > FmgcFlightPhases.TAKEOFF) {
             if (this.ilsApproachAutoTuned || this.flightPlanManager.getCurrentFlightPlanIndex() !== 0) {
                 return;
@@ -2286,8 +2283,7 @@ class FMCMainDisplay extends BaseAirliners {
                 if (appr.approachType !== ApproachType.APPROACH_TYPE_ILS && appr.approachType !== ApproachType.APPROACH_TYPE_LOCALIZER) {
                     return;
                 }
-                airport = this.flightPlanManager.getDestination();
-                runway = this.flightPlanManager.getDestinationRunway();
+                const runway = this.flightPlanManager.getDestinationRunway();
 
                 const planeLla = new LatLongAlt(
                     SimVar.GetSimVarValue("PLANE LATITUDE", "degree latitude"),
@@ -2299,32 +2295,34 @@ class FMCMainDisplay extends BaseAirliners {
                         return;
                     }
                 }
+
+                await this.tuneIlsFromApproach(appr);
             }
         } else {
             if (this.ilsTakeoffAutoTuned || this.flightPlanManager.getCurrentFlightPlanIndex() !== 0) {
                 return;
             }
             this.ilsAutoTuned = false;
-            airport = this.flightPlanManager.getOrigin();
-            runway = this.flightPlanManager.getOriginRunway();
-        }
+            const airport = this.flightPlanManager.getOrigin();
+            const runway = this.flightPlanManager.getOriginRunway();
 
-        // If the airport has correct navdata, the ILS will be listed as the reference navaid (originIcao in MSFS land) on at least the last leg of the
-        // ILS approach procedure(s). Tuning this way gives us the ident, and the course
-        if (airport && airport.infos && airport.infos.icao.charAt(0) === 'A' && runway) {
-            for (let i = 0; i < airport.infos.approaches.length && !this.ilsAutoTuned; i++) {
-                const appr = airport.infos.approaches[i];
-                // L(eft), C(entre), R(ight), T(true North) are the possible runway designators (ARINC424)
-                // If there are multiple procedures for the same type of approach, an alphanumeric suffix is added to their names (last subpattern)
-                // We are a little more lenient than ARINC424 in an effort to match non-perfect navdata, so we allow dashes, spaces, or nothing before the suffix
-                if (appr && appr.finalLegs) {
-                    if (
-                        (appr.approachType === ApproachType.APPROACH_TYPE_ILS || appr.approachType === ApproachType.APPROACH_TYPE_LOCALIZER)
-                        && appr.runwayNumber === runway.number
-                        && appr.runwayDesignator === runway.designator
-                        && appr.finalLegs.length > 0
-                    ) {
-                        await this.tuneIlsFromApproach(appr);
+            // If the airport has correct navdata, the ILS will be listed as the reference navaid (originIcao in MSFS land) on at least the last leg of the
+            // ILS approach procedure(s). Tuning this way gives us the ident, and the course
+            if (airport && airport.infos && airport.infos.icao.charAt(0) === 'A' && runway) {
+                for (let i = 0; i < airport.infos.approaches.length && !this.ilsAutoTuned; i++) {
+                    const appr = airport.infos.approaches[i];
+                    // L(eft), C(entre), R(ight), T(true North) are the possible runway designators (ARINC424)
+                    // If there are multiple procedures for the same type of approach, an alphanumeric suffix is added to their names (last subpattern)
+                    // We are a little more lenient than ARINC424 in an effort to match non-perfect navdata, so we allow dashes, spaces, or nothing before the suffix
+                    if (appr && appr.finalLegs) {
+                        if (
+                            (appr.approachType === ApproachType.APPROACH_TYPE_ILS)
+                            && appr.runwayNumber === runway.number
+                            && appr.runwayDesignator === runway.designator
+                            && appr.finalLegs.length > 0
+                        ) {
+                            await this.tuneIlsFromApproach(appr);
+                        }
                     }
                 }
             }

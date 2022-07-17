@@ -85,6 +85,7 @@
       "YouHaveNotYetImportedAnySimBriefData": "您尚未从 SimBrief 导入任何数据"
     },
     "Overview": {
+      "ActualGW": "Actual GW",
       "Engines": "引擎",
       "MMO": "最大使用马赫数",
       "MRW": "最大机坪重量",
