@@ -17,7 +17,7 @@ const NoSimBriefDataOverlay = () => {
     const [simbriefDataPending, setSimbriefDataPending] = useState(false);
     const [simbriefUserId] = usePersistentProperty('CONFIG_SIMBRIEF_USERID');
 
-    const fetchData = async () => {
+    const handleFetchData = async () => {
         setSimbriefDataPending(true);
 
         try {
@@ -44,7 +44,7 @@ const NoSimBriefDataOverlay = () => {
                                 <h1 className="max-w-4xl text-center">{t('Dispatch.Ofp.YouHaveNotYetImportedAnySimBriefData')}</h1>
                                 <button
                                     type="button"
-                                    onClick={fetchData}
+                                    onClick={handleFetchData}
                                     className="flex justify-center items-center p-2 space-x-4 w-full text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100"
                                 >
                                     <CloudArrowDown size={26} />

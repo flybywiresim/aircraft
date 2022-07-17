@@ -53,6 +53,7 @@ export const ArcMode: React.FC<ArcModeProps> = ({ symbols, adirsAlign, rangeSett
 
     useEffect(() => {
         mapParams.compute(ppos, rangeSetting, 492, trueHeading);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [ppos.lat, ppos.long, trueHeading, rangeSetting].map((n) => MathUtils.fastToFixed(n, 6)));
 
     if (adirsAlign) {

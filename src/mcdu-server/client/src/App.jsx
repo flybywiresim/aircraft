@@ -5,7 +5,7 @@ import { McduScreen } from './McduScreen';
 import { McduButtons } from './McduButtons';
 import { WebsocketContext } from './WebsocketContext';
 
-function App() {
+const App = () => {
     const [fullscreen, setFullscreen] = useState(window.location.href.endsWith('fullscreen') || window.location.href.endsWith('43'));
     const [aspect43] = useState(window.location.href.endsWith('43'));
     const [dark, setDark] = useState(false);
@@ -59,7 +59,7 @@ function App() {
                 setContent(JSON.parse(lastMessage.data.substring(lastMessage.data.indexOf(':') + 1)).left);
             }
         }
-    }, [lastMessage]);
+    }, [lastMessage, sendMessage]);
 
     let backgroundImageUrl = 'mcdu-a32nx.png';
     if (dark) {
@@ -101,6 +101,6 @@ function App() {
             )}
         </>
     );
-}
+};
 
 export default App;

@@ -8,6 +8,10 @@
     "moduleResolution": "node",
     "skipLibCheck": true,
     "strictNullChecks": true,
+    "lib": [
+      "esnext.full",
+      "dom"
+    ]
   },
   "include": [
     "src/**/*",

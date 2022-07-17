@@ -20,7 +20,7 @@ export const OutputButtons: React.FC<OutputButtonsProps> = ({ message, sendMessa
         showAnswers = true;
     }
 
-    const clicked = (index: string) : void => {
+    const handleClicked = (index: string) : void => {
         if (message.UniqueMessageID === -1) {
             return;
         }
@@ -45,14 +45,14 @@ export const OutputButtons: React.FC<OutputButtonsProps> = ({ message, sendMessa
                         index="L1"
                         content="CANCEL"
                         active={!buttonsBlocked}
-                        onClick={clicked}
+                        onClick={handleClicked}
                     />
                     <Button
                         messageId={message.UniqueMessageID}
                         index="R2"
                         content="SEND"
                         active={!buttonsBlocked}
-                        onClick={clicked}
+                        onClick={handleClicked}
                     />
                 </>
             )}
@@ -62,7 +62,7 @@ export const OutputButtons: React.FC<OutputButtonsProps> = ({ message, sendMessa
                     index="R2"
                     content="CLOSE"
                     active={!buttonsBlocked}
-                    onClick={clicked}
+                    onClick={handleClicked}
                 />
             )}
         </>

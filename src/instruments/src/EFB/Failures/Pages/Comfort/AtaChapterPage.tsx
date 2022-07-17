@@ -30,7 +30,9 @@ export const AtaChapterPage = ({ chapter, failures }: AtaChapterPageProps) => {
     const getHighlightedTerm = (failureName: string) => {
         const searchQueryIdx = failureName.toUpperCase().indexOf(searchQuery);
 
-        if (searchQuery === '' || searchQueryIdx === -1) return undefined;
+        if (searchQuery === '' || searchQueryIdx === -1) {
+            return undefined;
+        }
 
         return failureName.substring(searchQueryIdx, searchQueryIdx + searchQuery.length);
     };

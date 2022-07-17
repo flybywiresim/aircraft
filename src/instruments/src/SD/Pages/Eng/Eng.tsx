@@ -1,4 +1,4 @@
-import React, { FC, useState, useEffect } from 'react';
+import React, { FC, useState, useEffect, useRef } from 'react';
 import { render } from '@instruments/common/index';
 import { setIsEcamPage } from '@instruments/common/defaults';
 import { Arc, Needle } from '@instruments/common/gauges';
@@ -90,7 +90,7 @@ const PressureGauge = ({ x, y, engineNumber }: ComponentPositionProps) => {
             setPressureAboveHigh(true);
         }
 
-        if (pressureAboveHigh && displayedEngineOilPressure < OIL_PSI_HIGH_LIMIT - 4) {
+        if (displayedEngineOilPressure < OIL_PSI_HIGH_LIMIT - 4) {
             setPressureAboveHigh(false);
         }
 
@@ -98,23 +98,21 @@ const PressureGauge = ({ x, y, engineNumber }: ComponentPositionProps) => {
             setPressureBelowLow(true);
         }
 
-        if (pressureBelowLow && displayedEngineOilPressure > OIL_PSI_LOW_LIMIT + 2) {
+        if (displayedEngineOilPressure > OIL_PSI_LOW_LIMIT + 2) {
             setPressureBelowLow(true);
-        }
-
-        if (pressureAboveHigh || pressureBelowLow) {
-            setShouldPressurePulse(true);
-        } else {
-            setShouldPressurePulse(false);
         }
 
         if (displayedEngineOilPressure <= OIL_PSI_VLOW_LIMIT) {
             setPsiNeedleRed(true);
         }
-        if (psiNeedleRed && displayedEngineOilPressure >= OIL_PSI_VLOW_LIMIT + 0.5) {
+        if (displayedEngineOilPressure >= OIL_PSI_VLOW_LIMIT + 0.5) {
             setPsiNeedleRed(false);
         }
-    }, [engineOilPressure]);
+    }, [displayedEngineOilPressure, engineOilPressure, n2Percent, psiNeedleRed]);
+
+    useEffect(() => {
+        setShouldPressurePulse(pressureAboveHigh || pressureBelowLow);
+    }, [pressureAboveHigh, pressureBelowLow]);
 
     let needleClassName = 'GreenLine';
     let textClassName = 'FillGreen';
@@ -157,21 +155,21 @@ const QuantityGauge = ({ x, y, engineNumber }: ComponentPositionProps) => {
     const OIL_QTY_MAX = 24.25;
     const OIL_QTY_LOW_ADVISORY = 1.35;
     const displayedEngineOilQuantity = engineOilQuantity === 100 ? OIL_QTY_MAX : Math.round((engineOilQuantity / 100) * OIL_QTY_MAX / 0.5) * 0.5; // Engine oil quantity has a step of 0.2
-    const [quantityAtOrBelowLow, setQuantityAtOrBelowLow] = useState(false);
+    const quantityAtOrBelowLow = useRef(false);
     const [shouldQuantityPulse, setShouldQuantityPulse] = useState(false);
 
     // Sets engine oil quantity's pulsation based on advisory value constant, this should be changed in the future as its calculated on the fly in NEOs
     useEffect(() => {
         if (displayedEngineOilQuantity <= OIL_QTY_LOW_ADVISORY) {
-            setQuantityAtOrBelowLow(true);
+            quantityAtOrBelowLow.current = true;
+        } else if (displayedEngineOilQuantity >= OIL_QTY_LOW_ADVISORY + 2) {
+            quantityAtOrBelowLow.current = false;
         }
 
-        if (quantityAtOrBelowLow && displayedEngineOilQuantity >= OIL_QTY_LOW_ADVISORY + 2) {
-            setQuantityAtOrBelowLow(false);
+        if (quantityAtOrBelowLow) {
+            setShouldQuantityPulse(true);
         }
-
-        if (quantityAtOrBelowLow) setShouldQuantityPulse(true);
-    }, [engineOilQuantity]);
+    }, [displayedEngineOilQuantity, engineOilQuantity]);
 
     return (
         <SvgGroup x={0} y={0}>
@@ -240,9 +238,7 @@ const ValveGroup = ({ x, y, engineNumber }: ComponentPositionProps) => {
         } else {
             setTimeout(() => setIsValveOpen(false), 1200);
         }
-
-        return () => clearTimeout();
-    }, [isEngineStarting, engSelectorPosition]);
+    }, [isEngineStarting, engSelectorPosition, n2Percent]);
 
     useEffect(() => {
         if (n2Percent >= 50) {
@@ -280,6 +276,7 @@ const EngineColumn = ({ x, y, engineNumber }: ComponentPositionProps) => {
     const [tempAmber, setTempAmber] = useState(false);
     const [shouldTemperaturePulse, setShouldTemperaturePulse] = useState(false);
     const [tempBeenAboveAdvisory, setTempBeenAboveAdvisory] = useState(false);
+    const tempAboveAdvisoryIndicationTimer = useRef<window.Timer | undefined>();
 
     const [n1Vibration] = useSimVar(`TURB ENG VIBRATION:${engineNumber}`, 'Number');
 
@@ -292,25 +289,22 @@ const EngineColumn = ({ x, y, engineNumber }: ComponentPositionProps) => {
             setShouldTemperaturePulse(false);
         }
 
-        if (displayedEngineOilTemperature >= OIL_TEMP_VHIGH_LIMIT || engineOilTemperature < OIL_TEMP_LOW_TAKEOFF) {
-            setTempAmber(true);
-        } else {
-            setTempAmber(false);
-        }
+        setTempAmber(displayedEngineOilTemperature >= OIL_TEMP_VHIGH_LIMIT || engineOilTemperature < OIL_TEMP_LOW_TAKEOFF);
 
         if (engineOilTemperature > OIL_TEMP_HIGH_ADVISORY) {
-            setTimeout(() => {
+            tempAboveAdvisoryIndicationTimer.current = setTimeout(() => {
                 if (engineOilTemperature > OIL_TEMP_HIGH_ADVISORY) {
                     setTempBeenAboveAdvisory(true);
                 }
             }, 900_000);
         } else {
-            clearTimeout();
+            if (tempAboveAdvisoryIndicationTimer.current !== undefined) {
+                clearTimeout(tempAboveAdvisoryIndicationTimer.current);
+            }
+
             setTempBeenAboveAdvisory(false);
         }
-
-        return () => clearTimeout();
-    }, [engineOilTemperature]);
+    }, [displayedEngineOilTemperature, engineOilTemperature, tempBeenAboveAdvisory]);
 
     useEffect(() => {
         if (tempBeenAboveAdvisory) {

@@ -94,7 +94,7 @@ const GroundServiceButton: React.FC<GroundServiceButtonProps> = ({ children, nam
     return (
         <div
             className={`flex flex-row items-center space-x-6 py-6 px-6 cursor-pointer ${buttonsStyles[state]} ${className}`}
-            onClick={state === ServiceButtonState.DISABLED ? undefined : onClick}
+            onClick={() => (state !== ServiceButtonState.DISABLED && onClick())}
         >
             {children}
             <h1 className="flex-shrink-0 text-2xl font-medium text-current">{name}</h1>
@@ -247,67 +247,67 @@ export const ServicesPage = () => {
         setter: ActionCreatorWithOptionalPayload<ServiceButtonState, string>,
     ) => {
         switch (buttonState) {
-        case ServiceButtonState.INACTIVE:
-            dispatch(setter(ServiceButtonState.CALLED));
-            break;
-        case ServiceButtonState.CALLED:
-        case ServiceButtonState.ACTIVE:
-            dispatch(setter(ServiceButtonState.RELEASED));
-            break;
-        case ServiceButtonState.RELEASED:
-            dispatch(setter(ServiceButtonState.CALLED));
-            break;
-        default:
-            break;
+            case ServiceButtonState.INACTIVE:
+                dispatch(setter(ServiceButtonState.CALLED));
+                break;
+            case ServiceButtonState.CALLED:
+            case ServiceButtonState.ACTIVE:
+                dispatch(setter(ServiceButtonState.RELEASED));
+                break;
+            case ServiceButtonState.RELEASED:
+                dispatch(setter(ServiceButtonState.CALLED));
+                break;
+            default:
+                break;
         }
     };
 
     // Centralized handler for managing clicks to any button
     const handleButtonClick = (id: ServiceButton) => {
         switch (id) {
-        case ServiceButton.CabinDoor:
-            handleDoors(cabinDoorButtonState, setCabinDoorButtonState);
-            toggleCabinDoor();
-            break;
-        case ServiceButton.CargoDoor:
-            handleDoors(cargoDoorButtonState, setCargoDoorButtonState);
-            toggleCargoDoor();
-            break;
-        case ServiceButton.AftDoor:
-            handleDoors(aftDoorButtonState, setAftDoorButtonState);
-            toggleAftDoor();
-            break;
-        case ServiceButton.FuelTruck:
-            handleSimpleService(ServiceButton.FuelTruck, fuelTruckButtonState, setFuelTruckButtonState);
-            toggleFuelTruck();
-            break;
-        case ServiceButton.Gpu:
-            handleSimpleService(ServiceButton.Gpu, gpuButtonState, setGpuButtonState);
-            toggleGpu();
-            break;
-        case ServiceButton.JetBridge:
-            handleComplexService(ServiceButton.JetBridge,
-                jetWayButtonStateRef, setJetWayButtonState,
-                cabinDoorButtonState, setCabinDoorButtonState,
-                cabinDoorOpen);
-            toggleJetBridgeAndStairs();
-            break;
-        case ServiceButton.BaggageTruck:
-            handleComplexService(ServiceButton.BaggageTruck,
-                baggageButtonStateRef, setBaggageButtonState,
-                cargoDoorButtonState, setCargoDoorButtonState,
-                cargoDoorOpen);
-            toggleBaggageTruck();
-            break;
-        case ServiceButton.CateringTruck:
-            handleComplexService(ServiceButton.CateringTruck,
-                cateringButtonStateRef, setCateringButtonState,
-                aftDoorButtonState, setAftDoorButtonState,
-                aftDoorOpen);
-            toggleCateringTruck();
-            break;
-        default:
-            break;
+            case ServiceButton.CabinDoor:
+                handleDoors(cabinDoorButtonState, setCabinDoorButtonState);
+                toggleCabinDoor();
+                break;
+            case ServiceButton.CargoDoor:
+                handleDoors(cargoDoorButtonState, setCargoDoorButtonState);
+                toggleCargoDoor();
+                break;
+            case ServiceButton.AftDoor:
+                handleDoors(aftDoorButtonState, setAftDoorButtonState);
+                toggleAftDoor();
+                break;
+            case ServiceButton.FuelTruck:
+                handleSimpleService(ServiceButton.FuelTruck, fuelTruckButtonState, setFuelTruckButtonState);
+                toggleFuelTruck();
+                break;
+            case ServiceButton.Gpu:
+                handleSimpleService(ServiceButton.Gpu, gpuButtonState, setGpuButtonState);
+                toggleGpu();
+                break;
+            case ServiceButton.JetBridge:
+                handleComplexService(ServiceButton.JetBridge,
+                    jetWayButtonStateRef, setJetWayButtonState,
+                    cabinDoorButtonState, setCabinDoorButtonState,
+                    cabinDoorOpen);
+                toggleJetBridgeAndStairs();
+                break;
+            case ServiceButton.BaggageTruck:
+                handleComplexService(ServiceButton.BaggageTruck,
+                    baggageButtonStateRef, setBaggageButtonState,
+                    cargoDoorButtonState, setCargoDoorButtonState,
+                    cargoDoorOpen);
+                toggleBaggageTruck();
+                break;
+            case ServiceButton.CateringTruck:
+                handleComplexService(ServiceButton.CateringTruck,
+                    cateringButtonStateRef, setCateringButtonState,
+                    aftDoorButtonState, setAftDoorButtonState,
+                    aftDoorOpen);
+                toggleCateringTruck();
+                break;
+            default:
+                break;
         }
     };
 
@@ -325,19 +325,19 @@ export const ServicesPage = () => {
             return;
         }
         switch (doorState) {
-        case 0: // closed
-            if (state !== ServiceButtonState.CALLED) {
-                dispatch(setter(ServiceButtonState.INACTIVE));
-            }
-            break;
-        case 1: // open
-            dispatch(setter(ServiceButtonState.ACTIVE));
-            break;
-        default: // in between
-            if (state === ServiceButtonState.ACTIVE) {
-                dispatch(setter(ServiceButtonState.RELEASED));
-            }
-            break;
+            case 0: // closed
+                if (state !== ServiceButtonState.CALLED) {
+                    dispatch(setter(ServiceButtonState.INACTIVE));
+                }
+                break;
+            case 1: // open
+                dispatch(setter(ServiceButtonState.ACTIVE));
+                break;
+            default: // in between
+                if (state === ServiceButtonState.ACTIVE) {
+                    dispatch(setter(ServiceButtonState.RELEASED));
+                }
+                break;
         }
     };
 
@@ -350,22 +350,32 @@ export const ServicesPage = () => {
         doorState: number,
     ) => {
         switch (serviceButtonStateRef.current) {
-        case ServiceButtonState.HIDDEN:
-        case ServiceButtonState.DISABLED:
-        case ServiceButtonState.INACTIVE:
-            break;
-        case ServiceButtonState.CALLED:
-            if (doorState === 1) dispatch(setterServiceButtonState(ServiceButtonState.ACTIVE));
-            if (doorState === 0) dispatch(setterServiceButtonState(ServiceButtonState.INACTIVE));
-            break;
-        case ServiceButtonState.ACTIVE:
-            if (doorState < 1 && doorState > 0) dispatch(setterServiceButtonState(ServiceButtonState.RELEASED));
-            if (doorState === 0) dispatch(setterServiceButtonState(ServiceButtonState.INACTIVE));
-            break;
-        case ServiceButtonState.RELEASED:
-            if (doorState === 0) dispatch(setterServiceButtonState(ServiceButtonState.INACTIVE));
-            break;
-        default:
+            case ServiceButtonState.HIDDEN:
+            case ServiceButtonState.DISABLED:
+            case ServiceButtonState.INACTIVE:
+                break;
+            case ServiceButtonState.CALLED:
+                if (doorState === 1) {
+                    dispatch(setterServiceButtonState(ServiceButtonState.ACTIVE));
+                }
+                if (doorState === 0) {
+                    dispatch(setterServiceButtonState(ServiceButtonState.INACTIVE));
+                }
+                break;
+            case ServiceButtonState.ACTIVE:
+                if (doorState < 1 && doorState > 0) {
+                    dispatch(setterServiceButtonState(ServiceButtonState.RELEASED));
+                }
+                if (doorState === 0) {
+                    dispatch(setterServiceButtonState(ServiceButtonState.INACTIVE));
+                }
+                break;
+            case ServiceButtonState.RELEASED:
+                if (doorState === 0) {
+                    dispatch(setterServiceButtonState(ServiceButtonState.INACTIVE));
+                }
+                break;
+            default:
         }
         // enable door button in case door has been closed by other means (e.g. pushback)
         if (doorState < 1

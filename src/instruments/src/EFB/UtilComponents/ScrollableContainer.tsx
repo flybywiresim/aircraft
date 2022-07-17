@@ -37,7 +37,7 @@ export const ScrollableContainer: FC<ScrollableContainerProps> = ({
                 setContentOverflows(false);
             }
         }
-    }, [children]);
+    }, [children, height]);
 
     const handleMouseDown = (event: React.MouseEvent) => {
         position.current.top = containerRef.current ? containerRef.current.scrollTop : 0;
@@ -63,7 +63,7 @@ export const ScrollableContainer: FC<ScrollableContainerProps> = ({
         if (containerRef.current && containerRef.current.scrollHeight >= initialScroll) {
             containerRef.current.scrollTop = initialScroll;
         }
-    }, []);
+    }, [initialScroll]);
 
     const timeout = useRef<NodeJS.Timeout>();
 

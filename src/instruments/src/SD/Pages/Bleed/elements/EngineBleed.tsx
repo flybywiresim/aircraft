@@ -11,11 +11,11 @@ interface EngineBleedProps {
     sdacDatum: boolean,
     enginePRValveOpen: boolean,
     packFlowValveOpen: boolean,
-    onGround: boolean,
+    isOnGround: boolean,
     wingAntiIceOn: boolean,
 }
 
-const EngineBleed: FC<EngineBleedProps> = ({ x, y, engine, sdacDatum, enginePRValveOpen, packFlowValveOpen, onGround, wingAntiIceOn }) => {
+const EngineBleed: FC<EngineBleedProps> = ({ x, y, engine, sdacDatum, enginePRValveOpen, packFlowValveOpen, isOnGround, wingAntiIceOn }) => {
     const [engineN1] = useSimVar(`L:A32NX_ENGINE_N1:${engine}`, 'percent', 100);
     const [engineN1Idle] = useSimVar('L:A32NX_ENGINE_IDLE_N1', 'percent', 500);
     const engineN1BelowIdle = (engineN1 + 2) < engineN1Idle;
@@ -43,7 +43,8 @@ const EngineBleed: FC<EngineBleedProps> = ({ x, y, engine, sdacDatum, enginePRVa
 
             {/* Anti-ice */}
             <g id={`anti-ice-engine-${engine}`} className={wingAntiIceOn ? 'Show' : 'Hide'}>
-                <Triangle x={engine === 1 ? x - 41 : x + 41} y={y + 206} colour={onGround ? 'Amber' : 'Green'} orientation={engine === 1 ? -90 : 90} fill={0} scale={0.75} />
+                {/* eslint-disable-next-line react/jsx-handler-names */}
+                <Triangle x={engine === 1 ? x - 41 : x + 41} y={y + 206} colour={isOnGround ? 'Amber' : 'Green'} orientation={engine === 1 ? -90 : 90} fill={0} scale={0.75} />
                 <text className="Medium White" x={engine === 1 ? x - 80 : x + 42} y={y + 195}>ANTI</text>
                 <text className="Medium White" x={engine === 1 ? x - 80 : x + 52} y={y + 215}>ICE</text>
             </g>

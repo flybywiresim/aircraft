@@ -21,7 +21,7 @@ export const SemanticResponseButtons: React.FC<SemanticResponseButtonsProps> = (
     const showAnswers = !message.Response || (message.Response.ComStatus !== AtsuMessageComStatus.Sending && message.Response.ComStatus !== AtsuMessageComStatus.Sent);
     const buttonsBlocked = message.Response?.ComStatus === AtsuMessageComStatus.Sending || messageUnderModification;
 
-    const clicked = (index: string) : void => {
+    const handleClicked = (index: string) : void => {
         if (message.UniqueMessageID === -1 || buttonsBlocked) {
             return;
         }
@@ -50,7 +50,7 @@ export const SemanticResponseButtons: React.FC<SemanticResponseButtonsProps> = (
                                 index="L1"
                                 content="CANNOT"
                                 active={!buttonsBlocked}
-                                onClick={clicked}
+                                onClick={handleClicked}
                             />
                         </>
                     )}
@@ -61,7 +61,7 @@ export const SemanticResponseButtons: React.FC<SemanticResponseButtonsProps> = (
                                 index="R1"
                                 content="MODIFY"
                                 active={!buttonsBlocked}
-                                onClick={clicked}
+                                onClick={handleClicked}
                             />
                         </>
                     )}
@@ -70,7 +70,7 @@ export const SemanticResponseButtons: React.FC<SemanticResponseButtonsProps> = (
                         index="R2"
                         content="SEND"
                         active={!dataIncomplete && !buttonsBlocked}
-                        onClick={clicked}
+                        onClick={handleClicked}
                     />
                 </>
             )}
@@ -80,7 +80,7 @@ export const SemanticResponseButtons: React.FC<SemanticResponseButtonsProps> = (
                     index="R2"
                     content="CLOSE"
                     active={!buttonsBlocked}
-                    onClick={clicked}
+                    onClick={handleClicked}
                 />
             )}
         </>

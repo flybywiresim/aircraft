@@ -30,26 +30,26 @@ export const getRelevantChecklistIndices = () => {
     const flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', 'Enum');
 
     switch (flightPhase) {
-    case 1:
-    case 2:
+        case 1:
+        case 2:
         // Cockpit Preparation, Before Start, After Start, Taxi, Line-Up
-        relevantChecklistIndices.push(0, 1, 2, 3, 4);
-        break;
-    case 6:
-    case 7:
+            relevantChecklistIndices.push(0, 1, 2, 3, 4);
+            break;
+        case 6:
+        case 7:
         // Approach, Landing
-        relevantChecklistIndices.push(5, 6);
-        break;
-    case 8:
+            relevantChecklistIndices.push(5, 6);
+            break;
+        case 8:
         // After Landing
-        relevantChecklistIndices.push(7);
-        break;
-    case 9:
-    case 10:
+            relevantChecklistIndices.push(7);
+            break;
+        case 9:
+        case 10:
         // After Landing, Parking, Securing Aircraft
-        relevantChecklistIndices.push(7, 8, 9);
-        break;
-    default:
+            relevantChecklistIndices.push(7, 8, 9);
+            break;
+        default:
     }
 
     return relevantChecklistIndices;
@@ -60,12 +60,16 @@ export const setAutomaticItemStates = () => {
     const relevantChecklistIndices = getRelevantChecklistIndices();
     const firstRelevantUnmarkedIdx = checklists.findIndex((cl, clIndex) => relevantChecklistIndices.includes(clIndex) && !cl.markedCompleted);
 
-    if (firstRelevantUnmarkedIdx === -1) return;
+    if (firstRelevantUnmarkedIdx === -1) {
+        return;
+    }
 
     CHECKLISTS[firstRelevantUnmarkedIdx].items.forEach((clItem, itemIdx) => {
         const associatedTrackingItem = checklists[firstRelevantUnmarkedIdx].items[itemIdx];
 
-        if (!clItem.condition || !associatedTrackingItem) return;
+        if (!clItem.condition || !associatedTrackingItem) {
+            return;
+        }
 
         store.dispatch(setChecklistItemCompletion({
             checklistIndex: firstRelevantUnmarkedIdx,
@@ -114,7 +118,9 @@ export const Checklists = () => {
     };
 
     useEffect(() => {
-        if (!autoFillChecklists) return;
+        if (!autoFillChecklists) {
+            return;
+        }
 
         setAutomaticItemStates();
     }, [selectedChecklistIndex]);

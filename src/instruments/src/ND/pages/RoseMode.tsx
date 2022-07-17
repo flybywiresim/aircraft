@@ -1,4 +1,4 @@
-import React, { FC, memo, useEffect, useState } from 'react';
+import React, { FC, memo, useEffect, useRef, useState } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import { Layer, getSmallestAngle } from '@instruments/common/utils';
 import { MathUtils } from '@shared/MathUtils';
@@ -44,16 +44,16 @@ export const RoseMode: FC<RoseModeProps> = ({ symbols, adirsAlign, rangeSetting,
         track = (0.025 * groundSpeed + 0.00005) * track + (1 - (0.025 * groundSpeed + 0.00005)) * heading;
     }
 
-    const [mapParams] = useState(() => {
+    const mapParams = useRef((() => {
         const params = new MapParameters();
         params.compute(ppos, rangeSetting / 2, 250, trueHeading);
 
         return params;
-    });
+    })());
 
     useEffect(() => {
-        mapParams.compute(ppos, rangeSetting / 2, 250, trueHeading);
-    }, [ppos.lat, ppos.long, trueHeading, rangeSetting].map((n) => MathUtils.fastToFixed(n, 6)));
+        mapParams.current.compute(ppos, rangeSetting / 2, 250, trueHeading);
+    }, [ppos, rangeSetting, trueHeading]);
 
     if (adirsAlign) {
         return (
@@ -72,8 +72,8 @@ export const RoseMode: FC<RoseModeProps> = ({ symbols, adirsAlign, rangeSetting,
                                 side={side}
                                 range={rangeSetting}
                                 symbols={symbols}
-                                mapParams={mapParams}
-                                mapParamsVersion={mapParams.version}
+                                mapParams={mapParams.current}
+                                mapParamsVersion={mapParams.current.version}
                                 debug={false}
                             />
 
@@ -567,6 +567,7 @@ const VorCaptureOverlay: React.FC<{
             setToward(false);
         }
         setCdiPx(Math.min(12, Math.max(-12, cdiDegrees)) * 74 / 5);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [courseDeviation.toFixed(2)]);
 
     return (
@@ -761,12 +762,12 @@ const SelectedHeadingBug: React.FC<{heading: number, selected: number}> = ({ hea
 
 const formatTuningMode = (tuningMode: TuningMode): string => {
     switch (tuningMode) {
-    case TuningMode.Manual:
-        return 'M';
-    case TuningMode.Remote:
-        return 'R';
-    default:
-        return '';
+        case TuningMode.Manual:
+            return 'M';
+        case TuningMode.Remote:
+            return 'R';
+        default:
+            return '';
     }
 };
 

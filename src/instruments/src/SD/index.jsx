@@ -14,16 +14,14 @@ function powerAvailable() {
     return getSimVar('L:A32NX_ELEC_AC_2_BUS_IS_POWERED', 'Bool');
 }
 
-function SelfTest() {
-    return (
-        <svg className="text-wrapper">
-            <text x="246" y="170">SELF TEST IN PROGRESS</text>
-            <text x="246" y="210">(MAX 10 SECONDS)</text>
-        </svg>
-    );
-}
+const SelfTest = () => (
+    <svg className="text-wrapper">
+        <text x="246" y="170">SELF TEST IN PROGRESS</text>
+        <text x="246" y="210">(MAX 10 SECONDS)</text>
+    </svg>
+);
 
-function Idle() {
+const Idle = () => {
     const [inop, setInop] = useState(false);
 
     useInteractionEvent('A32NX_DCDU_BTN_INOP', () => {
@@ -43,9 +41,9 @@ function Idle() {
             </svg>
         </>
     );
-}
+};
 
-function SD() {
+const SD = () => {
     const [state, setState] = useState('DEFAULT');
 
     useUpdate((_deltaTime) => {
@@ -59,27 +57,27 @@ function SD() {
     });
 
     switch (state) {
-    case 'DEFAULT':
-        if (getSimVar('L:A32NX_COLD_AND_DARK_SPAWN')) {
-            setState('OFF');
-        } else {
-            setState('IDLE');
-        }
-        return <></>;
-    case 'OFF':
-        return <></>;
-    case 'ON':
-        setTimeout(() => {
-            if (powerAvailable()) {
+        case 'DEFAULT':
+            if (getSimVar('L:A32NX_COLD_AND_DARK_SPAWN')) {
+                setState('OFF');
+            } else {
                 setState('IDLE');
             }
-        }, 8000);
-        return <SelfTest />;
-    case 'IDLE':
-        return <Idle />;
-    default:
-        throw new RangeError();
+            return <></>;
+        case 'OFF':
+            return <></>;
+        case 'ON':
+            setTimeout(() => {
+                if (powerAvailable()) {
+                    setState('IDLE');
+                }
+            }, 8000);
+            return <SelfTest />;
+        case 'IDLE':
+            return <Idle />;
+        default:
+            throw new RangeError();
     }
-}
+};
 
 ReactDOM.render(<SD />, renderTarget);

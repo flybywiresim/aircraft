@@ -1,3 +1,4 @@
+/* eslint-disable no-constant-condition */
 import { ComponentProps, DisplayComponent, EventBus, FSComponent, Subject, Subscribable, VNode } from 'msfssdk';
 import { ArmedLateralMode, ArmedVerticalMode, isArmed, LateralMode, VerticalMode } from '@shared/autopilot';
 
@@ -248,21 +249,21 @@ class A2Cell extends DisplayComponent<{ bus:EventBus }> {
 
         sub.on('autoBrakeMode').whenChanged().handle((am) => {
             switch (am) {
-            case 0:
-                this.text.set('');
-                break;
-            case 1:
-                this.text.set('BRK LO ');
-                break;
-            case 2:
-                this.text.set('BRK MED ');
-                break;
-            case 3:
+                case 0:
+                    this.text.set('');
+                    break;
+                case 1:
+                    this.text.set('BRK LO ');
+                    break;
+                case 2:
+                    this.text.set('BRK MED ');
+                    break;
+                case 3:
                 // MAX will be shown in 3rd row
-                this.text.set('');
-                break;
-            default:
-                break;
+                    this.text.set('');
+                    break;
+                default:
+                    break;
             }
         });
 
@@ -345,27 +346,27 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
         this.isShown = true;
 
         switch (this.athrMode) {
-        case 1:
-            this.displayModeChangedPath(true);
-            text = `
+            case 1:
+                this.displayModeChangedPath(true);
+                text = `
                                 <path class="NormalStroke White" d="m25.114 1.8143v13.506h-16.952v-13.506z" />
                                 <text class="FontMedium MiddleAlign White" x="16.782249" y="7.1280665">MAN</text>
                                 <text class="FontMedium MiddleAlign White" x="16.869141" y="14.351689">TOGA</text>
                             `;
-            break;
-        case 2:
-            this.displayModeChangedPath(true);
-            text = `<g>
+                break;
+            case 2:
+                this.displayModeChangedPath(true);
+                text = `<g>
                                 <path class="NormalStroke White" d="m31.521 1.8143v13.506h-30.217v-13.506z" />
                                 <text class="FontMedium MiddleAlign White" x="16.782249" y="7.1280665">MAN</text>
                                 <text class="FontMedium MiddleAlign White" x="16.869141" y="14.351689">GA SOFT</text>
                             </g>`;
-            break;
-        case 3:
-            this.displayModeChangedPath(true);
-            const FlexTemp = Math.round(this.flexTemp);
-            const FlexText = FlexTemp >= 0 ? (`+${FlexTemp}`) : FlexTemp.toString();
-            text = `<g>
+                break;
+            case 3:
+                this.displayModeChangedPath(true);
+                const FlexTemp = Math.round(this.flexTemp);
+                const FlexText = FlexTemp >= 0 ? (`+${FlexTemp}`) : FlexTemp.toString();
+                text = `<g>
                                 <path class="NormalStroke White" d="m31.521 1.8143v13.506h-30.217v-13.506z" />
                                 <text class="FontMedium MiddleAlign White" x="16.782249" y="7.1280665">MAN</text>
                                 <text class="FontMedium MiddleAlign White" x="16.869141" y="14.351689">
@@ -374,94 +375,94 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
                                 </text>
                             </g>`;
 
-            break;
-        case 4:
-            this.displayModeChangedPath(true);
-            text = `<g>
+                break;
+            case 4:
+                this.displayModeChangedPath(true);
+                text = `<g>
                                 <path class="NormalStroke White" d="m25.114 1.8143v13.506h-16.952v-13.506z" />
                                 <text class="FontMedium MiddleAlign White" x="16.782249" y="7.1280665">MAN</text>
                                 <text class="FontMedium MiddleAlign White" x="16.869141" y="14.351689">DTO</text>
                             </g>`;
-            break;
-        case 5:
-            this.displayModeChangedPath(true);
-            text = `<g>
+                break;
+            case 5:
+                this.displayModeChangedPath(true);
+                text = `<g>
                                 <path class="NormalStroke White" d="m25.114 1.8143v13.506h-16.952v-13.506z" />
                                 <text class="FontMedium MiddleAlign White" x="16.782249" y="7.1280665">MAN</text>
                                 <text class="FontMedium MiddleAlign White" x="16.869141" y="14.351689">MCT</text>
                             </g>`;
-            break;
-        case 6:
-            this.displayModeChangedPath(true);
-            text = `<g>
+                break;
+            case 6:
+                this.displayModeChangedPath(true);
+                text = `<g>
                                 <path class="NormalStroke Amber" d="m25.114 1.8143v13.506h-16.952v-13.506z" />
                                 <text class="FontMedium MiddleAlign White" x="16.782249" y="7.1280665">MAN</text>
                                 <text class="FontMedium MiddleAlign White" x="16.869141" y="14.351689">THR</text>
                             </g>`;
-            break;
-        case 7:
-            text = '<text  class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">SPEED</text>';
-            this.displayModeChangedPath();
-            break;
-        case 8:
-            text = '<text  class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">MACH</text>';
-            this.displayModeChangedPath();
-            break;
-        case 9:
-            text = '<text  class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">THR MCT</text>';
-            this.displayModeChangedPath();
-            break;
-        case 10:
-            text = '<text  class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">THR CLB</text>';
-            this.displayModeChangedPath();
-            break;
-        case 11:
-            text = '<text  class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">THR LVR</text>';
-            this.displayModeChangedPath();
-            break;
-        case 12:
-            text = '<text  class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">THR IDLE</text>';
-            this.displayModeChangedPath();
-            break;
-        case 13:
-            this.displayModeChangedPath(true);
-            text = `<g>
+                break;
+            case 7:
+                text = '<text  class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">SPEED</text>';
+                this.displayModeChangedPath();
+                break;
+            case 8:
+                text = '<text  class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">MACH</text>';
+                this.displayModeChangedPath();
+                break;
+            case 9:
+                text = '<text  class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">THR MCT</text>';
+                this.displayModeChangedPath();
+                break;
+            case 10:
+                text = '<text  class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">THR CLB</text>';
+                this.displayModeChangedPath();
+                break;
+            case 11:
+                text = '<text  class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">THR LVR</text>';
+                this.displayModeChangedPath();
+                break;
+            case 12:
+                text = '<text  class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">THR IDLE</text>';
+                this.displayModeChangedPath();
+                break;
+            case 13:
+                this.displayModeChangedPath(true);
+                text = `<g>
                                 <path class="NormalStroke Amber BlinkInfinite" d="m0.70556 1.8143h30.927v6.0476h-30.927z" />
                                 <text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">A.FLOOR</text>
                             </g>`;
-            break;
-        case 14:
-            this.displayModeChangedPath(true);
-            text = `<g>
+                break;
+            case 14:
+                this.displayModeChangedPath(true);
+                text = `<g>
                                 <path class="NormalStroke Amber BlinkInfinite" d="m0.70556 1.8143h30.927v6.0476h-30.927z" />
                                 <text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">TOGA LK</text>
                             </g>`;
-            break;
-        default:
-            if (this.autoBrakeActive) {
-                switch (this.autoBrakeMode) {
-                case 1:
-                    text = '<text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">BRK LO</text>';
-                    this.displayModeChangedPath();
-                    break;
-                case 2:
-                    text = '<text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">BRK MED</text>';
-                    this.displayModeChangedPath();
-                    break;
-                case 3:
-                    text = '<text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">BRK MAX</text>';
-                    this.displayModeChangedPath();
-                    break;
-                default:
+                break;
+            default:
+                if (this.autoBrakeActive) {
+                    switch (this.autoBrakeMode) {
+                        case 1:
+                            text = '<text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">BRK LO</text>';
+                            this.displayModeChangedPath();
+                            break;
+                        case 2:
+                            text = '<text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">BRK MED</text>';
+                            this.displayModeChangedPath();
+                            break;
+                        case 3:
+                            text = '<text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">BRK MAX</text>';
+                            this.displayModeChangedPath();
+                            break;
+                        default:
+                            text = '';
+                            this.isShown = false;
+                            this.displayModeChangedPath(true);
+                    }
+                } else {
                     text = '';
                     this.isShown = false;
                     this.displayModeChangedPath(true);
                 }
-            } else {
-                text = '';
-                this.isShown = false;
-                this.displayModeChangedPath(true);
-            }
         }
 
         this.cellRef.instance.innerHTML = text;
@@ -519,28 +520,28 @@ class A3Cell extends DisplayComponent<A3CellProps> {
         let text: string = '';
         let className: string = '';
         switch (message) {
-        case 1:
-            text = 'THR LK';
-            className = 'Amber BlinkInfinite';
-            break;
-        case 2:
-            text = 'LVR TOGA';
-            className = 'White BlinkInfinite';
-            break;
-        case 3:
-            text = 'LVR CLB';
-            className = 'White BlinkInfinite';
-            break;
-        case 4:
-            text = 'LVR MCT';
-            className = 'White BlinkInfinite';
-            break;
-        case 5:
-            text = 'LVR ASYM';
-            className = 'Amber';
-            break;
-        default:
-            text = '';
+            case 1:
+                text = 'THR LK';
+                className = 'Amber BlinkInfinite';
+                break;
+            case 2:
+                text = 'LVR TOGA';
+                className = 'White BlinkInfinite';
+                break;
+            case 3:
+                text = 'LVR CLB';
+                className = 'White BlinkInfinite';
+                break;
+            case 4:
+                text = 'LVR MCT';
+                className = 'White BlinkInfinite';
+                break;
+            case 5:
+                text = 'LVR ASYM';
+                className = 'Amber';
+                break;
+            default:
+                text = '';
         }
 
         this.textSub.set(text);
@@ -678,86 +679,86 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
 
         this.isShown = true;
         switch (this.activeVerticalModeSub.get()) {
-        case VerticalMode.GS_TRACK:
-            text = 'G/S';
-            break;
+            case VerticalMode.GS_TRACK:
+                text = 'G/S';
+                break;
             /*  case 2:
             text = 'F-G/S';
             break; */
-        case VerticalMode.GS_CPT:
-            text = 'G/S*';
-            break;
+            case VerticalMode.GS_CPT:
+                text = 'G/S*';
+                break;
             /*  case 4:
             text = 'F-G/S*';
             break; */
-        case VerticalMode.SRS:
-        case VerticalMode.SRS_GA:
-            text = 'SRS';
-            break;
-        case VerticalMode.TCAS:
-            text = 'TCAS';
-            break;
+            case VerticalMode.SRS:
+            case VerticalMode.SRS_GA:
+                text = 'SRS';
+                break;
+            case VerticalMode.TCAS:
+                text = 'TCAS';
+                break;
             /*  case 9:
             text = 'FINAL';
             break; */
-        case VerticalMode.DES:
-            text = 'DES';
-            break;
-        case VerticalMode.OP_DES:
-            if (this.expediteMode) {
-                text = 'EXP DES';
-            } else {
-                text = 'OP DES';
-            }
-            break;
-        case VerticalMode.CLB:
-            text = 'CLB';
-            break;
-        case VerticalMode.OP_CLB:
-            if (this.expediteMode) {
-                text = 'EXP CLB';
-            } else {
-                text = 'OP CLB';
-            }
-            break;
-        case VerticalMode.ALT:
-            if (this.crzAltMode) {
-                text = 'ALT CRZ';
-            } else {
-                text = 'ALT';
-            }
-            break;
-        case VerticalMode.ALT_CPT:
-            text = 'ALT*';
-            break;
-        case VerticalMode.ALT_CST_CPT:
-            text = 'ALT CST*';
-            break;
-        case VerticalMode.ALT_CST:
-            text = 'ALT CST';
-            break;
-        /* case 18:
+            case VerticalMode.DES:
+                text = 'DES';
+                break;
+            case VerticalMode.OP_DES:
+                if (this.expediteMode) {
+                    text = 'EXP DES';
+                } else {
+                    text = 'OP DES';
+                }
+                break;
+            case VerticalMode.CLB:
+                text = 'CLB';
+                break;
+            case VerticalMode.OP_CLB:
+                if (this.expediteMode) {
+                    text = 'EXP CLB';
+                } else {
+                    text = 'OP CLB';
+                }
+                break;
+            case VerticalMode.ALT:
+                if (this.crzAltMode) {
+                    text = 'ALT CRZ';
+                } else {
+                    text = 'ALT';
+                }
+                break;
+            case VerticalMode.ALT_CPT:
+                text = 'ALT*';
+                break;
+            case VerticalMode.ALT_CST_CPT:
+                text = 'ALT CST*';
+                break;
+            case VerticalMode.ALT_CST:
+                text = 'ALT CST';
+                break;
+            /* case 18:
             text = 'ALT CRZ';
             break; */
-        case VerticalMode.FPA: {
-            const FPAText = `${(this.FPA >= 0 ? '+' : '')}${(Math.round(this.FPA * 10) / 10).toFixed(1)}°`;
+            case VerticalMode.FPA: {
+                const FPAText = `${(this.FPA >= 0 ? '+' : '')}${(Math.round(this.FPA * 10) / 10).toFixed(1)}°`;
 
-            text = 'FPA';
-            additionalText = FPAText;
-            break;
-        }
-        case VerticalMode.VS: {
-            const VSText = `${(this.selectedVS >= 0 ? '+' : '')}${Math.round(this.selectedVS).toString()}`.padStart(5, ' ');
+                text = 'FPA';
+                additionalText = FPAText;
+                break;
+            }
+            case VerticalMode.VS: {
+                const VSText = `${(this.selectedVS >= 0 ? '+' : '')}${Math.round(this.selectedVS).toString()}`.padStart(5, ' ');
 
-            text = 'V/S';
+                text = 'V/S';
 
-            additionalText = VSText;
-            break;
-        }
-        default:
-            text = '';
-            this.isShown = false;
-            this.displayModeChangedPath(true);
+                additionalText = VSText;
+                break;
+            }
+            default:
+                text = '';
+                this.isShown = false;
+                this.displayModeChangedPath(true);
         }
 
         const inSpeedProtection = this.inSpeedProtection && (this.activeVerticalModeSub.get() === 14 || this.activeVerticalModeSub.get() === 15);
@@ -1301,37 +1302,37 @@ class D1D2Cell extends ShowForSecondsComponent<CellProps> {
 
             this.isShown = true;
             switch (c) {
-            case 1:
-                text1 = 'CAT1';
-                break;
-            case 2:
-                text1 = 'CAT2';
-                break;
-            case 3:
-                text1 = 'CAT3';
-                text2 = 'SINGLE';
-                break;
-            case 4:
-                text1 = 'CAT3';
-                text2 = 'DUAL';
-                break;
-            case 5:
-                text1 = 'AUTO';
-                text2 = 'LAND';
-                break;
-            case 6:
-                text1 = 'F-APP';
-                break;
-            case 7:
-                text1 = 'F-APP';
-                text2 = '+ RAW';
-                break;
-            case 8:
-                text1 = 'RAW';
-                text2 = 'ONLY';
-                break;
-            default:
-                text1 = '';
+                case 1:
+                    text1 = 'CAT1';
+                    break;
+                case 2:
+                    text1 = 'CAT2';
+                    break;
+                case 3:
+                    text1 = 'CAT3';
+                    text2 = 'SINGLE';
+                    break;
+                case 4:
+                    text1 = 'CAT3';
+                    text2 = 'DUAL';
+                    break;
+                case 5:
+                    text1 = 'AUTO';
+                    text2 = 'LAND';
+                    break;
+                case 6:
+                    text1 = 'F-APP';
+                    break;
+                case 7:
+                    text1 = 'F-APP';
+                    text2 = '+ RAW';
+                    break;
+                case 8:
+                    text1 = 'RAW';
+                    text2 = 'ONLY';
+                    break;
+                default:
+                    text1 = '';
             }
 
             this.text1Sub.set(text1);
@@ -1547,15 +1548,15 @@ class E3Cell extends ShowForSecondsComponent<CellProps> {
         let className: string = '';
         this.isShown = true;
         switch (athrStatus) {
-        case 1:
-            className = 'Cyan';
-            break;
-        case 2:
-            className = 'White';
-            break;
-        default:
-            this.isShown = false;
-            className = 'HiddenElement';
+            case 1:
+                className = 'Cyan';
+                break;
+            case 2:
+                className = 'White';
+                break;
+            default:
+                this.isShown = false;
+                className = 'HiddenElement';
         }
         return className;
     }

@@ -1,4 +1,4 @@
-import React, { FC, memo, useEffect, useState } from 'react';
+import React, { FC, memo, useEffect, useRef } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { EfisSide, NdSymbol } from '@shared/NavigationDisplay';
@@ -22,10 +22,10 @@ export const PlanMode: FC<PlanModeProps> = ({ side, symbols, adirsAlign, rangeSe
 
     const [trueHeading] = useSimVar('PLANE HEADING DEGREES TRUE', 'degrees');
 
-    const [mapParams] = useState<MapParameters>(new MapParameters());
+    const mapParams = useRef<MapParameters>(new MapParameters());
 
     useEffect(() => {
-        mapParams.compute({ lat: planCentreLat, long: planCentreLong }, rangeSetting / 2, 250, 0);
+        mapParams.current.compute({ lat: planCentreLat, long: planCentreLong }, rangeSetting / 2, 250, 0);
     }, [planCentreLat, planCentreLong, rangeSetting]);
 
     return (
@@ -39,14 +39,14 @@ export const PlanMode: FC<PlanModeProps> = ({ side, symbols, adirsAlign, rangeSe
                     side={side}
                     range={rangeSetting}
                     symbols={symbols}
-                    mapParams={mapParams}
-                    mapParamsVersion={mapParams.version}
+                    mapParams={mapParams.current}
+                    mapParamsVersion={mapParams.current.version}
                     debug={false}
                 />
             </g>
 
-            {adirsAlign && !mapHidden && mapParams.valid && (
-                <Plane location={ppos} heading={trueHeading} mapParams={mapParams} />
+            {adirsAlign && !mapHidden && mapParams.current.valid && (
+                <Plane location={ppos} heading={trueHeading} mapParams={mapParams.current} />
             )}
 
             <ToWaypointIndicator side={side} />

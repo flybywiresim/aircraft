@@ -402,7 +402,7 @@ class SidestickIndicator extends DisplayComponent<{ bus: EventBus }> {
 
     private crossHairRef = FSComponent.createRef<SVGPathElement>();
 
-    private onGroundForVisibility = Subject.create('visible');
+    private isOnGroundForVisibility = Subject.create('visible');
 
     private engOneRunning = false;
 
@@ -412,9 +412,9 @@ class SidestickIndicator extends DisplayComponent<{ bus: EventBus }> {
         const oneEngineRunning = this.engOneRunning || this.engTwoRunning;
 
         if (!this.onGround || !oneEngineRunning) {
-            this.onGroundForVisibility.set('hidden');
+            this.isOnGroundForVisibility.set('hidden');
         } else {
-            this.onGroundForVisibility.set('visible');
+            this.isOnGroundForVisibility.set('visible');
             this.crossHairRef.instance.style.transform = `translate3d(${this.sideStickX}px, ${this.sideStickY}px, 0px)`;
         }
     }
@@ -452,7 +452,7 @@ class SidestickIndicator extends DisplayComponent<{ bus: EventBus }> {
 
     render(): VNode {
         return (
-            <g id="GroundCursorGroup" class="NormalStroke White" visibility={this.onGroundForVisibility}>
+            <g id="GroundCursorGroup" class="NormalStroke White" visibility={this.isOnGroundForVisibility}>
                 <path id="GroundCursorBorders" d="m92.327 103.75h6.0441v-6.0476m-58.93 0v6.0476h6.0441m46.842-45.861h6.0441v6.0476m-58.93 0v-6.0476h6.0441" />
                 <path
                     ref={this.crossHairRef}

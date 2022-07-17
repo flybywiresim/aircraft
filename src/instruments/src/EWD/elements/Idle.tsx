@@ -38,7 +38,7 @@ const Idle: React.FC<IdleProps> = ({ x, y }) => {
         if (showIdle && timer == null) {
             setTimer(10);
         }
-    }, [showIdle]);
+    }, [showIdle, timer]);
 
     return (
 

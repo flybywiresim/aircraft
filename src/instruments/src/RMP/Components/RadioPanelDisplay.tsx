@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { FC } from 'react';
 import { useSimVar } from '../../Common/simVars';
 
-interface Props {
+interface RadioPanelDisplayProps {
     /**
      * The value to display.
      */
@@ -20,17 +20,17 @@ const formatFrequency = (frequency: number): string => (frequency / 1000000).toF
  * Hooks into lightsTest SimVar to show 888.888 when test is ON.
  * Renders the seven-segment display with the appropriate value.
  */
-export function RadioPanelDisplay(props: Props) {
+export const RadioPanelDisplay: FC<RadioPanelDisplayProps> = ({ value }) => {
     const [lightsTest] = useSimVar('L:A32NX_OVHD_INTLT_ANN', 'Boolean', 1000);
 
     // If the passed value prop is a number, we'll use formatFrequency to get string format.
-    const value = typeof props.value === 'number' ? formatFrequency(props.value) : props.value;
+    const valueString = typeof value === 'number' ? formatFrequency(value) : value;
 
     return (
         <svg className="rmp-svg">
             <text x="100%" y="52%">
-                {lightsTest === 0 ? '8.8.8.8.8.8' : value}
+                {lightsTest === 0 ? '8.8.8.8.8.8' : valueString}
             </text>
         </svg>
     );
-}
+};

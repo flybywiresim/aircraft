@@ -35,12 +35,14 @@ export const SelectInput = (props: SelectInputProps) => {
     const [showDropdown, setShowDropdown] = useState(false);
 
     useEffect(() => {
-        if (props.value === undefined) return;
+        if (props.value === undefined) {
+            return;
+        }
 
         const option = props.options.find((option) => option.value === props.value) ?? defaultOption;
 
         setValue(option.displayValue);
-    }, [props.value]);
+    }, [defaultOption, props.options, props.value]);
 
     const onOptionClicked = (option: Option) => {
         if (props.onChange) {

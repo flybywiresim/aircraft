@@ -42,7 +42,7 @@ interface ErrorFallbackProps {
     resetErrorBoundary: (...args: Array<unknown>) => void;
 }
 
-export const ErrorFallback = ({ resetErrorBoundary }: ErrorFallbackProps) => {
+export const ErrorFallback = ({ resetErrorBoundary: onResetErrorBoundary }: ErrorFallbackProps) => {
     const [sessionId] = usePersistentProperty('A32NX_SENTRY_SESSION_ID');
     const [sentryEnabled] = usePersistentProperty(SENTRY_CONSENT_KEY, SentryConsentState.Refused);
 
@@ -65,7 +65,7 @@ export const ErrorFallback = ({ resetErrorBoundary }: ErrorFallbackProps) => {
                         </>
                     )}
 
-                    <div className="py-4 px-8 w-full text-theme-body hover:text-utility-red bg-utility-red hover:bg-theme-body rounded-md border-2 border-utility-red transition duration-100" onClick={resetErrorBoundary}>
+                    <div className="py-4 px-8 w-full text-theme-body hover:text-utility-red bg-utility-red hover:bg-theme-body rounded-md border-2 border-utility-red transition duration-100" onClick={onResetErrorBoundary}>
                         <h2 className="font-bold text-center text-current">Reset Display</h2>
                     </div>
                 </div>

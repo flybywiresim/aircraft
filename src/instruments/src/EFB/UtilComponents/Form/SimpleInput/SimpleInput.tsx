@@ -38,7 +38,7 @@ export const SimpleInput = (props: PropsWithChildren<SimpleInputProps>) => {
         if (keyboard.current) {
             keyboard.current.setInput(displayValue);
         }
-    }, [OSKOpen]);
+    }, [OSKOpen, displayValue]);
 
     useEffect(() => {
         if (props.value === undefined || props.value === '') {
@@ -46,13 +46,17 @@ export const SimpleInput = (props: PropsWithChildren<SimpleInputProps>) => {
             return;
         }
 
-        if (focused) return;
+        if (focused) {
+            return;
+        }
 
         setDisplayValue(getConstrainedValue(props.value));
     }, [props.value]);
 
     const onChange = (value: string): void => {
-        if (props.disabled) return;
+        if (props.disabled) {
+            return;
+        }
 
         let originalValue = value;
 
@@ -136,7 +140,9 @@ export const SimpleInput = (props: PropsWithChildren<SimpleInputProps>) => {
     };
 
     const pad = (value: string): string => {
-        if (props.padding === undefined) return value;
+        if (props.padding === undefined) {
+            return value;
+        }
         const split = value.split('.');
         while (split[0].length < props.padding) {
             split[0] = `0${split[0]}`;

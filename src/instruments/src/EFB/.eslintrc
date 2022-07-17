@@ -2,5 +2,8 @@
 {
   "ignorePatterns": [
     "web/**"
-  ]
+  ],
+  "rules" : {
+    "tailwindcss/classnames-order": "error"
+  }
 }

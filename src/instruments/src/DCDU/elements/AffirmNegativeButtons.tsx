@@ -30,7 +30,7 @@ export const AffirmNegativeButtons: React.FC<AffirmNegativeButtonsProps> = ({
         showSend = true;
     }
 
-    const clicked = (index: string) : void => {
+    const handleClicked = (index: string) : void => {
         if (message.UniqueMessageID === -1 || buttonsBlocked) {
             return;
         }
@@ -67,14 +67,14 @@ export const AffirmNegativeButtons: React.FC<AffirmNegativeButtonsProps> = ({
                         index="L1"
                         content="NEGATV"
                         active={!buttonsBlocked}
-                        onClick={clicked}
+                        onClick={handleClicked}
                     />
                     <Button
                         messageId={message.UniqueMessageID}
                         index="R2"
                         content="AFFIRM"
                         active={!buttonsBlocked}
-                        onClick={clicked}
+                        onClick={handleClicked}
                     />
                 </>
             )}
@@ -85,14 +85,14 @@ export const AffirmNegativeButtons: React.FC<AffirmNegativeButtonsProps> = ({
                         index="L1"
                         content="CANCEL"
                         active={!buttonsBlocked}
-                        onClick={clicked}
+                        onClick={handleClicked}
                     />
                     <Button
                         messageId={message.UniqueMessageID}
                         index="R2"
                         content="SEND"
                         active={!buttonsBlocked}
-                        onClick={clicked}
+                        onClick={handleClicked}
                     />
                 </>
             )}
@@ -102,7 +102,7 @@ export const AffirmNegativeButtons: React.FC<AffirmNegativeButtonsProps> = ({
                     index="R2"
                     content="CLOSE"
                     active={!buttonsBlocked}
-                    onClick={clicked}
+                    onClick={handleClicked}
                 />
             )}
         </>

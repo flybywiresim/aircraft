@@ -6,7 +6,7 @@ type RecallButtonsProps = {
 }
 
 export const RecallButtons: React.FC<RecallButtonsProps> = ({ recallMessage }) => {
-    const clicked = (_index: string) : void => {
+    const handleClicked = (_index: string) : void => {
         recallMessage();
     };
 
@@ -17,7 +17,7 @@ export const RecallButtons: React.FC<RecallButtonsProps> = ({ recallMessage }) =
                 index="R2"
                 content="RECALL"
                 active
-                onClick={clicked}
+                onClick={handleClicked}
             />
         </>
     );

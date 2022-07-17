@@ -103,7 +103,9 @@ export const LandingWidget = () => {
     const { arrivingAirport, arrivingMetar } = useAppSelector((state) => state.simbrief.data);
 
     const handleCalculateLanding = (): void => {
-        if (!areInputsValid()) return;
+        if (!areInputsValid()) {
+            return;
+        }
         const landingDistances = calculator.calculateLandingDistances(
             weight ?? 0,
             flaps ?? LandingFlapsConfig.Full,
@@ -147,7 +149,9 @@ export const LandingWidget = () => {
     };
 
     const syncValuesWithApiMetar = async (icao: string): Promise<void> => {
-        if (!isValidIcao(icao)) return;
+        if (!isValidIcao(icao)) {
+            return;
+        }
 
         fetch(`https://api.flybywiresim.com/metar/${icao}`)
             .then((res) => {
@@ -398,17 +402,17 @@ export const LandingWidget = () => {
 
     const fillDataTooltip = () => {
         switch (autoFillSource) {
-        case 'METAR':
-            if (!isAutoFillIcaoValid()) {
-                return t('Performance.Landing.TT.YouNeedToEnterAnIcaoCodeInOrderToMakeAMetarRequest');
-            }
-            break;
-        case 'OFP':
-            if (!isAutoFillIcaoValid()) {
-                return t('Performance.Landing.TT.YouNeedToLoadSimBriefDataInOrderToAutofillData');
-            }
-            break;
-        default: return undefined;
+            case 'METAR':
+                if (!isAutoFillIcaoValid()) {
+                    return t('Performance.Landing.TT.YouNeedToEnterAnIcaoCodeInOrderToMakeAMetarRequest');
+                }
+                break;
+            case 'OFP':
+                if (!isAutoFillIcaoValid()) {
+                    return t('Performance.Landing.TT.YouNeedToLoadSimBriefDataInOrderToAutofillData');
+                }
+                break;
+            default: return undefined;
         }
 
         return undefined;
@@ -426,6 +430,7 @@ export const LandingWidget = () => {
                                 <div className="flex flex-row">
                                     <TooltipWrapper text={fillDataTooltip()}>
                                         <button
+                                            /* eslint-disable-next-line react/jsx-handler-names */
                                             onClick={isAutoFillIcaoValid() ? handleAutoFill : undefined}
                                             className={`rounded-md rounded-r-none flex flex-row justify-center items-center px-8 py-2 space-x-4 text-theme-body transition duration-100 border-2 border-theme-highlight bg-theme-highlight outline-none ${!isAutoFillIcaoValid() ? 'opacity-50' : 'hover:text-theme-highlight hover:bg-theme-body'}`}
                                             type="button"

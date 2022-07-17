@@ -23,13 +23,13 @@ import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
 
 const getTagColor = (tagName?: string) => {
     switch (tagName) {
-    case 'STAR': return 'text-utility-green';
-    case 'APP': return 'text-utility-orange';
-    case 'TAXI': return 'text-[#5280EA]';
-    case 'SID': return 'text-utility-pink';
-    case 'REF': return 'text-utility-purple';
-    case 'DEL': return 'text-utility-red';
-    default: return 'text-theme-text';
+        case 'STAR': return 'text-utility-green';
+        case 'APP': return 'text-utility-orange';
+        case 'TAXI': return 'text-[#5280EA]';
+        case 'SID': return 'text-utility-pink';
+        case 'REF': return 'text-utility-purple';
+        case 'DEL': return 'text-utility-red';
+        default: return 'text-theme-text';
     }
 };
 
@@ -170,7 +170,9 @@ export const PinnedChartUI = () => {
     const filteredCharts = providerCharts.filter((pinnedChart) => {
         const filterItem = filterTabs[chartTypeIndex];
 
-        if (!filterItem) return true;
+        if (!filterItem) {
+            return true;
+        }
 
         const provider = providerTabs[selectedProvider].provider;
         console.log(provider);
@@ -203,21 +205,21 @@ export const PinnedChartUI = () => {
 
     const sortedCharts = searchedCharts.sort((a, b) => {
         switch (sortTypeIndex) {
-        case PinSort.NONE:
-            return 0;
-        case PinSort.FIRST_ACCESSED:
-            return a.timeAccessed - b.timeAccessed;
-        case PinSort.LAST_ACCESSED:
-            return b.timeAccessed - a.timeAccessed;
-        case PinSort.ALPHABETICAL_FIRST_LAST:
-            return (a.title + a.subTitle).localeCompare(b.title + b.subTitle);
-        case PinSort.ALPHABETICAL_LAST_FIRST:
-            return (b.title + b.subTitle).localeCompare(a.title + a.subTitle);
-        default: return 0;
+            case PinSort.NONE:
+                return 0;
+            case PinSort.FIRST_ACCESSED:
+                return a.timeAccessed - b.timeAccessed;
+            case PinSort.LAST_ACCESSED:
+                return b.timeAccessed - a.timeAccessed;
+            case PinSort.ALPHABETICAL_FIRST_LAST:
+                return (a.title + a.subTitle).localeCompare(b.title + b.subTitle);
+            case PinSort.ALPHABETICAL_LAST_FIRST:
+                return (b.title + b.subTitle).localeCompare(a.title + a.subTitle);
+            default: return 0;
         }
     });
 
-    const removeAll = () => {
+    const handleRemoveAll = () => {
         sortedCharts.forEach((item) => {
             dispatch(removedPinnedChart({ chartId: item.chartId }));
         });
@@ -289,7 +291,7 @@ export const PinnedChartUI = () => {
                                 <TooltipWrapper text={t('NavigationAndCharts.PinnedCharts.TT.RemoveAllPinnedCharts')}>
                                     <div
                                         className="flex flex-shrink justify-center items-center py-2 px-2 w-min text-center text-theme-body hover:text-utility-red bg-utility-red hover:bg-theme-body rounded-md border-2 border-utility-red transition duration-100"
-                                        onClick={removeAll}
+                                        onClick={handleRemoveAll}
                                     >
                                         <IconTrash />
                                     </div>

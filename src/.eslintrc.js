@@ -97,6 +97,7 @@ module.exports = {
         'react/destructuring-assignment': 'off',
         'react/jsx-props-no-spreading': 'off',
         'react/no-unescaped-entities': 'off',
+        'no-console': 'off',
 
         // Not needed with react 17+
         'react/jsx-uses-react': 'off',
@@ -123,6 +124,11 @@ module.exports = {
         '@typescript-eslint/lines-between-class-members': ['error'],
         'no-dupe-class-members': 'off',
         '@typescript-eslint/no-dupe-class-members': ['error'],
+
+        // Irrelevant for the majority of directories
+
+        // Overriden in src/instruments/src/EFB
+        'tailwindcss/classnames-order': 'off',
     },
     globals: {
         Simplane: 'readonly',

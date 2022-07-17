@@ -47,7 +47,7 @@ export const PageRedirect = ({ basePath, tabs }: PageRouteProps) => {
         });
 
         return unregisterHistoryListener;
-    }, []);
+    }, [getRedirectPathname, history]);
 
     return (
         <Route exact path={basePath}>

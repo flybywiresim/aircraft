@@ -13,10 +13,6 @@ type ButtonProps = {
 export const Button: React.FC<ButtonProps> = ({ index, content, active, onClick }) => {
     const [clicked, setClicked] = useState(false);
 
-    if (content.length === 0) {
-        return <></>;
-    }
-
     useInteractionEvents([`A32NX_DCDU_BTN_MPL_${index}`, `A32NX_DCDU_BTN_MPR_${index}`], () => {
         if (active) {
             setClicked(true);
@@ -27,31 +23,35 @@ export const Button: React.FC<ButtonProps> = ({ index, content, active, onClick 
         }
     });
 
+    if (content.length === 0) {
+        return <></>;
+    }
+
     let leftButton = false;
     const textDefinition = { x: 0, y: 0, style: 'button ' };
     const backgroundDefinition = { x: 0, y: 0, style: 'button ' };
     switch (index) {
-    case 'L2':
-        textDefinition.y = 480;
-    // eslint-disable-next-line no-fallthrough
-    case 'L1':
-        backgroundDefinition.x = 0;
-        textDefinition.x = 168;
-        textDefinition.y += 2240;
-        textDefinition.style += 'button-left ';
-        backgroundDefinition.style += 'button-left ';
-        leftButton = true;
-        break;
-    case 'R2':
-        textDefinition.y = 480;
-    // eslint-disable-next-line no-fallthrough
-    default:
-        backgroundDefinition.x = 2904;
-        textDefinition.x = 3760;
-        textDefinition.y += 2240;
-        textDefinition.style += 'button-right ';
-        backgroundDefinition.style += 'button-right ';
-        break;
+        case 'L2':
+            textDefinition.y = 480;
+        // eslint-disable-next-line no-fallthrough
+        case 'L1':
+            backgroundDefinition.x = 0;
+            textDefinition.x = 168;
+            textDefinition.y += 2240;
+            textDefinition.style += 'button-left ';
+            backgroundDefinition.style += 'button-left ';
+            leftButton = true;
+            break;
+        case 'R2':
+            textDefinition.y = 480;
+        // eslint-disable-next-line no-fallthrough
+        default:
+            backgroundDefinition.x = 2904;
+            textDefinition.x = 3760;
+            textDefinition.y += 2240;
+            textDefinition.style += 'button-right ';
+            backgroundDefinition.style += 'button-right ';
+            break;
     }
     const backgroundWidth = 1032;
     const backgroundHeight = 240;

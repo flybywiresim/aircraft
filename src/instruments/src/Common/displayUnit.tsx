@@ -19,12 +19,12 @@ enum DisplayUnitState {
     Standby
 }
 
-function BacklightBleed(props) {
+const BacklightBleed = (props) => {
     if (props.homeCockpit) {
         return null;
     }
     return <div className="BacklightBleed" />;
-}
+};
 
 export const DisplayUnit: React.FC<DisplayUnitProps> = (props) => {
     const [coldDark] = useSimVar('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool', 200);
@@ -96,7 +96,9 @@ export const DisplayUnit: React.FC<DisplayUnitProps> = (props) => {
                 </svg>
             </>
         );
-    } if (state === DisplayUnitState.Off) {
+    }
+
+    if (state === DisplayUnitState.Off) {
         return (
             <></>
         );

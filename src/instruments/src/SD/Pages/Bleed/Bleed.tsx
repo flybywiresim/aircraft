@@ -76,7 +76,7 @@ export const BleedPage: FC = () => {
                 sdacDatum={sdacDatum}
                 enginePRValveOpen={engine1PRValveOpen}
                 packFlowValveOpen={packFlowValve1Open}
-                onGround={aircraftOnGround}
+                isOnGround={aircraftOnGround}
                 wingAntiIceOn={wingAntiIceOn === 1}
             />
             <EngineBleed
@@ -86,7 +86,7 @@ export const BleedPage: FC = () => {
                 sdacDatum={sdacDatum}
                 enginePRValveOpen={engine2PRValveOpen}
                 packFlowValveOpen={packFlowValve2Open}
-                onGround={aircraftOnGround}
+                isOnGround={aircraftOnGround}
                 wingAntiIceOn={wingAntiIceOn === 1}
             />
 

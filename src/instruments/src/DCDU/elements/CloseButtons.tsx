@@ -8,7 +8,7 @@ type CloseButtonsProps = {
 }
 
 export const CloseButtons: React.FC<CloseButtonsProps> = ({ message, closeMessage }) => {
-    const clicked = (index: string) : void => {
+    const handleClicked = (index: string) : void => {
         if (message.UniqueMessageID === -1) {
             return;
         }
@@ -25,7 +25,7 @@ export const CloseButtons: React.FC<CloseButtonsProps> = ({ message, closeMessag
                 index="R2"
                 content="CLOSE"
                 active
-                onClick={clicked}
+                onClick={handleClicked}
             />
         </>
     );

@@ -19,6 +19,8 @@ const maxStaleness = 300;
 export const WheelPage = () => {
     const temperatures: number[] = [];
     for (let brakeNumber = 1; brakeNumber <= 4; brakeNumber++) {
+        // This does not violate the rules of hooks as this for-loop always executes exactly four times. This is still bad though...
+        // eslint-disable-next-line react-hooks/rules-of-hooks
         const [temperature] = useSimVar(`L:A32NX_REPORTED_BRAKE_TEMPERATURE_${brakeNumber}`, 'celsius', maxStaleness);
         temperatures.push(temperature);
     }

@@ -3,30 +3,32 @@ import { GaugeComponent, GaugeMarkerComponent, GaugeMaxComponent } from '@instru
 import { useSimVar } from '@instruments/common/simVars';
 import { Layer } from '@instruments/common/utils';
 
-const getModeEGTMax = () => {
+const useModeEGTMax = () => {
     const [throttleMode] = useSimVar('L:A32NX_AUTOTHRUST_THRUST_LIMIT_TYPE', 'number', 500);
     const [togaWarning] = useSimVar('L:A32NX_AUTOTHRUST_THRUST_LEVER_WARNING_TOGA', 'boolean', 500);
 
     switch (throttleMode) {
-    case 4:
-        return togaWarning ? 1060 : 1025;
+        case 4:
+            return togaWarning ? 1060 : 1025;
 
-    case 1:
-    case 2:
-    case 3:
-    case 5:
-        return 1025;
+        case 1:
+        case 2:
+        case 3:
+        case 5:
+            return 1025;
 
-    default:
-        return 750;
+        default:
+            return 750;
     }
 };
 
-const warningEGTColor = (EGTemperature: number) => {
+const useWarningEGTColor = (EGTemperature: number) => {
+    const modeEGTMax = useModeEGTMax();
+
     if (EGTemperature > 1060) {
         return 'Red';
     }
-    if (EGTemperature > getModeEGTMax()) {
+    if (EGTemperature > modeEGTMax) {
         return 'Amber';
     }
     return 'Green';
@@ -47,8 +49,8 @@ const EGT: React.FC<EGTProps> = ({ x, y, engine, active }) => {
     const min = 0;
     const max = 1200;
 
-    const modeEGTMax = getModeEGTMax();
-    const EGTColour = warningEGTColor(EGTemperature);
+    const modeEGTMax = useModeEGTMax();
+    const EGTColour = useWarningEGTColor(EGTemperature);
 
     return (
         <Layer x={x} y={y} id={`EGT-indicator-${engine}`}>

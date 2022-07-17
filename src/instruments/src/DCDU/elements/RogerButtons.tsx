@@ -27,7 +27,7 @@ export const RogerButtons: React.FC<RogerButtonsProps> = ({ message, selectedRes
         showSend = true;
     }
 
-    const clicked = (index: string) : void => {
+    const handleClicked = (index: string) : void => {
         if (message.UniqueMessageID === -1 || buttonsBlocked) {
             return;
         }
@@ -62,7 +62,7 @@ export const RogerButtons: React.FC<RogerButtonsProps> = ({ message, selectedRes
                         index="R2"
                         content="ROGER"
                         active={!buttonsBlocked}
-                        onClick={clicked}
+                        onClick={handleClicked}
                     />
                 </>
             )}
@@ -73,14 +73,14 @@ export const RogerButtons: React.FC<RogerButtonsProps> = ({ message, selectedRes
                         index="L1"
                         content="CANCEL"
                         active={!buttonsBlocked}
-                        onClick={clicked}
+                        onClick={handleClicked}
                     />
                     <Button
                         messageId={message.UniqueMessageID}
                         index="R2"
                         content="SEND"
                         active={!buttonsBlocked}
-                        onClick={clicked}
+                        onClick={handleClicked}
                     />
                 </>
             )}
@@ -90,7 +90,7 @@ export const RogerButtons: React.FC<RogerButtonsProps> = ({ message, selectedRes
                     index="R2"
                     content="CLOSE"
                     active={!buttonsBlocked}
-                    onClick={clicked}
+                    onClick={handleClicked}
                 />
             )}
         </>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { render } from '@instruments/common/index';
 import { useSimVar } from '@instruments/common/simVars';
 import { setIsEcamPage } from '@instruments/common/defaults';
@@ -40,7 +40,7 @@ export const HydPage = () => {
     useEffect(() => {
         setEngine1Running(Eng1N2 > 15 && greenFireValve);
         setEngine2Running(Eng2N2 > 15 && yellowFireValve);
-    }, [Eng1N2, Eng2N2]);
+    }, [Eng1N2, Eng2N2, greenFireValve, yellowFireValve]);
 
     // PTU variables
     const [ptuAvailable] = useSimVar('L:A32NX_HYD_PTU_VALVE_OPENED', 'boolean', 500);
@@ -55,13 +55,13 @@ export const HydPage = () => {
     }
 
     const [pressureChart, setPressureChart] = useState<PressureChartType>({ high: '', low: '', highValue: -1, lowValue: -1, ptuScenario: 'normal' });
-    const [ptuActive, setPtuActive] = useState(0);
+    const ptuActive = useRef(false);
 
     const [elecRightFormat, setElecRightFormat] = useState('hide');
     const [elecTriangleFill, setElecTriangleFill] = useState(0);
     const [elecTriangleColour, setElecTriangleColour] = useState('white');
 
-    function setPressures(clearState = false) {
+    const setPressures = useCallback((clearState = false) => {
         if (clearState) {
             setPressureChart({ high: '', low: '', highValue: -1, lowValue: -1, ptuScenario: 'normal' });
         } else if (yellowPressure > greenPressure) {
@@ -81,7 +81,7 @@ export const HydPage = () => {
                 ptuScenario: 'left-to-right',
             });
         }
-    }
+    }, [greenPressure, yellowPressure]);
 
     useEffect(() => {
         setPtuScenario(pressureChart.ptuScenario);
@@ -107,21 +107,21 @@ export const HydPage = () => {
             const negativePressureDifferential = pressureChart.low === 'GREEN' ? pressureChart.lowValue - yellowPressure : pressureChart.lowValue - greenPressure;
             if (maxPressure < 1450 || (greenPressure > 2990 && yellowPressure > 2990)) {
                 setPressures(true);
-                setPtuActive(0);
-            } else if (pressureDifferential > 200 && maxPressure > 1450 && !ptuActive) {
-                setPtuActive(1);
+                ptuActive.current = false;
+            } else if (pressureDifferential > 200 && maxPressure > 1450 && !ptuActive.current) {
+                ptuActive.current = true;
                 setPressures();
-            } else if (negativePressureDifferential <= -500 && ptuActive) {
+            } else if (negativePressureDifferential <= -500 && ptuActive.current) {
+                ptuActive.current = false;
                 setPressures(true);
-                setPtuActive(0);
             }
         } else if (ptuAvailable && yellowElectricPumpStatus && greenPressure <= 2990) {
             setPtuScenario('right-to-left');
-            setPtuActive(1);
+            ptuActive.current = true;
         } else {
             setPtuScenario(ptuAvailable ? 'normal' : 'PTU-off');
         }
-    }, [greenPressure, yellowPressure, yellowElectricPumpStatus, ptuAvailable]);
+    }, [greenPressure, yellowPressure, yellowElectricPumpStatus, ptuAvailable, pressureChart.low, pressureChart.lowValue, setPressures]);
 
     const y = 45;
 
@@ -243,14 +243,14 @@ const HydSys = ({ title, pressure, hydLevel, x, y, fireValve, pumpPBStatus, yell
 
     function checkPumpLowPressure(pump) {
         switch (pump) {
-        case 'GREEN':
-            return greenPumpLowPressure || !greenPumpActive;
-        case 'BLUE':
-            return bluePumpLowPressure || !bluePumpActive;
-        case 'YELLOW':
-            return yellowPumpLowPressure || !yellowPumpActive;
-        default:
-            return 1;
+            case 'GREEN':
+                return greenPumpLowPressure || !greenPumpActive;
+            case 'BLUE':
+                return bluePumpLowPressure || !bluePumpActive;
+            case 'YELLOW':
+                return yellowPumpLowPressure || !yellowPumpActive;
+            default:
+                return 1;
         }
     }
 
@@ -395,7 +395,7 @@ const HydReservoir = ({ system, x, y, fluidLevel, setHydLevel } : HydReservoirPr
         } else {
             setHydLevel(false);
         }
-    }, [fluidLevelInLitres]);
+    }, [fluidLevelInLitres, setHydLevel, values]);
 
     return (
         <>

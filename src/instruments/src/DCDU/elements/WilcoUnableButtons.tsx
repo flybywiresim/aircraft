@@ -37,7 +37,7 @@ export const WilcoUnableButtons: React.FC<WilcoUnableButtonsProps> = ({
         showSend = true;
     }
 
-    const clicked = (index: string) : void => {
+    const handleClicked = (index: string) : void => {
         if (message.UniqueMessageID === -1 || buttonsBlocked) {
             return;
         }
@@ -76,7 +76,7 @@ export const WilcoUnableButtons: React.FC<WilcoUnableButtonsProps> = ({
                         index="L1"
                         content="UNABLE"
                         active={!buttonsBlocked}
-                        onClick={clicked}
+                        onClick={handleClicked}
                     />
                     {showStandby && (
                         <Button
@@ -84,7 +84,7 @@ export const WilcoUnableButtons: React.FC<WilcoUnableButtonsProps> = ({
                             index="R1"
                             content="STBY"
                             active={!buttonsBlocked}
-                            onClick={clicked}
+                            onClick={handleClicked}
                         />
                     )}
                     <Button
@@ -92,7 +92,7 @@ export const WilcoUnableButtons: React.FC<WilcoUnableButtonsProps> = ({
                         index="R2"
                         content="WILCO"
                         active={!buttonsBlocked}
-                        onClick={clicked}
+                        onClick={handleClicked}
                     />
                 </>
             )}
@@ -103,14 +103,14 @@ export const WilcoUnableButtons: React.FC<WilcoUnableButtonsProps> = ({
                         index="L1"
                         content="CANCEL"
                         active={!buttonsBlocked}
-                        onClick={clicked}
+                        onClick={handleClicked}
                     />
                     <Button
                         messageId={message.UniqueMessageID}
                         index="R2"
                         content="SEND"
                         active={!buttonsBlocked}
-                        onClick={clicked}
+                        onClick={handleClicked}
                     />
                 </>
             )}
@@ -120,7 +120,7 @@ export const WilcoUnableButtons: React.FC<WilcoUnableButtonsProps> = ({
                     index="R2"
                     content="CLOSE"
                     active={!buttonsBlocked}
-                    onClick={clicked}
+                    onClick={handleClicked}
                 />
             )}
         </>

@@ -37,16 +37,21 @@ const TCAS_MASK_ROSE: TcasMask = [
 
 const useAirTraffic = (mapParams, mode) : NdTraffic[] => {
     const [airTraffic, setAirTraffic] = useState<NdTraffic[]>([]);
+    const [visibleAirTraffic, setVisibleAirTraffic] = useState<NdTraffic[]>([]);
+
     const tcasMask = (mode === Mode.ARC ? TCAS_MASK_ARC : TCAS_MASK_ROSE);
+
     useFlowSyncEvent('A32NX_TCAS_TRAFFIC', (_topic, data) => {
         if (data) {
-            setAirTraffic(trafficToDisplay(data, mapParams, tcasMask));
+            setAirTraffic(data);
         }
     });
+
     useEffect(() => {
-        setAirTraffic(trafficToDisplay(airTraffic, mapParams, tcasMask));
-    }, [mapParams?.nmRadius, mode]);
-    return airTraffic;
+        setVisibleAirTraffic(trafficToDisplay(airTraffic, mapParams, tcasMask));
+    }, [mapParams.nmRadius, mode, airTraffic, mapParams, tcasMask]);
+
+    return visibleAirTraffic;
 };
 
 const trafficToDisplay = (airTraffic, mapParams, tcasMask) => (
@@ -65,7 +70,9 @@ const trafficToDisplay = (airTraffic, mapParams, tcasMask) => (
                 return traffic;
             }
             const ret: [number, number] | null = MathUtils.intersectWithPolygon(x, y, 0, 0, tcasMask);
-            if (ret) [x, y] = ret;
+            if (ret) {
+                [x, y] = ret;
+            }
         }
         traffic.alive = true;
         traffic.vertSpeed = vertSpeed;
@@ -209,14 +216,14 @@ type TrafficProp = {
 const TrafficIndicator: FC<TrafficProp> = memo(({ x, y, relativeAlt, vertSpeed, intrusionLevel }) => {
     let color = '#ffffff';
     switch (intrusionLevel) {
-    case TaRaIntrusion.TA:
-        color = '#e38c56';
-        break;
-    case TaRaIntrusion.RA:
-        color = '#ff0000';
-        break;
-    default:
-        break;
+        case TaRaIntrusion.TA:
+            color = '#e38c56';
+            break;
+        case TaRaIntrusion.RA:
+            color = '#ff0000';
+            break;
+        default:
+            break;
     }
 
     // Place relative altitude above/below
@@ -276,14 +283,14 @@ type TrafficPropDebug = {
 const TrafficIndicatorDebug: FC<TrafficPropDebug> = memo(({ x, y, relativeAlt, vertSpeed, intrusionLevel, ID, hidden, seen, raTau, taTau, vTau, closureRate, closureAccel }) => {
     let color = '#ffffff';
     switch (intrusionLevel) {
-    case TaRaIntrusion.TA:
-        color = '#e38c56';
-        break;
-    case TaRaIntrusion.RA:
-        color = '#ff0000';
-        break;
-    default:
-        break;
+        case TaRaIntrusion.TA:
+            color = '#e38c56';
+            break;
+        case TaRaIntrusion.RA:
+            color = '#ff0000';
+            break;
+        default:
+            break;
     }
 
     // Place relative altitude above/below

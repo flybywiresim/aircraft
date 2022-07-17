@@ -149,7 +149,7 @@ export const PressureComponent = () => {
             setLdgElevValue(nearestfifty.toString());
             setCssLdgElevName('Green');
         }
-    }, [landingElevDialPosition, landingRunwayElevation]);
+    }, [landingElev, landingElevDialPosition, landingRunwayElevation]);
 
     return (
         <>

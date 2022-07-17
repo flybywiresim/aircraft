@@ -127,7 +127,9 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
         </VerticalSelectGroup>
     );
 
-    if (!isShown) return null;
+    if (!isShown) {
+        return null;
+    }
 
     return (
         <div className="flex flex-col justify-between h-content-section-full">

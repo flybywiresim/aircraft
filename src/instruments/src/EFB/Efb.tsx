@@ -127,15 +127,21 @@ const Efb = () => {
     }, [lat.toFixed(2), long.toFixed(2), arrivingPosLat, arrivingPosLong, departingPosLat, departingPosLong]);
 
     useEffect(() => {
-        if (powerState !== PowerStates.LOADED || !batteryLifeEnabled) return;
+        if (powerState !== PowerStates.LOADED || !batteryLifeEnabled) {
+            return;
+        }
 
         setBatteryLevel((oldLevel) => {
             const deltaTs = Math.max(absoluteTime - oldLevel.lastChangeTimestamp, 0);
             const batteryDurationSec = oldLevel.isCharging ? BATTERY_DURATION_CHARGE_MIN * 60 : -BATTERY_DURATION_DISCHARGE_MIN * 60;
 
             let level = oldLevel.level + 100 * deltaTs / batteryDurationSec;
-            if (level > 100) level = 100;
-            if (level < 0) level = 0;
+            if (level > 100) {
+                level = 100;
+            }
+            if (level < 0) {
+                level = 0;
+            }
             const lastChangeTimestamp = absoluteTime;
             const isCharging = oldLevel.isCharging;
 
@@ -167,7 +173,7 @@ const Efb = () => {
         }
 
         if (batteryLevel.level > 2 && powerState === PowerStates.EMPTY) {
-            offToLoaded();
+            handleOffToLoaded();
         }
     }, [batteryLevel, powerState]);
 
@@ -200,12 +206,14 @@ const Efb = () => {
     }, [powerState]);
 
     useInterval(() => {
-        if (!autoFillChecklists) return;
+        if (!autoFillChecklists) {
+            return;
+        }
 
         setAutomaticItemStates();
     }, 1000);
 
-    const offToLoaded = () => {
+    const handleOffToLoaded = () => {
         const shouldWait = powerState === PowerStates.SHUTOFF || powerState === PowerStates.EMPTY;
         setPowerState(PowerStates.LOADING);
 
@@ -220,7 +228,7 @@ const Efb = () => {
 
     useInteractionEvent('A32NX_EFB_POWER', () => {
         if (powerState === PowerStates.SHUTOFF) {
-            offToLoaded();
+            handleOffToLoaded();
         } else {
             setPowerState(PowerStates.SHUTOFF);
         }
@@ -281,59 +289,59 @@ const Efb = () => {
     const { offsetY } = useAppSelector((state) => state.keyboard);
 
     switch (powerState) {
-    case PowerStates.SHUTOFF:
-    case PowerStates.STANDBY:
-        return <div className="w-screen h-screen" onClick={offToLoaded} />;
-    case PowerStates.LOADING:
-        return <LoadingScreen />;
-    case PowerStates.EMPTY:
-        if (dc2BusIsPowered === 1) {
-            return offToLoaded();
-        }
-        return <EmptyBatteryScreen />;
-    case PowerStates.LOADED:
-        return (
-            <NavigraphContext.Provider value={navigraph}>
-                <ModalContainer />
-                <PowerContext.Provider value={{ powerState, setPowerState }}>
-                    <div className="bg-theme-body" style={{ transform: `translateY(-${offsetY}px)` }}>
-                        <Tooltip posX={posX} posY={posY} shown={shown} text={text} />
+        case PowerStates.SHUTOFF:
+        case PowerStates.STANDBY:
+            return <div className="w-screen h-screen" onClick={handleOffToLoaded} />;
+        case PowerStates.LOADING:
+            return <LoadingScreen />;
+        case PowerStates.EMPTY:
+            if (dc2BusIsPowered === 1) {
+                return handleOffToLoaded();
+            }
+            return <EmptyBatteryScreen />;
+        case PowerStates.LOADED:
+            return (
+                <NavigraphContext.Provider value={navigraph}>
+                    <ModalContainer />
+                    <PowerContext.Provider value={{ powerState, setPowerState }}>
+                        <div className="bg-theme-body" style={{ transform: `translateY(-${offsetY}px)` }}>
+                            <Tooltip posX={posX} posY={posY} shown={shown} text={text} />
 
-                        <ToastContainer
-                            position="top-center"
-                            draggableDirection="y"
-                            limit={2}
-                        />
-                        <StatusBar
-                            batteryLevel={batteryLevel.level}
-                            isCharging={dc2BusIsPowered === 1}
-                        />
-                        <div className="flex flex-row">
-                            <ToolBar />
-                            <div className="pt-14 pr-6 w-screen h-screen">
-                                <Switch>
-                                    <Route exact path="/">
-                                        <Redirect to="/dashboard" />
-                                    </Route>
-                                    <Route path="/dashboard" component={Dashboard} />
-                                    <Route path="/dispatch" component={Dispatch} />
-                                    <Route path="/ground" component={Ground} />
-                                    <Route path="/performance" component={Performance} />
-                                    <Route path="/navigation" component={Navigation} />
-                                    <Route path="/atc" component={ATC} />
-                                    <Route path="/failures" component={Failures} />
-                                    <Route path="/settings" component={Settings} />
-                                    <Route path="/checklists" component={Checklists} />
-                                    <Route path="/presets" component={Presets} />
-                                </Switch>
+                            <ToastContainer
+                                position="top-center"
+                                draggableDirection="y"
+                                limit={2}
+                            />
+                            <StatusBar
+                                batteryLevel={batteryLevel.level}
+                                isCharging={dc2BusIsPowered === 1}
+                            />
+                            <div className="flex flex-row">
+                                <ToolBar />
+                                <div className="pt-14 pr-6 w-screen h-screen">
+                                    <Switch>
+                                        <Route exact path="/">
+                                            <Redirect to="/dashboard" />
+                                        </Route>
+                                        <Route path="/dashboard" component={Dashboard} />
+                                        <Route path="/dispatch" component={Dispatch} />
+                                        <Route path="/ground" component={Ground} />
+                                        <Route path="/performance" component={Performance} />
+                                        <Route path="/navigation" component={Navigation} />
+                                        <Route path="/atc" component={ATC} />
+                                        <Route path="/failures" component={Failures} />
+                                        <Route path="/settings" component={Settings} />
+                                        <Route path="/checklists" component={Checklists} />
+                                        <Route path="/presets" component={Presets} />
+                                    </Switch>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </PowerContext.Provider>
-            </NavigraphContext.Provider>
-        );
-    default:
-        throw new Error('Invalid content state provided');
+                    </PowerContext.Provider>
+                </NavigraphContext.Provider>
+            );
+        default:
+            throw new Error('Invalid content state provided');
     }
 };
 

@@ -57,30 +57,30 @@ export const LocalFilesPage = () => {
     }, []);
 
     switch (connectionState) {
-    case ConnectionState.ATTEMPTING:
-        return (
-            <div className="flex flex-col justify-center items-center space-y-8 h-content-section-reduced rounded-lg border-2 border-theme-accent">
-                <h1>{t('NavigationAndCharts.LocalFiles.EstablishingConnection')}</h1>
-                <CloudArrowDown size={40} className="animate-bounce" />
-            </div>
-        );
-    case ConnectionState.ESTABLISHED:
-        return <LocalFileChartUI />;
-    case ConnectionState.FAILED:
-        return (
-            <div className="flex justify-center items-center h-content-section-reduced rounded-lg border-2 border-theme-accent">
-                <div className="space-y-4">
-                    <h1>{t('NavigationAndCharts.LocalFiles.FailedToEstablishConnection')}</h1>
-                    <button
-                        type="button"
-                        className="flex justify-center items-center py-2 space-x-4 w-full text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100"
-                        onClick={handleConnectionRetry}
-                    >
-                        {t('NavigationAndCharts.LocalFiles.Retry')}
-                    </button>
+        case ConnectionState.ATTEMPTING:
+            return (
+                <div className="flex flex-col justify-center items-center space-y-8 h-content-section-reduced rounded-lg border-2 border-theme-accent">
+                    <h1>{t('NavigationAndCharts.LocalFiles.EstablishingConnection')}</h1>
+                    <CloudArrowDown size={40} className="animate-bounce" />
                 </div>
-            </div>
-        );
-    default: return <></>;
+            );
+        case ConnectionState.ESTABLISHED:
+            return <LocalFileChartUI />;
+        case ConnectionState.FAILED:
+            return (
+                <div className="flex justify-center items-center h-content-section-reduced rounded-lg border-2 border-theme-accent">
+                    <div className="space-y-4">
+                        <h1>{t('NavigationAndCharts.LocalFiles.FailedToEstablishConnection')}</h1>
+                        <button
+                            type="button"
+                            className="flex justify-center items-center py-2 space-x-4 w-full text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100"
+                            onClick={handleConnectionRetry}
+                        >
+                            {t('NavigationAndCharts.LocalFiles.Retry')}
+                        </button>
+                    </div>
+                </div>
+            );
+        default: return <></>;
     }
 };

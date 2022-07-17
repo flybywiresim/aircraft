@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/rules-of-hooks */
+// react-hooks/rules-of-hooks was disabled for this file as it falsely reported that useSimvar was being conditionally called when it wasn't.
 import React, { useEffect, useState } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import { NXDataStore } from '@shared/persistence';
@@ -20,32 +22,32 @@ const mapOrder = (array, order) => {
 const adirsMessage1 = (adirs, engineRunning) => {
     let rowChoice = 0;
     switch (true) {
-    case (Math.ceil(adirs / 60) >= 7 && !engineRunning):
-        rowChoice = 0;
-        break;
-    case (Math.ceil(adirs / 60) >= 7 && engineRunning):
-        rowChoice = 1;
-        break;
-    case (Math.ceil(adirs / 60) === 6 && !engineRunning):
-        rowChoice = 2;
-        break;
-    case (Math.ceil(adirs / 60) === 6 && engineRunning):
-        rowChoice = 3;
-        break;
-    case (Math.ceil(adirs / 60) === 5 && !engineRunning):
-        rowChoice = 4;
-        break;
-    case (Math.ceil(adirs / 60) === 5 && engineRunning):
-        rowChoice = 5;
-        break;
-    case (Math.ceil(adirs / 60) === 4 && !engineRunning):
-        rowChoice = 6;
-        break;
-    case (Math.ceil(adirs / 60) === 4 && engineRunning):
-        rowChoice = 7;
-        break;
-    default:
-        break;
+        case (Math.ceil(adirs / 60) >= 7 && !engineRunning):
+            rowChoice = 0;
+            break;
+        case (Math.ceil(adirs / 60) >= 7 && engineRunning):
+            rowChoice = 1;
+            break;
+        case (Math.ceil(adirs / 60) === 6 && !engineRunning):
+            rowChoice = 2;
+            break;
+        case (Math.ceil(adirs / 60) === 6 && engineRunning):
+            rowChoice = 3;
+            break;
+        case (Math.ceil(adirs / 60) === 5 && !engineRunning):
+            rowChoice = 4;
+            break;
+        case (Math.ceil(adirs / 60) === 5 && engineRunning):
+            rowChoice = 5;
+            break;
+        case (Math.ceil(adirs / 60) === 4 && !engineRunning):
+            rowChoice = 6;
+            break;
+        case (Math.ceil(adirs / 60) === 4 && engineRunning):
+            rowChoice = 7;
+            break;
+        default:
+            break;
     }
     return rowChoice;
 };
@@ -53,26 +55,26 @@ const adirsMessage1 = (adirs, engineRunning) => {
 const adirsMessage2 = (adirs, engineRunning) => {
     let rowChoice = 0;
     switch (true) {
-    case (Math.ceil(adirs / 60) === 3 && !engineRunning):
-        rowChoice = 0;
-        break;
-    case (Math.ceil(adirs / 60) === 3 && engineRunning):
-        rowChoice = 1;
-        break;
-    case (Math.ceil(adirs / 60) === 2 && !engineRunning):
-        rowChoice = 2;
-        break;
-    case (Math.ceil(adirs / 60) === 2 && engineRunning):
-        rowChoice = 3;
-        break;
-    case (Math.ceil(adirs / 60) === 1 && !engineRunning):
-        rowChoice = 4;
-        break;
-    case (Math.ceil(adirs / 60) === 1 && engineRunning):
-        rowChoice = 5;
-        break;
-    default:
-        break;
+        case (Math.ceil(adirs / 60) === 3 && !engineRunning):
+            rowChoice = 0;
+            break;
+        case (Math.ceil(adirs / 60) === 3 && engineRunning):
+            rowChoice = 1;
+            break;
+        case (Math.ceil(adirs / 60) === 2 && !engineRunning):
+            rowChoice = 2;
+            break;
+        case (Math.ceil(adirs / 60) === 2 && engineRunning):
+            rowChoice = 3;
+            break;
+        case (Math.ceil(adirs / 60) === 1 && !engineRunning):
+            rowChoice = 4;
+            break;
+        case (Math.ceil(adirs / 60) === 1 && engineRunning):
+            rowChoice = 5;
+            break;
+        default:
+            break;
     }
     return rowChoice;
 };
@@ -313,7 +315,7 @@ const PseudoFWC: React.FC = () => {
         || (greenLP === 1 && blueLP === 1)
     ));
 
-    const engDualFault = !!(!aircraftOnGround && (
+    const engDualFault = (!aircraftOnGround && (
         (fireButton1 === 1 && fireButton2 === 1)
         || (!engine1ValueSwitch && !engine2ValueSwitch)
         || (engine1State === 0 && engine2State === 0)

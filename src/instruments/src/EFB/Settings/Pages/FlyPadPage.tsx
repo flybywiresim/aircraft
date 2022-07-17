@@ -100,7 +100,7 @@ export const FlyPadPage = () => {
                                     ref={brightnessSliderRef}
                                     style={{ width: '24rem' }}
                                     value={usingAutobrightness ? brightness : brightnessSetting}
-                                    onChange={setBrightnessSetting}
+                                    onChange={(value) => setBrightnessSetting(value)}
                                     onAfterChange={() => brightnessSliderRef.current.blur()}
                                 />
                                 <SimpleInput
