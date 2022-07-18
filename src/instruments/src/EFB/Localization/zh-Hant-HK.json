@@ -85,6 +85,7 @@
       "YouHaveNotYetImportedAnySimBriefData": "尚未導入 SimBrief 數據。"
     },
     "Overview": {
+      "ActualGW": "Actual GW",
       "Engines": "引擎",
       "MMO": "最快音速 (MMO)",
       "MRW": "最大地面重量 (MRW)",

@@ -1202,6 +1202,11 @@
     - When disabled pushback UI in the flyPadOS 3 is disabled and movement updates are suspended.
     - This prevents conflicts with other pushback add-ons
 
+- A32NX_DEVELOPER_STATE
+    - Bool
+    - Persistent
+    - Enables developer-specific options like direct payload adjustments
+
 ## EIS Display System
 
 - A32NX_EFIS_{side}_NAVAID_{1|2}_MODE

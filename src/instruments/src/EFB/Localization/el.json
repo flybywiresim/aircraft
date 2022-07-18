@@ -85,6 +85,7 @@
       "YouHaveNotYetImportedAnySimBriefData": "Δεν έχετε εισαγάγει ακόμη δεδομένα Simbrief."
     },
     "Overview": {
+      "ActualGW": "Actual GW",
       "Engines": "Κινητήρες",
       "MMO": "Μέγιστη Ταχύτητα Mach Αριθμού ",
       "MRW": "Μέγιστο Βάρος Πίστας",

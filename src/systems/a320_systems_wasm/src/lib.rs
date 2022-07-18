@@ -20,7 +20,9 @@ use rudder::rudder;
 use spoilers::spoilers;
 use std::error::Error;
 use systems::failures::FailureType;
-use systems::shared::{ElectricalBusType, HydraulicColor, LgciuId, ProximityDetectorId};
+use systems::shared::{
+    ElectricalBusType, GearActuatorId, HydraulicColor, LgciuId, ProximityDetectorId,
+};
 use systems_wasm::aspects::ExecuteOn;
 use systems_wasm::{MsfsSimulationBuilder, Variable};
 
@@ -82,19 +84,75 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
         (32_003, FailureType::LgciuInternalError(LgciuId::Lgciu2)),
         (
             32_004,
-            FailureType::GearProxSensorDamage(ProximityDetectorId::UplockGearLeft1),
-        ),
-        (
-            32_005,
-            FailureType::GearProxSensorDamage(ProximityDetectorId::DownlockDoorRight2),
-        ),
-        (
-            32_006,
             FailureType::GearProxSensorDamage(ProximityDetectorId::UplockGearNose1),
         ),
         (
+            32_005,
+            FailureType::GearProxSensorDamage(ProximityDetectorId::DownlockGearNose2),
+        ),
+        (
+            32_006,
+            FailureType::GearProxSensorDamage(ProximityDetectorId::UplockGearRight1),
+        ),
+        (
             32_007,
+            FailureType::GearProxSensorDamage(ProximityDetectorId::DownlockGearRight2),
+        ),
+        (
+            32_008,
+            FailureType::GearProxSensorDamage(ProximityDetectorId::UplockGearLeft2),
+        ),
+        (
+            32_009,
+            FailureType::GearProxSensorDamage(ProximityDetectorId::DownlockGearLeft1),
+        ),
+        (
+            32_010,
+            FailureType::GearProxSensorDamage(ProximityDetectorId::UplockDoorNose1),
+        ),
+        (
+            32_011,
+            FailureType::GearProxSensorDamage(ProximityDetectorId::DownlockDoorNose2),
+        ),
+        (
+            32_012,
+            FailureType::GearProxSensorDamage(ProximityDetectorId::UplockDoorRight2),
+        ),
+        (
+            32_013,
+            FailureType::GearProxSensorDamage(ProximityDetectorId::DownlockDoorRight1),
+        ),
+        (
+            32_014,
             FailureType::GearProxSensorDamage(ProximityDetectorId::UplockDoorLeft2),
+        ),
+        (
+            32_015,
+            FailureType::GearProxSensorDamage(ProximityDetectorId::DownlockDoorLeft1),
+        ),
+        (
+            32_020,
+            FailureType::GearActuatorJammed(GearActuatorId::GearNose),
+        ),
+        (
+            32_021,
+            FailureType::GearActuatorJammed(GearActuatorId::GearLeft),
+        ),
+        (
+            32_022,
+            FailureType::GearActuatorJammed(GearActuatorId::GearRight),
+        ),
+        (
+            32_023,
+            FailureType::GearActuatorJammed(GearActuatorId::GearDoorNose),
+        ),
+        (
+            32_024,
+            FailureType::GearActuatorJammed(GearActuatorId::GearDoorLeft),
+        ),
+        (
+            32_025,
+            FailureType::GearActuatorJammed(GearActuatorId::GearDoorRight),
         ),
         (34_000, FailureType::RadioAltimeter(1)),
         (34_001, FailureType::RadioAltimeter(2)),
