@@ -240,40 +240,40 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
     const mlw = { transform: `translateX(${(zfwCg < 32 ? 0.65 : 0.2) * width}px) translateY(${height * 0.22}px)` };
     const mzfw = { transform: `translateX(${(zfwCg < 32 ? 0.65 : 0.2) * width}px) translateY(${height * 0.29}px)` };
 
-    const cgRow1 = { transform: `translateX(${0.02 * width}px) translateY(${height * -0.1}px)` };
-    const cgRow2 = { transform: `translateX(${0.2 * width}px) translateY(${height * -0.1}px)` };
-    const cgRow3 = { transform: `translateX(${0.38 * width}px) translateY(${height * -0.1}px)` };
-    const cgRow4 = { transform: `translateX(${0.56 * width}px) translateY(${height * -0.1}px)` };
-    const cgRow5 = { transform: `translateX(${0.74 * width}px) translateY(${height * -0.1}px)` };
-    const cgRow6 = { transform: `translateX(${0.92 * width}px) translateY(${height * -0.1}px)` };
+    const cgRow1 = { transform: `translateX(${0.02 * width}px) translateY(${height * -0.08}px)` };
+    const cgRow2 = { transform: `translateX(${0.2 * width}px) translateY(${height * -0.08}px)` };
+    const cgRow3 = { transform: `translateX(${0.38 * width}px) translateY(${height * -0.08}px)` };
+    const cgRow4 = { transform: `translateX(${0.56 * width}px) translateY(${height * -0.08}px)` };
+    const cgRow5 = { transform: `translateX(${0.74 * width}px) translateY(${height * -0.08}px)` };
+    const cgRow6 = { transform: `translateX(${0.92 * width}px) translateY(${height * -0.08}px)` };
 
-    const wRow1 = { transform: `translateX(${-0.1 * width}px) translateY(${height * -0.01}px)` };
-    const wRow2 = { transform: `translateX(${-0.1 * width}px) translateY(${height * 0.21}px)` };
-    const wRow3 = { transform: `translateX(${-0.1 * width}px) translateY(${height * 0.43}px)` };
-    const wRow4 = { transform: `translateX(${-0.1 * width}px) translateY(${height * 0.65}px)` };
-    const wRow5 = { transform: `translateX(${-0.1 * width}px) translateY(${height * 0.87}px)` };
-    const wUnits = { transform: `translateX(${-0.125 * width}px) translateY(${height * 0.95}px)` };
+    const wRow1 = { transform: `translateX(${-0.09 * width}px) translateY(${height * -0.02}px)` };
+    const wRow2 = { transform: `translateX(${-0.09 * width}px) translateY(${height * 0.20}px)` };
+    const wRow3 = { transform: `translateX(${-0.09 * width}px) translateY(${height * 0.42}px)` };
+    const wRow4 = { transform: `translateX(${-0.09 * width}px) translateY(${height * 0.64}px)` };
+    const wRow5 = { transform: `translateX(${-0.09 * width}px) translateY(${height * 0.87}px)` };
+    const wUnits = { transform: `translateX(${-0.155 * width}px) translateY(${height * 0.95}px)` };
 
     return (
-        <div>
+        <div className="relative">
             <canvas ref={canvasRef} />
-            <p className="absolute top-0 text-sm font-medium" style={cgRow1}>15%</p>
-            <p className="absolute top-0 text-sm font-medium" style={cgRow2}>20%</p>
-            <p className="absolute top-0 text-sm font-medium" style={cgRow3}>25%</p>
-            <p className="absolute top-0 text-sm font-medium" style={cgRow4}>30%</p>
-            <p className="absolute top-0 text-sm font-medium" style={cgRow5}>35%</p>
-            <p className="absolute top-0 text-sm font-medium" style={cgRow6}>40%</p>
+            <p className="absolute top-0 font-mono font-medium text-md" style={cgRow1}>15%</p>
+            <p className="absolute top-0 font-mono font-medium text-md" style={cgRow2}>20%</p>
+            <p className="absolute top-0 font-mono font-medium text-md" style={cgRow3}>25%</p>
+            <p className="absolute top-0 font-mono font-medium text-md" style={cgRow4}>30%</p>
+            <p className="absolute top-0 font-mono font-medium text-md" style={cgRow5}>35%</p>
+            <p className="absolute top-0 font-mono font-medium text-md" style={cgRow6}>40%</p>
 
-            <p className="absolute top-0 text-sm font-medium" style={wRow1}>{Math.round(Units.kilogramToUser(80000) / 1000)}</p>
-            <p className="absolute top-0 text-sm font-medium" style={wRow2}>{Math.round(Units.kilogramToUser(70000) / 1000)}</p>
-            <p className="absolute top-0 text-sm font-medium" style={wRow3}>{Math.round(Units.kilogramToUser(60000) / 1000)}</p>
-            <p className="absolute top-0 text-sm font-medium" style={wRow4}>{Math.round(Units.kilogramToUser(50000) / 1000)}</p>
-            <p className="absolute top-0 text-sm font-medium" style={wRow5}>{Math.round(Units.kilogramToUser(40000) / 1000)}</p>
-            <p className="absolute top-0 text-sm font-medium" style={wUnits}>{usingMetric ? 'x 1000 kg' : 'x 1000 lb'}</p>
+            <p className="absolute top-0 font-mono font-medium text-md" style={wRow1}>{Math.round(Units.kilogramToUser(80000) / 1000)}</p>
+            <p className="absolute top-0 font-mono font-medium text-md" style={wRow2}>{Math.round(Units.kilogramToUser(70000) / 1000)}</p>
+            <p className="absolute top-0 font-mono font-medium text-md" style={wRow3}>{Math.round(Units.kilogramToUser(60000) / 1000)}</p>
+            <p className="absolute top-0 font-mono font-medium text-md" style={wRow4}>{Math.round(Units.kilogramToUser(50000) / 1000)}</p>
+            <p className="absolute top-0 font-mono font-medium text-md" style={wRow5}>{Math.round(Units.kilogramToUser(40000) / 1000)}</p>
+            <p className="absolute top-0 font-mono text-sm font-medium" style={wUnits}>{usingMetric ? 'x 1000 kg' : 'x 1000 lb'}</p>
 
-            <p className="absolute top-0 font-medium drop-shadow text-theme-highlight" style={mtow}>{flightPhase <= 1 || flightPhase >= 7 ? 'MTOW' : 'FLIGHT'}</p>
-            <p className="absolute top-0 font-medium text-colors-lime-500" style={mlw}>MLW</p>
-            <p className="absolute top-0 font-medium text-theme-text" style={mzfw}>MZFW</p>
+            <p className="absolute top-0 font-mono font-medium drop-shadow text-theme-highlight" style={mtow}>{flightPhase <= 1 || flightPhase >= 7 ? 'MTOW' : 'FLIGHT'}</p>
+            <p className="absolute top-0 font-mono font-medium text-colors-lime-500" style={mlw}>MLWA</p>
+            <p className="absolute top-0 font-mono font-medium text-theme-text" style={mzfw}>MZFW</p>
         </div>
     );
 };

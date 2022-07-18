@@ -1,5 +1,5 @@
 /* eslint-disable max-len */
-import React, { useEffect, useState } from 'react';
+import React, { FC, useEffect, useState } from 'react';
 import { BriefcaseFill, CloudArrowDown, PersonFill, PlayFill, StopCircleFill } from 'react-bootstrap-icons';
 import { useSimVar } from '@instruments/common/simVars';
 import { Units } from '@shared/units';
@@ -22,6 +22,9 @@ import { useAppSelector } from '../../../Store/store';
 
 export const Payload = () => {
     const { usingMetric } = Units;
+
+    const massUnitForDisplay = usingMetric ? 'KGS' : 'LBS';
+
     const [boardingStarted, setBoardingStarted] = useSimVar('L:A32NX_BOARDING_STARTED_BY_USR', 'Bool', 200);
     const simbriefDataLoaded = isSimbriefDataLoaded();
     const [boardingRate, setBoardingRate] = usePersistentProperty('CONFIG_BOARDING_RATE', 'REAL');
@@ -320,6 +323,7 @@ export const Payload = () => {
         if (!boardingStarted) {
             return 'text-theme-highlight';
         }
+
         return (totalPaxDesired * paxWeight + totalCargoDesired) >= (totalPax * paxWeight + totalCargo) ? 'text-green-500' : 'text-yellow-500';
     };
 
@@ -547,32 +551,32 @@ export const Payload = () => {
                 <CargoWidget cargo={cargo} cargoDesired={cargoDesired} cargoMap={cargoMap} cargoStationSize={cargoStationSize} onClickCargo={onClickCargo} />
 
                 <div className="flex relative right-0 flex-row justify-between px-4 mt-16">
-                    <div className="flex flex-col pr-24">
+                    <div className="flex flex-col flex-grow pr-24">
                         <div className="flex flex-row w-full">
                             <Card className="w-full col-1" childrenContainerClassName={`w-full ${simbriefDataLoaded ? 'rounded-r-none' : ''}`}>
                                 <table className="w-full">
                                     <thead className="w-full border-b">
                                         <tr className="py-2">
-                                            <th> </th>
-                                            <th scope="col" className="py-2 px-4 w-48 font-medium text-left text-md">
+                                            <th scope="col" colSpan={2} className="py-2 px-4 w-full font-medium text-center text-md">
                                                 {t('Ground.Payload.Planned')}
                                             </th>
-                                            <th scope="col" className="py-2 px-4 w-48 font-medium text-left text-md">
+                                            <th scope="col" className="py-2 px-4 w-full font-medium text-center text-md">
                                                 {t('Ground.Payload.Current')}
                                             </th>
                                         </tr>
                                     </thead>
+
                                     <tbody>
+                                        <tr className="h-2" />
+
                                         <tr>
                                             <td className="px-4 font-light whitespace-nowrap text-md">
                                                 {t('Ground.Payload.Passengers')}
                                             </td>
                                             <td>
                                                 <TooltipWrapper text={`${t('Ground.Payload.TT.MaxPassengers')} ${maxPax}`}>
-                                                    <td className="relative px-4 font-light whitespace-nowrap text-md">
-                                                        <SimpleInput
-                                                            className="my-2 w-32"
-                                                            number
+                                                    <div className="px-4 font-light whitespace-nowrap text-md">
+                                                        <PayloadValueInput
                                                             min={0}
                                                             max={maxPax > 0 ? maxPax : 999}
                                                             value={totalPaxDesired}
@@ -582,43 +586,42 @@ export const Payload = () => {
                                                                     setTargetCargo(parseInt(x), 0);
                                                                 }
                                                             }}
+                                                            unit="PAX"
                                                         />
-                                                    </td>
+                                                    </div>
                                                 </TooltipWrapper>
                                             </td>
-                                            <td className="px-4 font-light whitespace-nowrap text-md">
-                                                {`${totalPax}`}
+                                            <td className="px-4 w-20 font-mono font-light whitespace-nowrap text-md">
+                                                <PayloadValueUnitDisplay value={totalPax} padTo={3} unit="PAX" />
                                             </td>
                                         </tr>
+
                                         <tr>
                                             <td className="px-4 font-light whitespace-nowrap text-md">
                                                 {t('Ground.Payload.Cargo')}
                                             </td>
                                             <td>
-                                                <TooltipWrapper text={`${t('Ground.Payload.TT.MaxCargo')} ${maxCargo.toFixed(0)} ${usingMetric ? 'kg' : 'lb'}`}>
+                                                <TooltipWrapper text={`${t('Ground.Payload.TT.MaxCargo')} ${maxCargo.toFixed(0)} ${massUnitForDisplay}`}>
                                                     <div className="px-4 font-light whitespace-nowrap text-md">
-                                                        <div className="relative">
-                                                            <SimpleInput
-                                                                className="my-2 w-32"
-                                                                number
-                                                                min={0}
-                                                                max={maxCargo > 0 ? Math.round(maxCargo) : 99999}
-                                                                value={totalCargoDesired.toFixed(0)}
-                                                                onBlur={(x) => {
-                                                                    if (!Number.isNaN(parseInt(x)) || parseInt(x) === 0) {
-                                                                        setTargetCargo(0, parseInt(x));
-                                                                    }
-                                                                }}
-                                                            />
-                                                            <div className="absolute top-2 right-10 my-2 text-lg text-gray-400">{usingMetric ? 'KG' : 'LB'}</div>
-                                                        </div>
+                                                        <PayloadValueInput
+                                                            min={0}
+                                                            max={maxCargo > 0 ? Math.round(maxCargo) : 99999}
+                                                            value={totalCargoDesired}
+                                                            onBlur={(x) => {
+                                                                if (!Number.isNaN(parseInt(x)) || parseInt(x) === 0) {
+                                                                    setTargetCargo(0, parseInt(x));
+                                                                }
+                                                            }}
+                                                            unit={massUnitForDisplay}
+                                                        />
                                                     </div>
                                                 </TooltipWrapper>
                                             </td>
-                                            <td className="px-4 font-light whitespace-nowrap text-md">
-                                                {`${totalCargo.toFixed(0)} ${usingMetric ? 'kg' : 'lb'}`}
+                                            <td className="px-4 w-20 font-mono font-light whitespace-nowrap text-md">
+                                                <PayloadValueUnitDisplay value={totalCargo} padTo={5} unit={massUnitForDisplay} />
                                             </td>
                                         </tr>
+
                                         <tr>
                                             <td className="px-4 font-light whitespace-nowrap text-md">
                                                 {t('Ground.Payload.ZFW')}
@@ -626,26 +629,23 @@ export const Payload = () => {
                                             <td>
                                                 <TooltipWrapper text={`${t('Ground.Payload.TT.MaxZFW')} ${Units.kilogramToUser(Loadsheet.specs.weights.maxZfw).toFixed(0)} ${usingMetric ? 'kg' : 'lb'}`}>
                                                     <div className="px-4 font-light whitespace-nowrap text-md">
-                                                        <div className="relative">
-                                                            <SimpleInput
-                                                                className="my-2 w-32"
-                                                                number
-                                                                min={Math.round(emptyWeight)}
-                                                                max={Math.round(Units.kilogramToUser(Loadsheet.specs.weights.maxZfw))}
-                                                                value={zfwDesired.toFixed(0)}
-                                                                onBlur={(x) => {
-                                                                    if (!Number.isNaN(parseInt(x)) || parseInt(x) === 0) processZfw(parseInt(x));
-                                                                }}
-                                                            />
-                                                            <div className="absolute top-2 right-10 my-2 text-lg text-gray-400">{usingMetric ? 'KG' : 'LB'}</div>
-                                                        </div>
+                                                        <PayloadValueInput
+                                                            min={Math.round(emptyWeight)}
+                                                            max={Math.round(Units.kilogramToUser(Loadsheet.specs.weights.maxZfw))}
+                                                            value={zfwDesired}
+                                                            onBlur={(x) => {
+                                                                if (!Number.isNaN(parseInt(x)) || parseInt(x) === 0) processZfw(parseInt(x));
+                                                            }}
+                                                            unit={massUnitForDisplay}
+                                                        />
                                                     </div>
                                                 </TooltipWrapper>
                                             </td>
-                                            <td className="px-4 font-light whitespace-nowrap text-md">
-                                                {`${zfw.toFixed(0)} ${usingMetric ? 'kg' : 'lb'}`}
+                                            <td className="px-4 w-20 font-mono font-light whitespace-nowrap text-md">
+                                                <PayloadValueUnitDisplay value={zfw} padTo={5} unit={massUnitForDisplay} />
                                             </td>
                                         </tr>
+
                                         <tr>
                                             <td className="px-4 font-light whitespace-nowrap text-md">
                                                 {t('Ground.Payload.ZFWCG')}
@@ -677,27 +677,12 @@ export const Payload = () => {
                                         </tr>
                                     </tbody>
                                 </table>
-                            </Card>
-                            {simbriefDataLoaded
-                                && (simbriefPax !== totalPaxDesired
-                                || simbriefFreight + simbriefBag * simbriefBagWeight !== totalCargoDesired
-                                || simbriefPaxWeight !== paxWeight
-                                || simbriefBagWeight !== paxBagWeight) && (
-                                <TooltipWrapper text={t('Ground.Payload.TT.FillPayloadFromSimbrief')}>
-                                    <div
-                                        className="flex justify-center items-center px-2 h-auto rounded-md rounded-l-none border-2 transition duration-100 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight"
-                                        onClick={setSimBriefValues}
-                                    >
-                                        <CloudArrowDown size={26} />
-                                    </div>
-                                </TooltipWrapper>
-                            )}
-                        </div>
-                        <div className="flex flex-row mt-4">
-                            <Card className="pr-4 h-full" childrenContainerClassName="flex flex-col w-fit h-full">
-                                <TooltipWrapper text={t('Ground.Payload.TT.PerPaxWeight')}>
-                                    <div className="flex flex-row">
-                                        <div className="flex relative flex-row items-center mt-1 font-light text-medium">
+
+                                <hr className="mb-4 border-gray-700" />
+
+                                <div className="flex flex-row justify-start items-center">
+                                    <TooltipWrapper text={t('Ground.Payload.TT.PerPaxWeight')}>
+                                        <div className="flex relative flex-row items-center font-light text-medium">
                                             <PersonFill size={25} className="mx-3" />
                                             <SimpleInput
                                                 className="w-24"
@@ -712,57 +697,104 @@ export const Payload = () => {
                                             />
                                             <div className="absolute top-2 right-3 text-lg text-gray-400">{usingMetric ? 'KG' : 'LB'}</div>
                                         </div>
-                                    </div>
-                                </TooltipWrapper>
-                                <TooltipWrapper text={t('Ground.Payload.TT.PerPaxBagWeight')}>
-                                    <div className="flex relative flex-row items-center mt-1 font-light text-medium">
-                                        <BriefcaseFill size={25} className="mx-3" />
-                                        <SimpleInput
-                                            className="w-24"
-                                            number
-                                            min={Math.round(Units.kilogramToUser(Loadsheet.specs.pax.minBagWeight))}
-                                            max={Math.round(Units.kilogramToUser(Loadsheet.specs.pax.maxBagWeight))}
-                                            placeholder={Math.round(Units.kilogramToUser(Loadsheet.specs.pax.defaultBagWeight)).toString()}
-                                            value={paxBagWeight.toFixed(0)}
-                                            onBlur={(x) => {
-                                                if (!Number.isNaN(parseInt(x)) || parseInt(x) === 0) setPaxBagWeight(parseInt(x));
-                                            }}
-                                        />
-                                        <div className="absolute top-2 right-3 text-lg text-gray-400">{usingMetric ? 'KG' : 'LB'}</div>
-                                    </div>
-                                </TooltipWrapper>
+                                    </TooltipWrapper>
+
+                                    <TooltipWrapper text={t('Ground.Payload.TT.PerPaxBagWeight')}>
+                                        <div className="flex relative flex-row items-center ml-4 font-light text-medium">
+                                            <BriefcaseFill size={25} className="mx-3" />
+                                            <SimpleInput
+                                                className="w-24"
+                                                number
+                                                min={Math.round(Units.kilogramToUser(Loadsheet.specs.pax.minBagWeight))}
+                                                max={Math.round(Units.kilogramToUser(Loadsheet.specs.pax.maxBagWeight))}
+                                                placeholder={Math.round(Units.kilogramToUser(Loadsheet.specs.pax.defaultBagWeight)).toString()}
+                                                value={paxBagWeight.toFixed(0)}
+                                                onBlur={(x) => {
+                                                    if (!Number.isNaN(parseInt(x)) || parseInt(x) === 0) setPaxBagWeight(parseInt(x));
+                                                }}
+                                            />
+                                            <div className="absolute top-2 right-3 text-lg text-gray-400">{usingMetric ? 'KG' : 'LB'}</div>
+                                        </div>
+                                    </TooltipWrapper>
+
+                                    <TooltipWrapper text={t('Ground.Payload.TT.StartBoarding')}>
+                                        <button
+                                            type="button"
+                                            className={`flex justify-center rounded-lg items-center ml-auto w-32 h-12 ${formatBoardingStatusClass()} bg-current`}
+                                            onClick={() => setBoardingStarted(!boardingStarted)}
+                                        >
+                                            <div className={`${true ? 'text-theme-body' : 'text-theme-highlight'}`}>
+                                                <PlayFill size={32} className={boardingStarted ? 'hidden' : ''} />
+                                                <StopCircleFill size={32} className={boardingStarted ? '' : 'hidden'} />
+                                            </div>
+                                        </button>
+                                    </TooltipWrapper>
+                                </div>
                             </Card>
-                            <Card className="h-full w-fit" childrenContainerClassName="h-full w-fit rounded-r-none">
-                                <div className="flex overflow-x-hidden flex-col justify-center items-center space-y-2">
-                                    <div className="flex font-medium"> Boarding Time </div>
+
+                            {simbriefDataLoaded
+                                && (simbriefPax !== totalPaxDesired
+                                    || simbriefFreight + simbriefBag * simbriefBagWeight !== totalCargoDesired
+                                    || simbriefPaxWeight !== paxWeight
+                                    || simbriefBagWeight !== paxBagWeight)
+                                && (
+                                    <TooltipWrapper text={t('Ground.Payload.TT.FillPayloadFromSimbrief')}>
+                                        <div
+                                            className="flex justify-center items-center px-2 h-auto rounded-md rounded-l-none border-2 transition duration-100 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight"
+                                            onClick={setSimBriefValues}
+                                        >
+                                            <CloudArrowDown size={26} />
+                                        </div>
+                                    </TooltipWrapper>
+                                )}
+                        </div>
+
+                        <div className="flex flex-row mt-4">
+                            <Card className="w-full h-full" childrenContainerClassName="flex flex-col w-full h-full">
+                                <div className="flex flex-row justify-between items-center">
+                                    <div className="flex font-medium">Loading Time </div>
+
                                     <SelectGroup>
-                                        <SelectItem selected={boardingRate === 'INSTANT'} onSelect={() => setBoardingRate('INSTANT')}>{t('Settings.Instant')}</SelectItem>
+                                        <SelectItem
+                                            selected={boardingRate === 'INSTANT'}
+                                            onSelect={() => setBoardingRate('INSTANT')}
+                                        >
+                                            {t('Settings.Instant')}
+                                        </SelectItem>
 
                                         <TooltipWrapper text={`${!coldAndDark ? t('Ground.Fuel.TT.AircraftMustBeColdAndDarkToChangeRefuelTimes') : ''}`}>
-                                            <div><SelectItem className={`${!coldAndDark && 'opacity-20'}`} selected={boardingRate === 'FAST'} disabled={!coldAndDark} onSelect={() => setBoardingRate('FAST')}>{t('Settings.Fast')}</SelectItem></div>
+                                            <div>
+                                                <SelectItem
+                                                    className={`${!coldAndDark && 'opacity-20'}`}
+                                                    selected={boardingRate === 'FAST'}
+                                                    disabled={!coldAndDark}
+                                                    onSelect={() => setBoardingRate('FAST')}
+                                                >
+                                                    {t('Settings.Fast')}
+                                                </SelectItem>
+                                            </div>
                                         </TooltipWrapper>
 
-                                        <div><SelectItem className={`${!coldAndDark && 'opacity-20'}`} selected={boardingRate === 'REAL'} disabled={!coldAndDark} onSelect={() => setBoardingRate('REAL')}>{t('Settings.Real')}</SelectItem></div>
-
+                                        <div>
+                                            <SelectItem
+                                                className={`${!coldAndDark && 'opacity-20'}`}
+                                                selected={boardingRate === 'REAL'}
+                                                disabled={!coldAndDark}
+                                                onSelect={() => setBoardingRate('REAL')}
+                                            >
+                                                {t('Settings.Real')}
+                                            </SelectItem>
+                                        </div>
                                     </SelectGroup>
                                 </div>
                             </Card>
-                            <div>
-                                <TooltipWrapper text={t('Ground.Payload.TT.StartBoarding')}>
-                                    <div
-                                        className={`flex justify-center rounded-md rounded-l-none items-center h-full w-24 ${formatBoardingStatusClass()} bg-current`}
-                                        onClick={() => setBoardingStarted(!boardingStarted)}
-                                    >
-                                        <div className={`${true ? 'text-white' : 'text-theme-unselected'}`}>
-                                            <PlayFill size={50} className={boardingStarted ? 'hidden' : ''} />
-                                            <StopCircleFill size={50} className={boardingStarted ? '' : 'hidden'} />
-                                        </div>
-                                    </div>
-                                </TooltipWrapper>
-                            </div>
+
+                            {/* <Card className="h-full w-fit" childrenContainerClassName="h-full w-fit rounded-r-none"> */}
+                            {/* */}
+                            {/* </Card> */}
                         </div>
                     </div>
-                    <div className="border col-1 border-theme-accent">
+                    <div className="border border-theme-accent col-1">
                         <ChartWidget
                             width={525}
                             height={475}
@@ -778,5 +810,61 @@ export const Payload = () => {
                 </div>
             </div>
         </div>
+    );
+};
+
+interface PayloadValueInputProps {
+    min: number,
+    max: number,
+    value: number
+    onBlur: (v: string) => void,
+    unit: string,
+}
+
+const PayloadValueInput: FC<PayloadValueInputProps> = ({ min, max, value, onBlur, unit }) => (
+    <div className="relative w-44">
+        <SimpleInput
+            className="my-2 w-full font-mono"
+            fontSizeClassName="text-2xl"
+            number
+            min={min}
+            max={max}
+            value={value.toFixed(0)}
+            onBlur={onBlur}
+        />
+        <div className="flex absolute top-0 right-3 items-center h-full font-mono text-2xl text-gray-400">{unit}</div>
+    </div>
+);
+
+interface NumberUnitDisplayProps {
+    /**
+     * The value to show
+     */
+    value: number,
+
+    /**
+     * The amount of leading zeroes to pad with
+     */
+    padTo: number,
+
+    /**
+     * The unit to show at the end
+     */
+    unit: string,
+}
+
+const PayloadValueUnitDisplay: FC<NumberUnitDisplayProps> = ({ value, padTo, unit }) => {
+    const fixedValue = value.toFixed(0);
+    const leadingZeroCount = Math.max(0, padTo - fixedValue.length);
+
+    return (
+        <span className="flex items-center">
+            <span className="flex justify-end pr-2 w-20 text-2xl">
+                <span className="text-2xl text-gray-400">{'0'.repeat(leadingZeroCount)}</span>
+                {fixedValue}
+            </span>
+            {' '}
+            <span className="text-2xl text-gray-500">{unit}</span>
+        </span>
     );
 };
