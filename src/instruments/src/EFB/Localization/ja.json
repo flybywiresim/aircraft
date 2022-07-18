@@ -143,8 +143,8 @@
       "TT": {
         "AircraftMustBeColdAndDarkToChangeBoardingTimes": "エンジン停止かつ地上にいる場合のみ、搭乗時間を変更できます",
         "FillPayloadFromSimbrief": "Simbriefから積載物の情報を読み込む",
-        "MaxCargo": "Max Cargo",
-        "MaxPassengers": "Maximum Passengers",
+        "MaxCargo": "最大貨物重量",
+        "MaxPassengers": "最大乗客数",
         "MaxZFW": "最大ZFW",
         "MaxZFWCG": "最大ZFWCG",
         "PerPaxBagWeight": "乗客1人あたりの手荷物重量",
