@@ -19,7 +19,7 @@ export const Ground = () => {
         { name: 'Services', alias: t('Ground.Services.Title'), component: <ServicesPage /> },
         { name: 'Pushback', alias: t('Ground.Pushback.Title'), component: <PushbackPage /> },
         { name: 'Fuel', alias: t('Ground.Fuel.Title'), component: <FuelPage /> },
-        { name: 'Payload', alias: 'Payload', component: <Payload /> },
+        { name: 'Payload', alias: t('Ground.Payload.Title'), component: <Payload /> },
     ];
 
     return (
