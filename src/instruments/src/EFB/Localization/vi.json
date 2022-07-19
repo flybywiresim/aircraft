@@ -85,7 +85,7 @@
       "YouHaveNotYetImportedAnySimBriefData": "Bạn chưa nhập bất kỳ dữ liệu SimBrief nào."
     },
     "Overview": {
-      "ActualGW": "Actual GW",
+      "ActualGW": "Tổng trọng lượng thật",
       "Engines": "Động cơ",
       "MMO": "Tốc độ vận hành tối đa theo số Mach",
       "MRW": "Trong lượng bãi đậu tối đa",
@@ -135,23 +135,24 @@
       "Unavailable": "Không khả dụng"
     },
     "Payload": {
-      "BoardingTime": "Boarding Time",
-      "Cargo": "Cargo",
-      "Current": "Current",
-      "Passengers": "Passengers",
-      "Planned": "Planned",
+      "BoardingTime": "Thời gian lên máy bay",
+      "Cargo": "Hàng hóa",
+      "Current": "Hiện tại",
+      "Passengers": "Hành khách",
+      "Planned": "Đã lên kế hoạch",
       "TT": {
-        "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Aircraft Must Be On the Ground and Have Engines Shutdown to Change Boarding Duration",
-        "FillPayloadFromSimbrief": "Fill Payload Information from Simbrief",
-        "MaxCargo": "Max Cargo",
-        "MaxPassengers": "Maximum Passengers",
-        "MaxZFW": "Maximum ZFW",
-        "MaxZFWCG": "Maximum ZFWCG",
-        "PerPaxBagWeight": "Per Passenger Bag Weight",
-        "PerPaxWeight": "Per Passenger Weight",
-        "StartBoarding": "Begin Boarding"
+        "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Máy bay phải ở trên mặt đất và phải có động cơ tắt để thay đổi thời gian lên máy bay",
+        "FillPayloadFromSimbrief": "Điền thông tin tải trọng từ Simbrief",
+        "MaxCargo": "Số lượng hàng hóa tối đa",
+        "MaxPassengers": "Số hành khách tối đa",
+        "MaxZFW": "ZFW tối đa",
+        "MaxZFWCG": "ZFWCG tối đa",
+        "PerPaxBagWeight": "Trọng lượng mỗi túi hành khách",
+        "PerPaxWeight": "Trọng lượng mỗi hành khách",
+        "StartBoarding": "Bắt đầu lên máy bay"
       },
-      "ZFW": "ZFW",
+      "Title": "Tải trọng",
+      "ZFW": "Trọng lượng máy bay không kể nhiên liệu",
       "ZFWCG": "ZFWCG"
     },
     "Pushback": {
