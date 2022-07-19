@@ -281,9 +281,6 @@ void FlyByWireInterface::setupLocalVariables() {
   idDevelopmentAutoland_delta_Theta_bx_deg = make_unique<LocalVariable>("A32NX_DEV_FLARE_DELTA_THETA_BX");
   idDevelopmentAutoland_delta_Theta_beta_c_deg = make_unique<LocalVariable>("A32NX_DEV_FLARE_DELTA_THETA_BETA_C");
 
-  // register L variable for direct law
-  idDevelopmentUseDirectLaw = make_unique<LocalVariable>("A32NX_DEV_DIRECT_LAW");
-
   // register L variable for simulation rate limits
   idMinimumSimulationRate = make_unique<LocalVariable>("A32NX_SIMULATION_RATE_LIMIT_MINIMUM");
   idMaximumSimulationRate = make_unique<LocalVariable>("A32NX_SIMULATION_RATE_LIMIT_MAXIMUM");
@@ -1629,27 +1626,9 @@ bool FlyByWireInterface::updateServoSolenoidStatus() {
   idRudderTravelLimitActiveModeCommanded[1]->set(facsDiscreteOutputs[1].rudder_travel_lim_engaged);
   idRudderTravelLimCommandedPosition[1]->set(facsAnalogOutputs[1].rudder_travel_limit_order_deg);
 
-  // set outputs
-  if (!(wasInSlew || pauseDetected || idExternalOverride->get())) {
-    // object to write with trim
-    double leftAileronCommand = elacsAnalogOutputs[0].left_aileron_pos_order + elacsAnalogOutputs[1].left_aileron_pos_order;
-    double rightAileronCommand = elacsAnalogOutputs[0].right_aileron_pos_order + elacsAnalogOutputs[1].right_aileron_pos_order;
+  SimInput simInput = simConnectInterface.getSimInput();
 
-    double leftElevatorCommand = elacsAnalogOutputs[0].left_elev_pos_order_deg + secsAnalogOutputs[0].left_elev_pos_order_deg +
-                                 elacsAnalogOutputs[1].left_elev_pos_order_deg + secsAnalogOutputs[1].left_elev_pos_order_deg;
-    double rightElevatorCommand = elacsAnalogOutputs[0].right_elev_pos_order_deg + secsAnalogOutputs[0].right_elev_pos_order_deg +
-                                  elacsAnalogOutputs[1].right_elev_pos_order_deg + secsAnalogOutputs[1].right_elev_pos_order_deg;
-
-    SimInput simInput = simConnectInterface.getSimInput();
-    SimOutput output = {(-leftElevatorCommand - rightElevatorCommand) / (2 * 30), (leftAileronCommand - rightAileronCommand) / (2 * 25),
-                        -simInput.inputs[2] - (facsAnalogOutputs[0].yaw_damper_order_deg + facsAnalogOutputs[1].yaw_damper_order_deg) / 30};
-
-    // send data via sim connect
-    if (!simConnectInterface.sendData(output)) {
-      cout << "WASM: Write data failed!" << endl;
-      return false;
-    }
-  }
+  idRudderPosition->set(-simInput.inputs[2] - (facsAnalogOutputs[0].yaw_damper_order_deg + facsAnalogOutputs[1].yaw_damper_order_deg) / 30);
 
   SimOutputZetaTrim outputZetaTrim = {};
   outputZetaTrim.zeta_trim_pos = -(facsAnalogOutputs[0].rudder_trim_order_deg + facsAnalogOutputs[1].rudder_trim_order_deg) / 20;
@@ -2261,7 +2240,7 @@ bool FlyByWireInterface::updateFlyByWire(double sampleTime) {
   idRudderPedalAnimationPosition->set(max(-100, min(100, (-100.0 * simInput.inputs[2]) + (100.0 * simData.zeta_trim_pos))));
 
   // provide tracking mode state
-  idTrackingMode->set(flyByWireOutput.sim.data_computed.tracking_mode_on);
+  idTrackingMode->set(wasInSlew || pauseDetected || idExternalOverride->get());
 
   // determine if nosewheel demand shall be set
   if (!(wasInSlew || pauseDetected || idExternalOverride->get())) {
