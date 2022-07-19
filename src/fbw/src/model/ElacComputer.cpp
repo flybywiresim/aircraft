@@ -1095,24 +1095,25 @@ void ElacComputer::step()
     }
 
     rtb_handleIndex = static_cast<real_T>(rtb_V_ias) / rtb_mach_h;
-    if (rtb_V_ias <= std::fmin(365.0, (look1_binlxpw(rtb_DataTypeConversion8_g, ElacComputer_P.uDLookupTable_bp01Data,
-           ElacComputer_P.uDLookupTable_tableData, 3U) + 0.01) * rtb_handleIndex)) {
-      ElacComputer_DWork.eventTime = ElacComputer_U.in.time.simulation_time;
-    } else if (ElacComputer_DWork.eventTime == 0.0) {
+    if ((rtb_V_ias <= std::fmin(365.0, (look1_binlxpw(rtb_DataTypeConversion8_g, ElacComputer_P.uDLookupTable_bp01Data,
+            ElacComputer_P.uDLookupTable_tableData, 3U) + 0.01) * rtb_handleIndex)) || (priorityPitchPitchLawCap !=
+         pitch_efcs_law::NormalLaw) || (ElacComputer_DWork.eventTime == 0.0)) {
       ElacComputer_DWork.eventTime = ElacComputer_U.in.time.simulation_time;
     }
 
-    if (ElacComputer_U.in.discrete_inputs.ap_1_disengaged && ElacComputer_U.in.discrete_inputs.ap_2_disengaged) {
-      ElacComputer_DWork.sProtActive = ((rtb_V_ias > std::fmin(look1_binlxpw(rtb_DataTypeConversion8_g,
-        ElacComputer_P.uDLookupTable1_bp01Data, ElacComputer_P.uDLookupTable1_tableData, 3U), rtb_handleIndex *
-        look1_binlxpw(rtb_DataTypeConversion8_g, ElacComputer_P.uDLookupTable2_bp01Data,
-                      ElacComputer_P.uDLookupTable2_tableData, 3U))) || ElacComputer_DWork.sProtActive);
+    rtb_AND_ai = (priorityPitchPitchLawCap == pitch_efcs_law::NormalLaw);
+    if (ElacComputer_U.in.discrete_inputs.ap_1_disengaged && ElacComputer_U.in.discrete_inputs.ap_2_disengaged &&
+        (rtb_V_ias > std::fmin(look1_binlxpw(rtb_DataTypeConversion8_g, ElacComputer_P.uDLookupTable1_bp01Data,
+           ElacComputer_P.uDLookupTable1_tableData, 3U), rtb_handleIndex * look1_binlxpw(rtb_DataTypeConversion8_g,
+           ElacComputer_P.uDLookupTable2_bp01Data, ElacComputer_P.uDLookupTable2_tableData, 3U)))) {
+      ElacComputer_DWork.sProtActive = (rtb_AND_ai || ElacComputer_DWork.sProtActive);
     }
 
     rtb_DataTypeConversion_by = (ElacComputer_U.in.discrete_inputs.ap_1_disengaged &&
       ElacComputer_U.in.discrete_inputs.ap_2_disengaged);
-    ElacComputer_DWork.sProtActive = ((rtb_V_ias >= rtb_Switch1) && (rtb_DataTypeConversion_by &&
+    ElacComputer_DWork.sProtActive = ((rtb_V_ias >= rtb_Switch1) && (rtb_DataTypeConversion_by && rtb_AND_ai &&
       ElacComputer_DWork.sProtActive));
+    rtb_AND_ai = (priorityPitchPitchLawCap == pitch_efcs_law::NormalLaw);
     if (!ElacComputer_DWork.resetEventTime_not_empty) {
       ElacComputer_DWork.resetEventTime = ElacComputer_U.in.time.simulation_time;
       ElacComputer_DWork.resetEventTime_not_empty = true;
@@ -1122,14 +1123,15 @@ void ElacComputer::step()
       ElacComputer_DWork.resetEventTime = ElacComputer_U.in.time.simulation_time;
     }
 
-    ElacComputer_DWork.sProtActive_m = ((rtb_AND4 && rtb_DataTypeConversion_by && (rtb_alpha >
+    ElacComputer_DWork.sProtActive_m = ((rtb_AND4 && rtb_AND_ai && rtb_DataTypeConversion_by && (rtb_alpha >
       rtb_DataTypeConversion8_d3) && (ElacComputer_U.in.time.monotonic_time > 10.0)) || ElacComputer_DWork.sProtActive_m);
     ElacComputer_DWork.sProtActive_m = ((ElacComputer_U.in.time.simulation_time - ElacComputer_DWork.resetEventTime <=
       0.5) && (rtb_Y_p >= -0.5) && ((rtb_raComputationValue >= 200.0F) || (rtb_Y_p >= 0.5) || (rtb_alpha >=
-      rtb_DataTypeConversion8_d3 - 2.0)) && rtb_AND4 && ElacComputer_DWork.sProtActive_m);
+      rtb_DataTypeConversion8_d3 - 2.0)) && rtb_AND4 && rtb_AND_ai && ElacComputer_DWork.sProtActive_m);
     rtb_AND_ai = ((rtb_AND4 && (((rtb_ap_special_disc != 0) && (rtb_alpha > rtb_Y_b)) || (rtb_alpha >
-      rtb_DataTypeConversion8_d3 + 0.25))) || (ElacComputer_U.in.time.simulation_time - ElacComputer_DWork.eventTime >
-      3.0) || ElacComputer_DWork.sProtActive || ElacComputer_DWork.sProtActive_m);
+      rtb_DataTypeConversion8_d3 + 0.25)) && (priorityPitchPitchLawCap == pitch_efcs_law::NormalLaw)) ||
+                  (ElacComputer_U.in.time.simulation_time - ElacComputer_DWork.eventTime > 3.0) ||
+                  ElacComputer_DWork.sProtActive || ElacComputer_DWork.sProtActive_m);
     ElacComputer_B.logic.ths_active_commanded = rtb_AND2_p;
     ElacComputer_B.logic.protection_ap_disconnect = rtb_AND_ai;
     ElacComputer_B.logic.ap_authorised = ((std::abs(rtb_Y_p) <= 0.5) && (std::abs(rtb_DataTypeConversion6_g) <= 0.5) &&
