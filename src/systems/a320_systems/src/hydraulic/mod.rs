@@ -1142,6 +1142,9 @@ pub(super) struct A320Hydraulic {
     hyd_ptu_ecam_memo_id: VariableIdentifier,
     ptu_high_pitch_sound_id: VariableIdentifier,
     ptu_continuous_mode_id: VariableIdentifier,
+    debug_pump: f64,
+
+    debug_pump_to_aux: VariableIdentifier,
 
     nose_steering: SteeringActuator,
 
@@ -1272,6 +1275,8 @@ impl A320Hydraulic {
             hyd_ptu_ecam_memo_id: context.get_identifier("HYD_PTU_ON_ECAM_MEMO".to_owned()),
             ptu_high_pitch_sound_id: context.get_identifier("HYD_PTU_HIGH_PITCH_SOUND".to_owned()),
             ptu_continuous_mode_id: context.get_identifier("HYD_PTU_CONTINUOUS_MODE".to_owned()),
+            debug_pump_to_aux: context.get_identifier("HYD_PUMP_TO_AUX".to_owned()),
+            debug_pump: 0.,
 
             nose_steering: SteeringActuator::new(
                 context,
@@ -2053,6 +2058,7 @@ impl A320Hydraulic {
             context,
             &mut vec![&mut self.engine_driven_pump_1],
             None::<&mut ElectricPump>,
+            None::<&mut ElectricPump>,
             Some(&self.power_transfer_unit),
             &self.green_circuit_controller,
             reservoir_pneumatics.green_reservoir_pressure(),
@@ -2068,6 +2074,7 @@ impl A320Hydraulic {
             context,
             &mut vec![&mut self.engine_driven_pump_2],
             Some(&mut self.yellow_electric_pump),
+            None::<&mut ElectricPump>,
             Some(&self.power_transfer_unit),
             &self.yellow_circuit_controller,
             reservoir_pneumatics.yellow_reservoir_pressure(),
@@ -2083,6 +2090,7 @@ impl A320Hydraulic {
             context,
             &mut vec![&mut self.blue_electric_pump],
             Some(&mut self.ram_air_turbine),
+            None::<&mut ElectricPump>,
             None,
             &self.blue_circuit_controller,
             reservoir_pneumatics.blue_reservoir_pressure(),
@@ -2098,6 +2106,10 @@ impl A320Hydraulic {
             self.yellow_circuit.system_section(),
             self.brake_steer_computer.alternate_controller(),
         );
+
+        self.blue_circuit.set_pump_to_aux(0, self.debug_pump > 0.);
+        self.green_circuit.set_pump_to_aux(0, self.debug_pump > 0.);
+        self.yellow_circuit.set_pump_to_aux(0, self.debug_pump > 0.);
     }
 
     // Actual logic of HYD PTU memo computed here until done within FWS
@@ -2234,6 +2246,10 @@ impl SimulationElement for A320Hydraulic {
             self.power_transfer_unit.is_in_continuous_mode()
                 && !self.ptu_high_pitch_sound_active.output(),
         );
+    }
+
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        self.debug_pump = reader.read(&self.debug_pump_to_aux);
     }
 }
 impl HydraulicGeneratorControlUnit for A320Hydraulic {
@@ -2406,6 +2422,10 @@ impl HydraulicCircuitController for A320HydraulicCircuitController {
 
     fn should_open_leak_measurement_valve(&self) -> bool {
         self.should_open_leak_measurement_valve
+    }
+
+    fn should_route_pump_to_auxiliary(&self, _: usize) -> bool {
+        false
     }
 }
 
@@ -5999,6 +6019,10 @@ mod tests {
                 self.read_by_name("HYD_YELLOW_SYSTEM_1_SECTION_PRESSURE")
             }
 
+            fn yellow_pressure_auxiliary(&mut self) -> Pressure {
+                self.read_by_name("HYD_YELLOW_AUXILIARY_1_SECTION_PRESSURE")
+            }
+
             fn get_yellow_reservoir_volume(&mut self) -> Volume {
                 self.read_by_name("HYD_YELLOW_RESERVOIR_LEVEL")
             }
@@ -6343,6 +6367,11 @@ mod tests {
                 self.write_by_name("GENERAL ENG STARTER ACTIVE:2", false);
                 self.write_by_name("ENGINE_N2:2", 25.);
 
+                self
+            }
+
+            fn set_hyd_auxiliary(mut self) -> Self {
+                self.write_by_name("HYD_PUMP_TO_AUX", 1.);
                 self
             }
 
@@ -10558,6 +10587,33 @@ mod tests {
             // Check elevators did stay drooped down after valve reopening
             assert!(test_bed.get_left_elevator_position().get::<ratio>() < 0.1);
             assert!(test_bed.get_right_elevator_position().get::<ratio>() < 0.1);
+        }
+
+        #[test]
+        fn yellow_edp_buildup_auxiliary_section() {
+            let mut test_bed = test_bed_on_ground_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
+
+            // Waiting for 5s pressure should be at 3000 psi
+            test_bed = test_bed
+                .start_eng2(Ratio::new::<percent>(80.))
+                .run_waiting_for(Duration::from_secs(5));
+
+            assert!(test_bed.is_yellow_pressure_switch_pressurised());
+            assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(2800.));
+            assert!(test_bed.yellow_pressure_auxiliary() < Pressure::new::<psi>(50.));
+
+            // Pumping to auxiliary section
+            test_bed = test_bed
+                .set_hyd_auxiliary()
+                .run_waiting_for(Duration::from_secs(20));
+
+            assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(500.));
+            assert!(test_bed.yellow_pressure_auxiliary() < Pressure::new::<psi>(3500.));
+            assert!(test_bed.yellow_pressure_auxiliary() > Pressure::new::<psi>(2500.));
         }
     }
 }

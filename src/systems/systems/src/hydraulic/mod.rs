@@ -590,6 +590,7 @@ impl SimulationElement for PowerTransferUnit {
 pub trait HydraulicCircuitController {
     fn should_open_fire_shutoff_valve(&self, pump_index: usize) -> bool;
     fn should_open_leak_measurement_valve(&self) -> bool;
+    fn should_route_pump_to_auxiliary(&self, pump_index: usize) -> bool;
 }
 
 pub struct Accumulator {
@@ -715,7 +716,12 @@ impl Accumulator {
 pub struct HydraulicCircuit {
     pump_sections: Vec<Section>,
     system_section: Section,
-    pump_to_system_check_valves: Vec<CheckValve>,
+    auxiliary_section: Section,
+
+    pump_sections_check_valves: Vec<CheckValve>,
+
+    // True routed to auxiliary False routed to system section
+    pump_section_routed_to_auxiliary_section: Vec<bool>,
 
     fluid: Fluid,
     reservoir: Reservoir,
@@ -763,6 +769,8 @@ impl HydraulicCircuit {
         let mut pump_sections: Vec<Section> = Vec::new();
         let mut pump_to_system_check_valves: Vec<CheckValve> = Vec::new();
 
+        let mut pump_section_to_auxiliary: Vec<bool> = Vec::new();
+
         for pump_id in 1..=number_of_pump_sections {
             let fire_valve = Some(FireValve::new(
                 context,
@@ -791,6 +799,8 @@ impl HydraulicCircuit {
             ));
 
             pump_to_system_check_valves.push(CheckValve::new());
+
+            pump_section_to_auxiliary.push(false);
         }
 
         let system_section_volume = high_pressure_max_volume
@@ -822,7 +832,24 @@ impl HydraulicCircuit {
                     Self::DEFAULT_LEAK_MEASUREMENT_VALVE_POWERING_BUS,
                 )),
             ),
-            pump_to_system_check_valves,
+            auxiliary_section: Section::new(
+                context,
+                id,
+                "AUXILIARY",
+                1,
+                VolumeRate::new::<gallon_per_second>(Self::SYSTEM_SECTION_STATIC_LEAK_GAL_P_S),
+                system_section_volume * priming_volume,
+                system_section_volume,
+                None,
+                system_pressure_switch_lo_hyst,
+                system_pressure_switch_hi_hyst,
+                None,
+                false,
+                false,
+                None,
+            ),
+            pump_sections_check_valves: pump_to_system_check_valves,
+            pump_section_routed_to_auxiliary_section: pump_section_to_auxiliary,
             fluid: Fluid::new(Pressure::new::<pascal>(Self::FLUID_BULK_MODULUS_PASCAL)),
             reservoir,
         }
@@ -834,6 +861,7 @@ impl HydraulicCircuit {
 
     pub fn update_actuator_volumes(&mut self, actuator: &mut impl Actuator) {
         self.system_section.update_actuator_volumes(actuator);
+        self.auxiliary_section.update_actuator_volumes(actuator);
     }
 
     pub fn update(
@@ -841,6 +869,7 @@ impl HydraulicCircuit {
         context: &UpdateContext,
         main_section_pumps: &mut Vec<&mut impl PressureSource>,
         system_section_pump: Option<&mut impl PressureSource>,
+        auxiliary_section_pump: Option<&mut impl PressureSource>,
         ptu: Option<&PowerTransferUnit>,
         controller: &impl HydraulicCircuitController,
         reservoir_pressure: Pressure,
@@ -858,30 +887,51 @@ impl HydraulicCircuit {
 
         // Updating for each section its total maximum theoretical pumping capacity
         // "what max volume it could pump considering current reservoir state and pump rpm"
-        self.update_maximum_pumping_capacities(main_section_pumps, &system_section_pump);
+        self.update_maximum_pumping_capacities(
+            main_section_pumps,
+            &system_section_pump,
+            &auxiliary_section_pump,
+        );
 
         // What flow can come through each valve considering what is consumed downstream
         self.update_maximum_valve_flows(context);
 
         // Update final flow that will go through each valve (spliting flow between multiple valves)
         self.update_final_valves_flows();
+        self.update_auxiliary_final_valves_flows();
 
         self.update_delta_vol_from_valves();
 
         // We have all flow information, now we set pump parameters (displacement) to where it
         // should be so we reach target pressure
-        self.update_pumps(context, main_section_pumps, system_section_pump);
+        self.update_pumps(
+            context,
+            main_section_pumps,
+            system_section_pump,
+            auxiliary_section_pump,
+        );
 
         self.update_final_delta_vol_and_pressure(context);
     }
 
     fn update_delta_vol_from_valves(&mut self) {
         for (pump_index, section) in self.pump_sections.iter_mut().enumerate() {
-            section.update_downstream_delta_vol(&self.pump_to_system_check_valves[pump_index]);
+            section.update_downstream_delta_vol(&self.pump_sections_check_valves[pump_index]);
         }
 
-        self.system_section
-            .update_upstream_delta_vol(&self.pump_to_system_check_valves);
+        for (pump_index, section) in self.pump_sections.iter_mut().enumerate() {
+            if self.pump_section_routed_to_auxiliary_section[pump_index] {
+                self.auxiliary_section
+                    .update_upstream_delta_vol(std::slice::from_ref(
+                        &self.pump_sections_check_valves[pump_index],
+                    ));
+            } else {
+                self.system_section
+                    .update_upstream_delta_vol(std::slice::from_ref(
+                        &self.pump_sections_check_valves[pump_index],
+                    ));
+            }
+        }
     }
 
     fn update_pumps(
@@ -889,6 +939,7 @@ impl HydraulicCircuit {
         context: &UpdateContext,
         main_section_pumps: &mut Vec<&mut impl PressureSource>,
         system_section_pump: Option<&mut impl PressureSource>,
+        auxiliary_section_pump: Option<&mut impl PressureSource>,
     ) {
         for (pump_index, section) in self.pump_sections.iter_mut().enumerate() {
             section.update_pump_state(context, main_section_pumps[pump_index], &mut self.reservoir);
@@ -896,6 +947,11 @@ impl HydraulicCircuit {
 
         if let Some(pump) = system_section_pump {
             self.system_section
+                .update_pump_state(context, pump, &mut self.reservoir);
+        }
+
+        if let Some(pump) = auxiliary_section_pump {
+            self.auxiliary_section
                 .update_pump_state(context, pump, &mut self.reservoir);
         }
     }
@@ -907,16 +963,28 @@ impl HydraulicCircuit {
 
         self.system_section
             .update_final_delta_vol_and_pressure(context, &self.fluid);
+
+        self.auxiliary_section
+            .update_final_delta_vol_and_pressure(context, &self.fluid);
     }
 
     fn update_maximum_valve_flows(&mut self, context: &UpdateContext) {
-        for (pump_section_idx, valve) in self.pump_to_system_check_valves.iter_mut().enumerate() {
-            valve.update_flow_forecast(
-                context,
-                &self.pump_sections[pump_section_idx],
-                &self.system_section,
-                &self.fluid,
-            );
+        for (pump_section_idx, valve) in self.pump_sections_check_valves.iter_mut().enumerate() {
+            if self.pump_section_routed_to_auxiliary_section[pump_section_idx] {
+                valve.update_flow_forecast(
+                    context,
+                    &self.pump_sections[pump_section_idx],
+                    &self.auxiliary_section,
+                    &self.fluid,
+                );
+            } else {
+                valve.update_flow_forecast(
+                    context,
+                    &self.pump_sections[pump_section_idx],
+                    &self.system_section,
+                    &self.fluid,
+                );
+            }
         }
     }
 
@@ -924,6 +992,7 @@ impl HydraulicCircuit {
         &mut self,
         main_section_pumps: &mut Vec<&mut impl PressureSource>,
         system_section_pump: &Option<&mut impl PressureSource>,
+        auxiliary_section_pump: &Option<&mut impl PressureSource>,
     ) {
         for (pump_index, section) in self.pump_sections.iter_mut().enumerate() {
             section.update_maximum_pumping_capacity(main_section_pumps[pump_index]);
@@ -931,6 +1000,11 @@ impl HydraulicCircuit {
 
         if let Some(pump) = system_section_pump {
             self.system_section.update_maximum_pumping_capacity(*pump);
+        }
+
+        if let Some(pump) = auxiliary_section_pump {
+            self.auxiliary_section
+                .update_maximum_pumping_capacity(*pump);
         }
     }
 
@@ -945,6 +1019,11 @@ impl HydraulicCircuit {
             Pressure::new::<psi>(Self::TARGET_PRESSURE_PSI),
             &self.fluid,
         );
+        self.auxiliary_section
+            .update_target_volume_after_flow_update(
+                Pressure::new::<psi>(Self::TARGET_PRESSURE_PSI),
+                &self.fluid,
+            );
     }
 
     fn update_flows(&mut self, context: &UpdateContext, ptu: Option<&PowerTransferUnit>) {
@@ -952,6 +1031,9 @@ impl HydraulicCircuit {
             section.update_flow(context, &mut self.reservoir, ptu);
         }
         self.system_section
+            .update_flow(context, &mut self.reservoir, ptu);
+
+        self.auxiliary_section
             .update_flow(context, &mut self.reservoir, ptu);
     }
 
@@ -973,8 +1055,10 @@ impl HydraulicCircuit {
     fn update_final_valves_flows(&mut self) {
         let mut total_max_valves_volume = Volume::new::<gallon>(0.);
 
-        for valve in &mut self.pump_to_system_check_valves {
-            total_max_valves_volume += valve.max_virtual_volume;
+        for (idx, valve) in &mut self.pump_sections_check_valves.iter_mut().enumerate() {
+            if !self.pump_section_routed_to_auxiliary_section[idx] {
+                total_max_valves_volume += valve.max_virtual_volume;
+            }
         }
 
         let used_system_volume = self
@@ -984,14 +1068,50 @@ impl HydraulicCircuit {
 
         if used_system_volume >= total_max_valves_volume {
             // If all the volume upstream is used by system section, each valve will provide its max volume available
-            for valve in &mut self.pump_to_system_check_valves {
-                valve.current_volume = valve.max_virtual_volume;
+            for (idx, valve) in &mut self.pump_sections_check_valves.iter_mut().enumerate() {
+                if !self.pump_section_routed_to_auxiliary_section[idx] {
+                    valve.current_volume = valve.max_virtual_volume;
+                }
             }
         } else if total_max_valves_volume > Volume::new::<gallon>(0.) {
             let needed_ratio = used_system_volume / total_max_valves_volume;
 
-            for valve in &mut self.pump_to_system_check_valves {
-                valve.current_volume = valve.max_virtual_volume * needed_ratio;
+            for (idx, valve) in &mut self.pump_sections_check_valves.iter_mut().enumerate() {
+                if !self.pump_section_routed_to_auxiliary_section[idx] {
+                    valve.current_volume = valve.max_virtual_volume * needed_ratio;
+                }
+            }
+        }
+    }
+
+    fn update_auxiliary_final_valves_flows(&mut self) {
+        let mut total_max_valves_volume = Volume::new::<gallon>(0.);
+
+        for (idx, valve) in &mut self.pump_sections_check_valves.iter_mut().enumerate() {
+            if self.pump_section_routed_to_auxiliary_section[idx] {
+                total_max_valves_volume += valve.max_virtual_volume;
+            }
+        }
+
+        let used_system_volume = self
+            .auxiliary_section
+            .volume_target
+            .max(Volume::new::<gallon>(0.));
+
+        if used_system_volume >= total_max_valves_volume {
+            // If all the volume upstream is used by system section, each valve will provide its max volume available
+            for (idx, valve) in &mut self.pump_sections_check_valves.iter_mut().enumerate() {
+                if self.pump_section_routed_to_auxiliary_section[idx] {
+                    valve.current_volume = valve.max_virtual_volume;
+                }
+            }
+        } else if total_max_valves_volume > Volume::new::<gallon>(0.) {
+            let needed_ratio = used_system_volume / total_max_valves_volume;
+
+            for (idx, valve) in &mut self.pump_sections_check_valves.iter_mut().enumerate() {
+                if self.pump_section_routed_to_auxiliary_section[idx] {
+                    valve.current_volume = valve.max_virtual_volume * needed_ratio;
+                }
             }
         }
     }
@@ -1031,6 +1151,10 @@ impl HydraulicCircuit {
     pub fn pump_section(&self, pump_index: usize) -> &impl SectionPressure {
         &self.pump_sections[pump_index]
     }
+
+    pub fn set_pump_to_aux(&mut self, section_index: usize, pump_to_aux: bool) {
+        self.pump_section_routed_to_auxiliary_section[section_index] = pump_to_aux;
+    }
 }
 impl SimulationElement for HydraulicCircuit {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
@@ -1041,6 +1165,8 @@ impl SimulationElement for HydraulicCircuit {
         }
 
         self.system_section.accept(visitor);
+
+        self.auxiliary_section.accept(visitor);
 
         visitor.visit(self);
     }
