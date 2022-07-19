@@ -377,7 +377,8 @@ const Elevator = ({
     const cursorPath = `M0,77 l${side === 'right' ? '-' : ''}15,-9 l0,18Z`;
 
     // Need to scale the "nose down" elevator position up, since the current elevator limits are wrong.
-    const elevatorDeflectPctNormalized = elevatorDeflection.value * 90 / 30 * (elevatorDeflection.value > 0 ? 1.27 : 1);
+    const elevatorDeflectPctNormalized = elevatorDeflection.value * 90 / 30;
+
     const servcontrolLeftAvail = fcdcDiscreteWord3.getBitValue(side === 'left' ? 15 : 18);
     const servcontrolRightAvail = fcdcDiscreteWord3.getBitValue(side === 'left' ? 16 : 17);
     const cursorClassName = servcontrolLeftAvail || servcontrolRightAvail ? 'GreenLine' : 'AmberLine';
