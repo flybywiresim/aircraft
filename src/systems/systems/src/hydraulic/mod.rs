@@ -897,7 +897,7 @@ impl HydraulicCircuit {
         self.update_maximum_valve_flows(context);
 
         // Update final flow that will go through each valve (spliting flow between multiple valves)
-        self.update_final_valves_flows();
+        self.update_system_final_valves_flows();
         self.update_auxiliary_final_valves_flows();
 
         self.update_delta_vol_from_valves();
@@ -1052,24 +1052,27 @@ impl HydraulicCircuit {
             .update_leak_measurement_valve(context, controller);
     }
 
-    fn update_final_valves_flows(&mut self) {
+    fn update_final_valves_flows(&mut self, to_auxiliary: bool) {
         let mut total_max_valves_volume = Volume::new::<gallon>(0.);
 
         for (idx, valve) in &mut self.pump_sections_check_valves.iter_mut().enumerate() {
-            if !self.pump_section_routed_to_auxiliary_section[idx] {
+            if self.pump_section_routed_to_auxiliary_section[idx] == to_auxiliary {
                 total_max_valves_volume += valve.max_virtual_volume;
             }
         }
 
-        let used_system_volume = self
-            .system_section
-            .volume_target
-            .max(Volume::new::<gallon>(0.));
+        let section = if to_auxiliary {
+            &self.auxiliary_section
+        } else {
+            &self.system_section
+        };
+
+        let used_system_volume = section.volume_target.max(Volume::new::<gallon>(0.));
 
         if used_system_volume >= total_max_valves_volume {
             // If all the volume upstream is used by system section, each valve will provide its max volume available
             for (idx, valve) in &mut self.pump_sections_check_valves.iter_mut().enumerate() {
-                if !self.pump_section_routed_to_auxiliary_section[idx] {
+                if self.pump_section_routed_to_auxiliary_section[idx] == to_auxiliary {
                     valve.current_volume = valve.max_virtual_volume;
                 }
             }
@@ -1077,44 +1080,19 @@ impl HydraulicCircuit {
             let needed_ratio = used_system_volume / total_max_valves_volume;
 
             for (idx, valve) in &mut self.pump_sections_check_valves.iter_mut().enumerate() {
-                if !self.pump_section_routed_to_auxiliary_section[idx] {
+                if self.pump_section_routed_to_auxiliary_section[idx] == to_auxiliary {
                     valve.current_volume = valve.max_virtual_volume * needed_ratio;
                 }
             }
         }
     }
 
-    // TODO remove code duplication
+    fn update_system_final_valves_flows(&mut self) {
+        self.update_final_valves_flows(false);
+    }
+
     fn update_auxiliary_final_valves_flows(&mut self) {
-        let mut total_max_valves_volume = Volume::new::<gallon>(0.);
-
-        for (idx, valve) in &mut self.pump_sections_check_valves.iter_mut().enumerate() {
-            if self.pump_section_routed_to_auxiliary_section[idx] {
-                total_max_valves_volume += valve.max_virtual_volume;
-            }
-        }
-
-        let used_system_volume = self
-            .auxiliary_section
-            .volume_target
-            .max(Volume::new::<gallon>(0.));
-
-        if used_system_volume >= total_max_valves_volume {
-            // If all the volume upstream is used by system section, each valve will provide its max volume available
-            for (idx, valve) in &mut self.pump_sections_check_valves.iter_mut().enumerate() {
-                if self.pump_section_routed_to_auxiliary_section[idx] {
-                    valve.current_volume = valve.max_virtual_volume;
-                }
-            }
-        } else if total_max_valves_volume > Volume::new::<gallon>(0.) {
-            let needed_ratio = used_system_volume / total_max_valves_volume;
-
-            for (idx, valve) in &mut self.pump_sections_check_valves.iter_mut().enumerate() {
-                if self.pump_section_routed_to_auxiliary_section[idx] {
-                    valve.current_volume = valve.max_virtual_volume * needed_ratio;
-                }
-            }
-        }
+        self.update_final_valves_flows(true);
     }
 
     pub fn pump_pressure(&self, idx: usize) -> Pressure {
