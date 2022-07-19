@@ -6460,12 +6460,16 @@ mod tests {
             }
 
             fn set_deploy_ground_spoilers(mut self) -> Self {
-                self.write_by_name("SPOILERS_GROUND_SPOILERS_ACTIVE", true);
+                self.write_by_name("SEC_1_GROUND_SPOILER_OUT", true);
+                self.write_by_name("SEC_2_GROUND_SPOILER_OUT", true);
+                self.write_by_name("SEC_3_GROUND_SPOILER_OUT", true);
                 self
             }
 
             fn set_retract_ground_spoilers(mut self) -> Self {
-                self.write_by_name("SPOILERS_GROUND_SPOILERS_ACTIVE", false);
+                self.write_by_name("SEC_1_GROUND_SPOILER_OUT", false);
+                self.write_by_name("SEC_2_GROUND_SPOILER_OUT", false);
+                self.write_by_name("SEC_3_GROUND_SPOILER_OUT", false);
                 self
             }
 
@@ -10125,7 +10129,7 @@ mod tests {
 
         #[test]
         fn elevators_can_go_up_and_down_with_pressure() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -10151,7 +10155,7 @@ mod tests {
 
         #[test]
         fn elevators_centers_with_pressure_but_no_computer_command() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
