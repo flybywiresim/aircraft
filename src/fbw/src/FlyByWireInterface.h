@@ -155,6 +155,8 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idDevelopmentAutoland_delta_Theta_bx_deg;
   std::unique_ptr<LocalVariable> idDevelopmentAutoland_delta_Theta_beta_c_deg;
 
+  std::unique_ptr<LocalVariable> idDevelopmentUseDirectLaw;
+
   std::unique_ptr<LocalVariable> idLoggingFlightControlsEnabled;
   std::unique_ptr<LocalVariable> idLoggingThrottlesEnabled;
 
@@ -163,6 +165,7 @@ class FlyByWireInterface {
 
   std::unique_ptr<LocalVariable> idPerformanceWarningActive;
 
+  std::unique_ptr<LocalVariable> idTrackingMode;
   std::unique_ptr<LocalVariable> idExternalOverride;
 
   std::unique_ptr<LocalVariable> idFdrEvent;
@@ -341,6 +344,10 @@ class FlyByWireInterface {
   std::shared_ptr<SpoilersHandler> spoilersHandler;
 
   std::shared_ptr<ElevatorTrimHandler> elevatorTrimHandler;
+
+  std::unique_ptr<LocalVariable> idElevatorPosition;
+
+  std::unique_ptr<LocalVariable> idRudderPosition;
 
   std::unique_ptr<LocalVariable> idRadioReceiverUsageEnabled;
   std::unique_ptr<LocalVariable> idRadioReceiverLocalizerValid;

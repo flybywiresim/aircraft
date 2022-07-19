@@ -441,10 +441,6 @@ bool SimConnectInterface::prepareSimInputSimConnectDataDefinitions() {
 bool SimConnectInterface::prepareSimOutputSimConnectDataDefinitions() {
   bool result = true;
 
-  result &= addDataDefinition(hSimConnect, 1, SIMCONNECT_DATATYPE_FLOAT64, "ELEVATOR POSITION", "POSITION");
-  result &= addDataDefinition(hSimConnect, 1, SIMCONNECT_DATATYPE_FLOAT64, "AILERON POSITION", "POSITION");
-  result &= addDataDefinition(hSimConnect, 1, SIMCONNECT_DATATYPE_FLOAT64, "RUDDER POSITION", "POSITION");
-
   result &= addDataDefinition(hSimConnect, 2, SIMCONNECT_DATATYPE_FLOAT64, "ELEVATOR TRIM POSITION", "DEGREE");
 
   result &= addDataDefinition(hSimConnect, 3, SIMCONNECT_DATATYPE_FLOAT64, "RUDDER TRIM PCT", "PERCENT OVER 100");
@@ -1203,11 +1199,6 @@ bool SimConnectInterface::readData() {
 
   // success
   return true;
-}
-
-bool SimConnectInterface::sendData(SimOutput output) {
-  // write data and return result
-  return sendData(1, sizeof(output), &output);
 }
 
 bool SimConnectInterface::sendData(SimOutputEtaTrim output) {

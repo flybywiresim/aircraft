@@ -166,12 +166,6 @@ struct SimInputThrottles {
   double ATHR_reset_disable;
 };
 
-struct SimOutput {
-  double eta;
-  double xi;
-  double zeta;
-};
-
 struct SimOutputEtaTrim {
   double eta_trim_deg;
 };

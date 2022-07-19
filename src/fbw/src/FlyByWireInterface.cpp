@@ -281,6 +281,9 @@ void FlyByWireInterface::setupLocalVariables() {
   idDevelopmentAutoland_delta_Theta_bx_deg = make_unique<LocalVariable>("A32NX_DEV_FLARE_DELTA_THETA_BX");
   idDevelopmentAutoland_delta_Theta_beta_c_deg = make_unique<LocalVariable>("A32NX_DEV_FLARE_DELTA_THETA_BETA_C");
 
+  // register L variable for direct law
+  idDevelopmentUseDirectLaw = make_unique<LocalVariable>("A32NX_DEV_DIRECT_LAW");
+
   // register L variable for simulation rate limits
   idMinimumSimulationRate = make_unique<LocalVariable>("A32NX_SIMULATION_RATE_LIMIT_MINIMUM");
   idMaximumSimulationRate = make_unique<LocalVariable>("A32NX_SIMULATION_RATE_LIMIT_MAXIMUM");
@@ -289,6 +292,7 @@ void FlyByWireInterface::setupLocalVariables() {
   idPerformanceWarningActive = make_unique<LocalVariable>("A32NX_PERFORMANCE_WARNING_ACTIVE");
 
   // register L variable for external override
+  idTrackingMode = make_unique<LocalVariable>("A32NX_FLIGHT_CONTROLS_TRACKING_MODE");
   idExternalOverride = make_unique<LocalVariable>("A32NX_EXTERNAL_OVERRIDE");
 
   // register L variable for FDR event
@@ -468,6 +472,8 @@ void FlyByWireInterface::setupLocalVariables() {
 
   idSpoilersArmed = make_unique<LocalVariable>("A32NX_SPOILERS_ARMED");
   idSpoilersHandlePosition = make_unique<LocalVariable>("A32NX_SPOILERS_HANDLE_POSITION");
+
+  idRudderPosition = make_unique<LocalVariable>("A32NX_RUDDER_DEFLECTION_DEMAND");
 
   idRadioReceiverUsageEnabled = make_unique<LocalVariable>("A32NX_RADIO_RECEIVER_USAGE_ENABLED");
   idRadioReceiverLocalizerValid = make_unique<LocalVariable>("A32NX_RADIO_RECEIVER_LOC_IS_VALID");
@@ -2253,6 +2259,9 @@ bool FlyByWireInterface::updateFlyByWire(double sampleTime) {
   // set rudder pedals position
   idRudderPedalPosition->set(max(-100, min(100, (-100.0 * simInput.inputs[2]))));
   idRudderPedalAnimationPosition->set(max(-100, min(100, (-100.0 * simInput.inputs[2]) + (100.0 * simData.zeta_trim_pos))));
+
+  // provide tracking mode state
+  idTrackingMode->set(flyByWireOutput.sim.data_computed.tracking_mode_on);
 
   // determine if nosewheel demand shall be set
   if (!(wasInSlew || pauseDetected || idExternalOverride->get())) {
