@@ -20,6 +20,8 @@ class PitchDirectLaw final
     real_T Constant2_Value;
     real_T Constant3_Value;
     real_T Gain_Gain;
+    real_T Saturation_UpperSat;
+    real_T Saturation_LowerSat;
   };
 
   PitchDirectLaw(PitchDirectLaw const&) = delete;

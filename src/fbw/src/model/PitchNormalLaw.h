@@ -461,6 +461,8 @@ class PitchNormalLaw final
     real_T Saturation_UpperSat_m;
     real_T Saturation_LowerSat_b;
     real_T Constant_Value_h;
+    real_T Saturation_UpperSat_kp;
+    real_T Saturation_LowerSat_a4;
     uint32_T uDLookupTable_maxIndex[2];
     uint8_T ManualSwitch_CurrentSetting;
     uint8_T ManualSwitch1_CurrentSetting;

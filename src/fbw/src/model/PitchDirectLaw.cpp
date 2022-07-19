@@ -16,6 +16,10 @@ PitchDirectLaw::Parameters_PitchDirectLaw_T PitchDirectLaw::PitchDirectLaw_rtP{
 
   -11.0,
 
+  -30.0,
+
+  17.0,
+
   -30.0
 };
 
@@ -35,6 +39,12 @@ void PitchDirectLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_del
   if (!PitchDirectLaw_DWork.pY_not_empty) {
     PitchDirectLaw_DWork.pY = PitchDirectLaw_rtP.RateLimitereta_InitialCondition;
     PitchDirectLaw_DWork.pY_not_empty = true;
+  }
+
+  if (rtb_Gain > PitchDirectLaw_rtP.Saturation_UpperSat) {
+    rtb_Gain = PitchDirectLaw_rtP.Saturation_UpperSat;
+  } else if (rtb_Gain < PitchDirectLaw_rtP.Saturation_LowerSat) {
+    rtb_Gain = PitchDirectLaw_rtP.Saturation_LowerSat;
   }
 
   PitchDirectLaw_DWork.pY += std::fmax(std::fmin(rtb_Gain - PitchDirectLaw_DWork.pY, std::abs
