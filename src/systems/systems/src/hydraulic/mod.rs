@@ -919,7 +919,7 @@ impl HydraulicCircuit {
             section.update_downstream_delta_vol(&self.pump_sections_check_valves[pump_index]);
         }
 
-        for (pump_index, section) in self.pump_sections.iter_mut().enumerate() {
+        for (pump_index, _) in self.pump_sections.iter_mut().enumerate() {
             if self.pump_section_routed_to_auxiliary_section[pump_index] {
                 self.auxiliary_section
                     .update_upstream_delta_vol(std::slice::from_ref(
@@ -1084,6 +1084,7 @@ impl HydraulicCircuit {
         }
     }
 
+    // TODO remove code duplication
     fn update_auxiliary_final_valves_flows(&mut self) {
         let mut total_max_valves_volume = Volume::new::<gallon>(0.);
 
@@ -1152,8 +1153,12 @@ impl HydraulicCircuit {
         &self.pump_sections[pump_index]
     }
 
-    pub fn set_pump_to_aux(&mut self, section_index: usize, pump_to_aux: bool) {
-        self.pump_section_routed_to_auxiliary_section[section_index] = pump_to_aux;
+    pub fn set_pump_routing_to_auxiliary(
+        &mut self,
+        section_index: usize,
+        is_pumping_to_auxiliary: bool,
+    ) {
+        self.pump_section_routed_to_auxiliary_section[section_index] = is_pumping_to_auxiliary;
     }
 }
 impl SimulationElement for HydraulicCircuit {

@@ -2107,9 +2107,12 @@ impl A320Hydraulic {
             self.brake_steer_computer.alternate_controller(),
         );
 
-        self.blue_circuit.set_pump_to_aux(0, self.debug_pump > 0.);
-        self.green_circuit.set_pump_to_aux(0, self.debug_pump > 0.);
-        self.yellow_circuit.set_pump_to_aux(0, self.debug_pump > 0.);
+        self.blue_circuit
+            .set_pump_routing_to_auxiliary(0, self.debug_pump > 0.);
+        self.green_circuit
+            .set_pump_routing_to_auxiliary(0, self.debug_pump > 0.);
+        self.yellow_circuit
+            .set_pump_routing_to_auxiliary(0, self.debug_pump > 0.);
     }
 
     // Actual logic of HYD PTU memo computed here until done within FWS
