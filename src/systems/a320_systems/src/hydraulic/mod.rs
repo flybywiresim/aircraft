@@ -10624,9 +10624,9 @@ mod tests {
             // Pumping to auxiliary section
             test_bed = test_bed
                 .set_hyd_auxiliary()
-                .run_waiting_for(Duration::from_secs(20));
+                .run_waiting_for(Duration::from_secs(15));
 
-            assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(500.));
+            assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(1000.));
             assert!(test_bed.yellow_pressure_auxiliary() < Pressure::new::<psi>(3500.));
             assert!(test_bed.yellow_pressure_auxiliary() > Pressure::new::<psi>(2500.));
         }

@@ -730,6 +730,9 @@ impl HydraulicCircuit {
     const PUMP_SECTION_MAX_VOLUME_GAL: f64 = 0.8;
     const PUMP_SECTION_STATIC_LEAK_GAL_P_S: f64 = 0.005;
 
+    // Size of auxiliary section vs system section. 0.5 means auxiliary is half the size of system section
+    const AUXILIARY_TO_SYSTEM_SECTION_SIZE_RATIO: f64 = 0.5;
+
     const SYSTEM_SECTION_STATIC_LEAK_GAL_P_S: f64 = 0.03;
 
     const FLUID_BULK_MODULUS_PASCAL: f64 = 1450000000.0;
@@ -838,8 +841,10 @@ impl HydraulicCircuit {
                 "AUXILIARY",
                 1,
                 VolumeRate::new::<gallon_per_second>(Self::SYSTEM_SECTION_STATIC_LEAK_GAL_P_S),
-                system_section_volume * priming_volume,
-                system_section_volume,
+                system_section_volume
+                    * Self::AUXILIARY_TO_SYSTEM_SECTION_SIZE_RATIO
+                    * priming_volume,
+                system_section_volume * Self::AUXILIARY_TO_SYSTEM_SECTION_SIZE_RATIO,
                 None,
                 system_pressure_switch_lo_hyst,
                 system_pressure_switch_hi_hyst,
@@ -874,6 +879,11 @@ impl HydraulicCircuit {
         controller: &impl HydraulicCircuitController,
         reservoir_pressure: Pressure,
     ) {
+        println!(
+            "HYD PRESS {:.0} Aux: {:.0}",
+            self.system_section().pressure().get::<psi>(),
+            self.auxiliary_section.pressure().get::<psi>()
+        );
         self.reservoir.update(context, reservoir_pressure);
 
         self.update_shutoff_valves(controller);
