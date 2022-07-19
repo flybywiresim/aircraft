@@ -1296,16 +1296,19 @@ impl A320Hydraulic {
 
             blue_circuit: A320HydraulicCircuitFactory::new_blue_circuit(context),
             blue_circuit_controller: A320HydraulicCircuitController::new(
+                context,
                 None,
                 HydraulicColor::Blue,
             ),
             green_circuit: A320HydraulicCircuitFactory::new_green_circuit(context),
             green_circuit_controller: A320HydraulicCircuitController::new(
+                context,
                 Some(1),
                 HydraulicColor::Green,
             ),
             yellow_circuit: A320HydraulicCircuitFactory::new_yellow_circuit(context),
             yellow_circuit_controller: A320HydraulicCircuitController::new(
+                context,
                 Some(2),
                 HydraulicColor::Yellow,
             ),
@@ -2106,13 +2109,6 @@ impl A320Hydraulic {
             self.yellow_circuit.system_section(),
             self.brake_steer_computer.alternate_controller(),
         );
-
-        self.blue_circuit
-            .set_pump_routing_to_auxiliary(0, self.debug_pump > 0.);
-        self.green_circuit
-            .set_pump_routing_to_auxiliary(0, self.debug_pump > 0.);
-        self.yellow_circuit
-            .set_pump_routing_to_auxiliary(0, self.debug_pump > 0.);
     }
 
     // Actual logic of HYD PTU memo computed here until done within FWS
@@ -2228,6 +2224,8 @@ impl SimulationElement for A320Hydraulic {
         self.gear_system_gravity_extension_controller
             .accept(visitor);
         self.gear_system.accept(visitor);
+
+        self.yellow_circuit_controller.accept(visitor);
 
         visitor.visit(self);
     }
@@ -2355,6 +2353,9 @@ impl GearSystemController for A320GearHydraulicController {
 }
 
 struct A320HydraulicCircuitController {
+    debug_pump_to_aux: VariableIdentifier,
+    debug_pump: f64,
+
     circuit_id: HydraulicColor,
     engine_number: Option<usize>,
     should_open_fire_shutoff_valve: bool,
@@ -2364,8 +2365,14 @@ struct A320HydraulicCircuitController {
 impl A320HydraulicCircuitController {
     const DELAY_TO_REOPEN_LEAK_VALVE_AFTER_CARGO_DOOR_USE: Duration = Duration::from_secs(15);
 
-    fn new(engine_number: Option<usize>, circuit_id: HydraulicColor) -> Self {
+    fn new(
+        context: &mut InitContext,
+        engine_number: Option<usize>,
+        circuit_id: HydraulicColor,
+    ) -> Self {
         Self {
+            debug_pump_to_aux: context.get_identifier("HYD_PUMP_TO_AUX".to_owned()),
+            debug_pump: 0.,
             circuit_id,
             engine_number,
             should_open_fire_shutoff_valve: true,
@@ -2428,7 +2435,12 @@ impl HydraulicCircuitController for A320HydraulicCircuitController {
     }
 
     fn should_route_pump_to_auxiliary(&self, _: usize) -> bool {
-        false
+        self.debug_pump > 0.5
+    }
+}
+impl SimulationElement for A320HydraulicCircuitController {
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        self.debug_pump = reader.read(&self.debug_pump_to_aux);
     }
 }
 

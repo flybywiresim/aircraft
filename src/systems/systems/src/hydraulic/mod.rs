@@ -878,6 +878,7 @@ impl HydraulicCircuit {
 
         self.update_shutoff_valves(controller);
         self.update_leak_measurement_valves(context, controller);
+        self.update_auxiliary_selector_valve(controller);
 
         // Taking care of leaks / consumers / actuators volumes
         self.update_flows(context, ptu);
@@ -1052,6 +1053,13 @@ impl HydraulicCircuit {
             .update_leak_measurement_valve(context, controller);
     }
 
+    fn update_auxiliary_selector_valve(&mut self, controller: &impl HydraulicCircuitController) {
+        for (pump_section_index, _) in self.pump_sections_check_valves.iter().enumerate() {
+            self.pump_section_routed_to_auxiliary_section[pump_section_index] =
+                controller.should_route_pump_to_auxiliary(pump_section_index);
+        }
+    }
+
     fn update_final_valves_flows(&mut self, to_auxiliary: bool) {
         let mut total_max_valves_volume = Volume::new::<gallon>(0.);
 
@@ -1129,14 +1137,6 @@ impl HydraulicCircuit {
 
     pub fn pump_section(&self, pump_index: usize) -> &impl SectionPressure {
         &self.pump_sections[pump_index]
-    }
-
-    pub fn set_pump_routing_to_auxiliary(
-        &mut self,
-        section_index: usize,
-        is_pumping_to_auxiliary: bool,
-    ) {
-        self.pump_section_routed_to_auxiliary_section[section_index] = is_pumping_to_auxiliary;
     }
 }
 impl SimulationElement for HydraulicCircuit {
