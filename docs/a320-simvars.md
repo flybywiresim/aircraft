@@ -1400,6 +1400,14 @@
 
 ## Fly-By-Wire System
 
+- A32NX_DEV_DIRECT_LAW
+    - Bool
+    - Development only: set to 1 to force full direct law FBW
+
+- A32NX_FLIGHT_CONTROLS_TRACKING_MODE
+    - Bool
+    - Indicates if tracking mode is active: flight controls are coming from external source (ie: YourControls)
+
 - A32NX_LOGGING_FLIGHT_CONTROLS_ENABLED
     - Bool
     - Indicates if logging of flight control events is enabled
@@ -1482,6 +1490,35 @@
       Value | Meaning
       --- | ---
       -1.0 | full down
+      0.0 | neutral
+      1.0 | full up
+
+- A32NX_ELEVATOR_DEFLECTION_DEMAND
+    - Number
+    - Provides the elevator position demand to hydraulics
+      Value | Meaning
+      --- | ---
+      -1.0 | full down
+      0.0 | neutral
+      1.0 | full up
+
+- A32NX_RUDDER_DEFLECTION_DEMAND
+    - Number
+    - Provides the rudder position demand to hydraulics
+      Value | Meaning
+      --- | ---
+      -1.0 | full left
+      0.0 | neutral
+      1.0 | full right
+
+- A32NX_SPOILERS_{side}_DEFLECTION_DEMAND
+    - Number
+    - {side}
+        - LEFT
+        - RIGHT
+    - Provides the spoiler position demand to hydraulics
+      Value | Meaning
+      --- | ---
       0.0 | neutral
       1.0 | full up
 
