@@ -716,7 +716,7 @@ impl Accumulator {
 pub struct HydraulicCircuit {
     pump_sections: Vec<Section>,
     system_section: Section,
-    auxiliary_section: Section,
+    auxiliary_section: Option<Section>,
 
     pump_sections_check_valves: Vec<CheckValve>,
 
@@ -766,6 +766,7 @@ impl HydraulicCircuit {
         pump_pressure_switch_hi_hyst: Pressure,
         connected_to_ptu_left_side: bool,
         connected_to_ptu_right_side: bool,
+        has_auxiliary_section: bool,
     ) -> Self {
         assert!(number_of_pump_sections > 0);
 
@@ -835,24 +836,29 @@ impl HydraulicCircuit {
                     Self::DEFAULT_LEAK_MEASUREMENT_VALVE_POWERING_BUS,
                 )),
             ),
-            auxiliary_section: Section::new(
-                context,
-                id,
-                "AUXILIARY",
-                1,
-                VolumeRate::new::<gallon_per_second>(Self::SYSTEM_SECTION_STATIC_LEAK_GAL_P_S),
-                system_section_volume
-                    * Self::AUXILIARY_TO_SYSTEM_SECTION_SIZE_RATIO
-                    * priming_volume,
-                system_section_volume * Self::AUXILIARY_TO_SYSTEM_SECTION_SIZE_RATIO,
-                None,
-                system_pressure_switch_lo_hyst,
-                system_pressure_switch_hi_hyst,
-                None,
-                false,
-                false,
-                None,
-            ),
+            auxiliary_section: if has_auxiliary_section {
+                Some(Section::new(
+                    context,
+                    id,
+                    "AUXILIARY",
+                    1,
+                    VolumeRate::new::<gallon_per_second>(Self::SYSTEM_SECTION_STATIC_LEAK_GAL_P_S),
+                    system_section_volume
+                        * Self::AUXILIARY_TO_SYSTEM_SECTION_SIZE_RATIO
+                        * priming_volume,
+                    system_section_volume * Self::AUXILIARY_TO_SYSTEM_SECTION_SIZE_RATIO,
+                    None,
+                    system_pressure_switch_lo_hyst,
+                    system_pressure_switch_hi_hyst,
+                    None,
+                    false,
+                    false,
+                    None,
+                ))
+            } else {
+                None
+            },
+
             pump_sections_check_valves: pump_to_system_check_valves,
             pump_section_routed_to_auxiliary_section: pump_section_to_auxiliary,
             fluid: Fluid::new(Pressure::new::<pascal>(Self::FLUID_BULK_MODULUS_PASCAL)),
@@ -866,7 +872,10 @@ impl HydraulicCircuit {
 
     pub fn update_actuator_volumes(&mut self, actuator: &mut impl Actuator) {
         self.system_section.update_actuator_volumes(actuator);
-        self.auxiliary_section.update_actuator_volumes(actuator);
+
+        if let Some(auxiliary_section) = self.auxiliary_section.as_mut() {
+            auxiliary_section.update_actuator_volumes(actuator);
+        }
     }
 
     pub fn update(
@@ -879,11 +888,17 @@ impl HydraulicCircuit {
         controller: &impl HydraulicCircuitController,
         reservoir_pressure: Pressure,
     ) {
-        println!(
-            "HYD PRESS {:.0} Aux: {:.0}",
-            self.system_section().pressure().get::<psi>(),
-            self.auxiliary_section.pressure().get::<psi>()
-        );
+        if self.auxiliary_section.is_some() {
+            println!(
+                "HYD PRESS {:.0} Aux: {:.0}",
+                self.system_section().pressure().get::<psi>(),
+                self.auxiliary_section
+                    .as_ref()
+                    .unwrap()
+                    .pressure()
+                    .get::<psi>()
+            );
+        }
         self.reservoir.update(context, reservoir_pressure);
 
         self.update_shutoff_valves(controller);
@@ -932,10 +947,11 @@ impl HydraulicCircuit {
 
         for (pump_index, _) in self.pump_sections.iter_mut().enumerate() {
             if self.pump_section_routed_to_auxiliary_section[pump_index] {
-                self.auxiliary_section
-                    .update_upstream_delta_vol(std::slice::from_ref(
+                if let Some(auxiliary_section) = self.auxiliary_section.as_mut() {
+                    auxiliary_section.update_upstream_delta_vol(std::slice::from_ref(
                         &self.pump_sections_check_valves[pump_index],
                     ));
+                }
             } else {
                 self.system_section
                     .update_upstream_delta_vol(std::slice::from_ref(
@@ -962,8 +978,9 @@ impl HydraulicCircuit {
         }
 
         if let Some(pump) = auxiliary_section_pump {
-            self.auxiliary_section
-                .update_pump_state(context, pump, &mut self.reservoir);
+            if let Some(auxiliary_section) = self.auxiliary_section.as_mut() {
+                auxiliary_section.update_pump_state(context, pump, &mut self.reservoir);
+            }
         }
     }
 
@@ -975,17 +992,20 @@ impl HydraulicCircuit {
         self.system_section
             .update_final_delta_vol_and_pressure(context, &self.fluid);
 
-        self.auxiliary_section
-            .update_final_delta_vol_and_pressure(context, &self.fluid);
+        if let Some(auxiliary_section) = self.auxiliary_section.as_mut() {
+            auxiliary_section.update_final_delta_vol_and_pressure(context, &self.fluid);
+        }
     }
 
     fn update_maximum_valve_flows(&mut self, context: &UpdateContext) {
         for (pump_section_idx, valve) in self.pump_sections_check_valves.iter_mut().enumerate() {
-            if self.pump_section_routed_to_auxiliary_section[pump_section_idx] {
+            if self.auxiliary_section.is_some()
+                && self.pump_section_routed_to_auxiliary_section[pump_section_idx]
+            {
                 valve.update_flow_forecast(
                     context,
                     &self.pump_sections[pump_section_idx],
-                    &self.auxiliary_section,
+                    self.auxiliary_section.as_mut().unwrap(),
                     &self.fluid,
                 );
             } else {
@@ -1014,8 +1034,9 @@ impl HydraulicCircuit {
         }
 
         if let Some(pump) = auxiliary_section_pump {
-            self.auxiliary_section
-                .update_maximum_pumping_capacity(*pump);
+            if let Some(auxiliary_section) = self.auxiliary_section.as_mut() {
+                auxiliary_section.update_maximum_pumping_capacity(*pump);
+            }
         }
     }
 
@@ -1030,11 +1051,13 @@ impl HydraulicCircuit {
             Pressure::new::<psi>(Self::TARGET_PRESSURE_PSI),
             &self.fluid,
         );
-        self.auxiliary_section
-            .update_target_volume_after_flow_update(
+
+        if let Some(auxiliary_section) = self.auxiliary_section.as_mut() {
+            auxiliary_section.update_target_volume_after_flow_update(
                 Pressure::new::<psi>(Self::TARGET_PRESSURE_PSI),
                 &self.fluid,
             );
+        }
     }
 
     fn update_flows(&mut self, context: &UpdateContext, ptu: Option<&PowerTransferUnit>) {
@@ -1044,8 +1067,9 @@ impl HydraulicCircuit {
         self.system_section
             .update_flow(context, &mut self.reservoir, ptu);
 
-        self.auxiliary_section
-            .update_flow(context, &mut self.reservoir, ptu);
+        if let Some(auxiliary_section) = self.auxiliary_section.as_mut() {
+            auxiliary_section.update_flow(context, &mut self.reservoir, ptu);
+        }
     }
 
     fn update_shutoff_valves(&mut self, controller: &impl HydraulicCircuitController) {
@@ -1080,7 +1104,7 @@ impl HydraulicCircuit {
         }
 
         let section = if to_auxiliary {
-            &self.auxiliary_section
+            &self.auxiliary_section.as_ref().unwrap()
         } else {
             &self.system_section
         };
@@ -1110,7 +1134,9 @@ impl HydraulicCircuit {
     }
 
     fn update_auxiliary_final_valves_flows(&mut self) {
-        self.update_final_valves_flows(true);
+        if self.auxiliary_section.is_some() {
+            self.update_final_valves_flows(true);
+        }
     }
 
     pub fn pump_pressure(&self, idx: usize) -> Pressure {
@@ -1159,7 +1185,9 @@ impl SimulationElement for HydraulicCircuit {
 
         self.system_section.accept(visitor);
 
-        self.auxiliary_section.accept(visitor);
+        if let Some(auxiliary_section) = self.auxiliary_section.as_mut() {
+            auxiliary_section.accept(visitor);
+        }
 
         visitor.visit(self);
     }
@@ -2753,6 +2781,7 @@ mod tests {
             Pressure::new::<psi>(1300.),
             Pressure::new::<psi>(1800.),
             true,
+            false,
             false,
         )
     }

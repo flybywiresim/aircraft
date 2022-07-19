@@ -149,6 +149,7 @@ impl A320HydraulicCircuitFactory {
             Pressure::new::<psi>(Self::MIN_PRESS_EDP_SECTION_HI_HYST),
             true,
             false,
+            false,
         )
     }
 
@@ -165,6 +166,7 @@ impl A320HydraulicCircuitFactory {
             Pressure::new::<psi>(Self::MIN_PRESS_PRESSURISED_HI_HYST),
             Pressure::new::<psi>(Self::MIN_PRESS_EDP_SECTION_LO_HYST),
             Pressure::new::<psi>(Self::MIN_PRESS_EDP_SECTION_HI_HYST),
+            false,
             false,
             false,
         )
@@ -184,6 +186,7 @@ impl A320HydraulicCircuitFactory {
             Pressure::new::<psi>(Self::MIN_PRESS_EDP_SECTION_LO_HYST),
             Pressure::new::<psi>(Self::MIN_PRESS_EDP_SECTION_HI_HYST),
             false,
+            true,
             true,
         )
     }
