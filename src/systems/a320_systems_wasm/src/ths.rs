@@ -1,9 +1,11 @@
 use std::error::Error;
 
 use systems_wasm::aspects::{
-    EventToVariableMapping, ExecuteOn, MsfsAspectBuilder, VariablesToObject,
+    EventToVariableMapping, ExecuteOn, MsfsAspectBuilder, ObjectWrite, VariablesToObject,
 };
 use systems_wasm::{set_data_on_sim_object, Variable};
+
+use systems::shared::to_bool;
 
 use msfs::sim_connect;
 use msfs::{sim_connect::SimConnect, sim_connect::SIMCONNECT_OBJECT_ID_USER};
@@ -111,12 +113,11 @@ impl VariablesToObject for PitchTrimSimOutput {
         ]
     }
 
-    fn write(&mut self, values: Vec<f64>) {
+    fn write(&mut self, values: Vec<f64>) -> ObjectWrite {
         self.elevator_trim = values[0];
 
-        // TODO: needs another PR to be used
         //Not writing control feedback when in tracking mode
-        //ObjectWrite::on(!to_bool(values[1]))
+        ObjectWrite::on(!to_bool(values[1]))
     }
 
     set_data_on_sim_object!();
