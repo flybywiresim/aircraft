@@ -1366,11 +1366,9 @@ mod tests {
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::ConfFull);
     }
 
-    // The tests below test the movement of the
-    // flaps/slats.
     #[test]
     fn flaps_test_movement_0_to_1f() {
-        let angle_delta = 0.1;
+        let angle_delta = 0.2;
         let mut test_bed = test_bed_with()
             .set_green_hyd_pressure()
             .set_indicated_airspeed(0.)
@@ -1391,7 +1389,7 @@ mod tests {
 
     #[test]
     fn flaps_test_movement_1f_to_2() {
-        let angle_delta = 0.01;
+        let angle_delta = 0.2;
         let mut test_bed = test_bed_with()
             .set_green_hyd_pressure()
             .set_indicated_airspeed(0.)
@@ -1412,7 +1410,7 @@ mod tests {
 
     #[test]
     fn flaps_test_movement_2_to_3() {
-        let angle_delta = 0.01;
+        let angle_delta = 0.2;
         let mut test_bed = test_bed_with()
             .set_green_hyd_pressure()
             .set_indicated_airspeed(0.)
@@ -1433,7 +1431,7 @@ mod tests {
 
     #[test]
     fn flaps_test_movement_3_to_full() {
-        let angle_delta = 0.01;
+        let angle_delta = 0.2;
         let mut test_bed = test_bed_with()
             .set_green_hyd_pressure()
             .set_indicated_airspeed(0.)
@@ -1454,7 +1452,7 @@ mod tests {
 
     #[test]
     fn slats_test_movement_0_to_1f() {
-        let angle_delta = 0.01;
+        let angle_delta = 0.2;
         let mut test_bed = test_bed_with()
             .set_green_hyd_pressure()
             .set_indicated_airspeed(0.)
@@ -1501,7 +1499,7 @@ mod tests {
 
     #[test]
     fn slats_test_movement_1f_to_2() {
-        let angle_delta = 0.01;
+        let angle_delta = 0.2;
         let mut test_bed = test_bed_with()
             .set_green_hyd_pressure()
             .set_indicated_airspeed(0.)
@@ -1522,7 +1520,7 @@ mod tests {
 
     #[test]
     fn slats_test_movement_2_to_3() {
-        let angle_delta = 0.1;
+        let angle_delta = 0.2;
         let mut test_bed = test_bed_with()
             .set_green_hyd_pressure()
             .set_indicated_airspeed(0.)
@@ -1543,7 +1541,7 @@ mod tests {
 
     #[test]
     fn slats_test_movement_3_to_full() {
-        let angle_delta = 0.1;
+        let angle_delta = 0.2;
         let mut test_bed = test_bed_with()
             .set_green_hyd_pressure()
             .set_indicated_airspeed(0.)
