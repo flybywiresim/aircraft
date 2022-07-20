@@ -384,11 +384,8 @@ impl SimulationElement for SlatFlapComplex {
 
 #[cfg(test)]
 mod tests {
-    use crate::hydraulic::A320Hydraulic;
-
     use super::*;
     use std::time::Duration;
-    use systems::shared::interpolation;
     use systems::simulation::{
         test::{ReadByName, SimulationTestBed, TestBed, WriteByName},
         Aircraft,
@@ -408,22 +405,7 @@ mod tests {
     }
     impl FeedbackPositionPickoffUnit for SlatFlapGear {
         fn angle(&self) -> Angle {
-            let synchro_gear_breakpoints = match self.surface_type.as_str() {
-                "FLAPS" => A320Hydraulic::FLAP_FPPU_TO_SURFACE_ANGLE_BREAKPTS,
-                "SLATS" => A320Hydraulic::SLAT_FPPU_TO_SURFACE_ANGLE_BREAKPTS,
-                _ => panic!(),
-            };
-            let synchro_gear_degrees = match self.surface_type.as_str() {
-                "FLAPS" => A320Hydraulic::FLAP_FPPU_TO_SURFACE_ANGLE_DEGREES,
-                "SLATS" => A320Hydraulic::SLAT_FPPU_TO_SURFACE_ANGLE_DEGREES,
-                _ => panic!(),
-            };
-
-            Angle::new::<degree>(interpolation(
-                &synchro_gear_degrees,
-                &synchro_gear_breakpoints,
-                self.current_angle.get::<degree>(),
-            ))
+            self.current_angle
         }
     }
 
@@ -455,25 +437,6 @@ mod tests {
             }
         }
 
-        fn deflection_from_fppu(&self, fppu_angle: Angle) -> Angle {
-            let synchro_gear_breakpoints = match self.surface_type.as_str() {
-                "FLAPS" => A320Hydraulic::FLAP_FPPU_TO_SURFACE_ANGLE_BREAKPTS,
-                "SLATS" => A320Hydraulic::SLAT_FPPU_TO_SURFACE_ANGLE_BREAKPTS,
-                _ => panic!(),
-            };
-            let synchro_gear_degrees = match self.surface_type.as_str() {
-                "FLAPS" => A320Hydraulic::FLAP_FPPU_TO_SURFACE_ANGLE_DEGREES,
-                "SLATS" => A320Hydraulic::SLAT_FPPU_TO_SURFACE_ANGLE_DEGREES,
-                _ => panic!(),
-            };
-
-            Angle::new::<degree>(interpolation(
-                &synchro_gear_breakpoints,
-                &synchro_gear_degrees,
-                fppu_angle.get::<degree>(),
-            ))
-        }
-
         fn update(
             &mut self,
             context: &UpdateContext,
@@ -502,7 +465,7 @@ mod tests {
                         if new_ffpu_angle > demanded_angle && fppu_angle < demanded_angle
                             || new_ffpu_angle < demanded_angle && fppu_angle > demanded_angle
                         {
-                            self.current_angle = self.deflection_from_fppu(demanded_angle);
+                            self.current_angle = demanded_angle;
                         }
                     }
                 }
@@ -549,14 +512,14 @@ mod tests {
 
                 flap_gear: SlatFlapGear::new(
                     context,
-                    AngularVelocity::new::<degree_per_second>(4.),
-                    Angle::new::<degree>(40.),
+                    AngularVelocity::new::<degree_per_second>(7.5),
+                    Angle::new::<degree>(251.97),
                     "FLAPS",
                 ),
                 slat_gear: SlatFlapGear::new(
                     context,
-                    AngularVelocity::new::<degree_per_second>(3.),
-                    Angle::new::<degree>(27.),
+                    AngularVelocity::new::<degree_per_second>(7.5),
+                    Angle::new::<degree>(334.16),
                     "SLATS",
                 ),
 
@@ -912,7 +875,7 @@ mod tests {
         assert!(test_bed.read_slat_flap_system_status_word().get_bit(21));
         assert!(!test_bed.read_slat_flap_system_status_word().get_bit(26));
 
-        test_bed = test_bed.run_waiting_for(Duration::from_secs(31));
+        test_bed = test_bed.run_waiting_for(Duration::from_secs(45));
 
         assert!(!test_bed.read_slat_flap_actual_position_word().get_bit(12));
         assert!(test_bed.read_slat_flap_actual_position_word().get_bit(13));
@@ -1379,7 +1342,7 @@ mod tests {
 
         test_bed = test_bed
             .set_flaps_handle_position(1)
-            .run_waiting_for(Duration::from_secs(10));
+            .run_waiting_for(Duration::from_secs(20));
 
         assert!(
             (test_bed.get_flaps_fppu_feedback() - test_bed.get_flaps_demanded_angle()).abs()
@@ -1421,7 +1384,7 @@ mod tests {
 
         test_bed = test_bed
             .set_flaps_handle_position(3)
-            .run_waiting_for(Duration::from_secs(20));
+            .run_waiting_for(Duration::from_secs(30));
 
         assert!(
             (test_bed.get_flaps_fppu_feedback() - test_bed.get_flaps_demanded_angle()).abs()
@@ -1463,7 +1426,7 @@ mod tests {
 
         test_bed = test_bed
             .set_flaps_handle_position(1)
-            .run_waiting_for(Duration::from_secs(20));
+            .run_waiting_for(Duration::from_secs(30));
 
         assert!(
             (test_bed.get_slats_fppu_feedback() - test_bed.get_slats_demanded_angle()).abs()
@@ -1485,7 +1448,7 @@ mod tests {
 
         test_bed = test_bed
             .set_flaps_handle_position(1)
-            .run_waiting_for(Duration::from_secs(20));
+            .run_waiting_for(Duration::from_secs(30));
 
         assert!(
             (test_bed.get_flaps_fppu_feedback() - test_bed.get_flaps_demanded_angle()).abs()
@@ -1510,7 +1473,7 @@ mod tests {
 
         test_bed = test_bed
             .set_flaps_handle_position(2)
-            .run_waiting_for(Duration::from_secs(20));
+            .run_waiting_for(Duration::from_secs(40));
 
         assert!(
             (test_bed.get_slats_fppu_feedback() - test_bed.get_slats_demanded_angle()).abs()
@@ -1531,7 +1494,7 @@ mod tests {
 
         test_bed = test_bed
             .set_flaps_handle_position(3)
-            .run_waiting_for(Duration::from_secs(20));
+            .run_waiting_for(Duration::from_secs(40));
 
         assert!(
             (test_bed.get_slats_fppu_feedback() - test_bed.get_slats_demanded_angle()).abs()
@@ -1552,7 +1515,7 @@ mod tests {
 
         test_bed = test_bed
             .set_flaps_handle_position(4)
-            .run_waiting_for(Duration::from_secs(20));
+            .run_waiting_for(Duration::from_secs(50));
 
         assert!(
             (test_bed.get_slats_fppu_feedback() - test_bed.get_slats_demanded_angle()).abs()
