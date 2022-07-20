@@ -414,6 +414,7 @@ impl FlapSlatAssembly {
         ))
     }
 
+    #[cfg(test)]
     /// Gets Feedback Position Pickup Unit (FPPU) position from current flap surface angle
     fn feedback_angle_from_surface_angle(&self, flap_surface_angle: Angle) -> Angle {
         Angle::new::<degree>(interpolation(
@@ -546,18 +547,20 @@ mod tests {
             self.right_motor_pressure.set_pressure(right_motor_pressure);
         }
 
-        fn set_angle_request(&mut self, angle_request: Option<Angle>) {
-            self.left_motor_angle_request = flap_fppu_from_surface_angle(angle_request);
-            self.right_motor_angle_request = flap_fppu_from_surface_angle(angle_request);
+        fn set_angle_request(&mut self, surface_angle_request: Option<Angle>) {
+            self.left_motor_angle_request = flap_fppu_from_surface_angle(surface_angle_request);
+            self.right_motor_angle_request = flap_fppu_from_surface_angle(surface_angle_request);
         }
 
         fn set_angle_per_sfcc(
             &mut self,
-            angle_request_sfcc1: Option<Angle>,
-            angle_request_sfcc2: Option<Angle>,
+            surface_angle_request_sfcc1: Option<Angle>,
+            surface_angle_request_sfcc2: Option<Angle>,
         ) {
-            self.left_motor_angle_request = flap_fppu_from_surface_angle(angle_request_sfcc1);
-            self.right_motor_angle_request = flap_fppu_from_surface_angle(angle_request_sfcc2);
+            self.left_motor_angle_request =
+                flap_fppu_from_surface_angle(surface_angle_request_sfcc1);
+            self.right_motor_angle_request =
+                flap_fppu_from_surface_angle(surface_angle_request_sfcc2);
         }
     }
     impl Aircraft for TestAircraft {
@@ -1065,7 +1068,7 @@ mod tests {
         )
     }
 
-    fn flap_fppu_from_surface_angle(angle: Option<Angle>) -> Option<Angle> {
+    fn flap_fppu_from_surface_angle(surface_angle: Option<Angle>) -> Option<Angle> {
         let synchro_gear_map = [
             0., 65., 115., 120.53, 136., 145.5, 152., 165., 168.3, 179., 231.2, 251.97,
         ];
@@ -1073,14 +1076,12 @@ mod tests {
             0., 10.318, 18.2561, 19.134, 21.59, 23.098, 24.13, 26.196, 26.72, 28.42, 36.703, 40.,
         ];
 
-        if angle.is_some() {
-            Some(Angle::new::<degree>(interpolation(
+        surface_angle.map(|angle| {
+            Angle::new::<degree>(interpolation(
                 &surface_degrees_breakpoints,
                 &synchro_gear_map,
-                angle.unwrap().get::<degree>(),
-            )))
-        } else {
-            None
-        }
+                angle.get::<degree>(),
+            ))
+        })
     }
 }
