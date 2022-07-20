@@ -970,6 +970,9 @@ pub struct LinearActuatedRigidBodyOnHingeAxis {
     center_of_gravity_offset: Vector3<f64>,
     center_of_gravity_actual: Vector3<f64>,
 
+    center_of_pressure_offset: Vector3<f64>,
+    center_of_pressure_actual: Vector3<f64>,
+
     control_arm: Vector3<f64>,
     control_arm_actual: Vector3<f64>,
     actuator_extension_gives_positive_angle: bool,
@@ -1011,6 +1014,7 @@ impl LinearActuatedRigidBodyOnHingeAxis {
         mass: Mass,
         size: Vector3<f64>,
         center_of_gravity_offset: Vector3<f64>,
+        center_of_pressure_offset: Vector3<f64>,
         control_arm: Vector3<f64>,
         anchor_point: Vector3<f64>,
         min_angle: Angle,
@@ -1036,6 +1040,8 @@ impl LinearActuatedRigidBodyOnHingeAxis {
             size,
             center_of_gravity_offset,
             center_of_gravity_actual: center_of_gravity_offset,
+            center_of_pressure_offset,
+            center_of_pressure_actual: center_of_pressure_offset,
             control_arm,
             control_arm_actual: control_arm,
             actuator_extension_gives_positive_angle: false,
@@ -1092,8 +1098,7 @@ impl LinearActuatedRigidBodyOnHingeAxis {
     }
 
     pub fn apply_aero_force(&mut self, aerodynamic_force: Vector3<Force>) {
-        // Aero force applied at CG for now, might change to a different point
-        let torque = self.center_of_gravity_actual.cross(&Vector3::<f64>::new(
+        let torque = self.center_of_pressure_actual.cross(&Vector3::<f64>::new(
             aerodynamic_force[0].get::<newton>(),
             aerodynamic_force[1].get::<newton>(),
             aerodynamic_force[2].get::<newton>(),
@@ -1158,6 +1163,7 @@ impl LinearActuatedRigidBodyOnHingeAxis {
         );
         self.control_arm_actual = self.rotation_transform * self.control_arm;
         self.center_of_gravity_actual = self.rotation_transform * self.center_of_gravity_offset;
+        self.center_of_pressure_actual = self.rotation_transform * self.center_of_pressure_offset;
     }
 
     // Computes local acceleration including world gravity and plane acceleration
@@ -2380,9 +2386,9 @@ mod tests {
             test_bed.command(|a| a.apply_up_aero_forces(test_force));
             test_bed.run_with_delta(Duration::from_secs_f64(0.5));
 
-            test_force += Force::new::<newton>(300.);
+            test_force += Force::new::<newton>(400.);
 
-            if test_force < Force::new::<newton>(8000.) {
+            if test_force < Force::new::<newton>(10000.) {
                 assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.51));
                 assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.49));
             }
@@ -2412,7 +2418,7 @@ mod tests {
         for _ in 0..10 {
             println!("Reducing pressure {:.0}", test_pressure.get::<psi>());
             test_bed.command(|a| a.set_pressures([test_pressure, test_pressure]));
-            test_bed.command(|a| a.apply_up_aero_forces(Force::new::<newton>(5000.)));
+            test_bed.command(|a| a.apply_up_aero_forces(Force::new::<newton>(7000.)));
             test_bed.run_with_delta(Duration::from_secs_f64(0.3));
 
             test_pressure -= Pressure::new::<psi>(300.);
@@ -2651,6 +2657,7 @@ mod tests {
             Mass::new::<kilogram>(130.),
             size,
             cg_offset,
+            cg_offset,
             control_arm,
             anchor,
             Angle::new::<degree>(-23.),
@@ -2744,6 +2751,7 @@ mod tests {
             Mass::new::<kilogram>(50.),
             size,
             cg_offset,
+            cg_offset,
             control_arm,
             anchor,
             Angle::new::<degree>(-85.),
@@ -2765,6 +2773,7 @@ mod tests {
         LinearActuatedRigidBodyOnHingeAxis::new(
             Mass::new::<kilogram>(50.),
             size,
+            cg_offset,
             cg_offset,
             control_arm,
             anchor,
@@ -2829,6 +2838,7 @@ mod tests {
             Mass::new::<kilogram>(700.),
             size,
             cg_offset,
+            cg_offset,
             control_arm,
             anchor,
             Angle::new::<degree>(-80.),
@@ -2850,6 +2860,7 @@ mod tests {
         LinearActuatedRigidBodyOnHingeAxis::new(
             Mass::new::<kilogram>(700.),
             size,
+            cg_offset,
             cg_offset,
             control_arm,
             anchor,
@@ -2907,6 +2918,7 @@ mod tests {
             Mass::new::<kilogram>(300.),
             size,
             cg_offset,
+            cg_offset,
             control_arm,
             anchor,
             Angle::new::<degree>(-101.),
@@ -2963,6 +2975,7 @@ mod tests {
             Mass::new::<kilogram>(40.),
             size,
             cg_offset,
+            cg_offset,
             control_arm,
             anchor,
             Angle::new::<degree>(0.),
@@ -3011,6 +3024,7 @@ mod tests {
     fn aileron_body(is_init_down: bool) -> LinearActuatedRigidBodyOnHingeAxis {
         let size = Vector3::new(3.325, 0.16, 0.58);
         let cg_offset = Vector3::new(0., 0., -0.5 * size[2]);
+        let aero_center_offset = Vector3::new(0., 0., -0.4 * size[2]);
 
         let control_arm = Vector3::new(0., -0.0525, 0.);
         let anchor = Vector3::new(0., -0.0525, 0.33);
@@ -3025,6 +3039,7 @@ mod tests {
             Mass::new::<kilogram>(24.65),
             size,
             cg_offset,
+            aero_center_offset,
             control_arm,
             anchor,
             Angle::new::<degree>(-25.),
@@ -3073,6 +3088,7 @@ mod tests {
     fn elevator_body() -> LinearActuatedRigidBodyOnHingeAxis {
         let size = Vector3::new(6., 0.405, 1.125);
         let cg_offset = Vector3::new(0., 0., -0.5 * size[2]);
+        let aero_center_offset = Vector3::new(0., 0., -0.3 * size[2]);
 
         let control_arm = Vector3::new(0., -0.091, 0.);
         let anchor = Vector3::new(0., -0.091, 0.41);
@@ -3081,6 +3097,7 @@ mod tests {
             Mass::new::<kilogram>(58.6),
             size,
             cg_offset,
+            aero_center_offset,
             control_arm,
             anchor,
             Angle::new::<degree>(-17.),
@@ -3132,6 +3149,7 @@ mod tests {
     fn spoiler_body() -> LinearActuatedRigidBodyOnHingeAxis {
         let size = Vector3::new(1.785, 0.1, 0.685);
         let cg_offset = Vector3::new(0., 0., -0.5 * size[2]);
+        let aero_center_offset = Vector3::new(0., 0., -0.4 * size[2]);
 
         let control_arm = Vector3::new(0., -0.067 * size[2], -0.26 * size[2]);
         let anchor = Vector3::new(0., -0.26 * size[2], 0.26 * size[2]);
@@ -3140,6 +3158,7 @@ mod tests {
             Mass::new::<kilogram>(16.),
             size,
             cg_offset,
+            aero_center_offset,
             control_arm,
             anchor,
             Angle::new::<degree>(-10.),

@@ -1462,6 +1462,7 @@ mod tests {
             Mass::new::<kilogram>(50.),
             size,
             cg_offset,
+            cg_offset,
             control_arm,
             anchor,
             Angle::new::<degree>(-85.),
@@ -1517,6 +1518,7 @@ mod tests {
         LinearActuatedRigidBodyOnHingeAxis::new(
             Mass::new::<kilogram>(700.),
             size,
+            cg_offset,
             cg_offset,
             control_arm,
             anchor,
