@@ -38,6 +38,7 @@
 1. [HYD] Fixed too slow leak measurement valves operation - @Crocket63 (crocket)
 1. [ISIS] Added temporary ISIS font with arrows - @aweissoertel (Alexibexi#7550)
 1. [PFD] Improve PFD barberpole rendering and behaviour - @lukecologne (luke)
+1. [HYD] Fixed actuator position control demand consistency - @Crocket63 (crocket)
 
 ## 0.8.0
 
