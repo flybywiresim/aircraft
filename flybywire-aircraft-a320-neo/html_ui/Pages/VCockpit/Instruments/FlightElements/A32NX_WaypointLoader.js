@@ -177,7 +177,7 @@ class FacilityLoader {
             case 'N':
                 const ndbPromises = [queueRawLoad('LOAD_NDB', icao, 'N')];
                 if (!skipIntersectionData) {
-                    vorPromises.push(queueRawLoad('LOAD_INTERSECTION', icao, 'W'));
+                    ndbPromises.push(queueRawLoad('LOAD_INTERSECTION', icao, 'W'));
                 }
                 return Promise.all(ndbPromises)
                     .then(facilities => {
