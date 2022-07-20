@@ -437,6 +437,7 @@ mod tests {
                 "SLATS" => A320Hydraulic::SLAT_FPPU_TO_SURFACE_ANGLE_DEGREES,
                 _ => panic!(),
             };
+
             Angle::new::<degree>(interpolation(
                 &synchro_gear_degrees,
                 &synchro_gear_breakpoints,
@@ -446,7 +447,7 @@ mod tests {
     }
 
     impl SlatFlapGear {
-        const ANGLE_DELTA_DEGREE: f64 = 0.1;
+        const ANGLE_DELTA_DEGREE: f64 = 0.01;
 
         fn new(
             context: &mut InitContext,
@@ -485,6 +486,8 @@ mod tests {
             {
                 if let Some(demanded_angle) = sfcc.signal_demanded_angle(&self.surface_type) {
                     let actual_minus_target = demanded_angle - self.current_angle;
+                    let prev_angle = self.current_angle;
+
                     if actual_minus_target.get::<degree>().abs() > Self::ANGLE_DELTA_DEGREE {
                         self.current_angle += Angle::new::<degree>(
                             actual_minus_target.get::<degree>().signum()
@@ -492,8 +495,13 @@ mod tests {
                                 * context.delta_as_secs_f64(),
                         );
                         self.current_angle = self.current_angle.max(Angle::new::<degree>(0.));
-                    } else {
-                        self.current_angle = demanded_angle;
+
+                        // If demand was crossed between two frames: fixing to demand
+                        if self.current_angle > demanded_angle && prev_angle < demanded_angle
+                            || self.current_angle < demanded_angle && prev_angle > demanded_angle
+                        {
+                            self.current_angle = demanded_angle;
+                        }
                     }
                 }
             }
@@ -1364,7 +1372,7 @@ mod tests {
     // flaps/slats.
     #[test]
     fn flaps_test_movement_0_to_1f() {
-        let angle_delta = 0.01;
+        let angle_delta = 0.1;
         let mut test_bed = test_bed_with()
             .set_green_hyd_pressure()
             .set_indicated_airspeed(0.)
@@ -1435,6 +1443,7 @@ mod tests {
             previous_angle = test_bed.get_flaps_angle();
             test_bed = test_bed.run_one_tick();
         }
+
         assert!(
             (test_bed.get_flaps_angle() - test_bed.get_flaps_demanded_angle()).abs() <= angle_delta
         );
@@ -1590,7 +1599,7 @@ mod tests {
 
     #[test]
     fn slats_test_movement_1f_to_2() {
-        let angle_delta = 0.01;
+        let angle_delta = 0.1;
         let mut test_bed = test_bed_with()
             .set_green_hyd_pressure()
             .set_indicated_airspeed(0.)
@@ -1626,7 +1635,7 @@ mod tests {
 
     #[test]
     fn slats_test_movement_2_to_3() {
-        let angle_delta = 0.01;
+        let angle_delta = 0.1;
         let mut test_bed = test_bed_with()
             .set_green_hyd_pressure()
             .set_indicated_airspeed(0.)
@@ -1662,7 +1671,7 @@ mod tests {
 
     #[test]
     fn slats_test_movement_3_to_full() {
-        let angle_delta = 0.01;
+        let angle_delta = 0.1;
         let mut test_bed = test_bed_with()
             .set_green_hyd_pressure()
             .set_indicated_airspeed(0.)
