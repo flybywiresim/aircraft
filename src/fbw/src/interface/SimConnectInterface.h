@@ -205,8 +205,6 @@ class SimConnectInterface {
 
   bool readData();
 
-  bool sendData(SimOutput output);
-
   bool sendData(SimOutputZetaTrim output);
 
   bool sendData(SimOutputThrottles output);

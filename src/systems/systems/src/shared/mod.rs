@@ -149,6 +149,16 @@ pub enum ProximityDetectorId {
     DownlockDoorRight2,
 }
 
+#[derive(Clone, Copy, PartialEq)]
+pub enum GearActuatorId {
+    GearNose,
+    GearDoorNose,
+    GearLeft,
+    GearDoorLeft,
+    GearRight,
+    GearDoorRight,
+}
+
 pub trait EngineCorrectedN1 {
     fn corrected_n1(&self) -> Ratio;
 }
