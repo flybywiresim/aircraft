@@ -39,6 +39,7 @@
 1. [ISIS] Added temporary ISIS font with arrows - @aweissoertel (Alexibexi#7550)
 1. [PFD] Improve PFD barberpole rendering and behaviour - @lukecologne (luke)
 1. [FMGC] Only emit decel point when an approach is selected - @tracernz (Mike)
+1. [HYD] Fixed SFCC computer failing to send FPPU commands - @Crocket63 (crocket)
 
 ## 0.8.0
 
