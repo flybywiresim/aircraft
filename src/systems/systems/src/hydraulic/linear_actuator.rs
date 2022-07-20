@@ -1398,12 +1398,6 @@ mod tests {
             self.aero_forces.apply_up_force(force_up);
         }
 
-        fn actuator_position(&self, actuator_id: usize) -> Ratio {
-            assert!(actuator_id < N);
-            self.hydraulic_assembly
-                .actuator_position_normalized(actuator_id)
-        }
-
         fn is_locked(&self) -> bool {
             self.hydraulic_assembly.is_locked()
         }
@@ -1478,7 +1472,7 @@ mod tests {
                 <= 0.45
         );
 
-        assert_eq!(
+        assert_about_eq!(
             test_bed
                 .command_element(|e| {
                     e.linear_length_normalized_from_absolute_angle(Angle::new::<degree>(-17.))
@@ -1487,7 +1481,7 @@ mod tests {
             0.
         );
 
-        assert_eq!(
+        assert_about_eq!(
             test_bed
                 .command_element(|e| {
                     e.linear_length_normalized_from_absolute_angle(Angle::new::<degree>(30.))
@@ -1547,7 +1541,7 @@ mod tests {
             0.001
         );
 
-        assert_eq!(
+        assert_about_eq!(
             test_bed
                 .command_element(|e| {
                     e.linear_length_normalized_from_absolute_angle(Angle::new::<degree>(-25.))
@@ -1556,7 +1550,7 @@ mod tests {
             0.
         );
 
-        assert_eq!(
+        assert_about_eq!(
             test_bed
                 .command_element(|e| {
                     e.linear_length_normalized_from_absolute_angle(Angle::new::<degree>(25.))
