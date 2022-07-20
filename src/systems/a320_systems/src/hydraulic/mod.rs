@@ -4954,7 +4954,7 @@ impl ElevatorAssembly {
     fn update(
         &mut self,
         context: &UpdateContext,
-        aileron_controllers: &[impl HydraulicAssemblyController],
+        elevator_controllers: &[impl HydraulicAssemblyController],
         current_pressure_outward: &impl SectionPressure,
         current_pressure_inward: &impl SectionPressure,
     ) {
@@ -4962,7 +4962,7 @@ impl ElevatorAssembly {
             .update_body(context, self.hydraulic_assembly.body());
         self.hydraulic_assembly.update(
             context,
-            aileron_controllers,
+            elevator_controllers,
             [
                 current_pressure_outward.pressure_downstream_leak_valve(),
                 current_pressure_inward.pressure_downstream_leak_valve(),
@@ -10088,6 +10088,7 @@ mod tests {
             test_bed = test_bed
                 .set_ptu_state(false)
                 .set_yellow_e_pump(true)
+                .set_blue_e_pump(false)
                 .run_waiting_for(Duration::from_secs_f64(50.));
 
             assert!(!test_bed.is_blue_pressure_switch_pressurised());
@@ -10112,19 +10113,20 @@ mod tests {
             assert!(test_bed.is_blue_pressure_switch_pressurised());
             assert!(test_bed.is_yellow_pressure_switch_pressurised());
             assert!(test_bed.is_green_pressure_switch_pressurised());
-            assert!(test_bed.get_left_elevator_position().get::<ratio>() > 0.45);
-            assert!(test_bed.get_right_elevator_position().get::<ratio>() > 0.45);
+            assert!(test_bed.get_left_elevator_position().get::<ratio>() > 0.35);
+            assert!(test_bed.get_right_elevator_position().get::<ratio>() > 0.35);
 
             test_bed = test_bed
                 .set_ptu_state(false)
                 .set_yellow_e_pump(true)
                 .set_blue_e_pump(false)
-                .run_waiting_for(Duration::from_secs_f64(30.));
+                .run_waiting_for(Duration::from_secs_f64(75.));
 
+            assert!(!test_bed.is_blue_pressure_switch_pressurised());
             assert!(!test_bed.is_yellow_pressure_switch_pressurised());
             assert!(!test_bed.is_green_pressure_switch_pressurised());
-            assert!(test_bed.get_left_elevator_position().get::<ratio>() < 0.4);
-            assert!(test_bed.get_right_elevator_position().get::<ratio>() < 0.4);
+            assert!(test_bed.get_left_elevator_position().get::<ratio>() < 0.3);
+            assert!(test_bed.get_right_elevator_position().get::<ratio>() < 0.3);
         }
 
         #[test]
