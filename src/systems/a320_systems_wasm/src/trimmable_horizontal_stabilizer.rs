@@ -10,7 +10,9 @@ use systems::shared::to_bool;
 use msfs::sim_connect;
 use msfs::{sim_connect::SimConnect, sim_connect::SIMCONNECT_OBJECT_ID_USER};
 
-pub(super) fn ths(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>> {
+pub(super) fn trimmable_horizontal_stabilizer(
+    builder: &mut MsfsAspectBuilder,
+) -> Result<(), Box<dyn Error>> {
     builder.event_to_variable(
         "ELEV_TRIM_UP",
         EventToVariableMapping::Value(35.),

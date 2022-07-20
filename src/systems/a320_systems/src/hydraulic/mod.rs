@@ -36,7 +36,10 @@ use systems::{
             Pushback, SteeringActuator, SteeringAngleLimiter, SteeringController,
             SteeringRatioToAngle,
         },
-        ths::{ManualPitchTrimController, PitchTrimActuatorController, ThsTrimAssembly},
+        trimmable_horizontal_stabilizer::{
+            ManualPitchTrimController, PitchTrimActuatorController,
+            TrimmableHorizontalStabilizerAssembly,
+        },
         ElectricPump, EngineDrivenPump, HydraulicCircuit, HydraulicCircuitController,
         HydraulicPressureSensors, PowerTransferUnit, PowerTransferUnitCharacteristics,
         PowerTransferUnitController, PressureSwitch, PressureSwitchType, PumpController,
@@ -1237,7 +1240,7 @@ pub(super) struct A320Hydraulic {
 
     trim_controller: A320TrimInputController,
 
-    trim_assembly: ThsTrimAssembly,
+    trim_assembly: TrimmableHorizontalStabilizerAssembly,
 }
 impl A320Hydraulic {
     const HIGH_PITCH_PTU_SOUND_DELTA_PRESS_THRESHOLD_PSI: f64 = 2400.;
@@ -1484,7 +1487,7 @@ impl A320Hydraulic {
             ),
 
             trim_controller: A320TrimInputController::new(context),
-            trim_assembly: ThsTrimAssembly::new(
+            trim_assembly: TrimmableHorizontalStabilizerAssembly::new(
                 context,
                 Angle::new::<degree>(360. * -1.4),
                 Angle::new::<degree>(360. * 6.13),

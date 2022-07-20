@@ -404,7 +404,7 @@ impl PitchTrimActuator {
         context: &UpdateContext,
         electric_controller: &impl PitchTrimActuatorController,
         manual_controller: &impl ManualPitchTrimController,
-        ths_hydraulic_assembly: &ThsHydraulicAssembly,
+        ths_hydraulic_assembly: &TrimmableHorizontalStabilizerHydraulics,
     ) {
         self.update_clutches_state(electric_controller);
         self.update_motors(context, electric_controller, ths_hydraulic_assembly);
@@ -428,7 +428,7 @@ impl PitchTrimActuator {
     fn update_speed_and_override(
         &mut self,
         manual_controller: &impl ManualPitchTrimController,
-        ths_hydraulic_assembly: &ThsHydraulicAssembly,
+        ths_hydraulic_assembly: &TrimmableHorizontalStabilizerHydraulics,
     ) {
         let elec_drive_speed = self.elec_motor_drive_total_speed();
 
@@ -474,7 +474,7 @@ impl PitchTrimActuator {
         &mut self,
         context: &UpdateContext,
         controller: &impl PitchTrimActuatorController,
-        ths_hydraulic_assembly: &ThsHydraulicAssembly,
+        ths_hydraulic_assembly: &TrimmableHorizontalStabilizerHydraulics,
     ) {
         for (motor_index, motor) in self.electric_motors.iter_mut().enumerate() {
             motor.set_active_state(controller.energised_motor()[motor_index]);
@@ -513,12 +513,12 @@ impl SimulationElement for PitchTrimActuator {
     }
 }
 
-pub struct ThsTrimAssembly {
+pub struct TrimmableHorizontalStabilizerAssembly {
     pitch_trim_actuator: PitchTrimActuator,
     trim_wheel: TrimWheels,
-    ths_assembly: ThsHydraulicAssembly,
+    ths_assembly: TrimmableHorizontalStabilizerHydraulics,
 }
-impl ThsTrimAssembly {
+impl TrimmableHorizontalStabilizerAssembly {
     pub fn new(
         context: &mut InitContext,
 
@@ -548,7 +548,7 @@ impl ThsTrimAssembly {
                 min_trim_wheel_angle,
                 total_trim_wheel_range_angle,
             ),
-            ths_assembly: ThsHydraulicAssembly::new(
+            ths_assembly: TrimmableHorizontalStabilizerHydraulics::new(
                 context,
                 min_ths_deflection,
                 ths_deflection_range,
@@ -591,7 +591,7 @@ impl ThsTrimAssembly {
         self.ths_assembly.right_motor()
     }
 }
-impl SimulationElement for ThsTrimAssembly {
+impl SimulationElement for TrimmableHorizontalStabilizerAssembly {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.pitch_trim_actuator.accept(visitor);
         self.trim_wheel.accept(visitor);
@@ -599,7 +599,7 @@ impl SimulationElement for ThsTrimAssembly {
     }
 }
 
-struct ThsHydraulicAssembly {
+struct TrimmableHorizontalStabilizerHydraulics {
     deflection_id: VariableIdentifier,
     hydraulic_motors: [HydraulicDriveMotor; 2],
 
@@ -613,7 +613,7 @@ struct ThsHydraulicAssembly {
     is_at_max_up_spool_valve: bool,
     is_at_max_down_spool_valve: bool,
 }
-impl ThsHydraulicAssembly {
+impl TrimmableHorizontalStabilizerHydraulics {
     const HYDRAULIC_MOTOR_POSITION_ERROR_BREAKPOINT: [f64; 7] =
         [-50., -0.5, -0.1, 0., 0.1, 0.5, 50.];
     const HYDRAULIC_MOTOR_SPEED_REGULATION_COEF_MAP: [f64; 7] = [-1., -1., -0.6, 0., 0.6, 1., 1.];
@@ -710,7 +710,7 @@ impl ThsHydraulicAssembly {
         &mut self.hydraulic_motors[1]
     }
 }
-impl SimulationElement for ThsHydraulicAssembly {
+impl SimulationElement for TrimmableHorizontalStabilizerHydraulics {
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.deflection_id, self.actual_deflection.get::<degree>());
     }
@@ -809,7 +809,7 @@ mod tests {
         elec_trim_control: TestElecTrimControl,
         manual_trim_control: TestManualTrimControl,
 
-        trim_assembly: ThsTrimAssembly,
+        trim_assembly: TrimmableHorizontalStabilizerAssembly,
 
         hydraulic_pressures: [Pressure; 2],
 
@@ -825,7 +825,7 @@ mod tests {
                 updater_fixed_step: FixedStepLoop::new(Duration::from_millis(33)),
                 elec_trim_control: TestElecTrimControl::inactive_control(),
                 manual_trim_control: TestManualTrimControl::without_manual_input(),
-                trim_assembly: ThsTrimAssembly::new(
+                trim_assembly: TrimmableHorizontalStabilizerAssembly::new(
                     context,
                     Angle::new::<degree>(360. * -1.4),
                     Angle::new::<degree>(360. * 6.13),
