@@ -444,10 +444,11 @@ void FlyByWireInterface::setupLocalVariables() {
   idAileronPositionLeft = make_unique<LocalVariable>("A32NX_AILERON_LEFT_DEFLECTION_DEMAND");
   idAileronPositionRight = make_unique<LocalVariable>("A32NX_AILERON_RIGHT_DEFLECTION_DEMAND");
 
+  idElevatorPosition = make_unique<LocalVariable>("A32NX_ELEVATOR_DEFLECTION_DEMAND");
+
   idThs1MotorActive = make_unique<LocalVariable>("A32NX_THS_1_ACTIVE_MODE_COMMANDED");
   idThs1MotorCommand = make_unique<LocalVariable>("A32NX_THS_1_COMMANDED_POSITION");
 
-  idElevatorPosition = make_unique<LocalVariable>("A32NX_ELEVATOR_DEFLECTION_DEMAND");
   idRudderPosition = make_unique<LocalVariable>("A32NX_RUDDER_DEFLECTION_DEMAND");
 
   idRadioReceiverUsageEnabled = make_unique<LocalVariable>("A32NX_RADIO_RECEIVER_USAGE_ENABLED");
