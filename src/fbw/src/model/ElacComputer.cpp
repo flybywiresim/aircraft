@@ -1820,10 +1820,10 @@ void ElacComputer::step()
     ElacComputer_Y.out.discrete_outputs.right_aileron_active_mode = (rtb_AND2 &&
       ElacComputer_B.logic.right_aileron_avail);
     rtb_AND1 = !ElacComputer_B.laws.pitch_law_outputs.elevator_double_pressurization_active;
-    rtb_AND2 = (ElacComputer_B.logic.is_engaged_in_pitch && ElacComputer_B.logic.left_elevator_avail);
-    ElacComputer_Y.out.discrete_outputs.left_elevator_damping_mode = (rtb_AND2 && (rtb_AND1 || (!rtb_NOT_k)));
-    ElacComputer_Y.out.discrete_outputs.right_elevator_damping_mode = (rtb_AND2 && (((rtb_y_e == 0U) && (rtb_y_b == 0U))
-      || rtb_AND1));
+    ElacComputer_Y.out.discrete_outputs.left_elevator_damping_mode = (ElacComputer_B.logic.is_engaged_in_pitch &&
+      ElacComputer_B.logic.left_elevator_avail && (rtb_AND1 || (!rtb_NOT_k)));
+    ElacComputer_Y.out.discrete_outputs.right_elevator_damping_mode = (ElacComputer_B.logic.is_engaged_in_pitch &&
+      ElacComputer_B.logic.right_elevator_avail && (((rtb_y_e == 0U) && (rtb_y_b == 0U)) || rtb_AND1));
     ElacComputer_Y.out.discrete_outputs.ths_active = (ElacComputer_B.logic.ths_active_commanded &&
       ElacComputer_B.logic.ths_avail);
     ElacComputer_B.dt = ElacComputer_U.in.time.dt;

@@ -1224,9 +1224,10 @@ void SecComputer::step()
     SecComputer_Y.out.discrete_outputs.right_elevator_ok = SecComputer_B.logic.right_elevator_avail;
     SecComputer_Y.out.discrete_outputs.ground_spoiler_out = SecComputer_B.logic.ground_spoilers_out;
     SecComputer_Y.out.discrete_outputs.sec_failed = SecComputer_P.Constant2_Value_n;
-    rtb_y_pq = (SecComputer_B.logic.is_engaged_in_pitch && SecComputer_B.logic.left_elevator_avail);
-    SecComputer_Y.out.discrete_outputs.left_elevator_damping_mode = rtb_y_pq;
-    SecComputer_Y.out.discrete_outputs.right_elevator_damping_mode = rtb_y_pq;
+    SecComputer_Y.out.discrete_outputs.left_elevator_damping_mode = (SecComputer_B.logic.is_engaged_in_pitch &&
+      SecComputer_B.logic.left_elevator_avail);
+    SecComputer_Y.out.discrete_outputs.right_elevator_damping_mode = (SecComputer_B.logic.is_engaged_in_pitch &&
+      SecComputer_B.logic.right_elevator_avail);
     SecComputer_Y.out.discrete_outputs.ths_active = (SecComputer_B.logic.ths_active_commanded &&
       SecComputer_B.logic.ths_avail);
     rtb_VectorConcatenate[13] = SecComputer_P.Constant8_Value;
