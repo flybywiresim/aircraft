@@ -1277,8 +1277,9 @@ void ElacComputer::step()
 
     ElacComputer_RateLimiter_a(rtb_DataTypeConversion7, ElacComputer_P.RateLimiterGenericVariableTs_up,
       ElacComputer_P.RateLimiterGenericVariableTs_lo, ElacComputer_U.in.time.dt,
-      ElacComputer_U.in.analog_inputs.right_aileron_pos_deg, !ElacComputer_B.logic.is_engaged_in_roll,
-      &ElacComputer_B.laws.lateral_law_outputs.right_aileron_command_deg, &ElacComputer_DWork.sf_RateLimiter_a);
+      ElacComputer_U.in.analog_inputs.right_aileron_pos_deg, (!ElacComputer_B.logic.right_aileron_crosscommand_active) &&
+      (!ElacComputer_B.logic.is_engaged_in_roll), &ElacComputer_B.laws.lateral_law_outputs.right_aileron_command_deg,
+      &ElacComputer_DWork.sf_RateLimiter_a);
     if (ElacComputer_B.logic.left_aileron_crosscommand_active) {
       rtb_DataTypeConversion7 = ElacComputer_U.in.bus_inputs.elac_opp_bus.aileron_command_deg.Data;
     } else {
@@ -1293,8 +1294,8 @@ void ElacComputer::step()
 
     ElacComputer_RateLimiter_a(rtb_DataTypeConversion7, ElacComputer_P.RateLimiterGenericVariableTs1_up,
       ElacComputer_P.RateLimiterGenericVariableTs1_lo, ElacComputer_U.in.time.dt,
-      ElacComputer_U.in.analog_inputs.left_aileron_pos_deg, !ElacComputer_B.logic.is_engaged_in_roll, &rtb_Y_b,
-      &ElacComputer_DWork.sf_RateLimiter_p);
+      ElacComputer_U.in.analog_inputs.left_aileron_pos_deg, (!ElacComputer_B.logic.left_aileron_crosscommand_active) &&
+      (!ElacComputer_B.logic.is_engaged_in_roll), &rtb_Y_b, &ElacComputer_DWork.sf_RateLimiter_p);
     ElacComputer_MATLABFunction_j(&ElacComputer_U.in.bus_inputs.sfcc_1_bus.slat_flap_actual_position_word,
       ElacComputer_P.BitfromLabel_bit_a2, &rtb_y_o);
     ElacComputer_MATLABFunction(&ElacComputer_U.in.bus_inputs.sfcc_1_bus.slat_flap_actual_position_word, &rtb_AND2_p);
