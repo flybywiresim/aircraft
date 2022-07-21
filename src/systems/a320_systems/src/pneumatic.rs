@@ -12,6 +12,7 @@ use uom::si::{
 
 use systems::{
     accept_iterable,
+    air_conditioning::PackFlowControllers,
     overhead::{AutoOffFaultPushButton, OnOffFaultPushButton},
     pneumatic::{
         valve::*, BleedMonitoringComputerChannelOperationMode,
@@ -24,8 +25,8 @@ use systems::{
     shared::{
         pid::PidController, update_iterator::MaxStepLoop, ControllerSignal, ElectricalBusType,
         ElectricalBuses, EngineBleedPushbutton, EngineCorrectedN1, EngineCorrectedN2,
-        EngineFirePushButtons, EngineStartState, HydraulicColor, PneumaticBleed, PneumaticValve,
-        ReservoirAirPressure,
+        EngineFirePushButtons, EngineStartState, HydraulicColor, PackFlowValveState,
+        PneumaticBleed, PneumaticValve, ReservoirAirPressure,
     },
     simulation::{
         InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -215,6 +216,7 @@ impl A320Pneumatic {
         overhead_panel: &A320PneumaticOverheadPanel,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         apu: &impl ControllerSignal<TargetPressureTemperatureSignal>,
+        pack_flow_valve_signals: &impl PackFlowControllers<3>,
     ) {
         self.physics_updater.update(context);
 
@@ -225,6 +227,7 @@ impl A320Pneumatic {
                 overhead_panel,
                 engine_fire_push_buttons,
                 apu,
+                pack_flow_valve_signals,
             );
         }
     }
@@ -236,6 +239,7 @@ impl A320Pneumatic {
         overhead_panel: &A320PneumaticOverheadPanel,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         apu: &impl ControllerSignal<TargetPressureTemperatureSignal>,
+        pack_flow_valve_signals: &impl PackFlowControllers<3>,
     ) {
         self.apu_compression_chamber.update(apu);
 
@@ -314,7 +318,9 @@ impl A320Pneumatic {
         self.packs
             .iter_mut()
             .zip(self.engine_systems.iter_mut())
-            .for_each(|(pack, engine_system)| pack.update(context, engine_system));
+            .for_each(|(pack, engine_system)| {
+                pack.update(context, engine_system, pack_flow_valve_signals)
+            });
     }
 
     // TODO: Returning a mutable reference here is not great. I was running into an issue with the update order:
@@ -357,6 +363,14 @@ impl EngineStartState for A320Pneumatic {
     }
     fn engine_mode_selector(&self) -> EngineModeSelector {
         self.fadec.engine_mode_selector()
+    }
+}
+impl PackFlowValveState for A320Pneumatic {
+    fn pack_flow_valve_open_amount(&self, pack_id: usize) -> Ratio {
+        self.packs[pack_id].pack_flow_valve_open_amount()
+    }
+    fn pack_flow_valve_air_flow(&self, pack_id: usize) -> MassRate {
+        self.packs[pack_id].pack_flow_valve_air_flow()
     }
 }
 impl SimulationElement for A320Pneumatic {
@@ -1150,6 +1164,7 @@ impl SimulationElement for FullAuthorityDigitalEngineControl {
 
 /// A struct to hold all the pack related components
 struct PackComplex {
+    engine_number: usize,
     pack_flow_valve_flow_rate_id: VariableIdentifier,
     pack_container: PneumaticPipe,
     exhaust: PneumaticExhaust,
@@ -1159,6 +1174,7 @@ struct PackComplex {
 impl PackComplex {
     fn new(context: &mut InitContext, engine_number: usize) -> Self {
         Self {
+            engine_number,
             pack_flow_valve_flow_rate_id: context
                 .get_identifier(format!("PNEU_PACK_{}_FLOW_VALVE_FLOW_RATE", engine_number)),
             pack_container: PneumaticPipe::new(
@@ -1172,18 +1188,32 @@ impl PackComplex {
         }
     }
 
-    fn update(&mut self, context: &UpdateContext, from: &mut impl PneumaticContainer) {
+    fn update(
+        &mut self,
+        context: &UpdateContext,
+        from: &mut impl PneumaticContainer,
+        pack_flow_valve_signals: &impl PackFlowControllers<3>,
+    ) {
         self.pack_flow_valve_controller
             .update(context, self.pack_flow_valve.fluid_flow());
 
-        self.pack_flow_valve
-            .update_open_amount(&self.pack_flow_valve_controller);
+        self.pack_flow_valve.update_open_amount(
+            &pack_flow_valve_signals.pack_flow_controller(self.engine_number.into()),
+        );
 
         self.pack_flow_valve
             .update_move_fluid(context, from, &mut self.pack_container);
 
         self.exhaust
             .update_move_fluid(context, &mut self.pack_container);
+    }
+
+    fn pack_flow_valve_open_amount(&self) -> Ratio {
+        self.pack_flow_valve.open_amount()
+    }
+
+    fn pack_flow_valve_air_flow(&self) -> MassRate {
+        self.pack_flow_valve.fluid_flow()
     }
 }
 impl PneumaticContainer for PackComplex {
@@ -1344,6 +1374,10 @@ impl SimulationElement for CrossBleedValve {
 #[cfg(test)]
 mod tests {
     use systems::{
+        air_conditioning::{
+            acs_controller::{PackFlowController, PackId},
+            AirConditioningSystem, PackFlowControllers, ZoneType,
+        },
         electrical::{test::TestElectricitySource, ElectricalBus, Electricity},
         engine::leap_engine::LeapEngine,
         failures::FailureType,
@@ -1352,10 +1386,13 @@ mod tests {
             CrossBleedValveSelectorMode, EngineState, PneumaticContainer, PneumaticValveSignal,
             TargetPressureTemperatureSignal,
         },
+        pressurization::PressurizationOverheadPanel,
         shared::{
-            ApuBleedAirValveSignal, ControllerSignal, ElectricalBusType, ElectricalBuses,
-            EmergencyElectricalState, EngineFirePushButtons, HydraulicColor,
-            InternationalStandardAtmosphere, MachNumber, PneumaticValve, PotentialOrigin,
+            ApuBleedAirValveSignal, Cabin, ControllerSignal, ElectricalBusType, ElectricalBuses,
+            EmergencyElectricalState, EngineBleedPushbutton, EngineCorrectedN1,
+            EngineFirePushButtons, EngineStartState, GroundSpeed, HydraulicColor,
+            InternationalStandardAtmosphere, LgciuWeightOnWheels, MachNumber, PackFlowValveState,
+            PneumaticBleed, PneumaticValve, PotentialOrigin,
         },
         simulation::{
             test::{SimulationTestBed, TestBed, WriteByName},
@@ -1366,11 +1403,144 @@ mod tests {
     use std::{fs, fs::File, time::Duration};
 
     use uom::si::{
-        f64::*, length::foot, mass_rate::kilogram_per_second, pressure::psi, ratio::ratio,
-        thermodynamic_temperature::degree_celsius, velocity::knot,
+        f64::*,
+        length::foot,
+        mass_rate::kilogram_per_second,
+        pressure::{pascal, psi},
+        ratio::ratio,
+        thermodynamic_temperature::degree_celsius,
+        velocity::knot,
     };
 
     use super::{A320Pneumatic, A320PneumaticOverheadPanel};
+
+    struct TestAirConditioning {
+        a320_air_conditioning_system: AirConditioningSystem<3>,
+
+        adirs: TestAdirs,
+        lgciu: TestLgciu,
+        pressurization: TestPressurization,
+        pressurization_overhead: PressurizationOverheadPanel,
+    }
+    impl TestAirConditioning {
+        fn new(context: &mut InitContext) -> Self {
+            let cabin_zones: [ZoneType; 3] =
+                [ZoneType::Cockpit, ZoneType::Cabin(1), ZoneType::Cabin(2)];
+
+            Self {
+                a320_air_conditioning_system: AirConditioningSystem::new(context, cabin_zones),
+
+                adirs: TestAdirs::new(),
+                lgciu: TestLgciu::new(true),
+                pressurization: TestPressurization::new(),
+                pressurization_overhead: PressurizationOverheadPanel::new(context),
+            }
+        }
+        fn update(
+            &mut self,
+            context: &UpdateContext,
+            engines: [&impl EngineCorrectedN1; 2],
+            engine_fire_push_buttons: &impl EngineFirePushButtons,
+            pneumatic: &(impl EngineStartState + PackFlowValveState + PneumaticBleed),
+            pneumatic_overhead: &impl EngineBleedPushbutton,
+        ) {
+            self.a320_air_conditioning_system.update(
+                context,
+                &self.adirs,
+                engines,
+                engine_fire_push_buttons,
+                pneumatic,
+                pneumatic_overhead,
+                &self.pressurization,
+                &self.pressurization_overhead,
+                [&self.lgciu; 2],
+            );
+        }
+    }
+    impl PackFlowControllers<3> for TestAirConditioning {
+        fn pack_flow_controller(&self, pack_id: PackId) -> PackFlowController<3> {
+            self.a320_air_conditioning_system
+                .pack_flow_controller(pack_id)
+        }
+    }
+    impl SimulationElement for TestAirConditioning {
+        fn accept<V: SimulationElementVisitor>(&mut self, visitor: &mut V) {
+            self.a320_air_conditioning_system.accept(visitor);
+
+            visitor.visit(self);
+        }
+    }
+
+    struct TestAdirs {
+        ground_speed: Velocity,
+    }
+    impl TestAdirs {
+        fn new() -> Self {
+            Self {
+                ground_speed: Velocity::new::<knot>(0.),
+            }
+        }
+    }
+    impl GroundSpeed for TestAdirs {
+        fn ground_speed(&self) -> Velocity {
+            self.ground_speed
+        }
+    }
+
+    struct TestPressurization {
+        cabin_pressure: Pressure,
+    }
+    impl TestPressurization {
+        fn new() -> Self {
+            Self {
+                cabin_pressure: Pressure::new::<pascal>(101315.),
+            }
+        }
+    }
+    impl Cabin for TestPressurization {
+        fn altitude(&self) -> Length {
+            Length::new::<foot>(0.)
+        }
+
+        fn pressure(&self) -> Pressure {
+            self.cabin_pressure
+        }
+    }
+
+    struct TestLgciu {
+        compressed: bool,
+    }
+    impl TestLgciu {
+        fn new(compressed: bool) -> Self {
+            Self { compressed }
+        }
+    }
+    impl LgciuWeightOnWheels for TestLgciu {
+        fn left_and_right_gear_compressed(&self, _treat_ext_pwr_as_ground: bool) -> bool {
+            self.compressed
+        }
+        fn right_gear_compressed(&self, _treat_ext_pwr_as_ground: bool) -> bool {
+            true
+        }
+        fn right_gear_extended(&self, _treat_ext_pwr_as_ground: bool) -> bool {
+            false
+        }
+        fn left_gear_compressed(&self, _treat_ext_pwr_as_ground: bool) -> bool {
+            true
+        }
+        fn left_gear_extended(&self, _treat_ext_pwr_as_ground: bool) -> bool {
+            false
+        }
+        fn left_and_right_gear_extended(&self, _treat_ext_pwr_as_ground: bool) -> bool {
+            false
+        }
+        fn nose_gear_compressed(&self, _treat_ext_pwr_as_ground: bool) -> bool {
+            true
+        }
+        fn nose_gear_extended(&self, _treat_ext_pwr_as_ground: bool) -> bool {
+            false
+        }
+    }
 
     struct TestApu {
         bleed_air_valve_signal: ApuBleedAirValveSignal,
@@ -1466,6 +1636,7 @@ mod tests {
 
     struct PneumaticTestAircraft {
         pneumatic: A320Pneumatic,
+        air_conditioning: TestAirConditioning,
         apu: TestApu,
         engine_1: LeapEngine,
         engine_2: LeapEngine,
@@ -1487,6 +1658,7 @@ mod tests {
         fn new(context: &mut InitContext) -> Self {
             Self {
                 pneumatic: A320Pneumatic::new(context),
+                air_conditioning: TestAirConditioning::new(context),
                 apu: TestApu::new(),
                 engine_1: LeapEngine::new(context, 1),
                 engine_2: LeapEngine::new(context, 2),
@@ -1554,7 +1726,15 @@ mod tests {
                 &self.pneumatic_overhead_panel,
                 &self.fire_pushbuttons,
                 &self.apu,
+                &self.air_conditioning,
             );
+            self.air_conditioning.update(
+                context,
+                [&self.engine_1, &self.engine_2],
+                &self.fire_pushbuttons,
+                &self.pneumatic,
+                &self.pneumatic_overhead_panel,
+            )
         }
     }
     impl SimulationElement for PneumaticTestAircraft {
@@ -1564,6 +1744,7 @@ mod tests {
             self.engine_1.accept(visitor);
             self.engine_2.accept(visitor);
             self.pneumatic_overhead_panel.accept(visitor);
+            self.air_conditioning.accept(visitor);
 
             visitor.visit(self);
         }
@@ -2630,6 +2811,8 @@ mod tests {
             .stop_eng2()
             .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Auto)
             .set_bleed_air_running()
+            .set_pack_flow_pb_is_auto(1, false)
+            .set_pack_flow_pb_is_auto(2, false)
             .and_stabilize();
 
         assert!(test_bed.cross_bleed_valve_is_open());
@@ -2712,7 +2895,8 @@ mod tests {
             .stop_eng2()
             .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Shut)
             .set_bleed_air_running()
-            // .both_packs_auto()
+            .set_pack_flow_pb_is_auto(1, false)
+            .set_pack_flow_pb_is_auto(2, false)
             .and_stabilize();
 
         assert!(!test_bed.pr_valve_is_open(1));
@@ -2725,14 +2909,20 @@ mod tests {
     #[test]
     fn pack_flow_valve_closes_with_pack_pb_off() {
         let mut test_bed = test_bed_with()
+            .idle_eng1()
+            .idle_eng2()
             .set_pack_flow_pb_is_auto(1, true)
             .set_pack_flow_pb_is_auto(2, false)
+            .and_run()
             .and_run();
 
         assert!(test_bed.pack_flow_valve_is_open(1));
         assert!(!test_bed.pack_flow_valve_is_open(2));
 
-        test_bed = test_bed.set_pack_flow_pb_is_auto(1, false).and_run();
+        test_bed = test_bed
+            .set_pack_flow_pb_is_auto(1, false)
+            .and_run()
+            .and_run();
 
         assert!(!test_bed.pack_flow_valve_is_open(1));
         assert!(!test_bed.pack_flow_valve_is_open(2));
@@ -2977,6 +3167,7 @@ mod tests {
         test_bed = test_bed
             .set_pack_flow_pb_is_auto(1, false)
             .set_pack_flow_pb_is_auto(2, false)
+            .and_run()
             .and_run();
 
         assert!(test_bed.pack_flow_valve_flow(1) < flow_rate_tolerance());

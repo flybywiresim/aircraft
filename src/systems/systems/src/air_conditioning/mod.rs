@@ -1,11 +1,14 @@
-use self::acs_controller::{AirConditioningSystemController, PackFlowValveSignal};
+use self::acs_controller::{
+    AirConditioningSystemController, PackFlowController, PackFlowValveSignal, PackId,
+};
 
 use crate::{
     overhead::{OnOffFaultPushButton, ValueKnob},
+    pneumatic::PneumaticValveSignal,
     pressurization::PressurizationOverheadPanel,
     shared::{
         Cabin, ControllerSignal, EngineBleedPushbutton, EngineCorrectedN1, EngineFirePushButtons,
-        EngineStartState, GroundSpeed, LgciuWeightOnWheels, PneumaticBleed,
+        EngineStartState, GroundSpeed, LgciuWeightOnWheels, PackFlowValveState, PneumaticBleed,
     },
     simulation::{
         InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -29,6 +32,10 @@ pub trait DuctTemperature {
 
 pub trait PackFlow {
     fn pack_flow(&self) -> MassRate;
+}
+
+pub trait PackFlowControllers<const ZONES: usize> {
+    fn pack_flow_controller(&self, pack_id: PackId) -> PackFlowController<ZONES>;
 }
 
 pub enum ZoneType {
@@ -86,7 +93,7 @@ impl<const ZONES: usize> AirConditioningSystem<ZONES> {
         adirs: &impl GroundSpeed,
         engines: [&impl EngineCorrectedN1; 2],
         engine_fire_push_buttons: &impl EngineFirePushButtons,
-        pneumatic: &(impl PneumaticBleed + EngineStartState),
+        pneumatic: &(impl EngineStartState + PackFlowValveState + PneumaticBleed),
         pneumatic_overhead: &impl EngineBleedPushbutton,
         pressurization: &impl Cabin,
         pressurization_overhead: &PressurizationOverheadPanel,
@@ -100,15 +107,20 @@ impl<const ZONES: usize> AirConditioningSystem<ZONES> {
             engines,
             engine_fire_push_buttons,
             pneumatic,
+            pneumatic_overhead,
             pressurization,
             pressurization_overhead,
             lgciu,
         );
 
-        for (pfv, pack_id) in self.pack_flow_valves.iter_mut().zip([0, 1]) {
+        for (pfv, pack_id) in self
+            .pack_flow_valves
+            .iter_mut()
+            .zip([PackId::Pack1, PackId::Pack2])
+        {
             pfv.update(
                 context,
-                self.acsc.pack_flow_controller(pack_id),
+                &self.acsc.pack_flow_controller(pack_id),
                 engines,
                 pneumatic,
                 pneumatic_overhead,
@@ -129,6 +141,12 @@ impl<const ZONES: usize> DuctTemperature for AirConditioningSystem<ZONES> {
 impl<const ZONES: usize> PackFlow for AirConditioningSystem<ZONES> {
     fn pack_flow(&self) -> MassRate {
         self.acsc.pack_flow()
+    }
+}
+
+impl<const ZONES: usize> PackFlowControllers<ZONES> for AirConditioningSystem<ZONES> {
+    fn pack_flow_controller(&self, pack_id: PackId) -> PackFlowController<ZONES> {
+        self.acsc.pack_flow_controller(pack_id)
     }
 }
 

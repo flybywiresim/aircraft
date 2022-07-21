@@ -201,6 +201,7 @@ impl Aircraft for A320 {
             &self.pneumatic_overhead,
             &self.engine_fire_overhead,
             &self.apu,
+            &self.air_conditioning,
         );
         self.air_conditioning.update(
             context,
