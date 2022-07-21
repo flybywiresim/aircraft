@@ -39,6 +39,7 @@
 1. [ISIS] Added temporary ISIS font with arrows - @aweissoertel (Alexibexi#7550)
 1. [PFD] Improve PFD barberpole rendering and behaviour - @lukecologne (luke)
 1. [FMGC] Only emit decel point when an approach is selected - @tracernz (Mike)
+1. [MCDU] Fix padding of arc radii on F-PLN - @tracernz (Mike)
 
 ## 0.8.0
 
