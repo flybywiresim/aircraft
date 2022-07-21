@@ -516,7 +516,7 @@ impl SimulationElement for PitchTrimActuator {
 pub struct TrimmableHorizontalStabilizerAssembly {
     pitch_trim_actuator: PitchTrimActuator,
     trim_wheel: TrimWheels,
-    ths_assembly: TrimmableHorizontalStabilizerHydraulics,
+    ths_hydraulics: TrimmableHorizontalStabilizerHydraulics,
 }
 impl TrimmableHorizontalStabilizerAssembly {
     pub fn new(
@@ -548,7 +548,7 @@ impl TrimmableHorizontalStabilizerAssembly {
                 min_trim_wheel_angle,
                 total_trim_wheel_range_angle,
             ),
-            ths_assembly: TrimmableHorizontalStabilizerHydraulics::new(
+            ths_hydraulics: TrimmableHorizontalStabilizerHydraulics::new(
                 context,
                 min_ths_deflection,
                 ths_deflection_range,
@@ -567,12 +567,12 @@ impl TrimmableHorizontalStabilizerAssembly {
             context,
             electric_controller,
             manual_controller,
-            &self.ths_assembly,
+            &self.ths_hydraulics,
         );
 
         self.trim_wheel.update(&self.pitch_trim_actuator);
 
-        self.ths_assembly.update(
+        self.ths_hydraulics.update(
             context,
             pressures,
             self.pitch_trim_actuator.position_normalized(),
@@ -584,18 +584,18 @@ impl TrimmableHorizontalStabilizerAssembly {
     }
 
     pub fn left_motor(&mut self) -> &mut impl Actuator {
-        self.ths_assembly.left_motor()
+        self.ths_hydraulics.left_motor()
     }
 
     pub fn right_motor(&mut self) -> &mut impl Actuator {
-        self.ths_assembly.right_motor()
+        self.ths_hydraulics.right_motor()
     }
 }
 impl SimulationElement for TrimmableHorizontalStabilizerAssembly {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.pitch_trim_actuator.accept(visitor);
         self.trim_wheel.accept(visitor);
-        self.ths_assembly.accept(visitor);
+        self.ths_hydraulics.accept(visitor);
     }
 }
 
@@ -930,9 +930,9 @@ mod tests {
                     self.trim_assembly.pitch_trim_actuator.electric_motors[2]
                         .speed()
                         .get::<revolution_per_minute>(),
-                    self.trim_assembly.ths_assembly.hydraulic_motors[0].speed().get::<revolution_per_minute>(),
-                    self.trim_assembly.ths_assembly.hydraulic_motors[1].speed().get::<revolution_per_minute>(),
-                    self.trim_assembly.ths_assembly.actual_deflection.get::<degree>()
+                    self.trim_assembly.ths_hydraulics.hydraulic_motors[0].speed().get::<revolution_per_minute>(),
+                    self.trim_assembly.ths_hydraulics.hydraulic_motors[1].speed().get::<revolution_per_minute>(),
+                    self.trim_assembly.ths_hydraulics.actual_deflection.get::<degree>()
 
                 );
             }
