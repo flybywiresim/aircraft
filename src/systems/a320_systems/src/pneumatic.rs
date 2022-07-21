@@ -3,7 +3,6 @@ use std::{f64::consts::PI, time::Duration};
 
 use uom::si::{
     f64::*,
-    mass_rate::kilogram_per_second,
     pressure::psi,
     ratio::ratio,
     thermodynamic_temperature::degree_celsius,
@@ -1169,7 +1168,6 @@ struct PackComplex {
     pack_container: PneumaticPipe,
     exhaust: PneumaticExhaust,
     pack_flow_valve: DefaultValve,
-    pack_flow_valve_controller: PackFlowValveController,
 }
 impl PackComplex {
     fn new(context: &mut InitContext, engine_number: usize) -> Self {
@@ -1184,7 +1182,6 @@ impl PackComplex {
             ),
             exhaust: PneumaticExhaust::new(0.3, 0.3, Pressure::new::<psi>(0.)),
             pack_flow_valve: DefaultValve::new_closed(),
-            pack_flow_valve_controller: PackFlowValveController::new(context, engine_number),
         }
     }
 
@@ -1194,9 +1191,6 @@ impl PackComplex {
         from: &mut impl PneumaticContainer,
         pack_flow_valve_signals: &impl PackFlowControllers<3>,
     ) {
-        self.pack_flow_valve_controller
-            .update(context, self.pack_flow_valve.fluid_flow());
-
         self.pack_flow_valve.update_open_amount(
             &pack_flow_valve_signals.pack_flow_controller(self.engine_number.into()),
         );
@@ -1248,55 +1242,11 @@ impl PneumaticContainer for PackComplex {
     }
 }
 impl SimulationElement for PackComplex {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        self.pack_flow_valve_controller.accept(visitor);
-
-        visitor.visit(self);
-    }
-
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(
             &self.pack_flow_valve_flow_rate_id,
             self.pack_flow_valve.fluid_flow(),
         );
-    }
-}
-
-// In the future, this will be done by the ACSC, hence why I have used an external controller and not the BMC
-struct PackFlowValveController {
-    pack_toggle_pb_id: VariableIdentifier,
-    pack_pb_is_auto: bool,
-    pid: PidController,
-}
-impl PackFlowValveController {
-    fn new(context: &mut InitContext, engine_number: usize) -> Self {
-        Self {
-            pack_toggle_pb_id: context
-                .get_identifier(format!("OVHD_COND_PACK_{}_PB_IS_ON", engine_number)),
-            pack_pb_is_auto: true,
-            pid: PidController::new(0., 0.05, 0., 0., 1., 0.75, 1.),
-        }
-    }
-
-    fn update(&mut self, context: &UpdateContext, pack_flow_valve_flow_rate: MassRate) {
-        self.pid.next_control_output(
-            pack_flow_valve_flow_rate.get::<kilogram_per_second>(),
-            Some(context.delta()),
-        );
-    }
-}
-impl ControllerSignal<PackFlowValveSignal> for PackFlowValveController {
-    fn signal(&self) -> Option<PackFlowValveSignal> {
-        Some(if self.pack_pb_is_auto {
-            PackFlowValveSignal::new(Ratio::new::<ratio>(self.pid.output()))
-        } else {
-            PackFlowValveSignal::new_closed()
-        })
-    }
-}
-impl SimulationElement for PackFlowValveController {
-    fn read(&mut self, reader: &mut SimulatorReader) {
-        self.pack_pb_is_auto = reader.read(&self.pack_toggle_pb_id);
     }
 }
 
