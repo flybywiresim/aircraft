@@ -235,6 +235,8 @@ class SecComputer final
     uint32_T SSM_ls;
     uint32_T SSM_dg;
     uint32_T SSM_d3;
+    uint32_T SSM_p2;
+    uint32_T SSM_bo0;
     real32_T Data;
     real32_T Data_f;
     real32_T Data_fw;
@@ -409,6 +411,8 @@ class SecComputer final
     real32_T Data_hd;
     real32_T Data_al;
     real32_T Data_gu;
+    real32_T Data_ix;
+    real32_T Data_do;
     boolean_T sec_in_emergency_powersupply;
     boolean_T is_unit_1;
     boolean_T is_unit_2;
@@ -659,6 +663,7 @@ class SecComputer final
     real_T Delay_InitialCondition;
     real_T Constant_Value_h;
     real_T Constant2_Value_f;
+    real32_T Constant1_Value_m;
     real32_T Gain_Gain_b;
     real32_T Gain1_Gain;
     real32_T Gain2_Gain;

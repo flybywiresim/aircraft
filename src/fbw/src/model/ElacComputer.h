@@ -10,7 +10,6 @@
 
 extern const real_T ElacComputer_RGND;
 extern base_elac_logic_outputs rtP_elac_logic_output_MATLABStruct;
-extern base_elac_laws_outputs rtP_elac_laws_output_MATLABStruct;
 extern base_elac_analog_outputs rtP_elac_analog_output_MATLABStruct;
 extern base_elac_discrete_outputs rtP_elac_discrete_output_MATLABStruct;
 class ElacComputer final
@@ -323,6 +322,7 @@ class ElacComputer final
     uint32_T SSM_pe3;
     uint32_T SSM_jj;
     uint32_T SSM_jx;
+    uint32_T SSM_npl;
     real32_T Data;
     real32_T Data_f;
     real32_T Data_fw;
@@ -582,6 +582,7 @@ class ElacComputer final
     real32_T Data_gfr;
     real32_T Data_czp;
     real32_T Data_fm;
+    real32_T Data_jsg;
     boolean_T ground_spoilers_active_2;
     boolean_T is_unit_1;
     boolean_T is_unit_2;
@@ -737,6 +738,10 @@ class ElacComputer final
     real_T BitfromLabel4_bit_i;
     real_T BitfromLabel5_bit_l;
     real_T BitfromLabel_bit_es;
+    real_T BitfromLabel_bit_p3;
+    real_T BitfromLabel2_bit_j;
+    real_T BitfromLabel1_bit_i;
+    real_T BitfromLabel3_bit_mo;
     real_T CompareToConstant_const;
     real_T CompareToConstant_const_m;
     real_T CompareToConstant_const_l;
@@ -792,6 +797,7 @@ class ElacComputer final
     boolean_T PulseNode_isRisingEdge_g;
     elac_outputs out_Y0;
     base_elac_out_bus Constant4_Value;
+    base_elac_laws_outputs Constant_Value;
     real_T Bias_Bias;
     real_T Saturation_UpperSat;
     real_T Saturation_LowerSat;
@@ -809,11 +815,12 @@ class ElacComputer final
     real_T Constant5_Value;
     real_T Constant6_Value;
     real_T Constant7_Value;
+    real_T Constant8_Value;
     real_T Constant1_Value_d;
     real_T Constant2_Value_b;
     real_T Constant3_Value_f;
     real_T Constant4_Value_i;
-    real_T Constant_Value;
+    real_T Constant_Value_j;
     real_T Constant_Value_p;
     real_T Saturation_UpperSat_d;
     real_T Saturation_LowerSat_h;
@@ -829,7 +836,7 @@ class ElacComputer final
     real_T Constant5_Value_k;
     real_T Constant6_Value_b;
     real_T Constant7_Value_g;
-    real_T Constant8_Value;
+    real_T Constant8_Value_h;
     real_T Gain1_Gain;
     real_T uDLookupTable_tableData[4];
     real_T uDLookupTable_bp01Data[4];
@@ -845,6 +852,8 @@ class ElacComputer final
     real_T Gain1_Gain_b;
     real_T Constant_Value_a;
     real_T Delay_InitialCondition;
+    real_T uDLookupTable_tableData_j[7];
+    real_T uDLookupTable_bp01Data_h[7];
     real_T Constant_Value_b;
     real_T Switch12_Threshold;
     real_T Switch13_Threshold;

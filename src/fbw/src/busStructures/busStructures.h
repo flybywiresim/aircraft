@@ -213,6 +213,8 @@ struct ElacOutBus {
   Arinc429NumericWord rollSpoilerCommand;
   // Yaw Damper command for the FACs
   Arinc429NumericWord yawDamperCommand;
+
+  Arinc429NumericWord elevatorDualPressurizationCommand;
   // Discrete status words
   Arinc429DiscreteWord discreteStatusWord1;
 

@@ -327,6 +327,7 @@ struct base_elac_out_bus
   base_arinc_429 aileron_command_deg;
   base_arinc_429 roll_spoiler_command_deg;
   base_arinc_429 yaw_damper_command_deg;
+  base_arinc_429 elevator_double_pressurization_command_deg;
   base_arinc_429 discrete_status_word_1;
   base_arinc_429 discrete_status_word_2;
 };
@@ -393,6 +394,7 @@ struct base_elac_pitch_law_outputs
 {
   real_T elevator_command_deg;
   real_T ths_command_deg;
+  boolean_T elevator_double_pressurization_active;
 };
 
 #endif
@@ -815,6 +817,29 @@ struct base_pitch_rotation
 
 #endif
 
+#ifndef DEFINED_TYPEDEF_FOR_struct_AS8ihRtYtxSipjDCqtVGCE_
+#define DEFINED_TYPEDEF_FOR_struct_AS8ihRtYtxSipjDCqtVGCE_
+
+struct struct_AS8ihRtYtxSipjDCqtVGCE
+{
+  real_T elevator_command_deg;
+  real_T ths_command_deg;
+  real_T elevator_double_pressurization_active;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_struct_DGJtjwcHjMwSjtoGHgU8YD_
+#define DEFINED_TYPEDEF_FOR_struct_DGJtjwcHjMwSjtoGHgU8YD_
+
+struct struct_DGJtjwcHjMwSjtoGHgU8YD
+{
+  base_elac_lateral_law_outputs lateral_law_outputs;
+  struct_AS8ihRtYtxSipjDCqtVGCE pitch_law_outputs;
+};
+
+#endif
+
 #ifndef DEFINED_TYPEDEF_FOR_struct_2OohiAWrazWy5wDS5iisgF_
 #define DEFINED_TYPEDEF_FOR_struct_2OohiAWrazWy5wDS5iisgF_
 
@@ -826,10 +851,10 @@ struct struct_2OohiAWrazWy5wDS5iisgF
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_struct_UXc10I1LlTjeedHXDOGHyF_
-#define DEFINED_TYPEDEF_FOR_struct_UXc10I1LlTjeedHXDOGHyF_
+#ifndef DEFINED_TYPEDEF_FOR_struct_XUfKEhVD4cm2MFYfzn8ySH_
+#define DEFINED_TYPEDEF_FOR_struct_XUfKEhVD4cm2MFYfzn8ySH_
 
-struct struct_UXc10I1LlTjeedHXDOGHyF
+struct struct_XUfKEhVD4cm2MFYfzn8ySH
 {
   struct_2OohiAWrazWy5wDS5iisgF left_aileron_position_deg;
   struct_2OohiAWrazWy5wDS5iisgF right_aileron_position_deg;
@@ -844,6 +869,7 @@ struct struct_UXc10I1LlTjeedHXDOGHyF
   struct_2OohiAWrazWy5wDS5iisgF aileron_command_deg;
   struct_2OohiAWrazWy5wDS5iisgF roll_spoiler_command_deg;
   struct_2OohiAWrazWy5wDS5iisgF yaw_damper_command_deg;
+  struct_2OohiAWrazWy5wDS5iisgF elevator_double_pressurization_command_deg;
   struct_2OohiAWrazWy5wDS5iisgF discrete_status_word_1;
   struct_2OohiAWrazWy5wDS5iisgF discrete_status_word_2;
 };

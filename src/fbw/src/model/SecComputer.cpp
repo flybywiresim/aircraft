@@ -166,8 +166,9 @@ void SecComputer::step()
   real_T rtb_eta_trim_dot_deg_s;
   real_T rtb_eta_trim_limit_lo;
   real_T rtb_eta_trim_limit_up;
+  base_arinc_429 rtb_BusConversion_InsertedFor_MATLABFunction_at_inport_0_BusCreator1_ja;
+  real_T rtb_Switch1_c;
   real_T rtb_Switch6;
-  real_T rtb_Switch_o;
   real_T rtb_handleIndex;
   real_T rtb_zeta_deg;
   uint32_T rtb_DataTypeConversion1;
@@ -181,14 +182,14 @@ void SecComputer::step()
   boolean_T rtb_AND1_h;
   boolean_T rtb_AND3_b;
   boolean_T rtb_AND4_a;
-  boolean_T rtb_OR;
   boolean_T rtb_OR1;
   boolean_T rtb_OR14;
   boolean_T rtb_OR16;
   boolean_T rtb_OR3;
-  boolean_T rtb_y_a;
   boolean_T rtb_y_e;
-  boolean_T rtb_y_k4;
+  boolean_T rtb_y_ea;
+  boolean_T rtb_y_np;
+  boolean_T rtb_y_pq;
   if (SecComputer_U.in.sim_data.computer_running) {
     real_T pair1RollCommand;
     real_T rollCommand;
@@ -311,33 +312,33 @@ void SecComputer::step()
       FailureWarning)) || SecComputer_P.Constant2_Value_c || SecComputer_P.Constant2_Value_c);
     rtb_OR14 = (rtb_OR1 || rtb_OR3);
     rtb_doubleAdrFault = (rtb_OR1 && rtb_OR3);
-    rtb_OR = ((SecComputer_U.in.bus_inputs.ir_1_bus.pitch_angle_deg.SSM != static_cast<uint32_T>(SignStatusMatrix::
-                NormalOperation)) || (SecComputer_U.in.bus_inputs.ir_1_bus.roll_angle_deg.SSM != static_cast<uint32_T>
-               (SignStatusMatrix::NormalOperation)) || (SecComputer_U.in.bus_inputs.ir_1_bus.body_yaw_rate_deg_s.SSM !=
-               static_cast<uint32_T>(SignStatusMatrix::NormalOperation)) ||
-              (SecComputer_U.in.bus_inputs.ir_1_bus.body_long_accel_g.SSM != static_cast<uint32_T>(SignStatusMatrix::
-                NormalOperation)) || (SecComputer_U.in.bus_inputs.ir_1_bus.body_lat_accel_g.SSM != static_cast<uint32_T>
-               (SignStatusMatrix::NormalOperation)) || (SecComputer_U.in.bus_inputs.ir_1_bus.body_normal_accel_g.SSM !=
-               static_cast<uint32_T>(SignStatusMatrix::NormalOperation)) ||
-              (SecComputer_U.in.bus_inputs.ir_1_bus.pitch_att_rate_deg_s.SSM != static_cast<uint32_T>(SignStatusMatrix::
-                NormalOperation)) || (SecComputer_U.in.bus_inputs.ir_1_bus.roll_att_rate_deg_s.SSM !=
-               static_cast<uint32_T>(SignStatusMatrix::NormalOperation)) || SecComputer_P.Constant_Value_l);
-    rtb_OR1_gd = ((SecComputer_U.in.bus_inputs.ir_2_bus.pitch_angle_deg.SSM != static_cast<uint32_T>(SignStatusMatrix::
-      NormalOperation)) || (SecComputer_U.in.bus_inputs.ir_2_bus.roll_angle_deg.SSM != static_cast<uint32_T>
-      (SignStatusMatrix::NormalOperation)) || (SecComputer_U.in.bus_inputs.ir_2_bus.body_yaw_rate_deg_s.SSM !=
+    rtb_OR1_gd = ((SecComputer_U.in.bus_inputs.ir_1_bus.pitch_angle_deg.SSM != static_cast<uint32_T>(SignStatusMatrix::
+      NormalOperation)) || (SecComputer_U.in.bus_inputs.ir_1_bus.roll_angle_deg.SSM != static_cast<uint32_T>
+      (SignStatusMatrix::NormalOperation)) || (SecComputer_U.in.bus_inputs.ir_1_bus.body_yaw_rate_deg_s.SSM !=
       static_cast<uint32_T>(SignStatusMatrix::NormalOperation)) ||
-                  (SecComputer_U.in.bus_inputs.ir_2_bus.body_long_accel_g.SSM != static_cast<uint32_T>(SignStatusMatrix::
-      NormalOperation)) || (SecComputer_U.in.bus_inputs.ir_2_bus.body_lat_accel_g.SSM != static_cast<uint32_T>
-      (SignStatusMatrix::NormalOperation)) || (SecComputer_U.in.bus_inputs.ir_2_bus.body_normal_accel_g.SSM !=
+                  (SecComputer_U.in.bus_inputs.ir_1_bus.body_long_accel_g.SSM != static_cast<uint32_T>(SignStatusMatrix::
+      NormalOperation)) || (SecComputer_U.in.bus_inputs.ir_1_bus.body_lat_accel_g.SSM != static_cast<uint32_T>
+      (SignStatusMatrix::NormalOperation)) || (SecComputer_U.in.bus_inputs.ir_1_bus.body_normal_accel_g.SSM !=
       static_cast<uint32_T>(SignStatusMatrix::NormalOperation)) ||
-                  (SecComputer_U.in.bus_inputs.ir_2_bus.pitch_att_rate_deg_s.SSM != static_cast<uint32_T>
-                   (SignStatusMatrix::NormalOperation)) || (SecComputer_U.in.bus_inputs.ir_2_bus.roll_att_rate_deg_s.SSM
+                  (SecComputer_U.in.bus_inputs.ir_1_bus.pitch_att_rate_deg_s.SSM != static_cast<uint32_T>
+                   (SignStatusMatrix::NormalOperation)) || (SecComputer_U.in.bus_inputs.ir_1_bus.roll_att_rate_deg_s.SSM
       != static_cast<uint32_T>(SignStatusMatrix::NormalOperation)) || SecComputer_P.Constant_Value_l);
-    rtb_singleIrFault = (rtb_OR || rtb_OR1_gd);
-    rtb_doubleIrFault = (rtb_OR && rtb_OR1_gd);
-    rtb_y_e = !rtb_OR1;
+    rtb_y_e = ((SecComputer_U.in.bus_inputs.ir_2_bus.pitch_angle_deg.SSM != static_cast<uint32_T>(SignStatusMatrix::
+      NormalOperation)) || (SecComputer_U.in.bus_inputs.ir_2_bus.roll_angle_deg.SSM != static_cast<uint32_T>
+                (SignStatusMatrix::NormalOperation)) || (SecComputer_U.in.bus_inputs.ir_2_bus.body_yaw_rate_deg_s.SSM !=
+                static_cast<uint32_T>(SignStatusMatrix::NormalOperation)) ||
+               (SecComputer_U.in.bus_inputs.ir_2_bus.body_long_accel_g.SSM != static_cast<uint32_T>(SignStatusMatrix::
+      NormalOperation)) || (SecComputer_U.in.bus_inputs.ir_2_bus.body_lat_accel_g.SSM != static_cast<uint32_T>
+                (SignStatusMatrix::NormalOperation)) || (SecComputer_U.in.bus_inputs.ir_2_bus.body_normal_accel_g.SSM !=
+                static_cast<uint32_T>(SignStatusMatrix::NormalOperation)) ||
+               (SecComputer_U.in.bus_inputs.ir_2_bus.pitch_att_rate_deg_s.SSM != static_cast<uint32_T>(SignStatusMatrix::
+      NormalOperation)) || (SecComputer_U.in.bus_inputs.ir_2_bus.roll_att_rate_deg_s.SSM != static_cast<uint32_T>
+                (SignStatusMatrix::NormalOperation)) || SecComputer_P.Constant_Value_l);
+    rtb_singleIrFault = (rtb_OR1_gd || rtb_y_e);
+    rtb_doubleIrFault = (rtb_OR1_gd && rtb_y_e);
+    rtb_y_pq = !rtb_OR1;
     rtb_AND6 = !rtb_OR3;
-    if (rtb_y_e && rtb_AND6) {
+    if (rtb_y_pq && rtb_AND6) {
       rtb_V_ias = (SecComputer_U.in.bus_inputs.adr_2_bus.airspeed_computed_kn.Data +
                    SecComputer_U.in.bus_inputs.adr_2_bus.airspeed_computed_kn.Data) / 2.0F;
       rtb_V_tas = (SecComputer_U.in.bus_inputs.adr_2_bus.airspeed_true_kn.Data +
@@ -346,7 +347,7 @@ void SecComputer::step()
         2.0F;
       rtb_alpha = (SecComputer_U.in.bus_inputs.adr_2_bus.aoa_corrected_deg.Data +
                    SecComputer_U.in.bus_inputs.adr_2_bus.aoa_corrected_deg.Data) / 2.0F;
-    } else if (rtb_y_e && rtb_OR3) {
+    } else if (rtb_y_pq && rtb_OR3) {
       rtb_V_ias = SecComputer_U.in.bus_inputs.adr_1_bus.airspeed_computed_kn.Data;
       rtb_V_tas = SecComputer_U.in.bus_inputs.adr_1_bus.airspeed_true_kn.Data;
       rtb_mach_or = SecComputer_U.in.bus_inputs.adr_1_bus.mach.Data;
@@ -363,9 +364,9 @@ void SecComputer::step()
       rtb_alpha = 0.0F;
     }
 
-    rtb_y_e = !rtb_OR;
-    rtb_AND6 = !rtb_OR1_gd;
-    if (rtb_y_e && rtb_AND6) {
+    rtb_y_pq = !rtb_OR1_gd;
+    rtb_AND6 = !rtb_y_e;
+    if (rtb_y_pq && rtb_AND6) {
       rtb_theta = (SecComputer_U.in.bus_inputs.ir_1_bus.pitch_angle_deg.Data +
                    SecComputer_U.in.bus_inputs.ir_2_bus.pitch_angle_deg.Data) / 2.0F;
       rtb_phi = (SecComputer_U.in.bus_inputs.ir_1_bus.roll_angle_deg.Data +
@@ -384,7 +385,7 @@ void SecComputer::step()
                        SecComputer_U.in.bus_inputs.ir_2_bus.pitch_att_rate_deg_s.Data) / 2.0F;
       rtb_phi_dot = (SecComputer_U.in.bus_inputs.ir_1_bus.roll_att_rate_deg_s.Data +
                      SecComputer_U.in.bus_inputs.ir_2_bus.roll_att_rate_deg_s.Data) / 2.0F;
-    } else if (rtb_y_e && rtb_OR1_gd) {
+    } else if (rtb_y_pq && rtb_y_e) {
       rtb_theta = SecComputer_U.in.bus_inputs.ir_1_bus.pitch_angle_deg.Data;
       rtb_phi = SecComputer_U.in.bus_inputs.ir_1_bus.roll_angle_deg.Data;
       rtb_q = SecComputer_U.in.bus_inputs.ir_1_bus.body_pitch_rate_deg_s.Data;
@@ -394,7 +395,7 @@ void SecComputer::step()
       rtb_n_z = SecComputer_U.in.bus_inputs.ir_1_bus.body_normal_accel_g.Data;
       rtb_theta_dot = SecComputer_U.in.bus_inputs.ir_1_bus.pitch_att_rate_deg_s.Data;
       rtb_phi_dot = SecComputer_U.in.bus_inputs.ir_1_bus.roll_att_rate_deg_s.Data;
-    } else if (rtb_OR && rtb_AND6) {
+    } else if (rtb_OR1_gd && rtb_AND6) {
       rtb_theta = SecComputer_U.in.bus_inputs.ir_2_bus.pitch_angle_deg.Data;
       rtb_phi = SecComputer_U.in.bus_inputs.ir_2_bus.roll_angle_deg.Data;
       rtb_q = SecComputer_U.in.bus_inputs.ir_2_bus.body_pitch_rate_deg_s.Data;
@@ -420,7 +421,7 @@ void SecComputer::step()
     SecComputer_B.laws.lateral_law_outputs.left_spoiler_1_command_deg = rtb_phi;
     SecComputer_B.laws.lateral_law_outputs.left_spoiler_2_command_deg = rtb_n_x;
     SecComputer_B.laws.lateral_law_outputs.right_spoiler_2_command_deg = rtb_n_y;
-    SecComputer_MATLABFunction_l(&SecComputer_U.in.bus_inputs.lgciu_2_bus.discrete_word_3, &rtb_OR1);
+    SecComputer_MATLABFunction_l(&SecComputer_U.in.bus_inputs.lgciu_2_bus.discrete_word_3, &rtb_y_pq);
     SecComputer_MATLABFunction(&SecComputer_U.in.bus_inputs.lgciu_2_bus.discrete_word_3,
       SecComputer_P.BitfromLabel13_bit, &rtb_Switch7_c);
     rtb_y_e = (rtb_Switch7_c != 0U);
@@ -430,65 +431,65 @@ void SecComputer::step()
     SecComputer_MATLABFunction(&SecComputer_U.in.bus_inputs.lgciu_2_bus.discrete_word_3,
       SecComputer_P.BitfromLabel10_bit, &rtb_Switch7_c);
     rtb_y_e = (rtb_y_e || rtb_OR1_gd || (rtb_Switch7_c != 0U));
-    rtb_y_k4 = (rtb_OR1 && rtb_y_e);
+    rtb_y_ea = (rtb_y_pq && rtb_y_e);
     SecComputer_MATLABFunction_l(&SecComputer_U.in.bus_inputs.lgciu_1_bus.discrete_word_3, &rtb_AND3_b);
-    rtb_OR = (rtb_y_k4 && (!rtb_AND3_b));
-    SecComputer_MATLABFunction_l(&SecComputer_U.in.bus_inputs.lgciu_1_bus.discrete_word_3, &rtb_OR3);
+    rtb_OR3 = (rtb_y_ea && (!rtb_AND3_b));
+    SecComputer_MATLABFunction_l(&SecComputer_U.in.bus_inputs.lgciu_1_bus.discrete_word_3, &rtb_OR1);
     SecComputer_MATLABFunction(&SecComputer_U.in.bus_inputs.lgciu_1_bus.discrete_word_3,
       SecComputer_P.BitfromLabel5_bit_h, &rtb_Switch7_c);
     rtb_OR1_gd = (rtb_Switch7_c != 0U);
     SecComputer_MATLABFunction(&SecComputer_U.in.bus_inputs.lgciu_1_bus.discrete_word_3,
       SecComputer_P.BitfromLabel4_bit_c, &rtb_Switch7_c);
-    rtb_y_a = (rtb_Switch7_c != 0U);
+    rtb_y_np = (rtb_Switch7_c != 0U);
     SecComputer_MATLABFunction(&SecComputer_U.in.bus_inputs.lgciu_1_bus.discrete_word_3, SecComputer_P.BitfromLabel2_bit,
       &rtb_Switch7_c);
-    rtb_OR1_gd = (rtb_OR1_gd || rtb_y_a || (rtb_Switch7_c != 0U));
-    rtb_AND4_a = (rtb_OR3 && rtb_OR1_gd);
+    rtb_OR1_gd = (rtb_OR1_gd || rtb_y_np || (rtb_Switch7_c != 0U));
+    rtb_AND4_a = (rtb_OR1 && rtb_OR1_gd);
     SecComputer_MATLABFunction_l(&SecComputer_U.in.bus_inputs.lgciu_2_bus.discrete_word_3, &rtb_AND3_b);
-    rtb_AND4_a = (rtb_OR || (rtb_AND4_a && (!rtb_AND3_b)) || (rtb_y_k4 && rtb_AND4_a));
+    rtb_AND4_a = (rtb_OR3 || (rtb_AND4_a && (!rtb_AND3_b)) || (rtb_y_ea && rtb_AND4_a));
     SecComputer_MATLABFunction(&SecComputer_U.in.bus_inputs.lgciu_1_bus.discrete_word_3,
       SecComputer_P.BitfromLabel15_bit, &rtb_Switch7_c);
-    rtb_y_a = (rtb_Switch7_c != 0U);
-    SecComputer_MATLABFunction_l(&SecComputer_U.in.bus_inputs.lgciu_1_bus.discrete_word_3, &rtb_OR);
+    rtb_y_np = (rtb_Switch7_c != 0U);
+    SecComputer_MATLABFunction_l(&SecComputer_U.in.bus_inputs.lgciu_1_bus.discrete_word_3, &rtb_OR3);
     SecComputer_MATLABFunction(&SecComputer_U.in.bus_inputs.lgciu_1_bus.discrete_word_3,
       SecComputer_P.BitfromLabel14_bit, &rtb_Switch7_c);
-    rtb_y_k4 = (rtb_Switch7_c != 0U);
+    rtb_y_ea = (rtb_Switch7_c != 0U);
     SecComputer_MATLABFunction(&SecComputer_U.in.bus_inputs.lgciu_1_bus.discrete_word_3,
       SecComputer_P.BitfromLabel11_bit, &rtb_Switch7_c);
     rtb_AND1_h = (rtb_Switch7_c != 0U);
     SecComputer_MATLABFunction(&SecComputer_U.in.bus_inputs.lgciu_1_bus.discrete_word_3, SecComputer_P.BitfromLabel8_bit,
       &rtb_Switch7_c);
-    rtb_AND6 = ((!rtb_y_k4) && (!rtb_AND1_h) && (rtb_Switch7_c == 0U));
+    rtb_AND6 = ((!rtb_y_ea) && (!rtb_AND1_h) && (rtb_Switch7_c == 0U));
     SecComputer_MATLABFunction(&SecComputer_U.in.bus_inputs.lgciu_2_bus.discrete_word_3,
       SecComputer_P.BitfromLabel16_bit, &rtb_Switch7_c);
     rtb_AND3_b = (rtb_Switch7_c != 0U);
-    SecComputer_MATLABFunction_n((rtb_Switch7_c != 0U) && rtb_OR1 && rtb_y_e, SecComputer_U.in.time.dt,
+    SecComputer_MATLABFunction_n((rtb_Switch7_c != 0U) && rtb_y_pq && rtb_y_e, SecComputer_U.in.time.dt,
       SecComputer_P.ConfirmNode_isRisingEdge, SecComputer_P.ConfirmNode_timeDelay, &rtb_y_e,
       &SecComputer_DWork.sf_MATLABFunction_jk);
-    rtb_AND = (rtb_y_a && rtb_OR && rtb_AND6 && rtb_y_e);
+    rtb_AND = (rtb_y_np && rtb_OR3 && rtb_AND6 && rtb_y_e);
     SecComputer_MATLABFunction_l(&SecComputer_U.in.bus_inputs.lgciu_1_bus.discrete_word_3, &rtb_AND1_h);
     SecComputer_MATLABFunction_l(&SecComputer_U.in.bus_inputs.lgciu_2_bus.discrete_word_3, &rtb_AND3_b);
     rtb_AND13 = ((!rtb_AND1_h) && (!rtb_AND3_b));
     SecComputer_MATLABFunction(&SecComputer_U.in.bus_inputs.lgciu_2_bus.discrete_word_3,
       SecComputer_P.BitfromLabel7_bit_o, &rtb_Switch7_c);
     rtb_AND3_b = (rtb_Switch7_c != 0U);
-    SecComputer_MATLABFunction_l(&SecComputer_U.in.bus_inputs.lgciu_2_bus.discrete_word_3, &rtb_OR);
+    SecComputer_MATLABFunction_l(&SecComputer_U.in.bus_inputs.lgciu_2_bus.discrete_word_3, &rtb_OR3);
     SecComputer_MATLABFunction(&SecComputer_U.in.bus_inputs.lgciu_2_bus.discrete_word_3,
       SecComputer_P.BitfromLabel6_bit_e, &rtb_Switch7_c);
     rtb_AND1_h = (rtb_Switch7_c != 0U);
     SecComputer_MATLABFunction(&SecComputer_U.in.bus_inputs.lgciu_2_bus.discrete_word_3, SecComputer_P.BitfromLabel3_bit,
       &rtb_Switch7_c);
-    rtb_y_a = (rtb_Switch7_c != 0U);
+    rtb_y_np = (rtb_Switch7_c != 0U);
     SecComputer_MATLABFunction(&SecComputer_U.in.bus_inputs.lgciu_2_bus.discrete_word_3, SecComputer_P.BitfromLabel1_bit,
       &rtb_Switch7_c);
-    rtb_OR1 = (rtb_AND3_b && rtb_OR && ((!rtb_AND1_h) && (!rtb_y_a) && (rtb_Switch7_c == 0U)));
+    rtb_y_pq = (rtb_AND3_b && rtb_OR3 && ((!rtb_AND1_h) && (!rtb_y_np) && (rtb_Switch7_c == 0U)));
     SecComputer_MATLABFunction(&SecComputer_U.in.bus_inputs.lgciu_1_bus.discrete_word_3, SecComputer_P.BitfromLabel9_bit,
       &rtb_Switch7_c);
     rtb_AND3_b = (rtb_Switch7_c != 0U);
-    SecComputer_MATLABFunction_n((rtb_Switch7_c != 0U) && rtb_OR3 && rtb_OR1_gd, SecComputer_U.in.time.dt,
+    SecComputer_MATLABFunction_n((rtb_Switch7_c != 0U) && rtb_OR1 && rtb_OR1_gd, SecComputer_U.in.time.dt,
       SecComputer_P.ConfirmNode1_isRisingEdge, SecComputer_P.ConfirmNode1_timeDelay, &rtb_AND3_b,
       &SecComputer_DWork.sf_MATLABFunction_dw);
-    rtb_y_a = (rtb_OR1 && rtb_AND3_b);
+    rtb_y_np = (rtb_y_pq && rtb_AND3_b);
     if (SecComputer_DWork.is_active_c30_SecComputer == 0U) {
       SecComputer_DWork.is_active_c30_SecComputer = 1U;
       SecComputer_DWork.is_c30_SecComputer = SecComputer_IN_Ground;
@@ -529,13 +530,13 @@ void SecComputer::step()
 
     rtb_AND3_b = (SecComputer_B.in_flight != 0.0);
     SecComputer_MATLABFunction_n(!SecComputer_U.in.discrete_inputs.yellow_low_pressure, SecComputer_U.in.time.dt,
-      SecComputer_P.ConfirmNode_isRisingEdge_a, SecComputer_P.ConfirmNode_timeDelay_c, &rtb_OR1,
+      SecComputer_P.ConfirmNode_isRisingEdge_a, SecComputer_P.ConfirmNode_timeDelay_c, &rtb_y_pq,
       &SecComputer_DWork.sf_MATLABFunction_ndv);
     SecComputer_MATLABFunction_n(!SecComputer_U.in.discrete_inputs.blue_low_pressure, SecComputer_U.in.time.dt,
-      SecComputer_P.ConfirmNode1_isRisingEdge_j, SecComputer_P.ConfirmNode1_timeDelay_k, &rtb_OR,
+      SecComputer_P.ConfirmNode1_isRisingEdge_j, SecComputer_P.ConfirmNode1_timeDelay_k, &rtb_OR3,
       &SecComputer_DWork.sf_MATLABFunction_gf);
     SecComputer_MATLABFunction_n(!SecComputer_U.in.discrete_inputs.green_low_pressure, SecComputer_U.in.time.dt,
-      SecComputer_P.ConfirmNode2_isRisingEdge, SecComputer_P.ConfirmNode2_timeDelay, &rtb_OR3,
+      SecComputer_P.ConfirmNode2_isRisingEdge, SecComputer_P.ConfirmNode2_timeDelay, &rtb_OR1,
       &SecComputer_DWork.sf_MATLABFunction_h);
     SecComputer_MATLABFunction_e(SecComputer_U.in.discrete_inputs.capt_priority_takeover_pressed,
       SecComputer_P.PulseNode_isRisingEdge, &rtb_AND1_h, &SecComputer_DWork.sf_MATLABFunction_g4b);
@@ -566,9 +567,9 @@ void SecComputer::step()
       SecComputer_U.in.time.dt, SecComputer_P.ConfirmNode_isRisingEdge_j, SecComputer_P.ConfirmNode_timeDelay_a,
       &SecComputer_DWork.Delay1_DSTATE, &SecComputer_DWork.sf_MATLABFunction_g24);
     if (!SecComputer_DWork.pRightStickDisabled) {
-      rtb_Switch_o = SecComputer_U.in.analog_inputs.fo_roll_stick_pos;
+      rtb_Switch1_c = SecComputer_U.in.analog_inputs.fo_roll_stick_pos;
     } else {
-      rtb_Switch_o = SecComputer_P.Constant1_Value_p;
+      rtb_Switch1_c = SecComputer_P.Constant1_Value_p;
     }
 
     if (SecComputer_DWork.pLeftStickDisabled) {
@@ -577,7 +578,7 @@ void SecComputer::step()
       rtb_Switch6 = SecComputer_U.in.analog_inputs.capt_roll_stick_pos;
     }
 
-    rtb_handleIndex = rtb_Switch_o + rtb_Switch6;
+    rtb_handleIndex = rtb_Switch1_c + rtb_Switch6;
     if (rtb_handleIndex > SecComputer_P.Saturation1_UpperSat) {
       rtb_handleIndex = SecComputer_P.Saturation1_UpperSat;
     } else if (rtb_handleIndex < SecComputer_P.Saturation1_LowerSat) {
@@ -585,32 +586,32 @@ void SecComputer::step()
     }
 
     if (SecComputer_U.in.discrete_inputs.is_unit_1) {
-      rtb_OR1_gd = ((!SecComputer_U.in.discrete_inputs.l_elev_servo_failed) && rtb_OR);
-      rtb_y_e = ((!SecComputer_U.in.discrete_inputs.r_elev_servo_failed) && rtb_OR);
-    } else {
       rtb_OR1_gd = ((!SecComputer_U.in.discrete_inputs.l_elev_servo_failed) && rtb_OR3);
-      rtb_y_e = ((!SecComputer_U.in.discrete_inputs.r_elev_servo_failed) && rtb_OR1);
+      rtb_y_e = ((!SecComputer_U.in.discrete_inputs.r_elev_servo_failed) && rtb_OR3);
+    } else {
+      rtb_OR1_gd = ((!SecComputer_U.in.discrete_inputs.l_elev_servo_failed) && rtb_OR1);
+      rtb_y_e = ((!SecComputer_U.in.discrete_inputs.r_elev_servo_failed) && rtb_y_pq);
     }
 
-    rtb_AND6 = ((!SecComputer_U.in.discrete_inputs.ths_motor_fault) && (rtb_OR1 || rtb_OR3));
+    rtb_AND6 = ((!SecComputer_U.in.discrete_inputs.ths_motor_fault) && (rtb_y_pq || rtb_OR1));
     canEngageInPitch = ((rtb_OR1_gd || rtb_y_e) && (!SecComputer_U.in.discrete_inputs.is_unit_3));
     if (SecComputer_U.in.discrete_inputs.is_unit_1) {
       hasPriorityInPitch = (SecComputer_U.in.discrete_inputs.pitch_not_avail_elac_1 &&
                             SecComputer_U.in.discrete_inputs.pitch_not_avail_elac_2 &&
                             SecComputer_U.in.discrete_inputs.left_elev_not_avail_sec_opp &&
                             SecComputer_U.in.discrete_inputs.right_elev_not_avail_sec_opp);
-      spoilerPair1SupplyAvail = rtb_OR;
-      spoilerPair2SupplyAvail = rtb_OR1;
+      spoilerPair1SupplyAvail = rtb_OR3;
+      spoilerPair2SupplyAvail = rtb_y_pq;
     } else {
       hasPriorityInPitch = (SecComputer_U.in.discrete_inputs.is_unit_2 &&
                             (SecComputer_U.in.discrete_inputs.pitch_not_avail_elac_1 &&
         SecComputer_U.in.discrete_inputs.pitch_not_avail_elac_2));
       if (SecComputer_U.in.discrete_inputs.is_unit_2) {
-        spoilerPair1SupplyAvail = rtb_OR3;
+        spoilerPair1SupplyAvail = rtb_OR1;
         spoilerPair2SupplyAvail = false;
       } else {
-        spoilerPair1SupplyAvail = rtb_OR3;
-        spoilerPair2SupplyAvail = rtb_OR1;
+        spoilerPair1SupplyAvail = rtb_OR1;
+        spoilerPair2SupplyAvail = rtb_y_pq;
       }
     }
 
@@ -620,12 +621,12 @@ void SecComputer::step()
     spoilerPair2SupplyAvail = ((!SecComputer_U.in.discrete_inputs.l_spoiler_2_servo_failed) &&
       (!SecComputer_U.in.discrete_inputs.r_spoiler_2_servo_failed) && spoilerPair2SupplyAvail);
     SecComputer_B.logic.any_landing_gear_not_uplocked = rtb_AND4_a;
-    rtb_AND = (rtb_AND || rtb_AND13 || rtb_y_a);
+    rtb_AND = (rtb_AND || rtb_AND13 || rtb_y_np);
     rtb_AND3_b = rtb_AND4_a;
     SecComputer_MATLABFunction(&SecComputer_U.in.bus_inputs.elac_1_bus.discrete_status_word_1,
       SecComputer_P.BitfromLabel_bit, &rtb_Switch7_c);
     SecComputer_MATLABFunction_l(&SecComputer_U.in.bus_inputs.elac_1_bus.discrete_status_word_1, &rtb_AND4_a);
-    rtb_y_a = ((rtb_Switch7_c != 0U) && rtb_AND4_a);
+    rtb_y_np = ((rtb_Switch7_c != 0U) && rtb_AND4_a);
     SecComputer_MATLABFunction(&SecComputer_U.in.bus_inputs.elac_2_bus.discrete_status_word_1,
       SecComputer_P.BitfromLabel1_bit_g, &rtb_Switch7_c);
     SecComputer_MATLABFunction_l(&SecComputer_U.in.bus_inputs.elac_2_bus.discrete_status_word_1, &rtb_AND1_h);
@@ -637,18 +638,18 @@ void SecComputer::step()
     SecComputer_MATLABFunction(&SecComputer_U.in.bus_inputs.sfcc_2_bus.slat_flap_actual_position_word,
       SecComputer_P.BitfromLabel3_bit_o, &rtb_Switch7_c);
     SecComputer_MATLABFunction_l(&SecComputer_U.in.bus_inputs.sfcc_2_bus.slat_flap_actual_position_word, &rtb_AND1_h);
-    rtb_y_k4 = !rtb_OR16;
-    rtb_AND13 = (rtb_y_k4 && (((!rtb_doubleAdrFault) && ((rtb_mach_or > 0.91) || (rtb_alpha < -10.0F) || (rtb_alpha >
+    rtb_y_ea = !rtb_OR16;
+    rtb_AND13 = (rtb_y_ea && (((!rtb_doubleAdrFault) && ((rtb_mach_or > 0.91) || (rtb_alpha < -10.0F) || (rtb_alpha >
       40.0F) || (rtb_V_ias > 440.0F) || (rtb_V_ias < 60.0F))) || ((!rtb_doubleIrFault) && ((!rtb_singleIrFault) ||
       (!SecComputer_P.Constant_Value_l)) && ((std::abs(static_cast<real_T>(rtb_phi)) > 125.0) || ((rtb_theta > 50.0F) ||
       (rtb_theta < -30.0F))))));
-    SecComputer_DWork.abnormalConditionWasActive = (rtb_AND13 || (rtb_y_k4 &&
+    SecComputer_DWork.abnormalConditionWasActive = (rtb_AND13 || (rtb_y_ea &&
       SecComputer_DWork.abnormalConditionWasActive));
     if (rtb_doubleIrFault || ((SecComputer_B.in_flight != 0.0) && ((rtb_AND3_b && (!rtb_AND)) || ((rtb_AND4_a ||
             ((rtb_Switch7_c != 0U) && rtb_AND1_h)) && rtb_AND)))) {
       rtb_pitchLawCapability = pitch_efcs_law::DirectLaw;
     } else if ((rtb_OR14 && SecComputer_P.Constant2_Value_c) || rtb_doubleAdrFault ||
-               SecComputer_DWork.abnormalConditionWasActive || ((!rtb_y_a) && (!rtb_AND2_j) && ((!rtb_OR1_gd) ||
+               SecComputer_DWork.abnormalConditionWasActive || ((!rtb_y_np) && (!rtb_AND2_j) && ((!rtb_OR1_gd) ||
                  (!rtb_y_e)))) {
       rtb_pitchLawCapability = pitch_efcs_law::AlternateLaw2;
     } else {
@@ -661,7 +662,7 @@ void SecComputer::step()
       rtb_activePitchLaw = pitch_efcs_law::None;
     }
 
-    SecComputer_MATLABFunction_e(SecComputer_B.in_flight != 0.0, SecComputer_P.PulseNode_isRisingEdge_h, &rtb_y_k4,
+    SecComputer_MATLABFunction_e(SecComputer_B.in_flight != 0.0, SecComputer_P.PulseNode_isRisingEdge_h, &rtb_y_ea,
       &SecComputer_DWork.sf_MATLABFunction_b4);
     rtb_AND2_j = (SecComputer_U.in.discrete_inputs.pitch_not_avail_elac_1 &&
                   SecComputer_U.in.discrete_inputs.pitch_not_avail_elac_2);
@@ -669,12 +670,12 @@ void SecComputer::step()
     rtb_AND1_h = SecComputer_DWork.Memory_PreviousInput;
     SecComputer_DWork.Memory_PreviousInput = SecComputer_P.Logic_table[((((!rtb_AND3_b) || (std::abs
       (SecComputer_U.in.analog_inputs.ths_pos_deg) <= SecComputer_P.CompareToConstant1_const) ||
-      SecComputer_U.in.discrete_inputs.ths_override_active) + (static_cast<uint32_T>(rtb_y_k4) << 1)) << 1) +
+      SecComputer_U.in.discrete_inputs.ths_override_active) + (static_cast<uint32_T>(rtb_y_ea) << 1)) << 1) +
       SecComputer_DWork.Memory_PreviousInput];
     SecComputer_MATLABFunction(&SecComputer_U.in.bus_inputs.elac_1_bus.discrete_status_word_2,
       SecComputer_P.BitfromLabel7_bit_g, &rtb_Switch7_c);
     SecComputer_MATLABFunction_l(&SecComputer_U.in.bus_inputs.elac_1_bus.discrete_status_word_2, &rtb_AND1_h);
-    rtb_y_k4 = ((rtb_Switch7_c != 0U) && rtb_AND1_h);
+    rtb_y_ea = ((rtb_Switch7_c != 0U) && rtb_AND1_h);
     SecComputer_MATLABFunction(&SecComputer_U.in.bus_inputs.elac_2_bus.discrete_status_word_2,
       SecComputer_P.BitfromLabel6_bit_f, &rtb_Switch7_c);
     SecComputer_MATLABFunction_l(&SecComputer_U.in.bus_inputs.elac_2_bus.discrete_status_word_2, &rtb_AND4_a);
@@ -700,43 +701,43 @@ void SecComputer::step()
     rtb_AND3_b = (rtb_AND3_b || (rtb_Switch7_c == 0U));
     SecComputer_MATLABFunction(&SecComputer_U.in.bus_inputs.elac_2_bus.discrete_status_word_1,
       SecComputer_P.BitfromLabel3_bit_oz, &rtb_Switch7_c);
-    rtb_y_a = (rtb_Switch7_c == 0U);
+    rtb_y_np = (rtb_Switch7_c == 0U);
     SecComputer_MATLABFunction(&SecComputer_U.in.bus_inputs.elac_2_bus.discrete_status_word_1,
       SecComputer_P.BitfromLabel2_bit_p, &rtb_Switch7_c);
-    rtb_AND3_b = (rtb_y_k4 || rtb_AND2_p || (rtb_AND4_a || rtb_AND1_h) || (((!rtb_AND2_j) && rtb_AND3_b && (rtb_y_a ||
+    rtb_AND3_b = (rtb_y_ea || rtb_AND2_p || (rtb_AND4_a || rtb_AND1_h) || (((!rtb_AND2_j) && rtb_AND3_b && (rtb_y_np ||
       (rtb_Switch7_c == 0U))) || (rtb_AND2_j && ((SecComputer_U.in.discrete_inputs.left_elev_not_avail_sec_opp &&
       (!rtb_OR1_gd)) || (SecComputer_U.in.discrete_inputs.right_elev_not_avail_sec_opp && (!rtb_y_e))))) ||
                   ((SecComputer_U.in.analog_inputs.thr_lever_1_pos >= SecComputer_P.CompareToConstant3_const) ||
                    (SecComputer_U.in.analog_inputs.thr_lever_2_pos >= SecComputer_P.CompareToConstant4_const)));
     SecComputer_MATLABFunction_n(SecComputer_U.in.analog_inputs.spd_brk_lever_pos <
       SecComputer_P.CompareToConstant_const, SecComputer_U.in.time.dt, SecComputer_P.ConfirmNode_isRisingEdge_e,
-      SecComputer_P.ConfirmNode_timeDelay_e, &rtb_y_a, &SecComputer_DWork.sf_MATLABFunction_fh);
+      SecComputer_P.ConfirmNode_timeDelay_e, &rtb_y_np, &SecComputer_DWork.sf_MATLABFunction_fh);
     SecComputer_DWork.Memory_PreviousInput_f = SecComputer_P.Logic_table_i[(((static_cast<uint32_T>(rtb_AND3_b) << 1) +
-      rtb_y_a) << 1) + SecComputer_DWork.Memory_PreviousInput_f];
+      rtb_y_np) << 1) + SecComputer_DWork.Memory_PreviousInput_f];
     SecComputer_B.logic.speed_brake_inhibited = (rtb_AND3_b || SecComputer_DWork.Memory_PreviousInput_f);
-    SecComputer_B.logic.is_blue_hydraulic_power_avail = rtb_OR;
-    SecComputer_B.logic.is_green_hydraulic_power_avail = rtb_OR3;
-    SecComputer_MATLABFunction_e(rtb_OR16, SecComputer_P.PulseNode3_isRisingEdge, &rtb_OR3,
+    SecComputer_B.logic.is_blue_hydraulic_power_avail = rtb_OR3;
+    SecComputer_B.logic.is_green_hydraulic_power_avail = rtb_OR1;
+    SecComputer_MATLABFunction_e(rtb_OR16, SecComputer_P.PulseNode3_isRisingEdge, &rtb_OR1,
       &SecComputer_DWork.sf_MATLABFunction_nd);
-    rtb_AND3_b = (rtb_OR3 || ((SecComputer_U.in.analog_inputs.wheel_speed_left < SecComputer_P.CompareToConstant11_const)
+    rtb_AND3_b = (rtb_OR1 || ((SecComputer_U.in.analog_inputs.wheel_speed_left < SecComputer_P.CompareToConstant11_const)
       && (SecComputer_U.in.analog_inputs.wheel_speed_right < SecComputer_P.CompareToConstant12_const)));
-    SecComputer_MATLABFunction_e(rtb_OR16, SecComputer_P.PulseNode2_isRisingEdge, &rtb_OR3,
+    SecComputer_MATLABFunction_e(rtb_OR16, SecComputer_P.PulseNode2_isRisingEdge, &rtb_OR1,
       &SecComputer_DWork.sf_MATLABFunction_n);
     SecComputer_DWork.Memory_PreviousInput_n = SecComputer_P.Logic_table_ii[(((static_cast<uint32_T>(rtb_AND3_b) << 1) +
-      rtb_OR3) << 1) + SecComputer_DWork.Memory_PreviousInput_n];
+      rtb_OR1) << 1) + SecComputer_DWork.Memory_PreviousInput_n];
     SecComputer_MATLABFunction(&SecComputer_U.in.bus_inputs.lgciu_1_bus.discrete_word_2,
       SecComputer_P.BitfromLabel4_bit_a, &rtb_Switch7_c);
     rtb_AND1_h = (rtb_Switch7_c != 0U);
     SecComputer_MATLABFunction(&SecComputer_U.in.bus_inputs.lgciu_2_bus.discrete_word_2,
       SecComputer_P.BitfromLabel6_bit_d, &rtb_Switch7_c);
-    rtb_OR3 = (rtb_AND1_h && (rtb_Switch7_c != 0U));
+    rtb_OR1 = (rtb_AND1_h && (rtb_Switch7_c != 0U));
     SecComputer_MATLABFunction(&SecComputer_U.in.bus_inputs.lgciu_1_bus.discrete_word_2,
       SecComputer_P.BitfromLabel5_bit_i, &rtb_Switch7_c);
     rtb_AND1_h = (rtb_Switch7_c != 0U);
     SecComputer_MATLABFunction(&SecComputer_U.in.bus_inputs.lgciu_2_bus.discrete_word_2,
       SecComputer_P.BitfromLabel7_bit_m, &rtb_Switch7_c);
-    SecComputer_MATLABFunction_e(rtb_OR3 || (rtb_AND1_h && (rtb_Switch7_c != 0U)),
-      SecComputer_P.PulseNode1_isRisingEdge_k, &rtb_OR, &SecComputer_DWork.sf_MATLABFunction_a);
+    SecComputer_MATLABFunction_e(rtb_OR1 || (rtb_AND1_h && (rtb_Switch7_c != 0U)),
+      SecComputer_P.PulseNode1_isRisingEdge_k, &rtb_OR3, &SecComputer_DWork.sf_MATLABFunction_a);
     rtb_AND3_b = (SecComputer_U.in.analog_inputs.spd_brk_lever_pos < SecComputer_P.CompareToConstant_const_m);
     SecComputer_DWork.Delay1_DSTATE_i = (((((SecComputer_U.in.analog_inputs.spd_brk_lever_pos >
       SecComputer_P.CompareToConstant15_const) || rtb_AND3_b) && ((SecComputer_U.in.analog_inputs.thr_lever_1_pos <=
@@ -745,7 +746,7 @@ void SecComputer::step()
       SecComputer_P.CompareToConstant3_const_a) && (SecComputer_U.in.analog_inputs.thr_lever_2_pos <=
       SecComputer_P.CompareToConstant4_const_j)) || ((SecComputer_U.in.analog_inputs.thr_lever_1_pos <=
       SecComputer_P.CompareToConstant13_const) && (SecComputer_U.in.analog_inputs.thr_lever_2_pos <
-      SecComputer_P.CompareToConstant14_const)))) && (rtb_OR || ((SecComputer_U.in.analog_inputs.wheel_speed_left >=
+      SecComputer_P.CompareToConstant14_const)))) && (rtb_OR3 || ((SecComputer_U.in.analog_inputs.wheel_speed_left >=
       SecComputer_P.CompareToConstant5_const) && (SecComputer_U.in.analog_inputs.wheel_speed_right >=
       SecComputer_P.CompareToConstant6_const) && SecComputer_DWork.Memory_PreviousInput_n) ||
       SecComputer_DWork.Delay1_DSTATE_i));
@@ -754,14 +755,15 @@ void SecComputer::step()
     rtb_AND1_h = (rtb_Switch7_c != 0U);
     SecComputer_MATLABFunction(&SecComputer_U.in.bus_inputs.lgciu_2_bus.discrete_word_2,
       SecComputer_P.BitfromLabel2_bit_l, &rtb_Switch7_c);
-    rtb_OR3 = (rtb_AND1_h || (rtb_Switch7_c != 0U));
+    rtb_OR1 = (rtb_AND1_h || (rtb_Switch7_c != 0U));
     SecComputer_MATLABFunction(&SecComputer_U.in.bus_inputs.lgciu_1_bus.discrete_word_2,
       SecComputer_P.BitfromLabel1_bit_a, &rtb_Switch7_c);
     rtb_AND1_h = (rtb_Switch7_c != 0U);
     SecComputer_MATLABFunction(&SecComputer_U.in.bus_inputs.lgciu_2_bus.discrete_word_2,
       SecComputer_P.BitfromLabel3_bit_m, &rtb_Switch7_c);
-    SecComputer_MATLABFunction_e(rtb_OR3 || (rtb_AND1_h || (rtb_Switch7_c != 0U)),
-      SecComputer_P.PulseNode_isRisingEdge_hj, &rtb_OR, &SecComputer_DWork.sf_MATLABFunction_e3);
+    rtb_AND4_a = (rtb_Switch7_c != 0U);
+    SecComputer_MATLABFunction_e(rtb_OR1 || (rtb_AND1_h || (rtb_Switch7_c != 0U)),
+      SecComputer_P.PulseNode_isRisingEdge_hj, &rtb_OR3, &SecComputer_DWork.sf_MATLABFunction_e3);
     SecComputer_DWork.Delay_DSTATE_n = (((((SecComputer_U.in.analog_inputs.spd_brk_lever_pos >
       SecComputer_P.CompareToConstant10_const) || rtb_AND3_b) && ((SecComputer_U.in.analog_inputs.thr_lever_1_pos <=
       SecComputer_P.CompareToConstant7_const) && (SecComputer_U.in.analog_inputs.thr_lever_2_pos <=
@@ -769,7 +771,7 @@ void SecComputer::step()
       SecComputer_P.CompareToConstant17_const) && (SecComputer_U.in.analog_inputs.thr_lever_2_pos <=
       SecComputer_P.CompareToConstant18_const)) || ((SecComputer_U.in.analog_inputs.thr_lever_1_pos <=
       SecComputer_P.CompareToConstant8_const) && (SecComputer_U.in.analog_inputs.thr_lever_2_pos <
-      SecComputer_P.CompareToConstant9_const)))) && (rtb_OR || SecComputer_DWork.Delay_DSTATE_n));
+      SecComputer_P.CompareToConstant9_const)))) && (rtb_OR3 || SecComputer_DWork.Delay_DSTATE_n));
     SecComputer_B.logic.on_ground = rtb_OR16;
     SecComputer_B.logic.pitch_law_in_flight = (SecComputer_B.in_flight != 0.0);
     SecComputer_B.logic.tracking_mode_on = (SecComputer_U.in.sim_data.slew_on || SecComputer_U.in.sim_data.pause_on ||
@@ -788,15 +790,15 @@ void SecComputer::step()
       SecComputer_U.in.discrete_inputs.digital_output_failed_elac_2);
     SecComputer_B.logic.spoiler_pair_1_avail = spoilerPair1SupplyAvail;
     SecComputer_B.logic.spoiler_pair_2_avail = spoilerPair2SupplyAvail;
-    SecComputer_B.logic.is_yellow_hydraulic_power_avail = rtb_OR1;
+    SecComputer_B.logic.is_yellow_hydraulic_power_avail = rtb_y_pq;
     SecComputer_B.logic.left_sidestick_disabled = SecComputer_DWork.pLeftStickDisabled;
     SecComputer_B.logic.right_sidestick_disabled = SecComputer_DWork.pRightStickDisabled;
     SecComputer_B.logic.left_sidestick_priority_locked = SecComputer_DWork.Delay_DSTATE_c;
     SecComputer_B.logic.right_sidestick_priority_locked = SecComputer_DWork.Delay1_DSTATE;
     if (!SecComputer_DWork.pRightStickDisabled) {
-      rtb_Switch_o = SecComputer_U.in.analog_inputs.fo_pitch_stick_pos;
+      rtb_Switch1_c = SecComputer_U.in.analog_inputs.fo_pitch_stick_pos;
     } else {
-      rtb_Switch_o = SecComputer_P.Constant_Value_p;
+      rtb_Switch1_c = SecComputer_P.Constant_Value_p;
     }
 
     if (SecComputer_DWork.pLeftStickDisabled) {
@@ -805,13 +807,13 @@ void SecComputer::step()
       rtb_Switch6 = SecComputer_U.in.analog_inputs.capt_pitch_stick_pos;
     }
 
-    rtb_Switch_o += rtb_Switch6;
-    if (rtb_Switch_o > SecComputer_P.Saturation_UpperSat_d) {
+    rtb_Switch1_c += rtb_Switch6;
+    if (rtb_Switch1_c > SecComputer_P.Saturation_UpperSat_d) {
       SecComputer_B.logic.total_sidestick_pitch_command = SecComputer_P.Saturation_UpperSat_d;
-    } else if (rtb_Switch_o < SecComputer_P.Saturation_LowerSat_h) {
+    } else if (rtb_Switch1_c < SecComputer_P.Saturation_LowerSat_h) {
       SecComputer_B.logic.total_sidestick_pitch_command = SecComputer_P.Saturation_LowerSat_h;
     } else {
-      SecComputer_B.logic.total_sidestick_pitch_command = rtb_Switch_o;
+      SecComputer_B.logic.total_sidestick_pitch_command = rtb_Switch1_c;
     }
 
     SecComputer_B.logic.total_sidestick_roll_command = rtb_handleIndex;
@@ -841,14 +843,14 @@ void SecComputer::step()
     SecComputer_B.logic.ir_computation_data.phi_dot_deg_s = rtb_phi_dot;
     SecComputer_B.logic.lgciu_uplock_disagree_or_fault = rtb_AND;
     if (SecComputer_B.logic.ground_spoilers_out) {
-      rtb_Switch_o = SecComputer_P.Constant_Value;
+      rtb_Switch1_c = SecComputer_P.Constant_Value;
     } else if (SecComputer_B.logic.partial_lift_dumping_active) {
-      rtb_Switch_o = SecComputer_P.Constant1_Value;
+      rtb_Switch1_c = SecComputer_P.Constant1_Value;
     } else {
-      rtb_Switch_o = SecComputer_P.Constant2_Value;
+      rtb_Switch1_c = SecComputer_P.Constant2_Value;
     }
 
-    SecComputer_RateLimiter(rtb_Switch_o, SecComputer_P.RateLimiterVariableTs6_up,
+    SecComputer_RateLimiter(rtb_Switch1_c, SecComputer_P.RateLimiterVariableTs6_up,
       SecComputer_P.RateLimiterVariableTs6_lo, SecComputer_U.in.time.dt,
       SecComputer_P.RateLimiterVariableTs6_InitialCondition, &rtb_handleIndex, &SecComputer_DWork.sf_RateLimiter_c);
     rtb_AND3_b = (SecComputer_B.logic.ground_spoilers_out || SecComputer_B.logic.partial_lift_dumping_active);
@@ -860,25 +862,25 @@ void SecComputer::step()
       rtb_Switch6 = SecComputer_P.Constant3_Value;
     } else {
       if ((rtb_Switch7_c != 0U) || (rtb_y != 0U)) {
-        rtb_Switch_o = SecComputer_P.Constant4_Value_k;
+        rtb_Switch1_c = SecComputer_P.Constant4_Value_k;
       } else {
-        rtb_Switch_o = SecComputer_P.Constant5_Value;
+        rtb_Switch1_c = SecComputer_P.Constant5_Value;
       }
 
-      if (SecComputer_U.in.analog_inputs.spd_brk_lever_pos <= rtb_Switch_o) {
-        rtb_Switch_o *= SecComputer_P.Gain_Gain;
-        if (SecComputer_U.in.analog_inputs.spd_brk_lever_pos >= rtb_Switch_o) {
-          rtb_Switch_o = SecComputer_U.in.analog_inputs.spd_brk_lever_pos;
+      if (SecComputer_U.in.analog_inputs.spd_brk_lever_pos <= rtb_Switch1_c) {
+        rtb_Switch1_c *= SecComputer_P.Gain_Gain;
+        if (SecComputer_U.in.analog_inputs.spd_brk_lever_pos >= rtb_Switch1_c) {
+          rtb_Switch1_c = SecComputer_U.in.analog_inputs.spd_brk_lever_pos;
         }
       }
 
-      rtb_Switch6 = look1_binlxpw(rtb_Switch_o, SecComputer_P.uDLookupTable_bp01Data,
+      rtb_Switch6 = look1_binlxpw(rtb_Switch1_c, SecComputer_P.uDLookupTable_bp01Data,
         SecComputer_P.uDLookupTable_tableData, 4U);
     }
 
     SecComputer_RateLimiter(rtb_Switch6, SecComputer_P.RateLimiterVariableTs1_up,
       SecComputer_P.RateLimiterVariableTs1_lo, SecComputer_U.in.time.dt,
-      SecComputer_P.RateLimiterVariableTs1_InitialCondition, &rtb_Switch_o, &SecComputer_DWork.sf_RateLimiter);
+      SecComputer_P.RateLimiterVariableTs1_InitialCondition, &rtb_Switch1_c, &SecComputer_DWork.sf_RateLimiter);
     LawMDLOBJ1.step(&SecComputer_U.in.time.dt, &SecComputer_B.logic.total_sidestick_roll_command, &rtb_Switch6,
                     &rtb_zeta_deg);
     SecComputer_MATLABFunction(&SecComputer_U.in.bus_inputs.elac_1_bus.discrete_status_word_1,
@@ -914,12 +916,12 @@ void SecComputer::step()
       }
 
       rtb_zeta_deg = rollCommand;
-      rtb_Switch6 = rtb_Switch_o;
+      rtb_Switch6 = rtb_Switch1_c;
     } else if (SecComputer_U.in.discrete_inputs.is_unit_2) {
       pair1RollCommand = rollCommand;
       rtb_zeta_deg = 0.0;
       rtb_Switch6 = 0.0;
-      rtb_Switch_o = 0.0;
+      rtb_Switch1_c = 0.0;
     } else {
       pair1RollCommand = 0.0;
       if (rtb_OR14) {
@@ -929,17 +931,17 @@ void SecComputer::step()
       }
 
       rtb_Switch6 = 0.0;
-      rtb_Switch_o /= 2.0;
+      rtb_Switch1_c /= 2.0;
     }
 
     if (rollCommand >= 0.0) {
       rollCommand = rtb_Switch6 - pair1RollCommand;
-      pair1RollCommand = rtb_Switch_o - rtb_zeta_deg;
+      pair1RollCommand = rtb_Switch1_c - rtb_zeta_deg;
     } else {
       rollCommand = rtb_Switch6;
       rtb_Switch6 += pair1RollCommand;
-      pair1RollCommand = rtb_Switch_o;
-      rtb_Switch_o += rtb_zeta_deg;
+      pair1RollCommand = rtb_Switch1_c;
+      rtb_Switch1_c += rtb_zeta_deg;
     }
 
     if (rtb_AND3_b) {
@@ -977,7 +979,7 @@ void SecComputer::step()
     if (rtb_AND3_b) {
       rtb_zeta_deg = rtb_handleIndex;
     } else {
-      rtb_zeta_deg = std::fmax(pair1RollCommand - (rtb_Switch_o - std::fmax(rtb_Switch_o, -50.0)), -50.0);
+      rtb_zeta_deg = std::fmax(pair1RollCommand - (rtb_Switch1_c - std::fmax(rtb_Switch1_c, -50.0)), -50.0);
     }
 
     if (rtb_zeta_deg > SecComputer_P.Saturation2_UpperSat) {
@@ -991,7 +993,7 @@ void SecComputer::step()
       SecComputer_U.in.analog_inputs.left_spoiler_2_pos_deg, !SecComputer_B.logic.spoiler_pair_2_avail,
       &SecComputer_B.laws.lateral_law_outputs.left_spoiler_2_command_deg, &SecComputer_DWork.sf_RateLimiter_k);
     if (!rtb_AND3_b) {
-      rtb_handleIndex = std::fmax(rtb_Switch_o - (pair1RollCommand - std::fmax(pair1RollCommand, -50.0)), -50.0);
+      rtb_handleIndex = std::fmax(rtb_Switch1_c - (pair1RollCommand - std::fmax(pair1RollCommand, -50.0)), -50.0);
     }
 
     if (rtb_handleIndex > SecComputer_P.Saturation3_UpperSat) {
@@ -1032,7 +1034,7 @@ void SecComputer::step()
       rtb_handleIndex = 0.0;
     }
 
-    rtb_Switch_o = SecComputer_B.logic.pitch_law_in_flight;
+    rtb_Switch1_c = SecComputer_B.logic.pitch_law_in_flight;
     rtb_OR16 = (SecComputer_B.logic.tracking_mode_on || ((static_cast<real_T>(SecComputer_B.logic.active_pitch_law) !=
       SecComputer_P.CompareToConstant2_const_f) && (static_cast<real_T>(SecComputer_B.logic.active_pitch_law) !=
       SecComputer_P.CompareToConstant3_const_o)));
@@ -1043,9 +1045,9 @@ void SecComputer::step()
                     &SecComputer_U.in.analog_inputs.ths_pos_deg, &SecComputer_B.logic.adr_computation_data.V_ias_kn,
                     &SecComputer_B.logic.adr_computation_data.mach, &SecComputer_B.logic.adr_computation_data.V_tas_kn,
                     &rtb_handleIndex, (const_cast<real_T*>(&SecComputer_RGND)), (const_cast<real_T*>(&SecComputer_RGND)),
-                    &SecComputer_B.logic.total_sidestick_pitch_command, &rtb_Switch_o, &rtb_OR16, &rtb_OR14,
+                    &SecComputer_B.logic.total_sidestick_pitch_command, &rtb_Switch1_c, &rtb_OR16, &rtb_OR14,
                     &rtb_eta_deg, &rtb_eta_trim_dot_deg_s, &rtb_eta_trim_limit_lo, &rtb_eta_trim_limit_up);
-    LawMDLOBJ3.step(&SecComputer_U.in.time.dt, &SecComputer_B.logic.total_sidestick_pitch_command, &rtb_Switch_o,
+    LawMDLOBJ3.step(&SecComputer_U.in.time.dt, &SecComputer_B.logic.total_sidestick_pitch_command, &rtb_Switch1_c,
                     &rtb_Switch6, &rtb_zeta_deg, &rtb_handleIndex);
     switch (static_cast<int32_T>(SecComputer_B.logic.active_pitch_law)) {
      case 1:
@@ -1054,7 +1056,7 @@ void SecComputer::step()
       break;
 
      case 3:
-      SecComputer_B.laws.pitch_law_outputs.elevator_command_deg = rtb_Switch_o;
+      SecComputer_B.laws.pitch_law_outputs.elevator_command_deg = rtb_Switch1_c;
       break;
 
      default:
@@ -1129,16 +1131,46 @@ void SecComputer::step()
     }
 
     SecComputer_B.laws.pitch_law_outputs.ths_command_deg = SecComputer_DWork.Delay_DSTATE;
-    if (SecComputer_B.logic.is_engaged_in_pitch && SecComputer_B.logic.left_elevator_avail) {
-      SecComputer_Y.out.analog_outputs.left_elev_pos_order_deg =
-        SecComputer_B.laws.pitch_law_outputs.elevator_command_deg;
+    if (SecComputer_U.in.discrete_inputs.is_unit_1) {
+      rtb_V_ias = SecComputer_U.in.bus_inputs.elac_2_bus.elevator_double_pressurization_command_deg.Data;
+      rtb_BusConversion_InsertedFor_MATLABFunction_at_inport_0_BusCreator1_ja.SSM =
+        SecComputer_U.in.bus_inputs.elac_2_bus.elevator_double_pressurization_command_deg.SSM;
+    } else if (SecComputer_U.in.discrete_inputs.is_unit_2) {
+      rtb_V_ias = SecComputer_U.in.bus_inputs.elac_1_bus.elevator_double_pressurization_command_deg.Data;
+      rtb_BusConversion_InsertedFor_MATLABFunction_at_inport_0_BusCreator1_ja.SSM =
+        SecComputer_U.in.bus_inputs.elac_1_bus.elevator_double_pressurization_command_deg.SSM;
+    } else {
+      rtb_V_ias = SecComputer_P.Constant1_Value_m;
+      rtb_V_tas = std::fmod(std::floor(SecComputer_P.Constant1_Value_m), 4.2949673E+9F);
+      rtb_BusConversion_InsertedFor_MATLABFunction_at_inport_0_BusCreator1_ja.SSM = rtb_V_tas < 0.0F ?
+        static_cast<uint32_T>(-static_cast<int32_T>(static_cast<uint32_T>(-rtb_V_tas))) : static_cast<uint32_T>
+        (rtb_V_tas);
+    }
+
+    rtb_BusConversion_InsertedFor_MATLABFunction_at_inport_0_BusCreator1_ja.Data = rtb_V_ias;
+    SecComputer_MATLABFunction_l(&rtb_BusConversion_InsertedFor_MATLABFunction_at_inport_0_BusCreator1_ja, &rtb_AND4_a);
+    if (SecComputer_U.in.discrete_inputs.is_unit_1) {
+      rtb_y_pq = SecComputer_U.in.discrete_inputs.pitch_not_avail_elac_1;
+    } else {
+      rtb_y_pq = SecComputer_U.in.discrete_inputs.pitch_not_avail_elac_2;
+    }
+
+    rtb_AND3_b = (rtb_y_pq && (!SecComputer_B.logic.is_engaged_in_pitch) && rtb_AND4_a);
+    if (rtb_AND3_b) {
+      rtb_Switch1_c = rtb_V_ias;
+    } else {
+      rtb_Switch1_c = SecComputer_B.laws.pitch_law_outputs.elevator_command_deg;
+    }
+
+    rtb_y_pq = (SecComputer_B.logic.is_engaged_in_pitch || rtb_AND3_b);
+    if (rtb_y_pq && SecComputer_B.logic.left_elevator_avail) {
+      SecComputer_Y.out.analog_outputs.left_elev_pos_order_deg = rtb_Switch1_c;
     } else {
       SecComputer_Y.out.analog_outputs.left_elev_pos_order_deg = SecComputer_P.Constant_Value_h;
     }
 
-    if (SecComputer_B.logic.is_engaged_in_pitch && SecComputer_B.logic.right_elevator_avail) {
-      SecComputer_Y.out.analog_outputs.right_elev_pos_order_deg =
-        SecComputer_B.laws.pitch_law_outputs.elevator_command_deg;
+    if (rtb_y_pq && SecComputer_B.logic.right_elevator_avail) {
+      SecComputer_Y.out.analog_outputs.right_elev_pos_order_deg = rtb_Switch1_c;
     } else {
       SecComputer_Y.out.analog_outputs.right_elev_pos_order_deg = SecComputer_P.Constant_Value_h;
     }
@@ -1192,9 +1224,9 @@ void SecComputer::step()
     SecComputer_Y.out.discrete_outputs.right_elevator_ok = SecComputer_B.logic.right_elevator_avail;
     SecComputer_Y.out.discrete_outputs.ground_spoiler_out = SecComputer_B.logic.ground_spoilers_out;
     SecComputer_Y.out.discrete_outputs.sec_failed = SecComputer_P.Constant2_Value_n;
-    rtb_y_e = (SecComputer_B.logic.is_engaged_in_pitch && SecComputer_B.logic.left_elevator_avail);
-    SecComputer_Y.out.discrete_outputs.left_elevator_damping_mode = rtb_y_e;
-    SecComputer_Y.out.discrete_outputs.right_elevator_damping_mode = rtb_y_e;
+    rtb_y_pq = (SecComputer_B.logic.is_engaged_in_pitch && SecComputer_B.logic.left_elevator_avail);
+    SecComputer_Y.out.discrete_outputs.left_elevator_damping_mode = rtb_y_pq;
+    SecComputer_Y.out.discrete_outputs.right_elevator_damping_mode = rtb_y_pq;
     SecComputer_Y.out.discrete_outputs.ths_active = (SecComputer_B.logic.ths_active_commanded &&
       SecComputer_B.logic.ths_avail);
     rtb_VectorConcatenate[13] = SecComputer_P.Constant8_Value;
@@ -1484,195 +1516,199 @@ void SecComputer::step()
     SecComputer_B.SSM_bq = SecComputer_U.in.bus_inputs.elac_1_bus.yaw_damper_command_deg.SSM;
     SecComputer_B.sfcc_2_slats_out = SecComputer_U.in.discrete_inputs.sfcc_2_slats_out;
     SecComputer_B.Data_jb = SecComputer_U.in.bus_inputs.elac_1_bus.yaw_damper_command_deg.Data;
-    SecComputer_B.SSM_hi = SecComputer_U.in.bus_inputs.elac_1_bus.discrete_status_word_1.SSM;
-    SecComputer_B.Data_fn = SecComputer_U.in.bus_inputs.elac_1_bus.discrete_status_word_1.Data;
-    SecComputer_B.SSM_mm = SecComputer_U.in.bus_inputs.elac_1_bus.discrete_status_word_2.SSM;
-    SecComputer_B.Data_od = SecComputer_U.in.bus_inputs.elac_1_bus.discrete_status_word_2.Data;
-    SecComputer_B.SSM_kz = SecComputer_U.in.bus_inputs.fcdc_1_bus.efcs_status_word_1.SSM;
-    SecComputer_B.Data_ez = SecComputer_U.in.bus_inputs.fcdc_1_bus.efcs_status_word_1.Data;
-    SecComputer_B.SSM_il = SecComputer_U.in.bus_inputs.fcdc_1_bus.efcs_status_word_2.SSM;
-    SecComputer_B.Data_pw = SecComputer_U.in.bus_inputs.fcdc_1_bus.efcs_status_word_2.Data;
-    SecComputer_B.SSM_i2 = SecComputer_U.in.bus_inputs.fcdc_1_bus.efcs_status_word_3.SSM;
+    SecComputer_B.SSM_hi = SecComputer_U.in.bus_inputs.elac_1_bus.elevator_double_pressurization_command_deg.SSM;
+    SecComputer_B.Data_fn = SecComputer_U.in.bus_inputs.elac_1_bus.elevator_double_pressurization_command_deg.Data;
+    SecComputer_B.SSM_mm = SecComputer_U.in.bus_inputs.elac_1_bus.discrete_status_word_1.SSM;
+    SecComputer_B.Data_od = SecComputer_U.in.bus_inputs.elac_1_bus.discrete_status_word_1.Data;
+    SecComputer_B.SSM_kz = SecComputer_U.in.bus_inputs.elac_1_bus.discrete_status_word_2.SSM;
+    SecComputer_B.Data_ez = SecComputer_U.in.bus_inputs.elac_1_bus.discrete_status_word_2.Data;
+    SecComputer_B.SSM_il = SecComputer_U.in.bus_inputs.fcdc_1_bus.efcs_status_word_1.SSM;
+    SecComputer_B.Data_pw = SecComputer_U.in.bus_inputs.fcdc_1_bus.efcs_status_word_1.Data;
+    SecComputer_B.SSM_i2 = SecComputer_U.in.bus_inputs.fcdc_1_bus.efcs_status_word_2.SSM;
     SecComputer_B.digital_output_failed_elac_2 = SecComputer_U.in.discrete_inputs.digital_output_failed_elac_2;
-    SecComputer_B.Data_m2 = SecComputer_U.in.bus_inputs.fcdc_1_bus.efcs_status_word_3.Data;
-    SecComputer_B.SSM_ah = SecComputer_U.in.bus_inputs.fcdc_1_bus.efcs_status_word_4.SSM;
-    SecComputer_B.Data_ek = SecComputer_U.in.bus_inputs.fcdc_1_bus.efcs_status_word_4.Data;
-    SecComputer_B.SSM_en = SecComputer_U.in.bus_inputs.fcdc_1_bus.efcs_status_word_5.SSM;
-    SecComputer_B.Data_iy = SecComputer_U.in.bus_inputs.fcdc_1_bus.efcs_status_word_5.Data;
-    SecComputer_B.SSM_dq = SecComputer_U.in.bus_inputs.fcdc_1_bus.capt_roll_command_deg.SSM;
-    SecComputer_B.Data_lk = SecComputer_U.in.bus_inputs.fcdc_1_bus.capt_roll_command_deg.Data;
-    SecComputer_B.SSM_px = SecComputer_U.in.bus_inputs.fcdc_1_bus.fo_roll_command_deg.SSM;
-    SecComputer_B.Data_ca = SecComputer_U.in.bus_inputs.fcdc_1_bus.fo_roll_command_deg.Data;
-    SecComputer_B.SSM_lbo = SecComputer_U.in.bus_inputs.fcdc_1_bus.rudder_pedal_position_deg.SSM;
+    SecComputer_B.Data_m2 = SecComputer_U.in.bus_inputs.fcdc_1_bus.efcs_status_word_2.Data;
+    SecComputer_B.SSM_ah = SecComputer_U.in.bus_inputs.fcdc_1_bus.efcs_status_word_3.SSM;
+    SecComputer_B.Data_ek = SecComputer_U.in.bus_inputs.fcdc_1_bus.efcs_status_word_3.Data;
+    SecComputer_B.SSM_en = SecComputer_U.in.bus_inputs.fcdc_1_bus.efcs_status_word_4.SSM;
+    SecComputer_B.Data_iy = SecComputer_U.in.bus_inputs.fcdc_1_bus.efcs_status_word_4.Data;
+    SecComputer_B.SSM_dq = SecComputer_U.in.bus_inputs.fcdc_1_bus.efcs_status_word_5.SSM;
+    SecComputer_B.Data_lk = SecComputer_U.in.bus_inputs.fcdc_1_bus.efcs_status_word_5.Data;
+    SecComputer_B.SSM_px = SecComputer_U.in.bus_inputs.fcdc_1_bus.capt_roll_command_deg.SSM;
+    SecComputer_B.Data_ca = SecComputer_U.in.bus_inputs.fcdc_1_bus.capt_roll_command_deg.Data;
+    SecComputer_B.SSM_lbo = SecComputer_U.in.bus_inputs.fcdc_1_bus.fo_roll_command_deg.SSM;
     SecComputer_B.ths_motor_fault = SecComputer_U.in.discrete_inputs.ths_motor_fault;
-    SecComputer_B.Data_pix = SecComputer_U.in.bus_inputs.fcdc_1_bus.rudder_pedal_position_deg.Data;
-    SecComputer_B.SSM_p5 = SecComputer_U.in.bus_inputs.fcdc_1_bus.capt_pitch_command_deg.SSM;
-    SecComputer_B.Data_di = SecComputer_U.in.bus_inputs.fcdc_1_bus.capt_pitch_command_deg.Data;
-    SecComputer_B.SSM_mk = SecComputer_U.in.bus_inputs.fcdc_1_bus.fo_pitch_command_deg.SSM;
-    SecComputer_B.Data_lz = SecComputer_U.in.bus_inputs.fcdc_1_bus.fo_pitch_command_deg.Data;
-    SecComputer_B.SSM_mu = SecComputer_U.in.bus_inputs.fcdc_1_bus.aileron_left_pos_deg.SSM;
-    SecComputer_B.Data_lu = SecComputer_U.in.bus_inputs.fcdc_1_bus.aileron_left_pos_deg.Data;
-    SecComputer_B.SSM_cbl = SecComputer_U.in.bus_inputs.fcdc_1_bus.elevator_left_pos_deg.SSM;
-    SecComputer_B.Data_dc = SecComputer_U.in.bus_inputs.fcdc_1_bus.elevator_left_pos_deg.Data;
-    SecComputer_B.SSM_gzd = SecComputer_U.in.bus_inputs.fcdc_1_bus.aileron_right_pos_deg.SSM;
+    SecComputer_B.Data_pix = SecComputer_U.in.bus_inputs.fcdc_1_bus.fo_roll_command_deg.Data;
+    SecComputer_B.SSM_p5 = SecComputer_U.in.bus_inputs.fcdc_1_bus.rudder_pedal_position_deg.SSM;
+    SecComputer_B.Data_di = SecComputer_U.in.bus_inputs.fcdc_1_bus.rudder_pedal_position_deg.Data;
+    SecComputer_B.SSM_mk = SecComputer_U.in.bus_inputs.fcdc_1_bus.capt_pitch_command_deg.SSM;
+    SecComputer_B.Data_lz = SecComputer_U.in.bus_inputs.fcdc_1_bus.capt_pitch_command_deg.Data;
+    SecComputer_B.SSM_mu = SecComputer_U.in.bus_inputs.fcdc_1_bus.fo_pitch_command_deg.SSM;
+    SecComputer_B.Data_lu = SecComputer_U.in.bus_inputs.fcdc_1_bus.fo_pitch_command_deg.Data;
+    SecComputer_B.SSM_cbl = SecComputer_U.in.bus_inputs.fcdc_1_bus.aileron_left_pos_deg.SSM;
+    SecComputer_B.Data_dc = SecComputer_U.in.bus_inputs.fcdc_1_bus.aileron_left_pos_deg.Data;
+    SecComputer_B.SSM_gzd = SecComputer_U.in.bus_inputs.fcdc_1_bus.elevator_left_pos_deg.SSM;
     SecComputer_B.l_elev_servo_failed = SecComputer_U.in.discrete_inputs.l_elev_servo_failed;
-    SecComputer_B.Data_gc = SecComputer_U.in.bus_inputs.fcdc_1_bus.aileron_right_pos_deg.Data;
-    SecComputer_B.SSM_mo = SecComputer_U.in.bus_inputs.fcdc_1_bus.elevator_right_pos_deg.SSM;
-    SecComputer_B.Data_am = SecComputer_U.in.bus_inputs.fcdc_1_bus.elevator_right_pos_deg.Data;
-    SecComputer_B.SSM_me = SecComputer_U.in.bus_inputs.fcdc_1_bus.horiz_stab_trim_pos_deg.SSM;
-    SecComputer_B.Data_mo = SecComputer_U.in.bus_inputs.fcdc_1_bus.horiz_stab_trim_pos_deg.Data;
-    SecComputer_B.SSM_mj = SecComputer_U.in.bus_inputs.fcdc_1_bus.spoiler_1_left_pos_deg.SSM;
-    SecComputer_B.Data_dg = SecComputer_U.in.bus_inputs.fcdc_1_bus.spoiler_1_left_pos_deg.Data;
-    SecComputer_B.SSM_a5 = SecComputer_U.in.bus_inputs.fcdc_1_bus.spoiler_2_left_pos_deg.SSM;
-    SecComputer_B.Data_e1 = SecComputer_U.in.bus_inputs.fcdc_1_bus.spoiler_2_left_pos_deg.Data;
-    SecComputer_B.SSM_bt = SecComputer_U.in.bus_inputs.fcdc_1_bus.spoiler_3_left_pos_deg.SSM;
+    SecComputer_B.Data_gc = SecComputer_U.in.bus_inputs.fcdc_1_bus.elevator_left_pos_deg.Data;
+    SecComputer_B.SSM_mo = SecComputer_U.in.bus_inputs.fcdc_1_bus.aileron_right_pos_deg.SSM;
+    SecComputer_B.Data_am = SecComputer_U.in.bus_inputs.fcdc_1_bus.aileron_right_pos_deg.Data;
+    SecComputer_B.SSM_me = SecComputer_U.in.bus_inputs.fcdc_1_bus.elevator_right_pos_deg.SSM;
+    SecComputer_B.Data_mo = SecComputer_U.in.bus_inputs.fcdc_1_bus.elevator_right_pos_deg.Data;
+    SecComputer_B.SSM_mj = SecComputer_U.in.bus_inputs.fcdc_1_bus.horiz_stab_trim_pos_deg.SSM;
+    SecComputer_B.Data_dg = SecComputer_U.in.bus_inputs.fcdc_1_bus.horiz_stab_trim_pos_deg.Data;
+    SecComputer_B.SSM_a5 = SecComputer_U.in.bus_inputs.fcdc_1_bus.spoiler_1_left_pos_deg.SSM;
+    SecComputer_B.Data_e1 = SecComputer_U.in.bus_inputs.fcdc_1_bus.spoiler_1_left_pos_deg.Data;
+    SecComputer_B.SSM_bt = SecComputer_U.in.bus_inputs.fcdc_1_bus.spoiler_2_left_pos_deg.SSM;
     SecComputer_B.r_elev_servo_failed = SecComputer_U.in.discrete_inputs.r_elev_servo_failed;
-    SecComputer_B.Data_fp = SecComputer_U.in.bus_inputs.fcdc_1_bus.spoiler_3_left_pos_deg.Data;
-    SecComputer_B.SSM_om = SecComputer_U.in.bus_inputs.fcdc_1_bus.spoiler_4_left_pos_deg.SSM;
-    SecComputer_B.Data_ns = SecComputer_U.in.bus_inputs.fcdc_1_bus.spoiler_4_left_pos_deg.Data;
-    SecComputer_B.SSM_ar = SecComputer_U.in.bus_inputs.fcdc_1_bus.spoiler_5_left_pos_deg.SSM;
-    SecComputer_B.Data_m3 = SecComputer_U.in.bus_inputs.fcdc_1_bus.spoiler_5_left_pos_deg.Data;
-    SecComputer_B.SSM_ce = SecComputer_U.in.bus_inputs.fcdc_1_bus.spoiler_1_right_pos_deg.SSM;
-    SecComputer_B.Data_oj = SecComputer_U.in.bus_inputs.fcdc_1_bus.spoiler_1_right_pos_deg.Data;
-    SecComputer_B.SSM_ed = SecComputer_U.in.bus_inputs.fcdc_1_bus.spoiler_2_right_pos_deg.SSM;
-    SecComputer_B.Data_jy = SecComputer_U.in.bus_inputs.fcdc_1_bus.spoiler_2_right_pos_deg.Data;
-    SecComputer_B.SSM_jh = SecComputer_U.in.bus_inputs.fcdc_1_bus.spoiler_3_right_pos_deg.SSM;
+    SecComputer_B.Data_fp = SecComputer_U.in.bus_inputs.fcdc_1_bus.spoiler_2_left_pos_deg.Data;
+    SecComputer_B.SSM_om = SecComputer_U.in.bus_inputs.fcdc_1_bus.spoiler_3_left_pos_deg.SSM;
+    SecComputer_B.Data_ns = SecComputer_U.in.bus_inputs.fcdc_1_bus.spoiler_3_left_pos_deg.Data;
+    SecComputer_B.SSM_ar = SecComputer_U.in.bus_inputs.fcdc_1_bus.spoiler_4_left_pos_deg.SSM;
+    SecComputer_B.Data_m3 = SecComputer_U.in.bus_inputs.fcdc_1_bus.spoiler_4_left_pos_deg.Data;
+    SecComputer_B.SSM_ce = SecComputer_U.in.bus_inputs.fcdc_1_bus.spoiler_5_left_pos_deg.SSM;
+    SecComputer_B.Data_oj = SecComputer_U.in.bus_inputs.fcdc_1_bus.spoiler_5_left_pos_deg.Data;
+    SecComputer_B.SSM_ed = SecComputer_U.in.bus_inputs.fcdc_1_bus.spoiler_1_right_pos_deg.SSM;
+    SecComputer_B.Data_jy = SecComputer_U.in.bus_inputs.fcdc_1_bus.spoiler_1_right_pos_deg.Data;
+    SecComputer_B.SSM_jh = SecComputer_U.in.bus_inputs.fcdc_1_bus.spoiler_2_right_pos_deg.SSM;
     SecComputer_B.l_spoiler_1_servo_failed = SecComputer_U.in.discrete_inputs.l_spoiler_1_servo_failed;
-    SecComputer_B.Data_j1 = SecComputer_U.in.bus_inputs.fcdc_1_bus.spoiler_3_right_pos_deg.Data;
-    SecComputer_B.SSM_je = SecComputer_U.in.bus_inputs.fcdc_1_bus.spoiler_4_right_pos_deg.SSM;
-    SecComputer_B.Data_fc = SecComputer_U.in.bus_inputs.fcdc_1_bus.spoiler_4_right_pos_deg.Data;
-    SecComputer_B.SSM_jt = SecComputer_U.in.bus_inputs.fcdc_1_bus.spoiler_5_right_pos_deg.SSM;
-    SecComputer_B.Data_of = SecComputer_U.in.bus_inputs.fcdc_1_bus.spoiler_5_right_pos_deg.Data;
-    SecComputer_B.SSM_cui = SecComputer_U.in.bus_inputs.fcdc_2_bus.efcs_status_word_1.SSM;
-    SecComputer_B.Data_lg = SecComputer_U.in.bus_inputs.fcdc_2_bus.efcs_status_word_1.Data;
-    SecComputer_B.SSM_mq = SecComputer_U.in.bus_inputs.fcdc_2_bus.efcs_status_word_2.SSM;
-    SecComputer_B.Data_n4 = SecComputer_U.in.bus_inputs.fcdc_2_bus.efcs_status_word_2.Data;
-    SecComputer_B.SSM_ni = SecComputer_U.in.bus_inputs.fcdc_2_bus.efcs_status_word_3.SSM;
+    SecComputer_B.Data_j1 = SecComputer_U.in.bus_inputs.fcdc_1_bus.spoiler_2_right_pos_deg.Data;
+    SecComputer_B.SSM_je = SecComputer_U.in.bus_inputs.fcdc_1_bus.spoiler_3_right_pos_deg.SSM;
+    SecComputer_B.Data_fc = SecComputer_U.in.bus_inputs.fcdc_1_bus.spoiler_3_right_pos_deg.Data;
+    SecComputer_B.SSM_jt = SecComputer_U.in.bus_inputs.fcdc_1_bus.spoiler_4_right_pos_deg.SSM;
+    SecComputer_B.Data_of = SecComputer_U.in.bus_inputs.fcdc_1_bus.spoiler_4_right_pos_deg.Data;
+    SecComputer_B.SSM_cui = SecComputer_U.in.bus_inputs.fcdc_1_bus.spoiler_5_right_pos_deg.SSM;
+    SecComputer_B.Data_lg = SecComputer_U.in.bus_inputs.fcdc_1_bus.spoiler_5_right_pos_deg.Data;
+    SecComputer_B.SSM_mq = SecComputer_U.in.bus_inputs.fcdc_2_bus.efcs_status_word_1.SSM;
+    SecComputer_B.Data_n4 = SecComputer_U.in.bus_inputs.fcdc_2_bus.efcs_status_word_1.Data;
+    SecComputer_B.SSM_ni = SecComputer_U.in.bus_inputs.fcdc_2_bus.efcs_status_word_2.SSM;
     SecComputer_B.r_spoiler_1_servo_failed = SecComputer_U.in.discrete_inputs.r_spoiler_1_servo_failed;
-    SecComputer_B.Data_ot = SecComputer_U.in.bus_inputs.fcdc_2_bus.efcs_status_word_3.Data;
-    SecComputer_B.SSM_df = SecComputer_U.in.bus_inputs.fcdc_2_bus.efcs_status_word_4.SSM;
-    SecComputer_B.Data_gv = SecComputer_U.in.bus_inputs.fcdc_2_bus.efcs_status_word_4.Data;
-    SecComputer_B.SSM_oe = SecComputer_U.in.bus_inputs.fcdc_2_bus.efcs_status_word_5.SSM;
-    SecComputer_B.Data_ou = SecComputer_U.in.bus_inputs.fcdc_2_bus.efcs_status_word_5.Data;
-    SecComputer_B.SSM_ha = SecComputer_U.in.bus_inputs.fcdc_2_bus.capt_roll_command_deg.SSM;
-    SecComputer_B.Data_dh = SecComputer_U.in.bus_inputs.fcdc_2_bus.capt_roll_command_deg.Data;
-    SecComputer_B.SSM_op = SecComputer_U.in.bus_inputs.fcdc_2_bus.fo_roll_command_deg.SSM;
-    SecComputer_B.Data_ph = SecComputer_U.in.bus_inputs.fcdc_2_bus.fo_roll_command_deg.Data;
-    SecComputer_B.SSM_a50 = SecComputer_U.in.bus_inputs.fcdc_2_bus.rudder_pedal_position_deg.SSM;
+    SecComputer_B.Data_ot = SecComputer_U.in.bus_inputs.fcdc_2_bus.efcs_status_word_2.Data;
+    SecComputer_B.SSM_df = SecComputer_U.in.bus_inputs.fcdc_2_bus.efcs_status_word_3.SSM;
+    SecComputer_B.Data_gv = SecComputer_U.in.bus_inputs.fcdc_2_bus.efcs_status_word_3.Data;
+    SecComputer_B.SSM_oe = SecComputer_U.in.bus_inputs.fcdc_2_bus.efcs_status_word_4.SSM;
+    SecComputer_B.Data_ou = SecComputer_U.in.bus_inputs.fcdc_2_bus.efcs_status_word_4.Data;
+    SecComputer_B.SSM_ha = SecComputer_U.in.bus_inputs.fcdc_2_bus.efcs_status_word_5.SSM;
+    SecComputer_B.Data_dh = SecComputer_U.in.bus_inputs.fcdc_2_bus.efcs_status_word_5.Data;
+    SecComputer_B.SSM_op = SecComputer_U.in.bus_inputs.fcdc_2_bus.capt_roll_command_deg.SSM;
+    SecComputer_B.Data_ph = SecComputer_U.in.bus_inputs.fcdc_2_bus.capt_roll_command_deg.Data;
+    SecComputer_B.SSM_a50 = SecComputer_U.in.bus_inputs.fcdc_2_bus.fo_roll_command_deg.SSM;
     SecComputer_B.monotonic_time = SecComputer_U.in.time.monotonic_time;
     SecComputer_B.l_spoiler_2_servo_failed = SecComputer_U.in.discrete_inputs.l_spoiler_2_servo_failed;
-    SecComputer_B.Data_gs = SecComputer_U.in.bus_inputs.fcdc_2_bus.rudder_pedal_position_deg.Data;
-    SecComputer_B.SSM_og = SecComputer_U.in.bus_inputs.fcdc_2_bus.capt_pitch_command_deg.SSM;
-    SecComputer_B.Data_fd4 = SecComputer_U.in.bus_inputs.fcdc_2_bus.capt_pitch_command_deg.Data;
-    SecComputer_B.SSM_a4 = SecComputer_U.in.bus_inputs.fcdc_2_bus.fo_pitch_command_deg.SSM;
-    SecComputer_B.Data_hm = SecComputer_U.in.bus_inputs.fcdc_2_bus.fo_pitch_command_deg.Data;
-    SecComputer_B.SSM_bv = SecComputer_U.in.bus_inputs.fcdc_2_bus.aileron_left_pos_deg.SSM;
-    SecComputer_B.Data_i2 = SecComputer_U.in.bus_inputs.fcdc_2_bus.aileron_left_pos_deg.Data;
-    SecComputer_B.SSM_bo = SecComputer_U.in.bus_inputs.fcdc_2_bus.elevator_left_pos_deg.SSM;
-    SecComputer_B.Data_og = SecComputer_U.in.bus_inputs.fcdc_2_bus.elevator_left_pos_deg.Data;
-    SecComputer_B.SSM_d1 = SecComputer_U.in.bus_inputs.fcdc_2_bus.aileron_right_pos_deg.SSM;
+    SecComputer_B.Data_gs = SecComputer_U.in.bus_inputs.fcdc_2_bus.fo_roll_command_deg.Data;
+    SecComputer_B.SSM_og = SecComputer_U.in.bus_inputs.fcdc_2_bus.rudder_pedal_position_deg.SSM;
+    SecComputer_B.Data_fd4 = SecComputer_U.in.bus_inputs.fcdc_2_bus.rudder_pedal_position_deg.Data;
+    SecComputer_B.SSM_a4 = SecComputer_U.in.bus_inputs.fcdc_2_bus.capt_pitch_command_deg.SSM;
+    SecComputer_B.Data_hm = SecComputer_U.in.bus_inputs.fcdc_2_bus.capt_pitch_command_deg.Data;
+    SecComputer_B.SSM_bv = SecComputer_U.in.bus_inputs.fcdc_2_bus.fo_pitch_command_deg.SSM;
+    SecComputer_B.Data_i2 = SecComputer_U.in.bus_inputs.fcdc_2_bus.fo_pitch_command_deg.Data;
+    SecComputer_B.SSM_bo = SecComputer_U.in.bus_inputs.fcdc_2_bus.aileron_left_pos_deg.SSM;
+    SecComputer_B.Data_og = SecComputer_U.in.bus_inputs.fcdc_2_bus.aileron_left_pos_deg.Data;
+    SecComputer_B.SSM_d1 = SecComputer_U.in.bus_inputs.fcdc_2_bus.elevator_left_pos_deg.SSM;
     SecComputer_B.r_spoiler_2_servo_failed = SecComputer_U.in.discrete_inputs.r_spoiler_2_servo_failed;
-    SecComputer_B.Data_fv = SecComputer_U.in.bus_inputs.fcdc_2_bus.aileron_right_pos_deg.Data;
-    SecComputer_B.SSM_hy = SecComputer_U.in.bus_inputs.fcdc_2_bus.elevator_right_pos_deg.SSM;
-    SecComputer_B.Data_oc = SecComputer_U.in.bus_inputs.fcdc_2_bus.elevator_right_pos_deg.Data;
-    SecComputer_B.SSM_gi = SecComputer_U.in.bus_inputs.fcdc_2_bus.horiz_stab_trim_pos_deg.SSM;
-    SecComputer_B.Data_kq = SecComputer_U.in.bus_inputs.fcdc_2_bus.horiz_stab_trim_pos_deg.Data;
-    SecComputer_B.SSM_pp = SecComputer_U.in.bus_inputs.fcdc_2_bus.spoiler_1_left_pos_deg.SSM;
-    SecComputer_B.Data_ne = SecComputer_U.in.bus_inputs.fcdc_2_bus.spoiler_1_left_pos_deg.Data;
-    SecComputer_B.SSM_iab = SecComputer_U.in.bus_inputs.fcdc_2_bus.spoiler_2_left_pos_deg.SSM;
-    SecComputer_B.Data_it = SecComputer_U.in.bus_inputs.fcdc_2_bus.spoiler_2_left_pos_deg.Data;
-    SecComputer_B.SSM_jtv = SecComputer_U.in.bus_inputs.fcdc_2_bus.spoiler_3_left_pos_deg.SSM;
+    SecComputer_B.Data_fv = SecComputer_U.in.bus_inputs.fcdc_2_bus.elevator_left_pos_deg.Data;
+    SecComputer_B.SSM_hy = SecComputer_U.in.bus_inputs.fcdc_2_bus.aileron_right_pos_deg.SSM;
+    SecComputer_B.Data_oc = SecComputer_U.in.bus_inputs.fcdc_2_bus.aileron_right_pos_deg.Data;
+    SecComputer_B.SSM_gi = SecComputer_U.in.bus_inputs.fcdc_2_bus.elevator_right_pos_deg.SSM;
+    SecComputer_B.Data_kq = SecComputer_U.in.bus_inputs.fcdc_2_bus.elevator_right_pos_deg.Data;
+    SecComputer_B.SSM_pp = SecComputer_U.in.bus_inputs.fcdc_2_bus.horiz_stab_trim_pos_deg.SSM;
+    SecComputer_B.Data_ne = SecComputer_U.in.bus_inputs.fcdc_2_bus.horiz_stab_trim_pos_deg.Data;
+    SecComputer_B.SSM_iab = SecComputer_U.in.bus_inputs.fcdc_2_bus.spoiler_1_left_pos_deg.SSM;
+    SecComputer_B.Data_it = SecComputer_U.in.bus_inputs.fcdc_2_bus.spoiler_1_left_pos_deg.Data;
+    SecComputer_B.SSM_jtv = SecComputer_U.in.bus_inputs.fcdc_2_bus.spoiler_2_left_pos_deg.SSM;
     SecComputer_B.ths_override_active = SecComputer_U.in.discrete_inputs.ths_override_active;
-    SecComputer_B.Data_ch = SecComputer_U.in.bus_inputs.fcdc_2_bus.spoiler_3_left_pos_deg.Data;
-    SecComputer_B.SSM_fy = SecComputer_U.in.bus_inputs.fcdc_2_bus.spoiler_4_left_pos_deg.SSM;
-    SecComputer_B.Data_bb = SecComputer_U.in.bus_inputs.fcdc_2_bus.spoiler_4_left_pos_deg.Data;
-    SecComputer_B.SSM_d4 = SecComputer_U.in.bus_inputs.fcdc_2_bus.spoiler_5_left_pos_deg.SSM;
-    SecComputer_B.Data_ol = SecComputer_U.in.bus_inputs.fcdc_2_bus.spoiler_5_left_pos_deg.Data;
-    SecComputer_B.SSM_ars = SecComputer_U.in.bus_inputs.fcdc_2_bus.spoiler_1_right_pos_deg.SSM;
-    SecComputer_B.Data_hw = SecComputer_U.in.bus_inputs.fcdc_2_bus.spoiler_1_right_pos_deg.Data;
-    SecComputer_B.SSM_din = SecComputer_U.in.bus_inputs.fcdc_2_bus.spoiler_2_right_pos_deg.SSM;
-    SecComputer_B.Data_hs = SecComputer_U.in.bus_inputs.fcdc_2_bus.spoiler_2_right_pos_deg.Data;
-    SecComputer_B.SSM_m3 = SecComputer_U.in.bus_inputs.fcdc_2_bus.spoiler_3_right_pos_deg.SSM;
+    SecComputer_B.Data_ch = SecComputer_U.in.bus_inputs.fcdc_2_bus.spoiler_2_left_pos_deg.Data;
+    SecComputer_B.SSM_fy = SecComputer_U.in.bus_inputs.fcdc_2_bus.spoiler_3_left_pos_deg.SSM;
+    SecComputer_B.Data_bb = SecComputer_U.in.bus_inputs.fcdc_2_bus.spoiler_3_left_pos_deg.Data;
+    SecComputer_B.SSM_d4 = SecComputer_U.in.bus_inputs.fcdc_2_bus.spoiler_4_left_pos_deg.SSM;
+    SecComputer_B.Data_ol = SecComputer_U.in.bus_inputs.fcdc_2_bus.spoiler_4_left_pos_deg.Data;
+    SecComputer_B.SSM_ars = SecComputer_U.in.bus_inputs.fcdc_2_bus.spoiler_5_left_pos_deg.SSM;
+    SecComputer_B.Data_hw = SecComputer_U.in.bus_inputs.fcdc_2_bus.spoiler_5_left_pos_deg.Data;
+    SecComputer_B.SSM_din = SecComputer_U.in.bus_inputs.fcdc_2_bus.spoiler_1_right_pos_deg.SSM;
+    SecComputer_B.Data_hs = SecComputer_U.in.bus_inputs.fcdc_2_bus.spoiler_1_right_pos_deg.Data;
+    SecComputer_B.SSM_m3 = SecComputer_U.in.bus_inputs.fcdc_2_bus.spoiler_2_right_pos_deg.SSM;
     SecComputer_B.capt_priority_takeover_pressed = SecComputer_U.in.discrete_inputs.capt_priority_takeover_pressed;
-    SecComputer_B.Data_fj = SecComputer_U.in.bus_inputs.fcdc_2_bus.spoiler_3_right_pos_deg.Data;
-    SecComputer_B.SSM_np = SecComputer_U.in.bus_inputs.fcdc_2_bus.spoiler_4_right_pos_deg.SSM;
-    SecComputer_B.Data_ky = SecComputer_U.in.bus_inputs.fcdc_2_bus.spoiler_4_right_pos_deg.Data;
-    SecComputer_B.SSM_ax = SecComputer_U.in.bus_inputs.fcdc_2_bus.spoiler_5_right_pos_deg.SSM;
-    SecComputer_B.Data_h5 = SecComputer_U.in.bus_inputs.fcdc_2_bus.spoiler_5_right_pos_deg.Data;
-    SecComputer_B.SSM_cl = SecComputer_U.in.bus_inputs.elac_2_bus.left_aileron_position_deg.SSM;
-    SecComputer_B.Data_ku = SecComputer_U.in.bus_inputs.elac_2_bus.left_aileron_position_deg.Data;
-    SecComputer_B.SSM_es = SecComputer_U.in.bus_inputs.elac_2_bus.right_aileron_position_deg.SSM;
-    SecComputer_B.Data_jp = SecComputer_U.in.bus_inputs.elac_2_bus.right_aileron_position_deg.Data;
-    SecComputer_B.SSM_gi1 = SecComputer_U.in.bus_inputs.elac_2_bus.left_elevator_position_deg.SSM;
+    SecComputer_B.Data_fj = SecComputer_U.in.bus_inputs.fcdc_2_bus.spoiler_2_right_pos_deg.Data;
+    SecComputer_B.SSM_np = SecComputer_U.in.bus_inputs.fcdc_2_bus.spoiler_3_right_pos_deg.SSM;
+    SecComputer_B.Data_ky = SecComputer_U.in.bus_inputs.fcdc_2_bus.spoiler_3_right_pos_deg.Data;
+    SecComputer_B.SSM_ax = SecComputer_U.in.bus_inputs.fcdc_2_bus.spoiler_4_right_pos_deg.SSM;
+    SecComputer_B.Data_h5 = SecComputer_U.in.bus_inputs.fcdc_2_bus.spoiler_4_right_pos_deg.Data;
+    SecComputer_B.SSM_cl = SecComputer_U.in.bus_inputs.fcdc_2_bus.spoiler_5_right_pos_deg.SSM;
+    SecComputer_B.Data_ku = SecComputer_U.in.bus_inputs.fcdc_2_bus.spoiler_5_right_pos_deg.Data;
+    SecComputer_B.SSM_es = SecComputer_U.in.bus_inputs.elac_2_bus.left_aileron_position_deg.SSM;
+    SecComputer_B.Data_jp = SecComputer_U.in.bus_inputs.elac_2_bus.left_aileron_position_deg.Data;
+    SecComputer_B.SSM_gi1 = SecComputer_U.in.bus_inputs.elac_2_bus.right_aileron_position_deg.SSM;
     SecComputer_B.fo_priority_takeover_pressed = SecComputer_U.in.discrete_inputs.fo_priority_takeover_pressed;
-    SecComputer_B.Data_nu = SecComputer_U.in.bus_inputs.elac_2_bus.left_elevator_position_deg.Data;
-    SecComputer_B.SSM_jz = SecComputer_U.in.bus_inputs.elac_2_bus.right_elevator_position_deg.SSM;
-    SecComputer_B.Data_br = SecComputer_U.in.bus_inputs.elac_2_bus.right_elevator_position_deg.Data;
-    SecComputer_B.SSM_kt = SecComputer_U.in.bus_inputs.elac_2_bus.ths_position_deg.SSM;
-    SecComputer_B.Data_ae = SecComputer_U.in.bus_inputs.elac_2_bus.ths_position_deg.Data;
-    SecComputer_B.SSM_ds = SecComputer_U.in.bus_inputs.elac_2_bus.left_sidestick_pitch_command_deg.SSM;
-    SecComputer_B.Data_pe = SecComputer_U.in.bus_inputs.elac_2_bus.left_sidestick_pitch_command_deg.Data;
-    SecComputer_B.SSM_eg = SecComputer_U.in.bus_inputs.elac_2_bus.right_sidestick_pitch_command_deg.SSM;
-    SecComputer_B.Data_fy = SecComputer_U.in.bus_inputs.elac_2_bus.right_sidestick_pitch_command_deg.Data;
-    SecComputer_B.SSM_a0 = SecComputer_U.in.bus_inputs.elac_2_bus.left_sidestick_roll_command_deg.SSM;
+    SecComputer_B.Data_nu = SecComputer_U.in.bus_inputs.elac_2_bus.right_aileron_position_deg.Data;
+    SecComputer_B.SSM_jz = SecComputer_U.in.bus_inputs.elac_2_bus.left_elevator_position_deg.SSM;
+    SecComputer_B.Data_br = SecComputer_U.in.bus_inputs.elac_2_bus.left_elevator_position_deg.Data;
+    SecComputer_B.SSM_kt = SecComputer_U.in.bus_inputs.elac_2_bus.right_elevator_position_deg.SSM;
+    SecComputer_B.Data_ae = SecComputer_U.in.bus_inputs.elac_2_bus.right_elevator_position_deg.Data;
+    SecComputer_B.SSM_ds = SecComputer_U.in.bus_inputs.elac_2_bus.ths_position_deg.SSM;
+    SecComputer_B.Data_pe = SecComputer_U.in.bus_inputs.elac_2_bus.ths_position_deg.Data;
+    SecComputer_B.SSM_eg = SecComputer_U.in.bus_inputs.elac_2_bus.left_sidestick_pitch_command_deg.SSM;
+    SecComputer_B.Data_fy = SecComputer_U.in.bus_inputs.elac_2_bus.left_sidestick_pitch_command_deg.Data;
+    SecComputer_B.SSM_a0 = SecComputer_U.in.bus_inputs.elac_2_bus.right_sidestick_pitch_command_deg.SSM;
     SecComputer_B.capt_pitch_stick_pos = SecComputer_U.in.analog_inputs.capt_pitch_stick_pos;
-    SecComputer_B.Data_na = SecComputer_U.in.bus_inputs.elac_2_bus.left_sidestick_roll_command_deg.Data;
-    SecComputer_B.SSM_cv = SecComputer_U.in.bus_inputs.elac_2_bus.right_sidestick_roll_command_deg.SSM;
-    SecComputer_B.Data_my = SecComputer_U.in.bus_inputs.elac_2_bus.right_sidestick_roll_command_deg.Data;
-    SecComputer_B.SSM_ea = SecComputer_U.in.bus_inputs.elac_2_bus.rudder_pedal_position_deg.SSM;
-    SecComputer_B.Data_i4 = SecComputer_U.in.bus_inputs.elac_2_bus.rudder_pedal_position_deg.Data;
-    SecComputer_B.SSM_p4 = SecComputer_U.in.bus_inputs.elac_2_bus.aileron_command_deg.SSM;
-    SecComputer_B.Data_cx = SecComputer_U.in.bus_inputs.elac_2_bus.aileron_command_deg.Data;
-    SecComputer_B.SSM_m2 = SecComputer_U.in.bus_inputs.elac_2_bus.roll_spoiler_command_deg.SSM;
-    SecComputer_B.Data_nz = SecComputer_U.in.bus_inputs.elac_2_bus.roll_spoiler_command_deg.Data;
-    SecComputer_B.SSM_bt0 = SecComputer_U.in.bus_inputs.elac_2_bus.yaw_damper_command_deg.SSM;
+    SecComputer_B.Data_na = SecComputer_U.in.bus_inputs.elac_2_bus.right_sidestick_pitch_command_deg.Data;
+    SecComputer_B.SSM_cv = SecComputer_U.in.bus_inputs.elac_2_bus.left_sidestick_roll_command_deg.SSM;
+    SecComputer_B.Data_my = SecComputer_U.in.bus_inputs.elac_2_bus.left_sidestick_roll_command_deg.Data;
+    SecComputer_B.SSM_ea = SecComputer_U.in.bus_inputs.elac_2_bus.right_sidestick_roll_command_deg.SSM;
+    SecComputer_B.Data_i4 = SecComputer_U.in.bus_inputs.elac_2_bus.right_sidestick_roll_command_deg.Data;
+    SecComputer_B.SSM_p4 = SecComputer_U.in.bus_inputs.elac_2_bus.rudder_pedal_position_deg.SSM;
+    SecComputer_B.Data_cx = SecComputer_U.in.bus_inputs.elac_2_bus.rudder_pedal_position_deg.Data;
+    SecComputer_B.SSM_m2 = SecComputer_U.in.bus_inputs.elac_2_bus.aileron_command_deg.SSM;
+    SecComputer_B.Data_nz = SecComputer_U.in.bus_inputs.elac_2_bus.aileron_command_deg.Data;
+    SecComputer_B.SSM_bt0 = SecComputer_U.in.bus_inputs.elac_2_bus.roll_spoiler_command_deg.SSM;
     SecComputer_B.fo_pitch_stick_pos = SecComputer_U.in.analog_inputs.fo_pitch_stick_pos;
-    SecComputer_B.Data_id = SecComputer_U.in.bus_inputs.elac_2_bus.yaw_damper_command_deg.Data;
-    SecComputer_B.SSM_nr = SecComputer_U.in.bus_inputs.elac_2_bus.discrete_status_word_1.SSM;
-    SecComputer_B.Data_o2 = SecComputer_U.in.bus_inputs.elac_2_bus.discrete_status_word_1.Data;
-    SecComputer_B.SSM_fr = SecComputer_U.in.bus_inputs.elac_2_bus.discrete_status_word_2.SSM;
-    SecComputer_B.Data_gqq = SecComputer_U.in.bus_inputs.elac_2_bus.discrete_status_word_2.Data;
-    SecComputer_B.SSM_cc = SecComputer_U.in.bus_inputs.sfcc_1_bus.slat_flap_component_status_word.SSM;
-    SecComputer_B.Data_md = SecComputer_U.in.bus_inputs.sfcc_1_bus.slat_flap_component_status_word.Data;
-    SecComputer_B.SSM_lm = SecComputer_U.in.bus_inputs.sfcc_1_bus.slat_flap_system_status_word.SSM;
-    SecComputer_B.Data_cz = SecComputer_U.in.bus_inputs.sfcc_1_bus.slat_flap_system_status_word.Data;
-    SecComputer_B.SSM_mkm = SecComputer_U.in.bus_inputs.sfcc_1_bus.slat_flap_actual_position_word.SSM;
+    SecComputer_B.Data_id = SecComputer_U.in.bus_inputs.elac_2_bus.roll_spoiler_command_deg.Data;
+    SecComputer_B.SSM_nr = SecComputer_U.in.bus_inputs.elac_2_bus.yaw_damper_command_deg.SSM;
+    SecComputer_B.Data_o2 = SecComputer_U.in.bus_inputs.elac_2_bus.yaw_damper_command_deg.Data;
+    SecComputer_B.SSM_fr = SecComputer_U.in.bus_inputs.elac_2_bus.elevator_double_pressurization_command_deg.SSM;
+    SecComputer_B.Data_gqq = SecComputer_U.in.bus_inputs.elac_2_bus.elevator_double_pressurization_command_deg.Data;
+    SecComputer_B.SSM_cc = SecComputer_U.in.bus_inputs.elac_2_bus.discrete_status_word_1.SSM;
+    SecComputer_B.Data_md = SecComputer_U.in.bus_inputs.elac_2_bus.discrete_status_word_1.Data;
+    SecComputer_B.SSM_lm = SecComputer_U.in.bus_inputs.elac_2_bus.discrete_status_word_2.SSM;
+    SecComputer_B.Data_cz = SecComputer_U.in.bus_inputs.elac_2_bus.discrete_status_word_2.Data;
+    SecComputer_B.SSM_mkm = SecComputer_U.in.bus_inputs.sfcc_1_bus.slat_flap_component_status_word.SSM;
     SecComputer_B.capt_roll_stick_pos = SecComputer_U.in.analog_inputs.capt_roll_stick_pos;
-    SecComputer_B.Data_pm = SecComputer_U.in.bus_inputs.sfcc_1_bus.slat_flap_actual_position_word.Data;
-    SecComputer_B.SSM_jhd = SecComputer_U.in.bus_inputs.sfcc_1_bus.slat_actual_position_deg.SSM;
-    SecComputer_B.Data_bj = SecComputer_U.in.bus_inputs.sfcc_1_bus.slat_actual_position_deg.Data;
-    SecComputer_B.SSM_av = SecComputer_U.in.bus_inputs.sfcc_1_bus.flap_actual_position_deg.SSM;
-    SecComputer_B.Data_ox = SecComputer_U.in.bus_inputs.sfcc_1_bus.flap_actual_position_deg.Data;
-    SecComputer_B.SSM_ira = SecComputer_U.in.bus_inputs.sfcc_2_bus.slat_flap_component_status_word.SSM;
-    SecComputer_B.Data_pe5 = SecComputer_U.in.bus_inputs.sfcc_2_bus.slat_flap_component_status_word.Data;
-    SecComputer_B.SSM_ge = SecComputer_U.in.bus_inputs.sfcc_2_bus.slat_flap_system_status_word.SSM;
-    SecComputer_B.Data_jj = SecComputer_U.in.bus_inputs.sfcc_2_bus.slat_flap_system_status_word.Data;
-    SecComputer_B.SSM_lv = SecComputer_U.in.bus_inputs.sfcc_2_bus.slat_flap_actual_position_word.SSM;
+    SecComputer_B.Data_pm = SecComputer_U.in.bus_inputs.sfcc_1_bus.slat_flap_component_status_word.Data;
+    SecComputer_B.SSM_jhd = SecComputer_U.in.bus_inputs.sfcc_1_bus.slat_flap_system_status_word.SSM;
+    SecComputer_B.Data_bj = SecComputer_U.in.bus_inputs.sfcc_1_bus.slat_flap_system_status_word.Data;
+    SecComputer_B.SSM_av = SecComputer_U.in.bus_inputs.sfcc_1_bus.slat_flap_actual_position_word.SSM;
+    SecComputer_B.Data_ox = SecComputer_U.in.bus_inputs.sfcc_1_bus.slat_flap_actual_position_word.Data;
+    SecComputer_B.SSM_ira = SecComputer_U.in.bus_inputs.sfcc_1_bus.slat_actual_position_deg.SSM;
+    SecComputer_B.Data_pe5 = SecComputer_U.in.bus_inputs.sfcc_1_bus.slat_actual_position_deg.Data;
+    SecComputer_B.SSM_ge = SecComputer_U.in.bus_inputs.sfcc_1_bus.flap_actual_position_deg.SSM;
+    SecComputer_B.Data_jj = SecComputer_U.in.bus_inputs.sfcc_1_bus.flap_actual_position_deg.Data;
+    SecComputer_B.SSM_lv = SecComputer_U.in.bus_inputs.sfcc_2_bus.slat_flap_component_status_word.SSM;
     SecComputer_B.fo_roll_stick_pos = SecComputer_U.in.analog_inputs.fo_roll_stick_pos;
-    SecComputer_B.Data_p5 = SecComputer_U.in.bus_inputs.sfcc_2_bus.slat_flap_actual_position_word.Data;
-    SecComputer_B.SSM_cg = SecComputer_U.in.bus_inputs.sfcc_2_bus.slat_actual_position_deg.SSM;
-    SecComputer_B.Data_ekl = SecComputer_U.in.bus_inputs.sfcc_2_bus.slat_actual_position_deg.Data;
-    SecComputer_B.SSM_be = SecComputer_U.in.bus_inputs.sfcc_2_bus.flap_actual_position_deg.SSM;
-    SecComputer_B.Data_nd = SecComputer_U.in.bus_inputs.sfcc_2_bus.flap_actual_position_deg.Data;
-    SecComputer_B.SSM_axb = SecComputer_U.in.bus_inputs.lgciu_1_bus.discrete_word_1.SSM;
-    SecComputer_B.Data_n2 = SecComputer_U.in.bus_inputs.lgciu_1_bus.discrete_word_1.Data;
-    SecComputer_B.SSM_nz = SecComputer_U.in.bus_inputs.lgciu_1_bus.discrete_word_2.SSM;
-    SecComputer_B.Data_dl = SecComputer_U.in.bus_inputs.lgciu_1_bus.discrete_word_2.Data;
-    SecComputer_B.SSM_cx = SecComputer_U.in.bus_inputs.lgciu_1_bus.discrete_word_3.SSM;
+    SecComputer_B.Data_p5 = SecComputer_U.in.bus_inputs.sfcc_2_bus.slat_flap_component_status_word.Data;
+    SecComputer_B.SSM_cg = SecComputer_U.in.bus_inputs.sfcc_2_bus.slat_flap_system_status_word.SSM;
+    SecComputer_B.Data_ekl = SecComputer_U.in.bus_inputs.sfcc_2_bus.slat_flap_system_status_word.Data;
+    SecComputer_B.SSM_be = SecComputer_U.in.bus_inputs.sfcc_2_bus.slat_flap_actual_position_word.SSM;
+    SecComputer_B.Data_nd = SecComputer_U.in.bus_inputs.sfcc_2_bus.slat_flap_actual_position_word.Data;
+    SecComputer_B.SSM_axb = SecComputer_U.in.bus_inputs.sfcc_2_bus.slat_actual_position_deg.SSM;
+    SecComputer_B.Data_n2 = SecComputer_U.in.bus_inputs.sfcc_2_bus.slat_actual_position_deg.Data;
+    SecComputer_B.SSM_nz = SecComputer_U.in.bus_inputs.sfcc_2_bus.flap_actual_position_deg.SSM;
+    SecComputer_B.Data_dl = SecComputer_U.in.bus_inputs.sfcc_2_bus.flap_actual_position_deg.Data;
+    SecComputer_B.SSM_cx = SecComputer_U.in.bus_inputs.lgciu_1_bus.discrete_word_1.SSM;
     SecComputer_B.spd_brk_lever_pos = SecComputer_U.in.analog_inputs.spd_brk_lever_pos;
-    SecComputer_B.Data_gs2 = SecComputer_U.in.bus_inputs.lgciu_1_bus.discrete_word_3.Data;
-    SecComputer_B.SSM_gh = SecComputer_U.in.bus_inputs.lgciu_1_bus.discrete_word_4.SSM;
-    SecComputer_B.Data_h4 = SecComputer_U.in.bus_inputs.lgciu_1_bus.discrete_word_4.Data;
-    SecComputer_B.SSM_ks = SecComputer_U.in.bus_inputs.lgciu_2_bus.discrete_word_1.SSM;
-    SecComputer_B.Data_e3 = SecComputer_U.in.bus_inputs.lgciu_2_bus.discrete_word_1.Data;
-    SecComputer_B.SSM_pw = SecComputer_U.in.bus_inputs.lgciu_2_bus.discrete_word_2.SSM;
-    SecComputer_B.Data_f5h = SecComputer_U.in.bus_inputs.lgciu_2_bus.discrete_word_2.Data;
-    SecComputer_B.SSM_fh = SecComputer_U.in.bus_inputs.lgciu_2_bus.discrete_word_3.SSM;
-    SecComputer_B.Data_an = SecComputer_U.in.bus_inputs.lgciu_2_bus.discrete_word_3.Data;
-    SecComputer_B.SSM_gzn = SecComputer_U.in.bus_inputs.lgciu_2_bus.discrete_word_4.SSM;
+    SecComputer_B.Data_gs2 = SecComputer_U.in.bus_inputs.lgciu_1_bus.discrete_word_1.Data;
+    SecComputer_B.SSM_gh = SecComputer_U.in.bus_inputs.lgciu_1_bus.discrete_word_2.SSM;
+    SecComputer_B.Data_h4 = SecComputer_U.in.bus_inputs.lgciu_1_bus.discrete_word_2.Data;
+    SecComputer_B.SSM_ks = SecComputer_U.in.bus_inputs.lgciu_1_bus.discrete_word_3.SSM;
+    SecComputer_B.Data_e3 = SecComputer_U.in.bus_inputs.lgciu_1_bus.discrete_word_3.Data;
+    SecComputer_B.SSM_pw = SecComputer_U.in.bus_inputs.lgciu_1_bus.discrete_word_4.SSM;
+    SecComputer_B.Data_f5h = SecComputer_U.in.bus_inputs.lgciu_1_bus.discrete_word_4.Data;
+    SecComputer_B.SSM_fh = SecComputer_U.in.bus_inputs.lgciu_2_bus.discrete_word_1.SSM;
+    SecComputer_B.Data_an = SecComputer_U.in.bus_inputs.lgciu_2_bus.discrete_word_1.Data;
+    SecComputer_B.SSM_gzn = SecComputer_U.in.bus_inputs.lgciu_2_bus.discrete_word_2.SSM;
     SecComputer_B.slew_on = SecComputer_U.in.sim_data.slew_on;
     SecComputer_B.thr_lever_1_pos = SecComputer_U.in.analog_inputs.thr_lever_1_pos;
-    SecComputer_B.Data_i4o = SecComputer_U.in.bus_inputs.lgciu_2_bus.discrete_word_4.Data;
+    SecComputer_B.Data_i4o = SecComputer_U.in.bus_inputs.lgciu_2_bus.discrete_word_2.Data;
+    SecComputer_B.SSM_oo = SecComputer_U.in.bus_inputs.lgciu_2_bus.discrete_word_3.SSM;
+    SecComputer_B.Data_af = SecComputer_U.in.bus_inputs.lgciu_2_bus.discrete_word_3.Data;
+    SecComputer_B.SSM_evh = SecComputer_U.in.bus_inputs.lgciu_2_bus.discrete_word_4.SSM;
+    SecComputer_B.Data_bm = SecComputer_U.in.bus_inputs.lgciu_2_bus.discrete_word_4.Data;
     SecComputer_B.thr_lever_2_pos = SecComputer_U.in.analog_inputs.thr_lever_2_pos;
     SecComputer_B.left_elevator_pos_deg = SecComputer_U.in.analog_inputs.left_elevator_pos_deg;
     SecComputer_B.right_elevator_pos_deg = SecComputer_U.in.analog_inputs.right_elevator_pos_deg;
@@ -1686,57 +1722,57 @@ void SecComputer::step()
     SecComputer_B.load_factor_acc_2_g = SecComputer_U.in.analog_inputs.load_factor_acc_2_g;
     SecComputer_B.wheel_speed_left = SecComputer_U.in.analog_inputs.wheel_speed_left;
     SecComputer_B.wheel_speed_right = SecComputer_U.in.analog_inputs.wheel_speed_right;
-    SecComputer_B.SSM_oo = SecComputer_U.in.bus_inputs.adr_1_bus.altitude_standard_ft.SSM;
-    SecComputer_B.Data_af = SecComputer_U.in.bus_inputs.adr_1_bus.altitude_standard_ft.Data;
-    SecComputer_B.SSM_evh = SecComputer_U.in.bus_inputs.adr_1_bus.altitude_corrected_ft.SSM;
-    SecComputer_B.Data_bm = SecComputer_U.in.bus_inputs.adr_1_bus.altitude_corrected_ft.Data;
-    SecComputer_B.SSM_cn = SecComputer_U.in.bus_inputs.adr_1_bus.mach.SSM;
-    SecComputer_B.Data_dk = SecComputer_U.in.bus_inputs.adr_1_bus.mach.Data;
-    SecComputer_B.SSM_co = SecComputer_U.in.bus_inputs.adr_1_bus.airspeed_computed_kn.SSM;
+    SecComputer_B.SSM_cn = SecComputer_U.in.bus_inputs.adr_1_bus.altitude_standard_ft.SSM;
+    SecComputer_B.Data_dk = SecComputer_U.in.bus_inputs.adr_1_bus.altitude_standard_ft.Data;
+    SecComputer_B.SSM_co = SecComputer_U.in.bus_inputs.adr_1_bus.altitude_corrected_ft.SSM;
+    SecComputer_B.Data_nv = SecComputer_U.in.bus_inputs.adr_1_bus.altitude_corrected_ft.Data;
+    SecComputer_B.SSM_pe = SecComputer_U.in.bus_inputs.adr_1_bus.mach.SSM;
+    SecComputer_B.Data_jpf = SecComputer_U.in.bus_inputs.adr_1_bus.mach.Data;
+    SecComputer_B.SSM_cgz = SecComputer_U.in.bus_inputs.adr_1_bus.airspeed_computed_kn.SSM;
     SecComputer_B.tracking_mode_on_override = SecComputer_U.in.sim_data.tracking_mode_on_override;
-    SecComputer_B.Data_nv = SecComputer_U.in.bus_inputs.adr_1_bus.airspeed_computed_kn.Data;
-    SecComputer_B.SSM_pe = SecComputer_U.in.bus_inputs.adr_1_bus.airspeed_true_kn.SSM;
-    SecComputer_B.Data_jpf = SecComputer_U.in.bus_inputs.adr_1_bus.airspeed_true_kn.Data;
-    SecComputer_B.SSM_cgz = SecComputer_U.in.bus_inputs.adr_1_bus.vertical_speed_ft_min.SSM;
-    SecComputer_B.Data_i5 = SecComputer_U.in.bus_inputs.adr_1_bus.vertical_speed_ft_min.Data;
-    SecComputer_B.SSM_fw = SecComputer_U.in.bus_inputs.adr_1_bus.aoa_corrected_deg.SSM;
-    SecComputer_B.Data_k2 = SecComputer_U.in.bus_inputs.adr_1_bus.aoa_corrected_deg.Data;
-    SecComputer_B.SSM_h4 = SecComputer_U.in.bus_inputs.adr_2_bus.altitude_standard_ft.SSM;
-    SecComputer_B.Data_as = SecComputer_U.in.bus_inputs.adr_2_bus.altitude_standard_ft.Data;
-    SecComputer_B.SSM_cb3 = SecComputer_U.in.bus_inputs.adr_2_bus.altitude_corrected_ft.SSM;
+    SecComputer_B.Data_i5 = SecComputer_U.in.bus_inputs.adr_1_bus.airspeed_computed_kn.Data;
+    SecComputer_B.SSM_fw = SecComputer_U.in.bus_inputs.adr_1_bus.airspeed_true_kn.SSM;
+    SecComputer_B.Data_k2 = SecComputer_U.in.bus_inputs.adr_1_bus.airspeed_true_kn.Data;
+    SecComputer_B.SSM_h4 = SecComputer_U.in.bus_inputs.adr_1_bus.vertical_speed_ft_min.SSM;
+    SecComputer_B.Data_as = SecComputer_U.in.bus_inputs.adr_1_bus.vertical_speed_ft_min.Data;
+    SecComputer_B.SSM_cb3 = SecComputer_U.in.bus_inputs.adr_1_bus.aoa_corrected_deg.SSM;
+    SecComputer_B.Data_gk = SecComputer_U.in.bus_inputs.adr_1_bus.aoa_corrected_deg.Data;
+    SecComputer_B.SSM_pj = SecComputer_U.in.bus_inputs.adr_2_bus.altitude_standard_ft.SSM;
+    SecComputer_B.Data_jl = SecComputer_U.in.bus_inputs.adr_2_bus.altitude_standard_ft.Data;
+    SecComputer_B.SSM_dv = SecComputer_U.in.bus_inputs.adr_2_bus.altitude_corrected_ft.SSM;
     SecComputer_B.tailstrike_protection_on = SecComputer_U.in.sim_data.tailstrike_protection_on;
-    SecComputer_B.Data_gk = SecComputer_U.in.bus_inputs.adr_2_bus.altitude_corrected_ft.Data;
-    SecComputer_B.SSM_pj = SecComputer_U.in.bus_inputs.adr_2_bus.mach.SSM;
-    SecComputer_B.Data_jl = SecComputer_U.in.bus_inputs.adr_2_bus.mach.Data;
-    SecComputer_B.SSM_dv = SecComputer_U.in.bus_inputs.adr_2_bus.airspeed_computed_kn.SSM;
-    SecComputer_B.Data_e32 = SecComputer_U.in.bus_inputs.adr_2_bus.airspeed_computed_kn.Data;
-    SecComputer_B.SSM_i4 = SecComputer_U.in.bus_inputs.adr_2_bus.airspeed_true_kn.SSM;
-    SecComputer_B.Data_ih = SecComputer_U.in.bus_inputs.adr_2_bus.airspeed_true_kn.Data;
-    SecComputer_B.SSM_fm = SecComputer_U.in.bus_inputs.adr_2_bus.vertical_speed_ft_min.SSM;
-    SecComputer_B.Data_du = SecComputer_U.in.bus_inputs.adr_2_bus.vertical_speed_ft_min.Data;
-    SecComputer_B.SSM_e5 = SecComputer_U.in.bus_inputs.adr_2_bus.aoa_corrected_deg.SSM;
+    SecComputer_B.Data_e32 = SecComputer_U.in.bus_inputs.adr_2_bus.altitude_corrected_ft.Data;
+    SecComputer_B.SSM_i4 = SecComputer_U.in.bus_inputs.adr_2_bus.mach.SSM;
+    SecComputer_B.Data_ih = SecComputer_U.in.bus_inputs.adr_2_bus.mach.Data;
+    SecComputer_B.SSM_fm = SecComputer_U.in.bus_inputs.adr_2_bus.airspeed_computed_kn.SSM;
+    SecComputer_B.Data_du = SecComputer_U.in.bus_inputs.adr_2_bus.airspeed_computed_kn.Data;
+    SecComputer_B.SSM_e5 = SecComputer_U.in.bus_inputs.adr_2_bus.airspeed_true_kn.SSM;
+    SecComputer_B.Data_nx = SecComputer_U.in.bus_inputs.adr_2_bus.airspeed_true_kn.Data;
+    SecComputer_B.SSM_bf = SecComputer_U.in.bus_inputs.adr_2_bus.vertical_speed_ft_min.SSM;
+    SecComputer_B.Data_n0 = SecComputer_U.in.bus_inputs.adr_2_bus.vertical_speed_ft_min.Data;
+    SecComputer_B.SSM_fd = SecComputer_U.in.bus_inputs.adr_2_bus.aoa_corrected_deg.SSM;
     SecComputer_B.computer_running = SecComputer_U.in.sim_data.computer_running;
-    SecComputer_B.Data_nx = SecComputer_U.in.bus_inputs.adr_2_bus.aoa_corrected_deg.Data;
-    SecComputer_B.SSM_bf = SecComputer_U.in.bus_inputs.ir_1_bus.discrete_word_1.SSM;
-    SecComputer_B.Data_n0 = SecComputer_U.in.bus_inputs.ir_1_bus.discrete_word_1.Data;
-    SecComputer_B.SSM_fd = SecComputer_U.in.bus_inputs.ir_1_bus.latitude_deg.SSM;
-    SecComputer_B.Data_eqi = SecComputer_U.in.bus_inputs.ir_1_bus.latitude_deg.Data;
-    SecComputer_B.SSM_fv = SecComputer_U.in.bus_inputs.ir_1_bus.longitude_deg.SSM;
-    SecComputer_B.Data_om = SecComputer_U.in.bus_inputs.ir_1_bus.longitude_deg.Data;
-    SecComputer_B.SSM_dt = SecComputer_U.in.bus_inputs.ir_1_bus.ground_speed_kn.SSM;
-    SecComputer_B.Data_nr = SecComputer_U.in.bus_inputs.ir_1_bus.ground_speed_kn.Data;
-    SecComputer_B.SSM_j5 = SecComputer_U.in.bus_inputs.ir_1_bus.track_angle_true_deg.SSM;
+    SecComputer_B.Data_eqi = SecComputer_U.in.bus_inputs.adr_2_bus.aoa_corrected_deg.Data;
+    SecComputer_B.SSM_fv = SecComputer_U.in.bus_inputs.ir_1_bus.discrete_word_1.SSM;
+    SecComputer_B.Data_om = SecComputer_U.in.bus_inputs.ir_1_bus.discrete_word_1.Data;
+    SecComputer_B.SSM_dt = SecComputer_U.in.bus_inputs.ir_1_bus.latitude_deg.SSM;
+    SecComputer_B.Data_nr = SecComputer_U.in.bus_inputs.ir_1_bus.latitude_deg.Data;
+    SecComputer_B.SSM_j5 = SecComputer_U.in.bus_inputs.ir_1_bus.longitude_deg.SSM;
+    SecComputer_B.Data_p3 = SecComputer_U.in.bus_inputs.ir_1_bus.longitude_deg.Data;
+    SecComputer_B.SSM_ng = SecComputer_U.in.bus_inputs.ir_1_bus.ground_speed_kn.SSM;
+    SecComputer_B.Data_nb = SecComputer_U.in.bus_inputs.ir_1_bus.ground_speed_kn.Data;
+    SecComputer_B.SSM_cs = SecComputer_U.in.bus_inputs.ir_1_bus.track_angle_true_deg.SSM;
     SecComputer_B.sec_engaged_from_switch = SecComputer_U.in.discrete_inputs.sec_engaged_from_switch;
-    SecComputer_B.Data_p3 = SecComputer_U.in.bus_inputs.ir_1_bus.track_angle_true_deg.Data;
-    SecComputer_B.SSM_ng = SecComputer_U.in.bus_inputs.ir_1_bus.heading_true_deg.SSM;
-    SecComputer_B.Data_nb = SecComputer_U.in.bus_inputs.ir_1_bus.heading_true_deg.Data;
-    SecComputer_B.SSM_cs = SecComputer_U.in.bus_inputs.ir_1_bus.wind_speed_kn.SSM;
-    SecComputer_B.Data_hd = SecComputer_U.in.bus_inputs.ir_1_bus.wind_speed_kn.Data;
-    SecComputer_B.SSM_ls = SecComputer_U.in.bus_inputs.ir_1_bus.wind_direction_true_deg.SSM;
-    SecComputer_B.Data_al = SecComputer_U.in.bus_inputs.ir_1_bus.wind_direction_true_deg.Data;
-    SecComputer_B.SSM_dg = SecComputer_U.in.bus_inputs.ir_1_bus.track_angle_magnetic_deg.SSM;
-    SecComputer_B.Data_gu = SecComputer_U.in.bus_inputs.ir_1_bus.track_angle_magnetic_deg.Data;
-    SecComputer_B.SSM_d3 = SecComputer_U.in.bus_inputs.ir_1_bus.heading_magnetic_deg.SSM;
+    SecComputer_B.Data_hd = SecComputer_U.in.bus_inputs.ir_1_bus.track_angle_true_deg.Data;
+    SecComputer_B.SSM_ls = SecComputer_U.in.bus_inputs.ir_1_bus.heading_true_deg.SSM;
+    SecComputer_B.Data_al = SecComputer_U.in.bus_inputs.ir_1_bus.heading_true_deg.Data;
+    SecComputer_B.SSM_dg = SecComputer_U.in.bus_inputs.ir_1_bus.wind_speed_kn.SSM;
+    SecComputer_B.Data_gu = SecComputer_U.in.bus_inputs.ir_1_bus.wind_speed_kn.Data;
+    SecComputer_B.SSM_d3 = SecComputer_U.in.bus_inputs.ir_1_bus.wind_direction_true_deg.SSM;
+    SecComputer_B.Data_ix = SecComputer_U.in.bus_inputs.ir_1_bus.wind_direction_true_deg.Data;
+    SecComputer_B.SSM_p2 = SecComputer_U.in.bus_inputs.ir_1_bus.track_angle_magnetic_deg.SSM;
+    SecComputer_B.Data_do = SecComputer_U.in.bus_inputs.ir_1_bus.track_angle_magnetic_deg.Data;
+    SecComputer_B.SSM_bo0 = SecComputer_U.in.bus_inputs.ir_1_bus.heading_magnetic_deg.SSM;
     SecComputer_DWork.icLoad = false;
     SecComputer_DWork.Delay_DSTATE_l = SecComputer_DWork.Delay_DSTATE;
   } else {
@@ -1795,53 +1831,53 @@ void SecComputer::step()
   SecComputer_Y.out.data.analog_inputs.load_factor_acc_2_g = SecComputer_B.load_factor_acc_2_g;
   SecComputer_Y.out.data.analog_inputs.wheel_speed_left = SecComputer_B.wheel_speed_left;
   SecComputer_Y.out.data.analog_inputs.wheel_speed_right = SecComputer_B.wheel_speed_right;
-  SecComputer_Y.out.data.bus_inputs.adr_1_bus.altitude_standard_ft.SSM = SecComputer_B.SSM_oo;
-  SecComputer_Y.out.data.bus_inputs.adr_1_bus.altitude_standard_ft.Data = SecComputer_B.Data_af;
-  SecComputer_Y.out.data.bus_inputs.adr_1_bus.altitude_corrected_ft.SSM = SecComputer_B.SSM_evh;
-  SecComputer_Y.out.data.bus_inputs.adr_1_bus.altitude_corrected_ft.Data = SecComputer_B.Data_bm;
-  SecComputer_Y.out.data.bus_inputs.adr_1_bus.mach.SSM = SecComputer_B.SSM_cn;
-  SecComputer_Y.out.data.bus_inputs.adr_1_bus.mach.Data = SecComputer_B.Data_dk;
-  SecComputer_Y.out.data.bus_inputs.adr_1_bus.airspeed_computed_kn.SSM = SecComputer_B.SSM_co;
-  SecComputer_Y.out.data.bus_inputs.adr_1_bus.airspeed_computed_kn.Data = SecComputer_B.Data_nv;
-  SecComputer_Y.out.data.bus_inputs.adr_1_bus.airspeed_true_kn.SSM = SecComputer_B.SSM_pe;
-  SecComputer_Y.out.data.bus_inputs.adr_1_bus.airspeed_true_kn.Data = SecComputer_B.Data_jpf;
-  SecComputer_Y.out.data.bus_inputs.adr_1_bus.vertical_speed_ft_min.SSM = SecComputer_B.SSM_cgz;
-  SecComputer_Y.out.data.bus_inputs.adr_1_bus.vertical_speed_ft_min.Data = SecComputer_B.Data_i5;
-  SecComputer_Y.out.data.bus_inputs.adr_1_bus.aoa_corrected_deg.SSM = SecComputer_B.SSM_fw;
-  SecComputer_Y.out.data.bus_inputs.adr_1_bus.aoa_corrected_deg.Data = SecComputer_B.Data_k2;
-  SecComputer_Y.out.data.bus_inputs.adr_2_bus.altitude_standard_ft.SSM = SecComputer_B.SSM_h4;
-  SecComputer_Y.out.data.bus_inputs.adr_2_bus.altitude_standard_ft.Data = SecComputer_B.Data_as;
-  SecComputer_Y.out.data.bus_inputs.adr_2_bus.altitude_corrected_ft.SSM = SecComputer_B.SSM_cb3;
-  SecComputer_Y.out.data.bus_inputs.adr_2_bus.altitude_corrected_ft.Data = SecComputer_B.Data_gk;
-  SecComputer_Y.out.data.bus_inputs.adr_2_bus.mach.SSM = SecComputer_B.SSM_pj;
-  SecComputer_Y.out.data.bus_inputs.adr_2_bus.mach.Data = SecComputer_B.Data_jl;
-  SecComputer_Y.out.data.bus_inputs.adr_2_bus.airspeed_computed_kn.SSM = SecComputer_B.SSM_dv;
-  SecComputer_Y.out.data.bus_inputs.adr_2_bus.airspeed_computed_kn.Data = SecComputer_B.Data_e32;
-  SecComputer_Y.out.data.bus_inputs.adr_2_bus.airspeed_true_kn.SSM = SecComputer_B.SSM_i4;
-  SecComputer_Y.out.data.bus_inputs.adr_2_bus.airspeed_true_kn.Data = SecComputer_B.Data_ih;
-  SecComputer_Y.out.data.bus_inputs.adr_2_bus.vertical_speed_ft_min.SSM = SecComputer_B.SSM_fm;
-  SecComputer_Y.out.data.bus_inputs.adr_2_bus.vertical_speed_ft_min.Data = SecComputer_B.Data_du;
-  SecComputer_Y.out.data.bus_inputs.adr_2_bus.aoa_corrected_deg.SSM = SecComputer_B.SSM_e5;
-  SecComputer_Y.out.data.bus_inputs.adr_2_bus.aoa_corrected_deg.Data = SecComputer_B.Data_nx;
-  SecComputer_Y.out.data.bus_inputs.ir_1_bus.discrete_word_1.SSM = SecComputer_B.SSM_bf;
-  SecComputer_Y.out.data.bus_inputs.ir_1_bus.discrete_word_1.Data = SecComputer_B.Data_n0;
-  SecComputer_Y.out.data.bus_inputs.ir_1_bus.latitude_deg.SSM = SecComputer_B.SSM_fd;
-  SecComputer_Y.out.data.bus_inputs.ir_1_bus.latitude_deg.Data = SecComputer_B.Data_eqi;
-  SecComputer_Y.out.data.bus_inputs.ir_1_bus.longitude_deg.SSM = SecComputer_B.SSM_fv;
-  SecComputer_Y.out.data.bus_inputs.ir_1_bus.longitude_deg.Data = SecComputer_B.Data_om;
-  SecComputer_Y.out.data.bus_inputs.ir_1_bus.ground_speed_kn.SSM = SecComputer_B.SSM_dt;
-  SecComputer_Y.out.data.bus_inputs.ir_1_bus.ground_speed_kn.Data = SecComputer_B.Data_nr;
-  SecComputer_Y.out.data.bus_inputs.ir_1_bus.track_angle_true_deg.SSM = SecComputer_B.SSM_j5;
-  SecComputer_Y.out.data.bus_inputs.ir_1_bus.track_angle_true_deg.Data = SecComputer_B.Data_p3;
-  SecComputer_Y.out.data.bus_inputs.ir_1_bus.heading_true_deg.SSM = SecComputer_B.SSM_ng;
-  SecComputer_Y.out.data.bus_inputs.ir_1_bus.heading_true_deg.Data = SecComputer_B.Data_nb;
-  SecComputer_Y.out.data.bus_inputs.ir_1_bus.wind_speed_kn.SSM = SecComputer_B.SSM_cs;
-  SecComputer_Y.out.data.bus_inputs.ir_1_bus.wind_speed_kn.Data = SecComputer_B.Data_hd;
-  SecComputer_Y.out.data.bus_inputs.ir_1_bus.wind_direction_true_deg.SSM = SecComputer_B.SSM_ls;
-  SecComputer_Y.out.data.bus_inputs.ir_1_bus.wind_direction_true_deg.Data = SecComputer_B.Data_al;
-  SecComputer_Y.out.data.bus_inputs.ir_1_bus.track_angle_magnetic_deg.SSM = SecComputer_B.SSM_dg;
-  SecComputer_Y.out.data.bus_inputs.ir_1_bus.track_angle_magnetic_deg.Data = SecComputer_B.Data_gu;
-  SecComputer_Y.out.data.bus_inputs.ir_1_bus.heading_magnetic_deg.SSM = SecComputer_B.SSM_d3;
+  SecComputer_Y.out.data.bus_inputs.adr_1_bus.altitude_standard_ft.SSM = SecComputer_B.SSM_cn;
+  SecComputer_Y.out.data.bus_inputs.adr_1_bus.altitude_standard_ft.Data = SecComputer_B.Data_dk;
+  SecComputer_Y.out.data.bus_inputs.adr_1_bus.altitude_corrected_ft.SSM = SecComputer_B.SSM_co;
+  SecComputer_Y.out.data.bus_inputs.adr_1_bus.altitude_corrected_ft.Data = SecComputer_B.Data_nv;
+  SecComputer_Y.out.data.bus_inputs.adr_1_bus.mach.SSM = SecComputer_B.SSM_pe;
+  SecComputer_Y.out.data.bus_inputs.adr_1_bus.mach.Data = SecComputer_B.Data_jpf;
+  SecComputer_Y.out.data.bus_inputs.adr_1_bus.airspeed_computed_kn.SSM = SecComputer_B.SSM_cgz;
+  SecComputer_Y.out.data.bus_inputs.adr_1_bus.airspeed_computed_kn.Data = SecComputer_B.Data_i5;
+  SecComputer_Y.out.data.bus_inputs.adr_1_bus.airspeed_true_kn.SSM = SecComputer_B.SSM_fw;
+  SecComputer_Y.out.data.bus_inputs.adr_1_bus.airspeed_true_kn.Data = SecComputer_B.Data_k2;
+  SecComputer_Y.out.data.bus_inputs.adr_1_bus.vertical_speed_ft_min.SSM = SecComputer_B.SSM_h4;
+  SecComputer_Y.out.data.bus_inputs.adr_1_bus.vertical_speed_ft_min.Data = SecComputer_B.Data_as;
+  SecComputer_Y.out.data.bus_inputs.adr_1_bus.aoa_corrected_deg.SSM = SecComputer_B.SSM_cb3;
+  SecComputer_Y.out.data.bus_inputs.adr_1_bus.aoa_corrected_deg.Data = SecComputer_B.Data_gk;
+  SecComputer_Y.out.data.bus_inputs.adr_2_bus.altitude_standard_ft.SSM = SecComputer_B.SSM_pj;
+  SecComputer_Y.out.data.bus_inputs.adr_2_bus.altitude_standard_ft.Data = SecComputer_B.Data_jl;
+  SecComputer_Y.out.data.bus_inputs.adr_2_bus.altitude_corrected_ft.SSM = SecComputer_B.SSM_dv;
+  SecComputer_Y.out.data.bus_inputs.adr_2_bus.altitude_corrected_ft.Data = SecComputer_B.Data_e32;
+  SecComputer_Y.out.data.bus_inputs.adr_2_bus.mach.SSM = SecComputer_B.SSM_i4;
+  SecComputer_Y.out.data.bus_inputs.adr_2_bus.mach.Data = SecComputer_B.Data_ih;
+  SecComputer_Y.out.data.bus_inputs.adr_2_bus.airspeed_computed_kn.SSM = SecComputer_B.SSM_fm;
+  SecComputer_Y.out.data.bus_inputs.adr_2_bus.airspeed_computed_kn.Data = SecComputer_B.Data_du;
+  SecComputer_Y.out.data.bus_inputs.adr_2_bus.airspeed_true_kn.SSM = SecComputer_B.SSM_e5;
+  SecComputer_Y.out.data.bus_inputs.adr_2_bus.airspeed_true_kn.Data = SecComputer_B.Data_nx;
+  SecComputer_Y.out.data.bus_inputs.adr_2_bus.vertical_speed_ft_min.SSM = SecComputer_B.SSM_bf;
+  SecComputer_Y.out.data.bus_inputs.adr_2_bus.vertical_speed_ft_min.Data = SecComputer_B.Data_n0;
+  SecComputer_Y.out.data.bus_inputs.adr_2_bus.aoa_corrected_deg.SSM = SecComputer_B.SSM_fd;
+  SecComputer_Y.out.data.bus_inputs.adr_2_bus.aoa_corrected_deg.Data = SecComputer_B.Data_eqi;
+  SecComputer_Y.out.data.bus_inputs.ir_1_bus.discrete_word_1.SSM = SecComputer_B.SSM_fv;
+  SecComputer_Y.out.data.bus_inputs.ir_1_bus.discrete_word_1.Data = SecComputer_B.Data_om;
+  SecComputer_Y.out.data.bus_inputs.ir_1_bus.latitude_deg.SSM = SecComputer_B.SSM_dt;
+  SecComputer_Y.out.data.bus_inputs.ir_1_bus.latitude_deg.Data = SecComputer_B.Data_nr;
+  SecComputer_Y.out.data.bus_inputs.ir_1_bus.longitude_deg.SSM = SecComputer_B.SSM_j5;
+  SecComputer_Y.out.data.bus_inputs.ir_1_bus.longitude_deg.Data = SecComputer_B.Data_p3;
+  SecComputer_Y.out.data.bus_inputs.ir_1_bus.ground_speed_kn.SSM = SecComputer_B.SSM_ng;
+  SecComputer_Y.out.data.bus_inputs.ir_1_bus.ground_speed_kn.Data = SecComputer_B.Data_nb;
+  SecComputer_Y.out.data.bus_inputs.ir_1_bus.track_angle_true_deg.SSM = SecComputer_B.SSM_cs;
+  SecComputer_Y.out.data.bus_inputs.ir_1_bus.track_angle_true_deg.Data = SecComputer_B.Data_hd;
+  SecComputer_Y.out.data.bus_inputs.ir_1_bus.heading_true_deg.SSM = SecComputer_B.SSM_ls;
+  SecComputer_Y.out.data.bus_inputs.ir_1_bus.heading_true_deg.Data = SecComputer_B.Data_al;
+  SecComputer_Y.out.data.bus_inputs.ir_1_bus.wind_speed_kn.SSM = SecComputer_B.SSM_dg;
+  SecComputer_Y.out.data.bus_inputs.ir_1_bus.wind_speed_kn.Data = SecComputer_B.Data_gu;
+  SecComputer_Y.out.data.bus_inputs.ir_1_bus.wind_direction_true_deg.SSM = SecComputer_B.SSM_d3;
+  SecComputer_Y.out.data.bus_inputs.ir_1_bus.wind_direction_true_deg.Data = SecComputer_B.Data_ix;
+  SecComputer_Y.out.data.bus_inputs.ir_1_bus.track_angle_magnetic_deg.SSM = SecComputer_B.SSM_p2;
+  SecComputer_Y.out.data.bus_inputs.ir_1_bus.track_angle_magnetic_deg.Data = SecComputer_B.Data_do;
+  SecComputer_Y.out.data.bus_inputs.ir_1_bus.heading_magnetic_deg.SSM = SecComputer_B.SSM_bo0;
   SecComputer_Y.out.data.bus_inputs.ir_1_bus.heading_magnetic_deg.Data = SecComputer_B.Data;
   SecComputer_Y.out.data.bus_inputs.ir_1_bus.drift_angle_deg.SSM = SecComputer_B.SSM;
   SecComputer_Y.out.data.bus_inputs.ir_1_bus.drift_angle_deg.Data = SecComputer_B.Data_f;
@@ -1973,176 +2009,180 @@ void SecComputer::step()
   SecComputer_Y.out.data.bus_inputs.elac_1_bus.roll_spoiler_command_deg.Data = SecComputer_B.Data_lx;
   SecComputer_Y.out.data.bus_inputs.elac_1_bus.yaw_damper_command_deg.SSM = SecComputer_B.SSM_bq;
   SecComputer_Y.out.data.bus_inputs.elac_1_bus.yaw_damper_command_deg.Data = SecComputer_B.Data_jb;
-  SecComputer_Y.out.data.bus_inputs.elac_1_bus.discrete_status_word_1.SSM = SecComputer_B.SSM_hi;
-  SecComputer_Y.out.data.bus_inputs.elac_1_bus.discrete_status_word_1.Data = SecComputer_B.Data_fn;
-  SecComputer_Y.out.data.bus_inputs.elac_1_bus.discrete_status_word_2.SSM = SecComputer_B.SSM_mm;
-  SecComputer_Y.out.data.bus_inputs.elac_1_bus.discrete_status_word_2.Data = SecComputer_B.Data_od;
-  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.efcs_status_word_1.SSM = SecComputer_B.SSM_kz;
-  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.efcs_status_word_1.Data = SecComputer_B.Data_ez;
-  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.efcs_status_word_2.SSM = SecComputer_B.SSM_il;
-  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.efcs_status_word_2.Data = SecComputer_B.Data_pw;
-  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.efcs_status_word_3.SSM = SecComputer_B.SSM_i2;
-  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.efcs_status_word_3.Data = SecComputer_B.Data_m2;
-  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.efcs_status_word_4.SSM = SecComputer_B.SSM_ah;
-  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.efcs_status_word_4.Data = SecComputer_B.Data_ek;
-  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.efcs_status_word_5.SSM = SecComputer_B.SSM_en;
-  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.efcs_status_word_5.Data = SecComputer_B.Data_iy;
-  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.capt_roll_command_deg.SSM = SecComputer_B.SSM_dq;
-  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.capt_roll_command_deg.Data = SecComputer_B.Data_lk;
-  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.fo_roll_command_deg.SSM = SecComputer_B.SSM_px;
-  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.fo_roll_command_deg.Data = SecComputer_B.Data_ca;
-  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.rudder_pedal_position_deg.SSM = SecComputer_B.SSM_lbo;
-  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.rudder_pedal_position_deg.Data = SecComputer_B.Data_pix;
-  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.capt_pitch_command_deg.SSM = SecComputer_B.SSM_p5;
-  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.capt_pitch_command_deg.Data = SecComputer_B.Data_di;
-  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.fo_pitch_command_deg.SSM = SecComputer_B.SSM_mk;
-  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.fo_pitch_command_deg.Data = SecComputer_B.Data_lz;
-  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.aileron_left_pos_deg.SSM = SecComputer_B.SSM_mu;
-  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.aileron_left_pos_deg.Data = SecComputer_B.Data_lu;
-  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.elevator_left_pos_deg.SSM = SecComputer_B.SSM_cbl;
-  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.elevator_left_pos_deg.Data = SecComputer_B.Data_dc;
-  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.aileron_right_pos_deg.SSM = SecComputer_B.SSM_gzd;
-  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.aileron_right_pos_deg.Data = SecComputer_B.Data_gc;
-  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.elevator_right_pos_deg.SSM = SecComputer_B.SSM_mo;
-  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.elevator_right_pos_deg.Data = SecComputer_B.Data_am;
-  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.horiz_stab_trim_pos_deg.SSM = SecComputer_B.SSM_me;
-  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.horiz_stab_trim_pos_deg.Data = SecComputer_B.Data_mo;
-  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.spoiler_1_left_pos_deg.SSM = SecComputer_B.SSM_mj;
-  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.spoiler_1_left_pos_deg.Data = SecComputer_B.Data_dg;
-  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.spoiler_2_left_pos_deg.SSM = SecComputer_B.SSM_a5;
-  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.spoiler_2_left_pos_deg.Data = SecComputer_B.Data_e1;
-  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.spoiler_3_left_pos_deg.SSM = SecComputer_B.SSM_bt;
-  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.spoiler_3_left_pos_deg.Data = SecComputer_B.Data_fp;
-  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.spoiler_4_left_pos_deg.SSM = SecComputer_B.SSM_om;
-  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.spoiler_4_left_pos_deg.Data = SecComputer_B.Data_ns;
-  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.spoiler_5_left_pos_deg.SSM = SecComputer_B.SSM_ar;
-  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.spoiler_5_left_pos_deg.Data = SecComputer_B.Data_m3;
-  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.spoiler_1_right_pos_deg.SSM = SecComputer_B.SSM_ce;
-  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.spoiler_1_right_pos_deg.Data = SecComputer_B.Data_oj;
-  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.spoiler_2_right_pos_deg.SSM = SecComputer_B.SSM_ed;
-  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.spoiler_2_right_pos_deg.Data = SecComputer_B.Data_jy;
-  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.spoiler_3_right_pos_deg.SSM = SecComputer_B.SSM_jh;
-  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.spoiler_3_right_pos_deg.Data = SecComputer_B.Data_j1;
-  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.spoiler_4_right_pos_deg.SSM = SecComputer_B.SSM_je;
-  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.spoiler_4_right_pos_deg.Data = SecComputer_B.Data_fc;
-  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.spoiler_5_right_pos_deg.SSM = SecComputer_B.SSM_jt;
-  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.spoiler_5_right_pos_deg.Data = SecComputer_B.Data_of;
-  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.efcs_status_word_1.SSM = SecComputer_B.SSM_cui;
-  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.efcs_status_word_1.Data = SecComputer_B.Data_lg;
-  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.efcs_status_word_2.SSM = SecComputer_B.SSM_mq;
-  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.efcs_status_word_2.Data = SecComputer_B.Data_n4;
-  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.efcs_status_word_3.SSM = SecComputer_B.SSM_ni;
-  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.efcs_status_word_3.Data = SecComputer_B.Data_ot;
-  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.efcs_status_word_4.SSM = SecComputer_B.SSM_df;
-  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.efcs_status_word_4.Data = SecComputer_B.Data_gv;
-  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.efcs_status_word_5.SSM = SecComputer_B.SSM_oe;
-  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.efcs_status_word_5.Data = SecComputer_B.Data_ou;
-  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.capt_roll_command_deg.SSM = SecComputer_B.SSM_ha;
-  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.capt_roll_command_deg.Data = SecComputer_B.Data_dh;
-  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.fo_roll_command_deg.SSM = SecComputer_B.SSM_op;
-  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.fo_roll_command_deg.Data = SecComputer_B.Data_ph;
-  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.rudder_pedal_position_deg.SSM = SecComputer_B.SSM_a50;
-  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.rudder_pedal_position_deg.Data = SecComputer_B.Data_gs;
-  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.capt_pitch_command_deg.SSM = SecComputer_B.SSM_og;
-  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.capt_pitch_command_deg.Data = SecComputer_B.Data_fd4;
-  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.fo_pitch_command_deg.SSM = SecComputer_B.SSM_a4;
-  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.fo_pitch_command_deg.Data = SecComputer_B.Data_hm;
-  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.aileron_left_pos_deg.SSM = SecComputer_B.SSM_bv;
-  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.aileron_left_pos_deg.Data = SecComputer_B.Data_i2;
-  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.elevator_left_pos_deg.SSM = SecComputer_B.SSM_bo;
-  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.elevator_left_pos_deg.Data = SecComputer_B.Data_og;
-  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.aileron_right_pos_deg.SSM = SecComputer_B.SSM_d1;
-  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.aileron_right_pos_deg.Data = SecComputer_B.Data_fv;
-  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.elevator_right_pos_deg.SSM = SecComputer_B.SSM_hy;
-  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.elevator_right_pos_deg.Data = SecComputer_B.Data_oc;
-  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.horiz_stab_trim_pos_deg.SSM = SecComputer_B.SSM_gi;
-  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.horiz_stab_trim_pos_deg.Data = SecComputer_B.Data_kq;
-  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.spoiler_1_left_pos_deg.SSM = SecComputer_B.SSM_pp;
-  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.spoiler_1_left_pos_deg.Data = SecComputer_B.Data_ne;
-  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.spoiler_2_left_pos_deg.SSM = SecComputer_B.SSM_iab;
-  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.spoiler_2_left_pos_deg.Data = SecComputer_B.Data_it;
-  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.spoiler_3_left_pos_deg.SSM = SecComputer_B.SSM_jtv;
-  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.spoiler_3_left_pos_deg.Data = SecComputer_B.Data_ch;
-  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.spoiler_4_left_pos_deg.SSM = SecComputer_B.SSM_fy;
-  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.spoiler_4_left_pos_deg.Data = SecComputer_B.Data_bb;
-  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.spoiler_5_left_pos_deg.SSM = SecComputer_B.SSM_d4;
-  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.spoiler_5_left_pos_deg.Data = SecComputer_B.Data_ol;
-  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.spoiler_1_right_pos_deg.SSM = SecComputer_B.SSM_ars;
-  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.spoiler_1_right_pos_deg.Data = SecComputer_B.Data_hw;
-  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.spoiler_2_right_pos_deg.SSM = SecComputer_B.SSM_din;
-  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.spoiler_2_right_pos_deg.Data = SecComputer_B.Data_hs;
-  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.spoiler_3_right_pos_deg.SSM = SecComputer_B.SSM_m3;
-  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.spoiler_3_right_pos_deg.Data = SecComputer_B.Data_fj;
-  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.spoiler_4_right_pos_deg.SSM = SecComputer_B.SSM_np;
-  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.spoiler_4_right_pos_deg.Data = SecComputer_B.Data_ky;
-  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.spoiler_5_right_pos_deg.SSM = SecComputer_B.SSM_ax;
-  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.spoiler_5_right_pos_deg.Data = SecComputer_B.Data_h5;
-  SecComputer_Y.out.data.bus_inputs.elac_2_bus.left_aileron_position_deg.SSM = SecComputer_B.SSM_cl;
-  SecComputer_Y.out.data.bus_inputs.elac_2_bus.left_aileron_position_deg.Data = SecComputer_B.Data_ku;
-  SecComputer_Y.out.data.bus_inputs.elac_2_bus.right_aileron_position_deg.SSM = SecComputer_B.SSM_es;
-  SecComputer_Y.out.data.bus_inputs.elac_2_bus.right_aileron_position_deg.Data = SecComputer_B.Data_jp;
-  SecComputer_Y.out.data.bus_inputs.elac_2_bus.left_elevator_position_deg.SSM = SecComputer_B.SSM_gi1;
-  SecComputer_Y.out.data.bus_inputs.elac_2_bus.left_elevator_position_deg.Data = SecComputer_B.Data_nu;
-  SecComputer_Y.out.data.bus_inputs.elac_2_bus.right_elevator_position_deg.SSM = SecComputer_B.SSM_jz;
-  SecComputer_Y.out.data.bus_inputs.elac_2_bus.right_elevator_position_deg.Data = SecComputer_B.Data_br;
-  SecComputer_Y.out.data.bus_inputs.elac_2_bus.ths_position_deg.SSM = SecComputer_B.SSM_kt;
-  SecComputer_Y.out.data.bus_inputs.elac_2_bus.ths_position_deg.Data = SecComputer_B.Data_ae;
-  SecComputer_Y.out.data.bus_inputs.elac_2_bus.left_sidestick_pitch_command_deg.SSM = SecComputer_B.SSM_ds;
-  SecComputer_Y.out.data.bus_inputs.elac_2_bus.left_sidestick_pitch_command_deg.Data = SecComputer_B.Data_pe;
-  SecComputer_Y.out.data.bus_inputs.elac_2_bus.right_sidestick_pitch_command_deg.SSM = SecComputer_B.SSM_eg;
-  SecComputer_Y.out.data.bus_inputs.elac_2_bus.right_sidestick_pitch_command_deg.Data = SecComputer_B.Data_fy;
-  SecComputer_Y.out.data.bus_inputs.elac_2_bus.left_sidestick_roll_command_deg.SSM = SecComputer_B.SSM_a0;
-  SecComputer_Y.out.data.bus_inputs.elac_2_bus.left_sidestick_roll_command_deg.Data = SecComputer_B.Data_na;
-  SecComputer_Y.out.data.bus_inputs.elac_2_bus.right_sidestick_roll_command_deg.SSM = SecComputer_B.SSM_cv;
-  SecComputer_Y.out.data.bus_inputs.elac_2_bus.right_sidestick_roll_command_deg.Data = SecComputer_B.Data_my;
-  SecComputer_Y.out.data.bus_inputs.elac_2_bus.rudder_pedal_position_deg.SSM = SecComputer_B.SSM_ea;
-  SecComputer_Y.out.data.bus_inputs.elac_2_bus.rudder_pedal_position_deg.Data = SecComputer_B.Data_i4;
-  SecComputer_Y.out.data.bus_inputs.elac_2_bus.aileron_command_deg.SSM = SecComputer_B.SSM_p4;
-  SecComputer_Y.out.data.bus_inputs.elac_2_bus.aileron_command_deg.Data = SecComputer_B.Data_cx;
-  SecComputer_Y.out.data.bus_inputs.elac_2_bus.roll_spoiler_command_deg.SSM = SecComputer_B.SSM_m2;
-  SecComputer_Y.out.data.bus_inputs.elac_2_bus.roll_spoiler_command_deg.Data = SecComputer_B.Data_nz;
-  SecComputer_Y.out.data.bus_inputs.elac_2_bus.yaw_damper_command_deg.SSM = SecComputer_B.SSM_bt0;
-  SecComputer_Y.out.data.bus_inputs.elac_2_bus.yaw_damper_command_deg.Data = SecComputer_B.Data_id;
-  SecComputer_Y.out.data.bus_inputs.elac_2_bus.discrete_status_word_1.SSM = SecComputer_B.SSM_nr;
-  SecComputer_Y.out.data.bus_inputs.elac_2_bus.discrete_status_word_1.Data = SecComputer_B.Data_o2;
-  SecComputer_Y.out.data.bus_inputs.elac_2_bus.discrete_status_word_2.SSM = SecComputer_B.SSM_fr;
-  SecComputer_Y.out.data.bus_inputs.elac_2_bus.discrete_status_word_2.Data = SecComputer_B.Data_gqq;
-  SecComputer_Y.out.data.bus_inputs.sfcc_1_bus.slat_flap_component_status_word.SSM = SecComputer_B.SSM_cc;
-  SecComputer_Y.out.data.bus_inputs.sfcc_1_bus.slat_flap_component_status_word.Data = SecComputer_B.Data_md;
-  SecComputer_Y.out.data.bus_inputs.sfcc_1_bus.slat_flap_system_status_word.SSM = SecComputer_B.SSM_lm;
-  SecComputer_Y.out.data.bus_inputs.sfcc_1_bus.slat_flap_system_status_word.Data = SecComputer_B.Data_cz;
-  SecComputer_Y.out.data.bus_inputs.sfcc_1_bus.slat_flap_actual_position_word.SSM = SecComputer_B.SSM_mkm;
-  SecComputer_Y.out.data.bus_inputs.sfcc_1_bus.slat_flap_actual_position_word.Data = SecComputer_B.Data_pm;
-  SecComputer_Y.out.data.bus_inputs.sfcc_1_bus.slat_actual_position_deg.SSM = SecComputer_B.SSM_jhd;
-  SecComputer_Y.out.data.bus_inputs.sfcc_1_bus.slat_actual_position_deg.Data = SecComputer_B.Data_bj;
-  SecComputer_Y.out.data.bus_inputs.sfcc_1_bus.flap_actual_position_deg.SSM = SecComputer_B.SSM_av;
-  SecComputer_Y.out.data.bus_inputs.sfcc_1_bus.flap_actual_position_deg.Data = SecComputer_B.Data_ox;
-  SecComputer_Y.out.data.bus_inputs.sfcc_2_bus.slat_flap_component_status_word.SSM = SecComputer_B.SSM_ira;
-  SecComputer_Y.out.data.bus_inputs.sfcc_2_bus.slat_flap_component_status_word.Data = SecComputer_B.Data_pe5;
-  SecComputer_Y.out.data.bus_inputs.sfcc_2_bus.slat_flap_system_status_word.SSM = SecComputer_B.SSM_ge;
-  SecComputer_Y.out.data.bus_inputs.sfcc_2_bus.slat_flap_system_status_word.Data = SecComputer_B.Data_jj;
-  SecComputer_Y.out.data.bus_inputs.sfcc_2_bus.slat_flap_actual_position_word.SSM = SecComputer_B.SSM_lv;
-  SecComputer_Y.out.data.bus_inputs.sfcc_2_bus.slat_flap_actual_position_word.Data = SecComputer_B.Data_p5;
-  SecComputer_Y.out.data.bus_inputs.sfcc_2_bus.slat_actual_position_deg.SSM = SecComputer_B.SSM_cg;
-  SecComputer_Y.out.data.bus_inputs.sfcc_2_bus.slat_actual_position_deg.Data = SecComputer_B.Data_ekl;
-  SecComputer_Y.out.data.bus_inputs.sfcc_2_bus.flap_actual_position_deg.SSM = SecComputer_B.SSM_be;
-  SecComputer_Y.out.data.bus_inputs.sfcc_2_bus.flap_actual_position_deg.Data = SecComputer_B.Data_nd;
-  SecComputer_Y.out.data.bus_inputs.lgciu_1_bus.discrete_word_1.SSM = SecComputer_B.SSM_axb;
-  SecComputer_Y.out.data.bus_inputs.lgciu_1_bus.discrete_word_1.Data = SecComputer_B.Data_n2;
-  SecComputer_Y.out.data.bus_inputs.lgciu_1_bus.discrete_word_2.SSM = SecComputer_B.SSM_nz;
-  SecComputer_Y.out.data.bus_inputs.lgciu_1_bus.discrete_word_2.Data = SecComputer_B.Data_dl;
-  SecComputer_Y.out.data.bus_inputs.lgciu_1_bus.discrete_word_3.SSM = SecComputer_B.SSM_cx;
-  SecComputer_Y.out.data.bus_inputs.lgciu_1_bus.discrete_word_3.Data = SecComputer_B.Data_gs2;
-  SecComputer_Y.out.data.bus_inputs.lgciu_1_bus.discrete_word_4.SSM = SecComputer_B.SSM_gh;
-  SecComputer_Y.out.data.bus_inputs.lgciu_1_bus.discrete_word_4.Data = SecComputer_B.Data_h4;
-  SecComputer_Y.out.data.bus_inputs.lgciu_2_bus.discrete_word_1.SSM = SecComputer_B.SSM_ks;
-  SecComputer_Y.out.data.bus_inputs.lgciu_2_bus.discrete_word_1.Data = SecComputer_B.Data_e3;
-  SecComputer_Y.out.data.bus_inputs.lgciu_2_bus.discrete_word_2.SSM = SecComputer_B.SSM_pw;
-  SecComputer_Y.out.data.bus_inputs.lgciu_2_bus.discrete_word_2.Data = SecComputer_B.Data_f5h;
-  SecComputer_Y.out.data.bus_inputs.lgciu_2_bus.discrete_word_3.SSM = SecComputer_B.SSM_fh;
-  SecComputer_Y.out.data.bus_inputs.lgciu_2_bus.discrete_word_3.Data = SecComputer_B.Data_an;
-  SecComputer_Y.out.data.bus_inputs.lgciu_2_bus.discrete_word_4.SSM = SecComputer_B.SSM_gzn;
-  SecComputer_Y.out.data.bus_inputs.lgciu_2_bus.discrete_word_4.Data = SecComputer_B.Data_i4o;
+  SecComputer_Y.out.data.bus_inputs.elac_1_bus.elevator_double_pressurization_command_deg.SSM = SecComputer_B.SSM_hi;
+  SecComputer_Y.out.data.bus_inputs.elac_1_bus.elevator_double_pressurization_command_deg.Data = SecComputer_B.Data_fn;
+  SecComputer_Y.out.data.bus_inputs.elac_1_bus.discrete_status_word_1.SSM = SecComputer_B.SSM_mm;
+  SecComputer_Y.out.data.bus_inputs.elac_1_bus.discrete_status_word_1.Data = SecComputer_B.Data_od;
+  SecComputer_Y.out.data.bus_inputs.elac_1_bus.discrete_status_word_2.SSM = SecComputer_B.SSM_kz;
+  SecComputer_Y.out.data.bus_inputs.elac_1_bus.discrete_status_word_2.Data = SecComputer_B.Data_ez;
+  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.efcs_status_word_1.SSM = SecComputer_B.SSM_il;
+  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.efcs_status_word_1.Data = SecComputer_B.Data_pw;
+  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.efcs_status_word_2.SSM = SecComputer_B.SSM_i2;
+  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.efcs_status_word_2.Data = SecComputer_B.Data_m2;
+  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.efcs_status_word_3.SSM = SecComputer_B.SSM_ah;
+  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.efcs_status_word_3.Data = SecComputer_B.Data_ek;
+  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.efcs_status_word_4.SSM = SecComputer_B.SSM_en;
+  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.efcs_status_word_4.Data = SecComputer_B.Data_iy;
+  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.efcs_status_word_5.SSM = SecComputer_B.SSM_dq;
+  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.efcs_status_word_5.Data = SecComputer_B.Data_lk;
+  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.capt_roll_command_deg.SSM = SecComputer_B.SSM_px;
+  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.capt_roll_command_deg.Data = SecComputer_B.Data_ca;
+  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.fo_roll_command_deg.SSM = SecComputer_B.SSM_lbo;
+  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.fo_roll_command_deg.Data = SecComputer_B.Data_pix;
+  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.rudder_pedal_position_deg.SSM = SecComputer_B.SSM_p5;
+  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.rudder_pedal_position_deg.Data = SecComputer_B.Data_di;
+  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.capt_pitch_command_deg.SSM = SecComputer_B.SSM_mk;
+  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.capt_pitch_command_deg.Data = SecComputer_B.Data_lz;
+  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.fo_pitch_command_deg.SSM = SecComputer_B.SSM_mu;
+  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.fo_pitch_command_deg.Data = SecComputer_B.Data_lu;
+  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.aileron_left_pos_deg.SSM = SecComputer_B.SSM_cbl;
+  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.aileron_left_pos_deg.Data = SecComputer_B.Data_dc;
+  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.elevator_left_pos_deg.SSM = SecComputer_B.SSM_gzd;
+  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.elevator_left_pos_deg.Data = SecComputer_B.Data_gc;
+  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.aileron_right_pos_deg.SSM = SecComputer_B.SSM_mo;
+  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.aileron_right_pos_deg.Data = SecComputer_B.Data_am;
+  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.elevator_right_pos_deg.SSM = SecComputer_B.SSM_me;
+  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.elevator_right_pos_deg.Data = SecComputer_B.Data_mo;
+  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.horiz_stab_trim_pos_deg.SSM = SecComputer_B.SSM_mj;
+  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.horiz_stab_trim_pos_deg.Data = SecComputer_B.Data_dg;
+  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.spoiler_1_left_pos_deg.SSM = SecComputer_B.SSM_a5;
+  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.spoiler_1_left_pos_deg.Data = SecComputer_B.Data_e1;
+  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.spoiler_2_left_pos_deg.SSM = SecComputer_B.SSM_bt;
+  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.spoiler_2_left_pos_deg.Data = SecComputer_B.Data_fp;
+  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.spoiler_3_left_pos_deg.SSM = SecComputer_B.SSM_om;
+  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.spoiler_3_left_pos_deg.Data = SecComputer_B.Data_ns;
+  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.spoiler_4_left_pos_deg.SSM = SecComputer_B.SSM_ar;
+  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.spoiler_4_left_pos_deg.Data = SecComputer_B.Data_m3;
+  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.spoiler_5_left_pos_deg.SSM = SecComputer_B.SSM_ce;
+  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.spoiler_5_left_pos_deg.Data = SecComputer_B.Data_oj;
+  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.spoiler_1_right_pos_deg.SSM = SecComputer_B.SSM_ed;
+  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.spoiler_1_right_pos_deg.Data = SecComputer_B.Data_jy;
+  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.spoiler_2_right_pos_deg.SSM = SecComputer_B.SSM_jh;
+  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.spoiler_2_right_pos_deg.Data = SecComputer_B.Data_j1;
+  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.spoiler_3_right_pos_deg.SSM = SecComputer_B.SSM_je;
+  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.spoiler_3_right_pos_deg.Data = SecComputer_B.Data_fc;
+  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.spoiler_4_right_pos_deg.SSM = SecComputer_B.SSM_jt;
+  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.spoiler_4_right_pos_deg.Data = SecComputer_B.Data_of;
+  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.spoiler_5_right_pos_deg.SSM = SecComputer_B.SSM_cui;
+  SecComputer_Y.out.data.bus_inputs.fcdc_1_bus.spoiler_5_right_pos_deg.Data = SecComputer_B.Data_lg;
+  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.efcs_status_word_1.SSM = SecComputer_B.SSM_mq;
+  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.efcs_status_word_1.Data = SecComputer_B.Data_n4;
+  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.efcs_status_word_2.SSM = SecComputer_B.SSM_ni;
+  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.efcs_status_word_2.Data = SecComputer_B.Data_ot;
+  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.efcs_status_word_3.SSM = SecComputer_B.SSM_df;
+  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.efcs_status_word_3.Data = SecComputer_B.Data_gv;
+  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.efcs_status_word_4.SSM = SecComputer_B.SSM_oe;
+  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.efcs_status_word_4.Data = SecComputer_B.Data_ou;
+  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.efcs_status_word_5.SSM = SecComputer_B.SSM_ha;
+  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.efcs_status_word_5.Data = SecComputer_B.Data_dh;
+  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.capt_roll_command_deg.SSM = SecComputer_B.SSM_op;
+  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.capt_roll_command_deg.Data = SecComputer_B.Data_ph;
+  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.fo_roll_command_deg.SSM = SecComputer_B.SSM_a50;
+  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.fo_roll_command_deg.Data = SecComputer_B.Data_gs;
+  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.rudder_pedal_position_deg.SSM = SecComputer_B.SSM_og;
+  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.rudder_pedal_position_deg.Data = SecComputer_B.Data_fd4;
+  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.capt_pitch_command_deg.SSM = SecComputer_B.SSM_a4;
+  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.capt_pitch_command_deg.Data = SecComputer_B.Data_hm;
+  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.fo_pitch_command_deg.SSM = SecComputer_B.SSM_bv;
+  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.fo_pitch_command_deg.Data = SecComputer_B.Data_i2;
+  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.aileron_left_pos_deg.SSM = SecComputer_B.SSM_bo;
+  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.aileron_left_pos_deg.Data = SecComputer_B.Data_og;
+  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.elevator_left_pos_deg.SSM = SecComputer_B.SSM_d1;
+  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.elevator_left_pos_deg.Data = SecComputer_B.Data_fv;
+  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.aileron_right_pos_deg.SSM = SecComputer_B.SSM_hy;
+  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.aileron_right_pos_deg.Data = SecComputer_B.Data_oc;
+  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.elevator_right_pos_deg.SSM = SecComputer_B.SSM_gi;
+  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.elevator_right_pos_deg.Data = SecComputer_B.Data_kq;
+  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.horiz_stab_trim_pos_deg.SSM = SecComputer_B.SSM_pp;
+  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.horiz_stab_trim_pos_deg.Data = SecComputer_B.Data_ne;
+  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.spoiler_1_left_pos_deg.SSM = SecComputer_B.SSM_iab;
+  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.spoiler_1_left_pos_deg.Data = SecComputer_B.Data_it;
+  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.spoiler_2_left_pos_deg.SSM = SecComputer_B.SSM_jtv;
+  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.spoiler_2_left_pos_deg.Data = SecComputer_B.Data_ch;
+  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.spoiler_3_left_pos_deg.SSM = SecComputer_B.SSM_fy;
+  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.spoiler_3_left_pos_deg.Data = SecComputer_B.Data_bb;
+  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.spoiler_4_left_pos_deg.SSM = SecComputer_B.SSM_d4;
+  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.spoiler_4_left_pos_deg.Data = SecComputer_B.Data_ol;
+  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.spoiler_5_left_pos_deg.SSM = SecComputer_B.SSM_ars;
+  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.spoiler_5_left_pos_deg.Data = SecComputer_B.Data_hw;
+  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.spoiler_1_right_pos_deg.SSM = SecComputer_B.SSM_din;
+  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.spoiler_1_right_pos_deg.Data = SecComputer_B.Data_hs;
+  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.spoiler_2_right_pos_deg.SSM = SecComputer_B.SSM_m3;
+  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.spoiler_2_right_pos_deg.Data = SecComputer_B.Data_fj;
+  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.spoiler_3_right_pos_deg.SSM = SecComputer_B.SSM_np;
+  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.spoiler_3_right_pos_deg.Data = SecComputer_B.Data_ky;
+  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.spoiler_4_right_pos_deg.SSM = SecComputer_B.SSM_ax;
+  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.spoiler_4_right_pos_deg.Data = SecComputer_B.Data_h5;
+  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.spoiler_5_right_pos_deg.SSM = SecComputer_B.SSM_cl;
+  SecComputer_Y.out.data.bus_inputs.fcdc_2_bus.spoiler_5_right_pos_deg.Data = SecComputer_B.Data_ku;
+  SecComputer_Y.out.data.bus_inputs.elac_2_bus.left_aileron_position_deg.SSM = SecComputer_B.SSM_es;
+  SecComputer_Y.out.data.bus_inputs.elac_2_bus.left_aileron_position_deg.Data = SecComputer_B.Data_jp;
+  SecComputer_Y.out.data.bus_inputs.elac_2_bus.right_aileron_position_deg.SSM = SecComputer_B.SSM_gi1;
+  SecComputer_Y.out.data.bus_inputs.elac_2_bus.right_aileron_position_deg.Data = SecComputer_B.Data_nu;
+  SecComputer_Y.out.data.bus_inputs.elac_2_bus.left_elevator_position_deg.SSM = SecComputer_B.SSM_jz;
+  SecComputer_Y.out.data.bus_inputs.elac_2_bus.left_elevator_position_deg.Data = SecComputer_B.Data_br;
+  SecComputer_Y.out.data.bus_inputs.elac_2_bus.right_elevator_position_deg.SSM = SecComputer_B.SSM_kt;
+  SecComputer_Y.out.data.bus_inputs.elac_2_bus.right_elevator_position_deg.Data = SecComputer_B.Data_ae;
+  SecComputer_Y.out.data.bus_inputs.elac_2_bus.ths_position_deg.SSM = SecComputer_B.SSM_ds;
+  SecComputer_Y.out.data.bus_inputs.elac_2_bus.ths_position_deg.Data = SecComputer_B.Data_pe;
+  SecComputer_Y.out.data.bus_inputs.elac_2_bus.left_sidestick_pitch_command_deg.SSM = SecComputer_B.SSM_eg;
+  SecComputer_Y.out.data.bus_inputs.elac_2_bus.left_sidestick_pitch_command_deg.Data = SecComputer_B.Data_fy;
+  SecComputer_Y.out.data.bus_inputs.elac_2_bus.right_sidestick_pitch_command_deg.SSM = SecComputer_B.SSM_a0;
+  SecComputer_Y.out.data.bus_inputs.elac_2_bus.right_sidestick_pitch_command_deg.Data = SecComputer_B.Data_na;
+  SecComputer_Y.out.data.bus_inputs.elac_2_bus.left_sidestick_roll_command_deg.SSM = SecComputer_B.SSM_cv;
+  SecComputer_Y.out.data.bus_inputs.elac_2_bus.left_sidestick_roll_command_deg.Data = SecComputer_B.Data_my;
+  SecComputer_Y.out.data.bus_inputs.elac_2_bus.right_sidestick_roll_command_deg.SSM = SecComputer_B.SSM_ea;
+  SecComputer_Y.out.data.bus_inputs.elac_2_bus.right_sidestick_roll_command_deg.Data = SecComputer_B.Data_i4;
+  SecComputer_Y.out.data.bus_inputs.elac_2_bus.rudder_pedal_position_deg.SSM = SecComputer_B.SSM_p4;
+  SecComputer_Y.out.data.bus_inputs.elac_2_bus.rudder_pedal_position_deg.Data = SecComputer_B.Data_cx;
+  SecComputer_Y.out.data.bus_inputs.elac_2_bus.aileron_command_deg.SSM = SecComputer_B.SSM_m2;
+  SecComputer_Y.out.data.bus_inputs.elac_2_bus.aileron_command_deg.Data = SecComputer_B.Data_nz;
+  SecComputer_Y.out.data.bus_inputs.elac_2_bus.roll_spoiler_command_deg.SSM = SecComputer_B.SSM_bt0;
+  SecComputer_Y.out.data.bus_inputs.elac_2_bus.roll_spoiler_command_deg.Data = SecComputer_B.Data_id;
+  SecComputer_Y.out.data.bus_inputs.elac_2_bus.yaw_damper_command_deg.SSM = SecComputer_B.SSM_nr;
+  SecComputer_Y.out.data.bus_inputs.elac_2_bus.yaw_damper_command_deg.Data = SecComputer_B.Data_o2;
+  SecComputer_Y.out.data.bus_inputs.elac_2_bus.elevator_double_pressurization_command_deg.SSM = SecComputer_B.SSM_fr;
+  SecComputer_Y.out.data.bus_inputs.elac_2_bus.elevator_double_pressurization_command_deg.Data = SecComputer_B.Data_gqq;
+  SecComputer_Y.out.data.bus_inputs.elac_2_bus.discrete_status_word_1.SSM = SecComputer_B.SSM_cc;
+  SecComputer_Y.out.data.bus_inputs.elac_2_bus.discrete_status_word_1.Data = SecComputer_B.Data_md;
+  SecComputer_Y.out.data.bus_inputs.elac_2_bus.discrete_status_word_2.SSM = SecComputer_B.SSM_lm;
+  SecComputer_Y.out.data.bus_inputs.elac_2_bus.discrete_status_word_2.Data = SecComputer_B.Data_cz;
+  SecComputer_Y.out.data.bus_inputs.sfcc_1_bus.slat_flap_component_status_word.SSM = SecComputer_B.SSM_mkm;
+  SecComputer_Y.out.data.bus_inputs.sfcc_1_bus.slat_flap_component_status_word.Data = SecComputer_B.Data_pm;
+  SecComputer_Y.out.data.bus_inputs.sfcc_1_bus.slat_flap_system_status_word.SSM = SecComputer_B.SSM_jhd;
+  SecComputer_Y.out.data.bus_inputs.sfcc_1_bus.slat_flap_system_status_word.Data = SecComputer_B.Data_bj;
+  SecComputer_Y.out.data.bus_inputs.sfcc_1_bus.slat_flap_actual_position_word.SSM = SecComputer_B.SSM_av;
+  SecComputer_Y.out.data.bus_inputs.sfcc_1_bus.slat_flap_actual_position_word.Data = SecComputer_B.Data_ox;
+  SecComputer_Y.out.data.bus_inputs.sfcc_1_bus.slat_actual_position_deg.SSM = SecComputer_B.SSM_ira;
+  SecComputer_Y.out.data.bus_inputs.sfcc_1_bus.slat_actual_position_deg.Data = SecComputer_B.Data_pe5;
+  SecComputer_Y.out.data.bus_inputs.sfcc_1_bus.flap_actual_position_deg.SSM = SecComputer_B.SSM_ge;
+  SecComputer_Y.out.data.bus_inputs.sfcc_1_bus.flap_actual_position_deg.Data = SecComputer_B.Data_jj;
+  SecComputer_Y.out.data.bus_inputs.sfcc_2_bus.slat_flap_component_status_word.SSM = SecComputer_B.SSM_lv;
+  SecComputer_Y.out.data.bus_inputs.sfcc_2_bus.slat_flap_component_status_word.Data = SecComputer_B.Data_p5;
+  SecComputer_Y.out.data.bus_inputs.sfcc_2_bus.slat_flap_system_status_word.SSM = SecComputer_B.SSM_cg;
+  SecComputer_Y.out.data.bus_inputs.sfcc_2_bus.slat_flap_system_status_word.Data = SecComputer_B.Data_ekl;
+  SecComputer_Y.out.data.bus_inputs.sfcc_2_bus.slat_flap_actual_position_word.SSM = SecComputer_B.SSM_be;
+  SecComputer_Y.out.data.bus_inputs.sfcc_2_bus.slat_flap_actual_position_word.Data = SecComputer_B.Data_nd;
+  SecComputer_Y.out.data.bus_inputs.sfcc_2_bus.slat_actual_position_deg.SSM = SecComputer_B.SSM_axb;
+  SecComputer_Y.out.data.bus_inputs.sfcc_2_bus.slat_actual_position_deg.Data = SecComputer_B.Data_n2;
+  SecComputer_Y.out.data.bus_inputs.sfcc_2_bus.flap_actual_position_deg.SSM = SecComputer_B.SSM_nz;
+  SecComputer_Y.out.data.bus_inputs.sfcc_2_bus.flap_actual_position_deg.Data = SecComputer_B.Data_dl;
+  SecComputer_Y.out.data.bus_inputs.lgciu_1_bus.discrete_word_1.SSM = SecComputer_B.SSM_cx;
+  SecComputer_Y.out.data.bus_inputs.lgciu_1_bus.discrete_word_1.Data = SecComputer_B.Data_gs2;
+  SecComputer_Y.out.data.bus_inputs.lgciu_1_bus.discrete_word_2.SSM = SecComputer_B.SSM_gh;
+  SecComputer_Y.out.data.bus_inputs.lgciu_1_bus.discrete_word_2.Data = SecComputer_B.Data_h4;
+  SecComputer_Y.out.data.bus_inputs.lgciu_1_bus.discrete_word_3.SSM = SecComputer_B.SSM_ks;
+  SecComputer_Y.out.data.bus_inputs.lgciu_1_bus.discrete_word_3.Data = SecComputer_B.Data_e3;
+  SecComputer_Y.out.data.bus_inputs.lgciu_1_bus.discrete_word_4.SSM = SecComputer_B.SSM_pw;
+  SecComputer_Y.out.data.bus_inputs.lgciu_1_bus.discrete_word_4.Data = SecComputer_B.Data_f5h;
+  SecComputer_Y.out.data.bus_inputs.lgciu_2_bus.discrete_word_1.SSM = SecComputer_B.SSM_fh;
+  SecComputer_Y.out.data.bus_inputs.lgciu_2_bus.discrete_word_1.Data = SecComputer_B.Data_an;
+  SecComputer_Y.out.data.bus_inputs.lgciu_2_bus.discrete_word_2.SSM = SecComputer_B.SSM_gzn;
+  SecComputer_Y.out.data.bus_inputs.lgciu_2_bus.discrete_word_2.Data = SecComputer_B.Data_i4o;
+  SecComputer_Y.out.data.bus_inputs.lgciu_2_bus.discrete_word_3.SSM = SecComputer_B.SSM_oo;
+  SecComputer_Y.out.data.bus_inputs.lgciu_2_bus.discrete_word_3.Data = SecComputer_B.Data_af;
+  SecComputer_Y.out.data.bus_inputs.lgciu_2_bus.discrete_word_4.SSM = SecComputer_B.SSM_evh;
+  SecComputer_Y.out.data.bus_inputs.lgciu_2_bus.discrete_word_4.Data = SecComputer_B.Data_bm;
   SecComputer_Y.out.laws = SecComputer_B.laws;
   SecComputer_Y.out.logic = SecComputer_B.logic;
 }
@@ -2212,53 +2252,53 @@ void SecComputer::initialize()
   SecComputer_B.load_factor_acc_2_g = SecComputer_P.out_Y0.data.analog_inputs.load_factor_acc_2_g;
   SecComputer_B.wheel_speed_left = SecComputer_P.out_Y0.data.analog_inputs.wheel_speed_left;
   SecComputer_B.wheel_speed_right = SecComputer_P.out_Y0.data.analog_inputs.wheel_speed_right;
-  SecComputer_B.SSM_oo = SecComputer_P.out_Y0.data.bus_inputs.adr_1_bus.altitude_standard_ft.SSM;
-  SecComputer_B.Data_af = SecComputer_P.out_Y0.data.bus_inputs.adr_1_bus.altitude_standard_ft.Data;
-  SecComputer_B.SSM_evh = SecComputer_P.out_Y0.data.bus_inputs.adr_1_bus.altitude_corrected_ft.SSM;
-  SecComputer_B.Data_bm = SecComputer_P.out_Y0.data.bus_inputs.adr_1_bus.altitude_corrected_ft.Data;
-  SecComputer_B.SSM_cn = SecComputer_P.out_Y0.data.bus_inputs.adr_1_bus.mach.SSM;
-  SecComputer_B.Data_dk = SecComputer_P.out_Y0.data.bus_inputs.adr_1_bus.mach.Data;
-  SecComputer_B.SSM_co = SecComputer_P.out_Y0.data.bus_inputs.adr_1_bus.airspeed_computed_kn.SSM;
-  SecComputer_B.Data_nv = SecComputer_P.out_Y0.data.bus_inputs.adr_1_bus.airspeed_computed_kn.Data;
-  SecComputer_B.SSM_pe = SecComputer_P.out_Y0.data.bus_inputs.adr_1_bus.airspeed_true_kn.SSM;
-  SecComputer_B.Data_jpf = SecComputer_P.out_Y0.data.bus_inputs.adr_1_bus.airspeed_true_kn.Data;
-  SecComputer_B.SSM_cgz = SecComputer_P.out_Y0.data.bus_inputs.adr_1_bus.vertical_speed_ft_min.SSM;
-  SecComputer_B.Data_i5 = SecComputer_P.out_Y0.data.bus_inputs.adr_1_bus.vertical_speed_ft_min.Data;
-  SecComputer_B.SSM_fw = SecComputer_P.out_Y0.data.bus_inputs.adr_1_bus.aoa_corrected_deg.SSM;
-  SecComputer_B.Data_k2 = SecComputer_P.out_Y0.data.bus_inputs.adr_1_bus.aoa_corrected_deg.Data;
-  SecComputer_B.SSM_h4 = SecComputer_P.out_Y0.data.bus_inputs.adr_2_bus.altitude_standard_ft.SSM;
-  SecComputer_B.Data_as = SecComputer_P.out_Y0.data.bus_inputs.adr_2_bus.altitude_standard_ft.Data;
-  SecComputer_B.SSM_cb3 = SecComputer_P.out_Y0.data.bus_inputs.adr_2_bus.altitude_corrected_ft.SSM;
-  SecComputer_B.Data_gk = SecComputer_P.out_Y0.data.bus_inputs.adr_2_bus.altitude_corrected_ft.Data;
-  SecComputer_B.SSM_pj = SecComputer_P.out_Y0.data.bus_inputs.adr_2_bus.mach.SSM;
-  SecComputer_B.Data_jl = SecComputer_P.out_Y0.data.bus_inputs.adr_2_bus.mach.Data;
-  SecComputer_B.SSM_dv = SecComputer_P.out_Y0.data.bus_inputs.adr_2_bus.airspeed_computed_kn.SSM;
-  SecComputer_B.Data_e32 = SecComputer_P.out_Y0.data.bus_inputs.adr_2_bus.airspeed_computed_kn.Data;
-  SecComputer_B.SSM_i4 = SecComputer_P.out_Y0.data.bus_inputs.adr_2_bus.airspeed_true_kn.SSM;
-  SecComputer_B.Data_ih = SecComputer_P.out_Y0.data.bus_inputs.adr_2_bus.airspeed_true_kn.Data;
-  SecComputer_B.SSM_fm = SecComputer_P.out_Y0.data.bus_inputs.adr_2_bus.vertical_speed_ft_min.SSM;
-  SecComputer_B.Data_du = SecComputer_P.out_Y0.data.bus_inputs.adr_2_bus.vertical_speed_ft_min.Data;
-  SecComputer_B.SSM_e5 = SecComputer_P.out_Y0.data.bus_inputs.adr_2_bus.aoa_corrected_deg.SSM;
-  SecComputer_B.Data_nx = SecComputer_P.out_Y0.data.bus_inputs.adr_2_bus.aoa_corrected_deg.Data;
-  SecComputer_B.SSM_bf = SecComputer_P.out_Y0.data.bus_inputs.ir_1_bus.discrete_word_1.SSM;
-  SecComputer_B.Data_n0 = SecComputer_P.out_Y0.data.bus_inputs.ir_1_bus.discrete_word_1.Data;
-  SecComputer_B.SSM_fd = SecComputer_P.out_Y0.data.bus_inputs.ir_1_bus.latitude_deg.SSM;
-  SecComputer_B.Data_eqi = SecComputer_P.out_Y0.data.bus_inputs.ir_1_bus.latitude_deg.Data;
-  SecComputer_B.SSM_fv = SecComputer_P.out_Y0.data.bus_inputs.ir_1_bus.longitude_deg.SSM;
-  SecComputer_B.Data_om = SecComputer_P.out_Y0.data.bus_inputs.ir_1_bus.longitude_deg.Data;
-  SecComputer_B.SSM_dt = SecComputer_P.out_Y0.data.bus_inputs.ir_1_bus.ground_speed_kn.SSM;
-  SecComputer_B.Data_nr = SecComputer_P.out_Y0.data.bus_inputs.ir_1_bus.ground_speed_kn.Data;
-  SecComputer_B.SSM_j5 = SecComputer_P.out_Y0.data.bus_inputs.ir_1_bus.track_angle_true_deg.SSM;
-  SecComputer_B.Data_p3 = SecComputer_P.out_Y0.data.bus_inputs.ir_1_bus.track_angle_true_deg.Data;
-  SecComputer_B.SSM_ng = SecComputer_P.out_Y0.data.bus_inputs.ir_1_bus.heading_true_deg.SSM;
-  SecComputer_B.Data_nb = SecComputer_P.out_Y0.data.bus_inputs.ir_1_bus.heading_true_deg.Data;
-  SecComputer_B.SSM_cs = SecComputer_P.out_Y0.data.bus_inputs.ir_1_bus.wind_speed_kn.SSM;
-  SecComputer_B.Data_hd = SecComputer_P.out_Y0.data.bus_inputs.ir_1_bus.wind_speed_kn.Data;
-  SecComputer_B.SSM_ls = SecComputer_P.out_Y0.data.bus_inputs.ir_1_bus.wind_direction_true_deg.SSM;
-  SecComputer_B.Data_al = SecComputer_P.out_Y0.data.bus_inputs.ir_1_bus.wind_direction_true_deg.Data;
-  SecComputer_B.SSM_dg = SecComputer_P.out_Y0.data.bus_inputs.ir_1_bus.track_angle_magnetic_deg.SSM;
-  SecComputer_B.Data_gu = SecComputer_P.out_Y0.data.bus_inputs.ir_1_bus.track_angle_magnetic_deg.Data;
-  SecComputer_B.SSM_d3 = SecComputer_P.out_Y0.data.bus_inputs.ir_1_bus.heading_magnetic_deg.SSM;
+  SecComputer_B.SSM_cn = SecComputer_P.out_Y0.data.bus_inputs.adr_1_bus.altitude_standard_ft.SSM;
+  SecComputer_B.Data_dk = SecComputer_P.out_Y0.data.bus_inputs.adr_1_bus.altitude_standard_ft.Data;
+  SecComputer_B.SSM_co = SecComputer_P.out_Y0.data.bus_inputs.adr_1_bus.altitude_corrected_ft.SSM;
+  SecComputer_B.Data_nv = SecComputer_P.out_Y0.data.bus_inputs.adr_1_bus.altitude_corrected_ft.Data;
+  SecComputer_B.SSM_pe = SecComputer_P.out_Y0.data.bus_inputs.adr_1_bus.mach.SSM;
+  SecComputer_B.Data_jpf = SecComputer_P.out_Y0.data.bus_inputs.adr_1_bus.mach.Data;
+  SecComputer_B.SSM_cgz = SecComputer_P.out_Y0.data.bus_inputs.adr_1_bus.airspeed_computed_kn.SSM;
+  SecComputer_B.Data_i5 = SecComputer_P.out_Y0.data.bus_inputs.adr_1_bus.airspeed_computed_kn.Data;
+  SecComputer_B.SSM_fw = SecComputer_P.out_Y0.data.bus_inputs.adr_1_bus.airspeed_true_kn.SSM;
+  SecComputer_B.Data_k2 = SecComputer_P.out_Y0.data.bus_inputs.adr_1_bus.airspeed_true_kn.Data;
+  SecComputer_B.SSM_h4 = SecComputer_P.out_Y0.data.bus_inputs.adr_1_bus.vertical_speed_ft_min.SSM;
+  SecComputer_B.Data_as = SecComputer_P.out_Y0.data.bus_inputs.adr_1_bus.vertical_speed_ft_min.Data;
+  SecComputer_B.SSM_cb3 = SecComputer_P.out_Y0.data.bus_inputs.adr_1_bus.aoa_corrected_deg.SSM;
+  SecComputer_B.Data_gk = SecComputer_P.out_Y0.data.bus_inputs.adr_1_bus.aoa_corrected_deg.Data;
+  SecComputer_B.SSM_pj = SecComputer_P.out_Y0.data.bus_inputs.adr_2_bus.altitude_standard_ft.SSM;
+  SecComputer_B.Data_jl = SecComputer_P.out_Y0.data.bus_inputs.adr_2_bus.altitude_standard_ft.Data;
+  SecComputer_B.SSM_dv = SecComputer_P.out_Y0.data.bus_inputs.adr_2_bus.altitude_corrected_ft.SSM;
+  SecComputer_B.Data_e32 = SecComputer_P.out_Y0.data.bus_inputs.adr_2_bus.altitude_corrected_ft.Data;
+  SecComputer_B.SSM_i4 = SecComputer_P.out_Y0.data.bus_inputs.adr_2_bus.mach.SSM;
+  SecComputer_B.Data_ih = SecComputer_P.out_Y0.data.bus_inputs.adr_2_bus.mach.Data;
+  SecComputer_B.SSM_fm = SecComputer_P.out_Y0.data.bus_inputs.adr_2_bus.airspeed_computed_kn.SSM;
+  SecComputer_B.Data_du = SecComputer_P.out_Y0.data.bus_inputs.adr_2_bus.airspeed_computed_kn.Data;
+  SecComputer_B.SSM_e5 = SecComputer_P.out_Y0.data.bus_inputs.adr_2_bus.airspeed_true_kn.SSM;
+  SecComputer_B.Data_nx = SecComputer_P.out_Y0.data.bus_inputs.adr_2_bus.airspeed_true_kn.Data;
+  SecComputer_B.SSM_bf = SecComputer_P.out_Y0.data.bus_inputs.adr_2_bus.vertical_speed_ft_min.SSM;
+  SecComputer_B.Data_n0 = SecComputer_P.out_Y0.data.bus_inputs.adr_2_bus.vertical_speed_ft_min.Data;
+  SecComputer_B.SSM_fd = SecComputer_P.out_Y0.data.bus_inputs.adr_2_bus.aoa_corrected_deg.SSM;
+  SecComputer_B.Data_eqi = SecComputer_P.out_Y0.data.bus_inputs.adr_2_bus.aoa_corrected_deg.Data;
+  SecComputer_B.SSM_fv = SecComputer_P.out_Y0.data.bus_inputs.ir_1_bus.discrete_word_1.SSM;
+  SecComputer_B.Data_om = SecComputer_P.out_Y0.data.bus_inputs.ir_1_bus.discrete_word_1.Data;
+  SecComputer_B.SSM_dt = SecComputer_P.out_Y0.data.bus_inputs.ir_1_bus.latitude_deg.SSM;
+  SecComputer_B.Data_nr = SecComputer_P.out_Y0.data.bus_inputs.ir_1_bus.latitude_deg.Data;
+  SecComputer_B.SSM_j5 = SecComputer_P.out_Y0.data.bus_inputs.ir_1_bus.longitude_deg.SSM;
+  SecComputer_B.Data_p3 = SecComputer_P.out_Y0.data.bus_inputs.ir_1_bus.longitude_deg.Data;
+  SecComputer_B.SSM_ng = SecComputer_P.out_Y0.data.bus_inputs.ir_1_bus.ground_speed_kn.SSM;
+  SecComputer_B.Data_nb = SecComputer_P.out_Y0.data.bus_inputs.ir_1_bus.ground_speed_kn.Data;
+  SecComputer_B.SSM_cs = SecComputer_P.out_Y0.data.bus_inputs.ir_1_bus.track_angle_true_deg.SSM;
+  SecComputer_B.Data_hd = SecComputer_P.out_Y0.data.bus_inputs.ir_1_bus.track_angle_true_deg.Data;
+  SecComputer_B.SSM_ls = SecComputer_P.out_Y0.data.bus_inputs.ir_1_bus.heading_true_deg.SSM;
+  SecComputer_B.Data_al = SecComputer_P.out_Y0.data.bus_inputs.ir_1_bus.heading_true_deg.Data;
+  SecComputer_B.SSM_dg = SecComputer_P.out_Y0.data.bus_inputs.ir_1_bus.wind_speed_kn.SSM;
+  SecComputer_B.Data_gu = SecComputer_P.out_Y0.data.bus_inputs.ir_1_bus.wind_speed_kn.Data;
+  SecComputer_B.SSM_d3 = SecComputer_P.out_Y0.data.bus_inputs.ir_1_bus.wind_direction_true_deg.SSM;
+  SecComputer_B.Data_ix = SecComputer_P.out_Y0.data.bus_inputs.ir_1_bus.wind_direction_true_deg.Data;
+  SecComputer_B.SSM_p2 = SecComputer_P.out_Y0.data.bus_inputs.ir_1_bus.track_angle_magnetic_deg.SSM;
+  SecComputer_B.Data_do = SecComputer_P.out_Y0.data.bus_inputs.ir_1_bus.track_angle_magnetic_deg.Data;
+  SecComputer_B.SSM_bo0 = SecComputer_P.out_Y0.data.bus_inputs.ir_1_bus.heading_magnetic_deg.SSM;
   SecComputer_B.Data = SecComputer_P.out_Y0.data.bus_inputs.ir_1_bus.heading_magnetic_deg.Data;
   SecComputer_B.SSM = SecComputer_P.out_Y0.data.bus_inputs.ir_1_bus.drift_angle_deg.SSM;
   SecComputer_B.Data_f = SecComputer_P.out_Y0.data.bus_inputs.ir_1_bus.drift_angle_deg.Data;
@@ -2390,176 +2430,182 @@ void SecComputer::initialize()
   SecComputer_B.Data_lx = SecComputer_P.out_Y0.data.bus_inputs.elac_1_bus.roll_spoiler_command_deg.Data;
   SecComputer_B.SSM_bq = SecComputer_P.out_Y0.data.bus_inputs.elac_1_bus.yaw_damper_command_deg.SSM;
   SecComputer_B.Data_jb = SecComputer_P.out_Y0.data.bus_inputs.elac_1_bus.yaw_damper_command_deg.Data;
-  SecComputer_B.SSM_hi = SecComputer_P.out_Y0.data.bus_inputs.elac_1_bus.discrete_status_word_1.SSM;
-  SecComputer_B.Data_fn = SecComputer_P.out_Y0.data.bus_inputs.elac_1_bus.discrete_status_word_1.Data;
-  SecComputer_B.SSM_mm = SecComputer_P.out_Y0.data.bus_inputs.elac_1_bus.discrete_status_word_2.SSM;
-  SecComputer_B.Data_od = SecComputer_P.out_Y0.data.bus_inputs.elac_1_bus.discrete_status_word_2.Data;
-  SecComputer_B.SSM_kz = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.efcs_status_word_1.SSM;
-  SecComputer_B.Data_ez = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.efcs_status_word_1.Data;
-  SecComputer_B.SSM_il = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.efcs_status_word_2.SSM;
-  SecComputer_B.Data_pw = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.efcs_status_word_2.Data;
-  SecComputer_B.SSM_i2 = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.efcs_status_word_3.SSM;
-  SecComputer_B.Data_m2 = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.efcs_status_word_3.Data;
-  SecComputer_B.SSM_ah = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.efcs_status_word_4.SSM;
-  SecComputer_B.Data_ek = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.efcs_status_word_4.Data;
-  SecComputer_B.SSM_en = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.efcs_status_word_5.SSM;
-  SecComputer_B.Data_iy = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.efcs_status_word_5.Data;
-  SecComputer_B.SSM_dq = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.capt_roll_command_deg.SSM;
-  SecComputer_B.Data_lk = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.capt_roll_command_deg.Data;
-  SecComputer_B.SSM_px = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.fo_roll_command_deg.SSM;
-  SecComputer_B.Data_ca = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.fo_roll_command_deg.Data;
-  SecComputer_B.SSM_lbo = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.rudder_pedal_position_deg.SSM;
-  SecComputer_B.Data_pix = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.rudder_pedal_position_deg.Data;
-  SecComputer_B.SSM_p5 = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.capt_pitch_command_deg.SSM;
-  SecComputer_B.Data_di = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.capt_pitch_command_deg.Data;
-  SecComputer_B.SSM_mk = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.fo_pitch_command_deg.SSM;
-  SecComputer_B.Data_lz = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.fo_pitch_command_deg.Data;
-  SecComputer_B.SSM_mu = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.aileron_left_pos_deg.SSM;
-  SecComputer_B.Data_lu = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.aileron_left_pos_deg.Data;
-  SecComputer_B.SSM_cbl = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.elevator_left_pos_deg.SSM;
-  SecComputer_B.Data_dc = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.elevator_left_pos_deg.Data;
-  SecComputer_B.SSM_gzd = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.aileron_right_pos_deg.SSM;
-  SecComputer_B.Data_gc = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.aileron_right_pos_deg.Data;
-  SecComputer_B.SSM_mo = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.elevator_right_pos_deg.SSM;
-  SecComputer_B.Data_am = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.elevator_right_pos_deg.Data;
-  SecComputer_B.SSM_me = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.horiz_stab_trim_pos_deg.SSM;
-  SecComputer_B.Data_mo = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.horiz_stab_trim_pos_deg.Data;
-  SecComputer_B.SSM_mj = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.spoiler_1_left_pos_deg.SSM;
-  SecComputer_B.Data_dg = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.spoiler_1_left_pos_deg.Data;
-  SecComputer_B.SSM_a5 = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.spoiler_2_left_pos_deg.SSM;
-  SecComputer_B.Data_e1 = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.spoiler_2_left_pos_deg.Data;
-  SecComputer_B.SSM_bt = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.spoiler_3_left_pos_deg.SSM;
-  SecComputer_B.Data_fp = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.spoiler_3_left_pos_deg.Data;
-  SecComputer_B.SSM_om = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.spoiler_4_left_pos_deg.SSM;
-  SecComputer_B.Data_ns = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.spoiler_4_left_pos_deg.Data;
-  SecComputer_B.SSM_ar = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.spoiler_5_left_pos_deg.SSM;
-  SecComputer_B.Data_m3 = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.spoiler_5_left_pos_deg.Data;
-  SecComputer_B.SSM_ce = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.spoiler_1_right_pos_deg.SSM;
-  SecComputer_B.Data_oj = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.spoiler_1_right_pos_deg.Data;
-  SecComputer_B.SSM_ed = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.spoiler_2_right_pos_deg.SSM;
-  SecComputer_B.Data_jy = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.spoiler_2_right_pos_deg.Data;
-  SecComputer_B.SSM_jh = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.spoiler_3_right_pos_deg.SSM;
-  SecComputer_B.Data_j1 = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.spoiler_3_right_pos_deg.Data;
-  SecComputer_B.SSM_je = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.spoiler_4_right_pos_deg.SSM;
-  SecComputer_B.Data_fc = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.spoiler_4_right_pos_deg.Data;
-  SecComputer_B.SSM_jt = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.spoiler_5_right_pos_deg.SSM;
-  SecComputer_B.Data_of = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.spoiler_5_right_pos_deg.Data;
-  SecComputer_B.SSM_cui = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.efcs_status_word_1.SSM;
-  SecComputer_B.Data_lg = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.efcs_status_word_1.Data;
-  SecComputer_B.SSM_mq = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.efcs_status_word_2.SSM;
-  SecComputer_B.Data_n4 = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.efcs_status_word_2.Data;
-  SecComputer_B.SSM_ni = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.efcs_status_word_3.SSM;
-  SecComputer_B.Data_ot = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.efcs_status_word_3.Data;
-  SecComputer_B.SSM_df = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.efcs_status_word_4.SSM;
-  SecComputer_B.Data_gv = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.efcs_status_word_4.Data;
-  SecComputer_B.SSM_oe = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.efcs_status_word_5.SSM;
-  SecComputer_B.Data_ou = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.efcs_status_word_5.Data;
-  SecComputer_B.SSM_ha = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.capt_roll_command_deg.SSM;
-  SecComputer_B.Data_dh = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.capt_roll_command_deg.Data;
-  SecComputer_B.SSM_op = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.fo_roll_command_deg.SSM;
-  SecComputer_B.Data_ph = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.fo_roll_command_deg.Data;
-  SecComputer_B.SSM_a50 = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.rudder_pedal_position_deg.SSM;
-  SecComputer_B.Data_gs = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.rudder_pedal_position_deg.Data;
-  SecComputer_B.SSM_og = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.capt_pitch_command_deg.SSM;
-  SecComputer_B.Data_fd4 = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.capt_pitch_command_deg.Data;
-  SecComputer_B.SSM_a4 = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.fo_pitch_command_deg.SSM;
-  SecComputer_B.Data_hm = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.fo_pitch_command_deg.Data;
-  SecComputer_B.SSM_bv = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.aileron_left_pos_deg.SSM;
-  SecComputer_B.Data_i2 = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.aileron_left_pos_deg.Data;
-  SecComputer_B.SSM_bo = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.elevator_left_pos_deg.SSM;
-  SecComputer_B.Data_og = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.elevator_left_pos_deg.Data;
-  SecComputer_B.SSM_d1 = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.aileron_right_pos_deg.SSM;
-  SecComputer_B.Data_fv = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.aileron_right_pos_deg.Data;
-  SecComputer_B.SSM_hy = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.elevator_right_pos_deg.SSM;
-  SecComputer_B.Data_oc = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.elevator_right_pos_deg.Data;
-  SecComputer_B.SSM_gi = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.horiz_stab_trim_pos_deg.SSM;
-  SecComputer_B.Data_kq = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.horiz_stab_trim_pos_deg.Data;
-  SecComputer_B.SSM_pp = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.spoiler_1_left_pos_deg.SSM;
-  SecComputer_B.Data_ne = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.spoiler_1_left_pos_deg.Data;
-  SecComputer_B.SSM_iab = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.spoiler_2_left_pos_deg.SSM;
-  SecComputer_B.Data_it = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.spoiler_2_left_pos_deg.Data;
-  SecComputer_B.SSM_jtv = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.spoiler_3_left_pos_deg.SSM;
-  SecComputer_B.Data_ch = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.spoiler_3_left_pos_deg.Data;
-  SecComputer_B.SSM_fy = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.spoiler_4_left_pos_deg.SSM;
-  SecComputer_B.Data_bb = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.spoiler_4_left_pos_deg.Data;
-  SecComputer_B.SSM_d4 = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.spoiler_5_left_pos_deg.SSM;
-  SecComputer_B.Data_ol = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.spoiler_5_left_pos_deg.Data;
-  SecComputer_B.SSM_ars = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.spoiler_1_right_pos_deg.SSM;
-  SecComputer_B.Data_hw = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.spoiler_1_right_pos_deg.Data;
-  SecComputer_B.SSM_din = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.spoiler_2_right_pos_deg.SSM;
-  SecComputer_B.Data_hs = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.spoiler_2_right_pos_deg.Data;
-  SecComputer_B.SSM_m3 = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.spoiler_3_right_pos_deg.SSM;
-  SecComputer_B.Data_fj = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.spoiler_3_right_pos_deg.Data;
-  SecComputer_B.SSM_np = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.spoiler_4_right_pos_deg.SSM;
-  SecComputer_B.Data_ky = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.spoiler_4_right_pos_deg.Data;
-  SecComputer_B.SSM_ax = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.spoiler_5_right_pos_deg.SSM;
-  SecComputer_B.Data_h5 = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.spoiler_5_right_pos_deg.Data;
-  SecComputer_B.SSM_cl = SecComputer_P.out_Y0.data.bus_inputs.elac_2_bus.left_aileron_position_deg.SSM;
-  SecComputer_B.Data_ku = SecComputer_P.out_Y0.data.bus_inputs.elac_2_bus.left_aileron_position_deg.Data;
-  SecComputer_B.SSM_es = SecComputer_P.out_Y0.data.bus_inputs.elac_2_bus.right_aileron_position_deg.SSM;
-  SecComputer_B.Data_jp = SecComputer_P.out_Y0.data.bus_inputs.elac_2_bus.right_aileron_position_deg.Data;
-  SecComputer_B.SSM_gi1 = SecComputer_P.out_Y0.data.bus_inputs.elac_2_bus.left_elevator_position_deg.SSM;
-  SecComputer_B.Data_nu = SecComputer_P.out_Y0.data.bus_inputs.elac_2_bus.left_elevator_position_deg.Data;
-  SecComputer_B.SSM_jz = SecComputer_P.out_Y0.data.bus_inputs.elac_2_bus.right_elevator_position_deg.SSM;
-  SecComputer_B.Data_br = SecComputer_P.out_Y0.data.bus_inputs.elac_2_bus.right_elevator_position_deg.Data;
-  SecComputer_B.SSM_kt = SecComputer_P.out_Y0.data.bus_inputs.elac_2_bus.ths_position_deg.SSM;
-  SecComputer_B.Data_ae = SecComputer_P.out_Y0.data.bus_inputs.elac_2_bus.ths_position_deg.Data;
-  SecComputer_B.SSM_ds = SecComputer_P.out_Y0.data.bus_inputs.elac_2_bus.left_sidestick_pitch_command_deg.SSM;
-  SecComputer_B.Data_pe = SecComputer_P.out_Y0.data.bus_inputs.elac_2_bus.left_sidestick_pitch_command_deg.Data;
-  SecComputer_B.SSM_eg = SecComputer_P.out_Y0.data.bus_inputs.elac_2_bus.right_sidestick_pitch_command_deg.SSM;
-  SecComputer_B.Data_fy = SecComputer_P.out_Y0.data.bus_inputs.elac_2_bus.right_sidestick_pitch_command_deg.Data;
-  SecComputer_B.SSM_a0 = SecComputer_P.out_Y0.data.bus_inputs.elac_2_bus.left_sidestick_roll_command_deg.SSM;
-  SecComputer_B.Data_na = SecComputer_P.out_Y0.data.bus_inputs.elac_2_bus.left_sidestick_roll_command_deg.Data;
-  SecComputer_B.SSM_cv = SecComputer_P.out_Y0.data.bus_inputs.elac_2_bus.right_sidestick_roll_command_deg.SSM;
-  SecComputer_B.Data_my = SecComputer_P.out_Y0.data.bus_inputs.elac_2_bus.right_sidestick_roll_command_deg.Data;
-  SecComputer_B.SSM_ea = SecComputer_P.out_Y0.data.bus_inputs.elac_2_bus.rudder_pedal_position_deg.SSM;
-  SecComputer_B.Data_i4 = SecComputer_P.out_Y0.data.bus_inputs.elac_2_bus.rudder_pedal_position_deg.Data;
-  SecComputer_B.SSM_p4 = SecComputer_P.out_Y0.data.bus_inputs.elac_2_bus.aileron_command_deg.SSM;
-  SecComputer_B.Data_cx = SecComputer_P.out_Y0.data.bus_inputs.elac_2_bus.aileron_command_deg.Data;
-  SecComputer_B.SSM_m2 = SecComputer_P.out_Y0.data.bus_inputs.elac_2_bus.roll_spoiler_command_deg.SSM;
-  SecComputer_B.Data_nz = SecComputer_P.out_Y0.data.bus_inputs.elac_2_bus.roll_spoiler_command_deg.Data;
-  SecComputer_B.SSM_bt0 = SecComputer_P.out_Y0.data.bus_inputs.elac_2_bus.yaw_damper_command_deg.SSM;
-  SecComputer_B.Data_id = SecComputer_P.out_Y0.data.bus_inputs.elac_2_bus.yaw_damper_command_deg.Data;
-  SecComputer_B.SSM_nr = SecComputer_P.out_Y0.data.bus_inputs.elac_2_bus.discrete_status_word_1.SSM;
-  SecComputer_B.Data_o2 = SecComputer_P.out_Y0.data.bus_inputs.elac_2_bus.discrete_status_word_1.Data;
-  SecComputer_B.SSM_fr = SecComputer_P.out_Y0.data.bus_inputs.elac_2_bus.discrete_status_word_2.SSM;
-  SecComputer_B.Data_gqq = SecComputer_P.out_Y0.data.bus_inputs.elac_2_bus.discrete_status_word_2.Data;
-  SecComputer_B.SSM_cc = SecComputer_P.out_Y0.data.bus_inputs.sfcc_1_bus.slat_flap_component_status_word.SSM;
-  SecComputer_B.Data_md = SecComputer_P.out_Y0.data.bus_inputs.sfcc_1_bus.slat_flap_component_status_word.Data;
-  SecComputer_B.SSM_lm = SecComputer_P.out_Y0.data.bus_inputs.sfcc_1_bus.slat_flap_system_status_word.SSM;
-  SecComputer_B.Data_cz = SecComputer_P.out_Y0.data.bus_inputs.sfcc_1_bus.slat_flap_system_status_word.Data;
-  SecComputer_B.SSM_mkm = SecComputer_P.out_Y0.data.bus_inputs.sfcc_1_bus.slat_flap_actual_position_word.SSM;
-  SecComputer_B.Data_pm = SecComputer_P.out_Y0.data.bus_inputs.sfcc_1_bus.slat_flap_actual_position_word.Data;
-  SecComputer_B.SSM_jhd = SecComputer_P.out_Y0.data.bus_inputs.sfcc_1_bus.slat_actual_position_deg.SSM;
-  SecComputer_B.Data_bj = SecComputer_P.out_Y0.data.bus_inputs.sfcc_1_bus.slat_actual_position_deg.Data;
-  SecComputer_B.SSM_av = SecComputer_P.out_Y0.data.bus_inputs.sfcc_1_bus.flap_actual_position_deg.SSM;
-  SecComputer_B.Data_ox = SecComputer_P.out_Y0.data.bus_inputs.sfcc_1_bus.flap_actual_position_deg.Data;
-  SecComputer_B.SSM_ira = SecComputer_P.out_Y0.data.bus_inputs.sfcc_2_bus.slat_flap_component_status_word.SSM;
-  SecComputer_B.Data_pe5 = SecComputer_P.out_Y0.data.bus_inputs.sfcc_2_bus.slat_flap_component_status_word.Data;
-  SecComputer_B.SSM_ge = SecComputer_P.out_Y0.data.bus_inputs.sfcc_2_bus.slat_flap_system_status_word.SSM;
-  SecComputer_B.Data_jj = SecComputer_P.out_Y0.data.bus_inputs.sfcc_2_bus.slat_flap_system_status_word.Data;
-  SecComputer_B.SSM_lv = SecComputer_P.out_Y0.data.bus_inputs.sfcc_2_bus.slat_flap_actual_position_word.SSM;
-  SecComputer_B.Data_p5 = SecComputer_P.out_Y0.data.bus_inputs.sfcc_2_bus.slat_flap_actual_position_word.Data;
-  SecComputer_B.SSM_cg = SecComputer_P.out_Y0.data.bus_inputs.sfcc_2_bus.slat_actual_position_deg.SSM;
-  SecComputer_B.Data_ekl = SecComputer_P.out_Y0.data.bus_inputs.sfcc_2_bus.slat_actual_position_deg.Data;
-  SecComputer_B.SSM_be = SecComputer_P.out_Y0.data.bus_inputs.sfcc_2_bus.flap_actual_position_deg.SSM;
-  SecComputer_B.Data_nd = SecComputer_P.out_Y0.data.bus_inputs.sfcc_2_bus.flap_actual_position_deg.Data;
-  SecComputer_B.SSM_axb = SecComputer_P.out_Y0.data.bus_inputs.lgciu_1_bus.discrete_word_1.SSM;
-  SecComputer_B.Data_n2 = SecComputer_P.out_Y0.data.bus_inputs.lgciu_1_bus.discrete_word_1.Data;
-  SecComputer_B.SSM_nz = SecComputer_P.out_Y0.data.bus_inputs.lgciu_1_bus.discrete_word_2.SSM;
-  SecComputer_B.Data_dl = SecComputer_P.out_Y0.data.bus_inputs.lgciu_1_bus.discrete_word_2.Data;
-  SecComputer_B.SSM_cx = SecComputer_P.out_Y0.data.bus_inputs.lgciu_1_bus.discrete_word_3.SSM;
-  SecComputer_B.Data_gs2 = SecComputer_P.out_Y0.data.bus_inputs.lgciu_1_bus.discrete_word_3.Data;
-  SecComputer_B.SSM_gh = SecComputer_P.out_Y0.data.bus_inputs.lgciu_1_bus.discrete_word_4.SSM;
-  SecComputer_B.Data_h4 = SecComputer_P.out_Y0.data.bus_inputs.lgciu_1_bus.discrete_word_4.Data;
-  SecComputer_B.SSM_ks = SecComputer_P.out_Y0.data.bus_inputs.lgciu_2_bus.discrete_word_1.SSM;
-  SecComputer_B.Data_e3 = SecComputer_P.out_Y0.data.bus_inputs.lgciu_2_bus.discrete_word_1.Data;
-  SecComputer_B.SSM_pw = SecComputer_P.out_Y0.data.bus_inputs.lgciu_2_bus.discrete_word_2.SSM;
-  SecComputer_B.Data_f5h = SecComputer_P.out_Y0.data.bus_inputs.lgciu_2_bus.discrete_word_2.Data;
-  SecComputer_B.SSM_fh = SecComputer_P.out_Y0.data.bus_inputs.lgciu_2_bus.discrete_word_3.SSM;
-  SecComputer_B.Data_an = SecComputer_P.out_Y0.data.bus_inputs.lgciu_2_bus.discrete_word_3.Data;
-  SecComputer_B.SSM_gzn = SecComputer_P.out_Y0.data.bus_inputs.lgciu_2_bus.discrete_word_4.SSM;
-  SecComputer_B.Data_i4o = SecComputer_P.out_Y0.data.bus_inputs.lgciu_2_bus.discrete_word_4.Data;
+  SecComputer_B.SSM_hi = SecComputer_P.out_Y0.data.bus_inputs.elac_1_bus.elevator_double_pressurization_command_deg.SSM;
+  SecComputer_B.Data_fn =
+    SecComputer_P.out_Y0.data.bus_inputs.elac_1_bus.elevator_double_pressurization_command_deg.Data;
+  SecComputer_B.SSM_mm = SecComputer_P.out_Y0.data.bus_inputs.elac_1_bus.discrete_status_word_1.SSM;
+  SecComputer_B.Data_od = SecComputer_P.out_Y0.data.bus_inputs.elac_1_bus.discrete_status_word_1.Data;
+  SecComputer_B.SSM_kz = SecComputer_P.out_Y0.data.bus_inputs.elac_1_bus.discrete_status_word_2.SSM;
+  SecComputer_B.Data_ez = SecComputer_P.out_Y0.data.bus_inputs.elac_1_bus.discrete_status_word_2.Data;
+  SecComputer_B.SSM_il = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.efcs_status_word_1.SSM;
+  SecComputer_B.Data_pw = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.efcs_status_word_1.Data;
+  SecComputer_B.SSM_i2 = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.efcs_status_word_2.SSM;
+  SecComputer_B.Data_m2 = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.efcs_status_word_2.Data;
+  SecComputer_B.SSM_ah = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.efcs_status_word_3.SSM;
+  SecComputer_B.Data_ek = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.efcs_status_word_3.Data;
+  SecComputer_B.SSM_en = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.efcs_status_word_4.SSM;
+  SecComputer_B.Data_iy = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.efcs_status_word_4.Data;
+  SecComputer_B.SSM_dq = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.efcs_status_word_5.SSM;
+  SecComputer_B.Data_lk = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.efcs_status_word_5.Data;
+  SecComputer_B.SSM_px = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.capt_roll_command_deg.SSM;
+  SecComputer_B.Data_ca = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.capt_roll_command_deg.Data;
+  SecComputer_B.SSM_lbo = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.fo_roll_command_deg.SSM;
+  SecComputer_B.Data_pix = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.fo_roll_command_deg.Data;
+  SecComputer_B.SSM_p5 = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.rudder_pedal_position_deg.SSM;
+  SecComputer_B.Data_di = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.rudder_pedal_position_deg.Data;
+  SecComputer_B.SSM_mk = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.capt_pitch_command_deg.SSM;
+  SecComputer_B.Data_lz = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.capt_pitch_command_deg.Data;
+  SecComputer_B.SSM_mu = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.fo_pitch_command_deg.SSM;
+  SecComputer_B.Data_lu = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.fo_pitch_command_deg.Data;
+  SecComputer_B.SSM_cbl = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.aileron_left_pos_deg.SSM;
+  SecComputer_B.Data_dc = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.aileron_left_pos_deg.Data;
+  SecComputer_B.SSM_gzd = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.elevator_left_pos_deg.SSM;
+  SecComputer_B.Data_gc = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.elevator_left_pos_deg.Data;
+  SecComputer_B.SSM_mo = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.aileron_right_pos_deg.SSM;
+  SecComputer_B.Data_am = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.aileron_right_pos_deg.Data;
+  SecComputer_B.SSM_me = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.elevator_right_pos_deg.SSM;
+  SecComputer_B.Data_mo = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.elevator_right_pos_deg.Data;
+  SecComputer_B.SSM_mj = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.horiz_stab_trim_pos_deg.SSM;
+  SecComputer_B.Data_dg = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.horiz_stab_trim_pos_deg.Data;
+  SecComputer_B.SSM_a5 = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.spoiler_1_left_pos_deg.SSM;
+  SecComputer_B.Data_e1 = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.spoiler_1_left_pos_deg.Data;
+  SecComputer_B.SSM_bt = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.spoiler_2_left_pos_deg.SSM;
+  SecComputer_B.Data_fp = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.spoiler_2_left_pos_deg.Data;
+  SecComputer_B.SSM_om = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.spoiler_3_left_pos_deg.SSM;
+  SecComputer_B.Data_ns = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.spoiler_3_left_pos_deg.Data;
+  SecComputer_B.SSM_ar = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.spoiler_4_left_pos_deg.SSM;
+  SecComputer_B.Data_m3 = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.spoiler_4_left_pos_deg.Data;
+  SecComputer_B.SSM_ce = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.spoiler_5_left_pos_deg.SSM;
+  SecComputer_B.Data_oj = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.spoiler_5_left_pos_deg.Data;
+  SecComputer_B.SSM_ed = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.spoiler_1_right_pos_deg.SSM;
+  SecComputer_B.Data_jy = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.spoiler_1_right_pos_deg.Data;
+  SecComputer_B.SSM_jh = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.spoiler_2_right_pos_deg.SSM;
+  SecComputer_B.Data_j1 = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.spoiler_2_right_pos_deg.Data;
+  SecComputer_B.SSM_je = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.spoiler_3_right_pos_deg.SSM;
+  SecComputer_B.Data_fc = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.spoiler_3_right_pos_deg.Data;
+  SecComputer_B.SSM_jt = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.spoiler_4_right_pos_deg.SSM;
+  SecComputer_B.Data_of = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.spoiler_4_right_pos_deg.Data;
+  SecComputer_B.SSM_cui = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.spoiler_5_right_pos_deg.SSM;
+  SecComputer_B.Data_lg = SecComputer_P.out_Y0.data.bus_inputs.fcdc_1_bus.spoiler_5_right_pos_deg.Data;
+  SecComputer_B.SSM_mq = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.efcs_status_word_1.SSM;
+  SecComputer_B.Data_n4 = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.efcs_status_word_1.Data;
+  SecComputer_B.SSM_ni = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.efcs_status_word_2.SSM;
+  SecComputer_B.Data_ot = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.efcs_status_word_2.Data;
+  SecComputer_B.SSM_df = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.efcs_status_word_3.SSM;
+  SecComputer_B.Data_gv = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.efcs_status_word_3.Data;
+  SecComputer_B.SSM_oe = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.efcs_status_word_4.SSM;
+  SecComputer_B.Data_ou = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.efcs_status_word_4.Data;
+  SecComputer_B.SSM_ha = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.efcs_status_word_5.SSM;
+  SecComputer_B.Data_dh = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.efcs_status_word_5.Data;
+  SecComputer_B.SSM_op = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.capt_roll_command_deg.SSM;
+  SecComputer_B.Data_ph = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.capt_roll_command_deg.Data;
+  SecComputer_B.SSM_a50 = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.fo_roll_command_deg.SSM;
+  SecComputer_B.Data_gs = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.fo_roll_command_deg.Data;
+  SecComputer_B.SSM_og = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.rudder_pedal_position_deg.SSM;
+  SecComputer_B.Data_fd4 = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.rudder_pedal_position_deg.Data;
+  SecComputer_B.SSM_a4 = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.capt_pitch_command_deg.SSM;
+  SecComputer_B.Data_hm = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.capt_pitch_command_deg.Data;
+  SecComputer_B.SSM_bv = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.fo_pitch_command_deg.SSM;
+  SecComputer_B.Data_i2 = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.fo_pitch_command_deg.Data;
+  SecComputer_B.SSM_bo = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.aileron_left_pos_deg.SSM;
+  SecComputer_B.Data_og = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.aileron_left_pos_deg.Data;
+  SecComputer_B.SSM_d1 = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.elevator_left_pos_deg.SSM;
+  SecComputer_B.Data_fv = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.elevator_left_pos_deg.Data;
+  SecComputer_B.SSM_hy = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.aileron_right_pos_deg.SSM;
+  SecComputer_B.Data_oc = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.aileron_right_pos_deg.Data;
+  SecComputer_B.SSM_gi = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.elevator_right_pos_deg.SSM;
+  SecComputer_B.Data_kq = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.elevator_right_pos_deg.Data;
+  SecComputer_B.SSM_pp = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.horiz_stab_trim_pos_deg.SSM;
+  SecComputer_B.Data_ne = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.horiz_stab_trim_pos_deg.Data;
+  SecComputer_B.SSM_iab = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.spoiler_1_left_pos_deg.SSM;
+  SecComputer_B.Data_it = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.spoiler_1_left_pos_deg.Data;
+  SecComputer_B.SSM_jtv = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.spoiler_2_left_pos_deg.SSM;
+  SecComputer_B.Data_ch = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.spoiler_2_left_pos_deg.Data;
+  SecComputer_B.SSM_fy = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.spoiler_3_left_pos_deg.SSM;
+  SecComputer_B.Data_bb = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.spoiler_3_left_pos_deg.Data;
+  SecComputer_B.SSM_d4 = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.spoiler_4_left_pos_deg.SSM;
+  SecComputer_B.Data_ol = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.spoiler_4_left_pos_deg.Data;
+  SecComputer_B.SSM_ars = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.spoiler_5_left_pos_deg.SSM;
+  SecComputer_B.Data_hw = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.spoiler_5_left_pos_deg.Data;
+  SecComputer_B.SSM_din = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.spoiler_1_right_pos_deg.SSM;
+  SecComputer_B.Data_hs = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.spoiler_1_right_pos_deg.Data;
+  SecComputer_B.SSM_m3 = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.spoiler_2_right_pos_deg.SSM;
+  SecComputer_B.Data_fj = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.spoiler_2_right_pos_deg.Data;
+  SecComputer_B.SSM_np = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.spoiler_3_right_pos_deg.SSM;
+  SecComputer_B.Data_ky = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.spoiler_3_right_pos_deg.Data;
+  SecComputer_B.SSM_ax = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.spoiler_4_right_pos_deg.SSM;
+  SecComputer_B.Data_h5 = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.spoiler_4_right_pos_deg.Data;
+  SecComputer_B.SSM_cl = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.spoiler_5_right_pos_deg.SSM;
+  SecComputer_B.Data_ku = SecComputer_P.out_Y0.data.bus_inputs.fcdc_2_bus.spoiler_5_right_pos_deg.Data;
+  SecComputer_B.SSM_es = SecComputer_P.out_Y0.data.bus_inputs.elac_2_bus.left_aileron_position_deg.SSM;
+  SecComputer_B.Data_jp = SecComputer_P.out_Y0.data.bus_inputs.elac_2_bus.left_aileron_position_deg.Data;
+  SecComputer_B.SSM_gi1 = SecComputer_P.out_Y0.data.bus_inputs.elac_2_bus.right_aileron_position_deg.SSM;
+  SecComputer_B.Data_nu = SecComputer_P.out_Y0.data.bus_inputs.elac_2_bus.right_aileron_position_deg.Data;
+  SecComputer_B.SSM_jz = SecComputer_P.out_Y0.data.bus_inputs.elac_2_bus.left_elevator_position_deg.SSM;
+  SecComputer_B.Data_br = SecComputer_P.out_Y0.data.bus_inputs.elac_2_bus.left_elevator_position_deg.Data;
+  SecComputer_B.SSM_kt = SecComputer_P.out_Y0.data.bus_inputs.elac_2_bus.right_elevator_position_deg.SSM;
+  SecComputer_B.Data_ae = SecComputer_P.out_Y0.data.bus_inputs.elac_2_bus.right_elevator_position_deg.Data;
+  SecComputer_B.SSM_ds = SecComputer_P.out_Y0.data.bus_inputs.elac_2_bus.ths_position_deg.SSM;
+  SecComputer_B.Data_pe = SecComputer_P.out_Y0.data.bus_inputs.elac_2_bus.ths_position_deg.Data;
+  SecComputer_B.SSM_eg = SecComputer_P.out_Y0.data.bus_inputs.elac_2_bus.left_sidestick_pitch_command_deg.SSM;
+  SecComputer_B.Data_fy = SecComputer_P.out_Y0.data.bus_inputs.elac_2_bus.left_sidestick_pitch_command_deg.Data;
+  SecComputer_B.SSM_a0 = SecComputer_P.out_Y0.data.bus_inputs.elac_2_bus.right_sidestick_pitch_command_deg.SSM;
+  SecComputer_B.Data_na = SecComputer_P.out_Y0.data.bus_inputs.elac_2_bus.right_sidestick_pitch_command_deg.Data;
+  SecComputer_B.SSM_cv = SecComputer_P.out_Y0.data.bus_inputs.elac_2_bus.left_sidestick_roll_command_deg.SSM;
+  SecComputer_B.Data_my = SecComputer_P.out_Y0.data.bus_inputs.elac_2_bus.left_sidestick_roll_command_deg.Data;
+  SecComputer_B.SSM_ea = SecComputer_P.out_Y0.data.bus_inputs.elac_2_bus.right_sidestick_roll_command_deg.SSM;
+  SecComputer_B.Data_i4 = SecComputer_P.out_Y0.data.bus_inputs.elac_2_bus.right_sidestick_roll_command_deg.Data;
+  SecComputer_B.SSM_p4 = SecComputer_P.out_Y0.data.bus_inputs.elac_2_bus.rudder_pedal_position_deg.SSM;
+  SecComputer_B.Data_cx = SecComputer_P.out_Y0.data.bus_inputs.elac_2_bus.rudder_pedal_position_deg.Data;
+  SecComputer_B.SSM_m2 = SecComputer_P.out_Y0.data.bus_inputs.elac_2_bus.aileron_command_deg.SSM;
+  SecComputer_B.Data_nz = SecComputer_P.out_Y0.data.bus_inputs.elac_2_bus.aileron_command_deg.Data;
+  SecComputer_B.SSM_bt0 = SecComputer_P.out_Y0.data.bus_inputs.elac_2_bus.roll_spoiler_command_deg.SSM;
+  SecComputer_B.Data_id = SecComputer_P.out_Y0.data.bus_inputs.elac_2_bus.roll_spoiler_command_deg.Data;
+  SecComputer_B.SSM_nr = SecComputer_P.out_Y0.data.bus_inputs.elac_2_bus.yaw_damper_command_deg.SSM;
+  SecComputer_B.Data_o2 = SecComputer_P.out_Y0.data.bus_inputs.elac_2_bus.yaw_damper_command_deg.Data;
+  SecComputer_B.SSM_fr = SecComputer_P.out_Y0.data.bus_inputs.elac_2_bus.elevator_double_pressurization_command_deg.SSM;
+  SecComputer_B.Data_gqq =
+    SecComputer_P.out_Y0.data.bus_inputs.elac_2_bus.elevator_double_pressurization_command_deg.Data;
+  SecComputer_B.SSM_cc = SecComputer_P.out_Y0.data.bus_inputs.elac_2_bus.discrete_status_word_1.SSM;
+  SecComputer_B.Data_md = SecComputer_P.out_Y0.data.bus_inputs.elac_2_bus.discrete_status_word_1.Data;
+  SecComputer_B.SSM_lm = SecComputer_P.out_Y0.data.bus_inputs.elac_2_bus.discrete_status_word_2.SSM;
+  SecComputer_B.Data_cz = SecComputer_P.out_Y0.data.bus_inputs.elac_2_bus.discrete_status_word_2.Data;
+  SecComputer_B.SSM_mkm = SecComputer_P.out_Y0.data.bus_inputs.sfcc_1_bus.slat_flap_component_status_word.SSM;
+  SecComputer_B.Data_pm = SecComputer_P.out_Y0.data.bus_inputs.sfcc_1_bus.slat_flap_component_status_word.Data;
+  SecComputer_B.SSM_jhd = SecComputer_P.out_Y0.data.bus_inputs.sfcc_1_bus.slat_flap_system_status_word.SSM;
+  SecComputer_B.Data_bj = SecComputer_P.out_Y0.data.bus_inputs.sfcc_1_bus.slat_flap_system_status_word.Data;
+  SecComputer_B.SSM_av = SecComputer_P.out_Y0.data.bus_inputs.sfcc_1_bus.slat_flap_actual_position_word.SSM;
+  SecComputer_B.Data_ox = SecComputer_P.out_Y0.data.bus_inputs.sfcc_1_bus.slat_flap_actual_position_word.Data;
+  SecComputer_B.SSM_ira = SecComputer_P.out_Y0.data.bus_inputs.sfcc_1_bus.slat_actual_position_deg.SSM;
+  SecComputer_B.Data_pe5 = SecComputer_P.out_Y0.data.bus_inputs.sfcc_1_bus.slat_actual_position_deg.Data;
+  SecComputer_B.SSM_ge = SecComputer_P.out_Y0.data.bus_inputs.sfcc_1_bus.flap_actual_position_deg.SSM;
+  SecComputer_B.Data_jj = SecComputer_P.out_Y0.data.bus_inputs.sfcc_1_bus.flap_actual_position_deg.Data;
+  SecComputer_B.SSM_lv = SecComputer_P.out_Y0.data.bus_inputs.sfcc_2_bus.slat_flap_component_status_word.SSM;
+  SecComputer_B.Data_p5 = SecComputer_P.out_Y0.data.bus_inputs.sfcc_2_bus.slat_flap_component_status_word.Data;
+  SecComputer_B.SSM_cg = SecComputer_P.out_Y0.data.bus_inputs.sfcc_2_bus.slat_flap_system_status_word.SSM;
+  SecComputer_B.Data_ekl = SecComputer_P.out_Y0.data.bus_inputs.sfcc_2_bus.slat_flap_system_status_word.Data;
+  SecComputer_B.SSM_be = SecComputer_P.out_Y0.data.bus_inputs.sfcc_2_bus.slat_flap_actual_position_word.SSM;
+  SecComputer_B.Data_nd = SecComputer_P.out_Y0.data.bus_inputs.sfcc_2_bus.slat_flap_actual_position_word.Data;
+  SecComputer_B.SSM_axb = SecComputer_P.out_Y0.data.bus_inputs.sfcc_2_bus.slat_actual_position_deg.SSM;
+  SecComputer_B.Data_n2 = SecComputer_P.out_Y0.data.bus_inputs.sfcc_2_bus.slat_actual_position_deg.Data;
+  SecComputer_B.SSM_nz = SecComputer_P.out_Y0.data.bus_inputs.sfcc_2_bus.flap_actual_position_deg.SSM;
+  SecComputer_B.Data_dl = SecComputer_P.out_Y0.data.bus_inputs.sfcc_2_bus.flap_actual_position_deg.Data;
+  SecComputer_B.SSM_cx = SecComputer_P.out_Y0.data.bus_inputs.lgciu_1_bus.discrete_word_1.SSM;
+  SecComputer_B.Data_gs2 = SecComputer_P.out_Y0.data.bus_inputs.lgciu_1_bus.discrete_word_1.Data;
+  SecComputer_B.SSM_gh = SecComputer_P.out_Y0.data.bus_inputs.lgciu_1_bus.discrete_word_2.SSM;
+  SecComputer_B.Data_h4 = SecComputer_P.out_Y0.data.bus_inputs.lgciu_1_bus.discrete_word_2.Data;
+  SecComputer_B.SSM_ks = SecComputer_P.out_Y0.data.bus_inputs.lgciu_1_bus.discrete_word_3.SSM;
+  SecComputer_B.Data_e3 = SecComputer_P.out_Y0.data.bus_inputs.lgciu_1_bus.discrete_word_3.Data;
+  SecComputer_B.SSM_pw = SecComputer_P.out_Y0.data.bus_inputs.lgciu_1_bus.discrete_word_4.SSM;
+  SecComputer_B.Data_f5h = SecComputer_P.out_Y0.data.bus_inputs.lgciu_1_bus.discrete_word_4.Data;
+  SecComputer_B.SSM_fh = SecComputer_P.out_Y0.data.bus_inputs.lgciu_2_bus.discrete_word_1.SSM;
+  SecComputer_B.Data_an = SecComputer_P.out_Y0.data.bus_inputs.lgciu_2_bus.discrete_word_1.Data;
+  SecComputer_B.SSM_gzn = SecComputer_P.out_Y0.data.bus_inputs.lgciu_2_bus.discrete_word_2.SSM;
+  SecComputer_B.Data_i4o = SecComputer_P.out_Y0.data.bus_inputs.lgciu_2_bus.discrete_word_2.Data;
+  SecComputer_B.SSM_oo = SecComputer_P.out_Y0.data.bus_inputs.lgciu_2_bus.discrete_word_3.SSM;
+  SecComputer_B.Data_af = SecComputer_P.out_Y0.data.bus_inputs.lgciu_2_bus.discrete_word_3.Data;
+  SecComputer_B.SSM_evh = SecComputer_P.out_Y0.data.bus_inputs.lgciu_2_bus.discrete_word_4.SSM;
+  SecComputer_B.Data_bm = SecComputer_P.out_Y0.data.bus_inputs.lgciu_2_bus.discrete_word_4.Data;
   SecComputer_B.laws = SecComputer_P.out_Y0.laws;
   SecComputer_B.logic = SecComputer_P.out_Y0.logic;
   SecComputer_Y.out.discrete_outputs = SecComputer_P.out_Y0.discrete_outputs;
