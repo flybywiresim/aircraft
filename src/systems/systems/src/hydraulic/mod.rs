@@ -604,6 +604,8 @@ pub struct Accumulator {
     current_flow: VolumeRate,
     current_delta_vol: Volume,
     has_control_valve: bool,
+
+    circuit_target_pressure: Pressure,
 }
 impl Accumulator {
     const FLOW_DYNAMIC_LOW_PASS: f64 = 0.7;
@@ -617,6 +619,7 @@ impl Accumulator {
         total_volume: Volume,
         fluid_vol_at_init: Volume,
         has_control_valve: bool,
+        circuit_target_pressure: Pressure,
     ) -> Self {
         // Taking care of case where init volume is maxed at accumulator capacity: we can't exceed max_volume minus a margin for gas to compress
         let limited_volume = fluid_vol_at_init.min(total_volume * 0.9);
@@ -633,6 +636,7 @@ impl Accumulator {
             current_flow: VolumeRate::new::<gallon_per_second>(0.),
             current_delta_vol: Volume::new::<gallon>(0.),
             has_control_valve,
+            circuit_target_pressure,
         }
     }
 
@@ -665,10 +669,8 @@ impl Accumulator {
             *delta_vol += volume_from_acc;
         } else if accumulator_delta_press.get::<psi>() < 0.0 {
             let fluid_volume_to_reach_equilibrium = self.total_volume
-                - Volume::new::<gallon>(
-                    (self.gas_init_precharge.get::<psi>() * self.total_volume.get::<gallon>())
-                        / 3000.,
-                );
+                - ((self.gas_init_precharge * self.total_volume) / self.circuit_target_pressure);
+
             let max_delta_vol = fluid_volume_to_reach_equilibrium - self.fluid_volume;
             let volume_to_acc = delta_vol
                 .max(Volume::new::<gallon>(0.0))
@@ -722,6 +724,8 @@ pub struct HydraulicCircuit {
 
     fluid: Fluid,
     reservoir: Reservoir,
+
+    circuit_target_pressure: Pressure,
 }
 impl HydraulicCircuit {
     const PUMP_SECTION_MAX_VOLUME_GAL: f64 = 0.8;
@@ -730,7 +734,6 @@ impl HydraulicCircuit {
     const SYSTEM_SECTION_STATIC_LEAK_GAL_P_S: f64 = 0.03;
 
     const FLUID_BULK_MODULUS_PASCAL: f64 = 1450000000.0;
-    const TARGET_PRESSURE_PSI: f64 = 3000.;
 
     // Nitrogen PSI precharge pressure
     const ACCUMULATOR_GAS_PRE_CHARGE_PSI: f64 = 1885.0;
@@ -760,6 +763,8 @@ impl HydraulicCircuit {
         pump_pressure_switch_hi_hyst: Pressure,
         connected_to_ptu_left_side: bool,
         connected_to_ptu_right_side: bool,
+
+        circuit_target_pressure: Pressure,
     ) -> Self {
         assert!(number_of_pump_sections > 0);
 
@@ -815,6 +820,7 @@ impl HydraulicCircuit {
                     Volume::new::<gallon>(Self::ACCUMULATOR_MAX_VOLUME_GALLONS),
                     Volume::new::<gallon>(0.),
                     false,
+                    circuit_target_pressure,
                 )),
                 system_pressure_switch_lo_hyst,
                 system_pressure_switch_hi_hyst,
@@ -828,6 +834,7 @@ impl HydraulicCircuit {
             pump_to_system_check_valves,
             fluid: Fluid::new(Pressure::new::<pascal>(Self::FLUID_BULK_MODULUS_PASCAL)),
             reservoir,
+            circuit_target_pressure,
         }
     }
 
@@ -939,23 +946,28 @@ impl HydraulicCircuit {
 
     fn update_target_volumes_after_flow(&mut self) {
         for section in &mut self.pump_sections {
-            section.update_target_volume_after_flow_update(
-                Pressure::new::<psi>(Self::TARGET_PRESSURE_PSI),
-                &self.fluid,
-            );
+            section
+                .update_target_volume_after_flow_update(self.circuit_target_pressure, &self.fluid);
         }
-        self.system_section.update_target_volume_after_flow_update(
-            Pressure::new::<psi>(Self::TARGET_PRESSURE_PSI),
-            &self.fluid,
-        );
+        self.system_section
+            .update_target_volume_after_flow_update(self.circuit_target_pressure, &self.fluid);
     }
 
     fn update_flows(&mut self, context: &UpdateContext, ptu: Option<&PowerTransferUnit>) {
         for section in &mut self.pump_sections {
-            section.update_flow(context, &mut self.reservoir, ptu);
+            section.update_flow(
+                context,
+                &mut self.reservoir,
+                ptu,
+                self.circuit_target_pressure,
+            );
         }
-        self.system_section
-            .update_flow(context, &mut self.reservoir, ptu);
+        self.system_section.update_flow(
+            context,
+            &mut self.reservoir,
+            ptu,
+            self.circuit_target_pressure,
+        );
     }
 
     fn update_shutoff_valves(&mut self, controller: &impl HydraulicCircuitController) {
@@ -1200,11 +1212,11 @@ impl Section {
         self.volume_target -= self.delta_volume_flow_pass;
     }
 
-    fn static_leak(&self, context: &UpdateContext) -> Volume {
+    fn static_leak(&self, context: &UpdateContext, target_pressure: Pressure) -> Volume {
         self.static_leak_at_max_press
             * context.delta_as_time()
             * (self.current_pressure - Pressure::new::<psi>(14.7))
-            / Pressure::new::<psi>(3000.)
+            / target_pressure
     }
 
     /// Updates hydraulic flow from consumers like accumulator / ptu / any actuator
@@ -1213,8 +1225,9 @@ impl Section {
         context: &UpdateContext,
         reservoir: &mut Reservoir,
         ptu: Option<&PowerTransferUnit>,
+        target_pressure: Pressure,
     ) {
-        let static_leak = self.static_leak(context);
+        let static_leak = self.static_leak(context, target_pressure);
         let mut delta_volume_flow_pass = -static_leak;
 
         reservoir.add_return_volume(static_leak);
@@ -2618,6 +2631,7 @@ mod tests {
             Pressure::new::<psi>(1800.),
             true,
             false,
+            Pressure::new::<psi>(3000.),
         )
     }
 
