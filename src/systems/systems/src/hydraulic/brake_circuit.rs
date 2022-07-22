@@ -159,6 +159,7 @@ impl BrakeCircuit {
         accumulator_volume: Volume,
         accumulator_fluid_volume_at_init: Volume,
         total_displacement: Volume,
+        circuit_target_pressure: Pressure,
     ) -> BrakeCircuit {
         let mut has_accu = true;
         if accumulator_volume <= Volume::new::<gallon>(0.) {
@@ -185,6 +186,7 @@ impl BrakeCircuit {
                 accumulator_volume,
                 accumulator_fluid_volume_at_init,
                 true,
+                circuit_target_pressure,
             ),
             total_volume_to_actuator: Volume::new::<gallon>(0.),
             total_volume_to_reservoir: Volume::new::<gallon>(0.),
@@ -726,6 +728,7 @@ mod tests {
                 init_max_vol,
                 Volume::new::<gallon>(0.0),
                 Volume::new::<gallon>(0.1),
+                Pressure::new::<psi>(3000.),
             )
         }));
 
@@ -750,6 +753,7 @@ mod tests {
                 init_max_vol,
                 init_max_vol / 2.0,
                 Volume::new::<gallon>(0.1),
+                Pressure::new::<psi>(3000.),
             )
         }));
 
@@ -862,6 +866,7 @@ mod tests {
             init_max_vol,
             init_max_vol / 2.0,
             Volume::new::<gallon>(0.1),
+            Pressure::new::<psi>(3000.),
         )
     }
 

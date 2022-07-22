@@ -1029,20 +1029,24 @@ export class ManagedFlightPlan {
         }
 
         if (arrivalIndex !== -1) {
+            // string the common legs in the middle of the STAR
             const arrival: RawArrival = destinationInfo.arrivals[arrivalIndex];
             legs.push(...arrival.commonLegs);
             legAnnotations.push(...arrival.commonLegs.map(_ => arrival.name));
             // console.log('MFP: buildArrival - pushing STAR legs ->', legs);
-        }
 
-        if (arrivalIndex !== -1 && arrivalRunwayIndex !== -1) {
-            const arrival: RawArrival = destinationInfo.arrivals[arrivalIndex];
-            const runwayTransition: RawRunwayTransition = destinationInfo.arrivals[arrivalIndex].runwayTransitions[arrivalRunwayIndex];
+            // if no runway is selected at all (non-runway-specific approach)
+            // and the selected STAR only has runway transition legs... string them
+            // TODO research IRL behaviour
+            const starHasOneRunwayTrans = arrival.commonLegs.length === 0 && arrival.runwayTransitions.length === 1;
+            const approachIsRunwaySpecific = this.procedureDetails.destinationRunwayIndex >= 0;
+            const runwayTransIndex = arrivalRunwayIndex < 0 && starHasOneRunwayTrans && !approachIsRunwaySpecific ? 0 : arrivalRunwayIndex;
+
+            const runwayTransition = arrival.runwayTransitions[runwayTransIndex];
             if (runwayTransition) {
                 legs.push(...runwayTransition.legs);
                 legAnnotations.push(...runwayTransition.legs.map(_ => arrival.name));
             }
-            // console.log('MFP: buildArrival - pushing VIA legs ->', legs);
         }
 
         let { _startIndex, segment } = this.truncateSegment(SegmentType.Arrival);
