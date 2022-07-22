@@ -52,7 +52,7 @@ pub struct A320 {
     fuel: A320Fuel,
     engine_1: LeapEngine,
     engine_2: LeapEngine,
-    engine_fire_overhead: EngineFireOverheadPanel,
+    engine_fire_overhead: EngineFireOverheadPanel<2>,
     electrical: A320Electrical,
     power_consumption: A320PowerConsumption,
     ext_pwr: ExternalPowerSource,
