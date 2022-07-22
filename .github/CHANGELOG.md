@@ -41,6 +41,7 @@
 1. [FMGC] Only emit decel point when an approach is selected - @tracernz (Mike)
 1. [MCDU] Fix padding of arc radii on F-PLN - @tracernz (Mike)
 1. [FMGC] Allow stringing of STARs with non-runway approaches - @tracernz (Mike)
+1. [SD] Improve COND page visuals, fix some visual bugs on the SD - @lukecologne (luke)
 
 ## 0.8.0
 

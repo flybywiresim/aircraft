@@ -1,15 +1,17 @@
 import React from 'react';
+import { SvgGroup } from '../../Common/SvgGroup';
 import { render } from '../../../Common';
 import { setIsEcamPage } from '../../../Common/defaults';
 import { useSimVar } from '../../../Common/simVars';
+import Valve from './Valve';
 
-import './Cond.scss';
+import '../../Common/CommonStyles.scss';
 
 setIsEcamPage('cond_page');
 
 export const CondPage = () => {
     // Disaply trim valve position for each zone
-    const gaugeOffset = -50; // Gauges range is from -50 degree to +50 degree
+    const gaugeOffset = -43; // Gauges range is from -43 degree to +43 degree
 
     const [cockpitSelectedTemp] = useSimVar('L:A32NX_OVHD_COND_CKPT_SELECTOR_KNOB', 'number', 1000);
     const [cockpitTrimTemp] = useSimVar('L:A32NX_COND_CKPT_DUCT_TEMP', 'celsius', 1000);
@@ -28,50 +30,45 @@ export const CondPage = () => {
     const [hotAir] = useSimVar('L:A32NX_AIRCOND_HOTAIR_TOGGLE', 'bool', 1000);
 
     return (
-        <>
-            <svg id="cond-page" viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg">
-                {/* Title and unit */}
-                <g id="titleAndWarnings">
-                    <text className="PageTitle" x="5" y="27">COND</text>
-                    <text className="tempText" x="500" y="27">TEMP</text>
-                    <text className="tempText" x="553" y="27">:</text>
-                    <text id="CondTempUnit" className="UnitText" x="564" y="27">°C</text>
-                    { /* Not yet implemented
-                        <text id="LeftFanWarning" className="warningText" x="170" y="60">FAN</text>
-                        <text id="RightFanWarning" className="warningText" x="350" y="60">FAN</text>
-                        <text id="AltnMode" className="valueText" x="225" y="35">ALTN MODE</text>
-                    */}
-                </g>
+        <svg id="cond-page" className="ecam-common-styles" viewBox="0 0 768 768" style={{ marginTop: '-60px' }} xmlns="http://www.w3.org/2000/svg">
+            {/* Title and unit */}
+            <g id="titleAndWarnings">
+                <text className="Title UnderlineWhite" x="7" y="33">COND</text>
+                <text className="Huge" x="630" y="32">TEMP</text>
+                <text className="Huge" x="715" y="32">:</text>
+                <text id="CondTempUnit" className="Standard Cyan" x="726" y="31">°C</text>
+                { /* Not yet implemented
+                    <text id="LeftFanWarning" className="Large Amber" x="180" y="75">FAN</text>
+                    <text id="RightFanWarning" className="Large Amber" x="510" y="75">FAN</text>
+                    <text id="AltnMode" className="Large Green" x="310" y="45">ALTN MODE</text>
+                */}
+            </g>
 
-                {/* Plane shape */}
-                {/* eslint-disable-next-line max-len */}
-                <path id="PlaneSymbol" className="CondPlane" d="m213.8428,68.36133l0,83.97584l55.55171,0m31.00094,0l51.73732,0l0,-50.70766m0,50.70766l55.55173,0m34.81534,0l22.46143,0.14881l14.27533,-10.61944m-265.3938,10.47063l-43.25439,0.17314m-31.10621,0.0111c-48.43094,0.21796 -46.00225,-7.78263 -67.15623,-15.92789m407.68806,-58.64412l-15.47207,-9.94078c-116.67487,0.0387 -207.24004,-0.30086 -323.91504,-0.12489c-20.94778,1.56194 -28.42552,8.14482 -31.50305,11.74302l-9.3201,10.8969l-27.55615,9.99176" />
+            {/* Plane shape */}
+            <path id="UpperPlaneSymbol" className="LightGreyLine" d="m 95,128 l 27,-9 l 11,-12 a 75 75 0 0 1 40 -13 h 430 l 12,10" />
+            <path id="LowerPlaneSymbol" className="LightGreyLine" d="m 94,172 a 150 150 0 0 0 60 18 h 20 m 49,0 h 122 m 49,0 h 120 m 50,0 h 38 l 12,-10" />
+            <path id="PlaneSeperators" className="LightGreyLine" d="m 278,94 v96 m 179,0 v-54" />
 
-                {/* Cockpit */}
-                <CondUnit title="CKPT" selectedTemp={cockpitSelectedTemp} cabinTemp={cockpitCabinTemp} trimTemp={cockpitTrimTemp} x={153} offset={gaugeOffset} hotAir={hotAir} />
+            {/* Cockpit */}
+            <CondUnit title="CKPT" selectedTemp={cockpitSelectedTemp} cabinTemp={cockpitCabinTemp} trimTemp={cockpitTrimTemp} x={153} y={105} offset={gaugeOffset} hotAir={hotAir} />
 
-                {/* Fwd */}
-                <CondUnit title="FWD" selectedTemp={fwdSelectedTemp} cabinTemp={fwdCabinTemp} trimTemp={fwdTrimTemp} x={283} offset={gaugeOffset} hotAir={hotAir} />
+            {/* Fwd */}
+            <CondUnit title="FWD" selectedTemp={fwdSelectedTemp} cabinTemp={fwdCabinTemp} trimTemp={fwdTrimTemp} x={324} y={105} offset={gaugeOffset} hotAir={hotAir} />
 
-                {/*  Aft */}
-                <CondUnit title="AFT" selectedTemp={aftSelectedTemp} cabinTemp={aftCabinTemp} trimTemp={aftTrimTemp} x={423} offset={gaugeOffset} hotAir={hotAir} />
+            {/*  Aft */}
+            <CondUnit title="AFT" selectedTemp={aftSelectedTemp} cabinTemp={aftCabinTemp} trimTemp={aftTrimTemp} x={494} y={105} offset={gaugeOffset} hotAir={hotAir} />
 
-                {/* Valve and tubes */}
-                <g id="ValveAndTubes">
-                    <text className="DuctStatus" x="565" y="276">
-                        <tspan x="545" y="275">HOT</tspan>
-                        <tspan x="545" y="300">AIR</tspan>
-                    </text>
-                    <g id="HotAirValve">
-                        <circle className={hotAir ? 'st5' : 'pump-off'} cx="506" cy="280" r="16" />
-                        <line className={hotAir ? 'st5' : 'Hide'} x1="490" y1="280" x2="522" y2="280" id="HotAirValveOpen" />
-                        <line className={hotAir ? 'Hide' : 'pump-off'} x1="506" y1="264" x2="506" y2="296" id="HotAirValveClosed" />
-                    </g>
-                    <line className={hotAir ? 'st5' : 'pump-off'} x1="152" y1="280" x2="490" y2="280" />
-                    <line className={hotAir ? 'st5' : 'pump-off'} x1="522" y1="280" x2="540" y2="280" />
-                </g>
-            </svg>
-        </>
+            {/* Valve and tubes */}
+            <g id="ValveAndTubes">
+                <text className="MediumLarge" x="565" y="276">
+                    <tspan x="706" y="306" style={{ letterSpacing: '1px' }}>HOT</tspan>
+                    <tspan x="706" y="336" style={{ letterSpacing: '2px' }}>AIR</tspan>
+                </text>
+                <Valve x={650} y={312} radius={21} position={hotAir ? 'H' : 'V'} css={hotAir ? 'GreenLine' : 'AmberLine'} sdacDatum />
+                <line className={hotAir ? 'GreenLine' : 'AmberLine'} x1="195" y1="312" x2="627" y2="312" />
+                <line className={hotAir ? 'GreenLine' : 'AmberLine'} x1="672" y1="312" x2="696" y2="312" />
+            </g>
+        </svg>
     );
 };
 
@@ -81,40 +78,31 @@ type CondUnitProps = {
     cabinTemp: number,
     trimTemp: number,
     x: number,
+    y: number,
     offset: number,
     hotAir: number
 }
 
-const CondUnit = ({ title, selectedTemp, cabinTemp, trimTemp, x, offset, hotAir } : CondUnitProps) => {
-    const rotateTemp = offset + (selectedTemp / 3);
-    const polyPoints = `${x + 4},206 ${x},199 ${x - 4},206`;
-    const gaugeD = `m ${x - 26} 208 Q ${x} 186 ${x + 26} 208`;
-    const ductC = `${x - 40}`;
-    const ductH = `${x + 40}`;
-    const transformStyle = {
-        transform: `rotate(${rotateTemp.toFixed(0)}deg)`,
-        transformOrigin: `${x}px 230px`,
-    };
+const CondUnit = ({ title, selectedTemp, cabinTemp, trimTemp, x, y, offset, hotAir } : CondUnitProps) => {
+    const rotateTemp = offset + (selectedTemp * 86 / 300);
 
     return (
-        <>
-            <g className="Cond">
-                <text className="title" x={x} y="105">{title}</text>
-                <text id="CkptCabinTemp" className="valueText" x={x} y="130">{cabinTemp.toFixed(0)}</text>
-                <text id="CkptTrimTemp" className="valueText" x={x} y="180">{trimTemp.toFixed(0)}</text>
-                <text className="DuctStatus" x={ductC} y="215">C</text>
-                <text className="DuctStatus" x={ductH} y="215">H</text>
-                <g id="CkptGauge" style={transformStyle}>
-                    <polygon className="st5" points={polyPoints} />
-                    <line className="st5" x1={x} y1="230" x2={x} y2="208" />
-                </g>
-                <line className={hotAir ? 'st5' : 'pump-off'} x1={x} y1="230" x2={x} y2="280" />
-                <g className="Gauge">
-                    <path className="Gauge" d={gaugeD} />
-                    <line x1={x} y1="190" x2={x} y2="198" />
-                </g>
+        <SvgGroup x={x} y={y}>
+            <text className="Large Center" x={47} y={23}>{title}</text>
+            <text id="CkptCabinTemp" className="Large Green" x={26} y={56}>{cabinTemp.toFixed(0)}</text>
+            <text id="CkptTrimTemp" className="Standard Green" x={29} y={106}>{trimTemp.toFixed(0)}</text>
+            <text className="Standard" x={-2} y={147}>C</text>
+            <text className="Standard" x={74} y={146}>H</text>
+            <g id="CkptGauge" transform={`rotate(${rotateTemp.toFixed(0)} 42 158 )`}>
+                <path className="GreenLine" d="m 37,137 l 10,0 l -5,-9 z" />
+                <line className="GreenLine" x1={42} y1={158} x2={42} y2={138} />
             </g>
-        </>
+            <line className={hotAir ? 'GreenLine' : 'AmberLine'} x1={42} y1={207} x2={42} y2={158} />
+            <g>
+                <path className="WhiteLine" d="m 21,136 a 30 30 0 0 1 42 0" />
+                <line className="WhiteLine" x1={42} y1={118} x2={42} y2={127} />
+            </g>
+        </SvgGroup>
     );
 };
 
