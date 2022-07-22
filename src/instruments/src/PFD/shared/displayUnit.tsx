@@ -1,6 +1,7 @@
 import { ClockEvents, DisplayComponent, EventBus, FSComponent, Subscribable, VNode } from 'msfssdk';
 
 import './common.scss';
+import './pixels.scss';
 
 import { NXDataStore } from '@shared/persistence';
 import { PFDSimvars } from './PFDSimvarPublisher';

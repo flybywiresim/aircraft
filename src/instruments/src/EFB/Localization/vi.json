@@ -85,6 +85,7 @@
       "YouHaveNotYetImportedAnySimBriefData": "Bạn chưa nhập bất kỳ dữ liệu SimBrief nào."
     },
     "Overview": {
+      "ActualGW": "Actual GW",
       "Engines": "Động cơ",
       "MMO": "Tốc độ vận hành tối đa theo số Mach",
       "MRW": "Trong lượng bãi đậu tối đa",

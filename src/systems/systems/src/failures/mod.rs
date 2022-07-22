@@ -1,4 +1,4 @@
-use crate::shared::{HydraulicColor, LgciuId, ProximityDetectorId};
+use crate::shared::{GearActuatorId, HydraulicColor, LgciuId, ProximityDetectorId};
 use crate::simulation::SimulationElement;
 
 #[derive(Clone, Copy, PartialEq)]
@@ -10,6 +10,7 @@ pub enum FailureType {
     LgciuPowerSupply(LgciuId),
     LgciuInternalError(LgciuId),
     GearProxSensorDamage(ProximityDetectorId),
+    GearActuatorJammed(GearActuatorId),
     RadioAltimeter(usize),
 }
 
