@@ -85,6 +85,7 @@
       "YouHaveNotYetImportedAnySimBriefData": "Je hebt nog geen SimBrief-gegevens geïmporteerd."
     },
     "Overview": {
+      "ActualGW": "Actual GW",
       "Engines": "Motoren",
       "MMO": "MMO",
       "MRW": "MRW",
