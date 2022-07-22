@@ -1,6 +1,8 @@
 use self::linear_actuator::Actuator;
 use crate::failures::{Failure, FailureType};
-use crate::hydraulic::electrical_pump_physics::ElectricalPumpPhysics;
+use crate::hydraulic::{
+    electrical_pump_physics::ElectricalPumpPhysics, pumps::PumpCharacteristics,
+};
 use crate::pneumatic::PressurizeableReservoir;
 use crate::shared::{
     interpolation, low_pass_filter::LowPassFilter, random_from_range, DelayedTrueLogicGate,
@@ -31,6 +33,7 @@ pub mod flap_slat;
 pub mod landing_gear;
 pub mod linear_actuator;
 pub mod nose_steering;
+pub mod pumps;
 
 /// Indicates the pressure sensors info of an hydraulic circuit at different locations
 /// Information can be wrong in case of sensor failure -> do not use for physical pressure
@@ -1778,8 +1781,8 @@ pub struct Pump {
     current_displacement: Volume,
     current_flow: VolumeRate,
     current_max_displacement: LowPassFilter<Volume>,
-    press_breakpoints: [f64; 9],
-    displacement_carac: [f64; 9],
+
+    pump_characteristics: PumpCharacteristics,
 
     speed: AngularVelocity,
 
@@ -1788,12 +1791,10 @@ pub struct Pump {
 impl Pump {
     const SECONDS_PER_MINUTES: f64 = 60.;
     const FLOW_CONSTANT_RPM_CUBIC_INCH_TO_GPM: f64 = 231.;
-    const AIR_PRESSURE_BREAKPTS_PSI: [f64; 9] = [0., 5., 10., 15., 20., 30., 50., 70., 100.];
-    const AIR_PRESSURE_CARAC_RATIO: [f64; 9] = [0.0, 0.1, 0.6, 0.8, 0.9, 1., 1., 1., 1.];
 
     const MAX_DISPLACEMENT_FILTER_TIME_CONSTANT: Duration = Duration::from_millis(150);
 
-    fn new(press_breakpoints: [f64; 9], displacement_carac: [f64; 9]) -> Self {
+    fn new(pump_characteristics: PumpCharacteristics) -> Self {
         Self {
             delta_vol_max: Volume::new::<gallon>(0.),
             current_displacement: Volume::new::<gallon>(0.),
@@ -1801,8 +1802,7 @@ impl Pump {
             current_max_displacement: LowPassFilter::<Volume>::new(
                 Self::MAX_DISPLACEMENT_FILTER_TIME_CONSTANT,
             ),
-            press_breakpoints,
-            displacement_carac,
+            pump_characteristics,
 
             speed: AngularVelocity::new::<revolution_per_minute>(0.),
 
@@ -1839,15 +1839,12 @@ impl Pump {
     }
 
     fn update_cavitation(&mut self, reservoir: &Reservoir) {
-        self.cavitation_efficiency = Ratio::new::<ratio>(interpolation(
-            &Self::AIR_PRESSURE_BREAKPTS_PSI,
-            &Self::AIR_PRESSURE_CARAC_RATIO,
-            reservoir.air_pressure().get::<psi>(),
-        ));
-
-        if reservoir.is_empty() {
-            self.cavitation_efficiency = Ratio::new::<ratio>(0.);
-        }
+        self.cavitation_efficiency = if !reservoir.is_empty() {
+            self.pump_characteristics
+                .cavitation_efficiency(reservoir.air_pressure())
+        } else {
+            Ratio::new::<ratio>(0.)
+        };
     }
 
     fn calculate_displacement<T: PumpController>(
@@ -1856,11 +1853,8 @@ impl Pump {
         controller: &T,
     ) -> Volume {
         if controller.should_pressurise() {
-            Volume::new::<cubic_inch>(interpolation(
-                &self.press_breakpoints,
-                &self.displacement_carac,
-                section.pressure().get::<psi>(),
-            ))
+            self.pump_characteristics
+                .current_displacement(section.pressure())
         } else {
             Volume::new::<cubic_inch>(0.)
         }
@@ -1949,28 +1943,23 @@ pub struct ElectricPump {
     pump_physics: ElectricalPumpPhysics,
 }
 impl ElectricPump {
-    const NOMINAL_SPEED: f64 = 7600.0;
-
-    const DISPLACEMENT_BREAKPTS: [f64; 9] = [
-        0.0, 500.0, 1000.0, 1500.0, 2175.0, 2850.0, 3080.0, 3100.0, 3500.0,
-    ];
-    const DISPLACEMENT_MAP: [f64; 9] = [0.263, 0.263, 0.263, 0.263, 0.263, 0.2, 0.0, 0.0, 0.0];
-
     pub fn new(
         context: &mut InitContext,
         id: &str,
         bus_type: ElectricalBusType,
         max_current: ElectricCurrent,
+        pump_characteristics: PumpCharacteristics,
     ) -> Self {
+        let regulated_speed = pump_characteristics.regulated_speed();
         Self {
             cavitation_id: context.get_identifier(format!("HYD_{}_EPUMP_CAVITATION", id)),
-            pump: Pump::new(Self::DISPLACEMENT_BREAKPTS, Self::DISPLACEMENT_MAP),
+            pump: Pump::new(pump_characteristics),
             pump_physics: ElectricalPumpPhysics::new(
                 context,
                 id,
                 bus_type,
                 max_current,
-                AngularVelocity::new::<revolution_per_minute>(Self::NOMINAL_SPEED),
+                regulated_speed,
             ),
         }
     }
@@ -2058,17 +2047,16 @@ pub struct EngineDrivenPump {
     pump: Pump,
 }
 impl EngineDrivenPump {
-    const DISPLACEMENT_BREAKPTS: [f64; 9] = [
-        0.0, 500.0, 1000.0, 1500.0, 2800.0, 2910.0, 3025.0, 3050.0, 3500.0,
-    ];
-    const DISPLACEMENT_MAP: [f64; 9] = [2.4, 2.4, 2.4, 2.4, 2.4, 2.4, 0.0, 0.0, 0.0];
-
-    pub fn new(context: &mut InitContext, id: &str) -> Self {
+    pub fn new(
+        context: &mut InitContext,
+        id: &str,
+        pump_characteristics: PumpCharacteristics,
+    ) -> Self {
         Self {
             active_id: context.get_identifier(format!("HYD_{}_EDPUMP_ACTIVE", id)),
             is_active: false,
             speed: AngularVelocity::new::<revolution_per_minute>(0.),
-            pump: Pump::new(Self::DISPLACEMENT_BREAKPTS, Self::DISPLACEMENT_MAP),
+            pump: Pump::new(pump_characteristics),
         }
     }
 
@@ -2253,20 +2241,15 @@ pub struct RamAirTurbine {
     position: f64,
 }
 impl RamAirTurbine {
-    const DISPLACEMENT_BREAKPTS: [f64; 9] = [
-        0.0, 500.0, 1000.0, 1500.0, 2100.0, 2300.0, 2600.0, 2700.0, 3500.0,
-    ];
-    const DISPLACEMENT_MAP: [f64; 9] = [0.5, 0.8, 1.15, 1.15, 1.15, 0.8, 0.3, 0.0, 0.0];
-
     // Speed to go from 0 to 1 stow position per sec. 1 means full deploying in 1s
     const STOWING_SPEED: f64 = 1.;
 
-    pub fn new(context: &mut InitContext) -> Self {
+    pub fn new(context: &mut InitContext, pump_characteristics: PumpCharacteristics) -> Self {
         Self {
             stow_position_id: context.get_identifier("HYD_RAT_STOW_POSITION".to_owned()),
 
             deployment_commanded: false,
-            pump: Pump::new(Self::DISPLACEMENT_BREAKPTS, Self::DISPLACEMENT_MAP),
+            pump: Pump::new(pump_characteristics),
             pump_controller: AlwaysPressurisePumpController::new(),
             wind_turbine: WindTurbine::new(context),
             position: 0.,
@@ -2639,7 +2622,7 @@ mod tests {
     }
 
     fn engine_driven_pump(context: &mut InitContext) -> EngineDrivenPump {
-        EngineDrivenPump::new(context, "DEFAULT")
+        EngineDrivenPump::new(context, "DEFAULT", PumpCharacteristics::a320_edp())
     }
 
     #[cfg(test)]

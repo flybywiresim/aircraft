@@ -36,6 +36,7 @@ use systems::{
             Pushback, SteeringActuator, SteeringAngleLimiter, SteeringController,
             SteeringRatioToAngle,
         },
+        pumps::PumpCharacteristics,
         ElectricPump, EngineDrivenPump, HydraulicCircuit, HydraulicCircuitController,
         HydraulicPressureSensors, PowerTransferUnit, PowerTransferUnitCharacteristics,
         PowerTransferUnitController, PressureSwitch, PressureSwitchType, PumpController,
@@ -1326,14 +1327,22 @@ impl A320Hydraulic {
                 HydraulicColor::Yellow,
             ),
 
-            engine_driven_pump_1: EngineDrivenPump::new(context, "GREEN"),
+            engine_driven_pump_1: EngineDrivenPump::new(
+                context,
+                "GREEN",
+                PumpCharacteristics::a320_edp(),
+            ),
             engine_driven_pump_1_controller: A320EngineDrivenPumpController::new(
                 context,
                 1,
                 vec![Self::GREEN_EDP_CONTROL_POWER_BUS1],
             ),
 
-            engine_driven_pump_2: EngineDrivenPump::new(context, "YELLOW"),
+            engine_driven_pump_2: EngineDrivenPump::new(
+                context,
+                "YELLOW",
+                PumpCharacteristics::a320_edp(),
+            ),
             engine_driven_pump_2_controller: A320EngineDrivenPumpController::new(
                 context,
                 2,
@@ -1348,6 +1357,7 @@ impl A320Hydraulic {
                 "BLUE",
                 Self::BLUE_ELEC_PUMP_SUPPLY_POWER_BUS,
                 ElectricCurrent::new::<ampere>(Self::ELECTRIC_PUMP_MAX_CURRENT_AMPERE),
+                PumpCharacteristics::a320_electric_pump(),
             ),
             blue_electric_pump_controller: A320BlueElectricPumpController::new(
                 context,
@@ -1359,6 +1369,7 @@ impl A320Hydraulic {
                 "YELLOW",
                 Self::YELLOW_ELEC_PUMP_SUPPLY_POWER_BUS,
                 ElectricCurrent::new::<ampere>(Self::ELECTRIC_PUMP_MAX_CURRENT_AMPERE),
+                PumpCharacteristics::a320_electric_pump(),
             ),
             yellow_electric_pump_controller: A320YellowElectricPumpController::new(
                 context,
@@ -1368,7 +1379,7 @@ impl A320Hydraulic {
 
             pushback_tug: PushbackTug::new(context),
 
-            ram_air_turbine: RamAirTurbine::new(context),
+            ram_air_turbine: RamAirTurbine::new(context, PumpCharacteristics::a320_rat()),
             ram_air_turbine_controller: A320RamAirTurbineController::new(
                 Self::RAT_CONTROL_SOLENOID1_POWER_BUS,
                 Self::RAT_CONTROL_SOLENOID2_POWER_BUS,
