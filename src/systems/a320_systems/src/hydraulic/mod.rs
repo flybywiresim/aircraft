@@ -135,6 +135,8 @@ impl A320HydraulicCircuitFactory {
 
     const YELLOW_GREEN_BLUE_PUMPS_INDEXES: usize = 0;
 
+    const HYDRAULIC_TARGET_PRESSURE_PSI: f64 = 3000.;
+
     pub fn new_green_circuit(context: &mut InitContext) -> HydraulicCircuit {
         let reservoir = A320HydraulicReservoirFactory::new_green_reservoir(context);
         HydraulicCircuit::new(
@@ -150,6 +152,7 @@ impl A320HydraulicCircuitFactory {
             Pressure::new::<psi>(Self::MIN_PRESS_EDP_SECTION_HI_HYST),
             true,
             false,
+            Pressure::new::<psi>(Self::HYDRAULIC_TARGET_PRESSURE_PSI),
         )
     }
 
@@ -168,6 +171,7 @@ impl A320HydraulicCircuitFactory {
             Pressure::new::<psi>(Self::MIN_PRESS_EDP_SECTION_HI_HYST),
             false,
             false,
+            Pressure::new::<psi>(Self::HYDRAULIC_TARGET_PRESSURE_PSI),
         )
     }
 
@@ -186,6 +190,7 @@ impl A320HydraulicCircuitFactory {
             Pressure::new::<psi>(Self::MIN_PRESS_EDP_SECTION_HI_HYST),
             false,
             true,
+            Pressure::new::<psi>(Self::HYDRAULIC_TARGET_PRESSURE_PSI),
         )
     }
 }
@@ -1400,6 +1405,7 @@ impl A320Hydraulic {
                 Volume::new::<gallon>(0.),
                 Volume::new::<gallon>(0.),
                 Volume::new::<gallon>(0.13),
+                Pressure::new::<psi>(A320HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
             ),
 
             // Alternate brakes accumulator in real A320 is 1.5 gal capacity.
@@ -1411,6 +1417,7 @@ impl A320Hydraulic {
                 Volume::new::<gallon>(1.0),
                 Volume::new::<gallon>(0.4),
                 Volume::new::<gallon>(0.13),
+                Pressure::new::<psi>(A320HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
             ),
 
             braking_force: A320BrakingForce::new(context),
@@ -1426,6 +1433,7 @@ impl A320Hydraulic {
                 Ratio::new::<ratio>(314.98),
                 Self::FLAP_FPPU_TO_SURFACE_ANGLE_BREAKPTS,
                 Self::FLAP_FPPU_TO_SURFACE_ANGLE_DEGREES,
+                Pressure::new::<psi>(A320HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
             ),
             slat_system: FlapSlatAssembly::new(
                 context,
@@ -1438,6 +1446,7 @@ impl A320Hydraulic {
                 Ratio::new::<ratio>(314.98),
                 Self::SLAT_FPPU_TO_SURFACE_ANGLE_BREAKPTS,
                 Self::SLAT_FPPU_TO_SURFACE_ANGLE_DEGREES,
+                Pressure::new::<psi>(A320HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
             ),
             slats_flaps_complex: SlatFlapComplex::new(context),
 
