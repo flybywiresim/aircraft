@@ -85,6 +85,7 @@
       "YouHaveNotYetImportedAnySimBriefData": "SimBriefのデータはまだインポートされていません。"
     },
     "Overview": {
+      "ActualGW": "現在の総重量",
       "Engines": "エンジン",
       "MMO": "MMO",
       "MRW": "MRW",

@@ -85,6 +85,7 @@
       "YouHaveNotYetImportedAnySimBriefData": "คุณยังไม่ได้นำเข้าข้อมูล SimBrief ใดๆเลย"
     },
     "Overview": {
+      "ActualGW": "Actual GW",
       "Engines": "เครื่องยนต์",
       "MMO": "MMO",
       "MRW": "MRW",

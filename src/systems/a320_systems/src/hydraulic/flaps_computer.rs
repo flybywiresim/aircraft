@@ -786,7 +786,7 @@ mod tests {
         assert!(!test_bed.read_slat_flap_system_status_word().get_bit(21));
         assert!(test_bed.read_slat_flap_system_status_word().get_bit(26));
 
-        test_bed = test_bed.run_waiting_for(Duration::from_secs(30));
+        test_bed = test_bed.run_waiting_for(Duration::from_secs(31));
 
         assert!(!test_bed.read_slat_flap_actual_position_word().get_bit(12));
         assert!(test_bed.read_slat_flap_actual_position_word().get_bit(13));
@@ -816,7 +816,7 @@ mod tests {
         assert!(!test_bed.read_slat_flap_system_status_word().get_bit(21));
         assert!(!test_bed.read_slat_flap_system_status_word().get_bit(26));
 
-        test_bed = test_bed.run_waiting_for(Duration::from_secs(30));
+        test_bed = test_bed.run_waiting_for(Duration::from_secs(31));
 
         assert!(!test_bed.read_slat_flap_actual_position_word().get_bit(12));
         assert!(test_bed.read_slat_flap_actual_position_word().get_bit(13));
@@ -846,7 +846,7 @@ mod tests {
         assert!(!test_bed.read_slat_flap_system_status_word().get_bit(21));
         assert!(!test_bed.read_slat_flap_system_status_word().get_bit(26));
 
-        test_bed = test_bed.run_waiting_for(Duration::from_secs(30));
+        test_bed = test_bed.run_waiting_for(Duration::from_secs(31));
 
         assert!(!test_bed.read_slat_flap_actual_position_word().get_bit(12));
         assert!(test_bed.read_slat_flap_actual_position_word().get_bit(13));
@@ -876,7 +876,7 @@ mod tests {
         assert!(!test_bed.read_slat_flap_system_status_word().get_bit(21));
         assert!(!test_bed.read_slat_flap_system_status_word().get_bit(26));
 
-        test_bed = test_bed.run_waiting_for(Duration::from_secs(30));
+        test_bed = test_bed.run_waiting_for(Duration::from_secs(31));
 
         assert!(!test_bed.read_slat_flap_actual_position_word().get_bit(12));
         assert!(test_bed.read_slat_flap_actual_position_word().get_bit(13));
@@ -906,7 +906,7 @@ mod tests {
         assert!(test_bed.read_slat_flap_system_status_word().get_bit(21));
         assert!(!test_bed.read_slat_flap_system_status_word().get_bit(26));
 
-        test_bed = test_bed.run_waiting_for(Duration::from_secs(30));
+        test_bed = test_bed.run_waiting_for(Duration::from_secs(31));
 
         assert!(!test_bed.read_slat_flap_actual_position_word().get_bit(12));
         assert!(test_bed.read_slat_flap_actual_position_word().get_bit(13));
