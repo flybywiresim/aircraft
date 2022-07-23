@@ -163,7 +163,7 @@ class CDUInitPage {
         };
 
         if (mcdu.tropo) {
-            tropo.update(mcdu.tropo, Column.big);
+            tropo.update("" + mcdu.tropo, Column.big);
         }
         mcdu.onRightInput[4] = (value, scratchpadCallback) => {
             if (mcdu.tryUpdateTropo(value)) {
