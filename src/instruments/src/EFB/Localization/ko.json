@@ -85,6 +85,7 @@
       "YouHaveNotYetImportedAnySimBriefData": "SimBrief 데이터를 불러오지 않았습니다."
     },
     "Overview": {
+      "ActualGW": "Actual GW",
       "Engines": "엔진",
       "MMO": "최대 운항속도 (MMO)",
       "MRW": "최대 램프 중량 (MRW)",
