@@ -85,6 +85,7 @@
       "YouHaveNotYetImportedAnySimBriefData": "You have not yet imported any SimBrief data."
     },
     "Overview": {
+      "ActualGW": "Actual GW",
       "Engines": "Engines",
       "MMO": "MMO",
       "MRW": "MRW",
@@ -143,7 +144,6 @@
       "DoorAft": "Door Aft",
       "DoorCargo": "Cargo Door",
       "DoorFwd": "Door Fwd",
-      "DoorCargo": "Cargo Door",
       "ExternalPower": "Ground Power Unit",
       "FuelTruck": "Fuel Truck",
       "JetBridge": "Jet Bridge",

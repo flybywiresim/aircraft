@@ -237,6 +237,9 @@ void FlyByWireInterface::setupLocalVariables() {
   idDevelopmentAutoland_delta_Theta_bx_deg = make_unique<LocalVariable>("A32NX_DEV_FLARE_DELTA_THETA_BX");
   idDevelopmentAutoland_delta_Theta_beta_c_deg = make_unique<LocalVariable>("A32NX_DEV_FLARE_DELTA_THETA_BETA_C");
 
+  // register L variable for direct law
+  idDevelopmentUseDirectLaw = make_unique<LocalVariable>("A32NX_DEV_DIRECT_LAW");
+
   // register L variable for simulation rate limits
   idMinimumSimulationRate = make_unique<LocalVariable>("A32NX_SIMULATION_RATE_LIMIT_MINIMUM");
   idMaximumSimulationRate = make_unique<LocalVariable>("A32NX_SIMULATION_RATE_LIMIT_MAXIMUM");
@@ -245,6 +248,7 @@ void FlyByWireInterface::setupLocalVariables() {
   idPerformanceWarningActive = make_unique<LocalVariable>("A32NX_PERFORMANCE_WARNING_ACTIVE");
 
   // register L variable for external override
+  idTrackingMode = make_unique<LocalVariable>("A32NX_FLIGHT_CONTROLS_TRACKING_MODE");
   idExternalOverride = make_unique<LocalVariable>("A32NX_EXTERNAL_OVERRIDE");
 
   // register L variable for FDR event
@@ -439,6 +443,10 @@ void FlyByWireInterface::setupLocalVariables() {
 
   idAileronPositionLeft = make_unique<LocalVariable>("A32NX_AILERON_LEFT_DEFLECTION_DEMAND");
   idAileronPositionRight = make_unique<LocalVariable>("A32NX_AILERON_RIGHT_DEFLECTION_DEMAND");
+
+  idElevatorPosition = make_unique<LocalVariable>("A32NX_ELEVATOR_DEFLECTION_DEMAND");
+
+  idRudderPosition = make_unique<LocalVariable>("A32NX_RUDDER_DEFLECTION_DEMAND");
 
   idRadioReceiverUsageEnabled = make_unique<LocalVariable>("A32NX_RADIO_RECEIVER_USAGE_ENABLED");
   idRadioReceiverLocalizerValid = make_unique<LocalVariable>("A32NX_RADIO_RECEIVER_LOC_IS_VALID");
@@ -1487,17 +1495,8 @@ bool FlyByWireInterface::updateFlyByWire(double sampleTime) {
   idRudderPedalPosition->set(max(-100, min(100, (-100.0 * simInput.inputs[2]))));
   idRudderPedalAnimationPosition->set(max(-100, min(100, (-100.0 * simInput.inputs[2]) + (100.0 * simData.zeta_trim_pos))));
 
-  // set outputs
-  if (!flyByWireOutput.sim.data_computed.tracking_mode_on) {
-    // object to write with trim
-    SimOutput output = {flyByWireOutput.output.eta_pos, flyByWireOutput.output.xi_pos, flyByWireOutput.output.zeta_pos};
-
-    // send data via sim connect
-    if (!simConnectInterface.sendData(output)) {
-      cout << "WASM: Write data failed!" << endl;
-      return false;
-    }
-  }
+  // provide tracking mode state
+  idTrackingMode->set(flyByWireOutput.sim.data_computed.tracking_mode_on);
 
   // determine if nosewheel demand shall be set
   if (!flyByWireOutput.sim.data_computed.tracking_mode_on) {
@@ -1508,7 +1507,7 @@ bool FlyByWireInterface::updateFlyByWire(double sampleTime) {
 
   // set trim values
   SimOutputEtaTrim outputEtaTrim = {};
-  if (flyByWireOutput.output.eta_trim_deg_should_write) {
+  if (flyByWireOutput.output.eta_trim_deg_should_write && !idDevelopmentUseDirectLaw->get()) {
     outputEtaTrim.eta_trim_deg = flyByWireOutput.output.eta_trim_deg;
     elevatorTrimHandler->synchronizeValue(outputEtaTrim.eta_trim_deg);
   } else {
@@ -1523,7 +1522,7 @@ bool FlyByWireInterface::updateFlyByWire(double sampleTime) {
 
   SimOutputZetaTrim outputZetaTrim = {};
   rudderTrimHandler->update(sampleTime);
-  if (flyByWireOutput.output.zeta_trim_pos_should_write) {
+  if (flyByWireOutput.output.zeta_trim_pos_should_write && !idDevelopmentUseDirectLaw->get()) {
     outputZetaTrim.zeta_trim_pos = flyByWireOutput.output.zeta_trim_pos;
     rudderTrimHandler->synchronizeValue(outputZetaTrim.zeta_trim_pos);
   } else {
@@ -1547,12 +1546,30 @@ bool FlyByWireInterface::updateFlyByWire(double sampleTime) {
   idSpeedAlphaProtection->set(flyByWireOutput.sim.data_speeds_aoa.v_alpha_prot_kn);
   idSpeedAlphaMax->set(flyByWireOutput.sim.data_speeds_aoa.v_alpha_max_kn);
 
+  // determine input for ailerons
+  double aileronDemand = flyByWireOutput.output.xi_pos;
+  if (idExternalOverride->get() == 1) {
+    aileronDemand = simData.xi_pos;
+  } else if (idDevelopmentUseDirectLaw->get() == 1) {
+    aileronDemand = -1.0 * simInput.inputs[1];
+  }
+
   // update aileron positions
   animationAileronHandler->update(idAutopilotActiveAny->get(), spoilersHandler->getIsGroundSpoilersActive(), simData.simulationTime,
-                                  simData.Theta_deg, flapsHandleIndexFlapConf->get(), flapsPosition->get(),
-                                  idExternalOverride->get() == 1 ? simData.xi_pos : flyByWireOutput.output.xi_pos, sampleTime);
+                                  simData.Theta_deg, flapsHandleIndexFlapConf->get(), flapsPosition->get(), aileronDemand, sampleTime);
   idAileronPositionLeft->set(animationAileronHandler->getPositionLeft());
   idAileronPositionRight->set(animationAileronHandler->getPositionRight());
+
+
+  if (!idDevelopmentUseDirectLaw->get()) {
+    // set elevator demand
+    idElevatorPosition->set(flyByWireOutput.output.eta_pos);
+    // set rudder demand
+    idRudderPosition->set(flyByWireOutput.output.zeta_pos);
+  } else {   // use direct signals from input when requested
+      idElevatorPosition->set(-1.0 * simInput.inputs[0]);
+      idRudderPosition->set(-1.0 * simInput.inputs[2]);
+  }
 
   // determine if beta target needs to be active (blue)
   bool conditionDifferenceEngineN1Larger35 = (abs(simData.engine_N1_1_percent - simData.engine_N1_2_percent) > 35);
@@ -1774,7 +1791,8 @@ bool FlyByWireInterface::updateSpoilers(double sampleTime) {
   spoilersHandler->setSimulationVariables(
       simData.simulationTime, autopilotStateMachineOutput.enabled_AP1 == 1 || autopilotStateMachineOutput.enabled_AP2 == 1,
       simData.V_gnd_kn, thrustLeverAngle_1->get(), thrustLeverAngle_2->get(), simData.gear_animation_pos_1, simData.gear_animation_pos_2,
-      flapsHandleIndexFlapConf->get(), flyByWireOutput.sim.data_computed.high_aoa_prot_active == 1, flyByWireOutput.output.xi_pos);
+      flapsHandleIndexFlapConf->get(), flyByWireOutput.sim.data_computed.high_aoa_prot_active == 1,
+      (idExternalOverride->get() == 1 || idDevelopmentUseDirectLaw->get() == 1) ? simData.xi_pos : flyByWireOutput.output.xi_pos);
 
   // update sim position
   spoilersHandler->updateSimPosition(sampleTime);

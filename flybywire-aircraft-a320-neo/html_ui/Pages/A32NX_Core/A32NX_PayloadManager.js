@@ -128,7 +128,6 @@ function getTotalCargo() {
 }
 
 function getTotalPayload() {
-    const PAX_WEIGHT = SimVar.GetSimVarValue("L:A32NX_WB_PER_PAX_WEIGHT", "Number");
     const paxTotalMass = Object.values(paxStations).map((station) => SimVar.GetSimVarValue(`PAYLOAD STATION WEIGHT:${station.stationIndex}`, getUserUnit())).reduce((acc, cur) => acc + cur, 0);
     const cargoTotalMass = getTotalCargo();
     return paxTotalMass + cargoTotalMass;

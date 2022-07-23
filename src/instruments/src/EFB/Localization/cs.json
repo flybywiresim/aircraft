@@ -85,6 +85,7 @@
       "YouHaveNotYetImportedAnySimBriefData": "Dosud jste neimportovali žádná SimBrief data."
     },
     "Overview": {
+      "ActualGW": "Aktuální GW",
       "Engines": "Motory",
       "MMO": "MMO",
       "MRW": "MRW",
@@ -126,7 +127,7 @@
       "RightInnerTank": "Pravá vnitřní nádrž",
       "RightOuterTank": "Pravá vnější nádrž",
       "TT": {
-        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "Pro změnu délky tankování nesmí být spuštěné motory",
+        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "Pro změnu délky tankování musí být letadlo na zemi s vypnutými motory",
         "FillBlockFuelFromSimBrief": "Načíst palivo (Block Fuel) ze SimBriefu"
       },
       "Title": "Palivo",

@@ -34,7 +34,6 @@ class CDUAtcDepartReq {
 
     static ShowPage1(mcdu, store = CDUAtcDepartReq.CreateDataBlock()) {
         mcdu.clearDisplay();
-        mcdu.page.Current = mcdu.page.ATCDepartReq;
 
         if (store.firstCall && store.callsign === "") {
             if (mcdu.atsu.flightNumber().length !== 0) {
@@ -128,9 +127,9 @@ class CDUAtcDepartReq {
         }
 
         // check if all required information are available to prepare the PDC message
-        let reqDisplButton = "{cyan}REQ DISPL\xa0{end}";
+        let reqDisplButton = "{cyan}DCDU\xa0{end}";
         if (CDUAtcDepartReq.CanSendData(store)) {
-            reqDisplButton = "{cyan}REQ DISPL*{end}";
+            reqDisplButton = "{cyan}DCDU*{end}";
         }
 
         mcdu.setTemplate([
@@ -145,7 +144,7 @@ class CDUAtcDepartReq {
             [freetext],
             ["", "MORE\xa0"],
             ["", "FREE TEXT>"],
-            ["\xa0ATC MENU", "{cyan}ATC DEPART\xa0{end}"],
+            ["\xa0GROUND REQ", "{cyan}XFR TO\xa0{end}"],
             ["<RETURN", reqDisplButton]
         ]);
 
@@ -164,9 +163,9 @@ class CDUAtcDepartReq {
                 } else {
                     mcdu.dataManager.GetAirportByIdent(airports[0]).then((from) => {
                         mcdu.dataManager.GetAirportByIdent(airports[1]).then((to) => {
-                            if (from && to) {
-                                store.from = from;
-                                store.to = to;
+                            if (from.ident && to.ident) {
+                                store.from = from.ident;
+                                store.to = to.ident;
                                 CDUAtcDepartReq.ShowPage1(mcdu, store);
                             } else {
                                 mcdu.setScratchpadMessage(NXSystemMessages.notInDatabase);
@@ -188,7 +187,7 @@ class CDUAtcDepartReq {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[5] = () => {
-            CDUAtcMenu.ShowPage2(mcdu);
+            CDUAtcClearanceReq.ShowPage(mcdu, "GROUND");
         };
 
         mcdu.rightInputDelay[1] = () => {

@@ -32,6 +32,18 @@ export class InputValidation {
     }
 
     /**
+     * Checks if the value fits to a position format
+     * @param value The entered position candidate
+     * @returns AtsuStatusCodes.Ok if the format is valid
+     */
+    public static validateScratchpadPosition(value: string): AtsuStatusCodes {
+        if (/^[A-Z0-9]{1,10}$/.test(value)) {
+            return AtsuStatusCodes.Ok;
+        }
+        return AtsuStatusCodes.FormatError;
+    }
+
+    /**
      * Checks if the value fits to a procedure format
      * @param value The entered procedure candidate
      * @returns AtsuStatusCodes.Ok if the format is valid
@@ -48,8 +60,20 @@ export class InputValidation {
      * @param value The entered time candidate
      * @returns AtsuStatusCodes.Ok if the format is valid
      */
-    public static validateScratchpadTime(value: string): AtsuStatusCodes {
-        if (/^[0-9]{4}Z$/.test(value)) {
+    public static validateScratchpadTime(value: string, expectZulu: boolean = true): AtsuStatusCodes {
+        if ((expectZulu && /^[0-9]{4}Z$/.test(value)) || (!expectZulu && /^[0-9]{4}$/.test(value))) {
+            return AtsuStatusCodes.Ok;
+        }
+        return AtsuStatusCodes.FormatError;
+    }
+
+    /**
+     * Checks if the value fits to the ATIS format
+     * @param value The entered ATIS candidate
+     * @returns AtsuStatusCodes.Ok if the format is valid
+     */
+    public static validateScratchpadAtis(value: string): AtsuStatusCodes {
+        if (/^[A-Z]{1}$/.test(value)) {
             return AtsuStatusCodes.Ok;
         }
         return AtsuStatusCodes.FormatError;
@@ -68,6 +92,23 @@ export class InputValidation {
             }
             return AtsuStatusCodes.EntryOutOfRange;
         }
+        return AtsuStatusCodes.FormatError;
+    }
+
+    /**
+     * Checks if the value fits to the squawk format
+     * @param value The entered squawk candidate
+     * @returns AtsuStatusCodes.Ok if the format is valid
+     */
+    public static validateScratchpadSquawk(value: string): AtsuStatusCodes {
+        if (/^[0-9]{4}$/.test(value)) {
+            const squawk = parseInt(value);
+            if (squawk >= 0 && squawk < 7777) {
+                return AtsuStatusCodes.Ok;
+            }
+            return AtsuStatusCodes.EntryOutOfRange;
+        }
+
         return AtsuStatusCodes.FormatError;
     }
 
@@ -219,6 +260,32 @@ export class InputValidation {
     }
 
     /**
+     * Validates a value that it is compatible with the FCOM format for vertical speeds
+     * @param {string} value The entered scratchpad vertical speed
+     * @returns An AtsuStatusCodes-value
+     */
+    public static validateScratchpadVerticalSpeed(value: string): AtsuStatusCodes {
+        if (/^(\+|-|M)?[0-9]{1,4}(FT\/MIN|FT|FTM|M\/MIN|MM|M){1}$/.test(value)) {
+            let verticalSpeed = parseInt(value.match(/([0-9]+)/)[0]);
+            if (value.startsWith('-') || value.startsWith('M')) {
+                verticalSpeed *= -1;
+            }
+
+            if (!/(FT){1}/.test(value)) {
+                if (verticalSpeed >= -2000 && verticalSpeed <= 2000) {
+                    return AtsuStatusCodes.Ok;
+                }
+            } else if (verticalSpeed >= -6000 && verticalSpeed <= 6000) {
+                return AtsuStatusCodes.Ok;
+            }
+
+            return AtsuStatusCodes.EntryOutOfRange;
+        }
+
+        return AtsuStatusCodes.FormatError;
+    }
+
+    /**
      * Validates that two speed entries describe the same (knots or mach)
      * @param {string} lower Lower speed value
      * @param {string} higher Higher speed value
@@ -296,6 +363,24 @@ export class InputValidation {
     }
 
     /**
+     * Validates a value that it is compatible with the FCOM format for vertical speeds
+     * @param {string} value The entered scratchpad vertical speed
+     * @returns An AtsuStatusCodes-value
+     */
+    public static formatScratchpadVerticalSpeed(value: string): string {
+        let verticalSpeed = parseInt(value.match(/([0-9]+)/)[0]);
+        if (value.startsWith('-') || value.startsWith('M')) {
+            verticalSpeed *= -1;
+        }
+
+        if (!/(FT){1}/.test(value)) {
+            return `${verticalSpeed}MM`;
+        }
+
+        return `${verticalSpeed}FTM`;
+    }
+
+    /**
      * Validates that two altitude entries describe the same (FL, feet or meters)
      * @param {string} lower Lower altitude value
      * @param {string} higher Higher altitude value
@@ -360,6 +445,97 @@ export class InputValidation {
     }
 
     /**
+     * Validates the persons on board
+     * @param {string} value The persons on board
+     * @returns AtsuStatusCodes.Ok if the value is valid
+     */
+    public static validateScratchpadPersonsOnBoard(value: string): AtsuStatusCodes {
+        if (/^[0-9]{1,4}$/.test(value)) {
+            const pob = parseInt(value.match(/([0-9]+)/)[0]);
+            if (pob >= 1 && pob <= 1024) {
+                return AtsuStatusCodes.Ok;
+            }
+            return AtsuStatusCodes.EntryOutOfRange;
+        }
+
+        return AtsuStatusCodes.FormatError;
+    }
+
+    /**
+     * Validates the endurance
+     * @param {string} value The entered endurance
+     * @returns AtsuStatusCodes.Ok if the value is valid
+     */
+    public static validateScratchpadEndurance(value: string): AtsuStatusCodes {
+        if (/^([0-9]{1}H|[0-9]{2}(H)*)[0-9]{2}(M|MIN|MN)*$/.test(value)) {
+            const matches = value.match(/[0-9]{1,2}/g);
+
+            const hours = parseInt(matches[0]);
+            if (hours < 0 || hours >= 24) {
+                return AtsuStatusCodes.EntryOutOfRange;
+            }
+
+            const minutes = parseInt(matches[1]);
+            if (minutes < 0 || minutes >= 60) {
+                return AtsuStatusCodes.EntryOutOfRange;
+            }
+
+            return AtsuStatusCodes.Ok;
+        }
+
+        return AtsuStatusCodes.FormatError;
+    }
+
+    /**
+     * Validates the temparture
+     * @param {string} value The entered temperature
+     * @returns AtsuStatusCodes.Ok if the value is valid
+     */
+    public static validateScratchpadTemperature(value: string): AtsuStatusCodes {
+        if (/^[-+M]?[0-9]{1,3}[CF]?$/.test(value)) {
+            const negative = value.startsWith('-') || value.startsWith('M');
+            const fahrenheit = value.endsWith('F');
+
+            let temperature = parseInt(value.match(/([0-9]+)/)[0]);
+            if (negative) {
+                temperature *= -1;
+            }
+
+            if (fahrenheit && temperature >= -105 && temperature <= 150) {
+                return AtsuStatusCodes.Ok;
+            }
+            if (!fahrenheit && (temperature >= 80 || temperature < 47)) {
+                return AtsuStatusCodes.Ok;
+            }
+
+            return AtsuStatusCodes.EntryOutOfRange;
+        }
+
+        return AtsuStatusCodes.FormatError;
+    }
+
+    /**
+     * Validates the wind data
+     * @param {string} value The entered wind data
+     * @returns AtsuStatusCodes.Ok if the value is valid
+     */
+    public static validateScratchpadWind(value: string): AtsuStatusCodes {
+        if (/^[0-9]{1,3}\/[0-9]{1,3}(KT|KM)?$/.test(value)) {
+            const numbers = value.match(/([0-9]+)/g);
+            const direction = parseInt(numbers[0]);
+            const speed = parseInt(numbers[1]);
+
+            if (direction < 1 || direction > 360 || speed < 0 || speed > 255) {
+                return AtsuStatusCodes.EntryOutOfRange;
+            }
+
+            return AtsuStatusCodes.Ok;
+        }
+
+        return AtsuStatusCodes.FormatError;
+    }
+
+    /**
      * Converts an FCOM valid encoded offset string to a list of offset entries
      * @param {string} offset Valid encoded offset
      * @returns The decoded offset entries
@@ -395,7 +571,37 @@ export class InputValidation {
             left = offset[offset.length - 1] === 'L';
         }
 
-        return [left ? 'L' : 'R', distance.toString(), nmUnit ? 'NM' : 'KM'];
+        return [distance.toString(), nmUnit ? 'NM' : 'KM', left ? 'L' : 'R'];
+    }
+
+    /**
+     * Formats a valid scratchpad offset to a normalized temperature entry
+     * @param {string} value The entered temperature
+     * @returns The formatted temperature
+     */
+    public static formatScratchpadTemperature(value: string): string {
+        const negative = value.startsWith('-') || value.startsWith('M');
+        const fahrenheit = value.endsWith('F');
+
+        let temperature = parseInt(value.match(/([0-9]+)/)[0]);
+        if (negative) {
+            temperature *= -1;
+        }
+
+        return `${temperature}${fahrenheit ? 'F' : 'C'}`;
+    }
+
+    /**
+     * Normalizes the wind data
+     * @param {string} value The entered wind data
+     * @returns The normalized wind data
+     */
+    public static formatScratchpadWind(value: string): string {
+        const numbers = value.match(/([0-9]+)/g);
+        const direction = parseInt(numbers[0]);
+        const speed = parseInt(numbers[1]);
+        const kilometers = value.endsWith('M');
+        return `${direction.toString().padStart(3, '0')}/${speed.toString().padStart(3, '0')}${kilometers ? 'KM' : 'KT'}`;
     }
 
     /**
@@ -409,12 +615,36 @@ export class InputValidation {
     }
 
     /**
+     * Formats a valid scratchpad endurance entry to a normalized offset entry
+     * @param {string} value The scratchpad entry
+     * @returns The normalized offset entry
+     */
+    public static formatScratchpadEndurance(value: string): string {
+        const matches = value.match(/[0-9]{1,2}/g);
+        const hours = parseInt(matches[0]);
+        const minutes = parseInt(matches[1]);
+        return `${hours}H${minutes}`;
+    }
+
+    /**
      * Expands a lateral offset encoded string into an expanded version
      * @param {string} offset The valid offset value
      * @returns The expanded lateral offset
      */
     public static expandLateralOffset(offset: string): string {
         const entries = InputValidation.decodeOffsetString(offset);
-        return `${entries[1]}${entries[2]} ${entries[0] === 'L' ? 'LEFT' : 'RIGHT'}`;
+        return `${entries[0]}${entries[1]} ${entries[2] === 'L' ? 'LEFT' : 'RIGHT'}`;
+    }
+
+    /**
+     * Formats a valid scratchpad distance entry to a normalized distance entry
+     * @param {string} value The scratchpad entry
+     * @returns The normalized distance entry
+     */
+    public static formatScratchpadDistance(distance: string): string {
+        if (distance.endsWith('NM') || distance.endsWith('KM')) {
+            return distance;
+        }
+        return `${distance}NM`;
     }
 }
