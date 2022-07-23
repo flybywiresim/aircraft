@@ -1164,6 +1164,7 @@ impl SimulationElement for FullAuthorityDigitalEngineControl {
 /// A struct to hold all the pack related components
 struct PackComplex {
     engine_number: usize,
+    pack_flow_valve_id: VariableIdentifier,
     pack_flow_valve_flow_rate_id: VariableIdentifier,
     pack_container: PneumaticPipe,
     exhaust: PneumaticExhaust,
@@ -1173,6 +1174,7 @@ impl PackComplex {
     fn new(context: &mut InitContext, engine_number: usize) -> Self {
         Self {
             engine_number,
+            pack_flow_valve_id: context.get_identifier(Self::pack_flow_valve_id(engine_number)),
             pack_flow_valve_flow_rate_id: context
                 .get_identifier(format!("PNEU_PACK_{}_FLOW_VALVE_FLOW_RATE", engine_number)),
             pack_container: PneumaticPipe::new(
@@ -1183,6 +1185,10 @@ impl PackComplex {
             exhaust: PneumaticExhaust::new(0.3, 0.3, Pressure::new::<psi>(0.)),
             pack_flow_valve: DefaultValve::new_closed(),
         }
+    }
+
+    fn pack_flow_valve_id(number: usize) -> String {
+        format!("COND_PACK_FLOW_VALVE_{}_IS_OPEN", number)
     }
 
     fn update(
@@ -1243,6 +1249,10 @@ impl PneumaticContainer for PackComplex {
 }
 impl SimulationElement for PackComplex {
     fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(
+            &self.pack_flow_valve_id,
+            self.pack_flow_valve_open_amount() > Ratio::new::<ratio>(0.),
+        );
         writer.write(
             &self.pack_flow_valve_flow_rate_id,
             self.pack_flow_valve.fluid_flow(),
