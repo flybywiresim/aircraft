@@ -7,9 +7,9 @@ class Column {
      */
     constructor(index, text, ...att) {
         this.index = index;
-        this.raw = text;
+        this.raw = "" + text;
         this.color = att.find(e => e.color) || Column.white;
-        this.length = text.length;
+        this.length = this.raw.length;
         this.anchorPos = !!att.find(e => e.align) ? index - this.length + 1 : index;
         const size = att.find(e => e.size);
         this.size = !!size ? [`{${size["size"]}}`, "{end}"] : ["", ""];
@@ -27,8 +27,8 @@ class Column {
      * @param {string} text - text to be displayed
      */
     set text(text) {
-        this.raw = text;
-        this.length = text.length;
+        this.raw = "" + text;
+        this.length = this.raw.length;
 
         // if text is right aligned => update anchor position
         if (this.index !== this.anchorPos) {
