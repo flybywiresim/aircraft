@@ -164,17 +164,14 @@ class EICASCommonDisplay extends Airliners.EICASTemplateElement {
         }
     }
     refreshGrossWeight(_force = false) {
-        const fuelWeight = SimVar.GetSimVarValue("FUEL TOTAL QUANTITY WEIGHT", "kg");
-        const emptyWeight = SimVar.GetSimVarValue("EMPTY WEIGHT", "kg");
-        const payloadWeight = this.getPayloadWeight("kg");
-        const isOneEngineRunning = SimVar.GetSimVarValue("ENG COMBUSTION:1", "bool") || SimVar.GetSimVarValue("ENG COMBUSTION:2", "bool");
-        const gw = Math.round(NXUnits.kgToUser(emptyWeight + fuelWeight + payloadWeight));
+        const isOneEngineRunning = SimVar.GetSimVarValue("L:A32NX_ENGINE_N1:1", "Number") >= 15 || SimVar.GetSimVarValue("L:A32NX_ENGINE_N1:2", "Number") >= 15; //BASED ON IRL REFERENCE
+        const gw = Math.round(NXUnits.kgToUser(SimVar.GetSimVarValue("L:A32NX_FM_GROSS_WEIGHT", "number") * 1000));
         const gwUnit = NXUnits.userWeightUnit();
         if ((gw != this.currentGW) || (this.isOneEngineRunning != isOneEngineRunning) || _force) {
             this.currentGW = gw;
             this.isOneEngineRunning = isOneEngineRunning;
 
-            if (isOneEngineRunning && this.gwValue != null) {
+            if (isOneEngineRunning && this.currentGW != 0) {
                 // Lower EICAS displays GW in increments of 100
                 this.gwValue.classList.add("Value");
                 this.gwValue.classList.remove("Cyan");
@@ -191,14 +188,6 @@ class EICASCommonDisplay extends Airliners.EICASTemplateElement {
                 this.gwUnit.textContent = gwUnit;
             }
         }
-    }
-    getPayloadWeight(unit) {
-        const payloadCount = SimVar.GetSimVarValue("PAYLOAD STATION COUNT", "number");
-        let payloadWeight = 0;
-        for (let i = 1; i <= payloadCount; i++) {
-            payloadWeight += SimVar.GetSimVarValue(`PAYLOAD STATION WEIGHT:${i}`, unit);
-        }
-        return payloadWeight;
     }
     refreshHomeCockpitMode() {
         const isHomeCockpit = SimVar.GetSimVarValue("L:A32NX_HOME_COCKPIT_ENABLED", "bool");

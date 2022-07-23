@@ -496,9 +496,30 @@ pub fn min(accumulator: f64, item: f64) -> f64 {
     accumulator.min(item)
 }
 
+#[derive(PartialEq)]
+pub enum ObjectWrite {
+    Ignore,
+    ToSim,
+}
+impl ObjectWrite {
+    pub fn on(condition: bool) -> Self {
+        if condition {
+            Self::ToSim
+        } else {
+            Self::Ignore
+        }
+    }
+}
+impl Default for ObjectWrite {
+    fn default() -> Self {
+        Self::ToSim
+    }
+}
+
+/// Write function provides the output to know if the object will be written to sim or not
 pub trait VariablesToObject {
     fn variables(&self) -> Vec<Variable>;
-    fn write(&mut self, values: Vec<f64>);
+    fn write(&mut self, values: Vec<f64>) -> ObjectWrite;
     fn set_data_on_sim_object(&self, sim_connect: &mut SimConnect) -> Result<(), Box<dyn Error>>;
 }
 
@@ -528,8 +549,9 @@ impl ExecutableVariableAction for ToObject {
             .map(|variable_identifier| variables.read(variable_identifier))
             .collect();
 
-        self.target_object.write(values);
-        self.target_object.set_data_on_sim_object(sim_connect)?;
+        if self.target_object.write(values) == ObjectWrite::ToSim {
+            self.target_object.set_data_on_sim_object(sim_connect)?;
+        }
 
         Ok(())
     }

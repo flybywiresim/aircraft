@@ -85,6 +85,7 @@
       "YouHaveNotYetImportedAnySimBriefData": "Et ole vielä tuonut dataa SimBriefistä."
     },
     "Overview": {
+      "ActualGW": "Actual GW",
       "Engines": "Moottorit",
       "MMO": "Suurin lentonopeus (mach)",
       "MRW": "Suurin sallittu paino maassa (MRW)",

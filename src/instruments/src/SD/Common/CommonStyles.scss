@@ -1,6 +1,8 @@
 @import "../style.scss";
 @import "../../Common/definitions.scss";
 
+.ecam-common-styles {
+
 .ThickCyanLine {
   stroke: $display-cyan  !important;
   stroke-width: 6;
@@ -123,4 +125,6 @@ tspan {
     text-decoration: underline;
     text-decoration-color: $display-white;
   }
+}
+
 }
