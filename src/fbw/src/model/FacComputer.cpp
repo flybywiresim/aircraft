@@ -100,16 +100,22 @@ void FacComputer::FacComputer_RateLimiter_Reset(rtDW_RateLimiter_FacComputer_T *
   localDW->pY_not_empty = false;
 }
 
-void FacComputer::FacComputer_RateLimiter(real_T rtu_u, real_T rtu_up, real_T rtu_lo, real_T rtu_Ts, real_T rtu_init,
+void FacComputer::FacComputer_RateLimiter(real_T rtu_u, real_T rtu_up, real_T rtu_lo, real_T rtu_Ts, boolean_T rtu_reset,
   real_T *rty_Y, rtDW_RateLimiter_FacComputer_T *localDW)
 {
-  if (!localDW->pY_not_empty) {
-    localDW->pY = rtu_init;
+  if ((!localDW->pY_not_empty) || rtu_reset) {
+    localDW->pY = rtu_u;
     localDW->pY_not_empty = true;
   }
 
-  localDW->pY += std::fmax(std::fmin(rtu_u - localDW->pY, std::abs(rtu_up) * rtu_Ts), -std::abs(rtu_lo) * rtu_Ts);
-  *rty_Y = localDW->pY;
+  if (rtu_reset) {
+    *rty_Y = rtu_u;
+  } else {
+    *rty_Y = std::fmax(std::fmin(rtu_u - localDW->pY, std::abs(rtu_up) * rtu_Ts), -std::abs(rtu_lo) * rtu_Ts) +
+      localDW->pY;
+  }
+
+  localDW->pY = *rty_Y;
 }
 
 void FacComputer::FacComputer_CalculateV_alpha_max(real_T rtu_v_ias, real_T rtu_alpha, real_T rtu_alpha_0, real_T
@@ -194,7 +200,7 @@ void FacComputer::step()
 
     boolean_T rtb_ir3Invalid;
     boolean_T rtb_irOppInvalid;
-    boolean_T rtb_irOwnInvalid;
+    boolean_T rtb_y_e;
     if (!FacComputer_DWork.Runtime_MODE) {
       FacComputer_DWork.Delay1_DSTATE = FacComputer_P.Delay1_InitialCondition;
       FacComputer_DWork.Memory_PreviousInput = FacComputer_P.SRFlipFlop_initial_condition;
@@ -203,7 +209,6 @@ void FacComputer::step()
       FacComputer_DWork.Delay_DSTATE_d = FacComputer_P.DiscreteTimeIntegratorVariableTs_InitialCondition;
       FacComputer_DWork.Delay_DSTATE_m = FacComputer_P.RateLimiterDynamicEqualVariableTs_InitialCondition;
       FacComputer_DWork.Delay_DSTATE_k = FacComputer_P.RateLimiterDynamicEqualVariableTs_InitialCondition_a;
-      FacComputer_DWork.output_not_empty = false;
       FacComputer_DWork.previousInput_not_empty = false;
       FacComputer_DWork.output = false;
       FacComputer_DWork.timeSinceCondition = 0.0;
@@ -217,13 +222,13 @@ void FacComputer::step()
       FacComputer_DWork.is_active_c15_FacComputer = 0U;
       FacComputer_DWork.is_c15_FacComputer = FacComputer_IN_NO_ACTIVE_CHILD;
       FacComputer_DWork.sAlphaFloor = 0.0;
-      FacComputer_RateLimiter_Reset(&FacComputer_DWork.sf_RateLimiter_l);
-      FacComputer_RateLimiter_Reset(&FacComputer_DWork.sf_RateLimiter_o);
-      FacComputer_RateLimiter_Reset(&FacComputer_DWork.sf_RateLimiter_d);
-      FacComputer_RateLimiter_Reset(&FacComputer_DWork.sf_RateLimiter_do);
+      FacComputer_RateLimiter_Reset(&FacComputer_DWork.sf_RateLimiter_c);
+      FacComputer_RateLimiter_Reset(&FacComputer_DWork.sf_RateLimiter_a);
+      FacComputer_RateLimiter_Reset(&FacComputer_DWork.sf_RateLimiter_n);
+      FacComputer_RateLimiter_Reset(&FacComputer_DWork.sf_RateLimiter_j);
       FacComputer_DWork.pY_not_empty = false;
       FacComputer_DWork.pU_not_empty = false;
-      FacComputer_RateLimiter_Reset(&FacComputer_DWork.sf_RateLimiter_e);
+      FacComputer_DWork.pY_not_empty_l = false;
       FacComputer_DWork.Runtime_MODE = true;
     }
 
@@ -264,23 +269,17 @@ void FacComputer::step()
 
     rtb_y_d2 = (FacComputer_U.in.discrete_inputs.ap_own_engaged || FacComputer_U.in.discrete_inputs.ap_opp_engaged);
     rtb_AND = (FacComputer_U.in.discrete_inputs.rudder_trim_reset_button && (!rtb_y_d2));
-    if (!FacComputer_DWork.output_not_empty) {
-      FacComputer_DWork.output_b = rtb_AND;
-      FacComputer_DWork.output_not_empty = true;
-    }
-
     if (!FacComputer_DWork.previousInput_not_empty) {
       FacComputer_DWork.previousInput = FacComputer_P.PulseNode_isRisingEdge;
       FacComputer_DWork.previousInput_not_empty = true;
     }
 
     if (FacComputer_P.PulseNode_isRisingEdge) {
-      rtb_irOwnInvalid = (rtb_AND && (!FacComputer_DWork.previousInput));
+      rtb_y_e = (rtb_AND && (!FacComputer_DWork.previousInput));
     } else {
-      rtb_irOwnInvalid = ((!rtb_AND) && FacComputer_DWork.previousInput);
+      rtb_y_e = ((!rtb_AND) && FacComputer_DWork.previousInput);
     }
 
-    FacComputer_DWork.output_b = ((!FacComputer_DWork.output_b) && rtb_irOwnInvalid);
     FacComputer_DWork.previousInput = rtb_AND;
     rtb_Sum_l = FacComputer_P.Gain1_Gain * FacComputer_DWork.Delay1_DSTATE;
     if (rtb_Sum_l > FacComputer_P.Saturation_UpperSat_e) {
@@ -292,7 +291,7 @@ void FacComputer::step()
     FacComputer_DWork.Memory_PreviousInput = FacComputer_P.Logic_table
       [(((FacComputer_U.in.discrete_inputs.rudder_trim_switch_left ||
           FacComputer_U.in.discrete_inputs.rudder_trim_switch_right || rtb_y_d2 || (std::abs(rtb_Sum_l) <=
-           FacComputer_P.CompareToConstant_const)) + (static_cast<uint32_T>(FacComputer_DWork.output_b) << 1)) << 1) +
+           FacComputer_P.CompareToConstant_const)) + (static_cast<uint32_T>(rtb_y_e) << 1)) << 1) +
       FacComputer_DWork.Memory_PreviousInput];
     FacComputer_B.logic.lgciu_own_valid = rtb_DataTypeConversion_dl;
     FacComputer_B.logic.all_lgciu_lost = ((!rtb_DataTypeConversion_dl) && (!rtb_AND1));
@@ -306,10 +305,9 @@ void FacComputer::step()
     rtb_AND = ((FacComputer_U.in.bus_inputs.adr_3_bus.airspeed_computed_kn.SSM == static_cast<uint32_T>(SignStatusMatrix::
       FailureWarning)) || (FacComputer_U.in.bus_inputs.adr_3_bus.aoa_corrected_deg.SSM == static_cast<uint32_T>
                 (SignStatusMatrix::FailureWarning)));
-    rtb_irOwnInvalid = ((FacComputer_U.in.bus_inputs.ir_own_bus.body_yaw_rate_deg_s.SSM != static_cast<uint32_T>
-                         (SignStatusMatrix::NormalOperation)) ||
-                        (FacComputer_U.in.bus_inputs.ir_own_bus.body_lat_accel_g.SSM != static_cast<uint32_T>
-                         (SignStatusMatrix::NormalOperation)));
+    rtb_y_e = ((FacComputer_U.in.bus_inputs.ir_own_bus.body_yaw_rate_deg_s.SSM != static_cast<uint32_T>(SignStatusMatrix::
+      NormalOperation)) || (FacComputer_U.in.bus_inputs.ir_own_bus.body_lat_accel_g.SSM != static_cast<uint32_T>
+                (SignStatusMatrix::NormalOperation)));
     rtb_irOppInvalid = ((FacComputer_U.in.bus_inputs.ir_opp_bus.body_yaw_rate_deg_s.SSM != static_cast<uint32_T>
                          (SignStatusMatrix::NormalOperation)) ||
                         (FacComputer_U.in.bus_inputs.ir_opp_bus.body_lat_accel_g.SSM != static_cast<uint32_T>
@@ -335,7 +333,7 @@ void FacComputer::step()
       rtb_alpha = 0.0F;
     }
 
-    if (!rtb_irOwnInvalid) {
+    if (!rtb_y_e) {
       rtb_theta = FacComputer_U.in.bus_inputs.ir_own_bus.pitch_angle_deg.Data;
       rtb_phi = FacComputer_U.in.bus_inputs.ir_own_bus.roll_angle_deg.Data;
       rtb_q = FacComputer_U.in.bus_inputs.ir_own_bus.body_pitch_rate_deg_s.Data;
@@ -372,8 +370,8 @@ void FacComputer::step()
     rtb_Switch1_a = rtb_theta_dot;
     FacComputer_B.logic.double_self_detected_adr_failure = ((rtb_AND1 && rtb_DataTypeConversion_dl) || (rtb_AND1 &&
       rtb_AND) || (rtb_DataTypeConversion_dl && rtb_AND));
-    FacComputer_B.logic.double_self_detected_ir_failure = ((rtb_irOwnInvalid && rtb_irOppInvalid) || (rtb_irOwnInvalid &&
-      rtb_ir3Invalid) || (rtb_irOppInvalid && rtb_ir3Invalid));
+    FacComputer_B.logic.double_self_detected_ir_failure = ((rtb_y_e && rtb_irOppInvalid) || (rtb_y_e && rtb_ir3Invalid) ||
+      (rtb_irOppInvalid && rtb_ir3Invalid));
     FacComputer_B.logic.double_not_self_detected_adr_failure = FacComputer_P.Constant_Value_h;
     FacComputer_B.logic.double_not_self_detected_ir_failure = FacComputer_P.Constant_Value_h;
     FacComputer_B.logic.adr_computation_data.V_ias_kn = rtb_V_ias;
@@ -500,7 +498,7 @@ void FacComputer::step()
     rtb_AND = (rtb_y_c != 0U);
     FacComputer_MATLABFunction_f(&FacComputer_U.in.bus_inputs.sfcc_own_bus.slat_flap_system_status_word,
       FacComputer_P.BitfromLabel2_bit_d, &rtb_y_c);
-    rtb_irOwnInvalid = (rtb_y_c != 0U);
+    rtb_y_e = (rtb_y_c != 0U);
     FacComputer_MATLABFunction_f(&FacComputer_U.in.bus_inputs.sfcc_own_bus.slat_flap_system_status_word,
       FacComputer_P.BitfromLabel3_bit_n, &rtb_y_c);
     rtb_irOppInvalid = (rtb_y_c != 0U);
@@ -509,13 +507,13 @@ void FacComputer::step()
     rtb_ir3Invalid = (rtb_y_c != 0U);
     FacComputer_MATLABFunction_f(&FacComputer_U.in.bus_inputs.sfcc_own_bus.slat_flap_system_status_word,
       FacComputer_P.BitfromLabel5_bit_g, &rtb_y_c);
-    FacComputer_MATLABFunction_d(rtb_DataTypeConversion_dl, rtb_AND, rtb_irOwnInvalid, rtb_irOppInvalid, rtb_ir3Invalid,
-      rtb_y_c != 0U, &rtb_V_alpha_target_l);
+    FacComputer_MATLABFunction_d(rtb_DataTypeConversion_dl, rtb_AND, rtb_y_e, rtb_irOppInvalid, rtb_ir3Invalid, rtb_y_c
+      != 0U, &rtb_V_alpha_target_l);
     FacComputer_RateLimiter(look2_binlxpw(FacComputer_B.logic.adr_computation_data.mach, rtb_V_alpha_target_l,
       FacComputer_P.alphafloor_bp01Data, FacComputer_P.alphafloor_bp02Data, FacComputer_P.alphafloor_tableData,
-      FacComputer_P.alphafloor_maxIndex, 4U), FacComputer_P.RateLimiterVariableTs1_up,
-      FacComputer_P.RateLimiterVariableTs1_lo, FacComputer_U.in.time.dt,
-      FacComputer_P.RateLimiterVariableTs1_InitialCondition, &rtb_Switch4_f, &FacComputer_DWork.sf_RateLimiter);
+      FacComputer_P.alphafloor_maxIndex, 4U), FacComputer_P.RateLimiterGenericVariableTs1_up,
+      FacComputer_P.RateLimiterGenericVariableTs1_lo, FacComputer_U.in.time.dt, FacComputer_P.reset_Value,
+      &rtb_Switch4_f, &FacComputer_DWork.sf_RateLimiter);
     Vtas = FacComputer_P.DiscreteDerivativeVariableTs_Gain * FacComputer_B.logic.adr_computation_data.V_ias_kn;
     rtb_Switch_b = Vtas - FacComputer_DWork.Delay_DSTATE;
     FacComputer_LagFilter(rtb_Switch_b / FacComputer_U.in.time.dt, FacComputer_P.LagFilter_C1_k,
@@ -626,38 +624,38 @@ void FacComputer::step()
     rtb_AND = (rtb_y_c != 0U);
     FacComputer_MATLABFunction_f(&FacComputer_U.in.bus_inputs.sfcc_own_bus.slat_flap_system_status_word,
       FacComputer_P.BitfromLabel3_bit_g, &rtb_y_c);
-    rtb_irOwnInvalid = (rtb_y_c != 0U);
+    rtb_y_e = (rtb_y_c != 0U);
     FacComputer_MATLABFunction_f(&FacComputer_U.in.bus_inputs.sfcc_own_bus.slat_flap_system_status_word,
       FacComputer_P.BitfromLabel4_bit_f, &rtb_y_c);
     rtb_irOppInvalid = (rtb_y_c != 0U);
     FacComputer_MATLABFunction_f(&FacComputer_U.in.bus_inputs.sfcc_own_bus.slat_flap_system_status_word,
       FacComputer_P.BitfromLabel5_bit_g3, &rtb_y_c);
-    FacComputer_MATLABFunction_d(rtb_AND1, rtb_DataTypeConversion_dl, rtb_AND, rtb_irOwnInvalid, rtb_irOppInvalid,
-      rtb_y_c != 0U, &rtb_Switch4_f);
+    FacComputer_MATLABFunction_d(rtb_AND1, rtb_DataTypeConversion_dl, rtb_AND, rtb_y_e, rtb_irOppInvalid, rtb_y_c != 0U,
+      &rtb_Switch4_f);
     FacComputer_RateLimiter(look1_binlxpw(rtb_Switch4_f, FacComputer_P.alpha0_bp01Data, FacComputer_P.alpha0_tableData,
-      5U), FacComputer_P.RateLimiterVariableTs3_up, FacComputer_P.RateLimiterVariableTs3_lo, FacComputer_U.in.time.dt,
-      FacComputer_P.RateLimiterVariableTs3_InitialCondition, &rtb_Switch_b, &FacComputer_DWork.sf_RateLimiter_l);
+      5U), FacComputer_P.RateLimiterGenericVariableTs1_up_g, FacComputer_P.RateLimiterGenericVariableTs1_lo_n,
+      FacComputer_U.in.time.dt, FacComputer_P.reset_Value_k, &rtb_Switch1_a, &FacComputer_DWork.sf_RateLimiter_c);
     FacComputer_RateLimiter(look2_binlxpw(FacComputer_B.logic.adr_computation_data.mach, rtb_Switch4_f,
       FacComputer_P.alphamax_bp01Data, FacComputer_P.alphamax_bp02Data, FacComputer_P.alphamax_tableData,
-      FacComputer_P.alphamax_maxIndex, 4U), FacComputer_P.RateLimiterVariableTs2_up,
-      FacComputer_P.RateLimiterVariableTs2_lo, FacComputer_U.in.time.dt,
-      FacComputer_P.RateLimiterVariableTs2_InitialCondition, &rtb_Switch1_a, &FacComputer_DWork.sf_RateLimiter_o);
-    FacComputer_CalculateV_alpha_max(FacComputer_B.logic.adr_computation_data.V_ias_kn, rtb_Switch, rtb_Switch_b,
-      rtb_Switch1_a, &FacComputer_B.flight_envelope.v_alpha_max_kn);
+      FacComputer_P.alphamax_maxIndex, 4U), FacComputer_P.RateLimiterGenericVariableTs4_up,
+      FacComputer_P.RateLimiterGenericVariableTs4_lo, FacComputer_U.in.time.dt, FacComputer_P.reset_Value_o,
+      &rtb_Switch_b, &FacComputer_DWork.sf_RateLimiter_a);
+    FacComputer_CalculateV_alpha_max(FacComputer_B.logic.adr_computation_data.V_ias_kn, rtb_Switch, rtb_Switch1_a,
+      rtb_Switch_b, &FacComputer_B.flight_envelope.v_alpha_max_kn);
     FacComputer_RateLimiter(look2_binlxpw(FacComputer_B.logic.adr_computation_data.mach, rtb_Switch4_f,
       FacComputer_P.alphaprotection_bp01Data, FacComputer_P.alphaprotection_bp02Data,
       FacComputer_P.alphaprotection_tableData, FacComputer_P.alphaprotection_maxIndex, 4U),
-      FacComputer_P.RateLimiterVariableTs_up, FacComputer_P.RateLimiterVariableTs_lo, FacComputer_U.in.time.dt,
-      FacComputer_P.RateLimiterVariableTs_InitialCondition, &rtb_Switch1_a, &FacComputer_DWork.sf_RateLimiter_d);
-    FacComputer_CalculateV_alpha_max(FacComputer_B.logic.adr_computation_data.V_ias_kn, rtb_Switch, rtb_Switch_b,
-      rtb_Switch1_a, &rtb_V_alpha_target_l);
+      FacComputer_P.RateLimiterGenericVariableTs3_up, FacComputer_P.RateLimiterGenericVariableTs3_lo,
+      FacComputer_U.in.time.dt, FacComputer_P.reset_Value_a, &rtb_Switch_b, &FacComputer_DWork.sf_RateLimiter_n);
+    FacComputer_CalculateV_alpha_max(FacComputer_B.logic.adr_computation_data.V_ias_kn, rtb_Switch, rtb_Switch1_a,
+      rtb_Switch_b, &rtb_V_alpha_target_l);
     FacComputer_RateLimiter(look2_binlxpw(FacComputer_B.logic.adr_computation_data.mach, rtb_Switch4_f,
       FacComputer_P.alphastallwarn_bp01Data, FacComputer_P.alphastallwarn_bp02Data,
       FacComputer_P.alphastallwarn_tableData, FacComputer_P.alphastallwarn_maxIndex, 4U),
-      FacComputer_P.RateLimiterVariableTs1_up_m, FacComputer_P.RateLimiterVariableTs1_lo_l, FacComputer_U.in.time.dt,
-      FacComputer_P.RateLimiterVariableTs1_InitialCondition_p, &rtb_Switch1_a, &FacComputer_DWork.sf_RateLimiter_do);
-    FacComputer_CalculateV_alpha_max(FacComputer_B.logic.adr_computation_data.V_ias_kn, rtb_Switch, rtb_Switch_b,
-      rtb_Switch1_a, &rtb_Switch4_f);
+      FacComputer_P.RateLimiterGenericVariableTs2_up, FacComputer_P.RateLimiterGenericVariableTs2_lo,
+      FacComputer_U.in.time.dt, FacComputer_P.reset_Value_i, &rtb_Switch_b, &FacComputer_DWork.sf_RateLimiter_j);
+    FacComputer_CalculateV_alpha_max(FacComputer_B.logic.adr_computation_data.V_ias_kn, rtb_Switch, rtb_Switch1_a,
+      rtb_Switch_b, &rtb_Switch4_f);
     FacComputer_B.flight_envelope.alpha_floor_condition = (FacComputer_DWork.sAlphaFloor != 0.0);
     FacComputer_B.flight_envelope.alpha_filtered_deg = rtb_Switch;
     FacComputer_B.flight_envelope.computed_weight_lbs = 0.0;
@@ -755,9 +753,8 @@ void FacComputer::step()
       rtb_Switch_b = FacComputer_P.Saturation_LowerSat_o;
     }
 
-    rtb_Switch_b = std::fmin(rtb_Switch_b - FacComputer_DWork.Delay_DSTATE_k, rtb_Switch1_a * FacComputer_U.in.time.dt);
-    FacComputer_DWork.Delay_DSTATE_k += std::fmax(rtb_Switch_b, FacComputer_P.Gain_Gain_m * rtb_Switch1_a *
-      FacComputer_U.in.time.dt);
+    FacComputer_DWork.Delay_DSTATE_k += std::fmax(std::fmin(rtb_Switch_b - FacComputer_DWork.Delay_DSTATE_k,
+      rtb_Switch1_a * FacComputer_U.in.time.dt), FacComputer_P.Gain_Gain_m * rtb_Switch1_a * FacComputer_U.in.time.dt);
     if (FacComputer_B.logic.rudder_travel_lim_engaged) {
       rtb_Sum_l = look1_binlxpw(FacComputer_B.logic.adr_computation_data.V_ias_kn, FacComputer_P.uDLookupTable_bp01Data,
         FacComputer_P.uDLookupTable_tableData, 6U);
@@ -770,12 +767,17 @@ void FacComputer::step()
       rtb_Sum_l = FacComputer_U.in.analog_inputs.rudder_travel_lim_position_deg;
     }
 
-    FacComputer_RateLimiter(rtb_Sum_l, FacComputer_P.RateLimiterVariableTs_up_k,
-      FacComputer_P.RateLimiterVariableTs_lo_b, FacComputer_U.in.time.dt,
-      FacComputer_P.RateLimiterVariableTs_InitialCondition_h, &rtb_Switch_b, &FacComputer_DWork.sf_RateLimiter_e);
+    if (!FacComputer_DWork.pY_not_empty_l) {
+      FacComputer_DWork.pY_n = FacComputer_P.RateLimiterVariableTs_InitialCondition;
+      FacComputer_DWork.pY_not_empty_l = true;
+    }
+
+    FacComputer_DWork.pY_n += std::fmax(std::fmin(rtb_Sum_l - FacComputer_DWork.pY_n, std::abs
+      (FacComputer_P.RateLimiterVariableTs_up) * FacComputer_U.in.time.dt), -std::abs
+      (FacComputer_P.RateLimiterVariableTs_lo) * FacComputer_U.in.time.dt);
     FacComputer_B.laws.yaw_damper_command_deg = FacComputer_DWork.Delay_DSTATE_k;
     FacComputer_B.laws.rudder_trim_command_deg = FacComputer_DWork.Delay_DSTATE_m;
-    FacComputer_B.laws.rudder_travel_lim_command_deg = rtb_Switch_b;
+    FacComputer_B.laws.rudder_travel_lim_command_deg = FacComputer_DWork.pY_n;
     if (FacComputer_B.logic.yaw_damper_engaged) {
       FacComputer_Y.out.analog_outputs.yaw_damper_order_deg = FacComputer_B.laws.yaw_damper_command_deg;
     } else {
@@ -1379,101 +1381,105 @@ void FacComputer::step()
     FacComputer_B.Data_nb = FacComputer_U.in.bus_inputs.elac_1_bus.roll_spoiler_command_deg.Data;
     FacComputer_B.SSM_ls = FacComputer_U.in.bus_inputs.elac_1_bus.yaw_damper_command_deg.SSM;
     FacComputer_B.Data_hd = FacComputer_U.in.bus_inputs.elac_1_bus.yaw_damper_command_deg.Data;
-    FacComputer_B.SSM_dg = FacComputer_U.in.bus_inputs.elac_1_bus.discrete_status_word_1.SSM;
-    FacComputer_B.Data_al = FacComputer_U.in.bus_inputs.elac_1_bus.discrete_status_word_1.Data;
-    FacComputer_B.SSM_d3 = FacComputer_U.in.bus_inputs.elac_1_bus.discrete_status_word_2.SSM;
-    FacComputer_B.Data_gu = FacComputer_U.in.bus_inputs.elac_1_bus.discrete_status_word_2.Data;
-    FacComputer_B.SSM_p2 = FacComputer_U.in.bus_inputs.elac_2_bus.left_aileron_position_deg.SSM;
-    FacComputer_B.Data_ix = FacComputer_U.in.bus_inputs.elac_2_bus.left_aileron_position_deg.Data;
+    FacComputer_B.SSM_dg = FacComputer_U.in.bus_inputs.elac_1_bus.elevator_double_pressurization_command_deg.SSM;
+    FacComputer_B.Data_al = FacComputer_U.in.bus_inputs.elac_1_bus.elevator_double_pressurization_command_deg.Data;
+    FacComputer_B.SSM_d3 = FacComputer_U.in.bus_inputs.elac_1_bus.discrete_status_word_1.SSM;
+    FacComputer_B.Data_gu = FacComputer_U.in.bus_inputs.elac_1_bus.discrete_status_word_1.Data;
+    FacComputer_B.SSM_p2 = FacComputer_U.in.bus_inputs.elac_1_bus.discrete_status_word_2.SSM;
+    FacComputer_B.Data_ix = FacComputer_U.in.bus_inputs.elac_1_bus.discrete_status_word_2.Data;
     FacComputer_B.SSM_bo0 = FacComputer_U.in.bus_inputs.fac_opp_bus.sideslip_target_deg.SSM;
-    FacComputer_B.SSM_bc = FacComputer_U.in.bus_inputs.elac_2_bus.right_aileron_position_deg.SSM;
-    FacComputer_B.Data_do = FacComputer_U.in.bus_inputs.elac_2_bus.right_aileron_position_deg.Data;
-    FacComputer_B.SSM_h0 = FacComputer_U.in.bus_inputs.elac_2_bus.left_elevator_position_deg.SSM;
-    FacComputer_B.Data_hu = FacComputer_U.in.bus_inputs.elac_2_bus.left_elevator_position_deg.Data;
-    FacComputer_B.SSM_giz = FacComputer_U.in.bus_inputs.elac_2_bus.right_elevator_position_deg.SSM;
-    FacComputer_B.Data_pm1 = FacComputer_U.in.bus_inputs.elac_2_bus.right_elevator_position_deg.Data;
-    FacComputer_B.SSM_mqp = FacComputer_U.in.bus_inputs.elac_2_bus.ths_position_deg.SSM;
-    FacComputer_B.Data_i2y = FacComputer_U.in.bus_inputs.elac_2_bus.ths_position_deg.Data;
-    FacComputer_B.SSM_ba = FacComputer_U.in.bus_inputs.elac_2_bus.left_sidestick_pitch_command_deg.SSM;
-    FacComputer_B.Data_pg = FacComputer_U.in.bus_inputs.elac_2_bus.left_sidestick_pitch_command_deg.Data;
+    FacComputer_B.SSM_bc = FacComputer_U.in.bus_inputs.elac_2_bus.left_aileron_position_deg.SSM;
+    FacComputer_B.Data_do = FacComputer_U.in.bus_inputs.elac_2_bus.left_aileron_position_deg.Data;
+    FacComputer_B.SSM_h0 = FacComputer_U.in.bus_inputs.elac_2_bus.right_aileron_position_deg.SSM;
+    FacComputer_B.Data_hu = FacComputer_U.in.bus_inputs.elac_2_bus.right_aileron_position_deg.Data;
+    FacComputer_B.SSM_giz = FacComputer_U.in.bus_inputs.elac_2_bus.left_elevator_position_deg.SSM;
+    FacComputer_B.Data_pm1 = FacComputer_U.in.bus_inputs.elac_2_bus.left_elevator_position_deg.Data;
+    FacComputer_B.SSM_mqp = FacComputer_U.in.bus_inputs.elac_2_bus.right_elevator_position_deg.SSM;
+    FacComputer_B.Data_i2y = FacComputer_U.in.bus_inputs.elac_2_bus.right_elevator_position_deg.Data;
+    FacComputer_B.SSM_ba = FacComputer_U.in.bus_inputs.elac_2_bus.ths_position_deg.SSM;
+    FacComputer_B.Data_pg = FacComputer_U.in.bus_inputs.elac_2_bus.ths_position_deg.Data;
     FacComputer_B.Data_ni = FacComputer_U.in.bus_inputs.fac_opp_bus.sideslip_target_deg.Data;
-    FacComputer_B.SSM_in = FacComputer_U.in.bus_inputs.elac_2_bus.right_sidestick_pitch_command_deg.SSM;
-    FacComputer_B.Data_fr = FacComputer_U.in.bus_inputs.elac_2_bus.right_sidestick_pitch_command_deg.Data;
-    FacComputer_B.SSM_ff = FacComputer_U.in.bus_inputs.elac_2_bus.left_sidestick_roll_command_deg.SSM;
-    FacComputer_B.Data_cn = FacComputer_U.in.bus_inputs.elac_2_bus.left_sidestick_roll_command_deg.Data;
-    FacComputer_B.SSM_ic = FacComputer_U.in.bus_inputs.elac_2_bus.right_sidestick_roll_command_deg.SSM;
-    FacComputer_B.Data_nxl = FacComputer_U.in.bus_inputs.elac_2_bus.right_sidestick_roll_command_deg.Data;
-    FacComputer_B.SSM_fs = FacComputer_U.in.bus_inputs.elac_2_bus.rudder_pedal_position_deg.SSM;
-    FacComputer_B.Data_jh = FacComputer_U.in.bus_inputs.elac_2_bus.rudder_pedal_position_deg.Data;
-    FacComputer_B.SSM_ja = FacComputer_U.in.bus_inputs.elac_2_bus.aileron_command_deg.SSM;
-    FacComputer_B.Data_gl = FacComputer_U.in.bus_inputs.elac_2_bus.aileron_command_deg.Data;
+    FacComputer_B.SSM_in = FacComputer_U.in.bus_inputs.elac_2_bus.left_sidestick_pitch_command_deg.SSM;
+    FacComputer_B.Data_fr = FacComputer_U.in.bus_inputs.elac_2_bus.left_sidestick_pitch_command_deg.Data;
+    FacComputer_B.SSM_ff = FacComputer_U.in.bus_inputs.elac_2_bus.right_sidestick_pitch_command_deg.SSM;
+    FacComputer_B.Data_cn = FacComputer_U.in.bus_inputs.elac_2_bus.right_sidestick_pitch_command_deg.Data;
+    FacComputer_B.SSM_ic = FacComputer_U.in.bus_inputs.elac_2_bus.left_sidestick_roll_command_deg.SSM;
+    FacComputer_B.Data_nxl = FacComputer_U.in.bus_inputs.elac_2_bus.left_sidestick_roll_command_deg.Data;
+    FacComputer_B.SSM_fs = FacComputer_U.in.bus_inputs.elac_2_bus.right_sidestick_roll_command_deg.SSM;
+    FacComputer_B.Data_jh = FacComputer_U.in.bus_inputs.elac_2_bus.right_sidestick_roll_command_deg.Data;
+    FacComputer_B.SSM_ja = FacComputer_U.in.bus_inputs.elac_2_bus.rudder_pedal_position_deg.SSM;
+    FacComputer_B.Data_gl = FacComputer_U.in.bus_inputs.elac_2_bus.rudder_pedal_position_deg.Data;
     FacComputer_B.SSM_js = FacComputer_U.in.bus_inputs.fac_opp_bus.fac_slat_angle_deg.SSM;
-    FacComputer_B.SSM_is3 = FacComputer_U.in.bus_inputs.elac_2_bus.roll_spoiler_command_deg.SSM;
-    FacComputer_B.Data_gn = FacComputer_U.in.bus_inputs.elac_2_bus.roll_spoiler_command_deg.Data;
-    FacComputer_B.SSM_ag = FacComputer_U.in.bus_inputs.elac_2_bus.yaw_damper_command_deg.SSM;
-    FacComputer_B.Data_myb = FacComputer_U.in.bus_inputs.elac_2_bus.yaw_damper_command_deg.Data;
-    FacComputer_B.SSM_f5 = FacComputer_U.in.bus_inputs.elac_2_bus.discrete_status_word_1.SSM;
-    FacComputer_B.Data_l2 = FacComputer_U.in.bus_inputs.elac_2_bus.discrete_status_word_1.Data;
-    FacComputer_B.SSM_ph = FacComputer_U.in.bus_inputs.elac_2_bus.discrete_status_word_2.SSM;
-    FacComputer_B.Data_o5o = FacComputer_U.in.bus_inputs.elac_2_bus.discrete_status_word_2.Data;
-    FacComputer_B.Data_l5 = FacComputer_U.in.bus_inputs.fac_opp_bus.fac_slat_angle_deg.Data;
-    FacComputer_B.SSM_jw = FacComputer_U.in.bus_inputs.fac_opp_bus.fac_flap_angle.SSM;
-    FacComputer_B.Data_dc2 = FacComputer_U.in.bus_inputs.fac_opp_bus.fac_flap_angle.Data;
+    FacComputer_B.SSM_is3 = FacComputer_U.in.bus_inputs.elac_2_bus.aileron_command_deg.SSM;
+    FacComputer_B.Data_gn = FacComputer_U.in.bus_inputs.elac_2_bus.aileron_command_deg.Data;
+    FacComputer_B.SSM_ag = FacComputer_U.in.bus_inputs.elac_2_bus.roll_spoiler_command_deg.SSM;
+    FacComputer_B.Data_myb = FacComputer_U.in.bus_inputs.elac_2_bus.roll_spoiler_command_deg.Data;
+    FacComputer_B.SSM_f5 = FacComputer_U.in.bus_inputs.elac_2_bus.yaw_damper_command_deg.SSM;
+    FacComputer_B.Data_l2 = FacComputer_U.in.bus_inputs.elac_2_bus.yaw_damper_command_deg.Data;
+    FacComputer_B.SSM_ph = FacComputer_U.in.bus_inputs.elac_2_bus.elevator_double_pressurization_command_deg.SSM;
+    FacComputer_B.Data_o5o = FacComputer_U.in.bus_inputs.elac_2_bus.elevator_double_pressurization_command_deg.Data;
+    FacComputer_B.SSM_jw = FacComputer_U.in.bus_inputs.elac_2_bus.discrete_status_word_1.SSM;
+    FacComputer_B.Data_l5 = FacComputer_U.in.bus_inputs.elac_2_bus.discrete_status_word_1.Data;
+    FacComputer_B.Data_dc2 = FacComputer_U.in.bus_inputs.fac_opp_bus.fac_slat_angle_deg.Data;
+    FacComputer_B.SSM_jy = FacComputer_U.in.bus_inputs.elac_2_bus.discrete_status_word_2.SSM;
+    FacComputer_B.Data_gr = FacComputer_U.in.bus_inputs.elac_2_bus.discrete_status_word_2.Data;
+    FacComputer_B.SSM_j1 = FacComputer_U.in.bus_inputs.fac_opp_bus.fac_flap_angle.SSM;
+    FacComputer_B.Data_gp = FacComputer_U.in.bus_inputs.fac_opp_bus.fac_flap_angle.Data;
     FacComputer_B.pause_on = FacComputer_U.in.sim_data.pause_on;
-    FacComputer_B.SSM_jy = FacComputer_U.in.bus_inputs.fac_opp_bus.discrete_word_2.SSM;
-    FacComputer_B.Data_gr = FacComputer_U.in.bus_inputs.fac_opp_bus.discrete_word_2.Data;
-    FacComputer_B.SSM_j1 = FacComputer_U.in.bus_inputs.fac_opp_bus.rudder_travel_limit_command_deg.SSM;
-    FacComputer_B.Data_gp = FacComputer_U.in.bus_inputs.fac_opp_bus.rudder_travel_limit_command_deg.Data;
-    FacComputer_B.SSM_ov = FacComputer_U.in.bus_inputs.fac_opp_bus.delta_r_yaw_damper_deg.SSM;
-    FacComputer_B.Data_i3 = FacComputer_U.in.bus_inputs.fac_opp_bus.delta_r_yaw_damper_deg.Data;
-    FacComputer_B.SSM_mx = FacComputer_U.in.bus_inputs.fac_opp_bus.estimated_sideslip_deg.SSM;
-    FacComputer_B.Data_et = FacComputer_U.in.bus_inputs.fac_opp_bus.estimated_sideslip_deg.Data;
-    FacComputer_B.SSM_b4 = FacComputer_U.in.bus_inputs.fac_opp_bus.v_alpha_lim_kn.SSM;
-    FacComputer_B.Data_mc = FacComputer_U.in.bus_inputs.fac_opp_bus.v_alpha_lim_kn.Data;
+    FacComputer_B.SSM_ov = FacComputer_U.in.bus_inputs.fac_opp_bus.discrete_word_2.SSM;
+    FacComputer_B.Data_i3 = FacComputer_U.in.bus_inputs.fac_opp_bus.discrete_word_2.Data;
+    FacComputer_B.SSM_mx = FacComputer_U.in.bus_inputs.fac_opp_bus.rudder_travel_limit_command_deg.SSM;
+    FacComputer_B.Data_et = FacComputer_U.in.bus_inputs.fac_opp_bus.rudder_travel_limit_command_deg.Data;
+    FacComputer_B.SSM_b4 = FacComputer_U.in.bus_inputs.fac_opp_bus.delta_r_yaw_damper_deg.SSM;
+    FacComputer_B.Data_mc = FacComputer_U.in.bus_inputs.fac_opp_bus.delta_r_yaw_damper_deg.Data;
+    FacComputer_B.SSM_gb = FacComputer_U.in.bus_inputs.fac_opp_bus.estimated_sideslip_deg.SSM;
+    FacComputer_B.Data_k3 = FacComputer_U.in.bus_inputs.fac_opp_bus.estimated_sideslip_deg.Data;
+    FacComputer_B.SSM_oh = FacComputer_U.in.bus_inputs.fac_opp_bus.v_alpha_lim_kn.SSM;
+    FacComputer_B.Data_f2 = FacComputer_U.in.bus_inputs.fac_opp_bus.v_alpha_lim_kn.Data;
     FacComputer_B.tracking_mode_on_override = FacComputer_U.in.sim_data.tracking_mode_on_override;
-    FacComputer_B.SSM_gb = FacComputer_U.in.bus_inputs.fac_opp_bus.v_ls_kn.SSM;
-    FacComputer_B.Data_k3 = FacComputer_U.in.bus_inputs.fac_opp_bus.v_ls_kn.Data;
-    FacComputer_B.SSM_oh = FacComputer_U.in.bus_inputs.fac_opp_bus.v_stall_kn.SSM;
-    FacComputer_B.Data_f2 = FacComputer_U.in.bus_inputs.fac_opp_bus.v_stall_kn.Data;
-    FacComputer_B.SSM_mm5 = FacComputer_U.in.bus_inputs.fac_opp_bus.v_alpha_prot_kn.SSM;
-    FacComputer_B.Data_gh = FacComputer_U.in.bus_inputs.fac_opp_bus.v_alpha_prot_kn.Data;
-    FacComputer_B.SSM_br = FacComputer_U.in.bus_inputs.fac_opp_bus.v_stall_warn_kn.SSM;
-    FacComputer_B.Data_ed = FacComputer_U.in.bus_inputs.fac_opp_bus.v_stall_warn_kn.Data;
-    FacComputer_B.SSM_c2 = FacComputer_U.in.bus_inputs.fac_opp_bus.speed_trend_kn.SSM;
-    FacComputer_B.Data_o2j = FacComputer_U.in.bus_inputs.fac_opp_bus.speed_trend_kn.Data;
+    FacComputer_B.SSM_mm5 = FacComputer_U.in.bus_inputs.fac_opp_bus.v_ls_kn.SSM;
+    FacComputer_B.Data_gh = FacComputer_U.in.bus_inputs.fac_opp_bus.v_ls_kn.Data;
+    FacComputer_B.SSM_br = FacComputer_U.in.bus_inputs.fac_opp_bus.v_stall_kn.SSM;
+    FacComputer_B.Data_ed = FacComputer_U.in.bus_inputs.fac_opp_bus.v_stall_kn.Data;
+    FacComputer_B.SSM_c2 = FacComputer_U.in.bus_inputs.fac_opp_bus.v_alpha_prot_kn.SSM;
+    FacComputer_B.Data_o2j = FacComputer_U.in.bus_inputs.fac_opp_bus.v_alpha_prot_kn.Data;
+    FacComputer_B.SSM_hc = FacComputer_U.in.bus_inputs.fac_opp_bus.v_stall_warn_kn.SSM;
+    FacComputer_B.Data_i43 = FacComputer_U.in.bus_inputs.fac_opp_bus.v_stall_warn_kn.Data;
+    FacComputer_B.SSM_ktr = FacComputer_U.in.bus_inputs.fac_opp_bus.speed_trend_kn.SSM;
+    FacComputer_B.Data_ic = FacComputer_U.in.bus_inputs.fac_opp_bus.speed_trend_kn.Data;
     FacComputer_B.tailstrike_protection_on = FacComputer_U.in.sim_data.tailstrike_protection_on;
-    FacComputer_B.SSM_hc = FacComputer_U.in.bus_inputs.fac_opp_bus.v_3_kn.SSM;
-    FacComputer_B.Data_i43 = FacComputer_U.in.bus_inputs.fac_opp_bus.v_3_kn.Data;
-    FacComputer_B.SSM_ktr = FacComputer_U.in.bus_inputs.fac_opp_bus.v_4_kn.SSM;
-    FacComputer_B.Data_ic = FacComputer_U.in.bus_inputs.fac_opp_bus.v_4_kn.Data;
-    FacComputer_B.SSM_gl = FacComputer_U.in.bus_inputs.fac_opp_bus.v_man_kn.SSM;
-    FacComputer_B.Data_ak = FacComputer_U.in.bus_inputs.fac_opp_bus.v_man_kn.Data;
-    FacComputer_B.SSM_my = FacComputer_U.in.bus_inputs.fac_opp_bus.v_max_kn.SSM;
-    FacComputer_B.Data_jg = FacComputer_U.in.bus_inputs.fac_opp_bus.v_max_kn.Data;
-    FacComputer_B.SSM_j3 = FacComputer_U.in.bus_inputs.fac_opp_bus.v_fe_next_kn.SSM;
-    FacComputer_B.Data_cu = FacComputer_U.in.bus_inputs.fac_opp_bus.v_fe_next_kn.Data;
+    FacComputer_B.SSM_gl = FacComputer_U.in.bus_inputs.fac_opp_bus.v_3_kn.SSM;
+    FacComputer_B.Data_ak = FacComputer_U.in.bus_inputs.fac_opp_bus.v_3_kn.Data;
+    FacComputer_B.SSM_my = FacComputer_U.in.bus_inputs.fac_opp_bus.v_4_kn.SSM;
+    FacComputer_B.Data_jg = FacComputer_U.in.bus_inputs.fac_opp_bus.v_4_kn.Data;
+    FacComputer_B.SSM_j3 = FacComputer_U.in.bus_inputs.fac_opp_bus.v_man_kn.SSM;
+    FacComputer_B.Data_cu = FacComputer_U.in.bus_inputs.fac_opp_bus.v_man_kn.Data;
+    FacComputer_B.SSM_go = FacComputer_U.in.bus_inputs.fac_opp_bus.v_max_kn.SSM;
+    FacComputer_B.Data_ep = FacComputer_U.in.bus_inputs.fac_opp_bus.v_max_kn.Data;
+    FacComputer_B.SSM_e5c = FacComputer_U.in.bus_inputs.fac_opp_bus.v_fe_next_kn.SSM;
+    FacComputer_B.Data_d3 = FacComputer_U.in.bus_inputs.fac_opp_bus.v_fe_next_kn.Data;
     FacComputer_B.computer_running = FacComputer_U.in.sim_data.computer_running;
-    FacComputer_B.SSM_go = FacComputer_U.in.bus_inputs.fac_opp_bus.discrete_word_3.SSM;
-    FacComputer_B.Data_ep = FacComputer_U.in.bus_inputs.fac_opp_bus.discrete_word_3.Data;
-    FacComputer_B.SSM_e5c = FacComputer_U.in.bus_inputs.fac_opp_bus.discrete_word_4.SSM;
-    FacComputer_B.Data_d3 = FacComputer_U.in.bus_inputs.fac_opp_bus.discrete_word_4.Data;
-    FacComputer_B.SSM_dk = FacComputer_U.in.bus_inputs.fac_opp_bus.discrete_word_5.SSM;
-    FacComputer_B.Data_bt = FacComputer_U.in.bus_inputs.fac_opp_bus.discrete_word_5.Data;
-    FacComputer_B.SSM_evc = FacComputer_U.in.bus_inputs.fac_opp_bus.delta_r_rudder_trim_deg.SSM;
-    FacComputer_B.Data_e0 = FacComputer_U.in.bus_inputs.fac_opp_bus.delta_r_rudder_trim_deg.Data;
-    FacComputer_B.SSM_kk = FacComputer_U.in.bus_inputs.fac_opp_bus.rudder_trim_pos_deg.SSM;
-    FacComputer_B.Data_jl3 = FacComputer_U.in.bus_inputs.fac_opp_bus.rudder_trim_pos_deg.Data;
+    FacComputer_B.SSM_dk = FacComputer_U.in.bus_inputs.fac_opp_bus.discrete_word_3.SSM;
+    FacComputer_B.Data_bt = FacComputer_U.in.bus_inputs.fac_opp_bus.discrete_word_3.Data;
+    FacComputer_B.SSM_evc = FacComputer_U.in.bus_inputs.fac_opp_bus.discrete_word_4.SSM;
+    FacComputer_B.Data_e0 = FacComputer_U.in.bus_inputs.fac_opp_bus.discrete_word_4.Data;
+    FacComputer_B.SSM_kk = FacComputer_U.in.bus_inputs.fac_opp_bus.discrete_word_5.SSM;
+    FacComputer_B.Data_jl3 = FacComputer_U.in.bus_inputs.fac_opp_bus.discrete_word_5.Data;
+    FacComputer_B.SSM_af = FacComputer_U.in.bus_inputs.fac_opp_bus.delta_r_rudder_trim_deg.SSM;
+    FacComputer_B.Data_nm = FacComputer_U.in.bus_inputs.fac_opp_bus.delta_r_rudder_trim_deg.Data;
+    FacComputer_B.SSM_npr = FacComputer_U.in.bus_inputs.fac_opp_bus.rudder_trim_pos_deg.SSM;
+    FacComputer_B.Data_ia = FacComputer_U.in.bus_inputs.fac_opp_bus.rudder_trim_pos_deg.Data;
     FacComputer_B.ap_own_engaged = FacComputer_U.in.discrete_inputs.ap_own_engaged;
-    FacComputer_B.SSM_af = FacComputer_U.in.bus_inputs.adr_own_bus.altitude_standard_ft.SSM;
-    FacComputer_B.Data_nm = FacComputer_U.in.bus_inputs.adr_own_bus.altitude_standard_ft.Data;
-    FacComputer_B.SSM_npr = FacComputer_U.in.bus_inputs.adr_own_bus.altitude_corrected_ft.SSM;
-    FacComputer_B.Data_ia = FacComputer_U.in.bus_inputs.adr_own_bus.altitude_corrected_ft.Data;
-    FacComputer_B.SSM_ew = FacComputer_U.in.bus_inputs.adr_own_bus.mach.SSM;
-    FacComputer_B.Data_j0 = FacComputer_U.in.bus_inputs.adr_own_bus.mach.Data;
-    FacComputer_B.SSM_lt = FacComputer_U.in.bus_inputs.adr_own_bus.airspeed_computed_kn.SSM;
-    FacComputer_B.Data_bs = FacComputer_U.in.bus_inputs.adr_own_bus.airspeed_computed_kn.Data;
-    FacComputer_B.SSM_ger = FacComputer_U.in.bus_inputs.adr_own_bus.airspeed_true_kn.SSM;
-    FacComputer_B.Data_hp = FacComputer_U.in.bus_inputs.adr_own_bus.airspeed_true_kn.Data;
+    FacComputer_B.SSM_ew = FacComputer_U.in.bus_inputs.adr_own_bus.altitude_standard_ft.SSM;
+    FacComputer_B.Data_j0 = FacComputer_U.in.bus_inputs.adr_own_bus.altitude_standard_ft.Data;
+    FacComputer_B.SSM_lt = FacComputer_U.in.bus_inputs.adr_own_bus.altitude_corrected_ft.SSM;
+    FacComputer_B.Data_bs = FacComputer_U.in.bus_inputs.adr_own_bus.altitude_corrected_ft.Data;
+    FacComputer_B.SSM_ger = FacComputer_U.in.bus_inputs.adr_own_bus.mach.SSM;
+    FacComputer_B.Data_hp = FacComputer_U.in.bus_inputs.adr_own_bus.mach.Data;
+    FacComputer_B.SSM_pxo = FacComputer_U.in.bus_inputs.adr_own_bus.airspeed_computed_kn.SSM;
+    FacComputer_B.Data_ct = FacComputer_U.in.bus_inputs.adr_own_bus.airspeed_computed_kn.Data;
+    FacComputer_B.SSM_co2 = FacComputer_U.in.bus_inputs.adr_own_bus.airspeed_true_kn.SSM;
+    FacComputer_B.Data_pc = FacComputer_U.in.bus_inputs.adr_own_bus.airspeed_true_kn.Data;
     FacComputer_DWork.Delay1_DSTATE = FacComputer_DWork.Delay_DSTATE_d;
     FacComputer_DWork.Delay_DSTATE = Vtas;
     FacComputer_DWork.Delay2_DSTATE = FacComputer_DWork.Delay_DSTATE_m;
@@ -1528,59 +1534,59 @@ void FacComputer::step()
   FacComputer_Y.out.data.bus_inputs.fac_opp_bus.sideslip_target_deg.SSM = FacComputer_B.SSM_bo0;
   FacComputer_Y.out.data.bus_inputs.fac_opp_bus.sideslip_target_deg.Data = FacComputer_B.Data_ni;
   FacComputer_Y.out.data.bus_inputs.fac_opp_bus.fac_slat_angle_deg.SSM = FacComputer_B.SSM_js;
-  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.fac_slat_angle_deg.Data = FacComputer_B.Data_l5;
-  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.fac_flap_angle.SSM = FacComputer_B.SSM_jw;
-  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.fac_flap_angle.Data = FacComputer_B.Data_dc2;
-  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.discrete_word_2.SSM = FacComputer_B.SSM_jy;
-  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.discrete_word_2.Data = FacComputer_B.Data_gr;
-  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.rudder_travel_limit_command_deg.SSM = FacComputer_B.SSM_j1;
-  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.rudder_travel_limit_command_deg.Data = FacComputer_B.Data_gp;
-  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.delta_r_yaw_damper_deg.SSM = FacComputer_B.SSM_ov;
-  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.delta_r_yaw_damper_deg.Data = FacComputer_B.Data_i3;
-  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.estimated_sideslip_deg.SSM = FacComputer_B.SSM_mx;
-  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.estimated_sideslip_deg.Data = FacComputer_B.Data_et;
-  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.v_alpha_lim_kn.SSM = FacComputer_B.SSM_b4;
-  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.v_alpha_lim_kn.Data = FacComputer_B.Data_mc;
-  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.v_ls_kn.SSM = FacComputer_B.SSM_gb;
-  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.v_ls_kn.Data = FacComputer_B.Data_k3;
-  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.v_stall_kn.SSM = FacComputer_B.SSM_oh;
-  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.v_stall_kn.Data = FacComputer_B.Data_f2;
-  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.v_alpha_prot_kn.SSM = FacComputer_B.SSM_mm5;
-  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.v_alpha_prot_kn.Data = FacComputer_B.Data_gh;
-  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.v_stall_warn_kn.SSM = FacComputer_B.SSM_br;
-  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.v_stall_warn_kn.Data = FacComputer_B.Data_ed;
-  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.speed_trend_kn.SSM = FacComputer_B.SSM_c2;
-  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.speed_trend_kn.Data = FacComputer_B.Data_o2j;
-  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.v_3_kn.SSM = FacComputer_B.SSM_hc;
-  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.v_3_kn.Data = FacComputer_B.Data_i43;
-  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.v_4_kn.SSM = FacComputer_B.SSM_ktr;
-  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.v_4_kn.Data = FacComputer_B.Data_ic;
-  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.v_man_kn.SSM = FacComputer_B.SSM_gl;
-  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.v_man_kn.Data = FacComputer_B.Data_ak;
-  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.v_max_kn.SSM = FacComputer_B.SSM_my;
-  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.v_max_kn.Data = FacComputer_B.Data_jg;
-  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.v_fe_next_kn.SSM = FacComputer_B.SSM_j3;
-  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.v_fe_next_kn.Data = FacComputer_B.Data_cu;
-  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.discrete_word_3.SSM = FacComputer_B.SSM_go;
-  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.discrete_word_3.Data = FacComputer_B.Data_ep;
-  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.discrete_word_4.SSM = FacComputer_B.SSM_e5c;
-  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.discrete_word_4.Data = FacComputer_B.Data_d3;
-  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.discrete_word_5.SSM = FacComputer_B.SSM_dk;
-  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.discrete_word_5.Data = FacComputer_B.Data_bt;
-  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.delta_r_rudder_trim_deg.SSM = FacComputer_B.SSM_evc;
-  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.delta_r_rudder_trim_deg.Data = FacComputer_B.Data_e0;
-  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.rudder_trim_pos_deg.SSM = FacComputer_B.SSM_kk;
-  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.rudder_trim_pos_deg.Data = FacComputer_B.Data_jl3;
-  FacComputer_Y.out.data.bus_inputs.adr_own_bus.altitude_standard_ft.SSM = FacComputer_B.SSM_af;
-  FacComputer_Y.out.data.bus_inputs.adr_own_bus.altitude_standard_ft.Data = FacComputer_B.Data_nm;
-  FacComputer_Y.out.data.bus_inputs.adr_own_bus.altitude_corrected_ft.SSM = FacComputer_B.SSM_npr;
-  FacComputer_Y.out.data.bus_inputs.adr_own_bus.altitude_corrected_ft.Data = FacComputer_B.Data_ia;
-  FacComputer_Y.out.data.bus_inputs.adr_own_bus.mach.SSM = FacComputer_B.SSM_ew;
-  FacComputer_Y.out.data.bus_inputs.adr_own_bus.mach.Data = FacComputer_B.Data_j0;
-  FacComputer_Y.out.data.bus_inputs.adr_own_bus.airspeed_computed_kn.SSM = FacComputer_B.SSM_lt;
-  FacComputer_Y.out.data.bus_inputs.adr_own_bus.airspeed_computed_kn.Data = FacComputer_B.Data_bs;
-  FacComputer_Y.out.data.bus_inputs.adr_own_bus.airspeed_true_kn.SSM = FacComputer_B.SSM_ger;
-  FacComputer_Y.out.data.bus_inputs.adr_own_bus.airspeed_true_kn.Data = FacComputer_B.Data_hp;
+  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.fac_slat_angle_deg.Data = FacComputer_B.Data_dc2;
+  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.fac_flap_angle.SSM = FacComputer_B.SSM_j1;
+  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.fac_flap_angle.Data = FacComputer_B.Data_gp;
+  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.discrete_word_2.SSM = FacComputer_B.SSM_ov;
+  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.discrete_word_2.Data = FacComputer_B.Data_i3;
+  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.rudder_travel_limit_command_deg.SSM = FacComputer_B.SSM_mx;
+  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.rudder_travel_limit_command_deg.Data = FacComputer_B.Data_et;
+  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.delta_r_yaw_damper_deg.SSM = FacComputer_B.SSM_b4;
+  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.delta_r_yaw_damper_deg.Data = FacComputer_B.Data_mc;
+  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.estimated_sideslip_deg.SSM = FacComputer_B.SSM_gb;
+  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.estimated_sideslip_deg.Data = FacComputer_B.Data_k3;
+  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.v_alpha_lim_kn.SSM = FacComputer_B.SSM_oh;
+  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.v_alpha_lim_kn.Data = FacComputer_B.Data_f2;
+  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.v_ls_kn.SSM = FacComputer_B.SSM_mm5;
+  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.v_ls_kn.Data = FacComputer_B.Data_gh;
+  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.v_stall_kn.SSM = FacComputer_B.SSM_br;
+  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.v_stall_kn.Data = FacComputer_B.Data_ed;
+  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.v_alpha_prot_kn.SSM = FacComputer_B.SSM_c2;
+  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.v_alpha_prot_kn.Data = FacComputer_B.Data_o2j;
+  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.v_stall_warn_kn.SSM = FacComputer_B.SSM_hc;
+  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.v_stall_warn_kn.Data = FacComputer_B.Data_i43;
+  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.speed_trend_kn.SSM = FacComputer_B.SSM_ktr;
+  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.speed_trend_kn.Data = FacComputer_B.Data_ic;
+  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.v_3_kn.SSM = FacComputer_B.SSM_gl;
+  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.v_3_kn.Data = FacComputer_B.Data_ak;
+  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.v_4_kn.SSM = FacComputer_B.SSM_my;
+  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.v_4_kn.Data = FacComputer_B.Data_jg;
+  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.v_man_kn.SSM = FacComputer_B.SSM_j3;
+  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.v_man_kn.Data = FacComputer_B.Data_cu;
+  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.v_max_kn.SSM = FacComputer_B.SSM_go;
+  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.v_max_kn.Data = FacComputer_B.Data_ep;
+  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.v_fe_next_kn.SSM = FacComputer_B.SSM_e5c;
+  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.v_fe_next_kn.Data = FacComputer_B.Data_d3;
+  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.discrete_word_3.SSM = FacComputer_B.SSM_dk;
+  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.discrete_word_3.Data = FacComputer_B.Data_bt;
+  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.discrete_word_4.SSM = FacComputer_B.SSM_evc;
+  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.discrete_word_4.Data = FacComputer_B.Data_e0;
+  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.discrete_word_5.SSM = FacComputer_B.SSM_kk;
+  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.discrete_word_5.Data = FacComputer_B.Data_jl3;
+  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.delta_r_rudder_trim_deg.SSM = FacComputer_B.SSM_af;
+  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.delta_r_rudder_trim_deg.Data = FacComputer_B.Data_nm;
+  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.rudder_trim_pos_deg.SSM = FacComputer_B.SSM_npr;
+  FacComputer_Y.out.data.bus_inputs.fac_opp_bus.rudder_trim_pos_deg.Data = FacComputer_B.Data_ia;
+  FacComputer_Y.out.data.bus_inputs.adr_own_bus.altitude_standard_ft.SSM = FacComputer_B.SSM_ew;
+  FacComputer_Y.out.data.bus_inputs.adr_own_bus.altitude_standard_ft.Data = FacComputer_B.Data_j0;
+  FacComputer_Y.out.data.bus_inputs.adr_own_bus.altitude_corrected_ft.SSM = FacComputer_B.SSM_lt;
+  FacComputer_Y.out.data.bus_inputs.adr_own_bus.altitude_corrected_ft.Data = FacComputer_B.Data_bs;
+  FacComputer_Y.out.data.bus_inputs.adr_own_bus.mach.SSM = FacComputer_B.SSM_ger;
+  FacComputer_Y.out.data.bus_inputs.adr_own_bus.mach.Data = FacComputer_B.Data_hp;
+  FacComputer_Y.out.data.bus_inputs.adr_own_bus.airspeed_computed_kn.SSM = FacComputer_B.SSM_pxo;
+  FacComputer_Y.out.data.bus_inputs.adr_own_bus.airspeed_computed_kn.Data = FacComputer_B.Data_ct;
+  FacComputer_Y.out.data.bus_inputs.adr_own_bus.airspeed_true_kn.SSM = FacComputer_B.SSM_co2;
+  FacComputer_Y.out.data.bus_inputs.adr_own_bus.airspeed_true_kn.Data = FacComputer_B.Data_pc;
   FacComputer_Y.out.data.bus_inputs.adr_own_bus.vertical_speed_ft_min.SSM = FacComputer_B.SSM;
   FacComputer_Y.out.data.bus_inputs.adr_own_bus.vertical_speed_ft_min.Data = FacComputer_B.Data;
   FacComputer_Y.out.data.bus_inputs.adr_own_bus.aoa_corrected_deg.SSM = FacComputer_B.SSM_k;
@@ -1915,40 +1921,44 @@ void FacComputer::step()
   FacComputer_Y.out.data.bus_inputs.elac_1_bus.roll_spoiler_command_deg.Data = FacComputer_B.Data_nb;
   FacComputer_Y.out.data.bus_inputs.elac_1_bus.yaw_damper_command_deg.SSM = FacComputer_B.SSM_ls;
   FacComputer_Y.out.data.bus_inputs.elac_1_bus.yaw_damper_command_deg.Data = FacComputer_B.Data_hd;
-  FacComputer_Y.out.data.bus_inputs.elac_1_bus.discrete_status_word_1.SSM = FacComputer_B.SSM_dg;
-  FacComputer_Y.out.data.bus_inputs.elac_1_bus.discrete_status_word_1.Data = FacComputer_B.Data_al;
-  FacComputer_Y.out.data.bus_inputs.elac_1_bus.discrete_status_word_2.SSM = FacComputer_B.SSM_d3;
-  FacComputer_Y.out.data.bus_inputs.elac_1_bus.discrete_status_word_2.Data = FacComputer_B.Data_gu;
-  FacComputer_Y.out.data.bus_inputs.elac_2_bus.left_aileron_position_deg.SSM = FacComputer_B.SSM_p2;
-  FacComputer_Y.out.data.bus_inputs.elac_2_bus.left_aileron_position_deg.Data = FacComputer_B.Data_ix;
-  FacComputer_Y.out.data.bus_inputs.elac_2_bus.right_aileron_position_deg.SSM = FacComputer_B.SSM_bc;
-  FacComputer_Y.out.data.bus_inputs.elac_2_bus.right_aileron_position_deg.Data = FacComputer_B.Data_do;
-  FacComputer_Y.out.data.bus_inputs.elac_2_bus.left_elevator_position_deg.SSM = FacComputer_B.SSM_h0;
-  FacComputer_Y.out.data.bus_inputs.elac_2_bus.left_elevator_position_deg.Data = FacComputer_B.Data_hu;
-  FacComputer_Y.out.data.bus_inputs.elac_2_bus.right_elevator_position_deg.SSM = FacComputer_B.SSM_giz;
-  FacComputer_Y.out.data.bus_inputs.elac_2_bus.right_elevator_position_deg.Data = FacComputer_B.Data_pm1;
-  FacComputer_Y.out.data.bus_inputs.elac_2_bus.ths_position_deg.SSM = FacComputer_B.SSM_mqp;
-  FacComputer_Y.out.data.bus_inputs.elac_2_bus.ths_position_deg.Data = FacComputer_B.Data_i2y;
-  FacComputer_Y.out.data.bus_inputs.elac_2_bus.left_sidestick_pitch_command_deg.SSM = FacComputer_B.SSM_ba;
-  FacComputer_Y.out.data.bus_inputs.elac_2_bus.left_sidestick_pitch_command_deg.Data = FacComputer_B.Data_pg;
-  FacComputer_Y.out.data.bus_inputs.elac_2_bus.right_sidestick_pitch_command_deg.SSM = FacComputer_B.SSM_in;
-  FacComputer_Y.out.data.bus_inputs.elac_2_bus.right_sidestick_pitch_command_deg.Data = FacComputer_B.Data_fr;
-  FacComputer_Y.out.data.bus_inputs.elac_2_bus.left_sidestick_roll_command_deg.SSM = FacComputer_B.SSM_ff;
-  FacComputer_Y.out.data.bus_inputs.elac_2_bus.left_sidestick_roll_command_deg.Data = FacComputer_B.Data_cn;
-  FacComputer_Y.out.data.bus_inputs.elac_2_bus.right_sidestick_roll_command_deg.SSM = FacComputer_B.SSM_ic;
-  FacComputer_Y.out.data.bus_inputs.elac_2_bus.right_sidestick_roll_command_deg.Data = FacComputer_B.Data_nxl;
-  FacComputer_Y.out.data.bus_inputs.elac_2_bus.rudder_pedal_position_deg.SSM = FacComputer_B.SSM_fs;
-  FacComputer_Y.out.data.bus_inputs.elac_2_bus.rudder_pedal_position_deg.Data = FacComputer_B.Data_jh;
-  FacComputer_Y.out.data.bus_inputs.elac_2_bus.aileron_command_deg.SSM = FacComputer_B.SSM_ja;
-  FacComputer_Y.out.data.bus_inputs.elac_2_bus.aileron_command_deg.Data = FacComputer_B.Data_gl;
-  FacComputer_Y.out.data.bus_inputs.elac_2_bus.roll_spoiler_command_deg.SSM = FacComputer_B.SSM_is3;
-  FacComputer_Y.out.data.bus_inputs.elac_2_bus.roll_spoiler_command_deg.Data = FacComputer_B.Data_gn;
-  FacComputer_Y.out.data.bus_inputs.elac_2_bus.yaw_damper_command_deg.SSM = FacComputer_B.SSM_ag;
-  FacComputer_Y.out.data.bus_inputs.elac_2_bus.yaw_damper_command_deg.Data = FacComputer_B.Data_myb;
-  FacComputer_Y.out.data.bus_inputs.elac_2_bus.discrete_status_word_1.SSM = FacComputer_B.SSM_f5;
-  FacComputer_Y.out.data.bus_inputs.elac_2_bus.discrete_status_word_1.Data = FacComputer_B.Data_l2;
-  FacComputer_Y.out.data.bus_inputs.elac_2_bus.discrete_status_word_2.SSM = FacComputer_B.SSM_ph;
-  FacComputer_Y.out.data.bus_inputs.elac_2_bus.discrete_status_word_2.Data = FacComputer_B.Data_o5o;
+  FacComputer_Y.out.data.bus_inputs.elac_1_bus.elevator_double_pressurization_command_deg.SSM = FacComputer_B.SSM_dg;
+  FacComputer_Y.out.data.bus_inputs.elac_1_bus.elevator_double_pressurization_command_deg.Data = FacComputer_B.Data_al;
+  FacComputer_Y.out.data.bus_inputs.elac_1_bus.discrete_status_word_1.SSM = FacComputer_B.SSM_d3;
+  FacComputer_Y.out.data.bus_inputs.elac_1_bus.discrete_status_word_1.Data = FacComputer_B.Data_gu;
+  FacComputer_Y.out.data.bus_inputs.elac_1_bus.discrete_status_word_2.SSM = FacComputer_B.SSM_p2;
+  FacComputer_Y.out.data.bus_inputs.elac_1_bus.discrete_status_word_2.Data = FacComputer_B.Data_ix;
+  FacComputer_Y.out.data.bus_inputs.elac_2_bus.left_aileron_position_deg.SSM = FacComputer_B.SSM_bc;
+  FacComputer_Y.out.data.bus_inputs.elac_2_bus.left_aileron_position_deg.Data = FacComputer_B.Data_do;
+  FacComputer_Y.out.data.bus_inputs.elac_2_bus.right_aileron_position_deg.SSM = FacComputer_B.SSM_h0;
+  FacComputer_Y.out.data.bus_inputs.elac_2_bus.right_aileron_position_deg.Data = FacComputer_B.Data_hu;
+  FacComputer_Y.out.data.bus_inputs.elac_2_bus.left_elevator_position_deg.SSM = FacComputer_B.SSM_giz;
+  FacComputer_Y.out.data.bus_inputs.elac_2_bus.left_elevator_position_deg.Data = FacComputer_B.Data_pm1;
+  FacComputer_Y.out.data.bus_inputs.elac_2_bus.right_elevator_position_deg.SSM = FacComputer_B.SSM_mqp;
+  FacComputer_Y.out.data.bus_inputs.elac_2_bus.right_elevator_position_deg.Data = FacComputer_B.Data_i2y;
+  FacComputer_Y.out.data.bus_inputs.elac_2_bus.ths_position_deg.SSM = FacComputer_B.SSM_ba;
+  FacComputer_Y.out.data.bus_inputs.elac_2_bus.ths_position_deg.Data = FacComputer_B.Data_pg;
+  FacComputer_Y.out.data.bus_inputs.elac_2_bus.left_sidestick_pitch_command_deg.SSM = FacComputer_B.SSM_in;
+  FacComputer_Y.out.data.bus_inputs.elac_2_bus.left_sidestick_pitch_command_deg.Data = FacComputer_B.Data_fr;
+  FacComputer_Y.out.data.bus_inputs.elac_2_bus.right_sidestick_pitch_command_deg.SSM = FacComputer_B.SSM_ff;
+  FacComputer_Y.out.data.bus_inputs.elac_2_bus.right_sidestick_pitch_command_deg.Data = FacComputer_B.Data_cn;
+  FacComputer_Y.out.data.bus_inputs.elac_2_bus.left_sidestick_roll_command_deg.SSM = FacComputer_B.SSM_ic;
+  FacComputer_Y.out.data.bus_inputs.elac_2_bus.left_sidestick_roll_command_deg.Data = FacComputer_B.Data_nxl;
+  FacComputer_Y.out.data.bus_inputs.elac_2_bus.right_sidestick_roll_command_deg.SSM = FacComputer_B.SSM_fs;
+  FacComputer_Y.out.data.bus_inputs.elac_2_bus.right_sidestick_roll_command_deg.Data = FacComputer_B.Data_jh;
+  FacComputer_Y.out.data.bus_inputs.elac_2_bus.rudder_pedal_position_deg.SSM = FacComputer_B.SSM_ja;
+  FacComputer_Y.out.data.bus_inputs.elac_2_bus.rudder_pedal_position_deg.Data = FacComputer_B.Data_gl;
+  FacComputer_Y.out.data.bus_inputs.elac_2_bus.aileron_command_deg.SSM = FacComputer_B.SSM_is3;
+  FacComputer_Y.out.data.bus_inputs.elac_2_bus.aileron_command_deg.Data = FacComputer_B.Data_gn;
+  FacComputer_Y.out.data.bus_inputs.elac_2_bus.roll_spoiler_command_deg.SSM = FacComputer_B.SSM_ag;
+  FacComputer_Y.out.data.bus_inputs.elac_2_bus.roll_spoiler_command_deg.Data = FacComputer_B.Data_myb;
+  FacComputer_Y.out.data.bus_inputs.elac_2_bus.yaw_damper_command_deg.SSM = FacComputer_B.SSM_f5;
+  FacComputer_Y.out.data.bus_inputs.elac_2_bus.yaw_damper_command_deg.Data = FacComputer_B.Data_l2;
+  FacComputer_Y.out.data.bus_inputs.elac_2_bus.elevator_double_pressurization_command_deg.SSM = FacComputer_B.SSM_ph;
+  FacComputer_Y.out.data.bus_inputs.elac_2_bus.elevator_double_pressurization_command_deg.Data = FacComputer_B.Data_o5o;
+  FacComputer_Y.out.data.bus_inputs.elac_2_bus.discrete_status_word_1.SSM = FacComputer_B.SSM_jw;
+  FacComputer_Y.out.data.bus_inputs.elac_2_bus.discrete_status_word_1.Data = FacComputer_B.Data_l5;
+  FacComputer_Y.out.data.bus_inputs.elac_2_bus.discrete_status_word_2.SSM = FacComputer_B.SSM_jy;
+  FacComputer_Y.out.data.bus_inputs.elac_2_bus.discrete_status_word_2.Data = FacComputer_B.Data_gr;
   FacComputer_Y.out.laws = FacComputer_B.laws;
   FacComputer_Y.out.logic = FacComputer_B.logic;
   FacComputer_Y.out.flight_envelope = FacComputer_B.flight_envelope;
@@ -2010,59 +2020,59 @@ void FacComputer::initialize()
   FacComputer_B.SSM_bo0 = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.sideslip_target_deg.SSM;
   FacComputer_B.Data_ni = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.sideslip_target_deg.Data;
   FacComputer_B.SSM_js = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.fac_slat_angle_deg.SSM;
-  FacComputer_B.Data_l5 = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.fac_slat_angle_deg.Data;
-  FacComputer_B.SSM_jw = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.fac_flap_angle.SSM;
-  FacComputer_B.Data_dc2 = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.fac_flap_angle.Data;
-  FacComputer_B.SSM_jy = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.discrete_word_2.SSM;
-  FacComputer_B.Data_gr = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.discrete_word_2.Data;
-  FacComputer_B.SSM_j1 = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.rudder_travel_limit_command_deg.SSM;
-  FacComputer_B.Data_gp = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.rudder_travel_limit_command_deg.Data;
-  FacComputer_B.SSM_ov = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.delta_r_yaw_damper_deg.SSM;
-  FacComputer_B.Data_i3 = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.delta_r_yaw_damper_deg.Data;
-  FacComputer_B.SSM_mx = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.estimated_sideslip_deg.SSM;
-  FacComputer_B.Data_et = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.estimated_sideslip_deg.Data;
-  FacComputer_B.SSM_b4 = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.v_alpha_lim_kn.SSM;
-  FacComputer_B.Data_mc = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.v_alpha_lim_kn.Data;
-  FacComputer_B.SSM_gb = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.v_ls_kn.SSM;
-  FacComputer_B.Data_k3 = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.v_ls_kn.Data;
-  FacComputer_B.SSM_oh = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.v_stall_kn.SSM;
-  FacComputer_B.Data_f2 = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.v_stall_kn.Data;
-  FacComputer_B.SSM_mm5 = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.v_alpha_prot_kn.SSM;
-  FacComputer_B.Data_gh = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.v_alpha_prot_kn.Data;
-  FacComputer_B.SSM_br = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.v_stall_warn_kn.SSM;
-  FacComputer_B.Data_ed = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.v_stall_warn_kn.Data;
-  FacComputer_B.SSM_c2 = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.speed_trend_kn.SSM;
-  FacComputer_B.Data_o2j = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.speed_trend_kn.Data;
-  FacComputer_B.SSM_hc = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.v_3_kn.SSM;
-  FacComputer_B.Data_i43 = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.v_3_kn.Data;
-  FacComputer_B.SSM_ktr = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.v_4_kn.SSM;
-  FacComputer_B.Data_ic = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.v_4_kn.Data;
-  FacComputer_B.SSM_gl = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.v_man_kn.SSM;
-  FacComputer_B.Data_ak = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.v_man_kn.Data;
-  FacComputer_B.SSM_my = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.v_max_kn.SSM;
-  FacComputer_B.Data_jg = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.v_max_kn.Data;
-  FacComputer_B.SSM_j3 = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.v_fe_next_kn.SSM;
-  FacComputer_B.Data_cu = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.v_fe_next_kn.Data;
-  FacComputer_B.SSM_go = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.discrete_word_3.SSM;
-  FacComputer_B.Data_ep = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.discrete_word_3.Data;
-  FacComputer_B.SSM_e5c = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.discrete_word_4.SSM;
-  FacComputer_B.Data_d3 = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.discrete_word_4.Data;
-  FacComputer_B.SSM_dk = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.discrete_word_5.SSM;
-  FacComputer_B.Data_bt = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.discrete_word_5.Data;
-  FacComputer_B.SSM_evc = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.delta_r_rudder_trim_deg.SSM;
-  FacComputer_B.Data_e0 = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.delta_r_rudder_trim_deg.Data;
-  FacComputer_B.SSM_kk = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.rudder_trim_pos_deg.SSM;
-  FacComputer_B.Data_jl3 = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.rudder_trim_pos_deg.Data;
-  FacComputer_B.SSM_af = FacComputer_P.out_Y0.data.bus_inputs.adr_own_bus.altitude_standard_ft.SSM;
-  FacComputer_B.Data_nm = FacComputer_P.out_Y0.data.bus_inputs.adr_own_bus.altitude_standard_ft.Data;
-  FacComputer_B.SSM_npr = FacComputer_P.out_Y0.data.bus_inputs.adr_own_bus.altitude_corrected_ft.SSM;
-  FacComputer_B.Data_ia = FacComputer_P.out_Y0.data.bus_inputs.adr_own_bus.altitude_corrected_ft.Data;
-  FacComputer_B.SSM_ew = FacComputer_P.out_Y0.data.bus_inputs.adr_own_bus.mach.SSM;
-  FacComputer_B.Data_j0 = FacComputer_P.out_Y0.data.bus_inputs.adr_own_bus.mach.Data;
-  FacComputer_B.SSM_lt = FacComputer_P.out_Y0.data.bus_inputs.adr_own_bus.airspeed_computed_kn.SSM;
-  FacComputer_B.Data_bs = FacComputer_P.out_Y0.data.bus_inputs.adr_own_bus.airspeed_computed_kn.Data;
-  FacComputer_B.SSM_ger = FacComputer_P.out_Y0.data.bus_inputs.adr_own_bus.airspeed_true_kn.SSM;
-  FacComputer_B.Data_hp = FacComputer_P.out_Y0.data.bus_inputs.adr_own_bus.airspeed_true_kn.Data;
+  FacComputer_B.Data_dc2 = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.fac_slat_angle_deg.Data;
+  FacComputer_B.SSM_j1 = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.fac_flap_angle.SSM;
+  FacComputer_B.Data_gp = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.fac_flap_angle.Data;
+  FacComputer_B.SSM_ov = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.discrete_word_2.SSM;
+  FacComputer_B.Data_i3 = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.discrete_word_2.Data;
+  FacComputer_B.SSM_mx = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.rudder_travel_limit_command_deg.SSM;
+  FacComputer_B.Data_et = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.rudder_travel_limit_command_deg.Data;
+  FacComputer_B.SSM_b4 = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.delta_r_yaw_damper_deg.SSM;
+  FacComputer_B.Data_mc = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.delta_r_yaw_damper_deg.Data;
+  FacComputer_B.SSM_gb = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.estimated_sideslip_deg.SSM;
+  FacComputer_B.Data_k3 = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.estimated_sideslip_deg.Data;
+  FacComputer_B.SSM_oh = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.v_alpha_lim_kn.SSM;
+  FacComputer_B.Data_f2 = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.v_alpha_lim_kn.Data;
+  FacComputer_B.SSM_mm5 = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.v_ls_kn.SSM;
+  FacComputer_B.Data_gh = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.v_ls_kn.Data;
+  FacComputer_B.SSM_br = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.v_stall_kn.SSM;
+  FacComputer_B.Data_ed = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.v_stall_kn.Data;
+  FacComputer_B.SSM_c2 = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.v_alpha_prot_kn.SSM;
+  FacComputer_B.Data_o2j = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.v_alpha_prot_kn.Data;
+  FacComputer_B.SSM_hc = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.v_stall_warn_kn.SSM;
+  FacComputer_B.Data_i43 = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.v_stall_warn_kn.Data;
+  FacComputer_B.SSM_ktr = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.speed_trend_kn.SSM;
+  FacComputer_B.Data_ic = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.speed_trend_kn.Data;
+  FacComputer_B.SSM_gl = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.v_3_kn.SSM;
+  FacComputer_B.Data_ak = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.v_3_kn.Data;
+  FacComputer_B.SSM_my = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.v_4_kn.SSM;
+  FacComputer_B.Data_jg = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.v_4_kn.Data;
+  FacComputer_B.SSM_j3 = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.v_man_kn.SSM;
+  FacComputer_B.Data_cu = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.v_man_kn.Data;
+  FacComputer_B.SSM_go = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.v_max_kn.SSM;
+  FacComputer_B.Data_ep = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.v_max_kn.Data;
+  FacComputer_B.SSM_e5c = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.v_fe_next_kn.SSM;
+  FacComputer_B.Data_d3 = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.v_fe_next_kn.Data;
+  FacComputer_B.SSM_dk = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.discrete_word_3.SSM;
+  FacComputer_B.Data_bt = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.discrete_word_3.Data;
+  FacComputer_B.SSM_evc = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.discrete_word_4.SSM;
+  FacComputer_B.Data_e0 = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.discrete_word_4.Data;
+  FacComputer_B.SSM_kk = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.discrete_word_5.SSM;
+  FacComputer_B.Data_jl3 = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.discrete_word_5.Data;
+  FacComputer_B.SSM_af = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.delta_r_rudder_trim_deg.SSM;
+  FacComputer_B.Data_nm = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.delta_r_rudder_trim_deg.Data;
+  FacComputer_B.SSM_npr = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.rudder_trim_pos_deg.SSM;
+  FacComputer_B.Data_ia = FacComputer_P.out_Y0.data.bus_inputs.fac_opp_bus.rudder_trim_pos_deg.Data;
+  FacComputer_B.SSM_ew = FacComputer_P.out_Y0.data.bus_inputs.adr_own_bus.altitude_standard_ft.SSM;
+  FacComputer_B.Data_j0 = FacComputer_P.out_Y0.data.bus_inputs.adr_own_bus.altitude_standard_ft.Data;
+  FacComputer_B.SSM_lt = FacComputer_P.out_Y0.data.bus_inputs.adr_own_bus.altitude_corrected_ft.SSM;
+  FacComputer_B.Data_bs = FacComputer_P.out_Y0.data.bus_inputs.adr_own_bus.altitude_corrected_ft.Data;
+  FacComputer_B.SSM_ger = FacComputer_P.out_Y0.data.bus_inputs.adr_own_bus.mach.SSM;
+  FacComputer_B.Data_hp = FacComputer_P.out_Y0.data.bus_inputs.adr_own_bus.mach.Data;
+  FacComputer_B.SSM_pxo = FacComputer_P.out_Y0.data.bus_inputs.adr_own_bus.airspeed_computed_kn.SSM;
+  FacComputer_B.Data_ct = FacComputer_P.out_Y0.data.bus_inputs.adr_own_bus.airspeed_computed_kn.Data;
+  FacComputer_B.SSM_co2 = FacComputer_P.out_Y0.data.bus_inputs.adr_own_bus.airspeed_true_kn.SSM;
+  FacComputer_B.Data_pc = FacComputer_P.out_Y0.data.bus_inputs.adr_own_bus.airspeed_true_kn.Data;
   FacComputer_B.SSM = FacComputer_P.out_Y0.data.bus_inputs.adr_own_bus.vertical_speed_ft_min.SSM;
   FacComputer_B.Data = FacComputer_P.out_Y0.data.bus_inputs.adr_own_bus.vertical_speed_ft_min.Data;
   FacComputer_B.SSM_k = FacComputer_P.out_Y0.data.bus_inputs.adr_own_bus.aoa_corrected_deg.SSM;
@@ -2397,40 +2407,46 @@ void FacComputer::initialize()
   FacComputer_B.Data_nb = FacComputer_P.out_Y0.data.bus_inputs.elac_1_bus.roll_spoiler_command_deg.Data;
   FacComputer_B.SSM_ls = FacComputer_P.out_Y0.data.bus_inputs.elac_1_bus.yaw_damper_command_deg.SSM;
   FacComputer_B.Data_hd = FacComputer_P.out_Y0.data.bus_inputs.elac_1_bus.yaw_damper_command_deg.Data;
-  FacComputer_B.SSM_dg = FacComputer_P.out_Y0.data.bus_inputs.elac_1_bus.discrete_status_word_1.SSM;
-  FacComputer_B.Data_al = FacComputer_P.out_Y0.data.bus_inputs.elac_1_bus.discrete_status_word_1.Data;
-  FacComputer_B.SSM_d3 = FacComputer_P.out_Y0.data.bus_inputs.elac_1_bus.discrete_status_word_2.SSM;
-  FacComputer_B.Data_gu = FacComputer_P.out_Y0.data.bus_inputs.elac_1_bus.discrete_status_word_2.Data;
-  FacComputer_B.SSM_p2 = FacComputer_P.out_Y0.data.bus_inputs.elac_2_bus.left_aileron_position_deg.SSM;
-  FacComputer_B.Data_ix = FacComputer_P.out_Y0.data.bus_inputs.elac_2_bus.left_aileron_position_deg.Data;
-  FacComputer_B.SSM_bc = FacComputer_P.out_Y0.data.bus_inputs.elac_2_bus.right_aileron_position_deg.SSM;
-  FacComputer_B.Data_do = FacComputer_P.out_Y0.data.bus_inputs.elac_2_bus.right_aileron_position_deg.Data;
-  FacComputer_B.SSM_h0 = FacComputer_P.out_Y0.data.bus_inputs.elac_2_bus.left_elevator_position_deg.SSM;
-  FacComputer_B.Data_hu = FacComputer_P.out_Y0.data.bus_inputs.elac_2_bus.left_elevator_position_deg.Data;
-  FacComputer_B.SSM_giz = FacComputer_P.out_Y0.data.bus_inputs.elac_2_bus.right_elevator_position_deg.SSM;
-  FacComputer_B.Data_pm1 = FacComputer_P.out_Y0.data.bus_inputs.elac_2_bus.right_elevator_position_deg.Data;
-  FacComputer_B.SSM_mqp = FacComputer_P.out_Y0.data.bus_inputs.elac_2_bus.ths_position_deg.SSM;
-  FacComputer_B.Data_i2y = FacComputer_P.out_Y0.data.bus_inputs.elac_2_bus.ths_position_deg.Data;
-  FacComputer_B.SSM_ba = FacComputer_P.out_Y0.data.bus_inputs.elac_2_bus.left_sidestick_pitch_command_deg.SSM;
-  FacComputer_B.Data_pg = FacComputer_P.out_Y0.data.bus_inputs.elac_2_bus.left_sidestick_pitch_command_deg.Data;
-  FacComputer_B.SSM_in = FacComputer_P.out_Y0.data.bus_inputs.elac_2_bus.right_sidestick_pitch_command_deg.SSM;
-  FacComputer_B.Data_fr = FacComputer_P.out_Y0.data.bus_inputs.elac_2_bus.right_sidestick_pitch_command_deg.Data;
-  FacComputer_B.SSM_ff = FacComputer_P.out_Y0.data.bus_inputs.elac_2_bus.left_sidestick_roll_command_deg.SSM;
-  FacComputer_B.Data_cn = FacComputer_P.out_Y0.data.bus_inputs.elac_2_bus.left_sidestick_roll_command_deg.Data;
-  FacComputer_B.SSM_ic = FacComputer_P.out_Y0.data.bus_inputs.elac_2_bus.right_sidestick_roll_command_deg.SSM;
-  FacComputer_B.Data_nxl = FacComputer_P.out_Y0.data.bus_inputs.elac_2_bus.right_sidestick_roll_command_deg.Data;
-  FacComputer_B.SSM_fs = FacComputer_P.out_Y0.data.bus_inputs.elac_2_bus.rudder_pedal_position_deg.SSM;
-  FacComputer_B.Data_jh = FacComputer_P.out_Y0.data.bus_inputs.elac_2_bus.rudder_pedal_position_deg.Data;
-  FacComputer_B.SSM_ja = FacComputer_P.out_Y0.data.bus_inputs.elac_2_bus.aileron_command_deg.SSM;
-  FacComputer_B.Data_gl = FacComputer_P.out_Y0.data.bus_inputs.elac_2_bus.aileron_command_deg.Data;
-  FacComputer_B.SSM_is3 = FacComputer_P.out_Y0.data.bus_inputs.elac_2_bus.roll_spoiler_command_deg.SSM;
-  FacComputer_B.Data_gn = FacComputer_P.out_Y0.data.bus_inputs.elac_2_bus.roll_spoiler_command_deg.Data;
-  FacComputer_B.SSM_ag = FacComputer_P.out_Y0.data.bus_inputs.elac_2_bus.yaw_damper_command_deg.SSM;
-  FacComputer_B.Data_myb = FacComputer_P.out_Y0.data.bus_inputs.elac_2_bus.yaw_damper_command_deg.Data;
-  FacComputer_B.SSM_f5 = FacComputer_P.out_Y0.data.bus_inputs.elac_2_bus.discrete_status_word_1.SSM;
-  FacComputer_B.Data_l2 = FacComputer_P.out_Y0.data.bus_inputs.elac_2_bus.discrete_status_word_1.Data;
-  FacComputer_B.SSM_ph = FacComputer_P.out_Y0.data.bus_inputs.elac_2_bus.discrete_status_word_2.SSM;
-  FacComputer_B.Data_o5o = FacComputer_P.out_Y0.data.bus_inputs.elac_2_bus.discrete_status_word_2.Data;
+  FacComputer_B.SSM_dg = FacComputer_P.out_Y0.data.bus_inputs.elac_1_bus.elevator_double_pressurization_command_deg.SSM;
+  FacComputer_B.Data_al =
+    FacComputer_P.out_Y0.data.bus_inputs.elac_1_bus.elevator_double_pressurization_command_deg.Data;
+  FacComputer_B.SSM_d3 = FacComputer_P.out_Y0.data.bus_inputs.elac_1_bus.discrete_status_word_1.SSM;
+  FacComputer_B.Data_gu = FacComputer_P.out_Y0.data.bus_inputs.elac_1_bus.discrete_status_word_1.Data;
+  FacComputer_B.SSM_p2 = FacComputer_P.out_Y0.data.bus_inputs.elac_1_bus.discrete_status_word_2.SSM;
+  FacComputer_B.Data_ix = FacComputer_P.out_Y0.data.bus_inputs.elac_1_bus.discrete_status_word_2.Data;
+  FacComputer_B.SSM_bc = FacComputer_P.out_Y0.data.bus_inputs.elac_2_bus.left_aileron_position_deg.SSM;
+  FacComputer_B.Data_do = FacComputer_P.out_Y0.data.bus_inputs.elac_2_bus.left_aileron_position_deg.Data;
+  FacComputer_B.SSM_h0 = FacComputer_P.out_Y0.data.bus_inputs.elac_2_bus.right_aileron_position_deg.SSM;
+  FacComputer_B.Data_hu = FacComputer_P.out_Y0.data.bus_inputs.elac_2_bus.right_aileron_position_deg.Data;
+  FacComputer_B.SSM_giz = FacComputer_P.out_Y0.data.bus_inputs.elac_2_bus.left_elevator_position_deg.SSM;
+  FacComputer_B.Data_pm1 = FacComputer_P.out_Y0.data.bus_inputs.elac_2_bus.left_elevator_position_deg.Data;
+  FacComputer_B.SSM_mqp = FacComputer_P.out_Y0.data.bus_inputs.elac_2_bus.right_elevator_position_deg.SSM;
+  FacComputer_B.Data_i2y = FacComputer_P.out_Y0.data.bus_inputs.elac_2_bus.right_elevator_position_deg.Data;
+  FacComputer_B.SSM_ba = FacComputer_P.out_Y0.data.bus_inputs.elac_2_bus.ths_position_deg.SSM;
+  FacComputer_B.Data_pg = FacComputer_P.out_Y0.data.bus_inputs.elac_2_bus.ths_position_deg.Data;
+  FacComputer_B.SSM_in = FacComputer_P.out_Y0.data.bus_inputs.elac_2_bus.left_sidestick_pitch_command_deg.SSM;
+  FacComputer_B.Data_fr = FacComputer_P.out_Y0.data.bus_inputs.elac_2_bus.left_sidestick_pitch_command_deg.Data;
+  FacComputer_B.SSM_ff = FacComputer_P.out_Y0.data.bus_inputs.elac_2_bus.right_sidestick_pitch_command_deg.SSM;
+  FacComputer_B.Data_cn = FacComputer_P.out_Y0.data.bus_inputs.elac_2_bus.right_sidestick_pitch_command_deg.Data;
+  FacComputer_B.SSM_ic = FacComputer_P.out_Y0.data.bus_inputs.elac_2_bus.left_sidestick_roll_command_deg.SSM;
+  FacComputer_B.Data_nxl = FacComputer_P.out_Y0.data.bus_inputs.elac_2_bus.left_sidestick_roll_command_deg.Data;
+  FacComputer_B.SSM_fs = FacComputer_P.out_Y0.data.bus_inputs.elac_2_bus.right_sidestick_roll_command_deg.SSM;
+  FacComputer_B.Data_jh = FacComputer_P.out_Y0.data.bus_inputs.elac_2_bus.right_sidestick_roll_command_deg.Data;
+  FacComputer_B.SSM_ja = FacComputer_P.out_Y0.data.bus_inputs.elac_2_bus.rudder_pedal_position_deg.SSM;
+  FacComputer_B.Data_gl = FacComputer_P.out_Y0.data.bus_inputs.elac_2_bus.rudder_pedal_position_deg.Data;
+  FacComputer_B.SSM_is3 = FacComputer_P.out_Y0.data.bus_inputs.elac_2_bus.aileron_command_deg.SSM;
+  FacComputer_B.Data_gn = FacComputer_P.out_Y0.data.bus_inputs.elac_2_bus.aileron_command_deg.Data;
+  FacComputer_B.SSM_ag = FacComputer_P.out_Y0.data.bus_inputs.elac_2_bus.roll_spoiler_command_deg.SSM;
+  FacComputer_B.Data_myb = FacComputer_P.out_Y0.data.bus_inputs.elac_2_bus.roll_spoiler_command_deg.Data;
+  FacComputer_B.SSM_f5 = FacComputer_P.out_Y0.data.bus_inputs.elac_2_bus.yaw_damper_command_deg.SSM;
+  FacComputer_B.Data_l2 = FacComputer_P.out_Y0.data.bus_inputs.elac_2_bus.yaw_damper_command_deg.Data;
+  FacComputer_B.SSM_ph = FacComputer_P.out_Y0.data.bus_inputs.elac_2_bus.elevator_double_pressurization_command_deg.SSM;
+  FacComputer_B.Data_o5o =
+    FacComputer_P.out_Y0.data.bus_inputs.elac_2_bus.elevator_double_pressurization_command_deg.Data;
+  FacComputer_B.SSM_jw = FacComputer_P.out_Y0.data.bus_inputs.elac_2_bus.discrete_status_word_1.SSM;
+  FacComputer_B.Data_l5 = FacComputer_P.out_Y0.data.bus_inputs.elac_2_bus.discrete_status_word_1.Data;
+  FacComputer_B.SSM_jy = FacComputer_P.out_Y0.data.bus_inputs.elac_2_bus.discrete_status_word_2.SSM;
+  FacComputer_B.Data_gr = FacComputer_P.out_Y0.data.bus_inputs.elac_2_bus.discrete_status_word_2.Data;
   FacComputer_B.laws = FacComputer_P.out_Y0.laws;
   FacComputer_B.logic = FacComputer_P.out_Y0.logic;
   FacComputer_B.flight_envelope = FacComputer_P.out_Y0.flight_envelope;
