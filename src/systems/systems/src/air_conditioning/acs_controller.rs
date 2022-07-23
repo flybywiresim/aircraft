@@ -594,7 +594,7 @@ impl<const ZONES: usize> PackFlowController<ZONES> {
 
     fn new(context: &mut InitContext, pack_id: PackId) -> Self {
         Self {
-            pack_flow_id: context.get_identifier("COND_PACK_FLOW".to_owned()),
+            pack_flow_id: context.get_identifier(Self::pack_flow_id(pack_id as usize)),
 
             id: pack_id,
             flow_demand: Ratio::new::<percent>(0.),
@@ -605,6 +605,10 @@ impl<const ZONES: usize> PackFlowController<ZONES> {
 
             fcv_timer_open: Duration::from_secs(0),
         }
+    }
+
+    fn pack_flow_id(number: usize) -> String {
+        format!("COND_PACK_FLOW_{}", number + 1)
     }
 
     fn update(
@@ -810,7 +814,6 @@ impl<const ZONES: usize> ControllerSignal<PackFlowValveSignal> for PackFlowContr
 }
 
 impl<const ZONES: usize> SimulationElement for PackFlowController<ZONES> {
-    // TODO: Separate this for each pack flow
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.pack_flow_id, self.flow_demand);
     }
