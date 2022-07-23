@@ -307,7 +307,7 @@ export class EfisSymbols {
                     const legType = wp.additionalData.legType;
                     if (
                         legType === LegType.CA || legType === LegType.CR || legType === LegType.CI
-                        || legType === LegType.FM
+                        || legType === LegType.FM || legType === LegType.PI
                         || legType === LegType.VA || legType === LegType.VI || legType === LegType.VM
                     ) {
                         continue;
