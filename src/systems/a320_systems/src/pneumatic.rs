@@ -2867,28 +2867,6 @@ mod tests {
     }
 
     #[test]
-    fn pack_flow_valve_closes_with_pack_pb_off() {
-        let mut test_bed = test_bed_with()
-            .idle_eng1()
-            .idle_eng2()
-            .set_pack_flow_pb_is_auto(1, true)
-            .set_pack_flow_pb_is_auto(2, false)
-            .and_run()
-            .and_run();
-
-        assert!(test_bed.pack_flow_valve_is_open(1));
-        assert!(!test_bed.pack_flow_valve_is_open(2));
-
-        test_bed = test_bed
-            .set_pack_flow_pb_is_auto(1, false)
-            .and_run()
-            .and_run();
-
-        assert!(!test_bed.pack_flow_valve_is_open(1));
-        assert!(!test_bed.pack_flow_valve_is_open(2));
-    }
-
-    #[test]
     fn bleed_monitoring_computers_powered_by_correct_buses() {
         let mut test_bed = test_bed()
             .set_dc_ess_shed_bus_power(false)
@@ -3112,29 +3090,6 @@ mod tests {
     }
 
     #[test]
-    fn pack_flow_drops_when_valve_is_closed() {
-        let mut test_bed = test_bed_with()
-            .idle_eng1()
-            .idle_eng2()
-            .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Shut)
-            .mach_number(MachNumber(0.))
-            .both_packs_auto()
-            .and_stabilize();
-
-        assert!(test_bed.pack_flow_valve_flow(1) > flow_rate_tolerance());
-        assert!(test_bed.pack_flow_valve_flow(2) > flow_rate_tolerance());
-
-        test_bed = test_bed
-            .set_pack_flow_pb_is_auto(1, false)
-            .set_pack_flow_pb_is_auto(2, false)
-            .and_run()
-            .and_run();
-
-        assert!(test_bed.pack_flow_valve_flow(1) < flow_rate_tolerance());
-        assert!(test_bed.pack_flow_valve_flow(2) < flow_rate_tolerance());
-    }
-
-    #[test]
     fn large_time_step_stability() {
         let mut test_bed = test_bed_with()
             .idle_eng1()
@@ -3197,6 +3152,78 @@ mod tests {
                 test_bed.cross_bleed_valve_selector(),
                 CrossBleedValveSelectorMode::Shut
             );
+        }
+    }
+
+    mod pack_flow_valve_tests {
+        use super::*;
+
+        #[test]
+        fn pack_flow_valve_starts_closed() {
+            let test_bed = test_bed();
+
+            assert!(!test_bed.pack_flow_valve_is_open(1));
+            assert!(!test_bed.pack_flow_valve_is_open(2));
+        }
+
+        #[test]
+        fn pack_flow_valve_opens_when_conditions_met() {
+            let test_bed = test_bed_with()
+                .idle_eng1()
+                .idle_eng2()
+                .set_pack_flow_pb_is_auto(1, true)
+                .set_pack_flow_pb_is_auto(2, true)
+                .and_run()
+                .and_run();
+
+            assert!(test_bed.pack_flow_valve_is_open(1));
+            assert!(test_bed.pack_flow_valve_is_open(2));
+        }
+
+        #[test]
+        fn pack_flow_valve_closes_with_pack_pb_off() {
+            let mut test_bed = test_bed_with()
+                .idle_eng1()
+                .idle_eng2()
+                .set_pack_flow_pb_is_auto(1, true)
+                .set_pack_flow_pb_is_auto(2, false)
+                .and_run()
+                .and_run();
+
+            assert!(test_bed.pack_flow_valve_is_open(1));
+            assert!(!test_bed.pack_flow_valve_is_open(2));
+
+            test_bed = test_bed
+                .set_pack_flow_pb_is_auto(1, false)
+                .and_run()
+                .and_run();
+
+            assert!(!test_bed.pack_flow_valve_is_open(1));
+            assert!(!test_bed.pack_flow_valve_is_open(2));
+        }
+
+        #[test]
+        fn pack_flow_drops_when_valve_is_closed() {
+            let mut test_bed = test_bed_with()
+                .idle_eng1()
+                .idle_eng2()
+                .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Shut)
+                .mach_number(MachNumber(0.))
+                .both_packs_auto()
+                .and_stabilize()
+                .and_stabilize();
+
+            assert!(test_bed.pack_flow_valve_flow(1) > flow_rate_tolerance());
+            assert!(test_bed.pack_flow_valve_flow(2) > flow_rate_tolerance());
+
+            test_bed = test_bed
+                .set_pack_flow_pb_is_auto(1, false)
+                .set_pack_flow_pb_is_auto(2, false)
+                .and_run()
+                .and_run();
+
+            assert!(test_bed.pack_flow_valve_flow(1) < flow_rate_tolerance());
+            assert!(test_bed.pack_flow_valve_flow(2) < flow_rate_tolerance());
         }
     }
 }

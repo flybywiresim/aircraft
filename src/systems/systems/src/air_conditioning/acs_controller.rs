@@ -673,7 +673,6 @@ impl<const ZONES: usize> PackFlowController<ZONES> {
 
     fn pack_start_condition_determination(&self) -> bool {
         // Returns true when one of the packs is in start condition
-        // TODO add opposite pack start condition determination
         self.fcv_timer_open <= Duration::from_secs_f64(Self::PACK_START_TIME_SECOND)
     }
 
@@ -684,9 +683,8 @@ impl<const ZONES: usize> PackFlowController<ZONES> {
         pneumatic: &(impl EngineStartState + PackFlowValveState + PneumaticBleed),
     ) -> Ratio {
         let mut intermediate_flow: Ratio = acs_overhead.flow_selector_position().into();
-        let pack_in_start_condition = self.pack_start_condition_determination();
         // TODO: Add "insufficient performance" based on Pack Mixer Temperature Demand
-        if pack_in_start_condition {
+        if self.pack_start_condition_determination() {
             intermediate_flow =
                 intermediate_flow.max(Ratio::new::<percent>(Self::PACK_START_FLOW_LIMIT));
         }
@@ -2160,6 +2158,21 @@ mod acs_controller_tests {
             test_bed.run();
 
             assert!(test_bed.pack_flow() > initial_flow);
+        }
+
+        #[test]
+        fn pack_flow_increases_when_pack_in_start_condition() {
+            let mut test_bed = test_bed().with().both_packs_on().and().engine_idle();
+
+            test_bed.command_pack_flow_selector_position(0);
+            test_bed = test_bed.iterate(2);
+
+            let initial_flow = test_bed.pack_flow();
+
+            test_bed.run_with_delta(Duration::from_secs(31));
+            test_bed.run();
+
+            assert!(test_bed.pack_flow() < initial_flow);
         }
 
         #[test]
