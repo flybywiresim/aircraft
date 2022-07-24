@@ -1115,7 +1115,7 @@ export class ManagedFlightPlan {
 
             this.procedureDetails.approachType = approach.approachType;
             legs.push(...finalLegs);
-            legAnnotations.push(finalLegs.map(_ => approachName));
+            legAnnotations.push(...finalLegs.map(_ => approachName));
             missedLegs.push(...approach.missedLegs);
         }
 
