@@ -42,6 +42,7 @@ export const CargoWidget: React.FC<SeatMapProps> = ({ cargo, cargoDesired, cargo
             </div>
         </div>
         <div className="flex absolute top-4 left-2/3 flex-row px-4 w-fit">
+            <div><BriefcaseFill size={25} className="my-1 mx-3" /></div>
             <div className="flex flex-row mr-3 cursor-pointer" onClick={(e) => onClickCargo(CargoStation.aftCont, e)}>
                 <ProgressBar
                     height="20px"
