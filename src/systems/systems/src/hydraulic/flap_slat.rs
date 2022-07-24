@@ -1068,6 +1068,7 @@ mod tests {
         )
     }
 
+    #[cfg(test)]
     fn flap_fppu_from_surface_angle(surface_angle: Option<Angle>) -> Option<Angle> {
         let synchro_gear_map = [
             0., 65., 115., 120.53, 136., 145.5, 152., 165., 168.3, 179., 231.2, 251.97,
