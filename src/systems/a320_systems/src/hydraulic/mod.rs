@@ -36,6 +36,7 @@ use systems::{
             Pushback, SteeringActuator, SteeringAngleLimiter, SteeringController,
             SteeringRatioToAngle,
         },
+        pumps::PumpCharacteristics,
         trimmable_horizontal_stabilizer::{
             ManualPitchTrimController, PitchTrimActuatorController,
             TrimmableHorizontalStabilizerAssembly,
@@ -138,6 +139,8 @@ impl A320HydraulicCircuitFactory {
 
     const YELLOW_GREEN_BLUE_PUMPS_INDEXES: usize = 0;
 
+    const HYDRAULIC_TARGET_PRESSURE_PSI: f64 = 3000.;
+
     pub fn new_green_circuit(context: &mut InitContext) -> HydraulicCircuit {
         let reservoir = A320HydraulicReservoirFactory::new_green_reservoir(context);
         HydraulicCircuit::new(
@@ -153,6 +156,7 @@ impl A320HydraulicCircuitFactory {
             Pressure::new::<psi>(Self::MIN_PRESS_EDP_SECTION_HI_HYST),
             true,
             false,
+            Pressure::new::<psi>(Self::HYDRAULIC_TARGET_PRESSURE_PSI),
         )
     }
 
@@ -171,6 +175,7 @@ impl A320HydraulicCircuitFactory {
             Pressure::new::<psi>(Self::MIN_PRESS_EDP_SECTION_HI_HYST),
             false,
             false,
+            Pressure::new::<psi>(Self::HYDRAULIC_TARGET_PRESSURE_PSI),
         )
     }
 
@@ -189,6 +194,7 @@ impl A320HydraulicCircuitFactory {
             Pressure::new::<psi>(Self::MIN_PRESS_EDP_SECTION_HI_HYST),
             false,
             true,
+            Pressure::new::<psi>(Self::HYDRAULIC_TARGET_PRESSURE_PSI),
         )
     }
 }
@@ -1334,14 +1340,22 @@ impl A320Hydraulic {
                 HydraulicColor::Yellow,
             ),
 
-            engine_driven_pump_1: EngineDrivenPump::new(context, "GREEN"),
+            engine_driven_pump_1: EngineDrivenPump::new(
+                context,
+                "GREEN",
+                PumpCharacteristics::a320_edp(),
+            ),
             engine_driven_pump_1_controller: A320EngineDrivenPumpController::new(
                 context,
                 1,
                 vec![Self::GREEN_EDP_CONTROL_POWER_BUS1],
             ),
 
-            engine_driven_pump_2: EngineDrivenPump::new(context, "YELLOW"),
+            engine_driven_pump_2: EngineDrivenPump::new(
+                context,
+                "YELLOW",
+                PumpCharacteristics::a320_edp(),
+            ),
             engine_driven_pump_2_controller: A320EngineDrivenPumpController::new(
                 context,
                 2,
@@ -1356,6 +1370,7 @@ impl A320Hydraulic {
                 "BLUE",
                 Self::BLUE_ELEC_PUMP_SUPPLY_POWER_BUS,
                 ElectricCurrent::new::<ampere>(Self::ELECTRIC_PUMP_MAX_CURRENT_AMPERE),
+                PumpCharacteristics::a320_electric_pump(),
             ),
             blue_electric_pump_controller: A320BlueElectricPumpController::new(
                 context,
@@ -1367,6 +1382,7 @@ impl A320Hydraulic {
                 "YELLOW",
                 Self::YELLOW_ELEC_PUMP_SUPPLY_POWER_BUS,
                 ElectricCurrent::new::<ampere>(Self::ELECTRIC_PUMP_MAX_CURRENT_AMPERE),
+                PumpCharacteristics::a320_electric_pump(),
             ),
             yellow_electric_pump_controller: A320YellowElectricPumpController::new(
                 context,
@@ -1376,7 +1392,7 @@ impl A320Hydraulic {
 
             pushback_tug: PushbackTug::new(context),
 
-            ram_air_turbine: RamAirTurbine::new(context),
+            ram_air_turbine: RamAirTurbine::new(context, PumpCharacteristics::a320_rat()),
             ram_air_turbine_controller: A320RamAirTurbineController::new(
                 Self::RAT_CONTROL_SOLENOID1_POWER_BUS,
                 Self::RAT_CONTROL_SOLENOID2_POWER_BUS,
@@ -1397,6 +1413,7 @@ impl A320Hydraulic {
                 Volume::new::<gallon>(0.),
                 Volume::new::<gallon>(0.),
                 Volume::new::<gallon>(0.13),
+                Pressure::new::<psi>(A320HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
             ),
 
             // Alternate brakes accumulator in real A320 is 1.5 gal capacity.
@@ -1408,6 +1425,7 @@ impl A320Hydraulic {
                 Volume::new::<gallon>(1.0),
                 Volume::new::<gallon>(0.4),
                 Volume::new::<gallon>(0.13),
+                Pressure::new::<psi>(A320HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
             ),
 
             braking_force: A320BrakingForce::new(context),
@@ -1423,6 +1441,7 @@ impl A320Hydraulic {
                 Ratio::new::<ratio>(314.98),
                 Self::FLAP_FPPU_TO_SURFACE_ANGLE_BREAKPTS,
                 Self::FLAP_FPPU_TO_SURFACE_ANGLE_DEGREES,
+                Pressure::new::<psi>(A320HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
             ),
             slat_system: FlapSlatAssembly::new(
                 context,
@@ -1435,6 +1454,7 @@ impl A320Hydraulic {
                 Ratio::new::<ratio>(314.98),
                 Self::SLAT_FPPU_TO_SURFACE_ANGLE_BREAKPTS,
                 Self::SLAT_FPPU_TO_SURFACE_ANGLE_DEGREES,
+                Pressure::new::<psi>(A320HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
             ),
             slats_flaps_complex: SlatFlapComplex::new(context),
 
