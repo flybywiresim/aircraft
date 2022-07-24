@@ -833,7 +833,7 @@ impl EngineBleedAirSystem {
                 ThermodynamicTemperature::new::<degree_celsius>(15.),
             ),
             precooler_outlet_pipe: PneumaticPipe::new(
-                Volume::new::<cubic_meter>(0.5),
+                Volume::new::<cubic_meter>(2.5),
                 Pressure::new::<psi>(14.7),
                 ThermodynamicTemperature::new::<degree_celsius>(15.),
             ),
@@ -1178,7 +1178,7 @@ impl PackComplex {
             pack_flow_valve_flow_rate_id: context
                 .get_identifier(format!("PNEU_PACK_{}_FLOW_VALVE_FLOW_RATE", engine_number)),
             pack_container: PneumaticPipe::new(
-                Volume::new::<cubic_meter>(1.),
+                Volume::new::<cubic_meter>(2.),
                 Pressure::new::<psi>(14.7),
                 ThermodynamicTemperature::new::<degree_celsius>(15.),
             ),
@@ -1725,11 +1725,14 @@ mod tests {
     }
     impl PneumaticTestBed {
         fn new() -> Self {
-            Self {
+            let mut test_bed = Self {
                 test_bed: SimulationTestBed::<PneumaticTestAircraft>::new(|context| {
                     PneumaticTestAircraft::new(context)
                 }),
-            }
+            };
+            test_bed.command_pack_flow_selector_position(1);
+
+            test_bed
         }
 
         fn and_run(mut self) -> Self {
@@ -2105,6 +2108,10 @@ mod tests {
 
         fn cross_bleed_valve_is_powered_for_manual_control(&self) -> bool {
             self.query(|a| a.pneumatic.cross_bleed_valve.is_powered_for_manual_control)
+        }
+
+        fn command_pack_flow_selector_position(&mut self, value: u8) {
+            self.write_by_name("KNOB_OVHD_AIRCOND_PACKFLOW_Position", value);
         }
     }
 
@@ -3173,8 +3180,7 @@ mod tests {
                 .idle_eng2()
                 .set_pack_flow_pb_is_auto(1, true)
                 .set_pack_flow_pb_is_auto(2, true)
-                .and_run()
-                .and_run();
+                .and_stabilize();
 
             assert!(test_bed.pack_flow_valve_is_open(1));
             assert!(test_bed.pack_flow_valve_is_open(2));
@@ -3187,8 +3193,7 @@ mod tests {
                 .idle_eng2()
                 .set_pack_flow_pb_is_auto(1, true)
                 .set_pack_flow_pb_is_auto(2, false)
-                .and_run()
-                .and_run();
+                .and_stabilize();
 
             assert!(test_bed.pack_flow_valve_is_open(1));
             assert!(!test_bed.pack_flow_valve_is_open(2));
@@ -3210,7 +3215,6 @@ mod tests {
                 .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Shut)
                 .mach_number(MachNumber(0.))
                 .both_packs_auto()
-                .and_stabilize()
                 .and_stabilize();
 
             assert!(test_bed.pack_flow_valve_flow(1) > flow_rate_tolerance());
