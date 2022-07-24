@@ -19,7 +19,7 @@ use uom::si::{
 use systems::{
     engine::Engine,
     hydraulic::{
-        aerodynamic_model::AerodynamicModel,
+        aerodynamic_model::{AerodynamicBody, AerodynamicModel},
         brake_circuit::{
             AutobrakeDecelerationGovernor, AutobrakeMode, AutobrakePanel, BrakeCircuit,
             BrakeCircuitController,
@@ -709,6 +709,38 @@ impl A320RudderFactory {
 
 struct A320GearDoorFactory {}
 impl A320GearDoorFactory {
+    fn a320_nose_gear_door_aerodynamics() -> AerodynamicModel {
+        // Faking the single door by only considering right door aero.
+        // Will work with headwind, if testing massige cross wind it will look strange
+        AerodynamicModel::new(
+            &Self::a320_nose_gear_door_body(),
+            Some(Vector3::new(0., 1., 0.)),
+            Some(Vector3::new(0., 0., 1.)),
+            Some(Vector3::new(0., 1., 0.4)),
+            Ratio::new::<ratio>(0.5),
+        )
+    }
+
+    fn a320_left_gear_door_aerodynamics() -> AerodynamicModel {
+        AerodynamicModel::new(
+            &Self::a320_left_gear_door_body(),
+            Some(Vector3::new(-1., 0., 0.)),
+            Some(Vector3::new(-0.3, 0., 1.)),
+            Some(Vector3::new(-1., 0., -0.3)),
+            Ratio::new::<ratio>(1.0),
+        )
+    }
+
+    fn a320_right_gear_door_aerodynamics() -> AerodynamicModel {
+        AerodynamicModel::new(
+            &Self::a320_right_gear_door_body(),
+            Some(Vector3::new(1., 0., 0.)),
+            Some(Vector3::new(0.3, 0., 1.)),
+            Some(Vector3::new(1., 0., -0.3)),
+            Ratio::new::<ratio>(1.0),
+        )
+    }
+
     fn a320_nose_gear_door_actuator(
         bounded_linear_length: &impl BoundedLinearLength,
     ) -> LinearActuator {
@@ -810,8 +842,8 @@ impl A320GearDoorFactory {
     }
 
     fn a320_nose_gear_door_body() -> LinearActuatedRigidBodyOnHingeAxis {
-        let size = Vector3::new(-0.4, 0.02, 1.5);
-        let cg_offset = Vector3::new(0.5 * size[0], 0., 0.);
+        let size = Vector3::new(0.4, 0.02, 1.5);
+        let cg_offset = Vector3::new(-0.5 * size[0], 0., 0.);
 
         let control_arm = Vector3::new(-0.1465, 0., 0.);
         let anchor = Vector3::new(-0.1465, 0.40, 0.);
@@ -851,6 +883,36 @@ impl A320GearDoorFactory {
 
 struct A320GearFactory {}
 impl A320GearFactory {
+    fn a320_nose_gear_aerodynamics() -> AerodynamicModel {
+        AerodynamicModel::new(
+            &Self::a320_nose_gear_body(true),
+            Some(Vector3::new(0., 0., 1.)),
+            None,
+            None,
+            Ratio::new::<ratio>(1.0),
+        )
+    }
+
+    fn a320_right_gear_aerodynamics() -> AerodynamicModel {
+        AerodynamicModel::new(
+            &Self::a320_right_gear_body(true),
+            Some(Vector3::new(0., 0., 1.)),
+            Some(Vector3::new(0.3, 0., 1.)),
+            Some(Vector3::new(1., 0., -0.3)),
+            Ratio::new::<ratio>(1.0),
+        )
+    }
+
+    fn a320_left_gear_aerodynamics() -> AerodynamicModel {
+        AerodynamicModel::new(
+            &Self::a320_left_gear_body(true),
+            Some(Vector3::new(0., 0., 1.)),
+            Some(Vector3::new(-0.3, 0., 1.)),
+            Some(Vector3::new(-1., 0., -0.3)),
+            Ratio::new::<ratio>(1.0),
+        )
+    }
+
     fn a320_nose_gear_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
         const FLOW_CONTROL_INTEGRAL_GAIN: f64 = 5.;
         const FLOW_CONTROL_PROPORTIONAL_GAIN: f64 = 0.3;
@@ -1017,6 +1079,12 @@ impl A320GearSystemFactory {
             A320GearFactory::a320_gear_assembly(GearWheel::NOSE, init_downlocked),
             A320GearFactory::a320_gear_assembly(GearWheel::LEFT, init_downlocked),
             A320GearFactory::a320_gear_assembly(GearWheel::RIGHT, init_downlocked),
+            A320GearDoorFactory::a320_left_gear_door_aerodynamics(),
+            A320GearDoorFactory::a320_right_gear_door_aerodynamics(),
+            A320GearDoorFactory::a320_nose_gear_door_aerodynamics(),
+            A320GearFactory::a320_left_gear_aerodynamics(),
+            A320GearFactory::a320_right_gear_aerodynamics(),
+            A320GearFactory::a320_nose_gear_aerodynamics(),
         )
     }
 }

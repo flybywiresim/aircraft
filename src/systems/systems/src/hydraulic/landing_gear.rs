@@ -11,11 +11,14 @@ use crate::{
     },
 };
 
-use super::linear_actuator::{
-    Actuator, HydraulicAssemblyController, HydraulicLinearActuatorAssembly, LinearActuatorMode,
+use super::{
+    aerodynamic_model::AerodynamicModel,
+    linear_actuator::{
+        Actuator, HydraulicAssemblyController, HydraulicLinearActuatorAssembly, LinearActuatorMode,
+    },
 };
 
-use uom::si::{f64::*, pressure::psi, ratio::ratio};
+use uom::si::{f64::*, force::newton, pressure::psi, ratio::ratio};
 
 use std::time::Duration;
 
@@ -51,6 +54,12 @@ impl HydraulicGearSystem {
         nose_gear: HydraulicLinearActuatorAssembly<1>,
         left_gear: HydraulicLinearActuatorAssembly<1>,
         right_gear: HydraulicLinearActuatorAssembly<1>,
+        gear_door_left_aerodynamic: AerodynamicModel,
+        gear_door_right_aerodynamic: AerodynamicModel,
+        gear_door_nose_aerodynamic: AerodynamicModel,
+        gear_left_aerodynamic: AerodynamicModel,
+        gear_right_aerodynamic: AerodynamicModel,
+        gear_nose_aerodynamic: AerodynamicModel,
     ) -> Self {
         Self {
             door_center_position_id: context.get_identifier("GEAR_DOOR_CENTER_POSITION".to_owned()),
@@ -76,6 +85,7 @@ impl HydraulicGearSystem {
                     ProximityDetectorId::DownlockDoorNose1,
                     ProximityDetectorId::DownlockDoorNose2,
                 ],
+                gear_door_nose_aerodynamic,
             ),
             left_door_assembly: GearSystemComponentAssembly::new(
                 GearActuatorId::GearDoorLeft,
@@ -90,6 +100,7 @@ impl HydraulicGearSystem {
                     ProximityDetectorId::DownlockDoorLeft1,
                     ProximityDetectorId::DownlockDoorLeft2,
                 ],
+                gear_door_left_aerodynamic,
             ),
             right_door_assembly: GearSystemComponentAssembly::new(
                 GearActuatorId::GearDoorRight,
@@ -104,6 +115,7 @@ impl HydraulicGearSystem {
                     ProximityDetectorId::DownlockDoorRight1,
                     ProximityDetectorId::DownlockDoorRight2,
                 ],
+                gear_door_right_aerodynamic,
             ),
 
             // Nose gear has pull to retract system while main gears have push to retract
@@ -120,6 +132,7 @@ impl HydraulicGearSystem {
                     ProximityDetectorId::DownlockGearNose1,
                     ProximityDetectorId::DownlockGearNose2,
                 ],
+                gear_nose_aerodynamic,
             ),
             left_gear_assembly: GearSystemComponentAssembly::new(
                 GearActuatorId::GearLeft,
@@ -134,6 +147,7 @@ impl HydraulicGearSystem {
                     ProximityDetectorId::DownlockGearLeft1,
                     ProximityDetectorId::DownlockGearLeft2,
                 ],
+                gear_left_aerodynamic,
             ),
             right_gear_assembly: GearSystemComponentAssembly::new(
                 GearActuatorId::GearRight,
@@ -148,6 +162,7 @@ impl HydraulicGearSystem {
                     ProximityDetectorId::DownlockGearRight1,
                     ProximityDetectorId::DownlockGearRight2,
                 ],
+                gear_right_aerodynamic,
             ),
         }
     }
@@ -368,6 +383,7 @@ impl From<GearActuatorId> for GearSysComponentId {
 
 struct GearSystemComponentAssembly {
     component_id: GearSysComponentId,
+    act_id: GearActuatorId,
     is_inverted_control: bool,
     hydraulic_controller: GearSystemComponentHydraulicController,
     hydraulic_assembly: HydraulicLinearActuatorAssembly<1>,
@@ -375,6 +391,8 @@ struct GearSystemComponentAssembly {
     uplock_proximity_detectors: [ProximityDetector; 2],
     hydraulic_uplock: HydraulicLock,
     hydraulic_downlock: Option<HydraulicLock>,
+
+    aerodynamic_model: AerodynamicModel,
 }
 impl GearSystemComponentAssembly {
     const OPENED_PROXIMITY_DETECTOR_MOUNTING_POSITION_RATIO: f64 = 1.;
@@ -390,9 +408,11 @@ impl GearSystemComponentAssembly {
         has_hydraulic_downlock: bool,
         uplock_id: [ProximityDetectorId; 2],
         downlock_id: [ProximityDetectorId; 2],
+        aerodynamic_model: AerodynamicModel,
     ) -> Self {
         let mut obj = Self {
             component_id: id.into(),
+            act_id: id,
             is_inverted_control,
             hydraulic_controller: GearSystemComponentHydraulicController::new(
                 id,
@@ -430,6 +450,7 @@ impl GearSystemComponentAssembly {
             } else {
                 None
             },
+            aerodynamic_model,
         };
 
         obj.update_proximity_detectors();
@@ -447,6 +468,18 @@ impl GearSystemComponentAssembly {
         self.update_proximity_detectors();
 
         self.update_hydraulic_control(gear_system_controller, valves_controller, current_pressure);
+
+        self.aerodynamic_model
+            .update_body(context, self.hydraulic_assembly.body());
+
+        let force = self.aerodynamic_model.last_force();
+        println!(
+            "AERO {:?}  XYZ {:.0}/{:.0}/{:.0}",
+            self.act_id,
+            force[0].get::<newton>(),
+            force[1].get::<newton>(),
+            force[2].get::<newton>(),
+        );
 
         self.hydraulic_assembly.update(
             context,
@@ -976,6 +1009,7 @@ mod tests {
                         ProximityDetectorId::DownlockDoorRight1,
                         ProximityDetectorId::DownlockDoorRight2,
                     ],
+                    gear_door_aero(),
                 ),
                 gear_assembly: GearSystemComponentAssembly::new(
                     GearActuatorId::GearNose,
@@ -990,6 +1024,7 @@ mod tests {
                         ProximityDetectorId::DownlockGearRight1,
                         ProximityDetectorId::DownlockGearRight2,
                     ],
+                    gear_aero(),
                 ),
 
                 component_controller: TestGearSystemController::new(),
@@ -1475,6 +1510,26 @@ mod tests {
         let actuator = main_gear_actuator(&rigid_body);
 
         HydraulicLinearActuatorAssembly::new([actuator], rigid_body)
+    }
+
+    fn gear_door_aero() -> AerodynamicModel {
+        AerodynamicModel::new(
+            &main_gear_door_right_body(true),
+            Some(Vector3::new(-1., 0., 0.)),
+            None,
+            None,
+            Ratio::new::<ratio>(1.0),
+        )
+    }
+
+    fn gear_aero() -> AerodynamicModel {
+        AerodynamicModel::new(
+            &main_gear_right_body(true),
+            Some(Vector3::new(-1., 0., 0.)),
+            None,
+            None,
+            Ratio::new::<ratio>(1.0),
+        )
     }
 
     fn main_gear_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
