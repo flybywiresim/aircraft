@@ -85,7 +85,7 @@
       "YouHaveNotYetImportedAnySimBriefData": "עדיין לא ייבאת נתוני SimBrief."
     },
     "Overview": {
-      "ActualGW": "Actual GW",
+      "ActualGW": "משקל ברוטו נוכחי",
       "Engines": "מנועים",
       "MMO": "MMO",
       "MRW": "MRW",
@@ -134,6 +134,27 @@
       "TotalFuel": "סך הדלק",
       "Unavailable": "לא זמין"
     },
+    "Payload": {
+      "BoardingTime": "זמן עלייה למטוס",
+      "Cargo": "משא",
+      "Current": "נוכחי",
+      "Passengers": "נוסעים",
+      "Planned": "מתוכנן",
+      "TT": {
+        "AircraftMustBeColdAndDarkToChangeBoardingTimes": "המטוס חייב להיות על הקרקע עם מנועים כוביים בכדי לשנות את משך העליה למטוס",
+        "FillPayloadFromSimbrief": "מלא מידע על המטען מ-Simbrief",
+        "MaxCargo": "משא מקסימלי",
+        "MaxPassengers": "מספר נוסעים מקסימלי",
+        "MaxZFW": "משקל ללא דלק מקסימלי",
+        "MaxZFWCG": "מרכז כובד של משקל ללא דלק מקסימלי",
+        "PerPaxBagWeight": "משקל תיק נוסעים",
+        "PerPaxWeight": "משקל נוסע",
+        "StartBoarding": "התחל עליה למטוס"
+      },
+      "Title": "Payload",
+      "ZFW": "משקל ללא דלק",
+      "ZFWCG": "מרכז כובד משקל ללא דלק"
+    },
     "Pushback": {
       "Title": "דחיפה"
     },
@@ -144,7 +165,7 @@
       "DoorAft": "דלת אחורית",
       "DoorCargo": "דלת תא מטען",
       "DoorFwd": "דלת קדמית",
-      "ExternalPower": "יחידת מתח חיצוני",
+      "ExternalPower": "יחידת מתח קרקע",
       "FuelTruck": "משאית דלק",
       "JetBridge": "שרוול",
       "Title": "שירותים",
