@@ -657,6 +657,27 @@ mod tests {
     }
 
     #[test]
+    fn area_projection_on_x_y_z_gives_correct_area_with_negative_component_axis() {
+        let size = Vector3::<Length>::new(
+            Length::new::<meter>(1.),
+            Length::new::<meter>(2.),
+            Length::new::<meter>(3.),
+        );
+
+        let x_projection = Vector3::<f64>::new(-1., 0., 0.);
+        let y_projection = Vector3::<f64>::new(0., 1., 0.);
+        let z_projection = Vector3::<f64>::new(0., 0., 1.);
+
+        let x_area = area_projected(size, x_projection);
+        let y_area = area_projected(size, y_projection);
+        let z_area = area_projected(size, z_projection);
+
+        assert!(x_area == Area::new::<square_meter>(2. * 3.));
+        assert!(y_area == Area::new::<square_meter>(1. * 3.));
+        assert!(z_area == Area::new::<square_meter>(2. * 1.));
+    }
+
+    #[test]
     fn nose_gear_door_right_has_aero_force_pushing_open_with_headwind() {
         let nose_door_body = nose_gear_door_body();
         let nose_door_aero_model = nose_gear_door_aero();
