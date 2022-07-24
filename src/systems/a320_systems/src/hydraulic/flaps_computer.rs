@@ -108,7 +108,8 @@ impl SlatFlapControlComputer {
         }
     }
 
-    fn demanded_flaps_angle_from_conf(flap_conf: FlapsConf) -> Angle {
+    // Returns a flap demanded angle in FPPU reference degree (feedback sensor)
+    fn demanded_flaps_fppu_angle_from_conf(flap_conf: FlapsConf) -> Angle {
         match flap_conf {
             FlapsConf::Conf0 => Angle::new::<degree>(0.),
             FlapsConf::Conf1 => Angle::new::<degree>(0.),
@@ -119,7 +120,8 @@ impl SlatFlapControlComputer {
         }
     }
 
-    fn demanded_slats_angle_from_conf(flap_conf: FlapsConf) -> Angle {
+    // Returns a slat demanded angle in FPPU reference degree (feedback sensor)
+    fn demanded_slats_fppu_angle_from_conf(flap_conf: FlapsConf) -> Angle {
         match flap_conf {
             FlapsConf::Conf0 => Angle::new::<degree>(0.),
             FlapsConf::Conf1 => Angle::new::<degree>(222.27),
@@ -176,8 +178,8 @@ impl SlatFlapControlComputer {
     ) {
         self.flaps_conf = self.generate_configuration(flaps_handle, context);
 
-        self.flaps_demanded_angle = Self::demanded_flaps_angle_from_conf(self.flaps_conf);
-        self.slats_demanded_angle = Self::demanded_slats_angle_from_conf(self.flaps_conf);
+        self.flaps_demanded_angle = Self::demanded_flaps_fppu_angle_from_conf(self.flaps_conf);
+        self.slats_demanded_angle = Self::demanded_slats_fppu_angle_from_conf(self.flaps_conf);
         self.flaps_feedback_angle = flaps_feedback.angle();
         self.slats_feedback_angle = slats_feedback.angle();
     }
