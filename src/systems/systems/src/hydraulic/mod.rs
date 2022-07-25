@@ -1,6 +1,8 @@
 use self::linear_actuator::Actuator;
 use crate::failures::{Failure, FailureType};
-use crate::hydraulic::electrical_pump_physics::ElectricalPumpPhysics;
+use crate::hydraulic::{
+    electrical_pump_physics::ElectricalPumpPhysics, pumps::PumpCharacteristics,
+};
 use crate::pneumatic::PressurizeableReservoir;
 use crate::shared::{
     interpolation, low_pass_filter::LowPassFilter, random_from_range, DelayedTrueLogicGate,
@@ -31,6 +33,7 @@ pub mod flap_slat;
 pub mod landing_gear;
 pub mod linear_actuator;
 pub mod nose_steering;
+pub mod pumps;
 
 /// Indicates the pressure sensors info of an hydraulic circuit at different locations
 /// Information can be wrong in case of sensor failure -> do not use for physical pressure
@@ -602,6 +605,8 @@ pub struct Accumulator {
     current_flow: VolumeRate,
     current_delta_vol: Volume,
     has_control_valve: bool,
+
+    circuit_target_pressure: Pressure,
 }
 impl Accumulator {
     const FLOW_DYNAMIC_LOW_PASS: f64 = 0.7;
@@ -615,6 +620,7 @@ impl Accumulator {
         total_volume: Volume,
         fluid_vol_at_init: Volume,
         has_control_valve: bool,
+        circuit_target_pressure: Pressure,
     ) -> Self {
         // Taking care of case where init volume is maxed at accumulator capacity: we can't exceed max_volume minus a margin for gas to compress
         let limited_volume = fluid_vol_at_init.min(total_volume * 0.9);
@@ -631,6 +637,7 @@ impl Accumulator {
             current_flow: VolumeRate::new::<gallon_per_second>(0.),
             current_delta_vol: Volume::new::<gallon>(0.),
             has_control_valve,
+            circuit_target_pressure,
         }
     }
 
@@ -663,10 +670,8 @@ impl Accumulator {
             *delta_vol += volume_from_acc;
         } else if accumulator_delta_press.get::<psi>() < 0.0 {
             let fluid_volume_to_reach_equilibrium = self.total_volume
-                - Volume::new::<gallon>(
-                    (self.gas_init_precharge.get::<psi>() * self.total_volume.get::<gallon>())
-                        / 3000.,
-                );
+                - ((self.gas_init_precharge * self.total_volume) / self.circuit_target_pressure);
+
             let max_delta_vol = fluid_volume_to_reach_equilibrium - self.fluid_volume;
             let volume_to_acc = delta_vol
                 .max(Volume::new::<gallon>(0.0))
@@ -725,6 +730,8 @@ pub struct HydraulicCircuit {
 
     fluid: Fluid,
     reservoir: Reservoir,
+
+    circuit_target_pressure: Pressure,
 }
 impl HydraulicCircuit {
     const PUMP_SECTION_MAX_VOLUME_GAL: f64 = 0.8;
@@ -736,7 +743,6 @@ impl HydraulicCircuit {
     const SYSTEM_SECTION_STATIC_LEAK_GAL_P_S: f64 = 0.03;
 
     const FLUID_BULK_MODULUS_PASCAL: f64 = 1450000000.0;
-    const TARGET_PRESSURE_PSI: f64 = 3000.;
 
     // Nitrogen PSI precharge pressure
     const ACCUMULATOR_GAS_PRE_CHARGE_PSI: f64 = 1885.0;
@@ -767,6 +773,8 @@ impl HydraulicCircuit {
         connected_to_ptu_left_side: bool,
         connected_to_ptu_right_side: bool,
         has_auxiliary_section: bool,
+
+        circuit_target_pressure: Pressure,
     ) -> Self {
         assert!(number_of_pump_sections > 0);
 
@@ -826,6 +834,7 @@ impl HydraulicCircuit {
                     Volume::new::<gallon>(Self::ACCUMULATOR_MAX_VOLUME_GALLONS),
                     Volume::new::<gallon>(0.),
                     false,
+                    circuit_target_pressure,
                 )),
                 system_pressure_switch_lo_hyst,
                 system_pressure_switch_hi_hyst,
@@ -863,6 +872,7 @@ impl HydraulicCircuit {
             pump_section_routed_to_auxiliary_section: pump_section_to_auxiliary,
             fluid: Fluid::new(Pressure::new::<pascal>(Self::FLUID_BULK_MODULUS_PASCAL)),
             reservoir,
+            circuit_target_pressure,
         }
     }
 
@@ -888,17 +898,6 @@ impl HydraulicCircuit {
         controller: &impl HydraulicCircuitController,
         reservoir_pressure: Pressure,
     ) {
-        if self.auxiliary_section.is_some() {
-            println!(
-                "HYD PRESS {:.0} Aux: {:.0}",
-                self.system_section().pressure().get::<psi>(),
-                self.auxiliary_section
-                    .as_ref()
-                    .unwrap()
-                    .pressure()
-                    .get::<psi>()
-            );
-        }
         self.reservoir.update(context, reservoir_pressure);
 
         self.update_shutoff_valves(controller);
@@ -1042,33 +1041,41 @@ impl HydraulicCircuit {
 
     fn update_target_volumes_after_flow(&mut self) {
         for section in &mut self.pump_sections {
-            section.update_target_volume_after_flow_update(
-                Pressure::new::<psi>(Self::TARGET_PRESSURE_PSI),
-                &self.fluid,
-            );
+            section
+                .update_target_volume_after_flow_update(self.circuit_target_pressure, &self.fluid);
         }
-        self.system_section.update_target_volume_after_flow_update(
-            Pressure::new::<psi>(Self::TARGET_PRESSURE_PSI),
-            &self.fluid,
-        );
+        self.system_section
+            .update_target_volume_after_flow_update(self.circuit_target_pressure, &self.fluid);
 
         if let Some(auxiliary_section) = self.auxiliary_section.as_mut() {
-            auxiliary_section.update_target_volume_after_flow_update(
-                Pressure::new::<psi>(Self::TARGET_PRESSURE_PSI),
-                &self.fluid,
-            );
+            auxiliary_section
+                .update_target_volume_after_flow_update(self.circuit_target_pressure, &self.fluid);
         }
     }
 
     fn update_flows(&mut self, context: &UpdateContext, ptu: Option<&PowerTransferUnit>) {
         for section in &mut self.pump_sections {
-            section.update_flow(context, &mut self.reservoir, ptu);
+            section.update_flow(
+                context,
+                &mut self.reservoir,
+                ptu,
+                self.circuit_target_pressure,
+            );
         }
-        self.system_section
-            .update_flow(context, &mut self.reservoir, ptu);
+        self.system_section.update_flow(
+            context,
+            &mut self.reservoir,
+            ptu,
+            self.circuit_target_pressure,
+        );
 
         if let Some(auxiliary_section) = self.auxiliary_section.as_mut() {
-            auxiliary_section.update_flow(context, &mut self.reservoir, ptu);
+            auxiliary_section.update_flow(
+                context,
+                &mut self.reservoir,
+                ptu,
+                self.circuit_target_pressure,
+            );
         }
     }
 
@@ -1344,11 +1351,11 @@ impl Section {
         self.volume_target -= self.delta_volume_flow_pass;
     }
 
-    fn static_leak(&self, context: &UpdateContext) -> Volume {
+    fn static_leak(&self, context: &UpdateContext, target_pressure: Pressure) -> Volume {
         self.static_leak_at_max_press
             * context.delta_as_time()
             * (self.current_pressure - Pressure::new::<psi>(14.7))
-            / Pressure::new::<psi>(3000.)
+            / target_pressure
     }
 
     /// Updates hydraulic flow from consumers like accumulator / ptu / any actuator
@@ -1357,8 +1364,9 @@ impl Section {
         context: &UpdateContext,
         reservoir: &mut Reservoir,
         ptu: Option<&PowerTransferUnit>,
+        target_pressure: Pressure,
     ) {
-        let static_leak = self.static_leak(context);
+        let static_leak = self.static_leak(context, target_pressure);
         let mut delta_volume_flow_pass = -static_leak;
 
         reservoir.add_return_volume(static_leak);
@@ -1925,8 +1933,8 @@ pub struct Pump {
     current_displacement: Volume,
     current_flow: VolumeRate,
     current_max_displacement: LowPassFilter<Volume>,
-    press_breakpoints: [f64; 9],
-    displacement_carac: [f64; 9],
+
+    pump_characteristics: PumpCharacteristics,
 
     speed: AngularVelocity,
 
@@ -1935,12 +1943,10 @@ pub struct Pump {
 impl Pump {
     const SECONDS_PER_MINUTES: f64 = 60.;
     const FLOW_CONSTANT_RPM_CUBIC_INCH_TO_GPM: f64 = 231.;
-    const AIR_PRESSURE_BREAKPTS_PSI: [f64; 9] = [0., 5., 10., 15., 20., 30., 50., 70., 100.];
-    const AIR_PRESSURE_CARAC_RATIO: [f64; 9] = [0.0, 0.1, 0.6, 0.8, 0.9, 1., 1., 1., 1.];
 
     const MAX_DISPLACEMENT_FILTER_TIME_CONSTANT: Duration = Duration::from_millis(150);
 
-    fn new(press_breakpoints: [f64; 9], displacement_carac: [f64; 9]) -> Self {
+    fn new(pump_characteristics: PumpCharacteristics) -> Self {
         Self {
             delta_vol_max: Volume::new::<gallon>(0.),
             current_displacement: Volume::new::<gallon>(0.),
@@ -1948,8 +1954,7 @@ impl Pump {
             current_max_displacement: LowPassFilter::<Volume>::new(
                 Self::MAX_DISPLACEMENT_FILTER_TIME_CONSTANT,
             ),
-            press_breakpoints,
-            displacement_carac,
+            pump_characteristics,
 
             speed: AngularVelocity::new::<revolution_per_minute>(0.),
 
@@ -1986,15 +1991,12 @@ impl Pump {
     }
 
     fn update_cavitation(&mut self, reservoir: &Reservoir) {
-        self.cavitation_efficiency = Ratio::new::<ratio>(interpolation(
-            &Self::AIR_PRESSURE_BREAKPTS_PSI,
-            &Self::AIR_PRESSURE_CARAC_RATIO,
-            reservoir.air_pressure().get::<psi>(),
-        ));
-
-        if reservoir.is_empty() {
-            self.cavitation_efficiency = Ratio::new::<ratio>(0.);
-        }
+        self.cavitation_efficiency = if !reservoir.is_empty() {
+            self.pump_characteristics
+                .cavitation_efficiency(reservoir.air_pressure())
+        } else {
+            Ratio::new::<ratio>(0.)
+        };
     }
 
     fn calculate_displacement<T: PumpController>(
@@ -2003,11 +2005,8 @@ impl Pump {
         controller: &T,
     ) -> Volume {
         if controller.should_pressurise() {
-            Volume::new::<cubic_inch>(interpolation(
-                &self.press_breakpoints,
-                &self.displacement_carac,
-                section.pressure().get::<psi>(),
-            ))
+            self.pump_characteristics
+                .current_displacement(section.pressure())
         } else {
             Volume::new::<cubic_inch>(0.)
         }
@@ -2096,28 +2095,23 @@ pub struct ElectricPump {
     pump_physics: ElectricalPumpPhysics,
 }
 impl ElectricPump {
-    const NOMINAL_SPEED: f64 = 7600.0;
-
-    const DISPLACEMENT_BREAKPTS: [f64; 9] = [
-        0.0, 500.0, 1000.0, 1500.0, 2175.0, 2850.0, 3080.0, 3100.0, 3500.0,
-    ];
-    const DISPLACEMENT_MAP: [f64; 9] = [0.263, 0.263, 0.263, 0.263, 0.263, 0.2, 0.0, 0.0, 0.0];
-
     pub fn new(
         context: &mut InitContext,
         id: &str,
         bus_type: ElectricalBusType,
         max_current: ElectricCurrent,
+        pump_characteristics: PumpCharacteristics,
     ) -> Self {
+        let regulated_speed = pump_characteristics.regulated_speed();
         Self {
             cavitation_id: context.get_identifier(format!("HYD_{}_EPUMP_CAVITATION", id)),
-            pump: Pump::new(Self::DISPLACEMENT_BREAKPTS, Self::DISPLACEMENT_MAP),
+            pump: Pump::new(pump_characteristics),
             pump_physics: ElectricalPumpPhysics::new(
                 context,
                 id,
                 bus_type,
                 max_current,
-                AngularVelocity::new::<revolution_per_minute>(Self::NOMINAL_SPEED),
+                regulated_speed,
             ),
         }
     }
@@ -2205,17 +2199,16 @@ pub struct EngineDrivenPump {
     pump: Pump,
 }
 impl EngineDrivenPump {
-    const DISPLACEMENT_BREAKPTS: [f64; 9] = [
-        0.0, 500.0, 1000.0, 1500.0, 2800.0, 2910.0, 3025.0, 3050.0, 3500.0,
-    ];
-    const DISPLACEMENT_MAP: [f64; 9] = [2.4, 2.4, 2.4, 2.4, 2.4, 2.4, 0.0, 0.0, 0.0];
-
-    pub fn new(context: &mut InitContext, id: &str) -> Self {
+    pub fn new(
+        context: &mut InitContext,
+        id: &str,
+        pump_characteristics: PumpCharacteristics,
+    ) -> Self {
         Self {
             active_id: context.get_identifier(format!("HYD_{}_EDPUMP_ACTIVE", id)),
             is_active: false,
             speed: AngularVelocity::new::<revolution_per_minute>(0.),
-            pump: Pump::new(Self::DISPLACEMENT_BREAKPTS, Self::DISPLACEMENT_MAP),
+            pump: Pump::new(pump_characteristics),
         }
     }
 
@@ -2400,20 +2393,15 @@ pub struct RamAirTurbine {
     position: f64,
 }
 impl RamAirTurbine {
-    const DISPLACEMENT_BREAKPTS: [f64; 9] = [
-        0.0, 500.0, 1000.0, 1500.0, 2100.0, 2300.0, 2600.0, 2700.0, 3500.0,
-    ];
-    const DISPLACEMENT_MAP: [f64; 9] = [0.5, 0.8, 1.15, 1.15, 1.15, 0.8, 0.3, 0.0, 0.0];
-
     // Speed to go from 0 to 1 stow position per sec. 1 means full deploying in 1s
     const STOWING_SPEED: f64 = 1.;
 
-    pub fn new(context: &mut InitContext) -> Self {
+    pub fn new(context: &mut InitContext, pump_characteristics: PumpCharacteristics) -> Self {
         Self {
             stow_position_id: context.get_identifier("HYD_RAT_STOW_POSITION".to_owned()),
 
             deployment_commanded: false,
-            pump: Pump::new(Self::DISPLACEMENT_BREAKPTS, Self::DISPLACEMENT_MAP),
+            pump: Pump::new(pump_characteristics),
             pump_controller: AlwaysPressurisePumpController::new(),
             wind_turbine: WindTurbine::new(context),
             position: 0.,
@@ -2783,11 +2771,12 @@ mod tests {
             true,
             false,
             false,
+            Pressure::new::<psi>(3000.),
         )
     }
 
     fn engine_driven_pump(context: &mut InitContext) -> EngineDrivenPump {
-        EngineDrivenPump::new(context, "DEFAULT")
+        EngineDrivenPump::new(context, "DEFAULT", PumpCharacteristics::a320_edp())
     }
 
     #[cfg(test)]
