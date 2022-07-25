@@ -36,6 +36,7 @@ use systems::{
             Pushback, SteeringActuator, SteeringAngleLimiter, SteeringController,
             SteeringRatioToAngle,
         },
+        pumps::PumpCharacteristics,
         ElectricPump, EngineDrivenPump, HydraulicCircuit, HydraulicCircuitController,
         HydraulicPressureSensors, PressureSwitch, PressureSwitchType, PumpController,
         RamAirTurbine, RamAirTurbineController, Reservoir,
@@ -115,6 +116,8 @@ impl A320HydraulicCircuitFactory {
     const MIN_PRESS_PRESSURISED_LO_HYST: f64 = 2740.0;
     const MIN_PRESS_PRESSURISED_HI_HYST: f64 = 2900.0;
 
+    const HYDRAULIC_TARGET_PRESSURE_PSI: f64 = 3000.;
+
     pub fn new_green_circuit(context: &mut InitContext) -> HydraulicCircuit {
         let reservoir = A320HydraulicReservoirFactory::new_green_reservoir(context);
         HydraulicCircuit::new(
@@ -130,6 +133,7 @@ impl A320HydraulicCircuitFactory {
             Pressure::new::<psi>(Self::MIN_PRESS_EDP_SECTION_HI_HYST),
             false,
             false,
+            Pressure::new::<psi>(Self::HYDRAULIC_TARGET_PRESSURE_PSI),
         )
     }
 
@@ -148,6 +152,7 @@ impl A320HydraulicCircuitFactory {
             Pressure::new::<psi>(Self::MIN_PRESS_EDP_SECTION_HI_HYST),
             false,
             false,
+            Pressure::new::<psi>(Self::HYDRAULIC_TARGET_PRESSURE_PSI),
         )
     }
 }
@@ -1134,56 +1139,88 @@ impl A380Hydraulic {
             yellow_circuit: A320HydraulicCircuitFactory::new_yellow_circuit(context),
             yellow_circuit_controller: A380HydraulicCircuitController::new(HydraulicColor::Yellow),
 
-            engine_driven_pump_1a: EngineDrivenPump::new(context, "GREEN_1A"),
+            engine_driven_pump_1a: EngineDrivenPump::new(
+                context,
+                "GREEN_1A",
+                PumpCharacteristics::a380_edp(),
+            ),
             engine_driven_pump_1a_controller: A380EngineDrivenPumpController::new(
                 context,
                 A380EngineDrivenPumpId::Edp1a,
                 vec![Self::GREEN_EDP_CONTROL_POWER_BUS1],
             ),
 
-            engine_driven_pump_2a: EngineDrivenPump::new(context, "GREEN_2A"),
+            engine_driven_pump_2a: EngineDrivenPump::new(
+                context,
+                "GREEN_2A",
+                PumpCharacteristics::a380_edp(),
+            ),
             engine_driven_pump_2a_controller: A380EngineDrivenPumpController::new(
                 context,
                 A380EngineDrivenPumpId::Edp2a,
                 vec![Self::GREEN_EDP_CONTROL_POWER_BUS1],
             ),
 
-            engine_driven_pump_3a: EngineDrivenPump::new(context, "YELLOW_3A"),
+            engine_driven_pump_3a: EngineDrivenPump::new(
+                context,
+                "YELLOW_3A",
+                PumpCharacteristics::a380_edp(),
+            ),
             engine_driven_pump_3a_controller: A380EngineDrivenPumpController::new(
                 context,
                 A380EngineDrivenPumpId::Edp3a,
                 vec![Self::GREEN_EDP_CONTROL_POWER_BUS1],
             ),
 
-            engine_driven_pump_4a: EngineDrivenPump::new(context, "YELLOW_4A"),
+            engine_driven_pump_4a: EngineDrivenPump::new(
+                context,
+                "YELLOW_4A",
+                PumpCharacteristics::a380_edp(),
+            ),
             engine_driven_pump_4a_controller: A380EngineDrivenPumpController::new(
                 context,
                 A380EngineDrivenPumpId::Edp4a,
                 vec![Self::GREEN_EDP_CONTROL_POWER_BUS1],
             ),
 
-            engine_driven_pump_1b: EngineDrivenPump::new(context, "GREEN_1B"),
+            engine_driven_pump_1b: EngineDrivenPump::new(
+                context,
+                "GREEN_1B",
+                PumpCharacteristics::a380_edp(),
+            ),
             engine_driven_pump_1b_controller: A380EngineDrivenPumpController::new(
                 context,
                 A380EngineDrivenPumpId::Edp1b,
                 vec![Self::GREEN_EDP_CONTROL_POWER_BUS1],
             ),
 
-            engine_driven_pump_2b: EngineDrivenPump::new(context, "GREEN_2B"),
+            engine_driven_pump_2b: EngineDrivenPump::new(
+                context,
+                "GREEN_2B",
+                PumpCharacteristics::a380_edp(),
+            ),
             engine_driven_pump_2b_controller: A380EngineDrivenPumpController::new(
                 context,
                 A380EngineDrivenPumpId::Edp2b,
                 vec![Self::GREEN_EDP_CONTROL_POWER_BUS1],
             ),
 
-            engine_driven_pump_3b: EngineDrivenPump::new(context, "YELLOW_3B"),
+            engine_driven_pump_3b: EngineDrivenPump::new(
+                context,
+                "YELLOW_3B",
+                PumpCharacteristics::a380_edp(),
+            ),
             engine_driven_pump_3b_controller: A380EngineDrivenPumpController::new(
                 context,
                 A380EngineDrivenPumpId::Edp3b,
                 vec![Self::GREEN_EDP_CONTROL_POWER_BUS1],
             ),
 
-            engine_driven_pump_4b: EngineDrivenPump::new(context, "YELLOW_4B"),
+            engine_driven_pump_4b: EngineDrivenPump::new(
+                context,
+                "YELLOW_4B",
+                PumpCharacteristics::a380_edp(),
+            ),
             engine_driven_pump_4b_controller: A380EngineDrivenPumpController::new(
                 context,
                 A380EngineDrivenPumpId::Edp4b,
@@ -1195,6 +1232,7 @@ impl A380Hydraulic {
                 "YELLOW_A",
                 Self::YELLOW_ELEC_PUMP_SUPPLY_POWER_BUS,
                 ElectricCurrent::new::<ampere>(Self::ELECTRIC_PUMP_MAX_CURRENT_AMPERE),
+                PumpCharacteristics::a320_electric_pump(),
             ),
             yellow_electric_pump_a_controller: A320YellowElectricPumpController::new(
                 context,
@@ -1207,6 +1245,7 @@ impl A380Hydraulic {
                 "YELLOW_B",
                 Self::YELLOW_ELEC_PUMP_SUPPLY_POWER_BUS,
                 ElectricCurrent::new::<ampere>(Self::ELECTRIC_PUMP_MAX_CURRENT_AMPERE),
+                PumpCharacteristics::a320_electric_pump(),
             ),
             yellow_electric_pump_b_controller: A320YellowElectricPumpController::new(
                 context,
@@ -1219,6 +1258,7 @@ impl A380Hydraulic {
                 "GREEN_A",
                 Self::YELLOW_ELEC_PUMP_SUPPLY_POWER_BUS,
                 ElectricCurrent::new::<ampere>(Self::ELECTRIC_PUMP_MAX_CURRENT_AMPERE),
+                PumpCharacteristics::a320_electric_pump(),
             ),
             green_electric_pump_a_controller: A320YellowElectricPumpController::new(
                 context,
@@ -1231,6 +1271,7 @@ impl A380Hydraulic {
                 "GREEN_B",
                 Self::YELLOW_ELEC_PUMP_SUPPLY_POWER_BUS,
                 ElectricCurrent::new::<ampere>(Self::ELECTRIC_PUMP_MAX_CURRENT_AMPERE),
+                PumpCharacteristics::a320_electric_pump(),
             ),
             green_electric_pump_b_controller: A320YellowElectricPumpController::new(
                 context,
@@ -1240,7 +1281,7 @@ impl A380Hydraulic {
 
             pushback_tug: PushbackTug::new(context),
 
-            ram_air_turbine: RamAirTurbine::new(context),
+            ram_air_turbine: RamAirTurbine::new(context, PumpCharacteristics::a320_rat()),
             ram_air_turbine_controller: A320RamAirTurbineController::new(
                 Self::RAT_CONTROL_SOLENOID1_POWER_BUS,
                 Self::RAT_CONTROL_SOLENOID2_POWER_BUS,
@@ -1252,6 +1293,7 @@ impl A380Hydraulic {
                 Volume::new::<gallon>(0.),
                 Volume::new::<gallon>(0.),
                 Volume::new::<gallon>(0.13),
+                Pressure::new::<psi>(A320HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
             ),
 
             // Alternate brakes accumulator in real A320 is 1.5 gal capacity.
@@ -1263,6 +1305,7 @@ impl A380Hydraulic {
                 Volume::new::<gallon>(1.0),
                 Volume::new::<gallon>(0.4),
                 Volume::new::<gallon>(0.13),
+                Pressure::new::<psi>(A320HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
             ),
 
             braking_force: A320BrakingForce::new(context),
@@ -1278,6 +1321,7 @@ impl A380Hydraulic {
                 Ratio::new::<ratio>(314.98),
                 Self::FLAP_FPPU_TO_SURFACE_ANGLE_BREAKPTS,
                 Self::FLAP_FPPU_TO_SURFACE_ANGLE_DEGREES,
+                Pressure::new::<psi>(A320HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
             ),
             slat_system: FlapSlatAssembly::new(
                 context,
@@ -1290,6 +1334,7 @@ impl A380Hydraulic {
                 Ratio::new::<ratio>(314.98),
                 Self::SLAT_FPPU_TO_SURFACE_ANGLE_BREAKPTS,
                 Self::SLAT_FPPU_TO_SURFACE_ANGLE_DEGREES,
+                Pressure::new::<psi>(A320HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
             ),
             slats_flaps_complex: SlatFlapComplex::new(context),
 

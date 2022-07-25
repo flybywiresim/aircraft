@@ -3,6 +3,7 @@ use plotlib::repr::Plot;
 use plotlib::style::LineStyle;
 use plotlib::view::ContinuousView;
 use std::time::Duration;
+use systems::hydraulic::pumps::PumpCharacteristics;
 
 use systems::hydraulic::*;
 
@@ -356,11 +357,12 @@ fn electric_pump(context: &mut InitContext) -> ElectricPump {
         "DEFAULT",
         ElectricalBusType::AlternatingCurrentGndFltService,
         ElectricCurrent::new::<ampere>(45.),
+        PumpCharacteristics::a320_electric_pump(),
     )
 }
 
 fn _engine_driven_pump(context: &mut InitContext) -> EngineDrivenPump {
-    EngineDrivenPump::new(context, "DEFAULT")
+    EngineDrivenPump::new(context, "DEFAULT", PumpCharacteristics::a320_edp())
 }
 
 struct A320TestPneumatics {

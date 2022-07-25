@@ -134,6 +134,27 @@
       "TotalFuel": "Celkem paliva",
       "Unavailable": "Nedostupné"
     },
+    "Payload": {
+      "BoardingTime": "Čas nastupování",
+      "Cargo": "Náklad",
+      "Current": "Současné",
+      "Passengers": "Cestující",
+      "Planned": "Plánované",
+      "TT": {
+        "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Pro změnu délky nastupování musí být letadlo na zemi s vypnutými motory",
+        "FillPayloadFromSimbrief": "Načíst informace o naložení ze SimBriefu",
+        "MaxCargo": "Maximum nákladu",
+        "MaxPassengers": "Maximum cestujících",
+        "MaxZFW": "Maximální ZFW",
+        "MaxZFWCG": "Maximální ZFWCG",
+        "PerPaxBagWeight": "Hmotnost zavazadel na cestujícího",
+        "PerPaxWeight": "Váha cestujících",
+        "StartBoarding": "Zahájit nastupování"
+      },
+      "Title": "Náklad",
+      "ZFW": "ZFW",
+      "ZFWCG": "ZFWCG"
+    },
     "Pushback": {
       "Title": "Vytlačení"
     },

@@ -20,7 +20,7 @@ interface HydraulicSystemPairProps {
 }
 
 export const FctlPage = () => (
-    <svg id="ecam-fctl" viewBox="0 0 768 768" style={{ marginTop: '-60px' }} xmlns="http://www.w3.org/2000/svg">
+    <svg id="ecam-fctl" className="ecam-common-styles" viewBox="0 0 768 768" style={{ marginTop: '-60px' }} xmlns="http://www.w3.org/2000/svg">
         <text className="Title UnderlineWhite" x={8} y={33}>F/CTL</text>
 
         <HydraulicsProvider>
