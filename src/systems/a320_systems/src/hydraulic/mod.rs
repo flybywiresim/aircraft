@@ -116,14 +116,14 @@ impl A320HydraulicCircuitFactory {
     const MIN_PRESS_PRESSURISED_LO_HYST: f64 = 2740.0;
     const MIN_PRESS_PRESSURISED_HI_HYST: f64 = 2900.0;
 
-    const HYDRAULIC_TARGET_PRESSURE_PSI: f64 = 3000.;
+    const HYDRAULIC_TARGET_PRESSURE_PSI: f64 = 5100.;
 
     pub fn new_green_circuit(context: &mut InitContext) -> HydraulicCircuit {
         let reservoir = A320HydraulicReservoirFactory::new_green_reservoir(context);
         HydraulicCircuit::new(
             context,
             HydraulicColor::Green,
-            4,
+            6,
             Ratio::new::<percent>(100.),
             Volume::new::<gallon>(10.),
             reservoir,
@@ -142,7 +142,7 @@ impl A320HydraulicCircuitFactory {
         HydraulicCircuit::new(
             context,
             HydraulicColor::Yellow,
-            4,
+            6,
             Ratio::new::<percent>(100.),
             Volume::new::<gallon>(10.),
             reservoir,
@@ -1962,9 +1962,25 @@ impl A380Hydraulic {
         );
         self.green_electric_pump_a.update(
             context,
-            self.green_circuit.system_section(),
+            self.green_circuit
+                .pump_section(A380ElectricPumpId::EpumpGreenA.into_pump_section_index()),
             self.green_circuit.reservoir(),
             &self.green_electric_pump_a_controller,
+        );
+        self.green_electric_pump_b_controller.update(
+            context,
+            overhead_panel,
+            &self.forward_cargo_door_controller,
+            &self.aft_cargo_door_controller,
+            &self.green_circuit,
+            self.green_circuit.reservoir(),
+        );
+        self.green_electric_pump_b.update(
+            context,
+            self.green_circuit
+                .pump_section(A380ElectricPumpId::EpumpGreenB.into_pump_section_index()),
+            self.green_circuit.reservoir(),
+            &self.green_electric_pump_b_controller,
         );
 
         self.yellow_electric_pump_a_controller.update(
@@ -1977,9 +1993,26 @@ impl A380Hydraulic {
         );
         self.yellow_electric_pump_a.update(
             context,
-            self.yellow_circuit.system_section(),
+            self.yellow_circuit
+                .pump_section(A380ElectricPumpId::EpumpYellowA.into_pump_section_index()),
             self.yellow_circuit.reservoir(),
             &self.yellow_electric_pump_a_controller,
+        );
+
+        self.yellow_electric_pump_b_controller.update(
+            context,
+            overhead_panel,
+            &self.forward_cargo_door_controller,
+            &self.aft_cargo_door_controller,
+            &self.yellow_circuit,
+            self.yellow_circuit.reservoir(),
+        );
+        self.yellow_electric_pump_b.update(
+            context,
+            self.yellow_circuit
+                .pump_section(A380ElectricPumpId::EpumpYellowB.into_pump_section_index()),
+            self.yellow_circuit.reservoir(),
+            &self.yellow_electric_pump_b_controller,
         );
 
         self.ram_air_turbine.update(
@@ -2373,6 +2406,34 @@ impl Display for A380EngineDrivenPumpId {
             A380EngineDrivenPumpId::Edp3b => write!(f, "3B"),
             A380EngineDrivenPumpId::Edp4a => write!(f, "4A"),
             A380EngineDrivenPumpId::Edp4b => write!(f, "4B"),
+        }
+    }
+}
+
+#[derive(Clone, Copy)]
+enum A380ElectricPumpId {
+    EpumpGreenA,
+    EpumpGreenB,
+    EpumpYellowA,
+    EpumpYellowB,
+}
+impl A380ElectricPumpId {
+    fn into_pump_section_index(&self) -> usize {
+        match self {
+            A380ElectricPumpId::EpumpGreenA => 4,
+            A380ElectricPumpId::EpumpYellowA => 4,
+            A380ElectricPumpId::EpumpGreenB => 5,
+            A380ElectricPumpId::EpumpYellowB => 5,
+        }
+    }
+}
+impl Display for A380ElectricPumpId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            A380ElectricPumpId::EpumpGreenA => write!(f, "GA"),
+            A380ElectricPumpId::EpumpYellowA => write!(f, "YA"),
+            A380ElectricPumpId::EpumpGreenB => write!(f, "GB"),
+            A380ElectricPumpId::EpumpYellowB => write!(f, "YB"),
         }
     }
 }
