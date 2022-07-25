@@ -71,7 +71,6 @@ impl A320Electrical {
         apu_overhead: &(impl ApuMaster + ApuStart),
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         engines: [&impl EngineCorrectedN2; 2],
-        gcu: &impl HydraulicGeneratorControlUnit,
         lgciu1: &impl LgciuWeightOnWheels,
     ) {
         self.alternating_current.update_main_power_sources(
@@ -88,7 +87,7 @@ impl A320Electrical {
         self.emergency_elec
             .update(context, electricity, &self.alternating_current);
 
-        self.emergency_gen.update(gcu);
+        //self.emergency_gen.update(gcu);
 
         self.alternating_current.update(
             context,

@@ -38,8 +38,7 @@ use systems::{
         },
         pumps::PumpCharacteristics,
         ElectricPump, EngineDrivenPump, HydraulicCircuit, HydraulicCircuitController,
-        HydraulicPressureSensors, PressureSwitch, PressureSwitchType, PumpController,
-        RamAirTurbine, RamAirTurbineController, Reservoir,
+        HydraulicPressureSensors, PressureSwitch, PressureSwitchType, PumpController, Reservoir,
     },
     landing_gear::{GearSystemSensors, LandingGearControlInterfaceUnitSet},
     overhead::{
@@ -1035,9 +1034,6 @@ pub(super) struct A380Hydraulic {
 
     pushback_tug: PushbackTug,
 
-    ram_air_turbine: RamAirTurbine,
-    ram_air_turbine_controller: A320RamAirTurbineController,
-
     braking_circuit_norm: BrakeCircuit,
     braking_circuit_altn: BrakeCircuit,
     braking_force: A320BrakingForce,
@@ -1045,9 +1041,6 @@ pub(super) struct A380Hydraulic {
     flap_system: FlapSlatAssembly,
     slat_system: FlapSlatAssembly,
     slats_flaps_complex: SlatFlapComplex,
-
-    gcu: GeneratorControlUnit<9>,
-    emergency_gen: HydraulicGeneratorMotor,
 
     forward_cargo_door: CargoDoor,
     forward_cargo_door_controller: A320DoorController,
@@ -1285,12 +1278,6 @@ impl A380Hydraulic {
 
             pushback_tug: PushbackTug::new(context),
 
-            ram_air_turbine: RamAirTurbine::new(context, PumpCharacteristics::a320_rat()),
-            ram_air_turbine_controller: A320RamAirTurbineController::new(
-                Self::RAT_CONTROL_SOLENOID1_POWER_BUS,
-                Self::RAT_CONTROL_SOLENOID2_POWER_BUS,
-            ),
-
             braking_circuit_norm: BrakeCircuit::new(
                 context,
                 "NORM",
@@ -1342,15 +1329,6 @@ impl A380Hydraulic {
             ),
             slats_flaps_complex: SlatFlapComplex::new(context),
 
-            gcu: GeneratorControlUnit::new(
-                AngularVelocity::new::<revolution_per_minute>(12000.),
-                [
-                    0., 1000., 6000., 9999., 10000., 12000., 14000., 14001., 30000.,
-                ],
-                [0., 0., 0., 0., 1000., 6000., 1000., 0., 0.],
-            ),
-
-            emergency_gen: HydraulicGeneratorMotor::new(context, Volume::new::<cubic_inch>(0.19)),
             forward_cargo_door: A320CargoDoorFactory::new_a320_cargo_door(
                 context,
                 Self::FORWARD_CARGO_DOOR_ID,
@@ -1584,28 +1562,6 @@ impl A380Hydraulic {
             self.yellow_circuit.system_section(),
         );
 
-        self.ram_air_turbine.update_physics(
-            &context.delta(),
-            context.indicated_airspeed(),
-            self.green_circuit.system_section(),
-        );
-
-        self.gcu.update(
-            context,
-            &self.emergency_gen,
-            self.green_circuit.system_section(),
-            emergency_elec,
-            rat_and_emer_gen_man_on,
-            lgciu1,
-        );
-
-        self.emergency_gen.update(
-            context,
-            self.green_circuit.system_section(),
-            &self.gcu,
-            emergency_elec,
-        );
-
         self.gear_system_gravity_extension_controller
             .update(context);
 
@@ -1646,17 +1602,6 @@ impl A380Hydraulic {
             autobrake_panel,
             engine1,
             engine2,
-        );
-
-        // Updating rat stowed pos on all frames in case it's used for graphics
-        self.ram_air_turbine.update_position(&context.delta());
-
-        // Uses external conditions and momentary button: better to check each frame
-        self.ram_air_turbine_controller.update(
-            context,
-            overhead_panel,
-            rat_and_emer_gen_man_on,
-            emergency_elec_state,
         );
 
         self.pushback_tug.update(context);
@@ -2019,13 +1964,6 @@ impl A380Hydraulic {
             &self.yellow_electric_pump_b_controller,
         );
 
-        self.ram_air_turbine.update(
-            context,
-            self.green_circuit.system_section(),
-            self.green_circuit.reservoir(),
-            &self.ram_air_turbine_controller,
-        );
-
         self.green_circuit_controller.update(
             context,
             engine_fire_push_buttons,
@@ -2128,9 +2066,6 @@ impl SimulationElement for A380Hydraulic {
 
         self.pushback_tug.accept(visitor);
 
-        self.ram_air_turbine.accept(visitor);
-        self.ram_air_turbine_controller.accept(visitor);
-
         self.green_circuit.accept(visitor);
         self.yellow_circuit.accept(visitor);
 
@@ -2140,7 +2075,6 @@ impl SimulationElement for A380Hydraulic {
         self.braking_circuit_altn.accept(visitor);
         self.braking_force.accept(visitor);
 
-        self.emergency_gen.accept(visitor);
         self.nose_steering.accept(visitor);
         self.slats_flaps_complex.accept(visitor);
         self.flap_system.accept(visitor);
@@ -2164,15 +2098,6 @@ impl SimulationElement for A380Hydraulic {
         self.gear_system.accept(visitor);
 
         visitor.visit(self);
-    }
-}
-impl HydraulicGeneratorControlUnit for A380Hydraulic {
-    fn max_allowed_power(&self) -> Power {
-        self.gcu.max_allowed_power()
-    }
-
-    fn motor_speed(&self) -> AngularVelocity {
-        self.gcu.motor_speed()
     }
 }
 
@@ -2763,59 +2688,6 @@ impl SimulationElement for A380ElectricPumpController {
         self.is_powered = buses.is_powered(self.powered_by)
             || (self.is_required_for_cargo_door_operation.output()
                 && buses.is_powered(self.powered_by_when_cargo_door_operation))
-    }
-}
-
-struct A320RamAirTurbineController {
-    is_solenoid_1_powered: bool,
-    solenoid_1_bus: ElectricalBusType,
-
-    is_solenoid_2_powered: bool,
-    solenoid_2_bus: ElectricalBusType,
-
-    should_deploy: bool,
-}
-impl A320RamAirTurbineController {
-    fn new(solenoid_1_bus: ElectricalBusType, solenoid_2_bus: ElectricalBusType) -> Self {
-        Self {
-            is_solenoid_1_powered: false,
-            solenoid_1_bus,
-
-            is_solenoid_2_powered: false,
-            solenoid_2_bus,
-
-            should_deploy: false,
-        }
-    }
-
-    fn update(
-        &mut self,
-        context: &UpdateContext,
-        overhead_panel: &A380HydraulicOverheadPanel,
-        rat_and_emer_gen_man_on: &impl EmergencyElectricalRatPushButton,
-        emergency_elec_state: &impl EmergencyElectricalState,
-    ) {
-        let solenoid_1_should_trigger_deployment_if_powered =
-            overhead_panel.rat_man_on_push_button_is_pressed();
-
-        let solenoid_2_should_trigger_deployment_if_powered =
-            emergency_elec_state.is_in_emergency_elec() || rat_and_emer_gen_man_on.is_pressed();
-
-        // due to initialization issues the RAT will not deployed in any case when simulation has just started
-        self.should_deploy = context.is_sim_ready()
-            && ((self.is_solenoid_1_powered && solenoid_1_should_trigger_deployment_if_powered)
-                || (self.is_solenoid_2_powered && solenoid_2_should_trigger_deployment_if_powered));
-    }
-}
-impl RamAirTurbineController for A320RamAirTurbineController {
-    fn should_deploy(&self) -> bool {
-        self.should_deploy
-    }
-}
-impl SimulationElement for A320RamAirTurbineController {
-    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
-        self.is_solenoid_1_powered = buses.is_powered(self.solenoid_1_bus);
-        self.is_solenoid_2_powered = buses.is_powered(self.solenoid_2_bus);
     }
 }
 
