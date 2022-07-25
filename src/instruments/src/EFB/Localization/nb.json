@@ -135,7 +135,7 @@
       "Unavailable": "Ikke tilgjengelig"
     },
     "Payload": {
-      "BoardingTime": "Boarding Time",
+      "BoardingTime": "Ombordstigningstid",
       "Cargo": "Cargo",
       "Current": "Current",
       "Passengers": "Passengers",
@@ -144,7 +144,7 @@
         "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Aircraft Must Be On the Ground and Have Engines Shutdown to Change Boarding Duration",
         "FillPayloadFromSimbrief": "Fill Payload Information from Simbrief",
         "MaxCargo": "Max Cargo",
-        "MaxPassengers": "Maximum Passengers",
+        "MaxPassengers": "Maksimum passasjerer",
         "MaxZFW": "Maximum ZFW",
         "MaxZFWCG": "Maximum ZFWCG",
         "PerPaxBagWeight": "Per Passenger Bag Weight",
