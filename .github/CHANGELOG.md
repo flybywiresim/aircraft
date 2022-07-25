@@ -39,6 +39,7 @@
 1. [ISIS] Added temporary ISIS font with arrows - @aweissoertel (Alexibexi#7550)
 1. [PFD] Improve PFD barberpole rendering and behaviour - @lukecologne (luke)
 1. [FMGC] Only emit decel point when an approach is selected - @tracernz (Mike)
+1. [HYD] Fixed SFCC computer failing to send FPPU commands - @Crocket63 (crocket)
 1. [MCDU] Fix padding of arc radii on F-PLN - @tracernz (Mike)
 1. [FMGC] Allow stringing of STARs with non-runway approaches - @tracernz (Mike)
 1. [SD] Improve COND page visuals, fix some visual bugs on the SD - @lukecologne (luke)
