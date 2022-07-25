@@ -1022,16 +1022,16 @@ pub(super) struct A380Hydraulic {
     engine_driven_pump_4b_controller: A380EngineDrivenPumpController,
 
     yellow_electric_pump_a: ElectricPump,
-    yellow_electric_pump_a_controller: A320YellowElectricPumpController,
+    yellow_electric_pump_a_controller: A380ElectricPumpController,
 
     yellow_electric_pump_b: ElectricPump,
-    yellow_electric_pump_b_controller: A320YellowElectricPumpController,
+    yellow_electric_pump_b_controller: A380ElectricPumpController,
 
     green_electric_pump_a: ElectricPump,
-    green_electric_pump_a_controller: A320YellowElectricPumpController,
+    green_electric_pump_a_controller: A380ElectricPumpController,
 
     green_electric_pump_b: ElectricPump,
-    green_electric_pump_b_controller: A320YellowElectricPumpController,
+    green_electric_pump_b_controller: A380ElectricPumpController,
 
     pushback_tug: PushbackTug,
 
@@ -1234,8 +1234,9 @@ impl A380Hydraulic {
                 ElectricCurrent::new::<ampere>(Self::ELECTRIC_PUMP_MAX_CURRENT_AMPERE),
                 PumpCharacteristics::a320_electric_pump(),
             ),
-            yellow_electric_pump_a_controller: A320YellowElectricPumpController::new(
+            yellow_electric_pump_a_controller: A380ElectricPumpController::new(
                 context,
+                A380ElectricPumpId::EpumpYellowA,
                 Self::YELLOW_ELEC_PUMP_CONTROL_POWER_BUS,
                 Self::YELLOW_ELEC_PUMP_CONTROL_FROM_CARGO_DOOR_OPERATION_POWER_BUS,
             ),
@@ -1247,8 +1248,9 @@ impl A380Hydraulic {
                 ElectricCurrent::new::<ampere>(Self::ELECTRIC_PUMP_MAX_CURRENT_AMPERE),
                 PumpCharacteristics::a320_electric_pump(),
             ),
-            yellow_electric_pump_b_controller: A320YellowElectricPumpController::new(
+            yellow_electric_pump_b_controller: A380ElectricPumpController::new(
                 context,
+                A380ElectricPumpId::EpumpYellowB,
                 Self::YELLOW_ELEC_PUMP_CONTROL_POWER_BUS,
                 Self::YELLOW_ELEC_PUMP_CONTROL_FROM_CARGO_DOOR_OPERATION_POWER_BUS,
             ),
@@ -1260,8 +1262,9 @@ impl A380Hydraulic {
                 ElectricCurrent::new::<ampere>(Self::ELECTRIC_PUMP_MAX_CURRENT_AMPERE),
                 PumpCharacteristics::a320_electric_pump(),
             ),
-            green_electric_pump_a_controller: A320YellowElectricPumpController::new(
+            green_electric_pump_a_controller: A380ElectricPumpController::new(
                 context,
+                A380ElectricPumpId::EpumpGreenA,
                 Self::YELLOW_ELEC_PUMP_CONTROL_POWER_BUS,
                 Self::YELLOW_ELEC_PUMP_CONTROL_FROM_CARGO_DOOR_OPERATION_POWER_BUS,
             ),
@@ -1273,8 +1276,9 @@ impl A380Hydraulic {
                 ElectricCurrent::new::<ampere>(Self::ELECTRIC_PUMP_MAX_CURRENT_AMPERE),
                 PumpCharacteristics::a320_electric_pump(),
             ),
-            green_electric_pump_b_controller: A320YellowElectricPumpController::new(
+            green_electric_pump_b_controller: A380ElectricPumpController::new(
                 context,
+                A380ElectricPumpId::EpumpGreenB,
                 Self::YELLOW_ELEC_PUMP_CONTROL_POWER_BUS,
                 Self::YELLOW_ELEC_PUMP_CONTROL_FROM_CARGO_DOOR_OPERATION_POWER_BUS,
             ),
@@ -2286,7 +2290,7 @@ impl A380HydraulicCircuitController {
         context: &UpdateContext,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         overhead_panel: &A380HydraulicOverheadPanel,
-        yellow_epump_controller: &A320YellowElectricPumpController,
+        yellow_epump_controller: &A380ElectricPumpController,
     ) {
         self.cargo_door_in_use.update(
             context,
@@ -2567,8 +2571,10 @@ impl SimulationElement for A380EngineDrivenPumpController {
     }
 }
 
-struct A320YellowElectricPumpController {
+struct A380ElectricPumpController {
     low_press_id: VariableIdentifier,
+
+    pump_id: A380ElectricPumpId,
 
     is_powered: bool,
     powered_by: ElectricalBusType,
@@ -2582,22 +2588,29 @@ struct A320YellowElectricPumpController {
     is_required_for_cargo_door_operation: DelayedFalseLogicGate,
     should_pressurise_for_cargo_door_operation: bool,
 
+    is_closing_auxiliary_selector_valve: DelayedTrueLogicGate,
+
     low_pressure_hystereris: bool,
 }
-impl A320YellowElectricPumpController {
+impl A380ElectricPumpController {
     const DURATION_OF_YELLOW_PUMP_ACTIVATION_AFTER_CARGO_DOOR_OPERATION: Duration =
         Duration::from_secs(20);
+
+    const CLOSING_DELAY_FOR_AUXILIARY_SELECTOR_VALVE: Duration = Duration::from_millis(100);
 
     const LOW_PRESS_HYSTERESIS_HIGH_PSI: f64 = 1750.;
     const LOW_PRESS_HYSTERESIS_LOW_PSI: f64 = 1450.;
 
     fn new(
         context: &mut InitContext,
+        pump_id: A380ElectricPumpId,
         powered_by: ElectricalBusType,
         powered_by_when_cargo_door_operation: ElectricalBusType,
     ) -> Self {
         Self {
-            low_press_id: context.get_identifier("HYD_YELLOW_EPUMP_LOW_PRESS".to_owned()),
+            low_press_id: context.get_identifier(format!("HYD_{}_EPUMP_LOW_PRESS", pump_id)),
+
+            pump_id,
 
             is_powered: false,
             powered_by,
@@ -2613,6 +2626,10 @@ impl A320YellowElectricPumpController {
                 Self::DURATION_OF_YELLOW_PUMP_ACTIVATION_AFTER_CARGO_DOOR_OPERATION,
             ),
             should_pressurise_for_cargo_door_operation: false,
+
+            is_closing_auxiliary_selector_valve: DelayedTrueLogicGate::new(
+                Self::CLOSING_DELAY_FOR_AUXILIARY_SELECTOR_VALVE,
+            ),
 
             low_pressure_hystereris: false,
         }
@@ -2688,6 +2705,9 @@ impl A320YellowElectricPumpController {
         self.should_pressurise_for_cargo_door_operation =
             self.is_required_for_cargo_door_operation.output()
                 && !overhead_panel.yellow_epump_a_push_button.is_on();
+
+        self.is_closing_auxiliary_selector_valve
+            .update(context, self.should_pressurise_for_cargo_door_operation);
     }
 
     fn update_low_air_pressure(
@@ -2724,12 +2744,16 @@ impl A320YellowElectricPumpController {
         self.should_pressurise_for_cargo_door_operation
     }
 }
-impl PumpController for A320YellowElectricPumpController {
+impl PumpController for A380ElectricPumpController {
     fn should_pressurise(&self) -> bool {
         self.should_pressurise
     }
+
+    fn should_select_auxiliary_section(&self) -> bool {
+        self.is_closing_auxiliary_selector_valve.output()
+    }
 }
-impl SimulationElement for A320YellowElectricPumpController {
+impl SimulationElement for A380ElectricPumpController {
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.low_press_id, self.is_pressure_low);
     }
@@ -3931,7 +3955,12 @@ pub(super) struct A380HydraulicOverheadPanel {
     edp4b_push_button: AutoOffFaultPushButton,
 
     rat_push_button: MomentaryPushButton,
+
     yellow_epump_a_push_button: AutoOnFaultPushButton,
+    yellow_epump_b_push_button: AutoOnFaultPushButton,
+
+    green_epump_a_push_button: AutoOnFaultPushButton,
+    green_epump_b_push_button: AutoOnFaultPushButton,
 
     green_leak_measurement_push_button: AutoOffFaultPushButton,
     yellow_leak_measurement_push_button: AutoOffFaultPushButton,
@@ -3950,7 +3979,11 @@ impl A380HydraulicOverheadPanel {
 
             rat_push_button: MomentaryPushButton::new(context, "HYD_RAT_MAN_ON"),
 
-            yellow_epump_a_push_button: AutoOnFaultPushButton::new_auto(context, "HYD_EPUMPY"),
+            yellow_epump_a_push_button: AutoOnFaultPushButton::new_auto(context, "HYD_EPUMPYA"),
+            yellow_epump_b_push_button: AutoOnFaultPushButton::new_auto(context, "HYD_EPUMPYB"),
+
+            green_epump_a_push_button: AutoOnFaultPushButton::new_auto(context, "HYD_EPUMPGA"),
+            green_epump_b_push_button: AutoOnFaultPushButton::new_auto(context, "HYD_EPUMPGB"),
 
             green_leak_measurement_push_button: AutoOffFaultPushButton::new_auto(
                 context,
@@ -4035,7 +4068,12 @@ impl SimulationElement for A380HydraulicOverheadPanel {
         self.edp2a_push_button.accept(visitor);
 
         self.rat_push_button.accept(visitor);
+
         self.yellow_epump_a_push_button.accept(visitor);
+        self.yellow_epump_b_push_button.accept(visitor);
+
+        self.green_epump_a_push_button.accept(visitor);
+        self.green_epump_b_push_button.accept(visitor);
 
         self.green_leak_measurement_push_button.accept(visitor);
 
@@ -6528,7 +6566,7 @@ mod tests {
             assert!(test_bed.is_cargo_fwd_door_locked_up());
 
             test_bed = test_bed.run_waiting_for(
-                A320YellowElectricPumpController::DURATION_OF_YELLOW_PUMP_ACTIVATION_AFTER_CARGO_DOOR_OPERATION,
+                A380ElectricPumpController::DURATION_OF_YELLOW_PUMP_ACTIVATION_AFTER_CARGO_DOOR_OPERATION,
             );
 
             assert!(!test_bed.query(|a| a.is_cargo_powering_yellow_epump()));
