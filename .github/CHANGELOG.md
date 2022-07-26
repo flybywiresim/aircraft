@@ -43,6 +43,7 @@
 1. [MCDU] Fix padding of arc radii on F-PLN - @tracernz (Mike)
 1. [FMGC] Allow stringing of STARs with non-runway approaches - @tracernz (Mike)
 1. [SD] Improve COND page visuals, fix some visual bugs on the SD - @lukecologne (luke)
+1. [MODEL] Added new animated gear gravity extension handle- @tyler58546 (tyler58546), @MoreRightRudder (Mike), @Crocket63 (crocket), @Lantarius
 
 ## 0.8.0
 
