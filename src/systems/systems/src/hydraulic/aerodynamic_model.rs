@@ -672,7 +672,7 @@ mod tests {
                 .with_wind_speed_and_aoa(Velocity::new::<knot>(200.), Angle::new::<degree>(10.))
                 .with_left_wind(Velocity::new::<meter_per_second>(0.));
 
-        test_bed_nose_door.rotate_body(Angle::new::<degree>(0.));
+        test_bed_nose_door.rotate_body(Angle::new::<degree>(80.));
 
         test_bed_nose_door.run_without_delta();
 
@@ -778,15 +778,6 @@ mod tests {
         test_bed.run_without_delta();
 
         let lateral_force = test_bed.query(|a| a.body_aero_force_right_value());
-        let up_force = test_bed.query(|a| a.body_aero_force_up_value());
-        let long_force = test_bed.query(|a| a.body_aero_force_forward_value());
-
-        // There's drag
-        //assert!(long_force <= Force::new::<newton>(-100.));
-
-        // Up forces are minimal
-        // assert!(up_force >= Force::new::<newton>(-50.));
-        // assert!(up_force <= Force::new::<newton>(50.));
 
         // Door pushed left
         assert!(lateral_force <= Force::new::<newton>(-500.));
@@ -796,7 +787,7 @@ mod tests {
 
         test_bed.run_without_delta();
 
-        // Gear not pushed left
+        // Gear door not pushed left
         assert!(test_bed.query(|a| a.body_aero_force_right_value()) <= Force::new::<newton>(50.));
         assert!(test_bed.query(|a| a.body_aero_force_right_value()) >= Force::new::<newton>(-50.));
     }
@@ -884,7 +875,7 @@ mod tests {
             Some(Vector3::new(0., 1., 0.)),
             Some(Vector3::new(0., -0.2, 1.)),
             Some(Vector3::new(0., -1., -0.2)),
-            Ratio::new::<ratio>(0.5),
+            Ratio::new::<ratio>(0.7),
         )
     }
 
