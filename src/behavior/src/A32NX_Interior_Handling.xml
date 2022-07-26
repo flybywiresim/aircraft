@@ -654,27 +654,52 @@
 
                     alias rotations = (L:A32NX_GRAVITYGEAR_ROTATIONS, number);
                     alias rotatePct = (L:A32NX_GRAVITYGEAR_ROTATE_PCT, number);
+                    alias direction = (L:A32NX_GRAVITYGEAR_ROTATION_DIRECTION, number);
                     let maxRotatePct = rotations * 100;
                     let rotateAnimSpeed = 1;
-                    if rotatePct &lt; maxRotatePct {
-                        rotatePct = (rotatePct + rotateAnimSpeed).min(maxRotatePct);
+                    if direction == 1 {
+                        if rotatePct &lt; maxRotatePct {
+                            rotatePct = (rotatePct + rotateAnimSpeed).min(maxRotatePct);
+                        }
+                    } else {
+                        if rotatePct &gt; maxRotatePct {
+                            rotatePct = (rotatePct - rotateAnimSpeed).max(maxRotatePct);
+                        }
                     }
                 </Update>
-                <UseTemplate Name="ASOBO_GT_Interaction_LeftSingle_Leave_Code">
-                    <LEFT_SINGLE_CODE type="rnp">
+                <UseTemplate Name="ASOBO_GT_Knob_Infinite">
+                    <ANTICLOCKWISE_CODE type="rnp">
                         alias turned = (L:A32NX_GRAVITYGEAR_TURNED, number);
                         alias rotations = (L:A32NX_GRAVITYGEAR_ROTATIONS, number);
+                        alias direction = (L:A32NX_GRAVITYGEAR_ROTATION_DIRECTION, number);
 
                         if turned == 1 {
                             alias rotatePct = (L:A32NX_GRAVITYGEAR_ROTATE_PCT, number);
                             let maxRotatePct = rotations * 100;
-                            if rotatePct &gt;= maxRotatePct {
+                            if rotatePct == maxRotatePct {
+                                direction = -1;
+                                rotations = rotations - 1;
+                            }
+                        } else {
+                            turned = 1;
+                        }
+                    </ANTICLOCKWISE_CODE>
+                    <CLOCKWISE_CODE type="rnp">
+                        alias turned = (L:A32NX_GRAVITYGEAR_TURNED, number);
+                        alias rotations = (L:A32NX_GRAVITYGEAR_ROTATIONS, number);
+                        alias direction = (L:A32NX_GRAVITYGEAR_ROTATION_DIRECTION, number);
+
+                        if turned == 1 {
+                            alias rotatePct = (L:A32NX_GRAVITYGEAR_ROTATE_PCT, number);
+                            let maxRotatePct = rotations * 100;
+                            if rotatePct == maxRotatePct {
+                                direction = 1;
                                 rotations = rotations + 1;
                             }
                         } else {
                             turned = 1;
                         }
-                    </LEFT_SINGLE_CODE>
+                    </CLOCKWISE_CODE>
                 </UseTemplate>
             </Component>
             <Component ID="GearEmerExt" Node="GearEmerExt">
@@ -683,7 +708,7 @@
                         alias turnPct = (L:A32NX_GRAVITYGEAR_TURN_PCT, number);
                         alias rotatePct = (L:A32NX_GRAVITYGEAR_ROTATE_PCT, number);
 
-                        let animationPos = turnPct + (rotatePct % 100);
+                        let animationPos = turnPct + (((rotatePct % 100) + 100) % 100);
                         animationPos
                     </ANIM_CODE>
                     <ANIM_NAME>#NODE_ID#</ANIM_NAME>
