@@ -571,6 +571,8 @@ void FlyByWireInterface::setupLocalVariables() {
     idFcdcPriorityFoRed[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_PRIORITY_LIGHT_FO_RED_ON");
   }
 
+  idThsOverrideActive = make_unique<LocalVariable>("A32NX_HYD_THS_TRIM_MANUAL_OVERRIDE");
+
   for (int i = 0; i < 2; i++) {
     string idString = std::to_string(i + 1);
 
@@ -1176,7 +1178,7 @@ bool FlyByWireInterface::updateElac(double sampleTime, int elacIndex) {
   elacs[elacIndex].modelInputs.in.discrete_inputs.l_elev_servo_failed = idElevFaultLeft[elacIndex]->get();
   elacs[elacIndex].modelInputs.in.discrete_inputs.r_ail_servo_failed = idAilFaultRight[elacIndex]->get();
   elacs[elacIndex].modelInputs.in.discrete_inputs.r_elev_servo_failed = idElevFaultRight[elacIndex]->get();
-  elacs[elacIndex].modelInputs.in.discrete_inputs.ths_override_active = false;
+  elacs[elacIndex].modelInputs.in.discrete_inputs.ths_override_active = idThsOverrideActive->get();
   elacs[elacIndex].modelInputs.in.discrete_inputs.yellow_low_pressure = !idHydYellowPressurised->get();
   elacs[elacIndex].modelInputs.in.discrete_inputs.capt_priority_takeover_pressed = idCaptPriorityButtonPressed->get();
   elacs[elacIndex].modelInputs.in.discrete_inputs.fo_priority_takeover_pressed = idFoPriorityButtonPressed->get();
@@ -1274,7 +1276,7 @@ bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
     secs[secIndex].modelInputs.in.discrete_inputs.ths_motor_fault = false;
     secs[secIndex].modelInputs.in.discrete_inputs.l_elev_servo_failed = idElevFaultLeft[secIndex]->get();
     secs[secIndex].modelInputs.in.discrete_inputs.r_elev_servo_failed = idElevFaultRight[secIndex]->get();
-    secs[secIndex].modelInputs.in.discrete_inputs.ths_override_active = false;
+    secs[secIndex].modelInputs.in.discrete_inputs.ths_override_active = idThsOverrideActive->get();
   } else {
     secs[secIndex].modelInputs.in.discrete_inputs.pitch_not_avail_elac_1 = false;
     secs[secIndex].modelInputs.in.discrete_inputs.pitch_not_avail_elac_2 = false;
@@ -1641,24 +1643,6 @@ bool FlyByWireInterface::updateServoSolenoidStatus() {
 
   if (facsDiscreteOutputs[0].rudder_travel_lim_engaged || facsDiscreteOutputs[1].rudder_travel_lim_engaged) {
     rudderTravelLimiterPosition = facsAnalogOutputs[0].rudder_travel_limit_order_deg + facsAnalogOutputs[1].rudder_travel_limit_order_deg;
-  }
-
-  // set trim values
-  SimOutputEtaTrim outputEtaTrim = {};
-
-  if (elacsDiscreteOutputs[0].ths_active || elacsDiscreteOutputs[1].ths_active || secsDiscreteOutputs[0].ths_active ||
-      secsDiscreteOutputs[1].ths_active) {
-    outputEtaTrim.eta_trim_deg = -elacsAnalogOutputs[1].ths_pos_order - elacsAnalogOutputs[0].ths_pos_order +
-                                 -secsAnalogOutputs[0].ths_pos_order_deg - secsAnalogOutputs[1].ths_pos_order_deg;
-    elevatorTrimHandler->synchronizeValue(outputEtaTrim.eta_trim_deg);
-  } else {
-    outputEtaTrim.eta_trim_deg = elevatorTrimHandler->getPosition();
-  }
-  if (!(wasInSlew || pauseDetected || idExternalOverride->get())) {
-    if (!simConnectInterface.sendData(outputEtaTrim)) {
-      cout << "WASM: Write data failed!" << endl;
-      return false;
-    }
   }
 
   double totalSpoilersLeftDeflection = idLeftSpoilerPosition[0]->get() + idLeftSpoilerPosition[1]->get() + idLeftSpoilerPosition[2]->get() +

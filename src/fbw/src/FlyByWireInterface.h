@@ -446,6 +446,9 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idSplrFaultLeft[5];
   std::unique_ptr<LocalVariable> idSplrFaultRight[5];
 
+  // THS Override Signal LVar
+  std::unique_ptr<LocalVariable> idThsOverrideActive;
+
   // ELAC discrete input Lvars
   std::unique_ptr<LocalVariable> idElacPushbuttonPressed[2];
 
