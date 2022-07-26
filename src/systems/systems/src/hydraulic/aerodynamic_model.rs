@@ -684,10 +684,10 @@ mod tests {
 
         let mut test_bed_nose_door =
             test_bed(TestAircraft::new(nose_door_body, nose_door_aero_model))
-                .with_wind_speed_and_aoa(Velocity::new::<knot>(200.), Angle::new::<degree>(15.))
+                .with_wind_speed_and_aoa(Velocity::new::<knot>(200.), Angle::new::<degree>(10.))
                 .with_left_wind(Velocity::new::<meter_per_second>(0.));
 
-        test_bed_nose_door.rotate_body(Angle::new::<degree>(85.));
+        test_bed_nose_door.rotate_body(Angle::new::<degree>(0.));
 
         test_bed_nose_door.run_without_delta();
 
@@ -777,6 +777,46 @@ mod tests {
     }
 
     #[test]
+    fn right_gear_door_has_force_pushing_it_left_with_headwind() {
+        let right_gear_door_body = right_gear_door_body();
+        let right_gear_door_aero_model = right_gear_door_aero();
+
+        let mut test_bed = test_bed(TestAircraft::new(
+            right_gear_door_body,
+            right_gear_door_aero_model,
+        ))
+        .with_headwind(Velocity::new::<knot>(200.))
+        .with_left_wind(Velocity::new::<meter_per_second>(0.));
+
+        test_bed.rotate_body(Angle::new::<degree>(-85.));
+
+        test_bed.run_without_delta();
+
+        let lateral_force = test_bed.query(|a| a.body_aero_force_right_value());
+        let up_force = test_bed.query(|a| a.body_aero_force_up_value());
+        let long_force = test_bed.query(|a| a.body_aero_force_forward_value());
+
+        // There's drag
+        //assert!(long_force <= Force::new::<newton>(-100.));
+
+        // Up forces are minimal
+        // assert!(up_force >= Force::new::<newton>(-50.));
+        // assert!(up_force <= Force::new::<newton>(50.));
+
+        // Door pushed left
+        assert!(lateral_force <= Force::new::<newton>(-500.));
+
+        // Closing
+        test_bed.rotate_body(Angle::new::<degree>(0.));
+
+        test_bed.run_without_delta();
+
+        // Gear not pushed left
+        assert!(test_bed.query(|a| a.body_aero_force_right_value()) <= Force::new::<newton>(50.));
+        assert!(test_bed.query(|a| a.body_aero_force_right_value()) >= Force::new::<newton>(-50.));
+    }
+
+    #[test]
     fn left_gear_has_force_pushing_it_left_with_headwind() {
         let left_gear_body = right_gear_body(); // Same as left
         let left_gear_aero_model = left_gear_aero();
@@ -857,17 +897,10 @@ mod tests {
         AerodynamicModel::new(
             &nose_gear_door_body(),
             Some(Vector3::new(0., 1., 0.)),
-            Some(Vector3::new(0., 0., 1.)),
-            Some(Vector3::new(0., 1., 0.4)),
+            Some(Vector3::new(0., -0.2, 1.)),
+            Some(Vector3::new(0., -1., -0.2)),
             Ratio::new::<ratio>(0.5),
         )
-        // AerodynamicModel::new(
-        //     &nose_gear_door_body(),
-        //     Some(Vector3::new(0., 1., 0.)),
-        //     Some(Vector3::new(0.2, 0., 1.)),
-        //     Some(Vector3::new(0., 1., 0.2)),
-        //     Ratio::new::<ratio>(1.0),
-        // )
     }
 
     fn nose_gear_body() -> TestAerodynamicBody {
@@ -889,6 +922,28 @@ mod tests {
             None,
             None,
             Ratio::new::<ratio>(1.0),
+        )
+    }
+
+    fn right_gear_door_body() -> TestAerodynamicBody {
+        TestAerodynamicBody::new(
+            Vector3::new(
+                Length::new::<meter>(1.73),
+                Length::new::<meter>(0.02),
+                Length::new::<meter>(1.7),
+            ),
+            Vector3::new(0., 0., 1.),
+            Angle::new::<degree>(0.),
+        )
+    }
+
+    fn right_gear_door_aero() -> AerodynamicModel {
+        AerodynamicModel::new(
+            &right_gear_door_body(),
+            Some(Vector3::new(0., 1., 0.)),
+            Some(Vector3::new(0., -0.1, 1.)),
+            Some(Vector3::new(0., 1., 0.1)),
+            Ratio::new::<ratio>(0.5),
         )
     }
 

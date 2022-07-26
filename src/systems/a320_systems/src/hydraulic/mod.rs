@@ -715,29 +715,29 @@ impl A320GearDoorFactory {
         AerodynamicModel::new(
             &Self::a320_nose_gear_door_body(),
             Some(Vector3::new(0., 1., 0.)),
-            Some(Vector3::new(0., 0., 1.)),
-            Some(Vector3::new(0., 1., 0.4)),
-            Ratio::new::<ratio>(0.5),
+            Some(Vector3::new(0., -0.2, 1.)),
+            Some(Vector3::new(0., -1., -0.2)),
+            Ratio::new::<ratio>(0.7),
         )
     }
 
     fn a320_left_gear_door_aerodynamics() -> AerodynamicModel {
         AerodynamicModel::new(
             &Self::a320_left_gear_door_body(),
-            Some(Vector3::new(-1., 0., 0.)),
-            Some(Vector3::new(-0.3, 0., 1.)),
-            Some(Vector3::new(-1., 0., -0.3)),
-            Ratio::new::<ratio>(1.0),
+            Some(Vector3::new(0., 1., 0.)),
+            Some(Vector3::new(0., -0.1, 1.)),
+            Some(Vector3::new(0., 1., 0.1)),
+            Ratio::new::<ratio>(0.7),
         )
     }
 
     fn a320_right_gear_door_aerodynamics() -> AerodynamicModel {
         AerodynamicModel::new(
             &Self::a320_right_gear_door_body(),
-            Some(Vector3::new(1., 0., 0.)),
-            Some(Vector3::new(0.3, 0., 1.)),
-            Some(Vector3::new(1., 0., -0.3)),
-            Ratio::new::<ratio>(1.0),
+            Some(Vector3::new(0., 1., 0.)),
+            Some(Vector3::new(0., -0.1, 1.)),
+            Some(Vector3::new(0., 1., 0.1)),
+            Ratio::new::<ratio>(0.7),
         )
     }
 
@@ -784,7 +784,7 @@ impl A320GearDoorFactory {
             20000.,
             5000.,
             2000.,
-            9000.,
+            30000.,
             Duration::from_millis(100),
             [0.5, 0.5, 1., 1., 0.5, 0.5],
             [0., 0.15, 0.16, 0.84, 0.85, 1.],
@@ -889,7 +889,7 @@ impl A320GearFactory {
             Some(Vector3::new(0., 0., 1.)),
             None,
             None,
-            Ratio::new::<ratio>(1.0),
+            Ratio::new::<ratio>(0.25),
         )
     }
 
@@ -899,7 +899,7 @@ impl A320GearFactory {
             Some(Vector3::new(0., 0., 1.)),
             Some(Vector3::new(0.3, 0., 1.)),
             Some(Vector3::new(1., 0., -0.3)),
-            Ratio::new::<ratio>(1.0),
+            Ratio::new::<ratio>(0.7),
         )
     }
 
@@ -909,7 +909,7 @@ impl A320GearFactory {
             Some(Vector3::new(0., 0., 1.)),
             Some(Vector3::new(-0.3, 0., 1.)),
             Some(Vector3::new(-1., 0., -0.3)),
-            Ratio::new::<ratio>(1.0),
+            Ratio::new::<ratio>(0.7),
         )
     }
 
@@ -927,7 +927,7 @@ impl A320GearFactory {
             800000.,
             150000.,
             50000.,
-            1000000.,
+            700000.,
             Duration::from_millis(100),
             [0.5, 0.5, 1., 1., 0.5, 0.5],
             [0., 0.1, 0.11, 0.89, 0.9, 1.],
