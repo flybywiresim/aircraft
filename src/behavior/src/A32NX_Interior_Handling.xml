@@ -678,7 +678,7 @@
                             let maxRotatePct = rotations * 100;
                             if rotatePct == maxRotatePct {
                                 direction = -1;
-                                rotations = rotations - 1;
+                                rotations = (rotations - 1).max(0);
                             }
                         } else {
                             turned = 1;
@@ -694,7 +694,7 @@
                             let maxRotatePct = rotations * 100;
                             if rotatePct == maxRotatePct {
                                 direction = 1;
-                                rotations = rotations + 1;
+                                rotations = (rotations + 1).min(3);
                             }
                         } else {
                             turned = 1;
