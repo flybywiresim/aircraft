@@ -19,7 +19,7 @@ use uom::si::{
 use systems::{
     engine::Engine,
     hydraulic::{
-        aerodynamic_model::{AerodynamicBody, AerodynamicModel},
+        aerodynamic_model::AerodynamicModel,
         brake_circuit::{
             AutobrakeDecelerationGovernor, AutobrakeMode, AutobrakePanel, BrakeCircuit,
             BrakeCircuitController,

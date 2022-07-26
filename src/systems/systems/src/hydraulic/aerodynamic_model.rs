@@ -19,8 +19,6 @@ pub struct AerodynamicModel {
     has_lift: bool,
 
     area_coefficient: Ratio,
-
-    last_force: Vector3<Force>,
 }
 impl AerodynamicModel {
     const DEFAULT_LIFT_ANGLE_MAP_DEGREES: [f64; 7] = [-30., -18., -10., 0., 10., 18., 30.];
@@ -48,8 +46,6 @@ impl AerodynamicModel {
             has_lift: lift_axis.is_some(),
 
             area_coefficient,
-
-            last_force: Vector3::default(),
         };
         obj.initialize_areas(body.size());
         obj
@@ -70,26 +66,15 @@ impl AerodynamicModel {
     }
 
     fn total_aero_forces(
-        &mut self,
+        &self,
         context: &UpdateContext,
         physical_body: &impl AerodynamicBody,
     ) -> Vector3<Force> {
-        self.last_force =
-            self.lift_force(context, physical_body) + self.drag_force(context, physical_body);
-
         self.lift_force(context, physical_body) + self.drag_force(context, physical_body)
     }
 
-    pub fn update_body(
-        &mut self,
-        context: &UpdateContext,
-        physical_body: &mut impl AerodynamicBody,
-    ) {
+    pub fn update_body(&self, context: &UpdateContext, physical_body: &mut impl AerodynamicBody) {
         physical_body.apply_aero_forces(self.total_aero_forces(context, physical_body))
-    }
-
-    pub fn last_force(&self) -> Vector3<Force> {
-        self.last_force
     }
 
     /// Computes a lift force normal to the surface (as opposed as normal to the relative wind)

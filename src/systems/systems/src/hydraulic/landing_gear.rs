@@ -18,7 +18,7 @@ use super::{
     },
 };
 
-use uom::si::{f64::*, force::newton, pressure::psi, ratio::ratio};
+use uom::si::{f64::*, pressure::psi, ratio::ratio};
 
 use std::time::Duration;
 
@@ -383,7 +383,6 @@ impl From<GearActuatorId> for GearSysComponentId {
 
 struct GearSystemComponentAssembly {
     component_id: GearSysComponentId,
-    act_id: GearActuatorId,
     is_inverted_control: bool,
     hydraulic_controller: GearSystemComponentHydraulicController,
     hydraulic_assembly: HydraulicLinearActuatorAssembly<1>,
@@ -412,7 +411,6 @@ impl GearSystemComponentAssembly {
     ) -> Self {
         let mut obj = Self {
             component_id: id.into(),
-            act_id: id,
             is_inverted_control,
             hydraulic_controller: GearSystemComponentHydraulicController::new(
                 id,
@@ -471,15 +469,6 @@ impl GearSystemComponentAssembly {
 
         self.aerodynamic_model
             .update_body(context, self.hydraulic_assembly.body());
-
-        let force = self.aerodynamic_model.last_force();
-        println!(
-            "AERO {:?}  XYZ {:.0}/{:.0}/{:.0}",
-            self.act_id,
-            force[0].get::<newton>(),
-            force[1].get::<newton>(),
-            force[2].get::<newton>(),
-        );
 
         self.hydraulic_assembly.update(
             context,
