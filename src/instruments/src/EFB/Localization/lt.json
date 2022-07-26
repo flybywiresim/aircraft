@@ -134,6 +134,27 @@
       "TotalFuel": "Bendras kuras",
       "Unavailable": "Nepasiekiama"
     },
+    "Payload": {
+      "BoardingTime": "Laipinimo trukmė",
+      "Cargo": "Krovinys",
+      "Current": "Esamas",
+      "Passengers": "Keleiviai",
+      "Planned": "Suplanuotas",
+      "TT": {
+        "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Norint pakeisti laipinimo trukmę, orlaivis turi būti ant žemės, užgesintais varikliais",
+        "FillPayloadFromSimbrief": "Užpildyti informaciją apie krovinį iš Simbrief",
+        "MaxCargo": "Maksimalus krovinys",
+        "MaxPassengers": "Maksimalus keleivių skaičius",
+        "MaxZFW": "Maksimalus ZFW",
+        "MaxZFWCG": "Maximalus ZFWCG",
+        "PerPaxBagWeight": "Keleivio bagažo svoris",
+        "PerPaxWeight": "Keleivio svoris",
+        "StartBoarding": "Pradėti laipinimą"
+      },
+      "Title": "Krovinys",
+      "ZFW": "ZFW",
+      "ZFWCG": "ZFWCG"
+    },
     "Pushback": {
       "Title": "Išstumimas"
     },
