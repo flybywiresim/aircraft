@@ -640,4 +640,57 @@
         </Component>
     </Template>
 
+    <Template Name="FBW_HANDLING_GRAVITYGEAR_Template">
+        <Component ID="#NODE_ID#" Node="#NODE_ID#">
+            <Component ID="#NODE_ID#_CRANE" Node="#NODE_ID#_CRANE">
+                <Update Frequency = "100" type="rnp">
+                    alias turned = (L:A32NX_GRAVITYGEAR_TURNED, number);
+                    alias turnPct = (L:A32NX_GRAVITYGEAR_TURN_PCT, number);
+                    let maxTurnPct = turned * 100;
+                    let turnAnimSpeed = 1;
+                    if turnPct &lt; maxTurnPct {
+                        turnPct = (turnPct + turnAnimSpeed).min(maxTurnPct);
+                    }
+
+                    alias rotations = (L:A32NX_GRAVITYGEAR_ROTATIONS, number);
+                    alias rotatePct = (L:A32NX_GRAVITYGEAR_ROTATE_PCT, number);
+                    let maxRotatePct = rotations * 100;
+                    let rotateAnimSpeed = 1;
+                    if rotatePct &lt; maxRotatePct {
+                        rotatePct = (rotatePct + rotateAnimSpeed).min(maxRotatePct);
+                    }
+                </Update>
+                <UseTemplate Name="ASOBO_GT_Interaction_LeftSingle_Leave_Code">
+                    <LEFT_SINGLE_CODE type="rnp">
+                        alias turned = (L:A32NX_GRAVITYGEAR_TURNED, number);
+                        alias rotations = (L:A32NX_GRAVITYGEAR_ROTATIONS, number);
+
+                        if turned == 1 {
+                            alias rotatePct = (L:A32NX_GRAVITYGEAR_ROTATE_PCT, number);
+                            let maxRotatePct = rotations * 100;
+                            if rotatePct &gt;= maxRotatePct {
+                                rotations = rotations + 1;
+                            }
+                        } else {
+                            turned = 1;
+                        }
+                    </LEFT_SINGLE_CODE>
+                </UseTemplate>
+            </Component>
+            <Component ID="GearEmerExt" Node="GearEmerExt">
+                <UseTemplate Name="ASOBO_GT_Anim_Code">
+                    <ANIM_CODE type="rnp" return="number">
+                        alias turnPct = (L:A32NX_GRAVITYGEAR_TURN_PCT, number);
+                        alias rotatePct = (L:A32NX_GRAVITYGEAR_ROTATE_PCT, number);
+
+                        let animationPos = turnPct + (rotatePct % 100);
+                        animationPos
+                    </ANIM_CODE>
+                    <ANIM_NAME>#NODE_ID#</ANIM_NAME>
+                    <ANIM_LENGTH>300</ANIM_LENGTH>
+                </UseTemplate>
+            </Component>
+        </Component>
+    </Template>
+
 </ModelBehaviors>
