@@ -10536,6 +10536,38 @@ mod tests {
         }
 
         #[test]
+        fn gear_gravity_extension_reverted_has_correct_sequence() {
+            let mut test_bed = test_bed_in_flight_with()
+                .set_cold_dark_inputs()
+                .in_flight()
+                .run_one_tick();
+
+            assert!(test_bed.gear_system_state() == GearSystemState::AllUpLocked);
+
+            test_bed = test_bed
+                .turn_emergency_gear_extension_n_turns(3)
+                .run_waiting_for(Duration::from_secs_f64(35.));
+
+            assert!(test_bed.is_all_doors_really_down());
+            assert!(test_bed.is_all_gears_really_down());
+
+            test_bed = test_bed
+                .stow_emergency_gear_extension()
+                .run_waiting_for(Duration::from_secs_f64(10.));
+
+            // After 10 seconds we expect gear being retracted and doors still down
+            assert!(test_bed.gear_system_state() == GearSystemState::Retracting);
+            assert!(test_bed.is_all_doors_really_down());
+            assert!(!test_bed.is_all_gears_really_down());
+
+            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(10.));
+
+            assert!(test_bed.gear_system_state() == GearSystemState::AllUpLocked);
+            assert!(test_bed.is_all_doors_really_up());
+            assert!(test_bed.is_all_gears_really_up());
+        }
+
+        #[test]
         fn aileron_init_centered_if_spawning_in_air() {
             let mut test_bed = test_bed_in_flight_with()
                 .set_cold_dark_inputs()
