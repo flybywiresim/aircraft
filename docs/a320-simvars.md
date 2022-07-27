@@ -1061,26 +1061,6 @@
     - Percent
     - Indicates the angle of the right slats out of 27 degrees
 
-- A32NX_LEFT_FLAPS_TARGET_ANGLE
-    - Degrees
-    - Indicates the target angle of the left flaps
-      according to the configuration.
-
-- A32NX_RIGHT_FLAPS_TARGET_ANGLE
-    - Degrees
-    - Indicates the target angle of the right flaps
-      according to the configuration.
-
-- A32NX_LEFT_SLATS_TARGET_ANGLE
-    - Degrees
-    - Indicates the target angle of the left slats
-      according to the configuration.
-
-- A32NX_RIGHT_SLATS_TARGET_ANGLE
-    - Degrees
-    - Indicates the target angle of the right slats
-      according to the configuration.
-
 - A32NX_LEFT_FLAPS_ANGLE
     - Degrees
     - The actual angle of the left flaps
@@ -1201,6 +1181,11 @@
     - 0 when pushback system is completely disabled, 1 when system is enabled
     - When disabled pushback UI in the flyPadOS 3 is disabled and movement updates are suspended.
     - This prevents conflicts with other pushback add-ons
+
+- A32NX_DEVELOPER_STATE
+    - Bool
+    - Persistent
+    - Enables developer-specific options like direct payload adjustments
 
 ## EIS Display System
 
@@ -1395,6 +1380,14 @@
 
 ## Fly-By-Wire System
 
+- A32NX_DEV_DIRECT_LAW
+    - Bool
+    - Development only: set to 1 to force full direct law FBW
+
+- A32NX_FLIGHT_CONTROLS_TRACKING_MODE
+    - Bool
+    - Indicates if tracking mode is active: flight controls are coming from external source (ie: YourControls)
+
 - A32NX_LOGGING_FLIGHT_CONTROLS_ENABLED
     - Bool
     - Indicates if logging of flight control events is enabled
@@ -1477,6 +1470,55 @@
       Value | Meaning
       --- | ---
       -1.0 | full down
+      0.0 | neutral
+      1.0 | full up
+
+- A32NX_THS_{number}_ACTIVE_MODE_COMMANDED
+    - Boolean
+    - Trim electric motor {number} is commanded active
+    - {number}
+        - 1
+        - 2
+        - 3
+
+- A32NX_THS_{number}_COMMANDED_POSITION
+    - Degree
+    - Trim electric motor {number} position demand in trim surface deflection angle
+
+- A32NX_HYD_THS_TRIM_MANUAL_OVERRIDE
+    - Boolean
+    - Feedback signal from the trim actuator system. True if pilot is moving or holding trim wheel
+
+- A32NX_HYD_TRIM_WHEEL_PERCENT
+    - Percent
+    - Trim wheel position in percent
+
+- A32NX_ELEVATOR_DEFLECTION_DEMAND
+    - Number
+    - Provides the elevator position demand to hydraulics
+      Value | Meaning
+      --- | ---
+      -1.0 | full down
+      0.0 | neutral
+      1.0 | full up
+
+- A32NX_RUDDER_DEFLECTION_DEMAND
+    - Number
+    - Provides the rudder position demand to hydraulics
+      Value | Meaning
+      --- | ---
+      -1.0 | full left
+      0.0 | neutral
+      1.0 | full right
+
+- A32NX_SPOILERS_{side}_DEFLECTION_DEMAND
+    - Number
+    - {side}
+        - LEFT
+        - RIGHT
+    - Provides the spoiler position demand to hydraulics
+      Value | Meaning
+      --- | ---
       0.0 | neutral
       1.0 | full up
 

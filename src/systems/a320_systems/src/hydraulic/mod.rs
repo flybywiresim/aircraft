@@ -36,6 +36,11 @@ use systems::{
             Pushback, SteeringActuator, SteeringAngleLimiter, SteeringController,
             SteeringRatioToAngle,
         },
+        pumps::PumpCharacteristics,
+        trimmable_horizontal_stabilizer::{
+            ManualPitchTrimController, PitchTrimActuatorController,
+            TrimmableHorizontalStabilizerAssembly,
+        },
         ElectricPump, EngineDrivenPump, HydraulicCircuit, HydraulicCircuitController,
         HydraulicPressureSensors, PowerTransferUnit, PowerTransferUnitCharacteristics,
         PowerTransferUnitController, PressureSwitch, PressureSwitchType, PumpController,
@@ -134,6 +139,8 @@ impl A320HydraulicCircuitFactory {
 
     const YELLOW_GREEN_BLUE_PUMPS_INDEXES: usize = 0;
 
+    const HYDRAULIC_TARGET_PRESSURE_PSI: f64 = 3000.;
+
     pub fn new_green_circuit(context: &mut InitContext) -> HydraulicCircuit {
         let reservoir = A320HydraulicReservoirFactory::new_green_reservoir(context);
         HydraulicCircuit::new(
@@ -149,6 +156,7 @@ impl A320HydraulicCircuitFactory {
             Pressure::new::<psi>(Self::MIN_PRESS_EDP_SECTION_HI_HYST),
             true,
             false,
+            Pressure::new::<psi>(Self::HYDRAULIC_TARGET_PRESSURE_PSI),
         )
     }
 
@@ -167,6 +175,7 @@ impl A320HydraulicCircuitFactory {
             Pressure::new::<psi>(Self::MIN_PRESS_EDP_SECTION_HI_HYST),
             false,
             false,
+            Pressure::new::<psi>(Self::HYDRAULIC_TARGET_PRESSURE_PSI),
         )
     }
 
@@ -185,6 +194,7 @@ impl A320HydraulicCircuitFactory {
             Pressure::new::<psi>(Self::MIN_PRESS_EDP_SECTION_HI_HYST),
             false,
             true,
+            Pressure::new::<psi>(Self::HYDRAULIC_TARGET_PRESSURE_PSI),
         )
     }
 }
@@ -226,9 +236,11 @@ impl A320CargoDoorFactory {
         let control_arm = Vector3::new(-0.1597, -0.1614, 0.);
         let anchor = Vector3::new(-0.7596, -0.086, 0.);
         let axis_direction = Vector3::new(0., 0., 1.);
+
         LinearActuatedRigidBodyOnHingeAxis::new(
             Mass::new::<kilogram>(130.),
             size,
+            cg_offset,
             cg_offset,
             control_arm,
             anchor,
@@ -313,7 +325,10 @@ impl A320AileronFactory {
     /// Builds an aileron control surface body for A320 Neo
     fn a320_aileron_body(init_drooped_down: bool) -> LinearActuatedRigidBodyOnHingeAxis {
         let size = Vector3::new(3.325, 0.16, 0.58);
+
+        // CG at half the size
         let cg_offset = Vector3::new(0., 0., -0.5 * size[2]);
+        let aero_center = Vector3::new(0., 0., -0.4 * size[2]);
 
         let control_arm = Vector3::new(0., -0.0525, 0.);
         let anchor = Vector3::new(0., -0.0525, 0.33);
@@ -328,6 +343,7 @@ impl A320AileronFactory {
             Mass::new::<kilogram>(24.65),
             size,
             cg_offset,
+            aero_center,
             control_arm,
             anchor,
             Angle::new::<degree>(-25.),
@@ -361,11 +377,14 @@ impl A320AileronFactory {
 
     fn new_a320_aileron_aero_model() -> AerodynamicModel {
         let body = Self::a320_aileron_body(true);
+
+        // Aerodynamic object has a little rotation from horizontal direction so that at X°
+        // of wing AOA the aileron gets some X°+Y° AOA as the overwing pressure sucks the aileron up
         AerodynamicModel::new(
             &body,
             Some(Vector3::new(0., 1., 0.)),
-            Some(Vector3::new(0., 0., 1.)),
-            Some(Vector3::new(0., 1., 0.)),
+            Some(Vector3::new(0., 0.208, 0.978)),
+            Some(Vector3::new(0., 0.978, -0.208)),
             Ratio::new::<ratio>(1.),
         )
     }
@@ -419,6 +438,7 @@ impl A320SpoilerFactory {
     fn a320_spoiler_body() -> LinearActuatedRigidBodyOnHingeAxis {
         let size = Vector3::new(1.785, 0.1, 0.685);
         let cg_offset = Vector3::new(0., 0., -0.5 * size[2]);
+        let aero_center = Vector3::new(0., 0., -0.4 * size[2]);
 
         let control_arm = Vector3::new(0., -0.067 * size[2], -0.26 * size[2]);
         let anchor = Vector3::new(0., -0.26 * size[2], 0.26 * size[2]);
@@ -427,6 +447,7 @@ impl A320SpoilerFactory {
             Mass::new::<kilogram>(16.),
             size,
             cg_offset,
+            aero_center,
             control_arm,
             anchor,
             Angle::new::<degree>(-10.),
@@ -526,12 +547,13 @@ impl A320ElevatorFactory {
     fn a320_elevator_body(init_drooped_down: bool) -> LinearActuatedRigidBodyOnHingeAxis {
         let size = Vector3::new(6., 0.405, 1.125);
         let cg_offset = Vector3::new(0., 0., -0.5 * size[2]);
+        let aero_center = Vector3::new(0., 0., -0.3 * size[2]);
 
         let control_arm = Vector3::new(0., -0.091, 0.);
         let anchor = Vector3::new(0., -0.091, 0.41);
 
         let init_position = if init_drooped_down {
-            Angle::new::<degree>(-17.)
+            Angle::new::<degree>(-11.5)
         } else {
             Angle::new::<degree>(0.)
         };
@@ -540,10 +562,11 @@ impl A320ElevatorFactory {
             Mass::new::<kilogram>(58.6),
             size,
             cg_offset,
+            aero_center,
             control_arm,
             anchor,
-            Angle::new::<degree>(-17.),
-            Angle::new::<degree>(47.),
+            Angle::new::<degree>(-11.5),
+            Angle::new::<degree>(27.5),
             init_position,
             100.,
             false,
@@ -621,6 +644,7 @@ impl A320RudderFactory {
     fn a320_rudder_body(init_at_center: bool) -> LinearActuatedRigidBodyOnHingeAxis {
         let size = Vector3::new(0.42, 6.65, 1.8);
         let cg_offset = Vector3::new(0., 0.5 * size[1], -0.5 * size[2]);
+        let aero_center = Vector3::new(0., 0.5 * size[1], -0.3 * size[2]);
 
         let control_arm = Vector3::new(-0.144, 0., 0.);
         let anchor = Vector3::new(-0.144, 0., 0.50);
@@ -635,6 +659,7 @@ impl A320RudderFactory {
             Mass::new::<kilogram>(95.),
             size,
             cg_offset,
+            aero_center,
             control_arm,
             anchor,
             Angle::new::<degree>(-25.),
@@ -651,15 +676,15 @@ impl A320RudderFactory {
     fn a320_rudder_assembly(init_at_center: bool) -> HydraulicLinearActuatorAssembly<3> {
         let rudder_body = Self::a320_rudder_body(init_at_center);
 
-        let elevator_actuator_green = Self::a320_rudder_actuator(&rudder_body);
-        let elevator_actuator_blue = Self::a320_rudder_actuator(&rudder_body);
-        let elevator_actuator_yellow = Self::a320_rudder_actuator(&rudder_body);
+        let rudder_actuator_green = Self::a320_rudder_actuator(&rudder_body);
+        let rudder_actuator_blue = Self::a320_rudder_actuator(&rudder_body);
+        let rudder_actuator_yellow = Self::a320_rudder_actuator(&rudder_body);
 
         HydraulicLinearActuatorAssembly::new(
             [
-                elevator_actuator_green,
-                elevator_actuator_blue,
-                elevator_actuator_yellow,
+                rudder_actuator_green,
+                rudder_actuator_blue,
+                rudder_actuator_yellow,
             ],
             rudder_body,
         )
@@ -753,6 +778,7 @@ impl A320GearDoorFactory {
             Mass::new::<kilogram>(50.),
             size,
             cg_offset,
+            cg_offset,
             control_arm,
             anchor,
             Angle::new::<degree>(0.),
@@ -775,6 +801,7 @@ impl A320GearDoorFactory {
             Mass::new::<kilogram>(50.),
             size,
             cg_offset,
+            cg_offset,
             control_arm,
             anchor,
             Angle::new::<degree>(-85.),
@@ -796,6 +823,7 @@ impl A320GearDoorFactory {
         LinearActuatedRigidBodyOnHingeAxis::new(
             Mass::new::<kilogram>(40.),
             size,
+            cg_offset,
             cg_offset,
             control_arm,
             anchor,
@@ -839,7 +867,7 @@ impl A320GearFactory {
             Length::new::<meter>(0.035),
             VolumeRate::new::<gallon_per_second>(0.053),
             800000.,
-            15000.,
+            150000.,
             50000.,
             1000000.,
             Duration::from_millis(100),
@@ -864,7 +892,7 @@ impl A320GearFactory {
             Length::new::<meter>(0.105),
             VolumeRate::new::<gallon_per_second>(0.17),
             800000.,
-            15000.,
+            350000.,
             50000.,
             2500000.,
             Duration::from_millis(100),
@@ -887,6 +915,7 @@ impl A320GearFactory {
         LinearActuatedRigidBodyOnHingeAxis::new(
             Mass::new::<kilogram>(700.),
             size,
+            cg_offset,
             cg_offset,
             control_arm,
             anchor,
@@ -914,6 +943,7 @@ impl A320GearFactory {
             Mass::new::<kilogram>(700.),
             size,
             cg_offset,
+            cg_offset,
             control_arm,
             anchor,
             Angle::new::<degree>(-80.),
@@ -939,6 +969,7 @@ impl A320GearFactory {
         LinearActuatedRigidBodyOnHingeAxis::new(
             Mass::new::<kilogram>(300.),
             size,
+            cg_offset,
             cg_offset,
             control_arm,
             anchor,
@@ -1212,6 +1243,10 @@ pub(super) struct A320Hydraulic {
     gear_system: HydraulicGearSystem,
 
     ptu_high_pitch_sound_active: DelayedFalseLogicGate,
+
+    trim_controller: A320TrimInputController,
+
+    trim_assembly: TrimmableHorizontalStabilizerAssembly,
 }
 impl A320Hydraulic {
     const HIGH_PITCH_PTU_SOUND_DELTA_PRESS_THRESHOLD_PSI: f64 = 2400.;
@@ -1305,14 +1340,22 @@ impl A320Hydraulic {
                 HydraulicColor::Yellow,
             ),
 
-            engine_driven_pump_1: EngineDrivenPump::new(context, "GREEN"),
+            engine_driven_pump_1: EngineDrivenPump::new(
+                context,
+                "GREEN",
+                PumpCharacteristics::a320_edp(),
+            ),
             engine_driven_pump_1_controller: A320EngineDrivenPumpController::new(
                 context,
                 1,
                 vec![Self::GREEN_EDP_CONTROL_POWER_BUS1],
             ),
 
-            engine_driven_pump_2: EngineDrivenPump::new(context, "YELLOW"),
+            engine_driven_pump_2: EngineDrivenPump::new(
+                context,
+                "YELLOW",
+                PumpCharacteristics::a320_edp(),
+            ),
             engine_driven_pump_2_controller: A320EngineDrivenPumpController::new(
                 context,
                 2,
@@ -1327,6 +1370,7 @@ impl A320Hydraulic {
                 "BLUE",
                 Self::BLUE_ELEC_PUMP_SUPPLY_POWER_BUS,
                 ElectricCurrent::new::<ampere>(Self::ELECTRIC_PUMP_MAX_CURRENT_AMPERE),
+                PumpCharacteristics::a320_electric_pump(),
             ),
             blue_electric_pump_controller: A320BlueElectricPumpController::new(
                 context,
@@ -1338,6 +1382,7 @@ impl A320Hydraulic {
                 "YELLOW",
                 Self::YELLOW_ELEC_PUMP_SUPPLY_POWER_BUS,
                 ElectricCurrent::new::<ampere>(Self::ELECTRIC_PUMP_MAX_CURRENT_AMPERE),
+                PumpCharacteristics::a320_electric_pump(),
             ),
             yellow_electric_pump_controller: A320YellowElectricPumpController::new(
                 context,
@@ -1347,7 +1392,7 @@ impl A320Hydraulic {
 
             pushback_tug: PushbackTug::new(context),
 
-            ram_air_turbine: RamAirTurbine::new(context),
+            ram_air_turbine: RamAirTurbine::new(context, PumpCharacteristics::a320_rat()),
             ram_air_turbine_controller: A320RamAirTurbineController::new(
                 Self::RAT_CONTROL_SOLENOID1_POWER_BUS,
                 Self::RAT_CONTROL_SOLENOID2_POWER_BUS,
@@ -1368,6 +1413,7 @@ impl A320Hydraulic {
                 Volume::new::<gallon>(0.),
                 Volume::new::<gallon>(0.),
                 Volume::new::<gallon>(0.13),
+                Pressure::new::<psi>(A320HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
             ),
 
             // Alternate brakes accumulator in real A320 is 1.5 gal capacity.
@@ -1379,6 +1425,7 @@ impl A320Hydraulic {
                 Volume::new::<gallon>(1.0),
                 Volume::new::<gallon>(0.4),
                 Volume::new::<gallon>(0.13),
+                Pressure::new::<psi>(A320HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
             ),
 
             braking_force: A320BrakingForce::new(context),
@@ -1394,6 +1441,7 @@ impl A320Hydraulic {
                 Ratio::new::<ratio>(314.98),
                 Self::FLAP_FPPU_TO_SURFACE_ANGLE_BREAKPTS,
                 Self::FLAP_FPPU_TO_SURFACE_ANGLE_DEGREES,
+                Pressure::new::<psi>(A320HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
             ),
             slat_system: FlapSlatAssembly::new(
                 context,
@@ -1406,6 +1454,7 @@ impl A320Hydraulic {
                 Ratio::new::<ratio>(314.98),
                 Self::SLAT_FPPU_TO_SURFACE_ANGLE_BREAKPTS,
                 Self::SLAT_FPPU_TO_SURFACE_ANGLE_DEGREES,
+                Pressure::new::<psi>(A320HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
             ),
             slats_flaps_complex: SlatFlapComplex::new(context),
 
@@ -1455,6 +1504,19 @@ impl A320Hydraulic {
 
             ptu_high_pitch_sound_active: DelayedFalseLogicGate::new(
                 Self::HIGH_PITCH_PTU_SOUND_DURATION,
+            ),
+
+            trim_controller: A320TrimInputController::new(context),
+            trim_assembly: TrimmableHorizontalStabilizerAssembly::new(
+                context,
+                Angle::new::<degree>(360. * -1.4),
+                Angle::new::<degree>(360. * 6.13),
+                Angle::new::<degree>(360. * -1.87),
+                Angle::new::<degree>(360. * 8.19), // 1.87 rotations down 6.32 up,
+                AngularVelocity::new::<revolution_per_minute>(5000.),
+                Ratio::new::<ratio>(2035. / 6.13),
+                Angle::new::<degree>(-4.),
+                Angle::new::<degree>(17.5),
             ),
         }
     }
@@ -1718,6 +1780,20 @@ impl A320Hydraulic {
             lgciu2,
             &self.gear_system_gravity_extension_controller,
         );
+
+        self.trim_assembly.update(
+            context,
+            &self.trim_controller,
+            &self.trim_controller,
+            [
+                self.green_circuit
+                    .system_section()
+                    .pressure_downstream_leak_valve(),
+                self.yellow_circuit
+                    .system_section()
+                    .pressure_downstream_leak_valve(),
+            ],
+        );
     }
 
     fn update_with_sim_rate(
@@ -1864,6 +1940,9 @@ impl A320Hydraulic {
         for actuator in self.gear_system.all_actuators() {
             self.green_circuit.update_actuator_volumes(actuator);
         }
+
+        self.green_circuit
+            .update_actuator_volumes(self.trim_assembly.left_motor());
     }
 
     fn update_yellow_actuators_volume(&mut self) {
@@ -1899,6 +1978,9 @@ impl A320Hydraulic {
             .update_actuator_volumes(self.right_spoilers.actuator(1));
         self.yellow_circuit
             .update_actuator_volumes(self.right_spoilers.actuator(3));
+
+        self.yellow_circuit
+            .update_actuator_volumes(self.trim_assembly.right_motor());
     }
 
     fn update_blue_actuators_volume(&mut self) {
@@ -2213,6 +2295,9 @@ impl SimulationElement for A320Hydraulic {
         self.gear_system_gravity_extension_controller
             .accept(visitor);
         self.gear_system.accept(visitor);
+
+        self.trim_controller.accept(visitor);
+        self.trim_assembly.accept(visitor);
 
         visitor.visit(self);
     }
@@ -5025,7 +5110,7 @@ impl ElevatorAssembly {
             ],
         );
 
-        self.position = self.hydraulic_assembly.position_normalized();
+        self.position = self.hydraulic_assembly.actuator_position_normalized(0);
     }
 }
 impl SimulationElement for ElevatorAssembly {
@@ -5423,6 +5508,86 @@ impl SimulationElement for A320GravityExtension {
             &self.gear_gravity_extension_handle_is_turned_id,
             self.handle_angle.get::<degree>() < 360. && self.is_turned,
         );
+    }
+}
+
+struct A320TrimInputController {
+    motor1_active_id: VariableIdentifier,
+    motor2_active_id: VariableIdentifier,
+    motor3_active_id: VariableIdentifier,
+
+    motor1_position_id: VariableIdentifier,
+    motor2_position_id: VariableIdentifier,
+    motor3_position_id: VariableIdentifier,
+
+    manual_control_active_id: VariableIdentifier,
+    manual_control_speed_id: VariableIdentifier,
+
+    motor_active: [bool; 3],
+    motor_position: [Angle; 3],
+
+    manual_control: bool,
+    manual_control_speed: AngularVelocity,
+}
+impl A320TrimInputController {
+    fn new(context: &mut InitContext) -> Self {
+        Self {
+            motor1_active_id: context.get_identifier("THS_1_ACTIVE_MODE_COMMANDED".to_owned()),
+            motor2_active_id: context.get_identifier("THS_2_ACTIVE_MODE_COMMANDED".to_owned()),
+            motor3_active_id: context.get_identifier("THS_3_ACTIVE_MODE_COMMANDED".to_owned()),
+
+            motor1_position_id: context.get_identifier("THS_1_COMMANDED_POSITION".to_owned()),
+            motor2_position_id: context.get_identifier("THS_2_COMMANDED_POSITION".to_owned()),
+            motor3_position_id: context.get_identifier("THS_3_COMMANDED_POSITION".to_owned()),
+
+            manual_control_active_id: context
+                .get_identifier("THS_MANUAL_CONTROL_ACTIVE".to_owned()),
+            manual_control_speed_id: context.get_identifier("THS_MANUAL_CONTROL_SPEED".to_owned()),
+
+            motor_active: [false; 3],
+            motor_position: [Angle::default(); 3],
+
+            manual_control: false,
+            manual_control_speed: AngularVelocity::default(),
+        }
+    }
+}
+impl PitchTrimActuatorController for A320TrimInputController {
+    fn commanded_position(&self) -> Angle {
+        for (idx, motor_active) in self.motor_active.iter().enumerate() {
+            if *motor_active {
+                return self.motor_position[idx];
+            }
+        }
+
+        Angle::default()
+    }
+
+    fn energised_motor(&self) -> [bool; 3] {
+        self.motor_active
+    }
+}
+impl ManualPitchTrimController for A320TrimInputController {
+    fn is_manually_moved(&self) -> bool {
+        self.manual_control || self.manual_control_speed.get::<radian_per_second>() != 0.
+    }
+
+    fn moving_speed(&self) -> AngularVelocity {
+        self.manual_control_speed
+    }
+}
+impl SimulationElement for A320TrimInputController {
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        self.motor_active[0] = reader.read(&self.motor1_active_id);
+        self.motor_active[1] = reader.read(&self.motor2_active_id);
+        self.motor_active[2] = reader.read(&self.motor3_active_id);
+
+        self.motor_position[0] = reader.read(&self.motor1_position_id);
+        self.motor_position[1] = reader.read(&self.motor2_position_id);
+        self.motor_position[2] = reader.read(&self.motor3_position_id);
+
+        self.manual_control = reader.read(&self.manual_control_active_id);
+        self.manual_control_speed = reader.read(&self.manual_control_speed_id);
     }
 }
 
