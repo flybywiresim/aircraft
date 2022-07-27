@@ -289,15 +289,15 @@
 1. [HYD] Reduced engine driven pumps efficiency in active regulation area - @Crocket63
 1. [FMGC] Implemented Airport Button - @patmack14 (Patrick Macken)
 1. [RMP] Fixed colour of SEL indicator - @tracernz (Mike)
-2. [MISC] Added custom Autobrake event for SimConnect - @aguther (Andreas Guther)
-3. [EWD] Fixed failures not re-triggering when resolved - @tricky_dicky (Richard Pilbery)
-4. [SOUND] Prevent autopilot disconnect from sounding on C+D spawn - @tricky_dicky (Richard Pilbery) and @saschl (saschl#9432)
-5. [FMGC] Removed flight phase transition from TAKEOFF to PREFLIGHT - @beheh (Benedict Etzel)
-6. [FMGC] Added flight phase transition to DONE when on ground > 30 s and engines off - @aguther (Andreas Guther)
-7. [ATSU] Add FANS-C simulation for CPDLC - @Sven [de en] - (Sven Czarnian)
-8. [ATSU] Add VDL3-simulation of datalink transport protocol - @Sven [de en] - (Sven Czarnian)
-9.  [FMGC] Improve robustness of ILS auto-tuning - @tracernz (Mike)
-10. [ADDON] Simbridge Integration - @lucky38i (Alex)
+1. [MISC] Added custom Autobrake event for SimConnect - @aguther (Andreas Guther)
+1. [EWD] Fixed failures not re-triggering when resolved - @tricky_dicky (Richard Pilbery)
+1. [SOUND] Prevent autopilot disconnect from sounding on C+D spawn - @tricky_dicky (Richard Pilbery) and @saschl (saschl#9432)
+1. [FMGC] Removed flight phase transition from TAKEOFF to PREFLIGHT - @beheh (Benedict Etzel)
+1. [FMGC] Added flight phase transition to DONE when on ground > 30 s and engines off - @aguther (Andreas Guther)
+1. [ATSU] Add FANS-C simulation for CPDLC - @Sven [de en] - (Sven Czarnian)
+1. [ATSU] Add VDL3-simulation of datalink transport protocol - @Sven [de en] - (Sven Czarnian)
+1.  [FMGC] Improve robustness of ILS auto-tuning - @tracernz (Mike)
+1. [ADDON] Simbridge Integration - @lucky38i (Alex)
 
 ## 0.7.0
 
