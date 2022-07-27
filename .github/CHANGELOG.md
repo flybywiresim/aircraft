@@ -44,6 +44,8 @@
 1. [MCDU] Fix padding of arc radii on F-PLN - @tracernz (Mike)
 1. [FMGC] Allow stringing of STARs with non-runway approaches - @tracernz (Mike)
 1. [SD] Improve COND page visuals, fix some visual bugs on the SD - @lukecologne (luke)
+1. [FMGC] Fix unnatural turn direction for path capture transition - @tracernz (Mike)
+1. [FMGC] Fix unnatural turn direction for course capture transition - @tracernz (Mike)
 
 ## 0.8.0
 
