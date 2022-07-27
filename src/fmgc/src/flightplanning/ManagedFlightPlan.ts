@@ -33,6 +33,7 @@ import { DirectTo } from './DirectTo';
 import { GeoMath } from './GeoMath';
 import { WaypointBuilder } from './WaypointBuilder';
 import { WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
+import { FlightLevel } from '@fmgc/guidance/vnav/verticalFlightPlan/VerticalFlightPlan';
 
 /**
  * A flight plan managed by the FlightPlanManager.
@@ -658,6 +659,17 @@ export class ManagedFlightPlan {
         return this._segments[this._segments.length - 1];
     }
 
+    public isFirstWaypointInSegment(fpIndex: number): boolean {
+        const segment = this.findSegmentByWaypointIndex(fpIndex);
+        if (fpIndex >= this.waypoints.length) {
+            return false;
+        }
+        if (fpIndex === segment.offset) {
+            return true;
+        }
+        return false;
+    }
+
     public isLastWaypointInSegment(fpIndex: number): boolean {
         const segment = this.findSegmentByWaypointIndex(fpIndex);
         if (fpIndex >= this.waypoints.length) {
@@ -693,6 +705,8 @@ export class ManagedFlightPlan {
                     case 11:
                     case 22:
                         referenceWaypoint.distanceInFP = 1;
+                        referenceWaypoint.endsInDiscontinuity = true;
+                        referenceWaypoint.discontinuityCanBeCleared = false;
                         break;
                     default:
                         referenceWaypoint.distanceInFP = Avionics.Utils.computeGreatCircleDistance(prevWaypoint.infos.coordinates, referenceWaypoint.infos.coordinates);
@@ -722,7 +736,6 @@ export class ManagedFlightPlan {
             legAltitude2: waypoint.legAltitude2,
             speedConstraint: waypoint.speedConstraint,
             turnDirection: waypoint.turnDirection,
-            isVectors: waypoint.isVectors,
             endsInDiscontinuity: waypoint.endsInDiscontinuity,
             discontinuityCanBeCleared: waypoint.discontinuityCanBeCleared,
             distanceInFP: waypoint.distanceInFP,
@@ -955,19 +968,15 @@ export class ManagedFlightPlan {
             const runway: OneWayRunway | null = this.getOriginRunway();
 
             if (runway) {
-                // console.error('bruh');
                 // Reference : AMM - 22-71-00 PB001, Page 4
                 if (departureIndex === -1 && transitionIndex === -1) {
-                    const TEMPORARY_VERTICAL_SPEED = 2000.0; // ft/min
-                    const TEMPORARY_GROUND_SPEED = 160; // knots
+                    const altitudeFeet = Math.round((runway.thresholdElevation / 0.3048)) + 1500;
+                    const faLeg = procedure.buildWaypoint(`${airportInfo.ident}${runway.designation}`, runway.thresholdCoordinates);
+                    faLeg.additionalData.legType = LegType.FA;
+                    faLeg.additionalData.course = runway.direction;
+                    faLeg.legAltitude1 = altitudeFeet;
+                    faLeg.legAltitudeDescription = AltitudeDescriptor.AtOrAbove;
 
-                    const altitudeFeet = (runway.elevation * 3.2808399) + 1500;
-                    const distanceInNM = altitudeFeet / TEMPORARY_VERTICAL_SPEED * (TEMPORARY_GROUND_SPEED / 60);
-
-                    const coordinates = GeoMath.relativeBearingDistanceToCoords(runway.direction, distanceInNM, runway.endCoordinates);
-
-                    const faLeg = procedure.buildWaypoint(`${Math.round(altitudeFeet)}`, coordinates);
-                    // TODO should this check for unclr discont? (probs not)
                     faLeg.endsInDiscontinuity = true;
                     faLeg.discontinuityCanBeCleared = true;
 
@@ -1611,5 +1620,13 @@ export class ManagedFlightPlan {
         }
 
         return false;
+    }
+
+    get originTransitionAltitude(): Feet | undefined {
+        return this.originTransitionAltitudePilot ?? this.originTransitionAltitudeDb;
+    }
+
+    get destinationTransitionLevel(): FlightLevel | undefined {
+        return this.destinationTransitionLevelPilot ?? this.destinationTransitionLevelDb;
     }
 }

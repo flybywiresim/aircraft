@@ -18,6 +18,8 @@ import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
 import { distanceTo } from 'msfs-geo';
 import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
 import { PathVector, PathVectorType } from '../PathVector';
+import { GeometryNdSymbol } from '@shared/NavigationDisplay';
+import { EfisSymbols } from '@fmgc/efis/EfisSymbols';
 
 export class CRLeg extends Leg {
     private computedPath: PathVector[] = [];
@@ -42,6 +44,17 @@ export class CRLeg extends Leg {
 
     get ident(): string {
         return this.origin.ident.substring(0, 3) + this.origin.theta.toFixed(0);
+    }
+
+    get mapSymbols(): GeometryNdSymbol[] {
+        const ident = this.ident;
+        return [{
+            databaseId: EfisSymbols.tempDatabaseId(ident),
+            ident,
+            location: this.intercept,
+            altConstraints: EfisSymbols.mapAltConstraintsFromMetadata(this.metadata.altitudeConstraint),
+            speedConstraint: EfisSymbols.mapSpeedConstraintFromMetadata(this.metadata.speedConstraint),
+        }];
     }
 
     getPathStartPoint(): Coordinates | undefined {

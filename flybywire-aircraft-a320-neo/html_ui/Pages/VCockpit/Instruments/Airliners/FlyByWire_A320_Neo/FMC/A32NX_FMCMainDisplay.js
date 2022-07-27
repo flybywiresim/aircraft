@@ -1429,15 +1429,16 @@ class FMCMainDisplay extends BaseAirliners {
         this.managedProfile.clear();
 
         const origin = this.flightPlanManager.getPersistentOrigin(FlightPlans.Active);
-        const originElevation = origin ? origin.infos.coordinates.alt : 0;
+        const originElevation = origin ? origin.additionalData.runwayElevation : 0;
         const destination = this.flightPlanManager.getDestination(FlightPlans.Active);
         const destinationElevation = destination ? destination.infos.coordinates.alt : 0;
 
         // TODO should we save a constraint already propagated to the current leg?
 
-        // propagate descent speed constraints forward
+        // propagate descent speed constraints and predicted climb altitude forward
         let currentSpeedConstraint = Infinity;
         let previousSpeedConstraint = Infinity;
+        let predictedClimbStartAltitude = originElevation;
         for (let index = 0; index < this.flightPlanManager.getWaypointsCount(FlightPlans.Active); index++) {
             const wp = this.flightPlanManager.getWaypoint(index, FlightPlans.Active);
             if (wp.additionalData.constraintType === 2 /* DES */) {
@@ -1452,7 +1453,18 @@ class FMCMainDisplay extends BaseAirliners {
                 previousClimbSpeed: Infinity,
                 climbAltitude: Infinity,
                 descentAltitude: -Infinity,
+                predictedClimbStartAltitude,
             });
+            if (wp.additionalData.constraintType === 1 /* CLB */) {
+                switch (wp.legAltitudeDescription) {
+                    case 1: // at alt 1
+                    case 2: // at or above alt 1
+                    case 4: // between alt 1 and alt 2
+                        predictedClimbStartAltitude = Math.max(predictedClimbStartAltitude, wp.legAltitude1);
+                    default:
+                        // not constraining
+                }
+            }
             previousSpeedConstraint = currentSpeedConstraint;
         }
 
@@ -1514,6 +1526,7 @@ class FMCMainDisplay extends BaseAirliners {
                 wp.additionalData.predictedSpeed = this.managedSpeedCruise;
                 wp.additionalData.predictedAltitude = this._cruiseFlightLevel * 100;
             }
+            wp.additionalData.predictedClimbStartAltitude = profilePoint.predictedClimbStartAltitude;
             // small hack to ensure the terminal procedures and transitions to/from enroute look nice despite lack of altitude predictions
             if (index <= this.flightPlanManager.getEnRouteWaypointsFirstIndex(FlightPlans.Active)) {
                 wp.additionalData.predictedAltitude = Math.min(originElevation + 10000, wp.additionalData.predictedAltitude);
@@ -4609,6 +4622,14 @@ class FMCMainDisplay extends BaseAirliners {
             return true;
         }
         return false;
+    }
+
+    /**
+     * @param {WayPoint} waypoint
+     * @returns {boolean}
+     */
+    isXaLeg(waypoint) {
+        return [2 /* CA */, 8 /* FA */, 12 /* HA */, 19 /* VA */].findIndex((legType) => legType === waypoint.additionalData.legType) !== -1;
     }
 
     setGroundTempFromOrigin() {

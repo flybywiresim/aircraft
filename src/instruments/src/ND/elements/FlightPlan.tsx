@@ -68,34 +68,18 @@ export const FlightPlan: FC<FlightPathProps> = memo(({ x = 0, y = 0, side, range
             {symbols.map((symbol) => {
                 const position = mapParams.coordinatesToXYy(symbol.location);
 
-                let endPosition;
-                if (symbol.type & (NdSymbolTypeFlags.FlightPlanVectorLine)) {
-                    endPosition = mapParams.coordinatesToXYy(symbol.lineEnd!);
-                } else if (symbol.type & (NdSymbolTypeFlags.FlightPlanVectorArc)) {
-                    endPosition = mapParams.coordinatesToXYy(symbol.arcEnd!);
-                }
-
-                const radius = symbol.arcRadius ? mapParams.nmToPx * symbol.arcRadius : undefined;
-
-                const deltaX = endPosition ? endPosition[0] - position[0] : undefined;
-                const deltaY = endPosition ? endPosition[1] - position[1] : undefined;
-
                 return (
                     <SymbolMarker
                         key={symbol.databaseId}
                         ident={symbol.ident}
                         x={Number(MathUtils.fastToFixed(position[0], 1))}
                         y={Number(MathUtils.fastToFixed(position[1], 1))}
-                        endX={deltaX !== undefined ? Number(MathUtils.fastToFixed(deltaX, 1)) : undefined}
-                        endY={deltaY !== undefined ? Number(MathUtils.fastToFixed(deltaY, 1)) : undefined}
                         type={symbol.type}
-                        length={symbol.length}
                         direction={symbol.direction}
+                        length={symbol.length}
                         constraints={symbol.constraints}
                         radials={symbol.radials}
                         radii={symbol.radii}
-                        arcSweep={symbol.arcSweepAngle}
-                        arcRadius={radius}
                         mapParams={mapParams}
                         ndRange={range}
                     />
@@ -256,7 +240,7 @@ interface SymbolMarkerProps {
     ndRange: number,
 }
 
-const SymbolMarker: FC<SymbolMarkerProps> = memo(({ ident, x, y, endX, endY, arcRadius, arcSweep, type, constraints, length, direction, radials, radii, mapParams, ndRange }) => {
+const SymbolMarker: FC<SymbolMarkerProps> = memo(({ ident, x, y, type, constraints, length, direction, radials, radii, mapParams, ndRange }) => {
     let colour = 'White';
     let shadow = true;
     // todo airport as well if in flightplan
@@ -266,7 +250,7 @@ const SymbolMarker: FC<SymbolMarkerProps> = memo(({ ident, x, y, endX, endY, arc
         colour = 'White';
     } else if (type & NdSymbolTypeFlags.Tuned) {
         colour = 'Cyan';
-    } else if (type & (NdSymbolTypeFlags.FlightPlan | NdSymbolTypeFlags.ActiveFlightPlanVector | NdSymbolTypeFlags.FixInfo)) {
+    } else if (type & (NdSymbolTypeFlags.FlightPlan | NdSymbolTypeFlags.FixInfo)) {
         colour = 'Green';
     } else if (type & NdSymbolTypeFlags.EfisOption) {
         colour = 'Magenta';
@@ -357,31 +341,6 @@ const SymbolMarker: FC<SymbolMarkerProps> = memo(({ ident, x, y, endX, endY, arc
     } else if (type & (NdSymbolTypeFlags.Waypoint | NdSymbolTypeFlags.FlightPlan | NdSymbolTypeFlags.FixInfo)) {
         showIdent = true;
         elements.push(<WaypointMarker colour={colour} />);
-    } else if (type & (NdSymbolTypeFlags.FlightPlanVectorLine)) {
-        showIdent = false;
-
-        elements.push(
-            <path d={`M 0 0 l ${endX} ${endY}`} className={colour} strokeWidth={2} />,
-        );
-    } else if (type & (NdSymbolTypeFlags.FlightPlanVectorArc)) {
-        showIdent = false;
-
-        if (!arcRadius) {
-            return null;
-        }
-
-        const pathRadius = arcRadius!.toFixed(2);
-
-        elements.push(
-            <path d={`M 0 0 A ${pathRadius} ${pathRadius} 0 ${Math.abs(arcSweep!) >= 180 ? 1 : 0} ${arcSweep! > 0 ? 1 : 0} ${endX} ${endY}`} className={colour} strokeWidth={2} />,
-        );
-    } else if (type & (NdSymbolTypeFlags.FlightPlanVectorDebugPoint)) {
-        showIdent = true;
-        identYOffset = -25;
-
-        elements.push(
-            <path d="M 0 0 l -20 0 h 40 m -20 20 v -40" className={colour} strokeWidth={2} />,
-        );
     } else if (type & (NdSymbolTypeFlags.PwpTopOfDescent)) {
         showIdent = false;
         elements.push(

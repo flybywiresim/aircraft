@@ -9,6 +9,8 @@ import { distanceTo } from 'msfs-geo';
 import { PointSide, sideOfPointOnCourseToFix } from '@fmgc/guidance/lnav/CommonGeometry';
 import { FixedRadiusTransition } from '@fmgc/guidance/lnav/transitions/FixedRadiusTransition';
 import { DmeArcTransition } from '@fmgc/guidance/lnav/transitions/DmeArcTransition';
+import { GeometryNdSymbol } from '@shared/NavigationDisplay';
+import { EfisSymbols } from '@fmgc/efis/EfisSymbols';
 
 export abstract class XFLeg extends Leg {
     protected constructor(
@@ -58,5 +60,15 @@ export abstract class XFLeg extends Leg {
         }
 
         return distanceTo(startPoint, this.fix.infos.coordinates);
+    }
+
+    get mapSymbols(): GeometryNdSymbol[] {
+        return [{
+            databaseId: this.fix.icao,
+            ident: this.fix.ident,
+            location: this.fix.infos.coordinates,
+            altConstraints: EfisSymbols.mapAltConstraintsFromMetadata(this.metadata.altitudeConstraint),
+            speedConstraint: EfisSymbols.mapSpeedConstraintFromMetadata(this.metadata.speedConstraint),
+        }];
     }
 }

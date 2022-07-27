@@ -16,6 +16,8 @@ import { DmeArcTransition } from '@fmgc/guidance/lnav/transitions/DmeArcTransiti
 import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
 import { IFLeg } from '@fmgc/guidance/lnav/legs/IF';
 import { PathVector, PathVectorType } from '../PathVector';
+import { GeometryNdSymbol } from '@shared/NavigationDisplay';
+import { EfisSymbols } from '@fmgc/efis/EfisSymbols';
 
 export class CFLeg extends XFLeg {
     private computedPath: PathVector[] = [];
@@ -149,6 +151,16 @@ export class CFLeg extends XFLeg {
         const dtg = courseToFixDistanceToGo(ppos, this.course, this.getPathEndPoint());
 
         return dtg >= 0 && dtg <= this.distance;
+    }
+
+    get mapSymbols(): GeometryNdSymbol[] {
+        return [{
+            databaseId: this.fix.icao,
+            ident: this.fix.ident,
+            location: this.fix.infos.coordinates,
+            altConstraints: EfisSymbols.mapAltConstraintsFromMetadata(this.metadata.altitudeConstraint),
+            speedConstraint: EfisSymbols.mapSpeedConstraintFromMetadata(this.metadata.speedConstraint),
+        }];
     }
 
     get repr(): string {

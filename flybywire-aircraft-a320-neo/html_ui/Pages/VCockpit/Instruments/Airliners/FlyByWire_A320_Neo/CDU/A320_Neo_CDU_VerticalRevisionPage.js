@@ -16,6 +16,7 @@ class CDUVerticalRevisionPage {
             const confirmConstraint = confirmSpeed !== undefined || confirmAlt !== undefined;
             const constraintType = CDUVerticalRevisionPage.constraintType(mcdu, waypoint);
             const isDestination = wpIndex === mcdu.flightPlanManager.getDestinationIndex();
+            const isXaLeg = mcdu.isXaLeg(waypoint);
 
             let waypointIdent = "---";
             if (waypoint) {
@@ -25,6 +26,8 @@ class CDUVerticalRevisionPage {
                     if (destinationRunway) {
                         waypointIdent += Avionics.Utils.formatRunway(destinationRunway.designation);
                     }
+                } else if (mcdu.isXaLeg(waypoint)) {
+                    waypointIdent = Math.round(waypoint.legAltitude1).toString();
                 }
             }
             let coordinates = "---";
@@ -82,8 +85,8 @@ class CDUVerticalRevisionPage {
                 }
             }
 
-            let r3Title = "ALT CSTR\xa0";
-            let r3Cell = "{cyan}[\xa0\xa0\xa0\xa0]*{end}";
+            let r3Title = isXaLeg ? "" : "ALT CSTR\xa0";
+            let r3Cell = isXaLeg ? "" : "{cyan}[\xa0\xa0\xa0\xa0]*{end}";
             let l3Title = "\xa0SPD CSTR";
             let l3Cell = "{cyan}*[\xa0\xa0\xa0]{end}";
             let l4Title = "MACH/START WPT[color]inop";
@@ -126,7 +129,7 @@ class CDUVerticalRevisionPage {
                 l3Cell = "";
                 r5Cell = "";
             } else {
-                if (altitudeConstraint) {
+                if (altitudeConstraint && !isXaLeg) {
                     r3Cell = `{magenta}${altitudeConstraint}{end}`;
                 }
                 if (speedConstraint) {
@@ -242,43 +245,45 @@ class CDUVerticalRevisionPage {
                     this.ShowPage(mcdu, waypoint);
                 }, constraintType === WaypointConstraintType.DES);
             }; // SPD CSTR
-            mcdu.onRightInput[2] = (value, scratchpadCallback) => {
-                if (value === FMCMainDisplay.clrValue) {
-                    mcdu.flightPlanManager.setLegAltitudeDescription(waypoint, 0);
-                    mcdu.flightPlanManager.setWaypointAltitude(0, wpIndex, () => {
+            if (!isXaLeg) {
+                mcdu.onRightInput[2] = (value, scratchpadCallback) => {
+                    if (value === FMCMainDisplay.clrValue) {
+                        mcdu.flightPlanManager.setLegAltitudeDescription(waypoint, 0);
+                        mcdu.flightPlanManager.setWaypointAltitude(0, wpIndex, () => {
+                            mcdu.updateConstraints();
+                            this.ShowPage(mcdu, waypoint);
+                        });
+                        return;
+                    }
+
+                    const matchResult = value.match(/^([+-])?(((FL)?([0-9]{1,3}))|([0-9]{4,5}))$/);
+                    if (matchResult === null) {
+                        mcdu.setScratchpadMessage(NXSystemMessages.formatError);
+                        scratchpadCallback();
+                        return;
+                    }
+
+                    const altitude = matchResult[5] !== undefined ? parseInt(matchResult[5]) * 100 : parseInt(matchResult[6]);
+                    const code = matchResult[1] === undefined ? 1 : (matchResult[1] === '-' ? 3 : 2);
+
+                    if (altitude > 45000) {
+                        mcdu.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
+                        scratchpadCallback();
+                        return;
+                    }
+
+                    if (constraintType === WaypointConstraintType.Unknown) {
+                        CDUVerticalRevisionPage.ShowPage(mcdu, waypoint, undefined, altitude, code);
+                        return;
+                    }
+
+                    mcdu.flightPlanManager.setLegAltitudeDescription(waypoint, code);
+                    mcdu.flightPlanManager.setWaypointAltitude(altitude, wpIndex, () => {
                         mcdu.updateConstraints();
                         this.ShowPage(mcdu, waypoint);
-                    });
-                    return;
-                }
-
-                const matchResult = value.match(/^([+-])?(((FL)?([0-9]{1,3}))|([0-9]{4,5}))$/);
-                if (matchResult === null) {
-                    mcdu.setScratchpadMessage(NXSystemMessages.formatError);
-                    scratchpadCallback();
-                    return;
-                }
-
-                const altitude = matchResult[5] !== undefined ? parseInt(matchResult[5]) * 100 : parseInt(matchResult[6]);
-                const code = matchResult[1] === undefined ? 1 : (matchResult[1] === '-' ? 3 : 2);
-
-                if (altitude > 45000) {
-                    mcdu.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
-                    scratchpadCallback();
-                    return;
-                }
-
-                if (constraintType === WaypointConstraintType.Unknown) {
-                    CDUVerticalRevisionPage.ShowPage(mcdu, waypoint, undefined, altitude, code);
-                    return;
-                }
-
-                mcdu.flightPlanManager.setLegAltitudeDescription(waypoint, code);
-                mcdu.flightPlanManager.setWaypointAltitude(altitude, wpIndex, () => {
-                    mcdu.updateConstraints();
-                    this.ShowPage(mcdu, waypoint);
-                }, constraintType === WaypointConstraintType.DES);
-            }; // ALT CSTR
+                    }, constraintType === WaypointConstraintType.DES);
+                }; // ALT CSTR
+            }
             mcdu.onLeftInput[4] = () => {
                 //TODO: show appropriate wind page based on waypoint
                 CDUWindPage.Return = () => {
@@ -369,6 +374,12 @@ class CDUVerticalRevisionPage {
 
         if (matchResult[9] !== undefined) {
             alt = parseInt(matchResult[9]);
+        }
+
+        if (mcdu.isXaLeg(waypoint) && alt !== undefined) {
+            mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
+            scratchpadCallback();
+            return;
         }
 
         if ((speed !== undefined && (speed < 90 || speed > 350)) || (alt !== undefined && alt > 45000)) {

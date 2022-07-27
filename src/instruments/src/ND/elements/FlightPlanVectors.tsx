@@ -103,7 +103,7 @@ function isVectorValid(vector: PathVector): boolean {
 
     switch (vector.type) {
     case PathVectorType.Line:
-        return !!vector.startPoint;
+        return !!vector.startPoint && !!vector.endPoint;
     case PathVectorType.Arc:
         return !!vector.startPoint && !!vector.centrePoint && !!vector.endPoint;
     case PathVectorType.DebugPoint:

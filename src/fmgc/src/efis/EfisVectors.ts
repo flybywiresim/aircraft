@@ -4,15 +4,19 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
-import { EfisSide, EfisVectorsGroup } from '@shared/NavigationDisplay';
-import { PathVector, pathVectorLength, pathVectorValid } from '@fmgc/guidance/lnav/PathVector';
+import { EfisSide, EfisVectorsGroup, Mode, RangeSetting, rangeSettings } from '@shared/NavigationDisplay';
+import { PathVector, pathVectorLength, PathVectorType, pathVectorValid } from '@fmgc/guidance/lnav/PathVector';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { ArmedLateralMode, isArmed, LateralMode } from '@shared/autopilot';
 import { FlowEventSync } from '@shared/FlowEventSync';
+import { linePortionWithinEditArea, withinEditArea } from '@fmgc/efis/EfisCommon';
+import { Coordinates } from '@fmgc/flightplanning/data/geo';
 
 const UPDATE_TIMER = 2_500;
 
 export class EfisVectors {
+    private readonly groups = [EfisVectorsGroup.ACTIVE, EfisVectorsGroup.DASHED, EfisVectorsGroup.TEMPORARY];
+
     private syncer: FlowEventSync = new FlowEventSync();
 
     constructor(
@@ -20,11 +24,10 @@ export class EfisVectors {
     ) {
     }
 
-    private currentActiveVectors = [];
-
-    private currentDashedVectors = [];
-
-    private currentTemporaryVectors = [];
+    private currentVectors: Record<EfisSide, Map<EfisVectorsGroup, PathVector[]>> = {
+        L: new Map(),
+        R: new Map(),
+    };
 
     public forceUpdate() {
         this.updateTimer = UPDATE_TIMER + 1;
@@ -61,63 +64,55 @@ export class EfisVectors {
             this.guidanceController.efisStateForSide.R.legsCulled = false;
         }
 
-        // ACTIVE
-
+        // active (solid) vectors are only sent in a "NAV" mode, otherwise dashed
         const engagedLateralMode = SimVar.GetSimVarValue('L:A32NX_FMA_LATERAL_MODE', 'Number') as LateralMode;
         const armedLateralMode = SimVar.GetSimVarValue('L:A32NX_FMA_LATERAL_ARMED', 'Enum');
         const navArmed = isArmed(armedLateralMode, ArmedLateralMode.NAV);
-
         const transmitActive = engagedLateralMode === LateralMode.NAV || engagedLateralMode === LateralMode.LOC_CPT || engagedLateralMode === LateralMode.LOC_TRACK || navArmed;
-        const clearActive = !transmitActive && this.currentActiveVectors.length > 0;
-
-        if (transmitActive) {
-            this.currentActiveVectors = visibleActiveFlightPlanVectors;
-
-            this.transmitGroup(this.currentActiveVectors, EfisVectorsGroup.ACTIVE);
-        }
-
-        if (clearActive) {
-            this.currentActiveVectors = [];
-
-            this.transmitGroup(this.currentActiveVectors, EfisVectorsGroup.ACTIVE);
-        }
-
-        // DASHED
-
-        const transmitDashed = !transmitActive;
-        const clearDashed = !transmitDashed && this.currentDashedVectors.length > 0;
-
-        if (transmitDashed) {
-            this.currentDashedVectors = visibleActiveFlightPlanVectors;
-
-            this.transmitGroup(this.currentDashedVectors, EfisVectorsGroup.DASHED);
-        }
-
-        if (clearDashed) {
-            this.currentDashedVectors = [];
-
-            this.transmitGroup(this.currentDashedVectors, EfisVectorsGroup.DASHED);
-        }
-
-        // TEMPORARY
 
         const transmitTemporary = this.guidanceController.hasTemporaryFlightPlan && this.guidanceController.temporaryGeometry?.legs?.size > 0;
-        const clearTemporary = !transmitTemporary && this.currentTemporaryVectors.length > 0;
 
-        if (transmitTemporary) {
-            this.currentTemporaryVectors = visibleTemporaryFlightPlanVectors;
+        const vectors: Partial<Record<EfisVectorsGroup, PathVector[]>> = {
+            [EfisVectorsGroup.ACTIVE]: transmitActive ? visibleActiveFlightPlanVectors : [],
+            [EfisVectorsGroup.DASHED]: transmitActive ? visibleActiveFlightPlanVectors : [],
+            [EfisVectorsGroup.TEMPORARY]: transmitTemporary ? visibleTemporaryFlightPlanVectors : [],
+        };
 
-            this.transmitGroup(this.currentTemporaryVectors, EfisVectorsGroup.TEMPORARY);
-        }
-
-        if (clearTemporary) {
-            this.currentTemporaryVectors = [];
-
-            this.transmitGroup(this.currentTemporaryVectors, EfisVectorsGroup.TEMPORARY);
-        }
+        this.updateSide('L', vectors);
+        this.updateSide('R', vectors);
 
         if (LnavConfig.DEBUG_PERF) {
             console.timeEnd('vectors transmit');
+        }
+    }
+
+    private updateSide(side: EfisSide, vectors: Partial<Record<EfisVectorsGroup, PathVector[]>>): void {
+        const range = rangeSettings[SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_ND_RANGE`, 'number')];
+        const mode: Mode = SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_ND_MODE`, 'number');
+
+        let mapCentre: Coordinates;
+        let mapUp = 0;
+        if (mode === Mode.PLAN) {
+            const planCentreIndex = SimVar.GetSimVarValue('L:A32NX_SELECTED_WAYPOINT', 'number');
+            mapCentre = this.guidanceController.flightPlanManager.getWaypoint(planCentreIndex)?.infos.coordinates;
+        }
+        if (!mapCentre) {
+            mapCentre = {
+                lat: SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude'),
+                long: SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude'),
+            };
+            mapUp = SimVar.GetSimVarValue('PLANE HEADING DEGREES TRUE', 'degrees');
+        }
+
+        for (const group of this.groups) {
+            const groupVectors = vectors[group] ? EfisVectors.getVectorsWithinEditArea(vectors[group], range, mode, mapCentre, mapUp) : [];
+            const clearGroup = groupVectors.length < 1 && (this.currentVectors[side][group]?.length ?? 0) > 1;
+            const transmitGroup = clearGroup || groupVectors.length > 0;
+
+            if (transmitGroup) {
+                this.currentVectors[side][group] = groupVectors;
+                this.transmit(groupVectors, group, side);
+            }
         }
     }
 
@@ -134,9 +129,26 @@ export class EfisVectors {
         return length <= 5_000;
     }
 
-    private transmitGroup(vectors: PathVector[], group: EfisVectorsGroup): void {
-        this.transmit(vectors, group, 'L');
-        this.transmit(vectors, group, 'R');
+    private static getVectorsWithinEditArea(vectors: PathVector[], range: RangeSetting, mode: Mode, mapCentre: Coordinates, mapUp: DegreesTrue): PathVector[] {
+        return vectors.reduce((allVectors: PathVector[], vector: PathVector) => {
+            if (vector.type === PathVectorType.Line) {
+                const endpointsInEditArea = linePortionWithinEditArea(vector.startPoint, vector.endPoint, range, mode, mapCentre);
+                if (endpointsInEditArea !== undefined) {
+                    allVectors.push({
+                        type: PathVectorType.Line,
+                        startPoint: endpointsInEditArea[0],
+                        endPoint: endpointsInEditArea[1],
+                    });
+                }
+            } else if (
+                withinEditArea(vector.startPoint, range, mode, mapCentre, mapUp)
+                || 'endPoint' in vector && withinEditArea(vector.endPoint!, range, mode, mapCentre, mapUp)
+                || 'centrePoint' in vector && withinEditArea(vector.centrePoint!, range, mode, mapCentre, mapUp)
+            ) {
+                allVectors.push(vector);
+            }
+            return allVectors;
+        }, []);
     }
 
     private transmit(vectors: PathVector[], vectorsGroup: EfisVectorsGroup, side: EfisSide): void {

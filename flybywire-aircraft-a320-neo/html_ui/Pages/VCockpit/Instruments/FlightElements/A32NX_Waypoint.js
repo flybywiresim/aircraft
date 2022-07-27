@@ -145,6 +145,11 @@ class WayPoint {
         }
         return fileName + ".png";
     }
+
+    get isVectors() {
+        // eslint-disable-next-line semi-spacing
+        return this.additionalData.legType === 11 /* FM */ || this.additionalData.legType === 22 /* VM */;
+    }
 }
 class WayPointInfo {
     constructor(_instrument) {

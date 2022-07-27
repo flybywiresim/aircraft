@@ -41,6 +41,7 @@ export class CoarsePredictions {
 
             leg.predictedTas = Number.isFinite(tas) ? tas : undefined;
             leg.predictedGs = Number.isFinite(gs) ? gs : tas;
+            leg.predictedClimbStartAltitude = wp.additionalData.predictedClimbStartAltitude ?? 0;
         }
     }
 }

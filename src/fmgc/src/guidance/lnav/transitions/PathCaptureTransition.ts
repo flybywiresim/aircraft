@@ -7,7 +7,10 @@ import { MathUtils } from '@shared/MathUtils';
 import { CALeg } from '@fmgc/guidance/lnav/legs/CA';
 import { CILeg } from '@fmgc/guidance/lnav/legs/CI';
 import { DFLeg } from '@fmgc/guidance/lnav/legs/DF';
+import { FALeg } from '@fmgc/guidance/lnav/legs/FA';
+import { FMLeg } from '@fmgc/guidance/lnav/legs/FM';
 import { HALeg, HFLeg, HMLeg } from '@fmgc/guidance/lnav/legs/HX';
+import { RFLeg } from '@fmgc/guidance/lnav/legs/RF';
 import { TFLeg } from '@fmgc/guidance/lnav/legs/TF';
 import { Transition } from '@fmgc/guidance/lnav/Transition';
 import { GuidanceParameters } from '@fmgc/guidance/ControlLaws';
@@ -41,9 +44,9 @@ import { Leg } from '../legs/Leg';
 import { CFLeg } from '../legs/CF';
 import { CRLeg } from '../legs/CR';
 
-export type PrevLeg = AFLeg | CALeg | /* CDLeg | */ CRLeg | /* FALeg | */ HALeg | HFLeg | HMLeg;
+export type PrevLeg = AFLeg | CALeg | /* CDLeg | */ CRLeg | FALeg | HALeg | HFLeg | HMLeg | RFLeg;
 export type ReversionLeg = CFLeg | CILeg | DFLeg | TFLeg;
-export type NextLeg = AFLeg | CFLeg | /* FALeg | */ TFLeg;
+export type NextLeg = AFLeg | CFLeg | FALeg | FMLeg | TFLeg;
 
 const cos = (input: Degrees) => Math.cos(input * (Math.PI / 180));
 const tan = (input: Degrees) => Math.tan(input * MathUtils.DEGREES_TO_RADIANS);

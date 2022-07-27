@@ -16,6 +16,8 @@ import {
 } from 'msfs-geo';
 import { AFLeg } from '@fmgc/guidance/lnav/legs/AF';
 import { TFLeg } from '@fmgc/guidance/lnav/legs/TF';
+import { FALeg } from '@fmgc/guidance/lnav/legs/FA';
+import { FMLeg } from '@fmgc/guidance/lnav/legs/FM';
 
 const sin = (input: Degrees) => Math.sin(input * (Math.PI / 180));
 
@@ -77,6 +79,20 @@ export class Geo {
                 leg.radius,
                 from,
                 bearing,
+            );
+
+            const d1 = Avionics.Utils.computeGreatCircleDistance(from, intersections[0]);
+            const d2 = Avionics.Utils.computeGreatCircleDistance(from, intersections[1]);
+
+            return d1 > d2 ? intersections[1] : intersections[0];
+        }
+
+        if (leg instanceof FALeg || leg instanceof FMLeg) {
+            const intersections = placeBearingIntersection(
+                from,
+                Avionics.Utils.clampAngle(bearing),
+                leg.fix.infos.coordinates,
+                Avionics.Utils.clampAngle(leg.inboundCourse),
             );
 
             const d1 = Avionics.Utils.computeGreatCircleDistance(from, intersections[0]);

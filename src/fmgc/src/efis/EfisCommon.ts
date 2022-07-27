@@ -1,5 +1,6 @@
 import { Mode, RangeSetting } from '@shared/NavigationDisplay';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
+import { bearingTo, distanceTo, smallCircleGreatCircleIntersection } from 'msfs-geo';
 
 export function withinEditArea(lla: Coordinates, range: RangeSetting, mode: Mode, planCentre: Coordinates, trueHeading: DegreesTrue): boolean {
     const [editAhead, editBehind, editBeside] = calculateEditArea(range, mode);
@@ -74,4 +75,43 @@ export function calculateEditArea(range: RangeSetting, mode: Mode): [number, num
     default:
         return [0, 0, 0];
     }
+}
+
+export function linePortionWithinEditArea(llaStart: Coordinates, llaEnd: Coordinates, range: RangeSetting, mode: Mode, mapReference: Coordinates): [Coordinates, Coordinates] | undefined {
+    const [editAhead, editBehind, editBeside] = calculateEditArea(range, mode);
+    // FIXME atm we look at a larger area than necessary if the reference is not in the centre of the edit area
+    const mapCentre = mapReference;
+    const mapRadius = Math.sqrt(Math.max(editAhead, editBehind) ** 2 + editBeside ** 2);
+
+    const startWithinArea = distanceTo(mapCentre, llaStart) < mapRadius;
+    const endWithinArea = distanceTo(mapCentre, llaEnd) < mapRadius;
+    if (startWithinArea && endWithinArea) {
+        return [llaStart, llaEnd];
+    }
+
+    const bearing = bearingTo(llaStart, llaEnd);
+    const intersections = smallCircleGreatCircleIntersection(
+        mapCentre,
+        mapRadius,
+        llaStart,
+        bearing,
+    );
+
+    if (!intersections) {
+        return undefined;
+    }
+
+    if (startWithinArea) {
+        return [llaStart, intersections[1]];
+    }
+    if (endWithinArea) {
+        return [intersections[0], llaEnd];
+    }
+
+    // does the line go through the edit area?
+    const bearings = intersections.map((intersection) => bearingTo(llaStart, intersection));
+    if (Math.abs(bearings[0] - bearing % 360) < 90 && Math.abs(bearings[1] - bearing % 360) < 90) {
+        return intersections as [Coordinates, Coordinates];
+    }
+    return undefined;
 }

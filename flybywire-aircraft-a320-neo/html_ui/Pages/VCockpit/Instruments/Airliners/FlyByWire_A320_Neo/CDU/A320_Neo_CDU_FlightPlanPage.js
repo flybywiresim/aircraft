@@ -9,7 +9,10 @@ const Markers = {
 };
 
 class CDUFlightPlanPage {
-
+    /**
+     * @param {A320_Neo_CDU_MainDisplay} mcdu
+     * @param {number} offset
+     */
     static ShowPage(mcdu, offset = 0) {
 
         // INIT
@@ -27,7 +30,7 @@ class CDUFlightPlanPage {
             let runwayText, runwayAlt;
             if (runway) {
                 runwayText = Avionics.Utils.formatRunway(runway.designation);
-                runwayAlt = (runway.elevation * 3.280).toFixed(0).toString();
+                runwayAlt = (runway.thresholdElevation / 0.3048).toFixed(0).toString();
             }
             return [runwayText, runwayAlt];
         }
@@ -182,12 +185,12 @@ class CDUFlightPlanPage {
                     if (isFlying) {
                         if (fpIndex === fpm.getDestinationIndex() || isFinite(wp.liveUTCTo) || isFinite(wp.waypointReachedAt)) {
                             time = (fpIndex === fpm.getDestinationIndex() || wpActive || ident === "(DECEL)") ? stats.get(fpIndex).etaFromPpos : wp.waypointReachedAt;
-                            timeCell = `${FMCMainDisplay.secondsToUTC(time)}[s-text]`;
+                            timeCell = `${FMCMainDisplay.secondsToUTC(time)}`;
                         }
                     } else {
                         if (fpIndex === fpm.getDestinationIndex() || isFinite(wp.liveETATo)) {
                             time = (fpIndex === fpm.getDestinationIndex() || wpActive || ident === "(DECEL)") ? stats.get(fpIndex).timeFromPpos : 0;
-                            timeCell = `${FMCMainDisplay.secondsTohhmm(time)}[s-text]`;
+                            timeCell = `${FMCMainDisplay.secondsTohhmm(time)}`;
                         }
                     }
                 }
@@ -222,11 +225,11 @@ class CDUFlightPlanPage {
                             break;
                         case 8: // FA
                             fixAnnotation = `${wp.ident.substring(0, 3)}${magCourse}`;
+                            ident = wp.legAltitude1.toFixed(0);
                             break;
                         case 11: // FM
-                            if (wpPrev) {
-                                fixAnnotation = `${wpPrev.ident.substring(0,3)}${magCourse}`;
-                            }
+                            fixAnnotation = `${wp.ident.substring(0, 3)}${magCourse}`;
+                            ident = 'MANUAL';
                             break;
                         case 12: // HA
                             ident = wp.legAltitude1.toFixed(0);
@@ -275,12 +278,14 @@ class CDUFlightPlanPage {
                     speedConstraint = `{magenta}*{end}${wp.speedConstraint.toFixed(0)}`;
                 }
 
+                let altBig = false;
                 let altColor = color;
                 let spdColor = color;
+                let timeBig = false;
                 let timeColor = color;
 
                 // Altitude
-                const hasAltConstraint = wp.legAltitudeDescription > 0 && wp.legAltitudeDescription < 6;
+                const hasAltConstraint = wp.legAltitudeDescription > 0 && wp.legAltitudeDescription < 6 && !mcdu.isXaLeg(wp);
                 let altitudeConstraint = "-----";
                 let altPrefix = "\xa0";
                 if (fpIndex === fpm.getDestinationIndex()) {
@@ -295,15 +300,16 @@ class CDUFlightPlanPage {
                         altColor = color;
                     }
                     altitudeConstraint = altitudeConstraint.padStart(5,"\xa0");
-
                 } else if (wp === fpm.getOrigin() && fpIndex === 0) {
                     const [rwTxt, rwAlt] = getRunwayInfo(fpm.getOriginRunway());
                     if (rwTxt && rwAlt) {
                         ident += rwTxt;
                         altitudeConstraint = rwAlt;
                         altColor = color;
+                        altBig = true;
                     }
                     altitudeConstraint = altitudeConstraint.padStart(5,"\xa0");
+                    timeBig = true;
                 } else if (ident !== "MANUAL") {
                     const firstRouteIndex = 1 + fpm.getDepartureWaypointsCount();
                     const lastRouteIndex = fpm.getLastIndexBeforeApproach();
@@ -420,8 +426,10 @@ class CDUFlightPlanPage {
                     distance: distance,
                     spdColor: spdColor,
                     speedConstraint: speedConstraint,
+                    altBig,
                     altColor: altColor,
                     altitudeConstraint: { alt: altitudeConstraint, altPrefix: altPrefix },
+                    timeBig,
                     timeCell: timeCell,
                     timeColor: timeColor,
                     fixAnnotation: fixAnnotation ? fixAnnotation : "",
@@ -506,7 +514,7 @@ class CDUFlightPlanPage {
                     speedConstraint: "---",
                     altColor: 'white',
                     altitudeConstraint: { alt: "-----", altPrefix: "\xa0" },
-                    timeCell: "----[s-text]",
+                    timeCell: "----",
                     timeColor: "white",
                     fixAnnotation: "",
                     bearingTrack: "",
@@ -790,12 +798,12 @@ function renderFixHeader(rowObj, showNm = false, showDist = true, showFix = true
 }
 
 function renderFixContent(rowObj, spdRepeat = false, altRepeat = false) {
-    const {ident, isOverfly, color, spdColor, speedConstraint, altColor, altitudeConstraint, timeCell, timeColor} = rowObj;
+    const {ident, isOverfly, color, spdColor, speedConstraint, altBig, altColor, altitudeConstraint, timeBig, timeCell, timeColor} = rowObj;
 
     return [
         `${ident}${isOverfly ? FMCMainDisplay.ovfyValue : ""}[color]${color}`,
-        `{${spdColor}}${spdRepeat ? "\xa0\"\xa0" : speedConstraint}{end}{${altColor}}/${altRepeat ? "\xa0\xa0\xa0\"\xa0\xa0" : altitudeConstraint.altPrefix + altitudeConstraint.alt}{end}[s-text]`,
-        `${timeCell}{sp}{sp}{sp}{sp}[color]${timeColor}`
+        `{${spdColor}}{small}${spdRepeat ? "\xa0\"\xa0" : speedConstraint}{end}{end}{${altColor}}/{${altBig ? 'big' : 'small'}}${altRepeat ? "\xa0\xa0\xa0\"\xa0\xa0" : altitudeConstraint.altPrefix + altitudeConstraint.alt}{end}{end}`,
+        `{${timeBig ? 'big' : 'small'}}${timeCell}{end}{sp}{sp}{sp}{sp}[color]${timeColor}`
     ];
 }
 

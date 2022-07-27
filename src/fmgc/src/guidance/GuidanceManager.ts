@@ -15,6 +15,8 @@ import { LegType } from '@fmgc/types/fstypes/FSEnums';
 import { TransitionPicker } from '@fmgc/guidance/lnav/TransitionPicker';
 import { IFLeg } from '@fmgc/guidance/lnav/legs/IF';
 import { DFLeg } from '@fmgc/guidance/lnav/legs/DF';
+import { FALeg } from '@fmgc/guidance/lnav/legs/FA';
+import { FMLeg } from '@fmgc/guidance/lnav/legs/FM';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { CFLeg } from '@fmgc/guidance/lnav/legs/CF';
 import { CRLeg } from '@fmgc/guidance/lnav/legs/CR';
@@ -124,6 +126,14 @@ export class GuidanceManager {
                 const originObj = { coordinates: to.additionalData.recommendedLocation, ident, theta };
 
                 return new CRLeg(course, originObj, radial, metadata, segment);
+            }
+
+            if (to.additionalData?.legType === LegType.FA) {
+                return new FALeg(to, to.additionalData.course, to.legAltitude1, metadata, segment);
+            }
+
+            if (to.additionalData?.legType === LegType.FM) {
+                return new FMLeg(to, to.additionalData.course, metadata, segment);
             }
 
             if (to.additionalData?.legType === LegType.HA) {

@@ -136,6 +136,8 @@ export class LegsProcedure {
               try {
                   switch (currentLeg.type) {
                   case LegType.AF:
+                  case LegType.FA:
+                  case LegType.FM:
                       mappedLeg = this.mapExactFix(currentLeg);
                       break;
                   case LegType.CD:
@@ -163,7 +165,6 @@ export class LegsProcedure {
                   case LegType.FD:
                       mappedLeg = this.mapBearingAndDistanceFromOrigin(currentLeg);
                       break;
-                  case LegType.FM:
                   case LegType.VM:
                       mappedLeg = this.mapVectors(currentLeg, this._previousFix);
                       break;
@@ -505,9 +506,6 @@ export class LegsProcedure {
       const coordinates = GeoMath.relativeBearingDistanceToCoords(course, 1, prevLeg.infos.coordinates);
 
       const waypoint = this.buildWaypoint(FixNamingScheme.vector(), coordinates);
-      waypoint.isVectors = true;
-      waypoint.endsInDiscontinuity = true;
-      waypoint.discontinuityCanBeCleared = false;
 
       return waypoint;
   }
