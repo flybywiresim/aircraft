@@ -33,7 +33,6 @@ export default new TaskOfTasks('a32nx', [
             'src/fadec/build.sh',
             'wasm-opt -O1 -o flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/fadec.wasm flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/fadec.wasm'
         ], ['src/fadec', 'flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/fadec.wasm']),
-        new ExecTask('simbridge','bash scripts/local-api-build.sh')
     ], true),
 
     new TaskOfTasks('dist', [

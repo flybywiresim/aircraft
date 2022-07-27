@@ -123,9 +123,9 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.socket = undefined;
         this.socketConnectionAttempts = 0;
         this.maxConnectionAttempts = 60;
-        this.mcduServerConnect = NXDataStore.get("CONFIG_LOCAL_API_ENABLED", 'AUTO ON');
+        this.mcduServerConnect = NXDataStore.get("CONFIG_SIMBRIDGE_ENABLED", 'AUTO ON');
         if (this.mcduServerConnect !== 'PERM OFF') {
-            NXDataStore.set("CONFIG_LOCAL_API_ENABLED", 'AUTO ON');
+            NXDataStore.set("CONFIG_SIMBRIDGE_ENABLED", 'AUTO ON');
             this.mcduServerConnect = 'AUTO ON';
         } else {
             console.log("MCDU server connection attempts permanently deactivated.");
@@ -255,7 +255,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             }
         }
 
-        // The MCDU is a client to the Local-API and tries to connect in regular intervals.
+        // The MCDU is a client to Simbridge and tries to connect in regular intervals.
         // Due to an issue with the sim's Coherent engine we need to avoid trying
         // to connect the websocket continuously. The below solution based on an EFB setting
         // and a maximal number of attempts should mitigate the issue until
@@ -264,20 +264,20 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             && this.getGameState() === GameState.ingame) {
 
             // Try to connect websocket if enabled in EFB and no connection established
-            this.mcduServerConnect = NXDataStore.get("CONFIG_LOCAL_API_ENABLED", 'AUTO ON');
+            this.mcduServerConnect = NXDataStore.get("CONFIG_SIMBRIDGE_ENABLED", 'AUTO ON');
             if (this.mcduServerConnect === 'AUTO ON' && (!this.socket || this.socket.readyState !== 1)) {
                 // We try to connect for a fixed amount of attempts, then we deactivate the connection setting
                 if (this.socketConnectionAttempts++ >= this.maxConnectionAttempts) {
-                    console.log("Maximum number of connection attempts to Local-API exceeded. No more attempts.");
-                    NXDataStore.set("CONFIG_LOCAL_API_ENABLED", 'AUTO OFF');
+                    console.log("Maximum number of connection attempts to Simbridge exceeded. No more attempts.");
+                    NXDataStore.set("CONFIG_SIMBRIDGE_ENABLED", 'AUTO OFF');
                     this.socketConnectionAttempts = 0;
                 } else {
-                    console.log(`Attempting Local-API connection ${this.socketConnectionAttempts} of ${this.maxConnectionAttempts} attempts.`);
-                    this.connectWebsocket(NXDataStore.get("CONFIG_LOCAL_API_PORT", "8380"));
+                    console.log(`Attempting Simbridge connection ${this.socketConnectionAttempts} of ${this.maxConnectionAttempts} attempts.`);
+                    this.connectWebsocket(NXDataStore.get("CONFIG_SIMBRIDGE_PORT", "8380"));
                 }
             } else if (this.mcduServerConnect !== 'AUTO ON') {
                 if (this.socketConnectionAttempts > 0) {
-                    console.log("Local-API connection attempts deactivated. No more attempts.");
+                    console.log("Simbridge connection attempts deactivated. No more attempts.");
                     this.socketConnectionAttempts = 0;
                 }
                 if (this.socket) {
@@ -1187,7 +1187,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     /* WEBSOCKET */
 
     /**
-     * Attempts to connect to a local websocket server
+     * Attempts to connect to simbridge
      */
     connectWebsocket(port) {
 
