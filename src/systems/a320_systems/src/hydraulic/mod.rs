@@ -37,6 +37,10 @@ use systems::{
             SteeringRatioToAngle,
         },
         pumps::PumpCharacteristics,
+        trimmable_horizontal_stabilizer::{
+            ManualPitchTrimController, PitchTrimActuatorController,
+            TrimmableHorizontalStabilizerAssembly,
+        },
         ElectricPump, EngineDrivenPump, HydraulicCircuit, HydraulicCircuitController,
         HydraulicPressureSensors, PowerTransferUnit, PowerTransferUnitCharacteristics,
         PowerTransferUnitController, PressureSwitch, PressureSwitchType, PumpController,
@@ -1239,6 +1243,10 @@ pub(super) struct A320Hydraulic {
     gear_system: HydraulicGearSystem,
 
     ptu_high_pitch_sound_active: DelayedFalseLogicGate,
+
+    trim_controller: A320TrimInputController,
+
+    trim_assembly: TrimmableHorizontalStabilizerAssembly,
 }
 impl A320Hydraulic {
     const HIGH_PITCH_PTU_SOUND_DELTA_PRESS_THRESHOLD_PSI: f64 = 2400.;
@@ -1496,6 +1504,19 @@ impl A320Hydraulic {
 
             ptu_high_pitch_sound_active: DelayedFalseLogicGate::new(
                 Self::HIGH_PITCH_PTU_SOUND_DURATION,
+            ),
+
+            trim_controller: A320TrimInputController::new(context),
+            trim_assembly: TrimmableHorizontalStabilizerAssembly::new(
+                context,
+                Angle::new::<degree>(360. * -1.4),
+                Angle::new::<degree>(360. * 6.13),
+                Angle::new::<degree>(360. * -1.87),
+                Angle::new::<degree>(360. * 8.19), // 1.87 rotations down 6.32 up,
+                AngularVelocity::new::<revolution_per_minute>(5000.),
+                Ratio::new::<ratio>(2035. / 6.13),
+                Angle::new::<degree>(-4.),
+                Angle::new::<degree>(17.5),
             ),
         }
     }
@@ -1759,6 +1780,20 @@ impl A320Hydraulic {
             lgciu2,
             &self.gear_system_gravity_extension_controller,
         );
+
+        self.trim_assembly.update(
+            context,
+            &self.trim_controller,
+            &self.trim_controller,
+            [
+                self.green_circuit
+                    .system_section()
+                    .pressure_downstream_leak_valve(),
+                self.yellow_circuit
+                    .system_section()
+                    .pressure_downstream_leak_valve(),
+            ],
+        );
     }
 
     fn update_with_sim_rate(
@@ -1905,6 +1940,9 @@ impl A320Hydraulic {
         for actuator in self.gear_system.all_actuators() {
             self.green_circuit.update_actuator_volumes(actuator);
         }
+
+        self.green_circuit
+            .update_actuator_volumes(self.trim_assembly.left_motor());
     }
 
     fn update_yellow_actuators_volume(&mut self) {
@@ -1940,6 +1978,9 @@ impl A320Hydraulic {
             .update_actuator_volumes(self.right_spoilers.actuator(1));
         self.yellow_circuit
             .update_actuator_volumes(self.right_spoilers.actuator(3));
+
+        self.yellow_circuit
+            .update_actuator_volumes(self.trim_assembly.right_motor());
     }
 
     fn update_blue_actuators_volume(&mut self) {
@@ -2254,6 +2295,9 @@ impl SimulationElement for A320Hydraulic {
         self.gear_system_gravity_extension_controller
             .accept(visitor);
         self.gear_system.accept(visitor);
+
+        self.trim_controller.accept(visitor);
+        self.trim_assembly.accept(visitor);
 
         visitor.visit(self);
     }
@@ -5464,6 +5508,86 @@ impl SimulationElement for A320GravityExtension {
             &self.gear_gravity_extension_handle_is_turned_id,
             self.handle_angle.get::<degree>() < 360. && self.is_turned,
         );
+    }
+}
+
+struct A320TrimInputController {
+    motor1_active_id: VariableIdentifier,
+    motor2_active_id: VariableIdentifier,
+    motor3_active_id: VariableIdentifier,
+
+    motor1_position_id: VariableIdentifier,
+    motor2_position_id: VariableIdentifier,
+    motor3_position_id: VariableIdentifier,
+
+    manual_control_active_id: VariableIdentifier,
+    manual_control_speed_id: VariableIdentifier,
+
+    motor_active: [bool; 3],
+    motor_position: [Angle; 3],
+
+    manual_control: bool,
+    manual_control_speed: AngularVelocity,
+}
+impl A320TrimInputController {
+    fn new(context: &mut InitContext) -> Self {
+        Self {
+            motor1_active_id: context.get_identifier("THS_1_ACTIVE_MODE_COMMANDED".to_owned()),
+            motor2_active_id: context.get_identifier("THS_2_ACTIVE_MODE_COMMANDED".to_owned()),
+            motor3_active_id: context.get_identifier("THS_3_ACTIVE_MODE_COMMANDED".to_owned()),
+
+            motor1_position_id: context.get_identifier("THS_1_COMMANDED_POSITION".to_owned()),
+            motor2_position_id: context.get_identifier("THS_2_COMMANDED_POSITION".to_owned()),
+            motor3_position_id: context.get_identifier("THS_3_COMMANDED_POSITION".to_owned()),
+
+            manual_control_active_id: context
+                .get_identifier("THS_MANUAL_CONTROL_ACTIVE".to_owned()),
+            manual_control_speed_id: context.get_identifier("THS_MANUAL_CONTROL_SPEED".to_owned()),
+
+            motor_active: [false; 3],
+            motor_position: [Angle::default(); 3],
+
+            manual_control: false,
+            manual_control_speed: AngularVelocity::default(),
+        }
+    }
+}
+impl PitchTrimActuatorController for A320TrimInputController {
+    fn commanded_position(&self) -> Angle {
+        for (idx, motor_active) in self.motor_active.iter().enumerate() {
+            if *motor_active {
+                return self.motor_position[idx];
+            }
+        }
+
+        Angle::default()
+    }
+
+    fn energised_motor(&self) -> [bool; 3] {
+        self.motor_active
+    }
+}
+impl ManualPitchTrimController for A320TrimInputController {
+    fn is_manually_moved(&self) -> bool {
+        self.manual_control || self.manual_control_speed.get::<radian_per_second>() != 0.
+    }
+
+    fn moving_speed(&self) -> AngularVelocity {
+        self.manual_control_speed
+    }
+}
+impl SimulationElement for A320TrimInputController {
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        self.motor_active[0] = reader.read(&self.motor1_active_id);
+        self.motor_active[1] = reader.read(&self.motor2_active_id);
+        self.motor_active[2] = reader.read(&self.motor3_active_id);
+
+        self.motor_position[0] = reader.read(&self.motor1_position_id);
+        self.motor_position[1] = reader.read(&self.motor2_position_id);
+        self.motor_position[2] = reader.read(&self.motor3_position_id);
+
+        self.manual_control = reader.read(&self.manual_control_active_id);
+        self.manual_control_speed = reader.read(&self.manual_control_speed_id);
     }
 }
 

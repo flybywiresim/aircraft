@@ -7,6 +7,7 @@ mod gear;
 mod nose_wheel_steering;
 mod rudder;
 mod spoilers;
+mod trimmable_horizontal_stabilizer;
 
 use a320_systems::A320;
 use ailerons::ailerons;
@@ -25,6 +26,7 @@ use systems::shared::{
 };
 use systems_wasm::aspects::ExecuteOn;
 use systems_wasm::{MsfsSimulationBuilder, Variable};
+use trimmable_horizontal_stabilizer::trimmable_horizontal_stabilizer;
 
 #[msfs::gauge(name=systems)]
 async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
@@ -268,6 +270,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .with_aspect(elevators)?
     .with_aspect(rudder)?
     .with_aspect(gear)?
+    .with_aspect(trimmable_horizontal_stabilizer)?
     .build(A320::new)?;
 
     while let Some(event) = gauge.next_event().await {
