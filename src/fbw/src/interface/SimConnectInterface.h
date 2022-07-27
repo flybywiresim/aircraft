@@ -36,10 +36,6 @@ class SimConnectInterface {
     ELEVATOR_SET,
     ELEV_DOWN,
     ELEV_UP,
-    ELEV_TRIM_DN,
-    ELEV_TRIM_UP,
-    ELEVATOR_TRIM_SET,
-    AXIS_ELEV_TRIM_SET,
     AP_MASTER,
     AUTOPILOT_OFF,
     AUTOPILOT_ON,
@@ -208,8 +204,6 @@ class SimConnectInterface {
   bool requestData();
 
   bool readData();
-
-  bool sendData(SimOutputEtaTrim output);
 
   bool sendData(SimOutputZetaTrim output);
 
