@@ -123,10 +123,10 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.socket = undefined;
         this.socketConnectionAttempts = 0;
         this.maxConnectionAttempts = 60;
-        this.mcduServerConnect = NXDataStore.get("CONFIG_SIMBRIDGE_ENABLED", 'AUTO ON');
-        if (this.mcduServerConnect !== 'PERM OFF') {
+        this.simbridgeConnect = NXDataStore.get("CONFIG_SIMBRIDGE_ENABLED", 'AUTO ON');
+        if (this.simbridgeConnect !== 'PERM OFF') {
             NXDataStore.set("CONFIG_SIMBRIDGE_ENABLED", 'AUTO ON');
-            this.mcduServerConnect = 'AUTO ON';
+            this.simbridgeConnect = 'AUTO ON';
         } else {
             console.log("MCDU server connection attempts permanently deactivated.");
         }
@@ -264,8 +264,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             && this.getGameState() === GameState.ingame) {
 
             // Try to connect websocket if enabled in EFB and no connection established
-            this.mcduServerConnect = NXDataStore.get("CONFIG_SIMBRIDGE_ENABLED", 'AUTO ON');
-            if (this.mcduServerConnect === 'AUTO ON' && (!this.socket || this.socket.readyState !== 1)) {
+            this.simbridgeConnect = NXDataStore.get("CONFIG_SIMBRIDGE_ENABLED", 'AUTO ON');
+            if (this.simbridgeConnect === 'AUTO ON' && (!this.socket || this.socket.readyState !== 1)) {
                 // We try to connect for a fixed amount of attempts, then we deactivate the connection setting
                 if (this.socketConnectionAttempts++ >= this.maxConnectionAttempts) {
                     console.log("Maximum number of connection attempts to Simbridge exceeded. No more attempts.");
@@ -275,7 +275,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     console.log(`Attempting Simbridge connection ${this.socketConnectionAttempts} of ${this.maxConnectionAttempts} attempts.`);
                     this.connectWebsocket(NXDataStore.get("CONFIG_SIMBRIDGE_PORT", "8380"));
                 }
-            } else if (this.mcduServerConnect !== 'AUTO ON') {
+            } else if (this.simbridgeConnect !== 'AUTO ON') {
                 if (this.socketConnectionAttempts > 0) {
                     console.log("Simbridge connection attempts deactivated. No more attempts.");
                     this.socketConnectionAttempts = 0;
