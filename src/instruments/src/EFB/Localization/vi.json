@@ -1,0 +1,577 @@
+{
+  "AirTrafficControl": {
+    "Active": "Đang hoạt động",
+    "ChangeATISATCSourceButton": "Thay đổi nguồn ATIS/ATC",
+    "ConnectHoppieACARS": "Kết nối Hoppie ACARS",
+    "NoInformationAvailableForThisFrequency": "Không có thông tin có sẵn cho tần số này",
+    "SelectCorrectATISATCSource": "Trang này chỉ khả dụng khi IVAO hoặc VATSIM được sử dụng làm nguồn ATIS/ATC trong trang Cài đặt.",
+    "SetActive": "Đặt hoạt động",
+    "SetStandby": "Đặt chế độ chờ",
+    "Standby": "Chế độ chờ",
+    "Title": "Điều khiển không lưu"
+  },
+  "Checklists": {
+    "AreYouSureYouWantToResetAllChecklists": "Bạn có chắc chắn muốn đặt lại bảng kiểm không?",
+    "AreYouSureYouWantToResetChecklists": "Bạn có chắc chắn muốn đặt lại bảng kiểm không?",
+    "ChecklistResetWarning": "Cảnh báo đặt lại bảng kiểm",
+    "MarkChecklistAsComplete": "Đánh dấu bảng kiểm là hoàn tất",
+    "MarkItemAsComplete": "Đánh dấu mục là hoàn tất",
+    "ProceedToNextChecklist": "Tiến tới bảng kiểm tiếp theo",
+    "ResetAll": "Đặt lại tất cả",
+    "ResetChecklist": "Đặt lai bảng kiểm",
+    "TheLastChecklistIsComplete": "Bảng kiểm cuối cùng đã hoàn tất",
+    "ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted": "Có những mục trong bảng kiểm tra tự động điền chưa được hoàn thành",
+    "Title": "Các bảng kiểm"
+  },
+  "Dashboard": {
+    "ImportantInformation": {
+      "Checklists": {
+        "NoRelevantChecklists": "Không có bảng kiểm liên quan",
+        "Title": "Các bảng kiểm"
+      },
+      "GoToPage": "Đi tới trang",
+      "Maintenance": {
+        "NoActiveFailures": "Không có lỗi đang hoạt động",
+        "Title": "Bảo trì"
+      },
+      "PinnedCharts": {
+        "NoPinnedCharts": "Không có biểu đồ được ghim",
+        "Title": "Biểu đồ đã ghim"
+      },
+      "TT": {
+        "RearrangeWidgets": "Sắp xếp lại widgets"
+      },
+      "Title": "Thông tin quan trọng",
+      "Weather": {
+        "AirPressure": "Áp suất không khí",
+        "DewPoint": "Điểm sương",
+        "IcaoInvalid": "ICAO không hợp lệ hoặc không có METAR",
+        "Loading": "Đang tải…",
+        "MetarParsingError": "METAR đã nhận không thể phân tích được",
+        "NoIcaoProvided": "Chưa cung cấp mã ICAO",
+        "NotAvailableShort": "Không có",
+        "Raw": "Nguyên",
+        "TT": {
+          "SwitchToIconView": "Chuyển sang Chế độ biểu tượng",
+          "SwitchToRawMetarView": "Chuyển sang Chế độ xem METAR nguyên"
+        },
+        "Temperature": "Nhiệt độ",
+        "Title": "Thời tiết",
+        "WindSpeed": "Tốc độ gió"
+      }
+    },
+    "Title": "Bảng điều khiển",
+    "YourFlight": {
+      "Alternate": "Thay thế",
+      "AverageWind": "Vận tốc gió trung bình",
+      "CompanyRoute": "Tuyến công ty",
+      "CostIndex": "Chỉ số tiêu hao",
+      "CruiseAlt": "Độ cao bay đường trường.",
+      "ImportSimBriefData": "Nhập dữ liệu SimBrief",
+      "Route": "Lộ trình",
+      "SimBriefDataNotYetLoaded": "Dữ liệu SimBrief chưa được tải.",
+      "Title": "Chuyến bay của bạn",
+      "ZFW": "Trọng lượng máy bay không kể nhiên liệu"
+    }
+  },
+  "Dispatch": {
+    "Ofp": {
+      "ImportSimBriefData": "Nhập dữ liệu SimBrief",
+      "TT": {
+        "IncreaseFontSize": "Tăng cỡ phông chữ",
+        "ReduceFontSize": "Giảm cỡ phông chữ"
+      },
+      "Title": "OFP",
+      "YouHaveNotYetImportedAnySimBriefData": "Bạn chưa nhập bất kỳ dữ liệu SimBrief nào."
+    },
+    "Overview": {
+      "ActualGW": "Tổng trọng lượng thật",
+      "Engines": "Động cơ",
+      "MMO": "Tốc độ vận hành tối đa theo số Mach",
+      "MRW": "Trong lượng bãi đậu tối đa",
+      "MTOW": "Trọng lượng cất cánh tối đa",
+      "MZFW": "Trọng lượng nhỏ nhất không có nhiên liệu",
+      "MaximumCargo": "Hàng hóa tối đa",
+      "MaximumFuelCapacity": "Công suất nhiên liệu tối đa",
+      "MaximumPassengers": "Số hành khách tối đa",
+      "Model": "Mô hình",
+      "Range": "Phạm vi",
+      "Title": "Tổng quan"
+    },
+    "Title": "Dispatch"
+  },
+  "Failures": {
+    "Comfort": {
+      "Title": "Thoải mái"
+    },
+    "Compact": {
+      "Title": "Nhỏ gọn"
+    },
+    "FullSimulationOfTheFailuresBelowIsntYetGuaranteed": "Mô phỏng đầy đủ các lỗi dưới đây vẫn chưa được đảm bảo.",
+    "Search": "Tìm kiếm",
+    "Title": "Lỗi"
+  },
+  "Ground": {
+    "Fuel": {
+      "CenterTank": "Bình chính giữa",
+      "Completed": "Đã xong",
+      "Defueling": "Khử nhiên liệu",
+      "EstimatedDuration": "Thời lượng ước tính (phút)",
+      "EstimatedTime": "Thời gian dự tính",
+      "LeftInnerTank": "Bình phía trái trong cùng",
+      "LeftOuterTank": "Bình phía trái ngoài cùng",
+      "ReadyToStart": "Sẵn sàng bắt đầu",
+      "Refuel": "Đổ xăng",
+      "RefuelTime": "Thời gian đổ xăng",
+      "Refueling": "Tiếp nhiên liệu",
+      "RightInnerTank": "Bình phía phải trong cùng",
+      "RightOuterTank": "Bình phía phải ngoài cùng",
+      "TT": {
+        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "Máy bay phải ở trong chế độ Cold and Dark để thay đổi thời gian tiếp nhiên liệu",
+        "FillBlockFuelFromSimBrief": "Nạp nhiên liệu từ SimBrief"
+      },
+      "Title": "Nhiên liệu",
+      "TotalFuel": "Tổng nhiên liệu",
+      "Unavailable": "Không khả dụng"
+    },
+    "Payload": {
+      "BoardingTime": "Thời gian lên máy bay",
+      "Cargo": "Hàng hóa",
+      "Current": "Hiện tại",
+      "Passengers": "Hành khách",
+      "Planned": "Đã lên kế hoạch",
+      "TT": {
+        "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Máy bay phải ở trên mặt đất và phải có động cơ tắt để thay đổi thời gian lên máy bay",
+        "FillPayloadFromSimbrief": "Điền thông tin tải trọng từ Simbrief",
+        "MaxCargo": "Số lượng hàng hóa tối đa",
+        "MaxPassengers": "Số hành khách tối đa",
+        "MaxZFW": "ZFW tối đa",
+        "MaxZFWCG": "ZFWCG tối đa",
+        "PerPaxBagWeight": "Trọng lượng mỗi túi hành khách",
+        "PerPaxWeight": "Trọng lượng mỗi hành khách",
+        "StartBoarding": "Bắt đầu lên máy bay"
+      },
+      "Title": "Tải trọng",
+      "ZFW": "Trọng lượng máy bay không kể nhiên liệu",
+      "ZFWCG": "ZFWCG"
+    },
+    "Pushback": {
+      "Title": "Đẩy lùi"
+    },
+    "Services": {
+      "BaggageTruck": "Xe tải chở hành lý",
+      "CateringTruck": "Xe cung cấp thức ăn",
+      "Cones": "Chóp nón An toàn",
+      "DoorAft": "Cửa phía sau",
+      "DoorCargo": "Cửa hàng hóa vận chuyển",
+      "DoorFwd": "Cửa phía trước",
+      "ExternalPower": "Nguồn điện phía ngoài",
+      "FuelTruck": "Xe chở nhiên liệu",
+      "JetBridge": "Ống lồng",
+      "Title": "Các dịch vụ",
+      "WheelChocks": "Ốp chặn bánh xe"
+    },
+    "Title": "Mặt đất"
+  },
+  "Modals": {
+    "Cancel": "Hủy bỏ",
+    "Confirm": "Xác nhận",
+    "Okay": "OK"
+  },
+  "NavigationAndCharts": {
+    "All": "Tất cả",
+    "Altn": "Thay thế",
+    "ExitFullscreenMode": "Thoát chế độ toàn màn hình",
+    "From": "Từ",
+    "LocalFiles": {
+      "Both": "Cả hai",
+      "EstablishingConnection": "Đang thiết lập kết nối",
+      "FailedToEstablishConnection": "Không thể thiết lập kết nối.",
+      "FileName": "Tên tệp",
+      "Image": "Ảnh",
+      "Pdf": "Pdf",
+      "Retry": "Thử lại",
+      "Title": "Tập tin cục bộ"
+    },
+    "Navigraph": {
+      "AirportDoesNotExist": "Sân bay không tồn tại",
+      "AuthenticateWithNavigraph": "Xác thực với Navigraph",
+      "InsufficientEnv": "Tệp .env không đủ",
+      "IntoYourBrowserAndEnterTheCodeBelow": "vào trình duyệt của bạn và nhập mã dưới đây\n",
+      "LoadingMsg": "Đang tải…",
+      "NoAirportSelected": "Không có sân bay nào được chọn",
+      "ResetNavigraphAuthentication": "Đặt lại xác thực Navigraph",
+      "ScanTheQrCodeOrOpen": "Quét mã QR hoặc Mở",
+      "Title": "Navigraph"
+    },
+    "PinnedCharts": {
+      "Delete": "Xoá",
+      "Edit": "Sửa",
+      "NoItemsFound": "Không tìm thấy mục nào",
+      "SearchPlaceholder": "Tìm kiếm",
+      "ShowingChartsFromAllProviders": "Hiển thị biểu đồ từ tất cả các nhà cung cấp",
+      "SortMethods": {
+        "AlphabeticalAZ": "Theo thứ tự chữ cái - A -> Z",
+        "AlphabeticalZA": "Theo thứ tự chữ cái - Z -> A",
+        "FirstAccessed": "Lần truy cập lần đầu",
+        "LastAccessed": "Truy cập lần cuối",
+        "None": "Không có"
+      },
+      "TT": {
+        "ChangeChartProvider": "Thay đổi nhà cung cấp biểu đồ",
+        "ChangeChartSortMethod": "Thay đổi phương pháp sắp xếp biểu đồ",
+        "RemoveAllPinnedCharts": "Xóa tất cả các biểu đồ đã ghim"
+      },
+      "Title": "Biểu đồ đã ghim",
+      "View": "Xem"
+    },
+    "PleaseWait": "Vui lòng chờ",
+    "ShowingAllItems": "Hiển thị tất cả các mục",
+    "TT": {
+      "FitChartToHeight": "Thu phóng để vừa chiều cao",
+      "FitChartToWidth": "Thu phóng để vừa chiều ngang",
+      "ResetMovement": "Đặt lại sự di chuyển",
+      "RotateLeft45Degrees": "Xoay trái 45 độ",
+      "RotateRight45Degrees": "Xoay phải 45 độ",
+      "ZoomIn": "Phóng To",
+      "ZoomOut": "Thu Nhỏ"
+    },
+    "ThereAreNoChartsToDisplay": "Không có biểu đồ để hiển thị.",
+    "ThereIsNoChartToDisplay": "Không có biểu đồ để hiển thị.",
+    "Title": "Điều hướng & Biểu đồ",
+    "To": "Đến"
+  },
+  "Performance": {
+    "Data": "Dữ liệu",
+    "Landing": {
+      "AirportIcao": "ICAO của sân bay",
+      "ApproachSpeed": "Tốc độ tiếp cận",
+      "ApproachSpeedUnit": "kt",
+      "AutoLand": "Hạ cánh tự động",
+      "Calculate": "Tính",
+      "Clear": "Xoá",
+      "DropDownNo": "Không",
+      "DropDownYes": "Có",
+      "FillDataFrom": "Điền dữ liệu từ",
+      "FlapsConfiguration": "Cấu hình cánh tà",
+      "Low": "Thấp",
+      "MaximumManual": "Mức độ tối đa khi lái tay",
+      "Medium": "Trung bình",
+      "MetarErrorDialogMessage": "METAR từ OFP của bạn không thể được phân tích thành công. Bạn có muốn tự động điền dữ liệu bằng METAR đã được lấy từ nguồn khác không?",
+      "MetarErrorDialogTitle": "Lỗi phân tích OFP METAR",
+      "OverweightProcedure": "Thủ tục quá trọng lượng",
+      "Qnh": "QNH",
+      "ReverseThrust": "Lực đẩy ngược",
+      "RunwayAltitude": "Độ cao đường băng",
+      "RunwayAltitudeUnit": "ft ASL",
+      "RunwayCondition": "Điều kiện đường băng",
+      "RunwayConditions": {
+        "Dry": "Khô (6)",
+        "Good": "Tốt (5)",
+        "GoodMedium": "Tốt-trung bình (4)",
+        "Medium": "Trung bình (3)",
+        "MediumPoor": "Trung bình kém (2)",
+        "Poor": "Kém (1)"
+      },
+      "RunwayHeading": "Hướng của đường băng",
+      "RunwayHeadingUnit": "°",
+      "RunwayLda": "Đường băng LDA",
+      "RunwayLdaUnitFt": "ft",
+      "RunwayLdaUnitMeter": "m",
+      "RunwaySlope": "Độ dốc của đường băng",
+      "TT": {
+        "YouNeedToEnterAnIcaoCodeInOrderToMakeAMetarRequest": "Bạn cần nhập mã ICAO để thực hiện yêu cầu METAR",
+        "YouNeedToLoadSimBriefDataInOrderToAutofillData": "Bạn cần tải dữ liệu SimBrief để tự động điền dữ liệu"
+      },
+      "Temperature": "Nhiệt độ",
+      "Title": "Hạ cánh",
+      "UnitFt": "ft",
+      "UnitMeter": "m",
+      "Weight": "Trọng lượng",
+      "WindDirection": "Hướng gió",
+      "WindDirectionUnit": "°",
+      "WindMagnitude": "Cường độ gió",
+      "WindMagnitudeUnit": "kt"
+    },
+    "SYNC": "Đồng bộ hóa",
+    "Title": "Hiệu suất",
+    "TopOfDescent": {
+      "Data": {
+        "Angle": "Góc",
+        "CurrentAltitude": "Độ cao hiện tại",
+        "Distance": "Khoảng cách",
+        "GroundSpeed": "Tốc độ so với mặt đất",
+        "TargetAltitude": "Độ cao mục tiêu",
+        "Title": "Dữ liệu",
+        "UnitAngleDegrees": "độ",
+        "UnitFeet": "feet",
+        "UnitFtMin": "ft/phút",
+        "UnitNM": "NM",
+        "VerticalSpeed": "Vận tốc theo chiều thẳng đứng"
+      },
+      "GroundSpeed": {
+        "Add": "Thêm",
+        "FetchingSpeedFromSimulator": "Lấy tốc độ từ trình giả lập",
+        "GroundSpeed": "Tốc độ ở trên mặt đất",
+        "ManualInput": "Nhập thủ công",
+        "MinAltitude": "Độ cao thấp nhất",
+        "RemoveLast": "Gỡ cái cuối",
+        "Sync": "ĐỒNG BỘ HOÁ",
+        "Title": "Tốc độ so với mặt đất",
+        "UnitKnots": "knot",
+        "UnitKt": "kt"
+      },
+      "Result": {
+        "BeforeTarget": "trước mục tiêu",
+        "DesiredDescentAngle": "Góc hạ độ cao được quyết định",
+        "DesiredVerticalSpeed": "Vận tốc chiều thẳng đứng được quyết định",
+        "StartYourDescentAbout": "Bắt đầu hạ độ cao khoảng",
+        "Title": "Kết quả"
+      },
+      "TT": {
+        "DesynchronizeInputWithAircraftsCurrentAltitude": "Ngừng đồng bộ hóa đầu vào với độ cao hiện tại của máy bay",
+        "SynchronizeInputWithAircraftsCurrentAltitude": "Đồng bộ hóa đầu vào với độ cao hiện tại của máy bay"
+      },
+      "Title": "Điểm hạ độ cao / TOD"
+    }
+  },
+  "Presets": {
+    "AircraftStates": {
+      "Cancel": "Huỷ",
+      "ColdDark": "Cold & Dark",
+      "ConfirmationDialogMsg": "Vui lòng xác nhận tải cấu hình sẵn.",
+      "CurrentProcedureStep": "Bước thủ tục hiện tại",
+      "PleaseConfirmLoadingOfPreset": "Vui lòng xác nhận tải cấu hình sẵn.",
+      "ReadyPushback": "Sẵn sàng để đẩy lùi",
+      "ReadyTakeoff": "Sẵn sàng để cất cánh",
+      "ReadyTaxi": "Sẵn sàng để lăn",
+      "SelectAPresetToLoad": "Chọn cấu hình sẵn để tải",
+      "TheAircraftMustBeOnTheGroundToLoadAPreset": "Máy bay cần phải ở trên mặt đất để tải cấu hình sẵn.",
+      "TheAircraftMustBeOntheGroundToLoadAPreset": "Máy bay cần phải ở trên mặt đất để tải cấu hình sẵn.",
+      "Title": "Trạng thái máy bay",
+      "Turnaround": "Quay đầu"
+    },
+    "InteriorLighting": {
+      "AircraftNeedsToBePoweredToLoadPresets": "Máy bay cần được cung cấp năng lượng để tải cấu hình sẵn",
+      "AircraftNeedsToBePoweredToSavePresets": "Máy bay cần được cung cấp năng lượng để lưu cấu hình sẵn",
+      "LoadPreset": "Tải cấu hình sẵn",
+      "LoadingPreset": "Đang tải cấu hình sẵn",
+      "NewNameConfirmationDialogMsg": "Vui lòng xác nhận tên mới của Cấu hình bố trí đèn đặt sẵn",
+      "NoName": "Không tên",
+      "PleaseConfirmSavingPreset": "Vui lòng xác nhận lưu cấu hình sẵn.",
+      "SavePreset": "Lưu cấu hình sẵn",
+      "SavingPreset": "Đang lưu cấu hình sẵn",
+      "SelectAnInteriorLightingPresetToLoadOrSave": "Chọn cấu hình đèn bên trong máy bay sẵn để tải hoặc lưu.",
+      "TT": {
+        "AircraftMustBePowered": "Máy bay cần được cung cấp điện",
+        "ClickTextToChangeThePresetsName": "Chọn vào dòng chữ để đổi tên cấu hình sẵn",
+        "LoadThisPreset": "Tải cấu hình sẵn này",
+        "SaveTheCurrentLightingLevels": "Lưu cấu hình mức độ đèn hiện tại"
+      },
+      "TheAircraftMustBePoweredForInteriorLightingPresets": "Máy bay cần được cung cấp năng lượng cho cấu hình đèn bên trong máy bay sẵn.",
+      "Title": "Đèn bên trong máy bay"
+    },
+    "Title": "Cấu hình sẵn"
+  },
+  "Pushback": {
+    "AvailableOnlyOnGround": "Điểu khiển đẩy lùi chỉ có sẵn ở mặt đất",
+    "Backward": "Lùi",
+    "CallTug": "Gọi xe kéo",
+    "DisableSystemMessageBody": "Bạn có chắc muốn vô hiệu hóa hệ thống đẩy lùi không? Điều này sẽ làm ngắt kết nối với xe lai dắt.",
+    "DisableSystemMessageTitle": "Vô hiệu hóa hệ thống đẩy lùi",
+    "EnableSystemMessageBody": "Hệ thống đẩy lùi mới của flyPadOS 3 có thể gây xung đột với các tiện ích đẩy lùi khác. Chúng tôi khuyến khích bạn không nên kích hoạt hệ thống này nếu bạn định dùng một tiện ích đẩy lùi khác.",
+    "EnableSystemMessageTitle": "Kích hoạt hệ thống đẩy lùi",
+    "Forward": "Tiến",
+    "Halt": "Tạm dừng",
+    "LeavePageMessage": "Tạm dừng đẩy lùi",
+    "Left": "Trái",
+    "Moving": "Đang di chuyển",
+    "ParkingBrake": {
+      "Off": "Cài",
+      "On": "Cài",
+      "Title": "Phanh đỗ"
+    },
+    "Right": "Phải",
+    "SystemEnabledOff": "Hệ thống đẩy lùi tắt",
+    "SystemEnabledOn": "Hệ thống đẩy lùi bật",
+    "TT": {
+      "CallReleaseTug": "Gọi hoặc tách khỏi xe lai dắt",
+      "CenterPlaneMode": "Đặt trung tâm bản đồ là tàu bay Bật/Tắt",
+      "DecreaseSpeed": "Lùi ngược hoặc chậm hơn về phía trước",
+      "IncreaseSpeed": "Tiến lên hoặc chậm hơn về phía sau",
+      "Left": "Rẽ trái (nhấp đúp để đi thẳng)",
+      "PausePushback": "Tạm dừng hoặc tiếp tục đẩy lùi",
+      "Right": "Rẽ phải (nhấp đúp để đi thẳng)",
+      "SetReleaseParkingBrake": "Cài hoặc nhả phanh tay",
+      "SliderDirection": "Di chuyển thanh trượt cho hướng mong muốn",
+      "SliderSpeed": "Di chuyển thanh trượt cho tốc độ mong muốn",
+      "SystemEnabledOff": "Nhấp để bật hệ thống đẩy lùi.",
+      "SystemEnabledOn": "Nhấp để tắt hoàn toàn hệ thống đẩy lùi.",
+      "ZoomIn": "Phóng to",
+      "ZoomOut": "Thu nhỏ"
+    },
+    "TugAttached": "Xe lai dắt được kết nối",
+    "TugDirection": "Hướng của xe kéo",
+    "TugInTransit": "Đang chờ xe đẩy",
+    "TugSpeed": "Tốc độ xe kéo"
+  },
+  "Settings": {
+    "About": {
+      "Title": "Giới thiệu"
+    },
+    "AircraftOptionsPinPrograms": {
+      "AccelerationHeight": "Độ cao tăng tốc (ft)",
+      "EngineOutAccelerationHeight": "Độ cao tăng tốc khi động cơ ngừng hoạt động (ft)",
+      "IsisBaroUnit": "Đơn vị ISIS Baro",
+      "IsisMetricAltitude": "Đơn vị ISIS hệ Mét",
+      "LatLonExtendedFormat": "Định dạng điểm trên FMGC dạng vĩ/kinh",
+      "PaxSigns": "Đèn báo hiệu hành khách",
+      "RmpVhfSpacing": "Khoảng cách RMP VHF",
+      "ThrustReductionHeight": "Độ cao giảm lực đẩy (ft)",
+      "Title": "Tùy chọn máy bay / Pin Programs",
+      "WeightUnit": "Đơn vị trọng lượng"
+    },
+    "AtsuAoc": {
+      "AtisAtcSource": "Nguồn ATIS/ATC",
+      "AutomaticallyImportSimBriefData": "Tự động nhập dữ liệu SimBrief",
+      "Enable": "Kích hoạt",
+      "EnableTelex": "Kích hoạt TELEX",
+      "ErrorReporting": "Báo cáo lỗi",
+      "HoppieEnabled": "Hoppie đã được kích hoạt",
+      "HoppieUserId": "ID người dùng Hoppie",
+      "MetarSource": "Nguồn METAR",
+      "OptionalA32nxErrorReporting": "Tuỳ chọn báo cáo lỗi A32NX",
+      "PleaseCheckThatYouHaveCorrectlyEnteredYourSimbBriefUsernameOrPilotId": "Vui lòng kiểm tra xem bạn đã nhập đúng tên người dùng SimBrief hoặc ID phi công của mình chưa.",
+      "SimBriefUsernamePilotId": "Tên người dùng SimBrief/ID Pilot",
+      "TafSource": "Nguồn TAF",
+      "Telex": "TELEX",
+      "TelexEnablesFreeTextAndLiveMap": "TELEX cho phép nhắn tin miễn phí và bản đồ trực tiếp. Nếu được kích hoạt, dữ liệu vị trí máy bay được công bố trong suốt thời gian của chuyến bay. Tin nhắn được công khai và không được kiểm duyệt. BẠN PHẢI TỰ CHỊU TRÁCH NGHIỆM KHI DÙNG TÍNH NĂNG NÀY. Để tìm hiểu thêm về TELEX và các tính năng mà nó cho phép, vui lòng truy cập https://docs.flybywiresim.com/telex.",
+      "TelexWarning": "Cảnh báo TELEX",
+      "ThereWasAnErrorEncounteredWhenValidatingYourHoppieID": "Có lỗi xảy ra trong khi xác nhận ID Hoppie của bạn",
+      "Title": "ATSU / AOC",
+      "YouAreAbleToOptIntoAnonymousErrorReporting": "Bạn có thể chọn báo cáo lỗi ẩn danh cho phép chúng tôi chẩn đoán, theo dõi và xử lý các vấn đề nhanh hơn. Tính năng này hoàn toàn không bắt buộc và chúng tôi sẽ không bao giờ thu thập dữ liệu cá nhân của bạn, nhưng có thể giúp bạn dễ dàng nhận được hỗ trợ hơn và có các vấn đề bạn gặp phải khắc phục nhanh hơn.",
+      "YourHoppieIdHasBeenRemoved": "ID Hoppie của bạn đã được gỡ bỏ",
+      "YourHoppieIdHasBeenValidated": "ID Hoppie của bạn đã được xác thực",
+      "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "ID phi công SimBrief của bạn đã được xác thực và cập nhật thành"
+    },
+    "Audio": {
+      "Announcements": "Thông báo",
+      "BoardingMusic": "Nhạc khi lên máy bay",
+      "EngineInteriorVolume": "Âm lượng động cơ phía trong",
+      "ExteriorMasterVolume": "Âm lượng tổng thể bên ngoài",
+      "PassengerAmbience": "Môi trường hành khách",
+      "PtuAudibleInCockpit": "Âm thanh PTU trong buồng lái",
+      "Title": "Âm thanh",
+      "WindInteriorVolume": "Âm lượng gió phía trong"
+    },
+    "Fast": "Nhanh",
+    "Instant": "Lập tức",
+    "Real": "Thực",
+    "Realism": {
+      "AdirsAlignTime": "Thời gian căn chỉnh ADIRS",
+      "AutofillChecklists": "Tự đồng điền danh sách kiểm tra",
+      "BoardingTime": "Thời gian lên máy bay",
+      "DmcSelfTestTime": "Thời gian tự kiểm tra của DMC",
+      "HomeCockpitMode": "Chế độ buồng lái tại nhà",
+      "McduFocusTimeout": "Thời gian chờ MCDU chỉnh (giây)",
+      "McduKeyboardInput": "Dùng bàn phím cho MCDU",
+      "PauseAtTod": "Dừng tại điểm hạ độ cao",
+      "PauseAtTodDistance": "Khoảng cách dừng từ điểm hạ độ cao (nm)",
+      "SeparateTillerFromRudderInputs": "Tách rời Điều Khiển Bánh Mũi với Bàn Đạp",
+      "Title": "Mức thực tế"
+    },
+    "SimOptions": {
+      "Active": "Hoạt động",
+      "Auto": "Tự động",
+      "Calibrate": "Hiệu chỉnh",
+      "ConesEnabled": "Chóp nón An toàn",
+      "DefaultBarometerUnit": "Đơn vị áp kế mặc định",
+      "DynamicRegistrationDecal": "Đề-can đăng ký động",
+      "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Bật kết nối máy chủ MCDU (Tự động ngừng kích hoạt sau 5 phút nếu không có kết nối thành công)",
+      "ExternalMcduServerPort": "Cổng máy chủ MCDU bên ngoài",
+      "Hpa": "hPa",
+      "Inactive": "Không hoạt động",
+      "LoadOnly": "Chỉ tải",
+      "None": "Không",
+      "Off": "Tắt",
+      "Save": "Lưu",
+      "SyncMsfsFlightPlan": "Đồng bộ hóa Kế hoạch chuyến bay của MSFS",
+      "ThrottleDetents": "Chốt cần ga",
+      "Title": "Tùy chọn giả lập",
+      "UseCalculatedIlsSignals": "Sử dụng tín hiệu ILS được tính",
+      "WheelChocksEnabled": "Ốp chặn bánh xe",
+      "inHg": "inHg"
+    },
+    "ThrottleConfig": {
+      "Apply": "Áp dụng",
+      "AreYouSureThatYouWantToResetYourCurrentThrottleConfigurationToTheirDefaultStates": "Bạn có chắc chắn rằng bạn muốn đặt lại cấu hình cần ga trở về mặc định? Không thể hoàn tác hành động này.",
+      "Axis": "Trục",
+      "Back": "Quay lại",
+      "ConfigureEnd": "Cấu hình cuối",
+      "ConfigureStart": "Cấu hình bắt đầu",
+      "CurrentValue": "Giá trị hiện tại",
+      "Deadband": "Deadband",
+      "ErrorOverlapMsg": "chồng chéo với",
+      "IndependentAxis": "Trục độc lập",
+      "LoadFromFile": "Tải từ tệp",
+      "PleaseEnterAValidDeadzone": "Vui lòng nhập vùng nguy hiểm hợp lệ",
+      "ResetToDefaults": "Khôi phục về mặc định",
+      "ReverseFull": "Đảo ngược đầy đủ",
+      "ReverseIdle": "Đảo ngược nhàn rỗi",
+      "ReverserOnAxis": "Đảo ngược trên trục",
+      "SaveAndApply": "Lưu và áp dụng",
+      "SetFromThrottle": "Đặt từ cần ga",
+      "ThrottleConfigurationReset": "Khôi phục lại cấu hình cần ga"
+    },
+    "Title": "Cài đặt",
+    "Unrealistic": "Không thực tế",
+    "flyPad": {
+      "AutoBrightness": "Tự động điều chỉnh độ sáng",
+      "AutomaticallyShowOnscreenKeyboard": "Tự động hiển thị bàn phím trên màn hình",
+      "BatteryLifeEnabled": "Giả lập mức pin",
+      "Blue": "Xanh lam",
+      "Brightness": "Độ sáng",
+      "Dark": "Tối",
+      "Language": "Ngôn ngữ",
+      "Light": "Sáng",
+      "Local": "Cục bộ",
+      "LocalTimeFormat": "Định dạng thời gian cục bộ",
+      "OnscreenKeyboardLayout": "Bố cục bàn phím trên màn hình",
+      "ShowColoredRawMetar": "Hiển thị METAR nguyên có màu",
+      "ShowStatusBarFlightProgressIndicator": "Hiển thị thanh trạng thái chuyến bay",
+      "Theme": "Giao diện",
+      "TimeDisplayed": "Thời gian hiển thị",
+      "Title": "flyPad",
+      "TwelveHours": "12h",
+      "TwentyFourHours": "24h",
+      "Utc": "UTC",
+      "UtcAndLocal": "UTC và địa phương"
+    }
+  },
+  "StatusBar": {
+    "Apr": "Thg 4",
+    "Aug": "Thg 8",
+    "Dec": "Thg 12",
+    "Feb": "Thg 2",
+    "Fri": "Th 6",
+    "Jan": "Thg 1",
+    "Jul": "Thg 7",
+    "Jun": "Thg 6",
+    "Mar": "Thg 3",
+    "May": "Thg 5",
+    "Mon": "Th 2",
+    "Nov": "Thg 11",
+    "Oct": "Thg 10",
+    "Sat": "Th 7",
+    "Sep": "Thg 9",
+    "Sun": "CN",
+    "TT": {
+      "ConnectedToLocalApi": "Kết nối tới API cục bộ",
+      "DisconnectedFromLocalApi": "Ngắt kết nối khỏi API cục bộ",
+      "TurnOffOrShutdownEfb": "Tắt hoặc tắt máy EFB"
+    },
+    "Thu": "Th 5",
+    "Tue": "Th 3",
+    "Wed": "Th 4"
+  }
+}

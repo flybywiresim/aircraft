@@ -74,9 +74,9 @@ export class PFDComponent extends DisplayComponent<PFDProps> {
             this.failuresConsumer.update();
             this.displayFailed.set(this.failuresConsumer.isActive(getDisplayIndex() === 1 ? A320Failure.LeftPfdDisplay : A320Failure.RightPfdDisplay));
             if (!this.isAttExcessive.get() && ((this.pitch.isNormalOperation()
-            && (-this.pitch.value > 25 || -this.pitch.value < -13)) || (this.roll.isNormalOperation() && Math.abs(this.roll.value) > 45))) {
+            && (this.pitch.value > 25 || this.pitch.value < -13)) || (this.roll.isNormalOperation() && Math.abs(this.roll.value) > 45))) {
                 this.isAttExcessive.set(true);
-            } else if (this.isAttExcessive.get() && this.pitch.isNormalOperation() && -this.pitch.value < 22 && -this.pitch.value > -10
+            } else if (this.isAttExcessive.get() && this.pitch.isNormalOperation() && this.pitch.value < 22 && this.pitch.value > -10
             && this.roll.isNormalOperation() && Math.abs(this.roll.value) < 40) {
                 this.isAttExcessive.set(false);
             }

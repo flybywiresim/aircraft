@@ -1,0 +1,577 @@
+{
+  "AirTrafficControl": {
+    "Active": "Etkin",
+    "ChangeATISATCSourceButton": "Change ATIS/ATC source",
+    "ConnectHoppieACARS": "Hoppie ACARS'a bağlan",
+    "NoInformationAvailableForThisFrequency": "BU FREKANS İÇİN MEVCUT BİLGİ YOK",
+    "SelectCorrectATISATCSource": "This page is only available when IVAO or VATSIM is selected as the ATIS/ATC source in the settings page.",
+    "SetActive": "Etkinleştir",
+    "SetStandby": "Beklemede Ayarla",
+    "Standby": "Beklemede",
+    "Title": "Hava Trafik Kontrol"
+  },
+  "Checklists": {
+    "AreYouSureYouWantToResetAllChecklists": "Tüm kontrol listelerini sıfırlamak istediğinizden emin misiniz?",
+    "AreYouSureYouWantToResetChecklists": "Tüm kontrol listelerini sıfırlamak istediğinizden emin misiniz?",
+    "ChecklistResetWarning": "Kontrol Listesi Sıfırlama Uyarısı",
+    "MarkChecklistAsComplete": "Kontrol listesini tamamlandı olarak işaretle",
+    "MarkItemAsComplete": "Öğeyi tamamlandı olarak işaretle",
+    "ProceedToNextChecklist": "Bir sonraki kontrol listesine geçin",
+    "ResetAll": "Tümünü Sıfırla",
+    "ResetChecklist": "Kontrol Listesini Sıfırla",
+    "TheLastChecklistIsComplete": "Son kontrol listesi tamamlandı",
+    "ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted": "Henüz tamamlanmayan otomatik doldurma kontrol listesi öğeleri vardır",
+    "Title": "Kontrol Listeleri"
+  },
+  "Dashboard": {
+    "ImportantInformation": {
+      "Checklists": {
+        "NoRelevantChecklists": "İlgili Kontrol Listeleri Yok",
+        "Title": "Kontrol Listeleri"
+      },
+      "GoToPage": "Sayfaya git",
+      "Maintenance": {
+        "NoActiveFailures": "Etkin Arıza Yok",
+        "Title": "Bakım"
+      },
+      "PinnedCharts": {
+        "NoPinnedCharts": "Sabitlenmiş Harita Yok",
+        "Title": "Sabitlenmiş Haritalar"
+      },
+      "TT": {
+        "RearrangeWidgets": "Araçları Yeniden Düzenle"
+      },
+      "Title": "Önemli Bilgi",
+      "Weather": {
+        "AirPressure": "Hava Basıncı",
+        "DewPoint": "Çiy Noktası",
+        "IcaoInvalid": "ICAO geçersiz veya METAR mevcut değil",
+        "Loading": "Yükleniyor",
+        "MetarParsingError": "Alınan METAR ayrıştırılamadı",
+        "NoIcaoProvided": "ICAO sağlanmadı",
+        "NotAvailableShort": "N/A",
+        "Raw": "Ham",
+        "TT": {
+          "SwitchToIconView": "Simge Görünümüne Geç",
+          "SwitchToRawMetarView": "Ham METAR Görünümüne Geç"
+        },
+        "Temperature": "Sıcaklık",
+        "Title": "Hava Durumu",
+        "WindSpeed": "Rüzgar Hızı"
+      }
+    },
+    "Title": "Gösterge Paneli",
+    "YourFlight": {
+      "Alternate": "Alternatif",
+      "AverageWind": "Ortalama Rüzgar",
+      "CompanyRoute": "Şirket Rotası",
+      "CostIndex": "Maliyet Endeksi",
+      "CruiseAlt": "Seyir İrtifası",
+      "ImportSimBriefData": "SimBrief Verilerini İçe Aktar",
+      "Route": "Rota",
+      "SimBriefDataNotYetLoaded": "SimBrief verileri henüz yüklenmedi.",
+      "Title": "Uçuşunuz",
+      "ZFW": "ZFW"
+    }
+  },
+  "Dispatch": {
+    "Ofp": {
+      "ImportSimBriefData": "SimBrief Verilerini İçe Aktar",
+      "TT": {
+        "IncreaseFontSize": "Font boyutunu büyüt",
+        "ReduceFontSize": "Font boyutunu küçült"
+      },
+      "Title": "OFP",
+      "YouHaveNotYetImportedAnySimBriefData": "Henüz herhangi bir SimBrief verisini içe aktarmadınız."
+    },
+    "Overview": {
+      "ActualGW": "Actual GW",
+      "Engines": "Motorlar",
+      "MMO": "MMO",
+      "MRW": "MRW",
+      "MTOW": "MTOW",
+      "MZFW": "MZFW",
+      "MaximumCargo": "Maksimum Kargo",
+      "MaximumFuelCapacity": "Maksimum Yakıt Kapasitesi",
+      "MaximumPassengers": "Maksimum Yolcu",
+      "Model": "Model",
+      "Range": "Menzil",
+      "Title": "Genel Bakış"
+    },
+    "Title": "Harekat"
+  },
+  "Failures": {
+    "Comfort": {
+      "Title": "Konfor"
+    },
+    "Compact": {
+      "Title": "Kompakt"
+    },
+    "FullSimulationOfTheFailuresBelowIsntYetGuaranteed": "Aşağıdaki arızaların tam simülasyonu henüz garanti edilmemiştir.",
+    "Search": "Ara",
+    "Title": "Arızalar"
+  },
+  "Ground": {
+    "Fuel": {
+      "CenterTank": "Merkez Tank",
+      "Completed": "Tamamlandı",
+      "Defueling": "Yakıt Boşaltma",
+      "EstimatedDuration": "Tahmini süre (dakika)",
+      "EstimatedTime": "Tahmini süre",
+      "LeftInnerTank": "Sol İç Tank",
+      "LeftOuterTank": "Sol Dış Tank",
+      "ReadyToStart": "Başlamaya Hazır",
+      "Refuel": "Yakıt ikmali",
+      "RefuelTime": "Yakıt İkmal Süresi",
+      "Refueling": "Yakıt ikmali",
+      "RightInnerTank": "Sağ İç Tank",
+      "RightOuterTank": "Sağ Dış Tank",
+      "TT": {
+        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "Yakıt sürelerini değiştirmek için uçak Cold and Dark durumda olmalı",
+        "FillBlockFuelFromSimBrief": "SimBrief'ten Blok Yakıtı Doldur"
+      },
+      "Title": "Yakıt",
+      "TotalFuel": "Toplam Yakıt",
+      "Unavailable": "Kullanım Dışı"
+    },
+    "Payload": {
+      "BoardingTime": "Boarding Time",
+      "Cargo": "Cargo",
+      "Current": "Current",
+      "Passengers": "Passengers",
+      "Planned": "Planned",
+      "TT": {
+        "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Aircraft Must Be On the Ground and Have Engines Shutdown to Change Boarding Duration",
+        "FillPayloadFromSimbrief": "Fill Payload Information from Simbrief",
+        "MaxCargo": "Max Cargo",
+        "MaxPassengers": "Maximum Passengers",
+        "MaxZFW": "Maximum ZFW",
+        "MaxZFWCG": "Maximum ZFWCG",
+        "PerPaxBagWeight": "Per Passenger Bag Weight",
+        "PerPaxWeight": "Per Passenger Weight",
+        "StartBoarding": "Begin Boarding"
+      },
+      "Title": "Payload",
+      "ZFW": "ZFW",
+      "ZFWCG": "ZFWCG"
+    },
+    "Pushback": {
+      "Title": "Geri itme"
+    },
+    "Services": {
+      "BaggageTruck": "Bagaj Kamyonu",
+      "CateringTruck": "Yemek Servis Aracı",
+      "Cones": "Safety Cones",
+      "DoorAft": "Arka Giriş Kapısı",
+      "DoorCargo": "Cargo Door",
+      "DoorFwd": "Ön Giriş Kapısı",
+      "ExternalPower": "Harici Güç",
+      "FuelTruck": "Yakıt Kamyonu",
+      "JetBridge": "Körük",
+      "Title": "Hizmetler",
+      "WheelChocks": "Wheel Chocks"
+    },
+    "Title": "Yer"
+  },
+  "Modals": {
+    "Cancel": "İptal",
+    "Confirm": "Onayla",
+    "Okay": "Tamam"
+  },
+  "NavigationAndCharts": {
+    "All": "Tümü",
+    "Altn": "Alternatif",
+    "ExitFullscreenMode": "Tam Ekran Modundan Çık",
+    "From": "Kalkış",
+    "LocalFiles": {
+      "Both": "İkisi de",
+      "EstablishingConnection": "Bağlantı Kuruluyor",
+      "FailedToEstablishConnection": "Bağlantı kurulamadı.",
+      "FileName": "Dosya adı",
+      "Image": "Görüntü",
+      "Pdf": "Pdf",
+      "Retry": "Yeniden dene",
+      "Title": "Yerel Dosyalar"
+    },
+    "Navigraph": {
+      "AirportDoesNotExist": "Havaalanı Mevcut Değil",
+      "AuthenticateWithNavigraph": "Navigraph ile Kimlik Doğrulama",
+      "InsufficientEnv": "Yetersiz .env dosyası",
+      "IntoYourBrowserAndEnterTheCodeBelow": "tarayıcınıza girin ve aşağıdaki kodu girin\n",
+      "LoadingMsg": "Loading",
+      "NoAirportSelected": "Havaalanı Seçilmedi",
+      "ResetNavigraphAuthentication": "Navigraph Kimlik Doğrulamasını Sıfırla",
+      "ScanTheQrCodeOrOpen": "QR Kodunu tarayın veya Açın",
+      "Title": "Navigraph"
+    },
+    "PinnedCharts": {
+      "Delete": "Sil",
+      "Edit": "Düzenle",
+      "NoItemsFound": "Hiçbir öğe bulunamadı.",
+      "SearchPlaceholder": "Ara",
+      "ShowingChartsFromAllProviders": "Tüm Sağlayıcılardan Haritalar Gösteriliyor",
+      "SortMethods": {
+        "AlphabeticalAZ": "Alfabetik - A -> Z",
+        "AlphabeticalZA": "Alfabetik - Z -> A",
+        "FirstAccessed": "İlk Erişilen",
+        "LastAccessed": "Son Erişilen",
+        "None": "Hiçbiri"
+      },
+      "TT": {
+        "ChangeChartProvider": "Harita Sağlayıcısını Değiştir",
+        "ChangeChartSortMethod": "Harita Sıralama Yöntemini Değiştir",
+        "RemoveAllPinnedCharts": "Remove All Pinned Charts"
+      },
+      "Title": "Sabitlenmiş Haritalar",
+      "View": "Görüntüle"
+    },
+    "PleaseWait": "Lütfen bekleyin",
+    "ShowingAllItems": "Tüm Öğeler Gösteriliyor",
+    "TT": {
+      "FitChartToHeight": "Haritayı Yüksekliğe Sığdır",
+      "FitChartToWidth": "Haritayı Genişliğe Sığdır",
+      "ResetMovement": "Hareketi Sıfırla",
+      "RotateLeft45Degrees": "Sola 45 Derece Döndür",
+      "RotateRight45Degrees": "Sağa 45 Derece Döndür",
+      "ZoomIn": "Büyüt",
+      "ZoomOut": "Küçült"
+    },
+    "ThereAreNoChartsToDisplay": "Görüntülenecek harita yok.",
+    "ThereIsNoChartToDisplay": "Görüntülenecek bir harita yok.",
+    "Title": "Seyrüsefer ve Haritalar",
+    "To": "Varış"
+  },
+  "Performance": {
+    "Data": "Veri",
+    "Landing": {
+      "AirportIcao": "Havaalanı ICAO",
+      "ApproachSpeed": "Yaklaşma Hızı",
+      "ApproachSpeedUnit": "kts",
+      "AutoLand": "Otomatik İniş",
+      "Calculate": "Hesapla",
+      "Clear": "Temizle",
+      "DropDownNo": "Hayır",
+      "DropDownYes": "Evet",
+      "FillDataFrom": "Verileri doldurun",
+      "FlapsConfiguration": "Flap Konfigürasyonu",
+      "Low": "Alçak",
+      "MaximumManual": "Maksimum Manuel",
+      "Medium": "Orta",
+      "MetarErrorDialogMessage": "The METAR from your OFP could not be successfully parsed. Would you like to autofill data using a fetched METAR instead?",
+      "MetarErrorDialogTitle": "Error Parsing OFP METAR",
+      "OverweightProcedure": "Overweight Prosedürleri",
+      "Qnh": "QNH",
+      "ReverseThrust": "Reverse Thrust",
+      "RunwayAltitude": "Pist İrtifası",
+      "RunwayAltitudeUnit": "ft ASL",
+      "RunwayCondition": "Pist Durumu",
+      "RunwayConditions": {
+        "Dry": "Dry (6)",
+        "Good": "Good (5)",
+        "GoodMedium": "Good-Medium (4)",
+        "Medium": "Medium (3)",
+        "MediumPoor": "Medium-Poor (2)",
+        "Poor": "Poor (1)"
+      },
+      "RunwayHeading": "Pist Başı",
+      "RunwayHeadingUnit": "°",
+      "RunwayLda": "Pist LDA",
+      "RunwayLdaUnitFt": "ft",
+      "RunwayLdaUnitMeter": "m",
+      "RunwaySlope": "Pist Eğimi",
+      "TT": {
+        "YouNeedToEnterAnIcaoCodeInOrderToMakeAMetarRequest": "METAR isteğinde bulunmak için bir ICAO kodu girmeniz gerekmekte.",
+        "YouNeedToLoadSimBriefDataInOrderToAutofillData": "Verileri otomatik doldurmak için SimBrief verilerini yüklemeniz gerekmekte"
+      },
+      "Temperature": "Sıcaklık",
+      "Title": "İniş",
+      "UnitFt": "ft",
+      "UnitMeter": "m",
+      "Weight": "Ağırlık",
+      "WindDirection": "Rüzgar yönü",
+      "WindDirectionUnit": "°",
+      "WindMagnitude": "Rüzgar Hızı",
+      "WindMagnitudeUnit": "kts"
+    },
+    "SYNC": "Eşitle",
+    "Title": "Performans",
+    "TopOfDescent": {
+      "Data": {
+        "Angle": "Açı",
+        "CurrentAltitude": "Mevcut İrtifa",
+        "Distance": "Mesafe",
+        "GroundSpeed": "Yer Hızı",
+        "TargetAltitude": "Hedef İrtifa",
+        "Title": "Veri",
+        "UnitAngleDegrees": "derece",
+        "UnitFeet": "fit",
+        "UnitFtMin": "ft/dak",
+        "UnitNM": "NM",
+        "VerticalSpeed": "Düşey Hız"
+      },
+      "GroundSpeed": {
+        "Add": "Ekle",
+        "FetchingSpeedFromSimulator": "Hızı simülatörden oku",
+        "GroundSpeed": "Yer Hızı",
+        "ManualInput": "Elle Giriş",
+        "MinAltitude": "Min. İrtifa",
+        "RemoveLast": "Sonuncuyu kaldır",
+        "Sync": "Eşitle",
+        "Title": "Yer Hızı",
+        "UnitKnots": "knot",
+        "UnitKt": "kt"
+      },
+      "Result": {
+        "BeforeTarget": "hedeften önce",
+        "DesiredDescentAngle": "İstenilen İniş Açısı",
+        "DesiredVerticalSpeed": "İstenilen Düşey Hız",
+        "StartYourDescentAbout": "İnişi başlatma civarı",
+        "Title": "Sonuç"
+      },
+      "TT": {
+        "DesynchronizeInputWithAircraftsCurrentAltitude": "Giriş ile Uçağın Mevcut İrtifasının Eşleştirmesini Kaldır",
+        "SynchronizeInputWithAircraftsCurrentAltitude": "Giriş ile Uçağın Mevcut İrtifasını Eşleştir"
+      },
+      "Title": "Alçalma Başlangıcı"
+    }
+  },
+  "Presets": {
+    "AircraftStates": {
+      "Cancel": "İptal",
+      "ColdDark": "Cold & Dark",
+      "ConfirmationDialogMsg": "Lütfen hazır ayarın yüklenmesini onaylayın.",
+      "CurrentProcedureStep": "Mevcut Prosedür Adımı",
+      "PleaseConfirmLoadingOfPreset": "Lütfen hazır ayarın yüklenmesini onaylayın.",
+      "ReadyPushback": "Pushback için hazır",
+      "ReadyTakeoff": "Kalkış için hazır",
+      "ReadyTaxi": "Taksi için hazır",
+      "SelectAPresetToLoad": "Yüklenecek Hazır Ayar Seç",
+      "TheAircraftMustBeOnTheGroundToLoadAPreset": "Bir ön ayar yüklemek için uçak yerde olmalıdır.",
+      "TheAircraftMustBeOntheGroundToLoadAPreset": "Bir ön ayar yüklemek için uçak yerde olmalıdır.",
+      "Title": "Uçak Durumları",
+      "Turnaround": "Geri Dönüş Hazırlığı"
+    },
+    "InteriorLighting": {
+      "AircraftNeedsToBePoweredToLoadPresets": "Ön Ayarları Yüklemek için Uçağa Güç Verilmesi Gerekiyor",
+      "AircraftNeedsToBePoweredToSavePresets": "Ön Ayarları Kaydetmek için Uçağa Güç Verilmesi Gerekiyor",
+      "LoadPreset": "Ön Ayarı Yükle",
+      "LoadingPreset": "Ön Ayar Yükleniyor",
+      "NewNameConfirmationDialogMsg": "Please confirm the new name for the lighting preset",
+      "NoName": "İsimsiz",
+      "PleaseConfirmSavingPreset": "Lütfen Ön Ayarı Kaydetmeyi Onaylayın",
+      "SavePreset": "Ön ayarı kaydet",
+      "SavingPreset": "Ön Ayar Kaydediliyor",
+      "SelectAnInteriorLightingPresetToLoadOrSave": "Yüklemek veya kaydetmek için bir iç aydınlatma ön ayarı seçin",
+      "TT": {
+        "AircraftMustBePowered": "Uçağa Güç Verilmelidir",
+        "ClickTextToChangeThePresetsName": "Ön Ayarın Adını Değiştirmek için Metni tıklayın",
+        "LoadThisPreset": "Bu Ön Ayarı Yükle",
+        "SaveTheCurrentLightingLevels": "Mevcut Aydınlatma Düzeylerini Kaydet"
+      },
+      "TheAircraftMustBePoweredForInteriorLightingPresets": "İç aydınlatma ön ayarlarını kaydetmek için uçağa güç verilmesi gerekmekte.",
+      "Title": "İç Aydınlatma"
+    },
+    "Title": "Ön Ayarlar"
+  },
+  "Pushback": {
+    "AvailableOnlyOnGround": "Pushback controls are only available on the ground",
+    "Backward": "Geri",
+    "CallTug": "Çekiciye Haber Ver",
+    "DisableSystemMessageBody": "Are you sure you want to disable the Pushback System? This will also release the tug.",
+    "DisableSystemMessageTitle": "Disable Pushback System",
+    "EnableSystemMessageBody": "The new flyPadOS 3 Pushback System can cause conflicts with other pushback add-ons. We recommend not to enable the system if you plan to use another pushback add-on. ",
+    "EnableSystemMessageTitle": "Enable Pushback System",
+    "Forward": "İleri",
+    "Halt": "Durdur",
+    "LeavePageMessage": "Pausing Pushback",
+    "Left": "Left",
+    "Moving": "Moving",
+    "ParkingBrake": {
+      "Off": "Kapalı",
+      "On": "Açık",
+      "Title": "Park Freni"
+    },
+    "Right": "Right",
+    "SystemEnabledOff": "Pushback System Off",
+    "SystemEnabledOn": "Pushback System On",
+    "TT": {
+      "CallReleaseTug": "Call or release tug",
+      "CenterPlaneMode": "Center map on plane On/Off",
+      "DecreaseSpeed": "Backwards or slower forwards",
+      "IncreaseSpeed": "Forwards or slower backwards",
+      "Left": "Go left",
+      "PausePushback": "Pause or unpause pushback",
+      "Right": "Go right",
+      "SetReleaseParkingBrake": "Set or release parking brake",
+      "SliderDirection": "Move for desired direction",
+      "SliderSpeed": "Move for desired speed",
+      "SystemEnabledOff": "Click to turn the pushback system on.",
+      "SystemEnabledOn": "Click to turn the pushback system completely off.",
+      "ZoomIn": "Zoom in",
+      "ZoomOut": "Zoom out"
+    },
+    "TugAttached": "Tug is attached",
+    "TugDirection": "Çekici Yönü",
+    "TugInTransit": "Waiting for Tug/Pin",
+    "TugSpeed": "Çekici Hızı"
+  },
+  "Settings": {
+    "About": {
+      "Title": "Hakkında"
+    },
+    "AircraftOptionsPinPrograms": {
+      "AccelerationHeight": "İvme Yüksekliği (ft)",
+      "EngineOutAccelerationHeight": "Engine-Out Acceleration Height (ft)",
+      "IsisBaroUnit": "ISIS Baro Birimi",
+      "IsisMetricAltitude": "ISIS Metrik İrtifası",
+      "LatLonExtendedFormat": "FMGC Lat/Lon Waypoint Format",
+      "PaxSigns": "Yolcu İşaretleri",
+      "RmpVhfSpacing": "RMP VHF Aralığı",
+      "ThrustReductionHeight": "İtki Azaltma İrtifası (ft)",
+      "Title": "Uçak Seçenekleri / Pin Programları",
+      "WeightUnit": "Ağırlık Birimi"
+    },
+    "AtsuAoc": {
+      "AtisAtcSource": "ATIS/ATC Kaynağı",
+      "AutomaticallyImportSimBriefData": "SimBrief Verilerini Otomatik Olarak Al",
+      "Enable": "Etkinleştir",
+      "EnableTelex": "TELEX'i Etkinleştir",
+      "ErrorReporting": "Hata Raporlama",
+      "HoppieEnabled": "Hoppie enabled",
+      "HoppieUserId": "Hoppie Kullanıcı Kimliği",
+      "MetarSource": "METAR Kaynağı",
+      "OptionalA32nxErrorReporting": "İsteğe Bağlı A32NX Hata Bildirimi",
+      "PleaseCheckThatYouHaveCorrectlyEnteredYourSimbBriefUsernameOrPilotId": "Lütfen SimBrief kullanıcı adınızı veya pilot ID'nizi doğru girdiğinizden emin olun.",
+      "SimBriefUsernamePilotId": "SimBrief Kullanıcı Adı/Pilot Kimliği",
+      "TafSource": "TAF Kaynağı",
+      "Telex": "TELEX",
+      "TelexEnablesFreeTextAndLiveMap": "TELEX serbest metin ve canlı harita sağlar. Etkinleştirilirse, uçuş süresi boyunca uçak konum verileri yayınlanır. Mesajlar herkese açıktır ve denetlenmez. BU ÖZELLİĞİ KULLANIRKEN OLUŞAN RİSKLER SİZE AİTTİR. TELEX ve sağladığı özellikler hakkında daha fazla bilgi edinmek için lütfen https://docs.flybywiresim.com/telex adresine gidin.",
+      "TelexWarning": "TELEX Uyarısı",
+      "ThereWasAnErrorEncounteredWhenValidatingYourHoppieID": "Hoppie-ID'nizi doğrularken bir hata oluştu",
+      "Title": "ATSU / AOC",
+      "YouAreAbleToOptIntoAnonymousErrorReporting": "Sorunları daha hızlı teşhis etmemizi, izlememizi ve halletmemizi sağlayacak Anonim Hata Raporlamayı etkinleştirebilirsiniz. Bu özellik tamamen isteğe bağlıdır ve kişisel verileriniz asla toplanmaz. Anonim Hata Raporlaması daha kolay destek almanızı ve karşılaştığınız sorunların daha hızlı çözülmesine olanak sağlayabilir.",
+      "YourHoppieIdHasBeenRemoved": "Hoppie-ID'niz kaldırıldı",
+      "YourHoppieIdHasBeenValidated": "Hoppie-ID'niz doğrulandı",
+      "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "SimBrief Pilot kimliğiniz doğrulanmış ve şuna güncellenmiş"
+    },
+    "Audio": {
+      "Announcements": "Duyurular",
+      "BoardingMusic": "Biniş Müziği",
+      "EngineInteriorVolume": "Motor iç ses seviyesi",
+      "ExteriorMasterVolume": "Dış ana ses seviyesi",
+      "PassengerAmbience": "Yolcu Ambiyansı",
+      "PtuAudibleInCockpit": "Kokpitte PTU Duyulabilsin",
+      "Title": "Ses",
+      "WindInteriorVolume": "Rüzgar iç ses seviyesi"
+    },
+    "Fast": "Hızlı",
+    "Instant": "Anında",
+    "Real": "Gerçek",
+    "Realism": {
+      "AdirsAlignTime": "ADIRS Hizalama Zamanı",
+      "AutofillChecklists": "Kontrol listelerini Otomatik Doldur",
+      "BoardingTime": "Biniş Süresi",
+      "DmcSelfTestTime": "DMC Self Test Süresi",
+      "HomeCockpitMode": "Ev Kokpit Modu",
+      "McduFocusTimeout": "MCDU Focus Zaman Aşımı (saniye)",
+      "McduKeyboardInput": "MCDU Klavye Girişi",
+      "PauseAtTod": "T/D Pause",
+      "PauseAtTodDistance": "T/D Pause Distance (nm)",
+      "SeparateTillerFromRudderInputs": "Tiller'ı Rudder Girişlerinden Ayır",
+      "Title": "Gerçekçilik"
+    },
+    "SimOptions": {
+      "Active": "Etkin",
+      "Auto": "Otomatik",
+      "Calibrate": "Kalibrasyon",
+      "ConesEnabled": "Safety Cones",
+      "DefaultBarometerUnit": "Varsayılan Barometre Birimi",
+      "DynamicRegistrationDecal": "Dinamik Kayıt Çıkartması",
+      "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "MCDU Sunucu Bağlantısını Etkinleştir (Başarılı bağlantı olmazsa 5 dakika sonra otomatik olarak devre dışı bırakılır)",
+      "ExternalMcduServerPort": "Harici MCDU Sunucu Bağlantı Noktası",
+      "Hpa": "hPa",
+      "Inactive": "Etkin değil",
+      "LoadOnly": "Yalnızca Yükle",
+      "None": "Hiçbiri",
+      "Off": "Kapalı",
+      "Save": "Kaydet",
+      "SyncMsfsFlightPlan": "MSFS Uçuş Planını Eşitle",
+      "ThrottleDetents": "Gaz Mandalları",
+      "Title": "Simülasyon Seçenekleri",
+      "UseCalculatedIlsSignals": "Hesaplanan ILS Sinyallerini Kullan",
+      "WheelChocksEnabled": "Wheel Chocks",
+      "inHg": "inHg"
+    },
+    "ThrottleConfig": {
+      "Apply": "Uygula",
+      "AreYouSureThatYouWantToResetYourCurrentThrottleConfigurationToTheirDefaultStates": "Geçerli gaz yapılandırma ayarlarınızı varsayılan durumlarına sıfırlamak istediğinizden emin misiniz? Bu eylem geri döndürülemez.",
+      "Axis": "Eksen",
+      "Back": "Geri",
+      "ConfigureEnd": "Sonu Yapılandır",
+      "ConfigureStart": "Configure Start",
+      "CurrentValue": "Geçerli Değer",
+      "Deadband": "Ölü bant",
+      "ErrorOverlapMsg": "ile örtüşen",
+      "IndependentAxis": "Bağımsız Eksen",
+      "LoadFromFile": "Dosyadan Yükle",
+      "PleaseEnterAValidDeadzone": "Lütfen geçerli bir ölü bölge girin",
+      "ResetToDefaults": "Varsayılana sıfırla",
+      "ReverseFull": "Reverse Ful",
+      "ReverseIdle": "Reverse Idle",
+      "ReverserOnAxis": "Reverser eksende",
+      "SaveAndApply": "Kaydet ve Uygula",
+      "SetFromThrottle": "Throttle'dan ayarla",
+      "ThrottleConfigurationReset": "Throttle Yapılandırmasını Sıfırla"
+    },
+    "Title": "Ayarlar",
+    "Unrealistic": "Gerçekçi olmayan",
+    "flyPad": {
+      "AutoBrightness": "Otomatik Parlaklık",
+      "AutomaticallyShowOnscreenKeyboard": "Ekran Klavyesini Otomatik Olarak Göster",
+      "BatteryLifeEnabled": "Battery Life Simulated",
+      "Blue": "Mavi",
+      "Brightness": "Parlaklık",
+      "Dark": "Koyu",
+      "Language": "Dil",
+      "Light": "Açık",
+      "Local": "Yerel",
+      "LocalTimeFormat": "Yerel Saat Biçimi",
+      "OnscreenKeyboardLayout": "Ekran Klavyesi Yerleşimi",
+      "ShowColoredRawMetar": "Renkli Ham METAR'ı Göster",
+      "ShowStatusBarFlightProgressIndicator": "Durum Çubuğu Uçuş İlerleme Göstergesini Göster",
+      "Theme": "Tema",
+      "TimeDisplayed": "Gösterilen Süre",
+      "Title": "flyPad",
+      "TwelveHours": "12h",
+      "TwentyFourHours": "24 saat",
+      "Utc": "UTC",
+      "UtcAndLocal": "UTC ve Yerel"
+    }
+  },
+  "StatusBar": {
+    "Apr": "Nis",
+    "Aug": "Ağu",
+    "Dec": "Ara",
+    "Feb": "Şub",
+    "Fri": "Cum",
+    "Jan": "Oca",
+    "Jul": "Jul",
+    "Jun": "Haz",
+    "Mar": "Mar",
+    "May": "Mayıs",
+    "Mon": "Pzt",
+    "Nov": "Kas",
+    "Oct": "Eki",
+    "Sat": "Cmt",
+    "Sep": "Eyl",
+    "Sun": "Paz",
+    "TT": {
+      "ConnectedToLocalApi": "Yerel API'ye Bağlandı",
+      "DisconnectedFromLocalApi": "Yerel API bağlantısı kesildi",
+      "TurnOffOrShutdownEfb": "EFB'yi Kapatın"
+    },
+    "Thu": "Per",
+    "Tue": "Sal",
+    "Wed": "Çar"
+  }
+}

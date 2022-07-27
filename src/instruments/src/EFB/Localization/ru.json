@@ -1,0 +1,577 @@
+{
+  "AirTrafficControl": {
+    "Active": "Активная",
+    "ChangeATISATCSourceButton": "Изменить источник ATIS/ATC",
+    "ConnectHoppieACARS": "Подключить Hoppie ACARS",
+    "NoInformationAvailableForThisFrequency": "Нет доступной информации по этой частоте",
+    "SelectCorrectATISATCSource": "Эта страница доступна только в том случае, если в качестве источника ATIS/ATC выбран IVAO или VATSIM на странице настроек.",
+    "SetActive": "Установить активной",
+    "SetStandby": "Установить резервной",
+    "Standby": "Резервная",
+    "Title": "Управление Воздушным Движением"
+  },
+  "Checklists": {
+    "AreYouSureYouWantToResetAllChecklists": "Вы уверены, что хотите сбросить все чек-листы?",
+    "AreYouSureYouWantToResetChecklists": "Вы уверены, что хотите сбросить все контрольные списки?",
+    "ChecklistResetWarning": "Предупреждение сброса контрольного списка",
+    "MarkChecklistAsComplete": "Отметить контрольный список как завершенный",
+    "MarkItemAsComplete": "Отметить пункт как завершенный",
+    "ProceedToNextChecklist": "Перейти к следующему контрольному списку",
+    "ResetAll": "Сбросить все",
+    "ResetChecklist": "Сбросить контрольный список",
+    "TheLastChecklistIsComplete": "Последний контрольный список завершен",
+    "ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted": "Остались пункты контрольного списка автозаполнения, которые еще не завершены",
+    "Title": "Контрольные списки"
+  },
+  "Dashboard": {
+    "ImportantInformation": {
+      "Checklists": {
+        "NoRelevantChecklists": "Нет соответствующих контрольных списков",
+        "Title": "Контрольные списки"
+      },
+      "GoToPage": "Перейти на страницу",
+      "Maintenance": {
+        "NoActiveFailures": "Нет активных отказов",
+        "Title": "Обслуживание"
+      },
+      "PinnedCharts": {
+        "NoPinnedCharts": "Нет закрепленных карт",
+        "Title": "Закрепленные карты"
+      },
+      "TT": {
+        "RearrangeWidgets": "Переупорядочить виджеты"
+      },
+      "Title": "Важная информация",
+      "Weather": {
+        "AirPressure": "Атм. давление",
+        "DewPoint": "Точка росы",
+        "IcaoInvalid": "ICAO недействителен или отсутствует METAR",
+        "Loading": "Загрузка...",
+        "MetarParsingError": "Не удалось разобрать полученный METAR",
+        "NoIcaoProvided": "ИКАО не предоставленно",
+        "NotAvailableShort": "N/A",
+        "Raw": "Необработанный",
+        "TT": {
+          "SwitchToIconView": "Переключиться в режим просмотра значков",
+          "SwitchToRawMetarView": "Перейти к необработанному представлению METAR"
+        },
+        "Temperature": "Температура",
+        "Title": "Погода",
+        "WindSpeed": "Скорость ветра"
+      }
+    },
+    "Title": "Панель управления",
+    "YourFlight": {
+      "Alternate": "Альтернативный",
+      "AverageWind": "Средний ветер",
+      "CompanyRoute": "Маршрут компании",
+      "CostIndex": "Индекс стоимости",
+      "CruiseAlt": "Крейсерская высота",
+      "ImportSimBriefData": "Импортировать данные simBrief",
+      "Route": "Маршрут",
+      "SimBriefDataNotYetLoaded": "Данные simBrief еще не загружены.",
+      "Title": "Ваш рейс",
+      "ZFW": "ZFW"
+    }
+  },
+  "Dispatch": {
+    "Ofp": {
+      "ImportSimBriefData": "Импорт данных simBrief",
+      "TT": {
+        "IncreaseFontSize": "Увеличить шрифт",
+        "ReduceFontSize": "Уменьшить шрифт"
+      },
+      "Title": "OFP",
+      "YouHaveNotYetImportedAnySimBriefData": "Вы еще не импортировали данные simBrief."
+    },
+    "Overview": {
+      "ActualGW": "Actual GW",
+      "Engines": "Двигатели",
+      "MMO": "MMO",
+      "MRW": "MRW",
+      "MTOW": "MTOW",
+      "MZFW": "MZFW",
+      "MaximumCargo": "Максимальный груз",
+      "MaximumFuelCapacity": "Максимальный запас топлива",
+      "MaximumPassengers": "Максимальное количество пассажиров",
+      "Model": "Модель",
+      "Range": "Дальность",
+      "Title": "Обзор"
+    },
+    "Title": "Отправка"
+  },
+  "Failures": {
+    "Comfort": {
+      "Title": "Комфорт"
+    },
+    "Compact": {
+      "Title": "Компакт"
+    },
+    "FullSimulationOfTheFailuresBelowIsntYetGuaranteed": "Полная симуляция отказов, описанных ниже, пока не гарантируется.",
+    "Search": "Поиск",
+    "Title": "Отказы"
+  },
+  "Ground": {
+    "Fuel": {
+      "CenterTank": "Центральный бак",
+      "Completed": "Завершено",
+      "Defueling": "Слив топлива",
+      "EstimatedDuration": "Предполагаемая продолжительность (минуты)",
+      "EstimatedTime": "Примерное время",
+      "LeftInnerTank": "Левый внутренний бак",
+      "LeftOuterTank": "Левый наружный бак",
+      "ReadyToStart": "Готов к запуску",
+      "Refuel": "Заправиться",
+      "RefuelTime": "Время заправки",
+      "Refueling": "Заправка",
+      "RightInnerTank": "Правый внутренний бак",
+      "RightOuterTank": "Правый внешний бак",
+      "TT": {
+        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "Изменение продолжительности заправки только на земле при выключенных двигателях",
+        "FillBlockFuelFromSimBrief": "Заполнить блок топлива из simBrief"
+      },
+      "Title": "Топливо",
+      "TotalFuel": "Общее количество топлива",
+      "Unavailable": "Недоступно"
+    },
+    "Payload": {
+      "BoardingTime": "Boarding Time",
+      "Cargo": "Cargo",
+      "Current": "Current",
+      "Passengers": "Passengers",
+      "Planned": "Planned",
+      "TT": {
+        "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Aircraft Must Be On the Ground and Have Engines Shutdown to Change Boarding Duration",
+        "FillPayloadFromSimbrief": "Fill Payload Information from Simbrief",
+        "MaxCargo": "Max Cargo",
+        "MaxPassengers": "Maximum Passengers",
+        "MaxZFW": "Maximum ZFW",
+        "MaxZFWCG": "Maximum ZFWCG",
+        "PerPaxBagWeight": "Per Passenger Bag Weight",
+        "PerPaxWeight": "Per Passenger Weight",
+        "StartBoarding": "Begin Boarding"
+      },
+      "Title": "Payload",
+      "ZFW": "ZFW",
+      "ZFWCG": "ZFWCG"
+    },
+    "Pushback": {
+      "Title": "Откат"
+    },
+    "Services": {
+      "BaggageTruck": "Багажный грузовик",
+      "CateringTruck": "Кейтеринг грузовик",
+      "Cones": "Предохранительные конусы",
+      "DoorAft": "Задняя дверь",
+      "DoorCargo": "Грузовая дверь",
+      "DoorFwd": "Передняя дверь",
+      "ExternalPower": "Наземный блок питания",
+      "FuelTruck": "Топливная тележка",
+      "JetBridge": "Джет Бридж",
+      "Title": "Сервисы",
+      "WheelChocks": "Колесные упоры"
+    },
+    "Title": "Земля"
+  },
+  "Modals": {
+    "Cancel": "Отмена",
+    "Confirm": "Подтвердить",
+    "Okay": "ОК"
+  },
+  "NavigationAndCharts": {
+    "All": "Все",
+    "Altn": "Алтн",
+    "ExitFullscreenMode": "Выйти из полноэкранного режима",
+    "From": "От",
+    "LocalFiles": {
+      "Both": "Оба",
+      "EstablishingConnection": "Установка соединения...",
+      "FailedToEstablishConnection": "Не удалось установить соединение.",
+      "FileName": "Имя файла",
+      "Image": "Изображение",
+      "Pdf": "PDF",
+      "Retry": "Повторить",
+      "Title": "Локальные файлы"
+    },
+    "Navigraph": {
+      "AirportDoesNotExist": "Аэропорта не существует",
+      "AuthenticateWithNavigraph": "Аутентификация с помощью Navigraph",
+      "InsufficientEnv": "Неверный .env файл",
+      "IntoYourBrowserAndEnterTheCodeBelow": "в браузере и введите приведенный ниже код\n",
+      "LoadingMsg": "Загрузка...",
+      "NoAirportSelected": "Аэропорт не выбран",
+      "ResetNavigraphAuthentication": "Сбросить аутентификацию Navigraph",
+      "ScanTheQrCodeOrOpen": "Отсканируйте QR-код или откройте",
+      "Title": "Navigraph"
+    },
+    "PinnedCharts": {
+      "Delete": "Удалить",
+      "Edit": "Изменить",
+      "NoItemsFound": "Ничего не найдено",
+      "SearchPlaceholder": "Поиск",
+      "ShowingChartsFromAllProviders": "Отображение карт от всех поставщиков",
+      "SortMethods": {
+        "AlphabeticalAZ": "По алфавиту - А -> Z",
+        "AlphabeticalZA": "По алфавиту - Z -> A",
+        "FirstAccessed": "Первый доступ",
+        "LastAccessed": "Последний доступ",
+        "None": "Нет"
+      },
+      "TT": {
+        "ChangeChartProvider": "Изменить поставщика порта",
+        "ChangeChartSortMethod": "Изменить метод сортировки карт",
+        "RemoveAllPinnedCharts": "Удалить все закрепленные карты"
+      },
+      "Title": "Закрепленные карты",
+      "View": "Посмотреть"
+    },
+    "PleaseWait": "Пожалуйста, подождите...",
+    "ShowingAllItems": "Показано все",
+    "TT": {
+      "FitChartToHeight": "Расширить карту по высоте",
+      "FitChartToWidth": "Расширить карту по ширине",
+      "ResetMovement": "Сброс движения",
+      "RotateLeft45Degrees": "Повернуть влево на 45 градусов",
+      "RotateRight45Degrees": "Повернуть вправо на 45 градусов",
+      "ZoomIn": "Увеличить",
+      "ZoomOut": "Уменьшить"
+    },
+    "ThereAreNoChartsToDisplay": "Нет карт для отображения.",
+    "ThereIsNoChartToDisplay": "Нет карты для отображения.",
+    "Title": "Навигация и карты",
+    "To": "До"
+  },
+  "Performance": {
+    "Data": "Данные",
+    "Landing": {
+      "AirportIcao": "Аэропорт ICAO",
+      "ApproachSpeed": "Скорость подхода",
+      "ApproachSpeedUnit": "уз.",
+      "AutoLand": "Автоматическая посадка",
+      "Calculate": "Вычислить",
+      "Clear": "Очистить",
+      "DropDownNo": "Нет",
+      "DropDownYes": "Да",
+      "FillDataFrom": "Заполнить из данных",
+      "FlapsConfiguration": "Конфигурация закрылков",
+      "Low": "Низкий",
+      "MaximumManual": "Максимальный",
+      "Medium": "Средний",
+      "MetarErrorDialogMessage": "Не удалось успешно проанализировать METAR из вашего OFP. Хотите вместо этого автоматически заполнить данные с помощью извлечённого METAR?",
+      "MetarErrorDialogTitle": "Ошибка при разборе OFP METAR",
+      "OverweightProcedure": "Процедура избыточного веса",
+      "Qnh": "QNH",
+      "ReverseThrust": "Обратная тяга",
+      "RunwayAltitude": "Высота ВПП",
+      "RunwayAltitudeUnit": "футов ASL",
+      "RunwayCondition": "Состояние ВПП",
+      "RunwayConditions": {
+        "Dry": "Сухая (6)",
+        "Good": "Хорошая (5)",
+        "GoodMedium": "Хорошая средняя (4)",
+        "Medium": "Средняя (3)",
+        "MediumPoor": "Средняя плохая (2)",
+        "Poor": "Плохая (1)"
+      },
+      "RunwayHeading": "Направление ВПП",
+      "RunwayHeadingUnit": "°",
+      "RunwayLda": "ВПП LDA",
+      "RunwayLdaUnitFt": "фут",
+      "RunwayLdaUnitMeter": "м",
+      "RunwaySlope": "Наклон ВПП",
+      "TT": {
+        "YouNeedToEnterAnIcaoCodeInOrderToMakeAMetarRequest": "Вам необходимо ввести код ICAO, чтобы сделать запрос METAR",
+        "YouNeedToLoadSimBriefDataInOrderToAutofillData": "Для автозаполнения данных необходимо загрузить данные simBrief"
+      },
+      "Temperature": "Температура",
+      "Title": "Посадка",
+      "UnitFt": "фут",
+      "UnitMeter": "м",
+      "Weight": "Вес",
+      "WindDirection": "Направление ветра",
+      "WindDirectionUnit": "°",
+      "WindMagnitude": "Скорость ветра",
+      "WindMagnitudeUnit": "уз."
+    },
+    "SYNC": "СИНХРОНИЗИРОВАТЬ",
+    "Title": "Характеристика",
+    "TopOfDescent": {
+      "Data": {
+        "Angle": "Угол",
+        "CurrentAltitude": "Текущая высота",
+        "Distance": "Расстояние",
+        "GroundSpeed": "Скорость относительно земли",
+        "TargetAltitude": "Высота цели",
+        "Title": "Данные",
+        "UnitAngleDegrees": "градусов",
+        "UnitFeet": "футов",
+        "UnitFtMin": "фут/мин",
+        "UnitNM": "NM",
+        "VerticalSpeed": "Вертикальная скорость"
+      },
+      "GroundSpeed": {
+        "Add": "Добавить",
+        "FetchingSpeedFromSimulator": "Получение скорости из симулятора",
+        "GroundSpeed": "Скорость относительно земли",
+        "ManualInput": "Ручной ввод",
+        "MinAltitude": "Мин. высота",
+        "RemoveLast": "Удалить последнюю",
+        "Sync": "СИНХРОНИЗИРОВАТЬ",
+        "Title": "Скорость относительно земли",
+        "UnitKnots": "узлы",
+        "UnitKt": "уз"
+      },
+      "Result": {
+        "BeforeTarget": "перед целью",
+        "DesiredDescentAngle": "Желаемый угол снижения",
+        "DesiredVerticalSpeed": "Желаемая вертикальная скорость",
+        "StartYourDescentAbout": "Начните своё снижения",
+        "Title": "Результат"
+      },
+      "TT": {
+        "DesynchronizeInputWithAircraftsCurrentAltitude": "Десинхронизировать ввод текущей высоты",
+        "SynchronizeInputWithAircraftsCurrentAltitude": "Синхронизировать ввод текущий высоты"
+      },
+      "Title": "Вершина снижения"
+    }
+  },
+  "Presets": {
+    "AircraftStates": {
+      "Cancel": "Отмена",
+      "ColdDark": "Выключенный",
+      "ConfirmationDialogMsg": "Подтвердите загрузку пресета.",
+      "CurrentProcedureStep": "Текущий этап процедуры",
+      "PleaseConfirmLoadingOfPreset": "Подтвердите загрузку пресета.",
+      "ReadyPushback": "Готов к откату",
+      "ReadyTakeoff": "Готов к взлету",
+      "ReadyTaxi": "Готов к такси",
+      "SelectAPresetToLoad": "Выберите пресет для загрузки",
+      "TheAircraftMustBeOnTheGroundToLoadAPreset": "Самолёт должен находиться на земле, чтобы загрузить пресет.",
+      "TheAircraftMustBeOntheGroundToLoadAPreset": "Самолет должен находиться на земле, чтобы загрузить пресет.",
+      "Title": "Состоянии самолёта",
+      "Turnaround": "Оборот"
+    },
+    "InteriorLighting": {
+      "AircraftNeedsToBePoweredToLoadPresets": "Самолёт должен иметь питание для загрузки пресетов",
+      "AircraftNeedsToBePoweredToSavePresets": "Самолёт должен иметь питание для загрузки пресетов",
+      "LoadPreset": "Загрузить пресет",
+      "LoadingPreset": "Загрузка пресета...",
+      "NewNameConfirmationDialogMsg": "Подтвердите новое имя для пресета освещения",
+      "NoName": "Без имени",
+      "PleaseConfirmSavingPreset": "Подтвердите сохранение пресета",
+      "SavePreset": "Сохранить пресет",
+      "SavingPreset": "Сохранение пресета...",
+      "SelectAnInteriorLightingPresetToLoadOrSave": "Выберите пресет освещения кабины для загрузки или сохранения.",
+      "TT": {
+        "AircraftMustBePowered": "Самолёт должен иметь питание",
+        "ClickTextToChangeThePresetsName": "Нажмите на текст чтобы изменить имя пресета",
+        "LoadThisPreset": "Загрузить этот пресет",
+        "SaveTheCurrentLightingLevels": "Сохранить текущих уровней освещения"
+      },
+      "TheAircraftMustBePoweredForInteriorLightingPresets": "Самолет должен иметь питание для пресетов освещения салона.",
+      "Title": "Внутреннее освещение"
+    },
+    "Title": "Пресеты"
+  },
+  "Pushback": {
+    "AvailableOnlyOnGround": "Элементы управления буксировки доступны только на земле",
+    "Backward": "Назад",
+    "CallTug": "Вызов буксира",
+    "DisableSystemMessageBody": "Вы действительно хотите отключить систему буксировки? Это также освободит буксир.",
+    "DisableSystemMessageTitle": "Отключить систему буксировки",
+    "EnableSystemMessageBody": "Новая система буксировки flyPadOS 3 еще не доработана. Он несовместим с другими дополнениями буксировки и может вызвать другие проблемы. ",
+    "EnableSystemMessageTitle": "Включить систему буксировки",
+    "Forward": "Вперёд",
+    "Halt": "Приостановить",
+    "LeavePageMessage": "Приостановка отталкивания",
+    "Left": "Налево",
+    "Moving": "Перемещение",
+    "ParkingBrake": {
+      "Off": "Откл.",
+      "On": "Вкл.",
+      "Title": "Стояночный тормоз"
+    },
+    "Right": "Направо",
+    "SystemEnabledOff": "Система буксировки выключена",
+    "SystemEnabledOn": "Система буксировки включена",
+    "TT": {
+      "CallReleaseTug": "Вызовите или отпустите буксир",
+      "CenterPlaneMode": "Вкл/выкл центра карты",
+      "DecreaseSpeed": "Назад или медленнее вперед (двойной щелчок, чтобы установить скорость на 0)",
+      "IncreaseSpeed": "Вперёд или медленнее назад",
+      "Left": "Налево",
+      "PausePushback": "Приостановить или отменить откат",
+      "Right": "Направо",
+      "SetReleaseParkingBrake": "Установите или отпустите стояночный тормоз",
+      "SliderDirection": "Перемещение в нужном направлении",
+      "SliderSpeed": "Перемещение на желаемую скорость",
+      "SystemEnabledOff": "Нажмите, чтобы включить систему буксировки.",
+      "SystemEnabledOn": "Нажмите, чтобы полностью отключить систему буксировки.",
+      "ZoomIn": "Увеличить",
+      "ZoomOut": "Уменьшить"
+    },
+    "TugAttached": "Буксир прикреплен",
+    "TugDirection": "Направление буксира",
+    "TugInTransit": "Ожидание буксира",
+    "TugSpeed": "Скорость буксира"
+  },
+  "Settings": {
+    "About": {
+      "Title": "Описание"
+    },
+    "AircraftOptionsPinPrograms": {
+      "AccelerationHeight": "Высота ускорения (фт)",
+      "EngineOutAccelerationHeight": "Высота ускорения на выходе двигателя (фт)",
+      "IsisBaroUnit": "Единица измерения барометра на ISIS",
+      "IsisMetricAltitude": "Метрическая высота на ISIS",
+      "LatLonExtendedFormat": "Формат промежуточных точек FMGC для широты/долготы",
+      "PaxSigns": "Табло салона",
+      "RmpVhfSpacing": "Интервал RMP VHF",
+      "ThrustReductionHeight": "Высота уменьшения тяги (фт)",
+      "Title": "Опции самолёта / Пин-программы",
+      "WeightUnit": "Единицы измерения веса"
+    },
+    "AtsuAoc": {
+      "AtisAtcSource": "Источник ATIS/ATC",
+      "AutomaticallyImportSimBriefData": "Автоматический импорт данных SimBrief",
+      "Enable": "Включить",
+      "EnableTelex": "Включить TELEX",
+      "ErrorReporting": "Отчеты об ошибках",
+      "HoppieEnabled": "Hoppie включен",
+      "HoppieUserId": "Идентификатор пользователя Hoppie (ID)",
+      "MetarSource": "Источник METAR",
+      "OptionalA32nxErrorReporting": "Необязательные отчеты об ошибках A32NX",
+      "PleaseCheckThatYouHaveCorrectlyEnteredYourSimbBriefUsernameOrPilotId": "Убедитесь, что вы правильно ввели имя пользователя simBrief или идентификатор пилота.",
+      "SimBriefUsernamePilotId": "Имя пользователя/идентификатор пилота simBrief",
+      "TafSource": "Источник TAF",
+      "Telex": "TELEX",
+      "TelexEnablesFreeTextAndLiveMap": "TELEX обеспечивает свободный текст и живую карту. Если включено, данные о местоположении воздушного судна публикуются на время полета. Сообщения являются общедоступными и не проходят модерацию. ИСПОЛЬЗУЙТЕ ЭТУ ФУНКЦИЮ НА СВОЙ РИСК. Чтобы узнать больше о TELEX и его функциях, перейдите на страницу https://docs.flybywiresim.com/telex.",
+      "TelexWarning": "Предупреждение TELEX",
+      "ThereWasAnErrorEncounteredWhenValidatingYourHoppieID": "При проверке вашего Hoppie ID произошла ошибка",
+      "Title": "ATSU / AOC",
+      "YouAreAbleToOptIntoAnonymousErrorReporting": "Вы можете подписаться на анонимные отчеты об ошибках, которые позволят нам быстрее диагностировать, отслеживать и решать проблемы. Эта функция не является обязательной, и мы никогда не будем собирать ваши личные данные, но она может упростить вам получение поддержки и быстрее устранить возникшие проблемы.",
+      "YourHoppieIdHasBeenRemoved": "Ваш Hoppie ID удален",
+      "YourHoppieIdHasBeenValidated": "Ваш Hoppie ID был подтвержден",
+      "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "Ваш идентификатор SimBrief проверен и обновлен"
+    },
+    "Audio": {
+      "Announcements": "Объявления",
+      "BoardingMusic": "Музыка во время посадки",
+      "EngineInteriorVolume": "Громкость двигателей внутри",
+      "ExteriorMasterVolume": "Громкость внешних звуков",
+      "PassengerAmbience": "Звуковая атмосфера пассажиров",
+      "PtuAudibleInCockpit": "Звук PTU в кабине",
+      "Title": "Аудио",
+      "WindInteriorVolume": "Громкость ветра"
+    },
+    "Fast": "Быстро",
+    "Instant": "Мгновенно",
+    "Real": "Реалистично",
+    "Realism": {
+      "AdirsAlignTime": "Время калибровки ADIRS",
+      "AutofillChecklists": "Автозаполнение контрольных списков",
+      "BoardingTime": "Скорость посадки",
+      "DmcSelfTestTime": "Время самотестирования DMC",
+      "HomeCockpitMode": "Режим домашней кабины",
+      "McduFocusTimeout": "Тайм-аут фокуса MCDU (секунды)",
+      "McduKeyboardInput": "Ввод с клавиатуры MCDU",
+      "PauseAtTod": "Т/Д Пауза",
+      "PauseAtTodDistance": "Расстояние паузы Т/Д (нм)",
+      "SeparateTillerFromRudderInputs": "Отдельный румпель от входов руля",
+      "Title": "Реализм"
+    },
+    "SimOptions": {
+      "Active": "Активная",
+      "Auto": "Авто",
+      "Calibrate": "Калибровка",
+      "ConesEnabled": "Предохранительные конусы",
+      "DefaultBarometerUnit": "Единица измерения барометра по умолчанию",
+      "DynamicRegistrationDecal": "Наклейка с динамической регистрацией",
+      "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Подключение к серверу MCDU (автоматически деактивируется через 5 минут, если соединение не было успешным)",
+      "ExternalMcduServerPort": "Порт внешнего сервера MCDU",
+      "Hpa": "гПа",
+      "Inactive": "Неактивно",
+      "LoadOnly": "Только загрузка",
+      "None": "Нет",
+      "Off": "Откл.",
+      "Save": "Сохранить",
+      "SyncMsfsFlightPlan": "Синхронизировать план полета MSFS",
+      "ThrottleDetents": "Защелки рычагов",
+      "Title": "Параметры симулятора",
+      "UseCalculatedIlsSignals": "Использовать рассчитанные сигналы ILS",
+      "WheelChocksEnabled": "Колесные упоры",
+      "inHg": "дюйм. рт.ст."
+    },
+    "ThrottleConfig": {
+      "Apply": "Применить",
+      "AreYouSureThatYouWantToResetYourCurrentThrottleConfigurationToTheirDefaultStates": "Вы уверены, что хотите сбросить текущие настройки конфигурации рычагов до значений по умолчанию? Это действие необратимо.",
+      "Axis": "Ось",
+      "Back": "Назад",
+      "ConfigureEnd": "Настроить конец защелки",
+      "ConfigureStart": "Начать конфигурацию",
+      "CurrentValue": "Текущее значение",
+      "Deadband": "Зона нечувствительности",
+      "ErrorOverlapMsg": "перекрывается",
+      "IndependentAxis": "Отдельные оси",
+      "LoadFromFile": "Загрузить из файла",
+      "PleaseEnterAValidDeadzone": "Пожалуйста, введите действительную мертвую зону",
+      "ResetToDefaults": "Сбросить к значениям по умолчанию",
+      "ReverseFull": "Полная обратная тяга",
+      "ReverseIdle": "Малая обратная тяга",
+      "ReverserOnAxis": "Обратная тяга на оси",
+      "SaveAndApply": "Сохранить и применить",
+      "SetFromThrottle": "Установить из рычагов",
+      "ThrottleConfigurationReset": "Сбросить конфигурацию рычагов"
+    },
+    "Title": "Настройки",
+    "Unrealistic": "Не реалистично",
+    "flyPad": {
+      "AutoBrightness": "Автояркость",
+      "AutomaticallyShowOnscreenKeyboard": "Автоматически показывать экранную клавиатуру",
+      "BatteryLifeEnabled": "Имитация расхода батареи",
+      "Blue": "Синяя",
+      "Brightness": "Яркость",
+      "Dark": "Темная",
+      "Language": "Язык",
+      "Light": "Светлая",
+      "Local": "Местное",
+      "LocalTimeFormat": "Формат местного времени",
+      "OnscreenKeyboardLayout": "Раскладка экранной клавиатуры",
+      "ShowColoredRawMetar": "Показать цветной необработанный METAR",
+      "ShowStatusBarFlightProgressIndicator": "Показывать индикатор выполнения полета в строке состояния",
+      "Theme": "Тема",
+      "TimeDisplayed": "Отображаемое время",
+      "Title": "flyPad",
+      "TwelveHours": "12 Часовой",
+      "TwentyFourHours": "24 Часовой",
+      "Utc": "UTC",
+      "UtcAndLocal": "UTC и местное"
+    }
+  },
+  "StatusBar": {
+    "Apr": "Апр",
+    "Aug": "Авг",
+    "Dec": "Дек",
+    "Feb": "Фев",
+    "Fri": "Пт",
+    "Jan": "Янв",
+    "Jul": "Июл",
+    "Jun": "Июн",
+    "Mar": "Мар",
+    "May": "Май",
+    "Mon": "Пн",
+    "Nov": "Ноя",
+    "Oct": "Окт",
+    "Sat": "Сб",
+    "Sep": "Сен",
+    "Sun": "Вс",
+    "TT": {
+      "ConnectedToLocalApi": "Подключено к локальному API",
+      "DisconnectedFromLocalApi": "Отключено от локального API",
+      "TurnOffOrShutdownEfb": "Включить или выключить EFB"
+    },
+    "Thu": "Чт",
+    "Tue": "Вт",
+    "Wed": "Ср"
+  }
+}

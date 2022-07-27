@@ -114,6 +114,9 @@ bool ThrottleAxisMapping::loadFromFile() {
   // update configuration
   updateMappingFromConfiguration(configuration);
 
+  // set current value to idle
+  setCurrentValue(idleValue);
+
   // success
   return true;
 }
@@ -128,6 +131,9 @@ bool ThrottleAxisMapping::saveToFile() {
 
   // set data on structure
   storeConfigurationInIniStructure(iniStructure, loadConfigurationFromLocalVariables());
+
+  // set current value to idle
+  setCurrentValue(idleValue);
 
   // write to file
   return iniFile.write(iniStructure, true);

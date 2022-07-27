@@ -12,7 +12,9 @@ export interface PFDSimvars {
     altitude: number;
     speed: number;
     alphaProt: number;
-    onGround: number;
+    noseGearCompressed: boolean;
+    leftMainGearCompressed: boolean;
+    rightMainGearCompressed: boolean;
     activeLateralMode: number;
     activeVerticalMode: number;
     fmaModeReversion: boolean;
@@ -110,6 +112,9 @@ export interface PFDSimvars {
     daRaw: number;
     ls1Button: boolean;
     ls2Button: boolean;
+    xtk: number;
+    ldevRequestLeft: boolean;
+    ldevRequestRight: boolean;
   }
 
 export enum PFDVars {
@@ -124,7 +129,9 @@ export enum PFDVars {
     altitude = 'L:A32NX_ADIRS_ADR_1_ALTITUDE',
     speed = 'L:A32NX_ADIRS_ADR_1_COMPUTED_AIRSPEED',
     alphaProt = 'L:A32NX_SPEEDS_ALPHA_PROTECTION',
-    onGround = 'L:A32NX_LGCIU_1_NOSE_GEAR_COMPRESSED',
+    noseGearCompressed = 'L:A32NX_LGCIU_1_NOSE_GEAR_COMPRESSED',
+    leftMainGearCompressed = 'L:A32NX_LGCIU_1_LEFT_GEAR_COMPRESSED',
+    rightMainGearCompressed = 'L:A32NX_LGCIU_1_RIGHT_GEAR_COMPRESSED',
     activeLateralMode = 'L:A32NX_FMA_LATERAL_MODE',
     activeVerticalMode = 'L:A32NX_FMA_VERTICAL_MODE',
     fmaModeReversion = 'L:A32NX_FMA_MODE_REVERSION',
@@ -222,6 +229,9 @@ export enum PFDVars {
     daRaw = 'L:A32NX_ADIRS_IR_1_DRIFT_ANGLE',
     ls1Button = 'L:BTN_LS_1_FILTER_ACTIVE',
     ls2Button = 'L:BTN_LS_2_FILTER_ACTIVE',
+    xtk = 'L:A32NX_FG_CROSS_TRACK_ERROR',
+    ldevLeft = 'L:A32NX_FMGC_L_LDEV_REQUEST',
+    ldevRight = 'L:A32NX_FMGC_R_LDEV_REQUEST',
   }
 
 /** A publisher to poll and publish nav/com simvars. */
@@ -238,7 +248,9 @@ export class PFDSimvarPublisher extends SimVarPublisher<PFDSimvars> {
         ['altitude', { name: PFDVars.altitude, type: SimVarValueType.Number }],
         ['speed', { name: PFDVars.speed, type: SimVarValueType.Number }],
         ['alphaProt', { name: PFDVars.alphaProt, type: SimVarValueType.Number }],
-        ['onGround', { name: PFDVars.onGround, type: SimVarValueType.Number }],
+        ['noseGearCompressed', { name: PFDVars.noseGearCompressed, type: SimVarValueType.Bool }],
+        ['leftMainGearCompressed', { name: PFDVars.leftMainGearCompressed, type: SimVarValueType.Bool }],
+        ['rightMainGearCompressed', { name: PFDVars.rightMainGearCompressed, type: SimVarValueType.Bool }],
         ['activeLateralMode', { name: PFDVars.activeLateralMode, type: SimVarValueType.Number }],
         ['activeVerticalMode', { name: PFDVars.activeVerticalMode, type: SimVarValueType.Number }],
         ['fmaModeReversion', { name: PFDVars.fmaModeReversion, type: SimVarValueType.Bool }],
@@ -336,6 +348,9 @@ export class PFDSimvarPublisher extends SimVarPublisher<PFDSimvars> {
         ['daRaw', { name: PFDVars.daRaw, type: SimVarValueType.Number }],
         ['ls1Button', { name: PFDVars.ls1Button, type: SimVarValueType.Bool }],
         ['ls2Button', { name: PFDVars.ls2Button, type: SimVarValueType.Bool }],
+        ['xtk', { name: PFDVars.xtk, type: SimVarValueType.NM }],
+        ['ldevRequestLeft', { name: PFDVars.ldevLeft, type: SimVarValueType.Bool }],
+        ['ldevRequestRight', { name: PFDVars.ldevRight, type: SimVarValueType.Bool }],
     ])
 
     public constructor(bus: EventBus) {

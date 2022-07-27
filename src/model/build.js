@@ -384,6 +384,22 @@ function splitAnimations(gltfPath, outputPath, splitData) {
     fs.writeFileSync(outputPath, data);
 }
 
+function addParentNode(gltfPath, outputPath, node) {
+    const gltf = JSON.parse(fs.readFileSync(gltfPath, 'utf8'));
+    const parentIndex = gltf.nodes.findIndex(({ name }) => name === node.parent);
+    const childIndex = gltf.nodes.findIndex(({ name }) => name === node.name);
+
+    if (gltf.nodes[parentIndex]?.children) {
+        gltf.nodes[parentIndex]?.children?.push(childIndex);
+    } else if (gltf.nodes[parentIndex]) {
+        gltf.nodes[parentIndex].children = [];
+        gltf.nodes[parentIndex].children.push(childIndex);
+    }
+
+    const data = JSON.stringify(gltf);
+    fs.writeFileSync(outputPath, data);
+}
+
 const models = JSON.parse(fs.readFileSync(path.join(__dirname, 'models.json'), 'utf8'));
 const p = (n) => path.resolve(__dirname, n);
 for (const model of models) {
@@ -426,6 +442,11 @@ for (const model of models) {
         if (model.splitAnimations) {
             for (const split of model.splitAnimations) {
                 splitAnimations(p(model.output.gltf[i]), p(model.output.gltf[i]), split);
+            }
+        }
+        if (model.addParentNodes) {
+            for (const node of model.addParentNodes) {
+                addParentNode(p(model.output.gltf[i]), p(model.output.gltf[i]), node);
             }
         }
     }

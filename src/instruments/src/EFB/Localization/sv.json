@@ -1,0 +1,577 @@
+{
+  "AirTrafficControl": {
+    "Active": "Aktiv",
+    "ChangeATISATCSourceButton": "Ändra ATIS/ATC-källa",
+    "ConnectHoppieACARS": "Anslut Hoppie ACARS",
+    "NoInformationAvailableForThisFrequency": "INFORMATION EJ TILLGÄNGLIG FÖR DENNA FREKVENS",
+    "SelectCorrectATISATCSource": "Denna sida är endast tillgänglig när IVAO eller VATSIM har valts som ATIS/ATC-källa på inställningssidan.",
+    "SetActive": "Sätt Aktiv",
+    "SetStandby": "Sätt Standby",
+    "Standby": "Standby",
+    "Title": "Flygledning"
+  },
+  "Checklists": {
+    "AreYouSureYouWantToResetAllChecklists": "Är du säker på att du vill återställa alla checklistor?",
+    "AreYouSureYouWantToResetChecklists": "Är du säker på att du vill återställa alla checklistor?",
+    "ChecklistResetWarning": "Varning för återställning av checklistor",
+    "MarkChecklistAsComplete": "Markera checklistan som klar",
+    "MarkItemAsComplete": "Markera punkt som avklarad",
+    "ProceedToNextChecklist": "Gå vidare till nästa checklista",
+    "ResetAll": "Återställ alla",
+    "ResetChecklist": "Återställ checklista",
+    "TheLastChecklistIsComplete": "Sista checklistan slutförd",
+    "ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted": "Det finns återstående punkter i checklistan för automatisk ifyllning som ännu inte har slutförts.",
+    "Title": "Checklistor"
+  },
+  "Dashboard": {
+    "ImportantInformation": {
+      "Checklists": {
+        "NoRelevantChecklists": "Inga relevanta checklistor",
+        "Title": "Checklistor"
+      },
+      "GoToPage": "Gå till sida",
+      "Maintenance": {
+        "NoActiveFailures": "Inga aktiva fel",
+        "Title": "Underhåll"
+      },
+      "PinnedCharts": {
+        "NoPinnedCharts": "Inga fästa charts",
+        "Title": "Fästa charts"
+      },
+      "TT": {
+        "RearrangeWidgets": "Sortera om widgets"
+      },
+      "Title": "Viktig information",
+      "Weather": {
+        "AirPressure": "Lufttryck",
+        "DewPoint": "Daggpunkt",
+        "IcaoInvalid": "ICAO ogiltig eller ingen METAR tillgänglig",
+        "Loading": "Laddar",
+        "MetarParsingError": "Mottagen METAR kunde inte tolkas",
+        "NoIcaoProvided": "Ingen ICAO tillhandahållen",
+        "NotAvailableShort": "N/A",
+        "Raw": "Rådata",
+        "TT": {
+          "SwitchToIconView": "Byt till ikonvy",
+          "SwitchToRawMetarView": "Byt till rå METAR-vy"
+        },
+        "Temperature": "Temperatur",
+        "Title": "Väder",
+        "WindSpeed": "Vindstyrka"
+      }
+    },
+    "Title": "Dashboard",
+    "YourFlight": {
+      "Alternate": "Alternativ",
+      "AverageWind": "Genomsnittlig vind",
+      "CompanyRoute": "Företagsrutt",
+      "CostIndex": "Kostnadsindex",
+      "CruiseAlt": "Kryssningshöjd",
+      "ImportSimBriefData": "Importera SimBrief Data",
+      "Route": "Rutt",
+      "SimBriefDataNotYetLoaded": "SimBrief-data har ännu inte laddats.",
+      "Title": "Din flygning",
+      "ZFW": "ZFW"
+    }
+  },
+  "Dispatch": {
+    "Ofp": {
+      "ImportSimBriefData": "Importera SimBrief Data",
+      "TT": {
+        "IncreaseFontSize": "Öka teckenstorlek",
+        "ReduceFontSize": "Minska teckenstorlek"
+      },
+      "Title": "OFP",
+      "YouHaveNotYetImportedAnySimBriefData": "Du har ännu inte importerat SimBrief-data."
+    },
+    "Overview": {
+      "ActualGW": "Actual GW",
+      "Engines": "Motorer",
+      "MMO": "MMO",
+      "MRW": "MRW",
+      "MTOW": "MTOW",
+      "MZFW": "MZFW",
+      "MaximumCargo": "Maximal last",
+      "MaximumFuelCapacity": "Maximal bränslekapacitet",
+      "MaximumPassengers": "Max antal passagerare",
+      "Model": "Modell",
+      "Range": "Räckvidd",
+      "Title": "Översikt"
+    },
+    "Title": "Dispatch"
+  },
+  "Failures": {
+    "Comfort": {
+      "Title": "Komfort"
+    },
+    "Compact": {
+      "Title": "Kompakt"
+    },
+    "FullSimulationOfTheFailuresBelowIsntYetGuaranteed": "Fullständig simulering av felen nedan är ännu inte garanterad.",
+    "Search": "Sök",
+    "Title": "Fel"
+  },
+  "Ground": {
+    "Fuel": {
+      "CenterTank": "Centertank",
+      "Completed": "Klar",
+      "Defueling": "Avtankning",
+      "EstimatedDuration": "Beräknad varaktighet (minuter)",
+      "EstimatedTime": "Uppskattad tid",
+      "LeftInnerTank": "Vänster innertank",
+      "LeftOuterTank": "Vänster yttertank",
+      "ReadyToStart": "Redo för start",
+      "Refuel": "Tanka",
+      "RefuelTime": "Tanktid",
+      "Refueling": "Tankning",
+      "RightInnerTank": "Höger innertank",
+      "RightOuterTank": "Höger yttertank",
+      "TT": {
+        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "Ändring av tankningstiden endast på marken med avstängda motorer",
+        "FillBlockFuelFromSimBrief": "Fyll block bränsle från SimBrief"
+      },
+      "Title": "Bränsle",
+      "TotalFuel": "Totalt bränsle",
+      "Unavailable": "Ej tillgänglig"
+    },
+    "Payload": {
+      "BoardingTime": "Boarding Time",
+      "Cargo": "Cargo",
+      "Current": "Current",
+      "Passengers": "Passengers",
+      "Planned": "Planned",
+      "TT": {
+        "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Aircraft Must Be On the Ground and Have Engines Shutdown to Change Boarding Duration",
+        "FillPayloadFromSimbrief": "Fill Payload Information from Simbrief",
+        "MaxCargo": "Max Cargo",
+        "MaxPassengers": "Maximum Passengers",
+        "MaxZFW": "Maximum ZFW",
+        "MaxZFWCG": "Maximum ZFWCG",
+        "PerPaxBagWeight": "Per Passenger Bag Weight",
+        "PerPaxWeight": "Per Passenger Weight",
+        "StartBoarding": "Begin Boarding"
+      },
+      "Title": "Payload",
+      "ZFW": "ZFW",
+      "ZFWCG": "ZFWCG"
+    },
+    "Pushback": {
+      "Title": "Pushback"
+    },
+    "Services": {
+      "BaggageTruck": "Bagagelastbil",
+      "CateringTruck": "Cateringlastbil",
+      "Cones": "Koner",
+      "DoorAft": "Bakre dörr",
+      "DoorCargo": "Cargo Dörr",
+      "DoorFwd": "Främre dörr",
+      "ExternalPower": "Mobilt kraftaggregat",
+      "FuelTruck": "Bränslebil",
+      "JetBridge": "Jetbrygga",
+      "Title": "Tjänster",
+      "WheelChocks": "Hjulklossar"
+    },
+    "Title": "Marken"
+  },
+  "Modals": {
+    "Cancel": "Avbryt",
+    "Confirm": "Godkänn",
+    "Okay": "OK"
+  },
+  "NavigationAndCharts": {
+    "All": "Alla",
+    "Altn": "Altn",
+    "ExitFullscreenMode": "Lämna fullskärmsläge",
+    "From": "Från",
+    "LocalFiles": {
+      "Both": "Båda",
+      "EstablishingConnection": "Upprättar anslutning",
+      "FailedToEstablishConnection": "Anslutning misslyckades",
+      "FileName": "Filnamn",
+      "Image": "Bild",
+      "Pdf": "PDF",
+      "Retry": "Försök igen",
+      "Title": "Lokala filer"
+    },
+    "Navigraph": {
+      "AirportDoesNotExist": "Flygplats existerar inte",
+      "AuthenticateWithNavigraph": "Autentisera med Navigraph",
+      "InsufficientEnv": "Otillräcklig .env-fil",
+      "IntoYourBrowserAndEnterTheCodeBelow": "i din webbläsare och ange koden nedan\n",
+      "LoadingMsg": "Laddar",
+      "NoAirportSelected": "Ingen flygplats vald",
+      "ResetNavigraphAuthentication": "Återställ Navigraph autentisering",
+      "ScanTheQrCodeOrOpen": "Skanna QR-koden eller öppna",
+      "Title": "Navigraph"
+    },
+    "PinnedCharts": {
+      "Delete": "Radera",
+      "Edit": "Redigera",
+      "NoItemsFound": "Inga hittades",
+      "SearchPlaceholder": "Sök",
+      "ShowingChartsFromAllProviders": "Visar diagram från alla leverantörer",
+      "SortMethods": {
+        "AlphabeticalAZ": "Alfabetisk - A -> Ö",
+        "AlphabeticalZA": "Alfabetisk - Ö -> A",
+        "FirstAccessed": "Först använd",
+        "LastAccessed": "Senast använd",
+        "None": "Ingen"
+      },
+      "TT": {
+        "ChangeChartProvider": "Ändra chartsleverantör",
+        "ChangeChartSortMethod": "Ändra sorteringsmetod för charts",
+        "RemoveAllPinnedCharts": "Ta bort alla fästa diagram"
+      },
+      "Title": "Fästa charts",
+      "View": "Visa"
+    },
+    "PleaseWait": "Var god och vänta",
+    "ShowingAllItems": "Visa alla",
+    "TT": {
+      "FitChartToHeight": "Anpassa chart till höjd",
+      "FitChartToWidth": "Anpassa chart till bredd",
+      "ResetMovement": "Återställ vy",
+      "RotateLeft45Degrees": "Rotera 45 grader till vänster",
+      "RotateRight45Degrees": "Rotera 45 grader till höger",
+      "ZoomIn": "Zooma in",
+      "ZoomOut": "Zooma ut"
+    },
+    "ThereAreNoChartsToDisplay": "Det finns inga charts att visa.",
+    "ThereIsNoChartToDisplay": "Det finns ingen chart att visa.",
+    "Title": "Navigering och charts",
+    "To": "Till"
+  },
+  "Performance": {
+    "Data": "Data",
+    "Landing": {
+      "AirportIcao": "Flygplats ICAO",
+      "ApproachSpeed": "Approach-hastighet",
+      "ApproachSpeedUnit": "kts",
+      "AutoLand": "Autoland",
+      "Calculate": "Beräkna",
+      "Clear": "Rensa",
+      "DropDownNo": "Nej",
+      "DropDownYes": "Ja",
+      "FillDataFrom": "Fyll i data från",
+      "FlapsConfiguration": "Konfigurering av klaffar",
+      "Low": "Låg",
+      "MaximumManual": "Maximal Manuell",
+      "Medium": "Medium",
+      "MetarErrorDialogMessage": "METAR från din OFP kunde inte tolkas framgångsrikt. Vill du fylla i data automatiskt med hjälp av en hämtad METAR istället?",
+      "MetarErrorDialogTitle": "Fel vid tolkning av OFP METAR",
+      "OverweightProcedure": "Överviktsprocedur",
+      "Qnh": "QNH",
+      "ReverseThrust": "Omvänd dragkraft",
+      "RunwayAltitude": "Höjd på landningsbanan",
+      "RunwayAltitudeUnit": "Fot över havsnivå",
+      "RunwayCondition": "Banans skick",
+      "RunwayConditions": {
+        "Dry": "Torr (6)",
+        "Good": "Bra (5)",
+        "GoodMedium": "Bra-Medium (4)",
+        "Medium": "Medium (3)",
+        "MediumPoor": "Medium-Dålig (2)",
+        "Poor": "Dålig (1)"
+      },
+      "RunwayHeading": "Kurs för landningsbana",
+      "RunwayHeadingUnit": "°",
+      "RunwayLda": "Landningsbana LDA",
+      "RunwayLdaUnitFt": "ft",
+      "RunwayLdaUnitMeter": "m",
+      "RunwaySlope": "Banans sluttning",
+      "TT": {
+        "YouNeedToEnterAnIcaoCodeInOrderToMakeAMetarRequest": "Du måste ange en ICAO-kod för att kunna göra en METAR-begäran",
+        "YouNeedToLoadSimBriefDataInOrderToAutofillData": "Du måste ladda SimBrief-data för att automatiskt fylla i data"
+      },
+      "Temperature": "Temperatur",
+      "Title": "Landning",
+      "UnitFt": "ft",
+      "UnitMeter": "m",
+      "Weight": "Vikt",
+      "WindDirection": "Vindriktning",
+      "WindDirectionUnit": "°",
+      "WindMagnitude": "Vindstyrka",
+      "WindMagnitudeUnit": "kts"
+    },
+    "SYNC": "SYNKA",
+    "Title": "Prestanda",
+    "TopOfDescent": {
+      "Data": {
+        "Angle": "Vinkel",
+        "CurrentAltitude": "Aktuell höjd",
+        "Distance": "Distans",
+        "GroundSpeed": "Markhastighet",
+        "TargetAltitude": "Målhöjd",
+        "Title": "Data",
+        "UnitAngleDegrees": "grader",
+        "UnitFeet": "fot",
+        "UnitFtMin": "ft/min",
+        "UnitNM": "NM",
+        "VerticalSpeed": "Vertikal hastighet"
+      },
+      "GroundSpeed": {
+        "Add": "Lägg till",
+        "FetchingSpeedFromSimulator": "Hämtar hastighet från simulatorn",
+        "GroundSpeed": "Markhastighet",
+        "ManualInput": "Manuell input",
+        "MinAltitude": "Min. Höjd",
+        "RemoveLast": "Ta bort sista",
+        "Sync": "SYNKA",
+        "Title": "Markhastighet",
+        "UnitKnots": "knop",
+        "UnitKt": "kn"
+      },
+      "Result": {
+        "BeforeTarget": "före mål",
+        "DesiredDescentAngle": "Önskad fallvinkel",
+        "DesiredVerticalSpeed": "Önskad vertikal hastighet",
+        "StartYourDescentAbout": "Börja din nedstigning runt",
+        "Title": "Resultat"
+      },
+      "TT": {
+        "DesynchronizeInputWithAircraftsCurrentAltitude": "Desynkronisera input med flygplanets nuvarande höjd",
+        "SynchronizeInputWithAircraftsCurrentAltitude": "Synkronisera input med flygplanets nuvarande höjd"
+      },
+      "Title": "Början av nedstigning"
+    }
+  },
+  "Presets": {
+    "AircraftStates": {
+      "Cancel": "Avbryt",
+      "ColdDark": "Avstängt",
+      "ConfirmationDialogMsg": "Bekräfta inläsning av förinställning.",
+      "CurrentProcedureStep": "Aktuellt procedur-steg",
+      "PleaseConfirmLoadingOfPreset": "Bekräfta inläsning av förinställning.",
+      "ReadyPushback": "Redo för Pushback",
+      "ReadyTakeoff": "Redo för Takeoff",
+      "ReadyTaxi": "Redo för Taxi",
+      "SelectAPresetToLoad": "Välj en förinställning att läsa in",
+      "TheAircraftMustBeOnTheGroundToLoadAPreset": "Flygplanet måste vara på marken för att ladda en förinställning.",
+      "TheAircraftMustBeOntheGroundToLoadAPreset": "Flygplanet måste vara på marken för att ladda en förinställning.",
+      "Title": "Flygplanets tillstånd",
+      "Turnaround": "Turnaround"
+    },
+    "InteriorLighting": {
+      "AircraftNeedsToBePoweredToLoadPresets": "Flygplan måste ha ström för att läsa in förinställningar",
+      "AircraftNeedsToBePoweredToSavePresets": "Flygplan måste ha ström för att spara förinställningar",
+      "LoadPreset": "Ladda förval",
+      "LoadingPreset": "Laddar förval …",
+      "NewNameConfirmationDialogMsg": "Bekräfta det nya namnet på belysningsförinställningen",
+      "NoName": "Namnlös",
+      "PleaseConfirmSavingPreset": "Bekräfta att spara förinställning",
+      "SavePreset": "Spara förval",
+      "SavingPreset": "Sparar förval …",
+      "SelectAnInteriorLightingPresetToLoadOrSave": "Välj en förinställning för innerbelysning som du vill ladda eller spara.",
+      "TT": {
+        "AircraftMustBePowered": "Flygplanet måste ha ström",
+        "ClickTextToChangeThePresetsName": "Klicka på text för att ändra förinställningens namn",
+        "LoadThisPreset": "Ladda förval",
+        "SaveTheCurrentLightingLevels": "Spara nuvarande ljusnivåer"
+      },
+      "TheAircraftMustBePoweredForInteriorLightingPresets": "Flygplanet måste ha ström för innerbelysningsförinställningar.",
+      "Title": "Interiörbelysning"
+    },
+    "Title": "Förinställningar"
+  },
+  "Pushback": {
+    "AvailableOnlyOnGround": "Pushback-kontroller är endast tillgängliga på marken",
+    "Backward": "Bakåt",
+    "CallTug": "Ring dragare",
+    "DisableSystemMessageBody": "Är du säker på att du vill inaktivera pushback-systemet? Detta kommer också att släppa dragare.",
+    "DisableSystemMessageTitle": "Inaktivera pushback-systemet",
+    "EnableSystemMessageBody": "Det nya flyPadOS 3 Pushback-systemet kan orsaka konflikter med andra pushback-tillägg. Vi rekommenderar att du inte aktiverar systemet om du planerar att använda ett annat pushback-tillägg. ",
+    "EnableSystemMessageTitle": "Aktivera pushback system",
+    "Forward": "Framåt",
+    "Halt": "Pausad",
+    "LeavePageMessage": "Pausa pushback",
+    "Left": "Vänster",
+    "Moving": "Flyttar",
+    "ParkingBrake": {
+      "Off": "Av",
+      "On": "På",
+      "Title": "Parkeringsbroms"
+    },
+    "Right": "Höger",
+    "SystemEnabledOff": "Pushback system av",
+    "SystemEnabledOn": "Pushback system på",
+    "TT": {
+      "CallReleaseTug": "Ring eller släpp dragare",
+      "CenterPlaneMode": "Center karta på planet On/Off",
+      "DecreaseSpeed": "Bakåt eller långsammare framåt",
+      "IncreaseSpeed": "Framåt eller långsammare bakåt",
+      "Left": "Gå till vänster",
+      "PausePushback": "Pausa eller avpaus pushback",
+      "Right": "Gå till höger",
+      "SetReleaseParkingBrake": "Ställ in eller lossa parkeringsbromsen",
+      "SliderDirection": "Flytta för önskad riktning",
+      "SliderSpeed": "Flytta för önskad hastighet",
+      "SystemEnabledOff": "Klicka för att slå på pushback-systemet.",
+      "SystemEnabledOn": "Klicka för att stänga av pushback-systemet helt.",
+      "ZoomIn": "Zooma in",
+      "ZoomOut": "Zooma ut"
+    },
+    "TugAttached": "Dragare är fäst",
+    "TugDirection": "Dragarriktning",
+    "TugInTransit": "Väntar på dragare/pin",
+    "TugSpeed": "Dragarhastighet"
+  },
+  "Settings": {
+    "About": {
+      "Title": "Om"
+    },
+    "AircraftOptionsPinPrograms": {
+      "AccelerationHeight": "Accelerationshöjd (ft)",
+      "EngineOutAccelerationHeight": "Accelerationshöjd för motorfel (ft)",
+      "IsisBaroUnit": "ISIS Baro-enhet",
+      "IsisMetricAltitude": "ISIS metrisk höjd",
+      "LatLonExtendedFormat": "FMGC Lat/Lon Waypoint-format",
+      "PaxSigns": "Passagerarskyltar",
+      "RmpVhfSpacing": "RMP VHF-avstånd",
+      "ThrustReductionHeight": "Höjd för dragkraftsreduktion (ft)",
+      "Title": "Flygplan Inställningar / Pin-Program",
+      "WeightUnit": "Viktenhet"
+    },
+    "AtsuAoc": {
+      "AtisAtcSource": "ATIS/ATC Källa",
+      "AutomaticallyImportSimBriefData": "Importera SimBrief-data automatiskt",
+      "Enable": "Aktivera",
+      "EnableTelex": "Aktivera TELEX",
+      "ErrorReporting": "Felrapportering",
+      "HoppieEnabled": "Hoppie aktiverad",
+      "HoppieUserId": "Hoppie användar-ID",
+      "MetarSource": "METAR-källa",
+      "OptionalA32nxErrorReporting": "Frivillig felrapportering för A32NX",
+      "PleaseCheckThatYouHaveCorrectlyEnteredYourSimbBriefUsernameOrPilotId": "Kontrollera att du har angett ditt SimBrief-användarnamn eller pilot-ID korrekt.",
+      "SimBriefUsernamePilotId": "SimBrief Användarnamn/Pilot-ID",
+      "TafSource": "TAF-källa",
+      "Telex": "TELEX",
+      "TelexEnablesFreeTextAndLiveMap": "TELEX gör det möjligt att skicka textmeddelanden som visas på FlyByWires livekarta. Om den är aktiverad publiceras uppgifter om flygplanets position under hela flygningen. Meddelanden är offentliga och inte modererade. ANVÄND DENNA FUNKTION PÅ EGEN RISK. Läs mer om TELEX och de funktioner som det möjliggör på https://docs.flybywiresim.com/telex.",
+      "TelexWarning": "TELEX-varning",
+      "ThereWasAnErrorEncounteredWhenValidatingYourHoppieID": "Det uppstod ett fel vid validering av ditt Hoppie-ID",
+      "Title": "ATSU / AOC",
+      "YouAreAbleToOptIntoAnonymousErrorReporting": "Du kan välja anonym felrapportering som gör att vi kan diagnostisera, övervaka och åtgärda problem snabbare. Den här funktionen är helt frivillig och vi kommer aldrig att samla in dina personuppgifter, men den kan göra det lättare för dig att få support och få problem som du stöter på åtgärdade snabbare.",
+      "YourHoppieIdHasBeenRemoved": "Ditt Hoppie-ID har tagits bort",
+      "YourHoppieIdHasBeenValidated": "Ditt Hoppie-ID har validerats",
+      "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "Ditt SimBrief PilotID har validerats och uppdaterats till"
+    },
+    "Audio": {
+      "Announcements": "Tillkännagivanden",
+      "BoardingMusic": "Boardingmusik",
+      "EngineInteriorVolume": "Motorns ljudstyrka inne",
+      "ExteriorMasterVolume": "Huvudljudstyrka ute",
+      "PassengerAmbience": "Passagerarambiens",
+      "PtuAudibleInCockpit": "PTU hörbar i cockpit",
+      "Title": "Ljud",
+      "WindInteriorVolume": "Vind ljudstyrka inne"
+    },
+    "Fast": "Snabb",
+    "Instant": "Omedelbar",
+    "Real": "Verklig",
+    "Realism": {
+      "AdirsAlignTime": "ADIRS-justeringstid",
+      "AutofillChecklists": "Auto-fyll checklistor",
+      "BoardingTime": "Ombordstigningstid",
+      "DmcSelfTestTime": "DMC självtesttid",
+      "HomeCockpitMode": "Hem Cockpit-läge",
+      "McduFocusTimeout": "Tidsgräns för MCDU fokus (sekunder)",
+      "McduKeyboardInput": "MCDU Tangentbordsinput",
+      "PauseAtTod": "T/D Paus",
+      "PauseAtTodDistance": "Avstånd till målet för T/D-paus (nm)",
+      "SeparateTillerFromRudderInputs": "Separera Tiller från roder input",
+      "Title": "Realism"
+    },
+    "SimOptions": {
+      "Active": "Aktiv",
+      "Auto": "Auto",
+      "Calibrate": "Kalibrera",
+      "ConesEnabled": "Säkerhetskoner",
+      "DefaultBarometerUnit": "Standardbarometerenhet",
+      "DynamicRegistrationDecal": "Dynamisk registreringsdekal",
+      "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Aktivera MCDU-serveranslutning (inaktiveras automatiskt efter 5 minuter om anslutningen inte lyckas).",
+      "ExternalMcduServerPort": "Extern MCDU-serverport",
+      "Hpa": "hPa",
+      "Inactive": "Inaktiv",
+      "LoadOnly": "Ladda en gång",
+      "None": "Ingen",
+      "Off": "Av",
+      "Save": "Spara",
+      "SyncMsfsFlightPlan": "Synkronisera MSFS-färdplan",
+      "ThrottleDetents": "Kalibrering av tryckspaken",
+      "Title": "Sim-inställningar",
+      "UseCalculatedIlsSignals": "Använd beräknade ILS-signaler",
+      "WheelChocksEnabled": "Hjulklossar",
+      "inHg": "inHg"
+    },
+    "ThrottleConfig": {
+      "Apply": "Spara",
+      "AreYouSureThatYouWantToResetYourCurrentThrottleConfigurationToTheirDefaultStates": "Ska de aktuella inställningarna för kalibreringen av dragspaken återställas? Denna åtgärd kan inte göras ogjord.",
+      "Axis": "Axel",
+      "Back": "Tillbaka",
+      "ConfigureEnd": "Toleransområde slut",
+      "ConfigureStart": "Toleransområde start",
+      "CurrentValue": "Aktuellt värde",
+      "Deadband": "Toleransområde",
+      "ErrorOverlapMsg": "överlappar med",
+      "IndependentAxis": "Oberoende axel",
+      "LoadFromFile": "Ladda från fil",
+      "PleaseEnterAValidDeadzone": "Ange ett giltigt toleransområde",
+      "ResetToDefaults": "Återställ till standard",
+      "ReverseFull": "Reverse Full",
+      "ReverseIdle": "Reverse Idle",
+      "ReverserOnAxis": "Omvänd dragkraft på axel",
+      "SaveAndApply": "Spara och tillämpa",
+      "SetFromThrottle": "Spara från gasreglage",
+      "ThrottleConfigurationReset": "Återställning av gasreglagets kalibrering"
+    },
+    "Title": "Inställningar",
+    "Unrealistic": "Orealistiskt",
+    "flyPad": {
+      "AutoBrightness": "Automatisk ljusstyrka",
+      "AutomaticallyShowOnscreenKeyboard": "Visa automatiskt skärmtangentbordet",
+      "BatteryLifeEnabled": "Simulerad batteritid",
+      "Blue": "Blå",
+      "Brightness": "Ljusstyrka",
+      "Dark": "Mörk",
+      "Language": "Språk",
+      "Light": "Ljus",
+      "Local": "Lokal",
+      "LocalTimeFormat": "Lokalt tidsformat",
+      "OnscreenKeyboardLayout": "Tangentbordslayout",
+      "ShowColoredRawMetar": "Visa färgad METAR rådata",
+      "ShowStatusBarFlightProgressIndicator": "Visa status bar flygförloppsindikator",
+      "Theme": "Tema",
+      "TimeDisplayed": "Visad tid",
+      "Title": "flyPad",
+      "TwelveHours": "12h",
+      "TwentyFourHours": "24h",
+      "Utc": "UTC",
+      "UtcAndLocal": "UTC och lokal"
+    }
+  },
+  "StatusBar": {
+    "Apr": "Apr",
+    "Aug": "Aug",
+    "Dec": "Dec",
+    "Feb": "Feb",
+    "Fri": "Fre",
+    "Jan": "Jan",
+    "Jul": "Jul",
+    "Jun": "Jun",
+    "Mar": "Mar",
+    "May": "Maj",
+    "Mon": "Mån",
+    "Nov": "Nov",
+    "Oct": "Okt",
+    "Sat": "Lör",
+    "Sep": "Sep",
+    "Sun": "Sön",
+    "TT": {
+      "ConnectedToLocalApi": "Ansluten till Local-API",
+      "DisconnectedFromLocalApi": "Avklopplad från Local-API",
+      "TurnOffOrShutdownEfb": "Stäng av EFB"
+    },
+    "Thu": "Tor",
+    "Tue": "Tis",
+    "Wed": "Ons"
+  }
+}

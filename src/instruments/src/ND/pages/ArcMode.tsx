@@ -53,7 +53,7 @@ export const ArcMode: React.FC<ArcModeProps> = ({ symbols, adirsAlign, rangeSett
 
     useEffect(() => {
         mapParams.compute(ppos, rangeSetting, 492, trueHeading);
-    }, [ppos.lat, ppos.long, magHeading, rangeSetting].map((n) => MathUtils.fastToFixed(n, 6)));
+    }, [ppos.lat, ppos.long, trueHeading, rangeSetting].map((n) => MathUtils.fastToFixed(n, 6)));
 
     if (adirsAlign) {
         return (
@@ -94,7 +94,7 @@ export const ArcMode: React.FC<ArcModeProps> = ({ symbols, adirsAlign, rangeSett
                 { lsDisplayed && <LsCourseBug heading={heading} lsCourse={lsCourse} /> }
                 <SelectedHeadingBug heading={heading} selected={selectedHeading} />
                 <Plane />
-                <CrossTrack x={390} y={646} />
+                <CrossTrack x={390} y={646} side={side} />
                 <g clipPath="url(#arc-mode-tcas-clip)">
                     <Traffic mode={Mode.ARC} mapParams={mapParams} />
                 </g>

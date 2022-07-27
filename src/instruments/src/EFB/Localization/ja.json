@@ -1,0 +1,577 @@
+{
+  "AirTrafficControl": {
+    "Active": "アクティブ",
+    "ChangeATISATCSourceButton": "ATIS/ATCの提供元を変更",
+    "ConnectHoppieACARS": "Hoppie ACARSに接続",
+    "NoInformationAvailableForThisFrequency": "この周波数の情報はありません",
+    "SelectCorrectATISATCSource": "このページは設定ページでATIS/ATCの提供元としてIVAO、またはVATSIMが選択されている場合にのみ使用できます。",
+    "SetActive": "アクティブに設定",
+    "SetStandby": "スタンバイに設定",
+    "Standby": "スタンバイ",
+    "Title": "航空交通管制"
+  },
+  "Checklists": {
+    "AreYouSureYouWantToResetAllChecklists": "全てのチェックリストをリセットしますか？",
+    "AreYouSureYouWantToResetChecklists": "全てのチェックリストをリセットしますか？",
+    "ChecklistResetWarning": "注意:チェックリストのリセット",
+    "MarkChecklistAsComplete": "このチェックリストを完了とする",
+    "MarkItemAsComplete": "項目を完了とする",
+    "ProceedToNextChecklist": "次のチェックリストに進む",
+    "ResetAll": "全てリセット",
+    "ResetChecklist": "チェックリストをリセット",
+    "TheLastChecklistIsComplete": "最後のチェックリストを完了",
+    "ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted": "まだ完了していない自動入力のチェックリスト項目が残っています",
+    "Title": "チェックリスト"
+  },
+  "Dashboard": {
+    "ImportantInformation": {
+      "Checklists": {
+        "NoRelevantChecklists": "該当するチェックリスト無し",
+        "Title": "チェックリスト"
+      },
+      "GoToPage": "ページに移動",
+      "Maintenance": {
+        "NoActiveFailures": "有効な故障無し",
+        "Title": "メンテナンス"
+      },
+      "PinnedCharts": {
+        "NoPinnedCharts": "ピン留めしたチャート無し",
+        "Title": "ピン留めしたチャート"
+      },
+      "TT": {
+        "RearrangeWidgets": "ウィジェットを並び替える"
+      },
+      "Title": "重要情報",
+      "Weather": {
+        "AirPressure": "気圧",
+        "DewPoint": "露点温度",
+        "IcaoInvalid": "ICAOコードが無効か、METARが利用できません",
+        "Loading": "読み込み中…",
+        "MetarParsingError": "受信したMETARを解析できませんでした",
+        "NoIcaoProvided": "ICAOから提供されていません",
+        "NotAvailableShort": "利用不可",
+        "Raw": "原文",
+        "TT": {
+          "SwitchToIconView": "アイコン表示に切り替え",
+          "SwitchToRawMetarView": "METARの原文に切り替え"
+        },
+        "Temperature": "気温",
+        "Title": "気象",
+        "WindSpeed": "風速"
+      }
+    },
+    "Title": "ダッシュボード",
+    "YourFlight": {
+      "Alternate": "代替空港",
+      "AverageWind": "平均風速",
+      "CompanyRoute": "カンパニールート",
+      "CostIndex": "コストインデックス",
+      "CruiseAlt": "巡航高度",
+      "ImportSimBriefData": "SimBriefデータのインポート",
+      "Route": "ルート",
+      "SimBriefDataNotYetLoaded": "SimBriefのデータはまだ読み込まれていません。",
+      "Title": "あなたのフライト",
+      "ZFW": "ZFW"
+    }
+  },
+  "Dispatch": {
+    "Ofp": {
+      "ImportSimBriefData": "SimBriefデータのインポート",
+      "TT": {
+        "IncreaseFontSize": "文字サイズを大きくする",
+        "ReduceFontSize": "文字サイズを小さくする"
+      },
+      "Title": "OFP",
+      "YouHaveNotYetImportedAnySimBriefData": "SimBriefのデータはまだインポートされていません。"
+    },
+    "Overview": {
+      "ActualGW": "現在の総重量",
+      "Engines": "エンジン",
+      "MMO": "MMO",
+      "MRW": "MRW",
+      "MTOW": "MTOW",
+      "MZFW": "MZFW",
+      "MaximumCargo": "最大貨物積載量",
+      "MaximumFuelCapacity": "最大燃料容量",
+      "MaximumPassengers": "最大乗客数",
+      "Model": "型式",
+      "Range": "航続距離",
+      "Title": "概要"
+    },
+    "Title": "ディスパッチ"
+  },
+  "Failures": {
+    "Comfort": {
+      "Title": "カテゴリ別"
+    },
+    "Compact": {
+      "Title": "コンパクト"
+    },
+    "FullSimulationOfTheFailuresBelowIsntYetGuaranteed": "以下の故障の完全なシミュレーションはまだ保証されていません。",
+    "Search": "検索…",
+    "Title": "故障"
+  },
+  "Ground": {
+    "Fuel": {
+      "CenterTank": "中央タンク",
+      "Completed": "完了済み",
+      "Defueling": "燃料の取り出し中",
+      "EstimatedDuration": "推定所要時間(分)",
+      "EstimatedTime": "Estimated Time",
+      "LeftInnerTank": "左内側タンク",
+      "LeftOuterTank": "左外側タンク",
+      "ReadyToStart": "準備完了",
+      "Refuel": "給油",
+      "RefuelTime": "給油時間",
+      "Refueling": "給油中",
+      "RightInnerTank": "右内側タンク",
+      "RightOuterTank": "右外側タンク",
+      "TT": {
+        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "エンジン停止かつ地上にいる場合のみ、給油時間を変更できます",
+        "FillBlockFuelFromSimBrief": "SimBriefからブロック燃料を読み込む"
+      },
+      "Title": "燃料",
+      "TotalFuel": "合計燃料",
+      "Unavailable": "利用不能"
+    },
+    "Payload": {
+      "BoardingTime": "搭乗時間",
+      "Cargo": "貨物",
+      "Current": "現在値",
+      "Passengers": "乗客数",
+      "Planned": "計画値",
+      "TT": {
+        "AircraftMustBeColdAndDarkToChangeBoardingTimes": "エンジン停止かつ地上にいる場合のみ、搭乗時間を変更できます",
+        "FillPayloadFromSimbrief": "Simbriefから積載物の情報を読み込む",
+        "MaxCargo": "最大貨物重量",
+        "MaxPassengers": "最大乗客数",
+        "MaxZFW": "最大ZFW",
+        "MaxZFWCG": "最大ZFWCG",
+        "PerPaxBagWeight": "乗客1人あたりの手荷物重量",
+        "PerPaxWeight": "乗客1人あたりの重量",
+        "StartBoarding": "搭乗開始"
+      },
+      "Title": "積載物",
+      "ZFW": "ZFW",
+      "ZFWCG": "ZFWCG"
+    },
+    "Pushback": {
+      "Title": "プッシュバック"
+    },
+    "Services": {
+      "BaggageTruck": "手荷物トラック",
+      "CateringTruck": "機内食トラック",
+      "Cones": "セーフティコーン",
+      "DoorAft": "後部ドア",
+      "DoorCargo": "貨物ドア",
+      "DoorFwd": "前部ドア",
+      "ExternalPower": "地上電源装置",
+      "FuelTruck": "燃料トラック",
+      "JetBridge": "ボーディングブリッジ",
+      "Title": "サービス",
+      "WheelChocks": "輪止め"
+    },
+    "Title": "グランド"
+  },
+  "Modals": {
+    "Cancel": "取消",
+    "Confirm": "承認",
+    "Okay": "了解"
+  },
+  "NavigationAndCharts": {
+    "All": "全て",
+    "Altn": "代替",
+    "ExitFullscreenMode": "フルスクリーンモードを終了する",
+    "From": "出発",
+    "LocalFiles": {
+      "Both": "両方",
+      "EstablishingConnection": "接続中...",
+      "FailedToEstablishConnection": "接続できませんでした。",
+      "FileName": "ファイル名",
+      "Image": "画像",
+      "Pdf": "PDF",
+      "Retry": "再試行",
+      "Title": "ローカルファイル"
+    },
+    "Navigraph": {
+      "AirportDoesNotExist": "空港が存在しません",
+      "AuthenticateWithNavigraph": "Navigraphで認証する",
+      "InsufficientEnv": ".envファイルが不足しています",
+      "IntoYourBrowserAndEnterTheCodeBelow": "このURLをブラウザに入力し、以下のコードを入力してください\n",
+      "LoadingMsg": "読み込み中…",
+      "NoAirportSelected": "空港が選択されていません",
+      "ResetNavigraphAuthentication": "Navigraph認証のリセット",
+      "ScanTheQrCodeOrOpen": "QRコードをスキャンするか、これを開いてください",
+      "Title": "Navigraph"
+    },
+    "PinnedCharts": {
+      "Delete": "削除",
+      "Edit": "編集",
+      "NoItemsFound": "アイテムがありません",
+      "SearchPlaceholder": "検索…",
+      "ShowingChartsFromAllProviders": "全ての提供元のチャートを表示",
+      "SortMethods": {
+        "AlphabeticalAZ": "A -> Z順に並べ替え",
+        "AlphabeticalZA": "Z -> A順に並べ替え",
+        "FirstAccessed": "最初に使用したファイル順に並べ替え",
+        "LastAccessed": "最後に使用したファイル順に並べ替え",
+        "None": "設定しない"
+      },
+      "TT": {
+        "ChangeChartProvider": "チャートの提供元を変更",
+        "ChangeChartSortMethod": "チャートの並び替えを変更",
+        "RemoveAllPinnedCharts": "ピン留めしたチャートを全て削除"
+      },
+      "Title": "ピン留めしたチャート",
+      "View": "閲覧"
+    },
+    "PleaseWait": "しばらくお待ちください...",
+    "ShowingAllItems": "全アイテムを表示",
+    "TT": {
+      "FitChartToHeight": "チャートの高さに合わせる",
+      "FitChartToWidth": "チャートの幅に合わせる",
+      "ResetMovement": "拡縮、移動のリセット",
+      "RotateLeft45Degrees": "左に45 度回転",
+      "RotateRight45Degrees": "右に45 度回転",
+      "ZoomIn": "拡大",
+      "ZoomOut": "縮小"
+    },
+    "ThereAreNoChartsToDisplay": "表示するチャートはありません。",
+    "ThereIsNoChartToDisplay": "表示するチャートがありません。",
+    "Title": "ナビゲーションとチャート",
+    "To": "到着"
+  },
+  "Performance": {
+    "Data": "データ",
+    "Landing": {
+      "AirportIcao": "空港のICAOコード",
+      "ApproachSpeed": "進入速度",
+      "ApproachSpeedUnit": "kts",
+      "AutoLand": "自動着陸",
+      "Calculate": "計算を実行",
+      "Clear": "消去",
+      "DropDownNo": "いいえ",
+      "DropDownYes": "はい",
+      "FillDataFrom": "データの読み込み元",
+      "FlapsConfiguration": "フラップ設定",
+      "Low": "低",
+      "MaximumManual": "最大手動",
+      "Medium": "中",
+      "MetarErrorDialogMessage": "OFPのMETARを正常に解析できませんでした。代わりに取得したMETARを使用してデータを自動入力しますか？",
+      "MetarErrorDialogTitle": "OFPのMETARを解析中にエラーが発生しました",
+      "OverweightProcedure": "過積載の手順",
+      "Qnh": "QNH",
+      "ReverseThrust": "逆噴射の使用",
+      "RunwayAltitude": "滑走路の標高",
+      "RunwayAltitudeUnit": "ft(海抜高度)",
+      "RunwayCondition": "滑走路の状態",
+      "RunwayConditions": {
+        "Dry": "乾燥(6)",
+        "Good": "良い(5)",
+        "GoodMedium": "やや良い(4)",
+        "Medium": "中間(3)",
+        "MediumPoor": "やや悪い(2)",
+        "Poor": "悪い(1)"
+      },
+      "RunwayHeading": "滑走路の方位",
+      "RunwayHeadingUnit": "°",
+      "RunwayLda": "滑走路のLDA",
+      "RunwayLdaUnitFt": "ft",
+      "RunwayLdaUnitMeter": "m",
+      "RunwaySlope": "滑走路の勾配",
+      "TT": {
+        "YouNeedToEnterAnIcaoCodeInOrderToMakeAMetarRequest": "METARをリクエストするにはICAOコードを入力してください",
+        "YouNeedToLoadSimBriefDataInOrderToAutofillData": "データを自動入力するにはSimBriefのデータを読み込む必要があります"
+      },
+      "Temperature": "気温",
+      "Title": "着陸",
+      "UnitFt": "ft",
+      "UnitMeter": "m",
+      "Weight": "重量",
+      "WindDirection": "風向",
+      "WindDirectionUnit": "°",
+      "WindMagnitude": "風速",
+      "WindMagnitudeUnit": "kts"
+    },
+    "SYNC": "同期",
+    "Title": "パフォーマンス",
+    "TopOfDescent": {
+      "Data": {
+        "Angle": "降下角度",
+        "CurrentAltitude": "現在の高度",
+        "Distance": "距離",
+        "GroundSpeed": "対地速度",
+        "TargetAltitude": "目標高度",
+        "Title": "データ",
+        "UnitAngleDegrees": "度",
+        "UnitFeet": "feet",
+        "UnitFtMin": "ft/分",
+        "UnitNM": "NM",
+        "VerticalSpeed": "降下速度"
+      },
+      "GroundSpeed": {
+        "Add": "追加",
+        "FetchingSpeedFromSimulator": "シミュレータから速度を取得中",
+        "GroundSpeed": "対地速度",
+        "ManualInput": "手動入力",
+        "MinAltitude": "最小高度",
+        "RemoveLast": "最後の項目を削除",
+        "Sync": "同期",
+        "Title": "対地速度",
+        "UnitKnots": "knots",
+        "UnitKt": "kt"
+      },
+      "Result": {
+        "BeforeTarget": "で降下開始",
+        "DesiredDescentAngle": "望ましい降下角度",
+        "DesiredVerticalSpeed": "望ましい降下速度",
+        "StartYourDescentAbout": "目標の手前",
+        "Title": "結果"
+      },
+      "TT": {
+        "DesynchronizeInputWithAircraftsCurrentAltitude": "航空機の現在の高度との同期を解除する",
+        "SynchronizeInputWithAircraftsCurrentAltitude": "航空機の現在の高度と同期する"
+      },
+      "Title": "降下開始地点"
+    }
+  },
+  "Presets": {
+    "AircraftStates": {
+      "Cancel": "取消",
+      "ColdDark": "コールド＆ダーク(全電源停止)",
+      "ConfirmationDialogMsg": "プリセットの読み込みを確認してください。",
+      "CurrentProcedureStep": "現在進行中のステップ",
+      "PleaseConfirmLoadingOfPreset": "プリセットの読み込みを確認してください。",
+      "ReadyPushback": "プッシュバック準備完了",
+      "ReadyTakeoff": "離陸準備完了",
+      "ReadyTaxi": "タキシング準備完了",
+      "SelectAPresetToLoad": "読み込むプリセットを選択",
+      "TheAircraftMustBeOnTheGroundToLoadAPreset": "プリセットを読み込むには、航空機が地上にいる必要があります。",
+      "TheAircraftMustBeOntheGroundToLoadAPreset": "プリセットを読み込むには、航空機が地上にいる必要があります。",
+      "Title": "航空機の状態",
+      "Turnaround": "ターンアラウンド"
+    },
+    "InteriorLighting": {
+      "AircraftNeedsToBePoweredToLoadPresets": "プリセットを読み込むには、航空機に電力を供給する必要があります",
+      "AircraftNeedsToBePoweredToSavePresets": "プリセットを保存するには、航空機に電力を供給する必要があります",
+      "LoadPreset": "プリセットの読み込み",
+      "LoadingPreset": "プリセットの読み込み中",
+      "NewNameConfirmationDialogMsg": "機内照明プリセットの新しい名前を確認してください",
+      "NoName": "名称未設定",
+      "PleaseConfirmSavingPreset": "プリセットの保存を確認してください",
+      "SavePreset": "プリセットの保存",
+      "SavingPreset": "プリセットの保存中",
+      "SelectAnInteriorLightingPresetToLoadOrSave": "読み込み、または保存する機内照明プリセットを選択してください。",
+      "TT": {
+        "AircraftMustBePowered": "航空機に電力が供給されている必要があります",
+        "ClickTextToChangeThePresetsName": "文字をクリックしてプリセットの名前を変更します",
+        "LoadThisPreset": "このプリセットを読み込み",
+        "SaveTheCurrentLightingLevels": "現在の照明設定を保存する"
+      },
+      "TheAircraftMustBePoweredForInteriorLightingPresets": "航空機に機内照明プリセットを適用するときは電力を供給する必要があります。",
+      "Title": "機内照明"
+    },
+    "Title": "プリセット"
+  },
+  "Pushback": {
+    "AvailableOnlyOnGround": "プッシュバックコントロールは地上でのみ使用できます",
+    "Backward": "後進",
+    "CallTug": "牽引車を呼ぶ",
+    "DisableSystemMessageBody": "プッシュバックシステムを無効にしてもよろしいですか?これにより、牽引車との接続も解除されます。",
+    "DisableSystemMessageTitle": "プッシュバックシステムを無効にする",
+    "EnableSystemMessageBody": "新しいflyPadOS 3プッシュバックシステムは、他のプッシュバックアドオンと競合する可能性があります。他のプッシュバックアドオンを使用する予定がある場合は、システムを有効にしないことをお勧めします。",
+    "EnableSystemMessageTitle": "プッシュバックシステムを有効にする",
+    "Forward": "前進",
+    "Halt": "停止中",
+    "LeavePageMessage": "プッシュバックを一時停止中",
+    "Left": "左へ旋回",
+    "Moving": "移動中",
+    "ParkingBrake": {
+      "Off": "オフ",
+      "On": "オン",
+      "Title": "パーキングブレーキ"
+    },
+    "Right": "右へ旋回",
+    "SystemEnabledOff": "プッシュバックシステム オフ",
+    "SystemEnabledOn": "プッシュバックシステム オン",
+    "TT": {
+      "CallReleaseTug": "牽引車を呼ぶ・解除",
+      "CenterPlaneMode": "自機を地図の中心に表示する オン/オフ",
+      "DecreaseSpeed": "後進・前進速度を落とす",
+      "IncreaseSpeed": "前進・後進速度を落とす",
+      "Left": "左へ旋回",
+      "PausePushback": "プッシュバックの一時停止・再開",
+      "Right": "右へ旋回",
+      "SetReleaseParkingBrake": "パーキングブレーキの有効・無効",
+      "SliderDirection": "任意の牽引方向",
+      "SliderSpeed": "任意の牽引速度",
+      "SystemEnabledOff": "クリックすると、プッシュバックシステムがオンになります。",
+      "SystemEnabledOn": "クリックすると、プッシュバックシステムが完全にオフになります。",
+      "ZoomIn": "拡大",
+      "ZoomOut": "縮小"
+    },
+    "TugAttached": "牽引車に接続中",
+    "TugDirection": "牽引方向",
+    "TugInTransit": "牽引車/ピンの取り外しを準備中",
+    "TugSpeed": "牽引速度"
+  },
+  "Settings": {
+    "About": {
+      "Title": "flyPadについて"
+    },
+    "AircraftOptionsPinPrograms": {
+      "AccelerationHeight": "加速高度(ft)",
+      "EngineOutAccelerationHeight": "エンジン故障時の加速高度(ft)",
+      "IsisBaroUnit": "予備計器の気圧設定",
+      "IsisMetricAltitude": "予備計器のメートル法高度",
+      "LatLonExtendedFormat": "FMGC緯度/経度ウェイポイント形式",
+      "PaxSigns": "乗客サイン",
+      "RmpVhfSpacing": "RMP VHF 周波数間隔",
+      "ThrustReductionHeight": "推力低減高度(ft)",
+      "Title": "機体オプション/Pin Programs",
+      "WeightUnit": "重量単位"
+    },
+    "AtsuAoc": {
+      "AtisAtcSource": "ATIS/ATCの提供元",
+      "AutomaticallyImportSimBriefData": "SimBriefデータの自動インポート",
+      "Enable": "有効化",
+      "EnableTelex": "テレックスを有効化",
+      "ErrorReporting": "エラー報告の送信",
+      "HoppieEnabled": "Hoppie有効",
+      "HoppieUserId": "HoppieユーザーID",
+      "MetarSource": "METARの提供元",
+      "OptionalA32nxErrorReporting": "A32NXエラー報告の送信(オプション)",
+      "PleaseCheckThatYouHaveCorrectlyEnteredYourSimbBriefUsernameOrPilotId": "SimBriefのユーザー名、またはパイロットIDが正しく入力されているか確認してください。",
+      "SimBriefUsernamePilotId": "SimBriefのユーザー名/パイロット ID",
+      "TafSource": "TAFの提供元",
+      "Telex": "TELEX",
+      "TelexEnablesFreeTextAndLiveMap": "TELEXはフリーテキストの送信とライブマップを可能にします。有効にすると、飛行中の航空機の位置情報が公開されます。メッセージは公開され、管理されません。この機能は自己責任で使用してください。TELEX および TELEX で有効になる機能の詳細については、https://docs.flybywiresim.com/telex を参照してください。",
+      "TelexWarning": "注意:TELEXの有効化",
+      "ThereWasAnErrorEncounteredWhenValidatingYourHoppieID": "Hoppie-IDの検証中にエラーが発生しました",
+      "Title": "ATSU / AOC",
+      "YouAreAbleToOptIntoAnonymousErrorReporting": "匿名のエラー報告の送信を選択することで、私たちはより迅速に問題の診断、監視、対処を行うことができます。この機能はオプションであり、お客様の個人情報を収集することはありませんが、サポートをより簡単に受けられるようになり、発生した問題をより早く修正することができます。",
+      "YourHoppieIdHasBeenRemoved": "あなたのHoppie-IDが削除されました",
+      "YourHoppieIdHasBeenValidated": "あなたのHoppie-IDが検証されました",
+      "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "お使いのSimBrief PilotIDが検証され、次のように更新されました :"
+    },
+    "Audio": {
+      "Announcements": "機内アナウンス",
+      "BoardingMusic": "乗客搭乗中の音楽",
+      "EngineInteriorVolume": "エンジンの機内音量",
+      "ExteriorMasterVolume": "外部マスター音量",
+      "PassengerAmbience": "乗客の背景音",
+      "PtuAudibleInCockpit": "コックピットでPTU音が聞こえるようにする",
+      "Title": "オーディオ",
+      "WindInteriorVolume": "風の機内音量"
+    },
+    "Fast": "高速",
+    "Instant": "即時",
+    "Real": "現実的",
+    "Realism": {
+      "AdirsAlignTime": "ADIRSの調整時間",
+      "AutofillChecklists": "チェックリストの自動入力",
+      "BoardingTime": "乗客の搭乗時間",
+      "DmcSelfTestTime": "DMCの自己診断時間",
+      "HomeCockpitMode": "ホームコックピットモード",
+      "McduFocusTimeout": "MCDUへのフォーカスがタイムアウトする時間(秒)",
+      "McduKeyboardInput": "MCDUへのキーボード入力",
+      "PauseAtTod": "降下開始地点で一時停止",
+      "PauseAtTodDistance": "一時停止を有効にする降下開始地点からの距離(nm)",
+      "SeparateTillerFromRudderInputs": "ティラーをラダー入力から分離",
+      "Title": "リアリズム"
+    },
+    "SimOptions": {
+      "Active": "有効",
+      "Auto": "自動",
+      "Calibrate": "調整",
+      "ConesEnabled": "セーフティコーン",
+      "DefaultBarometerUnit": "デフォルトの気圧計単位",
+      "DynamicRegistrationDecal": "登録番号デカールの表示",
+      "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "MCDUサーバー接続の有効化(接続が成功しなかった場合、5分後に自動的に非有効化)",
+      "ExternalMcduServerPort": "外部MCDUサーバーポート",
+      "Hpa": "hPa",
+      "Inactive": "停止",
+      "LoadOnly": "読み込みのみ",
+      "None": "なし",
+      "Off": "オフ",
+      "Save": "保存",
+      "SyncMsfsFlightPlan": "MSFSのフライトプランと同期",
+      "ThrottleDetents": "スロットルディテント",
+      "Title": "シミュレーターオプション",
+      "UseCalculatedIlsSignals": "計算されたILS信号を使用",
+      "WheelChocksEnabled": "輪止め",
+      "inHg": "inHg"
+    },
+    "ThrottleConfig": {
+      "Apply": "適用",
+      "AreYouSureThatYouWantToResetYourCurrentThrottleConfigurationToTheirDefaultStates": "現在のスロットル構成設定をデフォルトの状態にリセットしてよろしいですか？この操作は元に戻せません。",
+      "Axis": "軸",
+      "Back": "戻る",
+      "ConfigureEnd": "終了値を設定",
+      "ConfigureStart": "開始値を設定",
+      "CurrentValue": "現在の値",
+      "Deadband": "デッドバンド",
+      "ErrorOverlapMsg": "が次の項目と重複:",
+      "IndependentAxis": "独立した軸",
+      "LoadFromFile": "ファイルから読み込む",
+      "PleaseEnterAValidDeadzone": "有効なデッドゾーンを入力してください",
+      "ResetToDefaults": "デフォルトに戻す",
+      "ReverseFull": "Reverse Full",
+      "ReverseIdle": "Reverse Idle",
+      "ReverserOnAxis": "逆噴射を軸に設定",
+      "SaveAndApply": "保存して適用",
+      "SetFromThrottle": "現在のスロットル値をセット",
+      "ThrottleConfigurationReset": "スロットル構成のリセット"
+    },
+    "Title": "設定",
+    "Unrealistic": "非現実的",
+    "flyPad": {
+      "AutoBrightness": "明るさ自動調節",
+      "AutomaticallyShowOnscreenKeyboard": "スクリーンキーボードを自動的に表示",
+      "BatteryLifeEnabled": "バッテリー消耗のシミュレーション",
+      "Blue": "ブルー",
+      "Brightness": "明るさ",
+      "Dark": "ダーク",
+      "Language": "言語",
+      "Light": "ライト",
+      "Local": "ローカル",
+      "LocalTimeFormat": "ローカルタイムの形式",
+      "OnscreenKeyboardLayout": "オンスクリーンキーボードのレイアウト",
+      "ShowColoredRawMetar": "METARの原文を色付きで表示",
+      "ShowStatusBarFlightProgressIndicator": "ステータスバーにフライト進行状況インジケーターを表示",
+      "Theme": "テーマ",
+      "TimeDisplayed": "表示する時刻形式",
+      "Title": "flyPad",
+      "TwelveHours": "12時間形式",
+      "TwentyFourHours": "24時間形式",
+      "Utc": "UTC",
+      "UtcAndLocal": "UTCとローカル"
+    }
+  },
+  "StatusBar": {
+    "Apr": "4月",
+    "Aug": "8月",
+    "Dec": "12月",
+    "Feb": "2月",
+    "Fri": "(金)",
+    "Jan": "1月",
+    "Jul": "7月",
+    "Jun": "6月",
+    "Mar": "3月",
+    "May": "5月",
+    "Mon": "(月)",
+    "Nov": "11月",
+    "Oct": "10月",
+    "Sat": "(土)",
+    "Sep": "9月",
+    "Sun": "(日)",
+    "TT": {
+      "ConnectedToLocalApi": "ローカルAPIに接続中",
+      "DisconnectedFromLocalApi": "ローカルAPIから切断されました",
+      "TurnOffOrShutdownEfb": "EFBを消灯、またはシャットダウンする"
+    },
+    "Thu": "(木)",
+    "Tue": "(火)",
+    "Wed": "(水)"
+  }
+}

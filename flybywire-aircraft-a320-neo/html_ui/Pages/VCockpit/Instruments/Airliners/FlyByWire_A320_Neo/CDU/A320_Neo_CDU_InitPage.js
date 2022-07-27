@@ -307,17 +307,17 @@ class CDUInitPage {
                 zfwCell = (NXUnits.kgToUser(mcdu.zeroFuelWeight)).toFixed(1);
                 zfwColor = "[color]cyan";
             }
-            if (isFinite(getZfwcg())) {
-                zfwCgCell = getZfwcg().toFixed(1);
+            if (isFinite(mcdu.zeroFuelWeightMassCenter)) {
+                zfwCgCell = mcdu.zeroFuelWeightMassCenter.toFixed(1);
             }
-            if (isFinite(mcdu.zeroFuelWeight) && isFinite(getZfwcg())) {
+            if (isFinite(mcdu.zeroFuelWeight) && isFinite(mcdu.zeroFuelWeightMassCenter)) {
                 zfwColor = "[color]cyan";
             }
         }
         mcdu.onRightInput[0] = async (value, scratchpadCallback) => {
             if (value === "") {
                 mcdu.setScratchpadText(
-                    (isFinite(getZfw()) ? (NXUnits.kgToUser(getZfw() / 1000)).toFixed(1) : "") +
+                    (isFinite(getZfw()) ? (getZfw() / 1000).toFixed(1) : "") +
                     "/" +
                     (isFinite(getZfwcg()) ? getZfwcg().toFixed(1) : ""));
             } else {

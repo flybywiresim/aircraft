@@ -1,0 +1,577 @@
+{
+  "AirTrafficControl": {
+    "Active": "활성",
+    "ChangeATISATCSourceButton": "ATIS/ATC 출처 변경",
+    "ConnectHoppieACARS": "Hoppie ACARS 연결",
+    "NoInformationAvailableForThisFrequency": "이 주파수에서 사용할 수 있는 정보 없음",
+    "SelectCorrectATISATCSource": "이 페이지는 설정 페이지의 ATIS/ATC 출처를 IVAO 또는 VATSIM으로 설정했을 때만 사용할 수 있습니다.",
+    "SetActive": "활성 주파수로 설정",
+    "SetStandby": "대기 주파수로 설정",
+    "Standby": "대기",
+    "Title": "항공 교통 관제"
+  },
+  "Checklists": {
+    "AreYouSureYouWantToResetAllChecklists": "모든 체크리스트를 초기화하시겠습니까?",
+    "AreYouSureYouWantToResetChecklists": "모든 체크리스트를 초기화하시겠습니까?",
+    "ChecklistResetWarning": "체크리스트 초기화 경고",
+    "MarkChecklistAsComplete": "체크리스트 완료로 표시",
+    "MarkItemAsComplete": "항목을 완료로 표시",
+    "ProceedToNextChecklist": "다음 체크리스트로 이동",
+    "ResetAll": "모두 초기화",
+    "ResetChecklist": "체크리스트 초기화",
+    "TheLastChecklistIsComplete": "마지막 체크리스트가 완료되었습니다",
+    "ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted": "아직 완료되지 않은 자동 완성 체크리스트가 남아있습니다",
+    "Title": "체크리스트"
+  },
+  "Dashboard": {
+    "ImportantInformation": {
+      "Checklists": {
+        "NoRelevantChecklists": "관련된 체크리스트 없음",
+        "Title": "체크리스트"
+      },
+      "GoToPage": "페이지로 이동",
+      "Maintenance": {
+        "NoActiveFailures": "활성된 고장 없음",
+        "Title": "유지 보수"
+      },
+      "PinnedCharts": {
+        "NoPinnedCharts": "고정된 차트 없음",
+        "Title": "고정된 차트"
+      },
+      "TT": {
+        "RearrangeWidgets": "위젯 재정렬"
+      },
+      "Title": "주요 정보",
+      "Weather": {
+        "AirPressure": "기압",
+        "DewPoint": "이슬점",
+        "IcaoInvalid": "ICAO가 유효하지 않거나, 사용가능한 METAR 없음",
+        "Loading": "로딩 중...",
+        "MetarParsingError": "수신된 METAR 정보를 분석할 수 없음",
+        "NoIcaoProvided": "ICAO가 제공되지 않음",
+        "NotAvailableShort": "N/A",
+        "Raw": "원본",
+        "TT": {
+          "SwitchToIconView": "아이콘 보기로 전환",
+          "SwitchToRawMetarView": "원본 METAR로 전환"
+        },
+        "Temperature": "온도",
+        "Title": "날씨",
+        "WindSpeed": "풍속"
+      }
+    },
+    "Title": "대시보드",
+    "YourFlight": {
+      "Alternate": "대체 공항",
+      "AverageWind": "평균 풍속",
+      "CompanyRoute": "회사 항로",
+      "CostIndex": "Cost Index",
+      "CruiseAlt": "순항 고도",
+      "ImportSimBriefData": "SimBrief 데이터 불러오기",
+      "Route": "루트",
+      "SimBriefDataNotYetLoaded": "SimBrief 데이터가 로드되지 않았습니다.",
+      "Title": "운항 정보",
+      "ZFW": "ZFW"
+    }
+  },
+  "Dispatch": {
+    "Ofp": {
+      "ImportSimBriefData": "SimBrief 데이터 불러오기",
+      "TT": {
+        "IncreaseFontSize": "글씨 크게",
+        "ReduceFontSize": "글씨 작게"
+      },
+      "Title": "OFP",
+      "YouHaveNotYetImportedAnySimBriefData": "SimBrief 데이터를 불러오지 않았습니다."
+    },
+    "Overview": {
+      "ActualGW": "실제 GW",
+      "Engines": "엔진",
+      "MMO": "최대 운항속도 (MMO)",
+      "MRW": "최대 램프 중량 (MRW)",
+      "MTOW": "최대 이륙 중량 (MTOW)",
+      "MZFW": "최대 연료 제외 중량 (MZFW)",
+      "MaximumCargo": "최대 화물 적재량",
+      "MaximumFuelCapacity": "최대 연료 용량",
+      "MaximumPassengers": "최대 승객 수",
+      "Model": "모델",
+      "Range": "항속 거리",
+      "Title": "개요"
+    },
+    "Title": "운항 관리"
+  },
+  "Failures": {
+    "Comfort": {
+      "Title": "간편"
+    },
+    "Compact": {
+      "Title": "단순"
+    },
+    "FullSimulationOfTheFailuresBelowIsntYetGuaranteed": "아래 고장 시뮬레이션은 아직 보장되지 않습니다.",
+    "Search": "검색",
+    "Title": "고장"
+  },
+  "Ground": {
+    "Fuel": {
+      "CenterTank": "중앙 탱크",
+      "Completed": "완료됨",
+      "Defueling": "배유중",
+      "EstimatedDuration": "예상 시간 (분)",
+      "EstimatedTime": "예상 시간",
+      "LeftInnerTank": "좌측 내부 탱크",
+      "LeftOuterTank": "좌측 외부 탱크",
+      "ReadyToStart": "급유 준비 완료",
+      "Refuel": "급유",
+      "RefuelTime": "급유 시간",
+      "Refueling": "급유중",
+      "RightInnerTank": "우측 내부 탱크",
+      "RightOuterTank": "우측 외부 탱크",
+      "TT": {
+        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "급유 시간을 변경하려면 항공기의 엔진이 꺼진 상태로 지상에 있어야 합니다.",
+        "FillBlockFuelFromSimBrief": "SimBrief 데이터를 바탕으로 연료 채우기"
+      },
+      "Title": "연료",
+      "TotalFuel": "총 연료",
+      "Unavailable": "사용 불가"
+    },
+    "Payload": {
+      "BoardingTime": "승객 탑승 시간",
+      "Cargo": "수화물",
+      "Current": "현재",
+      "Passengers": "승객",
+      "Planned": "계획",
+      "TT": {
+        "AircraftMustBeColdAndDarkToChangeBoardingTimes": "탑승 소요 시간을 변경하려면 항공기가 지상에 있어야 하며, 엔진이 꺼져있어야 합니다",
+        "FillPayloadFromSimbrief": "Simbrief에서 페이로드 정보 채우기",
+        "MaxCargo": "최대 수화물",
+        "MaxPassengers": "최대 승객 수",
+        "MaxZFW": "최대 ZFW",
+        "MaxZFWCG": "최대 ZFWCG",
+        "PerPaxBagWeight": "승객 화물당 무게",
+        "PerPaxWeight": "승객당 무게",
+        "StartBoarding": "탑승 시작"
+      },
+      "Title": "Payload",
+      "ZFW": "ZFW",
+      "ZFWCG": "ZFWCG"
+    },
+    "Pushback": {
+      "Title": "푸시백"
+    },
+    "Services": {
+      "BaggageTruck": "수하물 트럭",
+      "CateringTruck": "기내식 트럭",
+      "Cones": "안전콘",
+      "DoorAft": "뒤쪽 문",
+      "DoorCargo": "화물칸 문",
+      "DoorFwd": "앞쪽 문",
+      "ExternalPower": "지상 전원 공급 장비",
+      "FuelTruck": "연료 트럭",
+      "JetBridge": "탑승교",
+      "Title": "서비스",
+      "WheelChocks": "휠 초크"
+    },
+    "Title": "지상"
+  },
+  "Modals": {
+    "Cancel": "취소",
+    "Confirm": "확인",
+    "Okay": "확인"
+  },
+  "NavigationAndCharts": {
+    "All": "모두",
+    "Altn": "대체",
+    "ExitFullscreenMode": "전체화면 모드 종료",
+    "From": "이륙 공항",
+    "LocalFiles": {
+      "Both": "모두",
+      "EstablishingConnection": "연결 설정 중...",
+      "FailedToEstablishConnection": "연결에 실패했습니다",
+      "FileName": "파일 이름",
+      "Image": "이미지",
+      "Pdf": "PDF",
+      "Retry": "다시 시도",
+      "Title": "로컬 파일"
+    },
+    "Navigraph": {
+      "AirportDoesNotExist": "공항이 존재하지 않습니다",
+      "AuthenticateWithNavigraph": "Navigraph 인증",
+      "InsufficientEnv": "불충분한 .env 파일",
+      "IntoYourBrowserAndEnterTheCodeBelow": "브라우저에서 아래 코드를 입력하세요",
+      "LoadingMsg": "로딩 중...",
+      "NoAirportSelected": "선택된 공항 없음",
+      "ResetNavigraphAuthentication": "Navigraph 인증 재설정",
+      "ScanTheQrCodeOrOpen": "QR코드 스캔 또는 열기 - ",
+      "Title": "Navigraph"
+    },
+    "PinnedCharts": {
+      "Delete": "삭제",
+      "Edit": "편집",
+      "NoItemsFound": "항목을 찾을 수 없음",
+      "SearchPlaceholder": "검색",
+      "ShowingChartsFromAllProviders": "모든 출처에서 차트 표시",
+      "SortMethods": {
+        "AlphabeticalAZ": "알파벳순 - A -> Z",
+        "AlphabeticalZA": "알파벳순 - Z -> A",
+        "FirstAccessed": "처음으로 사용",
+        "LastAccessed": "마지막으로 사용",
+        "None": "없음"
+      },
+      "TT": {
+        "ChangeChartProvider": "차트 출처 변경",
+        "ChangeChartSortMethod": "차트 정렬 방법 변경",
+        "RemoveAllPinnedCharts": "고정된 차트 모두 제거"
+      },
+      "Title": "고정된 차트",
+      "View": "보기"
+    },
+    "PleaseWait": "잠시 기다려 주세요…",
+    "ShowingAllItems": "모든 항목 보기",
+    "TT": {
+      "FitChartToHeight": "차트를 높이에 맞추기",
+      "FitChartToWidth": "차트를 너비에 맞추기",
+      "ResetMovement": "이동 초기화",
+      "RotateLeft45Degrees": "왼쪽으로 45도 회전",
+      "RotateRight45Degrees": "오른쪽으로 45도 회전",
+      "ZoomIn": "확대",
+      "ZoomOut": "축소"
+    },
+    "ThereAreNoChartsToDisplay": "표시할 차트가 없습니다.",
+    "ThereIsNoChartToDisplay": "표시할 차트가 없습니다.",
+    "Title": "네비게이션 & 차트",
+    "To": "착륙 공항"
+  },
+  "Performance": {
+    "Data": "데이터",
+    "Landing": {
+      "AirportIcao": "공항 ICAO",
+      "ApproachSpeed": "접근 속도",
+      "ApproachSpeedUnit": "kts",
+      "AutoLand": "자동 착륙",
+      "Calculate": "계산",
+      "Clear": "초기화",
+      "DropDownNo": "아니오",
+      "DropDownYes": "예",
+      "FillDataFrom": "다음 데이터에서 가져오기",
+      "FlapsConfiguration": "플랩 설정",
+      "Low": "최저",
+      "MaximumManual": "최대 수동",
+      "Medium": "보통",
+      "MetarErrorDialogMessage": "OFP에서 METAR를 추출하는 도중 오류가 발생했습니다. OFP 대신 이미 추가된 METAR를 이용하여 데이터를 자동으로 채우시겠습니까?",
+      "MetarErrorDialogTitle": "OFP METAR 추출 오류",
+      "OverweightProcedure": "최대착륙중량 초과",
+      "Qnh": "QNH",
+      "ReverseThrust": "역추진 추력",
+      "RunwayAltitude": "활주로 고도",
+      "RunwayAltitudeUnit": "ft ASL",
+      "RunwayCondition": "활주로 상태",
+      "RunwayConditions": {
+        "Dry": "완전히 마름 (6)",
+        "Good": "매우 좋음 (5)",
+        "GoodMedium": "좋음 (4)",
+        "Medium": "보통 (3)",
+        "MediumPoor": "나쁨 (2)",
+        "Poor": "매우 나쁨 (1)"
+      },
+      "RunwayHeading": "활주로 방향",
+      "RunwayHeadingUnit": "°",
+      "RunwayLda": "활주로 LDA",
+      "RunwayLdaUnitFt": "ft",
+      "RunwayLdaUnitMeter": "m",
+      "RunwaySlope": "활주로 경사",
+      "TT": {
+        "YouNeedToEnterAnIcaoCodeInOrderToMakeAMetarRequest": "METAR를 요청하려면 ICAO 코드를 입력해야 합니다",
+        "YouNeedToLoadSimBriefDataInOrderToAutofillData": "데이터를 자동으로 채우려면 SimBrief 데이터를 불러와야 합니다"
+      },
+      "Temperature": "온도",
+      "Title": "착륙",
+      "UnitFt": "ft",
+      "UnitMeter": "m",
+      "Weight": "무게",
+      "WindDirection": "풍향",
+      "WindDirectionUnit": "°",
+      "WindMagnitude": "풍속",
+      "WindMagnitudeUnit": "kts"
+    },
+    "SYNC": "동기화",
+    "Title": "성능",
+    "TopOfDescent": {
+      "Data": {
+        "Angle": "각도",
+        "CurrentAltitude": "현재 고도",
+        "Distance": "거리",
+        "GroundSpeed": "지상 속도",
+        "TargetAltitude": "목표 고도",
+        "Title": "데이터",
+        "UnitAngleDegrees": "도",
+        "UnitFeet": "피트",
+        "UnitFtMin": "ft/min",
+        "UnitNM": "NM",
+        "VerticalSpeed": "수직 속도"
+      },
+      "GroundSpeed": {
+        "Add": "추가",
+        "FetchingSpeedFromSimulator": "시뮬레이터 속도 사용 중",
+        "GroundSpeed": "지상 속도",
+        "ManualInput": "수동 입력",
+        "MinAltitude": "최저 고도",
+        "RemoveLast": "마지막 항목 삭제",
+        "Sync": "동기화",
+        "Title": "지상 속도",
+        "UnitKnots": "노트",
+        "UnitKt": "kt"
+      },
+      "Result": {
+        "BeforeTarget": "전에 하강 시작",
+        "DesiredDescentAngle": "목표 하강 각",
+        "DesiredVerticalSpeed": "목표 수직 속도",
+        "StartYourDescentAbout": "목표 지점에서 약",
+        "Title": "결과"
+      },
+      "TT": {
+        "DesynchronizeInputWithAircraftsCurrentAltitude": "항공기 고도 동기화 해제",
+        "SynchronizeInputWithAircraftsCurrentAltitude": "항공기 고도 동기화"
+      },
+      "Title": "하강 시작 시점"
+    }
+  },
+  "Presets": {
+    "AircraftStates": {
+      "Cancel": "취소",
+      "ColdDark": "Cold & Dark",
+      "ConfirmationDialogMsg": "불러오려는 프리셋을 확인해주세요",
+      "CurrentProcedureStep": "현재 절차 단계",
+      "PleaseConfirmLoadingOfPreset": "불러오려는 프리셋을 확인해주세요",
+      "ReadyPushback": "푸시백 준비",
+      "ReadyTakeoff": "이륙 준비",
+      "ReadyTaxi": "지상활주 준비",
+      "SelectAPresetToLoad": "불러올 프리셋 선택",
+      "TheAircraftMustBeOnTheGroundToLoadAPreset": "프리셋을 불러오려면 항공기가 지상에 있어야 합니다.",
+      "TheAircraftMustBeOntheGroundToLoadAPreset": "프리셋을 불러오려면 항공기가 지상에 있어야 합니다.",
+      "Title": "항공기 상태",
+      "Turnaround": "Turnaround"
+    },
+    "InteriorLighting": {
+      "AircraftNeedsToBePoweredToLoadPresets": "프리셋을 불러오려면 항공기에 전원이 공급되어야 합니다",
+      "AircraftNeedsToBePoweredToSavePresets": "프리셋을 저장하려면 항공기에 전원이 공급되어야 합니다",
+      "LoadPreset": "프리셋 불러오기",
+      "LoadingPreset": "프리셋 불러오는 중...",
+      "NewNameConfirmationDialogMsg": "조명 프리셋의 이름을 확인해주세요",
+      "NoName": "이름 없음",
+      "PleaseConfirmSavingPreset": "저장하려는 프리셋을 확인해주세요",
+      "SavePreset": "프리셋 저장",
+      "SavingPreset": "프리셋 저장 중...",
+      "SelectAnInteriorLightingPresetToLoadOrSave": "불러오거나 저장하려는 기내 조명 프리셋을 선택해주세요",
+      "TT": {
+        "AircraftMustBePowered": "항공기에 전원이 공급되어야 합니다",
+        "ClickTextToChangeThePresetsName": "텍스트를 클릭하여 프리셋 이름 변경",
+        "LoadThisPreset": "이 프리셋 불러오기",
+        "SaveTheCurrentLightingLevels": "현재 조명 밝기 저장"
+      },
+      "TheAircraftMustBePoweredForInteriorLightingPresets": "기내 조명 프리셋을 사용하려면 항공기에 전원이 공급되어야 합니다.",
+      "Title": "기내 조명"
+    },
+    "Title": "프리셋"
+  },
+  "Pushback": {
+    "AvailableOnlyOnGround": "푸시백은 지상에서만 사용할 수 있습니다",
+    "Backward": "뒤로",
+    "CallTug": "터그 부르기",
+    "DisableSystemMessageBody": "푸시백 시스템을 비활성화 하시겠습니까? 비활성화 할 경우 터그가 해제됩니다.",
+    "DisableSystemMessageTitle": "푸시백 시스템 비활성화",
+    "EnableSystemMessageBody": "새로운 flyPadOS 3의 푸시백 시스템은 아직 완성되지 않았습니다. 다른 푸시백 애드온과 호환되지 않으며, 문제가 발생할 수 있습니다.",
+    "EnableSystemMessageTitle": "푸시백 시스템 활성화",
+    "Forward": "앞으로",
+    "Halt": "일시 중지",
+    "LeavePageMessage": "푸시백 일시 정지",
+    "Left": "왼쪽",
+    "Moving": "이동 중",
+    "ParkingBrake": {
+      "Off": "끄기",
+      "On": "켜기",
+      "Title": "파킹 브레이크"
+    },
+    "Right": "오른쪽",
+    "SystemEnabledOff": "푸시백 시스템 끄기",
+    "SystemEnabledOn": "푸시백 시스템 켜기",
+    "TT": {
+      "CallReleaseTug": "터그 요청 또는 연결 해제",
+      "CenterPlaneMode": "맵 중앙에 항공기 아이콘 켜기/끄기",
+      "DecreaseSpeed": "느리게 앞으로 또는 뒤로 가기",
+      "IncreaseSpeed": "느리게 뒤로 또는 앞으로 가기",
+      "Left": "좌측으로 이동",
+      "PausePushback": "푸시백 일시 중지 또는 일시 중지 해제",
+      "Right": "우측으로 이동",
+      "SetReleaseParkingBrake": "파킹 브레이크 설정 또는 해제",
+      "SliderDirection": "원하는 방향으로 슬라이더 이동",
+      "SliderSpeed": "원하는 속도로 슬라이더 이동",
+      "SystemEnabledOff": "클릭하여 푸시백 시스템을 켭니다.",
+      "SystemEnabledOn": "클릭하여 푸시백 시스템을 완전히 끕니다.",
+      "ZoomIn": "확대",
+      "ZoomOut": "축소"
+    },
+    "TugAttached": "터그가  연결되었습니다",
+    "TugDirection": "터그 방향",
+    "TugInTransit": "터그/핀 대기 중",
+    "TugSpeed": "터그 속도"
+  },
+  "Settings": {
+    "About": {
+      "Title": "정보"
+    },
+    "AircraftOptionsPinPrograms": {
+      "AccelerationHeight": "가속 고도 (ft)",
+      "EngineOutAccelerationHeight": "엔진 손상 중 가속 고도 (ft)",
+      "IsisBaroUnit": "ISIS 기압 단위",
+      "IsisMetricAltitude": "ISIS 고도 미터로 표기",
+      "LatLonExtendedFormat": "FMGC 위도/경도 항로 형식",
+      "PaxSigns": "승객 사인",
+      "RmpVhfSpacing": "RMP VHF 주파수 간격",
+      "ThrustReductionHeight": "추력 감소 고도 (ft)",
+      "Title": "항공기 옵션 / 프로그램 설정",
+      "WeightUnit": "무게 단위"
+    },
+    "AtsuAoc": {
+      "AtisAtcSource": "ATIS/ATC 출처",
+      "AutomaticallyImportSimBriefData": "자동으로 SimBrief 데이터 가져오기",
+      "Enable": "활성화",
+      "EnableTelex": "TELEX 활성화",
+      "ErrorReporting": "오류 보고",
+      "HoppieEnabled": "Hoppie 활성화됨",
+      "HoppieUserId": "Hoppie 사용자 ID",
+      "MetarSource": "METAR 출처",
+      "OptionalA32nxErrorReporting": "선택적으로 A32NX 오류 보고",
+      "PleaseCheckThatYouHaveCorrectlyEnteredYourSimbBriefUsernameOrPilotId": "SimBrief 사용자명 또는 조종사 ID를 올바르게 입력했는지 확인해주세요.",
+      "SimBriefUsernamePilotId": "Simbrief 사용자명/조종사 ID",
+      "TafSource": "TAF 출처",
+      "Telex": "TELEX",
+      "TelexEnablesFreeTextAndLiveMap": "TELEX는 자유 채팅과 실시간 지도를 활성화합니다. 활성화 할 경우, 비행 중 항공기의 위치 데이터가 공개됩니다. 모든 메시지는 공개되며, 관리되지 않습니다. 이 기능을 사용하는데에 따른 모든 책임은 사용자에게 있습니다. TELEX와 TELEX가 활성화 되었을 때 동작하는 모든 기능에 대해 알아보려면 https://docs.flybywiresim.com/telex 에서 확인할 수 있습니다.",
+      "TelexWarning": "TELEX 경고",
+      "ThereWasAnErrorEncounteredWhenValidatingYourHoppieID": "Hoppie-ID를 검증하는 도중 오류가 발생했습니다",
+      "Title": "ATSU / AOC",
+      "YouAreAbleToOptIntoAnonymousErrorReporting": "익명으로 오류를 보고하여 문제를 진단 및 모니터링하여 빠르게 처리할 수 있습니다. 해당 기능은 어디까지나 선택사항이며, 개인 정보를 수집하지 않으며, 더 쉽고 빠른 속도로 지원을 받아 문제를 해결할 수 있습니다",
+      "YourHoppieIdHasBeenRemoved": "Hoppie-ID가 삭제되었습니다",
+      "YourHoppieIdHasBeenValidated": "Hoppie-ID가 검증되었습니다",
+      "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "SimBrief 조종사 ID가 다음과 같이 검증 및 업데이트 되었습니다 : "
+    },
+    "Audio": {
+      "Announcements": "안내 방송",
+      "BoardingMusic": "탑승 음악",
+      "EngineInteriorVolume": "기내 엔진 음량",
+      "ExteriorMasterVolume": "외부 전체 음량",
+      "PassengerAmbience": "승객 환경음",
+      "PtuAudibleInCockpit": "조종석에서 PTU 동작음 듣기",
+      "Title": "오디오",
+      "WindInteriorVolume": "기내 바람 음량"
+    },
+    "Fast": "빠름",
+    "Instant": "즉시",
+    "Real": "실제",
+    "Realism": {
+      "AdirsAlignTime": "ADIRS 정렬 시간",
+      "AutofillChecklists": "체크리스트 자동 완성",
+      "BoardingTime": "승객 탑승 시간",
+      "DmcSelfTestTime": "DMC 자체 점검 시간",
+      "HomeCockpitMode": "실내 조종석 모드",
+      "McduFocusTimeout": "MCDU 포커스 타임아웃 (초)",
+      "McduKeyboardInput": "MCDU 키보드 입력",
+      "PauseAtTod": "T/D 일시정지",
+      "PauseAtTodDistance": "T/D 일시정지 거리 (nm)",
+      "SeparateTillerFromRudderInputs": "러더 입력과 틸러 입력 분리",
+      "Title": "리얼리즘"
+    },
+    "SimOptions": {
+      "Active": "활성",
+      "Auto": "자동",
+      "Calibrate": "보정",
+      "ConesEnabled": "안전콘",
+      "DefaultBarometerUnit": "기본 기압 단위",
+      "DynamicRegistrationDecal": "다이나믹 등록 데칼",
+      "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "MCDU 서버 연결 사용 (연결 실패 시 5분 후 자동으로 비활성화)",
+      "ExternalMcduServerPort": "외부 MCDU 서버 포트",
+      "Hpa": "hPa",
+      "Inactive": "비활성",
+      "LoadOnly": "불러오기 전용",
+      "None": "없음",
+      "Off": "끄기",
+      "Save": "저장",
+      "SyncMsfsFlightPlan": "MSFS 비행계획 동기화",
+      "ThrottleDetents": "쓰로틀 단계",
+      "Title": "시뮬레이션 옵션",
+      "UseCalculatedIlsSignals": "계산된 ILS 신호 사용",
+      "WheelChocksEnabled": "휠 초크",
+      "inHg": "inHg"
+    },
+    "ThrottleConfig": {
+      "Apply": "적용",
+      "AreYouSureThatYouWantToResetYourCurrentThrottleConfigurationToTheirDefaultStates": "현재 쓰로틀 구성 설정을 기본 상태로 초기화하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
+      "Axis": "축",
+      "Back": "이전",
+      "ConfigureEnd": "끝 값",
+      "ConfigureStart": "시작 값",
+      "CurrentValue": "현재 값",
+      "Deadband": "데드존",
+      "ErrorOverlapMsg": "이(가) 다음과 겹칩니다 :",
+      "IndependentAxis": "독립 축",
+      "LoadFromFile": "파일에서 불러오기",
+      "PleaseEnterAValidDeadzone": "올바른 데드존을 입력하십시오",
+      "ResetToDefaults": "기본값으로 초기화",
+      "ReverseFull": "Reverse Full",
+      "ReverseIdle": "Reverse Idle",
+      "ReverserOnAxis": "역추진 축",
+      "SaveAndApply": "저장 및 적용",
+      "SetFromThrottle": "쓰로틀 값으로 설정",
+      "ThrottleConfigurationReset": "쓰로틀 설정 초기화"
+    },
+    "Title": "설정",
+    "Unrealistic": "비현실적",
+    "flyPad": {
+      "AutoBrightness": "자동 밝기",
+      "AutomaticallyShowOnscreenKeyboard": "온스크린 키보드 자동 표시",
+      "BatteryLifeEnabled": "배터리 수명 시뮬레이션",
+      "Blue": "블루",
+      "Brightness": "밝기",
+      "Dark": "다크",
+      "Language": "언어",
+      "Light": "라이트",
+      "Local": "현지",
+      "LocalTimeFormat": "현지 시간 형식",
+      "OnscreenKeyboardLayout": "온스크린 키보드 레이아웃",
+      "ShowColoredRawMetar": "강조된 원본 METAR 보기",
+      "ShowStatusBarFlightProgressIndicator": "상태바에 비행 진행도 표시",
+      "Theme": "테마",
+      "TimeDisplayed": "시간 표기",
+      "Title": "flyPad",
+      "TwelveHours": "12시간",
+      "TwentyFourHours": "24시간",
+      "Utc": "UTC",
+      "UtcAndLocal": "UTC 및 현지 시간"
+    }
+  },
+  "StatusBar": {
+    "Apr": "4월",
+    "Aug": "8월",
+    "Dec": "12월",
+    "Feb": "2월",
+    "Fri": "금",
+    "Jan": "1월",
+    "Jul": "7월",
+    "Jun": "6월",
+    "Mar": "3월",
+    "May": "5월",
+    "Mon": "월",
+    "Nov": "11월",
+    "Oct": "10월",
+    "Sat": "토",
+    "Sep": "9월",
+    "Sun": "일",
+    "TT": {
+      "ConnectedToLocalApi": "로컬 API 연결됨",
+      "DisconnectedFromLocalApi": "로컬 API 연결 끊김",
+      "TurnOffOrShutdownEfb": "EFB 끄기 또는 종료"
+    },
+    "Thu": "목",
+    "Tue": "화",
+    "Wed": "수"
+  }
+}

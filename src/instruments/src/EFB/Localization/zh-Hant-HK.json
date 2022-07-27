@@ -1,0 +1,577 @@
+{
+  "AirTrafficControl": {
+    "Active": "使用中",
+    "ChangeATISATCSourceButton": "更改 ATIS/ATC 來源",
+    "ConnectHoppieACARS": "連接 Hoppie ACARS",
+    "NoInformationAvailableForThisFrequency": "此頻率沒有資料",
+    "SelectCorrectATISATCSource": "您需要在設置中選擇 IVAO 或 VATSIM 為 ATC 來源才可使用此頁面。",
+    "SetActive": "設定為使用中",
+    "SetStandby": "設定為待命",
+    "Standby": "待命",
+    "Title": "空中管制"
+  },
+  "Checklists": {
+    "AreYouSureYouWantToResetAllChecklists": "是否重置所有checklist？",
+    "AreYouSureYouWantToResetChecklists": "是否重置所有checklist？",
+    "ChecklistResetWarning": "Checklist 重置警告",
+    "MarkChecklistAsComplete": "將此 checklist 標記為完成",
+    "MarkItemAsComplete": "將此項目標記為完成",
+    "ProceedToNextChecklist": "進入下一個 checklist",
+    "ResetAll": "全部重置",
+    "ResetChecklist": "重置此 checklist",
+    "TheLastChecklistIsComplete": "最後 checklist 已完成",
+    "ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted": "還有剩餘的自動充填核對項目尚未完成",
+    "Title": "Checklists"
+  },
+  "Dashboard": {
+    "ImportantInformation": {
+      "Checklists": {
+        "NoRelevantChecklists": "沒有相關的 checklist",
+        "Title": "Checklists"
+      },
+      "GoToPage": "跳到頁數",
+      "Maintenance": {
+        "NoActiveFailures": "無故障現行",
+        "Title": "維修"
+      },
+      "PinnedCharts": {
+        "NoPinnedCharts": "未有航圖編上",
+        "Title": "編上航圖"
+      },
+      "TT": {
+        "RearrangeWidgets": "重新排列小組件"
+      },
+      "Title": "重要資訊",
+      "Weather": {
+        "AirPressure": "氣壓",
+        "DewPoint": "露點",
+        "IcaoInvalid": "ICAO 代碼無效或無 METAR 供應",
+        "Loading": "載入中...",
+        "MetarParsingError": "無法解析 METAR",
+        "NoIcaoProvided": "未提供 ICAO 代碼",
+        "NotAvailableShort": "無",
+        "Raw": "原本",
+        "TT": {
+          "SwitchToIconView": "圖標",
+          "SwitchToRawMetarView": "顯示原本 METAR"
+        },
+        "Temperature": "溫度",
+        "Title": "天氣",
+        "WindSpeed": "風速"
+      }
+    },
+    "Title": "控制台",
+    "YourFlight": {
+      "Alternate": "在備機場",
+      "AverageWind": "平均風力",
+      "CompanyRoute": "公司路線",
+      "CostIndex": "Cost Index",
+      "CruiseAlt": "飛行高度",
+      "ImportSimBriefData": "加載 SimBrief 數據",
+      "Route": "航線",
+      "SimBriefDataNotYetLoaded": "尚未導入 SimBrief 數據。",
+      "Title": "您的航班",
+      "ZFW": "零油重量 (ZFW)"
+    }
+  },
+  "Dispatch": {
+    "Ofp": {
+      "ImportSimBriefData": "加載 SimBrief 數據",
+      "TT": {
+        "IncreaseFontSize": "增大字體",
+        "ReduceFontSize": "減小字體"
+      },
+      "Title": "OFP",
+      "YouHaveNotYetImportedAnySimBriefData": "尚未導入 SimBrief 數據。"
+    },
+    "Overview": {
+      "ActualGW": "Actual GW",
+      "Engines": "引擎",
+      "MMO": "最快音速 (MMO)",
+      "MRW": "最大地面重量 (MRW)",
+      "MTOW": "最大起飛重量 (MTOW)",
+      "MZFW": "最大零油重量",
+      "MaximumCargo": "最大貨物重量",
+      "MaximumFuelCapacity": "最大燃油容量",
+      "MaximumPassengers": "最大客量",
+      "Model": "飛機型號",
+      "Range": "航距",
+      "Title": "概覽"
+    },
+    "Title": "派遣"
+  },
+  "Failures": {
+    "Comfort": {
+      "Title": "解壓"
+    },
+    "Compact": {
+      "Title": "加壓"
+    },
+    "FullSimulationOfTheFailuresBelowIsntYetGuaranteed": "未能保證以下故障的仿真度。",
+    "Search": "搜尋",
+    "Title": "故障"
+  },
+  "Ground": {
+    "Fuel": {
+      "CenterTank": "中央油箱",
+      "Completed": "完成",
+      "Defueling": "減油",
+      "EstimatedDuration": "預計需要時間 (分鐘)",
+      "EstimatedTime": "估計時間",
+      "LeftInnerTank": "左內油箱",
+      "LeftOuterTank": "左外油箱",
+      "ReadyToStart": "預備開始",
+      "Refuel": "油量",
+      "RefuelTime": "加油時間",
+      "Refueling": "正在加油",
+      "RightInnerTank": "右內油箱",
+      "RightOuterTank": "右外油箱",
+      "TT": {
+        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "飛機必須冷艙才能改變加油時間",
+        "FillBlockFuelFromSimBrief": "由 SimBrief 填充油量"
+      },
+      "Title": "燃油",
+      "TotalFuel": "總計油量",
+      "Unavailable": "唔用得"
+    },
+    "Payload": {
+      "BoardingTime": "Boarding Time",
+      "Cargo": "Cargo",
+      "Current": "Current",
+      "Passengers": "Passengers",
+      "Planned": "Planned",
+      "TT": {
+        "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Aircraft Must Be On the Ground and Have Engines Shutdown to Change Boarding Duration",
+        "FillPayloadFromSimbrief": "Fill Payload Information from Simbrief",
+        "MaxCargo": "Max Cargo",
+        "MaxPassengers": "Maximum Passengers",
+        "MaxZFW": "Maximum ZFW",
+        "MaxZFWCG": "Maximum ZFWCG",
+        "PerPaxBagWeight": "Per Passenger Bag Weight",
+        "PerPaxWeight": "Per Passenger Weight",
+        "StartBoarding": "Begin Boarding"
+      },
+      "Title": "Payload",
+      "ZFW": "ZFW",
+      "ZFWCG": "ZFWCG"
+    },
+    "Pushback": {
+      "Title": "推機"
+    },
+    "Services": {
+      "BaggageTruck": "行李車",
+      "CateringTruck": "飲食服務車",
+      "Cones": "Safety Cones",
+      "DoorAft": "後門",
+      "DoorCargo": "Cargo Door",
+      "DoorFwd": "正門",
+      "ExternalPower": "外部電源",
+      "FuelTruck": "燃油車",
+      "JetBridge": "登機橋",
+      "Title": "服務",
+      "WheelChocks": "Wheel Chocks"
+    },
+    "Title": "地勤"
+  },
+  "Modals": {
+    "Cancel": "取消",
+    "Confirm": "確定",
+    "Okay": "得"
+  },
+  "NavigationAndCharts": {
+    "All": "全部",
+    "Altn": "在備機場",
+    "ExitFullscreenMode": "退出全屏模式",
+    "From": "由",
+    "LocalFiles": {
+      "Both": "兩者",
+      "EstablishingConnection": "正在連接",
+      "FailedToEstablishConnection": "無法建立連接。",
+      "FileName": "文件名",
+      "Image": "圖片",
+      "Pdf": "PDF",
+      "Retry": "重試",
+      "Title": "電腦文件"
+    },
+    "Navigraph": {
+      "AirportDoesNotExist": "無此機場",
+      "AuthenticateWithNavigraph": "Navigraph 驗證",
+      "InsufficientEnv": ".env 文件不足",
+      "IntoYourBrowserAndEnterTheCodeBelow": "進入您的瀏覽器，然後輸入下面的代碼\n",
+      "LoadingMsg": "載入中...",
+      "NoAirportSelected": "未有選擇機場",
+      "ResetNavigraphAuthentication": "重置 Navigraph 驗證",
+      "ScanTheQrCodeOrOpen": "掃描二維碼或打開",
+      "Title": "Navigraph"
+    },
+    "PinnedCharts": {
+      "Delete": "删除",
+      "Edit": "編輯",
+      "NoItemsFound": "找不到項目",
+      "SearchPlaceholder": "搜尋",
+      "ShowingChartsFromAllProviders": "現正顯示所有供應商的航圖",
+      "SortMethods": {
+        "AlphabeticalAZ": "按字母順序排列 A -> Z",
+        "AlphabeticalZA": "按字母順序排列 A -> Z",
+        "FirstAccessed": "首次瀏覽",
+        "LastAccessed": "上次瀏覽",
+        "None": "未挑選"
+      },
+      "TT": {
+        "ChangeChartProvider": "轉換航圖提供商",
+        "ChangeChartSortMethod": "轉換航圖排序方法",
+        "RemoveAllPinnedCharts": "移除所有編上航圖"
+      },
+      "Title": "編上航圖",
+      "View": "檢視"
+    },
+    "PleaseWait": "請稍候...",
+    "ShowingAllItems": "顯示所有航圖",
+    "TT": {
+      "FitChartToHeight": "將航圖適合於高度",
+      "FitChartToWidth": "將航圖適合寬度",
+      "ResetMovement": "重置位置",
+      "RotateLeft45Degrees": "向左旋轉 45 度",
+      "RotateRight45Degrees": "向右旋轉 45 度",
+      "ZoomIn": "放大",
+      "ZoomOut": "縮小"
+    },
+    "ThereAreNoChartsToDisplay": "沒有航圖可顯示。",
+    "ThereIsNoChartToDisplay": "沒有航圖可顯示。",
+    "Title": "導航和航圖",
+    "To": "到"
+  },
+  "Performance": {
+    "Data": "數據",
+    "Landing": {
+      "AirportIcao": "機場 ICAO",
+      "ApproachSpeed": "降速",
+      "ApproachSpeedUnit": "節 (kts)",
+      "AutoLand": "自動降落",
+      "Calculate": "計算",
+      "Clear": "清除",
+      "DropDownNo": "否",
+      "DropDownYes": "是",
+      "FillDataFrom": "由 FMGC 填充數據",
+      "FlapsConfiguration": "襟翼 (Flaps) 位置",
+      "Low": "低剎力",
+      "MaximumManual": "最大手動",
+      "Medium": "中剎力",
+      "MetarErrorDialogMessage": "OFP 中的 METAR 無法解析。要否使用網上的 METAR 自動填充數據？",
+      "MetarErrorDialogTitle": "解析 OFP METAR 時出錯",
+      "OverweightProcedure": "超重程序",
+      "Qnh": "QNH",
+      "ReverseThrust": "反向推力 (Reverse)",
+      "RunwayAltitude": "跑道海拔",
+      "RunwayAltitudeUnit": "海拔英尺 (ft ASL)",
+      "RunwayCondition": "跑道狀況",
+      "RunwayConditions": {
+        "Dry": "幹 (6)",
+        "Good": "良好 (5)",
+        "GoodMedium": "好下 (4)",
+        "Medium": "中 (3)",
+        "MediumPoor": "中下 (2)",
+        "Poor": "差 (1)"
+      },
+      "RunwayHeading": "跑道方針",
+      "RunwayHeadingUnit": "°",
+      "RunwayLda": "跑道可降距離 (LDA)",
+      "RunwayLdaUnitFt": "英尺 (ft)",
+      "RunwayLdaUnitMeter": "米 (m)",
+      "RunwaySlope": "跑道斜坡",
+      "TT": {
+        "YouNeedToEnterAnIcaoCodeInOrderToMakeAMetarRequest": "您需要輸入機場 ICAO 代碼才能提出 METAR 請求",
+        "YouNeedToLoadSimBriefDataInOrderToAutofillData": "您需要加載 SimBrief 數據才能使用自動填充功能"
+      },
+      "Temperature": "溫度",
+      "Title": "降落",
+      "UnitFt": "英尺 (ft)",
+      "UnitMeter": "米 (m)",
+      "Weight": "重量",
+      "WindDirection": "風向",
+      "WindDirectionUnit": "°",
+      "WindMagnitude": "風速",
+      "WindMagnitudeUnit": "節 (kts)"
+    },
+    "SYNC": "同步處理",
+    "Title": "性能",
+    "TopOfDescent": {
+      "Data": {
+        "Angle": "角度",
+        "CurrentAltitude": "現時高度",
+        "Distance": "距離",
+        "GroundSpeed": "地面速度",
+        "TargetAltitude": "目標高度",
+        "Title": "數據",
+        "UnitAngleDegrees": "度",
+        "UnitFeet": "英尺 (ft)",
+        "UnitFtMin": "英尺/分鐘 (fpm)",
+        "UnitNM": "海里 (nm)",
+        "VerticalSpeed": "垂直速度"
+      },
+      "GroundSpeed": {
+        "Add": "加",
+        "FetchingSpeedFromSimulator": "正從模擬器取速",
+        "GroundSpeed": "地面速度",
+        "ManualInput": "人手輸入",
+        "MinAltitude": "最低高度",
+        "RemoveLast": "刪除上一個",
+        "Sync": "同步處理",
+        "Title": "地面速度",
+        "UnitKnots": "節 (kts)",
+        "UnitKt": "節 (kts)"
+      },
+      "Result": {
+        "BeforeTarget": "開始你的下降",
+        "DesiredDescentAngle": "所需的下降角度",
+        "DesiredVerticalSpeed": "所需的下降率",
+        "StartYourDescentAbout": "在目標前大約",
+        "Title": "結果"
+      },
+      "TT": {
+        "DesynchronizeInputWithAircraftsCurrentAltitude": "人手輸入飛機現時高度",
+        "SynchronizeInputWithAircraftsCurrentAltitude": "同步輸入飛機現時高度"
+      },
+      "Title": "下降點"
+    }
+  },
+  "Presets": {
+    "AircraftStates": {
+      "Cancel": "取消",
+      "ColdDark": "熄晒機",
+      "ConfirmationDialogMsg": "請確認加載預設。",
+      "CurrentProcedureStep": "現時程步",
+      "PleaseConfirmLoadingOfPreset": "請確認加載預設。",
+      "ReadyPushback": "推機前",
+      "ReadyTakeoff": "起飛前",
+      "ReadyTaxi": "開咗引擎",
+      "SelectAPresetToLoad": "選擇預設",
+      "TheAircraftMustBeOnTheGroundToLoadAPreset": "飛機必須在地面上才能加載預設。",
+      "TheAircraftMustBeOntheGroundToLoadAPreset": "飛機必須在地面上才能加載預設。",
+      "Title": "飛機狀態",
+      "Turnaround": "轉機"
+    },
+    "InteriorLighting": {
+      "AircraftNeedsToBePoweredToLoadPresets": "飛機必須通電才能加載預設",
+      "AircraftNeedsToBePoweredToSavePresets": "飛機必須通電才能儲存預設",
+      "LoadPreset": "加載預設",
+      "LoadingPreset": "正在加載預設",
+      "NewNameConfirmationDialogMsg": "請確認新照明預設的名稱",
+      "NoName": "無名",
+      "PleaseConfirmSavingPreset": "請確認儲存預設",
+      "SavePreset": "儲存預設",
+      "SavingPreset": "正在儲存預設",
+      "SelectAnInteriorLightingPresetToLoadOrSave": "請選擇內部照明預設。",
+      "TT": {
+        "AircraftMustBePowered": "必須供電給飛機",
+        "ClickTextToChangeThePresetsName": "按下字體來更改預設名稱",
+        "LoadThisPreset": "加載此預設",
+        "SaveTheCurrentLightingLevels": "儲存現時照明光度"
+      },
+      "TheAircraftMustBePoweredForInteriorLightingPresets": "必須供電給飛機才可使用內部照明預設。",
+      "Title": "內部照明"
+    },
+    "Title": "預設"
+  },
+  "Pushback": {
+    "AvailableOnlyOnGround": "Pushback controls are only available on the ground",
+    "Backward": "向後",
+    "CallTug": "召喚推機車",
+    "DisableSystemMessageBody": "Are you sure you want to disable the Pushback System? This will also release the tug.",
+    "DisableSystemMessageTitle": "Disable Pushback System",
+    "EnableSystemMessageBody": "The new flyPadOS 3 Pushback System can cause conflicts with other pushback add-ons. We recommend not to enable the system if you plan to use another pushback add-on. ",
+    "EnableSystemMessageTitle": "Enable Pushback System",
+    "Forward": "向前",
+    "Halt": "已暫停",
+    "LeavePageMessage": "暫停推機",
+    "Left": "左",
+    "Moving": "移動中",
+    "ParkingBrake": {
+      "Off": "放開",
+      "On": "鎖上",
+      "Title": "泊機煞掣"
+    },
+    "Right": "右",
+    "SystemEnabledOff": "Pushback System Off",
+    "SystemEnabledOn": "Pushback System On",
+    "TT": {
+      "CallReleaseTug": "召喚或釋放推機車",
+      "CenterPlaneMode": "地圖中央於本機 — 開/關",
+      "DecreaseSpeed": "向後或慢前",
+      "IncreaseSpeed": "向前或慢後",
+      "Left": "左轉",
+      "PausePushback": "暫停或回復推機",
+      "Right": "右轉",
+      "SetReleaseParkingBrake": "鎖上或放開泊機煞掣",
+      "SliderDirection": "移動到所需方向",
+      "SliderSpeed": "移動到所需速度",
+      "SystemEnabledOff": "Click to turn the pushback system on.",
+      "SystemEnabledOn": "Click to turn the pushback system completely off.",
+      "ZoomIn": "放大",
+      "ZoomOut": "縮小"
+    },
+    "TugAttached": "Tug is attached",
+    "TugDirection": "推機方向",
+    "TugInTransit": "Waiting for Tug/Pin",
+    "TugSpeed": "推機速度"
+  },
+  "Settings": {
+    "About": {
+      "Title": "有關"
+    },
+    "AircraftOptionsPinPrograms": {
+      "AccelerationHeight": "加速高度 (英尺，ft)",
+      "EngineOutAccelerationHeight": "引擎死火加速度高度 (英尺，ft)",
+      "IsisBaroUnit": "ISIS 氣壓單位",
+      "IsisMetricAltitude": "ISIS 公尺高度 (米)",
+      "LatLonExtendedFormat": "FMGC 緯度/經度 (Lat/Lon) 航點格式",
+      "PaxSigns": "客倉標誌",
+      "RmpVhfSpacing": "RMP 高頻間距",
+      "ThrustReductionHeight": "減油高度 (英尺，ft)",
+      "Title": "飛機選項/電針程式",
+      "WeightUnit": "重量單位"
+    },
+    "AtsuAoc": {
+      "AtisAtcSource": "ATIS/ATC 供應商",
+      "AutomaticallyImportSimBriefData": "自動加載 SimBrief 數據",
+      "Enable": "啟用",
+      "EnableTelex": "啟用 TELEX",
+      "ErrorReporting": "報告錯誤",
+      "HoppieEnabled": "Hoppie 已啟用",
+      "HoppieUserId": "Hoppie 用戶編號",
+      "MetarSource": "METAR 供應商",
+      "OptionalA32nxErrorReporting": "志願 A32NX 錯誤報告",
+      "PleaseCheckThatYouHaveCorrectlyEnteredYourSimbBriefUsernameOrPilotId": "請檢查您是否輸入了正確的 SimBrief 用戶名或編號。",
+      "SimBriefUsernamePilotId": "SimBrief 用戶名或編號",
+      "TafSource": "TAF 供應商",
+      "Telex": "TELEX",
+      "TelexEnablesFreeTextAndLiveMap": "TELEX 包括短信和實時地圖功能。啟用時會使用飛行位置數據。短信是公開式，並不受檢查。自行承擔風險使用。詳情請參閱 https://docs.flybywiresim.com/telex",
+      "TelexWarning": "TELEX 警告",
+      "ThereWasAnErrorEncounteredWhenValidatingYourHoppieID": "驗證您的Hoppie-ID時出現錯誤",
+      "Title": "ATSU / AOC",
+      "YouAreAbleToOptIntoAnonymousErrorReporting": "為了以便我們診斷、監控和處理問題，您可以自願選擇匿名報告錯誤。我們絕不會收集您的個人數據。",
+      "YourHoppieIdHasBeenRemoved": "您的 Hoppie ID 已被刪除",
+      "YourHoppieIdHasBeenValidated": "您的Hoppie-ID已經驗證",
+      "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "您的 SimBrief 用戶編號已被核實和更新"
+    },
+    "Audio": {
+      "Announcements": "廣播",
+      "BoardingMusic": "登機音樂",
+      "EngineInteriorVolume": "機內引擎聲量",
+      "ExteriorMasterVolume": "機外主聲量",
+      "PassengerAmbience": "乘客聲音",
+      "PtuAudibleInCockpit": "駕駛艙可否聽到 PTU 聲音",
+      "Title": "音訊",
+      "WindInteriorVolume": "機內風流音量"
+    },
+    "Fast": "快",
+    "Instant": "即時",
+    "Real": "仿真",
+    "Realism": {
+      "AdirsAlignTime": "ADRS 對準需時",
+      "AutofillChecklists": "Checklist 自動填充",
+      "BoardingTime": "登機需時",
+      "DmcSelfTestTime": "DMC 自檢需時",
+      "HomeCockpitMode": "砌機駕駛艙模式",
+      "McduFocusTimeout": "MCDU 對焦超時 (秒)",
+      "McduKeyboardInput": "MCDU 鍵盤輸入",
+      "PauseAtTod": "T/D Pause",
+      "PauseAtTodDistance": "T/D Pause Distance (nm)",
+      "SeparateTillerFromRudderInputs": "將舵柄與腳踏輸入分開",
+      "Title": "仿真度"
+    },
+    "SimOptions": {
+      "Active": "使用中",
+      "Auto": "自動",
+      "Calibrate": "校正",
+      "ConesEnabled": "Safety Cones",
+      "DefaultBarometerUnit": "氣壓單位",
+      "DynamicRegistrationDecal": "註冊印花隨機",
+      "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "啟用 MCDU 伺服器 (5 分鐘之內無連接下會自動停用)",
+      "ExternalMcduServerPort": "MCDU 伺服器端口 (Port)",
+      "Hpa": "毫巴 (hPa)",
+      "Inactive": "待用",
+      "LoadOnly": "只加載",
+      "None": "非同步",
+      "Off": "關",
+      "Save": "儲存",
+      "SyncMsfsFlightPlan": "同步處理 MSFS 航線",
+      "ThrottleDetents": "油門停點",
+      "Title": "模擬選項",
+      "UseCalculatedIlsSignals": "使用電腦計算的 ILS 信號",
+      "WheelChocksEnabled": "Wheel Chocks",
+      "inHg": "英寸汞柱 (inHg)"
+    },
+    "ThrottleConfig": {
+      "Apply": "應用",
+      "AreYouSureThatYouWantToResetYourCurrentThrottleConfigurationToTheirDefaultStates": "是否確定重置油門設定？重設是不可逆轉的。",
+      "Axis": "軸",
+      "Back": "返回",
+      "ConfigureEnd": "結束配置",
+      "ConfigureStart": "開始配置",
+      "CurrentValue": "目前值",
+      "Deadband": "死帶",
+      "ErrorOverlapMsg": "跟重疊",
+      "IndependentAxis": "獨立軸",
+      "LoadFromFile": "從文件中加載",
+      "PleaseEnterAValidDeadzone": "請輸入有效的死帶",
+      "ResetToDefaults": "重置原本設定",
+      "ReverseFull": "全力反推",
+      "ReverseIdle": "最少反推",
+      "ReverserOnAxis": "軸上設有反推杆",
+      "SaveAndApply": "儲存並應用",
+      "SetFromThrottle": "從油門設置",
+      "ThrottleConfigurationReset": "重置油門設定"
+    },
+    "Title": "設定",
+    "Unrealistic": "唔真實",
+    "flyPad": {
+      "AutoBrightness": "自動調整亮度",
+      "AutomaticallyShowOnscreenKeyboard": "自動顯示屏幕鍵盤",
+      "BatteryLifeEnabled": "Battery Life Simulated",
+      "Blue": "藍色",
+      "Brightness": "亮度",
+      "Dark": "深色",
+      "Language": "語言 (Language)",
+      "Light": "淺色",
+      "Local": "本地",
+      "LocalTimeFormat": "本地時間格式",
+      "OnscreenKeyboardLayout": "屏幕鍵盤",
+      "ShowColoredRawMetar": "顯示原本色彩 METAR",
+      "ShowStatusBarFlightProgressIndicator": "顯示飛行進度",
+      "Theme": "佈景主題",
+      "TimeDisplayed": "顯示時間",
+      "Title": "flyPad",
+      "TwelveHours": "12 時",
+      "TwentyFourHours": "24 時",
+      "Utc": "UTC",
+      "UtcAndLocal": "UTC 和本地時間"
+    }
+  },
+  "StatusBar": {
+    "Apr": "四月",
+    "Aug": "八月",
+    "Dec": "十二月",
+    "Feb": "二月",
+    "Fri": "星期五",
+    "Jan": "一月",
+    "Jul": "七月",
+    "Jun": "六月",
+    "Mar": "三月",
+    "May": "五月",
+    "Mon": "星期一",
+    "Nov": "十一月",
+    "Oct": "十月",
+    "Sat": "星期六",
+    "Sep": "九月",
+    "Sun": "星期日",
+    "TT": {
+      "ConnectedToLocalApi": "已連接本機 API",
+      "DisconnectedFromLocalApi": "本機 API 斷線",
+      "TurnOffOrShutdownEfb": "關閉 EFB"
+    },
+    "Thu": "星期四",
+    "Tue": "星期二",
+    "Wed": "星期三"
+  }
+}

@@ -125,6 +125,10 @@ struct SimData {
   double brakeRightPosition;
   double flapsHandleIndex;
   double gearHandlePosition;
+  unsigned long long assistanceTakeoffEnabled;
+  unsigned long long assistanceLandingEnabled;
+  unsigned long long aiAutoTrimActive;
+  unsigned long long aiControlsActive;
 };
 
 struct SimInput {
@@ -152,16 +156,6 @@ struct SimInputThrottles {
   double ATHR_push;
   double ATHR_disconnect;
   double ATHR_reset_disable;
-};
-
-struct SimOutput {
-  double eta;
-  double xi;
-  double zeta;
-};
-
-struct SimOutputEtaTrim {
-  double eta_trim_deg;
 };
 
 struct SimOutputZetaTrim {

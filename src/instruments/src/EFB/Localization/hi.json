@@ -1,0 +1,577 @@
+{
+  "AirTrafficControl": {
+    "Active": "सक्रिय",
+    "ChangeATISATCSourceButton": "एटिस/एटीसी स्रोत बदलें",
+    "ConnectHoppieACARS": "कनेक्ट हॉपी एकारस",
+    "NoInformationAvailableForThisFrequency": "इस आवृत्ति के लिए कोई जानकारी उपलब्ध नहीं है",
+    "SelectCorrectATISATCSource": "इस मेनू का तभी उपयोग किया जा सकता है जब IVAO या फिर VATSIM को ऐतिस / ऐटीसी में चुना जाता ह। ",
+    "SetActive": "सक्रिय सेट करें",
+    "SetStandby": "स्टैंडबाय सेट करें",
+    "Standby": "स्टैंडबाय",
+    "Title": "एयर ट्रैफिक कंट्रोल"
+  },
+  "Checklists": {
+    "AreYouSureYouWantToResetAllChecklists": "क्या आप वाकई सभी चेकलिस्ट रीसेट करना चाहते हैं?",
+    "AreYouSureYouWantToResetChecklists": "क्या आप वाकई सभी चेकलिस्ट रीसेट करना चाहते हैं?",
+    "ChecklistResetWarning": "चेकलिस्ट रीसेट चेतावनी",
+    "MarkChecklistAsComplete": "जांच सूची समाप्त चिन्हित करे ।",
+    "MarkItemAsComplete": "वस्तु समाप्त चिन्हित करे ।",
+    "ProceedToNextChecklist": "अगले जांच सूची की ओर बढ़ीये ।",
+    "ResetAll": "सभ कुछ पहले जैसे कर दे।",
+    "ResetChecklist": "जांच सूची रीसेट करे ।",
+    "TheLastChecklistIsComplete": "अंतिम जांच सूची को समाप्त किया गया है",
+    "ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted": "ऑटोफिल चेकलिस्ट को पूरा नहीं किया गया है ।",
+    "Title": "जांच सूची"
+  },
+  "Dashboard": {
+    "ImportantInformation": {
+      "Checklists": {
+        "NoRelevantChecklists": "कोई आधारित जांच सूची नही है",
+        "Title": "जांच सूची"
+      },
+      "GoToPage": "पृष्ट पर जाए ",
+      "Maintenance": {
+        "NoActiveFailures": "कोई चालू असफलता नही है ",
+        "Title": "रख-रखाव"
+      },
+      "PinnedCharts": {
+        "NoPinnedCharts": "कोई चार्ट लगाए नही गए है ",
+        "Title": "पिन किए गए चार्ट"
+      },
+      "TT": {
+        "RearrangeWidgets": "विजेट को अलग जगह करे"
+      },
+      "Title": "महत्वपूर्ण जानकारी",
+      "Weather": {
+        "AirPressure": "वायुदाब",
+        "DewPoint": "ओसांक",
+        "IcaoInvalid": "ICAO अमान्य है या कोई METAR उपलब्ध नहीं है",
+        "Loading": "लोड हो रहा है…",
+        "MetarParsingError": "प्राप्त METAR को पार्स नहीं किया जा सका",
+        "NoIcaoProvided": "कोई ICAO नहीं दिया गया",
+        "NotAvailableShort": "N/A",
+        "Raw": "सरल ",
+        "TT": {
+          "SwitchToIconView": "आइकन दृश्य में स्विच करें",
+          "SwitchToRawMetarView": "कृपया सरल METAR इस्तमाल करे "
+        },
+        "Temperature": "तापमान",
+        "Title": "मौसम",
+        "WindSpeed": "हवा की गति"
+      }
+    },
+    "Title": "डैशबोर्ड",
+    "YourFlight": {
+      "Alternate": "विकल्प",
+      "AverageWind": "औसत वायु",
+      "CompanyRoute": "कम्पनी रूट",
+      "CostIndex": "कॉस्ट इंडेक्स",
+      "CruiseAlt": "क्रूज़ ऊंचाई",
+      "ImportSimBriefData": "सिमब्रीफ डेटा आयात करें",
+      "Route": "मार्ग",
+      "SimBriefDataNotYetLoaded": "सिमब्रीफ डेटा अभी लोड नहीं हुआ है।",
+      "Title": "आपकी उड़ान",
+      "ZFW": "ZFW"
+    }
+  },
+  "Dispatch": {
+    "Ofp": {
+      "ImportSimBriefData": "सिमब्रीफ डेटा आयात करें",
+      "TT": {
+        "IncreaseFontSize": "फ़ॉन्ट आकार बढ़ाएॅं",
+        "ReduceFontSize": "फ़ॉन्ट का आकार घटाएँ"
+      },
+      "Title": "ओएफपी",
+      "YouHaveNotYetImportedAnySimBriefData": "आपने अभी तक कोई SimBrief डेटा आयात नहीं किया है।"
+    },
+    "Overview": {
+      "ActualGW": "Actual GW",
+      "Engines": "इंजन",
+      "MMO": "एम. एम. ओ",
+      "MRW": "एम. आर. डब्लू",
+      "MTOW": "एम. टी. ओ. डब्लू",
+      "MZFW": "एम. जेड. एफ. डब्लू",
+      "MaximumCargo": "अधिकतम कार्गो",
+      "MaximumFuelCapacity": "अधिकतम ईंधन क्षमता",
+      "MaximumPassengers": "अधिकतम यात्री",
+      "Model": "नमूना",
+      "Range": "सीमा",
+      "Title": "सिंहावलोकन"
+    },
+    "Title": "डिस्पैच"
+  },
+  "Failures": {
+    "Comfort": {
+      "Title": "आराम"
+    },
+    "Compact": {
+      "Title": "कॉम्पैक्ट"
+    },
+    "FullSimulationOfTheFailuresBelowIsntYetGuaranteed": "नीचे दी गई विफलताओं का पूर्ण सिमुलेशन अभी तक गारंटीकृत नहीं है।",
+    "Search": "खोजें",
+    "Title": "विफलतायें"
+  },
+  "Ground": {
+    "Fuel": {
+      "CenterTank": "बीच की टंकी",
+      "Completed": "समाप्त",
+      "Defueling": "तेल निकालना",
+      "EstimatedDuration": "अनुमानित अवधि (मिनट)",
+      "EstimatedTime": "Estimated Time",
+      "LeftInnerTank": "बांहिनी अंद्रुंडी टंकी ",
+      "LeftOuterTank": "बाहीनी बाहरी टंकी ",
+      "ReadyToStart": "शुरू करने के लिए तैयार",
+      "Refuel": "ईधन भरना",
+      "RefuelTime": "ईंधन भरने का समय",
+      "Refueling": "ईंधन भरा जा रहा है",
+      "RightInnerTank": "दायां भीतरी टैंक",
+      "RightOuterTank": "दाहिनी बाहरी टंकी ",
+      "TT": {
+        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "ईंधन भरने का समय बदलने के लिए जहाज बंद होना चाहिए",
+        "FillBlockFuelFromSimBrief": "सिमब्रीफ से निर्धारिक ईंधन भरें"
+      },
+      "Title": "ईंधन",
+      "TotalFuel": "कुल ईंधन",
+      "Unavailable": "अनुपलब्ध"
+    },
+    "Payload": {
+      "BoardingTime": "Boarding Time",
+      "Cargo": "Cargo",
+      "Current": "Current",
+      "Passengers": "Passengers",
+      "Planned": "Planned",
+      "TT": {
+        "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Aircraft Must Be On the Ground and Have Engines Shutdown to Change Boarding Duration",
+        "FillPayloadFromSimbrief": "Fill Payload Information from Simbrief",
+        "MaxCargo": "Max Cargo",
+        "MaxPassengers": "Maximum Passengers",
+        "MaxZFW": "Maximum ZFW",
+        "MaxZFWCG": "Maximum ZFWCG",
+        "PerPaxBagWeight": "Per Passenger Bag Weight",
+        "PerPaxWeight": "Per Passenger Weight",
+        "StartBoarding": "Begin Boarding"
+      },
+      "Title": "Payload",
+      "ZFW": "ZFW",
+      "ZFWCG": "ZFWCG"
+    },
+    "Pushback": {
+      "Title": "पुशबैक"
+    },
+    "Services": {
+      "BaggageTruck": "सामान ट्रक",
+      "CateringTruck": "खानपान ट्रक",
+      "Cones": "सुरक्षा कोन",
+      "DoorAft": "पिछला दरवाज़ा",
+      "DoorCargo": "Cargo Door",
+      "DoorFwd": "अगला दरवाज़ा",
+      "ExternalPower": "ग्राउंड पावर यूनिट",
+      "FuelTruck": "ईंधन ट्रक",
+      "JetBridge": "जेट पुल",
+      "Title": "सेवाएं",
+      "WheelChocks": "व्हील चॉक्स"
+    },
+    "Title": "सेवाएं"
+  },
+  "Modals": {
+    "Cancel": "रद्द करें",
+    "Confirm": "पुष्टि करना",
+    "Okay": "ठीक है"
+  },
+  "NavigationAndCharts": {
+    "All": "सभी",
+    "Altn": "एकांतर",
+    "ExitFullscreenMode": "फ़ुलस्क्रीन मोड से बाहर निकलें",
+    "From": "से",
+    "LocalFiles": {
+      "Both": "दोनों",
+      "EstablishingConnection": "कनेक्शन स्थापित हो रहा है...",
+      "FailedToEstablishConnection": "कनेक्शन स्थापित करने में विफल",
+      "FileName": "फ़ाइल का नाम",
+      "Image": "चित्र",
+      "Pdf": "पीडीएफ",
+      "Retry": "दोबारा कोशिश करें",
+      "Title": "स्थानीय फ़ाइलें"
+    },
+    "Navigraph": {
+      "AirportDoesNotExist": "हवाई अड्डा मौजूद नहीं है",
+      "AuthenticateWithNavigraph": "नैवीग्राफ से प्रमाणित करें",
+      "InsufficientEnv": "अपर्याप्त.env फ़ाइल",
+      "IntoYourBrowserAndEnterTheCodeBelow": "अपने ब्राउज़र में नीचे दिए गए कोड को दर्ज करें\n",
+      "LoadingMsg": "लोड हो रहा है…",
+      "NoAirportSelected": "कोई हवाई अड्डा चयनित नहीं",
+      "ResetNavigraphAuthentication": "नैवीग्राफ प्रमाणीकरण रीसेट करें",
+      "ScanTheQrCodeOrOpen": "QR कोड स्कैन करें या खोलें",
+      "Title": "नैवीग्राफ"
+    },
+    "PinnedCharts": {
+      "Delete": "हटाएँ",
+      "Edit": "बदलें",
+      "NoItemsFound": "कोई आइटम नहीं मिला",
+      "SearchPlaceholder": "खोजें",
+      "ShowingChartsFromAllProviders": "सभी प्रदाताओं से चार्ट दिखा रहा है",
+      "SortMethods": {
+        "AlphabeticalAZ": "वर्णानुक्रम - A -> Z",
+        "AlphabeticalZA": "वर्णानुक्रम - Z -> A",
+        "FirstAccessed": "सबसे पहले एक्सेस किया गया",
+        "LastAccessed": "आखिर में एक्सेस किया गया",
+        "None": "कोई नहीं"
+      },
+      "TT": {
+        "ChangeChartProvider": "चार्ट प्रोवाइडर बदलें",
+        "ChangeChartSortMethod": "चार्ट सॉर्ट विधि बदलें",
+        "RemoveAllPinnedCharts": "सभी पिन किए गए चार्ट हटाएँ"
+      },
+      "Title": "पिन किए गए चार्ट",
+      "View": "दृश्य"
+    },
+    "PleaseWait": "कृपया प्रतीक्षा करें...",
+    "ShowingAllItems": "सभी आइटम दिखा रहा है",
+    "TT": {
+      "FitChartToHeight": "चार्ट ऊँचाई तक फ़िट करें",
+      "FitChartToWidth": "चार्ट को चौड़ाई में फिट करें",
+      "ResetMovement": "रीसेट मूवमेंट",
+      "RotateLeft45Degrees": "बायाँ 45 डिग्री घुमाएँ",
+      "RotateRight45Degrees": "दाएँ 45 डिग्री घुमाएँ",
+      "ZoomIn": "ज़ूम इन",
+      "ZoomOut": "ज़ूम आउट"
+    },
+    "ThereAreNoChartsToDisplay": "प्रदर्शित करने के लिए कोई चार्ट नहीं हैं।",
+    "ThereIsNoChartToDisplay": "प्रदर्शित करने के लिए कोई चार्ट नहीं है।",
+    "Title": "नेविगेशन और चार्ट्स",
+    "To": "को"
+  },
+  "Performance": {
+    "Data": "डेटा",
+    "Landing": {
+      "AirportIcao": "हवाई अड्डा ICAO",
+      "ApproachSpeed": "एप्रोच गती",
+      "ApproachSpeedUnit": "के.टी.एस.",
+      "AutoLand": "आटोलैंड",
+      "Calculate": "गणना",
+      "Clear": "साफ़ करें",
+      "DropDownNo": "नहीं",
+      "DropDownYes": "हाँ",
+      "FillDataFrom": "से डेटा भरें",
+      "FlapsConfiguration": "फ्लैप कॉन्फ़िगरेशन",
+      "Low": "कम",
+      "MaximumManual": "अधिकतम मैनुअल",
+      "Medium": "मध्यम",
+      "MetarErrorDialogMessage": "आपके OFP से METAR को सफलतापूर्वक पार्स नहीं किया जा सका। क्या आप इसके बजाय एक प्राप्त किए गए METAR का उपयोग करके डेटा को ऑटोफिल करना चाहेंगे?",
+      "MetarErrorDialogTitle": "OFP METAR को पार्स करने में त्रुटि",
+      "OverweightProcedure": "अधिक वजन की प्रक्रिया",
+      "Qnh": "क्यू. एन. एच",
+      "ReverseThrust": "रिवर्स थ्रस्ट",
+      "RunwayAltitude": "रनवे की ऊंचाई",
+      "RunwayAltitudeUnit": "फुट एएसएल",
+      "RunwayCondition": "रनवे दशा",
+      "RunwayConditions": {
+        "Dry": "सूखा (6)",
+        "Good": "अच्छा (5)",
+        "GoodMedium": "गुड मीडियम (4)",
+        "Medium": "मीडियम (3)",
+        "MediumPoor": "मध्यम-बेकार (2)",
+        "Poor": "बेकार"
+      },
+      "RunwayHeading": "रनवे हेडिंग",
+      "RunwayHeadingUnit": "°",
+      "RunwayLda": "रनवे एलडीए",
+      "RunwayLdaUnitFt": "फुट",
+      "RunwayLdaUnitMeter": "मीटर",
+      "RunwaySlope": "रनवे का तिरछा पन",
+      "TT": {
+        "YouNeedToEnterAnIcaoCodeInOrderToMakeAMetarRequest": "METAR अनुरोध करने के लिए आपको एक ICAO कोड दर्ज करना होगा",
+        "YouNeedToLoadSimBriefDataInOrderToAutofillData": "डेटा को ऑटोफिल करने के लिए आपको SimBrief डेटा लोड करना होगा"
+      },
+      "Temperature": "तापमान",
+      "Title": "लैंडिंग",
+      "UnitFt": "फुट",
+      "UnitMeter": "मीटर",
+      "Weight": "भार",
+      "WindDirection": "हवा की दिशा",
+      "WindDirectionUnit": "°",
+      "WindMagnitude": "पवन परिमाण",
+      "WindMagnitudeUnit": "नॉट्स"
+    },
+    "SYNC": "समकालीन करें",
+    "Title": "परफॉर्मेंस",
+    "TopOfDescent": {
+      "Data": {
+        "Angle": "कोण",
+        "CurrentAltitude": "वर्तमान ऊंचाई",
+        "Distance": "दूरी",
+        "GroundSpeed": "धरती पर गती",
+        "TargetAltitude": "लक्ष्य ऊंचाई",
+        "Title": "जानकारी",
+        "UnitAngleDegrees": "डिग्री",
+        "UnitFeet": "फीट",
+        "UnitFtMin": "फुट/मिनट",
+        "UnitNM": "नौटिकल माइल्स",
+        "VerticalSpeed": "वर्टिकल गती"
+      },
+      "GroundSpeed": {
+        "Add": "जोड़ें",
+        "FetchingSpeedFromSimulator": "सिम्युलेटर से गति प्राप्त करना",
+        "GroundSpeed": "धरती पर गती",
+        "ManualInput": "मैन्युअल इनपुट",
+        "MinAltitude": "न्यूनतम ऊंचाई",
+        "RemoveLast": "अंतिम हटाएँ",
+        "Sync": "सिंक करें",
+        "Title": "ग्राउंड स्पीड",
+        "UnitKnots": "नॉट्स",
+        "UnitKt": "kt"
+      },
+      "Result": {
+        "BeforeTarget": "लक्ष्य से पहले",
+        "DesiredDescentAngle": "वांछित डिसेंट एंगल",
+        "DesiredVerticalSpeed": "वांछित वर्टिकल स्पीड",
+        "StartYourDescentAbout": "उतरना प्रारंभ करें",
+        "Title": "परिणाम"
+      },
+      "TT": {
+        "DesynchronizeInputWithAircraftsCurrentAltitude": "एयरक्राफ्ट की करंट एल्टीट्यूड के साथ इनपुट को डिसिंक्रोनाइज़ करें",
+        "SynchronizeInputWithAircraftsCurrentAltitude": "विमान की वर्तमान ऊंचाई के साथ इनपुट को सिंक्रोनाइज़ करें"
+      },
+      "Title": "टॉप ऑफ़ डिसेंट"
+    }
+  },
+  "Presets": {
+    "AircraftStates": {
+      "Cancel": "रद्द करें",
+      "ColdDark": "कोल्ड एंड डार्क",
+      "ConfirmationDialogMsg": "कृपया प्रीसेट लोड करने की पुष्टि करें।",
+      "CurrentProcedureStep": "वर्तमान प्रक्रिया चरण",
+      "PleaseConfirmLoadingOfPreset": "कृपया प्रीसेट लोड करने की पुष्टि करें।",
+      "ReadyPushback": "पुशबैक के लिए तैयार",
+      "ReadyTakeoff": "टेकऑफ़ के लिए तैयार",
+      "ReadyTaxi": "टैक्सी के लिए तैयार",
+      "SelectAPresetToLoad": "लोड करने के लिए प्रीसेट चुनें",
+      "TheAircraftMustBeOnTheGroundToLoadAPreset": "प्रीसेट लोड करने के लिए विमान जमीन पर होना चाहिए।",
+      "TheAircraftMustBeOntheGroundToLoadAPreset": "प्रीसेट लोड करने के लिए विमान जमीन पर होना चाहिए।",
+      "Title": "एयरक्राफ्ट स्टेट्स",
+      "Turnaround": "टर्नअराउंड"
+    },
+    "InteriorLighting": {
+      "AircraftNeedsToBePoweredToLoadPresets": "प्रीसेट लोड करने के लिए विमान को संचालित करने की आवश्यकता है",
+      "AircraftNeedsToBePoweredToSavePresets": "प्रीसेट को बचाने के लिए विमान को संचालित करने की आवश्यकता है",
+      "LoadPreset": "प्रीसेट लोड करें",
+      "LoadingPreset": "प्रीसेट लोड हो रहा है",
+      "NewNameConfirmationDialogMsg": "कृपया प्रकाश प्रीसेट के लिए नए नाम की पुष्टि करें",
+      "NoName": "कोई नाम नहीं",
+      "PleaseConfirmSavingPreset": "कृपया प्रीसेट सेविंग की पुष्टि करें",
+      "SavePreset": "प्रीसेट सेव करें",
+      "SavingPreset": "प्रीसेट सहेज रहा है",
+      "SelectAnInteriorLightingPresetToLoadOrSave": "लोड करने या सहेजने के लिए एक आंतरिक प्रकाश प्रीसेट चुनें।",
+      "TT": {
+        "AircraftMustBePowered": "विमान को संचालित किया जाना चाहिए",
+        "ClickTextToChangeThePresetsName": "प्रीसेट का नाम बदलने के लिए टेक्स्ट पर क्लिक करें",
+        "LoadThisPreset": "इस प्रीसेट को लोड करें",
+        "SaveTheCurrentLightingLevels": "वर्तमान प्रकाश स्तर सहेजें"
+      },
+      "TheAircraftMustBePoweredForInteriorLightingPresets": "विमान को आंतरिक प्रकाश प्रीसेट के लिए संचालित किया जाना चाहिए।",
+      "Title": "आन्तरिक प्रकाश"
+    },
+    "Title": "प्रीसेट"
+  },
+  "Pushback": {
+    "AvailableOnlyOnGround": "पुशबैक नियंत्रण केवल जमीन पर उपलब्ध हैं",
+    "Backward": "पिछे",
+    "CallTug": "टग बुलाओ",
+    "DisableSystemMessageBody": "क्या आप वाकई पुशबैक सिस्टम को अक्षम करना चाहते हैं? इससे टग भी रिलीज होगी।",
+    "DisableSystemMessageTitle": "पुशबैक सिस्टम को अक्षम करें",
+    "EnableSystemMessageBody": "नया FlyPadOS 3 पुशबैक सिस्टम अभी तक अंतिम रूप नहीं दिया गया है। यह अन्य पुशबैक ऐड-ऑन के साथ असंगत है और अन्य समस्याओं का कारण बन सकता है।",
+    "EnableSystemMessageTitle": "पुशबैक सिस्टम को सक्षम करें",
+    "Forward": "आगे",
+    "Halt": "रोकें",
+    "LeavePageMessage": "पुशबैक को रोकना",
+    "Left": "बाएं",
+    "Moving": "स्थानांतरित हो रहा है…",
+    "ParkingBrake": {
+      "Off": "बंद",
+      "On": "चालू",
+      "Title": "पार्किंग ब्रेक"
+    },
+    "Right": "सही",
+    "SystemEnabledOff": "पुशबैक सिस्टम ऑफ",
+    "SystemEnabledOn": "पुशबैक सिस्टम ऑन",
+    "TT": {
+      "CallReleaseTug": "टग को कॉल या रिलीज़ करें",
+      "CenterPlaneMode": "प्लेन ऑन/ऑफ पर सेंटर मैप",
+      "DecreaseSpeed": "बैकवर्ड या स्लो फॉरवर्ड (स्पीड को 0 पर सेट करने के लिए डबल क्लिक करें",
+      "IncreaseSpeed": "फॉरवर्ड या स्लो बैकवर्ड (स्पीड को 0 पर सेट करने के लिए डबल क्लिक करें",
+      "Left": "बाएं जाएं (सीधे के लिए डबल क्लिक करें)",
+      "PausePushback": "पुशबैक को रोकें या अनपॉज़ करें",
+      "Right": "दाएँ जाएँ (सीधे के लिए डबल क्लिक करें)",
+      "SetReleaseParkingBrake": "पार्किंग ब्रेक सेट या रिलीज़ करें",
+      "SliderDirection": "इच्छित दिशा के लिए खिसकाएं",
+      "SliderSpeed": "वांछित गति के लिए मूव करें",
+      "SystemEnabledOff": "पुशबैक सिस्टम को चालू करने के लिए क्लिक करें।",
+      "SystemEnabledOn": "पुशबैक सिस्टम को पूरी तरह से बंद करने के लिए क्लिक करें।",
+      "ZoomIn": "ज़ूम इन करें",
+      "ZoomOut": "ज़ूम आउट"
+    },
+    "TugAttached": "टग जुड़ा हुआ है",
+    "TugDirection": "टग की दिशा",
+    "TugInTransit": "टग/पिन की प्रतीक्षा कर रहा है",
+    "TugSpeed": "टग की स्पीड"
+  },
+  "Settings": {
+    "About": {
+      "Title": "बारे में"
+    },
+    "AircraftOptionsPinPrograms": {
+      "AccelerationHeight": "त्वरण ऊंचाई (ft)",
+      "EngineOutAccelerationHeight": "इंजन-आउट एक्सेलेरेशन हाइट (फीट)",
+      "IsisBaroUnit": "आईएसआईएस बारो यूनिट",
+      "IsisMetricAltitude": "ISIS मीट्रिक एल्टीट्यूड",
+      "LatLonExtendedFormat": "एफएमजीसी लैट/लोन वेपॉइंट फॉर्मेट",
+      "PaxSigns": "यात्री संकेत",
+      "RmpVhfSpacing": "आरएमपी वीएचएफ स्पेसिंग",
+      "ThrustReductionHeight": "थ्रस्ट रिडक्शन हाइट (ft)",
+      "Title": "विमान विकल्प/पिन प्रोग्राम",
+      "WeightUnit": "वज़न इकाई"
+    },
+    "AtsuAoc": {
+      "AtisAtcSource": "एटीआईएस/एटीसी स्रोत",
+      "AutomaticallyImportSimBriefData": "स्वचालित रूप से सिमब्रीफ डेटा आयात",
+      "Enable": "चालू करें",
+      "EnableTelex": "TELEX सक्षम करें",
+      "ErrorReporting": "त्रुटि रिपोर्टिंग",
+      "HoppieEnabled": "हॉपी इनेबल्ड",
+      "HoppieUserId": "होप्पी यूज़र आईडी",
+      "MetarSource": "METAR स्त्रोत",
+      "OptionalA32nxErrorReporting": "वैकल्पिक A32NX त्रुटि रिपोर्टिंग",
+      "PleaseCheckThatYouHaveCorrectlyEnteredYourSimbBriefUsernameOrPilotId": "कृपया जांच लें कि आपने अपना SimBrief उपयोगकर्ता नाम या पायलट आईडी सही ढंग से दर्ज किया है।",
+      "SimBriefUsernamePilotId": "SimBrief उपयोगकर्ता नाम/पायलट आईडी",
+      "TafSource": "TAF स्रोत",
+      "Telex": "टेलेक्स",
+      "TelexEnablesFreeTextAndLiveMap": "TELEX मुफ्त टेक्स्ट और लाइव मैप को सक्षम करता है। यदि सक्षम किया जाता है, तो उड़ान की अवधि के लिए विमान स्थिति डेटा प्रकाशित किया जाता है। संदेश सार्वजनिक होते हैं और मॉडरेट नहीं किए जाते हैं। इस सुविधा का उपयोग अपने जोखिम पर करें। TELEX और इसके द्वारा सक्षम सुविधाओं के बारे में अधिक जानने के लिए, कृपया https://docs.flybywiresim.com/telex पर जाएं।",
+      "TelexWarning": "टेलेक्स चेतावनी",
+      "ThereWasAnErrorEncounteredWhenValidatingYourHoppieID": "आपके Hoppie-id को सत्यापित करने में कोई त्रुटि हुई",
+      "Title": "अत्सू/एओसी",
+      "YouAreAbleToOptIntoAnonymousErrorReporting": "आप अनाम त्रुटि रिपोर्टिंग का चयन करने में सक्षम हैं जो हमें तेज दर पर समस्याओं का निदान, निगरानी और देखभाल करने की अनुमति देगा। यह सुविधा पूरी तरह से वैकल्पिक है और हम आपके व्यक्तिगत डेटा को कभी भी एकत्र नहीं करेंगे, लेकिन आपको अधिक आसानी से समर्थन प्राप्त करने की अनुमति दे सकते हैं और आपके द्वारा सामना की जाने वाली समस्याओं को तेज दर पर तय किया जा सकता है।",
+      "YourHoppieIdHasBeenRemoved": "आपका Hoppie-id हटा दिया गया है",
+      "YourHoppieIdHasBeenValidated": "आपकी Hoppie-id को मान्य कर दिया गया है",
+      "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "आपके SimBrief PilotID को मान्य और अद्यतन किया गया है"
+    },
+    "Audio": {
+      "Announcements": "घोषणाएँ",
+      "BoardingMusic": "बोर्डिंग म्यूज़िक",
+      "EngineInteriorVolume": "इंजन इंटिरियर वॉल्यूम",
+      "ExteriorMasterVolume": "एक्सटीरियर मास्टर वॉल्यूम",
+      "PassengerAmbience": "पैसेंजर एम्बिएंस",
+      "PtuAudibleInCockpit": "कॉकपिट में पीटीयू ऑडिबल",
+      "Title": "ऑडियो",
+      "WindInteriorVolume": "विंड इंटीरियर वॉल्यूम"
+    },
+    "Fast": "फ़ास्ट",
+    "Instant": "तुरंत",
+    "Real": "असली",
+    "Realism": {
+      "AdirsAlignTime": "ADIRS संरेखित समय",
+      "AutofillChecklists": "ऑटोफ़िल चेकलिस्ट",
+      "BoardingTime": "बोर्डिंग टाइम",
+      "DmcSelfTestTime": "डीएमसी सेल्फ टेस्ट टाइम",
+      "HomeCockpitMode": "होम कॉकपिट मोड",
+      "McduFocusTimeout": "एमसीडीयू फोकस टाइमआउट (सेकंड)",
+      "McduKeyboardInput": "MCDU कीबोर्ड इनपुट",
+      "PauseAtTod": "T/D Pause",
+      "PauseAtTodDistance": "T/D Pause Distance (nm)",
+      "SeparateTillerFromRudderInputs": "रडर इनपुट्स से अलग टिलर",
+      "Title": "यथार्थवाद"
+    },
+    "SimOptions": {
+      "Active": "सक्रिय",
+      "Auto": "ऑटो",
+      "Calibrate": "कैलिब्रेट",
+      "ConesEnabled": "सुरक्षा कोन",
+      "DefaultBarometerUnit": "डिफ़ॉल्ट बैरोमीटर यूनिट",
+      "DynamicRegistrationDecal": "डायनामिक रजिस्ट्रेशन डिकल",
+      "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "MCDU सर्वर कनेक्शन सक्षम करें (यदि कोई सफल कनेक्शन नहीं है, तो 5 मिनट के बाद स्वतः निष्क्रिय हो जाता है)",
+      "ExternalMcduServerPort": "बाहरी MCDU सर्वर पोर्ट",
+      "Hpa": "hecta पास्कल",
+      "Inactive": "निष्क्रिय",
+      "LoadOnly": "सिर्फ लोड करें",
+      "None": "कोई नहीं",
+      "Off": "बंद",
+      "Save": "सहेजें",
+      "SyncMsfsFlightPlan": "MSFS उड़ान योजना सिंक करें",
+      "ThrottleDetents": "थ्रॉटल डिटेंट्स",
+      "Title": "सिम ऑप्शन्स",
+      "UseCalculatedIlsSignals": "परिकलित ILS सिग्नल उपयोग",
+      "WheelChocksEnabled": "व्हील चॉक्स",
+      "inHg": "इंच बुध धातू"
+    },
+    "ThrottleConfig": {
+      "Apply": "लागू करें",
+      "AreYouSureThatYouWantToResetYourCurrentThrottleConfigurationToTheirDefaultStates": "क्या आप वाकई अपनी वर्तमान थ्रॉटल कॉन्फ़िगरेशन सेटिंग्स को उनके डिफ़ॉल्ट स्थिति में रीसेट करना चाहते हैं? यह क्रिया अपरिवर्तनीय है।",
+      "Axis": "एक्सिस",
+      "Back": "वापस",
+      "ConfigureEnd": "एंड कॉन्फ़िगर करें",
+      "ConfigureStart": "स्टार्ट कॉन्फ़िगर करें",
+      "CurrentValue": "वर्तमान मूल्य",
+      "Deadband": "डेडबैंड",
+      "ErrorOverlapMsg": "के साथ ओवरलैप होता है",
+      "IndependentAxis": "इंडिपेंडेंट ऐक्सिस",
+      "LoadFromFile": "टेक्स्ट की तरह लोड करें",
+      "PleaseEnterAValidDeadzone": "कृपया एक मान्य डेडज़ोन दर्ज करें",
+      "ResetToDefaults": "डिफ़ॉल्ट पर रीसेट करें",
+      "ReverseFull": "उलटा पूरा",
+      "ReverseIdle": "रिवर्स आइडल",
+      "ReverserOnAxis": "एक्सिस पर रिवर्सर",
+      "SaveAndApply": "सहेजें और लागू करें",
+      "SetFromThrottle": "थ्रॉटल से सेट करें",
+      "ThrottleConfigurationReset": "थ्रॉटल कॉन्फ़िगरेशन रीसेट"
+    },
+    "Title": "सेटिंग",
+    "Unrealistic": "अवास्तविक",
+    "flyPad": {
+      "AutoBrightness": "स्वतः उज्ज्वलता",
+      "AutomaticallyShowOnscreenKeyboard": "स्वचालित रूप से ऑनस्क्रीन कीबोर्ड दिखाएँ",
+      "BatteryLifeEnabled": "Battery Life Simulated",
+      "Blue": "नीला",
+      "Brightness": "चमक",
+      "Dark": "गहरा",
+      "Language": "भाषा",
+      "Light": "हल्का",
+      "Local": "स्थानीय",
+      "LocalTimeFormat": "स्थानीय समय फ़ॉर्मेट",
+      "OnscreenKeyboardLayout": "ऑनस्क्रीन कीबोर्ड लेआउट",
+      "ShowColoredRawMetar": "रंगीन रॉ METAR दिखाएँ",
+      "ShowStatusBarFlightProgressIndicator": "स्टेटस बार फ्लाइट प्रोग्रेस इंडिकेटर दिखाएँ",
+      "Theme": "थीम",
+      "TimeDisplayed": "प्रदर्शित समय",
+      "Title": "फ्लाईपैड",
+      "TwelveHours": "12h",
+      "TwentyFourHours": "24h",
+      "Utc": "यूटीसी",
+      "UtcAndLocal": "यूटीसी और लोकल"
+    }
+  },
+  "StatusBar": {
+    "Apr": "अप्रैल",
+    "Aug": "अगस्त",
+    "Dec": "दिसम्बर",
+    "Feb": "फ़रवरी",
+    "Fri": "शुक्रवार",
+    "Jan": "जनवरी",
+    "Jul": "जुलाई",
+    "Jun": "जून",
+    "Mar": "मार्च",
+    "May": "मई",
+    "Mon": "सोमवार",
+    "Nov": "नवम्बर",
+    "Oct": "अक्टूबर",
+    "Sat": "शनिवार",
+    "Sep": "सितम्बर",
+    "Sun": "रविवार",
+    "TT": {
+      "ConnectedToLocalApi": "स्थानीय API से कनेक्ट किया गया",
+      "DisconnectedFromLocalApi": "स्थानीय API से डिस्कनेक्ट किया गया",
+      "TurnOffOrShutdownEfb": "EFB बंद करें"
+    },
+    "Thu": "गुरुवार",
+    "Tue": "मंगलवार",
+    "Wed": "बुधवार"
+  }
+}

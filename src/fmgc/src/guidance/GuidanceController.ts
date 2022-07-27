@@ -42,6 +42,8 @@ export class GuidanceController {
 
     activeLegIndex: number;
 
+    temporaryLegIndex: number = -1;
+
     activeTransIndex: number;
 
     activeLegDtg: NauticalMiles;
@@ -175,7 +177,7 @@ export class GuidanceController {
         this.lnavDriver.ppos.lat = SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude');
         this.lnavDriver.ppos.long = SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude');
 
-        this.activeLegIndex = this.flightPlanManager.getActiveWaypointIndex();
+        this.activeLegIndex = this.flightPlanManager.getActiveWaypointIndex(false, false, FlightPlans.Active);
 
         this.updateGeometries();
 
@@ -214,7 +216,8 @@ export class GuidanceController {
     update(deltaTime: number) {
         this.geometryRecomputationTimer += deltaTime;
 
-        this.activeLegIndex = this.flightPlanManager.getActiveWaypointIndex();
+        this.activeLegIndex = this.flightPlanManager.getActiveWaypointIndex(false, false, FlightPlans.Active);
+        this.temporaryLegIndex = this.flightPlanManager.getActiveWaypointIndex(false, false, FlightPlans.Temporary);
 
         this.updateEfisState('L', this.leftEfisState);
         this.updateEfisState('R', this.rightEfisState);
@@ -227,11 +230,11 @@ export class GuidanceController {
 
             try {
                 this.updateGeometries();
+                this.geometryRecomputationTimer = GEOMETRY_RECOMPUTATION_TIMER + 1;
             } catch (e) {
                 console.error('[FMS] Error during update of geometry. See exception below.');
                 console.error(e);
             }
-            this.geometryRecomputationTimer = 0;
         }
 
         if (this.geometryRecomputationTimer > GEOMETRY_RECOMPUTATION_TIMER) {
@@ -308,6 +311,8 @@ export class GuidanceController {
 
         if (this.flightPlanManager.getFlightPlan(FlightPlans.Temporary)) {
             this.updateTemporaryGeometry();
+        } else {
+            this.temporaryGeometry = undefined;
         }
 
         this.recomputeGeometries();
@@ -344,7 +349,7 @@ export class GuidanceController {
     recomputeGeometries() {
         const tas = SimVar.GetSimVarValue('AIRSPEED TRUE', 'Knots');
         const gs = SimVar.GetSimVarValue('GPS GROUND SPEED', 'Knots');
-        const trueTrack = SimVar.GetSimVarValue('GPS GROUND TRACK', 'degrees');
+        const trueTrack = SimVar.GetSimVarValue('GPS GROUND TRUE TRACK', 'degree');
 
         if (this.activeGeometry) {
             this.activeGeometry.recomputeWithParameters(
@@ -363,8 +368,8 @@ export class GuidanceController {
                 gs,
                 this.lnavDriver.ppos,
                 trueTrack,
-                this.activeLegIndex,
-                this.activeTransIndex,
+                this.temporaryLegIndex,
+                this.temporaryLegIndex - 1,
             );
         }
     }

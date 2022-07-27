@@ -2,8 +2,19 @@ import { ExecTask, TaskOfTasks } from '@flybywiresim/igniter';
 import { getInstrumentsIgniterTasks } from './src/instruments/buildSrc/igniter/tasks.mjs';
 
 export default new TaskOfTasks('a32nx', [
+    new TaskOfTasks('preparation', [
+        new ExecTask('efb-translation', 'npm run build:efb-translation'),
+    ]),
+
     new TaskOfTasks('build', [
-        new TaskOfTasks('instruments', [...getInstrumentsIgniterTasks(), new ExecTask('pfd','npm run build:pfd', ['src/instruments/src/PFD','flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/PFD'])], true),
+        new TaskOfTasks('instruments',
+            [...getInstrumentsIgniterTasks(),
+                new ExecTask('pfd',
+                    'npm run build:pfd',
+                    ['src/instruments/src/PFD','flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/PFD']
+                )
+            ],
+            true),
         new ExecTask('atsu','npm run build:atsu', ['src/atsu', 'flybywire-aircraft-a320-neo/html_ui/JS/atsu']),
         new ExecTask('sentry-client','npm run build:sentry-client', ['src/sentry-client', 'flybywire-aircraft-a320-neo/html_ui/JS/sentry-client']),
         new ExecTask('failures','npm run build:failures', ['src/failures', 'flybywire-aircraft-a320-neo/html_ui/JS/generated/failures.js']),
@@ -22,14 +33,11 @@ export default new TaskOfTasks('a32nx', [
             'src/fadec/build.sh',
             'wasm-opt -O1 -o flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/fadec.wasm flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/fadec.wasm'
         ], ['src/fadec', 'flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/fadec.wasm']),
-        new TaskOfTasks('local-api', [
-            new ExecTask('local-api-server','bash scripts/local-api-build.sh')
-
-        ])
+        new ExecTask('simbridge','bash scripts/local-api-build.sh')
     ], true),
 
     new TaskOfTasks('dist', [
-        new ExecTask('metadata', 'bash scripts/metadata.sh'),
+        new ExecTask('metadata', 'node scripts/metadata.js flybywire-aircraft-a320-neo a32nx'),
         new ExecTask('manifests', 'node scripts/build.js'),
     ]),
 ]);

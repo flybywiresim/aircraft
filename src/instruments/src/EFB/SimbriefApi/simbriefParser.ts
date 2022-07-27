@@ -1,6 +1,6 @@
-import { ISimbriefData, EmptyISimbriefData } from './simbriefInterface';
+import { ISimbriefData } from './simbriefInterface';
 
-const simbriefApiUrl: URL = new URL('https://www.simbrief.com/api/xml.fetcher.php');
+const simbriefApiUrl = new URL('https://www.simbrief.com/api/xml.fetcher.php');
 const simbriefApiParams = simbriefApiUrl.searchParams;
 
 const getRequestData: RequestInit = {
@@ -8,20 +8,21 @@ const getRequestData: RequestInit = {
     method: 'GET',
 };
 
-export function getSimbriefData(simbriefUserId: string): Promise<ISimbriefData> {
+export const getSimbriefData = (simbriefUserId: string): Promise<ISimbriefData> => {
     simbriefApiParams.append('userid', simbriefUserId);
     simbriefApiParams.append('json', '1');
     simbriefApiUrl.search = simbriefApiParams.toString();
 
     return fetch(simbriefApiUrl.toString(), getRequestData)
-        .then((res) => res.json())
-        .then(
-            (result: any) => simbriefDataParser(result),
-            () => EmptyISimbriefData,
-        );
-}
+        .then((res) => {
+            if (!res.ok) {
+                return res.json().then((json) => Promise.reject(new Error(json.fetch.status)));
+            }
+            return res.json().then((json) => simbriefDataParser(json));
+        });
+};
 
-function simbriefDataParser(simbriefJson: any): ISimbriefData {
+const simbriefDataParser = (simbriefJson: any): ISimbriefData => {
     const { general } = simbriefJson;
     const { origin } = simbriefJson;
     const { aircraft } = simbriefJson;
@@ -33,6 +34,8 @@ function simbriefDataParser(simbriefJson: any): ISimbriefData {
     const { alternate } = simbriefJson;
     const { files } = simbriefJson;
     const { text } = simbriefJson;
+    const { weather } = simbriefJson;
+
     return {
         airline: general.icao_airline,
         flightNumber: general.flight_number,
@@ -43,11 +46,21 @@ function simbriefDataParser(simbriefJson: any): ISimbriefData {
         files: { loadsheet: files.pdf.link ? files.directory + files.pdf.link : undefined },
         origin: {
             iata: origin.iata_code,
+            runway: origin.plan_rwy,
             icao: origin.icao_code,
+            name: origin.name,
+            posLat: origin.pos_lat,
+            posLong: origin.pos_long,
+            metar: weather.orig_metar,
         },
         destination: {
             iata: destination.iata_code,
+            runway: destination.plan_rwy,
             icao: destination.icao_code,
+            name: destination.name,
+            posLat: destination.pos_lat,
+            posLong: destination.pos_long,
+            metar: weather.dest_metar,
         },
         distance: `${general.air_distance}nm`,
         flightETAInSeconds: times.est_time_enroute,
@@ -112,4 +125,4 @@ function simbriefDataParser(simbriefJson: any): ISimbriefData {
         },
         text: text.plan_html.replace(/^<div [^>]+>/, '').replace(/<\/div>$/, ''),
     };
-}
+};

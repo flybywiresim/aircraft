@@ -1,0 +1,577 @@
+{
+  "AirTrafficControl": {
+    "Active": "Aktif",
+    "ChangeATISATCSourceButton": "Ubah sumber ATIS/ATC",
+    "ConnectHoppieACARS": "Hubungkan Hoppie ACARS",
+    "NoInformationAvailableForThisFrequency": "Tidak ada informasi yang tersedia untuk frekuensi ini",
+    "SelectCorrectATISATCSource": "Halaman ini hanya tersedia apabila IVAO atau VATSIM telah terpilih sebagai ATIS/ATC di bagian pengaturan.",
+    "SetActive": "Aktifkan",
+    "SetStandby": "Setel Standby",
+    "Standby": "Standby",
+    "Title": "Air Traffic Control"
+  },
+  "Checklists": {
+    "AreYouSureYouWantToResetAllChecklists": "Apa anda yakin untuk mereset ulang seluruh checklist?",
+    "AreYouSureYouWantToResetChecklists": "Apa anda yakin untuk mereset seluruh checklist?",
+    "ChecklistResetWarning": "Peringatan Reset Checklist",
+    "MarkChecklistAsComplete": "Tandai ceklis selesai",
+    "MarkItemAsComplete": "Tandai sebagai selesai",
+    "ProceedToNextChecklist": "Lanjut ke ceklis berikutnya",
+    "ResetAll": "Reset Seluruhnya",
+    "ResetChecklist": "Reset Ceklis",
+    "TheLastChecklistIsComplete": "Ceklis terakhir selesai",
+    "ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted": "Masih ada ceklis otomatis yang belum terselesaikan",
+    "Title": "Ceklis"
+  },
+  "Dashboard": {
+    "ImportantInformation": {
+      "Checklists": {
+        "NoRelevantChecklists": "Tidak ada ceklis yang relevan",
+        "Title": "Ceklis"
+      },
+      "GoToPage": "Pergi ke halaman",
+      "Maintenance": {
+        "NoActiveFailures": "Tidak ada KERUSAKAN yang aktif",
+        "Title": "Perawatan"
+      },
+      "PinnedCharts": {
+        "NoPinnedCharts": "Tidak ada Chart yang disematkan",
+        "Title": "Chart yang disematkan"
+      },
+      "TT": {
+        "RearrangeWidgets": "Atur Kembali Widget"
+      },
+      "Title": "Informasi Penting",
+      "Weather": {
+        "AirPressure": "Tekanan Udara",
+        "DewPoint": "Titik Embun",
+        "IcaoInvalid": "ICAO tidak valid atau METAR tidak tersedia",
+        "Loading": "Memuat",
+        "MetarParsingError": "METAR yang diterima gagal dimuat",
+        "NoIcaoProvided": "Tak ada ICAO yang disediakan",
+        "NotAvailableShort": "Tidak Tersedia",
+        "Raw": "Format mentah",
+        "TT": {
+          "SwitchToIconView": "Beralih ke Tampilan Ikon",
+          "SwitchToRawMetarView": "Beralih ke Tampilan Format Mentah METAR"
+        },
+        "Temperature": "Temperatur",
+        "Title": "Cuaca",
+        "WindSpeed": "Kecepatan Angin"
+      }
+    },
+    "Title": "Dasbor",
+    "YourFlight": {
+      "Alternate": "Alternatif",
+      "AverageWind": "Rata-rata Angin",
+      "CompanyRoute": "Rute Maskapai",
+      "CostIndex": "Cost Index",
+      "CruiseAlt": "Ketinggian Jelajah",
+      "ImportSimBriefData": "Impor Data dari SimBrief",
+      "Route": "Rute",
+      "SimBriefDataNotYetLoaded": "Data SimBrief belum dimuat.",
+      "Title": "Penerbangan Anda",
+      "ZFW": "ZFW"
+    }
+  },
+  "Dispatch": {
+    "Ofp": {
+      "ImportSimBriefData": "Impor Data SimBrief",
+      "TT": {
+        "IncreaseFontSize": "Perbesar Ukuran Font",
+        "ReduceFontSize": "Perkecil Ukuran Font"
+      },
+      "Title": "OFP",
+      "YouHaveNotYetImportedAnySimBriefData": "Anda belum mengimpor data apapun dari SimBrief."
+    },
+    "Overview": {
+      "ActualGW": "Actual GW",
+      "Engines": "Mesin",
+      "MMO": "MMO",
+      "MRW": "MRW",
+      "MTOW": "MTOW",
+      "MZFW": "MZFW",
+      "MaximumCargo": "Kargo Maksimum",
+      "MaximumFuelCapacity": "Kapasitas Maksimum Bahan Bakar",
+      "MaximumPassengers": "Maksimum Penumpang",
+      "Model": "Model",
+      "Range": "Jarak",
+      "Title": "Ringkasan"
+    },
+    "Title": "Dispatch"
+  },
+  "Failures": {
+    "Comfort": {
+      "Title": "Aman"
+    },
+    "Compact": {
+      "Title": "Rumit"
+    },
+    "FullSimulationOfTheFailuresBelowIsntYetGuaranteed": "Simulasi penuh KERUSAKAN di bawah ini belum tentu bekerja dengan sempurna.",
+    "Search": "Cari",
+    "Title": "KERUSAKAN"
+  },
+  "Ground": {
+    "Fuel": {
+      "CenterTank": "Tangki Tengah",
+      "Completed": "Selesai",
+      "Defueling": "Mengurangi Bahan Bakar",
+      "EstimatedDuration": "Perkiraan Waktu (menit)",
+      "EstimatedTime": "Estimated Time",
+      "LeftInnerTank": "Tangki Kiri Dalam",
+      "LeftOuterTank": "Tangki Kiri Luar",
+      "ReadyToStart": "Siap Untuk Diisi",
+      "Refuel": "Mengisi Bahan Bakar",
+      "RefuelTime": "Waktu Mengisi Bahan Bakar",
+      "Refueling": "Mengisi Bahan Bakar",
+      "RightInnerTank": "Tangki Kanan Dalam",
+      "RightOuterTank": "Tangki Kanan Luar",
+      "TT": {
+        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "Pesawat Harus Dalam Keadaan Mati Total untuk Mengubah Waktu Pengisian Bakar",
+        "FillBlockFuelFromSimBrief": "Isi Bahan Bakar dari SimBrief"
+      },
+      "Title": "Bahan Bakar",
+      "TotalFuel": "Total Bahan Bakar",
+      "Unavailable": "Tidak tersedia"
+    },
+    "Payload": {
+      "BoardingTime": "Boarding Time",
+      "Cargo": "Cargo",
+      "Current": "Current",
+      "Passengers": "Passengers",
+      "Planned": "Planned",
+      "TT": {
+        "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Aircraft Must Be On the Ground and Have Engines Shutdown to Change Boarding Duration",
+        "FillPayloadFromSimbrief": "Fill Payload Information from Simbrief",
+        "MaxCargo": "Max Cargo",
+        "MaxPassengers": "Maximum Passengers",
+        "MaxZFW": "Maximum ZFW",
+        "MaxZFWCG": "Maximum ZFWCG",
+        "PerPaxBagWeight": "Per Passenger Bag Weight",
+        "PerPaxWeight": "Per Passenger Weight",
+        "StartBoarding": "Begin Boarding"
+      },
+      "Title": "Payload",
+      "ZFW": "ZFW",
+      "ZFWCG": "ZFWCG"
+    },
+    "Pushback": {
+      "Title": "Pushback"
+    },
+    "Services": {
+      "BaggageTruck": "Truk Bagasi",
+      "CateringTruck": "Truk Katering",
+      "Cones": "Safety Cones",
+      "DoorAft": "Pintu Belakang",
+      "DoorCargo": "Cargo Door",
+      "DoorFwd": "Pintu Depan",
+      "ExternalPower": "Daya Eksternal",
+      "FuelTruck": "Truk Bahan Bakar",
+      "JetBridge": "Garbarata",
+      "Title": "Layanan",
+      "WheelChocks": "Wheel Chocks"
+    },
+    "Title": "Konfigurasi Darat"
+  },
+  "Modals": {
+    "Cancel": "Batal",
+    "Confirm": "Konfirmasi",
+    "Okay": "Oke"
+  },
+  "NavigationAndCharts": {
+    "All": "Seluruh",
+    "Altn": "Alternatif",
+    "ExitFullscreenMode": "Keluar dari Mode Layar Penuh",
+    "From": "Asal",
+    "LocalFiles": {
+      "Both": "Keduanya",
+      "EstablishingConnection": "Menghubungkan Koneksi",
+      "FailedToEstablishConnection": "Gagal Menghubungkan Koneksi.",
+      "FileName": "Nama File",
+      "Image": "Gambar",
+      "Pdf": "Pdf",
+      "Retry": "Ulangi",
+      "Title": "File Lokal"
+    },
+    "Navigraph": {
+      "AirportDoesNotExist": "Bandara Tidak Ditemukan",
+      "AuthenticateWithNavigraph": "Autentikasi dengan Navigraph",
+      "InsufficientEnv": "File .env tidak memadai",
+      "IntoYourBrowserAndEnterTheCodeBelow": "pada browser anda dan masukkan kode dibawah ini",
+      "LoadingMsg": "Memuat",
+      "NoAirportSelected": "Tidak ada Bandara yang dipilih",
+      "ResetNavigraphAuthentication": "Atur Ulang Autentikasi Navigraph",
+      "ScanTheQrCodeOrOpen": "Pindai Kode QR atau Buka",
+      "Title": "Navigraph"
+    },
+    "PinnedCharts": {
+      "Delete": "Hapus",
+      "Edit": "Ubah",
+      "NoItemsFound": "Item tidak Ditemukan",
+      "SearchPlaceholder": "Cari",
+      "ShowingChartsFromAllProviders": "Memunculkan Chart dari Semua Sumber",
+      "SortMethods": {
+        "AlphabeticalAZ": "Urutkan Huruf - A -> Z",
+        "AlphabeticalZA": "Urutkan Huruf - Z -> A",
+        "FirstAccessed": "Pertama Diakses",
+        "LastAccessed": "Terakhir Diakses",
+        "None": "Tidak ada"
+      },
+      "TT": {
+        "ChangeChartProvider": "Ubah Sumber Chart",
+        "ChangeChartSortMethod": "Ubah Pengurutan Chart",
+        "RemoveAllPinnedCharts": "Hapus seluruh Chart yang telah ditandai"
+      },
+      "Title": "Chart yang Disematkan",
+      "View": "Lihat"
+    },
+    "PleaseWait": "Mohon Tunggu",
+    "ShowingAllItems": "Menampilkan Semua Item",
+    "TT": {
+      "FitChartToHeight": "Menyesuaikan Chart dengan Tinggi",
+      "FitChartToWidth": "Menyesuaikan Chart dengan Lebar",
+      "ResetMovement": "Reset Pergerakan",
+      "RotateLeft45Degrees": "Putar ke kiri 45 Derajat",
+      "RotateRight45Degrees": "Putar ke kanan 45 Derajat",
+      "ZoomIn": "Perbesar",
+      "ZoomOut": "Perkecil"
+    },
+    "ThereAreNoChartsToDisplay": "Tidak ada chart untuk ditampilkan",
+    "ThereIsNoChartToDisplay": "Tidak ada chart untuk ditampilkan.",
+    "Title": "Navigasi & Chart",
+    "To": "Tujuan"
+  },
+  "Performance": {
+    "Data": "Data",
+    "Landing": {
+      "AirportIcao": "ICAO Bandara",
+      "ApproachSpeed": "Kecepatan Approach",
+      "ApproachSpeedUnit": "kts",
+      "AutoLand": "Autoland",
+      "Calculate": "Kalkulasi",
+      "Clear": "Kosongkan",
+      "DropDownNo": "Tidak",
+      "DropDownYes": "Iya",
+      "FillDataFrom": "Masukkan data dari",
+      "FlapsConfiguration": "Konfigurasi Flaps",
+      "Low": "Rendah",
+      "MaximumManual": "Manual Maksimum",
+      "Medium": "Sedang",
+      "MetarErrorDialogMessage": "METAR dari OFP anda gagal dimuat. Apakah anda ingin mengisi data secara otomatis menggunakan METAR yang diambil sebagai gantinya?",
+      "MetarErrorDialogTitle": "Gagal mengambil OFP METAR",
+      "OverweightProcedure": "Prosedur Muatan Berlebih",
+      "Qnh": "QNH",
+      "ReverseThrust": "Reverse Thrust",
+      "RunwayAltitude": "Ketinggian Landasan",
+      "RunwayAltitudeUnit": "ft ASL",
+      "RunwayCondition": "Kondisi Landasan",
+      "RunwayConditions": {
+        "Dry": "Kering (6)",
+        "Good": "Baik (5)",
+        "GoodMedium": "Baik-Sedang (4)",
+        "Medium": "Sedang (3)",
+        "MediumPoor": "Sedang-Buruk (2)",
+        "Poor": "Buruk (1)"
+      },
+      "RunwayHeading": "Arah Landasan",
+      "RunwayHeadingUnit": "°",
+      "RunwayLda": "LDA Landasan",
+      "RunwayLdaUnitFt": "ft",
+      "RunwayLdaUnitMeter": "m",
+      "RunwaySlope": "Kemiringan Landasan",
+      "TT": {
+        "YouNeedToEnterAnIcaoCodeInOrderToMakeAMetarRequest": "Anda perlu memasukkan kode ICAO untuk mendapatkan METAR",
+        "YouNeedToLoadSimBriefDataInOrderToAutofillData": "Anda perlu memuat data SimBrief untuk mengisi data secara otomatis"
+      },
+      "Temperature": "Temperatur",
+      "Title": "Mendarat",
+      "UnitFt": "ft",
+      "UnitMeter": "m",
+      "Weight": "Berat",
+      "WindDirection": "Arah Angin",
+      "WindDirectionUnit": "°",
+      "WindMagnitude": "Kekuatan Angin",
+      "WindMagnitudeUnit": "kts"
+    },
+    "SYNC": "Sinkronkan",
+    "Title": "Performa",
+    "TopOfDescent": {
+      "Data": {
+        "Angle": "Sudut",
+        "CurrentAltitude": "Ketinggian Saat ini",
+        "Distance": "Jarak",
+        "GroundSpeed": "Kecepatan Darat",
+        "TargetAltitude": "Target Ketinggian",
+        "Title": "Data",
+        "UnitAngleDegrees": "derajat",
+        "UnitFeet": "feet",
+        "UnitFtMin": "ft/menit",
+        "UnitNM": "NM",
+        "VerticalSpeed": "Kecepatan Vertikal"
+      },
+      "GroundSpeed": {
+        "Add": "Tambah",
+        "FetchingSpeedFromSimulator": "Mengambil data kecepatan dari simulator",
+        "GroundSpeed": "Kecepatan Darat",
+        "ManualInput": "Input Manual",
+        "MinAltitude": "Ketinggian Minimal",
+        "RemoveLast": "Singkirkan Terakhir",
+        "Sync": "Sinkronkan",
+        "Title": "Ground Speed",
+        "UnitKnots": "knot",
+        "UnitKt": "kt"
+      },
+      "Result": {
+        "BeforeTarget": "sebelum target",
+        "DesiredDescentAngle": "Sudut Descent yang diinginkan",
+        "DesiredVerticalSpeed": "Kecepatan Vertikal yang diinginkan",
+        "StartYourDescentAbout": "Mulai turunkan ketinggian sekitar",
+        "Title": "Hasil"
+      },
+      "TT": {
+        "DesynchronizeInputWithAircraftsCurrentAltitude": "Desinkronisasi Input dengan Ketinggian Pesawat Saat Ini",
+        "SynchronizeInputWithAircraftsCurrentAltitude": "Sinkronkan Input dengan Ketinggian Pesawat Saat Ini"
+      },
+      "Title": "Top of Descent"
+    }
+  },
+  "Presets": {
+    "AircraftStates": {
+      "Cancel": "Batal",
+      "ColdDark": "Keadaan Mati",
+      "ConfirmationDialogMsg": "Harap konfirmasi pemuatan preset.",
+      "CurrentProcedureStep": "Langkah Prosedur Saat ini",
+      "PleaseConfirmLoadingOfPreset": "Harap konfirmasi pemuatan preset.",
+      "ReadyPushback": "Siap untuk Pushback",
+      "ReadyTakeoff": "Siap untuk Lepas Landas",
+      "ReadyTaxi": "Siap untuk Taxi",
+      "SelectAPresetToLoad": "Pilih Preset untuk dimuat",
+      "TheAircraftMustBeOnTheGroundToLoadAPreset": "Pesawat harus berada di darat untuk memuat preset.",
+      "TheAircraftMustBeOntheGroundToLoadAPreset": "Pesawat harus berada di darat untuk memuat preset.",
+      "Title": "Kondisi Pesawat",
+      "Turnaround": "Turnaround"
+    },
+    "InteriorLighting": {
+      "AircraftNeedsToBePoweredToLoadPresets": "Pesawat Perlu Diberi Daya untuk Memuat Preset",
+      "AircraftNeedsToBePoweredToSavePresets": "Pesawat Perlu Diberi Daya untuk Menyimpan Preset",
+      "LoadPreset": "Muat Preset",
+      "LoadingPreset": "Memuat Preset",
+      "NewNameConfirmationDialogMsg": "Mohon konfirmasi nama baru untuk preset cahaya",
+      "NoName": "Tanpa Nama",
+      "PleaseConfirmSavingPreset": "Mohon Konfirmasi Penyimpanan Preset",
+      "SavePreset": "Simpan Preset",
+      "SavingPreset": "Menyimpan Preset",
+      "SelectAnInteriorLightingPresetToLoadOrSave": "Pilih preset cahaya interior untuk dimuat atau disimpan.",
+      "TT": {
+        "AircraftMustBePowered": "Pesawat Perlu Dialiri Daya",
+        "ClickTextToChangeThePresetsName": "Klik Teks untuk Mengubah Nama Preset",
+        "LoadThisPreset": "Muat Preset ini",
+        "SaveTheCurrentLightingLevels": "Simpan Level Cahaya Saat Ini"
+      },
+      "TheAircraftMustBePoweredForInteriorLightingPresets": "Pesawat ini perlu dialiri daya untuk memilih preset cahaya.",
+      "Title": "Cahaya Interior"
+    },
+    "Title": "Preset"
+  },
+  "Pushback": {
+    "AvailableOnlyOnGround": "Kontrol pushback hanya tersedia di darat",
+    "Backward": "Mundur",
+    "CallTug": "Panggil Tug",
+    "DisableSystemMessageBody": "Apakah anda yakin ingin menonaktifkan Sistem Pushback? Ini juga akan melepaskan tug.",
+    "DisableSystemMessageTitle": "Nonaktifkan Sistem Pushback",
+    "EnableSystemMessageBody": "Sistem Pushback FlyPadOS 3 baru belum selesai. Sistemnya tidak kompatibel dengan add-on Pushback lainnya dan dapat menyebabkan masalah lain.",
+    "EnableSystemMessageTitle": "Aktifkan Sistem Pushback",
+    "Forward": "Maju",
+    "Halt": "Jeda",
+    "LeavePageMessage": "Menjeda Pushback",
+    "Left": "Kiri",
+    "Moving": "Bergerak",
+    "ParkingBrake": {
+      "Off": "Mati",
+      "On": "Nyala",
+      "Title": "Parking Brake"
+    },
+    "Right": "Kanan",
+    "SystemEnabledOff": "Sistem Pushback Nonaktif",
+    "SystemEnabledOn": "Sistem Pushback Aktif",
+    "TT": {
+      "CallReleaseTug": "Panggil atau lepaskan tug",
+      "CenterPlaneMode": "Pusatkan peta di pesawat Aktif/Nonaktif",
+      "DecreaseSpeed": "Mundur atau lebih lambat ke depan",
+      "IncreaseSpeed": "Maju atau lebih lambat ke belakang",
+      "Left": "Ke kiri",
+      "PausePushback": "Jeda atau hentikan jeda pushback",
+      "Right": "Ke kanan",
+      "SetReleaseParkingBrake": "Pasang atau lepaskan parking brake",
+      "SliderDirection": "Pindah untuk arah yang diinginkan",
+      "SliderSpeed": "Pindah untuk kecepatan yang diinginkan",
+      "SystemEnabledOff": "Klik untuk menyalakan sistem pushback.",
+      "SystemEnabledOn": "Klik untuk mematikan sistem pushback sepenuhnya.",
+      "ZoomIn": "Perbesar",
+      "ZoomOut": "Perkecil"
+    },
+    "TugAttached": "Tug terpasang",
+    "TugDirection": "Arah Tug",
+    "TugInTransit": "Menunggu Tug/Pin",
+    "TugSpeed": "Kecepatan Tug"
+  },
+  "Settings": {
+    "About": {
+      "Title": "Tentang"
+    },
+    "AircraftOptionsPinPrograms": {
+      "AccelerationHeight": "Akselerasi Ketinggian (ft)",
+      "EngineOutAccelerationHeight": "Ketinggian Akselerasi Mesin Mati (ft)",
+      "IsisBaroUnit": "ISIS Baro Unit",
+      "IsisMetricAltitude": "Ketinggian Metrik ISIS",
+      "LatLonExtendedFormat": "Format FMGC Lat/Lon Waypoint",
+      "PaxSigns": "PAX Signs",
+      "RmpVhfSpacing": "Jarak VHF RMP",
+      "ThrustReductionHeight": "Ketinggian Pengurangan Dorongan (ft)",
+      "Title": "Opsi Pesawat / Tandai Program",
+      "WeightUnit": "Satuan Berat"
+    },
+    "AtsuAoc": {
+      "AtisAtcSource": "Sumber ATIS/ATC",
+      "AutomaticallyImportSimBriefData": "Impor Data SimBrief Secara Otomatis",
+      "Enable": "Aktif",
+      "EnableTelex": "Aktifkan TELEX",
+      "ErrorReporting": "Laporkan Masalah",
+      "HoppieEnabled": "Hoppie tersedia",
+      "HoppieUserId": "Hoppie User ID",
+      "MetarSource": "Sumber METAR",
+      "OptionalA32nxErrorReporting": "Opsi Lapor Masalah pada A32NX",
+      "PleaseCheckThatYouHaveCorrectlyEnteredYourSimbBriefUsernameOrPilotId": "Mohon periksa kesesuaian data username/pilot ID SimBrief anda.",
+      "SimBriefUsernamePilotId": "Username/Pilot ID SimBrief",
+      "TafSource": "Sumber TAF",
+      "Telex": "TELEX",
+      "TelexEnablesFreeTextAndLiveMap": "TELEX mengaktifkan fitur free text dan live map. Jika diaktifkan, maka posisi pesawat secara terkini akan disiarkan di live map. Pesan free text tidak dimoderasi dan dapat dilihat oleh umum. DENGAN MENGGUNAKAN FITUR INI, ANDA MEMAHAMI RESIKO YANG DAPAT DITIMBULKAN. Untuk memahami lebih lanjut tentang fitur ini, kunjungi https://docs.flybywiresim.com/telex.",
+      "TelexWarning": "Peringatan TELEX",
+      "ThereWasAnErrorEncounteredWhenValidatingYourHoppieID": "Validasi ID Hoppie anda gagal.",
+      "Title": "ATSU / AOC",
+      "YouAreAbleToOptIntoAnonymousErrorReporting": "Anda dapat memilih untuk melakukan pelaporan kesalahan anonim yang akan memungkinkan kami untuk mendiagnosis, memantau, dan menangani masalah pada tingkat yang lebih cepat. Fitur ini benar-benar opsional dan kami tidak akan pernah mengumpulkan data pribadi anda, tetapi memungkinkan anda untuk lebih mudah mendapatkan dukungan dan masalah yang anda hadapi dapat lebih cepat teratasi.",
+      "YourHoppieIdHasBeenRemoved": "Hoppie-ID anda telah dihapus",
+      "YourHoppieIdHasBeenValidated": "Hoppie-ID anda telah tervalidasi",
+      "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "PilotID SimBrief anda telah divalidasi dan diperbarui menjadi"
+    },
+    "Audio": {
+      "Announcements": "Pengumuman",
+      "BoardingMusic": "Musik Boarding",
+      "EngineInteriorVolume": "Volume Interior Mesin",
+      "ExteriorMasterVolume": "Volume Master Eksterior",
+      "PassengerAmbience": "Kebisingan Penumpang",
+      "PtuAudibleInCockpit": "PTU Terdengar di Kokpit",
+      "Title": "Audio",
+      "WindInteriorVolume": "Volume Interior Angin"
+    },
+    "Fast": "Cepat",
+    "Instant": "Instan",
+    "Real": "Realisme",
+    "Realism": {
+      "AdirsAlignTime": "Waktu Penghidupan ADIRS",
+      "AutofillChecklists": "Ceklis Otomatis Terisi",
+      "BoardingTime": "Waktu Boarding",
+      "DmcSelfTestTime": "Waktu Pencobaan Mandiri DMC",
+      "HomeCockpitMode": "Mode Kokpit Rumah",
+      "McduFocusTimeout": "Batas Waktu Fokus MCDU (detik)",
+      "McduKeyboardInput": "Input Keyboard MCDU",
+      "PauseAtTod": "T/D Pause",
+      "PauseAtTodDistance": "T/D Pause Distance (nm)",
+      "SeparateTillerFromRudderInputs": "Pisahkan Tiller dari Input Rudder",
+      "Title": "Realisme"
+    },
+    "SimOptions": {
+      "Active": "Aktif",
+      "Auto": "Otomatis",
+      "Calibrate": "Kalibrasi",
+      "ConesEnabled": "Safety Cones",
+      "DefaultBarometerUnit": "Standar Satuan Barometer",
+      "DynamicRegistrationDecal": "Nomor Registrasi Pesawat",
+      "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Aktifkan Koneksi Server MCDU (Otomatis dinonaktifkan setelah 5 menit jika tidak ada koneksi yang berhasil)",
+      "ExternalMcduServerPort": "Port Server MCDU Eksternal",
+      "Hpa": "hPa",
+      "Inactive": "Tidak Aktif",
+      "LoadOnly": "Hanya Muat Saja",
+      "None": "Tidak ada",
+      "Off": "Mati",
+      "Save": "Simpan",
+      "SyncMsfsFlightPlan": "Sinkronkan dengan Flight Plan MSFS",
+      "ThrottleDetents": "Penahan Throttle",
+      "Title": "Opsi Sim",
+      "UseCalculatedIlsSignals": "Gunakan Sinyal ILS yang telah dikalkulasikan",
+      "WheelChocksEnabled": "Wheel Chocks",
+      "inHg": "inHg"
+    },
+    "ThrottleConfig": {
+      "Apply": "Terapkan",
+      "AreYouSureThatYouWantToResetYourCurrentThrottleConfigurationToTheirDefaultStates": "Apa anda yakin untuk mereset konfigurasi throttle saat ini menjadi settingan awal? Aksi ini tak dapat diubah.",
+      "Axis": "Axis",
+      "Back": "Kembali",
+      "ConfigureEnd": "Akhiri Konfigurasi",
+      "ConfigureStart": "Mulai Konfigurasi",
+      "CurrentValue": "Nilai Saat ini",
+      "Deadband": "Deadband",
+      "ErrorOverlapMsg": "tumpang tindih dengan",
+      "IndependentAxis": "Axis Independen",
+      "LoadFromFile": "Muat dari File",
+      "PleaseEnterAValidDeadzone": "Silahkan masukkan deadzone yang valid",
+      "ResetToDefaults": "Ubah ke Settingan Awal",
+      "ReverseFull": "Reverse Penuh",
+      "ReverseIdle": "Reverse Mati",
+      "ReverserOnAxis": "Reverser Pada Axis",
+      "SaveAndApply": "Simpan dan Terapkan",
+      "SetFromThrottle": "Atur dari Throttle",
+      "ThrottleConfigurationReset": "Reset Konfigurasi Throttle"
+    },
+    "Title": "Pengaturan",
+    "Unrealistic": "Tidak Realistis",
+    "flyPad": {
+      "AutoBrightness": "Kecerahan Otomatis",
+      "AutomaticallyShowOnscreenKeyboard": "Otomatis Menampilkan Keyboard Pada Layar",
+      "BatteryLifeEnabled": "Battery Life Simulated",
+      "Blue": "Biru",
+      "Brightness": "Kecerahan",
+      "Dark": "Gelap",
+      "Language": "Bahasa",
+      "Light": "Terang",
+      "Local": "Lokal",
+      "LocalTimeFormat": "Format Waktu Lokal",
+      "OnscreenKeyboardLayout": "Layout Keyboard Pada Layar",
+      "ShowColoredRawMetar": "Tampilkan Format Mentah METAR dalam Warna",
+      "ShowStatusBarFlightProgressIndicator": "Tampilkan Status Bar Indikator Progres Penerbangan",
+      "Theme": "Tema",
+      "TimeDisplayed": "Waktu yang ditampilkan",
+      "Title": "flyPad",
+      "TwelveHours": "12j",
+      "TwentyFourHours": "24j",
+      "Utc": "UTC",
+      "UtcAndLocal": "UTC dan Lokal"
+    }
+  },
+  "StatusBar": {
+    "Apr": "Apr",
+    "Aug": "Agu",
+    "Dec": "Des",
+    "Feb": "Feb",
+    "Fri": "Jum",
+    "Jan": "Jan",
+    "Jul": "Jul",
+    "Jun": "Jun",
+    "Mar": "Mar",
+    "May": "Mei",
+    "Mon": "Sen",
+    "Nov": "Nov",
+    "Oct": "Okt",
+    "Sat": "Sab",
+    "Sep": "Sep",
+    "Sun": "Ming",
+    "TT": {
+      "ConnectedToLocalApi": "Terhubung ke API Lokal",
+      "DisconnectedFromLocalApi": "Terputus dari API Lokal",
+      "TurnOffOrShutdownEfb": "Matikan EFB"
+    },
+    "Thu": "Kam",
+    "Tue": "Sel",
+    "Wed": "Rab"
+  }
+}

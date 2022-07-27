@@ -74,11 +74,6 @@ pub trait FeedbackPositionPickoffUnit {
     fn angle(&self) -> Angle;
 }
 
-pub trait LandingGearRealPosition {
-    fn is_up_and_locked(&self) -> bool;
-    fn is_down_and_locked(&self) -> bool;
-}
-
 pub trait LgciuWeightOnWheels {
     fn right_gear_compressed(&self, treat_ext_pwr_as_ground: bool) -> bool;
     fn right_gear_extended(&self, treat_ext_pwr_as_ground: bool) -> bool;
@@ -97,7 +92,73 @@ pub trait LgciuGearExtension {
     fn all_up_and_locked(&self) -> bool;
 }
 
-pub trait LgciuSensors: LgciuWeightOnWheels + LgciuGearExtension {}
+pub trait LgciuDoorPosition {
+    fn all_fully_opened(&self) -> bool;
+    fn all_closed_and_locked(&self) -> bool;
+}
+
+pub trait LgciuGearControl {
+    fn should_open_doors(&self) -> bool;
+    fn should_extend_gears(&self) -> bool;
+    fn control_active(&self) -> bool;
+}
+
+pub trait LandingGearHandle {
+    fn gear_handle_is_down(&self) -> bool;
+    fn gear_handle_baulk_locked(&self) -> bool;
+}
+
+pub trait LgciuInterface:
+    LgciuWeightOnWheels + LgciuGearExtension + LgciuDoorPosition + LgciuGearControl + LandingGearHandle
+{
+}
+
+#[derive(Copy, Clone, PartialEq, Debug)]
+#[repr(usize)]
+pub enum LgciuId {
+    Lgciu1 = 0,
+    Lgciu2 = 1,
+}
+
+#[derive(Clone, Copy, PartialEq)]
+pub enum ProximityDetectorId {
+    UplockGearNose1,
+    UplockGearNose2,
+    UplockGearLeft1,
+    UplockGearLeft2,
+    UplockGearRight1,
+    UplockGearRight2,
+    DownlockGearNose1,
+    DownlockGearNose2,
+    DownlockGearLeft1,
+    DownlockGearLeft2,
+    DownlockGearRight1,
+    DownlockGearRight2,
+
+    UplockDoorNose1,
+    UplockDoorNose2,
+    UplockDoorLeft1,
+    UplockDoorLeft2,
+    UplockDoorRight1,
+    UplockDoorRight2,
+    DownlockDoorNose1,
+    DownlockDoorNose2,
+    DownlockDoorLeft1,
+    DownlockDoorLeft2,
+    DownlockDoorRight1,
+    DownlockDoorRight2,
+}
+
+#[derive(Clone, Copy, PartialEq)]
+pub enum GearActuatorId {
+    GearNose,
+    GearDoorNose,
+    GearLeft,
+    GearDoorLeft,
+    GearRight,
+    GearDoorRight,
+}
+
 pub trait EngineCorrectedN1 {
     fn corrected_n1(&self) -> Ratio;
 }
@@ -127,12 +188,24 @@ pub trait EngineStartState {
 }
 
 pub trait EngineBleedPushbutton {
-    fn left_engine_bleed_pushbutton_is_auto(&self) -> bool;
-    fn right_engine_bleed_pushbutton_is_auto(&self) -> bool;
+    fn engine_bleed_pushbuttons_are_auto(&self) -> [bool; 2];
 }
 
 pub trait GroundSpeed {
     fn ground_speed(&self) -> Velocity;
+}
+
+pub trait AdirsDiscreteOutputs {
+    fn low_speed_warning_1_104kts(&self, adiru_number: usize) -> bool;
+    fn low_speed_warning_2_54kts(&self, adiru_number: usize) -> bool;
+    fn low_speed_warning_3_159kts(&self, adiru_number: usize) -> bool;
+    fn low_speed_warning_4_260kts(&self, adiru_number: usize) -> bool;
+}
+
+pub enum GearWheel {
+    NOSE = 0,
+    LEFT = 1,
+    RIGHT = 2,
 }
 
 pub trait SectionPressure {
@@ -323,6 +396,20 @@ impl DelayedTrueLogicGate {
         }
     }
 
+    pub fn starting_as(mut self, state: bool) -> Self {
+        self.set_output(state);
+        self
+    }
+
+    fn set_output(&mut self, state: bool) {
+        self.expression_result = state;
+        if state {
+            self.true_duration = self.delay;
+        } else {
+            self.true_duration = Duration::from_millis(0)
+        }
+    }
+
     pub fn update(&mut self, context: &UpdateContext, expression_result: bool) {
         if expression_result {
             self.true_duration += context.delta();
@@ -353,6 +440,13 @@ impl DelayedPulseTrueLogicGate {
             last_gate_output: false,
             true_delayed_gate: DelayedTrueLogicGate::new(delay),
         }
+    }
+
+    pub fn starting_as(mut self, state: bool, output: bool) -> Self {
+        self.output = output;
+        self.last_gate_output = !output;
+        self.true_delayed_gate.set_output(state);
+        self
     }
 
     pub fn update(&mut self, context: &UpdateContext, expression_result: bool) {
@@ -657,6 +751,55 @@ mod delayed_true_logic_gate_tests {
 
         assert!(!test_bed.query(|a| a.gate_output()));
     }
+
+    #[test]
+    fn when_the_expression_is_true_and_delay_hasnt_passed_starting_as_true_returns_true() {
+        let mut test_bed = SimulationTestBed::new(|_| {
+            TestAircraft::new(
+                DelayedTrueLogicGate::new(Duration::from_millis(1_000)).starting_as(true),
+            )
+        });
+
+        test_bed.command(|a| a.set_expression(true));
+
+        test_bed.run_with_delta(Duration::from_millis(0));
+        test_bed.run();
+
+        assert!(test_bed.query(|a| a.gate_output()));
+    }
+
+    #[test]
+    fn when_the_expression_is_true_and_delay_has_passed_starting_as_true_returns_true() {
+        let mut test_bed = SimulationTestBed::new(|_| {
+            TestAircraft::new(
+                DelayedTrueLogicGate::new(Duration::from_millis(1_000)).starting_as(true),
+            )
+        });
+
+        test_bed.command(|a| a.set_expression(true));
+
+        test_bed.run_with_delta(Duration::from_millis(1_500));
+        test_bed.run();
+
+        assert!(test_bed.query(|a| a.gate_output()));
+    }
+
+    #[test]
+    fn when_the_expression_is_true_and_becomes_false_before_delay_has_passed_returns_false_even_when_starting_as_true(
+    ) {
+        let mut test_bed = SimulationTestBed::new(|_| {
+            TestAircraft::new(
+                DelayedTrueLogicGate::new(Duration::from_millis(1_000)).starting_as(true),
+            )
+        });
+
+        test_bed.command(|a| a.set_expression(true));
+        test_bed.run_with_delta(Duration::from_millis(0));
+        test_bed.command(|a| a.set_expression(false));
+        test_bed.run();
+
+        assert!(!test_bed.query(|a| a.gate_output()));
+    }
 }
 
 #[cfg(test)]
@@ -876,6 +1019,48 @@ mod delayed_pulse_true_logic_gate_tests {
 
         test_bed.run_with_delta(Duration::from_millis(1200));
 
+        assert!(!test_bed.query(|a| a.gate_output()));
+    }
+
+    #[test]
+    fn when_the_expression_is_true_and_starting_as_true_false_returns_false() {
+        let mut test_bed = SimulationTestBed::new(|_| {
+            TestAircraft::new(
+                DelayedPulseTrueLogicGate::new(Duration::from_millis(1_000))
+                    .starting_as(true, false),
+            )
+        });
+
+        test_bed.command(|a| a.set_expression(true));
+
+        test_bed.run_with_delta(Duration::from_millis(0));
+        assert!(!test_bed.query(|a| a.gate_output()));
+
+        test_bed.run_with_delta(Duration::from_millis(500));
+        assert!(!test_bed.query(|a| a.gate_output()));
+
+        test_bed.run_with_delta(Duration::from_millis(1_200));
+        assert!(!test_bed.query(|a| a.gate_output()));
+    }
+
+    #[test]
+    fn when_the_expression_is_true_and_starting_as_true_true_returns_true_on_one_update_only() {
+        let mut test_bed = SimulationTestBed::new(|_| {
+            TestAircraft::new(
+                DelayedPulseTrueLogicGate::new(Duration::from_millis(1_000))
+                    .starting_as(true, true),
+            )
+        });
+
+        test_bed.command(|a| a.set_expression(true));
+
+        test_bed.run_with_delta(Duration::from_millis(0));
+        assert!(test_bed.query(|a| a.gate_output()));
+
+        test_bed.run_with_delta(Duration::from_millis(500));
+        assert!(!test_bed.query(|a| a.gate_output()));
+
+        test_bed.run_with_delta(Duration::from_millis(1_200));
         assert!(!test_bed.query(|a| a.gate_output()));
     }
 }

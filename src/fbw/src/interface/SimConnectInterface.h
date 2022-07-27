@@ -36,10 +36,6 @@ class SimConnectInterface {
     ELEVATOR_SET,
     ELEV_DOWN,
     ELEV_UP,
-    ELEV_TRIM_DN,
-    ELEV_TRIM_UP,
-    ELEVATOR_TRIM_SET,
-    AXIS_ELEV_TRIM_SET,
     AP_MASTER,
     AUTOPILOT_OFF,
     AUTOPILOT_ON,
@@ -83,6 +79,8 @@ class SimConnectInterface {
     A32NX_FCU_APPR_PUSH,
     A32NX_FCU_EXPED_PUSH,
     A32NX_FMGC_DIR_TO_TRIGGER,
+    A32NX_EFIS_L_CHRONO_PUSHED,
+    A32NX_EFIS_R_CHRONO_PUSHED,
     AP_AIRSPEED_ON,
     AP_AIRSPEED_OFF,
     AP_HDG_HOLD_ON,
@@ -206,10 +204,6 @@ class SimConnectInterface {
   bool requestData();
 
   bool readData();
-
-  bool sendData(SimOutput output);
-
-  bool sendData(SimOutputEtaTrim output);
 
   bool sendData(SimOutputZetaTrim output);
 

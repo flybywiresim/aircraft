@@ -92,30 +92,31 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             AOCRequestAtis: 49,
             AOCDepartRequest: 50,
             ATCMenu: 51,
-            ATCRequest: 52,
-            ATCEdit: 53,
-            ATCText: 54,
-            ATCDepartReq: 55,
-            ATCOceanicReq: 56,
-            ATCAtis: 57,
-            ATCAtisAutoUpdate: 58,
-            ATCAtisView: 59,
-            ATCMessages: 60,
-            ATCReports: 61,
-            ATCPositionReport: 62,
-            ATCMessageModify: 63,
-            ATCConnection: 64,
-            ATCNotification: 65,
-            ATCConnectionStatus: 66,
-            ATSUMenu: 67,
-            ATSUDatalinkStatus: 68,
-            ClimbWind: 69,
-            CruiseWind: 70,
-            DescentWind: 71,
-            FixInfoPage: 72,
-            AOCRcvdMsgs: 73,
-            AOCSentMsgs: 74,
-            AOCFreeText: 75,
+            ATCModify: 52,
+            ATCAtis: 53,
+            ATCMessageRecord: 54,
+            ATCMessageMonitoring: 55,
+            ATCConnection: 56,
+            ATCNotification: 57,
+            ATCConnectionStatus: 58,
+            ATCPositionReport1: 59,
+            ATCPositionReport2: 60,
+            ATCPositionReport3: 61,
+            ATCFlightRequest: 62,
+            ATCUsualRequest: 63,
+            ATCGroundRequest: 64,
+            ATCReports: 65,
+            ATCEmergency: 66,
+            ATCComLastId: 67, // This is needed for automatic page changes triggered by DCDU
+            ATSUMenu: 68,
+            ATSUDatalinkStatus: 69,
+            ClimbWind: 70,
+            CruiseWind: 71,
+            DescentWind: 72,
+            FixInfoPage: 73,
+            AOCRcvdMsgs: 74,
+            AOCSentMsgs: 75,
+            AOCFreeText: 76,
         };
 
         // Handling of MCDU Sever connection attempts
@@ -332,8 +333,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
     checkAocTimes() {
         if (!this.aocTimes.off) {
-            const isAirborne = !Simplane.getIsGrounded(); //TODO replace with proper flight mode in future
-            if (this.flightPhaseManager.phase === FmgcFlightPhases.TAKEOFF && isAirborne) {
+            if (this.flightPhaseManager.phase === FmgcFlightPhases.TAKEOFF && !this.isOnGround()) {
                 // Wheels off
                 // Off: remains blank until Take off time
                 this.aocTimes.off = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
@@ -349,8 +349,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         }
 
         if (!this.aocTimes.on) {
-            const isAirborne = !Simplane.getIsGrounded(); //TODO replace with proper flight mode in future
-            if (this.aocTimes.off && !isAirborne) {
+            if (this.aocTimes.off && !this.isOnGround()) {
                 // On: remains blank until Landing time
                 this.aocTimes.on = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
             }
@@ -956,6 +955,15 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
 
     /**
+     * Tries to show the MODIFY page if the MCDU is in the ATC COM system
+     */
+    tryToShowAtcModifyPage() {
+        if (this.page.Current >= this.page.ATCMenu && this.page.Current < this.page.ATCComLastId) {
+            CDUAtcMessageModify.ShowPage(this, this.atsu.modificationMessage);
+        }
+    }
+
+    /**
      * General ATSU message handler which converts ATSU status codes to new MCDU messages
      * @param code ATSU status code
      */
@@ -1217,7 +1225,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
         this.socket.onopen = () => {
             console.log(`Websocket connection to MCDU Server established. (${url})`);
-            (new NXNotif).showNotification({title: "MCDU CONNECTED", message: "Successfully connected to MCDU server.", timeout: 5000});
+            (new NXNotifManager).showNotification({title: "MCDU CONNECTED", message: "Successfully connected to MCDU server.", timeout: 5000});
             this.sendToSocket("mcduConnected");
             this.sendUpdate();
             this.socketConnectionAttempts = 0;

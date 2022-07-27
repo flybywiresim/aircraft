@@ -1,0 +1,577 @@
+{
+  "AirTrafficControl": {
+    "Active": "ใช้งานอยู่",
+    "ChangeATISATCSourceButton": "เปลี่ยนแหล่งที่มา ATIS/ATC",
+    "ConnectHoppieACARS": "เชื่อมต่อ Hoppie ACARS",
+    "NoInformationAvailableForThisFrequency": "ไม่มีข้อมูลให้สำหรับความถี่นี้",
+    "SelectCorrectATISATCSource": "หน้านี้จะใช้ได้เฉพาะเมื่อเลือก IVAO หรือ VATSIM เป็นแหล่งข้อมูล ATIS/ATC ในหน้าการตั้งค่า",
+    "SetActive": "ตั้งค่าเป็นใช้งานอยู่",
+    "SetStandby": "ตั้งค่าเป็นสแตนด์บาย",
+    "Standby": "สแตนด์บาย",
+    "Title": "การควบคุมการจราจรทางอากาศ"
+  },
+  "Checklists": {
+    "AreYouSureYouWantToResetAllChecklists": "คุณแน่ใจหรือไม่ว่าต้องการที่จะรีเซ็ต Checklists ทั้งหมด?",
+    "AreYouSureYouWantToResetChecklists": "คุณแน่ใจหรือไม่ว่าต้องการที่จะรีเซ็ต Checklists ทั้งหมด?",
+    "ChecklistResetWarning": "คำเตือนการรีเช็ต Checklist",
+    "MarkChecklistAsComplete": "ทำเครื่องหมาย Checklist ว่าเสร็จแล้ว",
+    "MarkItemAsComplete": "ทำเครื่องหมายว่าเสร็จแล้ว",
+    "ProceedToNextChecklist": "ไปที่ Checklist อันต่อไป",
+    "ResetAll": "รีเซ็ตทั้งหมด",
+    "ResetChecklist": "รีเซ็ต Checklist",
+    "TheLastChecklistIsComplete": "Checklist อันสุดท้าย เสร็จแล้ว",
+    "ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted": "มีรายการ Checklist ป้อนอัตโนมัติที่เหลืออยู่ ยังไม่เสร็จสมบูรณ์",
+    "Title": "Checklists"
+  },
+  "Dashboard": {
+    "ImportantInformation": {
+      "Checklists": {
+        "NoRelevantChecklists": "ไม่มี Checklists ที่เกี่ยวข้อง",
+        "Title": "Checklists"
+      },
+      "GoToPage": "ไปที่หน้า",
+      "Maintenance": {
+        "NoActiveFailures": "ไม่มีการล้มเหลวที่ใช้งานอยู่",
+        "Title": "การบำรุงรักษา"
+      },
+      "PinnedCharts": {
+        "NoPinnedCharts": "ไม่มี Charts ที่ปักหมุดไว้",
+        "Title": "Charts ที่ปักหมุดไว้"
+      },
+      "TT": {
+        "RearrangeWidgets": "จัดเรียงวิดเจ็ตใหม่"
+      },
+      "Title": "ข้อมูลสำคัญ",
+      "Weather": {
+        "AirPressure": "ความดันอากาศ",
+        "DewPoint": "จุดน้ำค้าง",
+        "IcaoInvalid": "ICAO ไม่ถูกต้องหรือไม่มี METAR ที่พร้อมใช้งาน",
+        "Loading": "กำลังโหลด",
+        "MetarParsingError": "ไม่สามารถแยกวิเคราะห์ METAR ที่ได้รับได้",
+        "NoIcaoProvided": "ไม่มี ICAO ให้",
+        "NotAvailableShort": "ไม่มี",
+        "Raw": "ข้อมูลดิบ",
+        "TT": {
+          "SwitchToIconView": "สลับไปยังมุมมองไอคอน",
+          "SwitchToRawMetarView": "สลับไปยังมุมมองข้อมูลดิบ METAR"
+        },
+        "Temperature": "อุณหภูมิ",
+        "Title": "สภาพอากาศ",
+        "WindSpeed": "ความเร็วลม"
+      }
+    },
+    "Title": "แดชบอร์ด",
+    "YourFlight": {
+      "Alternate": "สำรอง",
+      "AverageWind": "ลมเฉลี่ย",
+      "CompanyRoute": "Company Route",
+      "CostIndex": "Cost Index",
+      "CruiseAlt": "ความสูงที่บิน",
+      "ImportSimBriefData": "นำเข้าข้อมูล SimBrief",
+      "Route": "เส้นทางการบิน",
+      "SimBriefDataNotYetLoaded": "ข้อมูล SimBrief ยังไม่ได้โหลด",
+      "Title": "เที่ยวบินของคุณ",
+      "ZFW": "ZFW"
+    }
+  },
+  "Dispatch": {
+    "Ofp": {
+      "ImportSimBriefData": "นำเข้าข้อมูล SimBrief",
+      "TT": {
+        "IncreaseFontSize": "เพิ่มขนาดตัวอักษร",
+        "ReduceFontSize": "ลดขนาดตัวอักษร"
+      },
+      "Title": "OFP",
+      "YouHaveNotYetImportedAnySimBriefData": "คุณยังไม่ได้นำเข้าข้อมูล SimBrief ใดๆเลย"
+    },
+    "Overview": {
+      "ActualGW": "Actual GW",
+      "Engines": "เครื่องยนต์",
+      "MMO": "MMO",
+      "MRW": "MRW",
+      "MTOW": "MTOW",
+      "MZFW": "MZFW",
+      "MaximumCargo": "คาร์โกสูงสุด",
+      "MaximumFuelCapacity": "ความจุน้ำมันสูงสุด",
+      "MaximumPassengers": "ผู้โดยสารสูงสุด",
+      "Model": "โมเดล",
+      "Range": "พิสัยการบิน",
+      "Title": "ภาพรวม"
+    },
+    "Title": "Dispatch"
+  },
+  "Failures": {
+    "Comfort": {
+      "Title": "สะดวก"
+    },
+    "Compact": {
+      "Title": "กะทัดรัด"
+    },
+    "FullSimulationOfTheFailuresBelowIsntYetGuaranteed": "การจำลองเต็มรูปแบบของการล้มเหลวด้านล่างนี้ ยังไม่รับประกัน",
+    "Search": "ค้นหา",
+    "Title": "การล้มเหลว"
+  },
+  "Ground": {
+    "Fuel": {
+      "CenterTank": "ถังน้ำมันกลาง",
+      "Completed": "เสร็จแล้ว",
+      "Defueling": "กำลังเอาน้ำมันออก",
+      "EstimatedDuration": "ระยะเวลาโดยประมาณ (นาที)",
+      "EstimatedTime": "เวลาโดยประมาณ",
+      "LeftInnerTank": "ถังน้ำมันด้านในช้าย",
+      "LeftOuterTank": "ถ้งน้ำมันด้านนอกช้าย",
+      "ReadyToStart": "พร้อมที่จะเริ่ม",
+      "Refuel": "เติมน้ำมัน",
+      "RefuelTime": "เวลาเติมน้ำมัน",
+      "Refueling": "กำลังเติมน้ำมัน",
+      "RightInnerTank": "ถังน้ำมันด้านในขวา",
+      "RightOuterTank": "ถังน้ำมันด้านนอกขวา",
+      "TT": {
+        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "สามารถเปลี่ยนระยะเวลาการเติมน้ำมันได้บนพื้นดิน และเครื่องยนต์ดับอยู่เท่านั้น",
+        "FillBlockFuelFromSimBrief": "กรอก Block Fuel จาก SimBrief"
+      },
+      "Title": "น้ำมัน",
+      "TotalFuel": "น้ำมันรวม",
+      "Unavailable": "ไม่พร้อมใช้งาน"
+    },
+    "Payload": {
+      "BoardingTime": "Boarding Time",
+      "Cargo": "Cargo",
+      "Current": "Current",
+      "Passengers": "Passengers",
+      "Planned": "Planned",
+      "TT": {
+        "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Aircraft Must Be On the Ground and Have Engines Shutdown to Change Boarding Duration",
+        "FillPayloadFromSimbrief": "Fill Payload Information from Simbrief",
+        "MaxCargo": "Max Cargo",
+        "MaxPassengers": "Maximum Passengers",
+        "MaxZFW": "Maximum ZFW",
+        "MaxZFWCG": "Maximum ZFWCG",
+        "PerPaxBagWeight": "Per Passenger Bag Weight",
+        "PerPaxWeight": "Per Passenger Weight",
+        "StartBoarding": "Begin Boarding"
+      },
+      "Title": "Payload",
+      "ZFW": "ZFW",
+      "ZFWCG": "ZFWCG"
+    },
+    "Pushback": {
+      "Title": "Pushback"
+    },
+    "Services": {
+      "BaggageTruck": "รถบรรทุกสัมภาระ",
+      "CateringTruck": "รถบรรทุกอาหาร",
+      "Cones": "กรวยนิรภัย",
+      "DoorAft": "ประตูท้าย",
+      "DoorCargo": "ประตูคาร์โก้",
+      "DoorFwd": "ประตูหน้า",
+      "ExternalPower": "พลังงานภาคพื้น",
+      "FuelTruck": "รถบรรทุกน้ำมัน",
+      "JetBridge": "สะพานเทียบ",
+      "Title": "บริการ",
+      "WheelChocks": "ลูกกลิ้งล้อ"
+    },
+    "Title": "ภาคพื้น"
+  },
+  "Modals": {
+    "Cancel": "ยกเลิก",
+    "Confirm": "ยืนยัน",
+    "Okay": "ตกลง"
+  },
+  "NavigationAndCharts": {
+    "All": "ทั้งหมด",
+    "Altn": "สำรอง",
+    "ExitFullscreenMode": "ออกจากโหมดเต็มหน้าจอ",
+    "From": "จาก",
+    "LocalFiles": {
+      "Both": "ทั้งสอง",
+      "EstablishingConnection": "กำลังสร้างการเชื่อมต่อ",
+      "FailedToEstablishConnection": "ล้มเหลวในการสร้างการเชื่อมต่อ",
+      "FileName": "ชื่อไฟล์",
+      "Image": "รูปภาพ",
+      "Pdf": "PDF",
+      "Retry": "ลองใหม่",
+      "Title": "ไฟล์ในเครื่อง"
+    },
+    "Navigraph": {
+      "AirportDoesNotExist": "สนามบินไม่มีอยู่",
+      "AuthenticateWithNavigraph": "ตรวจสอบสิทธิ์ด้วย Navigraph",
+      "InsufficientEnv": "ไฟล์ .env ไม่เพียงพอ",
+      "IntoYourBrowserAndEnterTheCodeBelow": "ลงในเบราว์เซอร์ของคุณและป้อนรหัสด้านล่าง",
+      "LoadingMsg": "กำลังโหลด",
+      "NoAirportSelected": "ไม่มีสนามบินที่เลือก",
+      "ResetNavigraphAuthentication": "รีเซ็ตการตรวจสอบสิทธิ์ของ Navigraph",
+      "ScanTheQrCodeOrOpen": "สแกน QR Code หรือ เปิด",
+      "Title": "Navigraph"
+    },
+    "PinnedCharts": {
+      "Delete": "ลบ",
+      "Edit": "แก้ไข",
+      "NoItemsFound": "ไม่พบรายการ",
+      "SearchPlaceholder": "ค้นหา",
+      "ShowingChartsFromAllProviders": "แสดง Charts จากผู้ให้บริการทั้งหมด",
+      "SortMethods": {
+        "AlphabeticalAZ": "เรียงตามตัวอักษร - A -> Z",
+        "AlphabeticalZA": "เรียงตามตัวอักษร - Z -> A",
+        "FirstAccessed": "เข้าถึงเป็นครั้งแรก",
+        "LastAccessed": "เข้าถึงครั้งล่าสุด",
+        "None": "ไม่มี"
+      },
+      "TT": {
+        "ChangeChartProvider": "เปลี่ยนผู้ให้บริการ Chart",
+        "ChangeChartSortMethod": "เปลี่ยนวิธีการจัดเรียง Chart",
+        "RemoveAllPinnedCharts": "ลบ Chart ที่ปักหมุดไว้ทั้งหมด"
+      },
+      "Title": "Charts ที่ปักหมุดไว้",
+      "View": "ดู"
+    },
+    "PleaseWait": "กรุณารอสักครู่",
+    "ShowingAllItems": "แสดงรายการทั้งหมด",
+    "TT": {
+      "FitChartToHeight": "ปรับ Chart ให้พอดีกับความสูง",
+      "FitChartToWidth": "ปรับ Chart ให้พอดีกับความกว้าง",
+      "ResetMovement": "รีเซ็ตการเคลื่อนไหว",
+      "RotateLeft45Degrees": "หมุนซ้าย 45 องศา",
+      "RotateRight45Degrees": "หมุนขวา 45 องศา",
+      "ZoomIn": "ซูมเข้า",
+      "ZoomOut": "ซูมออก"
+    },
+    "ThereAreNoChartsToDisplay": "ไม่มี Charts ที่จะแสดง",
+    "ThereIsNoChartToDisplay": "ไม่มี Chart ที่จะแสดง",
+    "Title": "การนำทางและ Charts",
+    "To": "ถึง"
+  },
+  "Performance": {
+    "Data": "ข้อมูล",
+    "Landing": {
+      "AirportIcao": "สนามบิน ICAO",
+      "ApproachSpeed": "ความเร็ว Approach",
+      "ApproachSpeedUnit": "kts",
+      "AutoLand": "ลงจอดอัตโนมัติ",
+      "Calculate": "คำนวณ",
+      "Clear": "ล้าง",
+      "DropDownNo": "ไม่",
+      "DropDownYes": "ใช่",
+      "FillDataFrom": "กรอกข้อมูลจาก",
+      "FlapsConfiguration": "การตั้งค่า Flaps",
+      "Low": "ต่ำ",
+      "MaximumManual": "ด้วยตัวเองสูงสุด",
+      "Medium": "ปานกลาง",
+      "MetarErrorDialogMessage": "METAR จาก OFP ของคุณไม่สามารถแยกวิเคราะห์ได้ คุณต้องการจะป้อนข้อมูลอัตโนมัติโดยใช้การดึงข้อมูล METAR แทนหรือไม่",
+      "MetarErrorDialogTitle": "เกิดข้อผิดพลาดในการแยกวิเคราะห์ METAR จาก OFP",
+      "OverweightProcedure": "ขั้นตอนการลงจอดแบบน้ำหนักเกิน",
+      "Qnh": "QNH",
+      "ReverseThrust": "Reverse Thrust",
+      "RunwayAltitude": "ความสูงรันเวย์",
+      "RunwayAltitudeUnit": "ft ASL",
+      "RunwayCondition": "สภาพรันเวย์",
+      "RunwayConditions": {
+        "Dry": "แห้ง (6)",
+        "Good": "ดี (5)",
+        "GoodMedium": "ดี-ปานกลาง (4)",
+        "Medium": "กลาง (3)",
+        "MediumPoor": "ปานกลาง-แย่ (2)",
+        "Poor": "แย่ (1)"
+      },
+      "RunwayHeading": " ทิศทางรันเวย์",
+      "RunwayHeadingUnit": "°",
+      "RunwayLda": "ระยะที่ลงจอดได้ บนรันเวย์",
+      "RunwayLdaUnitFt": "ft",
+      "RunwayLdaUnitMeter": "m",
+      "RunwaySlope": "ความชันรันเวย์",
+      "TT": {
+        "YouNeedToEnterAnIcaoCodeInOrderToMakeAMetarRequest": "คุณจำเป็นต้องป้อนรหัส ICAO เพื่อที่จะทำการร้องขอ METAR",
+        "YouNeedToLoadSimBriefDataInOrderToAutofillData": "คุณจำเป็นต้องโหลดข้อมูล SimBrief เพื่อที่จะป้อนข้อมูลอัตโนมัติ"
+      },
+      "Temperature": "อุณหภูมิ",
+      "Title": "ลงจอด",
+      "UnitFt": "ft",
+      "UnitMeter": "m",
+      "Weight": "น้ำหนัก",
+      "WindDirection": "ทิศทางลม",
+      "WindDirectionUnit": "°",
+      "WindMagnitude": "ขนาดลม",
+      "WindMagnitudeUnit": "kts"
+    },
+    "SYNC": "ซิงค์",
+    "Title": "ประสิทธิภาพ",
+    "TopOfDescent": {
+      "Data": {
+        "Angle": "มุม",
+        "CurrentAltitude": "ความสูงปัจจุบัน",
+        "Distance": "ระยะทาง",
+        "GroundSpeed": "ความเร็วภาคพื้น",
+        "TargetAltitude": "ความสูงเป้าหมาย",
+        "Title": "ข้อมูล",
+        "UnitAngleDegrees": "องศา",
+        "UnitFeet": "ฟุต",
+        "UnitFtMin": "ฟุต/นาที",
+        "UnitNM": "ไมล์ทะเล",
+        "VerticalSpeed": "ความเร็วแนวดิ่ง"
+      },
+      "GroundSpeed": {
+        "Add": "เพิ่ม",
+        "FetchingSpeedFromSimulator": "ดึงข้อมูลความเร็วจาก Simulator",
+        "GroundSpeed": "ความเร็วภาคพื้น",
+        "ManualInput": "การป้อนด้วยตนเอง",
+        "MinAltitude": "ความสูงขั้นต่ำ",
+        "RemoveLast": "ลบอันล่าสุด",
+        "Sync": "ซิงค์",
+        "Title": "ความเร็วภาคพื้น",
+        "UnitKnots": "นอต",
+        "UnitKt": "kt"
+      },
+      "Result": {
+        "BeforeTarget": "ก่อนเป้าหมาย",
+        "DesiredDescentAngle": "มุมลดระดับที่ต้องการ",
+        "DesiredVerticalSpeed": "ความเร็วแนวดิ่งที่ต้องการ",
+        "StartYourDescentAbout": "เริ่มต้นการลดระดับของคุณประมาณ",
+        "Title": "ผลลัพท์"
+      },
+      "TT": {
+        "DesynchronizeInputWithAircraftsCurrentAltitude": "ยกเลิกการซิงค์อินพุตกับความสูงปัจจุบันของเครื่องบิน",
+        "SynchronizeInputWithAircraftsCurrentAltitude": "ซิงค์อินพุตกับความสูงปัจจุบันของเครื่องบิน"
+      },
+      "Title": "Top of Descent"
+    }
+  },
+  "Presets": {
+    "AircraftStates": {
+      "Cancel": "ยกเลิก",
+      "ColdDark": "Cold & Dark",
+      "ConfirmationDialogMsg": "กรุณายืนยันการโหลดค่าที่ตั้งไว้ล่วงหน้า",
+      "CurrentProcedureStep": "คำนวณขั้นตอน",
+      "PleaseConfirmLoadingOfPreset": "กรุณายืนยันการโหลดค่าที่ตั้งไว้ล่วงหน้า",
+      "ReadyPushback": "พร้อมสำหรับการ Pushback",
+      "ReadyTakeoff": "พร้อมสำหรับการวิ่งขึ้น",
+      "ReadyTaxi": "พร้อมสำหรับการ Taxi",
+      "SelectAPresetToLoad": "เลือกค่าที่ตั้งไว้ล่วงหน้าเพื่อโหลด",
+      "TheAircraftMustBeOnTheGroundToLoadAPreset": "เครื่องบินต้องอยู่บนพื้นดินจึงจะโหลดค่าที่ตั้งไว้ล่วงหน้า",
+      "TheAircraftMustBeOntheGroundToLoadAPreset": "เครื่องบินต้องอยู่บนพื้นดินจึงจะโหลดค่าที่ตั้งไว้ล่วงหน้าได้",
+      "Title": "สถานะเครื่องบิน",
+      "Turnaround": "Turnaround"
+    },
+    "InteriorLighting": {
+      "AircraftNeedsToBePoweredToLoadPresets": "เครื่องบินจำเป็นต้องใช้พลังงานสำหรับการโหลดค่าที่ตั้งไว้",
+      "AircraftNeedsToBePoweredToSavePresets": "เครื่องบินจำเป็นต้องใช้พลังงานสำหรับการบันทึกค่าที่ตั้งไว้",
+      "LoadPreset": "โหลดค่าที่ตั้งไว้ล่วงหน้า",
+      "LoadingPreset": "กำลังโหลดค่าที่ตั้งไว้",
+      "NewNameConfirmationDialogMsg": "กรุณายืนยันชื่อใหม่ของค่าแสงที่ตั้งไว้",
+      "NoName": "ไม่มีชื่อ",
+      "PleaseConfirmSavingPreset": "กรุณายืนยันการบันทึกค่าที่ตั้งไว้ล่วงหน้า",
+      "SavePreset": "บันทึกค่าที่ตั้งไว้",
+      "SavingPreset": "กำลังบันทึกค่าที่ตั้งไว้",
+      "SelectAnInteriorLightingPresetToLoadOrSave": "เลือกไฟภายในที่ตั้งไว้ล่วงหน้าเพื่อโหลดหรือบันทึก",
+      "TT": {
+        "AircraftMustBePowered": "เครื่องบินจำเป็นต้องใช้พลังงาน",
+        "ClickTextToChangeThePresetsName": "คลิก ข้อความ เพื่อเปลี่ยนชื่อที่ตั้งค่าไว้ล่วงหน้า",
+        "LoadThisPreset": "โหลดค่าที่ตั้งไว้อันนี้",
+        "SaveTheCurrentLightingLevels": "บันทึกระดับแสงในปัจจุบัน"
+      },
+      "TheAircraftMustBePoweredForInteriorLightingPresets": "เครื่องบินจำเป็นต้องใช้พลังงานสำหรับการตั้งค่าแสงภายใน",
+      "Title": "แสงไฟภายใน"
+    },
+    "Title": "ค่าที่ตั้งไว้"
+  },
+  "Pushback": {
+    "AvailableOnlyOnGround": "การควบคุม Pushback จะใช้ได้เฉพาะบนพื้นดินเท่านั้น",
+    "Backward": "ถอยหลัง",
+    "CallTug": "เรียกรถลากจูง",
+    "DisableSystemMessageBody": "คุณแน่ใจหรือว่าต้องการจะปิดการใช้งานระบบ Pushback? นอกจากนี้ยังจะปล่อยรถลากจูงด้วย",
+    "DisableSystemMessageTitle": "ปิดการใช้งานระบบ Pushback",
+    "EnableSystemMessageBody": "flyPadOS 3 ระบบ Pushback ใหม่สามารถทำให้เกิดปัญหากับ Pushback Add-on อื่นๆ เราไม่แนะนำให้เปิดใช้งานระบบ ถ้าคุณจะใช้ Pushback Add-on อื่นๆ",
+    "EnableSystemMessageTitle": "เปิดใช้งานระบบ Pushback",
+    "Forward": "ไปข้างหน้า",
+    "Halt": "หยุดชั่วคราว",
+    "LeavePageMessage": "กำลังหยุด Pushback",
+    "Left": "ซ้าย",
+    "Moving": "กำลังเคลื่อนที่…",
+    "ParkingBrake": {
+      "Off": "ปิด",
+      "On": "เปิด",
+      "Title": "Parking Brake"
+    },
+    "Right": "ขวา",
+    "SystemEnabledOff": "ระบบ Pushback ปิด",
+    "SystemEnabledOn": "ระบบ Pushback เปิด",
+    "TT": {
+      "CallReleaseTug": "เรียกหรือปล่อยรถลากจูง",
+      "CenterPlaneMode": "เปิด/ปิด ปรับศูนย์กลางเครื่องบินบนแผนที่",
+      "DecreaseSpeed": "ถอยหลังหรือไปข้างหน้าช้าลง",
+      "IncreaseSpeed": "ไปข้างหน้าหรือถอยหลังช้าลง",
+      "Left": "ไปทางซ้าย",
+      "PausePushback": "หยุดชั่วคราวหรือยกเลิกการหยุด Pushback",
+      "Right": "ไปทางขวา",
+      "SetReleaseParkingBrake": "ตั้งหรือปล่อย Parking Brake",
+      "SliderDirection": "เคลื่อนที่ไปยังทิศทางที่ต้องการ",
+      "SliderSpeed": "เคลื่อนที่สำหรับความเร็วที่ต้องการ",
+      "SystemEnabledOff": "คลิกเพื่อเปิดระบบ Pushback",
+      "SystemEnabledOn": "คลิกเพื่อปิดระบบ Pushback ให้ปิดอย่างสมบูรณ์",
+      "ZoomIn": "ซูมเข้า",
+      "ZoomOut": "ซูมออก"
+    },
+    "TugAttached": "รถลากจูงติดอยู่แล้ว",
+    "TugDirection": "ทิศทางการลากจูง",
+    "TugInTransit": "กำลังรอ รถลากจูง/หมุด",
+    "TugSpeed": "ความเร็วลากจูง"
+  },
+  "Settings": {
+    "About": {
+      "Title": "เกี่ยวกับ"
+    },
+    "AircraftOptionsPinPrograms": {
+      "AccelerationHeight": "Acceleration Height (ft)",
+      "EngineOutAccelerationHeight": "Engine-Out Acceleration Height (ft)",
+      "IsisBaroUnit": "ISIS หน่วย Baro",
+      "IsisMetricAltitude": "ความสูง ISIS Metric",
+      "LatLonExtendedFormat": "รูปแบบเวย์พอยท์ FMGC Lat/Lon",
+      "PaxSigns": "ป้ายห้องโดยสาร",
+      "RmpVhfSpacing": "ระยะห่าง RMP VHF",
+      "ThrustReductionHeight": "Thrust Reduction Height (ft)",
+      "Title": "ตัวเลือกเครื่องบิน/โปรแกรมปักหมุด",
+      "WeightUnit": "หน่วยน้ำหนัก"
+    },
+    "AtsuAoc": {
+      "AtisAtcSource": "แหล่งที่มา ATIS/ATC",
+      "AutomaticallyImportSimBriefData": "นำเข้าข้อมูล SimBrief โดยอัตโนมัติ",
+      "Enable": "เปิดใช้งาน",
+      "EnableTelex": "เปิดใช้งาน TELEX",
+      "ErrorReporting": "การรายงานข้อผิดพลาด",
+      "HoppieEnabled": "Hoppie เปิดใช้งานแล้ว",
+      "HoppieUserId": "รหัสผู้ใช้ Hoppie",
+      "MetarSource": "แหล่งที่มา METAR",
+      "OptionalA32nxErrorReporting": "การรายงานข้อผิดผลาดของ A32NX แบบไม่บังคับ",
+      "PleaseCheckThatYouHaveCorrectlyEnteredYourSimbBriefUsernameOrPilotId": "โปรดตรวจสอบว่าคุณได้ป้อนชื่อผู้ใช้ SimBrief หรือ ID นักบินของคุณถูกต้องแล้ว",
+      "SimBriefUsernamePilotId": "ชื่อผู้ใช้ SimBrief/รหัสนักบิน",
+      "TafSource": "แหล่งที่มา TAF",
+      "Telex": "TELEX",
+      "TelexEnablesFreeTextAndLiveMap": "TELEX เปิดในใช้งานการรับ-ส่งข้อความและแผนที่สด หากเปิดใช้งานไว้ ข้อมูลตำแหน่งเครื่องบินจะถูกเผยแพร่ในช่วงระยะเวลาของการบิน ข้อความเป็นสาธารณะและไม่ได้ตรวจสอบ ในการที่คุณจะใช้ Features เหล่านี้ คุณต้องใช้ด้วยความเสี่ยงของคุณเอง หากต้องการเรียนรู้เพิ่มเติมเกี่ยวกับ TELEX และ Features ที่เปิดใช้งานได้ โปรดไปที่ https://docs.flybywiresim.com/telex",
+      "TelexWarning": "การเตือน TELEX",
+      "ThereWasAnErrorEncounteredWhenValidatingYourHoppieID": "มีข้อผิดพลาดในการตรวจสอบรหัสผู้ใช้ Hoppie ของคุณ",
+      "Title": "ATSU / AOC",
+      "YouAreAbleToOptIntoAnonymousErrorReporting": "คุณสามารถเลือกที่จะเข้าร่วมการรายงานข้อผิดพลาดแบบไม่ระบุตัวตน ที่จะช่วยให้เราสามารถวินิจฉัย ตรวจสอบ และดูแลปัญหาได้รวดเร็วมากยิ่งขึ้น Features นี้เป็นตัวเลือกที่ไม่บังคับและเราจะไม่เก็บรวบรวมข้อมูลส่วนบุคคลของคุณ แต่อาจช่วยให้คุณรับการช่วยเหลือได้ง่ายขึ้น และปัญหาที่คุณพบอาจได้รับการแก้ไขในอัตราที่เร็วขึ้น รวดเร็วมากยิ่งขึ้น",
+      "YourHoppieIdHasBeenRemoved": "รหัสผู้ใช้ Hoppie ของคุณถูกเอาออกแล้ว",
+      "YourHoppieIdHasBeenValidated": "รหัสผู้ใช้ Hoppie ของคุณได้รับการตรวจสอบแล้ว",
+      "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "SimBrief PilotID ของคุณได้รับการตรวจสอบและอัปเดตเป็น"
+    },
+    "Audio": {
+      "Announcements": "เสียงประกาศ",
+      "BoardingMusic": "เสียงเพลงบนเครื่อง",
+      "EngineInteriorVolume": "ระดับเสียงเครื่องยนต์ภายใน",
+      "ExteriorMasterVolume": "ระดับเสียงภายนอกหลัก",
+      "PassengerAmbience": "เสียงบรรยากาศผู้โดยสาร",
+      "PtuAudibleInCockpit": "เสียง PTU ในห้องนักบิน",
+      "Title": "เสียง",
+      "WindInteriorVolume": "ระดับเสียงลมภายใน"
+    },
+    "Fast": "เร็ว",
+    "Instant": "ทันที",
+    "Real": "จริง",
+    "Realism": {
+      "AdirsAlignTime": "ADIRS Align Time",
+      "AutofillChecklists": "Checklists ป้อนอัตโนมัติ",
+      "BoardingTime": "เวลาขึ้นเครื่อง",
+      "DmcSelfTestTime": "เวลา DMC Self Test",
+      "HomeCockpitMode": "โหมด Home Cockpit",
+      "McduFocusTimeout": "หมดเวลาโฟกัส MCDU (วินาที)",
+      "McduKeyboardInput": "ป้อนข้อมูลคีย์บอร์ด MCDU",
+      "PauseAtTod": "หยุดชั่วคราวที่ T/D",
+      "PauseAtTodDistance": "ระยะทางหยุดชั่วคราว T/D (nm)",
+      "SeparateTillerFromRudderInputs": "แยก Tiller ออกจากอินพุต Rudder",
+      "Title": "ความสมจริง"
+    },
+    "SimOptions": {
+      "Active": "ใช้งานอยู่",
+      "Auto": "อัตโนมัติ",
+      "Calibrate": "Calibrate",
+      "ConesEnabled": "กรวยนิรภัย",
+      "DefaultBarometerUnit": "หน่วย Barometer เริ่มต้น",
+      "DynamicRegistrationDecal": "ทะเบียนเครื่องบินแบบไดนามิก",
+      "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "เปิดใช้งานการเชื่อมต่อเซิร์ฟเวอร์ MCDU (ปิดการทำงานหลังจาก 5 นาทีอัตโนมัติ หากไม่มีการเชื่อมต่อที่สำเร็จ)",
+      "ExternalMcduServerPort": "พอร์ตเซิร์ฟเวอร์ MCDU ภายนอก",
+      "Hpa": "hPa",
+      "Inactive": "ไม่ได้ใช้งาน",
+      "LoadOnly": "โหลดเท่านั้น",
+      "None": "ไม่มี",
+      "Off": "ปิด",
+      "Save": "บันทึก",
+      "SyncMsfsFlightPlan": "ซิงค์แผนการบิน MSFS",
+      "ThrottleDetents": "Throttle Detents",
+      "Title": "ตัวเลือกซิม",
+      "UseCalculatedIlsSignals": "ใช้สัญญาณ ILS ที่คำนวณได้",
+      "WheelChocksEnabled": "ลูกกลิ้งล้อ",
+      "inHg": "inHg"
+    },
+    "ThrottleConfig": {
+      "Apply": "ใช้",
+      "AreYouSureThatYouWantToResetYourCurrentThrottleConfigurationToTheirDefaultStates": "คุณแน่ใจหรือไม่ว่าต้องการที่จะรีเซ็ตการตั้งค่าคันเร่งปัจจุบันเป็นสถานะเริ่มต้น? การกระทำนี้ย้อนกลับไม่ได้",
+      "Axis": "แกน",
+      "Back": "กลับ",
+      "ConfigureEnd": "กำหนดค่าจุดจบ",
+      "ConfigureStart": "กำหนดค่าเริ่มต้น",
+      "CurrentValue": "ค่าปัจจุบัน",
+      "Deadband": "Deadband",
+      "ErrorOverlapMsg": "ซ้อนทับกับ",
+      "IndependentAxis": "แกนอิสระ",
+      "LoadFromFile": "โหลดจากไฟล์",
+      "PleaseEnterAValidDeadzone": "โปรดป้อนเขตเดดโซนที่ถูกต้อง",
+      "ResetToDefaults": "รีเซ็ตเป็นค่าเริ่มต้น",
+      "ReverseFull": "Reverse Full",
+      "ReverseIdle": "Reverse Idle",
+      "ReverserOnAxis": "ย้อนกลับบนแกน",
+      "SaveAndApply": "บันทึกและใช้",
+      "SetFromThrottle": "ตั้งค่าจากคันเร่ง",
+      "ThrottleConfigurationReset": "รีเซ็ตการกำหนดค่าคันเร่ง"
+    },
+    "Title": "การตั้งค่า",
+    "Unrealistic": "ไม่สมจริง",
+    "flyPad": {
+      "AutoBrightness": "ปรับความสว่างอัตโนมัติ",
+      "AutomaticallyShowOnscreenKeyboard": "แสดงแป้นพิมพ์บนหน้าจอโดยอัตโนมัติ",
+      "BatteryLifeEnabled": "จำลองการใช้งานแบตเตอรี่",
+      "Blue": "ฟ้า",
+      "Brightness": "ความสว่าง",
+      "Dark": "ดำ",
+      "Language": "ภาษา",
+      "Light": "สว่าง",
+      "Local": "ท้องถิ่น",
+      "LocalTimeFormat": "รูปแบบเวลาท้องถิ่น",
+      "OnscreenKeyboardLayout": "รูปแบบแป้นพิมพ์บนหน้าจอ",
+      "ShowColoredRawMetar": "แสดงข้อมูลดิบ METAR แบบมีสี",
+      "ShowStatusBarFlightProgressIndicator": "แสดงแถบสถานะความคืบหน้าของเที่ยวบิน",
+      "Theme": "ธีม",
+      "TimeDisplayed": "เวลาที่แสดง",
+      "Title": "flyPad",
+      "TwelveHours": "12 ชม.",
+      "TwentyFourHours": "24 ชม.",
+      "Utc": "UTC",
+      "UtcAndLocal": "UTC และท้องถิ่น"
+    }
+  },
+  "StatusBar": {
+    "Apr": "เม.ย.",
+    "Aug": "ส.ค.",
+    "Dec": "ธ.ค.",
+    "Feb": "ก.พ.",
+    "Fri": "ศ.",
+    "Jan": "ม.ค.",
+    "Jul": "ก.ค.",
+    "Jun": "มิ.ย.",
+    "Mar": "มี.ค.",
+    "May": "พ.ค.",
+    "Mon": "จ.",
+    "Nov": "พ.ย.",
+    "Oct": "ต.ค.",
+    "Sat": "ส.",
+    "Sep": "ก.ย.",
+    "Sun": "อา.",
+    "TT": {
+      "ConnectedToLocalApi": "เชื่อมต่อกับ API ภายในเครื่อง",
+      "DisconnectedFromLocalApi": "ตัดการเชื่อมต่อจาก API ภายในเครื่อง",
+      "TurnOffOrShutdownEfb": "ปิดเครื่อง EFB"
+    },
+    "Thu": "พฤ.",
+    "Tue": "อ.",
+    "Wed": "พ."
+  }
+}

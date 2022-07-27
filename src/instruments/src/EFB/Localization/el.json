@@ -1,0 +1,577 @@
+{
+  "AirTrafficControl": {
+    "Active": "Ενεργό",
+    "ChangeATISATCSourceButton": "Αλλαγή πηγής ATIS/ATC",
+    "ConnectHoppieACARS": "Σύνδεση Hoppie ACARS",
+    "NoInformationAvailableForThisFrequency": "Δεν υπάρχουν διαθέσιμες πληροφορίες για αυτή τη συχνότητα",
+    "SelectCorrectATISATCSource": "Αυτή η σελίδα είναι διαθέσιμη μόνο όταν έχει επιλεγεί το IVAO ή το VATSIM ως πηγή ATIS/ATC στη σελίδα ρυθμίσεων.",
+    "SetActive": "Θέστε Ενεργό",
+    "SetStandby": "Θέστε σε Αναμονή",
+    "Standby": "Αναμονή",
+    "Title": "Έλεγχος Εναέριας Κυκλοφορίας"
+  },
+  "Checklists": {
+    "AreYouSureYouWantToResetAllChecklists": "Είστε βέβαιοι ότι θέλετε να επαναφέρετε όλες τις λίστες ελέγχου;",
+    "AreYouSureYouWantToResetChecklists": "Είστε βέβαιοι ότι θέλετε να επαναφέρετε όλες τις λίστες ελέγχου;",
+    "ChecklistResetWarning": "Προειδοποίηση Επαναφοράς Λίστας Ελέγχου",
+    "MarkChecklistAsComplete": "Σημειώστε λίστα ελέγχου ως πλήρης",
+    "MarkItemAsComplete": "Σήμανση στοιχείου ως ολοκληρωμένης",
+    "ProceedToNextChecklist": "Προχωρήστε στην επόμενη λίστα ελέγχου",
+    "ResetAll": "Επαναφορά Όλων",
+    "ResetChecklist": "Επαναφορά Λίστας Ελέγχου",
+    "TheLastChecklistIsComplete": "Η τελευταία λίστα ελέγχου έχει ολοκληρωθεί",
+    "ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted": "Υπάρχουν στοιχεία της λίστας ελέγχου αυτόματης συμπλήρωσης που δεν έχουν ακόμη ολοκληρωθεί",
+    "Title": "Λίστες Ελέγχου"
+  },
+  "Dashboard": {
+    "ImportantInformation": {
+      "Checklists": {
+        "NoRelevantChecklists": "Μη Σχετικοί Κατάλογοι Ελέγχου",
+        "Title": "Λίστες Ελέγχου"
+      },
+      "GoToPage": "Μετάβαση στη Σελίδα",
+      "Maintenance": {
+        "NoActiveFailures": "Μη Ενεργές Αποτυχίες",
+        "Title": "Συντήρηση"
+      },
+      "PinnedCharts": {
+        "NoPinnedCharts": "Μη Καρφιτσωμένα Γραφήματα",
+        "Title": "Καρφιτσωμένα Γραφήματα"
+      },
+      "TT": {
+        "RearrangeWidgets": "Αναδιάταξη Γραφικών Συστατικών"
+      },
+      "Title": "Σημαντικές Πληροφορίες",
+      "Weather": {
+        "AirPressure": "Βαρομετρική Πίεση Αέρως",
+        "DewPoint": "Σημείο Δρόσου",
+        "IcaoInvalid": "ICAO μη έγκυρο ή METAR μη διαθέσιμο",
+        "Loading": "Φόρτωση...",
+        "MetarParsingError": "Ληφθέν METAR αδύνατο να αναλυθεί",
+        "NoIcaoProvided": "Δεν παρέχεται ICAO",
+        "NotAvailableShort": "N/A",
+        "Raw": "Ακατέργαστο",
+        "TT": {
+          "SwitchToIconView": "Εναλλαγή σε Προβολή Εικονιδίων",
+          "SwitchToRawMetarView": "Εναλλαγή σε ακατέργαστη METAR προβολή"
+        },
+        "Temperature": "Θερμοκρασία",
+        "Title": "Καιρός",
+        "WindSpeed": "Ταχύτητα Ανέμου"
+      }
+    },
+    "Title": "Πίνακας Ελέγχου",
+    "YourFlight": {
+      "Alternate": "Εναλλακτικό",
+      "AverageWind": "Μέσος Άνεμος",
+      "CompanyRoute": "Εταιρική Διαδρομή",
+      "CostIndex": "Δείκτης Κόστους",
+      "CruiseAlt": "Ύψος Πλεύσης ",
+      "ImportSimBriefData": "Εισαγωγή Δεδομένων Simbrief",
+      "Route": "Διαδρομή",
+      "SimBriefDataNotYetLoaded": "Τα Δεδομένα Simbrief δεν έχουν ακόμη φορτωθεί.",
+      "Title": "Η Πτήση σας",
+      "ZFW": "Βάρος Μηδενικού Καυσίμου"
+    }
+  },
+  "Dispatch": {
+    "Ofp": {
+      "ImportSimBriefData": "Εισαγωγή Δεδομένων Simbrief",
+      "TT": {
+        "IncreaseFontSize": "Μεγέθυνση Μεγέθους Γραμματοσειράς",
+        "ReduceFontSize": "Μείωση Μεγέθους Γραμματοσειράς"
+      },
+      "Title": "Επιχειρησιακό Σχέδιο Πτήσης",
+      "YouHaveNotYetImportedAnySimBriefData": "Δεν έχετε εισαγάγει ακόμη δεδομένα Simbrief."
+    },
+    "Overview": {
+      "ActualGW": "Actual GW",
+      "Engines": "Κινητήρες",
+      "MMO": "Μέγιστη Ταχύτητα Mach Αριθμού ",
+      "MRW": "Μέγιστο Βάρος Πίστας",
+      "MTOW": "Μέγιστο Βάρος Απογείωσης ",
+      "MZFW": "Μέγιστο Βάρος Μηδενικού Καυσίμου ",
+      "MaximumCargo": "Μέγιστο Εμπόρευμα",
+      "MaximumFuelCapacity": "Μέγιστη Χωρητικότητα Καυσίμου",
+      "MaximumPassengers": "Μέγιστοι Επιβάτες",
+      "Model": "Μοντέλο",
+      "Range": "Αυτονομία",
+      "Title": "Επισκόπηση"
+    },
+    "Title": "Αποστολή"
+  },
+  "Failures": {
+    "Comfort": {
+      "Title": "Άνεση"
+    },
+    "Compact": {
+      "Title": "Συμπυκνωμένο"
+    },
+    "FullSimulationOfTheFailuresBelowIsntYetGuaranteed": "Η πλήρης προσομοίωση των παρακάτω βλαβών δεν είναι ακόμη εγγυημένη.",
+    "Search": "Αναζήτηση",
+    "Title": "Αποτυχίες"
+  },
+  "Ground": {
+    "Fuel": {
+      "CenterTank": "Κεντρική Δεξαμενή",
+      "Completed": "Ολοκληρώθηκε",
+      "Defueling": "Διαδικασία Εξαγωγής Καυσίμου",
+      "EstimatedDuration": "Εκτιμώμενη Διάρκεια (Λεπτά)",
+      "EstimatedTime": "Εκτιμώμενος Χρόνος",
+      "LeftInnerTank": "Αριστερή Εσωτερική Δεξαμενή",
+      "LeftOuterTank": "Αριστερή Εξωτερική Δεξαμενή",
+      "ReadyToStart": "Έτοιμοι για Εκκίνηση",
+      "Refuel": "Ανεφοδιασμός ",
+      "RefuelTime": "Χρόνος Ανεφοδιασμού ",
+      "Refueling": "Ανεφοδιασμός",
+      "RightInnerTank": "Δεξιά Εσωτερική Δεξαμενή",
+      "RightOuterTank": "Δεξιά Εξωτερική Δεξαμενή",
+      "TT": {
+        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "Το αεροσκάφος πρέπει να είναι σε κατάσταση Cold and Dark για να αλλάξουν οι χρόνοι ανεφοδιασμού",
+        "FillBlockFuelFromSimBrief": "Συμπληρώστε το Καύσιμο Θέσης Στάθμευσης από το SimBrief"
+      },
+      "Title": "Καύσιμα",
+      "TotalFuel": "Σύνολο Καυσίμων",
+      "Unavailable": "Μη διαθέσιμο"
+    },
+    "Payload": {
+      "BoardingTime": "Boarding Time",
+      "Cargo": "Cargo",
+      "Current": "Current",
+      "Passengers": "Passengers",
+      "Planned": "Planned",
+      "TT": {
+        "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Aircraft Must Be On the Ground and Have Engines Shutdown to Change Boarding Duration",
+        "FillPayloadFromSimbrief": "Fill Payload Information from Simbrief",
+        "MaxCargo": "Max Cargo",
+        "MaxPassengers": "Maximum Passengers",
+        "MaxZFW": "Maximum ZFW",
+        "MaxZFWCG": "Maximum ZFWCG",
+        "PerPaxBagWeight": "Per Passenger Bag Weight",
+        "PerPaxWeight": "Per Passenger Weight",
+        "StartBoarding": "Begin Boarding"
+      },
+      "Title": "Payload",
+      "ZFW": "ZFW",
+      "ZFWCG": "ZFWCG"
+    },
+    "Pushback": {
+      "Title": "Οπισθοδρόμηση"
+    },
+    "Services": {
+      "BaggageTruck": "Φορτηγό Αποσκευών",
+      "CateringTruck": "Φορτηγό Τροφοδοσίας",
+      "Cones": "Safety Cones",
+      "DoorAft": "Πίσω Πόρτα",
+      "DoorCargo": "Cargo Door",
+      "DoorFwd": "Μπροστινή Πόρτα",
+      "ExternalPower": "Εξωτερική Ισχύος ",
+      "FuelTruck": "Φορτηγό Καυσίμων",
+      "JetBridge": "Γέφυρα Επιβίβασης ",
+      "Title": "Υπηρεσίες",
+      "WheelChocks": "Wheel Chocks"
+    },
+    "Title": "Έδαφος"
+  },
+  "Modals": {
+    "Cancel": "Ακύρωση",
+    "Confirm": "Επιβεβαίωση",
+    "Okay": "Εντάξει"
+  },
+  "NavigationAndCharts": {
+    "All": "Όλα",
+    "Altn": "Εναλλακτικό",
+    "ExitFullscreenMode": "Έξοδος από Πλήρη Οθόνη",
+    "From": "Από",
+    "LocalFiles": {
+      "Both": "Και τα δύο",
+      "EstablishingConnection": "Δημιουργία Σύνδεσης",
+      "FailedToEstablishConnection": "Αποτυχία Δημιουργίας Σύνδεσης.",
+      "FileName": "Όνομα Αρχείου",
+      "Image": "Εικόνα",
+      "Pdf": "Pdf",
+      "Retry": "Επανάληψη",
+      "Title": "Τοπικά Αρχεία"
+    },
+    "Navigraph": {
+      "AirportDoesNotExist": "Το Αεροδρόμιο δεν υπάρχει",
+      "AuthenticateWithNavigraph": "Έλεγχος ταυτότητας με Navigraph",
+      "InsufficientEnv": "Ανεπαρκές αρχείο.env",
+      "IntoYourBrowserAndEnterTheCodeBelow": "στο πρόγραμμα περιήγησής σας και εισάγετε τον παρακάτω κωδικό\n",
+      "LoadingMsg": "Loading",
+      "NoAirportSelected": "Δεν Επιλέχθηκε Αεροδρόμιο",
+      "ResetNavigraphAuthentication": "Επαναφορά Ελέγχου Ταυτότητας Navigraph",
+      "ScanTheQrCodeOrOpen": "Σάρωση του κώδικα QR ή Άνοιγμα",
+      "Title": "Navigraph"
+    },
+    "PinnedCharts": {
+      "Delete": "Διαγραφή",
+      "Edit": "Επεξεργασία",
+      "NoItemsFound": "Δεν Βρέθηκαν Στοιχεία",
+      "SearchPlaceholder": "Αναζήτηση",
+      "ShowingChartsFromAllProviders": "Εμφάνιση Γραφημάτων από Όλους τους Παρόχους",
+      "SortMethods": {
+        "AlphabeticalAZ": "Αλφαβητικά - A -> Ω",
+        "AlphabeticalZA": "Αλφαβητικά - Ω -> A",
+        "FirstAccessed": "Προσβάσιμα σε πρώτο χρόνο",
+        "LastAccessed": "Προσβάσιμο σε τελευταίο χρόνο",
+        "None": "Κανένα"
+      },
+      "TT": {
+        "ChangeChartProvider": "Αλλαγή Παροχέα Γραφήματος",
+        "ChangeChartSortMethod": "Αλλαγή Μεθόδου Ταξινόμησης Γραφήματος",
+        "RemoveAllPinnedCharts": "Αφαίρεση όλων των Καρφιτσωμένων Γραφημάτων"
+      },
+      "Title": "Καρφιτσωμένοι Χάρτες",
+      "View": "Προβολή"
+    },
+    "PleaseWait": "Παρακαλώ Περιμένετε…",
+    "ShowingAllItems": "Εμφάνιση Όλων των Αντικειμένων",
+    "TT": {
+      "FitChartToHeight": "Προσαρμογή Γραφήματος στο Ύψος",
+      "FitChartToWidth": "Προσαρμογή Γραφήματος στο Πλάτος",
+      "ResetMovement": "Επαναφορά Κίνησης",
+      "RotateLeft45Degrees": "Περιστροφή Αριστερά 45 μοίρες",
+      "RotateRight45Degrees": "Περιστροφή Δεξιά 45 μοίρες",
+      "ZoomIn": "Μεγέθυνση",
+      "ZoomOut": "Σμίκρυνση"
+    },
+    "ThereAreNoChartsToDisplay": "Δεν υπάρχουν γραφήματα για εμφάνιση.",
+    "ThereIsNoChartToDisplay": "Δεν υπάρχει γράφημα για εμφάνιση.",
+    "Title": "Πλοήγηση & Γραφήματα",
+    "To": "Προς"
+  },
+  "Performance": {
+    "Data": "Δεδομένα",
+    "Landing": {
+      "AirportIcao": "ICAO Αεροδρομίου",
+      "ApproachSpeed": "Ταχύτητα Προσέγγισης",
+      "ApproachSpeedUnit": "Κόμβοι",
+      "AutoLand": "Αυτόματη Προσγείωση",
+      "Calculate": "Υπολογισμός",
+      "Clear": "Εκκαθάριση",
+      "DropDownNo": "Όχι",
+      "DropDownYes": "Ναι",
+      "FillDataFrom": "Συμπλήρωση δεδομένων από",
+      "FlapsConfiguration": "Διαμόρφωση Πτερυγίων",
+      "Low": "Χαμηλή",
+      "MaximumManual": "Μέγιστο Τεχνικό Εγχειρίδιο ",
+      "Medium": "Μεσαίο",
+      "MetarErrorDialogMessage": "The METAR from your OFP could not be successfully parsed. Would you like to autofill data using a fetched METAR instead?",
+      "MetarErrorDialogTitle": "Error Parsing OFP METAR",
+      "OverweightProcedure": "Διαδικασία Υπερβολικού Βάρους",
+      "Qnh": "QNH",
+      "ReverseThrust": "Ανάστροφη Ώση",
+      "RunwayAltitude": "Υψόμετρο Διαδρόμου",
+      "RunwayAltitudeUnit": "Πόδια Άνωθεν Επιπέδου Θαλάσσης ",
+      "RunwayCondition": "Κατάσταση Διαδρόμου",
+      "RunwayConditions": {
+        "Dry": "Dry (6)",
+        "Good": "Good (5)",
+        "GoodMedium": "Good-Medium (4)",
+        "Medium": "Medium (3)",
+        "MediumPoor": "Medium-Poor (2)",
+        "Poor": "Poor (1)"
+      },
+      "RunwayHeading": "Πορεία Διαδρόμου",
+      "RunwayHeadingUnit": "°",
+      "RunwayLda": "LDA Διαδρόμου",
+      "RunwayLdaUnitFt": "Πόδια",
+      "RunwayLdaUnitMeter": "Μέτρα",
+      "RunwaySlope": "Κλίση Διαδρόμου",
+      "TT": {
+        "YouNeedToEnterAnIcaoCodeInOrderToMakeAMetarRequest": "Χρειάζεται να εισάγετε ενα κωδικό ICAO ώστε να υποβάλετε αίτημα METAR",
+        "YouNeedToLoadSimBriefDataInOrderToAutofillData": "Χρειάζεται να φορτώσετε τα δεδομένα Simbrief για την αυτόματη συμπλήρωση δεδομένων"
+      },
+      "Temperature": "Θερμοκρασία",
+      "Title": "Προσγείωση",
+      "UnitFt": "Πόδια",
+      "UnitMeter": "Μέτρα",
+      "Weight": "Βάρος",
+      "WindDirection": "Κατεύθυνση Ανέμου",
+      "WindDirectionUnit": "°",
+      "WindMagnitude": "Μέγεθος Ανέμου",
+      "WindMagnitudeUnit": "Κόμβοι"
+    },
+    "SYNC": "Συγχρονισμός",
+    "Title": "Απόδοση",
+    "TopOfDescent": {
+      "Data": {
+        "Angle": "Γωνία",
+        "CurrentAltitude": "Τρέχον Ύψος ",
+        "Distance": "Απόσταση",
+        "GroundSpeed": "Ταχύτητα Εδάφους",
+        "TargetAltitude": "Ύψος Στόχου",
+        "Title": "Δεδομένα",
+        "UnitAngleDegrees": "Μοίρες",
+        "UnitFeet": "πόδια",
+        "UnitFtMin": "Πόδια/λεπτό",
+        "UnitNM": "Ναυτικά Μίλια",
+        "VerticalSpeed": "Κατακόρυφη Ταχύτητα"
+      },
+      "GroundSpeed": {
+        "Add": "Προσθήκη",
+        "FetchingSpeedFromSimulator": "Ταχύτητα προσέλκυσης από τον προσομοιωτή",
+        "GroundSpeed": "Ταχύτητα Εδάφους",
+        "ManualInput": "Χειροκίνητη Εισαγωγή",
+        "MinAltitude": "Ελάχιστο Υψόμετρο",
+        "RemoveLast": "Αφαίρεση Τελευταίου",
+        "Sync": "Συγχρονισμός",
+        "Title": "Ταχύτητα Εδάφους",
+        "UnitKnots": "κόμβοι",
+        "UnitKt": "κόμβοι"
+      },
+      "Result": {
+        "BeforeTarget": "Προτού Στόχου",
+        "DesiredDescentAngle": "Επιθυμητή Γωνία Καθόδου",
+        "DesiredVerticalSpeed": "Επιθυμητή Κατακόρυφη Ταχύτητα",
+        "StartYourDescentAbout": "Ξεκίνα την κάθοδό σου",
+        "Title": "Αποτέλεσμα"
+      },
+      "TT": {
+        "DesynchronizeInputWithAircraftsCurrentAltitude": "Αποσυγχρονισμός εισόδου με το Τρέχον Υψόμετρο Αεροσκάφους",
+        "SynchronizeInputWithAircraftsCurrentAltitude": "Συγχρονίστε την εισαγωγή σας με το Τρέχον Υψόμετρο Αεροσκάφους"
+      },
+      "Title": "Κορυφή Καθόδου"
+    }
+  },
+  "Presets": {
+    "AircraftStates": {
+      "Cancel": "Ακύρωση",
+      "ColdDark": "Αεροσκάφος σε Σκοτεινή Κατάσταση",
+      "ConfirmationDialogMsg": "Παρακαλώ επιβεβαιώστε τη φόρτωση της προκαθορισμένης ρύθμισης.",
+      "CurrentProcedureStep": "Τρέχουσα Διαδικασία",
+      "PleaseConfirmLoadingOfPreset": "Επιβεβαιώστε τη φόρτωση της προκαθορισμένης ρύθμισης.",
+      "ReadyPushback": "Έτοιμοι για οπισθοδρόμηση",
+      "ReadyTakeoff": "Έτοιμοι για Απογείωση",
+      "ReadyTaxi": "Έτοιμοι για Τροχοδρόμηση ",
+      "SelectAPresetToLoad": "Επιλέξτε προκαθορισμένη ρύθμιση για φόρτωση ",
+      "TheAircraftMustBeOnTheGroundToLoadAPreset": "Το αεροσκάφος πρέπει να βρίσκεται στο έδαφος για να φορτώσει μια προκαθορισμένη ρύθμιση.",
+      "TheAircraftMustBeOntheGroundToLoadAPreset": "Το αεροσκάφος πρέπει να βρίσκεται στο έδαφος για να φορτώσει μια προκαθορισμένη ρύθμιση.",
+      "Title": "Κράτη Aεροσκάφους",
+      "Turnaround": "Turnaround"
+    },
+    "InteriorLighting": {
+      "AircraftNeedsToBePoweredToLoadPresets": "Τα αεροσκάφος πρέπει να τροφοδοτείται για να φορτώσει προκαθορισμένες ρυθμίσεις",
+      "AircraftNeedsToBePoweredToSavePresets": "Το αεροσκάφος πρέπει να τροφοδοτείται για να εξοικονομήσει προεπιλογές",
+      "LoadPreset": "Φόρτωση Προκαθορισμένης Ρύθμισης",
+      "LoadingPreset": "Φόρτωση Προκαθορισμένης Ρύθμισης",
+      "NewNameConfirmationDialogMsg": "Παρακαλώ επιβεβαιώστε το νέο όνομα για την προκαθορισμένη ρύθμιση φωτισμού",
+      "NoName": "Χωρίς Όνομα",
+      "PleaseConfirmSavingPreset": "Επιβεβαιώστε την προκαθορισμένη ρύθμιση αποθήκευσης",
+      "SavePreset": "Αποθήκευση Προεπιλογής",
+      "SavingPreset": "Αποθήκευση Προκαθορισμένης Ρύθμισης",
+      "SelectAnInteriorLightingPresetToLoadOrSave": "Επιλέξτε μια προκαθορισμένη ρύθμιση εσωτερικού φωτισμού για φόρτωση ή αποθήκευση.",
+      "TT": {
+        "AircraftMustBePowered": "Το αεροσκάφος πρέπει να τροφοδοτείται ",
+        "ClickTextToChangeThePresetsName": "Κάντε κλικ στο Κείμενο για να αλλάξετε το όνομα της προκαθορισμένης ρύθμισης",
+        "LoadThisPreset": "Φόρτωση Προκαθορισμένης Ρύθμισης",
+        "SaveTheCurrentLightingLevels": "Αποθηκεύστε τα Τρέχοντα Επίπεδα Φωτισμού"
+      },
+      "TheAircraftMustBePoweredForInteriorLightingPresets": "Το αεροσκάφος πρέπει να είναι τροφοδοτούμενο για προκαθορισμένες ρυθμίσεις εσωτερικού φωτισμού.",
+      "Title": "Εσωτερικός Φωτισμός"
+    },
+    "Title": "Προεπιλογές"
+  },
+  "Pushback": {
+    "AvailableOnlyOnGround": "Pushback controls are only available on the ground",
+    "Backward": "Πίσω",
+    "CallTug": "Καλέστε Ρυμουλκό",
+    "DisableSystemMessageBody": "Are you sure you want to disable the Pushback System? This will also release the tug.",
+    "DisableSystemMessageTitle": "Disable Pushback System",
+    "EnableSystemMessageBody": "The new flyPadOS 3 Pushback System can cause conflicts with other pushback add-ons. We recommend not to enable the system if you plan to use another pushback add-on. ",
+    "EnableSystemMessageTitle": "Enable Pushback System",
+    "Forward": "Μπροστά",
+    "Halt": "Διακοπή",
+    "LeavePageMessage": "Pausing Pushback",
+    "Left": "Left",
+    "Moving": "Moving",
+    "ParkingBrake": {
+      "Off": "Απενεργοποίηση",
+      "On": "Ενεργοποίηση",
+      "Title": "Φρένο Στάθμευσης"
+    },
+    "Right": "Right",
+    "SystemEnabledOff": "Pushback System Off",
+    "SystemEnabledOn": "Pushback System On",
+    "TT": {
+      "CallReleaseTug": "Call or release tug",
+      "CenterPlaneMode": "Center map on plane On/Off",
+      "DecreaseSpeed": "Backwards or slower forwards",
+      "IncreaseSpeed": "Forwards or slower backwards",
+      "Left": "Go left",
+      "PausePushback": "Pause or unpause pushback",
+      "Right": "Go right",
+      "SetReleaseParkingBrake": "Set or release parking brake",
+      "SliderDirection": "Move for desired direction",
+      "SliderSpeed": "Move for desired speed",
+      "SystemEnabledOff": "Click to turn the pushback system on.",
+      "SystemEnabledOn": "Click to turn the pushback system completely off.",
+      "ZoomIn": "Zoom in",
+      "ZoomOut": "Zoom out"
+    },
+    "TugAttached": "Tug is attached",
+    "TugDirection": "Κατεύθυνση Ρυμουλκού",
+    "TugInTransit": "Waiting for Tug/Pin",
+    "TugSpeed": "Ταχύτητα Ρυμουλκού"
+  },
+  "Settings": {
+    "About": {
+      "Title": "Σχετικά"
+    },
+    "AircraftOptionsPinPrograms": {
+      "AccelerationHeight": "Ύψος Επιτάχυνσης (ft)",
+      "EngineOutAccelerationHeight": "Ύψος Επιτάχυνσης Εξερχόμενου Κινητήρα (ft)",
+      "IsisBaroUnit": "Μονάδα ISIS Baro",
+      "IsisMetricAltitude": "Μετρικό Υψόμετρο ISIS",
+      "LatLonExtendedFormat": "Μορφή Σημείου Αναφοράς Lat/Lon FMGC",
+      "PaxSigns": "Πινακίδες Επιβατών",
+      "RmpVhfSpacing": "Απόσταση VHF RMP",
+      "ThrustReductionHeight": "Ύψος Mείωσης Ώσης (ft)",
+      "Title": "Επιλογές Αεροσκάφους / Προγράμματα Pin",
+      "WeightUnit": "Μονάδα Βάρους"
+    },
+    "AtsuAoc": {
+      "AtisAtcSource": "ATIS/ATC Πηγή",
+      "AutomaticallyImportSimBriefData": "Αυτόματη Εισαγωγή Δεδομένων Simbrief",
+      "Enable": "Ενεργοποίηση",
+      "EnableTelex": "Ενεργοποίηση TELEX",
+      "ErrorReporting": "Αναφορά Σφαλμάτων",
+      "HoppieEnabled": "Hoppie Ενεργό ",
+      "HoppieUserId": "Αναγνωριστικό Χρήστη Hoppie",
+      "MetarSource": "Πηγή METAR",
+      "OptionalA32nxErrorReporting": "Προαιρετική Αναφορά Σφαλμάτων A32NX",
+      "PleaseCheckThatYouHaveCorrectlyEnteredYourSimbBriefUsernameOrPilotId": "Παρακαλώ ελέγξτε ότι έχετε εισαγάγει σωστά το όνομα χρήστη Simbrief ή το αναγνωριστικό πιλότου σας.",
+      "SimBriefUsernamePilotId": "Όνομα Χρήστη/Αναγνωριστικό Πιλότου Simbrief",
+      "TafSource": "Πηγή TAF",
+      "Telex": "TELEX",
+      "TelexEnablesFreeTextAndLiveMap": "Το TELEX επιτρέπει ελεύθερο κείμενο και ζωντανό χάρτη. Εάν είναι ενεργοποιημένα, δημοσιεύονται δεδομένα θέσης του αεροσκάφους καθ' όλη τη διάρκεια της πτήσης. Τα μηνύματα είναι δημόσια και δεν εποπτεύονται. ΧΡΗΣΙΜΟΠΟΙΉΣΤΕ ΑΥΤΉ ΤΗ ΔΥΝΑΤOΤΗΤΑ ΜΕ ΔΙΚH ΣΑΣ ΕΥΘYΝΗ. Για να μάθετε περισσότερα σχετικά με το TELEX και τις δυνατότητες που ενεργοποιεί, μεταβείτε στη διεύθυνση https://docs.flybywiresim.com/telex.",
+      "TelexWarning": "Προειδοποίηση TELEX",
+      "ThereWasAnErrorEncounteredWhenValidatingYourHoppieID": "Παρουσιάστηκε σφάλμα κατά την επικύρωση του Hoppie ID",
+      "Title": "ATSU/AOC",
+      "YouAreAbleToOptIntoAnonymousErrorReporting": "Μπορείτε να επιλέξετε ανώνυμες αναφορές σφαλμάτων που θα μας επιτρέψουν να διαγνώσουμε, να παρακολουθήσουμε και να φροντίσουμε τα ζητήματα με ταχύτερο ρυθμό. Αυτή η λειτουργία είναι εντελώς προαιρετική και δεν θα συλλέξουμε ποτέ τα προσωπικά σας δεδομένα, αλλά μπορεί να σας επιτρέψει να λάβετε πιο εύκολα υποστήριξη και να διορθώσετε τα προβλήματα που αντιμετωπίζετε με ταχύτερο ρυθμό.",
+      "YourHoppieIdHasBeenRemoved": "Το Hoppie-ID σας έχει αφαιρεθεί",
+      "YourHoppieIdHasBeenValidated": "Το Hoppie-ID σας έχει επικυρωθεί",
+      "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "Το Simbrief PilotID σας έχει επικυρωθεί και ενημερωθεί σε"
+    },
+    "Audio": {
+      "Announcements": "Ανακοινώσεις",
+      "BoardingMusic": "Μουσική Επιβίβασης",
+      "EngineInteriorVolume": "Ήχος Εσωτερικού Κινητήρα",
+      "ExteriorMasterVolume": "Κύρια Εξωτερική Ένταση Ήχου",
+      "PassengerAmbience": "Ατμόσφαιρα Επιβατών",
+      "PtuAudibleInCockpit": "PTU ακουόμενο στο θάλαμο του πιλοτηρίου",
+      "Title": "Ήχος",
+      "WindInteriorVolume": "Εσωτερική  Ένταση Ήχου Αέρα "
+    },
+    "Fast": "Γρήγορα",
+    "Instant": "Στιγμιαία",
+    "Real": "Πραγματικά",
+    "Realism": {
+      "AdirsAlignTime": "Χρόνος Ευθυγράμμισης ADIRS",
+      "AutofillChecklists": "Λίστες Ελέγχου Αυτόματης Συμπλήρωσης",
+      "BoardingTime": "Χρόνος Επιβίβασης ",
+      "DmcSelfTestTime": "Χρόνος Αυτοδοκιμής DMC",
+      "HomeCockpitMode": "Λειτουργία θαλάμου πιλοτηρίου οικιακής χρήσης",
+      "McduFocusTimeout": "Χρονικό Όριο Εστίασης MCDU (δευτερόλεπτα)",
+      "McduKeyboardInput": "Είσαγωγή Πληκτρολογίου MCDU",
+      "PauseAtTod": "T/D Pause",
+      "PauseAtTodDistance": "T/D Pause Distance (nm)",
+      "SeparateTillerFromRudderInputs": "Ξεχωριστό Οιακοστροφίο απο τις Εισαγωγές Πηδαλίου",
+      "Title": "Ρεαλισμός"
+    },
+    "SimOptions": {
+      "Active": "Ενεργό",
+      "Auto": "Αυτόματο",
+      "Calibrate": "Βαθμονόμηση",
+      "ConesEnabled": "Safety Cones",
+      "DefaultBarometerUnit": "Προκαθορισμένη Βαρομετρική Μονάδα",
+      "DynamicRegistrationDecal": "Δυναμική Χαλκομανία Εγγραφής",
+      "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Ενεργοποίηση σύνδεσης διακομιστή MCDU (Αυτόματη απενεργοποίηση μετά από 5 λεπτά εάν δεν υπάρχει επιτυχής σύνδεση)",
+      "ExternalMcduServerPort": "Εξωτερική Θύρα Διακομιστή MCDU",
+      "Hpa": "hPa",
+      "Inactive": "Ανενεργό",
+      "LoadOnly": "Φόρτωση Μόνο",
+      "None": "Κανένα",
+      "Off": "Απενεργοποιημένο",
+      "Save": "Αποθήκευση",
+      "SyncMsfsFlightPlan": "Συγχρονισμός του Σχεδίου Πτήσεως MSFS",
+      "ThrottleDetents": "Αναστολέας Γκαζιού",
+      "Title": "Επιλογές Sim",
+      "UseCalculatedIlsSignals": "Χρήση Υπολογισμένων Σημάτων ILS",
+      "WheelChocksEnabled": "Wheel Chocks",
+      "inHg": "inHg"
+    },
+    "ThrottleConfig": {
+      "Apply": "Εφαρμογή",
+      "AreYouSureThatYouWantToResetYourCurrentThrottleConfigurationToTheirDefaultStates": "Είστε βέβαιοι ότι θέλετε να επαναφέρετε τις τρέχουσες ρυθμίσεις του γκαζιού στις προεπιλεγμένες καταστάσεις τους; Αυτή η ενέργεια είναι μη αναστρέψιμη.",
+      "Axis": "Άξονας",
+      "Back": "Προηγούμενο",
+      "ConfigureEnd": "Ρύθμιση Τέλους",
+      "ConfigureStart": "Ρύθμιση Παραμέτρων Έναρξης",
+      "CurrentValue": "Τρέχουσα Τιμή",
+      "Deadband": "Νεκρή ζώνη",
+      "ErrorOverlapMsg": "επικαλύπτεται με",
+      "IndependentAxis": "Ανεξάρτητος Άξονας",
+      "LoadFromFile": "Φόρτωση από Aρχείο",
+      "PleaseEnterAValidDeadzone": "Παρακαλώ εισαγάγετε ένα έγκυρο deadzone",
+      "ResetToDefaults": "Επαναφορά Προεπιλογών",
+      "ReverseFull": "Πλήρης Αναστροφή",
+      "ReverseIdle": "Αδρανής Αναστροφή",
+      "ReverserOnAxis": "Ανάστροφη στον Άξονα",
+      "SaveAndApply": "Αποθήκευση και Εφαρμογή",
+      "SetFromThrottle": "Θέστε από Γκάζι",
+      "ThrottleConfigurationReset": "Επαναφορά Ρύθμισης Γκαζιού"
+    },
+    "Title": "Ρυθμίσεις",
+    "Unrealistic": "Μη Ρεαλιστικό",
+    "flyPad": {
+      "AutoBrightness": "Αυτόματη Φωτεινότητα",
+      "AutomaticallyShowOnscreenKeyboard": "Αυτόματη Εμφάνιση Πληκτρολογίου Οθόνης",
+      "BatteryLifeEnabled": "Battery Life Simulated",
+      "Blue": "Μπλέ",
+      "Brightness": "Φωτεινότητα",
+      "Dark": "Σκοτεινό",
+      "Language": "Γλώσσα",
+      "Light": "Φωτεινό",
+      "Local": "Τοπική",
+      "LocalTimeFormat": "Μορφότυπο Τοπικής Ώρας",
+      "OnscreenKeyboardLayout": "Διάταξη Πληκτρολογίου Οθόνης",
+      "ShowColoredRawMetar": "Εμφάνιση Έγχρωμου Ακατέργαστου METAR",
+      "ShowStatusBarFlightProgressIndicator": "Εμφάνιση Ένδειξης Γραμμής Προόδου Πτήσης ",
+      "Theme": "Θέμα",
+      "TimeDisplayed": "Εμφανιζόμενος Χρόνος",
+      "Title": "flyPad",
+      "TwelveHours": "12h",
+      "TwentyFourHours": "24 ώρες",
+      "Utc": "UTC",
+      "UtcAndLocal": "UTC και Τοπική"
+    }
+  },
+  "StatusBar": {
+    "Apr": "Απρ",
+    "Aug": "Αυγ",
+    "Dec": "Δεκ",
+    "Feb": "Φεβ",
+    "Fri": "Παρ",
+    "Jan": "Ιαν.",
+    "Jul": "Jul",
+    "Jun": "Ιούν",
+    "Mar": "Μαρ",
+    "May": "Μάιος",
+    "Mon": "Δευ",
+    "Nov": "Νοε",
+    "Oct": "Οκτ",
+    "Sat": "Σαβ",
+    "Sep": "Σεπ",
+    "Sun": "Κυρ",
+    "TT": {
+      "ConnectedToLocalApi": "Συνδεδεμένο με Τοπικό API",
+      "DisconnectedFromLocalApi": "Αποσύνδεση από το Τοπικό API",
+      "TurnOffOrShutdownEfb": "Απενεργοποίηση ή Τερματισμός EFB"
+    },
+    "Thu": "Πεμ",
+    "Tue": "Τρι",
+    "Wed": "Τετ"
+  }
+}

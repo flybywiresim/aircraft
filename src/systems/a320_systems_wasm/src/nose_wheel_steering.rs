@@ -49,7 +49,7 @@ pub(super) fn nose_wheel_steering(builder: &mut MsfsAspectBuilder) -> Result<(),
 
     builder.event_to_variable(
         "AXIS_STEERING_SET",
-        EventToVariableMapping::EventData32kPosition,
+        EventToVariableMapping::EventData32kPositionInverted,
         Variable::aspect("RAW_TILLER_HANDLE_POSITION"),
         |options| options.mask(),
     )?;

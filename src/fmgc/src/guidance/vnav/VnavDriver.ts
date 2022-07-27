@@ -10,6 +10,7 @@ import { RequestedVerticalMode, TargetAltitude, TargetVerticalSpeed } from '@fmg
 import { AtmosphericConditions } from '@fmgc/guidance/vnav/AtmosphericConditions';
 import { VerticalMode } from '@shared/autopilot';
 import { CoarsePredictions } from '@fmgc/guidance/vnav/CoarsePredictions';
+import { FlightPlans } from '@fmgc/flightplanning/FlightPlanManager';
 import { Geometry } from '../Geometry';
 import { GuidanceComponent } from '../GuidanceComponent';
 import { ClimbPathBuilder } from './climb/ClimbPathBuilder';
@@ -22,7 +23,7 @@ export class VnavDriver implements GuidanceComponent {
 
     currentDescentProfile: TheoreticalDescentPathCharacteristics
 
-    currentApproachProfile: DecelPathCharacteristics;
+    currentApproachProfile?: DecelPathCharacteristics;
 
     private guidanceMode: RequestedVerticalMode;
 
@@ -74,7 +75,11 @@ export class VnavDriver implements GuidanceComponent {
             if (VnavConfig.VNAV_CALCULATE_CLIMB_PROFILE) {
                 this.currentClimbProfile = ClimbPathBuilder.computeClimbPath(geometry);
             }
-            this.currentApproachProfile = DecelPathBuilder.computeDecelPath(geometry);
+            if (this.guidanceController.flightPlanManager.getApproach(FlightPlans.Active)) {
+                this.currentApproachProfile = DecelPathBuilder.computeDecelPath(geometry);
+            } else {
+                this.currentApproachProfile = null;
+            }
             this.currentDescentProfile = DescentBuilder.computeDescentPath(geometry, this.currentApproachProfile);
 
             this.guidanceController.pseudoWaypoints.acceptVerticalProfile();

@@ -1,0 +1,577 @@
+{
+  "AirTrafficControl": {
+    "Active": "Aktívne",
+    "ChangeATISATCSourceButton": "Zmena zdroja ATIS/ATC",
+    "ConnectHoppieACARS": "Pripojiť Hoppie ACARS",
+    "NoInformationAvailableForThisFrequency": "Nie sú k dispozícii žiadne informácie o tejto frekvencii",
+    "SelectCorrectATISATCSource": "Táto stránka je dostupná len vtedy, keď je na stránke nastavení vybratá funkcia IVAO alebo VATSIM ako zdroj ATIS/ATC.",
+    "SetActive": "Nastaviť aktívnu",
+    "SetStandby": "Nastaviť pohotovostný režim",
+    "Standby": "Pohotovostný režim",
+    "Title": "Riadenie letovej prevádzky"
+  },
+  "Checklists": {
+    "AreYouSureYouWantToResetAllChecklists": "Naozaj chcete obnoviť všetky kontrolné zoznamy?",
+    "AreYouSureYouWantToResetChecklists": "Naozaj chcete obnoviť všetky kontrolné zoznamy?",
+    "ChecklistResetWarning": "Upozornenie na obnovenie kontrolného zoznamu",
+    "MarkChecklistAsComplete": "Označiť kontrolný zoznam ako hotový",
+    "MarkItemAsComplete": "Označiť položku ako dokončenú",
+    "ProceedToNextChecklist": "Prejsť na ďalší kontrolný zoznam",
+    "ResetAll": "Resetovať všetko",
+    "ResetChecklist": "Resetovať kontrolný zoznam",
+    "TheLastChecklistIsComplete": "Posledný kontrolný zoznam je kompletný",
+    "ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted": "Existujú zostávajúce položky automatického dopĺňania kontrolného zoznamu, ktoré ešte neboli dokončené",
+    "Title": "Kontrolné zoznamy"
+  },
+  "Dashboard": {
+    "ImportantInformation": {
+      "Checklists": {
+        "NoRelevantChecklists": "Žiadne relevantné kontrolné zoznamy",
+        "Title": "Kontrolné zoznamy"
+      },
+      "GoToPage": "Prejsť na stranu",
+      "Maintenance": {
+        "NoActiveFailures": "Žiadne aktívne poruchy",
+        "Title": "Údržba"
+      },
+      "PinnedCharts": {
+        "NoPinnedCharts": "Žiadne pripnuté grafy",
+        "Title": "Pripnuté grafy"
+      },
+      "TT": {
+        "RearrangeWidgets": "Zmena usporiadania widgetov"
+      },
+      "Title": "Dôležité informácie",
+      "Weather": {
+        "AirPressure": "Tlak vzduchu",
+        "DewPoint": "Rosný bod",
+        "IcaoInvalid": "ICAO je neplatná alebo nie je k dispozícii METAR",
+        "Loading": "Načítava sa…",
+        "MetarParsingError": "Prijaté METAR nebolo možné analyzovať",
+        "NoIcaoProvided": "Neposkytnuty ICAO kód",
+        "NotAvailableShort": "N/A",
+        "Raw": "Hrubé",
+        "TT": {
+          "SwitchToIconView": "Prepnúť do zobrazenia ikon",
+          "SwitchToRawMetarView": "Prepnúť na zobrazenie Raw METAR"
+        },
+        "Temperature": "Teplota",
+        "Title": "Počasie",
+        "WindSpeed": "Rýchlosť vetra"
+      }
+    },
+    "Title": "Prehľad",
+    "YourFlight": {
+      "Alternate": "Alternatívna stopa",
+      "AverageWind": "Priemerný vietor",
+      "CompanyRoute": "Route spoločnosti",
+      "CostIndex": "Index nákladov",
+      "CruiseAlt": "Cruise výška",
+      "ImportSimBriefData": "Import údajov z SimBrief",
+      "Route": "Trasa",
+      "SimBriefDataNotYetLoaded": "SimBrief dáta ešte neboli načítané.",
+      "Title": "Váš let",
+      "ZFW": "ZFW"
+    }
+  },
+  "Dispatch": {
+    "Ofp": {
+      "ImportSimBriefData": "Import údajov z SimBrief",
+      "TT": {
+        "IncreaseFontSize": "Zväčšiť veľkosť písma",
+        "ReduceFontSize": "Zmenšiť veľkosť písma"
+      },
+      "Title": "OFP",
+      "YouHaveNotYetImportedAnySimBriefData": "Ešte ste neimportovali žiadne údaje z SimBrief."
+    },
+    "Overview": {
+      "ActualGW": "Actual GW",
+      "Engines": "Motory",
+      "MMO": "MMO",
+      "MRW": "MRW",
+      "MTOW": "MTOW",
+      "MZFW": "MZFW",
+      "MaximumCargo": "Maximálny náklad",
+      "MaximumFuelCapacity": "Maximálna kapacita paliva",
+      "MaximumPassengers": "Maximálny počet cestujúcich",
+      "Model": "Model",
+      "Range": "Dosah",
+      "Title": "Prehľad"
+    },
+    "Title": "Odoslanie"
+  },
+  "Failures": {
+    "Comfort": {
+      "Title": "Komfort"
+    },
+    "Compact": {
+      "Title": "Kompaktná"
+    },
+    "FullSimulationOfTheFailuresBelowIsntYetGuaranteed": "Úplná simulácia nižšie uvedených porúch ešte nie je zaručená.",
+    "Search": "Vyhľadať",
+    "Title": "Poruchy"
+  },
+  "Ground": {
+    "Fuel": {
+      "CenterTank": "Centrálnlna nádrž",
+      "Completed": "Dokončené",
+      "Defueling": "Odčerpávanie paliva",
+      "EstimatedDuration": "Odhadovaná dĺžka trvania (minúty)",
+      "EstimatedTime": "Estimated Time",
+      "LeftInnerTank": "Ľavá vnútorná nádrž",
+      "LeftOuterTank": "Ľavá vonkajšia nádrž",
+      "ReadyToStart": "Pripravený na štart",
+      "Refuel": "Doplňte palivo",
+      "RefuelTime": "Čas na doplnenie paliva",
+      "Refueling": "Tankovanie",
+      "RightInnerTank": "Pravá vnútorná nádrž",
+      "RightOuterTank": "Pravá vonkajšia nádrž",
+      "TT": {
+        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "Lietadlo musia byť v stave Cold and Dark na zmeni času doplnenia paliva",
+        "FillBlockFuelFromSimBrief": "Naplňte blokové palivo od SimBrief"
+      },
+      "Title": "Palivo",
+      "TotalFuel": "Celkové palivo",
+      "Unavailable": "Nedostupné"
+    },
+    "Payload": {
+      "BoardingTime": "Boarding Time",
+      "Cargo": "Cargo",
+      "Current": "Current",
+      "Passengers": "Passengers",
+      "Planned": "Planned",
+      "TT": {
+        "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Aircraft Must Be On the Ground and Have Engines Shutdown to Change Boarding Duration",
+        "FillPayloadFromSimbrief": "Fill Payload Information from Simbrief",
+        "MaxCargo": "Max Cargo",
+        "MaxPassengers": "Maximum Passengers",
+        "MaxZFW": "Maximum ZFW",
+        "MaxZFWCG": "Maximum ZFWCG",
+        "PerPaxBagWeight": "Per Passenger Bag Weight",
+        "PerPaxWeight": "Per Passenger Weight",
+        "StartBoarding": "Begin Boarding"
+      },
+      "Title": "Payload",
+      "ZFW": "ZFW",
+      "ZFWCG": "ZFWCG"
+    },
+    "Pushback": {
+      "Title": "Pushback"
+    },
+    "Services": {
+      "BaggageTruck": "Batožinové vozidlo",
+      "CateringTruck": "Cateringové vozidlo",
+      "Cones": "Safety Cones",
+      "DoorAft": "Dvere zadné",
+      "DoorCargo": "Cargo Door",
+      "DoorFwd": "Dvere predné",
+      "ExternalPower": "Externé napájanie",
+      "FuelTruck": "Cisterna z palivom",
+      "JetBridge": "Jet Bridge",
+      "Title": "Služby",
+      "WheelChocks": "Wheel Chocks"
+    },
+    "Title": "Pozemný servis"
+  },
+  "Modals": {
+    "Cancel": "Zrušiť",
+    "Confirm": "Potvrdiť",
+    "Okay": "Okay"
+  },
+  "NavigationAndCharts": {
+    "All": "Všetko",
+    "Altn": "Altn",
+    "ExitFullscreenMode": "Skončiť režim na celú obrazovku",
+    "From": "Od",
+    "LocalFiles": {
+      "Both": "Obidva",
+      "EstablishingConnection": "Pripájam",
+      "FailedToEstablishConnection": "Nepodarilo sa nadviazať pripojenie.",
+      "FileName": "Názov súboru",
+      "Image": "Obrázok",
+      "Pdf": "Súbor PDF",
+      "Retry": "Skúsiť znova",
+      "Title": "Lokálne súbory"
+    },
+    "Navigraph": {
+      "AirportDoesNotExist": "Letisko neexistuje",
+      "AuthenticateWithNavigraph": "Autentifikácia pomocou Navigraph",
+      "InsufficientEnv": "Nedostatočný .env súbor",
+      "IntoYourBrowserAndEnterTheCodeBelow": "do vášho prehliadača a zadajte kód nižšie\n",
+      "LoadingMsg": "Loading",
+      "NoAirportSelected": "Letisko nie je vybrané",
+      "ResetNavigraphAuthentication": "Obnovenie overovania Navigrafu",
+      "ScanTheQrCodeOrOpen": "Skenovanie QR kódu alebo otvoriť",
+      "Title": "Navigraph"
+    },
+    "PinnedCharts": {
+      "Delete": "Vymazať",
+      "Edit": "Upraviť",
+      "NoItemsFound": "Nenašli sa žiadne položky.",
+      "SearchPlaceholder": "Vyhľadať",
+      "ShowingChartsFromAllProviders": "Zobrazenie grafov od všetkých poskytovateľov",
+      "SortMethods": {
+        "AlphabeticalAZ": "Abecedný - A -> Z",
+        "AlphabeticalZA": "Abecedné - Z -> A",
+        "FirstAccessed": "Prvý prístup",
+        "LastAccessed": "Posledný prístup",
+        "None": "Žiadne"
+      },
+      "TT": {
+        "ChangeChartProvider": "Zmeniť poskytovateľa grafu",
+        "ChangeChartSortMethod": "Zmeniť metódu zoradenia grafu",
+        "RemoveAllPinnedCharts": "Remove All Pinned Charts"
+      },
+      "Title": "Pripnuté grafy",
+      "View": "Zobraziť"
+    },
+    "PleaseWait": "Prosím čakajte",
+    "ShowingAllItems": "Zobrazujú sa všetky položky",
+    "TT": {
+      "FitChartToHeight": "Prispôsobenie grafu do výšky",
+      "FitChartToWidth": "Prispôsobenie grafu na šírku",
+      "ResetMovement": "Vynulovať pohyb",
+      "RotateLeft45Degrees": "Otočiť doľava o 45 stupňov",
+      "RotateRight45Degrees": "Otočiť doprava o 45 stupňov",
+      "ZoomIn": "Priblížiť",
+      "ZoomOut": "Oddialiť"
+    },
+    "ThereAreNoChartsToDisplay": "Nie sú žiadne grafy na zobrazenie.",
+    "ThereIsNoChartToDisplay": "Neexistuje žiadny graf, ktorý sa má zobraziť.",
+    "Title": "Navigácia a grafy",
+    "To": "Do"
+  },
+  "Performance": {
+    "Data": "Dáta",
+    "Landing": {
+      "AirportIcao": "ICAO letiska",
+      "ApproachSpeed": "Rýchlosť priblíženia",
+      "ApproachSpeedUnit": "kts",
+      "AutoLand": "Autoland",
+      "Calculate": "Vypočítať",
+      "Clear": "Vymazať",
+      "DropDownNo": "Nie",
+      "DropDownYes": "Áno",
+      "FillDataFrom": "Vyplniť údaje z",
+      "FlapsConfiguration": "Konfigurácia klapiek",
+      "Low": "Nízka",
+      "MaximumManual": "Maximálna príručka",
+      "Medium": "Stredné",
+      "MetarErrorDialogMessage": "The METAR from your OFP could not be successfully parsed. Would you like to autofill data using a fetched METAR instead?",
+      "MetarErrorDialogTitle": "Error Parsing OFP METAR",
+      "OverweightProcedure": "Postup s nadváhou",
+      "Qnh": "QNH",
+      "ReverseThrust": "Spätný ťah",
+      "RunwayAltitude": "Výška dráhy",
+      "RunwayAltitudeUnit": "ft ASL",
+      "RunwayCondition": "Stav dráhy",
+      "RunwayConditions": {
+        "Dry": "Dry (6)",
+        "Good": "Good (5)",
+        "GoodMedium": "Good-Medium (4)",
+        "Medium": "Medium (3)",
+        "MediumPoor": "Medium-Poor (2)",
+        "Poor": "Poor (1)"
+      },
+      "RunwayHeading": "Smer dráhy",
+      "RunwayHeadingUnit": "°",
+      "RunwayLda": "Dráha LDA",
+      "RunwayLdaUnitFt": "ft",
+      "RunwayLdaUnitMeter": "m",
+      "RunwaySlope": "Sklon dráhy",
+      "TT": {
+        "YouNeedToEnterAnIcaoCodeInOrderToMakeAMetarRequest": "Ak chcete podať žiadosť METAR, musíte zadať kód ICAO",
+        "YouNeedToLoadSimBriefDataInOrderToAutofillData": "Musíte načítať dáta SimBrief, aby ste mohli automaticky vyplniť dáta"
+      },
+      "Temperature": "Teplota",
+      "Title": "Pristátie",
+      "UnitFt": "ft",
+      "UnitMeter": "m",
+      "Weight": "Hmotnosť",
+      "WindDirection": "Smer vetra",
+      "WindDirectionUnit": "°",
+      "WindMagnitude": "Sila vetra",
+      "WindMagnitudeUnit": "kts"
+    },
+    "SYNC": "Synchronizácia",
+    "Title": "Výkon",
+    "TopOfDescent": {
+      "Data": {
+        "Angle": "Uhol",
+        "CurrentAltitude": "Aktuálna výška",
+        "Distance": "Vzdialenosť",
+        "GroundSpeed": "Pozemná rýchlosť",
+        "TargetAltitude": "Cieľová výška",
+        "Title": "Dáta",
+        "UnitAngleDegrees": "stupňov",
+        "UnitFeet": "feet",
+        "UnitFtMin": "ft/min",
+        "UnitNM": "NM",
+        "VerticalSpeed": "Vertikálna rýchlosť"
+      },
+      "GroundSpeed": {
+        "Add": "Pridať",
+        "FetchingSpeedFromSimulator": "Rýchlosť načítania zo simulátora",
+        "GroundSpeed": "Pozemná rýchlosť",
+        "ManualInput": "Manuálny vstup",
+        "MinAltitude": "Min. Nadmorská výška",
+        "RemoveLast": "Odstrániť poslednú",
+        "Sync": "Synchronizácia",
+        "Title": "Pozemná rýchlosť",
+        "UnitKnots": "uzly",
+        "UnitKt": "kt"
+      },
+      "Result": {
+        "BeforeTarget": "pred cieľom",
+        "DesiredDescentAngle": "Požadovaný uhol zostupu",
+        "DesiredVerticalSpeed": "Požadovaná vertikálna rýchlosť",
+        "StartYourDescentAbout": "Začnite svoj zostup",
+        "Title": "Výsledok"
+      },
+      "TT": {
+        "DesynchronizeInputWithAircraftsCurrentAltitude": "Desynchronizácia vstupu so súčasnou nadmorskou výškou lietadla",
+        "SynchronizeInputWithAircraftsCurrentAltitude": "Synchronizácia vstupu s aktuálnou nadmorskou výškou lietadla"
+      },
+      "Title": "Vrchol zostupu"
+    }
+  },
+  "Presets": {
+    "AircraftStates": {
+      "Cancel": "Zrušiť",
+      "ColdDark": "Studená a tmavá",
+      "ConfirmationDialogMsg": "Potvrďte načítanie prednastaveného nastavenia.",
+      "CurrentProcedureStep": "Aktuálny postup postupu",
+      "PleaseConfirmLoadingOfPreset": "Potvrďte načítanie prednastaveného nastavenia.",
+      "ReadyPushback": "Pripravený na vytlačenie",
+      "ReadyTakeoff": "Pripravený na vzlet ",
+      "ReadyTaxi": "Pripravený na taxing",
+      "SelectAPresetToLoad": "Vyberte prednastavenie na načítanie",
+      "TheAircraftMustBeOnTheGroundToLoadAPreset": "Lietadlo musí byť na zemi, aby naložilo prednastavenie.",
+      "TheAircraftMustBeOntheGroundToLoadAPreset": "Lietadlo musí byť na zemi, aby naložilo prednastavenie.",
+      "Title": "Stavy lietadla",
+      "Turnaround": "Obrat"
+    },
+    "InteriorLighting": {
+      "AircraftNeedsToBePoweredToLoadPresets": "Lietadlo musí byť zapnuté na načítanie predvolieb",
+      "AircraftNeedsToBePoweredToSavePresets": "Lietadlo musí byť zapnuté pre uloženie prednastavení",
+      "LoadPreset": "Načítať prednastavenie",
+      "LoadingPreset": "Načítanie prednastavenia",
+      "NewNameConfirmationDialogMsg": "Please confirm the new name for the lighting preset",
+      "NoName": "Bez mena",
+      "PleaseConfirmSavingPreset": "Potvrďte prednastavenie uloženia",
+      "SavePreset": "Uložiť prednastavenie",
+      "SavingPreset": "Uloženie prednastavenia",
+      "SelectAnInteriorLightingPresetToLoadOrSave": "Vyberte prednastavenie vnútorného osvetlenia, ktoré chcete načítať alebo uložiť.",
+      "TT": {
+        "AircraftMustBePowered": "Lietadlo musí byť zapnuté",
+        "ClickTextToChangeThePresetsName": "Ak chcete zmeniť názov predvoľby, kliknite na položku Text",
+        "LoadThisPreset": "Načítať túto predvoľbu",
+        "SaveTheCurrentLightingLevels": "Uložiť aktuálne úrovne osvetlenia"
+      },
+      "TheAircraftMustBePoweredForInteriorLightingPresets": "Lietadlo musí byť zapnuté pre prednastavenia vnútorného osvetlenia.",
+      "Title": "Interiérové osvetlenie"
+    },
+    "Title": "Predvoľby"
+  },
+  "Pushback": {
+    "AvailableOnlyOnGround": "Pushback controls are only available on the ground",
+    "Backward": "Dozadu",
+    "CallTug": "Zavolajte Tug",
+    "DisableSystemMessageBody": "Are you sure you want to disable the Pushback System? This will also release the tug.",
+    "DisableSystemMessageTitle": "Disable Pushback System",
+    "EnableSystemMessageBody": "The new flyPadOS 3 Pushback System can cause conflicts with other pushback add-ons. We recommend not to enable the system if you plan to use another pushback add-on. ",
+    "EnableSystemMessageTitle": "Enable Pushback System",
+    "Forward": "Dopredu",
+    "Halt": "Zastaviť",
+    "LeavePageMessage": "Pausing Pushback",
+    "Left": "Left",
+    "Moving": "Moving",
+    "ParkingBrake": {
+      "Off": "Vypnuté",
+      "On": "Zapnuté",
+      "Title": "Parkovacia brzda"
+    },
+    "Right": "Right",
+    "SystemEnabledOff": "Pushback System Off",
+    "SystemEnabledOn": "Pushback System On",
+    "TT": {
+      "CallReleaseTug": "Call or release tug",
+      "CenterPlaneMode": "Center map on plane On/Off",
+      "DecreaseSpeed": "Backwards or slower forwards",
+      "IncreaseSpeed": "Forwards or slower backwards",
+      "Left": "Go left",
+      "PausePushback": "Pause or unpause pushback",
+      "Right": "Go right",
+      "SetReleaseParkingBrake": "Set or release parking brake",
+      "SliderDirection": "Move for desired direction",
+      "SliderSpeed": "Move for desired speed",
+      "SystemEnabledOff": "Click to turn the pushback system on.",
+      "SystemEnabledOn": "Click to turn the pushback system completely off.",
+      "ZoomIn": "Zoom in",
+      "ZoomOut": "Zoom out"
+    },
+    "TugAttached": "Tug is attached",
+    "TugDirection": "Smer Tagu",
+    "TugInTransit": "Waiting for Tug/Pin",
+    "TugSpeed": "Rýchlosť Tugu"
+  },
+  "Settings": {
+    "About": {
+      "Title": "O aplikácií"
+    },
+    "AircraftOptionsPinPrograms": {
+      "AccelerationHeight": "Výška zrýchlenia (ft)",
+      "EngineOutAccelerationHeight": "Výška zrýchlenia pri poruche motora (ft)",
+      "IsisBaroUnit": "Jednotka ISIS Baro",
+      "IsisMetricAltitude": "Metrická nadmorská výška ISIS",
+      "LatLonExtendedFormat": "Formát bod cesty FMGC Lat/Lon",
+      "PaxSigns": "PAX Signs",
+      "RmpVhfSpacing": "RMP vzdialenosť VHF",
+      "ThrustReductionHeight": "Výška redukcie ťahu (ft)",
+      "Title": "Nastavenia lietadla / Pin programy",
+      "WeightUnit": "Jednotka hmotnosti"
+    },
+    "AtsuAoc": {
+      "AtisAtcSource": "ATIS/ATC Zdroj",
+      "AutomaticallyImportSimBriefData": "Automatické importovanie údajov z SimBrief",
+      "Enable": "Zapnúť",
+      "EnableTelex": "Povoliť TELEX",
+      "ErrorReporting": "Nahlasovanie chýb",
+      "HoppieEnabled": "Hoppie enabled",
+      "HoppieUserId": "ID používateľa Hoppie",
+      "MetarSource": "Zdroj METAR",
+      "OptionalA32nxErrorReporting": "Voliteľné hlásenie chýb A32NX",
+      "PleaseCheckThatYouHaveCorrectlyEnteredYourSimbBriefUsernameOrPilotId": "Skontrolujte, či ste správne zadali svoje užívateľské meno SimBrief alebo ID pilota.",
+      "SimBriefUsernamePilotId": "SimBrief užívateľské meno/ID pilota",
+      "TafSource": "Zdroj TAF",
+      "Telex": "TELEX",
+      "TelexEnablesFreeTextAndLiveMap": "TELEX umožňuje voľný text a živú mapu. Ak je povolené, údaje o polohe lietadla sa uverejňujú počas trvania letu. Správy sú verejné a nie moderované. POUŽITE TÚTO FUNKCIU NA VLASTNÉ RIZIKO. Ak sa chcete dozvedieť viac o TELEX a funkciách, ktoré umožňuje, prejdite na https://docs.flybywiresim.com/telex.",
+      "TelexWarning": "TELEX varovanie",
+      "ThereWasAnErrorEncounteredWhenValidatingYourHoppieID": "Pri overovaní ID Hoppie sa vyskytla chyba",
+      "Title": "ATSU / AOC",
+      "YouAreAbleToOptIntoAnonymousErrorReporting": "Môžete sa prihlásiť do anonymného hlásenia chýb, ktoré nám umožní diagnostikovať, monitorovať a starať sa o problémy rýchlejšie. Táto funkcia je úplne voliteľná a nikdy nebudeme zhromažďovať vaše osobné údaje, ale môže vám umožniť ľahšie získať podporu a vyriešiť problémy, s ktorými sa stretnete rýchlejšie.",
+      "YourHoppieIdHasBeenRemoved": "Identifikácia Hoppie-ID bola odstránená",
+      "YourHoppieIdHasBeenValidated": "Identifikácia vášho Hoppie-ID bola overená",
+      "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "Vaše SimBrief PilotID bolo overené a aktualizované na"
+    },
+    "Audio": {
+      "Announcements": "Oznámenia",
+      "BoardingMusic": "Boarding Music",
+      "EngineInteriorVolume": "Vnútorný hluk motora",
+      "ExteriorMasterVolume": "Exteriérová hlavná hlasitosť",
+      "PassengerAmbience": "zvuky cestujúcich",
+      "PtuAudibleInCockpit": "PTU Počuteľný v kokpite",
+      "Title": "Zvuk",
+      "WindInteriorVolume": "Zvuk vetra v interiéri"
+    },
+    "Fast": "Rýchlo",
+    "Instant": "Okamžite",
+    "Real": "Skutočné",
+    "Realism": {
+      "AdirsAlignTime": "ADIRS čas kalibrovania",
+      "AutofillChecklists": "Automatické vyplňovanie kontrolných zoznamov",
+      "BoardingTime": "Čas nástupu",
+      "DmcSelfTestTime": "DMC Čas testovania",
+      "HomeCockpitMode": "Domáci režim kokpitu",
+      "McduFocusTimeout": "Časový limit zaostrenia MCDU (sekundy)",
+      "McduKeyboardInput": "Vstup klávesnice MCDU",
+      "PauseAtTod": "T/D Pause",
+      "PauseAtTodDistance": "T/D Pause Distance (nm)",
+      "SeparateTillerFromRudderInputs": "Oddeľte Tiller od vstupov kormidla",
+      "Title": "Realizmus"
+    },
+    "SimOptions": {
+      "Active": "Aktívne",
+      "Auto": "Automaticky",
+      "Calibrate": "Skalibrovať",
+      "ConesEnabled": "Safety Cones",
+      "DefaultBarometerUnit": "Štandardná jednotka barometra",
+      "DynamicRegistrationDecal": "Dynamický registračný kód",
+      "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Povoliť pripojenie servera MCDU (automaticky sa deaktivuje po 5 minútach, ak nie je úspešné pripojenie)",
+      "ExternalMcduServerPort": "Externý port servera MCDU",
+      "Hpa": "hPa",
+      "Inactive": "Neaktívne",
+      "LoadOnly": "Len načítať",
+      "None": "Žiadne",
+      "Off": "Vypnuté",
+      "Save": "Uložiť",
+      "SyncMsfsFlightPlan": "Synchronizácia letového plánu MSFS",
+      "ThrottleDetents": "Detenty škrtiacej klapky",
+      "Title": "Možnosti Simulátora",
+      "UseCalculatedIlsSignals": "Použiť vypočítané signály ILS",
+      "WheelChocksEnabled": "Wheel Chocks",
+      "inHg": "inHg"
+    },
+    "ThrottleConfig": {
+      "Apply": "Použiť",
+      "AreYouSureThatYouWantToResetYourCurrentThrottleConfigurationToTheirDefaultStates": "Ste si istí, že chcete obnoviť aktuálne nastavenia konfigurácie škrtiacej klapky na predvolené stavy? Táto akcia je nezvratná.",
+      "Axis": "Os",
+      "Back": "Späť",
+      "ConfigureEnd": "Konfigurovať koniec",
+      "ConfigureStart": "Konfigurovať Štart",
+      "CurrentValue": "Aktuálna hodnota",
+      "Deadband": "Deadband",
+      "ErrorOverlapMsg": "prekrýva",
+      "IndependentAxis": "Nezávislá os",
+      "LoadFromFile": "Načítať zo súboru",
+      "PleaseEnterAValidDeadzone": "Zadajte platnú mŕtvu zónu",
+      "ResetToDefaults": "Obnoviť predvolené hodnoty",
+      "ReverseFull": "Reverzné plné",
+      "ReverseIdle": "Reverzný neutrál",
+      "ReverserOnAxis": "Reverser na os",
+      "SaveAndApply": "Uložiť a použiť",
+      "SetFromThrottle": "Nastav od škrtiacej klapky",
+      "ThrottleConfigurationReset": "Reset konfigurácie škrtiacej klapky"
+    },
+    "Title": "Nastavenia",
+    "Unrealistic": "Nereálne",
+    "flyPad": {
+      "AutoBrightness": "Automatický jas",
+      "AutomaticallyShowOnscreenKeyboard": "Automaticky zobrazovať klávesnicu na obrazovke",
+      "BatteryLifeEnabled": "Battery Life Simulated",
+      "Blue": "Modrá",
+      "Brightness": "Jas",
+      "Dark": "Tmavá",
+      "Language": "Jazyk",
+      "Light": "Svetlá",
+      "Local": "Lokálne",
+      "LocalTimeFormat": "Formát lokálneho času",
+      "OnscreenKeyboardLayout": "Rozloženie klávesnice na obrazovke",
+      "ShowColoredRawMetar": "Zobraziť farebný Raw METAR",
+      "ShowStatusBarFlightProgressIndicator": "Zobraziť indikátor priebehu letu stavového riadka",
+      "Theme": "Téma",
+      "TimeDisplayed": "Zobrazený čas",
+      "Title": "flyPad",
+      "TwelveHours": "12h",
+      "TwentyFourHours": "24h",
+      "Utc": "UTC",
+      "UtcAndLocal": "UTC a lokálne"
+    }
+  },
+  "StatusBar": {
+    "Apr": "apr",
+    "Aug": "aug",
+    "Dec": "Dec.",
+    "Feb": "Feb.",
+    "Fri": "Pia",
+    "Jan": "Jan.",
+    "Jul": "Jul",
+    "Jun": "Jún",
+    "Mar": "Mar.",
+    "May": "Máj",
+    "Mon": "Pon",
+    "Nov": "Nov.",
+    "Oct": "Okt.",
+    "Sat": "Sob",
+    "Sep": "Sep.",
+    "Sun": "Ned",
+    "TT": {
+      "ConnectedToLocalApi": "Pripojené k lokálnej API",
+      "DisconnectedFromLocalApi": "Odpojené od lokálnej API",
+      "TurnOffOrShutdownEfb": "Vypnúť alebo zastaviť EFB"
+    },
+    "Thu": "Štv",
+    "Tue": "Uto",
+    "Wed": "Str"
+  }
+}

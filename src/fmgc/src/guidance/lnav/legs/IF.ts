@@ -9,6 +9,7 @@ import { GuidanceParameters } from '@fmgc/guidance/ControlLaws';
 import { XFLeg } from '@fmgc/guidance/lnav/legs/XF';
 import { PathVector } from '@fmgc/guidance/lnav/PathVector';
 import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
+import { Guidable } from '@fmgc/guidance/Guidable';
 import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
 
 export class IFLeg extends XFLeg {
@@ -35,11 +36,15 @@ export class IFLeg extends XFLeg {
     }
 
     recomputeWithParameters(_isActive: boolean, _tas: Knots, _gs: Knots, _ppos: Coordinates, _trueTrack: DegreesTrue) {
-        if (!(this.outboundGuidable instanceof Leg)) {
-            throw new Error(`IF outboundGuidable must be a leg (is ${this.outboundGuidable?.constructor})`);
-        }
-
         this.isComputed = true;
+    }
+
+    /** @inheritdoc */
+    setNeighboringGuidables(inbound: Guidable, outbound: Guidable) {
+        if (outbound && !(outbound instanceof Leg) && outbound !== this.outboundGuidable) {
+            console.error(`IF outboundGuidable must be a leg (is ${outbound?.constructor})`);
+        }
+        super.setNeighboringGuidables(inbound, outbound);
     }
 
     get inboundCourse(): Degrees | undefined {

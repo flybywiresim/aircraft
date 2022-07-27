@@ -1,0 +1,577 @@
+{
+  "AirTrafficControl": {
+    "Active": "Aktiivinen",
+    "ChangeATISATCSourceButton": "Vaihda ATIS/ATC lähde",
+    "ConnectHoppieACARS": "Yhdistä Hoppien ACARSiin",
+    "NoInformationAvailableForThisFrequency": "Tietoja ei ole saatavilla tälle taajuudelle",
+    "SelectCorrectATISATCSource": "Tämä sivu on saatavilla vain, kun IVAO tai VATSIM on valittuna ATIS/ATC lähteeksi asetuksista.",
+    "SetActive": "Aseta aktiiviseksi",
+    "SetStandby": "Aseta valmiustilaan",
+    "Standby": "Valmiustila",
+    "Title": "Lennonjohto"
+  },
+  "Checklists": {
+    "AreYouSureYouWantToResetAllChecklists": "Haluatko varmasti nollata kaikki tarkistuslistat?",
+    "AreYouSureYouWantToResetChecklists": "Haluatko varmasti nollata kaikki tarkistuslistat?",
+    "ChecklistResetWarning": "Varoitus tarkistuslistojen nollauksesta",
+    "MarkChecklistAsComplete": "Merkitse tarkistuslista valmiiksi",
+    "MarkItemAsComplete": "Merkitse kohta tehdyksi",
+    "ProceedToNextChecklist": "Siirry seuraavaan tarkistuslistaan",
+    "ResetAll": "Nollaa kaikki",
+    "ResetChecklist": "Nollaa tarkistuslista",
+    "TheLastChecklistIsComplete": "Viimeinen tarkistuslista on valmis",
+    "ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted": "Kaikkia automaattisesti täyttyvän tarkistuslistan kohtia ei ole vielä tehty",
+    "Title": "Tarkistuslistat"
+  },
+  "Dashboard": {
+    "ImportantInformation": {
+      "Checklists": {
+        "NoRelevantChecklists": "Ei tarvittavia tarkistuslistoja",
+        "Title": "Tarkistuslistat"
+      },
+      "GoToPage": "Mene sivulle",
+      "Maintenance": {
+        "NoActiveFailures": "Ei aktiivisia vikoja",
+        "Title": "Huolto"
+      },
+      "PinnedCharts": {
+        "NoPinnedCharts": "Ei kiinnitettyjä karttoja",
+        "Title": "Kiinnitetyt kartat"
+      },
+      "TT": {
+        "RearrangeWidgets": "Järjestä widgetit uudelleen"
+      },
+      "Title": "Tärkeää tietoa",
+      "Weather": {
+        "AirPressure": "Ilmanpaine",
+        "DewPoint": "Kastepiste",
+        "IcaoInvalid": "ICAO-koodi virheellinen tai METAR:ia ei ole saatavilla",
+        "Loading": "Ladataan",
+        "MetarParsingError": "Vastaanotettua METAR:ia ei pystytty käyttämään",
+        "NoIcaoProvided": "ICAO-koodi puuttuu",
+        "NotAvailableShort": "N/A",
+        "Raw": "Raakalukema",
+        "TT": {
+          "SwitchToIconView": "Vaihda kuvakenäkymään",
+          "SwitchToRawMetarView": "Vaihda Raw METAR -näkymään"
+        },
+        "Temperature": "Lämpötila",
+        "Title": "Sää",
+        "WindSpeed": "Tuulen nopeus"
+      }
+    },
+    "Title": "Yleisnäkymä",
+    "YourFlight": {
+      "Alternate": "Vaihtoehtoinen",
+      "AverageWind": "Keskimääräinen tuuli",
+      "CompanyRoute": "Yhtiön reitti",
+      "CostIndex": "Kustannusindeksi",
+      "CruiseAlt": "Matkalentokorkeus",
+      "ImportSimBriefData": "Tuo tiedot SimBriefistä",
+      "Route": "Reitti",
+      "SimBriefDataNotYetLoaded": "SimBrief-data ei ole vielä ladattu.",
+      "Title": "Lentosi",
+      "ZFW": "ZFW"
+    }
+  },
+  "Dispatch": {
+    "Ofp": {
+      "ImportSimBriefData": "Tuo tiedot SimBriefistä",
+      "TT": {
+        "IncreaseFontSize": "Suurenna fonttikokoa",
+        "ReduceFontSize": "Pienennä fonttikokoa"
+      },
+      "Title": "OFP",
+      "YouHaveNotYetImportedAnySimBriefData": "Et ole vielä tuonut dataa SimBriefistä."
+    },
+    "Overview": {
+      "ActualGW": "Actual GW",
+      "Engines": "Moottorit",
+      "MMO": "Suurin lentonopeus (mach)",
+      "MRW": "Suurin sallittu paino maassa (MRW)",
+      "MTOW": "Suurin sallittu lentoonlähtöpaino (MTOW)",
+      "MZFW": "MZFW",
+      "MaximumCargo": "Suurin mahdollinen rahti",
+      "MaximumFuelCapacity": "Suurin polttoainekapasiteetti",
+      "MaximumPassengers": "Suurin mahdollinen matkustajamäärä",
+      "Model": "Malli",
+      "Range": "Toimintasäde",
+      "Title": "Yleiskatsaus"
+    },
+    "Title": "Lennonsuunnittelu"
+  },
+  "Failures": {
+    "Comfort": {
+      "Title": "Mukavuus"
+    },
+    "Compact": {
+      "Title": "Kompakti"
+    },
+    "FullSimulationOfTheFailuresBelowIsntYetGuaranteed": "Seuraavien vikojen täyttä simulointia ei ole vielä taattu.",
+    "Search": "Haku",
+    "Title": "Viat"
+  },
+  "Ground": {
+    "Fuel": {
+      "CenterTank": "Keskitankki",
+      "Completed": "Valmis",
+      "Defueling": "Tyhjennetään polttoainetta",
+      "EstimatedDuration": "Arvioitu kesto (minuuttia)",
+      "EstimatedTime": "Estimated Time",
+      "LeftInnerTank": "Vasen sisempi tankki",
+      "LeftOuterTank": "Vasen ulkoisempi tankki",
+      "ReadyToStart": "Valmiina aloittamaan",
+      "Refuel": "Tankkaa",
+      "RefuelTime": "Tankkauksen kesto",
+      "Refueling": "Tankataan",
+      "RightInnerTank": "Oikea sisempi tankki",
+      "RightOuterTank": "Oikea ulkoisempi tankki",
+      "TT": {
+        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "Tankkauksen kestoa voi muuttaa vain maassa moottorien ollessa sammuksissa",
+        "FillBlockFuelFromSimBrief": "Täytä polttoaineen määrä SimBrief:istä"
+      },
+      "Title": "Polttoaine",
+      "TotalFuel": "Kokonaispolttoaine",
+      "Unavailable": "Ei saatavilla"
+    },
+    "Payload": {
+      "BoardingTime": "Boarding Time",
+      "Cargo": "Cargo",
+      "Current": "Current",
+      "Passengers": "Passengers",
+      "Planned": "Planned",
+      "TT": {
+        "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Aircraft Must Be On the Ground and Have Engines Shutdown to Change Boarding Duration",
+        "FillPayloadFromSimbrief": "Fill Payload Information from Simbrief",
+        "MaxCargo": "Max Cargo",
+        "MaxPassengers": "Maximum Passengers",
+        "MaxZFW": "Maximum ZFW",
+        "MaxZFWCG": "Maximum ZFWCG",
+        "PerPaxBagWeight": "Per Passenger Bag Weight",
+        "PerPaxWeight": "Per Passenger Weight",
+        "StartBoarding": "Begin Boarding"
+      },
+      "Title": "Payload",
+      "ZFW": "ZFW",
+      "ZFWCG": "ZFWCG"
+    },
+    "Pushback": {
+      "Title": "Työntö"
+    },
+    "Services": {
+      "BaggageTruck": "Matkatavarat",
+      "CateringTruck": "Ateriapalvelut",
+      "Cones": "Varoituskartiot",
+      "DoorAft": "Takaovi",
+      "DoorCargo": "Rahtiovi",
+      "DoorFwd": "Etuovi",
+      "ExternalPower": "Maavirtayksikkö",
+      "FuelTruck": "Polttoainerekka",
+      "JetBridge": "Matkustajasilta",
+      "Title": "Palvelut",
+      "WheelChocks": "Pyöräkiilat"
+    },
+    "Title": "Maa"
+  },
+  "Modals": {
+    "Cancel": "Peruuta",
+    "Confirm": "Vahvista",
+    "Okay": "OK"
+  },
+  "NavigationAndCharts": {
+    "All": "Kaikki",
+    "Altn": "Vaihtoehtoinen",
+    "ExitFullscreenMode": "Poistu kokoruuduntilasta",
+    "From": "Mistä",
+    "LocalFiles": {
+      "Both": "Molemmat",
+      "EstablishingConnection": "Muodostetaan yhteyttä",
+      "FailedToEstablishConnection": "Yhteyden muodostaminen epäonnistui.",
+      "FileName": "Tiedoston nimi",
+      "Image": "Kuva",
+      "Pdf": "PDF-tiedosto",
+      "Retry": "Yritä uudelleen",
+      "Title": "Paikalliset tiedostot"
+    },
+    "Navigraph": {
+      "AirportDoesNotExist": "Lentokenttää ei ole olemassa",
+      "AuthenticateWithNavigraph": "Tunnistaudu Navigraphissa",
+      "InsufficientEnv": "Puutteellinen .env-tiedosto",
+      "IntoYourBrowserAndEnterTheCodeBelow": "selaimeesi ja kirjoita alla oleva koodi",
+      "LoadingMsg": "Ladataan",
+      "NoAirportSelected": "Ei lentokenttää valittuna",
+      "ResetNavigraphAuthentication": "Resetoi Navigraph tunnistautuminen",
+      "ScanTheQrCodeOrOpen": "Skannaa QR-koodi tai avaa",
+      "Title": "Navigraph"
+    },
+    "PinnedCharts": {
+      "Delete": "Poista",
+      "Edit": "Muokkaa",
+      "NoItemsFound": "Kohteita ei löytynyt",
+      "SearchPlaceholder": "Haku",
+      "ShowingChartsFromAllProviders": "Näytetään kaikkien tarjoajien kartat",
+      "SortMethods": {
+        "AlphabeticalAZ": "Aakkosjärjestyksessä - A -> Z",
+        "AlphabeticalZA": "Aakkosjärjestyksessä - Z -> A",
+        "FirstAccessed": "Ensimmäisenä käytetty",
+        "LastAccessed": "Viimeksi käytetty",
+        "None": "Ei mitään"
+      },
+      "TT": {
+        "ChangeChartProvider": "Vaihda karttojen tarjoajaa",
+        "ChangeChartSortMethod": "Muuta karttojen lajittelumenetelmää",
+        "RemoveAllPinnedCharts": "Tyhjennä kiinnitetyt kartat"
+      },
+      "Title": "Kiinnitetyt kartat",
+      "View": "Näytä"
+    },
+    "PleaseWait": "Odota hetki",
+    "ShowingAllItems": "Näytetään kaikki vaihtoehdot",
+    "TT": {
+      "FitChartToHeight": "Sovita kartta korkeuteen",
+      "FitChartToWidth": "Sovita kartta leveyteen",
+      "ResetMovement": "Nollaa liike",
+      "RotateLeft45Degrees": "Kierrä vasemmalle 45 astetta",
+      "RotateRight45Degrees": "Kierrä oikealle 45 astetta",
+      "ZoomIn": "Lähennä",
+      "ZoomOut": "Loitonna"
+    },
+    "ThereAreNoChartsToDisplay": "Ei esitettäviä karttoja.",
+    "ThereIsNoChartToDisplay": "Ei esitettävää karttaa.",
+    "Title": "Navigointi & Kartat",
+    "To": "Mihin"
+  },
+  "Performance": {
+    "Data": "Data",
+    "Landing": {
+      "AirportIcao": "Lentokentän ICAO ",
+      "ApproachSpeed": "Lähestymisnopeus",
+      "ApproachSpeedUnit": "solmua",
+      "AutoLand": "Automaattinen laskeutuminen",
+      "Calculate": "Laske",
+      "Clear": "Tyhjennä",
+      "DropDownNo": "Ei",
+      "DropDownYes": "Kyllä",
+      "FillDataFrom": "Täytä tiedot kohteesta",
+      "FlapsConfiguration": "Laippa-asetus",
+      "Low": "Matala",
+      "MaximumManual": "Suurin manuaalinen",
+      "Medium": "Keskitaso",
+      "MetarErrorDialogMessage": "Lentosuunnitelman METAR:ia ei voitu käyttää onnistuneesti. Haluaisitko sen sijaan käyttää simulaattorin METAR:ia?",
+      "MetarErrorDialogTitle": "Lentosuunnitelman METAR:ia ei voitu käyttää.",
+      "OverweightProcedure": "Menettelytapa ylipainoisena",
+      "Qnh": "Vallitseva paine (QNH)",
+      "ReverseThrust": "Moottorijarru",
+      "RunwayAltitude": "Kiitotien korkeus",
+      "RunwayAltitudeUnit": "Jalkaa merenpinnan yläpuolella",
+      "RunwayCondition": "Kiitotien kunto",
+      "RunwayConditions": {
+        "Dry": "Kuiva (6)",
+        "Good": "Hyvä (5)",
+        "GoodMedium": "Melko hyvä (4)",
+        "Medium": "Kohtalainen (3)",
+        "MediumPoor": "Melko heikko (2)",
+        "Poor": "Huono (1)"
+      },
+      "RunwayHeading": "Kiitotien suunta",
+      "RunwayHeadingUnit": "°",
+      "RunwayLda": "Käytettävissä oleva kiitotie (LDA)",
+      "RunwayLdaUnitFt": "Jalkaa",
+      "RunwayLdaUnitMeter": "metriä",
+      "RunwaySlope": "Kiitotien kaltevuus",
+      "TT": {
+        "YouNeedToEnterAnIcaoCodeInOrderToMakeAMetarRequest": "Syötä ICAO-koodi pyytääksesi METAR:ia",
+        "YouNeedToLoadSimBriefDataInOrderToAutofillData": "Sinun on ladattava SimBrief tiedot täyttääksesi tiedot automaattisesti"
+      },
+      "Temperature": "Lämpötila",
+      "Title": "Laskeutuminen",
+      "UnitFt": "Jalkaa",
+      "UnitMeter": "metriä",
+      "Weight": "Paino",
+      "WindDirection": "Tuulen suunta",
+      "WindDirectionUnit": "°",
+      "WindMagnitude": "Tuulen voimakkuus",
+      "WindMagnitudeUnit": "solmua"
+    },
+    "SYNC": "Synkronoi",
+    "Title": "Suorituskyky",
+    "TopOfDescent": {
+      "Data": {
+        "Angle": "Kulma",
+        "CurrentAltitude": "Vallitseva korkeus",
+        "Distance": "Etäisyys",
+        "GroundSpeed": "Maanopeus",
+        "TargetAltitude": "Tavoitekorkeus",
+        "Title": "Tiedot",
+        "UnitAngleDegrees": "astetta",
+        "UnitFeet": "jalkaa",
+        "UnitFtMin": "ft/min",
+        "UnitNM": "merimailia",
+        "VerticalSpeed": "Pystynopeus"
+      },
+      "GroundSpeed": {
+        "Add": "Lisää",
+        "FetchingSpeedFromSimulator": "Hakee nopeustietoa simulaattorista",
+        "GroundSpeed": "Maanopeus",
+        "ManualInput": "Syötä käsin",
+        "MinAltitude": "Minimi korkeus",
+        "RemoveLast": "Poista viimeisin",
+        "Sync": "Synkronoi",
+        "Title": "Maanopeus",
+        "UnitKnots": "solmua",
+        "UnitKt": "solmua"
+      },
+      "Result": {
+        "BeforeTarget": "ennen kohdetta",
+        "DesiredDescentAngle": "Haluttu laskeutumiskulma",
+        "DesiredVerticalSpeed": "Haluttu pystynopeus",
+        "StartYourDescentAbout": "Aloita laskeutuminen noin",
+        "Title": "Tulos"
+      },
+      "TT": {
+        "DesynchronizeInputWithAircraftsCurrentAltitude": "Lopeta lentokoneen korkeuden synkronointi",
+        "SynchronizeInputWithAircraftsCurrentAltitude": "Synkronoi lentokoneen vallitsevaan korkeuteen"
+      },
+      "Title": "Laskeutumisen aloittamispaikka (TOD)"
+    }
+  },
+  "Presets": {
+    "AircraftStates": {
+      "Cancel": "Peruuta",
+      "ColdDark": "Virraton tila",
+      "ConfirmationDialogMsg": "Vahvista esiasetuksen lataaminen.",
+      "CurrentProcedureStep": "Nykyinen menettelytapa",
+      "PleaseConfirmLoadingOfPreset": "Vahvista esiasetuksen lataaminen.",
+      "ReadyPushback": "Valmiina työntöön",
+      "ReadyTakeoff": "Selvä lentoonlähtöön",
+      "ReadyTaxi": "Valmis rullaamaan",
+      "SelectAPresetToLoad": "Valitse ladattava esiasetus",
+      "TheAircraftMustBeOnTheGroundToLoadAPreset": "Lentokoneen on oltava maassa esiasetuksen lataamiseksi.",
+      "TheAircraftMustBeOntheGroundToLoadAPreset": "Lentokoneen on oltava maassa esiasetuksen lataamiseksi.",
+      "Title": "Lentokoneen tilat",
+      "Turnaround": "Kääntö"
+    },
+    "InteriorLighting": {
+      "AircraftNeedsToBePoweredToLoadPresets": "Esiasetusten lataamiseksi virta tulee olla kytketty.",
+      "AircraftNeedsToBePoweredToSavePresets": "Esiasetusten tallentamiseksi virta tulee olla kytketty.",
+      "LoadPreset": "Lataa esiasetus",
+      "LoadingPreset": "Ladataan esiasetus",
+      "NewNameConfirmationDialogMsg": "Vahvista uusi nimi valotusesiasetukselle",
+      "NoName": "Ei nimeä",
+      "PleaseConfirmSavingPreset": "Vahvista esiasetuksen tallentaminen",
+      "SavePreset": "Tallenna esiasetus",
+      "SavingPreset": "Tallennetaan esiasetusta",
+      "SelectAnInteriorLightingPresetToLoadOrSave": "Valitse sisävalaistuksen esiasetus ladataksesi tai tallentaaksesi.",
+      "TT": {
+        "AircraftMustBePowered": "Lentokoneen virta tulee olla kytketty.",
+        "ClickTextToChangeThePresetsName": "Klikkaa tekstiä vaihtaaksesi esiasetuksen nimi.",
+        "LoadThisPreset": "Lataa tämä esiasetus",
+        "SaveTheCurrentLightingLevels": "Tallenna nykynen valaistustaso"
+      },
+      "TheAircraftMustBePoweredForInteriorLightingPresets": "Koneessa täytyy olla virrat sisävalaistuksen esiasetuksia varten.",
+      "Title": "Sisävalaistus"
+    },
+    "Title": "Esiasetukset"
+  },
+  "Pushback": {
+    "AvailableOnlyOnGround": "Työntöasetuksia voi käyttää vain maassa",
+    "Backward": "Taaksepäin",
+    "CallTug": "Kutsu työntöauto",
+    "DisableSystemMessageBody": "Haluatko varmasti poistaa työntöjärjestelmän käytöstä? Tämä vapauttaisi myös työntöauton.",
+    "DisableSystemMessageTitle": "Poista työntöjärjestelmä käytöstä",
+    "EnableSystemMessageBody": "FlyPad OS 3:n uutta työntöjärjestelmää ei ole vielä viimeistelty. Se ei ole yhteensopiva muiden työntö-lisäosien kanssa ja saattaa aiheuttaa muita ongelmia.",
+    "EnableSystemMessageTitle": "Ota työntöjärjestelmä käyttöön",
+    "Forward": "Eteenpäin",
+    "Halt": "Keskeytetty",
+    "LeavePageMessage": "Työntö keskeytetään",
+    "Left": "Vasen",
+    "Moving": "Siirretään",
+    "ParkingBrake": {
+      "Off": "Pois päältä",
+      "On": "Käytössä",
+      "Title": "Pysäköintijarru"
+    },
+    "Right": "Oikea",
+    "SystemEnabledOff": "Työntöjärjestelmä pois päältä",
+    "SystemEnabledOn": "Työntöjärjestelmä päällä",
+    "TT": {
+      "CallReleaseTug": "Kutsu tai vapauta työntöauto",
+      "CenterPlaneMode": "Keskitä kartta koneeseen päällä/pois",
+      "DecreaseSpeed": "Taaksepäin tai hitaammin eteenpäin",
+      "IncreaseSpeed": "Eteenpäin tai hitaammin taaksepäin",
+      "Left": "Vasemmalle",
+      "PausePushback": "Keskeytä tai jatka työntöä",
+      "Right": "Oikealle",
+      "SetReleaseParkingBrake": "Aseta tai vapauta pysänköintijarru",
+      "SliderDirection": "Siirrä haluttuun suuntaan",
+      "SliderSpeed": "Siirrä haluttuun nopeuteen",
+      "SystemEnabledOff": "Napsauta kytkeäksesi työntöjärjestelmä päälle.",
+      "SystemEnabledOn": "Napsauta kytkeäksesi työntöjärjestelmän kokonaan pois päältä.",
+      "ZoomIn": "Lähennä",
+      "ZoomOut": "Loitonna"
+    },
+    "TugAttached": "Työntöauto kiinnitetty",
+    "TugDirection": "Työntöauton suunta",
+    "TugInTransit": "Odotetaan työntöautoa",
+    "TugSpeed": "Työntöauton nopeus"
+  },
+  "Settings": {
+    "About": {
+      "Title": "Tietoja"
+    },
+    "AircraftOptionsPinPrograms": {
+      "AccelerationHeight": "Kiihdytyskorkeus (ft)",
+      "EngineOutAccelerationHeight": "Lentoonlähdön jälkeisen tehonmuutoksen korkeus (ft)",
+      "IsisBaroUnit": "ISIS Baro-yksikkö",
+      "IsisMetricAltitude": "ISIS metrinen korkeus",
+      "LatLonExtendedFormat": "FMGC Lat/Lon reittipisteen muoto",
+      "PaxSigns": "Matkustajamerkinnät",
+      "RmpVhfSpacing": "RMP VHF välitys",
+      "ThrustReductionHeight": "Työntövoiman vähennyskorkeus (ft)",
+      "Title": "Lentokoneen asetukset / ohjelmistot",
+      "WeightUnit": "Painoyksikkö"
+    },
+    "AtsuAoc": {
+      "AtisAtcSource": "ATIS/ATC Lähde",
+      "AutomaticallyImportSimBriefData": "Tuo SimBrief-tiedot automaattisesti",
+      "Enable": "Ota käyttöön",
+      "EnableTelex": "Ota TELEX käyttöön",
+      "ErrorReporting": "Virheraportointi",
+      "HoppieEnabled": "Hoppie käytössä",
+      "HoppieUserId": "Hoppie käyttäjän ID",
+      "MetarSource": "METAR Lähde",
+      "OptionalA32nxErrorReporting": "Valinnainen A32NX-virheraportointi",
+      "PleaseCheckThatYouHaveCorrectlyEnteredYourSimbBriefUsernameOrPilotId": "Tarkista, että olet syöttänyt oikein SimBrief käyttäjätunnuksesi tai lentäjätunnuksen.",
+      "SimBriefUsernamePilotId": "SimBrief käyttäjänimi/lentäjätunnus",
+      "TafSource": "TAF-lähde",
+      "Telex": "TELEX",
+      "TelexEnablesFreeTextAndLiveMap": "TELEX mahdollistaa viestinnän ja reaaliaikaisen kartan. Jos käytössä, lentokoneen sijaintitiedot julkaistaan lennon ajaksi. Viestit ovat julkisia eikä niitä moderoida. KÄYTTÖ OMALLA VASTUULLA. Jos haluat lisätietoja TELEXistä ja sen ominaisuuksista, siirry osoitteeseen https://docs.flybywiresim.com/telex.",
+      "TelexWarning": "TELEX-varoitus",
+      "ThereWasAnErrorEncounteredWhenValidatingYourHoppieID": "Virhe vahvistaessa Hoppie-ID:tä",
+      "Title": "ATSU / AOC",
+      "YouAreAbleToOptIntoAnonymousErrorReporting": "Voit ottaa käyttöön nimettömän virheraportoinnin, jonka avulla voimme diagnosoida, seurata ja korjata ongelmat nopeammin. Ominaisuus on täysin valinnainen, emmekä koskaan kerää henkilötietojasi, mutta tämä voi antaa mahdollisuuden saada helpommin tukea sekä kohtaamasi ongelmat korjatuksi nopeammin.\n",
+      "YourHoppieIdHasBeenRemoved": "Hoppie-ID poistettu",
+      "YourHoppieIdHasBeenValidated": "Hoppie-ID vahvistettu",
+      "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "SimBrief lentäjätunnuksesi on hyväksytty ja päivitetty seuraavaksi:"
+    },
+    "Audio": {
+      "Announcements": "Ilmoitukset",
+      "BoardingMusic": "Koneeseen nousemismusiikki",
+      "EngineInteriorVolume": "Koneen sisällä kuuluva moottorin ääni",
+      "ExteriorMasterVolume": "Ulkoiset äänet",
+      "PassengerAmbience": "Matkustajien äänet",
+      "PtuAudibleInCockpit": "PTU-ääni kuultavissa ohjaamossa",
+      "Title": "Äänet",
+      "WindInteriorVolume": "Tuulen ääni sisällä"
+    },
+    "Fast": "Nopea",
+    "Instant": "Välitön",
+    "Real": "Todellinen",
+    "Realism": {
+      "AdirsAlignTime": "ADIRS:in käynnistymisen kesto",
+      "AutofillChecklists": "Tarkistuslistan täyttö automaattisesti",
+      "BoardingTime": "Boarding-aika",
+      "DmcSelfTestTime": "DMC itsenäisen testauksen aika",
+      "HomeCockpitMode": "Kotiohjaamo-tila",
+      "McduFocusTimeout": "Lentotietokone poissa käytöstä tarkennuksen aikana (sekunteina)",
+      "McduKeyboardInput": "MCDU näppäimistö syöttö",
+      "PauseAtTod": "T/D Pause",
+      "PauseAtTodDistance": "T/D Pause Distance (nm)",
+      "SeparateTillerFromRudderInputs": "Erota nokkapyörän ohjaus peräsimestä",
+      "Title": "Realismi"
+    },
+    "SimOptions": {
+      "Active": "Aktiivinen",
+      "Auto": "Automaattinen",
+      "Calibrate": "Kalibroi",
+      "ConesEnabled": "Varoituskartiot",
+      "DefaultBarometerUnit": "Paineen oletusyksikkö",
+      "DynamicRegistrationDecal": "Dynaaminen rekisteröintimerkintä",
+      "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Ota lentotietokoneen palvelinyhteys käyttöön (yhdistysyritykset loppuvat 5 minuutin kuluttua, jos yhdistäminen ei onnistu)",
+      "ExternalMcduServerPort": "Ulkoinen lentotietokoneen palvelinyhteys",
+      "Hpa": "hPa",
+      "Inactive": "Ei aktiivinen",
+      "LoadOnly": "Vain lataus",
+      "None": "Ei mitään",
+      "Off": "Pois päältä",
+      "Save": "Tallenna",
+      "SyncMsfsFlightPlan": "Synkronoi MSFS lentosuunnitelma",
+      "ThrottleDetents": "Kaasupykälät",
+      "Title": "Sim -asetukset",
+      "UseCalculatedIlsSignals": "Käytä laskettuja ILS-signaaleja",
+      "WheelChocksEnabled": "Pyöräkiilat",
+      "inHg": "inHg"
+    },
+    "ThrottleConfig": {
+      "Apply": "Käytä",
+      "AreYouSureThatYouWantToResetYourCurrentThrottleConfigurationToTheirDefaultStates": "Haluatko varmasti palauttaa nykyiset kaasuasetukset niiden vakiotilaan? Palautusta ei voi peruuttaa.",
+      "Axis": "Akseli",
+      "Back": "Takaisin",
+      "ConfigureEnd": "Määritä end",
+      "ConfigureStart": "Konfiguroi Start",
+      "CurrentValue": "Nykyinen arvo",
+      "Deadband": "Neutraali alue",
+      "ErrorOverlapMsg": "on päällekkäin",
+      "IndependentAxis": "Akselit yksittäin",
+      "LoadFromFile": "Lataa tiedostosta",
+      "PleaseEnterAValidDeadzone": "Aseta hyväksyttävä neutraalialue",
+      "ResetToDefaults": "Palauta oletusarvoihin",
+      "ReverseFull": "Täysi moottorijarrutus",
+      "ReverseIdle": "Moottorijarrutus tyhjäkäynnillä",
+      "ReverserOnAxis": "Moottorijarrutus akselilla",
+      "SaveAndApply": "Tallenna ja käytä",
+      "SetFromThrottle": "Aseta kaasukahvasta",
+      "ThrottleConfigurationReset": "Nollaa kaasun konfigurointi"
+    },
+    "Title": "Asetukset",
+    "Unrealistic": "Epärealistinen",
+    "flyPad": {
+      "AutoBrightness": "Automaattinen kirkkaus",
+      "AutomaticallyShowOnscreenKeyboard": "Näytä näyttönäppäimistö automaattisesti",
+      "BatteryLifeEnabled": "Battery Life Simulated",
+      "Blue": "Sininen",
+      "Brightness": "Kirkkaus",
+      "Dark": "Tumma",
+      "Language": "Kieli",
+      "Light": "Vaalea",
+      "Local": "Paikallinen",
+      "LocalTimeFormat": "Paikallinen aikamuoto",
+      "OnscreenKeyboardLayout": "Näyttönäppäimistön asettelu",
+      "ShowColoredRawMetar": "Näytä raaka METAR värillisenä",
+      "ShowStatusBarFlightProgressIndicator": "Näytä lennon eteneminen tilapalkissa",
+      "Theme": "Teema",
+      "TimeDisplayed": "Näytetty aika",
+      "Title": "flyPad",
+      "TwelveHours": "12h",
+      "TwentyFourHours": "24h",
+      "Utc": "UTC",
+      "UtcAndLocal": "UTC ja paikallinen"
+    }
+  },
+  "StatusBar": {
+    "Apr": "Huhti",
+    "Aug": "Elo",
+    "Dec": "Joulu",
+    "Feb": "Helmi",
+    "Fri": "pe",
+    "Jan": "Tammi",
+    "Jul": "Hei",
+    "Jun": "Kesä",
+    "Mar": "Maalis",
+    "May": "Touko",
+    "Mon": "ma",
+    "Nov": "Marras",
+    "Oct": "Loka",
+    "Sat": "la",
+    "Sep": "Syys",
+    "Sun": "su",
+    "TT": {
+      "ConnectedToLocalApi": "Yhdistetty paikalliseen ohjelmointirajapintaan",
+      "DisconnectedFromLocalApi": "Lopeta yhteys paikalliseen ohjelmointirajapintaan",
+      "TurnOffOrShutdownEfb": "Sammuta tai sulje EFB"
+    },
+    "Thu": "to",
+    "Tue": "ti",
+    "Wed": "ke"
+  }
+}

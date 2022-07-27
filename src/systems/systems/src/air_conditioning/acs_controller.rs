@@ -2,8 +2,8 @@ use crate::{
     pneumatic::{EngineModeSelector, EngineState},
     pressurization::PressurizationOverheadPanel,
     shared::{
-        pid::PidController, Cabin, ControllerSignal, EngineBleedPushbutton, EngineCorrectedN1,
-        EngineFirePushButtons, EngineStartState, GroundSpeed, LgciuWeightOnWheels, PneumaticBleed,
+        pid::PidController, Cabin, ControllerSignal, EngineCorrectedN1, EngineFirePushButtons,
+        EngineStartState, GroundSpeed, LgciuWeightOnWheels, PneumaticBleed,
     },
     simulation::{
         InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -55,7 +55,6 @@ impl<const ZONES: usize> AirConditioningSystemController<ZONES> {
         engines: [&impl EngineCorrectedN1; 2],
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         pneumatic: &(impl PneumaticBleed + EngineStartState),
-        pneumatic_overhead: &impl EngineBleedPushbutton,
         pressurization: &impl Cabin,
         pressurization_overhead: &PressurizationOverheadPanel,
         lgciu: [&impl LgciuWeightOnWheels; 2],
@@ -64,10 +63,8 @@ impl<const ZONES: usize> AirConditioningSystemController<ZONES> {
         self.pack_flow_controller.update(
             &self.aircraft_state,
             acs_overhead,
-            engines,
             engine_fire_push_buttons,
             pneumatic,
-            pneumatic_overhead,
             pressurization,
             pressurization_overhead,
             pack_flow_valve,
@@ -80,6 +77,14 @@ impl<const ZONES: usize> AirConditioningSystemController<ZONES> {
                 pressurization,
             )
         }
+    }
+
+    pub(super) fn pack_fault_determination(
+        &self,
+        pack_flow_valve: &[PackFlowValve; 2],
+    ) -> [bool; 2] {
+        self.pack_flow_controller
+            .fcv_status_determination(pack_flow_valve)
     }
 }
 
@@ -578,10 +583,8 @@ impl<const ZONES: usize> PackFlowController<ZONES> {
         &mut self,
         aircraft_state: &AirConditioningStateManager,
         acs_overhead: &AirConditioningSystemOverhead<ZONES>,
-        engines: [&impl EngineCorrectedN1; 2],
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         pneumatic: &(impl PneumaticBleed + EngineStartState),
-        pneumatic_overhead: &impl EngineBleedPushbutton,
         pressurization: &impl Cabin,
         pressurization_overhead: &PressurizationOverheadPanel,
         pack_flow_valve: &[PackFlowValve; 2],
@@ -599,8 +602,7 @@ impl<const ZONES: usize> PackFlowController<ZONES> {
             pressurization_overhead,
             pneumatic,
         );
-        self.should_open_fcv =
-            self.should_open_fcv_determination(engines, pneumatic, pneumatic_overhead);
+        self.should_open_fcv = [self.fcv_1_open_allowed, self.fcv_2_open_allowed];
         self.pack_flow = self.pack_flow_calculation(pack_flow_valve, pressurization);
     }
 
@@ -644,7 +646,12 @@ impl<const ZONES: usize> PackFlowController<ZONES> {
             intermediate_flow =
                 intermediate_flow.min(Ratio::new::<percent>(Self::FLOW_REDUCTION_LIMIT));
         }
-        intermediate_flow.max(Ratio::new::<percent>(Self::BACKFLOW_LIMIT))
+        // If both flow control valves are closed, the flow indication is in the Lo position
+        if pack_flow_valve.iter().all(|fcv| !fcv.fcv_is_open()) {
+            OverheadFlowSelector::Lo.into()
+        } else {
+            intermediate_flow.max(Ratio::new::<percent>(Self::BACKFLOW_LIMIT))
+        }
     }
 
     // This calculates the flow based on the demand, when the packs are modelled this needs to be changed
@@ -680,7 +687,6 @@ impl<const ZONES: usize> PackFlowController<ZONES> {
             && (!(pneumatic.left_engine_state() == EngineState::Starting)
                 || !pneumatic.engine_crossbleed_is_on())
             && (pneumatic.engine_mode_selector() != EngineModeSelector::Ignition
-                || !pneumatic.engine_crossbleed_is_on()
                 || (pneumatic.right_engine_state() != EngineState::Off
                     && pneumatic.right_engine_state() != EngineState::Shutting))
             && !engine_fire_push_buttons.is_released(2)
@@ -688,28 +694,10 @@ impl<const ZONES: usize> PackFlowController<ZONES> {
         // && ! pack 2 overheat
     }
 
-    fn should_open_fcv_determination(
-        &self,
-        engines: [&impl EngineCorrectedN1; 2],
-        pneumatic: &(impl PneumaticBleed + EngineStartState),
-        pneumatic_overhead: &impl EngineBleedPushbutton,
-    ) -> [bool; 2] {
-        // Pneumatic overhead represents engine bleed pushbutton for left and right engine(s)
+    fn fcv_status_determination(&self, pack_flow_valve: &[PackFlowValve; 2]) -> [bool; 2] {
         [
-            self.fcv_1_open_allowed
-                && (((engines[0].corrected_n1() >= Ratio::new::<percent>(15.)
-                    && pneumatic_overhead.left_engine_bleed_pushbutton_is_auto())
-                    || (engines[1].corrected_n1() >= Ratio::new::<percent>(15.)
-                        && pneumatic_overhead.right_engine_bleed_pushbutton_is_auto()
-                        && pneumatic.engine_crossbleed_is_on()))
-                    || pneumatic.apu_bleed_is_on()),
-            self.fcv_2_open_allowed
-                && (((engines[1].corrected_n1() >= Ratio::new::<percent>(15.)
-                    && pneumatic_overhead.right_engine_bleed_pushbutton_is_auto())
-                    || (engines[0].corrected_n1() >= Ratio::new::<percent>(15.)
-                        && pneumatic_overhead.left_engine_bleed_pushbutton_is_auto()
-                        && pneumatic.engine_crossbleed_is_on()))
-                    || pneumatic.apu_bleed_is_on()),
+            pack_flow_valve[0].fcv_is_open() != self.fcv_1_open_allowed,
+            pack_flow_valve[1].fcv_is_open() != self.fcv_2_open_allowed,
         ]
     }
 
@@ -757,13 +745,7 @@ impl<const ZONES: usize> ControllerSignal<PackFlowValveSignal> for PackFlowContr
 
 impl<const ZONES: usize> SimulationElement for PackFlowController<ZONES> {
     fn write(&self, writer: &mut SimulatorWriter) {
-        // If both flow control valves are closed, the flow indication is in the Lo position
-        if self.should_open_fcv.iter().any(|&x| x) {
-            writer.write(&self.pack_flow_id, self.flow_demand);
-        } else {
-            let flow_selected: Ratio = OverheadFlowSelector::Lo.into();
-            writer.write(&self.pack_flow_id, flow_selected);
-        }
+        writer.write(&self.pack_flow_id, self.flow_demand);
     }
 }
 
@@ -774,7 +756,7 @@ mod acs_controller_tests {
         air_conditioning::cabin_air::CabinZone,
         overhead::AutoOffFaultPushButton,
         pneumatic::{valve::DefaultValve, EngineModeSelector},
-        shared::PneumaticValve,
+        shared::{EngineBleedPushbutton, PneumaticValve},
         simulation::{
             test::{ReadByName, SimulationTestBed, TestBed, WriteByName},
             Aircraft, SimulationElement, SimulationElementVisitor, UpdateContext,
@@ -922,12 +904,8 @@ mod acs_controller_tests {
     }
 
     impl EngineBleedPushbutton for TestPneumaticOverhead {
-        fn left_engine_bleed_pushbutton_is_auto(&self) -> bool {
-            self.engine_1_bleed.is_auto()
-        }
-
-        fn right_engine_bleed_pushbutton_is_auto(&self) -> bool {
-            self.engine_2_bleed.is_auto()
+        fn engine_bleed_pushbuttons_are_auto(&self) -> [bool; 2] {
+            [self.engine_1_bleed.is_auto(), self.engine_2_bleed.is_auto()]
         }
     }
 
@@ -1000,6 +978,10 @@ mod acs_controller_tests {
 
         fn set_apu_bleed_air_valve_open(&mut self) {
             self.apu_bleed_air_valve = DefaultValve::new_open();
+        }
+
+        fn set_apu_bleed_air_valve_closed(&mut self) {
+            self.apu_bleed_air_valve = DefaultValve::new_closed();
         }
 
         fn set_cross_bleed_valve_open(&mut self) {
@@ -1165,6 +1147,10 @@ mod acs_controller_tests {
             self.pneumatic.set_apu_bleed_air_valve_open();
         }
 
+        fn set_apu_bleed_air_valve_closed(&mut self) {
+            self.pneumatic.set_apu_bleed_air_valve_closed();
+        }
+
         fn set_cross_bleed_valve_open(&mut self) {
             self.pneumatic.set_cross_bleed_valve_open();
         }
@@ -1179,7 +1165,6 @@ mod acs_controller_tests {
                 [&self.engine_1, &self.engine_2],
                 &self.engine_fire_push_buttons,
                 &self.pneumatic,
-                &self.pneumatic_overhead,
                 &self.pressurization,
                 &self.pressurization_overhead,
                 [&self.lgciu1, &self.lgciu2],
@@ -1187,8 +1172,17 @@ mod acs_controller_tests {
             self.test_cabin
                 .update(context, &self.acsc, &self.acsc, &self.pressurization);
             for fcv in self.pack_flow_valve.iter_mut() {
-                fcv.update(context, &self.acsc);
+                fcv.update(
+                    context,
+                    &self.acsc,
+                    [&self.engine_1, &self.engine_2],
+                    &self.pneumatic,
+                    &self.pneumatic_overhead,
+                );
             }
+            self.acs_overhead.set_pack_pushbutton_fault(
+                self.acsc.pack_fault_determination(&self.pack_flow_valve),
+            );
         }
     }
     impl SimulationElement for TestAircraft {
@@ -1397,6 +1391,10 @@ mod acs_controller_tests {
             self.command(|a| a.set_apu_bleed_air_valve_open());
         }
 
+        fn command_apu_bleed_off(&mut self) {
+            self.command(|a| a.set_apu_bleed_air_valve_closed());
+        }
+
         fn command_eng_mode_selector(&mut self, mode: EngineModeSelector) {
             self.write_by_name("TURB ENG IGNITION SWITCH EX1:1", mode);
         }
@@ -1433,6 +1431,14 @@ mod acs_controller_tests {
 
         fn pack_flow(&self) -> MassRate {
             self.query(|a| a.acsc.pack_flow())
+        }
+
+        fn pack_1_has_fault(&mut self) -> bool {
+            self.read_by_name("OVHD_COND_PACK_1_PB_HAS_FAULT")
+        }
+
+        fn pack_2_has_fault(&mut self) -> bool {
+            self.read_by_name("OVHD_COND_PACK_2_PB_HAS_FAULT")
         }
     }
 
@@ -2109,6 +2115,68 @@ mod acs_controller_tests {
                 test_bed.pack_flow(),
                 MassRate::new::<kilogram_per_second>(0.)
             );
+        }
+
+        #[test]
+        fn pack_flow_valve_has_fault_when_no_bleed() {
+            let mut test_bed = test_bed().with().both_packs_on().iterate(2);
+
+            assert!(test_bed.pack_1_has_fault());
+            assert!(test_bed.pack_2_has_fault());
+        }
+
+        #[test]
+        fn pack_flow_valve_doesnt_have_fault_when_bleed_on() {
+            let mut test_bed = test_bed().with().both_packs_on();
+
+            test_bed.command_apu_bleed_on();
+            test_bed = test_bed.iterate(2);
+
+            assert!(!test_bed.pack_1_has_fault());
+            assert!(!test_bed.pack_2_has_fault());
+        }
+
+        #[test]
+        fn pack_flow_valve_doesnt_have_fault_when_no_bleed_and_engines_ignition() {
+            let mut test_bed = test_bed().with().both_packs_on();
+
+            test_bed.command_eng_mode_selector(EngineModeSelector::Ignition);
+            test_bed = test_bed.iterate(2);
+
+            assert!(!test_bed.pack_1_has_fault());
+            assert!(!test_bed.pack_2_has_fault());
+        }
+
+        #[test]
+        fn pack_flow_valve_doesnt_have_fault_when_bleed_and_ditching_mode() {
+            let mut test_bed = test_bed().with().both_packs_on();
+
+            test_bed.command_apu_bleed_on();
+
+            test_bed.command_ditching_on();
+            test_bed = test_bed.iterate(2);
+
+            assert!(!test_bed.pack_1_has_fault());
+            assert!(!test_bed.pack_2_has_fault());
+        }
+
+        #[test]
+        fn pack_flow_light_resets_after_condition() {
+            let mut test_bed = test_bed().with().both_packs_on().iterate(2);
+
+            assert!(test_bed.pack_1_has_fault());
+            assert!(test_bed.pack_2_has_fault());
+
+            test_bed.command_apu_bleed_on();
+            test_bed = test_bed.iterate(2);
+
+            assert!(!test_bed.pack_1_has_fault());
+            assert!(!test_bed.pack_2_has_fault());
+
+            test_bed.command_apu_bleed_off();
+            test_bed = test_bed.iterate(2);
+            assert!(test_bed.pack_1_has_fault());
+            assert!(test_bed.pack_2_has_fault());
         }
     }
 }

@@ -100,15 +100,17 @@ impl<const ZONES: usize> AirConditioningSystem<ZONES> {
             engines,
             engine_fire_push_buttons,
             pneumatic,
-            pneumatic_overhead,
             pressurization,
             pressurization_overhead,
             lgciu,
         );
 
         for pack_fv in self.pack_flow_valves.iter_mut() {
-            pack_fv.update(context, &self.acsc);
+            pack_fv.update(context, &self.acsc, engines, pneumatic, pneumatic_overhead);
         }
+
+        self.acs_overhead
+            .set_pack_pushbutton_fault(self.acsc.pack_fault_determination(&self.pack_flow_valves));
     }
 }
 
@@ -137,8 +139,7 @@ impl<const ZONES: usize> SimulationElement for AirConditioningSystem<ZONES> {
 pub struct AirConditioningSystemOverhead<const ZONES: usize> {
     flow_selector_id: VariableIdentifier,
 
-    pack_1_pb: OnOffFaultPushButton,
-    pack_2_pb: OnOffFaultPushButton,
+    pack_pbs: [OnOffFaultPushButton; 2],
     temperature_selectors: Vec<ValueKnob>,
     flow_selector: OverheadFlowSelector,
 }
@@ -149,8 +150,10 @@ impl<const ZONES: usize> AirConditioningSystemOverhead<ZONES> {
             flow_selector_id: context
                 .get_identifier("KNOB_OVHD_AIRCOND_PACKFLOW_Position".to_owned()),
 
-            pack_1_pb: OnOffFaultPushButton::new_on(context, "COND_PACK_1"),
-            pack_2_pb: OnOffFaultPushButton::new_on(context, "COND_PACK_2"),
+            pack_pbs: [
+                OnOffFaultPushButton::new_on(context, "COND_PACK_1"),
+                OnOffFaultPushButton::new_on(context, "COND_PACK_2"),
+            ],
             temperature_selectors: Vec::new(),
             flow_selector: OverheadFlowSelector::Norm,
         };
@@ -169,8 +172,15 @@ impl<const ZONES: usize> AirConditioningSystemOverhead<ZONES> {
         ThermodynamicTemperature::new::<degree_celsius>(knob.value() * 0.04 + 18.)
     }
 
-    fn pack_pushbuttons_state(&self) -> [bool; 2] {
-        [self.pack_1_pb.is_on(), self.pack_2_pb.is_on()]
+    fn pack_pushbuttons_state(&self) -> Vec<bool> {
+        self.pack_pbs.iter().map(|pack| pack.is_on()).collect()
+    }
+
+    fn set_pack_pushbutton_fault(&mut self, pb_has_fault: [bool; 2]) {
+        self.pack_pbs
+            .iter_mut()
+            .enumerate()
+            .for_each(|(index, pushbutton)| pushbutton.set_fault(pb_has_fault[index]));
     }
 
     fn flow_selector_position(&self) -> OverheadFlowSelector {
@@ -185,8 +195,7 @@ impl<const ZONES: usize> SimulationElement for AirConditioningSystemOverhead<ZON
 
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         accept_iterable!(self.temperature_selectors, visitor);
-        self.pack_1_pb.accept(visitor);
-        self.pack_2_pb.accept(visitor);
+        accept_iterable!(self.pack_pbs, visitor);
 
         visitor.visit(self);
     }
@@ -244,15 +253,38 @@ impl PackFlowValve {
         &mut self,
         context: &UpdateContext,
         open_fcv: &impl ControllerSignal<PackFlowValveSignal>,
+        engines: [&impl EngineCorrectedN1; 2],
+        pneumatic: &(impl PneumaticBleed + EngineStartState),
+        pneumatic_overhead: &impl EngineBleedPushbutton,
     ) {
-        if let Some(signal) = open_fcv.signal() {
-            self.is_open = signal.target_open_amount(self.number) > Ratio::new::<percent>(0.)
-        }
-        if self.is_open {
-            self.timer_open += context.delta();
+        if self.can_move_fcv(engines, pneumatic, pneumatic_overhead) {
+            if let Some(signal) = open_fcv.signal() {
+                self.is_open = signal.target_open_amount(self.number) > Ratio::new::<percent>(0.)
+            }
+            if self.is_open {
+                self.timer_open += context.delta();
+            } else {
+                self.timer_open = Duration::from_secs(0);
+            }
         } else {
-            self.timer_open = Duration::from_secs(0);
+            self.is_open = false;
         }
+    }
+
+    fn can_move_fcv(
+        &self,
+        engines: [&impl EngineCorrectedN1; 2],
+        pneumatic: &(impl PneumaticBleed + EngineStartState),
+        pneumatic_overhead: &impl EngineBleedPushbutton,
+    ) -> bool {
+        // Pneumatic overhead represents engine bleed pushbutton for left [0] and right [1] engine(s)
+        ((engines[self.number - 1].corrected_n1() >= Ratio::new::<percent>(15.)
+            && pneumatic_overhead.engine_bleed_pushbuttons_are_auto()[(self.number == 2) as usize])
+            || (engines[(self.number == 1) as usize].corrected_n1() >= Ratio::new::<percent>(15.)
+                && pneumatic_overhead.engine_bleed_pushbuttons_are_auto()
+                    [(self.number == 1) as usize]
+                && pneumatic.engine_crossbleed_is_on()))
+            || pneumatic.apu_bleed_is_on()
     }
 
     fn fcv_timer(&self) -> Duration {
@@ -326,12 +358,165 @@ impl Default for Air {
 #[cfg(test)]
 mod air_conditioning_tests {
     use super::*;
-    use crate::simulation::test::{SimulationTestBed, TestBed};
-    use crate::simulation::{Aircraft, SimulationElement};
+    use crate::{
+        overhead::AutoOffFaultPushButton,
+        pneumatic::{valve::DefaultValve, EngineModeSelector, EngineState},
+        shared::PneumaticValve,
+        simulation::{
+            test::{SimulationTestBed, TestBed},
+            Aircraft, SimulationElement,
+        },
+    };
+
+    struct TestEngine {
+        corrected_n1: Ratio,
+    }
+    impl TestEngine {
+        fn new(engine_corrected_n1: Ratio) -> Self {
+            Self {
+                corrected_n1: engine_corrected_n1,
+            }
+        }
+        fn set_engine_n1(&mut self, n: Ratio) {
+            self.corrected_n1 = n;
+        }
+    }
+    impl EngineCorrectedN1 for TestEngine {
+        fn corrected_n1(&self) -> Ratio {
+            self.corrected_n1
+        }
+    }
+
+    struct TestPneumaticOverhead {
+        engine_1_bleed: AutoOffFaultPushButton,
+        engine_2_bleed: AutoOffFaultPushButton,
+    }
+
+    impl TestPneumaticOverhead {
+        fn new(context: &mut InitContext) -> Self {
+            Self {
+                engine_1_bleed: AutoOffFaultPushButton::new_auto(context, "PNEU_ENG_1_BLEED"),
+                engine_2_bleed: AutoOffFaultPushButton::new_auto(context, "PNEU_ENG_2_BLEED"),
+            }
+        }
+
+        fn left_engine_bleed_pushbutton_set_auto(&mut self) {
+            self.engine_1_bleed.set_auto(true);
+        }
+
+        fn right_engine_bleed_pushbutton_set_auto(&mut self) {
+            self.engine_2_bleed.set_auto(true);
+        }
+    }
+
+    impl EngineBleedPushbutton for TestPneumaticOverhead {
+        fn engine_bleed_pushbuttons_are_auto(&self) -> [bool; 2] {
+            [self.engine_1_bleed.is_auto(), self.engine_2_bleed.is_auto()]
+        }
+    }
+
+    impl SimulationElement for TestPneumaticOverhead {
+        fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+            self.engine_1_bleed.accept(visitor);
+            self.engine_2_bleed.accept(visitor);
+
+            visitor.visit(self);
+        }
+    }
+
+    struct TestFadec {
+        engine_1_state_id: VariableIdentifier,
+        engine_2_state_id: VariableIdentifier,
+
+        engine_1_state: EngineState,
+        engine_2_state: EngineState,
+
+        engine_mode_selector_id: VariableIdentifier,
+        engine_mode_selector_position: EngineModeSelector,
+    }
+    impl TestFadec {
+        fn new(context: &mut InitContext) -> Self {
+            Self {
+                engine_1_state_id: context.get_identifier("ENGINE_STATE:1".to_owned()),
+                engine_2_state_id: context.get_identifier("ENGINE_STATE:2".to_owned()),
+                engine_1_state: EngineState::Off,
+                engine_2_state: EngineState::Off,
+                engine_mode_selector_id: context
+                    .get_identifier("TURB ENG IGNITION SWITCH EX1:1".to_owned()),
+                engine_mode_selector_position: EngineModeSelector::Norm,
+            }
+        }
+
+        fn engine_state(&self, number: usize) -> EngineState {
+            match number {
+                1 => self.engine_1_state,
+                2 => self.engine_2_state,
+                _ => panic!("Invalid engine number"),
+            }
+        }
+
+        fn engine_mode_selector(&self) -> EngineModeSelector {
+            self.engine_mode_selector_position
+        }
+    }
+    impl SimulationElement for TestFadec {
+        fn read(&mut self, reader: &mut SimulatorReader) {
+            self.engine_1_state = reader.read(&self.engine_1_state_id);
+            self.engine_2_state = reader.read(&self.engine_2_state_id);
+            self.engine_mode_selector_position = reader.read(&self.engine_mode_selector_id);
+        }
+    }
+
+    struct TestPneumatic {
+        apu_bleed_air_valve: DefaultValve,
+        cross_bleed_valve: DefaultValve,
+        fadec: TestFadec,
+    }
+
+    impl TestPneumatic {
+        fn new(context: &mut InitContext) -> Self {
+            Self {
+                apu_bleed_air_valve: DefaultValve::new_closed(),
+                cross_bleed_valve: DefaultValve::new_closed(),
+                fadec: TestFadec::new(context),
+            }
+        }
+    }
+
+    impl PneumaticBleed for TestPneumatic {
+        fn apu_bleed_is_on(&self) -> bool {
+            self.apu_bleed_air_valve.is_open()
+        }
+        fn engine_crossbleed_is_on(&self) -> bool {
+            self.cross_bleed_valve.is_open()
+        }
+    }
+    impl EngineStartState for TestPneumatic {
+        fn left_engine_state(&self) -> EngineState {
+            self.fadec.engine_state(1)
+        }
+        fn right_engine_state(&self) -> EngineState {
+            self.fadec.engine_state(2)
+        }
+        fn engine_mode_selector(&self) -> EngineModeSelector {
+            self.fadec.engine_mode_selector()
+        }
+    }
+    impl SimulationElement for TestPneumatic {
+        fn accept<V: SimulationElementVisitor>(&mut self, visitor: &mut V) {
+            self.fadec.accept(visitor);
+
+            visitor.visit(self);
+        }
+    }
 
     struct TestAircraft {
         flow_control_valve: PackFlowValve,
         actuator_signal: TestActuatorSignal,
+        engine_1: TestEngine,
+        engine_2: TestEngine,
+        pneumatic: TestPneumatic,
+        pneumatic_overhead: TestPneumaticOverhead,
     }
 
     impl TestAircraft {
@@ -339,6 +524,10 @@ mod air_conditioning_tests {
             Self {
                 flow_control_valve: PackFlowValve::new(context, 1),
                 actuator_signal: TestActuatorSignal::new(),
+                engine_1: TestEngine::new(Ratio::new::<percent>(0.)),
+                engine_2: TestEngine::new(Ratio::new::<percent>(0.)),
+                pneumatic: TestPneumatic::new(context),
+                pneumatic_overhead: TestPneumaticOverhead::new(context),
             }
         }
 
@@ -357,12 +546,29 @@ mod air_conditioning_tests {
         fn valve_timer(&self) -> Duration {
             self.flow_control_valve.fcv_timer()
         }
+
+        fn set_engine_n1(&mut self, n: Ratio) {
+            self.engine_1.set_engine_n1(n);
+            self.engine_2.set_engine_n1(n);
+        }
+
+        fn set_bleed_pb_to_auto(&mut self) {
+            self.pneumatic_overhead
+                .left_engine_bleed_pushbutton_set_auto();
+            self.pneumatic_overhead
+                .right_engine_bleed_pushbutton_set_auto();
+        }
     }
 
     impl Aircraft for TestAircraft {
         fn update_after_power_distribution(&mut self, context: &UpdateContext) {
-            self.flow_control_valve
-                .update(context, &self.actuator_signal);
+            self.flow_control_valve.update(
+                context,
+                &self.actuator_signal,
+                [&self.engine_1, &self.engine_2],
+                &self.pneumatic,
+                &self.pneumatic_overhead,
+            );
         }
     }
 
@@ -399,6 +605,35 @@ mod air_conditioning_tests {
         }
     }
 
+    struct AirCondTestBed {
+        test_bed: SimulationTestBed<TestAircraft>,
+    }
+    impl AirCondTestBed {
+        fn new() -> Self {
+            Self {
+                test_bed: SimulationTestBed::new(TestAircraft::new),
+            }
+        }
+    }
+    impl TestBed for AirCondTestBed {
+        type Aircraft = TestAircraft;
+
+        fn test_bed(&self) -> &SimulationTestBed<TestAircraft> {
+            &self.test_bed
+        }
+
+        fn test_bed_mut(&mut self) -> &mut SimulationTestBed<TestAircraft> {
+            &mut self.test_bed
+        }
+    }
+
+    fn test_bed_with_bleed() -> AirCondTestBed {
+        let mut test_bed = AirCondTestBed::new();
+        test_bed.command(|a| a.set_engine_n1(Ratio::new::<percent>(15.)));
+        test_bed.command(|a| a.set_bleed_pb_to_auto());
+        test_bed
+    }
+
     #[test]
     fn fcv_starts_closed() {
         let test_bed = SimulationTestBed::new(TestAircraft::new);
@@ -408,7 +643,7 @@ mod air_conditioning_tests {
 
     #[test]
     fn fcv_opens_when_signal_to_open() {
-        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
+        let mut test_bed = test_bed_with_bleed();
 
         test_bed.command(|a| a.command_valve_open());
         test_bed.run();
@@ -418,7 +653,7 @@ mod air_conditioning_tests {
 
     #[test]
     fn fcv_closes_when_signal_to_close() {
-        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
+        let mut test_bed = test_bed_with_bleed();
 
         test_bed.command(|a| a.command_valve_open());
         test_bed.run();
@@ -430,14 +665,14 @@ mod air_conditioning_tests {
 
     #[test]
     fn timer_starts_at_zero() {
-        let test_bed = SimulationTestBed::new(TestAircraft::new);
+        let test_bed = test_bed_with_bleed();
 
         assert_eq!(test_bed.query(|a| a.valve_timer()), Duration::from_secs(0));
     }
 
     #[test]
     fn timer_starts_when_valve_opens() {
-        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
+        let mut test_bed = test_bed_with_bleed();
 
         assert_eq!(test_bed.query(|a| a.valve_timer()), Duration::from_secs(0));
 
@@ -449,7 +684,7 @@ mod air_conditioning_tests {
 
     #[test]
     fn timer_resets_when_valve_closes() {
-        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
+        let mut test_bed = test_bed_with_bleed();
 
         assert_eq!(test_bed.query(|a| a.valve_timer()), Duration::from_secs(0));
 

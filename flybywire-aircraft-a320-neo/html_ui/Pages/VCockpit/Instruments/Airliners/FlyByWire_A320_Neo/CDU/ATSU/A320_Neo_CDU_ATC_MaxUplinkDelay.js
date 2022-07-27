@@ -58,7 +58,7 @@ class CDUAtcMaxUplinkDelay {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[5] = () => {
-            CDUAtcMenu.ShowPage1(mcdu);
+            CDUAtcMenu.ShowPage(mcdu);
         };
     }
 }

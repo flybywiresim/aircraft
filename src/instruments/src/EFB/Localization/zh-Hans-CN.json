@@ -1,0 +1,577 @@
+{
+  "AirTrafficControl": {
+    "Active": "启用",
+    "ChangeATISATCSourceButton": "更改 ATIS/ATC 来源",
+    "ConnectHoppieACARS": "连接 Hoppie ACARS",
+    "NoInformationAvailableForThisFrequency": "当前频率无可用信息",
+    "SelectCorrectATISATCSource": "只有在设置页面中选择 IVAO 或 VATSIM 作为 ATIS/ATC 来源时,此页面才可用。",
+    "SetActive": "设置为启用",
+    "SetStandby": "设置为待命",
+    "Standby": "待命",
+    "Title": "空中交通管制"
+  },
+  "Checklists": {
+    "AreYouSureYouWantToResetAllChecklists": "确定要重置所有检查单吗？",
+    "AreYouSureYouWantToResetChecklists": "确定要重置所有检查单吗？",
+    "ChecklistResetWarning": "检查单重置警告",
+    "MarkChecklistAsComplete": "标记检查单为已完成",
+    "MarkItemAsComplete": "标记项目为完成",
+    "ProceedToNextChecklist": "进行下一个检查单",
+    "ResetAll": "全部重置",
+    "ResetChecklist": "重置检查单",
+    "TheLastChecklistIsComplete": "最后一个检查单已完成",
+    "ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted": "仍有自动填充检查单项目未完成",
+    "Title": "检查单"
+  },
+  "Dashboard": {
+    "ImportantInformation": {
+      "Checklists": {
+        "NoRelevantChecklists": "没有相关的检查单",
+        "Title": "检查单"
+      },
+      "GoToPage": "跳转至此页面",
+      "Maintenance": {
+        "NoActiveFailures": "无故障",
+        "Title": "维护"
+      },
+      "PinnedCharts": {
+        "NoPinnedCharts": "没有固定的航图",
+        "Title": "固定的航图"
+      },
+      "TT": {
+        "RearrangeWidgets": "重新排列模块"
+      },
+      "Title": "重要信息",
+      "Weather": {
+        "AirPressure": "气压",
+        "DewPoint": "露点",
+        "IcaoInvalid": "ICAO代码无效或没有可用的METAR",
+        "Loading": "正在加载",
+        "MetarParsingError": "无法解析 METAR",
+        "NoIcaoProvided": "未填入 ICAO 代码",
+        "NotAvailableShort": "不适用",
+        "Raw": "原始数据",
+        "TT": {
+          "SwitchToIconView": "切换到图标视图",
+          "SwitchToRawMetarView": "切换到原始 METAR 报文视图"
+        },
+        "Temperature": "气温",
+        "Title": "天气",
+        "WindSpeed": "风速"
+      }
+    },
+    "Title": "主页面",
+    "YourFlight": {
+      "Alternate": "备降机场",
+      "AverageWind": "平均风速",
+      "CompanyRoute": "公司航路",
+      "CostIndex": "成本指数",
+      "CruiseAlt": "巡航高度",
+      "ImportSimBriefData": "从 SimBrief 导入数据",
+      "Route": "航路",
+      "SimBriefDataNotYetLoaded": "SimBrief 数据尚未加载",
+      "Title": "您的航班任务",
+      "ZFW": "零油重量"
+    }
+  },
+  "Dispatch": {
+    "Ofp": {
+      "ImportSimBriefData": "从 SimBrief 导入数据",
+      "TT": {
+        "IncreaseFontSize": "增大字号",
+        "ReduceFontSize": "减小字号"
+      },
+      "Title": "运行飞行计划 (OFP)",
+      "YouHaveNotYetImportedAnySimBriefData": "您尚未从 SimBrief 导入任何数据"
+    },
+    "Overview": {
+      "ActualGW": "Actual GW",
+      "Engines": "引擎",
+      "MMO": "最大使用马赫数",
+      "MRW": "最大机坪重量",
+      "MTOW": "最大起飞重量",
+      "MZFW": "最大零油重量",
+      "MaximumCargo": "最大载货量",
+      "MaximumFuelCapacity": "最大燃油量",
+      "MaximumPassengers": "最大载客人数",
+      "Model": "机型",
+      "Range": "航距",
+      "Title": "概览"
+    },
+    "Title": "签派"
+  },
+  "Failures": {
+    "Comfort": {
+      "Title": "舒适"
+    },
+    "Compact": {
+      "Title": "紧凑"
+    },
+    "FullSimulationOfTheFailuresBelowIsntYetGuaranteed": "以下故障尚不能保证完整模拟",
+    "Search": "搜索",
+    "Title": "失效"
+  },
+  "Ground": {
+    "Fuel": {
+      "CenterTank": "中央油箱",
+      "Completed": "已完成",
+      "Defueling": "放油",
+      "EstimatedDuration": "预计剩余时间（分钟）",
+      "EstimatedTime": "Estimated Time",
+      "LeftInnerTank": "左内侧油箱",
+      "LeftOuterTank": "左外侧油箱",
+      "ReadyToStart": "准备开始加油",
+      "Refuel": "加油",
+      "RefuelTime": "加油时间",
+      "Refueling": "加油中",
+      "RightInnerTank": "右内侧油箱",
+      "RightOuterTank": "右外侧油箱",
+      "TT": {
+        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "飞机必须恢复至冷舱状态以更改加油时间",
+        "FillBlockFuelFromSimBrief": "填充来自SimBrief的燃油量"
+      },
+      "Title": "燃油",
+      "TotalFuel": "总燃油量",
+      "Unavailable": "不可用"
+    },
+    "Payload": {
+      "BoardingTime": "Boarding Time",
+      "Cargo": "Cargo",
+      "Current": "Current",
+      "Passengers": "Passengers",
+      "Planned": "Planned",
+      "TT": {
+        "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Aircraft Must Be On the Ground and Have Engines Shutdown to Change Boarding Duration",
+        "FillPayloadFromSimbrief": "Fill Payload Information from Simbrief",
+        "MaxCargo": "Max Cargo",
+        "MaxPassengers": "Maximum Passengers",
+        "MaxZFW": "Maximum ZFW",
+        "MaxZFWCG": "Maximum ZFWCG",
+        "PerPaxBagWeight": "Per Passenger Bag Weight",
+        "PerPaxWeight": "Per Passenger Weight",
+        "StartBoarding": "Begin Boarding"
+      },
+      "Title": "Payload",
+      "ZFW": "ZFW",
+      "ZFWCG": "ZFWCG"
+    },
+    "Pushback": {
+      "Title": "后推"
+    },
+    "Services": {
+      "BaggageTruck": "行李车",
+      "CateringTruck": "餐车",
+      "Cones": "安全锥",
+      "DoorAft": "后门",
+      "DoorCargo": "货舱门",
+      "DoorFwd": "前门",
+      "ExternalPower": "外部电源",
+      "FuelTruck": "加油车",
+      "JetBridge": "廊桥",
+      "Title": "地面服务",
+      "WheelChocks": "轮档"
+    },
+    "Title": "地面"
+  },
+  "Modals": {
+    "Cancel": "取消",
+    "Confirm": "确认",
+    "Okay": "好的"
+  },
+  "NavigationAndCharts": {
+    "All": "所有文件",
+    "Altn": "备降机场",
+    "ExitFullscreenMode": "退出全屏模式",
+    "From": "从",
+    "LocalFiles": {
+      "Both": "全部",
+      "EstablishingConnection": "正在建立连接",
+      "FailedToEstablishConnection": "建立连接失败",
+      "FileName": "文件名",
+      "Image": "图像",
+      "Pdf": "PDF 文件",
+      "Retry": "重试",
+      "Title": "本地文件"
+    },
+    "Navigraph": {
+      "AirportDoesNotExist": "机场不存在",
+      "AuthenticateWithNavigraph": "使用 Navigraph 帐户进行身份验证",
+      "InsufficientEnv": ".env 文件数量不足",
+      "IntoYourBrowserAndEnterTheCodeBelow": "进入浏览器并输入下面的代码\n",
+      "LoadingMsg": "载入中",
+      "NoAirportSelected": "未选择机场",
+      "ResetNavigraphAuthentication": "重置 Navigraph 身份验证",
+      "ScanTheQrCodeOrOpen": "扫描二维码或打开",
+      "Title": "Navigraph"
+    },
+    "PinnedCharts": {
+      "Delete": "删除",
+      "Edit": "编辑",
+      "NoItemsFound": "未找到任何项目",
+      "SearchPlaceholder": "搜索",
+      "ShowingChartsFromAllProviders": "显示所有供应商的航图",
+      "SortMethods": {
+        "AlphabeticalAZ": "按字母顺序排列 - A-> Z",
+        "AlphabeticalZA": "按字母顺序排列 - Z -> A",
+        "FirstAccessed": "首次访问",
+        "LastAccessed": "上次访问",
+        "None": "无"
+      },
+      "TT": {
+        "ChangeChartProvider": "更换航图来源",
+        "ChangeChartSortMethod": "更改航图排序方式",
+        "RemoveAllPinnedCharts": "移除所有固定的航图"
+      },
+      "Title": "固定的航图",
+      "View": "浏览"
+    },
+    "PleaseWait": "请稍候",
+    "ShowingAllItems": "显示所有航图",
+    "TT": {
+      "FitChartToHeight": "使航图适合高度",
+      "FitChartToWidth": "使航图适合宽度",
+      "ResetMovement": "重置移动",
+      "RotateLeft45Degrees": "向左旋转45度",
+      "RotateRight45Degrees": "向右旋转45度",
+      "ZoomIn": "放大",
+      "ZoomOut": "缩小"
+    },
+    "ThereAreNoChartsToDisplay": "无航图可显示。",
+    "ThereIsNoChartToDisplay": "无航图可显示。",
+    "Title": "导航和航图",
+    "To": "至"
+  },
+  "Performance": {
+    "Data": "数据",
+    "Landing": {
+      "AirportIcao": "机场 ICAO",
+      "ApproachSpeed": "进近速度",
+      "ApproachSpeedUnit": "节 (kts)",
+      "AutoLand": "自动着陆",
+      "Calculate": "计算",
+      "Clear": "清空",
+      "DropDownNo": "否",
+      "DropDownYes": "是",
+      "FillDataFrom": "填充数据来源于",
+      "FlapsConfiguration": "襟翼配置",
+      "Low": "低刹力",
+      "MaximumManual": "最高性能手动降落",
+      "Medium": "中刹力",
+      "MetarErrorDialogMessage": "无法成功解析您的 OFP 中的 METAR。你想改用提取的 METAR 自动填充数据吗？",
+      "MetarErrorDialogTitle": "解析 OFP METAR 时出错",
+      "OverweightProcedure": "超重程序",
+      "Qnh": "海平面气压",
+      "ReverseThrust": "反推",
+      "RunwayAltitude": "跑道海拔",
+      "RunwayAltitudeUnit": "海拔高度 (英尺/ft)",
+      "RunwayCondition": "跑道状况",
+      "RunwayConditions": {
+        "Dry": "干（6）",
+        "Good": "好（5）",
+        "GoodMedium": "中等至良好（4）",
+        "Medium": "中等（3）",
+        "MediumPoor": "中等至差（2）",
+        "Poor": "差（1）"
+      },
+      "RunwayHeading": "跑道航向",
+      "RunwayHeadingUnit": "°",
+      "RunwayLda": "跑道可用着陆长度",
+      "RunwayLdaUnitFt": "英尺 (ft)",
+      "RunwayLdaUnitMeter": "米 (m)",
+      "RunwaySlope": "跑道坡度",
+      "TT": {
+        "YouNeedToEnterAnIcaoCodeInOrderToMakeAMetarRequest": "您需要输入 ICAO 代码才能提交 METAR 报文申请",
+        "YouNeedToLoadSimBriefDataInOrderToAutofillData": "您需要加载来自SimBrief数据，才能自动填充"
+      },
+      "Temperature": "气温",
+      "Title": "着陆",
+      "UnitFt": "英尺 (ft)",
+      "UnitMeter": "米 (m)",
+      "Weight": "重量",
+      "WindDirection": "风向",
+      "WindDirectionUnit": "°",
+      "WindMagnitude": "风级",
+      "WindMagnitudeUnit": "节 (kts)"
+    },
+    "SYNC": "同步",
+    "Title": "性能",
+    "TopOfDescent": {
+      "Data": {
+        "Angle": "角度",
+        "CurrentAltitude": "当前高度",
+        "Distance": "距离",
+        "GroundSpeed": "地速",
+        "TargetAltitude": "目标高度",
+        "Title": "数据",
+        "UnitAngleDegrees": "度",
+        "UnitFeet": "英尺 (ft)",
+        "UnitFtMin": "英尺/分钟 (fpm)",
+        "UnitNM": "海里 (nm)",
+        "VerticalSpeed": "垂直速度"
+      },
+      "GroundSpeed": {
+        "Add": "添加",
+        "FetchingSpeedFromSimulator": "从模拟器获取速度",
+        "GroundSpeed": "地速",
+        "ManualInput": "手动输入",
+        "MinAltitude": "最低高度",
+        "RemoveLast": "删除最后一个",
+        "Sync": "同步",
+        "Title": "地速",
+        "UnitKnots": "节 (kts)",
+        "UnitKt": "节 (kts)"
+      },
+      "Result": {
+        "BeforeTarget": "开始你的下降",
+        "DesiredDescentAngle": "所需的下降角度",
+        "DesiredVerticalSpeed": "所需的下降率",
+        "StartYourDescentAbout": "在目标前大约",
+        "Title": "结果"
+      },
+      "TT": {
+        "DesynchronizeInputWithAircraftsCurrentAltitude": "手动输入飞机当前高度",
+        "SynchronizeInputWithAircraftsCurrentAltitude": "同步输入飞机当前高度"
+      },
+      "Title": "下降顶点"
+    }
+  },
+  "Presets": {
+    "AircraftStates": {
+      "Cancel": "取消",
+      "ColdDark": "冷舱",
+      "ConfirmationDialogMsg": "请确认加载预设",
+      "CurrentProcedureStep": "当前程序步骤",
+      "PleaseConfirmLoadingOfPreset": "请确认加载预设。",
+      "ReadyPushback": "准备后推",
+      "ReadyTakeoff": "准备起飞",
+      "ReadyTaxi": "准备滑行",
+      "SelectAPresetToLoad": "选择要加载的预设",
+      "TheAircraftMustBeOnTheGroundToLoadAPreset": "飞机必须在地面才能加载预设",
+      "TheAircraftMustBeOntheGroundToLoadAPreset": "飞机必须在地面才能加载预设",
+      "Title": "飞机状态",
+      "Turnaround": "过站"
+    },
+    "InteriorLighting": {
+      "AircraftNeedsToBePoweredToLoadPresets": "飞机必须接通电源才能加载预设",
+      "AircraftNeedsToBePoweredToSavePresets": "飞机必须接通电源才能保存预设",
+      "LoadPreset": "加载预设",
+      "LoadingPreset": "正在加载预设",
+      "NewNameConfirmationDialogMsg": "请确认灯光预设配置的新名称",
+      "NoName": "无名称",
+      "PleaseConfirmSavingPreset": "请确认保存预设",
+      "SavePreset": "保存预设",
+      "SavingPreset": "正在保存预设",
+      "SelectAnInteriorLightingPresetToLoadOrSave": "选择舱内照明预设以加载或保存",
+      "TT": {
+        "AircraftMustBePowered": "飞机必须接通电源",
+        "ClickTextToChangeThePresetsName": "点击文本以更改预设名称",
+        "LoadThisPreset": "加载此预设",
+        "SaveTheCurrentLightingLevels": "保存当前照明亮度"
+      },
+      "TheAircraftMustBePoweredForInteriorLightingPresets": "飞机必须接通电源才能使用舱内照明预设",
+      "Title": "舱内照明"
+    },
+    "Title": "预设"
+  },
+  "Pushback": {
+    "AvailableOnlyOnGround": "推出控制面板仅在地面上可用",
+    "Backward": "向后",
+    "CallTug": "呼叫推车",
+    "DisableSystemMessageBody": "你确定要禁用推出系统吗？ 将导致拖车断开",
+    "DisableSystemMessageTitle": "禁用推出系统",
+    "EnableSystemMessageBody": "新的 flyPad OS 3 推出系统尚未最终确定，可能存在与其他推出插件不兼容情况，并导致其他问题。",
+    "EnableSystemMessageTitle": "启用推出系统",
+    "Forward": "向前",
+    "Halt": "暂停",
+    "LeavePageMessage": "推出暂停中",
+    "Left": "向左",
+    "Moving": "移动中",
+    "ParkingBrake": {
+      "Off": "断开停机刹车",
+      "On": "拉起停机刹车",
+      "Title": "停机刹车"
+    },
+    "Right": "向右",
+    "SystemEnabledOff": "推出系统关",
+    "SystemEnabledOn": "推出系统开",
+    "TT": {
+      "CallReleaseTug": "呼叫或释放拖车",
+      "CenterPlaneMode": "地图居中于本机   开/关",
+      "DecreaseSpeed": "向后或慢速向前",
+      "IncreaseSpeed": "向前或慢速向后",
+      "Left": "向左",
+      "PausePushback": "暂停或恢复后推",
+      "Right": "向右",
+      "SetReleaseParkingBrake": "设置或释放停留刹车",
+      "SliderDirection": "向所需方向移动",
+      "SliderSpeed": "以所需的速度移动",
+      "SystemEnabledOff": "点击以打开退出系统",
+      "SystemEnabledOn": "点击以完全关闭推出系统",
+      "ZoomIn": "放大",
+      "ZoomOut": "缩小"
+    },
+    "TugAttached": "拖杆已连接",
+    "TugDirection": "后推方向",
+    "TugInTransit": "等待拖车/销",
+    "TugSpeed": "后推速度"
+  },
+  "Settings": {
+    "About": {
+      "Title": "相关"
+    },
+    "AircraftOptionsPinPrograms": {
+      "AccelerationHeight": "加速高度 (英尺/ft)",
+      "EngineOutAccelerationHeight": "发动机失效加速高度 (英尺/ft)",
+      "IsisBaroUnit": "综合备用仪表系统 (ISIS) 气压单位",
+      "IsisMetricAltitude": "综合备用仪表系统 (ISIS) 米制高度 (m)",
+      "LatLonExtendedFormat": "FMGC 纬度/经度 航点格式",
+      "PaxSigns": "客舱标志",
+      "RmpVhfSpacing": "RMP 甚高频间隔",
+      "ThrustReductionHeight": "减推力高度 (英尺/ft)",
+      "Title": "飞机选项/置顶程序",
+      "WeightUnit": "重量单位"
+    },
+    "AtsuAoc": {
+      "AtisAtcSource": "ATIS/ATC 来源",
+      "AutomaticallyImportSimBriefData": "自动加载 SimBrief 数据",
+      "Enable": "启用",
+      "EnableTelex": "启用电传 (TELEX)",
+      "ErrorReporting": "报告错误",
+      "HoppieEnabled": "Hoppie 已启用",
+      "HoppieUserId": "Hoppie 用户代码",
+      "MetarSource": "METAR 来源",
+      "OptionalA32nxErrorReporting": "自愿发送 A32NX 错误报告",
+      "PleaseCheckThatYouHaveCorrectlyEnteredYourSimbBriefUsernameOrPilotId": "请检查您输入的 SimBrief 用户名或飞行员 ID 是否正确",
+      "SimBriefUsernamePilotId": "SimBrief 用户名/飞行员ID",
+      "TafSource": "TAF 来源",
+      "Telex": "电传 (TELEX)",
+      "TelexEnablesFreeTextAndLiveMap": "TELEX 包括发送信息和实时地图功能。如果启用，在飞行期间会发布飞行定位数据。信息是公开的并未经审查，使用此功能需要您自行承担风险。详情请参阅 https://docs.flybywiresim.com/telex",
+      "TelexWarning": "电传 (TELEX) 警告",
+      "ThereWasAnErrorEncounteredWhenValidatingYourHoppieID": "Hoppie 用户代码验证错误",
+      "Title": "ATSU / AOC",
+      "YouAreAbleToOptIntoAnonymousErrorReporting": "为了以便我们诊断、监控和处理问题，您可以自愿选择匿名报告错误。我们绝不会收集您的个人数据。",
+      "YourHoppieIdHasBeenRemoved": "您的 Hoppie 用户代码已被移除",
+      "YourHoppieIdHasBeenValidated": "你的 Hoppie 用户代码已验证",
+      "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "您的 SimBrief 飞行员ID已经验证并更新"
+    },
+    "Audio": {
+      "Announcements": "广播",
+      "BoardingMusic": "登机音乐",
+      "EngineInteriorVolume": "舱内引擎音量",
+      "ExteriorMasterVolume": "舱外主音量\n",
+      "PassengerAmbience": "乘客氛围",
+      "PtuAudibleInCockpit": "驾驶舱可否听到 PTU 声音",
+      "Title": "音频",
+      "WindInteriorVolume": "舱内气流音量"
+    },
+    "Fast": "快",
+    "Instant": "即时",
+    "Real": "真实",
+    "Realism": {
+      "AdirsAlignTime": "ADIRS 校准需时",
+      "AutofillChecklists": "自动填充检查单",
+      "BoardingTime": "登机需时",
+      "DmcSelfTestTime": "DMC 自检需时",
+      "HomeCockpitMode": "家用驾驶舱模式",
+      "McduFocusTimeout": "MCDU 对焦超时 (秒)",
+      "McduKeyboardInput": "MCDU 键盘输入",
+      "PauseAtTod": "T/D Pause",
+      "PauseAtTodDistance": "T/D Pause Distance (nm)",
+      "SeparateTillerFromRudderInputs": "将舵柄与脚舵输入分开",
+      "Title": "仿真度"
+    },
+    "SimOptions": {
+      "Active": "启用",
+      "Auto": "自动",
+      "Calibrate": "校准",
+      "ConesEnabled": "安全锥",
+      "DefaultBarometerUnit": "默认气压单位",
+      "DynamicRegistrationDecal": "动态注册号喷涂",
+      "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "启用 MCDU 服务器 (5 分钟之内无连接将自动停用)",
+      "ExternalMcduServerPort": "MCDU 服务器端口",
+      "Hpa": "百帕 (hPa)",
+      "Inactive": "待用",
+      "LoadOnly": "仅加载",
+      "None": "无",
+      "Off": "关",
+      "Save": "保存",
+      "SyncMsfsFlightPlan": "同步 MSFS 内飞行计划",
+      "ThrottleDetents": "油门卡位",
+      "Title": "模拟器选项",
+      "UseCalculatedIlsSignals": "使用经系统计算的ILS 信号",
+      "WheelChocksEnabled": "轮档",
+      "inHg": "英寸汞柱 (inHg)"
+    },
+    "ThrottleConfig": {
+      "Apply": "应用",
+      "AreYouSureThatYouWantToResetYourCurrentThrottleConfigurationToTheirDefaultStates": "是否确定重置油门设定？重置操作是不可逆的.",
+      "Axis": "轴",
+      "Back": "返回",
+      "ConfigureEnd": "结束配置",
+      "ConfigureStart": "开始配置",
+      "CurrentValue": "当前值",
+      "Deadband": "死区",
+      "ErrorOverlapMsg": "重叠",
+      "IndependentAxis": "独立轴",
+      "LoadFromFile": "从文件中加载",
+      "PleaseEnterAValidDeadzone": "请输入有效的死区",
+      "ResetToDefaults": "重置为默认值",
+      "ReverseFull": "全力反推",
+      "ReverseIdle": "最少反推",
+      "ReverserOnAxis": "轴上有反推杆",
+      "SaveAndApply": "保存并应用",
+      "SetFromThrottle": "从油门设置",
+      "ThrottleConfigurationReset": "重置油门设置"
+    },
+    "Title": "设置",
+    "Unrealistic": "不真实",
+    "flyPad": {
+      "AutoBrightness": "自动调节亮度",
+      "AutomaticallyShowOnscreenKeyboard": "自动显示屏幕键盘",
+      "BatteryLifeEnabled": "模拟电池电量",
+      "Blue": "蓝色",
+      "Brightness": "亮度",
+      "Dark": "深色",
+      "Language": "语言 (Language)",
+      "Light": "浅色",
+      "Local": "本地",
+      "LocalTimeFormat": "本地时间格式",
+      "OnscreenKeyboardLayout": "屏幕键盘布局",
+      "ShowColoredRawMetar": "显示彩色原始 METAR",
+      "ShowStatusBarFlightProgressIndicator": "显示飞行进度",
+      "Theme": "主题",
+      "TimeDisplayed": "显示时间",
+      "Title": "flyPad",
+      "TwelveHours": "12小时",
+      "TwentyFourHours": "24小时",
+      "Utc": "世界标准时间 (UTC)",
+      "UtcAndLocal": "世界标准时间 (UTC) 与本地时间"
+    }
+  },
+  "StatusBar": {
+    "Apr": "四月",
+    "Aug": "八月",
+    "Dec": "十二月",
+    "Feb": "二月",
+    "Fri": "周五",
+    "Jan": "一月",
+    "Jul": "七月",
+    "Jun": "六月",
+    "Mar": "三月",
+    "May": "五月",
+    "Mon": "周一",
+    "Nov": "十一月",
+    "Oct": "十月",
+    "Sat": "周六",
+    "Sep": "九月",
+    "Sun": "周日",
+    "TT": {
+      "ConnectedToLocalApi": "已连接本地 API",
+      "DisconnectedFromLocalApi": "已与本地 API 断开连接",
+      "TurnOffOrShutdownEfb": "关闭电子飞行包 (EFB)"
+    },
+    "Thu": "周四",
+    "Tue": "周二",
+    "Wed": "周三"
+  }
+}

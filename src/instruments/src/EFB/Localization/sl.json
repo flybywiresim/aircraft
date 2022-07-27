@@ -1,0 +1,577 @@
+{
+  "AirTrafficControl": {
+    "Active": "Aktivno",
+    "ChangeATISATCSourceButton": "Zamenjaj vir ATIS/ATC",
+    "ConnectHoppieACARS": "Povežite Hoppie ACARS",
+    "NoInformationAvailableForThisFrequency": "ZA TO FREKVENCO NI NA VOLJO NOBENIH INFORMACIJ",
+    "SelectCorrectATISATCSource": "Ta stran je na voljo le, če je IVAO ali VATSIM izbran kot vir ATIS/ATC na strani z nastavitvami.",
+    "SetActive": "Nastavi kot aktivno",
+    "SetStandby": "Nastavi v pripravljenost",
+    "Standby": "V pripravljenosti",
+    "Title": "Kontrola zračnega prometa"
+  },
+  "Checklists": {
+    "AreYouSureYouWantToResetAllChecklists": "Ali ste prepričani, da želite ponastaviti vse kontrolne sezname?",
+    "AreYouSureYouWantToResetChecklists": "Ali ste prepričani, da želite ponastaviti vse kontrolne sezname?",
+    "ChecklistResetWarning": "Opozorilo o ponastavitvi kontrolnega seznama",
+    "MarkChecklistAsComplete": "Označi kontrolni seznam kot dokončan",
+    "MarkItemAsComplete": "Označi element kot dokončan",
+    "ProceedToNextChecklist": "Nadaljujte z naslednjim kontrolnim seznamom",
+    "ResetAll": "Ponastavi vse",
+    "ResetChecklist": "Ponastavi kontrolni seznam",
+    "TheLastChecklistIsComplete": "Zadnji kontrolni seznam je končan",
+    "ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted": "Nekateri elementi kontrolnega seznama še niso dokončani",
+    "Title": "Kontrolni seznami"
+  },
+  "Dashboard": {
+    "ImportantInformation": {
+      "Checklists": {
+        "NoRelevantChecklists": "Ni ustreznih kontrolnih seznamov",
+        "Title": "Kontrolni seznami"
+      },
+      "GoToPage": "Pojdi na stran",
+      "Maintenance": {
+        "NoActiveFailures": "Ni aktivnih okvar",
+        "Title": "Vzdrževanje"
+      },
+      "PinnedCharts": {
+        "NoPinnedCharts": "Ni pripetih kart",
+        "Title": "Pripete karte"
+      },
+      "TT": {
+        "RearrangeWidgets": "Preurejanje pripomočkov"
+      },
+      "Title": "Pomembne informacije",
+      "Weather": {
+        "AirPressure": "Zražni tlak",
+        "DewPoint": "Rosišče",
+        "IcaoInvalid": "Neveljaven ICAO oz. METAR ni na voljo",
+        "Loading": "Nalagam",
+        "MetarParsingError": "Prejetega METAR-ja ni bilo mogoče razčleniti",
+        "NoIcaoProvided": "ICAO ni naveden",
+        "NotAvailableShort": "Ni na voljo",
+        "Raw": "Nerazčlenjeno",
+        "TT": {
+          "SwitchToIconView": "Preklopi na ikonski pogled",
+          "SwitchToRawMetarView": "Preklop na nerazčlenjene podatke METAR"
+        },
+        "Temperature": "Temperatura",
+        "Title": "Vreme",
+        "WindSpeed": "Hitrost vetra"
+      }
+    },
+    "Title": "Nadzorna plošča",
+    "YourFlight": {
+      "Alternate": "Nadomestno let.",
+      "AverageWind": "Povprečni veter",
+      "CompanyRoute": "Shranjen načrt poti",
+      "CostIndex": "Stroškovni indeks",
+      "CruiseAlt": "Cruise Alt.",
+      "ImportSimBriefData": "Uvoz podatkov iz SimBrief-a",
+      "Route": "Načrt poti",
+      "SimBriefDataNotYetLoaded": "SimBrief podatki še niso naloženi.",
+      "Title": "Vaš let",
+      "ZFW": "ZFW"
+    }
+  },
+  "Dispatch": {
+    "Ofp": {
+      "ImportSimBriefData": "Uvoz podatkov iz SimBrief-a",
+      "TT": {
+        "IncreaseFontSize": "Povečaj velikost pisave",
+        "ReduceFontSize": "Zmanjšaj velikosti pisave"
+      },
+      "Title": "OFP",
+      "YouHaveNotYetImportedAnySimBriefData": "Zaenkrat še niste uvozili nobenih SimBrief podatkov."
+    },
+    "Overview": {
+      "ActualGW": "Actual GW",
+      "Engines": "Motorji",
+      "MMO": "MMO",
+      "MRW": "MRW",
+      "MTOW": "MTOW",
+      "MZFW": "MZFW",
+      "MaximumCargo": "Maksimalni tovor",
+      "MaximumFuelCapacity": "Največja kapaciteta goriva",
+      "MaximumPassengers": "Največje število potnikov",
+      "Model": "Model",
+      "Range": "Doseg",
+      "Title": "Pregled"
+    },
+    "Title": "Odpošiljanje"
+  },
+  "Failures": {
+    "Comfort": {
+      "Title": "Udobno"
+    },
+    "Compact": {
+      "Title": "Strnjeno"
+    },
+    "FullSimulationOfTheFailuresBelowIsntYetGuaranteed": "Celostna simulacija spodnjih napak še ni zagotovljena.",
+    "Search": "Išči",
+    "Title": "Napake"
+  },
+  "Ground": {
+    "Fuel": {
+      "CenterTank": "Središčni rezervoar",
+      "Completed": "Dokončano",
+      "Defueling": "Odtoči gorivo",
+      "EstimatedDuration": "Predvideno trajanje v minutah",
+      "EstimatedTime": "Predvideni čas",
+      "LeftInnerTank": "Levi notranji rezervoar",
+      "LeftOuterTank": "Levi zunanji rezervoar",
+      "ReadyToStart": "Pripravljen na začetek",
+      "Refuel": "Napolni gorivo",
+      "RefuelTime": "Čas polnjenja goriva",
+      "Refueling": "Polnjenje z gorivom",
+      "RightInnerTank": "Desni notranji rezervoar",
+      "RightOuterTank": "Desni zunanji rezervoar",
+      "TT": {
+        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "Zrakoplov mora biti v stanju \"temno in hladno\", da lahko spremenite čas polnjena goriva.",
+        "FillBlockFuelFromSimBrief": "Uvozi \"Block Fuel\" iz Simbrief-a"
+      },
+      "Title": "Gorivo",
+      "TotalFuel": "Skupno gorivo",
+      "Unavailable": "Ni na voljo"
+    },
+    "Payload": {
+      "BoardingTime": "Boarding Time",
+      "Cargo": "Cargo",
+      "Current": "Current",
+      "Passengers": "Passengers",
+      "Planned": "Planned",
+      "TT": {
+        "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Aircraft Must Be On the Ground and Have Engines Shutdown to Change Boarding Duration",
+        "FillPayloadFromSimbrief": "Fill Payload Information from Simbrief",
+        "MaxCargo": "Max Cargo",
+        "MaxPassengers": "Maximum Passengers",
+        "MaxZFW": "Maximum ZFW",
+        "MaxZFWCG": "Maximum ZFWCG",
+        "PerPaxBagWeight": "Per Passenger Bag Weight",
+        "PerPaxWeight": "Per Passenger Weight",
+        "StartBoarding": "Begin Boarding"
+      },
+      "Title": "Payload",
+      "ZFW": "ZFW",
+      "ZFWCG": "ZFWCG"
+    },
+    "Pushback": {
+      "Title": "Vlačilec"
+    },
+    "Services": {
+      "BaggageTruck": "Tovornjak za prtljago",
+      "CateringTruck": "Gostinski tovornjak",
+      "Cones": "Varnostni stožci",
+      "DoorAft": "Zadnja vrata",
+      "DoorCargo": "Tovorna vrata",
+      "DoorFwd": "Sprednja vrata",
+      "ExternalPower": "Zunanje napajanje",
+      "FuelTruck": "Tovornjak z gorivom",
+      "JetBridge": "Potniški most",
+      "Title": "Storitve",
+      "WheelChocks": "Kolesne zagozde"
+    },
+    "Title": "Tla"
+  },
+  "Modals": {
+    "Cancel": "Prekliči",
+    "Confirm": "Potrdi",
+    "Okay": "V redu"
+  },
+  "NavigationAndCharts": {
+    "All": "Vse",
+    "Altn": "Altn",
+    "ExitFullscreenMode": "Zapri celozaslonski način",
+    "From": "Od",
+    "LocalFiles": {
+      "Both": "Oboje",
+      "EstablishingConnection": "Vzpostavljanje povezave",
+      "FailedToEstablishConnection": "Vzpostavitev povezave neuspešno.",
+      "FileName": "Ime datoteke",
+      "Image": "Slika",
+      "Pdf": "PDF",
+      "Retry": "Poskusi znova",
+      "Title": "Lokalne datoteke"
+    },
+    "Navigraph": {
+      "AirportDoesNotExist": "Letališče ne obstaja",
+      "AuthenticateWithNavigraph": "Preverjanje pristnosti z Navigraph-om",
+      "InsufficientEnv": "Nezadostna datoteka .env",
+      "IntoYourBrowserAndEnterTheCodeBelow": "v brskalniku in vnesite spodnjo kodo",
+      "LoadingMsg": "Nalaganje",
+      "NoAirportSelected": "Ni izbranega letališča",
+      "ResetNavigraphAuthentication": "Ponastavitev Navigraph avtentikacije",
+      "ScanTheQrCodeOrOpen": "Skenirajte QR kodo ali odprite",
+      "Title": "Navigraph"
+    },
+    "PinnedCharts": {
+      "Delete": "Izbriši",
+      "Edit": "Uredi",
+      "NoItemsFound": "Ni najdenih rezultatov",
+      "SearchPlaceholder": "Iskanje",
+      "ShowingChartsFromAllProviders": "Prikaži karte vseh ponudnikov",
+      "SortMethods": {
+        "AlphabeticalAZ": "Abecedno - A -> Z",
+        "AlphabeticalZA": "Abecedno - Z -> A",
+        "FirstAccessed": "Prvi dostop",
+        "LastAccessed": "Zadnji dostop",
+        "None": "Brez"
+      },
+      "TT": {
+        "ChangeChartProvider": "Spremeni ponudnika kart",
+        "ChangeChartSortMethod": "Spreminjanje načina razvrščanja kart",
+        "RemoveAllPinnedCharts": "Odstrani vse pripete karte"
+      },
+      "Title": "Pripete karte",
+      "View": "Pogled"
+    },
+    "PleaseWait": "Prosimo počakajte",
+    "ShowingAllItems": "Prikazujem vse elemente",
+    "TT": {
+      "FitChartToHeight": "Prilagodi karto po višini",
+      "FitChartToWidth": "Prilagodi karto po širini",
+      "ResetMovement": "Ponastavi premike",
+      "RotateLeft45Degrees": "Zavrtite 45 stopinj v levo",
+      "RotateRight45Degrees": "Zavrtite 45 stopinj v desno",
+      "ZoomIn": "Povečaj",
+      "ZoomOut": "Pomanjšaj"
+    },
+    "ThereAreNoChartsToDisplay": "Ni kart za prikaz.",
+    "ThereIsNoChartToDisplay": "Ni karte za prikaz.",
+    "Title": "Navigacija in karte",
+    "To": "Do"
+  },
+  "Performance": {
+    "Data": "Podatki",
+    "Landing": {
+      "AirportIcao": "ICAO letališča",
+      "ApproachSpeed": "Hitrost prileta",
+      "ApproachSpeedUnit": "kts",
+      "AutoLand": "Auto Land",
+      "Calculate": "Izračunaj",
+      "Clear": "Počisti",
+      "DropDownNo": "Ne",
+      "DropDownYes": "Da",
+      "FillDataFrom": "Izpolnite podatke iz",
+      "FlapsConfiguration": "Konfiguracija zakrilc",
+      "Low": "Nizko",
+      "MaximumManual": "Ročni maksimum",
+      "Medium": "Srednje",
+      "MetarErrorDialogMessage": "METAR iz vašega OFP ni bilo mogoče uspešno razčleniti. Želite samodejno izpolniti podatke s pridobljenim METAR-jem?",
+      "MetarErrorDialogTitle": "Napaka pri razčlenjevanju OFP METAR-ja",
+      "OverweightProcedure": "Postopek ob prekomerni teži",
+      "Qnh": "QNH",
+      "ReverseThrust": "Vzvratni potisk",
+      "RunwayAltitude": "Višina steze",
+      "RunwayAltitudeUnit": "ft ASL",
+      "RunwayCondition": "Stanje steze",
+      "RunwayConditions": {
+        "Dry": "Suho (6)",
+        "Good": "Dobro (5)",
+        "GoodMedium": "Dobro-srednje (4)",
+        "Medium": "Srednje (3)",
+        "MediumPoor": "Srednje-slabše (2)",
+        "Poor": "Slabo (1)"
+      },
+      "RunwayHeading": "Smer steze",
+      "RunwayHeadingUnit": "°",
+      "RunwayLda": "LDA steze",
+      "RunwayLdaUnitFt": "ft",
+      "RunwayLdaUnitMeter": "m",
+      "RunwaySlope": "Nagib steze",
+      "TT": {
+        "YouNeedToEnterAnIcaoCodeInOrderToMakeAMetarRequest": "Če želite zahtevati METAR, morate prej vnesti kodo ICAO",
+        "YouNeedToLoadSimBriefDataInOrderToAutofillData": "Za samodejno izpolnjevanje podatkov morate naložiti podatke iz SimBrief-a"
+      },
+      "Temperature": "Temperatura",
+      "Title": "Pristanek",
+      "UnitFt": "ft",
+      "UnitMeter": "m",
+      "Weight": "Teža",
+      "WindDirection": "Smer vetra",
+      "WindDirectionUnit": "°",
+      "WindMagnitude": "Moč vetra",
+      "WindMagnitudeUnit": "kts"
+    },
+    "SYNC": "Sinhroniziraj",
+    "Title": "Zmogljivost",
+    "TopOfDescent": {
+      "Data": {
+        "Angle": "Kot",
+        "CurrentAltitude": "Trenutna nadmorska višina",
+        "Distance": "Razdalja",
+        "GroundSpeed": "Talna hitrost",
+        "TargetAltitude": "Ciljna nadmorska višina",
+        "Title": "Podatki",
+        "UnitAngleDegrees": "stopinj",
+        "UnitFeet": "čevlji",
+        "UnitFtMin": "ft/min",
+        "UnitNM": "NM",
+        "VerticalSpeed": "Navpična hitrost"
+      },
+      "GroundSpeed": {
+        "Add": "Dodaj",
+        "FetchingSpeedFromSimulator": "Pridobivanje hitrosti iz simulatorja",
+        "GroundSpeed": "Talna hitrost",
+        "ManualInput": "Ročni vnos",
+        "MinAltitude": "Min. nadmorska višina",
+        "RemoveLast": "Odstrani zadnje",
+        "Sync": "Sinhroniziraj",
+        "Title": "Talna hitrost",
+        "UnitKnots": "vozlov",
+        "UnitKt": "kt"
+      },
+      "Result": {
+        "BeforeTarget": "pred ciljem",
+        "DesiredDescentAngle": "Želeni kot spusta",
+        "DesiredVerticalSpeed": "Želena navpična hitrost",
+        "StartYourDescentAbout": "Začnite spust okvirno",
+        "Title": "Rezultat"
+      },
+      "TT": {
+        "DesynchronizeInputWithAircraftsCurrentAltitude": "Desinhronizirajte vnos trenutne nadmorske višine zrakoplova",
+        "SynchronizeInputWithAircraftsCurrentAltitude": "Sinhronizirajte vnos trenutne nadmorske višine zrakoplova"
+      },
+      "Title": "Vrh spusta"
+    }
+  },
+  "Presets": {
+    "AircraftStates": {
+      "Cancel": "Prekliči",
+      "ColdDark": "Hladno in temno",
+      "ConfirmationDialogMsg": "Prosimo, potrdite nalaganje prednastavitve.",
+      "CurrentProcedureStep": "Trenutni korak postopka",
+      "PleaseConfirmLoadingOfPreset": "Prosimo, potrdite nalaganje prednastavitve.",
+      "ReadyPushback": "Pripravljen na vleko",
+      "ReadyTakeoff": "Pripravljen na vzlet",
+      "ReadyTaxi": "Pripravljen na taksiranje",
+      "SelectAPresetToLoad": "Izberite prednastavitev",
+      "TheAircraftMustBeOnTheGroundToLoadAPreset": "Letalo mora biti na tleh, preden lahko naložite prednastavitev.",
+      "TheAircraftMustBeOntheGroundToLoadAPreset": "Letalo mora biti na tleh, preden lahko naložite prednastavitev.",
+      "Title": "Stanja zrakoplova",
+      "Turnaround": "Preobrat"
+    },
+    "InteriorLighting": {
+      "AircraftNeedsToBePoweredToLoadPresets": "Za nalaganje prednastavitev zrakoplov potrebuje napajanje",
+      "AircraftNeedsToBePoweredToSavePresets": "Za shranjevanje prednastavitev zrakoplov potrebuje napajanje",
+      "LoadPreset": "Naloži prednastavitev",
+      "LoadingPreset": "Nalaganje prednastavitve",
+      "NewNameConfirmationDialogMsg": "Prosimo, potrdite novo ime za prednastavitev osvetlitve",
+      "NoName": "Brez imena",
+      "PleaseConfirmSavingPreset": "Prosimo, potrdite shranjevanje prednastavitve",
+      "SavePreset": "Shrani prednastavitev",
+      "SavingPreset": "Shranjevanje prednastavitve",
+      "SelectAnInteriorLightingPresetToLoadOrSave": "Izberite prednastavitev notranje osvetlitve, ki jo želite naložiti ali shraniti.",
+      "TT": {
+        "AircraftMustBePowered": "Zrakoplov mora biti napajan",
+        "ClickTextToChangeThePresetsName": "Kliknite Besedilo, če želite spremeniti ime prednastavitve",
+        "LoadThisPreset": "Naloži prednstavitev",
+        "SaveTheCurrentLightingLevels": "Shrani trenutne ravni osvetlitve"
+      },
+      "TheAircraftMustBePoweredForInteriorLightingPresets": "Zrakoplov potrebuje napajanje za prednastavitve notranje osvetlitve.",
+      "Title": "Notranja razsvetljava"
+    },
+    "Title": "Prednastavitve"
+  },
+  "Pushback": {
+    "AvailableOnlyOnGround": "Nadzor vleke je mogoč samo na tleh",
+    "Backward": "Vzvratno",
+    "CallTug": "Pokliči vlačilec",
+    "DisableSystemMessageBody": "Ali ste prepričani, da želite onemogočiti sistem vleke? To bo odklopilo tudi vlačilca.",
+    "DisableSystemMessageTitle": "Onemogoči sistem za vleko",
+    "EnableSystemMessageBody": "Novi sistem za vleko v flyPadOS 3 še ni dokončan in ni združljiv z drugimi podobnimi dodatki. Prav tako lahko povzroči druge nepredvidljive težave. ",
+    "EnableSystemMessageTitle": "Omogoči sistem za vleko",
+    "Forward": "Naprej",
+    "Halt": "Ustavi",
+    "LeavePageMessage": "Zaustavitev vleke",
+    "Left": "Levo",
+    "Moving": "Premikanje",
+    "ParkingBrake": {
+      "Off": "Izklop",
+      "On": "Vklop",
+      "Title": "Parkirna zavora"
+    },
+    "Right": "Desno",
+    "SystemEnabledOff": "Sistem za vleko izklopljen",
+    "SystemEnabledOn": "Sistem za vleko vklopljen",
+    "TT": {
+      "CallReleaseTug": "Pokličite ali spustite vlačilca",
+      "CenterPlaneMode": "Osredotoči zemljevid na letalo ON/OFF",
+      "DecreaseSpeed": "Nazaj ali počasneje naprej",
+      "IncreaseSpeed": "Naprej ali počasneje nazaj",
+      "Left": "Pojdi levo",
+      "PausePushback": "Prekini ali nadaljuj vleko",
+      "Right": "Pojdi desno",
+      "SetReleaseParkingBrake": "Vklopi ali sprosti parkirno zavoro",
+      "SliderDirection": "Premakni za želeno smer",
+      "SliderSpeed": "Premakni za želeno hitrost",
+      "SystemEnabledOff": "Kliknite, če želite vklopiti sistem vleke.",
+      "SystemEnabledOn": "Kliknite, če želite popolnoma izklopiti sistem vleke.",
+      "ZoomIn": "Povečaj",
+      "ZoomOut": "Pomanjšaj"
+    },
+    "TugAttached": "Vlačilec je priklopljen",
+    "TugDirection": "Smer vlačilca",
+    "TugInTransit": "Čakam na vlačilca/pin",
+    "TugSpeed": "Hitrost vlačilca"
+  },
+  "Settings": {
+    "About": {
+      "Title": "Vizitka"
+    },
+    "AircraftOptionsPinPrograms": {
+      "AccelerationHeight": "Višina pospešitve (ft)",
+      "EngineOutAccelerationHeight": "Višina pospeška ob izgubi motorja (ft)",
+      "IsisBaroUnit": "ISIS baro enota",
+      "IsisMetricAltitude": "ISIS metrična nadmorska višina",
+      "LatLonExtendedFormat": "FMGC - format zapisa točk zemljepisne dolžine/širine",
+      "PaxSigns": "PAX znaki",
+      "RmpVhfSpacing": "RMP VHF razmik",
+      "ThrustReductionHeight": "Višina zmanjšanja potiska (ft)",
+      "Title": "Možnosti zrakoplova / pripeti programi",
+      "WeightUnit": "Enota teže"
+    },
+    "AtsuAoc": {
+      "AtisAtcSource": "ATIS/ATC vir",
+      "AutomaticallyImportSimBriefData": "Samodejni uvoz podatkov SimBrief",
+      "Enable": "Omogoči",
+      "EnableTelex": "Omogoči TELEX",
+      "ErrorReporting": "Poročanje napak",
+      "HoppieEnabled": "Hoppie omogočen",
+      "HoppieUserId": "Hoppie uporabniški ID",
+      "MetarSource": "METAR vir",
+      "OptionalA32nxErrorReporting": "Prostovoljno poročanje o napakah A32NX",
+      "PleaseCheckThatYouHaveCorrectlyEnteredYourSimbBriefUsernameOrPilotId": "Preverite, če ste pravilno vnesli svoje uporabniško ime SimBrief oz. ID pilota.",
+      "SimBriefUsernamePilotId": "Simbrief uporabniško ime/ID",
+      "TafSource": "TAF vir",
+      "Telex": "TELEX",
+      "TelexEnablesFreeTextAndLiveMap": "TELEX omogoča \"free text\" in zemljevid v živo. Če je omogočen, so podatki o položaju zrakoplova objavljeni za čas trajanja leta. Sporočila so javna in niso moderirana. TO FUNKCIJO UPORABLJAJTE NA LASTNO ODGOVORNOST. Če želite izvedeti več o TELEX-u in funkcijah, ki jih omogoča, obiščite spletno mesto https://docs.flybywiresim.com/telex.",
+      "TelexWarning": "TELEX opozorilo",
+      "ThereWasAnErrorEncounteredWhenValidatingYourHoppieID": "Prišlo je do napake pri preverjanju vašega ID-ja Hoppie-ja",
+      "Title": "ATSU / AOC",
+      "YouAreAbleToOptIntoAnonymousErrorReporting": "Lahko se odločite za anonimno poročanje o napakah, kar nam bo omogočilo hitrejše diagnosticiranje, spremljanje in odpravljanje težav. Funkcija je popolnoma neobvezna in vaši osebni podatki niso zbirani, vendar vam lahko omogoči, da lažje dobite podporo in hitreje odpravite težave, na katere naletite.",
+      "YourHoppieIdHasBeenRemoved": "Vaš ID Hoppie-ja je bil odstranjen",
+      "YourHoppieIdHasBeenValidated": "Vaš ID Hoppie-ja je bil potrjen",
+      "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "Vaš SimBrief PilotID je bil potrjen in posodobljen na"
+    },
+    "Audio": {
+      "Announcements": "Objave",
+      "BoardingMusic": "Glasba ob vkrcanju",
+      "EngineInteriorVolume": "Zvok motorja znotraj",
+      "ExteriorMasterVolume": "Zunanja glasnost",
+      "PassengerAmbience": "Zvoki potnikov",
+      "PtuAudibleInCockpit": "PTU slišen v pilotski kabini",
+      "Title": "Zvok",
+      "WindInteriorVolume": "Glasnost vetra znotraj"
+    },
+    "Fast": "Hitro",
+    "Instant": "Takoj",
+    "Real": "Resnično",
+    "Realism": {
+      "AdirsAlignTime": "ADIRS čas uskladitve",
+      "AutofillChecklists": "Samodejno izpolni kontrolne sezname",
+      "BoardingTime": "Čas vkrcanja",
+      "DmcSelfTestTime": "DMC samopreizkusni čas",
+      "HomeCockpitMode": "Način \"Home Cockpit\"",
+      "McduFocusTimeout": "MCDU časovna omejitev fokusa (sekunde)",
+      "McduKeyboardInput": "MCDU vnos s tipkovnico",
+      "PauseAtTod": "T/D pavza",
+      "PauseAtTodDistance": "T/D Razdalja pavze (nm)",
+      "SeparateTillerFromRudderInputs": "Ločite delovanje krmilnika od krmila",
+      "Title": "Realizem"
+    },
+    "SimOptions": {
+      "Active": "Aktivno",
+      "Auto": "Samodejno",
+      "Calibrate": "Kalibracija",
+      "ConesEnabled": "Varnostni stožci",
+      "DefaultBarometerUnit": "Privzeta barometrična enota",
+      "DynamicRegistrationDecal": "Dinamična registrska nalepka",
+      "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Omogoči povezavo s strežnikom MCDU (samodejna deaktivacija po 5 minutah, če ni uspešne povezave)",
+      "ExternalMcduServerPort": "Zunanji MCDU Port",
+      "Hpa": "hPa",
+      "Inactive": "Neaktivno",
+      "LoadOnly": "Naloži samo",
+      "None": "Brez",
+      "Off": "Izklopljeno",
+      "Save": "Shrani",
+      "SyncMsfsFlightPlan": "Sinhroniziraj z MSFS načrtom leta",
+      "ThrottleDetents": "Odkloni plinske ročke",
+      "Title": "Nastavitve simulatorja",
+      "UseCalculatedIlsSignals": "Uporaba izračunanih signalov ILS",
+      "WheelChocksEnabled": "Kolesne zagozde",
+      "inHg": "inHg"
+    },
+    "ThrottleConfig": {
+      "Apply": "Potrdi",
+      "AreYouSureThatYouWantToResetYourCurrentThrottleConfigurationToTheirDefaultStates": "Ali ste prepričani, da želite ponastaviti trenutne konfiguracijske nastavitve pogonskega krmilnika na privzeto stanje? To dejanje je nepovratno.",
+      "Axis": "Os",
+      "Back": "Nazaj",
+      "ConfigureEnd": "Končaj konfiguracijo",
+      "ConfigureStart": "Konfiguriraj začetek",
+      "CurrentValue": "Trenutna vrednost",
+      "Deadband": "Mrtvi trak",
+      "ErrorOverlapMsg": "se prekriva z/s",
+      "IndependentAxis": "Neodvisna os",
+      "LoadFromFile": "Naloži iz datoteke",
+      "PleaseEnterAValidDeadzone": "Prosimo, vnesite veljavno mrtvo cono",
+      "ResetToDefaults": "Ponastavitev na privzete nastavitve",
+      "ReverseFull": "Polna vzvratna moč",
+      "ReverseIdle": "Vzvratni prosti tek",
+      "ReverserOnAxis": "Vzvratni pogon na osi",
+      "SaveAndApply": "Shrani in potrdi",
+      "SetFromThrottle": "Nastavi iz plinske ročke",
+      "ThrottleConfigurationReset": "Ponastavitev konfiguracije plinske ročke"
+    },
+    "Title": "Nastavitve",
+    "Unrealistic": "Nerealistično",
+    "flyPad": {
+      "AutoBrightness": "Samodejna svetlost",
+      "AutomaticallyShowOnscreenKeyboard": "Samodejno prikaži zaslonsko tipkovnico",
+      "BatteryLifeEnabled": "Simulirano trajanje baterije",
+      "Blue": "Modro",
+      "Brightness": "Svetlost",
+      "Dark": "Temno",
+      "Language": "Jezik",
+      "Light": "Svetlo",
+      "Local": "Lokalni čas",
+      "LocalTimeFormat": "Format lokalnega časa",
+      "OnscreenKeyboardLayout": "Postavitev zaslonske tipkovnice",
+      "ShowColoredRawMetar": "Prikaži obarvan nerazčlenjen METAR",
+      "ShowStatusBarFlightProgressIndicator": "Pokaži kazalnik napredka leta v vrstici stanja",
+      "Theme": "Tema",
+      "TimeDisplayed": "Prikazan čas",
+      "Title": "flyPad",
+      "TwelveHours": "12h",
+      "TwentyFourHours": "24h",
+      "Utc": "UTC",
+      "UtcAndLocal": "UTC in lokalni čas"
+    }
+  },
+  "StatusBar": {
+    "Apr": "Apr",
+    "Aug": "Avg",
+    "Dec": "Dec",
+    "Feb": "Feb",
+    "Fri": "Pet",
+    "Jan": "Jan",
+    "Jul": "Jul",
+    "Jun": "Jun",
+    "Mar": "Mar",
+    "May": "Maj",
+    "Mon": "Pon",
+    "Nov": "Nov",
+    "Oct": "Okt",
+    "Sat": "Sob",
+    "Sep": "Sep",
+    "Sun": "Ned",
+    "TT": {
+      "ConnectedToLocalApi": "Povezan na lokalni API",
+      "DisconnectedFromLocalApi": "Odklopljen iz lokalnega API",
+      "TurnOffOrShutdownEfb": "Izklopi ali zaustavi EFB"
+    },
+    "Thu": "Čet",
+    "Tue": "Tor",
+    "Wed": "Sre"
+  }
+}

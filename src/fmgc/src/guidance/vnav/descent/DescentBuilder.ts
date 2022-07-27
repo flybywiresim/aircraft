@@ -5,10 +5,10 @@ import { DecelPathCharacteristics } from '@fmgc/guidance/vnav/descent/DecelPathB
 export class DescentBuilder {
     static computeDescentPath(
         geometry: Geometry,
-        decelPath: DecelPathCharacteristics,
+        decelPath?: DecelPathCharacteristics,
     ): TheoreticalDescentPathCharacteristics {
         const cruiseAlt = SimVar.GetSimVarValue('L:AIRLINER_CRUISE_ALTITUDE', 'number');
-        const verticalDistance = cruiseAlt - decelPath.top;
+        const verticalDistance = cruiseAlt - decelPath?.top ?? 0;
         const fpa = 3;
 
         if (DEBUG) {
@@ -16,7 +16,7 @@ export class DescentBuilder {
             console.log(verticalDistance);
         }
 
-        const tod = decelPath.decel + (verticalDistance / Math.tan((fpa * Math.PI) / 180)) * 0.000164579;
+        const tod = decelPath?.decel ?? 0 + (verticalDistance / Math.tan((fpa * Math.PI) / 180)) * 0.000164579;
 
         if (DEBUG) {
             console.log(`[FMS/VNAV] T/D: ${tod.toFixed(1)}nm`);

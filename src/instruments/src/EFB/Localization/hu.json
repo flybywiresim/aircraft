@@ -1,0 +1,577 @@
+{
+  "AirTrafficControl": {
+    "Active": "Aktív",
+    "ChangeATISATCSourceButton": "ATIS/ATC forrás módosítása",
+    "ConnectHoppieACARS": "Csatlakozás Hoppie ACARS-hoz",
+    "NoInformationAvailableForThisFrequency": "Nincs információ erről a frekvenciáról",
+    "SelectCorrectATISATCSource": "Ez az oldal csak akkor érhető el, ha az IVAO vagy a VATSIM van kiválasztva ATIS/ATC forrásként a beállítások oldalon.",
+    "SetActive": "Beállítás aktívként",
+    "SetStandby": "Beállítás készenléti állapotba",
+    "Standby": "Készenléti ",
+    "Title": "Légiforgalmi irányítás"
+  },
+  "Checklists": {
+    "AreYouSureYouWantToResetAllChecklists": "Biztos benne hogy az összes ellenőrző listát alaphelyzetbe állítja?",
+    "AreYouSureYouWantToResetChecklists": "Biztos benne hogy az összes ellenőrző listát alaphelyzetbe állítja?",
+    "ChecklistResetWarning": "Ellenőrzőlista visszaállítás figyelmeztetés",
+    "MarkChecklistAsComplete": "Ellenőrző lista megjelölése befejezettként",
+    "MarkItemAsComplete": "Elem megjelölése készként",
+    "ProceedToNextChecklist": "Tovább a következő ellenörzőlistára",
+    "ResetAll": "Összes alaphelyzetbe állítása",
+    "ResetChecklist": "Lista alaphelyzetbe állítása",
+    "TheLastChecklistIsComplete": "Az utolsó ellenőrzőlista kész",
+    "ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted": "Automatikusan kitöltött ellenörzőlista elemek vannak befejezetlenül",
+    "Title": "Ellenőrzőlisták"
+  },
+  "Dashboard": {
+    "ImportantInformation": {
+      "Checklists": {
+        "NoRelevantChecklists": "Nincs idevonatkozó ellenőrzőlista",
+        "Title": "Ellenőrzőlisták"
+      },
+      "GoToPage": "Ugrás az oldalra",
+      "Maintenance": {
+        "NoActiveFailures": "Nincs aktív meghibásodás",
+        "Title": "Karbantartás"
+      },
+      "PinnedCharts": {
+        "NoPinnedCharts": "Nincsenek rögzített chart-ok",
+        "Title": "Rögzített chart-ok"
+      },
+      "TT": {
+        "RearrangeWidgets": "Alkalmazások átrendezése"
+      },
+      "Title": "Fontos Információk",
+      "Weather": {
+        "AirPressure": "Légnyomás",
+        "DewPoint": "Harmatpont",
+        "IcaoInvalid": "ICAO helytelen vagy nincs elérhető METAR",
+        "Loading": "Betöltés",
+        "MetarParsingError": "A kapott METAR nem értelmezhető",
+        "NoIcaoProvided": "Nincs ICAO megadva",
+        "NotAvailableShort": "N/A",
+        "Raw": "Kód",
+        "TT": {
+          "SwitchToIconView": "Váltás ikon nézetre",
+          "SwitchToRawMetarView": "Váltás METAR kód nézetre"
+        },
+        "Temperature": "Hőmérséklet",
+        "Title": "Időjárás",
+        "WindSpeed": "Szélsebesség"
+      }
+    },
+    "Title": "Vezérlőpult",
+    "YourFlight": {
+      "Alternate": "Kitérő reptér",
+      "AverageWind": "Átlagos szél",
+      "CompanyRoute": "Vállalati útvonal",
+      "CostIndex": "Költség index",
+      "CruiseAlt": "Utazómagasság",
+      "ImportSimBriefData": "SimBrief adatok importálása",
+      "Route": "Útvonal",
+      "SimBriefDataNotYetLoaded": "SimBrief adatok még nincsenek betöltve.",
+      "Title": "A repülésed",
+      "ZFW": "ZFW"
+    }
+  },
+  "Dispatch": {
+    "Ofp": {
+      "ImportSimBriefData": "SimBrief adatok importálása",
+      "TT": {
+        "IncreaseFontSize": "Betűméret növelése",
+        "ReduceFontSize": "Betűméret csökkentése"
+      },
+      "Title": "OFP",
+      "YouHaveNotYetImportedAnySimBriefData": "Még nem importált SimBrief adatokat"
+    },
+    "Overview": {
+      "ActualGW": "Actual GW",
+      "Engines": "Hajtóművek",
+      "MMO": "MMO",
+      "MRW": "MRW",
+      "MTOW": "MTOW",
+      "MZFW": "MZFW",
+      "MaximumCargo": "Maximális rakomány",
+      "MaximumFuelCapacity": "Maximális üzemanyag ",
+      "MaximumPassengers": "Maximális utaslétszám",
+      "Model": "Típus",
+      "Range": "Hatótávolság",
+      "Title": "Áttekintés"
+    },
+    "Title": "Útvonal eligazítás"
+  },
+  "Failures": {
+    "Comfort": {
+      "Title": "Komfort"
+    },
+    "Compact": {
+      "Title": "Kompakt"
+    },
+    "FullSimulationOfTheFailuresBelowIsntYetGuaranteed": "Az alábbi hibák teljes szimulációja még nem garantált.",
+    "Search": "Keresés",
+    "Title": "Hibák"
+  },
+  "Ground": {
+    "Fuel": {
+      "CenterTank": "Középső tartály",
+      "Completed": "Befejezve",
+      "Defueling": "Üzemanyag leszívása",
+      "EstimatedDuration": "Becsült időtartam (perc)",
+      "EstimatedTime": "Estimated Time",
+      "LeftInnerTank": "Bal belső tartály",
+      "LeftOuterTank": "Bal külső tartály",
+      "ReadyToStart": "Indításra kész",
+      "Refuel": "Tankolás",
+      "RefuelTime": "Tankolási idő",
+      "Refueling": "Tankolás",
+      "RightInnerTank": "Jobb belső tartály",
+      "RightOuterTank": "Jobb külső tartály",
+      "TT": {
+        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "A repülőgépnek áramtalanított állapotban kell lennie a tankolási időtartam megváltoztatásához",
+        "FillBlockFuelFromSimBrief": "(block) üzemanyag kitöltése SimBrief-ből"
+      },
+      "Title": "Üzemanyag",
+      "TotalFuel": "Összes üzemanyag",
+      "Unavailable": "Nem elérhető"
+    },
+    "Payload": {
+      "BoardingTime": "Boarding Time",
+      "Cargo": "Cargo",
+      "Current": "Current",
+      "Passengers": "Passengers",
+      "Planned": "Planned",
+      "TT": {
+        "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Aircraft Must Be On the Ground and Have Engines Shutdown to Change Boarding Duration",
+        "FillPayloadFromSimbrief": "Fill Payload Information from Simbrief",
+        "MaxCargo": "Max Cargo",
+        "MaxPassengers": "Maximum Passengers",
+        "MaxZFW": "Maximum ZFW",
+        "MaxZFWCG": "Maximum ZFWCG",
+        "PerPaxBagWeight": "Per Passenger Bag Weight",
+        "PerPaxWeight": "Per Passenger Weight",
+        "StartBoarding": "Begin Boarding"
+      },
+      "Title": "Payload",
+      "ZFW": "ZFW",
+      "ZFWCG": "ZFWCG"
+    },
+    "Pushback": {
+      "Title": "Hátratolás"
+    },
+    "Services": {
+      "BaggageTruck": "Poggyászkocsi",
+      "CateringTruck": "Utasellátó",
+      "Cones": "Safety Cones",
+      "DoorAft": "Hátsó ajtó",
+      "DoorCargo": "Cargo Door",
+      "DoorFwd": "Első ajtó",
+      "ExternalPower": "Külső áramforrás",
+      "FuelTruck": "Tartálykocsi",
+      "JetBridge": "Utashíd",
+      "Title": "Szolgáltatások",
+      "WheelChocks": "Wheel Chocks"
+    },
+    "Title": "Földi kiszolgálás"
+  },
+  "Modals": {
+    "Cancel": "Mégse",
+    "Confirm": "Megerősítés",
+    "Okay": "OK"
+  },
+  "NavigationAndCharts": {
+    "All": "Mind",
+    "Altn": "Kitérő reptér",
+    "ExitFullscreenMode": "Kilépés teljes képernyős üzemmódból",
+    "From": "Induló",
+    "LocalFiles": {
+      "Both": "Mindkettő",
+      "EstablishingConnection": "Kapcsolat létrehozása",
+      "FailedToEstablishConnection": "Csatlakozás sikertelen",
+      "FileName": "Fájlnév",
+      "Image": "Kép",
+      "Pdf": "PDF",
+      "Retry": "Újra",
+      "Title": "Helyi fájlok"
+    },
+    "Navigraph": {
+      "AirportDoesNotExist": "A repülőtér nem létezik",
+      "AuthenticateWithNavigraph": "Hitelesítés a Navigraph segítségével",
+      "InsufficientEnv": "Nem megfelelő .env fájl",
+      "IntoYourBrowserAndEnterTheCodeBelow": "a böngészőbe, és írja be a kódot lentebb\n",
+      "LoadingMsg": "Loading",
+      "NoAirportSelected": "Nincs repülőtér kiválasztva",
+      "ResetNavigraphAuthentication": "Navigraph hitelesítés visszaállítása",
+      "ScanTheQrCodeOrOpen": "Szkennelje be a QR-kódot vagy megnyitás",
+      "Title": "Navigraph"
+    },
+    "PinnedCharts": {
+      "Delete": "Törlés",
+      "Edit": "Szerkesztés",
+      "NoItemsFound": "Nem található elem",
+      "SearchPlaceholder": "Keresés",
+      "ShowingChartsFromAllProviders": "Chart-ok megjelenítése az összes szolgáltatótól",
+      "SortMethods": {
+        "AlphabeticalAZ": "ABC sorrend - A -> Z",
+        "AlphabeticalZA": "ABC sorrend - Z -> A",
+        "FirstAccessed": "Először használt",
+        "LastAccessed": "Legutóbb használt",
+        "None": "Egyik sem"
+      },
+      "TT": {
+        "ChangeChartProvider": "Chart szolgáltató váltása",
+        "ChangeChartSortMethod": "Chart rendezési módszer módosítása",
+        "RemoveAllPinnedCharts": "Összes rögzített Chart eltávolítása"
+      },
+      "Title": "Rögzített chart-ok",
+      "View": "Megtekintés"
+    },
+    "PleaseWait": "Kérem várjon",
+    "ShowingAllItems": "Az összes elem megjelenítése",
+    "TT": {
+      "FitChartToHeight": "Chart illesztése a magassághoz",
+      "FitChartToWidth": "Chart illesztése a szélességhez",
+      "ResetMovement": "Mozgatás visszaállítása",
+      "RotateLeft45Degrees": "Forgatás balra 45 fokkal",
+      "RotateRight45Degrees": "Forgatás jobbra 45 fokkal",
+      "ZoomIn": "Nagyítás",
+      "ZoomOut": "Kicsinyítés"
+    },
+    "ThereAreNoChartsToDisplay": "Nincsenek megjeleníthető Chart-ok",
+    "ThereIsNoChartToDisplay": "Nincs megjeleníthető Chart",
+    "Title": "Navigáció és Chart-ok",
+    "To": "Érkező"
+  },
+  "Performance": {
+    "Data": "Adatok",
+    "Landing": {
+      "AirportIcao": "Repülőtér ICAO",
+      "ApproachSpeed": "Megközelítési sebesség",
+      "ApproachSpeedUnit": "kts",
+      "AutoLand": "Automata leszállás",
+      "Calculate": "Kiszámol",
+      "Clear": "Törlés",
+      "DropDownNo": "Nem",
+      "DropDownYes": "Igen",
+      "FillDataFrom": "Adat kitöltése",
+      "FlapsConfiguration": "Fékszárny konfiguráció",
+      "Low": "Alacsony",
+      "MaximumManual": "Maximális manuális",
+      "Medium": "Közepes",
+      "MetarErrorDialogMessage": "Az OFP-ből származó METAR nem sikerült elemezni. Szeretné automatikusan kitölteni az adatokat egy lekért METAR használatával?",
+      "MetarErrorDialogTitle": "Hiba az OFP METAR elemzésekor",
+      "OverweightProcedure": "Túlsúlyos eljárás",
+      "Qnh": "QNH",
+      "ReverseThrust": "Sugárfordító",
+      "RunwayAltitude": "Futópálya magassága",
+      "RunwayAltitudeUnit": "ft AMSL",
+      "RunwayCondition": "Futópálya állapota",
+      "RunwayConditions": {
+        "Dry": "Dry (6)",
+        "Good": "Good (5)",
+        "GoodMedium": "Good-Medium (4)",
+        "Medium": "Medium (3)",
+        "MediumPoor": "Medium-Poor (2)",
+        "Poor": "Poor (1)"
+      },
+      "RunwayHeading": "Futópálya iránya",
+      "RunwayHeadingUnit": "°",
+      "RunwayLda": "Futópálya hossza",
+      "RunwayLdaUnitFt": "ft",
+      "RunwayLdaUnitMeter": "m",
+      "RunwaySlope": "Futópálya lejtése",
+      "TT": {
+        "YouNeedToEnterAnIcaoCodeInOrderToMakeAMetarRequest": "Irjon be egy ICAO kódot a METAR lekérdezéséhez",
+        "YouNeedToLoadSimBriefDataInOrderToAutofillData": "Az adatok automatikus kitöltéséhez be kell töltenie a SimBrief adatokat"
+      },
+      "Temperature": "Hőmérséklet",
+      "Title": "Leszállás",
+      "UnitFt": "ft",
+      "UnitMeter": "m",
+      "Weight": "Súly",
+      "WindDirection": "Szélirány",
+      "WindDirectionUnit": "°",
+      "WindMagnitude": "Szélerősség",
+      "WindMagnitudeUnit": "kts"
+    },
+    "SYNC": "Szinkronizálás",
+    "Title": "Teljesítmény",
+    "TopOfDescent": {
+      "Data": {
+        "Angle": "Szög",
+        "CurrentAltitude": "Jelenlegi magasság",
+        "Distance": "Távolság",
+        "GroundSpeed": "Föld feletti sebesség",
+        "TargetAltitude": "Célmagasság",
+        "Title": "Adatok",
+        "UnitAngleDegrees": "fok",
+        "UnitFeet": "láb",
+        "UnitFtMin": "ft/perc",
+        "UnitNM": "NM",
+        "VerticalSpeed": "Függőleges sebesség"
+      },
+      "GroundSpeed": {
+        "Add": "Hozzáadás",
+        "FetchingSpeedFromSimulator": "Sebesség lekérése a szimulátorból",
+        "GroundSpeed": "Föld feletti sebesség",
+        "ManualInput": "Kézi bevitel",
+        "MinAltitude": "Min. Magasság",
+        "RemoveLast": "Utolsó eltávolítása",
+        "Sync": "Szinkronizálás",
+        "Title": "Föld feletti sebesség",
+        "UnitKnots": "Csomó",
+        "UnitKt": "kt"
+      },
+      "Result": {
+        "BeforeTarget": "Cél előtt",
+        "DesiredDescentAngle": "Kívánt süllyedési szög",
+        "DesiredVerticalSpeed": "Kívánt függőleges sebesség",
+        "StartYourDescentAbout": "Süllyedés megkezdése",
+        "Title": "Eredmény"
+      },
+      "TT": {
+        "DesynchronizeInputWithAircraftsCurrentAltitude": "Adat szinkronizálása a repülőgép jelenlegi magasságával",
+        "SynchronizeInputWithAircraftsCurrentAltitude": "Adat szinkronizálása a perülőgép jelenlegi magasságával"
+      },
+      "Title": "Süllyedés megkezdése"
+    }
+  },
+  "Presets": {
+    "AircraftStates": {
+      "Cancel": "Mégse",
+      "ColdDark": "Áramtalanított ",
+      "ConfirmationDialogMsg": "Kérem erősítse meg a beállítás betöltését",
+      "CurrentProcedureStep": "Aktuális részfolyamat",
+      "PleaseConfirmLoadingOfPreset": "Kérem erősítse meg a beállítás betöltését",
+      "ReadyPushback": "Hátratolásra kész",
+      "ReadyTakeoff": "Felszállásra kész",
+      "ReadyTaxi": "Gurulásra kész",
+      "SelectAPresetToLoad": "Válasszon egy beállítás a betöltéshez",
+      "TheAircraftMustBeOnTheGroundToLoadAPreset": "A repülőgépnek a földön kell lennie a beállítás betöltéséhez.",
+      "TheAircraftMustBeOntheGroundToLoadAPreset": "A repülőgépnek a földön kell lennie a beállítás betöltéséhez.",
+      "Title": "Repülőgép Állapotai",
+      "Turnaround": "Forduló"
+    },
+    "InteriorLighting": {
+      "AircraftNeedsToBePoweredToLoadPresets": "Helyezze áram alá a repülőgépet a beállítások betöltéséhez",
+      "AircraftNeedsToBePoweredToSavePresets": "Helyezze áram alá a repülőgépet a beállítások mentéséhez",
+      "LoadPreset": "Beállítás betöltése",
+      "LoadingPreset": "Beállítás betöltée folyamatban",
+      "NewNameConfirmationDialogMsg": "Új név megerősítése",
+      "NoName": "Nincs név",
+      "PleaseConfirmSavingPreset": "Erősítse meg a beállítás mentését",
+      "SavePreset": "Beállítás mentése",
+      "SavingPreset": "Beállítás mentése folyamatban",
+      "SelectAnInteriorLightingPresetToLoadOrSave": "Fedélzeti világítás betöltés és mentése",
+      "TT": {
+        "AircraftMustBePowered": "A repülőnek áramellátás alatt kell lennie",
+        "ClickTextToChangeThePresetsName": "Kattintson a szövegre a beállítás nevének megváltozatásához",
+        "LoadThisPreset": "Töltse be ezt a beállítást",
+        "SaveTheCurrentLightingLevels": "Jelenlegi fedélzet világítási konfiguráció mentése"
+      },
+      "TheAircraftMustBePoweredForInteriorLightingPresets": "A repülőnek áramellátás alatt kell lennie a belső világítási beállításokhoz",
+      "Title": "Kabin világítás"
+    },
+    "Title": "Beállítások"
+  },
+  "Pushback": {
+    "AvailableOnlyOnGround": "Pushback controls are only available on the ground",
+    "Backward": "Hátra",
+    "CallTug": "Vontató hívása",
+    "DisableSystemMessageBody": "Are you sure you want to disable the Pushback System? This will also release the tug.",
+    "DisableSystemMessageTitle": "Disable Pushback System",
+    "EnableSystemMessageBody": "The new flyPadOS 3 Pushback System can cause conflicts with other pushback add-ons. We recommend not to enable the system if you plan to use another pushback add-on. ",
+    "EnableSystemMessageTitle": "Enable Pushback System",
+    "Forward": "Előre",
+    "Halt": "Állj",
+    "LeavePageMessage": "Pausing Pushback",
+    "Left": "Left",
+    "Moving": "Moving",
+    "ParkingBrake": {
+      "Off": "Ki",
+      "On": "Be",
+      "Title": "Rögzítőfék"
+    },
+    "Right": "Right",
+    "SystemEnabledOff": "Pushback System Off",
+    "SystemEnabledOn": "Pushback System On",
+    "TT": {
+      "CallReleaseTug": "Call or release tug",
+      "CenterPlaneMode": "Center map on plane On/Off",
+      "DecreaseSpeed": "Backwards or slower forwards",
+      "IncreaseSpeed": "Forwards or slower backwards",
+      "Left": "Go left",
+      "PausePushback": "Pause or unpause pushback",
+      "Right": "Go right",
+      "SetReleaseParkingBrake": "Set or release parking brake",
+      "SliderDirection": "Move for desired direction",
+      "SliderSpeed": "Move for desired speed",
+      "SystemEnabledOff": "Click to turn the pushback system on.",
+      "SystemEnabledOn": "Click to turn the pushback system completely off.",
+      "ZoomIn": "Zoom in",
+      "ZoomOut": "Zoom out"
+    },
+    "TugAttached": "Tug is attached",
+    "TugDirection": "Vontatás iránya",
+    "TugInTransit": "Waiting for Tug/Pin",
+    "TugSpeed": "Vontatás sebessége"
+  },
+  "Settings": {
+    "About": {
+      "Title": "Névjegy"
+    },
+    "AircraftOptionsPinPrograms": {
+      "AccelerationHeight": "Gyorsulási magasság (ft)",
+      "EngineOutAccelerationHeight": "Hajtómű leállás gyorsulási magasság (ft)",
+      "IsisBaroUnit": "ISIS barométer egység",
+      "IsisMetricAltitude": "ISIS metrikus magasság",
+      "LatLonExtendedFormat": "FMGC Lat/Lon Útvonal formátum",
+      "PaxSigns": "Övek becsatolását jelző tabló",
+      "RmpVhfSpacing": "RMP VHF elosztás",
+      "ThrustReductionHeight": "Tolóerő csökkentési magasság (ft)",
+      "Title": "Repülő beállításai / Pin programok",
+      "WeightUnit": "Súly mértékegység"
+    },
+    "AtsuAoc": {
+      "AtisAtcSource": "ATIS/ATC forrás",
+      "AutomaticallyImportSimBriefData": "SimBrief adatok automatikus importálása",
+      "Enable": "Engedélyezés",
+      "EnableTelex": "TELEX engedélyezése",
+      "ErrorReporting": "Hibajelentés",
+      "HoppieEnabled": "Hoppie engedélyezése",
+      "HoppieUserId": "Hoppie felhasználói ID",
+      "MetarSource": "METAR Forrás",
+      "OptionalA32nxErrorReporting": "Opcionális A32NX hibajelentés",
+      "PleaseCheckThatYouHaveCorrectlyEnteredYourSimbBriefUsernameOrPilotId": "Kérlek ellenőrizd hogy helyesen adtad-e meg a SimBrief felhasználóneved vagy a pilot ID-t.",
+      "SimBriefUsernamePilotId": "SimBrief felhasználónév/Pilot ID",
+      "TafSource": "TAF forrása",
+      "Telex": "TELEX",
+      "TelexEnablesFreeTextAndLiveMap": "A TELEX lehetővé teszi a szabad üzenetküldést és az élő térképet. Ha engedélyezve van, a repülőgép helyzetadatait a repülés időtartamára közzéteszi. Az üzenetek nyilvánosak és nem moderáltak. EZT A FUNKCIÓT SAJÁT FELELŐSSÉGÉRE HASZNÁLJA. Ha többet szeretne megtudni a TELEX-ről és az általa elérhetőt funkciókról, kérjük, látogasson el a https://docs.flybywiresim.com/telex weboldalra.",
+      "TelexWarning": "TELEX figyelmeztetés",
+      "ThereWasAnErrorEncounteredWhenValidatingYourHoppieID": "Hiba a Hoppie-ID érvényesítése közben",
+      "Title": "ATSU / AOC",
+      "YouAreAbleToOptIntoAnonymousErrorReporting": "Felíratkozhat egy anonim hibajelentés küldő funkcióra, amely lehetővé teszi számunkra, hogy a problémákat gyorsabban megoldjuk, diagnosztizáljuk, és figyeljük. Ez a funkció teljesen opcionális, soha nem gyűjtjük az ön személyes adatait, de lehetővé teheti a könnyebb támogatást, és gyorsabban megoldhajuk a felmerülő problémákat.",
+      "YourHoppieIdHasBeenRemoved": "Az ön Hoppie-ID ja eltávolításra került",
+      "YourHoppieIdHasBeenValidated": "Az ön Hoppie-ID ja érvényesítve lett",
+      "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "Az ön SimBrief Pilot-ID ja érvényesítve és frissítve lett"
+    },
+    "Audio": {
+      "Announcements": "Közlemények",
+      "BoardingMusic": "Zene beszállításkor",
+      "EngineInteriorVolume": "Hajtómű hangerő (belső)",
+      "ExteriorMasterVolume": "Általános hangerő (külső)",
+      "PassengerAmbience": "Utasok hangja",
+      "PtuAudibleInCockpit": "PTU hallható a pilótafülkében",
+      "Title": "Audió",
+      "WindInteriorVolume": "Szél hangerő (belső)"
+    },
+    "Fast": "Gyors",
+    "Instant": "Azonnali",
+    "Real": "Valós",
+    "Realism": {
+      "AdirsAlignTime": "ADIRS kalibrációs idő",
+      "AutofillChecklists": "Ellenörző listák automatikus kitöltése",
+      "BoardingTime": "Beszállási idő",
+      "DmcSelfTestTime": "DMC Öntesztelési idő",
+      "HomeCockpitMode": "Épített kabin mód",
+      "McduFocusTimeout": "MCDU Fókusz időtúllépés (másodperc)",
+      "McduKeyboardInput": "MCDU Billentyűzet bevitel",
+      "PauseAtTod": "T/D Pause",
+      "PauseAtTodDistance": "T/D Pause Distance (nm)",
+      "SeparateTillerFromRudderInputs": "Orrkerék kormányzás leválasztása az oldalkormányzásról",
+      "Title": "Realizmus"
+    },
+    "SimOptions": {
+      "Active": "Aktív",
+      "Auto": "Automatikus",
+      "Calibrate": "Kalibrálás",
+      "ConesEnabled": "Safety Cones",
+      "DefaultBarometerUnit": "Alap barométer mértékegység",
+      "DynamicRegistrationDecal": "Dinamikus regisztrációs matrica",
+      "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "MCDU Server Csatlakozás engedélyezése (Automatikus kikapcsolás 5 perc után, ha nincs sikeres kapcsolat)",
+      "ExternalMcduServerPort": "Külső MCDU szerver port",
+      "Hpa": "hPa",
+      "Inactive": "Inaktív",
+      "LoadOnly": "Betöltés",
+      "None": "Nincs",
+      "Off": "Ki",
+      "Save": "Mentés",
+      "SyncMsfsFlightPlan": "MSFS Repülési terv szinkronizálása",
+      "ThrottleDetents": "Gázkar állások",
+      "Title": "Szimulátor Opciók",
+      "UseCalculatedIlsSignals": "Használjon Kiszámított ILS Jeleket",
+      "WheelChocksEnabled": "Wheel Chocks",
+      "inHg": "inHg"
+    },
+    "ThrottleConfig": {
+      "Apply": "Alkalmaz",
+      "AreYouSureThatYouWantToResetYourCurrentThrottleConfigurationToTheirDefaultStates": "Biztos benne, hogy vissza szeretné állítani az aktuális gázkar konfigurációs beállításokat az alapértelmezett állapotokra? Ez a változtatás visszafordíthatatlan.",
+      "Axis": "Tengely",
+      "Back": "Vissza",
+      "ConfigureEnd": "Konfigurálás vége",
+      "ConfigureStart": "Konfigurálás elkezdése",
+      "CurrentValue": "Jelenlegi érték",
+      "Deadband": "Holtsáv",
+      "ErrorOverlapMsg": "Átfedés a következővel",
+      "IndependentAxis": "Független tengely",
+      "LoadFromFile": "Betöltés fájlból",
+      "PleaseEnterAValidDeadzone": "Adjon meg egy érvényes holtjátékot",
+      "ResetToDefaults": "Visszaállítás alapértékekre",
+      "ReverseFull": "Teljes Sugárfordító",
+      "ReverseIdle": "Alap Sugárfordító",
+      "ReverserOnAxis": "Sugárfordító a tengelyen",
+      "SaveAndApply": "Mentés és alkalmazás",
+      "SetFromThrottle": "Beállítás gázkarról",
+      "ThrottleConfigurationReset": "Gázkar beállítások visszaállítása"
+    },
+    "Title": "Beállítások",
+    "Unrealistic": "Nem realisztikus",
+    "flyPad": {
+      "AutoBrightness": "Auto. fényerő",
+      "AutomaticallyShowOnscreenKeyboard": "Képernyőn megjelenő billentyűzet automatikus megjelenítése",
+      "BatteryLifeEnabled": "Battery Life Simulated",
+      "Blue": "Kék",
+      "Brightness": "Fényerő",
+      "Dark": "Sötét",
+      "Language": "Nyelv",
+      "Light": "Világos",
+      "Local": "Helyi",
+      "LocalTimeFormat": "Helyi idő formátum",
+      "OnscreenKeyboardLayout": "Képernyőn megjelenő billentyűzet elrendezése",
+      "ShowColoredRawMetar": "Színes METAR kód megjelenítése",
+      "ShowStatusBarFlightProgressIndicator": "Repülési folyamat megjelenítése az állapotsor jelzőjével",
+      "Theme": "Megjelenés",
+      "TimeDisplayed": "Megjelenített idő",
+      "Title": "flyPad",
+      "TwelveHours": "12h",
+      "TwentyFourHours": "24h",
+      "Utc": "UTC",
+      "UtcAndLocal": "UTC és helyi"
+    }
+  },
+  "StatusBar": {
+    "Apr": "Ápr.",
+    "Aug": "Aug.",
+    "Dec": "Dec.",
+    "Feb": "Feb.",
+    "Fri": "Pé",
+    "Jan": "Jan.",
+    "Jul": "Júl.",
+    "Jun": "Jún.",
+    "Mar": "Már.",
+    "May": "Máj.",
+    "Mon": "Hét",
+    "Nov": "Nov.",
+    "Oct": "Okt.",
+    "Sat": "Szo",
+    "Sep": "Szept.",
+    "Sun": "Va",
+    "TT": {
+      "ConnectedToLocalApi": "Csatlakozva a helyi API-hoz",
+      "DisconnectedFromLocalApi": "Leválasztva a helyi API-ról",
+      "TurnOffOrShutdownEfb": "EFB leállítása vagy kikapcsolása"
+    },
+    "Thu": "Csüt",
+    "Tue": "Ke",
+    "Wed": "Sze"
+  }
+}

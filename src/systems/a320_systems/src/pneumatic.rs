@@ -1085,12 +1085,8 @@ impl A320PneumaticOverheadPanel {
     }
 }
 impl EngineBleedPushbutton for A320PneumaticOverheadPanel {
-    fn left_engine_bleed_pushbutton_is_auto(&self) -> bool {
-        self.engine_1_bleed.is_auto()
-    }
-
-    fn right_engine_bleed_pushbutton_is_auto(&self) -> bool {
-        self.engine_2_bleed.is_auto()
+    fn engine_bleed_pushbuttons_are_auto(&self) -> [bool; 2] {
+        [self.engine_1_bleed.is_auto(), self.engine_2_bleed.is_auto()]
     }
 }
 impl SimulationElement for A320PneumaticOverheadPanel {

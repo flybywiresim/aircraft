@@ -154,6 +154,6 @@ export class CRLeg extends Leg {
     }
 
     get repr(): string {
-        return 'CR';
+        return `CR ${this.course}T to ${this.origin.ident}${this.origin.theta}`;
     }
 }
