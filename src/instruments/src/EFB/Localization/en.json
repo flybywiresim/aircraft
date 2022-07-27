@@ -489,7 +489,7 @@
       "DynamicRegistrationDecal": "Dynamic Registration Decal",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Enable MCDU Server Connection (Auto deactivates after 5 minutes if no successful connection)",
       "ExternalMcduServerPort": "External MCDU Server Port",
-      "EnabledSimbridgeConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Enable Simbridge Connection (Auto deactivates after 5 minutes if no successful connection)",
+      "EnableSimbridge": "Enable Simbridge Connection (Auto deactivates after 5 minutes if no successful connection)",
       "SimbridgePort": "Simbridge Port",
       "Hpa": "hPa",
       "Inactive": "Inactive",

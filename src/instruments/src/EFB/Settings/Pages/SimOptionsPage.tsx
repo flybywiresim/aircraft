@@ -68,7 +68,7 @@ export const SimOptionsPage = () => {
                         </SelectGroup>
                     </SettingItem>
 
-                    <SettingItem name={t('Settings.SimOptions.EnabledSimbridgeConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection')}>
+                    <SettingItem name={t('Settings.SimOptions.EnableSimbridge')}>
                         <SelectGroup>
                             <SelectItem
                                 className="text-center color-red"
