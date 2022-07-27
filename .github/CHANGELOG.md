@@ -33,6 +33,7 @@
 1. [SD] Improve F/CTL and WHEEL SD pages visuals - @lukecologne (luke)
 1. [MCDU] Added formatter to improve text alignment and ease integration - @derl30n (Leon)
 1. [EFB] Fix default unit to match UI and other consumers - @tracernz (Mike)
+1. [HYD] Added a new THS mechanism simulation - @Crocket63 (crocket)
 1. [HYD] More prox sensors and gear actuator failures - @Crocket63 (crocket)
 1. [MCDU] Added 4:3 aspect ratio compatibility to remote mcdu client - @tyler58546 (tyler58546)
 1. [HYD] Fixed too slow leak measurement valves operation - @Crocket63 (crocket)
@@ -44,6 +45,9 @@
 1. [FMGC] Allow stringing of STARs with non-runway approaches - @tracernz (Mike)
 1. [SD] Improve COND page visuals, fix some visual bugs on the SD - @lukecologne (luke)
 1. [HYD] Aerodynamic forces applied on gear system - @Crocket63 (crocket)
+1. [FMGC] Fix unnatural turn direction for path capture transition - @tracernz (Mike)
+1. [FMGC] Fix unnatural turn direction for course capture transition - @tracernz (Mike)
+1. [FMGC] Update spoiler CD for MSFS SDK clarification - @donstim (donbikes#4084)
 
 ## 0.8.0
 
