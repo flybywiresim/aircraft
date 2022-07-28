@@ -1020,9 +1020,8 @@ void ElacComputer::step()
       ElacComputer_P.CompareToConstant_const_m) || ElacComputer_U.in.discrete_inputs.ths_override_active) + (
       static_cast<uint32_T>(rtb_y_i) << 1)) << 1) + ElacComputer_DWork.Memory_PreviousInput];
     rtb_NOT_k = (rtb_AND_ai && ElacComputer_DWork.Memory_PreviousInput);
-    rtb_AND_ai = ((!ElacComputer_U.in.discrete_inputs.ths_override_active) && ((rtb_isEngagedInPitch &&
-      (ElacComputer_B.in_flight != 0.0) && ((priorityPitchPitchLawCap != ElacComputer_P.EnumeratedConstant_Value_i) && (
-      !rtb_AND1_h))) || rtb_NOT_k));
+    rtb_AND_ai = ((rtb_isEngagedInPitch && (ElacComputer_B.in_flight != 0.0) && ((priorityPitchPitchLawCap !=
+      ElacComputer_P.EnumeratedConstant_Value_i) && (!rtb_AND1_h))) || rtb_NOT_k);
     rtb_logic_crg14_total_sidestick_roll_command = rtb_Switch_b;
     if (!ElacComputer_DWork.eventTime_not_empty_a) {
       ElacComputer_DWork.eventTime_g = ElacComputer_U.in.time.simulation_time;
@@ -1516,6 +1515,8 @@ void ElacComputer::step()
       } else if (rtb_DataTypeConversion8 < ElacComputer_P.Saturation_LowerSat_o) {
         rtb_DataTypeConversion8 = ElacComputer_P.Saturation_LowerSat_o;
       }
+    } else if (ElacComputer_U.in.discrete_inputs.ths_override_active) {
+      rtb_DataTypeConversion8 = ElacComputer_P.Constant_Value_n;
     } else {
       switch (static_cast<int32_T>(ElacComputer_B.logic.active_pitch_law)) {
        case 0:

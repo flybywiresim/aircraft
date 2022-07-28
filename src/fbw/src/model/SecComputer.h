@@ -25,8 +25,6 @@ class SecComputer final
   };
 
   struct rtDW_MATLABFunction_SecComputer_l_T {
-    boolean_T output;
-    boolean_T output_not_empty;
     boolean_T previousInput;
     boolean_T previousInput_not_empty;
   };
@@ -637,6 +635,7 @@ class SecComputer final
     real_T Gain_Gain_m;
     real_T Saturation_UpperSat;
     real_T Saturation_LowerSat;
+    real_T Constant_Value_a;
     real_T Constant5_Value_m;
     real_T Constant6_Value;
     real_T Constant1_Value_d;

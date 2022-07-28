@@ -819,6 +819,7 @@ class ElacComputer final
     real_T Gain_Gain_l;
     real_T Saturation_UpperSat_g;
     real_T Saturation_LowerSat_o;
+    real_T Constant_Value_n;
     real_T Constant5_Value;
     real_T Constant6_Value;
     real_T Constant7_Value;
