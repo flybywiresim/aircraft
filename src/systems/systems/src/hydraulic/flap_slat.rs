@@ -257,11 +257,9 @@ impl FlapSlatAssembly {
         sfcc2_angle_request: Option<Angle>,
     ) {
         if let Some(sfcc1_angle) = sfcc1_angle_request {
-            self.final_requested_synchro_gear_position =
-                self.feedback_angle_from_surface_angle(sfcc1_angle);
+            self.final_requested_synchro_gear_position = sfcc1_angle;
         } else if let Some(sfcc2_angle) = sfcc2_angle_request {
-            self.final_requested_synchro_gear_position =
-                self.feedback_angle_from_surface_angle(sfcc2_angle);
+            self.final_requested_synchro_gear_position = sfcc2_angle;
         }
     }
 
@@ -430,6 +428,7 @@ impl FlapSlatAssembly {
         ))
     }
 
+    #[cfg(test)]
     /// Gets Feedback Position Pickup Unit (FPPU) position from current flap surface angle
     fn feedback_angle_from_surface_angle(&self, flap_surface_angle: Angle) -> Angle {
         Angle::new::<degree>(interpolation(
@@ -564,18 +563,20 @@ mod tests {
             self.right_motor_pressure.set_pressure(right_motor_pressure);
         }
 
-        fn set_angle_request(&mut self, angle_request: Option<Angle>) {
-            self.left_motor_angle_request = angle_request;
-            self.right_motor_angle_request = angle_request;
+        fn set_angle_request(&mut self, surface_angle_request: Option<Angle>) {
+            self.left_motor_angle_request = flap_fppu_from_surface_angle(surface_angle_request);
+            self.right_motor_angle_request = flap_fppu_from_surface_angle(surface_angle_request);
         }
 
         fn set_angle_per_sfcc(
             &mut self,
-            angle_request_sfcc1: Option<Angle>,
-            angle_request_sfcc2: Option<Angle>,
+            surface_angle_request_sfcc1: Option<Angle>,
+            surface_angle_request_sfcc2: Option<Angle>,
         ) {
-            self.left_motor_angle_request = angle_request_sfcc1;
-            self.right_motor_angle_request = angle_request_sfcc2;
+            self.left_motor_angle_request =
+                flap_fppu_from_surface_angle(surface_angle_request_sfcc1);
+            self.right_motor_angle_request =
+                flap_fppu_from_surface_angle(surface_angle_request_sfcc2);
         }
     }
     impl Aircraft for TestAircraft {
@@ -1082,5 +1083,23 @@ mod tests {
             ],
             Pressure::new::<psi>(MAX_CIRCUIT_PRESSURE_PSI),
         )
+    }
+
+    #[cfg(test)]
+    fn flap_fppu_from_surface_angle(surface_angle: Option<Angle>) -> Option<Angle> {
+        let synchro_gear_map = [
+            0., 65., 115., 120.53, 136., 145.5, 152., 165., 168.3, 179., 231.2, 251.97,
+        ];
+        let surface_degrees_breakpoints = [
+            0., 10.318, 18.2561, 19.134, 21.59, 23.098, 24.13, 26.196, 26.72, 28.42, 36.703, 40.,
+        ];
+
+        surface_angle.map(|angle| {
+            Angle::new::<degree>(interpolation(
+                &surface_degrees_breakpoints,
+                &synchro_gear_map,
+                angle.get::<degree>(),
+            ))
+        })
     }
 }

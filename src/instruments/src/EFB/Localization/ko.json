@@ -85,7 +85,7 @@
       "YouHaveNotYetImportedAnySimBriefData": "SimBrief 데이터를 불러오지 않았습니다."
     },
     "Overview": {
-      "ActualGW": "Actual GW",
+      "ActualGW": "실제 GW",
       "Engines": "엔진",
       "MMO": "최대 운항속도 (MMO)",
       "MRW": "최대 램프 중량 (MRW)",
@@ -133,6 +133,27 @@
       "Title": "연료",
       "TotalFuel": "총 연료",
       "Unavailable": "사용 불가"
+    },
+    "Payload": {
+      "BoardingTime": "승객 탑승 시간",
+      "Cargo": "수화물",
+      "Current": "현재",
+      "Passengers": "승객",
+      "Planned": "계획",
+      "TT": {
+        "AircraftMustBeColdAndDarkToChangeBoardingTimes": "탑승 소요 시간을 변경하려면 항공기가 지상에 있어야 하며, 엔진이 꺼져있어야 합니다",
+        "FillPayloadFromSimbrief": "Simbrief에서 페이로드 정보 채우기",
+        "MaxCargo": "최대 수화물",
+        "MaxPassengers": "최대 승객 수",
+        "MaxZFW": "최대 ZFW",
+        "MaxZFWCG": "최대 ZFWCG",
+        "PerPaxBagWeight": "승객 화물당 무게",
+        "PerPaxWeight": "승객당 무게",
+        "StartBoarding": "탑승 시작"
+      },
+      "Title": "Payload",
+      "ZFW": "ZFW",
+      "ZFWCG": "ZFWCG"
     },
     "Pushback": {
       "Title": "푸시백"
