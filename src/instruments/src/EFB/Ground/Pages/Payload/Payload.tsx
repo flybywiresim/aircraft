@@ -31,7 +31,7 @@ export const Payload = () => {
     const [paxWeight, setPaxWeight] = useSimVar('L:A32NX_WB_PER_PAX_WEIGHT', 'Number', 200);
     const [paxBagWeight, setPaxBagWeight] = useSimVar('L:A32NX_WB_PER_BAG_WEIGHT', 'Number', 200);
     const [galToKg] = useSimVar('FUEL WEIGHT PER GALLON', 'kilograms', 2_000);
-    const [estFuelBurn] = useSimVar('L:A32NX_ESTIMATED_FUEL_BURN', 'Kilograms', 2_000);
+    const [destEfob] = useSimVar('L:A32NX_DESTINATION_FUEL_ON_BOARD', 'Kilograms', 5_000);
 
     const [emptyWeight] = useSimVar('A:EMPTY WEIGHT', usingMetric ? 'Kilograms' : 'Pounds', 2_000);
 
@@ -497,14 +497,13 @@ export const Payload = () => {
 
         // TODO: Better fuel burn algorithm for estimation - consider this placeholder logic
         // Adjust MLW CG values based on estimated fuel burn
-        if (estFuelBurn > 0) {
+        if (destEfob > 0) {
             const OUTER_CELL_KG = 228 * galToKg;
             const INNER_CELL_KG = 1816 * galToKg;
             let centerTank = 0;
             let outerTanks = 0;
             let innerTanks = 0;
-            const fuelRemain = totalFuel - estFuelBurn;
-            let f = fuelRemain;
+            let f = destEfob;
 
             f -= (OUTER_CELL_KG) * 2;
             outerTanks = ((OUTER_CELL_KG) * 2) + Math.min(f, 0);
@@ -516,11 +515,11 @@ export const Payload = () => {
                 }
             }
 
-            const newMlw = newZfw + fuelRemain;
-            const fuelRemainMoment = centerTank * centerTankMoment + outerTanks * outerTankMoment + innerTanks * innerTankMoment;
-            const newMlwMoment = newZfwMoment + fuelRemainMoment;
-            const newMlwDesired = newZfwDesired + fuelRemain;
-            const newMlwDesiredMoment = newZfwDesiredMoment + fuelRemainMoment;
+            const newMlw = newZfw + destEfob;
+            const destFuelMoment = centerTank * centerTankMoment + outerTanks * outerTankMoment + innerTanks * innerTankMoment;
+            const newMlwMoment = newZfwMoment + destFuelMoment;
+            const newMlwDesired = newZfwDesired + destEfob;
+            const newMlwDesiredMoment = newZfwDesiredMoment + destFuelMoment;
 
             const newMlwCg = calculateCg(newMlw, newMlwMoment);
             const newMlwDesiredCg = calculateCg(newMlwDesired, newMlwDesiredMoment);
@@ -538,7 +537,7 @@ export const Payload = () => {
     }, [
         ...pax, ...paxDesired,
         ...cargo, ...cargoDesired,
-        ...fuel, estFuelBurn,
+        ...fuel, destEfob,
         paxWeight, paxBagWeight,
         emptyWeight,
     ]);

@@ -595,7 +595,6 @@ class FMCMainDisplay extends BaseAirliners {
             this.navigation.update();
             this.getGW();
             this.checkGWParams();
-            this.getLandWeight();
         }
 
         this.A32NXCore.update();
@@ -2066,6 +2065,10 @@ class FMCMainDisplay extends BaseAirliners {
 
             this._routeTripFuelWeight = (A32NX_FuelPred.computeNumbers(airDistance, altToUse, A32NX_FuelPred.computations.FUEL, false) + deviation) / 1000;
             this._routeTripTime = A32NX_FuelPred.computeNumbers(airDistance, altToUse, A32NX_FuelPred.computations.TIME, false);
+            // TODO FIXME: Remove placeholder efob logic
+            if (this._routeTripFuelWeight) {
+                SimVar.SetSimVarValue('L:A32NX_DESTINATION_FUEL_ON_BOARD', 'Kilograms', this.getDestEFOB(true) * 1000);
+            }
         }
     }
 
@@ -4870,12 +4873,6 @@ class FMCMainDisplay extends BaseAirliners {
     //TODO: Can this be util?
     getCG() {
         return SimVar.GetSimVarValue("CG PERCENT", "Percent over 100") * 100;
-    }
-
-    getLandWeight() {
-        this.tryFuelPlanning();
-        // Set Destination WP Distance SimVar
-        SimVar.SetSimVarValue('L:A32NX_ESTIMATED_FUEL_BURN', 'Kilograms', this._routeTripFuelWeight * 1000);
     }
 
     //TODO: make this util or local var?
