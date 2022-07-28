@@ -133,7 +133,8 @@ export const Payload = () => {
             const perBagWeight = Units.kilogramToUser(simbriefBagWeight);
             setPaxBagWeight(perBagWeight);
             setPaxWeight(Units.kilogramToUser(simbriefPaxWeight));
-            setTargetPax(simbriefPax);
+            // TODO: Popup showing that maximum passengers number is incorrect if input is greater than maximum pax count
+            setTargetPax(simbriefPax > maxPax() ? maxPax() : simbriefPax);
             setTargetCargo(simbriefBag, Units.kilogramToUser(simbriefFreight), perBagWeight);
         } else {
             const perBagWeight = Units.poundToUser(simbriefBagWeight);
