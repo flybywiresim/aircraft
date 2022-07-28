@@ -19,10 +19,9 @@ class LiveryPrinter extends TemplateElement {
                 return;
             }
             this.Update();
-            requestAnimationFrame(updateLoop);
         };
         this._isConnected = true;
-        requestAnimationFrame(updateLoop);
+        setInterval(updateLoop, 100);
     }
     disconnectedCallback() {
     }
