@@ -22,11 +22,6 @@ class LiveryPrinter extends TemplateElement {
         };
         this._isConnected = true;
         setInterval(updateLoop, 100);
-    }
-    disconnectedCallback() {
-    }
-    Update() {
-
         Coherent.on('A32NX_PRINT', (lines) => {
             const currentPageID = SimVar.GetSimVarValue("L:A32NX_PAGE_ID", "number") - 1;
             if (currentPageID >= 0 && this.pages[currentPageID] == null) {
@@ -36,7 +31,10 @@ class LiveryPrinter extends TemplateElement {
                 this.pages[currentPageID] = lines;
             }
         });
-
+    }
+    disconnectedCallback() {
+    }
+    Update() {
         if (this.pages == null) {
             return;
         }
