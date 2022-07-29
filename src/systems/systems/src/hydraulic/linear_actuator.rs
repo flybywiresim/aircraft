@@ -918,8 +918,6 @@ impl<const N: usize> HydraulicLinearActuatorAssembly<N> {
                 min_velocity = min_velocity.max(new_min);
 
                 no_lock = false;
-
-                break;
             }
         }
 
