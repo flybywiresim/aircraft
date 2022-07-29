@@ -239,6 +239,7 @@ class CDUFlightPlanPage {
                             break;
                         case 16: // PI
                             fixAnnotation = `PROC ${wp.turnDirection === 1 ? 'L' : 'R'}`;
+                            ident = "INTCPT";
                             break;
                         case 17: // RF
                             fixAnnotation = `${("" + Math.round(wp.additionalData.radius)).padStart(2, "\xa0")}\xa0ARC`;
@@ -829,6 +830,8 @@ function legTypeIsCourseReversal(wp) {
 }
 
 function legTurnIsForced(wp) {
-    // left || right
-    return wp.turnDirection === 1 || wp.turnDirection === 2;
+    // forced turns are only for straight legs
+    return (wp.turnDirection === 1 /* Left */ || wp.turnDirection === 2 /* Right */)
+        // eslint-disable-next-line semi-spacing
+        && wp.additionalData.legType !== 1 /* AF */ && wp.additionalData.legType !== 17 /* RF */;
 }

@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
+import { TurnAreaExceedanceLeft, TurnAreaExceedanceRight } from '@fmgc/components/fms-messages/TurnAreaExceedance';
+import { FlightPlanManager } from '@shared/flightplan';
 import { FMMessage, FMMessageTriggers } from '@shared/FmMessages';
 import { FmgcComponent } from '../FmgcComponent';
 import { GpsPrimary } from './GpsPrimary';
@@ -23,6 +25,8 @@ import { MapPartlyDisplayedLeft, MapPartlyDisplayedRight } from './MapPartlyDisp
 export class FmsMessages implements FmgcComponent {
     private listener = RegisterViewListener('JS_LISTENER_SIMVARS', null, true);
 
+    private baseInstrument: BaseInstrument;
+
     private ndMessageFlags: Record<'L' | 'R', number> = {
         L: 0,
         R: 0,
@@ -33,10 +37,18 @@ export class FmsMessages implements FmgcComponent {
         new GpsPrimaryLost(),
         new MapPartlyDisplayedLeft(),
         new MapPartlyDisplayedRight(),
+        new TurnAreaExceedanceLeft(),
+        new TurnAreaExceedanceRight(),
     ];
 
-    init(): void {
-        // Do nothing
+    init(baseInstrument: BaseInstrument, _flightPlanManager: FlightPlanManager): void {
+        this.baseInstrument = baseInstrument;
+
+        for (const selector of this.messageSelectors) {
+            if (selector.init) {
+                selector.init(this.baseInstrument);
+            }
+        }
     }
 
     update(deltaTime: number): void {
@@ -172,6 +184,8 @@ export interface FMMessageSelector {
     message: FMMessage;
 
     efisSide?: 'L' | 'R';
+
+    init?(baseInstrument: BaseInstrument): void;
 
     /**
      * Optionally triggers a message when there isn't any other system or Redux update triggering it.

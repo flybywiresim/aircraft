@@ -321,8 +321,9 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idAileronPositionRight;
   std::shared_ptr<AnimationAileronHandler> animationAileronHandler;
 
+  std::unique_ptr<LocalVariable> idThs1MotorActive;
+  std::unique_ptr<LocalVariable> idThs1MotorCommand;
   std::unique_ptr<LocalVariable> idElevatorPosition;
-
   std::unique_ptr<LocalVariable> idRudderPosition;
 
   std::unique_ptr<LocalVariable> idRadioReceiverUsageEnabled;
