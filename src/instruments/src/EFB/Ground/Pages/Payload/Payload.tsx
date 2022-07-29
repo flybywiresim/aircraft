@@ -798,8 +798,9 @@ export const Payload = () => {
                     <div className="border border-theme-accent col-1">
                         <ChartWidget
                             width={525}
-                            height={475}
-                            envelope={Loadsheet.performanceEnvelope}
+                            height={511}
+                            envelope={Loadsheet.chart.performanceEnvelope}
+                            limits={Loadsheet.chart.chartLimits}
                             cg={boardingStarted ? Math.round(cg * 100) / 100 : Math.round(desiredCg * 100) / 100}
                             totalWeight={boardingStarted ? Math.round(Units.userToKilogram(totalWeight)) : Math.round(Units.userToKilogram(totalDesiredWeight))}
                             mldwCg={boardingStarted ? Math.round(mlwCg * 100) / 100 : Math.round(mlwDesiredCg * 100) / 100}

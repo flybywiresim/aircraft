@@ -2,12 +2,13 @@ import { usePersistentProperty } from '@instruments/common/persistence';
 import { useSimVar } from '@instruments/common/simVars';
 import { Units } from '@shared/units';
 import React, { useEffect, useRef, useState } from 'react';
-import { CanvasConst, PerformanceEnvelope } from './Constants';
+import { CanvasConst, PerformanceEnvelope, ChartLimits } from './Constants';
 
 interface ChartWidgetProps {
     width: number,
     height: number,
     envelope: PerformanceEnvelope,
+    limits: ChartLimits,
     totalWeight: number,
     cg: number,
     mldw: number,
@@ -17,7 +18,7 @@ interface ChartWidgetProps {
 }
 
 export const ChartWidget: React.FC<ChartWidgetProps> = ({
-    width, height, envelope,
+    width, height, envelope, limits,
     totalWeight, cg,
     mldw, mldwCg,
     zfw, zfwCg,
@@ -61,16 +62,16 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
         ctx.strokeStyle = '#2B313B';
         ctx.lineWidth = 1;
 
-        const yStep = height / (CanvasConst.weightLines - 1);
-        const xStep = width / CanvasConst.cgLines;
+        const yStep = height / limits.weight.lines;
+        const xStep = width / limits.cg.lines;
         const shiftX = (width / 18);
 
-        const weightToY = (weight: number) => (80 - (weight / 1000)) * yStep / 5;
-        const cgToX = (cg: number) => ((cg - 12) * xStep);
+        const weightToY = (weight: number) => (limits.weight.max - weight) * yStep / (limits.weight.scale);
+        const cgToX = (cg: number) => ((cg - limits.cg.min) * xStep);
         const cgWeightToXY = (cg: number, weight: number): [number, number] => {
             const xStart = cgToX(cg);
             const y = weightToY(weight);
-            const x = shiftX + xStart + ((CanvasConst.yScale - y) * Math.tan(15 / 16 * Math.PI + (cg - 12) * CanvasConst.cgAngle));
+            const x = shiftX + xStart + ((CanvasConst.yScale - y) * Math.tan(15 / 16 * Math.PI + (cg - limits.cg.min) * limits.cg.angleRad));
             return [x, y];
         };
 
@@ -90,10 +91,10 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
             ctx.lineWidth = 1;
             ctx.globalAlpha = (theme !== 'light') ? 0.5 : 0.25;
             const cgWidth = width - shiftX;
-            for (let cgPercent = 12, x = 0; x < cgWidth; x += xStep, cgPercent++) {
+            for (let cgPercent = limits.cg.min, x = 0; x < cgWidth; x += xStep, cgPercent++) {
                 if (x > 0 && (x < cgWidth)) {
-                    ctx.lineWidth = cgPercent % 5 ? 0.25 : 1;
-                    ctx.strokeStyle = cgPercent % 5 ? '#2B313B' : '#394049';
+                    ctx.lineWidth = cgPercent % limits.cg.highlight ? 0.25 : 1;
+                    ctx.strokeStyle = cgPercent % limits.cg.highlight ? '#2B313B' : '#394049';
 
                     const [x1, y1] = cgWeightToXY(cgPercent, 35000);
                     const [x2, y2] = cgWeightToXY(cgPercent, 80000);
@@ -233,44 +234,43 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
                 window.cancelAnimationFrame(frameId);
             }
         };
-    }, [draw]);
+    });
 
-    // TODO FIXME: Make Dynamic
-    const mtow = { transform: `translateX(${(zfwCg < 32 ? 0.65 : 0.2) * width}px) translateY(${height * 0.02}px)` };
-    const mlw = { transform: `translateX(${(zfwCg < 32 ? 0.65 : 0.2) * width}px) translateY(${height * 0.22}px)` };
-    const mzfw = { transform: `translateX(${(zfwCg < 32 ? 0.65 : 0.2) * width}px) translateY(${height * 0.29}px)` };
+    const mtow = { transform: `translateX(${(zfwCg < limits.cg.overlap ? limits.labels.mtow.x1 : limits.labels.mtow.x2) * width}px) translateY(${height * limits.labels.mtow.y}px)` };
+    const mlw = { transform: `translateX(${(zfwCg < limits.cg.overlap ? limits.labels.mlw.x1 : limits.labels.mlw.x2) * width}px) translateY(${height * limits.labels.mlw.y}px)` };
+    const mzfw = { transform: `translateX(${(zfwCg < limits.cg.overlap ? limits.labels.mzfw.x1 : limits.labels.mzfw.x2) * width}px) translateY(${height * limits.labels.mzfw.y}px)` };
 
-    const cgRow1 = { transform: `translateX(${0.02 * width}px) translateY(${height * -0.08}px)` };
-    const cgRow2 = { transform: `translateX(${0.2 * width}px) translateY(${height * -0.08}px)` };
-    const cgRow3 = { transform: `translateX(${0.38 * width}px) translateY(${height * -0.08}px)` };
-    const cgRow4 = { transform: `translateX(${0.56 * width}px) translateY(${height * -0.08}px)` };
-    const cgRow5 = { transform: `translateX(${0.74 * width}px) translateY(${height * -0.08}px)` };
-    const cgRow6 = { transform: `translateX(${0.92 * width}px) translateY(${height * -0.08}px)` };
+    const [cgRows, setCgRows] = useState<Object[]>([]);
+    const [weightRows, setWeightRows] = useState<Object[]>([]);
 
-    const wRow1 = { transform: `translateX(${-0.09 * width}px) translateY(${height * -0.02}px)` };
-    const wRow2 = { transform: `translateX(${-0.09 * width}px) translateY(${height * 0.20}px)` };
-    const wRow3 = { transform: `translateX(${-0.09 * width}px) translateY(${height * 0.42}px)` };
-    const wRow4 = { transform: `translateX(${-0.09 * width}px) translateY(${height * 0.64}px)` };
-    const wRow5 = { transform: `translateX(${-0.09 * width}px) translateY(${height * 0.87}px)` };
-    const wUnits = { transform: `translateX(${-0.155 * width}px) translateY(${height * 0.95}px)` };
+    const weightUnits = { transform: `translateX(${CanvasConst.weightAxis.units.x * width}px) translateY(${CanvasConst.weightAxis.units.y * height}px)` };
+
+    useEffect(() => {
+        const cg: Object[] = [];
+        for (let i = 0; i < limits.cg.values.length; i++) {
+            const newRow = { transform: `translateX(${(CanvasConst.cgAxis.xOffset + i * CanvasConst.cgAxis.xSpacing) * width}px) translateY(${height * CanvasConst.cgAxis.y}px)` };
+            cg.push(newRow);
+        }
+        setCgRows(cg);
+        const wg: Object[] = [];
+        for (let i = 0; i < limits.weight.values.length; i++) {
+            const newRow = { transform: `translateX(${CanvasConst.weightAxis.x * width}px) translateY(${height * (CanvasConst.weightAxis.yOffset + i * CanvasConst.weightAxis.ySpacing)}px)` };
+            wg.push(newRow);
+        }
+        setWeightRows(wg);
+    }, []);
+
+    const cgAxis = cgRows.map((cgRow, i) => <p className="absolute top-0 font-mono font-medium text-md" style={cgRow}>{`${limits.cg.values[i]}%`}</p>);
+    const weightAxis = weightRows.map((weightRow, i) => (
+        <p className="absolute top-0 font-mono font-medium text-md" style={weightRow}>{Math.round(Units.kilogramToUser(limits.weight.values[i] * 1000) / 1000)}</p>
+    ));
 
     return (
         <div className="relative">
             <canvas ref={canvasRef} />
-            <p className="absolute top-0 font-mono font-medium text-md" style={cgRow1}>15%</p>
-            <p className="absolute top-0 font-mono font-medium text-md" style={cgRow2}>20%</p>
-            <p className="absolute top-0 font-mono font-medium text-md" style={cgRow3}>25%</p>
-            <p className="absolute top-0 font-mono font-medium text-md" style={cgRow4}>30%</p>
-            <p className="absolute top-0 font-mono font-medium text-md" style={cgRow5}>35%</p>
-            <p className="absolute top-0 font-mono font-medium text-md" style={cgRow6}>40%</p>
-
-            <p className="absolute top-0 font-mono font-medium text-md" style={wRow1}>{Math.round(Units.kilogramToUser(80000) / 1000)}</p>
-            <p className="absolute top-0 font-mono font-medium text-md" style={wRow2}>{Math.round(Units.kilogramToUser(70000) / 1000)}</p>
-            <p className="absolute top-0 font-mono font-medium text-md" style={wRow3}>{Math.round(Units.kilogramToUser(60000) / 1000)}</p>
-            <p className="absolute top-0 font-mono font-medium text-md" style={wRow4}>{Math.round(Units.kilogramToUser(50000) / 1000)}</p>
-            <p className="absolute top-0 font-mono font-medium text-md" style={wRow5}>{Math.round(Units.kilogramToUser(40000) / 1000)}</p>
-            <p className="absolute top-0 font-mono text-sm font-medium" style={wUnits}>{usingMetric ? 'x 1000 kgs' : 'x 1000 lbs'}</p>
-
+            {cgAxis}
+            {weightAxis}
+            <p className="absolute top-0 font-mono text-sm font-medium" style={weightUnits}>{usingMetric ? 'x 1000 kgs' : 'x 1000 lbs'}</p>
             <p className="absolute top-0 font-mono font-medium drop-shadow text-theme-highlight" style={mtow}>{flightPhase <= 1 || flightPhase >= 7 ? 'MTOW' : 'FLIGHT'}</p>
             <p className="absolute top-0 font-mono font-medium text-colors-lime-500" style={mlw}>MLDW</p>
             <p className="absolute top-0 font-mono font-medium text-theme-text" style={mzfw}>MZFW</p>
