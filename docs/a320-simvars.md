@@ -2830,6 +2830,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Percent over 100
     - {gear}
         - CENTER
+        - CENTER_SMALL
         - LEFT
         - RIGHT
 

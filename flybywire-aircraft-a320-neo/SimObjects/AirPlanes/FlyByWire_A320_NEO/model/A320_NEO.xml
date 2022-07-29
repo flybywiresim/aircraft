@@ -134,6 +134,16 @@
             <UseTemplate Name="ASOBO_GEAR_Center_Template">
                 <ANIM_NAME>c_gear</ANIM_NAME>
             </UseTemplate>
+            <UseTemplate Name="ASOBO_GT_Anim">
+                <ANIM_NAME>c_gear_door1</ANIM_NAME>
+                <ANIM_CODE>(L:A32NX_GEAR_DOOR_CENTER_POSITION) 0.17 *</ANIM_CODE>
+                <ANIM_LENGTH>160</ANIM_LENGTH>
+            </UseTemplate>
+            <UseTemplate Name="ASOBO_GT_Anim">
+                <ANIM_NAME>c_gear_door2</ANIM_NAME>
+                <ANIM_CODE>(L:A32NX_GEAR_CENTER_SMALL_POSITION) 0.17 *</ANIM_CODE>
+                <ANIM_LENGTH>160</ANIM_LENGTH>
+            </UseTemplate>
 			<!-- GEAR C DECALALS -->
 			<UseTemplate Name="ASOBO_GEAR_Center_Template">
 				<ANIM_NAME>C_WHEEL_BASE-DECAL-Anim</ANIM_NAME>
@@ -141,12 +151,22 @@
             <UseTemplate Name="ASOBO_GEAR_Left_Template">
                 <ANIM_NAME>l_gear</ANIM_NAME>
             </UseTemplate>
+            <UseTemplate Name="ASOBO_GT_Anim">
+                <ANIM_NAME>l_gear_door</ANIM_NAME>
+                <ANIM_CODE>(L:A32NX_GEAR_DOOR_LEFT_POSITION) 0.17 *</ANIM_CODE>
+                <ANIM_LENGTH>160</ANIM_LENGTH>
+            </UseTemplate>
             <UseTemplate Name="ASOBO_GEAR_Right_Template">
                 <ANIM_NAME>r_gear</ANIM_NAME>
                 <!-- ANIM EVENTS -->
                 <ANIM_EVENT_EFFECT_NAME>CAM_LANDINGGEARS</ANIM_EVENT_EFFECT_NAME>
                 <NORMALIZED_TIME>0.5</NORMALIZED_TIME>
                 <DIRECTION>Both</DIRECTION>
+            </UseTemplate>
+            <UseTemplate Name="ASOBO_GT_Anim">
+                <ANIM_NAME>r_gear_door</ANIM_NAME>
+                <ANIM_CODE>(L:A32NX_GEAR_DOOR_RIGHT_POSITION) 0.17 *</ANIM_CODE>
+                <ANIM_LENGTH>160</ANIM_LENGTH>
             </UseTemplate>
             <UseTemplate Name="ASOBO_GEAR_Center_Tire_Template">
                 <ANIM_NAME>c_tire_anim</ANIM_NAME>
