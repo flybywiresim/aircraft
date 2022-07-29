@@ -49,8 +49,6 @@ const TerrainMapTransition: React.FC<TerrainMapTransitionProps> = ({ x, y, width
         useState({ opacity: 0.01, index: 0 }),
         useState({ opacity: 0.01, index: 0 }),
         useState({ opacity: 0.01, index: 0 }),
-        useState({ opacity: 0.01, index: 0 }),
-        useState({ opacity: 0.01, index: 0 }),
     ];
 
     const [frameTimer, setFrameTimer] = useState<NodeJS.Timer | undefined>(undefined);
