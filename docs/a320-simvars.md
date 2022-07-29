@@ -1473,6 +1473,26 @@
       0.0 | neutral
       1.0 | full up
 
+- A32NX_THS_{number}_ACTIVE_MODE_COMMANDED
+    - Boolean
+    - Trim electric motor {number} is commanded active
+    - {number}
+        - 1
+        - 2
+        - 3
+
+- A32NX_THS_{number}_COMMANDED_POSITION
+    - Degree
+    - Trim electric motor {number} position demand in trim surface deflection angle
+
+- A32NX_HYD_THS_TRIM_MANUAL_OVERRIDE
+    - Boolean
+    - Feedback signal from the trim actuator system. True if pilot is moving or holding trim wheel
+
+- A32NX_HYD_TRIM_WHEEL_PERCENT
+    - Percent
+    - Trim wheel position in percent
+
 - A32NX_ELEVATOR_DEFLECTION_DEMAND
     - Number
     - Provides the elevator position demand to hydraulics

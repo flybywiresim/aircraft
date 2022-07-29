@@ -19,6 +19,7 @@ import { PathVector, PathVectorType } from '@fmgc/guidance/lnav/PathVector';
 import { TurnDirection } from '@fmgc/types/fstypes/FSEnums';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { AFLeg } from '@fmgc/guidance/lnav/legs/AF';
+import { ControlLaw } from '@shared/autopilot';
 import { arcDistanceToGo, arcLength, maxBank } from '../CommonGeometry';
 import { CFLeg } from '../legs/CF';
 import { CRLeg } from '../legs/CR';
@@ -78,8 +79,14 @@ export class CourseCaptureTransition extends Transition {
 
     public predictedPath: PathVector[] = [];
 
+    private forcedTurnComplete = false;
+
+    private computedTurnDirection = TurnDirection.Either;
+
     recomputeWithParameters(_isActive: boolean, tas: Knots, gs: Knots, ppos: Coordinates, _trueTrack: DegreesTrue) {
         const termFix = this.previousLeg.getPathEndPoint();
+
+        this.computedTurnDirection = TurnDirection.Either;
 
         let courseChange;
         let initialTurningPoint;
@@ -128,6 +135,8 @@ export class CourseCaptureTransition extends Transition {
             return;
         }
 
+        this.computedTurnDirection = this.clockwise ? TurnDirection.Right : TurnDirection.Left;
+
         this.isNull = false;
         this.isArc = true;
         this.startPoint = initialTurningPoint;
@@ -162,15 +171,7 @@ export class CourseCaptureTransition extends Transition {
     }
 
     isAbeam(ppos: LatLongData): boolean {
-        const [inbound, outbound] = this.getTurningPoints();
-
-        const inBearingAc = Avionics.Utils.computeGreatCircleHeading(inbound, ppos);
-        const inHeadingAc = Math.abs(MathUtils.diffAngle(this.previousLeg.outboundCourse, inBearingAc));
-
-        const outBearingAc = Avionics.Utils.computeGreatCircleHeading(outbound, ppos);
-        const outHeadingAc = Math.abs(MathUtils.diffAngle(this.nextLeg.inboundCourse, outBearingAc));
-
-        return inHeadingAc <= 90 && outHeadingAc >= 90;
+        return !this.isNull && this.computedTurnDirection !== TurnDirection.Either && !this.forcedTurnComplete && this.previousLeg.getDistanceToGo(ppos) <= 0;
     }
 
     get distance(): NauticalMiles {
@@ -192,6 +193,24 @@ export class CourseCaptureTransition extends Transition {
     }
 
     getGuidanceParameters(ppos: LatLongAlt, trueTrack: number, tas: Knots, gs: Knots): GuidanceParameters | null {
+        if (this.computedTurnDirection !== TurnDirection.Either) {
+            const turnSign = this.computedTurnDirection === TurnDirection.Left ? -1 : 1;
+            let trackAngleError = this.nextLeg.inboundCourse - trueTrack;
+            if (turnSign !== Math.sign(trackAngleError)) {
+                trackAngleError += turnSign * 360;
+            }
+            if (Math.abs(trackAngleError) > 130) {
+                const phiCommand = turnSign * maxBank(tas, false);
+                return {
+                    law: ControlLaw.LATERAL_PATH,
+                    trackAngleError: 0,
+                    phiCommand,
+                    crossTrackError: 0,
+                };
+            }
+            this.forcedTurnComplete = true;
+        }
+
         // FIXME PPOS guidance and all...
         return this.nextLeg.getGuidanceParameters(ppos, trueTrack, tas, gs);
     }
