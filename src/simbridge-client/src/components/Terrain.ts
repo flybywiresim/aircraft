@@ -6,11 +6,11 @@ export class Terrain {
         return fetch(`${simbridgeUrl}/api/v1/terrain/available`).then((response) => response.ok);
     }
 
-    public static async setCurrentPosition(position: { latitude: number, longitude: number, heading: number, altitude: number, verticalSpeed: number }): Promise<void> {
+    public static async setCurrentPosition(latitude: number, longitude: number, heading: number, altitude: number, verticalSpeed: number): Promise<void> {
         fetch(`${simbridgeUrl}/api/v1/terrain/position`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(position),
+            body: JSON.stringify({ latitude, longitude, heading, altitude, verticalSpeed }),
         });
     }
 

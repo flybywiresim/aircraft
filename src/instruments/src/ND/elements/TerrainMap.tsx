@@ -5,40 +5,32 @@ import { Mode, EfisSide, rangeSettings } from '@shared/NavigationDisplay';
 import { useUpdate } from '@instruments/common/hooks';
 import { Terrain } from '../../../../simbridge-client/src/index';
 
-const MapTransitionFramerate = 20;
-const MapTransitionDuration = 1.5;
-const RerenderingTimeout = 2000;
+const MAP_TRANSITION_FRAMERATE = 20;
+const MAP_TRANSITION_DURATION = 1.5;
+const RERENDER_TIMEOUT = 2000;
+const METRES_TO_NAUTICAL_MILES = 1852;
 
 export interface TerrainMapProviderProps {
     side: EfisSide,
 }
 
 export const TerrainMapProvider: React.FC<TerrainMapProviderProps> = ({ side }) => {
-    const arincLat = useArinc429Var('L:A32NX_ADIRS_IR_1_LATITUDE', 1000);
-    const arincLong = useArinc429Var('L:A32NX_ADIRS_IR_1_LONGITUDE', 1000);
-    const [verticalSpeed] = useSimVar('VERTICAL SPEED', 'feet per second', 1000);
-    const [trueHeading] = useSimVar('PLANE HEADING DEGREES TRUE', 'degrees', 1000);
-    const [altitude] = useSimVar('PLANE ALTITUDE', 'feet', 1000);
-    const [updateTime, setUpdateTime] = useState<number>(0);
+    const arincLat = useArinc429Var('L:A32NX_ADIRS_IR_1_LATITUDE', 1_000);
+    const arincLong = useArinc429Var('L:A32NX_ADIRS_IR_1_LONGITUDE', 1_000);
+    const [verticalSpeed] = useSimVar('VERTICAL SPEED', 'feet per second', 1_000);
+    const [trueHeading] = useSimVar('PLANE HEADING DEGREES TRUE', 'degrees', 1_000);
+    const [altitude] = useSimVar('PLANE ALTITUDE', 'feet', 1_000);
 
-    useEffect(() => {
-        const currentTime = new Date().getTime();
+    const [timer, setTimer] = useState<number>(500);
 
-        // do not more than every 500 ms (unneeded due to system design)
-        if (side === 'L' && arincLat.isNormalOperation() && arincLong.isNormalOperation() && (currentTime - updateTime) >= 500) {
-            setUpdateTime(currentTime);
-
-            const currentPosition = {
-                latitude: arincLat.value,
-                longitude: arincLong.value,
-                heading: trueHeading,
-                altitude: Math.round(altitude),
-                verticalSpeed: Math.round(verticalSpeed * 60.0),
-            };
-
-            Terrain.setCurrentPosition(currentPosition);
+    useUpdate((deltaTime) => {
+        if (timer > 0) {
+            setTimer(Math.max(timer - (deltaTime), 0));
+        } else if (side === 'L' && arincLat.isNormalOperation() && arincLong.isNormalOperation()) {
+            Terrain.setCurrentPosition(arincLat.value, arincLong.value, trueHeading, Math.round(altitude), Math.round(verticalSpeed * 60.0));
+            setTimer(500);
         }
-    }, [arincLat, arincLong, verticalSpeed, trueHeading, altitude]);
+    });
 
     return <></>;
 };
@@ -83,7 +75,7 @@ const TerrainMapTransition: React.FC<TerrainMapTransitionProps> = ({ x, y, width
                     setCurrentFrame(currentFrameRef.current + 1);
                 }
             }
-        }, Math.round(1000 / MapTransitionFramerate)));
+        }, Math.round(1000 / MAP_TRANSITION_FRAMERATE)));
     }
 
     return (
@@ -213,7 +205,7 @@ export const TerrainMap: React.FC<TerrainMapProps> = ({ x, y, width, height, sid
         rerenderVisualization.MapTransitionData = [];
         rerenderVisualization.MinimumElevation = rerenderVisualization.NextMinimumElevation;
         rerenderVisualization.MaximumElevation = rerenderVisualization.NextMaximumElevation;
-        rerenderVisualization.RerenderTimeout = RerenderingTimeout;
+        rerenderVisualization.RerenderTimeout = RERENDER_TIMEOUT;
         setMapVisualization(rerenderVisualization);
     };
 
@@ -248,18 +240,18 @@ export const TerrainMap: React.FC<TerrainMapProps> = ({ x, y, width, height, sid
             setMapVisualization(new MapVisualizationData());
         } else if (mapVisualizationRef.current?.RerenderTimeout === undefined) {
             const newVisualizationData = new MapVisualizationData(mapVisualizationRef.current);
-            newVisualizationData.RerenderTimeout = RerenderingTimeout;
+            newVisualizationData.RerenderTimeout = RERENDER_TIMEOUT;
             setMapVisualization(newVisualizationData);
         }
 
-        const meterPerPixel = Math.round(rangeSettings[rangeIndex] * 1852 / height);
+        const meterPerPixel = Math.round(rangeSettings[rangeIndex] * METRES_TO_NAUTICAL_MILES / height);
         const displayConfiguration = {
             active: modeIndex !== Mode.PLAN && terrOnNdActive !== 0,
             mapWidth: width,
             mapHeight: height,
             meterPerPixel: meterPerPixel + (10 - (meterPerPixel % 10)),
-            mapTransitionTime: MapTransitionDuration,
-            mapTransitionFps: MapTransitionFramerate,
+            mapTransitionTime: MAP_TRANSITION_DURATION,
+            mapTransitionFps: MAP_TRANSITION_FRAMERATE,
             arcMode: modeIndex === Mode.ARC,
             gearDown: SimVar.GetSimVarValue('GEAR POSITION:0', 'Enum') !== 1,
         };
