@@ -405,14 +405,12 @@ impl CoreHydraulicForce {
         };
 
         let open_loop_modifier_from_position = if position_error.get::<ratio>() > 0. {
-            println!("EXTENSION MODIFIER");
             interpolation(
                 &self.flow_open_loop_position_breakpoints,
                 &self.flow_open_loop_modifier_extension_map,
                 position_normalized.get::<ratio>(),
             )
         } else {
-            println!("RETRACTION MODIFIER");
             interpolation(
                 &self.flow_open_loop_position_breakpoints,
                 &self.flow_open_loop_modifier_retraction_map,
