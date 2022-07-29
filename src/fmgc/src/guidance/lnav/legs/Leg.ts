@@ -61,4 +61,8 @@ export abstract class Leg extends Guidable {
     get overflyTermFix(): boolean {
         return false;
     }
+
+    get initialLegTermPoint(): Coordinates {
+        return this.getPathEndPoint();
+    }
 }

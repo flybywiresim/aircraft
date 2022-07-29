@@ -3,6 +3,7 @@
 
 import { FlightPlanManager } from '@fmgc/index';
 import { RequiredPerformance } from '@fmgc/navigation/RequiredPerformance';
+import { Coordinates } from 'msfs-geo';
 
 export class Navigation {
     requiredPerformance: RequiredPerformance;
@@ -10,6 +11,10 @@ export class Navigation {
     currentPerformance: number | undefined;
 
     accuracyHigh: boolean = false;
+
+    ppos: Coordinates = { lat: 0, long: 0 };
+
+    groundSpeed: Knots = 0;
 
     constructor(private flightPlanManager: FlightPlanManager) {
         this.requiredPerformance = new RequiredPerformance(this.flightPlanManager);
@@ -22,6 +27,8 @@ export class Navigation {
         this.requiredPerformance.update(deltaTime);
 
         this.updateCurrentPerformance();
+
+        this.updatePosition();
     }
 
     private updateCurrentPerformance(): void {
@@ -38,5 +45,12 @@ export class Navigation {
             SimVar.SetSimVarValue('L:A32NX_FMGC_L_NAV_ACCURACY_HIGH', 'bool', this.accuracyHigh);
             SimVar.SetSimVarValue('L:A32NX_FMGC_R_NAV_ACCURACY_HIGH', 'bool', this.accuracyHigh);
         }
+    }
+
+    private updatePosition(): void {
+        this.ppos.lat = SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude');
+        this.ppos.long = SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude');
+
+        this.groundSpeed = SimVar.GetSimVarValue('GPS GROUND SPEED', 'knots');
     }
 }

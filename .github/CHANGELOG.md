@@ -47,6 +47,10 @@
 1. [FMGC] Fix unnatural turn direction for path capture transition - @tracernz (Mike)
 1. [FMGC] Fix unnatural turn direction for course capture transition - @tracernz (Mike)
 1. [FMGC] Update spoiler CD for MSFS SDK clarification - @donstim (donbikes#4084)
+1. [FMGC] Implement procedure turns (PI leg) - @tracernz (Mike)
+1. [ECAM] Move EWD to correct AC bus - @tracernz (Mike)
+1. [FMGC] Fix inbound leg time for holds - @tracernz (Mike)
+1. [MCDU] Improved visuals of Init-A and Init-B page - @derl30n (Leon)
 1. [FLIGHTMODEL] Improve flight handling characteristics, ground effect, and landing gear simulation - @donstim (donbikes#4084)
 
 ## 0.8.0
