@@ -48,6 +48,7 @@
 1. [FMGC] Fix unnatural turn direction for course capture transition - @tracernz (Mike)
 1. [FMGC] Update spoiler CD for MSFS SDK clarification - @donstim (donbikes#4084)
 1. [FMGC] Implement procedure turns (PI leg) - @tracernz (Mike)
+1. [ECAM] Move EWD to correct AC bus - @tracernz (Mike)
 
 ## 0.8.0
 
