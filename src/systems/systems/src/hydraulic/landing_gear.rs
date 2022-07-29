@@ -25,6 +25,8 @@ pub trait GearGravityExtension {
 
 pub struct HydraulicGearSystem {
     door_center_position_id: VariableIdentifier,
+    door_center_gear_slaved_position_id: VariableIdentifier,
+
     door_left_position_id: VariableIdentifier,
     door_right_position_id: VariableIdentifier,
 
@@ -54,6 +56,9 @@ impl HydraulicGearSystem {
     ) -> Self {
         Self {
             door_center_position_id: context.get_identifier("GEAR_DOOR_CENTER_POSITION".to_owned()),
+            door_center_gear_slaved_position_id: context
+                .get_identifier("GEAR_CENTER_SMALL_POSITION".to_owned()),
+
             door_left_position_id: context.get_identifier("GEAR_DOOR_LEFT_POSITION".to_owned()),
             door_right_position_id: context.get_identifier("GEAR_DOOR_RIGHT_POSITION".to_owned()),
 
@@ -269,6 +274,11 @@ impl SimulationElement for HydraulicGearSystem {
             &self.door_center_position_id,
             self.nose_door_assembly.position_normalized(),
         );
+        writer.write(
+            &self.door_center_gear_slaved_position_id,
+            self.nose_gear_assembly.position_normalized(),
+        );
+
         writer.write(
             &self.door_left_position_id,
             self.left_door_assembly.position_normalized(),
