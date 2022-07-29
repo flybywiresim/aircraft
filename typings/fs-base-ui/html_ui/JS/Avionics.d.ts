@@ -305,6 +305,8 @@ declare global {
         protected updateAlwaysList(): void;
         protected clearAlwaysList(): void;
         registerInstrument(_instrumentName: string, _instrumentClass: CustomElementConstructor): void;
+        guidanceController?: any;
+        navigation?: any;
     }
     declare function registerInstrument(_instrumentName: string, _instrumentClass: CustomElementConstructor): void;
 

@@ -4,6 +4,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { HALeg, HFLeg, HMLeg } from '@fmgc/guidance/lnav/legs/HX';
+import { PILeg } from '@fmgc/guidance/lnav/legs/PI';
 import { RFLeg } from '@fmgc/guidance/lnav/legs/RF';
 import { TFLeg } from '@fmgc/guidance/lnav/legs/TF';
 import { VMLeg } from '@fmgc/guidance/lnav/legs/VM';
@@ -136,6 +137,10 @@ export class GuidanceManager {
 
             if (to.additionalData?.legType === LegType.HM) {
                 return new HMLeg(to, metadata, segment);
+            }
+
+            if (to.additionalData.legType === LegType.PI) {
+                return new PILeg(to, nextLeg as CFLeg, metadata, segment);
             }
         }
 
