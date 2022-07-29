@@ -50,6 +50,7 @@
 1. [FMGC] Implement procedure turns (PI leg) - @tracernz (Mike)
 1. [ECAM] Move EWD to correct AC bus - @tracernz (Mike)
 1. [FMGC] Fix inbound leg time for holds - @tracernz (Mike)
+1. [MCDU] Improved visuals of Init-A and Init-B page - @derl30n (Leon)
 
 ## 0.8.0
 
