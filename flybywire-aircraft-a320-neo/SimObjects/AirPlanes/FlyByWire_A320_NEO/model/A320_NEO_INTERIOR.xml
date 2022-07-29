@@ -279,15 +279,13 @@
                 <DRAG_MIN_VALUE>-4854</DRAG_MIN_VALUE>                <!-- Limit to -4.5 deg -->
             </UseTemplate>
 
-            <UseTemplate Name="ASOBO_HANDLING_Indicator_ElevatorTrim_Template">
+            <UseTemplate Name="FBW_HANDLING_Indicator_ElevatorTrim_Template">
                 <ANIM_NAME>LEVER_ELEVATORTRIM_DECAL</ANIM_NAME>
-                <MIN_DISPLAYABLE>-4</MIN_DISPLAYABLE>
-                <MAX_DISPLAYABLE>13.5</MAX_DISPLAYABLE>
-                <REF_VALUE_0>-4</REF_VALUE_0>
+                <REF_VALUE_0>0</REF_VALUE_0>
                 <ANIM_VALUE_0>0</ANIM_VALUE_0>
-                <REF_VALUE_1>13</REF_VALUE_1>
-                <ANIM_VALUE_1>94</ANIM_VALUE_1>
-                <REF_VALUE_2>13.5</REF_VALUE_2>
+                <REF_VALUE_1>97.143</REF_VALUE_1>
+                <ANIM_VALUE_1>94.2</ANIM_VALUE_1>
+                <REF_VALUE_2>100</REF_VALUE_2>
                 <ANIM_VALUE_2>100</ANIM_VALUE_2>
                 <MAX_POINT_INDEX>2</MAX_POINT_INDEX>
             </UseTemplate>
