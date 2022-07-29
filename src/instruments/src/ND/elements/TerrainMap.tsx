@@ -5,9 +5,9 @@ import { Mode, EfisSide, rangeSettings } from '@shared/NavigationDisplay';
 import { useUpdate } from '@instruments/common/hooks';
 import { Terrain } from '../../../../simbridge-client/src/index';
 
-const MAP_TRANSITION_FRAMERATE = 20;
+const MAP_TRANSITION_FRAMERATE = 15;
 const MAP_TRANSITION_DURATION = 1.5;
-const RERENDER_TIMEOUT = 2000;
+const RERENDER_TIMEOUT = 500;
 const METRES_TO_NAUTICAL_MILES = 1852;
 
 export interface TerrainMapProviderProps {
