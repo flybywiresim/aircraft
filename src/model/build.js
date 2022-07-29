@@ -176,19 +176,21 @@ function combineGltf(pathA, pathB, outputPath) {
             });
         mesh.primitives[0].indices += accessorsCount;
         // workaround to allow added meshes to use existing materials
-        if (!Number.isFinite(mesh.primitives[0].material)) {
-            for (let i = 0; i < gltfA.materials.length; i += 1) {
-                if (gltfA.materials[i].name === mesh.primitives[0].material) {
-                    mesh.primitives[0].material = i;
-                    break;
+        for (const primitive of mesh.primitives) {
+            if (!Number.isFinite(primitive.material)) {
+                for (let i = 0; i < gltfA.materials.length; i += 1) {
+                    if (gltfA.materials[i].name === primitive.material) {
+                        primitive.material = i;
+                        break;
+                    }
                 }
+                // If the material is not found, use material 0
+                if (!Number.isFinite(primitive.material)) {
+                    primitive.material = 0;
+                }
+            } else {
+                primitive.material += materialsCount;
             }
-            // If the material is not found, use material 0
-            if (!Number.isFinite(mesh.primitives[0].material)) {
-                mesh.primitives[0].material = 0;
-            }
-        } else {
-            mesh.primitives[0].material += materialsCount;
         }
         gltfA.meshes.push(mesh);
     }
@@ -430,13 +432,16 @@ for (const model of models) {
                     }
                 }
             } else {
-                combineGltf(p(model.output.gltf[i]), p(addition.gltf), p(model.output.gltf[i]));
+                const maxLod = addition.maxLod != null ? addition.maxLod : Infinity;
+                if (i <= maxLod) {
+                    combineGltf(p(model.output.gltf[i]), p(addition.gltf), p(model.output.gltf[i]));
 
-                // add some zeroes to the end of the bin file to make sure its length is divisible by 4
-                fs.appendFileSync(p(model.output.bin[i]), Buffer.alloc((4 - (fs.statSync(p(model.output.bin[i])).size % 4)) % 4));
+                    // add some zeroes to the end of the bin file to make sure its length is divisible by 4
+                    fs.appendFileSync(p(model.output.bin[i]), Buffer.alloc((4 - (fs.statSync(p(model.output.bin[i])).size % 4)) % 4));
 
-                // add the second bin file to the end of the first one
-                fs.appendFileSync(p(model.output.bin[i]), fs.readFileSync(p(addition.bin)));
+                    // add the second bin file to the end of the first one
+                    fs.appendFileSync(p(model.output.bin[i]), fs.readFileSync(p(addition.bin)));
+                }
             }
         }
         if (model.splitAnimations) {
