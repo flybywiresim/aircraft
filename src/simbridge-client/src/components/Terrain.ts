@@ -8,7 +8,10 @@ export class Terrain {
         return fetch(`${simbridgeUrl}/api/v1/terrain/available`).then((response) => {
             Terrain.endpointsAvailable = response.ok;
             return response.ok;
-        }).catch((_ex) => Terrain.endpointsAvailable = false);
+        }).catch((_ex) => {
+            Terrain.endpointsAvailable = false;
+            return false;
+        });
     }
 
     public static async setCurrentPosition(latitude: number, longitude: number, heading: number, altitude: number, verticalSpeed: number): Promise<void> {
