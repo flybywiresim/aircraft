@@ -166,7 +166,7 @@
 			</UseTemplate>
             <UseTemplate Name="ASOBO_GT_Anim">
                 <ANIM_NAME>l_gear</ANIM_NAME>
-                <ANIM_CODE>(L:A32NX_GEAR_LEFT_POSITION) 0.63 * 17 + (A:GEAR ANIMATION POSITION:1, percent) 50 - 0 max 1.6 * +</ANIM_CODE>
+                <ANIM_CODE>(L:A32NX_GEAR_LEFT_POSITION) 0.63 * 16 + (A:GEAR ANIMATION POSITION:1, percent) 50 - 0 max 1.6 * +</ANIM_CODE>
                 <ANIM_LENGTH>160</ANIM_LENGTH>
             </UseTemplate>
             <UseTemplate Name="ASOBO_GT_Anim">
@@ -176,7 +176,7 @@
             </UseTemplate>
             <UseTemplate Name="ASOBO_GT_Anim">
                 <ANIM_NAME>r_gear</ANIM_NAME>
-                <ANIM_CODE>(L:A32NX_GEAR_RIGHT_POSITION) 0.63 * 17 + (A:GEAR ANIMATION POSITION:2, percent) 50 - 0 max 1.6 * +</ANIM_CODE>
+                <ANIM_CODE>(L:A32NX_GEAR_RIGHT_POSITION) 0.63 * 16 + (A:GEAR ANIMATION POSITION:2, percent) 50 - 0 max 1.6 * +</ANIM_CODE>
                 <ANIM_LENGTH>160</ANIM_LENGTH>
                 <!-- ANIM EVENTS -->
                 <ANIM_EVENT_EFFECT_NAME>CAM_LANDINGGEARS</ANIM_EVENT_EFFECT_NAME>
