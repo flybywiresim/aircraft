@@ -27,11 +27,11 @@ export const TerrainMapProvider: React.FC<TerrainMapProviderProps> = ({ side }) 
         if (timer !== undefined) {
             if (timer > 0) {
                 setTimer(Math.max(timer - (deltaTime), 0));
-            } else if (side === 'L' && arincLat.isNormalOperation() && arincLong.isNormalOperation()) {
+            } else if (arincLat.isNormalOperation() && arincLong.isNormalOperation()) {
                 setTimer(undefined);
                 Terrain.mapdataAvailable().then((available) => {
-                    if (available === true) {
-                        Terrain.setCurrentPosition(arincLat.value, arincLong.value, trueHeading, Math.round(altitude), Math.round(verticalSpeed * 60.0));
+                    if (available === true && side === 'L') {
+                        Terrain.setCurrentPosition(arincLat.value, arincLong.value, trueHeading, Math.round(altitude), Math.round(verticalSpeed * 60.0)).catch((_ex) => {});
                     }
                     setTimer(500);
                 });
