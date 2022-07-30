@@ -193,10 +193,10 @@ export const TerrainMap: React.FC<TerrainMapProps> = ({ potentiometerIndex, x, y
                             }
 
                             setMapVisualization(newVisualization);
-                        });
-                    });
+                        }).catch((_ex) => setMapVisualization(new MapVisualizationData()));
+                    }).catch((_ex) => setMapVisualization(new MapVisualizationData()));
                 }
-            });
+            }).catch((_ex) => setMapVisualization(new MapVisualizationData()));
         }, 200);
     };
 
@@ -228,12 +228,9 @@ export const TerrainMap: React.FC<TerrainMapProps> = ({ potentiometerIndex, x, y
                         syncWithRenderer(timestamp);
                     } else {
                         // clear all data
-                        const resetVisualizationData = new MapVisualizationData(mapVisualizationRef.current);
-                        resetVisualizationData.MapTransitionData = [];
-                        resetVisualizationData.TerrainMapBuffer.forEach((element) => element.data = '');
-                        setMapVisualization(resetVisualizationData);
+                        setMapVisualization(new MapVisualizationData());
                     }
-                });
+                }).catch((_ex) => setMapVisualization(new MapVisualizationData()));
             } else {
                 const newVisualizationData = new MapVisualizationData(mapVisualizationRef.current);
                 if (newVisualizationData.RerenderTimeout !== undefined) {
@@ -241,10 +238,8 @@ export const TerrainMap: React.FC<TerrainMapProps> = ({ potentiometerIndex, x, y
                 }
                 setMapVisualization(newVisualizationData);
             }
-        } else if (!terrOnNdActive && mapVisualizationRef.current?.RerenderTimeout !== undefined) {
-            const newVisualizationData = new MapVisualizationData(mapVisualizationRef.current);
-            newVisualizationData.RerenderTimeout = undefined;
-            setMapVisualization(newVisualizationData);
+        } else if (!terrOnNdActive) {
+            setMapVisualization(new MapVisualizationData(mapVisualizationRef.current));
         }
     });
 
@@ -268,7 +263,7 @@ export const TerrainMap: React.FC<TerrainMapProps> = ({ potentiometerIndex, x, y
             arcMode: modeIndex === Mode.ARC,
             gearDown: SimVar.GetSimVarValue('GEAR POSITION:0', 'Enum') !== 1,
         };
-        Terrain.setDisplaySettings(side, displayConfiguration);
+        Terrain.setDisplaySettings(side, displayConfiguration).catch((_ex) => setMapVisualization(new MapVisualizationData()));
     }, [terrOnNdActive, rangeIndex, modeIndex, gearMode]);
 
     if (!terrOnNdActive || modeIndex === Mode.PLAN) {

@@ -18,6 +18,8 @@ export class Terrain {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ latitude, longitude, heading, altitude, verticalSpeed }),
             });
+        } else {
+            throw new Error('Endpoints unavailable');
         }
     }
 
@@ -37,6 +39,8 @@ export class Terrain {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(settings),
             });
+        } else {
+            throw new Error('Endpoints unavailable');
         }
     }
 
@@ -49,7 +53,8 @@ export class Terrain {
                 return false;
             });
         }
-        return false;
+
+        throw new Error('Endpoints unavailable');
     }
 
     public static async ndTransitionMaps(side: EfisSide, timestamp: number): Promise<string[]> {
@@ -59,7 +64,8 @@ export class Terrain {
                 headers: { Accept: 'application/json' },
             }).then((response) => response.json().then((imageBase64) => imageBase64));
         }
-        return [];
+
+        throw new Error('Endpoints unavailable');
     }
 
     public static async ndTerrainRange(side: EfisSide, timestamp: number):
@@ -78,20 +84,14 @@ export class Terrain {
             }).then((response) => response.json().then((data) => data));
         }
 
-        return {
-            minElevation: -1,
-            minElevationIsWarning: false,
-            minElevationIsCaution: false,
-            maxElevation: -1,
-            maxElevationIsWarning: false,
-            maxElevationIsCaution: false,
-        };
+        throw new Error('Endpoints unavailable');
     }
 
     public static async renderNdMap(side: EfisSide): Promise<number> {
         if (Terrain.endpointsAvailable) {
             return fetch(`${simbridgeUrl}/api/v1/terrain/renderMap?display=${side}`).then((response) => response.text().then((text) => parseInt(text)));
         }
-        return -1;
+
+        throw new Error('Endpoints unavailable');
     }
 }
