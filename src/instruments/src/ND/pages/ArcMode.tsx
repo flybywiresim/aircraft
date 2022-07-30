@@ -59,7 +59,7 @@ export const ArcMode: React.FC<ArcModeProps> = ({ symbols, adirsAlign, rangeSett
     if (adirsAlign) {
         return (
             <>
-                <TerrainMap x={-108} y={128} width={984} height={492} side={side} clipName="arc-mode-map-clip" />
+                <TerrainMap x={-108} y={128} width={984} height={492} side={side} potentiometerIndex={side === 'L' ? 94 : 95} clipName="arc-mode-map-clip" />
                 <Overlay
                     heading={heading}
                     rangeSetting={rangeSetting}

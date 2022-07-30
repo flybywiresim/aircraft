@@ -124,6 +124,7 @@ class MapVisualizationData {
 }
 
 export interface TerrainMapProps {
+    potentiometerIndex: number,
     x: number,
     y: number,
     width: number,
@@ -132,8 +133,9 @@ export interface TerrainMapProps {
     clipName: string,
 }
 
-export const TerrainMap: React.FC<TerrainMapProps> = ({ x, y, width, height, side, clipName }) => {
+export const TerrainMap: React.FC<TerrainMapProps> = ({ potentiometerIndex, x, y, width, height, side, clipName }) => {
     const [mapVisualization, setMapVisualization] = useState<MapVisualizationData>(new MapVisualizationData());
+    const [potentiometer] = useSimVar(`LIGHT POTENTIOMETER:${potentiometerIndex}`, 'percent over 100', 200);
     const [terrOnNdActive] = useSimVar(`L:A32NX_EFIS_TERR_${side}_ACTIVE`, 'boolean', 100);
     const [rangeIndex] = useSimVar(`L:A32NX_EFIS_${side}_ND_RANGE`, 'number', 100);
     const [modeIndex] = useSimVar(`L:A32NX_EFIS_${side}_ND_MODE`, 'number', 100);
@@ -271,7 +273,7 @@ export const TerrainMap: React.FC<TerrainMapProps> = ({ x, y, width, height, sid
 
     return (
         <>
-            <g id="map" clipPath={`url(#${clipName})`}>
+            <g id="map" clipPath={`url(#${clipName})`} opacity={potentiometer}>
                 {mapVisualization.TerrainMapBuffer.map((frame) => (
                     frame.data !== ''
                         ? (
