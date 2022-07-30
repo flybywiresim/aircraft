@@ -34,6 +34,8 @@ export const TerrainMapProvider: React.FC<TerrainMapProviderProps> = ({ side }) 
                         Terrain.setCurrentPosition(arincLat.value, arincLong.value, trueHeading, Math.round(altitude), Math.round(verticalSpeed * 60.0)).catch((_ex) => {});
                     }
                     setTimer(500);
+                }).catch((e) => {
+                    console.error(e);
                 });
             }
         }
