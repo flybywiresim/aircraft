@@ -226,6 +226,12 @@ export const TerrainMap: React.FC<TerrainMapProps> = ({ potentiometerIndex, x, y
                 Terrain.renderNdMap(side).then((timestamp) => {
                     if (timestamp > 0) {
                         syncWithRenderer(timestamp);
+                    } else {
+                        // clear all data
+                        const resetVisualizationData = new MapVisualizationData(mapVisualizationRef.current);
+                        resetVisualizationData.MapTransitionData = [];
+                        resetVisualizationData.TerrainMapBuffer.forEach((element) => element.data = '');
+                        setMapVisualization(resetVisualizationData);
                     }
                 });
             } else {
