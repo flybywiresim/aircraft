@@ -1780,9 +1780,6 @@ impl A320Hydraulic {
             emergency_elec,
         );
 
-        self.gear_system_gravity_extension_controller
-            .update(context);
-
         self.gear_system_hydraulic_controller.update(
             adirs,
             lgciu1,
@@ -5437,68 +5434,17 @@ impl SimulationElement for SpoilerComputer {
 }
 
 struct A320GravityExtension {
-    gear_gravity_extension_active_id: VariableIdentifier,
-    gear_gravity_extension_handle_is_turned_id: VariableIdentifier,
+    gear_gravity_extension_handle_position_id: VariableIdentifier,
 
     handle_angle: Angle,
-
-    is_extending_gear: bool,
-
-    is_turned: bool,
 }
 impl A320GravityExtension {
-    const INCREMENT_ANGLE_DEGREE_PER_SECOND: f64 = 220.;
-    const MAX_CRANK_HANDLE_ANGLE_DEGREE: f64 = 360. * 3.;
-    const MIN_CRANK_HANDLE_ANGLE_DEGREE: f64 = 0.;
-    const CRANK_HANDLE_ANGLE_MARGIN_AT_MAX_ROTATION_DEGREE: f64 = 0.1;
-
     fn new(context: &mut InitContext) -> Self {
         Self {
-            gear_gravity_extension_active_id: context
-                .get_identifier("GEAR_EMERGENCY_EXTENSION_ACTIVE".to_owned()),
-            gear_gravity_extension_handle_is_turned_id: context
-                .get_identifier("GEAR_EMERGENCY_EXTENSION_IS_TURNED".to_owned()),
+            gear_gravity_extension_handle_position_id: context
+                .get_identifier("GRAVITYGEAR_ROTATE_PCT".to_owned()),
 
             handle_angle: Angle::default(),
-            is_extending_gear: true,
-            is_turned: false,
-        }
-    }
-
-    fn update(&mut self, context: &UpdateContext) {
-        if self.is_turned {
-            if self.is_extending_gear {
-                self.handle_angle += Angle::new::<degree>(
-                    Self::INCREMENT_ANGLE_DEGREE_PER_SECOND * context.delta_as_secs_f64(),
-                );
-            } else {
-                self.handle_angle -= Angle::new::<degree>(
-                    Self::INCREMENT_ANGLE_DEGREE_PER_SECOND * context.delta_as_secs_f64(),
-                );
-            }
-        }
-
-        self.handle_angle = self
-            .handle_angle
-            .min(Angle::new::<degree>(
-                Self::MAX_CRANK_HANDLE_ANGLE_DEGREE
-                    + Self::CRANK_HANDLE_ANGLE_MARGIN_AT_MAX_ROTATION_DEGREE,
-            ))
-            .max(Angle::new::<degree>(
-                Self::MIN_CRANK_HANDLE_ANGLE_DEGREE
-                    - Self::CRANK_HANDLE_ANGLE_MARGIN_AT_MAX_ROTATION_DEGREE,
-            ));
-
-        if self.handle_angle.get::<degree>() > Self::MAX_CRANK_HANDLE_ANGLE_DEGREE
-            && !self.is_turned
-            && self.is_extending_gear
-        {
-            self.is_extending_gear = false;
-        } else if self.handle_angle.get::<degree>() < Self::MIN_CRANK_HANDLE_ANGLE_DEGREE
-            && !self.is_turned
-            && !self.is_extending_gear
-        {
-            self.is_extending_gear = true;
         }
     }
 }
@@ -5509,14 +5455,11 @@ impl GearGravityExtension for A320GravityExtension {
 }
 impl SimulationElement for A320GravityExtension {
     fn read(&mut self, reader: &mut SimulatorReader) {
-        self.is_turned = reader.read(&self.gear_gravity_extension_active_id);
-    }
+        let handle_percent: f64 = reader.read(&self.gear_gravity_extension_handle_position_id);
 
-    fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(
-            &self.gear_gravity_extension_handle_is_turned_id,
-            self.handle_angle.get::<degree>() < 360. && self.is_turned,
-        );
+        self.handle_angle = Angle::new::<degree>(handle_percent * 3.6)
+            .max(Angle::new::<degree>(0.))
+            .min(Angle::new::<degree>(360. * 3.));
     }
 }
 
@@ -6265,14 +6208,6 @@ mod tests {
                 self.read_by_name("A32NX_HYD_RAT_RPM")
             }
 
-            fn get_emergency_handle_number_of_turns(&self) -> u8 {
-                self.query(|a| {
-                    a.hydraulics
-                        .gear_system_gravity_extension_controller
-                        .extension_handle_number_of_turns()
-                })
-            }
-
             fn get_left_aileron_position(&mut self) -> Ratio {
                 Ratio::new::<ratio>(self.read_by_name("HYD_AIL_LEFT_DEFLECTION"))
             }
@@ -6376,6 +6311,13 @@ mod tests {
                 self.set_indicated_altitude(Length::new::<foot>(0.));
                 self.set_on_ground(true);
                 self.set_indicated_airspeed(Velocity::new::<knot>(5.));
+                self
+            }
+
+            fn on_the_ground_after_touchdown(mut self) -> Self {
+                self.set_indicated_altitude(Length::new::<foot>(0.));
+                self.set_on_ground(true);
+                self.set_indicated_airspeed(Velocity::new::<knot>(100.));
                 self
             }
 
@@ -6877,38 +6819,13 @@ mod tests {
                 self
             }
 
-            fn set_gear_emergency_extension_active(mut self, is_active: bool) -> Self {
-                self.write_by_name("GEAR_EMERGENCY_EXTENSION_ACTIVE", is_active);
-                self
-            }
-
             fn turn_emergency_gear_extension_n_turns(mut self, number_of_turns: u8) -> Self {
-                let mut number_of_loops = 0;
-                while self.get_emergency_handle_number_of_turns() < number_of_turns {
-                    self = self
-                        .set_gear_emergency_extension_active(true)
-                        .run_waiting_for(Duration::from_secs_f64(0.5));
-                    number_of_loops += 1;
-                    assert!(number_of_loops < 50);
-                }
-
-                self = self.set_gear_emergency_extension_active(false);
-
+                self.write_by_name("GRAVITYGEAR_ROTATE_PCT", number_of_turns as f64 * 100.);
                 self
             }
 
             fn stow_emergency_gear_extension(mut self) -> Self {
-                let mut number_of_loops = 0;
-                while self.get_emergency_handle_number_of_turns() != 0 {
-                    self = self
-                        .set_gear_emergency_extension_active(true)
-                        .run_waiting_for(Duration::from_secs_f64(0.5));
-                    number_of_loops += 1;
-                    assert!(number_of_loops < 50);
-                }
-
-                self = self.set_gear_emergency_extension_active(false);
-
+                self.write_by_name("GRAVITYGEAR_ROTATE_PCT", 0.);
                 self
             }
 
@@ -10732,6 +10649,32 @@ mod tests {
             // Check elevators did stay drooped down after valve reopening
             assert!(test_bed.get_left_elevator_position().get::<ratio>() < 0.1);
             assert!(test_bed.get_right_elevator_position().get::<ratio>() < 0.1);
+        }
+
+        #[test]
+        fn brakes_on_ground_work_after_emergency_extension() {
+            let mut test_bed = test_bed_in_flight_with()
+                .set_cold_dark_inputs()
+                .in_flight()
+                .set_gear_lever_up()
+                .run_waiting_for(Duration::from_secs_f64(1.));
+
+            assert!(test_bed.gear_system_state() == GearSystemState::AllUpLocked);
+
+            test_bed = test_bed
+                .turn_emergency_gear_extension_n_turns(3)
+                .run_waiting_for(Duration::from_secs_f64(20.));
+            assert!(test_bed.is_all_gears_really_down());
+            assert!(test_bed.is_all_doors_really_down());
+
+            test_bed = test_bed
+                .on_the_ground_after_touchdown()
+                .set_left_brake(Ratio::new::<ratio>(1.))
+                .set_right_brake(Ratio::new::<ratio>(1.))
+                .run_waiting_for(Duration::from_secs_f64(2.));
+
+            assert!(test_bed.get_brake_left_green_pressure() > Pressure::new::<psi>(500.));
+            assert!(test_bed.get_brake_right_green_pressure() > Pressure::new::<psi>(500.));
         }
     }
 }
