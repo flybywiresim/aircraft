@@ -906,7 +906,7 @@ impl A320GearFactory {
             Duration::from_millis(100),
             [1., 1., 1., 1., 0.5, 0.5],
             [0.5, 0.5, 1., 1., 1., 1.],
-            [0., 0.2, 0.21, 0.95, 0.96, 1.],
+            [0., 0.23, 0.24, 0.95, 0.96, 1.],
             FLOW_CONTROL_PROPORTIONAL_GAIN,
             FLOW_CONTROL_INTEGRAL_GAIN,
             FLOW_CONTROL_FORCE_GAIN,
