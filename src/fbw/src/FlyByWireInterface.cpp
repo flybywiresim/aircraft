@@ -446,6 +446,9 @@ void FlyByWireInterface::setupLocalVariables() {
 
   idElevatorPosition = make_unique<LocalVariable>("A32NX_ELEVATOR_DEFLECTION_DEMAND");
 
+  idThs1MotorActive = make_unique<LocalVariable>("A32NX_THS_1_ACTIVE_MODE_COMMANDED");
+  idThs1MotorCommand = make_unique<LocalVariable>("A32NX_THS_1_COMMANDED_POSITION");
+
   idRudderPosition = make_unique<LocalVariable>("A32NX_RUDDER_DEFLECTION_DEMAND");
 
   idRadioReceiverUsageEnabled = make_unique<LocalVariable>("A32NX_RADIO_RECEIVER_USAGE_ENABLED");
@@ -1506,19 +1509,12 @@ bool FlyByWireInterface::updateFlyByWire(double sampleTime) {
   }
 
   // set trim values
-  SimOutputEtaTrim outputEtaTrim = {};
-  if (flyByWireOutput.output.eta_trim_deg_should_write && !idDevelopmentUseDirectLaw->get()) {
-    outputEtaTrim.eta_trim_deg = flyByWireOutput.output.eta_trim_deg;
-    elevatorTrimHandler->synchronizeValue(outputEtaTrim.eta_trim_deg);
-  } else {
-    outputEtaTrim.eta_trim_deg = elevatorTrimHandler->getPosition();
-  }
-  if (!flyByWireOutput.sim.data_computed.tracking_mode_on) {
-    if (!simConnectInterface.sendData(outputEtaTrim)) {
-      cout << "WASM: Write data failed!" << endl;
-      return false;
-    }
-  }
+  idThs1MotorCommand->set(flyByWireOutput.output.eta_trim_deg);
+   if (flyByWireOutput.output.eta_trim_deg_should_write) {
+      idThs1MotorActive->set(1);
+   } else {
+      idThs1MotorActive->set(0);
+   }
 
   SimOutputZetaTrim outputZetaTrim = {};
   rudderTrimHandler->update(sampleTime);
