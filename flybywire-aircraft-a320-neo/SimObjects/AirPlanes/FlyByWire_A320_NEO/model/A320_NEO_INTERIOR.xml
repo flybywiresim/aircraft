@@ -2141,18 +2141,9 @@
                             <ROUND />
                         </UseTemplate>
 
-                        <!-- EMERGENCY EXTENSION PLACEHOLDER -->
-                        <UseTemplate Name="FBW_Anim_Interactions">
-                            <ANIM_TYPE>BUTTON</ANIM_TYPE>
-                            <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
-                            <NODE_ID>GEAR_EXTN_Decal</NODE_ID>
-                            <LEFT_SINGLE_CODE>1 (&gt;L:A32NX_GEAR_EMERGENCY_EXTENSION_CLICKED)</LEFT_SINGLE_CODE>
-                            <LEFT_LEAVE_CODE>0 (&gt;L:A32NX_GEAR_EMERGENCY_EXTENSION_CLICKED)</LEFT_LEAVE_CODE>
-                            <TOOLTIPID>Emergency Extension (click and hold to turn)</TOOLTIPID>
-                            <MOMENTARY/>
-                            <NO_SEQ1 />
-                            <NO_SEQ2 />
-                            <ROUND />
+                        <!-- EMERGENCY EXTENSION -->
+                        <UseTemplate Name="FBW_HANDLING_GRAVITYGEAR_Template">
+                            <NODE_ID>LEVER_GRAVITYGEAR</NODE_ID>
                         </UseTemplate>
 
                         <!-- EVAC CAPT & PURS -->
