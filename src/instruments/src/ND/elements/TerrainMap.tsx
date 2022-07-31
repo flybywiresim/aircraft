@@ -273,12 +273,16 @@ export const TerrainMap: React.FC<TerrainMapProps> = ({ potentiometerIndex, x, y
     }
 
     let lowerBorder = '';
-    if (Number.isFinite(mapVisualizationRef.current.MinimumElevation.altitude)) {
+    if (Number.isFinite(mapVisualizationRef.current.MinimumElevation.altitude) && mapVisualizationRef.current.MinimumElevation.altitude >= 0) {
         lowerBorder = String(Math.floor(mapVisualizationRef.current.MinimumElevation.altitude / 100)).padStart(3, '0');
     }
     let upperBorder = '';
     if (Number.isFinite(mapVisualizationRef.current.MaximumElevation.altitude)) {
-        upperBorder = String(Math.round(mapVisualizationRef.current.MaximumElevation.altitude / 100 + 0.5)).padStart(3, '0');
+        if (mapVisualizationRef.current.MaximumElevation.altitude !== 0) {
+            upperBorder = String(Math.round(mapVisualizationRef.current.MaximumElevation.altitude / 100 + 0.5)).padStart(3, '0');
+        } else {
+            upperBorder = '000';
+        }
     }
 
     return (
