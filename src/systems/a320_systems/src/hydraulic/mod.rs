@@ -714,8 +714,8 @@ impl A320RudderFactory {
 struct A320GearDoorFactory {}
 impl A320GearDoorFactory {
     fn a320_nose_gear_door_aerodynamics() -> AerodynamicModel {
-        // Faking the single door by only considering right door aero.
-        // Will work with headwind, if testing massige cross wind it will look strange
+        // Faking the single door by only considering right door aerodynamics.
+        // Will work with headwind, but will cause strange behaviour with massive crosswind.
         AerodynamicModel::new(
             &Self::a320_nose_gear_door_body(),
             Some(Vector3::new(0., 1., 0.)),
