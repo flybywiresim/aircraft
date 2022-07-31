@@ -496,31 +496,83 @@
             <ANIM_NAME>HANDLING_Wheel_ElevatorTrim</ANIM_NAME>
             <NODE_ID>HANDLING_Wheel_ElevatorTrim</NODE_ID>
             <PART_ID>HANDLING_Wheel_ElevatorTrim</PART_ID>
-            <DRAG_MIN_VALUE>-16384</DRAG_MIN_VALUE>
+            <DRAG_MIN_VALUE>0</DRAG_MIN_VALUE>
+            <DRAG_MAX_VALUE>100</DRAG_MAX_VALUE>
             <NODE_ID2>HANDLING_Wheel_ElevatorTrim_Pitch_2</NODE_ID2>
-            <DRAG_AXIS_SCALE>100</DRAG_AXIS_SCALE>
-            <DRAG_SCALAR>0.001</DRAG_SCALAR>
+            <DRAG_DELTA>0.001</DRAG_DELTA>
+            <DRAG_SPEED>0.03</DRAG_SPEED>
+            <LEFT_SINGLE_CODE>
+                (L:A32NX_HYD_TRIM_WHEEL_PERCENT) (&gt;O:Position)
+                1 (&gt;O:IsDragging)
+            </LEFT_SINGLE_CODE>
+            <LEFT_RELEASE_CODE>
+                0 (&gt;O:IsDragging)
+            </LEFT_RELEASE_CODE>
+            <DRAG_CODE type="rnp">
+                (K:AXIS_ELEV_TRIM_SET) = ((O:Position, number) / 100 * 16383 * 2) - 16383;
+            </DRAG_CODE>
+            <REVERSE_INTERACTION />
         </DefaultTemplateParameters>
 
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
-            <UseTemplate Name="ASOBO_GT_Lever_DraggingYAxis_EventsSet">
-                <ANIM_LENGTH>200</ANIM_LENGTH>
-                <ANIM_CODE>(A:ELEVATOR TRIM PCT, Percent) 100 +</ANIM_CODE>
-                <DRAG_SIMVAR>ELEVATOR TRIM PCT</DRAG_SIMVAR>
-                <DRAG_SIMVAR_UNITS>percent</DRAG_SIMVAR_UNITS>
-                <DRAG_EVENTID_SET>ELEVATOR_TRIM_SET</DRAG_EVENTID_SET>
+            <UseTemplate Name="ASOBO_GT_Lever_DraggingYAxis_Code">
+                <ANIM_LENGTH>100</ANIM_LENGTH>
+                <ANIM_CODE>(L:A32NX_HYD_TRIM_WHEEL_PERCENT)</ANIM_CODE>
+                <UP_CODE>#DRAG_CODE#</UP_CODE>
+                <DOWN_CODE>#DRAG_CODE#</DOWN_CODE>
             </UseTemplate>
+            <Update Frequency="60" type="rnp">
+                if (O:IsDragging, number) == 1 {
+                    #DRAG_CODE#;
+                }
+            </Update>
         </Component>
         <Component ID="#NODE_ID2#" Node="#NODE_ID2#">
-            <UseTemplate Name="ASOBO_GT_Interaction_DraggingYAxis_EventSet">
-                <ANIM_LENGTH>200</ANIM_LENGTH>
-                <ANIM_CODE>(A:ELEVATOR TRIM PCT, Percent) 100 +</ANIM_CODE>
-                <DRAG_SIMVAR>ELEVATOR TRIM PCT</DRAG_SIMVAR>
-                <DRAG_SIMVAR_UNITS>percent</DRAG_SIMVAR_UNITS>
-                <DRAG_EVENTID_SET>ELEVATOR_TRIM_SET</DRAG_EVENTID_SET>
+            <UseTemplate Name="ASOBO_GT_Lever_DraggingYAxis_Code">
+                <ANIM_LENGTH>100</ANIM_LENGTH>
+                <ANIM_CODE>(L:A32NX_HYD_TRIM_WHEEL_PERCENT)</ANIM_CODE>
+                <UP_CODE>#DRAG_CODE#</UP_CODE>
+                <DOWN_CODE>#DRAG_CODE#</DOWN_CODE>
             </UseTemplate>
+            <Update Frequency="60" type="rnp">
+                if (O:IsDragging, number) == 1 {
+                    #DRAG_CODE#;
+                }
+            </Update>
         </Component>
     </Template>
+
+    <Template Name="FBW_HANDLING_Indicator_ElevatorTrim_Template">
+		<Parameters Type="Default">
+			<ANIM_NAME>HANDLING_Indicator_ElevatorTrim</ANIM_NAME>
+		</Parameters>
+		<Switch>
+			<Case Check="REF_VALUE_0">
+				<UseTemplate Name="ASOBO_GT_Helper_Non_Linear_Animation_Code">
+					<SELECTION>(L:A32NX_HYD_TRIM_WHEEL_PERCENT)</SELECTION>
+				</UseTemplate>
+			</Case>
+			<Case Check="DISCRETE_STATES">
+				<UseTemplate Name="ASOBO_GT_Anim_Code">
+					<ANIM_CODE>(A:ELEVATOR TRIM PCT, Percent) 100 + 200 / #DISCRETE_STATES# * near</ANIM_CODE>
+					<ANIM_LENGTH>#DISCRETE_STATES#</ANIM_LENGTH>
+				</UseTemplate>
+			</Case>
+			<Case Check="ANIM_CODE">
+				<UseTemplate Name="ASOBO_GT_Anim_Code"/>
+			</Case>
+			<Default>
+				<UseTemplate Name="ASOBO_GT_Anim_Sim">
+					<ANIM_LENGTH>200</ANIM_LENGTH>
+					<ANIM_SIMVAR>ELEVATOR TRIM PCT</ANIM_SIMVAR>
+					<ANIM_SIMVAR_UNITS>percent</ANIM_SIMVAR_UNITS>
+					<!-- [-100, 100] -->
+					<ANIM_SIMVAR_BIAS>100</ANIM_SIMVAR_BIAS>
+					<!-- [-100, 100] + 100 => [0, 200] -->
+				</UseTemplate>
+			</Default>
+		</Switch>
+	</Template>
 
     <Template Name="FBW_HANDLING_RudderPedals_Template">
         <DefaultTemplateParameters>
@@ -637,6 +689,108 @@
                 <LEFT_SINGLE_CODE>(&gt;K:ANTISKID_BRAKES_TOGGLE)</LEFT_SINGLE_CODE>
                 <ANIM_CODE>(A:ANTISKID BRAKES ACTIVE, Bool) 100 *</ANIM_CODE>
             </UseTemplate>
+        </Component>
+    </Template>
+
+    <Template Name="FBW_HANDLING_GRAVITYGEAR_Template">
+        <Component ID="#NODE_ID#" Node="#NODE_ID#">
+            <Component ID="#NODE_ID#_BUTTON_CLICKZONE" Node="#NODE_ID#_BUTTON_CLICKZONE">
+                <UseTemplate Name="ASOBO_GT_Interaction_LeftSingle_Leave_Code">
+                    <CURSOR>DownArrow</CURSOR>
+                    <LEFT_SINGLE_CODE type="rnp">
+                        alias turned = (L:A32NX_GRAVITYGEAR_TURNED, number);
+                        turned = 0;
+                    </LEFT_SINGLE_CODE>
+                </UseTemplate>
+            </Component>
+
+            <Component ID="#NODE_ID#_ACTIVATE_CLICKZONE" Node="#NODE_ID#_ACTIVATE_CLICKZONE">
+                <UseTemplate Name="ASOBO_GT_Interaction_LeftSingle_Leave_Code">
+                    <CURSOR>UpArrow</CURSOR>
+                    <LEFT_SINGLE_CODE type="rnp">
+                        alias turned = (L:A32NX_GRAVITYGEAR_TURNED, number);
+                        turned = 1;
+                    </LEFT_SINGLE_CODE>
+                </UseTemplate>
+                <UseTemplate Name="ASOBO_GT_Visibility_Code">
+                    <VISIBILITY_CODE>(L:A32NX_GRAVITYGEAR_TURNED, bool) 1 !=</VISIBILITY_CODE>
+                </UseTemplate>
+            </Component>
+
+            <Component ID="#NODE_ID#_CRANE_CLICKZONE" Node="#NODE_ID#_CRANE_CLICKZONE">
+                <Update Frequency = "100" type="rnp">
+                    alias turned = (L:A32NX_GRAVITYGEAR_TURNED, number);
+                    alias turnPct = (L:A32NX_GRAVITYGEAR_TURN_PCT, number);
+                    alias stowing = (L:A32NX_GRAVITYGEAR_STOWING, number);
+                    let maxTurnPct = turned * 100;
+                    let turnAnimSpeed = 1;
+                    if turned == 1 {
+                        turnPct = (turnPct + turnAnimSpeed).min(maxTurnPct);
+                        stowing = 0;
+                    } else {
+                        turnPct = (turnPct - turnAnimSpeed).max(0);
+                        stowing = 1;
+                    }
+
+
+                    alias rotations = (L:A32NX_GRAVITYGEAR_ROTATIONS, number);
+                    alias rotatePct = (L:A32NX_GRAVITYGEAR_ROTATE_PCT, number);
+                    let maxRotatePct = rotations * 100;
+                    let rotateAnimSpeed = 1;
+                    if rotatePct &lt; maxRotatePct {
+                        rotatePct = (rotatePct + rotateAnimSpeed).min(maxRotatePct);
+                    } else {
+                        rotatePct = (rotatePct - rotateAnimSpeed).max(maxRotatePct);
+                    }
+                </Update>
+                <UseTemplate Name="ASOBO_GT_Visibility_Code">
+                    <VISIBILITY_CODE>(L:A32NX_GRAVITYGEAR_TURNED, bool)</VISIBILITY_CODE>
+                </UseTemplate>
+                <UseTemplate Name="ASOBO_GT_Knob_Infinite">
+                    <ANTICLOCKWISE_CONDITION type="rnp" return="boolean">
+                        alias turned = (L:A32NX_GRAVITYGEAR_TURNED, number);
+                        alias rotations = (L:A32NX_GRAVITYGEAR_ROTATIONS, number);
+                        alias rotatePct = (L:A32NX_GRAVITYGEAR_ROTATE_PCT, number);
+                        let maxRotatePct = rotations * 100;
+                        let canTurn = turned == 1 and rotatePct == maxRotatePct;
+                        canTurn
+                    </ANTICLOCKWISE_CONDITION>
+                    <ANTICLOCKWISE_CODE type="rnp">
+                        alias rotations = (L:A32NX_GRAVITYGEAR_ROTATIONS, number);
+                        rotations = (rotations - 1).max(0);
+                    </ANTICLOCKWISE_CODE>
+
+                    <CLOCKWISE_CONDITION type="rnp" return="boolean">
+                        alias turned = (L:A32NX_GRAVITYGEAR_TURNED, number);
+                        alias rotations = (L:A32NX_GRAVITYGEAR_ROTATIONS, number);
+                        alias rotatePct = (L:A32NX_GRAVITYGEAR_ROTATE_PCT, number);
+                        let maxRotatePct = rotations * 100;
+                        let canTurn = turned == 1 and rotatePct == maxRotatePct;
+                        canTurn
+                    </CLOCKWISE_CONDITION>
+                    <CLOCKWISE_CODE type="rnp">
+                        alias rotations = (L:A32NX_GRAVITYGEAR_ROTATIONS, number);
+                        rotations = (rotations + 1).min(3);
+                    </CLOCKWISE_CODE>
+                </UseTemplate>
+            </Component>
+            <Component ID="GearEmerExt" Node="GearEmerExt">
+                <UseTemplate Name="ASOBO_GT_Anim_Code">
+                    <ANIM_CODE type="rnp" return="number">
+                        alias turnPct = (L:A32NX_GRAVITYGEAR_TURN_PCT, number);
+                        alias rotatePct = (L:A32NX_GRAVITYGEAR_ROTATE_PCT, number);
+                        alias stowing = (L:A32NX_GRAVITYGEAR_STOWING, number);
+
+                        let anim = turnPct + (((rotatePct % 100) + 100) % 100);
+                        if stowing == 1 {
+                            anim = 200 + (100 - turnPct);
+                        }
+                        anim
+                    </ANIM_CODE>
+                    <ANIM_NAME>#NODE_ID#</ANIM_NAME>
+                    <ANIM_LENGTH>300</ANIM_LENGTH>
+                </UseTemplate>
+            </Component>
         </Component>
     </Template>
 

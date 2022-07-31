@@ -3,9 +3,8 @@ use std::error::Error;
 use msfs::sim_connect;
 use msfs::{sim_connect::SimConnect, sim_connect::SIMCONNECT_OBJECT_ID_USER};
 
-use systems::shared::to_bool;
 use systems_wasm::aspects::{
-    EventToVariableMapping, ExecuteOn, MsfsAspectBuilder, ObjectWrite, VariableToEventMapping,
+    EventToVariableMapping, MsfsAspectBuilder, ObjectWrite, VariableToEventMapping,
     VariableToEventWriteOn, VariablesToObject,
 };
 use systems_wasm::{set_data_on_sim_object, Variable};
@@ -54,30 +53,6 @@ pub(super) fn gear(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>
         VariableToEventMapping::EventDataRaw,
         VariableToEventWriteOn::Change,
         gear_set_set_event_id,
-    );
-
-    // MANUAL GRAVITY GEAR EXTENSION
-    builder.event_to_variable(
-        "GEAR_EMERGENCY_HANDLE_TOGGLE",
-        EventToVariableMapping::Value(1.),
-        Variable::aspect("GEAR_EMERGENCY_EXTENSION_EVENT"),
-        |options| options.mask().afterwards_reset_to(0.),
-    )?;
-
-    builder.map_many(
-        ExecuteOn::PreTick,
-        vec![
-            Variable::named("GEAR_EMERGENCY_EXTENSION_CLICKED"),
-            Variable::aspect("GEAR_EMERGENCY_EXTENSION_EVENT"),
-        ],
-        |values| {
-            if to_bool(values[0]) || to_bool(values[1]) {
-                1.
-            } else {
-                0.
-            }
-        },
-        Variable::aspect("GEAR_EMERGENCY_EXTENSION_ACTIVE"),
     );
 
     // GEAR POSITION FEEDBACK TO SIM
