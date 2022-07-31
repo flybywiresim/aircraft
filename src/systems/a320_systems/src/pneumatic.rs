@@ -1335,7 +1335,7 @@ impl SimulationElement for CrossBleedValve {
 mod tests {
     use systems::{
         air_conditioning::{
-            acs_controller::{PackFlowController, PackId},
+            acs_controller::{Pack, PackFlowController},
             AirConditioningSystem, PackFlowControllers, ZoneType,
         },
         electrical::{test::TestElectricitySource, ElectricalBus, Electricity},
@@ -1418,7 +1418,7 @@ mod tests {
         }
     }
     impl PackFlowControllers<3> for TestAirConditioning {
-        fn pack_flow_controller(&self, pack_id: PackId) -> PackFlowController<3> {
+        fn pack_flow_controller(&self, pack_id: Pack) -> PackFlowController<3> {
             self.a320_air_conditioning_system
                 .pack_flow_controller(pack_id)
         }

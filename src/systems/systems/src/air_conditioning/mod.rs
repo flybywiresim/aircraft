@@ -1,4 +1,4 @@
-use self::acs_controller::{AirConditioningSystemController, PackFlowController, PackId};
+use self::acs_controller::{AirConditioningSystemController, Pack, PackFlowController};
 
 use crate::{
     overhead::{OnOffFaultPushButton, ValueKnob},
@@ -32,7 +32,7 @@ pub trait PackFlow {
 }
 
 pub trait PackFlowControllers<const ZONES: usize> {
-    fn pack_flow_controller(&self, pack_id: PackId) -> PackFlowController<ZONES>;
+    fn pack_flow_controller(&self, pack_id: Pack) -> PackFlowController<ZONES>;
 }
 
 pub enum ZoneType {
@@ -122,7 +122,7 @@ impl<const ZONES: usize> PackFlow for AirConditioningSystem<ZONES> {
 }
 
 impl<const ZONES: usize> PackFlowControllers<ZONES> for AirConditioningSystem<ZONES> {
-    fn pack_flow_controller(&self, pack_id: PackId) -> PackFlowController<ZONES> {
+    fn pack_flow_controller(&self, pack_id: Pack) -> PackFlowController<ZONES> {
         self.acsc.pack_flow_controller(pack_id)
     }
 }

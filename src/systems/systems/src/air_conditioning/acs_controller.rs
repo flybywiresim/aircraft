@@ -44,8 +44,8 @@ impl<const ZONES: usize> AirConditioningSystemController<ZONES> {
             aircraft_state: AirConditioningStateManager::new(),
             zone_controller,
             pack_flow_controller: [
-                PackFlowController::new(context, PackId::Pack1),
-                PackFlowController::new(context, PackId::Pack2),
+                PackFlowController::new(context, Pack(1)),
+                PackFlowController::new(context, Pack(2)),
             ],
         }
     }
@@ -90,8 +90,8 @@ impl<const ZONES: usize> AirConditioningSystemController<ZONES> {
         pneumatic: &impl PackFlowValveState,
     ) -> [bool; 2] {
         [
-            self.pack_flow_controller[PackId::Pack1 as usize].fcv_status_determination(pneumatic),
-            self.pack_flow_controller[PackId::Pack2 as usize].fcv_status_determination(pneumatic),
+            self.pack_flow_controller[usize::from(Pack(1))].fcv_status_determination(pneumatic),
+            self.pack_flow_controller[usize::from(Pack(2))].fcv_status_determination(pneumatic),
         ]
     }
 }
@@ -113,8 +113,8 @@ impl<const ZONES: usize> PackFlow for AirConditioningSystemController<ZONES> {
 }
 
 impl<const ZONES: usize> PackFlowControllers<ZONES> for AirConditioningSystemController<ZONES> {
-    fn pack_flow_controller(&self, pack_id: PackId) -> PackFlowController<ZONES> {
-        self.pack_flow_controller[pack_id as usize]
+    fn pack_flow_controller(&self, pack_id: Pack) -> PackFlowController<ZONES> {
+        self.pack_flow_controller[usize::from(pack_id)]
     }
 }
 
@@ -552,18 +552,22 @@ impl PneumaticValveSignal for PackFlowValveSignal {
 }
 
 #[derive(Clone, Copy)]
-pub enum PackId {
-    Pack1 = 0,
-    Pack2 = 1,
+/// Pack ID can be 1 or 2
+pub struct Pack(usize);
+
+impl From<usize> for Pack {
+    fn from(value: usize) -> Self {
+        if value != 1 && value != 2 {
+            panic!("Pack ID number out of bounds.")
+        } else {
+            Pack(value)
+        }
+    }
 }
 
-impl From<usize> for PackId {
-    fn from(value: usize) -> Self {
-        match value as u8 {
-            1 => PackId::Pack1,
-            2 => PackId::Pack2,
-            _ => panic!("Pack ID number out of bounds."),
-        }
+impl From<Pack> for usize {
+    fn from(value: Pack) -> Self {
+        value.0 - 1
     }
 }
 
@@ -571,7 +575,7 @@ impl From<usize> for PackId {
 pub struct PackFlowController<const ZONES: usize> {
     pack_flow_id: VariableIdentifier,
 
-    id: PackId,
+    id: usize,
     flow_demand: Ratio,
     fcv_open_allowed: bool,
     should_open_fcv: bool,
@@ -593,11 +597,11 @@ impl<const ZONES: usize> PackFlowController<ZONES> {
     const FLOW_CONSTANT_C: f64 = 0.5675; // kg/s
     const FLOW_CONSTANT_XCAB: f64 = 0.00001828; // kg(feet*s)
 
-    fn new(context: &mut InitContext, pack_id: PackId) -> Self {
+    fn new(context: &mut InitContext, pack_id: Pack) -> Self {
         Self {
-            pack_flow_id: context.get_identifier(Self::pack_flow_id(pack_id as usize)),
+            pack_flow_id: context.get_identifier(Self::pack_flow_id(pack_id.into())),
 
-            id: pack_id,
+            id: pack_id.into(),
             flow_demand: Ratio::new::<percent>(0.),
             fcv_open_allowed: false,
             should_open_fcv: false,
@@ -643,12 +647,12 @@ impl<const ZONES: usize> PackFlowController<ZONES> {
 
         self.pid.next_control_output(
             pneumatic
-                .pack_flow_valve_air_flow(self.id as usize)
+                .pack_flow_valve_air_flow(self.id)
                 .get::<kilogram_per_second>(),
             Some(context.delta()),
         );
 
-        self.pack_flow = pneumatic.pack_flow_valve_air_flow(self.id as usize);
+        self.pack_flow = pneumatic.pack_flow_valve_air_flow(self.id);
     }
 
     fn pack_start_condition_determination(&self) -> bool {
@@ -673,9 +677,8 @@ impl<const ZONES: usize> PackFlowController<ZONES> {
                 intermediate_flow.max(Ratio::new::<percent>(Self::APU_SUPPLY_FLOW_LIMIT));
         }
         // Single pack operation determination
-        if (pneumatic.pack_flow_valve_open_amount(self.id as usize) > Ratio::new::<ratio>(0.))
-            != (pneumatic.pack_flow_valve_open_amount(1 - self.id as usize)
-                > Ratio::new::<ratio>(0.))
+        if (pneumatic.pack_flow_valve_open_amount(self.id) > Ratio::new::<ratio>(0.))
+            != (pneumatic.pack_flow_valve_open_amount(1 - self.id) > Ratio::new::<ratio>(0.))
         {
             intermediate_flow =
                 intermediate_flow.max(Ratio::new::<percent>(Self::ONE_PACK_FLOW_LIMIT));
@@ -691,7 +694,7 @@ impl<const ZONES: usize> PackFlowController<ZONES> {
                 intermediate_flow.min(Ratio::new::<percent>(Self::FLOW_REDUCTION_LIMIT));
         }
         // If the flow control valve is closed the indication is in the Lo position
-        if !(pneumatic.pack_flow_valve_open_amount(self.id as usize) > Ratio::new::<ratio>(0.)) {
+        if !(pneumatic.pack_flow_valve_open_amount(self.id) > Ratio::new::<ratio>(0.)) {
             OverheadFlowSelector::Lo.into()
         } else {
             intermediate_flow.max(Ratio::new::<percent>(Self::BACKFLOW_LIMIT))
@@ -713,8 +716,8 @@ impl<const ZONES: usize> PackFlowController<ZONES> {
         pressurization_overhead: &PressurizationOverheadPanel,
         pneumatic: &(impl PneumaticBleed + EngineStartState),
     ) -> bool {
-        match self.id {
-            PackId::Pack1 => {
+        match Pack::from(self.id + 1) {
+            Pack(1) => {
                 acs_overhead.pack_pushbuttons_state()[0]
                     && !(pneumatic.left_engine_state() == EngineState::Starting)
                     && (!(pneumatic.right_engine_state() == EngineState::Starting)
@@ -726,7 +729,7 @@ impl<const ZONES: usize> PackFlowController<ZONES> {
                     && !pressurization_overhead.ditching_is_on()
                 // && ! pack 1 overheat
             }
-            PackId::Pack2 => {
+            Pack(2) => {
                 acs_overhead.pack_pushbuttons_state()[1]
                     && !(pneumatic.right_engine_state() == EngineState::Starting)
                     && (!(pneumatic.left_engine_state() == EngineState::Starting)
@@ -738,6 +741,7 @@ impl<const ZONES: usize> PackFlowController<ZONES> {
                     && !pressurization_overhead.ditching_is_on()
                 // && ! pack 2 overheat
             }
+            _ => panic!("Pack ID number out of bounds."),
         }
     }
 
@@ -748,13 +752,10 @@ impl<const ZONES: usize> PackFlowController<ZONES> {
         pneumatic_overhead: &impl EngineBleedPushbutton,
     ) -> bool {
         // Pneumatic overhead represents engine bleed pushbutton for left [0] and right [1] engine(s)
-        ((engines[self.id as usize].corrected_n1() >= Ratio::new::<percent>(15.)
-            && pneumatic_overhead.engine_bleed_pushbuttons_are_auto()
-                [(self.id as usize == 1) as usize])
-            || (engines[(self.id as usize == 0) as usize].corrected_n1()
-                >= Ratio::new::<percent>(15.)
-                && pneumatic_overhead.engine_bleed_pushbuttons_are_auto()
-                    [(self.id as usize == 0) as usize]
+        ((engines[self.id].corrected_n1() >= Ratio::new::<percent>(15.)
+            && pneumatic_overhead.engine_bleed_pushbuttons_are_auto()[(self.id == 1) as usize])
+            || (engines[(self.id == 0) as usize].corrected_n1() >= Ratio::new::<percent>(15.)
+                && pneumatic_overhead.engine_bleed_pushbuttons_are_auto()[(self.id == 0) as usize]
                 && pneumatic.engine_crossbleed_is_on()))
             || pneumatic.apu_bleed_is_on()
     }
@@ -768,7 +769,7 @@ impl<const ZONES: usize> PackFlowController<ZONES> {
     }
 
     fn fcv_status_determination(&self, pneumatic: &impl PackFlowValveState) -> bool {
-        (pneumatic.pack_flow_valve_open_amount(self.id as usize) > Ratio::new::<ratio>(0.))
+        (pneumatic.pack_flow_valve_open_amount(self.id) > Ratio::new::<ratio>(0.))
             != self.fcv_open_allowed
     }
 
