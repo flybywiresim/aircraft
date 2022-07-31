@@ -677,7 +677,6 @@ mod tests {
         test_bed_nose_door.run_without_delta();
 
         let lateral_force = test_bed_nose_door.query(|a| a.body_aero_force_right_value());
-        let _up_force = test_bed_nose_door.query(|a| a.body_aero_force_up_value());
         let long_force = test_bed_nose_door.query(|a| a.body_aero_force_forward_value());
 
         // There's some drag
