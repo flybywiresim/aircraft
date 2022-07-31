@@ -6567,12 +6567,6 @@ mod tests {
             }
 
             fn get_real_gear_position(&mut self, wheel_id: GearWheel) -> Ratio {
-                let value: f64 = match wheel_id {
-                    GearWheel::NOSE => self.read_by_name("GEAR_CENTER_POSITION"),
-                    GearWheel::LEFT => self.read_by_name("GEAR_LEFT_POSITION"),
-                    GearWheel::RIGHT => self.read_by_name("GEAR_RIGHT_POSITION"),
-                };
-                println!("VALUE {:.2}", value);
                 match wheel_id {
                     GearWheel::NOSE => self.read_by_name("GEAR_CENTER_POSITION"),
                     GearWheel::LEFT => self.read_by_name("GEAR_LEFT_POSITION"),
@@ -10451,7 +10445,7 @@ mod tests {
 
             test_bed = test_bed
                 .turn_emergency_gear_extension_n_turns(2)
-                .run_waiting_for(Duration::from_secs_f64(10.));
+                .run_waiting_for(Duration::from_secs_f64(25.));
 
             assert!(test_bed.is_all_doors_really_down());
         }
@@ -10534,7 +10528,7 @@ mod tests {
             test_bed = test_bed
                 .set_gear_lever_down()
                 .turn_emergency_gear_extension_n_turns(3)
-                .run_waiting_for(Duration::from_secs_f64(20.));
+                .run_waiting_for(Duration::from_secs_f64(30.));
             assert!(test_bed.is_all_gears_really_down());
             assert!(test_bed.is_all_doors_really_down());
 
@@ -10696,7 +10690,7 @@ mod tests {
 
             test_bed = test_bed
                 .turn_emergency_gear_extension_n_turns(3)
-                .run_waiting_for(Duration::from_secs_f64(20.));
+                .run_waiting_for(Duration::from_secs_f64(30.));
             assert!(test_bed.is_all_gears_really_down());
             assert!(test_bed.is_all_doors_really_down());
 
