@@ -6305,6 +6305,13 @@ mod tests {
                 self
             }
 
+            fn on_the_ground_after_touchdown(mut self) -> Self {
+                self.set_indicated_altitude(Length::new::<foot>(0.));
+                self.set_on_ground(true);
+                self.set_indicated_airspeed(Velocity::new::<knot>(100.));
+                self
+            }
+
             fn air_press_low(mut self) -> Self {
                 self.command(|a| a.pneumatics.set_low_air_pressure());
                 self
@@ -10633,6 +10640,32 @@ mod tests {
             // Check elevators did stay drooped down after valve reopening
             assert!(test_bed.get_left_elevator_position().get::<ratio>() < 0.1);
             assert!(test_bed.get_right_elevator_position().get::<ratio>() < 0.1);
+        }
+
+        #[test]
+        fn brakes_on_ground_work_after_emergency_extension() {
+            let mut test_bed = test_bed_in_flight_with()
+                .set_cold_dark_inputs()
+                .in_flight()
+                .set_gear_lever_up()
+                .run_waiting_for(Duration::from_secs_f64(1.));
+
+            assert!(test_bed.gear_system_state() == GearSystemState::AllUpLocked);
+
+            test_bed = test_bed
+                .turn_emergency_gear_extension_n_turns(3)
+                .run_waiting_for(Duration::from_secs_f64(20.));
+            assert!(test_bed.is_all_gears_really_down());
+            assert!(test_bed.is_all_doors_really_down());
+
+            test_bed = test_bed
+                .on_the_ground_after_touchdown()
+                .set_left_brake(Ratio::new::<ratio>(1.))
+                .set_right_brake(Ratio::new::<ratio>(1.))
+                .run_waiting_for(Duration::from_secs_f64(2.));
+
+            assert!(test_bed.get_brake_left_green_pressure() > Pressure::new::<psi>(500.));
+            assert!(test_bed.get_brake_right_green_pressure() > Pressure::new::<psi>(500.));
         }
     }
 }
