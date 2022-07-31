@@ -1,5 +1,6 @@
 import { EfisSide } from '@shared/NavigationDisplay';
 import { simbridgeUrl } from '../common';
+import { NavigationDisplayTerrainData } from '../dto/Terrain/NavigationDisplayTerrainData';
 
 /**
  * Class pertaining to retrieving terrain data from SimBridge
@@ -51,14 +52,7 @@ export class Terrain {
     }
 
     public static async ndTerrainRange(side: EfisSide, timestamp: number):
-    Promise<{
-        minElevation: number,
-        minElevationIsWarning: boolean,
-        minElevationIsCaution: boolean,
-        maxElevation: number,
-        maxElevationIsWarning: boolean,
-        maxElevationIsCaution: boolean
-    }> {
+    Promise<NavigationDisplayTerrainData> {
         return fetch(`${simbridgeUrl}/api/v1/terrain/terrainRange?display=${side}&timestamp=${timestamp}`, {
             method: 'GET',
             headers: { Accept: 'application/json' },

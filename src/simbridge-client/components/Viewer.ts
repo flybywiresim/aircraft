@@ -1,4 +1,4 @@
-import { simbridgeUrl } from 'simbridge-client/common';
+import { simbridgeUrl } from '../common';
 
 /**
  * Class pertaining to retrieving static files for general viewing from SimBridge
@@ -8,11 +8,15 @@ export class Viewer {
      * Used to retrieve a streamable image of specified page within a given PDF file
      * @param filename required field, filename of the pdf
      * @param pageNumber required field, The page of the PDF file
-     * @returns on successful response, response body contains a streamable file
+     * @returns a Blob
      */
-    public static async getPDFPage(filename: string, pageNumber: number): Promise<Response> {
+    public static async getPDFPage(filename: string, pageNumber: number): Promise<Blob> {
         if (filename || pageNumber) {
-            return fetch(`${simbridgeUrl}/api/v1/utility/pdf?filename=${filename}&pagenumber=${pageNumber}`);
+            const response = await fetch(`${simbridgeUrl}/api/v1/utility/pdf?filename=${filename}&pagenumber=${pageNumber}`);
+            if (response.ok) {
+                return response.blob();
+            }
+            throw new Error(`SimBridge Error: ${response.status}`);
         }
         throw new Error('File name or page number missing');
     }
@@ -20,40 +24,56 @@ export class Viewer {
     /**
      * Retrieve the number of pages within a specified PDF file
      * @param filename required field, filename of the pdf
-     * @returns on successful response, body contains number of pages in PDF
+     * @returns A number
      */
-    public static async getPDFPageNum(filename: string): Promise<Response> {
+    public static async getPDFPageNum(filename: string): Promise<Number> {
         if (filename) {
-            return fetch(`${simbridgeUrl}/api/v1/utility/pdf/numpages?filename=${filename}`);
+            const response = await fetch(`${simbridgeUrl}/api/v1/utility/pdf/numpages?filename=${filename}`);
+            if (response.ok) {
+                return response.json();
+            }
+            throw new Error(`SimBridge Error: ${response.status}`);
         }
         throw new Error('File name or page number missing');
     }
 
     /**
      * Used to retrieve a list of filenames within the PDF folder
-     * @returns on sucessful response, response body contains an array of strings of the filenames within the pdf folder
+     * @returns an Array of strings
      */
-    public static async getPDFList(): Promise<Response> {
-        return fetch(`${simbridgeUrl}/api/v1/utility/pdf/list`);
+    public static async getPDFList(): Promise<string[]> {
+        const response = await fetch(`${simbridgeUrl}/api/v1/utility/pdf/list`);
+        if (response.ok) {
+            return response.json();
+        }
+        throw new Error(`SimBridge Error: ${response.status}`);
     }
 
     /**
      * Used to retrieve a streamable image of a specified image in the images folder
      * @param filename required field, filename of the image
-     * @returns on successful response, response body contains a streamable file
+     * @returns A Blob
      */
-    public static async getImage(filename: string, pageNumber: number): Promise<Response> {
+    public static async getImage(filename: string, pageNumber: number): Promise<Blob> {
         if (filename || pageNumber) {
-            return fetch(`${simbridgeUrl}/api/v1/utility/image?filename=${filename}`);
+            const response = await fetch(`${simbridgeUrl}/api/v1/utility/image?filename=${filename}`);
+            if (response.ok) {
+                return response.blob();
+            }
+            throw new Error(`SimBridge Error: ${response.status}`);
         }
         throw new Error('File name or page number missing');
     }
 
     /**
      * Used to retrieve a list of filenames within the PDF folder
-     * @returns on successful response, response body contains a streamable file
+     * @returns an Array of strings
      */
-    public static async getImageList(): Promise<Response> {
-        return fetch(`${simbridgeUrl}/api/v1/utility/image/list`);
+    public static async getImageList(): Promise<string[]> {
+        const response = await fetch(`${simbridgeUrl}/api/v1/utility/image/list`);
+        if (response.ok) {
+            return response.json();
+        }
+        throw new Error(`SimBridge Error: ${response.status}`);
     }
 }
