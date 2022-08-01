@@ -1026,7 +1026,13 @@ impl GearSystemStateMachine {
                 if !gear_handle_position_is_up {
                     GearSystemState::Extending
                 } else {
-                    self.gears_state
+                    // Checking consistency as we should be all uplocked with lever up
+                    if lgciu.all_up_and_locked() && lgciu.all_closed_and_locked() {
+                        self.gears_state
+                    } else {
+                        // Else we are supposed to be all uplocked but we aren't so back to retraction
+                        GearSystemState::Retracting
+                    }
                 }
             }
             GearSystemState::Retracting => {
