@@ -820,7 +820,7 @@
                 <WWISE_EVENT>gearleverclick</WWISE_EVENT>
                 <DOWN_CODE>(L:A32NX_GEAR_HANDLE_POSITION, Bool) !  (>L:A32NX_GEAR_LEVER_POSITION_REQUEST)</DOWN_CODE>
                 <ANIM_CODE>
-                    (L:A32NX_GEAR_HANDLE_POSITION, Bool)
+                    (L:A32NX_GEAR_HANDLE_POSITION, Bool) 3 *
                 </ANIM_CODE>
             </UseTemplate>
 
