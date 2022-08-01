@@ -81,7 +81,7 @@ impl VariablesToObject for RollSimOutput {
     fn variables(&self) -> Vec<Variable> {
         vec![
             Variable::aspect("HYD_FINAL_AILERON_FEEDBACK"),
-            Variable::aspect("FLIGHT_CONTROLS_TRACKING_MODE"),
+            Variable::named("FLIGHT_CONTROLS_TRACKING_MODE"),
         ]
     }
 
