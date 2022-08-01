@@ -63,6 +63,7 @@
 1. [EFB] Added Payload Loading to EFB - @2hwk (2Cas#1022)
 1. [MODEL] Remove blue highlights in lock mode - @tracernz (Mike)
 1. [EFB] Added pause at T/D function - @2hwk (2Cas#1022)
+1. [FLIGHTMODEL] Improve flight handling characteristics, ground effect, and landing gear simulation - @donstim (donbikes#4084)
 
 ## 0.8.0
 
