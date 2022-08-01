@@ -90,8 +90,8 @@ impl<const ZONES: usize> AirConditioningSystemController<ZONES> {
         pneumatic: &impl PackFlowValveState,
     ) -> [bool; 2] {
         [
-            self.pack_flow_controller[usize::from(Pack(1))].fcv_status_determination(pneumatic),
-            self.pack_flow_controller[usize::from(Pack(2))].fcv_status_determination(pneumatic),
+            self.pack_flow_controller[Pack(1).to_index()].fcv_status_determination(pneumatic),
+            self.pack_flow_controller[Pack(2).to_index()].fcv_status_determination(pneumatic),
         ]
     }
 }
@@ -114,7 +114,7 @@ impl<const ZONES: usize> PackFlow for AirConditioningSystemController<ZONES> {
 
 impl<const ZONES: usize> PackFlowControllers<ZONES> for AirConditioningSystemController<ZONES> {
     fn pack_flow_controller(&self, pack_id: Pack) -> PackFlowController<ZONES> {
-        self.pack_flow_controller[usize::from(pack_id)]
+        self.pack_flow_controller[pack_id.to_index()]
     }
 }
 
@@ -555,6 +555,12 @@ impl PneumaticValveSignal for PackFlowValveSignal {
 /// Pack ID can be 1 or 2
 pub struct Pack(usize);
 
+impl Pack {
+    fn to_index(self) -> usize {
+        self.0 - 1
+    }
+}
+
 impl From<usize> for Pack {
     fn from(value: usize) -> Self {
         if value != 1 && value != 2 {
@@ -562,12 +568,6 @@ impl From<usize> for Pack {
         } else {
             Pack(value)
         }
-    }
-}
-
-impl From<Pack> for usize {
-    fn from(value: Pack) -> Self {
-        value.0 - 1
     }
 }
 
@@ -599,9 +599,9 @@ impl<const ZONES: usize> PackFlowController<ZONES> {
 
     fn new(context: &mut InitContext, pack_id: Pack) -> Self {
         Self {
-            pack_flow_id: context.get_identifier(Self::pack_flow_id(pack_id.into())),
+            pack_flow_id: context.get_identifier(Self::pack_flow_id(pack_id.to_index())),
 
-            id: pack_id.into(),
+            id: pack_id.to_index(),
             flow_demand: Ratio::new::<percent>(0.),
             fcv_open_allowed: false,
             should_open_fcv: false,
