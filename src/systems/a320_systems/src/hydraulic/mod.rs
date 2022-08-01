@@ -6566,7 +6566,7 @@ mod tests {
                 self.read_by_name("RIGHT_SLATS_POSITION_PERCENT")
             }
 
-            fn get_real_gear_position(&mut self, wheel_id: GearWheel) -> f64 {
+            fn get_real_gear_position(&mut self, wheel_id: GearWheel) -> Ratio {
                 match wheel_id {
                     GearWheel::NOSE => self.read_by_name("GEAR_CENTER_POSITION"),
                     GearWheel::LEFT => self.read_by_name("GEAR_LEFT_POSITION"),
@@ -6574,7 +6574,7 @@ mod tests {
                 }
             }
 
-            fn get_real_gear_door_position(&mut self, wheel_id: GearWheel) -> f64 {
+            fn get_real_gear_door_position(&mut self, wheel_id: GearWheel) -> Ratio {
                 match wheel_id {
                     GearWheel::NOSE => self.read_by_name("GEAR_DOOR_CENTER_POSITION"),
                     GearWheel::LEFT => self.read_by_name("GEAR_DOOR_LEFT_POSITION"),
@@ -6583,27 +6583,30 @@ mod tests {
             }
 
             fn is_all_gears_really_up(&mut self) -> bool {
-                self.get_real_gear_position(GearWheel::NOSE) <= 0.
-                    && self.get_real_gear_position(GearWheel::LEFT) <= 0.
-                    && self.get_real_gear_position(GearWheel::RIGHT) <= 0.
+                self.get_real_gear_position(GearWheel::NOSE) <= Ratio::new::<ratio>(0.01)
+                    && self.get_real_gear_position(GearWheel::LEFT) <= Ratio::new::<ratio>(0.01)
+                    && self.get_real_gear_position(GearWheel::RIGHT) <= Ratio::new::<ratio>(0.01)
             }
 
             fn is_all_gears_really_down(&mut self) -> bool {
-                self.get_real_gear_position(GearWheel::NOSE) >= 1.
-                    && self.get_real_gear_position(GearWheel::LEFT) >= 1.
-                    && self.get_real_gear_position(GearWheel::RIGHT) >= 1.
+                self.get_real_gear_position(GearWheel::NOSE) >= Ratio::new::<ratio>(0.99)
+                    && self.get_real_gear_position(GearWheel::LEFT) >= Ratio::new::<ratio>(0.99)
+                    && self.get_real_gear_position(GearWheel::RIGHT) >= Ratio::new::<ratio>(0.99)
             }
 
             fn is_all_doors_really_up(&mut self) -> bool {
-                self.get_real_gear_door_position(GearWheel::NOSE) <= 0.
-                    && self.get_real_gear_door_position(GearWheel::LEFT) <= 0.
-                    && self.get_real_gear_door_position(GearWheel::RIGHT) <= 0.
+                self.get_real_gear_door_position(GearWheel::NOSE) <= Ratio::new::<ratio>(0.01)
+                    && self.get_real_gear_door_position(GearWheel::LEFT)
+                        <= Ratio::new::<ratio>(0.01)
+                    && self.get_real_gear_door_position(GearWheel::RIGHT)
+                        <= Ratio::new::<ratio>(0.01)
             }
 
             fn is_all_doors_really_down(&mut self) -> bool {
-                self.get_real_gear_door_position(GearWheel::NOSE) >= 0.9
-                    && self.get_real_gear_door_position(GearWheel::LEFT) >= 0.9
-                    && self.get_real_gear_door_position(GearWheel::RIGHT) >= 0.9
+                self.get_real_gear_door_position(GearWheel::NOSE) >= Ratio::new::<ratio>(0.9)
+                    && self.get_real_gear_door_position(GearWheel::LEFT) >= Ratio::new::<ratio>(0.9)
+                    && self.get_real_gear_door_position(GearWheel::RIGHT)
+                        >= Ratio::new::<ratio>(0.9)
             }
 
             fn ac_bus_1_lost(mut self) -> Self {
@@ -10442,7 +10445,7 @@ mod tests {
 
             test_bed = test_bed
                 .turn_emergency_gear_extension_n_turns(2)
-                .run_waiting_for(Duration::from_secs_f64(10.));
+                .run_waiting_for(Duration::from_secs_f64(25.));
 
             assert!(test_bed.is_all_doors_really_down());
         }
@@ -10525,7 +10528,7 @@ mod tests {
             test_bed = test_bed
                 .set_gear_lever_down()
                 .turn_emergency_gear_extension_n_turns(3)
-                .run_waiting_for(Duration::from_secs_f64(20.));
+                .run_waiting_for(Duration::from_secs_f64(30.));
             assert!(test_bed.is_all_gears_really_down());
             assert!(test_bed.is_all_doors_really_down());
 
@@ -10574,6 +10577,39 @@ mod tests {
                 .run_one_tick();
 
             assert!(test_bed.gear_system_state() == GearSystemState::AllUpLocked);
+        }
+
+        #[test]
+        fn gear_gravity_extension_reverted_has_correct_sequence() {
+            let mut test_bed = test_bed_in_flight_with()
+                .set_cold_dark_inputs()
+                .with_worst_case_ptu()
+                .in_flight()
+                .run_one_tick();
+
+            assert!(test_bed.gear_system_state() == GearSystemState::AllUpLocked);
+
+            test_bed = test_bed
+                .turn_emergency_gear_extension_n_turns(3)
+                .run_waiting_for(Duration::from_secs_f64(35.));
+
+            assert!(test_bed.is_all_doors_really_down());
+            assert!(test_bed.is_all_gears_really_down());
+
+            test_bed = test_bed
+                .stow_emergency_gear_extension()
+                .run_waiting_for(Duration::from_secs_f64(10.));
+
+            // // After 10 seconds we expect gear being retracted and doors still down
+            assert!(test_bed.gear_system_state() == GearSystemState::Retracting);
+            assert!(test_bed.is_all_doors_really_down());
+            assert!(!test_bed.is_all_gears_really_down());
+
+            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(10.));
+
+            assert!(test_bed.gear_system_state() == GearSystemState::AllUpLocked);
+            assert!(test_bed.is_all_doors_really_up());
+            assert!(test_bed.is_all_gears_really_up());
         }
 
         #[test]
@@ -10654,7 +10690,7 @@ mod tests {
 
             test_bed = test_bed
                 .turn_emergency_gear_extension_n_turns(3)
-                .run_waiting_for(Duration::from_secs_f64(20.));
+                .run_waiting_for(Duration::from_secs_f64(30.));
             assert!(test_bed.is_all_gears_really_down());
             assert!(test_bed.is_all_doors_really_down());
 
