@@ -78,13 +78,13 @@ clang++ \
   "${DIR}/src/interface/SimConnectInterface.cpp" \
   -I "${DIR}/src/busStructures" \
   -I "${DIR}/src/elac" \
-  "${DIR}/src/elac/elac.cpp" \
+  "${DIR}/src/elac/Elac.cpp" \
   -I "${DIR}/src/sec" \
-  "${DIR}/src/sec/sec.cpp" \
+  "${DIR}/src/sec/Sec.cpp" \
   -I "${DIR}/src/fcdc" \
-  "${DIR}/src/fcdc/fcdc.cpp" \
+  "${DIR}/src/fcdc/Fcdc.cpp" \
   -I "${DIR}/src/fac" \
-  "${DIR}/src/fac/fac.cpp" \
+  "${DIR}/src/fac/Fac.cpp" \
   -I "${DIR}/src/failures" \
   "${DIR}/src/failures/FailuresConsumer.cpp" \
   -I "${DIR}/src/utils" \
