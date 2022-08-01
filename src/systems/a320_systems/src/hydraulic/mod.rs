@@ -290,13 +290,14 @@ impl A320AileronFactory {
     const FLOW_CONTROL_FORCE_GAIN: f64 = 450000.;
 
     const MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING: f64 = 3500000.;
+    const MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT: f64 = 1.;
 
     fn a320_aileron_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
         let actuator_characteristics = LinearActuatorCharacteristics::new(
             Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING / 3.,
             Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING,
             VolumeRate::new::<gallon_per_second>(0.055),
-            Ratio::new::<percent>(1.),
+            Ratio::new::<percent>(Self::MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT),
         );
 
         // Aileron actuator real data:
@@ -400,14 +401,13 @@ impl A320SpoilerFactory {
 
     const MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING: f64 = 400000.;
 
-    const MAX_FLOW_GAL_P_S: f64 = 0.03;
     const MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT: f64 = 3.;
 
     fn a320_spoiler_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
         let actuator_characteristics = LinearActuatorCharacteristics::new(
             Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING / 5.,
             Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING,
-            VolumeRate::new::<gallon_per_second>(Self::MAX_FLOW_GAL_P_S),
+            VolumeRate::new::<gallon_per_second>(0.03),
             Ratio::new::<percent>(Self::MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT),
         );
 
@@ -761,7 +761,7 @@ impl A320GearDoorFactory {
         const FLOW_CONTROL_FORCE_GAIN: f64 = 200000.;
 
         const MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING: f64 = 9000.;
-        const MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT: f64 = 3.;
+        const MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT: f64 = 5.;
 
         let actuator_characteristics = LinearActuatorCharacteristics::new(
             MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING * 0.98,
@@ -919,7 +919,7 @@ impl A320GearFactory {
         const FLOW_CONTROL_FORCE_GAIN: f64 = 250000.;
 
         const MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING: f64 = 2500000.;
-        const MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT: f64 = 3.;
+        const MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT: f64 = 5.;
 
         let actuator_characteristics = LinearActuatorCharacteristics::new(
             MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING * 0.98,
