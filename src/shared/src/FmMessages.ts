@@ -180,4 +180,9 @@ export const FMMessageTypes: Readonly<Record<string, FMMessage>> = {
         color: 'Amber',
         ndPriority: 9,
     },
+    TurnAreaExceedance: {
+        id: 16,
+        text: 'TURN AREA EXCEEDANCE',
+        color: 'Amber',
+    },
 };

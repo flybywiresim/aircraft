@@ -19,7 +19,7 @@ export const EWD: React.FC = () => {
 
     return (
         <DisplayUnit
-            electricitySimvar="L:A32NX_ELEC_AC_2_BUS_IS_POWERED"
+            electricitySimvar="L:A32NX_ELEC_AC_ESS_BUS_IS_POWERED"
             potentiometerIndex={displayIndex}
         >
             <svg className="ewd-svg" version="1.1" viewBox="0 0 768 768" xmlns="http://www.w3.org/2000/svg">
