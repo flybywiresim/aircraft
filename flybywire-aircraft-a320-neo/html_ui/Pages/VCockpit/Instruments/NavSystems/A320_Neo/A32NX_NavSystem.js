@@ -2823,7 +2823,7 @@ class Warnings extends NavSystemElement {
         return this.linearMultiPointsEvaluation(this.pullUp_sinkRate_Points, descentRate, height) == 2;
     }
     landingGearCallback() {
-        const gear = !SimVar.GetSimVarValue("IS GEAR RETRACTABLE", "Boolean") || SimVar.GetSimVarValue("GEAR HANDLE POSITION", "Boolean");
+        const gear = !SimVar.GetSimVarValue("IS GEAR RETRACTABLE", "Boolean") || SimVar.GetSimVarValue("L:A32NX_GEAR_HANDLE_POSITION", "Boolean");
         const throttle = SimVar.GetSimVarValue("L:A32NX_AUTOTHRUST_TLA:1", "number");
         const flaps = SimVar.GetSimVarValue("L:A32NX_FLAPS_HANDLE_INDEX", "number");
         return !gear && (flaps > 1 || (throttle == 0));
