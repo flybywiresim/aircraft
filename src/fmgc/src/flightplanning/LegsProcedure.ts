@@ -136,6 +136,7 @@ export class LegsProcedure {
               try {
                   switch (currentLeg.type) {
                   case LegType.AF:
+                  case LegType.PI:
                       mappedLeg = this.mapExactFix(currentLeg);
                       break;
                   case LegType.CD:

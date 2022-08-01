@@ -1105,9 +1105,21 @@ export class ManagedFlightPlan {
         }
 
         if (approachIndex !== -1) {
+            const finalLegs = [...approach.finalLegs];
+            // PI legs can only occur in approach vias
+            // if the via ends in one, we must omit the IF leg at the start of the approach
+            const viaLastLegType = legs[legs.length - 1]?.type;
+            if (viaLastLegType === LegType.PI && finalLegs[0]?.type === LegType.IF) {
+                finalLegs.splice(0, 1);
+                // @ts-expect-error (ts compiler doesn't see that splice mutates finalLegs)
+                if (finalLegs[0]?.type !== LegType.CF) {
+                    console.error('PI must be followed by CF!');
+                }
+            }
+
             this.procedureDetails.approachType = approach.approachType;
-            legs.push(...approach.finalLegs);
-            legAnnotations.push(...approach.finalLegs.map(_ => approachName));
+            legs.push(...finalLegs);
+            legAnnotations.push(...finalLegs.map(_ => approachName));
             missedLegs.push(...approach.missedLegs);
         }
 

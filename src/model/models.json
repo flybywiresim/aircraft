@@ -90,6 +90,16 @@
       {
         "gltf": "./glass/glass.gltf",
         "bin": "./glass/glass.bin"
+      },
+      {
+        "gltf": "./cockpit/cockpit.gltf",
+        "bin": "./cockpit/cockpit.bin",
+        "maxLod": 0
+      },
+      {
+        "gltf": "./cockpit/gearemer.gltf",
+        "bin": "./cockpit/gearemer.bin",
+        "maxLod": 0
       }
     ],
     "modifications": [

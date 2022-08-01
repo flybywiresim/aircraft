@@ -9,7 +9,7 @@ crate-type = ["cdylib"]
 test = false
 
 [dependencies]
-uom = "0.32.0"
+uom = "0.33.0"
 a320_systems = { path = "../a320_systems" }
 systems = { path = "../systems" }
 systems_wasm = { path = "../systems_wasm" }

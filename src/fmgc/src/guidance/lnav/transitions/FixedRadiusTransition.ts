@@ -5,6 +5,7 @@
 
 import { MathUtils } from '@shared/MathUtils';
 import { DFLeg } from '@fmgc/guidance/lnav/legs/DF';
+import { PILeg } from '@fmgc/guidance/lnav/legs/PI';
 import { TFLeg } from '@fmgc/guidance/lnav/legs/TF';
 import { Transition } from '@fmgc/guidance/lnav/Transition';
 import { PathCaptureTransition } from '@fmgc/guidance/lnav/transitions/PathCaptureTransition';
@@ -22,7 +23,7 @@ import { PathVector, PathVectorType } from '../PathVector';
 import { CFLeg } from '../legs/CF';
 
 type PrevLeg = CILeg | CFLeg | DFLeg | TFLeg;
-type NextLeg = CFLeg | /* FALeg | FMLeg | PILeg | */ TFLeg;
+type NextLeg = CFLeg | /* FALeg | FMLeg | */ PILeg | TFLeg;
 
 const mod = (x: number, n: number) => x - Math.floor(x / n) * n;
 

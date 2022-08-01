@@ -35,7 +35,7 @@ export class Geo {
         const intersections1 = placeBearingIntersection(
             from,
             Avionics.Utils.clampAngle(leg.outboundCourse - 90),
-            leg.getPathEndPoint(),
+            leg.initialLegTermPoint,
             Avionics.Utils.clampAngle(leg.outboundCourse - 180),
         );
 
