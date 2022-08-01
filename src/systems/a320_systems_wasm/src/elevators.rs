@@ -75,7 +75,7 @@ impl VariablesToObject for PitchSimOutput {
     fn variables(&self) -> Vec<Variable> {
         vec![
             Variable::aspect("HYD_FINAL_ELEVATOR_FEEDBACK"),
-            Variable::aspect("FLIGHT_CONTROLS_TRACKING_MODE"),
+            Variable::named("FLIGHT_CONTROLS_TRACKING_MODE"),
         ]
     }
 
