@@ -2841,13 +2841,9 @@ In the variables below, {number} should be replaced with one item in the set: { 
         - LEFT
         - RIGHT
 
-- A32NX_GEAR_EMERGENCY_EXTENSION_CLICKED
-    - Indicates the emergency extension handle is clicked in cockpit.
-    - Bool
-
-- A32NX_GEAR_EMERGENCY_EXTENSION_IS_TURNED
-    - Indicates the emergency extension handle is currently turning.
-    - Bool
+- A32NX_GRAVITYGEAR_ROTATE_PCT
+    - Indicates the position of the gear emergency extension crank handle from 0 to 300 (3 turns)
+    - Percent
 
 ## ATC (ATA 34)
 

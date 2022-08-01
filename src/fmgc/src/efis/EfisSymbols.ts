@@ -13,6 +13,7 @@ import { PathVector, PathVectorType } from '@fmgc/guidance/lnav/PathVector';
 import { SegmentType } from '@fmgc/wtsdk';
 import { distanceTo } from 'msfs-geo';
 import { FlowEventSync } from '@shared/FlowEventSync';
+import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { LegType, RunwaySurface, TurnDirection, VorType } from '../types/fstypes/FSEnums';
 import { NearbyFacilities } from './NearbyFacilities';
 
@@ -306,7 +307,7 @@ export class EfisSymbols {
                     const legType = wp.additionalData.legType;
                     if (
                         legType === LegType.CA || legType === LegType.CR || legType === LegType.CI
-                        || legType === LegType.FM
+                        || legType === LegType.FM || legType === LegType.PI
                         || legType === LegType.VA || legType === LegType.VI || legType === LegType.VM
                     ) {
                         continue;
@@ -337,12 +338,14 @@ export class EfisSymbols {
                     const constraints = [];
                     let direction;
 
-                    // TODO PI leg
-                    const isCourseReversal = wp.additionalData.legType === LegType.HA || wp.additionalData.legType === LegType.HF || wp.additionalData.legType === LegType.HM;
+                    const isCourseReversal = wp.additionalData.legType === LegType.HA
+                        || wp.additionalData.legType === LegType.HF
+                        || wp.additionalData.legType === LegType.HM
+                        || wp.additionalData.legType === LegType.PI;
 
                     if (i === activeFp.activeWaypointIndex) {
                         type |= NdSymbolTypeFlags.ActiveLegTermination;
-                    } else if (isCourseReversal && i > (activeFp.activeWaypointIndex + 1) && range <= 80) {
+                    } else if (isCourseReversal && i > (activeFp.activeWaypointIndex + 1) && range <= 80 && !LnavConfig.DEBUG_FORCE_INCLUDE_COURSE_REVERSAL_VECTORS) {
                         if (wp.turnDirection === TurnDirection.Left) {
                             type |= NdSymbolTypeFlags.CourseReversalLeft;
                         } else {

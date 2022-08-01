@@ -9,7 +9,7 @@ import { GuidanceParameters, LateralPathGuidance } from '@fmgc/guidance/ControlL
 import { Geometry } from '@fmgc/guidance/Geometry';
 import { AltitudeDescriptor, TurnDirection } from '@fmgc/types/fstypes/FSEnums';
 import { SegmentType } from '@fmgc/wtsdk';
-import { arcDistanceToGo, arcGuidance, courseToFixDistanceToGo, courseToFixGuidance, maxBank } from '@fmgc/guidance/lnav/CommonGeometry';
+import { arcDistanceToGo, arcGuidance, courseToFixDistanceToGo, courseToFixGuidance, maxBank, reciprocal } from '@fmgc/guidance/lnav/CommonGeometry';
 import { XFLeg } from '@fmgc/guidance/lnav/legs/XF';
 import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
 import { EntryState, HoldEntryTransition } from '@fmgc/guidance/lnav/transitions/HoldEntryTransition';
@@ -394,7 +394,7 @@ abstract class HXLeg extends XFLeg {
     updatePrediction() {
         const windDirection = SimVar.GetSimVarValue('AMBIENT WIND DIRECTION', 'Degrees');
         const windSpeed = SimVar.GetSimVarValue('AMBIENT WIND VELOCITY', 'Knots');
-        const windAngleToInbound = Math.abs(Avionics.Utils.diffAngle(windDirection, this.inboundCourse));
+        const windAngleToInbound = Math.abs(Avionics.Utils.diffAngle(reciprocal(windDirection), this.inboundLegCourse));
         this.inboundWindSpeed = Math.cos(windAngleToInbound * Math.PI / 180) * windSpeed;
 
         this.currentPredictedTas = this.nextPredictedTas;
