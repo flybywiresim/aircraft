@@ -354,7 +354,7 @@ export class LegsProcedure {
           legDistance * LegsProcedure.distanceNormalFactorNM, prevLeg.infos.coordinates.lat, prevLeg.infos.coordinates.long,
       );
 
-      const waypoint = this.buildWaypoint(`${originIdent}${Math.trunc(legDistance * LegsProcedure.distanceNormalFactorNM)}`, coordinates);
+      const waypoint = this.buildWaypoint(`${originIdent.substring(0, 3)}/${Math.round(leg.distance / 1852).toString().padStart(2, '0')}`, coordinates);
 
       return waypoint;
   }
