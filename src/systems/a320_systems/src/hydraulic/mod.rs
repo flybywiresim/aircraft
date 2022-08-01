@@ -10607,14 +10607,14 @@ mod tests {
 
             test_bed = test_bed
                 .stow_emergency_gear_extension()
-                .run_waiting_for(Duration::from_secs_f64(10.));
+                .run_waiting_for(Duration::from_secs_f64(5.));
 
-            // // After 10 seconds we expect gear being retracted and doors still down
+            // After 5 seconds we expect gear being retracted and doors still down
             assert!(test_bed.gear_system_state() == GearSystemState::Retracting);
             assert!(test_bed.is_all_doors_really_down());
             assert!(!test_bed.is_all_gears_really_down());
 
-            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(10.));
+            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(15.));
 
             assert!(test_bed.gear_system_state() == GearSystemState::AllUpLocked);
             assert!(test_bed.is_all_doors_really_up());
