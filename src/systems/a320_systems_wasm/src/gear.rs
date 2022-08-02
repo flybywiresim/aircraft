@@ -56,13 +56,6 @@ pub(super) fn gear(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>
             Variable::named("GEAR_RIGHT_POSITION"),
         ],
         |values| {
-            // println!(
-            //     "Gears C L R {:.2} {:.2} {:.2} FINAL HANDLE MSFS {:?}",
-            //     values[0],
-            //     values[1],
-            //     values[2],
-            //     values[0] > 50. || values[1] > 5. || values[2] > 5.
-            // );
             if values[0] > 25. || values[1] > 25. || values[2] > 25. {
                 1.
             } else {
