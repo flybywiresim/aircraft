@@ -1201,7 +1201,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             this.socket = undefined;
         }
 
-        const url = `ws://127.0.0.1:${port}/interfaces/v1/mcdu`.trim();
+        const url = `ws://127.0.0.1:${port}/interfaces/v1/mcdu`.replace(/\s+/g, '');
 
         this.socket = new WebSocket(url);
 

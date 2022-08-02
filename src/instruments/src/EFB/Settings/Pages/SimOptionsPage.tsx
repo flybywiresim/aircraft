@@ -95,7 +95,7 @@ export const SimOptionsPage = () => {
                             className="text-center w-30"
                             value={simbridgePort}
                             onChange={(event) => {
-                                setSimbridgePort(event);
+                                setSimbridgePort(event.replace(/[^0-9]+/g, ''));
                             }}
                         />
                     </SettingItem>
