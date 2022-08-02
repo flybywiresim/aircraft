@@ -882,15 +882,12 @@ pub struct LinearActuatedRigidBodyOnHingeAxis {
     axis_direction: Vector3<f64>,
     rotation_transform: Rotation3<f64>,
 
-    plane_acceleration_filtered: LowPassFilter<Vector3<f64>>,
-
     min_absolute_length_to_anchor: Length,
     max_absolute_length_to_anchor: Length,
 }
 impl LinearActuatedRigidBodyOnHingeAxis {
     // Rebound energy when hiting min or max position. 0.3 means the body rebounds at 30% of the speed it hit the min/max position
     const DEFAULT_MAX_MIN_POSITION_REBOUND_FACTOR: f64 = 0.3;
-    const PLANE_ACCELERATION_FILTERING_TIME_CONSTANT: Duration = Duration::from_millis(100);
 
     pub fn new(
         mass: Mass,
@@ -944,9 +941,6 @@ impl LinearActuatedRigidBodyOnHingeAxis {
             rotation_transform: Rotation3::from_axis_angle(
                 &Unit::new_normalize(axis_direction),
                 0.,
-            ),
-            plane_acceleration_filtered: LowPassFilter::<Vector3<f64>>::new(
-                Self::PLANE_ACCELERATION_FILTERING_TIME_CONSTANT,
             ),
             min_absolute_length_to_anchor: Length::default(),
             max_absolute_length_to_anchor: Length::default(),
@@ -1072,9 +1066,6 @@ impl LinearActuatedRigidBodyOnHingeAxis {
     }
 
     pub fn update(&mut self, context: &UpdateContext) {
-        self.plane_acceleration_filtered
-            .update(context.delta(), context.acceleration().to_ms2_vector());
-
         if !self.is_locked {
             self.sum_of_torques +=
                 self.natural_damping() + self.torque_from_local_acceleration_and_gravity(context);

@@ -213,7 +213,9 @@ impl UpdateContext {
     pub(crate) const LOCAL_LONGITUDINAL_SPEED_KEY: &'static str = "VELOCITY BODY Z";
     pub(crate) const LOCAL_VERTICAL_SPEED_KEY: &'static str = "VELOCITY BODY Y";
 
-    const PLANE_ACCELERATION_FILTERING_TIME_CONSTANT: Duration = Duration::from_millis(100);
+    // Plane accelerations can become crazy with msfs collision handling.
+    // Having such filtering limits high frequencies transients in accelerations used for physics
+    const PLANE_ACCELERATION_FILTERING_TIME_CONSTANT: Duration = Duration::from_millis(400);
 
     #[deprecated(
         note = "Do not create UpdateContext directly. Instead use the SimulationTestBed or your own custom test bed."
@@ -439,14 +441,6 @@ impl UpdateContext {
 
         self.local_acceleration_plane_reference_filtered
             .update(delta, total_acceleration_plane_reference);
-
-        println!(
-            "ACCEL {:.2} {:.2} {:.2} is on ground {:?}",
-            self.acceleration_plane_reference_filtered_ms2_vector()[0],
-            self.acceleration_plane_reference_filtered_ms2_vector()[1],
-            self.acceleration_plane_reference_filtered_ms2_vector()[2],
-            self.is_on_ground
-        );
     }
 
     /// Relative wind could be directly read from simvar RELATIVE WIND VELOCITY XYZ.
