@@ -772,7 +772,12 @@ impl<const N: usize> HydraulicLinearActuatorAssembly<N> {
         current_pressure: [Pressure; N],
     ) {
         for (index, actuator) in self.linear_actuators.iter_mut().enumerate() {
-            actuator.set_position_target(assembly_controllers[index].requested_position());
+            actuator.set_position_target(
+                self.rigid_body
+                    .linear_actuator_pos_normalized_from_angular_position_normalized(
+                        assembly_controllers[index].requested_position(),
+                    ),
+            );
         }
 
         // Only one lock mechanism on the connected rigid body so we only look at first controller demand
@@ -878,6 +883,9 @@ pub struct LinearActuatedRigidBodyOnHingeAxis {
     rotation_transform: Rotation3<f64>,
 
     plane_acceleration_filtered: LowPassFilter<Vector3<f64>>,
+
+    min_absolute_length_to_anchor: Length,
+    max_absolute_length_to_anchor: Length,
 }
 impl LinearActuatedRigidBodyOnHingeAxis {
     // Rebound energy when hiting min or max position. 0.3 means the body rebounds at 30% of the speed it hit the min/max position
@@ -940,11 +948,15 @@ impl LinearActuatedRigidBodyOnHingeAxis {
             plane_acceleration_filtered: LowPassFilter::<Vector3<f64>>::new(
                 Self::PLANE_ACCELERATION_FILTERING_TIME_CONSTANT,
             ),
+            min_absolute_length_to_anchor: Length::default(),
+            max_absolute_length_to_anchor: Length::default(),
         };
         // Make sure the new object has coherent structure by updating internal roations and positions once
         new_body.initialize_actuator_force_direction();
         new_body.update_all_rotations();
+        new_body.init_min_max_linear_length();
         new_body.init_position_normalized();
+
         new_body
     }
 
@@ -1155,18 +1167,51 @@ impl LinearActuatedRigidBodyOnHingeAxis {
 
         Length::new::<meter>((self.anchor_point - control_arm_position).norm())
     }
+
+    fn init_min_max_linear_length(&mut self) {
+        let length_at_min_angle = self.absolute_length_to_anchor_at_angle(self.min_angle);
+        let length_at_max_angle = self.absolute_length_to_anchor_at_angle(self.max_angle);
+        self.min_absolute_length_to_anchor = length_at_min_angle.min(length_at_max_angle);
+        self.max_absolute_length_to_anchor = length_at_min_angle.max(length_at_max_angle);
+    }
+
+    fn linear_length_normalized_from_absolute_angle(&self, angle_demand: Angle) -> Ratio {
+        let total_linear_travel =
+            self.max_absolute_length_to_anchor - self.min_absolute_length_to_anchor;
+
+        let current_length_from_angle = self.absolute_length_to_anchor_at_angle(angle_demand);
+
+        (current_length_from_angle - self.min_absolute_length_to_anchor) / total_linear_travel
+    }
+
+    fn angular_ratio_to_absolute_angle(&self, angular_ratio_normalized: Ratio) -> Angle {
+        if self.actuator_extension_gives_positive_angle() {
+            angular_ratio_normalized.get::<ratio>() * self.total_travel + self.min_angle
+        } else {
+            -angular_ratio_normalized.get::<ratio>() * self.total_travel + self.max_angle
+        }
+    }
+
+    pub fn linear_actuator_pos_normalized_from_angular_position_normalized(
+        &self,
+        angular_ratio_normalized: Ratio,
+    ) -> Ratio {
+        // We allow 0.1 over min and max range so actuators that are controlled to end position do not slow down just before max position
+        let limited_ratio = angular_ratio_normalized
+            .max(Ratio::new::<ratio>(-0.1))
+            .min(Ratio::new::<ratio>(1.1));
+        self.linear_length_normalized_from_absolute_angle(
+            self.angular_ratio_to_absolute_angle(limited_ratio),
+        )
+    }
 }
 impl BoundedLinearLength for LinearActuatedRigidBodyOnHingeAxis {
     fn min_absolute_length_to_anchor(&self) -> Length {
-        let length_at_min_angle = self.absolute_length_to_anchor_at_angle(self.min_angle);
-        let length_at_max_angle = self.absolute_length_to_anchor_at_angle(self.max_angle);
-        length_at_min_angle.min(length_at_max_angle)
+        self.min_absolute_length_to_anchor
     }
 
     fn max_absolute_length_to_anchor(&self) -> Length {
-        let length_at_min_angle = self.absolute_length_to_anchor_at_angle(self.min_angle);
-        let length_at_max_angle = self.absolute_length_to_anchor_at_angle(self.max_angle);
-        length_at_min_angle.max(length_at_max_angle)
+        self.max_absolute_length_to_anchor
     }
 
     fn absolute_length_to_anchor(&self) -> Length {
@@ -1197,11 +1242,12 @@ impl AerodynamicBody for LinearActuatedRigidBodyOnHingeAxis {
 #[cfg(test)]
 mod tests {
     use nalgebra::Vector3;
+    use ntest::assert_about_eq;
 
     use super::*;
 
     use crate::shared::update_iterator::MaxStepLoop;
-    use crate::simulation::test::{SimulationTestBed, TestBed, WriteByName};
+    use crate::simulation::test::{ElementCtorFn, SimulationTestBed, TestBed, WriteByName};
     use crate::simulation::{Aircraft, SimulationElement};
     use std::time::Duration;
     use uom::si::{angle::degree, mass::kilogram, pressure::psi};
@@ -1352,12 +1398,6 @@ mod tests {
             self.aero_forces.apply_up_force(force_up);
         }
 
-        fn actuator_position(&self, actuator_id: usize) -> Ratio {
-            assert!(actuator_id < N);
-            self.hydraulic_assembly
-                .actuator_position_normalized(actuator_id)
-        }
-
         fn is_locked(&self) -> bool {
             self.hydraulic_assembly.is_locked()
         }
@@ -1408,6 +1448,235 @@ mod tests {
         }
     }
     impl SimulationElement for TestAircraft<2> {}
+
+    impl SimulationElement for LinearActuatedRigidBodyOnHingeAxis {}
+
+    #[test]
+    fn asymetrical_deflection_body_converts_angle_to_linear_ratio() {
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|_| elevator_body()));
+
+        assert!(
+            test_bed
+                .command_element(|e| {
+                    e.linear_length_normalized_from_absolute_angle(Angle::new::<degree>(0.))
+                })
+                .get::<ratio>()
+                >= 0.35
+        );
+        assert!(
+            test_bed
+                .command_element(|e| {
+                    e.linear_length_normalized_from_absolute_angle(Angle::new::<degree>(0.))
+                })
+                .get::<ratio>()
+                <= 0.45
+        );
+
+        assert_about_eq!(
+            test_bed
+                .command_element(|e| {
+                    e.linear_length_normalized_from_absolute_angle(Angle::new::<degree>(-17.))
+                })
+                .get::<ratio>(),
+            0.
+        );
+
+        assert_about_eq!(
+            test_bed
+                .command_element(|e| {
+                    e.linear_length_normalized_from_absolute_angle(Angle::new::<degree>(30.))
+                })
+                .get::<ratio>(),
+            1.
+        );
+    }
+
+    #[test]
+    fn asymetrical_deflection_body_converts_angle_ratio_to_absolute_angle() {
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|_| elevator_body()));
+
+        assert!(
+            test_bed
+                .command_element(|e| {
+                    e.angular_ratio_to_absolute_angle(Ratio::new::<ratio>(0.36))
+                })
+                .get::<degree>()
+                >= -1.
+        );
+        assert!(
+            test_bed
+                .command_element(|e| {
+                    e.angular_ratio_to_absolute_angle(Ratio::new::<ratio>(0.36))
+                })
+                .get::<degree>()
+                <= 1.
+        );
+
+        assert_about_eq!(
+            test_bed
+                .command_element(|e| { e.angular_ratio_to_absolute_angle(Ratio::new::<ratio>(0.)) })
+                .get::<degree>(),
+            -17.
+        );
+
+        assert_about_eq!(
+            test_bed
+                .command_element(|e| { e.angular_ratio_to_absolute_angle(Ratio::new::<ratio>(1.)) })
+                .get::<degree>(),
+            30.
+        );
+    }
+
+    #[test]
+    fn symetrical_deflection_body_converts_angle_to_linear_ratio() {
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|_| aileron_body(true)));
+
+        assert_about_eq!(
+            test_bed
+                .command_element(|e| {
+                    e.linear_length_normalized_from_absolute_angle(Angle::new::<degree>(0.))
+                })
+                .get::<ratio>(),
+            0.5,
+            0.001
+        );
+
+        assert_about_eq!(
+            test_bed
+                .command_element(|e| {
+                    e.linear_length_normalized_from_absolute_angle(Angle::new::<degree>(-25.))
+                })
+                .get::<ratio>(),
+            0.
+        );
+
+        assert_about_eq!(
+            test_bed
+                .command_element(|e| {
+                    e.linear_length_normalized_from_absolute_angle(Angle::new::<degree>(25.))
+                })
+                .get::<ratio>(),
+            1.
+        );
+    }
+
+    #[test]
+    fn left_gear_body_converts_angle_ratio_to_absolute_angle() {
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|_| main_gear_left_body(true)));
+
+        assert!(
+            test_bed
+                .command_element(|e| {
+                    e.angular_ratio_to_absolute_angle(Ratio::new::<ratio>(0.5))
+                })
+                .get::<degree>()
+                >= 35.
+        );
+        assert!(
+            test_bed
+                .command_element(|e| {
+                    e.angular_ratio_to_absolute_angle(Ratio::new::<ratio>(0.5))
+                })
+                .get::<degree>()
+                <= 45.
+        );
+
+        assert_about_eq!(
+            test_bed
+                .command_element(|e| { e.angular_ratio_to_absolute_angle(Ratio::new::<ratio>(0.)) })
+                .get::<degree>(),
+            0.
+        );
+
+        assert_about_eq!(
+            test_bed
+                .command_element(|e| { e.angular_ratio_to_absolute_angle(Ratio::new::<ratio>(1.)) })
+                .get::<degree>(),
+            80.
+        );
+    }
+
+    #[test]
+    fn right_gear_body_converts_angle_ratio_to_absolute_angle() {
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|_| main_gear_right_body(true)));
+
+        assert!(
+            test_bed
+                .command_element(|e| {
+                    e.angular_ratio_to_absolute_angle(Ratio::new::<ratio>(0.5))
+                })
+                .get::<degree>()
+                <= -35.
+        );
+        assert!(
+            test_bed
+                .command_element(|e| {
+                    e.angular_ratio_to_absolute_angle(Ratio::new::<ratio>(0.5))
+                })
+                .get::<degree>()
+                >= -45.
+        );
+
+        assert_about_eq!(
+            test_bed
+                .command_element(|e| { e.angular_ratio_to_absolute_angle(Ratio::new::<ratio>(0.)) })
+                .get::<degree>(),
+            0.
+        );
+
+        assert_about_eq!(
+            test_bed
+                .command_element(|e| { e.angular_ratio_to_absolute_angle(Ratio::new::<ratio>(1.)) })
+                .get::<degree>(),
+            -80.
+        );
+    }
+
+    #[test]
+    fn left_gear_body_converts_angle_to_linear_ratio() {
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|_| main_gear_left_body(true)));
+
+        assert_about_eq!(
+            test_bed
+                .command_element(|e| {
+                    e.linear_length_normalized_from_absolute_angle(Angle::new::<degree>(0.))
+                })
+                .get::<ratio>(),
+            0.
+        );
+
+        assert_about_eq!(
+            test_bed
+                .command_element(|e| {
+                    e.linear_length_normalized_from_absolute_angle(Angle::new::<degree>(80.))
+                })
+                .get::<ratio>(),
+            1.
+        );
+    }
+
+    #[test]
+    fn right_gear_body_converts_angle_to_linear_ratio() {
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|_| main_gear_right_body(true)));
+
+        assert_about_eq!(
+            test_bed
+                .command_element(|e| {
+                    e.linear_length_normalized_from_absolute_angle(Angle::new::<degree>(0.))
+                })
+                .get::<ratio>(),
+            0.
+        );
+
+        assert_about_eq!(
+            test_bed
+                .command_element(|e| {
+                    e.linear_length_normalized_from_absolute_angle(Angle::new::<degree>(-80.))
+                })
+                .get::<ratio>(),
+            1.
+        );
+    }
 
     #[test]
     fn linear_actuator_not_moving_on_locked_rigid_body() {
@@ -1651,14 +1920,14 @@ mod tests {
 
         test_bed.run_with_delta(Duration::from_secs(20));
 
-        assert!(test_bed.query(|a| a.actuator_position(0)) > Ratio::new::<ratio>(0.68));
-        assert!(test_bed.query(|a| a.actuator_position(0)) < Ratio::new::<ratio>(0.72));
+        assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.68));
+        assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.72));
 
         test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(0.2), 0));
         test_bed.run_with_delta(Duration::from_secs(20));
 
-        assert!(test_bed.query(|a| a.actuator_position(0)) > Ratio::new::<ratio>(0.18));
-        assert!(test_bed.query(|a| a.actuator_position(0)) < Ratio::new::<ratio>(0.22));
+        assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.18));
+        assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.22));
     }
 
     #[test]
@@ -1986,7 +2255,7 @@ mod tests {
         });
 
         test_bed.command(|a| a.set_pressures([Pressure::new::<psi>(3000.)]));
-        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(-0.5), 0));
+        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(-0.1), 0));
         test_bed.command(|a| a.command_unlock());
         test_bed.run_with_delta(Duration::from_secs(1));
 
