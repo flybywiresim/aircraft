@@ -439,6 +439,14 @@ impl UpdateContext {
 
         self.local_acceleration_plane_reference_filtered
             .update(delta, total_acceleration_plane_reference);
+
+        println!(
+            "ACCEL {:.2} {:.2} {:.2} is on ground {:?}",
+            self.acceleration_plane_reference_filtered_ms2_vector()[0],
+            self.acceleration_plane_reference_filtered_ms2_vector()[1],
+            self.acceleration_plane_reference_filtered_ms2_vector()[2],
+            self.is_on_ground
+        );
     }
 
     /// Relative wind could be directly read from simvar RELATIVE WIND VELOCITY XYZ.
