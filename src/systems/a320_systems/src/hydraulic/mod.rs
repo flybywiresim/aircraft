@@ -5116,7 +5116,7 @@ impl ElevatorAssembly {
             ],
         );
 
-        self.position = self.hydraulic_assembly.actuator_position_normalized(0);
+        self.position = self.hydraulic_assembly.position_normalized();
     }
 }
 impl SimulationElement for ElevatorAssembly {
@@ -5234,9 +5234,7 @@ impl SpoilerElement {
             [current_pressure],
         );
 
-        // We return actuator position so it's consistent with demand
-        // Later we must decide who works in actuator position and surface position between demand and control
-        self.position = self.hydraulic_assembly.actuator_position_normalized(0);
+        self.position = self.hydraulic_assembly.position_normalized();
     }
 }
 impl SimulationElement for SpoilerElement {
