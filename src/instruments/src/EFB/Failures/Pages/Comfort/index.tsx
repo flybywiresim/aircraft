@@ -3,6 +3,7 @@ import React from 'react';
 import { Route } from 'react-router';
 import { Link } from 'react-router-dom';
 import { Failure } from '@flybywiresim/failures';
+import { ScrollableContainer } from '../../../UtilComponents/ScrollableContainer';
 import { t } from '../../../translation';
 import { pathify } from '../../../Utils/routing';
 import { AtaChapterPage } from './AtaChapterPage';
@@ -61,13 +62,15 @@ interface ComfortUIProps {
 export const ComfortUI = ({ filteredChapters, allChapters, failures }: ComfortUIProps) => (
     <>
         <Route exact path="/failures/comfort">
-            {filteredChapters.map((chapter) => (
-                <ATAChapterCard
-                    ataNumber={chapter}
-                    title={AtaChaptersTitle[chapter]}
-                    description={AtaChaptersDescription[chapter]}
-                />
-            ))}
+            <ScrollableContainer height={48}>
+                {filteredChapters.map((chapter) => (
+                    <ATAChapterCard
+                        ataNumber={chapter}
+                        title={AtaChaptersTitle[chapter]}
+                        description={AtaChaptersDescription[chapter]}
+                    />
+                ))}
+            </ScrollableContainer>
             {filteredChapters.length === 0 && (
                 <div className="flex justify-center items-center mt-4 rounded-md border-2 border-theme-accent" style={{ height: '48rem' }}>
                     <p>{t('Failures.NoItemsFound')}</p>

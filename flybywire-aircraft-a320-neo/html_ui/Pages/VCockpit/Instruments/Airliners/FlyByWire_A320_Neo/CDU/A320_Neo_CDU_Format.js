@@ -6,16 +6,52 @@ class Column {
      * @param {...({ color: string } | { size: string } | { align: bool })} att - attributes of the text, e.g. text size, color and/or alignment
      */
     constructor(index, text, ...att) {
+        this.index = index;
         this.raw = text;
-        this.color = (att.find(e => e.color) || Column.white).color;
+        this.color = att.find(e => e.color) || Column.white;
         this.length = text.length;
         this.anchorPos = !!att.find(e => e.align) ? index - this.length + 1 : index;
         const size = att.find(e => e.size);
         this.size = !!size ? [`{${size["size"]}}`, "{end}"] : ["", ""];
     }
 
+    /**
+     * Returns a styled/formatted string.
+     * @returns {string}
+     */
     get text() {
-        return `${this.size[0]}{${this.color}}${this.raw}{end}${this.size[1]}`;
+        return `${this.size[0]}{${this.color.color}}${this.raw}{end}${this.size[1]}`;
+    }
+
+    /**
+     * @param {string} text - text to be displayed
+     */
+    set text(text) {
+        this.raw = text;
+        this.length = text.length;
+
+        // if text is right aligned => update anchor position
+        if (this.index !== this.anchorPos) {
+            this.anchorPos = this.index - this.length + 1;
+        }
+    }
+
+    /**
+     * @param {...({ color: string } | { size: string })} att - attributes of the text, e.g. text size and/or color
+     */
+    updateAttributes(...att) {
+        this.color = att.find(e => e.color) || this.color;
+        const size = att.find(e => e.size);
+        this.size = !!size ? [`{${size["size"]}}`, "{end}"] : this.size;
+    }
+
+    /**
+     * @param {string} text - text to be displayed
+     * @param {...({ color: string } | { size: string })} att - attributes of the text, e.g. text size and/or color
+     */
+    update(text, ...att) {
+        this.text = text;
+        this.updateAttributes(...att);
     }
 }
 
@@ -75,5 +111,6 @@ function FormatLine(...columns) {
         pos = newEnd;
     }
 
-    return [line.replace(/\s/g, '{sp}')];
+    // '{small}{end}{big}{end}' fixes the lines "jumping" (line moves up or down a few pixels) when entering small and large content into the same line.
+    return [line.replace(/\s/g, '{sp}') + "{small}{end}{big}{end}"];
 }
