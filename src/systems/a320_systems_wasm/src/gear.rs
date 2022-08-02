@@ -90,7 +90,7 @@ impl VariablesToObject for GearPosition {
     }
 
     fn write(&mut self, values: Vec<f64>) -> ObjectWrite {
-        const GEAR_POSITION_FOR_FAKE_DOOR_DRAG: f64 = 0.15;
+        const GEAR_POSITION_FOR_FAKE_DOOR_DRAG: f64 = 0.10;
 
         let gear_deployed = values[0] > 5. || values[1] > 5. || values[2] > 5.;
         let door_opened = values[3] > 10. || values[4] > 10. || values[5] > 10.;
