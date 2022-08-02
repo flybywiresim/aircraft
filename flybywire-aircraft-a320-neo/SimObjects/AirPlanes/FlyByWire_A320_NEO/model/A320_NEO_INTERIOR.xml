@@ -805,12 +805,6 @@
                 <TOOLTIPID>%((L:A32NX_BRAKE_FAN_BTN_PRESSED, Bool))%{if}Turn OFF brake fan%{else}Turn ON brake fan%{end}</TOOLTIPID>
             </UseTemplate>
 
-            <!-- <UseTemplate Name="FBW_LANDING_GEAR_Gear_Lever_Template">
-                <ANIM_NAME>lever_landing_gear</ANIM_NAME>
-                <NODE_ID>LEVER_LANDINGGEAR</NODE_ID>
-                <WWISE_EVENT>gearleverclick</WWISE_EVENT>
-                <NO_GEARUP_IF_LOCKED/>
-            </UseTemplate> -->
 
             <UseTemplate Name="ASOBO_GT_Anim_Code">
                 <ANIM_NAME>lever_landing_gear</ANIM_NAME>
@@ -818,7 +812,7 @@
                 <ANIM_LENGTH>3</ANIM_LENGTH>
                 <ANIM_DURATION>1</ANIM_DURATION>
                 <WWISE_EVENT>gearleverclick</WWISE_EVENT>
-                <DOWN_CODE>(L:A32NX_GEAR_HANDLE_POSITION, Bool) !  (>L:A32NX_GEAR_LEVER_POSITION_REQUEST)</DOWN_CODE>
+                <LEFT_SINGLE_CODE>(L:A32NX_GEAR_HANDLE_POSITION, Bool) !  (>L:A32NX_GEAR_LEVER_POSITION_REQUEST)</LEFT_SINGLE_CODE>
                 <ANIM_CODE>
                     (L:A32NX_GEAR_HANDLE_POSITION, Bool) 3 *
                 </ANIM_CODE>
