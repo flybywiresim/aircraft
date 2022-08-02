@@ -11,7 +11,7 @@ use systems_wasm::{set_data_on_sim_object, Variable};
 
 pub(super) fn gear(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>> {
     // Read gear demand from all sim sim events and mask them
-    let gear_set_set_event_id = builder.event_to_variable(
+    builder.event_to_variable(
         "GEAR_SET",
         EventToVariableMapping::EventDataRaw,
         Variable::named("GEAR_LEVER_POSITION_REQUEST"),
@@ -47,36 +47,12 @@ pub(super) fn gear(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>
         |options| options.mask(),
     )?;
 
-    // Feedback the gear event to the sim
-    builder.map_many(
-        ExecuteOn::PostTick,
-        vec![
-            Variable::named("GEAR_CENTER_POSITION"),
-            Variable::named("GEAR_LEFT_POSITION"),
-            Variable::named("GEAR_RIGHT_POSITION"),
-        ],
-        |values| {
-            if values[0] > 25. || values[1] > 25. || values[2] > 25. {
-                1.
-            } else {
-                0.
-            }
-        },
-        Variable::aspect("SIM_FEEDBACK_FINAL_GEAR_HANDLE"),
-    );
-
-    builder.variable_to_event_id(
-        Variable::aspect("SIM_FEEDBACK_FINAL_GEAR_HANDLE"),
-        VariableToEventMapping::EventDataRaw,
-        VariableToEventWriteOn::Change,
-        gear_set_set_event_id,
-    );
-
     // GEAR POSITION FEEDBACK TO SIM
     builder.variables_to_object(Box::new(GearPosition {
         nose_position: 1.,
         left_position: 1.,
         right_position: 1.,
+        gear_handle_position: 1.,
     }));
 
     Ok(())
@@ -95,6 +71,10 @@ struct GearPosition {
     #[name = "GEAR RIGHT POSITION"]
     #[unit = "Percent over 100"]
     right_position: f64,
+
+    #[name = "GEAR HANDLE POSITION"]
+    #[unit = "Percent over 100"]
+    gear_handle_position: f64,
 }
 
 impl VariablesToObject for GearPosition {
@@ -103,13 +83,30 @@ impl VariablesToObject for GearPosition {
             Variable::named("GEAR_CENTER_POSITION"),
             Variable::named("GEAR_LEFT_POSITION"),
             Variable::named("GEAR_RIGHT_POSITION"),
+            Variable::named("GEAR_DOOR_CENTER_POSITION"),
+            Variable::named("GEAR_DOOR_LEFT_POSITION"),
+            Variable::named("GEAR_DOOR_RIGHT_POSITION"),
         ]
     }
 
     fn write(&mut self, values: Vec<f64>) -> ObjectWrite {
-        self.nose_position = values[0] / 100.;
-        self.left_position = values[1] / 100.;
-        self.right_position = values[2] / 100.;
+        const GEAR_POSITION_FOR_FAKE_DOOR_DRAG: f64 = 0.15;
+
+        let gear_deployed = values[0] > 5. || values[1] > 5. || values[2] > 5.;
+        let door_opened = values[3] > 10. || values[4] > 10. || values[5] > 10.;
+
+        // If doors are deployed we fake gear going down a bit to get some door drag effect from the sim
+        if door_opened && !gear_deployed {
+            self.nose_position = (values[3] / 100.).min(GEAR_POSITION_FOR_FAKE_DOOR_DRAG);
+            self.left_position = (values[4] / 100.).min(GEAR_POSITION_FOR_FAKE_DOOR_DRAG);
+            self.right_position = (values[5] / 100.).min(GEAR_POSITION_FOR_FAKE_DOOR_DRAG);
+        } else {
+            self.nose_position = values[0] / 100.;
+            self.left_position = values[1] / 100.;
+            self.right_position = values[2] / 100.;
+        }
+
+        self.gear_handle_position = if gear_deployed { 1. } else { 0. };
 
         ObjectWrite::default()
     }
