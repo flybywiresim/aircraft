@@ -585,9 +585,9 @@ impl GearSystemComponentHydraulicController {
         self.actual_position = actual_position;
 
         self.requested_position = if should_open {
-            Ratio::new::<ratio>(1.5)
+            Ratio::new::<ratio>(1.1)
         } else {
-            Ratio::new::<ratio>(-0.5)
+            Ratio::new::<ratio>(-0.1)
         };
 
         self.should_lock = actual_position.get::<ratio>() > 0.5 && should_downlock
