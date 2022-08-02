@@ -212,13 +212,15 @@ void ThrottleAxisMapping::onEventThrottleSet_90() {
 void ThrottleAxisMapping::onEventReverseToggle() {
   isReverseToggleActive = !isReverseToggleActive;
   isReverseToggleKeyActive = isReverseToggleActive;
-  setCurrentValue(idleValue);
-}
+  setCurrentValue(TLA_REVERSE);
+  }
 
 void ThrottleAxisMapping::onEventReverseHold(bool isButtonHold) {
   isReverseToggleActive = isButtonHold;
   isReverseToggleKeyActive = isReverseToggleActive;
-  if (!isReverseToggleActive) {
+  if (isButtonHold){
+    setCurrentValue(TLA_REVERSE);
+  } else {
     setCurrentValue(idleValue);
   }
 }
@@ -231,7 +233,7 @@ void ThrottleAxisMapping::setCurrentValue(double value) {
   // calculate new TLA
   double newTLA = 0;
   if (!useReverseOnAxis && (isReverseToggleActive || isReverseToggleKeyActive)) {
-    newTLA = (TLA_REVERSE / 2.0) * (value + 1.0);
+    newTLA = TLA_REVERSE;
   } else {
     newTLA = thrustLeverAngleMapping.get(value);
   }
