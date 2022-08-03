@@ -12,11 +12,14 @@ use crate::simulation::{
     InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
     SimulatorWriter, UpdateContext, VariableIdentifier, Write,
 };
+use nalgebra::Vector3;
 
 use std::time::Duration;
 use uom::si::{
     angular_velocity::{radian_per_second, revolution_per_minute},
     f64::*,
+    force::newton,
+    mass::kilogram,
     pressure::{pascal, psi},
     ratio::ratio,
     torque::newton_meter,
@@ -1622,6 +1625,98 @@ impl SimulationElement for LeakMeasurementValve {
     }
 }
 
+struct SpringPhysics {
+    k_constant: f64,
+    damping_constant: f64,
+
+    last_length: Vector3<f64>,
+}
+impl SpringPhysics {
+    fn new() -> Self {
+        Self {
+            k_constant: 100.,
+            damping_constant: 50.,
+
+            last_length: Vector3::default(),
+        }
+    }
+
+    fn update_force_Nm(
+        &mut self,
+        context: &UpdateContext,
+        position1: Vector3<f64>,
+        position2: Vector3<f64>,
+    ) -> Vector3<f64> {
+        let length = position1 - position2;
+
+        let velocity = (length - self.last_length) / context.delta_as_secs_f64();
+
+        self.last_length = length;
+
+        let k_force = length * self.k_constant;
+        let damp_force = velocity * self.damping_constant;
+
+        println!("SPRING len {:.3}  vel  {:.3}", length[1], velocity[1],);
+
+        println!(
+            "SPRING kforce {:.3}  dforce  {:.3} ",
+            k_force[1], damp_force[1],
+        );
+
+        //kforce {:.2} dforce {:.2} totalForce {:.2}",
+
+        k_force - damp_force
+    }
+}
+
+struct FluidPhysics {
+    reference_point_cg: Vector3<f64>,
+    fluid_cg_position: Vector3<f64>,
+    fluid_cg_speed: Vector3<f64>,
+
+    virtual_mass: Mass,
+    spring: SpringPhysics,
+}
+impl FluidPhysics {
+    fn new() -> Self {
+        Self {
+            reference_point_cg: Vector3::default(),
+            fluid_cg_position: Vector3::default(),
+            fluid_cg_speed: Vector3::default(),
+
+            virtual_mass: Mass::new::<kilogram>(50.),
+            spring: SpringPhysics::new(),
+        }
+    }
+
+    fn update(&mut self, context: &UpdateContext) {
+        let gravity_force = context.acceleration_plane_reference_filtered_ms2_vector()
+            * self.virtual_mass.get::<kilogram>();
+
+        // println!(
+        //     "GRAVITY FORCE {:.2} {:.2} {:.2}",
+        //     gravity_force[0], gravity_force[1], gravity_force[2]
+        // );
+
+        let spring_force =
+            self.spring
+                .update_force_Nm(context, self.reference_point_cg, self.fluid_cg_position);
+
+        let total_forces = gravity_force + spring_force;
+
+        let acceleration = total_forces / self.virtual_mass.get::<kilogram>();
+
+        self.fluid_cg_speed += acceleration * context.delta_as_secs_f64();
+
+        self.fluid_cg_position += self.fluid_cg_speed * context.delta_as_secs_f64();
+
+        println!(
+            "current_fluid_cg {:.2} {:.2} {:.2}",
+            self.fluid_cg_position[0], self.fluid_cg_position[1], self.fluid_cg_position[2]
+        );
+    }
+}
+
 pub struct Reservoir {
     level_id: VariableIdentifier,
     low_level_id: VariableIdentifier,
@@ -1640,6 +1735,9 @@ pub struct Reservoir {
 
     leak_failure: Failure,
     return_failure: Failure,
+
+    fluid_physics: FluidPhysics,
+    hyd_loop_id: HydraulicColor, //TODO TO REMOVE
 }
 impl Reservoir {
     const MIN_USABLE_VOLUME_GAL: f64 = 0.2;
@@ -1674,6 +1772,8 @@ impl Reservoir {
             return_failure: Failure::new(FailureType::ReservoirReturnLeak(hyd_loop_id)),
             air_pressure_switches,
             level_switch: LevelSwitch::new(low_level_threshold),
+            fluid_physics: FluidPhysics::new(),
+            hyd_loop_id,
         }
     }
 
@@ -1685,6 +1785,10 @@ impl Reservoir {
         self.update_pressure_switches(context);
 
         self.update_leak_failure(context);
+
+        if self.hyd_loop_id == HydraulicColor::Yellow {
+            self.fluid_physics.update(context);
+        }
     }
 
     fn update_leak_failure(&mut self, context: &UpdateContext) {
@@ -2549,6 +2653,26 @@ mod tests {
 
         let is_low: bool = test_bed.read_by_name("HYD_GREEN_RESERVOIR_LEVEL_IS_LOW");
         assert!(is_low);
+    }
+
+    #[test]
+    fn reservoir_fluid_physics() {
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            reservoir(
+                context,
+                HydraulicColor::Yellow,
+                Volume::new::<gallon>(5.),
+                Volume::new::<gallon>(2.),
+                Volume::new::<gallon>(5.),
+            )
+        }))
+        .with_update_after_power_distribution(|el, context| {
+            el.update(context, Pressure::new::<psi>(50.))
+        });
+
+        for _ in 0..500 {
+            test_bed.run_with_delta(Duration::from_millis(33));
+        }
     }
 
     fn section(

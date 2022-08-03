@@ -58,6 +58,7 @@
 1. [MCDU] Hide stored elements on A/C Status when there are none - @tracernz (Mike)
 1. [FMGC] Fix ident for CD legs - @tracernz (Mike)
 1. [HYD] Refactor plane accelerations and added filtering to handle ground collisions - @Crocket63 (crocket)
+1. [HYD] Accelerations impacts hydraulic reervoir fluid - @Crocket63 (crocket)
 
 ## 0.8.0
 
