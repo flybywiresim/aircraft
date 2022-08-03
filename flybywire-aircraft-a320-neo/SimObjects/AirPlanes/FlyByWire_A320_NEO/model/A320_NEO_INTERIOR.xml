@@ -806,16 +806,10 @@
             </UseTemplate>
 
 
-            <UseTemplate Name="ASOBO_GT_Anim_Code">
+            <UseTemplate Name="FBW_HANDLING_Gear_Lever_Template">
                 <ANIM_NAME>lever_landing_gear</ANIM_NAME>
                 <NODE_ID>LEVER_LANDINGGEAR</NODE_ID>
                 <ANIM_LENGTH>3</ANIM_LENGTH>
-                <ANIM_DURATION>1</ANIM_DURATION>
-                <WWISE_EVENT>gearleverclick</WWISE_EVENT>
-                <LEFT_SINGLE_CODE>(L:A32NX_GEAR_HANDLE_POSITION, Bool) !  (>L:A32NX_GEAR_LEVER_POSITION_REQUEST)</LEFT_SINGLE_CODE>
-                <ANIM_CODE>
-                    (L:A32NX_GEAR_HANDLE_POSITION, Bool) 3 *
-                </ANIM_CODE>
             </UseTemplate>
 
 
