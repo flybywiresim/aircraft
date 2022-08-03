@@ -85,6 +85,7 @@
       "YouHaveNotYetImportedAnySimBriefData": "คุณยังไม่ได้นำเข้าข้อมูล SimBrief ใดๆเลย"
     },
     "Overview": {
+      "ActualGW": "Actual GW",
       "Engines": "เครื่องยนต์",
       "MMO": "MMO",
       "MRW": "MRW",
@@ -133,6 +134,27 @@
       "TotalFuel": "น้ำมันรวม",
       "Unavailable": "ไม่พร้อมใช้งาน"
     },
+    "Payload": {
+      "BoardingTime": "Boarding Time",
+      "Cargo": "Cargo",
+      "Current": "Current",
+      "Passengers": "Passengers",
+      "Planned": "Planned",
+      "TT": {
+        "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Aircraft Must Be On the Ground and Have Engines Shutdown to Change Boarding Duration",
+        "FillPayloadFromSimbrief": "Fill Payload Information from Simbrief",
+        "MaxCargo": "Max Cargo",
+        "MaxPassengers": "Maximum Passengers",
+        "MaxZFW": "Maximum ZFW",
+        "MaxZFWCG": "Maximum ZFWCG",
+        "PerPaxBagWeight": "Per Passenger Bag Weight",
+        "PerPaxWeight": "Per Passenger Weight",
+        "StartBoarding": "Begin Boarding"
+      },
+      "Title": "Payload",
+      "ZFW": "ZFW",
+      "ZFWCG": "ZFWCG"
+    },
     "Pushback": {
       "Title": "Pushback"
     },
@@ -141,7 +163,7 @@
       "CateringTruck": "รถบรรทุกอาหาร",
       "Cones": "กรวยนิรภัย",
       "DoorAft": "ประตูท้าย",
-      "DoorCargo": "Cargo Door",
+      "DoorCargo": "ประตูคาร์โก้",
       "DoorFwd": "ประตูหน้า",
       "ExternalPower": "พลังงานภาคพื้น",
       "FuelTruck": "รถบรรทุกน้ำมัน",
@@ -453,8 +475,8 @@
       "HomeCockpitMode": "โหมด Home Cockpit",
       "McduFocusTimeout": "หมดเวลาโฟกัส MCDU (วินาที)",
       "McduKeyboardInput": "ป้อนข้อมูลคีย์บอร์ด MCDU",
-      "PauseAtTod": "T/D Pause",
-      "PauseAtTodDistance": "T/D Pause Distance (nm)",
+      "PauseAtTod": "หยุดชั่วคราวที่ T/D",
+      "PauseAtTodDistance": "ระยะทางหยุดชั่วคราว T/D (nm)",
       "SeparateTillerFromRudderInputs": "แยก Tiller ออกจากอินพุต Rudder",
       "Title": "ความสมจริง"
     },
@@ -506,7 +528,7 @@
     "flyPad": {
       "AutoBrightness": "ปรับความสว่างอัตโนมัติ",
       "AutomaticallyShowOnscreenKeyboard": "แสดงแป้นพิมพ์บนหน้าจอโดยอัตโนมัติ",
-      "BatteryLifeEnabled": "Battery Life Simulated",
+      "BatteryLifeEnabled": "จำลองการใช้งานแบตเตอรี่",
       "Blue": "ฟ้า",
       "Brightness": "ความสว่าง",
       "Dark": "ดำ",

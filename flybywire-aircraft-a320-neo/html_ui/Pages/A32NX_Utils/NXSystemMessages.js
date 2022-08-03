@@ -56,10 +56,15 @@ class TypeIIMessage extends McduMessage {
  */
 const NXSystemMessages = {
     aocActFplnUplink:       new TypeIIMessage("AOC ACT F-PLN UPLINK"),
+    arptTypeAlreadyInUse:   new TypeIMessage("ARPT/TYPE ALREADY USED"),
     awyWptMismatch:         new TypeIMessage("AWY/WPT MISMATCH"),
+    cancelAtisUpdate:       new TypeIMessage("CANCEL UPDATE BEFORE"),
     checkMinDestFob:        new TypeIIMessage("CHECK MIN DEST FOB"),
     checkToData:            new TypeIIMessage("CHECK TAKE OFF DATA", true),
+    checkWeight:            new TypeIIMessage("CHECK WEIGHT", true),
+    comUnavailable:         new TypeIMessage("COM UNAVAILABLE"),
     databaseCodingError:    new TypeIIMessage("DATABASE CODING ERROR"),
+    dcduFileFull:           new TypeIMessage("DCDU FILE FULL"),
     destEfobBelowMin:       new TypeIIMessage("DEST EFOB BELOW MIN", true),
     enterDestData:          new TypeIIMessage("ENTER DEST DATA", true),
     entryOutOfRange:        new TypeIMessage("ENTRY OUT OF RANGE"),
@@ -67,9 +72,15 @@ const NXSystemMessages = {
     formatError:            new TypeIMessage("FORMAT ERROR"),
     fplnElementRetained:    new TypeIMessage("F-PLN ELEMENT RETAINED"),
     initializeWeightOrCg:   new TypeIIMessage("INITIALIZE WEIGHT/CG", true),
+    keyNotActive:           new TypeIMessage("KEY NOT ACTIVE"),
+    latLonAbreviated:       new TypeIMessage("LAT/LON DISPL ABREVIATED"),
     listOf99InUse:          new TypeIMessage("LIST OF 99 IN USE"),
+    newAtisReceived:        new TypeIMessage("NEW ATIS: READ AGAIN"),
     newCrzAlt:              new TypeIIMessage("NEW CRZ ALT - HHHHH", false, "HHHHH"),
+    noAtc:                  new TypeIMessage("NO ACTIVE ATC"),
+    noAtisReceived:         new TypeIMessage("NO ATIS REPORT RECEIVED"),
     noIntersectionFound:    new TypeIMessage("NO INTERSECTION FOUND"),
+    noPreviousAtis:         new TypeIMessage("NO PREVIOUS ATIS STORED"),
     notAllowed:             new TypeIMessage("NOT ALLOWED"),
     notAllowedInNav:        new TypeIMessage("NOT ALLOWED IN NAV"),
     notInDatabase:          new TypeIMessage("NOT IN DATABASE"),
@@ -77,19 +88,10 @@ const NXSystemMessages = {
     selectDesiredSystem:    new TypeIMessage("SELECT DESIRED SYSTEM"),
     setHoldSpeed:           new TypeIIMessage("SET HOLD SPEED"),
     spdLimExceeded:         new TypeIIMessage("SPD LIM EXCEEDED", true),
+    systemBusy:             new TypeIMessage("SYSTEM BUSY-TRY LATER"),
     uplinkInsertInProg:     new TypeIIMessage("UPLINK INSERT IN PROG"),
     vToDisagree:            new TypeIIMessage("V1/VR/V2 DISAGREE", true),
-    waitForSystemResponse:  new TypeIMessage("WAIT FOR SYSTEM RESPONSE"),
-    // FIXME these should be in alphabetical order like the rest
-    comUnavailable:         new TypeIMessage("COM UNAVAILABLE"),
-    dcduFileFull:           new TypeIMessage("DCDU FILE FULL"),
-    systemBusy:             new TypeIMessage("SYSTEM BUSY-TRY LATER"),
-    noAtc:                  new TypeIMessage("NO ACTIVE ATC"),
-    newAtisReceived:        new TypeIMessage("NEW ATIS: READ AGAIN"),
-    noAtisReceived:         new TypeIMessage("NO ATIS REPORT RECEIVED"),
-    noPreviousAtis:         new TypeIMessage("NO PREVIOUS ATIS STORED"),
-    arptTypeAlreadyInUse:   new TypeIMessage("ARPT/TYPE ALREADY USED"),
-    cancelAtisUpdate:       new TypeIMessage("CANCEL UPDATE BEFORE")
+    waitForSystemResponse:  new TypeIMessage("WAIT FOR SYSTEM RESPONSE")
 };
 
 const NXFictionalMessages = {

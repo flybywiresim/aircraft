@@ -22,7 +22,7 @@ export class Units {
         if (Units.mMetricUnits === undefined) {
             NXDataStore.getAndSubscribe('CONFIG_USING_METRIC_UNIT', (_: string, value: string) => {
                 Units.mMetricUnits = value === '1';
-            });
+            }, '1');
         }
         return Units.mMetricUnits;
     }
