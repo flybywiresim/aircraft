@@ -221,7 +221,7 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
 
         const render = () => {
             draw();
-            // workaround for bug
+            // workaround for rendering bug
             if (!frameId || frameId < 10) {
                 frameId = window.requestAnimationFrame(render);
             }
@@ -234,7 +234,7 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
                 window.cancelAnimationFrame(frameId);
             }
         };
-    });
+    }, [draw]);
 
     const mtow = { transform: `translateX(${(zfwCg < limits.cg.overlap ? limits.labels.mtow.x1 : limits.labels.mtow.x2) * width}px) translateY(${height * limits.labels.mtow.y}px)` };
     const mlw = { transform: `translateX(${(zfwCg < limits.cg.overlap ? limits.labels.mlw.x1 : limits.labels.mlw.x2) * width}px) translateY(${height * limits.labels.mlw.y}px)` };

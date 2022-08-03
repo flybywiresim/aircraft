@@ -172,7 +172,7 @@ export const SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, a
         ctx?.scale(ratio, ratio);
         const render = () => {
             draw();
-            // workaround for bug
+            // workaround for rendering bug
             if (!frameId || frameId < 10) {
                 frameId = window.requestAnimationFrame(render);
             }
