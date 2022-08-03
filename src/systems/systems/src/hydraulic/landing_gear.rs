@@ -607,9 +607,9 @@ impl GearSystemComponentHydraulicController {
         self.actual_position = actual_position;
 
         self.requested_position = if should_open {
-            Ratio::new::<ratio>(1.5)
+            Ratio::new::<ratio>(1.1)
         } else {
-            Ratio::new::<ratio>(-0.5)
+            Ratio::new::<ratio>(-0.1)
         };
 
         self.should_lock = actual_position.get::<ratio>() > 0.5 && should_downlock
@@ -1456,14 +1456,15 @@ mod tests {
             1,
             Length::new::<meter>(0.055),
             Length::new::<meter>(0.03),
-            VolumeRate::new::<gallon_per_second>(0.08),
+            VolumeRate::new::<gallon_per_second>(0.09),
             20000.,
             5000.,
             2000.,
-            28000.,
+            9000.,
             Duration::from_millis(100),
-            [0.5, 1., 1., 1., 1., 0.5],
-            [0., 0.2, 0.21, 0.79, 0.8, 1.],
+            [1., 1., 1., 1., 0.5, 0.5],
+            [0.5, 0.5, 1., 1., 1., 1.],
+            [0., 0.15, 0.16, 0.84, 0.85, 1.],
             DEFAULT_P_GAIN,
             DEFAULT_I_GAIN,
             DEFAULT_FORCE_GAIN,
@@ -1531,14 +1532,15 @@ mod tests {
             1,
             Length::new::<meter>(0.145),
             Length::new::<meter>(0.105),
-            VolumeRate::new::<gallon_per_second>(0.15),
+            VolumeRate::new::<gallon_per_second>(0.17),
             800000.,
             15000.,
             50000.,
             1200000.,
             Duration::from_millis(100),
-            [1., 1., 1., 1., 1., 1.],
-            [0., 0.2, 0.21, 0.79, 0.8, 1.],
+            [1., 1., 1., 1., 0.5, 0.5],
+            [0.5, 0.5, 1., 1., 1., 1.],
+            [0., 0.1, 0.11, 0.89, 0.9, 1.],
             DEFAULT_P_GAIN,
             DEFAULT_I_GAIN,
             DEFAULT_FORCE_GAIN,
