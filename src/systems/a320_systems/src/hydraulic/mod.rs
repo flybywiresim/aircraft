@@ -220,6 +220,7 @@ impl A320CargoDoorFactory {
             1000000.,
             Duration::from_millis(100),
             [1., 1., 1., 1., 1., 1.],
+            [1., 1., 1., 1., 1., 1.],
             [0., 0.2, 0.21, 0.79, 0.8, 1.],
             Self::FLOW_CONTROL_PROPORTIONAL_GAIN,
             Self::FLOW_CONTROL_INTEGRAL_GAIN,
@@ -316,6 +317,7 @@ impl A320AileronFactory {
             5000.,
             actuator_characteristics.slow_damping(),
             Duration::from_millis(300),
+            [1., 1., 1., 1., 1., 1.],
             [1., 1., 1., 1., 1., 1.],
             [0., 0.2, 0.21, 0.79, 0.8, 1.],
             Self::FLOW_CONTROL_PROPORTIONAL_GAIN,
@@ -422,6 +424,7 @@ impl A320SpoilerFactory {
             5000.,
             actuator_characteristics.slow_damping(),
             Duration::from_millis(300),
+            [1., 1., 1., 1., 1., 1.],
             [1., 1., 1., 1., 1., 1.],
             [0., 0.2, 0.21, 0.79, 0.8, 1.],
             Self::FLOW_CONTROL_PROPORTIONAL_GAIN,
@@ -535,6 +538,7 @@ impl A320ElevatorFactory {
             actuator_characteristics.slow_damping(),
             Duration::from_millis(300),
             [1., 1., 1., 1., 1., 1.],
+            [1., 1., 1., 1., 1., 1.],
             [0., 0.2, 0.21, 0.79, 0.8, 1.],
             Self::FLOW_CONTROL_PROPORTIONAL_GAIN,
             Self::FLOW_CONTROL_INTEGRAL_GAIN,
@@ -634,6 +638,7 @@ impl A320RudderFactory {
             10000.,
             actuator_characteristics.slow_damping(),
             Duration::from_millis(300),
+            [1., 1., 1., 1., 1., 1.],
             [1., 1., 1., 1., 1., 1.],
             [0., 0.2, 0.21, 0.79, 0.8, 1.],
             Self::FLOW_CONTROL_PROPORTIONAL_GAIN,
@@ -744,7 +749,8 @@ impl A320GearDoorFactory {
             2000.,
             actuator_characteristics.slow_damping(),
             Duration::from_millis(100),
-            [0.5, 0.5, 1., 1., 0.5, 0.5],
+            [1., 1., 1., 1., 0.5, 0.5],
+            [0.5, 0.5, 1., 1., 1., 1.],
             [0., 0.15, 0.16, 0.84, 0.85, 1.],
             FLOW_CONTROL_PROPORTIONAL_GAIN,
             FLOW_CONTROL_INTEGRAL_GAIN,
@@ -776,13 +782,14 @@ impl A320GearDoorFactory {
             Length::new::<meter>(0.055),
             Length::new::<meter>(0.03),
             actuator_characteristics.max_flow(),
-            20000.,
-            5000.,
+            200000.,
+            2500.,
             2000.,
             actuator_characteristics.slow_damping(),
             Duration::from_millis(100),
-            [0.5, 0.5, 1., 1., 0.5, 0.5],
-            [0., 0.15, 0.16, 0.84, 0.85, 1.],
+            [1., 1., 1., 1., 0.5, 0.5],
+            [0.5, 0.5, 1., 1., 1., 1.],
+            [0., 0.09, 0.1, 0.9, 0.91, 1.],
             FLOW_CONTROL_PROPORTIONAL_GAIN,
             FLOW_CONTROL_INTEGRAL_GAIN,
             FLOW_CONTROL_FORCE_GAIN,
@@ -904,7 +911,8 @@ impl A320GearFactory {
             50000.,
             actuator_characteristics.slow_damping(),
             Duration::from_millis(100),
-            [0.5, 0.5, 1., 1., 0.5, 0.5],
+            [1., 1., 1., 1., 0.5, 0.5],
+            [0.5, 0.5, 1., 1., 1., 1.],
             [0., 0.1, 0.11, 0.89, 0.9, 1.],
             FLOW_CONTROL_PROPORTIONAL_GAIN,
             FLOW_CONTROL_INTEGRAL_GAIN,
@@ -939,8 +947,9 @@ impl A320GearFactory {
             50000.,
             actuator_characteristics.slow_damping(),
             Duration::from_millis(100),
-            [0.5, 0.5, 1., 1., 0.5, 0.5],
-            [0., 0.1, 0.11, 0.89, 0.9, 1.],
+            [1., 1., 1., 1., 0.5, 0.5],
+            [0.2, 0.4, 1., 1., 1., 1.],
+            [0., 0.13, 0.17, 0.95, 0.96, 1.],
             FLOW_CONTROL_PROPORTIONAL_GAIN,
             FLOW_CONTROL_INTEGRAL_GAIN,
             FLOW_CONTROL_FORCE_GAIN,
@@ -5150,7 +5159,7 @@ impl ElevatorAssembly {
             ],
         );
 
-        self.position = self.hydraulic_assembly.actuator_position_normalized(0);
+        self.position = self.hydraulic_assembly.position_normalized();
     }
 }
 impl SimulationElement for ElevatorAssembly {
@@ -5268,9 +5277,7 @@ impl SpoilerElement {
             [current_pressure],
         );
 
-        // We return actuator position so it's consistent with demand
-        // Later we must decide who works in actuator position and surface position between demand and control
-        self.position = self.hydraulic_assembly.actuator_position_normalized(0);
+        self.position = self.hydraulic_assembly.position_normalized();
     }
 }
 impl SimulationElement for SpoilerElement {
@@ -10641,14 +10648,14 @@ mod tests {
 
             test_bed = test_bed
                 .stow_emergency_gear_extension()
-                .run_waiting_for(Duration::from_secs_f64(10.));
+                .run_waiting_for(Duration::from_secs_f64(5.));
 
-            // // After 10 seconds we expect gear being retracted and doors still down
+            // After 5 seconds we expect gear being retracted and doors still down
             assert!(test_bed.gear_system_state() == GearSystemState::Retracting);
             assert!(test_bed.is_all_doors_really_down());
             assert!(!test_bed.is_all_gears_really_down());
 
-            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(10.));
+            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(15.));
 
             assert!(test_bed.gear_system_state() == GearSystemState::AllUpLocked);
             assert!(test_bed.is_all_doors_really_up());
