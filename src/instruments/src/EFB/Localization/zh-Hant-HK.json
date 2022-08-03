@@ -85,6 +85,7 @@
       "YouHaveNotYetImportedAnySimBriefData": "尚未導入 SimBrief 數據。"
     },
     "Overview": {
+      "ActualGW": "Actual GW",
       "Engines": "引擎",
       "MMO": "最快音速 (MMO)",
       "MRW": "最大地面重量 (MRW)",
@@ -132,6 +133,27 @@
       "Title": "燃油",
       "TotalFuel": "總計油量",
       "Unavailable": "唔用得"
+    },
+    "Payload": {
+      "BoardingTime": "Boarding Time",
+      "Cargo": "Cargo",
+      "Current": "Current",
+      "Passengers": "Passengers",
+      "Planned": "Planned",
+      "TT": {
+        "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Aircraft Must Be On the Ground and Have Engines Shutdown to Change Boarding Duration",
+        "FillPayloadFromSimbrief": "Fill Payload Information from Simbrief",
+        "MaxCargo": "Max Cargo",
+        "MaxPassengers": "Maximum Passengers",
+        "MaxZFW": "Maximum ZFW",
+        "MaxZFWCG": "Maximum ZFWCG",
+        "PerPaxBagWeight": "Per Passenger Bag Weight",
+        "PerPaxWeight": "Per Passenger Weight",
+        "StartBoarding": "Begin Boarding"
+      },
+      "Title": "Payload",
+      "ZFW": "ZFW",
+      "ZFWCG": "ZFWCG"
     },
     "Pushback": {
       "Title": "推機"

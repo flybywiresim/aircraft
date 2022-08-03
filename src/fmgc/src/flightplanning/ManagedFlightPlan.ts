@@ -1029,20 +1029,24 @@ export class ManagedFlightPlan {
         }
 
         if (arrivalIndex !== -1) {
+            // string the common legs in the middle of the STAR
             const arrival: RawArrival = destinationInfo.arrivals[arrivalIndex];
             legs.push(...arrival.commonLegs);
             legAnnotations.push(...arrival.commonLegs.map(_ => arrival.name));
             // console.log('MFP: buildArrival - pushing STAR legs ->', legs);
-        }
 
-        if (arrivalIndex !== -1 && arrivalRunwayIndex !== -1) {
-            const arrival: RawArrival = destinationInfo.arrivals[arrivalIndex];
-            const runwayTransition: RawRunwayTransition = destinationInfo.arrivals[arrivalIndex].runwayTransitions[arrivalRunwayIndex];
+            // if no runway is selected at all (non-runway-specific approach)
+            // and the selected STAR only has runway transition legs... string them
+            // TODO research IRL behaviour
+            const starHasOneRunwayTrans = arrival.commonLegs.length === 0 && arrival.runwayTransitions.length === 1;
+            const approachIsRunwaySpecific = this.procedureDetails.destinationRunwayIndex >= 0;
+            const runwayTransIndex = arrivalRunwayIndex < 0 && starHasOneRunwayTrans && !approachIsRunwaySpecific ? 0 : arrivalRunwayIndex;
+
+            const runwayTransition = arrival.runwayTransitions[runwayTransIndex];
             if (runwayTransition) {
                 legs.push(...runwayTransition.legs);
                 legAnnotations.push(...runwayTransition.legs.map(_ => arrival.name));
             }
-            // console.log('MFP: buildArrival - pushing VIA legs ->', legs);
         }
 
         let { _startIndex, segment } = this.truncateSegment(SegmentType.Arrival);
@@ -1101,9 +1105,21 @@ export class ManagedFlightPlan {
         }
 
         if (approachIndex !== -1) {
+            const finalLegs = [...approach.finalLegs];
+            // PI legs can only occur in approach vias
+            // if the via ends in one, we must omit the IF leg at the start of the approach
+            const viaLastLegType = legs[legs.length - 1]?.type;
+            if (viaLastLegType === LegType.PI && finalLegs[0]?.type === LegType.IF) {
+                finalLegs.splice(0, 1);
+                // @ts-expect-error (ts compiler doesn't see that splice mutates finalLegs)
+                if (finalLegs[0]?.type !== LegType.CF) {
+                    console.error('PI must be followed by CF!');
+                }
+            }
+
             this.procedureDetails.approachType = approach.approachType;
-            legs.push(...approach.finalLegs);
-            legAnnotations.push(...approach.finalLegs.map(_ => approachName));
+            legs.push(...finalLegs);
+            legAnnotations.push(...finalLegs.map(_ => approachName));
             missedLegs.push(...approach.missedLegs);
         }
 
@@ -1589,5 +1605,23 @@ export class ManagedFlightPlan {
             return index + 1;
         }
         return -1;
+    }
+
+    get finalApproachActive(): boolean {
+        const appr = this.getSegment(SegmentType.Approach);
+        if (appr === FlightPlanSegment.Empty) {
+            return false;
+        }
+
+        const offset = this.activeWaypointIndex - appr.offset;
+        if (offset >= 0 && offset < appr.waypoints.length) {
+            for (const [index, wp] of appr.waypoints.entries()) {
+                if (wp.additionalData.fixTypeFlags & FixTypeFlags.FAF) {
+                    return offset >= index;
+                }
+            }
+        }
+
+        return false;
     }
 }

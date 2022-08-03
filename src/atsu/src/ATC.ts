@@ -10,20 +10,22 @@ import { CpdlcMessagesDownlink, CpdlcMessageExpectedResponseType } from './messa
 import { CpdlcMessage } from './messages/CpdlcMessage';
 import { Datalink } from './com/Datalink';
 import { Atsu } from './ATSU';
-import { DcduLink } from './components/DcduLink';
+import { DcduStatusMessage, DcduLink } from './components/DcduLink';
 import { FansMode, FutureAirNavigationSystem } from './com/FutureAirNavigationSystem';
+import { UplinkMessageStateMachine } from './components/UplinkMessageStateMachine';
+import { UplinkMessageMonitoring } from './components/UplinkMessageMonitoring';
 
 /*
  * Defines the ATC system for CPDLC communication
  */
 export class Atc {
-    private parent: Atsu | undefined = undefined;
+    private parent: Atsu = null;
 
-    private datalink: Datalink | undefined = undefined;
+    private datalink: Datalink = null;
 
-    private dcduLink: DcduLink | undefined = undefined;
+    private dcduLink: DcduLink = null;
 
-    private handoverInterval: number | undefined = 0;
+    private handoverInterval: number = 0;
 
     private handoverOngoing = false;
 
@@ -47,10 +49,26 @@ export class Atc {
 
     private currentFansMode: FansMode = FansMode.FansNone;
 
+    private automaticPositionReport: boolean = false;
+
+    public messageMonitoring: UplinkMessageMonitoring = null;
+
     constructor(parent: Atsu, datalink: Datalink) {
         this.parent = parent;
         this.datalink = datalink;
         this.dcduLink = new DcduLink(parent, this);
+        this.messageMonitoring = new UplinkMessageMonitoring(parent);
+
+        setInterval(() => {
+            const ids = this.messageMonitoring.checkMessageConditions();
+            ids.forEach((id) => {
+                const message = this.messageQueue.find((element) => id === element.UniqueMessageID);
+                if (message) {
+                    UplinkMessageStateMachine.update(this.parent, message, false, true);
+                    this.dcduLink.update(message, true);
+                }
+            });
+        }, 5000);
     }
 
     public async disconnect(): Promise<void> {
@@ -102,7 +120,7 @@ export class Atc {
         message.Station = station;
         message.CurrentTransmissionId = ++this.cpdlcMessageId;
         message.Direction = AtsuMessageDirection.Downlink;
-        message.Content = CpdlcMessagesDownlink.DM9998[1];
+        message.Content.push(CpdlcMessagesDownlink.DM9998[1]);
         message.ComStatus = AtsuMessageComStatus.Sending;
         message.Message = 'REQUEST LOGON';
         message.DcduRelevantMessage = false;
@@ -139,7 +157,7 @@ export class Atc {
             this.handoverInterval = setInterval(() => {
                 if (!this.dcduLink.openMessagesForStation(this.currentAtc)) {
                     clearInterval(this.handoverInterval);
-                    this.handoverInterval = undefined;
+                    this.handoverInterval = null;
 
                     // add a timer to ensure that the last transmission is already received to avoid ATC software warnings
                     setTimeout(() => {
@@ -171,7 +189,7 @@ export class Atc {
         message.Station = this.currentAtc;
         message.CurrentTransmissionId = ++this.cpdlcMessageId;
         message.Direction = AtsuMessageDirection.Downlink;
-        message.Content = CpdlcMessagesDownlink.DM9999[1];
+        message.Content.push(CpdlcMessagesDownlink.DM9999[1]);
         message.ComStatus = AtsuMessageComStatus.Sending;
         message.DcduRelevantMessage = false;
 
@@ -197,10 +215,10 @@ export class Atc {
         });
     }
 
-    private createCpdlcResponse(request: CpdlcMessage, response: number): CpdlcMessage | undefined {
+    private createCpdlcResponse(request: CpdlcMessage, response: number): CpdlcMessage {
         const downlinkId = `DM${response}`;
         if (!(downlinkId in CpdlcMessagesDownlink)) {
-            return undefined;
+            return null;
         }
 
         // create the meta information of the response
@@ -209,7 +227,7 @@ export class Atc {
         responseMessage.CurrentTransmissionId = ++this.cpdlcMessageId;
         responseMessage.PreviousTransmissionId = request.CurrentTransmissionId;
         responseMessage.Station = request.Station;
-        responseMessage.Content = CpdlcMessagesDownlink[downlinkId][1];
+        responseMessage.Content.push(CpdlcMessagesDownlink[downlinkId][1]);
 
         return responseMessage;
     }
@@ -219,25 +237,74 @@ export class Atc {
         if (message !== undefined) {
             const responseMsg = this.createCpdlcResponse(message, response);
 
-            // avoid double-sents
-            if (message.Response !== undefined && message.Response.Content.TypeId === responseMsg.Content.TypeId
-                 && (message.Response.ComStatus === AtsuMessageComStatus.Sending || message.Response.ComStatus === AtsuMessageComStatus.Sent)) {
+            // avoid double-sends
+            if (message.Response?.Content[0]?.TypeId === responseMsg.Content[0]?.TypeId
+            && (message.Response?.ComStatus === AtsuMessageComStatus.Sending || message.Response?.ComStatus === AtsuMessageComStatus.Sent)) {
                 return;
             }
 
             message.Response = responseMsg;
             message.Response.ComStatus = AtsuMessageComStatus.Sending;
+            this.dcduLink.updateDcduStatusMessage(message.UniqueMessageID, DcduStatusMessage.Sending);
             this.dcduLink.update(message);
+
+            if (this.parent.modificationMessage?.UniqueMessageID === uid) {
+                this.parent.modificationMessage = null;
+            }
 
             if (message.Response !== undefined) {
                 this.datalink.sendMessage(message.Response, false).then((code) => {
                     if (code === AtsuStatusCodes.Ok) {
                         message.Response.ComStatus = AtsuMessageComStatus.Sent;
+                        this.dcduLink.updateDcduStatusMessage(message.UniqueMessageID, DcduStatusMessage.Sent);
+                        setTimeout(() => {
+                            if (this.dcduLink.currentDcduStatusMessage(message.UniqueMessageID) === DcduStatusMessage.Sent) {
+                                this.dcduLink.updateDcduStatusMessage(message.UniqueMessageID, DcduStatusMessage.NoMessage);
+                            }
+                        }, 5000);
                     } else {
                         message.Response.ComStatus = AtsuMessageComStatus.Failed;
+                        this.dcduLink.updateDcduStatusMessage(message.UniqueMessageID, DcduStatusMessage.SendFailed);
                     }
                     this.dcduLink.update(message);
                 });
+            }
+        }
+    }
+
+    public sendExistingResponse(uid: number): void {
+        const message = this.messageQueue.find((element) => element.UniqueMessageID === uid);
+        if (message !== undefined && message.Response !== undefined) {
+            // avoid double-sends
+            if (message.Response.ComStatus === AtsuMessageComStatus.Sending || message.Response.ComStatus === AtsuMessageComStatus.Sent) {
+                return;
+            }
+
+            if (message.Response.CurrentTransmissionId < 0) {
+                message.Response.CurrentTransmissionId = ++this.cpdlcMessageId;
+            }
+            message.Response.ComStatus = AtsuMessageComStatus.Sending;
+            this.dcduLink.updateDcduStatusMessage(message.UniqueMessageID, DcduStatusMessage.Sending);
+            this.dcduLink.update(message);
+
+            this.datalink.sendMessage(message.Response, false).then((code) => {
+                if (code === AtsuStatusCodes.Ok) {
+                    message.Response.ComStatus = AtsuMessageComStatus.Sent;
+                    this.dcduLink.updateDcduStatusMessage(message.UniqueMessageID, DcduStatusMessage.Sent);
+                    setTimeout(() => {
+                        if (this.dcduLink.currentDcduStatusMessage(message.UniqueMessageID) === DcduStatusMessage.Sent) {
+                            this.dcduLink.updateDcduStatusMessage(message.UniqueMessageID, DcduStatusMessage.NoMessage);
+                        }
+                    }, 5000);
+                } else {
+                    message.Response.ComStatus = AtsuMessageComStatus.Failed;
+                    this.dcduLink.updateDcduStatusMessage(message.UniqueMessageID, DcduStatusMessage.SendFailed);
+                }
+                this.dcduLink.update(message);
+            });
+
+            if (this.parent.modificationMessage?.UniqueMessageID === uid) {
+                this.parent.modificationMessage = null;
             }
         }
     }
@@ -256,7 +323,12 @@ export class Atc {
 
         message.ComStatus = AtsuMessageComStatus.Sending;
         if ((message as CpdlcMessage).DcduRelevantMessage) {
+            this.dcduLink.updateDcduStatusMessage(message.UniqueMessageID, DcduStatusMessage.Sending);
             this.dcduLink.update(message as CpdlcMessage);
+        }
+
+        if (this.parent.modificationMessage?.UniqueMessageID === message.UniqueMessageID) {
+            this.parent.modificationMessage = null;
         }
 
         return this.datalink.sendMessage(message, false).then((code) => {
@@ -268,6 +340,15 @@ export class Atc {
 
             if ((message as CpdlcMessage).DcduRelevantMessage) {
                 this.dcduLink.update(message as CpdlcMessage);
+
+                this.dcduLink.updateDcduStatusMessage(message.UniqueMessageID, code === AtsuStatusCodes.Ok ? DcduStatusMessage.Sent : DcduStatusMessage.SendFailed);
+                if (code === AtsuStatusCodes.Ok) {
+                    setTimeout(() => {
+                        if (this.dcduLink.currentDcduStatusMessage(message.UniqueMessageID) === DcduStatusMessage.Sent) {
+                            this.dcduLink.updateDcduStatusMessage(message.UniqueMessageID, DcduStatusMessage.NoMessage);
+                        }
+                    }, 5000);
+                }
             }
 
             return code;
@@ -276,6 +357,19 @@ export class Atc {
 
     public messages(): AtsuMessage[] {
         return this.messageQueue;
+    }
+
+    public monitoredMessages(): AtsuMessage[] {
+        const retval: AtsuMessage[] = [];
+
+        this.messageMonitoring.monitoredMessageIds().forEach((id) => {
+            const message = this.messageQueue.find((elem) => elem.UniqueMessageID === id);
+            if (message) {
+                retval.push(message);
+            }
+        });
+
+        return retval;
     }
 
     public static isRelevantMessage(message: AtsuMessage): boolean {
@@ -298,9 +392,9 @@ export class Atc {
     }
 
     private analyzeMessage(request: CpdlcMessage, response: CpdlcMessage): boolean {
-        if (request.Content?.ExpectedResponse === CpdlcMessageExpectedResponseType.NotRequired && response === undefined) {
+        if (request.Content[0]?.ExpectedResponse === CpdlcMessageExpectedResponseType.NotRequired && response === undefined) {
             // received the station message for the DCDU
-            if (request.Content?.TypeId === 'UM9999') {
+            if (request.Content[0]?.TypeId === 'UM9999') {
                 request.DcduRelevantMessage = false;
                 if (this.currentAtc !== '') {
                     this.dcduLink.setAtcLogonMessage(request.Message);
@@ -309,7 +403,7 @@ export class Atc {
             }
 
             // received a logoff message
-            if (request.Content?.TypeId === 'UM9995') {
+            if (request.Content[0]?.TypeId === 'UM9995') {
                 request.DcduRelevantMessage = false;
                 this.dcduLink.setAtcLogonMessage('');
                 this.currentAtc = '';
@@ -325,7 +419,7 @@ export class Atc {
             }
 
             // process the handover message
-            if (request.Content?.TypeId === 'UM9998') {
+            if (request.Content[0]?.TypeId === 'UM9998') {
                 const entries = request.Message.split(' ');
                 if (entries.length >= 2) {
                     request.DcduRelevantMessage = false;
@@ -338,9 +432,9 @@ export class Atc {
 
         // expecting a LOGON or denied message
         if (this.nextAtc !== '' && request !== undefined && response !== undefined) {
-            if (request.Content?.TypeId === 'DM9998') {
+            if (request.Content[0]?.TypeId === 'DM9998') {
                 // logon accepted by ATC
-                if (response.Content?.TypeId === 'UM9997') {
+                if (response.Content[0]?.TypeId === 'UM9997') {
                     response.DcduRelevantMessage = false;
                     this.dcduLink.setAtcLogonMessage(`CURRENT ATC UNIT @${this.nextAtc}@`);
                     this.currentFansMode = FutureAirNavigationSystem.currentFansMode(this.nextAtc);
@@ -351,7 +445,7 @@ export class Atc {
                 }
 
                 // logon rejected
-                if (response.Content?.TypeId === 'UM9996' || response.Content?.TypeId === 'UM0') {
+                if (response.Content[0]?.TypeId === 'UM9996' || response.Content[0]?.TypeId === 'UM0') {
                     response.DcduRelevantMessage = false;
                     this.dcduLink.setAtcLogonMessage('');
                     this.currentAtc = '';
@@ -372,13 +466,18 @@ export class Atc {
             let concatMessages = true;
             if (cpdlcMessage.Direction === AtsuMessageDirection.Uplink && cpdlcMessage.Content !== undefined) {
                 // filter all standard messages and LOGON-related messages
-                concatMessages = cpdlcMessage.Content.TypeId === 'UM0' || cpdlcMessage.Content.TypeId === 'UM1' || cpdlcMessage.Content.TypeId === 'UM3'
-                                 || cpdlcMessage.Content.TypeId === 'UM4' || cpdlcMessage.Content.TypeId === 'UM5' || cpdlcMessage.Content.TypeId === 'UM9995'
-                                 || cpdlcMessage.Content.TypeId === 'UM9996' || cpdlcMessage.Content.TypeId === 'UM9997';
+                concatMessages = cpdlcMessage.Content[0]?.TypeId === 'UM0' || cpdlcMessage.Content[0]?.TypeId === 'UM1' || cpdlcMessage.Content[0]?.TypeId === 'UM3'
+                                 || cpdlcMessage.Content[0]?.TypeId === 'UM4' || cpdlcMessage.Content[0]?.TypeId === 'UM5' || cpdlcMessage.Content[0]?.TypeId === 'UM9995'
+                                 || cpdlcMessage.Content[0]?.TypeId === 'UM9996' || cpdlcMessage.Content[0]?.TypeId === 'UM9997';
             }
 
             if (cpdlcMessage.Direction === AtsuMessageDirection.Downlink && cpdlcMessage.CurrentTransmissionId === -1) {
                 cpdlcMessage.CurrentTransmissionId = ++this.cpdlcMessageId;
+            }
+
+            // initialize the uplink message
+            if (cpdlcMessage.Direction === AtsuMessageDirection.Uplink) {
+                UplinkMessageStateMachine.initialize(this.parent, cpdlcMessage);
             }
 
             // search corresponding request, if previous ID is set
@@ -386,7 +485,7 @@ export class Atc {
                 this.messageQueue.forEach((element) => {
                     // ensure that the sending and receiving stations are the same to avoid CPDLC ID overlaps
                     if (element.Station === cpdlcMessage.Station) {
-                        while (element !== undefined) {
+                        while (element !== null) {
                             if (element.CurrentTransmissionId === cpdlcMessage.PreviousTransmissionId) {
                                 element.Response = cpdlcMessage;
                                 this.analyzeMessage(element, cpdlcMessage);
@@ -404,6 +503,18 @@ export class Atc {
 
         if (messages.length !== 0 && (messages[0] as CpdlcMessage).DcduRelevantMessage) {
             this.dcduLink.enqueue(messages);
+        }
+    }
+
+    public updateMessage(message: CpdlcMessage): void {
+        const index = this.messageQueue.findIndex((element) => element.UniqueMessageID === message.UniqueMessageID);
+        if (index !== -1) {
+            if (this.parent.modificationMessage?.UniqueMessageID === message.UniqueMessageID) {
+                this.parent.modificationMessage = undefined;
+            }
+
+            this.messageQueue[index] = message;
+            this.dcduLink.update(message);
         }
     }
 
@@ -520,5 +631,13 @@ export class Atc {
 
     public fansMode(): FansMode {
         return this.currentFansMode;
+    }
+
+    public automaticPositionReportActive(): boolean {
+        return this.automaticPositionReport;
+    }
+
+    public toggleAutomaticPositionReportActive(): void {
+        this.automaticPositionReport = !this.automaticPositionReport;
     }
 }

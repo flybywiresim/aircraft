@@ -1,22 +1,22 @@
 class CDUAtcMessagesRecord {
     static TranslateCpdlcResponse(response) {
-        if (response !== undefined && response.Content !== undefined) {
-            if (response.Content.TypeId === "DM0") {
+        if (response) {
+            if (response.Content[0].TypeId === "DM0") {
                 return "WILC";
             }
-            if (response.Content.TypeId === "UM0" || response.Content.TypeId === "DM1") {
+            if (response.Content[0].TypeId === "UM0" || response.Content[0].TypeId === "DM1") {
                 return "UNBL";
             }
-            if (response.Content.TypeId === "UM1" || response.Content.TypeId === "DM2") {
+            if (response.Content[0].TypeId === "UM1" || response.Content[0].TypeId === "DM2") {
                 return "STBY";
             }
-            if (response.Content.TypeId === "UM3" || response.Content.TypeId === "DM3") {
+            if (response.Content[0].TypeId === "UM3" || response.Content[0].TypeId === "DM3") {
                 return "ROGR";
             }
-            if (response.Content.TypeId === "UM4" || response.Content.TypeId === "DM4") {
+            if (response.Content[0].TypeId === "UM4" || response.Content[0].TypeId === "DM4") {
                 return "AFRM";
             }
-            if (response.Content.TypeId === "UM5" || response.Content.TypeId === "DM5") {
+            if (response.Content[0].TypeId === "UM5" || response.Content[0].TypeId === "DM5") {
                 return "NEG";
             }
         }
@@ -25,10 +25,19 @@ class CDUAtcMessagesRecord {
     }
 
     static ShowPage(mcdu, messages = null, offset = 0, confirmErase = false) {
+        mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.ATCMessageRecord;
+
         if (!messages) {
             messages = mcdu.atsu.atc.messages();
         }
-        mcdu.clearDisplay();
+
+        // regular update due to showing dynamic data on this page
+        mcdu.page.SelfPtr = setTimeout(() => {
+            if (mcdu.page.Current === mcdu.page.ATCMessageRecord) {
+                CDUAtcMessagesRecord.ShowPage(mcdu, messages, offset, confirmErase);
+            }
+        }, mcdu.PageTimeout.Slow);
 
         let eraseRecordTitle = "\xa0MSG RECORD";
         let eraseRecordButton = "*ERASE";
@@ -36,10 +45,6 @@ class CDUAtcMessagesRecord {
             eraseRecordTitle = "\xa0ERASE MSG RECORD";
             eraseRecordButton = "*CONFIRM";
         }
-
-        mcdu.refreshPageCallback = () => {
-            this.ShowPage(mcdu, null, offset, false);
-        };
 
         const msgHeadersLeft = [], msgHeadersRight = [], msgStart = [];
         msgHeadersLeft.length = msgHeadersRight.length = msgStart.length = 4;
@@ -104,7 +109,7 @@ class CDUAtcMessagesRecord {
             ["<RETURN", "PRINT*[color]inop"]
         ]);
 
-        for (let i = 0; i < 5; i++) {
+        for (let i = 0; i < 4; i++) {
             mcdu.leftInputDelay[i] = () => {
                 return mcdu.getDelaySwitchPage();
             };
@@ -115,7 +120,7 @@ class CDUAtcMessagesRecord {
                         mcdu.atsu.removeMessage(messages[offset + i].UniqueMessageID);
                         CDUAtcMessagesRecord.ShowPage(mcdu, null, offset, false);
                     } else {
-                        CDUAtcMessage.ShowPage(mcdu, messages, offset + i);
+                        CDUAtcMessage.ShowPage(mcdu, messages, offset + i, true);
                     }
                 }
             };
@@ -138,7 +143,7 @@ class CDUAtcMessagesRecord {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[5] = () => {
-            CDUAtcMenu.ShowPage1(mcdu);
+            CDUAtcMenu.ShowPage(mcdu);
         };
     }
 }

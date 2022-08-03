@@ -279,15 +279,13 @@
                 <DRAG_MIN_VALUE>-4854</DRAG_MIN_VALUE>                <!-- Limit to -4.5 deg -->
             </UseTemplate>
 
-            <UseTemplate Name="ASOBO_HANDLING_Indicator_ElevatorTrim_Template">
+            <UseTemplate Name="FBW_HANDLING_Indicator_ElevatorTrim_Template">
                 <ANIM_NAME>LEVER_ELEVATORTRIM_DECAL</ANIM_NAME>
-                <MIN_DISPLAYABLE>-4</MIN_DISPLAYABLE>
-                <MAX_DISPLAYABLE>13.5</MAX_DISPLAYABLE>
-                <REF_VALUE_0>-4</REF_VALUE_0>
+                <REF_VALUE_0>0</REF_VALUE_0>
                 <ANIM_VALUE_0>0</ANIM_VALUE_0>
-                <REF_VALUE_1>13</REF_VALUE_1>
-                <ANIM_VALUE_1>94</ANIM_VALUE_1>
-                <REF_VALUE_2>13.5</REF_VALUE_2>
+                <REF_VALUE_1>97.143</REF_VALUE_1>
+                <ANIM_VALUE_1>94.2</ANIM_VALUE_1>
+                <REF_VALUE_2>100</REF_VALUE_2>
                 <ANIM_VALUE_2>100</ANIM_VALUE_2>
                 <MAX_POINT_INDEX>2</MAX_POINT_INDEX>
             </UseTemplate>
@@ -2143,18 +2141,9 @@
                             <ROUND />
                         </UseTemplate>
 
-                        <!-- EMERGENCY EXTENSION PLACEHOLDER -->
-                        <UseTemplate Name="FBW_Anim_Interactions">
-                            <ANIM_TYPE>BUTTON</ANIM_TYPE>
-                            <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
-                            <NODE_ID>GEAR_EXTN_Decal</NODE_ID>
-                            <LEFT_SINGLE_CODE>1 (&gt;L:A32NX_GEAR_EMERGENCY_EXTENSION_CLICKED)</LEFT_SINGLE_CODE>
-                            <LEFT_LEAVE_CODE>0 (&gt;L:A32NX_GEAR_EMERGENCY_EXTENSION_CLICKED)</LEFT_LEAVE_CODE>
-                            <TOOLTIPID>Emergency Extension (click and hold to turn)</TOOLTIPID>
-                            <MOMENTARY/>
-                            <NO_SEQ1 />
-                            <NO_SEQ2 />
-                            <ROUND />
+                        <!-- EMERGENCY EXTENSION -->
+                        <UseTemplate Name="FBW_HANDLING_GRAVITYGEAR_Template">
+                            <NODE_ID>LEVER_GRAVITYGEAR</NODE_ID>
                         </UseTemplate>
 
                         <!-- EVAC CAPT & PURS -->

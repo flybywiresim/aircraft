@@ -85,6 +85,7 @@
       "YouHaveNotYetImportedAnySimBriefData": "您尚未从 SimBrief 导入任何数据"
     },
     "Overview": {
+      "ActualGW": "Actual GW",
       "Engines": "引擎",
       "MMO": "最大使用马赫数",
       "MRW": "最大机坪重量",
@@ -133,6 +134,27 @@
       "TotalFuel": "总燃油量",
       "Unavailable": "不可用"
     },
+    "Payload": {
+      "BoardingTime": "Boarding Time",
+      "Cargo": "Cargo",
+      "Current": "Current",
+      "Passengers": "Passengers",
+      "Planned": "Planned",
+      "TT": {
+        "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Aircraft Must Be On the Ground and Have Engines Shutdown to Change Boarding Duration",
+        "FillPayloadFromSimbrief": "Fill Payload Information from Simbrief",
+        "MaxCargo": "Max Cargo",
+        "MaxPassengers": "Maximum Passengers",
+        "MaxZFW": "Maximum ZFW",
+        "MaxZFWCG": "Maximum ZFWCG",
+        "PerPaxBagWeight": "Per Passenger Bag Weight",
+        "PerPaxWeight": "Per Passenger Weight",
+        "StartBoarding": "Begin Boarding"
+      },
+      "Title": "Payload",
+      "ZFW": "ZFW",
+      "ZFWCG": "ZFWCG"
+    },
     "Pushback": {
       "Title": "后推"
     },
@@ -141,7 +163,7 @@
       "CateringTruck": "餐车",
       "Cones": "安全锥",
       "DoorAft": "后门",
-      "DoorCargo": "Cargo Door",
+      "DoorCargo": "货舱门",
       "DoorFwd": "前门",
       "ExternalPower": "外部电源",
       "FuelTruck": "加油车",
@@ -506,7 +528,7 @@
     "flyPad": {
       "AutoBrightness": "自动调节亮度",
       "AutomaticallyShowOnscreenKeyboard": "自动显示屏幕键盘",
-      "BatteryLifeEnabled": "Battery Life Simulated",
+      "BatteryLifeEnabled": "模拟电池电量",
       "Blue": "蓝色",
       "Brightness": "亮度",
       "Dark": "深色",
