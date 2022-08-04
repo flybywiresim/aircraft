@@ -279,9 +279,11 @@ impl UpdateContext {
                 vertical_acceleration,
                 longitudinal_acceleration,
             ),
-            local_acceleration_plane_reference_filtered: LowPassFilter::<Vector3<f64>>::new(
-                Self::PLANE_ACCELERATION_FILTERING_TIME_CONSTANT,
-            ),
+            local_acceleration_plane_reference_filtered:
+                LowPassFilter::<Vector3<f64>>::new_with_init_value(
+                    Self::PLANE_ACCELERATION_FILTERING_TIME_CONSTANT,
+                    Vector3::new(0., -9.8, 0.),
+                ),
             world_ambient_wind: Velocity3D::new(
                 Velocity::default(),
                 Velocity::default(),
@@ -341,9 +343,11 @@ impl UpdateContext {
             vertical_speed: Default::default(),
             local_acceleration: Default::default(),
 
-            local_acceleration_plane_reference_filtered: LowPassFilter::<Vector3<f64>>::new(
-                Self::PLANE_ACCELERATION_FILTERING_TIME_CONSTANT,
-            ),
+            local_acceleration_plane_reference_filtered:
+                LowPassFilter::<Vector3<f64>>::new_with_init_value(
+                    Self::PLANE_ACCELERATION_FILTERING_TIME_CONSTANT,
+                    Vector3::new(0., -9.8, 0.),
+                ),
 
             world_ambient_wind: Velocity3D::new(
                 Velocity::default(),
