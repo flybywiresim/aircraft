@@ -1711,15 +1711,15 @@ impl FluidPhysics {
         self.g_trap_is_empty
             .update(context, self.fluid_cg_position[1] > 0.);
 
-        println!(
-            "current_fluid_cg {:.2} {:.2} {:.2} GTRAP EMPTY {:?} GAUGE {:.2}  USABLE {:.2}",
-            self.fluid_cg_position[0],
-            self.fluid_cg_position[1],
-            self.fluid_cg_position[2],
-            self.g_trap_is_empty.output(),
-            self.gauge_modifier().get::<ratio>(),
-            self.usable_level_modifier().get::<ratio>()
-        );
+        // println!(
+        //     "current_fluid_cg {:.2} {:.2} {:.2} GTRAP EMPTY {:?} GAUGE {:.2}  USABLE {:.2}",
+        //     self.fluid_cg_position[0],
+        //     self.fluid_cg_position[1],
+        //     self.fluid_cg_position[2],
+        //     self.g_trap_is_empty.output(),
+        //     self.gauge_modifier().get::<ratio>(),
+        //     self.usable_level_modifier().get::<ratio>()
+        // );
     }
 
     fn update_forces(&mut self, context: &UpdateContext) -> Vector3<f64> {
@@ -1826,7 +1826,6 @@ pub struct Reservoir {
     return_failure: Failure,
 
     fluid_physics: FluidPhysics,
-    hyd_loop_id: HydraulicColor, //TODO TO REMOVE
 }
 impl Reservoir {
     const MIN_USABLE_VOLUME_GAL: f64 = 0.2;
@@ -1862,22 +1861,19 @@ impl Reservoir {
             air_pressure_switches,
             level_switch: LevelSwitch::new(low_level_threshold),
             fluid_physics: FluidPhysics::new(),
-            hyd_loop_id,
         }
     }
 
     fn update(&mut self, context: &UpdateContext, air_pressure: Pressure) {
         self.air_pressure = air_pressure;
 
+        self.fluid_physics.update(context);
+
         self.level_switch.update(self.fluid_level_from_gauge());
 
         self.update_pressure_switches(context);
 
         self.update_leak_failure(context);
-
-        if self.hyd_loop_id == HydraulicColor::Yellow {
-            self.fluid_physics.update(context);
-        }
     }
 
     fn update_leak_failure(&mut self, context: &UpdateContext) {
