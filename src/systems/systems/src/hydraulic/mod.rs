@@ -1694,7 +1694,7 @@ impl FluidPhysics {
 
             virtual_mass: Mass::new::<kilogram>(100.),
             spring: SpringPhysics::new(),
-            anisotropic_damping_constant: Vector3::new(60., 20., 60.),
+            anisotropic_damping_constant: Vector3::new(25., 20., 25.),
 
             g_trap_is_empty: DelayedTrueLogicGate::new(Duration::from_secs_f64(
                 random_from_normal_distribution(
@@ -1749,15 +1749,24 @@ impl FluidPhysics {
     // Example: 0.5 means gauge reads half the actual level of the reservoir
     fn gauge_modifier(&self) -> Ratio {
         const LATERAL_BREAKPOINTS: [f64; 6] = [-1., -0.2, 0., 0.2, 0.4, 1.];
-        const LATERAL_MAP: [f64; 6] = [0.2, 0.8, 1., 1.05, 1.2, 1.3];
+        const LATERAL_MAP: [f64; 6] = [0.2, 0.95, 1., 1.05, 1.2, 1.3];
+
+        const LONGITUDINAL_BREAKPOINTS: [f64; 6] = [-1., -0.1, 0., 0.1, 0.4, 1.];
+        const LONGITUDINAL_MAP: [f64; 6] = [0.2, 0.98, 1., 0.98, 0.2, 0.2];
 
         const VERTICAL_BREAKPOINTS: [f64; 6] = [-1., -0.1, 0., 0.1, 0.2, 1.];
-        const VERTICAL_MAP: [f64; 6] = [1., 1., 0.5, 0.7, 1.2, 1.5];
+        const VERTICAL_MAP: [f64; 6] = [1., 1., 0.7, 0.9, 1.2, 1.5];
 
         let lateral_ratio = interpolation(
             &LATERAL_BREAKPOINTS,
             &LATERAL_MAP,
             self.fluid_cg_position[0],
+        );
+
+        let logitudinal_ratio = interpolation(
+            &LONGITUDINAL_BREAKPOINTS,
+            &LONGITUDINAL_MAP,
+            self.fluid_cg_position[2],
         );
 
         let vertical_ratio = interpolation(
@@ -1766,7 +1775,7 @@ impl FluidPhysics {
             self.fluid_cg_position[1],
         );
 
-        Ratio::new::<ratio>(lateral_ratio * vertical_ratio)
+        Ratio::new::<ratio>(lateral_ratio * vertical_ratio * logitudinal_ratio)
     }
 
     // Returns a coefficient of the actual level that will be available for pumps.
