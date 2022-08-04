@@ -1629,43 +1629,45 @@ struct SpringPhysics {
     k_constant: f64,
     damping_constant: f64,
 
-    last_length: Vector3<f64>,
+    last_length: f64,
+    damping_force: LowPassFilter<f64>,
 }
 impl SpringPhysics {
     fn new() -> Self {
         Self {
-            k_constant: 100.,
-            damping_constant: 50.,
+            k_constant: 5000.,
+            damping_constant: 500.,
 
-            last_length: Vector3::default(),
+            last_length: 0.,
+            damping_force: LowPassFilter::new(Duration::from_millis(1)),
         }
     }
 
-    fn update_force_Nm(
+    fn update_force_nm(
         &mut self,
         context: &UpdateContext,
         position1: Vector3<f64>,
         position2: Vector3<f64>,
     ) -> Vector3<f64> {
-        let length = position1 - position2;
+        let spring_vector = position1 - position2;
+        let spring_length = spring_vector.norm();
 
-        let velocity = (length - self.last_length) / context.delta_as_secs_f64();
+        if spring_length.abs() < 0.001 {
+            self.last_length = spring_length;
 
-        self.last_length = length;
+            return Vector3::default();
+        }
+        let spring_vector_normalized = spring_vector.normalize();
 
-        let k_force = length * self.k_constant;
-        let damp_force = velocity * self.damping_constant;
+        let velocity = (spring_length - self.last_length) / context.delta_as_secs_f64();
 
-        println!("SPRING len {:.3}  vel  {:.3}", length[1], velocity[1],);
+        let k_force = spring_length * self.k_constant;
+        self.damping_force
+            .update(context.delta(), velocity * self.damping_constant);
 
-        println!(
-            "SPRING kforce {:.3}  dforce  {:.3} ",
-            k_force[1], damp_force[1],
-        );
+        self.last_length = spring_length;
 
-        //kforce {:.2} dforce {:.2} totalForce {:.2}",
-
-        k_force - damp_force
+        (k_force + self.damping_force.output()) * spring_vector_normalized
     }
 }
 
@@ -1681,10 +1683,10 @@ impl FluidPhysics {
     fn new() -> Self {
         Self {
             reference_point_cg: Vector3::default(),
-            fluid_cg_position: Vector3::default(),
+            fluid_cg_position: Vector3::new(0., -0.2, 0.),
             fluid_cg_speed: Vector3::default(),
 
-            virtual_mass: Mass::new::<kilogram>(50.),
+            virtual_mass: Mass::new::<kilogram>(100.),
             spring: SpringPhysics::new(),
         }
     }
@@ -1693,14 +1695,9 @@ impl FluidPhysics {
         let gravity_force = context.acceleration_plane_reference_filtered_ms2_vector()
             * self.virtual_mass.get::<kilogram>();
 
-        // println!(
-        //     "GRAVITY FORCE {:.2} {:.2} {:.2}",
-        //     gravity_force[0], gravity_force[1], gravity_force[2]
-        // );
-
         let spring_force =
             self.spring
-                .update_force_Nm(context, self.reference_point_cg, self.fluid_cg_position);
+                .update_force_nm(context, self.reference_point_cg, self.fluid_cg_position);
 
         let total_forces = gravity_force + spring_force;
 
@@ -1711,9 +1708,48 @@ impl FluidPhysics {
         self.fluid_cg_position += self.fluid_cg_speed * context.delta_as_secs_f64();
 
         println!(
-            "current_fluid_cg {:.2} {:.2} {:.2}",
-            self.fluid_cg_position[0], self.fluid_cg_position[1], self.fluid_cg_position[2]
+            "current_fluid_cg {:.2} {:.2} {:.2}  GAUGE {:.2}  USABLE {:.2}",
+            self.fluid_cg_position[0],
+            self.fluid_cg_position[1],
+            self.fluid_cg_position[2],
+            self.gauge_modifier().get::<ratio>(),
+            self.usable_level_modifier().get::<ratio>()
         );
+    }
+
+    fn gauge_modifier(&self) -> Ratio {
+        const LATERAL_BREAKPOINTS: [f64; 6] = [-1., -0.2, 0., 0.2, 0.4, 1.];
+        const LATERAL_MAP: [f64; 6] = [0.2, 0.8, 1., 1.05, 1.2, 1.5];
+
+        const VERTICAL_BREAKPOINTS: [f64; 6] = [-1., -0.1, 0., 0.1, 0.2, 1.];
+        const VERTICAL_MAP: [f64; 6] = [1., 1., 0.5, 0., 0., 0.];
+
+        let lateral_ratio = interpolation(
+            &LATERAL_BREAKPOINTS,
+            &LATERAL_MAP,
+            self.fluid_cg_position[0],
+        );
+
+        let vertical_ratio = interpolation(
+            &VERTICAL_BREAKPOINTS,
+            &VERTICAL_MAP,
+            self.fluid_cg_position[1],
+        );
+
+        Ratio::new::<ratio>(lateral_ratio * vertical_ratio)
+    }
+
+    fn usable_level_modifier(&self) -> Ratio {
+        const VERTICAL_BREAKPOINTS: [f64; 6] = [-1., -0.1, 0., 0.1, 0.2, 1.];
+        const VERTICAL_MAP: [f64; 6] = [1., 1., 0.5, 0., 0., 0.];
+
+        let vertical_ratio = interpolation(
+            &VERTICAL_BREAKPOINTS,
+            &VERTICAL_MAP,
+            self.fluid_cg_position[1],
+        );
+
+        Ratio::new::<ratio>(vertical_ratio)
     }
 }
 
@@ -1780,7 +1816,8 @@ impl Reservoir {
     fn update(&mut self, context: &UpdateContext, air_pressure: Pressure) {
         self.air_pressure = air_pressure;
 
-        self.level_switch.update(self.current_level);
+        self.level_switch
+            .update(self.fluid_level_reachable_by_pumps());
 
         self.update_pressure_switches(context);
 
@@ -1809,12 +1846,11 @@ impl Reservoir {
 
     // Try to take volume from reservoir. Will return only what's currently available
     fn try_take_volume(&mut self, volume: Volume) -> Volume {
-        let volume_taken = if self.current_level > self.min_usable {
-            let volume_available = self.current_level - self.min_usable;
-            volume_available.min(volume).max(Volume::new::<gallon>(0.))
-        } else {
-            Volume::new::<gallon>(0.)
-        };
+        let volume_taken = self
+            .fluid_level_reachable_by_pumps()
+            .min(volume)
+            .max(Volume::new::<gallon>(0.));
+
         self.current_level -= volume_taken;
 
         volume_taken
@@ -1830,8 +1866,7 @@ impl Reservoir {
     // What's current flow available
     fn request_flow_availability(&self, context: &UpdateContext, flow: VolumeRate) -> VolumeRate {
         let desired_volume = flow * context.delta_as_time();
-        let max_volume_available = self.current_level - self.min_usable;
-        max_volume_available.min(desired_volume) / context.delta_as_time()
+        self.fluid_level_reachable_by_pumps().min(desired_volume) / context.delta_as_time()
     }
 
     fn add_return_volume(&mut self, volume: Volume) {
@@ -1848,8 +1883,14 @@ impl Reservoir {
         self.current_level
     }
 
+    fn fluid_level_reachable_by_pumps(&self) -> Volume {
+        (self.current_level * self.fluid_physics.usable_level_modifier()
+            - Volume::new::<gallon>(Self::MIN_USABLE_VOLUME_GAL))
+        .max(Volume::new::<gallon>(0.))
+    }
+
     fn fluid_level_from_gauge(&self) -> Volume {
-        self.current_level.min(self.max_gaugeable)
+        self.current_level.min(self.max_gaugeable) * self.fluid_physics.gauge_modifier()
     }
 
     pub fn air_pressure(&self) -> Pressure {
@@ -1857,7 +1898,7 @@ impl Reservoir {
     }
 
     fn is_empty(&self) -> bool {
-        self.fluid_level_real() <= Volume::new::<gallon>(Self::MIN_USABLE_VOLUME_GAL)
+        self.fluid_level_reachable_by_pumps() <= Volume::new::<gallon>(0.01)
     }
 
     pub fn is_low_air_pressure(&self) -> bool {
@@ -2670,7 +2711,7 @@ mod tests {
             el.update(context, Pressure::new::<psi>(50.))
         });
 
-        for _ in 0..500 {
+        for _ in 0..800 {
             test_bed.run_with_delta(Duration::from_millis(33));
         }
     }
