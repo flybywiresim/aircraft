@@ -135,7 +135,7 @@
       "Unavailable": "Indisponível"
     },
     "Payload": {
-      "BoardingTime": "Boarding Time",
+      "BoardingTime": "Tempo de Embarque",
       "Cargo": "Cargo",
       "Current": "Current",
       "Passengers": "Passengers",
@@ -144,7 +144,7 @@
         "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Aircraft Must Be On the Ground and Have Engines Shutdown to Change Boarding Duration",
         "FillPayloadFromSimbrief": "Fill Payload Information from Simbrief",
         "MaxCargo": "Max Cargo",
-        "MaxPassengers": "Maximum Passengers",
+        "MaxPassengers": "Lotação Máxima de Passageiros",
         "MaxZFW": "Maximum ZFW",
         "MaxZFWCG": "Maximum ZFWCG",
         "PerPaxBagWeight": "Per Passenger Bag Weight",
@@ -487,6 +487,7 @@
       "ConesEnabled": "Cones de segurança",
       "DefaultBarometerUnit": "Unidade de Barómetro Padrão",
       "DynamicRegistrationDecal": "Decalque de Registro Dinâmico",
+      "EnableSimBridge": "Ativar conexão SimBridge (desativa automaticamente após 5 minutos se não houver conexão bem-sucedida)",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Ativar conexão com o servidor MCDU (desativa automaticamente após 5 minutos se não houver conexão bem-sucedida)",
       "ExternalMcduServerPort": "Porta de servidor MCDU externa",
       "Hpa": "hPa",
@@ -495,6 +496,7 @@
       "None": "Nenhum",
       "Off": "Desativado",
       "Save": "Salvar",
+      "SimBridgePort": "Porta SimBridge externa",
       "SyncMsfsFlightPlan": "Sincronizar plano de voo do MSFS",
       "ThrottleDetents": "Retentores da Manete",
       "Title": "Opções de Sim",
@@ -528,7 +530,7 @@
     "flyPad": {
       "AutoBrightness": "Brilho Automático",
       "AutomaticallyShowOnscreenKeyboard": "Mostrar Automaticamente o Teclado na Tela",
-      "BatteryLifeEnabled": "Battery Life Simulated",
+      "BatteryLifeEnabled": "Duração da Bateria Simulada",
       "Blue": "Azul",
       "Brightness": "Brilho",
       "Dark": "Escuro",

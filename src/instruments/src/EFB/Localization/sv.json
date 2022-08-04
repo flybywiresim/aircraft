@@ -85,7 +85,7 @@
       "YouHaveNotYetImportedAnySimBriefData": "Du har ännu inte importerat SimBrief-data."
     },
     "Overview": {
-      "ActualGW": "Actual GW",
+      "ActualGW": "Bruttovikt",
       "Engines": "Motorer",
       "MMO": "MMO",
       "MRW": "MRW",
@@ -135,23 +135,23 @@
       "Unavailable": "Ej tillgänglig"
     },
     "Payload": {
-      "BoardingTime": "Boarding Time",
-      "Cargo": "Cargo",
-      "Current": "Current",
-      "Passengers": "Passengers",
-      "Planned": "Planned",
+      "BoardingTime": "Ombordstigningstid",
+      "Cargo": "Frakt",
+      "Current": "Nuvarande",
+      "Passengers": "Passagerare",
+      "Planned": "Planerad",
       "TT": {
-        "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Aircraft Must Be On the Ground and Have Engines Shutdown to Change Boarding Duration",
-        "FillPayloadFromSimbrief": "Fill Payload Information from Simbrief",
-        "MaxCargo": "Max Cargo",
-        "MaxPassengers": "Maximum Passengers",
+        "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Flygplan måste vara på marken och ha motorer avstängning för att ändra ombordstigningens varaktighet",
+        "FillPayloadFromSimbrief": "Fyll nyttolastinformation från Simbrief",
+        "MaxCargo": "Max frakt",
+        "MaxPassengers": "Max antal passagerare",
         "MaxZFW": "Maximum ZFW",
-        "MaxZFWCG": "Maximum ZFWCG",
-        "PerPaxBagWeight": "Per Passenger Bag Weight",
-        "PerPaxWeight": "Per Passenger Weight",
-        "StartBoarding": "Begin Boarding"
+        "MaxZFWCG": "Maximal ZFWCG",
+        "PerPaxBagWeight": "Per passagerarväska vikt",
+        "PerPaxWeight": "Vikt per passagerare",
+        "StartBoarding": "Börja Boarding"
       },
-      "Title": "Payload",
+      "Title": "Nyttolast",
       "ZFW": "ZFW",
       "ZFWCG": "ZFWCG"
     },
@@ -487,6 +487,7 @@
       "ConesEnabled": "Säkerhetskoner",
       "DefaultBarometerUnit": "Standardbarometerenhet",
       "DynamicRegistrationDecal": "Dynamisk registreringsdekal",
+      "EnableSimBridge": "Aktivera SimBridge-serveranslutning (inaktiveras automatiskt efter 5 minuter om anslutningen inte lyckas).",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Aktivera MCDU-serveranslutning (inaktiveras automatiskt efter 5 minuter om anslutningen inte lyckas).",
       "ExternalMcduServerPort": "Extern MCDU-serverport",
       "Hpa": "hPa",
@@ -495,6 +496,7 @@
       "None": "Ingen",
       "Off": "Av",
       "Save": "Spara",
+      "SimBridgePort": "Extern SimBridge-port",
       "SyncMsfsFlightPlan": "Synkronisera MSFS-färdplan",
       "ThrottleDetents": "Kalibrering av tryckspaken",
       "Title": "Sim-inställningar",

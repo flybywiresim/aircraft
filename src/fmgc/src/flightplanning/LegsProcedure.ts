@@ -80,15 +80,15 @@ export class LegsProcedure {
     ) {
       for (const leg of this._legs) {
           if (this.isIcaoValid(leg.fixIcao)) {
-              this._facilitiesToLoad.set(leg.fixIcao, this._instrument.facilityLoader.getFacilityRaw(leg.fixIcao, 2000));
+              this._facilitiesToLoad.set(leg.fixIcao, this._instrument.facilityLoader.getFacilityRaw(leg.fixIcao, 2000, true));
           }
 
           if (this.isIcaoValid(leg.originIcao)) {
-              this._facilitiesToLoad.set(leg.originIcao, this._instrument.facilityLoader.getFacilityRaw(leg.originIcao, 2000));
+              this._facilitiesToLoad.set(leg.originIcao, this._instrument.facilityLoader.getFacilityRaw(leg.originIcao, 2000, true));
           }
 
           if (this.isIcaoValid(leg.arcCenterFixIcao)) {
-              this._facilitiesToLoad.set(leg.arcCenterFixIcao, this._instrument.facilityLoader.getFacilityRaw(leg.arcCenterFixIcao, 2000));
+              this._facilitiesToLoad.set(leg.arcCenterFixIcao, this._instrument.facilityLoader.getFacilityRaw(leg.arcCenterFixIcao, 2000, true));
           }
       }
   }
