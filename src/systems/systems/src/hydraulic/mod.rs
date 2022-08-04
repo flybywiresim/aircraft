@@ -5,8 +5,9 @@ use crate::hydraulic::{
 };
 use crate::pneumatic::PressurizeableReservoir;
 use crate::shared::{
-    interpolation, low_pass_filter::LowPassFilter, random_from_range, DelayedTrueLogicGate,
-    ElectricalBusType, ElectricalBuses, HydraulicColor, SectionPressure,
+    interpolation, low_pass_filter::LowPassFilter, random_from_normal_distribution,
+    random_from_range, DelayedTrueLogicGate, ElectricalBusType, ElectricalBuses, HydraulicColor,
+    SectionPressure,
 };
 use crate::simulation::{
     InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -18,7 +19,6 @@ use std::time::Duration;
 use uom::si::{
     angular_velocity::{radian_per_second, revolution_per_minute},
     f64::*,
-    force::newton,
     mass::kilogram,
     pressure::{pascal, psi},
     ratio::ratio,
@@ -1671,21 +1671,6 @@ impl SpringPhysics {
     }
 }
 
-struct ViscosityPhysics {
-    anisotropic_damping_constant: Vector3<f64>,
-}
-impl ViscosityPhysics {
-    fn new() -> Self {
-        Self {
-            anisotropic_damping_constant: Vector3::new(60., 20., 60.),
-        }
-    }
-
-    fn update_force_nm(&mut self, velocity_ms2: Vector3<f64>) -> Vector3<f64> {
-        -velocity_ms2.component_mul(&self.anisotropic_damping_constant)
-    }
-}
-
 struct FluidPhysics {
     reference_point_cg: Vector3<f64>,
     fluid_cg_position: Vector3<f64>,
@@ -1693,9 +1678,14 @@ struct FluidPhysics {
 
     virtual_mass: Mass,
     spring: SpringPhysics,
-    viscosity: ViscosityPhysics,
+    anisotropic_damping_constant: Vector3<f64>,
+
+    g_trap_is_empty: DelayedTrueLogicGate,
 }
 impl FluidPhysics {
+    const MEAN_G_TRAP_CAVITY_TIME_DURATION_SECONDS: f64 = 20.;
+    const STD_DEV_G_TRAP_CAVITY_TIME_DURATION_SECONDS: f64 = 4.;
+
     fn new() -> Self {
         Self {
             reference_point_cg: Vector3::default(),
@@ -1704,11 +1694,35 @@ impl FluidPhysics {
 
             virtual_mass: Mass::new::<kilogram>(100.),
             spring: SpringPhysics::new(),
-            viscosity: ViscosityPhysics::new(),
+            anisotropic_damping_constant: Vector3::new(60., 20., 60.),
+
+            g_trap_is_empty: DelayedTrueLogicGate::new(Duration::from_secs_f64(
+                random_from_normal_distribution(
+                    Self::MEAN_G_TRAP_CAVITY_TIME_DURATION_SECONDS,
+                    Self::STD_DEV_G_TRAP_CAVITY_TIME_DURATION_SECONDS,
+                ),
+            )),
         }
     }
 
     fn update(&mut self, context: &UpdateContext) {
+        self.update_speed_position(context);
+
+        self.g_trap_is_empty
+            .update(context, self.fluid_cg_position[1] > 0.);
+
+        println!(
+            "current_fluid_cg {:.2} {:.2} {:.2} GTRAP EMPTY {:?} GAUGE {:.2}  USABLE {:.2}",
+            self.fluid_cg_position[0],
+            self.fluid_cg_position[1],
+            self.fluid_cg_position[2],
+            self.g_trap_is_empty.output(),
+            self.gauge_modifier().get::<ratio>(),
+            self.usable_level_modifier().get::<ratio>()
+        );
+    }
+
+    fn update_forces(&mut self, context: &UpdateContext) -> Vector3<f64> {
         let gravity_force = context.acceleration_plane_reference_filtered_ms2_vector()
             * self.virtual_mass.get::<kilogram>();
 
@@ -1716,31 +1730,29 @@ impl FluidPhysics {
             self.spring
                 .update_force_nm(context, self.reference_point_cg, self.fluid_cg_position);
 
-        let total_forces =
-            gravity_force + spring_force + self.viscosity.update_force_nm(self.fluid_cg_speed);
+        let viscosity_damping = -self
+            .fluid_cg_speed
+            .component_mul(&self.anisotropic_damping_constant);
 
-        let acceleration = total_forces / self.virtual_mass.get::<kilogram>();
+        gravity_force + spring_force + viscosity_damping
+    }
+
+    fn update_speed_position(&mut self, context: &UpdateContext) {
+        let acceleration = self.update_forces(context) / self.virtual_mass.get::<kilogram>();
 
         self.fluid_cg_speed += acceleration * context.delta_as_secs_f64();
 
         self.fluid_cg_position += self.fluid_cg_speed * context.delta_as_secs_f64();
-
-        println!(
-            "current_fluid_cg {:.2} {:.2} {:.2}  GAUGE {:.2}  USABLE {:.2}",
-            self.fluid_cg_position[0],
-            self.fluid_cg_position[1],
-            self.fluid_cg_position[2],
-            self.gauge_modifier().get::<ratio>(),
-            self.usable_level_modifier().get::<ratio>()
-        );
     }
 
+    // Returns a coefficient of the actual level that will be seen by the gauge.
+    // Example: 0.5 means gauge reads half the actual level of the reservoir
     fn gauge_modifier(&self) -> Ratio {
         const LATERAL_BREAKPOINTS: [f64; 6] = [-1., -0.2, 0., 0.2, 0.4, 1.];
-        const LATERAL_MAP: [f64; 6] = [0.2, 0.8, 1., 1.05, 1.2, 1.5];
+        const LATERAL_MAP: [f64; 6] = [0.2, 0.8, 1., 1.05, 1.2, 1.3];
 
         const VERTICAL_BREAKPOINTS: [f64; 6] = [-1., -0.1, 0., 0.1, 0.2, 1.];
-        const VERTICAL_MAP: [f64; 6] = [1., 1., 0.8, 0.1, 0., 0.];
+        const VERTICAL_MAP: [f64; 6] = [1., 1., 0.5, 0.7, 1.2, 1.5];
 
         let lateral_ratio = interpolation(
             &LATERAL_BREAKPOINTS,
@@ -1757,17 +1769,32 @@ impl FluidPhysics {
         Ratio::new::<ratio>(lateral_ratio * vertical_ratio)
     }
 
+    // Returns a coefficient of the actual level that will be available for pumps.
+    // Example: 0.5 means from pumps point of view half the actual level of the reservoir is available
     fn usable_level_modifier(&self) -> Ratio {
-        const VERTICAL_BREAKPOINTS: [f64; 6] = [-1., -0.1, 0., 0.1, 0.2, 1.];
-        const VERTICAL_MAP: [f64; 6] = [1., 1., 0.8, 0.05, 0., 0.];
+        const LATERAL_BREAKPOINTS: [f64; 6] = [-1., -0.2, 0., 0.2, 0.4, 1.];
+        const LATERAL_MAP: [f64; 6] = [0.2, 0.8, 1., 1., 1., 1.];
 
-        let vertical_ratio = interpolation(
-            &VERTICAL_BREAKPOINTS,
-            &VERTICAL_MAP,
-            self.fluid_cg_position[1],
+        const LONGITUDINAL_BREAKPOINTS: [f64; 6] = [-1., -0.1, 0., 0.1, 0.4, 1.];
+        const LONGITUDINAL_MAP: [f64; 6] = [0.2, 1., 1., 1., 0.2, 0.2];
+
+        let lateral_ratio = interpolation(
+            &LATERAL_BREAKPOINTS,
+            &LATERAL_MAP,
+            self.fluid_cg_position[0],
         );
 
-        Ratio::new::<ratio>(vertical_ratio)
+        let logitudinal_ratio = interpolation(
+            &LONGITUDINAL_BREAKPOINTS,
+            &LONGITUDINAL_MAP,
+            self.fluid_cg_position[2],
+        );
+
+        if self.g_trap_is_empty.output() {
+            Ratio::new::<ratio>(0.)
+        } else {
+            Ratio::new::<ratio>(logitudinal_ratio * lateral_ratio)
+        }
     }
 }
 
@@ -1779,9 +1806,6 @@ pub struct Reservoir {
     max_capacity: Volume,
     max_gaugeable: Volume,
     current_level: Volume,
-    negative_g_trap_level: Volume,
-
-    min_usable: Volume,
 
     air_pressure: Pressure,
 
@@ -1797,8 +1821,6 @@ pub struct Reservoir {
 }
 impl Reservoir {
     const MIN_USABLE_VOLUME_GAL: f64 = 0.2;
-
-    const G_TRAP_CAVITY_VOLUME_GAL: f64 = 0.2;
 
     const LEAK_FAILURE_FLOW_GAL_PER_S: f64 = 0.1;
 
@@ -1824,9 +1846,7 @@ impl Reservoir {
             max_capacity,
             max_gaugeable,
             current_level,
-            negative_g_trap_level: current_level
-                .min(Volume::new::<gallon>(Self::G_TRAP_CAVITY_VOLUME_GAL)),
-            min_usable: Volume::new::<gallon>(Self::MIN_USABLE_VOLUME_GAL),
+
             air_pressure: Pressure::new::<psi>(50.),
             leak_failure: Failure::new(FailureType::ReservoirLeak(hyd_loop_id)),
             return_failure: Failure::new(FailureType::ReservoirReturnLeak(hyd_loop_id)),
@@ -1840,8 +1860,7 @@ impl Reservoir {
     fn update(&mut self, context: &UpdateContext, air_pressure: Pressure) {
         self.air_pressure = air_pressure;
 
-        self.level_switch
-            .update(self.fluid_level_reachable_by_pumps());
+        self.level_switch.update(self.fluid_level_from_gauge());
 
         self.update_pressure_switches(context);
 
@@ -2528,7 +2547,9 @@ impl SimulationElement for RamAirTurbine {
 
 #[cfg(test)]
 mod tests {
-    use crate::simulation::test::{ElementCtorFn, ReadByName, SimulationTestBed, TestBed};
+    use crate::simulation::test::{
+        ElementCtorFn, ReadByName, SimulationTestBed, TestBed, WriteByName,
+    };
     use crate::simulation::InitContext;
     use ntest::assert_about_eq;
 
@@ -2721,7 +2742,7 @@ mod tests {
     }
 
     #[test]
-    fn reservoir_fluid_physics() {
+    fn reservoir_inverted_has_around_20s_fluid_reserve() {
         let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
             reservoir(
                 context,
@@ -2735,9 +2756,44 @@ mod tests {
             el.update(context, Pressure::new::<psi>(50.))
         });
 
-        for _ in 0..800 {
-            test_bed.run_with_delta(Duration::from_millis(33));
+        test_bed.write_by_name("PLANE BANK DEGREES", 180.);
+
+        // 100*100ms = 10s run
+        for _ in 0..100 {
+            test_bed.run_with_delta(Duration::from_millis(100));
         }
+        assert_about_eq!(
+            test_bed
+                .command_element(|r| r.try_take_volume(Volume::new::<gallon>(1.)).get::<gallon>()),
+            1.
+        );
+
+        // After 15s more, no more fluid available
+        // 150*100ms = 10s run
+        for _ in 0..150 {
+            test_bed.run_with_delta(Duration::from_millis(100));
+        }
+
+        assert_about_eq!(
+            test_bed
+                .command_element(|r| r.try_take_volume(Volume::new::<gallon>(1.)).get::<gallon>()),
+            0.
+        );
+
+        // Can reach fluid after plane returning normal flight
+        test_bed.write_by_name("PLANE BANK DEGREES", 0.);
+
+        // After 1s
+        // 10*100ms = 1s run
+        for _ in 0..10 {
+            test_bed.run_with_delta(Duration::from_millis(100));
+        }
+
+        assert_about_eq!(
+            test_bed
+                .command_element(|r| r.try_take_volume(Volume::new::<gallon>(1.)).get::<gallon>()),
+            1.
+        );
     }
 
     fn section(
