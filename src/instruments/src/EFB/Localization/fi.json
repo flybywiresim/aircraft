@@ -135,7 +135,7 @@
       "Unavailable": "Ei saatavilla"
     },
     "Payload": {
-      "BoardingTime": "Boarding Time",
+      "BoardingTime": "Koneeseen nousun kesto",
       "Cargo": "Cargo",
       "Current": "Current",
       "Passengers": "Passengers",
@@ -144,7 +144,7 @@
         "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Aircraft Must Be On the Ground and Have Engines Shutdown to Change Boarding Duration",
         "FillPayloadFromSimbrief": "Fill Payload Information from Simbrief",
         "MaxCargo": "Max Cargo",
-        "MaxPassengers": "Maximum Passengers",
+        "MaxPassengers": "Suurin mahdollinen matkustajamäärä",
         "MaxZFW": "Maximum ZFW",
         "MaxZFWCG": "Maximum ZFWCG",
         "PerPaxBagWeight": "Per Passenger Bag Weight",
@@ -487,6 +487,7 @@
       "ConesEnabled": "Varoituskartiot",
       "DefaultBarometerUnit": "Paineen oletusyksikkö",
       "DynamicRegistrationDecal": "Dynaaminen rekisteröintimerkintä",
+      "EnableSimBridge": "Ota lentotietokoneen palvelinyhteys käyttöön (yhdistysyritykset loppuvat 5 minuutin kuluttua, jos yhdistäminen ei onnistu)",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Ota lentotietokoneen palvelinyhteys käyttöön (yhdistysyritykset loppuvat 5 minuutin kuluttua, jos yhdistäminen ei onnistu)",
       "ExternalMcduServerPort": "Ulkoinen lentotietokoneen palvelinyhteys",
       "Hpa": "hPa",
@@ -495,6 +496,7 @@
       "None": "Ei mitään",
       "Off": "Pois päältä",
       "Save": "Tallenna",
+      "SimBridgePort": "Ulkoinen lentotietokoneen palvelinyhteys",
       "SyncMsfsFlightPlan": "Synkronoi MSFS lentosuunnitelma",
       "ThrottleDetents": "Kaasupykälät",
       "Title": "Sim -asetukset",
@@ -528,7 +530,7 @@
     "flyPad": {
       "AutoBrightness": "Automaattinen kirkkaus",
       "AutomaticallyShowOnscreenKeyboard": "Näytä näyttönäppäimistö automaattisesti",
-      "BatteryLifeEnabled": "Battery Life Simulated",
+      "BatteryLifeEnabled": "Akun kesto simuloitu",
       "Blue": "Sininen",
       "Brightness": "Kirkkaus",
       "Dark": "Tumma",
