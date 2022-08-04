@@ -135,7 +135,7 @@
       "Unavailable": "Ni na voljo"
     },
     "Payload": {
-      "BoardingTime": "Boarding Time",
+      "BoardingTime": "Čas vkrcanja",
       "Cargo": "Cargo",
       "Current": "Current",
       "Passengers": "Passengers",
@@ -144,7 +144,7 @@
         "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Aircraft Must Be On the Ground and Have Engines Shutdown to Change Boarding Duration",
         "FillPayloadFromSimbrief": "Fill Payload Information from Simbrief",
         "MaxCargo": "Max Cargo",
-        "MaxPassengers": "Maximum Passengers",
+        "MaxPassengers": "Največje število potnikov",
         "MaxZFW": "Maximum ZFW",
         "MaxZFWCG": "Maximum ZFWCG",
         "PerPaxBagWeight": "Per Passenger Bag Weight",
@@ -487,6 +487,7 @@
       "ConesEnabled": "Varnostni stožci",
       "DefaultBarometerUnit": "Privzeta barometrična enota",
       "DynamicRegistrationDecal": "Dinamična registrska nalepka",
+      "EnableSimBridge": "Omogoči povezavo s strežnikom MCDU (samodejna deaktivacija po 5 minutah, če ni uspešne povezave)",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Omogoči povezavo s strežnikom MCDU (samodejna deaktivacija po 5 minutah, če ni uspešne povezave)",
       "ExternalMcduServerPort": "Zunanji MCDU Port",
       "Hpa": "hPa",
@@ -495,6 +496,7 @@
       "None": "Brez",
       "Off": "Izklopljeno",
       "Save": "Shrani",
+      "SimBridgePort": "Zunanji SimBridge Port",
       "SyncMsfsFlightPlan": "Sinhroniziraj z MSFS načrtom leta",
       "ThrottleDetents": "Odkloni plinske ročke",
       "Title": "Nastavitve simulatorja",
