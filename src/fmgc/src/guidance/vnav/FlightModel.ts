@@ -70,7 +70,7 @@ export class FlightModel {
             break;
         }
 
-        const spdBrkIncrement = spdBrkDeflected ? 0.00611 : 0;
+        const spdBrkIncrement = spdBrkDeflected ? 0.00763 : 0;
         const gearIncrement = gearExtended ? 0.03 : 0;
         return baseDrag + spdBrkIncrement + gearIncrement;
     }
@@ -283,5 +283,12 @@ export class FlightModel {
         const timeToAccel = (targetSpeed - initialSpeed) / accel;
         const distanceToAccel = (initialSpeed * timeToAccel) + (0.5 * accel * (timeToAccel ** 2)); // TODO: Check units
         return distanceToAccel;
+    }
+
+    static getGreenDotSpeedCas(
+        altitude: number,
+        weight: Kilograms,
+    ): Knots {
+        return weight / 500 + 85 + Math.max(0, (altitude - 20000) / 1000);
     }
 }

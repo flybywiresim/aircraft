@@ -4,6 +4,7 @@
 
 import { TurnAreaExceedanceLeft, TurnAreaExceedanceRight } from '@fmgc/components/fms-messages/TurnAreaExceedance';
 import { FlightPlanManager } from '@shared/flightplan';
+import { TdReached } from '@fmgc/components/fms-messages/TdReached';
 import { FMMessage, FMMessageTriggers } from '@shared/FmMessages';
 import { FmgcComponent } from '../FmgcComponent';
 import { GpsPrimary } from './GpsPrimary';
@@ -39,6 +40,7 @@ export class FmsMessages implements FmgcComponent {
         new MapPartlyDisplayedRight(),
         new TurnAreaExceedanceLeft(),
         new TurnAreaExceedanceRight(),
+        new TdReached(),
     ];
 
     init(baseInstrument: BaseInstrument, _flightPlanManager: FlightPlanManager): void {

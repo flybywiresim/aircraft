@@ -62,6 +62,7 @@
 1. [FMGC] Improve procedure loading performance - @tracernz (Mike)
 1. [EFB] Added Payload Loading to EFB - @2hwk (2Cas#1022)
 1. [MODEL] Remove blue highlights in lock mode - @tracernz (Mike)
+1. [EFB] Added pause at T/D function - @2hwk (2Cas#1022)
 
 ## 0.8.0
 
