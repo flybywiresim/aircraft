@@ -1671,6 +1671,21 @@ impl SpringPhysics {
     }
 }
 
+struct ViscosityPhysics {
+    anisotropic_damping_constant: Vector3<f64>,
+}
+impl ViscosityPhysics {
+    fn new() -> Self {
+        Self {
+            anisotropic_damping_constant: Vector3::new(60., 20., 60.),
+        }
+    }
+
+    fn update_force_nm(&mut self, velocity_ms2: Vector3<f64>) -> Vector3<f64> {
+        -velocity_ms2.component_mul(&self.anisotropic_damping_constant)
+    }
+}
+
 struct FluidPhysics {
     reference_point_cg: Vector3<f64>,
     fluid_cg_position: Vector3<f64>,
@@ -1678,6 +1693,7 @@ struct FluidPhysics {
 
     virtual_mass: Mass,
     spring: SpringPhysics,
+    viscosity: ViscosityPhysics,
 }
 impl FluidPhysics {
     fn new() -> Self {
@@ -1688,6 +1704,7 @@ impl FluidPhysics {
 
             virtual_mass: Mass::new::<kilogram>(100.),
             spring: SpringPhysics::new(),
+            viscosity: ViscosityPhysics::new(),
         }
     }
 
@@ -1699,7 +1716,8 @@ impl FluidPhysics {
             self.spring
                 .update_force_nm(context, self.reference_point_cg, self.fluid_cg_position);
 
-        let total_forces = gravity_force + spring_force;
+        let total_forces =
+            gravity_force + spring_force + self.viscosity.update_force_nm(self.fluid_cg_speed);
 
         let acceleration = total_forces / self.virtual_mass.get::<kilogram>();
 
@@ -1722,7 +1740,7 @@ impl FluidPhysics {
         const LATERAL_MAP: [f64; 6] = [0.2, 0.8, 1., 1.05, 1.2, 1.5];
 
         const VERTICAL_BREAKPOINTS: [f64; 6] = [-1., -0.1, 0., 0.1, 0.2, 1.];
-        const VERTICAL_MAP: [f64; 6] = [1., 1., 0.5, 0., 0., 0.];
+        const VERTICAL_MAP: [f64; 6] = [1., 1., 0.8, 0.1, 0., 0.];
 
         let lateral_ratio = interpolation(
             &LATERAL_BREAKPOINTS,
@@ -1741,7 +1759,7 @@ impl FluidPhysics {
 
     fn usable_level_modifier(&self) -> Ratio {
         const VERTICAL_BREAKPOINTS: [f64; 6] = [-1., -0.1, 0., 0.1, 0.2, 1.];
-        const VERTICAL_MAP: [f64; 6] = [1., 1., 0.5, 0., 0., 0.];
+        const VERTICAL_MAP: [f64; 6] = [1., 1., 0.8, 0.05, 0., 0.];
 
         let vertical_ratio = interpolation(
             &VERTICAL_BREAKPOINTS,
@@ -1761,6 +1779,8 @@ pub struct Reservoir {
     max_capacity: Volume,
     max_gaugeable: Volume,
     current_level: Volume,
+    negative_g_trap_level: Volume,
+
     min_usable: Volume,
 
     air_pressure: Pressure,
@@ -1777,6 +1797,8 @@ pub struct Reservoir {
 }
 impl Reservoir {
     const MIN_USABLE_VOLUME_GAL: f64 = 0.2;
+
+    const G_TRAP_CAVITY_VOLUME_GAL: f64 = 0.2;
 
     const LEAK_FAILURE_FLOW_GAL_PER_S: f64 = 0.1;
 
@@ -1802,6 +1824,8 @@ impl Reservoir {
             max_capacity,
             max_gaugeable,
             current_level,
+            negative_g_trap_level: current_level
+                .min(Volume::new::<gallon>(Self::G_TRAP_CAVITY_VOLUME_GAL)),
             min_usable: Volume::new::<gallon>(Self::MIN_USABLE_VOLUME_GAL),
             air_pressure: Pressure::new::<psi>(50.),
             leak_failure: Failure::new(FailureType::ReservoirLeak(hyd_loop_id)),
