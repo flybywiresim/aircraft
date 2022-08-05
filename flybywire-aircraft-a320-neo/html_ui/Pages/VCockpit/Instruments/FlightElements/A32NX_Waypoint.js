@@ -234,6 +234,7 @@ class WayPointInfo {
         this.long = data.lon;
     }
     async UpdateAirway(name) {
+        await this.ensureRouteData();
         if (this.airways.findIndex(airway => airway.name === name) === -1) {
             const airways = await this.instrument.facilityLoader.getAllAirways(this, name);
             if (airways.length === 1) {
@@ -242,7 +243,11 @@ class WayPointInfo {
         }
     }
     async UpdateAirways() {
+        await this.ensureRouteData();
         this.airways = await this.instrument.facilityLoader.getAllAirways(this);
+    }
+    async ensureRouteData() {
+        // only needed for navaids
     }
 }
 class AirportInfo extends WayPointInfo {
@@ -611,7 +616,21 @@ class AirportInfo extends WayPointInfo {
         }
     }
 }
-class VORInfo extends WayPointInfo {
+
+class NavaidInfo extends WayPointInfo {
+    async ensureRouteData() {
+        if (!this.routes) {
+            const intersection = await this.instrument.facilityLoader.getIntersectionData(this.icao);
+            if (intersection) {
+                this.routes = intersection.routes;
+            } else {
+                this.routes = [];
+            }
+        }
+    }
+}
+
+class VORInfo extends NavaidInfo {
     constructor(_instrument) {
         super(_instrument);
     }
@@ -724,7 +743,7 @@ class VORInfo extends WayPointInfo {
         });
     }
 }
-class NDBInfo extends WayPointInfo {
+class NDBInfo extends NavaidInfo {
     constructor(_instrument) {
         super(_instrument);
     }

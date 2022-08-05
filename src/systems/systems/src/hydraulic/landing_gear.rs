@@ -11,9 +11,12 @@ use crate::{
     },
 };
 
-use super::linear_actuator::{
-    Actuator, HydraulicAssemblyController, HydraulicLinearActuatorAssembly, HydraulicLocking,
-    LinearActuatorMode,
+use super::{
+    aerodynamic_model::AerodynamicModel,
+    linear_actuator::{
+        Actuator, HydraulicAssemblyController, HydraulicLinearActuatorAssembly, HydraulicLocking,
+        LinearActuatorMode,
+    },
 };
 
 use uom::si::{f64::*, pressure::psi, ratio::ratio};
@@ -26,6 +29,8 @@ pub trait GearGravityExtension {
 
 pub struct HydraulicGearSystem {
     door_center_position_id: VariableIdentifier,
+    door_center_gear_slaved_position_id: VariableIdentifier,
+
     door_left_position_id: VariableIdentifier,
     door_right_position_id: VariableIdentifier,
 
@@ -52,9 +57,18 @@ impl HydraulicGearSystem {
         nose_gear: HydraulicLinearActuatorAssembly<1>,
         left_gear: HydraulicLinearActuatorAssembly<1>,
         right_gear: HydraulicLinearActuatorAssembly<1>,
+        gear_door_left_aerodynamic: AerodynamicModel,
+        gear_door_right_aerodynamic: AerodynamicModel,
+        gear_door_nose_aerodynamic: AerodynamicModel,
+        gear_left_aerodynamic: AerodynamicModel,
+        gear_right_aerodynamic: AerodynamicModel,
+        gear_nose_aerodynamic: AerodynamicModel,
     ) -> Self {
         Self {
             door_center_position_id: context.get_identifier("GEAR_DOOR_CENTER_POSITION".to_owned()),
+            door_center_gear_slaved_position_id: context
+                .get_identifier("GEAR_CENTER_SMALL_POSITION".to_owned()),
+
             door_left_position_id: context.get_identifier("GEAR_DOOR_LEFT_POSITION".to_owned()),
             door_right_position_id: context.get_identifier("GEAR_DOOR_RIGHT_POSITION".to_owned()),
 
@@ -77,6 +91,7 @@ impl HydraulicGearSystem {
                     ProximityDetectorId::DownlockDoorNose1,
                     ProximityDetectorId::DownlockDoorNose2,
                 ],
+                gear_door_nose_aerodynamic,
             ),
             left_door_assembly: GearSystemComponentAssembly::new(
                 GearActuatorId::GearDoorLeft,
@@ -91,6 +106,7 @@ impl HydraulicGearSystem {
                     ProximityDetectorId::DownlockDoorLeft1,
                     ProximityDetectorId::DownlockDoorLeft2,
                 ],
+                gear_door_left_aerodynamic,
             ),
             right_door_assembly: GearSystemComponentAssembly::new(
                 GearActuatorId::GearDoorRight,
@@ -105,6 +121,7 @@ impl HydraulicGearSystem {
                     ProximityDetectorId::DownlockDoorRight1,
                     ProximityDetectorId::DownlockDoorRight2,
                 ],
+                gear_door_right_aerodynamic,
             ),
 
             // Nose gear has pull to retract system while main gears have push to retract
@@ -121,6 +138,7 @@ impl HydraulicGearSystem {
                     ProximityDetectorId::DownlockGearNose1,
                     ProximityDetectorId::DownlockGearNose2,
                 ],
+                gear_nose_aerodynamic,
             ),
             left_gear_assembly: GearSystemComponentAssembly::new(
                 GearActuatorId::GearLeft,
@@ -135,6 +153,7 @@ impl HydraulicGearSystem {
                     ProximityDetectorId::DownlockGearLeft1,
                     ProximityDetectorId::DownlockGearLeft2,
                 ],
+                gear_left_aerodynamic,
             ),
             right_gear_assembly: GearSystemComponentAssembly::new(
                 GearActuatorId::GearRight,
@@ -149,6 +168,7 @@ impl HydraulicGearSystem {
                     ProximityDetectorId::DownlockGearRight1,
                     ProximityDetectorId::DownlockGearRight2,
                 ],
+                gear_right_aerodynamic,
             ),
         }
     }
@@ -271,6 +291,11 @@ impl SimulationElement for HydraulicGearSystem {
             self.nose_door_assembly.position_normalized(),
         );
         writer.write(
+            &self.door_center_gear_slaved_position_id,
+            self.nose_gear_assembly.position_normalized(),
+        );
+
+        writer.write(
             &self.door_left_position_id,
             self.left_door_assembly.position_normalized(),
         );
@@ -376,6 +401,8 @@ struct GearSystemComponentAssembly {
     uplock_proximity_detectors: [ProximityDetector; 2],
     hydraulic_uplock: HydraulicLock,
     hydraulic_downlock: Option<HydraulicLock>,
+
+    aerodynamic_model: AerodynamicModel,
 }
 impl GearSystemComponentAssembly {
     const OPENED_PROXIMITY_DETECTOR_MOUNTING_POSITION_RATIO: f64 = 1.;
@@ -391,6 +418,7 @@ impl GearSystemComponentAssembly {
         has_hydraulic_downlock: bool,
         uplock_id: [ProximityDetectorId; 2],
         downlock_id: [ProximityDetectorId; 2],
+        aerodynamic_model: AerodynamicModel,
     ) -> Self {
         let mut obj = Self {
             component_id: id.into(),
@@ -431,6 +459,7 @@ impl GearSystemComponentAssembly {
             } else {
                 None
             },
+            aerodynamic_model,
         };
 
         obj.update_proximity_detectors();
@@ -448,6 +477,9 @@ impl GearSystemComponentAssembly {
         self.update_proximity_detectors();
 
         self.update_hydraulic_control(gear_system_controller, valves_controller, current_pressure);
+
+        self.aerodynamic_model
+            .update_body(context, self.hydraulic_assembly.body());
 
         self.hydraulic_assembly.update(
             context,
@@ -978,6 +1010,7 @@ mod tests {
                         ProximityDetectorId::DownlockDoorRight1,
                         ProximityDetectorId::DownlockDoorRight2,
                     ],
+                    gear_door_aero(),
                 ),
                 gear_assembly: GearSystemComponentAssembly::new(
                     GearActuatorId::GearNose,
@@ -992,6 +1025,7 @@ mod tests {
                         ProximityDetectorId::DownlockGearRight1,
                         ProximityDetectorId::DownlockGearRight2,
                     ],
+                    gear_aero(),
                 ),
 
                 component_controller: TestGearSystemController::new(),
@@ -1434,14 +1468,15 @@ mod tests {
             1,
             Length::new::<meter>(0.055),
             Length::new::<meter>(0.03),
-            VolumeRate::new::<gallon_per_second>(0.08),
+            VolumeRate::new::<gallon_per_second>(0.09),
             20000.,
             5000.,
             2000.,
-            28000.,
+            9000.,
             Duration::from_millis(100),
-            [0.5, 1., 1., 1., 1., 0.5],
-            [0., 0.2, 0.21, 0.79, 0.8, 1.],
+            [1., 1., 1., 1., 0.5, 0.5],
+            [0.5, 0.5, 1., 1., 1., 1.],
+            [0., 0.15, 0.16, 0.84, 0.85, 1.],
             DEFAULT_P_GAIN,
             DEFAULT_I_GAIN,
             DEFAULT_FORCE_GAIN,
@@ -1481,6 +1516,26 @@ mod tests {
         HydraulicLinearActuatorAssembly::new([actuator], rigid_body)
     }
 
+    fn gear_door_aero() -> AerodynamicModel {
+        AerodynamicModel::new(
+            &main_gear_door_right_body(true),
+            Some(Vector3::new(-1., 0., 0.)),
+            None,
+            None,
+            Ratio::new::<ratio>(1.0),
+        )
+    }
+
+    fn gear_aero() -> AerodynamicModel {
+        AerodynamicModel::new(
+            &main_gear_right_body(true),
+            Some(Vector3::new(-1., 0., 0.)),
+            None,
+            None,
+            Ratio::new::<ratio>(1.0),
+        )
+    }
+
     fn main_gear_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
         const DEFAULT_I_GAIN: f64 = 5.;
         const DEFAULT_P_GAIN: f64 = 0.05;
@@ -1491,14 +1546,15 @@ mod tests {
             1,
             Length::new::<meter>(0.145),
             Length::new::<meter>(0.105),
-            VolumeRate::new::<gallon_per_second>(0.15),
+            VolumeRate::new::<gallon_per_second>(0.17),
             800000.,
             15000.,
             50000.,
             1200000.,
             Duration::from_millis(100),
-            [1., 1., 1., 1., 1., 1.],
-            [0., 0.2, 0.21, 0.79, 0.8, 1.],
+            [1., 1., 1., 1., 0.5, 0.5],
+            [0.5, 0.5, 1., 1., 1., 1.],
+            [0., 0.1, 0.11, 0.89, 0.9, 1.],
             DEFAULT_P_GAIN,
             DEFAULT_I_GAIN,
             DEFAULT_FORCE_GAIN,
