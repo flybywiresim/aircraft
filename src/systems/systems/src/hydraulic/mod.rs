@@ -1630,7 +1630,6 @@ struct SpringPhysics {
     damping_constant: f64,
 
     last_length: f64,
-    damping_force: LowPassFilter<f64>,
 }
 impl SpringPhysics {
     fn new() -> Self {
@@ -1639,7 +1638,6 @@ impl SpringPhysics {
             damping_constant: 500.,
 
             last_length: 0.,
-            damping_force: LowPassFilter::new(Duration::from_millis(1)),
         }
     }
 
@@ -1657,17 +1655,16 @@ impl SpringPhysics {
 
             return Vector3::default();
         }
-        let spring_vector_normalized = spring_vector.normalize();
 
+        let spring_vector_normalized = spring_vector.normalize();
         let velocity = (spring_length - self.last_length) / context.delta_as_secs_f64();
 
         let k_force = spring_length * self.k_constant;
-        self.damping_force
-            .update(context.delta(), velocity * self.damping_constant);
+        let damping_force = velocity * self.damping_constant;
 
         self.last_length = spring_length;
 
-        (k_force + self.damping_force.output()) * spring_vector_normalized
+        (k_force + damping_force) * spring_vector_normalized
     }
 }
 
