@@ -45,6 +45,7 @@
 1. [MCDU] Fix padding of arc radii on F-PLN - @tracernz (Mike)
 1. [FMGC] Allow stringing of STARs with non-runway approaches - @tracernz (Mike)
 1. [SD] Improve COND page visuals, fix some visual bugs on the SD - @lukecologne (luke)
+1. [HYD] Aerodynamic forces applied on gear system - @Crocket63 (crocket)
 1. [HYD] Fixed Lgciu state machine when reverting gravity extension - @Crocket63 (crocket)
 1. [FMGC] Fix unnatural turn direction for path capture transition - @tracernz (Mike)
 1. [FMGC] Fix unnatural turn direction for course capture transition - @tracernz (Mike)
@@ -58,6 +59,8 @@
 1. [HYD] Randomised per actuator flow restrictions at plane init - @Crocket63 (crocket)
 1. [MCDU] Hide stored elements on A/C Status when there are none - @tracernz (Mike)
 1. [FMGC] Fix ident for CD legs - @tracernz (Mike)
+1. [HYD] Refactor plane accelerations and added filtering to handle ground collisions - @Crocket63 (crocket)
+1. [FMGC] Improve procedure loading performance - @tracernz (Mike)
 
 ## 0.8.0
 
