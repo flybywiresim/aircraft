@@ -181,6 +181,7 @@ impl A320CargoDoorFactory {
             1000000.,
             Duration::from_millis(100),
             [1., 1., 1., 1., 1., 1.],
+            [1., 1., 1., 1., 1., 1.],
             [0., 0.2, 0.21, 0.79, 0.8, 1.],
             Self::FLOW_CONTROL_PROPORTIONAL_GAIN,
             Self::FLOW_CONTROL_INTEGRAL_GAIN,
@@ -274,6 +275,7 @@ impl A320AileronFactory {
             5000.,
             randomized_damping,
             Duration::from_millis(300),
+            [1., 1., 1., 1., 1., 1.],
             [1., 1., 1., 1., 1., 1.],
             [0., 0.2, 0.21, 0.79, 0.8, 1.],
             Self::FLOW_CONTROL_PROPORTIONAL_GAIN,
@@ -387,6 +389,7 @@ impl A320SpoilerFactory {
             randomized_damping,
             Duration::from_millis(300),
             [1., 1., 1., 1., 1., 1.],
+            [1., 1., 1., 1., 1., 1.],
             [0., 0.2, 0.21, 0.79, 0.8, 1.],
             Self::FLOW_CONTROL_PROPORTIONAL_GAIN,
             Self::FLOW_CONTROL_INTEGRAL_GAIN,
@@ -496,6 +499,7 @@ impl A320ElevatorFactory {
             randomized_damping,
             Duration::from_millis(300),
             [1., 1., 1., 1., 1., 1.],
+            [1., 1., 1., 1., 1., 1.],
             [0., 0.2, 0.21, 0.79, 0.8, 1.],
             Self::FLOW_CONTROL_PROPORTIONAL_GAIN,
             Self::FLOW_CONTROL_INTEGRAL_GAIN,
@@ -593,6 +597,7 @@ impl A320RudderFactory {
             randomized_damping,
             Duration::from_millis(300),
             [1., 1., 1., 1., 1., 1.],
+            [1., 1., 1., 1., 1., 1.],
             [0., 0.2, 0.21, 0.79, 0.8, 1.],
             Self::FLOW_CONTROL_PROPORTIONAL_GAIN,
             Self::FLOW_CONTROL_INTEGRAL_GAIN,
@@ -674,6 +679,38 @@ impl A320RudderFactory {
 
 struct A320GearDoorFactory {}
 impl A320GearDoorFactory {
+    fn a320_nose_gear_door_aerodynamics() -> AerodynamicModel {
+        // Faking the single door by only considering right door aerodynamics.
+        // Will work with headwind, but will cause strange behaviour with massive crosswind.
+        AerodynamicModel::new(
+            &Self::a320_nose_gear_door_body(),
+            Some(Vector3::new(0., 1., 0.)),
+            Some(Vector3::new(0., -0.2, 1.)),
+            Some(Vector3::new(0., -1., -0.2)),
+            Ratio::new::<ratio>(0.7),
+        )
+    }
+
+    fn a320_left_gear_door_aerodynamics() -> AerodynamicModel {
+        AerodynamicModel::new(
+            &Self::a320_left_gear_door_body(),
+            Some(Vector3::new(0., 1., 0.)),
+            Some(Vector3::new(0., -0.1, 1.)),
+            Some(Vector3::new(0., 1., 0.1)),
+            Ratio::new::<ratio>(0.7),
+        )
+    }
+
+    fn a320_right_gear_door_aerodynamics() -> AerodynamicModel {
+        AerodynamicModel::new(
+            &Self::a320_right_gear_door_body(),
+            Some(Vector3::new(0., 1., 0.)),
+            Some(Vector3::new(0., -0.1, 1.)),
+            Some(Vector3::new(0., 1., 0.1)),
+            Ratio::new::<ratio>(0.7),
+        )
+    }
+
     fn a320_nose_gear_door_actuator(
         bounded_linear_length: &impl BoundedLinearLength,
     ) -> LinearActuator {
@@ -692,7 +729,8 @@ impl A320GearDoorFactory {
             2000.,
             28000.,
             Duration::from_millis(100),
-            [0.5, 0.5, 1., 1., 0.5, 0.5],
+            [1., 1., 1., 1., 0.5, 0.5],
+            [0.5, 0.5, 1., 1., 1., 1.],
             [0., 0.15, 0.16, 0.84, 0.85, 1.],
             FLOW_CONTROL_PROPORTIONAL_GAIN,
             FLOW_CONTROL_INTEGRAL_GAIN,
@@ -714,13 +752,14 @@ impl A320GearDoorFactory {
             Length::new::<meter>(0.055),
             Length::new::<meter>(0.03),
             VolumeRate::new::<gallon_per_second>(0.09),
-            20000.,
-            5000.,
+            200000.,
+            2500.,
             2000.,
-            9000.,
+            30000.,
             Duration::from_millis(100),
-            [0.5, 0.5, 1., 1., 0.5, 0.5],
-            [0., 0.15, 0.16, 0.84, 0.85, 1.],
+            [1., 1., 1., 1., 0.5, 0.5],
+            [0.5, 0.5, 1., 1., 1., 1.],
+            [0., 0.09, 0.1, 0.9, 0.91, 1.],
             FLOW_CONTROL_PROPORTIONAL_GAIN,
             FLOW_CONTROL_INTEGRAL_GAIN,
             FLOW_CONTROL_FORCE_GAIN,
@@ -775,8 +814,8 @@ impl A320GearDoorFactory {
     }
 
     fn a320_nose_gear_door_body() -> LinearActuatedRigidBodyOnHingeAxis {
-        let size = Vector3::new(-0.4, 0.02, 1.5);
-        let cg_offset = Vector3::new(0.5 * size[0], 0., 0.);
+        let size = Vector3::new(0.4, 0.02, 1.5);
+        let cg_offset = Vector3::new(-0.5 * size[0], 0., 0.);
 
         let control_arm = Vector3::new(-0.1465, 0., 0.);
         let anchor = Vector3::new(-0.1465, 0.40, 0.);
@@ -816,6 +855,36 @@ impl A320GearDoorFactory {
 
 struct A320GearFactory {}
 impl A320GearFactory {
+    fn a320_nose_gear_aerodynamics() -> AerodynamicModel {
+        AerodynamicModel::new(
+            &Self::a320_nose_gear_body(true),
+            Some(Vector3::new(0., 0., 1.)),
+            None,
+            None,
+            Ratio::new::<ratio>(0.25),
+        )
+    }
+
+    fn a320_right_gear_aerodynamics() -> AerodynamicModel {
+        AerodynamicModel::new(
+            &Self::a320_right_gear_body(true),
+            Some(Vector3::new(0., 0., 1.)),
+            Some(Vector3::new(0.3, 0., 1.)),
+            Some(Vector3::new(1., 0., -0.3)),
+            Ratio::new::<ratio>(0.7),
+        )
+    }
+
+    fn a320_left_gear_aerodynamics() -> AerodynamicModel {
+        AerodynamicModel::new(
+            &Self::a320_left_gear_body(true),
+            Some(Vector3::new(0., 0., 1.)),
+            Some(Vector3::new(-0.3, 0., 1.)),
+            Some(Vector3::new(-1., 0., -0.3)),
+            Ratio::new::<ratio>(0.7),
+        )
+    }
+
     fn a320_nose_gear_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
         const FLOW_CONTROL_INTEGRAL_GAIN: f64 = 5.;
         const FLOW_CONTROL_PROPORTIONAL_GAIN: f64 = 0.3;
@@ -830,9 +899,10 @@ impl A320GearFactory {
             800000.,
             150000.,
             50000.,
-            1000000.,
+            700000.,
             Duration::from_millis(100),
-            [0.5, 0.5, 1., 1., 0.5, 0.5],
+            [1., 1., 1., 1., 0.5, 0.5],
+            [0.5, 0.5, 1., 1., 1., 1.],
             [0., 0.1, 0.11, 0.89, 0.9, 1.],
             FLOW_CONTROL_PROPORTIONAL_GAIN,
             FLOW_CONTROL_INTEGRAL_GAIN,
@@ -857,8 +927,9 @@ impl A320GearFactory {
             50000.,
             2500000.,
             Duration::from_millis(100),
-            [0.5, 0.5, 1., 1., 0.5, 0.5],
-            [0., 0.1, 0.11, 0.89, 0.9, 1.],
+            [1., 1., 1., 1., 0.5, 0.5],
+            [0.2, 0.4, 1., 1., 1., 1.],
+            [0., 0.13, 0.17, 0.95, 0.96, 1.],
             FLOW_CONTROL_PROPORTIONAL_GAIN,
             FLOW_CONTROL_INTEGRAL_GAIN,
             FLOW_CONTROL_FORCE_GAIN,
@@ -982,6 +1053,12 @@ impl A320GearSystemFactory {
             A320GearFactory::a320_gear_assembly(GearWheel::NOSE, init_downlocked),
             A320GearFactory::a320_gear_assembly(GearWheel::LEFT, init_downlocked),
             A320GearFactory::a320_gear_assembly(GearWheel::RIGHT, init_downlocked),
+            A320GearDoorFactory::a320_left_gear_door_aerodynamics(),
+            A320GearDoorFactory::a320_right_gear_door_aerodynamics(),
+            A320GearDoorFactory::a320_nose_gear_door_aerodynamics(),
+            A320GearFactory::a320_left_gear_aerodynamics(),
+            A320GearFactory::a320_right_gear_aerodynamics(),
+            A320GearFactory::a320_nose_gear_aerodynamics(),
         )
     }
 }
@@ -1582,9 +1659,6 @@ impl A380Hydraulic {
             &self.aft_cargo_door_controller,
             self.yellow_circuit.system_section(),
         );
-
-        self.gear_system_gravity_extension_controller
-            .update(context);
 
         self.gear_system_hydraulic_controller.update(
             adirs,
@@ -4729,7 +4803,7 @@ impl ElevatorAssembly {
             ],
         );
 
-        self.position = self.hydraulic_assembly.actuator_position_normalized(0);
+        self.position = self.hydraulic_assembly.position_normalized();
     }
 }
 impl SimulationElement for ElevatorAssembly {
@@ -4847,9 +4921,7 @@ impl SpoilerElement {
             [current_pressure],
         );
 
-        // We return actuator position so it's consistent with demand
-        // Later we must decide who works in actuator position and surface position between demand and control
-        self.position = self.hydraulic_assembly.actuator_position_normalized(0);
+        self.position = self.hydraulic_assembly.position_normalized();
     }
 }
 impl SimulationElement for SpoilerElement {
@@ -5047,68 +5119,17 @@ impl SimulationElement for SpoilerComputer {
 }
 
 struct A320GravityExtension {
-    gear_gravity_extension_active_id: VariableIdentifier,
-    gear_gravity_extension_handle_is_turned_id: VariableIdentifier,
+    gear_gravity_extension_handle_position_id: VariableIdentifier,
 
     handle_angle: Angle,
-
-    is_extending_gear: bool,
-
-    is_turned: bool,
 }
 impl A320GravityExtension {
-    const INCREMENT_ANGLE_DEGREE_PER_SECOND: f64 = 220.;
-    const MAX_CRANK_HANDLE_ANGLE_DEGREE: f64 = 360. * 3.;
-    const MIN_CRANK_HANDLE_ANGLE_DEGREE: f64 = 0.;
-    const CRANK_HANDLE_ANGLE_MARGIN_AT_MAX_ROTATION_DEGREE: f64 = 0.1;
-
     fn new(context: &mut InitContext) -> Self {
         Self {
-            gear_gravity_extension_active_id: context
-                .get_identifier("GEAR_EMERGENCY_EXTENSION_ACTIVE".to_owned()),
-            gear_gravity_extension_handle_is_turned_id: context
-                .get_identifier("GEAR_EMERGENCY_EXTENSION_IS_TURNED".to_owned()),
+            gear_gravity_extension_handle_position_id: context
+                .get_identifier("GRAVITYGEAR_ROTATE_PCT".to_owned()),
 
             handle_angle: Angle::default(),
-            is_extending_gear: true,
-            is_turned: false,
-        }
-    }
-
-    fn update(&mut self, context: &UpdateContext) {
-        if self.is_turned {
-            if self.is_extending_gear {
-                self.handle_angle += Angle::new::<degree>(
-                    Self::INCREMENT_ANGLE_DEGREE_PER_SECOND * context.delta_as_secs_f64(),
-                );
-            } else {
-                self.handle_angle -= Angle::new::<degree>(
-                    Self::INCREMENT_ANGLE_DEGREE_PER_SECOND * context.delta_as_secs_f64(),
-                );
-            }
-        }
-
-        self.handle_angle = self
-            .handle_angle
-            .min(Angle::new::<degree>(
-                Self::MAX_CRANK_HANDLE_ANGLE_DEGREE
-                    + Self::CRANK_HANDLE_ANGLE_MARGIN_AT_MAX_ROTATION_DEGREE,
-            ))
-            .max(Angle::new::<degree>(
-                Self::MIN_CRANK_HANDLE_ANGLE_DEGREE
-                    - Self::CRANK_HANDLE_ANGLE_MARGIN_AT_MAX_ROTATION_DEGREE,
-            ));
-
-        if self.handle_angle.get::<degree>() > Self::MAX_CRANK_HANDLE_ANGLE_DEGREE
-            && !self.is_turned
-            && self.is_extending_gear
-        {
-            self.is_extending_gear = false;
-        } else if self.handle_angle.get::<degree>() < Self::MIN_CRANK_HANDLE_ANGLE_DEGREE
-            && !self.is_turned
-            && !self.is_extending_gear
-        {
-            self.is_extending_gear = true;
         }
     }
 }
@@ -5119,14 +5140,11 @@ impl GearGravityExtension for A320GravityExtension {
 }
 impl SimulationElement for A320GravityExtension {
     fn read(&mut self, reader: &mut SimulatorReader) {
-        self.is_turned = reader.read(&self.gear_gravity_extension_active_id);
-    }
+        let handle_percent: f64 = reader.read(&self.gear_gravity_extension_handle_position_id);
 
-    fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(
-            &self.gear_gravity_extension_handle_is_turned_id,
-            self.handle_angle.get::<degree>() < 360. && self.is_turned,
-        );
+        self.handle_angle = Angle::new::<degree>(handle_percent * 3.6)
+            .max(Angle::new::<degree>(0.))
+            .min(Angle::new::<degree>(360. * 3.));
     }
 }
 
@@ -5834,14 +5852,6 @@ mod tests {
                 self.read_by_name("A32NX_HYD_RAT_RPM")
             }
 
-            fn get_emergency_handle_number_of_turns(&self) -> u8 {
-                self.query(|a| {
-                    a.hydraulics
-                        .gear_system_gravity_extension_controller
-                        .extension_handle_number_of_turns()
-                })
-            }
-
             fn get_left_aileron_position(&mut self) -> Ratio {
                 Ratio::new::<ratio>(self.read_by_name("HYD_AIL_LEFT_DEFLECTION"))
             }
@@ -5923,6 +5933,13 @@ mod tests {
                 self.set_indicated_altitude(Length::new::<foot>(0.));
                 self.set_on_ground(true);
                 self.set_indicated_airspeed(Velocity::new::<knot>(5.));
+                self
+            }
+
+            fn on_the_ground_after_touchdown(mut self) -> Self {
+                self.set_indicated_altitude(Length::new::<foot>(0.));
+                self.set_on_ground(true);
+                self.set_indicated_airspeed(Velocity::new::<knot>(100.));
                 self
             }
 
@@ -6175,7 +6192,7 @@ mod tests {
                 self.read_by_name("RIGHT_SLATS_POSITION_PERCENT")
             }
 
-            fn get_real_gear_position(&mut self, wheel_id: GearWheel) -> f64 {
+            fn get_real_gear_position(&mut self, wheel_id: GearWheel) -> Ratio {
                 match wheel_id {
                     GearWheel::NOSE => self.read_by_name("GEAR_CENTER_POSITION"),
                     GearWheel::LEFT => self.read_by_name("GEAR_LEFT_POSITION"),
@@ -6183,7 +6200,7 @@ mod tests {
                 }
             }
 
-            fn get_real_gear_door_position(&mut self, wheel_id: GearWheel) -> f64 {
+            fn get_real_gear_door_position(&mut self, wheel_id: GearWheel) -> Ratio {
                 match wheel_id {
                     GearWheel::NOSE => self.read_by_name("GEAR_DOOR_CENTER_POSITION"),
                     GearWheel::LEFT => self.read_by_name("GEAR_DOOR_LEFT_POSITION"),
@@ -6192,27 +6209,30 @@ mod tests {
             }
 
             fn is_all_gears_really_up(&mut self) -> bool {
-                self.get_real_gear_position(GearWheel::NOSE) <= 0.
-                    && self.get_real_gear_position(GearWheel::LEFT) <= 0.
-                    && self.get_real_gear_position(GearWheel::RIGHT) <= 0.
+                self.get_real_gear_position(GearWheel::NOSE) <= Ratio::new::<ratio>(0.01)
+                    && self.get_real_gear_position(GearWheel::LEFT) <= Ratio::new::<ratio>(0.01)
+                    && self.get_real_gear_position(GearWheel::RIGHT) <= Ratio::new::<ratio>(0.01)
             }
 
             fn is_all_gears_really_down(&mut self) -> bool {
-                self.get_real_gear_position(GearWheel::NOSE) >= 1.
-                    && self.get_real_gear_position(GearWheel::LEFT) >= 1.
-                    && self.get_real_gear_position(GearWheel::RIGHT) >= 1.
+                self.get_real_gear_position(GearWheel::NOSE) >= Ratio::new::<ratio>(0.99)
+                    && self.get_real_gear_position(GearWheel::LEFT) >= Ratio::new::<ratio>(0.99)
+                    && self.get_real_gear_position(GearWheel::RIGHT) >= Ratio::new::<ratio>(0.99)
             }
 
             fn is_all_doors_really_up(&mut self) -> bool {
-                self.get_real_gear_door_position(GearWheel::NOSE) <= 0.
-                    && self.get_real_gear_door_position(GearWheel::LEFT) <= 0.
-                    && self.get_real_gear_door_position(GearWheel::RIGHT) <= 0.
+                self.get_real_gear_door_position(GearWheel::NOSE) <= Ratio::new::<ratio>(0.01)
+                    && self.get_real_gear_door_position(GearWheel::LEFT)
+                        <= Ratio::new::<ratio>(0.01)
+                    && self.get_real_gear_door_position(GearWheel::RIGHT)
+                        <= Ratio::new::<ratio>(0.01)
             }
 
             fn is_all_doors_really_down(&mut self) -> bool {
-                self.get_real_gear_door_position(GearWheel::NOSE) >= 0.9
-                    && self.get_real_gear_door_position(GearWheel::LEFT) >= 0.9
-                    && self.get_real_gear_door_position(GearWheel::RIGHT) >= 0.9
+                self.get_real_gear_door_position(GearWheel::NOSE) >= Ratio::new::<ratio>(0.9)
+                    && self.get_real_gear_door_position(GearWheel::LEFT) >= Ratio::new::<ratio>(0.9)
+                    && self.get_real_gear_door_position(GearWheel::RIGHT)
+                        >= Ratio::new::<ratio>(0.9)
             }
 
             fn ac_bus_1_lost(mut self) -> Self {
@@ -6419,38 +6439,13 @@ mod tests {
                 self
             }
 
-            fn set_gear_emergency_extension_active(mut self, is_active: bool) -> Self {
-                self.write_by_name("GEAR_EMERGENCY_EXTENSION_ACTIVE", is_active);
-                self
-            }
-
             fn turn_emergency_gear_extension_n_turns(mut self, number_of_turns: u8) -> Self {
-                let mut number_of_loops = 0;
-                while self.get_emergency_handle_number_of_turns() < number_of_turns {
-                    self = self
-                        .set_gear_emergency_extension_active(true)
-                        .run_waiting_for(Duration::from_secs_f64(0.5));
-                    number_of_loops += 1;
-                    assert!(number_of_loops < 50);
-                }
-
-                self = self.set_gear_emergency_extension_active(false);
-
+                self.write_by_name("GRAVITYGEAR_ROTATE_PCT", number_of_turns as f64 * 100.);
                 self
             }
 
             fn stow_emergency_gear_extension(mut self) -> Self {
-                let mut number_of_loops = 0;
-                while self.get_emergency_handle_number_of_turns() != 0 {
-                    self = self
-                        .set_gear_emergency_extension_active(true)
-                        .run_waiting_for(Duration::from_secs_f64(0.5));
-                    number_of_loops += 1;
-                    assert!(number_of_loops < 50);
-                }
-
-                self = self.set_gear_emergency_extension_active(false);
-
+                self.write_by_name("GRAVITYGEAR_ROTATE_PCT", 0.);
                 self
             }
         }
@@ -9306,7 +9301,7 @@ mod tests {
 
             test_bed = test_bed
                 .turn_emergency_gear_extension_n_turns(2)
-                .run_waiting_for(Duration::from_secs_f64(10.));
+                .run_waiting_for(Duration::from_secs_f64(25.));
 
             assert!(test_bed.is_all_doors_really_down());
         }
@@ -9389,7 +9384,7 @@ mod tests {
             test_bed = test_bed
                 .set_gear_lever_down()
                 .turn_emergency_gear_extension_n_turns(3)
-                .run_waiting_for(Duration::from_secs_f64(20.));
+                .run_waiting_for(Duration::from_secs_f64(30.));
             assert!(test_bed.is_all_gears_really_down());
             assert!(test_bed.is_all_doors_really_down());
 
@@ -9437,6 +9432,39 @@ mod tests {
                 .run_one_tick();
 
             assert!(test_bed.gear_system_state() == GearSystemState::AllUpLocked);
+        }
+
+        #[test]
+        fn gear_gravity_extension_reverted_has_correct_sequence() {
+            let mut test_bed = test_bed_in_flight_with()
+                .set_cold_dark_inputs()
+                .with_worst_case_ptu()
+                .in_flight()
+                .run_one_tick();
+
+            assert!(test_bed.gear_system_state() == GearSystemState::AllUpLocked);
+
+            test_bed = test_bed
+                .turn_emergency_gear_extension_n_turns(3)
+                .run_waiting_for(Duration::from_secs_f64(35.));
+
+            assert!(test_bed.is_all_doors_really_down());
+            assert!(test_bed.is_all_gears_really_down());
+
+            test_bed = test_bed
+                .stow_emergency_gear_extension()
+                .run_waiting_for(Duration::from_secs_f64(5.));
+
+            // After 5 seconds we expect gear being retracted and doors still down
+            assert!(test_bed.gear_system_state() == GearSystemState::Retracting);
+            assert!(test_bed.is_all_doors_really_down());
+            assert!(!test_bed.is_all_gears_really_down());
+
+            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(15.));
+
+            assert!(test_bed.gear_system_state() == GearSystemState::AllUpLocked);
+            assert!(test_bed.is_all_doors_really_up());
+            assert!(test_bed.is_all_gears_really_up());
         }
 
         #[test]
@@ -9503,6 +9531,32 @@ mod tests {
             // Check elevators did stay drooped down after valve reopening
             assert!(test_bed.get_left_elevator_position().get::<ratio>() < 0.1);
             assert!(test_bed.get_right_elevator_position().get::<ratio>() < 0.1);
+        }
+
+        #[test]
+        fn brakes_on_ground_work_after_emergency_extension() {
+            let mut test_bed = test_bed_in_flight_with()
+                .set_cold_dark_inputs()
+                .in_flight()
+                .set_gear_lever_up()
+                .run_waiting_for(Duration::from_secs_f64(1.));
+
+            assert!(test_bed.gear_system_state() == GearSystemState::AllUpLocked);
+
+            test_bed = test_bed
+                .turn_emergency_gear_extension_n_turns(3)
+                .run_waiting_for(Duration::from_secs_f64(30.));
+            assert!(test_bed.is_all_gears_really_down());
+            assert!(test_bed.is_all_doors_really_down());
+
+            test_bed = test_bed
+                .on_the_ground_after_touchdown()
+                .set_left_brake(Ratio::new::<ratio>(1.))
+                .set_right_brake(Ratio::new::<ratio>(1.))
+                .run_waiting_for(Duration::from_secs_f64(2.));
+
+            assert!(test_bed.get_brake_left_green_pressure() > Pressure::new::<psi>(500.));
+            assert!(test_bed.get_brake_right_green_pressure() > Pressure::new::<psi>(500.));
         }
     }
 }
