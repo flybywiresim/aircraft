@@ -2085,6 +2085,7 @@ impl A380Hydraulic {
             overhead_panel,
             &self.yellow_electric_pump_a_controller,
         );
+
         self.green_circuit.update(
             context,
             &mut vec![
@@ -2095,7 +2096,7 @@ impl A380Hydraulic {
                 &mut self.green_electric_pump_a,
                 &mut self.green_electric_pump_b,
             ],
-            Some(&mut self.green_electric_pump_a),
+            None,
             None,
             &self.green_circuit_controller,
             reservoir_pneumatics.green_reservoir_pressure(),
@@ -2117,7 +2118,7 @@ impl A380Hydraulic {
                 &mut self.yellow_electric_pump_a,
                 &mut self.yellow_electric_pump_b,
             ],
-            Some(&mut self.yellow_electric_pump_a),
+            None,
             None,
             &self.yellow_circuit_controller,
             reservoir_pneumatics.yellow_reservoir_pressure(),
