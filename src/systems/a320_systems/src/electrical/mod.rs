@@ -2400,7 +2400,6 @@ mod a320_electrical_circuit_tests {
                 &self.apu_overhead,
                 &self.engine_fire_push_buttons,
                 [&self.engines[0], &self.engines[1]],
-                &self.hydraulics,
                 &TestLandingGear::new(),
             );
             self.overhead

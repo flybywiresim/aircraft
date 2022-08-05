@@ -1473,7 +1473,7 @@ impl A380Hydraulic {
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         lgcius: &LandingGearControlInterfaceUnitSet,
         rat_and_emer_gen_man_on: &impl EmergencyElectricalRatPushButton,
-        emergency_elec: &(impl EmergencyElectricalState + EmergencyGeneratorPower),
+        emergency_elec: &impl EmergencyElectricalState,
         reservoir_pneumatics: &impl ReservoirAirPressure,
         adirs: &impl AdirsDiscreteOutputs,
     ) {
@@ -1643,7 +1643,7 @@ impl A380Hydraulic {
         &mut self,
         context: &UpdateContext,
         rat_and_emer_gen_man_on: &impl EmergencyElectricalRatPushButton,
-        emergency_elec: &(impl EmergencyElectricalState + EmergencyGeneratorPower),
+        emergency_elec: &impl EmergencyElectricalState,
         lgciu1: &impl LgciuInterface,
         lgciu2: &impl LgciuInterface,
         adirs: &impl AdirsDiscreteOutputs,
@@ -2092,6 +2092,8 @@ impl A380Hydraulic {
                 &mut self.engine_driven_pump_1b,
                 &mut self.engine_driven_pump_2a,
                 &mut self.engine_driven_pump_2b,
+                &mut self.green_electric_pump_a,
+                &mut self.green_electric_pump_b,
             ],
             Some(&mut self.green_electric_pump_a),
             None,
@@ -2112,6 +2114,8 @@ impl A380Hydraulic {
                 &mut self.engine_driven_pump_3b,
                 &mut self.engine_driven_pump_4a,
                 &mut self.engine_driven_pump_4b,
+                &mut self.yellow_electric_pump_a,
+                &mut self.yellow_electric_pump_b,
             ],
             Some(&mut self.yellow_electric_pump_a),
             None,
@@ -2390,7 +2394,7 @@ impl HydraulicCircuitController for A380HydraulicCircuitController {
         } else if fire_valve_index == 3 || fire_valve_index == 4 {
             self.should_open_fire_shutoff_valve[1]
         } else {
-            panic!("ERROR IN FIRE VALVE INDEX REQUEST")
+            true
         }
     }
 
@@ -5346,34 +5350,22 @@ mod tests {
         struct A320TestElectrical {
             airspeed: Velocity,
             all_ac_lost: bool,
-            emergency_generator: TestGenerator,
         }
         impl A320TestElectrical {
             pub fn new() -> Self {
                 A320TestElectrical {
                     airspeed: Velocity::new::<knot>(100.),
                     all_ac_lost: false,
-                    emergency_generator: TestGenerator::default(),
                 }
             }
 
-            fn update(
-                &mut self,
-                gcu: &impl HydraulicGeneratorControlUnit,
-                context: &UpdateContext,
-            ) {
+            fn update(&mut self, context: &UpdateContext) {
                 self.airspeed = context.indicated_airspeed();
-                self.emergency_generator.update(gcu);
             }
         }
         impl EmergencyElectricalState for A320TestElectrical {
             fn is_in_emergency_elec(&self) -> bool {
                 self.all_ac_lost && self.airspeed >= Velocity::new::<knot>(100.)
-            }
-        }
-        impl EmergencyGeneratorPower for A320TestElectrical {
-            fn generated_power(&self) -> Power {
-                self.emergency_generator.generated_power()
             }
         }
         impl SimulationElement for A320TestElectrical {
@@ -5484,14 +5476,6 @@ mod tests {
                     is_dc_hot_1_powered: true,
                     is_dc_hot_2_powered: true,
                 }
-            }
-
-            fn is_rat_commanded_to_deploy(&self) -> bool {
-                self.hydraulics.ram_air_turbine_controller.should_deploy()
-            }
-
-            fn is_emergency_gen_at_nominal_speed(&self) -> bool {
-                self.hydraulics.gcu.is_at_nominal_speed()
             }
 
             fn is_green_edp_commanded_on(&self) -> bool {
@@ -5641,7 +5625,7 @@ mod tests {
             }
 
             fn update_after_power_distribution(&mut self, context: &UpdateContext) {
-                self.electrical.update(&self.hydraulics.gcu, context);
+                self.electrical.update(context);
 
                 self.adirus.update(context);
 
@@ -5874,14 +5858,6 @@ mod tests {
 
             fn get_nose_steering_ratio(&mut self) -> Ratio {
                 Ratio::new::<ratio>(self.read_by_name("NOSE_WHEEL_POSITION_RATIO"))
-            }
-
-            fn rat_deploy_commanded(&self) -> bool {
-                self.query(|a| a.is_rat_commanded_to_deploy())
-            }
-
-            fn is_emergency_gen_at_nominal_speed(&self) -> bool {
-                self.query(|a| a.is_emergency_gen_at_nominal_speed())
             }
 
             fn is_fire_valve_eng1_closed(&mut self) -> bool {
@@ -8394,78 +8370,6 @@ mod tests {
         }
 
         #[test]
-        fn rat_does_not_deploy_on_ground_at_eng_off() {
-            let mut test_bed = test_bed_on_ground_with()
-                .set_cold_dark_inputs()
-                .on_the_ground()
-                .start_eng1(Ratio::new::<percent>(80.))
-                .start_eng2(Ratio::new::<percent>(80.))
-                .run_waiting_for(Duration::from_secs(10));
-
-            assert!(test_bed.get_rat_position() <= 0.);
-            assert!(test_bed.get_rat_rpm() <= 1.);
-
-            test_bed = test_bed
-                .ac_bus_1_lost()
-                .ac_bus_2_lost()
-                .run_waiting_for(Duration::from_secs(2));
-
-            // RAT has not deployed
-            assert!(test_bed.get_rat_position() <= 0.);
-            assert!(test_bed.get_rat_rpm() <= 1.);
-        }
-
-        #[test]
-        fn rat_does_not_deploy_when_sim_not_ready() {
-            let mut test_bed = test_bed_on_ground_with()
-                .set_cold_dark_inputs()
-                .in_flight()
-                .sim_not_ready()
-                .start_eng1(Ratio::new::<percent>(80.))
-                .start_eng2(Ratio::new::<percent>(80.))
-                .run_waiting_for(Duration::from_secs(10));
-
-            // AC off, sim not ready -> RAT should not deploy
-            test_bed = test_bed
-                .ac_bus_1_lost()
-                .ac_bus_2_lost()
-                .run_waiting_for(Duration::from_secs(2));
-
-            assert!(!test_bed.rat_deploy_commanded());
-
-            // AC off, sim ready -> RAT should deploy
-            test_bed = test_bed.sim_ready().run_waiting_for(Duration::from_secs(2));
-
-            assert!(test_bed.rat_deploy_commanded());
-        }
-
-        #[test]
-        fn rat_deploys_on_both_ac_lost() {
-            let mut test_bed = test_bed_on_ground_with()
-                .set_cold_dark_inputs()
-                .in_flight()
-                .start_eng1(Ratio::new::<percent>(80.))
-                .start_eng2(Ratio::new::<percent>(80.))
-                .run_waiting_for(Duration::from_secs(10));
-
-            assert!(!test_bed.rat_deploy_commanded());
-
-            test_bed = test_bed
-                .ac_bus_1_lost()
-                .run_waiting_for(Duration::from_secs(2));
-
-            assert!(!test_bed.rat_deploy_commanded());
-
-            // Now all AC off should deploy RAT in flight
-            test_bed = test_bed
-                .ac_bus_1_lost()
-                .ac_bus_2_lost()
-                .run_waiting_for(Duration::from_secs(2));
-
-            assert!(test_bed.rat_deploy_commanded());
-        }
-
-        #[test]
         fn yellow_epump_unavailable_if_unpowered() {
             let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
@@ -8591,32 +8495,6 @@ mod tests {
 
             assert!(!test_bed.is_slats_moving());
             assert!(!test_bed.is_flaps_moving());
-        }
-
-        #[test]
-        fn emergency_gen_is_started_on_both_ac_lost_in_flight() {
-            let mut test_bed = test_bed_on_ground_with()
-                .set_cold_dark_inputs()
-                .in_flight()
-                .start_eng1(Ratio::new::<percent>(80.))
-                .start_eng2(Ratio::new::<percent>(80.))
-                .run_waiting_for(Duration::from_secs(10));
-
-            assert!(!test_bed.is_emergency_gen_at_nominal_speed());
-
-            test_bed = test_bed
-                .ac_bus_1_lost()
-                .run_waiting_for(Duration::from_secs(2));
-
-            assert!(!test_bed.is_emergency_gen_at_nominal_speed());
-
-            // Now all AC off should deploy RAT in flight
-            test_bed = test_bed
-                .ac_bus_1_lost()
-                .ac_bus_2_lost()
-                .run_waiting_for(Duration::from_secs(8));
-
-            assert!(test_bed.is_emergency_gen_at_nominal_speed());
         }
 
         #[test]
@@ -9438,7 +9316,6 @@ mod tests {
         fn gear_gravity_extension_reverted_has_correct_sequence() {
             let mut test_bed = test_bed_in_flight_with()
                 .set_cold_dark_inputs()
-                .with_worst_case_ptu()
                 .in_flight()
                 .run_one_tick();
 
