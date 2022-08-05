@@ -821,7 +821,7 @@ impl A320GearDoorFactory {
             Duration::from_millis(100),
             [1., 1., 1., 1., 0.5, 0.5],
             [0.5, 0.5, 1., 1., 1., 1.],
-            [0., 0.09, 0.1, 0.9, 0.91, 1.],
+            [0., 0.07, 0.08, 0.9, 0.91, 1.],
             FLOW_CONTROL_PROPORTIONAL_GAIN,
             FLOW_CONTROL_INTEGRAL_GAIN,
             FLOW_CONTROL_FORCE_GAIN,
@@ -952,7 +952,7 @@ impl A320GearFactory {
         const FLOW_CONTROL_PROPORTIONAL_GAIN: f64 = 0.3;
         const FLOW_CONTROL_FORCE_GAIN: f64 = 250000.;
 
-        const MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING: f64 = 700000.;
+        const MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING: f64 = 900000.;
         const MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT: f64 = 3.;
 
         let actuator_characteristics = LinearActuatorCharacteristics::new(
