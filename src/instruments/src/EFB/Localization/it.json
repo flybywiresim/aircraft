@@ -20,7 +20,7 @@
     "ResetAll": "Ripristina Tutto",
     "ResetChecklist": "Ripristina Checklist",
     "TheLastChecklistIsComplete": "L'ultima checklist è completa",
-    "ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted": "Ci sono campi rimanenti per l'autocompilazione della checklist, che non sono ancora stati completati",
+    "ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted": "Ci sono campi rimanenti per l'autocompletamento della checklist, che non sono ancora stati completati",
     "Title": "Checklist"
   },
   "Dashboard": {
@@ -136,20 +136,20 @@
     },
     "Payload": {
       "BoardingTime": "Durata Imbarco",
-      "Cargo": "Cargo",
-      "Current": "Current",
-      "Passengers": "Passengers",
-      "Planned": "Planned",
+      "Cargo": "Carico",
+      "Current": "Corrente",
+      "Passengers": "Passeggeri",
+      "Planned": "Pianificato",
       "TT": {
-        "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Aircraft Must Be On the Ground and Have Engines Shutdown to Change Boarding Duration",
-        "FillPayloadFromSimbrief": "Fill Payload Information from Simbrief",
-        "MaxCargo": "Max Cargo",
+        "AircraftMustBeColdAndDarkToChangeBoardingTimes": "L'Aeromobile Deve Essere A Terra e Avere i Motori Spenti Per Modificare la Durata dell'Imbarco",
+        "FillPayloadFromSimbrief": "Inserisci Payload da SimBrief",
+        "MaxCargo": "Carico Massimo",
         "MaxPassengers": "Passeggeri Massimi",
-        "MaxZFW": "Maximum ZFW",
-        "MaxZFWCG": "Maximum ZFWCG",
-        "PerPaxBagWeight": "Per Passenger Bag Weight",
-        "PerPaxWeight": "Per Passenger Weight",
-        "StartBoarding": "Begin Boarding"
+        "MaxZFW": "ZFW Massimo",
+        "MaxZFWCG": "ZFWCG Massimo",
+        "PerPaxBagWeight": "Peso Bagaglio per Passeggero",
+        "PerPaxWeight": "Peso per Passeggero",
+        "StartBoarding": "Inizia Imbarco"
       },
       "Title": "Payload",
       "ZFW": "ZFW",
@@ -163,7 +163,7 @@
       "CateringTruck": "Veicolo Catering",
       "Cones": "Coni di Sicurezza",
       "DoorAft": "Porta Post.",
-      "DoorCargo": "Porta Cargo",
+      "DoorCargo": "Porta Carico",
       "DoorFwd": "Porta Ant.",
       "ExternalPower": "Unità di Alimentazione Esterna",
       "FuelTruck": "Veicolo Carburante",
@@ -281,7 +281,7 @@
       "RunwaySlope": "Pendenza Pista",
       "TT": {
         "YouNeedToEnterAnIcaoCodeInOrderToMakeAMetarRequest": "Devi inserire un codice ICAO in modo da effettuare una richiesta METAR",
-        "YouNeedToLoadSimBriefDataInOrderToAutofillData": "Devi caricare dati SimBrief per l'inserimento automatico dei dati"
+        "YouNeedToLoadSimBriefDataInOrderToAutofillData": "Devi caricare i dati SimBrief per l'inserimento automatico dei dati"
       },
       "Temperature": "Temperatura",
       "Title": "Atterraggio",
@@ -469,7 +469,7 @@
     "Real": "Reale",
     "Realism": {
       "AdirsAlignTime": "Durata Allineamento ADIRS",
-      "AutofillChecklists": "Autocompila Checklist",
+      "AutofillChecklists": "Autocompleta Checklist",
       "BoardingTime": "Durata Imbarco",
       "DmcSelfTestTime": "Durata Autotest DMC",
       "HomeCockpitMode": "Modalità Home Cockpit",
@@ -487,6 +487,7 @@
       "ConesEnabled": "Coni di Sicurezza",
       "DefaultBarometerUnit": "Unità Barometro Predefinita",
       "DynamicRegistrationDecal": "Decalco Registrazione Dinamico",
+      "EnableSimBridge": "Abilita Connessione Server SimBridge (Disattivazione automatica dopo 5 minuti in caso di connessione non riuscita)",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Abilita Connessione Server MCDU (Disattivazione automatica dopo 5 minuti in caso di connessione non riuscita)",
       "ExternalMcduServerPort": "Porta Esterna Server MCDU",
       "Hpa": "hPa",
@@ -495,6 +496,7 @@
       "None": "No",
       "Off": "Off",
       "Save": "Sì",
+      "SimBridgePort": "Porta Esterna Server SimBridge",
       "SyncMsfsFlightPlan": "Sincronizza Piano di Volo MSFS",
       "ThrottleDetents": "Posizioni Manetta",
       "Title": "Opzioni Sim",

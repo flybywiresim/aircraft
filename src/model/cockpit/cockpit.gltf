@@ -1,0 +1,1992 @@
+{
+    "accessors": [
+        {
+            "bufferView": 0,
+            "componentType": 5126,
+            "count": 2728,
+            "min": [
+                -1.7160303592681885,
+                0.420204222202301,
+                0.06134706735610962
+            ],
+            "max": [
+                1.326724648475647,
+                1.9099429845809937,
+                0.9249697923660278
+            ],
+            "type": "VEC3",
+            "name": "x0_COCKPIT_BACK01_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 12,
+            "componentType": 5120,
+            "count": 2728,
+            "type": "VEC4",
+            "name": "x0_COCKPIT_BACK01_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 16,
+            "componentType": 5120,
+            "count": 2728,
+            "type": "VEC4",
+            "name": "x0_COCKPIT_BACK01_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 20,
+            "componentType": 5122,
+            "count": 2728,
+            "type": "VEC2",
+            "name": "x0_COCKPIT_BACK01_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 24,
+            "componentType": 5122,
+            "count": 2728,
+            "type": "VEC2",
+            "name": "x0_COCKPIT_BACK01_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 28,
+            "componentType": 5123,
+            "count": 2728,
+            "type": "VEC4",
+            "name": "x0_COCKPIT_BACK01_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "componentType": 5123,
+            "count": 9156,
+            "type": "SCALAR",
+            "name": "x0_COCKPIT_BACK01_indices#0"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 98208,
+            "componentType": 5126,
+            "count": 4154,
+            "min": [
+                -1.7529988288879395,
+                -0.06217685341835022,
+                0.27546700835227966
+            ],
+            "max": [
+                1.0812934637069702,
+                2.0699973106384277,
+                1.6066025495529175
+            ],
+            "type": "VEC3",
+            "name": "x0_COCKPIT_BACK02_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 98220,
+            "componentType": 5120,
+            "count": 4154,
+            "type": "VEC4",
+            "name": "x0_COCKPIT_BACK02_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 98224,
+            "componentType": 5120,
+            "count": 4154,
+            "type": "VEC4",
+            "name": "x0_COCKPIT_BACK02_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 98228,
+            "componentType": 5122,
+            "count": 4154,
+            "type": "VEC2",
+            "name": "x0_COCKPIT_BACK02_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 98232,
+            "componentType": 5122,
+            "count": 4154,
+            "type": "VEC2",
+            "name": "x0_COCKPIT_BACK02_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 98236,
+            "componentType": 5123,
+            "count": 4154,
+            "type": "VEC4",
+            "name": "x0_COCKPIT_BACK02_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 18312,
+            "componentType": 5123,
+            "count": 11061,
+            "type": "SCALAR",
+            "name": "x0_COCKPIT_BACK02_indices#0"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 247752,
+            "componentType": 5126,
+            "count": 1984,
+            "min": [
+                -1.6846565008163452,
+                -0.06534881889820099,
+                -1.5508090257644653
+            ],
+            "max": [
+                1.299214482307434,
+                2.0375022888183594,
+                1.5945782661437988
+            ],
+            "type": "VEC3",
+            "name": "x0_COCKPIT_DECALSALPHA_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 247764,
+            "componentType": 5120,
+            "count": 1984,
+            "type": "VEC4",
+            "name": "x0_COCKPIT_DECALSALPHA_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 247768,
+            "componentType": 5120,
+            "count": 1984,
+            "type": "VEC4",
+            "name": "x0_COCKPIT_DECALSALPHA_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 247772,
+            "componentType": 5122,
+            "count": 1984,
+            "type": "VEC2",
+            "name": "x0_COCKPIT_DECALSALPHA_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 247776,
+            "componentType": 5122,
+            "count": 1984,
+            "type": "VEC2",
+            "name": "x0_COCKPIT_DECALSALPHA_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 247780,
+            "componentType": 5123,
+            "count": 1984,
+            "type": "VEC4",
+            "name": "x0_COCKPIT_DECALSALPHA_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 40434,
+            "componentType": 5123,
+            "count": 3684,
+            "type": "SCALAR",
+            "name": "x0_COCKPIT_DECALSALPHA_indices#0"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 319176,
+            "componentType": 5126,
+            "count": 3478,
+            "min": [
+                -1.315739393234253,
+                1.0269562005996704,
+                -1.8179785013198853
+            ],
+            "max": [
+                0.9477484822273254,
+                2.067660331726074,
+                0.7846047878265381
+            ],
+            "type": "VEC3",
+            "name": "x0_COCKPIT_FLOOR_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 319188,
+            "componentType": 5120,
+            "count": 3478,
+            "type": "VEC4",
+            "name": "x0_COCKPIT_FLOOR_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 319192,
+            "componentType": 5120,
+            "count": 3478,
+            "type": "VEC4",
+            "name": "x0_COCKPIT_FLOOR_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 319196,
+            "componentType": 5122,
+            "count": 3478,
+            "type": "VEC2",
+            "name": "x0_COCKPIT_FLOOR_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 319200,
+            "componentType": 5122,
+            "count": 3478,
+            "type": "VEC2",
+            "name": "x0_COCKPIT_FLOOR_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 319204,
+            "componentType": 5123,
+            "count": 3478,
+            "type": "VEC4",
+            "name": "x0_COCKPIT_FLOOR_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 47802,
+            "componentType": 5123,
+            "count": 12294,
+            "type": "SCALAR",
+            "name": "x0_COCKPIT_FLOOR_indices#0"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 444384,
+            "componentType": 5126,
+            "count": 120,
+            "min": [
+                -1.0467132329940796,
+                1.0016862154006958,
+                -0.3815113604068756
+            ],
+            "max": [
+                0.6788986325263977,
+                1.018474817276001,
+                -0.3444666564464569
+            ],
+            "type": "VEC3",
+            "name": "x0_COCKPIT_INPUTS01_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 444396,
+            "componentType": 5120,
+            "count": 120,
+            "type": "VEC4",
+            "name": "x0_COCKPIT_INPUTS01_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 444400,
+            "componentType": 5120,
+            "count": 120,
+            "type": "VEC4",
+            "name": "x0_COCKPIT_INPUTS01_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 444404,
+            "componentType": 5122,
+            "count": 120,
+            "type": "VEC2",
+            "name": "x0_COCKPIT_INPUTS01_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 444408,
+            "componentType": 5122,
+            "count": 120,
+            "type": "VEC2",
+            "name": "x0_COCKPIT_INPUTS01_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 444412,
+            "componentType": 5123,
+            "count": 120,
+            "type": "VEC4",
+            "name": "x0_COCKPIT_INPUTS01_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 72390,
+            "componentType": 5123,
+            "count": 264,
+            "type": "SCALAR",
+            "name": "x0_COCKPIT_INPUTS01_indices#0"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 448704,
+            "componentType": 5126,
+            "count": 32868,
+            "min": [
+                -0.5957156419754028,
+                -0.038016363978385925,
+                -0.43538352847099304
+            ],
+            "max": [
+                0.22822688519954681,
+                0.032261695712804794,
+                0.863524317741394
+            ],
+            "type": "VEC3",
+            "name": "x0_COCKPIT_OVERHEAD_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 448716,
+            "componentType": 5120,
+            "count": 32868,
+            "type": "VEC4",
+            "name": "x0_COCKPIT_OVERHEAD_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 448720,
+            "componentType": 5120,
+            "count": 32868,
+            "type": "VEC4",
+            "name": "x0_COCKPIT_OVERHEAD_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 448724,
+            "componentType": 5122,
+            "count": 32868,
+            "type": "VEC2",
+            "name": "x0_COCKPIT_OVERHEAD_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 448728,
+            "componentType": 5122,
+            "count": 32868,
+            "type": "VEC2",
+            "name": "x0_COCKPIT_OVERHEAD_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 448732,
+            "componentType": 5123,
+            "count": 32868,
+            "type": "VEC4",
+            "name": "x0_COCKPIT_OVERHEAD_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 72918,
+            "componentType": 5123,
+            "count": 115020,
+            "type": "SCALAR",
+            "name": "x0_COCKPIT_OVERHEAD_indices#0"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 1631952,
+            "componentType": 5126,
+            "count": 4448,
+            "min": [
+                -1.0900219678878784,
+                0.6707103848457336,
+                -1.6970192193984985
+            ],
+            "max": [
+                0.7220311164855957,
+                1.2384802103042603,
+                -1.2057383060455322
+            ],
+            "type": "VEC3",
+            "name": "x0_COCKPIT_PEDALS_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 1631964,
+            "componentType": 5120,
+            "count": 4448,
+            "type": "VEC4",
+            "name": "x0_COCKPIT_PEDALS_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 1631968,
+            "componentType": 5120,
+            "count": 4448,
+            "type": "VEC4",
+            "name": "x0_COCKPIT_PEDALS_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 1631972,
+            "componentType": 5122,
+            "count": 4448,
+            "type": "VEC2",
+            "name": "x0_COCKPIT_PEDALS_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 1631976,
+            "componentType": 5122,
+            "count": 4448,
+            "type": "VEC2",
+            "name": "x0_COCKPIT_PEDALS_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 1631980,
+            "componentType": 5123,
+            "count": 4448,
+            "type": "VEC4",
+            "name": "x0_COCKPIT_PEDALS_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 302958,
+            "componentType": 5123,
+            "count": 17316,
+            "type": "SCALAR",
+            "name": "x0_COCKPIT_PEDALS_indices#0"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 1792080,
+            "componentType": 5126,
+            "count": 535,
+            "min": [
+                -1.2770382165908813,
+                0.30345475673675537,
+                -1.187746286392212
+            ],
+            "max": [
+                0.6767993569374084,
+                1.4600638151168823,
+                1.0253498554229736
+            ],
+            "type": "VEC3",
+            "name": "x0_COCKPIT_PLASTICGLASS_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 1792092,
+            "componentType": 5120,
+            "count": 535,
+            "type": "VEC4",
+            "name": "x0_COCKPIT_PLASTICGLASS_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 1792096,
+            "componentType": 5120,
+            "count": 535,
+            "type": "VEC4",
+            "name": "x0_COCKPIT_PLASTICGLASS_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 1792100,
+            "componentType": 5122,
+            "count": 535,
+            "type": "VEC2",
+            "name": "x0_COCKPIT_PLASTICGLASS_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 1792104,
+            "componentType": 5122,
+            "count": 535,
+            "type": "VEC2",
+            "name": "x0_COCKPIT_PLASTICGLASS_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 1792108,
+            "componentType": 5123,
+            "count": 535,
+            "type": "VEC4",
+            "name": "x0_COCKPIT_PLASTICGLASS_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 337590,
+            "componentType": 5123,
+            "count": 1881,
+            "type": "SCALAR",
+            "name": "x0_COCKPIT_PLASTICGLASS_indices#0"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 1811340,
+            "componentType": 5126,
+            "count": 7740,
+            "min": [
+                -1.1497234106063843,
+                0.5126140713691711,
+                -0.7016947269439697
+            ],
+            "max": [
+                0.7817324995994568,
+                1.6532886028289795,
+                0.38779494166374207
+            ],
+            "type": "VEC3",
+            "name": "x0_COCKPIT_SEATS_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 1811352,
+            "componentType": 5120,
+            "count": 7740,
+            "type": "VEC4",
+            "name": "x0_COCKPIT_SEATS_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 1811356,
+            "componentType": 5120,
+            "count": 7740,
+            "type": "VEC4",
+            "name": "x0_COCKPIT_SEATS_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 1811360,
+            "componentType": 5122,
+            "count": 7740,
+            "type": "VEC2",
+            "name": "x0_COCKPIT_SEATS_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 1811364,
+            "componentType": 5122,
+            "count": 7740,
+            "type": "VEC2",
+            "name": "x0_COCKPIT_SEATS_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 1811368,
+            "componentType": 5123,
+            "count": 7740,
+            "type": "VEC4",
+            "name": "x0_COCKPIT_SEATS_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 341352,
+            "componentType": 5123,
+            "count": 28914,
+            "type": "SCALAR",
+            "name": "x0_COCKPIT_SEATS_indices#0"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 2089980,
+            "componentType": 5126,
+            "count": 10329,
+            "min": [
+                -1.7220906019210815,
+                0.5720301270484924,
+                -1.811937689781189
+            ],
+            "max": [
+                1.3319990634918213,
+                1.9113353490829468,
+                0.5925940275192261
+            ],
+            "type": "VEC3",
+            "name": "x0_COCKPIT_SIDEPANELS_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 2089992,
+            "componentType": 5120,
+            "count": 10329,
+            "type": "VEC4",
+            "name": "x0_COCKPIT_SIDEPANELS_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 2089996,
+            "componentType": 5120,
+            "count": 10329,
+            "type": "VEC4",
+            "name": "x0_COCKPIT_SIDEPANELS_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 2090000,
+            "componentType": 5122,
+            "count": 10329,
+            "type": "VEC2",
+            "name": "x0_COCKPIT_SIDEPANELS_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 2090004,
+            "componentType": 5122,
+            "count": 10329,
+            "type": "VEC2",
+            "name": "x0_COCKPIT_SIDEPANELS_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 2090008,
+            "componentType": 5123,
+            "count": 10329,
+            "type": "VEC4",
+            "name": "x0_COCKPIT_SIDEPANELS_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 399180,
+            "componentType": 5123,
+            "count": 38946,
+            "type": "SCALAR",
+            "name": "x0_COCKPIT_SIDEPANELS_indices#0"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 2461824,
+            "componentType": 5126,
+            "count": 9901,
+            "min": [
+                -1.7248035669326782,
+                0.09337909519672394,
+                -1.0417966842651367
+            ],
+            "max": [
+                1.3417145013809204,
+                1.2637892961502075,
+                0.6432894468307495
+            ],
+            "type": "VEC3",
+            "name": "x0_COCKPIT_SIDETOP_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 2461836,
+            "componentType": 5120,
+            "count": 9901,
+            "type": "VEC4",
+            "name": "x0_COCKPIT_SIDETOP_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 2461840,
+            "componentType": 5120,
+            "count": 9901,
+            "type": "VEC4",
+            "name": "x0_COCKPIT_SIDETOP_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 2461844,
+            "componentType": 5122,
+            "count": 9901,
+            "type": "VEC2",
+            "name": "x0_COCKPIT_SIDETOP_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 2461848,
+            "componentType": 5122,
+            "count": 9901,
+            "type": "VEC2",
+            "name": "x0_COCKPIT_SIDETOP_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 2461852,
+            "componentType": 5123,
+            "count": 9901,
+            "type": "VEC4",
+            "name": "x0_COCKPIT_SIDETOP_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 477072,
+            "componentType": 5123,
+            "count": 38154,
+            "type": "SCALAR",
+            "name": "x0_COCKPIT_SIDETOP_indices#0"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 2818260,
+            "componentType": 5126,
+            "count": 104,
+            "min": [
+                -0.7777349352836609,
+                0.7477385997772217,
+                -1.3386439085006714
+            ],
+            "max": [
+                0.40925663709640503,
+                1.2983571290969849,
+                -0.05757951736450195
+            ],
+            "type": "VEC3",
+            "name": "x0_COCKPIT_TEXT_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 2818272,
+            "componentType": 5120,
+            "count": 104,
+            "type": "VEC4",
+            "name": "x0_COCKPIT_TEXT_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 2818276,
+            "componentType": 5120,
+            "count": 104,
+            "type": "VEC4",
+            "name": "x0_COCKPIT_TEXT_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 2818280,
+            "componentType": 5122,
+            "count": 104,
+            "type": "VEC2",
+            "name": "x0_COCKPIT_TEXT_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 2818284,
+            "componentType": 5122,
+            "count": 104,
+            "type": "VEC2",
+            "name": "x0_COCKPIT_TEXT_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 2818288,
+            "componentType": 5123,
+            "count": 104,
+            "type": "VEC4",
+            "name": "x0_COCKPIT_TEXT_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 553380,
+            "componentType": 5123,
+            "count": 168,
+            "type": "SCALAR",
+            "name": "x0_COCKPIT_TEXT_indices#0"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 2822004,
+            "componentType": 5126,
+            "count": 165,
+            "min": [
+                -1.0592583417892456,
+                -0.03582889586687088,
+                -0.3984667956829071
+            ],
+            "max": [
+                0.691586434841156,
+                1.0205332040786743,
+                0.20397257804870605
+            ],
+            "type": "VEC3",
+            "name": "x0_COCKPIT_TOPGLASS_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 2822016,
+            "componentType": 5120,
+            "count": 165,
+            "type": "VEC4",
+            "name": "x0_COCKPIT_TOPGLASS_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 2822020,
+            "componentType": 5120,
+            "count": 165,
+            "type": "VEC4",
+            "name": "x0_COCKPIT_TOPGLASS_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 2822024,
+            "componentType": 5122,
+            "count": 165,
+            "type": "VEC2",
+            "name": "x0_COCKPIT_TOPGLASS_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 2822028,
+            "componentType": 5122,
+            "count": 165,
+            "type": "VEC2",
+            "name": "x0_COCKPIT_TOPGLASS_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 2822032,
+            "componentType": 5123,
+            "count": 165,
+            "type": "VEC4",
+            "name": "x0_COCKPIT_TOPGLASS_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 553716,
+            "componentType": 5123,
+            "count": 504,
+            "type": "SCALAR",
+            "name": "x0_COCKPIT_TOPGLASS_indices#0"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 2827944,
+            "componentType": 5126,
+            "count": 7930,
+            "min": [
+                -1.442156434059143,
+                -0.09175551682710648,
+                -0.7729623317718506
+            ],
+            "max": [
+                1.07416570186615,
+                0.5964341163635254,
+                1.6307673454284668
+            ],
+            "type": "VEC3",
+            "name": "x0_COCKPIT_TOPPANEL_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 2827956,
+            "componentType": 5120,
+            "count": 7930,
+            "type": "VEC4",
+            "name": "x0_COCKPIT_TOPPANEL_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 2827960,
+            "componentType": 5120,
+            "count": 7930,
+            "type": "VEC4",
+            "name": "x0_COCKPIT_TOPPANEL_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 2827964,
+            "componentType": 5122,
+            "count": 7930,
+            "type": "VEC2",
+            "name": "x0_COCKPIT_TOPPANEL_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 2827968,
+            "componentType": 5122,
+            "count": 7930,
+            "type": "VEC2",
+            "name": "x0_COCKPIT_TOPPANEL_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 2827972,
+            "componentType": 5123,
+            "count": 7930,
+            "type": "VEC4",
+            "name": "x0_COCKPIT_TOPPANEL_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 554724,
+            "componentType": 5123,
+            "count": 29727,
+            "type": "SCALAR",
+            "name": "x0_COCKPIT_TOPPANEL_indices#0"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 3113424,
+            "componentType": 5126,
+            "count": 5242,
+            "min": [
+                -1.0312665700912476,
+                -0.03509041666984558,
+                -1.3736284971237183
+            ],
+            "max": [
+                0.6632757186889648,
+                0.3814640939235687,
+                -0.6902344226837158
+            ],
+            "type": "VEC3",
+            "name": "x0_COCKPIT_GLARESHIELD_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 3113436,
+            "componentType": 5120,
+            "count": 5242,
+            "type": "VEC4",
+            "name": "x0_COCKPIT_GLARESHIELD_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 3113440,
+            "componentType": 5120,
+            "count": 5242,
+            "type": "VEC4",
+            "name": "x0_COCKPIT_GLARESHIELD_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 3113444,
+            "componentType": 5122,
+            "count": 5242,
+            "type": "VEC2",
+            "name": "x0_COCKPIT_GLARESHIELD_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 3113448,
+            "componentType": 5122,
+            "count": 5242,
+            "type": "VEC2",
+            "name": "x0_COCKPIT_GLARESHIELD_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 3113452,
+            "componentType": 5123,
+            "count": 5242,
+            "type": "VEC4",
+            "name": "x0_COCKPIT_GLARESHIELD_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 614178,
+            "componentType": 5123,
+            "count": 21408,
+            "type": "SCALAR",
+            "name": "x0_COCKPIT_GLARESHIELD_indices#0"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 3302136,
+            "componentType": 5126,
+            "count": 16763,
+            "min": [
+                -1.2726854085922241,
+                0.07592281699180603,
+                -1.8166934251785278
+            ],
+            "max": [
+                0.9046947360038757,
+                1.2208442687988281,
+                1.5540235042572021
+            ],
+            "type": "VEC3",
+            "name": "x0_COCKPIT_MAINPANEL_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 3302148,
+            "componentType": 5120,
+            "count": 16763,
+            "type": "VEC4",
+            "name": "x0_COCKPIT_MAINPANEL_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 3302152,
+            "componentType": 5120,
+            "count": 16763,
+            "type": "VEC4",
+            "name": "x0_COCKPIT_MAINPANEL_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 3302156,
+            "componentType": 5122,
+            "count": 16763,
+            "type": "VEC2",
+            "name": "x0_COCKPIT_MAINPANEL_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 3302160,
+            "componentType": 5122,
+            "count": 16763,
+            "type": "VEC2",
+            "name": "x0_COCKPIT_MAINPANEL_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 3302164,
+            "componentType": 5123,
+            "count": 16763,
+            "type": "VEC4",
+            "name": "x0_COCKPIT_MAINPANEL_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 656994,
+            "componentType": 5123,
+            "count": 62325,
+            "type": "SCALAR",
+            "name": "x0_COCKPIT_MAINPANEL_indices#0"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 3905604,
+            "componentType": 5126,
+            "count": 27362,
+            "min": [
+                -0.48907798528671265,
+                0.7931820750236511,
+                -1.3459279537200928
+            ],
+            "max": [
+                0.12108717858791351,
+                1.5497113466262817,
+                -0.378397673368454
+            ],
+            "type": "VEC3",
+            "name": "x0_COCKPIT_PEDESTAL_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 3905616,
+            "componentType": 5120,
+            "count": 27362,
+            "type": "VEC4",
+            "name": "x0_COCKPIT_PEDESTAL_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 3905620,
+            "componentType": 5120,
+            "count": 27362,
+            "type": "VEC4",
+            "name": "x0_COCKPIT_PEDESTAL_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 3905624,
+            "componentType": 5122,
+            "count": 27362,
+            "type": "VEC2",
+            "name": "x0_COCKPIT_PEDESTAL_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 3905628,
+            "componentType": 5122,
+            "count": 27362,
+            "type": "VEC2",
+            "name": "x0_COCKPIT_PEDESTAL_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 3905632,
+            "componentType": 5123,
+            "count": 27362,
+            "type": "VEC4",
+            "name": "x0_COCKPIT_PEDESTAL_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 781644,
+            "componentType": 5123,
+            "count": 97362,
+            "type": "SCALAR",
+            "name": "x0_COCKPIT_PEDESTAL_indices#0"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 4890636,
+            "componentType": 5126,
+            "count": 38850,
+            "min": [
+                -1.3913885354995728,
+                -0.004859656095504761,
+                -0.9819670915603638
+            ],
+            "max": [
+                0.9155333638191223,
+                1.5530450344085693,
+                1.0820602178573608
+            ],
+            "type": "VEC3",
+            "name": "x0_COCKPIT_THROTTLE_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 4890648,
+            "componentType": 5120,
+            "count": 38850,
+            "type": "VEC4",
+            "name": "x0_COCKPIT_THROTTLE_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 4890652,
+            "componentType": 5120,
+            "count": 38850,
+            "type": "VEC4",
+            "name": "x0_COCKPIT_THROTTLE_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 4890656,
+            "componentType": 5122,
+            "count": 38850,
+            "type": "VEC2",
+            "name": "x0_COCKPIT_THROTTLE_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 4890660,
+            "componentType": 5122,
+            "count": 38850,
+            "type": "VEC2",
+            "name": "x0_COCKPIT_THROTTLE_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 4890664,
+            "componentType": 5123,
+            "count": 38850,
+            "type": "VEC4",
+            "name": "x0_COCKPIT_THROTTLE_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 976368,
+            "componentType": 5123,
+            "count": 208026,
+            "type": "SCALAR",
+            "name": "x0_COCKPIT_THROTTLE_indices#0"
+        }
+    ],
+    "asset": {
+        "generator": "Khronos glTF Blender I/O v3.2.40 and Asobo Studio MSFS Blender I/O v1.1.6",
+        "version": "2.0",
+        "extensions": {
+            "ASOBO_asset_optimized": {
+                "BoundingBoxMax": [
+                    1.3417145013809204,
+                    2.0699973106384277,
+                    1.6307673454284668
+                ],
+                "BoundingBoxMin": [
+                    -1.7529988288879395,
+                    -0.09175551682710648,
+                    -1.8179785013198853
+                ],
+                "MajorVersion": 4,
+                "MinorVersion": 4,
+                "UseCheckerboardMaterialForMissingTextures": true,
+                "UseOnlyFilenameForImageURI": true
+            },
+            "ASOBO_normal_map_convention": {
+                "tangent_space_convention": "DirectX"
+            }
+        }
+    },
+    "bufferViews": [
+        {
+            "buffer": 0,
+            "byteLength": 6289236,
+            "byteStride": 36,
+            "target": 34962,
+            "name": "BufferViewVertexND"
+        },
+        {
+            "buffer": 0,
+            "byteLength": 1392420,
+            "byteOffset": 6289236,
+            "target": 34963,
+            "name": "BufferViewIndex"
+        }
+    ],
+    "materials": [],
+    "meshes": [
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 5,
+                        "NORMAL": 2,
+                        "POSITION": 0,
+                        "TANGENT": 1,
+                        "TEXCOORD_0": 3,
+                        "TEXCOORD_1": 4
+                    },
+                    "indices": 6,
+                    "material": "BACK01",
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 3052,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "x0_COCKPIT_BACK01"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 12,
+                        "NORMAL": 9,
+                        "POSITION": 7,
+                        "TANGENT": 8,
+                        "TEXCOORD_0": 10,
+                        "TEXCOORD_1": 11
+                    },
+                    "indices": 13,
+                    "material": "BACK02",
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 3687,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "x0_COCKPIT_BACK02"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 19,
+                        "NORMAL": 16,
+                        "POSITION": 14,
+                        "TANGENT": 15,
+                        "TEXCOORD_0": 17,
+                        "TEXCOORD_1": 18
+                    },
+                    "indices": 20,
+                    "material": "DECALSALPHA",
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 1228,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "x0_COCKPIT_DECALSALPHA"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 26,
+                        "NORMAL": 23,
+                        "POSITION": 21,
+                        "TANGENT": 22,
+                        "TEXCOORD_0": 24,
+                        "TEXCOORD_1": 25
+                    },
+                    "indices": 27,
+                    "material": "FLOOR",
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 4098,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "x0_COCKPIT_FLOOR"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 33,
+                        "NORMAL": 30,
+                        "POSITION": 28,
+                        "TANGENT": 29,
+                        "TEXCOORD_0": 31,
+                        "TEXCOORD_1": 32
+                    },
+                    "indices": 34,
+                    "material": "INPUTS01",
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 88,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "x0_COCKPIT_INPUTS01"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 40,
+                        "NORMAL": 37,
+                        "POSITION": 35,
+                        "TANGENT": 36,
+                        "TEXCOORD_0": 38,
+                        "TEXCOORD_1": 39
+                    },
+                    "indices": 41,
+                    "material": "OVERHEAD",
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 38340,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "x0_COCKPIT_OVERHEAD"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 47,
+                        "NORMAL": 44,
+                        "POSITION": 42,
+                        "TANGENT": 43,
+                        "TEXCOORD_0": 45,
+                        "TEXCOORD_1": 46
+                    },
+                    "indices": 48,
+                    "material": "PEDALS",
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 5772,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "x0_COCKPIT_PEDALS"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 54,
+                        "NORMAL": 51,
+                        "POSITION": 49,
+                        "TANGENT": 50,
+                        "TEXCOORD_0": 52,
+                        "TEXCOORD_1": 53
+                    },
+                    "indices": 55,
+                    "material": "PLASTICGLASS",
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 627,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "x0_COCKPIT_PLASTICGLASS"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 61,
+                        "NORMAL": 58,
+                        "POSITION": 56,
+                        "TANGENT": 57,
+                        "TEXCOORD_0": 59,
+                        "TEXCOORD_1": 60
+                    },
+                    "indices": 62,
+                    "material": "SEATS",
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 9638,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "x0_COCKPIT_SEATS"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 68,
+                        "NORMAL": 65,
+                        "POSITION": 63,
+                        "TANGENT": 64,
+                        "TEXCOORD_0": 66,
+                        "TEXCOORD_1": 67
+                    },
+                    "indices": 69,
+                    "material": "SIDEPANELS",
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 12982,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "x0_COCKPIT_SIDEPANELS"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 75,
+                        "NORMAL": 72,
+                        "POSITION": 70,
+                        "TANGENT": 71,
+                        "TEXCOORD_0": 73,
+                        "TEXCOORD_1": 74
+                    },
+                    "indices": 76,
+                    "material": "SIDETOP",
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 12718,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "x0_COCKPIT_SIDETOP"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 82,
+                        "NORMAL": 79,
+                        "POSITION": 77,
+                        "TANGENT": 78,
+                        "TEXCOORD_0": 80,
+                        "TEXCOORD_1": 81
+                    },
+                    "indices": 83,
+                    "material": "TEXT",
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 56,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "x0_COCKPIT_TEXT"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 89,
+                        "NORMAL": 86,
+                        "POSITION": 84,
+                        "TANGENT": 85,
+                        "TEXCOORD_0": 87,
+                        "TEXCOORD_1": 88
+                    },
+                    "indices": 90,
+                    "material": "TOPGLASS",
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 168,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "x0_COCKPIT_TOPGLASS"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 96,
+                        "NORMAL": 93,
+                        "POSITION": 91,
+                        "TANGENT": 92,
+                        "TEXCOORD_0": 94,
+                        "TEXCOORD_1": 95
+                    },
+                    "indices": 97,
+                    "material": "TOPPANEL",
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 9909,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "x0_COCKPIT_TOPPANEL"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 103,
+                        "NORMAL": 100,
+                        "POSITION": 98,
+                        "TANGENT": 99,
+                        "TEXCOORD_0": 101,
+                        "TEXCOORD_1": 102
+                    },
+                    "indices": 104,
+                    "material": "GLARESHIELD",
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 7136,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "x0_COCKPIT_GLARESHIELD"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 110,
+                        "NORMAL": 107,
+                        "POSITION": 105,
+                        "TANGENT": 106,
+                        "TEXCOORD_0": 108,
+                        "TEXCOORD_1": 109
+                    },
+                    "indices": 111,
+                    "material": "MAINPANEL",
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 20775,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "x0_COCKPIT_MAINPANEL"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 117,
+                        "NORMAL": 114,
+                        "POSITION": 112,
+                        "TANGENT": 113,
+                        "TEXCOORD_0": 115,
+                        "TEXCOORD_1": 116
+                    },
+                    "indices": 118,
+                    "material": "PEDESTAL",
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 32454,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "x0_COCKPIT_PEDESTAL"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 124,
+                        "NORMAL": 121,
+                        "POSITION": 119,
+                        "TANGENT": 120,
+                        "TEXCOORD_0": 122,
+                        "TEXCOORD_1": 123
+                    },
+                    "indices": 125,
+                    "material": "THROTTLE",
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 69342,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "x0_COCKPIT_THROTTLE"
+        }
+    ],
+    "nodes": [
+        {
+            "translation": [
+                0.18399550020694733,
+                2.5197179317474365,
+                10.99502182006836
+            ],
+            "rotation": [
+                -0.9819666743278505,
+                0,
+                0,
+                0.18905407190322876
+            ],
+            "mesh": 0,
+            "name": "COCKPIT_BACK01"
+        },
+        {
+            "translation": [
+                0.18399550020694733,
+                2.5197179317474365,
+                10.99502182006836
+            ],
+            "rotation": [
+                -0.9819666743278505,
+                0,
+                0,
+                0.18905407190322876
+            ],
+            "mesh": 1,
+            "name": "COCKPIT_BACK02"
+        },
+        {
+            "translation": [
+                0.18399550020694733,
+                2.5197179317474365,
+                10.99502182006836
+            ],
+            "rotation": [
+                -0.9819666743278505,
+                0,
+                0,
+                0.18905407190322876
+            ],
+            "mesh": 2,
+            "name": "COCKPIT_DECALSALPHA"
+        },
+        {
+            "translation": [
+                0.18399550020694733,
+                2.5197179317474365,
+                10.99502182006836
+            ],
+            "rotation": [
+                -0.9819666743278505,
+                0,
+                0,
+                0.18905407190322876
+            ],
+            "mesh": 3,
+            "name": "COCKPIT_FLOOR"
+        },
+        {
+            "translation": [
+                0.18399550020694733,
+                2.5197179317474365,
+                10.99502182006836
+            ],
+            "rotation": [
+                -0.9819666743278505,
+                0,
+                0,
+                0.18905407190322876
+            ],
+            "mesh": 4,
+            "name": "COCKPIT_INPUTS01"
+        },
+        {
+            "translation": [
+                0.18399550020694733,
+                2.5197179317474365,
+                10.99502182006836
+            ],
+            "rotation": [
+                -0.9819666743278505,
+                0,
+                0,
+                0.18905407190322876
+            ],
+            "mesh": 5,
+            "name": "COCKPIT_OVERHEAD"
+        },
+        {
+            "translation": [
+                0.18399550020694733,
+                2.5197179317474365,
+                10.99502182006836
+            ],
+            "rotation": [
+                -0.9819666743278505,
+                0,
+                0,
+                0.18905407190322876
+            ],
+            "mesh": 6,
+            "name": "COCKPIT_PEDALS"
+        },
+        {
+            "translation": [
+                0.18399550020694733,
+                2.5197179317474365,
+                10.99502182006836
+            ],
+            "rotation": [
+                -0.9819666743278505,
+                0,
+                0,
+                0.18905407190322876
+            ],
+            "mesh": 7,
+            "name": "COCKPIT_PLASTICGLASS"
+        },
+        {
+            "translation": [
+                0.18399550020694733,
+                2.5197179317474365,
+                10.99502182006836
+            ],
+            "rotation": [
+                -0.9819666743278505,
+                0,
+                0,
+                0.18905407190322876
+            ],
+            "mesh": 8,
+            "name": "COCKPIT_SEATS"
+        },
+        {
+            "translation": [
+                0.18399550020694733,
+                2.5197179317474365,
+                10.99502182006836
+            ],
+            "rotation": [
+                -0.9819666743278505,
+                0,
+                0,
+                0.18905407190322876
+            ],
+            "mesh": 9,
+            "name": "COCKPIT_SIDEPANELS"
+        },
+        {
+            "translation": [
+                0.18399550020694733,
+                2.5197179317474365,
+                10.99502182006836
+            ],
+            "rotation": [
+                -0.9819666743278505,
+                0,
+                0,
+                0.18905407190322876
+            ],
+            "mesh": 10,
+            "name": "COCKPIT_SIDETOP"
+        },
+        {
+            "translation": [
+                0.18399550020694733,
+                2.5197179317474365,
+                10.99502182006836
+            ],
+            "rotation": [
+                -0.9819666743278505,
+                0,
+                0,
+                0.18905407190322876
+            ],
+            "mesh": 11,
+            "name": "COCKPIT_TEXT"
+        },
+        {
+            "translation": [
+                0.18399550020694733,
+                2.5197179317474365,
+                10.99502182006836
+            ],
+            "rotation": [
+                -0.9819666743278505,
+                0,
+                0,
+                0.18905407190322876
+            ],
+            "mesh": 12,
+            "name": "COCKPIT_TOPGLASS"
+        },
+        {
+            "translation": [
+                0.18399550020694733,
+                2.5197179317474365,
+                10.99502182006836
+            ],
+            "rotation": [
+                -0.9819666743278505,
+                0,
+                0,
+                0.18905407190322876
+            ],
+            "mesh": 13,
+            "name": "COCKPIT_TOPPANEL"
+        },
+        {
+            "translation": [
+                0.18399550020694733,
+                2.5197179317474365,
+                10.99502182006836
+            ],
+            "rotation": [
+                -0.9819666743278505,
+                0,
+                0,
+                0.18905407190322876
+            ],
+            "mesh": 14,
+            "name": "COCKPIT_GLARESHIELD"
+        },
+        {
+            "translation": [
+                0.18399550020694733,
+                2.5197179317474365,
+                10.99502182006836
+            ],
+            "rotation": [
+                -0.9819666743278505,
+                0,
+                0,
+                0.18905407190322876
+            ],
+            "mesh": 15,
+            "name": "COCKPIT_MAINPANEL"
+        },
+        {
+            "translation": [
+                0.18399550020694733,
+                2.5197179317474365,
+                10.99502182006836
+            ],
+            "rotation": [
+                -0.9819666743278505,
+                0,
+                0,
+                0.18905407190322876
+            ],
+            "mesh": 16,
+            "name": "COCKPIT_PEDESTAL"
+        },
+        {
+            "translation": [
+                0.18399550020694733,
+                2.5197179317474365,
+                10.99502182006836
+            ],
+            "rotation": [
+                -0.9819666743278505,
+                0,
+                0,
+                0.18905407190322876
+            ],
+            "mesh": 17,
+            "name": "COCKPIT_THROTTLE"
+        }
+    ],
+    "scene": 0,
+    "scenes": [
+        {
+            "nodes": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17
+            ],
+            "name": "Scene"
+        }
+    ],
+    "extensionsUsed": [
+        "ASOBO_normal_map_convention",
+        "ASOBO_asset_optimized"
+    ],
+    "buffers": [
+        {
+            "byteLength": 7681656,
+            "uri": "cockpit.bin"
+        }
+    ]
+}

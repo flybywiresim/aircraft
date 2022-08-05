@@ -130,7 +130,7 @@ class FacilityLoader {
      * Gets the raw facility data for a given icao.
      * @param {String} icao The ICAO to get the raw facility data for.
      */
-    getFacilityRaw(icao, timeout = 1500) {
+    getFacilityRaw(icao, timeout = 1500, skipIntersectionData = false) {
 
         const queueRawLoad = (loadCall, icao, type) => {
             return new Promise((resolve) => {
@@ -161,21 +161,31 @@ class FacilityLoader {
                     return queueRawLoad('LOAD_INTERSECTION', icao, 'W');
                 }
             case 'V':
-                return Promise.all([queueRawLoad('LOAD_VOR', icao, 'V'), queueRawLoad('LOAD_INTERSECTION', icao, 'W')])
+                const vorPromises = [queueRawLoad('LOAD_VOR', icao, 'V')];
+                if (!skipIntersectionData) {
+                    vorPromises.push(queueRawLoad('LOAD_INTERSECTION', icao, 'W'));
+                }
+                return Promise.all(vorPromises)
                     .then(facilities => {
                         if (facilities[1]) {
                             return Object.assign(facilities[0], facilities[1]);
+                        } else if (!skipIntersectionData) {
+                            console.warn('Missing insersection data', facilities[0]);
                         }
-                        console.warn('Missing insersection data', facilities[0]);
                         return facilities[0];
                     });
             case 'N':
-                return Promise.all([queueRawLoad('LOAD_NDB', icao, 'N'), queueRawLoad('LOAD_INTERSECTION', icao, 'W')])
+                const ndbPromises = [queueRawLoad('LOAD_NDB', icao, 'N')];
+                if (!skipIntersectionData) {
+                    ndbPromises.push(queueRawLoad('LOAD_INTERSECTION', icao, 'W'));
+                }
+                return Promise.all(ndbPromises)
                     .then(facilities => {
                         if (facilities[1]) {
                             Object.assign(facilities[0], facilities[1]);
+                        } else if (!skipIntersectionData) {
+                            console.warn('Missing insersection data', facilities[0]);
                         }
-                        console.warn('Missing insersection data', facilities[0]);
                         return facilities[0];
                     });
         }

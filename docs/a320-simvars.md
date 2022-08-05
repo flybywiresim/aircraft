@@ -1473,6 +1473,26 @@
       0.0 | neutral
       1.0 | full up
 
+- A32NX_THS_{number}_ACTIVE_MODE_COMMANDED
+    - Boolean
+    - Trim electric motor {number} is commanded active
+    - {number}
+        - 1
+        - 2
+        - 3
+
+- A32NX_THS_{number}_COMMANDED_POSITION
+    - Degree
+    - Trim electric motor {number} position demand in trim surface deflection angle
+
+- A32NX_HYD_THS_TRIM_MANUAL_OVERRIDE
+    - Boolean
+    - Feedback signal from the trim actuator system. True if pilot is moving or holding trim wheel
+
+- A32NX_HYD_TRIM_WHEEL_PERCENT
+    - Percent
+    - Trim wheel position in percent
+
 - A32NX_ELEVATOR_DEFLECTION_DEMAND
     - Number
     - Provides the elevator position demand to hydraulics
@@ -2810,6 +2830,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Percent over 100
     - {gear}
         - CENTER
+        - CENTER_SMALL
         - LEFT
         - RIGHT
 
@@ -2821,13 +2842,9 @@ In the variables below, {number} should be replaced with one item in the set: { 
         - LEFT
         - RIGHT
 
-- A32NX_GEAR_EMERGENCY_EXTENSION_CLICKED
-    - Indicates the emergency extension handle is clicked in cockpit.
-    - Bool
-
-- A32NX_GEAR_EMERGENCY_EXTENSION_IS_TURNED
-    - Indicates the emergency extension handle is currently turning.
-    - Bool
+- A32NX_GRAVITYGEAR_ROTATE_PCT
+    - Indicates the position of the gear emergency extension crank handle from 0 to 300 (3 turns)
+    - Percent
 
 ## ATC (ATA 34)
 
