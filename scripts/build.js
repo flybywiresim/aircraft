@@ -115,3 +115,4 @@ function createPackageFiles(baseDir, manifestBaseFilename) {
 }
 
 createPackageFiles(A32NX, 'manifest-base.json');
+createPackageFiles(A32NX + '-lock-highlight', 'manifest-base-lock-highlight.json');
