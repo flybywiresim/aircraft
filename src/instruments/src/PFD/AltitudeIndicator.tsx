@@ -7,7 +7,7 @@ import { SimplaneValues } from './shared/SimplaneValueProvider';
 import { VerticalTape } from './VerticalTape';
 import { Arinc429Values } from './shared/ArincValueProvider';
 
-const DisplayRange = 600;
+const DisplayRange = 570;
 const ValueSpacing = 100;
 const DistanceSpacing = 7.5;
 
@@ -138,7 +138,7 @@ export class AltitudeIndicator extends DisplayComponent<AltitudeIndicatorProps> 
                 <LandingElevationIndicator bus={this.props.bus} />
                 <g ref={this.tapeRef}>
                     <VerticalTape
-                        displayRange={DisplayRange + 30}
+                        displayRange={DisplayRange + 60}
                         valueSpacing={ValueSpacing}
                         distanceSpacing={DistanceSpacing}
                         lowerLimit={-1500}
@@ -146,7 +146,6 @@ export class AltitudeIndicator extends DisplayComponent<AltitudeIndicatorProps> 
                         tapeValue={this.subscribable}
                         type="altitude"
                     />
-
                 </g>
 
             </g>
