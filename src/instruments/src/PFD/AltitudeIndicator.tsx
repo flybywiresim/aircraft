@@ -107,6 +107,99 @@ class RadioAltIndicator extends DisplayComponent<{ bus: EventBus, filteredRadioA
     }
 }
 
+class MinimumDescentAltitudeIndicator extends DisplayComponent<{ bus: EventBus }> {
+    private visibility = Subject.create('hidden');
+
+    private path = Subject.create('');
+
+    private altitude = 0;
+
+    private radioAltitudeValid = false;
+
+    private qnhLandingAltValid = false;
+
+    private qfeLandingAltValid = false;
+
+    private inLandingPhases = false;
+
+    private altMode: 'STD' | 'QNH' | 'QFE' = 'STD';
+
+    private mda = new Arinc429Word(0);
+
+    private landingElevation = new Arinc429Word(0);
+
+    private updateIndication(): void {
+        this.qnhLandingAltValid = !this.landingElevation.isFailureWarning()
+            && !this.landingElevation.isNoComputedData()
+            && this.inLandingPhases
+            && this.altMode === 'QNH';
+
+        this.qfeLandingAltValid = this.inLandingPhases
+            && this.altMode === 'QFE';
+
+        const altDelta = this.mda.value - this.altitude;
+
+        const showMda = (this.radioAltitudeValid || this.qnhLandingAltValid || this.qfeLandingAltValid)
+            && Math.abs(altDelta) <= 570
+            && !this.mda.isFailureWarning()
+            && !this.mda.isNoComputedData();
+
+        if (!showMda) {
+            this.visibility.set('hidden');
+            return;
+        }
+
+        const offset = altDelta * DistanceSpacing / ValueSpacing;
+        this.path.set(`m 127.9276,${80.249604 - offset} h 5.80948 v 1.124908 h -5.80948 z`);
+        this.visibility.set('visible');
+    }
+
+    onAfterRender(node: VNode): void {
+        super.onAfterRender(node);
+
+        const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values & SimplaneValues>();
+
+        sub.on('chosenRa').whenArinc429SsmChanged().handle((ra) => {
+            this.radioAltitudeValid = !ra.isFailureWarning() && !ra.isNoComputedData();
+            this.updateIndication();
+        });
+
+        sub.on('landingElevation').withArinc429Precision(0).handle((landingElevation) => {
+            this.landingElevation = landingElevation;
+            this.updateIndication();
+        });
+
+        sub.on('baroMode').whenChanged().handle((m) => {
+            this.altMode = m;
+            this.updateIndication();
+        });
+
+        sub.on('altitudeAr').withArinc429Precision(0).handle((a) => {
+            // TODO filtered alt
+            this.altitude = a.value;
+            this.updateIndication();
+        });
+
+        sub.on('mda').handle((mda) => {
+            // TODO get a real word
+            this.mda.value = mda;
+            this.mda.ssm = mda > 0 ? Arinc429Word.SignStatusMatrix.NormalOperation : Arinc429Word.SignStatusMatrix.NoComputedData;
+            this.updateIndication();
+        });
+
+        sub.on('fwcFlightPhase').whenChanged().handle((fp) => {
+            this.inLandingPhases = fp === 7 || fp === 8;
+            this.updateIndication();
+        });
+    }
+
+    render(): VNode {
+        return (
+            <path visibility={this.visibility} id="AltTapeMdaIndicator" class="Fill Amber" d={this.path} />
+        );
+    }
+}
+
 interface AltitudeIndicatorProps {
 
     bus: EventBus;
@@ -216,6 +309,7 @@ export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicator
                 </g>
                 <g ref={this.normal} style="display: none">
                     <path id="AltTapeOutline" class="NormalStroke White" d="m117.75 123.56h17.83m-4.7345-85.473v85.473m-13.096-85.473h17.83" />
+                    <MinimumDescentAltitudeIndicator bus={this.props.bus} />
                     <SelectedAltIndicator bus={this.props.bus} />
                     <AltimeterIndicator bus={this.props.bus} altitude={this.altitude} />
                     <MetricAltIndicator bus={this.props.bus} />
