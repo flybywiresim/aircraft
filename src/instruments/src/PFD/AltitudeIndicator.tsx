@@ -16,17 +16,18 @@ class LandingElevationIndicator extends DisplayComponent<{bus: EventBus}> {
 
     private altitude = 0;
 
-    private landingElevation = 0;
+    private landingElevation = new Arinc429Word(0);
 
     private flightPhase = 0;
 
     private delta = 0;
 
     private handleLandingElevation() {
-        const delta = this.altitude - this.landingElevation;
+        const landingElevationValid = !this.landingElevation.isFailureWarning() && !this.landingElevation.isNoComputedData();
+        const delta = this.altitude - this.landingElevation.value;
         const offset = (delta - DisplayRange) * DistanceSpacing / ValueSpacing;
         this.delta = delta;
-        if (delta > DisplayRange || (this.flightPhase !== 7 && this.flightPhase !== 8)) {
+        if (delta > DisplayRange || (this.flightPhase !== 7 && this.flightPhase !== 8) || !landingElevationValid) {
             this.landingElevationIndicator.instance.classList.add('HiddenElement');
         } else {
             this.landingElevationIndicator.instance.classList.remove('HiddenElement');
