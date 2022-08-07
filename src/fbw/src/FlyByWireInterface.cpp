@@ -1148,7 +1148,7 @@ bool FlyByWireInterface::updateElac(double sampleTime, int elacIndex) {
   elacs[elacIndex].modelInputs.in.time.simulation_time = simData.simulationTime;
   elacs[elacIndex].modelInputs.in.time.monotonic_time = monotonicTime;
 
-  elacs[elacIndex].modelInputs.in.sim_data.slew_on = simData.slew_on;
+  elacs[elacIndex].modelInputs.in.sim_data.slew_on = wasInSlew;
   elacs[elacIndex].modelInputs.in.sim_data.pause_on = pauseDetected;
   elacs[elacIndex].modelInputs.in.sim_data.tracking_mode_on_override = idExternalOverride->get() == 1;
   elacs[elacIndex].modelInputs.in.sim_data.tailstrike_protection_on = tailstrikeProtectionEnabled;
@@ -1258,7 +1258,7 @@ bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
   secs[secIndex].modelInputs.in.time.simulation_time = simData.simulationTime;
   secs[secIndex].modelInputs.in.time.monotonic_time = monotonicTime;
 
-  secs[secIndex].modelInputs.in.sim_data.slew_on = simData.slew_on;
+  secs[secIndex].modelInputs.in.sim_data.slew_on = wasInSlew;
   secs[secIndex].modelInputs.in.sim_data.pause_on = pauseDetected;
   secs[secIndex].modelInputs.in.sim_data.tracking_mode_on_override = idExternalOverride->get() == 1;
   secs[secIndex].modelInputs.in.sim_data.tailstrike_protection_on = tailstrikeProtectionEnabled;
@@ -1471,7 +1471,7 @@ bool FlyByWireInterface::updateFac(double sampleTime, int facIndex) {
   facs[facIndex].modelInputs.in.time.simulation_time = simData.simulationTime;
   facs[facIndex].modelInputs.in.time.monotonic_time = monotonicTime;
 
-  facs[facIndex].modelInputs.in.sim_data.slew_on = simData.slew_on;
+  facs[facIndex].modelInputs.in.sim_data.slew_on = wasInSlew;
   facs[facIndex].modelInputs.in.sim_data.pause_on = pauseDetected;
   facs[facIndex].modelInputs.in.sim_data.tracking_mode_on_override = idExternalOverride->get() == 1;
   facs[facIndex].modelInputs.in.sim_data.tailstrike_protection_on = tailstrikeProtectionEnabled;

@@ -671,6 +671,7 @@ class ElacComputer final
     rtDW_MATLABFunction_ElacComputer_kz_T sf_MATLABFunction_jz;
     rtDW_RateLimiter_ElacComputer_b_T sf_RateLimiter_m;
     rtDW_RateLimiter_ElacComputer_b_T sf_RateLimiter_n;
+    rtDW_MATLABFunction_ElacComputer_kz_T sf_MATLABFunction_nb;
     rtDW_MATLABFunction_ElacComputer_o_T sf_MATLABFunction_br;
     rtDW_MATLABFunction_ElacComputer_o_T sf_MATLABFunction_jg;
     rtDW_MATLABFunction_ElacComputer_o_T sf_MATLABFunction_mi;
@@ -778,6 +779,7 @@ class ElacComputer final
     real_T ConfirmNode2_timeDelay_k;
     real_T ConfirmNode1_timeDelay_a;
     real_T ConfirmNode_timeDelay_a;
+    real_T ConfirmNode_timeDelay_d;
     real_T RateLimiterGenericVariableTs_up;
     real_T RateLimiterGenericVariableTs1_up;
     real_T RateLimiterVariableTs2_up;
@@ -801,6 +803,7 @@ class ElacComputer final
     boolean_T PulseNode1_isRisingEdge;
     boolean_T ConfirmNode1_isRisingEdge_k;
     boolean_T ConfirmNode_isRisingEdge_j;
+    boolean_T ConfirmNode_isRisingEdge_o;
     boolean_T PulseNode_isRisingEdge_g;
     elac_outputs out_Y0;
     base_elac_out_bus Constant4_Value;

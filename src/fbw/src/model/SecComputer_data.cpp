@@ -286,6 +286,8 @@ SecComputer::Parameters_SecComputer_T SecComputer::SecComputer_P{
 
   30.0,
 
+  0.2,
+
   10.0,
 
   20.0,
@@ -331,6 +333,8 @@ SecComputer::Parameters_SecComputer_T SecComputer::SecComputer_P{
   true,
 
   true,
+
+  false,
 
   false,
 

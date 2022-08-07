@@ -470,6 +470,7 @@ class SecComputer final
     rtDW_MATLABFunction_SecComputer_l_T sf_MATLABFunction_g4b;
     rtDW_MATLABFunction_SecComputer_o_T sf_MATLABFunction_j2;
     rtDW_MATLABFunction_SecComputer_o_T sf_MATLABFunction_g24;
+    rtDW_MATLABFunction_SecComputer_o_T sf_MATLABFunction_k4;
     rtDW_MATLABFunction_SecComputer_o_T sf_MATLABFunction_dw;
     rtDW_MATLABFunction_SecComputer_o_T sf_MATLABFunction_jk;
     rtDW_MATLABFunction_SecComputer_o_T sf_MATLABFunction_h;
@@ -591,6 +592,7 @@ class SecComputer final
     real_T ConfirmNode1_timeDelay_a;
     real_T ConfirmNode_timeDelay_a;
     real_T ConfirmNode_timeDelay_e;
+    real_T ConfirmNode_timeDelay_eq;
     real_T RateLimiterVariableTs6_up;
     real_T RateLimiterVariableTs1_up;
     real_T RateLimiterGenericVariableTs_up;
@@ -613,6 +615,7 @@ class SecComputer final
     boolean_T PulseNode1_isRisingEdge;
     boolean_T ConfirmNode1_isRisingEdge_k;
     boolean_T ConfirmNode_isRisingEdge_j;
+    boolean_T ConfirmNode_isRisingEdge_g;
     boolean_T PulseNode_isRisingEdge_h;
     boolean_T ConfirmNode_isRisingEdge_e;
     boolean_T PulseNode3_isRisingEdge;
