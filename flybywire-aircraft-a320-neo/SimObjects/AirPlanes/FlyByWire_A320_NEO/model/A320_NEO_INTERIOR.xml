@@ -4061,11 +4061,13 @@
             <Component ID="Audio_Panel_Left">
                 <!-- Init of volume and transmit channels in default operation state: Transmit VHF1 and listen VHF1 and VFH2 -->
                 <Update Once="True">
-                    0 (&gt;L:XMLVAR_COM_PANEL1_Transmit_Channel)
-                    0 (&gt;K:PILOT_TRANSMITTER_SET)
+                    1 (&gt;L:XMLVAR_COM_PANEL1_Transmit_Channel)
+                    1 (&gt;L:XMLVAR_COM_PANEL2_Transmit_Channel)
 
                     1 (&gt;L:XMLVAR_COM_1_VHF_L_Switch_Down)
                     1 (&gt;L:XMLVAR_COM_1_VHF_C_Switch_Down)
+                    1 (&gt;L:XMLVAR_COM_2_VHF_L_Switch_Down)
+                    1 (&gt;L:XMLVAR_COM_2_VHF_C_Switch_Down)
 
                     1 (&gt;K:COM1_RECEIVE_SELECT)
                     1 (&gt;K:COM2_RECEIVE_SELECT)
@@ -4073,8 +4075,8 @@
 
                     0.8 (&gt;L:XMLVAR_COM_1_Volume_VHF_L)
                     0.4 (&gt;L:XMLVAR_COM_1_Volume_VHF_C)
-                    0 (&gt;L:XMLVAR_COM_1_Volume_VHF_R)
-                    0 (&gt;K:COM3_VOLUME_SET)
+                    0.8 (&gt;L:XMLVAR_COM_2_Volume_VHF_L)
+                    0.4 (&gt;L:XMLVAR_COM_2_Volume_VHF_C)
                 </Update>
                 <UseTemplate Name="FBW_AIRLINER_Audio_Panel_Template">
                     <ID>1</ID>
@@ -4222,17 +4224,6 @@
                 </UseTemplate>
             </Component>
             <Component ID="Audio_Panel_Right">
-                <Update Once="True">
-                    0 (&gt;L:XMLVAR_COM_PANEL2_Transmit_Channel)
-                    0 (&gt;K:COPILOT_TRANSMITTER_SET)
-
-                    1 (&gt;L:XMLVAR_COM_2_VHF_L_Switch_Down)
-                    1 (&gt;L:XMLVAR_COM_2_VHF_C_Switch_Down)
-
-                    0.8 (&gt;L:XMLVAR_COM_2_Volume_VHF_L)
-                    0.4 (&gt;L:XMLVAR_COM_2_Volume_VHF_C)
-                    0 (&gt;L:XMLVAR_COM_2_Volume_VHF_R)
-                </Update>
                 <UseTemplate Name="FBW_AIRLINER_Audio_Panel_Template">
                     <ID>2</ID>
                     <SIDE>R</SIDE>

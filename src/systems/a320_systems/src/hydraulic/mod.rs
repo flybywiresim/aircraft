@@ -220,7 +220,6 @@ impl A320CargoDoorFactory {
             1000000.,
             Duration::from_millis(100),
             [1., 1., 1., 1., 1., 1.],
-            [1., 1., 1., 1., 1., 1.],
             [0., 0.2, 0.21, 0.79, 0.8, 1.],
             Self::FLOW_CONTROL_PROPORTIONAL_GAIN,
             Self::FLOW_CONTROL_INTEGRAL_GAIN,
@@ -314,7 +313,6 @@ impl A320AileronFactory {
             5000.,
             randomized_damping,
             Duration::from_millis(300),
-            [1., 1., 1., 1., 1., 1.],
             [1., 1., 1., 1., 1., 1.],
             [0., 0.2, 0.21, 0.79, 0.8, 1.],
             Self::FLOW_CONTROL_PROPORTIONAL_GAIN,
@@ -428,7 +426,6 @@ impl A320SpoilerFactory {
             randomized_damping,
             Duration::from_millis(300),
             [1., 1., 1., 1., 1., 1.],
-            [1., 1., 1., 1., 1., 1.],
             [0., 0.2, 0.21, 0.79, 0.8, 1.],
             Self::FLOW_CONTROL_PROPORTIONAL_GAIN,
             Self::FLOW_CONTROL_INTEGRAL_GAIN,
@@ -538,7 +535,6 @@ impl A320ElevatorFactory {
             randomized_damping,
             Duration::from_millis(300),
             [1., 1., 1., 1., 1., 1.],
-            [1., 1., 1., 1., 1., 1.],
             [0., 0.2, 0.21, 0.79, 0.8, 1.],
             Self::FLOW_CONTROL_PROPORTIONAL_GAIN,
             Self::FLOW_CONTROL_INTEGRAL_GAIN,
@@ -635,7 +631,6 @@ impl A320RudderFactory {
             10000.,
             randomized_damping,
             Duration::from_millis(300),
-            [1., 1., 1., 1., 1., 1.],
             [1., 1., 1., 1., 1., 1.],
             [0., 0.2, 0.21, 0.79, 0.8, 1.],
             Self::FLOW_CONTROL_PROPORTIONAL_GAIN,
@@ -736,8 +731,7 @@ impl A320GearDoorFactory {
             2000.,
             28000.,
             Duration::from_millis(100),
-            [1., 1., 1., 1., 0.5, 0.5],
-            [0.5, 0.5, 1., 1., 1., 1.],
+            [0.5, 0.5, 1., 1., 0.5, 0.5],
             [0., 0.15, 0.16, 0.84, 0.85, 1.],
             FLOW_CONTROL_PROPORTIONAL_GAIN,
             FLOW_CONTROL_INTEGRAL_GAIN,
@@ -759,14 +753,13 @@ impl A320GearDoorFactory {
             Length::new::<meter>(0.055),
             Length::new::<meter>(0.03),
             VolumeRate::new::<gallon_per_second>(0.09),
-            200000.,
-            2500.,
+            20000.,
+            5000.,
             2000.,
             9000.,
             Duration::from_millis(100),
-            [1., 1., 1., 1., 0.5, 0.5],
-            [0.5, 0.5, 1., 1., 1., 1.],
-            [0., 0.09, 0.1, 0.9, 0.91, 1.],
+            [0.5, 0.5, 1., 1., 0.5, 0.5],
+            [0., 0.15, 0.16, 0.84, 0.85, 1.],
             FLOW_CONTROL_PROPORTIONAL_GAIN,
             FLOW_CONTROL_INTEGRAL_GAIN,
             FLOW_CONTROL_FORCE_GAIN,
@@ -878,8 +871,7 @@ impl A320GearFactory {
             50000.,
             1000000.,
             Duration::from_millis(100),
-            [1., 1., 1., 1., 0.5, 0.5],
-            [0.5, 0.5, 1., 1., 1., 1.],
+            [0.5, 0.5, 1., 1., 0.5, 0.5],
             [0., 0.1, 0.11, 0.89, 0.9, 1.],
             FLOW_CONTROL_PROPORTIONAL_GAIN,
             FLOW_CONTROL_INTEGRAL_GAIN,
@@ -904,9 +896,8 @@ impl A320GearFactory {
             50000.,
             2500000.,
             Duration::from_millis(100),
-            [1., 1., 1., 1., 0.5, 0.5],
-            [0.2, 0.4, 1., 1., 1., 1.],
-            [0., 0.13, 0.17, 0.95, 0.96, 1.],
+            [0.5, 0.5, 1., 1., 0.5, 0.5],
+            [0., 0.1, 0.11, 0.89, 0.9, 1.],
             FLOW_CONTROL_PROPORTIONAL_GAIN,
             FLOW_CONTROL_INTEGRAL_GAIN,
             FLOW_CONTROL_FORCE_GAIN,
@@ -10605,14 +10596,14 @@ mod tests {
 
             test_bed = test_bed
                 .stow_emergency_gear_extension()
-                .run_waiting_for(Duration::from_secs_f64(5.));
+                .run_waiting_for(Duration::from_secs_f64(10.));
 
-            // After 5 seconds we expect gear being retracted and doors still down
+            // // After 10 seconds we expect gear being retracted and doors still down
             assert!(test_bed.gear_system_state() == GearSystemState::Retracting);
             assert!(test_bed.is_all_doors_really_down());
             assert!(!test_bed.is_all_gears_really_down());
 
-            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(15.));
+            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(10.));
 
             assert!(test_bed.gear_system_state() == GearSystemState::AllUpLocked);
             assert!(test_bed.is_all_doors_really_up());
