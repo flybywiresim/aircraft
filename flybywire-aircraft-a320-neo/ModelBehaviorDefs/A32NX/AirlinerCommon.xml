@@ -510,13 +510,7 @@
                         (L:XMLVAR_COM_#ID#_Volume_#FREQ_ID#) #VOLUME_INCREMENT# - 0 max (&gt;L:XMLVAR_COM_#ID#_Volume_#FREQ_ID#)
                     }
                 </ANTICLOCKWISE_CODE>
-                <ANIM_CODE_SWITCH>
-                    <!-- Code disabled because I did not understand its purpose when I fixed the RMPs -->
-                    <!-- No changes seen but I don't want to delete code I don't understand -->
-
-                    <!-- (L:XMLVAR_COM_#ID#_#FREQ_ID#_Switch_Down) -->
-                    <!-- #TRANSMIT_ID# (L:XMLVAR_COM_Transmit_Channel) == or 100 * -->
-                </ANIM_CODE_SWITCH>
+                <ANIM_CODE_SWITCH>(L:XMLVAR_COM_#ID#_#FREQ_ID#_Switch_Down) 100 *</ANIM_CODE_SWITCH>
                 <ANIM_NAME_PUSH>#ANIM_NAME_SWITCH#</ANIM_NAME_PUSH>
                 <LEFT_SINGLE_CODE>
                     #SEQ1_POWERED# if{
