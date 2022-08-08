@@ -433,10 +433,8 @@
                     <!-- valueCopilot to save the value because PILOT_TRANSMITTER_SET sets it for the copilot too
                         It generates a script error in the console but it works
                     -->
-                    <LEFT_SINGLE_CODE type="rnp">
+                    <LEFT_SINGLE_CODE>
                         #SEQ1_POWERED# if{
-                            let valueCopilot=(L:XMLVAR_COM_PANEL2_Transmit_Channel);
-
                             #TRANSMIT_ID# (L:XMLVAR_COM_PANEL#ID#_Transmit_Channel) == if{
                                 4 (&gt;L:XMLVAR_COM_PANEL#ID#_Transmit_Channel)
                             } els{
@@ -449,7 +447,7 @@
                                 } els{
                                     #TRANSMIT_ID# (&gt;K:PILOT_TRANSMITTER_SET)
                                 }
-                                valueCopilot (&gt;K:COPILOT_TRANSMITTER_SET)
+                                (L:XMLVAR_COM_PANEL2_Transmit_Channel) (&gt;K:COPILOT_TRANSMITTER_SET)
                             } els{
                                 (A:COPILOT TRANSMITTER TYPE, Enum) #TRANSMIT_ID# == if{
                                     4 (&gt;K:COPILOT_TRANSMITTER_SET)
