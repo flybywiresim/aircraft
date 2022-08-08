@@ -430,9 +430,7 @@
                     <ANIM_NAME>#ANIM_NAME_BUTTON#</ANIM_NAME>
                     <SEQ1_NODE_ID>#NODE_ID_BUTTON_SEQ1#</SEQ1_NODE_ID>
                     <SEQ2_NODE_ID>#NODE_ID_BUTTON_SEQ2#</SEQ2_NODE_ID>
-                    <!-- valueCopilot to save the value because PILOT_TRANSMITTER_SET sets it for the copilot too
-                        It generates a script error in the console but it works
-                    -->
+                    <!-- XMLVAR_COM_PANEL2_Transmit_Channel into COPILOT_TRANSMITTER_SET because PILOT_TRANSMITTER_SET sets it for the copilot too -->
                     <LEFT_SINGLE_CODE>
                         #SEQ1_POWERED# if{
                             #TRANSMIT_ID# (L:XMLVAR_COM_PANEL#ID#_Transmit_Channel) == if{
