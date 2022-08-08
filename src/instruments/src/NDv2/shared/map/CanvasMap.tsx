@@ -1,13 +1,17 @@
+/* eslint-disable max-len */
 import { ClockEvents, DisplayComponent, EventBus, FSComponent, MappedSubject, Subscribable, VNode } from 'msfssdk';
-import { EfisVectorsGroup, NdSymbol, NdSymbolTypeFlags } from '@shared/NavigationDisplay';
+import { EfisNdMode, EfisVectorsGroup, NdSymbol, NdSymbolTypeFlags, NdTraffic } from '@shared/NavigationDisplay';
 import type { PathVector } from '@fmgc/guidance/lnav/PathVector';
-import { distanceTo } from 'msfs-geo';
+import { Coordinates, distanceTo } from 'msfs-geo';
+import { TaRaIntrusion } from '@tcas/lib/TcasConstants';
+import { MathUtils } from '@shared/MathUtils';
 import { FmsSymbolsData } from '../../FmsSymbolsPublisher';
 import { MapParameters } from '../../../ND/utils/MapParameters';
 import { NDSimvars } from '../../NDSimvarPublisher';
 import { WaypointLayer } from './WaypointLayer';
 import { ConstraintsLayer } from './ConstraintsLayer';
 import { RunwayLayer } from './RunwayLayer';
+import { TrafficLayer } from './TrafficLayer';
 import { FixInfoLayer } from './FixInfoLayer';
 
 export interface CanvasMapProps {
@@ -20,7 +24,7 @@ export interface CanvasMapProps {
     mapCenterLong: Subscribable<number>,
     mapRotation: Subscribable<number>,
     mapRangeRadius: Subscribable<number>,
-    mapClip: Subscribable<Path2D>;
+    mapMode: Subscribable<number>,
     mapVisible: Subscribable<boolean>,
 }
 
@@ -43,6 +47,8 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
 
     private readonly symbols: NdSymbol[] = [];
 
+    private readonly traffic: NdTraffic[] = [];
+
     private readonly mapParams = new MapParameters();
 
     public pointerX = 0;
@@ -56,6 +62,8 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
     private readonly constraintsLayer = new ConstraintsLayer();
 
     private readonly runwayLayer = new RunwayLayer();
+
+    private readonly trafficLayer = new TrafficLayer(this);
 
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
@@ -94,6 +102,10 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
         sub.on('vectorsActive').handle((data: PathVector[]) => {
             this.vectors[EfisVectorsGroup.ACTIVE].length = 0;
             this.vectors[EfisVectorsGroup.ACTIVE].push(...data);
+        });
+
+        sub.on('traffic').handle((data: NdTraffic[]) => {
+            this.handleNewTraffic(data);
         });
 
         sub.on('vectorsTemporary').handle((data: PathVector[]) => {
@@ -145,6 +157,56 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
         this.runwayLayer.data = runways;
     }
 
+    private handleNewTraffic(newTraffic: NdTraffic[]) {
+        this.traffic.length = 0; // Reset traffic display
+        if (this.props.mapMode.get() !== EfisNdMode.PLAN) {
+            newTraffic.forEach((intruder: NdTraffic) => {
+                const latLong: Coordinates = { lat: intruder.lat, long: intruder.lon };
+                let [x, y] = this.mapParams.coordinatesToXYy(latLong);
+
+                let tcasMask;
+                switch (this.props.mapMode.get()) {
+                case EfisNdMode.ARC:
+                    tcasMask = [
+                        [-384, -310], [-384, 0], [-264, 0], [-210, 59], [-210, 143],
+                        [210, 143], [210, 0], [267, -61], [384, -61],
+                        [384, -310], [340, -355], [300, -390], [240, -431.5],
+                        [180, -460], [100, -482], [0, -492], [-100, -482],
+                        [-180, -460], [-240, -431.5], [-300, -390], [-340, -355],
+                        [-384, -310],
+                    ];
+                    break;
+                case EfisNdMode.ROSE_NAV:
+                case EfisNdMode.ROSE_ILS:
+                case EfisNdMode.ROSE_VOR:
+                    tcasMask = [
+                        [-340, -227], [-103, -227], [-50, -244],
+                        [0, -250], [50, -244], [103, -227], [340, -227],
+                        [340, 180], [267, 180], [210, 241], [210, 383],
+                        [-210, 383], [-210, 300], [-264, 241], [-340, 241], [-340, -227],
+                    ];
+                    break;
+                default:
+                    break;
+                }
+
+                // Full time option installed: For all ranges except in ZOOM ranges NDRange > 9NM
+                if (!MathUtils.pointInPolygon(x, y, tcasMask)) {
+                    if (Math.abs(intruder.bitfield % 10) < TaRaIntrusion.TA) {
+                        // Remove if beyond viewable range
+                        return;
+                    }
+                    const ret: [number, number] | null = MathUtils.intersectWithPolygon(x, y, 0, 0, tcasMask);
+                    if (ret) [x, y] = ret;
+                }
+                intruder.posX = x;
+                intruder.posY = y;
+                this.traffic.push(intruder);
+            });
+        }
+        this.trafficLayer.data = this.traffic; // Populate with new traffic
+    }
+
     private handleFrame() {
         // console.log(`center: lat=${this.props.mapCenterLat.get()}, long=${this.props.mapCenterLong.get()}`);
 
@@ -154,7 +216,22 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
         context.clearRect(0, 0, this.props.width, this.props.height);
 
         context.translate(236, -6);
-        context.clip(this.props.mapClip.get());
+        switch (this.props.mapMode.get()) {
+        case EfisNdMode.ARC:
+            context.clip(new Path2D('M0,312 a492,492 0 0 1 768,0 L768,562 L648,562 L591,625 L591,768 L174,768 L174,683 L122,625 L0,625 L0,312'));
+            break;
+        case EfisNdMode.ROSE_NAV:
+        case EfisNdMode.ROSE_ILS:
+        case EfisNdMode.ROSE_VOR:
+            context.clip(new Path2D('M45,155 L282,155 a250,250 0 0 1 204,0 L723,155 L723,562 L648,562 L591,625 L591,768 L174,768 L174,683 L122,625 L45,625 L45,155'));
+            break;
+        case EfisNdMode.PLAN:
+            context.clip(new Path2D('M45,112 L140 112 280 56 488 56 628 112 723 112 723 720 114 720 114 633 45 633z'));
+            break;
+        default:
+            context.clip(new Path2D('M0,312 a492,492 0 0 1 768,0 L768,562 L648,562 L591,625 L591,768 L174,768 L174,683 L122,625 L0,625 L0,312'));
+            break;
+        }
         context.resetTransform();
 
         for (const key in this.vectors) {
@@ -178,6 +255,9 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
 
         this.runwayLayer.paintShadowLayer(context, this.props.width, this.props.height, this.mapParams);
         this.runwayLayer.paintColorLayer(context, this.props.width, this.props.height, this.mapParams);
+
+        this.trafficLayer.paintShadowLayer(context, this.props.width, this.props.height);
+        this.trafficLayer.paintColorLayer(context, this.props.width, this.props.height);
     }
 
     private drawVector(context: CanvasRenderingContext2D, vector: PathVector, group: EfisVectorsGroup) {

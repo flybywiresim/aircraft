@@ -199,14 +199,15 @@ export const Traffic: FC<TcasProps> = ({ mapParams, mode }) => {
 };
 
 type TrafficProp = {
-    x: number,
-    y: number,
-    relativeAlt: number,
-    vertSpeed: number,
-    intrusionLevel: TaRaIntrusion,
+    x: number | undefined,
+    y: number | undefined,
+    relativeAlt: number | undefined,
+    vertSpeed: number | undefined,
+    intrusionLevel: TaRaIntrusion | undefined,
 }
 
 const TrafficIndicator: FC<TrafficProp> = memo(({ x, y, relativeAlt, vertSpeed, intrusionLevel }) => {
+    if (relativeAlt === undefined || vertSpeed === undefined || x === undefined || y === undefined) return <></>;
     let color = '#ffffff';
     switch (intrusionLevel) {
     case TaRaIntrusion.TA:
@@ -258,11 +259,11 @@ const TrafficIndicator: FC<TrafficProp> = memo(({ x, y, relativeAlt, vertSpeed, 
 });
 
 type TrafficPropDebug = {
-    x: number,
-    y: number,
-    relativeAlt: number,
-    vertSpeed: number,
-    intrusionLevel: TaRaIntrusion,
+    x: number | undefined,
+    y: number | undefined,
+    relativeAlt: number | undefined,
+    vertSpeed: number | undefined,
+    intrusionLevel: TaRaIntrusion | undefined,
     ID: string,
     hidden: boolean | undefined,
     seen: number | undefined,
@@ -274,6 +275,7 @@ type TrafficPropDebug = {
 }
 
 const TrafficIndicatorDebug: FC<TrafficPropDebug> = memo(({ x, y, relativeAlt, vertSpeed, intrusionLevel, ID, hidden, seen, raTau, taTau, vTau, closureRate, closureAccel }) => {
+    if (relativeAlt === undefined || vertSpeed === undefined || x === undefined || y === undefined) return <></>;
     let color = '#ffffff';
     switch (intrusionLevel) {
     case TaRaIntrusion.TA:
