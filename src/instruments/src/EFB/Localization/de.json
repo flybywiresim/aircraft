@@ -85,7 +85,7 @@
       "YouHaveNotYetImportedAnySimBriefData": "Du hast noch keine SimBrief-Daten importiert."
     },
     "Overview": {
-      "ActualGW": "Actual GW",
+      "ActualGW": "Gesamtgewicht",
       "Engines": "Triebwerke",
       "MMO": "MMO",
       "MRW": "MRW",
@@ -135,23 +135,23 @@
       "Unavailable": "Nicht verfügbar"
     },
     "Payload": {
-      "BoardingTime": "Boarding Time",
-      "Cargo": "Cargo",
-      "Current": "Current",
-      "Passengers": "Passengers",
-      "Planned": "Planned",
+      "BoardingTime": "Boarding-Dauer",
+      "Cargo": "Fracht",
+      "Current": "Aktuell",
+      "Passengers": "Passagiere",
+      "Planned": "Geplant",
       "TT": {
-        "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Aircraft Must Be On the Ground and Have Engines Shutdown to Change Boarding Duration",
-        "FillPayloadFromSimbrief": "Fill Payload Information from Simbrief",
-        "MaxCargo": "Max Cargo",
-        "MaxPassengers": "Maximum Passengers",
-        "MaxZFW": "Maximum ZFW",
+        "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Flugzeug muss am Boden sein und die Triebwerke müssen ausgeschaltet sein, um die Boarding-Dauer zu ändern",
+        "FillPayloadFromSimbrief": "Beladungsdaten von Simbrief laden",
+        "MaxCargo": "Maximale Fracht",
+        "MaxPassengers": "Maximale Passagieranzahl",
+        "MaxZFW": "Maximales ZFW",
         "MaxZFWCG": "Maximum ZFWCG",
-        "PerPaxBagWeight": "Per Passenger Bag Weight",
-        "PerPaxWeight": "Per Passenger Weight",
-        "StartBoarding": "Begin Boarding"
+        "PerPaxBagWeight": "Gepäckgewicht per Passagier",
+        "PerPaxWeight": "Gewicht pro Passagier",
+        "StartBoarding": "Boarding starten"
       },
-      "Title": "Payload",
+      "Title": "Nutzlast",
       "ZFW": "ZFW",
       "ZFWCG": "ZFWCG"
     },
@@ -487,6 +487,7 @@
       "ConesEnabled": "Sicherheitskegel",
       "DefaultBarometerUnit": "Standard Barometer-Einheit",
       "DynamicRegistrationDecal": "Flugzeugkennzeichen dynamisch darstellen",
+      "EnableSimBridge": "SimBridge Serververbindung aktivieren (Wird nach 5 Minuten automatisch deaktiviert, wenn keine Verbindung zustande kommt)",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "MCDU Serververbindung aktivieren (Wird nach 5 Minuten automatisch deaktiviert, wenn keine Verbindung zustande kommt)",
       "ExternalMcduServerPort": "Externer MCDU-Serverport",
       "Hpa": "hPa",
@@ -495,6 +496,7 @@
       "None": "Aus",
       "Off": "Aus",
       "Save": "Zurückspeichern bei Änderung",
+      "SimBridgePort": "Externer SimBridge-Port",
       "SyncMsfsFlightPlan": "MSFS-Flugplan-Synchronisation",
       "ThrottleDetents": "Schubhebelkalibrierung",
       "Title": "Sim-Optionen",
