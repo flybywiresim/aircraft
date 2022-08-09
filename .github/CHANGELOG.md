@@ -314,6 +314,7 @@
 1. [ATSU] Add FANS-C simulation for CPDLC - @Sven [de en] - (Sven Czarnian)
 1. [ATSU] Add VDL3-simulation of datalink transport protocol - @Sven [de en] - (Sven Czarnian)
 1. [FMGC] Improve robustness of ILS auto-tuning - @tracernz (Mike)
+1. [ADDON] Simbridge Integration - @lucky38i (Alex)
 
 ## 0.7.0
 
