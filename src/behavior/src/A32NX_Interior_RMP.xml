@@ -112,29 +112,26 @@
             <BASE_NAME>VHF3</BASE_NAME>
         </UseTemplate>
 
-        <!-- Inop HF1 mode button and led -->
+        <!-- HF1 mode button and led -->
         <UseTemplate Name="FBW_Anim_Interactions">
             <ANIM_TYPE>BUTTON</ANIM_TYPE>
             <ANIM_TEMPLATE>FBW_RMP_MODE_BUTTON_AND_LED</ANIM_TEMPLATE>
-            <INOP>1</INOP>
             <BASE_NAME>HF1</BASE_NAME>
             <MODE_ID>4</MODE_ID>
         </UseTemplate>
 
-        <!-- Inop HF2 mode button and led -->
+        <!-- HF2 mode button and led -->
         <UseTemplate Name="FBW_Anim_Interactions">
             <ANIM_TYPE>BUTTON</ANIM_TYPE>
             <ANIM_TEMPLATE>FBW_RMP_MODE_BUTTON_AND_LED</ANIM_TEMPLATE>
-            <INOP>1</INOP>
             <BASE_NAME>HF2</BASE_NAME>
             <MODE_ID>5</MODE_ID>
         </UseTemplate>
 
-        <!-- Inop AM mode button and led -->
+        <!-- AM mode button and led -->
         <UseTemplate Name="FBW_Anim_Interactions">
             <ANIM_TYPE>BUTTON</ANIM_TYPE>
             <ANIM_TEMPLATE>FBW_RMP_MODE_BUTTON_AND_LED</ANIM_TEMPLATE>
-            <INOP>1</INOP>
             <BASE_NAME>AM</BASE_NAME>
             <MODE_ID>11</MODE_ID>
         </UseTemplate>
@@ -257,7 +254,6 @@
         <UseTemplate Name="FBW_Anim_Interactions">
             <ANIM_TYPE>BUTTON</ANIM_TYPE>
             <ANIM_TEMPLATE>FBW_RMP_MODE_BUTTON_AND_LED</ANIM_TEMPLATE>
-            <INOP>1</INOP>
             <BASE_NAME>BFO</BASE_NAME>
             <MODE_ID>10</MODE_ID>
         </UseTemplate>

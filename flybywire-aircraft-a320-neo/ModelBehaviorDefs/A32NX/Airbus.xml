@@ -566,53 +566,6 @@
         </UseTemplate>
     </Template>
 
-    <Template Name="FBW_AIRBUS_Dummy_Radio">
-        <DefaultTemplateParameters>
-        </DefaultTemplateParameters>
-
-        <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
-            <NODE_ID>#NODE_ID_CALL1#</NODE_ID>
-            <POTENTIOMETER_SEQ2>#POTENTIOMETER#</POTENTIOMETER_SEQ2>
-        </UseTemplate>
-        <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
-            <NODE_ID>#NODE_ID_CALL2#</NODE_ID>
-            <POTENTIOMETER_SEQ2>#POTENTIOMETER#</POTENTIOMETER_SEQ2>
-        </UseTemplate>
-        <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
-            <NODE_ID>#NODE_ID_CALL3#</NODE_ID>
-            <POTENTIOMETER_SEQ2>#POTENTIOMETER#</POTENTIOMETER_SEQ2>
-        </UseTemplate>
-        <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
-            <NODE_ID>#NODE_ID_CALL4#</NODE_ID>
-            <POTENTIOMETER_SEQ2>#POTENTIOMETER#</POTENTIOMETER_SEQ2>
-        </UseTemplate>
-        <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
-            <NODE_ID>#NODE_ID_CALL5#</NODE_ID>
-            <POTENTIOMETER_SEQ2>#POTENTIOMETER#</POTENTIOMETER_SEQ2>
-        </UseTemplate>
-        <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
-            <NODE_ID>#NODE_ID_MECH#</NODE_ID>
-            <POTENTIOMETER_SEQ2>#POTENTIOMETER#</POTENTIOMETER_SEQ2>
-        </UseTemplate>
-        <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
-            <NODE_ID>#NODE_ID_ATT#</NODE_ID>
-            <POTENTIOMETER_SEQ2>#POTENTIOMETER#</POTENTIOMETER_SEQ2>
-        </UseTemplate>
-        <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
-            <NODE_ID>#NODE_ID_VOICE#</NODE_ID>
-            <POTENTIOMETER_SEQ2>#POTENTIOMETER#</POTENTIOMETER_SEQ2>
-        </UseTemplate>
-        <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
-            <NODE_ID>#NODE_ID_RESET#</NODE_ID>
-            <ONLY_SEQ2/>
-            <POTENTIOMETER_SEQ2>#POTENTIOMETER#</POTENTIOMETER_SEQ2>
-        </UseTemplate>
-        <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
-            <NODE_ID>#NODE_ID_PA#</NODE_ID>
-            <ONLY_SEQ1/>
-        </UseTemplate>
-    </Template>
-
     <!-- ELAC switches -->
     <Template Name="FBW_AIRBUS_Push_ELAC_Template">
         <UseTemplate Name="FBW_Push_Toggle">
