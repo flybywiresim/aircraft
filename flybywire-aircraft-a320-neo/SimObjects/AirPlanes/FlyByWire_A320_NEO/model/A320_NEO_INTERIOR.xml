@@ -3908,8 +3908,8 @@
             <Component ID="Audio_Panel_Left">
                 <!-- Init of volume and transmit channels in default operation state: Transmit VHF1 and listen VHF1 and VFH2 -->
                 <Update Once="True">
-                    1 (&gt;L:XMLVAR_COM_PANEL1_Transmit_Channel)
-                    1 (&gt;L:XMLVAR_COM_PANEL2_Transmit_Channel)
+                    0 (&gt;L:XMLVAR_COM_PANEL1_Transmit_Channel)
+                    0 (&gt;L:XMLVAR_COM_PANEL2_Transmit_Channel)
 
                     1 (&gt;L:XMLVAR_COM_1_VHF_L_Switch_Down)
                     1 (&gt;L:XMLVAR_COM_1_VHF_C_Switch_Down)
