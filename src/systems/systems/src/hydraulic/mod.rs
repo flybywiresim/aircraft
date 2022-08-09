@@ -881,9 +881,11 @@ impl HydraulicCircuit {
         self.pump_sections[pump_id].fire_valve_is_open()
     }
 
-    pub fn update_actuator_volumes(&mut self, actuator: &mut impl Actuator) {
+    pub fn update_system_actuator_volumes(&mut self, actuator: &mut impl Actuator) {
         self.system_section.update_actuator_volumes(actuator);
+    }
 
+    pub fn update_auxiliary_actuator_volumes(&mut self, actuator: &mut impl Actuator) {
         if let Some(auxiliary_section) = self.auxiliary_section.as_mut() {
             auxiliary_section.update_actuator_volumes(actuator);
         }
@@ -1177,6 +1179,14 @@ impl HydraulicCircuit {
 
     pub fn system_section(&self) -> &impl SectionPressure {
         &self.system_section
+    }
+
+    pub fn auxiliary_section(&self) -> &impl SectionPressure {
+        if self.auxiliary_section.is_some() {
+            self.auxiliary_section.as_ref().unwrap()
+        } else {
+            &self.system_section
+        }
     }
 
     pub fn pump_section(&self, pump_index: usize) -> &impl SectionPressure {

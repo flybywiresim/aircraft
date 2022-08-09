@@ -1653,13 +1653,13 @@ impl A380Hydraulic {
         self.forward_cargo_door.update(
             context,
             &self.forward_cargo_door_controller,
-            self.yellow_circuit.system_section(),
+            self.yellow_circuit.auxiliary_section(),
         );
 
         self.aft_cargo_door.update(
             context,
             &self.aft_cargo_door_controller,
-            self.yellow_circuit.system_section(),
+            self.yellow_circuit.auxiliary_section(),
         );
 
         self.gear_system_hydraulic_controller.update(
@@ -1748,13 +1748,13 @@ impl A380Hydraulic {
         self.forward_cargo_door_controller.update(
             context,
             &self.forward_cargo_door,
-            self.yellow_circuit.system_section(),
+            self.yellow_circuit.auxiliary_section(),
         );
 
         self.aft_cargo_door_controller.update(
             context,
             &self.aft_cargo_door,
-            self.yellow_circuit.system_section(),
+            self.yellow_circuit.auxiliary_section(),
         );
 
         self.elac_computer.update(
@@ -1781,82 +1781,83 @@ impl A380Hydraulic {
 
     fn update_green_actuators_volume(&mut self) {
         self.green_circuit
-            .update_actuator_volumes(&mut self.braking_circuit_norm);
+            .update_system_actuator_volumes(&mut self.braking_circuit_norm);
 
-        self.green_circuit
-            .update_actuator_volumes(self.left_aileron.actuator(AileronActuatorPosition::Inboard));
-        self.green_circuit.update_actuator_volumes(
+        self.green_circuit.update_system_actuator_volumes(
+            self.left_aileron.actuator(AileronActuatorPosition::Inboard),
+        );
+        self.green_circuit.update_system_actuator_volumes(
             self.right_aileron
                 .actuator(AileronActuatorPosition::Inboard),
         );
 
-        self.green_circuit.update_actuator_volumes(
+        self.green_circuit.update_system_actuator_volumes(
             self.left_elevator
                 .actuator(ElevatorActuatorPosition::Inboard),
         );
 
         self.green_circuit
-            .update_actuator_volumes(self.rudder.actuator(RudderActuatorPosition::Green));
+            .update_system_actuator_volumes(self.rudder.actuator(RudderActuatorPosition::Green));
 
         self.green_circuit
-            .update_actuator_volumes(self.flap_system.left_motor());
+            .update_system_actuator_volumes(self.flap_system.left_motor());
         self.green_circuit
-            .update_actuator_volumes(self.slat_system.right_motor());
+            .update_system_actuator_volumes(self.slat_system.right_motor());
 
         self.green_circuit
-            .update_actuator_volumes(self.left_spoilers.actuator(0));
+            .update_system_actuator_volumes(self.left_spoilers.actuator(0));
         self.green_circuit
-            .update_actuator_volumes(self.left_spoilers.actuator(4));
+            .update_system_actuator_volumes(self.left_spoilers.actuator(4));
 
         self.green_circuit
-            .update_actuator_volumes(self.right_spoilers.actuator(0));
+            .update_system_actuator_volumes(self.right_spoilers.actuator(0));
         self.green_circuit
-            .update_actuator_volumes(self.right_spoilers.actuator(4));
+            .update_system_actuator_volumes(self.right_spoilers.actuator(4));
 
         for actuator in self.gear_system.all_actuators() {
-            self.green_circuit.update_actuator_volumes(actuator);
+            self.green_circuit.update_system_actuator_volumes(actuator);
         }
 
         self.green_circuit
-            .update_actuator_volumes(self.trim_assembly.left_motor());
+            .update_system_actuator_volumes(self.trim_assembly.left_motor());
     }
 
     fn update_yellow_actuators_volume(&mut self) {
         self.yellow_circuit
-            .update_actuator_volumes(&mut self.braking_circuit_altn);
+            .update_system_actuator_volumes(&mut self.braking_circuit_altn);
 
         self.yellow_circuit
-            .update_actuator_volumes(self.flap_system.right_motor());
+            .update_system_actuator_volumes(self.flap_system.right_motor());
 
         self.yellow_circuit
-            .update_actuator_volumes(self.forward_cargo_door.actuator());
+            .update_auxiliary_actuator_volumes(self.forward_cargo_door.actuator());
 
         self.yellow_circuit
-            .update_actuator_volumes(self.aft_cargo_door.actuator());
+            .update_auxiliary_actuator_volumes(self.aft_cargo_door.actuator());
 
         self.yellow_circuit
-            .update_actuator_volumes(&mut self.nose_steering);
+            .update_system_actuator_volumes(&mut self.nose_steering);
 
-        self.yellow_circuit.update_actuator_volumes(
+        self.yellow_circuit.update_system_actuator_volumes(
             self.right_elevator
                 .actuator(ElevatorActuatorPosition::Inboard),
         );
 
         self.yellow_circuit
-            .update_actuator_volumes(self.rudder.actuator(RudderActuatorPosition::Yellow));
+            .update_system_actuator_volumes(self.rudder.actuator(RudderActuatorPosition::Yellow));
 
         self.yellow_circuit
-            .update_actuator_volumes(self.left_spoilers.actuator(1));
+            .update_system_actuator_volumes(self.left_spoilers.actuator(1));
         self.yellow_circuit
-            .update_actuator_volumes(self.left_spoilers.actuator(3));
+            .update_system_actuator_volumes(self.left_spoilers.actuator(3));
 
         self.yellow_circuit
-            .update_actuator_volumes(self.right_spoilers.actuator(1));
+            .update_system_actuator_volumes(self.right_spoilers.actuator(1));
         self.yellow_circuit
-            .update_actuator_volumes(self.right_spoilers.actuator(3));
+            .update_system_actuator_volumes(self.right_spoilers.actuator(3));
 
         self.yellow_circuit
-            .update_actuator_volumes(self.trim_assembly.right_motor());
+            .update_system_actuator_volumes(self.trim_assembly.right_motor());
     }
 
     // All the core hydraulics updates that needs to be done at the slowest fixed step rate
