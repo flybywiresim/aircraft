@@ -715,13 +715,28 @@
                     <ANIM_NAME>#ANIM_NAME_BUTTON#</ANIM_NAME>
                     <SEQ1_NODE_ID>#NODE_ID_BUTTON_SEQ1#</SEQ1_NODE_ID>
                     <SEQ2_NODE_ID>#NODE_ID_BUTTON_SEQ2#</SEQ2_NODE_ID>
+                    <!-- XMLVAR_COM_PANEL2_Transmit_Channel into COPILOT_TRANSMITTER_SET because PILOT_TRANSMITTER_SET sets it for the copilot too -->
                     <LEFT_SINGLE_CODE>
                         #SEQ1_POWERED# if{
-                            (A:COM TRANSMIT:#Radio_ID#, Bool) ! (&gt;K:COM#Radio_ID#_TRANSMIT_SELECT)
-                            #Button_ID# (L:XMLVAR_COM_PANEL#ID#_Transmit_Channel) == if{
-                                0 (&gt;L:XMLVAR_COM_PANEL#ID#_Transmit_Channel)
+                            #TRANSMIT_ID# (L:XMLVAR_COM_PANEL#ID#_Transmit_Channel) == if{
+                                4 (&gt;L:XMLVAR_COM_PANEL#ID#_Transmit_Channel)
                             } els{
-                                #Button_ID# (&gt;L:XMLVAR_COM_PANEL#ID#_Transmit_Channel)
+                                #TRANSMIT_ID# (&gt;L:XMLVAR_COM_PANEL#ID#_Transmit_Channel)
+                            }
+
+                            #ID# 1 == if{
+                                (A:PILOT TRANSMITTER TYPE, Enum) #TRANSMIT_ID# == if{
+                                    4 (&gt;K:PILOT_TRANSMITTER_SET)
+                                } els{
+                                    #TRANSMIT_ID# (&gt;K:PILOT_TRANSMITTER_SET)
+                                }
+                                (L:XMLVAR_COM_PANEL2_Transmit_Channel) (&gt;K:COPILOT_TRANSMITTER_SET)
+                            } els{
+                                (A:COPILOT TRANSMITTER TYPE, Enum) #TRANSMIT_ID# == if{
+                                    4 (&gt;K:COPILOT_TRANSMITTER_SET)
+                                } els{
+                                    #TRANSMIT_ID# (&gt;K:COPILOT_TRANSMITTER_SET)
+                                }
                             }
                         }
                     </LEFT_SINGLE_CODE>
@@ -776,13 +791,7 @@
                         (L:XMLVAR_COM_#ID#_Volume_#FREQ_ID#) #VOLUME_INCREMENT# - 0 max (&gt;L:XMLVAR_COM_#ID#_Volume_#FREQ_ID#)
                     }
                 </ANTICLOCKWISE_CODE>
-                <ANIM_CODE_SWITCH>
-                    <!-- Code disabled because I did not understand its purpose when I fixed the RMPs -->
-                    <!-- No changes seen but I don't want to delete code I don't understand -->
-
-                    <!-- (L:XMLVAR_COM_#ID#_#FREQ_ID#_Switch_Down) -->
-                    <!-- #Button_ID# (L:XMLVAR_COM_Transmit_Channel) == or 100 * -->
-                </ANIM_CODE_SWITCH>
+                <ANIM_CODE_SWITCH>(L:XMLVAR_COM_#ID#_#FREQ_ID#_Switch_Down) 100*</ANIM_CODE_SWITCH>
                 <ANIM_NAME_PUSH>#ANIM_NAME_SWITCH#</ANIM_NAME_PUSH>
                 <LEFT_SINGLE_CODE>
                     #SEQ1_POWERED# if{
