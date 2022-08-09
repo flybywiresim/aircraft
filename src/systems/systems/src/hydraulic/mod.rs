@@ -881,11 +881,15 @@ impl HydraulicCircuit {
         self.pump_sections[pump_id].fire_valve_is_open()
     }
 
-    pub fn update_actuator_volumes(&mut self, actuator: &mut impl Actuator) {
+    pub fn update_system_actuator_volumes(&mut self, actuator: &mut impl Actuator) {
         self.system_section.update_actuator_volumes(actuator);
+    }
 
+    pub fn update_auxiliary_actuator_volumes(&mut self, actuator: &mut impl Actuator) {
         if let Some(auxiliary_section) = self.auxiliary_section.as_mut() {
             auxiliary_section.update_actuator_volumes(actuator);
+        } else {
+            panic!("No auxiliary section available but an actuator was provided")
         }
     }
 
