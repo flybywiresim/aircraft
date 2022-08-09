@@ -68,7 +68,7 @@ export const SimOptionsPage = () => {
                         </SelectGroup>
                     </SettingItem>
 
-                    <SettingItem name={t('Settings.SimOptions.EnableSimbridge')}>
+                    <SettingItem name={t('Settings.SimOptions.EnableSimBridge')}>
                         <SelectGroup>
                             <SelectItem
                                 className="text-center color-red"
@@ -90,7 +90,7 @@ export const SimOptionsPage = () => {
                         </div>
                     </SettingItem>
 
-                    <SettingItem name={t('Settings.SimOptions.SimbridgePort')}>
+                    <SettingItem name={t('Settings.SimOptions.SimBridgePort')}>
                         <SimpleInput
                             className="text-center w-30"
                             value={simbridgePort}
