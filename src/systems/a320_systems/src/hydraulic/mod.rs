@@ -1253,9 +1253,9 @@ pub(super) struct A320Hydraulic {
     hyd_ptu_ecam_memo_id: VariableIdentifier,
     ptu_high_pitch_sound_id: VariableIdentifier,
     ptu_continuous_mode_id: VariableIdentifier,
-    debug_pump: f64,
 
-    debug_pump_to_aux: VariableIdentifier,
+    should_pump_to_auxiliary_section: bool, // TODO remove when a380 system available
+    dev_should_pump_to_aux: VariableIdentifier, // TODO remove when a380 system available
 
     nose_steering: SteeringActuator,
 
@@ -1390,8 +1390,8 @@ impl A320Hydraulic {
             hyd_ptu_ecam_memo_id: context.get_identifier("HYD_PTU_ON_ECAM_MEMO".to_owned()),
             ptu_high_pitch_sound_id: context.get_identifier("HYD_PTU_HIGH_PITCH_SOUND".to_owned()),
             ptu_continuous_mode_id: context.get_identifier("HYD_PTU_CONTINUOUS_MODE".to_owned()),
-            debug_pump_to_aux: context.get_identifier("HYD_PUMP_TO_AUX".to_owned()),
-            debug_pump: 0.,
+            dev_should_pump_to_aux: context.get_identifier("HYD_PUMP_TO_AUX".to_owned()),
+            should_pump_to_auxiliary_section: false,
 
             nose_steering: SteeringActuator::new(
                 context,
@@ -2412,7 +2412,7 @@ impl SimulationElement for A320Hydraulic {
     }
 
     fn read(&mut self, reader: &mut SimulatorReader) {
-        self.debug_pump = reader.read(&self.debug_pump_to_aux);
+        self.should_pump_to_auxiliary_section = reader.read(&self.dev_should_pump_to_aux);
     }
 }
 impl HydraulicGeneratorControlUnit for A320Hydraulic {
