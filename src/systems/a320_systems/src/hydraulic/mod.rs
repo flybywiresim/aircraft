@@ -136,6 +136,7 @@ impl A320HydraulicCircuitFactory {
             Pressure::new::<psi>(Self::MIN_PRESS_EDP_SECTION_HI_HYST),
             false,
             false,
+            true,
             Pressure::new::<psi>(Self::HYDRAULIC_TARGET_PRESSURE_PSI),
         )
     }
@@ -155,6 +156,7 @@ impl A320HydraulicCircuitFactory {
             Pressure::new::<psi>(Self::MIN_PRESS_EDP_SECTION_HI_HYST),
             false,
             false,
+            true,
             Pressure::new::<psi>(Self::HYDRAULIC_TARGET_PRESSURE_PSI),
         )
     }
@@ -2097,6 +2099,7 @@ impl A380Hydraulic {
                 &mut self.green_electric_pump_b,
             ],
             None::<&mut ElectricPump>,
+            None::<&mut ElectricPump>,
             None,
             &self.green_circuit_controller,
             reservoir_pneumatics.green_reservoir_pressure(),
@@ -2118,6 +2121,7 @@ impl A380Hydraulic {
                 &mut self.yellow_electric_pump_a,
                 &mut self.yellow_electric_pump_b,
             ],
+            None::<&mut ElectricPump>,
             None::<&mut ElectricPump>,
             None,
             &self.yellow_circuit_controller,
@@ -2318,9 +2322,11 @@ struct A380HydraulicCircuitController {
     should_open_fire_shutoff_valve: [bool; 2],
     should_open_leak_measurement_valve: bool,
     cargo_door_in_use: DelayedFalseLogicGate,
+    routing_epump_sections_to_aux: DelayedTrueLogicGate,
 }
 impl A380HydraulicCircuitController {
     const DELAY_TO_REOPEN_LEAK_VALVE_AFTER_CARGO_DOOR_USE: Duration = Duration::from_secs(15);
+    const DELAY_TO_CLOSE_AUX_SELECTOR_ON_CARGO_DOOR_USE: Duration = Duration::from_millis(150);
 
     fn new(circuit_id: HydraulicColor) -> Self {
         Self {
@@ -2330,6 +2336,9 @@ impl A380HydraulicCircuitController {
             cargo_door_in_use: DelayedFalseLogicGate::new(
                 Self::DELAY_TO_REOPEN_LEAK_VALVE_AFTER_CARGO_DOOR_USE,
             ),
+            routing_epump_sections_to_aux: DelayedTrueLogicGate::new(
+                Self::DELAY_TO_CLOSE_AUX_SELECTOR_ON_CARGO_DOOR_USE,
+            ),
         }
     }
 
@@ -2338,12 +2347,15 @@ impl A380HydraulicCircuitController {
         context: &UpdateContext,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         overhead_panel: &A380HydraulicOverheadPanel,
-        yellow_epump_controller: &A380ElectricPumpController,
+        epump_controller: &A380ElectricPumpController,
     ) {
         self.cargo_door_in_use.update(
             context,
-            yellow_epump_controller.should_pressurise_for_cargo_door_operation(),
+            epump_controller.should_pressurise_for_cargo_door_operation(),
         );
+
+        self.routing_epump_sections_to_aux
+            .update(context, self.cargo_door_in_use.output());
 
         match self.circuit_id {
             HydraulicColor::Green => {
@@ -2401,6 +2413,14 @@ impl HydraulicCircuitController for A380HydraulicCircuitController {
 
     fn should_open_leak_measurement_valve(&self) -> bool {
         self.should_open_leak_measurement_valve
+    }
+
+    fn should_route_pump_to_auxiliary(&self, pump_index: usize) -> bool {
+        if pump_index <= 4 || pump_index >= 5 && !(self.routing_epump_sections_to_aux.output()) {
+            false
+        } else {
+            true
+        }
     }
 }
 
@@ -2636,15 +2656,11 @@ struct A380ElectricPumpController {
     is_required_for_cargo_door_operation: DelayedFalseLogicGate,
     should_pressurise_for_cargo_door_operation: bool,
 
-    is_closing_auxiliary_selector_valve: DelayedTrueLogicGate,
-
     low_pressure_hystereris: bool,
 }
 impl A380ElectricPumpController {
     const DURATION_OF_YELLOW_PUMP_ACTIVATION_AFTER_CARGO_DOOR_OPERATION: Duration =
         Duration::from_secs(20);
-
-    const CLOSING_DELAY_FOR_AUXILIARY_SELECTOR_VALVE: Duration = Duration::from_millis(100);
 
     const LOW_PRESS_HYSTERESIS_HIGH_PSI: f64 = 1750.;
     const LOW_PRESS_HYSTERESIS_LOW_PSI: f64 = 1450.;
@@ -2674,10 +2690,6 @@ impl A380ElectricPumpController {
                 Self::DURATION_OF_YELLOW_PUMP_ACTIVATION_AFTER_CARGO_DOOR_OPERATION,
             ),
             should_pressurise_for_cargo_door_operation: false,
-
-            is_closing_auxiliary_selector_valve: DelayedTrueLogicGate::new(
-                Self::CLOSING_DELAY_FOR_AUXILIARY_SELECTOR_VALVE,
-            ),
 
             low_pressure_hystereris: false,
         }
@@ -2753,9 +2765,6 @@ impl A380ElectricPumpController {
         self.should_pressurise_for_cargo_door_operation =
             self.is_required_for_cargo_door_operation.output()
                 && !overhead_panel.yellow_epump_a_push_button.is_on();
-
-        self.is_closing_auxiliary_selector_valve
-            .update(context, self.should_pressurise_for_cargo_door_operation);
     }
 
     fn update_low_air_pressure(
@@ -2795,10 +2804,6 @@ impl A380ElectricPumpController {
 impl PumpController for A380ElectricPumpController {
     fn should_pressurise(&self) -> bool {
         self.should_pressurise
-    }
-
-    fn should_select_auxiliary_section(&self) -> bool {
-        self.is_closing_auxiliary_selector_valve.output()
     }
 }
 impl SimulationElement for A380ElectricPumpController {
@@ -5763,6 +5768,10 @@ mod tests {
 
             fn yellow_pressure(&mut self) -> Pressure {
                 self.read_by_name("HYD_YELLOW_SYSTEM_1_SECTION_PRESSURE")
+            }
+
+            fn yellow_pressure_auxiliary(&mut self) -> Pressure {
+                self.read_by_name("HYD_YELLOW_AUXILIARY_1_SECTION_PRESSURE")
             }
 
             fn get_yellow_reservoir_volume(&mut self) -> Volume {
@@ -9435,6 +9444,24 @@ mod tests {
 
             assert!(test_bed.get_brake_left_green_pressure() > Pressure::new::<psi>(500.));
             assert!(test_bed.get_brake_right_green_pressure() > Pressure::new::<psi>(500.));
+        }
+
+        #[test]
+        fn yellow_epump_buildup_auxiliary_section() {
+            let mut test_bed = test_bed_on_ground_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
+
+            // Waiting for 5s pressure should be at 3000 psi
+            test_bed = test_bed
+                .open_fwd_cargo_door()
+                .run_waiting_for(Duration::from_secs(5));
+
+            assert!(!test_bed.is_yellow_pressure_switch_pressurised());
+            assert!(test_bed.yellow_pressure() <= Pressure::new::<psi>(1500.));
+            assert!(test_bed.yellow_pressure_auxiliary() > Pressure::new::<psi>(2800.));
         }
     }
 }
