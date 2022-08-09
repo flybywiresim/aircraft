@@ -946,12 +946,15 @@ impl HydraulicCircuit {
         }
 
         for (pump_index, _) in self.pump_sections.iter_mut().enumerate() {
-            if self.pump_section_routed_to_auxiliary_section[pump_index] {
-                if let Some(auxiliary_section) = self.auxiliary_section.as_mut() {
-                    auxiliary_section.update_upstream_delta_vol(std::slice::from_ref(
+            if self.auxiliary_section.is_some()
+                && self.pump_section_routed_to_auxiliary_section[pump_index]
+            {
+                self.auxiliary_section
+                    .as_mut()
+                    .unwrap()
+                    .update_upstream_delta_vol(std::slice::from_ref(
                         &self.pump_sections_check_valves[pump_index],
                     ));
-                }
             } else {
                 self.system_section
                     .update_upstream_delta_vol(std::slice::from_ref(
@@ -999,23 +1002,18 @@ impl HydraulicCircuit {
 
     fn update_maximum_valve_flows(&mut self, context: &UpdateContext) {
         for (pump_section_idx, valve) in self.pump_sections_check_valves.iter_mut().enumerate() {
-            if self.auxiliary_section.is_some()
-                && self.pump_section_routed_to_auxiliary_section[pump_section_idx]
-            {
-                valve.update_flow_forecast(
-                    context,
-                    &self.pump_sections[pump_section_idx],
-                    self.auxiliary_section.as_mut().unwrap(),
-                    &self.fluid,
-                );
-            } else {
-                valve.update_flow_forecast(
-                    context,
-                    &self.pump_sections[pump_section_idx],
-                    &self.system_section,
-                    &self.fluid,
-                );
-            }
+            valve.update_flow_forecast(
+                context,
+                &self.pump_sections[pump_section_idx],
+                if self.auxiliary_section.is_some()
+                    && self.pump_section_routed_to_auxiliary_section[pump_section_idx]
+                {
+                    self.auxiliary_section.as_mut().unwrap()
+                } else {
+                    &self.system_section
+                },
+                &self.fluid,
+            );
         }
     }
 
@@ -1111,23 +1109,25 @@ impl HydraulicCircuit {
             }
         }
 
-        let section = if to_auxiliary {
+        let downstream_section = if to_auxiliary {
             &self.auxiliary_section.as_ref().unwrap()
         } else {
             &self.system_section
         };
 
-        let used_system_volume = section.volume_target.max(Volume::new::<gallon>(0.));
+        let used_downstream_volume = downstream_section
+            .volume_target
+            .max(Volume::new::<gallon>(0.));
 
-        if used_system_volume >= total_max_valves_volume {
-            // If all the volume upstream is used by system section, each valve will provide its max volume available
+        if used_downstream_volume >= total_max_valves_volume {
+            // If all the volume upstream is used by downstream section, each valve will provide its max volume available
             for (idx, valve) in &mut self.pump_sections_check_valves.iter_mut().enumerate() {
                 if self.pump_section_routed_to_auxiliary_section[idx] == to_auxiliary {
                     valve.current_volume = valve.max_virtual_volume;
                 }
             }
         } else if total_max_valves_volume > Volume::new::<gallon>(0.) {
-            let needed_ratio = used_system_volume / total_max_valves_volume;
+            let needed_ratio = used_downstream_volume / total_max_valves_volume;
 
             for (idx, valve) in &mut self.pump_sections_check_valves.iter_mut().enumerate() {
                 if self.pump_section_routed_to_auxiliary_section[idx] == to_auxiliary {
