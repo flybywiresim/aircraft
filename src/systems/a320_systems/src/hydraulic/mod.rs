@@ -2085,7 +2085,7 @@ impl A380Hydraulic {
             context,
             engine_fire_push_buttons,
             overhead_panel,
-            &self.yellow_electric_pump_a_controller,
+            &self.green_electric_pump_a_controller,
         );
 
         self.green_circuit.update(
@@ -2326,7 +2326,7 @@ struct A380HydraulicCircuitController {
 }
 impl A380HydraulicCircuitController {
     const DELAY_TO_REOPEN_LEAK_VALVE_AFTER_CARGO_DOOR_USE: Duration = Duration::from_secs(15);
-    const DELAY_TO_CLOSE_AUX_SELECTOR_ON_CARGO_DOOR_USE: Duration = Duration::from_millis(150);
+    const DELAY_TO_CLOSE_AUX_SELECTOR_ON_CARGO_DOOR_USE: Duration = Duration::from_millis(450);
 
     fn new(circuit_id: HydraulicColor) -> Self {
         Self {
@@ -2353,6 +2353,14 @@ impl A380HydraulicCircuitController {
             context,
             epump_controller.should_pressurise_for_cargo_door_operation(),
         );
+
+        if self.circuit_id == HydraulicColor::Yellow {
+            println!(
+                "Y control door in use {:?}, should route aux {:?}",
+                self.cargo_door_in_use.output(),
+                self.routing_epump_sections_to_aux.output()
+            );
+        }
 
         self.routing_epump_sections_to_aux
             .update(context, self.cargo_door_in_use.output());
@@ -2416,7 +2424,7 @@ impl HydraulicCircuitController for A380HydraulicCircuitController {
     }
 
     fn should_route_pump_to_auxiliary(&self, pump_index: usize) -> bool {
-        if pump_index <= 4 || pump_index >= 5 && !(self.routing_epump_sections_to_aux.output()) {
+        if pump_index < 4 || pump_index >= 4 && !(self.routing_epump_sections_to_aux.output()) {
             false
         } else {
             true
@@ -2711,7 +2719,7 @@ impl A380ElectricPumpController {
             aft_cargo_door_controller,
         );
 
-        self.should_pressurise = (overhead_panel.yellow_epump_a_push_button.is_on()
+        self.should_pressurise = (overhead_panel.epump_button_is_on(self.pump_id)
             || self.is_required_for_cargo_door_operation.output())
             && self.is_powered;
 
@@ -2764,7 +2772,7 @@ impl A380ElectricPumpController {
 
         self.should_pressurise_for_cargo_door_operation =
             self.is_required_for_cargo_door_operation.output()
-                && !overhead_panel.yellow_epump_a_push_button.is_on();
+                && !overhead_panel.epump_button_is_on(self.pump_id);
     }
 
     fn update_low_air_pressure(
@@ -2773,7 +2781,7 @@ impl A380ElectricPumpController {
         overhead_panel: &A380HydraulicOverheadPanel,
     ) {
         self.has_air_pressure_low_fault =
-            reservoir.is_low_air_pressure() && !overhead_panel.yellow_epump_push_button_is_auto();
+            reservoir.is_low_air_pressure() && !overhead_panel.epump_button_is_auto(self.pump_id);
     }
 
     fn update_low_level(
@@ -2782,7 +2790,7 @@ impl A380ElectricPumpController {
         overhead_panel: &A380HydraulicOverheadPanel,
     ) {
         self.has_low_level_fault =
-            reservoir.is_low_level() && !overhead_panel.yellow_epump_push_button_is_auto();
+            reservoir.is_low_level() && !overhead_panel.epump_button_is_auto(self.pump_id);
     }
 
     fn has_pressure_low_fault(&self) -> bool {
@@ -4020,8 +4028,13 @@ impl A380HydraulicOverheadPanel {
             .set_fault(hyd.yellow_epump_has_fault());
     }
 
-    fn yellow_epump_push_button_is_auto(&self) -> bool {
-        self.yellow_epump_a_push_button.is_auto()
+    fn epump_button_is_auto(&self, pump_id: A380ElectricPumpId) -> bool {
+        match pump_id {
+            A380ElectricPumpId::EpumpGreenA => self.green_epump_a_push_button.is_auto(),
+            A380ElectricPumpId::EpumpGreenB => self.green_epump_b_push_button.is_auto(),
+            A380ElectricPumpId::EpumpYellowA => self.yellow_epump_a_push_button.is_auto(),
+            A380ElectricPumpId::EpumpYellowB => self.yellow_epump_b_push_button.is_auto(),
+        }
     }
 
     fn edp_push_button_is_auto(&self, pump_id: A380EngineDrivenPumpId) -> bool {
@@ -4050,8 +4063,13 @@ impl A380HydraulicOverheadPanel {
         }
     }
 
-    fn rat_man_on_push_button_is_pressed(&self) -> bool {
-        self.rat_push_button.is_pressed()
+    fn epump_button_is_on(&self, pump_id: A380ElectricPumpId) -> bool {
+        match pump_id {
+            A380ElectricPumpId::EpumpGreenA => self.green_epump_a_push_button.is_on(),
+            A380ElectricPumpId::EpumpGreenB => self.green_epump_b_push_button.is_on(),
+            A380ElectricPumpId::EpumpYellowA => self.yellow_epump_a_push_button.is_on(),
+            A380ElectricPumpId::EpumpYellowB => self.yellow_epump_b_push_button.is_on(),
+        }
     }
 
     fn green_leak_measurement_valve_is_on(&self) -> bool {
@@ -9455,6 +9473,10 @@ mod tests {
                 .run_one_tick();
 
             // Waiting for 5s pressure should be at 3000 psi
+            test_bed = test_bed.open_fwd_cargo_door().run_waiting_for(
+                A320DoorController::DELAY_UNLOCK_TO_HYDRAULIC_CONTROL + Duration::from_secs(5),
+            );
+
             test_bed = test_bed
                 .open_fwd_cargo_door()
                 .run_waiting_for(Duration::from_secs(5));
