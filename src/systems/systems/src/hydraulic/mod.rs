@@ -1927,9 +1927,6 @@ impl PressurizeableReservoir for Reservoir {
 
 pub trait PumpController {
     fn should_pressurise(&self) -> bool;
-    fn should_select_auxiliary_section(&self) -> bool {
-        false
-    }
 }
 
 pub struct Pump {
