@@ -4,6 +4,7 @@
 #pragma once
 
 #include <iostream>
+#include <memory>
 
 #include "../FlyPadBackend.h"
 #include "../inih/ini.h"
@@ -54,7 +55,7 @@ private:
 
   bool isInitialized = false;
 
-  LightingSimVars* simVars;
+  std::unique_ptr<LightingSimVars> simVars;
 
 public:
   /**
@@ -67,12 +68,14 @@ public:
    * @param simVars pointer to the LightSimVars object for reading and writing
    * the simulation variables.
    */
-  LightPreset() : simVars(new LightingSimVars()) {};
+  LightPreset() {
+    simVars = std::make_unique<LightingSimVars>();
+  };
 
   /**
-   * Destroys the LightPreset object.
+   * Destructor
    */
-  ~LightPreset() { delete simVars; }
+  ~LightPreset() = default;
 
   /**
    * Called when SimConnect is initialized

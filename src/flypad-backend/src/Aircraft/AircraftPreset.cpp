@@ -6,14 +6,6 @@
 
 #include "AircraftPreset.h"
 
-AircraftPreset::AircraftPreset() {
-  m_Units = new Units();
-}
-
-AircraftPreset::~AircraftPreset() {
-  delete m_Units;
-}
-
 void AircraftPreset::initialize() {
   LoadAircraftPresetRequest = register_named_variable("A32NX_AIRCRAFT_PRESET_LOAD");
   this->setLoadAircraftPresetRequest(0);
