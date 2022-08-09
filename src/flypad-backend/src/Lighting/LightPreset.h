@@ -70,6 +70,11 @@ public:
   LightPreset() : simVars(new LightingSimVars()) {};
 
   /**
+   * Destroys the LightPreset object.
+   */
+  ~LightPreset() { delete simVars; }
+
+  /**
    * Called when SimConnect is initialized
    */
   void initialize();
