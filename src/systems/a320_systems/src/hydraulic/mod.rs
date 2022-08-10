@@ -1662,13 +1662,13 @@ impl A380Hydraulic {
         self.forward_cargo_door.update(
             context,
             &self.forward_cargo_door_controller,
-            self.yellow_circuit.auxiliary_section(),
+            self.green_circuit.auxiliary_section(),
         );
 
         self.aft_cargo_door.update(
             context,
             &self.aft_cargo_door_controller,
-            self.yellow_circuit.auxiliary_section(),
+            self.green_circuit.auxiliary_section(),
         );
 
         self.gear_system_hydraulic_controller.update(
@@ -1757,13 +1757,13 @@ impl A380Hydraulic {
         self.forward_cargo_door_controller.update(
             context,
             &self.forward_cargo_door,
-            self.yellow_circuit.auxiliary_section(),
+            self.green_circuit.auxiliary_section(),
         );
 
         self.aft_cargo_door_controller.update(
             context,
             &self.aft_cargo_door,
-            self.yellow_circuit.auxiliary_section(),
+            self.green_circuit.auxiliary_section(),
         );
 
         self.elac_computer.update(
@@ -1806,6 +1806,12 @@ impl A380Hydraulic {
         );
 
         self.green_circuit
+            .update_auxiliary_actuator_volumes(self.forward_cargo_door.actuator());
+
+        self.green_circuit
+            .update_auxiliary_actuator_volumes(self.aft_cargo_door.actuator());
+
+        self.green_circuit
             .update_system_actuator_volumes(self.rudder.actuator(RudderActuatorPosition::Green));
 
         self.green_circuit
@@ -1837,12 +1843,6 @@ impl A380Hydraulic {
 
         self.yellow_circuit
             .update_system_actuator_volumes(self.flap_system.right_motor());
-
-        self.yellow_circuit
-            .update_auxiliary_actuator_volumes(self.forward_cargo_door.actuator());
-
-        self.yellow_circuit
-            .update_auxiliary_actuator_volumes(self.aft_cargo_door.actuator());
 
         self.yellow_circuit
             .update_system_actuator_volumes(&mut self.nose_steering);
