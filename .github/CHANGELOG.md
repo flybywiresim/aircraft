@@ -58,6 +58,7 @@
 1. [MODEL] Added new animated gear gravity extension handle- @tyler58546 (tyler58546), @MoreRightRudder (Mike), @Crocket63 (crocket), @Lantarius
 1. [MCDU] Hide stored elements on A/C Status when there are none - @tracernz (Mike)
 1. [FMGC] Fix ident for CD legs - @tracernz (Mike)
+1. [HYD] Refactor plane accelerations and added filtering to handle ground collisions - @Crocket63 (crocket)
 1. [FMGC] Improve procedure loading performance - @tracernz (Mike)
 
 ## 0.8.0
