@@ -2364,14 +2364,6 @@ impl A380HydraulicCircuitController {
             epump_controller.should_pressurise_for_cargo_door_operation(),
         );
 
-        if self.circuit_id == HydraulicColor::Yellow {
-            println!(
-                "Y control door in use {:?}, should route aux {:?}",
-                self.cargo_door_in_use.output(),
-                self.routing_epump_sections_to_aux.output()
-            );
-        }
-
         self.routing_epump_sections_to_aux
             .update(context, self.cargo_door_in_use.output());
 
@@ -2443,7 +2435,7 @@ impl HydraulicCircuitController for A380HydraulicCircuitController {
 }
 
 use std::fmt::Display;
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq)]
 enum A380EngineDrivenPumpId {
     Edp1a,
     Edp1b,
@@ -2621,6 +2613,17 @@ impl A380EngineDrivenPumpController {
         self.should_pressurise = (!self.is_powered || should_pressurise_if_powered)
             && !overhead_panel.engines_edp_disconnected(self.pump_id.into_engine_num());
 
+        if self.pump_id == A380EngineDrivenPumpId::Edp1a {
+            println!(
+                "EDP1a should press {:?} final should press {:?} Ovh is_disco {:?} Ovhedp is auto {:?} Ovhedp is off {:?}",
+                should_pressurise_if_powered,
+                self.should_pressurise,
+                overhead_panel.engines_edp_disconnected(self.pump_id.into_engine_num()),
+                overhead_panel.edp_push_button_is_auto(self.pump_id),
+                overhead_panel.edp_push_button_is_off(self.pump_id),
+            );
+        }
+
         self.update_low_pressure(engines, hydraulic_circuit, lgciu);
 
         self.update_low_air_pressure(reservoir, overhead_panel);
@@ -2675,15 +2678,10 @@ struct A380ElectricPumpController {
 
     is_required_for_cargo_door_operation: DelayedFalseLogicGate,
     should_pressurise_for_cargo_door_operation: bool,
-
-    low_pressure_hystereris: bool,
 }
 impl A380ElectricPumpController {
     const DURATION_OF_YELLOW_PUMP_ACTIVATION_AFTER_CARGO_DOOR_OPERATION: Duration =
         Duration::from_secs(20);
-
-    const LOW_PRESS_HYSTERESIS_HIGH_PSI: f64 = 1750.;
-    const LOW_PRESS_HYSTERESIS_LOW_PSI: f64 = 1450.;
 
     fn new(
         context: &mut InitContext,
@@ -2710,8 +2708,6 @@ impl A380ElectricPumpController {
                 Self::DURATION_OF_YELLOW_PUMP_ACTIVATION_AFTER_CARGO_DOOR_OPERATION,
             ),
             should_pressurise_for_cargo_door_operation: false,
-
-            low_pressure_hystereris: false,
         }
     }
 
@@ -2733,6 +2729,7 @@ impl A380ElectricPumpController {
 
         self.should_pressurise = (overhead_panel.epump_button_on_is_on(self.pump_id)
             || self.is_required_for_cargo_door_operation.output())
+            && !overhead_panel.epump_button_off_is_off(self.pump_id)
             && self.is_powered;
 
         self.update_low_pressure(hydraulic_circuit);
@@ -2743,30 +2740,11 @@ impl A380ElectricPumpController {
     }
 
     fn update_low_pressure(&mut self, hydraulic_circuit: &impl HydraulicPressureSensors) {
-        self.update_low_pressure_hysteresis(hydraulic_circuit);
-
-        self.is_pressure_low = self.should_pressurise() && !self.low_pressure_hystereris;
+        self.is_pressure_low = self.should_pressurise()
+            && !hydraulic_circuit
+                .pump_section_switch_pressurised(self.pump_id.into_pump_section_index());
 
         self.has_pressure_low_fault = self.is_pressure_low;
-    }
-
-    fn update_low_pressure_hysteresis(
-        &mut self,
-        hydraulic_circuit: &impl HydraulicPressureSensors,
-    ) {
-        if hydraulic_circuit
-            .system_section_pressure_transducer()
-            .get::<psi>()
-            > Self::LOW_PRESS_HYSTERESIS_HIGH_PSI
-        {
-            self.low_pressure_hystereris = true;
-        } else if hydraulic_circuit
-            .system_section_pressure_transducer()
-            .get::<psi>()
-            < Self::LOW_PRESS_HYSTERESIS_LOW_PSI
-        {
-            self.low_pressure_hystereris = false;
-        }
     }
 
     fn update_cargo_door_logic(
@@ -4094,6 +4072,19 @@ impl A380HydraulicOverheadPanel {
             .set_fault(hyd.epump_has_fault(A380ElectricPumpId::EpumpGreenA));
         self.green_epump_b_off_push_button
             .set_fault(hyd.epump_has_fault(A380ElectricPumpId::EpumpGreenB));
+
+        if self.yellow_epump_a_off_push_button.is_off() {
+            self.yellow_epump_a_on_push_button.push_auto()
+        }
+        if self.yellow_epump_b_off_push_button.is_off() {
+            self.yellow_epump_b_on_push_button.push_auto()
+        }
+        if self.yellow_epump_a_off_push_button.is_off() {
+            self.yellow_epump_a_on_push_button.push_auto()
+        }
+        if self.green_epump_b_off_push_button.is_off() {
+            self.green_epump_b_on_push_button.push_auto()
+        }
     }
 
     fn epump_button_on_is_auto(&self, pump_id: A380ElectricPumpId) -> bool {
