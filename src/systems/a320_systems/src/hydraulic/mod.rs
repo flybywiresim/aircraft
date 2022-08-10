@@ -46,7 +46,8 @@ use systems::{
     },
     landing_gear::{GearSystemSensors, LandingGearControlInterfaceUnitSet},
     overhead::{
-        AutoOffFaultPushButton, AutoOnFaultPushButton, MomentaryOnPushButton, MomentaryPushButton,
+        AutoOffFaultPushButton, AutoOnFaultPushButton, FaultReleasePushButton,
+        MomentaryOnPushButton, MomentaryPushButton,
     },
     shared::{
         interpolation,
@@ -1537,13 +1538,21 @@ impl A380Hydraulic {
         }
     }
 
-    fn yellow_epump_has_fault(&self) -> bool {
-        self.yellow_electric_pump_a_controller
-            .has_pressure_low_fault()
-            || self
-                .yellow_electric_pump_a_controller
-                .has_air_pressure_low_fault()
-            || self.yellow_electric_pump_a_controller.has_low_level_fault()
+    fn epump_has_fault(&self, pump_id: A380ElectricPumpId) -> bool {
+        match pump_id {
+            A380ElectricPumpId::EpumpYellowA => {
+                self.yellow_electric_pump_a_controller.has_any_fault()
+            }
+            A380ElectricPumpId::EpumpYellowB => {
+                self.yellow_electric_pump_b_controller.has_any_fault()
+            }
+            A380ElectricPumpId::EpumpGreenA => {
+                self.green_electric_pump_a_controller.has_any_fault()
+            }
+            A380ElectricPumpId::EpumpGreenB => {
+                self.green_electric_pump_b_controller.has_any_fault()
+            }
+        }
     }
 
     pub fn green_reservoir(&self) -> &Reservoir {
@@ -3963,13 +3972,20 @@ pub(super) struct A380HydraulicOverheadPanel {
     edp3b_push_button: AutoOffFaultPushButton,
     edp4b_push_button: AutoOffFaultPushButton,
 
-    rat_push_button: MomentaryPushButton,
+    eng1_edp_disconnect: FaultReleasePushButton,
+    eng2_edp_disconnect: FaultReleasePushButton,
+    eng3_edp_disconnect: FaultReleasePushButton,
+    eng4_edp_disconnect: FaultReleasePushButton,
 
-    yellow_epump_a_push_button: AutoOnFaultPushButton,
-    yellow_epump_b_push_button: AutoOnFaultPushButton,
+    yellow_epump_a_on_push_button: AutoOnFaultPushButton,
+    yellow_epump_b_on_push_button: AutoOnFaultPushButton,
+    green_epump_a_on_push_button: AutoOnFaultPushButton,
+    green_epump_b_on_push_button: AutoOnFaultPushButton,
 
-    green_epump_a_push_button: AutoOnFaultPushButton,
-    green_epump_b_push_button: AutoOnFaultPushButton,
+    yellow_epump_a_off_push_button: AutoOffFaultPushButton,
+    yellow_epump_b_off_push_button: AutoOffFaultPushButton,
+    green_epump_a_off_push_button: AutoOffFaultPushButton,
+    green_epump_b_off_push_button: AutoOffFaultPushButton,
 
     green_leak_measurement_push_button: AutoOffFaultPushButton,
     yellow_leak_measurement_push_button: AutoOffFaultPushButton,
@@ -3986,13 +4002,46 @@ impl A380HydraulicOverheadPanel {
             edp3b_push_button: AutoOffFaultPushButton::new_auto(context, "HYD_ENG_3B_PUMP"),
             edp4b_push_button: AutoOffFaultPushButton::new_auto(context, "HYD_ENG_4B_PUMP"),
 
-            rat_push_button: MomentaryPushButton::new(context, "HYD_RAT_MAN_ON"),
+            eng1_edp_disconnect: FaultReleasePushButton::new_in(context, "HYD_ENG1_DISCONNECT"),
+            eng2_edp_disconnect: FaultReleasePushButton::new_in(context, "HYD_ENG2_DISCONNECT"),
+            eng3_edp_disconnect: FaultReleasePushButton::new_in(context, "HYD_ENG3_DISCONNECT"),
+            eng4_edp_disconnect: FaultReleasePushButton::new_in(context, "HYD_ENG4_DISCONNECT"),
 
-            yellow_epump_a_push_button: AutoOnFaultPushButton::new_auto(context, "HYD_EPUMPYA"),
-            yellow_epump_b_push_button: AutoOnFaultPushButton::new_auto(context, "HYD_EPUMPYB"),
+            yellow_epump_a_on_push_button: AutoOnFaultPushButton::new_auto(
+                context,
+                "HYD_EPUMPYA_ON",
+            ),
+            yellow_epump_b_on_push_button: AutoOnFaultPushButton::new_auto(
+                context,
+                "HYD_EPUMPYB_ON",
+            ),
 
-            green_epump_a_push_button: AutoOnFaultPushButton::new_auto(context, "HYD_EPUMPGA"),
-            green_epump_b_push_button: AutoOnFaultPushButton::new_auto(context, "HYD_EPUMPGB"),
+            green_epump_a_on_push_button: AutoOnFaultPushButton::new_auto(
+                context,
+                "HYD_EPUMPGA_ON",
+            ),
+            green_epump_b_on_push_button: AutoOnFaultPushButton::new_auto(
+                context,
+                "HYD_EPUMPGB_ON",
+            ),
+
+            yellow_epump_a_off_push_button: AutoOffFaultPushButton::new_auto(
+                context,
+                "HYD_EPUMPYA_OFF",
+            ),
+            yellow_epump_b_off_push_button: AutoOffFaultPushButton::new_auto(
+                context,
+                "HYD_EPUMPYB_OFF",
+            ),
+
+            green_epump_a_off_push_button: AutoOffFaultPushButton::new_auto(
+                context,
+                "HYD_EPUMPGA_OFF",
+            ),
+            green_epump_b_off_push_button: AutoOffFaultPushButton::new_auto(
+                context,
+                "HYD_EPUMPGB_OFF",
+            ),
 
             green_leak_measurement_push_button: AutoOffFaultPushButton::new_auto(
                 context,
@@ -4025,16 +4074,23 @@ impl A380HydraulicOverheadPanel {
         self.edp4b_push_button
             .set_fault(hyd.edp_has_fault(A380EngineDrivenPumpId::Edp4b));
 
-        self.yellow_epump_a_push_button
-            .set_fault(hyd.yellow_epump_has_fault());
+        self.yellow_epump_a_off_push_button
+            .set_fault(hyd.epump_has_fault(A380ElectricPumpId::EpumpYellowA));
+        self.yellow_epump_b_off_push_button
+            .set_fault(hyd.epump_has_fault(A380ElectricPumpId::EpumpYellowB));
+
+        self.green_epump_a_off_push_button
+            .set_fault(hyd.epump_has_fault(A380ElectricPumpId::EpumpGreenA));
+        self.green_epump_b_off_push_button
+            .set_fault(hyd.epump_has_fault(A380ElectricPumpId::EpumpGreenB));
     }
 
     fn epump_button_is_auto(&self, pump_id: A380ElectricPumpId) -> bool {
         match pump_id {
-            A380ElectricPumpId::EpumpGreenA => self.green_epump_a_push_button.is_auto(),
-            A380ElectricPumpId::EpumpGreenB => self.green_epump_b_push_button.is_auto(),
-            A380ElectricPumpId::EpumpYellowA => self.yellow_epump_a_push_button.is_auto(),
-            A380ElectricPumpId::EpumpYellowB => self.yellow_epump_b_push_button.is_auto(),
+            A380ElectricPumpId::EpumpGreenA => self.green_epump_a_on_push_button.is_auto(),
+            A380ElectricPumpId::EpumpGreenB => self.green_epump_b_on_push_button.is_auto(),
+            A380ElectricPumpId::EpumpYellowA => self.yellow_epump_a_on_push_button.is_auto(),
+            A380ElectricPumpId::EpumpYellowB => self.yellow_epump_b_on_push_button.is_auto(),
         }
     }
 
@@ -4066,10 +4122,10 @@ impl A380HydraulicOverheadPanel {
 
     fn epump_button_is_on(&self, pump_id: A380ElectricPumpId) -> bool {
         match pump_id {
-            A380ElectricPumpId::EpumpGreenA => self.green_epump_a_push_button.is_on(),
-            A380ElectricPumpId::EpumpGreenB => self.green_epump_b_push_button.is_on(),
-            A380ElectricPumpId::EpumpYellowA => self.yellow_epump_a_push_button.is_on(),
-            A380ElectricPumpId::EpumpYellowB => self.yellow_epump_b_push_button.is_on(),
+            A380ElectricPumpId::EpumpGreenA => self.green_epump_a_on_push_button.is_on(),
+            A380ElectricPumpId::EpumpGreenB => self.green_epump_b_on_push_button.is_on(),
+            A380ElectricPumpId::EpumpYellowA => self.yellow_epump_a_on_push_button.is_on(),
+            A380ElectricPumpId::EpumpYellowB => self.yellow_epump_b_on_push_button.is_on(),
         }
     }
 
@@ -4085,17 +4141,30 @@ impl SimulationElement for A380HydraulicOverheadPanel {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.edp1a_push_button.accept(visitor);
         self.edp2a_push_button.accept(visitor);
+        self.edp3a_push_button.accept(visitor);
+        self.edp4a_push_button.accept(visitor);
 
-        self.rat_push_button.accept(visitor);
+        self.edp1b_push_button.accept(visitor);
+        self.edp2b_push_button.accept(visitor);
+        self.edp3b_push_button.accept(visitor);
+        self.edp4b_push_button.accept(visitor);
 
-        self.yellow_epump_a_push_button.accept(visitor);
-        self.yellow_epump_b_push_button.accept(visitor);
+        self.eng1_edp_disconnect.accept(visitor);
+        self.eng2_edp_disconnect.accept(visitor);
+        self.eng3_edp_disconnect.accept(visitor);
+        self.eng4_edp_disconnect.accept(visitor);
 
-        self.green_epump_a_push_button.accept(visitor);
-        self.green_epump_b_push_button.accept(visitor);
+        self.yellow_epump_a_on_push_button.accept(visitor);
+        self.yellow_epump_b_on_push_button.accept(visitor);
+        self.green_epump_a_on_push_button.accept(visitor);
+        self.green_epump_b_on_push_button.accept(visitor);
+
+        self.yellow_epump_a_off_push_button.accept(visitor);
+        self.yellow_epump_b_off_push_button.accept(visitor);
+        self.green_epump_a_off_push_button.accept(visitor);
+        self.green_epump_b_off_push_button.accept(visitor);
 
         self.green_leak_measurement_push_button.accept(visitor);
-
         self.yellow_leak_measurement_push_button.accept(visitor);
 
         visitor.visit(self);
