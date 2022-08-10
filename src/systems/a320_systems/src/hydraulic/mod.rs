@@ -2815,6 +2815,10 @@ impl A380ElectricPumpController {
         self.has_low_level_fault
     }
 
+    fn has_any_fault(&self) -> bool {
+        self.has_low_level_fault || self.has_air_pressure_low_fault || self.has_pressure_low_fault
+    }
+
     fn should_pressurise_for_cargo_door_operation(&self) -> bool {
         self.should_pressurise_for_cargo_door_operation
     }
