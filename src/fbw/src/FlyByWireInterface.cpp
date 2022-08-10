@@ -461,6 +461,8 @@ void FlyByWireInterface::setupLocalVariables() {
   idRealisticTillerEnabled = make_unique<LocalVariable>("A32NX_REALISTIC_TILLER_ENABLED");
   idTillerHandlePosition = make_unique<LocalVariable>("A32NX_TILLER_HANDLE_POSITION");
   idNoseWheelPosition = make_unique<LocalVariable>("A32NX_NOSE_WHEEL_POSITION");
+
+  idSyncFoEfisEnabled = make_unique<LocalVariable>("A32NX_FO_SYNC_EFIS_ENABLED");
 }
 
 bool FlyByWireInterface::handleFcuInitialization(double sampleTime) {
@@ -763,6 +765,8 @@ bool FlyByWireInterface::updateAdditionalData(double sampleTime) {
   additionalData.realisticTillerEnabled = idRealisticTillerEnabled->get() == 1;
   additionalData.tillerHandlePosition = idTillerHandlePosition->get();
   additionalData.noseWheelPosition = idNoseWheelPosition->get();
+
+  additionalData.syncFoEfisEnabled = idSyncFoEfisEnabled->get() == 1;
 
   return true;
 }
@@ -1069,6 +1073,17 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
     }
   }
 
+
+  static bool last_fd1_active = simData.ap_fd_1_active;
+  if (additionalData.syncFoEfisEnabled)
+  {
+    if (last_fd1_active != simData.ap_fd_1_active)
+    {
+      simConnectInterface.sendEvent(SimConnectInterface::Events::TOGGLE_FLIGHT_DIRECTOR, 2);
+    }
+  }
+  last_fd1_active = simData.ap_fd_1_active;
+  
   // update FMA variables ---------------------------------------------------------------------------------------------
   idFmaLateralMode->set(autopilotStateMachineOutput.lateral_mode);
   idFmaLateralArmed->set(autopilotStateMachineOutput.lateral_mode_armed);

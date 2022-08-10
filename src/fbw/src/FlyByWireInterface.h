@@ -337,6 +337,8 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idTillerHandlePosition;
   std::unique_ptr<LocalVariable> idNoseWheelPosition;
 
+  std::unique_ptr<LocalVariable> idSyncFoEfisEnabled;
+
   void loadConfiguration();
   void setupLocalVariables();
 
