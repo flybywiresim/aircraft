@@ -2035,6 +2035,7 @@ impl A380Hydraulic {
             &self.aft_cargo_door_controller,
             &self.green_circuit,
             self.green_circuit.reservoir(),
+            engines,
         );
         self.green_electric_pump_a.update(
             context,
@@ -2050,6 +2051,7 @@ impl A380Hydraulic {
             &self.aft_cargo_door_controller,
             &self.green_circuit,
             self.green_circuit.reservoir(),
+            engines,
         );
         self.green_electric_pump_b.update(
             context,
@@ -2066,6 +2068,7 @@ impl A380Hydraulic {
             &self.aft_cargo_door_controller,
             &self.yellow_circuit,
             self.yellow_circuit.reservoir(),
+            engines,
         );
         self.yellow_electric_pump_a.update(
             context,
@@ -2082,6 +2085,7 @@ impl A380Hydraulic {
             &self.aft_cargo_door_controller,
             &self.yellow_circuit,
             self.yellow_circuit.reservoir(),
+            engines,
         );
         self.yellow_electric_pump_b.update(
             context,
@@ -2613,17 +2617,6 @@ impl A380EngineDrivenPumpController {
         self.should_pressurise = (!self.is_powered || should_pressurise_if_powered)
             && !overhead_panel.engines_edp_disconnected(self.pump_id.into_engine_num());
 
-        if self.pump_id == A380EngineDrivenPumpId::Edp1a {
-            println!(
-                "EDP1a should press {:?} final should press {:?} Ovh is_disco {:?} Ovhedp is auto {:?} Ovhedp is off {:?}",
-                should_pressurise_if_powered,
-                self.should_pressurise,
-                overhead_panel.engines_edp_disconnected(self.pump_id.into_engine_num()),
-                overhead_panel.edp_push_button_is_auto(self.pump_id),
-                overhead_panel.edp_push_button_is_off(self.pump_id),
-            );
-        }
-
         self.update_low_pressure(engines, hydraulic_circuit, lgciu);
 
         self.update_low_air_pressure(reservoir, overhead_panel);
@@ -2719,6 +2712,7 @@ impl A380ElectricPumpController {
         aft_cargo_door_controller: &A320DoorController,
         hydraulic_circuit: &impl HydraulicPressureSensors,
         reservoir: &Reservoir,
+        engines: [&impl Engine; 4],
     ) {
         self.update_cargo_door_logic(
             context,
@@ -2730,6 +2724,7 @@ impl A380ElectricPumpController {
         self.should_pressurise = (overhead_panel.epump_button_on_is_on(self.pump_id)
             || self.is_required_for_cargo_door_operation.output())
             && !overhead_panel.epump_button_off_is_off(self.pump_id)
+            && !self.is_any_engine_running(engines)
             && self.is_powered;
 
         self.update_low_pressure(hydraulic_circuit);
@@ -2737,6 +2732,15 @@ impl A380ElectricPumpController {
         self.update_low_air_pressure(reservoir, overhead_panel);
 
         self.update_low_level(reservoir, overhead_panel);
+    }
+
+    // Should be the feedback used to disable elec pumps running when engines are on
+    // Place holder logic for now using oil press
+    fn is_any_engine_running(&self, engines: [&impl Engine; 4]) -> bool {
+        !(engines[0].oil_pressure_is_low()
+            && engines[1].oil_pressure_is_low()
+            && engines[2].oil_pressure_is_low()
+            && engines[3].oil_pressure_is_low())
     }
 
     fn update_low_pressure(&mut self, hydraulic_circuit: &impl HydraulicPressureSensors) {
@@ -4079,8 +4083,8 @@ impl A380HydraulicOverheadPanel {
         if self.yellow_epump_b_off_push_button.is_off() {
             self.yellow_epump_b_on_push_button.push_auto()
         }
-        if self.yellow_epump_a_off_push_button.is_off() {
-            self.yellow_epump_a_on_push_button.push_auto()
+        if self.green_epump_a_off_push_button.is_off() {
+            self.green_epump_a_on_push_button.push_auto()
         }
         if self.green_epump_b_off_push_button.is_off() {
             self.green_epump_b_on_push_button.push_auto()
