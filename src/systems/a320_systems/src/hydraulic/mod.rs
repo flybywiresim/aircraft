@@ -2617,7 +2617,9 @@ impl A380EngineDrivenPumpController {
         }
 
         // Inverted logic, no power means solenoid valve always leave pump in pressurise mode
-        self.should_pressurise = !self.is_powered || should_pressurise_if_powered;
+        // TODO disconnected pump is just depressurising it as a placeholder for disc mechanism
+        self.should_pressurise = (!self.is_powered || should_pressurise_if_powered)
+            && !overhead_panel.engines_edp_disconnected(self.pump_id.into_engine_num());
 
         self.update_low_pressure(engines, hydraulic_circuit, lgciu);
 
@@ -4100,6 +4102,16 @@ impl A380HydraulicOverheadPanel {
             A380ElectricPumpId::EpumpGreenB => self.green_epump_b_on_push_button.is_auto(),
             A380ElectricPumpId::EpumpYellowA => self.yellow_epump_a_on_push_button.is_auto(),
             A380ElectricPumpId::EpumpYellowB => self.yellow_epump_b_on_push_button.is_auto(),
+        }
+    }
+
+    fn engines_edp_disconnected(&self, engine_num: usize) -> bool {
+        match engine_num {
+            1 => !self.eng1_edp_disconnect.is_auto(),
+            2 => !self.eng2_edp_disconnect.is_auto(),
+            3 => !self.eng3_edp_disconnect.is_auto(),
+            4 => !self.eng4_edp_disconnect.is_auto(),
+            _ => panic!("Only 4 engines on A380"),
         }
     }
 
