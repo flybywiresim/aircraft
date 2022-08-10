@@ -2500,7 +2500,7 @@ impl Display for A380EngineDrivenPumpId {
     }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq)]
 enum A380ElectricPumpId {
     EpumpGreenA,
     EpumpGreenB,
@@ -2729,7 +2729,7 @@ impl A380ElectricPumpController {
             aft_cargo_door_controller,
         );
 
-        self.should_pressurise = (overhead_panel.epump_button_is_on(self.pump_id)
+        self.should_pressurise = (overhead_panel.epump_button_on_is_on(self.pump_id)
             || self.is_required_for_cargo_door_operation.output())
             && self.is_powered;
 
@@ -2774,15 +2774,20 @@ impl A380ElectricPumpController {
         forward_cargo_door_controller: &A320DoorController,
         aft_cargo_door_controller: &A320DoorController,
     ) {
-        self.is_required_for_cargo_door_operation.update(
-            context,
-            forward_cargo_door_controller.should_pressurise_hydraulics()
-                || aft_cargo_door_controller.should_pressurise_hydraulics(),
-        );
+        // Only cargo logic for green side
+        if self.pump_id == A380ElectricPumpId::EpumpGreenA
+            || self.pump_id == A380ElectricPumpId::EpumpGreenB
+        {
+            self.is_required_for_cargo_door_operation.update(
+                context,
+                forward_cargo_door_controller.should_pressurise_hydraulics()
+                    || aft_cargo_door_controller.should_pressurise_hydraulics(),
+            );
 
-        self.should_pressurise_for_cargo_door_operation =
-            self.is_required_for_cargo_door_operation.output()
-                && !overhead_panel.epump_button_is_on(self.pump_id);
+            self.should_pressurise_for_cargo_door_operation =
+                self.is_required_for_cargo_door_operation.output()
+                    && !overhead_panel.epump_button_on_is_on(self.pump_id);
+        }
     }
 
     fn update_low_air_pressure(
@@ -2790,8 +2795,8 @@ impl A380ElectricPumpController {
         reservoir: &Reservoir,
         overhead_panel: &A380HydraulicOverheadPanel,
     ) {
-        self.has_air_pressure_low_fault =
-            reservoir.is_low_air_pressure() && !overhead_panel.epump_button_is_auto(self.pump_id);
+        self.has_air_pressure_low_fault = reservoir.is_low_air_pressure()
+            && !overhead_panel.epump_button_off_is_off(self.pump_id);
     }
 
     fn update_low_level(
@@ -2800,7 +2805,7 @@ impl A380ElectricPumpController {
         overhead_panel: &A380HydraulicOverheadPanel,
     ) {
         self.has_low_level_fault =
-            reservoir.is_low_level() && !overhead_panel.epump_button_is_auto(self.pump_id);
+            reservoir.is_low_level() && !overhead_panel.epump_button_off_is_off(self.pump_id);
     }
 
     fn has_pressure_low_fault(&self) -> bool {
@@ -4089,12 +4094,21 @@ impl A380HydraulicOverheadPanel {
             .set_fault(hyd.epump_has_fault(A380ElectricPumpId::EpumpGreenB));
     }
 
-    fn epump_button_is_auto(&self, pump_id: A380ElectricPumpId) -> bool {
+    fn epump_button_on_is_auto(&self, pump_id: A380ElectricPumpId) -> bool {
         match pump_id {
             A380ElectricPumpId::EpumpGreenA => self.green_epump_a_on_push_button.is_auto(),
             A380ElectricPumpId::EpumpGreenB => self.green_epump_b_on_push_button.is_auto(),
             A380ElectricPumpId::EpumpYellowA => self.yellow_epump_a_on_push_button.is_auto(),
             A380ElectricPumpId::EpumpYellowB => self.yellow_epump_b_on_push_button.is_auto(),
+        }
+    }
+
+    fn epump_button_off_is_off(&self, pump_id: A380ElectricPumpId) -> bool {
+        match pump_id {
+            A380ElectricPumpId::EpumpGreenA => self.green_epump_a_off_push_button.is_off(),
+            A380ElectricPumpId::EpumpGreenB => self.green_epump_b_off_push_button.is_off(),
+            A380ElectricPumpId::EpumpYellowA => self.yellow_epump_a_off_push_button.is_off(),
+            A380ElectricPumpId::EpumpYellowB => self.yellow_epump_b_off_push_button.is_off(),
         }
     }
 
@@ -4124,7 +4138,7 @@ impl A380HydraulicOverheadPanel {
         }
     }
 
-    fn epump_button_is_on(&self, pump_id: A380ElectricPumpId) -> bool {
+    fn epump_button_on_is_on(&self, pump_id: A380ElectricPumpId) -> bool {
         match pump_id {
             A380ElectricPumpId::EpumpGreenA => self.green_epump_a_on_push_button.is_on(),
             A380ElectricPumpId::EpumpGreenB => self.green_epump_b_on_push_button.is_on(),
