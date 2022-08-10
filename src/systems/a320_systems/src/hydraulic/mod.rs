@@ -4011,10 +4011,10 @@ impl A380HydraulicOverheadPanel {
             edp3b_push_button: AutoOffFaultPushButton::new_auto(context, "HYD_ENG_3B_PUMP"),
             edp4b_push_button: AutoOffFaultPushButton::new_auto(context, "HYD_ENG_4B_PUMP"),
 
-            eng1_edp_disconnect: AutoOffFaultPushButton::new_auto(context, "ENG_1AB_PUMP_DISC"),
-            eng2_edp_disconnect: AutoOffFaultPushButton::new_auto(context, "ENG_2AB_PUMP_DISC"),
-            eng3_edp_disconnect: AutoOffFaultPushButton::new_auto(context, "ENG_3AB_PUMP_DISC"),
-            eng4_edp_disconnect: AutoOffFaultPushButton::new_auto(context, "ENG_4AB_PUMP_DISC"),
+            eng1_edp_disconnect: AutoOffFaultPushButton::new_auto(context, "HYD_ENG_1AB_PUMP_DISC"),
+            eng2_edp_disconnect: AutoOffFaultPushButton::new_auto(context, "HYD_ENG_2AB_PUMP_DISC"),
+            eng3_edp_disconnect: AutoOffFaultPushButton::new_auto(context, "HYD_ENG_3AB_PUMP_DISC"),
+            eng4_edp_disconnect: AutoOffFaultPushButton::new_auto(context, "HYD_ENG_4AB_PUMP_DISC"),
 
             yellow_epump_a_on_push_button: AutoOnFaultPushButton::new_auto(
                 context,
