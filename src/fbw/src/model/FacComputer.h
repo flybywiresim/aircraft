@@ -25,6 +25,11 @@ class FacComputer final
     boolean_T pU_not_empty;
   };
 
+  struct rtDW_MATLABFunction_FacComputer_f_T {
+    real_T timeSinceCondition;
+    boolean_T output;
+  };
+
   struct BlockIO_FacComputer_T {
     base_fac_logic_outputs logic;
     base_fac_flight_envelope_outputs flight_envelope;
@@ -509,7 +514,6 @@ class FacComputer final
     real_T Delay_DSTATE_d;
     real_T Delay_DSTATE_m;
     real_T Delay_DSTATE_k;
-    real_T timeSinceCondition;
     real_T pY;
     real_T pU;
     real_T pY_n;
@@ -517,13 +521,14 @@ class FacComputer final
     uint8_T is_active_c15_FacComputer;
     uint8_T is_c15_FacComputer;
     boolean_T Memory_PreviousInput;
-    boolean_T output;
     boolean_T pY_not_empty;
     boolean_T pU_not_empty;
     boolean_T previousInput;
     boolean_T previousInput_not_empty;
     boolean_T pY_not_empty_l;
     boolean_T Runtime_MODE;
+    rtDW_MATLABFunction_FacComputer_f_T sf_MATLABFunction_ax;
+    rtDW_MATLABFunction_FacComputer_f_T sf_MATLABFunction_p;
     rtDW_LagFilter_FacComputer_T sf_LagFilter_c;
     rtDW_LagFilter_FacComputer_g_T sf_LagFilter_d;
     rtDW_LagFilter_FacComputer_T sf_LagFilter_f;
@@ -575,6 +580,7 @@ class FacComputer final
     real_T BitfromLabel5_bit;
     real_T BitfromLabel6_bit;
     real_T BitfromLabel7_bit;
+    real_T BitfromLabel8_bit;
     real_T BitfromLabel_bit_j;
     real_T BitfromLabel1_bit_e;
     real_T BitfromLabel6_bit_m;
@@ -586,7 +592,7 @@ class FacComputer final
     real_T BitfromLabel4_bit_c;
     real_T BitfromLabel5_bit_g;
     real_T BitfromLabel9_bit;
-    real_T BitfromLabel8_bit;
+    real_T BitfromLabel8_bit_i;
     real_T BitfromLabel_bit_a;
     real_T BitfromLabel1_bit_i;
     real_T BitfromLabel2_bit_di;
@@ -605,6 +611,7 @@ class FacComputer final
     real_T RateLimiterGenericVariableTs2_lo;
     real_T RateLimiterVariableTs_lo;
     real_T ConfirmNode_timeDelay;
+    real_T ConfirmNode_timeDelay_l;
     real_T RateLimiterGenericVariableTs1_up;
     real_T RateLimiterGenericVariableTs1_up_g;
     real_T RateLimiterGenericVariableTs4_up;
@@ -618,8 +625,9 @@ class FacComputer final
     real32_T CompareToConstant1_const;
     real32_T CompareToConstant2_const;
     boolean_T SRFlipFlop_initial_condition;
-    boolean_T PulseNode_isRisingEdge;
     boolean_T ConfirmNode_isRisingEdge;
+    boolean_T PulseNode_isRisingEdge;
+    boolean_T ConfirmNode_isRisingEdge_o;
     fac_outputs out_Y0;
     base_fac_bus Constant4_Value;
     real_T Constant_Value;
@@ -747,6 +755,9 @@ class FacComputer final
   static void FacComputer_LagFilter_n_Reset(rtDW_LagFilter_FacComputer_g_T *localDW);
   static void FacComputer_LagFilter_k(real32_T rtu_U, real_T rtu_C1, real_T rtu_dt, real32_T *rty_Y,
     rtDW_LagFilter_FacComputer_g_T *localDW);
+  static void FacComputer_MATLABFunction_i_Reset(rtDW_MATLABFunction_FacComputer_f_T *localDW);
+  static void FacComputer_MATLABFunction_p(boolean_T rtu_u, real_T rtu_Ts, boolean_T rtu_isRisingEdge, real_T
+    rtu_timeDelay, boolean_T *rty_y, rtDW_MATLABFunction_FacComputer_f_T *localDW);
   static void FacComputer_MATLABFunction_g(const boolean_T rtu_u[19], real32_T *rty_y);
 };
 
