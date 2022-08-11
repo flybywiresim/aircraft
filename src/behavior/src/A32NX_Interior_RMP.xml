@@ -6,27 +6,6 @@
     </Template>
 
     <Template Name="FBW_RMP_CONTROLS_Template">
-        <Component ID="RMP_SWITCH_INT_#SIDE#" Node="SWITCH_AUDIO#SIDE#_INT">
-            <UseTemplate Name="FBW_Anim_Interactions">
-                <MouseFlags>LeftSingle+RightSingle</MouseFlags>
-                <ANIM_TYPE>SWITCH</ANIM_TYPE>
-                <ANIM_TEMPLATE>ASOBO_GT_Switch_Code</ANIM_TEMPLATE>
-                <ANIM_LENGTH>100</ANIM_LENGTH>
-                <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
-                <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
-                <ANIM_NAME>SWITCH_AUDIO#SIDE#_INT</ANIM_NAME>
-                <WWISE_EVENT_1>lswitch</WWISE_EVENT_1>
-                <WWISE_EVENT_2>lswitch</WWISE_EVENT_2>
-                <ANIM_CODE>(L:A32NX_RMP_#SIDE#_SWITCH_INT, number)</ANIM_CODE>
-                <LEFT_SINGLE_CODE>
-                    (L:A32NX_RMP_#SIDE#_SWITCH_INT, number) 50 + (&gt;L:A32NX_RMP_#SIDE#_SWITCH_INT, number)
-                </LEFT_SINGLE_CODE>
-                <RIGHT_SINGLE_CODE>
-                    (L:A32NX_RMP_#SIDE#_SWITCH_INT, number) 10 + (&gt;L:A32NX_RMP_#SIDE#_SWITCH_INT, number)
-                </RIGHT_SINGLE_CODE>
-            </UseTemplate>
-        </Component>
-
         <!-- Panel ON/OFF Toggle Switch -->
         <Component ID="RMP_TOGGLE_SWITCH_#SIDE#" Node="SWITCH_RADIO#SIDE#_1">
             <UseTemplate Name="FBW_Anim_Interactions">

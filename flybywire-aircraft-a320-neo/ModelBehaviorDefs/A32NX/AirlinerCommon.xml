@@ -755,6 +755,22 @@
             <TOOLTIP_HAND>%((L:XMLVAR_NAV_#SIDE#_ADF2_Switch_Down))%{if}TT:INPUT.KEY_RADIO_ADF2_IDENT_DISABLE_DESC%{else}TT:INPUT.KEY_RADIO_ADF2_IDENT_ENABLE_DESC%{end}</TOOLTIP_HAND>
         </UseTemplate>
 
+        <Component ID="RMP_SWITCH_INT_#SIDE#" Node="#NODE_ID_SWITCH_INT#">
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>SWITCH</ANIM_TYPE>
+                <ANIM_TEMPLATE>ASOBO_GT_Switch_Code</ANIM_TEMPLATE>
+                <ANIM_LENGTH>100</ANIM_LENGTH>
+                <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+                <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+                <ANIM_NAME>#NODE_ID_SWITCH_INT#</ANIM_NAME>
+                <WWISE_EVENT_1>lswitch</WWISE_EVENT_1>
+                <WWISE_EVENT_2>lswitch</WWISE_EVENT_2>
+                <ANIM_CODE>(L:A32NX_RMP_#SIDE#_SWITCH_INT, number)</ANIM_CODE>
+                <LEFT_SINGLE_CODE>
+                    (L:A32NX_RMP_#SIDE#_SWITCH_INT, number) 50 + (&gt;L:A32NX_RMP_#SIDE#_SWITCH_INT, number)
+                </LEFT_SINGLE_CODE>
+            </UseTemplate>
+        </Component>
     </Template>
 
     <Template Name="FBW_AIRLINER_Audio_Volume_Knob_Template">
