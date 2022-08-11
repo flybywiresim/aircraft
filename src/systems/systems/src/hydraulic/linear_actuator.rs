@@ -79,7 +79,8 @@ struct CoreHydraulicForce {
     fluid_compression_spring_constant: f64,
     fluid_compression_damping_constant: f64,
 
-    flow_open_loop_modifier_map: [f64; 6],
+    flow_open_loop_modifier_extension_map: [f64; 6],
+    flow_open_loop_modifier_retraction_map: [f64; 6],
     flow_open_loop_position_breakpoints: [f64; 6],
 
     max_flow: VolumeRate,
@@ -123,7 +124,8 @@ impl CoreHydraulicForce {
         min_flow: VolumeRate,
         bore_side_area: Area,
         rod_side_area: Area,
-        flow_open_loop_modifier_map: [f64; 6],
+        flow_open_loop_modifier_extension_map: [f64; 6],
+        flow_open_loop_modifier_retraction_map: [f64; 6],
         flow_open_loop_position_breakpoints: [f64; 6],
         flow_control_proportional_gain: f64,
         flow_control_integral_gain: f64,
@@ -141,7 +143,8 @@ impl CoreHydraulicForce {
             fluid_compression_spring_constant,
             fluid_compression_damping_constant,
 
-            flow_open_loop_modifier_map,
+            flow_open_loop_modifier_extension_map,
+            flow_open_loop_modifier_retraction_map,
             flow_open_loop_position_breakpoints,
 
             max_flow,
@@ -401,11 +404,19 @@ impl CoreHydraulicForce {
             )
         };
 
-        let open_loop_modifier_from_position = interpolation(
-            &self.flow_open_loop_position_breakpoints,
-            &self.flow_open_loop_modifier_map,
-            position_normalized.get::<ratio>(),
-        );
+        let open_loop_modifier_from_position = if position_error.get::<ratio>() > 0. {
+            interpolation(
+                &self.flow_open_loop_position_breakpoints,
+                &self.flow_open_loop_modifier_extension_map,
+                position_normalized.get::<ratio>(),
+            )
+        } else {
+            interpolation(
+                &self.flow_open_loop_position_breakpoints,
+                &self.flow_open_loop_modifier_retraction_map,
+                position_normalized.get::<ratio>(),
+            )
+        };
 
         (open_loop_flow_target.min(self.max_flow).max(self.min_flow))
             * open_loop_modifier_from_position
@@ -531,7 +542,8 @@ impl LinearActuator {
         active_hydraulic_damping_constant: f64,
         slow_hydraulic_damping_constant: f64,
         slow_hydraulic_damping_filtering_constant: Duration,
-        flow_open_loop_modifier_map: [f64; 6],
+        flow_open_loop_modifier_extension_map: [f64; 6],
+        flow_open_loop_modifier_retraction_map: [f64; 6],
         flow_open_loop_position_breakpoints: [f64; 6],
         flow_control_proportional_gain: f64,
         flow_control_integral_gain: f64,
@@ -615,7 +627,8 @@ impl LinearActuator {
                 actual_min_flow,
                 total_bore_side_area,
                 total_rod_side_area,
-                flow_open_loop_modifier_map,
+                flow_open_loop_modifier_extension_map,
+                flow_open_loop_modifier_retraction_map,
                 flow_open_loop_position_breakpoints,
                 flow_control_proportional_gain,
                 flow_control_integral_gain,
@@ -882,15 +895,12 @@ pub struct LinearActuatedRigidBodyOnHingeAxis {
     axis_direction: Vector3<f64>,
     rotation_transform: Rotation3<f64>,
 
-    plane_acceleration_filtered: LowPassFilter<Vector3<f64>>,
-
     min_absolute_length_to_anchor: Length,
     max_absolute_length_to_anchor: Length,
 }
 impl LinearActuatedRigidBodyOnHingeAxis {
     // Rebound energy when hiting min or max position. 0.3 means the body rebounds at 30% of the speed it hit the min/max position
     const DEFAULT_MAX_MIN_POSITION_REBOUND_FACTOR: f64 = 0.3;
-    const PLANE_ACCELERATION_FILTERING_TIME_CONSTANT: Duration = Duration::from_millis(100);
 
     pub fn new(
         mass: Mass,
@@ -944,9 +954,6 @@ impl LinearActuatedRigidBodyOnHingeAxis {
             rotation_transform: Rotation3::from_axis_angle(
                 &Unit::new_normalize(axis_direction),
                 0.,
-            ),
-            plane_acceleration_filtered: LowPassFilter::<Vector3<f64>>::new(
-                Self::PLANE_ACCELERATION_FILTERING_TIME_CONSTANT,
             ),
             min_absolute_length_to_anchor: Length::default(),
             max_absolute_length_to_anchor: Length::default(),
@@ -1048,28 +1055,12 @@ impl LinearActuatedRigidBodyOnHingeAxis {
         self.center_of_pressure_actual = self.rotation_transform * self.center_of_pressure_offset;
     }
 
-    // Computes local acceleration including world gravity and plane acceleration
-    // Note that this does not compute acceleration due to angular velocity of the plane
-    fn local_acceleration_and_gravity(&self, context: &UpdateContext) -> Torque {
-        let plane_acceleration_plane_reference = self.plane_acceleration_filtered.output();
-
-        let pitch_rotation = context.attitude().pitch_rotation_transform();
-
-        let bank_rotation = context.attitude().bank_rotation_transform();
-
-        let gravity_acceleration_world_reference = Vector3::new(0., -9.8, 0.);
-
-        // Total acceleration in plane reference is the gravity in world reference rotated to plane reference. To this we substract
-        // the local plane reference to get final local acceleration (if plane falling at 1G final local accel is 1G of gravity - 1G local accel = 0G)
-        let total_acceleration_plane_reference = (pitch_rotation
-            * (bank_rotation * gravity_acceleration_world_reference))
-            - plane_acceleration_plane_reference;
-
-        // We add a 0 component to make the 2D CG position a 3D vector so we can compute a cross product easily
-
+    // Computes torque caused by local plane acceleration
+    fn torque_from_local_acceleration_and_gravity(&self, context: &UpdateContext) -> Torque {
         // Force = m * G
-        let resultant_force_plane_reference =
-            total_acceleration_plane_reference * self.mass.get::<kilogram>();
+        let resultant_force_plane_reference = context
+            .acceleration_plane_reference_filtered_ms2_vector()
+            * self.mass.get::<kilogram>();
 
         // The Moment generated by acceleration force is the CoG offset from hinge position cross product with the acceleration force
         let gravity_moment_vector = self
@@ -1088,12 +1079,9 @@ impl LinearActuatedRigidBodyOnHingeAxis {
     }
 
     pub fn update(&mut self, context: &UpdateContext) {
-        self.plane_acceleration_filtered
-            .update(context.delta(), context.acceleration().to_ms2_vector());
-
         if !self.is_locked {
             self.sum_of_torques +=
-                self.natural_damping() + self.local_acceleration_and_gravity(context);
+                self.natural_damping() + self.torque_from_local_acceleration_and_gravity(context);
 
             self.angular_acceleration = AngularAcceleration::new::<radian_per_second_squared>(
                 self.sum_of_torques.get::<newton_meter>() / self.inertia_at_hinge,
@@ -2630,6 +2618,7 @@ mod tests {
             1200000.,
             Duration::from_millis(100),
             [1., 1., 1., 1., 1., 1.],
+            [1., 1., 1., 1., 1., 1.],
             [0., 0.2, 0.21, 0.79, 0.8, 1.],
             DEFAULT_P_GAIN,
             DEFAULT_I_GAIN,
@@ -2705,7 +2694,8 @@ mod tests {
             2000.,
             9000.,
             Duration::from_millis(100),
-            [0.5, 0.5, 1., 1., 0.5, 0.5],
+            [1., 1., 1., 1., 0.5, 0.5],
+            [0.5, 0.5, 1., 1., 1., 1.],
             [0., 0.15, 0.16, 0.84, 0.85, 1.],
             DEFAULT_P_GAIN,
             DEFAULT_I_GAIN,
@@ -2726,6 +2716,7 @@ mod tests {
             0.,
             0.,
             Duration::from_millis(100),
+            [0.5, 1., 1., 1., 1., 0.5],
             [0.5, 1., 1., 1., 1., 0.5],
             [0., 0.2, 0.21, 0.79, 0.8, 1.],
             0.,
@@ -2811,7 +2802,8 @@ mod tests {
             50000.,
             1200000.,
             Duration::from_millis(100),
-            [0.5, 0.5, 1., 1., 0.5, 0.5],
+            [1., 1., 1., 1., 0.5, 0.5],
+            [0.5, 0.5, 1., 1., 1., 1.],
             [0., 0.1, 0.11, 0.89, 0.9, 1.],
             DEFAULT_P_GAIN,
             DEFAULT_I_GAIN,
@@ -2889,7 +2881,8 @@ mod tests {
             50000.,
             2200000.,
             Duration::from_millis(100),
-            [0.5, 0.5, 1., 1., 0.5, 0.5],
+            [1., 1., 1., 1., 0.5, 0.5],
+            [0.5, 0.5, 1., 1., 1., 1.],
             [0., 0.1, 0.11, 0.89, 0.9, 1.],
             DEFAULT_P_GAIN,
             DEFAULT_I_GAIN,
@@ -2944,7 +2937,8 @@ mod tests {
             2000.,
             28000.,
             Duration::from_millis(100),
-            [0.5, 0.5, 1., 1., 0.5, 0.5],
+            [1., 1., 1., 1., 0.5, 0.5],
+            [0.5, 0.5, 1., 1., 1., 1.],
             [0., 0.15, 0.16, 0.84, 0.85, 1.],
             DEFAULT_P_GAIN,
             DEFAULT_I_GAIN,
@@ -2999,6 +2993,7 @@ mod tests {
             5000.,
             800000.,
             Duration::from_millis(300),
+            [1., 1., 1., 1., 1., 1.],
             [1., 1., 1., 1., 1., 1.],
             [0., 0.2, 0.21, 0.79, 0.8, 1.],
             DEFAULT_P_GAIN,
@@ -3062,6 +3057,7 @@ mod tests {
             10000000.,
             Duration::from_millis(300),
             [1., 1., 1., 1., 1., 1.],
+            [1., 1., 1., 1., 1., 1.],
             [0., 0.2, 0.21, 0.79, 0.8, 1.],
             DEFAULT_P_GAIN,
             DEFAULT_I_GAIN,
@@ -3117,6 +3113,7 @@ mod tests {
             5000.,
             800000.,
             Duration::from_millis(300),
+            [1., 1., 1., 1., 1., 1.],
             [1., 1., 1., 1., 1., 1.],
             [0., 0.2, 0.21, 0.79, 0.8, 1.],
             DEFAULT_P_GAIN,
