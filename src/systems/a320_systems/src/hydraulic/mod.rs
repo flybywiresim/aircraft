@@ -1151,6 +1151,8 @@ pub(super) struct A380Hydraulic {
     trim_controller: A320TrimInputController,
 
     trim_assembly: TrimmableHorizontalStabilizerAssembly,
+
+    epump_auto_logic: A380ElectricPumpAutoLogic,
 }
 impl A380Hydraulic {
     const FLAP_FPPU_TO_SURFACE_ANGLE_BREAKPTS: [f64; 12] = [
@@ -1464,6 +1466,8 @@ impl A380Hydraulic {
                 Angle::new::<degree>(-4.),
                 Angle::new::<degree>(17.5),
             ),
+
+            epump_auto_logic: A380ElectricPumpAutoLogic::default(),
         }
     }
 
@@ -1780,6 +1784,14 @@ impl A380Hydraulic {
             self.green_circuit.system_section(),
             self.yellow_circuit.system_section(),
         );
+
+        self.epump_auto_logic.update(
+            context,
+            &self.forward_cargo_door_controller,
+            &self.aft_cargo_door_controller,
+            &self.pushback_tug,
+            overhead_panel,
+        );
     }
 
     // For each hydraulic loop retrieves volumes from and to each actuator and pass it to the loops
@@ -2036,6 +2048,7 @@ impl A380Hydraulic {
             &self.green_circuit,
             self.green_circuit.reservoir(),
             engines,
+            &self.epump_auto_logic,
         );
         self.green_electric_pump_a.update(
             context,
@@ -2052,6 +2065,7 @@ impl A380Hydraulic {
             &self.green_circuit,
             self.green_circuit.reservoir(),
             engines,
+            &self.epump_auto_logic,
         );
         self.green_electric_pump_b.update(
             context,
@@ -2069,6 +2083,7 @@ impl A380Hydraulic {
             &self.yellow_circuit,
             self.yellow_circuit.reservoir(),
             engines,
+            &self.epump_auto_logic,
         );
         self.yellow_electric_pump_a.update(
             context,
@@ -2086,6 +2101,7 @@ impl A380Hydraulic {
             &self.yellow_circuit,
             self.yellow_circuit.reservoir(),
             engines,
+            &self.epump_auto_logic,
         );
         self.yellow_electric_pump_b.update(
             context,
@@ -2655,6 +2671,123 @@ impl SimulationElement for A380EngineDrivenPumpController {
     }
 }
 
+struct A380ElectricPumpAutoLogic {
+    green_pump_a_selected: bool,
+    yellow_pump_a_selected: bool,
+
+    is_required_for_cargo_door_operation: DelayedFalseLogicGate,
+    cargo_door_in_operation_previous: bool,
+
+    is_required_for_body_steering_operation: DelayedFalseLogicGate,
+    body_steering_in_operation_previous: bool,
+}
+impl A380ElectricPumpAutoLogic {
+    const DURATION_OF_PUMP_ACTIVATION_AFTER_CARGO_DOOR_OPERATION: Duration =
+        Duration::from_secs(20);
+
+    const DURATION_OF_PUMP_ACTIVATION_AFTER_BODY_STEERING_OPERATION: Duration =
+        Duration::from_secs(5);
+    fn default() -> Self {
+        Self {
+            green_pump_a_selected: random_from_range(0., 1.) < 0.5,
+            yellow_pump_a_selected: random_from_range(0., 1.) < 0.5,
+
+            is_required_for_cargo_door_operation: DelayedFalseLogicGate::new(
+                Self::DURATION_OF_PUMP_ACTIVATION_AFTER_CARGO_DOOR_OPERATION,
+            ),
+            cargo_door_in_operation_previous: false,
+
+            is_required_for_body_steering_operation: DelayedFalseLogicGate::new(
+                Self::DURATION_OF_PUMP_ACTIVATION_AFTER_BODY_STEERING_OPERATION,
+            ),
+            body_steering_in_operation_previous: false,
+        }
+    }
+
+    fn update(
+        &mut self,
+        context: &UpdateContext,
+        forward_cargo_door_controller: &A320DoorController,
+        aft_cargo_door_controller: &A320DoorController,
+        pushback_tug: &PushbackTug,
+        overhead: &A380HydraulicOverheadPanel,
+    ) {
+        self.update_auto_run_logic(
+            context,
+            forward_cargo_door_controller,
+            aft_cargo_door_controller,
+            pushback_tug,
+        );
+
+        self.select_pump_in_use(overhead);
+    }
+
+    fn update_auto_run_logic(
+        &mut self,
+        context: &UpdateContext,
+        forward_cargo_door_controller: &A320DoorController,
+        aft_cargo_door_controller: &A320DoorController,
+        pushback_tug: &PushbackTug,
+    ) {
+        self.cargo_door_in_operation_previous = self.is_required_for_cargo_door_operation.output();
+
+        self.is_required_for_cargo_door_operation.update(
+            context,
+            forward_cargo_door_controller.should_pressurise_hydraulics()
+                || aft_cargo_door_controller.should_pressurise_hydraulics(),
+        );
+
+        self.body_steering_in_operation_previous =
+            self.is_required_for_body_steering_operation.output();
+
+        self.is_required_for_body_steering_operation
+            .update(context, pushback_tug.is_nose_wheel_steering_pin_inserted());
+    }
+
+    fn select_pump_in_use(&mut self, overhead: &A380HydraulicOverheadPanel) {
+        let should_change_pump_for_cargo = !self.cargo_door_in_operation_previous
+            && self.is_required_for_cargo_door_operation.output();
+        let should_change_pump_for_body_steering = !self.body_steering_in_operation_previous
+            && self.is_required_for_body_steering_operation.output();
+
+        if should_change_pump_for_cargo
+            && (self.green_pump_a_selected
+                && !overhead.epump_button_off_is_off(A380ElectricPumpId::EpumpGreenB)
+                || !self.green_pump_a_selected
+                    && !overhead.epump_button_off_is_off(A380ElectricPumpId::EpumpGreenA))
+        {
+            self.green_pump_a_selected = !self.green_pump_a_selected
+        }
+
+        if should_change_pump_for_body_steering
+            && (self.yellow_pump_a_selected
+                && !overhead.epump_button_off_is_off(A380ElectricPumpId::EpumpYellowB)
+                || !self.yellow_pump_a_selected
+                    && !overhead.epump_button_off_is_off(A380ElectricPumpId::EpumpYellowA))
+        {
+            self.yellow_pump_a_selected = !self.yellow_pump_a_selected
+        }
+    }
+
+    fn should_auto_run_epump(&self, pump_id: A380ElectricPumpId) -> bool {
+        let green_operation_required = self.is_required_for_cargo_door_operation.output();
+        let yellow_operation_required = self.is_required_for_body_steering_operation.output();
+        match pump_id {
+            A380ElectricPumpId::EpumpGreenA => {
+                green_operation_required && self.green_pump_a_selected
+            }
+            A380ElectricPumpId::EpumpGreenB => {
+                green_operation_required && !self.green_pump_a_selected
+            }
+            A380ElectricPumpId::EpumpYellowA => {
+                yellow_operation_required && self.yellow_pump_a_selected
+            }
+            A380ElectricPumpId::EpumpYellowB => {
+                yellow_operation_required && !self.yellow_pump_a_selected
+            }
+        }
+    }
+}
 struct A380ElectricPumpController {
     low_press_id: VariableIdentifier,
 
@@ -2668,14 +2801,9 @@ struct A380ElectricPumpController {
     has_air_pressure_low_fault: bool,
     has_low_level_fault: bool,
     is_pressure_low: bool,
-
-    is_required_for_cargo_door_operation: DelayedFalseLogicGate,
     should_pressurise_for_cargo_door_operation: bool,
 }
 impl A380ElectricPumpController {
-    const DURATION_OF_YELLOW_PUMP_ACTIVATION_AFTER_CARGO_DOOR_OPERATION: Duration =
-        Duration::from_secs(20);
-
     fn new(
         context: &mut InitContext,
         pump_id: A380ElectricPumpId,
@@ -2697,9 +2825,7 @@ impl A380ElectricPumpController {
             has_low_level_fault: false,
 
             is_pressure_low: true,
-            is_required_for_cargo_door_operation: DelayedFalseLogicGate::new(
-                Self::DURATION_OF_YELLOW_PUMP_ACTIVATION_AFTER_CARGO_DOOR_OPERATION,
-            ),
+
             should_pressurise_for_cargo_door_operation: false,
         }
     }
@@ -2713,16 +2839,13 @@ impl A380ElectricPumpController {
         hydraulic_circuit: &impl HydraulicPressureSensors,
         reservoir: &Reservoir,
         engines: [&impl Engine; 4],
+        auto_logic: &A380ElectricPumpAutoLogic,
     ) {
-        self.update_cargo_door_logic(
-            context,
-            overhead_panel,
-            forward_cargo_door_controller,
-            aft_cargo_door_controller,
-        );
+        self.should_pressurise_for_cargo_door_operation =
+            auto_logic.should_auto_run_epump(self.pump_id);
 
         self.should_pressurise = (overhead_panel.epump_button_on_is_on(self.pump_id)
-            || self.is_required_for_cargo_door_operation.output())
+            || self.should_pressurise_for_cargo_door_operation)
             && !overhead_panel.epump_button_off_is_off(self.pump_id)
             && !self.is_any_engine_running(engines)
             && self.is_powered;
@@ -2749,29 +2872,6 @@ impl A380ElectricPumpController {
                 .pump_section_switch_pressurised(self.pump_id.into_pump_section_index());
 
         self.has_pressure_low_fault = self.is_pressure_low;
-    }
-
-    fn update_cargo_door_logic(
-        &mut self,
-        context: &UpdateContext,
-        overhead_panel: &A380HydraulicOverheadPanel,
-        forward_cargo_door_controller: &A320DoorController,
-        aft_cargo_door_controller: &A320DoorController,
-    ) {
-        // Only cargo logic for green side
-        if self.pump_id == A380ElectricPumpId::EpumpGreenA
-            || self.pump_id == A380ElectricPumpId::EpumpGreenB
-        {
-            self.is_required_for_cargo_door_operation.update(
-                context,
-                forward_cargo_door_controller.should_pressurise_hydraulics()
-                    || aft_cargo_door_controller.should_pressurise_hydraulics(),
-            );
-
-            self.should_pressurise_for_cargo_door_operation =
-                self.is_required_for_cargo_door_operation.output()
-                    && !overhead_panel.epump_button_on_is_on(self.pump_id);
-        }
     }
 
     fn update_low_air_pressure(
@@ -2825,7 +2925,7 @@ impl SimulationElement for A380ElectricPumpController {
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
         // Control of the pump is powered by dedicated bus OR manual operation of cargo door through another bus
         self.is_powered = buses.is_powered(self.powered_by)
-            || (self.is_required_for_cargo_door_operation.output()
+            || (self.should_pressurise_for_cargo_door_operation
                 && buses.is_powered(self.powered_by_when_cargo_door_operation))
     }
 }
@@ -6656,7 +6756,7 @@ mod tests {
             assert!(test_bed.is_cargo_fwd_door_locked_up());
 
             test_bed = test_bed.run_waiting_for(
-                A380ElectricPumpController::DURATION_OF_YELLOW_PUMP_ACTIVATION_AFTER_CARGO_DOOR_OPERATION,
+                A380ElectricPumpAutoLogic::DURATION_OF_PUMP_ACTIVATION_AFTER_CARGO_DOOR_OPERATION,
             );
 
             assert!(!test_bed.query(|a| a.is_cargo_powering_yellow_epump()));
