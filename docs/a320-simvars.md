@@ -2769,9 +2769,9 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - | Bit |                                     Description                                     |
       |:---:|:-----------------------------------------------------------------------------------:|
       | 11  | LH & RH gear shock absorber compressed (Don't treat GND PWR connected as on ground) |
-      | 12  | LH gear shock absorber compressed (Don't treat GND PWR connected as on ground)      |
-      | 13  | RH gear shock absorber compressed (Don't treat GND PWR connected as on ground)      |
-      | 14  | Nose gear shock absorber compressed (Don't treat GND PWR connected as on ground)    |
+      | 12  | Nose gear shock absorber compressed (Don't treat GND PWR connected as on ground)    |
+      | 13  | LH gear shock absorber compressed (Don't treat GND PWR connected as on ground)      |
+      | 14  | RH gear shock absorber compressed (Don't treat GND PWR connected as on ground)      |
       | 15  | LH & RH gear downlocked                                                             |
 
 
