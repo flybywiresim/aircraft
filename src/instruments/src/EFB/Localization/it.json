@@ -118,14 +118,14 @@
       "Defueling": "Scaricamento",
       "EstimatedDuration": "Durata stimata (minuti)",
       "EstimatedTime": "Estimated Time",
-      "LeftInnerTank": "Serbatoio Sinistro Interno",
-      "LeftOuterTank": "Serbatoio Sinistro Esterno",
+      "LeftInnerTank": "Serbatoio Interno Sinistro",
+      "LeftOuterTank": "Serbatoio Esterno Sinistro",
       "ReadyToStart": "Pronto a Iniziare",
       "Refuel": "Rifornimento",
       "RefuelTime": "Durata Rifornimento",
       "Refueling": "Caricamento",
-      "RightInnerTank": "Serbatoio Destro Interno",
-      "RightOuterTank": "Serbatoio Destro Esterno",
+      "RightInnerTank": "Serbatoio Interno Destro",
+      "RightOuterTank": "Serbatoio Esterno Destro",
       "TT": {
         "AircraftMustBeColdAndDarkToChangeRefuelTimes": "Cambiare la durata del rifornimento soltanto a terra con motori spenti",
         "FillBlockFuelFromSimBrief": "Inserisci Block Fuel da SimBrief"
@@ -165,11 +165,11 @@
       "DoorAft": "Porta Post.",
       "DoorCargo": "Porta Carico",
       "DoorFwd": "Porta Ant.",
-      "ExternalPower": "Unità di Alimentazione Esterna",
+      "ExternalPower": "Ground Power Unit",
       "FuelTruck": "Veicolo Carburante",
-      "JetBridge": "Ponte Imbarco",
+      "JetBridge": "Ponte d'Imbarco",
       "Title": "Servizi",
-      "WheelChocks": "Tacchi per Ruote"
+      "WheelChocks": "Tacchi Fermaruote"
     },
     "Title": "Terra"
   },
@@ -181,7 +181,7 @@
   "NavigationAndCharts": {
     "All": "Tutti",
     "Altn": "Altn",
-    "ExitFullscreenMode": "Esci dalla Modalità a Schermo Intero",
+    "ExitFullscreenMode": "Esci dalla Modalità Schermo Intero",
     "From": "Da",
     "LocalFiles": {
       "Both": "Entrambi",
@@ -200,7 +200,7 @@
       "IntoYourBrowserAndEnterTheCodeBelow": "nel tuo browser e inserisci il codice riportato di seguito",
       "LoadingMsg": "Caricamento",
       "NoAirportSelected": "Nessun Aeroporto Selezionato",
-      "ResetNavigraphAuthentication": "Rimuovi Autenticazione con Navigraph",
+      "ResetNavigraphAuthentication": "Rimuovi Autenticazione Navigraph",
       "ScanTheQrCodeOrOpen": "Scansiona il Codice QR o Apri",
       "Title": "Navigraph"
     },
@@ -209,7 +209,7 @@
       "Edit": "Modifica",
       "NoItemsFound": "Nessun Elemento Trovato",
       "SearchPlaceholder": "Cerca",
-      "ShowingChartsFromAllProviders": "Visualizzazione delle Carte da tutti i Fornitori",
+      "ShowingChartsFromAllProviders": "Visualizzazione Carte da Tutti i Fornitori",
       "SortMethods": {
         "AlphabeticalAZ": "Alfabetico - A -> Z",
         "AlphabeticalZA": "Alfabetico - Z -> A",
@@ -397,8 +397,8 @@
     "TT": {
       "CallReleaseTug": "Chiama o allontana tug",
       "CenterPlaneMode": "Centra mappa sull'aereo On/Off",
-      "DecreaseSpeed": "Indietro o avanti lentamente",
-      "IncreaseSpeed": "Avanti o indietro lentamente",
+      "DecreaseSpeed": "Indietro o lentamente avanti",
+      "IncreaseSpeed": "Avanti o lentamente indietro",
       "Left": "Vai a sinistra",
       "PausePushback": "Interrompi o riavvia pushback",
       "Right": "Vai a destra",
@@ -440,7 +440,7 @@
       "HoppieEnabled": "Hoppie Abilitato",
       "HoppieUserId": "ID Utente Hoppie",
       "MetarSource": "Fonte METAR",
-      "OptionalA32nxErrorReporting": "Segnalazione Errori A32NX Opzionale",
+      "OptionalA32nxErrorReporting": "Segnalazione Errori A32NX Opzionali",
       "PleaseCheckThatYouHaveCorrectlyEnteredYourSimbBriefUsernameOrPilotId": "Verifica di aver inserito correttamente il tuo nome utente o ID pilota SimBrief",
       "SimBriefUsernamePilotId": "Nome Utente/ID Pilota SimBrief",
       "TafSource": "Fonte TAF",
@@ -501,7 +501,7 @@
       "ThrottleDetents": "Posizioni Manetta",
       "Title": "Opzioni Sim",
       "UseCalculatedIlsSignals": "Usa Segnali ILS Calcolati",
-      "WheelChocksEnabled": "Tacchi per Ruote",
+      "WheelChocksEnabled": "Tacchi Fermaruote",
       "inHg": "inHg"
     },
     "ThrottleConfig": {
@@ -511,7 +511,7 @@
       "Back": "Indietro",
       "ConfigureEnd": "Configura Fine",
       "ConfigureStart": "Configura Inizio",
-      "CurrentValue": "Valore Attuale",
+      "CurrentValue": "Valore Corrente",
       "Deadband": "Zona Morta",
       "ErrorOverlapMsg": "confligge con",
       "IndependentAxis": "Assi Separate",
