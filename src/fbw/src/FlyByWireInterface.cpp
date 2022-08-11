@@ -1073,16 +1073,20 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
     }
   }
 
-
-  static bool last_fd1_active = simData.ap_fd_1_active;
-  if (additionalData.syncFoEfisEnabled)
+  if (additionalData.syncFoEfisEnabled && simData.ap_fd_1_active != simData.ap_fd_2_active)
   {
     if (last_fd1_active != simData.ap_fd_1_active)
     {
       simConnectInterface.sendEvent(SimConnectInterface::Events::TOGGLE_FLIGHT_DIRECTOR, 2);
     }
+    
+    if (last_fd2_active != simData.ap_fd_2_active)
+    {
+      simConnectInterface.sendEvent(SimConnectInterface::Events::TOGGLE_FLIGHT_DIRECTOR, 1);
+    }
   }
   last_fd1_active = simData.ap_fd_1_active;
+  last_fd2_active = simData.ap_fd_2_active;
   
   // update FMA variables ---------------------------------------------------------------------------------------------
   idFmaLateralMode->set(autopilotStateMachineOutput.lateral_mode);

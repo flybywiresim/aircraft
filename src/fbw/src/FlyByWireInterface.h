@@ -77,6 +77,9 @@ class FlyByWireInterface {
 
   bool clientDataEnabled = false;
 
+  bool last_fd1_active = false;
+  bool last_fd2_active = false;
+
   FlightDataRecorder flightDataRecorder;
 
   SimConnectInterface simConnectInterface;
