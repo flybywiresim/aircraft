@@ -2115,7 +2115,10 @@ impl A380Hydraulic {
             context,
             engine_fire_push_buttons,
             overhead_panel,
-            &self.green_electric_pump_a_controller,
+            [
+                &self.green_electric_pump_a_controller,
+                &self.green_electric_pump_b_controller,
+            ],
         );
 
         self.green_circuit.update(
@@ -2139,7 +2142,10 @@ impl A380Hydraulic {
             context,
             engine_fire_push_buttons,
             overhead_panel,
-            &self.yellow_electric_pump_a_controller,
+            [
+                &self.yellow_electric_pump_a_controller,
+                &self.yellow_electric_pump_b_controller,
+            ],
         );
         self.yellow_circuit.update(
             context,
@@ -2377,11 +2383,12 @@ impl A380HydraulicCircuitController {
         context: &UpdateContext,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         overhead_panel: &A380HydraulicOverheadPanel,
-        epump_controller: &A380ElectricPumpController,
+        epump_controllers: [&A380ElectricPumpController; 2],
     ) {
         self.cargo_door_in_use.update(
             context,
-            epump_controller.should_pressurise_for_cargo_door_operation(),
+            epump_controllers[0].should_pressurise_for_cargo_door_operation()
+                || epump_controllers[1].should_pressurise_for_cargo_door_operation(),
         );
 
         self.routing_epump_sections_to_aux
@@ -5983,8 +5990,8 @@ mod tests {
                 self.read_by_name("HYD_YELLOW_SYSTEM_1_SECTION_PRESSURE")
             }
 
-            fn yellow_pressure_auxiliary(&mut self) -> Pressure {
-                self.read_by_name("HYD_YELLOW_AUXILIARY_1_SECTION_PRESSURE")
+            fn green_pressure_auxiliary(&mut self) -> Pressure {
+                self.read_by_name("HYD_GREEN_AUXILIARY_1_SECTION_PRESSURE")
             }
 
             fn get_yellow_reservoir_volume(&mut self) -> Volume {
@@ -9660,7 +9667,7 @@ mod tests {
         }
 
         #[test]
-        fn yellow_epump_buildup_auxiliary_section() {
+        fn green_epump_buildup_auxiliary_section_when_cargo_doors() {
             let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
@@ -9676,9 +9683,9 @@ mod tests {
                 .open_fwd_cargo_door()
                 .run_waiting_for(Duration::from_secs(5));
 
-            assert!(!test_bed.is_yellow_pressure_switch_pressurised());
-            assert!(test_bed.yellow_pressure() <= Pressure::new::<psi>(1500.));
-            assert!(test_bed.yellow_pressure_auxiliary() > Pressure::new::<psi>(2800.));
+            assert!(!test_bed.is_green_pressure_switch_pressurised());
+            assert!(test_bed.green_pressure() <= Pressure::new::<psi>(1500.));
+            assert!(test_bed.green_pressure_auxiliary() > Pressure::new::<psi>(2800.));
         }
     }
 }
