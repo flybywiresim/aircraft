@@ -157,7 +157,7 @@ impl A320HydraulicCircuitFactory {
             Pressure::new::<psi>(Self::MIN_PRESS_EDP_SECTION_HI_HYST),
             false,
             false,
-            true,
+            false,
             Pressure::new::<psi>(Self::HYDRAULIC_TARGET_PRESSURE_PSI),
         )
     }
@@ -2385,14 +2385,17 @@ impl A380HydraulicCircuitController {
         overhead_panel: &A380HydraulicOverheadPanel,
         epump_controllers: [&A380ElectricPumpController; 2],
     ) {
-        self.cargo_door_in_use.update(
-            context,
-            epump_controllers[0].should_pressurise_for_cargo_door_operation()
-                || epump_controllers[1].should_pressurise_for_cargo_door_operation(),
-        );
+        // No cargo doors on yellow side
+        if self.circuit_id == HydraulicColor::Green {
+            self.cargo_door_in_use.update(
+                context,
+                epump_controllers[0].should_pressurise_for_cargo_door_operation()
+                    || epump_controllers[1].should_pressurise_for_cargo_door_operation(),
+            );
 
-        self.routing_epump_sections_to_aux
-            .update(context, self.cargo_door_in_use.output());
+            self.routing_epump_sections_to_aux
+                .update(context, self.cargo_door_in_use.output());
+        }
 
         match self.circuit_id {
             HydraulicColor::Green => {
@@ -2453,6 +2456,11 @@ impl HydraulicCircuitController for A380HydraulicCircuitController {
     }
 
     fn should_route_pump_to_auxiliary(&self, pump_index: usize) -> bool {
+        // No auxiliary selection valve in yellow circuit
+        if self.circuit_id == HydraulicColor::Yellow {
+            return false;
+        }
+
         if pump_index < 4 || pump_index >= 4 && !(self.routing_epump_sections_to_aux.output()) {
             false
         } else {
@@ -9686,6 +9694,27 @@ mod tests {
             assert!(!test_bed.is_green_pressure_switch_pressurised());
             assert!(test_bed.green_pressure() <= Pressure::new::<psi>(1500.));
             assert!(test_bed.green_pressure_auxiliary() > Pressure::new::<psi>(2800.));
+        }
+
+        #[test]
+        fn yellow_epump_buildup_system_section_when_pushback() {
+            let mut test_bed = test_bed_on_ground_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
+
+            test_bed = test_bed
+                .set_pushback_state(true)
+                .run_waiting_for(Duration::from_secs(5));
+
+            assert!(!test_bed.is_green_pressure_switch_pressurised());
+            assert!(test_bed.green_pressure() <= Pressure::new::<psi>(50.));
+            assert!(test_bed.green_pressure_auxiliary() <= Pressure::new::<psi>(50.));
+
+            // TODO dunno what to expect from leak measurement valve state there
+            //assert!(test_bed.is_yellow_pressure_switch_pressurised());
+            assert!(test_bed.yellow_pressure() >= Pressure::new::<psi>(2500.));
         }
     }
 }
