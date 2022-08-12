@@ -310,14 +310,6 @@
     - vapp calculated for config full whether A32NX_VSPEEDS_LANDING_CONF3 or not
     - is mach corrected
 
-- A32NX_SPEEDS_ALPHA_PROTECTION
-    - Number (knots)
-    - speed where alpha protection is reached with 1g
-
-- A32NX_SPEEDS_ALPHA_MAX
-    - Number (knots)
-    - speed where alpha max is reached with 1g
-
 - A32NX_TRK_FPA_MODE_ACTIVE
     - Bool
     - True if TRK/FPA mode is active
@@ -1099,7 +1091,8 @@
 
 - A32NX_SPOILERS_ARMED
     - Bool
-    - Indicates if the ground spoilers are armed
+    - Indicates if the ground spoiler handle is physically in the armed position.
+        DO NOT USE IN SYSTEMS, USE FCDC INSTEAD
       Value | Meaning
       --- | ---
       0 | disarmed
@@ -1107,19 +1100,12 @@
 
 - A32NX_SPOILERS_HANDLE_POSITION
     - Number
-    - Indicates the physical handler position without arm/disarm
+    - Indicates the physical handler position without arm/disarm.
+        DO NOT USE IN SYSTEMS, USE FCDC INSTEAD
       Value | Position
       --- | ---
       0 | Retracted
       1 | Full extension
-
-- A32NX_SPOILERS_GROUND_SPOILERS_ACTIVE
-    - Bool
-    - Indicates if the ground spoilers are active (fully deployed)
-      Value | Position
-      --- | ---
-      0 | Inactive
-      1 | Active
 
 - A32NX_PERFORMANCE_WARNING_ACTIVE
     - Bool
@@ -1409,10 +1395,6 @@
 
 ## Fly-By-Wire System
 
-- A32NX_DEV_DIRECT_LAW
-    - Bool
-    - Development only: set to 1 to force full direct law FBW
-
 - A32NX_FLIGHT_CONTROLS_TRACKING_MODE
     - Bool
     - Indicates if tracking mode is active: flight controls are coming from external source (ie: YourControls)
@@ -1457,33 +1439,6 @@
       0 | neutral
       100 | full right
 
-- A32NX_ALPHA_MAX_PERCENTAGE
-    - Number (0.0 -> 1.0)
-    - Percentage of current (filtered) alpha to alpha max
-    - alpha max can be overshoot so values beyond 1.0 should be expected
-
-- A32NX_BETA_TARGET
-    - Degrees
-    - Target beta (sideslip) in case of asymmetric thrust
-
-- A32NX_AILERON_LEFT_DEFLECTION_DEMAND
-    - Number
-    - Provides the left aileron position demand to hydraulics
-      Value | Meaning
-      --- | ---
-      -1.0 | full up
-      0.0 | neutral
-      1.0 | full down
-
-- A32NX_AILERON_RIGHT_DEFLECTION_DEMAND
-    - Number
-    - Provides the right aileron position demand to hydraulics
-      Value | Meaning
-      --- | ---
-      -1.0 | full down
-      0.0 | neutral
-      1.0 | full up
-
 - A32NX_HYD_AILERON_LEFT_DEFLECTION
     - Number
     - Provides the final left aileron physical position
@@ -1522,15 +1477,6 @@
     - Percent
     - Trim wheel position in percent
 
-- A32NX_ELEVATOR_DEFLECTION_DEMAND
-    - Number
-    - Provides the elevator position demand to hydraulics
-      Value | Meaning
-      --- | ---
-      -1.0 | full down
-      0.0 | neutral
-      1.0 | full up
-
 - A32NX_RUDDER_DEFLECTION_DEMAND
     - Number
     - Provides the rudder position demand to hydraulics
@@ -1539,17 +1485,6 @@
       -1.0 | full left
       0.0 | neutral
       1.0 | full right
-
-- A32NX_SPOILERS_{side}_DEFLECTION_DEMAND
-    - Number
-    - {side}
-        - LEFT
-        - RIGHT
-    - Provides the spoiler position demand to hydraulics
-      Value | Meaning
-      --- | ---
-      0.0 | neutral
-      1.0 | full up
 
 ## ADIRS
 

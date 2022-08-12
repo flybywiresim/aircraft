@@ -76,6 +76,22 @@ clang++ \
   -I "${DIR}/src/inih" \
   -I "${DIR}/src/interface" \
   "${DIR}/src/interface/SimConnectInterface.cpp" \
+  -I "${DIR}/src/busStructures" \
+  -I "${DIR}/src/elac" \
+  "${DIR}/src/elac/Elac.cpp" \
+  -I "${DIR}/src/sec" \
+  "${DIR}/src/sec/Sec.cpp" \
+  -I "${DIR}/src/fcdc" \
+  "${DIR}/src/fcdc/Fcdc.cpp" \
+  -I "${DIR}/src/fac" \
+  "${DIR}/src/fac/Fac.cpp" \
+  -I "${DIR}/src/failures" \
+  "${DIR}/src/failures/FailuresConsumer.cpp" \
+  -I "${DIR}/src/utils" \
+  "${DIR}/src/utils/ConfirmNode.cpp" \
+  "${DIR}/src/utils/SRFlipFLop.cpp" \
+  "${DIR}/src/utils/PulseNode.cpp" \
+  "${DIR}/src/utils/HysteresisNode.cpp" \
   -I "${DIR}/src/model" \
   "${DIR}/src/model/AutopilotLaws_data.cpp" \
   "${DIR}/src/model/AutopilotLaws.cpp" \
@@ -84,8 +100,17 @@ clang++ \
   "${DIR}/src/model/Autothrust_data.cpp" \
   "${DIR}/src/model/Autothrust.cpp" \
   "${DIR}/src/model/Double2MultiWord.cpp" \
-  "${DIR}/src/model/FlyByWire_data.cpp" \
-  "${DIR}/src/model/FlyByWire.cpp" \
+  "${DIR}/src/model/ElacComputer_data.cpp" \
+  "${DIR}/src/model/ElacComputer.cpp" \
+  "${DIR}/src/model/SecComputer_data.cpp" \
+  "${DIR}/src/model/SecComputer.cpp" \
+  "${DIR}/src/model/PitchNormalLaw.cpp" \
+  "${DIR}/src/model/PitchAlternateLaw.cpp" \
+  "${DIR}/src/model/PitchDirectLaw.cpp" \
+  "${DIR}/src/model/LateralNormalLaw.cpp" \
+  "${DIR}/src/model/LateralDirectLaw.cpp" \
+  "${DIR}/src/model/FacComputer_data.cpp" \
+  "${DIR}/src/model/FacComputer.cpp" \
   "${DIR}/src/model/look1_binlxpw.cpp" \
   "${DIR}/src/model/look2_binlcpw.cpp" \
   "${DIR}/src/model/look2_binlxpw.cpp" \
@@ -96,13 +121,13 @@ clang++ \
   "${DIR}/src/model/uMultiWord2Double.cpp" \
   -I "${DIR}/src/zlib" \
   "${DIR}/src/zlib/zfstream.cc" \
-  "${DIR}/src/AnimationAileronHandler.cpp" \
   "${DIR}/src/ElevatorTrimHandler.cpp" \
   "${DIR}/src/FlyByWireInterface.cpp" \
   "${DIR}/src/FlightDataRecorder.cpp" \
+  "${DIR}/src/Arinc429.cpp" \
+  "${DIR}/src/Arinc429Utils.cpp" \
   "${DIR}/src/LocalVariable.cpp" \
   "${DIR}/src/InterpolatingLookupTable.cpp" \
-  "${DIR}/src/RudderTrimHandler.cpp" \
   "${DIR}/src/SpoilersHandler.cpp" \
   "${DIR}/src/ThrottleAxisMapping.cpp" \
   "${DIR}/src/CalculatedRadioReceiver.cpp" \
