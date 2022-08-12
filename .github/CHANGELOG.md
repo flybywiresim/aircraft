@@ -61,6 +61,7 @@
 1. [HYD] Refactor plane accelerations and added filtering to handle ground collisions - @Crocket63 (crocket)
 1. [FMGC] Improve procedure loading performance - @tracernz (Mike)
 1. [EFB] Added Payload Loading to EFB - @2hwk (2Cas#1022)
+1. [MODEL] Remove blue highlights in lock mode - @tracernz (Mike)
 
 ## 0.8.0
 
