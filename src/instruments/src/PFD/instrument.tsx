@@ -141,6 +141,7 @@ class A32NX_PFD extends BaseInstrument {
         this.simVarPublisher.subscribe('targetSpeedManaged');
         this.simVarPublisher.subscribe('vfeNext');
         this.simVarPublisher.subscribe('ilsCourse');
+        this.simVarPublisher.subscribe('ilsRMPTuned');
         this.simVarPublisher.subscribe('tla1');
         this.simVarPublisher.subscribe('tla2');
         this.simVarPublisher.subscribe('metricAltToggle');
