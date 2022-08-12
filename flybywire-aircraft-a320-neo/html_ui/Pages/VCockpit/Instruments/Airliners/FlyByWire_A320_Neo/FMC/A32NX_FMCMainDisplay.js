@@ -2065,6 +2065,10 @@ class FMCMainDisplay extends BaseAirliners {
 
             this._routeTripFuelWeight = (A32NX_FuelPred.computeNumbers(airDistance, altToUse, A32NX_FuelPred.computations.FUEL, false) + deviation) / 1000;
             this._routeTripTime = A32NX_FuelPred.computeNumbers(airDistance, altToUse, A32NX_FuelPred.computations.TIME, false);
+            // TODO FIXME: Remove placeholder efob logic
+            if (this._routeTripFuelWeight) {
+                SimVar.SetSimVarValue('L:A32NX_DESTINATION_FUEL_ON_BOARD', 'Kilograms', this.getDestEFOB(true) * 1000);
+            }
         }
     }
 

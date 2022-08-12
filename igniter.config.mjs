@@ -37,6 +37,9 @@ export default new TaskOfTasks('a32nx', [
             'src/flypad-backend/build.sh',
             'wasm-opt -O1 -o flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/flypad-backend.wasm flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/flypad-backend.wasm'
         ], ['src/flypad-backend', 'flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/flypad-backend.wasm']),
+        new TaskOfTasks('simbridge', [
+            new ExecTask('client', ['npm run build:simbridge-client'], ['src/simbridge-client', 'flybywire-aircraft-a320-neo/html_ui/JS/simbridge-client']),
+        ]),
     ], true),
 
     new TaskOfTasks('dist', [
