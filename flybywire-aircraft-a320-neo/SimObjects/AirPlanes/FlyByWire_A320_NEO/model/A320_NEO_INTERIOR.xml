@@ -17,10 +17,16 @@
         <Include ModelBehaviorFile="A32NX\generated\A32NX_Interior_Generics.xml"/>
         <Include ModelBehaviorFile="Asobo\Common.xml"/>
         <Include ModelBehaviorFile="Asobo\Airliner\GlassCockpit.xml"/>
+        <Include ModelBehaviorFile="A32NX\LockHighlight.xml"/>
 
         <!-- EFB -->
 
         <Component ID="EFB_L">
+            <DefaultTemplateParameters>
+                <!-- disable lock mode blue highlight -->
+                <NO_HIGHLIGHT_NODE_ID>@StopLockHighlight</NO_HIGHLIGHT_NODE_ID>
+            </DefaultTemplateParameters>
+
             <Component ID="SCREEN_EFB_L" Node="SCREEN_EFB_L">
                 <DefaultTemplateParameters>
                     <NODE_ID>SCREEN_EFB_L</NODE_ID>
@@ -39,6 +45,11 @@
         </Component>
 
         <Component ID="EFB_R">
+            <DefaultTemplateParameters>
+                <!-- disable lock mode blue highlight -->
+                <NO_HIGHLIGHT_NODE_ID>@StopLockHighlight</NO_HIGHLIGHT_NODE_ID>
+            </DefaultTemplateParameters>
+
             <Component ID="SCREEN_EFB_R" Node="SCREEN_EFB_R">
                 <DefaultTemplateParameters>
                     <NODE_ID>SCREEN_EFB_R</NODE_ID>
@@ -57,6 +68,11 @@
         </Component>
 
         <Component ID="MCDU">
+            <DefaultTemplateParameters>
+                <!-- disable lock mode blue highlight -->
+                <NO_HIGHLIGHT_NODE_ID>@StopLockHighlight</NO_HIGHLIGHT_NODE_ID>
+            </DefaultTemplateParameters>
+
             <UseTemplate Name="FBW_MULTI_FUNCTION_CONTROL_DISPLAY_UNIT_Template">
                 <SIDE>L</SIDE>
                 <DISPLAY_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</DISPLAY_POWERED>
@@ -78,6 +94,11 @@
         <!-- Integrated lighting -->
 
         <Component ID="LIGHTING">
+            <DefaultTemplateParameters>
+                <!-- disable lock mode blue highlight -->
+                <NO_HIGHLIGHT_NODE_ID>@StopLockHighlight</NO_HIGHLIGHT_NODE_ID>
+            </DefaultTemplateParameters>
+
             <!-- FLOOD LT PED -->
             <UseTemplate Name="FBW_Stepless_Potentiometer">
                 <NODE_ID>LIGHTING_Knob_Pedestal</NODE_ID>
@@ -237,6 +258,11 @@
         </Component>
 
         <Component ID="Pedestal_Fwd">
+            <DefaultTemplateParameters>
+                <!-- disable lock mode blue highlight -->
+                <NO_HIGHLIGHT_NODE_ID>@StopLockHighlight</NO_HIGHLIGHT_NODE_ID>
+            </DefaultTemplateParameters>
+
             <UseTemplate Name="FBW_ENGINE_Lever_Throttle_Template">
                 <NODE_ID>LEVER_THROTTLE_1</NODE_ID>
                 <ANIM_NAME>throttle_lever_0</ANIM_NAME>
@@ -306,6 +332,11 @@
         </Component>
 
         <Component ID="Pedestal_Aft">
+            <DefaultTemplateParameters>
+                <!-- disable lock mode blue highlight -->
+                <NO_HIGHLIGHT_NODE_ID>@StopLockHighlight</NO_HIGHLIGHT_NODE_ID>
+            </DefaultTemplateParameters>
+
             <Component ID="Engines">
 
                 <!-- ENG MASTER 1 -->
@@ -479,6 +510,11 @@
         </Component>
 
         <Component ID="Front_Sides">
+            <DefaultTemplateParameters>
+                <!-- disable lock mode blue highlight -->
+                <NO_HIGHLIGHT_NODE_ID>@StopLockHighlight</NO_HIGHLIGHT_NODE_ID>
+            </DefaultTemplateParameters>
+
             <UseTemplate Name="FBW_HANDLING_RudderPedals_Template">
                 <RUDDERPEDALS_TYPE>MIXED</RUDDERPEDALS_TYPE>
                 <NODE_ID_L_RUDDER>PEDALS_LEFT</NODE_ID_L_RUDDER>
@@ -790,6 +826,10 @@
         </Component>
 
         <Component ID="Front_Middle">
+            <DefaultTemplateParameters>
+                <!-- disable lock mode blue highlight -->
+                <NO_HIGHLIGHT_NODE_ID>@StopLockHighlight</NO_HIGHLIGHT_NODE_ID>
+            </DefaultTemplateParameters>
 
             <!-- BRK FAN -->
             <UseTemplate Name="FBW_Anim_Interactions">
@@ -1189,6 +1229,11 @@
         </Component>
 
         <Component ID="OVERHEAD">
+            <DefaultTemplateParameters>
+                <!-- disable lock mode blue highlight -->
+                <NO_HIGHLIGHT_NODE_ID>@StopLockHighlight</NO_HIGHLIGHT_NODE_ID>
+            </DefaultTemplateParameters>
+
             <Component ID="Overhead_Electricals">
                 <DefaultTemplateParameters>
                     <TYPE>AIRBUS</TYPE>
@@ -3590,6 +3635,9 @@
                 <DEFAULT_TEMPLATE_EMISSIVE>ASOBO_LIGHTING_Potentiometer_Emissive_Template</DEFAULT_TEMPLATE_EMISSIVE>
 
                 <PLANE_NAME>A32NX</PLANE_NAME>
+
+                <!-- disable lock mode blue highlight -->
+                <NO_HIGHLIGHT_NODE_ID>@StopLockHighlight</NO_HIGHLIGHT_NODE_ID>
             </DefaultTemplateParameters>
 
             <!-- AUTO LAND L -->
@@ -3823,6 +3871,8 @@
         <Component ID="EFIS_L">
             <DefaultTemplateParameters>
                 <SIDE>L</SIDE>
+                <!-- disable lock mode blue highlight -->
+                <NO_HIGHLIGHT_NODE_ID>@StopLockHighlight</NO_HIGHLIGHT_NODE_ID>
             </DefaultTemplateParameters>
 
             <!-- FCU BARO SELECT L-->
@@ -3925,6 +3975,8 @@
         <Component ID="EFIS_R">
             <DefaultTemplateParameters>
                 <SIDE>R</SIDE>
+                <!-- disable lock mode blue highlight -->
+                <NO_HIGHLIGHT_NODE_ID>@StopLockHighlight</NO_HIGHLIGHT_NODE_ID>
             </DefaultTemplateParameters>
 
             <UseTemplate Name="FBW_AIRLINER_Switch_Baro_Selector_Template">
@@ -4023,6 +4075,11 @@
         </Component>
 
         <Component ID="Airbus_EICAS">
+            <DefaultTemplateParameters>
+                <!-- disable lock mode blue highlight -->
+                <NO_HIGHLIGHT_NODE_ID>@StopLockHighlight</NO_HIGHLIGHT_NODE_ID>
+            </DefaultTemplateParameters>
+
             <UseTemplate Name="ASOBO_Airbus_EICAS_Template">
                 <BOTH_SCREENS_ON_ONE_NODE/>
                 <NODE_ID>DYN_SCREEN</NODE_ID>
@@ -4041,6 +4098,8 @@
             <DefaultTemplateParameters>
                 <POTENTIOMETER>85</POTENTIOMETER>
                 <TYPE>AIRBUS</TYPE>
+                <!-- disable lock mode blue highlight -->
+                <NO_HIGHLIGHT_NODE_ID>@StopLockHighlight</NO_HIGHLIGHT_NODE_ID>
             </DefaultTemplateParameters>
             <Component ID="Updater">
                 <UseTemplate Name="FBW_AIRLINER_Audio_Panel_Updater">
@@ -4318,6 +4377,11 @@
         </Component>
 
         <Component ID="Airbus_ATC">
+            <DefaultTemplateParameters>
+                <!-- disable lock mode blue highlight -->
+                <NO_HIGHLIGHT_NODE_ID>@StopLockHighlight</NO_HIGHLIGHT_NODE_ID>
+            </DefaultTemplateParameters>
+
             <UseTemplate Name="FBW_Airbus_ATC_Template">
                 <TYPE>AIRBUS</TYPE>
                 <PUSH_BTN_PREFIX>PUSH_ATC_</PUSH_BTN_PREFIX>
@@ -4359,6 +4423,11 @@
 
         <!-- ACCU PRESS BRAKES -->
         <Component ID="Airbus_BRK">
+            <DefaultTemplateParameters>
+                <!-- disable lock mode blue highlight -->
+                <NO_HIGHLIGHT_NODE_ID>@StopLockHighlight</NO_HIGHLIGHT_NODE_ID>
+            </DefaultTemplateParameters>
+
             <Component ID="BRK_PRESS_ARC_L" Node="BRK_PRESS_ARC_L">
                 <UseTemplate Name="ASOBO_GT_Anim_Code">
                     <ANIM_NAME>Press_Arc_L</ANIM_NAME>
@@ -4428,6 +4497,11 @@
         </Component>
 
         <Component ID="Airbus_Pedestal_Radios">
+            <DefaultTemplateParameters>
+                <!-- disable lock mode blue highlight -->
+                <NO_HIGHLIGHT_NODE_ID>@StopLockHighlight</NO_HIGHLIGHT_NODE_ID>
+            </DefaultTemplateParameters>
+
             <Component ID="Switching_Panel">
                 <!-- SWITCHING ATT HDG -->
                 <UseTemplate Name="FBW_Anim_Interactions">
@@ -4467,6 +4541,8 @@
         <Template Name="FBW_AUTOPILOT_Knob_Heading_Template">
             <DefaultTemplateParameters>
                 <ID>1</ID>
+                <!-- disable lock mode blue highlight -->
+                <NO_HIGHLIGHT_NODE_ID>@StopLockHighlight</NO_HIGHLIGHT_NODE_ID>
             </DefaultTemplateParameters>
 
             <UseTemplate Name="ASOBO_GT_Helper_Suffix_ID_Appender">
@@ -4477,10 +4553,17 @@
         <Template Name="FBW_AUTOPILOT_Knob_VerticalSpeed_Template">
             <DefaultTemplateParameters>
                 <ID>1</ID>
+                <!-- disable lock mode blue highlight -->
+                <NO_HIGHLIGHT_NODE_ID>@StopLockHighlight</NO_HIGHLIGHT_NODE_ID>
             </DefaultTemplateParameters>
         </Template>
 
         <Component ID="SAFETY">
+            <DefaultTemplateParameters>
+                <!-- disable lock mode blue highlight -->
+                <NO_HIGHLIGHT_NODE_ID>@StopLockHighlight</NO_HIGHLIGHT_NODE_ID>
+            </DefaultTemplateParameters>
+
             <UseTemplate Name="FBW_Anim_Interactions">
                 <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
                 <ANIM_TEMPLATE>FBW_Push_Held</ANIM_TEMPLATE>
@@ -4587,6 +4670,11 @@
         </Component>
 
         <Component ID="DOOR_PANEL">
+            <DefaultTemplateParameters>
+                <!-- disable lock mode blue highlight -->
+                <NO_HIGHLIGHT_NODE_ID>@StopLockHighlight</NO_HIGHLIGHT_NODE_ID>
+            </DefaultTemplateParameters>
+
             <!-- COCKPIT DOOR -->
             <UseTemplate Name="FBW_Anim_Interactions">
                 <ANIM_TYPE>SWITCH</ANIM_TYPE>
@@ -4605,6 +4693,11 @@
         </Component>
 
         <Component ID="Chronometer">
+            <DefaultTemplateParameters>
+                <!-- disable lock mode blue highlight -->
+                <NO_HIGHLIGHT_NODE_ID>@StopLockHighlight</NO_HIGHLIGHT_NODE_ID>
+            </DefaultTemplateParameters>
+
             <!-- FCU CHRONO L -->
             <UseTemplate Name="FBW_Anim_Interactions">
                 <ANIM_TYPE>BUTTON</ANIM_TYPE>
@@ -4707,6 +4800,11 @@
         </Component>
 
         <Component ID="INOP">
+            <DefaultTemplateParameters>
+                <!-- disable lock mode blue highlight -->
+                <NO_HIGHLIGHT_NODE_ID>@StopLockHighlight</NO_HIGHLIGHT_NODE_ID>
+            </DefaultTemplateParameters>
+
             <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
                 <NODE_ID>SWITCH_LEFT</NODE_ID>
             </UseTemplate>
@@ -5077,6 +5175,11 @@
         </Component>
 
         <Component ID="COFFEE">
+            <DefaultTemplateParameters>
+                <!-- disable lock mode blue highlight -->
+                <NO_HIGHLIGHT_NODE_ID>@StopLockHighlight</NO_HIGHLIGHT_NODE_ID>
+            </DefaultTemplateParameters>
+
             <UseTemplate Name="FBW_Coffee_Cup">
                 <NODE_ID>COCKPIT_COFFEE_L</NODE_ID>
             </UseTemplate>
