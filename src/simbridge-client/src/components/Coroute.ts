@@ -1,5 +1,5 @@
 import { simbridgeUrl } from '../common';
-import { CoRouteDto } from '../dto/Coroute/coroute';
+import { CoRouteDto } from '../Coroute/coroute';
 
 /**
  * Class responsible for retrieving data related to company routes from SimBridge
