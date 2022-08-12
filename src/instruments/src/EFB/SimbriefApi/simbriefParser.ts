@@ -72,9 +72,12 @@ const simbriefDataParser = (simbriefJson: any): ISimbriefData => {
             maxLandingWeight: weights.max_ldw,
             maxTakeOffWeight: weights.max_tow,
             maxZeroFuelWeight: weights.max_zfw,
-            passengerCount: weights.pax_count,
+            passengerCount: weights.pax_count_actual,
+            bagCount: weights.bag_count_actual,
             passengerWeight: weights.pax_weight,
+            bagWeight: weights.bag_weight,
             payload: weights.payload,
+            freight: weights.freight_added,
         },
         fuel: {
             avgFuelFlow: fuel.avg_fuel_flow,
