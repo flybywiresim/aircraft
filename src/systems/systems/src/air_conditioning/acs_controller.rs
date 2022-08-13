@@ -2,9 +2,9 @@ use crate::{
     pneumatic::{EngineModeSelector, EngineState, PneumaticValveSignal},
     pressurization::PressurizationOverheadPanel,
     shared::{
-        pid::PidController, Cabin, ControllerSignal, EngineBleedPushbutton, EngineCorrectedN1,
-        EngineFirePushButtons, EngineStartState, GroundSpeed, LgciuWeightOnWheels,
-        PackFlowValveState, PneumaticBleed,
+        pid::PidController, Cabin, ControllerSignal, ElectricalBusType, ElectricalBuses,
+        EngineBleedPushbutton, EngineCorrectedN1, EngineFirePushButtons, EngineStartState,
+        GroundSpeed, LgciuWeightOnWheels, PackFlowValveState, PneumaticBleed,
     },
     simulation::{
         InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -32,10 +32,17 @@ pub(super) struct AirConditioningSystemController<const ZONES: usize> {
     aircraft_state: AirConditioningStateManager,
     zone_controller: Vec<ZoneController<ZONES>>,
     pack_flow_controller: [PackFlowController<ZONES>; 2],
+
+    primary_powered_by: ElectricalBusType,
+    primary_is_powered: bool,
 }
 
 impl<const ZONES: usize> AirConditioningSystemController<ZONES> {
-    pub fn new(context: &mut InitContext, cabin_zone_ids: &[ZoneType; ZONES]) -> Self {
+    pub fn new(
+        context: &mut InitContext,
+        cabin_zone_ids: &[ZoneType; ZONES],
+        primary_powered_by: ElectricalBusType,
+    ) -> Self {
         let zone_controller = cabin_zone_ids
             .iter()
             .map(|id| ZoneController::new(context, id))
@@ -47,6 +54,8 @@ impl<const ZONES: usize> AirConditioningSystemController<ZONES> {
                 PackFlowController::new(context, Pack(1)),
                 PackFlowController::new(context, Pack(2)),
             ],
+            primary_powered_by,
+            primary_is_powered: false,
         }
     }
 
@@ -76,12 +85,19 @@ impl<const ZONES: usize> AirConditioningSystemController<ZONES> {
                 pneumatic_overhead,
                 pressurization,
                 pressurization_overhead,
+                self.primary_is_powered,
             );
         }
 
         let pack_flow = self.pack_flow();
         for zone in self.zone_controller.iter_mut() {
-            zone.update(context, acs_overhead, pack_flow, pressurization)
+            zone.update(
+                context,
+                acs_overhead,
+                pack_flow,
+                pressurization,
+                self.primary_is_powered,
+            )
         }
     }
 
@@ -124,6 +140,10 @@ impl<const ZONES: usize> SimulationElement for AirConditioningSystemController<Z
         accept_iterable!(self.pack_flow_controller, visitor);
 
         visitor.visit(self);
+    }
+
+    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
+        self.primary_is_powered = buses.is_powered(self.primary_powered_by)
     }
 }
 
@@ -427,6 +447,7 @@ impl<const ZONES: usize> ZoneController<ZONES> {
         acs_overhead: &AirConditioningSystemOverhead<ZONES>,
         pack_flow: MassRate,
         pressurization: &impl Cabin,
+        primary_is_powered: bool,
     ) {
         self.zone_selected_temperature = acs_overhead.selected_cabin_temperature(self.zone_id);
         self.duct_demand_temperature = if pack_flow < MassRate::new::<kilogram_per_second>(0.01) {
@@ -435,6 +456,9 @@ impl<const ZONES: usize> ZoneController<ZONES> {
                 0.8 * self.zone_measured_temperature.get::<degree_celsius>()
                     + 0.2 * context.ambient_temperature().get::<degree_celsius>(),
             )
+        } else if !primary_is_powered {
+            // If the Zone controller is working on secondary power, the temperature demand is set at 24 degrees
+            ThermodynamicTemperature::new::<degree_celsius>(24.)
         } else {
             self.calculate_duct_temp_demand(context, pressurization)
         };
@@ -628,6 +652,7 @@ impl<const ZONES: usize> PackFlowController<ZONES> {
         pneumatic_overhead: &impl EngineBleedPushbutton,
         pressurization: &impl Cabin,
         pressurization_overhead: &PressurizationOverheadPanel,
+        is_powered: bool,
     ) {
         // TODO: Add overheat protection
         self.flow_demand = self.flow_demand_determination(aircraft_state, acs_overhead, pneumatic);
@@ -637,8 +662,9 @@ impl<const ZONES: usize> PackFlowController<ZONES> {
             pressurization_overhead,
             pneumatic,
         );
-        self.should_open_fcv =
-            self.fcv_open_allowed && self.can_move_fcv(engines, pneumatic, pneumatic_overhead);
+        self.should_open_fcv = self.fcv_open_allowed
+            && self.can_move_fcv(engines, pneumatic, pneumatic_overhead)
+            && is_powered;
         self.update_timer(context);
         self.pack_flow_demand = self.absolute_flow_calculation(pressurization);
 
@@ -811,12 +837,13 @@ mod acs_controller_tests {
     use super::*;
     use crate::{
         air_conditioning::cabin_air::CabinZone,
+        electrical::{test::TestElectricitySource, ElectricalBus, Electricity},
         overhead::AutoOffFaultPushButton,
         pneumatic::{
             valve::{DefaultValve, PneumaticExhaust},
             ControllablePneumaticValve, EngineModeSelector, PneumaticContainer, PneumaticPipe,
         },
-        shared::{EngineBleedPushbutton, PneumaticValve},
+        shared::{EngineBleedPushbutton, PneumaticValve, PotentialOrigin},
         simulation::{
             test::{ReadByName, SimulationTestBed, TestBed, WriteByName},
             Aircraft, SimulationElement, SimulationElementVisitor, UpdateContext,
@@ -1275,6 +1302,8 @@ mod acs_controller_tests {
         lgciu1: TestLgciu,
         lgciu2: TestLgciu,
         test_cabin: TestCabin,
+        powered_source: TestElectricitySource,
+        dc_1_bus: ElectricalBus,
     }
     impl TestAircraft {
         fn new(context: &mut InitContext) -> Self {
@@ -1282,6 +1311,7 @@ mod acs_controller_tests {
                 acsc: AirConditioningSystemController::new(
                     context,
                     &[ZoneType::Cockpit, ZoneType::Cabin(1)],
+                    ElectricalBusType::DirectCurrent(1),
                 ),
                 acs_overhead: AirConditioningSystemOverhead::new(
                     context,
@@ -1298,6 +1328,11 @@ mod acs_controller_tests {
                 lgciu1: TestLgciu::new(false),
                 lgciu2: TestLgciu::new(false),
                 test_cabin: TestCabin::new(context),
+                powered_source: TestElectricitySource::powered(
+                    context,
+                    PotentialOrigin::EngineGenerator(1),
+                ),
+                dc_1_bus: ElectricalBus::new(context, ElectricalBusType::DirectCurrent(1)),
             }
         }
 
@@ -1332,6 +1367,15 @@ mod acs_controller_tests {
         }
     }
     impl Aircraft for TestAircraft {
+        fn update_before_power_distribution(
+            &mut self,
+            _context: &UpdateContext,
+            electricity: &mut Electricity,
+        ) {
+            electricity.supplied_by(&self.powered_source);
+            electricity.flow(&self.powered_source, &self.dc_1_bus);
+        }
+
         fn update_after_power_distribution(&mut self, context: &UpdateContext) {
             self.pneumatic.update(context, &self.acsc);
             self.acsc.update(
