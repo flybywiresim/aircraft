@@ -1392,6 +1392,7 @@ mod tests {
                     context,
                     cabin_zones,
                     ElectricalBusType::DirectCurrent(1),
+                    ElectricalBusType::DirectCurrent(2),
                 ),
 
                 adirs: TestAdirs::new(),

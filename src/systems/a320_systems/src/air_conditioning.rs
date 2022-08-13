@@ -30,6 +30,7 @@ impl A320AirConditioning {
                 context,
                 cabin_zones,
                 ElectricalBusType::DirectCurrent(1),
+                ElectricalBusType::DirectCurrent(2),
             ),
         }
     }
