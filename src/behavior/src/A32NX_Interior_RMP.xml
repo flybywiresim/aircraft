@@ -142,15 +142,14 @@
                  <POTENTIOMETER>7</POTENTIOMETER>
                 <EMISSIVE_CODE type="rnp" return="number">
                     let indicatorsPowered = #INDICATORS_POWERED, bool#;
-                    let id = #ID, number#;
                     alias toggleSwitch = (L:A32NX_RMP_#SIDE#_TOGGLE_SWITCH, bool);
                     alias selectedModeLeft = (L:A32NX_RMP_L_SELECTED_MODE, number);
                     alias selectedModeRight = (L:A32NX_RMP_R_SELECTED_MODE, number);
                     alias annunciatorLight = (L:A32NX_OVHD_INTLT_ANN, number);
                     let emissiveDim = if annunciatorLight == 2 { 0.05 } else { 1 };
                     // @todo abnormal defined differently with NAV modes available.
-                    let rmpLeftAbnormal = id == 1 and (selectedModeLeft == 2 or selectedModeLeft == 3 or selectedModeRight == 1);
-                    let rmpRightAbnormal = id == 2 and (selectedModeRight == 1 or selectedModeRight == 3 or selectedModeLeft == 2);
+                    let rmpLeftAbnormal = (selectedModeLeft &gt; 1 and selectedModeLeft &lt; 6);
+                    let rmpRightAbnormal = (selectedModeRight != 2 and selectedModeRight &lt; 6);
 
                     (if (toggleSwitch and (rmpLeftAbnormal or rmpRightAbnormal) or (annunciatorLight == 0)) and indicatorsPowered {
                         1 * emissiveDim
@@ -167,15 +166,14 @@
                  <POTENTIOMETER>7</POTENTIOMETER>
                 <EMISSIVE_CODE type="rnp" return="number">
                     let indicatorsPowered = #INDICATORS_POWERED, bool#;
-                    let id = #ID, number#;
                     alias toggleSwitch = (L:A32NX_RMP_#SIDE#_TOGGLE_SWITCH, bool);
                     alias selectedModeLeft = (L:A32NX_RMP_L_SELECTED_MODE, number);
                     alias selectedModeRight = (L:A32NX_RMP_R_SELECTED_MODE, number);
                     alias annunciatorLight = (L:A32NX_OVHD_INTLT_ANN, number);
                     let emissiveDim = if annunciatorLight == 2 { 0.05 } else { 1 };
                     // @todo abnormal defined differently with NAV modes available.
-                    let rmpLeftAbnormal = id == 1 and (selectedModeLeft == 2 or selectedModeLeft == 3 or selectedModeRight == 1);
-                    let rmpRightAbnormal = id == 2 and (selectedModeRight == 1 or selectedModeRight == 3 or selectedModeLeft == 2);
+                    let rmpLeftAbnormal = (selectedModeLeft &gt; 1 and selectedModeLeft &lt; 6);
+                    let rmpRightAbnormal = (selectedModeRight != 2 and selectedModeRight &lt; 6);
 
                     (if (toggleSwitch and (rmpLeftAbnormal or rmpRightAbnormal) or (annunciatorLight == 0)) and indicatorsPowered {
                         1 * emissiveDim

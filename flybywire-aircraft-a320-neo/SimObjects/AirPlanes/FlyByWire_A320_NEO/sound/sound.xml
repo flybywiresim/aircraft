@@ -1456,7 +1456,7 @@
             <Requires LocalVar="A32NX_ELEC_AC_2_BUS_IS_POWERED" Units="Bool" Index="1">
                 <Range LowerBound="1" />
             </Requires>
-            <Requires SimVar="FUEL TANK RIGHT  MAIN QUANTITY" Units="Gallons" Index="1">
+            <Requires SimVar="FUEL TANK RIGHT MAIN QUANTITY" Units="Gallons" Index="1">
                 <Range LowerBound="0.2" />
             </Requires>
         </Sound>

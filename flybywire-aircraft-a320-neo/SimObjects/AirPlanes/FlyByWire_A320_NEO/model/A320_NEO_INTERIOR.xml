@@ -3906,25 +3906,6 @@
                 </UseTemplate>
             </Component>
             <Component ID="Audio_Panel_Left">
-                <!-- Init of volume and transmit channels in default operation state: Transmit VHF1 and listen VHF1 and VFH2 -->
-                <Update Once="True">
-                    0 (&gt;L:XMLVAR_COM_PANEL1_Transmit_Channel)
-                    0 (&gt;L:XMLVAR_COM_PANEL2_Transmit_Channel)
-
-                    1 (&gt;L:XMLVAR_COM_1_VHF_L_Switch_Down)
-                    1 (&gt;L:XMLVAR_COM_1_VHF_C_Switch_Down)
-                    1 (&gt;L:XMLVAR_COM_2_VHF_L_Switch_Down)
-                    1 (&gt;L:XMLVAR_COM_2_VHF_C_Switch_Down)
-
-                    1 (&gt;K:COM1_RECEIVE_SELECT)
-                    1 (&gt;K:COM2_RECEIVE_SELECT)
-                    1 (&gt;K:COM3_RECEIVE_SELECT)
-
-                    0.8 (&gt;L:XMLVAR_COM_1_Volume_VHF_L)
-                    0.4 (&gt;L:XMLVAR_COM_1_Volume_VHF_C)
-                    0.8 (&gt;L:XMLVAR_COM_2_Volume_VHF_L)
-                    0.4 (&gt;L:XMLVAR_COM_2_Volume_VHF_C)
-                </Update>
                 <UseTemplate Name="FBW_AIRLINER_Audio_Panel_Template">
                     <ID>1</ID>
                     <SIDE>L</SIDE>
@@ -4310,9 +4291,39 @@
 
                 </UseTemplate>
             </Component>
-            <!-- MARKER DEFAULT VALUE IS 1 BUT IT IS UNDESIRED -->
-            <!-- ADF2 volume set do not exist in the sdk for now. Hopefully in the future -->
+            <!-- MARKER DEFAULT VALUE IS 1 BUT IT IS UNDESIRED
+                ADF2 volume set do not exist in the sdk for now. Hopefully in the future -->
             <Update Once="True">
+                0 (&gt;L:XMLVAR_RMP1_Transmit_Channel)
+                0 (&gt;L:XMLVAR_RMP2_Transmit_Channel)
+
+                1 (&gt;L:XMLVAR_RMP1_VHF1_Knob_Volume_Down)
+                1 (&gt;L:XMLVAR_RMP1_VHF2_Knob_Volume_Down)
+                1 (&gt;L:XMLVAR_RMP2_VHF1_Knob_Volume_Down)
+                1 (&gt;L:XMLVAR_RMP2_VHF2_Knob_Volume_Down)
+
+                1 (&gt;K:COM1_RECEIVE_SELECT)
+                1 (&gt;K:COM2_RECEIVE_SELECT)
+                1 (&gt;K:COM3_RECEIVE_SELECT)
+
+                0.8 (&gt;L:XMLVAR_RMP1_Volume_VHF1)
+                0.4 (&gt;L:XMLVAR_RMP1_Volume_VHF2)
+                0.8 (&gt;L:XMLVAR_RMP2_Volume_VHF1)
+                0.4 (&gt;L:XMLVAR_RMP2_Volume_VHF2)
+                0.8 (&gt;L:XMLVAR_RMP3_Volume_VHF1)
+                0.4 (&gt;L:XMLVAR_RMP3_Volume_VHF2)
+
+                (L:XMLVAR_RMP1_Volume_VHF1) 100 * (&gt;K:COM1_VOLUME_SET)
+                (L:XMLVAR_RMP1_Volume_VHF2) 100 * (&gt;K:COM2_VOLUME_SET)
+                0 (&gt;K:COM3_VOLUME_SET)
+
+                20000000 (&gt;L:A32NX_RMP_HF1_ACTIVE_FREQUENCY)
+                20000000 (&gt;L:A32NX_RMP_HF2_ACTIVE_FREQUENCY)
+                20000000 (&gt;L:A32NX_RMP1_HF1_STANDBY_FREQUENCY)
+                20000000 (&gt;L:A32NX_RMP1_HF2_STANDBY_FREQUENCY)
+                20000000 (&gt;L:A32NX_RMP2_HF1_STANDBY_FREQUENCY)
+                20000000 (&gt;L:A32NX_RMP2_HF2_STANDBY_FREQUENCY)
+
                 (A:MARKER SOUND, Bool) 1 == {
                     (&gt;K:MARKER_SOUND_TOGGLE)
                 }

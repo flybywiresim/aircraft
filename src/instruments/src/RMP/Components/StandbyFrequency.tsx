@@ -8,6 +8,7 @@ declare const Utils; // this can also be replaced once /typings are available
 
 export enum TransceiverType {
     RADIO_VHF,
+    RADIO_HF,
     VOR,
     ILS,
     ADF

@@ -121,7 +121,7 @@ export const NavRadioPanel = (props: Props) => {
             setActiveFrequencySaved(standbyFrequency);
 
             if (props.transceiver === TransceiverType.ILS) {
-                SimVar.SetSimVarValue('L:A32NX_RMP_ILS_MLS_TUNED', 'boolean', true);
+                SimVar.SetSimVarValue('L:A32NX_RMP_ILS_TUNED', 'boolean', true);
             }
         } else {
             setCourse(course);
