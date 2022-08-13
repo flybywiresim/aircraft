@@ -149,7 +149,7 @@ pub enum ProximityDetectorId {
     DownlockDoorRight2,
 }
 
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Clone, Copy, PartialEq, Debug)]
 pub enum GearActuatorId {
     GearNose,
     GearDoorNose,

@@ -80,15 +80,15 @@ export class LegsProcedure {
     ) {
       for (const leg of this._legs) {
           if (this.isIcaoValid(leg.fixIcao)) {
-              this._facilitiesToLoad.set(leg.fixIcao, this._instrument.facilityLoader.getFacilityRaw(leg.fixIcao, 2000));
+              this._facilitiesToLoad.set(leg.fixIcao, this._instrument.facilityLoader.getFacilityRaw(leg.fixIcao, 2000, true));
           }
 
           if (this.isIcaoValid(leg.originIcao)) {
-              this._facilitiesToLoad.set(leg.originIcao, this._instrument.facilityLoader.getFacilityRaw(leg.originIcao, 2000));
+              this._facilitiesToLoad.set(leg.originIcao, this._instrument.facilityLoader.getFacilityRaw(leg.originIcao, 2000, true));
           }
 
           if (this.isIcaoValid(leg.arcCenterFixIcao)) {
-              this._facilitiesToLoad.set(leg.arcCenterFixIcao, this._instrument.facilityLoader.getFacilityRaw(leg.arcCenterFixIcao, 2000));
+              this._facilitiesToLoad.set(leg.arcCenterFixIcao, this._instrument.facilityLoader.getFacilityRaw(leg.arcCenterFixIcao, 2000, true));
           }
       }
   }
@@ -354,7 +354,7 @@ export class LegsProcedure {
           legDistance * LegsProcedure.distanceNormalFactorNM, prevLeg.infos.coordinates.lat, prevLeg.infos.coordinates.long,
       );
 
-      const waypoint = this.buildWaypoint(`${originIdent}${Math.trunc(legDistance * LegsProcedure.distanceNormalFactorNM)}`, coordinates);
+      const waypoint = this.buildWaypoint(`${originIdent.substring(0, 3)}/${Math.round(leg.distance / 1852).toString().padStart(2, '0')}`, coordinates);
 
       return waypoint;
   }

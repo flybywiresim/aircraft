@@ -1,10 +1,10 @@
 {
   "AirTrafficControl": {
     "Active": "Etkin",
-    "ChangeATISATCSourceButton": "Change ATIS/ATC source",
+    "ChangeATISATCSourceButton": "ATIS/ATC Kaynağını Değiştir",
     "ConnectHoppieACARS": "Hoppie ACARS'a bağlan",
     "NoInformationAvailableForThisFrequency": "BU FREKANS İÇİN MEVCUT BİLGİ YOK",
-    "SelectCorrectATISATCSource": "This page is only available when IVAO or VATSIM is selected as the ATIS/ATC source in the settings page.",
+    "SelectCorrectATISATCSource": "Bu sayfa yalnızca ayarlar sayfasında ATIS/ATC kaynağı olarak IVAO veya VATSIM seçildiğinde kullanılabilir.",
     "SetActive": "Etkinleştir",
     "SetStandby": "Beklemede Ayarla",
     "Standby": "Beklemede",
@@ -127,7 +127,7 @@
       "RightInnerTank": "Sağ İç Tank",
       "RightOuterTank": "Sağ Dış Tank",
       "TT": {
-        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "Yakıt sürelerini değiştirmek için uçak Cold and Dark durumda olmalı",
+        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "Yakıt İkmal Süresini Değiştirmek İçin Uçak Yerde ve Motorları Kapalı Olmalıdır",
         "FillBlockFuelFromSimBrief": "SimBrief'ten Blok Yakıtı Doldur"
       },
       "Title": "Yakıt",
@@ -161,15 +161,15 @@
     "Services": {
       "BaggageTruck": "Bagaj Kamyonu",
       "CateringTruck": "Yemek Servis Aracı",
-      "Cones": "Safety Cones",
+      "Cones": "Emniyet Konileri",
       "DoorAft": "Arka Giriş Kapısı",
       "DoorCargo": "Cargo Door",
       "DoorFwd": "Ön Giriş Kapısı",
-      "ExternalPower": "Harici Güç",
+      "ExternalPower": "Yer Güç Ünitesi",
       "FuelTruck": "Yakıt Kamyonu",
       "JetBridge": "Körük",
       "Title": "Hizmetler",
-      "WheelChocks": "Wheel Chocks"
+      "WheelChocks": "Tekerlek Takozları"
     },
     "Title": "Yer"
   },
@@ -198,7 +198,7 @@
       "AuthenticateWithNavigraph": "Navigraph ile Kimlik Doğrulama",
       "InsufficientEnv": "Yetersiz .env dosyası",
       "IntoYourBrowserAndEnterTheCodeBelow": "tarayıcınıza girin ve aşağıdaki kodu girin\n",
-      "LoadingMsg": "Loading",
+      "LoadingMsg": "Yükleniyor",
       "NoAirportSelected": "Havaalanı Seçilmedi",
       "ResetNavigraphAuthentication": "Navigraph Kimlik Doğrulamasını Sıfırla",
       "ScanTheQrCodeOrOpen": "QR Kodunu tarayın veya Açın",
@@ -220,7 +220,7 @@
       "TT": {
         "ChangeChartProvider": "Harita Sağlayıcısını Değiştir",
         "ChangeChartSortMethod": "Harita Sıralama Yöntemini Değiştir",
-        "RemoveAllPinnedCharts": "Remove All Pinned Charts"
+        "RemoveAllPinnedCharts": "Tüm Sabitlenmiş Haritaları Kaldır"
       },
       "Title": "Sabitlenmiş Haritalar",
       "View": "Görüntüle"
@@ -257,8 +257,8 @@
       "Low": "Alçak",
       "MaximumManual": "Maksimum Manuel",
       "Medium": "Orta",
-      "MetarErrorDialogMessage": "The METAR from your OFP could not be successfully parsed. Would you like to autofill data using a fetched METAR instead?",
-      "MetarErrorDialogTitle": "Error Parsing OFP METAR",
+      "MetarErrorDialogMessage": "OFP'den okunan METAR ayrıştırılamadı. Bunun yerine mevcut METAR'ı kullanılarak verileri otomatik doldurmak ister misiniz?",
+      "MetarErrorDialogTitle": "OFP METAR Ayrıştırma Hatası",
       "OverweightProcedure": "Overweight Prosedürleri",
       "Qnh": "QNH",
       "ReverseThrust": "Reverse Thrust",
@@ -266,8 +266,8 @@
       "RunwayAltitudeUnit": "ft ASL",
       "RunwayCondition": "Pist Durumu",
       "RunwayConditions": {
-        "Dry": "Dry (6)",
-        "Good": "Good (5)",
+        "Dry": "Kuru (6)",
+        "Good": "İyi (5)",
         "GoodMedium": "Good-Medium (4)",
         "Medium": "Medium (3)",
         "MediumPoor": "Medium-Poor (2)",
@@ -356,7 +356,7 @@
       "AircraftNeedsToBePoweredToSavePresets": "Ön Ayarları Kaydetmek için Uçağa Güç Verilmesi Gerekiyor",
       "LoadPreset": "Ön Ayarı Yükle",
       "LoadingPreset": "Ön Ayar Yükleniyor",
-      "NewNameConfirmationDialogMsg": "Please confirm the new name for the lighting preset",
+      "NewNameConfirmationDialogMsg": "Lütfen aydınlatma ön ayarının yeni adını onaylayın",
       "NoName": "İsimsiz",
       "PleaseConfirmSavingPreset": "Lütfen Ön Ayarı Kaydetmeyi Onaylayın",
       "SavePreset": "Ön ayarı kaydet",
@@ -378,7 +378,7 @@
     "Backward": "Geri",
     "CallTug": "Çekiciye Haber Ver",
     "DisableSystemMessageBody": "Are you sure you want to disable the Pushback System? This will also release the tug.",
-    "DisableSystemMessageTitle": "Disable Pushback System",
+    "DisableSystemMessageTitle": "Pushback sistemini devre dışı bırak",
     "EnableSystemMessageBody": "The new flyPadOS 3 Pushback System can cause conflicts with other pushback add-ons. We recommend not to enable the system if you plan to use another pushback add-on. ",
     "EnableSystemMessageTitle": "Enable Pushback System",
     "Forward": "İleri",
@@ -393,7 +393,7 @@
     },
     "Right": "Right",
     "SystemEnabledOff": "Pushback System Off",
-    "SystemEnabledOn": "Pushback System On",
+    "SystemEnabledOn": "Pushback Sistemi Açık",
     "TT": {
       "CallReleaseTug": "Call or release tug",
       "CenterPlaneMode": "Center map on plane On/Off",
@@ -410,7 +410,7 @@
       "ZoomIn": "Zoom in",
       "ZoomOut": "Zoom out"
     },
-    "TugAttached": "Tug is attached",
+    "TugAttached": "Römorkör bağlı",
     "TugDirection": "Çekici Yönü",
     "TugInTransit": "Waiting for Tug/Pin",
     "TugSpeed": "Çekici Hızı"
@@ -437,7 +437,7 @@
       "Enable": "Etkinleştir",
       "EnableTelex": "TELEX'i Etkinleştir",
       "ErrorReporting": "Hata Raporlama",
-      "HoppieEnabled": "Hoppie enabled",
+      "HoppieEnabled": "Hoppie etkin",
       "HoppieUserId": "Hoppie Kullanıcı Kimliği",
       "MetarSource": "METAR Kaynağı",
       "OptionalA32nxErrorReporting": "İsteğe Bağlı A32NX Hata Bildirimi",
@@ -484,9 +484,10 @@
       "Active": "Etkin",
       "Auto": "Otomatik",
       "Calibrate": "Kalibrasyon",
-      "ConesEnabled": "Safety Cones",
+      "ConesEnabled": "Emniyet Konileri",
       "DefaultBarometerUnit": "Varsayılan Barometre Birimi",
       "DynamicRegistrationDecal": "Dinamik Kayıt Çıkartması",
+      "EnableSimBridge": "MCDU Sunucu Bağlantısını Etkinleştir (Başarılı bağlantı olmazsa 5 dakika sonra otomatik olarak devre dışı bırakılır)",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "MCDU Sunucu Bağlantısını Etkinleştir (Başarılı bağlantı olmazsa 5 dakika sonra otomatik olarak devre dışı bırakılır)",
       "ExternalMcduServerPort": "Harici MCDU Sunucu Bağlantı Noktası",
       "Hpa": "hPa",
@@ -495,6 +496,7 @@
       "None": "Hiçbiri",
       "Off": "Kapalı",
       "Save": "Kaydet",
+      "SimBridgePort": "Harici MCDU Sunucu Bağlantı Noktası",
       "SyncMsfsFlightPlan": "MSFS Uçuş Planını Eşitle",
       "ThrottleDetents": "Gaz Mandalları",
       "Title": "Simülasyon Seçenekleri",
