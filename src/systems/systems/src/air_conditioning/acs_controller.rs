@@ -1365,6 +1365,14 @@ mod acs_controller_tests {
         fn set_cross_bleed_valve_open(&mut self) {
             self.pneumatic.set_cross_bleed_valve_open();
         }
+
+        fn unpower_dc_1_bus(&mut self) {
+            self.powered_source.unpower();
+        }
+
+        fn power_dc_1_bus(&mut self) {
+            self.powered_source.power();
+        }
     }
     impl Aircraft for TestAircraft {
         fn update_before_power_distribution(
@@ -1554,6 +1562,16 @@ mod acs_controller_tests {
                 self.query(|a| a.acsc.aircraft_state),
                 AirConditioningStateManager::EndLanding(_)
             )
+        }
+
+        fn unpowered_dc_1_bus(mut self) -> Self {
+            self.command(|a| a.unpower_dc_1_bus());
+            self
+        }
+
+        fn powered_dc_1_bus(mut self) -> Self {
+            self.command(|a| a.power_dc_1_bus());
+            self
         }
 
         fn command_selected_temperature(
@@ -2095,6 +2113,48 @@ mod acs_controller_tests {
                 (test_bed.duct_demand_temperature()[1].get::<degree_celsius>() - 2.).abs() < 1.
             );
         }
+
+        #[test]
+        fn knobs_dont_affect_duct_demand_when_primary_unpowered() {
+            let mut test_bed = test_bed()
+                .with()
+                .both_packs_on()
+                .and()
+                .engine_idle()
+                .and()
+                .unpowered_dc_1_bus()
+                .command_selected_temperature(
+                    [ThermodynamicTemperature::new::<degree_celsius>(30.); 2],
+                );
+
+            test_bed = test_bed.iterate_with_delta(100, Duration::from_secs(10));
+
+            assert!(
+                (test_bed.duct_demand_temperature()[1].get::<degree_celsius>() - 24.).abs() < 1.
+            );
+        }
+
+        #[test]
+        fn unpowering_and_repowering_primary_behaves_as_expected() {
+            let mut test_bed = test_bed()
+                .with()
+                .both_packs_on()
+                .and()
+                .engine_idle()
+                .and()
+                .unpowered_dc_1_bus()
+                .command_selected_temperature(
+                    [ThermodynamicTemperature::new::<degree_celsius>(30.); 2],
+                );
+            test_bed = test_bed.iterate_with_delta(100, Duration::from_secs(10));
+            assert!(
+                (test_bed.duct_demand_temperature()[1].get::<degree_celsius>() - 24.).abs() < 1.
+            );
+
+            test_bed = test_bed.powered_dc_1_bus();
+            test_bed = test_bed.iterate_with_delta(100, Duration::from_secs(10));
+            assert!(test_bed.duct_demand_temperature()[1].get::<degree_celsius>() > 24.);
+        }
     }
 
     mod pack_flow_controller_tests {
@@ -2404,6 +2464,44 @@ mod acs_controller_tests {
             test_bed = test_bed.iterate(2);
             assert!(test_bed.pack_1_has_fault());
             assert!(test_bed.pack_2_has_fault());
+        }
+
+        #[test]
+        fn pack_flow_controller_signals_to_close_when_unpowered() {
+            let mut test_bed = test_bed()
+                .with()
+                .both_packs_on()
+                .and()
+                .engine_idle()
+                .iterate(2);
+            assert!(test_bed.pack_flow() > MassRate::new::<kilogram_per_second>(0.));
+
+            test_bed = test_bed.unpowered_dc_1_bus().iterate(2);
+
+            assert_eq!(
+                test_bed.pack_flow(),
+                MassRate::new::<kilogram_per_second>(0.),
+            );
+        }
+
+        #[test]
+        fn pack_flow_controller_signals_resets_after_power_reset() {
+            let mut test_bed = test_bed()
+                .with()
+                .both_packs_on()
+                .and()
+                .engine_idle()
+                .iterate(2);
+            assert!(test_bed.pack_flow() > MassRate::new::<kilogram_per_second>(0.));
+
+            test_bed = test_bed.unpowered_dc_1_bus().iterate(2);
+            assert_eq!(
+                test_bed.pack_flow(),
+                MassRate::new::<kilogram_per_second>(0.)
+            );
+
+            test_bed = test_bed.powered_dc_1_bus().iterate(2);
+            assert!(test_bed.pack_flow() > MassRate::new::<kilogram_per_second>(0.));
         }
     }
 }
