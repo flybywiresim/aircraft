@@ -398,13 +398,9 @@
     - Number
     - The current mode of the right radio management panel.
 
-- A32NX_RMP_L_NAV_BUTTON_SELECTED
+- A32NX_RMP_{L,R}_NAV_BUTTON_SELECTED
     - Bool
-    - Whether the NAV push button on the left RMP is pushed or not.
-
-- A32NX_RMP_R_NAV_BUTTON_SELECTED
-    - Bool
-    - Whether the NAV push button on the right RMP is pushed or not.
+    - Whether the NAV push button on the corresponding RMP is pushed or not.
 
 - A32NX_RMP_L_VHF2_STANDBY
     - Hz
