@@ -17,8 +17,12 @@ const TEXT_DATA_MODE_VHF3 = 'DATA';
  */
 const formatFrequency = (frequency: number): string => {
     // VHF, HF , VOR, ILS
-    if (frequency >= 2800000) {
+    if (frequency >= 108000000) {
         return (frequency / 1000000).toFixed(3).padEnd(7, '0');
+    }
+
+    if (frequency >= 2000000) {
+        return (frequency / 1000000).toFixed(3).padEnd(5, '0');
     }
 
     // ADF

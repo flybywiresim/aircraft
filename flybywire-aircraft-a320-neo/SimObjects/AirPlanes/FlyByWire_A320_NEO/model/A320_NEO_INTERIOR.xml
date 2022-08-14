@@ -3889,10 +3889,6 @@
                 <POTENTIOMETER>85</POTENTIOMETER>
                 <TYPE>AIRBUS</TYPE>
             </DefaultTemplateParameters>
-            <Component ID="Updater">
-                <UseTemplate Name="FBW_AIRLINER_Audio_Panel_Updater">
-                </UseTemplate>
-            </Component>
             <!-- RMP 1 is powered by AC/DC ESS (via ESS TR for AC) -->
             <!-- For each ACP, VHF1 is powered with ESS (emergency circuit), VHF2 with AC/DC 2 and VHF3 with AC/DC 3 (via corresponding TR for AC) -->
             <!-- Hence, in case of total electrical failure, only RMP 1 and VHF1 on both ACP are powered via ESS circuit -->
@@ -3964,7 +3960,7 @@
                     <NODE_ID_BUTTON_SEQ2_MECH>PUSH_AUDIOL_MECH_SEQ2</NODE_ID_BUTTON_SEQ2_MECH>
 
                     <NODE_ID_RECEIVER_ATT>KNOB_AUDIOL_CAB</NODE_ID_RECEIVER_ATT>
-                    <NODE_ID_LIGHT_RECEIVER_ATT>PUSH_AUDIOR_CAB_EMIS</NODE_ID_LIGHT_RECEIVER_ATT>
+                    <NODE_ID_LIGHT_RECEIVER_ATT>PUSH_AUDIOL_CAB_EMIS</NODE_ID_LIGHT_RECEIVER_ATT>
                     <ANIM_NAME_KNOB_RECEIVER_ATT>KNOB_AUDIOL_CAB</ANIM_NAME_KNOB_RECEIVER_ATT>
                     <ANIM_NAME_PUSH_RECEIVER_ATT>PUSH_AUDIOL_CAB</ANIM_NAME_PUSH_RECEIVER_ATT>
                     <NODE_ID_BUTTON_ATT>PUSH_AUDIOL_ATT</NODE_ID_BUTTON_ATT>
@@ -4294,27 +4290,27 @@
             <!-- MARKER DEFAULT VALUE IS 1 BUT IT IS UNDESIRED
                 ADF2 volume set do not exist in the sdk for now. Hopefully in the future -->
             <Update Once="True">
-                0 (&gt;L:XMLVAR_RMP1_Transmit_Channel)
-                0 (&gt;L:XMLVAR_RMP2_Transmit_Channel)
+                0 (&gt;L:A32NX_ACP1_Transmit_Channel)
+                0 (&gt;L:A32NX_ACP2_Transmit_Channel)
 
-                1 (&gt;L:XMLVAR_RMP1_VHF1_Knob_Volume_Down)
-                1 (&gt;L:XMLVAR_RMP1_VHF2_Knob_Volume_Down)
-                1 (&gt;L:XMLVAR_RMP2_VHF1_Knob_Volume_Down)
-                1 (&gt;L:XMLVAR_RMP2_VHF2_Knob_Volume_Down)
+                1 (&gt;L:A32NX_ACP1_VHF1_Knob_Volume_Down)
+                1 (&gt;L:A32NX_ACP1_VHF2_Knob_Volume_Down)
+                1 (&gt;L:A32NX_ACP2_VHF1_Knob_Volume_Down)
+                1 (&gt;L:A32NX_ACP2_VHF2_Knob_Volume_Down)
 
                 1 (&gt;K:COM1_RECEIVE_SELECT)
                 1 (&gt;K:COM2_RECEIVE_SELECT)
                 1 (&gt;K:COM3_RECEIVE_SELECT)
 
-                0.8 (&gt;L:XMLVAR_RMP1_Volume_VHF1)
-                0.4 (&gt;L:XMLVAR_RMP1_Volume_VHF2)
-                0.8 (&gt;L:XMLVAR_RMP2_Volume_VHF1)
-                0.4 (&gt;L:XMLVAR_RMP2_Volume_VHF2)
-                0.8 (&gt;L:XMLVAR_RMP3_Volume_VHF1)
-                0.4 (&gt;L:XMLVAR_RMP3_Volume_VHF2)
+                0.8 (&gt;L:A32NX_ACP1_Volume_VHF1)
+                0.4 (&gt;L:A32NX_ACP1_Volume_VHF2)
+                0.8 (&gt;L:A32NX_ACP2_Volume_VHF1)
+                0.4 (&gt;L:A32NX_ACP2_Volume_VHF2)
+                0.8 (&gt;L:A32NX_ACP3_Volume_VHF1)
+                0.4 (&gt;L:A32NX_ACP3_Volume_VHF2)
 
-                (L:XMLVAR_RMP1_Volume_VHF1) 100 * (&gt;K:COM1_VOLUME_SET)
-                (L:XMLVAR_RMP1_Volume_VHF2) 100 * (&gt;K:COM2_VOLUME_SET)
+                (L:A32NX_ACP1_Volume_VHF1) 100 * (&gt;K:COM1_VOLUME_SET)
+                (L:A32NX_ACP1_Volume_VHF2) 100 * (&gt;K:COM2_VOLUME_SET)
                 0 (&gt;K:COM3_VOLUME_SET)
 
                 20000000 (&gt;L:A32NX_RMP_HF1_ACTIVE_FREQUENCY)
