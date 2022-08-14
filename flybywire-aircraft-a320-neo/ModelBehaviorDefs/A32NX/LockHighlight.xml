@@ -1,0 +1,5 @@
+<ModelBehaviors>
+    <!-- Place True here to disable blue highlighting of controls in lock interaction mode -->
+    <!-- Place False here to enable blue highlighting of controls in lock interaction mode -->
+    <Macro Name="StopLockHighlight">True</Macro>
+</ModelBehaviors>
