@@ -1021,13 +1021,15 @@
     </Template>
 
     <Template Name="FBW_AIRLINER_Audio_Panel_Updater">
-        <!-- This Panel takes input from the 3 audio panels and sets the simvars to the value it should have based on it -->
-        <!-- Simvar is ON if any Panel sets it to ON, Volume is the Max of the 3 panels -->
-
         <UseTemplate Name="ASOBO_GT_Update">
             <FREQUENCY>15</FREQUENCY>
             <UPDATE_CODE>
-                <!--  DO NOT SET  0 (&gt;K:COM3_RECEIVE_SELECT) AS vPilot WOULD NOT BE WORKING ANYMORE -->
+                <!--
+                        DO NOT SET  0 (&gt;K:COM3_RECEIVE_SELECT) AS vPilot WOULD NOT BE WORKING ANYMORE
+
+                        Here getting the maximum of one channel between the three ACPs.
+                        Multiplying each by their "Knob_Volume_Down" to take into account their value if the knob is pushed. 0 otherwise
+                -->
                 (I:XMLVAR_COM_UpdateReceivers) if{
                     (L:A32NX_ACP1_VHF1_Knob_Volume_Down) (L:A32NX_ACP2_VHF1_Knob_Volume_Down) (L:A32NX_ACP3_VHF1_Knob_Volume_Down) or or (&gt;K:COM1_RECEIVE_SELECT)
                     (L:A32NX_ACP1_VHF2_Knob_Volume_Down) (L:A32NX_ACP2_VHF2_Knob_Volume_Down) (L:A32NX_ACP3_VHF2_Knob_Volume_Down) or or (&gt;K:COM2_RECEIVE_SELECT)
