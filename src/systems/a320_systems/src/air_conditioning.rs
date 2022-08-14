@@ -29,8 +29,14 @@ impl A320AirConditioning {
             a320_air_conditioning_system: AirConditioningSystem::new(
                 context,
                 cabin_zones,
-                ElectricalBusType::DirectCurrent(1),
-                ElectricalBusType::DirectCurrent(2),
+                vec![
+                    ElectricalBusType::DirectCurrent(1),
+                    ElectricalBusType::AlternatingCurrent(1),
+                ],
+                vec![
+                    ElectricalBusType::DirectCurrent(2),
+                    ElectricalBusType::AlternatingCurrent(2),
+                ],
             ),
         }
     }

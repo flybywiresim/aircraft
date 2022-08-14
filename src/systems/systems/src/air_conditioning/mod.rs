@@ -75,8 +75,8 @@ impl<const ZONES: usize> AirConditioningSystem<ZONES> {
     pub fn new(
         context: &mut InitContext,
         cabin_zones: [ZoneType; ZONES],
-        acsc_primary_powered_by: ElectricalBusType,
-        acsc_secondary_powered_by: ElectricalBusType,
+        acsc_primary_powered_by: Vec<ElectricalBusType>,
+        acsc_secondary_powered_by: Vec<ElectricalBusType>,
     ) -> Self {
         Self {
             acs_overhead: AirConditioningSystemOverhead::new(context, &cabin_zones),

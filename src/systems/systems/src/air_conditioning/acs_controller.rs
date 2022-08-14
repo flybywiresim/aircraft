@@ -40,9 +40,9 @@ pub(super) struct AirConditioningSystemController<const ZONES: usize> {
     zone_controller: Vec<ZoneController<ZONES>>,
     pack_flow_controller: [PackFlowController<ZONES>; 2],
 
-    primary_powered_by: ElectricalBusType,
+    primary_powered_by: Vec<ElectricalBusType>,
     primary_is_powered: bool,
-    secondary_powered_by: ElectricalBusType,
+    secondary_powered_by: Vec<ElectricalBusType>,
     secondary_is_powered: bool,
 }
 
@@ -50,8 +50,8 @@ impl<const ZONES: usize> AirConditioningSystemController<ZONES> {
     pub fn new(
         context: &mut InitContext,
         cabin_zone_ids: &[ZoneType; ZONES],
-        primary_powered_by: ElectricalBusType,
-        secondary_powered_by: ElectricalBusType,
+        primary_powered_by: Vec<ElectricalBusType>,
+        secondary_powered_by: Vec<ElectricalBusType>,
     ) -> Self {
         let zone_controller = cabin_zone_ids
             .iter()
@@ -168,8 +168,11 @@ impl<const ZONES: usize> SimulationElement for AirConditioningSystemController<Z
     }
 
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
-        self.primary_is_powered = buses.is_powered(self.primary_powered_by);
-        self.secondary_is_powered = buses.is_powered(self.secondary_powered_by);
+        self.primary_is_powered = self.primary_powered_by.iter().all(|&p| buses.is_powered(p));
+        self.secondary_is_powered = self
+            .secondary_powered_by
+            .iter()
+            .all(|&p| buses.is_powered(p));
     }
 }
 
@@ -1338,10 +1341,14 @@ mod acs_controller_tests {
         lgciu1: TestLgciu,
         lgciu2: TestLgciu,
         test_cabin: TestCabin,
-        powered_source_1: TestElectricitySource,
-        powered_source_2: TestElectricitySource,
+        powered_dc_source_1: TestElectricitySource,
+        powered_ac_source_1: TestElectricitySource,
+        powered_dc_source_2: TestElectricitySource,
+        powered_ac_source_2: TestElectricitySource,
         dc_1_bus: ElectricalBus,
+        ac_1_bus: ElectricalBus,
         dc_2_bus: ElectricalBus,
+        ac_2_bus: ElectricalBus,
     }
     impl TestAircraft {
         fn new(context: &mut InitContext) -> Self {
@@ -1349,8 +1356,14 @@ mod acs_controller_tests {
                 acsc: AirConditioningSystemController::new(
                     context,
                     &[ZoneType::Cockpit, ZoneType::Cabin(1)],
-                    ElectricalBusType::DirectCurrent(1),
-                    ElectricalBusType::DirectCurrent(2),
+                    vec![
+                        ElectricalBusType::DirectCurrent(1),
+                        ElectricalBusType::AlternatingCurrent(1),
+                    ],
+                    vec![
+                        ElectricalBusType::DirectCurrent(2),
+                        ElectricalBusType::AlternatingCurrent(2),
+                    ],
                 ),
                 acs_overhead: AirConditioningSystemOverhead::new(
                     context,
@@ -1367,16 +1380,26 @@ mod acs_controller_tests {
                 lgciu1: TestLgciu::new(false),
                 lgciu2: TestLgciu::new(false),
                 test_cabin: TestCabin::new(context),
-                powered_source_1: TestElectricitySource::powered(
+                powered_dc_source_1: TestElectricitySource::powered(
+                    context,
+                    PotentialOrigin::Battery(1),
+                ),
+                powered_ac_source_1: TestElectricitySource::powered(
                     context,
                     PotentialOrigin::EngineGenerator(1),
                 ),
-                powered_source_2: TestElectricitySource::powered(
+                powered_dc_source_2: TestElectricitySource::powered(
+                    context,
+                    PotentialOrigin::Battery(2),
+                ),
+                powered_ac_source_2: TestElectricitySource::powered(
                     context,
                     PotentialOrigin::EngineGenerator(2),
                 ),
                 dc_1_bus: ElectricalBus::new(context, ElectricalBusType::DirectCurrent(1)),
+                ac_1_bus: ElectricalBus::new(context, ElectricalBusType::AlternatingCurrent(1)),
                 dc_2_bus: ElectricalBus::new(context, ElectricalBusType::DirectCurrent(2)),
+                ac_2_bus: ElectricalBus::new(context, ElectricalBusType::AlternatingCurrent(2)),
             }
         }
 
@@ -1411,19 +1434,35 @@ mod acs_controller_tests {
         }
 
         fn unpower_dc_1_bus(&mut self) {
-            self.powered_source_1.unpower();
+            self.powered_dc_source_1.unpower();
         }
 
         fn power_dc_1_bus(&mut self) {
-            self.powered_source_1.power();
+            self.powered_dc_source_1.power();
+        }
+
+        fn unpower_ac_1_bus(&mut self) {
+            self.powered_ac_source_1.unpower();
+        }
+
+        fn power_ac_1_bus(&mut self) {
+            self.powered_ac_source_1.power();
         }
 
         fn unpower_dc_2_bus(&mut self) {
-            self.powered_source_2.unpower();
+            self.powered_dc_source_2.unpower();
         }
 
         fn power_dc_2_bus(&mut self) {
-            self.powered_source_2.power();
+            self.powered_dc_source_2.power();
+        }
+
+        fn unpower_ac_2_bus(&mut self) {
+            self.powered_ac_source_2.unpower();
+        }
+
+        fn power_ac_2_bus(&mut self) {
+            self.powered_ac_source_2.power();
         }
     }
     impl Aircraft for TestAircraft {
@@ -1432,10 +1471,14 @@ mod acs_controller_tests {
             _context: &UpdateContext,
             electricity: &mut Electricity,
         ) {
-            electricity.supplied_by(&self.powered_source_1);
-            electricity.supplied_by(&self.powered_source_2);
-            electricity.flow(&self.powered_source_1, &self.dc_1_bus);
-            electricity.flow(&self.powered_source_2, &self.dc_2_bus);
+            electricity.supplied_by(&self.powered_dc_source_1);
+            electricity.supplied_by(&self.powered_ac_source_1);
+            electricity.supplied_by(&self.powered_dc_source_2);
+            electricity.supplied_by(&self.powered_ac_source_2);
+            electricity.flow(&self.powered_dc_source_1, &self.dc_1_bus);
+            electricity.flow(&self.powered_ac_source_1, &self.ac_1_bus);
+            electricity.flow(&self.powered_dc_source_2, &self.dc_2_bus);
+            electricity.flow(&self.powered_ac_source_2, &self.ac_2_bus);
         }
 
         fn update_after_power_distribution(&mut self, context: &UpdateContext) {
@@ -1628,6 +1671,16 @@ mod acs_controller_tests {
             self
         }
 
+        fn unpowered_ac_1_bus(mut self) -> Self {
+            self.command(|a| a.unpower_ac_1_bus());
+            self
+        }
+
+        fn powered_ac_1_bus(mut self) -> Self {
+            self.command(|a| a.power_ac_1_bus());
+            self
+        }
+
         fn unpowered_dc_2_bus(mut self) -> Self {
             self.command(|a| a.unpower_dc_2_bus());
             self
@@ -1635,6 +1688,16 @@ mod acs_controller_tests {
 
         fn powered_dc_2_bus(mut self) -> Self {
             self.command(|a| a.power_dc_2_bus());
+            self
+        }
+
+        fn unpowered_ac_2_bus(mut self) -> Self {
+            self.command(|a| a.unpower_ac_2_bus());
+            self
+        }
+
+        fn powered_ac_2_bus(mut self) -> Self {
+            self.command(|a| a.power_ac_2_bus());
             self
         }
 
@@ -2187,6 +2250,7 @@ mod acs_controller_tests {
                 .engine_idle()
                 .and()
                 .unpowered_dc_1_bus()
+                .unpowered_ac_1_bus()
                 .command_selected_temperature(
                     [ThermodynamicTemperature::new::<degree_celsius>(30.); 2],
                 );
@@ -2207,6 +2271,7 @@ mod acs_controller_tests {
                 .engine_idle()
                 .and()
                 .unpowered_dc_1_bus()
+                .unpowered_ac_1_bus()
                 .command_selected_temperature(
                     [ThermodynamicTemperature::new::<degree_celsius>(30.); 2],
                 );
@@ -2215,7 +2280,7 @@ mod acs_controller_tests {
                 (test_bed.duct_demand_temperature()[1].get::<degree_celsius>() - 24.).abs() < 1.
             );
 
-            test_bed = test_bed.powered_dc_1_bus();
+            test_bed = test_bed.powered_dc_1_bus().powered_ac_1_bus();
             test_bed = test_bed.iterate_with_delta(100, Duration::from_secs(10));
             assert!(test_bed.duct_demand_temperature()[1].get::<degree_celsius>() > 24.);
         }
@@ -2542,13 +2607,49 @@ mod acs_controller_tests {
 
             test_bed = test_bed
                 .unpowered_dc_1_bus()
+                .unpowered_ac_1_bus()
                 .unpowered_dc_2_bus()
+                .unpowered_ac_2_bus()
                 .iterate(2);
 
             assert_eq!(
                 test_bed.pack_flow(),
                 MassRate::new::<kilogram_per_second>(0.),
             );
+        }
+
+        #[test]
+        fn unpowering_ac_or_dc_unpowers_system() {
+            let mut test_bed = test_bed()
+                .with()
+                .both_packs_on()
+                .and()
+                .engine_idle()
+                .iterate(2);
+            assert!(test_bed.pack_flow() > MassRate::new::<kilogram_per_second>(0.));
+
+            test_bed = test_bed
+                .unpowered_dc_1_bus()
+                .unpowered_ac_2_bus()
+                .iterate(2);
+            assert_eq!(
+                test_bed.pack_flow(),
+                MassRate::new::<kilogram_per_second>(0.),
+            );
+
+            test_bed = test_bed
+                .powered_dc_1_bus()
+                .unpowered_ac_1_bus()
+                .unpowered_dc_2_bus()
+                .powered_ac_2_bus()
+                .iterate(2);
+            assert_eq!(
+                test_bed.pack_flow(),
+                MassRate::new::<kilogram_per_second>(0.),
+            );
+
+            test_bed = test_bed.powered_ac_1_bus().powered_dc_2_bus().iterate(2);
+            assert!(test_bed.pack_flow() > MassRate::new::<kilogram_per_second>(0.));
         }
 
         #[test]
@@ -2565,7 +2666,10 @@ mod acs_controller_tests {
             test_bed.run();
             assert!(test_bed.pack_flow() > initial_flow);
 
-            test_bed = test_bed.unpowered_dc_1_bus().iterate(2);
+            test_bed = test_bed
+                .unpowered_dc_1_bus()
+                .unpowered_ac_1_bus()
+                .iterate(2);
             assert_eq!(test_bed.pack_flow(), initial_flow);
         }
 
@@ -2581,14 +2685,21 @@ mod acs_controller_tests {
 
             test_bed = test_bed
                 .unpowered_dc_1_bus()
+                .unpowered_ac_1_bus()
                 .unpowered_dc_2_bus()
+                .unpowered_ac_2_bus()
                 .iterate(2);
             assert_eq!(
                 test_bed.pack_flow(),
                 MassRate::new::<kilogram_per_second>(0.)
             );
 
-            test_bed = test_bed.powered_dc_1_bus().powered_dc_2_bus().iterate(2);
+            test_bed = test_bed
+                .powered_dc_1_bus()
+                .powered_ac_1_bus()
+                .powered_dc_2_bus()
+                .powered_ac_2_bus()
+                .iterate(2);
             assert!(test_bed.pack_flow() > MassRate::new::<kilogram_per_second>(0.));
         }
     }
