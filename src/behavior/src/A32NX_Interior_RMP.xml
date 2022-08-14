@@ -197,8 +197,8 @@
             <UseTemplate Name="ASOBO_GT_Switch_Code">
                 <ANIM_NAME>LOCK_RADIO#SIDE#_NAV</ANIM_NAME>
                 <ANIM_LENGTH>100</ANIM_LENGTH>
-                <ANIM_CODE>(L:XMLVAR_RMP_#SIDE#_NavLockOff) 100 *</ANIM_CODE>
-                <LEFT_SINGLE_CODE>(L:XMLVAR_RMP_#SIDE#_NavLockOff) ! (&gt;L:XMLVAR_RMP_#SIDE#_NavLockOff)</LEFT_SINGLE_CODE>
+                <ANIM_CODE>(L:A32NX_ACP_#SIDE#_NavLockOff) 100 *</ANIM_CODE>
+                <LEFT_SINGLE_CODE>(L:A32NX_ACP_#SIDE#_NavLockOff) ! (&gt;L:A32NX_ACP_#SIDE#_NavLockOff)</LEFT_SINGLE_CODE>
                 <WWISE_EVENT_1></WWISE_EVENT_1>
                 <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
                 <WWISE_EVENT_2></WWISE_EVENT_2>
