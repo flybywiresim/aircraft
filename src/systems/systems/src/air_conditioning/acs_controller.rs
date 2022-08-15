@@ -28,7 +28,7 @@ use uom::si::{
     velocity::knot,
 };
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Clone, Copy)]
 enum ACSCActiveComputer {
     Primary,
     Secondary,
@@ -99,7 +99,7 @@ impl<const ZONES: usize> AirConditioningSystemController<ZONES> {
                 pneumatic_overhead,
                 pressurization,
                 pressurization_overhead,
-                &operation_mode,
+                operation_mode,
             );
         }
 
@@ -478,20 +478,30 @@ impl<const ZONES: usize> ZoneController<ZONES> {
         pressurization: &impl Cabin,
         operation_mode: &ACSCActiveComputer,
     ) {
-        self.zone_selected_temperature = acs_overhead.selected_cabin_temperature(self.zone_id);
+        self.zone_selected_temperature = if matches!(operation_mode, ACSCActiveComputer::Secondary)
+        {
+            // If the Zone controller is working on secondary power, the zones are controlled to
+            // 24 degrees by the secondary computer
+            ThermodynamicTemperature::new::<degree_celsius>(24.)
+        } else {
+            acs_overhead.selected_cabin_temperature(self.zone_id)
+        };
         self.duct_demand_temperature = if pack_flow < MassRate::new::<kilogram_per_second>(0.01) {
-            // When there's no pack flow, duct temperature is mostly determined by cabin recirculated air and ambient temperature
+            // When there's no pack flow, duct temperature is mostly determined by cabin recirculated
+            // air and ambient temperature
             ThermodynamicTemperature::new::<degree_celsius>(
                 0.8 * self.zone_measured_temperature.get::<degree_celsius>()
                     + 0.2 * context.ambient_temperature().get::<degree_celsius>(),
             )
-        } else if matches!(operation_mode, ACSCActiveComputer::Secondary) {
-            // If the Zone controller is working on secondary power, the temperature demand is set at 24 degrees by the secondary computer
-            ThermodynamicTemperature::new::<degree_celsius>(24.)
         } else if matches!(operation_mode, ACSCActiveComputer::None) {
-            // If unpowered or failed, the pack controller would take over and control the cabin temperature to 15 degrees
+            // If unpowered or failed, the pack controller would take over and deliver a fixed 20deg
+            // for the cockpit and 10 for the cabin
             // Simulated here until packs are modelled
-            ThermodynamicTemperature::new::<degree_celsius>(15.)
+            if self.zone_id == 0 {
+                ThermodynamicTemperature::new::<degree_celsius>(20.)
+            } else {
+                ThermodynamicTemperature::new::<degree_celsius>(10.)
+            }
         } else {
             self.calculate_duct_temp_demand(context, pressurization)
         };
@@ -639,6 +649,7 @@ pub struct PackFlowController<const ZONES: usize> {
     pack_flow: MassRate,
     pack_flow_demand: MassRate,
     pid: PidController,
+    operation_mode: ACSCActiveComputer,
 
     fcv_timer_open: Duration,
 }
@@ -665,6 +676,7 @@ impl<const ZONES: usize> PackFlowController<ZONES> {
             pack_flow: MassRate::new::<kilogram_per_second>(0.),
             pack_flow_demand: MassRate::new::<kilogram_per_second>(0.),
             pid: PidController::new(0.01, 1.5, 0., 0., 1., 0., 1.),
+            operation_mode: ACSCActiveComputer::None,
 
             fcv_timer_open: Duration::from_secs(0),
         }
@@ -685,20 +697,19 @@ impl<const ZONES: usize> PackFlowController<ZONES> {
         pneumatic_overhead: &impl EngineBleedPushbutton,
         pressurization: &impl Cabin,
         pressurization_overhead: &PressurizationOverheadPanel,
-        operation_mode: &ACSCActiveComputer,
+        operation_mode: ACSCActiveComputer,
     ) {
         // TODO: Add overheat protection
-        self.flow_demand =
-            self.flow_demand_determination(aircraft_state, acs_overhead, pneumatic, operation_mode);
+        self.operation_mode = operation_mode;
+        self.flow_demand = self.flow_demand_determination(aircraft_state, acs_overhead, pneumatic);
         self.fcv_open_allowed = self.fcv_open_allowed_determination(
             acs_overhead,
             engine_fire_push_buttons,
             pressurization_overhead,
             pneumatic,
         );
-        self.should_open_fcv = self.fcv_open_allowed
-            && self.can_move_fcv(engines, pneumatic, pneumatic_overhead)
-            && !matches!(operation_mode, ACSCActiveComputer::None);
+        self.should_open_fcv =
+            self.fcv_open_allowed && self.can_move_fcv(engines, pneumatic, pneumatic_overhead);
         self.update_timer(context);
         self.pack_flow_demand = self.absolute_flow_calculation(pressurization);
 
@@ -725,11 +736,14 @@ impl<const ZONES: usize> PackFlowController<ZONES> {
         aircraft_state: &AirConditioningStateManager,
         acs_overhead: &AirConditioningSystemOverhead<ZONES>,
         pneumatic: &(impl EngineStartState + PackFlowValveState + PneumaticBleed),
-        operation_mode: &ACSCActiveComputer,
     ) -> Ratio {
+        // If computer is unpowered, return previous flow demand (knobs don't affect flow demand)
+        if matches!(self.operation_mode, ACSCActiveComputer::None) {
+            return self.flow_demand;
+        }
         let mut intermediate_flow: Ratio = acs_overhead.flow_selector_position().into();
         // If Secondary computer is active flow setting optimization is not available
-        if matches!(operation_mode, ACSCActiveComputer::Secondary) {
+        if matches!(self.operation_mode, ACSCActiveComputer::Secondary) {
             return intermediate_flow;
         }
         // TODO: Add "insufficient performance" based on Pack Mixer Temperature Demand
@@ -840,7 +854,8 @@ impl<const ZONES: usize> PackFlowController<ZONES> {
 
     #[cfg(test)]
     fn pack_flow_demand(&self) -> MassRate {
-        if !self.should_open_fcv {
+        // Only send signal to move the valve if the computer is powered
+        if !matches!(self.operation_mode, ACSCActiveComputer::None) && !self.should_open_fcv {
             MassRate::new::<kilogram_per_second>(0.)
         } else {
             self.pack_flow_demand
@@ -856,12 +871,17 @@ impl<const ZONES: usize> PackFlow for PackFlowController<ZONES> {
 
 impl<const ZONES: usize> ControllerSignal<PackFlowValveSignal> for PackFlowController<ZONES> {
     fn signal(&self) -> Option<PackFlowValveSignal> {
-        let target_open: Ratio = if self.should_open_fcv {
-            Ratio::new::<ratio>(self.pid.output())
+        // Only send signal to move the valve if the computer is powered
+        if !matches!(self.operation_mode, ACSCActiveComputer::None) {
+            let target_open: Ratio = if self.should_open_fcv {
+                Ratio::new::<ratio>(self.pid.output())
+            } else {
+                Ratio::new::<ratio>(0.)
+            };
+            Some(PackFlowValveSignal::new(target_open))
         } else {
-            Ratio::new::<ratio>(0.)
-        };
-        Some(PackFlowValveSignal::new(target_open))
+            None
+        }
     }
 }
 
@@ -2263,6 +2283,33 @@ mod acs_controller_tests {
         }
 
         #[test]
+        fn unpowering_the_system_gives_control_to_packs() {
+            let mut test_bed = test_bed()
+                .with()
+                .both_packs_on()
+                .and()
+                .engine_idle()
+                .iterate(2)
+                .and()
+                .unpowered_dc_1_bus()
+                .unpowered_ac_1_bus()
+                .unpowered_dc_2_bus()
+                .unpowered_ac_2_bus()
+                .command_selected_temperature(
+                    [ThermodynamicTemperature::new::<degree_celsius>(30.); 2],
+                );
+
+            test_bed = test_bed.iterate_with_delta(100, Duration::from_secs(10));
+
+            assert!(
+                (test_bed.duct_demand_temperature()[0].get::<degree_celsius>() - 20.).abs() < 1.
+            );
+            assert!(
+                (test_bed.duct_demand_temperature()[1].get::<degree_celsius>() - 10.).abs() < 1.
+            );
+        }
+
+        #[test]
         fn unpowering_and_repowering_primary_behaves_as_expected() {
             let mut test_bed = test_bed()
                 .with()
@@ -2596,7 +2643,7 @@ mod acs_controller_tests {
         }
 
         #[test]
-        fn pack_flow_controller_signals_to_close_when_unpowered() {
+        fn pack_flow_controller_is_unresponsive_when_unpowered() {
             let mut test_bed = test_bed()
                 .with()
                 .both_packs_on()
@@ -2609,13 +2656,11 @@ mod acs_controller_tests {
                 .unpowered_dc_1_bus()
                 .unpowered_ac_1_bus()
                 .unpowered_dc_2_bus()
-                .unpowered_ac_2_bus()
-                .iterate(2);
+                .unpowered_ac_2_bus();
+            test_bed.command_ditching_on();
+            test_bed = test_bed.iterate(2);
 
-            assert_eq!(
-                test_bed.pack_flow(),
-                MassRate::new::<kilogram_per_second>(0.),
-            );
+            assert!(test_bed.pack_flow() > MassRate::new::<kilogram_per_second>(0.));
         }
 
         #[test]
@@ -2628,28 +2673,24 @@ mod acs_controller_tests {
                 .iterate(2);
             assert!(test_bed.pack_flow() > MassRate::new::<kilogram_per_second>(0.));
 
-            test_bed = test_bed
-                .unpowered_dc_1_bus()
-                .unpowered_ac_2_bus()
-                .iterate(2);
-            assert_eq!(
-                test_bed.pack_flow(),
-                MassRate::new::<kilogram_per_second>(0.),
-            );
+            test_bed = test_bed.unpowered_dc_1_bus().unpowered_ac_2_bus();
+            test_bed.command_ditching_on();
+            test_bed = test_bed.iterate(2);
+            assert!(test_bed.pack_flow() > MassRate::new::<kilogram_per_second>(0.));
 
             test_bed = test_bed
                 .powered_dc_1_bus()
                 .unpowered_ac_1_bus()
                 .unpowered_dc_2_bus()
-                .powered_ac_2_bus()
-                .iterate(2);
+                .powered_ac_2_bus();
+            test_bed = test_bed.iterate(2);
+            assert!(test_bed.pack_flow() > MassRate::new::<kilogram_per_second>(0.));
+
+            test_bed = test_bed.powered_ac_1_bus().powered_dc_2_bus().iterate(2);
             assert_eq!(
                 test_bed.pack_flow(),
                 MassRate::new::<kilogram_per_second>(0.),
             );
-
-            test_bed = test_bed.powered_ac_1_bus().powered_dc_2_bus().iterate(2);
-            assert!(test_bed.pack_flow() > MassRate::new::<kilogram_per_second>(0.));
         }
 
         #[test]
@@ -2687,12 +2728,10 @@ mod acs_controller_tests {
                 .unpowered_dc_1_bus()
                 .unpowered_ac_1_bus()
                 .unpowered_dc_2_bus()
-                .unpowered_ac_2_bus()
-                .iterate(2);
-            assert_eq!(
-                test_bed.pack_flow(),
-                MassRate::new::<kilogram_per_second>(0.)
-            );
+                .unpowered_ac_2_bus();
+            test_bed.command_ditching_on();
+            test_bed = test_bed.iterate(2);
+            assert!(test_bed.pack_flow() > MassRate::new::<kilogram_per_second>(0.));
 
             test_bed = test_bed
                 .powered_dc_1_bus()
@@ -2700,7 +2739,10 @@ mod acs_controller_tests {
                 .powered_dc_2_bus()
                 .powered_ac_2_bus()
                 .iterate(2);
-            assert!(test_bed.pack_flow() > MassRate::new::<kilogram_per_second>(0.));
+            assert_eq!(
+                test_bed.pack_flow(),
+                MassRate::new::<kilogram_per_second>(0.),
+            );
         }
     }
 }
