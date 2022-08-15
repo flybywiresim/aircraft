@@ -737,15 +737,14 @@ impl<const ZONES: usize> PackFlowController<ZONES> {
         acs_overhead: &AirConditioningSystemOverhead<ZONES>,
         pneumatic: &(impl EngineStartState + PackFlowValveState + PneumaticBleed),
     ) -> Ratio {
-        // If computer is unpowered, return previous flow demand (knobs don't affect flow demand)
         if matches!(self.operation_mode, ACSCActiveComputer::None) {
+            // If the computer is unpowered, return previous flow demand
             return self.flow_demand;
+        } else if matches!(self.operation_mode, ACSCActiveComputer::Secondary) {
+            // If Secondary computer is active flow setting optimization is not available
+            return Ratio::new::<percent>(100.);
         }
         let mut intermediate_flow: Ratio = acs_overhead.flow_selector_position().into();
-        // If Secondary computer is active flow setting optimization is not available
-        if matches!(self.operation_mode, ACSCActiveComputer::Secondary) {
-            return intermediate_flow;
-        }
         // TODO: Add "insufficient performance" based on Pack Mixer Temperature Demand
         if self.pack_start_condition_determination() {
             intermediate_flow =
@@ -2707,10 +2706,9 @@ mod acs_controller_tests {
             test_bed.run();
             assert!(test_bed.pack_flow() > initial_flow);
 
-            test_bed = test_bed
-                .unpowered_dc_1_bus()
-                .unpowered_ac_1_bus()
-                .iterate(2);
+            test_bed = test_bed.unpowered_dc_1_bus().unpowered_ac_1_bus();
+            test_bed.command_pack_flow_selector_position(0);
+            test_bed = test_bed.iterate(2);
             assert_eq!(test_bed.pack_flow(), initial_flow);
         }
 
