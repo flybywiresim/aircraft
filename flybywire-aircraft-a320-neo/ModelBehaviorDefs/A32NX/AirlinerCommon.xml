@@ -292,7 +292,6 @@
 
     <Template Name="FBW_AIRLINER_Audio_Panel_SubTemplate">
         <DefaultTemplateParameters>
-            <NODE_ID_LED_RECEIVER_MKR>#PREFIX#_AudioReceiver_Knob_MKR_LED#SUFFIX_ID#</NODE_ID_LED_RECEIVER_MKR>
             <POTENTIOMETER_SEQ1></POTENTIOMETER_SEQ1>
             <DONT_OVERRIDE_BASE_EMISSIVE>False</DONT_OVERRIDE_BASE_EMISSIVE>
             <SEQ1_POWERED>
@@ -669,7 +668,6 @@
             <NODE_ID_LIGHT>#NODE_ID_LIGHT_RECEIVER_MKR#</NODE_ID_LIGHT>
             <ANIM_NAME_KNOB>#ANIM_NAME_KNOB_RECEIVER_MKR#</ANIM_NAME_KNOB>
             <ANIM_NAME_SWITCH>#ANIM_NAME_PUSH_RECEIVER_MKR#</ANIM_NAME_SWITCH>
-            <NODE_ID_LED>#NODE_ID_LED_RECEIVER_MKR#</NODE_ID_LED>
             <INSTRUMENT>MKR</INSTRUMENT>
             <ONCLICK>
                 (A:MARKER SOUND, Bool) 1 == (L:XMLVAR_NAV_L_MKR_Knob_Volume_Down) 0 == (L:XMLVAR_NAV_R_MKR_Knob_Volume_Down) 0 == and and if{

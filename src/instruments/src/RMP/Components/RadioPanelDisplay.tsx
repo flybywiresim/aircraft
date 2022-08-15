@@ -9,6 +9,7 @@ interface Props {
 }
 
 const TEXT_DATA_MODE_VHF3 = 'DATA';
+const TEXT_DATA_MODE_VHF3_UNPOWERED = '------';
 
 /**
  * Format the given frequency to be displayed.
@@ -36,6 +37,7 @@ const formatFrequency = (frequency: number): string => {
  */
 export function RadioPanelDisplay(props: Props) {
     const [lightsTest] = useSimVar('L:A32NX_OVHD_INTLT_ANN', 'Boolean', 1000);
+    const [DCBus1] = useSimVar('L:A32NX_ELEC_DC_1_BUS_IS_POWERED', 'boolean');
 
     let content: JSX.Element;
 
@@ -57,10 +59,16 @@ export function RadioPanelDisplay(props: Props) {
                 {formatFrequency(props.value)}
             </text>
         );
-    } else {
+    } else if (DCBus1) {
         content = (
             <text x="85%" y="52%">
                 {TEXT_DATA_MODE_VHF3}
+            </text>
+        );
+    } else {
+        content = (
+            <text x="100%" y="52%">
+                {TEXT_DATA_MODE_VHF3_UNPOWERED}
             </text>
         );
     }
