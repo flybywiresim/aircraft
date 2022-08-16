@@ -2438,9 +2438,9 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Bool
     - True if the respective {1 or 2} pack flow valve is open
 
-- A32NX_COND_PACK_FLOW
+- A32NX_COND_PACK_FLOW_{index}
     - Percent
-    - Percentage flow coming out of the packs into the cabin (LO: 80%, NORM: 100%, HI: 120%)
+    - Percentage flow coming out of each pack {1 or 2} into the cabin (LO: 80%, NORM: 100%, HI: 120%)
 
 - A32NX_OVHD_COND_{id}_SELECTOR_KNOB
     - Percentage
@@ -2769,9 +2769,9 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - | Bit |                                     Description                                     |
       |:---:|:-----------------------------------------------------------------------------------:|
       | 11  | LH & RH gear shock absorber compressed (Don't treat GND PWR connected as on ground) |
-      | 12  | LH gear shock absorber compressed (Don't treat GND PWR connected as on ground)      |
-      | 13  | RH gear shock absorber compressed (Don't treat GND PWR connected as on ground)      |
-      | 14  | Nose gear shock absorber compressed (Don't treat GND PWR connected as on ground)    |
+      | 12  | Nose gear shock absorber compressed (Don't treat GND PWR connected as on ground)    |
+      | 13  | LH gear shock absorber compressed (Don't treat GND PWR connected as on ground)      |
+      | 14  | RH gear shock absorber compressed (Don't treat GND PWR connected as on ground)      |
       | 15  | LH & RH gear downlocked                                                             |
 
 
@@ -2830,6 +2830,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Percent over 100
     - {gear}
         - CENTER
+        - CENTER_SMALL
         - LEFT
         - RIGHT
 
