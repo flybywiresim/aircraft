@@ -196,6 +196,8 @@ const HydSys = ({ title, pressure, x, y, fireValve, pumpPBStatus } : HydSysProps
     const [pumpPressurisedSwitch] = useSimVar(`L:A32NX_HYD_${title}_PUMP_1_SECTION_PRESSURE_SWITCH`, 'boolean', 500);
     const [systemPressurisedSwitch] = useSimVar(`L:A32NX_HYD_${title}_SYSTEM_1_SECTION_PRESSURE_SWITCH`, 'boolean', 500);
 
+    const [reservoirLowQuantitySwitch] = useSimVar(`L:A32NX_HYD_${title}_RESERVOIR_LEVEL_IS_LOW`, 'boolean', 500);
+
     let hydTitleXPos: number;
     if (title === 'GREEN') {
         hydTitleXPos = -2;
@@ -221,10 +223,10 @@ const HydSys = ({ title, pressure, x, y, fireValve, pumpPBStatus } : HydSysProps
                 pumpSwitchLowPressure={!pumpPressurisedSwitch}
             />
             {
-                title !== 'BLUE' && <HydEngValve x={0} y={372} fireValve={fireValve} lowLevel={false} />
+                title !== 'BLUE' && <HydEngValve x={0} y={372} fireValve={fireValve} lowLevel={reservoirLowQuantitySwitch} />
             }
             {/* Reservoir */}
-            <HydReservoir system={title} x={0} y={576} />
+            <HydReservoir system={title} x={0} y={576} lowLevel={reservoirLowQuantitySwitch} />
         </SvgGroup>
     );
 };
@@ -278,10 +280,13 @@ type HydReservoirProps = {
     system: string,
     x: number,
     y: number,
+    lowLevel: boolean,
 }
 
-const HydReservoir = ({ system, x, y } : HydReservoirProps) => {
+const HydReservoir = ({ system, x, y, lowLevel } : HydReservoirProps) => {
     const [fluidLevel] = useSimVar(`L:A32NX_HYD_${system}_RESERVOIR_LEVEL`, 'gallon', 1000);
+
+    const [lowAirPress] = useSimVar(`L:A32NX_HYD_${system}_RESERVOIR_AIR_PRESSURE_IS_LOW`, 'boolean', 1000);
 
     const fluidLevelInLitres = fluidLevel * 3.79;
 
@@ -295,18 +300,21 @@ const HydReservoir = ({ system, x, y } : HydReservoirProps) => {
 
     return (
         <SvgGroup x={x} y={y}>
-            <line className={fluidLevelInLitres < values[0].low ? 'AmberLine' : 'GreenLine'} x1={0} y1={-121} x2={0} y2={system === 'BLUE' ? -205 : -161} />
-            <line className={fluidLevelInLitres < values[0].low ? 'AmberLine' : 'WhiteLine'} x1={0} y1={upperReserve.toFixed(0)} x2={0} y2={-121} />
-            <line className="GreenLine" x1={0} y1={-121} x2={6} y2={-121} strokeLinejoin="miter" />
-            <line className="GreenLine" x1={6} y1={lowerNorm.toFixed(0)} x2={6} y2={-121} strokeLinejoin="miter" />
-            <line className="GreenLine" x1={0} y1={lowerNorm.toFixed(0)} x2={6} y2={lowerNorm.toFixed(0)} strokeLinejoin="miter" />
+            <line className={lowLevel ? 'AmberLine' : 'GreenLine'} x1={0} y1={-121} x2={0} y2={system === 'BLUE' ? -205 : -161} />
+            <line className={lowLevel ? 'AmberLine' : 'WhiteLine'} x1={0} y1={upperReserve.toFixed(0)} x2={0} y2={-121} />
+            <line className="GreenLine" x1={0} y1={-121} x2={6} y2={-121} />
+            <line className="GreenLine" x1={6} y1={lowerNorm.toFixed(0)} x2={6} y2={-121} />
+            <line className="GreenLine" x1={0} y1={lowerNorm.toFixed(0)} x2={6} y2={lowerNorm.toFixed(0)} />
             <rect className="AmberLine" x={0} y={upperReserve.toFixed(0)} width={6} height={reserveHeight} />
 
             {/* Hydraulic level */}
-            <line className={fluidLevelInLitres < values[0].low ? 'AmberLine' : 'GreenLine'} x1={0} y1={0} x2={-12} y2={0} strokeLinejoin="miter" />
-            <line className={fluidLevelInLitres < values[0].low ? 'AmberLine' : 'GreenLine'} x1={-12} y1={0} x2={-12} y2={fluidHeight} strokeLinejoin="miter" />
-            <line className={fluidLevelInLitres < values[0].low ? 'AmberLine' : 'GreenLine'} x1={0} y1={fluidHeight} x2={-12} y2={fluidHeight} strokeLinejoin="miter" />
-            <line className={fluidLevelInLitres < values[0].low ? 'AmberLine' : 'GreenLine'} x1={0} y1={fluidHeight} x2={-13} y2={fluidHeight - 11} strokeLinejoin="miter" />
+            <line className={lowLevel ? 'AmberLine' : 'GreenLine'} x1={0} y1={0} x2={-12} y2={0} />
+            <line className={lowLevel ? 'AmberLine' : 'GreenLine'} x1={-12} y1={0} x2={-12} y2={fluidHeight} />
+            <line className={lowLevel ? 'AmberLine' : 'GreenLine'} x1={0} y1={fluidHeight} x2={-12} y2={fluidHeight} />
+            <line className={lowLevel ? 'AmberLine' : 'GreenLine'} x1={0} y1={fluidHeight} x2={-13} y2={fluidHeight - 11} />
+
+            <text className={lowAirPress ? 'Large Amber' : 'Hide'} x={20} y={-80}>LO AIR</text>
+            <text className={lowAirPress ? 'Large Amber' : 'Hide'} x={20} y={-50}>PRESS</text>
         </SvgGroup>
     );
 };
