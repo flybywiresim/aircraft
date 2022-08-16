@@ -1401,12 +1401,10 @@ impl SimulationElement for Section {
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.pressure_id, self.pressure());
 
-        if self.leak_measurement_valve.is_some() {
-            writer.write(
-                &self.pressure_switch_id,
-                self.pressure_switch_state() == PressureSwitchState::Pressurised,
-            );
-        }
+        writer.write(
+            &self.pressure_switch_id,
+            self.pressure_switch_state() == PressureSwitchState::Pressurised,
+        );
     }
 }
 impl SectionPressure for Section {
