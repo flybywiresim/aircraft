@@ -24,6 +24,7 @@ export const HydPage = () => {
     const [greenPumpPBStatus] = useSimVar('L:A32NX_OVHD_HYD_ENG_1_PUMP_PB_IS_AUTO', 'boolean', 500);
     const [yellowPumpPBStatus] = useSimVar('L:A32NX_OVHD_HYD_ENG_2_PUMP_PB_IS_AUTO', 'boolean', 500);
     const [bluePumpPBStatus] = useSimVar('L:A32NX_OVHD_HYD_EPUMPB_PB_IS_AUTO', 'boolean', 500);
+    const [bluePumpActive] = useSimVar('L:A32NX_HYD_BLUE_EPUMP_ACTIVE', 'boolean', 500);
 
     const [yellowElectricPumpStatus] = useSimVar('L:A32NX_HYD_YELLOW_EPUMP_ACTIVE', 'boolean', 500);
 
@@ -129,7 +130,7 @@ export const HydPage = () => {
                     x={383}
                     y={65}
                     fireValve={false}
-                    pumpPBStatus={bluePumpPBStatus}
+                    pumpPBStatus={bluePumpPBStatus && bluePumpActive}
                 />
                 <HydSys
                     title="YELLOW"
