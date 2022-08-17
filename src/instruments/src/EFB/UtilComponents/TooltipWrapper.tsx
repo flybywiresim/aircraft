@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 import React, { useRef, useState, useEffect, forwardRef, RefObject } from 'react';
-import { useAppDispatch } from '../Store/store';
+import { useAppDispatch, useAppSelector } from '../Store/store';
 import { setPosX, setPosY, setShown, setText } from '../Store/features/tooltip';
 
 interface TooltipProps {
@@ -10,15 +10,19 @@ interface TooltipProps {
     shown: boolean;
 }
 
-export const Tooltip = forwardRef(({ text, posX, posY, shown }: TooltipProps, ref: RefObject<HTMLDivElement>) => (
-    <div
-        ref={ref}
-        className={`absolute rounded-md z-40 px-2 whitespace-nowrap border bg-theme-accent border-theme-secondary transition duration-100 pointer-events-none ${shown ? 'opacity-100' : 'opacity-0'}`}
-        style={{ top: `${posY}px`, left: `${posX}px` }}
-    >
-        {text}
-    </div>
-));
+export const Tooltip = forwardRef(({ text, posX, posY, shown }: TooltipProps, ref: RefObject<HTMLDivElement>) => {
+    const { offsetY } = useAppSelector((state) => state.keyboard);
+
+    return (
+        <div
+            ref={ref}
+            className={`absolute rounded-md z-40 px-2 whitespace-nowrap border bg-theme-accent border-theme-secondary transition duration-100 pointer-events-none ${shown ? 'opacity-100' : 'opacity-0'}`}
+            style={{ top: `${posY + offsetY}px`, left: `${posX}px` }}
+        >
+            {text}
+        </div>
+    );
+});
 
 interface TooltipWrapperProps {
     text?: string;
