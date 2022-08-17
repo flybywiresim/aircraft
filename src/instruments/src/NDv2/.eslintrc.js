@@ -5,6 +5,6 @@ module.exports = {
     extends: '../../../.eslintrc.js',
 
     // overrides airbnb, use sparingly
-    rules: { 'react/no-unknown-property': 'off', 'react/style-prop-object': 'off' },
+    rules: { 'react/no-unknown-property': 'off', 'react/style-prop-object': 'off', 'arrow-body-style': 'off' },
 
 };

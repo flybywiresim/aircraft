@@ -65,28 +65,28 @@ export class SelectedHeadingBug extends DisplayComponent<SelectedHeadingBugProps
         return (
             <>
                 <g
-                    visibility={this.bugShown.map((v) => (v ? 'visible' : 'hidden'))}
+                    visibility={this.bugShown.map((v) => (v ? 'inherit' : 'hidden'))}
                     transform={this.diffSubject.map((diff) => `rotate(${diff} 384 620)`)}
                 >
                     <path
                         d="M382,126 L370,99 L398,99 L386,126"
-                        class="shadow rounded"
+                        class="rounded shadow"
                         strokeWidth={3.5}
                     />
                     <path
                         d="M382,126 L370,99 L398,99 L386,126"
-                        class="Cyan rounded"
+                        class="rounded Cyan"
                         strokeWidth={3}
                     />
                 </g>
 
                 <text
-                    visibility={this.textShown.map((v) => (v ? 'visible' : 'hidden'))}
+                    visibility={this.textShown.map((v) => (v ? 'inherit' : 'hidden'))}
                     x={384}
                     y={60}
                     textAnchor="middle"
                     transform={this.diffSubject.map((diff) => `rotate(${(diff) < 0 ? -38 : 38} 384 620)`)}
-                    class="Cyan shadow"
+                    class="shadow Cyan"
                     fontSize={22}
                 >
                     {this.selected.map((selected) => (

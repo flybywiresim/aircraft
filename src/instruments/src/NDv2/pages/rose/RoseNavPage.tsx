@@ -29,9 +29,9 @@ export class RoseNavPage extends RoseMode {
                     isUsingTrackUpMode={this.props.isUsingTrackUpMode}
                 />
                 <Airplane
+                    bus={this.props.bus}
                     x={Subject.create(384)}
                     y={Subject.create(384)}
-                    available={this.isVisible}
                     rotation={Subject.create(0)}
                 />
             </g>

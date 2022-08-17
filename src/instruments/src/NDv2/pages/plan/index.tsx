@@ -1,4 +1,4 @@
-import { FSComponent, ComponentProps, DisplayComponent, Subscribable, VNode, Subject } from 'msfssdk';
+import { FSComponent, ComponentProps, DisplayComponent, Subscribable, VNode, Subject, EventBus } from 'msfssdk';
 import { Arinc429Word } from '@shared/arinc429';
 import { Airplane } from '../../shared/Airplane';
 import { PlanModeUnderlay } from './PlanModeUnderlay';
@@ -6,6 +6,7 @@ import { MapParameters } from '../../../ND/utils/MapParameters';
 import { NDPage } from '../NDPage';
 
 export interface PlanModePageProps extends ComponentProps {
+    bus: EventBus,
     aircraftTrueHeading: Subscribable<Arinc429Word>,
     mapCenterLat: Subscribable<number>,
     mapCenterLong: Subscribable<number>,
@@ -76,10 +77,10 @@ export class PlanModePage extends DisplayComponent<PlanModePageProps> implements
                 <PlanModeUnderlay mapRange={this.props.mapRangeRadius} />
 
                 <Airplane
+                    bus={this.props.bus}
                     x={this.planeX}
                     y={this.planeY}
                     rotation={this.planeRotation}
-                    available={this.planeAvailable}
                 />
             </g>
         );

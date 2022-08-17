@@ -20,7 +20,7 @@ export class Layer extends DisplayComponent<LayerProps> {
         }
 
         return (
-            <g transform={value} visibility={this.props.visible?.map((v) => (v ? 'visible' : 'hidden')) ?? 'visible'}>
+            <g transform={value} visibility={this.props.visible?.map((v) => (v ? 'inherit' : 'hidden')) ?? 'inherit'}>
                 {this.props.children}
             </g>
         );

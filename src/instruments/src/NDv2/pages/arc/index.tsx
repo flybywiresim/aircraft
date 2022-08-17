@@ -1,12 +1,6 @@
 import {
-    FSComponent,
-    ComponentProps,
-    DisplayComponent,
-    MappedSubject,
-    Subject,
-    Subscribable,
-    VNode,
-    EventBus,
+    FSComponent, ComponentProps, DisplayComponent, MappedSubject, Subject, Subscribable,
+    VNode, EventBus,
 } from 'msfssdk';
 import { Arinc429Word } from '@shared/arinc429';
 import { EfisNdMode } from '@shared/NavigationDisplay';
@@ -136,9 +130,9 @@ export class ArcModePage extends DisplayComponent<ArcModePageProps> implements N
                 />
 
                 <Airplane
+                    bus={this.props.bus}
                     x={Subject.create(384)}
                     y={Subject.create(626)}
-                    available={this.airplaneShown}
                     rotation={this.planeRotation}
                 />
                 <LubberLine

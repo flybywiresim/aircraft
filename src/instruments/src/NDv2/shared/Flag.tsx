@@ -14,7 +14,7 @@ export class Flag extends DisplayComponent<FlagProps> {
         super.onAfterRender(node);
 
         this.props.shown.sub((shown) => {
-            this.flagRef.instance.style.visibility = shown ? 'visible' : 'hidden';
+            this.flagRef.instance.style.visibility = shown ? 'inherit' : 'hidden';
         }, true);
     }
 

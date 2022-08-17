@@ -279,6 +279,7 @@ export class NDComponent extends DisplayComponent<NDProps> {
                         tcasMode={Subject.create(TcasMode.STBY)}
                         rangeValue={this.mapRangeRadius as Subject<EfisNdRangeValue>}
                         isUsingTrackUpMode={this.isUsingTrackUpMode}
+                        index={1} // FIXME
                     />
                     <RoseNavPage
                         bus={this.props.bus}
@@ -297,6 +298,7 @@ export class NDComponent extends DisplayComponent<NDProps> {
                     />
                     <PlanModePage
                         ref={this.planPage}
+                        bus={this.props.bus}
                         mapCenterLat={this.pposLatWord.map((v) => v.valueOr(0))}
                         mapCenterLong={this.pposLongWord.map((v) => v.valueOr(0))}
                         mapRangeRadius={this.mapRangeRadius}

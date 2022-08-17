@@ -110,6 +110,7 @@ class A32NX_ND extends BaseInstrument {
         this.vorBusPublisher.subscribe('nav1HasDme');
         this.vorBusPublisher.subscribe('nav1DmeDistance');
         this.vorBusPublisher.subscribe('nav1RelativeBearing');
+        this.vorBusPublisher.subscribe('nav1Obs');
         this.vorBusPublisher.subscribe('nav1Available');
         this.vorBusPublisher.subscribe('nav1TuningMode');
         this.vorBusPublisher.subscribe('nav2Ident');
@@ -117,6 +118,7 @@ class A32NX_ND extends BaseInstrument {
         this.vorBusPublisher.subscribe('nav2HasDme');
         this.vorBusPublisher.subscribe('nav2DmeDistance');
         this.vorBusPublisher.subscribe('nav2RelativeBearing');
+        this.vorBusPublisher.subscribe('nav2Obs');
         this.vorBusPublisher.subscribe('nav2Available');
         this.vorBusPublisher.subscribe('nav2TuningMode');
 
