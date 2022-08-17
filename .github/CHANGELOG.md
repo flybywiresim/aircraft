@@ -31,6 +31,8 @@
 1. [SOUND] Fix announcements playing twice and adding check for power to PA - @frankkopp (Frank Kopp)
 1. [ENG] Adjust oil pressure table - @tracernz (Mike)
 1. [FBW] Added option to have two axis for rudder e.g. racing pedals - @frankkopp (Frank Kopp)
+1. [COND] Add mixer unit and recirculation fans to air conditioning system - @mjuhe (Miquel Juhe)
+1. [COND] Add trim air valves to air conditioning system - @mjuhe (Miquel Juhe)
 
 ## 0.9.0
 
@@ -103,35 +105,6 @@
 1. [SD] Visual and functional improvements/fixes to the HYD SD page - @lukecologne (luke)
 1. [HYD] Added optional auxiliary hydraulic section in core hydraulic circuits - @Crocket63
 1. [EFB] Added SimBridge Health Check icon to Status Bar - @frankkopp (Frank Kopp)
-1. [HYD] Fixed opened gear door wobbling - @Crocket63
-1. [HYD] Fix gear extending whith dual lgciu power loss - @Crocket63 (crocket)
-1. [EFB] flyPad pushback option to ignore controller inputs - @frankkopp (Frank Kopp)
-1. [FCTL] Add realistically simulated F/CTL computers: ELAC/SEC/FCDC/FAC - @lukecologne (luke)
-1. [HYD] Accelerations impacts hydraulic reservoir fluid movement - @Crocket63 (crocket)
-1. [FLIGHTMODEL] Add SU10 crosswind parameters - @donstim (donbikes#4084)
-1. [MODEL] Visible pilot avatars via flyPad setting - @frankkopp (Frank Kopp)
-1. [MODEL] Fixed screens flickering in SU10 - @tyler58546 (tyler58546)
-1. [EFB] Added Local Files support - @ErickSharp (Erick Torres) @frankkopp (Frank Kopp)
-1. [BLEED] Added custom Wing Anti-Ice model - @omrygin, @Eagle941 (Joe)
-1. [MISC] Fix FDR data for support analysis - @frankkopp (Frank Kopp)
-1. [LIGHTS] Increased max brightness of cockpit displays - @frankkopp (Frank Kopp)
-1. [EFB] Improved Aircraft Presets procedures - @frankkopp (Frank Kopp)
-1. [FMGC] Make DES SPD LIM available prior to descent - @tracernz (Mike)
-1. [LIGHTS] Redone cockpit emissives panels and ambient lighting -@FinalLightNL (FinalLight)
-1. [FMGC] Rework f-pln departure page - @tracernz (Mike)
-1. [MCDU] Support coroute loading and viewing - @lucky38i (Alex)
-1. [HYD] Fixed autobrake controller tuning - @Crocket63 (crocket)
-1. [ENGINE] Improved engine primary parameters performance (EGT & Fuel Flow) - @Taz5150 (TazX [Z+2]#0405)
-1. [ENGINE] Fix Engine Flex Calculations - @Taz5150 (TazX [Z+2]#0405)
-1. [FLIGHTMODEL] Flight Model update - @donstim (donbikes#4084)
-1. [HYD] Fix incorrect gain in down pitch commands - @Crocket63 (crocket)
-1. [PFD] Improve appearance of L/DEV and V/DEV scales - @tracernz (Mike)
-1. [HYD] Implemented Electro Hydrostatic actuators - @Crocket63 (crocket)
-1. [MISC] Change 2 way overhead switches to be also controllable with mouse wheel up/down @patsta32 (Pat)
-1. [FAC] Move Speedscale computation to FAC - @lukecologne (luke)
-1. [EFB] Added deboarding button to flyPad Payload - @frankkopp (Frank Kopp)
-1. [EFB] Improved simbridge-client connection handling - @frankkopp (Frank Kopp)
-1. [HYD] Tilting gear mechanism - @Crocket63 (crocket)
 
 ## 0.8.0
 

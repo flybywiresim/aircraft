@@ -480,7 +480,7 @@
         <Sound WwiseEvent="cabfans" WwiseData="true" NodeName="LIGHT_ASOBO_NAVIGATIONTAILRIGHT" FadeOutType="2" FadeOutTime="2" LocalVar="A32NX_ELEC_AC_1_BUS_IS_POWERED" Units="Bool" Index="1">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N1" />
-            <Requires LocalVar="A32NX_VENTILATION_CABFANS_TOGGLE">
+            <Requires LocalVar="A32NX_OVHD_VENT_CAB_FANS_PB_IS_ON">
                 <Range LowerBound="1" />
             </Requires>
         </Sound>
