@@ -1,12 +1,14 @@
 use systems::{
     accept_iterable,
     air_conditioning::{
-        cabin_air::CabinZone, AirConditioningSystem, DuctTemperature, PackFlow, ZoneType,
+        acs_controller::{Pack, PackFlowController},
+        cabin_air::CabinZone,
+        AirConditioningSystem, DuctTemperature, PackFlow, PackFlowControllers, ZoneType,
     },
     pressurization::PressurizationOverheadPanel,
     shared::{
         Cabin, EngineBleedPushbutton, EngineCorrectedN1, EngineFirePushButtons, EngineStartState,
-        GroundSpeed, LgciuWeightOnWheels, PneumaticBleed,
+        GroundSpeed, LgciuWeightOnWheels, PackFlowValveState, PneumaticBleed,
     },
     simulation::{InitContext, SimulationElement, SimulationElementVisitor, UpdateContext},
 };
@@ -34,7 +36,7 @@ impl A320AirConditioning {
         adirs: &impl GroundSpeed,
         engines: [&impl EngineCorrectedN1; 2],
         engine_fire_push_buttons: &impl EngineFirePushButtons,
-        pneumatic: &(impl PneumaticBleed + EngineStartState),
+        pneumatic: &(impl EngineStartState + PackFlowValveState + PneumaticBleed),
         pneumatic_overhead: &impl EngineBleedPushbutton,
         pressurization: &impl Cabin,
         pressurization_overhead: &PressurizationOverheadPanel,
@@ -57,6 +59,13 @@ impl A320AirConditioning {
             &self.a320_air_conditioning_system,
             pressurization,
         );
+    }
+}
+
+impl PackFlowControllers<3> for A320AirConditioning {
+    fn pack_flow_controller(&self, pack_id: Pack) -> PackFlowController<3> {
+        self.a320_air_conditioning_system
+            .pack_flow_controller(pack_id)
     }
 }
 
