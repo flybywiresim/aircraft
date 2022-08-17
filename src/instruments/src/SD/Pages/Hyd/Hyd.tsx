@@ -3,7 +3,7 @@ import { render } from '@instruments/common/index';
 import { useSimVar } from '@instruments/common/simVars';
 import { setIsEcamPage } from '@instruments/common/defaults';
 import { SvgGroup } from '../../Common/SvgGroup';
-import { ptuArray, levels } from './common';
+import { levels } from './common';
 import { Triangle } from '../../Common/Shapes';
 
 import '../../Common/CommonStyles.scss';
@@ -20,6 +20,10 @@ export const HydPage = () => {
     const [bluePressure] = useSimVar('L:A32NX_HYD_BLUE_SYSTEM_1_SECTION_PRESSURE', 'psi', 500);
 
     const [yellowPumpPressurisedSwitch] = useSimVar('L:A32NX_HYD_YELLOW_PUMP_1_SECTION_PRESSURE_SWITCH', 'boolean', 500);
+    const [greenPumpPressurisedSwitch] = useSimVar('L:A32NX_HYD_GREEN_PUMP_1_SECTION_PRESSURE_SWITCH', 'boolean', 500);
+
+    const [yellowFluidLevel] = useSimVar('L:A32NX_HYD_YELLOW_RESERVOIR_LEVEL', 'gallon', 1000);
+    const [greenFluidLevel] = useSimVar('L:A32NX_HYD_GREEN_RESERVOIR_LEVEL', 'gallon', 1000);
 
     const [greenPumpPBStatus] = useSimVar('L:A32NX_OVHD_HYD_ENG_1_PUMP_PB_IS_AUTO', 'boolean', 500);
     const [yellowPumpPBStatus] = useSimVar('L:A32NX_OVHD_HYD_ENG_2_PUMP_PB_IS_AUTO', 'boolean', 500);
@@ -42,71 +46,7 @@ export const HydPage = () => {
     }, [Eng1N2, Eng2N2]);
 
     // PTU variables
-    const [ptuAvailable] = useSimVar('L:A32NX_HYD_PTU_VALVE_OPENED', 'boolean', 500);
-    const [ptuScenario, setPtuScenario] = useState('normal');
-
-    type PressureChartType = {
-        high: string,
-        low: string,
-        highValue: number,
-        lowValue: number,
-        ptuScenario: string
-    }
-
-    const [pressureChart, setPressureChart] = useState<PressureChartType>({ high: '', low: '', highValue: -1, lowValue: -1, ptuScenario: 'normal' });
-    const [ptuActive, setPtuActive] = useState(0);
-
-    function setPressures(clearState = false) {
-        if (clearState) {
-            setPressureChart({ high: '', low: '', highValue: -1, lowValue: -1, ptuScenario: 'normal' });
-        } else if (yellowPressure > greenPressure) {
-            setPressureChart({
-                high: 'YELLOW',
-                low: 'GREEN',
-                highValue: yellowPressure,
-                lowValue: greenPressure,
-                ptuScenario: 'right-to-left',
-            });
-        } else {
-            setPressureChart({
-                high: 'GREEN',
-                low: 'YELLOW',
-                highValue: greenPressure,
-                lowValue: yellowPressure,
-                ptuScenario: 'left-to-right',
-            });
-        }
-    }
-
-    useEffect(() => {
-        setPtuScenario(pressureChart.ptuScenario);
-    }, [pressureChart]);
-
-    // PTU logic
-    useEffect(() => {
-        if (ptuAvailable && !yellowElectricPumpStatus) {
-            // The PTU valve has to be open and the yellow electric pump should not be on
-            const pressureDifferential = Math.abs(greenPressure - yellowPressure);
-            const maxPressure = Math.max(yellowPressure, greenPressure);
-            // const minPressure = Math.min(yellowPressure, greenPressure);
-            const negativePressureDifferential = pressureChart.low === 'GREEN' ? pressureChart.lowValue - yellowPressure : pressureChart.lowValue - greenPressure;
-            if (maxPressure < 1450 || (greenPressure > 2990 && yellowPressure > 2990)) {
-                setPressures(true);
-                setPtuActive(0);
-            } else if (pressureDifferential > 200 && maxPressure > 1450 && !ptuActive) {
-                setPtuActive(1);
-                setPressures();
-            } else if (negativePressureDifferential <= -500 && ptuActive) {
-                setPressures(true);
-                setPtuActive(0);
-            }
-        } else if (ptuAvailable && yellowElectricPumpStatus && greenPressure <= 2990) {
-            setPtuScenario('right-to-left');
-            setPtuActive(1);
-        } else {
-            setPtuScenario(ptuAvailable ? 'normal' : 'PTU-off');
-        }
-    }, [greenPressure, yellowPressure, yellowElectricPumpStatus, ptuAvailable]);
+    const [ptuControlValveOpen] = useSimVar('L:A32NX_HYD_PTU_VALVE_OPENED', 'boolean', 500);
 
     return (
         <>
@@ -141,7 +81,18 @@ export const HydPage = () => {
                     pumpPBStatus={yellowPumpPBStatus}
                 />
 
-                <PTU x={383} y={216} ptuScenario={ptuScenario} />
+                <PTU
+                    x={383}
+                    y={216}
+                    yellowPressure={yellowPressure}
+                    greenPressure={greenPressure}
+                    yellowPumpLowPressure={!yellowPumpPressurisedSwitch}
+                    greenPumpLowPressure={!greenPumpPressurisedSwitch}
+                    yellowQuantity={yellowFluidLevel}
+                    greenQuantity={greenFluidLevel}
+                    ptuControlValveOff={!ptuControlValveOpen}
+                    yellowElecPumpOn={yellowElectricPumpStatus}
+                />
 
                 <RAT x={372} y={282} />
 
@@ -367,34 +318,128 @@ const YellowElecPump = ({ pumpPushbuttonOn, pressure, enginePumpPressureLowSwitc
     );
 };
 
+enum TransferColor {
+    Green = 'Green',
+    Amber = 'Amber',
+}
+
+enum TransferState {
+    GreenToYellow,
+    YellowToGreen,
+    None
+}
+
 type PTUProps = {
     x: number,
     y: number,
-    ptuScenario: string
+    yellowPressure: number,
+    greenPressure: number,
+    yellowPumpLowPressure: boolean,
+    greenPumpLowPressure: boolean,
+    yellowQuantity: number,
+    greenQuantity: number,
+    ptuControlValveOff: boolean
+    yellowElecPumpOn: boolean,
 }
 
-const PTU = ({ x, y, ptuScenario } : PTUProps) => {
-    const result: any = ptuArray.find(({ scenario }) => scenario === ptuScenario);
-    const ptu1 = result.format.find(({ id }) => id === 'ptu1');
-    const ptu2 = result.format.find(({ id }) => id === 'ptu2');
-    const ptu3 = result.format.find(({ id }) => id === 'ptu3');
-    const ptu4 = result.format.find(({ id }) => id === 'ptu4');
-    const ptu5 = result.format.find(({ id }) => id === 'ptu5');
-    const triangle1 = result.format.find(({ id }) => id === 'triangle1');
-    const triangle2 = result.format.find(({ id }) => id === 'triangle2');
-    const triangle3 = result.format.find(({ id }) => id === 'triangle3');
+const shouldTransferActivate = (
+    lowerPressureSystemQuantity: number,
+    lowerPressureSystemPressure: number,
+    highPressureSystemPressure: number,
+    lowerPressureSystemPumpLowPress: boolean,
+    yellowElecPumpOn: boolean,
+    transferDirection: TransferState,
+) => {
+    if (transferDirection === TransferState.None) {
+        return false;
+    }
+
+    const litersPerGallon = 3.79;
+
+    return lowerPressureSystemPumpLowPress
+        && (transferDirection === TransferState.GreenToYellow && !yellowElecPumpOn || transferDirection === TransferState.YellowToGreen)
+        && ((highPressureSystemPressure > 1450 && lowerPressureSystemQuantity * litersPerGallon < 2.5)
+        || (lowerPressureSystemPressure > 1500 && lowerPressureSystemQuantity * litersPerGallon > 2.5));
+};
+
+const PTU = ({ x, y, yellowPressure, greenPressure, yellowPumpLowPressure, greenPumpLowPressure, yellowQuantity, greenQuantity, ptuControlValveOff, yellowElecPumpOn } : PTUProps) => {
+    const [transferColor, setTransferColor] = useState(TransferColor.Green);
+    const [transferState, setTransferState] = useState(TransferState.None);
+
+    useEffect(() => {
+        let newTransferState;
+
+        if (ptuControlValveOff) {
+            newTransferState = TransferState.None;
+        } else if (transferState === TransferState.None) {
+            if (yellowPressure - greenPressure > 200) {
+                newTransferState = TransferState.YellowToGreen;
+            } else if (greenPressure - yellowPressure > 200) {
+                newTransferState = TransferState.GreenToYellow;
+            }
+        } else if (transferState === TransferState.GreenToYellow && greenPressure - yellowPressure < -300) {
+            newTransferState = TransferState.YellowToGreen;
+        } else if (transferState === TransferState.YellowToGreen && yellowPressure - greenPressure < -300) {
+            newTransferState = TransferState.GreenToYellow;
+        } else {
+            newTransferState = transferState;
+        }
+
+        let lowPressureSystemPressure: number;
+        let highPressureSystemPressure: number;
+        let lowPressureSystemQuantity: number;
+        let lowerPressureSystemPumpLowPress: boolean;
+        if (newTransferState === TransferState.GreenToYellow) {
+            highPressureSystemPressure = greenPressure;
+            lowPressureSystemPressure = yellowPressure;
+            lowPressureSystemQuantity = yellowQuantity;
+            lowerPressureSystemPumpLowPress = yellowPumpLowPressure;
+        } else if (newTransferState === TransferState.YellowToGreen) {
+            highPressureSystemPressure = yellowPressure;
+            lowPressureSystemPressure = greenPressure;
+            lowPressureSystemQuantity = greenQuantity;
+            lowerPressureSystemPumpLowPress = greenPumpLowPressure;
+        } else {
+            highPressureSystemPressure = 0;
+            lowPressureSystemPressure = 0;
+            lowPressureSystemQuantity = 0;
+            lowerPressureSystemPumpLowPress = false;
+        }
+
+        if (shouldTransferActivate(lowPressureSystemQuantity, lowPressureSystemPressure, highPressureSystemPressure, lowerPressureSystemPumpLowPress, yellowElecPumpOn, newTransferState)) {
+            setTransferState(newTransferState);
+        } else {
+            setTransferState(TransferState.None);
+        }
+    }, [yellowPressure, greenPressure, yellowPumpLowPressure, greenPumpLowPressure, yellowQuantity, greenQuantity, ptuControlValveOff, yellowElecPumpOn]);
+
+    useEffect(() => {
+        // Should also be amber if PTU fault
+        if (ptuControlValveOff) {
+            setTransferColor(TransferColor.Amber);
+        } else {
+            setTransferColor(TransferColor.Green);
+        }
+    }, [ptuControlValveOff]);
+
+    const triangleFill = transferState !== TransferState.None ? 1 : 0;
+    const triangle1Orintation = transferState !== TransferState.GreenToYellow ? -90 : 90;
+    const triangle2Orintation = transferState !== TransferState.GreenToYellow ? -90 : 90;
+    const triangle3Orintation = transferState !== TransferState.YellowToGreen ? 90 : -90;
+
+    console.log(transferState);
 
     return (
         <SvgGroup x={x} y={y}>
-            <line id="ptu1" className={ptu1.className} x1={-132} y1={0} x2={-246} y2={0} />
-            <line id="ptu2" className={ptu2.className} x1={-107} y1={0} x2={-20} y2={0} />
-            <path id="ptu3" className={ptu3.className} d="M-20 0 A20 20 0 0 0 20 0" />
-            <line id="ptu4" className={ptu4.className} x1={20} y1={0} x2={56} y2={0} />
-            <line id="ptu5" className={ptu5.className} x1={177} y1={0} x2={246} y2={0} />
+            <line id="ptu1" className={`${transferState === TransferState.None ? 'Hide ' : ''}${transferColor}Line`} x1={-132} y1={0} x2={-246} y2={0} />
+            <line id="ptu2" className={`${transferColor}Line`} x1={-107} y1={0} x2={-20} y2={0} />
+            <path id="ptu3" className={`${transferColor}Line`} d="M-20 0 A20 20 0 0 0 20 0" />
+            <line id="ptu4" className={`${transferColor}Line`} x1={20} y1={0} x2={56} y2={0} />
+            <line id="ptu5" className={`${transferState === TransferState.None ? 'Hide ' : ''}${transferColor}Line`} x1={177} y1={0} x2={246} y2={0} />
             <text className="Large" x={92} y={10}>PTU</text>
-            <Triangle scale={4 / 3} x={triangle1.orientation < 0 ? -131 : -107} y={0} colour={triangle1.colour} fill={triangle1.fill} orientation={triangle1.orientation} />
-            <Triangle scale={4 / 3} x={triangle2.orientation > 0 ? 80 : 56} y={0} colour={triangle2.colour} fill={triangle2.fill} orientation={triangle2.orientation} />
-            <Triangle scale={4 / 3} x={triangle3.orientation > 0 ? 177 : 153} y={0} colour={triangle3.colour} fill={triangle3.fill} orientation={triangle3.orientation} />
+            <Triangle scale={4 / 3} x={triangle1Orintation < 0 ? -131 : -107} y={0} colour={transferColor} fill={triangleFill} orientation={triangle1Orintation} />
+            <Triangle scale={4 / 3} x={triangle2Orintation > 0 ? 80 : 56} y={0} colour={transferColor} fill={triangleFill} orientation={triangle2Orintation} />
+            <Triangle scale={4 / 3} x={triangle3Orintation > 0 ? 177 : 153} y={0} colour={transferColor} fill={triangleFill} orientation={triangle3Orintation} />
         </SvgGroup>
     );
 };
