@@ -18,7 +18,9 @@ use uom::si::{
 };
 
 use crate::{
-    shared::{interpolation, low_pass_filter::LowPassFilter, pid::PidController},
+    shared::{
+        interpolation, low_pass_filter::LowPassFilter, pid::PidController, random_from_range,
+    },
     simulation::UpdateContext,
 };
 
@@ -488,6 +490,37 @@ impl CoreHydraulicForce {
     }
 }
 
+pub struct LinearActuatorCharacteristics {
+    max_flow: VolumeRate,
+    slow_damping: f64,
+}
+impl LinearActuatorCharacteristics {
+    pub fn new(
+        min_damping: f64,
+        max_damping: f64,
+        nominal_flow: VolumeRate,
+        flow_dispersion: Ratio,
+    ) -> Self {
+        let flow_max_absolute_dispersion = nominal_flow + nominal_flow * flow_dispersion;
+        let flow_min_absolute_dispersion = nominal_flow - nominal_flow * flow_dispersion;
+
+        Self {
+            max_flow: VolumeRate::new::<gallon_per_second>(random_from_range(
+                flow_min_absolute_dispersion.get::<gallon_per_second>(),
+                flow_max_absolute_dispersion.get::<gallon_per_second>(),
+            )),
+            slow_damping: random_from_range(min_damping, max_damping),
+        }
+    }
+
+    pub fn max_flow(&self) -> VolumeRate {
+        self.max_flow
+    }
+
+    pub fn slow_damping(&self) -> f64 {
+        self.slow_damping
+    }
+}
 /// Represents a classical linear actuator with a rod side area and a bore side area
 /// It is connected between an anchor point on the plane and a control arm of a rigid body
 /// When the actuator moves, it takes fluid on one side and gives back to reservoir the fluid on other side

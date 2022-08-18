@@ -2147,6 +2147,28 @@
             </Requires>
         </Sound>
 
+        <Sound WwiseData="true" WwiseEvent="printerloop" NodeName="Print" Continuous="true" LocalVar="A32NX_PRINTER_ACTIVE" Units="NUMBER">
+            <Range LowerBound="1"/>
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="papertear" NodeName="Print" Continuous="false" LocalVar="A32NX_PRINTER_TEAR" Units="NUMBER">
+            <Range LowerBound="2" UpperBound="2"/>
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="papercrumble" NodeName="PAPER_DISCARD" Continuous="false" LocalVar="A32NX_DISCARD_PAGE" Units="NUMBER">
+            <Range LowerBound="1" UpperBound="1"/>
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="paperflip" NodeName="PAPER_1" Continuous="false" LocalVar="A32NX_PRINT_PAGE_OFFSET" Units="NUMBER">
+            <Range LowerBound="0" UpperBound="0"/>
+            <Range LowerBound="-1" UpperBound="-1"/>
+            <Range LowerBound="-2" UpperBound="-2"/>
+            <Range LowerBound="-3" UpperBound="-3"/>
+            <Range LowerBound="-4" UpperBound="-4"/>
+            <Range LowerBound="-5" UpperBound="-5"/>
+            <Range LowerBound="-6" UpperBound="-6"/>
+        </Sound>
+
         <!-- RAIN ========================================================================================== -->
 
 		<Sound WwiseData="true" WwiseEvent="LightRainL" SimVar="AMBIENT PRECIP RATE" Units="millimeters of water" Index="0" NodeName="WIPER_BASE_L" ViewPoint="Inside" Continuous="true">
@@ -2556,12 +2578,6 @@
         <Sound WwiseData="true" WwiseEvent="smallknob" Continuous="false" ViewPoint="Inside"/>
         <Sound WwiseData="true" WwiseEvent="roundbutton" Continuous="false" ViewPoint="Inside"/>
         <Sound WwiseData="true" WwiseEvent="firetestbutton" Continuous="false" ViewPoint="Inside"/>
-
-        <!--- PRINTER SOUNDS ====================================================================================  -->
-        <Sound WwiseData="true" WwiseEvent="paperflip" Continuous="false" ViewPoint="Inside"/>
-        <Sound WwiseData="true" WwiseEvent="papercrumble" Continuous="false" ViewPoint="Inside"/>
-        <Sound WwiseData="true" WwiseEvent="papertear" Continuous="false" ViewPoint="Inside"/>
-        <Sound WwiseData="true" WwiseEvent="printerloop" Continuous="true" ViewPoint="Inside"/>
 
         <!-- AUTOPILOT =======================================================================================  -->
         <Sound WwiseData="true" WwiseEvent="autopilot_knob_push_button_on" ViewPoint="Inside"/>

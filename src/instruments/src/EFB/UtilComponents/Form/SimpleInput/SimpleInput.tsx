@@ -15,6 +15,7 @@ interface SimpleInputProps {
     number?: boolean;
     padding?: number;
     decimalPrecision?: number;
+    fontSizeClassName?: string;
     reverse?: boolean; // Flip label/input order;
     className?: string;
     maxLength?: number;
@@ -87,7 +88,6 @@ export const SimpleInput = (props: PropsWithChildren<SimpleInputProps>) => {
 
                 if (inputRef.current.getBoundingClientRect().bottom > spaceBeforeKeyboard) {
                     const offset = inputRef.current.getBoundingClientRect().bottom - spaceBeforeKeyboard;
-                    console.log('offset', offset);
 
                     dispatch(setOffsetY(offset));
                 }
@@ -164,7 +164,7 @@ export const SimpleInput = (props: PropsWithChildren<SimpleInputProps>) => {
     return (
         <>
             <input
-                className={`px-3 py-1.5 text-lg rounded-md border-2 transition duration-100
+                className={`px-3 py-1.5 ${props.fontSizeClassName ?? 'text-lg'} rounded-md border-2 transition duration-100
                     focus-within:outline-none focus-within:border-theme-highlight
                     ${props.disabled
             ? 'placeholder-theme-body bg-theme-unselected border-theme-unselected text-theme-body'
