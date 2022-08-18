@@ -85,6 +85,7 @@
       "YouHaveNotYetImportedAnySimBriefData": "You have not yet imported any SimBrief data."
     },
     "Overview": {
+      "ActualGW": "Actual GW",
       "Engines": "Engines",
       "MMO": "MMO",
       "MRW": "MRW",
@@ -111,6 +112,27 @@
     "Title": "Failures"
   },
   "Ground": {
+    "Payload": {
+      "Passengers": "Passengers",
+      "Cargo": "Cargo",
+      "ZFW": "ZFW",
+      "ZFWCG": "ZFWCG",
+      "Planned": "Planned",
+      "Current": "Current",
+      "BoardingTime": "Boarding Time",
+      "Title": "Payload",
+      "TT": {
+        "MaxPassengers": "Maximum Passengers",
+        "MaxCargo": "Maximum Cargo",
+        "MaxZFW": "Maximum ZFW",
+        "MaxZFWCG": "Maximum ZFWCG",
+        "PerPaxWeight": "Per Passenger Weight",
+        "PerPaxBagWeight": "Per Passenger Bag Weight",
+        "FillPayloadFromSimbrief": "Fill Payload Information from Simbrief",
+        "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Aircraft Must Be On the Ground and Have Engines Shutdown to Change Boarding Duration",
+        "StartBoarding": "Begin Boarding"
+      }
+    },
     "Fuel": {
       "CenterTank": "Center Tank",
       "Completed": "Completed",
@@ -132,6 +154,27 @@
       "Title": "Fuel",
       "TotalFuel": "Total Fuel",
       "Unavailable": "Unavailable"
+    },
+    "Payload": {
+      "BoardingTime": "Boarding Time",
+      "Cargo": "Cargo",
+      "Current": "Current",
+      "Passengers": "Passengers",
+      "Planned": "Planned",
+      "TT": {
+        "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Aircraft Must Be On the Ground and Have Engines Shutdown to Change Boarding Duration",
+        "FillPayloadFromSimbrief": "Fill Payload Information from Simbrief",
+        "MaxCargo": "Max Cargo",
+        "MaxPassengers": "Maximum Passengers",
+        "MaxZFW": "Maximum ZFW",
+        "MaxZFWCG": "Maximum ZFWCG",
+        "PerPaxBagWeight": "Per Passenger Bag Weight",
+        "PerPaxWeight": "Per Passenger Weight",
+        "StartBoarding": "Begin Boarding"
+      },
+      "Title": "Payload",
+      "ZFW": "ZFW",
+      "ZFWCG": "ZFWCG"
     },
     "Pushback": {
       "Title": "Pushback"
@@ -465,6 +508,7 @@
       "ConesEnabled": "Safety Cones",
       "DefaultBarometerUnit": "Default Barometer Unit",
       "DynamicRegistrationDecal": "Dynamic Registration Decal",
+      "EnableSimBridge": "Enable SimBridge Connection (Auto deactivates after 5 minutes if no successful connection)",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Enable MCDU Server Connection (Auto deactivates after 5 minutes if no successful connection)",
       "ExternalMcduServerPort": "External MCDU Server Port",
       "Hpa": "hPa",
@@ -473,6 +517,7 @@
       "None": "None",
       "Off": "Off",
       "Save": "Save",
+      "SimBridgePort": "External SimBridge Port",
       "SyncMsfsFlightPlan": "Sync MSFS Flight Plan",
       "ThrottleDetents": "Throttle Detents",
       "Title": "Sim Options",

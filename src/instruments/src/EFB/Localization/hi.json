@@ -85,6 +85,7 @@
       "YouHaveNotYetImportedAnySimBriefData": "आपने अभी तक कोई SimBrief डेटा आयात नहीं किया है।"
     },
     "Overview": {
+      "ActualGW": "Actual GW",
       "Engines": "इंजन",
       "MMO": "एम. एम. ओ",
       "MRW": "एम. आर. डब्लू",
@@ -132,6 +133,27 @@
       "Title": "ईंधन",
       "TotalFuel": "कुल ईंधन",
       "Unavailable": "अनुपलब्ध"
+    },
+    "Payload": {
+      "BoardingTime": "Boarding Time",
+      "Cargo": "Cargo",
+      "Current": "Current",
+      "Passengers": "Passengers",
+      "Planned": "Planned",
+      "TT": {
+        "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Aircraft Must Be On the Ground and Have Engines Shutdown to Change Boarding Duration",
+        "FillPayloadFromSimbrief": "Fill Payload Information from Simbrief",
+        "MaxCargo": "Max Cargo",
+        "MaxPassengers": "Maximum Passengers",
+        "MaxZFW": "Maximum ZFW",
+        "MaxZFWCG": "Maximum ZFWCG",
+        "PerPaxBagWeight": "Per Passenger Bag Weight",
+        "PerPaxWeight": "Per Passenger Weight",
+        "StartBoarding": "Begin Boarding"
+      },
+      "Title": "Payload",
+      "ZFW": "ZFW",
+      "ZFWCG": "ZFWCG"
     },
     "Pushback": {
       "Title": "पुशबैक"
@@ -465,6 +487,7 @@
       "ConesEnabled": "सुरक्षा कोन",
       "DefaultBarometerUnit": "डिफ़ॉल्ट बैरोमीटर यूनिट",
       "DynamicRegistrationDecal": "डायनामिक रजिस्ट्रेशन डिकल",
+      "EnableSimBridge": "MCDU सर्वर कनेक्शन सक्षम करें (यदि कोई सफल कनेक्शन नहीं है, तो 5 मिनट के बाद स्वतः निष्क्रिय हो जाता है)",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "MCDU सर्वर कनेक्शन सक्षम करें (यदि कोई सफल कनेक्शन नहीं है, तो 5 मिनट के बाद स्वतः निष्क्रिय हो जाता है)",
       "ExternalMcduServerPort": "बाहरी MCDU सर्वर पोर्ट",
       "Hpa": "hecta पास्कल",
@@ -473,6 +496,7 @@
       "None": "कोई नहीं",
       "Off": "बंद",
       "Save": "सहेजें",
+      "SimBridgePort": "बाहरी MCDU सर्वर पोर्ट",
       "SyncMsfsFlightPlan": "MSFS उड़ान योजना सिंक करें",
       "ThrottleDetents": "थ्रॉटल डिटेंट्स",
       "Title": "सिम ऑप्शन्स",

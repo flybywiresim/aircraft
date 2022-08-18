@@ -85,6 +85,7 @@
       "YouHaveNotYetImportedAnySimBriefData": "עדיין לא ייבאת נתוני SimBrief."
     },
     "Overview": {
+      "ActualGW": "משקל ברוטו נוכחי",
       "Engines": "מנועים",
       "MMO": "MMO",
       "MRW": "MRW",
@@ -133,6 +134,27 @@
       "TotalFuel": "סך הדלק",
       "Unavailable": "לא זמין"
     },
+    "Payload": {
+      "BoardingTime": "זמן עלייה למטוס",
+      "Cargo": "משא",
+      "Current": "נוכחי",
+      "Passengers": "נוסעים",
+      "Planned": "מתוכנן",
+      "TT": {
+        "AircraftMustBeColdAndDarkToChangeBoardingTimes": "המטוס חייב להיות על הקרקע עם מנועים כוביים בכדי לשנות את משך העליה למטוס",
+        "FillPayloadFromSimbrief": "מלא מידע על המטען מ-Simbrief",
+        "MaxCargo": "משא מקסימלי",
+        "MaxPassengers": "מספר נוסעים מקסימלי",
+        "MaxZFW": "משקל ללא דלק מקסימלי",
+        "MaxZFWCG": "מרכז כובד של משקל ללא דלק מקסימלי",
+        "PerPaxBagWeight": "משקל תיק נוסעים",
+        "PerPaxWeight": "משקל נוסע",
+        "StartBoarding": "התחל עליה למטוס"
+      },
+      "Title": "Payload",
+      "ZFW": "משקל ללא דלק",
+      "ZFWCG": "מרכז כובד משקל ללא דלק"
+    },
     "Pushback": {
       "Title": "דחיפה"
     },
@@ -143,7 +165,7 @@
       "DoorAft": "דלת אחורית",
       "DoorCargo": "דלת תא מטען",
       "DoorFwd": "דלת קדמית",
-      "ExternalPower": "יחידת מתח חיצוני",
+      "ExternalPower": "יחידת מתח קרקע",
       "FuelTruck": "משאית דלק",
       "JetBridge": "שרוול",
       "Title": "שירותים",
@@ -465,6 +487,7 @@
       "ConesEnabled": "קונוס בטיחות",
       "DefaultBarometerUnit": "יחידת ברומטר ברירת מחדל",
       "DynamicRegistrationDecal": "דִינָמִי מדבקת רישום",
+      "EnableSimBridge": "אפשר חיבור שרת MCDU (נכבה אוטומטית לאחר חמש דקות אם לא היה חיבור מוצלח)",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "אפשר חיבור שרת MCDU (נכבה אוטומטית לאחר חמש דקות אם לא היה חיבור מוצלח)",
       "ExternalMcduServerPort": "פורט MCDU חיצוני",
       "Hpa": "hPa",
@@ -473,6 +496,7 @@
       "None": "ללא",
       "Off": "כבוי",
       "Save": "שמור",
+      "SimBridgePort": "פורט MCDU חיצוני",
       "SyncMsfsFlightPlan": "סנכרן את תוכנית הטיסה מ-MSFS",
       "ThrottleDetents": "מעצורי מצערת",
       "Title": "אפשרויות סימולטור",

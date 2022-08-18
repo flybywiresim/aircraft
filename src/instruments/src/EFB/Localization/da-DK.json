@@ -85,6 +85,7 @@
       "YouHaveNotYetImportedAnySimBriefData": "Du har endnu ikke importeret nogen SimBrief data."
     },
     "Overview": {
+      "ActualGW": "Actual GW",
       "Engines": "Motorer",
       "MMO": "MMO",
       "MRW": "MRW",
@@ -132,6 +133,27 @@
       "Title": "Brændstof",
       "TotalFuel": "Total brændstof",
       "Unavailable": "Ikke tilgængelig"
+    },
+    "Payload": {
+      "BoardingTime": "Boarding Time",
+      "Cargo": "Cargo",
+      "Current": "Current",
+      "Passengers": "Passengers",
+      "Planned": "Planned",
+      "TT": {
+        "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Aircraft Must Be On the Ground and Have Engines Shutdown to Change Boarding Duration",
+        "FillPayloadFromSimbrief": "Fill Payload Information from Simbrief",
+        "MaxCargo": "Max Cargo",
+        "MaxPassengers": "Maximum Passengers",
+        "MaxZFW": "Maximum ZFW",
+        "MaxZFWCG": "Maximum ZFWCG",
+        "PerPaxBagWeight": "Per Passenger Bag Weight",
+        "PerPaxWeight": "Per Passenger Weight",
+        "StartBoarding": "Begin Boarding"
+      },
+      "Title": "Payload",
+      "ZFW": "ZFW",
+      "ZFWCG": "ZFWCG"
     },
     "Pushback": {
       "Title": "Pushback"
@@ -465,6 +487,7 @@
       "ConesEnabled": "Safety Cones",
       "DefaultBarometerUnit": "Standard Barometer enhed",
       "DynamicRegistrationDecal": "Dynamisk registrerings mærke",
+      "EnableSimBridge": "Aktiver MCDU Server Forbindelse (Deaktiveres automatisk efter 5 minutter, hvis der ikke oprettes succesfuld forbindelse)",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Aktiver MCDU Server Forbindelse (Deaktiveres automatisk efter 5 minutter, hvis der ikke oprettes succesfuld forbindelse)",
       "ExternalMcduServerPort": "Ekstern MCDU serverport",
       "Hpa": "hPa",
@@ -473,6 +496,7 @@
       "None": "Ingen",
       "Off": "Fra",
       "Save": "Gem",
+      "SimBridgePort": "Ekstern MCDU serverport",
       "SyncMsfsFlightPlan": "Synkroniser MSFS-flyveplan",
       "ThrottleDetents": "Gashåndtagspositioner",
       "Title": "Sim-instillinger",

@@ -85,6 +85,7 @@
       "YouHaveNotYetImportedAnySimBriefData": "Ešte ste neimportovali žiadne údaje z SimBrief."
     },
     "Overview": {
+      "ActualGW": "Actual GW",
       "Engines": "Motory",
       "MMO": "MMO",
       "MRW": "MRW",
@@ -132,6 +133,27 @@
       "Title": "Palivo",
       "TotalFuel": "Celkové palivo",
       "Unavailable": "Nedostupné"
+    },
+    "Payload": {
+      "BoardingTime": "Boarding Time",
+      "Cargo": "Cargo",
+      "Current": "Current",
+      "Passengers": "Passengers",
+      "Planned": "Planned",
+      "TT": {
+        "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Aircraft Must Be On the Ground and Have Engines Shutdown to Change Boarding Duration",
+        "FillPayloadFromSimbrief": "Fill Payload Information from Simbrief",
+        "MaxCargo": "Max Cargo",
+        "MaxPassengers": "Maximum Passengers",
+        "MaxZFW": "Maximum ZFW",
+        "MaxZFWCG": "Maximum ZFWCG",
+        "PerPaxBagWeight": "Per Passenger Bag Weight",
+        "PerPaxWeight": "Per Passenger Weight",
+        "StartBoarding": "Begin Boarding"
+      },
+      "Title": "Payload",
+      "ZFW": "ZFW",
+      "ZFWCG": "ZFWCG"
     },
     "Pushback": {
       "Title": "Pushback"
@@ -465,6 +487,7 @@
       "ConesEnabled": "Safety Cones",
       "DefaultBarometerUnit": "Štandardná jednotka barometra",
       "DynamicRegistrationDecal": "Dynamický registračný kód",
+      "EnableSimBridge": "Povoliť pripojenie servera MCDU (automaticky sa deaktivuje po 5 minútach, ak nie je úspešné pripojenie)",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Povoliť pripojenie servera MCDU (automaticky sa deaktivuje po 5 minútach, ak nie je úspešné pripojenie)",
       "ExternalMcduServerPort": "Externý port servera MCDU",
       "Hpa": "hPa",
@@ -473,6 +496,7 @@
       "None": "Žiadne",
       "Off": "Vypnuté",
       "Save": "Uložiť",
+      "SimBridgePort": "Externý port servera MCDU",
       "SyncMsfsFlightPlan": "Synchronizácia letového plánu MSFS",
       "ThrottleDetents": "Detenty škrtiacej klapky",
       "Title": "Možnosti Simulátora",

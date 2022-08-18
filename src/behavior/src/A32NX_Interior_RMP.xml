@@ -64,7 +64,11 @@
         </Component>
 
         <!-- Panel transfer button -->
+        <!-- Force COM3_RADIO_SET_HZ to 0 to show "DATA" at startup -->
         <Component ID="RMP_TRANSFER_BUTTON_#SIDE#" Node="PUSH_RADIO#SIDE#_ARROWS">
+            <Update Once="True">
+                0 (&gt;K:COM3_RADIO_SET_HZ)
+            </Update>
             <UseTemplate Name="FBW_Anim_Interactions">
                 <ANIM_TYPE>BUTTON</ANIM_TYPE>
                 <ANIM_TEMPLATE>ASOBO_GT_Push_Button</ANIM_TEMPLATE>
@@ -132,20 +136,50 @@
             <BASE_NAME>AM</BASE_NAME>
         </UseTemplate>
 
-        <!-- SEL indicator led light -->
-        <Component ID="PUSH_RADIO#SIDE#_SEL_SEQ2" Node="PUSH_RADIO#SIDE#_SEL_SEQ2">
+        <!-- SEL word indicator light -->
+        <Component ID="PUSH_RADIO#SIDE#_SEL_SEQ1" Node="PUSH_RADIO#SIDE#_SEL_SEQ1">
             <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
+                 <POTENTIOMETER>7</POTENTIOMETER>
                 <EMISSIVE_CODE type="rnp" return="number">
                     let indicatorsPowered = #INDICATORS_POWERED, bool#;
+                    let id = #ID, number#;
                     alias toggleSwitch = (L:A32NX_RMP_#SIDE#_TOGGLE_SWITCH, bool);
                     alias selectedModeLeft = (L:A32NX_RMP_L_SELECTED_MODE, number);
                     alias selectedModeRight = (L:A32NX_RMP_R_SELECTED_MODE, number);
                     alias annunciatorLight = (L:A32NX_OVHD_INTLT_ANN, number);
                     let emissiveDim = if annunciatorLight == 2 { 0.05 } else { 1 };
                     // @todo abnormal defined differently with NAV modes available.
-                    let rmpLeftAbnormal = selectedModeLeft != 1;
-                    let rmpRightAbnormal = selectedModeRight != 2;
-                    (if (toggleSwitch and (rmpLeftAbnormal or rmpRightAbnormal) or (annunciatorLight == 0)) and indicatorsPowered {
+                    let rmpLeftAbnormal = selectedModeLeft != 1 or selectedModeRight == 1;
+                    let rmpRightAbnormal = selectedModeRight != 2 or selectedModeLeft == 2;
+                    let sideLeftCheck = id == 1;
+                    let sideRightCheck = id == 2;
+                    (if (toggleSwitch and ((rmpLeftAbnormal and sideLeftCheck) or (rmpRightAbnormal and sideRightCheck)) or (annunciatorLight == 0)) and indicatorsPowered {
+                        1 * emissiveDim
+                    } else {
+                        0
+                    })
+                </EMISSIVE_CODE>
+            </UseTemplate>
+        </Component>
+
+        <!-- SEL indicator led light -->
+        <Component ID="PUSH_RADIO#SIDE#_SEL_SEQ2" Node="PUSH_RADIO#SIDE#_SEL_SEQ2">
+            <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
+                 <POTENTIOMETER>7</POTENTIOMETER>
+                <EMISSIVE_CODE type="rnp" return="number">
+                    let indicatorsPowered = #INDICATORS_POWERED, bool#;
+                    let id = #ID, number#;
+                    alias toggleSwitch = (L:A32NX_RMP_#SIDE#_TOGGLE_SWITCH, bool);
+                    alias selectedModeLeft = (L:A32NX_RMP_L_SELECTED_MODE, number);
+                    alias selectedModeRight = (L:A32NX_RMP_R_SELECTED_MODE, number);
+                    alias annunciatorLight = (L:A32NX_OVHD_INTLT_ANN, number);
+                    let emissiveDim = if annunciatorLight == 2 { 0.05 } else { 1 };
+                    // @todo abnormal defined differently with NAV modes available.
+                    let rmpLeftAbnormal = selectedModeLeft != 1 or selectedModeRight == 1;
+                    let rmpRightAbnormal = selectedModeRight != 2 or selectedModeLeft == 2;
+                    let sideLeftCheck = id == 1;
+                    let sideRightCheck = id == 2;
+                    (if (toggleSwitch and ((rmpLeftAbnormal and sideLeftCheck) or (rmpRightAbnormal and sideRightCheck)) or (annunciatorLight == 0)) and indicatorsPowered {
                         1 * emissiveDim
                     } else {
                         0
@@ -156,6 +190,7 @@
 
         <!-- SEL indicator backlighting -->
         <UseTemplate Name="FBW_RMP_BACKLIGHT_Template">
+            <POTENTIOMETER>7</POTENTIOMETER>
             <BASE_NAME>SEL</BASE_NAME>
         </UseTemplate>
     </Template>
@@ -288,7 +323,7 @@
         <Component ID="#BACKLIGHT_NAME#" Node="#BACKLIGHT_NAME#">
             <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
                 <EMISSIVE_CODE>
-                   (A:LIGHT POTENTIOMETER:#POTENTIOMETER#, Percent over 100) #BACKLIGHTS_POWERED# *
+                   (A:LIGHT POTENTIOMETER:#POTENTIOMETER#, Percent over 100) #BACKLIGHTS_POWERED# (L:A32NX_RMP_#SIDE#_TOGGLE_SWITCH) * *
                 </EMISSIVE_CODE>
             </UseTemplate>
         </Component>

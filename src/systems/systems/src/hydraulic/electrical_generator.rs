@@ -16,8 +16,9 @@ use crate::shared::{
     HydraulicGeneratorControlUnit, LgciuWeightOnWheels, SectionPressure,
 };
 
-use crate::simulation::{InitContext, VariableIdentifier};
-use crate::simulation::{SimulationElement, SimulatorWriter, UpdateContext, Write};
+use crate::simulation::{
+    InitContext, SimulationElement, SimulatorWriter, UpdateContext, VariableIdentifier, Write,
+};
 
 use std::time::Duration;
 

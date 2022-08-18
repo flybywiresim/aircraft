@@ -85,6 +85,7 @@
       "YouHaveNotYetImportedAnySimBriefData": "Du har ennå ikke importert noen SimBrief-data."
     },
     "Overview": {
+      "ActualGW": "Actual GW",
       "Engines": "Motorer",
       "MMO": "MMO",
       "MRW": "MRW",
@@ -133,6 +134,27 @@
       "TotalFuel": "Totalt drivstoff",
       "Unavailable": "Ikke tilgjengelig"
     },
+    "Payload": {
+      "BoardingTime": "Ombordstigningstid",
+      "Cargo": "Cargo",
+      "Current": "Current",
+      "Passengers": "Passengers",
+      "Planned": "Planned",
+      "TT": {
+        "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Aircraft Must Be On the Ground and Have Engines Shutdown to Change Boarding Duration",
+        "FillPayloadFromSimbrief": "Fill Payload Information from Simbrief",
+        "MaxCargo": "Max Cargo",
+        "MaxPassengers": "Maksimum passasjerer",
+        "MaxZFW": "Maximum ZFW",
+        "MaxZFWCG": "Maximum ZFWCG",
+        "PerPaxBagWeight": "Per Passenger Bag Weight",
+        "PerPaxWeight": "Per Passenger Weight",
+        "StartBoarding": "Begin Boarding"
+      },
+      "Title": "Payload",
+      "ZFW": "ZFW",
+      "ZFWCG": "ZFWCG"
+    },
     "Pushback": {
       "Title": "Pushback"
     },
@@ -143,7 +165,7 @@
       "DoorAft": "Bakre dør",
       "DoorCargo": "Cargo Door",
       "DoorFwd": "Fremre dør",
-      "ExternalPower": "Ekstern Strøm",
+      "ExternalPower": "Bakken kraftenhet",
       "FuelTruck": "Drivstoffbil",
       "JetBridge": "Ombordstigningsbro",
       "Title": "Tjenester",
@@ -465,6 +487,7 @@
       "ConesEnabled": "Sikkerhet kjegler",
       "DefaultBarometerUnit": "Standard Barometerenhet",
       "DynamicRegistrationDecal": "Dynamisk registreringsdekal",
+      "EnableSimBridge": "Aktiver SimBridge Servertilkobling (Deaktiveres automatisk etter 5 minutter hvis tilkoblingen ikke er vellykket)",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Aktiver MCDU Servertilkobling (Deaktiveres automatisk etter 5 minutter hvis tilkoblingen ikke er vellykket)",
       "ExternalMcduServerPort": "Ekstern MCDU-serverport",
       "Hpa": "hPa",
@@ -473,6 +496,7 @@
       "None": "Ingen",
       "Off": "Av",
       "Save": "Lagre",
+      "SimBridgePort": "Ekstern SimBridge-port",
       "SyncMsfsFlightPlan": "Synkroniser MSFS-flyplan",
       "ThrottleDetents": "Gassperrer",
       "Title": "Sim-alternativer",

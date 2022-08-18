@@ -85,6 +85,7 @@
       "YouHaveNotYetImportedAnySimBriefData": "Zaenkrat še niste uvozili nobenih SimBrief podatkov."
     },
     "Overview": {
+      "ActualGW": "Actual GW",
       "Engines": "Motorji",
       "MMO": "MMO",
       "MRW": "MRW",
@@ -132,6 +133,27 @@
       "Title": "Gorivo",
       "TotalFuel": "Skupno gorivo",
       "Unavailable": "Ni na voljo"
+    },
+    "Payload": {
+      "BoardingTime": "Čas vkrcanja",
+      "Cargo": "Cargo",
+      "Current": "Current",
+      "Passengers": "Passengers",
+      "Planned": "Planned",
+      "TT": {
+        "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Aircraft Must Be On the Ground and Have Engines Shutdown to Change Boarding Duration",
+        "FillPayloadFromSimbrief": "Fill Payload Information from Simbrief",
+        "MaxCargo": "Max Cargo",
+        "MaxPassengers": "Največje število potnikov",
+        "MaxZFW": "Maximum ZFW",
+        "MaxZFWCG": "Maximum ZFWCG",
+        "PerPaxBagWeight": "Per Passenger Bag Weight",
+        "PerPaxWeight": "Per Passenger Weight",
+        "StartBoarding": "Begin Boarding"
+      },
+      "Title": "Payload",
+      "ZFW": "ZFW",
+      "ZFWCG": "ZFWCG"
     },
     "Pushback": {
       "Title": "Vlačilec"
@@ -465,6 +487,7 @@
       "ConesEnabled": "Varnostni stožci",
       "DefaultBarometerUnit": "Privzeta barometrična enota",
       "DynamicRegistrationDecal": "Dinamična registrska nalepka",
+      "EnableSimBridge": "Omogoči povezavo s strežnikom MCDU (samodejna deaktivacija po 5 minutah, če ni uspešne povezave)",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Omogoči povezavo s strežnikom MCDU (samodejna deaktivacija po 5 minutah, če ni uspešne povezave)",
       "ExternalMcduServerPort": "Zunanji MCDU Port",
       "Hpa": "hPa",
@@ -473,6 +496,7 @@
       "None": "Brez",
       "Off": "Izklopljeno",
       "Save": "Shrani",
+      "SimBridgePort": "Zunanji SimBridge Port",
       "SyncMsfsFlightPlan": "Sinhroniziraj z MSFS načrtom leta",
       "ThrottleDetents": "Odkloni plinske ročke",
       "Title": "Nastavitve simulatorja",

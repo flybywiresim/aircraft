@@ -85,6 +85,7 @@
       "YouHaveNotYetImportedAnySimBriefData": "您尚未从 SimBrief 导入任何数据"
     },
     "Overview": {
+      "ActualGW": "Actual GW",
       "Engines": "引擎",
       "MMO": "最大使用马赫数",
       "MRW": "最大机坪重量",
@@ -132,6 +133,27 @@
       "Title": "燃油",
       "TotalFuel": "总燃油量",
       "Unavailable": "不可用"
+    },
+    "Payload": {
+      "BoardingTime": "登机需时",
+      "Cargo": "Cargo",
+      "Current": "Current",
+      "Passengers": "Passengers",
+      "Planned": "Planned",
+      "TT": {
+        "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Aircraft Must Be On the Ground and Have Engines Shutdown to Change Boarding Duration",
+        "FillPayloadFromSimbrief": "Fill Payload Information from Simbrief",
+        "MaxCargo": "Max Cargo",
+        "MaxPassengers": "最大载客人数",
+        "MaxZFW": "Maximum ZFW",
+        "MaxZFWCG": "Maximum ZFWCG",
+        "PerPaxBagWeight": "Per Passenger Bag Weight",
+        "PerPaxWeight": "Per Passenger Weight",
+        "StartBoarding": "Begin Boarding"
+      },
+      "Title": "Payload",
+      "ZFW": "零油重量",
+      "ZFWCG": "ZFWCG"
     },
     "Pushback": {
       "Title": "后推"
@@ -465,6 +487,7 @@
       "ConesEnabled": "安全锥",
       "DefaultBarometerUnit": "默认气压单位",
       "DynamicRegistrationDecal": "动态注册号喷涂",
+      "EnableSimBridge": "启用 MCDU 服务器 (5 分钟之内无连接将自动停用)",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "启用 MCDU 服务器 (5 分钟之内无连接将自动停用)",
       "ExternalMcduServerPort": "MCDU 服务器端口",
       "Hpa": "百帕 (hPa)",
@@ -473,6 +496,7 @@
       "None": "无",
       "Off": "关",
       "Save": "保存",
+      "SimBridgePort": "MCDU 服务器端口",
       "SyncMsfsFlightPlan": "同步 MSFS 内飞行计划",
       "ThrottleDetents": "油门卡位",
       "Title": "模拟器选项",

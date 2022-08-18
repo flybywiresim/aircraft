@@ -85,6 +85,7 @@
       "YouHaveNotYetImportedAnySimBriefData": "Je hebt nog geen SimBrief-gegevens geïmporteerd."
     },
     "Overview": {
+      "ActualGW": "Actual GW",
       "Engines": "Motoren",
       "MMO": "MMO",
       "MRW": "MRW",
@@ -132,6 +133,27 @@
       "Title": "Brandstof",
       "TotalFuel": "Totale brandstof",
       "Unavailable": "Niet beschikbaar"
+    },
+    "Payload": {
+      "BoardingTime": "Boarding Time",
+      "Cargo": "Cargo",
+      "Current": "Current",
+      "Passengers": "Passengers",
+      "Planned": "Planned",
+      "TT": {
+        "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Aircraft Must Be On the Ground and Have Engines Shutdown to Change Boarding Duration",
+        "FillPayloadFromSimbrief": "Fill Payload Information from Simbrief",
+        "MaxCargo": "Max Cargo",
+        "MaxPassengers": "Maximum Passengers",
+        "MaxZFW": "Maximum ZFW",
+        "MaxZFWCG": "Maximum ZFWCG",
+        "PerPaxBagWeight": "Per Passenger Bag Weight",
+        "PerPaxWeight": "Per Passenger Weight",
+        "StartBoarding": "Begin Boarding"
+      },
+      "Title": "Payload",
+      "ZFW": "ZFW",
+      "ZFWCG": "ZFWCG"
     },
     "Pushback": {
       "Title": "Pushback"
@@ -465,6 +487,7 @@
       "ConesEnabled": "Safety Cones",
       "DefaultBarometerUnit": "Standaard barometer-eenheid",
       "DynamicRegistrationDecal": "Dynamische Registratie Sticker",
+      "EnableSimBridge": "MCDU-serververbinding inschakelen (Deactiveert automatisch na 5 minuten als er geen succesvolle verbinding is)",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "MCDU-serververbinding inschakelen (Deactiveert automatisch na 5 minuten als er geen succesvolle verbinding is)",
       "ExternalMcduServerPort": "Externe MCDU Serverpoort",
       "Hpa": "hPa",
@@ -473,6 +496,7 @@
       "None": "Geen",
       "Off": "Uit",
       "Save": "Opslaan",
+      "SimBridgePort": "Externe MCDU Serverpoort",
       "SyncMsfsFlightPlan": "MSFS-vluchtplan synchroniseren",
       "ThrottleDetents": "Throttle Detents",
       "Title": "Sim-opties",

@@ -85,6 +85,7 @@
       "YouHaveNotYetImportedAnySimBriefData": "Vous n'avez pas encore importé de données SimBrief."
     },
     "Overview": {
+      "ActualGW": "Actual GW",
       "Engines": "Moteurs",
       "MMO": "MMO",
       "MRW": "MRW",
@@ -132,6 +133,27 @@
       "Title": "Carburant",
       "TotalFuel": "Carburant Total",
       "Unavailable": "Indisponible"
+    },
+    "Payload": {
+      "BoardingTime": "Boarding Time",
+      "Cargo": "Cargo",
+      "Current": "Current",
+      "Passengers": "Passengers",
+      "Planned": "Planned",
+      "TT": {
+        "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Aircraft Must Be On the Ground and Have Engines Shutdown to Change Boarding Duration",
+        "FillPayloadFromSimbrief": "Fill Payload Information from Simbrief",
+        "MaxCargo": "Max Cargo",
+        "MaxPassengers": "Maximum Passengers",
+        "MaxZFW": "Maximum ZFW",
+        "MaxZFWCG": "Maximum ZFWCG",
+        "PerPaxBagWeight": "Per Passenger Bag Weight",
+        "PerPaxWeight": "Per Passenger Weight",
+        "StartBoarding": "Begin Boarding"
+      },
+      "Title": "Payload",
+      "ZFW": "ZFW",
+      "ZFWCG": "ZFWCG"
     },
     "Pushback": {
       "Title": "Repoussage"
@@ -465,6 +487,7 @@
       "ConesEnabled": "Cônes de sécurité",
       "DefaultBarometerUnit": "Unité baromètre par défaut",
       "DynamicRegistrationDecal": "Calque d'enregistrement dynamique",
+      "EnableSimBridge": "Activer la connexion au serveur MCDU (désactivation automatique après 5 minutes en cas d'échec de la connexion)",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Activer la connexion au serveur MCDU (désactivation automatique après 5 minutes en cas d'échec de la connexion)",
       "ExternalMcduServerPort": "Port du serveur MCDU externe",
       "Hpa": "hPa",
@@ -473,6 +496,7 @@
       "None": "Aucun",
       "Off": "DÉSACTIVÉ",
       "Save": "Enregistrer",
+      "SimBridgePort": "Port du serveur MCDU externe",
       "SyncMsfsFlightPlan": "Synchroniser le plan de vol MSFS",
       "ThrottleDetents": "Encoches des manettes",
       "Title": "Options de simulation",

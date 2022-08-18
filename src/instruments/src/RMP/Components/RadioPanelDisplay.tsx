@@ -8,6 +8,8 @@ interface Props {
     value: number | string,
 }
 
+const TEXT_DATA_MODE_VHF3 = 'DATA';
+
 /**
  * Format the given frequency to be displayed.
  * @param frequency The given frequency number in Hz.
@@ -23,14 +25,39 @@ const formatFrequency = (frequency: number): string => (frequency / 1000000).toF
 export function RadioPanelDisplay(props: Props) {
     const [lightsTest] = useSimVar('L:A32NX_OVHD_INTLT_ANN', 'Boolean', 1000);
 
-    // If the passed value prop is a number, we'll use formatFrequency to get string format.
-    const value = typeof props.value === 'number' ? formatFrequency(props.value) : props.value;
+    let content: JSX.Element;
+
+    if (lightsTest === 0) {
+        content = (
+            <text x="100%" y="52%">
+                8.8.8.8.8.8
+            </text>
+        );
+    } else if (props.value > 0) {
+        let value = '';
+        // If the passed value prop is a number, we'll use formatFrequency to get string format.
+        if (typeof props.value === 'number') {
+            value = formatFrequency(props.value);
+        } else {
+            value = props.value;
+        }
+
+        content = (
+            <text x="100%" y="52%">
+                {value}
+            </text>
+        );
+    } else {
+        content = (
+            <text x="85%" y="52%">
+                {TEXT_DATA_MODE_VHF3}
+            </text>
+        );
+    }
 
     return (
         <svg className="rmp-svg">
-            <text x="100%" y="52%">
-                {lightsTest === 0 ? '8.8.8.8.8.8' : value}
-            </text>
+            {content}
         </svg>
     );
 }

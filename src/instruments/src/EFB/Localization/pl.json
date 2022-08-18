@@ -85,6 +85,7 @@
       "YouHaveNotYetImportedAnySimBriefData": "Nie zaimportowałeś jeszcze żadnych danych SimBrief."
     },
     "Overview": {
+      "ActualGW": "Actual GW",
       "Engines": "Silniki",
       "MMO": "MMO",
       "MRW": "MRW",
@@ -132,6 +133,27 @@
       "Title": "Paliwo",
       "TotalFuel": "Paliwo Łącznie",
       "Unavailable": "Niedostępny"
+    },
+    "Payload": {
+      "BoardingTime": "Boarding Time",
+      "Cargo": "Cargo",
+      "Current": "Current",
+      "Passengers": "Passengers",
+      "Planned": "Planned",
+      "TT": {
+        "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Aircraft Must Be On the Ground and Have Engines Shutdown to Change Boarding Duration",
+        "FillPayloadFromSimbrief": "Fill Payload Information from Simbrief",
+        "MaxCargo": "Max Cargo",
+        "MaxPassengers": "Maximum Passengers",
+        "MaxZFW": "Maximum ZFW",
+        "MaxZFWCG": "Maximum ZFWCG",
+        "PerPaxBagWeight": "Per Passenger Bag Weight",
+        "PerPaxWeight": "Per Passenger Weight",
+        "StartBoarding": "Begin Boarding"
+      },
+      "Title": "Payload",
+      "ZFW": "ZFW",
+      "ZFWCG": "ZFWCG"
     },
     "Pushback": {
       "Title": "Wypychanie"
@@ -465,6 +487,7 @@
       "ConesEnabled": "Pachołki Bezpieczeństwa",
       "DefaultBarometerUnit": "Domyślna Jednostka Barometru",
       "DynamicRegistrationDecal": "Dynamiczny Numer Rejestracyjny",
+      "EnableSimBridge": "Włącz połączenie z serwerem MCDU (Automatycznie dezaktywowane po 5 minutach bez połączenia)",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Włącz połączenie z serwerem MCDU (Automatycznie dezaktywowane po 5 minutach bez połączenia)",
       "ExternalMcduServerPort": "Port Serwera MCDU",
       "Hpa": "hPa",
@@ -473,6 +496,7 @@
       "None": "Nie",
       "Off": "Wył.",
       "Save": "Tak",
+      "SimBridgePort": "Port Serwera MCDU",
       "SyncMsfsFlightPlan": "Synchronizacja Planu Lotu z MSFS",
       "ThrottleDetents": "Kalibracja Przepustnic",
       "Title": "Ustawienia Symulatora",

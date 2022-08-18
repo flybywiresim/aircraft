@@ -25810,30 +25810,6 @@
             "name": "c_gear",
             "channels": [
                 {
-                    "sampler": 0,
-                    "target": { "node": 19, "path": "translation" }
-                },
-                { "sampler": 1, "target": { "node": 19, "path": "rotation" } },
-                { "sampler": 2, "target": { "node": 19, "path": "scale" } },
-                {
-                    "sampler": 3,
-                    "target": { "node": 23, "path": "translation" }
-                },
-                { "sampler": 4, "target": { "node": 23, "path": "rotation" } },
-                { "sampler": 5, "target": { "node": 23, "path": "scale" } },
-                {
-                    "sampler": 6,
-                    "target": { "node": 21, "path": "translation" }
-                },
-                { "sampler": 7, "target": { "node": 21, "path": "rotation" } },
-                { "sampler": 8, "target": { "node": 21, "path": "scale" } },
-                {
-                    "sampler": 9,
-                    "target": { "node": 25, "path": "translation" }
-                },
-                { "sampler": 10, "target": { "node": 25, "path": "rotation" } },
-                { "sampler": 11, "target": { "node": 25, "path": "scale" } },
-                {
                     "sampler": 12,
                     "target": { "node": 128, "path": "translation" }
                 },
@@ -25907,6 +25883,56 @@
                 { "input": 143, "output": 144, "interpolation": "LINEAR" },
                 { "input": 145, "output": 146, "interpolation": "LINEAR" },
                 { "input": 147, "output": 148, "interpolation": "LINEAR" }
+            ]
+        },
+        {
+            "name": "c_gear_door1",
+            "channels": [
+                {
+                    "sampler": 0,
+                    "target": { "node": 19, "path": "translation" }
+                },
+                { "sampler": 1, "target": { "node": 19, "path": "rotation" } },
+                { "sampler": 2, "target": { "node": 19, "path": "scale" } },
+                {
+                    "sampler": 3,
+                    "target": { "node": 23, "path": "translation" }
+                },
+                { "sampler": 4, "target": { "node": 23, "path": "rotation" } },
+                { "sampler": 5, "target": { "node": 23, "path": "scale" } }
+            ],
+            "samplers": [
+                { "input": 95, "output": 96, "interpolation": "LINEAR" },
+                { "input": 97, "output": 98, "interpolation": "LINEAR" },
+                { "input": 99, "output": 100, "interpolation": "LINEAR" },
+                { "input": 101, "output": 102, "interpolation": "LINEAR" },
+                { "input": 103, "output": 104, "interpolation": "LINEAR" },
+                { "input": 105, "output": 106, "interpolation": "LINEAR" }
+            ]
+        },
+        {
+            "name": "c_gear_door2",
+            "channels": [
+                {
+                    "sampler": 0,
+                    "target": { "node": 21, "path": "translation" }
+                },
+                { "sampler": 1, "target": { "node": 21, "path": "rotation" } },
+                { "sampler": 2, "target": { "node": 21, "path": "scale" } },
+                {
+                    "sampler": 3,
+                    "target": { "node": 25, "path": "translation" }
+                },
+                { "sampler": 4, "target": { "node": 25, "path": "rotation" } },
+                { "sampler": 5, "target": { "node": 25, "path": "scale" } }
+            ],
+            "samplers": [
+                { "input": 107, "output": 108, "interpolation": "LINEAR" },
+                { "input": 109, "output": 110, "interpolation": "LINEAR" },
+                { "input": 111, "output": 112, "interpolation": "LINEAR" },
+                { "input": 113, "output": 114, "interpolation": "LINEAR" },
+                { "input": 115, "output": 116, "interpolation": "LINEAR" },
+                { "input": 117, "output": 118, "interpolation": "LINEAR" }
             ]
         },
         {
@@ -26149,24 +26175,6 @@
                 },
                 { "sampler": 35, "target": { "node": 109, "path": "scale" } },
                 {
-                    "sampler": 36,
-                    "target": { "node": 12, "path": "translation" }
-                },
-                { "sampler": 37, "target": { "node": 12, "path": "rotation" } },
-                { "sampler": 38, "target": { "node": 12, "path": "scale" } },
-                {
-                    "sampler": 39,
-                    "target": { "node": 13, "path": "translation" }
-                },
-                { "sampler": 40, "target": { "node": 13, "path": "rotation" } },
-                { "sampler": 41, "target": { "node": 13, "path": "scale" } },
-                {
-                    "sampler": 42,
-                    "target": { "node": 14, "path": "translation" }
-                },
-                { "sampler": 43, "target": { "node": 14, "path": "rotation" } },
-                { "sampler": 44, "target": { "node": 14, "path": "scale" } },
-                {
                     "sampler": 45,
                     "target": { "node": 118, "path": "translation" }
                 },
@@ -26297,6 +26305,40 @@
                 { "input": 349, "output": 350, "interpolation": "LINEAR" },
                 { "input": 351, "output": 352, "interpolation": "LINEAR" },
                 { "input": 353, "output": 354, "interpolation": "LINEAR" }
+            ]
+        },
+        {
+            "name": "l_gear_door",
+            "channels": [
+                {
+                    "sampler": 0,
+                    "target": { "node": 12, "path": "translation" }
+                },
+                { "sampler": 1, "target": { "node": 12, "path": "rotation" } },
+                { "sampler": 2, "target": { "node": 12, "path": "scale" } },
+                {
+                    "sampler": 3,
+                    "target": { "node": 13, "path": "translation" }
+                },
+                { "sampler": 4, "target": { "node": 13, "path": "rotation" } },
+                { "sampler": 5, "target": { "node": 13, "path": "scale" } },
+                {
+                    "sampler": 6,
+                    "target": { "node": 14, "path": "translation" }
+                },
+                { "sampler": 7, "target": { "node": 14, "path": "rotation" } },
+                { "sampler": 8, "target": { "node": 14, "path": "scale" } }
+            ],
+            "samplers": [
+                { "input": 299, "output": 300, "interpolation": "LINEAR" },
+                { "input": 301, "output": 302, "interpolation": "LINEAR" },
+                { "input": 303, "output": 304, "interpolation": "LINEAR" },
+                { "input": 305, "output": 306, "interpolation": "LINEAR" },
+                { "input": 307, "output": 308, "interpolation": "LINEAR" },
+                { "input": 309, "output": 310, "interpolation": "LINEAR" },
+                { "input": 311, "output": 312, "interpolation": "LINEAR" },
+                { "input": 313, "output": 314, "interpolation": "LINEAR" },
+                { "input": 315, "output": 316, "interpolation": "LINEAR" }
             ]
         },
         {
@@ -26559,24 +26601,6 @@
                 },
                 { "sampler": 29, "target": { "node": 193, "path": "scale" } },
                 {
-                    "sampler": 30,
-                    "target": { "node": 5, "path": "translation" }
-                },
-                { "sampler": 31, "target": { "node": 5, "path": "rotation" } },
-                { "sampler": 32, "target": { "node": 5, "path": "scale" } },
-                {
-                    "sampler": 33,
-                    "target": { "node": 6, "path": "translation" }
-                },
-                { "sampler": 34, "target": { "node": 6, "path": "rotation" } },
-                { "sampler": 35, "target": { "node": 6, "path": "scale" } },
-                {
-                    "sampler": 36,
-                    "target": { "node": 7, "path": "translation" }
-                },
-                { "sampler": 37, "target": { "node": 7, "path": "rotation" } },
-                { "sampler": 38, "target": { "node": 7, "path": "scale" } },
-                {
                     "sampler": 39,
                     "target": { "node": 176, "path": "translation" }
                 },
@@ -26725,6 +26749,40 @@
                 { "input": 567, "output": 568, "interpolation": "LINEAR" },
                 { "input": 569, "output": 570, "interpolation": "LINEAR" },
                 { "input": 571, "output": 572, "interpolation": "LINEAR" }
+            ]
+        },
+        {
+            "name": "r_gear_door",
+            "channels": [
+                {
+                    "sampler": 0,
+                    "target": { "node": 5, "path": "translation" }
+                },
+                { "sampler": 1, "target": { "node": 5, "path": "rotation" } },
+                { "sampler": 2, "target": { "node": 5, "path": "scale" } },
+                {
+                    "sampler": 3,
+                    "target": { "node": 6, "path": "translation" }
+                },
+                { "sampler": 4, "target": { "node": 6, "path": "rotation" } },
+                { "sampler": 5, "target": { "node": 6, "path": "scale" } },
+                {
+                    "sampler": 6,
+                    "target": { "node": 7, "path": "translation" }
+                },
+                { "sampler": 7, "target": { "node": 7, "path": "rotation" } },
+                { "sampler": 8, "target": { "node": 7, "path": "scale" } }
+            ],
+            "samplers": [
+                { "input": 505, "output": 506, "interpolation": "LINEAR" },
+                { "input": 507, "output": 508, "interpolation": "LINEAR" },
+                { "input": 509, "output": 510, "interpolation": "LINEAR" },
+                { "input": 511, "output": 512, "interpolation": "LINEAR" },
+                { "input": 513, "output": 514, "interpolation": "LINEAR" },
+                { "input": 515, "output": 516, "interpolation": "LINEAR" },
+                { "input": 517, "output": 518, "interpolation": "LINEAR" },
+                { "input": 519, "output": 520, "interpolation": "LINEAR" },
+                { "input": 521, "output": 522, "interpolation": "LINEAR" }
             ]
         },
         {

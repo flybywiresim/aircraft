@@ -85,6 +85,7 @@
       "YouHaveNotYetImportedAnySimBriefData": "Jūs dar neįkėlėte SimBrief duomenų."
     },
     "Overview": {
+      "ActualGW": "Tikrasis svoris",
       "Engines": "Varikliai",
       "MMO": "MMO",
       "MRW": "MRW",
@@ -132,6 +133,27 @@
       "Title": "Kuras",
       "TotalFuel": "Bendras kuras",
       "Unavailable": "Nepasiekiama"
+    },
+    "Payload": {
+      "BoardingTime": "Laipinimo trukmė",
+      "Cargo": "Krovinys",
+      "Current": "Esamas",
+      "Passengers": "Keleiviai",
+      "Planned": "Suplanuotas",
+      "TT": {
+        "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Norint pakeisti laipinimo trukmę, orlaivis turi būti ant žemės, užgesintais varikliais",
+        "FillPayloadFromSimbrief": "Užpildyti informaciją apie krovinį iš Simbrief",
+        "MaxCargo": "Maksimalus krovinys",
+        "MaxPassengers": "Maksimalus keleivių skaičius",
+        "MaxZFW": "Maksimalus ZFW",
+        "MaxZFWCG": "Maximalus ZFWCG",
+        "PerPaxBagWeight": "Keleivio bagažo svoris",
+        "PerPaxWeight": "Keleivio svoris",
+        "StartBoarding": "Pradėti laipinimą"
+      },
+      "Title": "Krovinys",
+      "ZFW": "ZFW",
+      "ZFWCG": "ZFWCG"
     },
     "Pushback": {
       "Title": "Išstumimas"
@@ -453,8 +475,8 @@
       "HomeCockpitMode": "Namų kabinos režimas",
       "McduFocusTimeout": "MCDU fokuso praradimas (sekundės)",
       "McduKeyboardInput": "MCDU duomenų įvedimas klaviatūra",
-      "PauseAtTod": "T/D Pause",
-      "PauseAtTodDistance": "T/D Pause Distance (nm)",
+      "PauseAtTod": "Pauzė prieš pradedant leistis",
+      "PauseAtTodDistance": "Pauzės atstumas nuo pradėjimo leistis taško",
       "SeparateTillerFromRudderInputs": "Išskirti tiller iš krypties vairo komandų",
       "Title": "Realizmas"
     },
@@ -465,6 +487,7 @@
       "ConesEnabled": "Saugumo kūgiai",
       "DefaultBarometerUnit": "Numatyti barometro vienetai",
       "DynamicRegistrationDecal": "Dinaminis registracijos lipdukas",
+      "EnableSimBridge": "Įjungti SimBridge automatinį prisijungimą (automatiškai išjungiama po 5 minučių, jei nepavyksta prisijungti)",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Įgalinti MCDU serverio prisijungimą (automatiškai išjungiama po 5 minučių, jei nepavyksta prisijungti)",
       "ExternalMcduServerPort": "Išorinis MCDU serverio port",
       "Hpa": "hPa",
@@ -473,6 +496,7 @@
       "None": "Nėra",
       "Off": "Išjungta",
       "Save": "Išsaugoti",
+      "SimBridgePort": "Išorinis SimBridge serverio port",
       "SyncMsfsFlightPlan": "Sinchronizuoti MSFS Skrydžio Planą",
       "ThrottleDetents": "Droselio detentai",
       "Title": "Simuliatoriaus nustatymai",
