@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Power } from 'react-bootstrap-icons';
+import { Power, Wifi, WifiOff } from 'react-bootstrap-icons';
 import { useSimVar } from '@instruments/common/simVars';
 import { usePersistentProperty, usePersistentNumberProperty } from '@instruments/common/persistence';
 import { useLongPress } from 'use-long-press';
 import { useHistory } from 'react-router-dom';
+import { useInterval } from '@flybywiresim/react-components';
 import { t } from '../translation';
 import { TooltipWrapper } from '../UtilComponents/TooltipWrapper';
 import { usePower, PowerStates } from '../Efb';
@@ -18,12 +19,14 @@ interface StatusBarProps {
 }
 
 export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
-    const [currentUTC] = useSimVar('E:ZULU TIME', 'seconds', 1_000);
-    const [currentLocalTime] = useSimVar('E:LOCAL TIME', 'seconds', 1_000);
-    const [dayOfWeek] = useSimVar('E:ZULU DAY OF WEEK', 'number', 1_000);
-    const [monthOfYear] = useSimVar('E:ZULU MONTH OF YEAR', 'number', 1_000);
-    const [dayOfMonth] = useSimVar('E:ZULU DAY OF MONTH', 'number', 1_000);
+    const [currentUTC] = useSimVar('E:ZULU TIME', 'seconds');
+    const [currentLocalTime] = useSimVar('E:LOCAL TIME', 'seconds');
+    const [dayOfWeek] = useSimVar('E:ZULU DAY OF WEEK', 'number');
+    const [monthOfYear] = useSimVar('E:ZULU MONTH OF YEAR', 'number');
+    const [dayOfMonth] = useSimVar('E:ZULU DAY OF MONTH', 'number');
     const [showStatusBarFlightProgress] = usePersistentNumberProperty('EFB_SHOW_STATUSBAR_FLIGHTPROGRESS', 1);
+    const [simbridgePort] = usePersistentProperty('CONFIG_SIMBRIDGE_PORT', '8380');
+    const [simbridgeEnabled] = usePersistentProperty('CONFIG_SIMBRIDGE_ENABLED', 'AUTO ON');
 
     const history = useHistory();
 
@@ -90,26 +93,31 @@ export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
     const shutoffTimerRef = useRef<NodeJS.Timer | null>(null);
 
     // TODO FIXME: This is going to need some readjustment when the user config changes
-    // const setConnectedState = async () => {
-    //     try {
-    //         const healthRes = await fetch('http://localhost:8380/health');
-    //         const healthJson = await healthRes.json();
-    //
-    //         if (healthJson.info.api.status === 'up') {
-    //             setLocalApiConnected(true);
-    //         } else {
-    //             setLocalApiConnected(false);
-    //         }
-    //     } catch (_) {
-    //         setLocalApiConnected(false);
-    //     }
-    // };
-    //
-    // const [localApiConnected, setLocalApiConnected] = useState(false);
-    //
-    // useInterval(() => {
-    //     setConnectedState();
-    // }, 30_000);
+    const setConnectedState = async () => {
+        if (simbridgeEnabled !== 'AUTO ON') {
+            setLocalApiConnected(false);
+            return;
+        }
+        try {
+            const url = `http://localhost:${simbridgePort}/health`;
+            const healthRes = await fetch(url);
+            const healthJson = await healthRes.json();
+
+            if (healthJson.info.api.status === 'up') {
+                setLocalApiConnected(true);
+            } else {
+                setLocalApiConnected(false);
+            }
+        } catch (_) {
+            setLocalApiConnected(false);
+        }
+    };
+
+    const [localApiConnected, setLocalApiConnected] = useState(false);
+
+    useInterval(() => {
+        setConnectedState();
+    }, 15_000);
 
     const bind = useLongPress(() => {}, {
         threshold: 100_000,
@@ -135,7 +143,7 @@ export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
     }, [shutoffBarPercent]);
 
     useEffect(() => {
-        // setConnectedState();
+        setConnectedState();
 
         const interval = setInterval(() => {
             setShowSchedTimes((old) => !old);
@@ -193,13 +201,13 @@ export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
                     </div>
                 )}
 
-                {/* <TooltipWrapper text={localApiConnected ? t('StatusBar.TT.ConnectedToLocalApi') : t('StatusBar.TT.DisconnectedFromLocalApi')}> */}
-                {/*    {localApiConnected ? ( */}
-                {/*        <Wifi size={26} /> */}
-                {/*    ) : ( */}
-                {/*        <WifiOff size={26} /> */}
-                {/*    )} */}
-                {/* </TooltipWrapper> */}
+                <TooltipWrapper text={localApiConnected ? t('StatusBar.TT.ConnectedToLocalApi') : t('StatusBar.TT.DisconnectedFromLocalApi')}>
+                    {localApiConnected ? (
+                        <Wifi size={26} />
+                    ) : (
+                        <WifiOff size={26} />
+                    )}
+                </TooltipWrapper>
 
                 <BatteryStatus batteryLevel={batteryLevel} isCharging={isCharging} />
 
