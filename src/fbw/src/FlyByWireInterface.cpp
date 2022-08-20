@@ -1866,13 +1866,11 @@ bool FlyByWireInterface::updateFoSide(double sampleTime) {
   {
     if (last_ls1_active != additionalData.ls1Active)
     {
-      //simConnectInterface.sendEvent(SimConnectInterface::Events::TOGGLE_FLIGHT_DIRECTOR, 2);
       idLs2Active->set(additionalData.ls1Active);
     }
     
     if (last_ls2_active != additionalData.ls2Active)
     {
-      //simConnectInterface.sendEvent(SimConnectInterface::Events::TOGGLE_FLIGHT_DIRECTOR, 2);
       idLs1Active->set(additionalData.ls2Active);
     }
   }
@@ -1880,9 +1878,10 @@ bool FlyByWireInterface::updateFoSide(double sampleTime) {
   last_ls2_active = additionalData.ls2Active;
 
   // inHg/hPa switch
+  // Currently synced already
 
   // STD Button
-  // Currently sync already
+  // Currently synced already
 
   // result
   return true;
