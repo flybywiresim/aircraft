@@ -44,7 +44,7 @@ export const ArcMode: React.FC<ArcModeProps> = ({ symbols, adirsAlign, rangeSett
         track = Number(MathUtils.fastToFixed(track, 2));
     }
 
-    const [mapParams] = useState(() => {
+    const [mapParams, setMapParams] = useState(() => {
         const params = new MapParameters();
         params.compute(ppos, rangeSetting, 492, trueHeading);
 
@@ -52,7 +52,9 @@ export const ArcMode: React.FC<ArcModeProps> = ({ symbols, adirsAlign, rangeSett
     });
 
     useEffect(() => {
-        mapParams.compute(ppos, rangeSetting, 492, trueHeading);
+        const newMapParams = new MapParameters();
+        newMapParams.compute(ppos, rangeSetting, 492, trueHeading);
+        setMapParams(newMapParams);
     }, [ppos.lat, ppos.long, trueHeading, rangeSetting].map((n) => MathUtils.fastToFixed(n, 6)));
 
     if (adirsAlign) {
@@ -72,7 +74,6 @@ export const ArcMode: React.FC<ArcModeProps> = ({ symbols, adirsAlign, rangeSett
                             range={rangeSetting}
                             symbols={symbols}
                             mapParams={mapParams}
-                            mapParamsVersion={mapParams.version}
                             debug={false}
                         />
 

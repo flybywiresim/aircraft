@@ -59,7 +59,6 @@ export const FlightPlan: FC<FlightPathProps> = memo(({ x = 0, y = 0, side, range
                     x={0}
                     y={0}
                     mapParams={mapParams}
-                    mapParamsVersion={mapParams.version}
                     side={side}
                     group={parseInt(group) as EfisVectorsGroup}
                 />

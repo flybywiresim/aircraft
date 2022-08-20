@@ -28,12 +28,9 @@ export const PlanMode: FC<PlanModeProps> = ({ side, symbols, adirsAlign, rangeSe
     useEffect(() => {
         clearTimeout(debounce.current);
         debounce.current = setTimeout(() => {
-            setMapParams((oldMapParams) => {
-                const newMapParams = new MapParameters();
-                newMapParams.version = oldMapParams.version;
-                newMapParams.compute({ lat: planCentreLat, long: planCentreLong }, rangeSetting / 2, 250, 0);
-                return newMapParams;
-            });
+            const newMapParams = new MapParameters();
+            newMapParams.compute({ lat: planCentreLat, long: planCentreLong }, rangeSetting / 2, 250, 0);
+            setMapParams(newMapParams);
         });
     }, [planCentreLat, planCentreLong, rangeSetting]);
 

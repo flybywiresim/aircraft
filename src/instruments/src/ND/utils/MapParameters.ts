@@ -11,12 +11,9 @@ export class MapParameters {
 
     public nmRadius: number;
 
-    public version = 0;
-
     public valid = false;
 
     compute(centerCoordinates: Coordinates, nmRadius: number, pxRadius: number, mapUpTrueDeg: number): void {
-        this.version++;
         this.valid = Number.isFinite(centerCoordinates.lat) && Number.isFinite(centerCoordinates.long) && Number.isFinite(pxRadius) && Number.isFinite(mapUpTrueDeg);
 
         this.mapUpTrueDeg = mapUpTrueDeg;
