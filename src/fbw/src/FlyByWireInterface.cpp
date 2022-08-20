@@ -1846,15 +1846,12 @@ bool FlyByWireInterface::updateFoSide(double sampleTime) {
   auto simData = simConnectInterface.getSimData();
 
   // FD Button
-  if (additionalData.syncFoEfisEnabled && simData.ap_fd_1_active != simData.ap_fd_2_active)
-  {
-    if (last_fd1_active != simData.ap_fd_1_active)
-    {
+  if (additionalData.syncFoEfisEnabled && simData.ap_fd_1_active != simData.ap_fd_2_active) {
+    if (last_fd1_active != simData.ap_fd_1_active) {
       simConnectInterface.sendEvent(SimConnectInterface::Events::TOGGLE_FLIGHT_DIRECTOR, 2);
     }
     
-    if (last_fd2_active != simData.ap_fd_2_active)
-    {
+    if (last_fd2_active != simData.ap_fd_2_active) {
       simConnectInterface.sendEvent(SimConnectInterface::Events::TOGGLE_FLIGHT_DIRECTOR, 1);
     }
   }
@@ -1862,15 +1859,12 @@ bool FlyByWireInterface::updateFoSide(double sampleTime) {
   last_fd2_active = simData.ap_fd_2_active;
 
   // LS Button
-  if (additionalData.syncFoEfisEnabled && additionalData.ls1Active != additionalData.ls2Active)
-  {
-    if (last_ls1_active != additionalData.ls1Active)
-    {
+  if (additionalData.syncFoEfisEnabled && additionalData.ls1Active != additionalData.ls2Active) {
+    if (last_ls1_active != additionalData.ls1Active) {
       idLs2Active->set(additionalData.ls1Active);
     }
     
-    if (last_ls2_active != additionalData.ls2Active)
-    {
+    if (last_ls2_active != additionalData.ls2Active) {
       idLs1Active->set(additionalData.ls2Active);
     }
   }
