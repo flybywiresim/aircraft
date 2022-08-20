@@ -164,11 +164,11 @@ export const ChartViewer = () => {
 
     // The functions that handle rotation get the closest 45 degree angle increment to the current angle
     const handleRotateRight = () => {
-        dispatch(editTabProperty({ tab: currentTab, chartRotation: chartRotation + (45 - chartRotation % 45) }));
+        dispatch(editTabProperty({ tab: currentTab, chartRotation: chartRotation + (90 - chartRotation % 90) }));
     };
 
     const handleRotateLeft = () => {
-        dispatch(editTabProperty({ tab: currentTab, chartRotation: chartRotation - (45 + chartRotation % 45) }));
+        dispatch(editTabProperty({ tab: currentTab, chartRotation: chartRotation - (90 + chartRotation % 90) }));
     };
 
     useEffect(() => {
