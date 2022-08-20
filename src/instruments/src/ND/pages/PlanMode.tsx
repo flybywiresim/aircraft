@@ -1,4 +1,4 @@
-import React, { FC, memo, useEffect, useState } from 'react';
+import React, { FC, memo, useEffect, useState, useRef } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { EfisSide, NdSymbol } from '@shared/NavigationDisplay';
@@ -22,10 +22,19 @@ export const PlanMode: FC<PlanModeProps> = ({ side, symbols, adirsAlign, rangeSe
 
     const [trueHeading] = useSimVar('PLANE HEADING DEGREES TRUE', 'degrees');
 
-    const [mapParams] = useState<MapParameters>(new MapParameters());
+    const [mapParams, setMapParams] = useState<MapParameters>(new MapParameters());
+    const debounce = useRef();
 
     useEffect(() => {
-        mapParams.compute({ lat: planCentreLat, long: planCentreLong }, rangeSetting / 2, 250, 0);
+        clearTimeout(debounce.current);
+        debounce.current = setTimeout(() => {
+            setMapParams((oldMapParams) => {
+                const newMapParams = new MapParameters();
+                newMapParams.version = oldMapParams.version;
+                newMapParams.compute({ lat: planCentreLat, long: planCentreLong }, rangeSetting / 2, 250, 0);
+                return newMapParams;
+            });
+        });
     }, [planCentreLat, planCentreLong, rangeSetting]);
 
     return (
@@ -40,7 +49,6 @@ export const PlanMode: FC<PlanModeProps> = ({ side, symbols, adirsAlign, rangeSe
                     range={rangeSetting}
                     symbols={symbols}
                     mapParams={mapParams}
-                    mapParamsVersion={mapParams.version}
                     debug={false}
                 />
             </g>
