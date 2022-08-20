@@ -34,4 +34,7 @@ struct AdditionalData {
   double tillerHandlePosition;
   double noseWheelPosition;
   unsigned long long syncFoEfisEnabled;
+  unsigned long long ls1Active;
+  unsigned long long ls2Active;
+  unsigned long long IsisLsActive;
 };
