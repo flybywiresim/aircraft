@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { ArrowReturnRight } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
+import { usePersistentProperty } from '@instruments/common/persistence';
 import { t } from '../../../translation';
 import { LocalFileChart, LocalFileChartSelector, LocalFileOrganizedCharts } from './LocalFileChartSelector';
 import { ScrollableContainer } from '../../../UtilComponents/ScrollableContainer';
@@ -10,6 +11,7 @@ import { useAppDispatch, useAppSelector } from '../../../Store/store';
 import { isSimbriefDataLoaded } from '../../../Store/features/simBrief';
 import { NavigationTab, editTabProperty } from '../../../Store/features/navigationPage';
 import { ChartViewer } from '../../Navigation';
+import { Viewer } from '../../../../../../simbridge-client/src';
 
 interface LocalFileCharts {
     images: LocalFileChart[];
@@ -18,6 +20,8 @@ interface LocalFileCharts {
 
 export const LocalFileChartUI = () => {
     const dispatch = useAppDispatch();
+
+    const [simbridgeEnabled] = usePersistentProperty('CONFIG_SIMBRIDGE_ENABLED', 'AUTO ON');
 
     const [statusBarInfo, setStatusBarInfo] = useState('');
 
@@ -88,13 +92,14 @@ export const LocalFileChartUI = () => {
         const pdfs: LocalFileChart[] = [];
         const images: LocalFileChart[] = [];
 
+        if (simbridgeEnabled !== 'AUTO ON') {
+            return { images, pdfs }; // No need to search if simbridge is not enabled
+        }
+
         try {
             // IMAGE or BOTH
             if (selectedTabIndex === 0 || selectedTabIndex === 2) {
-                const resp = await fetch('http://localhost:8380/api/v1/utility/image/list');
-
-                const imageNames: string[] = await resp.json();
-
+                const imageNames: string[] = await Viewer.getImageList();
                 imageNames.forEach((imageName) => {
                     if (imageName.toUpperCase().includes(searchQuery)) {
                         images.push({
@@ -107,9 +112,7 @@ export const LocalFileChartUI = () => {
 
             // PDF or BOTH
             if (selectedTabIndex === 1 || selectedTabIndex === 2) {
-                const resp = await fetch('http://localhost:8380/api/v1/utility/pdf/list');
-                const pdfNames: string[] = await resp.json();
-
+                const pdfNames: string[] = await Viewer.getPDFList();
                 pdfNames.forEach((pdfName) => {
                     if (pdfName.toUpperCase().includes(searchQuery)) {
                         pdfs.push({

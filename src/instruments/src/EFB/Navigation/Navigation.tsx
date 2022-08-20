@@ -32,12 +32,12 @@ import {
 import { PageLink, PageRedirect, TabRoutes } from '../Utils/routing';
 import { Navbar } from '../UtilComponents/Navbar';
 import { NavigraphPage } from './Pages/NavigraphPage/NavigraphPage';
-import { getPdfUrl } from './Pages/LocalFilesPage/LocalFilesPage';
+import { LocalFilesPage, getPdfUrl } from './Pages/LocalFilesPage/LocalFilesPage';
 import { PinnedChartUI } from './Pages/PinnedChartsPage';
 
 export const navigationTabs: (PageLink & {associatedTab: NavigationTab})[] = [
     { name: 'Navigraph', alias: '', component: <NavigraphPage />, associatedTab: NavigationTab.NAVIGRAPH },
-    // { name: 'Local Files', alias: '', component: <LocalFilesPage />, associatedTab: NavigationTab.LOCAL_FILES },
+    { name: 'Local Files', alias: '', component: <LocalFilesPage />, associatedTab: NavigationTab.LOCAL_FILES },
     { name: 'Pinned Charts', alias: '', component: <PinnedChartUI />, associatedTab: NavigationTab.PINNED_CHARTS },
 ];
 
@@ -46,8 +46,8 @@ export const Navigation = () => {
 
     if (navigationTabs) {
         navigationTabs[0].alias = t('NavigationAndCharts.Navigraph.Title');
-        // navigationTabs[1].alias = t('NavigationAndCharts.LocalFiles.Title');
-        navigationTabs[1].alias = t('NavigationAndCharts.PinnedCharts.Title');
+        navigationTabs[1].alias = t('NavigationAndCharts.LocalFiles.Title');
+        navigationTabs[2].alias = t('NavigationAndCharts.PinnedCharts.Title');
     }
 
     return (
@@ -204,9 +204,13 @@ export const ChartViewer = () => {
 
     useEffect(() => {
         if (pagesViewable > 1) {
-            getPdfUrl(chartId, currentPage).then((url) => {
-                dispatch(editTabProperty({ tab: currentTab, chartName: { light: url, dark: url } }));
-            });
+            getPdfUrl(chartId, currentPage)
+                .then((url) => {
+                    dispatch(editTabProperty({ tab: currentTab, chartName: { light: url, dark: url } }));
+                })
+                .catch((error) => {
+                    console.log(`Error: ${error}`);
+                });
         }
     }, [currentPage]);
 
@@ -429,9 +433,9 @@ export const ChartViewer = () => {
                                             const chartHeightExceedsBoundary = chartRef.current.clientHeight > ref.current.clientHeight;
 
                                             const offsetY = chartHeightExceedsBoundary ? 0 : (ref.current.clientHeight - (chartRef.current.clientHeight * newScale)) / 2;
-                                            console.log(state.scale, newScale);
+                                            // console.log(state.scale, newScale);
                                             if (state.scale === newScale) {
-                                                console.log('called');
+                                                // console.log('called');
                                                 setTransform(0, offsetY, newScale);
                                                 dispatch(editTabProperty({
                                                     tab: currentTab,

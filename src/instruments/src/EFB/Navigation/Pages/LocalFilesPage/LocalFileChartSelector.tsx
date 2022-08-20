@@ -1,6 +1,7 @@
 import React from 'react';
 import { CloudArrowDown, PinFill, Pin } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
+import { usePersistentProperty } from '@instruments/common/persistence';
 import { t } from '../../../translation';
 import {
     NavigationTab,
@@ -15,6 +16,7 @@ import {
 } from '../../../Store/features/navigationPage';
 import { useAppDispatch, useAppSelector } from '../../../Store/store';
 import { navigationTabs } from '../../Navigation';
+import { Viewer } from '../../../../../../simbridge-client/src';
 
 export type LocalFileChart = {
     fileName: string;
@@ -33,6 +35,8 @@ interface LocalFileChartSelectorProps {
 
 export const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartSelectorProps) => {
     const dispatch = useAppDispatch();
+
+    const [simbridgeEnabled] = usePersistentProperty('CONFIG_SIMBRIDGE_ENABLED', 'AUTO ON');
 
     const { chartId, selectedTabIndex } = useAppSelector((state) => state.navigationTab[NavigationTab.LOCAL_FILES]);
     const { pinnedCharts } = useAppSelector((state) => state.navigationTab);
@@ -59,26 +63,35 @@ export const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartS
         );
     }
 
-    const getChartResourceUrl = async (chart: LocalFileChart) => {
-        const resp = await fetch(chart.type === 'PDF'
-            ? `http://localhost:8380/api/v1/utility/pdf?filename=${chart.fileName}&pagenumber=1`
-            : `http://localhost:8380/api/v1/utility/image?filename=${chart.fileName}`);
-
-        if (!resp.ok) {
+    const getChartResourceUrl = async (chart: LocalFileChart): Promise<string> => {
+        if (simbridgeEnabled !== 'AUTO ON') {
             return Promise.reject();
         }
-
-        const blob = await resp.blob();
-        return URL.createObjectURL(blob);
+        try {
+            if (chart.type === 'PDF') {
+                const blob = await Viewer.getPDFPage(chart.fileName, 1);
+                return URL.createObjectURL(blob);
+            }
+            const blob = await Viewer.getImage(chart.fileName, 1);
+            return URL.createObjectURL(blob);
+        } catch (err) {
+            return Promise.reject();
+        }
     };
 
     const getPagesViewable = async (chart: LocalFileChart): Promise<number> => {
-        if (chart.type === 'PDF') {
-            const pageNumResp = await fetch(`http://localhost:8380/api/v1/utility/pdf/numpages?filename=${chart.fileName}`);
-            return pageNumResp.json();
+        if (simbridgeEnabled !== 'AUTO ON') {
+            return Promise.reject();
         }
-
-        return 1;
+        if (chart.type === 'PDF') {
+            try {
+                const pageNumResp = await Viewer.getPDFPageNum(chart.fileName);
+                return pageNumResp.valueOf();
+            } catch (err) {
+                return Promise.reject();
+            }
+        }
+        return 1; // return 1 if called on a non-pdf file
     };
 
     const handleChartClick = async (chart: LocalFileChart) => {
