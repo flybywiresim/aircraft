@@ -56,6 +56,135 @@ impl SimulationElement for ElecMotor {
     }
 }
 
+trait YawDamperActuatorController {
+    fn is_solenoid_energized(&self) -> bool;
+    fn position_request(&self) -> Ratio;
+}
+
+struct YawDamperActuator {
+    current_ratio: LowPassFilter<Ratio>,
+    is_control_active: bool,
+}
+impl YawDamperActuator {
+    const POSITION_FILTER_TIME_CONSTANT: Duration = Duration::from_millis(1500);
+    const POSITION_FILTER_MECHANICAL_CENTERING_TIME_CONSTANT: Duration =
+        Duration::from_millis(3000);
+
+    const MIN_HYD_PRESS_FOR_ACTIVE_MODE_PSI: f64 = 1500.;
+    const REFERENCE_HYD_PRESS_FOR_MAX_SPEED_PSI: f64 = 3000.;
+
+    fn new() -> Self {
+        Self {
+            current_ratio: LowPassFilter::<Ratio>::new_with_init_value(
+                Self::POSITION_FILTER_TIME_CONSTANT,
+                Ratio::new::<ratio>(0.5),
+            ),
+            is_control_active: false,
+        }
+    }
+
+    fn update(
+        &mut self,
+        context: &UpdateContext,
+        actuator_controller: &impl YawDamperActuatorController,
+        current_pressure: Pressure,
+    ) {
+        if current_pressure.get::<psi>() > Self::MIN_HYD_PRESS_FOR_ACTIVE_MODE_PSI
+            && actuator_controller.is_solenoid_energized()
+        {
+            self.update_time_constant_from_pressure(current_pressure);
+
+            self.current_ratio.update(
+                context.delta(),
+                actuator_controller
+                    .position_request()
+                    .min(Ratio::new::<ratio>(1.))
+                    .max(Ratio::new::<ratio>(0.)),
+            );
+
+            self.is_control_active = true;
+        } else {
+            self.update_time_constant_for_spring_centering();
+            self.current_ratio
+                .update(context.delta(), Ratio::new::<ratio>(0.5));
+            self.is_control_active = false;
+        }
+    }
+
+    fn update_time_constant_from_pressure(&mut self, pressure: Pressure) {
+        let pressure_speed_ratio =
+            pressure.get::<psi>() / Self::REFERENCE_HYD_PRESS_FOR_MAX_SPEED_PSI;
+
+        self.current_ratio
+            .set_time_constant(Duration::from_secs_f64(
+                Self::POSITION_FILTER_TIME_CONSTANT.as_secs_f64() * pressure_speed_ratio,
+            ));
+    }
+
+    fn update_time_constant_for_spring_centering(&mut self) {
+        self.current_ratio
+            .set_time_constant(Self::POSITION_FILTER_MECHANICAL_CENTERING_TIME_CONSTANT);
+    }
+
+    fn is_control_active(&self) -> bool {
+        self.is_control_active
+    }
+
+    fn position_normalized(&self) -> Ratio {
+        self.current_ratio.output()
+    }
+
+    fn set_slaved_position(&mut self, master_actuator_position_normalized: Ratio) {
+        self.current_ratio
+            .reset(master_actuator_position_normalized);
+    }
+}
+
+struct YawDamperMechanism {
+    actuators: [YawDamperActuator; 2],
+}
+impl YawDamperMechanism {
+    const RATIO_TO_ANGLE_GAIN: f64 = 50.;
+
+    fn new() -> Self {
+        Self {
+            actuators: [YawDamperActuator::new(), YawDamperActuator::new()],
+        }
+    }
+
+    fn update(
+        &mut self,
+        context: &UpdateContext,
+        controllers: [&impl YawDamperActuatorController; 2],
+        pressures: [Pressure; 2],
+    ) {
+        self.actuators[0].update(context, controllers[0], pressures[0]);
+        self.actuators[1].update(context, controllers[1], pressures[1]);
+
+        self.update_position_of_slaved_actuator();
+    }
+
+    fn update_position_of_slaved_actuator(&mut self) {
+        if self.actuators[0].is_control_active() {
+            self.actuators[1].set_slaved_position(self.actuators[0].position_normalized());
+        } else if self.actuators[1].is_control_active() {
+            self.actuators[0].set_slaved_position(self.actuators[1].position_normalized());
+        }
+    }
+
+    fn position_angle(&self) -> Angle {
+        let position_normalized = if self.actuators[0].is_control_active() {
+            self.actuators[0].position_normalized()
+        } else if self.actuators[1].is_control_active() {
+            self.actuators[1].position_normalized()
+        } else {
+            (self.actuators[0].position_normalized() + self.actuators[1].position_normalized()) / 2.
+        };
+
+        Angle::new::<degree>((position_normalized.get::<ratio>() - 0.5) * Self::RATIO_TO_ANGLE_GAIN)
+    }
+}
+
 pub trait AngularPositioningController {
     fn commanded_position(&self) -> [Angle; 2];
     fn energised_motor(&self) -> [bool; 2];
