@@ -1,6 +1,6 @@
 import fs from 'fs';
 import { join } from 'path';
-import { ExecTask } from '@flybywiresim/igniter';
+import { ExecTask } from '@saschl/igniter';
 import { Directories } from '../directories.mjs';
 
 const ecamPages = [

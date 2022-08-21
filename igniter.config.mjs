@@ -1,4 +1,4 @@
-import { ExecTask, TaskOfTasks } from '@flybywiresim/igniter';
+import { ExecTask, TaskOfTasks } from '@saschl/igniter';
 import { getInstrumentsIgniterTasks } from './src/instruments/buildSrc/igniter/tasks.mjs';
 
 export default new TaskOfTasks('a32nx', [
