@@ -10,7 +10,7 @@ use uom::si::{
     pressure::psi,
     ratio::ratio,
     volume::gallon,
-    volume_rate::gallon_per_minute,
+    volume_rate::{gallon_per_minute, gallon_per_second},
 };
 
 use crate::shared::{
@@ -58,12 +58,15 @@ impl SimulationElement for ElecMotor {
 
 trait YawDamperActuatorController {
     fn is_solenoid_energized(&self) -> bool;
-    fn position_request(&self) -> Ratio;
+    fn angle_request(&self) -> Angle;
 }
 
 struct YawDamperActuator {
-    current_ratio: LowPassFilter<Ratio>,
+    angle: LowPassFilter<Angle>,
+    last_angle: Angle,
     is_control_active: bool,
+
+    flow: VolumeRate,
 }
 impl YawDamperActuator {
     const POSITION_FILTER_TIME_CONSTANT: Duration = Duration::from_millis(1500);
@@ -72,14 +75,20 @@ impl YawDamperActuator {
 
     const MIN_HYD_PRESS_FOR_ACTIVE_MODE_PSI: f64 = 1500.;
     const REFERENCE_HYD_PRESS_FOR_MAX_SPEED_PSI: f64 = 3000.;
+    const VOLUME_GAIN_DEG_TO_GALLON: f64 = 0.01;
+
+    const MAX_ANGLE_DEGREE: f64 = 25.;
 
     fn new() -> Self {
         Self {
-            current_ratio: LowPassFilter::<Ratio>::new_with_init_value(
+            angle: LowPassFilter::<Angle>::new_with_init_value(
                 Self::POSITION_FILTER_TIME_CONSTANT,
-                Ratio::new::<ratio>(0.5),
+                Angle::default(),
             ),
             is_control_active: false,
+            last_angle: Angle::default(),
+
+            flow: VolumeRate::default(),
         }
     }
 
@@ -94,35 +103,37 @@ impl YawDamperActuator {
         {
             self.update_time_constant_from_pressure(current_pressure);
 
-            self.current_ratio.update(
+            self.angle.update(
                 context.delta(),
                 actuator_controller
-                    .position_request()
-                    .min(Ratio::new::<ratio>(1.))
-                    .max(Ratio::new::<ratio>(0.)),
+                    .angle_request()
+                    .min(Angle::new::<degree>(Self::MAX_ANGLE_DEGREE))
+                    .max(-Angle::new::<degree>(Self::MAX_ANGLE_DEGREE)),
             );
 
             self.is_control_active = true;
         } else {
             self.update_time_constant_for_spring_centering();
-            self.current_ratio
-                .update(context.delta(), Ratio::new::<ratio>(0.5));
+            self.angle.update(context.delta(), Angle::default());
             self.is_control_active = false;
         }
+
+        self.update_hyd_flow(context);
+
+        self.last_angle = self.angle.output();
     }
 
     fn update_time_constant_from_pressure(&mut self, pressure: Pressure) {
         let pressure_speed_ratio =
             pressure.get::<psi>() / Self::REFERENCE_HYD_PRESS_FOR_MAX_SPEED_PSI;
 
-        self.current_ratio
-            .set_time_constant(Duration::from_secs_f64(
-                Self::POSITION_FILTER_TIME_CONSTANT.as_secs_f64() * pressure_speed_ratio,
-            ));
+        self.angle.set_time_constant(Duration::from_secs_f64(
+            Self::POSITION_FILTER_TIME_CONSTANT.as_secs_f64() * 1. / pressure_speed_ratio,
+        ));
     }
 
     fn update_time_constant_for_spring_centering(&mut self) {
-        self.current_ratio
+        self.angle
             .set_time_constant(Self::POSITION_FILTER_MECHANICAL_CENTERING_TIME_CONSTANT);
     }
 
@@ -130,13 +141,25 @@ impl YawDamperActuator {
         self.is_control_active
     }
 
-    fn position_normalized(&self) -> Ratio {
-        self.current_ratio.output()
+    fn angle(&self) -> Angle {
+        self.angle.output()
     }
 
-    fn set_slaved_position(&mut self, master_actuator_position_normalized: Ratio) {
-        self.current_ratio
-            .reset(master_actuator_position_normalized);
+    fn set_slaved_position(&mut self, master_actuator_angle: Angle) {
+        self.angle.reset(master_actuator_angle);
+    }
+
+    fn update_hyd_flow(&mut self, context: &UpdateContext) {
+        self.flow = if self.is_control_active() {
+            let delta_position = (self.angle() - self.last_angle).abs();
+
+            VolumeRate::new::<gallon_per_second>(
+                delta_position.get::<degree>() * Self::VOLUME_GAIN_DEG_TO_GALLON
+                    / context.delta_as_secs_f64(),
+            )
+        } else {
+            VolumeRate::default()
+        };
     }
 }
 
@@ -144,8 +167,6 @@ struct YawDamperMechanism {
     actuators: [YawDamperActuator; 2],
 }
 impl YawDamperMechanism {
-    const RATIO_TO_ANGLE_GAIN: f64 = 50.;
-
     fn new() -> Self {
         Self {
             actuators: [YawDamperActuator::new(), YawDamperActuator::new()],
@@ -166,22 +187,20 @@ impl YawDamperMechanism {
 
     fn update_position_of_slaved_actuator(&mut self) {
         if self.actuators[0].is_control_active() {
-            self.actuators[1].set_slaved_position(self.actuators[0].position_normalized());
+            self.actuators[1].set_slaved_position(self.actuators[0].angle());
         } else if self.actuators[1].is_control_active() {
-            self.actuators[0].set_slaved_position(self.actuators[1].position_normalized());
+            self.actuators[0].set_slaved_position(self.actuators[1].angle());
         }
     }
 
-    fn position_angle(&self) -> Angle {
-        let position_normalized = if self.actuators[0].is_control_active() {
-            self.actuators[0].position_normalized()
+    fn angle(&self) -> Angle {
+        if self.actuators[0].is_control_active() {
+            self.actuators[0].angle()
         } else if self.actuators[1].is_control_active() {
-            self.actuators[1].position_normalized()
+            self.actuators[1].angle()
         } else {
-            (self.actuators[0].position_normalized() + self.actuators[1].position_normalized()) / 2.
-        };
-
-        Angle::new::<degree>((position_normalized.get::<ratio>() - 0.5) * Self::RATIO_TO_ANGLE_GAIN)
+            (self.actuators[0].angle() + self.actuators[1].angle()) / 2.
+        }
     }
 }
 
@@ -411,6 +430,7 @@ impl SimulationElement for RudderTravelLimiter {
 struct RudderMechanicalControl {
     travel_limiter: RudderTravelLimiter,
     trim: RudderTrimActuator,
+    yaw_damper: YawDamperMechanism,
 
     final_actuators_input: Angle,
 }
@@ -419,6 +439,7 @@ impl RudderMechanicalControl {
         Self {
             travel_limiter: RudderTravelLimiter::new(context),
             trim: RudderTrimActuator::new(context),
+            yaw_damper: YawDamperMechanism::new(),
 
             final_actuators_input: Angle::default(),
         }
@@ -430,14 +451,19 @@ impl RudderMechanicalControl {
         rudder_pedal_position_requested: Angle,
         trim_controller: &impl AngularPositioningController,
         travel_limiter_controller: &impl AngularPositioningController,
+        yaw_damper_controllers: [&impl YawDamperActuatorController; 2],
+        pressures: [Pressure; 2],
     ) {
         self.travel_limiter
             .update(context, travel_limiter_controller);
         self.trim.update(context, trim_controller);
+        self.yaw_damper
+            .update(context, yaw_damper_controllers, pressures);
 
-        self.final_actuators_input = (rudder_pedal_position_requested + self.trim.angle())
-            .min(self.travel_limiter.max())
-            .max(self.travel_limiter.min())
+        self.final_actuators_input =
+            (rudder_pedal_position_requested + self.trim.angle() + self.yaw_damper.angle())
+                .min(self.travel_limiter.max())
+                .max(self.travel_limiter.min())
     }
 }
 impl SimulationElement for RudderMechanicalControl {
@@ -493,11 +519,40 @@ mod tests {
         }
     }
 
+    struct TestYawDamperController {
+        energized_relay: bool,
+        position_request: Angle,
+    }
+    impl TestYawDamperController {
+        fn default() -> Self {
+            Self {
+                energized_relay: false,
+                position_request: Angle::default(),
+            }
+        }
+
+        fn set_active(&mut self, energized_relay: bool, position_request: Angle) {
+            self.energized_relay = energized_relay;
+            self.position_request = position_request;
+        }
+    }
+    impl YawDamperActuatorController for TestYawDamperController {
+        fn angle_request(&self) -> Angle {
+            self.position_request
+        }
+
+        fn is_solenoid_energized(&self) -> bool {
+            self.energized_relay
+        }
+    }
+
     struct TestAircraft {
         updater_fixed_step: FixedStepLoop,
 
         trim_controller: TestPositionController,
         limiter_controller: TestPositionController,
+        green_yaw_damper_controller: TestYawDamperController,
+        yellow_yaw_damper_controller: TestYawDamperController,
         rudder_pedal_input: Angle,
 
         rudder_control: RudderMechanicalControl,
@@ -515,6 +570,8 @@ mod tests {
                 updater_fixed_step: FixedStepLoop::new(Duration::from_millis(33)),
                 trim_controller: TestPositionController::default(),
                 limiter_controller: TestPositionController::default(),
+                green_yaw_damper_controller: TestYawDamperController::default(),
+                yellow_yaw_damper_controller: TestYawDamperController::default(),
                 rudder_pedal_input: Angle::default(),
 
                 rudder_control: RudderMechanicalControl::new(context),
@@ -561,6 +618,13 @@ mod tests {
         fn set_no_elec_power(&mut self) {
             self.is_elec_powered = false;
         }
+
+        fn set_yaw_damper_states(&mut self, energized_relays: [bool; 2], angle_demand: [Angle; 2]) {
+            self.green_yaw_damper_controller
+                .set_active(energized_relays[0], angle_demand[0]);
+            self.yellow_yaw_damper_controller
+                .set_active(energized_relays[1], angle_demand[1])
+        }
     }
     impl Aircraft for TestAircraft {
         fn update_before_power_distribution(
@@ -587,6 +651,11 @@ mod tests {
                     self.rudder_pedal_input,
                     &self.trim_controller,
                     &self.limiter_controller,
+                    [
+                        &self.green_yaw_damper_controller,
+                        &self.yellow_yaw_damper_controller,
+                    ],
+                    self.hydraulic_pressures,
                 );
 
                 println!(
@@ -731,5 +800,110 @@ mod tests {
 
         let final_rudder_deflection: Angle = test_bed.query(|a| a.final_rudder_demand());
         assert!((final_rudder_deflection.get::<degree>() - -3.5).abs() < 0.1);
+    }
+
+    #[test]
+    fn yaw_damper_not_moving_without_pressure() {
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
+
+        test_bed
+            .command(|a| a.set_hyd_pressure([Pressure::new::<psi>(0.), Pressure::new::<psi>(0.)]));
+        test_bed.command(|a| {
+            a.set_yaw_damper_states(
+                [true, false],
+                [Angle::new::<degree>(5.), Angle::new::<degree>(5.)],
+            )
+        });
+
+        test_bed.run_with_delta(Duration::from_millis(6000));
+
+        let final_rudder_deflection: Angle = test_bed.query(|a| a.final_rudder_demand());
+        assert!(final_rudder_deflection.get::<degree>().abs() < 0.1);
+    }
+
+    #[test]
+    fn yaw_damper_green_moving_with_pressure() {
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
+
+        test_bed.command(|a| {
+            a.set_hyd_pressure([Pressure::new::<psi>(3000.), Pressure::new::<psi>(0.)])
+        });
+        test_bed.command(|a| {
+            a.set_yaw_damper_states(
+                [true, false],
+                [Angle::new::<degree>(5.), Angle::new::<degree>(5.)],
+            )
+        });
+
+        test_bed.run_with_delta(Duration::from_millis(6000));
+
+        let final_rudder_deflection: Angle = test_bed.query(|a| a.final_rudder_demand());
+        assert!((final_rudder_deflection.get::<degree>() - 5.).abs() < 0.1);
+    }
+
+    #[test]
+    fn yaw_damper_green_moving_back_to_center_without_pressure() {
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
+
+        test_bed.command(|a| {
+            a.set_hyd_pressure([Pressure::new::<psi>(3000.), Pressure::new::<psi>(0.)])
+        });
+        test_bed.command(|a| {
+            a.set_yaw_damper_states(
+                [true, false],
+                [Angle::new::<degree>(15.), Angle::new::<degree>(5.)],
+            )
+        });
+
+        test_bed.run_with_delta(Duration::from_millis(10000));
+
+        let final_rudder_deflection: Angle = test_bed.query(|a| a.final_rudder_demand());
+        assert!((final_rudder_deflection.get::<degree>() - 15.).abs() < 0.1);
+
+        test_bed
+            .command(|a| a.set_hyd_pressure([Pressure::new::<psi>(0.), Pressure::new::<psi>(0.)]));
+        test_bed.command(|a| {
+            a.set_yaw_damper_states(
+                [true, false],
+                [Angle::new::<degree>(15.), Angle::new::<degree>(5.)],
+            )
+        });
+
+        test_bed.run_with_delta(Duration::from_millis(20000));
+
+        let final_rudder_deflection: Angle = test_bed.query(|a| a.final_rudder_demand());
+        assert!((final_rudder_deflection.get::<degree>() - 0.).abs() < 0.1);
+    }
+
+    #[test]
+    fn yaw_damper_green_moving_back_to_center_without_energized_relay() {
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
+
+        test_bed.command(|a| {
+            a.set_hyd_pressure([Pressure::new::<psi>(3000.), Pressure::new::<psi>(0.)])
+        });
+        test_bed.command(|a| {
+            a.set_yaw_damper_states(
+                [true, false],
+                [Angle::new::<degree>(15.), Angle::new::<degree>(5.)],
+            )
+        });
+
+        test_bed.run_with_delta(Duration::from_millis(10000));
+
+        let final_rudder_deflection: Angle = test_bed.query(|a| a.final_rudder_demand());
+        assert!((final_rudder_deflection.get::<degree>() - 15.).abs() < 0.1);
+
+        test_bed.command(|a| {
+            a.set_yaw_damper_states(
+                [false, false],
+                [Angle::new::<degree>(15.), Angle::new::<degree>(5.)],
+            )
+        });
+
+        test_bed.run_with_delta(Duration::from_millis(20000));
+
+        let final_rudder_deflection: Angle = test_bed.query(|a| a.final_rudder_demand());
+        assert!((final_rudder_deflection.get::<degree>() - 0.).abs() < 0.1);
     }
 }
