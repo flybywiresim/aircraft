@@ -4,8 +4,8 @@ use crate::simulation::{
 };
 
 use uom::si::{
-    angle::{degree, radian},
-    angular_velocity::{degree_per_second, radian_per_second, revolution_per_minute},
+    angle::degree,
+    angular_velocity::degree_per_second,
     f64::*,
     pressure::psi,
     ratio::ratio,
@@ -13,9 +13,9 @@ use uom::si::{
     volume_rate::{gallon_per_minute, gallon_per_second},
 };
 
-use crate::shared::{
-    interpolation, low_pass_filter::LowPassFilter, ElectricalBusType, ElectricalBuses,
-};
+use crate::shared::{low_pass_filter::LowPassFilter, ElectricalBusType, ElectricalBuses};
+
+use super::linear_actuator::Actuator;
 
 use std::time::Duration;
 
@@ -67,6 +67,9 @@ struct YawDamperActuator {
     is_control_active: bool,
 
     flow: VolumeRate,
+
+    total_volume_to_actuator: Volume,
+    total_volume_to_reservoir: Volume,
 }
 impl YawDamperActuator {
     const POSITION_FILTER_TIME_CONSTANT: Duration = Duration::from_millis(1500);
@@ -75,7 +78,7 @@ impl YawDamperActuator {
 
     const MIN_HYD_PRESS_FOR_ACTIVE_MODE_PSI: f64 = 1500.;
     const REFERENCE_HYD_PRESS_FOR_MAX_SPEED_PSI: f64 = 3000.;
-    const VOLUME_GAIN_DEG_TO_GALLON: f64 = 0.01;
+    const VOLUME_GAIN_DEG_TO_GALLON: f64 = 0.005;
 
     const MAX_ANGLE_DEGREE: f64 = 25.;
 
@@ -89,6 +92,9 @@ impl YawDamperActuator {
             last_angle: Angle::default(),
 
             flow: VolumeRate::default(),
+
+            total_volume_to_actuator: Volume::default(),
+            total_volume_to_reservoir: Volume::default(),
         }
     }
 
@@ -150,16 +156,32 @@ impl YawDamperActuator {
     }
 
     fn update_hyd_flow(&mut self, context: &UpdateContext) {
-        self.flow = if self.is_control_active() {
+        let total_volume = if self.is_control_active() {
             let delta_position = (self.angle() - self.last_angle).abs();
 
-            VolumeRate::new::<gallon_per_second>(
-                delta_position.get::<degree>() * Self::VOLUME_GAIN_DEG_TO_GALLON
-                    / context.delta_as_secs_f64(),
-            )
+            Volume::new::<gallon>(delta_position.get::<degree>() * Self::VOLUME_GAIN_DEG_TO_GALLON)
         } else {
-            VolumeRate::default()
+            Volume::default()
         };
+
+        self.total_volume_to_actuator += total_volume;
+        self.total_volume_to_reservoir = self.total_volume_to_actuator;
+
+        self.flow = total_volume / context.delta_as_time();
+    }
+}
+impl Actuator for YawDamperActuator {
+    fn used_volume(&self) -> Volume {
+        self.total_volume_to_actuator
+    }
+
+    fn reservoir_return(&self) -> Volume {
+        self.total_volume_to_reservoir
+    }
+
+    fn reset_volumes(&mut self) {
+        self.total_volume_to_reservoir = Volume::new::<gallon>(0.);
+        self.total_volume_to_actuator = Volume::new::<gallon>(0.);
     }
 }
 
@@ -201,6 +223,14 @@ impl YawDamperMechanism {
         } else {
             (self.actuators[0].angle() + self.actuators[1].angle()) / 2.
         }
+    }
+
+    fn green_actuator(&mut self) -> &mut impl Actuator {
+        &mut self.actuators[0]
+    }
+
+    fn yellow_actuator(&mut self) -> &mut impl Actuator {
+        &mut self.actuators[1]
     }
 }
 
@@ -465,6 +495,14 @@ impl RudderMechanicalControl {
                 .min(self.travel_limiter.max())
                 .max(self.travel_limiter.min())
     }
+
+    fn green_actuator(&mut self) -> &mut impl Actuator {
+        self.yaw_damper.green_actuator()
+    }
+
+    fn yellow_actuator(&mut self) -> &mut impl Actuator {
+        self.yaw_damper.yellow_actuator()
+    }
 }
 impl SimulationElement for RudderMechanicalControl {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
@@ -489,8 +527,6 @@ mod tests {
     use crate::simulation::test::{ReadByName, SimulationTestBed, TestBed};
     use crate::simulation::{Aircraft, SimulationElement};
     use std::time::Duration;
-
-    use rstest::rstest;
 
     struct TestPositionController {
         motor_active: [bool; 2],
@@ -659,11 +695,14 @@ mod tests {
                 );
 
                 println!(
-                    "TRIM DEMAND: {:.3} ,TRIM REAL POS {:.3}, LIMITER +/- {:.3} Final actuator input {:.3} ",
+                    "TRIM DEMAND: {:.3} ,TRIM REAL POS {:.3}, LIMITER +/- {:.3} Ydamper {:.3} Final actuator input {:.3} Flows gpm G Y {:.2} {:.2}",
                     self.trim_controller.commanded_position()[0].get::<degree>(),
                     self.rudder_control.trim.mechanism.angle.get::<degree>(),
                     self.rudder_control.travel_limiter.mechanism.angle.get::<degree>(),
+                    self.rudder_control.yaw_damper.angle().get::<degree>(),
                     self.rudder_control.final_actuators_input.get::<degree>(),
+                    self.rudder_control.yaw_damper.actuators[0].flow.get::<gallon_per_minute>(),
+                    self.rudder_control.yaw_damper.actuators[1].flow.get::<gallon_per_minute>()
                 );
             }
         }
