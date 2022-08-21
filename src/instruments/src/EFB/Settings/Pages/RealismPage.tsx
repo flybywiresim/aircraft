@@ -122,7 +122,7 @@ export const RealismPage = () => {
                 )}
             </SettingGroup>
 
-            <SettingItem name={t('Settings.Realism.SyncEfis')}>
+            <SettingItem name={t('Settings.Realism.SyncEfis')} unrealistic>
                 <Toggle value={!!syncEfis} onToggle={(value) => setFoEfis(value ? 1 : 0)} />
             </SettingItem>
 

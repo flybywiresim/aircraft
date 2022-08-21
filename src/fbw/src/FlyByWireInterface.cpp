@@ -773,11 +773,11 @@ bool FlyByWireInterface::updateAdditionalData(double sampleTime) {
   additionalData.tillerHandlePosition = idTillerHandlePosition->get();
   additionalData.noseWheelPosition = idNoseWheelPosition->get();
 
-  additionalData.syncFoEfisEnabled = idSyncFoEfisEnabled->get() == 1;
+  additionalData.syncFoEfisEnabled = idSyncFoEfisEnabled->get();
 
-  additionalData.ls1Active = idLs1Active->get() == 1;
-  additionalData.ls2Active = idLs2Active->get() == 1;
-  additionalData.IsisLsActive = idIsisLsActive->get() == 1;
+  additionalData.ls1Active = idLs1Active->get();
+  additionalData.ls2Active = idLs2Active->get();
+  additionalData.IsisLsActive = idIsisLsActive->get();
 
   return true;
 }

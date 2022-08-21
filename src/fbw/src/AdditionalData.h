@@ -33,8 +33,8 @@ struct AdditionalData {
   unsigned long long realisticTillerEnabled;
   double tillerHandlePosition;
   double noseWheelPosition;
-  unsigned long long syncFoEfisEnabled;
-  unsigned long long ls1Active;
-  unsigned long long ls2Active;
-  unsigned long long IsisLsActive;
+  double syncFoEfisEnabled;
+  double ls1Active;
+  double ls2Active;
+  double IsisLsActive;
 };
