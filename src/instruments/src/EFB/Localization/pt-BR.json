@@ -478,6 +478,7 @@
       "PauseAtTod": "T/D Pause",
       "PauseAtTodDistance": "T/D Pause Distance (nm)",
       "SeparateTillerFromRudderInputs": "Separar controle de taxi do leme",
+      "SyncEfis": "Sync EFIS controls from Captain to FO",
       "Title": "Realismo"
     },
     "SimOptions": {
@@ -487,6 +488,7 @@
       "ConesEnabled": "Safety Cones",
       "DefaultBarometerUnit": "Unidade padrão do barômetro",
       "DynamicRegistrationDecal": "Registro dinâmico do decalque",
+      "EnableSimBridge": "Ativar conexão com o servidor MCDU (desativa automaticamente após 5 minutos se não houver conexão bem-sucedida)",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Ativar conexão com o servidor MCDU (desativa automaticamente após 5 minutos se não houver conexão bem-sucedida)",
       "ExternalMcduServerPort": "Porta externa de servidor MCDU",
       "Hpa": "hPa",
@@ -495,6 +497,7 @@
       "None": "Nenhum",
       "Off": "Desativado",
       "Save": "Salvar",
+      "SimBridgePort": "Porta externa de servidor MCDU",
       "SyncMsfsFlightPlan": "Sincronizar plano de voo do MSFS",
       "ThrottleDetents": "Manetes de potência",
       "Title": "Opções do Simulador",

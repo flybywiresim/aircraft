@@ -478,6 +478,7 @@
       "PauseAtTod": "T/D Pause",
       "PauseAtTodDistance": "T/D Pause Distance (nm)",
       "SeparateTillerFromRudderInputs": "Scheid Tiller van Roer invoer",
+      "SyncEfis": "Sync EFIS controls from Captain to FO",
       "Title": "Realisme"
     },
     "SimOptions": {
@@ -487,6 +488,7 @@
       "ConesEnabled": "Safety Cones",
       "DefaultBarometerUnit": "Standaard barometer-eenheid",
       "DynamicRegistrationDecal": "Dynamische Registratie Sticker",
+      "EnableSimBridge": "MCDU-serververbinding inschakelen (Deactiveert automatisch na 5 minuten als er geen succesvolle verbinding is)",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "MCDU-serververbinding inschakelen (Deactiveert automatisch na 5 minuten als er geen succesvolle verbinding is)",
       "ExternalMcduServerPort": "Externe MCDU Serverpoort",
       "Hpa": "hPa",
@@ -495,6 +497,7 @@
       "None": "Geen",
       "Off": "Uit",
       "Save": "Opslaan",
+      "SimBridgePort": "Externe MCDU Serverpoort",
       "SyncMsfsFlightPlan": "MSFS-vluchtplan synchroniseren",
       "ThrottleDetents": "Throttle Detents",
       "Title": "Sim-opties",

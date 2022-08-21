@@ -478,6 +478,7 @@
       "PauseAtTod": "T/D Pause",
       "PauseAtTodDistance": "T/D Pause Distance (nm)",
       "SeparateTillerFromRudderInputs": "Separați cârma de intrările cârmei",
+      "SyncEfis": "Sync EFIS controls from Captain to FO",
       "Title": "Realism"
     },
     "SimOptions": {
@@ -487,6 +488,7 @@
       "ConesEnabled": "Safety Cones",
       "DefaultBarometerUnit": "Unitate Barometrica Implicită",
       "DynamicRegistrationDecal": "Număr de înregistrare dinamic",
+      "EnableSimBridge": "Activează conexiune server MCDU (Auto dezactivează după 5 minute dacă nu s-a stabilit conexiunea)",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Activează conexiune server MCDU (Auto dezactivează după 5 minute dacă nu s-a stabilit conexiunea)",
       "ExternalMcduServerPort": "Poartă exterioară server MCDU",
       "Hpa": "hPa",
@@ -495,6 +497,7 @@
       "None": "Niciunul",
       "Off": "Dezactivată",
       "Save": "Salvează",
+      "SimBridgePort": "Poartă exterioară server MCDU",
       "SyncMsfsFlightPlan": "Sincronizare plan de zbor MSFS",
       "ThrottleDetents": "Senzori accelerație",
       "Title": "Opțiuni simulator",
