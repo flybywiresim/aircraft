@@ -1,4 +1,4 @@
-/* eslint-disable max-len,react/no-this-in-sfc */
+/* eslint-disable max-len,react/no-this-in-sfc,no-console */
 import React, { useEffect, useRef, useState } from 'react';
 import {
     ArrowClockwise,
@@ -9,7 +9,8 @@ import {
     FullscreenExit,
     MoonFill,
     Plus,
-    SunFill, XCircleFill,
+    SunFill,
+    XCircleFill,
 } from 'react-bootstrap-icons';
 import { useSimVar } from '@instruments/common/simVars';
 import { ReactZoomPanPinchRef, TransformComponent, TransformWrapper } from 'react-zoom-pan-pinch';
@@ -20,19 +21,19 @@ import { useNavigraph } from '../ChartsApi/Navigraph';
 import { SimpleInput } from '../UtilComponents/Form/SimpleInput/SimpleInput';
 import { useAppDispatch, useAppSelector } from '../Store/store';
 import {
-    NavigationTab,
-    setBoundingBox,
-    setUsingDarkTheme,
-    setSelectedNavigationTabIndex,
-    editTabProperty,
-    ProviderTab,
-    setProvider,
     ChartProvider,
+    editTabProperty,
+    NavigationTab,
+    ProviderTab,
+    setBoundingBox,
+    setProvider,
+    setSelectedNavigationTabIndex,
+    setUsingDarkTheme,
 } from '../Store/features/navigationPage';
 import { PageLink, PageRedirect, TabRoutes } from '../Utils/routing';
 import { Navbar } from '../UtilComponents/Navbar';
 import { NavigraphPage } from './Pages/NavigraphPage/NavigraphPage';
-import { LocalFilesPage, getPdfUrl } from './Pages/LocalFilesPage/LocalFilesPage';
+import { getPdfUrl, LocalFilesPage } from './Pages/LocalFilesPage/LocalFilesPage';
 import { PinnedChartUI } from './Pages/PinnedChartsPage';
 
 export const navigationTabs: (PageLink & {associatedTab: NavigationTab})[] = [
@@ -172,35 +173,31 @@ export const ChartViewer = () => {
     };
 
     useEffect(() => {
-        if (!chartDimensions.height && !chartDimensions.width) {
-            const img = new Image();
-            img.onload = function () {
-                if (ref.current) {
-                    const chartDimensions: {width: number, height: number} = {
-                        width: -1,
-                        height: -1,
-                    };
-
+        const img = new Image();
+        img.onload = function () {
+            if (ref.current) {
+                const chartDimensions: { width: number, height: number } = {
+                    width: -1,
+                    height: -1,
+                };
                     // @ts-ignore
-                    if (this.height * (ref.current.clientWidth / this.width) < ref.current.clientHeight) {
-                        // @ts-ignore
-                        chartDimensions.width = this.width * (ref.current.clientHeight / this.height);
-                        chartDimensions.height = ref.current.clientHeight;
-                    } else {
-                        chartDimensions.width = ref.current.clientWidth;
-                        // @ts-ignore
-                        chartDimensions.height = this.height * (ref.current.clientWidth / this.width);
-                    }
-
-                    dispatch(editTabProperty({
-                        tab: currentTab,
-                        chartDimensions,
-                    }));
+                if (this.height * (ref.current.clientWidth / this.width) < ref.current.clientHeight) {
+                    // @ts-ignore
+                    chartDimensions.width = this.width * (ref.current.clientHeight / this.height);
+                    chartDimensions.height = ref.current.clientHeight;
+                } else {
+                    chartDimensions.width = ref.current.clientWidth;
+                    // @ts-ignore
+                    chartDimensions.height = this.height * (ref.current.clientWidth / this.width);
                 }
-            };
-            img.src = chartLinks.light;
-        }
-    }, [chartLinks]);
+                dispatch(editTabProperty({
+                    tab: currentTab,
+                    chartDimensions,
+                }));
+            }
+        };
+        img.src = chartLinks.light;
+    }, [chartLinks, currentPage, chartRotation]);
 
     useEffect(() => {
         if (pagesViewable > 1) {
