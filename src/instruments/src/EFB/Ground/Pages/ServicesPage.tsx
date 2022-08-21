@@ -17,7 +17,7 @@ import {
 } from 'react-bootstrap-icons';
 import { ActionCreatorWithOptionalPayload } from '@reduxjs/toolkit';
 import { t } from '../../translation';
-import { UprightOutline } from '../../Assets/UprightOutline';
+import { GroundServiceOutline } from '../../Assets/GroundServiceOutline';
 import { useAppDispatch, useAppSelector } from '../../Store/store';
 import {
     setAftDoorButtonState,
@@ -476,7 +476,7 @@ export const ServicesPage = () => {
 
     return (
         <div className="relative h-content-section-reduced">
-            <UprightOutline className="inset-x-0 mx-auto w-full h-full text-theme-text" />
+            <GroundServiceOutline className="inset-x-0 mx-auto w-full h-full text-theme-text" />
 
             <ServiceButtonWrapper xr={880} y={64}>
 

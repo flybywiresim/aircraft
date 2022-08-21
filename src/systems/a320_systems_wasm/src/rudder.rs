@@ -23,10 +23,10 @@ pub(super) fn rudder(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Erro
     );
 
     // AILERON POSITION FEEDBACK TO SIM
-    builder.map_many(
+    builder.map(
         ExecuteOn::PostTick,
-        vec![Variable::aspect("HYD_RUD_DEFLECTION")],
-        |values| values[0] * 2. - 1.,
+        Variable::aspect("HYD_RUD_DEFLECTION"),
+        |value| value * 2. - 1.,
         Variable::aspect("HYD_FINAL_RUDDER_FEEDBACK"),
     );
 
@@ -45,7 +45,7 @@ impl VariablesToObject for YawSimOutput {
     fn variables(&self) -> Vec<Variable> {
         vec![
             Variable::aspect("HYD_FINAL_RUDDER_FEEDBACK"),
-            Variable::aspect("FLIGHT_CONTROLS_TRACKING_MODE"),
+            Variable::named("FLIGHT_CONTROLS_TRACKING_MODE"),
         ]
     }
 

@@ -747,30 +747,15 @@
                     <VISIBILITY_CODE>(L:A32NX_GRAVITYGEAR_TURNED, bool)</VISIBILITY_CODE>
                 </UseTemplate>
                 <UseTemplate Name="ASOBO_GT_Knob_Infinite">
-                    <ANTICLOCKWISE_CONDITION type="rnp" return="boolean">
-                        alias turned = (L:A32NX_GRAVITYGEAR_TURNED, number);
-                        alias rotations = (L:A32NX_GRAVITYGEAR_ROTATIONS, number);
-                        alias rotatePct = (L:A32NX_GRAVITYGEAR_ROTATE_PCT, number);
-                        let maxRotatePct = rotations * 100;
-                        let canTurn = turned == 1 and rotatePct == maxRotatePct;
-                        canTurn
-                    </ANTICLOCKWISE_CONDITION>
-                    <ANTICLOCKWISE_CODE type="rnp">
-                        alias rotations = (L:A32NX_GRAVITYGEAR_ROTATIONS, number);
-                        rotations = (rotations - 1).max(0);
+                    <ANTICLOCKWISE_CODE>
+                        (L:A32NX_GRAVITYGEAR_TURNED, number) 1 == (L:A32NX_GRAVITYGEAR_ROTATE_PCT, number) (L:A32NX_GRAVITYGEAR_ROTATIONS, number) 100 * == and if{
+                            (L:A32NX_GRAVITYGEAR_ROTATIONS, number) 1 - 0 max (&gt;L:A32NX_GRAVITYGEAR_ROTATIONS, number)
+                        }
                     </ANTICLOCKWISE_CODE>
-
-                    <CLOCKWISE_CONDITION type="rnp" return="boolean">
-                        alias turned = (L:A32NX_GRAVITYGEAR_TURNED, number);
-                        alias rotations = (L:A32NX_GRAVITYGEAR_ROTATIONS, number);
-                        alias rotatePct = (L:A32NX_GRAVITYGEAR_ROTATE_PCT, number);
-                        let maxRotatePct = rotations * 100;
-                        let canTurn = turned == 1 and rotatePct == maxRotatePct;
-                        canTurn
-                    </CLOCKWISE_CONDITION>
-                    <CLOCKWISE_CODE type="rnp">
-                        alias rotations = (L:A32NX_GRAVITYGEAR_ROTATIONS, number);
-                        rotations = (rotations + 1).min(3);
+                    <CLOCKWISE_CODE>
+                        (L:A32NX_GRAVITYGEAR_TURNED, number) 1 == (L:A32NX_GRAVITYGEAR_ROTATE_PCT, number) (L:A32NX_GRAVITYGEAR_ROTATIONS, number) 100 * == and if{
+                            (L:A32NX_GRAVITYGEAR_ROTATIONS, number) 1 + 3 min (&gt;L:A32NX_GRAVITYGEAR_ROTATIONS, number)
+                        }
                     </CLOCKWISE_CODE>
                 </UseTemplate>
             </Component>

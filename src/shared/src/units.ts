@@ -43,6 +43,10 @@ export class Units {
         return Units.usingMetric ? value : Units.kilogramToPound(value);
     }
 
+    static poundToUser(value: KiloGram): Pound | KiloGram {
+        return Units.usingMetric ? Units.poundToKilogram(value) : value;
+    }
+
     static get userWeightSuffixEis2(): 'kg' | 'lbs' {
         // EIS uses S suffix on LB
         return Units.usingMetric ? 'kg' : 'lbs';
