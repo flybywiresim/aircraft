@@ -180,7 +180,7 @@ class MinimumDescentAltitudeIndicator extends DisplayComponent<{ bus: EventBus }
             this.updateIndication();
         });
 
-        sub.on('mda').handle((mda) => {
+        sub.on('mda').whenChanged().handle((mda) => {
             // TODO get a real word
             this.mda.value = mda;
             this.mda.ssm = mda > 0 ? Arinc429Word.SignStatusMatrix.NormalOperation : Arinc429Word.SignStatusMatrix.NoComputedData;
