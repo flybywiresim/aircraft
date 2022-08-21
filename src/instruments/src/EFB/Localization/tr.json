@@ -135,7 +135,7 @@
       "Unavailable": "Kullanım Dışı"
     },
     "Payload": {
-      "BoardingTime": "Boarding Time",
+      "BoardingTime": "Biniş Süresi",
       "Cargo": "Cargo",
       "Current": "Current",
       "Passengers": "Passengers",
@@ -163,7 +163,7 @@
       "CateringTruck": "Yemek Servis Aracı",
       "Cones": "Emniyet Konileri",
       "DoorAft": "Arka Giriş Kapısı",
-      "DoorCargo": "Cargo Door",
+      "DoorCargo": "Yükleme Kapısı",
       "DoorFwd": "Ön Giriş Kapısı",
       "ExternalPower": "Yer Güç Ünitesi",
       "FuelTruck": "Yakıt Kamyonu",
@@ -383,7 +383,7 @@
     "EnableSystemMessageTitle": "Pushback Sistemini Etkinleştir",
     "Forward": "İleri",
     "Halt": "Duraklatıldı",
-    "LeavePageMessage": "Pausing Pushback",
+    "LeavePageMessage": "Pushback Duraklatılıyor",
     "Left": "Sol",
     "Moving": "Hareket halinde",
     "ParkingBrake": {
@@ -421,7 +421,7 @@
     },
     "AircraftOptionsPinPrograms": {
       "AccelerationHeight": "İvme Yüksekliği (ft)",
-      "EngineOutAccelerationHeight": "Engine-Out Acceleration Height (ft)",
+      "EngineOutAccelerationHeight": "Motor Arıza İvmelenme Yüksekliği (ft)",
       "IsisBaroUnit": "ISIS Baro Birimi",
       "IsisMetricAltitude": "ISIS Metrik İrtifası",
       "LatLonExtendedFormat": "FMGC Enlem/Boylam Yol-noktası Biçimi",
@@ -510,7 +510,7 @@
       "Axis": "Eksen",
       "Back": "Geri",
       "ConfigureEnd": "Sonu Yapılandır",
-      "ConfigureStart": "Configure Start",
+      "ConfigureStart": "Başlat",
       "CurrentValue": "Geçerli Değer",
       "Deadband": "Ölü bant",
       "ErrorOverlapMsg": "ile örtüşen",
