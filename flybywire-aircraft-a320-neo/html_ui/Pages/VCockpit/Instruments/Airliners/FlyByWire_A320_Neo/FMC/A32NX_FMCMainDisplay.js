@@ -1539,7 +1539,7 @@ class FMCMainDisplay extends BaseAirliners {
         /** @type {OneWayRunway} */
         const runway = this.flightPlanManager.getDestinationRunway(FlightPlans.Active);
         if (runway) {
-            landingElevation = runway.thresholdElevation / 0.3048;
+            landingElevation = A32NX_Util.meterToFeet(runway.thresholdElevation);
         } else {
             const airport = this.flightPlanManager.getDestination(FlightPlans.Active);
             if (airport) {
