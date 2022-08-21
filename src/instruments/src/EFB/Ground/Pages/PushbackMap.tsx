@@ -252,7 +252,7 @@ export const PushbackMap = () => {
                         )}
                     <IconPlane
                         className="text-theme-highlight"
-                        style={{ transform: `rotate(-90deg) translateY(${Math.abs(aircraftIconPosition.x) < 1000 ? aircraftIconPosition.x : Math.sign(aircraftIconPosition.x) * 1000}px) translateX(${Math.abs(aircraftIconPosition.y) < 1000 ? aircraftIconPosition.y : Math.sign(aircraftIconPosition.y) * 1000}px)` }}
+                        style={{ transform: `rotate(-90deg) translateY(${Math.sign(aircraftIconPosition.x) * Math.min(1000, Math.abs(aircraftIconPosition.x))}px) translateX(${Math.sign(aircraftIconPosition.y) * Math.min(1000, Math.abs(aircraftIconPosition.y))}px)` }}
                         size={a320IconSize(mapRange)}
                         strokeLinejoin="miter"
                         stroke={1}
