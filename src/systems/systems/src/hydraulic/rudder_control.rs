@@ -22,23 +22,43 @@ use std::time::Duration;
 struct ElecMotor {
     powered_by: ElectricalBusType,
     is_powered: bool,
+
+    is_active: bool,
+
+    target_angle: Angle,
 }
 impl ElecMotor {
     fn new(powered_by: ElectricalBusType) -> Self {
         Self {
             powered_by,
             is_powered: false,
+            is_active: false,
+            target_angle: Angle::default(),
         }
     }
 
-    fn is_powered(&self) -> bool {
-        self.is_powered
+    fn set_active(&mut self, is_commanded_active: bool, target_position: Angle) {
+        self.target_angle = target_position;
+        self.is_active = is_commanded_active && self.is_powered
+    }
+
+    fn is_active(&self) -> bool {
+        self.is_active
+    }
+
+    fn target_angle(&self) -> Angle {
+        self.target_angle
     }
 }
 impl SimulationElement for ElecMotor {
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
         self.is_powered = buses.is_powered(self.powered_by);
     }
+}
+
+pub trait AngularPositioningController {
+    fn commanded_position(&self) -> [Angle; 2];
+    fn energised_motor(&self) -> [bool; 2];
 }
 
 /// Position an output shaft with the help of two elec motors.
@@ -61,26 +81,29 @@ impl AngularPositioningWithDualElecMotors {
         max_speed: AngularVelocity,
         max_angle: Angle,
         min_angle: Angle,
+        init_angle: Angle,
         motor1_powered_by: ElectricalBusType,
         motor2_powered_by: ElectricalBusType,
     ) -> Self {
         Self {
-            angle: Angle::default(),
+            angle: init_angle,
             speed: LowPassFilter::new(Self::SPEED_FILTER_TIME_CONST),
             motors: [
                 ElecMotor::new(motor1_powered_by),
                 ElecMotor::new(motor2_powered_by),
             ],
 
-            last_delta_angle: Angle::default(),
+            last_delta_angle: init_angle,
             max_speed,
             max_angle,
             min_angle,
         }
     }
 
-    fn update(&mut self, context: &UpdateContext, angle_request: Angle) {
-        if self.motors_available() {
+    fn update(&mut self, context: &UpdateContext, controller: &impl AngularPositioningController) {
+        self.update_motors_command(controller);
+
+        if let Some(angle_request) = self.active_position_request() {
             self.update_trim_speed_from_angle_request(context, angle_request);
         } else {
             self.speed.update(
@@ -92,8 +115,23 @@ impl AngularPositioningWithDualElecMotors {
         self.update_position(context);
     }
 
-    fn motors_available(&self) -> bool {
-        self.motors[0].is_powered() || self.motors[1].is_powered()
+    fn update_motors_command(&mut self, controller: &impl AngularPositioningController) {
+        for (index, motor) in self.motors.iter_mut().enumerate() {
+            motor.set_active(
+                controller.energised_motor()[index],
+                controller.commanded_position()[index],
+            );
+        }
+    }
+
+    fn active_position_request(&self) -> Option<Angle> {
+        if self.motors[0].is_active() {
+            Some(self.motors[0].target_angle())
+        } else if self.motors[1].is_active() {
+            Some(self.motors[1].target_angle())
+        } else {
+            None
+        }
     }
 
     fn update_trim_speed_from_angle_request(
@@ -126,6 +164,10 @@ impl AngularPositioningWithDualElecMotors {
 
         self.angle = self.angle.min(self.max_angle).max(self.min_angle);
     }
+
+    fn angle(&self) -> Angle {
+        self.angle
+    }
 }
 impl SimulationElement for AngularPositioningWithDualElecMotors {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
@@ -136,31 +178,40 @@ impl SimulationElement for AngularPositioningWithDualElecMotors {
 }
 
 struct RudderTrimActuator {
+    rudder_trim_feedback_angle_id: VariableIdentifier,
     mechanism: AngularPositioningWithDualElecMotors,
 }
 
 impl RudderTrimActuator {
-    const MOTOR1_POWER_BUS: ElectricalBusType = ElectricalBusType::AlternatingCurrent(1);
+    const MOTOR1_POWER_BUS: ElectricalBusType = ElectricalBusType::AlternatingCurrentEssential;
     const MOTOR2_POWER_BUS: ElectricalBusType = ElectricalBusType::AlternatingCurrent(2);
 
     const TRIM_SPEED_DEG_PER_S: f64 = 1.;
     const MIN_ANGLE_DEG: f64 = -25.;
     const MAX_ANGLE_DEG: f64 = 25.;
 
-    fn new() -> Self {
+    fn new(context: &mut InitContext) -> Self {
         Self {
+            rudder_trim_feedback_angle_id: context
+                .get_identifier("HYD_RUDDER_TRIM_FEEDBACK_ANGLE".to_owned()),
+
             mechanism: AngularPositioningWithDualElecMotors::new(
                 AngularVelocity::new::<degree_per_second>(Self::TRIM_SPEED_DEG_PER_S),
                 Angle::new::<degree>(Self::MAX_ANGLE_DEG),
                 Angle::new::<degree>(Self::MIN_ANGLE_DEG),
+                Angle::default(),
                 Self::MOTOR1_POWER_BUS,
                 Self::MOTOR2_POWER_BUS,
             ),
         }
     }
 
-    fn update(&mut self, context: &UpdateContext, angle_request: Angle) {
-        self.mechanism.update(context, angle_request);
+    fn update(&mut self, context: &UpdateContext, controller: &impl AngularPositioningController) {
+        self.mechanism.update(context, controller);
+    }
+
+    fn angle(&self) -> Angle {
+        self.mechanism.angle()
     }
 }
 impl SimulationElement for RudderTrimActuator {
@@ -169,18 +220,104 @@ impl SimulationElement for RudderTrimActuator {
 
         visitor.visit(self);
     }
+
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(&self.rudder_trim_feedback_angle_id, self.angle());
+    }
 }
 
 struct RudderTravelLimiter {
+    rudder_limiter_feedback_angle_id: VariableIdentifier,
+
     mechanism: AngularPositioningWithDualElecMotors,
 }
 impl RudderTravelLimiter {
-    const MOTOR1_POWER_BUS: ElectricalBusType = ElectricalBusType::AlternatingCurrent(1);
+    const MOTOR1_POWER_BUS: ElectricalBusType = ElectricalBusType::AlternatingCurrentEssential;
     const MOTOR2_POWER_BUS: ElectricalBusType = ElectricalBusType::AlternatingCurrent(2);
 
     const SPEED_DEG_PER_S: f64 = 1.;
-    const MIN_ANGLE_DEG: f64 = -25.;
+    const MIN_ANGLE_DEG: f64 = 3.5;
     const MAX_ANGLE_DEG: f64 = 25.;
+
+    fn new(context: &mut InitContext) -> Self {
+        Self {
+            rudder_limiter_feedback_angle_id: context
+                .get_identifier("HYD_RUDDER_LIMITER_FEEDBACK_ANGLE".to_owned()),
+
+            mechanism: AngularPositioningWithDualElecMotors::new(
+                AngularVelocity::new::<degree_per_second>(Self::SPEED_DEG_PER_S),
+                Angle::new::<degree>(Self::MAX_ANGLE_DEG),
+                Angle::new::<degree>(Self::MIN_ANGLE_DEG),
+                Angle::new::<degree>(Self::MAX_ANGLE_DEG),
+                Self::MOTOR1_POWER_BUS,
+                Self::MOTOR2_POWER_BUS,
+            ),
+        }
+    }
+
+    fn update(&mut self, context: &UpdateContext, controller: &impl AngularPositioningController) {
+        self.mechanism.update(context, controller);
+    }
+
+    fn min(&self) -> Angle {
+        -self.mechanism.angle()
+    }
+
+    fn max(&self) -> Angle {
+        self.mechanism.angle()
+    }
+}
+impl SimulationElement for RudderTravelLimiter {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.mechanism.accept(visitor);
+
+        visitor.visit(self);
+    }
+
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(&self.rudder_limiter_feedback_angle_id, self.max());
+    }
+}
+
+struct RudderMechanicalControl {
+    travel_limiter: RudderTravelLimiter,
+    trim: RudderTrimActuator,
+
+    final_actuators_input: Angle,
+}
+impl RudderMechanicalControl {
+    fn new(context: &mut InitContext) -> Self {
+        Self {
+            travel_limiter: RudderTravelLimiter::new(context),
+            trim: RudderTrimActuator::new(context),
+
+            final_actuators_input: Angle::default(),
+        }
+    }
+
+    fn update(
+        &mut self,
+        context: &UpdateContext,
+        rudder_pedal_position_requested: Angle,
+        trim_controller: &impl AngularPositioningController,
+        travel_limiter_controller: &impl AngularPositioningController,
+    ) {
+        self.travel_limiter
+            .update(context, travel_limiter_controller);
+        self.trim.update(context, trim_controller);
+
+        self.final_actuators_input = (rudder_pedal_position_requested + self.trim.angle())
+            .min(self.travel_limiter.max())
+            .max(self.travel_limiter.min())
+    }
+}
+impl SimulationElement for RudderMechanicalControl {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.travel_limiter.accept(visitor);
+        self.trim.accept(visitor);
+
+        visitor.visit(self);
+    }
 }
 
 #[cfg(test)]
@@ -200,13 +337,43 @@ mod tests {
 
     use rstest::rstest;
 
+    struct TestPositionController {
+        motor_active: [bool; 2],
+        position_request: [Angle; 2],
+    }
+    impl TestPositionController {
+        fn default() -> Self {
+            Self {
+                motor_active: [false; 2],
+                position_request: [Angle::default(); 2],
+            }
+        }
+
+        fn set_active(&mut self, motor_active: [bool; 2], position_request: [Angle; 2]) {
+            self.motor_active = motor_active;
+            self.position_request = position_request;
+        }
+    }
+    impl AngularPositioningController for TestPositionController {
+        fn commanded_position(&self) -> [Angle; 2] {
+            self.position_request
+        }
+
+        fn energised_motor(&self) -> [bool; 2] {
+            self.motor_active
+        }
+    }
+
     struct TestAircraft {
         updater_fixed_step: FixedStepLoop,
 
-        rudder_trim: RudderTrimActuator,
-        hydraulic_pressures: [Pressure; 2],
+        trim_controller: TestPositionController,
+        limiter_controller: TestPositionController,
+        rudder_pedal_input: Angle,
 
-        angle_request: Angle,
+        rudder_control: RudderMechanicalControl,
+
+        hydraulic_pressures: [Pressure; 2],
 
         powered_source_ac: TestElectricitySource,
         ac_1_bus: ElectricalBus,
@@ -217,10 +384,13 @@ mod tests {
         fn new(context: &mut InitContext) -> Self {
             Self {
                 updater_fixed_step: FixedStepLoop::new(Duration::from_millis(33)),
-                rudder_trim: RudderTrimActuator::new(),
+                trim_controller: TestPositionController::default(),
+                limiter_controller: TestPositionController::default(),
+                rudder_pedal_input: Angle::default(),
+
+                rudder_control: RudderMechanicalControl::new(context),
 
                 hydraulic_pressures: [Pressure::new::<psi>(3000.); 2],
-                angle_request: Angle::default(),
 
                 powered_source_ac: TestElectricitySource::powered(
                     context,
@@ -237,12 +407,26 @@ mod tests {
             }
         }
 
+        fn final_rudder_demand(&self) -> Angle {
+            self.rudder_control.final_actuators_input
+        }
+
         fn set_hyd_pressure(&mut self, pressures: [Pressure; 2]) {
             self.hydraulic_pressures = pressures;
         }
 
-        fn set_trim_demand(&mut self, angle_req: Angle) {
-            self.angle_request = angle_req;
+        fn set_trim_demand(&mut self, motor_active: [bool; 2], position_request: [Angle; 2]) {
+            self.trim_controller
+                .set_active(motor_active, position_request);
+        }
+
+        fn set_limiter_demand(&mut self, motor_active: [bool; 2], position_request: [Angle; 2]) {
+            self.limiter_controller
+                .set_active(motor_active, position_request);
+        }
+
+        fn set_rudder_pedal_angle(&mut self, pedal_angle: Angle) {
+            self.rudder_pedal_input = pedal_angle;
         }
 
         fn set_no_elec_power(&mut self) {
@@ -269,20 +453,26 @@ mod tests {
             self.updater_fixed_step.update(context);
 
             for cur_time_step in &mut self.updater_fixed_step {
-                self.rudder_trim
-                    .update(&context.with_delta(cur_time_step), self.angle_request);
+                self.rudder_control.update(
+                    &context.with_delta(cur_time_step),
+                    self.rudder_pedal_input,
+                    &self.trim_controller,
+                    &self.limiter_controller,
+                );
 
                 println!(
-                    "TRIM DEMAND: {:.3} ,TRIM REAL POS {:.3}, ",
-                    self.angle_request.get::<degree>(),
-                    self.rudder_trim.mechanism.angle.get::<degree>(),
+                    "TRIM DEMAND: {:.3} ,TRIM REAL POS {:.3}, LIMITER +/- {:.3} Final actuator input {:.3} ",
+                    self.trim_controller.commanded_position()[0].get::<degree>(),
+                    self.rudder_control.trim.mechanism.angle.get::<degree>(),
+                    self.rudder_control.travel_limiter.mechanism.angle.get::<degree>(),
+                    self.rudder_control.final_actuators_input.get::<degree>(),
                 );
             }
         }
     }
     impl SimulationElement for TestAircraft {
         fn accept<V: SimulationElementVisitor>(&mut self, visitor: &mut V) {
-            self.rudder_trim.accept(visitor);
+            self.rudder_control.accept(visitor);
 
             visitor.visit(self);
         }
@@ -292,129 +482,125 @@ mod tests {
     fn trim_demand_up_15_degrees_then_down() {
         let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
-        test_bed.command(|a| a.set_trim_demand(Angle::new::<degree>(15.)));
+        test_bed.command(|a| {
+            a.set_trim_demand(
+                [true, false],
+                [Angle::new::<degree>(15.), Angle::new::<degree>(15.)],
+            )
+        });
         test_bed.run_with_delta(Duration::from_millis(17000));
 
-        test_bed.command(|a| a.set_trim_demand(Angle::new::<degree>(-15.)));
+        let trim_deflection: Angle = test_bed.read_by_name("HYD_RUDDER_TRIM_FEEDBACK_ANGLE");
+        assert!((trim_deflection.get::<degree>() - 15.).abs() < 0.1);
+
+        test_bed.command(|a| {
+            a.set_trim_demand(
+                [true, false],
+                [Angle::new::<degree>(-15.), Angle::new::<degree>(-15.)],
+            )
+        });
         test_bed.run_with_delta(Duration::from_millis(34000));
+
+        let trim_deflection: Angle = test_bed.read_by_name("HYD_RUDDER_TRIM_FEEDBACK_ANGLE");
+        assert!((trim_deflection.get::<degree>() - -15.).abs() < 0.1);
     }
 
     #[test]
     fn trim_demand_up_1_degrees_then_2() {
         let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
-        test_bed.command(|a| a.set_trim_demand(Angle::new::<degree>(1.)));
+        test_bed.command(|a| {
+            a.set_trim_demand(
+                [true, false],
+                [Angle::new::<degree>(1.), Angle::new::<degree>(1.)],
+            )
+        });
         test_bed.run_with_delta(Duration::from_millis(2000));
 
-        test_bed.command(|a| a.set_trim_demand(Angle::new::<degree>(2.)));
+        let trim_deflection: Angle = test_bed.read_by_name("HYD_RUDDER_TRIM_FEEDBACK_ANGLE");
+        assert!((trim_deflection.get::<degree>() - 1.).abs() < 0.1);
+
+        test_bed.command(|a| {
+            a.set_trim_demand(
+                [true, false],
+                [Angle::new::<degree>(2.), Angle::new::<degree>(2.)],
+            )
+        });
         test_bed.run_with_delta(Duration::from_millis(2000));
+
+        let trim_deflection: Angle = test_bed.read_by_name("HYD_RUDDER_TRIM_FEEDBACK_ANGLE");
+        assert!((trim_deflection.get::<degree>() - 2.).abs() < 0.1);
     }
 
-    // #[rstest]
-    // #[case(0)]
-    // #[case(1)]
-    // #[case(2)]
-    // fn trim_assembly_trim_up_trim_down_motor_n(#[case] motor_idx: usize) {
-    //     let mut test_bed = SimulationTestBed::new(|context| TestAircraft::new(context));
+    #[test]
+    fn trim_demand_added_to_pedal_demand() {
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
-    //     test_bed.command(|a| a.set_elec_trim_demand(Angle::new::<degree>(13.), motor_idx));
-    //     test_bed.command(|a| a.set_no_manual_input());
+        test_bed.command(|a| {
+            a.set_trim_demand(
+                [true, false],
+                [Angle::new::<degree>(3.), Angle::new::<degree>(3.)],
+            )
+        });
+        test_bed.command(|a| a.set_rudder_pedal_angle(Angle::new::<degree>(5.)));
+        test_bed.run_with_delta(Duration::from_millis(4000));
 
-    //     test_bed.run_with_delta(Duration::from_millis(20000));
+        let trim_deflection: Angle = test_bed.read_by_name("HYD_RUDDER_TRIM_FEEDBACK_ANGLE");
+        assert!((trim_deflection.get::<degree>() - 3.).abs() < 0.1);
 
-    //     let deflection: Angle = test_bed.read_by_name("HYD_FINAL_THS_DEFLECTION");
-    //     assert!(deflection.get::<degree>() > 12.9);
-    //     assert!(deflection.get::<degree>() < 13.1);
+        let final_rudder_deflection: Angle = test_bed.query(|a| a.final_rudder_demand());
+        assert!((final_rudder_deflection.get::<degree>() - 8.).abs() < 0.1);
+    }
 
-    //     let man_override: f64 = test_bed.read_by_name("HYD_THS_TRIM_MANUAL_OVERRIDE");
-    //     assert!(man_override <= 0.5);
+    #[test]
+    fn limiter_limits_final_demand_up() {
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
-    //     test_bed.command(|a| a.set_elec_trim_demand(Angle::new::<degree>(-2.), motor_idx));
-    //     test_bed.run_with_delta(Duration::from_millis(25000));
+        test_bed.command(|a| {
+            a.set_trim_demand(
+                [true, false],
+                [Angle::new::<degree>(3.), Angle::new::<degree>(3.)],
+            )
+        });
+        test_bed.command(|a| a.set_rudder_pedal_angle(Angle::new::<degree>(5.)));
+        test_bed.command(|a| {
+            a.set_limiter_demand(
+                [true, false],
+                [Angle::new::<degree>(3.5), Angle::new::<degree>(3.5)],
+            )
+        });
+        test_bed.run_with_delta(Duration::from_millis(30000));
 
-    //     let deflection: Angle = test_bed.read_by_name("HYD_FINAL_THS_DEFLECTION");
-    //     assert!(deflection.get::<degree>() >= -2.1);
-    //     assert!(deflection.get::<degree>() < -1.9);
-    // }
+        let trim_deflection: Angle = test_bed.read_by_name("HYD_RUDDER_TRIM_FEEDBACK_ANGLE");
+        assert!((trim_deflection.get::<degree>() - 3.).abs() < 0.1);
 
-    // #[test]
-    // fn trim_assembly_moves_but_ths_stops_with_hyd_press_below_1450psi() {
-    //     let mut test_bed = SimulationTestBed::new(TestAircraft::new);
+        let final_rudder_deflection: Angle = test_bed.query(|a| a.final_rudder_demand());
+        assert!((final_rudder_deflection.get::<degree>() - 3.5).abs() < 0.1);
+    }
 
-    //     test_bed.command(|a| a.set_elec_trim_demand(Angle::new::<degree>(13.), 0));
-    //     test_bed.run_with_delta(Duration::from_millis(5000));
+    #[test]
+    fn limiter_limits_final_demand_down() {
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
-    //     let deflection: Angle = test_bed.read_by_name("HYD_FINAL_THS_DEFLECTION");
-    //     assert!(deflection.get::<degree>() > 2.);
+        test_bed.command(|a| {
+            a.set_trim_demand(
+                [true, false],
+                [Angle::new::<degree>(-3.), Angle::new::<degree>(-3.)],
+            )
+        });
+        test_bed.command(|a| a.set_rudder_pedal_angle(Angle::new::<degree>(-5.)));
+        test_bed.command(|a| {
+            a.set_limiter_demand(
+                [true, false],
+                [Angle::new::<degree>(3.5), Angle::new::<degree>(3.5)],
+            )
+        });
+        test_bed.run_with_delta(Duration::from_millis(30000));
 
-    //     println!("PRESSURE DROP");
-    //     test_bed.command(|a| {
-    //         a.set_hyd_pressure([Pressure::new::<psi>(1300.), Pressure::new::<psi>(1300.)])
-    //     });
-    //     test_bed.run_with_delta(Duration::from_millis(5000));
+        let trim_deflection: Angle = test_bed.read_by_name("HYD_RUDDER_TRIM_FEEDBACK_ANGLE");
+        assert!((trim_deflection.get::<degree>() - -3.).abs() < 0.1);
 
-    //     let deflection_after_hyd_fail: Angle = test_bed.read_by_name("HYD_FINAL_THS_DEFLECTION");
-    //     assert!((deflection - deflection_after_hyd_fail).abs() < Angle::new::<degree>(1.));
-    // }
-
-    // #[test]
-    // fn trim_assembly_max_motor_0() {
-    //     let mut test_bed = SimulationTestBed::new(|context| TestAircraft::new(context));
-
-    //     test_bed.command(|a| a.set_elec_trim_demand(Angle::new::<degree>(13.5), 0));
-    //     test_bed.run_with_delta(Duration::from_millis(20000));
-
-    //     let deflection: Angle = test_bed.read_by_name("HYD_FINAL_THS_DEFLECTION");
-    //     assert!(deflection.get::<degree>() > 13.45);
-    //     assert!(deflection.get::<degree>() < 13.55);
-
-    //     let trim_wheel_position_percent: Ratio = test_bed.read_by_name("HYD_TRIM_WHEEL_PERCENT");
-    //     assert!(trim_wheel_position_percent.get::<percent>() > 99.9);
-    //     assert!(trim_wheel_position_percent.get::<percent>() < 100.1);
-    // }
-
-    // #[test]
-    // fn trim_assembly_motor_0_without_elec_is_stuck() {
-    //     let mut test_bed = SimulationTestBed::new(|context| TestAircraft::new(context));
-
-    //     test_bed.command(|a| a.set_elec_trim_demand(Angle::new::<degree>(13.5), 0));
-    //     test_bed.command(|a| a.set_no_elec_power());
-    //     test_bed.run_with_delta(Duration::from_millis(20000));
-
-    //     let deflection: Angle = test_bed.read_by_name("HYD_FINAL_THS_DEFLECTION");
-    //     assert!(deflection.get::<degree>() >= -0.1);
-    //     assert!(deflection.get::<degree>() <= 0.1);
-    // }
-
-    // #[test]
-    // fn trim_assembly_min_motor_0() {
-    //     let mut test_bed = SimulationTestBed::new(|context| TestAircraft::new(context));
-
-    //     test_bed.command(|a| a.set_elec_trim_demand(Angle::new::<degree>(-4.), 0));
-    //     test_bed.run_with_delta(Duration::from_millis(20000));
-
-    //     let deflection: Angle = test_bed.read_by_name("HYD_FINAL_THS_DEFLECTION");
-    //     assert!(deflection.get::<degree>() > -4.1);
-    //     assert!(deflection.get::<degree>() < -3.9);
-
-    //     let trim_wheel_position_percent: Ratio = test_bed.read_by_name("HYD_TRIM_WHEEL_PERCENT");
-    //     assert!(trim_wheel_position_percent.get::<percent>() > -0.1);
-    //     assert!(trim_wheel_position_percent.get::<percent>() < 0.1);
-    // }
-
-    // #[test]
-    // fn trim_wheel_moves_up_with_hyd_press_if_moved_manually() {
-    //     let mut test_bed = SimulationTestBed::new(TestAircraft::new);
-
-    //     test_bed.command(|a| {
-    //         a.set_hyd_pressure([Pressure::new::<psi>(3000.), Pressure::new::<psi>(3000.)])
-    //     });
-
-    //     test_bed.command(|a| a.set_no_elec_input());
-    //     test_bed.command(|a| a.set_manual_trim_input(true));
-    //     test_bed.run_with_delta(Duration::from_millis(5000));
-
-    //     let deflection: Angle = test_bed.read_by_name("HYD_FINAL_THS_DEFLECTION");
-    //     assert!(deflection.get::<degree>() > 5.);
-    // }
+        let final_rudder_deflection: Angle = test_bed.query(|a| a.final_rudder_demand());
+        assert!((final_rudder_deflection.get::<degree>() - -3.5).abs() < 0.1);
+    }
 }
