@@ -385,7 +385,7 @@
       "SelectAnInteriorLightingPresetToLoadOrSave": "Select an interior lighting preset to load or save.",
       "AutoLoadLightingPreset": "Enable automatic loading of lighting presets:",
       "AutoLoadLightingHelpTitle": "Automatic Preset Loading",
-      "AutoLoadLightingHelp": "When automatic loading of lighting presets is enabled, the aircraft lights will be set to the specified presets whenever the aircraft gets AC power or the enable setting is switched on.",
+      "AutoLoadLightingHelp": "When automatic loading of lighting presets is enabled, the aircraft interior lights will be set to the specified presets whenever the aircraft gets AC power or the enable setting is switched on.",
       "AutoLoadNoneSelection": "None",
       "AutoLoadDay": "Day:",
       "AutoLoadDawnDusk": "Dawn/Dusk:",
