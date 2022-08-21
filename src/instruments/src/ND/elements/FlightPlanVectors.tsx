@@ -23,12 +23,7 @@ export const FlightPlanVectors: FC<FlightPlanVectorsProps> = memo(({ x, y, mapPa
 
     const lineStyle = vectorsGroupLineStyle(group);
 
-    useFlowSyncEvent(`A32NX_EFIS_VECTORS_${side}_${EfisVectorsGroup[group]}`, useCallback((_topic, data) => {
-        if (data) {
-            setVectors(data);
-        } else if (LnavConfig.DEBUG_PATH_DRAWING) {
-            console.warn(`[ND/Vectors] Received falsy vectors on event '${EfisVectorsGroup[group]}'.`);
-        }
+    useFlowSy
     }, [group]));
 
     return (
