@@ -58,9 +58,15 @@ const useStandbyVhfFrequency = (side: string, transceiver: number) => {
 export const VhfRadioPanel = (props: Props) => {
     const [active, setActive] = useActiveVhfFrequency(props.transceiver);
     const [standby, setStandby] = useStandbyVhfFrequency(props.side, props.transceiver);
+    const [, setValueOppositePanelStandby] = props.side === 'L' ? useStandbyVhfFrequency('R', 3) : useStandbyVhfFrequency('L', 3);
 
     // Handle Transfer Button Pressed.
     useInteractionEvent(`A32NX_RMP_${props.side}_TRANSFER_BUTTON_PRESSED`, () => {
+        // Force the standby opposite side otherwise we would lose the frequency/data format
+        // Otherwise it would become frequency/frequency
+        if (props.transceiver === 3) {
+            setValueOppositePanelStandby(active);
+        }
         setActive(standby);
         setStandby(active);
     });

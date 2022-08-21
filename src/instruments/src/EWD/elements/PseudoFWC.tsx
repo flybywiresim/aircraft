@@ -397,6 +397,8 @@ const PseudoFWC: React.FC = () => {
     const [pack2On] = useSimVar('L:A32NX_OVHD_COND_PACK_2_PB_IS_ON', 'bool');
     const [excessPressure] = useSimVar('L:A32NX_PRESS_EXCESS_CAB_ALT', 'bool', 500);
 
+    const [voiceVHF3] = useSimVar('A:COM ACTIVE FREQUENCY:3', 'number', 500);
+
     /* WARNINGS AND FAILURES */
     const landASAPRed: boolean = !!(!aircraftOnGround
     && (
@@ -1670,6 +1672,17 @@ const PseudoFWC: React.FC = () => {
             sysPage: -1,
             side: 'RIGHT',
         },
+        '0000567': // VHF3 VOICE
+        {
+            flightPhaseInhib: [],
+            simVarIsActive: voiceVHF3 !== 0 && [1, 2, 6, 9, 10].includes(flightPhase),
+            whichCodeToReturn: [0],
+            codesToReturn: ['000056701'],
+            memoInhibit: false,
+            failure: 0,
+            sysPage: -1,
+            side: 'RIGHT',
+        },
     };
 
     /* TO CONFIG */
@@ -1994,6 +2007,7 @@ const PseudoFWC: React.FC = () => {
         unit,
         usrStartRefueling,
         wingAntiIce,
+        voiceVHF3,
     ]);
 
     useEffect(() => {
