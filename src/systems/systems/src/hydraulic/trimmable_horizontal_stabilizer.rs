@@ -583,6 +583,10 @@ impl TrimmableHorizontalStabilizerAssembly {
         self.pitch_trim_actuator.position_normalized()
     }
 
+    pub fn actual_trim_angle(&self) -> Angle {
+        self.ths_hydraulics.actual_deflection()
+    }
+
     pub fn left_motor(&mut self) -> &mut impl Actuator {
         self.ths_hydraulics.left_motor()
     }
@@ -708,6 +712,10 @@ impl TrimmableHorizontalStabilizerHydraulics {
 
     pub fn right_motor(&mut self) -> &mut impl Actuator {
         &mut self.hydraulic_motors[1]
+    }
+
+    fn actual_deflection(&self) -> Angle {
+        self.actual_deflection
     }
 }
 impl SimulationElement for TrimmableHorizontalStabilizerHydraulics {

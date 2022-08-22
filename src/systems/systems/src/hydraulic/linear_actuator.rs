@@ -871,7 +871,7 @@ impl<const N: usize> HydraulicLinearActuatorAssembly<N> {
         self.linear_actuators[index].position_normalized()
     }
 
-    fn set_trim_offset(&mut self, trim_angle: Angle) {
+    pub fn set_trim_offset(&mut self, trim_angle: Angle) {
         self.rigid_body.apply_global_angle_offset(trim_angle);
     }
 
@@ -999,7 +999,6 @@ impl LinearActuatedRigidBodyOnHingeAxis {
 
             min_absolute_length_to_anchor: Length::default(),
             max_absolute_length_to_anchor: Length::default(),
-
         };
         // Make sure the new object has coherent structure by updating internal roations and positions once
         new_body.initialize_actuator_force_direction();

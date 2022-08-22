@@ -1806,6 +1806,7 @@ impl A320Hydraulic {
             self.elac_computer.left_elevator_controllers(),
             self.blue_circuit.system_section(),
             self.green_circuit.system_section(),
+            self.trim_assembly.actual_trim_angle(),
         );
 
         self.right_elevator.update(
@@ -1813,6 +1814,7 @@ impl A320Hydraulic {
             self.elac_computer.right_elevator_controllers(),
             self.blue_circuit.system_section(),
             self.yellow_circuit.system_section(),
+            self.trim_assembly.actual_trim_angle(),
         );
 
         self.rudder.update(
@@ -5215,7 +5217,10 @@ impl ElevatorAssembly {
         aileron_controllers: &[impl HydraulicAssemblyController],
         current_pressure_outward: &impl SectionPressure,
         current_pressure_inward: &impl SectionPressure,
+        ths_actual_angle: Angle,
     ) {
+        self.hydraulic_assembly.set_trim_offset(ths_actual_angle);
+
         self.aerodynamic_model
             .update_body(context, self.hydraulic_assembly.body());
         self.hydraulic_assembly.update(
