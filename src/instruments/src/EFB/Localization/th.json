@@ -478,6 +478,7 @@
       "PauseAtTod": "หยุดชั่วคราวที่ T/D",
       "PauseAtTodDistance": "ระยะทางหยุดชั่วคราว T/D (nm)",
       "SeparateTillerFromRudderInputs": "แยก Tiller ออกจากอินพุต Rudder",
+      "SyncEfis": "Sync EFIS controls from Captain to FO",
       "Title": "ความสมจริง"
     },
     "SimOptions": {
