@@ -3,68 +3,6 @@ use systems_wasm::aspects::{ExecuteOn, MsfsAspectBuilder};
 use systems_wasm::Variable;
 
 pub(super) fn spoilers(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>> {
-    builder.map(
-        ExecuteOn::PreTick,
-        Variable::named("SPOILERS_LEFT_DEFLECTION_DEMAND"),
-        |value| value,
-        Variable::aspect("HYD_SPOILER_1_LEFT_DEMAND"),
-    );
-    builder.map(
-        ExecuteOn::PreTick,
-        Variable::named("SPOILERS_LEFT_DEFLECTION_DEMAND"),
-        |value| value,
-        Variable::aspect("HYD_SPOILER_2_LEFT_DEMAND"),
-    );
-    builder.map(
-        ExecuteOn::PreTick,
-        Variable::named("SPOILERS_LEFT_DEFLECTION_DEMAND"),
-        |value| value,
-        Variable::aspect("HYD_SPOILER_3_LEFT_DEMAND"),
-    );
-    builder.map(
-        ExecuteOn::PreTick,
-        Variable::named("SPOILERS_LEFT_DEFLECTION_DEMAND"),
-        |value| value,
-        Variable::aspect("HYD_SPOILER_4_LEFT_DEMAND"),
-    );
-    builder.map(
-        ExecuteOn::PreTick,
-        Variable::named("SPOILERS_LEFT_DEFLECTION_DEMAND"),
-        |value| value,
-        Variable::aspect("HYD_SPOILER_5_LEFT_DEMAND"),
-    );
-
-    builder.map(
-        ExecuteOn::PreTick,
-        Variable::named("SPOILERS_RIGHT_DEFLECTION_DEMAND"),
-        |value| value,
-        Variable::aspect("HYD_SPOILER_1_RIGHT_DEMAND"),
-    );
-    builder.map(
-        ExecuteOn::PreTick,
-        Variable::named("SPOILERS_RIGHT_DEFLECTION_DEMAND"),
-        |value| value,
-        Variable::aspect("HYD_SPOILER_2_RIGHT_DEMAND"),
-    );
-    builder.map(
-        ExecuteOn::PreTick,
-        Variable::named("SPOILERS_RIGHT_DEFLECTION_DEMAND"),
-        |value| value,
-        Variable::aspect("HYD_SPOILER_3_RIGHT_DEMAND"),
-    );
-    builder.map(
-        ExecuteOn::PreTick,
-        Variable::named("SPOILERS_RIGHT_DEFLECTION_DEMAND"),
-        |value| value,
-        Variable::aspect("HYD_SPOILER_4_RIGHT_DEMAND"),
-    );
-    builder.map(
-        ExecuteOn::PreTick,
-        Variable::named("SPOILERS_RIGHT_DEFLECTION_DEMAND"),
-        |value| value,
-        Variable::aspect("HYD_SPOILER_5_RIGHT_DEMAND"),
-    );
-
     builder.map_many(
         ExecuteOn::PostTick,
         vec![
