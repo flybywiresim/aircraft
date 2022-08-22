@@ -478,6 +478,7 @@
       "PauseAtTod": "Interruzione T/D",
       "PauseAtTodDistance": "Distanza Interruzione T/D (nm)",
       "SeparateTillerFromRudderInputs": "Separa gli Input del Tiller e dei Pedali",
+      "SyncEfis": "Sincronizza controlli EFIS dal Comandante al Primo Ufficiale",
       "Title": "Realismo"
     },
     "SimOptions": {
