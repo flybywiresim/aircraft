@@ -104,14 +104,6 @@ SecComputer::Parameters_SecComputer_T SecComputer::SecComputer_P{
 
   0.0,
 
-  14.0,
-
-  14.0,
-
-  13.0,
-
-  13.0,
-
   11.0,
 
   12.0,
@@ -143,6 +135,14 @@ SecComputer::Parameters_SecComputer_T SecComputer::SecComputer_P{
   13.0,
 
   14.0,
+
+  14.0,
+
+  14.0,
+
+  13.0,
+
+  13.0,
 
   20.0,
 
