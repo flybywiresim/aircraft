@@ -478,6 +478,7 @@
       "PauseAtTod": "T/D Pause",
       "PauseAtTodDistance": "T/D Pause Distance (nm)",
       "SeparateTillerFromRudderInputs": "Erota nokkapyörän ohjaus peräsimestä",
+      "SyncEfis": "Sync EFIS controls from Captain to FO",
       "Title": "Realismi"
     },
     "SimOptions": {
