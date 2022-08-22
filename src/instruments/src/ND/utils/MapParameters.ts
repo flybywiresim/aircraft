@@ -13,6 +13,10 @@ export class MapParameters {
 
     public valid = false;
 
+    constructor(centerCoordinates: Coordinates, nmRadius: number, pxRadius: number, mapUpTrueDeg: number) {
+        this.compute(centerCoordinates, nmRadius, pxRadius, mapUpTrueDeg);
+    }
+
     compute(centerCoordinates: Coordinates, nmRadius: number, pxRadius: number, mapUpTrueDeg: number): void {
         this.valid = Number.isFinite(centerCoordinates.lat) && Number.isFinite(centerCoordinates.long) && Number.isFinite(pxRadius) && Number.isFinite(mapUpTrueDeg);
 

@@ -22,15 +22,15 @@ export const PlanMode: FC<PlanModeProps> = ({ side, symbols, adirsAlign, rangeSe
 
     const [trueHeading] = useSimVar('PLANE HEADING DEGREES TRUE', 'degrees');
 
-    const [mapParams, setMapParams] = useState<MapParameters>(new MapParameters());
+    const [mapParams, setMapParams] = useState<MapParameters>(() => (
+        new MapParameters({ lat: planCentreLat, long: planCentreLong }, rangeSetting / 2, 250, 0)
+    ));
     const debounce = useRef();
 
     useEffect(() => {
         clearTimeout(debounce.current);
         debounce.current = setTimeout(() => {
-            const newMapParams = new MapParameters();
-            newMapParams.compute({ lat: planCentreLat, long: planCentreLong }, rangeSetting / 2, 250, 0);
-            setMapParams(newMapParams);
+            setMapParams(new MapParameters({ lat: planCentreLat, long: planCentreLong }, rangeSetting / 2, 250, 0));
         });
     }, [planCentreLat, planCentreLong, rangeSetting]);
 

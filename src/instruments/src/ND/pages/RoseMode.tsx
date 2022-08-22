@@ -44,17 +44,12 @@ export const RoseMode: FC<RoseModeProps> = ({ symbols, adirsAlign, rangeSetting,
         track = (0.025 * groundSpeed + 0.00005) * track + (1 - (0.025 * groundSpeed + 0.00005)) * heading;
     }
 
-    const [mapParams, setMapParams] = useState(() => {
-        const params = new MapParameters();
-        params.compute(ppos, rangeSetting / 2, 250, trueHeading);
-
-        return params;
-    });
+    const [mapParams, setMapParams] = useState(() => (
+        new MapParameters(ppos, rangeSetting / 2, 250, trueHeading)
+    ));
 
     useEffect(() => {
-        const newMapParams = new MapParameters();
-        newMapParams.compute(ppos, rangeSetting / 2, 250, trueHeading);
-        setMapParams(newMapParams);
+        setMapParams(new MapParameters(ppos, rangeSetting / 2, 250, trueHeading));
     }, [ppos.lat, ppos.long, trueHeading, rangeSetting].map((n) => MathUtils.fastToFixed(n, 6)));
 
     if (adirsAlign) {

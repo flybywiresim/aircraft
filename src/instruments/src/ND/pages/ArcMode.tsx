@@ -44,17 +44,12 @@ export const ArcMode: React.FC<ArcModeProps> = ({ symbols, adirsAlign, rangeSett
         track = Number(MathUtils.fastToFixed(track, 2));
     }
 
-    const [mapParams, setMapParams] = useState(() => {
-        const params = new MapParameters();
-        params.compute(ppos, rangeSetting, 492, trueHeading);
-
-        return params;
-    });
+    const [mapParams, setMapParams] = useState(() => (
+        new MapParameters(ppos, rangeSetting, 492, trueHeading)
+    ));
 
     useEffect(() => {
-        const newMapParams = new MapParameters();
-        newMapParams.compute(ppos, rangeSetting, 492, trueHeading);
-        setMapParams(newMapParams);
+        setMapParams(new MapParameters(ppos, rangeSetting, 492, trueHeading));
     }, [ppos.lat, ppos.long, trueHeading, rangeSetting].map((n) => MathUtils.fastToFixed(n, 6)));
 
     if (adirsAlign) {
