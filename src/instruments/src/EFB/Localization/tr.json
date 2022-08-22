@@ -478,7 +478,7 @@
       "PauseAtTod": "T/D Noktasında Duraklat",
       "PauseAtTodDistance": "T/D Noktasında Duraklatma Mesafesi (nm)",
       "SeparateTillerFromRudderInputs": "Tiller'ı Rudder Girişlerinden Ayır",
-      "SyncEfis": "Sync EFIS controls from Captain to FO",
+      "SyncEfis": "EFIS kontrollerini Kaptan'dan FO'ya senkronize edin",
       "Title": "Gerçekçilik"
     },
     "SimOptions": {
