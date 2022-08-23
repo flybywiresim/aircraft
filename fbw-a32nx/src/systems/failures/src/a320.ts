@@ -51,6 +51,9 @@ export const A320Failure = Object.freeze({
     LeftPfdDisplay: 31000,
     RightPfdDisplay: 31001,
 
+    FlightWarningComputer1: 31500,
+    FlightWarningComputer2: 31501,
+
     LgciuPowerSupply1: 32000,
     LgciuPowerSupply2: 32001,
     LgciuInternalError1: 32002,

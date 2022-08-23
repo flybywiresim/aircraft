@@ -79,6 +79,7 @@ use flaps_computer::SlatFlapComplex;
 
 #[cfg(test)]
 use systems::hydraulic::PressureSwitchState;
+use systems::shared::HydraulicSysLowPressure;
 
 struct A320HydraulicReservoirFactory {}
 impl A320HydraulicReservoirFactory {
@@ -2531,6 +2532,26 @@ impl A320Hydraulic {
 
     pub fn gear_system(&self) -> &impl GearSystemSensors {
         &self.gear_system
+    }
+}
+impl HydraulicSysLowPressure for A320Hydraulic {
+    fn is_blue_sys_lo_pr(&self) -> bool {
+        !self
+            .blue_circuit
+            .system_section()
+            .is_pressure_switch_pressurised()
+    }
+    fn is_yellow_sys_lo_pr(&self) -> bool {
+        !self
+            .yellow_circuit
+            .system_section()
+            .is_pressure_switch_pressurised()
+    }
+    fn is_green_sys_lo_pr(&self) -> bool {
+        !self
+            .green_circuit
+            .system_section()
+            .is_pressure_switch_pressurised()
     }
 }
 impl SimulationElement for A320Hydraulic {

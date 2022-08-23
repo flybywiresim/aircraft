@@ -161,6 +161,8 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
             29_012,
             FailureType::ElecPumpOverheat(AirbusElectricPumpId::Yellow),
         ),
+        (31_500, FailureType::FlightWarningComputer(1)),
+        (31_501, FailureType::FlightWarningComputer(2)),
         (32_000, FailureType::LgciuPowerSupply(LgciuId::Lgciu1)),
         (32_001, FailureType::LgciuPowerSupply(LgciuId::Lgciu2)),
         (32_002, FailureType::LgciuInternalError(LgciuId::Lgciu1)),
@@ -266,6 +268,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("AMBIENT WIND Y", "meter per second", 0)?
     .provides_aircraft_variable("AMBIENT WIND Z", "meter per second", 0)?
     .provides_aircraft_variable("ANTISKID BRAKES ACTIVE", "Bool", 0)?
+    .provides_aircraft_variable("AUTOPILOT ALTITUDE LOCK VAR", "Feet", 3)?
     .provides_aircraft_variable("EXTERNAL POWER AVAILABLE", "Bool", 1)?
     .provides_aircraft_variable("FUEL TANK LEFT MAIN QUANTITY", "Pounds", 0)?
     .provides_aircraft_variable("GEAR ANIMATION POSITION", "Percent", 0)?
@@ -306,6 +309,8 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("TURB ENG CORRECTED N2", "Percent", 2)?
     .provides_aircraft_variable("TURB ENG JET THRUST", "Pounds", 1)?
     .provides_aircraft_variable("TURB ENG JET THRUST", "Pounds", 2)?
+    .provides_aircraft_variable("TURB ENG IGNITION SWITCH", "Enum", 1)?
+    .provides_aircraft_variable("TURB ENG IGNITION SWITCH", "Enum", 2)?
     .provides_aircraft_variable("TURB ENG IGNITION SWITCH EX1", "Enum", 1)?
     .provides_aircraft_variable("UNLIMITED FUEL", "Bool", 0)?
     .provides_aircraft_variable("VELOCITY BODY X", "feet per second", 0)?

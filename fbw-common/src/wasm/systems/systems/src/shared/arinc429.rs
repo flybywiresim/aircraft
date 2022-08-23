@@ -40,6 +40,14 @@ impl<T: Copy> Arinc429Word<T> {
     pub fn is_normal_operation(&self) -> bool {
         self.ssm == SignStatus::NormalOperation
     }
+
+    pub fn or(self, value: Arinc429Word<T>) -> Self {
+        if self.is_normal_operation() {
+            self
+        } else {
+            value
+        }
+    }
 }
 impl Arinc429Word<u32> {
     pub fn set_bit(&mut self, bit: u8, value: bool) {

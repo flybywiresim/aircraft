@@ -124,4 +124,8 @@ export class TcasSoundManager implements TcasComponent {
         }
         return false;
     }
+
+    isPlayingSound(): boolean {
+        return this.playingSound === null;
+    }
 }

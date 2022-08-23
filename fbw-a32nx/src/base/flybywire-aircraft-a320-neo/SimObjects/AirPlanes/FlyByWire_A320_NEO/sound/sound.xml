@@ -597,6 +597,9 @@
 
         <Sound WwiseData="true" WwiseEvent="AP_DC_new" Continuous="false" NodeName="PEDALS_LEFT" LocalVar="A32NX_AUTOPILOT_ACTIVE" Units="BOOL" Index="0">
             <Range UpperBound="0" />
+            <Requires LocalVar="A32NX_FWS_ANY_FWC_NORMAL" Units="Bool">
+                <Range LowerBound="1" />
+            </Requires>
         </Sound>
 
         <Sound WwiseData="true" WwiseEvent="APUnlock" NodeName="PUSH_YOKE_LEFT" ViewPoint="Inside" Continuous="false" LocalVar="A32NX_AUTOPILOT_ACTIVE" Units="BOOL" Index="0">
@@ -2151,8 +2154,8 @@
 
         <Sound WwiseData="true" WwiseEvent="CRC" NodeName="WIPER_BASE_L" ViewPoint="Inside" LocalVar="A32NX_MASTER_WARNING">
             <Range LowerBound="0.5" />
-            <Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
-                <Range LowerBound="28" />
+            <Requires LocalVar="A32NX_FWS_ANY_FWC_NORMAL" Units="Bool">
+                <Range LowerBound="1" />
             </Requires>
         </Sound>
 
@@ -2278,32 +2281,497 @@
 
         <Sound WwiseData="true" WwiseEvent="improved_tone_caution" NodeName="PEDALS_LEFT" ViewPoint="Inside" LocalVar="A32NX_MASTER_CAUTION" Continuous="false">
             <Range LowerBound="0.5" />
-            <Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
-                <Range LowerBound="28" />
+            <Requires LocalVar="A32NX_FWS_ANY_FWC_NORMAL" Units="Bool">
+                <Range LowerBound="1" />
             </Requires>
         </Sound>
 
         <!-- Altitude deviation warning =====================================================================-->
 
-        <Sound WwiseData="true" WwiseEvent="cchordloop" NodeName="PEDALS_LEFT" ViewPoint="Inside" LocalVar="A32NX_ALT_DEVIATION" Continuous="true">
-            <Range LowerBound="1" />
-            <Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
-                <Range LowerBound="28" />
-            </Requires>
-        </Sound>
-
-        <Sound WwiseData="true" WwiseEvent="cchordshort" NodeName="PEDALS_LEFT" ViewPoint="Inside" LocalVar="A32NX_ALT_DEVIATION_SHORT" Continuous="false">
-            <Range LowerBound="1" />
-            <Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
-                <Range LowerBound="28" />
-            </Requires>
-        </Sound>
-
         <Sound WwiseEvent="3click" WwiseData="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FMA_TRIPLE_CLICK" Continuous="false">
             <Range LowerBound="1"/>
-            <Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
-                <Range LowerBound="28" />
+            <Requires LocalVar="A32NX_FWS_ANY_FWC_NORMAL" Units="Bool">
+                <Range LowerBound="1" />
             </Requires>
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="cavcharge" Continuous="false" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_SOUND_CAVALRY_CHARGE" Units="BOOL" Index="0">
+            <Range LowerBound="1" />
+            <Requires LocalVar="A32NX_FWS_ANY_FWC_NORMAL" Units="Bool">
+                <Range LowerBound="1" />
+            </Requires>
+        </Sound>
+
+        <!-- Audio from FWC 1 ==================================================================================== -->
+
+        <Sound WwiseData="true" WwiseEvent="cchordloop" Continuous="true" NodeName="PEDALS_LEFT" ViewPoint="Inside" LocalVar="A32NX_FWS_FWC_1_AUDIO" Units="ENUM" Index="0">
+            <Range LowerBound="5" UpperBound="5" />
+        </Sound>
+
+        <!-- Audio from FWC 2 ==================================================================================== -->
+
+        <Sound WwiseData="true" WwiseEvent="cchordloop" Continuous="true" NodeName="PEDALS_LEFT" ViewPoint="Inside" LocalVar="A32NX_FWS_FWC_2_AUDIO" Units="ENUM" Index="0">
+            <Range LowerBound="5" UpperBound="5" />
+        </Sound>
+
+        <!-- Synthetic Voice from FWC 1 ========================================================================================  -->
+
+        <Sound WwiseData="true" WwiseEvent="priorityleft" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_1_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="60" UpperBound="60" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="priorityright" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_1_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="61" UpperBound="61" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="dualinput" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_1_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="62" UpperBound="62" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="new_retard" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_1_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="70" UpperBound="70" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="aural_minimumnew" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_1_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="80" UpperBound="80" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="aural_100above" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_1_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="81" UpperBound="81" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="new_5" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_1_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="105" UpperBound="105" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="new_10" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_1_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="110" UpperBound="110" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="new_20" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_1_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="122" UpperBound="122" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="new_30" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_1_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="123" UpperBound="123" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="new_40" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_1_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="124" UpperBound="124" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="new_50" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_1_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="125" UpperBound="125" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="60" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_1_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="126" UpperBound="126" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="70" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_1_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="127" UpperBound="127" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="80" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_1_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="128" UpperBound="128" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="90" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_1_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="129" UpperBound="129" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="new_100" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_1_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="131" UpperBound="131" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="new_200" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_1_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="132" UpperBound="132" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="new_300" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_1_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="133" UpperBound="133" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="new_400" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_1_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="134" UpperBound="134" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="new_500" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_1_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="135" UpperBound="135" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="new_1000" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_1_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="136" UpperBound="136" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="new_2000" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_1_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="137" UpperBound="137" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="new_2500" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_1_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="138" UpperBound="138" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="new_2_500" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_1_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="139" UpperBound="139" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="1" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_1_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="101" UpperBound="101" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="1c" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_1_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="141" UpperBound="141" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="2" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_1_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="102" UpperBound="102" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="2c" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_1_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="142" UpperBound="142" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="3" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_1_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="103" UpperBound="103" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="3c" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_1_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="143" UpperBound="143" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="4" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_1_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="104" UpperBound="104" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="4c" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_1_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="144" UpperBound="144" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="5c" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_1_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="145" UpperBound="145" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="6" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_1_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="106" UpperBound="106" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="7" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_1_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="107" UpperBound="107" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="8" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_1_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="108" UpperBound="108" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="9" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_1_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="109" UpperBound="109" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="11" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_1_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="111" UpperBound="111" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="12" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_1_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="112" UpperBound="112" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="13" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_1_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="113" UpperBound="113" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="14" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_1_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="114" UpperBound="114" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="15" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_1_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="115" UpperBound="115" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="16" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_1_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="116" UpperBound="116" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="17" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_1_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="117" UpperBound="117" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="18" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_1_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="118" UpperBound="118" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="19" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_1_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="119" UpperBound="119" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="19" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_1_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="119" UpperBound="119" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="20c" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_1_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="152" UpperBound="152" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="30c" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_1_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="153" UpperBound="153" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="40c" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_1_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="154" UpperBound="154" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="50c" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_1_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="155" UpperBound="155" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="60c" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_1_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="156" UpperBound="156" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="70c" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_1_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="157" UpperBound="157" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="80c" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_1_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="158" UpperBound="158" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="90c" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_1_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="159" UpperBound="159" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="hundredand" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_1_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="160" UpperBound="160" />
+        </Sound>
+
+        <!-- Synthetic Voice from FWC 2 ========================================================================================  -->
+
+        <Sound WwiseData="true" WwiseEvent="priorityleft" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_2_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="60" UpperBound="60" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="priorityright" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_2_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="61" UpperBound="61" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="dualinput" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_2_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="62" UpperBound="62" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="new_retard" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_2_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="70" UpperBound="70" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="aural_minimumnew" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_2_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="80" UpperBound="80" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="aural_100above" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_2_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="81" UpperBound="81" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="new_5" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_2_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="105" UpperBound="105" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="new_10" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_2_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="110" UpperBound="110" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="new_20" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_2_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="122" UpperBound="122" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="new_30" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_2_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="123" UpperBound="123" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="new_40" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_2_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="124" UpperBound="124" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="new_50" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_2_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="125" UpperBound="125" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="60" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_2_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="126" UpperBound="126" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="70" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_2_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="127" UpperBound="127" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="80" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_2_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="128" UpperBound="128" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="90" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_2_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="129" UpperBound="129" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="new_100" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_2_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="131" UpperBound="131" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="new_200" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_2_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="132" UpperBound="132" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="new_300" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_2_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="133" UpperBound="133" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="new_400" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_2_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="134" UpperBound="134" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="new_500" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_2_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="135" UpperBound="135" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="new_1000" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_2_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="136" UpperBound="136" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="new_2000" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_2_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="137" UpperBound="137" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="new_2500" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_2_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="138" UpperBound="138" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="new_2_500" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_2_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="139" UpperBound="139" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="1" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_2_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="101" UpperBound="101" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="1c" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_2_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="141" UpperBound="141" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="2" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_2_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="102" UpperBound="102" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="2c" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_2_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="142" UpperBound="142" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="3" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_2_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="103" UpperBound="103" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="3c" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_2_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="143" UpperBound="143" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="4" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_2_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="104" UpperBound="104" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="4c" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_2_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="144" UpperBound="144" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="5c" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_2_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="145" UpperBound="145" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="6" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_2_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="106" UpperBound="106" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="7" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_2_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="107" UpperBound="107" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="8" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_2_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="108" UpperBound="108" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="9" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_2_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="109" UpperBound="109" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="11" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_2_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="111" UpperBound="111" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="12" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_2_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="112" UpperBound="112" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="13" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_2_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="113" UpperBound="113" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="14" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_2_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="114" UpperBound="114" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="15" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_2_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="115" UpperBound="115" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="16" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_2_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="116" UpperBound="116" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="17" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_2_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="117" UpperBound="117" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="18" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_2_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="118" UpperBound="118" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="19" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_2_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="119" UpperBound="119" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="19" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_2_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="119" UpperBound="119" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="20c" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_2_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="152" UpperBound="152" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="30c" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_2_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="153" UpperBound="153" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="40c" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_2_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="154" UpperBound="154" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="50c" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_2_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="155" UpperBound="155" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="60c" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_2_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="156" UpperBound="156" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="70c" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_2_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="157" UpperBound="157" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="80c" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_2_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="158" UpperBound="158" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="90c" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_2_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="159" UpperBound="159" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="hundredand" Continuous="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FWS_FWC_2_SYNTHETIC_VOICE" Units="ENUM" Index="0">
+            <Range LowerBound="160" UpperBound="160" />
         </Sound>
 
     </SimVarSounds>
@@ -2313,8 +2781,6 @@
     <AvionicSounds>
         <Sound WwiseData="true" WwiseEvent="cchordshort" Continuous="false" NodeName="PEDALS_LEFT" ViewPoint="Inside"/>
         <Sound WwiseData="true" WwiseEvent="cchordloop" Continuous="true" NodeName="PEDALS_LEFT" ViewPoint="Inside"/>
-        <Sound WwiseData="true" WwiseEvent="aural_stall" />
-        <Sound WwiseData="true" WwiseEvent="aural_stall_new" NodeName="PEDALS_LEFT" ViewPoint="Inside" />
         <Sound WwiseData="true" WwiseEvent="aural_pull_up" />
         <Sound WwiseData="true" WwiseEvent="aural_pullup_new" Continuous="false" NodeName="PEDALS_LEFT" ViewPoint="Inside"/>
         <Sound WwiseData="true" WwiseEvent="aural_overspeed" />
@@ -2327,47 +2793,10 @@
         <Sound WwiseData="true" WwiseEvent="aural_too_low_gear" Continuous="false" NodeName="PEDALS_LEFT" ViewPoint="Inside" />
         <Sound WwiseData="true" WwiseEvent="aural_too_low_flaps" Continuous="false" NodeName="PEDALS_LEFT" ViewPoint="Inside" />
         <Sound WwiseData="true" WwiseEvent="aural_too_low_terrain" Continuous="false" NodeName="PEDALS_LEFT" ViewPoint="Inside" />
-        <Sound WwiseData="true" WwiseEvent="aural_5ft" />
-        <Sound WwiseData="true" WwiseEvent="aural_10ft" />
-        <Sound WwiseData="true" WwiseEvent="aural_20ft" />
-        <Sound WwiseData="true" WwiseEvent="aural_30ft" />
-        <Sound WwiseData="true" WwiseEvent="aural_40ft" />
-        <Sound WwiseData="true" WwiseEvent="aural_50ft" />
-        <Sound WwiseData="true" WwiseEvent="aural_60ft" />
-        <Sound WwiseData="true" WwiseEvent="aural_70ft" />
-        <Sound WwiseData="true" WwiseEvent="aural_100ft" />
-        <Sound WwiseData="true" WwiseEvent="aural_200ft" />
-        <Sound WwiseData="true" WwiseEvent="aural_300ft" />
-        <Sound WwiseData="true" WwiseEvent="aural_400ft" />
-        <Sound WwiseData="true" WwiseEvent="aural_500ft" />
-        <Sound WwiseData="true" WwiseEvent="aural_1000ft" />
-        <Sound WwiseData="true" WwiseEvent="aural_2500ft" />
-        <Sound WwiseData="true" WwiseEvent="aural_retard" />
-        <Sound WwiseData="true" WwiseEvent="aural_v1" />
         <Sound WwiseEvent="cavcharge" WwiseData="true" NodeName="PEDALS_LEFT" Continuous="false" />
         <Sound WwiseEvent="3click" WwiseData="true" NodeName="PEDALS_LEFT" Continuous="false" />
         <Sound WwiseData="true" WwiseEvent="fwdgalley" NodeName="WIPER_BASE_L" />
         <Sound WwiseData="true" WwiseEvent="cpdlc_ring" NodeName="WIPER_BASE_L" />
-
-        <!-- New RA callouts ====================================================================================-->
-        <Sound WwiseData="true" WwiseEvent="new_5" NodeName="WIPER_BASE_L" />
-        <Sound WwiseData="true" WwiseEvent="new_10" NodeName="WIPER_BASE_L" />
-        <Sound WwiseData="true" WwiseEvent="new_20" NodeName="WIPER_BASE_L" />
-        <Sound WwiseData="true" WwiseEvent="new_30" NodeName="WIPER_BASE_L" />
-        <Sound WwiseData="true" WwiseEvent="new_40" NodeName="WIPER_BASE_L" />
-        <Sound WwiseData="true" WwiseEvent="new_50" NodeName="WIPER_BASE_L" />
-        <Sound WwiseData="true" WwiseEvent="new_100" NodeName="WIPER_BASE_L" />
-        <Sound WwiseData="true" WwiseEvent="new_200" NodeName="WIPER_BASE_L" />
-        <Sound WwiseData="true" WwiseEvent="new_300" NodeName="WIPER_BASE_L" />
-        <Sound WwiseData="true" WwiseEvent="new_400" NodeName="WIPER_BASE_L" />
-        <Sound WwiseData="true" WwiseEvent="new_500" NodeName="WIPER_BASE_L" />
-        <Sound WwiseData="true" WwiseEvent="new_1000" NodeName="WIPER_BASE_L" />
-        <Sound WwiseData="true" WwiseEvent="new_2000" NodeName="WIPER_BASE_L" />
-        <Sound WwiseData="true" WwiseEvent="new_2500" NodeName="WIPER_BASE_L" />
-        <Sound WwiseData="true" WwiseEvent="new_2_500" NodeName="WIPER_BASE_L" />
-        <Sound WwiseData="true" WwiseEvent="new_retard" NodeName="WIPER_BASE_L" />
-        <Sound WwiseData="true" WwiseEvent="aural_minimumnew" NodeName="WIPER_BASE_L" />
-        <Sound WwiseData="true" WwiseEvent="aural_100above" NodeName="WIPER_BASE_L" />
 
         <!-- TCAS callouts ====================================================================================-->
 

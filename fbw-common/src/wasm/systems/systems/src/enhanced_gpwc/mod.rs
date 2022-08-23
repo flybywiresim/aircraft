@@ -290,6 +290,18 @@ mod tests {
     }
 
     impl LgciuGearExtension for TestLgciu {
+        fn left_gear_down_and_locked(&self) -> bool {
+            self.gear_down
+        }
+
+        fn right_gear_down_and_locked(&self) -> bool {
+            self.gear_down
+        }
+
+        fn nose_gear_down_and_locked(&self) -> bool {
+            self.gear_down
+        }
+
         fn all_down_and_locked(&self) -> bool {
             self.gear_down
         }

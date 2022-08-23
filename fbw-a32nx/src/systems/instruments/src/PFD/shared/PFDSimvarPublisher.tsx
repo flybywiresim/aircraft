@@ -102,6 +102,10 @@ export type PFDSimvars = AdirsSimVars & SwitchingPanelVSimVars & {
     latAccRaw: number;
     ls1Button: boolean;
     ls2Button: boolean;
+    fwc1AltAlertPulsing: boolean,
+    fwc2AltAlertPulsing: boolean,
+    fwc1AltAlertFlashing: boolean,
+    fwc2AltAlertFlashing: boolean,
     fcdc1DiscreteWord1Raw: number;
     fcdc2DiscreteWord1Raw: number;
     fcdc1DiscreteWord2Raw: number;
@@ -245,7 +249,7 @@ export enum PFDVars {
     radioAltitude2 = 'L:A32NX_RA_2_RADIO_ALTITUDE',
     crzAltMode = 'L:A32NX_FMA_CRUISE_ALT_MODE',
     tcasModeDisarmed = 'L:A32NX_AUTOPILOT_TCAS_MESSAGE_DISARM',
-    flexTemp = 'L:AIRLINER_TO_FLEX_TEMP',
+    flexTemp = 'L:A32NX_TO_FLEX_TEMP',
     autoBrakeMode = 'L:A32NX_AUTOBRAKES_ARMED_MODE',
     autoBrakeActive = 'L:A32NX_AUTOBRAKES_ACTIVE',
     autoBrakeDecel = 'L:A32NX_AUTOBRAKES_DECEL_LIGHT',
@@ -254,6 +258,10 @@ export enum PFDVars {
     latAccRaw = 'L:A32NX_ADIRS_IR_1_BODY_LATERAL_ACC',
     ls1Button = 'L:BTN_LS_1_FILTER_ACTIVE',
     ls2Button = 'L:BTN_LS_2_FILTER_ACTIVE',
+    fwc1AltAlertPulsing = 'L:A32NX_FWS_FWC_1_ALT_ALERT_PULSING',
+    fwc2AltAlertPulsing = 'L:A32NX_FWS_FWC_2_ALT_ALERT_PULSING',
+    fwc1AltAlertFlashing = 'L:A32NX_FWS_FWC_1_ALT_ALERT_FLASHING',
+    fwc2AltAlertFlashing = 'L:A32NX_FWS_FWC_2_ALT_ALERT_FLASHING',
     fcdc1DiscreteWord1Raw = 'L:A32NX_FCDC_1_DISCRETE_WORD_1',
     fcdc2DiscreteWord1Raw = 'L:A32NX_FCDC_2_DISCRETE_WORD_1',
     fcdc1DiscreteWord2Raw = 'L:A32NX_FCDC_1_DISCRETE_WORD_2',
@@ -411,6 +419,10 @@ export class PFDSimvarPublisher extends UpdatableSimVarPublisher<PFDSimvars> {
         ['latAccRaw', { name: PFDVars.latAccRaw, type: SimVarValueType.Number }],
         ['ls1Button', { name: PFDVars.ls1Button, type: SimVarValueType.Bool }],
         ['ls2Button', { name: PFDVars.ls2Button, type: SimVarValueType.Bool }],
+        ['fwc1AltAlertPulsing', { name: PFDVars.fwc1AltAlertPulsing, type: SimVarValueType.Bool }],
+        ['fwc2AltAlertPulsing', { name: PFDVars.fwc2AltAlertPulsing, type: SimVarValueType.Bool }],
+        ['fwc1AltAlertFlashing', { name: PFDVars.fwc1AltAlertFlashing, type: SimVarValueType.Bool }],
+        ['fwc2AltAlertFlashing', { name: PFDVars.fwc2AltAlertFlashing, type: SimVarValueType.Bool }],
         ['fcdc1DiscreteWord1Raw', { name: PFDVars.fcdc1DiscreteWord1Raw, type: SimVarValueType.Number }],
         ['fcdc2DiscreteWord1Raw', { name: PFDVars.fcdc2DiscreteWord1Raw, type: SimVarValueType.Number }],
         ['fcdc1DiscreteWord2Raw', { name: PFDVars.fcdc1DiscreteWord2Raw, type: SimVarValueType.Number }],

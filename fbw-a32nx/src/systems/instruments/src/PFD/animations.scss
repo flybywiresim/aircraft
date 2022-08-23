@@ -42,9 +42,16 @@
   100%  {opacity: 1}
 }
 
+@keyframes AltitudeAlertAnim {
+  0% { stroke-width: 0.12mm; }
+  50% { stroke-width: 0.12mm; }
+  51% { stroke-width: 0.16mm; }
+  100% { stroke-width: 0.16mm; }
+}
+
 .BlinkInfinite {
   animation-name: blinking;
-  animation-duration: 1s;
+  animation-duration: 1100ms;
   animation-iteration-count: infinite;
 }
 
@@ -74,4 +81,11 @@
   animation-name: blinking;
   animation-duration: 200ms;
   animation-iteration-count: infinite;
+}
+
+.AltitudeAlertPulse {
+  animation-name: AltitudeAlertAnim;
+  animation-duration: 1100ms;
+  animation-iteration-count: infinite;
+  fill: none;
 }

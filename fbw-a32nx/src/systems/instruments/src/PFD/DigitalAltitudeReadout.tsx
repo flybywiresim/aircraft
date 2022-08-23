@@ -89,6 +89,22 @@ export class DigitalAltitudeReadout extends DisplayComponent<DigitalAltitudeRead
         this.altitude,
     );
 
+    private fwc1AltAlertPulsing = Subject.create(false);
+
+    private fwc2AltAlertPulsing = Subject.create(false);
+
+    private fwc1AltAlertFlashing = Subject.create(false);
+
+    private fwc2AltAlertFlashing = Subject.create(false);
+
+    private readonly altReadoutOutline = MappedSubject.create(
+        ([pulse1, pulse2, flash1, flash2]) => flash1 || flash2 ? 'NormalStroke Amber BlinkInfinite' : pulse1 || pulse2 ? 'AltitudeAlertPulse Yellow' : 'NormalStroke Yellow',
+        this.fwc1AltAlertPulsing,
+        this.fwc2AltAlertPulsing,
+        this.fwc1AltAlertFlashing,
+        this.fwc2AltAlertFlashing,
+    )
+
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
@@ -140,6 +156,11 @@ export class DigitalAltitudeReadout extends DisplayComponent<DigitalAltitudeRead
         sub.on('baroCorrectedAltitude').handle(this.altitude.setWord.bind(this.altitude));
 
         this.baroMode.setConsumer(sub.on('baroMode'));
+
+        sub.on('fwc1AltAlertPulsing').handle(this.fwc1AltAlertFlashing.set.bind(this.fwc1AltAlertFlashing));
+        sub.on('fwc2AltAlertPulsing').handle(this.fwc2AltAlertFlashing.set.bind(this.fwc2AltAlertFlashing));
+        sub.on('fwc1AltAlertFlashing').handle(this.fwc1AltAlertFlashing.set.bind(this.fwc1AltAlertFlashing));
+        sub.on('fwc2AltAlertFlashing').handle(this.fwc2AltAlertFlashing.set.bind(this.fwc2AltAlertFlashing));
     }
 
     render(): VNode {
@@ -199,7 +220,7 @@ export class DigitalAltitudeReadout extends DisplayComponent<DigitalAltitudeRead
                     </svg>
                 </g>
                 <path id="AltReadoutReducedAccurMarks" class="NormalStroke Amber" style="display: none" d="m132.61 81.669h4.7345m-4.7345-1.6933h4.7345" />
-                <path id="AltReadoutOutline" class="NormalStroke Yellow" d="m117.75 76.337h13.096v-2.671h8.8647v14.313h-8.8647v-2.671h-13.096" />
+                <path id="AltReadoutOutline" class={this.altReadoutOutline} d="m117.75 76.337h13.096v-2.671h8.8647v14.313h-8.8647v-2.671h-13.096" />
 
                 <g id="AltNegativeText" class="FontLarge EndAlign" visibility={this.isNegativeSub}>
                     <text class="White" x="121.51714" y="77.956947">N</text>

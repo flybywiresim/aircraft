@@ -104,7 +104,7 @@ export enum EwdVars {
     throttle2Position = 'L:XMLVAR_Throttle2Position',
     fwcFlightPhase = 'L:A32NX_FWC_FLIGHT_PHASE',
     idleN1 = 'L:A32NX_ENGINE_IDLE_N1',
-    flexTemp = 'L:AIRLINER_TO_FLEX_TEMP',
+    flexTemp = 'L:A32NX_TO_FLEX_TEMP',
     satRaw = 'L:A32NX_ADIRS_ADR_1_STATIC_AIR_TEMPERATURE',
     totalFuel = 'FUEL TOTAL QUANTITY WEIGHT',
     slatsFlapsStatusRaw = 'L:A32NX_SFCC_SLAT_FLAP_SYSTEM_STATUS_WORD',

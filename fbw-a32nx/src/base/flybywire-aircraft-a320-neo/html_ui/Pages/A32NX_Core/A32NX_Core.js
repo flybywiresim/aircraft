@@ -44,11 +44,6 @@ class A32NX_Core {
                 updateInterval: 100,
             },
             {
-                name: 'FWC',
-                module: new A32NX_FWC(2),
-                updateInterval: 50,
-            },
-            {
                 name: 'GPWS',
                 module: new A32NX_GPWS(this),
                 updateInterval: 75,

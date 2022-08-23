@@ -12,6 +12,7 @@ lazy_static = "1.4.0"
 nalgebra = "0.25.0"
 ntest = "0.7.2"
 enum-map = "2.4.2"
+fxhash = "0.2.1"
 systems = { path = "../../../../../fbw-common/src/wasm/systems/systems" }
 
 [dev-dependencies]

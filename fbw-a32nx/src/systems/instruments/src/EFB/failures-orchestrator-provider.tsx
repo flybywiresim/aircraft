@@ -64,6 +64,8 @@ const createOrchestrator = () => new FailuresOrchestrator('A32NX', [
 
     [31, A320Failure.LeftPfdDisplay, 'Captain PFD display'],
     [31, A320Failure.RightPfdDisplay, 'F/O PFD display'],
+    [31, A320Failure.FlightWarningComputer1, 'FWC 1'],
+    [31, A320Failure.FlightWarningComputer2, 'FWC 2'],
 
     [32, A320Failure.LgciuPowerSupply1, 'LGCIU 1 Power supply'],
     [32, A320Failure.LgciuPowerSupply2, 'LGCIU 2 Power supply'],
