@@ -138,38 +138,12 @@ export const ChartViewer = () => {
         setAircraftIconVisible(visible);
     }, [boundingBox, chartLinks, aircraftLatitude.toFixed(2), aircraftLongitude.toFixed(2), aircraftTrueHeading.toFixed(1)]);
 
-    useEffect(() => {
-        const { width, height } = chartDimensions;
-
-        if (chartRef.current) {
-            if (width) {
-                chartRef.current.style.width = `${width}px`;
-            }
-
-            if (height) {
-                chartRef.current.style.height = `${height}px`;
-            }
-        }
-    }, [chartRef, chartDimensions]);
-
-    useEffect(() => {
-        if (planeInFocus) {
-            dispatch(editTabProperty({ tab: currentTab, chartRotation: 360 - aircraftIconPosition.r }));
-            // TODO: implement the chart translation
-            // if (ref.current) {
-            //     ref.current.scrollTop = aircraftIconPosition.y + ((ref.current.clientHeight - aircraftIconPosition.y) / 2);
-            //     ref.current.scrollLeft = -(ref.current.clientWidth - aircraftIconPosition.x) / 2;
-            // }
-        }
-    }, [aircraftIconPosition.r, planeInFocus]);
-
-    // The functions that handle rotation get the closest 45 degree angle increment to the current angle
     const handleRotateRight = () => {
-        dispatch(editTabProperty({ tab: currentTab, chartRotation: chartRotation + (90 - chartRotation % 90) }));
+        dispatch(editTabProperty({ tab: currentTab, chartRotation: (chartRotation + 90) % 360 }));
     };
 
     const handleRotateLeft = () => {
-        dispatch(editTabProperty({ tab: currentTab, chartRotation: chartRotation - (90 + chartRotation % 90) }));
+        dispatch(editTabProperty({ tab: currentTab, chartRotation: (chartRotation - 90) % 360 }));
     };
 
     useEffect(() => {
@@ -180,16 +154,36 @@ export const ChartViewer = () => {
                     width: -1,
                     height: -1,
                 };
-                    // @ts-ignore
+
+                console.debug(`chartRotation=${chartRotation} ===============`);
+                // @ts-ignore
+                console.debug(`ref.current.clientWidth=${ref.current.clientWidth} ref.current.clientHeight=${ref.current.clientHeight} this.width=${(this.width)} this.height=${(this.height)}`);
+
+                // @ts-ignore
                 if (this.height * (ref.current.clientWidth / this.width) < ref.current.clientHeight) {
+                    console.debug('Landscape');
+                    chartDimensions.height = ref.current.clientHeight;
                     // @ts-ignore
                     chartDimensions.width = this.width * (ref.current.clientHeight / this.height);
-                    chartDimensions.height = ref.current.clientHeight;
+                    if (chartRotation === 90 || chartRotation === 270) {
+                        chartDimensions.width = ref.current.clientWidth;
+                        // @ts-ignore
+                        chartDimensions.height = this.height * (ref.current.clientWidth / this.width);
+                    }
                 } else {
+                    console.debug('Portrait');
                     chartDimensions.width = ref.current.clientWidth;
                     // @ts-ignore
                     chartDimensions.height = this.height * (ref.current.clientWidth / this.width);
+                    if (chartRotation === 90 || chartRotation === 270) {
+                        chartDimensions.height = ref.current.clientHeight;
+                        // @ts-ignore
+                        chartDimensions.width = this.width * (ref.current.clientHeight / this.height);
+                    }
                 }
+
+                console.debug(`chartDimensions.width=${chartDimensions.width} chartDimensions.height=${chartDimensions.height}`);
+
                 dispatch(editTabProperty({
                     tab: currentTab,
                     chartDimensions,
@@ -198,6 +192,20 @@ export const ChartViewer = () => {
         };
         img.src = chartLinks.light;
     }, [chartLinks, currentPage, chartRotation]);
+
+    useEffect(() => {
+        const { width, height } = chartDimensions;
+        if (chartRef.current) {
+            if (width) {
+                chartRef.current.style.width = `${width}px`;
+            }
+            if (height) {
+                chartRef.current.style.height = `${height}px`;
+            }
+            // @ts-ignore
+            console.debug(`chartRef.current.style.width=${chartRef.current.style.width} chartRef.current.style.height=${chartRef.current.style.height}`);
+        }
+    }, [chartRef, chartDimensions]);
 
     useEffect(() => {
         if (pagesViewable > 1) {
@@ -254,19 +262,6 @@ export const ChartViewer = () => {
                         className="h-full"
                         onMouseUp={() => dispatch(editTabProperty({ tab: currentTab, chartPosition: { ...state } }))}
                     >
-                        {/* <div className="overflow-hidden absolute bottom-6 left-6 z-30 rounded-md">
-                            {drawMode && (
-                                <Slider min={1} max={30} value={brushSize} onChange={(value) => setBrushSize(value)} />
-                            )}
-                            <button
-                                type="button"
-                                onClick={() => setDrawMode((old) => !old)}
-                                className={`p-2 transition hover:text-theme-body duration-100 cursor-pointer bg-theme-secondary hover:bg-theme-highlight ${drawMode && 'text-theme-body bg-theme-highlight'}`}
-                            >
-                                <PencilFill className="fill-current" size={40} />
-                            </button>
-                        </div> */}
-
                         {pagesViewable > 1 && (
                             <div className="flex overflow-hidden absolute top-6 left-6 z-40 flex-row items-center rounded-md">
                                 <div
@@ -312,15 +307,6 @@ export const ChartViewer = () => {
                                         <ArrowCounterclockwise size={40} />
                                     </button>
                                 </TooltipWrapper>
-                                {/* {boundingBox && (
-                                    <button
-                                        type="button"
-                                        onClick={() => dispatch(setPlaneInFocus(!planeInFocus))}
-                                        className={`p-2 transition hover:text-theme-body duration-100 cursor-pointer bg-theme-secondary hover:bg-theme-highlight ${planeInFocus && 'text-theme-highlight  hover:text-theme-text'}`}
-                                    >
-                                        <Bullseye size={40} />
-                                    </button>
-                                )} */}
                                 <TooltipWrapper text={t('NavigationAndCharts.TT.RotateRight45Degrees')}>
                                     <button
                                         type="button"
