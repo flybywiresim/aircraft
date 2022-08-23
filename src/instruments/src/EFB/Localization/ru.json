@@ -85,6 +85,7 @@
       "YouHaveNotYetImportedAnySimBriefData": "Вы еще не импортировали данные simBrief."
     },
     "Overview": {
+      "ActualGW": "Actual GW",
       "Engines": "Двигатели",
       "MMO": "MMO",
       "MRW": "MRW",
@@ -132,6 +133,27 @@
       "Title": "Топливо",
       "TotalFuel": "Общее количество топлива",
       "Unavailable": "Недоступно"
+    },
+    "Payload": {
+      "BoardingTime": "Boarding Time",
+      "Cargo": "Cargo",
+      "Current": "Current",
+      "Passengers": "Passengers",
+      "Planned": "Planned",
+      "TT": {
+        "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Aircraft Must Be On the Ground and Have Engines Shutdown to Change Boarding Duration",
+        "FillPayloadFromSimbrief": "Fill Payload Information from Simbrief",
+        "MaxCargo": "Max Cargo",
+        "MaxPassengers": "Maximum Passengers",
+        "MaxZFW": "Maximum ZFW",
+        "MaxZFWCG": "Maximum ZFWCG",
+        "PerPaxBagWeight": "Per Passenger Bag Weight",
+        "PerPaxWeight": "Per Passenger Weight",
+        "StartBoarding": "Begin Boarding"
+      },
+      "Title": "Payload",
+      "ZFW": "ZFW",
+      "ZFWCG": "ZFWCG"
     },
     "Pushback": {
       "Title": "Откат"
@@ -456,6 +478,7 @@
       "PauseAtTod": "Т/Д Пауза",
       "PauseAtTodDistance": "Расстояние паузы Т/Д (нм)",
       "SeparateTillerFromRudderInputs": "Отдельный румпель от входов руля",
+      "SyncEfis": "Sync EFIS controls from Captain to FO",
       "Title": "Реализм"
     },
     "SimOptions": {
@@ -465,6 +488,7 @@
       "ConesEnabled": "Предохранительные конусы",
       "DefaultBarometerUnit": "Единица измерения барометра по умолчанию",
       "DynamicRegistrationDecal": "Наклейка с динамической регистрацией",
+      "EnableSimBridge": "Подключение к серверу MCDU (автоматически деактивируется через 5 минут, если соединение не было успешным)",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Подключение к серверу MCDU (автоматически деактивируется через 5 минут, если соединение не было успешным)",
       "ExternalMcduServerPort": "Порт внешнего сервера MCDU",
       "Hpa": "гПа",
@@ -473,6 +497,7 @@
       "None": "Нет",
       "Off": "Откл.",
       "Save": "Сохранить",
+      "SimBridgePort": "Порт внешнего сервера MCDU",
       "SyncMsfsFlightPlan": "Синхронизировать план полета MSFS",
       "ThrottleDetents": "Защелки рычагов",
       "Title": "Параметры симулятора",

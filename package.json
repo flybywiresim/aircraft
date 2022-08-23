@@ -1,6 +1,6 @@
 {
   "name": "a32nx",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "edition": "development",
   "scripts": {
     "lint": "eslint --cache **/*.{js,mjs,jsx,ts,tsx}",
@@ -21,6 +21,7 @@
     "build:pfd": "cd src/instruments/src/PFD && rollup -c",
     "build:mcdu-client": "rollup -c src/mcdu-server/client/rollup.config.js",
     "build:mcdu-server": "pkg src/mcdu-server/index.js --target node12-win-x64 --no-bytecode --public-packages \"*\" --public --output \"flybywire-aircraft-a320-neo/MCDU SERVER/server.exe\"",
+    "build:simbridge-client": "rollup -c src/simbridge-client/rollup.config.js",
     "build:ace": "node --max-old-space-size=8192 node_modules/rollup/dist/bin/rollup -wc .\\src\\instruments\\buildSrc\\aceBuild.mjs"
   },
   "lint-staged": {

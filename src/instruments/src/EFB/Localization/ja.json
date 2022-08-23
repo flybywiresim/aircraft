@@ -85,6 +85,7 @@
       "YouHaveNotYetImportedAnySimBriefData": "SimBriefのデータはまだインポートされていません。"
     },
     "Overview": {
+      "ActualGW": "現在の総重量",
       "Engines": "エンジン",
       "MMO": "MMO",
       "MRW": "MRW",
@@ -132,6 +133,27 @@
       "Title": "燃料",
       "TotalFuel": "合計燃料",
       "Unavailable": "利用不能"
+    },
+    "Payload": {
+      "BoardingTime": "搭乗時間",
+      "Cargo": "貨物",
+      "Current": "現在値",
+      "Passengers": "乗客数",
+      "Planned": "計画値",
+      "TT": {
+        "AircraftMustBeColdAndDarkToChangeBoardingTimes": "エンジン停止かつ地上にいる場合のみ、搭乗時間を変更できます",
+        "FillPayloadFromSimbrief": "Simbriefから積載物の情報を読み込む",
+        "MaxCargo": "最大貨物重量",
+        "MaxPassengers": "最大乗客数",
+        "MaxZFW": "最大ZFW",
+        "MaxZFWCG": "最大ZFWCG",
+        "PerPaxBagWeight": "乗客1人あたりの手荷物重量",
+        "PerPaxWeight": "乗客1人あたりの重量",
+        "StartBoarding": "搭乗開始"
+      },
+      "Title": "積載物",
+      "ZFW": "ZFW",
+      "ZFWCG": "ZFWCG"
     },
     "Pushback": {
       "Title": "プッシュバック"
@@ -456,6 +478,7 @@
       "PauseAtTod": "降下開始地点で一時停止",
       "PauseAtTodDistance": "一時停止を有効にする降下開始地点からの距離(nm)",
       "SeparateTillerFromRudderInputs": "ティラーをラダー入力から分離",
+      "SyncEfis": "機長のEFIS操作を副操縦士に同期",
       "Title": "リアリズム"
     },
     "SimOptions": {
@@ -465,6 +488,7 @@
       "ConesEnabled": "セーフティコーン",
       "DefaultBarometerUnit": "デフォルトの気圧計単位",
       "DynamicRegistrationDecal": "登録番号デカールの表示",
+      "EnableSimBridge": "SimBridgeサーバー接続の有効化(接続が成功しなかった場合、5分後に自動的に非有効化)",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "MCDUサーバー接続の有効化(接続が成功しなかった場合、5分後に自動的に非有効化)",
       "ExternalMcduServerPort": "外部MCDUサーバーポート",
       "Hpa": "hPa",
@@ -473,6 +497,7 @@
       "None": "なし",
       "Off": "オフ",
       "Save": "保存",
+      "SimBridgePort": "外部SimBridgeサーバーポート",
       "SyncMsfsFlightPlan": "MSFSのフライトプランと同期",
       "ThrottleDetents": "スロットルディテント",
       "Title": "シミュレーターオプション",

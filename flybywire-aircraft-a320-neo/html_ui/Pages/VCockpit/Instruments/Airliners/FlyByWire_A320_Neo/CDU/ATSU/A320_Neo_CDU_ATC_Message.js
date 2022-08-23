@@ -2,24 +2,32 @@ class CDUAtcMessage {
     static TranslateCpdlcResponse(message) {
         let retval;
 
-        if (message.Content !== undefined) {
-            if (message.Content.TypeId === "DM0") {
+        switch (message.Content[0].TypeId) {
+            case "DM0":
                 retval = "WILC";
-            } else if (message.Content.TypeId === "UM0" || message.Content.TypeId === "DM1") {
+                break;
+            case "UM0":
+            case "DM1":
                 retval = "UNBL";
-            } else if (message.Content.TypeId === "UM1" || message.Content.TypeId === "DM2") {
+                break;
+            case "UM1":
+            case "DM2":
                 retval = "STBY";
-            } else if (message.Content.TypeId === "UM3" || message.Content.TypeId === "DM3") {
+                break;
+            case "UM3":
+            case "DM3":
                 retval = "ROGR";
-            } else if (message.Content.TypeId === "UM4" || message.Content.TypeId === "DM4") {
+                break;
+            case "UM4":
+            case "DM4":
                 retval = "AFRM";
-            } else if (message.Content.TypeId === "UM5" || message.Content.TypeId === "DM5") {
+                break;
+            case "UM5":
+            case "DM5":
                 retval = "NEG";
-            } else {
+                break;
+            default:
                 return "";
-            }
-        } else {
-            return "";
         }
 
         let color = '{cyan}';
@@ -31,7 +39,7 @@ class CDUAtcMessage {
         return retval;
     }
 
-    static ShowPage(mcdu, messages, messageIndex, offset = 0) {
+    static ShowPage(mcdu, messages, messageIndex, messageList, offset = 0) {
         mcdu.clearDisplay();
         const message = messages[messageIndex];
         const lines = message.serialize(Atsu.AtsuMessageSerializationFormat.MCDU).split("\n");
@@ -47,14 +55,14 @@ class CDUAtcMessage {
             if (lines[offset + 1]) {
                 mcdu.onUp = () => {
                     offset += 1;
-                    CDUAtcMessage.ShowPage(mcdu, messages, messageIndex, offset);
+                    CDUAtcMessage.ShowPage(mcdu, messages, messageIndex, messageList, offset);
                 };
                 up = true;
             }
             if (lines[offset - 1]) {
                 mcdu.onDown = () => {
                     offset -= 1;
-                    CDUAtcMessage.ShowPage(mcdu, messages, messageIndex, offset);
+                    CDUAtcMessage.ShowPage(mcdu, messages, messageIndex, messageList, offset);
                 };
                 down = true;
             }
@@ -73,21 +81,21 @@ class CDUAtcMessage {
             [`{small}${lines[offset + 6] ? lines[offset + 6] : ""}{end}`],
             [`${lines[offset + 7] ? lines[offset + 7] : ""}`],
             [`{small}${lines[offset + 8] ? lines[offset + 8] : ""}{end}`],
-            ["\xa0MSG RECORD"],
+            [`\xa0${messageList ? "MSG RECORD" : "MONITORED MSG"}`],
             ["<RETURN", "PRINT*[color]cyan"]
         ]);
 
         mcdu.onNextPage = () => {
             const nextMesssageIndex = messageIndex + 1;
             if (nextMesssageIndex < messages.length) {
-                CDUAtcMessage.ShowPage(mcdu, messages, nextMesssageIndex);
+                CDUAtcMessage.ShowPage(mcdu, messages, messageList, nextMesssageIndex);
             }
         };
 
         mcdu.onPrevPage = () => {
             const previousMesssageIndex = messageIndex - 1;
             if (previousMesssageIndex >= 0) {
-                CDUAtcMessage.ShowPage(mcdu, messages, previousMesssageIndex);
+                CDUAtcMessage.ShowPage(mcdu, messages, messageList, previousMesssageIndex);
             }
         };
 
@@ -95,7 +103,11 @@ class CDUAtcMessage {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[5] = () => {
-            CDUAtcMessagesRecord.ShowPage(mcdu);
+            if (messageList) {
+                CDUAtcMessagesRecord.ShowPage(mcdu);
+            } else {
+                CDUAtcMessageMonitoring.ShowPage(mcdu);
+            }
         };
 
         mcdu.onRightInput[5] = () => {

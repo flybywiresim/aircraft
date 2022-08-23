@@ -134,12 +134,14 @@ pub struct FlapSlatAssembly {
 
     synchro_gear_breakpoints: [f64; 12],
     final_surface_angle_carac: [f64; 12],
+
+    circuit_target_pressure: Pressure,
 }
 impl FlapSlatAssembly {
     const LOW_PASS_FILTER_SURFACE_POSITION_TRANSIENT_TIME_CONSTANT: Duration =
         Duration::from_millis(300);
     const BRAKE_PRESSURE_MIN_TO_ALLOW_MOVEMENT_PSI: f64 = 500.;
-    const MAX_CIRCUIT_PRESSURE_PSI: f64 = 3000.;
+
     const ANGLE_THRESHOLD_FOR_REDUCED_SPEED_DEGREES: f64 = 6.69;
     const ANGULAR_SPEED_LIMIT_FACTOR_WHEN_APROACHING_POSITION: f64 = 0.5;
     const MIN_ANGULAR_SPEED_TO_REPORT_MOVING: f64 = 0.01;
@@ -155,6 +157,7 @@ impl FlapSlatAssembly {
         surface_gear_ratio: Ratio,
         synchro_gear_breakpoints: [f64; 12],
         final_surface_angle_carac: [f64; 12],
+        circuit_target_pressure: Pressure,
     ) -> Self {
         Self {
             position_left_percent_id: context
@@ -182,6 +185,7 @@ impl FlapSlatAssembly {
             right_motor: FlapSlatHydraulicMotor::new(motor_displacement),
             synchro_gear_breakpoints,
             final_surface_angle_carac,
+            circuit_target_pressure,
         }
     }
 
@@ -253,11 +257,9 @@ impl FlapSlatAssembly {
         sfcc2_angle_request: Option<Angle>,
     ) {
         if let Some(sfcc1_angle) = sfcc1_angle_request {
-            self.final_requested_synchro_gear_position =
-                self.feedback_angle_from_surface_angle(sfcc1_angle);
+            self.final_requested_synchro_gear_position = sfcc1_angle;
         } else if let Some(sfcc2_angle) = sfcc2_angle_request {
-            self.final_requested_synchro_gear_position =
-                self.feedback_angle_from_surface_angle(sfcc2_angle);
+            self.final_requested_synchro_gear_position = sfcc2_angle;
         }
     }
 
@@ -283,12 +285,18 @@ impl FlapSlatAssembly {
 
         let new_theoretical_max_speed_left_side = AngularVelocity::new::<radian_per_second>(
             0.5 * self.full_pressure_max_speed.get::<radian_per_second>()
-                * Self::max_speed_factor_from_pressure(final_left_pressure),
+                * Self::max_speed_factor_from_pressure(
+                    final_left_pressure,
+                    self.circuit_target_pressure,
+                ),
         );
 
         let new_theoretical_max_speed_right_side = AngularVelocity::new::<radian_per_second>(
             0.5 * self.full_pressure_max_speed.get::<radian_per_second>()
-                * Self::max_speed_factor_from_pressure(final_right_pressure),
+                * Self::max_speed_factor_from_pressure(
+                    final_right_pressure,
+                    self.circuit_target_pressure,
+                ),
         );
 
         let mut new_theoretical_max_speed =
@@ -303,12 +311,16 @@ impl FlapSlatAssembly {
             .update(context.delta(), new_theoretical_max_speed);
     }
 
-    fn max_speed_factor_from_pressure(current_pressure: Pressure) -> f64 {
+    fn max_speed_factor_from_pressure(
+        current_pressure: Pressure,
+        circuit_target_pressure: Pressure,
+    ) -> f64 {
         let press_corrected =
             current_pressure.get::<psi>() - Self::BRAKE_PRESSURE_MIN_TO_ALLOW_MOVEMENT_PSI;
         if current_pressure > Pressure::new::<psi>(Self::BRAKE_PRESSURE_MIN_TO_ALLOW_MOVEMENT_PSI) {
             (0.0004 * press_corrected.powi(2)
-                / (Self::MAX_CIRCUIT_PRESSURE_PSI - Self::BRAKE_PRESSURE_MIN_TO_ALLOW_MOVEMENT_PSI))
+                / (circuit_target_pressure.get::<psi>()
+                    - Self::BRAKE_PRESSURE_MIN_TO_ALLOW_MOVEMENT_PSI))
                 .min(1.)
                 .max(0.)
         } else {
@@ -416,6 +428,7 @@ impl FlapSlatAssembly {
         ))
     }
 
+    #[cfg(test)]
     /// Gets Feedback Position Pickup Unit (FPPU) position from current flap surface angle
     fn feedback_angle_from_surface_angle(&self, flap_surface_angle: Angle) -> Angle {
         Angle::new::<degree>(interpolation(
@@ -442,15 +455,27 @@ impl SimulationElement for FlapSlatAssembly {
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(
             &self.position_left_percent_id,
-            self.position_feedback().get::<degree>()
-                / self.max_synchro_gear_position.get::<degree>()
-                * 100.,
+            interpolation(
+                &self.synchro_gear_breakpoints,
+                &self.final_surface_angle_carac,
+                self.position_feedback().get::<degree>(),
+            ) / interpolation(
+                &self.synchro_gear_breakpoints,
+                &self.final_surface_angle_carac,
+                self.max_synchro_gear_position.get::<degree>(),
+            ) * 100.,
         );
         writer.write(
             &self.position_right_percent_id,
-            self.position_feedback().get::<degree>()
-                / self.max_synchro_gear_position.get::<degree>()
-                * 100.,
+            interpolation(
+                &self.synchro_gear_breakpoints,
+                &self.final_surface_angle_carac,
+                self.position_feedback().get::<degree>(),
+            ) / interpolation(
+                &self.synchro_gear_breakpoints,
+                &self.final_surface_angle_carac,
+                self.max_synchro_gear_position.get::<degree>(),
+            ) * 100.,
         );
 
         let flaps_surface_angle = self.flap_surface_angle();
@@ -480,6 +505,8 @@ mod tests {
     use crate::simulation::{Aircraft, SimulationElement, SimulationElementVisitor, UpdateContext};
 
     use crate::simulation::test::{SimulationTestBed, TestBed};
+
+    const MAX_CIRCUIT_PRESSURE_PSI: f64 = 3000.;
 
     #[derive(Default)]
     struct TestHydraulicSection {
@@ -536,18 +563,20 @@ mod tests {
             self.right_motor_pressure.set_pressure(right_motor_pressure);
         }
 
-        fn set_angle_request(&mut self, angle_request: Option<Angle>) {
-            self.left_motor_angle_request = angle_request;
-            self.right_motor_angle_request = angle_request;
+        fn set_angle_request(&mut self, surface_angle_request: Option<Angle>) {
+            self.left_motor_angle_request = flap_fppu_from_surface_angle(surface_angle_request);
+            self.right_motor_angle_request = flap_fppu_from_surface_angle(surface_angle_request);
         }
 
         fn set_angle_per_sfcc(
             &mut self,
-            angle_request_sfcc1: Option<Angle>,
-            angle_request_sfcc2: Option<Angle>,
+            surface_angle_request_sfcc1: Option<Angle>,
+            surface_angle_request_sfcc2: Option<Angle>,
         ) {
-            self.left_motor_angle_request = angle_request_sfcc1;
-            self.right_motor_angle_request = angle_request_sfcc2;
+            self.left_motor_angle_request =
+                flap_fppu_from_surface_angle(surface_angle_request_sfcc1);
+            self.right_motor_angle_request =
+                flap_fppu_from_surface_angle(surface_angle_request_sfcc2);
         }
     }
     impl Aircraft for TestAircraft {
@@ -624,8 +653,8 @@ mod tests {
         test_bed.command(|a| a.set_angle_request(Some(Angle::new::<degree>(20.))));
         test_bed.command(|a| {
             a.set_current_pressure(
-                Pressure::new::<psi>(FlapSlatAssembly::MAX_CIRCUIT_PRESSURE_PSI),
-                Pressure::new::<psi>(FlapSlatAssembly::MAX_CIRCUIT_PRESSURE_PSI),
+                Pressure::new::<psi>(MAX_CIRCUIT_PRESSURE_PSI),
+                Pressure::new::<psi>(MAX_CIRCUIT_PRESSURE_PSI),
             )
         });
 
@@ -671,8 +700,8 @@ mod tests {
         test_bed.command(|a| a.set_angle_request(Some(Angle::new::<degree>(20.))));
         test_bed.command(|a| {
             a.set_current_pressure(
-                Pressure::new::<psi>(FlapSlatAssembly::MAX_CIRCUIT_PRESSURE_PSI),
-                Pressure::new::<psi>(FlapSlatAssembly::MAX_CIRCUIT_PRESSURE_PSI),
+                Pressure::new::<psi>(MAX_CIRCUIT_PRESSURE_PSI),
+                Pressure::new::<psi>(MAX_CIRCUIT_PRESSURE_PSI),
             )
         });
 
@@ -723,7 +752,7 @@ mod tests {
         test_bed.command(|a| {
             a.set_current_pressure(
                 Pressure::new::<psi>(0.),
-                Pressure::new::<psi>(FlapSlatAssembly::MAX_CIRCUIT_PRESSURE_PSI),
+                Pressure::new::<psi>(MAX_CIRCUIT_PRESSURE_PSI),
             )
         });
 
@@ -766,7 +795,7 @@ mod tests {
         test_bed.command(|a| a.set_angle_request(Some(Angle::new::<degree>(20.))));
         test_bed.command(|a| {
             a.set_current_pressure(
-                Pressure::new::<psi>(FlapSlatAssembly::MAX_CIRCUIT_PRESSURE_PSI),
+                Pressure::new::<psi>(MAX_CIRCUIT_PRESSURE_PSI),
                 Pressure::new::<psi>(0.),
             )
         });
@@ -811,8 +840,8 @@ mod tests {
         test_bed.command(|a| a.set_angle_request(Some(flap_position_request)));
         test_bed.command(|a| {
             a.set_current_pressure(
-                Pressure::new::<psi>(FlapSlatAssembly::MAX_CIRCUIT_PRESSURE_PSI),
-                Pressure::new::<psi>(FlapSlatAssembly::MAX_CIRCUIT_PRESSURE_PSI),
+                Pressure::new::<psi>(MAX_CIRCUIT_PRESSURE_PSI),
+                Pressure::new::<psi>(MAX_CIRCUIT_PRESSURE_PSI),
             )
         });
 
@@ -837,8 +866,8 @@ mod tests {
         test_bed.command(|a| a.set_angle_request(Some(flap_position_request)));
         test_bed.command(|a| {
             a.set_current_pressure(
-                Pressure::new::<psi>(FlapSlatAssembly::MAX_CIRCUIT_PRESSURE_PSI),
-                Pressure::new::<psi>(FlapSlatAssembly::MAX_CIRCUIT_PRESSURE_PSI),
+                Pressure::new::<psi>(MAX_CIRCUIT_PRESSURE_PSI),
+                Pressure::new::<psi>(MAX_CIRCUIT_PRESSURE_PSI),
             )
         });
 
@@ -903,8 +932,8 @@ mod tests {
         test_bed.command(|a| a.set_angle_per_sfcc(None, Some(flap_position_request)));
         test_bed.command(|a| {
             a.set_current_pressure(
-                Pressure::new::<psi>(FlapSlatAssembly::MAX_CIRCUIT_PRESSURE_PSI),
-                Pressure::new::<psi>(FlapSlatAssembly::MAX_CIRCUIT_PRESSURE_PSI),
+                Pressure::new::<psi>(MAX_CIRCUIT_PRESSURE_PSI),
+                Pressure::new::<psi>(MAX_CIRCUIT_PRESSURE_PSI),
             )
         });
 
@@ -933,8 +962,8 @@ mod tests {
         test_bed.command(|a| a.set_angle_request(Some(flap_position_request)));
         test_bed.command(|a| {
             a.set_current_pressure(
-                Pressure::new::<psi>(FlapSlatAssembly::MAX_CIRCUIT_PRESSURE_PSI),
-                Pressure::new::<psi>(FlapSlatAssembly::MAX_CIRCUIT_PRESSURE_PSI),
+                Pressure::new::<psi>(MAX_CIRCUIT_PRESSURE_PSI),
+                Pressure::new::<psi>(MAX_CIRCUIT_PRESSURE_PSI),
             )
         });
 
@@ -961,8 +990,8 @@ mod tests {
         test_bed.command(|a| a.set_angle_request(Some(flap_position_request)));
         test_bed.command(|a| {
             a.set_current_pressure(
-                Pressure::new::<psi>(FlapSlatAssembly::MAX_CIRCUIT_PRESSURE_PSI),
-                Pressure::new::<psi>(FlapSlatAssembly::MAX_CIRCUIT_PRESSURE_PSI),
+                Pressure::new::<psi>(MAX_CIRCUIT_PRESSURE_PSI),
+                Pressure::new::<psi>(MAX_CIRCUIT_PRESSURE_PSI),
             )
         });
 
@@ -999,8 +1028,8 @@ mod tests {
         test_bed.command(|a| a.set_angle_request(Some(flap_position_request)));
         test_bed.command(|a| {
             a.set_current_pressure(
-                Pressure::new::<psi>(FlapSlatAssembly::MAX_CIRCUIT_PRESSURE_PSI),
-                Pressure::new::<psi>(FlapSlatAssembly::MAX_CIRCUIT_PRESSURE_PSI),
+                Pressure::new::<psi>(MAX_CIRCUIT_PRESSURE_PSI),
+                Pressure::new::<psi>(MAX_CIRCUIT_PRESSURE_PSI),
             )
         });
 
@@ -1052,6 +1081,25 @@ mod tests {
                 0., 10.318, 18.2561, 19.134, 21.59, 23.098, 24.13, 26.196, 26.72, 28.42, 36.703,
                 40.,
             ],
+            Pressure::new::<psi>(MAX_CIRCUIT_PRESSURE_PSI),
         )
+    }
+
+    #[cfg(test)]
+    fn flap_fppu_from_surface_angle(surface_angle: Option<Angle>) -> Option<Angle> {
+        let synchro_gear_map = [
+            0., 65., 115., 120.53, 136., 145.5, 152., 165., 168.3, 179., 231.2, 251.97,
+        ];
+        let surface_degrees_breakpoints = [
+            0., 10.318, 18.2561, 19.134, 21.59, 23.098, 24.13, 26.196, 26.72, 28.42, 36.703, 40.,
+        ];
+
+        surface_angle.map(|angle| {
+            Angle::new::<degree>(interpolation(
+                &surface_degrees_breakpoints,
+                &synchro_gear_map,
+                angle.get::<degree>(),
+            ))
+        })
     }
 }

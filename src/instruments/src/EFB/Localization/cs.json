@@ -85,6 +85,7 @@
       "YouHaveNotYetImportedAnySimBriefData": "Dosud jste neimportovali žádná SimBrief data."
     },
     "Overview": {
+      "ActualGW": "Aktuální GW",
       "Engines": "Motory",
       "MMO": "MMO",
       "MRW": "MRW",
@@ -126,12 +127,33 @@
       "RightInnerTank": "Pravá vnitřní nádrž",
       "RightOuterTank": "Pravá vnější nádrž",
       "TT": {
-        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "Pro změnu délky tankování nesmí být spuštěné motory",
+        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "Pro změnu délky tankování musí být letadlo na zemi s vypnutými motory",
         "FillBlockFuelFromSimBrief": "Načíst palivo (Block Fuel) ze SimBriefu"
       },
       "Title": "Palivo",
       "TotalFuel": "Celkem paliva",
       "Unavailable": "Nedostupné"
+    },
+    "Payload": {
+      "BoardingTime": "Čas nastupování",
+      "Cargo": "Náklad",
+      "Current": "Současné",
+      "Passengers": "Cestující",
+      "Planned": "Plánované",
+      "TT": {
+        "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Pro změnu délky nastupování musí být letadlo na zemi s vypnutými motory",
+        "FillPayloadFromSimbrief": "Načíst informace o naložení ze SimBriefu",
+        "MaxCargo": "Maximum nákladu",
+        "MaxPassengers": "Maximum cestujících",
+        "MaxZFW": "Maximální ZFW",
+        "MaxZFWCG": "Maximální ZFWCG",
+        "PerPaxBagWeight": "Hmotnost zavazadel na cestujícího",
+        "PerPaxWeight": "Váha cestujících",
+        "StartBoarding": "Zahájit nastupování"
+      },
+      "Title": "Náklad",
+      "ZFW": "ZFW",
+      "ZFWCG": "ZFWCG"
     },
     "Pushback": {
       "Title": "Vytlačení"
@@ -453,9 +475,10 @@
       "HomeCockpitMode": "Režim domácího kokpitu",
       "McduFocusTimeout": "Časový limit vstupu MCDU z klávesnice (sekundy)",
       "McduKeyboardInput": "MCDU zadávání pomocí klávesnice",
-      "PauseAtTod": "T/D Pause",
-      "PauseAtTodDistance": "T/D Pause Distance (nm)",
+      "PauseAtTod": "Pauza na T/D",
+      "PauseAtTodDistance": "Vzdálenost zapauzování před T/D (nm)",
       "SeparateTillerFromRudderInputs": "Oddělit vstupy pro tiller a směrovku",
+      "SyncEfis": "Sync EFIS controls from Captain to FO",
       "Title": "Realismus"
     },
     "SimOptions": {
@@ -465,6 +488,7 @@
       "ConesEnabled": "Výstražné kužely",
       "DefaultBarometerUnit": "Výchozí jednotky tlaku vzduchu",
       "DynamicRegistrationDecal": "Dynamická imatrikulace letadla",
+      "EnableSimBridge": "Povolit připojení SimBridge (Bez úspěšného připojení se po 5 minutách automaticky vypne)",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Povolit připojení k serveru MCDU (Bez úspěšného připojení se po 5 minutách automaticky vypne)",
       "ExternalMcduServerPort": "Port externího serveru MCDU",
       "Hpa": "hPa",
@@ -473,6 +497,7 @@
       "None": "Žádné",
       "Off": "Vypnuto",
       "Save": "Uložit",
+      "SimBridgePort": "Externí port SimBridge",
       "SyncMsfsFlightPlan": "Synchronizace letového plánu MSFS",
       "ThrottleDetents": "Zarážky plynu",
       "Title": "Možnosti simulace",
@@ -506,7 +531,7 @@
     "flyPad": {
       "AutoBrightness": "Automatický jas",
       "AutomaticallyShowOnscreenKeyboard": "Automaticky zobrazit klávesnici na obrazovce",
-      "BatteryLifeEnabled": "Battery Life Simulated",
+      "BatteryLifeEnabled": "Simulace výdrže baterie",
       "Blue": "Modrý",
       "Brightness": "Jas",
       "Dark": "Tmavý",

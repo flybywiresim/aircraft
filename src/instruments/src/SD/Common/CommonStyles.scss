@@ -1,0 +1,130 @@
+@import "../style.scss";
+@import "../../Common/definitions.scss";
+
+.ecam-common-styles {
+
+.ThickCyanLine {
+  stroke: $display-cyan  !important;
+  stroke-width: 6;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  fill: none;
+}
+
+.AmberLine {
+  stroke: $display-amber  !important;
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  fill: none;
+}
+
+.RedLine {
+  stroke: $display-red  !important;
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  fill: none;
+}
+
+.GreenLine {
+  stroke: $display-green  !important;
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  fill: none;
+}
+
+.WhiteLine {
+  stroke: $display-white  !important;
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  fill: none;
+}
+
+.LightGreyLine {
+  stroke: $display-grey  !important;
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  fill: none;
+}
+
+.ThickGreyLine {
+  stroke: $display-grey;
+  stroke-width: 4;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  fill: none;
+}
+
+.GreyFill {
+  fill: $display-grey;
+  stroke: none;
+}
+
+text,
+tspan {
+  fill: $display-white;
+  stroke: none !important;
+
+  &.Standard {
+    font-size: 22px;
+  }
+
+  &.Medium {
+    font-size: 20px;
+  }
+
+  &.MediumLarge {
+    font-size: 24px;
+  }
+
+  &.Large {
+    font-size: 26px;
+  }
+
+  &.Huge {
+    font-size: 30px;
+  }
+
+  &.Title {
+    font-size: 36px;
+  }
+
+  &.Cyan {
+    fill: $display-cyan  !important;
+  }
+
+  &.Green {
+    fill: $display-green  !important;
+  }
+
+  &.Amber {
+    fill: $display-amber;
+  }
+
+  &.Red {
+    fill: $display-red;
+  }
+
+  &.Magenta {
+    fill: $display-magenta;
+  }
+
+  &.Center {
+    text-anchor: middle !important;
+  }
+
+  &.End {
+    text-anchor: end !important;
+  }
+
+  &.UnderlineWhite {
+    text-decoration: underline;
+    text-decoration-color: $display-white;
+  }
+}
+
+}

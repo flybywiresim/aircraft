@@ -85,6 +85,7 @@
       "YouHaveNotYetImportedAnySimBriefData": "Anda belum mengimpor data apapun dari SimBrief."
     },
     "Overview": {
+      "ActualGW": "Actual GW",
       "Engines": "Mesin",
       "MMO": "MMO",
       "MRW": "MRW",
@@ -132,6 +133,27 @@
       "Title": "Bahan Bakar",
       "TotalFuel": "Total Bahan Bakar",
       "Unavailable": "Tidak tersedia"
+    },
+    "Payload": {
+      "BoardingTime": "Boarding Time",
+      "Cargo": "Cargo",
+      "Current": "Current",
+      "Passengers": "Passengers",
+      "Planned": "Planned",
+      "TT": {
+        "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Aircraft Must Be On the Ground and Have Engines Shutdown to Change Boarding Duration",
+        "FillPayloadFromSimbrief": "Fill Payload Information from Simbrief",
+        "MaxCargo": "Max Cargo",
+        "MaxPassengers": "Maximum Passengers",
+        "MaxZFW": "Maximum ZFW",
+        "MaxZFWCG": "Maximum ZFWCG",
+        "PerPaxBagWeight": "Per Passenger Bag Weight",
+        "PerPaxWeight": "Per Passenger Weight",
+        "StartBoarding": "Begin Boarding"
+      },
+      "Title": "Payload",
+      "ZFW": "ZFW",
+      "ZFWCG": "ZFWCG"
     },
     "Pushback": {
       "Title": "Pushback"
@@ -456,6 +478,7 @@
       "PauseAtTod": "T/D Pause",
       "PauseAtTodDistance": "T/D Pause Distance (nm)",
       "SeparateTillerFromRudderInputs": "Pisahkan Tiller dari Input Rudder",
+      "SyncEfis": "Sync EFIS controls from Captain to FO",
       "Title": "Realisme"
     },
     "SimOptions": {
@@ -465,6 +488,7 @@
       "ConesEnabled": "Safety Cones",
       "DefaultBarometerUnit": "Standar Satuan Barometer",
       "DynamicRegistrationDecal": "Nomor Registrasi Pesawat",
+      "EnableSimBridge": "Aktifkan Koneksi Server MCDU (Otomatis dinonaktifkan setelah 5 menit jika tidak ada koneksi yang berhasil)",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Aktifkan Koneksi Server MCDU (Otomatis dinonaktifkan setelah 5 menit jika tidak ada koneksi yang berhasil)",
       "ExternalMcduServerPort": "Port Server MCDU Eksternal",
       "Hpa": "hPa",
@@ -473,6 +497,7 @@
       "None": "Tidak ada",
       "Off": "Mati",
       "Save": "Simpan",
+      "SimBridgePort": "Port Server MCDU Eksternal",
       "SyncMsfsFlightPlan": "Sinkronkan dengan Flight Plan MSFS",
       "ThrottleDetents": "Penahan Throttle",
       "Title": "Opsi Sim",

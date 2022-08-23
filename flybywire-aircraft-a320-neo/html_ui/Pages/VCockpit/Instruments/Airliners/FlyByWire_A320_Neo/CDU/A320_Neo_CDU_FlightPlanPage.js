@@ -209,7 +209,7 @@ class CDUFlightPlanPage {
                     // ARINC Leg Types - R1A 610
                     switch (wp.additionalData.legType) {
                         case 1: // AF
-                            fixAnnotation = `${Math.round(wp.additionalData.rho).toString().substring(0, 2).padStart(2, '0')} ${WayPoint.formatIdentFromIcao(wp.additionalData.recommendedIcao).substring(0, 3)}`;
+                            fixAnnotation = `${Math.round(wp.additionalData.rho).toString().substring(0, 2).padStart(2, '\xa0')} ${WayPoint.formatIdentFromIcao(wp.additionalData.recommendedIcao).substring(0, 3)}`;
                             break;
                         case 2: // CA
                         case 3: // CD
@@ -239,9 +239,10 @@ class CDUFlightPlanPage {
                             break;
                         case 16: // PI
                             fixAnnotation = `PROC ${wp.turnDirection === 1 ? 'L' : 'R'}`;
+                            ident = "INTCPT";
                             break;
                         case 17: // RF
-                            fixAnnotation = `${("" + Math.round(wp.additionalData.radius)).padStart(2, "0")}\xa0ARC`;
+                            fixAnnotation = `${("" + Math.round(wp.additionalData.radius)).padStart(2, "\xa0")}\xa0ARC`;
                             break;
                         case 19: // VA
                         case 20: // VD
@@ -829,6 +830,8 @@ function legTypeIsCourseReversal(wp) {
 }
 
 function legTurnIsForced(wp) {
-    // left || right
-    return wp.turnDirection === 1 || wp.turnDirection === 2;
+    // forced turns are only for straight legs
+    return (wp.turnDirection === 1 /* Left */ || wp.turnDirection === 2 /* Right */)
+        // eslint-disable-next-line semi-spacing
+        && wp.additionalData.legType !== 1 /* AF */ && wp.additionalData.legType !== 17 /* RF */;
 }

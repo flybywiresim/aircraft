@@ -3,7 +3,7 @@ import { combineReducers } from 'redux';
 import { connectRouter } from 'connected-react-router';
 
 import todCalculatorReducer from './features/todCalculator';
-import buttonsReducer from './features/buttons';
+import groundServicePageReducer from './features/groundServicePage';
 import simbriefReducer from './features/simBrief';
 import performanceReducer from './features/performance';
 import flightProgressReducer from './features/flightProgress';
@@ -18,7 +18,7 @@ import pushbackReducer from './features/pushback';
 export const createRootReducer = (history) => combineReducers({
     router: connectRouter(history),
     todCalculator: todCalculatorReducer,
-    buttons: buttonsReducer,
+    groundServicePage: groundServicePageReducer,
     simbrief: simbriefReducer,
     performance: performanceReducer,
     flightProgress: flightProgressReducer,

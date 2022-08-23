@@ -5,6 +5,7 @@
 
 import { HALeg, HFLeg, HMLeg } from '@fmgc/guidance/lnav/legs/HX';
 import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
+import { PILeg } from '@fmgc/guidance/lnav/legs/PI';
 import { TurnDirection } from '@fmgc/types/fstypes/FSEnums';
 
 export enum AltitudeConstraintType {
@@ -86,7 +87,7 @@ export function isHold(leg: Leg): boolean {
 }
 
 export function isCourseReversalLeg(leg: Leg): boolean {
-    return isHold(leg); // TODO PILeg
+    return isHold(leg) || leg instanceof PILeg;
 }
 
 /**

@@ -50,7 +50,7 @@ eicas-common-display text {
 eicas-common-display text.Cyan {
   fill: var(--displayCyan) !important;
 }
-eicas-common-display text.Title {
+eicas-common-display text.White {
   fill: var(--displayWhite) !important;
 }
 eicas-common-display text.Value {

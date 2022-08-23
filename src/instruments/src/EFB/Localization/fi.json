@@ -85,6 +85,7 @@
       "YouHaveNotYetImportedAnySimBriefData": "Et ole vielä tuonut dataa SimBriefistä."
     },
     "Overview": {
+      "ActualGW": "Actual GW",
       "Engines": "Moottorit",
       "MMO": "Suurin lentonopeus (mach)",
       "MRW": "Suurin sallittu paino maassa (MRW)",
@@ -132,6 +133,27 @@
       "Title": "Polttoaine",
       "TotalFuel": "Kokonaispolttoaine",
       "Unavailable": "Ei saatavilla"
+    },
+    "Payload": {
+      "BoardingTime": "Koneeseen nousun kesto",
+      "Cargo": "Cargo",
+      "Current": "Current",
+      "Passengers": "Passengers",
+      "Planned": "Planned",
+      "TT": {
+        "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Aircraft Must Be On the Ground and Have Engines Shutdown to Change Boarding Duration",
+        "FillPayloadFromSimbrief": "Fill Payload Information from Simbrief",
+        "MaxCargo": "Max Cargo",
+        "MaxPassengers": "Suurin mahdollinen matkustajamäärä",
+        "MaxZFW": "Maximum ZFW",
+        "MaxZFWCG": "Maximum ZFWCG",
+        "PerPaxBagWeight": "Per Passenger Bag Weight",
+        "PerPaxWeight": "Per Passenger Weight",
+        "StartBoarding": "Begin Boarding"
+      },
+      "Title": "Payload",
+      "ZFW": "ZFW",
+      "ZFWCG": "ZFWCG"
     },
     "Pushback": {
       "Title": "Työntö"
@@ -456,6 +478,7 @@
       "PauseAtTod": "T/D Pause",
       "PauseAtTodDistance": "T/D Pause Distance (nm)",
       "SeparateTillerFromRudderInputs": "Erota nokkapyörän ohjaus peräsimestä",
+      "SyncEfis": "Sync EFIS controls from Captain to FO",
       "Title": "Realismi"
     },
     "SimOptions": {
@@ -465,6 +488,7 @@
       "ConesEnabled": "Varoituskartiot",
       "DefaultBarometerUnit": "Paineen oletusyksikkö",
       "DynamicRegistrationDecal": "Dynaaminen rekisteröintimerkintä",
+      "EnableSimBridge": "Ota lentotietokoneen palvelinyhteys käyttöön (yhdistysyritykset loppuvat 5 minuutin kuluttua, jos yhdistäminen ei onnistu)",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Ota lentotietokoneen palvelinyhteys käyttöön (yhdistysyritykset loppuvat 5 minuutin kuluttua, jos yhdistäminen ei onnistu)",
       "ExternalMcduServerPort": "Ulkoinen lentotietokoneen palvelinyhteys",
       "Hpa": "hPa",
@@ -473,6 +497,7 @@
       "None": "Ei mitään",
       "Off": "Pois päältä",
       "Save": "Tallenna",
+      "SimBridgePort": "Ulkoinen lentotietokoneen palvelinyhteys",
       "SyncMsfsFlightPlan": "Synkronoi MSFS lentosuunnitelma",
       "ThrottleDetents": "Kaasupykälät",
       "Title": "Sim -asetukset",
@@ -506,7 +531,7 @@
     "flyPad": {
       "AutoBrightness": "Automaattinen kirkkaus",
       "AutomaticallyShowOnscreenKeyboard": "Näytä näyttönäppäimistö automaattisesti",
-      "BatteryLifeEnabled": "Battery Life Simulated",
+      "BatteryLifeEnabled": "Akun kesto simuloitu",
       "Blue": "Sininen",
       "Brightness": "Kirkkaus",
       "Dark": "Tumma",
