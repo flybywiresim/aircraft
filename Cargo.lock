@@ -21,6 +21,7 @@ dependencies = [
 name = "a320_systems"
 version = "0.1.0"
 dependencies = [
+ "fxhash",
  "nalgebra",
  "ntest",
  "rand",

@@ -191,6 +191,8 @@ export class TcasComputer implements TcasComponent {
 
     private correctiveRa: LocalSimVar<boolean>; // Is currently issuing a corrective RA (yes/no) TODO FIXME: ARINC429
 
+    private auralAdvisoryOutput: LocalSimVar<boolean>; // Is currently playing an aural advisory (Discrete)
+
     private isSlewActive: boolean; // Slew Mode on?
 
     private simRate: number; // Simulation Rate
@@ -245,6 +247,7 @@ export class TcasComputer implements TcasComponent {
         this.tcasFault = new LocalSimVar('L:A32NX_TCAS_FAULT', 'bool');
         this.taOnly = new LocalSimVar('L:A32NX_TCAS_TA_ONLY', 'bool');
         this.correctiveRa = new LocalSimVar('L:A32NX_TCAS_RA_CORRECTIVE', 'bool');
+        this.auralAdvisoryOutput = new LocalSimVar('L:A32NX_TCAS_AURAL_ADVISORY_OUTPUT', 'bool');
         this.airTraffic = [];
         this.raTraffic = [];
         this.sensitivity = new LocalSimVar('L:A32NX_TCAS_SENSITIVITY', 'number');
@@ -293,6 +296,8 @@ export class TcasComputer implements TcasComponent {
         this.gpwsWarning = !!SimVar.GetSimVarValue('L:A32NX_GPWS_Warning_Active', 'boolean');
 
         this.tcasMode.setVar((this.xpdrStatus === XpdrMode.STBY || !this.tcasPower || !this.altRptgSwitchPos) ? TcasMode.STBY : this.tcasSwitchPos); // 34-43-00:A32
+
+        this.auralAdvisoryOutput.setVar(this.soundManager.isPlayingSound());
     }
 
     /**

@@ -56,6 +56,14 @@ export class DigitalAltitudeReadout extends DisplayComponent<DigitalAltitudeRead
 
     private altitude = 0;
 
+    private fwc1AltAlertPulsing = false;
+
+    private fwc2AltAlertPulsing = false;
+
+    private fwc1AltAlertFlashing = false;
+
+    private fwc2AltAlertFlashing = false;
+
     private isNegativeSub = Subject.create('hidden')
 
     private colorSub = Subject.create('')
@@ -75,6 +83,23 @@ export class DigitalAltitudeReadout extends DisplayComponent<DigitalAltitudeRead
     private tenThousandsValue = Subject.create(0);
 
     private tenThousandsPosition = Subject.create(0);
+
+    private altReadoutOutline = Subject.create('NormalStroke Yellow');
+
+    private handleAltAlert() {
+        const anyPulsing = this.fwc1AltAlertPulsing || this.fwc2AltAlertPulsing;
+        const anyFlashing = this.fwc1AltAlertFlashing || this.fwc2AltAlertFlashing;
+
+        let className = 'NormalStroke Yellow';
+
+        if (anyFlashing) {
+            className = 'NormalStroke Amber BlinkInfinite';
+        } else if (anyPulsing && !anyFlashing) {
+            className = 'AltitudeAlertPulse Yellow';
+        }
+
+        this.altReadoutOutline.set(className);
+    }
 
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
@@ -128,6 +153,26 @@ export class DigitalAltitudeReadout extends DisplayComponent<DigitalAltitudeRead
             const showThousandsZero = TenThousandsValue !== 0;
 
             this.showThousandsZeroSub.set(showThousandsZero);
+        });
+
+        sub.on('fwc1AltAlertPulsing').whenChanged().handle((altAlertPulsing) => {
+            this.fwc1AltAlertPulsing = altAlertPulsing;
+            this.handleAltAlert();
+        });
+
+        sub.on('fwc1AltAlertFlashing').whenChanged().handle((altAlertFlashing) => {
+            this.fwc1AltAlertFlashing = altAlertFlashing;
+            this.handleAltAlert();
+        });
+
+        sub.on('fwc2AltAlertPulsing').whenChanged().handle((altAlertPulsing) => {
+            this.fwc2AltAlertPulsing = altAlertPulsing;
+            this.handleAltAlert();
+        });
+
+        sub.on('fwc2AltAlertFlashing').whenChanged().handle((altAlertFlashing) => {
+            this.fwc2AltAlertFlashing = altAlertFlashing;
+            this.handleAltAlert();
         });
     }
 
@@ -193,7 +238,7 @@ export class DigitalAltitudeReadout extends DisplayComponent<DigitalAltitudeRead
                     </svg>
                 </g>
                 <path id="AltReadoutReducedAccurMarks" class="NormalStroke Amber" style="display: none" d="m132.61 81.669h4.7345m-4.7345-1.6933h4.7345" />
-                <path id="AltReadoutOutline" class="NormalStroke Yellow" d="m117.75 76.337h13.096v-2.671h8.8647v14.313h-8.8647v-2.671h-13.096" />
+                <path id="AltReadoutOutline" class={this.altReadoutOutline} d="m117.75 76.337h13.096v-2.671h8.8647v14.313h-8.8647v-2.671h-13.096" />
 
                 <g id="AltNegativeText" class="FontLarge EndAlign" visibility={this.isNegativeSub}>
                     <text class="White" x="121.51714" y="77.956947">N</text>

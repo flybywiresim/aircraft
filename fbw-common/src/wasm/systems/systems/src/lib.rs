@@ -12,6 +12,7 @@ pub mod apu;
 pub mod electrical;
 pub mod engine;
 pub mod failures;
+pub mod flight_warning;
 pub mod hydraulic;
 pub mod landing_gear;
 pub mod navigation;
