@@ -528,7 +528,7 @@ impl From<VoiceFile> for AudioData {
         match voice {
             VoiceFile::Retard => AudioData {
                 code: 70,
-                duration: Some(Duration::from_millis(716)),
+                duration: Some(Duration::from_millis(716 + 200)),
             },
             VoiceFile::Minimum => AudioData {
                 code: 80,
@@ -576,7 +576,7 @@ impl From<VoiceFile> for AudioData {
             },
             VoiceFile::Ten => AudioData {
                 code: 110,
-                duration: Some(Duration::from_millis(340)),
+                duration: Some(Duration::from_millis(340 + 80)),
             },
             VoiceFile::Eleven => AudioData {
                 code: 111,
