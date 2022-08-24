@@ -155,34 +155,26 @@ export const ChartViewer = () => {
                     height: -1,
                 };
 
-                console.debug(`chartRotation=${chartRotation} ===============`);
-                // @ts-ignore
-                console.debug(`ref.current.clientWidth=${ref.current.clientWidth} ref.current.clientHeight=${ref.current.clientHeight} this.width=${(this.width)} this.height=${(this.height)}`);
-
                 // @ts-ignore
                 if (this.height * (ref.current.clientWidth / this.width) < ref.current.clientHeight) {
-                    console.debug('Landscape');
                     chartDimensions.height = ref.current.clientHeight;
                     // @ts-ignore
                     chartDimensions.width = this.width * (ref.current.clientHeight / this.height);
                     if (chartRotation === 90 || chartRotation === 270) {
                         chartDimensions.width = ref.current.clientWidth;
                         // @ts-ignore
-                        chartDimensions.height = this.height * (ref.current.clientWidth / this.width);
+                        chartDimensions.height = this.width * (ref.current.clientWidth / this.width);
                     }
                 } else {
-                    console.debug('Portrait');
                     chartDimensions.width = ref.current.clientWidth;
                     // @ts-ignore
                     chartDimensions.height = this.height * (ref.current.clientWidth / this.width);
                     if (chartRotation === 90 || chartRotation === 270) {
                         chartDimensions.height = ref.current.clientHeight;
                         // @ts-ignore
-                        chartDimensions.width = this.width * (ref.current.clientHeight / this.height);
+                        chartDimensions.width = this.height * (ref.current.clientHeight / this.height);
                     }
                 }
-
-                console.debug(`chartDimensions.width=${chartDimensions.width} chartDimensions.height=${chartDimensions.height}`);
 
                 dispatch(editTabProperty({
                     tab: currentTab,
@@ -202,8 +194,6 @@ export const ChartViewer = () => {
             if (height) {
                 chartRef.current.style.height = `${height}px`;
             }
-            // @ts-ignore
-            console.debug(`chartRef.current.style.width=${chartRef.current.style.width} chartRef.current.style.height=${chartRef.current.style.height}`);
         }
     }, [chartRef, chartDimensions]);
 
@@ -242,6 +232,9 @@ export const ChartViewer = () => {
         );
     }
 
+    // @ts-ignore
+    // @ts-ignore
+    // noinspection PointlessBooleanExpressionJS
     return (
         <div
             className={`relative ${!isFullScreen && 'rounded-l-none ml-6'}`}
@@ -292,6 +285,59 @@ export const ChartViewer = () => {
                                 >
 
                                     <Plus size={40} />
+                                </div>
+                            </div>
+                        )}
+
+                        {/* DEBUGGING */}
+                        {true && (
+                            <div className="flex absolute top-24 right-16 left-1 z-50 flex-grow justify-between mx-4 font-mono text-black bg-gray-100 border-gray-100 opacity-100">
+                                <div className="overflow-hidden text-utility-red text-m">
+                                    Debug Info
+                                    <br />
+                                    chartId
+                                    {' '}
+                                    {chartId}
+                                    <br />
+                                    chartRotation
+                                    {' '}
+                                    {chartRotation}
+                                    <br />
+                                    {' '}
+                                    chartPosition
+                                    {' '}
+                                    {chartPosition.positionX}
+                                    {' '}
+                                    {chartPosition.positionY}
+                                    {' '}
+                                    {chartPosition.scale}
+                                    {' '}
+                                    <br />
+                                    chartDimensions
+                                    {' '}
+                                    {chartDimensions.width}
+                                    {' '}
+                                    {chartDimensions.height}
+                                    <br />
+                                    ref.current
+                                    {' '}
+                                    {ref.current ? ref.current.clientWidth : 'null'}
+                                    {' '}
+                                    {ref.current ? ref.current.clientHeight : 'null'}
+                                    <br />
+                                    chartRef.current
+                                    {' '}
+                                    {chartRef.current ? chartRef.current.clientWidth : 'null'}
+                                    {' '}
+                                    {chartRef.current ? chartRef.current.clientHeight : 'null'}
+                                    {' '}
+                                    {chartRef.current ? chartRef.current.style.width : 'null'}
+                                    {' '}
+                                    {chartRef.current ? chartRef.current.style.height : 'null'}
+                                    {' '}
+                                    {chartRef.current ? chartRef.current.style.position : 'null'}
+                                    {' '}
+                                    {chartRef.current ? chartRef.current.style.all : 'null'}
                                 </div>
                             </div>
                         )}
@@ -375,6 +421,7 @@ export const ChartViewer = () => {
                                         type="button"
                                         onClick={() => {
                                             setTransform(0, 0, 1);
+                                            dispatch(editTabProperty({ tab: currentTab, chartRotation: 0 }));
                                             dispatch(editTabProperty({ tab: currentTab, chartPosition: { ...chartPosition, positionX: 0, positionY: 0, scale: 1 } }));
                                         }}
                                         className="p-2 hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight transition duration-100 cursor-pointer"
