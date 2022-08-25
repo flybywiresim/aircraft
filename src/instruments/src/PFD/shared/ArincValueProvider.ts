@@ -190,8 +190,8 @@ export class ArincValueProvider {
     }
 
     private determineAndPublishChosenLandingElevation(publisher: Publisher<Arinc429Values>) {
-        const useOpposite = this.ownLandingElevation.isFailureWarning()
-            && this.ownLandingElevation.isNoComputedData()
+        const useOpposite = (this.ownLandingElevation.isFailureWarning()
+            || this.ownLandingElevation.isNoComputedData())
             && !this.oppLandingElevation.isFailureWarning()
             && !this.oppLandingElevation.isNoComputedData();
 
