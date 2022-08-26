@@ -478,6 +478,7 @@
       "PauseAtTod": "Pauza na T/D",
       "PauseAtTodDistance": "Vzdálenost zapauzování před T/D (nm)",
       "SeparateTillerFromRudderInputs": "Oddělit vstupy pro tiller a směrovku",
+      "SyncEfis": "Synchronizovat EFIS ovládání od kapitána k FO",
       "Title": "Realismus"
     },
     "SimOptions": {
