@@ -1,0 +1,20 @@
+.button-grid {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+}
+
+.button-row {
+    flex-grow: 1;
+    display: flex;
+}
+
+.button {
+    flex-grow: 1;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.dummy {
+    flex-grow: 1;
+}
