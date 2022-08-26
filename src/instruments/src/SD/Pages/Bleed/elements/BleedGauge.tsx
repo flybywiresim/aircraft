@@ -18,7 +18,7 @@ const BleedGauge: FC<BleedGaugeProps> = ({ x, y, engine, sdacDatum, packFlowValv
     const [precoolerOutletTemp] = useSimVar(`L:A32NX_PNEU_ENG_${engine}_PRECOOLER_OUTLET_TEMPERATURE`, 'celsius', 500);
     const compressorOutletTemp = Math.round(precoolerOutletTemp / 5) * 5;
 
-    const [packInletFlowPercentage] = useSimVar('L:A32NX_COND_PACK_FLOW', 'percent', 500);
+    const [packInletFlowPercentage] = useSimVar(`L:A32NX_COND_PACK_FLOW_${engine}`, 'percent', 500);
 
     const [fwdCondSelectorKnob] = useSimVar('L:A32NX_OVHD_COND_FWD_SELECTOR_KNOB', 'number', 1000); // 0 to 300
     const packBypassValve = Math.round(fwdCondSelectorKnob / 300 * 100);

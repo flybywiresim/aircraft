@@ -478,6 +478,7 @@
       "PauseAtTod": "T/D Pause",
       "PauseAtTodDistance": "T/D Pause Distance (nm)",
       "SeparateTillerFromRudderInputs": "Separat Tiller fra Rudder Inputs",
+      "SyncEfis": "Sync EFIS controls between Captain and FO",
       "Title": "Realisme"
     },
     "SimOptions": {
@@ -487,6 +488,7 @@
       "ConesEnabled": "Safety Cones",
       "DefaultBarometerUnit": "Standard Barometer enhed",
       "DynamicRegistrationDecal": "Dynamisk registrerings mærke",
+      "EnableSimBridge": "Aktiver MCDU Server Forbindelse (Deaktiveres automatisk efter 5 minutter, hvis der ikke oprettes succesfuld forbindelse)",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Aktiver MCDU Server Forbindelse (Deaktiveres automatisk efter 5 minutter, hvis der ikke oprettes succesfuld forbindelse)",
       "ExternalMcduServerPort": "Ekstern MCDU serverport",
       "Hpa": "hPa",
@@ -495,6 +497,7 @@
       "None": "Ingen",
       "Off": "Fra",
       "Save": "Gem",
+      "SimBridgePort": "Ekstern MCDU serverport",
       "SyncMsfsFlightPlan": "Synkroniser MSFS-flyveplan",
       "ThrottleDetents": "Gashåndtagspositioner",
       "Title": "Sim-instillinger",

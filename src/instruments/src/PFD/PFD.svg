@@ -2851,6 +2851,58 @@
            y="88.870819"
            style="font-size:7px;stroke-width:0.264583">S</tspan></text>
     </g>
+    <g
+       id="g764"
+       inkscape:label="TcasFailText">
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:6px;line-height:1.25;font-family:'FBW Display-EIS';-inkscape-font-specification:'FBW Display-EIS';fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+         x="138.14822"
+         y="100.00159"
+         id="text742"
+         inkscape:label="S"><tspan
+           sodipodi:role="line"
+           id="tspan740"
+           x="138.14822"
+           y="100.00159"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:6px;font-family:'FBW Display-EIS';-inkscape-font-specification:'FBW Display-EIS';stroke-width:0.264583">T</tspan></text>
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:6px;line-height:1.25;font-family:'FBW Display-EIS';-inkscape-font-specification:'FBW Display-EIS';fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+         x="138.37868"
+         y="105.00106"
+         id="text746"
+         inkscape:label="A"><tspan
+           sodipodi:role="line"
+           id="tspan744"
+           x="138.37868"
+           y="105.00106"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:6px;font-family:'FBW Display-EIS';-inkscape-font-specification:'FBW Display-EIS';stroke-width:0.264583">C</tspan></text>
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:6px;line-height:1.25;font-family:'FBW Display-EIS';-inkscape-font-specification:'FBW Display-EIS';fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+         x="138.31876"
+         y="110.00027"
+         id="text750"
+         inkscape:label="C"><tspan
+           sodipodi:role="line"
+           id="tspan748"
+           x="138.31876"
+           y="110.00027"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:6px;font-family:'FBW Display-EIS';-inkscape-font-specification:'FBW Display-EIS';stroke-width:0.264583">A</tspan></text>
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:6px;line-height:1.25;font-family:'FBW Display-EIS';-inkscape-font-specification:'FBW Display-EIS';fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+         x="141.90611"
+         y="115.03627"
+         id="text754"
+         inkscape:label="T"><tspan
+           sodipodi:role="line"
+           id="tspan752"
+           x="141.90611"
+           y="115.03627"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:6px;font-family:'FBW Display-EIS';-inkscape-font-specification:'FBW Display-EIS';text-align:end;text-anchor:end;stroke-width:0.264583">S</tspan></text>
+    </g>
   </g>
   <desc
      id="desc1874">PFD.dxf - scale = 1.000000, origin = (0.000000, 0.000000), method = file</desc>
