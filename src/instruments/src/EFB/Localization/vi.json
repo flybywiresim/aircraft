@@ -478,7 +478,7 @@
       "PauseAtTod": "Dừng tại điểm hạ độ cao",
       "PauseAtTodDistance": "Khoảng cách dừng từ điểm hạ độ cao (nm)",
       "SeparateTillerFromRudderInputs": "Tách rời Điều Khiển Bánh Mũi với Bàn Đạp",
-      "SyncEfis": "Sync EFIS controls from Captain to FO",
+      "SyncEfis": "Sync EFIS controls between Captain and FO",
       "Title": "Mức thực tế"
     },
     "SimOptions": {
