@@ -1,50 +1,81 @@
 import React from 'react';
 import { AtsuMessageComStatus, AtsuMessageDirection } from '@atsu/messages/AtsuMessage';
-import { CpdlcMessage, CpdlcMessageRequestedResponseType, CpdlcMessageResponse } from '@atsu/messages/CpdlcMessage';
+import { AtsuTimestamp } from '@atsu/messages/AtsuTimestamp';
+import { CpdlcMessageExpectedResponseType, CpdlcMessagesDownlink } from '@atsu/messages/CpdlcMessageElements';
+import { CpdlcMessage, CpdlcMessageMonitoringState } from '@atsu/messages/CpdlcMessage';
 import { Checkerboard } from './Checkerboard';
 
 type MessageStatusProps = {
     message: CpdlcMessage,
-    selectedResponse : CpdlcMessageResponse | undefined
+    selectedResponse : number
 }
 
-const translateStatus = (response: CpdlcMessageResponse | undefined, message: CpdlcMessage) => {
-    const answerExpected = message.RequestedResponses !== CpdlcMessageRequestedResponseType.NotRequired && message.RequestedResponses !== CpdlcMessageRequestedResponseType.No;
+const translateResponseId = (response: number, message: CpdlcMessage): string => {
+    const answerExpected = message.Content[0].ExpectedResponse !== CpdlcMessageExpectedResponseType.NotRequired && message.Content[0].ExpectedResponse !== CpdlcMessageExpectedResponseType.No;
 
-    switch (response) {
-    case CpdlcMessageResponse.Standby:
-        return 'STBY';
-    case CpdlcMessageResponse.Wilco:
-        return 'WILCO';
-    case CpdlcMessageResponse.Roger:
-        return 'ROGER';
-    case CpdlcMessageResponse.Negative:
-        return 'NEGATV';
-    case CpdlcMessageResponse.Unable:
-        return 'UNABLE';
-    case CpdlcMessageResponse.Acknowledge:
-        return 'ACK';
-    case CpdlcMessageResponse.Affirm:
-        return 'AFFIRM';
-    case CpdlcMessageResponse.Refuse:
-        return 'REFUSE';
-    case undefined:
-        if (message.Direction === AtsuMessageDirection.Input && answerExpected) {
+    if (response === -1) {
+        if (message.Direction === AtsuMessageDirection.Uplink && answerExpected) {
             return 'OPEN';
         }
         if (message.ComStatus === AtsuMessageComStatus.Sent) {
             return 'SENT';
         }
-        return '';
-    default:
-        return 'UKN';
+    } else if (`DM${response}` in CpdlcMessagesDownlink) {
+        const text = CpdlcMessagesDownlink[`DM${response}`][0][0];
+        if (text === 'STANDBY') {
+            return 'STBY';
+        }
+        if (text === 'NEGATIVE') {
+            return 'NEGATV';
+        }
+        return text;
     }
+
+    return '';
+};
+
+const translateResponseMessage = (message: CpdlcMessage, response: CpdlcMessage | undefined): string => {
+    const answerExpected = message.Content[0].ExpectedResponse !== CpdlcMessageExpectedResponseType.NotRequired && message.Content[0].ExpectedResponse !== CpdlcMessageExpectedResponseType.No;
+
+    if (!response) {
+        if (message.Direction === AtsuMessageDirection.Uplink && answerExpected) {
+            return 'OPEN';
+        }
+        if (message.ComStatus === AtsuMessageComStatus.Sent) {
+            return 'SENT';
+        }
+    } else if (response.Content.length !== 0 && response.Content[0].TypeId in CpdlcMessagesDownlink) {
+        if (!message.SemanticResponseRequired) {
+            const text = CpdlcMessagesDownlink[response.Content[0].TypeId][0][0];
+            if (text === 'STANDBY') {
+                return 'STBY';
+            }
+            if (text === 'NEGATIVE') {
+                return 'NEGATV';
+            }
+            return text;
+        }
+        if (response.ComStatus !== AtsuMessageComStatus.Sent) {
+            return 'OPEN';
+        }
+        return '';
+    }
+
+    return '';
 };
 
 export const MessageStatus: React.FC<MessageStatusProps> = ({ message, selectedResponse }) => {
+    const messageIsReminder = !message.SemanticResponseRequired && message.MessageMonitoring === CpdlcMessageMonitoringState.Finished;
+
     let statusClass = 'status-message ';
-    if (message.Direction === AtsuMessageDirection.Input) {
-        if (message.ResponseType === undefined && selectedResponse === undefined) {
+    if (message.Direction === AtsuMessageDirection.Uplink) {
+        if (!message.SemanticResponseRequired) {
+            if (message.Response || selectedResponse !== -1) {
+                statusClass += 'status-other';
+            } else {
+                statusClass += 'status-open';
+            }
+        } else if (message.Response?.ComStatus === AtsuMessageComStatus.Open) {
             statusClass += 'status-open';
         } else {
             statusClass += 'status-other';
@@ -57,16 +88,18 @@ export const MessageStatus: React.FC<MessageStatusProps> = ({ message, selectedR
 
     // calculate the position of the background rectangle
     let text = '';
-    if (selectedResponse !== undefined) {
-        text = translateStatus(selectedResponse, message);
-    } else {
-        text = translateStatus(message.ResponseType, message);
+    if (message.Direction === AtsuMessageDirection.Uplink && !messageIsReminder) {
+        if (selectedResponse !== -1) {
+            text = translateResponseId(selectedResponse, message);
+        } else {
+            text = translateResponseMessage(message, message.Response);
+        }
     }
 
     const backgroundRequired = text !== 'OPEN' && text !== 'SENT';
     let backgroundColor = 'rgba(0,0,0,0)';
-    if (message.Direction === AtsuMessageDirection.Input) {
-        if (selectedResponse === undefined || selectedResponse === message.ResponseType) {
+    if (message.Direction === AtsuMessageDirection.Uplink) {
+        if (selectedResponse === -1 || message.Response?.Content[0].TypeId === `DM${selectedResponse}`) {
             backgroundColor = 'rgb(0,255,0)';
         } else {
             backgroundColor = 'rgb(0,255,255)';
@@ -83,14 +116,21 @@ export const MessageStatus: React.FC<MessageStatusProps> = ({ message, selectedR
         background.y = 310 - background.height;
     }
 
+    let title = '';
+    if (message.MessageMonitoring === CpdlcMessageMonitoringState.Finished) {
+        if (message.SemanticResponseRequired) {
+            title = `${message.Response?.Timestamp?.dcduTimestamp()} TO ${message.Response?.Station}`;
+        } else {
+            title = (new AtsuTimestamp()).dcduTimestamp();
+            text = '';
+        }
+    } else {
+        title = `${message.Timestamp?.dcduTimestamp()} ${message.Direction === AtsuMessageDirection.Downlink ? ' TO ' : ' FROM '} ${message.Station}`;
+    }
+
     return (
         <g>
-            <text className="station" x="168" y="280">
-                {message.Timestamp?.dcduTimestamp()}
-                {' '}
-                {message.Direction === AtsuMessageDirection.Output ? ' TO ' : ' FROM '}
-                {message.Station}
-            </text>
+            <text className="station" x="168" y="280">{title}</text>
             <>
                 (
                 {backgroundRequired

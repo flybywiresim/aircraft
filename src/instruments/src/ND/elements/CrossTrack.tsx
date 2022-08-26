@@ -1,22 +1,30 @@
 import { useSimVar } from '@instruments/common/simVars';
-import React, { memo } from 'react';
+import { EfisSide } from '@shared/NavigationDisplay';
+import React from 'react';
 
 interface CrossTrackProps {
     x: number,
     y: number,
-    isPlanMode?: boolean;
+    isPlanMode?: boolean,
+    side: EfisSide,
 }
 
-export const CrossTrack: React.FC<CrossTrackProps> = memo(({ x, y, isPlanMode }) => {
+export const CrossTrack: React.FC<CrossTrackProps> = ({ x, y, isPlanMode, side }) => {
     const [crossTrackError] = useSimVar('L:A32NX_FG_CROSS_TRACK_ERROR', 'nautical miles', 250);
+    const [rnp] = useSimVar(`L:A32NX_FMGC_${side}_RNP`, 'number');
 
     let crossTrackText = '';
     let crossTrackAnchor = 'start';
     let crossTrackX = x;
-    const crossTrackAbs = Math.abs(crossTrackError);
+    const crossTrackAbs = Math.min(99.9, Math.abs(crossTrackError));
 
-    if (crossTrackAbs >= 0.1) {
+    if (rnp > 0 && rnp <= (0.3 + Number.EPSILON) && crossTrackAbs >= (0.02 - Number.EPSILON) && crossTrackAbs < (0.3 + Number.EPSILON)) {
+        crossTrackText = crossTrackAbs.toFixed(2);
+    } else if (crossTrackAbs >= 0.1) {
         crossTrackText = crossTrackAbs.toFixed(1);
+    }
+
+    if (crossTrackText.length > 0) {
         if (crossTrackError < 0) {
             crossTrackText += 'R';
             crossTrackAnchor = 'start';
@@ -33,4 +41,4 @@ export const CrossTrack: React.FC<CrossTrackProps> = memo(({ x, y, isPlanMode })
             {crossTrackText}
         </text>
     );
-});
+};

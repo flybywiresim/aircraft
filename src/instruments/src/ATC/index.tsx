@@ -1,5 +1,5 @@
 import './style.scss';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useSimVar, useSplitSimVar } from '@instruments/common/simVars';
 import { useInteractionEvent, useUpdate } from '@instruments/common/hooks';
 import { TcasComputer } from '@tcas/index';
@@ -30,19 +30,21 @@ const PoweredXpdrDisplay = () => {
     const [ltsTest] = useSimVar('L:A32NX_OVHD_INTLT_ANN', 'Number', 250);
     const [tcas] = useState(() => new TcasComputer());
 
-    const [transponderCode, setTransponderCode] = useSplitSimVar('TRANSPONDER CODE:1', 'Bco16', 'K:XPNDR_SET', 'Bco16', 500);
+    const [transponderCode, setTransponderCode] = useSplitSimVar('TRANSPONDER CODE:1', 'Bco16', 'K:XPNDR_SET', 'Bco16');
     const codeInDisplay = newDigits !== null ? newDigits : getDigitsFromBco16(transponderCode);
 
     useEffect(() => {
         tcas.init();
     }, []);
 
-    useUpdate((deltaTime) => {
+    const updateCallback = useCallback((deltaTime) => {
         tcas.update(deltaTime);
         if (displayResetTimer > 0) {
             setDisplayResetTimer(Math.max(displayResetTimer - deltaTime / 1000, 0));
         }
-    });
+    }, [displayResetTimer]);
+
+    useUpdate(updateCallback);
 
     useEffect(() => {
         if (displayResetTimer === -1) {

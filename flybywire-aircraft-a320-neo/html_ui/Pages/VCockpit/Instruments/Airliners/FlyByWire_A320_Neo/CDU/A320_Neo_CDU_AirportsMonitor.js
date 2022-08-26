@@ -251,7 +251,7 @@ class CDUAirportsMonitor {
                             this.frozen = false;
                             this.ShowPage(mcdu);
                         } else {
-                            mcdu.addNewMessage(NXSystemMessages.notInDatabase);
+                            mcdu.setScratchpadMessage(NXSystemMessages.notInDatabase);
                             scratchpadCallback();
                         }
                     }).catch(console.error);

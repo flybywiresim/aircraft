@@ -1,3 +1,8 @@
+// Copyright (c) 2021-2022 FlyByWire Simulations
+// Copyright (c) 2021-2022 Synaptic Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { GuidanceComponent } from '@fmgc/guidance/GuidanceComponent';
 import { PseudoWaypoint, PseudoWaypointSequencingAction } from '@fmgc/guidance/PsuedoWaypoint';
 import { VnavConfig, VnavDescentMode } from '@fmgc/guidance/vnav/VnavConfig';
@@ -37,6 +42,7 @@ export class PseudoWaypoints implements GuidanceComponent {
     private recompute() {
         const geometry = this.guidanceController.activeGeometry;
         const wptCount = this.guidanceController.flightPlanManager.getWaypointsCount();
+        const haveApproach = !!this.guidanceController.vnavDriver.currentApproachProfile;
 
         if (!geometry || geometry.legs.size < 1) {
             this.pseudoWaypoints.length = 0;
@@ -64,7 +70,7 @@ export class PseudoWaypoints implements GuidanceComponent {
             }
         }
 
-        if (VnavConfig.VNAV_EMIT_DECEL) {
+        if (VnavConfig.VNAV_EMIT_DECEL && haveApproach) {
             const decel = PseudoWaypoints.pointFromEndOfPath(geometry, wptCount, this.guidanceController.vnavDriver.currentApproachProfile.decel, DEBUG && PWP_IDENT_DECEL);
 
             if (decel) {
@@ -102,7 +108,7 @@ export class PseudoWaypoints implements GuidanceComponent {
             // }
         }
 
-        if (VnavConfig.VNAV_DESCENT_MODE === VnavDescentMode.CDA && VnavConfig.VNAV_EMIT_CDA_FLAP_PWP) {
+        if (VnavConfig.VNAV_DESCENT_MODE === VnavDescentMode.CDA && VnavConfig.VNAV_EMIT_CDA_FLAP_PWP && haveApproach) {
             const flap1 = PseudoWaypoints.pointFromEndOfPath(geometry, wptCount, this.guidanceController.vnavDriver.currentApproachProfile.flap1, DEBUG && PWP_IDENT_FLAP1);
 
             if (flap1) {
@@ -243,7 +249,7 @@ export class PseudoWaypoints implements GuidanceComponent {
         for (let i = wptCount - 1; i > 0; i--) {
             const leg = path.legs.get(i);
 
-            if (!leg) {
+            if (!leg || leg.isNull) {
                 continue;
             }
 

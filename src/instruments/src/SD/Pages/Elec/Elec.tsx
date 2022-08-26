@@ -3,7 +3,7 @@ import React from 'react';
 import { render } from '@instruments/common/index';
 import { PageTitle } from '../../Common/PageTitle';
 import { setIsEcamPage } from '../../../Common/defaults';
-import { SimVarProvider, useSimVar } from '../../../Common/simVars';
+import { useSimVar } from '../../../Common/simVars';
 import { EcamPage } from '../../Common/EcamPage';
 import { SvgGroup } from '../../Common/SvgGroup';
 
@@ -518,4 +518,4 @@ const Wire = ({ d, amber }: WireProps) => {
     return <path className={classes} d={d} />;
 };
 
-render(<SimVarProvider><ElecPage /></SimVarProvider>);
+render(<ElecPage />);

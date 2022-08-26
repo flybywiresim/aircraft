@@ -10,13 +10,12 @@ import postcss from 'rollup-plugin-postcss';
 import tailwindcss from 'tailwindcss';
 import dotenv from 'dotenv';
 import json from '@rollup/plugin-json';
+import postcssColorFunctionalNotation from 'postcss-color-functional-notation';
 import { Directories } from './directories.mjs';
 
 const extensions = ['.ts', '.tsx', '.js', '.jsx', '.mjs'];
 
 dotenv.config();
-
-console.log(process.env);
 
 function babel() {
     return babelPlugin({
@@ -46,10 +45,10 @@ function postCss(_, instrumentFolder) {
             tailwindcss(tailwindConfigPath),
         ];
     } else {
-        plugins = [
-            tailwindcss(undefined),
-        ];
+        plugins = [];
     }
+
+    plugins.push(postcssColorFunctionalNotation());
 
     return postcss({
         use: { sass: {} },
@@ -72,6 +71,7 @@ export function baseCompile(instrumentName, instrumentFolder) {
         replace({
             'DEBUG': 'false',
             'preventAssignment': true,
+            'process.env.VITE_BUILD': 'false',
             'process.env.NODE_ENV': JSON.stringify('production'),
             'process.env.CLIENT_ID': JSON.stringify(process.env.CLIENT_ID),
             'process.env.CLIENT_SECRET': JSON.stringify(process.env.CLIENT_SECRET),

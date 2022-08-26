@@ -20,6 +20,41 @@ class CDU_Field {
     onSelect(value) {
         this.selectedCallback(this.currentValue);
     }
+
+    getFieldAsColumnParameters() {
+        const text = this.getValue();
+        let color = Column.white;
+
+        if (text.includes("[color]amber")) {
+            color = Column.amber;
+        } else if (text.includes("[color]red")) {
+            color = Column.red;
+        } else if (text.includes("[color]green")) {
+            color = Column.green;
+        } else if (text.includes("[color]cyan")) {
+            color = Column.cyan;
+        } else if (text.includes("[color]magenta")) {
+            color = Column.magenta;
+        } else if (text.includes("[color]yellow")) {
+            color = Column.yellow;
+        } else if (text.includes("[color]inop")) {
+            color = Column.inop;
+        }
+
+        return [
+            this.onSelect.bind(this),
+            text
+                .replace("[color]white", "")
+                .replace("[color]amber", "")
+                .replace("[color]red", "")
+                .replace("[color]green", "")
+                .replace("[color]cyan", "")
+                .replace("[color]magenta", "")
+                .replace("[color]yellow", "")
+                .replace("[color]inop", "")
+            , color
+        ];
+    }
 }
 
 /**
@@ -40,7 +75,7 @@ class CDU_InopField extends CDU_Field {
     }
 
     onSelect() {
-        this.mcdu.addNewMessage(NXFictionalMessages.notYetImplemented);
+        this.mcdu.setScratchpadMessage(NXFictionalMessages.notYetImplemented);
         super.onSelect();
     }
 
@@ -97,7 +132,7 @@ class CDU_SingleValueField extends CDU_Field {
     setValue(value) {
         // Custom isValid callback
         if (value.length === 0 || (this.isValid && !this.isValid(value))) {
-            this.mcdu.addNewMessage(NXSystemMessages.formatError);
+            this.mcdu.setScratchpadMessage(NXSystemMessages.formatError);
             return false;
         }
 
@@ -105,7 +140,7 @@ class CDU_SingleValueField extends CDU_Field {
             case "string":
                 // Check max length
                 if (value.length > this.maxLength) {
-                    this.mcdu.addNewMessage(NXSystemMessages.formatError);
+                    this.mcdu.setScratchpadMessage(NXSystemMessages.formatError);
                     return false;
                 }
                 break;
@@ -113,11 +148,11 @@ class CDU_SingleValueField extends CDU_Field {
                 // Make sure value is an integer and is within the min/max
                 const valueAsInt = Number.parseInt(value, 10);
                 if (!isFinite(valueAsInt) || value.includes(".")) {
-                    this.mcdu.addNewMessage(NXSystemMessages.formatError);
+                    this.mcdu.setScratchpadMessage(NXSystemMessages.formatError);
                     return false;
                 }
                 if (valueAsInt > this.maxValue || valueAsInt < this.minValue) {
-                    this.mcdu.addNewMessage(NXSystemMessages.entryOutOfRange);
+                    this.mcdu.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
                     return false;
                 }
                 value = valueAsInt;
@@ -126,11 +161,11 @@ class CDU_SingleValueField extends CDU_Field {
                 // Make sure value is a valid number and is within the min/max
                 const valueAsFloat = Number.parseFloat(value);
                 if (!isFinite(valueAsFloat)) {
-                    this.mcdu.addNewMessage(NXSystemMessages.formatError);
+                    this.mcdu.setScratchpadMessage(NXSystemMessages.formatError);
                     return false;
                 }
                 if (valueAsFloat > this.maxValue || valueAsFloat < this.minValue) {
-                    this.mcdu.addNewMessage(NXSystemMessages.entryOutOfRange);
+                    this.mcdu.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
                     return false;
                 }
                 value = valueAsFloat;
@@ -148,7 +183,7 @@ class CDU_SingleValueField extends CDU_Field {
                 this.currentValue = null;
             }
         } else {
-            this.mcdu.addNewMessage(NXSystemMessages.notAllowed);
+            this.mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
         }
     }
     onSelect(value) {

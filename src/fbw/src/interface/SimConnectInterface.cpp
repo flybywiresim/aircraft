@@ -241,6 +241,10 @@ bool SimConnectInterface::prepareSimDataSimConnectDataDefinitions() {
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "BRAKE RIGHT POSITION", "POSITION");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "FLAPS HANDLE INDEX", "NUMBER");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "GEAR HANDLE POSITION", "POSITION");
+  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_INT64, "ASSISTANCE TAKEOFF ENABLED", "BOOL");
+  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_INT64, "ASSISTANCE LANDING ENABLED", "BOOL");
+  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_INT64, "AI AUTOTRIM ACTIVE", "BOOL");
+  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_INT64, "AI CONTROLS", "BOOL");
 
   return result;
 }
@@ -274,11 +278,6 @@ bool SimConnectInterface::prepareSimInputSimConnectDataDefinitions() {
   result &= addInputDataDefinition(hSimConnect, 0, Events::ELEVATOR_SET, "ELEVATOR_SET", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::ELEV_DOWN, "ELEV_DOWN", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::ELEV_UP, "ELEV_UP", true);
-
-  result &= addInputDataDefinition(hSimConnect, 0, Events::ELEV_TRIM_DN, "ELEV_TRIM_DN", true);
-  result &= addInputDataDefinition(hSimConnect, 0, Events::ELEV_TRIM_UP, "ELEV_TRIM_UP", true);
-  result &= addInputDataDefinition(hSimConnect, 0, Events::ELEVATOR_TRIM_SET, "ELEVATOR_TRIM_SET", true);
-  result &= addInputDataDefinition(hSimConnect, 0, Events::AXIS_ELEV_TRIM_SET, "AXIS_ELEV_TRIM_SET", true);
 
   result &= addInputDataDefinition(hSimConnect, 0, Events::AP_MASTER, "AP_MASTER", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::AUTOPILOT_OFF, "AUTOPILOT_OFF", false);
@@ -323,6 +322,9 @@ bool SimConnectInterface::prepareSimInputSimConnectDataDefinitions() {
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_APPR_PUSH, "A32NX.FCU_APPR_PUSH", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_EXPED_PUSH, "A32NX.FCU_EXPED_PUSH", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FMGC_DIR_TO_TRIGGER, "A32NX.FMGC_DIR_TO_TRIGGER", false);
+
+  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_EFIS_L_CHRONO_PUSHED, "A32NX.EFIS_L_CHRONO_PUSHED", false);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_EFIS_R_CHRONO_PUSHED, "A32NX.EFIS_R_CHRONO_PUSHED", false);
 
   result &= addInputDataDefinition(hSimConnect, 0, Events::AP_SPEED_SLOT_INDEX_SET, "SPEED_SLOT_INDEX_SET", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::AP_SPD_VAR_INC, "AP_SPD_VAR_INC", true);
@@ -428,10 +430,6 @@ bool SimConnectInterface::prepareSimInputSimConnectDataDefinitions() {
 
 bool SimConnectInterface::prepareSimOutputSimConnectDataDefinitions() {
   bool result = true;
-
-  result &= addDataDefinition(hSimConnect, 1, SIMCONNECT_DATATYPE_FLOAT64, "ELEVATOR POSITION", "POSITION");
-  result &= addDataDefinition(hSimConnect, 1, SIMCONNECT_DATATYPE_FLOAT64, "AILERON POSITION", "POSITION");
-  result &= addDataDefinition(hSimConnect, 1, SIMCONNECT_DATATYPE_FLOAT64, "RUDDER POSITION", "POSITION");
 
   result &= addDataDefinition(hSimConnect, 2, SIMCONNECT_DATATYPE_FLOAT64, "ELEVATOR TRIM POSITION", "DEGREE");
 
@@ -857,15 +855,6 @@ bool SimConnectInterface::readData() {
   return true;
 }
 
-bool SimConnectInterface::sendData(SimOutput output) {
-  // write data and return result
-  return sendData(1, sizeof(output), &output);
-}
-
-bool SimConnectInterface::sendData(SimOutputEtaTrim output) {
-  // write data and return result
-  return sendData(2, sizeof(output), &output);
-}
 
 bool SimConnectInterface::sendData(SimOutputZetaTrim output) {
   // write data and return result
@@ -1356,54 +1345,6 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
       break;
     }
 
-    case Events::ELEV_TRIM_DN: {
-      elevatorTrimHandler->onEventElevatorTrimDown();
-      if (loggingFlightControlsEnabled) {
-        cout << "WASM: ELEV_TRIM_DN: ";
-        cout << "(no data)";
-        cout << " -> ";
-        cout << elevatorTrimHandler->getPosition();
-        cout << endl;
-      }
-      break;
-    }
-
-    case Events::ELEV_TRIM_UP: {
-      elevatorTrimHandler->onEventElevatorTrimUp();
-      if (loggingFlightControlsEnabled) {
-        cout << "WASM: ELEV_TRIM_UP: ";
-        cout << "(no data)";
-        cout << " -> ";
-        cout << elevatorTrimHandler->getPosition();
-        cout << endl;
-      }
-      break;
-    }
-
-    case Events::ELEVATOR_TRIM_SET: {
-      elevatorTrimHandler->onEventElevatorTrimSet(static_cast<long>(event->dwData));
-      if (loggingFlightControlsEnabled) {
-        cout << "WASM: ELEVATOR_TRIM_SET: ";
-        cout << static_cast<long>(event->dwData);
-        cout << " -> ";
-        cout << elevatorTrimHandler->getPosition();
-        cout << endl;
-      }
-      break;
-    }
-
-    case Events::AXIS_ELEV_TRIM_SET: {
-      elevatorTrimHandler->onEventElevatorTrimAxisSet(static_cast<long>(event->dwData));
-      if (loggingFlightControlsEnabled) {
-        cout << "WASM: AXIS_ELEV_TRIM_SET: ";
-        cout << static_cast<long>(event->dwData);
-        cout << " -> ";
-        cout << elevatorTrimHandler->getPosition();
-        cout << endl;
-      }
-      break;
-    }
-
     case Events::AUTOPILOT_OFF: {
       simInputAutopilot.AP_disconnect = 1;
       cout << "WASM: event triggered: AUTOPILOT_OFF" << endl;
@@ -1738,6 +1679,18 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
     case Events::A32NX_FMGC_DIR_TO_TRIGGER: {
       simInputAutopilot.DIR_TO_trigger = 1;
       cout << "WASM: event triggered: A32NX_FMGC_DIR_TO_TRIGGER" << endl;
+      break;
+    }
+
+    case Events::A32NX_EFIS_L_CHRONO_PUSHED: {
+      execute_calculator_code("(>H:A32NX_EFIS_L_CHRONO_PUSHED)", nullptr, nullptr, nullptr);
+      cout << "WASM: event triggered: A32NX_EFIS_L_CHRONO_PUSHED" << endl;
+      break;
+    }
+
+    case Events::A32NX_EFIS_R_CHRONO_PUSHED: {
+      execute_calculator_code("(>H:A32NX_EFIS_R_CHRONO_PUSHED)", nullptr, nullptr, nullptr);
+      cout << "WASM: event triggered: A32NX_EFIS_R_CHRONO_PUSHED" << endl;
       break;
     }
 

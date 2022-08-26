@@ -176,19 +176,21 @@ function combineGltf(pathA, pathB, outputPath) {
             });
         mesh.primitives[0].indices += accessorsCount;
         // workaround to allow added meshes to use existing materials
-        if (!Number.isFinite(mesh.primitives[0].material)) {
-            for (let i = 0; i < gltfA.materials.length; i += 1) {
-                if (gltfA.materials[i].name === mesh.primitives[0].material) {
-                    mesh.primitives[0].material = i;
-                    break;
+        for (const primitive of mesh.primitives) {
+            if (!Number.isFinite(primitive.material)) {
+                for (let i = 0; i < gltfA.materials.length; i += 1) {
+                    if (gltfA.materials[i].name === primitive.material) {
+                        primitive.material = i;
+                        break;
+                    }
                 }
+                // If the material is not found, use material 0
+                if (!Number.isFinite(primitive.material)) {
+                    primitive.material = 0;
+                }
+            } else {
+                primitive.material += materialsCount;
             }
-            // If the material is not found, use material 0
-            if (!Number.isFinite(mesh.primitives[0].material)) {
-                mesh.primitives[0].material = 0;
-            }
-        } else {
-            mesh.primitives[0].material += materialsCount;
         }
         gltfA.meshes.push(mesh);
     }
@@ -384,6 +386,22 @@ function splitAnimations(gltfPath, outputPath, splitData) {
     fs.writeFileSync(outputPath, data);
 }
 
+function addParentNode(gltfPath, outputPath, node) {
+    const gltf = JSON.parse(fs.readFileSync(gltfPath, 'utf8'));
+    const parentIndex = gltf.nodes.findIndex(({ name }) => name === node.parent);
+    const childIndex = gltf.nodes.findIndex(({ name }) => name === node.name);
+
+    if (gltf.nodes[parentIndex]?.children) {
+        gltf.nodes[parentIndex]?.children?.push(childIndex);
+    } else if (gltf.nodes[parentIndex]) {
+        gltf.nodes[parentIndex].children = [];
+        gltf.nodes[parentIndex].children.push(childIndex);
+    }
+
+    const data = JSON.stringify(gltf);
+    fs.writeFileSync(outputPath, data);
+}
+
 const models = JSON.parse(fs.readFileSync(path.join(__dirname, 'models.json'), 'utf8'));
 const p = (n) => path.resolve(__dirname, n);
 for (const model of models) {
@@ -414,18 +432,26 @@ for (const model of models) {
                     }
                 }
             } else {
-                combineGltf(p(model.output.gltf[i]), p(addition.gltf), p(model.output.gltf[i]));
+                const maxLod = addition.maxLod != null ? addition.maxLod : Infinity;
+                if (i <= maxLod) {
+                    combineGltf(p(model.output.gltf[i]), p(addition.gltf), p(model.output.gltf[i]));
 
-                // add some zeroes to the end of the bin file to make sure its length is divisible by 4
-                fs.appendFileSync(p(model.output.bin[i]), Buffer.alloc((4 - (fs.statSync(p(model.output.bin[i])).size % 4)) % 4));
+                    // add some zeroes to the end of the bin file to make sure its length is divisible by 4
+                    fs.appendFileSync(p(model.output.bin[i]), Buffer.alloc((4 - (fs.statSync(p(model.output.bin[i])).size % 4)) % 4));
 
-                // add the second bin file to the end of the first one
-                fs.appendFileSync(p(model.output.bin[i]), fs.readFileSync(p(addition.bin)));
+                    // add the second bin file to the end of the first one
+                    fs.appendFileSync(p(model.output.bin[i]), fs.readFileSync(p(addition.bin)));
+                }
             }
         }
         if (model.splitAnimations) {
             for (const split of model.splitAnimations) {
                 splitAnimations(p(model.output.gltf[i]), p(model.output.gltf[i]), split);
+            }
+        }
+        if (model.addParentNodes) {
+            for (const node of model.addParentNodes) {
+                addParentNode(p(model.output.gltf[i]), p(model.output.gltf[i]), node);
             }
         }
     }

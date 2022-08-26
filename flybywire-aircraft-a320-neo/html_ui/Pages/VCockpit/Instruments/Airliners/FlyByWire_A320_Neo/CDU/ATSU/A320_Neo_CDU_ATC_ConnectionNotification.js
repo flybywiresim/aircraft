@@ -3,6 +3,12 @@ class CDUAtcConnectionNotification {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.ATCNotification;
 
+        mcdu.page.SelfPtr = setTimeout(() => {
+            if (mcdu.page.Current === mcdu.page.ATCNotification) {
+                CDUAtcConnectionNotification.ShowPage(mcdu, store);
+            }
+        }, mcdu.PageTimeout.Default);
+
         let flightNo = "-------[color]white";
         let atcStation = "____[color]amber";
         let atcStationAvail = false;
@@ -78,7 +84,7 @@ class CDUAtcConnectionNotification {
             [notificationMessage],
             [notificationStatus],
             [""],
-            ["\xa0ATC MENU", "CONNECTION\xa0"],
+            ["\xa0CONNECTION", "CONNECTION\xa0"],
             ["<RETURN", "STATUS>"]
         ]);
 
@@ -87,15 +93,15 @@ class CDUAtcConnectionNotification {
         };
         mcdu.onLeftInput[1] = (value) => {
             if (store["loginState"] === 1 && mcdu.atsu.atc.nextStation() !== store["atcCenter"]) {
-                mcdu.addNewMessage(NXSystemMessages.systemBusy);
+                mcdu.setScratchpadMessage(NXSystemMessages.systemBusy);
                 return;
             }
 
             store["loginState"] = 0;
             if (/^[A-Z0-9]{4}$/.test(value) === false) {
-                mcdu.addNewMessage(NXSystemMessages.formatError);
+                mcdu.setScratchpadMessage(NXSystemMessages.formatError);
             } else if (mcdu.atsu.flightNumber().length === 0) {
-                mcdu.addNewMessage(NXFictionalMessages.fltNbrMissing);
+                mcdu.setScratchpadMessage(NXFictionalMessages.fltNbrMissing);
             } else {
                 store["atcCenter"] = "";
 
@@ -120,7 +126,7 @@ class CDUAtcConnectionNotification {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[5] = () => {
-            CDUAtcMenu.ShowPage1(mcdu);
+            CDUAtcConnection.ShowPage(mcdu);
         };
 
         mcdu.rightInputDelay[1] = () => {
@@ -154,7 +160,7 @@ class CDUAtcConnectionNotification {
                     }
                 });
             } else {
-                mcdu.addNewMessage(NXSystemMessages.mandatoryFields);
+                mcdu.setScratchpadMessage(NXSystemMessages.mandatoryFields);
             }
 
             CDUAtcConnectionNotification.ShowPage(mcdu, store);

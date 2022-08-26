@@ -4,12 +4,11 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
-import { Guidable } from '@fmgc/guidance/Guidable';
 import { SegmentType } from '@fmgc/flightplanning/FlightPlanSegment';
 import { GuidanceParameters } from '@fmgc/guidance/ControlLaws';
 import { XFLeg } from '@fmgc/guidance/lnav/legs/XF';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
-import { courseToFixDistanceToGo, courseToFixGuidance } from '@fmgc/guidance/lnav/CommonGeometry';
+import { courseToFixDistanceToGo, fixToFixGuidance } from '@fmgc/guidance/lnav/CommonGeometry';
 import { Transition } from '@fmgc/guidance/lnav/Transition';
 import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
 import { bearingTo } from 'msfs-geo';
@@ -57,11 +56,13 @@ export class DFLeg extends XFLeg {
         );
     }
 
-    recomputeWithParameters(_isActive: boolean, _tas: Knots, _gs: Knots, _ppos: Coordinates, _trueTrack: DegreesTrue, previousGuidable: Guidable, nextGuidable: Guidable) {
-        // We don't really do anything here
-        this.inboundGuidable = previousGuidable;
-        this.outboundGuidable = nextGuidable;
-
+    recomputeWithParameters(
+        _isActive: boolean,
+        _tas: Knots,
+        _gs: Knots,
+        _ppos: Coordinates,
+        _trueTrack: DegreesTrue,
+    ) {
         const newStart = this.inboundGuidable?.getPathEndPoint() ?? this.estimateStartPoint();
 
         // Adjust the start point if we can
@@ -80,12 +81,12 @@ export class DFLeg extends XFLeg {
                 {
                     type: PathVectorType.DebugPoint,
                     startPoint: this.start,
-                    annotation: 'DF_START',
+                    annotation: 'DF START',
                 },
                 {
                     type: PathVectorType.DebugPoint,
                     startPoint: this.getPathEndPoint(),
-                    annotation: 'DF_END',
+                    annotation: 'DF END',
                 },
             );
         }
@@ -106,7 +107,7 @@ export class DFLeg extends XFLeg {
     }
 
     getGuidanceParameters(ppos: Coordinates, trueTrack: Degrees, _tas: Knots): GuidanceParameters | undefined {
-        return courseToFixGuidance(ppos, trueTrack, this.outboundCourse, this.fix.infos.coordinates);
+        return fixToFixGuidance(ppos, trueTrack, this.start, this.fix.infos.coordinates);
     }
 
     getNominalRollAngle(_gs: Knots): Degrees {

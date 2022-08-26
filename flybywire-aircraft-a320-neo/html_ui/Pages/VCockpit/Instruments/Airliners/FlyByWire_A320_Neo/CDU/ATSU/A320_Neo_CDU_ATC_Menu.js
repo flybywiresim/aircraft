@@ -1,35 +1,62 @@
 class CDUAtcMenu {
-    static ShowPage1(mcdu) {
+    static ShowPage(mcdu) {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.ATCMenu;
+
+        // regular update due to showing dynamic data on this page
+        mcdu.page.SelfPtr = setTimeout(() => {
+            if (mcdu.page.Current === mcdu.page.ATCMenu) {
+                CDUAtcMenu.ShowPage(mcdu);
+            }
+        }, mcdu.PageTimeout.Slow);
+
+        let modif = "";
+        if (mcdu.atsu.modificationMessage) {
+            modif = "MODIFY>";
+        }
+
         mcdu.setTemplate([
-            ["ATC MENU", "1", "2"],
+            ["ATC MENU"],
             [""],
-            ["<LAT REQ[color]inop", "VERT REQ>[color]inop"],
+            ["<FLIGHT REQ", "USUAL REQ>"],
             [""],
-            ["<WHEN CAN WE[color]inop", "OTHER REQ>[color]inop"],
+            ["<GROUND REQ", "D-ATIS>"],
             [""],
-            ["", "TEXT>[color]inop"],
+            ["<MSG RECORD", "REPORTS>"],
             [""],
-            ["<MSG RECORD", "REPORTS>[color]inop"],
+            ["<MONITORED MSG", modif],
             [""],
-            ["<CONNECTION", ""],
+            ["<CONNECTION"],
             ["\xa0ATSU DLK"],
-            ["<RETURN", "EMERGENCY>[color]inop"]
+            ["<RETURN", "EMER MENU>[color]amber"]
         ]);
 
         mcdu.leftInputDelay[0] = () => {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[0] = () => {
-            //CDUAtcRequest.ShowPage(mcdu);
+            CDUAtcFlightReq.ShowPage(mcdu);
+        };
+
+        mcdu.leftInputDelay[1] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+        mcdu.onLeftInput[1] = () => {
+            CDUAtcClearanceReq.ShowPage(mcdu, "GROUND");
+        };
+
+        mcdu.leftInputDelay[2] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+        mcdu.onLeftInput[2] = () => {
+            CDUAtcMessagesRecord.ShowPage(mcdu);
         };
 
         mcdu.leftInputDelay[3] = () => {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[3] = () => {
-            CDUAtcMessagesRecord.ShowPage(mcdu);
+            CDUAtcMessageMonitoring.ShowPage(mcdu);
         };
 
         mcdu.leftInputDelay[4] = () => {
@@ -39,87 +66,53 @@ class CDUAtcMenu {
             CDUAtcConnection.ShowPage(mcdu);
         };
 
-        mcdu.leftInputDelay[5] = () => {
+        mcdu.rightInputDelay[0] = () => {
             return mcdu.getDelaySwitchPage();
         };
-        mcdu.onLeftInput[5] = () => {
-            CDUAtsuMenu.ShowPage(mcdu);
+        mcdu.onRightInput[0] = () => {
+            if (mcdu.atsu.atc.fansMode() === Atsu.FansMode.FansA) {
+                CDUAtcUsualRequestFansA.ShowPage(mcdu);
+            } else {
+                CDUAtcUsualRequestFansB.ShowPage(mcdu);
+            }
+        };
+
+        mcdu.rightInputDelay[1] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+        mcdu.onRightInput[1] = () => {
+            CDUAtcAtisMenu.ShowPage(mcdu);
+        };
+
+        mcdu.rightInputDelay[2] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+        mcdu.onRightInput[2] = () => {
+            if (mcdu.atsu.atc.fansMode() === Atsu.FansMode.FansA) {
+                CDUAtcReports.ShowPage(mcdu);
+            } else {
+                mcdu.setScratchpadMessage(NXSystemMessages.keyNotActive);
+            }
         };
 
         mcdu.rightInputDelay[3] = () => {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onRightInput[3] = () => {
-            //CDUAtcReports.ShowPage(mcdu);
+            if (mcdu.atsu.modificationMessage) {
+                CDUAtcMessageModify.ShowPage(mcdu, mcdu.atsu.modificationMessage);
+            }
         };
 
         mcdu.rightInputDelay[5] = () => {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onRightInput[5] = () => {
-            //CDUAtcEmergency.ShowPage(mcdu);
-        };
-
-        mcdu.onPrevPage = () => {
-            CDUAtcMenu.ShowPage2(mcdu);
-        };
-        mcdu.onNextPage = () => {
-            CDUAtcMenu.ShowPage2(mcdu);
-        };
-    }
-
-    static ShowPage2(mcdu) {
-        mcdu.clearDisplay();
-        mcdu.page.Current = mcdu.page.ATCMenu;
-        mcdu.setTemplate([
-            ["ATC MENU", "2", "2"],
-            ["------ATS623 PAGE--------"],
-            ["<DEPART REQ", "ATIS>"],
-            ["", ""],
-            ["<OCEANIC REQ", ""],
-            [""],
-            [""],
-            [""],
-            [""],
-            [""],
-            [""],
-            ["\xa0ATSU DLK"],
-            ["<RETURN"]
-        ]);
-
-        mcdu.leftInputDelay[0] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
-        mcdu.onLeftInput[0] = () => {
-            CDUAtcDepartReq.ShowPage1(mcdu);
-        };
-
-        mcdu.leftInputDelay[1] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
-        mcdu.onLeftInput[1] = () => {
-            CDUAtcOceanicReq.ShowPage1(mcdu);
-        };
-
-        mcdu.leftInputDelay[5] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
-        mcdu.onLeftInput[5] = () => {
-            CDUAtsuMenu.ShowPage(mcdu);
-        };
-
-        mcdu.rightInputDelay[0] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
-        mcdu.onRightInput[0] = () => {
-            CDUAtcAtisMenu.ShowPage(mcdu);
-        };
-
-        mcdu.onPrevPage = () => {
-            CDUAtcMenu.ShowPage1(mcdu);
-        };
-        mcdu.onNextPage = () => {
-            CDUAtcMenu.ShowPage1(mcdu);
+            if (mcdu.atsu.atc.fansMode() === Atsu.FansMode.FansA) {
+                CDUAtcEmergencyFansA.ShowPage1(mcdu);
+            } else {
+                CDUAtcEmergencyFansB.ShowPage(mcdu);
+            }
         };
     }
 }

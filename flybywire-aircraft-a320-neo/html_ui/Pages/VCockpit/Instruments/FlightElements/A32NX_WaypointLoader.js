@@ -117,10 +117,12 @@ class FacilityLoader {
             }
         }
 
-        const pendingRequest = this._pendingRawRequests.get(`${type}${_data.icaoTrimed}`);
-        if (pendingRequest) {
-            clearTimeout(pendingRequest.timeout);
-            pendingRequest.resolve(_data);
+        const pendingRequests = this._pendingRawRequests.get(`${type}${_data.icaoTrimed}`);
+        if (pendingRequests) {
+            pendingRequests.forEach((pendingRequest) => {
+                clearTimeout(pendingRequest.timeout);
+                pendingRequest.resolve(_data);
+            });
             this._pendingRawRequests.delete(`${type}${_data.icaoTrimed}`);
         }
     }
@@ -128,7 +130,7 @@ class FacilityLoader {
      * Gets the raw facility data for a given icao.
      * @param {String} icao The ICAO to get the raw facility data for.
      */
-    getFacilityRaw(icao, timeout = 1500) {
+    getFacilityRaw(icao, timeout = 1500, skipIntersectionData = false) {
 
         const queueRawLoad = (loadCall, icao, type) => {
             return new Promise((resolve) => {
@@ -138,8 +140,13 @@ class FacilityLoader {
                     icao: icao.trim()
                 };
 
-                this._pendingRawRequests.set(`${type}${request.icao}`, request);
-                Coherent.call(loadCall, icao).catch(console.error);
+                const pendingRequests = this._pendingRawRequests.get(`${type}${request.icao}`);
+                if (pendingRequests) {
+                    pendingRequests.push(request);
+                } else {
+                    this._pendingRawRequests.set(`${type}${request.icao}`, [request]);
+                    Coherent.call(loadCall, icao).catch(console.error);
+                }
             });
         };
 
@@ -154,21 +161,31 @@ class FacilityLoader {
                     return queueRawLoad('LOAD_INTERSECTION', icao, 'W');
                 }
             case 'V':
-                return Promise.all([queueRawLoad('LOAD_VOR', icao, 'V'), queueRawLoad('LOAD_INTERSECTION', icao, 'W')])
+                const vorPromises = [queueRawLoad('LOAD_VOR', icao, 'V')];
+                if (!skipIntersectionData) {
+                    vorPromises.push(queueRawLoad('LOAD_INTERSECTION', icao, 'W'));
+                }
+                return Promise.all(vorPromises)
                     .then(facilities => {
                         if (facilities[1]) {
                             return Object.assign(facilities[0], facilities[1]);
+                        } else if (!skipIntersectionData) {
+                            console.warn('Missing insersection data', facilities[0]);
                         }
-                        console.warn('Missing insersection data', facilities[0]);
                         return facilities[0];
                     });
             case 'N':
-                return Promise.all([queueRawLoad('LOAD_NDB', icao, 'N'), queueRawLoad('LOAD_INTERSECTION', icao, 'W')])
+                const ndbPromises = [queueRawLoad('LOAD_NDB', icao, 'N')];
+                if (!skipIntersectionData) {
+                    ndbPromises.push(queueRawLoad('LOAD_INTERSECTION', icao, 'W'));
+                }
+                return Promise.all(ndbPromises)
                     .then(facilities => {
                         if (facilities[1]) {
                             Object.assign(facilities[0], facilities[1]);
+                        } else if (!skipIntersectionData) {
+                            console.warn('Missing insersection data', facilities[0]);
                         }
-                        console.warn('Missing insersection data', facilities[0]);
                         return facilities[0];
                     });
         }

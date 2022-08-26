@@ -15,7 +15,7 @@ export const LnavConfig = {
     /**
      * Coefficient applied to all transition turn radii
      */
-    TURN_RADIUS_FACTOR: 1.1,
+    TURN_RADIUS_FACTOR: 1.0,
 
     /**
      * The number of transitions to compute after the active leg (-1: no limit, compute all transitions)

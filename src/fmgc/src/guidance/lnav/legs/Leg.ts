@@ -25,7 +25,9 @@ export abstract class Leg extends Guidable {
 
     abstract get ident(): string
 
-    displayedOnMap: boolean = true
+    isNull = false
+
+    displayedOnMap = true
 
     predictedTas: Knots
 
@@ -36,7 +38,13 @@ export abstract class Leg extends Guidable {
     }
 
     /** @inheritDoc */
-    recomputeWithParameters(_isActive: boolean, _tas: Knots, _gs: Knots, _ppos: Coordinates, _trueTrack: DegreesTrue, _previousGuidable: Guidable, _nextGuidable: Guidable): void {
+    recomputeWithParameters(
+        _isActive: boolean,
+        _tas: Knots,
+        _gs: Knots,
+        _ppos: Coordinates,
+        _trueTrack: DegreesTrue,
+    ): void {
         // Default impl.
     }
 
@@ -52,5 +60,9 @@ export abstract class Leg extends Guidable {
 
     get overflyTermFix(): boolean {
         return false;
+    }
+
+    get initialLegTermPoint(): Coordinates {
+        return this.getPathEndPoint();
     }
 }

@@ -141,9 +141,9 @@ export class FlightPathDirector extends DisplayComponent<{bus: EventBus, isAttEx
             const FDPitchOrderLim = Math.max(Math.min(FDPitchOrder, 22.5), -22.5) * 1.9;
 
             const daLimConv = Math.max(Math.min(this.data.da.value, 21), -21) * DistanceSpacing / ValueSpacing;
-            const pitchSubFpaConv = (calculateHorizonOffsetFromPitch(-this.data.pitch.value) - calculateHorizonOffsetFromPitch(this.data.fpa.value));
+            const pitchSubFpaConv = (calculateHorizonOffsetFromPitch(this.data.pitch.value) - calculateHorizonOffsetFromPitch(this.data.fpa.value));
             const rollCos = Math.cos(this.data.roll.value * Math.PI / 180);
-            const rollSin = Math.sin(this.data.roll.value * Math.PI / 180);
+            const rollSin = Math.sin(-this.data.roll.value * Math.PI / 180);
 
             const FDRollOffset = FDRollOrderLim * 0.77;
             const xOffsetFpv = daLimConv * rollCos - pitchSubFpaConv * rollSin;

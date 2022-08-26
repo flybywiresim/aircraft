@@ -56,14 +56,14 @@ class CDUPilotsWaypoint {
             if (value === FMCMainDisplay.clrValue) {
                 const deleted = mcdu.dataManager.deleteStoredWaypoint(index);
                 if (!deleted) {
-                    mcdu.addNewMessage(NXSystemMessages.fplnElementRetained);
+                    mcdu.setScratchpadMessage(NXSystemMessages.fplnElementRetained);
                 } else if (mcdu.dataManager.numberOfStoredWaypoints() < 1) {
                     CDUNewWaypoint.ShowPage(mcdu, () => CDUDataIndexPage.ShowPage2(mcdu));
                 } else {
                     CDUPilotsWaypoint.ShowPage(mcdu, mcdu.dataManager.nextStoredWaypointIndex());
                 }
             } else {
-                mcdu.addNewMessage(NXSystemMessages.notAllowed);
+                mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
                 scratchpadCallback();
             }
         };
@@ -81,7 +81,7 @@ class CDUPilotsWaypoint {
             if (confirmDeleteAll) {
                 const allDeleted = mcdu.dataManager.deleteAllStoredWaypoints();
                 if (!allDeleted) {
-                    mcdu.addNewMessage(NXSystemMessages.fplnElementRetained);
+                    mcdu.setScratchpadMessage(NXSystemMessages.fplnElementRetained);
                 }
                 CDUPilotsWaypoint.ShowPage(mcdu, index);
             } else {

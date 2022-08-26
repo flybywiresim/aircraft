@@ -68,6 +68,6 @@ export class CourseChange {
         turnCenterDistance: NauticalMiles,
         trackChange: Degrees,
     ): Degrees {
-        return turnDirection * (45 - Math.abs(trackChange));
+        return trackChange + (turnDirection > 0 ? 45 : -45);
     }
 }

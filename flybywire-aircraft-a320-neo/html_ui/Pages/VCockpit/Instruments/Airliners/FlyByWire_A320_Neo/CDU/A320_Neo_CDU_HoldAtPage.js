@@ -98,13 +98,13 @@ class CDUHoldAtPage {
         // change course
         mcdu.onLeftInput[0] = (value, scratchpadCallback) => {
             if (value.match(/^[0-9]{1,3}$/) === null) {
-                mcdu.addNewMessage(NXSystemMessages.formatError);
+                mcdu.setScratchpadMessage(NXSystemMessages.formatError);
                 scratchpadCallback();
                 return;
             }
             const magCourse = parseInt(value);
             if (magCourse > 360) {
-                mcdu.addNewMessage(NXSystemMessages.entryOutOfRange);
+                mcdu.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
                 scratchpadCallback();
                 return;
             }
@@ -115,7 +115,7 @@ class CDUHoldAtPage {
         // change turn direction
         mcdu.onLeftInput[1] = (value, scratchpadCallback) => {
             if (value !== "L" && value !== "R") {
-                mcdu.addNewMessage(NXSystemMessages.formatError);
+                mcdu.setScratchpadMessage(NXSystemMessages.formatError);
                 scratchpadCallback();
                 return;
             }
@@ -127,7 +127,7 @@ class CDUHoldAtPage {
         mcdu.onLeftInput[2] = (value, scratchpadCallback) => {
             const m = value.match(/^(([0-9]{0,1}(\.[0-9])?)\/?|\/([0-9]{0,2}(\.[0-9])?))$/);
             if (m === null) {
-                mcdu.addNewMessage(NXSystemMessages.formatError);
+                mcdu.setScratchpadMessage(NXSystemMessages.formatError);
                 scratchpadCallback();
                 return;
             }

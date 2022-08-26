@@ -74,6 +74,9 @@ bool FlyByWireInterface::update(double sampleTime) {
   // update radio receivers
   result &= updateRadioReceiver(sampleTime);
 
+  // handle initialization
+  result &= handleFcuInitialization(calculatedSampleTime);
+
   // do not process laws in pause or slew
   if (simConnectInterface.getSimData().slew_on) {
     wasInSlew = true;
@@ -105,6 +108,9 @@ bool FlyByWireInterface::update(double sampleTime) {
 
   // update spoilers
   result &= updateSpoilers(calculatedSampleTime);
+
+  // update FO side with FO Sync ON
+  result &= updateFoSide(calculatedSampleTime);
 
   // update flight data recorder
   flightDataRecorder.update(&autopilotStateMachine, &autopilotLaws, &autoThrust, &flyByWire, engineData, additionalData);
@@ -218,6 +224,10 @@ void FlyByWireInterface::loadConfiguration() {
 }
 
 void FlyByWireInterface::setupLocalVariables() {
+  // regsiter L variable for init state and ready signal
+  idIsReady = make_unique<LocalVariable>("A32NX_IS_READY");
+  idStartState = make_unique<LocalVariable>("A32NX_START_STATE");
+
   // regsiter L variable for logging
   idLoggingFlightControlsEnabled = make_unique<LocalVariable>("A32NX_LOGGING_FLIGHT_CONTROLS_ENABLED");
   idLoggingThrottlesEnabled = make_unique<LocalVariable>("A32NX_LOGGING_THROTTLES_ENABLED");
@@ -230,6 +240,9 @@ void FlyByWireInterface::setupLocalVariables() {
   idDevelopmentAutoland_delta_Theta_bx_deg = make_unique<LocalVariable>("A32NX_DEV_FLARE_DELTA_THETA_BX");
   idDevelopmentAutoland_delta_Theta_beta_c_deg = make_unique<LocalVariable>("A32NX_DEV_FLARE_DELTA_THETA_BETA_C");
 
+  // register L variable for direct law
+  idDevelopmentUseDirectLaw = make_unique<LocalVariable>("A32NX_DEV_DIRECT_LAW");
+
   // register L variable for simulation rate limits
   idMinimumSimulationRate = make_unique<LocalVariable>("A32NX_SIMULATION_RATE_LIMIT_MINIMUM");
   idMaximumSimulationRate = make_unique<LocalVariable>("A32NX_SIMULATION_RATE_LIMIT_MAXIMUM");
@@ -238,6 +251,7 @@ void FlyByWireInterface::setupLocalVariables() {
   idPerformanceWarningActive = make_unique<LocalVariable>("A32NX_PERFORMANCE_WARNING_ACTIVE");
 
   // register L variable for external override
+  idTrackingMode = make_unique<LocalVariable>("A32NX_FLIGHT_CONTROLS_TRACKING_MODE");
   idExternalOverride = make_unique<LocalVariable>("A32NX_EXTERNAL_OVERRIDE");
 
   // register L variable for FDR event
@@ -433,12 +447,86 @@ void FlyByWireInterface::setupLocalVariables() {
   idAileronPositionLeft = make_unique<LocalVariable>("A32NX_AILERON_LEFT_DEFLECTION_DEMAND");
   idAileronPositionRight = make_unique<LocalVariable>("A32NX_AILERON_RIGHT_DEFLECTION_DEMAND");
 
+  idElevatorPosition = make_unique<LocalVariable>("A32NX_ELEVATOR_DEFLECTION_DEMAND");
+
+  idThs1MotorActive = make_unique<LocalVariable>("A32NX_THS_1_ACTIVE_MODE_COMMANDED");
+  idThs1MotorCommand = make_unique<LocalVariable>("A32NX_THS_1_COMMANDED_POSITION");
+
+  idRudderPosition = make_unique<LocalVariable>("A32NX_RUDDER_DEFLECTION_DEMAND");
+
   idRadioReceiverUsageEnabled = make_unique<LocalVariable>("A32NX_RADIO_RECEIVER_USAGE_ENABLED");
   idRadioReceiverLocalizerValid = make_unique<LocalVariable>("A32NX_RADIO_RECEIVER_LOC_IS_VALID");
   idRadioReceiverLocalizerDeviation = make_unique<LocalVariable>("A32NX_RADIO_RECEIVER_LOC_DEVIATION");
   idRadioReceiverLocalizerDistance = make_unique<LocalVariable>("A32NX_RADIO_RECEIVER_LOC_DISTANCE");
   idRadioReceiverGlideSlopeValid = make_unique<LocalVariable>("A32NX_RADIO_RECEIVER_GS_IS_VALID");
   idRadioReceiverGlideSlopeDeviation = make_unique<LocalVariable>("A32NX_RADIO_RECEIVER_GS_DEVIATION");
+
+  idRealisticTillerEnabled = make_unique<LocalVariable>("A32NX_REALISTIC_TILLER_ENABLED");
+  idTillerHandlePosition = make_unique<LocalVariable>("A32NX_TILLER_HANDLE_POSITION");
+  idNoseWheelPosition = make_unique<LocalVariable>("A32NX_NOSE_WHEEL_POSITION");
+
+  idSyncFoEfisEnabled = make_unique<LocalVariable>("A32NX_FO_SYNC_EFIS_ENABLED");
+
+  idLs1Active = make_unique<LocalVariable>("BTN_LS_1_FILTER_ACTIVE");
+  idLs2Active = make_unique<LocalVariable>("BTN_LS_2_FILTER_ACTIVE");
+  idIsisLsActive = make_unique<LocalVariable>("A32NX_ISIS_LS_ACTIVE");
+}
+
+bool FlyByWireInterface::handleFcuInitialization(double sampleTime) {
+  // init should be run only once and only when is ready is signaled
+  if (wasFcuInitialized || !idIsReady->get()) {
+    return true;
+  }
+
+  // get sim data
+  auto simData = simConnectInterface.getSimData();
+
+  // remember simulation of ready signal
+  if (simulationTimeReady == 0.0) {
+    simulationTimeReady = simData.simulationTime;
+  }
+
+  // time since ready
+  auto timeSinceReady = simData.simulationTime - simulationTimeReady;
+
+  // determine if we need to run init code
+  if (idStartState->get() >= 5 && timeSinceReady > 6.0) {
+    // init FCU for in flight configuration
+    double targetAltitude = round(simData.H_ind_ft / 1000.0) * 1000.0;
+    double targetHeading = fmod(round(simData.Psi_magnetic_deg / 10.0) * 10.0, 360.0);
+    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_SPD_PUSH);
+    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_HDG_SET, targetHeading);
+    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_HDG_PULL);
+    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_ALT_SET, targetAltitude);
+    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_VS_SET, simData.H_ind_ft < targetAltitude ? 1000 : -1000);
+    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_VS_PULL);
+    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_ATHR_PUSH);
+    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_AP_1_PUSH);
+    idFcuHeadingSync->set(0);
+    idFcuModeReversionActive->set(0);
+    idFcuModeReversionTargetFpm->set(simData.H_ind_ft < targetAltitude ? 1000 : -1000);
+    wasFcuInitialized = true;
+  } else if (idStartState->get() == 4 && timeSinceReady > 1.0) {
+    // init FCU for on runway -> ready for take-off
+    double targetHeading = fmod(round(simData.Psi_magnetic_deg), 360.0);
+    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_SPD_SET, 150);
+    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_SPD_PULL);
+    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_HDG_SET, targetHeading);
+    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_HDG_PULL);
+    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_ALT_SET, 15000);
+    wasFcuInitialized = true;
+  } else if (idStartState->get() < 4 && timeSinceReady > 1.0) {
+    // init FCU for on ground -> default FCU values after power-on
+    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_SPD_SET, 100);
+    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_SPD_PULL);
+    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_HDG_SET, 0);
+    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_HDG_PULL);
+    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_ALT_SET, 100);
+    wasFcuInitialized = true;
+  }
+
+  // success
+  return true;
 }
 
 bool FlyByWireInterface::readDataAndLocalVariables(double sampleTime) {
@@ -677,6 +765,19 @@ bool FlyByWireInterface::updateAdditionalData(double sampleTime) {
   additionalData.throttle_lever_2_pos = simData.throttle_lever_2_pos;
   additionalData.corrected_engine_N1_1_percent = simData.corrected_engine_N1_1_percent;
   additionalData.corrected_engine_N1_2_percent = simData.corrected_engine_N1_2_percent;
+  additionalData.assistanceTakeoffEnabled = simData.assistanceTakeoffEnabled;
+  additionalData.assistanceLandingEnabled = simData.assistanceLandingEnabled;
+  additionalData.aiAutoTrimActive = simData.aiAutoTrimActive;
+  additionalData.aiControlsActive = simData.aiControlsActive;
+  additionalData.realisticTillerEnabled = idRealisticTillerEnabled->get() == 1;
+  additionalData.tillerHandlePosition = idTillerHandlePosition->get();
+  additionalData.noseWheelPosition = idNoseWheelPosition->get();
+
+  additionalData.syncFoEfisEnabled = idSyncFoEfisEnabled->get();
+
+  additionalData.ls1Active = idLs1Active->get();
+  additionalData.ls2Active = idLs2Active->get();
+  additionalData.IsisLsActive = idIsisLsActive->get();
 
   return true;
 }
@@ -982,7 +1083,7 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
       simConnectInterface.sendEvent(SimConnectInterface::Events::TOGGLE_FLIGHT_DIRECTOR, 2);
     }
   }
-
+  
   // update FMA variables ---------------------------------------------------------------------------------------------
   idFmaLateralMode->set(autopilotStateMachineOutput.lateral_mode);
   idFmaLateralArmed->set(autopilotStateMachineOutput.lateral_mode_armed);
@@ -1412,17 +1513,8 @@ bool FlyByWireInterface::updateFlyByWire(double sampleTime) {
   idRudderPedalPosition->set(max(-100, min(100, (-100.0 * simInput.inputs[2]))));
   idRudderPedalAnimationPosition->set(max(-100, min(100, (-100.0 * simInput.inputs[2]) + (100.0 * simData.zeta_trim_pos))));
 
-  // set outputs
-  if (!flyByWireOutput.sim.data_computed.tracking_mode_on) {
-    // object to write with trim
-    SimOutput output = {flyByWireOutput.output.eta_pos, flyByWireOutput.output.xi_pos, flyByWireOutput.output.zeta_pos};
-
-    // send data via sim connect
-    if (!simConnectInterface.sendData(output)) {
-      cout << "WASM: Write data failed!" << endl;
-      return false;
-    }
-  }
+  // provide tracking mode state
+  idTrackingMode->set(flyByWireOutput.sim.data_computed.tracking_mode_on);
 
   // determine if nosewheel demand shall be set
   if (!flyByWireOutput.sim.data_computed.tracking_mode_on) {
@@ -1432,23 +1524,16 @@ bool FlyByWireInterface::updateFlyByWire(double sampleTime) {
   }
 
   // set trim values
-  SimOutputEtaTrim outputEtaTrim = {};
-  if (flyByWireOutput.output.eta_trim_deg_should_write) {
-    outputEtaTrim.eta_trim_deg = flyByWireOutput.output.eta_trim_deg;
-    elevatorTrimHandler->synchronizeValue(outputEtaTrim.eta_trim_deg);
-  } else {
-    outputEtaTrim.eta_trim_deg = elevatorTrimHandler->getPosition();
-  }
-  if (!flyByWireOutput.sim.data_computed.tracking_mode_on) {
-    if (!simConnectInterface.sendData(outputEtaTrim)) {
-      cout << "WASM: Write data failed!" << endl;
-      return false;
-    }
-  }
+  idThs1MotorCommand->set(flyByWireOutput.output.eta_trim_deg);
+   if (flyByWireOutput.output.eta_trim_deg_should_write) {
+      idThs1MotorActive->set(1);
+   } else {
+      idThs1MotorActive->set(0);
+   }
 
   SimOutputZetaTrim outputZetaTrim = {};
   rudderTrimHandler->update(sampleTime);
-  if (flyByWireOutput.output.zeta_trim_pos_should_write) {
+  if (flyByWireOutput.output.zeta_trim_pos_should_write && !idDevelopmentUseDirectLaw->get()) {
     outputZetaTrim.zeta_trim_pos = flyByWireOutput.output.zeta_trim_pos;
     rudderTrimHandler->synchronizeValue(outputZetaTrim.zeta_trim_pos);
   } else {
@@ -1472,12 +1557,30 @@ bool FlyByWireInterface::updateFlyByWire(double sampleTime) {
   idSpeedAlphaProtection->set(flyByWireOutput.sim.data_speeds_aoa.v_alpha_prot_kn);
   idSpeedAlphaMax->set(flyByWireOutput.sim.data_speeds_aoa.v_alpha_max_kn);
 
+  // determine input for ailerons
+  double aileronDemand = flyByWireOutput.output.xi_pos;
+  if (idExternalOverride->get() == 1) {
+    aileronDemand = simData.xi_pos;
+  } else if (idDevelopmentUseDirectLaw->get() == 1) {
+    aileronDemand = -1.0 * simInput.inputs[1];
+  }
+
   // update aileron positions
   animationAileronHandler->update(idAutopilotActiveAny->get(), spoilersHandler->getIsGroundSpoilersActive(), simData.simulationTime,
-                                  simData.Theta_deg, flapsHandleIndexFlapConf->get(), flapsPosition->get(),
-                                  idExternalOverride->get() == 1 ? simData.xi_pos : flyByWireOutput.output.xi_pos, sampleTime);
+                                  simData.Theta_deg, flapsHandleIndexFlapConf->get(), flapsPosition->get(), aileronDemand, sampleTime);
   idAileronPositionLeft->set(animationAileronHandler->getPositionLeft());
   idAileronPositionRight->set(animationAileronHandler->getPositionRight());
+
+
+  if (!idDevelopmentUseDirectLaw->get()) {
+    // set elevator demand
+    idElevatorPosition->set(flyByWireOutput.output.eta_pos);
+    // set rudder demand
+    idRudderPosition->set(flyByWireOutput.output.zeta_pos);
+  } else {   // use direct signals from input when requested
+      idElevatorPosition->set(-1.0 * simInput.inputs[0]);
+      idRudderPosition->set(-1.0 * simInput.inputs[2]);
+  }
 
   // determine if beta target needs to be active (blue)
   bool conditionDifferenceEngineN1Larger35 = (abs(simData.engine_N1_1_percent - simData.engine_N1_2_percent) > 35);
@@ -1699,7 +1802,8 @@ bool FlyByWireInterface::updateSpoilers(double sampleTime) {
   spoilersHandler->setSimulationVariables(
       simData.simulationTime, autopilotStateMachineOutput.enabled_AP1 == 1 || autopilotStateMachineOutput.enabled_AP2 == 1,
       simData.V_gnd_kn, thrustLeverAngle_1->get(), thrustLeverAngle_2->get(), simData.gear_animation_pos_1, simData.gear_animation_pos_2,
-      flapsHandleIndexFlapConf->get(), flyByWireOutput.sim.data_computed.high_aoa_prot_active == 1, flyByWireOutput.output.xi_pos);
+      flapsHandleIndexFlapConf->get(), flyByWireOutput.sim.data_computed.high_aoa_prot_active == 1,
+      (idExternalOverride->get() == 1 || idDevelopmentUseDirectLaw->get() == 1) ? simData.xi_pos : flyByWireOutput.output.xi_pos);
 
   // update sim position
   spoilersHandler->updateSimPosition(sampleTime);
@@ -1732,6 +1836,46 @@ bool FlyByWireInterface::updateAltimeterSetting(double sampleTime) {
     SimOutputAltimeter out = {true};
     simConnectInterface.sendData(out);
   }
+
+  // result
+  return true;
+}
+
+bool FlyByWireInterface::updateFoSide(double sampleTime) {
+  // get sim data
+  auto simData = simConnectInterface.getSimData();
+
+  // FD Button
+  if (additionalData.syncFoEfisEnabled && simData.ap_fd_1_active != simData.ap_fd_2_active) {
+    if (last_fd1_active != simData.ap_fd_1_active) {
+      simConnectInterface.sendEvent(SimConnectInterface::Events::TOGGLE_FLIGHT_DIRECTOR, 2);
+    }
+    
+    if (last_fd2_active != simData.ap_fd_2_active) {
+      simConnectInterface.sendEvent(SimConnectInterface::Events::TOGGLE_FLIGHT_DIRECTOR, 1);
+    }
+  }
+  last_fd1_active = simData.ap_fd_1_active;
+  last_fd2_active = simData.ap_fd_2_active;
+
+  // LS Button
+  if (additionalData.syncFoEfisEnabled && additionalData.ls1Active != additionalData.ls2Active) {
+    if (last_ls1_active != additionalData.ls1Active) {
+      idLs2Active->set(additionalData.ls1Active);
+    }
+    
+    if (last_ls2_active != additionalData.ls2Active) {
+      idLs1Active->set(additionalData.ls2Active);
+    }
+  }
+  last_ls1_active = additionalData.ls1Active;
+  last_ls2_active = additionalData.ls2Active;
+
+  // inHg/hPa switch
+  // Currently synced already
+
+  // STD Button
+  // Currently synced already
 
   // result
   return true;

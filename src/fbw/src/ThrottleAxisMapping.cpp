@@ -35,6 +35,8 @@ ThrottleAxisMapping::ThrottleAxisMapping(unsigned int id) {
   idThrustLeverAngle = make_unique<LocalVariable>(LVAR_THRUST_LEVER_ANGLE.c_str());
   idUsingConfig = make_unique<LocalVariable>(LVAR_LOAD_CONFIG.c_str());
   idUseReverseOnAxis = make_unique<LocalVariable>(LVAR_USE_REVERSE_ON_AXIS.c_str());
+  idIncrementNormal = make_unique<LocalVariable>(LVAR_INCREMENT_NORMAL.c_str());
+  idIncrementSmall = make_unique<LocalVariable>(LVAR_INCREMENT_SMALL.c_str());
   idDetentReverseLow = make_unique<LocalVariable>(LVAR_DETENT_REVERSE_LOW.c_str());
   idDetentReverseHigh = make_unique<LocalVariable>(LVAR_DETENT_REVERSE_HIGH.c_str());
   idDetentReverseIdleLow = make_unique<LocalVariable>(LVAR_DETENT_REVERSEIDLE_LOW.c_str());
@@ -112,6 +114,9 @@ bool ThrottleAxisMapping::loadFromFile() {
   // update configuration
   updateMappingFromConfiguration(configuration);
 
+  // set current value to idle
+  setCurrentValue(idleValue);
+
   // success
   return true;
 }
@@ -126,6 +131,9 @@ bool ThrottleAxisMapping::saveToFile() {
 
   // set data on structure
   storeConfigurationInIniStructure(iniStructure, loadConfigurationFromLocalVariables());
+
+  // set current value to idle
+  setCurrentValue(idleValue);
 
   // write to file
   return iniFile.write(iniStructure, true);
@@ -150,19 +158,19 @@ void ThrottleAxisMapping::onEventThrottleCut() {
 }
 
 void ThrottleAxisMapping::onEventThrottleIncrease() {
-  increaseThrottleBy(0.05);
+  increaseThrottleBy(incrementNormal);
 }
 
 void ThrottleAxisMapping::onEventThrottleIncreaseSmall() {
-  increaseThrottleBy(0.025);
+  increaseThrottleBy(incrementSmall);
 }
 
 void ThrottleAxisMapping::onEventThrottleDecrease() {
-  decreaseThrottleBy(0.05);
+  decreaseThrottleBy(incrementNormal);
 }
 
 void ThrottleAxisMapping::onEventThrottleDecreaseSmall() {
-  decreaseThrottleBy(0.025);
+  decreaseThrottleBy(incrementSmall);
 }
 
 void ThrottleAxisMapping::onEventThrottleSet_10() {
@@ -272,7 +280,9 @@ void ThrottleAxisMapping::decreaseThrottleBy(double value) {
 
 ThrottleAxisMapping::Configuration ThrottleAxisMapping::getDefaultConfiguration() {
   return {
-      true,  // use reverse on axis
+      true,   // use reverse on axis
+      0.05,   // increment normal
+      0.025,  // increment small
       -1.00,  // reverse low
       -0.95,  // reverse high
       -0.72,  // reverse idle low
@@ -290,14 +300,16 @@ ThrottleAxisMapping::Configuration ThrottleAxisMapping::getDefaultConfiguration(
 
 ThrottleAxisMapping::Configuration ThrottleAxisMapping::loadConfigurationFromLocalVariables() {
   idUsingConfig->set(true);
-  return {idUseReverseOnAxis->get() == 1, idDetentReverseLow->get(), idDetentReverseHigh->get(), idDetentReverseIdleLow->get(),
-          idDetentReverseIdleHigh->get(), idDetentIdleLow->get(),    idDetentIdleHigh->get(),    idDetentClimbLow->get(),
-          idDetentClimbHigh->get(),       idDetentFlexMctLow->get(), idDetentFlexMctHigh->get(), idDetentTogaLow->get(),
-          idDetentTogaHigh->get()};
+  return {idUseReverseOnAxis->get() == 1, idIncrementNormal->get(),      idIncrementSmall->get(),        idDetentReverseLow->get(),
+          idDetentReverseHigh->get(),     idDetentReverseIdleLow->get(), idDetentReverseIdleHigh->get(), idDetentIdleLow->get(),
+          idDetentIdleHigh->get(),        idDetentClimbLow->get(),       idDetentClimbHigh->get(),       idDetentFlexMctLow->get(),
+          idDetentFlexMctHigh->get(),     idDetentTogaLow->get(),        idDetentTogaHigh->get()};
 }
 
 void ThrottleAxisMapping::storeConfigurationInLocalVariables(const Configuration& configuration) {
   idUseReverseOnAxis->set(configuration.useReverseOnAxis);
+  idIncrementNormal->set(configuration.incrementNormal);
+  idIncrementSmall->set(configuration.incrementSmall);
   if (configuration.useReverseOnAxis) {
     idDetentReverseLow->set(configuration.reverseLow);
     idDetentReverseHigh->set(configuration.reverseHigh);
@@ -323,6 +335,8 @@ ThrottleAxisMapping::Configuration ThrottleAxisMapping::loadConfigurationFromIni
   idUsingConfig->set(true);
   return {
       INITypeConversion::getBoolean(structure, CONFIGURATION_SECTION_COMMON, "REVERSE_ON_AXIS", false),
+      INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_COMMON, "KEY_INCREMENT_NORMAL", 0.05),
+      INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_COMMON, "KEY_INCREMENT_SMALL", 0.025),
       INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_AXIS, "REVERSE_LOW", -1.00),
       INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_AXIS, "REVERSE_HIGH", -0.95),
       INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_AXIS, "REVERSE_IDLE_LOW", -0.20),
@@ -340,6 +354,8 @@ ThrottleAxisMapping::Configuration ThrottleAxisMapping::loadConfigurationFromIni
 
 void ThrottleAxisMapping::storeConfigurationInIniStructure(INIStructure& structure, const Configuration& configuration) {
   structure[CONFIGURATION_SECTION_COMMON]["REVERSE_ON_AXIS"] = configuration.useReverseOnAxis ? "true" : "false";
+  structure[CONFIGURATION_SECTION_COMMON]["KEY_INCREMENT_NORMAL"] = to_string(configuration.incrementNormal);
+  structure[CONFIGURATION_SECTION_COMMON]["KEY_INCREMENT_SMALL"] = to_string(configuration.incrementSmall);
   structure[CONFIGURATION_SECTION_AXIS]["REVERSE_LOW"] = to_string(configuration.reverseLow);
   structure[CONFIGURATION_SECTION_AXIS]["REVERSE_HIGH"] = to_string(configuration.reverseHigh);
   structure[CONFIGURATION_SECTION_AXIS]["REVERSE_IDLE_LOW"] = to_string(configuration.reverseIdleLow);
@@ -357,6 +373,10 @@ void ThrottleAxisMapping::storeConfigurationInIniStructure(INIStructure& structu
 void ThrottleAxisMapping::updateMappingFromConfiguration(const Configuration& configuration) {
   // update use reverse on axis
   useReverseOnAxis = configuration.useReverseOnAxis;
+
+  // update increments
+  incrementNormal = configuration.incrementNormal;
+  incrementSmall = configuration.incrementSmall;
 
   // mapping table vector
   vector<pair<double, double>> mappingTable;

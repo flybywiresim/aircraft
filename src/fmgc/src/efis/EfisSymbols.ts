@@ -13,6 +13,7 @@ import { PathVector, PathVectorType } from '@fmgc/guidance/lnav/PathVector';
 import { SegmentType } from '@fmgc/wtsdk';
 import { distanceTo } from 'msfs-geo';
 import { FlowEventSync } from '@shared/FlowEventSync';
+import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { LegType, RunwaySurface, TurnDirection, VorType } from '../types/fstypes/FSEnums';
 import { NearbyFacilities } from './NearbyFacilities';
 
@@ -101,7 +102,7 @@ export class EfisSymbols {
                 case RunwaySurface.Bituminous:
                 case RunwaySurface.Concrete:
                 case RunwaySurface.Tarmac:
-                    if (runway.length >= 1300) {
+                    if (runway.length >= 1500 && runway.width >= 30) {
                         return true;
                     }
                     break;
@@ -267,10 +268,10 @@ export class EfisSymbols {
                 return `${prefix}${Math.round(alt)}`;
             };
 
-            const formatConstraintSpeed = (speed: number, prefix: string = '') => `${prefix}${Math.floor(speed)} KT`;
+            const formatConstraintSpeed = (speed: number, prefix: string = '') => `${prefix}${Math.floor(speed)}KT`;
 
             for (const [index, leg] of this.guidanceController.activeGeometry.legs.entries()) {
-                if (leg.terminationWaypoint && leg.displayedOnMap) {
+                if (!leg.isNull && leg.terminationWaypoint && leg.displayedOnMap) {
                     if (!(leg.terminationWaypoint instanceof WayPoint)) {
                         const isActive = index === this.guidanceController.activeLegIndex;
 
@@ -302,8 +303,13 @@ export class EfisSymbols {
                     const wp = activeFp.getWaypoint(i);
 
                     // Managed by legs
+                    // FIXME these should integrate with the normal algorithms to pick up contraints, not be drawn in enroute ranges, etc.
                     const legType = wp.additionalData.legType;
-                    if (legType === LegType.CA || legType === LegType.CR || legType === LegType.CI || legType === LegType.FM || legType === LegType.VI || legType === LegType.VM) {
+                    if (
+                        legType === LegType.CA || legType === LegType.CR || legType === LegType.CI
+                        || legType === LegType.FM || legType === LegType.PI
+                        || legType === LegType.VA || legType === LegType.VI || legType === LegType.VM
+                    ) {
                         continue;
                     }
 
@@ -332,12 +338,14 @@ export class EfisSymbols {
                     const constraints = [];
                     let direction;
 
-                    // TODO PI leg
-                    const isCourseReversal = wp.additionalData.legType === LegType.HA || wp.additionalData.legType === LegType.HF || wp.additionalData.legType === LegType.HM;
+                    const isCourseReversal = wp.additionalData.legType === LegType.HA
+                        || wp.additionalData.legType === LegType.HF
+                        || wp.additionalData.legType === LegType.HM
+                        || wp.additionalData.legType === LegType.PI;
 
                     if (i === activeFp.activeWaypointIndex) {
                         type |= NdSymbolTypeFlags.ActiveLegTermination;
-                    } else if (isCourseReversal && i > (activeFp.activeWaypointIndex + 1) && range <= 80) {
+                    } else if (isCourseReversal && i > (activeFp.activeWaypointIndex + 1) && range <= 80 && !LnavConfig.DEBUG_FORCE_INCLUDE_COURSE_REVERSAL_VECTORS) {
                         if (wp.turnDirection === TurnDirection.Left) {
                             type |= NdSymbolTypeFlags.CourseReversalLeft;
                         } else {

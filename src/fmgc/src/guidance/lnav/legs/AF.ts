@@ -8,7 +8,6 @@ import { SegmentType } from '@fmgc/flightplanning/FlightPlanSegment';
 import { arcDistanceToGo, arcGuidance } from '@fmgc/guidance/lnav/CommonGeometry';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { GuidanceParameters } from '@fmgc/guidance/ControlLaws';
-import { Guidable } from '@fmgc/guidance/Guidable';
 import { DmeArcTransition } from '@fmgc/guidance/lnav/transitions/DmeArcTransition';
 import { MathUtils } from '@shared/MathUtils';
 import { TurnDirection } from '@fmgc/types/fstypes/FSEnums';
@@ -45,10 +44,6 @@ export class AFLeg extends XFLeg {
         this.outboundCourse = this.terminationRadial + 90 * this.turnDirectionSign;
     }
 
-    private previousGuidable: Guidable | undefined
-
-    private nextGuidable: Guidable | undefined
-
     readonly centre: Coordinates | undefined
 
     private readonly terminationRadial: DegreesTrue | undefined;
@@ -70,27 +65,30 @@ export class AFLeg extends XFLeg {
     outboundCourse: DegreesTrue | undefined
 
     getPathStartPoint(): Coordinates | undefined {
-        return this.previousGuidable instanceof DmeArcTransition ? this.previousGuidable.getPathEndPoint() : this.arcStartPoint;
+        return this.inboundGuidable instanceof DmeArcTransition ? this.inboundGuidable.getPathEndPoint() : this.arcStartPoint;
     }
 
     getPathEndPoint(): Coordinates | undefined {
-        if (this.nextGuidable instanceof DmeArcTransition && this.nextGuidable.isComputed) {
-            return this.nextGuidable.getPathStartPoint();
+        if (this.outboundGuidable instanceof DmeArcTransition && this.outboundGuidable.isComputed) {
+            return this.outboundGuidable.getPathStartPoint();
         }
 
         return this.arcEndPoint;
     }
 
-    recomputeWithParameters(_isActive: boolean, _tas: Knots, _gs: Knots, _ppos: Coordinates, _trueTrack: DegreesTrue, previousGuidable: Guidable, nextGuidable: Guidable) {
-        this.previousGuidable = previousGuidable;
-        this.nextGuidable = nextGuidable;
-
+    recomputeWithParameters(
+        _isActive: boolean,
+        _tas: Knots,
+        _gs: Knots,
+        _ppos: Coordinates,
+        _trueTrack: DegreesTrue,
+    ) {
         this.sweepAngle = MathUtils.diffAngle(bearingTo(this.centre, this.getPathStartPoint()), bearingTo(this.centre, this.getPathEndPoint()));
         this.clockwise = this.sweepAngle > 0;
 
         // We do not consider the path capture end point in this class' getPathEndPoint since that causes a race condition with the path capture
         // finding its intercept point onto this leg
-        const startPoint = this.previousGuidable instanceof PathCaptureTransition ? this.previousGuidable.getPathEndPoint() : this.getPathStartPoint();
+        const startPoint = this.inboundGuidable instanceof PathCaptureTransition ? this.inboundGuidable.getPathEndPoint() : this.getPathStartPoint();
 
         this.predictedPath.length = 0;
         this.predictedPath.push({

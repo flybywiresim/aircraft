@@ -3,7 +3,7 @@ use crate::{
     overhead::{IndicationLight, OnOffFaultPushButton},
     shared::{
         arinc429::{Arinc429Word, SignStatus},
-        GroundSpeed, MachNumber,
+        AdirsDiscreteOutputs, GroundSpeed, MachNumber,
     },
     simulation::{
         Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -17,6 +17,7 @@ use uom::si::{
     angular_velocity::degree_per_second,
     f64::*,
     length::foot,
+    ratio::ratio,
     thermodynamic_temperature::degree_celsius,
     velocity::{foot_per_minute, knot},
 };
@@ -100,7 +101,7 @@ impl SimulationElement for AirDataInertialReferenceSystemOverheadPanel {
     }
 }
 
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Clone, Copy, PartialEq, Debug)]
 enum InertialReferenceMode {
     Off = 0,
     Navigation = 1,
@@ -215,8 +216,14 @@ struct AdirsSimulatorData {
     heading_id: VariableIdentifier,
     heading: Angle,
 
+    true_heading_id: VariableIdentifier,
+    true_heading: Angle,
+
     track_id: VariableIdentifier,
     track: Angle,
+
+    true_track_id: VariableIdentifier,
+    true_track: Angle,
 
     ground_speed_id: VariableIdentifier,
     ground_speed: Velocity,
@@ -245,7 +252,9 @@ impl AdirsSimulatorData {
     const BODY_ROTATION_RATE_Y: &'static str = "ROTATION VELOCITY BODY Y";
     const BODY_ROTATION_RATE_Z: &'static str = "ROTATION VELOCITY BODY Z";
     const HEADING: &'static str = "PLANE HEADING DEGREES MAGNETIC";
+    const TRUE_HEADING: &'static str = "PLANE HEADING DEGREES TRUE";
     const TRACK: &'static str = "GPS GROUND MAGNETIC TRACK";
+    const TRUE_TRACK: &'static str = "GPS GROUND TRUE TRACK";
     const GROUND_SPEED: &'static str = "GPS GROUND SPEED";
     const WIND_DIRECTION: &'static str = "AMBIENT WIND DIRECTION";
     const WIND_VELOCITY: &'static str = "AMBIENT WIND VELOCITY";
@@ -287,8 +296,14 @@ impl AdirsSimulatorData {
             heading_id: context.get_identifier(Self::HEADING.to_owned()),
             heading: Default::default(),
 
+            true_heading_id: context.get_identifier(Self::TRUE_HEADING.to_owned()),
+            true_heading: Default::default(),
+
             track_id: context.get_identifier(Self::TRACK.to_owned()),
             track: Default::default(),
+
+            true_track_id: context.get_identifier(Self::TRUE_TRACK.to_owned()),
+            true_track: Default::default(),
 
             ground_speed_id: context.get_identifier(Self::GROUND_SPEED.to_owned()),
             ground_speed: Default::default(),
@@ -326,7 +341,9 @@ impl SimulationElement for AdirsSimulatorData {
         self.body_rotation_rate_y = AngularVelocity::new::<degree_per_second>(body_rotation_rate_y);
         self.body_rotation_rate_z = AngularVelocity::new::<degree_per_second>(body_rotation_rate_z);
         self.heading = reader.read(&self.heading_id);
+        self.true_heading = reader.read(&self.true_heading_id);
         self.track = reader.read(&self.track_id);
+        self.true_track = reader.read(&self.true_track_id);
         self.ground_speed = reader.read(&self.ground_speed_id);
         self.wind_direction = reader.read(&self.wind_direction_id);
         self.wind_velocity = reader.read(&self.wind_velocity_id);
@@ -430,12 +447,35 @@ impl GroundSpeed for AirDataInertialReferenceSystem {
         self.adirus[0].ground_speed()
     }
 }
+impl AdirsDiscreteOutputs for AirDataInertialReferenceSystem {
+    fn low_speed_warning_1_104kts(&self, adiru_number: usize) -> bool {
+        self.adirus[adiru_number - 1].low_speed_warning_1_104kts()
+    }
+
+    fn low_speed_warning_2_54kts(&self, adiru_number: usize) -> bool {
+        self.adirus[adiru_number - 1].low_speed_warning_2_54kts()
+    }
+
+    fn low_speed_warning_3_159kts(&self, adiru_number: usize) -> bool {
+        self.adirus[adiru_number - 1].low_speed_warning_3_159kts()
+    }
+
+    fn low_speed_warning_4_260kts(&self, adiru_number: usize) -> bool {
+        self.adirus[adiru_number - 1].low_speed_warning_4_260kts()
+    }
+}
 
 struct AirDataInertialReferenceUnit {
     state_id: VariableIdentifier,
 
     adr: AirDataReference,
     ir: InertialReference,
+
+    // Discrete outputs
+    low_speed_warning_1_104kts: bool,
+    low_speed_warning_2_54kts: bool,
+    low_speed_warning_3_159kts: bool,
+    low_speed_warning_4_260kts: bool,
 }
 impl AirDataInertialReferenceUnit {
     fn new(context: &mut InitContext, number: usize) -> Self {
@@ -443,6 +483,11 @@ impl AirDataInertialReferenceUnit {
             state_id: context.get_identifier(Self::state_id(number)),
             adr: AirDataReference::new(context, number),
             ir: InertialReference::new(context, number),
+
+            low_speed_warning_1_104kts: false,
+            low_speed_warning_2_54kts: false,
+            low_speed_warning_3_159kts: false,
+            low_speed_warning_4_260kts: false,
         }
     }
 
@@ -456,6 +501,8 @@ impl AirDataInertialReferenceUnit {
         self.adr.update(context, overhead, simulator_data);
         self.ir
             .update(context, &self.adr, overhead, align_time, simulator_data);
+
+        self.update_discrete_outputs();
     }
 
     fn is_fully_aligned(&self) -> bool {
@@ -486,6 +533,50 @@ impl AirDataInertialReferenceUnit {
 
     fn ir_has_fault(&self) -> bool {
         self.ir.has_fault()
+    }
+
+    fn update_discrete_outputs(&mut self) {
+        let speed_knot = self.adr.computed_airspeed_raw().get::<knot>();
+
+        if speed_knot < 100. {
+            self.low_speed_warning_1_104kts = false;
+        } else if speed_knot > 104. {
+            self.low_speed_warning_1_104kts = true;
+        }
+
+        if speed_knot < 50. {
+            self.low_speed_warning_2_54kts = false;
+        } else if speed_knot > 54. {
+            self.low_speed_warning_2_54kts = true;
+        }
+
+        if speed_knot < 155. {
+            self.low_speed_warning_3_159kts = false;
+        } else if speed_knot > 159. {
+            self.low_speed_warning_3_159kts = true;
+        }
+
+        if speed_knot < 260. {
+            self.low_speed_warning_4_260kts = false;
+        } else if speed_knot > 264. {
+            self.low_speed_warning_4_260kts = true;
+        }
+    }
+
+    fn low_speed_warning_1_104kts(&self) -> bool {
+        self.low_speed_warning_1_104kts
+    }
+
+    fn low_speed_warning_2_54kts(&self) -> bool {
+        self.low_speed_warning_2_54kts
+    }
+
+    fn low_speed_warning_3_159kts(&self) -> bool {
+        self.low_speed_warning_3_159kts
+    }
+
+    fn low_speed_warning_4_260kts(&self) -> bool {
+        self.low_speed_warning_4_260kts
     }
 }
 impl SimulationElement for AirDataInertialReferenceUnit {
@@ -546,6 +637,10 @@ impl<T: Copy + Default + PartialOrd> AdirsData<T> {
         self.ssm = ssm;
     }
 
+    fn set_from(&mut self, other: &AdirsData<T>) {
+        self.set_value(other.value, other.ssm);
+    }
+
     /// Sets failure warning with the default (0.0) value.
     fn set_failure_warning(&mut self) {
         self.value = Default::default();
@@ -576,6 +671,14 @@ impl<T: Copy + Default + PartialOrd> AdirsData<T> {
 
     fn write_to<U: Write<T> + Writer>(&self, writer: &mut U) {
         writer.write_arinc429(&self.id, self.value, self.ssm);
+    }
+
+    fn write_to_converted<U: Write<f64> + Writer, V: Fn(T) -> f64>(
+        &self,
+        writer: &mut U,
+        convert: V,
+    ) {
+        writer.write_arinc429(&self.id, convert(self.value), self.ssm);
     }
 }
 
@@ -769,6 +872,10 @@ impl AirDataReference {
             static_air_temperature.get::<degree_celsius>() - isa,
         )
     }
+
+    fn computed_airspeed_raw(&self) -> Velocity {
+        self.computed_airspeed.value()
+    }
 }
 impl TrueAirspeedSource for AirDataReference {
     fn true_airspeed(&self) -> Arinc429Word<Velocity> {
@@ -821,7 +928,9 @@ struct InertialReference {
     pitch: AdirsData<Angle>,
     roll: AdirsData<Angle>,
     heading: AdirsData<Angle>,
+    true_heading: AdirsData<Angle>,
     track: AdirsData<Angle>,
+    true_track: AdirsData<Angle>,
     drift_angle: AdirsData<Angle>,
     flight_path_angle: AdirsData<Angle>,
     body_pitch_rate: AdirsData<AngularVelocity>,
@@ -847,7 +956,9 @@ impl InertialReference {
     const PITCH: &'static str = "PITCH";
     const ROLL: &'static str = "ROLL";
     const HEADING: &'static str = "HEADING";
+    const TRUE_HEADING: &'static str = "TRUE_HEADING";
     const TRACK: &'static str = "TRACK";
+    const TRUE_TRACK: &'static str = "TRUE_TRACK";
     const DRIFT_ANGLE: &'static str = "DRIFT_ANGLE";
     const FLIGHT_PATH_ANGLE: &'static str = "FLIGHT_PATH_ANGLE";
     const BODY_PITCH_RATE: &'static str = "BODY_PITCH_RATE";
@@ -881,7 +992,9 @@ impl InertialReference {
             pitch: AdirsData::new_ir(context, number, Self::PITCH),
             roll: AdirsData::new_ir(context, number, Self::ROLL),
             heading: AdirsData::new_ir(context, number, Self::HEADING),
+            true_heading: AdirsData::new_ir(context, number, Self::TRUE_HEADING),
             track: AdirsData::new_ir(context, number, Self::TRACK),
+            true_track: AdirsData::new_ir(context, number, Self::TRUE_TRACK),
             drift_angle: AdirsData::new_ir(context, number, Self::DRIFT_ANGLE),
             flight_path_angle: AdirsData::new_ir(context, number, Self::FLIGHT_PATH_ANGLE),
             body_pitch_rate: AdirsData::new_ir(context, number, Self::BODY_PITCH_RATE),
@@ -922,7 +1035,7 @@ impl InertialReference {
         );
 
         self.update_attitude_values(context, simulator_data);
-        self.update_heading_value(overhead, simulator_data);
+        self.update_heading_values(overhead, simulator_data);
         self.update_non_attitude_values(true_airspeed_source, simulator_data);
     }
 
@@ -985,17 +1098,21 @@ impl InertialReference {
         } else {
             SignStatus::NoComputedData
         };
-        let pitch = simulator_data.pitch;
-        let roll = simulator_data.roll;
+        // Calculate the attitudes and body rotation rates.
+        // Correct the signs so that they conform to standard aeronautical norms.
+        let pitch = -simulator_data.pitch;
+        let roll = -simulator_data.roll;
         self.pitch.set_value(pitch, ssm);
         self.roll.set_value(roll, ssm);
 
-        let p = simulator_data.body_rotation_rate_z;
-        let q = simulator_data.body_rotation_rate_x;
+        let p = -simulator_data.body_rotation_rate_z;
+        let q = -simulator_data.body_rotation_rate_x;
         let r = simulator_data.body_rotation_rate_y;
         self.body_roll_rate.set_value(p, ssm);
         self.body_pitch_rate.set_value(q, ssm);
         self.body_yaw_rate.set_value(r, ssm);
+
+        // Calculate attitude rates, by applying the inverse body coordinate transformation matrix.
         self.heading_rate.set_value(
             (r * V::from(roll.cos()) + q * V::from(roll.sin())) / V::from(pitch.cos()),
             ssm,
@@ -1007,16 +1124,19 @@ impl InertialReference {
             ssm,
         );
 
+        // Calculate the body accelerations as measured by the IRS accelerometers.
+        // The sim only gives the acceleration vector without gravity, so we have to calculate and add the gravity vector
+        // based on Theta and Phi.
         let g = Acceleration::new::<meter_per_second_squared>(9.81);
         self.body_longitudinal_acc
-            .set_value(context.long_accel() / g, ssm);
+            .set_value(context.long_accel() / g - pitch.cos(), ssm);
         self.body_lateral_acc
-            .set_value(context.lat_accel() / g, ssm);
+            .set_value(context.lat_accel() / g + pitch.cos() * roll.sin(), ssm);
         self.body_normal_acc
-            .set_value(context.vert_accel() / g, ssm);
+            .set_value(context.vert_accel() / g + pitch.cos() * roll.cos(), ssm);
     }
 
-    fn update_heading_value(
+    fn update_heading_values(
         &mut self,
         overhead: &AirDataInertialReferenceSystemOverheadPanel,
         simulator_data: AdirsSimulatorData,
@@ -1031,6 +1151,20 @@ impl InertialReference {
             SignStatus::NoComputedData
         };
 
+        let true_heading_ssm = if self.is_on
+            && (self.is_fully_aligned()
+                || (overhead.mode_of(self.number) == InertialReferenceMode::Navigation
+                    && self
+                        .remaining_align_duration
+                        .map_or(false, |duration| duration.as_secs() < 120)))
+        {
+            SignStatus::NormalOperation
+        } else {
+            SignStatus::NoComputedData
+        };
+
+        self.true_heading
+            .set_value(simulator_data.true_heading, true_heading_ssm);
         self.heading.set_value(simulator_data.heading, ssm);
     }
 
@@ -1056,6 +1190,13 @@ impl InertialReference {
             },
             ssm,
         );
+
+        if ground_speed_above_minimum_threshold {
+            self.true_track.set_value(simulator_data.true_track, ssm);
+        } else {
+            self.true_track.set_from(&self.true_heading);
+        }
+
         self.drift_angle.set_value(
             if ground_speed_above_minimum_threshold {
                 let diff = simulator_data.track - simulator_data.heading;
@@ -1160,18 +1301,29 @@ impl SimulationElement for InertialReference {
         self.roll.write_to(writer);
 
         self.heading.write_to(writer);
+        self.true_heading.write_to(writer);
         self.track.write_to(writer);
+        self.true_track.write_to(writer);
         self.drift_angle.write_to(writer);
         self.flight_path_angle.write_to(writer);
-        self.body_pitch_rate.write_to(writer);
-        self.body_roll_rate.write_to(writer);
-        self.body_yaw_rate.write_to(writer);
-        self.body_longitudinal_acc.write_to(writer);
-        self.body_lateral_acc.write_to(writer);
-        self.body_normal_acc.write_to(writer);
-        self.heading_rate.write_to(writer);
-        self.pitch_att_rate.write_to(writer);
-        self.roll_att_rate.write_to(writer);
+        self.body_pitch_rate
+            .write_to_converted(writer, |value| value.get::<degree_per_second>());
+        self.body_roll_rate
+            .write_to_converted(writer, |value| value.get::<degree_per_second>());
+        self.body_yaw_rate
+            .write_to_converted(writer, |value| value.get::<degree_per_second>());
+        self.body_longitudinal_acc
+            .write_to_converted(writer, |value| value.get::<ratio>());
+        self.body_lateral_acc
+            .write_to_converted(writer, |value| value.get::<ratio>());
+        self.body_normal_acc
+            .write_to_converted(writer, |value| value.get::<ratio>());
+        self.heading_rate
+            .write_to_converted(writer, |value| value.get::<degree_per_second>());
+        self.pitch_att_rate
+            .write_to_converted(writer, |value| value.get::<degree_per_second>());
+        self.roll_att_rate
+            .write_to_converted(writer, |value| value.get::<degree_per_second>());
         self.vertical_speed.write_to(writer);
         self.ground_speed.write_to(writer);
         self.wind_direction.write_to(writer);
@@ -1222,6 +1374,7 @@ mod tests {
     use uom::si::{
         angle::degree,
         length::foot,
+        ratio::percent,
         thermodynamic_temperature::degree_celsius,
         velocity::{foot_per_minute, knot},
     };
@@ -1354,8 +1507,18 @@ mod tests {
             self
         }
 
+        fn true_heading_of(mut self, angle: Angle) -> Self {
+            self.write_by_name(AdirsSimulatorData::TRUE_HEADING, angle);
+            self
+        }
+
         fn track_of(mut self, angle: Angle) -> Self {
             self.write_by_name(AdirsSimulatorData::TRACK, angle);
+            self
+        }
+
+        fn true_track_of(mut self, angle: Angle) -> Self {
+            self.write_by_name(AdirsSimulatorData::TRUE_TRACK, angle);
             self
         }
 
@@ -1556,11 +1719,27 @@ mod tests {
             ))
         }
 
+        fn true_heading(&mut self, adiru_number: usize) -> Arinc429Word<Angle> {
+            self.read_arinc429_by_name(&output_data_id(
+                OutputDataType::Ir,
+                adiru_number,
+                InertialReference::TRUE_HEADING,
+            ))
+        }
+
         fn track(&mut self, adiru_number: usize) -> Arinc429Word<Angle> {
             self.read_arinc429_by_name(&output_data_id(
                 OutputDataType::Ir,
                 adiru_number,
                 InertialReference::TRACK,
+            ))
+        }
+
+        fn true_track(&mut self, adiru_number: usize) -> Arinc429Word<Angle> {
+            self.read_arinc429_by_name(&output_data_id(
+                OutputDataType::Ir,
+                adiru_number,
+                InertialReference::TRUE_TRACK,
             ))
         }
 
@@ -1849,6 +2028,26 @@ mod tests {
                     .get::<knot>(),
                 0.
             );
+        }
+
+        fn realistic_navigation_align_until(
+            mut self,
+            adiru_number: usize,
+            duration: Duration,
+        ) -> Self {
+            self = self
+                .align_time_configured_as(AlignTime::Realistic)
+                .and()
+                .ir_mode_selector_set_to(adiru_number, InertialReferenceMode::Navigation);
+
+            // Run once to let the simulation write the remaining alignment time.
+            self.run_with_delta(Duration::from_secs(0));
+
+            let remaining_alignment_time = self.remaining_alignment_time();
+            self.run_with_delta(remaining_alignment_time - duration);
+
+            println!("{:?}", self.remaining_alignment_time());
+            self
         }
     }
     impl TestBed for AdirsTestBed {
@@ -2572,7 +2771,7 @@ mod tests {
             let mut test_bed = all_adirus_aligned_test_bed_with().pitch_of(angle);
             test_bed.run();
 
-            assert_eq!(test_bed.pitch(adiru_number).normal_value().unwrap(), angle);
+            assert_eq!(test_bed.pitch(adiru_number).normal_value().unwrap(), -angle);
         }
 
         #[rstest]
@@ -2584,7 +2783,7 @@ mod tests {
             let mut test_bed = all_adirus_aligned_test_bed_with().roll_of(angle);
             test_bed.run();
 
-            assert_eq!(test_bed.roll(adiru_number).normal_value().unwrap(), angle);
+            assert_eq!(test_bed.roll(adiru_number).normal_value().unwrap(), -angle);
         }
 
         #[rstest]
@@ -2602,7 +2801,7 @@ mod tests {
                     .normal_value()
                     .unwrap()
                     .get::<degree_per_second>(),
-                rate.get::<revolution_per_minute>()
+                -rate.get::<degree_per_second>()
             );
         }
 
@@ -2621,7 +2820,7 @@ mod tests {
                     .normal_value()
                     .unwrap()
                     .get::<degree_per_second>(),
-                rate.get::<revolution_per_minute>()
+                -rate.get::<degree_per_second>()
             );
         }
 
@@ -2640,7 +2839,7 @@ mod tests {
                     .normal_value()
                     .unwrap()
                     .get::<degree_per_second>(),
-                rate.get::<revolution_per_minute>()
+                rate.get::<degree_per_second>()
             );
         }
 
@@ -2651,13 +2850,20 @@ mod tests {
         fn body_long_acc_is_supplied_by_ir(#[case] adiru_number: usize) {
             let acc = Acceleration::new::<meter_per_second_squared>(1.);
             let g = Acceleration::new::<meter_per_second_squared>(9.81);
-            let mut test_bed = all_adirus_aligned_test_bed();
+            let pitch = Angle::new::<degree>(5.);
+            let roll = Angle::new::<degree>(5.);
+            let mut test_bed = all_adirus_aligned_test_bed().pitch_of(pitch).roll_of(roll);
             test_bed.set_long_acc(acc);
             test_bed.run();
 
             assert_about_eq!(
-                V::from(test_bed.body_long_acc(adiru_number).normal_value().unwrap()),
-                V::from(acc / g)
+                test_bed
+                    .body_long_acc(adiru_number)
+                    .normal_value()
+                    .unwrap()
+                    .get::<percent>(),
+                (acc / g - test_bed.pitch(adiru_number).normal_value().unwrap().cos())
+                    .get::<ratio>()
             );
         }
 
@@ -2668,13 +2874,22 @@ mod tests {
         fn body_lat_acc_is_supplied_by_ir(#[case] adiru_number: usize) {
             let acc = Acceleration::new::<meter_per_second_squared>(1.);
             let g = Acceleration::new::<meter_per_second_squared>(9.81);
-            let mut test_bed = all_adirus_aligned_test_bed();
+            let pitch = Angle::new::<degree>(5.);
+            let roll = Angle::new::<degree>(5.);
+            let mut test_bed = all_adirus_aligned_test_bed().pitch_of(pitch).roll_of(roll);
             test_bed.set_lat_acc(acc);
             test_bed.run();
 
             assert_about_eq!(
-                V::from(test_bed.body_lat_acc(adiru_number).normal_value().unwrap()),
-                V::from(acc / g)
+                test_bed
+                    .body_lat_acc(adiru_number)
+                    .normal_value()
+                    .unwrap()
+                    .get::<percent>(),
+                (acc / g
+                    + test_bed.pitch(adiru_number).normal_value().unwrap().cos()
+                        * test_bed.roll(adiru_number).normal_value().unwrap().sin())
+                .get::<ratio>()
             );
         }
 
@@ -2685,18 +2900,22 @@ mod tests {
         fn body_norm_acc_is_supplied_by_ir(#[case] adiru_number: usize) {
             let acc = Acceleration::new::<meter_per_second_squared>(1.);
             let g = Acceleration::new::<meter_per_second_squared>(9.81);
-            let mut test_bed = all_adirus_aligned_test_bed();
+            let pitch = Angle::new::<degree>(5.);
+            let roll = Angle::new::<degree>(5.);
+            let mut test_bed = all_adirus_aligned_test_bed().pitch_of(pitch).roll_of(roll);
             test_bed.set_norm_acc(acc);
             test_bed.run();
 
             assert_about_eq!(
-                V::from(
-                    test_bed
-                        .body_normal_acc(adiru_number)
-                        .normal_value()
-                        .unwrap()
-                ),
-                V::from(acc / g)
+                test_bed
+                    .body_normal_acc(adiru_number)
+                    .normal_value()
+                    .unwrap()
+                    .get::<percent>(),
+                (acc / g
+                    + test_bed.pitch(adiru_number).normal_value().unwrap().cos()
+                        * test_bed.roll(adiru_number).normal_value().unwrap().cos())
+                .get::<ratio>()
             );
         }
 
@@ -2713,6 +2932,47 @@ mod tests {
                 test_bed.heading(adiru_number).normal_value().unwrap(),
                 angle
             );
+        }
+
+        #[rstest]
+        #[case(1)]
+        #[case(2)]
+        #[case(3)]
+        fn true_heading_is_supplied_by_ir(#[case] adiru_number: usize) {
+            let angle = Angle::new::<degree>(160.);
+            let mut test_bed = all_adirus_aligned_test_bed_with().true_heading_of(angle);
+            test_bed.run();
+
+            assert_eq!(
+                test_bed.true_heading(adiru_number).normal_value().unwrap(),
+                angle
+            );
+        }
+
+        #[rstest]
+        #[case(1)]
+        #[case(2)]
+        #[case(3)]
+        fn true_heading_is_normal_when_remaining_align_is_less_than_two_minutes(
+            #[case] adiru_number: usize,
+        ) {
+            let mut test_bed = test_bed_with()
+                .realistic_navigation_align_until(adiru_number, Duration::from_millis(119999));
+
+            assert!(test_bed.true_heading(adiru_number).is_normal_operation());
+        }
+
+        #[rstest]
+        #[case(1)]
+        #[case(2)]
+        #[case(3)]
+        fn true_heading_is_not_normal_when_remaining_align_is_equal_to_two_minutes(
+            #[case] adiru_number: usize,
+        ) {
+            let mut test_bed = test_bed_with()
+                .realistic_navigation_align_until(adiru_number, Duration::from_millis(120000));
+
+            assert!(!test_bed.true_heading(adiru_number).is_normal_operation());
         }
 
         #[rstest]
@@ -2738,6 +2998,28 @@ mod tests {
         #[case(1)]
         #[case(2)]
         #[case(3)]
+        fn true_track_is_supplied_when_ground_speed_greater_than_or_equal_to_50_knots(
+            #[case] adiru_number: usize,
+        ) {
+            let angle = Angle::new::<degree>(160.);
+            let mut test_bed = all_adirus_aligned_test_bed_with()
+                .true_track_of(angle)
+                .and()
+                .ground_speed_of(Velocity::new::<knot>(
+                    InertialReference::MINIMUM_GROUND_SPEED_FOR_TRACK_KNOTS,
+                ));
+            test_bed.run();
+
+            assert_eq!(
+                test_bed.true_track(adiru_number).normal_value().unwrap(),
+                angle
+            );
+        }
+
+        #[rstest]
+        #[case(1)]
+        #[case(2)]
+        #[case(3)]
         fn track_is_heading_when_ground_speed_less_than_50_knots(#[case] adiru_number: usize) {
             let angle = Angle::new::<degree>(160.);
             let mut test_bed = all_adirus_aligned_test_bed_with()
@@ -2749,6 +3031,28 @@ mod tests {
             test_bed.run();
 
             assert_eq!(test_bed.track(adiru_number).normal_value().unwrap(), angle);
+        }
+
+        #[rstest]
+        #[case(1)]
+        #[case(2)]
+        #[case(3)]
+        fn true_track_is_true_heading_when_ground_speed_less_than_50_knots(
+            #[case] adiru_number: usize,
+        ) {
+            let angle = Angle::new::<degree>(160.);
+            let mut test_bed = all_adirus_aligned_test_bed_with()
+                .true_heading_of(angle)
+                .and()
+                .ground_speed_of(Velocity::new::<knot>(
+                    InertialReference::MINIMUM_GROUND_SPEED_FOR_TRACK_KNOTS - 0.01,
+                ));
+            test_bed.run();
+
+            assert_eq!(
+                test_bed.true_track(adiru_number).normal_value().unwrap(),
+                angle
+            );
         }
 
         #[rstest]
@@ -3017,6 +3321,86 @@ mod tests {
             test_bed.run();
 
             assert!(!test_bed.uses_gps_as_primary());
+        }
+
+        #[rstest]
+        #[case(1)]
+        #[case(2)]
+        #[case(3)]
+        fn discrete_output_speed_warning_1(#[case] adiru_number: usize) {
+            let mut test_bed = all_adirus_aligned_test_bed();
+            test_bed.set_indicated_airspeed(Velocity::new::<knot>(95.));
+            test_bed.run();
+
+            assert!(
+                !test_bed.query(|a| a.adirs.adirus[adiru_number - 1].low_speed_warning_1_104kts())
+            );
+
+            test_bed.set_indicated_airspeed(Velocity::new::<knot>(105.));
+            test_bed.run();
+            assert!(
+                test_bed.query(|a| a.adirs.adirus[adiru_number - 1].low_speed_warning_1_104kts())
+            );
+        }
+
+        #[rstest]
+        #[case(1)]
+        #[case(2)]
+        #[case(3)]
+        fn discrete_output_speed_warning_2(#[case] adiru_number: usize) {
+            let mut test_bed = all_adirus_aligned_test_bed();
+            test_bed.set_indicated_airspeed(Velocity::new::<knot>(45.));
+            test_bed.run();
+
+            assert!(
+                !test_bed.query(|a| a.adirs.adirus[adiru_number - 1].low_speed_warning_2_54kts())
+            );
+
+            test_bed.set_indicated_airspeed(Velocity::new::<knot>(55.));
+            test_bed.run();
+            assert!(
+                test_bed.query(|a| a.adirs.adirus[adiru_number - 1].low_speed_warning_2_54kts())
+            );
+        }
+
+        #[rstest]
+        #[case(1)]
+        #[case(2)]
+        #[case(3)]
+        fn discrete_output_speed_warning_3(#[case] adiru_number: usize) {
+            let mut test_bed = all_adirus_aligned_test_bed();
+            test_bed.set_indicated_airspeed(Velocity::new::<knot>(150.));
+            test_bed.run();
+
+            assert!(
+                !test_bed.query(|a| a.adirs.adirus[adiru_number - 1].low_speed_warning_3_159kts())
+            );
+
+            test_bed.set_indicated_airspeed(Velocity::new::<knot>(160.));
+            test_bed.run();
+            assert!(
+                test_bed.query(|a| a.adirs.adirus[adiru_number - 1].low_speed_warning_3_159kts())
+            );
+        }
+
+        #[rstest]
+        #[case(1)]
+        #[case(2)]
+        #[case(3)]
+        fn discrete_output_speed_warning_4(#[case] adiru_number: usize) {
+            let mut test_bed = all_adirus_aligned_test_bed();
+            test_bed.set_indicated_airspeed(Velocity::new::<knot>(255.));
+            test_bed.run();
+
+            assert!(
+                !test_bed.query(|a| a.adirs.adirus[adiru_number - 1].low_speed_warning_4_260kts())
+            );
+
+            test_bed.set_indicated_airspeed(Velocity::new::<knot>(265.));
+            test_bed.run();
+            assert!(
+                test_bed.query(|a| a.adirs.adirus[adiru_number - 1].low_speed_warning_4_260kts())
+            );
         }
     }
 }

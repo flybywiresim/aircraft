@@ -11,13 +11,13 @@ export class FreetextMessage extends AtsuMessage {
     constructor() {
         super();
         this.Type = AtsuMessageType.Freetext;
-        this.Direction = AtsuMessageDirection.Output;
+        this.Direction = AtsuMessageDirection.Downlink;
     }
 
     public serialize(format: AtsuMessageSerializationFormat) {
         let message = '';
 
-        if (format === AtsuMessageSerializationFormat.MCDU) {
+        if (format === AtsuMessageSerializationFormat.MCDU || format === AtsuMessageSerializationFormat.MCDUMonitored) {
             wordWrap(this.Message, 25).forEach((line) => {
                 message += `{green}${line}{end}\n`;
             });

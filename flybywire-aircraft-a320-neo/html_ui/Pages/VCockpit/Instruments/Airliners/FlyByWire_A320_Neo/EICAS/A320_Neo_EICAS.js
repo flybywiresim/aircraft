@@ -67,7 +67,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.createLowerScreenPage("DOOR", "BottomScreen", "a32nx-door-page-element");
         this.createLowerScreenPage("WHEEL", "BottomScreen", "a32nx-wheel-page-element");
         this.createLowerScreenPage("FTCL", "BottomScreen", "a32nx-fctl-page-element");
-        this.createLowerScreenPage("STS", "BottomScreen", "a320-neo-lower-ecam-status");
+        this.createLowerScreenPage("STS", "BottomScreen", "a32nx-status-page-element");
         this.createLowerScreenPage("CRZ", "BottomScreen", "a32nx-crz-page-element");
     }
 
@@ -100,6 +100,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.lowerEngMaintDiv = this.querySelector("#Eicas2MaintMode");
 
         this.doorVideoPressed = false;
+        this.doorVideoEnabled = false;
 
         // Using ternary in case the LVar is undefined
         this.poweredDuringPreviousUpdate = SimVar.GetSimVarValue("L:A32NX_COLD_AND_DARK_SPAWN", "Bool") ? 0 : 1;
@@ -287,10 +288,11 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
     }
 
     updateDoorVideoState() {
-        const doorVideoPressedNow = SimVar.GetSimVarValue("L:PUSH_DOORPANEL_VIDEO", "Bool") === 1;
         const doorVideoEnabledNow = SimVar.GetSimVarValue("L:A32NX_OVHD_COCKPITDOORVIDEO_TOGGLE", "Bool") === 1;
+        const doorVideoPressedNow = SimVar.GetSimVarValue("L:PUSH_DOORPANEL_VIDEO", "Bool") === 1;
 
-        if (doorVideoEnabledNow && this.doorVideoPressed !== doorVideoPressedNow) {
+        if (this.doorVideoEnabled !== doorVideoEnabledNow || this.doorVideoPressed !== doorVideoPressedNow) {
+            this.doorVideoEnabled = doorVideoEnabledNow;
             this.doorVideoPressed = doorVideoPressedNow;
 
             this.setDoorVideo();
@@ -298,9 +300,16 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
     }
 
     setDoorVideo() {
-        this.doorVideoWrapper.style.visibility = this.doorVideoPressed ? "visible" : "hidden";
+        this.doorVideoWrapper.style.visibility = this.doorVideoEnabled && this.doorVideoPressed ? "visible" : "hidden";
     }
 
+    SwitchToPageName(_menu, _page) {
+        if (this.doorVideoPressed) {
+            SimVar.SetSimVarValue("L:PUSH_DOORPANEL_VIDEO", "Bool", 0);
+        }
+
+        super.SwitchToPageName(_menu, _page);
+    }
 }
 
 registerInstrument("a320-neo-eicas-element", A320_Neo_EICAS);

@@ -3,6 +3,7 @@
 CDN_URL="storage.bunnycdn.com/flybywiresim-cdn"
 CDN_PURGE_LINK="https://bunnycdn.com/api/purge?url=http://flybywiresim.b-cdn.net"
 CDN_DIR=${1:-"addons/a32nx/test"}
+LOCAL_DIR=${2:-"./build-modules"}
 
 MAX_RETRY=5
 
@@ -24,13 +25,13 @@ upload () {
 }
 
 # Upload all files
-for FILE in ./build-modules/*; do
+for FILE in "${LOCAL_DIR}"/*; do
     upload "$FILE"
 done
 
 # Purge after all uploads that the files are somewhat in sync
 echo "Purging cache"
-for FILE in ./build-modules/*; do
+for FILE in "${LOCAL_DIR}"/*; do
     DEST="$CDN_PURGE_LINK/$CDN_DIR/$(basename -- "$FILE")"
     echo "Purging cache for file: $FILE"
     echo "Purge URL: $DEST"

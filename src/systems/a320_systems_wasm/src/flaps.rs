@@ -2,7 +2,7 @@ use msfs::sim_connect;
 use msfs::{sim_connect::SimConnect, sim_connect::SIMCONNECT_OBJECT_ID_USER};
 use std::error::Error;
 use systems_wasm::aspects::{
-    EventToVariableMapping, ExecuteOn, MsfsAspectBuilder, VariablesToObject,
+    EventToVariableMapping, ExecuteOn, MsfsAspectBuilder, ObjectWrite, VariablesToObject,
 };
 use systems_wasm::{set_data_on_sim_object, Variable};
 
@@ -113,9 +113,11 @@ impl VariablesToObject for FlapsSurface {
         ]
     }
 
-    fn write(&mut self, values: Vec<f64>) {
+    fn write(&mut self, values: Vec<f64>) -> ObjectWrite {
         self.left_flap = values[0];
         self.right_flap = values[1];
+
+        ObjectWrite::default()
     }
 
     set_data_on_sim_object!();
@@ -140,9 +142,11 @@ impl VariablesToObject for SlatsSurface {
         ]
     }
 
-    fn write(&mut self, values: Vec<f64>) {
+    fn write(&mut self, values: Vec<f64>) -> ObjectWrite {
         self.left_slat = values[0];
         self.right_slat = values[1];
+
+        ObjectWrite::default()
     }
 
     set_data_on_sim_object!();
@@ -165,8 +169,9 @@ impl VariablesToObject for FlapsHandleIndex {
         ]
     }
 
-    fn write(&mut self, values: Vec<f64>) {
+    fn write(&mut self, values: Vec<f64>) -> ObjectWrite {
         self.index = Self::msfs_flap_index_from_surfaces_positions_percent(values);
+        ObjectWrite::default()
     }
 
     set_data_on_sim_object!();

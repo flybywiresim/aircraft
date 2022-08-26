@@ -162,7 +162,6 @@ declare class FlightPlanManager {
     tryAutoActivateApproach(): void;
     getApproachActiveWaypointIndex(): number;
     getApproach(): Approach;
-    getApproachNavFrequency(): number;
     getApproachTransitionIndex(): number;
     getLastIndexBeforeApproach(): number;
     getApproachRunway(): Runway;

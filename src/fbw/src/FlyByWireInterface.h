@@ -77,6 +77,12 @@ class FlyByWireInterface {
 
   bool clientDataEnabled = false;
 
+  bool last_fd1_active = false;
+  bool last_fd2_active = false;
+
+  bool last_ls1_active = false;
+  bool last_ls2_active = false;
+
   FlightDataRecorder flightDataRecorder;
 
   SimConnectInterface simConnectInterface;
@@ -101,6 +107,11 @@ class FlyByWireInterface {
 
   RadioReceiver radioReceiver;
 
+  bool wasFcuInitialized = false;
+  double simulationTimeReady = 0.0;
+  std::unique_ptr<LocalVariable> idIsReady;
+  std::unique_ptr<LocalVariable> idStartState;
+
   bool developmentLocalVariablesEnabled = false;
   bool useCalculatedLocalizerAndGlideSlope = false;
   std::unique_ptr<LocalVariable> idDevelopmentAutoland_condition_Flare;
@@ -110,6 +121,8 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idDevelopmentAutoland_delta_Theta_bx_deg;
   std::unique_ptr<LocalVariable> idDevelopmentAutoland_delta_Theta_beta_c_deg;
 
+  std::unique_ptr<LocalVariable> idDevelopmentUseDirectLaw;
+
   std::unique_ptr<LocalVariable> idLoggingFlightControlsEnabled;
   std::unique_ptr<LocalVariable> idLoggingThrottlesEnabled;
 
@@ -118,6 +131,7 @@ class FlyByWireInterface {
 
   std::unique_ptr<LocalVariable> idPerformanceWarningActive;
 
+  std::unique_ptr<LocalVariable> idTrackingMode;
   std::unique_ptr<LocalVariable> idExternalOverride;
 
   std::unique_ptr<LocalVariable> idFdrEvent;
@@ -313,6 +327,11 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idAileronPositionRight;
   std::shared_ptr<AnimationAileronHandler> animationAileronHandler;
 
+  std::unique_ptr<LocalVariable> idThs1MotorActive;
+  std::unique_ptr<LocalVariable> idThs1MotorCommand;
+  std::unique_ptr<LocalVariable> idElevatorPosition;
+  std::unique_ptr<LocalVariable> idRudderPosition;
+
   std::unique_ptr<LocalVariable> idRadioReceiverUsageEnabled;
   std::unique_ptr<LocalVariable> idRadioReceiverLocalizerValid;
   std::unique_ptr<LocalVariable> idRadioReceiverLocalizerDeviation;
@@ -320,8 +339,20 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idRadioReceiverGlideSlopeValid;
   std::unique_ptr<LocalVariable> idRadioReceiverGlideSlopeDeviation;
 
+  std::unique_ptr<LocalVariable> idRealisticTillerEnabled;
+  std::unique_ptr<LocalVariable> idTillerHandlePosition;
+  std::unique_ptr<LocalVariable> idNoseWheelPosition;
+
+  std::unique_ptr<LocalVariable> idSyncFoEfisEnabled;
+
+  std::unique_ptr<LocalVariable> idLs1Active;
+  std::unique_ptr<LocalVariable> idLs2Active;
+  std::unique_ptr<LocalVariable> idIsisLsActive;
+
   void loadConfiguration();
   void setupLocalVariables();
+
+  bool handleFcuInitialization(double sampleTime);
 
   bool readDataAndLocalVariables(double sampleTime);
 
@@ -339,6 +370,8 @@ class FlyByWireInterface {
   bool updateAutothrust(double sampleTime);
 
   bool updateSpoilers(double sampleTime);
+
+  bool updateFoSide(double sampleTime);
 
   bool updateAltimeterSetting(double sampleTime);
 

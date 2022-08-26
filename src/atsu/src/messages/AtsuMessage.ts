@@ -9,8 +9,8 @@ export enum AtsuMessageNetwork {
 }
 
 export enum AtsuMessageDirection {
-    Input,
-    Output
+    Uplink,
+    Downlink
 }
 
 export enum AtsuMessageType {
@@ -35,6 +35,7 @@ export enum AtsuMessageComStatus {
 
 export enum AtsuMessageSerializationFormat {
     MCDU,
+    MCDUMonitored,
     DCDU,
     Printer,
     Network
@@ -48,15 +49,15 @@ export class AtsuMessage {
 
     public UniqueMessageID: number = -1;
 
-    public Timestamp: AtsuTimestamp | undefined = undefined;
+    public Timestamp: AtsuTimestamp = new AtsuTimestamp();
 
     public Station = '';
 
     public ComStatus: AtsuMessageComStatus = AtsuMessageComStatus.Open;
 
-    public Type: AtsuMessageType | undefined = undefined;
+    public Type: AtsuMessageType = null;
 
-    public Direction: AtsuMessageDirection | undefined = undefined;
+    public Direction: AtsuMessageDirection = null;
 
     public Confirmed = false;
 
@@ -70,7 +71,7 @@ export class AtsuMessage {
     public deserialize(jsonData: Record<string, unknown>) {
         this.Network = jsonData.Network;
         this.UniqueMessageID = jsonData.UniqueMessageID;
-        if (jsonData.Timestamp !== undefined) {
+        if (jsonData.Timestamp) {
             this.Timestamp = new AtsuTimestamp();
             this.Timestamp.deserialize(jsonData.Timestamp);
         }

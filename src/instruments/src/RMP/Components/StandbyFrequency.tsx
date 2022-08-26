@@ -103,29 +103,36 @@ export const StandbyFrequency = (props: Props) => {
     const spacing = usePersistentProperty('RMP_VHF_SPACING_25KHZ', '0')[0] === '0' ? 8.33 : 25;
     // Handle outer knob turned.
     const outerKnobUpdateCallback: UpdateValueCallback = useCallback((offset) => {
-        const frequency = Math.round(props.value / 1000);
-        const integer = Math.floor(frequency / 1000);
-        const decimal = frequency % 1000;
-        // @todo determine min/max depending on mode.
-        const maxInteger = decimal > 975 ? 135 : 136;
-        const newInteger = Utils.Clamp(integer + offset, 118, maxInteger);
-        props.setValue((newInteger * 1000 + decimal) * 1000);
+        if (props.value !== 0) {
+            const frequency = Math.round(props.value / 1000);
+            const integer = Math.floor(frequency / 1000);
+            const decimal = frequency % 1000;
+            // @todo determine min/max depending on mode.
+            const maxInteger = decimal > 975 ? 135 : 136;
+            const newInteger = Utils.Clamp(integer + offset, 118, maxInteger);
+            props.setValue((newInteger * 1000 + decimal) * 1000);
+        } else {
+            props.setValue(0);
+        }
     }, [props.value]);
 
     // Handle inner knob turned.
     const innerKnobUpdateCallback: UpdateValueCallback = useCallback((offset) => {
         const frequency = Math.round(props.value / 1000);
-        if (Math.sign(offset) === 1 && frequency === 136975) {
-            return;
+        if (props.value !== 0) {
+            const integer = Math.floor(frequency / 1000);
+            // @todo determine correct frequency spacing depending on mode.
+            const decimal = offsetFrequencyChannel(spacing, frequency % 1000, offset);
+            // @todo determine min/max depending on mode.
+            // Tested in real life:
+            // Integer cannot return to 118 from 136 to the right
+            // Decimal can return to 0 from 975 to the right
+            // const maxDecimal = integer === 136 ? 975 : 1000;
+            const newDecimal = Utils.Clamp(decimal, 0, 1000);
+            props.setValue((integer * 1000 + newDecimal) * 1000);
+        } else {
+            props.setValue(0);
         }
-
-        const integer = Math.floor(frequency / 1000);
-        // @todo determine correct frequency spacing depending on mode.
-        const decimal = offsetFrequencyChannel(spacing, frequency % 1000, offset);
-        // @todo determine min/max depending on mode.
-        const maxDecimal = integer === 136 ? 975 : 1000;
-        const newDecimal = Utils.Clamp(decimal, 0, maxDecimal);
-        props.setValue((integer * 1000 + newDecimal) * 1000);
     }, [props.value]);
 
     // Used to change integer value of freq.

@@ -18,7 +18,7 @@ class CDUFixInfoPage {
                     fixInfo.setRefFix();
                     return CDUFixInfoPage.ShowPage(mcdu, page);
                 } else {
-                    mcdu.addNewMessage(NXSystemMessages.notAllowed);
+                    mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
                     return scratchpadCallback();
                 }
             }
@@ -28,14 +28,14 @@ class CDUFixInfoPage {
                     CDUFixInfoPage.ShowPage(mcdu, page);
                 }).catch((message) => {
                     if (message instanceof McduMessage) {
-                        mcdu.addNewMessage(message);
+                        mcdu.setScratchpadMessage(message);
                         scratchpadCallback();
                     } else {
                         console.error(err);
                     }
                 });
             } else {
-                mcdu.addNewMessage(NXSystemMessages.formatError);
+                mcdu.setScratchpadMessage(NXSystemMessages.formatError);
                 scratchpadCallback();
             }
         };
@@ -73,7 +73,7 @@ class CDUFixInfoPage {
                             fixInfo.setRadial(i);
                             CDUFixInfoPage.ShowPage(mcdu, page);
                         } else {
-                            mcdu.addNewMessage(NXSystemMessages.notAllowed);
+                            mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
                             scratchpadCallback();
                         }
                     } else if (value.match(/^[0-9]{1,3}$/)) {
@@ -83,14 +83,14 @@ class CDUFixInfoPage {
                             fixInfo.setRadial(i, degrees);
                             CDUFixInfoPage.ShowPage(mcdu, page);
                         } else {
-                            mcdu.addNewMessage(NXSystemMessages.entryOutOfRange);
+                            mcdu.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
                             scratchpadCallback();
                         }
                     } else if (value === '' && radial !== undefined) {
-                        mcdu.addNewMessage(NXFictionalMessages.notYetImplemented);
+                        mcdu.setScratchpadMessage(NXFictionalMessages.notYetImplemented);
                         scratchpadCallback();
                     } else {
-                        mcdu.addNewMessage(NXSystemMessages.formatError);
+                        mcdu.setScratchpadMessage(NXSystemMessages.formatError);
                         scratchpadCallback();
                     }
                 };
@@ -108,7 +108,7 @@ class CDUFixInfoPage {
                         fixInfo.setRadius();
                         CDUFixInfoPage.ShowPage(mcdu, page);
                     } else {
-                        mcdu.addNewMessage(NXSystemMessages.notAllowed);
+                        mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
                         scratchpadCallback();
                     }
                 } else if (value.match(/^[0-9]{1,3}$/)) {
@@ -117,20 +117,20 @@ class CDUFixInfoPage {
                         fixInfo.setRadius(radius);
                         CDUFixInfoPage.ShowPage(mcdu, page);
                     } else {
-                        mcdu.addNewMessage(NXSystemMessages.entryOutOfRange);
+                        mcdu.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
                         scratchpadCallback();
                     }
                 } else if (value === '' && fixInfo.radius !== undefined) {
-                    mcdu.addNewMessage(NXFictionalMessages.notYetImplemented);
+                    mcdu.setScratchpadMessage(NXFictionalMessages.notYetImplemented);
                     scratchpadCallback();
                 } else {
-                    mcdu.addNewMessage(NXSystemMessages.formatError);
+                    mcdu.setScratchpadMessage(NXSystemMessages.formatError);
                     scratchpadCallback();
                 }
             };
 
             template[10] = ['{inop}<ABEAM{end}'];
-            mcdu.onLeftInput[4] = () => mcdu.addNewMessage(NXFictionalMessages.notYetImplemented);
+            mcdu.onLeftInput[4] = () => mcdu.setScratchpadMessage(NXFictionalMessages.notYetImplemented);
         }
 
         mcdu.setArrows(false, false, true, true);

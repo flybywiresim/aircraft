@@ -26,4 +26,15 @@ struct AdditionalData {
   double throttle_lever_2_pos;
   double corrected_engine_N1_1_percent;
   double corrected_engine_N1_2_percent;
+  unsigned long long assistanceTakeoffEnabled;
+  unsigned long long assistanceLandingEnabled;
+  unsigned long long aiAutoTrimActive;
+  unsigned long long aiControlsActive;
+  unsigned long long realisticTillerEnabled;
+  double tillerHandlePosition;
+  double noseWheelPosition;
+  double syncFoEfisEnabled;
+  double ls1Active;
+  double ls2Active;
+  double IsisLsActive;
 };

@@ -16,7 +16,6 @@ import { Geo } from '@fmgc/utils/Geo';
 import { PathVector, PathVectorType } from '@fmgc/guidance/lnav/PathVector';
 import { CourseChange } from '@fmgc/guidance/lnav/transitions/utilss/CourseChange';
 import { Constants } from '@shared/Constants';
-import { Guidable } from '@fmgc/guidance/Guidable';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { TurnDirection } from '@fmgc/types/fstypes/FSEnums';
 import {
@@ -24,6 +23,8 @@ import {
     getIntermediatePoint,
     maxBank,
     maxTad,
+    PointSide,
+    reciprocal,
     sideOfPointOnCourseToFix,
 } from '@fmgc/guidance/lnav/CommonGeometry';
 import { ControlLaw } from '@shared/autopilot';
@@ -31,10 +32,13 @@ import { AFLeg } from '@fmgc/guidance/lnav/legs/AF';
 import {
     bearingTo,
     distanceTo,
+    firstSmallCircleIntersection,
     placeBearingDistance,
     placeBearingIntersection,
     smallCircleGreatCircleIntersection,
 } from 'msfs-geo';
+import { PILeg } from '@fmgc/guidance/lnav/legs/PI';
+import { isCourseReversalLeg } from '@fmgc/guidance/lnav/legs';
 import { Leg } from '../legs/Leg';
 import { CFLeg } from '../legs/CF';
 import { CRLeg } from '../legs/CR';
@@ -42,6 +46,7 @@ import { CRLeg } from '../legs/CR';
 export type PrevLeg = AFLeg | CALeg | /* CDLeg | */ CRLeg | /* FALeg | */ HALeg | HFLeg | HMLeg;
 export type ReversionLeg = CFLeg | CILeg | DFLeg | TFLeg;
 export type NextLeg = AFLeg | CFLeg | /* FALeg | */ TFLeg;
+type NextReversionLeg = PILeg;
 
 const cos = (input: Degrees) => Math.cos(input * (Math.PI / 180));
 const tan = (input: Degrees) => Math.tan(input * MathUtils.DEGREES_TO_RADIANS);
@@ -59,9 +64,9 @@ const compareTurnDirections = (sign: number, data: TurnDirection) => {
 export class PathCaptureTransition extends Transition {
     constructor(
         public previousLeg: PrevLeg | ReversionLeg,
-        public nextLeg: NextLeg,
+        public nextLeg: NextLeg | NextReversionLeg,
     ) {
-        super();
+        super(previousLeg, nextLeg);
     }
 
     startWithTad = false
@@ -86,39 +91,41 @@ export class PathCaptureTransition extends Transition {
 
     tad: NauticalMiles | undefined;
 
-    private forcedTurnRequired = false;
-
     private forcedTurnComplete = false;
 
-    recomputeWithParameters(_isActive: boolean, tas: Knots, gs: Knots, _ppos: Coordinates, _trueTrack: DegreesTrue, previousGuidable: Guidable, nextGuidable: Guidable) {
+    private computedTurnDirection = TurnDirection.Either;
+
+    private computedTargetTrack: DegreesTrue = 0;
+
+    recomputeWithParameters(_isActive: boolean, tas: Knots, gs: Knots, _ppos: Coordinates, _trueTrack: DegreesTrue) {
         if (this.isFrozen) {
             return;
         }
 
-        this.previousLeg = previousGuidable as PrevLeg | ReversionLeg;
-        this.nextLeg = nextGuidable as NextLeg;
-
-        if (!(previousGuidable instanceof Leg)) {
+        if (!(this.inboundGuidable instanceof Leg)) {
             throw new Error('[FMS/Geometry/PathCapture] previousGuidable must be a leg');
         }
 
-        const targetTrack = previousGuidable.outboundCourse;
+        const targetTrack = this.inboundGuidable.outboundCourse;
 
         const naturalTurnDirectionSign = Math.sign(MathUtils.diffAngle(targetTrack, this.nextLeg.inboundCourse));
 
-        let prevLegTermination: LatLongAlt | Coordinates;
+        this.computedTurnDirection = TurnDirection.Either;
+        this.computedTargetTrack = this.nextLeg.inboundCourse;
+
+        let prevLegTermFix: LatLongAlt | Coordinates;
         if (this.previousLeg instanceof AFLeg) {
-            prevLegTermination = this.previousLeg.arcEndPoint;
+            prevLegTermFix = this.previousLeg.arcEndPoint;
         } else {
-            prevLegTermination = this.previousLeg.terminationWaypoint instanceof WayPoint ? this.previousLeg.terminationWaypoint.infos.coordinates : this.previousLeg.terminationWaypoint;
+            prevLegTermFix = this.previousLeg.terminationWaypoint instanceof WayPoint ? this.previousLeg.terminationWaypoint.infos.coordinates : this.previousLeg.terminationWaypoint;
         }
 
         // Start the transition before the termination fix if we are reverted because of an overshoot
         let initialTurningPoint: Coordinates;
         if (this.startWithTad) {
-            const prevLegStraightLength = this.previousLeg.distanceToTermination;
+            const prevLegDistanceToTerm = this.previousLeg.distanceToTermination;
 
-            this.tad = Math.min(maxTad(tas), prevLegStraightLength - 0.05);
+            this.tad = Math.min(maxTad(tas), prevLegDistanceToTerm - 0.05);
 
             // If we are inbound of a TF leg, we use getIntermediatePoint in order to get more accurate results
             if ('from' in this.previousLeg) {
@@ -131,22 +138,22 @@ export class PathCaptureTransition extends Transition {
                 initialTurningPoint = getIntermediatePoint(start, end, ratio);
             } else {
                 initialTurningPoint = placeBearingDistance(
-                    prevLegTermination,
-                    Avionics.Utils.clampAngle(this.previousLeg.outboundCourse + 180),
+                    prevLegTermFix,
+                    reciprocal(this.previousLeg.outboundCourse),
                     this.tad,
                 );
             }
         } else {
             this.tad = 0;
-            initialTurningPoint = prevLegTermination;
+            initialTurningPoint = prevLegTermFix;
         }
 
         const distanceFromItp: NauticalMiles = Geo.distanceToLeg(initialTurningPoint, this.nextLeg);
-        const deltaTrack: Degrees = MathUtils.diffAngle(targetTrack, this.nextLeg.inboundCourse, this.nextLeg.metadata.turnDirection);
+        // for some legs the turn direction is not for forced turn onto the leg
+        const desiredDirection = isCourseReversalLeg(this.nextLeg) ? TurnDirection.Either : this.nextLeg.metadata.turnDirection;
+        const deltaTrack: Degrees = MathUtils.diffAngle(targetTrack, this.nextLeg.inboundCourse, desiredDirection);
 
         this.predictedPath.length = 0;
-
-        this.forcedTurnRequired = Math.abs(deltaTrack) > 130;
 
         if (Math.abs(deltaTrack) < 3 && distanceFromItp < 0.1) {
             this.itp = this.previousLeg.getPathEndPoint();
@@ -158,12 +165,16 @@ export class PathCaptureTransition extends Transition {
                 endPoint: this.previousLeg.getPathEndPoint(),
             });
 
+            this.isNull = true;
+
             this.distance = 0;
 
             this.isComputed = true;
 
             return;
         }
+
+        this.isNull = false;
 
         // If track change is very similar to a 45 degree intercept, we do a direct intercept
         if (Math.abs(deltaTrack) > 42 && Math.abs(deltaTrack) < 48 && distanceFromItp > 0.01) {
@@ -208,12 +219,11 @@ export class PathCaptureTransition extends Transition {
         if (distanceLimit <= Math.abs(turnCenterDistance) && Math.abs(turnCenterDistance) < radius) {
             const radiusToLeg = radius - Math.abs(turnCenterDistance);
 
-            let intercept;
+            let intercept: Coordinates;
 
             // If we are inbound of a TF leg, we use the TF leg ref fix for our small circle intersect in order to get
             // more accurate results
             if ('from' in this.nextLeg) {
-                // const intersects = smallCircleGreatCircleIntersection(turnCenter, radius, initialTurningPoint, this.nextLeg.outboundCourse);
                 const intersects = smallCircleGreatCircleIntersection(turnCenter, radius, this.nextLeg.from.infos.coordinates, this.nextLeg.outboundCourse);
 
                 if (intersects) {
@@ -226,7 +236,7 @@ export class PathCaptureTransition extends Transition {
                     }
                 }
             } else {
-                intercept = smallCircleGreatCircleIntersection(turnCenter, radius, this.nextLeg.getPathEndPoint(), this.nextLeg.outboundCourse + 180);
+                intercept = firstSmallCircleIntersection(turnCenter, radius, this.nextLeg.getPathEndPoint(), reciprocal(this.nextLeg.outboundCourse));
             }
 
             // If the difference between the radius and turnCenterDistance is very small, we might not find an intercept using the circle.
@@ -297,10 +307,14 @@ export class PathCaptureTransition extends Transition {
 
             if (isReverse) {
                 courseChange = CourseChange.reverse(turnDirection, turnCenterDistance, deltaTrack, radius);
+                this.computedTurnDirection = this.nextLeg.metadata.turnDirection;
             } else {
                 courseChange = CourseChange.normal(turnDirection, turnCenterDistance, deltaTrack, radius);
+                this.computedTurnDirection = turnDirection < 0 ? TurnDirection.Left : TurnDirection.Right;
             }
         }
+
+        this.computedTargetTrack = (360 + this.previousLeg.outboundCourse + courseChange) % 360;
 
         const finalTurningPoint = placeBearingDistance(turnCenter, targetTrack + courseChange - 90 * turnDirection, radius);
 
@@ -329,7 +343,7 @@ export class PathCaptureTransition extends Transition {
             intercept = Geo.legIntercept(finalTurningPoint, targetTrack + courseChange, this.nextLeg);
         }
 
-        const overshot = sideOfPointOnCourseToFix(finalTurningPoint, targetTrack + courseChange, intercept) === -1;
+        const overshot = sideOfPointOnCourseToFix(finalTurningPoint, targetTrack + courseChange, intercept) === PointSide.Before;
 
         this.itp = initialTurningPoint;
         this.ftp = finalTurningPoint;
@@ -350,12 +364,6 @@ export class PathCaptureTransition extends Transition {
             this.predictedPath.push({
                 type: PathVectorType.Line,
                 startPoint: finalTurningPoint,
-                endPoint: intercept,
-            });
-        } else {
-            this.predictedPath.push({
-                type: PathVectorType.Line,
-                startPoint: intercept,
                 endPoint: intercept,
             });
         }
@@ -433,7 +441,7 @@ export class PathCaptureTransition extends Transition {
     }
 
     isAbeam(ppos: LatLongData): boolean {
-        return this.forcedTurnRequired && !this.forcedTurnComplete && this.previousLeg.getDistanceToGo(ppos) <= 0;
+        return !this.isNull && this.computedTurnDirection !== TurnDirection.Either && !this.forcedTurnComplete && this.previousLeg.getDistanceToGo(ppos) <= 0;
     }
 
     distance = 0;
@@ -446,10 +454,10 @@ export class PathCaptureTransition extends Transition {
         return 1;
     }
 
-    getGuidanceParameters(ppos: LatLongAlt, trueTrack: number, tas: Knots): GuidanceParameters | null {
-        if (this.forcedTurnRequired) {
-            const turnSign = this.nextLeg.metadata.turnDirection === TurnDirection.Left ? -1 : 1;
-            let trackAngleError = this.nextLeg.inboundCourse - trueTrack;
+    getGuidanceParameters(ppos: LatLongAlt, trueTrack: number, tas: Knots, gs: Knots): GuidanceParameters | null {
+        if (this.computedTurnDirection !== TurnDirection.Either) {
+            const turnSign = this.computedTurnDirection === TurnDirection.Left ? -1 : 1;
+            let trackAngleError = this.computedTargetTrack - trueTrack;
             if (turnSign !== Math.sign(trackAngleError)) {
                 trackAngleError += turnSign * 360;
             }
@@ -465,7 +473,7 @@ export class PathCaptureTransition extends Transition {
             this.forcedTurnComplete = true;
         }
 
-        return this.nextLeg.getGuidanceParameters(ppos, trueTrack, tas);
+        return this.nextLeg.getGuidanceParameters(ppos, trueTrack, tas, gs);
     }
 
     getNominalRollAngle(_gs: Knots): Degrees {

@@ -45,19 +45,24 @@ class EICASCommonDisplay extends Airliners.EICASTemplateElement {
         }
 
         const airDataReferenceSource = this.getStatusAirDataReferenceSource();
+        const inertialReferenceSource = this.getStatusInertialReferenceSource();
         const sat = Arinc429Word.fromSimVarValue(`L:A32NX_ADIRS_ADR_${airDataReferenceSource}_STATIC_AIR_TEMPERATURE`);
         this.refreshTAT(Arinc429Word.fromSimVarValue(`L:A32NX_ADIRS_ADR_${airDataReferenceSource}_TOTAL_AIR_TEMPERATURE`));
         this.refreshSAT(sat);
         this.refreshISA(Arinc429Word.fromSimVarValue(`L:A32NX_ADIRS_ADR_${airDataReferenceSource}_INTERNATIONAL_STANDARD_ATMOSPHERE_DELTA`), sat);
 
         this.refreshClock();
-        this.refreshLoadFactor(_deltaTime, SimVar.GetSimVarValue("G FORCE", "GFORCE"));
+        this.refreshLoadFactor(_deltaTime, Arinc429Word.fromSimVarValue(`L:A32NX_ADIRS_IR_${inertialReferenceSource}_BODY_NORMAL_ACC`));
         this.refreshGrossWeight();
         this.refreshHomeCockpitMode();
     }
 
     getStatusAirDataReferenceSource() {
         return this.getStatusSupplier(SimVar.GetSimVarValue('L:A32NX_AIR_DATA_SWITCHING_KNOB', 'Enum'));
+    }
+
+    getStatusInertialReferenceSource() {
+        return this.getStatusSupplier(SimVar.GetSimVarValue('L:A32NX_ATT_HDG_SWITCHING_KNOB', 'Enum'));
     }
 
     getStatusSupplier(knobValue) {
@@ -108,10 +113,11 @@ class EICASCommonDisplay extends Airliners.EICASTemplateElement {
         element.classList.toggle("Value", !isWarning);
     }
 
-    refreshLoadFactor(_deltaTime, value) {
+    refreshLoadFactor(_deltaTime, n_z) {
+        const value = n_z.value;
         const conditionsMet = value > 1.4 || value < 0.7;
-        const loadFactorSet = this.loadFactorSet.write(conditionsMet, _deltaTime);
-        const loadFactorReset = this.loadFactorReset.write(!conditionsMet, _deltaTime);
+        const loadFactorSet = this.loadFactorSet.write(conditionsMet && n_z.isNormalOperation(), _deltaTime);
+        const loadFactorReset = this.loadFactorReset.write(!conditionsMet || !n_z.isNormalOperation(), _deltaTime);
         const flightPhase = SimVar.GetSimVarValue("L:A32NX_FWC_FLIGHT_PHASE", "Enum");
         const isVisible = (
             flightPhase >= 4 &&
@@ -131,8 +137,13 @@ class EICASCommonDisplay extends Airliners.EICASTemplateElement {
         }
 
         if (this.loadFactorText) {
-            const clamped = Math.min(Math.max(value, -3), 5);
-            this.loadFactorText.textContent = (clamped >= 0 ? "+" : "") + clamped.toFixed(1);
+            if (n_z.isNormalOperation()) {
+                const clamped = Math.min(Math.max(value, -3), 5);
+                this.loadFactorText.textContent = (clamped >= 0 ? "+" : "") + clamped.toFixed(1);
+            } else {
+                this.loadFactorText.textContent = 'XX';
+            }
+
         }
     }
     refreshClock() {
@@ -153,17 +164,14 @@ class EICASCommonDisplay extends Airliners.EICASTemplateElement {
         }
     }
     refreshGrossWeight(_force = false) {
-        const fuelWeight = SimVar.GetSimVarValue("FUEL TOTAL QUANTITY WEIGHT", "kg");
-        const emptyWeight = SimVar.GetSimVarValue("EMPTY WEIGHT", "kg");
-        const payloadWeight = this.getPayloadWeight("kg");
-        const isOneEngineRunning = SimVar.GetSimVarValue("ENG COMBUSTION:1", "bool") || SimVar.GetSimVarValue("ENG COMBUSTION:2", "bool");
-        const gw = Math.round(NXUnits.kgToUser(emptyWeight + fuelWeight + payloadWeight));
+        const isOneEngineRunning = SimVar.GetSimVarValue("L:A32NX_ENGINE_N1:1", "Number") >= 15 || SimVar.GetSimVarValue("L:A32NX_ENGINE_N1:2", "Number") >= 15; //BASED ON IRL REFERENCE
+        const gw = Math.round(NXUnits.kgToUser(SimVar.GetSimVarValue("L:A32NX_FM_GROSS_WEIGHT", "number") * 1000));
         const gwUnit = NXUnits.userWeightUnit();
         if ((gw != this.currentGW) || (this.isOneEngineRunning != isOneEngineRunning) || _force) {
             this.currentGW = gw;
             this.isOneEngineRunning = isOneEngineRunning;
 
-            if (isOneEngineRunning && this.gwValue != null) {
+            if (isOneEngineRunning && this.currentGW != 0) {
                 // Lower EICAS displays GW in increments of 100
                 this.gwValue.classList.add("Value");
                 this.gwValue.classList.remove("Cyan");
@@ -180,14 +188,6 @@ class EICASCommonDisplay extends Airliners.EICASTemplateElement {
                 this.gwUnit.textContent = gwUnit;
             }
         }
-    }
-    getPayloadWeight(unit) {
-        const payloadCount = SimVar.GetSimVarValue("PAYLOAD STATION COUNT", "number");
-        let payloadWeight = 0;
-        for (let i = 1; i <= payloadCount; i++) {
-            payloadWeight += SimVar.GetSimVarValue(`PAYLOAD STATION WEIGHT:${i}`, unit);
-        }
-        return payloadWeight;
     }
     refreshHomeCockpitMode() {
         const isHomeCockpit = SimVar.GetSimVarValue("L:A32NX_HOME_COCKPIT_ENABLED", "bool");

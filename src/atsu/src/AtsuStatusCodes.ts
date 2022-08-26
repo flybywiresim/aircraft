@@ -15,5 +15,8 @@ export enum AtsuStatusCodes {
     ProxyError,
     NewAtisReceived,
     NoAtisReceived,
-    SystemBusy
+    SystemBusy,
+    EntryOutOfRange,
+    FormatError,
+    NotInDatabase
 }

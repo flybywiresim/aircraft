@@ -585,6 +585,12 @@ class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
         clearTimeout(this._resetSelectionTimeout);
         this.isPreselectionModeActive = false;
         this.inSelection = false;
+        const lateralMode = SimVar.GetSimVarValue("L:A32NX_FMA_LATERAL_MODE", "Number");
+        const isManagedActive = this.isManagedModeActive(lateralMode);
+        if (isManagedActive) {
+            this.isSelectedValueActive = false;
+            SimVar.SetSimVarValue("L:A32NX_AUTOPILOT_HEADING_SELECTED", "Degrees", -1);
+        }
         SimVar.SetSimVarValue("K:A32NX.FCU_TO_AP_HDG_PUSH", "number", 0);
         SimVar.SetSimVarValue("K:HEADING_SLOT_INDEX_SET", "number", 2);
     }

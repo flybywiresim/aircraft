@@ -70,7 +70,7 @@ export class FlightModel {
             break;
         }
 
-        const spdBrkIncrement = spdBrkDeflected ? 0.01 : 0;
+        const spdBrkIncrement = spdBrkDeflected ? 0.00611 : 0;
         const gearIncrement = gearExtended ? 0.03 : 0;
         return baseDrag + spdBrkIncrement + gearIncrement;
     }

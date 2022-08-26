@@ -5,9 +5,8 @@
 
 import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
-import { Guidable } from '@fmgc/guidance/Guidable';
 import { distanceTo } from 'msfs-geo';
-import { sideOfPointOnCourseToFix } from '@fmgc/guidance/lnav/CommonGeometry';
+import { PointSide, sideOfPointOnCourseToFix } from '@fmgc/guidance/lnav/CommonGeometry';
 import { FixedRadiusTransition } from '@fmgc/guidance/lnav/transitions/FixedRadiusTransition';
 import { DmeArcTransition } from '@fmgc/guidance/lnav/transitions/DmeArcTransition';
 
@@ -17,10 +16,6 @@ export abstract class XFLeg extends Leg {
     ) {
         super();
     }
-
-    protected inboundGuidable: Guidable | undefined;
-
-    protected outboundGuidable: Guidable | undefined;
 
     getPathEndPoint(): Coordinates | undefined {
         if (this.outboundGuidable instanceof FixedRadiusTransition && this.outboundGuidable.isComputed) {
@@ -52,7 +47,7 @@ export abstract class XFLeg extends Leg {
     get overshot(): boolean {
         const side = sideOfPointOnCourseToFix(this.fix.infos.coordinates, this.outboundCourse, this.getPathStartPoint());
 
-        return side === 1;
+        return side === PointSide.After;
     }
 
     get distanceToTermination(): NauticalMiles {

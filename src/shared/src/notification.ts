@@ -1,3 +1,5 @@
+import { EventBus, KeyEvents, KeyInterceptManager } from 'msfssdk';
+
 let nxNotificationsListener: ViewListener.ViewListener;
 
 /**
@@ -18,12 +20,60 @@ export type NotificationData = {
  * Notification utility class to create a notification event and element
  *
  * Usage:
- * import { Notification } from '@shared/notification';
+ * import { NotificationManager } from '@shared/notification';
  * ...
- * const notification = new Notification();
+ * const notification = new NotificationManager();
  * notification.showNotification({ message: 'Your notification here!' });
 */
-export class Notification {
+
+export class NotificationManager {
+    eventBus: EventBus;
+
+    manager: KeyInterceptManager;
+
+    notifications: Notification[];
+
+    constructor() {
+        this.notifications = [];
+        this.eventBus = new EventBus();
+        KeyInterceptManager.getManager(this.eventBus).then((man) => {
+            this.manager = man;
+            this.registerIntercepts();
+        });
+    }
+
+    registerIntercepts() {
+        this.manager.interceptKey('PAUSE_TOGGLE', true);
+        this.manager.interceptKey('PAUSE_ON', true);
+        this.manager.interceptKey('PAUSE_OFF', true);
+        this.manager.interceptKey('PAUSE_SET', true);
+
+        const subscriber = this.eventBus.getSubscriber<KeyEvents>();
+        subscriber.on('key_intercept').handle((keyData) => {
+            switch (keyData.key) {
+            case 'PAUSE_TOGGLE':
+            case 'PAUSE_ON':
+            case 'PAUSE_OFF':
+            case 'PAUSE_SET':
+                this.notifications.forEach((notif: Notification) => {
+                    notif.hideNotification();
+                });
+                this.notifications.length = 0;
+                break;
+            default:
+                break;
+            }
+        });
+    }
+
+    showNotification(params: any = {}): void {
+        const notif: Notification = new Notification();
+        notif.showNotification(params);
+        this.notifications.push(notif);
+    }
+}
+
+class Notification {
     time: number;
 
     params: NotificationData;
@@ -55,7 +105,7 @@ export class Notification {
      * @param {string} params.message Notification message
      * @param {number} params.timeout Time in ms before notification message will disappear
      */
-    setData(params: any = {}): void {
+    private setData(params: any = {}): void {
         if (params.title) {
             this.params.title = params.title;
             this.params.id = `${params.title}_${new Date().getTime()}`;
@@ -95,7 +145,11 @@ export class Notification {
         nxNotificationsListener.triggerToAllSubscribers('SendNewNotification', this.params);
         setTimeout(() => {
             // TODO FIXME: May break in the future, check every update
-            nxNotificationsListener.triggerToAllSubscribers('HideNotification', this.params.type, null, this.params.id);
+            this.hideNotification();
         }, this.params.timeout);
+    }
+
+    hideNotification() {
+        nxNotificationsListener.triggerToAllSubscribers('HideNotification', this.params.type, null, this.params.id);
     }
 }

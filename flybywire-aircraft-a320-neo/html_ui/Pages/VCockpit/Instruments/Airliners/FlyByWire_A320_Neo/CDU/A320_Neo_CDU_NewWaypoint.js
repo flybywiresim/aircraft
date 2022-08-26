@@ -70,7 +70,7 @@ class CDUNewWaypoint {
                 _inProgressData.ident = value;
                 mcdu.requestCall(() => CDUNewWaypoint.ShowPage(mcdu, doneCallback, _inProgressData));
             } else {
-                mcdu.addNewMessage(NXSystemMessages.formatError);
+                mcdu.setScratchpadMessage(NXSystemMessages.formatError);
                 scratchpadCallback();
             }
         };
@@ -100,14 +100,14 @@ class CDUNewWaypoint {
                     }));
                 } catch (err) {
                     if (err instanceof McduMessage) {
-                        mcdu.addNewMessage(err);
+                        mcdu.setScratchpadMessage(err);
                     } else {
                         console.error(err);
                     }
                     scratchpadCallback();
                 }
             } else {
-                mcdu.addNewMessage(NXSystemMessages.formatError);
+                mcdu.setScratchpadMessage(NXSystemMessages.formatError);
                 scratchpadCallback();
             }
         };
@@ -140,14 +140,14 @@ class CDUNewWaypoint {
                     });
                 } catch (err) {
                     if (err instanceof McduMessage) {
-                        mcdu.addNewMessage(err);
+                        mcdu.setScratchpadMessage(err);
                     } else {
                         console.error(err);
                     }
                     scratchpadCallback();
                 }
             } else {
-                mcdu.addNewMessage(NXSystemMessages.formatError);
+                mcdu.setScratchpadMessage(NXSystemMessages.formatError);
                 scratchpadCallback();
             }
         };
@@ -181,14 +181,14 @@ class CDUNewWaypoint {
                     });
                 } catch (err) {
                     if (err instanceof McduMessage) {
-                        mcdu.addNewMessage(err);
+                        mcdu.setScratchpadMessage(err);
                     } else {
                         console.error(err);
                     }
                     scratchpadCallback();
                 }
             } else {
-                mcdu.addNewMessage(NXSystemMessages.formatError);
+                mcdu.setScratchpadMessage(NXSystemMessages.formatError);
                 scratchpadCallback();
             }
         };
@@ -207,7 +207,7 @@ class CDUNewWaypoint {
                         wp = mcdu.dataManager.createPlaceBearingPlaceBearingWaypoint(_inProgressData.place1, _inProgressData.bearing1, _inProgressData.place2, _inProgressData.bearing2, true, _inProgressData.ident);
                         break;
                     default:
-                        mcdu.addNewMessage(NXFictionalMessages.notYetImplemented);
+                        mcdu.setScratchpadMessage(NXFictionalMessages.notYetImplemented);
                         return;
                 }
                 mcdu.requestCall(() => {

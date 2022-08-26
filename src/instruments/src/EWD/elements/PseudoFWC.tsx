@@ -118,6 +118,7 @@ const PseudoFWC: React.FC = () => {
     const [engine2Generator] = useSimVar('L:A32NX_ELEC_ENG_GEN_2_POTENTIAL_NORMAL', 'bool', 500);
     const [emergencyElectricGeneratorPotential] = useSimVar('L:A32NX_ELEC_EMER_GEN_POTENTIAL', 'number', 500);
     const [dcESSBusPowered] = useSimVar('L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED', 'bool', 500);
+    const [dc2BusPowered] = useSimVar('L:A32NX_ELEC_DC_2_BUS_IS_POWERED', 'bool', 500);
     const [ac1BusPowered] = useSimVar('L:A32NX_ELEC_AC_1_BUS_IS_POWERED', 'bool', 500);
     const [ac2BusPowered] = useSimVar('L:A32NX_ELEC_AC_2_BUS_IS_POWERED', 'bool', 500);
     const emergencyGeneratorOn = emergencyElectricGeneratorPotential > 0 ? 1 : 0;
@@ -191,11 +192,13 @@ const PseudoFWC: React.FC = () => {
     // const aircraftOnGround = left1LandingGear === 1 || right1LandingGear === 1;
     // FIXME The landing gear triggers the dual engine failure on loading
     const aircraftOnGround = SimVar.GetSimVarValue('SIM ON GROUND', 'Bool');
-    const [landingGearDown] = useSimVar('GEAR HANDLE POSITION', 'bool', 500);
+    const [landingGearLeverDown] = useSimVar('GEAR HANDLE POSITION', 'bool', 500);
     const [landingLight2Retracted] = useSimVar('L:LANDING_2_Retracted', 'bool', 500);
     const [landingLight3Retracted] = useSimVar('L:LANDING_3_Retracted', 'bool', 500);
     const [autoBrakesArmedMode] = useSimVar('L:A32NX_AUTOBRAKES_ARMED_MODE', 'enum', 500);
     const [antiskidActive] = useSimVar('ANTISKID BRAKES ACTIVE', 'bool', 500);
+    const [lgciu1Fault] = useSimVar('L:A32NX_LGCIU_1_FAULT', 'bool', 500);
+    const [lgciu2Fault] = useSimVar('L:A32NX_LGCIU_2_FAULT', 'bool', 500);
 
     /* OTHER STUFF */
 
@@ -213,8 +216,15 @@ const PseudoFWC: React.FC = () => {
     const [autoBrake] = useSimVar('L:A32NX_AUTOBRAKES_ARMED_MODE', 'enum', 500);
     const [flapsHandle] = useSimVar('L:A32NX_FLAPS_HANDLE_INDEX', 'enum', 500);
     const [flapsIndex] = useSimVar('L:A32NX_FLAPS_CONF_INDEX', 'number', 100);
+
     const [slatsAngle] = useSimVar('L:A32NX_LEFT_SLATS_ANGLE', 'degrees', 100);
+    const slatsInfD = slatsAngle <= 17;
+    const slatsSupG = slatsAngle >= 25;
+
     const [flapsAngle] = useSimVar('L:A32NX_LEFT_FLAPS_ANGLE', 'degrees', 100);
+    const flapsInfA = flapsAngle <= 2;
+    const flapsSupF = flapsAngle >= 24;
+
     const [toconfig] = useSimVar('L:A32NX_TO_CONFIG_NORMAL', 'bool', 100);
 
     const [adirsRemainingAlignTime] = useSimVar('L:A32NX_ADIRS_REMAINING_IR_ALIGNMENT_TIME', 'seconds', 1000);
@@ -244,7 +254,8 @@ const PseudoFWC: React.FC = () => {
     const [flightPhaseInhibitOverride] = useSimVar('L:A32NX_FWC_INHIBOVRD', 'bool', 500);
     const [nwSteeringDisc] = useSimVar('L:A32NX_HYD_NW_STRG_DISC_ECAM_MEMO', 'bool', 500);
     const [predWSOn] = useSimVar('L:A32NX_SWITCH_RADAR_PWS_Position', 'bool', 1000);
-    const [gpwsOff] = useSimVar('L:A32NX_GPWS_TERR_OFF', 'bool', 500);
+    const [gpwsTerrOff] = useSimVar('L:A32NX_GPWS_TERR_OFF', 'bool', 500);
+    const [gpwsSysOff] = useSimVar('L:A32NX_GPWS_SYS_OFF', 'Bool');
     const [tcasMode] = useSimVar('L:A32NX_TCAS_MODE', 'enum', 500);
     const [tcasSensitivity] = useSimVar('L:A32NX_TCAS_SENSITIVITY', 'enum', 500);
     const [compMesgCount] = useSimVar('L:A32NX_COMPANY_MSG_COUNT', 'number', 500);
@@ -280,11 +291,13 @@ const PseudoFWC: React.FC = () => {
     const [eng1BleedPbFault] = useSimVar('L:A32NX_OVHD_PNEU_ENG_1_BLEED_PB_HAS_FAULT', 'bool', 500);
     const [eng2Bleed] = useSimVar('A:BLEED AIR ENGINE:2', 'bool', 100);
     const [eng2BleedPbFault] = useSimVar('L:A32NX_OVHD_PNEU_ENG_2_BLEED_PB_HAS_FAULT', 'bool', 500);
-    const [pack1Fault] = useSimVar('L:A32NX_AIRCOND_PACK1_FAULT', 'bool');
-    const [pack2Fault] = useSimVar('L:A32NX_AIRCOND_PACK2_FAULT', 'bool');
+    const [pack1Fault] = useSimVar('L:A32NX_OVHD_COND_PACK_1_PB_HAS_FAULT', 'bool');
+    const [pack2Fault] = useSimVar('L:A32NX_OVHD_COND_PACK_2_PB_HAS_FAULT', 'bool');
     const [pack1On] = useSimVar('L:A32NX_OVHD_COND_PACK_1_PB_IS_ON', 'bool');
     const [pack2On] = useSimVar('L:A32NX_OVHD_COND_PACK_2_PB_IS_ON', 'bool');
     const [excessPressure] = useSimVar('L:A32NX_PRESS_EXCESS_CAB_ALT', 'bool', 500);
+
+    const [voiceVHF3] = useSimVar('A:COM ACTIVE FREQUENCY:3', 'number', 500);
 
     /* WARNINGS AND FAILURES */
     const landASAPRed: boolean = !!(!aircraftOnGround
@@ -635,7 +648,7 @@ const PseudoFWC: React.FC = () => {
                 && toconfigFailed
             )
             || (
-                [3, 4, 5].includes(flightPhase) && (slatsAngle < 18 || slatsAngle > 22)
+                [3, 4, 5].includes(flightPhase) && (slatsInfD || slatsSupG)
             ),
             whichCodeToReturn: [0, 1],
             codesToReturn: ['270008501', '270008502'],
@@ -653,7 +666,7 @@ const PseudoFWC: React.FC = () => {
                 && toconfigFailed
             )
             || (
-                [3, 4, 5].includes(flightPhase) && (flapsAngle < 10 || flapsAngle > 20)
+                [3, 4, 5].includes(flightPhase) && (flapsInfA || flapsSupF)
             ),
             whichCodeToReturn: [0, 1],
             codesToReturn: ['270009001', '270009002'],
@@ -764,6 +777,36 @@ const PseudoFWC: React.FC = () => {
             simVarIsActive: antiskidActive === 0,
             whichCodeToReturn: [0, 1],
             codesToReturn: ['320006001', '320006002'],
+            memoInhibit: false,
+            failure: 2,
+            sysPage: 9,
+            side: 'LEFT',
+        },
+        3200180: { // LGCIU 1 FAULT
+            flightPhaseInhib: [3, 4, 5, 7, 8],
+            simVarIsActive: lgciu1Fault && !(lgciu1Fault && lgciu2Fault) && dcESSBusPowered,
+            whichCodeToReturn: [0, !gpwsSysOff ? 1 : null],
+            codesToReturn: ['320018001', '320018002'],
+            memoInhibit: false,
+            failure: 1,
+            sysPage: -1,
+            side: 'LEFT',
+        },
+        3200190: { // LGCIU 2 FAULT
+            flightPhaseInhib: [3, 4, 5, 7, 8],
+            simVarIsActive: lgciu2Fault && !(lgciu1Fault && lgciu2Fault) && dc2BusPowered,
+            whichCodeToReturn: [0],
+            codesToReturn: ['320019001'],
+            memoInhibit: false,
+            failure: 1,
+            sysPage: -1,
+            side: 'LEFT',
+        },
+        3200195: { // LGCIU 1+2 FAULT
+            flightPhaseInhib: [4, 5, 7, 8],
+            simVarIsActive: lgciu1Fault && lgciu2Fault && dc2BusPowered && dcESSBusPowered,
+            whichCodeToReturn: [0, 1, !gpwsSysOff ? 2 : null],
+            codesToReturn: ['320019501', '320019502', '320019503'],
             memoInhibit: false,
             failure: 2,
             sysPage: 9,
@@ -912,7 +955,7 @@ const PseudoFWC: React.FC = () => {
             flightPhaseInhib: [1, 2, 3, 4, 5, 9, 10],
             simVarIsActive: !!ldgmemo,
             whichCodeToReturn: [
-                landingGearDown === 1 ? 1 : 0,
+                landingGearLeverDown === 1 ? 1 : 0,
                 noSmokingSwitchPosition !== 2 && seatBelt === 1 ? 3 : 2,
                 cabinReady ? 5 : 4,
                 spoilersArmed ? 7 : 6,
@@ -1165,7 +1208,7 @@ const PseudoFWC: React.FC = () => {
         '0000545': // TERR OFF
         {
             flightPhaseInhib: [1, 10],
-            simVarIsActive: !!(gpwsOff === 1 && ![1, 10].includes(flightPhase)),
+            simVarIsActive: !!(gpwsTerrOff === 1 && ![1, 10].includes(flightPhase)),
             whichCodeToReturn: [[3, 4, 5, 7, 8, 9].includes(flightPhase) || toconfig === 1 ? 1 : 0],
             codesToReturn: ['000054501', '000054502'],
             memoInhibit: false,
@@ -1349,6 +1392,17 @@ const PseudoFWC: React.FC = () => {
             sysPage: -1,
             side: 'RIGHT',
         },
+        '0000567': // VHF3 VOICE
+        {
+            flightPhaseInhib: [],
+            simVarIsActive: voiceVHF3 !== 0 && [1, 2, 6, 9, 10].includes(flightPhase),
+            whichCodeToReturn: [0],
+            codesToReturn: ['000056701'],
+            memoInhibit: false,
+            failure: 0,
+            sysPage: -1,
+            side: 'RIGHT',
+        },
     };
 
     /* TO CONFIG */
@@ -1376,7 +1430,7 @@ const PseudoFWC: React.FC = () => {
     }, [
         engine1Generator, engine2Generator, blueLP, greenLP, yellowLP, eng1pumpPBisAuto, eng2pumpPBisAuto,
         flapsMcdu, flapsMcduEntered, speedBrake, parkBrake, v1Speed, vrSpeed, v2Speed, cabin,
-        catering, cargoaftLocked, cargofwdLocked, toconfigBtn,
+        catering, cargoaftLocked, cargofwdLocked, toconfigBtn, tomemo, flapsHandle, brakesHot,
     ]);
 
     useEffect(() => {
@@ -1390,12 +1444,20 @@ const PseudoFWC: React.FC = () => {
         let tempMemoArrayRight:string[] = [];
         const allFailureKeys: string[] = [];
         let tempFailureArrayLeft:string[] = [];
-        const failureKeysLeft: string[] = failuresLeft;
+        let failureKeysLeft: string[] = failuresLeft;
+        let recallFailureKeys: string[] = recallFailures;
         let tempFailureArrayRight:string[] = [];
         const failureKeysRight: string[] = failuresRight;
         let leftFailureSystemCount = 0;
         let rightFailureSystemCount = 0;
-
+        // Update failuresLeft list in case failure has been resolved
+        for (const [key, value] of Object.entries(EWDMessageFailures)) {
+            if (!value.simVarIsActive || value.flightPhaseInhib.some((e) => e === flightPhase)) {
+                failureKeysLeft = failureKeysLeft.filter((e) => e !== key);
+                recallFailureKeys = recallFailures.filter((e) => e !== key);
+            }
+        }
+        setRecallFailures(recallFailureKeys);
         // Failures first
         for (const [key, value] of Object.entries(EWDMessageFailures)) {
             if (value.simVarIsActive && !value.flightPhaseInhib.some((e) => e === flightPhase)) {
@@ -1403,7 +1465,7 @@ const PseudoFWC: React.FC = () => {
                     allFailureKeys.push(key);
                 }
 
-                if ((value.side === 'LEFT' && !failuresLeft.includes(key) && !recallFailures.includes(key)) || (value.side === 'RIGHT' && !failuresRight.includes(key))) {
+                if ((value.side === 'LEFT' && !failuresLeft.includes(key) && !recallFailureKeys.includes(key)) || (value.side === 'RIGHT' && !failuresRight.includes(key))) {
                     if (value.side === 'LEFT') {
                         failureKeysLeft.push(key);
                     } else {
@@ -1419,9 +1481,8 @@ const PseudoFWC: React.FC = () => {
                 } else if (![eng1FireTest, eng2FireTest, apuFireTest, cargoFireTest].every((e) => e === 0)) {
                     masterWarning(1);
                 }
-
                 const newCode: string[] = [];
-                if (!recallFailures.includes(key)) {
+                if (!recallFailureKeys.includes(key)) {
                     const codeIndex = value.whichCodeToReturn.filter((e) => e !== null);
                     codeIndex.forEach((e: number) => {
                         newCode.push(value.codesToReturn[e]);
@@ -1447,7 +1508,6 @@ const PseudoFWC: React.FC = () => {
         }
 
         const failLeft = tempFailureArrayLeft.length > 0;
-        // const failRight = tempFailureArrayRight.length > 0;
 
         const mesgFailOrderLeft: string[] = [];
         const mesgFailOrderRight: string[] = [];
@@ -1465,7 +1525,7 @@ const PseudoFWC: React.FC = () => {
         setFailuresLeft(failureKeysLeft);
         setFailuresRight(failureKeysRight);
 
-        if (failLeft) {
+        if (tempFailureArrayLeft.length > 0) {
             setMemoMessageLeft(orderedFailureArrayLeft);
         }
 
@@ -1565,6 +1625,7 @@ const PseudoFWC: React.FC = () => {
         compMesgCount,
         computedAirSpeedToNearest2,
         configPortableDevices,
+        dc2BusPowered,
         dcESSBusPowered,
         dmcSwitchingKnob,
         emergencyGeneratorOn,
@@ -1587,6 +1648,8 @@ const PseudoFWC: React.FC = () => {
         fireButton1,
         fireButton2,
         fireButtonAPU,
+        flapsInfA,
+        flapsSupF,
         flapsHandle,
         flapsIndex,
         flightPhase,
@@ -1596,7 +1659,7 @@ const PseudoFWC: React.FC = () => {
         fuelXFeedPBOn,
         gpwsFlapMode,
         gpwsFlaps3,
-        gpwsOff,
+        gpwsTerrOff,
         greenHydEng1PBAuto,
         height1Failed,
         height2Failed,
@@ -1611,6 +1674,8 @@ const PseudoFWC: React.FC = () => {
         landingLight3Retracted,
         ldgmemo,
         leftOuterInnerValve,
+        lgciu1Fault,
+        lgciu2Fault,
         manLandingElevation,
         ndXfrKnob,
         noSmoking,
@@ -1628,6 +1693,8 @@ const PseudoFWC: React.FC = () => {
         seatBelt,
         showTakeoffInhibit,
         showLandingInhibit,
+        slatsInfD,
+        slatsSupG,
         speedBrake,
         spoilersArmed,
         strobeLightsOn,
@@ -1643,6 +1710,7 @@ const PseudoFWC: React.FC = () => {
         unit,
         usrStartRefueling,
         wingAntiIce,
+        voiceVHF3,
     ]);
 
     useEffect(() => {
@@ -1666,6 +1734,10 @@ const PseudoFWC: React.FC = () => {
             });
         }
     }, [memoMessageRight]);
+
+    useEffect(() => {
+        SimVar.SetSimVarValue('L:A32NX_STATUS_LEFT_LINE_8', 'string', '000000001');
+    }, []);
 
     return null;
 };

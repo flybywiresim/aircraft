@@ -84,7 +84,6 @@ class CDUAtcOceanicReq {
 
     static ShowPage1(mcdu, store = CDUAtcOceanicReq.CreateDataBlock()) {
         mcdu.clearDisplay();
-        mcdu.page.Current = mcdu.page.ATCOceanicReq;
 
         let flightNo = "{white}-------{end}";
         let atcStation = "{white}----{end}";
@@ -136,9 +135,9 @@ class CDUAtcOceanicReq {
             (value) => {
                 mcdu.waypointType(mcdu, value).then((type) => {
                     if (type[0] === -1) {
-                        mcdu.addNewMessage(type[1]);
+                        mcdu.setScratchpadMessage(type[1]);
                     } else if (type[0] === 1) {
-                        mcdu.addNewMessage(NXSystemMessages.formatError);
+                        mcdu.setScratchpadMessage(NXSystemMessages.formatError);
                     } else {
                         store.entryPoint = value;
                         if (CDUAtcOceanicReq.WaypointOnRoute(mcdu, value)) {
@@ -167,8 +166,9 @@ class CDUAtcOceanicReq {
                 suffix: "[color]cyan",
                 maxLength: 3,
                 isValid: ((value) => {
-                    if (/^M*.[0-9]{1,2}$/.test(value)) {
-                        let number = parseInt(value.split('.')[1]);
+                    if (value && /^M*.[0-9]{1,2}$/.test(value)) {
+                        const split = value.split('.');
+                        let number = parseInt(split.length > 0 && split[1]);
                         if (number < 10) {
                             number *= 10;
                         }
@@ -178,12 +178,15 @@ class CDUAtcOceanicReq {
                 })
             },
             (value) => {
-                let number = parseInt(value.split('.')[1]);
-                if (number < 10) {
-                    number *= 10;
+                if (value) {
+                    const split = value.split('.');
+                    let number = parseInt(split.length > 0 && split[1]);
+                    if (number < 10) {
+                        number *= 10;
+                    }
+                    store.requestedMach = `M.${number}`;
+                    CDUAtcOceanicReq.ShowPage1(mcdu, store);
                 }
-                store.requestedMach = `M.${number}`;
-                CDUAtcOceanicReq.ShowPage1(mcdu, store);
             });
         const requestedFlightlevel = new CDU_SingleValueField(mcdu,
             "string",
@@ -245,9 +248,9 @@ class CDUAtcOceanicReq {
         }
 
         // check if all required information are available to prepare the PDC message
-        let reqDisplButton = "{cyan}REQ DISPL\xa0{end}";
+        let reqDisplButton = "{cyan}DCDU\xa0{end}";
         if (CDUAtcOceanicReq.CanSendData(mcdu, store)) {
-            reqDisplButton = "{cyan}REQ DISPL*{end}";
+            reqDisplButton = "{cyan}DCDU*{end}";
         }
 
         mcdu.setTemplate([
@@ -262,7 +265,7 @@ class CDUAtcOceanicReq {
             [freetext],
             ["", "MORE\xa0"],
             ["", "FREE TEXT>"],
-            ["\xa0ATC MENU", "{cyan}ATC OCEAN\xa0{end}"],
+            ["\xa0FLIGHT REQ", "{cyan}XFR TO\xa0{end}"],
             ["<RETURN", reqDisplButton]
         ]);
 
@@ -277,7 +280,7 @@ class CDUAtcOceanicReq {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[5] = () => {
-            CDUAtcMenu.ShowPage2(mcdu);
+            CDUAtcFlightReq.ShowPage(mcdu);
         };
 
         mcdu.rightInputDelay[5] = () => {
@@ -285,7 +288,7 @@ class CDUAtcOceanicReq {
         };
         mcdu.onRightInput[5] = () => {
             if (CDUAtcOceanicReq.CanSendData(mcdu, store)) {
-                mcdu.atsu.registerMessage(CDUAtcOceanicReq.CreateMessage(mcdu, store));
+                mcdu.atsu.registerMessages([CDUAtcOceanicReq.CreateMessage(mcdu, store)]);
                 CDUAtcOceanicReq.ShowPage1(mcdu);
             }
         };

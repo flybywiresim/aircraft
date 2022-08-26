@@ -1,0 +1,8 @@
+{
+  "rules": {
+    "max-len": "off"
+  },
+  "parserOptions": {
+    "warnOnUnsupportedTypeScriptVersion": false
+  }
+}

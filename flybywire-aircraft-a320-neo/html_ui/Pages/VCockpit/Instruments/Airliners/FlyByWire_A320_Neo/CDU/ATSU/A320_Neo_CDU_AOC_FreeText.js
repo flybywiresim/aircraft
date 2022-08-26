@@ -1,5 +1,5 @@
 class CDUAocFreeText {
-    static ShowPage(mcdu, store = { "msg_to": "", "reqID": 0, "msg_line1": "", "msg_line2": "", "msg_line3": "", "msg_line4": "", "sendStatus": ""}) {
+    static ShowPage(mcdu, store = { "msg_to": "", "reqID": SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') !== 0 ? 0 : 1, "msg_line1": "", "msg_line2": "", "msg_line3": "", "msg_line4": "", "sendStatus": ""}) {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.AOCFreeText;
         const networkTypes = [
@@ -104,7 +104,7 @@ class CDUAocFreeText {
             const sendValid = oneLineFilled === true && store["msg_to"] !== "";
 
             if (sendValid === false) {
-                mcdu.addNewMessage(NXSystemMessages.mandatoryFields);
+                mcdu.setScratchpadMessage(NXSystemMessages.mandatoryFields);
                 return;
             }
 

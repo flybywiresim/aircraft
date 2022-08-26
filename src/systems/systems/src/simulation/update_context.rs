@@ -11,7 +11,7 @@ use uom::si::{
 
 use super::{Read, SimulatorReader};
 use crate::{
-    shared::MachNumber,
+    shared::{low_pass_filter::LowPassFilter, MachNumber},
     simulation::{InitContext, VariableIdentifier},
 };
 use nalgebra::{Rotation3, Vector3};
@@ -144,6 +144,7 @@ impl Default for Velocity3D {
 /// for the purpose of handling a simulation tick.
 #[derive(Clone, Copy, Debug)]
 pub struct UpdateContext {
+    is_ready_id: VariableIdentifier,
     ambient_temperature_id: VariableIdentifier,
     indicated_airspeed_id: VariableIdentifier,
     true_airspeed_id: VariableIdentifier,
@@ -167,6 +168,8 @@ pub struct UpdateContext {
     mach_number_id: VariableIdentifier,
 
     delta: Delta,
+    simulation_time: f64,
+    is_ready: bool,
     indicated_airspeed: Velocity,
     true_airspeed: Velocity,
     indicated_altitude: Length,
@@ -174,7 +177,10 @@ pub struct UpdateContext {
     ambient_pressure: Pressure,
     is_on_ground: bool,
     vertical_speed: Velocity,
+
     local_acceleration: LocalAcceleration,
+    local_acceleration_plane_reference_filtered: LowPassFilter<Vector3<f64>>,
+
     world_ambient_wind: Velocity3D,
     local_relative_wind: Velocity3D,
     local_velocity: Velocity3D,
@@ -184,6 +190,7 @@ pub struct UpdateContext {
     true_heading: Angle,
 }
 impl UpdateContext {
+    pub(crate) const IS_READY_KEY: &'static str = "IS_READY";
     pub(crate) const AMBIENT_DENSITY_KEY: &'static str = "AMBIENT DENSITY";
     pub(crate) const AMBIENT_TEMPERATURE_KEY: &'static str = "AMBIENT TEMPERATURE";
     pub(crate) const INDICATED_AIRSPEED_KEY: &'static str = "AIRSPEED INDICATED";
@@ -206,12 +213,17 @@ impl UpdateContext {
     pub(crate) const LOCAL_LONGITUDINAL_SPEED_KEY: &'static str = "VELOCITY BODY Z";
     pub(crate) const LOCAL_VERTICAL_SPEED_KEY: &'static str = "VELOCITY BODY Y";
 
+    // Plane accelerations can become crazy with msfs collision handling.
+    // Having such filtering limits high frequencies transients in accelerations used for physics
+    const PLANE_ACCELERATION_FILTERING_TIME_CONSTANT: Duration = Duration::from_millis(400);
+
     #[deprecated(
         note = "Do not create UpdateContext directly. Instead use the SimulationTestBed or your own custom test bed."
     )]
     pub fn new(
         context: &mut InitContext,
         delta: Duration,
+        simulation_time: f64,
         indicated_airspeed: Velocity,
         true_airspeed: Velocity,
         indicated_altitude: Length,
@@ -225,6 +237,7 @@ impl UpdateContext {
         mach_number: MachNumber,
     ) -> UpdateContext {
         UpdateContext {
+            is_ready_id: context.get_identifier(Self::IS_READY_KEY.to_owned()),
             ambient_temperature_id: context
                 .get_identifier(Self::AMBIENT_TEMPERATURE_KEY.to_owned()),
             indicated_airspeed_id: context.get_identifier(Self::INDICATED_AIRSPEED_KEY.to_owned()),
@@ -252,6 +265,8 @@ impl UpdateContext {
             mach_number_id: context.get_identifier(Self::MACH_NUMBER_KEY.to_owned()),
 
             delta: delta.into(),
+            simulation_time,
+            is_ready: true,
             indicated_airspeed,
             true_airspeed,
             indicated_altitude,
@@ -264,6 +279,11 @@ impl UpdateContext {
                 vertical_acceleration,
                 longitudinal_acceleration,
             ),
+            local_acceleration_plane_reference_filtered:
+                LowPassFilter::<Vector3<f64>>::new_with_init_value(
+                    Self::PLANE_ACCELERATION_FILTERING_TIME_CONSTANT,
+                    Vector3::new(0., -9.8, 0.),
+                ),
             world_ambient_wind: Velocity3D::new(
                 Velocity::default(),
                 Velocity::default(),
@@ -288,6 +308,7 @@ impl UpdateContext {
 
     pub(super) fn new_for_simulation(context: &mut InitContext) -> UpdateContext {
         UpdateContext {
+            is_ready_id: context.get_identifier("IS_READY".to_owned()),
             ambient_temperature_id: context.get_identifier("AMBIENT TEMPERATURE".to_owned()),
             indicated_airspeed_id: context.get_identifier("AIRSPEED INDICATED".to_owned()),
             true_airspeed_id: context.get_identifier("AIRSPEED TRUE".to_owned()),
@@ -311,6 +332,8 @@ impl UpdateContext {
             mach_number_id: context.get_identifier("AIRSPEED MACH".to_owned()),
 
             delta: Default::default(),
+            simulation_time: Default::default(),
+            is_ready: Default::default(),
             indicated_airspeed: Default::default(),
             true_airspeed: Default::default(),
             indicated_altitude: Default::default(),
@@ -319,6 +342,13 @@ impl UpdateContext {
             is_on_ground: Default::default(),
             vertical_speed: Default::default(),
             local_acceleration: Default::default(),
+
+            local_acceleration_plane_reference_filtered:
+                LowPassFilter::<Vector3<f64>>::new_with_init_value(
+                    Self::PLANE_ACCELERATION_FILTERING_TIME_CONSTANT,
+                    Vector3::new(0., -9.8, 0.),
+                ),
+
             world_ambient_wind: Velocity3D::new(
                 Velocity::default(),
                 Velocity::default(),
@@ -342,7 +372,12 @@ impl UpdateContext {
     }
 
     /// Updates a context based on the data that was read from the simulator.
-    pub(super) fn update(&mut self, reader: &mut SimulatorReader, delta: Duration) {
+    pub(super) fn update(
+        &mut self,
+        reader: &mut SimulatorReader,
+        delta: Duration,
+        simulation_time: f64,
+    ) {
         self.ambient_temperature = reader.read(&self.ambient_temperature_id);
         self.indicated_airspeed = reader.read(&self.indicated_airspeed_id);
         self.true_airspeed = reader.read(&self.true_airspeed_id);
@@ -354,6 +389,8 @@ impl UpdateContext {
             Velocity::new::<foot_per_minute>(reader.read(&self.vertical_speed_id));
 
         self.delta = delta.into();
+        self.simulation_time = simulation_time;
+        self.is_ready = reader.read(&self.is_ready_id);
 
         self.local_acceleration = LocalAcceleration::new(
             reader.read(&self.accel_body_x_id),
@@ -385,6 +422,29 @@ impl UpdateContext {
         self.true_heading = reader.read(&self.plane_true_heading_id);
 
         self.update_relative_wind();
+
+        self.update_local_acceleration_plane_reference(delta);
+    }
+
+    // Computes local acceleration including world gravity and plane acceleration
+    // Note that this does not compute acceleration due to angular velocity of the plane
+    fn update_local_acceleration_plane_reference(&mut self, delta: Duration) {
+        let plane_acceleration_plane_reference = self.local_acceleration.to_ms2_vector();
+
+        let pitch_rotation = self.attitude().pitch_rotation_transform();
+
+        let bank_rotation = self.attitude().bank_rotation_transform();
+
+        let gravity_acceleration_world_reference = Vector3::new(0., -9.8, 0.);
+
+        // Total acceleration in plane reference is the gravity in world reference rotated to plane reference. To this we substract
+        // the local plane reference to get final local acceleration (if plane falling at 1G final local accel is 1G of gravity - 1G local accel = 0G)
+        let total_acceleration_plane_reference = (pitch_rotation
+            * (bank_rotation * gravity_acceleration_world_reference))
+            - plane_acceleration_plane_reference;
+
+        self.local_acceleration_plane_reference_filtered
+            .update(delta, total_acceleration_plane_reference);
     }
 
     /// Relative wind could be directly read from simvar RELATIVE WIND VELOCITY XYZ.
@@ -434,6 +494,18 @@ impl UpdateContext {
 
     pub fn delta_as_time(&self) -> Time {
         self.delta.into()
+    }
+
+    pub fn simulation_time(&self) -> f64 {
+        self.simulation_time
+    }
+
+    pub fn is_sim_ready(&self) -> bool {
+        self.simulation_time >= 2.0 && self.is_ready
+    }
+
+    pub fn is_sim_initialiazing(&self) -> bool {
+        self.simulation_time < 2.0 || !self.is_ready
     }
 
     pub fn indicated_airspeed(&self) -> Velocity {
@@ -490,6 +562,10 @@ impl UpdateContext {
 
     pub fn acceleration(&self) -> LocalAcceleration {
         self.local_acceleration
+    }
+
+    pub fn acceleration_plane_reference_filtered_ms2_vector(&self) -> Vector3<f64> {
+        self.local_acceleration_plane_reference_filtered.output()
     }
 
     pub fn pitch(&self) -> Angle {

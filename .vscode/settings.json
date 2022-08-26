@@ -9,7 +9,7 @@
     "editor.formatOnSave": true
   },
   "[json]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.defaultFormatter": "vscode.json-language-features",
     "editor.formatOnSave": true
   },
   "[javascript]": {
@@ -49,4 +49,13 @@
   },
   "typescript.preferences.quoteStyle": "single",
   "typescript.preferences.importModuleSpecifier": "non-relative"
+  ,
+  "emeraldwalk.runonsave": {
+    "commands": [
+           {
+               "match": "\\.rs$",
+               "cmd": "cargo fmt"
+           }
+    ]
+}
 }
