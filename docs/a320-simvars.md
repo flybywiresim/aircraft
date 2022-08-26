@@ -875,6 +875,10 @@
     - Useful for home cockpits that use the sim's built-in pop-out feature and do not wish to have these effects present
       on their displays.
 
+- A32NX_FO_SYNC_EFIS_ENABLED
+    - Bool
+    - 1 to sync the status of FD and LS buttons between CPT and FO sides
+
 - A32NX_HYD_{loop_name}_EPUMP_LOW_PRESS
     - Bool
     - Electric pump of {loop_name} hydraulic circuit is active but pressure is too low
