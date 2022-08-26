@@ -298,25 +298,24 @@
 1. [HYD] Adjusted droop characteristics and randomness of surfaces actuators - @Crocket63
 1. [PFD] Reimplement PFD with msfs-avionics framework for improved performance - @saschl (saschl#9432)
 1. [GPWS] Mute "100 above" callout during autoland - @patmack14 (Patrick Macken)
-2. [MCDU] Refactored mcdu key input events - @derl30n - (Leon)
-3. [AUTOTHRUST] Added configuration option to allow change of key increment size - @aguther (Andreas Guther)
-4. [FLIGHTMODEL] Start fuel transfer for both tanks when EITHER inner tank reaches the trigger level - @donstim (
-   donbikes#4084)
-5. [FMGC] Add lat/lon waypoint ident option - @tracernz (Mike)
-6. [HYD] PTU model refinement and simulated potential wear state probabilities - @Crocket63
-7. [HYD] Reduced engine driven pumps efficiency in active regulation area - @Crocket63
-8. [FMGC] Implemented Airport Button - @patmack14 (Patrick Macken)
-9.  [RMP] Fixed colour of SEL indicator - @tracernz (Mike)
-10. [MISC] Added custom Autobrake event for SimConnect - @aguther (Andreas Guther)
-11. [EWD] Fixed failures not re-triggering when resolved - @tricky_dicky (Richard Pilbery)
-12. [SOUND] Prevent autopilot disconnect from sounding on C+D spawn - @tricky_dicky (Richard Pilbery) and @saschl (saschl#9432)
-13. [FMGC] Removed flight phase transition from TAKEOFF to PREFLIGHT - @beheh (Benedict Etzel)
-14. [FMGC] Added flight phase transition to DONE when on ground > 30 s and engines off - @aguther (Andreas Guther)
-15. [ATSU] Add FANS-C simulation for CPDLC - @Sven [de en] - (Sven Czarnian)
-16. [ATSU] Add VDL3-simulation of datalink transport protocol - @Sven [de en] - (Sven Czarnian)
-17. [FMGC] Improve robustness of ILS auto-tuning - @tracernz (Mike)
-18. [OVHD] Fixed fire push button not being able to be stowed - Julian Sebline (Julian Sebline#8476 on Discord)
-19. [MCDU] Support coroute loading and viewing - @lucky38i (Alex)
+1. [MCDU] Refactored mcdu key input events - @derl30n - (Leon)
+1. [AUTOTHRUST] Added configuration option to allow change of key increment size - @aguther (Andreas Guther)
+1. [FLIGHTMODEL] Start fuel transfer for both tanks when EITHER inner tank reaches the trigger level - @donstim (donbikes#4084)
+1. [FMGC] Add lat/lon waypoint ident option - @tracernz (Mike)
+1. [HYD] PTU model refinement and simulated potential wear state probabilities - @Crocket63
+1. [HYD] Reduced engine driven pumps efficiency in active regulation area - @Crocket63
+1. [FMGC] Implemented Airport Button - @patmack14 (Patrick Macken)
+1.  [RMP] Fixed colour of SEL indicator - @tracernz (Mike)
+1.  [MISC] Added custom Autobrake event for SimConnect - @aguther (Andreas Guther)
+1.  [EWD] Fixed failures not re-triggering when resolved - @tricky_dicky (Richard Pilbery)
+1.  [SOUND] Prevent autopilot disconnect from sounding on C+D spawn - @tricky_dicky (Richard Pilbery) and @saschl (saschl#9432)
+1.  [FMGC] Removed flight phase transition from TAKEOFF to PREFLIGHT - @beheh (Benedict Etzel)
+1.  [FMGC] Added flight phase transition to DONE when on ground > 30 s and engines off - @aguther (Andreas Guther)
+1.  [ATSU] Add FANS-C simulation for CPDLC - @Sven [de en] - (Sven Czarnian)
+1. [ATSU] Add VDL3-simulation of datalink transport protocol - @Sven [de en] - (Sven Czarnian)
+1. [FMGC] Improve robustness of ILS auto-tuning - @tracernz (Mike)
+1. [OVHD] Fixed fire push button not being able to be stowed - Julian Sebline (Julian Sebline#8476 on Discord)
+1. [MCDU] Support coroute loading and viewing - @lucky38i (Alex)
 
 ## 0.7.0
 

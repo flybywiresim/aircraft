@@ -12,7 +12,6 @@
 /flybywire-aircraft-a320-neo/html_ui/JS/atsu/
 /flybywire-aircraft-a320-neo/html_ui/JS/fmgc/
 /flybywire-aircraft-a320-neo/html_ui/JS/sentry-client/
-/flybywire-aircraft-a320-neo/html_ui/JS/local-api-client/
 /flybywire-aircraft-a320-neo/html_ui/JS/tcas/
 /flybywire-aircraft-a320-neo/html_ui/JS/simbridge-client/
 /flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/*
@@ -48,7 +47,6 @@ node_modules
 /src/sound/.cache
 /src/instruments/aceBundles
 /src/instruments/src/EFB/dist
-/src/local-api
 /src/instruments/buildSrc/custom/*
 /src/autothrottle/target
 /flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/model/*.gltf
@@ -70,9 +68,6 @@ node_modules
 .env
 src/instruments/buildSrc/custom/*
 /flybywire-aircraft-a320-neo/MCDU SERVER/
-/flybywire-aircraft-a320-neo/server/
-/flyByWire-aircraft-a320-neo/resources
-/flyByWire-aircraft-a320-neo/*.exe
 /src/mcdu-server/client/build
 !/flybywire-aircraft-a320-neo/CORS SERVER/*
 /flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/TEXTURE/A320NEO_COCKPIT_DECALSTEXT_ALBD.TIF.dds

@@ -222,6 +222,36 @@ const addLatLonWaypoint = async (mcdu, lat, lon) => {
     }
 };
 
+/**
+ * Inserts the located company route's origin, destination and if provided alternate.
+ * @param {FMCMainDisplay} mcdu
+ */
+const insertCoRoute = async (mcdu) => {
+    const {
+        originIcao,
+        destinationIcao,
+        alternateIcao,
+    } = mcdu.coRoute;
+
+    const fromTo = `${originIcao}/${destinationIcao}`;
+
+    mcdu.tryUpdateFromTo(fromTo, async (result) => {
+        if (result) {
+            CDUPerformancePage.UpdateThrRedAccFromOrigin(mcdu);
+            CDUPerformancePage.UpdateEngOutAccFromOrigin(mcdu);
+
+            if (alternateIcao) {
+                await mcdu.tryUpdateAltDestination(alternateIcao);
+            }
+
+            await uplinkRoute(mcdu, true);
+            if (mcdu.page.Current === mcdu.page.InitPageA) {
+                CDUInitPage.ShowPage1(mcdu);
+            }
+        }
+    });
+};
+
 const uplinkRoute = async (mcdu, coroute = false) => {
     const {navlog} = coroute ? mcdu.coRoute : mcdu.simbrief;
 

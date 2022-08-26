@@ -123,12 +123,12 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.socket = undefined;
         this.socketConnectionAttempts = 0;
         this.maxConnectionAttempts = 60;
-        this.mcduServerConnect = NXDataStore.get("CONFIG_LOCAL_API_ENABLED", 'AUTO ON');
-        if (this.mcduServerConnect !== 'PERM OFF') {
-            NXDataStore.set("CONFIG_LOCAL_API_ENABLED", 'AUTO ON');
-            this.mcduServerConnect = 'AUTO ON';
+        this.simbridgeConnect = NXDataStore.get("CONFIG_SIMBRIDGE_ENABLED", 'AUTO ON');
+        if (this.simbridgeConnect !== 'PERM OFF') {
+            NXDataStore.set("CONFIG_SIMBRIDGE_ENABLED", 'AUTO ON');
+            this.simbridgeConnect = 'AUTO ON';
         } else {
-            console.log("MCDU server connection attempts permanently deactivated.");
+            console.log("SimBridge connection attempts permanently deactivated.");
         }
     }
 
@@ -255,7 +255,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             }
         }
 
-        // The MCDU is a client to the MCDU Server and tries to connect in regular intervals.
+        // The MCDU is a client to Simbridge and tries to connect in regular intervals.
         // Due to an issue with the sim's Coherent engine we need to avoid trying
         // to connect the websocket continuously. The below solution based on an EFB setting
         // and a maximal number of attempts should mitigate the issue until
@@ -264,20 +264,20 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             && this.getGameState() === GameState.ingame) {
 
             // Try to connect websocket if enabled in EFB and no connection established
-            this.mcduServerConnect = NXDataStore.get("CONFIG_LOCAL_API_ENABLED", 'AUTO ON');
-            if (this.mcduServerConnect === 'AUTO ON' && (!this.socket || this.socket.readyState !== 1)) {
+            this.simbridgeConnect = NXDataStore.get("CONFIG_SIMBRIDGE_ENABLED", 'AUTO ON');
+            if (this.simbridgeConnect === 'AUTO ON' && (!this.socket || this.socket.readyState !== 1)) {
                 // We try to connect for a fixed amount of attempts, then we deactivate the connection setting
                 if (this.socketConnectionAttempts++ >= this.maxConnectionAttempts) {
-                    console.log("Maximum number of connection attempts to MCDU Server exceeded. No more attempts.");
-                    NXDataStore.set("CONFIG_LOCAL_API_ENABLED", 'AUTO OFF');
+                    console.log("Maximum number of connection attempts to Simbridge exceeded. No more attempts.");
+                    NXDataStore.set("CONFIG_SIMBRIDGE_ENABLED", 'AUTO OFF');
                     this.socketConnectionAttempts = 0;
                 } else {
-                    console.log(`Attempting MCDU Server connection ${this.socketConnectionAttempts} of ${this.maxConnectionAttempts} attempts.`);
-                    this.connectWebsocket(NXDataStore.get("CONFIG_LOCAL_API_PORT", "8380"));
+                    console.log(`Attempting Simbridge connection ${this.socketConnectionAttempts} of ${this.maxConnectionAttempts} attempts.`);
+                    this.connectWebsocket(NXDataStore.get("CONFIG_SIMBRIDGE_PORT", "8380"));
                 }
-            } else if (this.mcduServerConnect !== 'AUTO ON') {
+            } else if (this.simbridgeConnect !== 'AUTO ON') {
                 if (this.socketConnectionAttempts > 0) {
-                    console.log("MCDU server connection attempts deactivated. No more attempts.");
+                    console.log("Simbridge connection attempts deactivated. No more attempts.");
                     this.socketConnectionAttempts = 0;
                 }
                 if (this.socket) {
@@ -302,8 +302,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             }
         }
 
-        this.checkFplanModified();
-
         // TODO these other mechanisms are replaced in the MCDU split PR
         if (this.pageUpdate) {
             this.pageUpdate();
@@ -313,13 +311,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
 
     /* MCDU UPDATE */
-
-    /**
-     * Checks if the flight plan manager has been modified to then clear the coRoute field in INIT A
-     */
-    checkFplanModified() {
-        //TODO
-    }
 
     /**
      * Checks whether INIT page B is open and an engine is being started, if so:
@@ -1196,7 +1187,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     /* WEBSOCKET */
 
     /**
-     * Attempts to connect to a local websocket server
+     * Attempts to connect to simbridge
      */
     connectWebsocket(port) {
 
@@ -1210,7 +1201,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             this.socket = undefined;
         }
 
-        const url = `ws://127.0.0.1:${port}/interfaces/mcdu`;
+        const url = `ws://127.0.0.1:${port}/interfaces/v1/mcdu`.replace(/\s+/g, '');
 
         this.socket = new WebSocket(url);
 
@@ -1220,7 +1211,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             if (this.socketConnectionAttempts > 0) {
                 return;
             }
-            console.log(`WebSocket connection error. Maybe MCDU Server disconnected? (${url})`);
+            console.log(`WebSocket connection error. Maybe SimBridge disconnected? (${url})`);
         };
 
         this.socket.onclose = () => {
@@ -1229,12 +1220,12 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             if (this.socketConnectionAttempts > 0) {
                 return;
             }
-            console.log(`Websocket connection to MCDU Server closed. (${url})`);
+            console.log(`Websocket connection to SimBridge closed. (${url})`);
         };
 
         this.socket.onopen = () => {
-            console.log(`Websocket connection to MCDU Server established. (${url})`);
-            (new NXNotifManager).showNotification({title: "MCDU CONNECTED", message: "Successfully connected to MCDU server.", timeout: 5000});
+            console.log(`Websocket connection to SimBridge established. (${url})`);
+            (new NXNotifManager).showNotification({title: "MCDU CONNECTED", message: "Successfully connected to SimBridge.", timeout: 5000});
             this.sendToSocket("mcduConnected");
             this.sendUpdate();
             this.socketConnectionAttempts = 0;

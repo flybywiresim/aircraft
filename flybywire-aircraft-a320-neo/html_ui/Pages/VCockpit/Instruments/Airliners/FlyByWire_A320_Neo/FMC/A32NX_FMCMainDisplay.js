@@ -2403,16 +2403,26 @@ class FMCMainDisplay extends BaseAirliners {
         });
     }
 
-    updateCoRoute(coRoute, callback = EmptyCallback.Boolean) {
-        if (coRoute.length > 2 && (coRoute !== FMCMainDisplay.clrValue)) {
-            if (coRoute.length < 10) {
-                if (coRoute === "NONE") {
+    updateCoRoute(coRouteNum, callback = EmptyCallback.Boolean) {
+        if (coRouteNum.length > 2 && (coRouteNum !== FMCMainDisplay.clrValue)) {
+            if (coRouteNum.length < 10) {
+                if (coRouteNum === "NONE") {
                     this.coRoute = { routeNumber: undefined};
                 } else {
-                    getCoRoute(this, coRoute, () => {}).then((success) => {
+                    SimBridgeClient.CompanyRoute.getCoRoute(coRouteNum).then((success, data) => {
                         if (success) {
+                            this.coRoute["originIcao"] = data.origin.icao_code;
+                            this.coRoute["destinationIcao"] = data.destination.icao_code;
+                            this.coRoute["route"] = data.general.route;
+                            if (data.alternate) {
+                                this.coRoute["alternateIcao"] = data.alternate.icao_code;
+                            }
+                            this.coRoute["navlog"] = data.navlog.fix;
+
                             insertCoRoute(this);
-                            this.coRoute["routeNumber"] = coRoute;
+                            this.coRoute["routeNumber"] = coRouteNum;
+                        } else {
+                            this.addNewMessage(NXSystemMessages.notInDatabase);
                         }
                     });
                 }
@@ -2421,6 +2431,27 @@ class FMCMainDisplay extends BaseAirliners {
         }
         this.setScratchpadMessage(NXSystemMessages.notAllowed);
         return callback(false);
+    }
+
+    getRouteList() {
+        const origin = this.flightPlanManager.getOrigin().ident;
+        const dest = this.flightPlanManager.getDestination().ident;
+        SimBridgeClient.CompanyRoute.getRouteList(origin, dest).then((success, data) => {
+            if (success) {
+                data.forEach((route => {
+                    this.coRoute.routes.push({
+                        originIcao: route.origin.icao_code,
+                        destinationIcao: route.origin.icao_code,
+                        alternateIcao: route.alternate ? route.alternate : undefined,
+                        route: route.general.route,
+                        navlog: route.navlog.fix,
+                        routeName: route.name
+                    });
+                }));
+            } else {
+                this.addNewMessage(NXSystemMessages.notInDatabase);
+            }
+        });
     }
 
     getTotalTripTime() {
