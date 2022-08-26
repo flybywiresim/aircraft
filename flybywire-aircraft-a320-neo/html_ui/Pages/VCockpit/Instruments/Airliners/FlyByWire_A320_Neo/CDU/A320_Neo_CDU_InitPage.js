@@ -16,8 +16,8 @@ class CDUInitPage {
                 suffix: "[color]cyan",
                 maxLength: 10,
             },
-            (value) => {
-                mcdu.updateCoRoute(value, (result) => {
+            async (value) => {
+                await mcdu.updateCoRoute(value, (result) => {
                     if (result) {
                         CDUInitPage.ShowPage1(mcdu);
                     } else {
@@ -70,9 +70,6 @@ class CDUInitPage {
         if (mcdu.flightPlanManager.getPersistentOrigin() && mcdu.flightPlanManager.getPersistentOrigin().ident) {
             if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
                 fromTo.update(mcdu.flightPlanManager.getPersistentOrigin().ident + "/" + mcdu.flightPlanManager.getDestination().ident, Column.cyan);
-                if (coRoute.raw.includes("__________")) {
-                    coRoute.text = "";
-                }
 
                 // If an active SimBrief OFP matches the FP, hide the request option
                 // This allows loading a new OFP via INIT/REVIEW loading a different orig/dest to the current one
@@ -201,7 +198,7 @@ class CDUInitPage {
                 });
             } else if (mcdu.flightPlanManager.getPersistentOrigin() && mcdu.flightPlanManager.getPersistentOrigin().ident) {
                 if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
-                    mcdu.getRouteList(mcdu).then(() => {
+                    mcdu.getCoRouteList(mcdu).then(() => {
                         CDUAvailableFlightPlanPage.ShowPage(mcdu);
                     });
                 }

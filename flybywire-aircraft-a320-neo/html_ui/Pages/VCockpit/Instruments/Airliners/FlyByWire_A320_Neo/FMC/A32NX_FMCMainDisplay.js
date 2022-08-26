@@ -1900,14 +1900,14 @@ class FMCMainDisplay extends BaseAirliners {
                                 this.flightPlanManager.setOrigin(airportFrom.icao, () => {
                                     this.tmpOrigin = airportFrom.ident;
                                     this.setGroundTempFromOrigin();
-                                    this.flightPlanManager.setDestination(airportTo.icao, () => {
+                                    this.flightPlanManager.setDestination(airportTo.icao, async () => {
                                         this.flightPlanManager.getWaypoint(0).endsInDiscontinuity = true;
                                         this.flightPlanManager.getWaypoint(0).discontinuityCanBeCleared = true;
                                         this.tmpOrigin = airportTo.ident;
                                         SimVar.SetSimVarValue("L:FLIGHTPLAN_USE_DECEL_WAYPOINT", "number", 1);
-                                        getRouteList(this).then(() => {
-                                            callback(true);
-                                        });
+
+                                        await this.getCoRouteList();
+                                        callback(true);
                                     }).catch(console.error);
                                 }).catch(console.error);
                             }).catch(console.error);
@@ -2403,13 +2403,14 @@ class FMCMainDisplay extends BaseAirliners {
         });
     }
 
-    updateCoRoute(coRouteNum, callback = EmptyCallback.Boolean) {
-        if (coRouteNum.length > 2 && (coRouteNum !== FMCMainDisplay.clrValue)) {
-            if (coRouteNum.length < 10) {
-                if (coRouteNum === "NONE") {
-                    this.coRoute = { routeNumber: undefined};
-                } else {
-                    SimBridgeClient.CompanyRoute.getCoRoute(coRouteNum).then((success, data) => {
+    async updateCoRoute(coRouteNum, callback = EmptyCallback.Boolean) {
+        try {
+            if (coRouteNum.length > 2 && (coRouteNum !== FMCMainDisplay.clrValue)) {
+                if (coRouteNum.length < 10) {
+                    if (coRouteNum === "NONE") {
+                        this.coRoute = { routeNumber: undefined};
+                    } else {
+                        const {success, data} = await SimBridgeClient.CompanyRoute.getCoRoute(coRouteNum);
                         if (success) {
                             this.coRoute["originIcao"] = data.origin.icao_code;
                             this.coRoute["destinationIcao"] = data.destination.icao_code;
@@ -2422,36 +2423,47 @@ class FMCMainDisplay extends BaseAirliners {
                             insertCoRoute(this);
                             this.coRoute["routeNumber"] = coRouteNum;
                         } else {
-                            this.addNewMessage(NXSystemMessages.notInDatabase);
+                            this.setScratchpadMessage(NXSystemMessages.notInDatabase);
                         }
-                    });
+                    }
+                    return callback(true);
                 }
-                return callback(true);
             }
+            this.setScratchpadMessage(NXSystemMessages.notAllowed);
+            return callback(false);
+        } catch (error) {
+            console.error(`Error retrieving coroute from SimBridge ${error}`);
+            this.setScratchpadMessage(NXFictionalMessages.unknownDownlinkErr);
+            return callback(false);
         }
-        this.setScratchpadMessage(NXSystemMessages.notAllowed);
-        return callback(false);
     }
 
-    getRouteList() {
-        const origin = this.flightPlanManager.getOrigin().ident;
-        const dest = this.flightPlanManager.getDestination().ident;
-        SimBridgeClient.CompanyRoute.getRouteList(origin, dest).then((success, data) => {
+    async getCoRouteList() {
+        try {
+            const origin = this.flightPlanManager.getOrigin().ident;
+            const dest = this.flightPlanManager.getDestination().ident;
+            const {success, data} = await SimBridgeClient.CompanyRoute.getRouteList(origin, dest);
+
             if (success) {
                 data.forEach((route => {
+                    console.log(route);
                     this.coRoute.routes.push({
                         originIcao: route.origin.icao_code,
-                        destinationIcao: route.origin.icao_code,
+                        destinationIcao: route.destination.icao_code,
                         alternateIcao: route.alternate ? route.alternate : undefined,
                         route: route.general.route,
                         navlog: route.navlog.fix,
                         routeName: route.name
                     });
                 }));
+                console.log(`inside getRouteList`);
+                console.log(this.coRoute);
             } else {
-                this.addNewMessage(NXSystemMessages.notInDatabase);
+                this.setScratchpadMessage(NXSystemMessages.notInDatabase);
             }
-        });
+        } catch (error) {
+            console.error(`Error retrieving coroute list ${error}`);
+        }
     }
 
     getTotalTripTime() {
