@@ -64,6 +64,7 @@
 1. [EFB] Added Payload Loading to EFB - @2hwk (2Cas#1022)
 1. [MODEL] Remove blue highlights in lock mode - @tracernz (Mike)
 1. [RMP] Fixed the behavior of the RMPs and ACPs (VHFs only) - Julian Sebline (Julian Sebline#8476 on Discord)
+1. [PFD] Added option to sync FD/LS buttons between CPT and FO - @Eagle941 (Joe)
 
 ## 0.8.0
 
