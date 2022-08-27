@@ -11,7 +11,7 @@ import { SelectInput } from '../../UtilComponents/Form/SelectInput/SelectInput';
 import { t } from '../../translation';
 import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
-import { AlertModal, PromptModal, useModals } from '../../UtilComponents/Modals/Modals';
+import { PromptModal, useModals } from '../../UtilComponents/Modals/Modals';
 import { TooltipWrapper } from '../../UtilComponents/TooltipWrapper';
 
 export const LightPresets = () => {
@@ -96,8 +96,6 @@ type AutoLoadConfigurationProps = {
 }
 
 const AutoLoadConfiguration = (props: AutoLoadConfigurationProps) => {
-    const { showModal } = useModals();
-
     const [autoLoadPreset, setAutoLoadPreset] = usePersistentNumberProperty('LIGHT_PRESET_AUTOLOAD', 0);
 
     // State for persistent copy of autoload preset IDs
@@ -116,15 +114,6 @@ const AutoLoadConfiguration = (props: AutoLoadConfigurationProps) => {
         return options;
     };
 
-    const showAutoLoadHelp = () => {
-        showModal(
-            <AlertModal
-                title={t('Presets.InteriorLighting.AutoLoadLightingHelpTitle')}
-                bodyText={t('Presets.InteriorLighting.AutoLoadLightingHelp')}
-            />,
-        );
-    };
-
     useEffect(() => {
         setPresetSelectionOptions(generatePresetSelectionOptions());
     }, []);
@@ -140,12 +129,6 @@ const AutoLoadConfiguration = (props: AutoLoadConfigurationProps) => {
                     {t('Presets.InteriorLighting.AutoLoadLightingPreset')}
                 </div>
                 <Toggle value={!!autoLoadPreset} onToggle={(value) => (setAutoLoadPreset(value ? 1 : 0))} />
-                <div
-                    className="py-1 px-4 ml-auto rounded-md border bg-theme-accent border-theme-accent hover:bg-theme-highlight"
-                    onClick={() => showAutoLoadHelp()}
-                >
-                    ?
-                </div>
             </div>
             <div className="flex flex-row justify-start items-center mt-3 space-x-4">
                 <div>{t('Presets.InteriorLighting.AutoLoadDay')}</div>
