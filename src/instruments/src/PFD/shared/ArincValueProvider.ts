@@ -16,7 +16,7 @@ export interface Arinc429Values {
     chosenRa: Arinc429Word;
     fpa: Arinc429Word;
     da: Arinc429Word;
-
+    landingElevation: Arinc429Word;
 }
 export class ArincValueProvider {
     private roll = new Arinc429Word(0);
@@ -46,6 +46,10 @@ export class ArincValueProvider {
     private fpa = new Arinc429Word(0);
 
     private da = new Arinc429Word(0);
+
+    private ownLandingElevation = new Arinc429Word(0);
+
+    private oppLandingElevation = new Arinc429Word(0);
 
     constructor(private readonly bus: EventBus) {
 
@@ -134,6 +138,42 @@ export class ArincValueProvider {
             this.da = new Arinc429Word(da);
             publisher.pub('da', this.da);
         });
+
+        subscriber.on('landingElevation1').handle((elevation) => {
+            if (getDisplayIndex() === 1) {
+                this.ownLandingElevation.value = elevation;
+            } else {
+                this.oppLandingElevation.value = elevation;
+            }
+            this.determineAndPublishChosenLandingElevation(publisher);
+        });
+
+        subscriber.on('landingElevation1Ssm').handle((ssm) => {
+            if (getDisplayIndex() === 1) {
+                this.ownLandingElevation.ssm = ssm as any;
+            } else {
+                this.oppLandingElevation.ssm = ssm as any;
+            }
+            this.determineAndPublishChosenLandingElevation(publisher);
+        });
+
+        subscriber.on('landingElevation1').handle((elevation) => {
+            if (getDisplayIndex() === 1) {
+                this.oppLandingElevation.value = elevation;
+            } else {
+                this.ownLandingElevation.value = elevation;
+            }
+            this.determineAndPublishChosenLandingElevation(publisher);
+        });
+
+        subscriber.on('landingElevation1Ssm').handle((ssm) => {
+            if (getDisplayIndex() === 1) {
+                this.oppLandingElevation.ssm = ssm as any;
+            } else {
+                this.ownLandingElevation.ssm = ssm as any;
+            }
+            this.determineAndPublishChosenLandingElevation(publisher);
+        });
     }
 
     private determineAndPublishChosenRadioAltitude(publisher: Publisher<Arinc429Values>) {
@@ -147,5 +187,18 @@ export class ArincValueProvider {
         ) ? this.oppRadioAltitude : this.ownRadioAltitude;
 
         publisher.pub('chosenRa', chosenRadioAltitude);
+    }
+
+    private determineAndPublishChosenLandingElevation(publisher: Publisher<Arinc429Values>) {
+        const useOpposite = (this.ownLandingElevation.isFailureWarning()
+            || this.ownLandingElevation.isNoComputedData())
+            && !this.oppLandingElevation.isFailureWarning()
+            && !this.oppLandingElevation.isNoComputedData();
+
+        if (useOpposite) {
+            publisher.pub('landingElevation', this.oppLandingElevation);
+        } else {
+            publisher.pub('landingElevation', this.ownLandingElevation);
+        }
     }
 }

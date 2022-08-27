@@ -478,6 +478,7 @@
       "PauseAtTod": "השהה לפני הנמכת גובה (T/D)",
       "PauseAtTodDistance": "מרחק מהשהייה לפני הנמכה",
       "SeparateTillerFromRudderInputs": "היגוי גלגל האף נפרד מהפדלים",
+      "SyncEfis": "Sync EFIS controls between Captain and FO",
       "Title": "מציאותיות"
     },
     "SimOptions": {
