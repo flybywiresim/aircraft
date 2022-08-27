@@ -101,7 +101,7 @@ export const SimOptionsPage = () => {
                     </SettingItem>
 
                     <SettingItem name={t('Settings.SimOptions.DynamicRegistrationDecal')}>
-                        <Toggle value={dynamicRegistration === 'ENABLED'} onToggle={(value) => setDynamicRegistration(value ? 'ENABLED' : 'DISABLED')} />
+                        <Toggle value={dynamicRegistration === '1'} onToggle={(value) => setDynamicRegistration(value ? '1' : '0')} />
                     </SettingItem>
 
                     <SettingItem name={t('Settings.SimOptions.UseCalculatedIlsSignals')}>
