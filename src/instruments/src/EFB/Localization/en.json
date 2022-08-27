@@ -577,8 +577,8 @@
     "Sep": "Sep",
     "Sun": "Sun",
     "TT": {
-      "ConnectedToLocalApi": "Connected to Local API",
-      "DisconnectedFromLocalApi": "Disconnected from Local API",
+      "ConnectedToLocalApi": "Connected to SimBridge",
+      "DisconnectedFromLocalApi": "Disconnected from SimBridge",
       "TurnOffOrShutdownEfb": "Turn off or Shutdown EFB"
     },
     "Thu": "Thu",
