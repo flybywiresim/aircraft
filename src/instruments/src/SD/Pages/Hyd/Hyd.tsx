@@ -9,6 +9,8 @@ import '../../Common/CommonStyles.scss';
 
 setIsEcamPage('hyd_page');
 
+const litersPerGallon = 3.79;
+
 export const HydPage = () => {
     // The FADEC SimVars include a test for the fire button.
     const [Eng1N2] = useSimVar('TURB ENG N2:1', 'Percent', 1000);
@@ -245,7 +247,7 @@ const HydReservoir = ({ system, x, y, lowLevel } : HydReservoirProps) => {
 
     const [lowAirPress] = useSimVar(`L:A32NX_HYD_${system}_RESERVOIR_AIR_PRESSURE_IS_LOW`, 'boolean', 1000);
 
-    const fluidLevelInLitres = fluidLevel * 3.79;
+    const fluidLevelInLitres = fluidLevel * litersPerGallon;
 
     const values = levels.filter((item) => item.system === system);
     const litersPerPixel = 121 / values[0].max;
@@ -358,8 +360,6 @@ const shouldTransferActivate = (
     if (transferDirection === TransferState.None) {
         return false;
     }
-
-    const litersPerGallon = 3.79;
 
     return lowerPressureSystemPumpLowPress
         && (transferDirection === TransferState.GreenToYellow && !yellowElecPumpOn || transferDirection === TransferState.YellowToGreen)
