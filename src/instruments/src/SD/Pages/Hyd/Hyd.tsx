@@ -11,6 +11,12 @@ setIsEcamPage('hyd_page');
 
 const litersPerGallon = 3.79;
 
+enum HydSystem {
+    GREEN = 'GREEN',
+    BLUE = 'BLUE',
+    YELLOW = 'YELLOW',
+}
+
 export const HydPage = () => {
     // The FADEC SimVars include a test for the fire button.
     const [Eng1N2] = useSimVar('TURB ENG N2:1', 'Percent', 1000);
@@ -58,7 +64,7 @@ export const HydPage = () => {
                 <text className={`${engine2Running ? '' : 'Amber '}Title`} x="562" y="404">2</text>
 
                 <HydSys
-                    title="GREEN"
+                    system={HydSystem.GREEN}
                     pressure={greenPressure}
                     x={136}
                     y={65}
@@ -66,7 +72,7 @@ export const HydPage = () => {
                     pumpPBStatus={greenPumpPBStatus}
                 />
                 <HydSys
-                    title="BLUE"
+                    system={HydSystem.BLUE}
                     pressure={bluePressure}
                     x={383}
                     y={65}
@@ -74,7 +80,7 @@ export const HydPage = () => {
                     pumpPBStatus={bluePumpPBStatus && bluePumpActive}
                 />
                 <HydSys
-                    title="YELLOW"
+                    system={HydSystem.YELLOW}
                     pressure={yellowPressure}
                     x={630}
                     y={65}
@@ -134,7 +140,7 @@ const RAT = ({ x, y }: RATProps) => {
 };
 
 type HydSysProps = {
-    title: string,
+    system: HydSystem,
     pressure: number,
     x: number,
     y: number,
@@ -142,19 +148,19 @@ type HydSysProps = {
     pumpPBStatus: boolean,
 }
 
-const HydSys = ({ title, pressure, x, y, fireValve, pumpPBStatus } : HydSysProps) => {
+const HydSys = ({ system, pressure, x, y, fireValve, pumpPBStatus } : HydSysProps) => {
     const lowPressure = 1450;
     const pressureNearest50 = Math.round(pressure / 50) * 50 >= 100 ? Math.round(pressure / 50) * 50 : 0;
 
-    const [pumpPressurisedSwitch] = useSimVar(`L:A32NX_HYD_${title}_PUMP_1_SECTION_PRESSURE_SWITCH`, 'boolean', 500);
-    const [systemPressurisedSwitch] = useSimVar(`L:A32NX_HYD_${title}_SYSTEM_1_SECTION_PRESSURE_SWITCH`, 'boolean', 500);
+    const [pumpPressurisedSwitch] = useSimVar(`L:A32NX_HYD_${system}_PUMP_1_SECTION_PRESSURE_SWITCH`, 'boolean', 500);
+    const [systemPressurisedSwitch] = useSimVar(`L:A32NX_HYD_${system}_SYSTEM_1_SECTION_PRESSURE_SWITCH`, 'boolean', 500);
 
-    const [reservoirLowQuantitySwitch] = useSimVar(`L:A32NX_HYD_${title}_RESERVOIR_LEVEL_IS_LOW`, 'boolean', 500);
+    const [reservoirLowQuantitySwitch] = useSimVar(`L:A32NX_HYD_${system}_RESERVOIR_LEVEL_IS_LOW`, 'boolean', 500);
 
     let hydTitleXPos: number;
-    if (title === 'GREEN') {
+    if (system === HydSystem.GREEN) {
         hydTitleXPos = -2;
-    } else if (title === 'BLUE') {
+    } else if (system === HydSystem.BLUE) {
         hydTitleXPos = 1;
     } else {
         hydTitleXPos = 3;
@@ -163,29 +169,29 @@ const HydSys = ({ title, pressure, x, y, fireValve, pumpPBStatus } : HydSysProps
     return (
         <SvgGroup x={x} y={y}>
             <Triangle x={0} y={0} colour={!systemPressurisedSwitch ? 'Amber' : 'Green'} fill={0} orientation={0} />
-            <text className={`Huge Center${!systemPressurisedSwitch ? ' Amber' : ''}`} x={hydTitleXPos} y={50}>{title}</text>
+            <text className={`Huge Center${!systemPressurisedSwitch ? ' Amber' : ''}`} x={hydTitleXPos} y={50}>{system}</text>
             <text className={`Huge Center ${pressureNearest50 <= lowPressure ? 'Amber' : 'Green'}`} x={1} y={92}>{pressureNearest50}</text>
 
-            <line className={pressureNearest50 <= lowPressure ? 'AmberLine' : 'GreenLine'} x1={0} y1={title === 'BLUE' ? 217 : 151} x2={0} y2={103} />
+            <line className={pressureNearest50 <= lowPressure ? 'AmberLine' : 'GreenLine'} x1={0} y1={system === HydSystem.BLUE ? 217 : 151} x2={0} y2={103} />
 
             <HydEngPump
-                system={title}
+                system={system}
                 pumpOn={pumpPBStatus}
                 x={0}
-                y={title === 'BLUE' ? 370 : 303}
+                y={system === HydSystem.BLUE ? 370 : 303}
                 pumpSwitchLowPressure={!pumpPressurisedSwitch}
             />
             {
-                title !== 'BLUE' && <HydEngValve x={0} y={372} fireValve={fireValve} lowLevel={reservoirLowQuantitySwitch} />
+                system !== HydSystem.BLUE && <HydEngValve x={0} y={372} fireValve={fireValve} lowLevel={reservoirLowQuantitySwitch} />
             }
             {/* Reservoir */}
-            <HydReservoir system={title} x={0} y={576} lowLevel={reservoirLowQuantitySwitch} />
+            <HydReservoir system={system} x={0} y={576} lowLevel={reservoirLowQuantitySwitch} />
         </SvgGroup>
     );
 };
 
 type HydEngPumpProps = {
-    system: string,
+    system: HydSystem,
     pumpOn: boolean,
     x: number,
     y: number,
@@ -194,9 +200,9 @@ type HydEngPumpProps = {
 
 const HydEngPump = ({ system, pumpOn, x, y, pumpSwitchLowPressure } : HydEngPumpProps) => {
     let pumpLineYUpper: number;
-    if (system === 'GREEN') {
+    if (system === HydSystem.GREEN) {
         pumpLineYUpper = -151;
-    } else if (system === 'BLUE') {
+    } else if (system === HydSystem.BLUE) {
         pumpLineYUpper = -153;
     } else {
         pumpLineYUpper = -84;
@@ -229,14 +235,16 @@ const HydEngValve = ({ x, y, fireValve, lowLevel } : HydEngValveProps) => (
     </SvgGroup>
 );
 
-const levels = [
-    { system: 'GREEN', max: 14.5, low: 3.5, norm: 2.6 },
-    { system: 'BLUE', max: 6.5, low: 2.4, norm: 1.6 },
-    { system: 'YELLOW', max: 12.5, low: 3.5, norm: 2.6 },
-];
+type Levels = {max: number, low: number, norm: number};
+
+const levels = {
+    GREEN: { max: 14.5, low: 3.5, norm: 2.6 } as Levels,
+    BLUE: { max: 6.5, low: 2.4, norm: 1.6 } as Levels,
+    YELLOW: { max: 12.5, low: 3.5, norm: 2.6 } as Levels,
+};
 
 type HydReservoirProps = {
-    system: string,
+    system: HydSystem,
     x: number,
     y: number,
     lowLevel: boolean,
@@ -249,17 +257,17 @@ const HydReservoir = ({ system, x, y, lowLevel } : HydReservoirProps) => {
 
     const fluidLevelInLitres = fluidLevel * litersPerGallon;
 
-    const values = levels.filter((item) => item.system === system);
-    const litersPerPixel = 121 / values[0].max;
-    const reserveHeight = (litersPerPixel * values[0].low);
+    const values = levels[system];
+    const litersPerPixel = 121 / values.max;
+    const reserveHeight = (litersPerPixel * values.low);
     const upperReserve = -reserveHeight;
-    const lowerNorm = -121 + (litersPerPixel * values[0].norm);
-    const fluidLevelPerPixel = 121 / values[0].max;
+    const lowerNorm = -121 + (litersPerPixel * values.norm);
+    const fluidLevelPerPixel = 121 / values.max;
     const fluidHeight = -(fluidLevelPerPixel * fluidLevelInLitres);
 
     return (
         <SvgGroup x={x} y={y}>
-            <line className={lowLevel ? 'AmberLine' : 'GreenLine'} x1={0} y1={-121} x2={0} y2={system === 'BLUE' ? -205 : -161} />
+            <line className={lowLevel ? 'AmberLine' : 'GreenLine'} x1={0} y1={-121} x2={0} y2={system === HydSystem.BLUE ? -205 : -161} />
             <line className={lowLevel ? 'AmberLine' : 'WhiteLine'} x1={0} y1={upperReserve.toFixed(0)} x2={0} y2={-121} />
             <line className="GreenLine" x1={0} y1={-121} x2={6} y2={-121} />
             <line className="GreenLine" x1={6} y1={lowerNorm.toFixed(0)} x2={6} y2={-121} />
