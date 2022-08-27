@@ -428,9 +428,9 @@ const PTU = ({ x, y, yellowPressure, greenPressure, yellowPumpLowPressure, green
     }, [ptuControlValveOff]);
 
     const triangleFill = transferState !== TransferState.None ? 1 : 0;
-    const triangle1Orintation = transferState !== TransferState.GreenToYellow ? -90 : 90;
-    const triangle2Orintation = transferState !== TransferState.GreenToYellow ? -90 : 90;
-    const triangle3Orintation = transferState !== TransferState.YellowToGreen ? 90 : -90;
+    const triangle1Orientation = transferState !== TransferState.GreenToYellow ? -90 : 90;
+    const triangle2Orientation = transferState !== TransferState.GreenToYellow ? -90 : 90;
+    const triangle3Orientation = transferState !== TransferState.YellowToGreen ? 90 : -90;
 
     console.log(transferState);
 
@@ -442,9 +442,9 @@ const PTU = ({ x, y, yellowPressure, greenPressure, yellowPumpLowPressure, green
             <line id="ptu4" className={`${transferColor}Line`} x1={20} y1={0} x2={56} y2={0} />
             <line id="ptu5" className={`${transferState === TransferState.None ? 'Hide ' : ''}${transferColor}Line`} x1={177} y1={0} x2={246} y2={0} />
             <text className="Large" x={92} y={10}>PTU</text>
-            <Triangle scale={4 / 3} x={triangle1Orintation < 0 ? -131 : -107} y={0} colour={transferColor} fill={triangleFill} orientation={triangle1Orintation} />
-            <Triangle scale={4 / 3} x={triangle2Orintation > 0 ? 80 : 56} y={0} colour={transferColor} fill={triangleFill} orientation={triangle2Orintation} />
-            <Triangle scale={4 / 3} x={triangle3Orintation > 0 ? 177 : 153} y={0} colour={transferColor} fill={triangleFill} orientation={triangle3Orintation} />
+            <Triangle scale={4 / 3} x={triangle1Orientation < 0 ? -131 : -107} y={0} colour={transferColor} fill={triangleFill} orientation={triangle1Orientation} />
+            <Triangle scale={4 / 3} x={triangle2Orientation > 0 ? 80 : 56} y={0} colour={transferColor} fill={triangleFill} orientation={triangle2Orientation} />
+            <Triangle scale={4 / 3} x={triangle3Orientation > 0 ? 177 : 153} y={0} colour={transferColor} fill={triangleFill} orientation={triangle3Orientation} />
         </SvgGroup>
     );
 };
