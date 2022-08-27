@@ -84,14 +84,15 @@ export const LightPresets = () => {
                         />
                     ))}
                 </div>
-                <AutoLoadConfiguration namesMap={namesMap} />
+                <AutoLoadConfiguration namesMap={namesMap} storedNames={storedNames} />
             </ScrollableContainer>
         </div>
     );
 };
 
 type AutoLoadConfigurationProps = {
-    namesMap: Map<number, string>
+    namesMap: Map<number, string>,
+    storedNames: string
 }
 
 const AutoLoadConfiguration = (props: AutoLoadConfigurationProps) => {
@@ -130,7 +131,7 @@ const AutoLoadConfiguration = (props: AutoLoadConfigurationProps) => {
 
     useEffect(() => {
         setPresetSelectionOptions(generatePresetSelectionOptions());
-    }, [props.namesMap]);
+    }, [props.namesMap, props.storedNames]);
 
     return (
         <div className="py-2 px-4 mt-2 rounded-md border-2 border-theme-accent">
