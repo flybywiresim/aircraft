@@ -368,7 +368,6 @@ const shouldTransferActivate = (
 };
 
 const PTU = ({ x, y, yellowPressure, greenPressure, yellowPumpLowPressure, greenPumpLowPressure, yellowQuantity, greenQuantity, ptuControlValveOff, yellowElecPumpOn } : PTUProps) => {
-    const [transferColor, setTransferColor] = useState(TransferColor.Green);
     const [transferState, setTransferState] = useState(TransferState.None);
 
     useEffect(() => {
@@ -418,21 +417,18 @@ const PTU = ({ x, y, yellowPressure, greenPressure, yellowPumpLowPressure, green
         }
     }, [yellowPressure, greenPressure, yellowPumpLowPressure, greenPumpLowPressure, yellowQuantity, greenQuantity, ptuControlValveOff, yellowElecPumpOn]);
 
-    useEffect(() => {
-        // Should also be amber if PTU fault
-        if (ptuControlValveOff) {
-            setTransferColor(TransferColor.Amber);
-        } else {
-            setTransferColor(TransferColor.Green);
-        }
-    }, [ptuControlValveOff]);
+    // Should also be amber if PTU fault
+    let transferColor: TransferColor;
+    if (ptuControlValveOff) {
+        transferColor = TransferColor.Amber;
+    } else {
+        transferColor = TransferColor.Green;
+    }
 
     const triangleFill = transferState !== TransferState.None ? 1 : 0;
     const triangle1Orientation = transferState !== TransferState.GreenToYellow ? -90 : 90;
     const triangle2Orientation = transferState !== TransferState.GreenToYellow ? -90 : 90;
     const triangle3Orientation = transferState !== TransferState.YellowToGreen ? 90 : -90;
-
-    console.log(transferState);
 
     return (
         <SvgGroup x={x} y={y}>
