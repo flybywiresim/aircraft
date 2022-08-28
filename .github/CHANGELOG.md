@@ -66,6 +66,7 @@
 1. [MODEL] Remove blue highlights in lock mode - @tracernz (Mike)
 1. [RMP] Fixed the behavior of the RMPs and ACPs (VHFs only) - Julian Sebline (Julian Sebline#8476 on Discord)
 1. [PFD] Added option to sync FD/LS buttons between CPT and FO - @Eagle941 (Joe)
+1. [EFB] Add automatic loading of a lighting preset - @SpiritZephyr (Ben)
 
 ## 0.8.0
 
