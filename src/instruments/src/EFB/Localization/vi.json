@@ -127,7 +127,7 @@
       "RightInnerTank": "Bình phía phải trong cùng",
       "RightOuterTank": "Bình phía phải ngoài cùng",
       "TT": {
-        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "Máy bay phải ở trong chế độ Cold and Dark để thay đổi thời gian tiếp nhiên liệu",
+        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "Máy bay phải ở trên mặt đất và động cơ phải được tắt để thay đổi thời gian tiếp nhiên liệu",
         "FillBlockFuelFromSimBrief": "Nạp nhiên liệu từ SimBrief"
       },
       "Title": "Nhiên liệu",
@@ -445,7 +445,7 @@
       "SimBriefUsernamePilotId": "Tên người dùng SimBrief/ID Pilot",
       "TafSource": "Nguồn TAF",
       "Telex": "TELEX",
-      "TelexEnablesFreeTextAndLiveMap": "TELEX cho phép nhắn tin miễn phí và bản đồ trực tiếp. Nếu được kích hoạt, dữ liệu vị trí máy bay được công bố trong suốt thời gian của chuyến bay. Tin nhắn được công khai và không được kiểm duyệt. BẠN PHẢI TỰ CHỊU TRÁCH NGHIỆM KHI DÙNG TÍNH NĂNG NÀY. Để tìm hiểu thêm về TELEX và các tính năng mà nó cho phép, vui lòng truy cập https://docs.flybywiresim.com/telex.",
+      "TelexEnablesFreeTextAndLiveMap": "TELEX cho phép nhắn tin miễn phí và đồng thời bật bản đồ trực tiếp. Nếu được kích hoạt, dữ liệu vị trí máy bay được công bố trong suốt thời gian của chuyến bay. Tin nhắn được công khai và không được kiểm duyệt. BẠN TỰ CHỊU MỌI RỦI RO KHI SỬ DỤNG TÍNH NĂNG NÀY. Để tìm hiểu thêm về TELEX và các tính năng mà nó cho phép, vui lòng truy cập https://docs.flybywiresim.com/telex.",
       "TelexWarning": "Cảnh báo TELEX",
       "ThereWasAnErrorEncounteredWhenValidatingYourHoppieID": "Có lỗi xảy ra trong khi xác nhận ID Hoppie của bạn",
       "Title": "ATSU / AOC",
@@ -478,6 +478,7 @@
       "PauseAtTod": "Dừng tại điểm hạ độ cao",
       "PauseAtTodDistance": "Khoảng cách dừng từ điểm hạ độ cao (nm)",
       "SeparateTillerFromRudderInputs": "Tách rời Điều Khiển Bánh Mũi với Bàn Đạp",
+      "SyncEfis": "Sync EFIS controls between Captain and FO",
       "Title": "Mức thực tế"
     },
     "SimOptions": {

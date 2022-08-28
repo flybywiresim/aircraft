@@ -478,6 +478,7 @@
       "PauseAtTod": "T/D Pause",
       "PauseAtTodDistance": "T/D Pause Distance (nm)",
       "SeparateTillerFromRudderInputs": "रडर इनपुट्स से अलग टिलर",
+      "SyncEfis": "Sync EFIS controls between Captain and FO",
       "Title": "यथार्थवाद"
     },
     "SimOptions": {

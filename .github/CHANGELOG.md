@@ -33,6 +33,7 @@
 1. [SD] Improve F/CTL and WHEEL SD pages visuals - @lukecologne (luke)
 1. [MCDU] Added formatter to improve text alignment and ease integration - @derl30n (Leon)
 1. [EFB] Fix default unit to match UI and other consumers - @tracernz (Mike)
+1. [HYD] Added possibility to lock or limit hydraulic actuators velocity - @Crocket63 (crocket)
 1. [HYD] Added a new THS mechanism simulation - @Crocket63 (crocket)
 1. [HYD] More prox sensors and gear actuator failures - @Crocket63 (crocket)
 1. [MCDU] Added 4:3 aspect ratio compatibility to remote mcdu client - @tyler58546 (tyler58546)
@@ -56,12 +57,15 @@
 1. [FMGC] Fix inbound leg time for holds - @tracernz (Mike)
 1. [MCDU] Improved visuals of Init-A and Init-B page - @derl30n (Leon)
 1. [MODEL] Added new animated gear gravity extension handle- @tyler58546 (tyler58546), @MoreRightRudder (Mike), @Crocket63 (crocket), @Lantarius
+1. [HYD] Randomised per actuator flow restrictions at plane init - @Crocket63 (crocket)
 1. [MCDU] Hide stored elements on A/C Status when there are none - @tracernz (Mike)
 1. [FMGC] Fix ident for CD legs - @tracernz (Mike)
 1. [HYD] Refactor plane accelerations and added filtering to handle ground collisions - @Crocket63 (crocket)
 1. [FMGC] Improve procedure loading performance - @tracernz (Mike)
 1. [EFB] Added Payload Loading to EFB - @2hwk (2Cas#1022)
 1. [MODEL] Remove blue highlights in lock mode - @tracernz (Mike)
+1. [RMP] Fixed the behavior of the RMPs and ACPs (VHFs only) - Julian Sebline (Julian Sebline#8476 on Discord)
+1. [PFD] Added option to sync FD/LS buttons between CPT and FO - @Eagle941 (Joe)
 
 ## 0.8.0
 
@@ -312,6 +316,7 @@
 1. [ATSU] Add FANS-C simulation for CPDLC - @Sven [de en] - (Sven Czarnian)
 1. [ATSU] Add VDL3-simulation of datalink transport protocol - @Sven [de en] - (Sven Czarnian)
 1. [FMGC] Improve robustness of ILS auto-tuning - @tracernz (Mike)
+1. [OVHD] Fixed fire push button not being able to be stowed - Julian Sebline (Julian Sebline#8476 on Discord)
 
 ## 0.7.0
 
@@ -1094,5 +1099,4 @@
 1. [MISC] Standby Instrument stays ON if emergency power should be available, bug fixes - @2hwk (2Cas#1022 on discord)
 1. [CDU] Full +/- button functionality - @lhoenig (Lukas Hoenig)
 1. [DCDU] Fixed MSG- and MSG+ button labels - @tyler58546 (tyler58546)
-1. [OVHD] Fixed fire push button not being able to be stowed - Julian Sebline (Julian Sebline#8476 on Discord)
 1. [ISIS] Fixed issue where ISIS was allowing a bug to be set while in the OFF state - Patrick Macken (@Pat M on Discord)
