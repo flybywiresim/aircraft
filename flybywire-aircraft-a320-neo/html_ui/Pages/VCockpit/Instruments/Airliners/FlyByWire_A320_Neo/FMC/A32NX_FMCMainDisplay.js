@@ -183,6 +183,11 @@ class FMCMainDisplay extends BaseAirliners {
         this.efisSymbols = undefined;
         this.groundTempAuto = undefined;
         this.groundTempPilot = undefined;
+        /**
+         * Landing elevation in feet MSL.
+         * This is the destination runway threshold elevation, or airport elevation if runway is not selected.
+         */
+        this.landingElevation = undefined;
 
         // ATSU data
         this.atsu = undefined;
@@ -521,6 +526,8 @@ class FMCMainDisplay extends BaseAirliners {
         this.speedLimitExceeded = false;
         this.groundTempAuto = undefined;
         this.groundTempPilot = undefined;
+        this.landingElevation = undefined;
+
         this.onAirport = () => { };
 
         if (this.navigation) {
@@ -601,6 +608,7 @@ class FMCMainDisplay extends BaseAirliners {
 
         if (flightPlanChanged) {
             this.updateManagedProfile();
+            this.updateLandingElevation();
         }
 
         this.updateAutopilot();
@@ -1525,6 +1533,45 @@ class FMCMainDisplay extends BaseAirliners {
         }
     }
 
+    async updateLandingElevation() {
+        let landingElevation;
+
+        /** @type {OneWayRunway} */
+        const runway = this.flightPlanManager.getDestinationRunway(FlightPlans.Active);
+        if (runway) {
+            landingElevation = A32NX_Util.meterToFeet(runway.thresholdElevation);
+        } else {
+            const airport = this.flightPlanManager.getDestination(FlightPlans.Active);
+            if (airport) {
+                const ele = await this.facilityLoader.GetAirportFieldElevation(airport.icao);
+                landingElevation = isFinite(ele) ? ele : undefined;
+            }
+        }
+
+        if (this.landingElevation !== landingElevation) {
+            this.landingElevation = landingElevation;
+
+            const ssm = landingElevation !== undefined ? Arinc429Word.SignStatusMatrix.NormalOperation : Arinc429Word.SignStatusMatrix.NoComputedData;
+
+            this.setBnrArincSimVar('LANDING_ELEVATION', landingElevation ? landingElevation : 0, ssm, 14, 16384, -2048);
+            // FIXME CPCs should use the FM ARINC vars, and transmit their own vars as well
+            SimVar.SetSimVarValue("L:A32NX_PRESS_AUTO_LANDING_ELEVATION", "feet", landingElevation ? landingElevation : 0);
+        }
+    }
+
+    async setBnrArincSimVar(name, value, ssm, bits, rangeMax, rangeMin = 0) {
+        const quantum = Math.max(Math.abs(rangeMin), rangeMax) / 2 ** bits;
+        const data = Math.max(rangeMin, Math.min(rangeMax, Math.round(value / quantum) * quantum));
+
+        // TODO change our ARINC429 format so JS can write it, then drop the SSM simvars
+        return Promise.all([
+            SimVar.SetSimVarValue(`L:A32NX_FM1_${name}`, "number", data),
+            SimVar.SetSimVarValue(`L:A32NX_FM1_${name}_SSM`, "number", ssm),
+            SimVar.SetSimVarValue(`L:A32NX_FM2_${name}`, "number", data),
+            SimVar.SetSimVarValue(`L:A32NX_FM2_${name}_SSM`, "number", ssm),
+        ]);
+    }
+
     getClbManagedSpeedFromCostIndex() {
         const dCI = (this.costIndex / 999) ** 2;
         return 290 * (1 - dCI) + 330 * dCI;
@@ -2214,13 +2261,6 @@ class FMCMainDisplay extends BaseAirliners {
         //console.log("FMCMainDisplay: setApproachIndex = ", approachIndex);
         this.ensureCurrentFlightPlanIsTemporary(() => {
             this.flightPlanManager.setApproachIndex(approachIndex, () => {
-                const approach = this.flightPlanManager.getApproach();
-                if (approach) {
-                    const runway = this.flightPlanManager.getDestinationRunway();
-                    if (runway) {
-                        SimVar.SetSimVarValue("L:A32NX_PRESS_AUTO_LANDING_ELEVATION", "feet", A32NX_Util.meterToFeet(runway.elevation));
-                    }
-                }
                 this.tempFpPendingAutoTune = true;
                 callback(true);
             }).catch(console.error);
