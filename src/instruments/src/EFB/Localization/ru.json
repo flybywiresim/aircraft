@@ -478,6 +478,7 @@
       "PauseAtTod": "Т/Д Пауза",
       "PauseAtTodDistance": "Расстояние паузы Т/Д (нм)",
       "SeparateTillerFromRudderInputs": "Отдельный румпель от входов руля",
+      "SyncEfis": "Sync EFIS controls between Captain and FO",
       "Title": "Реализм"
     },
     "SimOptions": {

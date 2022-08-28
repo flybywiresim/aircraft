@@ -112,27 +112,6 @@
     "Title": "Failures"
   },
   "Ground": {
-    "Payload": {
-      "Passengers": "Passengers",
-      "Cargo": "Cargo",
-      "ZFW": "ZFW",
-      "ZFWCG": "ZFWCG",
-      "Planned": "Planned",
-      "Current": "Current",
-      "BoardingTime": "Boarding Time",
-      "Title": "Payload",
-      "TT": {
-        "MaxPassengers": "Maximum Passengers",
-        "MaxCargo": "Maximum Cargo",
-        "MaxZFW": "Maximum ZFW",
-        "MaxZFWCG": "Maximum ZFWCG",
-        "PerPaxWeight": "Per Passenger Weight",
-        "PerPaxBagWeight": "Per Passenger Bag Weight",
-        "FillPayloadFromSimbrief": "Fill Payload Information from Simbrief",
-        "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Aircraft Must Be On the Ground and Have Engines Shutdown to Change Boarding Duration",
-        "StartBoarding": "Begin Boarding"
-      }
-    },
     "Fuel": {
       "CenterTank": "Center Tank",
       "Completed": "Completed",
@@ -499,6 +478,7 @@
       "PauseAtTod": "T/D Pause",
       "PauseAtTodDistance": "T/D Pause Distance (nm)",
       "SeparateTillerFromRudderInputs": "Separate Tiller from Rudder Inputs",
+      "SyncEfis": "Sync EFIS controls between Captain and FO",
       "Title": "Realism"
     },
     "SimOptions": {
