@@ -149,7 +149,7 @@ pub enum ProximityDetectorId {
     DownlockDoorRight2,
 }
 
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Clone, Copy, PartialEq, Debug)]
 pub enum GearActuatorId {
     GearNose,
     GearDoorNose,
@@ -189,6 +189,12 @@ pub trait EngineStartState {
 
 pub trait EngineBleedPushbutton {
     fn engine_bleed_pushbuttons_are_auto(&self) -> [bool; 2];
+}
+
+pub trait PackFlowValveState {
+    // Pack id is 1 or 2
+    fn pack_flow_valve_open_amount(&self, pack_id: usize) -> Ratio;
+    fn pack_flow_valve_air_flow(&self, pack_id: usize) -> MassRate;
 }
 
 pub trait GroundSpeed {

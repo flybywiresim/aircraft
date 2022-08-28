@@ -276,7 +276,8 @@
     <Template Name="FBW_AIRLINER_Audio_Panel_Template">
         <DefaultTemplateParameters>
             <ID>1</ID>
-            <VOLUME_INCREMENT>0.03</VOLUME_INCREMENT>
+            <VOLUME_INCREMENT>0.04</VOLUME_INCREMENT>
+            <VOLUME_INCREMENT_HARD>0.01</VOLUME_INCREMENT_HARD>
             <PREFIX>AIRLINER</PREFIX>
             <SEQ1_POWERED>1</SEQ1_POWERED>
         </DefaultTemplateParameters>
@@ -338,6 +339,7 @@
         <UseTemplate Name="FBW_Anim_Interactions">
             <ANIM_TYPE>BUTTON</ANIM_TYPE>
             <ANIM_TEMPLATE>FBW_AIRLINER_Audio_Volume_Knob_Template</ANIM_TEMPLATE>
+            <SEQ1_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool) (L:A32NX_RMP_#SIDE#_TOGGLE_SWITCH, bool) and</SEQ1_POWERED>
             <NODE_ID>#NODE_ID_RECEIVER_VHF_L#</NODE_ID>
             <NODE_ID_LIGHT>#NODE_ID_LIGHT_RECEIVER_VHF_L#</NODE_ID_LIGHT>
             <ANIM_NAME_KNOB>#ANIM_NAME_KNOB_RECEIVER_VHF_L#</ANIM_NAME_KNOB>
@@ -348,8 +350,6 @@
             <NODE_ID_BUTTON_SEQ1>#NODE_ID_BUTTON_SEQ1_VHF_L#</NODE_ID_BUTTON_SEQ1>
             <NODE_ID_BUTTON_SEQ2>#NODE_ID_BUTTON_SEQ2_VHF_L#</NODE_ID_BUTTON_SEQ2>
             <FREQ_ID>VHF_L</FREQ_ID>
-            <Radio_ID>1</Radio_ID>
-            <Button_ID>1</Button_ID>
             <TRANSMIT_ID>0</TRANSMIT_ID>
             <TOOLTIP_LEFT>TT:COCKPIT.TOOLTIPS.TRANSMITTER_VHF_L_VOLUME_DEC</TOOLTIP_LEFT>
             <TOOLTIP_RIGHT>TT:COCKPIT.TOOLTIPS.TRANSMITTER_VHF_L_VOLUME_INC</TOOLTIP_RIGHT>
@@ -359,6 +359,7 @@
         <UseTemplate Name="FBW_Anim_Interactions">
             <ANIM_TYPE>BUTTON</ANIM_TYPE>
             <ANIM_TEMPLATE>FBW_AIRLINER_Audio_Volume_Knob_Template</ANIM_TEMPLATE>
+            <SEQ1_POWERED>(L:A32NX_ELEC_DC_2_BUS_IS_POWERED, Bool) (L:A32NX_RMP_#SIDE#_TOGGLE_SWITCH, bool) and</SEQ1_POWERED>
             <NODE_ID>#NODE_ID_RECEIVER_VHF_C#</NODE_ID>
             <NODE_ID_LIGHT>#NODE_ID_LIGHT_RECEIVER_VHF_C#</NODE_ID_LIGHT>
             <ANIM_NAME_KNOB>#ANIM_NAME_KNOB_RECEIVER_VHF_C#</ANIM_NAME_KNOB>
@@ -369,8 +370,6 @@
             <NODE_ID_BUTTON_SEQ1>#NODE_ID_BUTTON_SEQ1_VHF_C#</NODE_ID_BUTTON_SEQ1>
             <NODE_ID_BUTTON_SEQ2>#NODE_ID_BUTTON_SEQ2_VHF_C#</NODE_ID_BUTTON_SEQ2>
             <FREQ_ID>VHF_C</FREQ_ID>
-            <Radio_ID>2</Radio_ID>
-            <Button_ID>2</Button_ID>
             <TRANSMIT_ID>1</TRANSMIT_ID>
             <TOOLTIP_LEFT>TT:COCKPIT.TOOLTIPS.TRANSMITTER_VHF_C_VOLUME_DEC</TOOLTIP_LEFT>
             <TOOLTIP_RIGHT>TT:COCKPIT.TOOLTIPS.TRANSMITTER_VHF_C_VOLUME_INC</TOOLTIP_RIGHT>
@@ -380,6 +379,7 @@
         <UseTemplate Name="FBW_Anim_Interactions">
             <ANIM_TYPE>BUTTON</ANIM_TYPE>
             <ANIM_TEMPLATE>FBW_AIRLINER_Audio_Volume_Knob_Template</ANIM_TEMPLATE>
+            <SEQ1_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool) (L:A32NX_RMP_#SIDE#_TOGGLE_SWITCH, bool) and</SEQ1_POWERED>
             <NODE_ID>#NODE_ID_RECEIVER_VHF_R#</NODE_ID>
             <NODE_ID_LIGHT>#NODE_ID_LIGHT_RECEIVER_VHF_R#</NODE_ID_LIGHT>
             <ANIM_NAME_KNOB>#ANIM_NAME_KNOB_RECEIVER_VHF_R#</ANIM_NAME_KNOB>
@@ -390,8 +390,6 @@
             <NODE_ID_BUTTON_SEQ1>#NODE_ID_BUTTON_SEQ1_VHF_R#</NODE_ID_BUTTON_SEQ1>
             <NODE_ID_BUTTON_SEQ2>#NODE_ID_BUTTON_SEQ2_VHF_R#</NODE_ID_BUTTON_SEQ2>
             <FREQ_ID>VHF_R</FREQ_ID>
-            <Radio_ID>3</Radio_ID>
-            <Button_ID>3</Button_ID>
             <TRANSMIT_ID>2</TRANSMIT_ID>
             <TOOLTIP_LEFT>TT:COCKPIT.TOOLTIPS.TRANSMITTER_VHF_R_VOLUME_DEC</TOOLTIP_LEFT>
             <TOOLTIP_RIGHT>TT:COCKPIT.TOOLTIPS.TRANSMITTER_VHF_R_VOLUME_INC</TOOLTIP_RIGHT>
@@ -413,30 +411,17 @@
         </DefaultTemplateParameters>
         <OverrideTemplateParameters>
             <TRANSMIT_EMISSIVE_CODE>
-                #AUDIO_KNOB_POWERED# ! if{
+                #SEQ1_POWERED# ! if{
                     0
                 } els{
-                    (L:XMLVAR_COM_#ID#_#FREQ_ID#_Switch_Down) #Button_ID# (L:XMLVAR_COM_Transmit_Channel) == ! and (L:A32NX_OVHD_INTLT_ANN) 0 == or if{
-                        14 #EMISSIVE_DIM# *
+                    1 (L:XMLVAR_COM_#ID#_#FREQ_ID#_Switch_Down) == (L:A32NX_OVHD_INTLT_ANN) 0 == or if{
+                        3.0 #EMISSIVE_DIM# *
                     } els{
-                        (A:LIGHT POTENTIOMETER:#POTENTIOMETER#, Percent over 100) 0.5 *
+                        0
                     }
                 }
             </TRANSMIT_EMISSIVE_CODE>
         </OverrideTemplateParameters>
-        <Condition Valid="Radio_ID">
-            <True>
-                <UseTemplate Name="ASOBO_GT_Update">
-                    <FREQUENCY>3</FREQUENCY>
-                    <UPDATE_CODE>
-                    (A:COM TRANSMIT:#Radio_ID#, Bool) if{
-                        #Button_ID# (&gt;L:XMLVAR_COM_Transmit_Channel)
-                    }
-                    </UPDATE_CODE>
-                </UseTemplate>
-            </True>
-        </Condition>
-
         <Condition Valid="NO_BUTTON">
             <False>
                 <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
@@ -445,13 +430,43 @@
                     <ANIM_NAME>#ANIM_NAME_BUTTON#</ANIM_NAME>
                     <SEQ1_NODE_ID>#NODE_ID_BUTTON_SEQ1#</SEQ1_NODE_ID>
                     <SEQ2_NODE_ID>#NODE_ID_BUTTON_SEQ2#</SEQ2_NODE_ID>
+                    <!-- XMLVAR_COM_PANEL2_Transmit_Channel into COPILOT_TRANSMITTER_SET because PILOT_TRANSMITTER_SET sets it for the copilot too -->
                     <LEFT_SINGLE_CODE>
-                    #Button_ID# (&gt;L:XMLVAR_COM_Transmit_Channel)
-                    #TRANSMIT_ID# (&gt;K:PILOT_TRANSMITTER_SET)
-                    4 (&gt;K:COPILOT_TRANSMITTER_SET)
+                        #SEQ1_POWERED# if{
+                            #TRANSMIT_ID# (L:XMLVAR_COM_PANEL#ID#_Transmit_Channel) == if{
+                                4 (&gt;L:XMLVAR_COM_PANEL#ID#_Transmit_Channel)
+                            } els{
+                                #TRANSMIT_ID# (&gt;L:XMLVAR_COM_PANEL#ID#_Transmit_Channel)
+                            }
+
+                            #ID# 1 == if{
+                                (A:PILOT TRANSMITTER TYPE, Enum) #TRANSMIT_ID# == if{
+                                    4 (&gt;K:PILOT_TRANSMITTER_SET)
+                                } els{
+                                    #TRANSMIT_ID# (&gt;K:PILOT_TRANSMITTER_SET)
+                                }
+                                (L:XMLVAR_COM_PANEL2_Transmit_Channel) (&gt;K:COPILOT_TRANSMITTER_SET)
+                            } els{
+                                (A:COPILOT TRANSMITTER TYPE, Enum) #TRANSMIT_ID# == if{
+                                    4 (&gt;K:COPILOT_TRANSMITTER_SET)
+                                } els{
+                                    #TRANSMIT_ID# (&gt;K:COPILOT_TRANSMITTER_SET)
+                                }
+                            }
+                        }
                     </LEFT_SINGLE_CODE>
-                    <NODE_ID>#NODE_ID_BUTTON#</NODE_ID>
-                    <SEQ1_EMISSIVE_CODE>#Button_ID# (L:XMLVAR_COM_Transmit_Channel) == (L:A32NX_OVHD_INTLT_ANN) 0 == or #SEQ1_POWERED# and #EMISSIVE_DIM# *</SEQ1_EMISSIVE_CODE>
+                    <!-- Green light -->
+                    <SEQ1_EMISSIVE_CODE>
+                        #SEQ1_POWERED# if{
+                            #TRANSMIT_ID# (L:XMLVAR_COM_PANEL#ID#_Transmit_Channel) == (L:A32NX_OVHD_INTLT_ANN) 0 == or #EMISSIVE_DIM# *
+                        }
+                    </SEQ1_EMISSIVE_CODE>
+                     <!-- Button name light (for example CALL or MECH)-->
+                    <SEQ2_EMISSIVE_CODE>
+                        #SEQ1_POWERED# if{
+                            #TRANSMIT_ID# (L:XMLVAR_COM_PANEL#ID#_Transmit_Channel) == (L:A32NX_OVHD_INTLT_ANN) 0 == or #EMISSIVE_DIM# *
+                        }
+                    </SEQ2_EMISSIVE_CODE>
                     <WWISE_EVENT_1>fcubutton</WWISE_EVENT_1>
                     <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
                     <WWISE_EVENT_2>fcubutton</WWISE_EVENT_2>
@@ -477,19 +492,33 @@
                 <USE_SIMVAR_FOR_KNOB_ANIM>False</USE_SIMVAR_FOR_KNOB_ANIM>
                 <CENTER_RADIUS>0.002</CENTER_RADIUS>
                 <KNOB_ANIM_CODE>(L:XMLVAR_COM_#ID#_Volume_#FREQ_ID#) 100 *</KNOB_ANIM_CODE>
-                <CLOCKWISE_CODE>(L:XMLVAR_COM_#ID#_Volume_#FREQ_ID#) #VOLUME_INCREMENT# + 1 min (&gt;L:XMLVAR_COM_#ID#_Volume_#FREQ_ID#) 1 (&gt;I:XMLVAR_COM_UpdateVolumes)</CLOCKWISE_CODE>
-                <ANTICLOCKWISE_CODE>(L:XMLVAR_COM_#ID#_Volume_#FREQ_ID#) #VOLUME_INCREMENT# - 0 max (&gt;L:XMLVAR_COM_#ID#_Volume_#FREQ_ID#) 1 (&gt;I:XMLVAR_COM_UpdateVolumes)</ANTICLOCKWISE_CODE>
-                <ANIM_CODE_SWITCH>
-                (L:XMLVAR_COM_#ID#_#FREQ_ID#_Switch_Down)
-                #Button_ID# (L:XMLVAR_COM_Transmit_Channel) == or 100 *
-                </ANIM_CODE_SWITCH>
+                <CLOCKWISE_CODE>
+                    0 (L:XMLVAR_COM_#ID#_#FREQ_ID#_Switch_Down) == if{
+                        (L:XMLVAR_COM_#ID#_Volume_#FREQ_ID#) #VOLUME_INCREMENT_HARD# + 1 min (&gt;L:XMLVAR_COM_#ID#_Volume_#FREQ_ID#)
+                    } els{
+                        (L:XMLVAR_COM_#ID#_Volume_#FREQ_ID#) #VOLUME_INCREMENT# + 1 min (&gt;L:XMLVAR_COM_#ID#_Volume_#FREQ_ID#)
+                    }
+                </CLOCKWISE_CODE>
+                <ANTICLOCKWISE_CODE>
+                    0 (L:XMLVAR_COM_#ID#_#FREQ_ID#_Switch_Down) == if{
+                        (L:XMLVAR_COM_#ID#_Volume_#FREQ_ID#) #VOLUME_INCREMENT_HARD# - 0 max (&gt;L:XMLVAR_COM_#ID#_Volume_#FREQ_ID#)
+                    } els{
+                        (L:XMLVAR_COM_#ID#_Volume_#FREQ_ID#) #VOLUME_INCREMENT# - 0 max (&gt;L:XMLVAR_COM_#ID#_Volume_#FREQ_ID#)
+                    }
+                </ANTICLOCKWISE_CODE>
+                <ANIM_CODE_SWITCH>(L:XMLVAR_COM_#ID#_#FREQ_ID#_Switch_Down) 100 *</ANIM_CODE_SWITCH>
                 <ANIM_NAME_PUSH>#ANIM_NAME_SWITCH#</ANIM_NAME_PUSH>
                 <LEFT_SINGLE_CODE>
-                #Button_ID# (L:XMLVAR_COM_Transmit_Channel) != if{
-                    (L:XMLVAR_COM_#ID#_#FREQ_ID#_Switch_Down) ! (&gt;L:XMLVAR_COM_#ID#_#FREQ_ID#_Switch_Down)
-                    1 (&gt;I:XMLVAR_COM_UpdateReceivers)
-                }
+                    #SEQ1_POWERED# if{
+                        (L:XMLVAR_COM_#ID#_#FREQ_ID#_Switch_Down) ! (&gt;L:XMLVAR_COM_#ID#_#FREQ_ID#_Switch_Down)
+                        1 (&gt;I:XMLVAR_COM_UpdateReceivers)
+                    }
                 </LEFT_SINGLE_CODE>
+                <SEQ1_EMISSIVE_CODE>
+                    #SEQ1_POWERED# if{
+                        1 (L:XMLVAR_COM_#ID#_#FREQ_ID#_Switch_Down) == (L:A32NX_OVHD_INTLT_ANN) 0 == or #EMISSIVE_DIM# *
+                    }
+                </SEQ1_EMISSIVE_CODE>
                 <WWISE_EVENT></WWISE_EVENT>
                 <WWISE_EVENT_1>mcdubuttons</WWISE_EVENT_1>
                 <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
@@ -515,84 +544,74 @@
         <!-- Simvar is ON if any Panel sets it to ON, Volume is the Max of the 3 panels -->
 
         <UseTemplate Name="ASOBO_GT_Update">
-            <FREQUENCY>1</FREQUENCY>
+            <FREQUENCY>15</FREQUENCY>
             <UPDATE_CODE>
-            (A:COM RECEIVE:1, Bool) sp1
-            (A:COM RECEIVE:2, Bool) sp2
-            (A:COM RECEIVE:3, Bool) sp3
+                <!-- NOTE TO THE NEXT DEVELOPER SEEING THIS CODE -->
 
-            (L:XMLVAR_COM_1_VHF_L_Switch_Down) (L:XMLVAR_COM_2_VHF_L_Switch_Down) (L:XMLVAR_COM_3_VHF_L_Switch_Down) or or sp4
-            (L:XMLVAR_COM_1_VHF_C_Switch_Down) (L:XMLVAR_COM_2_VHF_C_Switch_Down) (L:XMLVAR_COM_3_VHF_C_Switch_Down) or or sp5
-            (L:XMLVAR_COM_1_VHF_R_Switch_Down) (L:XMLVAR_COM_2_VHF_R_Switch_Down) (L:XMLVAR_COM_3_VHF_R_Switch_Down) or or sp6
+                <!-- Need to add (L:XMLVAR_COM_3_VHF_L_Switch_Down) to make the overhead audio panel work in the future -->
+                <!--
+                    (L:XMLVAR_COM_1_VHF_L_Switch_Down) (L:XMLVAR_COM_2_VHF_L_Switch_Down) (L:XMLVAR_COM_3_VHF_L_Switch_Down) or or (&gt;K:COM1_RECEIVE_SELECT)
+                    (L:XMLVAR_COM_1_VHF_C_Switch_Down) (L:XMLVAR_COM_2_VHF_C_Switch_Down) (L:XMLVAR_COM_3_VHF_C_Switch_Down) or or (&gt;K:COM2_RECEIVE_SELECT)
+                    (L:XMLVAR_COM_1_VHF_R_Switch_Down) (L:XMLVAR_COM_2_VHF_R_Switch_Down) (L:XMLVAR_COM_3_VHF_R_Switch_Down) or or (&gt;K:COM3_RECEIVE_SELECT)
+                -->
 
-            (A:COM VOLUME:1, Percent over 100) sp7
-            (A:COM VOLUME:2, Percent over 100) sp8
-            (A:COM VOLUME:3, Percent over 100) sp9
+                <!-- For the first condition.... -->
+                <!-- As COM1 is difficult to disable on reception, I chose to force the condition instead of using (A:COM RECEIVE:1, Bool)
 
-            (L:XMLVAR_COM_1_Volume_VHF_L) (L:XMLVAR_COM_2_Volume_VHF_L) (L:XMLVAR_COM_3_Volume_VHF_L) max max sp10
-            (L:XMLVAR_COM_1_Volume_VHF_C) (L:XMLVAR_COM_2_Volume_VHF_C) (L:XMLVAR_COM_3_Volume_VHF_C) max max sp11
-            (L:XMLVAR_COM_1_Volume_VHF_R) (L:XMLVAR_COM_2_Volume_VHF_R) (L:XMLVAR_COM_3_Volume_VHF_R) max max sp12
+                DO NOT SET  0 (&gt;K:COM3_VOLUME_SET) AS vPilot WOULD NOT BE WORKING ANYMORE
 
-            (* Check if the Simvars have been toggled externaly *)
-            (I:XMLVAR_COM_UpdateReceivers) if{
-                l4 (&gt;K:COM1_RECEIVE_SELECT)
-                l5 (&gt;K:COM2_RECEIVE_SELECT)
-                l6 (&gt;K:COM3_RECEIVE_SELECT)
-                0 (&gt;I:XMLVAR_COM_UpdateReceivers)
-            } els{
-                (* Update XML Values if SimVar has changed *)
-                (O:XMLVAR_COM_1_Receive_PreviousValue) l1 != l4 l1 != and if{
-                    1 (&gt;L:XMLVAR_COM_1_VHF_L_Switch_Down)
+                -->
+
+                (I:XMLVAR_COM_UpdateReceivers) if{
+                    (L:XMLVAR_COM_1_VHF_L_Switch_Down) (L:XMLVAR_COM_2_VHF_L_Switch_Down) or (&gt;K:COM1_RECEIVE_SELECT)
+                    (L:XMLVAR_COM_1_VHF_C_Switch_Down) (L:XMLVAR_COM_2_VHF_C_Switch_Down) or (&gt;K:COM2_RECEIVE_SELECT)
+                    0 (&gt;I:XMLVAR_COM_UpdateReceivers)
                 }
-                (O:XMLVAR_COM_2_Receive_PreviousValue) l2 != l5 l2 != and if{
-                    1 (&gt;L:XMLVAR_COM_2_VHF_C_Switch_Down)
-                }
-                (O:XMLVAR_COM_3_Receive_PreviousValue) l3 != l6 l3 != and if{
-                    1 (&gt;L:XMLVAR_COM_3_VHF_R_Switch_Down)
-                }
-            }
-            (I:XMLVAR_COM_UpdateVolumes) if{
-                l10 100 * (&gt;K:COM1_VOLUME_SET)
-                l11 100 * (&gt;K:COM2_VOLUME_SET)
-                l12 100 * (&gt;K:COM3_VOLUME_SET)
-                0 (&gt;I:XMLVAR_COM_UpdateVolumes)
-            } els{
-                (* Update XML Values if SimVar has changed *)
-                (O:XMLVAR_COM_1_Volume_PreviousValue) l7 != l10 l7 != and if{
-                    l10 l7 &gt; if{
-                        l7 (L:XMLVAR_COM_1_Volume_VHF_L) min (&gt;L:XMLVAR_COM_1_Volume_VHF_L)
-                        l7 (L:XMLVAR_COM_2_Volume_VHF_L) min (&gt;L:XMLVAR_COM_2_Volume_VHF_L)
-                        l7 (L:XMLVAR_COM_3_Volume_VHF_L) min (&gt;L:XMLVAR_COM_3_Volume_VHF_L)
+
+                (L:XMLVAR_COM_1_VHF_L_Switch_Down) (L:XMLVAR_COM_2_VHF_L_Switch_Down) or if{
+                    (L:XMLVAR_COM_1_VHF_L_Switch_Down) (L:XMLVAR_COM_2_VHF_L_Switch_Down) and if{
+                        (L:XMLVAR_COM_1_Volume_VHF_L) (L:XMLVAR_COM_2_Volume_VHF_L) max max 100 * (&gt;K:COM1_VOLUME_SET)
                     } els{
-                        l7 (&gt;L:XMLVAR_COM_1_Volume_VHF_L)
+                        1 (L:XMLVAR_COM_1_VHF_L_Switch_Down) == if{
+                            (L:XMLVAR_COM_1_Volume_VHF_L) 100 * (&gt;K:COM1_VOLUME_SET)
+                        } els{
+                            (L:XMLVAR_COM_2_Volume_VHF_L) 100 * (&gt;K:COM1_VOLUME_SET)
+
+                        }
+                    }
+                } els{
+                    0 (&gt;K:COM1_VOLUME_SET)
+                }
+
+                (A:COM RECEIVE:2, Bool) if{
+                    (L:XMLVAR_COM_1_VHF_C_Switch_Down) (L:XMLVAR_COM_2_VHF_C_Switch_Down) or if{
+                        (L:XMLVAR_COM_1_VHF_C_Switch_Down) (L:XMLVAR_COM_2_VHF_C_Switch_Down) and if{
+                            (L:XMLVAR_COM_1_Volume_VHF_C) (L:XMLVAR_COM_2_Volume_VHF_C) max max 100 * (&gt;K:COM2_VOLUME_SET)
+                        } els{
+                            1 (L:XMLVAR_COM_1_VHF_C_Switch_Down) == if{
+                                (L:XMLVAR_COM_1_Volume_VHF_C) 100 * (&gt;K:COM2_VOLUME_SET)
+                            } els{
+                                (L:XMLVAR_COM_2_Volume_VHF_C) 100 * (&gt;K:COM2_VOLUME_SET)
+                            }
+                        }
+                    }
+                } els{
+                    0 (&gt;K:COM2_VOLUME_SET)
+                }
+
+                (A:COM RECEIVE:3, Bool) if{
+                    (L:XMLVAR_COM_1_VHF_R_Switch_Down) (L:XMLVAR_COM_2_VHF_R_Switch_Down) or if{
+                        (L:XMLVAR_COM_1_VHF_R_Switch_Down) (L:XMLVAR_COM_2_VHF_R_Switch_Down) and if{
+                            (L:XMLVAR_COM_1_Volume_VHF_R) (L:XMLVAR_COM_2_Volume_VHF_R) max max 100 * (&gt;K:COM3_VOLUME_SET)
+                        } els{
+                            1 (L:XMLVAR_COM_1_VHF_R_Switch_Down) == if{
+                                (L:XMLVAR_COM_1_Volume_VHF_R) 100 * (&gt;K:COM3_VOLUME_SET)
+                            } els{
+                                (L:XMLVAR_COM_2_Volume_VHF_R) 100 * (&gt;K:COM3_VOLUME_SET)
+                            }
+                        }
                     }
                 }
-                (O:XMLVAR_COM_2_Volume_PreviousValue) l8 != l11 l8 != and if{
-                    l11 l8 &gt; if{
-                        l8 (L:XMLVAR_COM_1_Volume_VHF_C) min (&gt;L:XMLVAR_COM_1_Volume_VHF_C)
-                        l8 (L:XMLVAR_COM_2_Volume_VHF_C) min (&gt;L:XMLVAR_COM_2_Volume_VHF_C)
-                        l8 (L:XMLVAR_COM_3_Volume_VHF_C) min (&gt;L:XMLVAR_COM_3_Volume_VHF_C)
-                    } els{
-                        l8 (&gt;L:XMLVAR_COM_2_Volume_VHF_C)
-                    }
-                }
-                (O:XMLVAR_COM_3_Volume_PreviousValue) l9 != l12 l9 != and if{
-                    l12 l9 &gt; if{
-                        l9 (L:XMLVAR_COM_1_Volume_VHF_R) min (&gt;L:XMLVAR_COM_1_Volume_VHF_R)
-                        l9 (L:XMLVAR_COM_2_Volume_VHF_R) min (&gt;L:XMLVAR_COM_2_Volume_VHF_R)
-                        l9 (L:XMLVAR_COM_3_Volume_VHF_R) min (&gt;L:XMLVAR_COM_3_Volume_VHF_R)
-                    } els{
-                        l9 (&gt;L:XMLVAR_COM_3_Volume_VHF_R)
-                    }
-                }
-            }
-
-            l4 (&gt;O:XMLVAR_COM_1_Receive_PreviousValue)
-            l5 (&gt;O:XMLVAR_COM_2_Receive_PreviousValue)
-            l6 (&gt;O:XMLVAR_COM_3_Receive_PreviousValue)
-            l10 (&gt;O:XMLVAR_COM_1_Volume_PreviousValue)
-            l11 (&gt;O:XMLVAR_COM_2_Volume_PreviousValue)
-            l12 (&gt;O:XMLVAR_COM_3_Volume_PreviousValue)
             </UPDATE_CODE>
         </UseTemplate>
     </Template>

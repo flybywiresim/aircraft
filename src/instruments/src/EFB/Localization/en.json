@@ -362,6 +362,12 @@
       "SavePreset": "Save Preset",
       "SavingPreset": "Saving Preset",
       "SelectAnInteriorLightingPresetToLoadOrSave": "Select an interior lighting preset to load or save.",
+      "AutoLoadLightingPreset": "Enable automatic loading of lighting presets:",
+      "AutoLoadLightingHelpTitle": "Automatic Preset Loading",
+      "AutoLoadNoneSelection": "None",
+      "AutoLoadDay": "Day:",
+      "AutoLoadDawnDusk": "Dawn/Dusk:",
+      "AutoLoadNight": "Night:",
       "TT": {
         "AircraftMustBePowered": "Aircraft Must be Powered",
         "ClickTextToChangeThePresetsName": "Click Text to Change the Preset's Name",
@@ -478,6 +484,7 @@
       "PauseAtTod": "T/D Pause",
       "PauseAtTodDistance": "T/D Pause Distance (nm)",
       "SeparateTillerFromRudderInputs": "Separate Tiller from Rudder Inputs",
+      "SyncEfis": "Sync EFIS controls between Captain and FO",
       "Title": "Realism"
     },
     "SimOptions": {
@@ -487,6 +494,7 @@
       "ConesEnabled": "Safety Cones",
       "DefaultBarometerUnit": "Default Barometer Unit",
       "DynamicRegistrationDecal": "Dynamic Registration Decal",
+      "EnableSimBridge": "Enable SimBridge Connection (Auto deactivates after 5 minutes if no successful connection)",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Enable MCDU Server Connection (Auto deactivates after 5 minutes if no successful connection)",
       "ExternalMcduServerPort": "External MCDU Server Port",
       "Hpa": "hPa",
@@ -495,6 +503,7 @@
       "None": "None",
       "Off": "Off",
       "Save": "Save",
+      "SimBridgePort": "External SimBridge Port",
       "SyncMsfsFlightPlan": "Sync MSFS Flight Plan",
       "ThrottleDetents": "Throttle Detents",
       "Title": "Sim Options",

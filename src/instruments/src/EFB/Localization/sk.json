@@ -478,6 +478,7 @@
       "PauseAtTod": "T/D Pause",
       "PauseAtTodDistance": "T/D Pause Distance (nm)",
       "SeparateTillerFromRudderInputs": "Oddeľte Tiller od vstupov kormidla",
+      "SyncEfis": "Sync EFIS controls between Captain and FO",
       "Title": "Realizmus"
     },
     "SimOptions": {
@@ -487,6 +488,7 @@
       "ConesEnabled": "Safety Cones",
       "DefaultBarometerUnit": "Štandardná jednotka barometra",
       "DynamicRegistrationDecal": "Dynamický registračný kód",
+      "EnableSimBridge": "Povoliť pripojenie servera MCDU (automaticky sa deaktivuje po 5 minútach, ak nie je úspešné pripojenie)",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Povoliť pripojenie servera MCDU (automaticky sa deaktivuje po 5 minútach, ak nie je úspešné pripojenie)",
       "ExternalMcduServerPort": "Externý port servera MCDU",
       "Hpa": "hPa",
@@ -495,6 +497,7 @@
       "None": "Žiadne",
       "Off": "Vypnuté",
       "Save": "Uložiť",
+      "SimBridgePort": "Externý port servera MCDU",
       "SyncMsfsFlightPlan": "Synchronizácia letového plánu MSFS",
       "ThrottleDetents": "Detenty škrtiacej klapky",
       "Title": "Možnosti Simulátora",

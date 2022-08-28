@@ -29,8 +29,8 @@ use systems::{
         landing_gear::{GearGravityExtension, GearSystemController, HydraulicGearSystem},
         linear_actuator::{
             Actuator, BoundedLinearLength, HydraulicAssemblyController,
-            HydraulicLinearActuatorAssembly, LinearActuatedRigidBodyOnHingeAxis, LinearActuator,
-            LinearActuatorMode,
+            HydraulicLinearActuatorAssembly, HydraulicLocking, LinearActuatedRigidBodyOnHingeAxis,
+            LinearActuator, LinearActuatorCharacteristics, LinearActuatorMode,
         },
         nose_steering::{
             Pushback, SteeringActuator, SteeringAngleLimiter, SteeringController,
@@ -220,11 +220,14 @@ impl A320CargoDoorFactory {
             1000000.,
             Duration::from_millis(100),
             [1., 1., 1., 1., 1., 1.],
+            [1., 1., 1., 1., 1., 1.],
             [0., 0.2, 0.21, 0.79, 0.8, 1.],
             Self::FLOW_CONTROL_PROPORTIONAL_GAIN,
             Self::FLOW_CONTROL_INTEGRAL_GAIN,
             Self::FLOW_CONTROL_FORCE_GAIN,
             false,
+            false,
+            None,
         )
     }
 
@@ -290,11 +293,14 @@ impl A320AileronFactory {
     const FLOW_CONTROL_FORCE_GAIN: f64 = 450000.;
 
     const MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING: f64 = 3500000.;
+    const MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT: f64 = 1.;
 
     fn a320_aileron_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
-        let randomized_damping = random_from_range(
+        let actuator_characteristics = LinearActuatorCharacteristics::new(
             Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING / 3.,
             Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING,
+            VolumeRate::new::<gallon_per_second>(0.055),
+            Ratio::new::<percent>(Self::MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT),
         );
 
         // Aileron actuator real data:
@@ -307,18 +313,21 @@ impl A320AileronFactory {
             1,
             Length::new::<meter>(0.0537878),
             Length::new::<meter>(0.),
-            VolumeRate::new::<gallon_per_second>(0.055),
+            actuator_characteristics.max_flow(),
             80000.,
             1500.,
             5000.,
-            randomized_damping,
+            actuator_characteristics.slow_damping(),
             Duration::from_millis(300),
+            [1., 1., 1., 1., 1., 1.],
             [1., 1., 1., 1., 1., 1.],
             [0., 0.2, 0.21, 0.79, 0.8, 1.],
             Self::FLOW_CONTROL_PROPORTIONAL_GAIN,
             Self::FLOW_CONTROL_INTEGRAL_GAIN,
             Self::FLOW_CONTROL_FORCE_GAIN,
             false,
+            false,
+            None,
         )
     }
 
@@ -398,20 +407,14 @@ impl A320SpoilerFactory {
 
     const MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING: f64 = 400000.;
 
-    const MAX_FLOW_GAL_P_S: f64 = 0.03;
     const MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT: f64 = 3.;
 
     fn a320_spoiler_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
-        let randomized_damping = random_from_range(
+        let actuator_characteristics = LinearActuatorCharacteristics::new(
             Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING / 5.,
             Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING,
-        );
-
-        let random_max_flow_margin =
-            Self::MAX_FLOW_GAL_P_S * Self::MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT / 100.;
-        let random_max_flow_gal_per_s = random_from_range(
-            Self::MAX_FLOW_GAL_P_S - random_max_flow_margin,
-            Self::MAX_FLOW_GAL_P_S + random_max_flow_margin,
+            VolumeRate::new::<gallon_per_second>(0.03),
+            Ratio::new::<percent>(Self::MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT),
         );
 
         LinearActuator::new(
@@ -419,18 +422,24 @@ impl A320SpoilerFactory {
             1,
             Length::new::<meter>(0.03),
             Length::new::<meter>(0.),
-            VolumeRate::new::<gallon_per_second>(random_max_flow_gal_per_s),
+            actuator_characteristics.max_flow(),
             80000.,
             1500.,
             5000.,
-            randomized_damping,
+            actuator_characteristics.slow_damping(),
             Duration::from_millis(300),
+            [1., 1., 1., 1., 1., 1.],
             [1., 1., 1., 1., 1., 1.],
             [0., 0.2, 0.21, 0.79, 0.8, 1.],
             Self::FLOW_CONTROL_PROPORTIONAL_GAIN,
             Self::FLOW_CONTROL_INTEGRAL_GAIN,
             Self::FLOW_CONTROL_FORCE_GAIN,
             false,
+            true,
+            Some((
+                AngularVelocity::new::<radian_per_second>(-10000.),
+                AngularVelocity::new::<radian_per_second>(0.),
+            )),
         )
     }
 
@@ -516,11 +525,14 @@ impl A320ElevatorFactory {
     const FLOW_CONTROL_FORCE_GAIN: f64 = 450000.;
 
     const MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING: f64 = 15000000.;
+    const MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT: f64 = 1.;
 
     fn a320_elevator_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
-        let randomized_damping = random_from_range(
+        let actuator_characteristics = LinearActuatorCharacteristics::new(
             Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING / 5.,
             Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING,
+            VolumeRate::new::<gallon_per_second>(0.029),
+            Ratio::new::<percent>(Self::MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT),
         );
 
         LinearActuator::new(
@@ -528,18 +540,21 @@ impl A320ElevatorFactory {
             1,
             Length::new::<meter>(0.0407),
             Length::new::<meter>(0.),
-            VolumeRate::new::<gallon_per_second>(0.029),
+            actuator_characteristics.max_flow(),
             80000.,
             1500.,
             20000.,
-            randomized_damping,
+            actuator_characteristics.slow_damping(),
             Duration::from_millis(300),
+            [1., 1., 1., 1., 1., 1.],
             [1., 1., 1., 1., 1., 1.],
             [0., 0.2, 0.21, 0.79, 0.8, 1.],
             Self::FLOW_CONTROL_PROPORTIONAL_GAIN,
             Self::FLOW_CONTROL_INTEGRAL_GAIN,
             Self::FLOW_CONTROL_FORCE_GAIN,
             false,
+            false,
+            None,
         )
     }
 
@@ -613,11 +628,14 @@ impl A320RudderFactory {
     const FLOW_CONTROL_FORCE_GAIN: f64 = 350000.;
 
     const MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING: f64 = 1000000.;
+    const MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT: f64 = 1.;
 
     fn a320_rudder_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
-        let randomized_damping = random_from_range(
+        let actuator_characteristics = LinearActuatorCharacteristics::new(
             Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING / 4.,
             Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING,
+            VolumeRate::new::<gallon_per_second>(0.0792),
+            Ratio::new::<percent>(Self::MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT),
         );
 
         LinearActuator::new(
@@ -625,18 +643,21 @@ impl A320RudderFactory {
             1,
             Length::new::<meter>(0.06),
             Length::new::<meter>(0.),
-            VolumeRate::new::<gallon_per_second>(0.0792),
+            actuator_characteristics.max_flow(),
             80000.,
             1500.,
             10000.,
-            randomized_damping,
+            actuator_characteristics.slow_damping(),
             Duration::from_millis(300),
+            [1., 1., 1., 1., 1., 1.],
             [1., 1., 1., 1., 1., 1.],
             [0., 0.2, 0.21, 0.79, 0.8, 1.],
             Self::FLOW_CONTROL_PROPORTIONAL_GAIN,
             Self::FLOW_CONTROL_INTEGRAL_GAIN,
             Self::FLOW_CONTROL_FORCE_GAIN,
             false,
+            false,
+            None,
         )
     }
 
@@ -713,6 +734,38 @@ impl A320RudderFactory {
 
 struct A320GearDoorFactory {}
 impl A320GearDoorFactory {
+    fn a320_nose_gear_door_aerodynamics() -> AerodynamicModel {
+        // Faking the single door by only considering right door aerodynamics.
+        // Will work with headwind, but will cause strange behaviour with massive crosswind.
+        AerodynamicModel::new(
+            &Self::a320_nose_gear_door_body(),
+            Some(Vector3::new(0., 1., 0.)),
+            Some(Vector3::new(0., -0.2, 1.)),
+            Some(Vector3::new(0., -1., -0.2)),
+            Ratio::new::<ratio>(0.7),
+        )
+    }
+
+    fn a320_left_gear_door_aerodynamics() -> AerodynamicModel {
+        AerodynamicModel::new(
+            &Self::a320_left_gear_door_body(),
+            Some(Vector3::new(0., 1., 0.)),
+            Some(Vector3::new(0., -0.1, 1.)),
+            Some(Vector3::new(0., 1., 0.1)),
+            Ratio::new::<ratio>(0.7),
+        )
+    }
+
+    fn a320_right_gear_door_aerodynamics() -> AerodynamicModel {
+        AerodynamicModel::new(
+            &Self::a320_right_gear_door_body(),
+            Some(Vector3::new(0., 1., 0.)),
+            Some(Vector3::new(0., -0.1, 1.)),
+            Some(Vector3::new(0., 1., 0.1)),
+            Ratio::new::<ratio>(0.7),
+        )
+    }
+
     fn a320_nose_gear_door_actuator(
         bounded_linear_length: &impl BoundedLinearLength,
     ) -> LinearActuator {
@@ -720,23 +773,36 @@ impl A320GearDoorFactory {
         const FLOW_CONTROL_PROPORTIONAL_GAIN: f64 = 0.15;
         const FLOW_CONTROL_FORCE_GAIN: f64 = 200000.;
 
+        const MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING: f64 = 28000.;
+        const MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT: f64 = 3.;
+
+        let actuator_characteristics = LinearActuatorCharacteristics::new(
+            MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING * 0.98,
+            MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING * 1.02,
+            VolumeRate::new::<gallon_per_second>(0.027),
+            Ratio::new::<percent>(MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT),
+        );
+
         LinearActuator::new(
             bounded_linear_length,
             1,
             Length::new::<meter>(0.0378),
             Length::new::<meter>(0.023),
-            VolumeRate::new::<gallon_per_second>(0.027),
+            actuator_characteristics.max_flow(),
             20000.,
             5000.,
             2000.,
-            28000.,
+            actuator_characteristics.slow_damping(),
             Duration::from_millis(100),
-            [0.5, 0.5, 1., 1., 0.5, 0.5],
+            [1., 1., 1., 1., 0.5, 0.5],
+            [0.5, 0.5, 1., 1., 1., 1.],
             [0., 0.15, 0.16, 0.84, 0.85, 1.],
             FLOW_CONTROL_PROPORTIONAL_GAIN,
             FLOW_CONTROL_INTEGRAL_GAIN,
             FLOW_CONTROL_FORCE_GAIN,
             true,
+            false,
+            None,
         )
     }
 
@@ -747,23 +813,36 @@ impl A320GearDoorFactory {
         const FLOW_CONTROL_PROPORTIONAL_GAIN: f64 = 0.7;
         const FLOW_CONTROL_FORCE_GAIN: f64 = 200000.;
 
+        const MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING: f64 = 30000.;
+        const MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT: f64 = 5.;
+
+        let actuator_characteristics = LinearActuatorCharacteristics::new(
+            MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING * 0.98,
+            MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING * 1.02,
+            VolumeRate::new::<gallon_per_second>(0.09),
+            Ratio::new::<percent>(MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT),
+        );
+
         LinearActuator::new(
             bounded_linear_length,
             1,
             Length::new::<meter>(0.055),
             Length::new::<meter>(0.03),
-            VolumeRate::new::<gallon_per_second>(0.09),
-            20000.,
-            5000.,
+            actuator_characteristics.max_flow(),
+            200000.,
+            2500.,
             2000.,
-            9000.,
+            actuator_characteristics.slow_damping(),
             Duration::from_millis(100),
-            [0.5, 0.5, 1., 1., 0.5, 0.5],
-            [0., 0.15, 0.16, 0.84, 0.85, 1.],
+            [1., 1., 1., 1., 0.5, 0.5],
+            [0.5, 0.5, 1., 1., 1., 1.],
+            [0., 0.07, 0.08, 0.9, 0.91, 1.],
             FLOW_CONTROL_PROPORTIONAL_GAIN,
             FLOW_CONTROL_INTEGRAL_GAIN,
             FLOW_CONTROL_FORCE_GAIN,
             true,
+            false,
+            None,
         )
     }
 
@@ -814,8 +893,8 @@ impl A320GearDoorFactory {
     }
 
     fn a320_nose_gear_door_body() -> LinearActuatedRigidBodyOnHingeAxis {
-        let size = Vector3::new(-0.4, 0.02, 1.5);
-        let cg_offset = Vector3::new(0.5 * size[0], 0., 0.);
+        let size = Vector3::new(0.4, 0.02, 1.5);
+        let cg_offset = Vector3::new(-0.5 * size[0], 0., 0.);
 
         let control_arm = Vector3::new(-0.1465, 0., 0.);
         let anchor = Vector3::new(-0.1465, 0.40, 0.);
@@ -855,28 +934,71 @@ impl A320GearDoorFactory {
 
 struct A320GearFactory {}
 impl A320GearFactory {
+    fn a320_nose_gear_aerodynamics() -> AerodynamicModel {
+        AerodynamicModel::new(
+            &Self::a320_nose_gear_body(true),
+            Some(Vector3::new(0., 0., 1.)),
+            None,
+            None,
+            Ratio::new::<ratio>(0.25),
+        )
+    }
+
+    fn a320_right_gear_aerodynamics() -> AerodynamicModel {
+        AerodynamicModel::new(
+            &Self::a320_right_gear_body(true),
+            Some(Vector3::new(0., 0., 1.)),
+            Some(Vector3::new(0.3, 0., 1.)),
+            Some(Vector3::new(1., 0., -0.3)),
+            Ratio::new::<ratio>(0.7),
+        )
+    }
+
+    fn a320_left_gear_aerodynamics() -> AerodynamicModel {
+        AerodynamicModel::new(
+            &Self::a320_left_gear_body(true),
+            Some(Vector3::new(0., 0., 1.)),
+            Some(Vector3::new(-0.3, 0., 1.)),
+            Some(Vector3::new(-1., 0., -0.3)),
+            Ratio::new::<ratio>(0.7),
+        )
+    }
+
     fn a320_nose_gear_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
         const FLOW_CONTROL_INTEGRAL_GAIN: f64 = 5.;
         const FLOW_CONTROL_PROPORTIONAL_GAIN: f64 = 0.3;
         const FLOW_CONTROL_FORCE_GAIN: f64 = 250000.;
+
+        const MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING: f64 = 900000.;
+        const MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT: f64 = 3.;
+
+        let actuator_characteristics = LinearActuatorCharacteristics::new(
+            MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING * 0.98,
+            MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING * 1.02,
+            VolumeRate::new::<gallon_per_second>(0.053),
+            Ratio::new::<percent>(MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT),
+        );
 
         LinearActuator::new(
             bounded_linear_length,
             1,
             Length::new::<meter>(0.0792),
             Length::new::<meter>(0.035),
-            VolumeRate::new::<gallon_per_second>(0.053),
+            actuator_characteristics.max_flow(),
             800000.,
             150000.,
             50000.,
-            1000000.,
+            actuator_characteristics.slow_damping(),
             Duration::from_millis(100),
-            [0.5, 0.5, 1., 1., 0.5, 0.5],
+            [1., 1., 1., 1., 0.5, 0.5],
+            [0.5, 0.5, 1., 1., 1., 1.],
             [0., 0.1, 0.11, 0.89, 0.9, 1.],
             FLOW_CONTROL_PROPORTIONAL_GAIN,
             FLOW_CONTROL_INTEGRAL_GAIN,
             FLOW_CONTROL_FORCE_GAIN,
             true,
+            false,
+            None,
         )
     }
 
@@ -885,23 +1007,36 @@ impl A320GearFactory {
         const FLOW_CONTROL_PROPORTIONAL_GAIN: f64 = 0.3;
         const FLOW_CONTROL_FORCE_GAIN: f64 = 250000.;
 
+        const MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING: f64 = 2500000.;
+        const MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT: f64 = 5.;
+
+        let actuator_characteristics = LinearActuatorCharacteristics::new(
+            MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING * 0.98,
+            MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING * 1.02,
+            VolumeRate::new::<gallon_per_second>(0.17),
+            Ratio::new::<percent>(MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT),
+        );
+
         LinearActuator::new(
             bounded_linear_length,
             1,
             Length::new::<meter>(0.145),
             Length::new::<meter>(0.105),
-            VolumeRate::new::<gallon_per_second>(0.17),
+            actuator_characteristics.max_flow(),
             800000.,
             350000.,
             50000.,
-            2500000.,
+            actuator_characteristics.slow_damping(),
             Duration::from_millis(100),
-            [0.5, 0.5, 1., 1., 0.5, 0.5],
-            [0., 0.1, 0.11, 0.89, 0.9, 1.],
+            [1., 1., 1., 1., 0.5, 0.5],
+            [0.2, 0.4, 1., 1., 1., 1.],
+            [0., 0.13, 0.17, 0.95, 0.96, 1.],
             FLOW_CONTROL_PROPORTIONAL_GAIN,
             FLOW_CONTROL_INTEGRAL_GAIN,
             FLOW_CONTROL_FORCE_GAIN,
             true,
+            false,
+            None,
         )
     }
 
@@ -1021,6 +1156,12 @@ impl A320GearSystemFactory {
             A320GearFactory::a320_gear_assembly(GearWheel::NOSE, init_downlocked),
             A320GearFactory::a320_gear_assembly(GearWheel::LEFT, init_downlocked),
             A320GearFactory::a320_gear_assembly(GearWheel::RIGHT, init_downlocked),
+            A320GearDoorFactory::a320_left_gear_door_aerodynamics(),
+            A320GearDoorFactory::a320_right_gear_door_aerodynamics(),
+            A320GearDoorFactory::a320_nose_gear_door_aerodynamics(),
+            A320GearFactory::a320_left_gear_aerodynamics(),
+            A320GearFactory::a320_right_gear_aerodynamics(),
+            A320GearFactory::a320_nose_gear_aerodynamics(),
         )
     }
 }
@@ -3833,6 +3974,7 @@ impl HydraulicAssemblyController for A320DoorController {
         Ratio::new::<ratio>(0.)
     }
 }
+impl HydraulicLocking for A320DoorController {}
 impl SimulationElement for A320DoorController {
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.position_requested = Ratio::new::<ratio>(reader.read(&self.requested_position_id));
@@ -3885,7 +4027,7 @@ impl CargoDoor {
     fn update(
         &mut self,
         context: &UpdateContext,
-        cargo_door_controller: &impl HydraulicAssemblyController,
+        cargo_door_controller: &(impl HydraulicAssemblyController + HydraulicLocking),
         current_pressure: &impl SectionPressure,
     ) {
         self.aerodynamic_model
@@ -4418,6 +4560,7 @@ impl HydraulicAssemblyController for AileronController {
         Ratio::default()
     }
 }
+impl HydraulicLocking for AileronController {}
 
 enum AileronHydConfiguration {
     GB,
@@ -4790,19 +4933,19 @@ impl ElacComputer {
         self.update_elevator();
     }
 
-    fn left_elevator_controllers(&self) -> &[impl HydraulicAssemblyController] {
+    fn left_elevator_controllers(&self) -> &[impl HydraulicAssemblyController + HydraulicLocking] {
         &self.left_elevator_controllers[..]
     }
 
-    fn right_elevator_controllers(&self) -> &[impl HydraulicAssemblyController] {
+    fn right_elevator_controllers(&self) -> &[impl HydraulicAssemblyController + HydraulicLocking] {
         &self.right_elevator_controllers[..]
     }
 
-    fn left_controllers(&self) -> &[impl HydraulicAssemblyController] {
+    fn left_controllers(&self) -> &[impl HydraulicAssemblyController + HydraulicLocking] {
         &self.left_aileron_controllers[..]
     }
 
-    fn right_controllers(&self) -> &[impl HydraulicAssemblyController] {
+    fn right_controllers(&self) -> &[impl HydraulicAssemblyController + HydraulicLocking] {
         &self.right_aileron_controllers[..]
     }
 }
@@ -4947,7 +5090,7 @@ impl FacComputer {
         );
     }
 
-    fn rudder_controllers(&self) -> &[impl HydraulicAssemblyController] {
+    fn rudder_controllers(&self) -> &[impl HydraulicAssemblyController + HydraulicLocking] {
         &self.rudder_controllers[..]
     }
 }
@@ -5032,7 +5175,7 @@ impl AileronAssembly {
     fn update(
         &mut self,
         context: &UpdateContext,
-        aileron_controllers: &[impl HydraulicAssemblyController],
+        aileron_controllers: &[impl HydraulicAssemblyController + HydraulicLocking],
         current_pressure_outward: &impl SectionPressure,
         current_pressure_inward: &impl SectionPressure,
     ) {
@@ -5092,7 +5235,7 @@ impl ElevatorAssembly {
     fn update(
         &mut self,
         context: &UpdateContext,
-        aileron_controllers: &[impl HydraulicAssemblyController],
+        aileron_controllers: &[impl HydraulicAssemblyController + HydraulicLocking],
         current_pressure_outward: &impl SectionPressure,
         current_pressure_inward: &impl SectionPressure,
     ) {
@@ -5148,7 +5291,7 @@ impl RudderAssembly {
     fn update(
         &mut self,
         context: &UpdateContext,
-        rudder_controllers: &[impl HydraulicAssemblyController],
+        rudder_controllers: &[impl HydraulicAssemblyController + HydraulicLocking],
         current_pressure_green: &impl SectionPressure,
         current_pressure_blue: &impl SectionPressure,
         current_pressure_yellow: &impl SectionPressure,
@@ -5214,7 +5357,7 @@ impl SpoilerElement {
     fn update(
         &mut self,
         context: &UpdateContext,
-        spoiler_controller: &impl HydraulicAssemblyController,
+        spoiler_controller: &(impl HydraulicAssemblyController + HydraulicLocking),
         current_pressure: Pressure,
     ) {
         self.aerodynamic_model
@@ -5245,7 +5388,7 @@ impl SpoilerGroup {
     fn update(
         &mut self,
         context: &UpdateContext,
-        spoiler_controllers: &[impl HydraulicAssemblyController],
+        spoiler_controllers: &[impl HydraulicAssemblyController + HydraulicLocking],
         green_pressure: &impl SectionPressure,
         blue_pressure: &impl SectionPressure,
         yellow_pressure: &impl SectionPressure,
@@ -5329,6 +5472,7 @@ impl HydraulicAssemblyController for SpoilerController {
         Ratio::default()
     }
 }
+impl HydraulicLocking for SpoilerController {}
 
 struct SpoilerComputer {
     requested_position_left_1_id: VariableIdentifier,
@@ -5393,11 +5537,11 @@ impl SpoilerComputer {
         }
     }
 
-    fn left_controllers(&self) -> &[impl HydraulicAssemblyController] {
+    fn left_controllers(&self) -> &[impl HydraulicAssemblyController + HydraulicLocking] {
         &self.left_controllers[..]
     }
 
-    fn right_controllers(&self) -> &[impl HydraulicAssemblyController] {
+    fn right_controllers(&self) -> &[impl HydraulicAssemblyController + HydraulicLocking] {
         &self.right_controllers[..]
     }
 }
@@ -10596,14 +10740,14 @@ mod tests {
 
             test_bed = test_bed
                 .stow_emergency_gear_extension()
-                .run_waiting_for(Duration::from_secs_f64(10.));
+                .run_waiting_for(Duration::from_secs_f64(5.));
 
-            // // After 10 seconds we expect gear being retracted and doors still down
+            // After 5 seconds we expect gear being retracted and doors still down
             assert!(test_bed.gear_system_state() == GearSystemState::Retracting);
             assert!(test_bed.is_all_doors_really_down());
             assert!(!test_bed.is_all_gears_really_down());
 
-            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(10.));
+            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(15.));
 
             assert!(test_bed.gear_system_state() == GearSystemState::AllUpLocked);
             assert!(test_bed.is_all_doors_really_up());
