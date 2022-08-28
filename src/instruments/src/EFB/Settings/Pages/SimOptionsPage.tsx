@@ -16,7 +16,7 @@ export const SimOptionsPage = () => {
     const [showThrottleSettings, setShowThrottleSettings] = useState(false);
 
     const [defaultBaro, setDefaultBaro] = usePersistentProperty('CONFIG_INIT_BARO_UNIT', 'AUTO');
-    const [dynamicRegistration, setDynamicRegistration] = usePersistentProperty('DYNAMIC_REGISTRATION_DECAL', 'DISABLED');
+    const [dynamicRegistration, setDynamicRegistration] = usePersistentProperty('DYNAMIC_REGISTRATION_DECAL', '0');
     const [fpSync, setFpSync] = usePersistentProperty('FP_SYNC', 'LOAD');
     const [mcduServerPort, setMcduServerPort] = usePersistentProperty('CONFIG_EXTERNAL_MCDU_PORT', '8380');
     const [mcduServerEnabled, setMcduServerEnabled] = usePersistentProperty('CONFIG_EXTERNAL_MCDU_SERVER_ENABLED', 'AUTO ON');
@@ -101,7 +101,7 @@ export const SimOptionsPage = () => {
                     </SettingItem>
 
                     <SettingItem name={t('Settings.SimOptions.DynamicRegistrationDecal')}>
-                        <Toggle value={dynamicRegistration === 'ENABLED'} onToggle={(value) => setDynamicRegistration(value ? 'ENABLED' : 'DISABLED')} />
+                        <Toggle value={dynamicRegistration === '1'} onToggle={(value) => setDynamicRegistration(value ? '1' : '0')} />
                     </SettingItem>
 
                     <SettingItem name={t('Settings.SimOptions.UseCalculatedIlsSignals')}>
