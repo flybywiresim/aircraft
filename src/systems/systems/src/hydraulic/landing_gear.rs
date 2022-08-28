@@ -14,7 +14,8 @@ use crate::{
 use super::{
     aerodynamic_model::AerodynamicModel,
     linear_actuator::{
-        Actuator, HydraulicAssemblyController, HydraulicLinearActuatorAssembly, LinearActuatorMode,
+        Actuator, HydraulicAssemblyController, HydraulicLinearActuatorAssembly, HydraulicLocking,
+        LinearActuatorMode,
     },
 };
 
@@ -695,6 +696,7 @@ impl HydraulicAssemblyController for GearSystemComponentHydraulicController {
         }
     }
 }
+impl HydraulicLocking for GearSystemComponentHydraulicController {}
 impl SimulationElement for GearSystemComponentHydraulicController {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.jammed_actuator_failure.accept(visitor);
@@ -1479,6 +1481,8 @@ mod tests {
             DEFAULT_I_GAIN,
             DEFAULT_FORCE_GAIN,
             true,
+            false,
+            None,
         )
     }
 
@@ -1555,6 +1559,8 @@ mod tests {
             DEFAULT_I_GAIN,
             DEFAULT_FORCE_GAIN,
             true,
+            false,
+            None,
         )
     }
 

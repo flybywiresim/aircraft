@@ -478,6 +478,7 @@
       "PauseAtTod": "T/D Pause",
       "PauseAtTodDistance": "T/D Pause Distance (nm)",
       "SeparateTillerFromRudderInputs": "使用方向舵控制鼻輪轉向",
+      "SyncEfis": "Sync EFIS controls between Captain and FO",
       "Title": "現實"
     },
     "SimOptions": {

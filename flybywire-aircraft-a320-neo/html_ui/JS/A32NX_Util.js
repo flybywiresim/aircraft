@@ -395,5 +395,5 @@ class NXNotif {
 }
 
 A32NX_Util.meterToFeet = (meterValue) => {
-    return meterValue * 3.28084;
+    return meterValue / 0.3048;
 };
