@@ -42,7 +42,7 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
         <div className="flex overflow-hidden flex-col flex-shrink-0 justify-between items-center text-white">
             <ProgressBar
                 height="225px"
-                width="40px"
+                width="50px"
                 isLabelVisible={false}
                 displayBar
                 borderRadius="0px"
