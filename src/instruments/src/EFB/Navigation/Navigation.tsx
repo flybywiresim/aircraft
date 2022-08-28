@@ -16,7 +16,7 @@ import { useSimVar } from '@instruments/common/simVars';
 import { ReactZoomPanPinchRef, TransformComponent, TransformWrapper } from 'react-zoom-pan-pinch';
 import { t } from '../translation';
 import { TooltipWrapper } from '../UtilComponents/TooltipWrapper';
-import { DrawableCanvas } from '../UtilComponents/DrawableCanvas';
+// import { DrawableCanvas } from '../UtilComponents/DrawableCanvas';
 import { useNavigraph } from '../ChartsApi/Navigraph';
 import { SimpleInput } from '../UtilComponents/Form/SimpleInput/SimpleInput';
 import { useAppDispatch, useAppSelector } from '../Store/store';
@@ -105,7 +105,6 @@ export const ChartViewer = () => {
     const { userName } = useNavigraph();
 
     const ref = useRef<HTMLDivElement>(null);
-
     const chartRef = useRef<HTMLDivElement>(null);
 
     const [aircraftIconVisible, setAircraftIconVisible] = useState(false);
@@ -149,7 +148,7 @@ export const ChartViewer = () => {
     };
 
     useEffect(() => {
-        console.debug('useEffect - chartLinks, currentPage, chartRotation');
+        console.debug('useEffect - chartLinks, currentPage');
         const img = new Image();
         // eslint-disable-next-line func-names
         img.onload = function () {
@@ -180,7 +179,7 @@ export const ChartViewer = () => {
             }
         };
         img.src = chartLinks.light;
-    }, [chartLinks, currentPage, chartRotation]);
+    }, [chartLinks, currentPage]);
 
     useEffect(() => {
         console.debug('useEffect - chartRef, chartDimensions');
@@ -205,7 +204,7 @@ export const ChartViewer = () => {
                     dispatch(editTabProperty({ tab: currentTab, chartName: { light: url, dark: url } }));
                 })
                 .catch((error) => {
-                    console.log(`Error: ${error}`);
+                    console.error(`Error: ${error}`);
                 });
         }
     }, [currentPage]);
@@ -250,6 +249,9 @@ export const ChartViewer = () => {
                     disabled: true,
                     sensitivity: 0,
                 }}
+                minScale={0.05}
+                maxScale={5}
+                limitToBounds={false}
             >
                 {({ zoomIn, zoomOut, setTransform, state }) => (
                     <div
@@ -387,19 +389,18 @@ export const ChartViewer = () => {
                                                     } else {
                                                         console.debug('fth portrait not rotated');
                                                         newScale = ref.current.clientHeight / chartRef.current.clientHeight;
-                                                        const chartExceedsBoundary = chartRef.current.clientWidth > ref.current.clientWidth;
-                                                        offsetX = chartExceedsBoundary ? 0 : (ref.current.clientWidth - (chartRef.current.clientWidth * newScale)) / 2;
+                                                        offsetX = (ref.current.clientWidth - (chartRef.current.clientWidth * newScale)) / 2;
                                                     }
                                                 } else { // landscape
                                                     // eslint-disable-next-line no-lonely-if
                                                     if (rotated90degree) {
-                                                        console.debug('fth landscape rotated to portrait'); newScale = ref.current.clientHeight / chartRef.current.clientWidth;
+                                                        console.debug('fth landscape rotated to portrait');
+                                                        newScale = ref.current.clientHeight / chartRef.current.clientWidth;
                                                         offsetY = ((chartRef.current.clientWidth - chartRef.current.clientHeight) / 2) * newScale;
                                                     } else {
                                                         console.debug('fth landscape not rotated');
                                                         newScale = ref.current.clientHeight / chartRef.current.clientHeight;
-                                                        const chartExceedsBoundary = chartRef.current.clientWidth > ref.current.clientWidth;
-                                                        offsetX = chartExceedsBoundary ? 0 : (ref.current.clientWidth - (chartRef.current.clientWidth * newScale)) / 2;
+                                                        offsetX = (ref.current.clientWidth - (chartRef.current.clientWidth * newScale)) / 2;
                                                     }
                                                 }
 
@@ -438,8 +439,7 @@ export const ChartViewer = () => {
                                                     } else {
                                                         console.debug('ftw portrait not rotated');
                                                         newScale = ref.current.clientWidth / chartRef.current.clientWidth;
-                                                        const chartHeightExceedsBoundary = chartRef.current.clientHeight > ref.current.clientHeight;
-                                                        offsetY = chartHeightExceedsBoundary ? 0 : (ref.current.clientHeight - (chartRef.current.clientHeight * newScale)) / 2;
+                                                        offsetY = (ref.current.clientHeight - (chartRef.current.clientHeight * newScale)) / 2;
                                                     }
                                                 } else { // landscape
                                                     // eslint-disable-next-line no-lonely-if
@@ -450,8 +450,7 @@ export const ChartViewer = () => {
                                                     } else {
                                                         console.debug('ftw landscape not rotated');
                                                         newScale = ref.current.clientWidth / chartRef.current.clientWidth;
-                                                        const chartHeightExceedsBoundary = chartRef.current.clientHeight > ref.current.clientHeight;
-                                                        offsetY = chartHeightExceedsBoundary ? 0 : (ref.current.clientHeight - (chartRef.current.clientHeight * newScale)) / 2;
+                                                        offsetY = (ref.current.clientHeight - (chartRef.current.clientHeight * newScale)) / 2;
                                                     }
                                                 }
 
@@ -511,28 +510,10 @@ export const ChartViewer = () => {
                                 <div
                                     className="p-2 hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight rounded-md transition duration-100 cursor-pointer"
                                     onClick={() => {
-                                        // TODO: THIS NEEDS TO WORK BETTER
                                         dispatch(editTabProperty({ tab: currentTab, isFullScreen: !isFullScreen }));
-
                                         if (chartRef.current && ref.current) {
-                                            const newScale = ref.current.clientWidth / chartRef.current.clientWidth;
-
-                                            const chartHeightExceedsBoundary = chartRef.current.clientHeight > ref.current.clientHeight;
-
-                                            const offsetY = chartHeightExceedsBoundary ? 0 : (ref.current.clientHeight - (chartRef.current.clientHeight * newScale)) / 2;
-                                            // console.log(state.scale, newScale);
-                                            if (state.scale === newScale) {
-                                                // console.log('called');
-                                                setTransform(0, offsetY, newScale);
-                                                dispatch(editTabProperty({
-                                                    tab: currentTab,
-                                                    chartPosition: {
-                                                        positionX: 0,
-                                                        positionY: offsetY,
-                                                        scale: newScale,
-                                                    },
-                                                }));
-                                            }
+                                            setTransform(0, 0, 1);
+                                            dispatch(editTabProperty({ tab: currentTab, chartPosition: { ...chartPosition, positionX: 0, positionY: 0, scale: 1 } }));
                                         }
                                     }}
                                 >
