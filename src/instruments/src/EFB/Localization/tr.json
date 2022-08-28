@@ -354,6 +354,11 @@
     "InteriorLighting": {
       "AircraftNeedsToBePoweredToLoadPresets": "Ön Ayarları Yüklemek için Uçağa Güç Verilmesi Gerekiyor",
       "AircraftNeedsToBePoweredToSavePresets": "Ön Ayarları Kaydetmek için Uçağa Güç Verilmesi Gerekiyor",
+      "AutoLoadDawnDusk": "Dawn/Dusk",
+      "AutoLoadDay": "Day",
+      "AutoLoadLightingPreset": "Enable automatic loading of lighting presets:",
+      "AutoLoadNight": "Night",
+      "AutoLoadNoneSelection": "None",
       "LoadPreset": "Ön Ayarı Yükle",
       "LoadingPreset": "Ön Ayar Yükleniyor",
       "NewNameConfirmationDialogMsg": "Lütfen aydınlatma ön ayarının yeni adını onaylayın",

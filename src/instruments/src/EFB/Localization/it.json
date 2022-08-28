@@ -354,6 +354,11 @@
     "InteriorLighting": {
       "AircraftNeedsToBePoweredToLoadPresets": "L'Aeromobile deve essere Alimentato per Caricare i Preset",
       "AircraftNeedsToBePoweredToSavePresets": "L'Aeromobile deve essere Alimentato per Salvare i Preset",
+      "AutoLoadDawnDusk": "Dawn/Dusk",
+      "AutoLoadDay": "Day",
+      "AutoLoadLightingPreset": "Enable automatic loading of lighting presets:",
+      "AutoLoadNight": "Night",
+      "AutoLoadNoneSelection": "None",
       "LoadPreset": "Carica Preset",
       "LoadingPreset": "Caricamento Preset",
       "NewNameConfirmationDialogMsg": "Prego conferma nuovo nome per il preset di illuminazione",

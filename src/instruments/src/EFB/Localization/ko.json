@@ -354,6 +354,11 @@
     "InteriorLighting": {
       "AircraftNeedsToBePoweredToLoadPresets": "프리셋을 불러오려면 항공기에 전원이 공급되어야 합니다",
       "AircraftNeedsToBePoweredToSavePresets": "프리셋을 저장하려면 항공기에 전원이 공급되어야 합니다",
+      "AutoLoadDawnDusk": "새벽/황혼",
+      "AutoLoadDay": "주간",
+      "AutoLoadLightingPreset": "조명 프리셋 자동으로 불러오기 활성화:",
+      "AutoLoadNight": "야간",
+      "AutoLoadNoneSelection": "없음",
       "LoadPreset": "프리셋 불러오기",
       "LoadingPreset": "프리셋 불러오는 중...",
       "NewNameConfirmationDialogMsg": "조명 프리셋의 이름을 확인해주세요",
@@ -478,7 +483,7 @@
       "PauseAtTod": "T/D 일시정지",
       "PauseAtTodDistance": "T/D 일시정지 거리 (nm)",
       "SeparateTillerFromRudderInputs": "러더 입력과 틸러 입력 분리",
-      "SyncEfis": "기장과 부기장 EFIS 컨트롤 동기화",
+      "SyncEfis": "기장과 부기장의 EFIS 컨트롤 동기화",
       "Title": "리얼리즘"
     },
     "SimOptions": {
@@ -569,8 +574,8 @@
     "Sep": "9월",
     "Sun": "일",
     "TT": {
-      "ConnectedToLocalApi": "로컬 API 연결됨",
-      "DisconnectedFromLocalApi": "로컬 API 연결 끊김",
+      "ConnectedToLocalApi": "SimBridge와 연결됨",
+      "DisconnectedFromLocalApi": "SimBridge 연결 끊김",
       "TurnOffOrShutdownEfb": "EFB 끄기 또는 종료"
     },
     "Thu": "목",

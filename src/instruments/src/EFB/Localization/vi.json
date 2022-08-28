@@ -354,6 +354,11 @@
     "InteriorLighting": {
       "AircraftNeedsToBePoweredToLoadPresets": "Máy bay cần được cung cấp năng lượng để tải cấu hình đặt sẵn",
       "AircraftNeedsToBePoweredToSavePresets": "Máy bay cần được cung cấp năng lượng để lưu cấu hình đặt sẵn",
+      "AutoLoadDawnDusk": "Bình minh/Hoàng hôn",
+      "AutoLoadDay": "Ban ngày",
+      "AutoLoadLightingPreset": "Bật tự động tải cài đặt đèn:",
+      "AutoLoadNight": "Ban đêm",
+      "AutoLoadNoneSelection": "Không",
       "LoadPreset": "Tải cấu hình sẵn",
       "LoadingPreset": "Đang tải cấu hình sẵn",
       "NewNameConfirmationDialogMsg": "Vui lòng xác nhận tên mới của cấu hình đèn đặt sẵn",
@@ -478,7 +483,7 @@
       "PauseAtTod": "Dừng tại điểm hạ độ cao",
       "PauseAtTodDistance": "Khoảng cách dừng từ điểm hạ độ cao (nm)",
       "SeparateTillerFromRudderInputs": "Tách rời Điều Khiển Bánh Mũi với Bàn Đạp",
-      "SyncEfis": "Sync EFIS controls between Captain and FO",
+      "SyncEfis": "Đồng bộ hóa các điều khiển EFIS giữa cơ trưởng và cơ phó",
       "Title": "Mức thực tế"
     },
     "SimOptions": {
@@ -569,8 +574,8 @@
     "Sep": "Thg 9",
     "Sun": "CN",
     "TT": {
-      "ConnectedToLocalApi": "Kết nối tới API cục bộ",
-      "DisconnectedFromLocalApi": "Ngắt kết nối khỏi API cục bộ",
+      "ConnectedToLocalApi": "Đã được kết nối tới SimBridge",
+      "DisconnectedFromLocalApi": "Đã ngắt kết nối khỏi SimBridge",
       "TurnOffOrShutdownEfb": "Tắt hoặc tắt máy EFB"
     },
     "Thu": "Th 5",

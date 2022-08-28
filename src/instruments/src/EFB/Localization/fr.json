@@ -354,6 +354,11 @@
     "InteriorLighting": {
       "AircraftNeedsToBePoweredToLoadPresets": "L'avion doit être alimenté pour charger des préréglages",
       "AircraftNeedsToBePoweredToSavePresets": "L'avion doit être alimenté pour enregistrer les préréglages",
+      "AutoLoadDawnDusk": "Dawn/Dusk",
+      "AutoLoadDay": "Day",
+      "AutoLoadLightingPreset": "Enable automatic loading of lighting presets:",
+      "AutoLoadNight": "Night",
+      "AutoLoadNoneSelection": "None",
       "LoadPreset": "Charger le préréglage",
       "LoadingPreset": "Chargement du préréglage",
       "NewNameConfirmationDialogMsg": "Veuillez confirmer le nouveau nom du préréglage d'éclairage",

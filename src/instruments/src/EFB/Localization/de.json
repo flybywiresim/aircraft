@@ -354,6 +354,11 @@
     "InteriorLighting": {
       "AircraftNeedsToBePoweredToLoadPresets": "Das Flugzeug muss mit Strom versorgt werden, um Voreinstellungen zu laden",
       "AircraftNeedsToBePoweredToSavePresets": "Das Flugzeug muss mit Strom versorgt sein, um Voreinstellungen zu speichern",
+      "AutoLoadDawnDusk": "Dämmerung",
+      "AutoLoadDay": "Tag",
+      "AutoLoadLightingPreset": "Automatisches Laden von Beleuchtungsvoreinstellungen aktivieren:",
+      "AutoLoadNight": "Nacht",
+      "AutoLoadNoneSelection": "Keine",
       "LoadPreset": "Voreinstellung laden",
       "LoadingPreset": "Voreinstellung wird geladen",
       "NewNameConfirmationDialogMsg": "Bestätige bitte den neuen Namen der Voreinstellung",
@@ -569,8 +574,8 @@
     "Sep": "Sep",
     "Sun": "So",
     "TT": {
-      "ConnectedToLocalApi": "Mit Local-API Server verbunden",
-      "DisconnectedFromLocalApi": "Keine Verbindung zum Local-API Server",
+      "ConnectedToLocalApi": "Mit SimBridge verbunden",
+      "DisconnectedFromLocalApi": "Keine Verbindung zur SimBridge",
       "TurnOffOrShutdownEfb": "EFB ausschalten oder herunterfahren"
     },
     "Thu": "Do",
