@@ -362,6 +362,12 @@
       "SavePreset": "Save Preset",
       "SavingPreset": "Saving Preset",
       "SelectAnInteriorLightingPresetToLoadOrSave": "Select an interior lighting preset to load or save.",
+      "AutoLoadLightingPreset": "Enable automatic loading of lighting presets:",
+      "AutoLoadLightingHelpTitle": "Automatic Preset Loading",
+      "AutoLoadNoneSelection": "None",
+      "AutoLoadDay": "Day:",
+      "AutoLoadDawnDusk": "Dawn/Dusk:",
+      "AutoLoadNight": "Night:",
       "TT": {
         "AircraftMustBePowered": "Aircraft Must be Powered",
         "ClickTextToChangeThePresetsName": "Click Text to Change the Preset's Name",
