@@ -120,6 +120,10 @@ export interface PFDSimvars {
     xtk: number;
     ldevRequestLeft: boolean;
     ldevRequestRight: boolean;
+    landingElevation1: number;
+    landingElevation1Ssm: number;
+    landingElevation2: number;
+    landingElevation2Ssm: number;
     fac1Healthy: boolean;
     fac2Healthy: boolean;
     fac1VAlphaProtRaw: number;
@@ -210,7 +214,6 @@ export enum PFDVars {
     metricAltToggle = 'L:A32NX_METRIC_ALT_TOGGLE',
     tla1='L:A32NX_AUTOTHRUST_TLA:1',
     tla2='L:A32NX_AUTOTHRUST_TLA:2',
-    landingElevation = 'L:A32NX_PRESS_AUTO_LANDING_ELEVATION',
     tcasState = 'L:A32NX_TCAS_STATE',
     tcasCorrective = 'L:A32NX_TCAS_RA_CORRECTIVE',
     tcasRedZoneL = 'L:A32NX_TCAS_VSPEED_RED:1',
@@ -254,6 +257,10 @@ export enum PFDVars {
     xtk = 'L:A32NX_FG_CROSS_TRACK_ERROR',
     ldevLeft = 'L:A32NX_FMGC_L_LDEV_REQUEST',
     ldevRight = 'L:A32NX_FMGC_R_LDEV_REQUEST',
+    landingElevation1 = 'L:A32NX_FM1_LANDING_ELEVATION',
+    landingElevation1Ssm = 'L:A32NX_FM1_LANDING_ELEVATION_SSM',
+    landingElevation2 = 'L:A32NX_FM2_LANDING_ELEVATION',
+    landingElevation2Ssm = 'L:A32NX_FM2_LANDING_ELEVATION_SSM',
     fac1Healthy = 'L:A32NX_FAC_1_HEALTHY',
     fac2Healthy = 'L:A32NX_FAC_2_HEALTHY',
     fac1VAlphaProtRaw = 'L:A32NX_FAC_1_V_ALPHA_PROT',
@@ -346,7 +353,6 @@ export class PFDSimvarPublisher extends SimVarPublisher<PFDSimvars> {
         ['metricAltToggle', { name: PFDVars.metricAltToggle, type: SimVarValueType.Bool }],
         ['tla1', { name: PFDVars.tla1, type: SimVarValueType.Number }],
         ['tla2', { name: PFDVars.tla2, type: SimVarValueType.Number }],
-        ['landingElevation', { name: PFDVars.landingElevation, type: SimVarValueType.Feet }],
         ['tcasState', { name: PFDVars.tcasState, type: SimVarValueType.Enum }],
         ['tcasCorrective', { name: PFDVars.tcasCorrective, type: SimVarValueType.Bool }],
         ['tcasRedZoneL', { name: PFDVars.tcasRedZoneL, type: SimVarValueType.Number }],
@@ -390,6 +396,10 @@ export class PFDSimvarPublisher extends SimVarPublisher<PFDSimvars> {
         ['xtk', { name: PFDVars.xtk, type: SimVarValueType.NM }],
         ['ldevRequestLeft', { name: PFDVars.ldevLeft, type: SimVarValueType.Bool }],
         ['ldevRequestRight', { name: PFDVars.ldevRight, type: SimVarValueType.Bool }],
+        ['landingElevation1', { name: PFDVars.landingElevation1, type: SimVarValueType.Number }],
+        ['landingElevation1Ssm', { name: PFDVars.landingElevation1Ssm, type: SimVarValueType.Number }],
+        ['landingElevation2', { name: PFDVars.landingElevation2, type: SimVarValueType.Number }],
+        ['landingElevation2Ssm', { name: PFDVars.landingElevation2Ssm, type: SimVarValueType.Number }],
         ['fac1Healthy', { name: PFDVars.fac1Healthy, type: SimVarValueType.Bool }],
         ['fac2Healthy', { name: PFDVars.fac2Healthy, type: SimVarValueType.Bool }],
         ['fac1VAlphaProtRaw', { name: PFDVars.fac1VAlphaProtRaw, type: SimVarValueType.Number }],
