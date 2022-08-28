@@ -13,6 +13,8 @@ import { BatteryStatus } from './BatteryStatus';
 import { useAppSelector } from '../Store/store';
 import { initialState } from '../Store/features/simBrief';
 
+import { Health } from '../../../../simbridge-client/src';
+
 interface StatusBarProps {
     batteryLevel: number;
     isCharging: boolean;
@@ -99,11 +101,8 @@ export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
             return;
         }
         try {
-            const url = `http://localhost:${simbridgePort}/health`;
-            const healthRes = await fetch(url);
-            const healthJson = await healthRes.json();
-
-            if (healthJson.info.api.status === 'up') {
+            const health = await Health.getHealth();
+            if (health) {
                 setLocalApiConnected(true);
             } else {
                 setLocalApiConnected(false);
