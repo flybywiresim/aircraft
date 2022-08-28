@@ -209,10 +209,10 @@ export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicator
                     <text id="AltFailText" class="Blink9Seconds FontLargest Red EndAlign" x="131.16769" y="83.433167">ALT</text>
                 </g>
                 <g ref={this.tcasFailed} style="display: none">
-                    <text class="Blink9Seconds FontLargest Amber EndAlign" x="141.5" y="96">T</text>
-                    <text class="Blink9Seconds FontLargest Amber EndAlign" x="141.5" y="104">C</text>
-                    <text class="Blink9Seconds FontLargest Amber EndAlign" x="141.5" y="112">A</text>
-                    <text class="Blink9Seconds FontLargest Amber EndAlign" x="141.5" y="120">S</text>
+                    <text class="Blink9Seconds FontMedium Amber EndAlign" x="141.5" y="100">T</text>
+                    <text class="Blink9Seconds FontMedium Amber EndAlign" x="141.5" y="105">C</text>
+                    <text class="Blink9Seconds FontMedium Amber EndAlign" x="141.5" y="110">A</text>
+                    <text class="Blink9Seconds FontMedium Amber EndAlign" x="141.5" y="115">S</text>
                 </g>
                 <g ref={this.normal} style="display: none">
                     <path id="AltTapeOutline" class="NormalStroke White" d="m117.75 123.56h17.83m-4.7345-85.473v85.473m-13.096-85.473h17.83" />
