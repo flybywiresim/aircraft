@@ -478,6 +478,7 @@
       "PauseAtTod": "降下開始地点で一時停止",
       "PauseAtTodDistance": "一時停止を有効にする降下開始地点からの距離(nm)",
       "SeparateTillerFromRudderInputs": "ティラーをラダー入力から分離",
+      "SyncEfis": "機長のEFIS操作を副操縦士に同期",
       "Title": "リアリズム"
     },
     "SimOptions": {

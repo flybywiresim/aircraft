@@ -64,7 +64,7 @@
     "YourFlight": {
       "Alternate": "สำรอง",
       "AverageWind": "ลมเฉลี่ย",
-      "CompanyRoute": "Company Route",
+      "CompanyRoute": "เส้นทางบริษัท",
       "CostIndex": "Cost Index",
       "CruiseAlt": "ความสูงที่บิน",
       "ImportSimBriefData": "นำเข้าข้อมูล SimBrief",
@@ -135,23 +135,23 @@
       "Unavailable": "ไม่พร้อมใช้งาน"
     },
     "Payload": {
-      "BoardingTime": "Boarding Time",
-      "Cargo": "Cargo",
-      "Current": "Current",
-      "Passengers": "Passengers",
-      "Planned": "Planned",
+      "BoardingTime": "เวลาเรียกขึ้นเครื่อง",
+      "Cargo": "คาร์โก้",
+      "Current": "ปัจจุบัน",
+      "Passengers": "ผู้โดยสาร",
+      "Planned": "ที่วางแผนไว้",
       "TT": {
-        "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Aircraft Must Be On the Ground and Have Engines Shutdown to Change Boarding Duration",
-        "FillPayloadFromSimbrief": "Fill Payload Information from Simbrief",
-        "MaxCargo": "Max Cargo",
-        "MaxPassengers": "Maximum Passengers",
-        "MaxZFW": "Maximum ZFW",
-        "MaxZFWCG": "Maximum ZFWCG",
-        "PerPaxBagWeight": "Per Passenger Bag Weight",
-        "PerPaxWeight": "Per Passenger Weight",
-        "StartBoarding": "Begin Boarding"
+        "AircraftMustBeColdAndDarkToChangeBoardingTimes": "เครื่องบินต้องอยู่บนพื้นดิน และต้องปิดเครื่องยนต์เพื่อที่จะเปลี่ยนเวลาเรียกขึ้นเครื่อง",
+        "FillPayloadFromSimbrief": "กรอกข้อมูลน้ำหนักบรรทุกจาก Simbrief",
+        "MaxCargo": "จำนวนคาร์โก้สูงสุด",
+        "MaxPassengers": "จำนวนผู้โดยสารสูงสุด",
+        "MaxZFW": "จำนวน ZFW สูงสุด",
+        "MaxZFWCG": "จำนวน ZFWCG สูงสุด",
+        "PerPaxBagWeight": "น้ำหนักสัมภาระของผู้โดยสารต่อคน",
+        "PerPaxWeight": "น้ำหนักผู้โดยสารต่อคน",
+        "StartBoarding": "เริ่มการเรียกขึ้นเครื่อง"
       },
-      "Title": "Payload",
+      "Title": "น้ำหนักบรรทุก",
       "ZFW": "ZFW",
       "ZFWCG": "ZFWCG"
     },
@@ -478,6 +478,7 @@
       "PauseAtTod": "หยุดชั่วคราวที่ T/D",
       "PauseAtTodDistance": "ระยะทางหยุดชั่วคราว T/D (nm)",
       "SeparateTillerFromRudderInputs": "แยก Tiller ออกจากอินพุต Rudder",
+      "SyncEfis": "Sync EFIS controls between Captain and FO",
       "Title": "ความสมจริง"
     },
     "SimOptions": {
@@ -487,7 +488,7 @@
       "ConesEnabled": "กรวยนิรภัย",
       "DefaultBarometerUnit": "หน่วย Barometer เริ่มต้น",
       "DynamicRegistrationDecal": "ทะเบียนเครื่องบินแบบไดนามิก",
-      "EnableSimBridge": "เปิดใช้งานการเชื่อมต่อเซิร์ฟเวอร์ MCDU (ปิดการทำงานหลังจาก 5 นาทีอัตโนมัติ หากไม่มีการเชื่อมต่อที่สำเร็จ)",
+      "EnableSimBridge": "เปิดใช้งานการเชื่อมต่อ SimBridge (ปิดการทำงานหลังจาก 5 นาทีอัตโนมัติ หากไม่มีการเชื่อมต่อที่สำเร็จ)",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "เปิดใช้งานการเชื่อมต่อเซิร์ฟเวอร์ MCDU (ปิดการทำงานหลังจาก 5 นาทีอัตโนมัติ หากไม่มีการเชื่อมต่อที่สำเร็จ)",
       "ExternalMcduServerPort": "พอร์ตเซิร์ฟเวอร์ MCDU ภายนอก",
       "Hpa": "hPa",
@@ -496,7 +497,7 @@
       "None": "ไม่มี",
       "Off": "ปิด",
       "Save": "บันทึก",
-      "SimBridgePort": "พอร์ตเซิร์ฟเวอร์ MCDU ภายนอก",
+      "SimBridgePort": "พอร์ต SimBridge ภายนอก",
       "SyncMsfsFlightPlan": "ซิงค์แผนการบิน MSFS",
       "ThrottleDetents": "Throttle Detents",
       "Title": "ตัวเลือกซิม",

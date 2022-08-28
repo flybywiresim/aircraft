@@ -478,6 +478,7 @@
       "PauseAtTod": "T/D Pause",
       "PauseAtTodDistance": "T/D Pause Distance (nm)",
       "SeparateTillerFromRudderInputs": "Oddeľte Tiller od vstupov kormidla",
+      "SyncEfis": "Sync EFIS controls between Captain and FO",
       "Title": "Realizmus"
     },
     "SimOptions": {

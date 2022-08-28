@@ -33,6 +33,7 @@
 1. [SD] Improve F/CTL and WHEEL SD pages visuals - @lukecologne (luke)
 1. [MCDU] Added formatter to improve text alignment and ease integration - @derl30n (Leon)
 1. [EFB] Fix default unit to match UI and other consumers - @tracernz (Mike)
+1. [HYD] Added possibility to lock or limit hydraulic actuators velocity - @Crocket63 (crocket)
 1. [HYD] Added a new THS mechanism simulation - @Crocket63 (crocket)
 1. [HYD] More prox sensors and gear actuator failures - @Crocket63 (crocket)
 1. [MCDU] Added 4:3 aspect ratio compatibility to remote mcdu client - @tyler58546 (tyler58546)
@@ -64,6 +65,8 @@
 1. [EFB] Added Payload Loading to EFB - @2hwk (2Cas#1022)
 1. [MODEL] Remove blue highlights in lock mode - @tracernz (Mike)
 1. [RMP] Fixed the behavior of the RMPs and ACPs (VHFs only) - Julian Sebline (Julian Sebline#8476 on Discord)
+1. [PFD] Added option to sync FD/LS buttons between CPT and FO - @Eagle941 (Joe)
+1. [EFB] Add automatic loading of a lighting preset - @SpiritZephyr (Ben)
 
 ## 0.8.0
 

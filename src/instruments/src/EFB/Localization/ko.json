@@ -478,6 +478,7 @@
       "PauseAtTod": "T/D 일시정지",
       "PauseAtTodDistance": "T/D 일시정지 거리 (nm)",
       "SeparateTillerFromRudderInputs": "러더 입력과 틸러 입력 분리",
+      "SyncEfis": "기장과 부기장 EFIS 컨트롤 동기화",
       "Title": "리얼리즘"
     },
     "SimOptions": {
