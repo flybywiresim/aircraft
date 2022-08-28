@@ -150,10 +150,9 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
                     </div>
 
                     {isDualAxis ? (
-                        <div className="flex flex-row justify-between rounded-xl">
+                        <div className="flex flex-row mx-32">
                             <BaseThrottleConfig
                                 mappingsAxisOne={mappingsAxisOne}
-                                disabled={false}
                                 throttleNumber={1}
                                 throttleCount={isDualAxis ? 1 : 2}
                                 activeIndex={selectedIndex}
@@ -163,7 +162,6 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
                             </div>
                             <BaseThrottleConfig
                                 mappingsAxisOne={mappingsAxisTwo}
-                                disabled={false}
                                 throttleNumber={2}
                                 throttleCount={1}
                                 activeIndex={selectedIndex}
@@ -174,8 +172,7 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
                             <BaseThrottleConfig
                                 mappingsAxisOne={mappingsAxisOne}
                                 mappingsAxisTwo={mappingsAxisTwo}
-                                disabled={false}
-                                throttleNumber={1}
+                                throttleNumber={4}
                                 throttleCount={2}
                                 activeIndex={selectedIndex}
                             />
@@ -203,7 +200,7 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
                     <button
                         type="button"
                         onClick={onClose}
-                        className="py-2.5 px-5 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100"
+                        className="py-2.5 px-5 rounded-md border-2 transition duration-100 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight"
                     >
                         {t('Settings.ThrottleConfig.Back')}
                     </button>
@@ -222,7 +219,7 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
                                 />,
                             );
                         }}
-                        className="py-2.5 px-5 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100"
+                        className="py-2.5 px-5 rounded-md border-2 transition duration-100 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight"
                     >
                         {t('Settings.ThrottleConfig.ResetToDefaults')}
                     </button>
@@ -231,7 +228,7 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
                         onClick={() => {
                             syncToThrottle(1);
                         }}
-                        className="py-2.5 px-5 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100"
+                        className="py-2.5 px-5 rounded-md border-2 transition duration-100 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight"
                     >
                         {t('Settings.ThrottleConfig.LoadFromFile')}
                     </button>
