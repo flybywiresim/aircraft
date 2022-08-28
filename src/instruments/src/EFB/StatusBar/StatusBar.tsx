@@ -27,7 +27,6 @@ export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
     const [monthOfYear] = useSimVar('E:ZULU MONTH OF YEAR', 'number');
     const [dayOfMonth] = useSimVar('E:ZULU DAY OF MONTH', 'number');
     const [showStatusBarFlightProgress] = usePersistentNumberProperty('EFB_SHOW_STATUSBAR_FLIGHTPROGRESS', 1);
-    const [simbridgePort] = usePersistentProperty('CONFIG_SIMBRIDGE_PORT', '8380');
     const [simbridgeEnabled] = usePersistentProperty('CONFIG_SIMBRIDGE_ENABLED', 'AUTO ON');
 
     const history = useHistory();
@@ -94,25 +93,24 @@ export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
     const [shutoffBarPercent, setShutoffBarPercent] = useState(0);
     const shutoffTimerRef = useRef<NodeJS.Timer | null>(null);
 
-    // TODO FIXME: This is going to need some readjustment when the user config changes
     const setConnectedState = async () => {
         if (simbridgeEnabled !== 'AUTO ON') {
-            setLocalApiConnected(false);
+            setSimBridgeConnected(false);
             return;
         }
         try {
             const health = await Health.getHealth();
             if (health) {
-                setLocalApiConnected(true);
+                setSimBridgeConnected(true);
             } else {
-                setLocalApiConnected(false);
+                setSimBridgeConnected(false);
             }
         } catch (_) {
-            setLocalApiConnected(false);
+            setSimBridgeConnected(false);
         }
     };
 
-    const [localApiConnected, setLocalApiConnected] = useState(false);
+    const [simBridgeConnected, setSimBridgeConnected] = useState(false);
 
     useInterval(() => {
         setConnectedState();
@@ -200,8 +198,8 @@ export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
                     </div>
                 )}
 
-                <TooltipWrapper text={localApiConnected ? t('StatusBar.TT.ConnectedToLocalApi') : t('StatusBar.TT.DisconnectedFromLocalApi')}>
-                    {localApiConnected ? (
+                <TooltipWrapper text={simBridgeConnected ? t('StatusBar.TT.ConnectedToLocalApi') : t('StatusBar.TT.DisconnectedFromLocalApi')}>
+                    {simBridgeConnected ? (
                         <Wifi size={26} />
                     ) : (
                         <WifiOff size={26} />
