@@ -41,8 +41,8 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
     return (
         <div className="flex overflow-hidden flex-col flex-shrink-0 justify-between items-center text-white">
             <ProgressBar
-                height="300px"
-                width="50px"
+                height="225px"
+                width="40px"
                 isLabelVisible={false}
                 displayBar
                 borderRadius="0px"
@@ -71,7 +71,7 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
                             </div>
                             <div>
                                 <SimpleInput
-                                    className="mb-6"
+                                    className="mb-6 w-60"
                                     value={deadZone.toFixed(2)}
                                     reverse
                                     onChange={(deadZone) => {
@@ -88,7 +88,7 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
                             </div>
                             <div>
                                 <button
-                                    className="py-3 px-2 w-full rounded-md border-2 transition duration-100 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight"
+                                    className="py-1 px-2 w-60 rounded-md border-2 transition duration-100 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight"
                                     onClick={() => {
                                         setFromTo(props.throttlePosition, props.lowerBoundDetentSetter, props.upperBoundDetentSetter, deadZone);
                                     }}
@@ -105,7 +105,7 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
                             <p>{t('Settings.ThrottleConfig.ConfigureEnd')}</p>
                             <SimpleInput
                                 reverse
-                                className="mr-0"
+                                className="mr-0 w-60"
                                 value={!props.expertMode ? deadZone : props.upperBoundDetentGetter.toFixed(2)}
                                 onChange={(deadZone) => {
                                     if (previousMode === props.expertMode && deadZone.length > 1 && !Number.isNaN(Number(deadZone))) {
@@ -117,7 +117,7 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
 
                             <p>{props.expertMode ? t('Settings.ThrottleConfig.ConfigureStart') : t('Settings.ThrottleConfig.Deadband')}</p>
                             <SimpleInput
-                                className="mt-2"
+                                className="mt-2 w-60"
                                 reverse
                                 value={!props.expertMode ? deadZone : props.lowerBoundDetentGetter.toFixed(2)}
                                 onChange={(deadZone) => {
