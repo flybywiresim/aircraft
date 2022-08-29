@@ -7,7 +7,7 @@ import { SimplaneValues } from './shared/SimplaneValueProvider';
 import { VerticalTape } from './VerticalTape';
 import { Arinc429Values } from './shared/ArincValueProvider';
 
-const DisplayRange = 600;
+const DisplayRange = 570;
 const ValueSpacing = 100;
 const DistanceSpacing = 7.5;
 
@@ -16,17 +16,18 @@ class LandingElevationIndicator extends DisplayComponent<{bus: EventBus}> {
 
     private altitude = 0;
 
-    private landingElevation = 0;
+    private landingElevation = new Arinc429Word(0);
 
     private flightPhase = 0;
 
     private delta = 0;
 
     private handleLandingElevation() {
-        const delta = this.altitude - this.landingElevation;
+        const landingElevationValid = !this.landingElevation.isFailureWarning() && !this.landingElevation.isNoComputedData();
+        const delta = this.altitude - this.landingElevation.value;
         const offset = (delta - DisplayRange) * DistanceSpacing / ValueSpacing;
         this.delta = delta;
-        if (delta > DisplayRange || (this.flightPhase !== 7 && this.flightPhase !== 8)) {
+        if (delta > DisplayRange || (this.flightPhase !== 7 && this.flightPhase !== 8) || !landingElevationValid) {
             this.landingElevationIndicator.instance.classList.add('HiddenElement');
         } else {
             this.landingElevationIndicator.instance.classList.remove('HiddenElement');
@@ -106,6 +107,99 @@ class RadioAltIndicator extends DisplayComponent<{ bus: EventBus, filteredRadioA
     }
 }
 
+class MinimumDescentAltitudeIndicator extends DisplayComponent<{ bus: EventBus }> {
+    private visibility = Subject.create('hidden');
+
+    private path = Subject.create('');
+
+    private altitude = 0;
+
+    private radioAltitudeValid = false;
+
+    private qnhLandingAltValid = false;
+
+    private qfeLandingAltValid = false;
+
+    private inLandingPhases = false;
+
+    private altMode: 'STD' | 'QNH' | 'QFE' = 'STD';
+
+    private mda = new Arinc429Word(0);
+
+    private landingElevation = new Arinc429Word(0);
+
+    private updateIndication(): void {
+        this.qnhLandingAltValid = !this.landingElevation.isFailureWarning()
+            && !this.landingElevation.isNoComputedData()
+            && this.inLandingPhases
+            && this.altMode === 'QNH';
+
+        this.qfeLandingAltValid = this.inLandingPhases
+            && this.altMode === 'QFE';
+
+        const altDelta = this.mda.value - this.altitude;
+
+        const showMda = (this.radioAltitudeValid || this.qnhLandingAltValid || this.qfeLandingAltValid)
+            && Math.abs(altDelta) <= 570
+            && !this.mda.isFailureWarning()
+            && !this.mda.isNoComputedData();
+
+        if (!showMda) {
+            this.visibility.set('hidden');
+            return;
+        }
+
+        const offset = altDelta * DistanceSpacing / ValueSpacing;
+        this.path.set(`m 127.9276,${80.249604 - offset} h 5.80948 v 1.124908 h -5.80948 z`);
+        this.visibility.set('visible');
+    }
+
+    onAfterRender(node: VNode): void {
+        super.onAfterRender(node);
+
+        const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values & SimplaneValues>();
+
+        sub.on('chosenRa').whenArinc429SsmChanged().handle((ra) => {
+            this.radioAltitudeValid = !ra.isFailureWarning() && !ra.isNoComputedData();
+            this.updateIndication();
+        });
+
+        sub.on('landingElevation').withArinc429Precision(0).handle((landingElevation) => {
+            this.landingElevation = landingElevation;
+            this.updateIndication();
+        });
+
+        sub.on('baroMode').whenChanged().handle((m) => {
+            this.altMode = m;
+            this.updateIndication();
+        });
+
+        sub.on('altitudeAr').withArinc429Precision(0).handle((a) => {
+            // TODO filtered alt
+            this.altitude = a.value;
+            this.updateIndication();
+        });
+
+        sub.on('mda').whenChanged().handle((mda) => {
+            // TODO get a real word
+            this.mda.value = mda;
+            this.mda.ssm = mda > 0 ? Arinc429Word.SignStatusMatrix.NormalOperation : Arinc429Word.SignStatusMatrix.NoComputedData;
+            this.updateIndication();
+        });
+
+        sub.on('fwcFlightPhase').whenChanged().handle((fp) => {
+            this.inLandingPhases = fp === 7 || fp === 8;
+            this.updateIndication();
+        });
+    }
+
+    render(): VNode {
+        return (
+            <path visibility={this.visibility} id="AltTapeMdaIndicator" class="Fill Amber" d={this.path} />
+        );
+    }
+}
+
 interface AltitudeIndicatorProps {
 
     bus: EventBus;
@@ -138,7 +232,7 @@ export class AltitudeIndicator extends DisplayComponent<AltitudeIndicatorProps> 
                 <LandingElevationIndicator bus={this.props.bus} />
                 <g ref={this.tapeRef}>
                     <VerticalTape
-                        displayRange={DisplayRange + 30}
+                        displayRange={DisplayRange + 60}
                         valueSpacing={ValueSpacing}
                         distanceSpacing={DistanceSpacing}
                         lowerLimit={-1500}
@@ -146,7 +240,6 @@ export class AltitudeIndicator extends DisplayComponent<AltitudeIndicatorProps> 
                         tapeValue={this.subscribable}
                         type="altitude"
                     />
-
                 </g>
 
             </g>
@@ -209,13 +302,14 @@ export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicator
                     <text id="AltFailText" class="Blink9Seconds FontLargest Red EndAlign" x="131.16769" y="83.433167">ALT</text>
                 </g>
                 <g ref={this.tcasFailed} style="display: none">
-                    <text class="Blink9Seconds FontLargest Amber EndAlign" x="141.5" y="96">T</text>
-                    <text class="Blink9Seconds FontLargest Amber EndAlign" x="141.5" y="104">C</text>
-                    <text class="Blink9Seconds FontLargest Amber EndAlign" x="141.5" y="112">A</text>
-                    <text class="Blink9Seconds FontLargest Amber EndAlign" x="141.5" y="120">S</text>
+                    <text class="Blink9Seconds FontMedium Amber EndAlign" x="141.5" y="100">T</text>
+                    <text class="Blink9Seconds FontMedium Amber EndAlign" x="141.5" y="105">C</text>
+                    <text class="Blink9Seconds FontMedium Amber EndAlign" x="141.5" y="110">A</text>
+                    <text class="Blink9Seconds FontMedium Amber EndAlign" x="141.5" y="115">S</text>
                 </g>
                 <g ref={this.normal} style="display: none">
                     <path id="AltTapeOutline" class="NormalStroke White" d="m117.75 123.56h17.83m-4.7345-85.473v85.473m-13.096-85.473h17.83" />
+                    <MinimumDescentAltitudeIndicator bus={this.props.bus} />
                     <SelectedAltIndicator bus={this.props.bus} />
                     <AltimeterIndicator bus={this.props.bus} altitude={this.altitude} />
                     <MetricAltIndicator bus={this.props.bus} />
