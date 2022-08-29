@@ -354,11 +354,11 @@
     "InteriorLighting": {
       "AircraftNeedsToBePoweredToLoadPresets": "プリセットを読み込むには、航空機に電力を供給する必要があります",
       "AircraftNeedsToBePoweredToSavePresets": "プリセットを保存するには、航空機に電力を供給する必要があります",
-      "AutoLoadDawnDusk": "Dawn/Dusk",
-      "AutoLoadDay": "Day",
-      "AutoLoadLightingPreset": "Enable automatic loading of lighting presets:",
-      "AutoLoadNight": "Night",
-      "AutoLoadNoneSelection": "None",
+      "AutoLoadDawnDusk": "朝/夕方",
+      "AutoLoadDay": "昼",
+      "AutoLoadLightingPreset": "機内照明プリセットの自動読み込みを有効にする:",
+      "AutoLoadNight": "夜",
+      "AutoLoadNoneSelection": "なし",
       "LoadPreset": "プリセットの読み込み",
       "LoadingPreset": "プリセットの読み込み中",
       "NewNameConfirmationDialogMsg": "機内照明プリセットの新しい名前を確認してください",
@@ -574,8 +574,8 @@
     "Sep": "9月",
     "Sun": "(日)",
     "TT": {
-      "ConnectedToLocalApi": "ローカルAPIに接続中",
-      "DisconnectedFromLocalApi": "ローカルAPIから切断されました",
+      "ConnectedToLocalApi": "SimBridgeに接続中",
+      "DisconnectedFromLocalApi": "SimBridgeから切断されました",
       "TurnOffOrShutdownEfb": "EFBを消灯、またはシャットダウンする"
     },
     "Thu": "(木)",
