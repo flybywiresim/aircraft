@@ -2668,6 +2668,38 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Indicates whether the fault light is on for the engine bleed push button
     - Bool
 
+- A32NX_PNEU_WING_ANTI_ICE_SYSTEM_ON:
+    - Indicates wheter the wing anti ice system is on
+    - Bool
+
+- A32NX_PNEU_WING_ANTI_ICE_HAS_FAULT:
+    - Indicates wheter the wing anti ice system has a fault
+    - Bool
+
+- A32NX_PNEU_LEFT_WING_ANTI_ICE_CONSUMER_PRESSURE:
+    - Pressure in the left wing anti ice pipe
+    - PSI
+
+- A32NX_PNEU_RIGHT_WING_ANTI_ICE_CONSUMER_PRESSURE:
+    - Pressure in the right wing anti ice pipe
+    - PSI
+
+- A32NX_PNEU_LEFT_WING_ANTI_ICE_CONSUMER_TEMPERATURE:
+    - Temperature in the left wing anti ice pipe
+    - Degree celsius
+
+- A32NX_PNEU_RIGHT_WING_ANTI_ICE_CONSUMER_TEMPERATURE:
+    - Temperature in the right wing anti ice pipe
+    - Degree celsius
+
+- A32NX_LEFT_WING_ANTI_ICE_VALVE_OPEN:
+    - Indicates whether the left wing anti ice valve is open
+    - Bool
+
+- A32NX_RIGHT_WING_ANTI_ICE_VALVE_OPEN:
+    - Indicates whether the right wing anti ice valve is open
+    - Bool
+
 ## Flaps / Slats (ATA 27)
 
 - A32NX_SFCC_SLAT_FLAP_SYSTEM_STATUS_WORD
