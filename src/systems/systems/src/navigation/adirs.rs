@@ -535,29 +535,32 @@ impl AirDataInertialReferenceUnit {
         self.ir.has_fault()
     }
 
+    // If above speed threshold OR if data is unavailable: all discrete are set to TRUE
     fn update_discrete_outputs(&mut self) {
         let speed_knot = self.adr.computed_airspeed_raw().get::<knot>();
 
+        let data_unavailable = self.ir_has_fault() || !self.ir_is_on() || !self.is_fully_aligned();
+
         if speed_knot < 100. {
-            self.low_speed_warning_1_104kts = false;
+            self.low_speed_warning_1_104kts = data_unavailable;
         } else if speed_knot > 104. {
             self.low_speed_warning_1_104kts = true;
         }
 
         if speed_knot < 50. {
-            self.low_speed_warning_2_54kts = false;
+            self.low_speed_warning_2_54kts = data_unavailable;
         } else if speed_knot > 54. {
             self.low_speed_warning_2_54kts = true;
         }
 
         if speed_knot < 155. {
-            self.low_speed_warning_3_159kts = false;
+            self.low_speed_warning_3_159kts = data_unavailable;
         } else if speed_knot > 159. {
             self.low_speed_warning_3_159kts = true;
         }
 
         if speed_knot < 260. {
-            self.low_speed_warning_4_260kts = false;
+            self.low_speed_warning_4_260kts = data_unavailable;
         } else if speed_knot > 264. {
             self.low_speed_warning_4_260kts = true;
         }
@@ -3398,6 +3401,32 @@ mod tests {
 
             test_bed.set_indicated_airspeed(Velocity::new::<knot>(265.));
             test_bed.run();
+            assert!(
+                test_bed.query(|a| a.adirs.adirus[adiru_number - 1].low_speed_warning_4_260kts())
+            );
+        }
+
+        #[rstest]
+        #[case(1)]
+        #[case(2)]
+        #[case(3)]
+        fn discrete_output_speed_warnings_with_off_adir(#[case] adiru_number: usize) {
+            let mut test_bed = test_bed();
+            test_bed.set_indicated_airspeed(Velocity::new::<knot>(5.));
+            test_bed.run();
+
+            assert!(
+                test_bed.query(|a| a.adirs.adirus[adiru_number - 1].low_speed_warning_1_104kts())
+            );
+
+            assert!(
+                test_bed.query(|a| a.adirs.adirus[adiru_number - 1].low_speed_warning_2_54kts())
+            );
+
+            assert!(
+                test_bed.query(|a| a.adirs.adirus[adiru_number - 1].low_speed_warning_3_159kts())
+            );
+
             assert!(
                 test_bed.query(|a| a.adirs.adirus[adiru_number - 1].low_speed_warning_4_260kts())
             );
