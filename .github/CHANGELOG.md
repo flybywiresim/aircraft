@@ -71,6 +71,7 @@
 1. [ADDON] Simbridge Integration - @lucky38i (Alex)
 1. [SD] Visual and functional improvements/fixes to the HYD SD page - @lukecologne (luke)
 1. [HYD] Added optional auxiliary hydraulic section in core hydraulic circuits - @Crocket63
+1. [EFB] Added SimBridge Health Check icon to Status Bar - @frankkopp (Frank Kopp)
 
 ## 0.8.0
 
