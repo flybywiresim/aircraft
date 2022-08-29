@@ -196,7 +196,7 @@ impl A320HydraulicCircuitFactory {
             Pressure::new::<psi>(Self::MIN_PRESS_EDP_SECTION_HI_HYST),
             false,
             true,
-            true, // TODO set to false once we have A380 system available as only A380 should use this to true
+            false,
             Pressure::new::<psi>(Self::HYDRAULIC_TARGET_PRESSURE_PSI),
         )
     }
