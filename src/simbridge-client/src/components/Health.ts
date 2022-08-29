@@ -6,17 +6,17 @@ import { simbridgeUrl } from '../common';
 export class Health {
     /**
      * Used to check the state of a given service. If none is given, then main status is returned.
-     * @param serviceName The name of the service or omit for the overall status ('' || 'api || 'mcdu')
+     * @param serviceName The name of the service or omit for the overall status
      * @returns true if service is available, false otherwise
      */
-    public static async getHealth(serviceName: String = ''): Promise<boolean> {
+    public static async getHealth(serviceName?: 'api'|'mcdu'): Promise<boolean> {
         const response = await fetch(`${simbridgeUrl}/health`);
         if (!response.ok) {
             throw new Error(`SimBridge Error: ${response.status}`);
         }
         const healthJson = await response.json();
         switch (serviceName) {
-        case '':
+        case undefined:
             if (healthJson.status === 'ok') {
                 return true;
             }
@@ -32,7 +32,7 @@ export class Health {
             }
             break;
         default:
-            throw new Error(`Unknown service name: ${serviceName}`);
+            throw new Error(`Unknown service name: '${serviceName}'`);
         }
         return false;
     }
