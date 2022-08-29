@@ -21,6 +21,28 @@
                 } els{
                     0.3 (&gt;O:_ButtonAnimVar)
                 }
+
+                (L:A32NX_PRINTER_PRINTING, bool) 0 &gt; (L:A32NX_PRINTER_TOGGLE, bool) 0 == and if{
+                    (L:A32NX_PRINTER_ACTIVE) 1 + (&gt;L:A32NX_PRINTER_ACTIVE)
+                }
+                (L:A32NX_PRINTER_ACTIVE, number) 300 &gt; if{
+                    0 (&gt;L:A32NX_PRINTER_ACTIVE)
+                    1 (&gt;L:A32NX_PRINTER_TOGGLE)
+                }
+                (L:A32NX_PRINTER_PRINTING, bool) 0 == (L:A32NX_PRINTER_TOGGLE, bool) 0 &gt; and if{
+                    0 (&gt;L:A32NX_PRINTER_TOGGLE)
+                    0 (&gt;L:A32NX_PRINTER_ACTIVE)
+                }
+                (L:A32NX_PRINTER_PRINTING, bool) 0 == (L:A32NX_PRINTER_ACTIVE, number) 0 &gt; and if{
+                    0 (&gt;L:A32NX_PRINTER_ACTIVE)
+                }
+                (L:A32NX_PRINTER_PRINTING, bool) 0 &gt; (L:A32NX_PRINTER_TEAR, number) 0 == and
+                (L:A32NX_PRINTER_PRINTING, bool) 0 &gt; (L:A32NX_PRINTER_TEAR, number) 2 == and or if{
+                    1 (&gt;L:A32NX_PRINTER_TEAR)
+                }
+                (L:A32NX_PRINTER_PRINTING, bool) 0 == (L:A32NX_PRINTER_TEAR, number) 1 == and if{
+                    2 (&gt;L:A32NX_PRINTER_TEAR)
+                }
             </Update>
 
             <UseTemplate Name = "ASOBO_GT_Anim_Code">
