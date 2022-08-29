@@ -77,6 +77,12 @@ class FlyByWireInterface {
 
   bool clientDataEnabled = false;
 
+  bool last_fd1_active = false;
+  bool last_fd2_active = false;
+
+  bool last_ls1_active = false;
+  bool last_ls2_active = false;
+
   FlightDataRecorder flightDataRecorder;
 
   SimConnectInterface simConnectInterface;
@@ -337,6 +343,12 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idTillerHandlePosition;
   std::unique_ptr<LocalVariable> idNoseWheelPosition;
 
+  std::unique_ptr<LocalVariable> idSyncFoEfisEnabled;
+
+  std::unique_ptr<LocalVariable> idLs1Active;
+  std::unique_ptr<LocalVariable> idLs2Active;
+  std::unique_ptr<LocalVariable> idIsisLsActive;
+
   void loadConfiguration();
   void setupLocalVariables();
 
@@ -358,6 +370,8 @@ class FlyByWireInterface {
   bool updateAutothrust(double sampleTime);
 
   bool updateSpoilers(double sampleTime);
+
+  bool updateFoSide(double sampleTime);
 
   bool updateAltimeterSetting(double sampleTime);
 
