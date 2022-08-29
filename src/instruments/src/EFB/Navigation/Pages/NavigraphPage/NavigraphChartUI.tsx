@@ -70,12 +70,9 @@ export const NavigraphChartUI = () => {
     useEffect(() => {
         const fetchCharts = async () => {
             const light = await navigraph.chartCall(searchQuery, chartName.light);
-
             const dark = await navigraph.chartCall(searchQuery, chartName.dark);
-
             dispatch(editTabProperty({ tab: NavigationTab.NAVIGRAPH, chartLinks: { light, dark } }));
         };
-
         fetchCharts();
     }, [chartName]);
 
@@ -117,7 +114,7 @@ export const NavigraphChartUI = () => {
     const simbriefDataLoaded = isSimbriefDataLoaded();
 
     return (
-        <div className="flex overflow-x-hidden flex-row w-full rounded-lg h-content-section-reduced">
+        <div className="flex overflow-x-hidden flex-row w-full h-content-section-reduced rounded-lg">
             <>
                 {!isFullScreen && (
                     <div className="flex-shrink-0" style={{ width: '450px' }}>

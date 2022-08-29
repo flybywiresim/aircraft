@@ -61,7 +61,6 @@ export const Navigation = () => {
                     basePath="/navigation"
                     onSelected={(index) => {
                         const associatedTab = ChartProvider[navigationTabs[index].associatedTab];
-
                         dispatch(setSelectedNavigationTabIndex(index));
                         dispatch(setBoundingBox(undefined));
                         dispatch(setProvider(associatedTab));
@@ -116,8 +115,6 @@ export const ChartViewer = () => {
     useEffect(() => {
         let visible = false;
 
-        // console.log(boundingBox, aircraftLatitude, aircraftLongitude);
-
         if (boundingBox
             && aircraftLatitude >= boundingBox.bottomLeft.lat
             && aircraftLatitude <= boundingBox.topRight.lat
@@ -138,17 +135,14 @@ export const ChartViewer = () => {
     }, [boundingBox, chartLinks, aircraftLatitude.toFixed(2), aircraftLongitude.toFixed(2), aircraftTrueHeading.toFixed(1)]);
 
     const handleRotateRight = () => {
-        console.debug('rotate right');
         dispatch(editTabProperty({ tab: currentTab, chartRotation: (chartRotation + 90) % 360 }));
     };
 
     const handleRotateLeft = () => {
-        console.debug('rotate left');
         dispatch(editTabProperty({ tab: currentTab, chartRotation: (chartRotation - 90) % 360 }));
     };
 
     useEffect(() => {
-        console.debug('useEffect - chartLinks, currentPage');
         const img = new Image();
         // eslint-disable-next-line func-names
         img.onload = function () {
@@ -163,11 +157,9 @@ export const ChartViewer = () => {
                 };
 
                 if (imgWidth > imgHeight) { // landscape
-                    console.debug('landscape');
                     chartDimensions.height = ref.current.clientHeight;
                     chartDimensions.width = imgWidth * (ref.current.clientHeight / imgHeight);
                 } else { // portrait
-                    console.debug('portrait');
                     chartDimensions.height = imgHeight * (ref.current.clientWidth / imgWidth);
                     chartDimensions.width = ref.current.clientWidth;
                 }
@@ -182,7 +174,6 @@ export const ChartViewer = () => {
     }, [chartLinks, currentPage]);
 
     useEffect(() => {
-        console.debug('useEffect - chartRef, chartDimensions');
         const { width, height } = chartDimensions;
         if (chartRef.current && width && height) {
             if (width > height) {
@@ -197,7 +188,6 @@ export const ChartViewer = () => {
     }, [chartRef, chartDimensions]);
 
     useEffect(() => {
-        console.debug('useEffect - currentPage');
         if (pagesViewable > 1) {
             getPdfUrl(chartId, currentPage)
                 .then((url) => {
@@ -286,65 +276,7 @@ export const ChartViewer = () => {
                                     className={`flex flex-row justify-center items-center h-14 bg-opacity-40 transition duration-100 cursor-pointer hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight ${currentPage === pagesViewable && 'opacity-50 pointer-events-none'}`}
                                     onClick={() => dispatch(editTabProperty({ tab: currentTab, currentPage: currentPage + 1 }))}
                                 >
-
                                     <Plus size={40} />
-                                </div>
-                            </div>
-                        )}
-
-                        {/* DEBUGGING */}
-                        {true && (
-                            <div className="flex absolute top-24 right-16 left-1 z-50 flex-grow justify-between mx-4 font-mono text-black bg-gray-100 border-gray-100 opacity-100">
-                                <div className="overflow-hidden text-utility-red text-m">
-                                    Debug Info
-                                    <br />
-                                    chartId
-                                    {' '}
-                                    {chartId}
-                                    <br />
-                                    chartRotation
-                                    {' '}
-                                    {chartRotation}
-                                    <br />
-                                    {' '}
-                                    chartPosition
-                                    {' '}
-                                    {chartPosition.positionX}
-                                    {' '}
-                                    {chartPosition.positionY}
-                                    {' '}
-                                    {chartPosition.scale}
-                                    {' '}
-                                    <br />
-                                    chartDimensions
-                                    {' '}
-                                    {chartDimensions.width}
-                                    {' '}
-                                    {chartDimensions.height}
-                                    <br />
-                                    ref.current
-                                    {' '}
-                                    {ref.current ? ref.current.clientWidth : 'null'}
-                                    {' '}
-                                    {ref.current ? ref.current.clientHeight : 'null'}
-                                    {' '}
-                                    {ref.current ? ref.current.style.width : 'null'}
-                                    {' '}
-                                    {ref.current ? ref.current.style.height : 'null'}
-                                    {' '}
-                                    {ref.current ? ref.current.style.position : 'null'}
-                                    <br />
-                                    chartRef.current
-                                    {' '}
-                                    {chartRef.current ? chartRef.current.clientWidth : 'null'}
-                                    {' '}
-                                    {chartRef.current ? chartRef.current.clientHeight : 'null'}
-                                    {' '}
-                                    {chartRef.current ? chartRef.current.style.width : 'null'}
-                                    {' '}
-                                    {chartRef.current ? chartRef.current.style.height : 'null'}
-                                    {' '}
-                                    {chartRef.current ? chartRef.current.style.position : 'null'}
                                 </div>
                             </div>
                         )}
@@ -383,23 +315,19 @@ export const ChartViewer = () => {
 
                                                 if (chartRef.current.clientHeight >= chartRef.current.clientWidth) { // portrait
                                                     if (rotated90degree) {
-                                                        console.debug('fth portrait rotated to landscape');
                                                         newScale = ref.current.clientHeight / chartRef.current.clientWidth;
                                                         offsetX = (ref.current.clientWidth - ref.current.clientHeight) / 2;
                                                         offsetY = ((chartRef.current.clientWidth - chartRef.current.clientHeight) / 2) * newScale;
                                                     } else {
-                                                        console.debug('fth portrait not rotated');
                                                         newScale = ref.current.clientHeight / chartRef.current.clientHeight;
                                                         offsetX = (ref.current.clientWidth - (chartRef.current.clientWidth * newScale)) / 2;
                                                     }
                                                 } else { // landscape
                                                     // eslint-disable-next-line no-lonely-if
                                                     if (rotated90degree) {
-                                                        console.debug('fth landscape rotated to portrait');
                                                         newScale = ref.current.clientHeight / chartRef.current.clientWidth;
                                                         offsetY = ((chartRef.current.clientWidth - chartRef.current.clientHeight) / 2) * newScale;
                                                     } else {
-                                                        console.debug('fth landscape not rotated');
                                                         newScale = ref.current.clientHeight / chartRef.current.clientHeight;
                                                         offsetX = (ref.current.clientWidth - (chartRef.current.clientWidth * newScale)) / 2;
                                                     }
@@ -434,23 +362,19 @@ export const ChartViewer = () => {
 
                                                 if (chartRef.current.clientHeight >= chartRef.current.clientWidth) { // portrait
                                                     if (rotated90degree) {
-                                                        console.debug('ftw portrait rotated to landscape');
                                                         newScale = ref.current.clientWidth / chartRef.current.clientHeight;
                                                         offsetX = ((chartRef.current.clientHeight - chartRef.current.clientWidth) / 2) * newScale;
                                                         offsetY = (ref.current.clientHeight - ref.current.clientWidth) / 2;
                                                     } else {
-                                                        console.debug('ftw portrait not rotated');
                                                         newScale = ref.current.clientWidth / chartRef.current.clientWidth;
                                                         offsetY = (ref.current.clientHeight - (chartRef.current.clientHeight * newScale)) / 2;
                                                     }
                                                 } else { // landscape
                                                     // eslint-disable-next-line no-lonely-if
                                                     if (rotated90degree) {
-                                                        console.debug('ftw landscape rotated to portrait');
                                                         newScale = ref.current.clientWidth / chartRef.current.clientHeight;
                                                         offsetX = ((chartRef.current.clientHeight - chartRef.current.clientWidth) / 2) * newScale;
                                                     } else {
-                                                        console.debug('ftw landscape not rotated');
                                                         newScale = ref.current.clientWidth / chartRef.current.clientWidth;
                                                         offsetY = (ref.current.clientHeight - (chartRef.current.clientHeight * newScale)) / 2;
                                                     }
@@ -477,7 +401,6 @@ export const ChartViewer = () => {
                                     <button
                                         type="button"
                                         onClick={() => {
-                                            console.debug('reset');
                                             setTransform(0, 0, 1);
                                             dispatch(editTabProperty({ tab: currentTab, chartRotation: 0 }));
                                             dispatch(editTabProperty({ tab: currentTab, chartPosition: { ...chartPosition, positionX: 0, positionY: 0, scale: 1 } }));
@@ -536,7 +459,7 @@ export const ChartViewer = () => {
                         </div>
 
                         <div
-                            className="flex overflow-x-hidden overflow-y-scroll relative flex-row mx-auto h-full bg-theme-accent rounded-lg border-2 border-utility-red grabbable no-scrollbar"
+                            className="flex overflow-x-hidden overflow-y-scroll relative flex-row mx-auto h-full bg-theme-accent rounded-lg grabbable no-scrollbar"
                             ref={ref}
                         >
                             <TransformComponent wrapperStyle={{ height: ref.current?.clientHeight, width: ref.current?.clientWidth }}>
@@ -581,9 +504,9 @@ export const ChartViewer = () => {
                                         </svg>
                                     )}
 
-                                    <div className="border-2 border-utility-amber" ref={chartRef}>
+                                    <div ref={chartRef}>
                                         <img
-                                            className="absolute left-0 w-full border-2 border-utility-green transition duration-100 select-none"
+                                            className="absolute left-0 w-full transition duration-100 select-none"
                                             draggable={false}
                                             src={chartLinks.dark}
                                             alt="chart"
