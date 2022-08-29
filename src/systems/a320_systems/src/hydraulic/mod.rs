@@ -29,8 +29,8 @@ use systems::{
         landing_gear::{GearGravityExtension, GearSystemController, HydraulicGearSystem},
         linear_actuator::{
             Actuator, BoundedLinearLength, HydraulicAssemblyController,
-            HydraulicLinearActuatorAssembly, LinearActuatedRigidBodyOnHingeAxis, LinearActuator,
-            LinearActuatorCharacteristics, LinearActuatorMode,
+            HydraulicLinearActuatorAssembly, HydraulicLocking, LinearActuatedRigidBodyOnHingeAxis,
+            LinearActuator, LinearActuatorCharacteristics, LinearActuatorMode,
         },
         nose_steering::{
             Pushback, SteeringActuator, SteeringAngleLimiter, SteeringController,
@@ -226,6 +226,8 @@ impl A320CargoDoorFactory {
             Self::FLOW_CONTROL_INTEGRAL_GAIN,
             Self::FLOW_CONTROL_FORCE_GAIN,
             false,
+            false,
+            None,
         )
     }
 
@@ -324,6 +326,8 @@ impl A320AileronFactory {
             Self::FLOW_CONTROL_INTEGRAL_GAIN,
             Self::FLOW_CONTROL_FORCE_GAIN,
             false,
+            false,
+            None,
         )
     }
 
@@ -431,6 +435,11 @@ impl A320SpoilerFactory {
             Self::FLOW_CONTROL_INTEGRAL_GAIN,
             Self::FLOW_CONTROL_FORCE_GAIN,
             false,
+            true,
+            Some((
+                AngularVelocity::new::<radian_per_second>(-10000.),
+                AngularVelocity::new::<radian_per_second>(0.),
+            )),
         )
     }
 
@@ -555,6 +564,8 @@ impl A320ElevatorFactory {
             Self::FLOW_CONTROL_INTEGRAL_GAIN,
             Self::FLOW_CONTROL_FORCE_GAIN,
             false,
+            false,
+            None,
         )
     }
 
@@ -656,6 +667,8 @@ impl A320RudderFactory {
             Self::FLOW_CONTROL_INTEGRAL_GAIN,
             Self::FLOW_CONTROL_FORCE_GAIN,
             false,
+            false,
+            None,
         )
     }
 
@@ -799,6 +812,8 @@ impl A320GearDoorFactory {
             FLOW_CONTROL_INTEGRAL_GAIN,
             FLOW_CONTROL_FORCE_GAIN,
             true,
+            false,
+            None,
         )
     }
 
@@ -837,6 +852,8 @@ impl A320GearDoorFactory {
             FLOW_CONTROL_INTEGRAL_GAIN,
             FLOW_CONTROL_FORCE_GAIN,
             true,
+            false,
+            None,
         )
     }
 
@@ -991,6 +1008,8 @@ impl A320GearFactory {
             FLOW_CONTROL_INTEGRAL_GAIN,
             FLOW_CONTROL_FORCE_GAIN,
             true,
+            false,
+            None,
         )
     }
 
@@ -1027,6 +1046,8 @@ impl A320GearFactory {
             FLOW_CONTROL_INTEGRAL_GAIN,
             FLOW_CONTROL_FORCE_GAIN,
             true,
+            false,
+            None,
         )
     }
 
@@ -3958,6 +3979,7 @@ impl SimulationElement for A320DoorController {
         self.position_requested = Ratio::new::<ratio>(reader.read(&self.requested_position_id));
     }
 }
+impl HydraulicLocking for A320DoorController {}
 
 struct CargoDoor {
     hydraulic_assembly: HydraulicLinearActuatorAssembly<1>,
@@ -4005,7 +4027,7 @@ impl CargoDoor {
     fn update(
         &mut self,
         context: &UpdateContext,
-        cargo_door_controller: &impl HydraulicAssemblyController,
+        cargo_door_controller: &(impl HydraulicAssemblyController + HydraulicLocking),
         current_pressure: &impl SectionPressure,
     ) {
         self.aerodynamic_model
@@ -4549,6 +4571,7 @@ impl HydraulicAssemblyController for AileronController {
         Ratio::default()
     }
 }
+impl HydraulicLocking for AileronController {}
 
 struct AileronSystemHydraulicController {
     left_aileron_blue_actuator_solenoid_id: VariableIdentifier,
@@ -4591,11 +4614,11 @@ impl AileronSystemHydraulicController {
         }
     }
 
-    fn left_controllers(&self) -> &[impl HydraulicAssemblyController] {
+    fn left_controllers(&self) -> &[impl HydraulicAssemblyController + HydraulicLocking] {
         &self.left_aileron_controllers[..]
     }
 
-    fn right_controllers(&self) -> &[impl HydraulicAssemblyController] {
+    fn right_controllers(&self) -> &[impl HydraulicAssemblyController + HydraulicLocking] {
         &self.right_aileron_controllers[..]
     }
 
@@ -4754,11 +4777,11 @@ impl ElevatorSystemHydraulicController {
         }
     }
 
-    fn left_controllers(&self) -> &[impl HydraulicAssemblyController] {
+    fn left_controllers(&self) -> &[impl HydraulicAssemblyController + HydraulicLocking] {
         &self.left_controllers[..]
     }
 
-    fn right_controllers(&self) -> &[impl HydraulicAssemblyController] {
+    fn right_controllers(&self) -> &[impl HydraulicAssemblyController + HydraulicLocking] {
         &self.right_controllers[..]
     }
 
@@ -4996,7 +5019,7 @@ impl RudderSystemHydraulicController {
         );
     }
 
-    fn rudder_controllers(&self) -> &[impl HydraulicAssemblyController] {
+    fn rudder_controllers(&self) -> &[impl HydraulicAssemblyController + HydraulicLocking] {
         &self.rudder_controllers[..]
     }
 }
@@ -5075,7 +5098,7 @@ impl AileronAssembly {
     fn update(
         &mut self,
         context: &UpdateContext,
-        aileron_controllers: &[impl HydraulicAssemblyController],
+        aileron_controllers: &[impl HydraulicAssemblyController + HydraulicLocking],
         current_pressure_outward: &impl SectionPressure,
         current_pressure_inward: &impl SectionPressure,
     ) {
@@ -5135,7 +5158,7 @@ impl ElevatorAssembly {
     fn update(
         &mut self,
         context: &UpdateContext,
-        elevator_controllers: &[impl HydraulicAssemblyController],
+        elevator_controllers: &[impl HydraulicAssemblyController + HydraulicLocking],
         current_pressure_outward: &impl SectionPressure,
         current_pressure_inward: &impl SectionPressure,
     ) {
@@ -5191,7 +5214,7 @@ impl RudderAssembly {
     fn update(
         &mut self,
         context: &UpdateContext,
-        rudder_controllers: &[impl HydraulicAssemblyController],
+        rudder_controllers: &[impl HydraulicAssemblyController + HydraulicLocking],
         current_pressure_green: &impl SectionPressure,
         current_pressure_blue: &impl SectionPressure,
         current_pressure_yellow: &impl SectionPressure,
@@ -5257,7 +5280,7 @@ impl SpoilerElement {
     fn update(
         &mut self,
         context: &UpdateContext,
-        spoiler_controller: &impl HydraulicAssemblyController,
+        spoiler_controller: &(impl HydraulicAssemblyController + HydraulicLocking),
         current_pressure: Pressure,
     ) {
         self.aerodynamic_model
@@ -5392,6 +5415,7 @@ impl SimulationElement for SpoilerController {
             ));
     }
 }
+impl HydraulicLocking for SpoilerController {}
 
 struct A320GravityExtension {
     gear_gravity_extension_handle_position_id: VariableIdentifier,
