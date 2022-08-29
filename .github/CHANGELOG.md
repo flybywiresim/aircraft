@@ -68,6 +68,7 @@
 1. [PFD] Added option to sync FD/LS buttons between CPT and FO - @Eagle941 (Joe)
 1. [EFB] Add automatic loading of a lighting preset - @SpiritZephyr (Ben)
 1. [COND] Connect Air Conditioning System to Electrical System - @mjuhe (Miquel Juhe)
+1. [ADDON] Simbridge Integration - @lucky38i (Alex)
 
 ## 0.8.0
 
@@ -319,7 +320,6 @@
 1. [ATSU] Add VDL3-simulation of datalink transport protocol - @Sven [de en] - (Sven Czarnian)
 1. [FMGC] Improve robustness of ILS auto-tuning - @tracernz (Mike)
 1. [OVHD] Fixed fire push button not being able to be stowed - Julian Sebline (Julian Sebline#8476 on Discord)
-1. [ADDON] Simbridge Integration - @lucky38i (Alex)
 
 ## 0.7.0
 
