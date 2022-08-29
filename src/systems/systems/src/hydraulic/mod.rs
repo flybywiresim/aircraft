@@ -594,7 +594,9 @@ impl SimulationElement for PowerTransferUnit {
 pub trait HydraulicCircuitController {
     fn should_open_fire_shutoff_valve(&self, pump_index: usize) -> bool;
     fn should_open_leak_measurement_valve(&self) -> bool;
-    fn should_route_pump_to_auxiliary(&self, pump_index: usize) -> bool;
+    fn should_route_pump_to_auxiliary(&self, _pump_index: usize) -> bool {
+        false
+    }
 }
 
 pub struct Accumulator {
@@ -888,6 +890,8 @@ impl HydraulicCircuit {
     pub fn update_auxiliary_actuator_volumes(&mut self, actuator: &mut impl Actuator) {
         if let Some(auxiliary_section) = self.auxiliary_section.as_mut() {
             auxiliary_section.update_actuator_volumes(actuator);
+        } else {
+            panic!("No auxiliary section available but an actuator was provided")
         }
     }
 
