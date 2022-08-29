@@ -594,7 +594,9 @@ impl SimulationElement for PowerTransferUnit {
 pub trait HydraulicCircuitController {
     fn should_open_fire_shutoff_valve(&self, pump_index: usize) -> bool;
     fn should_open_leak_measurement_valve(&self) -> bool;
-    fn should_route_pump_to_auxiliary(&self, pump_index: usize) -> bool;
+    fn should_route_pump_to_auxiliary(&self, _pump_index: usize) -> bool {
+        false
+    }
 }
 
 pub struct Accumulator {

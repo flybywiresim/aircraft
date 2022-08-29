@@ -1318,9 +1318,6 @@ pub(super) struct A320Hydraulic {
     ptu_high_pitch_sound_id: VariableIdentifier,
     ptu_continuous_mode_id: VariableIdentifier,
 
-    should_pump_to_auxiliary_section: bool, // TODO remove when a380 system available
-    dev_should_pump_to_aux: VariableIdentifier, // TODO remove when a380 system available
-
     nose_steering: SteeringActuator,
 
     core_hydraulic_updater: FixedStepLoop,
@@ -1454,8 +1451,6 @@ impl A320Hydraulic {
             hyd_ptu_ecam_memo_id: context.get_identifier("HYD_PTU_ON_ECAM_MEMO".to_owned()),
             ptu_high_pitch_sound_id: context.get_identifier("HYD_PTU_HIGH_PITCH_SOUND".to_owned()),
             ptu_continuous_mode_id: context.get_identifier("HYD_PTU_CONTINUOUS_MODE".to_owned()),
-            dev_should_pump_to_aux: context.get_identifier("HYD_PUMP_TO_AUX".to_owned()),
-            should_pump_to_auxiliary_section: false,
 
             nose_steering: SteeringActuator::new(
                 context,
@@ -1475,19 +1470,16 @@ impl A320Hydraulic {
 
             blue_circuit: A320HydraulicCircuitFactory::new_blue_circuit(context),
             blue_circuit_controller: A320HydraulicCircuitController::new(
-                context,
                 None,
                 HydraulicColor::Blue,
             ),
             green_circuit: A320HydraulicCircuitFactory::new_green_circuit(context),
             green_circuit_controller: A320HydraulicCircuitController::new(
-                context,
                 Some(1),
                 HydraulicColor::Green,
             ),
             yellow_circuit: A320HydraulicCircuitFactory::new_yellow_circuit(context),
             yellow_circuit_controller: A320HydraulicCircuitController::new(
-                context,
                 Some(2),
                 HydraulicColor::Yellow,
             ),
@@ -2449,8 +2441,6 @@ impl SimulationElement for A320Hydraulic {
             .accept(visitor);
         self.gear_system.accept(visitor);
 
-        self.yellow_circuit_controller.accept(visitor);
-
         self.trim_controller.accept(visitor);
         self.trim_assembly.accept(visitor);
 
@@ -2474,10 +2464,6 @@ impl SimulationElement for A320Hydraulic {
             self.power_transfer_unit.is_in_continuous_mode()
                 && !self.ptu_high_pitch_sound_active.output(),
         );
-    }
-
-    fn read(&mut self, reader: &mut SimulatorReader) {
-        self.should_pump_to_auxiliary_section = reader.read(&self.dev_should_pump_to_aux);
     }
 }
 impl HydraulicGeneratorControlUnit for A320Hydraulic {
@@ -2580,9 +2566,6 @@ impl GearSystemController for A320GearHydraulicController {
 }
 
 struct A320HydraulicCircuitController {
-    debug_pump_to_aux: VariableIdentifier,
-    debug_pump: f64,
-
     circuit_id: HydraulicColor,
     engine_number: Option<usize>,
     should_open_fire_shutoff_valve: bool,
@@ -2592,14 +2575,8 @@ struct A320HydraulicCircuitController {
 impl A320HydraulicCircuitController {
     const DELAY_TO_REOPEN_LEAK_VALVE_AFTER_CARGO_DOOR_USE: Duration = Duration::from_secs(15);
 
-    fn new(
-        context: &mut InitContext,
-        engine_number: Option<usize>,
-        circuit_id: HydraulicColor,
-    ) -> Self {
+    fn new(engine_number: Option<usize>, circuit_id: HydraulicColor) -> Self {
         Self {
-            debug_pump_to_aux: context.get_identifier("HYD_PUMP_TO_AUX".to_owned()),
-            debug_pump: 0.,
             circuit_id,
             engine_number,
             should_open_fire_shutoff_valve: true,
@@ -2659,15 +2636,6 @@ impl HydraulicCircuitController for A320HydraulicCircuitController {
 
     fn should_open_leak_measurement_valve(&self) -> bool {
         self.should_open_leak_measurement_valve
-    }
-
-    fn should_route_pump_to_auxiliary(&self, _: usize) -> bool {
-        self.debug_pump > 0.5
-    }
-}
-impl SimulationElement for A320HydraulicCircuitController {
-    fn read(&mut self, reader: &mut SimulatorReader) {
-        self.debug_pump = reader.read(&self.debug_pump_to_aux);
     }
 }
 
@@ -6288,10 +6256,6 @@ mod tests {
                 self.read_by_name("HYD_YELLOW_SYSTEM_1_SECTION_PRESSURE")
             }
 
-            fn yellow_pressure_auxiliary(&mut self) -> Pressure {
-                self.read_by_name("HYD_YELLOW_AUXILIARY_1_SECTION_PRESSURE")
-            }
-
             fn get_yellow_reservoir_volume(&mut self) -> Volume {
                 self.read_by_name("HYD_YELLOW_RESERVOIR_LEVEL")
             }
@@ -6635,11 +6599,6 @@ mod tests {
                 self.write_by_name("GENERAL ENG STARTER ACTIVE:2", false);
                 self.write_by_name("ENGINE_N2:2", 25.);
 
-                self
-            }
-
-            fn set_hyd_auxiliary(mut self) -> Self {
-                self.write_by_name("HYD_PUMP_TO_AUX", 1.);
                 self
             }
 
@@ -10892,33 +10851,6 @@ mod tests {
 
             assert!(test_bed.get_brake_left_green_pressure() > Pressure::new::<psi>(500.));
             assert!(test_bed.get_brake_right_green_pressure() > Pressure::new::<psi>(500.));
-        }
-
-        #[test]
-        fn yellow_edp_buildup_auxiliary_section() {
-            let mut test_bed = test_bed_on_ground_with()
-                .engines_off()
-                .on_the_ground()
-                .set_cold_dark_inputs()
-                .run_one_tick();
-
-            // Waiting for 5s pressure should be at 3000 psi
-            test_bed = test_bed
-                .start_eng2(Ratio::new::<percent>(80.))
-                .run_waiting_for(Duration::from_secs(5));
-
-            assert!(test_bed.is_yellow_pressure_switch_pressurised());
-            assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(2800.));
-            assert!(test_bed.yellow_pressure_auxiliary() < Pressure::new::<psi>(50.));
-
-            // Pumping to auxiliary section
-            test_bed = test_bed
-                .set_hyd_auxiliary()
-                .run_waiting_for(Duration::from_secs(15));
-
-            assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(1000.));
-            assert!(test_bed.yellow_pressure_auxiliary() < Pressure::new::<psi>(3500.));
-            assert!(test_bed.yellow_pressure_auxiliary() > Pressure::new::<psi>(2500.));
         }
     }
 }
