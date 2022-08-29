@@ -68,12 +68,14 @@ export const NavigraphChartUI = () => {
     }, [charts]);
 
     useEffect(() => {
-        const fetchCharts = async () => {
-            const light = await navigraph.chartCall(searchQuery, chartName.light);
-            const dark = await navigraph.chartCall(searchQuery, chartName.dark);
-            dispatch(editTabProperty({ tab: NavigationTab.NAVIGRAPH, chartLinks: { light, dark } }));
-        };
-        fetchCharts();
+        if (chartName && (chartName.light !== '' || chartName.dark !== '')) {
+            const fetchCharts = async () => {
+                const light = await navigraph.chartCall(searchQuery, chartName.light);
+                const dark = await navigraph.chartCall(searchQuery, chartName.dark);
+                dispatch(editTabProperty({ tab: NavigationTab.NAVIGRAPH, chartLinks: { light, dark } }));
+            };
+            fetchCharts();
+        }
     }, [chartName]);
 
     const handleIcaoChange = async (value: string) => {
