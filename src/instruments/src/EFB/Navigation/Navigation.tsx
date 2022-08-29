@@ -377,7 +377,7 @@ export const ChartViewer = () => {
                                         onClick={() => {
                                             if (ref.current && chartRef.current) {
                                                 const rotated90degree = Math.abs(chartRotation) === 90 || Math.abs(chartRotation) === 270;
-                                                let newScale = 1.0;
+                                                let newScale: number;
                                                 let offsetX = 0;
                                                 let offsetY = 0;
 
@@ -385,6 +385,7 @@ export const ChartViewer = () => {
                                                     if (rotated90degree) {
                                                         console.debug('fth portrait rotated to landscape');
                                                         newScale = ref.current.clientHeight / chartRef.current.clientWidth;
+                                                        offsetX = (ref.current.clientWidth - ref.current.clientHeight) / 2;
                                                         offsetY = ((chartRef.current.clientWidth - chartRef.current.clientHeight) / 2) * newScale;
                                                     } else {
                                                         console.debug('fth portrait not rotated');
@@ -427,7 +428,7 @@ export const ChartViewer = () => {
                                         onClick={() => {
                                             if (ref.current && chartRef.current) {
                                                 const rotated90degree = Math.abs(chartRotation) === 90 || Math.abs(chartRotation) === 270;
-                                                let newScale = 1.0;
+                                                let newScale: number;
                                                 let offsetX = 0;
                                                 let offsetY = 0;
 
@@ -436,6 +437,7 @@ export const ChartViewer = () => {
                                                         console.debug('ftw portrait rotated to landscape');
                                                         newScale = ref.current.clientWidth / chartRef.current.clientHeight;
                                                         offsetX = ((chartRef.current.clientHeight - chartRef.current.clientWidth) / 2) * newScale;
+                                                        offsetY = (ref.current.clientHeight - ref.current.clientWidth) / 2;
                                                     } else {
                                                         console.debug('ftw portrait not rotated');
                                                         newScale = ref.current.clientWidth / chartRef.current.clientWidth;
