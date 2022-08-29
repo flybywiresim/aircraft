@@ -672,7 +672,7 @@ export const LandingWidget = () => {
                                     <SelectInput
                                         className="w-64"
                                         defaultValue={initialState.landing.autoland}
-                                        value={reverseThrust}
+                                        value={autoland}
                                         onChange={handleAutolandChange}
                                         options={[
                                             { value: false, displayValue: `${t('Performance.Landing.DropDownNo')}` },
