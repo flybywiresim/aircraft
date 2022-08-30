@@ -43,7 +43,7 @@ declare global {
 
         function getIsaTemp(alt?: Feet): number;
 
-        function getIsaTempDeviation(alt?: Feet, sat?: Celcius): Celcius
+        function getIsaTempDeviation(alt?: Feet, sat?: Celsius): Celsius
 
         class UpdateThrottler {
             constructor(intervalMs: number);
