@@ -68,6 +68,7 @@
 1. [PFD] Added option to sync FD/LS buttons between CPT and FO - @Eagle941 (Joe)
 1. [EFB] Add automatic loading of a lighting preset - @SpiritZephyr (Ben)
 1. [COND] Connect Air Conditioning System to Electrical System - @mjuhe (Miquel Juhe)
+1. [ADDON] Simbridge Integration - @lucky38i (Alex)
 
 ## 0.8.0
 

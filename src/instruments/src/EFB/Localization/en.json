@@ -497,6 +497,8 @@
       "EnableSimBridge": "Enable SimBridge Connection (Auto deactivates after 5 minutes if no successful connection)",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Enable MCDU Server Connection (Auto deactivates after 5 minutes if no successful connection)",
       "ExternalMcduServerPort": "External MCDU Server Port",
+      "EnableSimBridge": "Enable Simbridge Connection (Auto deactivates after 5 minutes if no successful connection)",
+      "SimBridgePort": "Simbridge Port",
       "Hpa": "hPa",
       "Inactive": "Inactive",
       "LoadOnly": "Load Only",
