@@ -102,6 +102,7 @@ const EWDMessages = {
     '000055201': '\x1b<3mCOMPANY MSG',
     '000056001': '\x1b<3mHI ALT SET',
     '000068001': '\x1b<3mADIRS SWTG',
+    '000056701': '\x1b<3mVHF3 VOICE',
     '213122101': '\x1b<2m\x1b4mCAB PR\x1bm EXCESS CAB ALT',
     '213122102': '\x1b<5m -CREW OXY MASKS.....USE',
     '213122103': '\x1b<5m -SIGNS...............ON',

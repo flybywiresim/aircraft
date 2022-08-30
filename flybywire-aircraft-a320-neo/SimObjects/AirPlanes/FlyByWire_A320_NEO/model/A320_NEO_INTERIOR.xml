@@ -4105,16 +4105,39 @@
                 <UseTemplate Name="FBW_AIRLINER_Audio_Panel_Updater">
                 </UseTemplate>
             </Component>
+            <!-- RMP 1 is powered by AC/DC ESS (via ESS TR for AC) -->
+            <!-- For each ACP, VHF1 is powered with ESS (emergency circuit), VHF2 with AC/DC 2 and VHF3 with AC/DC 3 (via corresponding TR for AC) -->
+            <!-- Hence, in case of total electrical failure, only RMP 1 and VHF1 on both ACP are powered via ESS circuit -->
+            <!-- SOURCE: http://www.pmgasser.ch/airbus_memos/downloads/A320_ELEC.pdf -->
             <Component ID="Radio_Left">
                 <UseTemplate Name="FBW_RADIO_MANAGEMENT_PANEL_Template">
+                    <ID>1</ID>
                     <SIDE>L</SIDE>
-                    <BACKLIGHTS_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</BACKLIGHTS_POWERED>
+                    <BACKLIGHTS_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</BACKLIGHTS_POWERED>
                     <INDICATORS_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</INDICATORS_POWERED>
                 </UseTemplate>
             </Component>
             <Component ID="Audio_Panel_Left">
+                <!-- Init of volume and transmit channels in default operation state: Transmit VHF1 and listen VHF1 and VFH2 -->
+                <Update Once="True">
+                    0 (&gt;L:XMLVAR_COM_PANEL1_Transmit_Channel)
+                    0 (&gt;K:PILOT_TRANSMITTER_SET)
+
+                    1 (&gt;L:XMLVAR_COM_1_VHF_L_Switch_Down)
+                    1 (&gt;L:XMLVAR_COM_1_VHF_C_Switch_Down)
+
+                    1 (&gt;K:COM1_RECEIVE_SELECT)
+                    1 (&gt;K:COM2_RECEIVE_SELECT)
+                    1 (&gt;K:COM3_RECEIVE_SELECT)
+
+                    0.8 (&gt;L:XMLVAR_COM_1_Volume_VHF_L)
+                    0.4 (&gt;L:XMLVAR_COM_1_Volume_VHF_C)
+                    0 (&gt;L:XMLVAR_COM_1_Volume_VHF_R)
+                    0 (&gt;K:COM3_VOLUME_SET)
+                </Update>
                 <UseTemplate Name="FBW_AIRLINER_Audio_Panel_Template">
                     <ID>1</ID>
+                    <SIDE>L</SIDE>
                     <NODE_ID_RECEIVER_VHF_L>KNOB_AUDIOL_VHF1</NODE_ID_RECEIVER_VHF_L>
                     <NODE_ID_LIGHT_RECEIVER_VHF_L>PUSH_AUDIOL_VHF1_EMIS</NODE_ID_LIGHT_RECEIVER_VHF_L>
                     <ANIM_NAME_KNOB_RECEIVER_VHF_L>KNOB_AUDIOL_VHF1</ANIM_NAME_KNOB_RECEIVER_VHF_L>
@@ -4139,9 +4162,6 @@
                     <ANIM_NAME_BUTTON_VHF_R>PUSH_AUDIOL_CALL3</ANIM_NAME_BUTTON_VHF_R>
                     <NODE_ID_BUTTON_SEQ1_VHF_R>PUSH_AUDIOL_CALL3_SEQ1</NODE_ID_BUTTON_SEQ1_VHF_R>
                     <NODE_ID_BUTTON_SEQ2_VHF_R>PUSH_AUDIOL_CALL3_SEQ2</NODE_ID_BUTTON_SEQ2_VHF_R>
-                    <SEQ1_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-                    <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
-                    <AUDIO_KNOB_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</AUDIO_KNOB_POWERED>
                 </UseTemplate>
                 <Component ID="Audio_Panel_Left_Dummies">
                     <OverrideTemplateParameters>
@@ -4154,102 +4174,119 @@
                     </OverrideTemplateParameters>
                     <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
                         <NODE_ID>PUSH_AUDIOL_RESET</NODE_ID>
-                        <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
-                        <NO_SEQ1/>
+                        <SEQ1_POWERED>0</SEQ1_POWERED>
+                        <SEQ2_POWERED>0</SEQ2_POWERED>
                     </UseTemplate>
                     <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
                         <NODE_ID>PUSH_AUDIOL_VOICE</NODE_ID>
-                        <SEQ1_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-                        <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
+                        <SEQ1_POWERED>0</SEQ1_POWERED>
+                        <SEQ2_POWERED>0</SEQ2_POWERED>
                     </UseTemplate>
                     <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
                         <NODE_ID>PUSH_AUDIOL_PA</NODE_ID>
-                        <SEQ1_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-                        <NO_SEQ2/>
+                        <SEQ1_POWERED>0</SEQ1_POWERED>
+                        <SEQ2_POWERED>0</SEQ2_POWERED>
                     </UseTemplate>
                     <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
                         <NODE_ID>PUSH_AUDIOL_ATT</NODE_ID>
-                        <SEQ1_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-                        <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
+                        <SEQ1_POWERED>0</SEQ1_POWERED>
+                        <SEQ2_POWERED>0</SEQ2_POWERED>
                     </UseTemplate>
                     <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
                         <NODE_ID>PUSH_AUDIOL_MECH</NODE_ID>
-                        <SEQ1_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-                        <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
+                        <SEQ1_POWERED>0</SEQ1_POWERED>
+                        <SEQ2_POWERED>0</SEQ2_POWERED>
                     </UseTemplate>
                     <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
                         <NODE_ID>PUSH_AUDIOL_CALL4</NODE_ID>
-                        <SEQ1_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-                        <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
+                        <SEQ1_POWERED>0</SEQ1_POWERED>
+                        <SEQ2_POWERED>0</SEQ2_POWERED>
                     </UseTemplate>
                     <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
                         <NODE_ID>PUSH_AUDIOL_CALL5</NODE_ID>
-                        <SEQ1_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-                        <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
+                        <SEQ1_POWERED>0</SEQ1_POWERED>
+                        <SEQ2_POWERED>0</SEQ2_POWERED>
                     </UseTemplate>
                 </Component>
                 <Component ID="Audio_Panel_Left_Volume_Dummies">
                     <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
                         <NODE_ID>PUSH_AUDIOL_VOR1_EMIS</NODE_ID>
-                        <AUDIO_KNOB_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</AUDIO_KNOB_POWERED>
+                        <AUDIO_KNOB_POWERED>0</AUDIO_KNOB_POWERED>
                     </UseTemplate>
                     <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
                         <NODE_ID>PUSH_AUDIOL_VOR2_EMIS</NODE_ID>
-                        <AUDIO_KNOB_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</AUDIO_KNOB_POWERED>
+                        <AUDIO_KNOB_POWERED>0</AUDIO_KNOB_POWERED>
                     </UseTemplate>
                     <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
                         <NODE_ID>PUSH_AUDIOL_MKR_EMIS</NODE_ID>
-                        <AUDIO_KNOB_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</AUDIO_KNOB_POWERED>
+                        <AUDIO_KNOB_POWERED>0</AUDIO_KNOB_POWERED>
                     </UseTemplate>
                     <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
                         <NODE_ID>PUSH_AUDIOL_ILS_EMIS</NODE_ID>
-                        <AUDIO_KNOB_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</AUDIO_KNOB_POWERED>
+                        <AUDIO_KNOB_POWERED>0</AUDIO_KNOB_POWERED>
                     </UseTemplate>
                     <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
                         <NODE_ID>PUSH_AUDIOL_HF1_EMIS</NODE_ID>
-                        <AUDIO_KNOB_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</AUDIO_KNOB_POWERED>
+                        <AUDIO_KNOB_POWERED>0</AUDIO_KNOB_POWERED>
                     </UseTemplate>
                     <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
                         <NODE_ID>PUSH_AUDIOL_MLS_EMIS</NODE_ID>
-                        <AUDIO_KNOB_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</AUDIO_KNOB_POWERED>
+                        <AUDIO_KNOB_POWERED>0</AUDIO_KNOB_POWERED>
                     </UseTemplate>
                     <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
                         <NODE_ID>PUSH_AUDIOL_HF2_EMIS</NODE_ID>
-                        <AUDIO_KNOB_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</AUDIO_KNOB_POWERED>
+                        <AUDIO_KNOB_POWERED>0</AUDIO_KNOB_POWERED>
                     </UseTemplate>
                     <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
                         <NODE_ID>PUSH_AUDIOL_ADF1_EMIS</NODE_ID>
-                        <AUDIO_KNOB_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</AUDIO_KNOB_POWERED>
+                        <AUDIO_KNOB_POWERED>0</AUDIO_KNOB_POWERED>
                     </UseTemplate>
                     <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
                         <NODE_ID>PUSH_AUDIOL_INT_EMIS</NODE_ID>
-                        <AUDIO_KNOB_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</AUDIO_KNOB_POWERED>
+                        <AUDIO_KNOB_POWERED>0</AUDIO_KNOB_POWERED>
                     </UseTemplate>
                     <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
                         <NODE_ID>PUSH_AUDIOL_ADF2_EMIS</NODE_ID>
-                        <AUDIO_KNOB_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</AUDIO_KNOB_POWERED>
+                        <AUDIO_KNOB_POWERED>0</AUDIO_KNOB_POWERED>
                     </UseTemplate>
                     <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
                         <NODE_ID>PUSH_AUDIOL_CAB_EMIS</NODE_ID>
-                        <AUDIO_KNOB_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</AUDIO_KNOB_POWERED>
+                        <AUDIO_KNOB_POWERED>0</AUDIO_KNOB_POWERED>
                     </UseTemplate>
                     <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
                         <NODE_ID>PUSH_AUDIOL_PA1_EMIS</NODE_ID>
-                        <AUDIO_KNOB_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</AUDIO_KNOB_POWERED>
+                        <AUDIO_KNOB_POWERED>0</AUDIO_KNOB_POWERED>
                     </UseTemplate>
                 </Component>
             </Component>
 
+            <!-- RMP 2 is powered by AC/DC 2 (via TR 2 for AC) -->
+            <!-- For each ACP, VHF1 is powered with ESS (emergency circuit), VHF2 with AC/DC 2 and VHF3 with AC/DC 3 (via corresponding TR for AC) -->
+            <!-- Hence, in case of total electrical failure, only RMP 1 and VHF1 on both ACP are powered via ESS circuit -->
+            <!-- SOURCE: http://www.pmgasser.ch/airbus_memos/downloads/A320_ELEC.pdf -->
             <Component ID="Radio_Right">
                 <UseTemplate Name="FBW_RADIO_MANAGEMENT_PANEL_Template">
+                    <ID>2</ID>
                     <SIDE>R</SIDE>
-                    <BACKLIGHTS_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</BACKLIGHTS_POWERED>
+                    <BACKLIGHTS_POWERED>(L:A32NX_ELEC_DC_2_BUS_IS_POWERED, Bool)</BACKLIGHTS_POWERED>
                     <INDICATORS_POWERED>(L:A32NX_ELEC_DC_2_BUS_IS_POWERED, Bool)</INDICATORS_POWERED>
                 </UseTemplate>
             </Component>
             <Component ID="Audio_Panel_Right">
+                <Update Once="True">
+                    0 (&gt;L:XMLVAR_COM_PANEL2_Transmit_Channel)
+                    0 (&gt;K:COPILOT_TRANSMITTER_SET)
+
+                    1 (&gt;L:XMLVAR_COM_2_VHF_L_Switch_Down)
+                    1 (&gt;L:XMLVAR_COM_2_VHF_C_Switch_Down)
+
+                    0.8 (&gt;L:XMLVAR_COM_2_Volume_VHF_L)
+                    0.4 (&gt;L:XMLVAR_COM_2_Volume_VHF_C)
+                    0 (&gt;L:XMLVAR_COM_2_Volume_VHF_R)
+                </Update>
                 <UseTemplate Name="FBW_AIRLINER_Audio_Panel_Template">
                     <ID>2</ID>
+                    <SIDE>R</SIDE>
                     <NODE_ID_RECEIVER_VHF_L>KNOB_AUDIOR_VHF1</NODE_ID_RECEIVER_VHF_L>
                     <NODE_ID_LIGHT_RECEIVER_VHF_L>PUSH_AUDIOR_VHF1_EMIS</NODE_ID_LIGHT_RECEIVER_VHF_L>
                     <ANIM_NAME_KNOB_RECEIVER_VHF_L>KNOB_AUDIOR_VHF1</ANIM_NAME_KNOB_RECEIVER_VHF_L>
@@ -4274,9 +4311,6 @@
                     <ANIM_NAME_BUTTON_VHF_R>PUSH_AUDIOR_CALL3</ANIM_NAME_BUTTON_VHF_R>
                     <NODE_ID_BUTTON_SEQ1_VHF_R>PUSH_AUDIOR_CALL3_SEQ1</NODE_ID_BUTTON_SEQ1_VHF_R>
                     <NODE_ID_BUTTON_SEQ2_VHF_R>PUSH_AUDIOR_CALL3_SEQ2</NODE_ID_BUTTON_SEQ2_VHF_R>
-                    <SEQ1_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-                    <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
-                    <AUDIO_KNOB_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</AUDIO_KNOB_POWERED>
                 </UseTemplate>
                 <Component ID="Audio_Panel_Right_Dummies">
                     <OverrideTemplateParameters>
@@ -4289,88 +4323,88 @@
                     </OverrideTemplateParameters>
                     <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
                         <NODE_ID>PUSH_AUDIOR_RESET</NODE_ID>
-                        <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
-                        <NO_SEQ1/>
+                        <SEQ1_POWERED>0</SEQ1_POWERED>
+                        <SEQ2_POWERED>0</SEQ2_POWERED>
                     </UseTemplate>
                     <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
                         <NODE_ID>PUSH_AUDIOR_VOICE</NODE_ID>
-                        <SEQ1_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-                        <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
+                        <SEQ1_POWERED>0</SEQ1_POWERED>
+                        <SEQ2_POWERED>0</SEQ2_POWERED>
                     </UseTemplate>
                     <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
                         <NODE_ID>PUSH_AUDIOR_PA</NODE_ID>
-                        <SEQ1_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-                        <NO_SEQ2/>
+                        <SEQ1_POWERED>0</SEQ1_POWERED>
+                        <SEQ2_POWERED>0</SEQ2_POWERED>
                     </UseTemplate>
                     <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
                         <NODE_ID>PUSH_AUDIOR_ATT</NODE_ID>
-                        <SEQ1_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-                        <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
+                        <SEQ1_POWERED>0</SEQ1_POWERED>
+                        <SEQ2_POWERED>0</SEQ2_POWERED>
                     </UseTemplate>
                     <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
                         <NODE_ID>PUSH_AUDIOR_MECH</NODE_ID>
-                        <SEQ1_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-                        <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
+                        <SEQ1_POWERED>0</SEQ1_POWERED>
+                        <SEQ2_POWERED>0</SEQ2_POWERED>
                     </UseTemplate>
                     <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
                         <NODE_ID>PUSH_AUDIOR_CALL4</NODE_ID>
-                        <SEQ1_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-                        <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
+                        <SEQ1_POWERED>0</SEQ1_POWERED>
+                        <SEQ2_POWERED>0</SEQ2_POWERED>
                     </UseTemplate>
                     <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
                         <NODE_ID>PUSH_AUDIOR_CALL5</NODE_ID>
-                        <SEQ1_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-                        <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
+                        <SEQ1_POWERED>0</SEQ1_POWERED>
+                        <SEQ2_POWERED>0</SEQ2_POWERED>
                     </UseTemplate>
                 </Component>
                 <Component ID="Audio_Panel_Right_Volume_Dummies">
                     <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
                         <NODE_ID>PUSH_AUDIOR_VOR1_EMIS</NODE_ID>
-                        <AUDIO_KNOB_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</AUDIO_KNOB_POWERED>
+                        <AUDIO_KNOB_POWERED>0</AUDIO_KNOB_POWERED>
                     </UseTemplate>
                     <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
                         <NODE_ID>PUSH_AUDIOR_VOR2_EMIS</NODE_ID>
-                        <AUDIO_KNOB_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</AUDIO_KNOB_POWERED>
+                        <AUDIO_KNOB_POWERED>0</AUDIO_KNOB_POWERED>
                     </UseTemplate>
                     <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
                         <NODE_ID>PUSH_AUDIOR_MKR_EMIS</NODE_ID>
-                        <AUDIO_KNOB_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</AUDIO_KNOB_POWERED>
+                        <AUDIO_KNOB_POWERED>0</AUDIO_KNOB_POWERED>
                     </UseTemplate>
                     <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
                         <NODE_ID>PUSH_AUDIOR_ILS_EMIS</NODE_ID>
-                        <AUDIO_KNOB_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</AUDIO_KNOB_POWERED>
+                        <AUDIO_KNOB_POWERED>0</AUDIO_KNOB_POWERED>
                     </UseTemplate>
                     <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
                         <NODE_ID>PUSH_AUDIOR_HF1_EMIS</NODE_ID>
-                        <AUDIO_KNOB_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</AUDIO_KNOB_POWERED>
+                        <AUDIO_KNOB_POWERED>0</AUDIO_KNOB_POWERED>
                     </UseTemplate>
                     <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
                         <NODE_ID>PUSH_AUDIOR_MLS_EMIS</NODE_ID>
-                        <AUDIO_KNOB_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</AUDIO_KNOB_POWERED>
+                        <AUDIO_KNOB_POWERED>0</AUDIO_KNOB_POWERED>
                     </UseTemplate>
                     <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
                         <NODE_ID>PUSH_AUDIOR_HF2_EMIS</NODE_ID>
-                        <AUDIO_KNOB_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</AUDIO_KNOB_POWERED>
+                        <AUDIO_KNOB_POWERED>0</AUDIO_KNOB_POWERED>
                     </UseTemplate>
                     <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
                         <NODE_ID>PUSH_AUDIOR_ADF1_EMIS</NODE_ID>
-                        <AUDIO_KNOB_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</AUDIO_KNOB_POWERED>
+                        <AUDIO_KNOB_POWERED>0</AUDIO_KNOB_POWERED>
                     </UseTemplate>
                     <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
                         <NODE_ID>PUSH_AUDIOR_INT_EMIS</NODE_ID>
-                        <AUDIO_KNOB_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</AUDIO_KNOB_POWERED>
+                        <AUDIO_KNOB_POWERED>0</AUDIO_KNOB_POWERED>
                     </UseTemplate>
                     <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
                         <NODE_ID>PUSH_AUDIOR_ADF2_EMIS</NODE_ID>
-                        <AUDIO_KNOB_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</AUDIO_KNOB_POWERED>
+                        <AUDIO_KNOB_POWERED>0</AUDIO_KNOB_POWERED>
                     </UseTemplate>
                     <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
                         <NODE_ID>PUSH_AUDIOR_CAB_EMIS</NODE_ID>
-                        <AUDIO_KNOB_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</AUDIO_KNOB_POWERED>
+                        <AUDIO_KNOB_POWERED>0</AUDIO_KNOB_POWERED>
                     </UseTemplate>
                     <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
                         <NODE_ID>PUSH_AUDIOR_PA1_EMIS</NODE_ID>
-                        <AUDIO_KNOB_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</AUDIO_KNOB_POWERED>
+                        <AUDIO_KNOB_POWERED>0</AUDIO_KNOB_POWERED>
                     </UseTemplate>
                 </Component>
             </Component>
