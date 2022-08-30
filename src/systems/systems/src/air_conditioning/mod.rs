@@ -4,8 +4,8 @@ use crate::{
     overhead::{OnOffFaultPushButton, ValueKnob},
     pressurization::PressurizationOverheadPanel,
     shared::{
-        Cabin, EngineBleedPushbutton, EngineCorrectedN1, EngineFirePushButtons, EngineStartState,
-        GroundSpeed, LgciuWeightOnWheels, PackFlowValveState, PneumaticBleed,
+        Cabin, ElectricalBusType, EngineBleedPushbutton, EngineCorrectedN1, EngineFirePushButtons,
+        EngineStartState, GroundSpeed, LgciuWeightOnWheels, PackFlowValveState, PneumaticBleed,
     },
     simulation::{
         InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -72,10 +72,20 @@ pub struct AirConditioningSystem<const ZONES: usize> {
 }
 
 impl<const ZONES: usize> AirConditioningSystem<ZONES> {
-    pub fn new(context: &mut InitContext, cabin_zones: [ZoneType; ZONES]) -> Self {
+    pub fn new(
+        context: &mut InitContext,
+        cabin_zones: [ZoneType; ZONES],
+        acsc_primary_powered_by: Vec<ElectricalBusType>,
+        acsc_secondary_powered_by: Vec<ElectricalBusType>,
+    ) -> Self {
         Self {
             acs_overhead: AirConditioningSystemOverhead::new(context, &cabin_zones),
-            acsc: AirConditioningSystemController::new(context, &cabin_zones),
+            acsc: AirConditioningSystemController::new(
+                context,
+                &cabin_zones,
+                acsc_primary_powered_by,
+                acsc_secondary_powered_by,
+            ),
         }
     }
 
