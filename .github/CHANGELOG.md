@@ -69,6 +69,7 @@
 1. [EFB] Add automatic loading of a lighting preset - @SpiritZephyr (Ben)
 1. [COND] Connect Air Conditioning System to Electrical System - @mjuhe (Miquel Juhe)
 1. [HYD] Default discrete of failed ADIRs impacts gear safety valve correctly - @Crocket63 (crocket)
+1. [ADDON] Simbridge Integration - @lucky38i (Alex)
 
 ## 0.8.0
 
