@@ -62,7 +62,6 @@
 1. [FMGC] Fix ident for CD legs - @tracernz (Mike)
 1. [HYD] Refactor plane accelerations and added filtering to handle ground collisions - @Crocket63 (crocket)
 1. [FMGC] Improve procedure loading performance - @tracernz (Mike)
-1. [HYD] Added optional auxiliary hydraulic section in core hydraulic circuits - @Crocket63
 1. [EFB] Added Payload Loading to EFB - @2hwk (2Cas#1022)
 1. [MODEL] Remove blue highlights in lock mode - @tracernz (Mike)
 1. [RMP] Fixed the behavior of the RMPs and ACPs (VHFs only) - Julian Sebline (Julian Sebline#8476 on Discord)
@@ -70,6 +69,7 @@
 1. [EFB] Add automatic loading of a lighting preset - @SpiritZephyr (Ben)
 1. [COND] Connect Air Conditioning System to Electrical System - @mjuhe (Miquel Juhe)
 1. [ADDON] Simbridge Integration - @lucky38i (Alex)
+1. [HYD] Added optional auxiliary hydraulic section in core hydraulic circuits - @Crocket63
 
 ## 0.8.0
 
