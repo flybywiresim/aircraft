@@ -119,7 +119,6 @@ impl A320HydraulicCircuitFactory {
     const MIN_PRESS_EDP_SECTION_HI_HYST: f64 = 2900.0;
     const MIN_PRESS_PRESSURISED_LO_HYST: f64 = 2740.0;
     const MIN_PRESS_PRESSURISED_HI_HYST: f64 = 2900.0;
-
     const HYDRAULIC_TARGET_PRESSURE_PSI: f64 = 5100.;
 
     pub fn new_green_circuit(context: &mut InitContext) -> HydraulicCircuit {
