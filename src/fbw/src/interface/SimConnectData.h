@@ -129,6 +129,8 @@ struct SimData {
   unsigned long long assistanceLandingEnabled;
   unsigned long long aiAutoTrimActive;
   unsigned long long aiControlsActive;
+  unsigned long long volumeCOM1;
+  unsigned long long volumeCOM2;
 };
 
 struct SimInput {
@@ -340,4 +342,15 @@ struct ClientDataLocalVariablesAutothrust {
   double is_soft_alt_mode_active;
   double is_TCAS_active;
   double target_TCAS_RA_rate_fpm;
+};
+
+struct ThirdPartyDataIVAO {
+  uint8_t selcal;
+  uint8_t volumeCOM1;
+  uint8_t volumeCOM2;
+};
+
+struct ThirdPartyDataVPILOT {
+  uint8_t loaded; // Set to 1 if the aircraft is loaded. 0 once unloaded. If loaded, vPilot does not play the SELCAL sound
+  uint8_t selcal;
 };

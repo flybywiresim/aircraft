@@ -250,6 +250,12 @@ class SimConnectInterface {
   bool setClientDataFlyByWire(ClientDataFlyByWire output);
   ClientDataFlyByWire getClientDataFlyByWire();
 
+  bool setThirdPartyDataIVAO(ThirdPartyDataIVAO& output);
+  ThirdPartyDataIVAO* getThirdPartyDataIVAO();
+
+  bool setThirdPartyDataVPILOT(ThirdPartyDataVPILOT& output);
+  ThirdPartyDataVPILOT* getThirdPartyDataVPILOT();
+
   void setLoggingFlightControlsEnabled(bool enabled);
   bool getLoggingFlightControlsEnabled();
 
@@ -270,6 +276,37 @@ class SimConnectInterface {
     FLY_BY_WIRE,
     LOCAL_VARIABLES,
     LOCAL_VARIABLES_AUTOTHRUST,
+    IVAO,
+    VPILOT,
+  };
+
+  enum ClientDefine {
+    DEFINITION_AUTOPILOT_STATE_MACHINE,
+    DEFINITION_AUTOPILOT_LAWS,
+    DEFINITION_AUTOTHRUST,
+    DEFINITION_FLY_BY_WIRE_INPUT,
+    DEFINITION_FLY_BY_WIRE,
+    DEFINITION_LOCAL_VARIABLES,
+    DEFINITION_LOCAL_VARIABLES_AUTOTHRUST,
+    DEFINITION_AIRCRAFT_LOADED,
+    DEFINITION_SELCAL_IVAO,
+    DEFINITION_SELCAL_VPILOT,
+    DEFINITION_VOLUME_COM1,
+    DEFINITION_VOLUME_COM2,
+    DEFINITION_ALL_IVAO,
+    DEFINITION_ALL_VPILOT,
+  };
+
+  enum ClientRequest {
+    REQUEST_AUTOPILOT_STATE_MACHINE,
+    REQUEST_AUTOPILOT_LAWS,
+    REQUEST_AUTOTHRUST,
+    REQUEST_FLY_BY_WIRE_INPUT,
+    REQUEST_FLY_BY_WIRE,
+    REQUEST_LOCAL_VARIABLES,
+    REQUEST_LOCAL_VARIABLES_AUTOTHRUST,
+    REQUEST_ALL_IVAO,
+    REQUEST_ALL_VPILOT,
   };
 
   bool isConnected = false;
@@ -303,6 +340,9 @@ class SimConnectInterface {
   ClientDataAutothrust clientDataAutothrust = {};
   ClientDataFlyByWire clientDataFlyByWire = {};
 
+  ThirdPartyDataIVAO* thirdPartyDataIVAO = nullptr;
+  ThirdPartyDataVPILOT* thirdPartyDataVPILOT = nullptr;
+
   // change to non-static when aileron events can be processed via SimConnect
   static double flightControlsKeyChangeAileron;
   double flightControlsKeyChangeElevator = 0.0;
@@ -318,6 +358,10 @@ class SimConnectInterface {
   bool prepareSimInputSimConnectDataDefinitions();
 
   bool prepareSimOutputSimConnectDataDefinitions();
+
+  bool prepareIVAODataDefinitions();
+
+  bool prepareVPILOTDataDefinitions();
 
   bool prepareClientDataDefinitions();
 

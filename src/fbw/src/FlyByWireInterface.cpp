@@ -109,6 +109,8 @@ bool FlyByWireInterface::update(double sampleTime) {
   // update spoilers
   result &= updateSpoilers(calculatedSampleTime);
 
+  result &= updateThirdParty(additionalData.volumeCOM1, additionalData.volumeCOM2);
+
   // update flight data recorder
   flightDataRecorder.update(&autopilotStateMachine, &autopilotLaws, &autoThrust, &flyByWire, engineData, additionalData);
 
@@ -140,7 +142,7 @@ void FlyByWireInterface::loadConfiguration() {
 
   // if any model is deactivated we need to enable client data
   clientDataEnabled = (!autopilotStateMachineEnabled || !autopilotLawsEnabled || !autoThrustEnabled || !flyByWireEnabled);
-
+  clientDataEnabled = true;
   // print configuration into console
   cout << "WASM: MODEL     : CLIENT_DATA_ENABLED (auto)           = " << clientDataEnabled << endl;
   cout << "WASM: MODEL     : AUTOPILOT_STATE_MACHINE_ENABLED      = " << autopilotStateMachineEnabled << endl;
@@ -461,6 +463,20 @@ void FlyByWireInterface::setupLocalVariables() {
   idRealisticTillerEnabled = make_unique<LocalVariable>("A32NX_REALISTIC_TILLER_ENABLED");
   idTillerHandlePosition = make_unique<LocalVariable>("A32NX_TILLER_HANDLE_POSITION");
   idNoseWheelPosition = make_unique<LocalVariable>("A32NX_NOSE_WHEEL_POSITION");
+
+  selcal = make_unique<LocalVariable>("A32NX_ACP_SELCAL");
+
+  volumeCOM1ACP1 = make_unique<LocalVariable>("A32NX_ACP1_Volume_VHF1");
+  cout << "VOLUME INIT = " << volumeCOM1ACP1->get() << endl;
+  volumeCOM1ACP2 = make_unique<LocalVariable>("A32NX_ACP2_Volume_VHF1");
+  volumeCOM1ACP3 = make_unique<LocalVariable>("A32NX_ACP3_Volume_VHF1");
+
+  volumeCOM2ACP1 = make_unique<LocalVariable>("A32NX_ACP1_Volume_VHF2");
+  volumeCOM2ACP2 = make_unique<LocalVariable>("A32NX_ACP2_Volume_VHF2");
+  volumeCOM2ACP3 = make_unique<LocalVariable>("A32NX_ACP3_Volume_VHF2");
+
+  updateReceiversFromThirdParty = make_unique<LocalVariable>("A32NX_COM_UpdateReceiversFromThirdParty");
+  updateReceiversFromThirdParty->set(1);
 }
 
 bool FlyByWireInterface::handleFcuInitialization(double sampleTime) {
@@ -763,6 +779,8 @@ bool FlyByWireInterface::updateAdditionalData(double sampleTime) {
   additionalData.realisticTillerEnabled = idRealisticTillerEnabled->get() == 1;
   additionalData.tillerHandlePosition = idTillerHandlePosition->get();
   additionalData.noseWheelPosition = idNoseWheelPosition->get();
+  additionalData.volumeCOM1 = simData.volumeCOM1;
+  additionalData.volumeCOM2 = simData.volumeCOM2;
 
   return true;
 }
@@ -1809,6 +1827,69 @@ bool FlyByWireInterface::updateSpoilers(double sampleTime) {
   idSpoilersPositionRight->set(spoilersHandler->getRightPosition());
 
   // result
+  return true;
+}
+
+bool FlyByWireInterface::updateThirdParty(unsigned long long volumeCOM1, unsigned long long volumeCOM2) {
+  auto thirdPartyDataIVAO = simConnectInterface.getThirdPartyDataIVAO();
+  auto thirdPartyDataVPILOT = simConnectInterface.getThirdPartyDataVPILOT();
+
+  if(thirdPartyDataIVAO) {
+    bool update = false;
+
+    selcal->set(thirdPartyDataIVAO->selcal);
+
+    if(thirdPartyDataIVAO->volumeCOM1 != this->previousVolumeCOM1) {
+      double volumeCOM1over100 = thirdPartyDataIVAO->volumeCOM1 / 100.0;
+
+      volumeCOM1ACP1->set(volumeCOM1over100);
+      volumeCOM1ACP2->set(volumeCOM1over100);
+      volumeCOM1ACP3->set(volumeCOM1over100);
+
+      this->previousVolumeCOM1 = thirdPartyDataIVAO->volumeCOM1;
+
+      update = true;
+    }
+
+    if(thirdPartyDataIVAO->volumeCOM2 != this->previousVolumeCOM2) {
+      double volumeCOM2over100 = thirdPartyDataIVAO->volumeCOM2 / 100.0;
+
+      volumeCOM2ACP1->set(volumeCOM2over100);
+      volumeCOM2ACP2->set(volumeCOM2over100);
+      volumeCOM2ACP3->set(volumeCOM2over100);
+
+      this->previousVolumeCOM2 = thirdPartyDataIVAO->volumeCOM2;
+
+      update = true;
+    }
+
+    if(update) {
+      updateReceiversFromThirdParty->set(1);
+    }
+
+    delete thirdPartyDataIVAO;
+    thirdPartyDataIVAO = nullptr;
+  } else if(thirdPartyDataVPILOT) {
+      selcal->set(thirdPartyDataVPILOT->selcal);
+
+      delete thirdPartyDataVPILOT;
+      thirdPartyDataVPILOT = nullptr;
+  } else {
+    ThirdPartyDataIVAO dataIVAO {selcal->get(), this->previousVolumeCOM1, this->previousVolumeCOM2};
+    ThirdPartyDataVPILOT dataVPILOT {1, selcal->get()};
+
+    if(volumeCOM1 != this->previousVolumeCOM1 || volumeCOM2 != this->previousVolumeCOM2) {
+      dataIVAO.volumeCOM1 = volumeCOM1;
+      dataIVAO.volumeCOM2 = volumeCOM2;
+
+      this->previousVolumeCOM1 = volumeCOM1;
+      this->previousVolumeCOM2 = volumeCOM2;
+    }
+
+    simConnectInterface.setThirdPartyDataIVAO(dataIVAO);
+    simConnectInterface.setThirdPartyDataVPILOT(dataVPILOT);
+  }
+
   return true;
 }
 

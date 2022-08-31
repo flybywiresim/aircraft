@@ -31,6 +31,8 @@ struct AdditionalData {
   unsigned long long aiAutoTrimActive;
   unsigned long long aiControlsActive;
   unsigned long long realisticTillerEnabled;
+  unsigned long long volumeCOM1;
+  unsigned long long volumeCOM2;
   double tillerHandlePosition;
   double noseWheelPosition;
 };
