@@ -134,6 +134,8 @@ pub struct A320HydraulicCircuitFactory {}
 impl A320HydraulicCircuitFactory {
     const MIN_PRESS_EDP_SECTION_LO_HYST: f64 = 1740.0;
     const MIN_PRESS_EDP_SECTION_HI_HYST: f64 = 2200.0;
+    const MIN_PRESS_BLUE_ELEC_PUMP_SECTION_LO_HYST: f64 = 1450.0;
+    const MIN_PRESS_BLUE_ELEC_PUMP_SECTION_HI_HYST: f64 = 1750.0;
     const MIN_PRESS_PRESSURISED_LO_HYST: f64 = 1450.0;
     const MIN_PRESS_PRESSURISED_HI_HYST: f64 = 1750.0;
 
@@ -171,8 +173,8 @@ impl A320HydraulicCircuitFactory {
             reservoir,
             Pressure::new::<psi>(Self::MIN_PRESS_PRESSURISED_LO_HYST),
             Pressure::new::<psi>(Self::MIN_PRESS_PRESSURISED_HI_HYST),
-            Pressure::new::<psi>(Self::MIN_PRESS_EDP_SECTION_LO_HYST),
-            Pressure::new::<psi>(Self::MIN_PRESS_EDP_SECTION_HI_HYST),
+            Pressure::new::<psi>(Self::MIN_PRESS_BLUE_ELEC_PUMP_SECTION_LO_HYST),
+            Pressure::new::<psi>(Self::MIN_PRESS_BLUE_ELEC_PUMP_SECTION_HI_HYST),
             false,
             false,
             Pressure::new::<psi>(Self::HYDRAULIC_TARGET_PRESSURE_PSI),
