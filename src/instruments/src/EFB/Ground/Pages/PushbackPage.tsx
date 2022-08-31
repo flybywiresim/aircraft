@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 /* eslint-disable max-len */
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useSimVar, useSplitSimVar } from '@instruments/common/simVars';
 import {
     ArrowDown,
@@ -20,7 +20,6 @@ import {
 import Slider from 'rc-slider';
 import { MathUtils } from '@shared/MathUtils';
 import { toast } from 'react-toastify';
-import { usePersistentProperty } from 'react-msfs';
 import { usePersistentNumberProperty } from '@instruments/common/persistence';
 import { t } from '../../translation';
 import { TooltipWrapper } from '../../UtilComponents/TooltipWrapper';
