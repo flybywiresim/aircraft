@@ -348,6 +348,8 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idLs1Active;
   std::unique_ptr<LocalVariable> idLs2Active;
   std::unique_ptr<LocalVariable> idIsisLsActive;
+  
+  std::unique_ptr<LocalVariable> idWingAntiIce;
 
   void loadConfiguration();
   void setupLocalVariables();
