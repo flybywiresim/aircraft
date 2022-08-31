@@ -535,11 +535,15 @@ impl AirDataInertialReferenceUnit {
         self.ir.has_fault()
     }
 
+    fn adr_is_valid(&self) -> bool {
+        self.adr.is_valid()
+    }
+
     // If above speed threshold OR if data is unavailable: all discrete are set to TRUE
     fn update_discrete_outputs(&mut self) {
         let speed_knot = self.adr.computed_airspeed_raw().get::<knot>();
 
-        let data_unavailable = self.ir_has_fault() || !self.ir_is_on() || !self.is_fully_aligned();
+        let data_unavailable = !self.adr_is_valid();
 
         if speed_knot < 100. {
             self.low_speed_warning_1_104kts = data_unavailable;
@@ -797,13 +801,11 @@ impl AirDataReference {
     }
 
     fn update_values(&mut self, context: &UpdateContext, simulator_data: AdirsSimulatorData) {
-        let is_valid = self.is_on && self.is_initialised();
-
         // For now some of the data will be read from the context. Later the context will no longer
         // contain this information (and instead all usages will be replaced by requests to the ADIRUs).
 
         // If the ADR is off or not initialized, output all labels as FW with value 0.
-        if !is_valid {
+        if !self.is_valid() {
             self.altitude.set_failure_warning();
             self.barometric_vertical_speed.set_failure_warning();
             self.computed_airspeed.set_failure_warning();
@@ -863,6 +865,10 @@ impl AirDataReference {
 
     fn is_initialised(&self) -> bool {
         self.remaining_initialisation_duration == Some(Duration::from_secs(0))
+    }
+
+    fn is_valid(&self) -> bool {
+        self.is_on && self.is_initialised()
     }
 
     fn international_standard_atmosphere_delta(
