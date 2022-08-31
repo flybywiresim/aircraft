@@ -1,18 +1,18 @@
 import React from 'react';
-import { CloudArrowDown, PinFill, Pin } from 'react-bootstrap-icons';
+import { CloudArrowDown, Pin, PinFill } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
 import { usePersistentProperty } from '@instruments/common/persistence';
 import { t } from '../../../translation';
 import {
-    NavigationTab,
+    addPinnedChart,
+    ChartProvider,
+    editPinnedChart,
     editTabProperty,
+    isChartPinned,
+    NavigationTab,
+    removedPinnedChart,
     setBoundingBox,
     setProvider,
-    ChartProvider,
-    isChartPinned,
-    removedPinnedChart,
-    addPinnedChart,
-    editPinnedChart,
 } from '../../../Store/features/navigationPage';
 import { useAppDispatch, useAppSelector } from '../../../Store/store';
 import { navigationTabs } from '../../Navigation';
@@ -69,11 +69,9 @@ export const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartS
         }
         try {
             if (chart.type === 'PDF') {
-                const blob = await Viewer.getPDFPage(chart.fileName, 1);
-                return URL.createObjectURL(blob);
+                return await Viewer.getPDFPageUrl(chart.fileName, 1);
             }
-            const blob = await Viewer.getImage(chart.fileName, 1);
-            return URL.createObjectURL(blob);
+            return await Viewer.getImageUrl(chart.fileName);
         } catch (err) {
             return Promise.reject();
         }
@@ -85,8 +83,7 @@ export const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartS
         }
         if (chart.type === 'PDF') {
             try {
-                const pageNumResp = await Viewer.getPDFPageNum(chart.fileName);
-                return pageNumResp.valueOf();
+                return await Viewer.getPDFPageNum(chart.fileName);
             } catch (err) {
                 return Promise.reject();
             }
