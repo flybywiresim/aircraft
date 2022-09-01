@@ -478,6 +478,7 @@
       "PauseAtTod": "T/D pavza",
       "PauseAtTodDistance": "T/D Razdalja pavze (nm)",
       "SeparateTillerFromRudderInputs": "Ločite delovanje krmilnika od krmila",
+      "SyncEfis": "Sync EFIS controls between Captain and FO",
       "Title": "Realizem"
     },
     "SimOptions": {

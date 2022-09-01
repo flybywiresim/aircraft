@@ -478,6 +478,7 @@
       "PauseAtTod": "T/D Pause",
       "PauseAtTodDistance": "T/D Pause Distance (nm)",
       "SeparateTillerFromRudderInputs": "فصل الحارث عن مدخلات الدفة",
+      "SyncEfis": "Sync EFIS controls between Captain and FO",
       "Title": "الواقعية"
     },
     "SimOptions": {

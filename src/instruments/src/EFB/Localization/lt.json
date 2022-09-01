@@ -478,6 +478,7 @@
       "PauseAtTod": "Pauzė prieš pradedant leistis",
       "PauseAtTodDistance": "Pauzės atstumas nuo pradėjimo leistis taško",
       "SeparateTillerFromRudderInputs": "Išskirti tiller iš krypties vairo komandų",
+      "SyncEfis": "Sync EFIS controls between Captain and FO",
       "Title": "Realizmas"
     },
     "SimOptions": {

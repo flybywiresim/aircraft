@@ -7,8 +7,8 @@ use systems::{
     },
     pressurization::PressurizationOverheadPanel,
     shared::{
-        Cabin, EngineBleedPushbutton, EngineCorrectedN1, EngineFirePushButtons, EngineStartState,
-        GroundSpeed, LgciuWeightOnWheels, PackFlowValveState, PneumaticBleed,
+        Cabin, ElectricalBusType, EngineBleedPushbutton, EngineCorrectedN1, EngineFirePushButtons,
+        EngineStartState, GroundSpeed, LgciuWeightOnWheels, PackFlowValveState, PneumaticBleed,
     },
     simulation::{InitContext, SimulationElement, SimulationElementVisitor, UpdateContext},
 };
@@ -26,7 +26,18 @@ impl A320AirConditioning {
 
         Self {
             a320_cabin: A320Cabin::new(context),
-            a320_air_conditioning_system: AirConditioningSystem::new(context, cabin_zones),
+            a320_air_conditioning_system: AirConditioningSystem::new(
+                context,
+                cabin_zones,
+                vec![
+                    ElectricalBusType::DirectCurrent(1),
+                    ElectricalBusType::AlternatingCurrent(1),
+                ],
+                vec![
+                    ElectricalBusType::DirectCurrent(2),
+                    ElectricalBusType::AlternatingCurrent(2),
+                ],
+            ),
         }
     }
 

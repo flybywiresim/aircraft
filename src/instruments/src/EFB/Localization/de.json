@@ -478,6 +478,7 @@
       "PauseAtTod": "T/D-Pause",
       "PauseAtTodDistance": "Zielentfernung für T/D Pause (NM)",
       "SeparateTillerFromRudderInputs": "Trennung von Tiller und Seitenruder Eingaben",
+      "SyncEfis": "Synchronisieren der EFIS-Steuerelemente zwischen Captain und FO",
       "Title": "Realismus"
     },
     "SimOptions": {
