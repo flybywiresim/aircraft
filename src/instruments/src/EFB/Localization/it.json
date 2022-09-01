@@ -356,6 +356,7 @@
       "AircraftNeedsToBePoweredToSavePresets": "L'Aeromobile deve essere Alimentato per Salvare i Preset",
       "AutoLoadDawnDusk": "Alba/Crepuscolo",
       "AutoLoadDay": "Giorno",
+      "AutoLoadLightingHelpTitle": "Automatic Preset Loading",
       "AutoLoadLightingPreset": "Abilita il caricamento automatico dei preset di illuminazione:",
       "AutoLoadNight": "Notte",
       "AutoLoadNoneSelection": "Nessuno",
@@ -412,13 +413,15 @@
       "SliderSpeed": "Sposta per velocità desiderata",
       "SystemEnabledOff": "Clicca per attivare il sistema pushback.",
       "SystemEnabledOn": "Clicca per disattivare completamente il sistema pushback.",
+      "UseControllerInput": "Turn controller input from rudder and elevator on/off",
       "ZoomIn": "Ingrandisci",
       "ZoomOut": "Rimpicciolisci"
     },
     "TugAttached": "Tug è collegato",
     "TugDirection": "Direzione Tug",
     "TugInTransit": "In Attesa del Tug",
-    "TugSpeed": "Velocità Tug"
+    "TugSpeed": "Velocità Tug",
+    "UseControllerInput": "Use Controller Input"
   },
   "Settings": {
     "About": {

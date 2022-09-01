@@ -354,10 +354,11 @@
     "InteriorLighting": {
       "AircraftNeedsToBePoweredToLoadPresets": "Samolot musi być zasilany, by możliwe było wczytanie ustawień",
       "AircraftNeedsToBePoweredToSavePresets": "Samolot musi być zasilany, by możliwe było zapisanie ustawień",
-      "AutoLoadDawnDusk": "Dawn/Dusk",
-      "AutoLoadDay": "Day",
+      "AutoLoadDawnDusk": "Dawn/Dusk:",
+      "AutoLoadDay": "Day:",
+      "AutoLoadLightingHelpTitle": "Automatic Preset Loading",
       "AutoLoadLightingPreset": "Enable automatic loading of lighting presets:",
-      "AutoLoadNight": "Night",
+      "AutoLoadNight": "Night:",
       "AutoLoadNoneSelection": "None",
       "LoadPreset": "Wczytaj Ustawienia",
       "LoadingPreset": "Wczytywanie Ustawienia",
@@ -412,13 +413,15 @@
       "SliderSpeed": "Ustaw pożądaną prędkość",
       "SystemEnabledOff": "Kliknij, aby włączyć system wypychania.",
       "SystemEnabledOn": "Kliknij, aby całkowicie wyłączyć system wypychania.",
+      "UseControllerInput": "Turn controller input from rudder and elevator on/off",
       "ZoomIn": "Przybliż",
       "ZoomOut": "Oddal"
     },
     "TugAttached": "Holownik jest podłączony",
     "TugDirection": "Kierunek Wypychania",
     "TugInTransit": "Oczekuję na Holownik/Kołek",
-    "TugSpeed": "Prędkość Wypychania"
+    "TugSpeed": "Prędkość Wypychania",
+    "UseControllerInput": "Use Controller Input"
   },
   "Settings": {
     "About": {

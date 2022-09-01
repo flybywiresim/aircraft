@@ -356,6 +356,7 @@
       "AircraftNeedsToBePoweredToSavePresets": "プリセットを保存するには、航空機に電力を供給する必要があります",
       "AutoLoadDawnDusk": "朝/夕方",
       "AutoLoadDay": "昼",
+      "AutoLoadLightingHelpTitle": "Automatic Preset Loading",
       "AutoLoadLightingPreset": "機内照明プリセットの自動読み込みを有効にする:",
       "AutoLoadNight": "夜",
       "AutoLoadNoneSelection": "なし",
@@ -412,13 +413,15 @@
       "SliderSpeed": "任意の牽引速度",
       "SystemEnabledOff": "クリックすると、プッシュバックシステムがオンになります。",
       "SystemEnabledOn": "クリックすると、プッシュバックシステムが完全にオフになります。",
+      "UseControllerInput": "Turn controller input from rudder and elevator on/off",
       "ZoomIn": "拡大",
       "ZoomOut": "縮小"
     },
     "TugAttached": "牽引車に接続中",
     "TugDirection": "牽引方向",
     "TugInTransit": "牽引車/ピンの取り外しを準備中",
-    "TugSpeed": "牽引速度"
+    "TugSpeed": "牽引速度",
+    "UseControllerInput": "Use Controller Input"
   },
   "Settings": {
     "About": {

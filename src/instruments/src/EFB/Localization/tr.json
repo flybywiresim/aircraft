@@ -354,10 +354,11 @@
     "InteriorLighting": {
       "AircraftNeedsToBePoweredToLoadPresets": "Ön Ayarları Yüklemek için Uçağa Güç Verilmesi Gerekiyor",
       "AircraftNeedsToBePoweredToSavePresets": "Ön Ayarları Kaydetmek için Uçağa Güç Verilmesi Gerekiyor",
-      "AutoLoadDawnDusk": "Dawn/Dusk",
-      "AutoLoadDay": "Day",
+      "AutoLoadDawnDusk": "Dawn/Dusk:",
+      "AutoLoadDay": "Day:",
+      "AutoLoadLightingHelpTitle": "Automatic Preset Loading",
       "AutoLoadLightingPreset": "Enable automatic loading of lighting presets:",
-      "AutoLoadNight": "Night",
+      "AutoLoadNight": "Night:",
       "AutoLoadNoneSelection": "None",
       "LoadPreset": "Ön Ayarı Yükle",
       "LoadingPreset": "Ön Ayar Yükleniyor",
@@ -412,13 +413,15 @@
       "SliderSpeed": "İstediğiniz hıza hareket ettirin",
       "SystemEnabledOff": "Pushback sistemini etkinleştirmek için tıklayın.",
       "SystemEnabledOn": "Pushback sistemini tamamen devre dışı bırakmak için tıklayın.",
+      "UseControllerInput": "Turn controller input from rudder and elevator on/off",
       "ZoomIn": "Büyüt",
       "ZoomOut": "Küçült"
     },
     "TugAttached": "Römorkör bağlı",
     "TugDirection": "Römorkör Yönü",
     "TugInTransit": "Römorkör/Pin Bekleniyor",
-    "TugSpeed": "Römorkör Hızı"
+    "TugSpeed": "Römorkör Hızı",
+    "UseControllerInput": "Use Controller Input"
   },
   "Settings": {
     "About": {

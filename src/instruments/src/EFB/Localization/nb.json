@@ -354,10 +354,11 @@
     "InteriorLighting": {
       "AircraftNeedsToBePoweredToLoadPresets": "Flyet må ha strøm for å laste inn forhåndsinnstillinger",
       "AircraftNeedsToBePoweredToSavePresets": "Flyet må ha strøm for å lagre forhåndsinnstillinger",
-      "AutoLoadDawnDusk": "Dawn/Dusk",
-      "AutoLoadDay": "Day",
+      "AutoLoadDawnDusk": "Dawn/Dusk:",
+      "AutoLoadDay": "Day:",
+      "AutoLoadLightingHelpTitle": "Automatic Preset Loading",
       "AutoLoadLightingPreset": "Enable automatic loading of lighting presets:",
-      "AutoLoadNight": "Night",
+      "AutoLoadNight": "Night:",
       "AutoLoadNoneSelection": "None",
       "LoadPreset": "Last inn forhåndsinnstilling",
       "LoadingPreset": "Laster inn forhåndsinnstilling",
@@ -412,13 +413,15 @@
       "SliderSpeed": "Flytt regler for ønsket hastighet",
       "SystemEnabledOff": "Klikk for å slå på pushback-systemet.",
       "SystemEnabledOn": "Klikk for å slå pushback-systemet helt av.",
+      "UseControllerInput": "Turn controller input from rudder and elevator on/off",
       "ZoomIn": "Zoom inn",
       "ZoomOut": "Zoom ut"
     },
     "TugAttached": "Pushbacktraktor er festet",
     "TugDirection": "Pushbacktraktor-retning",
     "TugInTransit": "Venter på pushbacktraktor/pin",
-    "TugSpeed": "pushbacktraktor-hastighet"
+    "TugSpeed": "pushbacktraktor-hastighet",
+    "UseControllerInput": "Use Controller Input"
   },
   "Settings": {
     "About": {

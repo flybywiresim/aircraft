@@ -354,10 +354,11 @@
     "InteriorLighting": {
       "AircraftNeedsToBePoweredToLoadPresets": "เครื่องบินจำเป็นต้องใช้พลังงานสำหรับการโหลดค่าที่ตั้งไว้",
       "AircraftNeedsToBePoweredToSavePresets": "เครื่องบินจำเป็นต้องใช้พลังงานสำหรับการบันทึกค่าที่ตั้งไว้",
-      "AutoLoadDawnDusk": "Dawn/Dusk",
-      "AutoLoadDay": "Day",
+      "AutoLoadDawnDusk": "Dawn/Dusk:",
+      "AutoLoadDay": "Day:",
+      "AutoLoadLightingHelpTitle": "Automatic Preset Loading",
       "AutoLoadLightingPreset": "Enable automatic loading of lighting presets:",
-      "AutoLoadNight": "Night",
+      "AutoLoadNight": "Night:",
       "AutoLoadNoneSelection": "None",
       "LoadPreset": "โหลดค่าที่ตั้งไว้ล่วงหน้า",
       "LoadingPreset": "กำลังโหลดค่าที่ตั้งไว้",
@@ -412,13 +413,15 @@
       "SliderSpeed": "เคลื่อนที่สำหรับความเร็วที่ต้องการ",
       "SystemEnabledOff": "คลิกเพื่อเปิดระบบ Pushback",
       "SystemEnabledOn": "คลิกเพื่อปิดระบบ Pushback ให้ปิดอย่างสมบูรณ์",
+      "UseControllerInput": "Turn controller input from rudder and elevator on/off",
       "ZoomIn": "ซูมเข้า",
       "ZoomOut": "ซูมออก"
     },
     "TugAttached": "รถลากจูงติดอยู่แล้ว",
     "TugDirection": "ทิศทางการลากจูง",
     "TugInTransit": "กำลังรอ รถลากจูง/หมุด",
-    "TugSpeed": "ความเร็วลากจูง"
+    "TugSpeed": "ความเร็วลากจูง",
+    "UseControllerInput": "Use Controller Input"
   },
   "Settings": {
     "About": {

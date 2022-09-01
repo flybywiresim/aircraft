@@ -356,6 +356,7 @@
       "AircraftNeedsToBePoweredToSavePresets": "K uložení předvoleb musí být letadlo napájené",
       "AutoLoadDawnDusk": "Svítání/Soumrak",
       "AutoLoadDay": "Den",
+      "AutoLoadLightingHelpTitle": "Automatic Preset Loading",
       "AutoLoadLightingPreset": "Povolit automatické načítání předvoleb osvětlení:",
       "AutoLoadNight": "Noc",
       "AutoLoadNoneSelection": "Žádné",
@@ -412,13 +413,15 @@
       "SliderSpeed": "Posuňte pro požadovanou rychlost",
       "SystemEnabledOff": "Klikněte pro zapnutí systému pro vytlačení.",
       "SystemEnabledOn": "Klikněte pro úplné vypnutí systému pro vytlačení.",
+      "UseControllerInput": "Turn controller input from rudder and elevator on/off",
       "ZoomIn": "Přiblížit",
       "ZoomOut": "Oddálit"
     },
     "TugAttached": "Pushback je připojen",
     "TugDirection": "Směr vytlačení",
     "TugInTransit": "Čekání na pushback/pin",
-    "TugSpeed": "Rychlost vytlačení"
+    "TugSpeed": "Rychlost vytlačení",
+    "UseControllerInput": "Use Controller Input"
   },
   "Settings": {
     "About": {

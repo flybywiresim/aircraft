@@ -354,10 +354,11 @@
     "InteriorLighting": {
       "AircraftNeedsToBePoweredToLoadPresets": "يجب أن تكون الطائرات تعمل بالطاقة لتحميل الإعدادات المسبقة",
       "AircraftNeedsToBePoweredToSavePresets": "تحتاج الطائرات إلى أن تكون مدعومة بالطاقه لحفظ الإعدادات المسبقة",
-      "AutoLoadDawnDusk": "Dawn/Dusk",
-      "AutoLoadDay": "Day",
+      "AutoLoadDawnDusk": "Dawn/Dusk:",
+      "AutoLoadDay": "Day:",
+      "AutoLoadLightingHelpTitle": "Automatic Preset Loading",
       "AutoLoadLightingPreset": "Enable automatic loading of lighting presets:",
-      "AutoLoadNight": "Night",
+      "AutoLoadNight": "Night:",
       "AutoLoadNoneSelection": "None",
       "LoadPreset": "تحميل الإعداد المسبق",
       "LoadingPreset": "تحميل الإعداد المسبق",
@@ -412,13 +413,15 @@
       "SliderSpeed": "تحرك للحصول على السرعة المطلوبة",
       "SystemEnabledOff": "انقر لتشغيل نظام الدفع.",
       "SystemEnabledOn": "انقر لإيقاف تشغيل نظام الدفع تمامًا.",
+      "UseControllerInput": "Turn controller input from rudder and elevator on/off",
       "ZoomIn": "تكبير",
       "ZoomOut": "تصغير"
     },
     "TugAttached": "وحدة الدفع متصلة",
     "TugDirection": "اتجاه الدفع ",
     "TugInTransit": "Waiting for Tug/Pin",
-    "TugSpeed": "سرعة الدفع "
+    "TugSpeed": "سرعة الدفع ",
+    "UseControllerInput": "Use Controller Input"
   },
   "Settings": {
     "About": {

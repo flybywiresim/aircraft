@@ -354,10 +354,11 @@
     "InteriorLighting": {
       "AircraftNeedsToBePoweredToLoadPresets": "L'avion doit être alimenté pour charger des préréglages",
       "AircraftNeedsToBePoweredToSavePresets": "L'avion doit être alimenté pour enregistrer les préréglages",
-      "AutoLoadDawnDusk": "Dawn/Dusk",
-      "AutoLoadDay": "Day",
+      "AutoLoadDawnDusk": "Dawn/Dusk:",
+      "AutoLoadDay": "Day:",
+      "AutoLoadLightingHelpTitle": "Automatic Preset Loading",
       "AutoLoadLightingPreset": "Enable automatic loading of lighting presets:",
-      "AutoLoadNight": "Night",
+      "AutoLoadNight": "Night:",
       "AutoLoadNoneSelection": "None",
       "LoadPreset": "Charger le préréglage",
       "LoadingPreset": "Chargement du préréglage",
@@ -412,13 +413,15 @@
       "SliderSpeed": "Déplacer pour la vitesse souhaitée",
       "SystemEnabledOff": "Cliquez pour démarrer le système de repoussage.",
       "SystemEnabledOn": "Cliquez pour éteindre complètement le système de repoussage.",
+      "UseControllerInput": "Turn controller input from rudder and elevator on/off",
       "ZoomIn": "Zoom avant",
       "ZoomOut": "Zoom arrière"
     },
     "TugAttached": "Le remorqueur est attaché",
     "TugDirection": "Direction du remorqueur",
     "TugInTransit": "En attente du remorqueur/de la liaison",
-    "TugSpeed": "Vitesse du remorqueur"
+    "TugSpeed": "Vitesse du remorqueur",
+    "UseControllerInput": "Use Controller Input"
   },
   "Settings": {
     "About": {

@@ -354,10 +354,11 @@
     "InteriorLighting": {
       "AircraftNeedsToBePoweredToLoadPresets": "יש לספק מתח למטוס בכדי לטעון תבניות",
       "AircraftNeedsToBePoweredToSavePresets": "יש לספק מתח למטוס בכדי לשמור תבניות",
-      "AutoLoadDawnDusk": "Dawn/Dusk",
-      "AutoLoadDay": "Day",
+      "AutoLoadDawnDusk": "Dawn/Dusk:",
+      "AutoLoadDay": "Day:",
+      "AutoLoadLightingHelpTitle": "Automatic Preset Loading",
       "AutoLoadLightingPreset": "Enable automatic loading of lighting presets:",
-      "AutoLoadNight": "Night",
+      "AutoLoadNight": "Night:",
       "AutoLoadNoneSelection": "None",
       "LoadPreset": "טען תבנית",
       "LoadingPreset": "טוען תבנית",
@@ -412,13 +413,15 @@
       "SliderSpeed": "מעבר למהירות הרצויה",
       "SystemEnabledOff": "לחץ כדי להפעיל את מערכת הדחיפה.",
       "SystemEnabledOn": "לחץ כדי לכבות את מערכת הדחיפה לחלוטין.",
+      "UseControllerInput": "Turn controller input from rudder and elevator on/off",
       "ZoomIn": "הגדל תצוגה",
       "ZoomOut": "הקטן תצוגה"
     },
     "TugAttached": "נע-דחף מחובר",
     "TugDirection": "כיוון הגרירה",
     "TugInTransit": "ממתין לנע-דחף",
-    "TugSpeed": "מהירות הגרירה"
+    "TugSpeed": "מהירות הגרירה",
+    "UseControllerInput": "Use Controller Input"
   },
   "Settings": {
     "About": {

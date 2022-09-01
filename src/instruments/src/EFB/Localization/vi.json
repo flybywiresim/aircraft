@@ -356,6 +356,7 @@
       "AircraftNeedsToBePoweredToSavePresets": "Máy bay cần được cung cấp năng lượng để lưu cấu hình đặt sẵn",
       "AutoLoadDawnDusk": "Bình minh/Hoàng hôn",
       "AutoLoadDay": "Ban ngày",
+      "AutoLoadLightingHelpTitle": "Automatic Preset Loading",
       "AutoLoadLightingPreset": "Bật tự động tải cài đặt đèn:",
       "AutoLoadNight": "Ban đêm",
       "AutoLoadNoneSelection": "Không",
@@ -412,13 +413,15 @@
       "SliderSpeed": "Di chuyển thanh trượt cho tốc độ mong muốn",
       "SystemEnabledOff": "Nhấp để bật hệ thống đẩy lùi.",
       "SystemEnabledOn": "Nhấp để tắt hoàn toàn hệ thống đẩy lùi.",
+      "UseControllerInput": "Turn controller input from rudder and elevator on/off",
       "ZoomIn": "Phóng to",
       "ZoomOut": "Thu nhỏ"
     },
     "TugAttached": "Xe lai dắt được kết nối",
     "TugDirection": "Hướng của xe kéo",
     "TugInTransit": "Đang chờ xe đẩy",
-    "TugSpeed": "Tốc độ xe kéo"
+    "TugSpeed": "Tốc độ xe kéo",
+    "UseControllerInput": "Use Controller Input"
   },
   "Settings": {
     "About": {

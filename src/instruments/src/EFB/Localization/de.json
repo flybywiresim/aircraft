@@ -356,6 +356,7 @@
       "AircraftNeedsToBePoweredToSavePresets": "Das Flugzeug muss mit Strom versorgt sein, um Voreinstellungen zu speichern",
       "AutoLoadDawnDusk": "Dämmerung",
       "AutoLoadDay": "Tag",
+      "AutoLoadLightingHelpTitle": "Automatisches Laden der Beleuchtungsvoreinstellung",
       "AutoLoadLightingPreset": "Automatisches Laden von Beleuchtungsvoreinstellungen aktivieren:",
       "AutoLoadNight": "Nacht",
       "AutoLoadNoneSelection": "Keine",
@@ -412,13 +413,15 @@
       "SliderSpeed": "Schieberegler verschieben, um die gewünschte Geschwindigkeit einzustellen",
       "SystemEnabledOff": "Klicken Sie, um das Pushback-System einzuschalten.",
       "SystemEnabledOn": "Klicken Sie, um das Pushback-System vollständig auszuschalten.",
+      "UseControllerInput": "Controller-Eingabe von Ruder und Höhenruder ein-/ausschalten",
       "ZoomIn": "Vergrößern",
       "ZoomOut": "Verkleinern"
     },
     "TugAttached": "Schlepper ist befestigt",
     "TugDirection": "Schlepprichtung",
     "TugInTransit": "Warten auf Schlepper und Pin",
-    "TugSpeed": "Schleppgeschwindigkeit"
+    "TugSpeed": "Schleppgeschwindigkeit",
+    "UseControllerInput": "Controller-Eingabe verwenden"
   },
   "Settings": {
     "About": {
