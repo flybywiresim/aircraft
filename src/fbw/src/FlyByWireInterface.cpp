@@ -1883,7 +1883,7 @@ bool FlyByWireInterface::updateThirdParty(unsigned long long volumeCOM1, unsigne
         // Make the SELCAL push button blink every SELCAL_LIGHT_TIME_MS
         // It sets the BLINK_ID (foundable in the XML behaviors) then 0 to make it blink
         if(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - this->previousTime).count() >= SELCAL_LIGHT_TIME_MS) {
-          this->selcal->set(this->selcal->get() == this->selcalActive ? 0 : this->selcalActive);
+          this->selcal->set(this->selcal->get(false) == this->selcalActive ? 0 : this->selcalActive);
           this->previousTime = std::chrono::system_clock::now();
         }
       }
