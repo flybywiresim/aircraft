@@ -439,9 +439,9 @@ impl UpdateContext {
 
         // Total acceleration in plane reference is the gravity in world reference rotated to plane reference. To this we substract
         // the local plane reference to get final local acceleration (if plane falling at 1G final local accel is 1G of gravity - 1G local accel = 0G)
-        let total_acceleration_plane_reference = (pitch_rotation
-            * (bank_rotation * gravity_acceleration_world_reference))
-            - plane_acceleration_plane_reference;
+        let total_acceleration_plane_reference =
+            pitch_rotation * (bank_rotation * gravity_acceleration_world_reference);
+        //    - plane_acceleration_plane_reference;
 
         self.local_acceleration_plane_reference_filtered
             .update(delta, total_acceleration_plane_reference);
