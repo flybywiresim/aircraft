@@ -1706,7 +1706,7 @@ impl FluidPhysics {
         self.update_speed_position(context);
 
         self.g_trap_is_empty
-            .update(context, self.fluid_cg_position[1] > 0.);
+            .update(context, self.is_fluid_going_up());
 
         // println!(
         //     "current_fluid_cg {:.2} {:.2} {:.2} GTRAP EMPTY {:?} GAUGE {:.2}  USABLE {:.2}",
@@ -1801,6 +1801,38 @@ impl FluidPhysics {
         } else {
             Ratio::new::<ratio>(logitudinal_ratio * lateral_ratio)
         }
+    }
+
+    // Returns a coefficient of the actual level that will be seen by low level switch
+    // Example: 0.5 means from pumps point of view half the actual level of the reservoir is available
+    fn low_level_switch_modifier(&self) -> Ratio {
+        const LATERAL_BREAKPOINTS: [f64; 6] = [-1., -0.2, 0., 0.2, 0.4, 1.];
+        const LATERAL_MAP: [f64; 6] = [0.2, 0.8, 1., 1., 1., 1.];
+
+        const VERTICAL_BREAKPOINTS: [f64; 6] = [-1., -0.1, 0., 0.1, 0.4, 1.];
+        const VERTICAL_MAP: [f64; 6] = [0.2, 1., 1., 1., 0.2, 0.2];
+
+        let lateral_ratio = interpolation(
+            &LATERAL_BREAKPOINTS,
+            &LATERAL_MAP,
+            self.fluid_cg_position[0],
+        );
+
+        let logitudinal_ratio = interpolation(
+            &LONGITUDINAL_BREAKPOINTS,
+            &LONGITUDINAL_MAP,
+            self.fluid_cg_position[2],
+        );
+
+        if self.is_fluid_going_up() {
+            Ratio::new::<ratio>(0.)
+        } else {
+            Ratio::new::<ratio>(logitudinal_ratio * lateral_ratio)
+        }
+    }
+
+    fn is_fluid_going_up(&self) -> bool {
+        self.fluid_cg_position[1] > 0.
     }
 }
 
