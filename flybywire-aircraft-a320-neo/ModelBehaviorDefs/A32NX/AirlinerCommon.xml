@@ -339,7 +339,7 @@
             <NODE_ID_SEQ2>#NODE_ID_BUTTON_SEQ2_VHF_L#</NODE_ID_SEQ2>
             <FREQ_ID>VHF1</FREQ_ID>
             <TRANSMIT_ID>0</TRANSMIT_ID>
-            <SELCAL>1</SELCAL>
+            <BLINK_ID>1</BLINK_ID>
             <TOOLTIP_PB>TT:COCKPIT.TOOLTIPS.TRANSMITTER_SELECT_VHF_L</TOOLTIP_PB>
         </UseTemplate>
 
@@ -365,7 +365,7 @@
             <NODE_ID_SEQ2>#NODE_ID_BUTTON_SEQ2_VHF_C#</NODE_ID_SEQ2>
             <FREQ_ID>VHF2</FREQ_ID>
             <TRANSMIT_ID>1</TRANSMIT_ID>
-            <SELCAL>2</SELCAL>
+            <BLINK_ID>2</BLINK_ID>
             <TOOLTIP>TT:COCKPIT.TOOLTIPS.TRANSMITTER_SELECT_VHF_C</TOOLTIP>
         </UseTemplate>
 
@@ -391,7 +391,7 @@
             <NODE_ID_SEQ2>#NODE_ID_BUTTON_SEQ2_VHF_R#</NODE_ID_SEQ2>
             <FREQ_ID>VHF3</FREQ_ID>
             <TRANSMIT_ID>2</TRANSMIT_ID>
-            <SELCAL>0</SELCAL>
+            <BLINK_ID>0</BLINK_ID>
             <TOOLTIP>TT:COCKPIT.TOOLTIPS.TRANSMITTER_SELECT_VHF_R</TOOLTIP>
         </UseTemplate>
 
@@ -417,7 +417,7 @@
             <NODE_ID_SEQ2>#NODE_ID_BUTTON_SEQ2_HF1#</NODE_ID_SEQ2>
             <FREQ_ID>HF1</FREQ_ID>
             <TRANSMIT_ID>3</TRANSMIT_ID>
-            <SELCAL>4</SELCAL>
+            <BLINK_ID>4</BLINK_ID>
             <TOOLTIP>TT:COCKPIT.TOOLTIPS.TRANSMITTER_SELECT_HF_L</TOOLTIP>
         </UseTemplate>
 
@@ -444,7 +444,7 @@
             <NODE_ID_SEQ2>#NODE_ID_BUTTON_SEQ2_HF2#</NODE_ID_SEQ2>
             <FREQ_ID>HF2</FREQ_ID>
             <TRANSMIT_ID>5</TRANSMIT_ID>
-            <SELCAL>8</SELCAL>
+            <BLINK_ID>8</BLINK_ID>
             <TOOLTIP>TT:COCKPIT.TOOLTIPS.TRANSMITTER_SELECT_HF_R</TOOLTIP>
         </UseTemplate>
 
@@ -470,7 +470,7 @@
             <NODE_ID_SEQ2>#NODE_ID_BUTTON_SEQ2_MECH#</NODE_ID_SEQ2>
             <FREQ_ID>MECH</FREQ_ID>
             <TRANSMIT_ID>6</TRANSMIT_ID>
-            <SELCAL>0</SELCAL>
+            <BLINK_ID>16</BLINK_ID>
             <TOOLTIP>TT:COCKPIT.TOOLTIPS.TRANSMITTER_SELECT_INT</TOOLTIP>
         </UseTemplate>
 
@@ -496,7 +496,7 @@
             <NODE_ID_SEQ2>#NODE_ID_BUTTON_SEQ2_ATT#</NODE_ID_SEQ2>
             <FREQ_ID>ATT</FREQ_ID>
             <TRANSMIT_ID>7</TRANSMIT_ID>
-            <SELCAL>0</SELCAL>
+            <BLINK_ID>32</BLINK_ID>
             <TOOLTIP>TT:COCKPIT.TOOLTIPS.TRANSMITTER_SELECT_CAB</TOOLTIP>
         </UseTemplate>
 
@@ -522,7 +522,7 @@
             <NODE_ID_SEQ2>#NODE_ID_BUTTON_SEQ2_PA#</NODE_ID_SEQ2>
             <FREQ_ID>PA</FREQ_ID>
             <TRANSMIT_ID>8</TRANSMIT_ID>
-            <SELCAL>0</SELCAL>
+            <BLINK_ID>0</BLINK_ID>
             <TOOLTIPID>TT:COCKPIT.TOOLTIPS.TRANSMITTER_SELECT_PA</TOOLTIPID>
         </UseTemplate>
 
@@ -864,8 +864,19 @@
                     <!-- Button name light (for example CALL or MECH)-->
                 <SEQ2_EMISSIVE_CODE>
                     #SEQ1_POWERED# if{
-                        #SELCAL# 0 &gt; if{
-                            #TRANSMIT_ID# (L:A32NX_ACP#ID#_Transmit_Channel) == #SELCAL# (L:A32NX_ACP_SELCAL) == or (L:A32NX_OVHD_INTLT_ANN) 0 == or #EMISSIVE_DIM# *
+                        #BLINK_ID# 0 &gt; if{
+                            #BLINK_ID# 16 &lt; if{
+                                #TRANSMIT_ID# (L:A32NX_ACP#ID#_Transmit_Channel) == #BLINK_ID# (L:A32NX_ACP_SELCAL) == or (L:A32NX_OVHD_INTLT_ANN) 0 == or #EMISSIVE_DIM# *
+                            }
+
+                            #BLINK_ID# 16 == if{
+                                #TRANSMIT_ID# (L:A32NX_ACP#ID#_Transmit_Channel) == #BLINK_ID# (L:A32NX_ACP_CALL_MECH) == or (L:A32NX_OVHD_INTLT_ANN) 0 == or #EMISSIVE_DIM# *
+                            }
+
+                            #BLINK_ID# 32 == if{
+                                #TRANSMIT_ID# (L:A32NX_ACP#ID#_Transmit_Channel) == #BLINK_ID# (L:A32NX_ACP_CALL_ATT) == or (L:A32NX_OVHD_INTLT_ANN) 0 == or #EMISSIVE_DIM# *
+                            }
+
                         } els{
                             #TRANSMIT_ID# (L:A32NX_ACP#ID#_Transmit_Channel) == (L:A32NX_OVHD_INTLT_ANN) 0 == or #EMISSIVE_DIM# *
                         }

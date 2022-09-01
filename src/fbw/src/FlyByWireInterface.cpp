@@ -3,9 +3,12 @@
 #include <cmath>
 #include <iomanip>
 #include <iostream>
+#include <chrono>
 
 #include "FlyByWireInterface.h"
 #include "SimConnectData.h"
+
+ #define SELCAL_LIGHT_TIME_MS 300
 
 using namespace std;
 using namespace mINI;
@@ -465,9 +468,9 @@ void FlyByWireInterface::setupLocalVariables() {
   idNoseWheelPosition = make_unique<LocalVariable>("A32NX_NOSE_WHEEL_POSITION");
 
   selcal = make_unique<LocalVariable>("A32NX_ACP_SELCAL");
+  selcalReset = make_unique<LocalVariable>("A32NX_ACP_RESET");
 
   volumeCOM1ACP1 = make_unique<LocalVariable>("A32NX_ACP1_Volume_VHF1");
-  cout << "VOLUME INIT = " << volumeCOM1ACP1->get() << endl;
   volumeCOM1ACP2 = make_unique<LocalVariable>("A32NX_ACP2_Volume_VHF1");
   volumeCOM1ACP3 = make_unique<LocalVariable>("A32NX_ACP3_Volume_VHF1");
 
@@ -1837,7 +1840,7 @@ bool FlyByWireInterface::updateThirdParty(unsigned long long volumeCOM1, unsigne
   if(thirdPartyDataIVAO) {
     bool update = false;
 
-    selcal->set(thirdPartyDataIVAO->selcal);
+    this->selcalActive = thirdPartyDataIVAO->selcal;
 
     if(thirdPartyDataIVAO->volumeCOM1 != this->previousVolumeCOM1) {
       double volumeCOM1over100 = thirdPartyDataIVAO->volumeCOM1 / 100.0;
@@ -1870,13 +1873,26 @@ bool FlyByWireInterface::updateThirdParty(unsigned long long volumeCOM1, unsigne
     delete thirdPartyDataIVAO;
     thirdPartyDataIVAO = nullptr;
   } else if(thirdPartyDataVPILOT) {
-      selcal->set(thirdPartyDataVPILOT->selcal);
+      this->selcalActive = thirdPartyDataVPILOT->selcal;
 
       delete thirdPartyDataVPILOT;
       thirdPartyDataVPILOT = nullptr;
   } else {
-    ThirdPartyDataIVAO dataIVAO {selcal->get(), this->previousVolumeCOM1, this->previousVolumeCOM2};
-    ThirdPartyDataVPILOT dataVPILOT {1, selcal->get()};
+    if(this->selcalReset->get() == 0) {
+      if(this->selcalActive) {
+        if(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - this->previousTime).count() >= SELCAL_LIGHT_TIME_MS) {
+          this->selcal->set(this->selcal->get() == this->selcalActive ? 0 : this->selcalActive);
+          this->previousTime = std::chrono::system_clock::now();
+        }
+      }
+    } else {
+      this->selcalActive = 0;
+      this->selcalReset->set(0);
+      this->selcal->set(0);
+    }
+
+    ThirdPartyDataIVAO dataIVAO {this->selcalActive, this->previousVolumeCOM1, this->previousVolumeCOM2};
+    ThirdPartyDataVPILOT dataVPILOT {1, this->selcalActive};
 
     if(volumeCOM1 != this->previousVolumeCOM1 || volumeCOM2 != this->previousVolumeCOM2) {
       dataIVAO.volumeCOM1 = volumeCOM1;

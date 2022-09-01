@@ -80,6 +80,10 @@ class FlyByWireInterface {
 
   bool clientDataEnabled = false;
 
+  uint8_t selcalActive = 0; // Set to 1,2,4,8 depending on the receiver. 0 if inactive.
+
+  std::chrono::system_clock::time_point previousTime = std::chrono::system_clock::now();
+
   FlightDataRecorder flightDataRecorder;
 
   SimConnectInterface simConnectInterface;
@@ -341,6 +345,7 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idNoseWheelPosition;
 
   std::unique_ptr<LocalVariable> selcal;
+  std::unique_ptr<LocalVariable> selcalReset;
 
   std::unique_ptr<LocalVariable> volumeCOM1ACP1;
   std::unique_ptr<LocalVariable> volumeCOM1ACP2;
