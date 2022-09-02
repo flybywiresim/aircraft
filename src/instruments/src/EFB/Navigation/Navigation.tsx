@@ -14,6 +14,7 @@ import {
 } from 'react-bootstrap-icons';
 import { useSimVar } from '@instruments/common/simVars';
 import { ReactZoomPanPinchRef, TransformComponent, TransformWrapper } from 'react-zoom-pan-pinch';
+import { toast } from 'react-toastify';
 import { t } from '../translation';
 import { TooltipWrapper } from '../UtilComponents/TooltipWrapper';
 // import { DrawableCanvas } from '../UtilComponents/DrawableCanvas';
@@ -510,6 +511,7 @@ export const ChartViewer = () => {
                                             draggable={false}
                                             src={chartLinks.dark}
                                             alt="chart"
+
                                         />
                                         <img
                                             className={`absolute left-0 w-full transition duration-100 select-none ${usingDarkTheme && 'opacity-0'}`}

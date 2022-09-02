@@ -21,8 +21,10 @@ export const getPdfUrl = async (fileName: string, pageNumber: number): Promise<s
         return Promise.reject();
     }
     try {
-        const blob = await Viewer.getPDFPage(fileName, pageNumber);
-        return URL.createObjectURL(blob);
+        toast.loading('Loading PDF...', { autoClose: 1000 });
+        const objectURL = await Viewer.getPDFPageUrl(fileName, pageNumber);
+        toast.dismiss();
+        return objectURL;
     } catch (err) {
         toast.error(`Failed to retrieve requested PDF Document: ${err}`);
         return Promise.reject();

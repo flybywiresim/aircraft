@@ -20,24 +20,18 @@ interface LocalFileCharts {
 
 export const LocalFileChartUI = () => {
     const dispatch = useAppDispatch();
-
     const [simbridgeEnabled] = usePersistentProperty('CONFIG_SIMBRIDGE_ENABLED', 'AUTO ON');
-
     const [statusBarInfo, setStatusBarInfo] = useState('');
-
     const [icaoAndNameDisagree, setIcaoAndNameDisagree] = useState(false);
-
     const [charts, setCharts] = useState<LocalFileCharts>({
         images: [],
         pdfs: [],
     });
-
     const [organizedCharts, setOrganizedCharts] = useState<LocalFileOrganizedCharts[]>([
         { name: 'IMAGE', alias: t('NavigationAndCharts.LocalFiles.Image'), charts: charts.images },
         { name: 'PDF', alias: t('NavigationAndCharts.LocalFiles.Pdf'), charts: charts.pdfs },
         { name: 'BOTH', alias: t('NavigationAndCharts.LocalFiles.Both'), charts: [...charts.images, ...charts.pdfs] },
     ]);
-
     const { searchQuery, isFullScreen, chartName, selectedTabIndex } = useAppSelector((state) => state.navigationTab[NavigationTab.LOCAL_FILES]);
 
     const updateSearchStatus = async () => {

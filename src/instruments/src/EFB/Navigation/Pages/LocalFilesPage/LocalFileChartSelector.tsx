@@ -69,9 +69,15 @@ export const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartS
         }
         try {
             if (chart.type === 'PDF') {
-                return await Viewer.getPDFPageUrl(chart.fileName, 1);
+                toast.loading('Loading PDF...', { autoClose: 1000 });
+                const url = await Viewer.getPDFPageUrl(chart.fileName, 1);
+                toast.dismiss();
+                return url;
             }
-            return await Viewer.getImageUrl(chart.fileName);
+            toast.loading('Loading Image...', { autoClose: 1000 });
+            const url = await Viewer.getImageUrl(chart.fileName);
+            toast.dismiss();
+            return url;
         } catch (err) {
             return Promise.reject();
         }
@@ -98,9 +104,7 @@ export const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartS
         try {
             const pagesViewable = await getPagesViewable(chart);
             dispatch(editTabProperty({ tab: NavigationTab.LOCAL_FILES, pagesViewable }));
-
             const url = await getChartResourceUrl(chart);
-
             dispatch(editTabProperty({ tab: NavigationTab.LOCAL_FILES, chartDimensions: { width: undefined, height: undefined } }));
             dispatch(editTabProperty({ tab: NavigationTab.LOCAL_FILES, chartName: { light: url, dark: url } }));
             dispatch(setBoundingBox(undefined));
@@ -110,9 +114,7 @@ export const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartS
             } else {
                 toast.error('Failed to retrieve requested image.');
             }
-
             dispatch(editTabProperty({ tab: NavigationTab.LOCAL_FILES, chartId: oldChartId }));
-
             return;
         }
         dispatch(setProvider(ChartProvider.LOCAL_FILES));
