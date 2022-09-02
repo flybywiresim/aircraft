@@ -1623,10 +1623,7 @@ mod tests {
             ))
         }
 
-        fn corrected_average_static_pressure(
-            &mut self,
-            adiru_number: usize,
-        ) -> Arinc429Word<f64> {
+        fn corrected_average_static_pressure(&mut self, adiru_number: usize) -> Arinc429Word<f64> {
             self.read_arinc429_by_name(&output_data_id(
                 OutputDataType::Adr,
                 adiru_number,
