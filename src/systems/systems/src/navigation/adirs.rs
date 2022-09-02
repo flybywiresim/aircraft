@@ -2862,7 +2862,7 @@ mod tests {
                     .normal_value()
                     .unwrap()
                     .get::<percent>(),
-                (acc / g - test_bed.pitch(adiru_number).normal_value().unwrap().cos())
+                (acc / g - test_bed.pitch(adiru_number).normal_value().unwrap().sin())
                     .get::<ratio>()
             );
         }
