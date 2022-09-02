@@ -2438,7 +2438,7 @@ mod tests {
 
             test_bed.run();
 
-            assert_eq!(
+            assert_about_eq!(
                 test_bed
                     .corrected_average_static_pressure(adiru_number)
                     .normal_value()
