@@ -1,0 +1,4871 @@
+{
+    "accessors": [
+        {
+            "bufferView": 1,
+            "byteOffset": 28,
+            "componentType": 5123,
+            "count": 2381,
+            "type": "VEC4",
+            "name": "Tripods.Cube.001_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 16,
+            "componentType": 5120,
+            "count": 2381,
+            "type": "VEC4",
+            "name": "Tripods.Cube.001_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 1,
+            "componentType": 5126,
+            "count": 2381,
+            "min": [
+                -1.6528631448745728,
+                0.18424470722675323,
+                -1.852952241897583
+            ],
+            "max": [
+                1.6528631448745728,
+                2.3058676719665527,
+                1.0113030672073364
+            ],
+            "type": "VEC3",
+            "name": "Tripods.Cube.001_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 12,
+            "componentType": 5120,
+            "count": 2381,
+            "type": "VEC4",
+            "name": "Tripods.Cube.001_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 20,
+            "componentType": 5122,
+            "count": 2381,
+            "type": "VEC2",
+            "name": "Tripods.Cube.001_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 24,
+            "componentType": 5122,
+            "count": 2381,
+            "type": "VEC2",
+            "name": "Tripods.Cube.001_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "componentType": 5123,
+            "count": 5382,
+            "type": "SCALAR",
+            "name": "Tripods.Cube.001_indices#0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 85744,
+            "componentType": 5123,
+            "count": 116,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder_Cylinder.002_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 85732,
+            "componentType": 5120,
+            "count": 116,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder_Cylinder.002_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 85716,
+            "componentType": 5126,
+            "count": 116,
+            "min": [
+                -0.21187171339988708,
+                0.46032893657684326,
+                -0.1856548935174942
+            ],
+            "max": [
+                0.21187171339988708,
+                0.4811554253101349,
+                0.18565504252910614
+            ],
+            "type": "VEC3",
+            "name": "Tripods.Cylinder_Cylinder.002_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 85728,
+            "componentType": 5120,
+            "count": 116,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder_Cylinder.002_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 85736,
+            "componentType": 5122,
+            "count": 116,
+            "type": "VEC2",
+            "name": "Tripods.Cylinder_Cylinder.002_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 85740,
+            "componentType": 5122,
+            "count": 116,
+            "type": "VEC2",
+            "name": "Tripods.Cylinder_Cylinder.002_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 10764,
+            "componentType": 5123,
+            "count": 204,
+            "type": "SCALAR",
+            "name": "Tripods.Cylinder_Cylinder.002_indices#0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 89920,
+            "componentType": 5123,
+            "count": 190,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder.002_Cylinder.004_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 89908,
+            "componentType": 5120,
+            "count": 190,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder.002_Cylinder.004_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 89892,
+            "componentType": 5126,
+            "count": 190,
+            "min": [
+                -0.46284955739974976,
+                0.3268260061740875,
+                -0.3762306272983551
+            ],
+            "max": [
+                0.4091915190219879,
+                0.34765249490737915,
+                0.18565502762794495
+            ],
+            "type": "VEC3",
+            "name": "Tripods.Cylinder.002_Cylinder.004_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 89904,
+            "componentType": 5120,
+            "count": 190,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder.002_Cylinder.004_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 89912,
+            "componentType": 5122,
+            "count": 190,
+            "type": "VEC2",
+            "name": "Tripods.Cylinder.002_Cylinder.004_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 89916,
+            "componentType": 5122,
+            "count": 190,
+            "type": "VEC2",
+            "name": "Tripods.Cylinder.002_Cylinder.004_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 11172,
+            "componentType": 5123,
+            "count": 312,
+            "type": "SCALAR",
+            "name": "Tripods.Cylinder.002_Cylinder.004_indices#0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 96760,
+            "componentType": 5123,
+            "count": 578,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder.003_Cylinder.005_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 96748,
+            "componentType": 5120,
+            "count": 578,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder.003_Cylinder.005_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 96732,
+            "componentType": 5126,
+            "count": 578,
+            "min": [
+                -0.13181093335151672,
+                0.23705877363681793,
+                -0.13196025788784027
+            ],
+            "max": [
+                0.13181093335151672,
+                0.4713610112667084,
+                0.13136285543441772
+            ],
+            "type": "VEC3",
+            "name": "Tripods.Cylinder.003_Cylinder.005_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 96744,
+            "componentType": 5120,
+            "count": 578,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder.003_Cylinder.005_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 96752,
+            "componentType": 5122,
+            "count": 578,
+            "type": "VEC2",
+            "name": "Tripods.Cylinder.003_Cylinder.005_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 96756,
+            "componentType": 5122,
+            "count": 578,
+            "type": "VEC2",
+            "name": "Tripods.Cylinder.003_Cylinder.005_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 11796,
+            "componentType": 5123,
+            "count": 978,
+            "type": "SCALAR",
+            "name": "Tripods.Cylinder.003_Cylinder.005_indices#0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 117568,
+            "componentType": 5123,
+            "count": 1772,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder.004_Cylinder.007_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 117556,
+            "componentType": 5120,
+            "count": 1772,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder.004_Cylinder.007_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 117540,
+            "componentType": 5126,
+            "count": 1772,
+            "min": [
+                -0.25133633613586426,
+                0.4717426002025604,
+                -0.23822152614593506
+            ],
+            "max": [
+                0.2513367831707001,
+                2.536174774169922,
+                0.19747377932071686
+            ],
+            "type": "VEC3",
+            "name": "Tripods.Cylinder.004_Cylinder.007_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 117552,
+            "componentType": 5120,
+            "count": 1772,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder.004_Cylinder.007_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 117560,
+            "componentType": 5122,
+            "count": 1772,
+            "type": "VEC2",
+            "name": "Tripods.Cylinder.004_Cylinder.007_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 117564,
+            "componentType": 5122,
+            "count": 1772,
+            "type": "VEC2",
+            "name": "Tripods.Cylinder.004_Cylinder.007_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 13752,
+            "componentType": 5123,
+            "count": 3738,
+            "type": "SCALAR",
+            "name": "Tripods.Cylinder.004_Cylinder.007_indices#0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 181360,
+            "componentType": 5123,
+            "count": 300,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder.006_Cylinder.011_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 181348,
+            "componentType": 5120,
+            "count": 300,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder.006_Cylinder.011_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 181332,
+            "componentType": 5126,
+            "count": 300,
+            "min": [
+                -0.07813775539398193,
+                0.38244059681892395,
+                -1.4575432538986206
+            ],
+            "max": [
+                0.07895072549581528,
+                0.4342420995235443,
+                -1.405682921409607
+            ],
+            "type": "VEC3",
+            "name": "Tripods.Cylinder.006_Cylinder.011_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 181344,
+            "componentType": 5120,
+            "count": 300,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder.006_Cylinder.011_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 181352,
+            "componentType": 5122,
+            "count": 300,
+            "type": "VEC2",
+            "name": "Tripods.Cylinder.006_Cylinder.011_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 181356,
+            "componentType": 5122,
+            "count": 300,
+            "type": "VEC2",
+            "name": "Tripods.Cylinder.006_Cylinder.011_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 21228,
+            "componentType": 5123,
+            "count": 780,
+            "type": "SCALAR",
+            "name": "Tripods.Cylinder.006_Cylinder.011_indices#0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 192160,
+            "componentType": 5123,
+            "count": 10292,
+            "type": "VEC4",
+            "name": "Tripods.Cube.002_Cube.004_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 192148,
+            "componentType": 5120,
+            "count": 10292,
+            "type": "VEC4",
+            "name": "Tripods.Cube.002_Cube.004_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 192132,
+            "componentType": 5126,
+            "count": 10292,
+            "min": [
+                -1.6955124139785767,
+                0.08519809693098068,
+                -1.937922477722168
+            ],
+            "max": [
+                1.6955124139785767,
+                0.21460846066474915,
+                1.0334376096725464
+            ],
+            "type": "VEC3",
+            "name": "Tripods.Cube.002_Cube.004_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 192144,
+            "componentType": 5120,
+            "count": 10292,
+            "type": "VEC4",
+            "name": "Tripods.Cube.002_Cube.004_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 192152,
+            "componentType": 5122,
+            "count": 10292,
+            "type": "VEC2",
+            "name": "Tripods.Cube.002_Cube.004_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 192156,
+            "componentType": 5122,
+            "count": 10292,
+            "type": "VEC2",
+            "name": "Tripods.Cube.002_Cube.004_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 22788,
+            "componentType": 5123,
+            "count": 23040,
+            "type": "SCALAR",
+            "name": "Tripods.Cube.002_Cube.004_indices#0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 562672,
+            "componentType": 5123,
+            "count": 672,
+            "type": "VEC4",
+            "name": "Tripods.Cube.002_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 562660,
+            "componentType": 5120,
+            "count": 672,
+            "type": "VEC4",
+            "name": "Tripods.Cube.002_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 562644,
+            "componentType": 5126,
+            "count": 672,
+            "min": [
+                0.03648204356431961,
+                0.16175049543380737,
+                -0.422512412071228
+            ],
+            "max": [
+                0.5292530655860901,
+                1.5214440822601318,
+                0.02217905968427658
+            ],
+            "type": "VEC3",
+            "name": "Tripods.Cube.002_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 562656,
+            "componentType": 5120,
+            "count": 672,
+            "type": "VEC4",
+            "name": "Tripods.Cube.002_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 562664,
+            "componentType": 5122,
+            "count": 672,
+            "type": "VEC2",
+            "name": "Tripods.Cube.002_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 562668,
+            "componentType": 5122,
+            "count": 672,
+            "type": "VEC2",
+            "name": "Tripods.Cube.002_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 68868,
+            "componentType": 5123,
+            "count": 1068,
+            "type": "SCALAR",
+            "name": "Tripods.Cube.002_indices#0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 586864,
+            "componentType": 5123,
+            "count": 2135,
+            "type": "VEC4",
+            "name": "Tripods.Cube.003_Cube.002_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 586852,
+            "componentType": 5120,
+            "count": 2135,
+            "type": "VEC4",
+            "name": "Tripods.Cube.003_Cube.002_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 586836,
+            "componentType": 5126,
+            "count": 2135,
+            "min": [
+                0.3724405765533447,
+                0.2395419478416443,
+                -0.40775996446609497
+            ],
+            "max": [
+                0.514870285987854,
+                1.3822137117385864,
+                -0.1771588921546936
+            ],
+            "type": "VEC3",
+            "name": "Tripods.Cube.003_Cube.002_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 586848,
+            "componentType": 5120,
+            "count": 2135,
+            "type": "VEC4",
+            "name": "Tripods.Cube.003_Cube.002_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 586856,
+            "componentType": 5122,
+            "count": 2135,
+            "type": "VEC2",
+            "name": "Tripods.Cube.003_Cube.002_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 586860,
+            "componentType": 5122,
+            "count": 2135,
+            "type": "VEC2",
+            "name": "Tripods.Cube.003_Cube.002_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 71004,
+            "componentType": 5123,
+            "count": 4608,
+            "type": "SCALAR",
+            "name": "Tripods.Cube.003_Cube.002_indices#0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 663724,
+            "componentType": 5123,
+            "count": 2995,
+            "type": "VEC4",
+            "name": "Tripods.Cube.004_Cube.003_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 663712,
+            "componentType": 5120,
+            "count": 2995,
+            "type": "VEC4",
+            "name": "Tripods.Cube.004_Cube.003_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 663696,
+            "componentType": 5126,
+            "count": 2995,
+            "min": [
+                0.1681356132030487,
+                0.8832625150680542,
+                -0.2962547540664673
+            ],
+            "max": [
+                0.2421424239873886,
+                0.89063560962677,
+                -0.22225384414196014
+            ],
+            "type": "VEC3",
+            "name": "Tripods.Cube.004_Cube.003_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 663708,
+            "componentType": 5120,
+            "count": 2995,
+            "type": "VEC4",
+            "name": "Tripods.Cube.004_Cube.003_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 663716,
+            "componentType": 5122,
+            "count": 2995,
+            "type": "VEC2",
+            "name": "Tripods.Cube.004_Cube.003_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 663720,
+            "componentType": 5122,
+            "count": 2995,
+            "type": "VEC2",
+            "name": "Tripods.Cube.004_Cube.003_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 80220,
+            "componentType": 5123,
+            "count": 5184,
+            "type": "SCALAR",
+            "name": "Tripods.Cube.004_Cube.003_indices#0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 771544,
+            "componentType": 5123,
+            "count": 141,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder.001_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 771532,
+            "componentType": 5120,
+            "count": 141,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder.001_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 771516,
+            "componentType": 5126,
+            "count": 141,
+            "min": [
+                -0.47123855352401733,
+                0.3454083204269409,
+                -0.3551875352859497
+            ],
+            "max": [
+                -0.14792273938655853,
+                0.6662364602088928,
+                -0.00916227139532566
+            ],
+            "type": "VEC3",
+            "name": "Tripods.Cylinder.001_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 771528,
+            "componentType": 5120,
+            "count": 141,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder.001_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 771536,
+            "componentType": 5122,
+            "count": 141,
+            "type": "VEC2",
+            "name": "Tripods.Cylinder.001_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 771540,
+            "componentType": 5122,
+            "count": 141,
+            "type": "VEC2",
+            "name": "Tripods.Cylinder.001_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 90588,
+            "componentType": 5123,
+            "count": 276,
+            "type": "SCALAR",
+            "name": "Tripods.Cylinder.001_indices#0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 776620,
+            "componentType": 5123,
+            "count": 126,
+            "type": "VEC4",
+            "name": "Tripods.Cube.008_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 776608,
+            "componentType": 5120,
+            "count": 126,
+            "type": "VEC4",
+            "name": "Tripods.Cube.008_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 776592,
+            "componentType": 5126,
+            "count": 126,
+            "min": [
+                0.12439654022455215,
+                0.3481418192386627,
+                -0.3721518814563751
+            ],
+            "max": [
+                0.3984886407852173,
+                0.8790436387062073,
+                -0.00932550523430109
+            ],
+            "type": "VEC3",
+            "name": "Tripods.Cube.008_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 776604,
+            "componentType": 5120,
+            "count": 126,
+            "type": "VEC4",
+            "name": "Tripods.Cube.008_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 776612,
+            "componentType": 5122,
+            "count": 126,
+            "type": "VEC2",
+            "name": "Tripods.Cube.008_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 776616,
+            "componentType": 5122,
+            "count": 126,
+            "type": "VEC2",
+            "name": "Tripods.Cube.008_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 91140,
+            "componentType": 5123,
+            "count": 204,
+            "type": "SCALAR",
+            "name": "Tripods.Cube.008_indices#0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 781156,
+            "componentType": 5123,
+            "count": 408,
+            "type": "VEC4",
+            "name": "Tripods.Cube.009_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 781144,
+            "componentType": 5120,
+            "count": 408,
+            "type": "VEC4",
+            "name": "Tripods.Cube.009_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 781128,
+            "componentType": 5126,
+            "count": 408,
+            "min": [
+                0.1833384931087494,
+                0.8906347751617432,
+                -0.2810535728931427
+            ],
+            "max": [
+                0.22693996131420135,
+                0.937544584274292,
+                -0.23745505511760712
+            ],
+            "type": "VEC3",
+            "name": "Tripods.Cube.009_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 781140,
+            "componentType": 5120,
+            "count": 408,
+            "type": "VEC4",
+            "name": "Tripods.Cube.009_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 781148,
+            "componentType": 5122,
+            "count": 408,
+            "type": "VEC2",
+            "name": "Tripods.Cube.009_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 781152,
+            "componentType": 5122,
+            "count": 408,
+            "type": "VEC2",
+            "name": "Tripods.Cube.009_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 91548,
+            "componentType": 5123,
+            "count": 1872,
+            "type": "SCALAR",
+            "name": "Tripods.Cube.009_indices#0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 795844,
+            "componentType": 5123,
+            "count": 575,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder.005_Cylinder.003_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 795832,
+            "componentType": 5120,
+            "count": 575,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder.005_Cylinder.003_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 795816,
+            "componentType": 5126,
+            "count": 575,
+            "min": [
+                -0.06152310594916344,
+                2.536174774169922,
+                -0.06159320846199989
+            ],
+            "max": [
+                0.061522260308265686,
+                3.6544196605682373,
+                0.06131438538432121
+            ],
+            "type": "VEC3",
+            "name": "Tripods.Cylinder.005_Cylinder.003_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 795828,
+            "componentType": 5120,
+            "count": 575,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder.005_Cylinder.003_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 795836,
+            "componentType": 5122,
+            "count": 575,
+            "type": "VEC2",
+            "name": "Tripods.Cylinder.005_Cylinder.003_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 795840,
+            "componentType": 5122,
+            "count": 575,
+            "type": "VEC2",
+            "name": "Tripods.Cylinder.005_Cylinder.003_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 95292,
+            "componentType": 5123,
+            "count": 1875,
+            "type": "SCALAR",
+            "name": "Tripods.Cylinder.005_Cylinder.003_indices#0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 816544,
+            "componentType": 5123,
+            "count": 366,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder.006_Cylinder.001_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 816532,
+            "componentType": 5120,
+            "count": 366,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder.006_Cylinder.001_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 816516,
+            "componentType": 5126,
+            "count": 366,
+            "min": [
+                -1.29981529712677,
+                0.38244059681892395,
+                0.6366457939147949
+            ],
+            "max": [
+                -1.1784791946411133,
+                0.4342420995235443,
+                0.7972725629806519
+            ],
+            "type": "VEC3",
+            "name": "Tripods.Cylinder.006_Cylinder.001_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 816528,
+            "componentType": 5120,
+            "count": 366,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder.006_Cylinder.001_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 816536,
+            "componentType": 5122,
+            "count": 366,
+            "type": "VEC2",
+            "name": "Tripods.Cylinder.006_Cylinder.001_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 816540,
+            "componentType": 5122,
+            "count": 366,
+            "type": "VEC2",
+            "name": "Tripods.Cylinder.006_Cylinder.001_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 99044,
+            "componentType": 5123,
+            "count": 780,
+            "type": "SCALAR",
+            "name": "Tripods.Cylinder.006_Cylinder.001_indices#0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 829720,
+            "componentType": 5123,
+            "count": 366,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder.006_Cylinder.002_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 829708,
+            "componentType": 5120,
+            "count": 366,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder.006_Cylinder.002_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 829692,
+            "componentType": 5126,
+            "count": 366,
+            "min": [
+                1.17902410030365,
+                0.38244059681892395,
+                0.6357998251914978
+            ],
+            "max": [
+                1.3002228736877441,
+                0.4342420995235443,
+                0.7964709401130676
+            ],
+            "type": "VEC3",
+            "name": "Tripods.Cylinder.006_Cylinder.002_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 829704,
+            "componentType": 5120,
+            "count": 366,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder.006_Cylinder.002_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 829712,
+            "componentType": 5122,
+            "count": 366,
+            "type": "VEC2",
+            "name": "Tripods.Cylinder.006_Cylinder.002_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 829716,
+            "componentType": 5122,
+            "count": 366,
+            "type": "VEC2",
+            "name": "Tripods.Cylinder.006_Cylinder.002_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 100604,
+            "componentType": 5123,
+            "count": 780,
+            "type": "SCALAR",
+            "name": "Tripods.Cylinder.006_Cylinder.002_indices#0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 842896,
+            "componentType": 5123,
+            "count": 2381,
+            "type": "VEC4",
+            "name": "Tripods.Cube.003_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 842884,
+            "componentType": 5120,
+            "count": 2381,
+            "type": "VEC4",
+            "name": "Tripods.Cube.003_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 842868,
+            "componentType": 5126,
+            "count": 2381,
+            "min": [
+                -1.6528631448745728,
+                0.18424470722675323,
+                -1.852952241897583
+            ],
+            "max": [
+                1.6528631448745728,
+                2.3058676719665527,
+                1.0113030672073364
+            ],
+            "type": "VEC3",
+            "name": "Tripods.Cube.003_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 842880,
+            "componentType": 5120,
+            "count": 2381,
+            "type": "VEC4",
+            "name": "Tripods.Cube.003_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 842888,
+            "componentType": 5122,
+            "count": 2381,
+            "type": "VEC2",
+            "name": "Tripods.Cube.003_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 842892,
+            "componentType": 5122,
+            "count": 2381,
+            "type": "VEC2",
+            "name": "Tripods.Cube.003_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 102164,
+            "componentType": 5123,
+            "count": 5382,
+            "type": "SCALAR",
+            "name": "Tripods.Cube.003_indices#0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 928612,
+            "componentType": 5123,
+            "count": 116,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder_Cylinder.001_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 928600,
+            "componentType": 5120,
+            "count": 116,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder_Cylinder.001_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 928584,
+            "componentType": 5126,
+            "count": 116,
+            "min": [
+                -0.21187171339988708,
+                0.46032893657684326,
+                -0.1856548935174942
+            ],
+            "max": [
+                0.21187171339988708,
+                0.4811554253101349,
+                0.18565504252910614
+            ],
+            "type": "VEC3",
+            "name": "Tripods.Cylinder_Cylinder.001_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 928596,
+            "componentType": 5120,
+            "count": 116,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder_Cylinder.001_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 928604,
+            "componentType": 5122,
+            "count": 116,
+            "type": "VEC2",
+            "name": "Tripods.Cylinder_Cylinder.001_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 928608,
+            "componentType": 5122,
+            "count": 116,
+            "type": "VEC2",
+            "name": "Tripods.Cylinder_Cylinder.001_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 112928,
+            "componentType": 5123,
+            "count": 204,
+            "type": "SCALAR",
+            "name": "Tripods.Cylinder_Cylinder.001_indices#0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 932788,
+            "componentType": 5123,
+            "count": 190,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder.002_Cylinder.001_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 932776,
+            "componentType": 5120,
+            "count": 190,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder.002_Cylinder.001_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 932760,
+            "componentType": 5126,
+            "count": 190,
+            "min": [
+                -0.46284955739974976,
+                0.3268260061740875,
+                -0.3762306272983551
+            ],
+            "max": [
+                0.4091915190219879,
+                0.34765249490737915,
+                0.18565502762794495
+            ],
+            "type": "VEC3",
+            "name": "Tripods.Cylinder.002_Cylinder.001_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 932772,
+            "componentType": 5120,
+            "count": 190,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder.002_Cylinder.001_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 932780,
+            "componentType": 5122,
+            "count": 190,
+            "type": "VEC2",
+            "name": "Tripods.Cylinder.002_Cylinder.001_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 932784,
+            "componentType": 5122,
+            "count": 190,
+            "type": "VEC2",
+            "name": "Tripods.Cylinder.002_Cylinder.001_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 113336,
+            "componentType": 5123,
+            "count": 312,
+            "type": "SCALAR",
+            "name": "Tripods.Cylinder.002_Cylinder.001_indices#0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 939628,
+            "componentType": 5123,
+            "count": 578,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder.003_Cylinder.001_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 939616,
+            "componentType": 5120,
+            "count": 578,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder.003_Cylinder.001_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 939600,
+            "componentType": 5126,
+            "count": 578,
+            "min": [
+                -0.13181093335151672,
+                0.23705877363681793,
+                -0.13196025788784027
+            ],
+            "max": [
+                0.13181093335151672,
+                0.4713610112667084,
+                0.13136285543441772
+            ],
+            "type": "VEC3",
+            "name": "Tripods.Cylinder.003_Cylinder.001_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 939612,
+            "componentType": 5120,
+            "count": 578,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder.003_Cylinder.001_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 939620,
+            "componentType": 5122,
+            "count": 578,
+            "type": "VEC2",
+            "name": "Tripods.Cylinder.003_Cylinder.001_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 939624,
+            "componentType": 5122,
+            "count": 578,
+            "type": "VEC2",
+            "name": "Tripods.Cylinder.003_Cylinder.001_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 113960,
+            "componentType": 5123,
+            "count": 978,
+            "type": "SCALAR",
+            "name": "Tripods.Cylinder.003_Cylinder.001_indices#0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 960436,
+            "componentType": 5123,
+            "count": 1772,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder.004_Cylinder.001_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 960424,
+            "componentType": 5120,
+            "count": 1772,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder.004_Cylinder.001_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 960408,
+            "componentType": 5126,
+            "count": 1772,
+            "min": [
+                -0.25133633613586426,
+                0.4717426002025604,
+                -0.23822152614593506
+            ],
+            "max": [
+                0.2513367831707001,
+                2.536174774169922,
+                0.19747377932071686
+            ],
+            "type": "VEC3",
+            "name": "Tripods.Cylinder.004_Cylinder.001_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 960420,
+            "componentType": 5120,
+            "count": 1772,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder.004_Cylinder.001_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 960428,
+            "componentType": 5122,
+            "count": 1772,
+            "type": "VEC2",
+            "name": "Tripods.Cylinder.004_Cylinder.001_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 960432,
+            "componentType": 5122,
+            "count": 1772,
+            "type": "VEC2",
+            "name": "Tripods.Cylinder.004_Cylinder.001_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 115916,
+            "componentType": 5123,
+            "count": 3738,
+            "type": "SCALAR",
+            "name": "Tripods.Cylinder.004_Cylinder.001_indices#0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1024228,
+            "componentType": 5123,
+            "count": 300,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder.006_Cylinder.003_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1024216,
+            "componentType": 5120,
+            "count": 300,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder.006_Cylinder.003_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1024200,
+            "componentType": 5126,
+            "count": 300,
+            "min": [
+                -0.07813775539398193,
+                0.38244059681892395,
+                -1.4575432538986206
+            ],
+            "max": [
+                0.07895072549581528,
+                0.4342420995235443,
+                -1.405682921409607
+            ],
+            "type": "VEC3",
+            "name": "Tripods.Cylinder.006_Cylinder.003_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1024212,
+            "componentType": 5120,
+            "count": 300,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder.006_Cylinder.003_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1024220,
+            "componentType": 5122,
+            "count": 300,
+            "type": "VEC2",
+            "name": "Tripods.Cylinder.006_Cylinder.003_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1024224,
+            "componentType": 5122,
+            "count": 300,
+            "type": "VEC2",
+            "name": "Tripods.Cylinder.006_Cylinder.003_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 123392,
+            "componentType": 5123,
+            "count": 780,
+            "type": "SCALAR",
+            "name": "Tripods.Cylinder.006_Cylinder.003_indices#0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1035028,
+            "componentType": 5123,
+            "count": 10292,
+            "type": "VEC4",
+            "name": "Tripods.Cube.002_Cube.001_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1035016,
+            "componentType": 5120,
+            "count": 10292,
+            "type": "VEC4",
+            "name": "Tripods.Cube.002_Cube.001_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1035000,
+            "componentType": 5126,
+            "count": 10292,
+            "min": [
+                -1.6955124139785767,
+                0.08519809693098068,
+                -1.937922477722168
+            ],
+            "max": [
+                1.6955124139785767,
+                0.21460846066474915,
+                1.0334376096725464
+            ],
+            "type": "VEC3",
+            "name": "Tripods.Cube.002_Cube.001_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1035012,
+            "componentType": 5120,
+            "count": 10292,
+            "type": "VEC4",
+            "name": "Tripods.Cube.002_Cube.001_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1035020,
+            "componentType": 5122,
+            "count": 10292,
+            "type": "VEC2",
+            "name": "Tripods.Cube.002_Cube.001_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1035024,
+            "componentType": 5122,
+            "count": 10292,
+            "type": "VEC2",
+            "name": "Tripods.Cube.002_Cube.001_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 124952,
+            "componentType": 5123,
+            "count": 23040,
+            "type": "SCALAR",
+            "name": "Tripods.Cube.002_Cube.001_indices#0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1405540,
+            "componentType": 5123,
+            "count": 672,
+            "type": "VEC4",
+            "name": "Tripods.Cube.004_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1405528,
+            "componentType": 5120,
+            "count": 672,
+            "type": "VEC4",
+            "name": "Tripods.Cube.004_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1405512,
+            "componentType": 5126,
+            "count": 672,
+            "min": [
+                0.03648204356431961,
+                0.16175049543380737,
+                -0.422512412071228
+            ],
+            "max": [
+                0.5292530655860901,
+                1.5214440822601318,
+                0.02217905968427658
+            ],
+            "type": "VEC3",
+            "name": "Tripods.Cube.004_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1405524,
+            "componentType": 5120,
+            "count": 672,
+            "type": "VEC4",
+            "name": "Tripods.Cube.004_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1405532,
+            "componentType": 5122,
+            "count": 672,
+            "type": "VEC2",
+            "name": "Tripods.Cube.004_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1405536,
+            "componentType": 5122,
+            "count": 672,
+            "type": "VEC2",
+            "name": "Tripods.Cube.004_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 171032,
+            "componentType": 5123,
+            "count": 1068,
+            "type": "SCALAR",
+            "name": "Tripods.Cube.004_indices#0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1429732,
+            "componentType": 5123,
+            "count": 2135,
+            "type": "VEC4",
+            "name": "Tripods.Cube.003_Cube.001_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1429720,
+            "componentType": 5120,
+            "count": 2135,
+            "type": "VEC4",
+            "name": "Tripods.Cube.003_Cube.001_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1429704,
+            "componentType": 5126,
+            "count": 2135,
+            "min": [
+                0.3724405765533447,
+                0.2395419478416443,
+                -0.40775996446609497
+            ],
+            "max": [
+                0.514870285987854,
+                1.3822137117385864,
+                -0.1771588921546936
+            ],
+            "type": "VEC3",
+            "name": "Tripods.Cube.003_Cube.001_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1429716,
+            "componentType": 5120,
+            "count": 2135,
+            "type": "VEC4",
+            "name": "Tripods.Cube.003_Cube.001_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1429724,
+            "componentType": 5122,
+            "count": 2135,
+            "type": "VEC2",
+            "name": "Tripods.Cube.003_Cube.001_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1429728,
+            "componentType": 5122,
+            "count": 2135,
+            "type": "VEC2",
+            "name": "Tripods.Cube.003_Cube.001_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 173168,
+            "componentType": 5123,
+            "count": 4608,
+            "type": "SCALAR",
+            "name": "Tripods.Cube.003_Cube.001_indices#0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1506592,
+            "componentType": 5123,
+            "count": 2995,
+            "type": "VEC4",
+            "name": "Tripods.Cube.004_Cube.001_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1506580,
+            "componentType": 5120,
+            "count": 2995,
+            "type": "VEC4",
+            "name": "Tripods.Cube.004_Cube.001_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1506564,
+            "componentType": 5126,
+            "count": 2995,
+            "min": [
+                0.1681356132030487,
+                0.8832625150680542,
+                -0.2962547540664673
+            ],
+            "max": [
+                0.2421424239873886,
+                0.89063560962677,
+                -0.22225384414196014
+            ],
+            "type": "VEC3",
+            "name": "Tripods.Cube.004_Cube.001_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1506576,
+            "componentType": 5120,
+            "count": 2995,
+            "type": "VEC4",
+            "name": "Tripods.Cube.004_Cube.001_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1506584,
+            "componentType": 5122,
+            "count": 2995,
+            "type": "VEC2",
+            "name": "Tripods.Cube.004_Cube.001_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1506588,
+            "componentType": 5122,
+            "count": 2995,
+            "type": "VEC2",
+            "name": "Tripods.Cube.004_Cube.001_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 182384,
+            "componentType": 5123,
+            "count": 5184,
+            "type": "SCALAR",
+            "name": "Tripods.Cube.004_Cube.001_indices#0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1614412,
+            "componentType": 5123,
+            "count": 141,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder.002_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1614400,
+            "componentType": 5120,
+            "count": 141,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder.002_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1614384,
+            "componentType": 5126,
+            "count": 141,
+            "min": [
+                -0.47123855352401733,
+                0.3454083204269409,
+                -0.3551875352859497
+            ],
+            "max": [
+                -0.14792273938655853,
+                0.6662364602088928,
+                -0.00916227139532566
+            ],
+            "type": "VEC3",
+            "name": "Tripods.Cylinder.002_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1614396,
+            "componentType": 5120,
+            "count": 141,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder.002_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1614404,
+            "componentType": 5122,
+            "count": 141,
+            "type": "VEC2",
+            "name": "Tripods.Cylinder.002_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1614408,
+            "componentType": 5122,
+            "count": 141,
+            "type": "VEC2",
+            "name": "Tripods.Cylinder.002_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 192752,
+            "componentType": 5123,
+            "count": 276,
+            "type": "SCALAR",
+            "name": "Tripods.Cylinder.002_indices#0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1619488,
+            "componentType": 5123,
+            "count": 126,
+            "type": "VEC4",
+            "name": "Tripods.Cube.005_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1619476,
+            "componentType": 5120,
+            "count": 126,
+            "type": "VEC4",
+            "name": "Tripods.Cube.005_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1619460,
+            "componentType": 5126,
+            "count": 126,
+            "min": [
+                0.12439654022455215,
+                0.3481418192386627,
+                -0.3721518814563751
+            ],
+            "max": [
+                0.3984886407852173,
+                0.8790436387062073,
+                -0.00932550523430109
+            ],
+            "type": "VEC3",
+            "name": "Tripods.Cube.005_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1619472,
+            "componentType": 5120,
+            "count": 126,
+            "type": "VEC4",
+            "name": "Tripods.Cube.005_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1619480,
+            "componentType": 5122,
+            "count": 126,
+            "type": "VEC2",
+            "name": "Tripods.Cube.005_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1619484,
+            "componentType": 5122,
+            "count": 126,
+            "type": "VEC2",
+            "name": "Tripods.Cube.005_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 193304,
+            "componentType": 5123,
+            "count": 204,
+            "type": "SCALAR",
+            "name": "Tripods.Cube.005_indices#0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1624024,
+            "componentType": 5123,
+            "count": 408,
+            "type": "VEC4",
+            "name": "Tripods.Cube.006_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1624012,
+            "componentType": 5120,
+            "count": 408,
+            "type": "VEC4",
+            "name": "Tripods.Cube.006_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1623996,
+            "componentType": 5126,
+            "count": 408,
+            "min": [
+                0.1833384931087494,
+                0.8906347751617432,
+                -0.2810535728931427
+            ],
+            "max": [
+                0.22693996131420135,
+                0.937544584274292,
+                -0.23745505511760712
+            ],
+            "type": "VEC3",
+            "name": "Tripods.Cube.006_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1624008,
+            "componentType": 5120,
+            "count": 408,
+            "type": "VEC4",
+            "name": "Tripods.Cube.006_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1624016,
+            "componentType": 5122,
+            "count": 408,
+            "type": "VEC2",
+            "name": "Tripods.Cube.006_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1624020,
+            "componentType": 5122,
+            "count": 408,
+            "type": "VEC2",
+            "name": "Tripods.Cube.006_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 193712,
+            "componentType": 5123,
+            "count": 1872,
+            "type": "SCALAR",
+            "name": "Tripods.Cube.006_indices#0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1638712,
+            "componentType": 5123,
+            "count": 567,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder.005_Cylinder.001_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1638700,
+            "componentType": 5120,
+            "count": 567,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder.005_Cylinder.001_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1638684,
+            "componentType": 5126,
+            "count": 567,
+            "min": [
+                -0.06152310594916344,
+                2.536174774169922,
+                -0.06159320846199989
+            ],
+            "max": [
+                0.061522260308265686,
+                3.8135948181152344,
+                0.06131438538432121
+            ],
+            "type": "VEC3",
+            "name": "Tripods.Cylinder.005_Cylinder.001_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1638696,
+            "componentType": 5120,
+            "count": 567,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder.005_Cylinder.001_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1638704,
+            "componentType": 5122,
+            "count": 567,
+            "type": "VEC2",
+            "name": "Tripods.Cylinder.005_Cylinder.001_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1638708,
+            "componentType": 5122,
+            "count": 567,
+            "type": "VEC2",
+            "name": "Tripods.Cylinder.005_Cylinder.001_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 197456,
+            "componentType": 5123,
+            "count": 1875,
+            "type": "SCALAR",
+            "name": "Tripods.Cylinder.005_Cylinder.001_indices#0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1659124,
+            "componentType": 5123,
+            "count": 366,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder.006_Cylinder.004_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1659112,
+            "componentType": 5120,
+            "count": 366,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder.006_Cylinder.004_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1659096,
+            "componentType": 5126,
+            "count": 366,
+            "min": [
+                -1.29981529712677,
+                0.38244059681892395,
+                0.6366457939147949
+            ],
+            "max": [
+                -1.1784791946411133,
+                0.4342420995235443,
+                0.7972725629806519
+            ],
+            "type": "VEC3",
+            "name": "Tripods.Cylinder.006_Cylinder.004_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1659108,
+            "componentType": 5120,
+            "count": 366,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder.006_Cylinder.004_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1659116,
+            "componentType": 5122,
+            "count": 366,
+            "type": "VEC2",
+            "name": "Tripods.Cylinder.006_Cylinder.004_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1659120,
+            "componentType": 5122,
+            "count": 366,
+            "type": "VEC2",
+            "name": "Tripods.Cylinder.006_Cylinder.004_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 201208,
+            "componentType": 5123,
+            "count": 780,
+            "type": "SCALAR",
+            "name": "Tripods.Cylinder.006_Cylinder.004_indices#0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1672300,
+            "componentType": 5123,
+            "count": 366,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder.006_Cylinder.005_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1672288,
+            "componentType": 5120,
+            "count": 366,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder.006_Cylinder.005_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1672272,
+            "componentType": 5126,
+            "count": 366,
+            "min": [
+                1.17902410030365,
+                0.38244059681892395,
+                0.6357998251914978
+            ],
+            "max": [
+                1.3002228736877441,
+                0.4342420995235443,
+                0.7964709401130676
+            ],
+            "type": "VEC3",
+            "name": "Tripods.Cylinder.006_Cylinder.005_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1672284,
+            "componentType": 5120,
+            "count": 366,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder.006_Cylinder.005_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1672292,
+            "componentType": 5122,
+            "count": 366,
+            "type": "VEC2",
+            "name": "Tripods.Cylinder.006_Cylinder.005_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1672296,
+            "componentType": 5122,
+            "count": 366,
+            "type": "VEC2",
+            "name": "Tripods.Cylinder.006_Cylinder.005_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 202768,
+            "componentType": 5123,
+            "count": 780,
+            "type": "SCALAR",
+            "name": "Tripods.Cylinder.006_Cylinder.005_indices#0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1685476,
+            "componentType": 5123,
+            "count": 2426,
+            "type": "VEC4",
+            "name": "Tripods.Cube.007_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1685464,
+            "componentType": 5120,
+            "count": 2426,
+            "type": "VEC4",
+            "name": "Tripods.Cube.007_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1685448,
+            "componentType": 5126,
+            "count": 2426,
+            "min": [
+                -1.8519188165664673,
+                0.18424470722675323,
+                -1.737824559211731
+            ],
+            "max": [
+                1.1807384490966797,
+                2.3058676719665527,
+                1.5465660095214844
+            ],
+            "type": "VEC3",
+            "name": "Tripods.Cube.007_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1685460,
+            "componentType": 5120,
+            "count": 2426,
+            "type": "VEC4",
+            "name": "Tripods.Cube.007_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1685468,
+            "componentType": 5122,
+            "count": 2426,
+            "type": "VEC2",
+            "name": "Tripods.Cube.007_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1685472,
+            "componentType": 5122,
+            "count": 2426,
+            "type": "VEC2",
+            "name": "Tripods.Cube.007_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 204328,
+            "componentType": 5123,
+            "count": 5382,
+            "type": "SCALAR",
+            "name": "Tripods.Cube.007_indices#0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1772812,
+            "componentType": 5123,
+            "count": 118,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder_Cylinder.003_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1772800,
+            "componentType": 5120,
+            "count": 118,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder_Cylinder.003_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1772784,
+            "componentType": 5126,
+            "count": 118,
+            "min": [
+                -0.1960473209619522,
+                0.46032893657684326,
+                -0.21099595725536346
+            ],
+            "max": [
+                0.19604726135730743,
+                0.4811554253101349,
+                0.2109960913658142
+            ],
+            "type": "VEC3",
+            "name": "Tripods.Cylinder_Cylinder.003_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1772796,
+            "componentType": 5120,
+            "count": 118,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder_Cylinder.003_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1772804,
+            "componentType": 5122,
+            "count": 118,
+            "type": "VEC2",
+            "name": "Tripods.Cylinder_Cylinder.003_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1772808,
+            "componentType": 5122,
+            "count": 118,
+            "type": "VEC2",
+            "name": "Tripods.Cylinder_Cylinder.003_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 215092,
+            "componentType": 5123,
+            "count": 204,
+            "type": "SCALAR",
+            "name": "Tripods.Cylinder_Cylinder.003_indices#0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1777060,
+            "componentType": 5123,
+            "count": 194,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder.002_Cylinder.002_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1777048,
+            "componentType": 5120,
+            "count": 194,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder.002_Cylinder.002_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1777032,
+            "componentType": 5126,
+            "count": 194,
+            "min": [
+                -0.38165879249572754,
+                0.3268260061740875,
+                -0.4506244361400604
+            ],
+            "max": [
+                0.4014708399772644,
+                0.34765249490737915,
+                0.21099607646465302
+            ],
+            "type": "VEC3",
+            "name": "Tripods.Cylinder.002_Cylinder.002_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1777044,
+            "componentType": 5120,
+            "count": 194,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder.002_Cylinder.002_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1777052,
+            "componentType": 5122,
+            "count": 194,
+            "type": "VEC2",
+            "name": "Tripods.Cylinder.002_Cylinder.002_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1777056,
+            "componentType": 5122,
+            "count": 194,
+            "type": "VEC2",
+            "name": "Tripods.Cylinder.002_Cylinder.002_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 215500,
+            "componentType": 5123,
+            "count": 312,
+            "type": "SCALAR",
+            "name": "Tripods.Cylinder.002_Cylinder.002_indices#0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1784044,
+            "componentType": 5123,
+            "count": 642,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder.003_Cylinder.002_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1784032,
+            "componentType": 5120,
+            "count": 642,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder.003_Cylinder.002_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1784016,
+            "componentType": 5126,
+            "count": 642,
+            "min": [
+                -0.1315724104642868,
+                0.23705877363681793,
+                -0.1319044828414917
+            ],
+            "max": [
+                0.13193781673908234,
+                0.4713610112667084,
+                0.1316724270582199
+            ],
+            "type": "VEC3",
+            "name": "Tripods.Cylinder.003_Cylinder.002_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1784028,
+            "componentType": 5120,
+            "count": 642,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder.003_Cylinder.002_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1784036,
+            "componentType": 5122,
+            "count": 642,
+            "type": "VEC2",
+            "name": "Tripods.Cylinder.003_Cylinder.002_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1784040,
+            "componentType": 5122,
+            "count": 642,
+            "type": "VEC2",
+            "name": "Tripods.Cylinder.003_Cylinder.002_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 216124,
+            "componentType": 5123,
+            "count": 978,
+            "type": "SCALAR",
+            "name": "Tripods.Cylinder.003_Cylinder.002_indices#0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1807156,
+            "componentType": 5123,
+            "count": 1816,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder.004_Cylinder.002_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1807144,
+            "componentType": 5120,
+            "count": 1816,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder.004_Cylinder.002_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1807128,
+            "componentType": 5126,
+            "count": 1816,
+            "min": [
+                -0.24689988791942596,
+                0.4717426002025604,
+                -0.2543783485889435
+            ],
+            "max": [
+                0.2143370509147644,
+                2.536174774169922,
+                0.24505072832107544
+            ],
+            "type": "VEC3",
+            "name": "Tripods.Cylinder.004_Cylinder.002_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1807140,
+            "componentType": 5120,
+            "count": 1816,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder.004_Cylinder.002_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1807148,
+            "componentType": 5122,
+            "count": 1816,
+            "type": "VEC2",
+            "name": "Tripods.Cylinder.004_Cylinder.002_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1807152,
+            "componentType": 5122,
+            "count": 1816,
+            "type": "VEC2",
+            "name": "Tripods.Cylinder.004_Cylinder.002_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 218080,
+            "componentType": 5123,
+            "count": 3738,
+            "type": "SCALAR",
+            "name": "Tripods.Cylinder.004_Cylinder.002_indices#0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1872532,
+            "componentType": 5123,
+            "count": 384,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder.006_Cylinder.006_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1872520,
+            "componentType": 5120,
+            "count": 384,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder.006_Cylinder.006_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1872504,
+            "componentType": 5126,
+            "count": 384,
+            "min": [
+                0.4890742003917694,
+                0.38244059681892395,
+                -1.366734504699707
+            ],
+            "max": [
+                0.6527784466743469,
+                0.4342420995235443,
+                -1.2589538097381592
+            ],
+            "type": "VEC3",
+            "name": "Tripods.Cylinder.006_Cylinder.006_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1872516,
+            "componentType": 5120,
+            "count": 384,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder.006_Cylinder.006_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1872524,
+            "componentType": 5122,
+            "count": 384,
+            "type": "VEC2",
+            "name": "Tripods.Cylinder.006_Cylinder.006_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1872528,
+            "componentType": 5122,
+            "count": 384,
+            "type": "VEC2",
+            "name": "Tripods.Cylinder.006_Cylinder.006_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 225556,
+            "componentType": 5123,
+            "count": 780,
+            "type": "SCALAR",
+            "name": "Tripods.Cylinder.006_Cylinder.006_indices#0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1886356,
+            "componentType": 5123,
+            "count": 10281,
+            "type": "VEC4",
+            "name": "Tripods.Cube.002_Cube.002_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1886344,
+            "componentType": 5120,
+            "count": 10281,
+            "type": "VEC4",
+            "name": "Tripods.Cube.002_Cube.002_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1886328,
+            "componentType": 5126,
+            "count": 10281,
+            "min": [
+                -1.9262279272079468,
+                0.08519809693098068,
+                -1.788045048713684
+            ],
+            "max": [
+                1.2052037715911865,
+                0.21460846066474915,
+                1.5827295780181885
+            ],
+            "type": "VEC3",
+            "name": "Tripods.Cube.002_Cube.002_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1886340,
+            "componentType": 5120,
+            "count": 10281,
+            "type": "VEC4",
+            "name": "Tripods.Cube.002_Cube.002_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1886348,
+            "componentType": 5122,
+            "count": 10281,
+            "type": "VEC2",
+            "name": "Tripods.Cube.002_Cube.002_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1886352,
+            "componentType": 5122,
+            "count": 10281,
+            "type": "VEC2",
+            "name": "Tripods.Cube.002_Cube.002_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 227116,
+            "componentType": 5123,
+            "count": 23040,
+            "type": "SCALAR",
+            "name": "Tripods.Cube.002_Cube.002_indices#0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 2256472,
+            "componentType": 5123,
+            "count": 672,
+            "type": "VEC4",
+            "name": "Tripods.Cube.010_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 2256460,
+            "componentType": 5120,
+            "count": 672,
+            "type": "VEC4",
+            "name": "Tripods.Cube.010_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 2256444,
+            "componentType": 5126,
+            "count": 672,
+            "min": [
+                0.12038310617208481,
+                0.16175049543380737,
+                -0.23186862468719482
+            ],
+            "max": [
+                0.5580300688743591,
+                1.5214440822601318,
+                0.09016972780227661
+            ],
+            "type": "VEC3",
+            "name": "Tripods.Cube.010_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 2256456,
+            "componentType": 5120,
+            "count": 672,
+            "type": "VEC4",
+            "name": "Tripods.Cube.010_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 2256464,
+            "componentType": 5122,
+            "count": 672,
+            "type": "VEC2",
+            "name": "Tripods.Cube.010_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 2256468,
+            "componentType": 5122,
+            "count": 672,
+            "type": "VEC2",
+            "name": "Tripods.Cube.010_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 273196,
+            "componentType": 5123,
+            "count": 1068,
+            "type": "SCALAR",
+            "name": "Tripods.Cube.010_indices#0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 2280664,
+            "componentType": 5123,
+            "count": 2168,
+            "type": "VEC4",
+            "name": "Tripods.Cube.003_Cube.003_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 2280652,
+            "componentType": 5120,
+            "count": 2168,
+            "type": "VEC4",
+            "name": "Tripods.Cube.003_Cube.003_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 2280636,
+            "componentType": 5126,
+            "count": 2168,
+            "min": [
+                0.500885546207428,
+                0.2395419478416443,
+                -0.21999074518680573
+            ],
+            "max": [
+                0.5460257530212402,
+                1.3822137117385864,
+                0.03715945780277252
+            ],
+            "type": "VEC3",
+            "name": "Tripods.Cube.003_Cube.003_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 2280648,
+            "componentType": 5120,
+            "count": 2168,
+            "type": "VEC4",
+            "name": "Tripods.Cube.003_Cube.003_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 2280656,
+            "componentType": 5122,
+            "count": 2168,
+            "type": "VEC2",
+            "name": "Tripods.Cube.003_Cube.003_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 2280660,
+            "componentType": 5122,
+            "count": 2168,
+            "type": "VEC2",
+            "name": "Tripods.Cube.003_Cube.003_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 275332,
+            "componentType": 5123,
+            "count": 4608,
+            "type": "SCALAR",
+            "name": "Tripods.Cube.003_Cube.003_indices#0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 2358712,
+            "componentType": 5123,
+            "count": 3060,
+            "type": "VEC4",
+            "name": "Tripods.Cube.004_Cube.002_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 2358700,
+            "componentType": 5120,
+            "count": 3060,
+            "type": "VEC4",
+            "name": "Tripods.Cube.004_Cube.002_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 2358684,
+            "componentType": 5126,
+            "count": 3060,
+            "min": [
+                0.2544988989830017,
+                0.8832625150680542,
+                -0.19309279322624207
+            ],
+            "max": [
+                0.32843440771102905,
+                0.89063560962677,
+                -0.11894623935222626
+            ],
+            "type": "VEC3",
+            "name": "Tripods.Cube.004_Cube.002_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 2358696,
+            "componentType": 5120,
+            "count": 3060,
+            "type": "VEC4",
+            "name": "Tripods.Cube.004_Cube.002_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 2358704,
+            "componentType": 5122,
+            "count": 3060,
+            "type": "VEC2",
+            "name": "Tripods.Cube.004_Cube.002_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 2358708,
+            "componentType": 5122,
+            "count": 3060,
+            "type": "VEC2",
+            "name": "Tripods.Cube.004_Cube.002_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 284548,
+            "componentType": 5123,
+            "count": 5184,
+            "type": "SCALAR",
+            "name": "Tripods.Cube.004_Cube.002_indices#0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 2468872,
+            "componentType": 5123,
+            "count": 162,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder.003_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 2468860,
+            "componentType": 5120,
+            "count": 162,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder.003_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 2468844,
+            "componentType": 5126,
+            "count": 162,
+            "min": [
+                -0.38958293199539185,
+                0.3454083204269409,
+                -0.4557875990867615
+            ],
+            "max": [
+                -0.043083108961582184,
+                0.6662364602088928,
+                -0.12779131531715393
+            ],
+            "type": "VEC3",
+            "name": "Tripods.Cylinder.003_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 2468856,
+            "componentType": 5120,
+            "count": 162,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder.003_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 2468864,
+            "componentType": 5122,
+            "count": 162,
+            "type": "VEC2",
+            "name": "Tripods.Cylinder.003_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 2468868,
+            "componentType": 5122,
+            "count": 162,
+            "type": "VEC2",
+            "name": "Tripods.Cylinder.003_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 294916,
+            "componentType": 5123,
+            "count": 276,
+            "type": "SCALAR",
+            "name": "Tripods.Cylinder.003_indices#0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 2474704,
+            "componentType": 5123,
+            "count": 128,
+            "type": "VEC4",
+            "name": "Tripods.Cube.011_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 2474692,
+            "componentType": 5120,
+            "count": 128,
+            "type": "VEC4",
+            "name": "Tripods.Cube.011_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 2474676,
+            "componentType": 5126,
+            "count": 128,
+            "min": [
+                0.18220406770706177,
+                0.3481418192386627,
+                -0.25637388229370117
+            ],
+            "max": [
+                0.3892030417919159,
+                0.8790436387062073,
+                0.11890555918216705
+            ],
+            "type": "VEC3",
+            "name": "Tripods.Cube.011_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 2474688,
+            "componentType": 5120,
+            "count": 128,
+            "type": "VEC4",
+            "name": "Tripods.Cube.011_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 2474696,
+            "componentType": 5122,
+            "count": 128,
+            "type": "VEC2",
+            "name": "Tripods.Cube.011_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 2474700,
+            "componentType": 5122,
+            "count": 128,
+            "type": "VEC2",
+            "name": "Tripods.Cube.011_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 295468,
+            "componentType": 5123,
+            "count": 204,
+            "type": "SCALAR",
+            "name": "Tripods.Cube.011_indices#0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 2479312,
+            "componentType": 5123,
+            "count": 408,
+            "type": "VEC4",
+            "name": "Tripods.Cube.012_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 2479300,
+            "componentType": 5120,
+            "count": 408,
+            "type": "VEC4",
+            "name": "Tripods.Cube.012_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 2479284,
+            "componentType": 5126,
+            "count": 408,
+            "min": [
+                0.2698413133621216,
+                0.8906347751617432,
+                -0.17773327231407166
+            ],
+            "max": [
+                0.3130919933319092,
+                0.937544584274292,
+                -0.13430571556091309
+            ],
+            "type": "VEC3",
+            "name": "Tripods.Cube.012_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 2479296,
+            "componentType": 5120,
+            "count": 408,
+            "type": "VEC4",
+            "name": "Tripods.Cube.012_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 2479304,
+            "componentType": 5122,
+            "count": 408,
+            "type": "VEC2",
+            "name": "Tripods.Cube.012_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 2479308,
+            "componentType": 5122,
+            "count": 408,
+            "type": "VEC2",
+            "name": "Tripods.Cube.012_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 295876,
+            "componentType": 5123,
+            "count": 1872,
+            "type": "SCALAR",
+            "name": "Tripods.Cube.012_indices#0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 2494000,
+            "componentType": 5123,
+            "count": 565,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder.005_Cylinder.002_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 2493988,
+            "componentType": 5120,
+            "count": 565,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder.005_Cylinder.002_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 2493972,
+            "componentType": 5126,
+            "count": 565,
+            "min": [
+                -0.06141093745827675,
+                2.536174774169922,
+                -0.06156768277287483
+            ],
+            "max": [
+                0.06158192455768585,
+                3.8135948181152344,
+                0.061457790434360504
+            ],
+            "type": "VEC3",
+            "name": "Tripods.Cylinder.005_Cylinder.002_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 2493984,
+            "componentType": 5120,
+            "count": 565,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder.005_Cylinder.002_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 2493992,
+            "componentType": 5122,
+            "count": 565,
+            "type": "VEC2",
+            "name": "Tripods.Cylinder.005_Cylinder.002_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 2493996,
+            "componentType": 5122,
+            "count": 565,
+            "type": "VEC2",
+            "name": "Tripods.Cylinder.005_Cylinder.002_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 299620,
+            "componentType": 5123,
+            "count": 1875,
+            "type": "SCALAR",
+            "name": "Tripods.Cylinder.005_Cylinder.002_indices#0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 2514340,
+            "componentType": 5123,
+            "count": 386,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder.006_Cylinder.007_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 2514328,
+            "componentType": 5120,
+            "count": 386,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder.006_Cylinder.007_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 2514312,
+            "componentType": 5126,
+            "count": 386,
+            "min": [
+                -1.4564131498336792,
+                0.38244059681892395,
+                0.08286212384700775
+            ],
+            "max": [
+                -1.3880304098129272,
+                0.4342420995235443,
+                0.24456150829792023
+            ],
+            "type": "VEC3",
+            "name": "Tripods.Cylinder.006_Cylinder.007_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 2514324,
+            "componentType": 5120,
+            "count": 386,
+            "type": "VEC4",
+            "name": "Tripods.Cylinder.006_Cylinder.007_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 2514332,
+            "componentType": 5122,
+            "count": 386,
+            "type": "VEC2",
+            "name": "Tripods.Cylinder.006_Cylinder.007_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 2514336,
+            "componentType": 5122,
+            "count": 386,
+            "type": "VEC2",
+            "name": "Tripods.Cylinder.006_Cylinder.007_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 303372,
+            "componentType": 5123,
+            "count": 780,
+            "type": "SCALAR",
+            "name": "Tripods.Cylinder.006_Cylinder.007_indices#0"
+        }
+    ],
+    "asset": {
+        "generator": "Khronos glTF Blender I/O v1.7.5",
+        "version": "2.0",
+        "extensions": {
+            "ASOBO_normal_map_convention": {
+                "tangent_space_convention": "DirectX"
+            },
+            "ASOBO_asset_optimized": {
+                "BoundingBoxMax": [
+                    1.6955124139785767,
+                    3.8135948181152344,
+                    1.5827295780181885
+                ],
+                "BoundingBoxMin": [
+                    -1.9262279272079468,
+                    0,
+                    -1.937922477722168
+                ],
+                "MajorVersion": 4,
+                "MinorVersion": 2
+            }
+        }
+    },
+    "bufferViews": [
+        {
+            "buffer": 0,
+            "byteLength": 304932,
+            "byteOffset": 0,
+            "target": 34963,
+            "name": "Tripods.BufferViewIndex"
+        },
+        {
+            "buffer": 0,
+            "byteLength": 2528208,
+            "byteStride": 36,
+            "byteOffset": 304932,
+            "target": 34962,
+            "name": "Tripods.BufferViewVertexND"
+        }
+    ],
+    "extensionsUsed": [
+        "ASOBO_asset_optimized",
+        "ASOBO_normal_map_convention",
+        "MSFT_texture_dds"
+    ],
+    "materials": [
+        {
+            "name": "Tripods.tripod",
+            "normalTexture": {
+                "index": 0
+            },
+            "occlusionTexture": {
+                "index": 1
+            },
+            "pbrMetallicRoughness": {
+                "baseColorTexture": {
+                    "index": 2
+                },
+                "metallicRoughnessTexture": {
+                    "index": 1
+                }
+            }
+        }
+    ],
+    "meshes": [
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 0,
+                        "NORMAL": 1,
+                        "POSITION": 2,
+                        "TANGENT": 3,
+                        "TEXCOORD_0": 4,
+                        "TEXCOORD_1": 5
+                    },
+                    "indices": 6,
+                    "material": 0,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 1794,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "Tripods.Cube.001"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 7,
+                        "NORMAL": 8,
+                        "POSITION": 9,
+                        "TANGENT": 10,
+                        "TEXCOORD_0": 11,
+                        "TEXCOORD_1": 12
+                    },
+                    "indices": 13,
+                    "material": 0,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 68,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "Tripods.Cylinder_Cylinder.002"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 14,
+                        "NORMAL": 15,
+                        "POSITION": 16,
+                        "TANGENT": 17,
+                        "TEXCOORD_0": 18,
+                        "TEXCOORD_1": 19
+                    },
+                    "indices": 20,
+                    "material": 0,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 104,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "Tripods.Cylinder.002_Cylinder.004"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 21,
+                        "NORMAL": 22,
+                        "POSITION": 23,
+                        "TANGENT": 24,
+                        "TEXCOORD_0": 25,
+                        "TEXCOORD_1": 26
+                    },
+                    "indices": 27,
+                    "material": 0,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 326,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "Tripods.Cylinder.003_Cylinder.005"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 28,
+                        "NORMAL": 29,
+                        "POSITION": 30,
+                        "TANGENT": 31,
+                        "TEXCOORD_0": 32,
+                        "TEXCOORD_1": 33
+                    },
+                    "indices": 34,
+                    "material": 0,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 1246,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "Tripods.Cylinder.004_Cylinder.007"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 35,
+                        "NORMAL": 36,
+                        "POSITION": 37,
+                        "TANGENT": 38,
+                        "TEXCOORD_0": 39,
+                        "TEXCOORD_1": 40
+                    },
+                    "indices": 41,
+                    "material": 0,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 260,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "Tripods.Cylinder.006_Cylinder.011"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 42,
+                        "NORMAL": 43,
+                        "POSITION": 44,
+                        "TANGENT": 45,
+                        "TEXCOORD_0": 46,
+                        "TEXCOORD_1": 47
+                    },
+                    "indices": 48,
+                    "material": 0,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 7680,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "Tripods.Cube.002_Cube.004"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 49,
+                        "NORMAL": 50,
+                        "POSITION": 51,
+                        "TANGENT": 52,
+                        "TEXCOORD_0": 53,
+                        "TEXCOORD_1": 54
+                    },
+                    "indices": 55,
+                    "material": 0,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 356,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "Tripods.Cube.002"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 56,
+                        "NORMAL": 57,
+                        "POSITION": 58,
+                        "TANGENT": 59,
+                        "TEXCOORD_0": 60,
+                        "TEXCOORD_1": 61
+                    },
+                    "indices": 62,
+                    "material": 0,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 1536,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "Tripods.Cube.003_Cube.002"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 63,
+                        "NORMAL": 64,
+                        "POSITION": 65,
+                        "TANGENT": 66,
+                        "TEXCOORD_0": 67,
+                        "TEXCOORD_1": 68
+                    },
+                    "indices": 69,
+                    "material": 0,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 1728,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "Tripods.Cube.004_Cube.003"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 70,
+                        "NORMAL": 71,
+                        "POSITION": 72,
+                        "TANGENT": 73,
+                        "TEXCOORD_0": 74,
+                        "TEXCOORD_1": 75
+                    },
+                    "indices": 76,
+                    "material": 0,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 92,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "Tripods.Cylinder.001"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 77,
+                        "NORMAL": 78,
+                        "POSITION": 79,
+                        "TANGENT": 80,
+                        "TEXCOORD_0": 81,
+                        "TEXCOORD_1": 82
+                    },
+                    "indices": 83,
+                    "material": 0,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 68,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "Tripods.Cube.008"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 84,
+                        "NORMAL": 85,
+                        "POSITION": 86,
+                        "TANGENT": 87,
+                        "TEXCOORD_0": 88,
+                        "TEXCOORD_1": 89
+                    },
+                    "indices": 90,
+                    "material": 0,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 624,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "Tripods.Cube.009"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 91,
+                        "NORMAL": 92,
+                        "POSITION": 93,
+                        "TANGENT": 94,
+                        "TEXCOORD_0": 95,
+                        "TEXCOORD_1": 96
+                    },
+                    "indices": 97,
+                    "material": 0,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 625,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "Tripods.Cylinder.005_Cylinder.003"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 98,
+                        "NORMAL": 99,
+                        "POSITION": 100,
+                        "TANGENT": 101,
+                        "TEXCOORD_0": 102,
+                        "TEXCOORD_1": 103
+                    },
+                    "indices": 104,
+                    "material": 0,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 260,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "Tripods.Cylinder.006_Cylinder.001"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 105,
+                        "NORMAL": 106,
+                        "POSITION": 107,
+                        "TANGENT": 108,
+                        "TEXCOORD_0": 109,
+                        "TEXCOORD_1": 110
+                    },
+                    "indices": 111,
+                    "material": 0,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 260,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "Tripods.Cylinder.006_Cylinder.002"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 112,
+                        "NORMAL": 113,
+                        "POSITION": 114,
+                        "TANGENT": 115,
+                        "TEXCOORD_0": 116,
+                        "TEXCOORD_1": 117
+                    },
+                    "indices": 118,
+                    "material": 0,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 1794,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "Tripods.Cube.003"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 119,
+                        "NORMAL": 120,
+                        "POSITION": 121,
+                        "TANGENT": 122,
+                        "TEXCOORD_0": 123,
+                        "TEXCOORD_1": 124
+                    },
+                    "indices": 125,
+                    "material": 0,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 68,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "Tripods.Cylinder_Cylinder.001"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 126,
+                        "NORMAL": 127,
+                        "POSITION": 128,
+                        "TANGENT": 129,
+                        "TEXCOORD_0": 130,
+                        "TEXCOORD_1": 131
+                    },
+                    "indices": 132,
+                    "material": 0,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 104,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "Tripods.Cylinder.002_Cylinder.001"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 133,
+                        "NORMAL": 134,
+                        "POSITION": 135,
+                        "TANGENT": 136,
+                        "TEXCOORD_0": 137,
+                        "TEXCOORD_1": 138
+                    },
+                    "indices": 139,
+                    "material": 0,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 326,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "Tripods.Cylinder.003_Cylinder.001"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 140,
+                        "NORMAL": 141,
+                        "POSITION": 142,
+                        "TANGENT": 143,
+                        "TEXCOORD_0": 144,
+                        "TEXCOORD_1": 145
+                    },
+                    "indices": 146,
+                    "material": 0,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 1246,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "Tripods.Cylinder.004_Cylinder.001"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 147,
+                        "NORMAL": 148,
+                        "POSITION": 149,
+                        "TANGENT": 150,
+                        "TEXCOORD_0": 151,
+                        "TEXCOORD_1": 152
+                    },
+                    "indices": 153,
+                    "material": 0,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 260,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "Tripods.Cylinder.006_Cylinder.003"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 154,
+                        "NORMAL": 155,
+                        "POSITION": 156,
+                        "TANGENT": 157,
+                        "TEXCOORD_0": 158,
+                        "TEXCOORD_1": 159
+                    },
+                    "indices": 160,
+                    "material": 0,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 7680,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "Tripods.Cube.002_Cube.001"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 161,
+                        "NORMAL": 162,
+                        "POSITION": 163,
+                        "TANGENT": 164,
+                        "TEXCOORD_0": 165,
+                        "TEXCOORD_1": 166
+                    },
+                    "indices": 167,
+                    "material": 0,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 356,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "Tripods.Cube.004"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 168,
+                        "NORMAL": 169,
+                        "POSITION": 170,
+                        "TANGENT": 171,
+                        "TEXCOORD_0": 172,
+                        "TEXCOORD_1": 173
+                    },
+                    "indices": 174,
+                    "material": 0,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 1536,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "Tripods.Cube.003_Cube.001"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 175,
+                        "NORMAL": 176,
+                        "POSITION": 177,
+                        "TANGENT": 178,
+                        "TEXCOORD_0": 179,
+                        "TEXCOORD_1": 180
+                    },
+                    "indices": 181,
+                    "material": 0,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 1728,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "Tripods.Cube.004_Cube.001"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 182,
+                        "NORMAL": 183,
+                        "POSITION": 184,
+                        "TANGENT": 185,
+                        "TEXCOORD_0": 186,
+                        "TEXCOORD_1": 187
+                    },
+                    "indices": 188,
+                    "material": 0,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 92,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "Tripods.Cylinder.002"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 189,
+                        "NORMAL": 190,
+                        "POSITION": 191,
+                        "TANGENT": 192,
+                        "TEXCOORD_0": 193,
+                        "TEXCOORD_1": 194
+                    },
+                    "indices": 195,
+                    "material": 0,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 68,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "Tripods.Cube.005"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 196,
+                        "NORMAL": 197,
+                        "POSITION": 198,
+                        "TANGENT": 199,
+                        "TEXCOORD_0": 200,
+                        "TEXCOORD_1": 201
+                    },
+                    "indices": 202,
+                    "material": 0,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 624,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "Tripods.Cube.006"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 203,
+                        "NORMAL": 204,
+                        "POSITION": 205,
+                        "TANGENT": 206,
+                        "TEXCOORD_0": 207,
+                        "TEXCOORD_1": 208
+                    },
+                    "indices": 209,
+                    "material": 0,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 625,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "Tripods.Cylinder.005_Cylinder.001"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 210,
+                        "NORMAL": 211,
+                        "POSITION": 212,
+                        "TANGENT": 213,
+                        "TEXCOORD_0": 214,
+                        "TEXCOORD_1": 215
+                    },
+                    "indices": 216,
+                    "material": 0,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 260,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "Tripods.Cylinder.006_Cylinder.004"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 217,
+                        "NORMAL": 218,
+                        "POSITION": 219,
+                        "TANGENT": 220,
+                        "TEXCOORD_0": 221,
+                        "TEXCOORD_1": 222
+                    },
+                    "indices": 223,
+                    "material": 0,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 260,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "Tripods.Cylinder.006_Cylinder.005"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 224,
+                        "NORMAL": 225,
+                        "POSITION": 226,
+                        "TANGENT": 227,
+                        "TEXCOORD_0": 228,
+                        "TEXCOORD_1": 229
+                    },
+                    "indices": 230,
+                    "material": 0,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 1794,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "Tripods.Cube.007"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 231,
+                        "NORMAL": 232,
+                        "POSITION": 233,
+                        "TANGENT": 234,
+                        "TEXCOORD_0": 235,
+                        "TEXCOORD_1": 236
+                    },
+                    "indices": 237,
+                    "material": 0,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 68,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "Tripods.Cylinder_Cylinder.003"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 238,
+                        "NORMAL": 239,
+                        "POSITION": 240,
+                        "TANGENT": 241,
+                        "TEXCOORD_0": 242,
+                        "TEXCOORD_1": 243
+                    },
+                    "indices": 244,
+                    "material": 0,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 104,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "Tripods.Cylinder.002_Cylinder.002"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 245,
+                        "NORMAL": 246,
+                        "POSITION": 247,
+                        "TANGENT": 248,
+                        "TEXCOORD_0": 249,
+                        "TEXCOORD_1": 250
+                    },
+                    "indices": 251,
+                    "material": 0,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 326,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "Tripods.Cylinder.003_Cylinder.002"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 252,
+                        "NORMAL": 253,
+                        "POSITION": 254,
+                        "TANGENT": 255,
+                        "TEXCOORD_0": 256,
+                        "TEXCOORD_1": 257
+                    },
+                    "indices": 258,
+                    "material": 0,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 1246,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "Tripods.Cylinder.004_Cylinder.002"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 259,
+                        "NORMAL": 260,
+                        "POSITION": 261,
+                        "TANGENT": 262,
+                        "TEXCOORD_0": 263,
+                        "TEXCOORD_1": 264
+                    },
+                    "indices": 265,
+                    "material": 0,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 260,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "Tripods.Cylinder.006_Cylinder.006"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 266,
+                        "NORMAL": 267,
+                        "POSITION": 268,
+                        "TANGENT": 269,
+                        "TEXCOORD_0": 270,
+                        "TEXCOORD_1": 271
+                    },
+                    "indices": 272,
+                    "material": 0,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 7680,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "Tripods.Cube.002_Cube.002"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 273,
+                        "NORMAL": 274,
+                        "POSITION": 275,
+                        "TANGENT": 276,
+                        "TEXCOORD_0": 277,
+                        "TEXCOORD_1": 278
+                    },
+                    "indices": 279,
+                    "material": 0,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 356,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "Tripods.Cube.010"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 280,
+                        "NORMAL": 281,
+                        "POSITION": 282,
+                        "TANGENT": 283,
+                        "TEXCOORD_0": 284,
+                        "TEXCOORD_1": 285
+                    },
+                    "indices": 286,
+                    "material": 0,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 1536,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "Tripods.Cube.003_Cube.003"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 287,
+                        "NORMAL": 288,
+                        "POSITION": 289,
+                        "TANGENT": 290,
+                        "TEXCOORD_0": 291,
+                        "TEXCOORD_1": 292
+                    },
+                    "indices": 293,
+                    "material": 0,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 1728,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "Tripods.Cube.004_Cube.002"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 294,
+                        "NORMAL": 295,
+                        "POSITION": 296,
+                        "TANGENT": 297,
+                        "TEXCOORD_0": 298,
+                        "TEXCOORD_1": 299
+                    },
+                    "indices": 300,
+                    "material": 0,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 92,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "Tripods.Cylinder.003"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 301,
+                        "NORMAL": 302,
+                        "POSITION": 303,
+                        "TANGENT": 304,
+                        "TEXCOORD_0": 305,
+                        "TEXCOORD_1": 306
+                    },
+                    "indices": 307,
+                    "material": 0,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 68,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "Tripods.Cube.011"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 308,
+                        "NORMAL": 309,
+                        "POSITION": 310,
+                        "TANGENT": 311,
+                        "TEXCOORD_0": 312,
+                        "TEXCOORD_1": 313
+                    },
+                    "indices": 314,
+                    "material": 0,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 624,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "Tripods.Cube.012"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 315,
+                        "NORMAL": 316,
+                        "POSITION": 317,
+                        "TANGENT": 318,
+                        "TEXCOORD_0": 319,
+                        "TEXCOORD_1": 320
+                    },
+                    "indices": 321,
+                    "material": 0,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 625,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "Tripods.Cylinder.005_Cylinder.002"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 322,
+                        "NORMAL": 323,
+                        "POSITION": 324,
+                        "TANGENT": 325,
+                        "TEXCOORD_0": 326,
+                        "TEXCOORD_1": 327
+                    },
+                    "indices": 328,
+                    "material": 0,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 260,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "Tripods.Cylinder.006_Cylinder.007"
+        }
+    ],
+    "nodes": [
+        {
+            "translation": [
+                0.8769921064376831,
+                -4.011475086212158,
+                10.439217567443848
+            ],
+            "mesh": 0,
+            "name": "Tripods.Cube.001"
+        },
+        {
+            "translation": [
+                0.8769921064376831,
+                -4.011475086212158,
+                10.439217567443848
+            ],
+            "mesh": 1,
+            "name": "Tripods.Cylinder_Cylinder.002"
+        },
+        {
+            "translation": [
+                0.8769921064376831,
+                -4.011475086212158,
+                10.439217567443848
+            ],
+            "mesh": 2,
+            "name": "Tripods.Cylinder.002_Cylinder.004"
+        },
+        {
+            "translation": [
+                0.8769921064376831,
+                -4.011475086212158,
+                10.439217567443848
+            ],
+            "mesh": 3,
+            "name": "Tripods.Cylinder.003_Cylinder.005"
+        },
+        {
+            "translation": [
+                0.8769921064376831,
+                -4.011475086212158,
+                10.439217567443848
+            ],
+            "mesh": 4,
+            "name": "Tripods.Cylinder.004_Cylinder.007"
+        },
+        {
+            "translation": [
+                0.8769921064376831,
+                -4.011475086212158,
+                10.439217567443848
+            ],
+            "mesh": 5,
+            "name": "Tripods.Cylinder.006_Cylinder.011"
+        },
+        {
+            "translation": [
+                0.8769921064376831,
+                -4.011475086212158,
+                10.439217567443848
+            ],
+            "mesh": 6,
+            "name": "Tripods.Cube.002_Cube.004"
+        },
+        {
+            "translation": [
+                0.8744775056838989,
+                -3.9204134941101074,
+                10.439217567443848
+            ],
+            "mesh": 7,
+            "name": "Tripods.Cube"
+        },
+        {
+            "translation": [
+                0.8769921064376831,
+                -4.011475086212158,
+                10.439217567443848
+            ],
+            "mesh": 8,
+            "name": "Tripods.Cube.003_Cube.002"
+        },
+        {
+            "translation": [
+                0.8769921064376831,
+                -4.011475086212158,
+                10.439217567443848
+            ],
+            "mesh": 9,
+            "name": "Tripods.Cube.004_Cube.003"
+        },
+        {
+            "translation": [
+                0.8769921064376831,
+                -4.011475086212158,
+                10.439217567443848
+            ],
+            "mesh": 10,
+            "name": "Tripods.Cylinder.001"
+        },
+        {
+            "translation": [
+                0.8769921064376831,
+                -4.011475086212158,
+                10.439217567443848
+            ],
+            "mesh": 11,
+            "name": "Tripods.Cube.008"
+        },
+        {
+            "translation": [
+                0.8769921064376831,
+                -4.011475086212158,
+                10.439217567443848
+            ],
+            "mesh": 12,
+            "name": "Tripods.Cube.009"
+        },
+        {
+            "translation": [
+                0.8769921064376831,
+                -4.011475086212158,
+                10.439217567443848
+            ],
+            "mesh": 13,
+            "name": "Tripods.Cylinder.005_Cylinder.003"
+        },
+        {
+            "translation": [
+                0.8769921064376831,
+                -4.011475086212158,
+                10.439217567443848
+            ],
+            "mesh": 14,
+            "name": "Tripods.Cylinder.006_Cylinder.001"
+        },
+        {
+            "translation": [
+                0.8769921064376831,
+                -4.011475086212158,
+                10.439217567443848
+            ],
+            "mesh": 15,
+            "name": "Tripods.Cylinder.006_Cylinder.002"
+        },
+        {
+            "translation": [
+                2.427408218383789,
+                -4.011475086212158,
+                -1.2061738967895508
+            ],
+            "mesh": 16,
+            "name": "Tripods.Cube.002"
+        },
+        {
+            "translation": [
+                2.427408218383789,
+                -4.011475086212158,
+                -1.2061738967895508
+            ],
+            "mesh": 17,
+            "name": "Tripods.Cylinder_Cylinder.001"
+        },
+        {
+            "translation": [
+                2.427408218383789,
+                -4.011475086212158,
+                -1.2061738967895508
+            ],
+            "mesh": 18,
+            "name": "Tripods.Cylinder.002_Cylinder.001"
+        },
+        {
+            "translation": [
+                2.427408218383789,
+                -4.011475086212158,
+                -1.2061738967895508
+            ],
+            "mesh": 19,
+            "name": "Tripods.Cylinder.003_Cylinder.001"
+        },
+        {
+            "translation": [
+                2.427408218383789,
+                -4.011475086212158,
+                -1.2061738967895508
+            ],
+            "mesh": 20,
+            "name": "Tripods.Cylinder.004_Cylinder.001"
+        },
+        {
+            "translation": [
+                2.427408218383789,
+                -4.011475086212158,
+                -1.2061738967895508
+            ],
+            "mesh": 21,
+            "name": "Tripods.Cylinder.006_Cylinder.003"
+        },
+        {
+            "translation": [
+                2.427408218383789,
+                -4.011475086212158,
+                -1.2061738967895508
+            ],
+            "mesh": 22,
+            "name": "Tripods.Cube.002_Cube.001"
+        },
+        {
+            "translation": [
+                2.424893379211426,
+                -3.9204134941101074,
+                -1.2061738967895508
+            ],
+            "mesh": 23,
+            "name": "Tripods.Cube.003"
+        },
+        {
+            "translation": [
+                2.427408218383789,
+                -4.011475086212158,
+                -1.2061738967895508
+            ],
+            "mesh": 24,
+            "name": "Tripods.Cube.003_Cube.001"
+        },
+        {
+            "translation": [
+                2.427408218383789,
+                -4.011475086212158,
+                -1.2061738967895508
+            ],
+            "mesh": 25,
+            "name": "Tripods.Cube.004_Cube.001"
+        },
+        {
+            "translation": [
+                2.427408218383789,
+                -4.011475086212158,
+                -1.2061738967895508
+            ],
+            "mesh": 26,
+            "name": "Tripods.Cylinder.002"
+        },
+        {
+            "translation": [
+                2.427408218383789,
+                -4.011475086212158,
+                -1.2061738967895508
+            ],
+            "mesh": 27,
+            "name": "Tripods.Cube.004"
+        },
+        {
+            "translation": [
+                2.427408218383789,
+                -4.011475086212158,
+                -1.2061738967895508
+            ],
+            "mesh": 28,
+            "name": "Tripods.Cube.005"
+        },
+        {
+            "translation": [
+                2.427408218383789,
+                -4.011475086212158,
+                -1.2061738967895508
+            ],
+            "mesh": 29,
+            "name": "Tripods.Cylinder.005_Cylinder.001"
+        },
+        {
+            "translation": [
+                2.427408218383789,
+                -4.011475086212158,
+                -1.2061738967895508
+            ],
+            "mesh": 30,
+            "name": "Tripods.Cylinder.006_Cylinder.004"
+        },
+        {
+            "translation": [
+                2.0804333686828613,
+                -4.011475086212158,
+                -3.7982802391052246
+            ],
+            "mesh": 31,
+            "name": "Tripods.Cylinder.006_Cylinder.005"
+        },
+        {
+            "translation": [
+                -2.4955668449401855,
+                -4.011475086212158,
+                -1.2061071395874023
+            ],
+            "mesh": 32,
+            "name": "Tripods.Cube.006"
+        },
+        {
+            "translation": [
+                -2.4955668449401855,
+                -4.011475086212158,
+                -1.2061071395874023
+            ],
+            "mesh": 33,
+            "name": "Tripods.Cylinder_Cylinder.003"
+        },
+        {
+            "translation": [
+                -2.4955668449401855,
+                -4.011475086212158,
+                -1.2061071395874023
+            ],
+            "mesh": 34,
+            "name": "Tripods.Cylinder.002_Cylinder.002"
+        },
+        {
+            "translation": [
+                -2.4955668449401855,
+                -4.011475086212158,
+                -1.2061071395874023
+            ],
+            "mesh": 35,
+            "name": "Tripods.Cylinder.003_Cylinder.002"
+        },
+        {
+            "translation": [
+                -2.4955668449401855,
+                -4.011475086212158,
+                -1.2061071395874023
+            ],
+            "mesh": 36,
+            "name": "Tripods.Cylinder.004_Cylinder.002"
+        },
+        {
+            "translation": [
+                -2.4955668449401855,
+                -4.011475086212158,
+                -1.2061071395874023
+            ],
+            "mesh": 37,
+            "name": "Tripods.Cylinder.006_Cylinder.006"
+        },
+        {
+            "translation": [
+                -2.4955668449401855,
+                -4.011475086212158,
+                -1.2061071395874023
+            ],
+            "mesh": 38,
+            "name": "Tripods.Cube.002_Cube.002"
+        },
+        {
+            "translation": [
+                -2.497873544692993,
+                -3.9204134941101074,
+                -1.2071093320846558
+            ],
+            "mesh": 39,
+            "name": "Tripods.Cube.007"
+        },
+        {
+            "translation": [
+                -2.4955668449401855,
+                -4.011475086212158,
+                -1.2061071395874023
+            ],
+            "mesh": 40,
+            "name": "Tripods.Cube.003_Cube.003"
+        },
+        {
+            "translation": [
+                -2.4955668449401855,
+                -4.011475086212158,
+                -1.2061071395874023
+            ],
+            "mesh": 41,
+            "name": "Tripods.Cube.004_Cube.002"
+        },
+        {
+            "translation": [
+                -2.4955668449401855,
+                -4.011475086212158,
+                -1.2061071395874023
+            ],
+            "mesh": 42,
+            "name": "Tripods.Cylinder.003"
+        },
+        {
+            "translation": [
+                -2.4955668449401855,
+                -4.011475086212158,
+                -1.2061071395874023
+            ],
+            "mesh": 43,
+            "name": "Tripods.Cube.010"
+        },
+        {
+            "translation": [
+                -2.4955668449401855,
+                -4.011475086212158,
+                -1.2061071395874023
+            ],
+            "mesh": 44,
+            "name": "Tripods.Cube.011"
+        },
+        {
+            "translation": [
+                -2.4955668449401855,
+                -4.011475086212158,
+                -1.2061071395874023
+            ],
+            "mesh": 45,
+            "name": "Tripods.Cylinder.005_Cylinder.002"
+        },
+        {
+            "translation": [
+                -2.4955668449401855,
+                -4.011475086212158,
+                -1.2061071395874023
+            ],
+            "mesh": 46,
+            "name": "Tripods.Cylinder.006_Cylinder.007"
+        }
+    ],
+    "scene": 0,
+    "scenes": [
+        {
+            "name": "Tripods.Scene",
+            "nodes": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46
+            ]
+        }
+    ],
+    "textures": [
+        {
+            "extensions": {
+                "MSFT_texture_dds": {
+                    "source": 0
+                }
+            }
+        },
+        {
+            "extensions": {
+                "MSFT_texture_dds": {
+                    "source": 1
+                }
+            }
+        },
+        {
+            "extensions": {
+                "MSFT_texture_dds": {
+                    "source": 2
+                }
+            }
+        }
+    ],
+    "buffers": [
+        {
+            "byteLength": 2833140,
+            "uri": "tripods.bin"
+        }
+    ],
+    "images": [
+        {
+            "name": "Tripods.Tripod_NML",
+            "uri": "Tripod_NML.dds",
+            "extras": "ASOBO_image_converted_meta"
+        },
+        {
+            "name": "Tripods.Tripod_COMP",
+            "uri": "Tripod_COMP.dds",
+            "extras": "ASOBO_image_converted_meta"
+        },
+        {
+            "name": "Tripods.Tripod_ALB",
+            "uri": "Tripod_ALB.dds",
+            "extras": "ASOBO_image_converted_meta"
+        }
+    ]
+}
