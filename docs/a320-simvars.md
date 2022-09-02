@@ -1600,6 +1600,10 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Seconds
     - The remaining alignment duration. Zero seconds when the system is aligned or the system is not aligning.
 
+- A32NX_ADIRS_ADR_{number}_CORRECTED_AVERAGE_STATIC_PRESSURE
+    - Arinc429Word<hPa>
+    - The corrected average static pressure.
+
 - A32NX_ADIRS_ADR_{number}_ALTITUDE
     - Arinc429Word<Feet>
     - The altitude.
