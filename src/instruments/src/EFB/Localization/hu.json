@@ -354,12 +354,12 @@
     "InteriorLighting": {
       "AircraftNeedsToBePoweredToLoadPresets": "Helyezze áram alá a repülőgépet a beállítások betöltéséhez",
       "AircraftNeedsToBePoweredToSavePresets": "Helyezze áram alá a repülőgépet a beállítások mentéséhez",
-      "AutoLoadDawnDusk": "Dawn/Dusk:",
-      "AutoLoadDay": "Day:",
-      "AutoLoadLightingHelpTitle": "Automatic Preset Loading",
-      "AutoLoadLightingPreset": "Enable automatic loading of lighting presets:",
-      "AutoLoadNight": "Night:",
-      "AutoLoadNoneSelection": "None",
+      "AutoLoadDawnDusk": "Hajnal/szürkület:",
+      "AutoLoadDay": "Nap:",
+      "AutoLoadLightingHelpTitle": "Automatikus beállítás betöltés",
+      "AutoLoadLightingPreset": "Engedélyezze a világítási beállítások automatikus betöltését:",
+      "AutoLoadNight": "Éjszaka:",
+      "AutoLoadNoneSelection": "Nincs",
       "LoadPreset": "Beállítás betöltése",
       "LoadingPreset": "Beállítás betöltée folyamatban",
       "NewNameConfirmationDialogMsg": "Új név megerősítése",
@@ -413,7 +413,7 @@
       "SliderSpeed": "Mozgás a kívánt sebességgel",
       "SystemEnabledOff": "Kattintson a hátratoló rendszer bekapcsolásához.",
       "SystemEnabledOn": "Kattintson a hátratoló rendszer kikapcsolásához.",
-      "UseControllerInput": "Turn controller input from rudder and elevator on/off",
+      "UseControllerInput": "Kapcsolja ki/be a vezérlést a oldalkormányról és a magassági kormányról",
       "ZoomIn": "Nagyítás",
       "ZoomOut": "Kicsinyítés"
     },
@@ -421,7 +421,7 @@
     "TugDirection": "Vontatás iránya",
     "TugInTransit": "Várakozás a vontatóra",
     "TugSpeed": "Vontatás sebessége",
-    "UseControllerInput": "Use Controller Input"
+    "UseControllerInput": "Használja a vezérlő bemenetét"
   },
   "Settings": {
     "About": {
@@ -577,8 +577,8 @@
     "Sep": "Szept.",
     "Sun": "Va",
     "TT": {
-      "ConnectedToLocalApi": "Csatlakozva a helyi API-hoz",
-      "DisconnectedFromLocalApi": "Leválasztva a helyi API-ról",
+      "ConnectedToLocalApi": "Csatlakozva a SimBridge-hez",
+      "DisconnectedFromLocalApi": "Lecsatlakozva a SimBridge-ről",
       "TurnOffOrShutdownEfb": "EFB leállítása vagy kikapcsolása"
     },
     "Thu": "Csüt",
