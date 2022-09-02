@@ -41,10 +41,8 @@ export const NavigraphChartUI = () => {
 
     const assignAirportInfo = async () => {
         setIcaoAndNameDisagree(true);
-
         const airportInfo = await navigraph.getAirportInfo(searchQuery);
         setStatusBarInfo(airportInfo?.name || t('NavigationAndCharts.Navigraph.AirportDoesNotExist'));
-
         setIcaoAndNameDisagree(false);
     };
 
@@ -80,14 +78,10 @@ export const NavigraphChartUI = () => {
 
     const handleIcaoChange = async (value: string) => {
         if (value.length !== 4) return;
-
         const newValue = value.toUpperCase();
-
         dispatch(editTabProperty({ tab: NavigationTab.NAVIGRAPH, searchQuery: newValue }));
-
         setChartListDisagrees(true);
         const chartList = await navigraph.getChartList(newValue);
-
         if (chartList) {
             setCharts(chartList);
         }
@@ -104,11 +98,9 @@ export const NavigraphChartUI = () => {
         if (searchQuery.length !== 4) {
             return t('NavigationAndCharts.Navigraph.NoAirportSelected');
         }
-
         if (loading) {
             return t('NavigationAndCharts.PleaseWait');
         }
-
         return statusBarInfo;
     };
 
