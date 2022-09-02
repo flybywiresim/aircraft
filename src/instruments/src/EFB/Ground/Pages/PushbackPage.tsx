@@ -620,9 +620,7 @@ export const PushbackPage = () => {
                         </TooltipWrapper>
                     </div>
 
-                    <div className={`flex flex-row items-center h-10 ${!pushbackActive && 'opacity-30'
-                    + ' pointer-events-none'}`}
-                    >
+                    <div className={`flex flex-row items-center h-10 ${!pushbackActive && 'opacity-30 pointer-events-none'}`}>
                         <TooltipWrapper text={t('Pushback.TT.UseControllerInput')}>
                             <div className="mr-4">
                                 {t('Pushback.UseControllerInput')}
