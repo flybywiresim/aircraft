@@ -49,7 +49,6 @@ const UnpoweredRadioPanel = () => (
  */
 const PoweredRadioPanel = (props: Props) => {
     const [navReceiverType, setNavReceiverType] = useState(TransceiverType.ILS);
-    const [nbTicks, setnbTicks] = useState(0);
 
     // Used to turn on the associated led
     const [panelMode, setPanelMode] = useSimVar(`L:A32NX_RMP_${props.side}_SELECTED_MODE`, 'Number', 250);
@@ -58,30 +57,6 @@ const PoweredRadioPanel = (props: Props) => {
     // Used to return to the selected VHF once NAV is pushed again
     const [previousPanelMode, setPreviousPanelMode] = useState(panelMode);
     const [indexTransceiver, setIndexTransceiver] = useState(props.side === 'L' ? 1 : 2);
-
-    const [ilsKnobPushed] = useSimVar(`L:A32NX_ACP_NAV_${props.side}_ILS_Knob_Volume_Down`, 'Boolean');
-    const [vor1KnobPushed] = useSimVar(`L:A32NX_ACP_NAV_${props.side}_VOR1_Knob_Volume_Down`, 'Boolean');
-    const [vor2KnobPushed] = useSimVar(`L:A32NX_ACP_NAV_${props.side}_VOR2_Knob_Volume_Down`, 'Boolean');
-    const [adf1KnobPushed] = useSimVar(`L:A32NX_ACP_NAV_${props.side}_ADF1_Knob_Volume_Down`, 'Boolean');
-    const [adf2KnobPushed] = useSimVar(`L:A32NX_ACP_NAV_${props.side}_ADF2_Knob_Volume_Down`, 'Boolean');
-
-    const nbTicksRef = useRef(nbTicks);
-    nbTicksRef.current = nbTicks;
-
-    const ilsKnobPushedRef = useRef(ilsKnobPushed);
-    ilsKnobPushedRef.current = ilsKnobPushed;
-
-    const vor1KnobPushedRef = useRef(vor1KnobPushed);
-    vor1KnobPushedRef.current = vor1KnobPushed;
-
-    const vor2KnobPushedRef = useRef(vor2KnobPushed);
-    vor2KnobPushedRef.current = vor2KnobPushed;
-
-    const adf1KnobPushedRef = useRef(adf1KnobPushed);
-    adf1KnobPushedRef.current = adf1KnobPushed;
-
-    const adf2KnobPushedRef = useRef(adf2KnobPushed);
-    adf2KnobPushedRef.current = adf2KnobPushed;
 
     // Hook radio management panel mode buttons to set panelMode SimVar.
     useInteractionEvent(`A32NX_RMP_${props.side}_VHF1_BUTTON_PRESSED`, () => {
@@ -136,45 +111,15 @@ const PoweredRadioPanel = (props: Props) => {
         }
     });
 
-    useInterval(() => {
-        if (nbTicksRef.current === 0 && ilsKnobPushedRef.current) {
-
-        } else {
-            if (vor1KnobPushedRef.current) {
-
-            }
-
-            if (vor2KnobPushedRef.current) {
-
-            }
-
-            if (adf1KnobPushedRef.current) {
-
-            }
-
-            if (adf2KnobPushedRef.current) {
-
-            }
-        }
-
-        nbTicksRef.current++;
-
-        // Every 40 seconds, the DME is broadcast
-        if (nbTicksRef.current === 3) {
-            nbTicksRef.current = 0;
-        }
-    }, 10_000);
-
     /**
      * MLS IMPLEMENTED IN THE XML BEHAVIOURS
      * BUT DISABLED HERE SINCE THERE IS NOT ENOUGH REFERENCES
      */
-    // useInteractionEvent(`A32NX_RMP_${props.side}_MLS_BUTTON_PRESSED`, () => {
-    //     if (navButtonPressed) {
-    //         setPanelMode(8);
-    //         setNavTransceiverType(TransceiverType.ILS);
-    //     }
-    // });
+    useInteractionEvent(`A32NX_RMP_${props.side}_MLS_BUTTON_PRESSED`, () => {
+        if (navButtonPressed) {
+            setPanelMode(8);
+        }
+    });
 
     useInteractionEvent(`A32NX_RMP_${props.side}_ADF_BUTTON_PRESSED`, () => {
         if (navButtonPressed) {
