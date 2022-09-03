@@ -6,7 +6,6 @@
   - [Contents](#contents)
   - [Uncategorized](#uncategorized)
   - [EIS Display System](#eis-display-system)
-  - [Fly-By-Wire System](#fly-by-wire-system)
   - [ADIRS](#adirs)
   - [Radio Receivers](#radio-receivers)
   - [Flight Management System](#flight-management-system)
@@ -17,6 +16,7 @@
   - [Air Conditioning / Pressurisation / Ventilation](#air-conditioning--pressurisation--ventilation)
   - [Pneumatic](#pneumatic)
   - [Flaps / Slats (ATA 27)](#flaps--slats-ata-27)
+  - [Flight Controls (ATA 27)](#flight-controls-ata-27)
   - [Landing Gear (ATA 32)](#landing-gear-ata-32)
   - [ATC (ATA 34)](#atc-ata-34)
   - [Radio Altimeter (ATA 34)](#radio-altimeter-ata-34)
@@ -1376,99 +1376,6 @@
         - RDY
         - FM2
 
-## Fly-By-Wire System
-
-- A32NX_FLIGHT_CONTROLS_TRACKING_MODE
-    - Bool
-    - Indicates if tracking mode is active: flight controls are coming from external source (ie: YourControls)
-
-- A32NX_LOGGING_FLIGHT_CONTROLS_ENABLED
-    - Bool
-    - Indicates if logging of flight control events is enabled
-
-- A32NX_SIDESTICK_POSITION_X
-    - Number
-    - Provides the direct sidestick position (lateral)
-      Value | Meaning
-      --- | ---
-      -1 | full left
-      0 | neutral
-      1 | full right
-
-- A32NX_SIDESTICK_POSITION_Y
-    - Number
-    - Provides the direct sidestick position (longitudinal)
-      Value | Meaning
-      --- | ---
-      -1 | full forward
-      0 | neutral
-      1 | full backward
-
-- A32NX_RUDDER_PEDAL_POSITION
-    - Number
-    - Provides the rudder pedal position
-      Value | Meaning
-      --- | ---
-      -100 | full left
-      0 | neutral
-      100 | full right
-
-- A32NX_RUDDER_PEDAL_ANIMATION_POSITION
-    - Number
-    - Provides the rudder pedal position including rudder trim for animation
-      Value | Meaning
-      --- | ---
-      -100 | full left
-      0 | neutral
-      100 | full right
-
-- A32NX_HYD_AILERON_LEFT_DEFLECTION
-    - Number
-    - Provides the final left aileron physical position
-      Value | Meaning
-      --- | ---
-      -1.0 | full up
-      0.0 | neutral
-      1.0 | full down
-
-- A32NX_HYD_AILERON_RIGHT_DEFLECTION
-    - Number
-    - Provides the final right aileron physical position
-      Value | Meaning
-      --- | ---
-      -1.0 | full down
-      0.0 | neutral
-      1.0 | full up
-
-- A32NX_THS_{number}_ACTIVE_MODE_COMMANDED
-    - Boolean
-    - Trim electric motor {number} is commanded active
-    - {number}
-        - 1
-        - 2
-        - 3
-
-- A32NX_THS_{number}_COMMANDED_POSITION
-    - Degree
-    - Trim electric motor {number} position demand in trim surface deflection angle
-
-- A32NX_HYD_THS_TRIM_MANUAL_OVERRIDE
-    - Boolean
-    - Feedback signal from the trim actuator system. True if pilot is moving or holding trim wheel
-
-- A32NX_HYD_TRIM_WHEEL_PERCENT
-    - Percent
-    - Trim wheel position in percent
-
-- A32NX_RUDDER_DEFLECTION_DEMAND
-    - Number
-    - Provides the rudder position demand to hydraulics
-      Value | Meaning
-      --- | ---
-      -1.0 | full left
-      0.0 | neutral
-      1.0 | full right
-
 ## ADIRS
 
 In the variables below, {number} should be replaced with one item in the set: { 1, 2, 3 }, unless declared otherwise.
@@ -2685,6 +2592,99 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Arinc429<Degrees>
     - Note that multiple SFCC are not yet implemented, thus no {number} in the name.
     - The Flap FPPU angle ranges from 0° to 360°
+
+## Flight Controls (ATA 27)
+
+- A32NX_FLIGHT_CONTROLS_TRACKING_MODE
+    - Bool
+    - Indicates if tracking mode is active: flight controls are coming from external source (ie: YourControls)
+
+- A32NX_LOGGING_FLIGHT_CONTROLS_ENABLED
+    - Bool
+    - Indicates if logging of flight control events is enabled
+
+- A32NX_SIDESTICK_POSITION_X
+    - Number
+    - Provides the direct sidestick position (lateral)
+      Value | Meaning
+      --- | ---
+      -1 | full left
+      0 | neutral
+      1 | full right
+
+- A32NX_SIDESTICK_POSITION_Y
+    - Number
+    - Provides the direct sidestick position (longitudinal)
+      Value | Meaning
+      --- | ---
+      -1 | full forward
+      0 | neutral
+      1 | full backward
+
+- A32NX_RUDDER_PEDAL_POSITION
+    - Number
+    - Provides the rudder pedal position
+      Value | Meaning
+      --- | ---
+      -100 | full left
+      0 | neutral
+      100 | full right
+
+- A32NX_RUDDER_PEDAL_ANIMATION_POSITION
+    - Number
+    - Provides the rudder pedal position including rudder trim for animation
+      Value | Meaning
+      --- | ---
+      -100 | full left
+      0 | neutral
+      100 | full right
+
+- A32NX_HYD_AILERON_LEFT_DEFLECTION
+    - Number
+    - Provides the final left aileron physical position
+      Value | Meaning
+      --- | ---
+      -1.0 | full up
+      0.0 | neutral
+      1.0 | full down
+
+- A32NX_HYD_AILERON_RIGHT_DEFLECTION
+    - Number
+    - Provides the final right aileron physical position
+      Value | Meaning
+      --- | ---
+      -1.0 | full down
+      0.0 | neutral
+      1.0 | full up
+
+- A32NX_THS_{number}_ACTIVE_MODE_COMMANDED
+    - Boolean
+    - Trim electric motor {number} is commanded active
+    - {number}
+        - 1
+        - 2
+        - 3
+
+- A32NX_THS_{number}_COMMANDED_POSITION
+    - Degree
+    - Trim electric motor {number} position demand in trim surface deflection angle
+
+- A32NX_HYD_THS_TRIM_MANUAL_OVERRIDE
+    - Boolean
+    - Feedback signal from the trim actuator system. True if pilot is moving or holding trim wheel
+
+- A32NX_HYD_TRIM_WHEEL_PERCENT
+    - Percent
+    - Trim wheel position in percent
+
+- A32NX_RUDDER_DEFLECTION_DEMAND
+    - Number
+    - Provides the rudder position demand to hydraulics
+      Value | Meaning
+      --- | ---
+      -1.0 | full left
+      0.0 | neutral
+      1.0 | full right
 
 ## Landing Gear (ATA 32)
 
