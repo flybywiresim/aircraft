@@ -680,7 +680,7 @@
                     1 (L:XMLVAR_COM_#ID#_#FREQ_ID#_Switch_Down) == (L:A32NX_OVHD_INTLT_ANN) 0 == or if{
                         3.0 #EMISSIVE_DIM# *
                     } els{
-                        0
+                        0.1 #EMISSIVE_DIM# *
                     }
                 }
             </TRANSMIT_EMISSIVE_CODE>
@@ -819,9 +819,9 @@
                     0
                 } els{
                     (L:XMLVAR_NAV_#SIDE#_#INSTRUMENT#_Switch_Down) 1 == (L:A32NX_OVHD_INTLT_ANN) 0 == or if{
-                        14 #EMISSIVE_DIM# *
+                        3.0 #EMISSIVE_DIM# *
                     } els{
-                        (A:LIGHT POTENTIOMETER:#POTENTIOMETER#, Percent over 100) 0.5 *
+                        0.1 #EMISSIVE_DIM# *
                     }
                 }
             </TRANSMIT_EMISSIVE_CODE>
