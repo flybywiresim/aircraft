@@ -14,7 +14,7 @@ dependencies = [
  "rand",
  "rustplotlib",
  "systems",
- "uom",
+ "uom 0.33.0",
 ]
 
 [[package]]
@@ -26,7 +26,7 @@ dependencies = [
  "rand",
  "rstest",
  "systems",
- "uom",
+ "uom 0.33.0",
 ]
 
 [[package]]
@@ -37,7 +37,30 @@ dependencies = [
  "msfs",
  "systems",
  "systems_wasm",
- "uom",
+ "uom 0.33.0",
+]
+
+[[package]]
+name = "a380_systems"
+version = "0.1.0"
+dependencies = [
+ "nalgebra",
+ "ntest",
+ "rand",
+ "rstest",
+ "systems",
+ "uom 0.32.0",
+]
+
+[[package]]
+name = "a380_systems_wasm"
+version = "0.1.0"
+dependencies = [
+ "a380_systems",
+ "msfs",
+ "systems",
+ "systems_wasm",
+ "uom 0.32.0",
 ]
 
 [[package]]
@@ -925,7 +948,7 @@ dependencies = [
  "rand",
  "rand_distr",
  "rstest",
- "uom",
+ "uom 0.33.0",
 ]
 
 [[package]]
@@ -936,7 +959,7 @@ dependencies = [
  "fxhash",
  "msfs",
  "systems",
- "uom",
+ "uom 0.33.0",
 ]
 
 [[package]]
@@ -1015,6 +1038,16 @@ name = "unicode-xid"
 version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "957e51f3646910546462e67d5f7599b9e4fb8acdd304b087a6494730f9eebf04"
+
+[[package]]
+name = "uom"
+version = "0.32.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ffcb443c899d2adc34f4ae4c64d6e9867b6d3ead2fad03979a8732a4ab6d396f"
+dependencies = [
+ "num-traits",
+ "typenum",
+]
 
 [[package]]
 name = "uom"
