@@ -4328,7 +4328,7 @@
                     (&gt;K:MARKER_SOUND_TOGGLE)
                 }
 
-                0 (&gt;K:NAV1_VOLUME_SET)
+                49 (&gt;K:NAV1_VOLUME_SET)
                 0 (&gt;K:NAV2_VOLUME_SET)
                 0 (&gt;K:NAV3_VOLUME_SET)
                 0 (&gt;K:NAV4_VOLUME_SET)
