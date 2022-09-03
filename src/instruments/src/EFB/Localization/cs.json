@@ -413,7 +413,7 @@
       "SliderSpeed": "Posuňte pro požadovanou rychlost",
       "SystemEnabledOff": "Klikněte pro zapnutí systému pro vytlačení.",
       "SystemEnabledOn": "Klikněte pro úplné vypnutí systému pro vytlačení.",
-      "UseControllerInput": "Turn controller input from rudder and elevator on/off",
+      "UseControllerInput": "Zapne nebo vypne vstup z ovládání směrovky a výškovky",
       "ZoomIn": "Přiblížit",
       "ZoomOut": "Oddálit"
     },
@@ -421,7 +421,7 @@
     "TugDirection": "Směr vytlačení",
     "TugInTransit": "Čekání na pushback/pin",
     "TugSpeed": "Rychlost vytlačení",
-    "UseControllerInput": "Use Controller Input"
+    "UseControllerInput": "Používat vstup z ovladače"
   },
   "Settings": {
     "About": {
