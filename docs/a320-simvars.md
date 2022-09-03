@@ -2773,6 +2773,122 @@ In the variables below, {number} should be replaced with one item in the set: { 
       - GREEN
       - RED
 
+- A32NX_ELAC_{number}_PUSHBUTTON_PRESSED
+    - Boolean
+
+- A32NX_ELAC_{number}_DIGITAL_OP_VALIDATED
+    - If the ELAC {number} is healthy.
+    - Boolean
+
+- A32NX_SEC_{number}_PUSHBUTTON_PRESSED
+    - Boolean
+
+- A32NX_SEC_{number}_FAULT_LIGHT_ON
+    - If the SEC {number} fault light should be illuminated.
+    - Boolean
+
+- A32NX_SEC_{number}_GROUND_SPOILER_OUT
+    - If the SEC {number} indicates that it's ground spoilers are deployed.
+    - Boolean
+
+- A32NX_FAC_{number}_PUSHBUTTON_PRESSED
+    - Boolean
+
+- A32NX_FAC_{number}_HEALTHY
+    - If the FAC {number} is healthy.
+    - Boolean
+
+- A32NX_{side}_{surface}_{system}_SERVO_SOLENOID_ENERGIZED
+    - Boolean
+    - If the servo mode solenoid of the specified servo should be energized.
+    - {side}
+        - LEFT
+        - RIGHT
+    - {surface}
+        - ELEV
+        - AIL
+    - {system}
+        - GREEN
+        - BLUE
+        - YELLOW
+
+- A32NX_{side}_SPOILER_{number}_COMMANDED_POSITION
+    - Number
+    - The commanded position of the specified servo, in degrees.
+    - {side}
+        - LEFT
+        - RIGHT
+    - {number}
+        - 1 to 5
+
+- A32NX_{side}_{surface}_{system}_COMMANDED_POSITION
+    - Number
+    - The commanded position of the specified servo, in degrees.
+    - {side}
+        - LEFT
+        - RIGHT
+    - {surface}
+        - ELEV
+        - AIL
+    - {system}
+        - GREEN
+        - BLUE
+        - YELLOW
+
+- A32NX_YAW_DAMPER_{system}_SERVO_SOLENOID_ENERGIZED
+    - Boolean
+    - If the servo mode solenoid of the specified servo should be energized.
+    - {system}
+        - GREEN
+        - YELLOW
+
+- A32NX_YAW_DAMPER_{system}_COMMANDED_POSITION
+    - Number
+    - The commanded position of the specified servo, in degrees.
+    - {system}
+        - GREEN
+        - YELLOW
+
+- A32NX_RUDDER_TRIM_{number}_ACTIVE_MODE_COMMANDED
+    - Boolean
+    - Trim electric motor {number} is commanded active
+    - {number}
+        - 1
+        - 2
+
+- A32NX_RUDDER_TRIM_{number}_COMMANDED_POSITION
+    - Degree
+    - Trim electric motor {number} position demand in trim surface deflection angle
+    - {number}
+        - 1
+        - 2
+
+- A32NX_RUDDER_TRAVEL_LIM_{number}_ACTIVE_MODE_COMMANDED
+    - Boolean
+    - RTL electric motor {number} is commanded active
+    - {number}
+        - 1
+        - 2
+
+- A32NX_RUDDER_TRAVEL_LIM_{number}_COMMANDED_POSITION
+    - Degree
+    - RTL electric motor {number} position demand in trim surface deflection angle
+    - {number}
+        - 1
+        - 2
+
+- A32NX_THS_{number}_ACTIVE_MODE_COMMANDED
+    - Boolean
+    - Trim electric motor {number} is commanded active
+    - {number}
+        - 1
+        - 2
+        - 3
+
+- A32NX_THS_{number}_COMMANDED_POSITION
+    - Degree
+    - Trim electric motor {number} position demand in trim surface deflection angle
+
 - A32NX_SIDESTICK_POSITION_X
     - Number
     - Provides the direct sidestick position (lateral)
@@ -2826,18 +2942,6 @@ In the variables below, {number} should be replaced with one item in the set: { 
       -1.0 | full down
       0.0 | neutral
       1.0 | full up
-
-- A32NX_THS_{number}_ACTIVE_MODE_COMMANDED
-    - Boolean
-    - Trim electric motor {number} is commanded active
-    - {number}
-        - 1
-        - 2
-        - 3
-
-- A32NX_THS_{number}_COMMANDED_POSITION
-    - Degree
-    - Trim electric motor {number} position demand in trim surface deflection angle
 
 - A32NX_HYD_THS_TRIM_MANUAL_OVERRIDE
     - Boolean
