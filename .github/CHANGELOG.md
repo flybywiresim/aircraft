@@ -62,6 +62,7 @@
 1. [RMP] RMPs can now enter in NAV backup mode and tune/listen the navigation instruments - Julian Sebline (Julian Sebline#8476 on Discord)
 1. [HYD] Refactor plane accelerations and added filtering to handle ground collisions - @Crocket63 (crocket)
 1. [FMGC] Improve procedure loading performance - @tracernz (Mike)
+1. [FMGC] SELCAL support (vPilot and Altitude IVAO) and volume control via vPilot/ACPs - Julian Sebline (Julian Sebline#8476 on Discord)
 
 ## 0.8.0
 
