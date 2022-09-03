@@ -29,7 +29,7 @@ use systems::{
     shared::{
         ApuMaster, ApuStart, AuxiliaryPowerUnitElectrical, EmergencyElectricalRatPushButton,
         EmergencyElectricalState, EmergencyGeneratorPower, EngineCorrectedN2,
-        EngineFirePushButtons, HydraulicGeneratorControlUnit, LgciuWeightOnWheels,
+        EngineFirePushButtons, LgciuWeightOnWheels,
     },
     simulation::{
         InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
@@ -424,7 +424,7 @@ mod a320_electrical_circuit_tests {
         failures::FailureType,
         shared::{
             ApuAvailable, ContactorSignal, ControllerSignal, ElectricalBusType, ElectricalBuses,
-            PotentialOrigin,
+            PotentialOrigin, HydraulicGeneratorControlUnit,
         },
         simulation::{
             test::{ReadByName, SimulationTestBed, TestBed, WriteByName},

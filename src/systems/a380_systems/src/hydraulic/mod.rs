@@ -44,7 +44,7 @@ use systems::{
         HydraulicPressureSensors, PressureSwitch, PressureSwitchType, PumpController, Reservoir,
     },
     landing_gear::{GearSystemSensors, LandingGearControlInterfaceUnitSet},
-    overhead::{AutoOffFaultPushButton, AutoOnFaultPushButton, MomentaryPushButton},
+    overhead::{AutoOffFaultPushButton, AutoOnFaultPushButton},
     shared::{
         interpolation,
         low_pass_filter::LowPassFilter,
@@ -5531,6 +5531,7 @@ impl SimulationElement for A320TrimInputController {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use systems::overhead::{MomentaryPushButton};
 
     mod a320_hydraulics {
         use super::*;
