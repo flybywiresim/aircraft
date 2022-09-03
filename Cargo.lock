@@ -49,7 +49,7 @@ dependencies = [
  "rand",
  "rstest",
  "systems",
- "uom 0.32.0",
+ "uom 0.33.0",
 ]
 
 [[package]]
