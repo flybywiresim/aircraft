@@ -139,25 +139,25 @@ impl SlatFlapControlComputer {
     ) -> FlapsConf {
         match (flaps_handle.previous_position(), flaps_handle.position()) {
             (0, 1)
-            if context.indicated_airspeed().get::<knot>()
-                <= Self::HANDLE_ONE_CONF_AIRSPEED_THRESHOLD_KNOTS =>
-                {
-                    FlapsConf::Conf1F
-                }
+                if context.indicated_airspeed().get::<knot>()
+                    <= Self::HANDLE_ONE_CONF_AIRSPEED_THRESHOLD_KNOTS =>
+            {
+                FlapsConf::Conf1F
+            }
             (0, 1) => FlapsConf::Conf1,
             (1, 1)
-            if context.indicated_airspeed().get::<knot>()
-                > Self::CONF1F_TO_CONF1_AIRSPEED_THRESHOLD_KNOTS =>
-                {
-                    FlapsConf::Conf1
-                }
+                if context.indicated_airspeed().get::<knot>()
+                    > Self::CONF1F_TO_CONF1_AIRSPEED_THRESHOLD_KNOTS =>
+            {
+                FlapsConf::Conf1
+            }
             (1, 1) => self.flaps_conf,
             (_, 1)
-            if context.indicated_airspeed().get::<knot>()
-                <= Self::CONF1F_TO_CONF1_AIRSPEED_THRESHOLD_KNOTS =>
-                {
-                    FlapsConf::Conf1F
-                }
+                if context.indicated_airspeed().get::<knot>()
+                    <= Self::CONF1F_TO_CONF1_AIRSPEED_THRESHOLD_KNOTS =>
+            {
+                FlapsConf::Conf1F
+            }
             (_, 1) => FlapsConf::Conf1,
             (_, 0) => FlapsConf::Conf0,
             (from, to) if from != to => FlapsConf::from(to + 1),
@@ -298,21 +298,21 @@ impl SlatFlapLane for SlatFlapControlComputer {
     fn signal_demanded_angle(&self, surface_type: &str) -> Option<Angle> {
         match surface_type {
             "FLAPS"
-            if Self::surface_movement_required(
-                self.flaps_demanded_angle,
-                self.flaps_feedback_angle,
-            ) =>
-                {
-                    Some(self.flaps_demanded_angle)
-                }
+                if Self::surface_movement_required(
+                    self.flaps_demanded_angle,
+                    self.flaps_feedback_angle,
+                ) =>
+            {
+                Some(self.flaps_demanded_angle)
+            }
             "SLATS"
-            if Self::surface_movement_required(
-                self.slats_demanded_angle,
-                self.slats_feedback_angle,
-            ) =>
-                {
-                    Some(self.slats_demanded_angle)
-                }
+                if Self::surface_movement_required(
+                    self.slats_demanded_angle,
+                    self.slats_feedback_angle,
+                ) =>
+            {
+                Some(self.slats_demanded_angle)
+            }
             "FLAPS" | "SLATS" => None,
             _ => panic!("Not a valid slat/flap surface"),
         }

@@ -2660,12 +2660,12 @@ impl A380EngineDrivenPumpController {
     ) {
         self.is_pressure_low = self.should_pressurise()
             && !hydraulic_circuit
-            .pump_section_switch_pressurised(self.pump_id.into_pump_section_index());
+                .pump_section_switch_pressurised(self.pump_id.into_pump_section_index());
 
         // TODO Fault inhibit copied from A320
         self.has_pressure_low_fault = self.is_pressure_low
             && (!engines[self.pump_id.into_engine_index()].oil_pressure_is_low()
-            || !(lgciu.right_gear_compressed(false) && lgciu.left_gear_compressed(false)));
+                || !(lgciu.right_gear_compressed(false) && lgciu.left_gear_compressed(false)));
     }
 
     fn update_low_air_pressure(
@@ -2830,18 +2830,18 @@ impl A380ElectricPumpAutoLogic {
 
         if should_change_pump_for_cargo
             && (self.green_pump_a_selected
-            && !overhead.epump_button_off_is_off(A380ElectricPumpId::EpumpGreenB)
-            || !self.green_pump_a_selected
-            && !overhead.epump_button_off_is_off(A380ElectricPumpId::EpumpGreenA))
+                && !overhead.epump_button_off_is_off(A380ElectricPumpId::EpumpGreenB)
+                || !self.green_pump_a_selected
+                    && !overhead.epump_button_off_is_off(A380ElectricPumpId::EpumpGreenA))
         {
             self.green_pump_a_selected = !self.green_pump_a_selected
         }
 
         if should_change_pump_for_body_steering
             && (self.yellow_pump_a_selected
-            && !overhead.epump_button_off_is_off(A380ElectricPumpId::EpumpYellowB)
-            || !self.yellow_pump_a_selected
-            && !overhead.epump_button_off_is_off(A380ElectricPumpId::EpumpYellowA))
+                && !overhead.epump_button_off_is_off(A380ElectricPumpId::EpumpYellowB)
+                || !self.yellow_pump_a_selected
+                    && !overhead.epump_button_off_is_off(A380ElectricPumpId::EpumpYellowA))
         {
             self.yellow_pump_a_selected = !self.yellow_pump_a_selected
         }
@@ -2947,7 +2947,7 @@ impl A380ElectricPumpController {
     fn update_low_pressure(&mut self, hydraulic_circuit: &impl HydraulicPressureSensors) {
         self.is_pressure_low = self.should_pressurise()
             && !hydraulic_circuit
-            .pump_section_switch_pressurised(self.pump_id.into_pump_section_index());
+                .pump_section_switch_pressurised(self.pump_id.into_pump_section_index());
 
         self.has_pressure_low_fault = self.is_pressure_low;
     }
@@ -3004,7 +3004,7 @@ impl SimulationElement for A380ElectricPumpController {
         // Control of the pump is powered by dedicated bus OR manual operation of cargo door through another bus
         self.is_powered = buses.is_powered(self.powered_by)
             || (self.should_pressurise_for_cargo_door_operation
-            && buses.is_powered(self.powered_by_when_cargo_door_operation))
+                && buses.is_powered(self.powered_by_when_cargo_door_operation))
     }
 }
 
@@ -3205,8 +3205,8 @@ impl A320HydraulicBrakeSteerComputerUnit {
     fn update_normal_braking_availability(&mut self, normal_braking_circuit_pressure: Pressure) {
         if normal_braking_circuit_pressure.get::<psi>() > Self::MIN_PRESSURE_BRAKE_ALTN_HYST_HI
             && (self.left_brake_pilot_input.get::<ratio>() < Self::PILOT_INPUT_DETECTION_TRESHOLD
-            && self.right_brake_pilot_input.get::<ratio>()
-            < Self::PILOT_INPUT_DETECTION_TRESHOLD)
+                && self.right_brake_pilot_input.get::<ratio>()
+                    < Self::PILOT_INPUT_DETECTION_TRESHOLD)
         {
             self.normal_brakes_available = true;
         } else if normal_braking_circuit_pressure.get::<psi>()
@@ -3220,7 +3220,7 @@ impl A320HydraulicBrakeSteerComputerUnit {
         let yellow_manual_braking_input = self.left_brake_pilot_input
             > self.alternate_brake_outputs.left_demand() + Ratio::new::<ratio>(0.2)
             || self.right_brake_pilot_input
-            > self.alternate_brake_outputs.right_demand() + Ratio::new::<ratio>(0.2);
+                > self.alternate_brake_outputs.right_demand() + Ratio::new::<ratio>(0.2);
 
         // Nominal braking from pedals is limited to 2538psi
         self.norm_brake_outputs
@@ -3321,7 +3321,7 @@ impl A320HydraulicBrakeSteerComputerUnit {
                     if alternate_circuit.left_brake_pressure().get::<psi>()
                         < Self::MIN_PRESSURE_PARK_BRAKE_EMERGENCY
                         || alternate_circuit.right_brake_pressure().get::<psi>()
-                        < Self::MIN_PRESSURE_PARK_BRAKE_EMERGENCY
+                            < Self::MIN_PRESSURE_PARK_BRAKE_EMERGENCY
                     {
                         self.norm_brake_outputs.set_brake_demands(
                             self.left_brake_pilot_input,
@@ -3667,28 +3667,28 @@ impl A320DoorController {
                 DoorControlState::NoControl
             }
             DoorControlState::NoControl
-            if self.duration_in_no_control > Self::DELAY_UNLOCK_TO_HYDRAULIC_CONTROL =>
-                {
-                    self.should_unlock = false;
-                    DoorControlState::HydControl
-                }
+                if self.duration_in_no_control > Self::DELAY_UNLOCK_TO_HYDRAULIC_CONTROL =>
+            {
+                self.should_unlock = false;
+                DoorControlState::HydControl
+            }
             DoorControlState::HydControl if door.is_locked() => {
                 self.should_unlock = false;
                 DoorControlState::DownLocked
             }
             DoorControlState::HydControl
-            if door.position() > Ratio::new::<ratio>(0.9)
-                && self.position_requested > Ratio::new::<ratio>(0.5) =>
-                {
-                    self.should_unlock = false;
-                    DoorControlState::UpLocked
-                }
+                if door.position() > Ratio::new::<ratio>(0.9)
+                    && self.position_requested > Ratio::new::<ratio>(0.5) =>
+            {
+                self.should_unlock = false;
+                DoorControlState::UpLocked
+            }
             DoorControlState::UpLocked
-            if self.position_requested < Ratio::new::<ratio>(1.)
-                && current_pressure > Pressure::new::<psi>(1000.) =>
-                {
-                    DoorControlState::HydControl
-                }
+                if self.position_requested < Ratio::new::<ratio>(1.)
+                    && current_pressure > Pressure::new::<psi>(1000.) =>
+            {
+                DoorControlState::HydControl
+            }
             _ => self.control_state,
         }
     }
@@ -3940,11 +3940,11 @@ impl A320AutobrakeController {
             should_disarm_after_time_in_flight: DelayedPulseTrueLogicGate::new(
                 Duration::from_secs_f64(Self::DURATION_OF_FLIGHT_TO_DISARM_AUTOBRAKE_SECS),
             )
-                .starting_as(context.is_in_flight(), false),
+            .starting_as(context.is_in_flight(), false),
             should_reject_max_mode_after_time_in_flight: DelayedTrueLogicGate::new(
                 Duration::from_secs_f64(Self::DURATION_OF_FLIGHT_TO_DISARM_AUTOBRAKE_SECS),
             )
-                .starting_as(context.is_in_flight()),
+            .starting_as(context.is_in_flight()),
             external_disarm_event: false,
         }
     }
@@ -3968,11 +3968,11 @@ impl A320AutobrakeController {
             match autobrake_panel.pressed_mode() {
                 Some(mode) if self.mode == mode => AutobrakeMode::NONE,
                 Some(mode)
-                if mode != AutobrakeMode::MAX
-                    || !self.should_reject_max_mode_after_time_in_flight.output() =>
-                    {
-                        mode
-                    }
+                    if mode != AutobrakeMode::MAX
+                        || !self.should_reject_max_mode_after_time_in_flight.output() =>
+                {
+                    mode
+                }
                 Some(_) | None => self.mode,
             }
         }
@@ -3992,18 +3992,18 @@ impl A320AutobrakeController {
             AutobrakeMode::LOW | AutobrakeMode::MED => {
                 self.deceleration_demanded()
                     && self
-                    .deceleration_governor
-                    .is_on_target(Ratio::new::<percent>(
-                        Self::MARGIN_PERCENT_TO_TARGET_TO_SHOW_DECEL_IN_LO_MED,
-                    ))
+                        .deceleration_governor
+                        .is_on_target(Ratio::new::<percent>(
+                            Self::MARGIN_PERCENT_TO_TARGET_TO_SHOW_DECEL_IN_LO_MED,
+                        ))
             }
             _ => {
                 self.deceleration_demanded()
                     && self.deceleration_governor.decelerating_at_or_above_rate(
-                    Acceleration::new::<meter_per_second_squared>(
-                        Self::TARGET_TO_SHOW_DECEL_IN_MAX_MS2,
-                    ),
-                )
+                        Acceleration::new::<meter_per_second_squared>(
+                            Self::TARGET_TO_SHOW_DECEL_IN_MAX_MS2,
+                        ),
+                    )
             }
         }
     }
@@ -4020,13 +4020,13 @@ impl A320AutobrakeController {
                 self.left_brake_pedal_input > Ratio::new::<percent>(53.)
                     || self.right_brake_pedal_input > Ratio::new::<percent>(53.)
                     || (self.left_brake_pedal_input > Ratio::new::<percent>(11.)
-                    && self.right_brake_pedal_input > Ratio::new::<percent>(11.))
+                        && self.right_brake_pedal_input > Ratio::new::<percent>(11.))
             }
             AutobrakeMode::MAX => {
                 self.left_brake_pedal_input > Ratio::new::<percent>(77.)
                     || self.right_brake_pedal_input > Ratio::new::<percent>(77.)
                     || (self.left_brake_pedal_input > Ratio::new::<percent>(53.)
-                    && self.right_brake_pedal_input > Ratio::new::<percent>(53.))
+                        && self.right_brake_pedal_input > Ratio::new::<percent>(53.))
             }
             _ => false,
         }
@@ -4041,7 +4041,7 @@ impl A320AutobrakeController {
             || self.should_disarm_after_time_in_flight.output()
             || self.external_disarm_event
             || (self.mode == AutobrakeMode::MAX
-            && self.should_reject_max_mode_after_time_in_flight.output())
+                && self.should_reject_max_mode_after_time_in_flight.output())
     }
 
     fn calculate_target(&mut self) -> Acceleration {
@@ -6113,7 +6113,7 @@ mod tests {
                     self,
                     "AUTOBRAKES_ARMED_MODE",
                 )
-                    .into()
+                .into()
             }
 
             fn get_brake_left_green_pressure(&mut self) -> Pressure {
@@ -6503,16 +6503,16 @@ mod tests {
             fn is_all_doors_really_up(&mut self) -> bool {
                 self.get_real_gear_door_position(GearWheel::NOSE) <= Ratio::new::<ratio>(0.01)
                     && self.get_real_gear_door_position(GearWheel::LEFT)
-                    <= Ratio::new::<ratio>(0.01)
+                        <= Ratio::new::<ratio>(0.01)
                     && self.get_real_gear_door_position(GearWheel::RIGHT)
-                    <= Ratio::new::<ratio>(0.01)
+                        <= Ratio::new::<ratio>(0.01)
             }
 
             fn is_all_doors_really_down(&mut self) -> bool {
                 self.get_real_gear_door_position(GearWheel::NOSE) >= Ratio::new::<ratio>(0.9)
                     && self.get_real_gear_door_position(GearWheel::LEFT) >= Ratio::new::<ratio>(0.9)
                     && self.get_real_gear_door_position(GearWheel::RIGHT)
-                    >= Ratio::new::<ratio>(0.9)
+                        >= Ratio::new::<ratio>(0.9)
             }
 
             fn ac_bus_1_lost(mut self) -> Self {
