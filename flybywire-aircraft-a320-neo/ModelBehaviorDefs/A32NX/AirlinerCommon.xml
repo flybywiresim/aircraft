@@ -873,7 +873,7 @@
                     1 (L:A32NX_ACP#ID#_#FREQ_ID#_Knob_Volume_Down) == (L:A32NX_OVHD_INTLT_ANN) 0 == or if{
                         3.0 #EMISSIVE_DIM# *
                     } els{
-                        0
+                        0.1 #EMISSIVE_DIM# *
                     }
                 }
             </TRANSMIT_EMISSIVE_CODE>
@@ -961,7 +961,7 @@
                     (L:A32NX_ACP_NAV_#SIDE#_#INSTRUMENT#_Knob_Volume_Down) 1 == (L:A32NX_OVHD_INTLT_ANN) 0 == or if{
                         3.0 #EMISSIVE_DIM# *
                     } els{
-                        0
+                        0.1 #EMISSIVE_DIM# *
                     }
                 }
             </TRANSMIT_EMISSIVE_CODE>
