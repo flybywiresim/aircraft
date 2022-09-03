@@ -4059,7 +4059,8 @@
                 </UseTemplate>
             </Component>
             <Component ID="Audio_Panel_Left">
-                <!-- Init of volume and transmit channels in default operation state: Transmit VHF1 and listen VHF1 and VFH2 -->
+                <!-- Init of volume and transmit channels in default operation state: Transmit VHF1 and listen VHF1 and VFH2
+                    PANEL2_Transmit_Channel set to 4 (none) to be able to switch between COM1 and COM2 in third parties -->
                 <Update Once="True">
                     0 (&gt;L:XMLVAR_COM_PANEL1_Transmit_Channel)
                     4 (&gt;L:XMLVAR_COM_PANEL2_Transmit_Channel)
