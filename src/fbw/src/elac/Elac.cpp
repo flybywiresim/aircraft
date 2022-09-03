@@ -135,6 +135,7 @@ base_elac_discrete_outputs Elac::getDiscreteOutputs() {
     output.left_elevator_damping_mode = false;
     output.right_elevator_damping_mode = false;
     output.ths_active = false;
+    output.batt_power_supply = false;
   } else {
     output = modelOutputs.discrete_outputs;
   }

@@ -93,6 +93,7 @@ base_sec_discrete_outputs rtP_sec_discrete_output_MATLABStruct{
   false,
   false,
   false,
+  false,
   false
 } ;
 
@@ -290,6 +291,8 @@ SecComputer::Parameters_SecComputer_T SecComputer::SecComputer_P{
 
   10.0,
 
+  30.0,
+
   20.0,
 
   5.0,
@@ -347,6 +350,8 @@ SecComputer::Parameters_SecComputer_T SecComputer::SecComputer_P{
   true,
 
   true,
+
+  false,
 
 
   {
@@ -1398,6 +1403,7 @@ SecComputer::Parameters_SecComputer_T SecComputer::SecComputer_P{
     },
 
     {
+      false,
       false,
       false,
       false,

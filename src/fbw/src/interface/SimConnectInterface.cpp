@@ -687,7 +687,7 @@ bool SimConnectInterface::prepareClientDataDefinitions() {
   result &= SimConnect_CreateClientData(hSimConnect, ClientData::ELAC_DISCRETE_OUTPUTS, sizeof(base_elac_discrete_outputs),
                                         SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
   // add data definitions
-  for (int i = 0; i < 11; i++) {
+  for (int i = 0; i < 12; i++) {
     result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::ELAC_DISCRETE_OUTPUTS, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
                                                    SIMCONNECT_CLIENTDATATYPE_INT8);
   }
@@ -861,7 +861,7 @@ bool SimConnectInterface::prepareClientDataDefinitions() {
   result &= SimConnect_CreateClientData(hSimConnect, ClientData::SEC_DISCRETE_OUTPUTS, sizeof(base_sec_discrete_outputs),
                                         SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
   // add data definitions
-  for (int i = 0; i < 8; i++) {
+  for (int i = 0; i < 9; i++) {
     result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::SEC_DISCRETE_OUTPUTS, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
                                                    SIMCONNECT_CLIENTDATATYPE_INT8);
   }
@@ -1195,7 +1195,6 @@ bool SimConnectInterface::readData() {
   // success
   return true;
 }
-
 
 bool SimConnectInterface::sendData(SimOutputZetaTrim output) {
   // write data and return result

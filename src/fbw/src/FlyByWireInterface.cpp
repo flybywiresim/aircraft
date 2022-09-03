@@ -695,6 +695,7 @@ void FlyByWireInterface::setupLocalVariables() {
   idElecDcBus2Powered = make_unique<LocalVariable>("A32NX_ELEC_DC_2_BUS_IS_POWERED");
   idElecDcEssShedBusPowered = make_unique<LocalVariable>("A32NX_ELEC_DC_ESS_SHED_BUS_IS_POWERED");
   idElecDcEssBusPowered = make_unique<LocalVariable>("A32NX_ELEC_DC_ESS_BUS_IS_POWERED");
+  idElecBat1HotBusPowered = make_unique<LocalVariable>("A32NX_ELEC_DC_HOT_1_BUS_IS_POWERED");
 
   idHydYellowSystemPressure = make_unique<LocalVariable>("A32NX_HYD_YELLOW_SYSTEM_1_SECTION_PRESSURE");
   idHydGreenSystemPressure = make_unique<LocalVariable>("A32NX_HYD_GREEN_SYSTEM_1_SECTION_PRESSURE");
@@ -1246,9 +1247,16 @@ bool FlyByWireInterface::updateElac(double sampleTime, int elacIndex) {
     elacsAnalogOutputs[elacIndex] = simConnectInterface.getClientDataElacAnalogsOutput();
     elacsBusOutputs[elacIndex] = simConnectInterface.getClientDataElacBusOutput();
   } else {
+    bool powerSupplyAvailable = false;
+    if (elacIndex == 0) {
+      powerSupplyAvailable =
+          idElecDcEssBusPowered->get() || (elacsDiscreteOutputs[elacIndex].batt_power_supply ? idElecBat1HotBusPowered->get() : false);
+    } else {
+      powerSupplyAvailable = idElecDcBus2Powered->get();
+    }
+
     elacs[elacIndex].update(sampleTime, simData.simulationTime,
-                            failuresConsumer.isActive(elacIndex == 0 ? Failures::Elac1 : Failures::Elac2),
-                            elacIndex == 0 ? idElecDcEssBusPowered->get() : idElecDcBus2Powered->get());
+                            failuresConsumer.isActive(elacIndex == 0 ? Failures::Elac1 : Failures::Elac2), powerSupplyAvailable);
 
     elacsDiscreteOutputs[elacIndex] = elacs[elacIndex].getDiscreteOutputs();
     elacsAnalogOutputs[elacIndex] = elacs[elacIndex].getAnalogOutputs();
@@ -1392,9 +1400,16 @@ bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
     secsAnalogOutputs[secIndex] = simConnectInterface.getClientDataSecAnalogsOutput();
     secsBusOutputs[secIndex] = simConnectInterface.getClientDataSecBusOutput();
   } else {
+    bool powerSupplyAvailable = false;
+    if (secIndex == 0) {
+      powerSupplyAvailable =
+          idElecDcEssBusPowered->get() || (secsDiscreteOutputs[secIndex].batt_power_supply ? idElecBat1HotBusPowered->get() : false);
+    } else {
+      powerSupplyAvailable = idElecDcBus2Powered->get();
+    }
+
     Failures failureIndex = secIndex == 0 ? Failures::Sec1 : (secIndex == 1 ? Failures::Sec2 : Failures::Sec3);
-    secs[secIndex].update(sampleTime, simData.simulationTime, failuresConsumer.isActive(failureIndex),
-                          secIndex == 0 ? idElecDcEssBusPowered->get() : idElecDcBus2Powered->get());
+    secs[secIndex].update(sampleTime, simData.simulationTime, failuresConsumer.isActive(failureIndex), powerSupplyAvailable);
 
     secsDiscreteOutputs[secIndex] = secs[secIndex].getDiscreteOutputs();
     secsAnalogOutputs[secIndex] = secs[secIndex].getAnalogOutputs();
@@ -1922,7 +1937,7 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
       simConnectInterface.sendEvent(SimConnectInterface::Events::TOGGLE_FLIGHT_DIRECTOR, 2);
     }
   }
-  
+
   // update FMA variables ---------------------------------------------------------------------------------------------
   idFmaLateralMode->set(autopilotStateMachineOutput.lateral_mode);
   idFmaLateralArmed->set(autopilotStateMachineOutput.lateral_mode_armed);
@@ -2482,7 +2497,7 @@ bool FlyByWireInterface::updateFoSide(double sampleTime) {
     if (last_fd1_active != simData.ap_fd_1_active) {
       simConnectInterface.sendEvent(SimConnectInterface::Events::TOGGLE_FLIGHT_DIRECTOR, 2);
     }
-    
+
     if (last_fd2_active != simData.ap_fd_2_active) {
       simConnectInterface.sendEvent(SimConnectInterface::Events::TOGGLE_FLIGHT_DIRECTOR, 1);
     }
@@ -2495,7 +2510,7 @@ bool FlyByWireInterface::updateFoSide(double sampleTime) {
     if (last_ls1_active != additionalData.ls1Active) {
       idLs2Active->set(additionalData.ls1Active);
     }
-    
+
     if (last_ls2_active != additionalData.ls2Active) {
       idLs1Active->set(additionalData.ls2Active);
     }
