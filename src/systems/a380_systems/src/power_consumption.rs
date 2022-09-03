@@ -9,7 +9,7 @@ use uom::si::{f64::*, power::watt};
 /// This type provides an aggregated form of power consumption.
 /// We haven't yet implemented all power consumers and thus need something to
 /// consume power, as otherwise electrical load is nearly 0.
-pub(super) struct A320PowerConsumption {
+pub(super) struct A380PowerConsumption {
     ac_bus_1_consumer: FlightPhasePowerConsumer,
     ac_bus_2_consumer: FlightPhasePowerConsumer,
     ac_ess_bus_consumer: FlightPhasePowerConsumer,
@@ -25,7 +25,7 @@ pub(super) struct A320PowerConsumption {
     dc_hot_bus_2_consumer: FlightPhasePowerConsumer,
     dc_gnd_flt_service_consumer: FlightPhasePowerConsumer,
 }
-impl A320PowerConsumption {
+impl A380PowerConsumption {
     pub fn new(context: &mut InitContext) -> Self {
         // The watts in this function are all provided by komp.
         Self {
@@ -325,7 +325,7 @@ impl A320PowerConsumption {
         self.dc_gnd_flt_service_consumer.update(context);
     }
 }
-impl SimulationElement for A320PowerConsumption {
+impl SimulationElement for A380PowerConsumption {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.ac_bus_1_consumer.accept(visitor);
         self.ac_bus_2_consumer.accept(visitor);

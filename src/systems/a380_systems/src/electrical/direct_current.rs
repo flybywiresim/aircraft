@@ -1,6 +1,6 @@
 use super::{
-    A320AlternatingCurrentElectricalSystem, A320DirectCurrentElectricalSystem,
-    A320ElectricalOverheadPanel,
+    A380AlternatingCurrentElectricalSystem, A380DirectCurrentElectricalSystem,
+    A380ElectricalOverheadPanel,
 };
 use systems::simulation::InitContext;
 use systems::{
@@ -18,7 +18,7 @@ use uom::si::{f64::*, velocity::knot};
 
 pub(crate) const APU_START_MOTOR_BUS_TYPE: ElectricalBusType = ElectricalBusType::Sub("49-42-00");
 
-pub(super) struct A320DirectCurrentElectrical {
+pub(super) struct A380DirectCurrentElectrical {
     dc_bus_1: ElectricalBus,
     dc_bus_2: ElectricalBus,
     dc_bus_1_tie_contactor: Contactor,
@@ -48,9 +48,9 @@ pub(super) struct A320DirectCurrentElectrical {
     tr_2_to_dc_gnd_flt_service_bus_contactor: Contactor,
     dc_bus_2_to_dc_gnd_flt_service_bus_contactor: Contactor,
 }
-impl A320DirectCurrentElectrical {
+impl A380DirectCurrentElectrical {
     pub fn new(context: &mut InitContext) -> Self {
-        A320DirectCurrentElectrical {
+        A380DirectCurrentElectrical {
             dc_bus_1: ElectricalBus::new(context, ElectricalBusType::DirectCurrent(1)),
             dc_bus_1_tie_contactor: Contactor::new(context, "1PC1"),
             dc_bus_2: ElectricalBus::new(context, ElectricalBusType::DirectCurrent(2)),
@@ -92,8 +92,8 @@ impl A320DirectCurrentElectrical {
         &mut self,
         context: &UpdateContext,
         electricity: &mut Electricity,
-        overhead: &A320ElectricalOverheadPanel,
-        ac_state: &impl A320AlternatingCurrentElectricalSystem,
+        overhead: &A380ElectricalOverheadPanel,
+        ac_state: &impl A380AlternatingCurrentElectricalSystem,
         emergency_elec: &EmergencyElectrical,
         emergency_generator: &EmergencyGenerator,
         apu: &mut impl AuxiliaryPowerUnitElectrical,
@@ -244,7 +244,7 @@ impl A320DirectCurrentElectrical {
         context: &UpdateContext,
         electricity: &Electricity,
         emergency_generator: &EmergencyGenerator,
-        ac_state: &impl A320AlternatingCurrentElectricalSystem,
+        ac_state: &impl A380AlternatingCurrentElectricalSystem,
     ) -> bool {
         !ac_state.any_non_essential_bus_powered(electricity)
             && !electricity.is_powered(emergency_generator)
@@ -306,12 +306,12 @@ impl A320DirectCurrentElectrical {
         self.battery_2.set_empty_battery_charge();
     }
 }
-impl A320DirectCurrentElectricalSystem for A320DirectCurrentElectrical {
+impl A380DirectCurrentElectricalSystem for A380DirectCurrentElectrical {
     fn static_inverter(&self) -> &StaticInverter {
         &self.static_inverter
     }
 }
-impl SimulationElement for A320DirectCurrentElectrical {
+impl SimulationElement for A380DirectCurrentElectrical {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.battery_1.accept(visitor);
         self.battery_1_charge_limiter.accept(visitor);

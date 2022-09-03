@@ -9,15 +9,15 @@ use systems::simulation::{
 use uom::si::f64::Length;
 use uom::si::length::{foot, meter};
 
-pub struct A320RadioAltimeters {
-    radio_altimeter_1: A320RadioAltimeter,
-    radio_altimeter_2: A320RadioAltimeter,
+pub struct A380RadioAltimeters {
+    radio_altimeter_1: A380RadioAltimeter,
+    radio_altimeter_2: A380RadioAltimeter,
 }
 
-impl A320RadioAltimeters {
+impl A380RadioAltimeters {
     pub fn new(context: &mut InitContext) -> Self {
         Self {
-            radio_altimeter_1: A320RadioAltimeter::new(
+            radio_altimeter_1: A380RadioAltimeter::new(
                 context,
                 1,
                 ElectricalBusType::AlternatingCurrent(1),
@@ -35,7 +35,7 @@ impl A320RadioAltimeters {
                     Length::new::<foot>(22.4),
                 ),
             ),
-            radio_altimeter_2: A320RadioAltimeter::new(
+            radio_altimeter_2: A380RadioAltimeter::new(
                 context,
                 2,
                 ElectricalBusType::AlternatingCurrent(2),
@@ -59,7 +59,7 @@ impl A320RadioAltimeters {
     }
 }
 
-impl SimulationElement for A320RadioAltimeters {
+impl SimulationElement for A380RadioAltimeters {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.radio_altimeter_1.accept(visitor);
         self.radio_altimeter_2.accept(visitor);
@@ -68,12 +68,12 @@ impl SimulationElement for A320RadioAltimeters {
     }
 }
 
-pub struct A320RadioAltimeter {
+pub struct A380RadioAltimeter {
     radio_altimeter: Ala52BRadioAltimeter,
     transceivers: Ala52BTransceiverPair,
 }
 
-impl A320RadioAltimeter {
+impl A380RadioAltimeter {
     fn new(
         context: &mut InitContext,
         number: usize,
@@ -97,7 +97,7 @@ impl A320RadioAltimeter {
     }
 }
 
-impl SimulationElement for A320RadioAltimeter {
+impl SimulationElement for A380RadioAltimeter {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.transceivers.accept(visitor);
         self.radio_altimeter.accept(visitor);

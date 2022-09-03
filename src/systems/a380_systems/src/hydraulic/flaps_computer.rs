@@ -491,7 +491,7 @@ mod tests {
         }
     }
 
-    struct A320FlapsTestAircraft {
+    struct A380FlapsTestAircraft {
         green_hydraulic_pressure_id: VariableIdentifier,
         blue_hydraulic_pressure_id: VariableIdentifier,
         yellow_hydraulic_pressure_id: VariableIdentifier,
@@ -505,7 +505,7 @@ mod tests {
         yellow_pressure: Pressure,
     }
 
-    impl A320FlapsTestAircraft {
+    impl A380FlapsTestAircraft {
         fn new(context: &mut InitContext) -> Self {
             Self {
                 green_hydraulic_pressure_id: context
@@ -536,7 +536,7 @@ mod tests {
         }
     }
 
-    impl Aircraft for A320FlapsTestAircraft {
+    impl Aircraft for A380FlapsTestAircraft {
         fn update_after_power_distribution(&mut self, context: &UpdateContext) {
             self.slat_flap_complex
                 .update(context, &self.flap_gear, &self.slat_gear);
@@ -555,7 +555,7 @@ mod tests {
         }
     }
 
-    impl SimulationElement for A320FlapsTestAircraft {
+    impl SimulationElement for A380FlapsTestAircraft {
         fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
             self.slat_flap_complex.accept(visitor);
             self.flap_gear.accept(visitor);
@@ -570,16 +570,16 @@ mod tests {
         }
     }
 
-    struct A320FlapsTestBed {
-        test_bed: SimulationTestBed<A320FlapsTestAircraft>,
+    struct A380FlapsTestBed {
+        test_bed: SimulationTestBed<A380FlapsTestAircraft>,
     }
 
-    impl A320FlapsTestBed {
+    impl A380FlapsTestBed {
         const HYD_TIME_STEP_MILLIS: u64 = 33;
 
         fn new() -> Self {
             Self {
-                test_bed: SimulationTestBed::new(A320FlapsTestAircraft::new),
+                test_bed: SimulationTestBed::new(A380FlapsTestAircraft::new),
             }
         }
 
@@ -675,23 +675,23 @@ mod tests {
             assert_eq!(self.get_flaps_conf(), conf);
         }
     }
-    impl TestBed for A320FlapsTestBed {
-        type Aircraft = A320FlapsTestAircraft;
+    impl TestBed for A380FlapsTestBed {
+        type Aircraft = A380FlapsTestAircraft;
 
-        fn test_bed(&self) -> &SimulationTestBed<A320FlapsTestAircraft> {
+        fn test_bed(&self) -> &SimulationTestBed<A380FlapsTestAircraft> {
             &self.test_bed
         }
 
-        fn test_bed_mut(&mut self) -> &mut SimulationTestBed<A320FlapsTestAircraft> {
+        fn test_bed_mut(&mut self) -> &mut SimulationTestBed<A380FlapsTestAircraft> {
             &mut self.test_bed
         }
     }
 
-    fn test_bed() -> A320FlapsTestBed {
-        A320FlapsTestBed::new()
+    fn test_bed() -> A380FlapsTestBed {
+        A380FlapsTestBed::new()
     }
 
-    fn test_bed_with() -> A320FlapsTestBed {
+    fn test_bed_with() -> A380FlapsTestBed {
         test_bed()
     }
 

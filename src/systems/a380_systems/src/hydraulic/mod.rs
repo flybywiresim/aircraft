@@ -68,8 +68,8 @@ use flaps_computer::SlatFlapComplex;
 #[cfg(test)]
 use systems::hydraulic::PressureSwitchState;
 
-struct A320HydraulicReservoirFactory {}
-impl A320HydraulicReservoirFactory {
+struct A380HydraulicReservoirFactory {}
+impl A380HydraulicReservoirFactory {
     fn new_green_reservoir(context: &mut InitContext) -> Reservoir {
         let reservoir_offset_when_gear_up = if context.start_gear_down() {
             Volume::new::<gallon>(0.)
@@ -109,8 +109,8 @@ impl A320HydraulicReservoirFactory {
     }
 }
 
-pub struct A320HydraulicCircuitFactory {}
-impl A320HydraulicCircuitFactory {
+pub struct A380HydraulicCircuitFactory {}
+impl A380HydraulicCircuitFactory {
     const MIN_PRESS_EDP_SECTION_LO_HYST: f64 = 2740.0;
     const MIN_PRESS_EDP_SECTION_HI_HYST: f64 = 2900.0;
     const MIN_PRESS_PRESSURISED_LO_HYST: f64 = 2740.0;
@@ -118,7 +118,7 @@ impl A320HydraulicCircuitFactory {
     const HYDRAULIC_TARGET_PRESSURE_PSI: f64 = 5100.;
 
     pub fn new_green_circuit(context: &mut InitContext) -> HydraulicCircuit {
-        let reservoir = A320HydraulicReservoirFactory::new_green_reservoir(context);
+        let reservoir = A380HydraulicReservoirFactory::new_green_reservoir(context);
         HydraulicCircuit::new(
             context,
             HydraulicColor::Green,
@@ -138,7 +138,7 @@ impl A320HydraulicCircuitFactory {
     }
 
     pub fn new_yellow_circuit(context: &mut InitContext) -> HydraulicCircuit {
-        let reservoir = A320HydraulicReservoirFactory::new_yellow_reservoir(context);
+        let reservoir = A380HydraulicReservoirFactory::new_yellow_reservoir(context);
         HydraulicCircuit::new(
             context,
             HydraulicColor::Yellow,
@@ -158,13 +158,13 @@ impl A320HydraulicCircuitFactory {
     }
 }
 
-struct A320CargoDoorFactory {}
-impl A320CargoDoorFactory {
+struct A380CargoDoorFactory {}
+impl A380CargoDoorFactory {
     const FLOW_CONTROL_PROPORTIONAL_GAIN: f64 = 0.05;
     const FLOW_CONTROL_INTEGRAL_GAIN: f64 = 5.;
     const FLOW_CONTROL_FORCE_GAIN: f64 = 200000.;
 
-    fn a320_cargo_door_actuator(
+    fn a380_cargo_door_actuator(
         bounded_linear_length: &impl BoundedLinearLength,
     ) -> LinearActuator {
         LinearActuator::new(
@@ -190,8 +190,8 @@ impl A320CargoDoorFactory {
         )
     }
 
-    /// Builds a cargo door body for A320 Neo
-    fn a320_cargo_door_body(is_locked: bool) -> LinearActuatedRigidBodyOnHingeAxis {
+    /// Builds a cargo door body for A380-800
+    fn a380_cargo_door_body(is_locked: bool) -> LinearActuatedRigidBodyOnHingeAxis {
         let size = Vector3::new(100. / 1000., 1855. / 1000., 2025. / 1000.);
         let cg_offset = Vector3::new(0., -size[1] / 2., 0.);
 
@@ -217,24 +217,24 @@ impl A320CargoDoorFactory {
 
     /// Builds a cargo door assembly consisting of the door physical rigid body and the hydraulic actuator connected
     /// to it
-    fn a320_cargo_door_assembly() -> HydraulicLinearActuatorAssembly<1> {
-        let cargo_door_body = Self::a320_cargo_door_body(true);
-        let cargo_door_actuator = Self::a320_cargo_door_actuator(&cargo_door_body);
+    fn a380_cargo_door_assembly() -> HydraulicLinearActuatorAssembly<1> {
+        let cargo_door_body = Self::a380_cargo_door_body(true);
+        let cargo_door_actuator = Self::a380_cargo_door_actuator(&cargo_door_body);
         HydraulicLinearActuatorAssembly::new([cargo_door_actuator], cargo_door_body)
     }
 
-    fn new_a320_cargo_door(context: &mut InitContext, id: &str) -> CargoDoor {
-        let assembly = Self::a320_cargo_door_assembly();
+    fn new_a380_cargo_door(context: &mut InitContext, id: &str) -> CargoDoor {
+        let assembly = Self::a380_cargo_door_assembly();
         CargoDoor::new(
             context,
             id,
             assembly,
-            Self::new_a320_cargo_door_aero_model(),
+            Self::new_a380_cargo_door_aero_model(),
         )
     }
 
-    fn new_a320_cargo_door_aero_model() -> AerodynamicModel {
-        let body = Self::a320_cargo_door_body(false);
+    fn new_a380_cargo_door_aero_model() -> AerodynamicModel {
+        let body = Self::a380_cargo_door_body(false);
         AerodynamicModel::new(
             &body,
             Some(Vector3::new(1., 0., 0.)),
@@ -245,8 +245,8 @@ impl A320CargoDoorFactory {
     }
 }
 
-struct A320AileronFactory {}
-impl A320AileronFactory {
+struct A380AileronFactory {}
+impl A380AileronFactory {
     const FLOW_CONTROL_PROPORTIONAL_GAIN: f64 = 0.35;
     const FLOW_CONTROL_INTEGRAL_GAIN: f64 = 5.;
     const FLOW_CONTROL_FORCE_GAIN: f64 = 450000.;
@@ -254,7 +254,7 @@ impl A320AileronFactory {
     const MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING: f64 = 3500000.;
     const MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT: f64 = 1.;
 
-    fn a320_aileron_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
+    fn a380_aileron_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
         let actuator_characteristics = LinearActuatorCharacteristics::new(
             Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING / 3.,
             Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING,
@@ -290,8 +290,8 @@ impl A320AileronFactory {
         )
     }
 
-    /// Builds an aileron control surface body for A320 Neo
-    fn a320_aileron_body(init_drooped_down: bool) -> LinearActuatedRigidBodyOnHingeAxis {
+    /// Builds an aileron control surface body for A380-800
+    fn a380_aileron_body(init_drooped_down: bool) -> LinearActuatedRigidBodyOnHingeAxis {
         let size = Vector3::new(3.325, 0.16, 0.58);
 
         // CG at half the size
@@ -325,11 +325,11 @@ impl A320AileronFactory {
 
     /// Builds an aileron assembly consisting of the aileron physical rigid body and two hydraulic actuators connected
     /// to it
-    fn a320_aileron_assembly(init_drooped_down: bool) -> HydraulicLinearActuatorAssembly<2> {
-        let aileron_body = Self::a320_aileron_body(init_drooped_down);
+    fn a380_aileron_assembly(init_drooped_down: bool) -> HydraulicLinearActuatorAssembly<2> {
+        let aileron_body = Self::a380_aileron_body(init_drooped_down);
 
-        let aileron_actuator_outward = Self::a320_aileron_actuator(&aileron_body);
-        let aileron_actuator_inward = Self::a320_aileron_actuator(&aileron_body);
+        let aileron_actuator_outward = Self::a380_aileron_actuator(&aileron_body);
+        let aileron_actuator_inward = Self::a380_aileron_actuator(&aileron_body);
 
         HydraulicLinearActuatorAssembly::new(
             [aileron_actuator_outward, aileron_actuator_inward],
@@ -339,12 +339,12 @@ impl A320AileronFactory {
 
     fn new_aileron(context: &mut InitContext, id: ActuatorSide) -> AileronAssembly {
         let init_drooped_down = !context.is_in_flight();
-        let assembly = Self::a320_aileron_assembly(init_drooped_down);
-        AileronAssembly::new(context, id, assembly, Self::new_a320_aileron_aero_model())
+        let assembly = Self::a380_aileron_assembly(init_drooped_down);
+        AileronAssembly::new(context, id, assembly, Self::new_a380_aileron_aero_model())
     }
 
-    fn new_a320_aileron_aero_model() -> AerodynamicModel {
-        let body = Self::a320_aileron_body(true);
+    fn new_a380_aileron_aero_model() -> AerodynamicModel {
+        let body = Self::a380_aileron_body(true);
 
         // Aerodynamic object has a little rotation from horizontal direction so that at X°
         // of wing AOA the aileron gets some X°+Y° AOA as the overwing pressure sucks the aileron up
@@ -358,8 +358,8 @@ impl A320AileronFactory {
     }
 }
 
-struct A320SpoilerFactory {}
-impl A320SpoilerFactory {
+struct A380SpoilerFactory {}
+impl A380SpoilerFactory {
     const FLOW_CONTROL_PROPORTIONAL_GAIN: f64 = 0.15;
     const FLOW_CONTROL_INTEGRAL_GAIN: f64 = 2.;
     const FLOW_CONTROL_FORCE_GAIN: f64 = 450000.;
@@ -368,7 +368,7 @@ impl A320SpoilerFactory {
 
     const MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT: f64 = 3.;
 
-    fn a320_spoiler_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
+    fn a380_spoiler_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
         let actuator_characteristics = LinearActuatorCharacteristics::new(
             Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING / 5.,
             Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING,
@@ -402,8 +402,8 @@ impl A320SpoilerFactory {
         )
     }
 
-    /// Builds a spoiler control surface body for A320 Neo
-    fn a320_spoiler_body() -> LinearActuatedRigidBodyOnHingeAxis {
+    /// Builds a spoiler control surface body for A380-800
+    fn a380_spoiler_body() -> LinearActuatedRigidBodyOnHingeAxis {
         let size = Vector3::new(1.785, 0.1, 0.685);
         let cg_offset = Vector3::new(0., 0., -0.5 * size[2]);
         let aero_center = Vector3::new(0., 0., -0.4 * size[2]);
@@ -428,41 +428,41 @@ impl A320SpoilerFactory {
     }
 
     /// Builds a spoiler assembly consisting of the spoiler physical rigid body and one hydraulic actuator
-    fn a320_spoiler_assembly() -> HydraulicLinearActuatorAssembly<1> {
-        let spoiler_body = Self::a320_spoiler_body();
+    fn a380_spoiler_assembly() -> HydraulicLinearActuatorAssembly<1> {
+        let spoiler_body = Self::a380_spoiler_body();
 
-        let spoiler_actuator = Self::a320_spoiler_actuator(&spoiler_body);
+        let spoiler_actuator = Self::a380_spoiler_actuator(&spoiler_body);
 
         HydraulicLinearActuatorAssembly::new([spoiler_actuator], spoiler_body)
     }
 
-    fn new_a320_spoiler_group(context: &mut InitContext, id: ActuatorSide) -> SpoilerGroup {
-        let spoiler_1 = Self::new_a320_spoiler_element(context, id, 1);
-        let spoiler_2 = Self::new_a320_spoiler_element(context, id, 2);
-        let spoiler_3 = Self::new_a320_spoiler_element(context, id, 3);
-        let spoiler_4 = Self::new_a320_spoiler_element(context, id, 4);
-        let spoiler_5 = Self::new_a320_spoiler_element(context, id, 5);
+    fn new_a380_spoiler_group(context: &mut InitContext, id: ActuatorSide) -> SpoilerGroup {
+        let spoiler_1 = Self::new_a380_spoiler_element(context, id, 1);
+        let spoiler_2 = Self::new_a380_spoiler_element(context, id, 2);
+        let spoiler_3 = Self::new_a380_spoiler_element(context, id, 3);
+        let spoiler_4 = Self::new_a380_spoiler_element(context, id, 4);
+        let spoiler_5 = Self::new_a380_spoiler_element(context, id, 5);
 
         SpoilerGroup::new([spoiler_1, spoiler_2, spoiler_3, spoiler_4, spoiler_5])
     }
 
-    fn new_a320_spoiler_element(
+    fn new_a380_spoiler_element(
         context: &mut InitContext,
         id: ActuatorSide,
         id_number: usize,
     ) -> SpoilerElement {
-        let assembly = Self::a320_spoiler_assembly();
+        let assembly = Self::a380_spoiler_assembly();
         SpoilerElement::new(
             context,
             id,
             id_number,
             assembly,
-            Self::new_a320_spoiler_aero_model(),
+            Self::new_a380_spoiler_aero_model(),
         )
     }
 
-    fn new_a320_spoiler_aero_model() -> AerodynamicModel {
-        let body = Self::a320_spoiler_body();
+    fn new_a380_spoiler_aero_model() -> AerodynamicModel {
+        let body = Self::a380_spoiler_body();
 
         // Lift vector and normal are rotated 10° to acount for air supposedly following
         // wing profile that is 10° from horizontal
@@ -477,8 +477,8 @@ impl A320SpoilerFactory {
     }
 }
 
-struct A320ElevatorFactory {}
-impl A320ElevatorFactory {
+struct A380ElevatorFactory {}
+impl A380ElevatorFactory {
     const FLOW_CONTROL_PROPORTIONAL_GAIN: f64 = 1.;
     const FLOW_CONTROL_INTEGRAL_GAIN: f64 = 5.;
     const FLOW_CONTROL_FORCE_GAIN: f64 = 450000.;
@@ -486,7 +486,7 @@ impl A320ElevatorFactory {
     const MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING: f64 = 15000000.;
     const MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT: f64 = 1.;
 
-    fn a320_elevator_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
+    fn a380_elevator_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
         let actuator_characteristics = LinearActuatorCharacteristics::new(
             Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING / 5.,
             Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING,
@@ -517,8 +517,8 @@ impl A320ElevatorFactory {
         )
     }
 
-    /// Builds an aileron control surface body for A320 Neo
-    fn a320_elevator_body(init_drooped_down: bool) -> LinearActuatedRigidBodyOnHingeAxis {
+    /// Builds an aileron control surface body for A380-800
+    fn a380_elevator_body(init_drooped_down: bool) -> LinearActuatedRigidBodyOnHingeAxis {
         let size = Vector3::new(6., 0.405, 1.125);
         let cg_offset = Vector3::new(0., 0., -0.5 * size[2]);
         let aero_center = Vector3::new(0., 0., -0.3 * size[2]);
@@ -550,11 +550,11 @@ impl A320ElevatorFactory {
 
     /// Builds an aileron assembly consisting of the aileron physical rigid body and two hydraulic actuators connected
     /// to it
-    fn a320_elevator_assembly(init_drooped_down: bool) -> HydraulicLinearActuatorAssembly<2> {
-        let elevator_body = Self::a320_elevator_body(init_drooped_down);
+    fn a380_elevator_assembly(init_drooped_down: bool) -> HydraulicLinearActuatorAssembly<2> {
+        let elevator_body = Self::a380_elevator_body(init_drooped_down);
 
-        let elevator_actuator_outboard = Self::a320_elevator_actuator(&elevator_body);
-        let elevator_actuator_inbord = Self::a320_elevator_actuator(&elevator_body);
+        let elevator_actuator_outboard = Self::a380_elevator_actuator(&elevator_body);
+        let elevator_actuator_inbord = Self::a380_elevator_actuator(&elevator_body);
 
         HydraulicLinearActuatorAssembly::new(
             [elevator_actuator_outboard, elevator_actuator_inbord],
@@ -564,12 +564,12 @@ impl A320ElevatorFactory {
 
     fn new_elevator(context: &mut InitContext, id: ActuatorSide) -> ElevatorAssembly {
         let init_drooped_down = !context.is_in_flight();
-        let assembly = Self::a320_elevator_assembly(init_drooped_down);
-        ElevatorAssembly::new(context, id, assembly, Self::new_a320_elevator_aero_model())
+        let assembly = Self::a380_elevator_assembly(init_drooped_down);
+        ElevatorAssembly::new(context, id, assembly, Self::new_a380_elevator_aero_model())
     }
 
-    fn new_a320_elevator_aero_model() -> AerodynamicModel {
-        let body = Self::a320_elevator_body(true);
+    fn new_a380_elevator_aero_model() -> AerodynamicModel {
+        let body = Self::a380_elevator_body(true);
         AerodynamicModel::new(
             &body,
             Some(Vector3::new(0., 1., 0.)),
@@ -580,8 +580,8 @@ impl A320ElevatorFactory {
     }
 }
 
-struct A320RudderFactory {}
-impl A320RudderFactory {
+struct A380RudderFactory {}
+impl A380RudderFactory {
     const FLOW_CONTROL_PROPORTIONAL_GAIN: f64 = 1.5;
     const FLOW_CONTROL_INTEGRAL_GAIN: f64 = 2.;
     const FLOW_CONTROL_FORCE_GAIN: f64 = 350000.;
@@ -589,7 +589,7 @@ impl A320RudderFactory {
     const MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING: f64 = 1000000.;
     const MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT: f64 = 1.;
 
-    fn a320_rudder_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
+    fn a380_rudder_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
         let actuator_characteristics = LinearActuatorCharacteristics::new(
             Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING / 4.,
             Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING,
@@ -620,8 +620,8 @@ impl A320RudderFactory {
         )
     }
 
-    /// Builds an aileron control surface body for A320 Neo
-    fn a320_rudder_body(init_at_center: bool) -> LinearActuatedRigidBodyOnHingeAxis {
+    /// Builds an aileron control surface body for A380-800
+    fn a380_rudder_body(init_at_center: bool) -> LinearActuatedRigidBodyOnHingeAxis {
         let size = Vector3::new(0.42, 6.65, 1.8);
         let cg_offset = Vector3::new(0., 0.5 * size[1], -0.5 * size[2]);
         let aero_center = Vector3::new(0., 0.5 * size[1], -0.3 * size[2]);
@@ -653,12 +653,12 @@ impl A320RudderFactory {
 
     /// Builds an aileron assembly consisting of the aileron physical rigid body and two hydraulic actuators connected
     /// to it
-    fn a320_rudder_assembly(init_at_center: bool) -> HydraulicLinearActuatorAssembly<3> {
-        let rudder_body = Self::a320_rudder_body(init_at_center);
+    fn a380_rudder_assembly(init_at_center: bool) -> HydraulicLinearActuatorAssembly<3> {
+        let rudder_body = Self::a380_rudder_body(init_at_center);
 
-        let rudder_actuator_green = Self::a320_rudder_actuator(&rudder_body);
-        let rudder_actuator_blue = Self::a320_rudder_actuator(&rudder_body);
-        let rudder_actuator_yellow = Self::a320_rudder_actuator(&rudder_body);
+        let rudder_actuator_green = Self::a380_rudder_actuator(&rudder_body);
+        let rudder_actuator_blue = Self::a380_rudder_actuator(&rudder_body);
+        let rudder_actuator_yellow = Self::a380_rudder_actuator(&rudder_body);
 
         HydraulicLinearActuatorAssembly::new(
             [
@@ -675,12 +675,12 @@ impl A320RudderFactory {
             || context.start_state() == StartState::Runway
             || context.is_in_flight();
 
-        let assembly = Self::a320_rudder_assembly(init_at_center);
-        RudderAssembly::new(context, assembly, Self::new_a320_rudder_aero_model())
+        let assembly = Self::a380_rudder_assembly(init_at_center);
+        RudderAssembly::new(context, assembly, Self::new_a380_rudder_aero_model())
     }
 
-    fn new_a320_rudder_aero_model() -> AerodynamicModel {
-        let body = Self::a320_rudder_body(true);
+    fn new_a380_rudder_aero_model() -> AerodynamicModel {
+        let body = Self::a380_rudder_body(true);
         AerodynamicModel::new(
             &body,
             Some(Vector3::new(1., 0., 0.)),
@@ -691,13 +691,13 @@ impl A320RudderFactory {
     }
 }
 
-struct A320GearDoorFactory {}
-impl A320GearDoorFactory {
-    fn a320_nose_gear_door_aerodynamics() -> AerodynamicModel {
+struct A380GearDoorFactory {}
+impl A380GearDoorFactory {
+    fn a380_nose_gear_door_aerodynamics() -> AerodynamicModel {
         // Faking the single door by only considering right door aerodynamics.
         // Will work with headwind, but will cause strange behaviour with massive crosswind.
         AerodynamicModel::new(
-            &Self::a320_nose_gear_door_body(),
+            &Self::a380_nose_gear_door_body(),
             Some(Vector3::new(0., 1., 0.)),
             Some(Vector3::new(0., -0.2, 1.)),
             Some(Vector3::new(0., -1., -0.2)),
@@ -705,9 +705,9 @@ impl A320GearDoorFactory {
         )
     }
 
-    fn a320_left_gear_door_aerodynamics() -> AerodynamicModel {
+    fn a380_left_gear_door_aerodynamics() -> AerodynamicModel {
         AerodynamicModel::new(
-            &Self::a320_left_gear_door_body(),
+            &Self::a380_left_gear_door_body(),
             Some(Vector3::new(0., 1., 0.)),
             Some(Vector3::new(0., -0.1, 1.)),
             Some(Vector3::new(0., 1., 0.1)),
@@ -715,9 +715,9 @@ impl A320GearDoorFactory {
         )
     }
 
-    fn a320_right_gear_door_aerodynamics() -> AerodynamicModel {
+    fn a380_right_gear_door_aerodynamics() -> AerodynamicModel {
         AerodynamicModel::new(
-            &Self::a320_right_gear_door_body(),
+            &Self::a380_right_gear_door_body(),
             Some(Vector3::new(0., 1., 0.)),
             Some(Vector3::new(0., -0.1, 1.)),
             Some(Vector3::new(0., 1., 0.1)),
@@ -725,7 +725,7 @@ impl A320GearDoorFactory {
         )
     }
 
-    fn a320_nose_gear_door_actuator(
+    fn a380_nose_gear_door_actuator(
         bounded_linear_length: &impl BoundedLinearLength,
     ) -> LinearActuator {
         const FLOW_CONTROL_INTEGRAL_GAIN: f64 = 5.;
@@ -765,7 +765,7 @@ impl A320GearDoorFactory {
         )
     }
 
-    fn a320_main_gear_door_actuator(
+    fn a380_main_gear_door_actuator(
         bounded_linear_length: &impl BoundedLinearLength,
     ) -> LinearActuator {
         const FLOW_CONTROL_INTEGRAL_GAIN: f64 = 5.;
@@ -805,7 +805,7 @@ impl A320GearDoorFactory {
         )
     }
 
-    fn a320_left_gear_door_body() -> LinearActuatedRigidBodyOnHingeAxis {
+    fn a380_left_gear_door_body() -> LinearActuatedRigidBodyOnHingeAxis {
         let size = Vector3::new(-1.73, 0.02, 1.7);
         let cg_offset = Vector3::new(2. / 3. * size[0], 0.1, 0.);
 
@@ -828,7 +828,7 @@ impl A320GearDoorFactory {
         )
     }
 
-    fn a320_right_gear_door_body() -> LinearActuatedRigidBodyOnHingeAxis {
+    fn a380_right_gear_door_body() -> LinearActuatedRigidBodyOnHingeAxis {
         let size = Vector3::new(1.73, 0.02, 1.7);
         let cg_offset = Vector3::new(2. / 3. * size[0], 0.1, 0.);
 
@@ -851,7 +851,7 @@ impl A320GearDoorFactory {
         )
     }
 
-    fn a320_nose_gear_door_body() -> LinearActuatedRigidBodyOnHingeAxis {
+    fn a380_nose_gear_door_body() -> LinearActuatedRigidBodyOnHingeAxis {
         let size = Vector3::new(0.4, 0.02, 1.5);
         let cg_offset = Vector3::new(-0.5 * size[0], 0., 0.);
 
@@ -874,16 +874,16 @@ impl A320GearDoorFactory {
         )
     }
 
-    fn a320_gear_door_assembly(wheel_id: GearWheel) -> HydraulicLinearActuatorAssembly<1> {
+    fn a380_gear_door_assembly(wheel_id: GearWheel) -> HydraulicLinearActuatorAssembly<1> {
         let gear_door_body = match wheel_id {
-            GearWheel::NOSE => Self::a320_nose_gear_door_body(),
-            GearWheel::LEFT => Self::a320_left_gear_door_body(),
-            GearWheel::RIGHT => Self::a320_right_gear_door_body(),
+            GearWheel::NOSE => Self::a380_nose_gear_door_body(),
+            GearWheel::LEFT => Self::a380_left_gear_door_body(),
+            GearWheel::RIGHT => Self::a380_right_gear_door_body(),
         };
         let gear_door_actuator = match wheel_id {
-            GearWheel::NOSE => Self::a320_nose_gear_door_actuator(&gear_door_body),
+            GearWheel::NOSE => Self::a380_nose_gear_door_actuator(&gear_door_body),
             GearWheel::LEFT | GearWheel::RIGHT => {
-                Self::a320_main_gear_door_actuator(&gear_door_body)
+                Self::a380_main_gear_door_actuator(&gear_door_body)
             }
         };
 
@@ -891,11 +891,11 @@ impl A320GearDoorFactory {
     }
 }
 
-struct A320GearFactory {}
-impl A320GearFactory {
-    fn a320_nose_gear_aerodynamics() -> AerodynamicModel {
+struct A380GearFactory {}
+impl A380GearFactory {
+    fn a380_nose_gear_aerodynamics() -> AerodynamicModel {
         AerodynamicModel::new(
-            &Self::a320_nose_gear_body(true),
+            &Self::a380_nose_gear_body(true),
             Some(Vector3::new(0., 0., 1.)),
             None,
             None,
@@ -903,9 +903,9 @@ impl A320GearFactory {
         )
     }
 
-    fn a320_right_gear_aerodynamics() -> AerodynamicModel {
+    fn a380_right_gear_aerodynamics() -> AerodynamicModel {
         AerodynamicModel::new(
-            &Self::a320_right_gear_body(true),
+            &Self::a380_right_gear_body(true),
             Some(Vector3::new(0., 0., 1.)),
             Some(Vector3::new(0.3, 0., 1.)),
             Some(Vector3::new(1., 0., -0.3)),
@@ -913,9 +913,9 @@ impl A320GearFactory {
         )
     }
 
-    fn a320_left_gear_aerodynamics() -> AerodynamicModel {
+    fn a380_left_gear_aerodynamics() -> AerodynamicModel {
         AerodynamicModel::new(
-            &Self::a320_left_gear_body(true),
+            &Self::a380_left_gear_body(true),
             Some(Vector3::new(0., 0., 1.)),
             Some(Vector3::new(-0.3, 0., 1.)),
             Some(Vector3::new(-1., 0., -0.3)),
@@ -923,7 +923,7 @@ impl A320GearFactory {
         )
     }
 
-    fn a320_nose_gear_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
+    fn a380_nose_gear_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
         const FLOW_CONTROL_INTEGRAL_GAIN: f64 = 5.;
         const FLOW_CONTROL_PROPORTIONAL_GAIN: f64 = 0.3;
         const FLOW_CONTROL_FORCE_GAIN: f64 = 250000.;
@@ -961,7 +961,7 @@ impl A320GearFactory {
         )
     }
 
-    fn a320_main_gear_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
+    fn a380_main_gear_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
         const FLOW_CONTROL_INTEGRAL_GAIN: f64 = 5.0;
         const FLOW_CONTROL_PROPORTIONAL_GAIN: f64 = 0.3;
         const FLOW_CONTROL_FORCE_GAIN: f64 = 250000.;
@@ -999,7 +999,7 @@ impl A320GearFactory {
         )
     }
 
-    fn a320_left_gear_body(init_downlocked: bool) -> LinearActuatedRigidBodyOnHingeAxis {
+    fn a380_left_gear_body(init_downlocked: bool) -> LinearActuatedRigidBodyOnHingeAxis {
         let size = Vector3::new(0.3, 3.453, 0.3);
         let cg_offset = Vector3::new(0., -3. / 4. * size[1], 0.);
 
@@ -1026,7 +1026,7 @@ impl A320GearFactory {
         )
     }
 
-    fn a320_right_gear_body(init_downlocked: bool) -> LinearActuatedRigidBodyOnHingeAxis {
+    fn a380_right_gear_body(init_downlocked: bool) -> LinearActuatedRigidBodyOnHingeAxis {
         let size = Vector3::new(0.3, 3.453, 0.3);
         let cg_offset = Vector3::new(0., -3. / 4. * size[1], 0.);
 
@@ -1053,7 +1053,7 @@ impl A320GearFactory {
         )
     }
 
-    fn a320_nose_gear_body(init_downlocked: bool) -> LinearActuatedRigidBodyOnHingeAxis {
+    fn a380_nose_gear_body(init_downlocked: bool) -> LinearActuatedRigidBodyOnHingeAxis {
         let size = Vector3::new(0.3, 2.453, 0.3);
         let cg_offset = Vector3::new(0., -2. / 3. * size[1], 0.);
 
@@ -1080,47 +1080,47 @@ impl A320GearFactory {
         )
     }
 
-    fn a320_gear_assembly(
+    fn a380_gear_assembly(
         wheel_id: GearWheel,
         init_downlocked: bool,
     ) -> HydraulicLinearActuatorAssembly<1> {
         let gear_body = match wheel_id {
-            GearWheel::NOSE => Self::a320_nose_gear_body(init_downlocked),
+            GearWheel::NOSE => Self::a380_nose_gear_body(init_downlocked),
 
-            GearWheel::LEFT => Self::a320_left_gear_body(init_downlocked),
+            GearWheel::LEFT => Self::a380_left_gear_body(init_downlocked),
 
-            GearWheel::RIGHT => Self::a320_right_gear_body(init_downlocked),
+            GearWheel::RIGHT => Self::a380_right_gear_body(init_downlocked),
         };
 
         let gear_actuator = match wheel_id {
-            GearWheel::NOSE => Self::a320_nose_gear_actuator(&gear_body),
+            GearWheel::NOSE => Self::a380_nose_gear_actuator(&gear_body),
 
-            GearWheel::LEFT | GearWheel::RIGHT => Self::a320_main_gear_actuator(&gear_body),
+            GearWheel::LEFT | GearWheel::RIGHT => Self::a380_main_gear_actuator(&gear_body),
         };
 
         HydraulicLinearActuatorAssembly::new([gear_actuator], gear_body)
     }
 }
 
-struct A320GearSystemFactory {}
-impl A320GearSystemFactory {
-    fn a320_gear_system(context: &mut InitContext) -> HydraulicGearSystem {
+struct A380GearSystemFactory {}
+impl A380GearSystemFactory {
+    fn a380_gear_system(context: &mut InitContext) -> HydraulicGearSystem {
         let init_downlocked = context.start_gear_down();
 
         HydraulicGearSystem::new(
             context,
-            A320GearDoorFactory::a320_gear_door_assembly(GearWheel::NOSE),
-            A320GearDoorFactory::a320_gear_door_assembly(GearWheel::LEFT),
-            A320GearDoorFactory::a320_gear_door_assembly(GearWheel::RIGHT),
-            A320GearFactory::a320_gear_assembly(GearWheel::NOSE, init_downlocked),
-            A320GearFactory::a320_gear_assembly(GearWheel::LEFT, init_downlocked),
-            A320GearFactory::a320_gear_assembly(GearWheel::RIGHT, init_downlocked),
-            A320GearDoorFactory::a320_left_gear_door_aerodynamics(),
-            A320GearDoorFactory::a320_right_gear_door_aerodynamics(),
-            A320GearDoorFactory::a320_nose_gear_door_aerodynamics(),
-            A320GearFactory::a320_left_gear_aerodynamics(),
-            A320GearFactory::a320_right_gear_aerodynamics(),
-            A320GearFactory::a320_nose_gear_aerodynamics(),
+            A380GearDoorFactory::a380_gear_door_assembly(GearWheel::NOSE),
+            A380GearDoorFactory::a380_gear_door_assembly(GearWheel::LEFT),
+            A380GearDoorFactory::a380_gear_door_assembly(GearWheel::RIGHT),
+            A380GearFactory::a380_gear_assembly(GearWheel::NOSE, init_downlocked),
+            A380GearFactory::a380_gear_assembly(GearWheel::LEFT, init_downlocked),
+            A380GearFactory::a380_gear_assembly(GearWheel::RIGHT, init_downlocked),
+            A380GearDoorFactory::a380_left_gear_door_aerodynamics(),
+            A380GearDoorFactory::a380_right_gear_door_aerodynamics(),
+            A380GearDoorFactory::a380_nose_gear_door_aerodynamics(),
+            A380GearFactory::a380_left_gear_aerodynamics(),
+            A380GearFactory::a380_right_gear_aerodynamics(),
+            A380GearFactory::a380_nose_gear_aerodynamics(),
         )
     }
 }
@@ -1132,7 +1132,7 @@ pub(super) struct A380Hydraulic {
     physics_updater: MaxStepLoop,
     ultra_fast_physics_updater: MaxStepLoop,
 
-    brake_steer_computer: A320HydraulicBrakeSteerComputerUnit,
+    brake_steer_computer: A380HydraulicBrakeSteerComputerUnit,
 
     green_circuit: HydraulicCircuit,
     green_circuit_controller: A380HydraulicCircuitController,
@@ -1179,16 +1179,16 @@ pub(super) struct A380Hydraulic {
 
     braking_circuit_norm: BrakeCircuit,
     braking_circuit_altn: BrakeCircuit,
-    braking_force: A320BrakingForce,
+    braking_force: A380BrakingForce,
 
     flap_system: FlapSlatAssembly,
     slat_system: FlapSlatAssembly,
     slats_flaps_complex: SlatFlapComplex,
 
     forward_cargo_door: CargoDoor,
-    forward_cargo_door_controller: A320DoorController,
+    forward_cargo_door_controller: A380DoorController,
     aft_cargo_door: CargoDoor,
-    aft_cargo_door_controller: A320DoorController,
+    aft_cargo_door_controller: A380DoorController,
 
     elac_computer: ElacComputer,
     left_aileron: AileronAssembly,
@@ -1203,11 +1203,11 @@ pub(super) struct A380Hydraulic {
     left_spoilers: SpoilerGroup,
     right_spoilers: SpoilerGroup,
 
-    gear_system_gravity_extension_controller: A320GravityExtension,
-    gear_system_hydraulic_controller: A320GearHydraulicController,
+    gear_system_gravity_extension_controller: A380GravityExtension,
+    gear_system_hydraulic_controller: A380GearHydraulicController,
     gear_system: HydraulicGearSystem,
 
-    trim_controller: A320TrimInputController,
+    trim_controller: A380TrimInputController,
 
     trim_assembly: TrimmableHorizontalStabilizerAssembly,
 
@@ -1274,11 +1274,11 @@ impl A380Hydraulic {
                 Self::HYDRAULIC_SIM_FLIGHT_CONTROLS_MAX_TIME_STEP_MILLISECONDS,
             ),
 
-            brake_steer_computer: A320HydraulicBrakeSteerComputerUnit::new(context),
+            brake_steer_computer: A380HydraulicBrakeSteerComputerUnit::new(context),
 
-            green_circuit: A320HydraulicCircuitFactory::new_green_circuit(context),
+            green_circuit: A380HydraulicCircuitFactory::new_green_circuit(context),
             green_circuit_controller: A380HydraulicCircuitController::new(HydraulicColor::Green),
-            yellow_circuit: A320HydraulicCircuitFactory::new_yellow_circuit(context),
+            yellow_circuit: A380HydraulicCircuitFactory::new_yellow_circuit(context),
             yellow_circuit_controller: A380HydraulicCircuitController::new(HydraulicColor::Yellow),
 
             engine_driven_pump_1a: EngineDrivenPump::new(
@@ -1433,10 +1433,10 @@ impl A380Hydraulic {
                 Volume::new::<gallon>(0.),
                 Volume::new::<gallon>(0.),
                 Volume::new::<gallon>(0.13),
-                Pressure::new::<psi>(A320HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
+                Pressure::new::<psi>(A380HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
             ),
 
-            // Alternate brakes accumulator in real A320 is 1.5 gal capacity.
+            // Alternate brakes accumulator in real A380 is 1.5 gal capacity.
             // This is tuned down to 1.0 to match real world accumulator filling time
             // as a faster accumulator response has too much unstability
             braking_circuit_altn: BrakeCircuit::new(
@@ -1445,10 +1445,10 @@ impl A380Hydraulic {
                 Volume::new::<gallon>(1.0),
                 Volume::new::<gallon>(0.4),
                 Volume::new::<gallon>(0.13),
-                Pressure::new::<psi>(A320HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
+                Pressure::new::<psi>(A380HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
             ),
 
-            braking_force: A320BrakingForce::new(context),
+            braking_force: A380BrakingForce::new(context),
 
             flap_system: FlapSlatAssembly::new(
                 context,
@@ -1461,7 +1461,7 @@ impl A380Hydraulic {
                 Ratio::new::<ratio>(314.98),
                 Self::FLAP_FPPU_TO_SURFACE_ANGLE_BREAKPTS,
                 Self::FLAP_FPPU_TO_SURFACE_ANGLE_DEGREES,
-                Pressure::new::<psi>(A320HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
+                Pressure::new::<psi>(A380HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
             ),
             slat_system: FlapSlatAssembly::new(
                 context,
@@ -1474,46 +1474,46 @@ impl A380Hydraulic {
                 Ratio::new::<ratio>(314.98),
                 Self::SLAT_FPPU_TO_SURFACE_ANGLE_BREAKPTS,
                 Self::SLAT_FPPU_TO_SURFACE_ANGLE_DEGREES,
-                Pressure::new::<psi>(A320HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
+                Pressure::new::<psi>(A380HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
             ),
             slats_flaps_complex: SlatFlapComplex::new(context),
 
-            forward_cargo_door: A320CargoDoorFactory::new_a320_cargo_door(
+            forward_cargo_door: A380CargoDoorFactory::new_a380_cargo_door(
                 context,
                 Self::FORWARD_CARGO_DOOR_ID,
             ),
-            forward_cargo_door_controller: A320DoorController::new(
+            forward_cargo_door_controller: A380DoorController::new(
                 context,
                 Self::FORWARD_CARGO_DOOR_ID,
             ),
 
-            aft_cargo_door: A320CargoDoorFactory::new_a320_cargo_door(
+            aft_cargo_door: A380CargoDoorFactory::new_a380_cargo_door(
                 context,
                 Self::AFT_CARGO_DOOR_ID,
             ),
-            aft_cargo_door_controller: A320DoorController::new(context, Self::AFT_CARGO_DOOR_ID),
+            aft_cargo_door_controller: A380DoorController::new(context, Self::AFT_CARGO_DOOR_ID),
 
             elac_computer: ElacComputer::new(context),
-            left_aileron: A320AileronFactory::new_aileron(context, ActuatorSide::Left),
-            right_aileron: A320AileronFactory::new_aileron(context, ActuatorSide::Right),
-            left_elevator: A320ElevatorFactory::new_elevator(context, ActuatorSide::Left),
-            right_elevator: A320ElevatorFactory::new_elevator(context, ActuatorSide::Right),
+            left_aileron: A380AileronFactory::new_aileron(context, ActuatorSide::Left),
+            right_aileron: A380AileronFactory::new_aileron(context, ActuatorSide::Right),
+            left_elevator: A380ElevatorFactory::new_elevator(context, ActuatorSide::Left),
+            right_elevator: A380ElevatorFactory::new_elevator(context, ActuatorSide::Right),
 
             fac_computer: FacComputer::new(context),
-            rudder: A320RudderFactory::new_rudder(context),
+            rudder: A380RudderFactory::new_rudder(context),
 
             spoiler_computer: SpoilerComputer::new(context),
-            left_spoilers: A320SpoilerFactory::new_a320_spoiler_group(context, ActuatorSide::Left),
-            right_spoilers: A320SpoilerFactory::new_a320_spoiler_group(
+            left_spoilers: A380SpoilerFactory::new_a380_spoiler_group(context, ActuatorSide::Left),
+            right_spoilers: A380SpoilerFactory::new_a380_spoiler_group(
                 context,
                 ActuatorSide::Right,
             ),
 
-            gear_system_gravity_extension_controller: A320GravityExtension::new(context),
-            gear_system_hydraulic_controller: A320GearHydraulicController::new(),
-            gear_system: A320GearSystemFactory::a320_gear_system(context),
+            gear_system_gravity_extension_controller: A380GravityExtension::new(context),
+            gear_system_hydraulic_controller: A380GearHydraulicController::new(),
+            gear_system: A380GearSystemFactory::a380_gear_system(context),
 
-            trim_controller: A320TrimInputController::new(context),
+            trim_controller: A380TrimInputController::new(context),
             trim_assembly: TrimmableHorizontalStabilizerAssembly::new(
                 context,
                 Angle::new::<degree>(360. * -1.4),
@@ -2323,14 +2323,14 @@ impl SimulationElement for A380Hydraulic {
     }
 }
 
-struct A320GearHydraulicController {
+struct A380GearHydraulicController {
     safety_valve_should_open: bool,
     cutoff_valve_should_open: bool,
     vent_valves_should_open: bool,
     doors_uplock_mechanical_release: bool,
     gears_uplock_mechanical_release: bool,
 }
-impl A320GearHydraulicController {
+impl A380GearHydraulicController {
     fn new() -> Self {
         Self {
             safety_valve_should_open: true,
@@ -2390,7 +2390,7 @@ impl A320GearHydraulicController {
             (speed_condition || on_ground_condition) && self_maintained_gear_lever_condition;
     }
 }
-impl GearSystemController for A320GearHydraulicController {
+impl GearSystemController for A380GearHydraulicController {
     fn safety_valve_should_open(&self) -> bool {
         self.safety_valve_should_open
     }
@@ -2658,7 +2658,7 @@ impl A380EngineDrivenPumpController {
             && !hydraulic_circuit
                 .pump_section_switch_pressurised(self.pump_id.into_pump_section_index());
 
-        // TODO Fault inhibit copied from A320
+        // TODO Fault inhibit copied from A380
         self.has_pressure_low_fault = self.is_pressure_low
             && (!engines[self.pump_id.into_engine_index()].oil_pressure_is_low()
                 || !(lgciu.right_gear_compressed(false) && lgciu.left_gear_compressed(false)));
@@ -2781,8 +2781,8 @@ impl A380ElectricPumpAutoLogic {
     fn update(
         &mut self,
         context: &UpdateContext,
-        forward_cargo_door_controller: &A320DoorController,
-        aft_cargo_door_controller: &A320DoorController,
+        forward_cargo_door_controller: &A380DoorController,
+        aft_cargo_door_controller: &A380DoorController,
         pushback_tug: &PushbackTug,
         overhead: &A380HydraulicOverheadPanel,
     ) {
@@ -2799,8 +2799,8 @@ impl A380ElectricPumpAutoLogic {
     fn update_auto_run_logic(
         &mut self,
         context: &UpdateContext,
-        forward_cargo_door_controller: &A320DoorController,
-        aft_cargo_door_controller: &A320DoorController,
+        forward_cargo_door_controller: &A380DoorController,
+        aft_cargo_door_controller: &A380DoorController,
         pushback_tug: &PushbackTug,
     ) {
         self.cargo_door_in_operation_previous = self.is_required_for_cargo_door_operation.output();
@@ -2908,8 +2908,8 @@ impl A380ElectricPumpController {
         &mut self,
         context: &UpdateContext,
         overhead_panel: &A380HydraulicOverheadPanel,
-        forward_cargo_door_controller: &A320DoorController,
-        aft_cargo_door_controller: &A320DoorController,
+        forward_cargo_door_controller: &A380DoorController,
+        aft_cargo_door_controller: &A380DoorController,
         hydraulic_circuit: &impl HydraulicPressureSensors,
         reservoir: &Reservoir,
         engines: [&impl Engine; 4],
@@ -3004,12 +3004,12 @@ impl SimulationElement for A380ElectricPumpController {
     }
 }
 
-struct A320BrakeSystemOutputs {
+struct A380BrakeSystemOutputs {
     left_demand: Ratio,
     right_demand: Ratio,
     pressure_limit: Pressure,
 }
-impl A320BrakeSystemOutputs {
+impl A380BrakeSystemOutputs {
     fn new() -> Self {
         Self {
             left_demand: Ratio::new::<ratio>(0.),
@@ -3049,7 +3049,7 @@ impl A320BrakeSystemOutputs {
         self.right_demand
     }
 }
-impl BrakeCircuitController for A320BrakeSystemOutputs {
+impl BrakeCircuitController for A380BrakeSystemOutputs {
     fn pressure_limit(&self) -> Pressure {
         self.pressure_limit
     }
@@ -3063,7 +3063,7 @@ impl BrakeCircuitController for A320BrakeSystemOutputs {
     }
 }
 
-struct A320HydraulicBrakeSteerComputerUnit {
+struct A380HydraulicBrakeSteerComputerUnit {
     park_brake_lever_pos_id: VariableIdentifier,
 
     antiskid_brakes_active_id: VariableIdentifier,
@@ -3077,14 +3077,14 @@ struct A320HydraulicBrakeSteerComputerUnit {
     tiller_pedal_disconnect_id: VariableIdentifier,
     autopilot_nosewheel_demand_id: VariableIdentifier,
 
-    autobrake_controller: A320AutobrakeController,
+    autobrake_controller: A380AutobrakeController,
     parking_brake_demand: bool,
 
     left_brake_pilot_input: Ratio,
     right_brake_pilot_input: Ratio,
 
-    norm_brake_outputs: A320BrakeSystemOutputs,
-    alternate_brake_outputs: A320BrakeSystemOutputs,
+    norm_brake_outputs: A380BrakeSystemOutputs,
+    alternate_brake_outputs: A380BrakeSystemOutputs,
 
     normal_brakes_available: bool,
     should_disable_auto_brake_when_retracting: DelayedTrueLogicGate,
@@ -3103,7 +3103,7 @@ struct A320HydraulicBrakeSteerComputerUnit {
 
     ground_speed: Velocity,
 }
-impl A320HydraulicBrakeSteerComputerUnit {
+impl A380HydraulicBrakeSteerComputerUnit {
     const RUDDER_PEDAL_INPUT_GAIN: f64 = 32.;
     const RUDDER_PEDAL_INPUT_MAP: [f64; 6] = [0., 1., 2., 32., 32., 32.];
     const RUDDER_PEDAL_INPUT_CURVE_MAP: [f64; 6] = [0., 0., 2., 6.4, 6.4, 6.4];
@@ -3152,13 +3152,13 @@ impl A320HydraulicBrakeSteerComputerUnit {
             autopilot_nosewheel_demand_id: context
                 .get_identifier("AUTOPILOT_NOSEWHEEL_DEMAND".to_owned()),
 
-            autobrake_controller: A320AutobrakeController::new(context),
+            autobrake_controller: A380AutobrakeController::new(context),
 
             parking_brake_demand: true,
             left_brake_pilot_input: Ratio::new::<ratio>(0.0),
             right_brake_pilot_input: Ratio::new::<ratio>(0.0),
-            norm_brake_outputs: A320BrakeSystemOutputs::new(),
-            alternate_brake_outputs: A320BrakeSystemOutputs::new(),
+            norm_brake_outputs: A380BrakeSystemOutputs::new(),
+            alternate_brake_outputs: A380BrakeSystemOutputs::new(),
             normal_brakes_available: false,
             should_disable_auto_brake_when_retracting: DelayedTrueLogicGate::new(
                 Duration::from_secs_f64(Self::AUTOBRAKE_GEAR_RETRACTION_DURATION_S),
@@ -3391,7 +3391,7 @@ impl A320HydraulicBrakeSteerComputerUnit {
         &self.alternate_brake_outputs
     }
 }
-impl SimulationElement for A320HydraulicBrakeSteerComputerUnit {
+impl SimulationElement for A380HydraulicBrakeSteerComputerUnit {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.autobrake_controller.accept(visitor);
         visitor.visit(self);
@@ -3416,13 +3416,13 @@ impl SimulationElement for A320HydraulicBrakeSteerComputerUnit {
             Ratio::new::<ratio>(reader.read(&self.autopilot_nosewheel_demand_id));
     }
 }
-impl SteeringController for A320HydraulicBrakeSteerComputerUnit {
+impl SteeringController for A380HydraulicBrakeSteerComputerUnit {
     fn requested_position(&self) -> Angle {
         self.final_steering_position_request
     }
 }
 
-struct A320BrakingForce {
+struct A380BrakingForce {
     brake_left_force_factor_id: VariableIdentifier,
     brake_right_force_factor_id: VariableIdentifier,
     trailing_edge_flaps_left_percent_id: VariableIdentifier,
@@ -3439,14 +3439,14 @@ struct A320BrakingForce {
     is_chocks_enabled: bool,
     is_light_beacon_on: bool,
 }
-impl A320BrakingForce {
+impl A380BrakingForce {
     const REFERENCE_PRESSURE_FOR_MAX_FORCE: f64 = 2538.;
 
     const FLAPS_BREAKPOINTS: [f64; 3] = [0., 50., 100.];
     const FLAPS_PENALTY_PERCENT: [f64; 3] = [5., 5., 0.];
 
     pub fn new(context: &mut InitContext) -> Self {
-        A320BrakingForce {
+        A380BrakingForce {
             brake_left_force_factor_id: context
                 .get_identifier("BRAKE LEFT FORCE FACTOR".to_owned()),
             brake_right_force_factor_id: context
@@ -3543,7 +3543,7 @@ impl A320BrakingForce {
     }
 }
 
-impl SimulationElement for A320BrakingForce {
+impl SimulationElement for A380BrakingForce {
     fn write(&self, writer: &mut SimulatorWriter) {
         // BRAKE XXXX FORCE FACTOR is the actual braking force we want the plane to generate in the simulator
         writer.write(&self.brake_left_force_factor_id, self.left_braking_force);
@@ -3568,7 +3568,7 @@ enum DoorControlState {
     UpLocked = 3,
 }
 
-struct A320DoorController {
+struct A380DoorController {
     requested_position_id: VariableIdentifier,
 
     control_state: DoorControlState,
@@ -3582,7 +3582,7 @@ struct A320DoorController {
     control_position_request: Ratio,
     should_unlock: bool,
 }
-impl A320DoorController {
+impl A380DoorController {
     // Duration which the hydraulic valves sends a open request when request is closing (this is done on real aircraft so uplock can be easily unlocked without friction)
     const UP_CONTROL_TIME_BEFORE_DOWN_CONTROL: Duration = Duration::from_millis(200);
 
@@ -3695,7 +3695,7 @@ impl A320DoorController {
             || self.control_state == DoorControlState::HydControl
     }
 }
-impl HydraulicAssemblyController for A320DoorController {
+impl HydraulicAssemblyController for A380DoorController {
     fn requested_mode(&self) -> LinearActuatorMode {
         if self.should_close_valves {
             LinearActuatorMode::ClosedValves
@@ -3716,8 +3716,8 @@ impl HydraulicAssemblyController for A320DoorController {
         Ratio::new::<ratio>(0.)
     }
 }
-impl HydraulicLocking for A320DoorController {}
-impl SimulationElement for A320DoorController {
+impl HydraulicLocking for A380DoorController {}
+impl SimulationElement for A380DoorController {
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.position_requested = Ratio::new::<ratio>(reader.read(&self.requested_position_id));
     }
@@ -3874,7 +3874,7 @@ impl SimulationElement for PushbackTug {
 
 /// Autobrake controller computes the state machine of the autobrake logic, and the deceleration target
 /// that we expect for the plane
-pub struct A320AutobrakeController {
+pub struct A380AutobrakeController {
     armed_mode_id: VariableIdentifier,
     armed_mode_id_set: VariableIdentifier,
     decel_light_id: VariableIdentifier,
@@ -3899,7 +3899,7 @@ pub struct A320AutobrakeController {
 
     external_disarm_event: bool,
 }
-impl A320AutobrakeController {
+impl A380AutobrakeController {
     const DURATION_OF_FLIGHT_TO_DISARM_AUTOBRAKE_SECS: f64 = 10.;
 
     // Dynamic decel target map versus time for any mode that needs it
@@ -3915,8 +3915,8 @@ impl A320AutobrakeController {
     const MARGIN_PERCENT_TO_TARGET_TO_SHOW_DECEL_IN_LO_MED: f64 = 80.;
     const TARGET_TO_SHOW_DECEL_IN_MAX_MS2: f64 = -2.7;
 
-    fn new(context: &mut InitContext) -> A320AutobrakeController {
-        A320AutobrakeController {
+    fn new(context: &mut InitContext) -> A380AutobrakeController {
+        A380AutobrakeController {
             armed_mode_id: context.get_identifier("AUTOBRAKES_ARMED_MODE".to_owned()),
             armed_mode_id_set: context.get_identifier("AUTOBRAKES_ARMED_MODE_SET".to_owned()),
             decel_light_id: context.get_identifier("AUTOBRAKES_DECEL_LIGHT".to_owned()),
@@ -4109,7 +4109,7 @@ impl A320AutobrakeController {
         self.deceleration_governor.update(context, self.target);
     }
 }
-impl SimulationElement for A320AutobrakeController {
+impl SimulationElement for A380AutobrakeController {
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.armed_mode_id, self.mode as u8 as f64);
         writer.write(&self.armed_mode_id_set, -1.);
@@ -5418,12 +5418,12 @@ impl SimulationElement for SpoilerComputer {
     }
 }
 
-struct A320GravityExtension {
+struct A380GravityExtension {
     gear_gravity_extension_handle_position_id: VariableIdentifier,
 
     handle_angle: Angle,
 }
-impl A320GravityExtension {
+impl A380GravityExtension {
     fn new(context: &mut InitContext) -> Self {
         Self {
             gear_gravity_extension_handle_position_id: context
@@ -5433,12 +5433,12 @@ impl A320GravityExtension {
         }
     }
 }
-impl GearGravityExtension for A320GravityExtension {
+impl GearGravityExtension for A380GravityExtension {
     fn extension_handle_number_of_turns(&self) -> u8 {
         (self.handle_angle.get::<degree>() / 360.).floor() as u8
     }
 }
-impl SimulationElement for A320GravityExtension {
+impl SimulationElement for A380GravityExtension {
     fn read(&mut self, reader: &mut SimulatorReader) {
         let handle_percent: f64 = reader.read(&self.gear_gravity_extension_handle_position_id);
 
@@ -5448,7 +5448,7 @@ impl SimulationElement for A320GravityExtension {
     }
 }
 
-struct A320TrimInputController {
+struct A380TrimInputController {
     motor1_active_id: VariableIdentifier,
     motor2_active_id: VariableIdentifier,
     motor3_active_id: VariableIdentifier,
@@ -5466,7 +5466,7 @@ struct A320TrimInputController {
     manual_control: bool,
     manual_control_speed: AngularVelocity,
 }
-impl A320TrimInputController {
+impl A380TrimInputController {
     fn new(context: &mut InitContext) -> Self {
         Self {
             motor1_active_id: context.get_identifier("THS_1_ACTIVE_MODE_COMMANDED".to_owned()),
@@ -5489,7 +5489,7 @@ impl A320TrimInputController {
         }
     }
 }
-impl PitchTrimActuatorController for A320TrimInputController {
+impl PitchTrimActuatorController for A380TrimInputController {
     fn commanded_position(&self) -> Angle {
         for (idx, motor_active) in self.motor_active.iter().enumerate() {
             if *motor_active {
@@ -5504,7 +5504,7 @@ impl PitchTrimActuatorController for A320TrimInputController {
         self.motor_active
     }
 }
-impl ManualPitchTrimController for A320TrimInputController {
+impl ManualPitchTrimController for A380TrimInputController {
     fn is_manually_moved(&self) -> bool {
         self.manual_control || self.manual_control_speed.get::<radian_per_second>() != 0.
     }
@@ -5513,7 +5513,7 @@ impl ManualPitchTrimController for A320TrimInputController {
         self.manual_control_speed
     }
 }
-impl SimulationElement for A320TrimInputController {
+impl SimulationElement for A380TrimInputController {
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.motor_active[0] = reader.read(&self.motor1_active_id);
         self.motor_active[1] = reader.read(&self.motor2_active_id);
@@ -5533,7 +5533,7 @@ mod tests {
     use super::*;
     use systems::overhead::{MomentaryPushButton};
 
-    mod a320_hydraulics {
+    mod a380_hydraulics {
         use super::*;
         use systems::{
             electrical::{
@@ -5558,13 +5558,13 @@ mod tests {
             volume::liter,
         };
 
-        struct A320TestEmergencyElectricalOverheadPanel {
+        struct A380TestEmergencyElectricalOverheadPanel {
             rat_and_emer_gen_man_on: MomentaryPushButton,
         }
 
-        impl A320TestEmergencyElectricalOverheadPanel {
+        impl A380TestEmergencyElectricalOverheadPanel {
             pub fn new(context: &mut InitContext) -> Self {
-                A320TestEmergencyElectricalOverheadPanel {
+                A380TestEmergencyElectricalOverheadPanel {
                     rat_and_emer_gen_man_on: MomentaryPushButton::new(
                         context,
                         "EMER_ELEC_RAT_AND_EMER_GEN",
@@ -5572,29 +5572,29 @@ mod tests {
                 }
             }
         }
-        impl SimulationElement for A320TestEmergencyElectricalOverheadPanel {
+        impl SimulationElement for A380TestEmergencyElectricalOverheadPanel {
             fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
                 self.rat_and_emer_gen_man_on.accept(visitor);
 
                 visitor.visit(self);
             }
         }
-        impl EmergencyElectricalRatPushButton for A320TestEmergencyElectricalOverheadPanel {
+        impl EmergencyElectricalRatPushButton for A380TestEmergencyElectricalOverheadPanel {
             fn is_pressed(&self) -> bool {
                 self.rat_and_emer_gen_man_on.is_pressed()
             }
         }
 
         #[derive(Default)]
-        struct A320TestAdirus {
+        struct A380TestAdirus {
             airspeed: Velocity,
         }
-        impl A320TestAdirus {
+        impl A380TestAdirus {
             fn update(&mut self, context: &UpdateContext) {
                 self.airspeed = context.true_airspeed()
             }
         }
-        impl AdirsDiscreteOutputs for A320TestAdirus {
+        impl AdirsDiscreteOutputs for A380TestAdirus {
             fn low_speed_warning_1_104kts(&self, _: usize) -> bool {
                 self.airspeed.get::<knot>() > 104.
             }
@@ -5612,10 +5612,10 @@ mod tests {
             }
         }
 
-        struct A320TestPneumatics {
+        struct A380TestPneumatics {
             pressure: Pressure,
         }
-        impl A320TestPneumatics {
+        impl A380TestPneumatics {
             pub fn new() -> Self {
                 Self {
                     pressure: Pressure::new::<psi>(50.),
@@ -5630,7 +5630,7 @@ mod tests {
                 self.pressure = Pressure::new::<psi>(1.);
             }
         }
-        impl ReservoirAirPressure for A320TestPneumatics {
+        impl ReservoirAirPressure for A380TestPneumatics {
             fn green_reservoir_pressure(&self) -> Pressure {
                 self.pressure
             }
@@ -5644,13 +5644,13 @@ mod tests {
             }
         }
 
-        struct A320TestElectrical {
+        struct A380TestElectrical {
             airspeed: Velocity,
             all_ac_lost: bool,
         }
-        impl A320TestElectrical {
+        impl A380TestElectrical {
             pub fn new() -> Self {
-                A320TestElectrical {
+                A380TestElectrical {
                     airspeed: Velocity::new::<knot>(100.),
                     all_ac_lost: false,
                 }
@@ -5660,19 +5660,19 @@ mod tests {
                 self.airspeed = context.indicated_airspeed();
             }
         }
-        impl EmergencyElectricalState for A320TestElectrical {
+        impl EmergencyElectricalState for A380TestElectrical {
             fn is_in_emergency_elec(&self) -> bool {
                 self.all_ac_lost && self.airspeed >= Velocity::new::<knot>(100.)
             }
         }
-        impl SimulationElement for A320TestElectrical {
+        impl SimulationElement for A380TestElectrical {
             fn receive_power(&mut self, buses: &impl ElectricalBuses) {
                 self.all_ac_lost = !buses.is_powered(ElectricalBusType::AlternatingCurrent(1))
                     && !buses.is_powered(ElectricalBusType::AlternatingCurrent(2));
             }
         }
-        struct A320HydraulicsTestAircraft {
-            pneumatics: A320TestPneumatics,
+        struct A380HydraulicsTestAircraft {
+            pneumatics: A380TestPneumatics,
             engine_1: LeapEngine,
             engine_2: LeapEngine,
             engine_3: LeapEngine,
@@ -5680,13 +5680,13 @@ mod tests {
             hydraulics: A380Hydraulic,
             overhead: A380HydraulicOverheadPanel,
             autobrake_panel: AutobrakePanel,
-            emergency_electrical_overhead: A320TestEmergencyElectricalOverheadPanel,
+            emergency_electrical_overhead: A380TestEmergencyElectricalOverheadPanel,
             engine_fire_overhead: EngineFireOverheadPanel<4>,
 
             landing_gear: LandingGear,
             lgcius: LandingGearControlInterfaceUnitSet,
-            adirus: A320TestAdirus,
-            electrical: A320TestElectrical,
+            adirus: A380TestAdirus,
+            electrical: A380TestElectrical,
             ext_pwr: ExternalPowerSource,
 
             powered_source_ac: TestElectricitySource,
@@ -5711,10 +5711,10 @@ mod tests {
             is_dc_hot_1_powered: bool,
             is_dc_hot_2_powered: bool,
         }
-        impl A320HydraulicsTestAircraft {
+        impl A380HydraulicsTestAircraft {
             fn new(context: &mut InitContext) -> Self {
                 Self {
-                    pneumatics: A320TestPneumatics::new(),
+                    pneumatics: A380TestPneumatics::new(),
                     engine_1: LeapEngine::new(context, 1),
                     engine_2: LeapEngine::new(context, 2),
                     engine_3: LeapEngine::new(context, 3),
@@ -5722,7 +5722,7 @@ mod tests {
                     hydraulics: A380Hydraulic::new(context),
                     overhead: A380HydraulicOverheadPanel::new(context),
                     autobrake_panel: AutobrakePanel::new(context),
-                    emergency_electrical_overhead: A320TestEmergencyElectricalOverheadPanel::new(
+                    emergency_electrical_overhead: A380TestEmergencyElectricalOverheadPanel::new(
                         context,
                     ),
                     engine_fire_overhead: EngineFireOverheadPanel::new(context),
@@ -5732,8 +5732,8 @@ mod tests {
                         ElectricalBusType::DirectCurrentEssential,
                         ElectricalBusType::DirectCurrentGndFltService,
                     ),
-                    adirus: A320TestAdirus::default(),
-                    electrical: A320TestElectrical::new(),
+                    adirus: A380TestAdirus::default(),
+                    electrical: A380TestElectrical::new(),
                     ext_pwr: ExternalPowerSource::new(context),
                     powered_source_ac: TestElectricitySource::powered(
                         context,
@@ -5874,7 +5874,7 @@ mod tests {
             }
         }
 
-        impl Aircraft for A320HydraulicsTestAircraft {
+        impl Aircraft for A380HydraulicsTestAircraft {
             fn update_before_power_distribution(
                 &mut self,
                 _: &UpdateContext,
@@ -5966,7 +5966,7 @@ mod tests {
                 // );
             }
         }
-        impl SimulationElement for A320HydraulicsTestAircraft {
+        impl SimulationElement for A380HydraulicsTestAircraft {
             fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
                 self.engine_1.accept(visitor);
                 self.engine_2.accept(visitor);
@@ -5986,15 +5986,15 @@ mod tests {
             }
         }
 
-        struct A320HydraulicsTestBed {
-            test_bed: SimulationTestBed<A320HydraulicsTestAircraft>,
+        struct A380HydraulicsTestBed {
+            test_bed: SimulationTestBed<A380HydraulicsTestAircraft>,
         }
-        impl A320HydraulicsTestBed {
+        impl A380HydraulicsTestBed {
             fn new_with_start_state(start_state: StartState) -> Self {
                 Self {
                     test_bed: SimulationTestBed::new_with_start_state(
                         start_state,
-                        A320HydraulicsTestAircraft::new,
+                        A380HydraulicsTestAircraft::new,
                     ),
                 }
             }
@@ -6106,7 +6106,7 @@ mod tests {
             }
 
             fn autobrake_mode(&mut self) -> AutobrakeMode {
-                ReadByName::<A320HydraulicsTestBed, f64>::read_by_name(
+                ReadByName::<A380HydraulicsTestBed, f64>::read_by_name(
                     self,
                     "AUTOBRAKES_ARMED_MODE",
                 )
@@ -6162,14 +6162,14 @@ mod tests {
             }
 
             fn is_fire_valve_eng1_closed(&mut self) -> bool {
-                !ReadByName::<A320HydraulicsTestBed, bool>::read_by_name(
+                !ReadByName::<A380HydraulicsTestBed, bool>::read_by_name(
                     self,
                     "HYD_GREEN_PUMP_1_FIRE_VALVE_OPENED",
                 ) && !self.query(|a| a.hydraulics.green_circuit.is_fire_shutoff_valve_open(0))
             }
 
             fn is_fire_valve_eng2_closed(&mut self) -> bool {
-                !ReadByName::<A320HydraulicsTestBed, bool>::read_by_name(
+                !ReadByName::<A380HydraulicsTestBed, bool>::read_by_name(
                     self,
                     "HYD_YELLOW_PUMP_1_FIRE_VALVE_OPENED",
                 ) && !self.query(|a| a.hydraulics.green_circuit.is_fire_shutoff_valve_open(0))
@@ -6726,31 +6726,31 @@ mod tests {
                 self
             }
         }
-        impl TestBed for A320HydraulicsTestBed {
-            type Aircraft = A320HydraulicsTestAircraft;
+        impl TestBed for A380HydraulicsTestBed {
+            type Aircraft = A380HydraulicsTestAircraft;
 
-            fn test_bed(&self) -> &SimulationTestBed<A320HydraulicsTestAircraft> {
+            fn test_bed(&self) -> &SimulationTestBed<A380HydraulicsTestAircraft> {
                 &self.test_bed
             }
 
-            fn test_bed_mut(&mut self) -> &mut SimulationTestBed<A320HydraulicsTestAircraft> {
+            fn test_bed_mut(&mut self) -> &mut SimulationTestBed<A380HydraulicsTestAircraft> {
                 &mut self.test_bed
             }
         }
 
-        fn test_bed_on_ground() -> A320HydraulicsTestBed {
-            A320HydraulicsTestBed::new_with_start_state(StartState::Apron)
+        fn test_bed_on_ground() -> A380HydraulicsTestBed {
+            A380HydraulicsTestBed::new_with_start_state(StartState::Apron)
         }
 
-        fn test_bed_in_flight() -> A320HydraulicsTestBed {
-            A320HydraulicsTestBed::new_with_start_state(StartState::Cruise)
+        fn test_bed_in_flight() -> A380HydraulicsTestBed {
+            A380HydraulicsTestBed::new_with_start_state(StartState::Cruise)
         }
 
-        fn test_bed_on_ground_with() -> A320HydraulicsTestBed {
+        fn test_bed_on_ground_with() -> A380HydraulicsTestBed {
             test_bed_on_ground()
         }
 
-        fn test_bed_in_flight_with() -> A320HydraulicsTestBed {
+        fn test_bed_in_flight_with() -> A380HydraulicsTestBed {
             test_bed_in_flight()
         }
 
@@ -6825,7 +6825,7 @@ mod tests {
 
             // Need to wait for operator to first unlock, then activate hydraulic control
             test_bed = test_bed.open_fwd_cargo_door().run_waiting_for(
-                Duration::from_secs(1) + A320DoorController::DELAY_UNLOCK_TO_HYDRAULIC_CONTROL,
+                Duration::from_secs(1) + A380DoorController::DELAY_UNLOCK_TO_HYDRAULIC_CONTROL,
             );
             assert!(test_bed.query(|a| a.is_cargo_powering_yellow_epump()));
 
@@ -8588,7 +8588,7 @@ mod tests {
                 .dc_ground_service_lost()
                 .open_fwd_cargo_door()
                 .run_waiting_for(
-                    Duration::from_secs(1) + A320DoorController::DELAY_UNLOCK_TO_HYDRAULIC_CONTROL,
+                    Duration::from_secs(1) + A380DoorController::DELAY_UNLOCK_TO_HYDRAULIC_CONTROL,
                 );
 
             assert!(test_bed.query(|a| a.is_cargo_powering_yellow_epump()));
@@ -8859,7 +8859,7 @@ mod tests {
             let current_position_unlocked = test_bed.cargo_fwd_door_position();
 
             test_bed = test_bed.open_fwd_cargo_door().run_waiting_for(
-                A320DoorController::DELAY_UNLOCK_TO_HYDRAULIC_CONTROL + Duration::from_secs(1),
+                A380DoorController::DELAY_UNLOCK_TO_HYDRAULIC_CONTROL + Duration::from_secs(1),
             );
 
             assert!(test_bed.cargo_fwd_door_position() > current_position_unlocked);
@@ -9747,7 +9747,7 @@ mod tests {
 
             // Waiting for 5s pressure should be at 3000 psi
             test_bed = test_bed.open_fwd_cargo_door().run_waiting_for(
-                A320DoorController::DELAY_UNLOCK_TO_HYDRAULIC_CONTROL + Duration::from_secs(5),
+                A380DoorController::DELAY_UNLOCK_TO_HYDRAULIC_CONTROL + Duration::from_secs(5),
             );
 
             test_bed = test_bed

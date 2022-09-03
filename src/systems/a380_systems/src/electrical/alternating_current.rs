@@ -1,6 +1,6 @@
 use super::{
-    A320AlternatingCurrentElectricalSystem, A320DirectCurrentElectricalSystem,
-    A320ElectricalOverheadPanel, A320EmergencyElectricalOverheadPanel,
+    A380AlternatingCurrentElectricalSystem, A380DirectCurrentElectricalSystem,
+    A380ElectricalOverheadPanel, A380EmergencyElectricalOverheadPanel,
 };
 use std::time::Duration;
 use systems::simulation::InitContext;
@@ -17,9 +17,9 @@ use systems::{
 };
 use uom::si::{f64::*, velocity::knot};
 
-pub(super) struct A320AlternatingCurrentElectrical {
-    main_power_sources: A320MainPowerSources,
-    ac_ess_feed_contactors: A320AcEssFeedContactors,
+pub(super) struct A380AlternatingCurrentElectrical {
+    main_power_sources: A380MainPowerSources,
+    ac_ess_feed_contactors: A380AcEssFeedContactors,
     ac_bus_1: ElectricalBus,
     ac_bus_2: ElectricalBus,
     ac_ess_bus: ElectricalBus,
@@ -36,11 +36,11 @@ pub(super) struct A320AlternatingCurrentElectrical {
     ac_gnd_flt_service_bus: ElectricalBus,
     ext_pwr_to_ac_gnd_flt_service_bus_and_tr_2_contactor: Contactor,
 }
-impl A320AlternatingCurrentElectrical {
+impl A380AlternatingCurrentElectrical {
     pub fn new(context: &mut InitContext) -> Self {
-        A320AlternatingCurrentElectrical {
-            main_power_sources: A320MainPowerSources::new(context),
-            ac_ess_feed_contactors: A320AcEssFeedContactors::new(context),
+        A380AlternatingCurrentElectrical {
+            main_power_sources: A380MainPowerSources::new(context),
+            ac_ess_feed_contactors: A380AcEssFeedContactors::new(context),
             ac_bus_1: ElectricalBus::new(context, ElectricalBusType::AlternatingCurrent(1)),
             ac_bus_2: ElectricalBus::new(context, ElectricalBusType::AlternatingCurrent(2)),
             ac_ess_bus: ElectricalBus::new(context, ElectricalBusType::AlternatingCurrentEssential),
@@ -73,8 +73,8 @@ impl A320AlternatingCurrentElectrical {
         context: &UpdateContext,
         electricity: &mut Electricity,
         ext_pwr: &ExternalPowerSource,
-        overhead: &A320ElectricalOverheadPanel,
-        emergency_overhead: &A320EmergencyElectricalOverheadPanel,
+        overhead: &A380ElectricalOverheadPanel,
+        emergency_overhead: &A380EmergencyElectricalOverheadPanel,
         apu: &impl AuxiliaryPowerUnitElectrical,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         engines: [&impl EngineCorrectedN2; 2],
@@ -101,7 +101,7 @@ impl A320AlternatingCurrentElectrical {
         context: &UpdateContext,
         electricity: &mut Electricity,
         ext_pwr: &ExternalPowerSource,
-        overhead: &A320ElectricalOverheadPanel,
+        overhead: &A380ElectricalOverheadPanel,
         emergency_generator: &EmergencyGenerator,
     ) {
         self.ac_bus_2_to_tr_2_contactor
@@ -186,7 +186,7 @@ impl A320AlternatingCurrentElectrical {
         context: &UpdateContext,
         electricity: &mut Electricity,
         emergency_generator: &EmergencyGenerator,
-        dc_state: &impl A320DirectCurrentElectricalSystem,
+        dc_state: &impl A380DirectCurrentElectricalSystem,
     ) {
         electricity.flow(dc_state.static_inverter(), &self.ac_stat_inv_bus);
 
@@ -282,7 +282,7 @@ impl A320AlternatingCurrentElectrical {
         electricity.is_powered(&self.ac_ess_bus)
     }
 }
-impl A320AlternatingCurrentElectricalSystem for A320AlternatingCurrentElectrical {
+impl A380AlternatingCurrentElectricalSystem for A380AlternatingCurrentElectrical {
     fn ac_bus_2_powered(&self, electricity: &Electricity) -> bool {
         electricity.is_powered(&self.ac_bus_2)
     }
@@ -303,12 +303,12 @@ impl A320AlternatingCurrentElectricalSystem for A320AlternatingCurrentElectrical
         &self.tr_ess
     }
 }
-impl AlternatingCurrentElectricalSystem for A320AlternatingCurrentElectrical {
+impl AlternatingCurrentElectricalSystem for A380AlternatingCurrentElectrical {
     fn any_non_essential_bus_powered(&self, electricity: &Electricity) -> bool {
         electricity.is_powered(&self.ac_bus_1) || electricity.is_powered(&self.ac_bus_2)
     }
 }
-impl SimulationElement for A320AlternatingCurrentElectrical {
+impl SimulationElement for A380AlternatingCurrentElectrical {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.main_power_sources.accept(visitor);
         self.ac_ess_feed_contactors.accept(visitor);
@@ -336,7 +336,7 @@ impl SimulationElement for A320AlternatingCurrentElectrical {
     }
 }
 
-struct A320MainPowerSources {
+struct A380MainPowerSources {
     engine_1_gen: EngineGenerator,
     engine_2_gen: EngineGenerator,
     engine_generator_contactors: [Contactor; 2],
@@ -345,9 +345,9 @@ struct A320MainPowerSources {
     apu_gen_contactor: Contactor,
     ext_pwr_contactor: Contactor,
 }
-impl A320MainPowerSources {
+impl A380MainPowerSources {
     fn new(context: &mut InitContext) -> Self {
-        A320MainPowerSources {
+        A380MainPowerSources {
             engine_1_gen: EngineGenerator::new(context, 1),
             engine_2_gen: EngineGenerator::new(context, 2),
             engine_generator_contactors: [
@@ -366,8 +366,8 @@ impl A320MainPowerSources {
         context: &UpdateContext,
         electricity: &mut Electricity,
         ext_pwr: &ExternalPowerSource,
-        overhead: &A320ElectricalOverheadPanel,
-        emergency_overhead: &A320EmergencyElectricalOverheadPanel,
+        overhead: &A380ElectricalOverheadPanel,
+        emergency_overhead: &A380EmergencyElectricalOverheadPanel,
         apu: &impl AuxiliaryPowerUnitElectrical,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         engines: [&impl EngineCorrectedN2; 2],
@@ -453,7 +453,7 @@ impl A320MainPowerSources {
         self.engine_generator_contactors[number - 1].is_open()
     }
 }
-impl SimulationElement for A320MainPowerSources {
+impl SimulationElement for A380MainPowerSources {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.engine_1_gen.accept(visitor);
         self.engine_2_gen.accept(visitor);
@@ -471,20 +471,20 @@ impl SimulationElement for A320MainPowerSources {
     }
 }
 
-pub(super) struct A320AcEssFeedContactors {
+pub(super) struct A380AcEssFeedContactors {
     ac_ess_feed_contactor_1: Contactor,
     ac_ess_feed_contactor_2: Contactor,
     ac_ess_feed_contactor_delay_logic_gate: DelayedTrueLogicGate,
 }
-impl A320AcEssFeedContactors {
+impl A380AcEssFeedContactors {
     pub const AC_ESS_FEED_TO_AC_BUS_2_DELAY_IN_SECONDS: Duration = Duration::from_secs(3);
 
     fn new(context: &mut InitContext) -> Self {
-        A320AcEssFeedContactors {
+        A380AcEssFeedContactors {
             ac_ess_feed_contactor_1: Contactor::new(context, "3XC1"),
             ac_ess_feed_contactor_2: Contactor::new(context, "3XC2"),
             ac_ess_feed_contactor_delay_logic_gate: DelayedTrueLogicGate::new(
-                A320AcEssFeedContactors::AC_ESS_FEED_TO_AC_BUS_2_DELAY_IN_SECONDS,
+                A380AcEssFeedContactors::AC_ESS_FEED_TO_AC_BUS_2_DELAY_IN_SECONDS,
             ),
         }
     }
@@ -495,7 +495,7 @@ impl A320AcEssFeedContactors {
         electricity: &mut Electricity,
         ac_bus_1: &ElectricalBus,
         ac_bus_2: &ElectricalBus,
-        overhead: &A320ElectricalOverheadPanel,
+        overhead: &A380ElectricalOverheadPanel,
     ) {
         self.ac_ess_feed_contactor_delay_logic_gate
             .update(context, !electricity.is_powered(ac_bus_1));
@@ -525,7 +525,7 @@ impl A320AcEssFeedContactors {
             || electricity.is_powered(&self.ac_ess_feed_contactor_2)
     }
 }
-impl SimulationElement for A320AcEssFeedContactors {
+impl SimulationElement for A380AcEssFeedContactors {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.ac_ess_feed_contactor_1.accept(visitor);
         self.ac_ess_feed_contactor_2.accept(visitor);

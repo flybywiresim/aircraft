@@ -3,16 +3,16 @@ use systems::simulation::{
 };
 use uom::si::{f64::*, mass::kilogram};
 
-pub struct A320Fuel {
+pub struct A380Fuel {
     unlimited_fuel_id: VariableIdentifier,
     fuel_tank_left_main_quantity_id: VariableIdentifier,
 
     unlimited_fuel: bool,
     left_inner_tank_fuel_quantity: Mass,
 }
-impl A320Fuel {
+impl A380Fuel {
     pub fn new(context: &mut InitContext) -> Self {
-        A320Fuel {
+        A380Fuel {
             unlimited_fuel_id: context.get_identifier("UNLIMITED FUEL".to_owned()),
             fuel_tank_left_main_quantity_id: context
                 .get_identifier("FUEL TANK LEFT MAIN QUANTITY".to_owned()),
@@ -26,7 +26,7 @@ impl A320Fuel {
         self.unlimited_fuel || self.left_inner_tank_fuel_quantity > Mass::new::<kilogram>(0.)
     }
 }
-impl SimulationElement for A320Fuel {
+impl SimulationElement for A380Fuel {
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.unlimited_fuel = reader.read(&self.unlimited_fuel_id);
         self.left_inner_tank_fuel_quantity = reader.read(&self.fuel_tank_left_main_quantity_id);

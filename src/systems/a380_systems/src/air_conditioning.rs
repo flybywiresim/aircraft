@@ -14,19 +14,19 @@ use systems::{
 };
 use uom::si::{f64::*, mass_rate::kilogram_per_second, volume::cubic_meter};
 
-pub(super) struct A320AirConditioning {
-    a320_cabin: A320Cabin,
-    a320_air_conditioning_system: AirConditioningSystem<3>,
+pub(super) struct A380AirConditioning {
+    a380_cabin: A380Cabin,
+    a380_air_conditioning_system: AirConditioningSystem<3>,
 }
 
-impl A320AirConditioning {
+impl A380AirConditioning {
     pub fn new(context: &mut InitContext) -> Self {
         let cabin_zones: [ZoneType; 3] =
             [ZoneType::Cockpit, ZoneType::Cabin(1), ZoneType::Cabin(2)];
 
         Self {
-            a320_cabin: A320Cabin::new(context),
-            a320_air_conditioning_system: AirConditioningSystem::new(
+            a380_cabin: A380Cabin::new(context),
+            a380_air_conditioning_system: AirConditioningSystem::new(
                 context,
                 cabin_zones,
                 vec![
@@ -53,7 +53,7 @@ impl A320AirConditioning {
         pressurization_overhead: &PressurizationOverheadPanel,
         lgciu: [&impl LgciuWeightOnWheels; 2],
     ) {
-        self.a320_air_conditioning_system.update(
+        self.a380_air_conditioning_system.update(
             context,
             adirs,
             engines,
@@ -64,39 +64,39 @@ impl A320AirConditioning {
             pressurization_overhead,
             lgciu,
         );
-        self.a320_cabin.update(
+        self.a380_cabin.update(
             context,
-            &self.a320_air_conditioning_system,
-            &self.a320_air_conditioning_system,
+            &self.a380_air_conditioning_system,
+            &self.a380_air_conditioning_system,
             pressurization,
         );
     }
 }
 
-impl PackFlowControllers<3> for A320AirConditioning {
+impl PackFlowControllers<3> for A380AirConditioning {
     fn pack_flow_controller(&self, pack_id: Pack) -> PackFlowController<3> {
-        self.a320_air_conditioning_system
+        self.a380_air_conditioning_system
             .pack_flow_controller(pack_id)
     }
 }
 
-impl SimulationElement for A320AirConditioning {
+impl SimulationElement for A380AirConditioning {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        self.a320_cabin.accept(visitor);
-        self.a320_air_conditioning_system.accept(visitor);
+        self.a380_cabin.accept(visitor);
+        self.a380_air_conditioning_system.accept(visitor);
 
         visitor.visit(self);
     }
 }
 
-struct A320Cabin {
+struct A380Cabin {
     cabin_zone: [CabinZone<2>; 3],
 }
 
-impl A320Cabin {
+impl A380Cabin {
     // TODO: Improve volume according to specs
-    const A320_CABIN_VOLUME_CUBIC_METER: f64 = 200.; // m3
-    const A320_COCKPIT_VOLUME_CUBIC_METER: f64 = 10.; // m3
+    const A380_CABIN_VOLUME_CUBIC_METER: f64 = 200.; // m3
+    const A380_COCKPIT_VOLUME_CUBIC_METER: f64 = 10.; // m3
 
     fn new(context: &mut InitContext) -> Self {
         Self {
@@ -104,21 +104,21 @@ impl A320Cabin {
                 CabinZone::new(
                     context,
                     ZoneType::Cockpit,
-                    Volume::new::<cubic_meter>(Self::A320_COCKPIT_VOLUME_CUBIC_METER),
+                    Volume::new::<cubic_meter>(Self::A380_COCKPIT_VOLUME_CUBIC_METER),
                     2,
                     None,
                 ),
                 CabinZone::new(
                     context,
                     ZoneType::Cabin(1),
-                    Volume::new::<cubic_meter>(Self::A320_CABIN_VOLUME_CUBIC_METER / 2.),
+                    Volume::new::<cubic_meter>(Self::A380_CABIN_VOLUME_CUBIC_METER / 2.),
                     0,
                     Some([(1, 6), (7, 13)]),
                 ),
                 CabinZone::new(
                     context,
                     ZoneType::Cabin(2),
-                    Volume::new::<cubic_meter>(Self::A320_CABIN_VOLUME_CUBIC_METER / 2.),
+                    Volume::new::<cubic_meter>(Self::A380_CABIN_VOLUME_CUBIC_METER / 2.),
                     0,
                     Some([(14, 21), (22, 29)]),
                 ),
@@ -135,7 +135,7 @@ impl A320Cabin {
     ) {
         let flow_rate_per_cubic_meter: MassRate = MassRate::new::<kilogram_per_second>(
             pack_flow.pack_flow().get::<kilogram_per_second>()
-                / (Self::A320_CABIN_VOLUME_CUBIC_METER + Self::A320_COCKPIT_VOLUME_CUBIC_METER),
+                / (Self::A380_CABIN_VOLUME_CUBIC_METER + Self::A380_COCKPIT_VOLUME_CUBIC_METER),
         );
         for zone in self.cabin_zone.iter_mut() {
             zone.update(
@@ -148,7 +148,7 @@ impl A320Cabin {
     }
 }
 
-impl SimulationElement for A320Cabin {
+impl SimulationElement for A380Cabin {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         accept_iterable!(self.cabin_zone, visitor);
 

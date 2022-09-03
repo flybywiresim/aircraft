@@ -104,7 +104,7 @@ valve_signal_implementation!(EngineStarterValveSignal);
 valve_signal_implementation!(FanAirValveSignal);
 valve_signal_implementation!(PackFlowValveSignal);
 
-pub struct A320Pneumatic {
+pub struct A380Pneumatic {
     physics_updater: MaxStepLoop,
 
     cross_bleed_valve_open_id: VariableIdentifier,
@@ -133,7 +133,7 @@ pub struct A320Pneumatic {
 
     packs: [PackComplex; 2],
 }
-impl A320Pneumatic {
+impl A380Pneumatic {
     const PNEUMATIC_SIM_MAX_TIME_STEP: Duration = Duration::from_millis(100);
 
     pub fn new(context: &mut InitContext) -> Self {
@@ -212,7 +212,7 @@ impl A320Pneumatic {
         &mut self,
         context: &UpdateContext,
         engines: [&(impl EngineCorrectedN1 + EngineCorrectedN2); 2],
-        overhead_panel: &A320PneumaticOverheadPanel,
+        overhead_panel: &A380PneumaticOverheadPanel,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         apu: &impl ControllerSignal<TargetPressureTemperatureSignal>,
         pack_flow_valve_signals: &impl PackFlowControllers<3>,
@@ -235,7 +235,7 @@ impl A320Pneumatic {
         &mut self,
         context: &UpdateContext,
         engines: [&(impl EngineCorrectedN1 + EngineCorrectedN2); 2],
-        overhead_panel: &A320PneumaticOverheadPanel,
+        overhead_panel: &A380PneumaticOverheadPanel,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         apu: &impl ControllerSignal<TargetPressureTemperatureSignal>,
         pack_flow_valve_signals: &impl PackFlowControllers<3>,
@@ -342,7 +342,7 @@ impl A320Pneumatic {
             .change_spatial_volume(yellow_hydraulic_reservoir.available_volume());
     }
 }
-impl PneumaticBleed for A320Pneumatic {
+impl PneumaticBleed for A380Pneumatic {
     fn apu_bleed_is_on(&self) -> bool {
         self.apu_bleed_air_valve.is_open()
     }
@@ -350,7 +350,7 @@ impl PneumaticBleed for A320Pneumatic {
         self.cross_bleed_valve.is_open()
     }
 }
-impl EngineStartState for A320Pneumatic {
+impl EngineStartState for A380Pneumatic {
     fn left_engine_state(&self) -> EngineState {
         self.fadec.engine_state(1)
     }
@@ -361,7 +361,7 @@ impl EngineStartState for A320Pneumatic {
         self.fadec.engine_mode_selector()
     }
 }
-impl PackFlowValveState for A320Pneumatic {
+impl PackFlowValveState for A380Pneumatic {
     fn pack_flow_valve_open_amount(&self, pack_id: usize) -> Ratio {
         self.packs[pack_id].pack_flow_valve_open_amount()
     }
@@ -369,7 +369,7 @@ impl PackFlowValveState for A320Pneumatic {
         self.packs[pack_id].pack_flow_valve_air_flow()
     }
 }
-impl SimulationElement for A320Pneumatic {
+impl SimulationElement for A380Pneumatic {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.cross_bleed_valve.accept(visitor);
         self.fadec.accept(visitor);
@@ -396,7 +396,7 @@ impl SimulationElement for A320Pneumatic {
         );
     }
 }
-impl ReservoirAirPressure for A320Pneumatic {
+impl ReservoirAirPressure for A380Pneumatic {
     fn green_reservoir_pressure(&self) -> Pressure {
         self.green_hydraulic_reservoir_with_valve.pressure()
     }
@@ -470,7 +470,7 @@ impl BleedMonitoringComputer {
         context: &UpdateContext,
         sensors: &[EngineBleedAirSystem; 2],
         apu_bleed_valve: &impl PneumaticValve,
-        overhead_panel: &A320PneumaticOverheadPanel,
+        overhead_panel: &A380PneumaticOverheadPanel,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         cross_bleed_valve: &impl PneumaticValve,
         fadec: &FullAuthorityDigitalEngineControl,
@@ -607,7 +607,7 @@ impl BleedMonitoringComputerChannel {
         is_engine_fire_pushbutton_released: bool,
         apu_bleed_valve: &impl PneumaticValve,
         cross_bleed_valve: &impl PneumaticValve,
-        overhead_panel: &A320PneumaticOverheadPanel,
+        overhead_panel: &A380PneumaticOverheadPanel,
         fadec: &FullAuthorityDigitalEngineControl,
     ) {
         self.high_pressure_compressor_pressure = sensors.high_pressure();
@@ -1062,15 +1062,15 @@ impl PneumaticContainer for EngineBleedAirSystem {
     }
 }
 
-pub struct A320PneumaticOverheadPanel {
+pub struct A380PneumaticOverheadPanel {
     apu_bleed: OnOffFaultPushButton,
     cross_bleed: CrossBleedValveSelectorKnob,
     engine_1_bleed: AutoOffFaultPushButton,
     engine_2_bleed: AutoOffFaultPushButton,
 }
-impl A320PneumaticOverheadPanel {
+impl A380PneumaticOverheadPanel {
     pub fn new(context: &mut InitContext) -> Self {
-        A320PneumaticOverheadPanel {
+        A380PneumaticOverheadPanel {
             apu_bleed: OnOffFaultPushButton::new_on(context, "PNEU_APU_BLEED"),
             cross_bleed: CrossBleedValveSelectorKnob::new_auto(context),
             engine_1_bleed: AutoOffFaultPushButton::new_auto(context, "PNEU_ENG_1_BLEED"),
@@ -1094,12 +1094,12 @@ impl A320PneumaticOverheadPanel {
         }
     }
 }
-impl EngineBleedPushbutton for A320PneumaticOverheadPanel {
+impl EngineBleedPushbutton for A380PneumaticOverheadPanel {
     fn engine_bleed_pushbuttons_are_auto(&self) -> [bool; 2] {
         [self.engine_1_bleed.is_auto(), self.engine_2_bleed.is_auto()]
     }
 }
-impl SimulationElement for A320PneumaticOverheadPanel {
+impl SimulationElement for A380PneumaticOverheadPanel {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.apu_bleed.accept(visitor);
         self.cross_bleed.accept(visitor);
@@ -1369,10 +1369,10 @@ mod tests {
         velocity::knot,
     };
 
-    use super::{A320Pneumatic, A320PneumaticOverheadPanel};
+    use super::{A380Pneumatic, A380PneumaticOverheadPanel};
 
     struct TestAirConditioning {
-        a320_air_conditioning_system: AirConditioningSystem<3>,
+        a380_air_conditioning_system: AirConditioningSystem<3>,
 
         adirs: TestAdirs,
         lgciu: TestLgciu,
@@ -1385,7 +1385,7 @@ mod tests {
                 [ZoneType::Cockpit, ZoneType::Cabin(1), ZoneType::Cabin(2)];
 
             Self {
-                a320_air_conditioning_system: AirConditioningSystem::new(
+                a380_air_conditioning_system: AirConditioningSystem::new(
                     context,
                     cabin_zones,
                     vec![ElectricalBusType::DirectCurrent(1)],
@@ -1406,7 +1406,7 @@ mod tests {
             pneumatic: &(impl EngineStartState + PackFlowValveState + PneumaticBleed),
             pneumatic_overhead: &impl EngineBleedPushbutton,
         ) {
-            self.a320_air_conditioning_system.update(
+            self.a380_air_conditioning_system.update(
                 context,
                 &self.adirs,
                 engines,
@@ -1421,13 +1421,13 @@ mod tests {
     }
     impl PackFlowControllers<3> for TestAirConditioning {
         fn pack_flow_controller(&self, pack_id: Pack) -> PackFlowController<3> {
-            self.a320_air_conditioning_system
+            self.a380_air_conditioning_system
                 .pack_flow_controller(pack_id)
         }
     }
     impl SimulationElement for TestAirConditioning {
         fn accept<V: SimulationElementVisitor>(&mut self, visitor: &mut V) {
-            self.a320_air_conditioning_system.accept(visitor);
+            self.a380_air_conditioning_system.accept(visitor);
 
             visitor.visit(self);
         }
@@ -1568,13 +1568,13 @@ mod tests {
         }
     }
 
-    struct A320TestElectrical {
+    struct A380TestElectrical {
         airspeed: Velocity,
         all_ac_lost: bool,
     }
-    impl A320TestElectrical {
+    impl A380TestElectrical {
         pub fn new() -> Self {
-            A320TestElectrical {
+            A380TestElectrical {
                 airspeed: Velocity::new::<knot>(100.),
                 all_ac_lost: false,
             }
@@ -1584,12 +1584,12 @@ mod tests {
             self.airspeed = context.indicated_airspeed();
         }
     }
-    impl EmergencyElectricalState for A320TestElectrical {
+    impl EmergencyElectricalState for A380TestElectrical {
         fn is_in_emergency_elec(&self) -> bool {
             self.all_ac_lost && self.airspeed >= Velocity::new::<knot>(100.)
         }
     }
-    impl SimulationElement for A320TestElectrical {
+    impl SimulationElement for A380TestElectrical {
         fn receive_power(&mut self, buses: &impl ElectricalBuses) {
             self.all_ac_lost = !buses.is_powered(ElectricalBusType::AlternatingCurrent(1))
                 && !buses.is_powered(ElectricalBusType::AlternatingCurrent(2));
@@ -1597,14 +1597,14 @@ mod tests {
     }
 
     struct PneumaticTestAircraft {
-        pneumatic: A320Pneumatic,
+        pneumatic: A380Pneumatic,
         air_conditioning: TestAirConditioning,
         apu: TestApu,
         engine_1: LeapEngine,
         engine_2: LeapEngine,
-        pneumatic_overhead_panel: A320PneumaticOverheadPanel,
+        pneumatic_overhead_panel: A380PneumaticOverheadPanel,
         fire_pushbuttons: TestEngineFirePushButtons,
-        electrical: A320TestElectrical,
+        electrical: A380TestElectrical,
         powered_source: TestElectricitySource,
         dc_1_bus: ElectricalBus,
         dc_2_bus: ElectricalBus,
@@ -1619,14 +1619,14 @@ mod tests {
     impl PneumaticTestAircraft {
         fn new(context: &mut InitContext) -> Self {
             Self {
-                pneumatic: A320Pneumatic::new(context),
+                pneumatic: A380Pneumatic::new(context),
                 air_conditioning: TestAirConditioning::new(context),
                 apu: TestApu::new(),
                 engine_1: LeapEngine::new(context, 1),
                 engine_2: LeapEngine::new(context, 2),
-                pneumatic_overhead_panel: A320PneumaticOverheadPanel::new(context),
+                pneumatic_overhead_panel: A380PneumaticOverheadPanel::new(context),
                 fire_pushbuttons: TestEngineFirePushButtons::new(),
-                electrical: A320TestElectrical::new(),
+                electrical: A380TestElectrical::new(),
                 powered_source: TestElectricitySource::powered(
                     context,
                     PotentialOrigin::EngineGenerator(1),

@@ -1,4 +1,4 @@
-use super::{alternating_current::A320AlternatingCurrentElectrical, A320ElectricalOverheadPanel};
+use super::{alternating_current::A380AlternatingCurrentElectrical, A380ElectricalOverheadPanel};
 use systems::{
     electrical::{AlternatingCurrentElectricalSystem, Electricity},
     simulation::UpdateContext,
@@ -20,8 +20,8 @@ impl MainGalley {
         &mut self,
         context: &UpdateContext,
         electricity: &Electricity,
-        alternating_current: &A320AlternatingCurrentElectrical,
-        overhead: &A320ElectricalOverheadPanel,
+        alternating_current: &A380AlternatingCurrentElectrical,
+        overhead: &A380ElectricalOverheadPanel,
     ) {
         self.is_shed = !alternating_current.any_non_essential_bus_powered(electricity)
             || alternating_current
@@ -48,8 +48,8 @@ impl SecondaryGalley {
     pub fn update(
         &mut self,
         electricity: &Electricity,
-        alternating_current: &A320AlternatingCurrentElectrical,
-        overhead: &A320ElectricalOverheadPanel,
+        alternating_current: &A380AlternatingCurrentElectrical,
+        overhead: &A380ElectricalOverheadPanel,
     ) {
         self.is_shed = !alternating_current.any_non_essential_bus_powered(electricity)
             || overhead.commercial_is_off()
