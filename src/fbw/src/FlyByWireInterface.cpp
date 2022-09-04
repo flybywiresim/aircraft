@@ -109,6 +109,9 @@ bool FlyByWireInterface::update(double sampleTime) {
   // update spoilers
   result &= updateSpoilers(calculatedSampleTime);
 
+  // update FO side with FO Sync ON
+  result &= updateFoSide(calculatedSampleTime);
+
   // update flight data recorder
   flightDataRecorder.update(&autopilotStateMachine, &autopilotLaws, &autoThrust, &flyByWire, engineData, additionalData);
 
@@ -461,6 +464,12 @@ void FlyByWireInterface::setupLocalVariables() {
   idRealisticTillerEnabled = make_unique<LocalVariable>("A32NX_REALISTIC_TILLER_ENABLED");
   idTillerHandlePosition = make_unique<LocalVariable>("A32NX_TILLER_HANDLE_POSITION");
   idNoseWheelPosition = make_unique<LocalVariable>("A32NX_NOSE_WHEEL_POSITION");
+
+  idSyncFoEfisEnabled = make_unique<LocalVariable>("A32NX_FO_SYNC_EFIS_ENABLED");
+
+  idLs1Active = make_unique<LocalVariable>("BTN_LS_1_FILTER_ACTIVE");
+  idLs2Active = make_unique<LocalVariable>("BTN_LS_2_FILTER_ACTIVE");
+  idIsisLsActive = make_unique<LocalVariable>("A32NX_ISIS_LS_ACTIVE");
 }
 
 bool FlyByWireInterface::handleFcuInitialization(double sampleTime) {
@@ -763,6 +772,12 @@ bool FlyByWireInterface::updateAdditionalData(double sampleTime) {
   additionalData.realisticTillerEnabled = idRealisticTillerEnabled->get() == 1;
   additionalData.tillerHandlePosition = idTillerHandlePosition->get();
   additionalData.noseWheelPosition = idNoseWheelPosition->get();
+
+  additionalData.syncFoEfisEnabled = idSyncFoEfisEnabled->get();
+
+  additionalData.ls1Active = idLs1Active->get();
+  additionalData.ls2Active = idLs2Active->get();
+  additionalData.IsisLsActive = idIsisLsActive->get();
 
   return true;
 }
@@ -1068,7 +1083,7 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
       simConnectInterface.sendEvent(SimConnectInterface::Events::TOGGLE_FLIGHT_DIRECTOR, 2);
     }
   }
-
+  
   // update FMA variables ---------------------------------------------------------------------------------------------
   idFmaLateralMode->set(autopilotStateMachineOutput.lateral_mode);
   idFmaLateralArmed->set(autopilotStateMachineOutput.lateral_mode_armed);
@@ -1821,6 +1836,46 @@ bool FlyByWireInterface::updateAltimeterSetting(double sampleTime) {
     SimOutputAltimeter out = {true};
     simConnectInterface.sendData(out);
   }
+
+  // result
+  return true;
+}
+
+bool FlyByWireInterface::updateFoSide(double sampleTime) {
+  // get sim data
+  auto simData = simConnectInterface.getSimData();
+
+  // FD Button
+  if (additionalData.syncFoEfisEnabled && simData.ap_fd_1_active != simData.ap_fd_2_active) {
+    if (last_fd1_active != simData.ap_fd_1_active) {
+      simConnectInterface.sendEvent(SimConnectInterface::Events::TOGGLE_FLIGHT_DIRECTOR, 2);
+    }
+    
+    if (last_fd2_active != simData.ap_fd_2_active) {
+      simConnectInterface.sendEvent(SimConnectInterface::Events::TOGGLE_FLIGHT_DIRECTOR, 1);
+    }
+  }
+  last_fd1_active = simData.ap_fd_1_active;
+  last_fd2_active = simData.ap_fd_2_active;
+
+  // LS Button
+  if (additionalData.syncFoEfisEnabled && additionalData.ls1Active != additionalData.ls2Active) {
+    if (last_ls1_active != additionalData.ls1Active) {
+      idLs2Active->set(additionalData.ls1Active);
+    }
+    
+    if (last_ls2_active != additionalData.ls2Active) {
+      idLs1Active->set(additionalData.ls2Active);
+    }
+  }
+  last_ls1_active = additionalData.ls1Active;
+  last_ls2_active = additionalData.ls2Active;
+
+  // inHg/hPa switch
+  // Currently synced already
+
+  // STD Button
+  // Currently synced already
 
   // result
   return true;

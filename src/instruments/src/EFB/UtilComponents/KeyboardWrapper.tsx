@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Keyboard, { KeyboardInput } from 'react-simple-keyboard';
 import '../Assets/Keyboard.scss';
 import SimpleKeyboardLayouts from 'simple-keyboard-layouts';
@@ -43,6 +43,9 @@ export const KeyboardWrapper = ({ onChangeAll, keyboardRef, setOpen, blurInput, 
     const [currentLayoutName, setCurrentLayoutName] = useState('default');
 
     const { offsetY } = useAppSelector((state) => state.keyboard);
+    const [offsetX, setOffsetX] = useState(0);
+    const [verticalDeviation, setVerticalDeviation] = useState(0);
+    const keyboardWrapperRef = useRef<HTMLDivElement>(null);
 
     const onKeyPress = (button: string) => {
         if (button === '{shift}' || button === '{lock}') {
@@ -55,10 +58,21 @@ export const KeyboardWrapper = ({ onChangeAll, keyboardRef, setOpen, blurInput, 
         onKeyDown?.(button);
     };
 
+    useEffect(() => {
+        if (!keyboardWrapperRef.current) {
+            return;
+        }
+
+        const { left, bottom } = keyboardWrapperRef.current.getBoundingClientRect();
+        setVerticalDeviation(window.innerHeight - bottom);
+        setOffsetX(-left);
+    }, []);
+
     return (
         <div
-            className="fixed inset-x-0 bottom-0 z-50 m-0 shadow-lg"
-            style={{ transform: `translateY(${offsetY}px)` }}
+            className="fixed bottom-0 z-50 m-0 shadow-lg w-[1430px]"
+            style={{ transform: `translate(${offsetX}px, ${verticalDeviation - offsetY}px)` }}
+            ref={keyboardWrapperRef}
         >
             <Keyboard
                 keyboardRef={(r) => {

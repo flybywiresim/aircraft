@@ -827,6 +827,14 @@
         - BLUE
         - YELLOW
 
+- A32NX_HYD_{loop_name}_PUMP_1_SECTION_PRESSURE_SWITCH
+    - Boolean
+    - Current pressure switch state in {loop_name} pump section
+    - {loop_name}
+        - GREEN
+        - BLUE
+        - YELLOW
+
 - A32NX_HYD_{loop_name}_RESERVOIR_LEVEL
     - Gallon
     - Current gaugeable fluid level in the {loop_name} hydraulic circuit reservoir
@@ -918,6 +926,10 @@
         - Removes reflection from the ISIS
     - Useful for home cockpits that use the sim's built-in pop-out feature and do not wish to have these effects present
       on their displays.
+
+- A32NX_FO_SYNC_EFIS_ENABLED
+    - Bool
+    - 1 to sync the status of FD and LS buttons between CPT and FO sides
 
 - A32NX_HYD_{loop_name}_EPUMP_LOW_PRESS
     - Bool
@@ -1823,6 +1835,14 @@ In the variables below, {number} should be replaced with one item in the set: { 
         - L
         - R
 
+- L:A32NX_FM{number}_LANDING_ELEVATION
+    - ARINC429<number> (feet MSL)
+    - The landing elevation at the active destination
+    - **Temporary:** there are also simvars with _SSM suffix to carry the SSM until JS is able to write ARINC simvars
+    - {number}
+        - 1 - captain's side FMGC
+        - 2 - f/o's side FMGC
+
 ## Autopilot System
 
 - A32NX_FMA_LATERAL_MODE
@@ -2491,9 +2511,9 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Bool
     - True if the respective {1 or 2} pack flow valve is open
 
-- A32NX_COND_PACK_FLOW
+- A32NX_COND_PACK_FLOW_{index}
     - Percent
-    - Percentage flow coming out of the packs into the cabin (LO: 80%, NORM: 100%, HI: 120%)
+    - Percentage flow coming out of each pack {1 or 2} into the cabin (LO: 80%, NORM: 100%, HI: 120%)
 
 - A32NX_OVHD_COND_{id}_SELECTOR_KNOB
     - Percentage
@@ -2538,6 +2558,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Percent open of the cabin pressure safety valves
 
 - A32NX_PRESS_AUTO_LANDING_ELEVATION
+    - **Deprecated**
     - Feet
     - Automatic landing elevation as calculated by the MCDU when a destination runway is entered
 
@@ -2822,9 +2843,9 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - | Bit |                                     Description                                     |
       |:---:|:-----------------------------------------------------------------------------------:|
       | 11  | LH & RH gear shock absorber compressed (Don't treat GND PWR connected as on ground) |
-      | 12  | LH gear shock absorber compressed (Don't treat GND PWR connected as on ground)      |
-      | 13  | RH gear shock absorber compressed (Don't treat GND PWR connected as on ground)      |
-      | 14  | Nose gear shock absorber compressed (Don't treat GND PWR connected as on ground)    |
+      | 12  | Nose gear shock absorber compressed (Don't treat GND PWR connected as on ground)    |
+      | 13  | LH gear shock absorber compressed (Don't treat GND PWR connected as on ground)      |
+      | 14  | RH gear shock absorber compressed (Don't treat GND PWR connected as on ground)      |
       | 15  | LH & RH gear downlocked                                                             |
 
 
