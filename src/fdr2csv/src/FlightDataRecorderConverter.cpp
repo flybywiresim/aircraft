@@ -575,6 +575,10 @@ void FlightDataRecorderConverter::writeHeader(ofstream& out, const string& delim
   fmt::print(out, "data.realisticTillerEnabled{}", delimiter);
   fmt::print(out, "data.tillerHandlePosition{}", delimiter);
   fmt::print(out, "data.noseWheelPosition{}", delimiter);
+  fmt::print(out, "data.syncFoEfisEnabled{}", delimiter);
+  fmt::print(out, "data.ls1Active{}", delimiter);
+  fmt::print(out, "data.ls2Active{}", delimiter);
+  fmt::print(out, "data.IsisLsActive{}", delimiter);
   fmt::print(out, "\n");
 }
 
@@ -1155,5 +1159,9 @@ void FlightDataRecorderConverter::writeStruct(ofstream& out,
   fmt::print(out, "{}{}", data.realisticTillerEnabled, delimiter);
   fmt::print(out, "{}{}", data.tillerHandlePosition, delimiter);
   fmt::print(out, "{}{}", data.noseWheelPosition, delimiter);
+  fmt::print(out, "{}{}", data.syncFoEfisEnabled, delimiter);
+  fmt::print(out, "{}{}", data.ls1Active, delimiter);
+  fmt::print(out, "{}{}", data.ls2Active, delimiter);
+  fmt::print(out, "{}{}", data.IsisLsActive, delimiter);
   fmt::print(out, "\n");
 }
