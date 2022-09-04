@@ -18,7 +18,7 @@ interface Props {
 
 export const HfRadioPanel = (props: Props) => {
     const [active, setActive] = useSimVar(`L:A32NX_RMP_HF${props.hf}_ACTIVE_FREQUENCY`, 'Hz');
-    const [standby, setStandby] = useSimVar(`L:A32NX_RMP${props.side === 'L' ? 1 : 2}_HF${props.hf}_STANDBY_FREQUENCY`, 'Hz');
+    const [standby, setStandby] = useSimVar(`L:A32NX_RMP_${props.side}_HF${props.hf}_STANDBY_FREQUENCY`, 'Hz');
 
     // Handle Transfer Button Pressed.
     useInteractionEvent(`A32NX_RMP_${props.side}_TRANSFER_BUTTON_PRESSED`, () => {
