@@ -52,6 +52,7 @@
 1. [FMGC] Fix unnatural turn direction for path capture transition - @tracernz (Mike)
 1. [FMGC] Fix unnatural turn direction for course capture transition - @tracernz (Mike)
 1. [FMGC] Update spoiler CD for MSFS SDK clarification - @donstim (donbikes#4084)
+1. [HYD] Actuators damping chambers can be asymetrical - @Crocket63 (crocket)
 1. [FMGC] Implement procedure turns (PI leg) - @tracernz (Mike)
 1. [ECAM] Move EWD to correct AC bus - @tracernz (Mike)
 1. [FMGC] Fix inbound leg time for holds - @tracernz (Mike)
@@ -60,9 +61,6 @@
 1. [HYD] Randomised per actuator flow restrictions at plane init - @Crocket63 (crocket)
 1. [MCDU] Hide stored elements on A/C Status when there are none - @tracernz (Mike)
 1. [FMGC] Fix ident for CD legs - @tracernz (Mike)
-1. [RMP] Fixed behavior of RMPs - Julian Sebline (Julian Sebline#8476 on Discord)
-1. [ISIS] Fixed issue where ISIS was allowing a bug to be set while in the OFF state - Patrick Macken (@Pat M on Discord)
-1. [RMP] RMPs can now enter in NAV backup mode and tune/listen the navigation instruments - Julian Sebline (Julian Sebline#8476 on Discord)
 1. [HYD] Refactor plane accelerations and added filtering to handle ground collisions - @Crocket63 (crocket)
 1. [FMGC] Improve procedure loading performance - @tracernz (Mike)
 1. [EFB] Added Payload Loading to EFB - @2hwk (2Cas#1022)
@@ -75,6 +73,7 @@
 1. [SD] Visual and functional improvements/fixes to the HYD SD page - @lukecologne (luke)
 1. [HYD] Added optional auxiliary hydraulic section in core hydraulic circuits - @Crocket63
 1. [EFB] Added SimBridge Health Check icon to Status Bar - @frankkopp (Frank Kopp)
+1. [RMP] RMPs navigation backup - Julian Sebline (Julian Sebline#8476 on Discord)
 
 ## 0.8.0
 
