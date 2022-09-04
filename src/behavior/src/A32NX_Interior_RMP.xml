@@ -152,6 +152,7 @@
                     alias annunciatorLight = (L:A32NX_OVHD_INTLT_ANN, number);
                     let emissiveDim = if annunciatorLight == 2 { 0.05 } else { 1 };
                     // @todo abnormal defined differently with NAV modes available.
+
                     let rmpLeftAbnormal = id == 1 and (selectedModeLeft == 2 or selectedModeLeft == 3 or selectedModeRight == 1);
                     let rmpRightAbnormal = id == 2 and (selectedModeRight == 1 or selectedModeRight == 3 or selectedModeLeft == 2);
 
@@ -177,6 +178,7 @@
                     alias annunciatorLight = (L:A32NX_OVHD_INTLT_ANN, number);
                     let emissiveDim = if annunciatorLight == 2 { 0.05 } else { 1 };
                     // @todo abnormal defined differently with NAV modes available.
+
                     let rmpLeftAbnormal = id == 1 and (selectedModeLeft == 2 or selectedModeLeft == 3 or selectedModeRight == 1);
                     let rmpRightAbnormal = id == 2 and (selectedModeRight == 1 or selectedModeRight == 3 or selectedModeLeft == 2);
 

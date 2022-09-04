@@ -60,7 +60,7 @@ if (edition === 'stable') {
 } else {
     titlePostfix = `branch ${GIT_BRANCH}`;
 }
-const title = `A32NX (${titlePostfix})`;
+const titleSuffix = ` (${titlePostfix})`;
 
 // This copies one of two prepared DDS files from the src folder
 // (src/Textures/decals 4k/) to the aircraft folder
@@ -86,26 +86,33 @@ if (edition === 'stable') {
     copyDDSFiles('/Textures/decals 4k/A320NEO_COCKPIT_DECALSTEXT_ALBD.TIF-exp.dds');
 }
 
-const contentEntries = [];
-let totalPackageSize = 0;
+function createPackageFiles(baseDir, manifestBaseFilename) {
+    const contentEntries = [];
+    let totalPackageSize = 0;
 
-for (const filename of readdir(A32NX)) {
-    const stat = fs.statSync(filename, { bigint: true });
-    contentEntries.push({
-        path: path.relative(A32NX, filename.replace(path.sep, '/')),
-        size: Number(stat.size),
-        date: Number((stat.mtimeNs / 100n) + MS_FILETIME_EPOCH),
-    });
-    totalPackageSize += Number(stat.size);
+    for (const filename of readdir(baseDir)) {
+        const stat = fs.statSync(filename, { bigint: true });
+        contentEntries.push({
+            path: path.relative(baseDir, filename.replace(path.sep, '/')),
+            size: Number(stat.size),
+            date: Number((stat.mtimeNs / 100n) + MS_FILETIME_EPOCH),
+        });
+        totalPackageSize += Number(stat.size);
+    }
+
+    fs.writeFileSync(path.join(baseDir, 'layout.json'), JSON.stringify({
+        content: contentEntries,
+    }, null, 2));
+
+    const manifestBase = require(`../${manifestBaseFilename}`);
+
+    fs.writeFileSync(path.join(baseDir, 'manifest.json'), JSON.stringify({
+        ...manifestBase,
+        title: manifestBase.title + titleSuffix,
+        package_version: require('../package.json').version + `-${GIT_COMMIT_SHA}`,
+        total_package_size: totalPackageSize.toString().padStart(20, '0'),
+    }, null, 2));
 }
 
-fs.writeFileSync(path.join(A32NX, 'layout.json'), JSON.stringify({
-    content: contentEntries,
-}, null, 2));
-
-fs.writeFileSync(path.join(A32NX, 'manifest.json'), JSON.stringify({
-    ...require('../manifest-base.json'),
-    title: title,
-    package_version: require('../package.json').version + `-${GIT_COMMIT_SHA}`,
-    total_package_size: totalPackageSize.toString().padStart(20, '0'),
-}, null, 2));
+createPackageFiles(A32NX, 'manifest-base.json');
+createPackageFiles(A32NX + '-lock-highlight', 'manifest-base-lock-highlight.json');

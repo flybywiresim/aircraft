@@ -769,7 +769,7 @@
                         (L:XMLVAR_COM_#ID#_Volume_#FREQ_ID#) #VOLUME_INCREMENT# - 0 max (&gt;L:XMLVAR_COM_#ID#_Volume_#FREQ_ID#)
                     }
                 </ANTICLOCKWISE_CODE>
-                <ANIM_CODE_SWITCH>(L:XMLVAR_COM_#ID#_#FREQ_ID#_Switch_Down) 100*</ANIM_CODE_SWITCH>
+                <ANIM_CODE_SWITCH>(L:XMLVAR_COM_#ID#_#FREQ_ID#_Switch_Down) 100 *</ANIM_CODE_SWITCH>
                 <ANIM_NAME_PUSH>#ANIM_NAME_SWITCH#</ANIM_NAME_PUSH>
                 <LEFT_SINGLE_CODE>
                     #SEQ1_POWERED# if{
