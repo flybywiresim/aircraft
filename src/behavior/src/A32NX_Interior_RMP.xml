@@ -166,6 +166,7 @@
                  <POTENTIOMETER>7</POTENTIOMETER>
                 <EMISSIVE_CODE type="rnp" return="number">
                     let indicatorsPowered = #INDICATORS_POWERED, bool#;
+                    let id = #ID, number#;
                     alias toggleSwitch = (L:A32NX_RMP_#SIDE#_TOGGLE_SWITCH, bool);
                     alias selectedModeLeft = (L:A32NX_RMP_L_SELECTED_MODE, number);
                     alias selectedModeRight = (L:A32NX_RMP_R_SELECTED_MODE, number);

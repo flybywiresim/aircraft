@@ -4294,35 +4294,35 @@
             <!-- MARKER DEFAULT VALUE IS 1 BUT IT IS UNDESIRED
                 ADF2 volume set do not exist in the sdk for now. Hopefully in the future -->
             <Update Once="True">
-                0 (&gt;L:A32NX_ACP1_Transmit_Channel)
-                0 (&gt;L:A32NX_ACP2_Transmit_Channel)
+                0 (&gt;L:A32NX_ACP1_TRANSMIT_CHANNEL)
+                0 (&gt;L:A32NX_ACP2_TRANSMIT_CHANNEL)
 
-                1 (&gt;L:A32NX_ACP1_VHF1_Knob_Volume_Down)
-                1 (&gt;L:A32NX_ACP1_VHF2_Knob_Volume_Down)
-                1 (&gt;L:A32NX_ACP2_VHF1_Knob_Volume_Down)
-                1 (&gt;L:A32NX_ACP2_VHF2_Knob_Volume_Down)
+                1 (&gt;L:A32NX_ACP1_VHF1_KNOB_VOLUME_DOWN)
+                1 (&gt;L:A32NX_ACP1_VHF2_KNOB_VOLUME_DOWN)
+                1 (&gt;L:A32NX_ACP2_VHF1_KNOB_VOLUME_DOWN)
+                1 (&gt;L:A32NX_ACP2_VHF2_KNOB_VOLUME_DOWN)
 
                 1 (&gt;K:COM1_RECEIVE_SELECT)
                 1 (&gt;K:COM2_RECEIVE_SELECT)
                 1 (&gt;K:COM3_RECEIVE_SELECT)
 
-                0.8 (&gt;L:A32NX_ACP1_Volume_VHF1)
-                0.4 (&gt;L:A32NX_ACP1_Volume_VHF2)
-                0.8 (&gt;L:A32NX_ACP2_Volume_VHF1)
-                0.4 (&gt;L:A32NX_ACP2_Volume_VHF2)
-                0.8 (&gt;L:A32NX_ACP3_Volume_VHF1)
-                0.4 (&gt;L:A32NX_ACP3_Volume_VHF2)
+                0.8 (&gt;L:A32NX_ACP1_VHF1_VOLUME)
+                0.4 (&gt;L:A32NX_ACP1_VHF2_VOLUME)
+                0.8 (&gt;L:A32NX_ACP2_VHF1_VOLUME)
+                0.4 (&gt;L:A32NX_ACP2_VHF2_VOLUME)
+                0.8 (&gt;L:A32NX_ACP3_VHF1_VOLUME)
+                0.4 (&gt;L:A32NX_ACP3_VHF2_VOLUME)
 
-                (L:A32NX_ACP1_Volume_VHF1) 100 * (&gt;K:COM1_VOLUME_SET)
-                (L:A32NX_ACP1_Volume_VHF2) 100 * (&gt;K:COM2_VOLUME_SET)
+                (L:A32NX_ACP1_VHF1_VOLUME) 100 * (&gt;K:COM1_VOLUME_SET)
+                (L:A32NX_ACP1_VHF2_VOLUME) 100 * (&gt;K:COM2_VOLUME_SET)
                 0 (&gt;K:COM3_VOLUME_SET)
 
                 11345000 (&gt;L:A32NX_RMP_HF1_ACTIVE_FREQUENCY)
                 8930000 (&gt;L:A32NX_RMP_HF2_ACTIVE_FREQUENCY)
-                17916000 (&gt;L:A32NX_RMP1_HF1_STANDBY_FREQUENCY)
-                5541000 (&gt;L:A32NX_RMP1_HF2_STANDBY_FREQUENCY)
-                13342000 (&gt;L:A32NX_RMP2_HF1_STANDBY_FREQUENCY)
-                3494000 (&gt;L:A32NX_RMP2_HF2_STANDBY_FREQUENCY)
+                17916000 (&gt;L:A32NX_RMP_L_HF1_STANDBY_FREQUENCY)
+                5541000 (&gt;L:A32NX_RMP_L_HF2_STANDBY_FREQUENCY)
+                13342000 (&gt;L:A32NX_RMP_R_HF1_STANDBY_FREQUENCY)
+                3494000 (&gt;L:A32NX_RMP_R_HF2_STANDBY_FREQUENCY)
 
                 (A:MARKER SOUND, Bool) 1 == {
                     (&gt;K:MARKER_SOUND_TOGGLE)
