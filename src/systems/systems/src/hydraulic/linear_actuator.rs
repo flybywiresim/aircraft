@@ -81,7 +81,8 @@ struct CoreHydraulicForce {
     fluid_compression_spring_constant: f64,
     fluid_compression_damping_constant: f64,
 
-    flow_open_loop_modifier_map: [f64; 6],
+    flow_open_loop_modifier_extension_map: [f64; 6],
+    flow_open_loop_modifier_retraction_map: [f64; 6],
     flow_open_loop_position_breakpoints: [f64; 6],
 
     max_flow: VolumeRate,
@@ -129,7 +130,8 @@ impl CoreHydraulicForce {
         min_flow: VolumeRate,
         bore_side_area: Area,
         rod_side_area: Area,
-        flow_open_loop_modifier_map: [f64; 6],
+        flow_open_loop_modifier_extension_map: [f64; 6],
+        flow_open_loop_modifier_retraction_map: [f64; 6],
         flow_open_loop_position_breakpoints: [f64; 6],
         flow_control_proportional_gain: f64,
         flow_control_integral_gain: f64,
@@ -150,7 +152,8 @@ impl CoreHydraulicForce {
             fluid_compression_spring_constant,
             fluid_compression_damping_constant,
 
-            flow_open_loop_modifier_map,
+            flow_open_loop_modifier_extension_map,
+            flow_open_loop_modifier_retraction_map,
             flow_open_loop_position_breakpoints,
 
             max_flow,
@@ -421,11 +424,19 @@ impl CoreHydraulicForce {
             )
         };
 
-        let open_loop_modifier_from_position = interpolation(
-            &self.flow_open_loop_position_breakpoints,
-            &self.flow_open_loop_modifier_map,
-            position_normalized.get::<ratio>(),
-        );
+        let open_loop_modifier_from_position = if position_error.get::<ratio>() > 0. {
+            interpolation(
+                &self.flow_open_loop_position_breakpoints,
+                &self.flow_open_loop_modifier_extension_map,
+                position_normalized.get::<ratio>(),
+            )
+        } else {
+            interpolation(
+                &self.flow_open_loop_position_breakpoints,
+                &self.flow_open_loop_modifier_retraction_map,
+                position_normalized.get::<ratio>(),
+            )
+        };
 
         (open_loop_flow_target.min(self.max_flow).max(self.min_flow))
             * open_loop_modifier_from_position
@@ -591,7 +602,8 @@ impl LinearActuator {
         active_hydraulic_damping_constant: f64,
         slow_hydraulic_damping_constant: f64,
         slow_hydraulic_damping_filtering_constant: Duration,
-        flow_open_loop_modifier_map: [f64; 6],
+        flow_open_loop_modifier_extension_map: [f64; 6],
+        flow_open_loop_modifier_retraction_map: [f64; 6],
         flow_open_loop_position_breakpoints: [f64; 6],
         flow_control_proportional_gain: f64,
         flow_control_integral_gain: f64,
@@ -678,7 +690,8 @@ impl LinearActuator {
                 actual_min_flow,
                 total_bore_side_area,
                 total_rod_side_area,
-                flow_open_loop_modifier_map,
+                flow_open_loop_modifier_extension_map,
+                flow_open_loop_modifier_retraction_map,
                 flow_open_loop_position_breakpoints,
                 flow_control_proportional_gain,
                 flow_control_integral_gain,
@@ -2904,6 +2917,7 @@ mod tests {
             1200000.,
             Duration::from_millis(100),
             [1., 1., 1., 1., 1., 1.],
+            [1., 1., 1., 1., 1., 1.],
             [0., 0.2, 0.21, 0.79, 0.8, 1.],
             DEFAULT_P_GAIN,
             DEFAULT_I_GAIN,
@@ -2981,7 +2995,8 @@ mod tests {
             2000.,
             9000.,
             Duration::from_millis(100),
-            [0.5, 0.5, 1., 1., 0.5, 0.5],
+            [1., 1., 1., 1., 0.5, 0.5],
+            [0.5, 0.5, 1., 1., 1., 1.],
             [0., 0.15, 0.16, 0.84, 0.85, 1.],
             DEFAULT_P_GAIN,
             DEFAULT_I_GAIN,
@@ -3004,6 +3019,7 @@ mod tests {
             0.,
             0.,
             Duration::from_millis(100),
+            [0.5, 1., 1., 1., 1., 0.5],
             [0.5, 1., 1., 1., 1., 0.5],
             [0., 0.2, 0.21, 0.79, 0.8, 1.],
             0.,
@@ -3091,7 +3107,8 @@ mod tests {
             50000.,
             1200000.,
             Duration::from_millis(100),
-            [0.5, 0.5, 1., 1., 0.5, 0.5],
+            [1., 1., 1., 1., 0.5, 0.5],
+            [0.5, 0.5, 1., 1., 1., 1.],
             [0., 0.1, 0.11, 0.89, 0.9, 1.],
             DEFAULT_P_GAIN,
             DEFAULT_I_GAIN,
@@ -3171,7 +3188,8 @@ mod tests {
             50000.,
             2200000.,
             Duration::from_millis(100),
-            [0.5, 0.5, 1., 1., 0.5, 0.5],
+            [1., 1., 1., 1., 0.5, 0.5],
+            [0.5, 0.5, 1., 1., 1., 1.],
             [0., 0.1, 0.11, 0.89, 0.9, 1.],
             DEFAULT_P_GAIN,
             DEFAULT_I_GAIN,
@@ -3228,7 +3246,8 @@ mod tests {
             2000.,
             28000.,
             Duration::from_millis(100),
-            [0.5, 0.5, 1., 1., 0.5, 0.5],
+            [1., 1., 1., 1., 0.5, 0.5],
+            [0.5, 0.5, 1., 1., 1., 1.],
             [0., 0.15, 0.16, 0.84, 0.85, 1.],
             DEFAULT_P_GAIN,
             DEFAULT_I_GAIN,
@@ -3285,6 +3304,7 @@ mod tests {
             5000.,
             800000.,
             Duration::from_millis(300),
+            [1., 1., 1., 1., 1., 1.],
             [1., 1., 1., 1., 1., 1.],
             [0., 0.2, 0.21, 0.79, 0.8, 1.],
             DEFAULT_P_GAIN,
@@ -3350,6 +3370,7 @@ mod tests {
             10000000.,
             Duration::from_millis(300),
             [1., 1., 1., 1., 1., 1.],
+            [1., 1., 1., 1., 1., 1.],
             [0., 0.2, 0.21, 0.79, 0.8, 1.],
             DEFAULT_P_GAIN,
             DEFAULT_I_GAIN,
@@ -3407,6 +3428,7 @@ mod tests {
             5000.,
             800000.,
             Duration::from_millis(300),
+            [1., 1., 1., 1., 1., 1.],
             [1., 1., 1., 1., 1., 1.],
             [0., 0.2, 0.21, 0.79, 0.8, 1.],
             DEFAULT_P_GAIN,
