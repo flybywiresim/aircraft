@@ -8362,7 +8362,7 @@ mod tests {
         }
 
         #[test]
-        fn no_brake_inversion() {
+        fn no_norm_brake_inversion() {
             let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
@@ -8377,6 +8377,7 @@ mod tests {
 
             assert!(test_bed.is_green_pressure_switch_pressurised());
             assert!(test_bed.is_yellow_pressure_switch_pressurised());
+
             // Braking left
             test_bed = test_bed
                 .set_left_brake(Ratio::new::<percent>(100.))
@@ -8398,6 +8399,24 @@ mod tests {
             assert!(test_bed.get_brake_right_green_pressure() > Pressure::new::<psi>(2000.));
             assert!(test_bed.get_brake_left_yellow_pressure() < Pressure::new::<psi>(50.));
             assert!(test_bed.get_brake_right_yellow_pressure() < Pressure::new::<psi>(50.));
+        }
+
+        #[test]
+        fn no_alternate_brake_inversion() {
+            let mut test_bed = test_bed_on_ground_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
+
+            test_bed = test_bed
+                .start_eng1(Ratio::new::<percent>(100.))
+                .start_eng2(Ratio::new::<percent>(100.))
+                .set_park_brake(false)
+                .run_waiting_for(Duration::from_secs(5));
+
+            assert!(test_bed.is_green_pressure_switch_pressurised());
+            assert!(test_bed.is_yellow_pressure_switch_pressurised());
 
             // Disabling Askid causes alternate braking to work and release green brakes
             test_bed = test_bed
