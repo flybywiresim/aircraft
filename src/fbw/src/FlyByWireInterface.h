@@ -11,7 +11,6 @@
 #include "ElevatorTrimHandler.h"
 #include "EngineData.h"
 #include "FlightDataRecorder.h"
-#include "FlyByWire.h"
 #include "InterpolatingLookupTable.h"
 #include "LocalVariable.h"
 #include "RateLimiter.h"
