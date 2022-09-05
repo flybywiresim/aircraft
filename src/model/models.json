@@ -100,6 +100,10 @@
         "gltf": "./cockpit/gearemer.gltf",
         "bin": "./cockpit/gearemer.bin",
         "maxLod": 0
+      },
+      {
+        "gltf": "./post-it/postit.gltf",
+        "bin": "./post-it/postit.bin"
       }
     ],
     "modifications": [
