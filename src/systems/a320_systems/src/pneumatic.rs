@@ -3,7 +3,7 @@ use std::{f64::consts::PI, time::Duration};
 
 use uom::si::{
     f64::*,
-    pressure::psi,
+    pressure::{psi,inch_of_mercury},
     ratio::ratio,
     thermodynamic_temperature::degree_celsius,
     volume::{cubic_meter, gallon},
@@ -20,6 +20,7 @@ use systems::{
         EngineCompressionChamberController, EngineModeSelector, EngineState, PneumaticContainer,
         PneumaticPipe, PneumaticValveSignal, Precooler, PressurisedReservoirWithExhaustValve,
         PressurizeableReservoir, TargetPressureTemperatureSignal, VariableVolumeContainer,
+        WingAntiIcePushButtonMode,WingAntiIcePushButton,
     },
     shared::{
         pid::PidController, update_iterator::MaxStepLoop, ControllerSignal, ElectricalBusType,
@@ -32,6 +33,9 @@ use systems::{
         SimulatorWriter, UpdateContext, VariableIdentifier, Write,
     },
 };
+
+mod wing_anti_ice;
+use wing_anti_ice::*;
 
 macro_rules! valve_signal_implementation {
     ($signal_type: ty) => {
@@ -109,6 +113,7 @@ pub struct A320Pneumatic {
 
     cross_bleed_valve_open_id: VariableIdentifier,
     apu_bleed_air_valve_open_id: VariableIdentifier,
+    ambient_pressure_id: VariableIdentifier,
 
     bleed_monitoring_computers: [BleedMonitoringComputer; 2],
     engine_systems: [EngineBleedAirSystem; 2],
@@ -120,6 +125,10 @@ pub struct A320Pneumatic {
 
     apu_compression_chamber: CompressionChamber,
     apu_bleed_air_valve: DefaultValve,
+
+    ambient_pressure: Pressure,
+
+    wing_anti_ice: WingAntiIceComplex,
 
     hydraulic_reservoir_bleed_air_valves: [PurelyPneumaticValve; 2],
     hydraulic_reservoir_bleed_air_pipe: PneumaticPipe,
@@ -142,6 +151,7 @@ impl A320Pneumatic {
             cross_bleed_valve_open_id: context.get_identifier("PNEU_XBLEED_VALVE_OPEN".to_owned()),
             apu_bleed_air_valve_open_id: context
                 .get_identifier("APU_BLEED_AIR_VALVE_OPEN".to_owned()),
+            ambient_pressure_id: context.get_identifier("AMBIENT PRESSURE".to_owned()),
             bleed_monitoring_computers: [
                 BleedMonitoringComputer::new(1, 2, ElectricalBusType::DirectCurrentEssentialShed),
                 BleedMonitoringComputer::new(2, 1, ElectricalBusType::DirectCurrent(2)),
@@ -162,6 +172,8 @@ impl A320Pneumatic {
             ],
             apu_compression_chamber: CompressionChamber::new(Volume::new::<cubic_meter>(5.)),
             apu_bleed_air_valve: DefaultValve::new_closed(),
+            ambient_pressure: Pressure::new::<inch_of_mercury>(29.92),
+            wing_anti_ice: WingAntiIceComplex::new(context),
             hydraulic_reservoir_bleed_air_valves: [
                 PurelyPneumaticValve::new(),
                 PurelyPneumaticValve::new(),
@@ -297,6 +309,7 @@ impl A320Pneumatic {
             );
         }
 
+        self.wing_anti_ice.update(context, &mut self.engine_systems, overhead_panel.wing_anti_ice.mode());
         let [left_system, right_system] = &mut self.engine_systems;
         self.apu_bleed_air_valve.update_move_fluid(
             context,
@@ -329,6 +342,10 @@ impl A320Pneumatic {
     // For now, we just pass over control of the bleed valve to the APU, so it can be updated after the ECB update but before the turbine update.
     pub fn apu_bleed_air_valve(&mut self) -> &mut impl ControllablePneumaticValve {
         &mut self.apu_bleed_air_valve
+    }
+
+    pub fn is_precoooler_pressurised(&self, number: usize) -> bool {
+        self.engine_systems[number].precooler_outlet_pressure() > 1.05 * self.ambient_pressure
     }
 
     pub fn update_hydraulic_reservoir_spatial_volumes(
@@ -376,6 +393,7 @@ impl SimulationElement for A320Pneumatic {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.cross_bleed_valve.accept(visitor);
         self.fadec.accept(visitor);
+        self.wing_anti_ice.accept(visitor);
 
         accept_iterable!(self.bleed_monitoring_computers, visitor);
         accept_iterable!(self.engine_systems, visitor);
@@ -386,6 +404,10 @@ impl SimulationElement for A320Pneumatic {
         self.green_hydraulic_reservoir_with_valve.accept(visitor);
 
         visitor.visit(self);
+    }
+
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        self.ambient_pressure = reader.read(&self.ambient_pressure_id);
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
@@ -732,7 +754,7 @@ impl ControllerSignal<CrossBleedValveSignal> for BleedMonitoringComputerChannel 
     }
 }
 
-struct EngineBleedAirSystem {
+pub struct EngineBleedAirSystem {
     intermediate_pressure_id: VariableIdentifier,
     high_pressure_id: VariableIdentifier,
     transfer_pressure_id: VariableIdentifier,
@@ -1070,6 +1092,7 @@ pub struct A320PneumaticOverheadPanel {
     cross_bleed: CrossBleedValveSelectorKnob,
     engine_1_bleed: AutoOffFaultPushButton,
     engine_2_bleed: AutoOffFaultPushButton,
+    wing_anti_ice: WingAntiIcePushButton,
 }
 impl A320PneumaticOverheadPanel {
     pub fn new(context: &mut InitContext) -> Self {
@@ -1078,6 +1101,7 @@ impl A320PneumaticOverheadPanel {
             cross_bleed: CrossBleedValveSelectorKnob::new_auto(context),
             engine_1_bleed: AutoOffFaultPushButton::new_auto(context, "PNEU_ENG_1_BLEED"),
             engine_2_bleed: AutoOffFaultPushButton::new_auto(context, "PNEU_ENG_2_BLEED"),
+            wing_anti_ice: WingAntiIcePushButton::new_off(context),
         }
     }
 
@@ -1087,6 +1111,13 @@ impl A320PneumaticOverheadPanel {
 
     pub fn cross_bleed_mode(&self) -> CrossBleedValveSelectorMode {
         self.cross_bleed.mode()
+    }
+
+    pub fn wing_anti_ice_is_on(&self) -> bool {
+        match self.wing_anti_ice.mode() {
+            WingAntiIcePushButtonMode::Off => false,
+            _ => true
+        }
     }
 
     pub fn engine_bleed_pb_is_auto(&self, engine_number: usize) -> bool {
@@ -1108,6 +1139,7 @@ impl SimulationElement for A320PneumaticOverheadPanel {
         self.cross_bleed.accept(visitor);
         self.engine_1_bleed.accept(visitor);
         self.engine_2_bleed.accept(visitor);
+        self.wing_anti_ice.accept(visitor);
 
         visitor.visit(self);
     }

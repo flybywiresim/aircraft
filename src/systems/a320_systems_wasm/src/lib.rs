@@ -219,6 +219,8 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("ROTATION VELOCITY BODY X", "degree per second", 0)?
     .provides_aircraft_variable("ROTATION VELOCITY BODY Y", "degree per second", 0)?
     .provides_aircraft_variable("ROTATION VELOCITY BODY Z", "degree per second", 0)?
+    // .provides_aircraft_variable("PNEU_WING_ANTI_ICE_HAS_FAULT","Bool",0)?
+    // .provides_aircraft_variable("PNEU_WING_ANTI_ICE_SYSTEM_ON", "Bool", 0)?
     .with_aspect(|builder| {
         builder.copy(
             Variable::aircraft("APU GENERATOR SWITCH", "Bool", 0),
@@ -250,6 +252,11 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
         builder.copy(
             Variable::aircraft("GENERAL ENG MASTER ALTERNATOR", "Bool", 2),
             Variable::aspect("OVHD_ELEC_ENG_GEN_2_PB_IS_ON"),
+        );
+
+        builder.copy(
+            Variable::aircraft("STRUCTURAL DEICE SWITCH", "Bool", 0),
+            Variable::aspect("BUTTON_OVHD_ANTI_ICE_WING_Position"),
         );
 
         builder.map(
