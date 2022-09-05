@@ -180,16 +180,6 @@ impl HydraulicGearSystem {
         lgciu_controller: &impl LgciuGearControl,
         main_hydraulic_circuit: &impl SectionPressure,
     ) {
-        println!(
-            "LEFT DOOR STATE {:?}, soft dl is active {:?}",
-            self.left_door_assembly
-                .hydraulic_controller
-                .requested_mode(),
-            self.left_door_assembly
-                .hydraulic_controller
-                .soft_downlock_is_active
-        );
-
         self.hydraulic_supply.update(
             context,
             valves_controller,
