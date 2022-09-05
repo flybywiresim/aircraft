@@ -435,6 +435,7 @@
       "LatLonExtendedFormat": "FMGC Lat/Lon Waypoint Format",
       "PaxSigns": "客艙標誌",
       "RmpVhfSpacing": "RMP 甚高頻（VHF）間隔",
+      "Satcom": "Show Satcom",
       "ThrustReductionHeight": "減推高度（英呎/ft）",
       "Title": "飛機選項/置頂程式",
       "WeightUnit": "重量單位"

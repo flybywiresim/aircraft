@@ -435,6 +435,7 @@
       "LatLonExtendedFormat": "FMGC 纬度/经度 航点格式",
       "PaxSigns": "客舱标志",
       "RmpVhfSpacing": "RMP 甚高频间隔",
+      "Satcom": "Show Satcom",
       "ThrustReductionHeight": "减推力高度 (英尺/ft)",
       "Title": "飞机选项/置顶程序",
       "WeightUnit": "重量单位"

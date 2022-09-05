@@ -435,6 +435,7 @@
       "LatLonExtendedFormat": "Formato de Waypont Lat/Lon do FMGC",
       "PaxSigns": "Aviso de Passageiros",
       "RmpVhfSpacing": "Espaçamento RMP VHF",
+      "Satcom": "Show Satcom",
       "ThrustReductionHeight": "Altura de redução de empuxo (ft)",
       "Title": "Opções da aeronave / Programas fixados",
       "WeightUnit": "Unidade de peso"

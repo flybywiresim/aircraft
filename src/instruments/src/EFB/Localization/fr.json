@@ -435,6 +435,7 @@
       "LatLonExtendedFormat": "Format de point de cheminement lat/long FMGC",
       "PaxSigns": "Voyants passagers",
       "RmpVhfSpacing": "Espacement VHF RMP",
+      "Satcom": "Show Satcom",
       "ThrustReductionHeight": "Thrust Reduction Height (pi)",
       "Title": "Options de l'avion/configuration matérielle",
       "WeightUnit": "Unité de masse"

@@ -435,6 +435,7 @@
       "LatLonExtendedFormat": "Μορφή Σημείου Αναφοράς Lat/Lon FMGC",
       "PaxSigns": "Πινακίδες Επιβατών",
       "RmpVhfSpacing": "Απόσταση VHF RMP",
+      "Satcom": "Show Satcom",
       "ThrustReductionHeight": "Ύψος Mείωσης Ώσης (ft)",
       "Title": "Επιλογές Αεροσκάφους / Προγράμματα Pin",
       "WeightUnit": "Μονάδα Βάρους"

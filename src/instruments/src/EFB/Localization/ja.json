@@ -435,6 +435,7 @@
       "LatLonExtendedFormat": "FMGC緯度/経度ウェイポイント形式",
       "PaxSigns": "乗客サイン",
       "RmpVhfSpacing": "RMP VHF 周波数間隔",
+      "Satcom": "Show Satcom",
       "ThrustReductionHeight": "推力低減高度(ft)",
       "Title": "機体オプション/Pin Programs",
       "WeightUnit": "重量単位"

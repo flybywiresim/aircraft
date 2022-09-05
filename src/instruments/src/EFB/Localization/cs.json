@@ -435,6 +435,7 @@
       "LatLonExtendedFormat": "Formát FMGC Lat/Lon Waypointů",
       "PaxSigns": "Znamení cestujícím",
       "RmpVhfSpacing": "RMP VHF rozteč",
+      "Satcom": "Show Satcom",
       "ThrustReductionHeight": "Výška snížení tahu (ft AGL)",
       "Title": "Možnosti letadla / Pin programy",
       "WeightUnit": "Jednotky hmotnosti"

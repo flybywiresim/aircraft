@@ -435,6 +435,7 @@
       "LatLonExtendedFormat": "FMGC Lat/Lon reittipisteen muoto",
       "PaxSigns": "Matkustajamerkinnät",
       "RmpVhfSpacing": "RMP VHF välitys",
+      "Satcom": "Show Satcom",
       "ThrustReductionHeight": "Työntövoiman vähennyskorkeus (ft)",
       "Title": "Lentokoneen asetukset / ohjelmistot",
       "WeightUnit": "Painoyksikkö"

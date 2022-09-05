@@ -435,6 +435,7 @@
       "LatLonExtendedFormat": "FMGC 위도/경도 항로 형식",
       "PaxSigns": "승객 사인",
       "RmpVhfSpacing": "RMP VHF 주파수 간격",
+      "Satcom": "Show Satcom",
       "ThrustReductionHeight": "추력 감소 고도 (ft)",
       "Title": "항공기 옵션 / 프로그램 설정",
       "WeightUnit": "무게 단위"

@@ -435,6 +435,7 @@
       "LatLonExtendedFormat": "FMGC Lat/Lon Waypoint Format",
       "PaxSigns": "Passagier-Anzeigen",
       "RmpVhfSpacing": "RMP VHF Kanalraster",
+      "Satcom": "Satcom anzeigen",
       "ThrustReductionHeight": "Flughöhe für Schubreduzierung (Fuß)",
       "Title": "Flugzeug-Optionen/Pin Programming",
       "WeightUnit": "Gewichtseinheit"

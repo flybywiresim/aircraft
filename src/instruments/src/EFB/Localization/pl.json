@@ -435,6 +435,7 @@
       "LatLonExtendedFormat": "Format Punktów Trasy FMGC Szer/Dł Geog.",
       "PaxSigns": "Znaki dla Pasażerów",
       "RmpVhfSpacing": "Odstępy Częstotliwości VHF na Panelu RMP",
+      "Satcom": "Show Satcom",
       "ThrustReductionHeight": "Wysokość Redukcji Ciągu (ft)",
       "Title": "Opcje Samolotu/Przypięte Programy",
       "WeightUnit": "Jednostka Masy"

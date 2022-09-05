@@ -435,6 +435,7 @@
       "LatLonExtendedFormat": "FMGC Lat/Lon Waypoint-indeling",
       "PaxSigns": "PAX Signs",
       "RmpVhfSpacing": "RMP VHF Afstand",
+      "Satcom": "Show Satcom",
       "ThrustReductionHeight": "Hoogte stuwkrachtreductie (ft)",
       "Title": "Vliegtuig Opties / Pin Programma's",
       "WeightUnit": "Gewichtseenheid"

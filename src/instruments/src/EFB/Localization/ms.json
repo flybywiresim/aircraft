@@ -435,6 +435,7 @@
       "LatLonExtendedFormat": "FMGC Lat/Lon Waypoint Format",
       "PaxSigns": "PAX Signs",
       "RmpVhfSpacing": "RMP VHF Spacing",
+      "Satcom": "Show Satcom",
       "ThrustReductionHeight": "Thrust Reduction Height (ft)",
       "Title": "Aircraft Options / Pin Programs",
       "WeightUnit": "Weight Unit"

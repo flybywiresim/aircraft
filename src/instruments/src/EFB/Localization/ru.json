@@ -435,6 +435,7 @@
       "LatLonExtendedFormat": "Формат промежуточных точек FMGC для широты/долготы",
       "PaxSigns": "Табло салона",
       "RmpVhfSpacing": "Интервал RMP VHF",
+      "Satcom": "Show Satcom",
       "ThrustReductionHeight": "Высота уменьшения тяги (фт)",
       "Title": "Опции самолёта / Пин-программы",
       "WeightUnit": "Единицы измерения веса"

@@ -435,6 +435,7 @@
       "LatLonExtendedFormat": "Format FMGC Lat/Lon Waypoint",
       "PaxSigns": "PAX Signs",
       "RmpVhfSpacing": "Jarak VHF RMP",
+      "Satcom": "Show Satcom",
       "ThrustReductionHeight": "Ketinggian Pengurangan Dorongan (ft)",
       "Title": "Opsi Pesawat / Tandai Program",
       "WeightUnit": "Satuan Berat"

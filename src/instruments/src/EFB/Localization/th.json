@@ -435,6 +435,7 @@
       "LatLonExtendedFormat": "รูปแบบเวย์พอยท์ FMGC Lat/Lon",
       "PaxSigns": "ป้ายห้องโดยสาร",
       "RmpVhfSpacing": "ระยะห่าง RMP VHF",
+      "Satcom": "Show Satcom",
       "ThrustReductionHeight": "Thrust Reduction Height (ft)",
       "Title": "ตัวเลือกเครื่องบิน/โปรแกรมปักหมุด",
       "WeightUnit": "หน่วยน้ำหนัก"

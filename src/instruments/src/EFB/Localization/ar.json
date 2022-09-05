@@ -435,6 +435,7 @@
       "LatLonExtendedFormat": "FMGC Lat/Lon Waypoint Format",
       "PaxSigns": "علامات الركاب",
       "RmpVhfSpacing": "تباعد RMP VHF",
+      "Satcom": "Show Satcom",
       "ThrustReductionHeight": "ارتفاع تخفيض النفاث (قدم)",
       "Title": "Aircraft Options / Pin Programs",
       "WeightUnit": "وحدة الوزن"

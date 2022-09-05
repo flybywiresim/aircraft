@@ -435,6 +435,7 @@
       "LatLonExtendedFormat": "FMGC Lat/Lon Waypoint Format",
       "PaxSigns": "Passasjerskilter",
       "RmpVhfSpacing": "RMP VHF-intervall",
+      "Satcom": "Show Satcom",
       "ThrustReductionHeight": "Kraftreduksjonshøyde (ft)",
       "Title": "Flyinnstillinger / fest programmer",
       "WeightUnit": "Vektenhet"
