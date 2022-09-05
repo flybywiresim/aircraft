@@ -434,6 +434,7 @@ struct base_sec_discrete_outputs
   boolean_T left_elevator_damping_mode;
   boolean_T right_elevator_damping_mode;
   boolean_T ths_active;
+  boolean_T batt_power_supply;
 };
 
 #endif

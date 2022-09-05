@@ -7,7 +7,6 @@
 #include "AutopilotStateMachine.h"
 #include "Autothrust.h"
 #include "EngineData.h"
-#include "FlyByWire.h"
 #include "zfstream.h"
 
 class FlightDataRecorder {

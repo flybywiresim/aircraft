@@ -58,6 +58,7 @@ class SecComputer final
     boolean_T pRightStickDisabled;
     boolean_T abnormalConditionWasActive;
     boolean_T Runtime_MODE;
+    rtDW_MATLABFunction_SecComputer_o_T sf_MATLABFunction_i;
     rtDW_MATLABFunction_SecComputer_l_T sf_MATLABFunction_b4;
     rtDW_MATLABFunction_SecComputer_o_T sf_MATLABFunction_fh;
     rtDW_MATLABFunction_SecComputer_l_T sf_MATLABFunction_nu;
@@ -187,6 +188,7 @@ class SecComputer final
     real_T ConfirmNode_timeDelay_a;
     real_T ConfirmNode_timeDelay_e;
     real_T ConfirmNode_timeDelay_eq;
+    real_T ConfirmNode_timeDelay_m;
     real_T RateLimiterVariableTs6_up;
     real_T RateLimiterVariableTs1_up;
     real_T RateLimiterGenericVariableTs_up;
@@ -216,6 +218,7 @@ class SecComputer final
     boolean_T PulseNode2_isRisingEdge;
     boolean_T PulseNode1_isRisingEdge_k;
     boolean_T PulseNode_isRisingEdge_hj;
+    boolean_T ConfirmNode_isRisingEdge_c;
     sec_outputs out_Y0;
     base_sec_out_bus Constant4_Value;
     real_T Constant_Value;

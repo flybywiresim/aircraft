@@ -604,58 +604,6 @@ bool SimConnectInterface::prepareClientDataDefinitions() {
   // ------------------------------------------------------------------------------------------------------------------
 
   // map client id
-  result &= SimConnect_MapClientDataNameToID(hSimConnect, "A32NX_CLIENT_DATA_FLY_BY_WIRE_INPUT", ClientData::FLY_BY_WIRE_INPUT);
-  // create client data
-  result &= SimConnect_CreateClientData(hSimConnect, ClientData::FLY_BY_WIRE_INPUT, sizeof(ClientDataFlyByWireInput),
-                                        SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
-  // add data definitions
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::FLY_BY_WIRE_INPUT, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::FLY_BY_WIRE_INPUT, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::FLY_BY_WIRE_INPUT, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-
-  // ------------------------------------------------------------------------------------------------------------------
-
-  // map client id
-  result &= SimConnect_MapClientDataNameToID(hSimConnect, "A32NX_CLIENT_DATA_FLY_BY_WIRE", ClientData::FLY_BY_WIRE);
-  // create client data
-  result &= SimConnect_CreateClientData(hSimConnect, ClientData::FLY_BY_WIRE, sizeof(ClientDataFlyByWire),
-                                        SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
-  // add data definitions
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::FLY_BY_WIRE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::FLY_BY_WIRE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::FLY_BY_WIRE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::FLY_BY_WIRE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::FLY_BY_WIRE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::FLY_BY_WIRE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::FLY_BY_WIRE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::FLY_BY_WIRE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::FLY_BY_WIRE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::FLY_BY_WIRE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::FLY_BY_WIRE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::FLY_BY_WIRE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-
-  // request data to be updated when set
-  result &= SimConnect_RequestClientData(hSimConnect, ClientData::FLY_BY_WIRE, ClientData::FLY_BY_WIRE, ClientData::FLY_BY_WIRE,
-                                         SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET);
-
-  // ------------------------------------------------------------------------------------------------------------------
-
-  // map client id
   result &= SimConnect_MapClientDataNameToID(hSimConnect, "A32NX_CLIENT_DATA_ELAC_DISCRETE_INPUT", ClientData::ELAC_DISCRETE_INPUTS);
   // create client data
   result &= SimConnect_CreateClientData(hSimConnect, ClientData::ELAC_DISCRETE_INPUTS, sizeof(base_elac_discrete_inputs),
@@ -687,7 +635,7 @@ bool SimConnectInterface::prepareClientDataDefinitions() {
   result &= SimConnect_CreateClientData(hSimConnect, ClientData::ELAC_DISCRETE_OUTPUTS, sizeof(base_elac_discrete_outputs),
                                         SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
   // add data definitions
-  for (int i = 0; i < 11; i++) {
+  for (int i = 0; i < 12; i++) {
     result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::ELAC_DISCRETE_OUTPUTS, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
                                                    SIMCONNECT_CLIENTDATATYPE_INT8);
   }
@@ -861,7 +809,7 @@ bool SimConnectInterface::prepareClientDataDefinitions() {
   result &= SimConnect_CreateClientData(hSimConnect, ClientData::SEC_DISCRETE_OUTPUTS, sizeof(base_sec_discrete_outputs),
                                         SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
   // add data definitions
-  for (int i = 0; i < 8; i++) {
+  for (int i = 0; i < 9; i++) {
     result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::SEC_DISCRETE_OUTPUTS, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
                                                    SIMCONNECT_CLIENTDATATYPE_INT8);
   }
@@ -1196,7 +1144,6 @@ bool SimConnectInterface::readData() {
   return true;
 }
 
-
 bool SimConnectInterface::sendData(SimOutputZetaTrim output) {
   // write data and return result
   return sendData(3, sizeof(output), &output);
@@ -1323,16 +1270,6 @@ ClientDataAutopilotStateMachine SimConnectInterface::getClientDataAutopilotState
 
 ClientDataAutothrust SimConnectInterface::getClientDataAutothrust() {
   return clientDataAutothrust;
-}
-
-bool SimConnectInterface::setClientDataFlyByWireInput(ClientDataFlyByWireInput output) {
-  // write data and return result
-  return sendClientData(ClientData::FLY_BY_WIRE_INPUT, sizeof(output), &output);
-}
-
-bool SimConnectInterface::setClientDataFlyByWire(ClientDataFlyByWire output) {
-  // write data and return result
-  return sendClientData(ClientData::FLY_BY_WIRE, sizeof(output), &output);
 }
 
 ClientDataFlyByWire SimConnectInterface::getClientDataFlyByWire() {
@@ -2819,11 +2756,6 @@ void SimConnectInterface::simConnectProcessClientData(const SIMCONNECT_RECV_CLIE
     case ClientData::AUTOTHRUST:
       // store aircraft data
       clientDataAutothrust = *((ClientDataAutothrust*)&data->dwData);
-      return;
-
-    case ClientData::FLY_BY_WIRE:
-      // store aircraft data
-      clientDataFlyByWire = *((ClientDataFlyByWire*)&data->dwData);
       return;
 
     case ClientData::ELAC_DISCRETE_OUTPUTS:
