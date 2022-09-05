@@ -775,6 +775,14 @@
         - BLUE
         - YELLOW
 
+- A32NX_HYD_{loop_name}_PUMP_1_SECTION_PRESSURE_SWITCH
+    - Boolean
+    - Current pressure switch state in {loop_name} pump section
+    - {loop_name}
+        - GREEN
+        - BLUE
+        - YELLOW
+
 - A32NX_HYD_{loop_name}_RESERVOIR_LEVEL
     - Gallon
     - Current gaugeable fluid level in the {loop_name} hydraulic circuit reservoir
@@ -1526,6 +1534,10 @@ In the variables below, {number} should be replaced with one item in the set: { 
 - A32NX_ADIRS_REMAINING_IR_ALIGNMENT_TIME
     - Seconds
     - The remaining alignment duration. Zero seconds when the system is aligned or the system is not aligning.
+
+- A32NX_ADIRS_ADR_{number}_CORRECTED_AVERAGE_STATIC_PRESSURE
+    - Arinc429Word<hPa>
+    - The corrected average static pressure.
 
 - A32NX_ADIRS_ADR_{number}_ALTITUDE
     - Arinc429Word<Feet>
