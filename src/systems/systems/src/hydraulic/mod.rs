@@ -1626,19 +1626,14 @@ impl SimulationElement for LeakMeasurementValve {
 }
 
 struct SpringPhysics {
-    k_constant: f64,
-    damping_constant: f64,
-
     last_length: f64,
 }
 impl SpringPhysics {
-    fn new() -> Self {
-        Self {
-            k_constant: 5000.,
-            damping_constant: 500.,
+    const SPRING_K_CONSTANT: f64 = 5000.;
+    const SPRING_DAMPING_CONSTANT: f64 = 500.;
 
-            last_length: 0.,
-        }
+    fn default() -> Self {
+        Self { last_length: 0. }
     }
 
     fn update_force(
@@ -1659,8 +1654,8 @@ impl SpringPhysics {
         let spring_vector_normalized = spring_vector.normalize();
         let velocity = (spring_length - self.last_length) / context.delta_as_secs_f64();
 
-        let k_force = spring_length * self.k_constant;
-        let damping_force = velocity * self.damping_constant;
+        let k_force = spring_length * Self::SPRING_K_CONSTANT;
+        let damping_force = velocity * Self::SPRING_DAMPING_CONSTANT;
 
         self.last_length = spring_length;
 
@@ -1690,7 +1685,7 @@ impl FluidPhysics {
             fluid_cg_speed: Vector3::default(),
 
             virtual_mass: Mass::new::<kilogram>(100.),
-            spring: SpringPhysics::new(),
+            spring: SpringPhysics::default(),
             anisotropic_damping_constant: Vector3::new(25., 20., 25.),
 
             g_trap_is_empty: DelayedTrueLogicGate::new(Duration::from_secs_f64(
@@ -1707,16 +1702,6 @@ impl FluidPhysics {
 
         self.g_trap_is_empty
             .update(context, self.is_fluid_going_up());
-
-        // println!(
-        //     "current_fluid_cg {:.2} {:.2} {:.2} GTRAP EMPTY {:?} GAUGE {:.2}  USABLE {:.2}",
-        //     self.fluid_cg_position[0],
-        //     self.fluid_cg_position[1],
-        //     self.fluid_cg_position[2],
-        //     self.g_trap_is_empty.output(),
-        //     self.gauge_modifier().get::<ratio>(),
-        //     self.usable_level_modifier().get::<ratio>()
-        // );
     }
 
     fn update_forces(&mut self, context: &UpdateContext) -> Vector3<f64> {
@@ -1747,32 +1732,29 @@ impl FluidPhysics {
     fn gauge_modifier(&self) -> Ratio {
         const LATERAL_BREAKPOINTS: [f64; 6] = [-1., -0.2, 0., 0.2, 0.4, 1.];
         const LATERAL_MAP: [f64; 6] = [0.2, 0.95, 1., 1.05, 1.2, 1.3];
-
-        const LONGITUDINAL_BREAKPOINTS: [f64; 6] = [-1., -0.1, 0., 0.1, 0.4, 1.];
-        const LONGITUDINAL_MAP: [f64; 6] = [0.2, 0.98, 1., 0.98, 0.2, 0.2];
-
-        const VERTICAL_BREAKPOINTS: [f64; 6] = [-1., -0.1, 0., 0.1, 0.2, 1.];
-        const VERTICAL_MAP: [f64; 6] = [1., 1., 0.7, 0.9, 1.2, 1.5];
-
         let lateral_ratio = interpolation(
             &LATERAL_BREAKPOINTS,
             &LATERAL_MAP,
             self.fluid_cg_position[0],
         );
 
-        let logitudinal_ratio = interpolation(
+        const LONGITUDINAL_BREAKPOINTS: [f64; 6] = [-1., -0.1, 0., 0.1, 0.4, 1.];
+        const LONGITUDINAL_MAP: [f64; 6] = [0.2, 0.98, 1., 0.98, 0.2, 0.2];
+        let longitudinal_ratio = interpolation(
             &LONGITUDINAL_BREAKPOINTS,
             &LONGITUDINAL_MAP,
             self.fluid_cg_position[2],
         );
 
+        const VERTICAL_BREAKPOINTS: [f64; 6] = [-1., -0.1, 0., 0.1, 0.2, 1.];
+        const VERTICAL_MAP: [f64; 6] = [1., 1., 0.7, 0.9, 1.2, 1.5];
         let vertical_ratio = interpolation(
             &VERTICAL_BREAKPOINTS,
             &VERTICAL_MAP,
             self.fluid_cg_position[1],
         );
 
-        Ratio::new::<ratio>(lateral_ratio * vertical_ratio * logitudinal_ratio)
+        Ratio::new::<ratio>(lateral_ratio * vertical_ratio * longitudinal_ratio)
     }
 
     // Returns a coefficient of the actual level that will be available for pumps.
@@ -1780,17 +1762,15 @@ impl FluidPhysics {
     fn usable_level_modifier(&self) -> Ratio {
         const LATERAL_BREAKPOINTS: [f64; 6] = [-1., -0.2, 0., 0.2, 0.4, 1.];
         const LATERAL_MAP: [f64; 6] = [0.2, 0.8, 1., 1., 1., 1.];
-
-        const LONGITUDINAL_BREAKPOINTS: [f64; 6] = [-1., -0.1, 0., 0.1, 0.4, 1.];
-        const LONGITUDINAL_MAP: [f64; 6] = [0.2, 1., 1., 1., 0.2, 0.2];
-
         let lateral_ratio = interpolation(
             &LATERAL_BREAKPOINTS,
             &LATERAL_MAP,
             self.fluid_cg_position[0],
         );
 
-        let logitudinal_ratio = interpolation(
+        const LONGITUDINAL_BREAKPOINTS: [f64; 6] = [-1., -0.1, 0., 0.1, 0.4, 1.];
+        const LONGITUDINAL_MAP: [f64; 6] = [0.2, 1., 1., 1., 0.2, 0.2];
+        let longitudinal_ratio = interpolation(
             &LONGITUDINAL_BREAKPOINTS,
             &LONGITUDINAL_MAP,
             self.fluid_cg_position[2],
@@ -1799,7 +1779,7 @@ impl FluidPhysics {
         if self.g_trap_is_empty.output() {
             Ratio::new::<ratio>(0.)
         } else {
-            Ratio::new::<ratio>(logitudinal_ratio * lateral_ratio)
+            Ratio::new::<ratio>(longitudinal_ratio * lateral_ratio)
         }
     }
 
