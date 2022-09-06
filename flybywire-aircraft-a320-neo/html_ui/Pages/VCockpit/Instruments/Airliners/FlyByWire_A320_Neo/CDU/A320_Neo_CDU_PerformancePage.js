@@ -1096,7 +1096,7 @@ class CDUPerformancePage {
         mcdu.thrustReductionAltitudeGoaround = alt;
         mcdu.accelerationAltitudeGoaround = alt;
         mcdu.engineOutAccelerationAltitudeGoaround = alt;
-        console.log("inside UpdateTHrRedAccFromdest in CDUPERF and thrustReductionAltitudeGoaround is: " + mcdu.thrustReductionAltitudeGoaround + "alt variable is: " + alt);
+        console.log("inside UpdaTeTHrRedAccFromdest in CDUPERF and thrustReductionAltitudeGoaround is: " + mcdu.thrustReductionAltitudeGoaround + "alt variable is: " + alt);
         SimVar.SetSimVarValue("L:AIRLINER_THR_RED_ALT_GOAROUND", "Number", alt);
         SimVar.SetSimVarValue("L:AIRLINER_ACC_ALT_GOAROUND", "Number", alt);
         SimVar.SetSimVarValue("L:AIRLINER_ENG_OUT_ACC_ALT_GOAROUND", "Number", alt);
