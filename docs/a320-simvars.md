@@ -783,6 +783,14 @@
         - BLUE
         - YELLOW
 
+- A32NX_HYD_{loop_name}_PUMP_1_SECTION_PRESSURE_SWITCH
+    - Boolean
+    - Current pressure switch state in {loop_name} pump section
+    - {loop_name}
+        - GREEN
+        - BLUE
+        - YELLOW
+
 - A32NX_HYD_{loop_name}_RESERVOIR_LEVEL
     - Gallon
     - Current gaugeable fluid level in the {loop_name} hydraulic circuit reservoir
@@ -874,6 +882,10 @@
         - Removes reflection from the ISIS
     - Useful for home cockpits that use the sim's built-in pop-out feature and do not wish to have these effects present
       on their displays.
+
+- A32NX_FO_SYNC_EFIS_ENABLED
+    - Bool
+    - 1 to sync the status of FD and LS buttons between CPT and FO sides
 
 - A32NX_HYD_{loop_name}_EPUMP_LOW_PRESS
     - Bool
@@ -1588,6 +1600,10 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Seconds
     - The remaining alignment duration. Zero seconds when the system is aligned or the system is not aligning.
 
+- A32NX_ADIRS_ADR_{number}_CORRECTED_AVERAGE_STATIC_PRESSURE
+    - Arinc429Word<hPa>
+    - The corrected average static pressure.
+
 - A32NX_ADIRS_ADR_{number}_ALTITUDE
     - Arinc429Word<Feet>
     - The altitude.
@@ -1769,6 +1785,14 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - {side}
         - L
         - R
+
+- L:A32NX_FM{number}_LANDING_ELEVATION
+    - ARINC429<number> (feet MSL)
+    - The landing elevation at the active destination
+    - **Temporary:** there are also simvars with _SSM suffix to carry the SSM until JS is able to write ARINC simvars
+    - {number}
+        - 1 - captain's side FMGC
+        - 2 - f/o's side FMGC
 
 ## Autopilot System
 
@@ -2485,6 +2509,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Percent open of the cabin pressure safety valves
 
 - A32NX_PRESS_AUTO_LANDING_ELEVATION
+    - **Deprecated**
     - Feet
     - Automatic landing elevation as calculated by the MCDU when a destination runway is entered
 

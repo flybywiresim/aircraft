@@ -478,6 +478,7 @@
       "PauseAtTod": "T/D Pause",
       "PauseAtTodDistance": "T/D Pause Distance (nm)",
       "SeparateTillerFromRudderInputs": "Oddziel Sterowanie Kołem od Steru Kierunku",
+      "SyncEfis": "Sync EFIS controls between Captain and FO",
       "Title": "Realizm"
     },
     "SimOptions": {

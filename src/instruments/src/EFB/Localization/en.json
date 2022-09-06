@@ -112,27 +112,6 @@
     "Title": "Failures"
   },
   "Ground": {
-    "Payload": {
-      "Passengers": "Passengers",
-      "Cargo": "Cargo",
-      "ZFW": "ZFW",
-      "ZFWCG": "ZFWCG",
-      "Planned": "Planned",
-      "Current": "Current",
-      "BoardingTime": "Boarding Time",
-      "Title": "Payload",
-      "TT": {
-        "MaxPassengers": "Maximum Passengers",
-        "MaxCargo": "Maximum Cargo",
-        "MaxZFW": "Maximum ZFW",
-        "MaxZFWCG": "Maximum ZFWCG",
-        "PerPaxWeight": "Per Passenger Weight",
-        "PerPaxBagWeight": "Per Passenger Bag Weight",
-        "FillPayloadFromSimbrief": "Fill Payload Information from Simbrief",
-        "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Aircraft Must Be On the Ground and Have Engines Shutdown to Change Boarding Duration",
-        "StartBoarding": "Begin Boarding"
-      }
-    },
     "Fuel": {
       "CenterTank": "Center Tank",
       "Completed": "Completed",
@@ -383,6 +362,12 @@
       "SavePreset": "Save Preset",
       "SavingPreset": "Saving Preset",
       "SelectAnInteriorLightingPresetToLoadOrSave": "Select an interior lighting preset to load or save.",
+      "AutoLoadLightingPreset": "Enable automatic loading of lighting presets:",
+      "AutoLoadLightingHelpTitle": "Automatic Preset Loading",
+      "AutoLoadNoneSelection": "None",
+      "AutoLoadDay": "Day:",
+      "AutoLoadDawnDusk": "Dawn/Dusk:",
+      "AutoLoadNight": "Night:",
       "TT": {
         "AircraftMustBePowered": "Aircraft Must be Powered",
         "ClickTextToChangeThePresetsName": "Click Text to Change the Preset's Name",
@@ -499,6 +484,7 @@
       "PauseAtTod": "T/D Pause",
       "PauseAtTodDistance": "T/D Pause Distance (nm)",
       "SeparateTillerFromRudderInputs": "Separate Tiller from Rudder Inputs",
+      "SyncEfis": "Sync EFIS controls between Captain and FO",
       "Title": "Realism"
     },
     "SimOptions": {
@@ -511,6 +497,8 @@
       "EnableSimBridge": "Enable SimBridge Connection (Auto deactivates after 5 minutes if no successful connection)",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Enable MCDU Server Connection (Auto deactivates after 5 minutes if no successful connection)",
       "ExternalMcduServerPort": "External MCDU Server Port",
+      "EnableSimBridge": "Enable Simbridge Connection (Auto deactivates after 5 minutes if no successful connection)",
+      "SimBridgePort": "Simbridge Port",
       "Hpa": "hPa",
       "Inactive": "Inactive",
       "LoadOnly": "Load Only",
@@ -589,8 +577,8 @@
     "Sep": "Sep",
     "Sun": "Sun",
     "TT": {
-      "ConnectedToLocalApi": "Connected to Local API",
-      "DisconnectedFromLocalApi": "Disconnected from Local API",
+      "ConnectedToLocalApi": "Connected to SimBridge",
+      "DisconnectedFromLocalApi": "Disconnected from SimBridge",
       "TurnOffOrShutdownEfb": "Turn off or Shutdown EFB"
     },
     "Thu": "Thu",
