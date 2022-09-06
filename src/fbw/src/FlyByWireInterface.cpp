@@ -521,6 +521,8 @@ void FlyByWireInterface::setupLocalVariables() {
     idAdrAirspeedTrue[i] = make_unique<LocalVariable>("A32NX_ADIRS_ADR_" + idString + "_TRUE_AIRSPEED");
     idAdrVerticalSpeed[i] = make_unique<LocalVariable>("A32NX_ADIRS_ADR_" + idString + "_BAROMETRIC_VERTICAL_SPEED");
     idAdrAoaCorrected[i] = make_unique<LocalVariable>("A32NX_ADIRS_ADR_" + idString + "_ANGLE_OF_ATTACK");
+    idAdrCorrectedAverageStaticPressure[i] =
+        make_unique<LocalVariable>("A32NX_ADIRS_ADR_" + idString + "_CORRECTED_AVERAGE_STATIC_PRESSURE");
 
     idIrLatitude[i] = make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_LATITUDE");
     idIrLongitude[i] = make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_LONGITUDE");
@@ -1124,6 +1126,8 @@ bool FlyByWireInterface::updateAdirs(int adirsIndex) {
   adrBusOutputs[adirsIndex].airspeed_true_kn = Arinc429Utils::fromSimVar(idAdrAirspeedTrue[adirsIndex]->get());
   adrBusOutputs[adirsIndex].vertical_speed_ft_min = Arinc429Utils::fromSimVar(idAdrVerticalSpeed[adirsIndex]->get());
   adrBusOutputs[adirsIndex].aoa_corrected_deg = Arinc429Utils::fromSimVar(idAdrAoaCorrected[adirsIndex]->get());
+  adrBusOutputs[adirsIndex].corrected_average_static_pressure =
+      Arinc429Utils::fromSimVar(idAdrCorrectedAverageStaticPressure[adirsIndex]->get());
 
   irBusOutputs[adirsIndex].latitude_deg = Arinc429Utils::fromSimVar(idIrLatitude[adirsIndex]->get());
   irBusOutputs[adirsIndex].longitude_deg = Arinc429Utils::fromSimVar(idIrLongitude[adirsIndex]->get());

@@ -140,6 +140,7 @@ struct base_adr_bus
   base_arinc_429 airspeed_true_kn;
   base_arinc_429 vertical_speed_ft_min;
   base_arinc_429 aoa_corrected_deg;
+  base_arinc_429 corrected_average_static_pressure;
 };
 
 #endif

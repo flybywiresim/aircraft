@@ -140,7 +140,9 @@
     "xtr1common": "cpp",
     "xtree": "cpp",
     "xutility": "cpp",
-    "queue": "cpp"
+    "queue": "cpp",
+    "__functional_03": "cpp",
+    "memory_resource": "cpp"
   },
   "typescript.preferences.quoteStyle": "single",
   "typescript.preferences.importModuleSpecifier": "non-relative"

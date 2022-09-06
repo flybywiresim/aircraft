@@ -392,6 +392,7 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idAdrAirspeedTrue[3];
   std::unique_ptr<LocalVariable> idAdrVerticalSpeed[3];
   std::unique_ptr<LocalVariable> idAdrAoaCorrected[3];
+  std::unique_ptr<LocalVariable> idAdrCorrectedAverageStaticPressure[3];
 
   // IR bus inputs
   std::unique_ptr<LocalVariable> idIrLatitude[3];
