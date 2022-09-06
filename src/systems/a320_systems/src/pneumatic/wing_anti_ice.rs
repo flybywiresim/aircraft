@@ -116,7 +116,7 @@ impl WingAntiIceValveController {
         self.supplier_pressurized = supplier_pressurized;
 
         if self.wing_anti_ice_button_pos == WingAntiIcePushButtonMode::On {
-            if self.is_on_ground && self.system_test_done == false {
+            if self.is_on_ground && !self.system_test_done {
                 if self.supplier_pressurized {
                     self.system_test_timer += context.delta();
                 }
@@ -127,7 +127,7 @@ impl WingAntiIceValveController {
                 } else {
                     self.controller_signals_on = true;
                 }
-            } else if self.is_on_ground == false {
+            } else if !self.is_on_ground {
                 self.controller_signals_on = true;
             }
         } else {
@@ -137,7 +137,7 @@ impl WingAntiIceValveController {
         // If the plane has took off, we reset the timer
         // and set test_done to false in order for the 
         // mechanism to work when landing.
-        if self.is_on_ground == false && self.system_test_timer > Duration::from_secs(0) {
+        if !self.is_on_ground && self.system_test_timer > Duration::from_secs(0) {
             self.system_test_timer = Duration::from_secs(0);
             self.system_test_done = false;
         }
@@ -835,10 +835,10 @@ mod tests {
                      - ambient_temperature.get::<degree_celsius>()).abs() < temperature_epsilon.get::<degree_celsius>());
         assert!((test_bed.right_wai_temperature().get::<degree_celsius>()
                      - ambient_temperature.get::<degree_celsius>()).abs() < temperature_epsilon.get::<degree_celsius>());
-        assert!(test_bed.left_valve_open() == false);
-        assert!(test_bed.right_valve_open() == false);
-        assert!(test_bed.wing_anti_ice_system_on() == false);
-        assert!(test_bed.wing_anti_ice_has_fault() == false);
+        assert!(!test_bed.left_valve_open());
+        assert!(!test_bed.right_valve_open());
+        assert!(!test_bed.wing_anti_ice_system_on());
+        assert!(!test_bed.wing_anti_ice_has_fault());
     }
 
     #[test]
@@ -861,8 +861,8 @@ mod tests {
     #[test]
     fn wing_anti_ice_no_fault_after_starting_engine() {
         let altitude = Length::new::<foot>(500.);
-        let wai_pressure: Pressure = Pressure::new::<psi>(22.5);
-        let pressure_epsilon: Pressure = Pressure::new::<psi>(0.1);
+        let _wai_pressure: Pressure = Pressure::new::<psi>(22.5);
+        let _pressure_epsilon: Pressure = Pressure::new::<psi>(0.1);
 
         let mut test_bed = test_bed()
             .stop_eng1()
@@ -890,7 +890,7 @@ mod tests {
         println!("right open amount = {}", test_bed.right_valve_open_amount());
         println!("left valve_pid_output = {}", test_bed.left_valve_pid_output());
         println!("right valve_pid_output = {}", test_bed.right_valve_pid_output());
-        assert!(test_bed.wing_anti_ice_has_fault() == false);
+        assert!(!test_bed.wing_anti_ice_has_fault());
         assert!(test_bed.wing_anti_ice_system_on());
     }
 
@@ -917,8 +917,8 @@ mod tests {
     #[test]
     fn wing_anti_ice_tweak_pid() {
         let altitude = Length::new::<foot>(10.);
-        let wai_pressure: Pressure = Pressure::new::<psi>(22.5);
-        let pressure_epsilon: Pressure = Pressure::new::<psi>(0.1);
+        let _wai_pressure: Pressure = Pressure::new::<psi>(22.5);
+        let _pressure_epsilon: Pressure = Pressure::new::<psi>(0.1);
         let mut test_bed = test_bed()
             .in_isa_atmosphere(altitude)
             .idle_eng1()
@@ -945,9 +945,9 @@ mod tests {
         let ambient_pressure = InternationalStandardAtmosphere::pressure_at_altitude(altitude);
         let ambient_temperature = InternationalStandardAtmosphere::temperature_at_altitude(altitude);
 
-        let wai_pressure: Pressure = Pressure::new::<psi>(22.5);
-        let pressure_epsilon: Pressure = Pressure::new::<psi>(0.1);
-        let mut test_bed = test_bed()
+        let _wai_pressure: Pressure = Pressure::new::<psi>(22.5);
+        let _pressure_epsilon: Pressure = Pressure::new::<psi>(0.1);
+        let test_bed = test_bed()
             .in_isa_atmosphere(altitude)
             .power_eng1()
             .power_eng2()
@@ -980,7 +980,7 @@ mod tests {
         let wai_pressure: Pressure = Pressure::new::<psi>(22.5);
         let pressure_epsilon: Pressure = Pressure::new::<psi>(0.1);
 
-        let mut test_bed = test_bed()
+        let test_bed = test_bed()
             .in_isa_atmosphere(altitude)
             .idle_eng1()
             .idle_eng2()
@@ -1009,7 +1009,7 @@ mod tests {
 
         test_bed = test_bed.wing_anti_ice_push_button(WingAntiIcePushButtonMode::On);
         test_bed.run_with_delta(Duration::from_millis(16));
-        assert!(test_bed.wing_anti_ice_system_on() == true);
+        assert!(test_bed.wing_anti_ice_system_on());
         test_bed.run_with_delta(Duration::from_secs(1));
         
         assert!(test_bed.left_valve_open_amount()>0.);
@@ -1022,12 +1022,12 @@ mod tests {
         assert!(test_bed.left_valve_open_amount() == 0.);
         assert!(test_bed.right_valve_controller_timer() == Duration::from_secs(30));
         assert!(test_bed.right_valve_open_amount() == 0.);
-        assert!(test_bed.wing_anti_ice_system_on() == false);
+        assert!(!test_bed.wing_anti_ice_system_on());
     }
 
     #[test]
     fn wing_anti_ice_valve_open_after_leaving_ground_after_test() {
-        let altitude = Length::new::<foot>(500.);
+        let _altitude = Length::new::<foot>(500.);
         let mut test_bed = test_bed()
             .idle_eng1()
             .idle_eng2()
@@ -1038,7 +1038,7 @@ mod tests {
         test_bed = test_bed.wing_anti_ice_push_button(WingAntiIcePushButtonMode::On);
         test_bed.run_with_delta(Duration::from_secs(31));
         
-        assert!(test_bed.wing_anti_ice_system_on() == false);
+        assert!(!test_bed.wing_anti_ice_system_on());
         assert!(test_bed.left_valve_open_amount() == 0.);
         assert!(test_bed.right_valve_open_amount() == 0.);
 
@@ -1056,7 +1056,7 @@ mod tests {
         println!("left valve_pid_output = {}", test_bed.left_valve_pid_output());
         println!("right valve_pid_output = {}", test_bed.right_valve_pid_output());
 
-        assert!(test_bed.wing_anti_ice_system_on() == true);
+        assert!(test_bed.wing_anti_ice_system_on());
         assert!(test_bed.left_valve_open_amount() > 0.);
         assert!(test_bed.right_valve_open_amount() > 0.);
         assert!(test_bed.left_valve_controller_timer() == Duration::from_secs(0));
@@ -1075,8 +1075,8 @@ mod tests {
         
         test_bed.set_on_ground(true);
         test_bed.run_with_delta(Duration::from_secs(30));
-        assert!(test_bed.left_valve_open() == false);
-        assert!(test_bed.right_valve_open() == false);
+        assert!(!test_bed.left_valve_open());
+        assert!(!test_bed.right_valve_open());
 
         test_bed.set_on_ground(false);
         test_bed.run_with_delta(Duration::from_millis(16));
