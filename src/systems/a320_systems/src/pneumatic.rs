@@ -3,7 +3,7 @@ use std::{f64::consts::PI, time::Duration};
 
 use uom::si::{
     f64::*,
-    pressure::{psi,inch_of_mercury},
+    pressure::{inch_of_mercury, psi},
     ratio::ratio,
     thermodynamic_temperature::degree_celsius,
     volume::{cubic_meter, gallon},
@@ -20,7 +20,7 @@ use systems::{
         EngineCompressionChamberController, EngineModeSelector, EngineState, PneumaticContainer,
         PneumaticPipe, PneumaticValveSignal, Precooler, PressurisedReservoirWithExhaustValve,
         PressurizeableReservoir, TargetPressureTemperatureSignal, VariableVolumeContainer,
-        WingAntiIcePushButtonMode,WingAntiIcePushButton,
+        WingAntiIcePushButton, WingAntiIcePushButtonMode,
     },
     shared::{
         pid::PidController, update_iterator::MaxStepLoop, ControllerSignal, ElectricalBusType,
@@ -309,7 +309,11 @@ impl A320Pneumatic {
             );
         }
 
-        self.wing_anti_ice.update(context, &mut self.engine_systems, overhead_panel.wing_anti_ice.mode());
+        self.wing_anti_ice.update(
+            context,
+            &mut self.engine_systems,
+            overhead_panel.wing_anti_ice.mode(),
+        );
         let [left_system, right_system] = &mut self.engine_systems;
         self.apu_bleed_air_valve.update_move_fluid(
             context,
@@ -1114,10 +1118,7 @@ impl A320PneumaticOverheadPanel {
     }
 
     pub fn wing_anti_ice_is_on(&self) -> bool {
-        match self.wing_anti_ice.mode() {
-            WingAntiIcePushButtonMode::Off => false,
-            _ => true
-        }
+        !matches!(self.wing_anti_ice.mode(), WingAntiIcePushButtonMode::Off)
     }
 
     pub fn engine_bleed_pb_is_auto(&self, engine_number: usize) -> bool {

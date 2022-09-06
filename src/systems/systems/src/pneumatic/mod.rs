@@ -409,7 +409,6 @@ impl CompressionChamber {
     }
 }
 
-
 pub struct WingAntiIcePushButton {
     mode_id: VariableIdentifier,
     mode: WingAntiIcePushButtonMode,
@@ -427,15 +426,12 @@ impl WingAntiIcePushButton {
     }
 
     pub fn is_on(&self) -> bool {
-        match self.mode {
-            WingAntiIcePushButtonMode::On => true,
-            _ => false,
-        }
+        matches!(self.mode, WingAntiIcePushButtonMode::On)
     }
 }
 impl SimulationElement for WingAntiIcePushButton {
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(&self.mode_id,self.is_on());
+        writer.write(&self.mode_id, self.is_on());
     }
 
     fn read(&mut self, reader: &mut SimulatorReader) {
@@ -446,7 +442,7 @@ impl SimulationElement for WingAntiIcePushButton {
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum WingAntiIcePushButtonMode {
     Off = 0,
-    On = 1
+    On = 1,
 }
 
 read_write_enum!(WingAntiIcePushButtonMode);
