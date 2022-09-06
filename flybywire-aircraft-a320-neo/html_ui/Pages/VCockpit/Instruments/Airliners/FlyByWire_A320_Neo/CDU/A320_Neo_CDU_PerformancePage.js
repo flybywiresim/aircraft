@@ -929,12 +929,14 @@ class CDUPerformancePage {
         let thrRedAcc = "---";
         if (isFinite(mcdu.thrustReductionAltitudeGoaround) && mcdu.thrustReductionAltitudeGoaround != 0) {
             thrRedAcc = mcdu.thrustReductionAltitudeGoaround.toFixed(0);
+            console.log("inside if line 930 in PERF and thruREDGOAround is: " + mcdu.thrustReductionAltitudeGoaround);
         }
 
         thrRedAcc += "/";
 
         if (isFinite(mcdu.accelerationAltitudeGoaround && mcdu.accelerationAltitudeGoaround != 0)) {
             thrRedAcc += mcdu.accelerationAltitudeGoaround.toFixed(0);
+            console.log("inside if line 936 in PERF and accelGOAround is: " + accelerationAltitudeGoaround);
         } else {
             thrRedAcc += "---";
         }
@@ -1094,7 +1096,7 @@ class CDUPerformancePage {
         mcdu.thrustReductionAltitudeGoaround = alt;
         mcdu.accelerationAltitudeGoaround = alt;
         mcdu.engineOutAccelerationAltitudeGoaround = alt;
-
+        console.log("inside UpdateTHrRedAccFromdest in CDUPERF and thrustReductionAltitudeGoaround is: " + mcdu.thrustReductionAltitudeGoaround + "alt variable is: " + alt);
         SimVar.SetSimVarValue("L:AIRLINER_THR_RED_ALT_GOAROUND", "Number", alt);
         SimVar.SetSimVarValue("L:AIRLINER_ACC_ALT_GOAROUND", "Number", alt);
         SimVar.SetSimVarValue("L:AIRLINER_ENG_OUT_ACC_ALT_GOAROUND", "Number", alt);
