@@ -23,18 +23,17 @@ use systems::{
     },
 };
 
-/* The valve itself is a DefaultValve. The only thing
- * we need to re-implement is the controller, that sets
- * whether or not the valve should be open.
- *
- * The controller works using signals. A signal basically
- * tells the controlloer what fraction of the valve should
- * be open. Each valve has an `update_open_amount` method,
- * that accepts a controller that implements the
- * `ControllerSignal` trait. This trait has a single method,
- * which returns an option for the signal type (e.g. wing anti ice signal)
- * depending on the button/selector position.
- **/
+// The valve itself is a DefaultValve. The only thing
+// we need to re-implement is the controller, that sets
+// whether or not the valve should be open.
+//
+// The controller works using signals. A signal basically
+// tells the controlloer what fraction of the valve should
+// be open. Each valve has an `update_open_amount` method,
+// that accepts a controller that implements the
+// `ControllerSignal` trait. This trait has a single method,
+// which returns an option for the signal type (e.g. wing anti ice signal)
+// depending on the button/selector position.
 
 // A WAI valve signal, just indicates what fraction
 // of the valve should be open
@@ -71,12 +70,12 @@ impl PneumaticValveSignal for WingAntiIceValveSignal {
 // - After 30 seconds, the ON light would turn off.
 // - After takeoff, it should be turned on again.
 pub struct WingAntiIceValveController {
-    wing_anti_ice_button_pos: WingAntiIcePushButtonMode, //The position of the button
-    valve_pid: PidController, //PID controller for the valve - to regulate pressure
-    system_test_timer: Duration, //Timer to count up to 30 seconds
-    system_test_done: bool,   //Timer reached 30 seconds while on the ground
-    controller_signals_on: bool, //Status of the ON light. If button is pushed and
-    //the test is finished, the ON light should turn off.
+    wing_anti_ice_button_pos: WingAntiIcePushButtonMode, // The position of the button
+    valve_pid: PidController, // PID controller for the valve - to regulate pressure
+    system_test_timer: Duration, // Timer to count up to 30 seconds
+    system_test_done: bool,   // Timer reached 30 seconds while on the ground
+    controller_signals_on: bool, // Status of the ON light. If button is pushed and
+    // the test is finished, the ON light should turn off.
     supplier_pressurized: bool,
 
     is_on_ground_id: VariableIdentifier,
@@ -180,12 +179,11 @@ impl ControllerSignal<WingAntiIceValveSignal> for WingAntiIceValveController {
     }
 }
 
-/* The wing anti ice is a consumer,
- * meaning it is a simple container that consumes
- * air from the bleed system, and exhausts it to the
- * ambient atmosphere. This is just the implementation
- * of a regular container
- * */
+// The wing anti ice is a consumer,
+// meaning it is a simple container that consumes
+// air from the bleed system, and exhausts it to the
+// ambient atmosphere. This is just the implementation
+// of a regular container
 pub struct WingAntiIceConsumer {
     pipe: PneumaticPipe,
 }
@@ -248,14 +246,13 @@ impl WingAntiIceConsumer {
     }
 }
 
-/* The entire WAI system could have been hard coded
- * into A320Pneumatic, however I think this is cleaner.
- * The complex includes both WAI parts. Each part contains
- * a consumer, a valve and an exhaust.
- *
- * There are two valve controllers, one for each.
- * Still need to figure out whether this is how it works.
- * */
+// The entire WAI system could have been hard coded
+// into A320Pneumatic, however I think this is cleaner.
+// The complex includes both WAI parts. Each part contains
+// a consumer, a valve and an exhaust.
+//
+// There are two valve controllers, one for each.
+// Still need to figure out whether this is how it works.
 
 // const not inside WingAntiIceComplex to link
 // it with the size of the arrays in the struct
