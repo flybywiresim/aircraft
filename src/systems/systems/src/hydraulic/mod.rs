@@ -2929,8 +2929,8 @@ mod tests {
         );
 
         // After 15s more, no more fluid available
-        // 150*100ms = 10s run
-        for _ in 0..150 {
+        // 200*100ms = 20s run
+        for _ in 0..200 {
             test_bed.run_with_delta(Duration::from_millis(100));
         }
 
