@@ -256,11 +256,15 @@ impl WingAntiIceConsumer {
  * There are two valve controllers, one for each.
  * Still need to figure out whether this is how it works.
  * */
+
+// const not inside WingAntiIceComplex to link
+// it with the size of the arrays in the struct
+const NUM_OF_WAI: usize = 2;
 pub struct WingAntiIceComplex {
-    wai_exhaust: [PneumaticExhaust; 2],
-    wai_valve: [DefaultValve; 2],
-    wai_consumer: [WingAntiIceConsumer; 2],
-    valve_controller: [WingAntiIceValveController; 2],
+    wai_exhaust: [PneumaticExhaust; NUM_OF_WAI],
+    wai_valve: [DefaultValve; NUM_OF_WAI],
+    wai_consumer: [WingAntiIceConsumer; NUM_OF_WAI],
+    valve_controller: [WingAntiIceValveController; NUM_OF_WAI],
     wai_system_has_fault: bool,
     wai_system_on: bool,
 
@@ -274,7 +278,6 @@ pub struct WingAntiIceComplex {
     wai_right_valve_open_id: VariableIdentifier,
 }
 impl WingAntiIceComplex {
-    const NUM_OF_WAI: usize = 2;
     pub fn new(context: &mut InitContext) -> Self {
         Self {
             // At 22000ft, flow rate is given at 0.327kg/s
@@ -351,7 +354,7 @@ impl WingAntiIceComplex {
         let mut has_fault: bool = false; // Tracks if the system has a fault
         let mut num_of_on: usize = 0; // Number of controllers that signal `on`
 
-        for n in 0..Self::NUM_OF_WAI {
+        for n in 0..NUM_OF_WAI {
             self.valve_controller[n].valve_pid.next_control_output(
                 self.wai_consumer_pressure(n).get::<psi>(),
                 Some(context.delta()),
@@ -397,7 +400,7 @@ impl WingAntiIceComplex {
 
         self.wai_system_has_fault = has_fault;
 
-        self.wai_system_on = (num_of_on == Self::NUM_OF_WAI) && !has_fault;
+        self.wai_system_on = (num_of_on == NUM_OF_WAI) && !has_fault;
     }
 }
 
@@ -406,7 +409,7 @@ impl SimulationElement for WingAntiIceComplex {
     where
         Self: Sized,
     {
-        for n in 0..Self::NUM_OF_WAI {
+        for n in 0..NUM_OF_WAI {
             self.valve_controller[n].accept(visitor);
         }
         visitor.visit(self);
