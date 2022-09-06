@@ -74,6 +74,7 @@
 1. [HYD] Added optional auxiliary hydraulic section in core hydraulic circuits - @Crocket63
 1. [EFB] Added SimBridge Health Check icon to Status Bar - @frankkopp (Frank Kopp)
 1. [HYD] Fix gear extending whith dual lgciu power loss - @Crocket63 (crocket)
+1. [FLIGHTMODEL] Add SU10 crosswind parameters - @donstim (donbikes#4084)
 
 ## 0.8.0
 
