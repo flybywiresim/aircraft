@@ -414,9 +414,7 @@ mod tests {
         },
     };
 
-    use std::{
-        time::Duration
-    };
+    use std::time::Duration;
 
     use uom::si::{
         length::foot,
@@ -427,7 +425,7 @@ mod tests {
     use crate::{
         A320Pneumatic,
         A320PneumaticOverheadPanel,
-        hydraulic::{A320Hydraulic},
+        hydraulic::A320Hydraulic,
         systems::simulation::test::{ReadByName, WriteByName}
     };
 
@@ -793,7 +791,6 @@ mod tests {
         PneumaticTestBed::new()
     }
 
-
     #[test]
     fn wing_anti_ice_simvars() {
         let test_bed = test_bed();
@@ -808,6 +805,7 @@ mod tests {
         assert!(test_bed.contains_variable_with_name("PNEU_RIGHT_WING_ANTI_ICE_VALVE_OPEN"));
         assert!(test_bed.contains_variable_with_name("BUTTON_OVHD_ANTI_ICE_WING_Position"));
     }
+    
     #[test]
     fn wing_anti_ice_cold_and_dark() {
         let altitude = Length::new::<foot>(500.);
@@ -841,7 +839,6 @@ mod tests {
         assert!(test_bed.right_valve_open() == false);
         assert!(test_bed.wing_anti_ice_system_on() == false);
         assert!(test_bed.wing_anti_ice_has_fault() == false);
-
     }
 
     #[test]
@@ -998,7 +995,6 @@ mod tests {
         assert!((test_bed.right_wai_pressure() - wai_pressure).abs() < pressure_epsilon);
     }
 
-
     #[test]
     fn wing_anti_ice_valve_close_after_30_seconds_on_ground () {
         let mut test_bed = test_bed()
@@ -1027,8 +1023,6 @@ mod tests {
         assert!(test_bed.right_valve_controller_timer() == Duration::from_secs(30));
         assert!(test_bed.right_valve_open_amount() == 0.);
         assert!(test_bed.wing_anti_ice_system_on() == false);
-
-
     }
 
     #[test]
@@ -1048,11 +1042,6 @@ mod tests {
         assert!(test_bed.left_valve_open_amount() == 0.);
         assert!(test_bed.right_valve_open_amount() == 0.);
 
-        // test_bed = test_bed
-        //         .in_isa_atmosphere(altitude)
-        //         .power_eng1()
-        //         .power_eng2()
-        //         .and_stabilize();
         test_bed.set_on_ground(false);
         test_bed.run_with_delta(Duration::from_secs(1));
         
