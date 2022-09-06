@@ -160,10 +160,10 @@ impl LevelSwitch {
         }
     }
 
-    pub fn update(&mut self, current_volume: Volume) {
-        if current_volume <= self.low_hysteresis_threshold {
+    pub fn update(&mut self, current_volume: Volume, is_upside_down: bool) {
+        if current_volume <= self.low_hysteresis_threshold && !is_upside_down {
             self.state_is_low = true;
-        } else if current_volume >= self.high_hysteresis_threshold {
+        } else if current_volume >= self.high_hysteresis_threshold || is_upside_down {
             self.state_is_low = false;
         }
     }
@@ -1641,7 +1641,7 @@ impl SpringPhysics {
         }
     }
 
-    fn update_force_nm(
+    fn update_force(
         &mut self,
         context: &UpdateContext,
         position1: Vector3<f64>,
@@ -1725,7 +1725,7 @@ impl FluidPhysics {
 
         let spring_force =
             self.spring
-                .update_force_nm(context, self.reference_point_cg, self.fluid_cg_position);
+                .update_force(context, self.reference_point_cg, self.fluid_cg_position);
 
         let viscosity_damping = -self
             .fluid_cg_speed
@@ -1803,34 +1803,6 @@ impl FluidPhysics {
         }
     }
 
-    // Returns a coefficient of the actual level that will be seen by low level switch
-    // Example: 0.5 means from pumps point of view half the actual level of the reservoir is available
-    fn low_level_switch_modifier(&self) -> Ratio {
-        const LATERAL_BREAKPOINTS: [f64; 6] = [-1., -0.2, 0., 0.2, 0.4, 1.];
-        const LATERAL_MAP: [f64; 6] = [0.2, 0.8, 1., 1., 1., 1.];
-
-        const VERTICAL_BREAKPOINTS: [f64; 6] = [-1., -0.1, 0., 0.1, 0.4, 1.];
-        const VERTICAL_MAP: [f64; 6] = [0.2, 1., 1., 1., 0.2, 0.2];
-
-        let lateral_ratio = interpolation(
-            &LATERAL_BREAKPOINTS,
-            &LATERAL_MAP,
-            self.fluid_cg_position[0],
-        );
-
-        let logitudinal_ratio = interpolation(
-            &LONGITUDINAL_BREAKPOINTS,
-            &LONGITUDINAL_MAP,
-            self.fluid_cg_position[2],
-        );
-
-        if self.is_fluid_going_up() {
-            Ratio::new::<ratio>(0.)
-        } else {
-            Ratio::new::<ratio>(logitudinal_ratio * lateral_ratio)
-        }
-    }
-
     fn is_fluid_going_up(&self) -> bool {
         self.fluid_cg_position[1] > 0.
     }
@@ -1898,7 +1870,10 @@ impl Reservoir {
 
         self.fluid_physics.update(context);
 
-        self.level_switch.update(self.fluid_level_from_gauge());
+        self.level_switch.update(
+            self.fluid_level_from_gauge(),
+            self.fluid_physics.is_fluid_going_up(),
+        );
 
         self.update_pressure_switches(context);
 
@@ -2773,6 +2748,34 @@ mod tests {
 
         let is_low: bool = test_bed.read_by_name("HYD_GREEN_RESERVOIR_LEVEL_IS_LOW");
         assert!(is_low);
+    }
+
+    #[test]
+    fn reservoir_empty_but_inverted_has_level_switch_reporting_ok() {
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            reservoir(
+                context,
+                HydraulicColor::Green,
+                Volume::new::<gallon>(5.),
+                Volume::new::<gallon>(2.),
+                Volume::new::<gallon>(0.01),
+            )
+        }));
+
+        test_bed.set_update_after_power_distribution(|reservoir, context| {
+            reservoir.update(context, Pressure::new::<psi>(50.))
+        });
+
+        test_bed.run_multiple_frames(Duration::from_secs(2));
+
+        let is_low: bool = test_bed.read_by_name("HYD_GREEN_RESERVOIR_LEVEL_IS_LOW");
+        assert!(is_low);
+
+        test_bed.write_by_name("PLANE BANK DEGREES", 180.);
+        test_bed.run_multiple_frames(Duration::from_secs(2));
+
+        let is_low: bool = test_bed.read_by_name("HYD_GREEN_RESERVOIR_LEVEL_IS_LOW");
+        assert!(!is_low);
     }
 
     #[test]
