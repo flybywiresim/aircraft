@@ -2,4 +2,4 @@
 
 set -ex
 
-cargo test
+cargo test -p a320_systems "$@"
