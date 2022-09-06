@@ -1,90 +1,26 @@
-// use core::panic;
 use std::time::Duration;
 
 use crate::{
-    A320Pneumatic,
-    A320PneumaticOverheadPanel,
-    hydraulic::{A320Hydraulic},
-    pneumatic::{EngineBleedAirSystem},
+    pneumatic::EngineBleedAirSystem,
     UpdateContext,
 };
 
 use uom::si::{
     f64::*,
-    pressure::{pascal, psi},
+    pressure::psi,
     ratio::{percent, ratio},
     thermodynamic_temperature::degree_celsius,
     temperature_interval,
     volume::cubic_meter,
-    // volume_rate::cubic_meter_per_second,
 };
 
 use systems::{
-    pneumatic::{valve::DefaultValve, valve::PneumaticExhaust, ControllablePneumaticValve, PneumaticContainer, PneumaticValveSignal, WingAntiIcePushButtonMode, PneumaticPipe},
-    shared::{ControllerSignal, pid::PidController, PneumaticValve, EngineFirePushButtons},
-    simulation::{InitContext, Read, Write, SimulationElement, SimulationElementVisitor, SimulatorReader, SimulatorWriter, VariableIdentifier}
+    pneumatic::{valve::DefaultValve, valve::PneumaticExhaust, ControllablePneumaticValve, PneumaticContainer,
+                PneumaticValveSignal, WingAntiIcePushButtonMode, PneumaticPipe},
+    shared::{ControllerSignal, pid::PidController, PneumaticValve},
+    simulation::{InitContext, Read, Write, SimulationElement, SimulationElementVisitor,
+                 SimulatorReader, SimulatorWriter, VariableIdentifier}
 };
-
-
-/* This is actually not specific for the wing anti ice,
- * and should be attached to any consumer that exhausts 
- * air to the outside of the plane.
- * This is actually a static valve, that keeps its open amount
- * without a controller. Unlike `DefaultValve`, the `update_move_fluid`
- * here moves air from a container to the ambient atmosphere, which
- * is an infinite pressure bath.
- * */
-
-// Just holds how much the exhaust is open.
-// pub struct StaticExhaust {
-//     open_amount: Ratio,
-// }
-
-// impl StaticExhaust {
-//     const MASS_TRANSFER_SPEED: f64 = 1.;
-    
-//     // Unlike `DefaultValve`, we need to specify the 
-//     // initial open amount everytime we initiate a new exhaust
-//     pub fn new(open_amount: Ratio) -> Self {
-//         Self { open_amount }
-//     }
-    
-//     // Returns the open amount 
-//     pub fn open_amount(&self) -> Ratio {
-//         self.open_amount
-//     }
-
-//     // Compute the amount of air that is exhausted
-//     // given the pressure gradient between the container
-//     // and the ambient atmosphere.
-//     pub fn update_move_fluid(
-//         &self,
-//         context: &UpdateContext,
-//         from: &mut impl PneumaticContainer,
-//     ) {
-
-//         let equalization_volume = (from.pressure()-context.ambient_pressure()) * from.volume()
-//             / Pressure::new::<pascal>(142000.);
-//         self.exhaust_volume(
-//             context,
-//             from,
-//             self.open_amount()
-//                 * equalization_volume
-//                 * (1. - (-Self::MASS_TRANSFER_SPEED * context.delta_as_secs_f64()).exp()),
-//         );
-//     } 
-    
-//     // Exhaust a certain amount of volume
-//     fn exhaust_volume(  
-//             &self,
-//             context: &UpdateContext,
-//             from: &mut impl PneumaticContainer,
-//             volume: Volume,
-//     ) {
-//         // TODO: use change_fluid_amount using Mass, ThermodynamicTemperature, Pressure
-//         //from.change_volume(-volume);
-//     }
-// }
 
 /* The valve itself is a DefaultValve. The only thing
  * we need to re-implement is the controller, that sets
@@ -136,7 +72,6 @@ impl PneumaticValveSignal for WingAntiIceValveSignal {
 pub struct WingAntiIceValveController {
     wing_anti_ice_button_pos: WingAntiIcePushButtonMode, //The position of the button
     valve_pid: PidController, //PID controller for the valve - to regulate pressure
-    // valve_pid_output: f64, //Output of the PID controller - open_amount
     system_test_timer: Duration, //Timer to count up to 30 seconds
     system_test_done: bool, //Timer reached 30 seconds while on the ground
     controller_signals_on: bool, //Status of the ON light. If button is pushed and 
@@ -153,7 +88,6 @@ impl WingAntiIceValveController {
             wing_anti_ice_button_pos: WingAntiIcePushButtonMode::Off,
             // Setpoint is 22.5 +/- 2.5 (psi)
             valve_pid: PidController::new(0.05,0.01,0.,0.,1.,22.5,1.),
-            // valve_pid_output: 0.,
             system_test_timer: Duration::from_secs(0),
             system_test_done: false,
             controller_signals_on: false,
@@ -161,8 +95,7 @@ impl WingAntiIceValveController {
 
             is_on_ground_id: context.get_identifier("SIM ON GROUND".to_owned()),
             is_on_ground: Default::default(), //true
-       }
-    
+        }    
     }
 
     pub fn controller_signals_on(&self) -> bool {
@@ -200,11 +133,10 @@ impl WingAntiIceValveController {
         } else {
             self.controller_signals_on = false;
         }
-
         
-        //If the plane has took off, we reset the timer
-        //and set test_done to false in order for the 
-        //mechanism to work when landing.
+        // If the plane has took off, we reset the timer
+        // and set test_done to false in order for the 
+        // mechanism to work when landing.
         if self.is_on_ground == false && self.system_test_timer > Duration::from_secs(0) {
             self.system_test_timer = Duration::from_secs(0);
             self.system_test_done = false;
@@ -250,7 +182,6 @@ impl ControllerSignal<WingAntiIceValveSignal> for WingAntiIceValveController {
  * ambient atmosphere. This is just the implementation 
  * of a regular container
  * */
-
 pub struct WingAntiIceConsumer {
     pipe: PneumaticPipe,
 }
@@ -292,8 +223,6 @@ impl WingAntiIceConsumer {
     pub fn new(volume: Volume) -> Self {
         Self {
             pipe: PneumaticPipe::new(volume,
-                // TODO Removed Fluid when upgrading from DefaultPipe --> PneumaticPipe
-                // Fluid::new(Pressure::new::<pascal>(142000.)),
                 Pressure::new::<psi>(14.7),
                 ThermodynamicTemperature::new::<degree_celsius>(15.),
             ),
@@ -344,6 +273,9 @@ impl WingAntiIceComplex {
             // At 22000ft, flow rate is given at 0.327kg/s
             wai_exhaust: [PneumaticExhaust::new(0.524, 3., Pressure::new::<psi>(0.)),
                           PneumaticExhaust::new(0.524, 3., Pressure::new::<psi>(0.))],
+            // If the pressure increases to 2.1 bar (30.4579 psi)
+            // the switch gives a 'high pressure' signal. If the pressure decreases
+            // to 1.0 bar (14.5038 psi) the related switch gives a 'low pressure' signal.
             wai_valve: [DefaultValve::new_closed(),
                         DefaultValve::new_closed()],
             wai_consumer: [WingAntiIceConsumer::new(Volume::new::<cubic_meter>(1.)),
@@ -397,13 +329,10 @@ impl WingAntiIceComplex {
         let mut num_of_on: usize = 0; // Number of controllers that signal `on`
 
         for n in 0..Self::NUM_OF_WAI {
-            // self.valve_controller[n].valve_pid_output = 
             self.valve_controller[n].valve_pid.next_control_output(
                self.wai_consumer_pressure(n).get::<psi>(),
                Some(context.delta()),
             );
-
-            //self.valve_controller[n].valve_pid.reset_with_output(1.);
             
             // First, we see if the valve's open amount changes this update,
             // as a result of a change in the ovhd panel push button.
@@ -475,29 +404,32 @@ impl SimulationElement for WingAntiIceComplex {
 mod tests {
     use super::*;
     use systems::{
-        air_conditioning::{AirConditioningSystem, acs_controller::PackFlowController, acs_controller::Pack, PackFlowControllers, ZoneType},
+        air_conditioning::{AirConditioningSystem, acs_controller::{PackFlowController, Pack}, PackFlowControllers, ZoneType},
         engine::leap_engine::LeapEngine,
-        pneumatic::{EngineState, TargetPressureTemperatureSignal/*, PneumaticContainer*/},
-        shared::{ApuBleedAirValveSignal, /*MachNumber,*/ InternationalStandardAtmosphere},
+        pneumatic::{EngineState, TargetPressureTemperatureSignal},
+        shared::{ApuBleedAirValveSignal, InternationalStandardAtmosphere, EngineFirePushButtons},
         simulation::{
             test::{SimulationTestBed, TestBed},
-            Aircraft, SimulationElement/*, Write,
-*/        },
+            Aircraft, SimulationElement
+        },
     };
 
     use std::{
-        // fs::File,
         time::Duration
     };
 
     use uom::si::{
         length::foot,
-        // pressure::pascal,
         thermodynamic_temperature::degree_celsius,
         mass_rate::kilogram_per_second
     };
     
-    use crate::systems::simulation::test::{ReadByName, WriteByName};
+    use crate::{
+        A320Pneumatic,
+        A320PneumaticOverheadPanel,
+        hydraulic::{A320Hydraulic},
+        systems::simulation::test::{ReadByName, WriteByName}
+    };
 
     struct TestApu {
         bleed_air_valve_signal: ApuBleedAirValveSignal,
@@ -545,11 +477,6 @@ mod tests {
 
     struct TestAirConditioning {
         a320_air_conditioning_system: AirConditioningSystem<3>,
-
-        // adirs: TestAdirs,
-        // lgciu: TestLgciu,
-        // pressurization: TestPressurization,
-        // pressurization_overhead: PressurizationOverheadPanel,
     }
     impl TestAirConditioning {
         fn new(context: &mut InitContext) -> Self {
@@ -558,33 +485,8 @@ mod tests {
 
             Self {
                 a320_air_conditioning_system: AirConditioningSystem::new(context, cabin_zones),
-
-                // adirs: TestAdirs::new(),
-                // lgciu: TestLgciu::new(true),
-                // pressurization: TestPressurization::new(),
-                // pressurization_overhead: PressurizationOverheadPanel::new(context),
             }
         }
-        // fn update(
-        //     &mut self,
-        //     context: &UpdateContext,
-        //     engines: [&impl EngineCorrectedN1; 2],
-        //     engine_fire_push_buttons: &impl EngineFirePushButtons,
-        //     pneumatic: &(impl EngineStartState + PackFlowValveState + PneumaticBleed),
-        //     pneumatic_overhead: &impl EngineBleedPushbutton,
-        // ) {
-        //     self.a320_air_conditioning_system.update(
-        //         context,
-        //         &self.adirs,
-        //         engines,
-        //         engine_fire_push_buttons,
-        //         pneumatic,
-        //         pneumatic_overhead,
-        //         &self.pressurization,
-        //         &self.pressurization_overhead,
-        //         [&self.lgciu; 2],
-        //     );
-        // }
     }
     impl PackFlowControllers<3> for TestAirConditioning {
         fn pack_flow_controller(&self, pack_id: Pack) -> PackFlowController<3> {
@@ -1030,22 +932,13 @@ mod tests {
 
         assert!(test_bed.left_valve_controller_on());
 
-        // let mut openamount = Vec::new();
-        for _ in 0..10 {
-            // openamount.push(test_bed.left_valve_open_amount());
-            // openamount.push(test_bed.left_wai_pressure().get::<psi>());
+        for _ in 0..50 {
             println!("left pressure = {}",test_bed.left_wai_pressure().get::<psi>());
             println!("left open amount = {}", test_bed.left_valve_open_amount());
             assert_ne!(test_bed.left_valve_open_amount(), 0.);
             test_bed.run_with_delta(Duration::from_millis(16));
         }
 
-        // let mut file = File::create("DO NOT COMMIT.txt").expect("Could not create file");
-
-        // use std::io::Write;
-
-        // writeln!(file, "{:?}", openamount).expect("Could not write file");
-        // assert!(1>1);
         assert!(test_bed.left_valve_open());
     }
 
@@ -1103,7 +996,6 @@ mod tests {
 
         assert!((test_bed.left_wai_pressure() - wai_pressure).abs() < pressure_epsilon);
         assert!((test_bed.right_wai_pressure() - wai_pressure).abs() < pressure_epsilon);
-
     }
 
 
@@ -1174,13 +1066,12 @@ mod tests {
         println!("right open amount = {}", test_bed.right_valve_open_amount());
         println!("left valve_pid_output = {}", test_bed.left_valve_pid_output());
         println!("right valve_pid_output = {}", test_bed.right_valve_pid_output());
-        
+
         assert!(test_bed.wing_anti_ice_system_on() == true);
         assert!(test_bed.left_valve_open_amount() > 0.);
         assert!(test_bed.right_valve_open_amount() > 0.);
         assert!(test_bed.left_valve_controller_timer() == Duration::from_secs(0));
         assert!(test_bed.right_valve_controller_timer() == Duration::from_secs(0));
-
     }
 
     #[test]
@@ -1217,8 +1108,6 @@ mod tests {
         test_bed.run_with_delta(Duration::from_secs(30));
         assert!(test_bed.left_valve_open_amount() == 0.);
         assert!(test_bed.right_valve_open_amount() == 0.);
-
-
     }
 
 }
