@@ -25,6 +25,17 @@ const EngineBleed: FC<EngineBleedProps> = ({ x, y, engine, sdacDatum, enginePRVa
     const [precoolerInletPress] = useSimVar(`L:A32NX_PNEU_ENG_${engine}_PRECOOLER_INLET_PRESSURE`, 'psi', 10);
     const precoolerInletPressTwo = Math.round(precoolerInletPress / 2) * 2;
 
+    const [wingAntiIceValveOpen] = useSimVar(`L:A32NX_PNEU_${engine}_WING_ANTI_ICE_VALVE_OPEN`, 'bool', 500);
+    const [wingAntiIceHighPressure] = useSimVar(`L:A32NX_PNEU_${engine}_WING_ANTI_ICE_HIGH_PRESSURE`, 'bool', 500);
+    const [wingAntiIceLowPressure] = useSimVar(`L:A32NX_PNEU_${engine}_WING_ANTI_ICE_LOW_PRESSURE`, 'bool', 500);
+
+    /* When onGround, it should become AMBER after 10s that it's open */
+    const WingAntiIceTriangleColour = onGround || 
+                                      wingAntiIceValveOpen !== wingAntiIceOn || 
+                                      wingAntiIceHighPressure ||
+                                      wingAntiIceLowPressure
+                                      ? 'Amber' :  'Green'
+
     return (
         <g id={`bleed-${engine}`}>
 
@@ -43,7 +54,7 @@ const EngineBleed: FC<EngineBleedProps> = ({ x, y, engine, sdacDatum, enginePRVa
 
             {/* Anti-ice */}
             <g id={`anti-ice-engine-${engine}`} className={wingAntiIceOn ? 'Show' : 'Hide'}>
-                <Triangle x={engine === 1 ? x - 41 : x + 41} y={y + 206} colour={onGround ? 'Amber' : 'Green'} orientation={engine === 1 ? -90 : 90} fill={0} scale={0.75} />
+                <Triangle x={engine === 1 ? x - 41 : x + 41} y={y + 206} colour={WingAntiIceTriangleColour} orientation={engine === 1 ? -90 : 90} fill={0} scale={0.75} />
                 <text className="Medium White" x={engine === 1 ? x - 80 : x + 42} y={y + 195}>ANTI</text>
                 <text className="Medium White" x={engine === 1 ? x - 80 : x + 52} y={y + 215}>ICE</text>
             </g>

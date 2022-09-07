@@ -2676,28 +2676,44 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Indicates wheter the wing anti ice system has a fault
     - Bool
 
-- A32NX_PNEU_LEFT_WING_ANTI_ICE_CONSUMER_PRESSURE:
+- A32NX_PNEU_1_WING_ANTI_ICE_CONSUMER_PRESSURE:
     - Pressure in the left wing anti ice pipe
     - PSI
 
-- A32NX_PNEU_RIGHT_WING_ANTI_ICE_CONSUMER_PRESSURE:
+- A32NX_PNEU_2_WING_ANTI_ICE_CONSUMER_PRESSURE:
     - Pressure in the right wing anti ice pipe
     - PSI
 
-- A32NX_PNEU_LEFT_WING_ANTI_ICE_CONSUMER_TEMPERATURE:
+- A32NX_PNEU_1_WING_ANTI_ICE_CONSUMER_TEMPERATURE:
     - Temperature in the left wing anti ice pipe
     - Degree celsius
 
-- A32NX_PNEU_RIGHT_WING_ANTI_ICE_CONSUMER_TEMPERATURE:
+- A32NX_PNEU_2_WING_ANTI_ICE_CONSUMER_TEMPERATURE:
     - Temperature in the right wing anti ice pipe
     - Degree celsius
 
-- A32NX_LEFT_WING_ANTI_ICE_VALVE_OPEN:
+- A32NX_PNEU_1_WING_ANTI_ICE_VALVE_OPEN:
     - Indicates whether the left wing anti ice valve is open
     - Bool
 
-- A32NX_RIGHT_WING_ANTI_ICE_VALVE_OPEN:
+- A32NX_PNEU_2_WING_ANTI_ICE_VALVE_OPEN:
     - Indicates whether the right wing anti ice valve is open
+    - Bool
+
+- A32NX_PNEU_1_WING_ANTI_ICE_LOW_PRESSURE:
+    - Low Pressure warning in the left wing anti ice pipe
+    - Bool
+
+- A32NX_PNEU_2_WING_ANTI_ICE_LOW_PRESSURE:
+    - Low Pressure warning in the right wing anti ice pipe
+    - Bool
+
+- A32NX_PNEU_1_WING_ANTI_ICE_HIGH_PRESSURE:
+    - High Pressure warning in the left wing anti ice pipe
+    - Bool
+
+- A32NX_PNEU_2_WING_ANTI_ICE_HIGH_PRESSURE:
+    - High Pressure warning in the right wing anti ice pipe
     - Bool
 
 ## Flaps / Slats (ATA 27)

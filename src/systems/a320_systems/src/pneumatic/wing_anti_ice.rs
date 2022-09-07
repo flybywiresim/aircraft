@@ -264,6 +264,8 @@ pub struct WingAntiIceComplex {
     valve_controller: [WingAntiIceValveController; NUM_OF_WAI],
     wai_system_has_fault: bool,
     wai_system_on: bool,
+    wai_high_pressure: [bool; NUM_OF_WAI],
+    wai_low_pressure: [bool; NUM_OF_WAI],
 
     wai_on_id: VariableIdentifier,
     wai_fault_id: VariableIdentifier,
@@ -273,6 +275,11 @@ pub struct WingAntiIceComplex {
     wai_right_temperature_id: VariableIdentifier,
     wai_left_valve_open_id: VariableIdentifier,
     wai_right_valve_open_id: VariableIdentifier,
+
+    wai_left_high_pressure_id: VariableIdentifier,
+    wai_right_high_pressure_id: VariableIdentifier,
+    wai_left_low_pressure_id: VariableIdentifier,
+    wai_right_low_pressure_id: VariableIdentifier,
 }
 impl WingAntiIceComplex {
     pub fn new(context: &mut InitContext) -> Self {
@@ -297,21 +304,33 @@ impl WingAntiIceComplex {
 
             wai_system_has_fault: false,
             wai_system_on: false,
+            wai_high_pressure: [false, false],
+            wai_low_pressure: [false, false],
 
             wai_on_id: context.get_identifier("PNEU_WING_ANTI_ICE_SYSTEM_ON".to_owned()),
             wai_fault_id: context.get_identifier("PNEU_WING_ANTI_ICE_HAS_FAULT".to_owned()),
             wai_left_pressure_id: context
-                .get_identifier("PNEU_LEFT_WING_ANTI_ICE_CONSUMER_PRESSURE".to_owned()),
+                .get_identifier("PNEU_1_WING_ANTI_ICE_CONSUMER_PRESSURE".to_owned()),
             wai_right_pressure_id: context
-                .get_identifier("PNEU_RIGHT_WING_ANTI_ICE_CONSUMER_PRESSURE".to_owned()),
+                .get_identifier("PNEU_2_WING_ANTI_ICE_CONSUMER_PRESSURE".to_owned()),
             wai_left_temperature_id: context
-                .get_identifier("PNEU_LEFT_WING_ANTI_ICE_CONSUMER_TEMPERATURE".to_owned()),
+                .get_identifier("PNEU_1_WING_ANTI_ICE_CONSUMER_TEMPERATURE".to_owned()),
             wai_right_temperature_id: context
-                .get_identifier("PNEU_RIGHT_WING_ANTI_ICE_CONSUMER_TEMPERATURE".to_owned()),
+                .get_identifier("PNEU_2_WING_ANTI_ICE_CONSUMER_TEMPERATURE".to_owned()),
             wai_left_valve_open_id: context
-                .get_identifier("PNEU_LEFT_WING_ANTI_ICE_VALVE_OPEN".to_owned()),
+                .get_identifier("PNEU_1_WING_ANTI_ICE_VALVE_OPEN".to_owned()),
             wai_right_valve_open_id: context
-                .get_identifier("PNEU_RIGHT_WING_ANTI_ICE_VALVE_OPEN".to_owned()),
+                .get_identifier("PNEU_2_WING_ANTI_ICE_VALVE_OPEN".to_owned()),
+
+            wai_left_high_pressure_id: context
+                .get_identifier("PNEU_1_WING_ANTI_ICE_HIGH_PRESSURE".to_owned()),
+            wai_right_high_pressure_id: context
+                .get_identifier("PNEU_2_WING_ANTI_ICE_HIGH_PRESSURE".to_owned()),
+
+            wai_left_low_pressure_id: context
+                .get_identifier("PNEU_1_WING_ANTI_ICE_LOW_PRESSURE".to_owned()),
+            wai_right_low_pressure_id: context
+                .get_identifier("PNEU_2_WING_ANTI_ICE_LOW_PRESSURE".to_owned()),
         }
     }
 
@@ -324,8 +343,11 @@ impl WingAntiIceComplex {
         context: &UpdateContext,
         wai_mode: WingAntiIcePushButtonMode,
         number: usize,
-        supplier_pressurized: bool,
+        precooler_pressure: Pressure,
     ) {
+        // The WAI valves open at min 10psi of pressure
+        let supplier_pressurized: bool =
+            precooler_pressure > context.ambient_pressure() + Pressure::new::<psi>(10.);
         self.valve_controller[number].update(context, wai_mode, supplier_pressurized);
     }
 
@@ -364,7 +386,7 @@ impl WingAntiIceComplex {
                 context,
                 wai_mode,
                 n,
-                engine_systems[n].precooler_outlet_pressure() > 1.05 * context.ambient_pressure(),
+                engine_systems[n].precooler_outlet_pressure(),
             );
             self.wai_valve[n].update_open_amount(&self.valve_controller[n]);
 
@@ -393,6 +415,20 @@ impl WingAntiIceComplex {
                 &mut engine_systems[n].precooler_outlet_pipe,
                 &mut self.wai_consumer[n],
             );
+
+            if self.wai_consumer_pressure(n).get::<psi>() <= 13. && self.is_wai_valve_open(n) {
+                self.wai_high_pressure[n] = false;
+                self.wai_low_pressure[n] = true;
+                has_fault = true;
+            } else if self.wai_consumer_pressure(n).get::<psi>() >= 32. && self.is_wai_valve_open(n)
+            {
+                self.wai_high_pressure[n] = true;
+                self.wai_low_pressure[n] = false;
+                has_fault = true;
+            } else {
+                self.wai_high_pressure[n] = false;
+                self.wai_low_pressure[n] = false;
+            }
         }
 
         self.wai_system_has_fault = has_fault;
@@ -415,8 +451,8 @@ impl SimulationElement for WingAntiIceComplex {
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.wai_on_id, self.is_wai_system_on());
         writer.write(&self.wai_fault_id, self.wai_system_has_fault);
-        writer.write(&self.wai_left_pressure_id, self.wai_consumer[0].pressure());
-        writer.write(&self.wai_right_pressure_id, self.wai_consumer[1].pressure());
+        writer.write(&self.wai_left_pressure_id, self.wai_consumer_pressure(0));
+        writer.write(&self.wai_right_pressure_id, self.wai_consumer_pressure(1));
         writer.write(
             &self.wai_left_temperature_id,
             self.wai_consumer[0].temperature(),
@@ -427,6 +463,10 @@ impl SimulationElement for WingAntiIceComplex {
         );
         writer.write(&self.wai_left_valve_open_id, self.is_wai_valve_open(0));
         writer.write(&self.wai_right_valve_open_id, self.is_wai_valve_open(1));
+        writer.write(&self.wai_left_high_pressure_id, self.wai_high_pressure[0]);
+        writer.write(&self.wai_right_high_pressure_id, self.wai_high_pressure[1]);
+        writer.write(&self.wai_left_low_pressure_id, self.wai_low_pressure[0]);
+        writer.write(&self.wai_right_low_pressure_id, self.wai_low_pressure[1]);
     }
 }
 
@@ -764,11 +804,11 @@ mod tests {
         }
 
         fn precooler_pressure(&self, number: usize) -> Pressure {
-            self.query(|a| a.pneumatic.engine_systems[number - 1].precooler_outlet_pressure())
+            self.query(|a| a.pneumatic.engine_systems[number].precooler_outlet_pressure())
         }
 
         fn precooler_temperature(&self, number: usize) -> ThermodynamicTemperature {
-            self.query(|a| a.pneumatic.engine_systems[number - 1].precooler_outlet_temperature())
+            self.query(|a| a.pneumatic.engine_systems[number].precooler_outlet_temperature())
         }
 
         fn left_valve_open_amount(&self) -> f64 {
@@ -842,17 +882,18 @@ mod tests {
 
         assert!(test_bed.contains_variable_with_name("PNEU_WING_ANTI_ICE_SYSTEM_ON"));
         assert!(test_bed.contains_variable_with_name("PNEU_WING_ANTI_ICE_HAS_FAULT"));
-        assert!(test_bed.contains_variable_with_name("PNEU_LEFT_WING_ANTI_ICE_CONSUMER_PRESSURE"));
-        assert!(test_bed.contains_variable_with_name("PNEU_RIGHT_WING_ANTI_ICE_CONSUMER_PRESSURE"));
-        assert!(
-            test_bed.contains_variable_with_name("PNEU_LEFT_WING_ANTI_ICE_CONSUMER_TEMPERATURE")
-        );
-        assert!(
-            test_bed.contains_variable_with_name("PNEU_RIGHT_WING_ANTI_ICE_CONSUMER_TEMPERATURE")
-        );
-        assert!(test_bed.contains_variable_with_name("PNEU_LEFT_WING_ANTI_ICE_VALVE_OPEN"));
-        assert!(test_bed.contains_variable_with_name("PNEU_RIGHT_WING_ANTI_ICE_VALVE_OPEN"));
+        assert!(test_bed.contains_variable_with_name("PNEU_1_WING_ANTI_ICE_CONSUMER_PRESSURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_2_WING_ANTI_ICE_CONSUMER_PRESSURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_1_WING_ANTI_ICE_CONSUMER_TEMPERATURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_2_WING_ANTI_ICE_CONSUMER_TEMPERATURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_1_WING_ANTI_ICE_VALVE_OPEN"));
+        assert!(test_bed.contains_variable_with_name("PNEU_2_WING_ANTI_ICE_VALVE_OPEN"));
         assert!(test_bed.contains_variable_with_name("BUTTON_OVHD_ANTI_ICE_WING_Position"));
+
+        assert!(test_bed.contains_variable_with_name("PNEU_1_WING_ANTI_ICE_HIGH_PRESSURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_2_WING_ANTI_ICE_HIGH_PRESSURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_1_WING_ANTI_ICE_LOW_PRESSURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_2_WING_ANTI_ICE_LOW_PRESSURE"));
     }
 
     #[test]
@@ -925,6 +966,18 @@ mod tests {
         test_bed = test_bed
             .wing_anti_ice_push_button(WingAntiIcePushButtonMode::On)
             .and_stabilize();
+
+        println!("left open amount = {}", test_bed.left_valve_open_amount());
+        println!("right open amount = {}", test_bed.right_valve_open_amount());
+
+        println!(
+            "left precooler press = {}",
+            test_bed.precooler_pressure(0).get::<psi>()
+        );
+        println!(
+            "right precooler press = {}",
+            test_bed.precooler_pressure(1).get::<psi>()
+        );
         assert!(test_bed.wing_anti_ice_has_fault());
     }
 
