@@ -397,10 +397,12 @@
       "On": "On",
       "Title": "Parking Brake"
     },
+    "UseControllerInput": "Use Controller Input",
     "Right": "Right",
     "SystemEnabledOff": "Pushback System Off",
     "SystemEnabledOn": "Pushback System On",
     "TT": {
+      "UseControllerInput": "Turn controller input from rudder and elevator on/off",
       "CallReleaseTug": "Call or release tug",
       "CenterPlaneMode": "Center map on plane On/Off",
       "DecreaseSpeed": "Backwards or slower forwards",
