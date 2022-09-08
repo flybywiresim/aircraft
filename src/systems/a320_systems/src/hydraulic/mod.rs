@@ -5697,9 +5697,12 @@ mod tests {
                 ExternalPowerSource,
             },
             engine::{leap_engine::LeapEngine, EngineFireOverheadPanel},
+            failures::FailureType,
             hydraulic::electrical_generator::TestGenerator,
             landing_gear::{GearSystemState, LandingGear, LandingGearControlInterfaceUnitSet},
-            shared::{EmergencyElectricalState, HydraulicGeneratorControlUnit, PotentialOrigin},
+            shared::{
+                EmergencyElectricalState, HydraulicGeneratorControlUnit, LgciuId, PotentialOrigin,
+            },
             simulation::{
                 test::{ReadByName, SimulationTestBed, TestBed, WriteByName},
                 Aircraft, InitContext,
@@ -10853,6 +10856,31 @@ mod tests {
 
             assert!(test_bed.get_brake_left_green_pressure() > Pressure::new::<psi>(500.));
             assert!(test_bed.get_brake_right_green_pressure() > Pressure::new::<psi>(500.));
+        }
+
+        #[test]
+        fn gears_do_not_deploy_with_all_lgciu_failed() {
+            let mut test_bed = test_bed_in_flight_with()
+                .set_cold_dark_inputs()
+                .in_flight()
+                .set_gear_lever_up()
+                .run_waiting_for(Duration::from_secs_f64(1.));
+
+            assert!(test_bed.gear_system_state() == GearSystemState::AllUpLocked);
+
+            test_bed.fail(FailureType::LgciuPowerSupply(LgciuId::Lgciu1));
+            test_bed.fail(FailureType::LgciuPowerSupply(LgciuId::Lgciu2));
+
+            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(5.));
+            assert!(test_bed.is_all_gears_really_up());
+            assert!(test_bed.is_all_doors_really_up());
+
+            test_bed = test_bed
+                .set_gear_lever_down()
+                .run_waiting_for(Duration::from_secs_f64(5.));
+
+            assert!(test_bed.is_all_gears_really_up());
+            assert!(test_bed.is_all_doors_really_up());
         }
     }
 }
