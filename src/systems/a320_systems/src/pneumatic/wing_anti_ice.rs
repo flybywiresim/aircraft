@@ -91,18 +91,26 @@ impl WingAntiIceValveController {
         Self {
             wing_anti_ice_button_pos: WingAntiIcePushButtonMode::Off,
             // Setpoint is 22.5 +/- 2.5 (psi)
-            valve_pid: PidController::new(0.05, 0.01, 0., 0., 1., Self::get_valve_setpoint(), 1.),
+            valve_pid: PidController::new(
+                0.05,
+                0.01,
+                0.,
+                0.,
+                1.,
+                Self::choose_valve_setpoint(),
+                1.,
+            ),
             system_test_timer: Duration::from_secs(0),
             system_test_done: false,
             controller_signals_on: false,
             supplier_pressurized: false,
 
             is_on_ground_id: context.get_identifier("SIM ON GROUND".to_owned()),
-            is_on_ground: Default::default(), //true
+            is_on_ground: Default::default(),
         }
     }
 
-    fn get_valve_setpoint() -> f64 {
+    fn choose_valve_setpoint() -> f64 {
         if cfg!(test) {
             return Self::WAI_VALVE_MEAN_SETPOINT;
         } else {
