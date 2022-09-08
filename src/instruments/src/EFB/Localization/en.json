@@ -437,7 +437,8 @@
       "RmpVhfSpacing": "RMP VHF Spacing",
       "ThrustReductionHeight": "Thrust Reduction Height (ft)",
       "Title": "Aircraft Options / Pin Programs",
-      "WeightUnit": "Weight Unit"
+      "WeightUnit": "Weight Unit",
+      "Satcom": "Satcom"
     },
     "AtsuAoc": {
       "AtisAtcSource": "ATIS/ATC Source",
