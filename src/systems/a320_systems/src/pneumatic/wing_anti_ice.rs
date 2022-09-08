@@ -267,6 +267,8 @@ pub struct WingAntiIceComplex {
     wai_high_pressure: [bool; NUM_OF_WAI],
     wai_low_pressure: [bool; NUM_OF_WAI],
 
+    wai_bleed_pressurised: [bool; NUM_OF_WAI],
+
     wai_on_id: VariableIdentifier,
     wai_fault_id: VariableIdentifier,
     wai_left_pressure_id: VariableIdentifier,
@@ -306,6 +308,7 @@ impl WingAntiIceComplex {
             wai_system_on: false,
             wai_high_pressure: [false, false],
             wai_low_pressure: [false, false],
+            wai_bleed_pressurised: [false, false],
 
             wai_on_id: context.get_identifier("PNEU_WING_ANTI_ICE_SYSTEM_ON".to_owned()),
             wai_fault_id: context.get_identifier("PNEU_WING_ANTI_ICE_HAS_FAULT".to_owned()),
@@ -337,21 +340,32 @@ impl WingAntiIceComplex {
         self.wai_system_on
     }
 
+    fn update_pressure_above_minimum(
+        &mut self,
+        context: &UpdateContext,
+        precooler_pressure: Pressure,
+        number: usize,
+    ) {
+        // The WAI valves open at min 10psi of pressure
+        self.wai_bleed_pressurised[number] =
+            precooler_pressure > context.ambient_pressure() + Pressure::new::<psi>(10.);
+    }
+
     fn update_valve_controller(
         &mut self,
         context: &UpdateContext,
         wai_mode: WingAntiIcePushButtonMode,
         number: usize,
-        precooler_pressure: Pressure,
     ) {
-        // The WAI valves open at min 10psi of pressure
-        let supplier_pressurized: bool =
-            precooler_pressure > context.ambient_pressure() + Pressure::new::<psi>(10.);
-        self.valve_controller[number].update(context, wai_mode, supplier_pressurized);
+        self.valve_controller[number].update(context, wai_mode, self.wai_bleed_pressurised[number]);
     }
 
     pub fn is_wai_valve_open(&self, number: usize) -> bool {
         self.wai_valve[number].is_open()
+    }
+
+    pub fn is_precoooler_pressurised(&self, number: usize) -> bool {
+        self.wai_bleed_pressurised[number]
     }
 
     pub fn wai_consumer_pressure(&self, number: usize) -> Pressure {
@@ -373,6 +387,12 @@ impl WingAntiIceComplex {
         let mut num_of_on: usize = 0; // Number of controllers that signal `on`
 
         for n in 0..NUM_OF_WAI {
+            self.update_pressure_above_minimum(
+                context,
+                engine_systems[n].precooler_outlet_pressure(),
+                n,
+            );
+
             self.valve_controller[n].valve_pid.next_control_output(
                 self.wai_consumer_pressure(n).get::<psi>(),
                 Some(context.delta()),
@@ -381,12 +401,7 @@ impl WingAntiIceComplex {
             // First, we see if the valve's open amount changes this update,
             // as a result of a change in the ovhd panel push button.
             // If the precooler is not pressurized, a FAULT should light.
-            self.update_valve_controller(
-                context,
-                wai_mode,
-                n,
-                engine_systems[n].precooler_outlet_pressure(),
-            );
+            self.update_valve_controller(context, wai_mode, n);
             self.wai_valve[n].update_open_amount(&self.valve_controller[n]);
 
             // We need both controllers to signal `on` for the
@@ -779,11 +794,11 @@ mod tests {
 
         //Utility functions to get info from the test bed
         fn left_precooler_pressurised(&self) -> bool {
-            self.query(|a| a.pneumatic.is_precoooler_pressurised(0))
+            self.query(|a| a.pneumatic.wing_anti_ice.is_precoooler_pressurised(0))
         }
 
         fn right_precooler_pressurised(&self) -> bool {
-            self.query(|a| a.pneumatic.is_precoooler_pressurised(1))
+            self.query(|a| a.pneumatic.wing_anti_ice.is_precoooler_pressurised(1))
         }
 
         fn left_wai_pressure(&self) -> Pressure {
@@ -1181,7 +1196,7 @@ mod tests {
         assert!(test_bed.left_valve_open_amount() == 0.);
         assert!(test_bed.right_valve_controller_timer() == Duration::from_secs(30));
         assert!(test_bed.right_valve_open_amount() == 0.);
-        assert!(!test_bed.wing_anti_ice_system_on());
+        assert!(test_bed.wing_anti_ice_system_on());
     }
 
     #[test]
@@ -1197,7 +1212,7 @@ mod tests {
         test_bed = test_bed.wing_anti_ice_push_button(WingAntiIcePushButtonMode::On);
         test_bed.run_with_delta(Duration::from_secs(31));
 
-        assert!(!test_bed.wing_anti_ice_system_on());
+        assert!(test_bed.wing_anti_ice_system_on());
         assert!(test_bed.left_valve_open_amount() == 0.);
         assert!(test_bed.right_valve_open_amount() == 0.);
 
