@@ -16,7 +16,9 @@ use systems::{
         valve::DefaultValve, valve::PneumaticExhaust, ControllablePneumaticValve,
         PneumaticContainer, PneumaticPipe, PneumaticValveSignal, WingAntiIcePushButtonMode,
     },
-    shared::{pid::PidController, ControllerSignal, PneumaticValve},
+    shared::{
+        pid::PidController, random_from_normal_distribution, ControllerSignal, PneumaticValve,
+    },
     simulation::{
         InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
         SimulatorWriter, VariableIdentifier, Write,
@@ -83,11 +85,13 @@ pub struct WingAntiIceValveController {
 }
 impl WingAntiIceValveController {
     const WAI_TEST_TIME: Duration = Duration::from_secs(30);
+    const WAI_VALVE_MEAN_SETPOINT: f64 = 22.5;
+    const WAI_VALVE_STD_DEV_SETPOINT: f64 = 2.5;
     pub fn new(context: &mut InitContext) -> Self {
         Self {
             wing_anti_ice_button_pos: WingAntiIcePushButtonMode::Off,
             // Setpoint is 22.5 +/- 2.5 (psi)
-            valve_pid: PidController::new(0.05, 0.01, 0., 0., 1., 22.5, 1.),
+            valve_pid: PidController::new(0.05, 0.01, 0., 0., 1., Self::get_valve_setpoint(), 1.),
             system_test_timer: Duration::from_secs(0),
             system_test_done: false,
             controller_signals_on: false,
@@ -95,6 +99,17 @@ impl WingAntiIceValveController {
 
             is_on_ground_id: context.get_identifier("SIM ON GROUND".to_owned()),
             is_on_ground: Default::default(), //true
+        }
+    }
+
+    fn get_valve_setpoint() -> f64 {
+        if cfg!(test) {
+            return Self::WAI_VALVE_MEAN_SETPOINT;
+        } else {
+            return random_from_normal_distribution(
+                Self::WAI_VALVE_MEAN_SETPOINT,
+                Self::WAI_VALVE_STD_DEV_SETPOINT,
+            );
         }
     }
 
@@ -245,6 +260,12 @@ impl WingAntiIceConsumer {
         self.update_temperature(-delta_t * context.delta_as_secs_f64() * Self::CONDUCTION_RATE);
     }
 }
+
+// FWC FAILURES TO IMPLEMENT
+// WING A.ICE SYS FAULT
+// WING A.ICE L(R) VALVE OPEN
+// WING A.ICE OPEN ON GND
+// WING A.ICE L(R) HI PR
 
 // The entire WAI system could have been hard coded
 // into A320Pneumatic, however I think this is cleaner.
@@ -423,7 +444,6 @@ impl WingAntiIceComplex {
             self.wai_consumer[n].radiate_heat_to_ambient(context);
 
             // This only changes the volume if open_amount is not zero.
-            //TODO Changed from update_move_fluid_with_temperature --> update_move_fluid
             self.wai_valve[n].update_move_fluid(
                 context,
                 &mut engine_systems[n].precooler_outlet_pipe,
