@@ -12,7 +12,10 @@ export class SimplaneValueProvider {
         });
 
         sub.on('isAirspeedMach').whenChanged().handle((am) => {
-            this.pfdSimvar.updateSimVarSource('airspeedHoldValue', { name: am ? "AUTOPILOT MACH HOLD VAR" : "AUTOPILOT AIRSPEED HOLD VAR",  type: am ? SimVarValueType.Number : SimVarValueType.Knots });
+            this.pfdSimvar.updateSimVarSource('airspeedHoldValue', {
+                name: am ? 'AUTOPILOT MACH HOLD VAR' : 'AUTOPILOT AIRSPEED HOLD VAR',
+                type: am ? SimVarValueType.Number : SimVarValueType.Knots,
+            });
         });
     }
 }

@@ -2,6 +2,7 @@ import { ClockEvents, DisplayComponent, EventBus, FSComponent, Subject, Subscrib
 import { Arinc429Word } from '@shared/arinc429';
 import { VerticalMode } from '@shared/autopilot';
 import { BaroPressureMode } from 'instruments/src/PFD/shared/BaroPressureMode';
+import { PressureUnit } from 'instruments/src/PFD/shared/PressureUnit';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { DigitalAltitudeReadout } from './DigitalAltitudeReadout';
 import { VerticalTape } from './VerticalTape';
@@ -479,7 +480,7 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
 
     private pressure = 0;
 
-    private unit = 0;
+    private unit = PressureUnit.InHG;
 
     private transAlt = 0;
 
@@ -499,17 +500,17 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
         const sub = this.props.bus.getSubscriber<PFDSimvars>();
 
         sub.on('baroMode').whenChanged().handle((m) => {
-            if (m === 0) { // QFE
+            if (m === 0) {
                 this.mode.set(BaroPressureMode.QFE);
                 this.stdGroup.instance.classList.add('HiddenElement');
                 this.qfeGroup.instance.classList.remove('HiddenElement');
                 this.qfeBorder.instance.classList.remove('HiddenElement');
-            } else if (m === 1) { // QNH
+            } else if (m === 1) {
                 this.mode.set(BaroPressureMode.QNH);
                 this.stdGroup.instance.classList.add('HiddenElement');
                 this.qfeGroup.instance.classList.remove('HiddenElement');
                 this.qfeBorder.instance.classList.add('HiddenElement');
-            } else if (m === 2 || m === 3) { // "STD"
+            } else if (m === 2 || m === 3) {
                 this.mode.set(BaroPressureMode.STD);
                 this.stdGroup.instance.classList.remove('HiddenElement');
                 this.qfeGroup.instance.classList.add('HiddenElement');
@@ -548,7 +549,7 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
             this.getText();
         });
 
-        sub.on('baroPressure').whenChanged().handle((p) => {
+        sub.on('baroPressure').withPrecision(0).whenChanged().handle((p) => {
             this.pressure = p;
             this.getText();
         });
@@ -574,7 +575,7 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
 
     private getText() {
         if (this.pressure !== null) {
-            if (this.unit === 1) {
+            if (this.unit === PressureUnit.MB) {
                 this.text.set(Math.round(this.pressure).toString());
             } else {
                 this.text.set(this.pressure.toFixed(2));
@@ -656,8 +657,10 @@ class MetricAltIndicator extends DisplayComponent<{ bus: EventBus }> {
         });
 
         sub.on('metricAltToggle').whenChanged().handle((m) => {
-            this.state.metricAltToggle = m;
-            this.needsUpdate = true;
+            if (this.state.metricAltToggle) {
+                this.state.metricAltToggle = m;
+                this.needsUpdate = true;
+            }
         });
 
         sub.on('realTime').handle(this.updateState.bind(this));
