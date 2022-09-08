@@ -354,12 +354,12 @@
     "InteriorLighting": {
       "AircraftNeedsToBePoweredToLoadPresets": "Flyet må ha strøm for å laste inn forhåndsinnstillinger",
       "AircraftNeedsToBePoweredToSavePresets": "Flyet må ha strøm for å lagre forhåndsinnstillinger",
-      "AutoLoadDawnDusk": "Dawn/Dusk:",
-      "AutoLoadDay": "Day:",
-      "AutoLoadLightingHelpTitle": "Automatic Preset Loading",
-      "AutoLoadLightingPreset": "Enable automatic loading of lighting presets:",
-      "AutoLoadNight": "Night:",
-      "AutoLoadNoneSelection": "None",
+      "AutoLoadDawnDusk": "Daggry/Skumring:",
+      "AutoLoadDay": "Dag:",
+      "AutoLoadLightingHelpTitle": "Automatisk forhåndsinnstilt lasting",
+      "AutoLoadLightingPreset": "Aktiver automatisk lasting av forhåndsinnstillinger for belysning:",
+      "AutoLoadNight": "Natt:",
+      "AutoLoadNoneSelection": "Ingen",
       "LoadPreset": "Last inn forhåndsinnstilling",
       "LoadingPreset": "Laster inn forhåndsinnstilling",
       "NewNameConfirmationDialogMsg": "Bekreft det nye navnet på forhåndsinnstillingen for belysning",
@@ -413,7 +413,7 @@
       "SliderSpeed": "Flytt regler for ønsket hastighet",
       "SystemEnabledOff": "Klikk for å slå på pushback-systemet.",
       "SystemEnabledOn": "Klikk for å slå pushback-systemet helt av.",
-      "UseControllerInput": "Turn controller input from rudder and elevator on/off",
+      "UseControllerInput": "Slå kontrollerinngangen fra ror og heiskontrollflate på/av",
       "ZoomIn": "Zoom inn",
       "ZoomOut": "Zoom ut"
     },
@@ -421,7 +421,7 @@
     "TugDirection": "Pushbacktraktor-retning",
     "TugInTransit": "Venter på pushbacktraktor/pin",
     "TugSpeed": "pushbacktraktor-hastighet",
-    "UseControllerInput": "Use Controller Input"
+    "UseControllerInput": "Bruk Controller Input"
   },
   "Settings": {
     "About": {
@@ -435,7 +435,7 @@
       "LatLonExtendedFormat": "FMGC Lat/Lon Waypoint Format",
       "PaxSigns": "Passasjerskilter",
       "RmpVhfSpacing": "RMP VHF-intervall",
-      "Satcom": "Show Satcom",
+      "Satcom": "Vis Satcom",
       "ThrustReductionHeight": "Kraftreduksjonshøyde (ft)",
       "Title": "Flyinnstillinger / fest programmer",
       "WeightUnit": "Vektenhet"
@@ -487,7 +487,7 @@
       "PauseAtTod": "T/D Pause",
       "PauseAtTodDistance": "T/D Pause Distance (nm)",
       "SeparateTillerFromRudderInputs": "Separer nesehjulsstyingen fra ror-aksen",
-      "SyncEfis": "Sync EFIS controls between Captain and FO",
+      "SyncEfis": "Synkroniser EFIS-kontroller mellom kaptein og first officer",
       "Title": "Realisme"
     },
     "SimOptions": {
@@ -497,7 +497,7 @@
       "ConesEnabled": "Sikkerhet kjegler",
       "DefaultBarometerUnit": "Standard Barometerenhet",
       "DynamicRegistrationDecal": "Dynamisk registreringsdekal",
-      "EnableSimBridge": "Aktiver SimBridge Servertilkobling (Deaktiveres automatisk etter 5 minutter hvis tilkoblingen ikke er vellykket)",
+      "EnableSimBridge": "Aktiver SimBridge servertilkobling (Deaktiveres automatisk etter 5 minutter hvis tilkoblingen ikke er vellykket)",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Aktiver MCDU Servertilkobling (Deaktiveres automatisk etter 5 minutter hvis tilkoblingen ikke er vellykket)",
       "ExternalMcduServerPort": "Ekstern MCDU-serverport",
       "Hpa": "hPa",
@@ -578,8 +578,8 @@
     "Sep": "sep.",
     "Sun": "søn.",
     "TT": {
-      "ConnectedToLocalApi": "Koblet til lokal API",
-      "DisconnectedFromLocalApi": "Frakoblet lokal API",
+      "ConnectedToLocalApi": "Koblet til SimBridge",
+      "DisconnectedFromLocalApi": "Frakoblet SimBridge",
       "TurnOffOrShutdownEfb": "Lås eller skru av EFB"
     },
     "Thu": "tor.",

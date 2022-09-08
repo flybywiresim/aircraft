@@ -359,7 +359,7 @@
       "AutoLoadLightingHelpTitle": "Automatic Preset Loading",
       "AutoLoadLightingPreset": "Enable automatic loading of lighting presets:",
       "AutoLoadNight": "Night:",
-      "AutoLoadNoneSelection": "None",
+      "AutoLoadNoneSelection": "Boş",
       "LoadPreset": "Ön Ayarı Yükle",
       "LoadingPreset": "Ön Ayar Yükleniyor",
       "NewNameConfirmationDialogMsg": "Lütfen aydınlatma ön ayarının yeni adını onaylayın",
@@ -578,8 +578,8 @@
     "Sep": "Eyl",
     "Sun": "Paz",
     "TT": {
-      "ConnectedToLocalApi": "Yerel API'ye Bağlandı",
-      "DisconnectedFromLocalApi": "Yerel API bağlantısı kesildi",
+      "ConnectedToLocalApi": "SimBridge’e Bağlandı",
+      "DisconnectedFromLocalApi": "SimBridge Bağlantısı Kesildi",
       "TurnOffOrShutdownEfb": "EFB'yi Kapatın"
     },
     "Thu": "Per",
