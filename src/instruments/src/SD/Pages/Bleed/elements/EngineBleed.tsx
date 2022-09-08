@@ -26,15 +26,16 @@ const EngineBleed: FC<EngineBleedProps> = ({ x, y, engine, sdacDatum, enginePRVa
     const precoolerInletPressTwo = Math.round(precoolerInletPress / 2) * 2;
 
     const [wingAntiIceValveOpen] = useSimVar(`L:A32NX_PNEU_${engine}_WING_ANTI_ICE_VALVE_OPEN`, 'bool', 500);
+    const wingAntiIceValveOpenBool = wingAntiIceValveOpen === 1;
     const [wingAntiIceHighPressure] = useSimVar(`L:A32NX_PNEU_${engine}_WING_ANTI_ICE_HIGH_PRESSURE`, 'bool', 500);
     const [wingAntiIceLowPressure] = useSimVar(`L:A32NX_PNEU_${engine}_WING_ANTI_ICE_LOW_PRESSURE`, 'bool', 500);
 
     /* When onGround, it should become AMBER after 10s that it's open */
     const WingAntiIceTriangleColour = onGround || 
-                                      wingAntiIceValveOpen !== wingAntiIceOn || 
-                                      wingAntiIceHighPressure ||
-                                      wingAntiIceLowPressure
-                                      ? 'Amber' :  'Green'
+                                      wingAntiIceValveOpenBool !== wingAntiIceOn || 
+                                      wingAntiIceHighPressure === 1 ||
+                                      wingAntiIceLowPressure === 1
+                                      ? 'Amber' : 'Green'
 
     return (
         <g id={`bleed-${engine}`}>

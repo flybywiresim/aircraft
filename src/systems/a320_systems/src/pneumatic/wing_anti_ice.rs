@@ -321,7 +321,6 @@ impl WingAntiIceComplex {
                 .get_identifier("PNEU_1_WING_ANTI_ICE_VALVE_OPEN".to_owned()),
             wai_right_valve_open_id: context
                 .get_identifier("PNEU_2_WING_ANTI_ICE_VALVE_OPEN".to_owned()),
-
             wai_left_high_pressure_id: context
                 .get_identifier("PNEU_1_WING_ANTI_ICE_HIGH_PRESSURE".to_owned()),
             wai_right_high_pressure_id: context
@@ -432,8 +431,7 @@ impl WingAntiIceComplex {
         }
 
         self.wai_system_has_fault = has_fault;
-
-        self.wai_system_on = (num_of_on == NUM_OF_WAI) && !has_fault;
+        self.wai_system_on = wai_mode == WingAntiIcePushButtonMode::On;
     }
 }
 
