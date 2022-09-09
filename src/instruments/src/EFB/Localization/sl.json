@@ -354,6 +354,12 @@
     "InteriorLighting": {
       "AircraftNeedsToBePoweredToLoadPresets": "Za nalaganje prednastavitev zrakoplov potrebuje napajanje",
       "AircraftNeedsToBePoweredToSavePresets": "Za shranjevanje prednastavitev zrakoplov potrebuje napajanje",
+      "AutoLoadDawnDusk": "Dawn/Dusk:",
+      "AutoLoadDay": "Day:",
+      "AutoLoadLightingHelpTitle": "Automatic Preset Loading",
+      "AutoLoadLightingPreset": "Enable automatic loading of lighting presets:",
+      "AutoLoadNight": "Night:",
+      "AutoLoadNoneSelection": "None",
       "LoadPreset": "Naloži prednastavitev",
       "LoadingPreset": "Nalaganje prednastavitve",
       "NewNameConfirmationDialogMsg": "Prosimo, potrdite novo ime za prednastavitev osvetlitve",
@@ -407,13 +413,15 @@
       "SliderSpeed": "Premakni za želeno hitrost",
       "SystemEnabledOff": "Kliknite, če želite vklopiti sistem vleke.",
       "SystemEnabledOn": "Kliknite, če želite popolnoma izklopiti sistem vleke.",
+      "UseControllerInput": "Turn controller input from rudder and elevator on/off",
       "ZoomIn": "Povečaj",
       "ZoomOut": "Pomanjšaj"
     },
     "TugAttached": "Vlačilec je priklopljen",
     "TugDirection": "Smer vlačilca",
     "TugInTransit": "Čakam na vlačilca/pin",
-    "TugSpeed": "Hitrost vlačilca"
+    "TugSpeed": "Hitrost vlačilca",
+    "UseControllerInput": "Use Controller Input"
   },
   "Settings": {
     "About": {
@@ -427,6 +435,7 @@
       "LatLonExtendedFormat": "FMGC - format zapisa točk zemljepisne dolžine/širine",
       "PaxSigns": "PAX znaki",
       "RmpVhfSpacing": "RMP VHF razmik",
+      "Satcom": "Satcom",
       "ThrustReductionHeight": "Višina zmanjšanja potiska (ft)",
       "Title": "Možnosti zrakoplova / pripeti programi",
       "WeightUnit": "Enota teže"
@@ -472,13 +481,15 @@
       "AutofillChecklists": "Samodejno izpolni kontrolne sezname",
       "BoardingTime": "Čas vkrcanja",
       "DmcSelfTestTime": "DMC samopreizkusni čas",
+      "FirstOfficerAvatar": "Show First Officer Avatar",
       "HomeCockpitMode": "Način \"Home Cockpit\"",
       "McduFocusTimeout": "MCDU časovna omejitev fokusa (sekunde)",
       "McduKeyboardInput": "MCDU vnos s tipkovnico",
       "PauseAtTod": "T/D pavza",
       "PauseAtTodDistance": "T/D Razdalja pavze (nm)",
+      "PilotAvatar": "Show Pilot Avatar",
       "SeparateTillerFromRudderInputs": "Ločite delovanje krmilnika od krmila",
-      "SyncEfis": "Sync EFIS controls between Captain and FO",
+      "SyncEfis": "Sinhronizacija EFIS-a med CP in FO",
       "Title": "Realizem"
     },
     "SimOptions": {

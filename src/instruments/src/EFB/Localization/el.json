@@ -354,6 +354,12 @@
     "InteriorLighting": {
       "AircraftNeedsToBePoweredToLoadPresets": "Τα αεροσκάφος πρέπει να τροφοδοτείται για να φορτώσει προκαθορισμένες ρυθμίσεις",
       "AircraftNeedsToBePoweredToSavePresets": "Το αεροσκάφος πρέπει να τροφοδοτείται για να εξοικονομήσει προεπιλογές",
+      "AutoLoadDawnDusk": "Dawn/Dusk:",
+      "AutoLoadDay": "Day:",
+      "AutoLoadLightingHelpTitle": "Automatic Preset Loading",
+      "AutoLoadLightingPreset": "Enable automatic loading of lighting presets:",
+      "AutoLoadNight": "Night:",
+      "AutoLoadNoneSelection": "None",
       "LoadPreset": "Φόρτωση Προκαθορισμένης Ρύθμισης",
       "LoadingPreset": "Φόρτωση Προκαθορισμένης Ρύθμισης",
       "NewNameConfirmationDialogMsg": "Παρακαλώ επιβεβαιώστε το νέο όνομα για την προκαθορισμένη ρύθμιση φωτισμού",
@@ -407,13 +413,15 @@
       "SliderSpeed": "Move for desired speed",
       "SystemEnabledOff": "Click to turn the pushback system on.",
       "SystemEnabledOn": "Click to turn the pushback system completely off.",
+      "UseControllerInput": "Turn controller input from rudder and elevator on/off",
       "ZoomIn": "Zoom in",
       "ZoomOut": "Zoom out"
     },
     "TugAttached": "Tug is attached",
     "TugDirection": "Κατεύθυνση Ρυμουλκού",
     "TugInTransit": "Waiting for Tug/Pin",
-    "TugSpeed": "Ταχύτητα Ρυμουλκού"
+    "TugSpeed": "Ταχύτητα Ρυμουλκού",
+    "UseControllerInput": "Use Controller Input"
   },
   "Settings": {
     "About": {
@@ -427,6 +435,7 @@
       "LatLonExtendedFormat": "Μορφή Σημείου Αναφοράς Lat/Lon FMGC",
       "PaxSigns": "Πινακίδες Επιβατών",
       "RmpVhfSpacing": "Απόσταση VHF RMP",
+      "Satcom": "Satcom",
       "ThrustReductionHeight": "Ύψος Mείωσης Ώσης (ft)",
       "Title": "Επιλογές Αεροσκάφους / Προγράμματα Pin",
       "WeightUnit": "Μονάδα Βάρους"
@@ -472,11 +481,13 @@
       "AutofillChecklists": "Λίστες Ελέγχου Αυτόματης Συμπλήρωσης",
       "BoardingTime": "Χρόνος Επιβίβασης ",
       "DmcSelfTestTime": "Χρόνος Αυτοδοκιμής DMC",
+      "FirstOfficerAvatar": "Show First Officer Avatar",
       "HomeCockpitMode": "Λειτουργία θαλάμου πιλοτηρίου οικιακής χρήσης",
       "McduFocusTimeout": "Χρονικό Όριο Εστίασης MCDU (δευτερόλεπτα)",
       "McduKeyboardInput": "Είσαγωγή Πληκτρολογίου MCDU",
       "PauseAtTod": "T/D Pause",
       "PauseAtTodDistance": "T/D Pause Distance (nm)",
+      "PilotAvatar": "Show Pilot Avatar",
       "SeparateTillerFromRudderInputs": "Ξεχωριστό Οιακοστροφίο απο τις Εισαγωγές Πηδαλίου",
       "SyncEfis": "Sync EFIS controls between Captain and FO",
       "Title": "Ρεαλισμός"
