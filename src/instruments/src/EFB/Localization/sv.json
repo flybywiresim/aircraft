@@ -354,6 +354,12 @@
     "InteriorLighting": {
       "AircraftNeedsToBePoweredToLoadPresets": "Flygplan måste ha ström för att läsa in förinställningar",
       "AircraftNeedsToBePoweredToSavePresets": "Flygplan måste ha ström för att spara förinställningar",
+      "AutoLoadDawnDusk": "Gryning/skymning:",
+      "AutoLoadDay": "Dag:",
+      "AutoLoadLightingHelpTitle": "Automatisk förinställd laddning",
+      "AutoLoadLightingPreset": "Aktivera automatisk laddning av belysningsförinställningar:",
+      "AutoLoadNight": "Natt:",
+      "AutoLoadNoneSelection": "Ingen",
       "LoadPreset": "Ladda förval",
       "LoadingPreset": "Laddar förval …",
       "NewNameConfirmationDialogMsg": "Bekräfta det nya namnet på belysningsförinställningen",
@@ -407,13 +413,15 @@
       "SliderSpeed": "Flytta för önskad hastighet",
       "SystemEnabledOff": "Klicka för att slå på pushback-systemet.",
       "SystemEnabledOn": "Klicka för att stänga av pushback-systemet helt.",
+      "UseControllerInput": "Slå på/av spelkontrollen ingång från roder och höjdrodret",
       "ZoomIn": "Zooma in",
       "ZoomOut": "Zooma ut"
     },
     "TugAttached": "Dragare är fäst",
     "TugDirection": "Dragarriktning",
     "TugInTransit": "Väntar på dragare/pin",
-    "TugSpeed": "Dragarhastighet"
+    "TugSpeed": "Dragarhastighet",
+    "UseControllerInput": "Använda spelkontrollen som indata"
   },
   "Settings": {
     "About": {
@@ -427,6 +435,7 @@
       "LatLonExtendedFormat": "FMGC Lat/Lon Waypoint-format",
       "PaxSigns": "Passagerarskyltar",
       "RmpVhfSpacing": "RMP VHF-avstånd",
+      "Satcom": "Visa Satcom",
       "ThrustReductionHeight": "Höjd för dragkraftsreduktion (ft)",
       "Title": "Flygplan Inställningar / Pin-Program",
       "WeightUnit": "Viktenhet"
@@ -472,13 +481,15 @@
       "AutofillChecklists": "Auto-fyll checklistor",
       "BoardingTime": "Ombordstigningstid",
       "DmcSelfTestTime": "DMC självtesttid",
+      "FirstOfficerAvatar": "Show First Officer Avatar",
       "HomeCockpitMode": "Hem Cockpit-läge",
       "McduFocusTimeout": "Tidsgräns för MCDU fokus (sekunder)",
       "McduKeyboardInput": "MCDU Tangentbordsinput",
       "PauseAtTod": "T/D Paus",
       "PauseAtTodDistance": "Avstånd till målet för T/D-paus (nm)",
+      "PilotAvatar": "Show Pilot Avatar",
       "SeparateTillerFromRudderInputs": "Separera Tiller från roder input",
-      "SyncEfis": "Sync EFIS controls between Captain and FO",
+      "SyncEfis": "Synkronisera EFIS-kontroller mellan Captain och FO",
       "Title": "Realism"
     },
     "SimOptions": {
@@ -569,8 +580,8 @@
     "Sep": "Sep",
     "Sun": "Sön",
     "TT": {
-      "ConnectedToLocalApi": "Ansluten till Local-API",
-      "DisconnectedFromLocalApi": "Avklopplad från Local-API",
+      "ConnectedToLocalApi": "Ansluten till SimBridge",
+      "DisconnectedFromLocalApi": "Avklopplad från SimBridge",
       "TurnOffOrShutdownEfb": "Stäng av EFB"
     },
     "Thu": "Tor",

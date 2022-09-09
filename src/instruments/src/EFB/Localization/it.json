@@ -354,6 +354,12 @@
     "InteriorLighting": {
       "AircraftNeedsToBePoweredToLoadPresets": "L'Aeromobile deve essere Alimentato per Caricare i Preset",
       "AircraftNeedsToBePoweredToSavePresets": "L'Aeromobile deve essere Alimentato per Salvare i Preset",
+      "AutoLoadDawnDusk": "Alba/Crepuscolo:",
+      "AutoLoadDay": "Giorno:",
+      "AutoLoadLightingHelpTitle": "Caricamento Preset Automatico",
+      "AutoLoadLightingPreset": "Abilita il caricamento automatico dei preset di illuminazione:",
+      "AutoLoadNight": "Notte:",
+      "AutoLoadNoneSelection": "No",
       "LoadPreset": "Carica Preset",
       "LoadingPreset": "Caricamento Preset",
       "NewNameConfirmationDialogMsg": "Prego conferma nuovo nome per il preset di illuminazione",
@@ -407,13 +413,15 @@
       "SliderSpeed": "Sposta per velocità desiderata",
       "SystemEnabledOff": "Clicca per attivare il sistema pushback.",
       "SystemEnabledOn": "Clicca per disattivare completamente il sistema pushback.",
+      "UseControllerInput": "Turn controller input from rudder and elevator on/off",
       "ZoomIn": "Ingrandisci",
       "ZoomOut": "Rimpicciolisci"
     },
     "TugAttached": "Tug è collegato",
     "TugDirection": "Direzione Tug",
     "TugInTransit": "In Attesa del Tug",
-    "TugSpeed": "Velocità Tug"
+    "TugSpeed": "Velocità Tug",
+    "UseControllerInput": "Usa Input Controller"
   },
   "Settings": {
     "About": {
@@ -427,6 +435,7 @@
       "LatLonExtendedFormat": "Formato Waypoint Lat/Lon FMGC",
       "PaxSigns": "PAX Sign",
       "RmpVhfSpacing": "Spaziatura VHF RMP",
+      "Satcom": "Mostra Satcom",
       "ThrustReductionHeight": "Altezza Riduzione Spinta (ft)",
       "Title": "Opzioni Aeromobile / Definisci Comportamenti",
       "WeightUnit": "Unità Peso"
@@ -472,13 +481,15 @@
       "AutofillChecklists": "Autocompleta Checklist",
       "BoardingTime": "Durata Imbarco",
       "DmcSelfTestTime": "Durata Autotest DMC",
+      "FirstOfficerAvatar": "Show First Officer Avatar",
       "HomeCockpitMode": "Modalità Home Cockpit",
       "McduFocusTimeout": "Rilascio Selezione su MCDU (secondi)",
       "McduKeyboardInput": "Input Tastiera su MCDU",
       "PauseAtTod": "Interruzione T/D",
       "PauseAtTodDistance": "Distanza Interruzione T/D (nm)",
+      "PilotAvatar": "Show Pilot Avatar",
       "SeparateTillerFromRudderInputs": "Separa gli Input del Tiller e dei Pedali",
-      "SyncEfis": "Sincronizza controlli EFIS dal Comandante al Primo Ufficiale",
+      "SyncEfis": "Sincronizza controlli EFIS tra Comandante e Primo Ufficiale",
       "Title": "Realismo"
     },
     "SimOptions": {
@@ -488,7 +499,7 @@
       "ConesEnabled": "Coni di Sicurezza",
       "DefaultBarometerUnit": "Unità Barometro Predefinita",
       "DynamicRegistrationDecal": "Decalco Registrazione Dinamico",
-      "EnableSimBridge": "Abilita Connessione Server SimBridge (Disattivazione automatica dopo 5 minuti in caso di connessione non riuscita)",
+      "EnableSimBridge": "Abilita Connessione SimBridge (Disattivazione automatica dopo 5 minuti in caso di connessione non riuscita)",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Abilita Connessione Server MCDU (Disattivazione automatica dopo 5 minuti in caso di connessione non riuscita)",
       "ExternalMcduServerPort": "Porta Esterna Server MCDU",
       "Hpa": "hPa",
@@ -569,8 +580,8 @@
     "Sep": "Set",
     "Sun": "Dom",
     "TT": {
-      "ConnectedToLocalApi": "Connesso all'API Locale",
-      "DisconnectedFromLocalApi": "Sconnesso dall'API Locale",
+      "ConnectedToLocalApi": "Connesso a SimBridge",
+      "DisconnectedFromLocalApi": "Disconnesso da SimBridge",
       "TurnOffOrShutdownEfb": "Spegni o Arresta EFB"
     },
     "Thu": "Gio",
