@@ -354,6 +354,12 @@
     "InteriorLighting": {
       "AircraftNeedsToBePoweredToLoadPresets": "Esiasetusten lataamiseksi virta tulee olla kytketty.",
       "AircraftNeedsToBePoweredToSavePresets": "Esiasetusten tallentamiseksi virta tulee olla kytketty.",
+      "AutoLoadDawnDusk": "Dawn/Dusk:",
+      "AutoLoadDay": "Day:",
+      "AutoLoadLightingHelpTitle": "Automatic Preset Loading",
+      "AutoLoadLightingPreset": "Enable automatic loading of lighting presets:",
+      "AutoLoadNight": "Night:",
+      "AutoLoadNoneSelection": "Ei mitään",
       "LoadPreset": "Lataa esiasetus",
       "LoadingPreset": "Ladataan esiasetus",
       "NewNameConfirmationDialogMsg": "Vahvista uusi nimi valotusesiasetukselle",
@@ -407,13 +413,15 @@
       "SliderSpeed": "Siirrä haluttuun nopeuteen",
       "SystemEnabledOff": "Napsauta kytkeäksesi työntöjärjestelmä päälle.",
       "SystemEnabledOn": "Napsauta kytkeäksesi työntöjärjestelmän kokonaan pois päältä.",
+      "UseControllerInput": "Turn controller input from rudder and elevator on/off",
       "ZoomIn": "Lähennä",
       "ZoomOut": "Loitonna"
     },
     "TugAttached": "Työntöauto kiinnitetty",
     "TugDirection": "Työntöauton suunta",
     "TugInTransit": "Odotetaan työntöautoa",
-    "TugSpeed": "Työntöauton nopeus"
+    "TugSpeed": "Työntöauton nopeus",
+    "UseControllerInput": "Use Controller Input"
   },
   "Settings": {
     "About": {
@@ -427,6 +435,7 @@
       "LatLonExtendedFormat": "FMGC Lat/Lon reittipisteen muoto",
       "PaxSigns": "Matkustajamerkinnät",
       "RmpVhfSpacing": "RMP VHF välitys",
+      "Satcom": "Satcom",
       "ThrustReductionHeight": "Työntövoiman vähennyskorkeus (ft)",
       "Title": "Lentokoneen asetukset / ohjelmistot",
       "WeightUnit": "Painoyksikkö"
@@ -472,11 +481,13 @@
       "AutofillChecklists": "Tarkistuslistan täyttö automaattisesti",
       "BoardingTime": "Boarding-aika",
       "DmcSelfTestTime": "DMC itsenäisen testauksen aika",
+      "FirstOfficerAvatar": "Show First Officer Avatar",
       "HomeCockpitMode": "Kotiohjaamo-tila",
       "McduFocusTimeout": "Lentotietokone poissa käytöstä tarkennuksen aikana (sekunteina)",
       "McduKeyboardInput": "MCDU näppäimistö syöttö",
       "PauseAtTod": "T/D Pause",
       "PauseAtTodDistance": "T/D Pause Distance (nm)",
+      "PilotAvatar": "Show Pilot Avatar",
       "SeparateTillerFromRudderInputs": "Erota nokkapyörän ohjaus peräsimestä",
       "SyncEfis": "Sync EFIS controls between Captain and FO",
       "Title": "Realismi"

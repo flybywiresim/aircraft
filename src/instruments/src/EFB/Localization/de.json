@@ -354,6 +354,12 @@
     "InteriorLighting": {
       "AircraftNeedsToBePoweredToLoadPresets": "Das Flugzeug muss mit Strom versorgt werden, um Voreinstellungen zu laden",
       "AircraftNeedsToBePoweredToSavePresets": "Das Flugzeug muss mit Strom versorgt sein, um Voreinstellungen zu speichern",
+      "AutoLoadDawnDusk": "Dämmerung",
+      "AutoLoadDay": "Tag",
+      "AutoLoadLightingHelpTitle": "Automatisches Laden der Beleuchtungsvoreinstellung",
+      "AutoLoadLightingPreset": "Automatisches Laden von Beleuchtungsvoreinstellungen aktivieren:",
+      "AutoLoadNight": "Nacht",
+      "AutoLoadNoneSelection": "Keine",
       "LoadPreset": "Voreinstellung laden",
       "LoadingPreset": "Voreinstellung wird geladen",
       "NewNameConfirmationDialogMsg": "Bestätige bitte den neuen Namen der Voreinstellung",
@@ -407,13 +413,15 @@
       "SliderSpeed": "Schieberegler verschieben, um die gewünschte Geschwindigkeit einzustellen",
       "SystemEnabledOff": "Klicken Sie, um das Pushback-System einzuschalten.",
       "SystemEnabledOn": "Klicken Sie, um das Pushback-System vollständig auszuschalten.",
+      "UseControllerInput": "Controller-Eingabe von Ruder und Höhenruder ein-/ausschalten",
       "ZoomIn": "Vergrößern",
       "ZoomOut": "Verkleinern"
     },
     "TugAttached": "Schlepper ist befestigt",
     "TugDirection": "Schlepprichtung",
     "TugInTransit": "Warten auf Schlepper und Pin",
-    "TugSpeed": "Schleppgeschwindigkeit"
+    "TugSpeed": "Schleppgeschwindigkeit",
+    "UseControllerInput": "Controller-Eingabe verwenden"
   },
   "Settings": {
     "About": {
@@ -427,6 +435,7 @@
       "LatLonExtendedFormat": "FMGC Lat/Lon Waypoint Format",
       "PaxSigns": "Passagier-Anzeigen",
       "RmpVhfSpacing": "RMP VHF Kanalraster",
+      "Satcom": "Satcom anzeigen",
       "ThrustReductionHeight": "Flughöhe für Schubreduzierung (Fuß)",
       "Title": "Flugzeug-Optionen/Pin Programming",
       "WeightUnit": "Gewichtseinheit"
@@ -472,11 +481,13 @@
       "AutofillChecklists": "Checklisten automatisch ausfüllen",
       "BoardingTime": "Boarding-Dauer",
       "DmcSelfTestTime": "DMC-Selbsttestdauer",
+      "FirstOfficerAvatar": "Co-Pilot-Avatar anzeigen",
       "HomeCockpitMode": "Homecockpit-Modus",
       "McduFocusTimeout": "MCDU Fokusdauer (Sekunden)",
       "McduKeyboardInput": "MCDU-Tastatureingabe",
       "PauseAtTod": "T/D-Pause",
       "PauseAtTodDistance": "Zielentfernung für T/D Pause (NM)",
+      "PilotAvatar": "Pilot-Avatar anzeigen",
       "SeparateTillerFromRudderInputs": "Trennung von Tiller und Seitenruder Eingaben",
       "SyncEfis": "Synchronisieren der EFIS-Steuerelemente zwischen Captain und FO",
       "Title": "Realismus"
@@ -569,8 +580,8 @@
     "Sep": "Sep",
     "Sun": "So",
     "TT": {
-      "ConnectedToLocalApi": "Mit Local-API Server verbunden",
-      "DisconnectedFromLocalApi": "Keine Verbindung zum Local-API Server",
+      "ConnectedToLocalApi": "Mit SimBridge verbunden",
+      "DisconnectedFromLocalApi": "Keine Verbindung zur SimBridge",
       "TurnOffOrShutdownEfb": "EFB ausschalten oder herunterfahren"
     },
     "Thu": "Do",
