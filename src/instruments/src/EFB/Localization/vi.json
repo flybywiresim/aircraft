@@ -354,6 +354,12 @@
     "InteriorLighting": {
       "AircraftNeedsToBePoweredToLoadPresets": "Máy bay cần được cung cấp năng lượng để tải cấu hình đặt sẵn",
       "AircraftNeedsToBePoweredToSavePresets": "Máy bay cần được cung cấp năng lượng để lưu cấu hình đặt sẵn",
+      "AutoLoadDawnDusk": "Bình minh/Hoàng hôn",
+      "AutoLoadDay": "Ban ngày",
+      "AutoLoadLightingHelpTitle": "Automatic Preset Loading",
+      "AutoLoadLightingPreset": "Bật tự động tải cài đặt đèn:",
+      "AutoLoadNight": "Ban đêm",
+      "AutoLoadNoneSelection": "Không",
       "LoadPreset": "Tải cấu hình sẵn",
       "LoadingPreset": "Đang tải cấu hình sẵn",
       "NewNameConfirmationDialogMsg": "Vui lòng xác nhận tên mới của cấu hình đèn đặt sẵn",
@@ -407,13 +413,15 @@
       "SliderSpeed": "Di chuyển thanh trượt cho tốc độ mong muốn",
       "SystemEnabledOff": "Nhấp để bật hệ thống đẩy lùi.",
       "SystemEnabledOn": "Nhấp để tắt hoàn toàn hệ thống đẩy lùi.",
+      "UseControllerInput": "Turn controller input from rudder and elevator on/off",
       "ZoomIn": "Phóng to",
       "ZoomOut": "Thu nhỏ"
     },
     "TugAttached": "Xe lai dắt được kết nối",
     "TugDirection": "Hướng của xe kéo",
     "TugInTransit": "Đang chờ xe đẩy",
-    "TugSpeed": "Tốc độ xe kéo"
+    "TugSpeed": "Tốc độ xe kéo",
+    "UseControllerInput": "Use Controller Input"
   },
   "Settings": {
     "About": {
@@ -427,6 +435,7 @@
       "LatLonExtendedFormat": "Định dạng điểm trên FMGC dạng vĩ/kinh",
       "PaxSigns": "Đèn báo hiệu hành khách",
       "RmpVhfSpacing": "Khoảng cách RMP VHF",
+      "Satcom": "Satcom",
       "ThrustReductionHeight": "Độ cao giảm lực đẩy (ft)",
       "Title": "Tùy chọn máy bay / Pin Programs",
       "WeightUnit": "Đơn vị trọng lượng"
@@ -472,13 +481,15 @@
       "AutofillChecklists": "Tự đồng điền danh sách kiểm tra",
       "BoardingTime": "Thời gian lên máy bay",
       "DmcSelfTestTime": "Thời gian tự kiểm tra của DMC",
+      "FirstOfficerAvatar": "Show First Officer Avatar",
       "HomeCockpitMode": "Chế độ buồng lái tại nhà",
       "McduFocusTimeout": "Thời gian chờ MCDU chỉnh (giây)",
       "McduKeyboardInput": "Dùng bàn phím cho MCDU",
       "PauseAtTod": "Dừng tại điểm hạ độ cao",
       "PauseAtTodDistance": "Khoảng cách dừng từ điểm hạ độ cao (nm)",
+      "PilotAvatar": "Show Pilot Avatar",
       "SeparateTillerFromRudderInputs": "Tách rời Điều Khiển Bánh Mũi với Bàn Đạp",
-      "SyncEfis": "Sync EFIS controls between Captain and FO",
+      "SyncEfis": "Đồng bộ hóa các điều khiển EFIS giữa cơ trưởng và cơ phó",
       "Title": "Mức thực tế"
     },
     "SimOptions": {
@@ -569,8 +580,8 @@
     "Sep": "Thg 9",
     "Sun": "CN",
     "TT": {
-      "ConnectedToLocalApi": "Kết nối tới API cục bộ",
-      "DisconnectedFromLocalApi": "Ngắt kết nối khỏi API cục bộ",
+      "ConnectedToLocalApi": "Đã được kết nối tới SimBridge",
+      "DisconnectedFromLocalApi": "Đã ngắt kết nối khỏi SimBridge",
       "TurnOffOrShutdownEfb": "Tắt hoặc tắt máy EFB"
     },
     "Thu": "Th 5",

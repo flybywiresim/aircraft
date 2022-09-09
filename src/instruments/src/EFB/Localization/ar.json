@@ -354,6 +354,12 @@
     "InteriorLighting": {
       "AircraftNeedsToBePoweredToLoadPresets": "يجب أن تكون الطائرات تعمل بالطاقة لتحميل الإعدادات المسبقة",
       "AircraftNeedsToBePoweredToSavePresets": "تحتاج الطائرات إلى أن تكون مدعومة بالطاقه لحفظ الإعدادات المسبقة",
+      "AutoLoadDawnDusk": "Dawn/Dusk:",
+      "AutoLoadDay": "Day:",
+      "AutoLoadLightingHelpTitle": "Automatic Preset Loading",
+      "AutoLoadLightingPreset": "Enable automatic loading of lighting presets:",
+      "AutoLoadNight": "Night:",
+      "AutoLoadNoneSelection": "None",
       "LoadPreset": "تحميل الإعداد المسبق",
       "LoadingPreset": "تحميل الإعداد المسبق",
       "NewNameConfirmationDialogMsg": "يرجى تأكيد الاسم الجديد للإعداد المسبق للإضاءة",
@@ -407,13 +413,15 @@
       "SliderSpeed": "تحرك للحصول على السرعة المطلوبة",
       "SystemEnabledOff": "انقر لتشغيل نظام الدفع.",
       "SystemEnabledOn": "انقر لإيقاف تشغيل نظام الدفع تمامًا.",
+      "UseControllerInput": "Turn controller input from rudder and elevator on/off",
       "ZoomIn": "تكبير",
       "ZoomOut": "تصغير"
     },
     "TugAttached": "وحدة الدفع متصلة",
     "TugDirection": "اتجاه الدفع ",
     "TugInTransit": "Waiting for Tug/Pin",
-    "TugSpeed": "سرعة الدفع "
+    "TugSpeed": "سرعة الدفع ",
+    "UseControllerInput": "Use Controller Input"
   },
   "Settings": {
     "About": {
@@ -427,6 +435,7 @@
       "LatLonExtendedFormat": "FMGC Lat/Lon Waypoint Format",
       "PaxSigns": "علامات الركاب",
       "RmpVhfSpacing": "تباعد RMP VHF",
+      "Satcom": "Satcom",
       "ThrustReductionHeight": "ارتفاع تخفيض النفاث (قدم)",
       "Title": "Aircraft Options / Pin Programs",
       "WeightUnit": "وحدة الوزن"
@@ -472,11 +481,13 @@
       "AutofillChecklists": "ملئ تلقائي لقوائم الفحص",
       "BoardingTime": "وقت الصعود",
       "DmcSelfTestTime": "وقت الاختبار الذاتي DMC",
+      "FirstOfficerAvatar": "Show First Officer Avatar",
       "HomeCockpitMode": "وضع قمرة القيادة المنزلية",
       "McduFocusTimeout": "مهلة التركيز MCDU (ثواني)",
       "McduKeyboardInput": "لوحة مفاتيح تدخيل MCDU",
       "PauseAtTod": "T/D Pause",
       "PauseAtTodDistance": "T/D Pause Distance (nm)",
+      "PilotAvatar": "Show Pilot Avatar",
       "SeparateTillerFromRudderInputs": "فصل الحارث عن مدخلات الدفة",
       "SyncEfis": "Sync EFIS controls between Captain and FO",
       "Title": "الواقعية"
