@@ -435,7 +435,7 @@
       "LatLonExtendedFormat": "FMGC Lat/Lon reittipisteen muoto",
       "PaxSigns": "Matkustajamerkinnät",
       "RmpVhfSpacing": "RMP VHF välitys",
-      "Satcom": "Show Satcom",
+      "Satcom": "Satcom",
       "ThrustReductionHeight": "Työntövoiman vähennyskorkeus (ft)",
       "Title": "Lentokoneen asetukset / ohjelmistot",
       "WeightUnit": "Painoyksikkö"
@@ -481,11 +481,13 @@
       "AutofillChecklists": "Tarkistuslistan täyttö automaattisesti",
       "BoardingTime": "Boarding-aika",
       "DmcSelfTestTime": "DMC itsenäisen testauksen aika",
+      "FirstOfficerAvatar": "Show First Officer Avatar",
       "HomeCockpitMode": "Kotiohjaamo-tila",
       "McduFocusTimeout": "Lentotietokone poissa käytöstä tarkennuksen aikana (sekunteina)",
       "McduKeyboardInput": "MCDU näppäimistö syöttö",
       "PauseAtTod": "T/D Pause",
       "PauseAtTodDistance": "T/D Pause Distance (nm)",
+      "PilotAvatar": "Show Pilot Avatar",
       "SeparateTillerFromRudderInputs": "Erota nokkapyörän ohjaus peräsimestä",
       "SyncEfis": "Sync EFIS controls between Captain and FO",
       "Title": "Realismi"

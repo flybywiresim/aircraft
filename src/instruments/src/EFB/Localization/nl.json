@@ -435,7 +435,7 @@
       "LatLonExtendedFormat": "FMGC Lat/Lon Waypoint-indeling",
       "PaxSigns": "PAX Signs",
       "RmpVhfSpacing": "RMP VHF Afstand",
-      "Satcom": "Show Satcom",
+      "Satcom": "Satcom",
       "ThrustReductionHeight": "Hoogte stuwkrachtreductie (ft)",
       "Title": "Vliegtuig Opties / Pin Programma's",
       "WeightUnit": "Gewichtseenheid"
@@ -481,11 +481,13 @@
       "AutofillChecklists": "Checklists automatisch invullen",
       "BoardingTime": "Instaptijd",
       "DmcSelfTestTime": "DMC zelf testtijd",
+      "FirstOfficerAvatar": "Show First Officer Avatar",
       "HomeCockpitMode": "Home Cockpit Modus",
       "McduFocusTimeout": "MCDU Focus Time-out (seconden)",
       "McduKeyboardInput": "MCDU Toetsenbordinvoer",
       "PauseAtTod": "T/D Pause",
       "PauseAtTodDistance": "T/D Pause Distance (nm)",
+      "PilotAvatar": "Show Pilot Avatar",
       "SeparateTillerFromRudderInputs": "Scheid Tiller van Roer invoer",
       "SyncEfis": "Sync EFIS controls between Captain and FO",
       "Title": "Realisme"

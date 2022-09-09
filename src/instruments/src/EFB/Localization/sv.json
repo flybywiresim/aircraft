@@ -481,11 +481,13 @@
       "AutofillChecklists": "Auto-fyll checklistor",
       "BoardingTime": "Ombordstigningstid",
       "DmcSelfTestTime": "DMC självtesttid",
+      "FirstOfficerAvatar": "Show First Officer Avatar",
       "HomeCockpitMode": "Hem Cockpit-läge",
       "McduFocusTimeout": "Tidsgräns för MCDU fokus (sekunder)",
       "McduKeyboardInput": "MCDU Tangentbordsinput",
       "PauseAtTod": "T/D Paus",
       "PauseAtTodDistance": "Avstånd till målet för T/D-paus (nm)",
+      "PilotAvatar": "Show Pilot Avatar",
       "SeparateTillerFromRudderInputs": "Separera Tiller från roder input",
       "SyncEfis": "Synkronisera EFIS-kontroller mellan Captain och FO",
       "Title": "Realism"

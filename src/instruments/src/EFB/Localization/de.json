@@ -481,11 +481,13 @@
       "AutofillChecklists": "Checklisten automatisch ausfüllen",
       "BoardingTime": "Boarding-Dauer",
       "DmcSelfTestTime": "DMC-Selbsttestdauer",
+      "FirstOfficerAvatar": "Co-Pilot-Avatar anzeigen",
       "HomeCockpitMode": "Homecockpit-Modus",
       "McduFocusTimeout": "MCDU Fokusdauer (Sekunden)",
       "McduKeyboardInput": "MCDU-Tastatureingabe",
       "PauseAtTod": "T/D-Pause",
       "PauseAtTodDistance": "Zielentfernung für T/D Pause (NM)",
+      "PilotAvatar": "Pilot-Avatar anzeigen",
       "SeparateTillerFromRudderInputs": "Trennung von Tiller und Seitenruder Eingaben",
       "SyncEfis": "Synchronisieren der EFIS-Steuerelemente zwischen Captain und FO",
       "Title": "Realismus"

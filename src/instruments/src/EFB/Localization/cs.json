@@ -435,7 +435,7 @@
       "LatLonExtendedFormat": "Formát FMGC Lat/Lon Waypointů",
       "PaxSigns": "Znamení cestujícím",
       "RmpVhfSpacing": "RMP VHF rozteč",
-      "Satcom": "Show Satcom",
+      "Satcom": "Satcom",
       "ThrustReductionHeight": "Výška snížení tahu (ft AGL)",
       "Title": "Možnosti letadla / Pin programy",
       "WeightUnit": "Jednotky hmotnosti"
@@ -481,11 +481,13 @@
       "AutofillChecklists": "Automaticky vyplňovat checklisty",
       "BoardingTime": "Čas nastupování cestujících",
       "DmcSelfTestTime": "Inicializační test DMC",
+      "FirstOfficerAvatar": "Show First Officer Avatar",
       "HomeCockpitMode": "Režim domácího kokpitu",
       "McduFocusTimeout": "Časový limit vstupu MCDU z klávesnice (sekundy)",
       "McduKeyboardInput": "MCDU zadávání pomocí klávesnice",
       "PauseAtTod": "Pauza na T/D",
       "PauseAtTodDistance": "Vzdálenost zapauzování před T/D (nm)",
+      "PilotAvatar": "Show Pilot Avatar",
       "SeparateTillerFromRudderInputs": "Oddělit vstupy pro tiller a směrovku",
       "SyncEfis": "Synchronizovat EFIS mezi kapitánem a FO",
       "Title": "Realismus"

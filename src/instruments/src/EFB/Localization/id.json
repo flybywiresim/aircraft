@@ -435,7 +435,7 @@
       "LatLonExtendedFormat": "Format FMGC Lat/Lon Waypoint",
       "PaxSigns": "PAX Signs",
       "RmpVhfSpacing": "Jarak VHF RMP",
-      "Satcom": "Show Satcom",
+      "Satcom": "Satcom",
       "ThrustReductionHeight": "Ketinggian Pengurangan Dorongan (ft)",
       "Title": "Opsi Pesawat / Tandai Program",
       "WeightUnit": "Satuan Berat"
@@ -481,11 +481,13 @@
       "AutofillChecklists": "Ceklis Otomatis Terisi",
       "BoardingTime": "Waktu Boarding",
       "DmcSelfTestTime": "Waktu Pencobaan Mandiri DMC",
+      "FirstOfficerAvatar": "Show First Officer Avatar",
       "HomeCockpitMode": "Mode Kokpit Rumah",
       "McduFocusTimeout": "Batas Waktu Fokus MCDU (detik)",
       "McduKeyboardInput": "Input Keyboard MCDU",
       "PauseAtTod": "T/D Pause",
       "PauseAtTodDistance": "T/D Pause Distance (nm)",
+      "PilotAvatar": "Show Pilot Avatar",
       "SeparateTillerFromRudderInputs": "Pisahkan Tiller dari Input Rudder",
       "SyncEfis": "Sync EFIS controls between Captain and FO",
       "Title": "Realisme"

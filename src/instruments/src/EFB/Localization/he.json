@@ -481,11 +481,13 @@
       "AutofillChecklists": "מלא רשימות בדיקה אוטומטית",
       "BoardingTime": "זמן עלייה למטוס",
       "DmcSelfTestTime": "DMC - זמן בדיקה עצמית",
+      "FirstOfficerAvatar": "Show First Officer Avatar",
       "HomeCockpitMode": "מצב תא טייס ביתי",
       "McduFocusTimeout": "MCDU - זמן לשחרור מקלדת",
       "McduKeyboardInput": "MCDU - קלט מקלדת",
       "PauseAtTod": "השהה לפני הנמכת גובה (T/D)",
       "PauseAtTodDistance": "מרחק מהשהייה לפני הנמכה",
+      "PilotAvatar": "Show Pilot Avatar",
       "SeparateTillerFromRudderInputs": "היגוי גלגל האף נפרד מהפדלים",
       "SyncEfis": "סנכרון EFIS בין הקפטן לטייס המשנה",
       "Title": "מציאותיות"

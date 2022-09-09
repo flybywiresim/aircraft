@@ -435,7 +435,7 @@
       "LatLonExtendedFormat": "FMGC 위도/경도 항로 형식",
       "PaxSigns": "승객 사인",
       "RmpVhfSpacing": "RMP VHF 주파수 간격",
-      "Satcom": "Show Satcom",
+      "Satcom": "Satcom",
       "ThrustReductionHeight": "추력 감소 고도 (ft)",
       "Title": "항공기 옵션 / 프로그램 설정",
       "WeightUnit": "무게 단위"
@@ -481,11 +481,13 @@
       "AutofillChecklists": "체크리스트 자동 완성",
       "BoardingTime": "승객 탑승 시간",
       "DmcSelfTestTime": "DMC 자체 점검 시간",
+      "FirstOfficerAvatar": "부기장 아바타 표시",
       "HomeCockpitMode": "실내 조종석 모드",
       "McduFocusTimeout": "MCDU 포커스 타임아웃 (초)",
       "McduKeyboardInput": "MCDU 키보드 입력",
       "PauseAtTod": "T/D 일시정지",
       "PauseAtTodDistance": "T/D 일시정지 거리 (nm)",
+      "PilotAvatar": "기장 아바타 표시",
       "SeparateTillerFromRudderInputs": "러더 입력과 틸러 입력 분리",
       "SyncEfis": "기장과 부기장의 EFIS 컨트롤 동기화",
       "Title": "리얼리즘"

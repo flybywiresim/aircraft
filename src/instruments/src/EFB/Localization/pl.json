@@ -435,7 +435,7 @@
       "LatLonExtendedFormat": "Format Punktów Trasy FMGC Szer/Dł Geog.",
       "PaxSigns": "Znaki dla Pasażerów",
       "RmpVhfSpacing": "Odstępy Częstotliwości VHF na Panelu RMP",
-      "Satcom": "Show Satcom",
+      "Satcom": "Satcom",
       "ThrustReductionHeight": "Wysokość Redukcji Ciągu (ft)",
       "Title": "Opcje Samolotu/Przypięte Programy",
       "WeightUnit": "Jednostka Masy"
@@ -481,11 +481,13 @@
       "AutofillChecklists": "Automatyczne Wypełnianie Checklist",
       "BoardingTime": "Czas Wejścia Pasażerów na Pokład",
       "DmcSelfTestTime": "Czas Autotestu DMC",
+      "FirstOfficerAvatar": "Show First Officer Avatar",
       "HomeCockpitMode": "Tryb Kokpitu Domowego",
       "McduFocusTimeout": "Czas Aktywności MCDU (sekundy)",
       "McduKeyboardInput": "Wprowadzanie Danych Fizyczną Klawiaturą do MCDU",
       "PauseAtTod": "T/D Pause",
       "PauseAtTodDistance": "T/D Pause Distance (nm)",
+      "PilotAvatar": "Show Pilot Avatar",
       "SeparateTillerFromRudderInputs": "Oddziel Sterowanie Kołem od Steru Kierunku",
       "SyncEfis": "Sync EFIS controls between Captain and FO",
       "Title": "Realizm"

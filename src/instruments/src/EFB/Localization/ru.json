@@ -435,7 +435,7 @@
       "LatLonExtendedFormat": "Формат промежуточных точек FMGC для широты/долготы",
       "PaxSigns": "Табло салона",
       "RmpVhfSpacing": "Интервал RMP VHF",
-      "Satcom": "Show Satcom",
+      "Satcom": "Satcom",
       "ThrustReductionHeight": "Высота уменьшения тяги (фт)",
       "Title": "Опции самолёта / Пин-программы",
       "WeightUnit": "Единицы измерения веса"
@@ -481,11 +481,13 @@
       "AutofillChecklists": "Автозаполнение контрольных списков",
       "BoardingTime": "Скорость посадки",
       "DmcSelfTestTime": "Время самотестирования DMC",
+      "FirstOfficerAvatar": "Show First Officer Avatar",
       "HomeCockpitMode": "Режим домашней кабины",
       "McduFocusTimeout": "Тайм-аут фокуса MCDU (секунды)",
       "McduKeyboardInput": "Ввод с клавиатуры MCDU",
       "PauseAtTod": "Т/Д Пауза",
       "PauseAtTodDistance": "Расстояние паузы Т/Д (нм)",
+      "PilotAvatar": "Show Pilot Avatar",
       "SeparateTillerFromRudderInputs": "Отдельный румпель от входов руля",
       "SyncEfis": "Sync EFIS controls between Captain and FO",
       "Title": "Реализм"

@@ -435,7 +435,7 @@
       "LatLonExtendedFormat": "FMGC - format zapisa točk zemljepisne dolžine/širine",
       "PaxSigns": "PAX znaki",
       "RmpVhfSpacing": "RMP VHF razmik",
-      "Satcom": "Show Satcom",
+      "Satcom": "Satcom",
       "ThrustReductionHeight": "Višina zmanjšanja potiska (ft)",
       "Title": "Možnosti zrakoplova / pripeti programi",
       "WeightUnit": "Enota teže"
@@ -481,11 +481,13 @@
       "AutofillChecklists": "Samodejno izpolni kontrolne sezname",
       "BoardingTime": "Čas vkrcanja",
       "DmcSelfTestTime": "DMC samopreizkusni čas",
+      "FirstOfficerAvatar": "Show First Officer Avatar",
       "HomeCockpitMode": "Način \"Home Cockpit\"",
       "McduFocusTimeout": "MCDU časovna omejitev fokusa (sekunde)",
       "McduKeyboardInput": "MCDU vnos s tipkovnico",
       "PauseAtTod": "T/D pavza",
       "PauseAtTodDistance": "T/D Razdalja pavze (nm)",
+      "PilotAvatar": "Show Pilot Avatar",
       "SeparateTillerFromRudderInputs": "Ločite delovanje krmilnika od krmila",
       "SyncEfis": "Sinhronizacija EFIS-a med CP in FO",
       "Title": "Realizem"

@@ -435,7 +435,7 @@
       "LatLonExtendedFormat": "FMGC緯度/経度ウェイポイント形式",
       "PaxSigns": "乗客サイン",
       "RmpVhfSpacing": "RMP VHF 周波数間隔",
-      "Satcom": "Satcomモジュールを表示",
+      "Satcom": "Satcom",
       "ThrustReductionHeight": "推力低減高度(ft)",
       "Title": "機体オプション/Pin Programs",
       "WeightUnit": "重量単位"
@@ -481,11 +481,13 @@
       "AutofillChecklists": "チェックリストの自動入力",
       "BoardingTime": "乗客の搭乗時間",
       "DmcSelfTestTime": "DMCの自己診断時間",
+      "FirstOfficerAvatar": "副操縦士を表示",
       "HomeCockpitMode": "ホームコックピットモード",
       "McduFocusTimeout": "MCDUへのフォーカスがタイムアウトする時間(秒)",
       "McduKeyboardInput": "MCDUへのキーボード入力",
       "PauseAtTod": "降下開始地点で一時停止",
       "PauseAtTodDistance": "一時停止を有効にする降下開始地点からの距離(nm)",
+      "PilotAvatar": "パイロットを表示",
       "SeparateTillerFromRudderInputs": "ティラーをラダー入力から分離",
       "SyncEfis": "機長席と副操縦士席のEFIS操作を同期",
       "Title": "リアリズム"

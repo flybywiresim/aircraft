@@ -481,11 +481,13 @@
       "AutofillChecklists": "Ellenörző listák automatikus kitöltése",
       "BoardingTime": "Beszállási idő",
       "DmcSelfTestTime": "DMC Öntesztelési idő",
+      "FirstOfficerAvatar": "Mutassa az elsőtisztet",
       "HomeCockpitMode": "Épített kabin mód",
       "McduFocusTimeout": "MCDU Fókusz időtúllépés (másodperc)",
       "McduKeyboardInput": "MCDU Billentyűzet bevitel",
       "PauseAtTod": "T/D Szünet",
       "PauseAtTodDistance": "T/D szüneteltetési távolság (nm)",
+      "PilotAvatar": "Mutassa a pilótát",
       "SeparateTillerFromRudderInputs": "Orrkerék kormányzás leválasztása az oldalkormányzásról",
       "SyncEfis": "Szinkronizálja az EFIS vezérlőket kapitányról",
       "Title": "Realizmus"

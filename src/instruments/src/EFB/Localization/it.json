@@ -481,11 +481,13 @@
       "AutofillChecklists": "Autocompleta Checklist",
       "BoardingTime": "Durata Imbarco",
       "DmcSelfTestTime": "Durata Autotest DMC",
+      "FirstOfficerAvatar": "Show First Officer Avatar",
       "HomeCockpitMode": "Modalità Home Cockpit",
       "McduFocusTimeout": "Rilascio Selezione su MCDU (secondi)",
       "McduKeyboardInput": "Input Tastiera su MCDU",
       "PauseAtTod": "Interruzione T/D",
       "PauseAtTodDistance": "Distanza Interruzione T/D (nm)",
+      "PilotAvatar": "Show Pilot Avatar",
       "SeparateTillerFromRudderInputs": "Separa gli Input del Tiller e dei Pedali",
       "SyncEfis": "Sincronizza controlli EFIS tra Comandante e Primo Ufficiale",
       "Title": "Realismo"

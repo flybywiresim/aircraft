@@ -435,7 +435,7 @@
       "LatLonExtendedFormat": "FMGC Enlem/Boylam Yol-noktası Biçimi",
       "PaxSigns": "Yolcu İşaretleri",
       "RmpVhfSpacing": "RMP VHF Aralığı",
-      "Satcom": "Show Satcom",
+      "Satcom": "Satcom",
       "ThrustReductionHeight": "İtki Azaltma İrtifası (ft)",
       "Title": "Uçak Seçenekleri / Pin Programları",
       "WeightUnit": "Ağırlık Birimi"
@@ -481,11 +481,13 @@
       "AutofillChecklists": "Kontrol listelerini Otomatik Doldur",
       "BoardingTime": "Biniş Süresi",
       "DmcSelfTestTime": "DMC Self Test Süresi",
+      "FirstOfficerAvatar": "Show First Officer Avatar",
       "HomeCockpitMode": "Ev Kokpit Modu",
       "McduFocusTimeout": "MCDU Focus Zaman Aşımı (saniye)",
       "McduKeyboardInput": "MCDU Klavye Girişi",
       "PauseAtTod": "T/D Noktasında Duraklat",
       "PauseAtTodDistance": "T/D Noktasında Duraklatma Mesafesi (nm)",
+      "PilotAvatar": "Show Pilot Avatar",
       "SeparateTillerFromRudderInputs": "Tiller'ı Rudder Girişlerinden Ayır",
       "SyncEfis": "EFIS kontrollerini Kaptan'dan FO'ya senkronize edin",
       "Title": "Gerçekçilik"

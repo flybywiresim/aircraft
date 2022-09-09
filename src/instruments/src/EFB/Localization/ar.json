@@ -435,7 +435,7 @@
       "LatLonExtendedFormat": "FMGC Lat/Lon Waypoint Format",
       "PaxSigns": "علامات الركاب",
       "RmpVhfSpacing": "تباعد RMP VHF",
-      "Satcom": "Show Satcom",
+      "Satcom": "Satcom",
       "ThrustReductionHeight": "ارتفاع تخفيض النفاث (قدم)",
       "Title": "Aircraft Options / Pin Programs",
       "WeightUnit": "وحدة الوزن"
@@ -481,11 +481,13 @@
       "AutofillChecklists": "ملئ تلقائي لقوائم الفحص",
       "BoardingTime": "وقت الصعود",
       "DmcSelfTestTime": "وقت الاختبار الذاتي DMC",
+      "FirstOfficerAvatar": "Show First Officer Avatar",
       "HomeCockpitMode": "وضع قمرة القيادة المنزلية",
       "McduFocusTimeout": "مهلة التركيز MCDU (ثواني)",
       "McduKeyboardInput": "لوحة مفاتيح تدخيل MCDU",
       "PauseAtTod": "T/D Pause",
       "PauseAtTodDistance": "T/D Pause Distance (nm)",
+      "PilotAvatar": "Show Pilot Avatar",
       "SeparateTillerFromRudderInputs": "فصل الحارث عن مدخلات الدفة",
       "SyncEfis": "Sync EFIS controls between Captain and FO",
       "Title": "الواقعية"

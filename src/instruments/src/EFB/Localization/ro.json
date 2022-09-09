@@ -435,7 +435,7 @@
       "LatLonExtendedFormat": "FMGC Lat/Lon format puncte de trecere",
       "PaxSigns": "Semn PAX",
       "RmpVhfSpacing": "Spațiere RMP VHF",
-      "Satcom": "Show Satcom",
+      "Satcom": "Satcom",
       "ThrustReductionHeight": "Înălțimea de reducere a puterii (ft)",
       "Title": "Opțiuni aeronave/programe Pin",
       "WeightUnit": "Unitatea de măsurat greutatea"
@@ -481,11 +481,13 @@
       "AutofillChecklists": "Completare automată a listelor de verificare",
       "BoardingTime": "Timp de încărcare",
       "DmcSelfTestTime": "Timp de testare automată DMC",
+      "FirstOfficerAvatar": "Show First Officer Avatar",
       "HomeCockpitMode": "Mod cabină de pilotaj de casă",
       "McduFocusTimeout": "MCDU Focus Timeout (secunde)",
       "McduKeyboardInput": "Intrare tastatură MCDU",
       "PauseAtTod": "T/D Pause",
       "PauseAtTodDistance": "T/D Pause Distance (nm)",
+      "PilotAvatar": "Show Pilot Avatar",
       "SeparateTillerFromRudderInputs": "Separați cârma de intrările cârmei",
       "SyncEfis": "Sync EFIS controls between Captain and FO",
       "Title": "Realism"

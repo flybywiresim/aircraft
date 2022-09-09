@@ -435,7 +435,7 @@
       "LatLonExtendedFormat": "FMGC Lat/Lon Waypoint Format",
       "PaxSigns": "Passager skilte",
       "RmpVhfSpacing": "RMP VHF Afstand",
-      "Satcom": "Show Satcom",
+      "Satcom": "Satcom",
       "ThrustReductionHeight": "Thrustreduktionshøjde (ft)",
       "Title": "Muligheder for fly / Pin programmer",
       "WeightUnit": "Vægt enhed"
@@ -481,11 +481,13 @@
       "AutofillChecklists": "Tjeklister til autoudfyldning",
       "BoardingTime": "Boarding tid",
       "DmcSelfTestTime": "DMC Selv Test Tid",
+      "FirstOfficerAvatar": "Show First Officer Avatar",
       "HomeCockpitMode": "Hjemmecockpit tilstand",
       "McduFocusTimeout": "MCDU Fokus Timeout (sekunder)",
       "McduKeyboardInput": "MCDU Tastatur Input",
       "PauseAtTod": "T/D Pause",
       "PauseAtTodDistance": "T/D Pause Distance (nm)",
+      "PilotAvatar": "Show Pilot Avatar",
       "SeparateTillerFromRudderInputs": "Separat Tiller fra Rudder Inputs",
       "SyncEfis": "Sync EFIS controls between Captain and FO",
       "Title": "Realisme"

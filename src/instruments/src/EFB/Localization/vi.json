@@ -435,7 +435,7 @@
       "LatLonExtendedFormat": "Định dạng điểm trên FMGC dạng vĩ/kinh",
       "PaxSigns": "Đèn báo hiệu hành khách",
       "RmpVhfSpacing": "Khoảng cách RMP VHF",
-      "Satcom": "Show Satcom",
+      "Satcom": "Satcom",
       "ThrustReductionHeight": "Độ cao giảm lực đẩy (ft)",
       "Title": "Tùy chọn máy bay / Pin Programs",
       "WeightUnit": "Đơn vị trọng lượng"
@@ -481,11 +481,13 @@
       "AutofillChecklists": "Tự đồng điền danh sách kiểm tra",
       "BoardingTime": "Thời gian lên máy bay",
       "DmcSelfTestTime": "Thời gian tự kiểm tra của DMC",
+      "FirstOfficerAvatar": "Show First Officer Avatar",
       "HomeCockpitMode": "Chế độ buồng lái tại nhà",
       "McduFocusTimeout": "Thời gian chờ MCDU chỉnh (giây)",
       "McduKeyboardInput": "Dùng bàn phím cho MCDU",
       "PauseAtTod": "Dừng tại điểm hạ độ cao",
       "PauseAtTodDistance": "Khoảng cách dừng từ điểm hạ độ cao (nm)",
+      "PilotAvatar": "Show Pilot Avatar",
       "SeparateTillerFromRudderInputs": "Tách rời Điều Khiển Bánh Mũi với Bàn Đạp",
       "SyncEfis": "Đồng bộ hóa các điều khiển EFIS giữa cơ trưởng và cơ phó",
       "Title": "Mức thực tế"
