@@ -5253,7 +5253,7 @@
                     </VISIBILITY_CODE>
                 </UseTemplate>
             </Component>
-            <!-- First office -->
+            <!-- First Officer -->
             <Component ID="PILOT_1" Node="PILOT_1">
                 <UseTemplate Name="ASOBO_GT_Visibility_Code">
                     <VISIBILITY_CODE>
