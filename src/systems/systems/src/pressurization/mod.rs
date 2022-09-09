@@ -91,6 +91,8 @@ impl Pressurization {
             fwc_excess_residual_pressure_id: context
                 .get_identifier("PRESS_EXCESS_RESIDUAL_PR".to_owned()),
             fwc_low_diff_pressure_id: context.get_identifier("PRESS_LOW_DIFF_PR".to_owned()),
+            // FIXME use ARINC429 vars to get FM landing elev
+            // FIXME CPC 1 and 2 should transmit their landing elev to the SDACs (FWC/DMCs get it from there)
             auto_landing_elevation_id: context
                 .get_identifier("PRESS_AUTO_LANDING_ELEVATION".to_owned()),
             departure_elevation_id: context.get_identifier("DEPARTURE_ELEVATION".to_owned()),

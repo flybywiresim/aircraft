@@ -1388,7 +1388,12 @@ mod tests {
                 [ZoneType::Cockpit, ZoneType::Cabin(1), ZoneType::Cabin(2)];
 
             Self {
-                a320_air_conditioning_system: AirConditioningSystem::new(context, cabin_zones),
+                a320_air_conditioning_system: AirConditioningSystem::new(
+                    context,
+                    cabin_zones,
+                    vec![ElectricalBusType::DirectCurrent(1)],
+                    vec![ElectricalBusType::DirectCurrent(2)],
+                ),
 
                 adirs: TestAdirs::new(),
                 lgciu: TestLgciu::new(true),

@@ -653,21 +653,23 @@ impl LandingGearControlInterfaceUnit {
             self.is_powered,
         );
 
-        if is_master_computer && !self.is_active_computer_previous_state {
-            self.actions_when_becoming_master();
-        }
+        if self.is_powered {
+            if is_master_computer && !self.is_active_computer_previous_state {
+                self.actions_when_becoming_master();
+            }
 
-        if !is_master_computer {
-            self.actions_when_slave();
-        }
+            if !is_master_computer {
+                self.actions_when_slave();
+            }
 
-        if self.is_powered && !self.is_powered_previous_state {
-            self.actions_when_startup();
-        }
+            if !self.is_powered_previous_state {
+                self.actions_when_startup();
+            }
 
-        if is_master_computer {
-            self.gear_system_control
-                .update(&self.sensor_inputs, !self.is_gear_lever_down);
+            if is_master_computer {
+                self.gear_system_control
+                    .update(&self.sensor_inputs, !self.is_gear_lever_down);
+            }
         }
 
         if context.is_sim_ready() {
