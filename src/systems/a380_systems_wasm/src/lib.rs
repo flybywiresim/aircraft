@@ -32,8 +32,6 @@ use trimmable_horizontal_stabilizer::trimmable_horizontal_stabilizer;
 async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     let mut sim_connect = gauge.open_simconnect("systems")?;
 
-    println!("bruhh-1");
-
     let key_prefix = "A32NX_";
     let (mut simulation, mut handler) = MsfsSimulationBuilder::new(
         key_prefix,

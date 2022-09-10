@@ -183,8 +183,6 @@ impl Aircraft for A380 {
             &self.autobrake_panel,
             &self.engine_fire_overhead,
             &self.lgcius,
-            &self.emergency_electrical_overhead,
-            &self.electrical,
             &self.pneumatic,
             &self.adirs,
         );

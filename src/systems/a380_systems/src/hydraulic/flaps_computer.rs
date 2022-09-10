@@ -386,8 +386,6 @@ impl SimulationElement for SlatFlapComplex {
 
 #[cfg(test)]
 mod tests {
-    use crate::hydraulic::A380Hydraulic;
-
     use super::*;
     use std::time::Duration;
     use systems::simulation::{

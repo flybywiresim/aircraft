@@ -51,10 +51,9 @@ use systems::{
         random_from_range,
         update_iterator::{FixedStepLoop, MaxStepLoop},
         AdirsDiscreteOutputs, DelayedFalseLogicGate, DelayedPulseTrueLogicGate,
-        DelayedTrueLogicGate, ElectricalBusType, ElectricalBuses, EmergencyElectricalRatPushButton,
-        EmergencyElectricalState, EngineFirePushButtons, GearWheel, HydraulicColor,
-        LandingGearHandle, LgciuInterface, LgciuWeightOnWheels, ReservoirAirPressure,
-        SectionPressure,
+        DelayedTrueLogicGate, ElectricalBusType, ElectricalBuses, EngineFirePushButtons, GearWheel,
+        HydraulicColor, LandingGearHandle, LgciuInterface, LgciuWeightOnWheels,
+        ReservoirAirPressure, SectionPressure,
     },
     simulation::{
         InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -1238,16 +1237,8 @@ impl A380Hydraulic {
     const YELLOW_ELEC_PUMP_SUPPLY_POWER_BUS: ElectricalBusType =
         ElectricalBusType::AlternatingCurrentGndFltService;
 
-    const YELLOW_EDP_CONTROL_POWER_BUS1: ElectricalBusType = ElectricalBusType::DirectCurrent(2);
-    const YELLOW_EDP_CONTROL_POWER_BUS2: ElectricalBusType =
-        ElectricalBusType::DirectCurrentEssential;
     const GREEN_EDP_CONTROL_POWER_BUS1: ElectricalBusType =
         ElectricalBusType::DirectCurrentEssential;
-
-    const RAT_CONTROL_SOLENOID1_POWER_BUS: ElectricalBusType =
-        ElectricalBusType::DirectCurrentHot(1);
-    const RAT_CONTROL_SOLENOID2_POWER_BUS: ElectricalBusType =
-        ElectricalBusType::DirectCurrentHot(2);
 
     // Refresh rate of core hydraulic simulation
     const HYDRAULIC_SIM_TIME_STEP: Duration = Duration::from_millis(33);
@@ -1538,8 +1529,6 @@ impl A380Hydraulic {
         autobrake_panel: &AutobrakePanel,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         lgcius: &LandingGearControlInterfaceUnitSet,
-        rat_and_emer_gen_man_on: &impl EmergencyElectricalRatPushButton,
-        emergency_elec: &impl EmergencyElectricalState,
         reservoir_pneumatics: &impl ReservoirAirPressure,
         adirs: &impl AdirsDiscreteOutputs,
     ) {
@@ -1550,8 +1539,6 @@ impl A380Hydraulic {
         for cur_time_step in self.physics_updater {
             self.update_fast_physics(
                 &context.with_delta(cur_time_step),
-                rat_and_emer_gen_man_on,
-                emergency_elec,
                 lgcius.lgciu1(),
                 lgcius.lgciu2(),
                 adirs,
@@ -1562,8 +1549,6 @@ impl A380Hydraulic {
             context,
             overhead_panel,
             autobrake_panel,
-            rat_and_emer_gen_man_on,
-            emergency_elec,
             lgcius.lgciu1(),
             lgcius.lgciu2(),
             engines[0],
@@ -1716,8 +1701,6 @@ impl A380Hydraulic {
     fn update_fast_physics(
         &mut self,
         context: &UpdateContext,
-        rat_and_emer_gen_man_on: &impl EmergencyElectricalRatPushButton,
-        emergency_elec: &impl EmergencyElectricalState,
         lgciu1: &impl LgciuInterface,
         lgciu2: &impl LgciuInterface,
         adirs: &impl AdirsDiscreteOutputs,
@@ -1761,8 +1744,6 @@ impl A380Hydraulic {
         context: &UpdateContext,
         overhead_panel: &A380HydraulicOverheadPanel,
         autobrake_panel: &AutobrakePanel,
-        rat_and_emer_gen_man_on: &impl EmergencyElectricalRatPushButton,
-        emergency_elec_state: &impl EmergencyElectricalState,
         lgciu1: &impl LgciuInterface,
         lgciu2: &impl LgciuInterface,
         engine1: &impl Engine,
@@ -2100,10 +2081,7 @@ impl A380Hydraulic {
         );
 
         self.green_electric_pump_a_controller.update(
-            context,
             overhead_panel,
-            &self.forward_cargo_door_controller,
-            &self.aft_cargo_door_controller,
             &self.green_circuit,
             self.green_circuit.reservoir(),
             engines,
@@ -2117,10 +2095,7 @@ impl A380Hydraulic {
             &self.green_electric_pump_a_controller,
         );
         self.green_electric_pump_b_controller.update(
-            context,
             overhead_panel,
-            &self.forward_cargo_door_controller,
-            &self.aft_cargo_door_controller,
             &self.green_circuit,
             self.green_circuit.reservoir(),
             engines,
@@ -2135,10 +2110,7 @@ impl A380Hydraulic {
         );
 
         self.yellow_electric_pump_a_controller.update(
-            context,
             overhead_panel,
-            &self.forward_cargo_door_controller,
-            &self.aft_cargo_door_controller,
             &self.yellow_circuit,
             self.yellow_circuit.reservoir(),
             engines,
@@ -2153,10 +2125,7 @@ impl A380Hydraulic {
         );
 
         self.yellow_electric_pump_b_controller.update(
-            context,
             overhead_panel,
-            &self.forward_cargo_door_controller,
-            &self.aft_cargo_door_controller,
             &self.yellow_circuit,
             self.yellow_circuit.reservoir(),
             engines,
@@ -2714,18 +2683,6 @@ impl A380EngineDrivenPumpController {
         self.update_low_level(reservoir, overhead_panel);
     }
 
-    fn has_pressure_low_fault(&self) -> bool {
-        self.has_pressure_low_fault
-    }
-
-    fn has_air_pressure_low_fault(&self) -> bool {
-        self.has_air_pressure_low_fault
-    }
-
-    fn has_low_level_fault(&self) -> bool {
-        self.has_low_level_fault
-    }
-
     fn has_any_fault(&self) -> bool {
         self.has_pressure_low_fault || self.has_air_pressure_low_fault || self.has_low_level_fault
     }
@@ -2906,10 +2863,7 @@ impl A380ElectricPumpController {
 
     fn update(
         &mut self,
-        context: &UpdateContext,
         overhead_panel: &A380HydraulicOverheadPanel,
-        forward_cargo_door_controller: &A380DoorController,
-        aft_cargo_door_controller: &A380DoorController,
         hydraulic_circuit: &impl HydraulicPressureSensors,
         reservoir: &Reservoir,
         engines: [&impl Engine; 4],
@@ -2964,18 +2918,6 @@ impl A380ElectricPumpController {
     ) {
         self.has_low_level_fault =
             reservoir.is_low_level() && !overhead_panel.epump_button_off_is_off(self.pump_id);
-    }
-
-    fn has_pressure_low_fault(&self) -> bool {
-        self.has_pressure_low_fault
-    }
-
-    fn has_air_pressure_low_fault(&self) -> bool {
-        self.has_air_pressure_low_fault
-    }
-
-    fn has_low_level_fault(&self) -> bool {
-        self.has_low_level_fault
     }
 
     fn has_any_fault(&self) -> bool {
@@ -4266,15 +4208,6 @@ impl A380HydraulicOverheadPanel {
         }
     }
 
-    fn epump_button_on_is_auto(&self, pump_id: A380ElectricPumpId) -> bool {
-        match pump_id {
-            A380ElectricPumpId::EpumpGreenA => self.green_epump_a_on_push_button.is_auto(),
-            A380ElectricPumpId::EpumpGreenB => self.green_epump_b_on_push_button.is_auto(),
-            A380ElectricPumpId::EpumpYellowA => self.yellow_epump_a_on_push_button.is_auto(),
-            A380ElectricPumpId::EpumpYellowB => self.yellow_epump_b_on_push_button.is_auto(),
-        }
-    }
-
     fn engines_edp_disconnected(&self, engine_num: usize) -> bool {
         match engine_num {
             1 => !self.eng1_edp_disconnect.is_auto(),
@@ -4971,7 +4904,6 @@ enum AileronActuatorPosition {
 
 #[derive(PartialEq, Clone, Copy)]
 enum ElevatorActuatorPosition {
-    Outboard = 0,
     Inboard = 1,
 }
 
@@ -5541,9 +5473,8 @@ mod tests {
                 ExternalPowerSource,
             },
             engine::{leap_engine::LeapEngine, EngineFireOverheadPanel},
-            hydraulic::electrical_generator::TestGenerator,
             landing_gear::{GearSystemState, LandingGear, LandingGearControlInterfaceUnitSet},
-            shared::{EmergencyElectricalState, HydraulicGeneratorControlUnit, PotentialOrigin},
+            shared::{EmergencyElectricalRatPushButton, EmergencyElectricalState, PotentialOrigin},
             simulation::{
                 test::{ReadByName, SimulationTestBed, TestBed, WriteByName},
                 Aircraft, InitContext,
@@ -5945,8 +5876,6 @@ mod tests {
                     &self.autobrake_panel,
                     &self.engine_fire_overhead,
                     &self.lgcius,
-                    &self.emergency_electrical_overhead,
-                    &self.electrical,
                     &self.pneumatics,
                     &self.adirus,
                 );
@@ -6129,14 +6058,6 @@ mod tests {
                 self.query(|a| a.get_yellow_brake_accumulator_fluid_volume())
             }
 
-            fn get_rat_position(&mut self) -> f64 {
-                self.read_by_name("HYD_RAT_STOW_POSITION")
-            }
-
-            fn get_rat_rpm(&mut self) -> f64 {
-                self.read_by_name("A32NX_HYD_RAT_RPM")
-            }
-
             fn get_left_aileron_position(&mut self) -> Ratio {
                 Ratio::new::<ratio>(self.read_by_name("HYD_AIL_LEFT_DEFLECTION"))
             }
@@ -6230,22 +6151,6 @@ mod tests {
                 self
             }
 
-            fn rotates_on_runway(mut self) -> Self {
-                self.set_indicated_altitude(Length::new::<foot>(0.));
-                self.set_on_ground(false);
-                self.set_indicated_airspeed(Velocity::new::<knot>(135.));
-                self.write_by_name(
-                    LandingGear::GEAR_CENTER_COMPRESSION,
-                    Ratio::new::<ratio>(0.5),
-                );
-                self.write_by_name(LandingGear::GEAR_LEFT_COMPRESSION, Ratio::new::<ratio>(0.8));
-                self.write_by_name(
-                    LandingGear::GEAR_RIGHT_COMPRESSION,
-                    Ratio::new::<ratio>(0.8),
-                );
-                self
-            }
-
             fn in_flight(mut self) -> Self {
                 self.set_on_ground(false);
                 self.set_indicated_altitude(Length::new::<foot>(2500.));
@@ -6313,10 +6218,6 @@ mod tests {
 
             fn is_nw_disc_memo_shown(&mut self) -> bool {
                 self.read_by_name("HYD_NW_STRG_DISC_ECAM_MEMO")
-            }
-
-            fn is_ptu_running_high_pitch_sound(&mut self) -> bool {
-                self.read_by_name("HYD_PTU_HIGH_PITCH_SOUND")
             }
 
             fn start_eng1(mut self, n2: Ratio) -> Self {
@@ -6526,11 +6427,6 @@ mod tests {
                 self.command(|a| a.set_dc_ground_service_is_powered(false));
                 self
             }
-            fn dc_ground_service_avail(mut self) -> Self {
-                self.command(|a| a.set_dc_ground_service_is_powered(true));
-                self
-            }
-
             fn ac_ground_service_lost(mut self) -> Self {
                 self.command(|a| a.set_ac_ground_service_is_powered(false));
                 self
@@ -6543,11 +6439,6 @@ mod tests {
 
             fn dc_ess_lost(mut self) -> Self {
                 self.command(|a| a.set_dc_ess_is_powered(false));
-                self
-            }
-
-            fn dc_ess_active(mut self) -> Self {
-                self.command(|a| a.set_dc_ess_is_powered(true));
                 self
             }
 
