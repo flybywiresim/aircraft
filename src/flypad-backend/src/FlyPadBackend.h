@@ -55,6 +55,8 @@ enum DataStructureRequestIDs {
 // Local data structure for simconnect data
 struct SimulationData {
   double simulationTime;
+  double volumeCOM1;
+  double volumeCOM2;
 };
 
 // Data structure for PushbackDataID
