@@ -424,7 +424,7 @@ mod a380_electrical_circuit_tests {
         failures::FailureType,
         shared::{
             ApuAvailable, ContactorSignal, ControllerSignal, ElectricalBusType, ElectricalBuses,
-            PotentialOrigin, HydraulicGeneratorControlUnit,
+            HydraulicGeneratorControlUnit, PotentialOrigin,
         },
         simulation::{
             test::{ReadByName, SimulationTestBed, TestBed, WriteByName},

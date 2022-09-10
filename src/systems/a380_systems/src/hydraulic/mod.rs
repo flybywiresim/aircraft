@@ -5531,7 +5531,7 @@ impl SimulationElement for A380TrimInputController {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use systems::overhead::{MomentaryPushButton};
+    use systems::overhead::MomentaryPushButton;
 
     mod a380_hydraulics {
         use super::*;
