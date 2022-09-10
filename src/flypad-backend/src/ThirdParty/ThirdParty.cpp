@@ -3,6 +3,8 @@
 
 #include "ThirdParty.h"
 
+#define SELCAL_LIGHT_TIME_MS 300
+
 ThirdParty::ThirdParty(HANDLE hSimConnect): _hSimConnect(hSimConnect) {}
 
 void ThirdParty::initialize() {

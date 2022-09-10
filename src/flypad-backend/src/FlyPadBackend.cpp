@@ -7,8 +7,6 @@
 #include "Pushback/Pushback.h"
 #include "ThirdParty/ThirdParty.h"
 
-#define SELCAL_LIGHT_TIME_MS 300
-
 FlyPadBackend FLYPAD_BACKEND;
 
 /**
@@ -80,7 +78,7 @@ bool FlyPadBackend::initialize() {
 
   result &= S_OK == SimConnect_MapClientDataNameToID(hSimConnect, "vPILOT FBW", ClientData::VPILOT);
   result &= S_OK == SimConnect_CreateClientData(hSimConnect, ClientData::VPILOT, sizeof(ThirdPartyDataVPILOT), SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
-  result &= S_OK == SimConnect_AddToClientDataDefinition(hSimConnect, DataStructureIDs::AircraftLoaded, 0, SIMCONNECT_CLIENTDATATYPE_INT8);
+  result &= S_OK == SimConnect_AddToClientDataDefinition(hSimConnect, DataStructureIDs::AircraftLoadedDataID, 0, SIMCONNECT_CLIENTDATATYPE_INT8);
   result &= S_OK == SimConnect_AddToClientDataDefinition(hSimConnect, DataStructureIDs::SelcalVPILOTDataID, 1, SIMCONNECT_CLIENTDATATYPE_INT8);
   result &= S_OK == SimConnect_AddToClientDataDefinition(hSimConnect, DataStructureIDs::AllVPILOTDataID, 0, sizeof(ThirdPartyDataVPILOT));
   result &= S_OK == SimConnect_RequestClientData(hSimConnect, ClientData::VPILOT, DataStructureRequestIDs::AllVPILOTRequestID, DataStructureIDs::AllVPILOTDataID, SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET, SIMCONNECT_DATA_REQUEST_FLAG_CHANGED);

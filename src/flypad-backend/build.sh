@@ -41,11 +41,13 @@ clang++ \
   -I "${DIR}/src" \
   -I "${DIR}/src/Lighting" \
   -I "${DIR}/src/Aircraft" \
+  -I "${DIR}/src/ThirdParty" \
   "${DIR}/src/FlyPadBackend.cpp" \
   "${DIR}/src/Lighting/LightPreset.cpp" \
   "${DIR}/src/Aircraft/AircraftPreset.cpp" \
   "${DIR}/src/Pushback/Pushback.cpp" \
-  "${DIR}/src/Pushback/InertialDampener.cpp"
+  "${DIR}/src/Pushback/InertialDampener.cpp" \
+  "${DIR}/src/ThirdParty/ThirdParty.cpp"
 
 
 # restore directory

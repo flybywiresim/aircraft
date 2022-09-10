@@ -1,7 +1,11 @@
+#pragma once
+
 #include <MSFS/Legacy/gauges.h>
 #include <MSFS/MSFS.h>
 #include <MSFS/MSFS_Render.h>
 #include <SimConnect.h>
+
+#include "FlyPadBackend.h"
 
 struct ThirdPartyDataIVAO {
   uint8_t selcal;

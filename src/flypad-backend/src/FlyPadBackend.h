@@ -34,7 +34,7 @@ enum DataStructureIDs {
   SelcalVPILOTDataID,
   VolumeCOM1DataID,
   VolumeCOM2DataID,
-  AircraftLoaded,
+  AircraftLoadedDataID,
   AllIVAODataID,
   AllVPILOTDataID
 };
