@@ -577,9 +577,7 @@
             <NODE_ID>#NODE_ID_RECEIVER_RESET#</NODE_ID>
             <ANIM_NAME>#ANIM_NAME_PUSH_RECEIVER_RESET#</ANIM_NAME>
             <LEFT_SINGLE_CODE>
-                0 (&gt;L:A32NX_ACP_CALL_MECH)
-                0 (&gt;L:A32NX_ACP_CALL_ATT)
-                0 (&gt;L:A32NX_ACP_SELCAL)
+                1 (&gt;L:A32NX_ACP_RESET)
             </LEFT_SINGLE_CODE>
             <WWISE_EVENT_1>fcubutton</WWISE_EVENT_1>
             <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>

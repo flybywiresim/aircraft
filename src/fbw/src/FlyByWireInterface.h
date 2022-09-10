@@ -73,16 +73,9 @@ class FlyByWireInterface {
   double flightControlsKeyChangeElevator = 0.0;
   double flightControlsKeyChangeRudder = 0.0;
 
-  double previousVolumeCOM1 = 0.0;
-  double previousVolumeCOM2 = 0.0;
-
   bool disableXboxCompatibilityRudderAxisPlusMinus = false;
 
   bool clientDataEnabled = false;
-
-  uint8_t selcalActive = 0; // Set to 1,2,4,8 depending on the receiver. 0 if inactive.
-
-  std::chrono::system_clock::time_point previousTime = std::chrono::system_clock::now();
 
   FlightDataRecorder flightDataRecorder;
 
@@ -344,18 +337,6 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idTillerHandlePosition;
   std::unique_ptr<LocalVariable> idNoseWheelPosition;
 
-  std::unique_ptr<LocalVariable> selcal;
-  std::unique_ptr<LocalVariable> selcalReset;
-
-  std::unique_ptr<LocalVariable> volumeCOM1ACP1;
-  std::unique_ptr<LocalVariable> volumeCOM1ACP2;
-  std::unique_ptr<LocalVariable> volumeCOM1ACP3;
-
-  std::unique_ptr<LocalVariable> volumeCOM2ACP1;
-  std::unique_ptr<LocalVariable> volumeCOM2ACP2;
-  std::unique_ptr<LocalVariable> volumeCOM2ACP3;
-  std::unique_ptr<LocalVariable> updateReceiversFromThirdParty;
-
   void loadConfiguration();
   void setupLocalVariables();
 
@@ -375,8 +356,6 @@ class FlyByWireInterface {
   bool updateAutopilotLaws(double sampleTime);
   bool updateFlyByWire(double sampleTime);
   bool updateAutothrust(double sampleTime);
-
-  bool updateThirdParty(unsigned long long volumeCOM1, unsigned long long volumeCOM2);
 
   bool updateSpoilers(double sampleTime);
 
