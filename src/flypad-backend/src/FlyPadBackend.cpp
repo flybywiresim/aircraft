@@ -5,6 +5,7 @@
 #include "Aircraft/AircraftPreset.h"
 #include "Lighting/LightPreset.h"
 #include "Pushback/Pushback.h"
+#include "ThirdParty/ThirdParty.h"
 
 #define SELCAL_LIGHT_TIME_MS 300
 
@@ -50,16 +51,7 @@ bool FlyPadBackend::initialize() {
   lightPresetPtr = std::make_unique<LightPreset>();
   aircraftPresetPtr = std::make_unique<AircraftPreset>();
   pushbackPtr = std::make_unique<Pushback>(hSimConnect, &pushbackData);
-
-  selcal = register_named_variable("A32NX_ACP_SELCAL");
-  selcalReset = register_named_variable("A32NX_ACP_RESET");
-  volumeCOM1ACP1 = register_named_variable("A32NX_ACP1_Volume_VHF1");
-  volumeCOM1ACP2 = register_named_variable("A32NX_ACP2_Volume_VHF1");
-  volumeCOM1ACP3 = register_named_variable("A32NX_ACP3_Volume_VHF1");
-  volumeCOM2ACP1 = register_named_variable("A32NX_ACP1_Volume_VHF2");
-  volumeCOM2ACP2 = register_named_variable("A32NX_ACP2_Volume_VHF2");
-  volumeCOM2ACP3 = register_named_variable("A32NX_ACP3_Volume_VHF2");
-  updateReceiversFromThirdParty = register_named_variable("A32NX_COM_UpdateReceiversFromThirdParty");
+  thirdPartyPtr = std::make_unique<ThirdParty>(hSimConnect);
 
   // Simulation data to local data structure mapping
   HRESULT result = S_OK;
@@ -80,19 +72,11 @@ bool FlyPadBackend::initialize() {
 
   result &= S_OK == SimConnect_MapClientDataNameToID(hSimConnect, "IVAO Altitude Data", ClientData::IVAO);
   result &= S_OK == SimConnect_CreateClientData(hSimConnect, ClientData::IVAO, sizeof(ThirdPartyDataIVAO), SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
-
   result &= S_OK == SimConnect_AddToClientDataDefinition(hSimConnect, DataStructureIDs::SelcalIVAODataID, 0, SIMCONNECT_CLIENTDATATYPE_INT8);
   result &= S_OK == SimConnect_AddToClientDataDefinition(hSimConnect, DataStructureIDs::VolumeCOM1DataID, 1, SIMCONNECT_CLIENTDATATYPE_INT8);
   result &= S_OK == SimConnect_AddToClientDataDefinition(hSimConnect, DataStructureIDs::VolumeCOM2DataID, 2, SIMCONNECT_CLIENTDATATYPE_INT8);
   result &= S_OK == SimConnect_AddToClientDataDefinition(hSimConnect, DataStructureIDs::AllIVAODataID, 0, sizeof(ThirdPartyDataIVAO));
   result &= S_OK == SimConnect_RequestClientData(hSimConnect, ClientData::IVAO, DataStructureRequestIDs::AllIVAORequestID, DataStructureIDs::AllIVAODataID, SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET, SIMCONNECT_DATA_REQUEST_FLAG_CHANGED);
-
-  if(result) {
-    ThirdPartyDataIVAO data {0, 80, 40};
-    setThirdPartyDataIVAO(data); // notifying Altitude the aircraft is loaded with default values
-  } else {
-    cout << "Failed to init IVAO" << endl;
-  }
 
   result &= S_OK == SimConnect_MapClientDataNameToID(hSimConnect, "vPILOT FBW", ClientData::VPILOT);
   result &= S_OK == SimConnect_CreateClientData(hSimConnect, ClientData::VPILOT, sizeof(ThirdPartyDataVPILOT), SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
@@ -101,17 +85,11 @@ bool FlyPadBackend::initialize() {
   result &= S_OK == SimConnect_AddToClientDataDefinition(hSimConnect, DataStructureIDs::AllVPILOTDataID, 0, sizeof(ThirdPartyDataVPILOT));
   result &= S_OK == SimConnect_RequestClientData(hSimConnect, ClientData::VPILOT, DataStructureRequestIDs::AllVPILOTRequestID, DataStructureIDs::AllVPILOTDataID, SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET, SIMCONNECT_DATA_REQUEST_FLAG_CHANGED);
 
-  if(result) {
-    ThirdPartyDataVPILOT data {1, 0};
-    setThirdPartyDataVPILOT(data); // notifying vPilot the aircraft is loaded
-  } else {
-    cout << "Failed to init vPilot" << endl;
-  }
-
   // initialize submodules
   lightPresetPtr->initialize();
   aircraftPresetPtr->initialize();
   pushbackPtr->initialize();
+  thirdPartyPtr->initialize();
 
   std::cout << "FLYPAD_BACKEND: SimConnect connected." << std::endl;
   return (result == S_OK);
@@ -133,8 +111,17 @@ bool FlyPadBackend::onUpdate(double deltaTime) {
     lightPresetPtr->onUpdate(deltaTime);
     aircraftPresetPtr->onUpdate(deltaTime);
     pushbackPtr->onUpdate(deltaTime);
+    thirdPartyPtr->onUpdate(simulationData.volumeCOM1, simulationData.volumeCOM2, IVAOData, VPILOTData);
 
-    updateThirdParty(simulationData.volumeCOM1, simulationData.volumeCOM2);
+    if(IVAOData) {
+      delete IVAOData;
+      IVAOData = nullptr;
+    }
+
+    if(VPILOTData) {
+      delete VPILOTData;
+      VPILOTData = nullptr;
+    }
 
     return true;
   }
@@ -148,12 +135,7 @@ bool FlyPadBackend::shutdown() {
   lightPresetPtr->shutdown();
   aircraftPresetPtr->shutdown();
   pushbackPtr->shutdown();
-
-  ThirdPartyDataVPILOT dataVPILOT {0, 0};
-  std::cout << unsigned(setThirdPartyDataVPILOT(dataVPILOT)) << std::endl; // notifying vPilot the aircraft is unloaded
-
-  ThirdPartyDataIVAO dataIVAO {0, 0, 0};
-  std::cout << unsigned(setThirdPartyDataIVAO(dataIVAO)) << std::endl; // notifying vPilot the aircraft is unloaded
+  thirdPartyPtr->shutdown();
 
   isConnected = false;
   unregister_all_named_vars();
@@ -323,81 +305,4 @@ std::string FlyPadBackend::getSimConnectExceptionString(SIMCONNECT_EXCEPTION exc
     default:
       return "UNKNOWN";
   }
-}
-
-bool FlyPadBackend::updateThirdParty(unsigned long long volumeCOM1, unsigned long long volumeCOM2) {
-  if(IVAOData) {
-    bool update = false;
-
-    this->selcalActive = IVAOData->selcal;
-
-    if(IVAOData->volumeCOM1 != this->previousVolumeCOM1) {
-      double volumeCOM1over100 = IVAOData->volumeCOM1 / 100.0;
-
-      setSimVar(volumeCOM1ACP1, volumeCOM1over100);
-      setSimVar(volumeCOM1ACP2, volumeCOM1over100);
-      setSimVar(volumeCOM1ACP3, volumeCOM1over100);
-
-      this->previousVolumeCOM1 = IVAOData->volumeCOM1;
-
-      update = true;
-    }
-
-    if(IVAOData->volumeCOM2 != this->previousVolumeCOM2) {
-      double volumeCOM2over100 = IVAOData->volumeCOM2 / 100.0;
-
-      setSimVar(volumeCOM2ACP1, volumeCOM2over100);
-      setSimVar(volumeCOM2ACP2, volumeCOM2over100);
-      setSimVar(volumeCOM2ACP3, volumeCOM2over100);
-
-      this->previousVolumeCOM2 = IVAOData->volumeCOM2;
-
-      update = true;
-    }
-
-    if(update) {
-      setSimVar(updateReceiversFromThirdParty, 1);
-    }
-
-    delete IVAOData;
-    IVAOData = nullptr;
-  } else if(VPILOTData) {
-      this->selcalActive = VPILOTData->selcal;
-      delete VPILOTData;
-      VPILOTData = nullptr;
-  } else {
-    FLOAT64 localSelcalReset = get_named_variable_value(selcalReset);
-    FLOAT64 localSelcal = get_named_variable_value(selcal);
-
-    if(localSelcalReset == 0) {
-      if(this->selcalActive) {
-        // Make the SELCAL push button blink every SELCAL_LIGHT_TIME_MS
-        // It sets the BLINK_ID (foundable in the XML behaviors) then 0 to make it blink
-        if(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - this->previousTime).count() >= SELCAL_LIGHT_TIME_MS) {
-          setSimVar(selcal, localSelcal == this->selcalActive ? 0 : this->selcalActive);
-          this->previousTime = std::chrono::system_clock::now();
-        }
-      }
-    } else {
-      setSimVar(selcalReset, 0);
-      setSimVar(selcal, 0);
-      this->selcalActive = 0;
-    }
-
-    ThirdPartyDataIVAO dataIVAO {this->selcalActive, this->previousVolumeCOM1, this->previousVolumeCOM2};
-    ThirdPartyDataVPILOT dataVPILOT {1, this->selcalActive};
-
-    if(volumeCOM1 != this->previousVolumeCOM1 || volumeCOM2 != this->previousVolumeCOM2) {
-      dataIVAO.volumeCOM1 = volumeCOM1;
-      dataIVAO.volumeCOM2 = volumeCOM2;
-
-      this->previousVolumeCOM1 = volumeCOM1;
-      this->previousVolumeCOM2 = volumeCOM2;
-    }
-
-    setThirdPartyDataIVAO(dataIVAO);
-    setThirdPartyDataVPILOT(dataVPILOT);
-  }
-
-  return true;
 }

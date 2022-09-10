@@ -67,17 +67,6 @@ struct PushbackData {
   FLOAT64 rotAccelBodyX;
 };
 
-struct ThirdPartyDataIVAO {
-  uint8_t selcal;
-  uint8_t volumeCOM1;
-  uint8_t volumeCOM2;
-};
-
-struct ThirdPartyDataVPILOT {
-  uint8_t loaded; // Set to 1 if the aircraft is loaded. 0 once unloaded. If loaded, vPilot does not play the SELCAL sound
-  uint8_t selcal;
-};
-
 enum Events {
   KEY_TUG_HEADING_EVENT,
   KEY_TUG_SPEED_EVENT
@@ -86,20 +75,13 @@ enum Events {
 class LightPreset;
 class AircraftPreset;
 class Pushback;
+class ThirdParty;
+struct ThirdPartyDataIVAO;
+struct ThirdPartyDataVPILOT;
 
 class FlyPadBackend {
 private:
   HANDLE hSimConnect;
-
-  ID selcal{};
-  ID selcalReset{};
-  ID volumeCOM1ACP1{};
-  ID volumeCOM1ACP2{};
-  ID volumeCOM1ACP3{};
-  ID volumeCOM2ACP1{};
-  ID volumeCOM2ACP2{};
-  ID volumeCOM2ACP3{};
-  ID updateReceiversFromThirdParty{};
 
   // Instance of local data structure for simconnect data
   SimulationData simulationData = {};
@@ -115,32 +97,11 @@ private:
   // Storing previous simulation allows for Pause detection
   double previousSimulationTime = 0;
 
-  double previousVolumeCOM1 = 0.0;
-  double previousVolumeCOM2 = 0.0;
-  uint8_t selcalActive = 0; // Set to 1,2,4,8 depending on the receiver. 0 if inactive.
-
-  std::chrono::system_clock::time_point previousTime = std::chrono::system_clock::now();
-
   // Pointers to the flypad backend submodules
   std::unique_ptr<LightPreset> lightPresetPtr;
   std::unique_ptr<AircraftPreset> aircraftPresetPtr;
   std::unique_ptr<Pushback> pushbackPtr;
-
-  inline bool
-  setThirdPartyDataVPILOT(ThirdPartyDataVPILOT& output) {
-    return S_OK == SimConnect_SetClientData(hSimConnect, ClientData::VPILOT, DataStructureRequestIDs::AllVPILOTRequestID, SIMCONNECT_CLIENT_DATA_SET_FLAG_DEFAULT, 0, sizeof(ThirdPartyDataVPILOT), &output);
-  }
-  inline bool
-  setThirdPartyDataIVAO(ThirdPartyDataIVAO& output) {
-    return S_OK == SimConnect_SetClientData(hSimConnect, ClientData::VPILOT, DataStructureRequestIDs::AllIVAORequestID, SIMCONNECT_CLIENT_DATA_SET_FLAG_DEFAULT, 0, sizeof(ThirdPartyDataIVAO), &output);
-  }
-
-  inline void
-  setSimVar(ID var, FLOAT64 value) const {
-    set_named_variable_value(var, value);
-  }
-
-  bool updateThirdParty(unsigned long long volumeCOM1, unsigned long long volumeCOM2);
+  std::unique_ptr<ThirdParty> thirdPartyPtr;
 
 public:
   /**

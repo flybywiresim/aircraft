@@ -1,0 +1,56 @@
+#include <MSFS/Legacy/gauges.h>
+#include <MSFS/MSFS.h>
+#include <MSFS/MSFS_Render.h>
+#include <SimConnect.h>
+
+struct ThirdPartyDataIVAO {
+  uint8_t selcal;
+  uint8_t volumeCOM1;
+  uint8_t volumeCOM2;
+};
+
+struct ThirdPartyDataVPILOT {
+  uint8_t loaded; // Set to 1 if the aircraft is loaded. 0 once unloaded. If loaded, vPilot does not play the SELCAL sound
+  uint8_t selcal;
+};
+
+class ThirdParty{
+private:
+    HANDLE _hSimConnect;
+    ID _selcal{};
+    ID _selcalReset{};
+    ID _volumeCOM1ACP1{};
+    ID _volumeCOM1ACP2{};
+    ID _volumeCOM1ACP3{};
+    ID _volumeCOM2ACP1{};
+    ID _volumeCOM2ACP2{};
+    ID _volumeCOM2ACP3{};
+    ID _updateReceiversFromThirdParty{};
+
+    double _previousVolumeCOM1 = 0.0;
+    double _previousVolumeCOM2 = 0.0;
+    uint8_t _selcalActive = 0; // Set to 1,2,4,8 depending on the receiver. 0 if inactive.
+
+    std::chrono::system_clock::time_point _previousTime = std::chrono::system_clock::now();
+
+  inline bool
+  setThirdPartyDataVPILOT(ThirdPartyDataVPILOT& output) {
+    return S_OK == SimConnect_SetClientData(_hSimConnect, ClientData::VPILOT, DataStructureRequestIDs::AllVPILOTRequestID, SIMCONNECT_CLIENT_DATA_SET_FLAG_DEFAULT, 0, sizeof(ThirdPartyDataVPILOT), &output);
+  }
+  inline bool
+  setThirdPartyDataIVAO(ThirdPartyDataIVAO& output) {
+    return S_OK == SimConnect_SetClientData(_hSimConnect, ClientData::VPILOT, DataStructureRequestIDs::AllIVAORequestID, SIMCONNECT_CLIENT_DATA_SET_FLAG_DEFAULT, 0, sizeof(ThirdPartyDataIVAO), &output);
+  }
+
+    inline void
+  setSimVar(ID var, FLOAT64 value) const {
+    set_named_variable_value(var, value);
+  }
+
+ public:
+    ThirdParty(HANDLE);
+
+    void initialize();
+    void onUpdate(double, double, ThirdPartyDataIVAO*, ThirdPartyDataVPILOT*);
+    void shutdown();
+};
