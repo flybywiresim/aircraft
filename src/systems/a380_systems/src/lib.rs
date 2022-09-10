@@ -123,7 +123,7 @@ impl Aircraft for A380 {
             // the engine generators are supplying electricity.
             self.electrical_overhead.apu_generator_is_on()
                 && !(self.electrical_overhead.external_power_is_on()
-                && self.electrical_overhead.external_power_is_available()),
+                    && self.electrical_overhead.external_power_is_available()),
             self.pneumatic.apu_bleed_air_valve(),
             self.fuel.left_inner_tank_has_fuel_remaining(),
         );

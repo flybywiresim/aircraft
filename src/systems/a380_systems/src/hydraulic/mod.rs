@@ -2687,7 +2687,7 @@ impl A380EngineDrivenPumpController {
     ) {
         self.is_pressure_low = self.should_pressurise()
             && !hydraulic_circuit.pump_section_switch_pressurised(
-            A380HydraulicCircuitFactory::YELLOW_GREEN_BLUE_PUMPS_INDEXES,
+                A380HydraulicCircuitFactory::YELLOW_GREEN_BLUE_PUMPS_INDEXES,
             );
 
         // Fault inhibited if on ground AND engine oil pressure is low (11KS1 elec relay)
@@ -2860,7 +2860,7 @@ impl A380BlueElectricPumpController {
 
         self.is_pressure_low = self.should_pressurise()
             && !hydraulic_circuit.pump_section_switch_pressurised(
-            A380HydraulicCircuitFactory::YELLOW_GREEN_BLUE_PUMPS_INDEXES,
+                A380HydraulicCircuitFactory::YELLOW_GREEN_BLUE_PUMPS_INDEXES,
             );
 
         self.has_pressure_low_fault = self.is_pressure_low
