@@ -968,6 +968,10 @@
         "bin": "./cone/cone.bin"
       },
       {
+        "gltf": "./satcom/HoneywellJetwave.gltf",
+        "bin": "./satcom/HoneywellJetwave.bin"
+      },
+      {
         "combineFiles": ["./a320-exterior/A320_NEO_LOD00.gltf"],
         "nodes": [
           {

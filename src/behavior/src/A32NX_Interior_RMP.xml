@@ -112,26 +112,29 @@
             <BASE_NAME>VHF3</BASE_NAME>
         </UseTemplate>
 
-        <!-- HF1 mode button and led -->
+        <!-- Inop HF1 mode button and led -->
         <UseTemplate Name="FBW_Anim_Interactions">
             <ANIM_TYPE>BUTTON</ANIM_TYPE>
             <ANIM_TEMPLATE>FBW_RMP_MODE_BUTTON_AND_LED</ANIM_TEMPLATE>
+            <INOP>1</INOP>
             <BASE_NAME>HF1</BASE_NAME>
             <MODE_ID>4</MODE_ID>
         </UseTemplate>
 
-        <!-- HF2 mode button and led -->
+        <!-- Inop HF2 mode button and led -->
         <UseTemplate Name="FBW_Anim_Interactions">
             <ANIM_TYPE>BUTTON</ANIM_TYPE>
             <ANIM_TEMPLATE>FBW_RMP_MODE_BUTTON_AND_LED</ANIM_TEMPLATE>
+            <INOP>1</INOP>
             <BASE_NAME>HF2</BASE_NAME>
             <MODE_ID>5</MODE_ID>
         </UseTemplate>
 
-        <!-- AM mode button and led -->
+        <!-- Inop AM mode button and led -->
         <UseTemplate Name="FBW_Anim_Interactions">
             <ANIM_TYPE>BUTTON</ANIM_TYPE>
             <ANIM_TEMPLATE>FBW_RMP_MODE_BUTTON_AND_LED</ANIM_TEMPLATE>
+            <INOP>1</INOP>
             <BASE_NAME>AM</BASE_NAME>
             <MODE_ID>11</MODE_ID>
         </UseTemplate>
@@ -142,14 +145,16 @@
                  <POTENTIOMETER>7</POTENTIOMETER>
                 <EMISSIVE_CODE type="rnp" return="number">
                     let indicatorsPowered = #INDICATORS_POWERED, bool#;
+                    let id = #ID, number#;
                     alias toggleSwitch = (L:A32NX_RMP_#SIDE#_TOGGLE_SWITCH, bool);
                     alias selectedModeLeft = (L:A32NX_RMP_L_SELECTED_MODE, number);
                     alias selectedModeRight = (L:A32NX_RMP_R_SELECTED_MODE, number);
                     alias annunciatorLight = (L:A32NX_OVHD_INTLT_ANN, number);
                     let emissiveDim = if annunciatorLight == 2 { 0.05 } else { 1 };
                     // @todo abnormal defined differently with NAV modes available.
-                    let rmpLeftAbnormal = (selectedModeLeft &gt; 1 and selectedModeLeft &lt; 6);
-                    let rmpRightAbnormal = (selectedModeRight != 2 and selectedModeRight &lt; 6);
+
+                    let rmpLeftAbnormal = id == 1 and (selectedModeLeft == 2 or selectedModeLeft == 3 or selectedModeRight == 1);
+                    let rmpRightAbnormal = id == 2 and (selectedModeRight == 1 or selectedModeRight == 3 or selectedModeLeft == 2);
 
                     (if (toggleSwitch and (rmpLeftAbnormal or rmpRightAbnormal) or (annunciatorLight == 0)) and indicatorsPowered {
                         1 * emissiveDim
@@ -166,14 +171,16 @@
                  <POTENTIOMETER>7</POTENTIOMETER>
                 <EMISSIVE_CODE type="rnp" return="number">
                     let indicatorsPowered = #INDICATORS_POWERED, bool#;
+                    let id = #ID, number#;
                     alias toggleSwitch = (L:A32NX_RMP_#SIDE#_TOGGLE_SWITCH, bool);
                     alias selectedModeLeft = (L:A32NX_RMP_L_SELECTED_MODE, number);
                     alias selectedModeRight = (L:A32NX_RMP_R_SELECTED_MODE, number);
                     alias annunciatorLight = (L:A32NX_OVHD_INTLT_ANN, number);
                     let emissiveDim = if annunciatorLight == 2 { 0.05 } else { 1 };
                     // @todo abnormal defined differently with NAV modes available.
-                    let rmpLeftAbnormal = (selectedModeLeft &gt; 1 and selectedModeLeft &lt; 6);
-                    let rmpRightAbnormal = (selectedModeRight != 2 and selectedModeRight &lt; 6);
+
+                    let rmpLeftAbnormal = id == 1 and (selectedModeLeft == 2 or selectedModeLeft == 3 or selectedModeRight == 1);
+                    let rmpRightAbnormal = id == 2 and (selectedModeRight == 1 or selectedModeRight == 3 or selectedModeLeft == 2);
 
                     (if (toggleSwitch and (rmpLeftAbnormal or rmpRightAbnormal) or (annunciatorLight == 0)) and indicatorsPowered {
                         1 * emissiveDim
@@ -197,8 +204,8 @@
             <UseTemplate Name="ASOBO_GT_Switch_Code">
                 <ANIM_NAME>LOCK_RADIO#SIDE#_NAV</ANIM_NAME>
                 <ANIM_LENGTH>100</ANIM_LENGTH>
-                <ANIM_CODE>(L:A32NX_ACP_#SIDE#_NavLockOff) 100 *</ANIM_CODE>
-                <LEFT_SINGLE_CODE>(L:A32NX_ACP_#SIDE#_NavLockOff) ! (&gt;L:A32NX_ACP_#SIDE#_NavLockOff)</LEFT_SINGLE_CODE>
+                <ANIM_CODE>(L:XMLVAR_RMP_#SIDE#_NavLockOff) 100 *</ANIM_CODE>
+                <LEFT_SINGLE_CODE>(L:XMLVAR_RMP_#SIDE#_NavLockOff) ! (&gt;L:XMLVAR_RMP_#SIDE#_NavLockOff)</LEFT_SINGLE_CODE>
                 <WWISE_EVENT_1></WWISE_EVENT_1>
                 <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
                 <WWISE_EVENT_2></WWISE_EVENT_2>
@@ -252,6 +259,7 @@
         <UseTemplate Name="FBW_Anim_Interactions">
             <ANIM_TYPE>BUTTON</ANIM_TYPE>
             <ANIM_TEMPLATE>FBW_RMP_MODE_BUTTON_AND_LED</ANIM_TEMPLATE>
+            <INOP>1</INOP>
             <BASE_NAME>BFO</BASE_NAME>
             <MODE_ID>10</MODE_ID>
         </UseTemplate>
