@@ -35,7 +35,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     let key_prefix = "A32NX_";
     let (mut simulation, mut handler) = MsfsSimulationBuilder::new(
         key_prefix,
-        Variable::named(&"A32NX_START_STATE"),
+        Variable::named(&format!("{}START_STATE", key_prefix)),
         sim_connect.as_mut().get_mut(),
     )
     .with_electrical_buses([
