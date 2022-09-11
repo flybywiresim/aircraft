@@ -21,6 +21,8 @@ struct ThirdPartyDataVPILOT {
 class ThirdParty{
 private:
     HANDLE _hSimConnect;
+    bool _isInitialized = false;
+
     ID _selcal{};
     ID _selcalReset{};
     ID _volumeCOM1ACP1{};
@@ -31,22 +33,22 @@ private:
     ID _volumeCOM2ACP3{};
     ID _updateReceiversFromThirdParty{};
 
-    double _previousVolumeCOM1 = 0.0;
-    double _previousVolumeCOM2 = 0.0;
+    INT64 _previousVolumeCOM1 = 0;
+    INT64 _previousVolumeCOM2 = 0;
     uint8_t _selcalActive = 0; // Set to 1,2,4,8 depending on the receiver. 0 if inactive.
 
     std::chrono::system_clock::time_point _previousTime = std::chrono::system_clock::now();
 
   inline bool
   setThirdPartyDataVPILOT(ThirdPartyDataVPILOT& output) {
-    return S_OK == SimConnect_SetClientData(_hSimConnect, ClientData::VPILOT, DataStructureRequestIDs::AllVPILOTRequestID, SIMCONNECT_CLIENT_DATA_SET_FLAG_DEFAULT, 0, sizeof(ThirdPartyDataVPILOT), &output);
+    return S_OK == SimConnect_SetClientData(_hSimConnect, ClientData::VPILOT, DataStructureIDs::AllVPILOTDataID, SIMCONNECT_CLIENT_DATA_SET_FLAG_DEFAULT, 0, sizeof(output), &output);
   }
   inline bool
   setThirdPartyDataIVAO(ThirdPartyDataIVAO& output) {
-    return S_OK == SimConnect_SetClientData(_hSimConnect, ClientData::VPILOT, DataStructureRequestIDs::AllIVAORequestID, SIMCONNECT_CLIENT_DATA_SET_FLAG_DEFAULT, 0, sizeof(ThirdPartyDataIVAO), &output);
+    return S_OK == SimConnect_SetClientData(_hSimConnect, ClientData::IVAO, DataStructureIDs::AllIVAODataID, SIMCONNECT_CLIENT_DATA_SET_FLAG_DEFAULT, 0, sizeof(output), &output);
   }
 
-    inline void
+  inline void
   setSimVar(ID var, FLOAT64 value) const {
     set_named_variable_value(var, value);
   }
@@ -55,6 +57,9 @@ private:
     ThirdParty(HANDLE);
 
     void initialize();
-    void onUpdate(double, double, ThirdPartyDataIVAO*, ThirdPartyDataVPILOT*);
+    void onUpdate(INT64, INT64, ThirdPartyDataIVAO*, ThirdPartyDataVPILOT*);
     void shutdown();
+
+    void notifyShutdownThirdParty();
+    void notifyStartThirdParty();
 };

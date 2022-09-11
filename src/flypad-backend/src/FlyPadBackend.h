@@ -31,11 +31,11 @@ enum DataStructureIDs {
   SimulationDataID,
   PushbackDataID,
   SelcalIVAODataID,
-  SelcalVPILOTDataID,
   VolumeCOM1DataID,
   VolumeCOM2DataID,
-  AircraftLoadedDataID,
   AllIVAODataID,
+  AircraftLoadedDataID,
+  SelcalVPILOTDataID,
   AllVPILOTDataID
 };
 
@@ -55,8 +55,8 @@ enum DataStructureRequestIDs {
 // Local data structure for simconnect data
 struct SimulationData {
   double simulationTime;
-  double volumeCOM1;
-  double volumeCOM2;
+  INT64 volumeCOM1;
+  INT64 volumeCOM2;
 };
 
 // Data structure for PushbackDataID
@@ -151,6 +151,12 @@ private:
    * @param data
    */
   void simConnectProcessSimObjectData(const SIMCONNECT_RECV_SIMOBJECT_DATA* data);
+
+  /**
+   * Process received simconnect client data
+   * @param data
+   */
+  void simConnectProcessClientData(const SIMCONNECT_RECV_CLIENT_DATA* data);
 
   /**
    * Returns human-readable descriptions of simconnect exceptions

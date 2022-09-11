@@ -1,6 +1,3 @@
-#include <iostream>
-#include <chrono>
-
 #include "ThirdParty.h"
 
 #define SELCAL_LIGHT_TIME_MS 300
@@ -8,12 +5,6 @@
 ThirdParty::ThirdParty(HANDLE hSimConnect): _hSimConnect(hSimConnect) {}
 
 void ThirdParty::initialize() {
-    ThirdPartyDataIVAO dataVIAO {0, 80, 40};
-    setThirdPartyDataIVAO(dataVIAO); // notifying Altitude the aircraft is loaded with default values
-
-    ThirdPartyDataVPILOT dataVPILOT {1, 0};
-    setThirdPartyDataVPILOT(dataVPILOT); // notifying vPilot the aircraft is loaded
-
     _selcal = register_named_variable("A32NX_ACP_SELCAL");
     _selcalReset = register_named_variable("A32NX_ACP_RESET");
     _volumeCOM1ACP1 = register_named_variable("A32NX_ACP1_Volume_VHF1");
@@ -23,20 +14,23 @@ void ThirdParty::initialize() {
     _volumeCOM2ACP2 = register_named_variable("A32NX_ACP2_Volume_VHF2");
     _volumeCOM2ACP3 = register_named_variable("A32NX_ACP3_Volume_VHF2");
     _updateReceiversFromThirdParty = register_named_variable("A32NX_COM_UpdateReceiversFromThirdParty");
+
+    _isInitialized = true;
+
+    std::cout << "FLYPAD_BACKEND (ThirdParty): ThirdParty initialized" << std::endl;
 }
 
 void ThirdParty::shutdown() {
-    ThirdPartyDataVPILOT dataVPILOT {0, 0};
-    std::cout << unsigned(setThirdPartyDataVPILOT(dataVPILOT)) << std::endl; // notifying vPilot the aircraft is unloaded
-
-    ThirdPartyDataIVAO dataIVAO {0, 0, 0};
-    std::cout << unsigned(setThirdPartyDataIVAO(dataIVAO)) << std::endl; // notifying vPilot the aircraft is unloaded
+    _isInitialized = false;
+    std::cout << "FLYPAD_BACKEND (ThirdParty): ThirdParty shutdown" << std::endl;
 }
 
-void ThirdParty::onUpdate(double volumeCOM1, double volumeCOM2, ThirdPartyDataIVAO* IVAOData, ThirdPartyDataVPILOT* VPILOTData) {
-    if(IVAOData) {
-        bool update = false;
+void ThirdParty::onUpdate(INT64 volumeCOM1, INT64 volumeCOM2, ThirdPartyDataIVAO* IVAOData, ThirdPartyDataVPILOT* VPILOTData) {
+    bool update = false;
 
+    if(_isInitialized == false) return;
+
+    if(IVAOData) {
         this->_selcalActive = IVAOData->selcal;
 
         if(IVAOData->volumeCOM1 != this->_previousVolumeCOM1) {
@@ -69,36 +63,55 @@ void ThirdParty::onUpdate(double volumeCOM1, double volumeCOM2, ThirdPartyDataIV
     } else if(VPILOTData) {
         this->_selcalActive = VPILOTData->selcal;
     } else {
-        FLOAT64 localSelcalReset = get_named_variable_value(_selcalReset);
-        FLOAT64 localSelcal = get_named_variable_value(_selcal);
-
-        if(localSelcalReset == 0) {
+        if(get_named_variable_value(_selcalReset) == 0) {
             if(this->_selcalActive) {
                 // Make the SELCAL push button blink every SELCAL_LIGHT_TIME_MS
                 // It sets the BLINK_ID (foundable in the XML behaviors) then 0 to make it blink
-                if(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - this->_previousTime).count() >= SELCAL_LIGHT_TIME_MS) {
-                    setSimVar(_selcal, localSelcal == this->_selcalActive ? 0 : this->_selcalActive);
-                    this->_previousTime = std::chrono::system_clock::now();
+                auto now = std::chrono::system_clock::now();
+                if(std::chrono::duration_cast<std::chrono::milliseconds>(now - this->_previousTime).count() >= SELCAL_LIGHT_TIME_MS) {
+                    setSimVar(_selcal, get_named_variable_value(_selcal) == this->_selcalActive ? 0 : this->_selcalActive);
+                    this->_previousTime = now;
+                    update = true;
                 }
             }
         } else {
             setSimVar(_selcalReset, 0);
             setSimVar(_selcal, 0);
             this->_selcalActive = 0;
+            update = true;
         }
-
-        ThirdPartyDataIVAO dataIVAO {this->_selcalActive, this->_previousVolumeCOM1, this->_previousVolumeCOM2};
-        ThirdPartyDataVPILOT dataVPILOT {1, this->_selcalActive};
 
         if(volumeCOM1 != this->_previousVolumeCOM1 || volumeCOM2 != this->_previousVolumeCOM2) {
-            dataIVAO.volumeCOM1 = volumeCOM1;
-            dataIVAO.volumeCOM2 = volumeCOM2;
-
             this->_previousVolumeCOM1 = volumeCOM1;
             this->_previousVolumeCOM2 = volumeCOM2;
+
+            update = true;
         }
 
-        setThirdPartyDataIVAO(dataIVAO);
-        setThirdPartyDataVPILOT(dataVPILOT);
+        if(update) {
+            ThirdPartyDataIVAO IVAODataTmp {this->_selcalActive, (uint8_t)this->_previousVolumeCOM1, (uint8_t)this->_previousVolumeCOM2};
+            ThirdPartyDataVPILOT VPILOTDataTmp {1, this->_selcalActive};
+
+            setThirdPartyDataIVAO(IVAODataTmp);
+            setThirdPartyDataVPILOT(VPILOTDataTmp);
+        }
     }
+}
+
+void ThirdParty::notifyShutdownThirdParty() {
+    // notifying vPilot the aircraft is unloaded
+    ThirdPartyDataVPILOT dataVPILOT {0, 0};
+    std::cout << "NOTIFYING vPilot = " << unsigned(setThirdPartyDataVPILOT(dataVPILOT)) << std::endl;
+
+    ThirdPartyDataIVAO dataIVAO {0, 0, 0};
+    setThirdPartyDataIVAO(dataIVAO);
+}
+
+void ThirdParty::notifyStartThirdParty() {
+    ThirdPartyDataIVAO dataIVAO {0, 80, 40};
+    setThirdPartyDataIVAO(dataIVAO);
+
+    // notifying vPilot the aircraft is loaded
+    ThirdPartyDataVPILOT dataVPILOT {1, 0};
+    setThirdPartyDataVPILOT(dataVPILOT);
 }
