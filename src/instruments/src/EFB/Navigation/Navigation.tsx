@@ -222,8 +222,6 @@ export const ChartViewer = () => {
         );
     }
 
-    // @ts-ignore
-    // @ts-ignore
     // noinspection PointlessBooleanExpressionJS
     return (
         <div
