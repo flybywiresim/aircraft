@@ -73,11 +73,11 @@ bool FlyPadBackend::initialize() {
   }
 
   result &= SimConnect_MapClientDataNameToID(hSimConnect, "IVAO Altitude Data", ClientData::IVAO);
-  //result &= SimConnect_CreateClientData(hSimConnect, ClientData::IVAO, sizeof(ThirdPartyDataIVAO), SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
+  result &= SimConnect_CreateClientData(hSimConnect, ClientData::IVAO, sizeof(struct ThirdPartyDataIVAO), SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
   result &= SimConnect_AddToClientDataDefinition(hSimConnect, DataStructureIDs::SelcalIVAODataID, 0, SIMCONNECT_CLIENTDATATYPE_INT8);
   result &= SimConnect_AddToClientDataDefinition(hSimConnect, DataStructureIDs::VolumeCOM1DataID, 1, SIMCONNECT_CLIENTDATATYPE_INT8);
   result &= SimConnect_AddToClientDataDefinition(hSimConnect, DataStructureIDs::VolumeCOM2DataID, 2, SIMCONNECT_CLIENTDATATYPE_INT8);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, DataStructureIDs::AllIVAODataID, 0, sizeof(ThirdPartyDataIVAO));
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, DataStructureIDs::AllIVAODataID, 0, sizeof(struct ThirdPartyDataIVAO));
   result &= SimConnect_RequestClientData(hSimConnect, ClientData::IVAO, DataStructureRequestIDs::AllIVAORequestID, DataStructureIDs::AllIVAODataID, SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET, SIMCONNECT_DATA_REQUEST_FLAG_CHANGED);
 
   if (result != S_OK) {
@@ -85,10 +85,10 @@ bool FlyPadBackend::initialize() {
   }
 
   result &= SimConnect_MapClientDataNameToID(hSimConnect, "vPILOT FBW", ClientData::VPILOT);
-  result &= SimConnect_CreateClientData(hSimConnect, ClientData::VPILOT, sizeof(ThirdPartyDataVPILOT), SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
+  result &= SimConnect_CreateClientData(hSimConnect, ClientData::VPILOT, sizeof(struct ThirdPartyDataVPILOT), SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
   result &= SimConnect_AddToClientDataDefinition(hSimConnect, DataStructureIDs::AircraftLoadedDataID, 0, SIMCONNECT_CLIENTDATATYPE_INT8);
   result &= SimConnect_AddToClientDataDefinition(hSimConnect, DataStructureIDs::SelcalVPILOTDataID, 1, SIMCONNECT_CLIENTDATATYPE_INT8);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, DataStructureIDs::AllVPILOTDataID, 0, sizeof(ThirdPartyDataVPILOT));
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, DataStructureIDs::AllVPILOTDataID, 0, sizeof(struct ThirdPartyDataVPILOT));
   result &= SimConnect_RequestClientData(hSimConnect, ClientData::VPILOT, DataStructureRequestIDs::AllVPILOTRequestID, DataStructureIDs::AllVPILOTDataID, SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET, SIMCONNECT_DATA_REQUEST_FLAG_CHANGED);
 
   if (result != S_OK) {
@@ -204,13 +204,14 @@ void FlyPadBackend::simConnectProcessClientData(const SIMCONNECT_RECV_CLIENT_DAT
   // process depending on request id from SimConnect_RequestClientData()
   switch (data->dwRequestID) {
     case DataStructureRequestIDs::AllIVAORequestID:
-      IVAOData = new ThirdPartyDataIVAO();
-      *IVAOData = *((ThirdPartyDataIVAO*) &data->dwData);
+      cout << "IVAO ";
+      IVAOData = new struct ThirdPartyDataIVAO();
+      *IVAOData = *((struct ThirdPartyDataIVAO*) &data->dwData);
       return;
 
     case DataStructureRequestIDs::AllVPILOTRequestID:
-      VPILOTData = new ThirdPartyDataVPILOT();
-      *VPILOTData = *((ThirdPartyDataVPILOT*) &data->dwData);
+      VPILOTData = new struct ThirdPartyDataVPILOT();
+      *VPILOTData = *((struct ThirdPartyDataVPILOT*) &data->dwData);
       return;
 
     default:
@@ -223,7 +224,7 @@ void FlyPadBackend::simConnectProcessClientData(const SIMCONNECT_RECV_CLIENT_DAT
 void FlyPadBackend::simConnectProcessDispatchMessage(SIMCONNECT_RECV* pData, DWORD* cbData) {
   switch (pData->dwID) {
     case SIMCONNECT_RECV_ID_OPEN:
-      thirdPartyPtr->notifyStartThirdParty();
+      //thirdPartyPtr->notifyStartThirdParty();
       cout << "FLYPAD_BACKEND: SimConnect connection established" << endl;
       break;
 
@@ -245,10 +246,14 @@ void FlyPadBackend::simConnectProcessDispatchMessage(SIMCONNECT_RECV* pData, DWO
       cout << getSimConnectExceptionString(
         static_cast<SIMCONNECT_EXCEPTION>(
           static_cast<SIMCONNECT_RECV_EXCEPTION*>(pData)->dwException));
+      cout << "ID = " << static_cast<SIMCONNECT_RECV_EXCEPTION*>(pData)->dwID << " ";
+      cout << "INDEX = " <<  static_cast<SIMCONNECT_RECV_EXCEPTION*>(pData)->dwIndex << " ";
+      cout << "SIZE = " <<  static_cast<SIMCONNECT_RECV_EXCEPTION*>(pData)->dwSize << " ";
       cout << endl;
       break;
 
     default:
+    cout << "RECEIVED CODE = " << pData->dwID<< endl;
       break;
   }
 }
