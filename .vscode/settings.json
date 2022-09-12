@@ -45,7 +45,9 @@
   },
   "cmake.configureOnOpen": false,
   "files.associations": {
-    "memory": "cpp"
+    "*.rs": "rust",
+    "memory": "cpp",
+    "ostream": "cpp"
   },
   "typescript.preferences.quoteStyle": "single",
   "typescript.preferences.importModuleSpecifier": "non-relative"

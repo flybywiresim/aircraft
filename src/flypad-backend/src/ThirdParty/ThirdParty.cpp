@@ -37,7 +37,6 @@ void ThirdParty::onUpdate(INT64 volumeCOM1, INT64 volumeCOM2, ThirdPartyDataIVAO
     if (IVAOData->volumeCOM1 != this->_previousVolumeCOM1) {
       double volumeCOM1over100 = IVAOData->volumeCOM1 / 100.0;
 
-      std::cout << "VOL  = " << volumeCOM1over100 << std::endl;
       setSimVar(_volumeCOM1ACP1, volumeCOM1over100);
       setSimVar(_volumeCOM1ACP2, volumeCOM1over100);
       setSimVar(_volumeCOM1ACP3, volumeCOM1over100);
@@ -60,7 +59,6 @@ void ThirdParty::onUpdate(INT64 volumeCOM1, INT64 volumeCOM2, ThirdPartyDataIVAO
     }
 
     if (update) {
-      std::cout << "UPDATE IVAO = " << std::endl;
       setSimVar(_updateReceiversFromThirdParty, 1);
     }
   } else if (VPILOTData) {
@@ -93,7 +91,6 @@ void ThirdParty::onUpdate(INT64 volumeCOM1, INT64 volumeCOM2, ThirdPartyDataIVAO
     }
 
     if (update) {
-      std::cout << "UPDATE GENRAL = " << std::endl;
       ThirdPartyDataIVAO IVAODataTmp{this->_selcalActive, (uint8_t)this->_previousVolumeCOM1, (uint8_t)this->_previousVolumeCOM2};
       ThirdPartyDataVPILOT VPILOTDataTmp{1, this->_selcalActive};
 

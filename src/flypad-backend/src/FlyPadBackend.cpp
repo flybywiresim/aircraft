@@ -204,7 +204,6 @@ void FlyPadBackend::simConnectProcessClientData(const SIMCONNECT_RECV_CLIENT_DAT
   // process depending on request id from SimConnect_RequestClientData()
   switch (data->dwRequestID) {
     case DataStructureRequestIDs::AllIVAORequestID:
-      cout << "IVAO ";
       IVAOData = new struct ThirdPartyDataIVAO();
       *IVAOData = *((struct ThirdPartyDataIVAO*) &data->dwData);
       return;
@@ -224,7 +223,7 @@ void FlyPadBackend::simConnectProcessClientData(const SIMCONNECT_RECV_CLIENT_DAT
 void FlyPadBackend::simConnectProcessDispatchMessage(SIMCONNECT_RECV* pData, DWORD* cbData) {
   switch (pData->dwID) {
     case SIMCONNECT_RECV_ID_OPEN:
-      //thirdPartyPtr->notifyStartThirdParty();
+      thirdPartyPtr->notifyStartThirdParty();
       cout << "FLYPAD_BACKEND: SimConnect connection established" << endl;
       break;
 
@@ -253,7 +252,7 @@ void FlyPadBackend::simConnectProcessDispatchMessage(SIMCONNECT_RECV* pData, DWO
       break;
 
     default:
-    cout << "RECEIVED CODE = " << pData->dwID<< endl;
+      cout << "FLYPAD_BACKEND: Unknown received in simConnectProcessDispatchMessage (" << pData->dwID << ")" << endl;
       break;
   }
 }
