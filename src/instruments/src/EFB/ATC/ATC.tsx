@@ -1,6 +1,7 @@
 /* eslint-disable max-len */
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import * as apiClient from '@flybywiresim/api-client';
+import { AtcType } from '@flybywiresim/api-client';
 import useInterval from '@instruments/common/useInterval';
 import { Link } from 'react-router-dom';
 import { CloudArrowDown, Gear, InfoCircle } from 'react-bootstrap-icons';
@@ -26,7 +27,7 @@ interface FrequencyCardProps {
 
 const FrequencyCard = ({ className, callsign, frequency, setActive, setCurrent, setStandby }: FrequencyCardProps) => (
     <div className={className}>
-        <div className="overflow-hidden relative p-6 w-full rounded-md bg-theme-secondary">
+        <div className="overflow-hidden relative p-6 w-full bg-theme-secondary rounded-md">
             <h2 className="font-bold">
                 {callsign}
             </h2>
@@ -36,19 +37,19 @@ const FrequencyCard = ({ className, callsign, frequency, setActive, setCurrent, 
 
             <div className="flex absolute inset-0 flex-row opacity-0 hover:opacity-100 transition duration-100">
                 <div
-                    className="flex justify-center items-center px-2 w-full font-bold text-center border-2 transition duration-100 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight"
+                    className="flex justify-center items-center px-2 w-full font-bold text-center text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-2 border-theme-highlight transition duration-100"
                     onClick={setActive}
                 >
                     <h2 className="text-current">{t('AirTrafficControl.SetActive')}</h2>
                 </div>
                 <div
-                    className="flex justify-center items-center px-2 w-full font-bold text-center border-2 transition duration-100 text-theme-body hover:text-utility-amber bg-utility-amber hover:bg-theme-body border-utility-amber"
+                    className="flex justify-center items-center px-2 w-full font-bold text-center text-theme-body hover:text-utility-amber bg-utility-amber hover:bg-theme-body border-2 border-utility-amber transition duration-100"
                     onClick={setStandby}
                 >
                     <h2 className="text-current">{t('AirTrafficControl.SetStandby')}</h2>
                 </div>
                 <div
-                    className="flex justify-center items-center w-1/4 font-bold border-2 transition duration-100 text-theme-body hover:text-theme-text bg-theme-text hover:bg-theme-body border-theme-text"
+                    className="flex justify-center items-center w-1/4 font-bold text-theme-body hover:text-theme-text bg-theme-text hover:bg-theme-body border-2 border-theme-text transition duration-100"
                     onClick={setCurrent}
                 >
                     <InfoCircle size={35} />
@@ -68,8 +69,10 @@ export const ATC = () => {
     const [currentLatitude] = useSimVar('GPS POSITION LAT', 'Degrees', 10_000);
     const [currentLongitude] = useSimVar('GPS POSITION LON', 'Degrees', 10_000);
     const [atisSource] = usePersistentProperty('CONFIG_ATIS_SRC', 'FAA');
-
     const [atcDataPending, setAtcDataPending] = useState(true);
+
+    const [controllerTypeFilter, setControllerTypeFilter] = useState<AtcType|undefined>(undefined);
+    const [controllerCallSignFilter, setControllerCallSignFilter] = useState('');
 
     const loadAtc = useCallback(async () => {
         if (atisSource.toLowerCase() !== 'vatsim' && atisSource.toLowerCase() !== 'ivao') return;
@@ -164,6 +167,10 @@ export const ATC = () => {
         loadAtc();
     }, 60_000);
 
+    const filterControllers = (c: ATCInfoExtended): boolean => !((controllerTypeFilter && c.type !== controllerTypeFilter)
+            || (controllerCallSignFilter !== ''
+                && !c.callsign.toUpperCase().includes(controllerCallSignFilter.toUpperCase())));
+
     return (
         <div>
             <div className="flex relative flex-row justify-between items-center mb-2">
@@ -176,16 +183,18 @@ export const ATC = () => {
                 <div className="mt-4 w-full h-content-section-reduced">
                     <div className="relative">
                         <ScrollableContainer innerClassName="grid grid-cols-2" height={29}>
-                            {controllers && controllers.map((controller, index) => (
-                                <FrequencyCard
-                                    className={`${index && index % 2 !== 0 && 'ml-4'} ${index >= 2 && 'mt-4'}`}
-                                    callsign={controller.callsign}
-                                    frequency={controller.frequency}
-                                    setActive={() => setActiveFrequency(toFrequency(controller.frequency))}
-                                    setCurrent={() => setCurrentAtc(controllers?.find((c) => c.frequency === controller.frequency))}
-                                    setStandby={() => setStandbyFrequency(toFrequency(controller.frequency))}
-                                />
-                            ))}
+                            {controllers && controllers
+                                .filter((c) => filterControllers(c))
+                                .map((controller, index) => (
+                                    <FrequencyCard
+                                        className={`${index && index % 2 !== 0 && 'ml-4'} ${index >= 2 && 'mt-4'}`}
+                                        callsign={controller.callsign}
+                                        frequency={controller.frequency}
+                                        setActive={() => setActiveFrequency(toFrequency(controller.frequency))}
+                                        setCurrent={() => setCurrentAtc(controllers?.find((c) => c.frequency === controller.frequency))}
+                                        setStandby={() => setStandbyFrequency(toFrequency(controller.frequency))}
+                                    />
+                                ))}
                         </ScrollableContainer>
 
                         <div className={`absolute flex items-center justify-center inset-0 transition duration-200 bg-theme-body h-full border-2 border-theme-accent rounded-md
@@ -196,17 +205,17 @@ export const ATC = () => {
                             )}
                         </div>
                     </div>
-                    <div className="flex flex-row mt-4 h-96 rounded-lg border-2 divide-x-2 border-theme-accent divide-theme-accent">
+                    <div className="flex flex-row mt-4 h-96 rounded-lg border-2 border-theme-accent divide-x-2 divide-theme-accent">
                         <div className="flex flex-col justify-between p-6">
                             <div>
                                 <p>{t('AirTrafficControl.Active')}</p>
-                                <div className="flex justify-center items-center mt-4 w-72 h-24 text-6xl rounded-lg border-2 font-rmp text-theme-highlight border-theme-accent">
+                                <div className="flex justify-center items-center mt-4 w-72 h-24 font-rmp text-6xl text-theme-highlight rounded-lg border-2 border-theme-accent">
                                     {displayedActiveFrequency && displayedActiveFrequency}
                                 </div>
                             </div>
                             <div>
                                 <p>{t('AirTrafficControl.Standby')}</p>
-                                <div className="flex justify-center items-center mt-4 w-72 h-24 text-6xl rounded-lg border-2 font-rmp text-utility-amber border-theme-accent">
+                                <div className="flex justify-center items-center mt-4 w-72 h-24 font-rmp text-6xl text-utility-amber rounded-lg border-2 border-theme-accent">
                                     {displayedStandbyFrequency && displayedStandbyFrequency}
                                 </div>
                             </div>
@@ -221,12 +230,12 @@ export const ATC = () => {
                     </div>
                 </div>
             ) : (
-                <div className="flex justify-center items-center mt-4 rounded-lg border-2 h-content-section-reduced border-theme-accent">
+                <div className="flex justify-center items-center mt-4 h-content-section-reduced rounded-lg border-2 border-theme-accent">
                     <div className="space-y-8 max-w-4xl">
                         <h1 className="text-center">{t('AirTrafficControl.SelectCorrectATISATCSource')}</h1>
                         <Link
                             to={`/settings/${pathify('ATSU / AOC')}`}
-                            className="flex justify-center items-center p-2 space-x-4 w-full rounded-md border-2 transition duration-100 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight"
+                            className="flex justify-center items-center p-2 space-x-4 w-full text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100"
                         >
                             <Gear size={26} />
                             <p className="text-current">{t('AirTrafficControl.ChangeATISATCSourceButton')}</p>
