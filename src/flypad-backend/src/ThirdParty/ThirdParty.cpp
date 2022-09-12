@@ -30,7 +30,7 @@ void ThirdParty::onUpdate(INT64 volumeCOM1, INT64 volumeCOM2, ThirdPartyDataIVAO
     
     bool update = false;
 
-    if(IVAOData) {
+    if (IVAOData) {
         this->_selcalActive = IVAOData->selcal;
 
         if(IVAOData->volumeCOM1 != this->_previousVolumeCOM1) {
