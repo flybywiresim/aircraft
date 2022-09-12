@@ -42,8 +42,7 @@ private:
   inline bool setThirdPartyDataVPILOT(ThirdPartyDataVPILOT& output) const {
     return S_OK == SimConnect_SetClientData(_hSimConnect, ClientData::VPILOT, DataStructureIDs::AllVPILOTDataID, SIMCONNECT_CLIENT_DATA_SET_FLAG_DEFAULT, 0, sizeof(output), &output);
   }
-  inline bool
-  setThirdPartyDataIVAO(ThirdPartyDataIVAO& output) {
+  inline bool setThirdPartyDataIVAO(ThirdPartyDataIVAO& output) const {
     return S_OK == SimConnect_SetClientData(_hSimConnect, ClientData::IVAO, DataStructureIDs::AllIVAODataID, SIMCONNECT_CLIENT_DATA_SET_FLAG_DEFAULT, 0, sizeof(output), &output);
   }
 
