@@ -133,7 +133,7 @@ bool FlyPadBackend::onUpdate(double deltaTime) {
       IVAOData = nullptr;
     }
 
-    if(VPILOTData) {
+    if (VPILOTData) {
       delete VPILOTData;
       VPILOTData = nullptr;
     }
