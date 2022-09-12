@@ -11,6 +11,11 @@ import { pathify } from '../Utils/routing';
 import { ScrollableContainer } from '../UtilComponents/ScrollableContainer';
 import { useSimVar, useSplitSimVar } from '../../Common/simVars';
 import { usePersistentProperty } from '../../Common/persistence';
+import { SimpleInput } from '../UtilComponents/Form/SimpleInput/SimpleInput';
+import { editTabProperty, NavigationTab } from '../Store/features/navigationPage';
+import { SelectGroup, SelectItem } from '../UtilComponents/Form/Select';
+import { Button } from '../../DCDU/elements/Button';
+import { setTodData } from '../Store/features/todCalculator';
 
 export declare class ATCInfoExtended extends apiClient.ATCInfo {
     distance: number;
@@ -181,8 +186,77 @@ export const ATC = () => {
             </div>
             { (atisSource === 'IVAO' || atisSource === 'VATSIM') ? (
                 <div className="mt-4 w-full h-content-section-reduced">
-                    <div className="relative">
-                        <ScrollableContainer innerClassName="grid grid-cols-2" height={29}>
+
+                    <div className="relative space-y-4">
+
+                        <div className="flex flex-row items-center space-x-4">
+                            <SimpleInput
+                                placeholder={t('AirTrafficControl.SearchPlaceholder')}
+                                className="flex-grow"
+                                value={controllerCallSignFilter}
+                                onChange={(value) => setControllerCallSignFilter(value)}
+                            />
+                            <button
+                                type="button"
+                                className="flex items-center px-3 -ml-4 text-utility-red hover:text-theme-body hover:bg-utility-red rounded-md rounded-l-none border-2 border-utility-red transition duration-100"
+                                onClick={() => setControllerCallSignFilter('')}
+                            >
+                                X
+                            </button>
+
+                            <SelectGroup>
+                                <SelectItem
+                                    selected={controllerTypeFilter === undefined}
+                                    onSelect={() => setControllerTypeFilter(undefined)}
+                                >
+                                    {t('AirTrafficControl.ShowAll')}
+                                </SelectItem>
+                                <SelectItem
+                                    selected={controllerTypeFilter === apiClient.AtcType.ATIS}
+                                    onSelect={() => setControllerTypeFilter(apiClient.AtcType.ATIS)}
+                                >
+                                    {t('AirTrafficControl.ShowAtis')}
+                                </SelectItem>
+                                <SelectItem
+                                    selected={controllerTypeFilter === apiClient.AtcType.DELIVERY}
+                                    onSelect={() => setControllerTypeFilter(apiClient.AtcType.DELIVERY)}
+                                >
+                                    {t('AirTrafficControl.ShowDelivery')}
+                                </SelectItem>
+                                <SelectItem
+                                    selected={controllerTypeFilter === apiClient.AtcType.GROUND}
+                                    onSelect={() => setControllerTypeFilter(apiClient.AtcType.GROUND)}
+                                >
+                                    {t('AirTrafficControl.ShowGround')}
+                                </SelectItem>
+                                <SelectItem
+                                    selected={controllerTypeFilter === apiClient.AtcType.TOWER}
+                                    onSelect={() => setControllerTypeFilter(apiClient.AtcType.TOWER)}
+                                >
+                                    {t('AirTrafficControl.ShowTower')}
+                                </SelectItem>
+                                <SelectItem
+                                    selected={controllerTypeFilter === apiClient.AtcType.DEPARTURE}
+                                    onSelect={() => setControllerTypeFilter(apiClient.AtcType.DEPARTURE)}
+                                >
+                                    {t('AirTrafficControl.ShowDeparture')}
+                                </SelectItem>
+                                <SelectItem
+                                    selected={controllerTypeFilter === apiClient.AtcType.APPROACH}
+                                    onSelect={() => setControllerTypeFilter(apiClient.AtcType.APPROACH)}
+                                >
+                                    {t('AirTrafficControl.ShowApproach')}
+                                </SelectItem>
+                                <SelectItem
+                                    selected={controllerTypeFilter === apiClient.AtcType.RADAR}
+                                    onSelect={() => setControllerTypeFilter(apiClient.AtcType.RADAR)}
+                                >
+                                    {t('AirTrafficControl.ShowRadar')}
+                                </SelectItem>
+                            </SelectGroup>
+                        </div>
+
+                        <ScrollableContainer innerClassName="grid grid-cols-2" height={26}>
                             {controllers && controllers
                                 .filter((c) => filterControllers(c))
                                 .map((controller, index) => (
@@ -205,6 +279,7 @@ export const ATC = () => {
                             )}
                         </div>
                     </div>
+
                     <div className="flex flex-row mt-4 h-96 rounded-lg border-2 border-theme-accent divide-x-2 divide-theme-accent">
                         <div className="flex flex-col justify-between p-6">
                             <div>
