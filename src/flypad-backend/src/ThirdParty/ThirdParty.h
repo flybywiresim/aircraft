@@ -51,7 +51,7 @@ private:
   }
 
  public:
-    ThirdParty(HANDLE);
+    explicit ThirdParty(HANDLE);
 
     void initialize();
     void onUpdate(INT64, INT64, ThirdPartyDataIVAO*, ThirdPartyDataVPILOT*);
