@@ -128,7 +128,7 @@ bool FlyPadBackend::onUpdate(double deltaTime) {
     pushbackPtr->onUpdate(deltaTime);
     thirdPartyPtr->onUpdate(simulationData.volumeCOM1, simulationData.volumeCOM2, IVAOData, VPILOTData);
 
-    if(IVAOData) {
+    if (IVAOData) {
       delete IVAOData;
       IVAOData = nullptr;
     }
