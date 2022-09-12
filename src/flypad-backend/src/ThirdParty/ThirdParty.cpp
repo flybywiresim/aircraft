@@ -26,9 +26,9 @@ void ThirdParty::shutdown() {
 }
 
 void ThirdParty::onUpdate(INT64 volumeCOM1, INT64 volumeCOM2, ThirdPartyDataIVAO* IVAOData, ThirdPartyDataVPILOT* VPILOTData) {
+    if (!_isInitialized) return;
+    
     bool update = false;
-
-    if(_isInitialized == false) return;
 
     if(IVAOData) {
         this->_selcalActive = IVAOData->selcal;
