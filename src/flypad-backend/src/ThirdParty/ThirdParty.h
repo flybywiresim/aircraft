@@ -46,8 +46,7 @@ private:
     return S_OK == SimConnect_SetClientData(_hSimConnect, ClientData::IVAO, DataStructureIDs::AllIVAODataID, SIMCONNECT_CLIENT_DATA_SET_FLAG_DEFAULT, 0, sizeof(output), &output);
   }
 
-  inline void
-  setSimVar(ID var, FLOAT64 value) const {
+  static inline void setSimVar(ID var, FLOAT64 value) {
     set_named_variable_value(var, value);
   }
 
