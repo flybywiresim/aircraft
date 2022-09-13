@@ -333,9 +333,9 @@ interface ControllerInformationProps {
 
 const ControllerInformation = ({ currentAtc }: ControllerInformationProps) => (
     <ScrollableContainer height={15.9} className="p-3">
-        <h2>{currentAtc?.callsign}</h2>
+        <h2 className="text-utility-amber">{currentAtc?.callsign}</h2>
         {currentAtc?.textAtis.map((line) => (
-            <p className="flex flex-wrap mt-4">{line}</p>
+            <p className="flex flex-wrap mt-2 text-2xl">{line}</p>
         ))}
     </ScrollableContainer>
 );
