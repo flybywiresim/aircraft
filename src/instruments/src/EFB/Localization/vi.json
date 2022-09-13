@@ -354,11 +354,11 @@
     "InteriorLighting": {
       "AircraftNeedsToBePoweredToLoadPresets": "Máy bay cần được cung cấp năng lượng để tải cấu hình đặt sẵn",
       "AircraftNeedsToBePoweredToSavePresets": "Máy bay cần được cung cấp năng lượng để lưu cấu hình đặt sẵn",
-      "AutoLoadDawnDusk": "Bình minh/Hoàng hôn",
-      "AutoLoadDay": "Ban ngày",
-      "AutoLoadLightingHelpTitle": "Automatic Preset Loading",
+      "AutoLoadDawnDusk": "Bình minh/Hoàng hôn:",
+      "AutoLoadDay": "Ban ngày:",
+      "AutoLoadLightingHelpTitle": "Tự động nạp cấu hình sẵn",
       "AutoLoadLightingPreset": "Bật tự động tải cài đặt đèn:",
-      "AutoLoadNight": "Ban đêm",
+      "AutoLoadNight": "Ban đêm:",
       "AutoLoadNoneSelection": "Không",
       "LoadPreset": "Tải cấu hình sẵn",
       "LoadingPreset": "Đang tải cấu hình sẵn",
@@ -421,7 +421,7 @@
     "TugDirection": "Hướng của xe kéo",
     "TugInTransit": "Đang chờ xe đẩy",
     "TugSpeed": "Tốc độ xe kéo",
-    "UseControllerInput": "Use Controller Input"
+    "UseControllerInput": "Sử dụng đầu vào từ bộ điều khiển"
   },
   "Settings": {
     "About": {
@@ -481,13 +481,13 @@
       "AutofillChecklists": "Tự đồng điền danh sách kiểm tra",
       "BoardingTime": "Thời gian lên máy bay",
       "DmcSelfTestTime": "Thời gian tự kiểm tra của DMC",
-      "FirstOfficerAvatar": "Show First Officer Avatar",
+      "FirstOfficerAvatar": "Hiển thị Avatar Cơ Phó",
       "HomeCockpitMode": "Chế độ buồng lái tại nhà",
       "McduFocusTimeout": "Thời gian chờ MCDU chỉnh (giây)",
       "McduKeyboardInput": "Dùng bàn phím cho MCDU",
       "PauseAtTod": "Dừng tại điểm hạ độ cao",
       "PauseAtTodDistance": "Khoảng cách dừng từ điểm hạ độ cao (nm)",
-      "PilotAvatar": "Show Pilot Avatar",
+      "PilotAvatar": "Hiện thị Avatar Phi công",
       "SeparateTillerFromRudderInputs": "Tách rời Điều Khiển Bánh Mũi với Bàn Đạp",
       "SyncEfis": "Đồng bộ hóa các điều khiển EFIS giữa cơ trưởng và cơ phó",
       "Title": "Mức thực tế"
@@ -499,7 +499,7 @@
       "ConesEnabled": "Chóp nón An toàn",
       "DefaultBarometerUnit": "Đơn vị áp kế mặc định",
       "DynamicRegistrationDecal": "Đề-can đăng ký động",
-      "EnableSimBridge": "Bật kết nối SimBridge (Tự động ngừng kích hoạt sau 5 phút nếu không có kết nối thành công)",
+      "EnableSimBridge": "Bật kết nối Simbridge (Tự động ngừng kích hoạt sau 5 phút nếu không có kết nối thành công)",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Bật kết nối máy chủ MCDU (Tự động ngừng kích hoạt sau 5 phút nếu không có kết nối thành công)",
       "ExternalMcduServerPort": "Cổng máy chủ MCDU bên ngoài",
       "Hpa": "hPa",
