@@ -111,9 +111,9 @@ export const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartS
             dispatch(setBoundingBox(undefined));
         } catch (_) {
             if (chart.type === 'PDF') {
-                toast.error('Failed to retrieve requested PDF Document.');
+                toast.error(t('NavigationAndCharts.LoadingPdfFailed'));
             } else {
-                toast.error('Failed to retrieve requested image.');
+                toast.error(t('NavigationAndCharts.LoadingImageFailed'));
             }
             dispatch(editTabProperty({ tab: NavigationTab.LOCAL_FILES, chartId: oldChartId }));
             return;
