@@ -293,12 +293,14 @@ pub struct WingAntiIceComplex {
     valve_controller: [WingAntiIceValveController; NUM_OF_WAI],
     wai_system_has_fault: bool,
     wai_system_on: bool,
+    wai_selected: bool,
     wai_shed: bool,
     wai_high_pressure: [bool; NUM_OF_WAI],
     wai_low_pressure: [bool; NUM_OF_WAI],
     wai_bleed_pressurised: [bool; NUM_OF_WAI],
 
     wai_on_id: VariableIdentifier,
+    wai_selected_id: VariableIdentifier,
     wai_fault_id: VariableIdentifier,
     wai_left_pressure_id: VariableIdentifier,
     wai_right_pressure_id: VariableIdentifier,
@@ -315,8 +317,7 @@ pub struct WingAntiIceComplex {
 impl WingAntiIceComplex {
     const WAI_MIN_PRESSURE: f64 = 1.; //BAR
     const WAI_MAX_PRESSURE: f64 = 2.1; //BAR
-    const WAI_NOMINAL_EXHAUST_SPEED: f64 = 0.1785;
-    const WAI_LEAKING_EXHAUST_SPEED: f64 = 3.;
+    const WAI_EXHAUST_SPEED: f64 = 0.1785;
     const WAI_VALVE_TRANSFER_SPEED: f64 = 0.023;
     // Each WAI duct is made of
     // Flow Trimming Restrictor 47mm diameter
@@ -341,14 +342,15 @@ impl WingAntiIceComplex {
         Self {
             // At 22000ft, flow rate is given at 0.327kg/s
             wai_exhaust: [
+                // Leaking failure not simulated
                 PneumaticExhaust::new(
-                    Self::WAI_NOMINAL_EXHAUST_SPEED,
-                    Self::WAI_LEAKING_EXHAUST_SPEED,
+                    Self::WAI_EXHAUST_SPEED,
+                    Self::WAI_EXHAUST_SPEED,
                     Pressure::new::<psi>(0.),
                 ),
                 PneumaticExhaust::new(
-                    Self::WAI_NOMINAL_EXHAUST_SPEED,
-                    Self::WAI_LEAKING_EXHAUST_SPEED,
+                    Self::WAI_EXHAUST_SPEED,
+                    Self::WAI_EXHAUST_SPEED,
                     Pressure::new::<psi>(0.),
                 ),
             ],
@@ -367,6 +369,7 @@ impl WingAntiIceComplex {
 
             wai_system_has_fault: false,
             wai_system_on: false,
+            wai_selected: false,
             wai_shed: false,
             wai_high_pressure: [false, false],
             wai_low_pressure: [false, false],
@@ -375,6 +378,8 @@ impl WingAntiIceComplex {
             // When switch is ON, but command is to turn WAI OFF (i.e. ground), hide EngineBleed from the BLEED page.
             // Implement relay 5DL
             wai_on_id: context.get_identifier("PNEU_WING_ANTI_ICE_SYSTEM_ON".to_owned()),
+            wai_selected_id: context
+                .get_identifier("PNEU_WING_ANTI_ICE_SYSTEM_SELECTED".to_owned()),
             wai_fault_id: context.get_identifier("PNEU_WING_ANTI_ICE_HAS_FAULT".to_owned()),
 
             wai_left_valve_closed_id: context
@@ -520,7 +525,8 @@ impl WingAntiIceComplex {
         }
 
         self.wai_system_has_fault = has_fault;
-        self.wai_system_on = wai_mode == WingAntiIcePushButtonMode::On;
+        self.wai_system_on = (num_of_on == Self::NUM_OF_WAI); // && !has_fault;
+        self.wai_selected = wai_mode == WingAntiIcePushButtonMode::On;
     }
 }
 
@@ -537,6 +543,7 @@ impl SimulationElement for WingAntiIceComplex {
 
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.wai_on_id, self.is_wai_system_on());
+        writer.write(&self.wai_selected_id, self.wai_selected);
         writer.write(&self.wai_fault_id, self.wai_system_has_fault);
         writer.write(&self.wai_left_pressure_id, self.wai_consumer_pressure(0));
         writer.write(&self.wai_right_pressure_id, self.wai_consumer_pressure(1));
@@ -984,6 +991,7 @@ mod tests {
         let test_bed = test_bed();
 
         assert!(test_bed.contains_variable_with_name("PNEU_WING_ANTI_ICE_SYSTEM_ON"));
+        assert!(test_bed.contains_variable_with_name("PNEU_WING_ANTI_ICE_SYSTEM_SELECTED"));
         assert!(test_bed.contains_variable_with_name("PNEU_WING_ANTI_ICE_HAS_FAULT"));
         assert!(test_bed.contains_variable_with_name("PNEU_1_WING_ANTI_ICE_CONSUMER_PRESSURE"));
         assert!(test_bed.contains_variable_with_name("PNEU_2_WING_ANTI_ICE_CONSUMER_PRESSURE"));
