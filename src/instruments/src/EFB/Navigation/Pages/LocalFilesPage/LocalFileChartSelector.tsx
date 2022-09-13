@@ -69,16 +69,17 @@ export const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartS
         }
         try {
             if (chart.type === 'PDF') {
-                toast.loading('Loading PDF...', { autoClose: 1000 });
+                toast.loading(t('NavigationAndCharts.LoadingPdf'), { autoClose: 1000 });
                 const url = await Viewer.getPDFPageUrl(chart.fileName, 1);
                 toast.dismiss();
                 return url;
             }
-            toast.loading('Loading Image...', { autoClose: 1000 });
+            toast.loading(t('NavigationAndCharts.LoadingImage'), { autoClose: 1000 });
             const url = await Viewer.getImageUrl(chart.fileName);
             toast.dismiss();
             return url;
         } catch (err) {
+            toast.dismiss();
             return Promise.reject();
         }
     };
