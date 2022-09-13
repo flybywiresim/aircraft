@@ -315,9 +315,9 @@ pub struct WingAntiIceComplex {
 impl WingAntiIceComplex {
     const WAI_MIN_PRESSURE: f64 = 1.; //BAR
     const WAI_MAX_PRESSURE: f64 = 2.1; //BAR
-    const WAI_NOMINAL_EXHAUST_SPEED: f64 = 0.524;
+    const WAI_NOMINAL_EXHAUST_SPEED: f64 = 0.1785;
     const WAI_LEAKING_EXHAUST_SPEED: f64 = 3.;
-    const WAI_VALVE_TRANSFER_SPEED: f64 = 0.035;
+    const WAI_VALVE_TRANSFER_SPEED: f64 = 0.023;
     // Each WAI duct is made of
     // Flow Trimming Restrictor 47mm diameter
     // Lagged Supply Duct 50mm diameter
@@ -1262,7 +1262,7 @@ mod tests {
 
     #[test]
     fn wing_anti_ice_time_to_open() {
-        let altitude = Length::new::<foot>(20000.);
+        let altitude = Length::new::<foot>(22000.);
         let wai_pressure: Pressure = Pressure::new::<psi>(22.5);
         let pressure_epsilon: Pressure = Pressure::new::<psi>(0.1);
         let mut test_bed = test_bed()
@@ -1349,14 +1349,14 @@ mod tests {
 
     #[test]
     fn wing_anti_ice_pressure_regulated() {
-        let altitude = Length::new::<foot>(0.);
+        let altitude = Length::new::<foot>(6000.);
         let wai_pressure: Pressure = Pressure::new::<psi>(22.5);
         let pressure_epsilon: Pressure = Pressure::new::<psi>(0.1);
 
         let test_bed = test_bed()
             .in_isa_atmosphere(altitude)
-            .idle_eng1()
-            .idle_eng2()
+            .power_eng1()
+            .power_eng2()
             .wing_anti_ice_push_button(WingAntiIcePushButtonMode::On)
             .and_stabilize_steps(10);
 
