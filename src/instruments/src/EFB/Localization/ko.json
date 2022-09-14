@@ -183,6 +183,10 @@
     "Altn": "대체",
     "ExitFullscreenMode": "전체화면 모드 종료",
     "From": "이륙 공항",
+    "LoadingImage": "Loading Image",
+    "LoadingImageFailed": "Loading Image failed",
+    "LoadingPdf": "Loading PDF",
+    "LoadingPdfFailed": "Loading PDF failed",
     "LocalFiles": {
       "Both": "모두",
       "EstablishingConnection": "연결 설정 중...",

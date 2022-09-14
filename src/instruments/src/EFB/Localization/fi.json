@@ -183,6 +183,10 @@
     "Altn": "Vaihtoehtoinen",
     "ExitFullscreenMode": "Poistu kokoruuduntilasta",
     "From": "Mistä",
+    "LoadingImage": "Loading Image",
+    "LoadingImageFailed": "Loading Image failed",
+    "LoadingPdf": "Loading PDF",
+    "LoadingPdfFailed": "Loading PDF failed",
     "LocalFiles": {
       "Both": "Molemmat",
       "EstablishingConnection": "Muodostetaan yhteyttä",

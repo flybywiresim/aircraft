@@ -183,6 +183,10 @@
     "Altn": "Alternatif",
     "ExitFullscreenMode": "Tam Ekran Modundan Çık",
     "From": "Kalkış",
+    "LoadingImage": "Loading Image",
+    "LoadingImageFailed": "Loading Image failed",
+    "LoadingPdf": "Loading PDF",
+    "LoadingPdfFailed": "Loading PDF failed",
     "LocalFiles": {
       "Both": "İkisi de",
       "EstablishingConnection": "Bağlantı Kuruluyor",

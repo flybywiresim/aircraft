@@ -183,6 +183,10 @@
     "Altn": "एकांतर",
     "ExitFullscreenMode": "फ़ुलस्क्रीन मोड से बाहर निकलें",
     "From": "से",
+    "LoadingImage": "Loading Image",
+    "LoadingImageFailed": "Loading Image failed",
+    "LoadingPdf": "Loading PDF",
+    "LoadingPdfFailed": "Loading PDF failed",
     "LocalFiles": {
       "Both": "दोनों",
       "EstablishingConnection": "कनेक्शन स्थापित हो रहा है...",

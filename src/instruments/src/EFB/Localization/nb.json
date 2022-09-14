@@ -183,6 +183,10 @@
     "Altn": "Alternativ",
     "ExitFullscreenMode": "Avslutt fullskjermmodus",
     "From": "Fra",
+    "LoadingImage": "Loading Image",
+    "LoadingImageFailed": "Loading Image failed",
+    "LoadingPdf": "Loading PDF",
+    "LoadingPdfFailed": "Loading PDF failed",
     "LocalFiles": {
       "Both": "Begge",
       "EstablishingConnection": "Oppretter tilkobling",

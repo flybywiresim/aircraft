@@ -183,6 +183,10 @@
     "Altn": "חלופי",
     "ExitFullscreenMode": "צא ממסך מלא",
     "From": "מוצא",
+    "LoadingImage": "Loading Image",
+    "LoadingImageFailed": "Loading Image failed",
+    "LoadingPdf": "Loading PDF",
+    "LoadingPdfFailed": "Loading PDF failed",
     "LocalFiles": {
       "Both": "שניהם",
       "EstablishingConnection": "מייצר חיבור",

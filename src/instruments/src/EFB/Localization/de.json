@@ -183,6 +183,10 @@
     "Altn": "ALTN",
     "ExitFullscreenMode": "Vollbildmodus beenden",
     "From": "Von",
+    "LoadingImage": "Bild wird geladen",
+    "LoadingImageFailed": "Laden des Bildes fehlgeschlagen",
+    "LoadingPdf": "PDF wird geladen",
+    "LoadingPdfFailed": "Laden des PDFs fehlgeschlagen",
     "LocalFiles": {
       "Both": "Beide",
       "EstablishingConnection": "Verbindung herstellen...",

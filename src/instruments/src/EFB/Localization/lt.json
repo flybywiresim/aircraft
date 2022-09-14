@@ -183,6 +183,10 @@
     "Altn": "Alternatyvus",
     "ExitFullscreenMode": "Išeiti iš pilno ekrano režimo",
     "From": "Iš",
+    "LoadingImage": "Loading Image",
+    "LoadingImageFailed": "Loading Image failed",
+    "LoadingPdf": "Loading PDF",
+    "LoadingPdfFailed": "Loading PDF failed",
     "LocalFiles": {
       "Both": "Abu",
       "EstablishingConnection": "Nustatomas ryšys",

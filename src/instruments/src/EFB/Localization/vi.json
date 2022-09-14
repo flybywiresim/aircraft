@@ -183,6 +183,10 @@
     "Altn": "Thay thế",
     "ExitFullscreenMode": "Thoát chế độ toàn màn hình",
     "From": "Từ",
+    "LoadingImage": "Loading Image",
+    "LoadingImageFailed": "Loading Image failed",
+    "LoadingPdf": "Loading PDF",
+    "LoadingPdfFailed": "Loading PDF failed",
     "LocalFiles": {
       "Both": "Cả hai",
       "EstablishingConnection": "Đang thiết lập kết nối",
