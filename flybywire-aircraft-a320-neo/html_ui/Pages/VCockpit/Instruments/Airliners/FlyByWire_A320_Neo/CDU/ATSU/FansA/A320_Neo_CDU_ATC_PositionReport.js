@@ -261,26 +261,50 @@ class CDUAtcPositionReport {
             overhead[1] = data.passedWaypoint[1];
             overhead[2] = data.passedWaypoint[2];
         }
+        if (data.passedWaypoint[3] === false) {
+            if (data.passedWaypoint[0]) {
+                overhead[0] = `{small}${overhead[0]}{end}`;
+            }
+            if (data.passedWaypoint[1] && data.passedWaypoint[2]) {
+                overhead[1] = `{small}${overhead[1]}{end}`;
+                overhead[2] = `{small}${overhead[2]}{end}`;
+            }
+        }
 
         const ppos = ["_______[color]amber", "____/______[color]amber"];
         if (data.currentPosition[0]) {
             ppos[0] = `{cyan}${Atsu.coordinateToString({ lat: data.currentPosition[0][0], lon: data.currentPosition[0][1] }, true)}{end}`;
+            if (data.currentPosition[1] === false) {
+                ppos[0] = `{small}${ppos[0]}{end}`;
+            }
         }
         if (data.currentUtc[0] && data.currentAltitude[0]) {
             ppos[1] = `{cyan}${data.currentUtc[0]}/${data.currentAltitude[0]}{end}`;
+            if (data.currentUtc[1] === false) {
+                ppos[1] = `{small}${ppos[1]}{end}`;
+            }
         }
 
         const to = ["[    ]", "[  ]"];
         if (data.activeWaypoint[0]) {
             to[0] = data.activeWaypoint[0];
+            if (data.activeWaypoint[2] === false) {
+                to[0] = `{small}${to[0]}{end}`;
+            }
         }
         if (data.activeWaypoint[1]) {
             to[1] = data.activeWaypoint[1];
+            if (data.activeWaypoint[2] === false) {
+                to[1] = `{small}${to[1]}{end}`;
+            }
         }
 
         let next = "[    ]";
         if (data.nextWaypoint[0]) {
             next = data.nextWaypoint[0];
+            if (data.nextWaypoint[1] === false) {
+                next = `{small}${next}{end}`;
+            }
         }
 
         mcdu.setTemplate([
@@ -584,7 +608,10 @@ class CDUAtcPositionReport {
         const sat = data.sat[0] ? data.sat[0] : "[  ]";
         const turbulence = data.turbulence[0] ? data.turbulence[0] : "[  ]";
         const icing = data.icing[0] ? data.icing[0] : "[  ]";
-        const eta = data.eta[0] ? data.eta[0] : "[   ]";
+        let eta = data.eta[0] ? data.eta[0] : "[   ]";
+        if (data.eta[1] === false && data.eta[0]) {
+            eta = `{small}${eta}{end}`;
+        }
         const endurance = data.endurance[0] ? data.endurance[0] : "[   ]";
 
         let text = "ADD TEXT\xa0";
@@ -601,7 +628,7 @@ class CDUAtcPositionReport {
         mcdu.setTemplate([
             ["POSITION REPORT", "2", "3"],
             ["\xa0WIND", "SAT\xa0"],
-            [`{cyan}${wind[0]}{end}{white}°{end}{cyan}/${wind[1]}{end}`, `{cyan}${sat}{end}`],
+            [`{cyan}${data.wind[1] === false && data.wind[0] ? '{small}' : ''}${wind[0]}/${wind[1]}${data.wind[1] === false && data.wind[0] ? '{end}' : ''}{end}`, `{cyan}${data.sat[1] === false && data.sat[0] ? '{small}' : ''}${sat}${data.sat[1] === false && data.sat[0] ? '{end}' : ''}{end}`],
             ["\xa0ICING(TLMS)", "TURB(LMS)\xa0"],
             [`{cyan}${icing}{end}`, `{cyan}${turbulence}{end}`],
             ["\xa0ETA", "ENDURANCE\xa0"],
@@ -768,12 +795,27 @@ class CDUAtcPositionReport {
     static ShowPage3(mcdu, requestMessage = null, data = CDUAtcPositionReport.CreateDataBlock(mcdu, requestMessage, true)) {
         mcdu.page.Current = mcdu.page.ATCPositionReport3;
 
-        const indicatedAirspeed = data.indicatedAirspeed[0] ? data.indicatedAirspeed[0] : "[  ]";
-        const groundSpeed = data.groundSpeed[0] ? data.groundSpeed[0] : "[  ]";
-        const verticalSpeed = data.verticalSpeed[0] ? data.verticalSpeed[0] : "[  ]";
+        let indicatedAirspeed = data.indicatedAirspeed[0] ? data.indicatedAirspeed[0] : "[  ]";
+        if (data.indicatedAirspeed[0] && data.indicatedAirspeed[1] === false) {
+            indicatedAirspeed = `{small}${indicatedAirspeed}{end}`;
+        }
+        let groundSpeed = data.groundSpeed[0] ? data.groundSpeed[0] : "[  ]";
+        if (data.groundSpeed[0] && data.groundSpeed[1] === false) {
+            groundSpeed = `{small}${groundSpeed}{end}`;
+        }
+        let verticalSpeed = data.verticalSpeed[0] ? data.verticalSpeed[0] : "[  ]";
+        if (data.verticalSpeed[0] && data.verticalSpeed[1] === false) {
+            verticalSpeed = `{small}${verticalSpeed}{end}`;
+        }
         const deviating = data.deviating[0] ? data.deviating[0] : "[  ]";
-        const heading = data.heading[0] ? data.heading[0] : "[  ]";
-        const track = data.track[0] ? data.track[0] : "[  ]";
+        let heading = data.heading[0] ? `${data.heading[0]}°TRUE` : "[  ]";
+        if (data.heading[0] && data.heading[1] === false) {
+            heading = `{small}${heading}{end}`;
+        }
+        let track = data.track[0] ? `${data.track[0]}{white}°{end}` : "[  ]";
+        if (data.track[0] && data.track[1] === false) {
+            track = `{small}${track}{end}`;
+        }
         const descending = ["\xa0DSCENDING TO", "[   ]"];
         const climbing = ["CLBING TO\xa0", "[   ]"];
 
@@ -808,7 +850,7 @@ class CDUAtcPositionReport {
             ["\xa0VERT SPEED", "DEVIATING\xa0"],
             [`{cyan}${verticalSpeed}{end}`, `{cyan}${deviating}{end}`],
             ["\xa0HEADING", "TRACK ANGLE\xa0"],
-            [`{cyan}${heading}{end}{white}°{end}`, `{cyan}${track}{end}{white}°{end}`],
+            [`{cyan}${heading}{end}`, `{cyan}${track}{end}`],
             [descending[0], climbing[0]],
             [`{cyan}${descending[1]}{end}`, `{cyan}${climbing[1]}{end}`],
             ["\xa0ALL FIELDS"],
