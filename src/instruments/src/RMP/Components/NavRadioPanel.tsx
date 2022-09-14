@@ -122,7 +122,8 @@ export const NavRadioPanel = (props: Props) => {
 
                 // FCOM compliant: If ILS, the frequency can be tuned via the RMP only if both RMPs are in nav backup mode.
                 if (props.transceiver !== TransceiverType.ILS
-                || (SimVar.GetSimVarValue('L:A32NX_RMP_L_NAV_BUTTON_SELECTED', 'Bool') === true && SimVar.GetSimVarValue('L:A32NX_RMP_R_NAV_BUTTON_SELECTED', 'Bool') === true)) {
+                    || (SimVar.GetSimVarValue('L:A32NX_RMP_L_NAV_BUTTON_SELECTED', 'Bool')
+                        && SimVar.GetSimVarValue('L:A32NX_RMP_R_NAV_BUTTON_SELECTED', 'Bool'))) {
                     setActiveFrequencySimVar(props.transceiver, index, standbyFrequency);
                 }
                 setActiveFrequencySaved(standbyFrequency);
