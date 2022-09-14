@@ -109,7 +109,8 @@ export class Atsu {
         // define wind and SAT
         if (atsu.flightStateObserver.EnvironmentData.windDirection && atsu.flightStateObserver.EnvironmentData.windSpeed && atsu.flightStateObserver.EnvironmentData.temperature) {
             extension = CpdlcMessagesDownlink.DM67[1].deepCopy();
-            extension.Content[0].Value = `WIND: ${atsu.flightStateObserver.EnvironmentData.windDirection}/${atsu.flightStateObserver.EnvironmentData.windSpeed}`;
+            const windInput = `${atsu.flightStateObserver.EnvironmentData.windDirection}/${atsu.flightStateObserver.EnvironmentData.windSpeed}KT`;
+            extension.Content[0].Value = `WIND: ${InputValidation.formatScratchpadWind(windInput)}`;
             extension.Content[0].Value = `${extension.Content[0].Value} SAT: ${atsu.flightStateObserver.EnvironmentData.temperature}C`;
             message.Content.push(extension);
         }
