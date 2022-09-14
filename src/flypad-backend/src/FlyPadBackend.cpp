@@ -247,9 +247,8 @@ void FlyPadBackend::simConnectProcessDispatchMessage(SIMCONNECT_RECV* pData, DWO
       cout << getSimConnectExceptionString(
         static_cast<SIMCONNECT_EXCEPTION>(
           static_cast<SIMCONNECT_RECV_EXCEPTION*>(pData)->dwException));
-      cout << "ID = " << static_cast<SIMCONNECT_RECV_EXCEPTION*>(pData)->dwID << " ";
-      cout << "INDEX = " <<  static_cast<SIMCONNECT_RECV_EXCEPTION*>(pData)->dwIndex << " ";
-      cout << "SIZE = " <<  static_cast<SIMCONNECT_RECV_EXCEPTION*>(pData)->dwSize << " ";
+      cout << "ID = " << static_cast<SIMCONNECT_RECV_EXCEPTION*>(pData)->dwID;
+      cout << "  Index = " <<  static_cast<SIMCONNECT_RECV_EXCEPTION*>(pData)->dwIndex;
       cout << endl;
       break;
 
