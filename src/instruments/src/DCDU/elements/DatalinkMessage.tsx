@@ -92,11 +92,12 @@ export const DatalinkMessage: React.FC<DatalinkMessageProps> = ({ messages, upda
                 content += `${text}\n`;
             }
         });
+        content += '//';
 
         if (messages[0].SemanticResponseRequired && messages[0].Response) {
             messageSeperatorLine = content.split('\n').length;
             content += '------------------------------\n';
-            content += `${messages[0].Response.serialize(AtsuMessageSerializationFormat.DCDU)}\n`;
+            content += `${messages[0].Response.serialize(AtsuMessageSerializationFormat.DCDU)}//\n`;
         }
     }
 
