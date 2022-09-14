@@ -132,29 +132,41 @@ class CDUAtcPositionReport {
 
         // define the overhead
         let extension = Atsu.CpdlcMessagesDownlink["DM67"][1].deepCopy();
-        extension.Content[0].Value = `OVHD:${data.passedWaypoint[0]}`;
+        extension.Content[0].Value = `OVHD: ${data.passedWaypoint[0]}`;
         retval.Content.push(extension);
         extension = Atsu.CpdlcMessagesDownlink["DM67"][1].deepCopy();
         extension.Content[0].Value = `AT ${data.passedWaypoint[1]}Z/${data.passedWaypoint[2]}`;
         retval.Content.push(extension);
         // define the present position
         extension = Atsu.CpdlcMessagesDownlink["DM67"][1].deepCopy();
-        extension.Content[0].Value = `PPOS:${Atsu.coordinateToString({ lat: data.currentPosition[0][0], lon: data.currentPosition[0][1] }, false)}`;
+        extension.Content[0].Value = `PPOS: ${Atsu.coordinateToString({ lat: data.currentPosition[0][0], lon: data.currentPosition[0][1] }, false)}`;
         retval.Content.push(extension);
         extension = Atsu.CpdlcMessagesDownlink["DM67"][1].deepCopy();
         extension.Content[0].Value = `AT ${data.currentUtc[0]}Z/${data.currentAltitude[0]}`;
         retval.Content.push(extension);
         // define the active position
         extension = Atsu.CpdlcMessagesDownlink["DM67"][1].deepCopy();
-        extension.Content[0].Value = `NEXT:${data.activeWaypoint[0]}`;
-        retval.Content.push(extension);
-        extension = Atsu.CpdlcMessagesDownlink["DM67"][1].deepCopy();
-        extension.Content[0].Value = `AT ${data.activeWaypoint[1]}Z`;
+        extension.Content[0].Value = `TO :${data.activeWaypoint[0]} AT ${data.activeWaypoint[1]}Z`;
         retval.Content.push(extension);
         // define the next position
         extension = Atsu.CpdlcMessagesDownlink["DM67"][1].deepCopy();
-        extension.Content[0].Value = `ENSUING:${data.nextWaypoint[0]}`;
+        extension.Content[0].Value = `NEXT: ${data.nextWaypoint[0]}`;
         retval.Content.push(extension);
+
+        // create wind and temperature data
+        if (data.wind[0] && data.sat[0]) {
+            extension = Atsu.CpdlcMessagesDownlink["DM67"][1].deepCopy();
+            extension.Content[0].Value = `WIND: ${data.wind[0]} SAT: ${data.sat[0]}`;
+            retval.Content.push(extension);
+        } else if (data.wind[0]) {
+            extension = Atsu.CpdlcMessagesDownlink["DM67"][1].deepCopy();
+            extension.Content[0].Value = `WIND: ${data.wind[0]}`;
+            retval.Content.push(extension);
+        } else if (data.sat[0]) {
+            extension = Atsu.CpdlcMessagesDownlink["DM67"][1].deepCopy();
+            extension.Content[0].Value = `SAT: ${data.sat[0]}`;
+            retval.Content.push(extension);
+        }
 
         // create the initial data
         if (data.eta[0]) {
@@ -171,27 +183,9 @@ class CDUAtcPositionReport {
             extension.Content[0].Value = `CLIMBING TO ${data.climbing[0]}`;
             retval.Content.push(extension);
         }
-        if (data.deviating[0]) {
-            extension = Atsu.CpdlcMessagesDownlink["DM67"][1].deepCopy();
-            extension.Content[0].Value = `DEVIATING ${Atsu.InputValidation.expandLateralOffset(data.deviating[0])}`;
-            retval.Content.push(extension);
-        }
         if (data.endurance[0]) {
             extension = Atsu.CpdlcMessagesDownlink["DM67"][1].deepCopy();
             extension.Content[0].Value = `ENDURANCE: ${data.endurance[0]}`;
-            retval.Content.push(extension);
-        }
-        if (data.wind[0] && data.sat[0]) {
-            extension = Atsu.CpdlcMessagesDownlink["DM67"][1].deepCopy();
-            extension.Content[0].Value = `WIND: ${data.wind[0]} SAT: ${data.sat[0]}`;
-            retval.Content.push(extension);
-        } else if (data.wind[0]) {
-            extension = Atsu.CpdlcMessagesDownlink["DM67"][1].deepCopy();
-            extension.Content[0].Value = `WIND: ${data.wind[0]}`;
-            retval.Content.push(extension);
-        } else if (data.sat[0]) {
-            extension = Atsu.CpdlcMessagesDownlink["DM67"][1].deepCopy();
-            extension.Content[0].Value = `SAT: ${data.sat[0]}`;
             retval.Content.push(extension);
         }
         if (data.icing[0] && data.turbulence[0]) {
@@ -225,17 +219,20 @@ class CDUAtcPositionReport {
             extension.Content[0].Value = `VS: ${data.verticalSpeed[0]}`;
             retval.Content.push(extension);
         }
-        if (data.heading[0] && data.track[0]) {
+        if (data.heading[0]) {
             extension = Atsu.CpdlcMessagesDownlink["DM67"][1].deepCopy();
-            extension.Content[0].Value = `HDG: ${data.heading[0]}° TRK: ${data.track[0]}°`;
+            extension.Content[0].Value = `HDG: ${data.heading[0]}°TRUE`;
             retval.Content.push(extension);
-        } else if (data.heading[0]) {
-            extension = Atsu.CpdlcMessagesDownlink["DM67"][1].deepCopy();
-            extension.Content[0].Value = `HDG: ${data.heading[0]}°`;
-            retval.Content.push(extension);
-        } else if (data.track[0]) {
+        }
+        if (data.track[0]) {
             extension = Atsu.CpdlcMessagesDownlink["DM67"][1].deepCopy();
             extension.Content[0].Value = `TRK: ${data.track[0]}°`;
+            retval.Content.push(extension);
+        }
+
+        if (data.deviating[0]) {
+            extension = Atsu.CpdlcMessagesDownlink["DM67"][1].deepCopy();
+            extension.Content[0].Value = `DEVIATING ${Atsu.InputValidation.expandLateralOffset(data.deviating[0])}`;
             retval.Content.push(extension);
         }
 
