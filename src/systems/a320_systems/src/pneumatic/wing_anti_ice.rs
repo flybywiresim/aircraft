@@ -525,7 +525,7 @@ impl WingAntiIceComplex {
         }
 
         self.wai_system_has_fault = has_fault;
-        self.wai_system_on = (num_of_on == Self::NUM_OF_WAI); // && !has_fault;
+        self.wai_system_on = (num_of_on == NUM_OF_WAI); // && !has_fault;
         self.wai_selected = wai_mode == WingAntiIcePushButtonMode::On;
     }
 }
@@ -863,6 +863,10 @@ mod tests {
 
         fn wing_anti_ice_system_on(&mut self) -> bool {
             self.read_by_name("PNEU_WING_ANTI_ICE_SYSTEM_ON")
+        }
+
+        fn wing_anti_ice_system_selected(&mut self) -> bool {
+            self.read_by_name("PNEU_WING_ANTI_ICE_SYSTEM_SELECTED")
         }
 
         fn is_sim_on_ground(&mut self) -> bool {
@@ -1408,7 +1412,8 @@ mod tests {
         assert!(test_bed.left_valve_open_amount() == 0.);
         assert!(test_bed.right_valve_controller_timer() == Duration::from_secs(30));
         assert!(test_bed.right_valve_open_amount() == 0.);
-        assert!(test_bed.wing_anti_ice_system_on());
+        assert!(!test_bed.wing_anti_ice_system_on());
+        assert!(test_bed.wing_anti_ice_system_selected());
     }
 
     #[test]
@@ -1424,7 +1429,8 @@ mod tests {
         test_bed = test_bed.wing_anti_ice_push_button(WingAntiIcePushButtonMode::On);
         test_bed.run_with_delta(Duration::from_secs(31));
 
-        assert!(test_bed.wing_anti_ice_system_on());
+        assert!(!test_bed.wing_anti_ice_system_on());
+        assert!(test_bed.wing_anti_ice_system_selected());
         assert!(test_bed.left_valve_open_amount() == 0.);
         assert!(test_bed.right_valve_open_amount() == 0.);
 
