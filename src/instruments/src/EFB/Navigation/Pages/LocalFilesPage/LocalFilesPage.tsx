@@ -17,16 +17,40 @@ enum ConnectionState {
 export const getPdfUrl = async (fileName: string, pageNumber: number): Promise<string> => {
     const simbridgeEnabled = NXDataStore.get('CONFIG_SIMBRIDGE_ENABLED', 'AUTO ON');
     if (simbridgeEnabled !== 'AUTO ON') {
-        toast.error('SimBridge is not enabled in flyPad settings.');
+        toast.error(t('NavigationAndCharts.SimBridgeNotEnabled'));
         return Promise.reject();
     }
+    const id = 'loading-file';
     try {
-        toast.loading('Loading PDF...', { autoClose: 1000 });
+        toast.loading(t('NavigationAndCharts.LoadingPdf'), { toastId: id, pauseOnFocusLoss: false });
         const objectURL = await Viewer.getPDFPageUrl(fileName, pageNumber);
-        toast.dismiss();
+        toast.update(id, { toastId: id, render: '', type: 'success', isLoading: false, pauseOnFocusLoss: false });
+        toast.dismiss(id);
         return objectURL;
     } catch (err) {
-        toast.error(`Failed to retrieve requested PDF Document: ${err}`);
+        toast.dismiss(id);
+        toast.error(t('NavigationAndCharts.LoadingPdfFailed'), { autoClose: 1000 });
+
+        return Promise.reject();
+    }
+};
+
+export const getImageUrl = async (fileName: string): Promise<string> => {
+    const simbridgeEnabled = NXDataStore.get('CONFIG_SIMBRIDGE_ENABLED', 'AUTO ON');
+    if (simbridgeEnabled !== 'AUTO ON') {
+        toast.error(t('NavigationAndCharts.SimBridgeNotEnabled'));
+        return Promise.reject();
+    }
+    const id = 'loading-file';
+    try {
+        toast.loading(t('NavigationAndCharts.LoadingImage'), { toastId: id, pauseOnFocusLoss: false });
+        const objectURL = await Viewer.getImageUrl(fileName);
+        toast.update(id, { toastId: id, render: '', type: 'success', isLoading: false, pauseOnFocusLoss: false });
+        toast.dismiss(id);
+        return objectURL;
+    } catch (err) {
+        toast.dismiss(id);
+        toast.error(t('NavigationAndCharts.LoadingImageFailed'), { autoClose: 1000 });
         return Promise.reject();
     }
 };

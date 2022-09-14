@@ -17,6 +17,7 @@ import {
 import { useAppDispatch, useAppSelector } from '../../../Store/store';
 import { navigationTabs } from '../../Navigation';
 import { Viewer } from '../../../../../../simbridge-client/src';
+import { getImageUrl, getPdfUrl } from './LocalFilesPage';
 
 export type LocalFileChart = {
     fileName: string;
@@ -64,22 +65,12 @@ export const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartS
     }
 
     const getChartResourceUrl = async (chart: LocalFileChart): Promise<string> => {
-        if (simbridgeEnabled !== 'AUTO ON') {
-            return Promise.reject();
-        }
         try {
             if (chart.type === 'PDF') {
-                toast.loading(t('NavigationAndCharts.LoadingPdf'), { autoClose: 1000 });
-                const url = await Viewer.getPDFPageUrl(chart.fileName, 1);
-                toast.dismiss();
-                return url;
+                return await getPdfUrl(chart.fileName, 1);
             }
-            toast.loading(t('NavigationAndCharts.LoadingImage'), { autoClose: 1000 });
-            const url = await Viewer.getImageUrl(chart.fileName);
-            toast.dismiss();
-            return url;
+            return await getImageUrl(chart.fileName);
         } catch (err) {
-            toast.dismiss();
             return Promise.reject();
         }
     };
@@ -101,25 +92,18 @@ export const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartS
     const handleChartClick = async (chart: LocalFileChart) => {
         const oldChartId = chartId;
         dispatch(editTabProperty({ tab: NavigationTab.LOCAL_FILES, chartId: chart.fileName }));
-
         try {
-            const pagesViewable = await getPagesViewable(chart);
-            dispatch(editTabProperty({ tab: NavigationTab.LOCAL_FILES, pagesViewable }));
             const url = await getChartResourceUrl(chart);
             dispatch(editTabProperty({ tab: NavigationTab.LOCAL_FILES, chartDimensions: { width: undefined, height: undefined } }));
             dispatch(editTabProperty({ tab: NavigationTab.LOCAL_FILES, chartName: { light: url, dark: url } }));
             dispatch(setBoundingBox(undefined));
+            const pagesViewable = await getPagesViewable(chart);
+            dispatch(editTabProperty({ tab: NavigationTab.LOCAL_FILES, pagesViewable }));
         } catch (_) {
-            if (chart.type === 'PDF') {
-                toast.error(t('NavigationAndCharts.LoadingPdfFailed'));
-            } else {
-                toast.error(t('NavigationAndCharts.LoadingImageFailed'));
-            }
             dispatch(editTabProperty({ tab: NavigationTab.LOCAL_FILES, chartId: oldChartId }));
             return;
         }
         dispatch(setProvider(ChartProvider.LOCAL_FILES));
-
         dispatch(editTabProperty({ tab: NavigationTab.LOCAL_FILES, currentPage: 1 }));
     };
 
