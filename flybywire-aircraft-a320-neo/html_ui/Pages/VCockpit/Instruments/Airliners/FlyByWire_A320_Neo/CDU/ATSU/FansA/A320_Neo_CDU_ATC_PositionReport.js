@@ -618,12 +618,15 @@ class CDUAtcPositionReport {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[0] = (value) => {
-            if (value === FMCDataManager.clrValue) {
+            if (value === FMCMainDisplay.clrValue) {
                 data.wind = [null, true];
-            } else if (Atsu.InputValidation.validateScratchpadWind(value)) {
-                data.wind = [Atsu.InputValidation.formatScratchpadWind(value), true];
             } else {
-                mcdu.setScratchpadMessage(NXSystemMessages.formatError);
+                const error = Atsu.InputValidation.validateScratchpadWind(value);
+                if (error === Atsu.AtsuStatusCodes.Ok) {
+                    data.wind = [Atsu.InputValidation.formatScratchpadWind(value), true];
+                } else {
+                    mcdu.setScratchpadMessage(NXSystemMessages.formatError);
+                }
             }
             CDUAtcPositionReport.ShowPage2(mcdu, requestMessage, data);
         };
@@ -632,7 +635,7 @@ class CDUAtcPositionReport {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[1] = (value) => {
-            if (value === FMCDataManager.clrValue) {
+            if (value === FMCMainDisplay.clrValue) {
                 data.icing = [null, true];
             } else if (value === "T" || value === "L" || value === "M" || value === "S") {
                 data.icing = [value, true];
@@ -646,7 +649,7 @@ class CDUAtcPositionReport {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[2] = (value) => {
-            if (value === FMCDataManager.clrValue) {
+            if (value === FMCMainDisplay.clrValue) {
                 data.eta = [null, true];
             } else if (Atsu.InputValidation.validateScratchpadTime(value)) {
                 data.eta = [value, true];
@@ -678,7 +681,7 @@ class CDUAtcPositionReport {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onRightInput[0] = (value) => {
-            if (value === FMCDataManager.clrValue) {
+            if (value === FMCMainDisplay.clrValue) {
                 data.sat = [null, true];
             } else {
                 const error = Atsu.InputValidation.validateScratchpadTemperature(value);
@@ -695,7 +698,7 @@ class CDUAtcPositionReport {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onRightInput[1] = (value) => {
-            if (value === FMCDataManager.clrValue) {
+            if (value === FMCMainDisplay.clrValue) {
                 data.turbulence = [null, true];
             } else if (value === "L" || value === "M" || value === "S") {
                 data.turbulence = [value, true];
@@ -709,7 +712,7 @@ class CDUAtcPositionReport {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onRightInput[2] = (value) => {
-            if (value === FMCDataManager.clrValue) {
+            if (value === FMCMainDisplay.clrValue) {
                 data.endurance = [null, true];
             } else if (Atsu.InputValidation.validateScratchpadEndurance(value)) {
                 data.endurance = [Atsu.InputValidation.formatScratchpadEndurance(value), true];
