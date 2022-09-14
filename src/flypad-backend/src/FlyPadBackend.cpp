@@ -146,6 +146,8 @@ bool FlyPadBackend::onUpdate(double deltaTime) {
 bool FlyPadBackend::shutdown() {
   std::cout << "FLYPAD_BACKEND: Disconnecting ..." << std::endl;
 
+  thirdPartyPtr->notifyShutdownThirdParty();
+
   // shutdown suib modules
   lightPresetPtr->shutdown();
   aircraftPresetPtr->shutdown();

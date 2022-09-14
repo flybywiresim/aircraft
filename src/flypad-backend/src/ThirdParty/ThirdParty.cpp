@@ -103,7 +103,7 @@ void ThirdParty::onUpdate(INT64 volumeCOM1, INT64 volumeCOM2, ThirdPartyDataIVAO
 void ThirdParty::notifyShutdownThirdParty() const {
   // notifying vPilot the aircraft is unloaded
   ThirdPartyDataVPILOT dataVPILOT{0, 0};
-  std::cout << "NOTIFYING vPilot = " << unsigned(setThirdPartyDataVPILOT(dataVPILOT)) << std::endl;
+  setThirdPartyDataVPILOT(dataVPILOT);
 
   ThirdPartyDataIVAO dataIVAO{0, 0, 0};
   setThirdPartyDataIVAO(dataIVAO);

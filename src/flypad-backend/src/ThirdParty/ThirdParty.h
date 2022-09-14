@@ -39,11 +39,11 @@ class ThirdParty {
 
   std::chrono::system_clock::time_point _previousTime = std::chrono::system_clock::now();
 
-  inline bool setThirdPartyDataVPILOT(struct ThirdPartyDataVPILOT output) const {
+  inline bool setThirdPartyDataVPILOT(struct ThirdPartyDataVPILOT& output) const {
     return S_OK == SimConnect_SetClientData(_hSimConnect, ClientData::VPILOT, DataStructureIDs::AllVPILOTDataID,
                                             SIMCONNECT_CLIENT_DATA_SET_FLAG_DEFAULT, 0, sizeof(output), &output);
   }
-  inline bool setThirdPartyDataIVAO(struct ThirdPartyDataIVAO output) const {
+  inline bool setThirdPartyDataIVAO(struct ThirdPartyDataIVAO& output) const {
     return S_OK == SimConnect_SetClientData(_hSimConnect, ClientData::IVAO, DataStructureIDs::AllIVAODataID,
                                             SIMCONNECT_CLIENT_DATA_SET_FLAG_DEFAULT, 0, sizeof(output), &output);
   }
