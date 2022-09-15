@@ -183,10 +183,10 @@
     "Altn": "Thay thế",
     "ExitFullscreenMode": "Thoát chế độ toàn màn hình",
     "From": "Từ",
-    "LoadingImage": "Loading Image",
-    "LoadingImageFailed": "Loading Image failed",
-    "LoadingPdf": "Loading PDF",
-    "LoadingPdfFailed": "Loading PDF failed",
+    "LoadingImage": "Đang tải hình ảnh",
+    "LoadingImageFailed": "Tải ảnh thất bại",
+    "LoadingPdf": "Đang tải PDF",
+    "LoadingPdfFailed": "Tải PDF thất bại",
     "LocalFiles": {
       "Both": "Cả hai",
       "EstablishingConnection": "Đang thiết lập kết nối",
@@ -417,7 +417,7 @@
       "SliderSpeed": "Di chuyển thanh trượt cho tốc độ mong muốn",
       "SystemEnabledOff": "Nhấp để bật hệ thống đẩy lùi.",
       "SystemEnabledOn": "Nhấp để tắt hoàn toàn hệ thống đẩy lùi.",
-      "UseControllerInput": "Turn controller input from rudder and elevator on/off",
+      "UseControllerInput": "Bật/tắt đầu vào bộ điều khiển cho bàn đạp và bánh lái độ cao",
       "ZoomIn": "Phóng to",
       "ZoomOut": "Thu nhỏ"
     },
