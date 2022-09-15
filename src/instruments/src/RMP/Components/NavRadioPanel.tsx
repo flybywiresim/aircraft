@@ -120,7 +120,7 @@ export const NavRadioPanel = (props: Props) => {
                     setMode(Mode.COURSE);
                 }
 
-                // FCOM compliant: Both RMPs must in nav backup mode in order to tune the ILS
+                // FCOM compliant: Both RMPs must be in nav backup mode in order to tune the ILS
                 if (props.transceiver !== TransceiverType.ILS
                     || (SimVar.GetSimVarValue('L:A32NX_RMP_L_NAV_BUTTON_SELECTED', 'Bool')
                         && SimVar.GetSimVarValue('L:A32NX_RMP_R_NAV_BUTTON_SELECTED', 'Bool'))) {
