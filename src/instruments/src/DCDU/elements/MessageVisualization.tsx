@@ -283,8 +283,10 @@ export const MessageVisualization: React.FC<MessageVisualizationProps> = memo(({
 
     let lines = createVisualizationLines(message, keepNewlines, watchdogIndices);
 
-    // get the number of pages
-    const messagePageCount = Math.ceil(lines.length / maxLines);
+    // calculate visualized lines, incl. repeated last line of previous page
+    // thereafter get the number of pages
+    const messagePageCountWithoutOverlap = Math.ceil(lines.length / maxLines);
+    const messagePageCount = Math.ceil((lines.length + messagePageCountWithoutOverlap - 1) / maxLines);
     if (messagePageCount !== pageCount) {
         reachedEndOfMessage(messageUid, messagePageCount === 1);
         setPageCount(messagePageCount);
@@ -297,7 +299,7 @@ export const MessageVisualization: React.FC<MessageVisualizationProps> = memo(({
     }
 
     // get the indices
-    const startIndex = pageIndex * maxLines;
+    const startIndex = pageIndex * maxLines - pageIndex;
     const endIndex = Math.min(startIndex + maxLines, lines.length);
 
     // get visible lines
