@@ -3557,8 +3557,7 @@ mod tests {
             assert!(test_bed.valve_controller_timer() == Duration::from_secs(30));
             assert!(test_bed.wing_anti_ice_system_selected());
             assert!(!test_bed.wing_anti_ice_has_fault());
-            //TODO CHECK Wiring
-            //assert!(test_bed.wing_anti_ice_system_on());
+            assert!(!test_bed.wing_anti_ice_system_on());
             assert!(test_bed.left_valve_closed());
             assert!(test_bed.right_valve_closed());
             assert!(!test_bed.wing_anti_ice_system_on());
