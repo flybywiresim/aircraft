@@ -4,10 +4,23 @@
     "ChangeATISATCSourceButton": "ATIS/ATCの提供元を変更",
     "ConnectHoppieACARS": "Hoppie ACARSに接続",
     "NoInformationAvailableForThisFrequency": "この周波数の情報はありません",
+    "SearchPlaceholder": "Search",
     "SelectCorrectATISATCSource": "このページは設定ページでATIS/ATCの提供元としてIVAO、またはVATSIMが選択されている場合にのみ使用できます。",
     "SetActive": "アクティブに設定",
     "SetStandby": "スタンバイに設定",
+    "ShowAll": "All",
+    "ShowApproach": "Approach",
+    "ShowAtis": "ATIS",
+    "ShowDelivery": "Delivery",
+    "ShowDeparture": "Departure",
+    "ShowGround": "Ground",
+    "ShowRadar": "Radar",
+    "ShowTower": "Tower",
     "Standby": "スタンバイ",
+    "TT": {
+      "AtcCallSignSearch": "ATC Call-sign Search",
+      "AtcTypeFilter": "Filter for"
+    },
     "Title": "航空交通管制"
   },
   "Checklists": {

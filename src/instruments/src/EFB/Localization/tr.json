@@ -4,10 +4,23 @@
     "ChangeATISATCSourceButton": "ATIS/ATC Kaynağını Değiştir",
     "ConnectHoppieACARS": "Hoppie ACARS'a bağlan",
     "NoInformationAvailableForThisFrequency": "BU FREKANS İÇİN MEVCUT BİLGİ YOK",
+    "SearchPlaceholder": "Search",
     "SelectCorrectATISATCSource": "Bu sayfa yalnızca ayarlar sayfasında ATIS/ATC kaynağı olarak IVAO veya VATSIM seçildiğinde kullanılabilir.",
     "SetActive": "Etkinleştir",
     "SetStandby": "Beklemede Ayarla",
+    "ShowAll": "All",
+    "ShowApproach": "Approach",
+    "ShowAtis": "ATIS",
+    "ShowDelivery": "Delivery",
+    "ShowDeparture": "Departure",
+    "ShowGround": "Ground",
+    "ShowRadar": "Radar",
+    "ShowTower": "Tower",
     "Standby": "Beklemede",
+    "TT": {
+      "AtcCallSignSearch": "ATC Call-sign Search",
+      "AtcTypeFilter": "Filter for"
+    },
     "Title": "Hava Trafik Kontrol"
   },
   "Checklists": {

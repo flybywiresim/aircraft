@@ -4,10 +4,23 @@
     "ChangeATISATCSourceButton": "Pakeisti ATIS/ATC šaltinį",
     "ConnectHoppieACARS": "Prijungti Hoppie ACARS",
     "NoInformationAvailableForThisFrequency": "Jokia informacija nėra pasiekiama šiame dažnyje",
+    "SearchPlaceholder": "Search",
     "SelectCorrectATISATCSource": "Šis puslapis pasiekiamas tik pasirinkus IVAO arba VATSIM kaip ATIS/ATC šaltinį nustatymų puslapyje.",
     "SetActive": "Aktyvus",
     "SetStandby": "Atsarginis",
+    "ShowAll": "All",
+    "ShowApproach": "Approach",
+    "ShowAtis": "ATIS",
+    "ShowDelivery": "Delivery",
+    "ShowDeparture": "Departure",
+    "ShowGround": "Ground",
+    "ShowRadar": "Radar",
+    "ShowTower": "Tower",
     "Standby": "Atsarginis",
+    "TT": {
+      "AtcCallSignSearch": "ATC Call-sign Search",
+      "AtcTypeFilter": "Filter for"
+    },
     "Title": "Oro Erdvės Kontrolė"
   },
   "Checklists": {

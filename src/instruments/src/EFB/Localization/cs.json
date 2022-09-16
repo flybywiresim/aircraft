@@ -4,10 +4,23 @@
     "ChangeATISATCSourceButton": "Změnit zdroj ATIS/ATC",
     "ConnectHoppieACARS": "Připojit ACARS Hoppie",
     "NoInformationAvailableForThisFrequency": "Pro tuto frekvenci nejsou dostupné žádné informace",
+    "SearchPlaceholder": "Search",
     "SelectCorrectATISATCSource": "Tato stránka je dostupná pouze pokud je v nastavení jako zdroj ATIS/ATC vybrána možnost IVAO nebo VATSIM.",
     "SetActive": "Nastavit aktivní",
     "SetStandby": "Nastavit standby",
+    "ShowAll": "All",
+    "ShowApproach": "Approach",
+    "ShowAtis": "ATIS",
+    "ShowDelivery": "Delivery",
+    "ShowDeparture": "Departure",
+    "ShowGround": "Ground",
+    "ShowRadar": "Radar",
+    "ShowTower": "Tower",
     "Standby": "Standby",
+    "TT": {
+      "AtcCallSignSearch": "ATC Call-sign Search",
+      "AtcTypeFilter": "Filter for"
+    },
     "Title": "Řízení letového provozu"
   },
   "Checklists": {

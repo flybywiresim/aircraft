@@ -4,10 +4,23 @@
     "ChangeATISATCSourceButton": "Ändra ATIS/ATC-källa",
     "ConnectHoppieACARS": "Anslut Hoppie ACARS",
     "NoInformationAvailableForThisFrequency": "INFORMATION EJ TILLGÄNGLIG FÖR DENNA FREKVENS",
+    "SearchPlaceholder": "Sök",
     "SelectCorrectATISATCSource": "Denna sida är endast tillgänglig när IVAO eller VATSIM har valts som ATIS/ATC-källa på inställningssidan.",
     "SetActive": "Sätt Aktiv",
     "SetStandby": "Sätt Standby",
+    "ShowAll": "Alla",
+    "ShowApproach": "Approach",
+    "ShowAtis": "ATIS",
+    "ShowDelivery": "Delivery",
+    "ShowDeparture": "Departure",
+    "ShowGround": "Ground",
+    "ShowRadar": "Radar",
+    "ShowTower": "Tower",
     "Standby": "Standby",
+    "TT": {
+      "AtcCallSignSearch": "ATC-sökning efter anropssignal",
+      "AtcTypeFilter": "ATC-typfilter"
+    },
     "Title": "Flygledning"
   },
   "Checklists": {

@@ -4,10 +4,23 @@
     "ChangeATISATCSourceButton": "Zamenjaj vir ATIS/ATC",
     "ConnectHoppieACARS": "Povežite Hoppie ACARS",
     "NoInformationAvailableForThisFrequency": "ZA TO FREKVENCO NI NA VOLJO NOBENIH INFORMACIJ",
+    "SearchPlaceholder": "Search",
     "SelectCorrectATISATCSource": "Ta stran je na voljo le, če je IVAO ali VATSIM izbran kot vir ATIS/ATC na strani z nastavitvami.",
     "SetActive": "Nastavi kot aktivno",
     "SetStandby": "Nastavi v pripravljenost",
+    "ShowAll": "All",
+    "ShowApproach": "Approach",
+    "ShowAtis": "ATIS",
+    "ShowDelivery": "Delivery",
+    "ShowDeparture": "Departure",
+    "ShowGround": "Ground",
+    "ShowRadar": "Radar",
+    "ShowTower": "Tower",
     "Standby": "V pripravljenosti",
+    "TT": {
+      "AtcCallSignSearch": "ATC Call-sign Search",
+      "AtcTypeFilter": "Filter for"
+    },
     "Title": "Kontrola zračnega prometa"
   },
   "Checklists": {

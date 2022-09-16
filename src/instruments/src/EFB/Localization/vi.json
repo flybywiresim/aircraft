@@ -4,10 +4,23 @@
     "ChangeATISATCSourceButton": "Thay đổi nguồn ATIS/ATC",
     "ConnectHoppieACARS": "Kết nối Hoppie ACARS",
     "NoInformationAvailableForThisFrequency": "Không có thông tin có sẵn cho tần số này",
+    "SearchPlaceholder": "Search",
     "SelectCorrectATISATCSource": "Trang này chỉ khả dụng khi IVAO hoặc VATSIM được sử dụng làm nguồn ATIS/ATC trong trang Cài đặt.",
     "SetActive": "Đặt hoạt động",
     "SetStandby": "Đặt chế độ chờ",
+    "ShowAll": "All",
+    "ShowApproach": "Approach",
+    "ShowAtis": "ATIS",
+    "ShowDelivery": "Delivery",
+    "ShowDeparture": "Departure",
+    "ShowGround": "Ground",
+    "ShowRadar": "Radar",
+    "ShowTower": "Tower",
     "Standby": "Chế độ chờ",
+    "TT": {
+      "AtcCallSignSearch": "ATC Call-sign Search",
+      "AtcTypeFilter": "Filter for"
+    },
     "Title": "Điều khiển không lưu"
   },
   "Checklists": {

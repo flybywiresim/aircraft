@@ -4,10 +4,23 @@
     "ChangeATISATCSourceButton": "Cambia fonte ATIS/ATC",
     "ConnectHoppieACARS": "Connetti ACARS Hoppie",
     "NoInformationAvailableForThisFrequency": "Nessuna informazione disponibile per questa frequenza",
+    "SearchPlaceholder": "Search",
     "SelectCorrectATISATCSource": "Questa pagina è disponibile solo quando IVAO o VATSIM sono selezionati come fonte ATIS/ATC nella pagina delle impostazioni",
     "SetActive": "Imposta Attivo",
     "SetStandby": "Imposta Standby",
+    "ShowAll": "All",
+    "ShowApproach": "Approach",
+    "ShowAtis": "ATIS",
+    "ShowDelivery": "Delivery",
+    "ShowDeparture": "Departure",
+    "ShowGround": "Ground",
+    "ShowRadar": "Radar",
+    "ShowTower": "Tower",
     "Standby": "Standby",
+    "TT": {
+      "AtcCallSignSearch": "ATC Call-sign Search",
+      "AtcTypeFilter": "Filter for"
+    },
     "Title": "Controllo Traffico Aereo"
   },
   "Checklists": {

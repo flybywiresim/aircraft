@@ -4,10 +4,23 @@
     "ChangeATISATCSourceButton": "Αλλαγή πηγής ATIS/ATC",
     "ConnectHoppieACARS": "Σύνδεση Hoppie ACARS",
     "NoInformationAvailableForThisFrequency": "Δεν υπάρχουν διαθέσιμες πληροφορίες για αυτή τη συχνότητα",
+    "SearchPlaceholder": "Search",
     "SelectCorrectATISATCSource": "Αυτή η σελίδα είναι διαθέσιμη μόνο όταν έχει επιλεγεί το IVAO ή το VATSIM ως πηγή ATIS/ATC στη σελίδα ρυθμίσεων.",
     "SetActive": "Θέστε Ενεργό",
     "SetStandby": "Θέστε σε Αναμονή",
+    "ShowAll": "All",
+    "ShowApproach": "Approach",
+    "ShowAtis": "ATIS",
+    "ShowDelivery": "Delivery",
+    "ShowDeparture": "Departure",
+    "ShowGround": "Ground",
+    "ShowRadar": "Radar",
+    "ShowTower": "Tower",
     "Standby": "Αναμονή",
+    "TT": {
+      "AtcCallSignSearch": "ATC Call-sign Search",
+      "AtcTypeFilter": "Filter for"
+    },
     "Title": "Έλεγχος Εναέριας Κυκλοφορίας"
   },
   "Checklists": {

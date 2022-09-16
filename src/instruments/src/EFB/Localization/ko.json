@@ -4,10 +4,23 @@
     "ChangeATISATCSourceButton": "ATIS/ATC 출처 변경",
     "ConnectHoppieACARS": "Hoppie ACARS 연결",
     "NoInformationAvailableForThisFrequency": "이 주파수에서 사용할 수 있는 정보 없음",
+    "SearchPlaceholder": "Search",
     "SelectCorrectATISATCSource": "이 페이지는 설정 페이지의 ATIS/ATC 출처를 IVAO 또는 VATSIM으로 설정했을 때만 사용할 수 있습니다.",
     "SetActive": "활성 주파수로 설정",
     "SetStandby": "대기 주파수로 설정",
+    "ShowAll": "All",
+    "ShowApproach": "Approach",
+    "ShowAtis": "ATIS",
+    "ShowDelivery": "Delivery",
+    "ShowDeparture": "Departure",
+    "ShowGround": "Ground",
+    "ShowRadar": "Radar",
+    "ShowTower": "Tower",
     "Standby": "대기",
+    "TT": {
+      "AtcCallSignSearch": "ATC Call-sign Search",
+      "AtcTypeFilter": "Filter for"
+    },
     "Title": "항공 교통 관제"
   },
   "Checklists": {
