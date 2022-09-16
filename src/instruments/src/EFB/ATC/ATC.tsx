@@ -6,7 +6,7 @@ import useInterval from '@instruments/common/useInterval';
 import { Link } from 'react-router-dom';
 import { CloudArrowDown, Gear, InfoCircle } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
-import { t } from '../translation';
+import { languageOptions, t } from '../translation';
 import { pathify } from '../Utils/routing';
 import { ScrollableContainer } from '../UtilComponents/ScrollableContainer';
 import { useSimVar, useSplitSimVar } from '../../Common/simVars';
@@ -14,6 +14,7 @@ import { usePersistentProperty } from '../../Common/persistence';
 import { SimpleInput } from '../UtilComponents/Form/SimpleInput/SimpleInput';
 import { SelectGroup, SelectItem } from '../UtilComponents/Form/Select';
 import { TooltipWrapper } from '../UtilComponents/TooltipWrapper';
+import { SelectInput } from '../UtilComponents/Form/SelectInput/SelectInput';
 
 export declare class ATCInfoExtended extends apiClient.ATCInfo {
     distance: number;
@@ -174,6 +175,17 @@ export const ATC = () => {
             || (controllerCallSignFilter !== ''
                 && !c.callsign.toUpperCase().includes(controllerCallSignFilter.toUpperCase())));
 
+    const atcTypeOptions = [
+        { typeName: t('AirTrafficControl.ShowAll'), atcType: undefined },
+        { typeName: t('AirTrafficControl.ShowAtis'), atcType: AtcType.ATIS },
+        { typeName: t('AirTrafficControl.ShowDelivery'), atcType: AtcType.DELIVERY },
+        { typeName: t('AirTrafficControl.ShowGround'), atcType: AtcType.GROUND },
+        { typeName: t('AirTrafficControl.ShowTower'), atcType: AtcType.TOWER },
+        { typeName: t('AirTrafficControl.ShowApproach'), atcType: AtcType.APPROACH },
+        { typeName: t('AirTrafficControl.ShowDeparture'), atcType: AtcType.DEPARTURE },
+        { typeName: t('AirTrafficControl.ShowRadar'), atcType: AtcType.RADAR },
+    ];
+
     return (
         <div>
             <div className="flex relative flex-row justify-between items-center mb-2">
@@ -187,12 +199,12 @@ export const ATC = () => {
 
                     <div className="relative space-y-4">
 
-                        <div className="flex flex-row items-center space-x-4">
+                        <div className="flex flex-row items-center space-x-3">
                             <TooltipWrapper text={t('AirTrafficControl.TT.AtcCallSignSearch')}>
                                 <div className="flex flex-row">
                                     <SimpleInput
                                         placeholder={t('AirTrafficControl.SearchPlaceholder')}
-                                        className="flex-grow rounded-r-none"
+                                        className="flex-grow w-64 rounded-r-none"
                                         value={controllerCallSignFilter}
                                         onChange={(value) => setControllerCallSignFilter(value)}
                                     />
@@ -205,60 +217,21 @@ export const ATC = () => {
                                     </button>
                                 </div>
                             </TooltipWrapper>
-                            <TooltipWrapper text={t('AirTrafficControl.TT.AtcTypeFilter')}>
-                                <div>
-                                    <SelectGroup>
-                                        <SelectItem
-                                            selected={controllerTypeFilter === undefined}
-                                            onSelect={() => setControllerTypeFilter(undefined)}
-                                        >
-                                            {t('AirTrafficControl.ShowAll')}
-                                        </SelectItem>
-                                        <SelectItem
-                                            selected={controllerTypeFilter === apiClient.AtcType.ATIS}
-                                            onSelect={() => setControllerTypeFilter(apiClient.AtcType.ATIS)}
-                                        >
-                                            {t('AirTrafficControl.ShowAtis')}
-                                        </SelectItem>
-                                        <SelectItem
-                                            selected={controllerTypeFilter === apiClient.AtcType.DELIVERY}
-                                            onSelect={() => setControllerTypeFilter(apiClient.AtcType.DELIVERY)}
-                                        >
-                                            {t('AirTrafficControl.ShowDelivery')}
-                                        </SelectItem>
-                                        <SelectItem
-                                            selected={controllerTypeFilter === apiClient.AtcType.GROUND}
-                                            onSelect={() => setControllerTypeFilter(apiClient.AtcType.GROUND)}
-                                        >
-                                            {t('AirTrafficControl.ShowGround')}
-                                        </SelectItem>
-                                        <SelectItem
-                                            selected={controllerTypeFilter === apiClient.AtcType.TOWER}
-                                            onSelect={() => setControllerTypeFilter(apiClient.AtcType.TOWER)}
-                                        >
-                                            {t('AirTrafficControl.ShowTower')}
-                                        </SelectItem>
-                                        <SelectItem
-                                            selected={controllerTypeFilter === apiClient.AtcType.DEPARTURE}
-                                            onSelect={() => setControllerTypeFilter(apiClient.AtcType.DEPARTURE)}
-                                        >
-                                            {t('AirTrafficControl.ShowDeparture')}
-                                        </SelectItem>
-                                        <SelectItem
-                                            selected={controllerTypeFilter === apiClient.AtcType.APPROACH}
-                                            onSelect={() => setControllerTypeFilter(apiClient.AtcType.APPROACH)}
-                                        >
-                                            {t('AirTrafficControl.ShowApproach')}
-                                        </SelectItem>
-                                        <SelectItem
-                                            selected={controllerTypeFilter === apiClient.AtcType.RADAR}
-                                            onSelect={() => setControllerTypeFilter(apiClient.AtcType.RADAR)}
-                                        >
-                                            {t('AirTrafficControl.ShowRadar')}
-                                        </SelectItem>
-                                    </SelectGroup>
-                                </div>
-                            </TooltipWrapper>
+                            <SelectGroup>
+                                {atcTypeOptions.map((option) => (
+                                    <TooltipWrapper text={`${t('AirTrafficControl.TT.AtcTypeFilter')} ${option.typeName}`}>
+                                        <div>
+                                            <SelectItem
+                                                className="overflow-x-hidden w-[120px]"
+                                                selected={controllerTypeFilter === option.atcType}
+                                                onSelect={() => setControllerTypeFilter(option.atcType)}
+                                            >
+                                                {option.typeName}
+                                            </SelectItem>
+                                        </div>
+                                    </TooltipWrapper>
+                                ))}
+                            </SelectGroup>
                         </div>
 
                         <ScrollableContainer innerClassName="grid grid-cols-2" height={34}>
