@@ -354,6 +354,12 @@
     "InteriorLighting": {
       "AircraftNeedsToBePoweredToLoadPresets": "Norint įkelti išankstinius nustatymus, orlaivis turi būti įjungtas",
       "AircraftNeedsToBePoweredToSavePresets": "Norint išsaugoti išankstinius nustatymus, orlaivis turi būti įjungtas",
+      "AutoLoadDawnDusk": "Dawn/Dusk:",
+      "AutoLoadDay": "Day:",
+      "AutoLoadLightingHelpTitle": "Automatic Preset Loading",
+      "AutoLoadLightingPreset": "Enable automatic loading of lighting presets:",
+      "AutoLoadNight": "Night:",
+      "AutoLoadNoneSelection": "None",
       "LoadPreset": "Įkelti išankstinį nustatymą",
       "LoadingPreset": "Išankstinis nustatymas įkeliamas",
       "NewNameConfirmationDialogMsg": "Prašome patvirtinti naują apšvietimo išankstinio nustatymo pavadinimą",
@@ -407,13 +413,15 @@
       "SliderSpeed": "Pasirinkite norimą greitį",
       "SystemEnabledOff": "Paspauskite norint įjungti išstumimo sistemą.",
       "SystemEnabledOn": "Paspauskite norint pilnai išjungti išstumimo sistemą.",
+      "UseControllerInput": "Turn controller input from rudder and elevator on/off",
       "ZoomIn": "Priartinti",
       "ZoomOut": "Nutolinti"
     },
     "TugAttached": "Vilkikas prisijungęs",
     "TugDirection": "Vilkiko kryptis",
     "TugInTransit": "Laukiama vilkiko",
-    "TugSpeed": "Vilkiko greitis"
+    "TugSpeed": "Vilkiko greitis",
+    "UseControllerInput": "Use Controller Input"
   },
   "Settings": {
     "About": {
@@ -427,6 +435,7 @@
       "LatLonExtendedFormat": "FMGC skrydžio taškų koordinačių formatas",
       "PaxSigns": "Keleivių ženklai",
       "RmpVhfSpacing": "RMP VHF Spacing",
+      "Satcom": "Satcom",
       "ThrustReductionHeight": "Traukos mažinimo aukštis (pėdos)",
       "Title": "Lėktuvo parinktys",
       "WeightUnit": "Svorio vienetai"
@@ -472,11 +481,13 @@
       "AutofillChecklists": "Automatinis patikrinimų sąrašo pildymas",
       "BoardingTime": "Laipinimo trukmė",
       "DmcSelfTestTime": "DMC automatinio patikrinimo trukmė",
+      "FirstOfficerAvatar": "Show First Officer Avatar",
       "HomeCockpitMode": "Namų kabinos režimas",
       "McduFocusTimeout": "MCDU fokuso praradimas (sekundės)",
       "McduKeyboardInput": "MCDU duomenų įvedimas klaviatūra",
       "PauseAtTod": "Pauzė prieš pradedant leistis",
       "PauseAtTodDistance": "Pauzės atstumas nuo pradėjimo leistis taško",
+      "PilotAvatar": "Show Pilot Avatar",
       "SeparateTillerFromRudderInputs": "Išskirti tiller iš krypties vairo komandų",
       "SyncEfis": "Sync EFIS controls between Captain and FO",
       "Title": "Realizmas"

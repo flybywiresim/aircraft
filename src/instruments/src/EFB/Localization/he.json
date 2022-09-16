@@ -354,6 +354,12 @@
     "InteriorLighting": {
       "AircraftNeedsToBePoweredToLoadPresets": "יש לספק מתח למטוס בכדי לטעון תבניות",
       "AircraftNeedsToBePoweredToSavePresets": "יש לספק מתח למטוס בכדי לשמור תבניות",
+      "AutoLoadDawnDusk": "זריחה/שקיעה:",
+      "AutoLoadDay": "יום:",
+      "AutoLoadLightingHelpTitle": "טעינת תבנית אוטומטית",
+      "AutoLoadLightingPreset": "הפעל טעינת תבנית תאורה אוטומטית:",
+      "AutoLoadNight": "לילה:",
+      "AutoLoadNoneSelection": "ללא",
       "LoadPreset": "טען תבנית",
       "LoadingPreset": "טוען תבנית",
       "NewNameConfirmationDialogMsg": "אנא אשר את שם תבנית התאורה",
@@ -407,13 +413,15 @@
       "SliderSpeed": "מעבר למהירות הרצויה",
       "SystemEnabledOff": "לחץ כדי להפעיל את מערכת הדחיפה.",
       "SystemEnabledOn": "לחץ כדי לכבות את מערכת הדחיפה לחלוטין.",
+      "UseControllerInput": "הפעל/כבה קלט מבקר הגה כיוון וגובה",
       "ZoomIn": "הגדל תצוגה",
       "ZoomOut": "הקטן תצוגה"
     },
     "TugAttached": "נע-דחף מחובר",
     "TugDirection": "כיוון הגרירה",
     "TugInTransit": "ממתין לנע-דחף",
-    "TugSpeed": "מהירות הגרירה"
+    "TugSpeed": "מהירות הגרירה",
+    "UseControllerInput": "השתמש בקלט בקר"
   },
   "Settings": {
     "About": {
@@ -427,6 +435,7 @@
       "LatLonExtendedFormat": "FMGC - פורמט נקודת ציון של קו רוחב/אורך",
       "PaxSigns": "שלטי נוסעים",
       "RmpVhfSpacing": "פאנל רדיו - מרווח תדרי VHF",
+      "Satcom": "הצג Satcom",
       "ThrustReductionHeight": "גובה הפחתת דחף (רגל)",
       "Title": "אפשרויות מטוס / תוכניות סיכות",
       "WeightUnit": "יחידת משקל"
@@ -472,13 +481,15 @@
       "AutofillChecklists": "מלא רשימות בדיקה אוטומטית",
       "BoardingTime": "זמן עלייה למטוס",
       "DmcSelfTestTime": "DMC - זמן בדיקה עצמית",
+      "FirstOfficerAvatar": "Show First Officer Avatar",
       "HomeCockpitMode": "מצב תא טייס ביתי",
       "McduFocusTimeout": "MCDU - זמן לשחרור מקלדת",
       "McduKeyboardInput": "MCDU - קלט מקלדת",
       "PauseAtTod": "השהה לפני הנמכת גובה (T/D)",
       "PauseAtTodDistance": "מרחק מהשהייה לפני הנמכה",
+      "PilotAvatar": "Show Pilot Avatar",
       "SeparateTillerFromRudderInputs": "היגוי גלגל האף נפרד מהפדלים",
-      "SyncEfis": "Sync EFIS controls between Captain and FO",
+      "SyncEfis": "סנכרון EFIS בין הקפטן לטייס המשנה",
       "Title": "מציאותיות"
     },
     "SimOptions": {
@@ -488,7 +499,7 @@
       "ConesEnabled": "קונוס בטיחות",
       "DefaultBarometerUnit": "יחידת ברומטר ברירת מחדל",
       "DynamicRegistrationDecal": "דִינָמִי מדבקת רישום",
-      "EnableSimBridge": "אפשר חיבור שרת MCDU (נכבה אוטומטית לאחר חמש דקות אם לא היה חיבור מוצלח)",
+      "EnableSimBridge": "אפשר חיבור Simbridge (נכבה אוטומטית לאחר חמש דקות אם לא היה חיבור מוצלח)",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "אפשר חיבור שרת MCDU (נכבה אוטומטית לאחר חמש דקות אם לא היה חיבור מוצלח)",
       "ExternalMcduServerPort": "פורט MCDU חיצוני",
       "Hpa": "hPa",
@@ -497,7 +508,7 @@
       "None": "ללא",
       "Off": "כבוי",
       "Save": "שמור",
-      "SimBridgePort": "פורט MCDU חיצוני",
+      "SimBridgePort": "פורט SimBridge חיצוני",
       "SyncMsfsFlightPlan": "סנכרן את תוכנית הטיסה מ-MSFS",
       "ThrottleDetents": "מעצורי מצערת",
       "Title": "אפשרויות סימולטור",
@@ -569,8 +580,8 @@
     "Sep": "ספטמבר",
     "Sun": "ראשון",
     "TT": {
-      "ConnectedToLocalApi": "מחובר ל-API מקומי",
-      "DisconnectedFromLocalApi": "מנותק מ-API מקומי",
+      "ConnectedToLocalApi": "מחובר ל-SimBridge",
+      "DisconnectedFromLocalApi": "מנותק מ-SimBridge",
       "TurnOffOrShutdownEfb": "כיבוי EFB"
     },
     "Thu": "חמישי",

@@ -20,10 +20,12 @@ import {
 import Slider from 'rc-slider';
 import { MathUtils } from '@shared/MathUtils';
 import { toast } from 'react-toastify';
+import { usePersistentNumberProperty } from '@instruments/common/persistence';
 import { t } from '../../translation';
 import { TooltipWrapper } from '../../UtilComponents/TooltipWrapper';
 import { PromptModal, useModals } from '../../UtilComponents/Modals/Modals';
 import { PushbackMap } from './PushbackMap';
+import { Toggle } from '../../UtilComponents/Form/Toggle';
 
 export const PushbackPage = () => {
     const { showModal } = useModals();
@@ -43,6 +45,7 @@ export const PushbackPage = () => {
     const [pushbackAttached] = useSimVar('Pushback Attached', 'bool', 100);
     const [pushbackAngle] = useSimVar('PUSHBACK ANGLE', 'Radians', 100);
 
+    const [useControllerInput, setUseControllerInput] = usePersistentNumberProperty('PUSHBACK_USE_CONTROLLER_INPUT', 1);
     const [rudderPosition] = useSimVar('L:A32NX_RUDDER_PEDAL_POSITION', 'number', 50);
     const [elevatorPosition] = useSimVar('L:A32NX_SIDESTICK_POSITION_Y', 'number', 50);
 
@@ -174,7 +177,7 @@ export const PushbackPage = () => {
 
     // Update commanded heading from rudder input
     useEffect(() => {
-        if (!pushbackActive) {
+        if (!pushbackActive || !useControllerInput) {
             return;
         }
         // create deadzone
@@ -187,7 +190,7 @@ export const PushbackPage = () => {
 
     // Update commanded speed from elevator input
     useEffect(() => {
-        if (!pushbackActive) {
+        if (!pushbackActive || !useControllerInput) {
             return;
         }
         // create deadzone
@@ -395,7 +398,7 @@ export const PushbackPage = () => {
                 )}
 
                 {/* Manual Pushback Controls */}
-                <div className={`flex flex-col p-6 h-full space-y-4 rounded-lg border-2 border-theme-accent ${!pushbackUIAvailable && 'opacity-20 pointer-events-none'}`}>
+                <div className={`flex flex-col p-6 h-full space-y-2 rounded-lg border-2 border-theme-accent ${!pushbackUIAvailable && 'opacity-20 pointer-events-none'}`}>
                     <div className="flex flex-row space-x-4">
 
                         {/* Pushback System enabled On/Off */}
@@ -614,6 +617,15 @@ export const PushbackPage = () => {
                                     <ChevronDoubleUp />
                                 </p>
                             </div>
+                        </TooltipWrapper>
+                    </div>
+
+                    <div className={`flex flex-row items-center h-10 ${!pushbackActive && 'opacity-30 pointer-events-none'}`}>
+                        <TooltipWrapper text={t('Pushback.TT.UseControllerInput')}>
+                            <div className="mr-4">
+                                {t('Pushback.UseControllerInput')}
+                            </div>
+                            <Toggle value={!!useControllerInput} onToggle={(value) => (setUseControllerInput(value ? 1 : 0))} />
                         </TooltipWrapper>
                     </div>
                 </div>

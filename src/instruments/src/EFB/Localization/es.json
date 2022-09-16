@@ -354,6 +354,12 @@
     "InteriorLighting": {
       "AircraftNeedsToBePoweredToLoadPresets": "El avión debe tener alimentación para cargar los preajustes",
       "AircraftNeedsToBePoweredToSavePresets": "El avión debe tener alimentación para guardar los preajustes",
+      "AutoLoadDawnDusk": "Dawn/Dusk:",
+      "AutoLoadDay": "Day:",
+      "AutoLoadLightingHelpTitle": "Automatic Preset Loading",
+      "AutoLoadLightingPreset": "Enable automatic loading of lighting presets:",
+      "AutoLoadNight": "Night:",
+      "AutoLoadNoneSelection": "None",
       "LoadPreset": "Cargar preajuste",
       "LoadingPreset": "Cargando preajuste",
       "NewNameConfirmationDialogMsg": "Por favor, confirme el nuevo nombre del ajuste preestablecido de iluminación",
@@ -407,13 +413,15 @@
       "SliderSpeed": "Mover a la velocidad deseada",
       "SystemEnabledOff": "Haz click para encender el sistema de remolque.",
       "SystemEnabledOn": "Haz click para apagar completamente el sistema de remolque ",
+      "UseControllerInput": "Turn controller input from rudder and elevator on/off",
       "ZoomIn": "Acercar",
       "ZoomOut": "Alejar"
     },
     "TugAttached": "El remolcador está unido",
     "TugDirection": "Dirección del remolcador",
     "TugInTransit": "Esperando al Remolcador/Pin",
-    "TugSpeed": "Velocidad del remolcador"
+    "TugSpeed": "Velocidad del remolcador",
+    "UseControllerInput": "Use Controller Input"
   },
   "Settings": {
     "About": {
@@ -427,6 +435,7 @@
       "LatLonExtendedFormat": "Formato de punto Lat/Long FMGC",
       "PaxSigns": "Señales PAX",
       "RmpVhfSpacing": "Espaciado VHF RMP",
+      "Satcom": "Satcom",
       "ThrustReductionHeight": "Altura de reducción de empuje (ft)",
       "Title": "Opciones de aeronave/ Programas de pin",
       "WeightUnit": "Unidad de peso"
@@ -472,11 +481,13 @@
       "AutofillChecklists": "Autocompletar listas de verificación",
       "BoardingTime": "Tiempo de embarque",
       "DmcSelfTestTime": "Tiempo de autocomprobación DMC",
+      "FirstOfficerAvatar": "Show First Officer Avatar",
       "HomeCockpitMode": "Modo Home Cockpit",
       "McduFocusTimeout": "Tiempo de espera del MCDU (segundos)",
       "McduKeyboardInput": "Entrada de teclado MCDU",
       "PauseAtTod": "Pausa T/D",
       "PauseAtTodDistance": "Distancia de Pausa T/D (nm)",
+      "PilotAvatar": "Show Pilot Avatar",
       "SeparateTillerFromRudderInputs": "Separar Tiller de la entrada del Timón",
       "SyncEfis": "Sync EFIS controls between Captain and FO",
       "Title": "Realismo"
