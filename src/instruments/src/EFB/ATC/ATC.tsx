@@ -115,8 +115,7 @@ export const ATC = () => {
           + Math.cos(deg2Rad(lat1)) * Math.cos(deg2Rad(lat2))
           * Math.sin(dLon / 2) * Math.sin(dLon / 2);
         const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        const d = R * c * 0.5399568; // Distance in nm
-        return d;
+        return R * c * 0.5399568; // Distance in nm
     };
 
     const deg2Rad = (deg) => deg * (Math.PI / 180);
