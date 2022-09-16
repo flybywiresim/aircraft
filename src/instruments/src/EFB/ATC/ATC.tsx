@@ -6,7 +6,7 @@ import useInterval from '@instruments/common/useInterval';
 import { Link } from 'react-router-dom';
 import { CloudArrowDown, Gear, InfoCircle } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
-import { languageOptions, t } from '../translation';
+import { t } from '../translation';
 import { pathify } from '../Utils/routing';
 import { ScrollableContainer } from '../UtilComponents/ScrollableContainer';
 import { useSimVar, useSplitSimVar } from '../../Common/simVars';
@@ -14,7 +14,6 @@ import { usePersistentProperty } from '../../Common/persistence';
 import { SimpleInput } from '../UtilComponents/Form/SimpleInput/SimpleInput';
 import { SelectGroup, SelectItem } from '../UtilComponents/Form/Select';
 import { TooltipWrapper } from '../UtilComponents/TooltipWrapper';
-import { SelectInput } from '../UtilComponents/Form/SelectInput/SelectInput';
 
 export declare class ATCInfoExtended extends apiClient.ATCInfo {
     distance: number;
