@@ -2200,9 +2200,9 @@ mod tests {
             self.query(|a| a.pneumatic.wing_anti_ice.is_precoooler_pressurised(0))
         }
 
-        // fn right_precooler_pressurised(&self) -> bool {
-        //     self.query(|a| a.pneumatic.wing_anti_ice.is_precoooler_pressurised(1))
-        // }
+        fn right_precooler_pressurised(&self) -> bool {
+            self.query(|a| a.pneumatic.wing_anti_ice.is_precoooler_pressurised(1))
+        }
 
         fn left_wai_pressure(&self) -> Pressure {
             self.query(|a| a.pneumatic.wing_anti_ice.wai_consumer_pressure(0))
@@ -2251,12 +2251,8 @@ mod tests {
         //     })
         // }
 
-        fn left_valve_controller_timer(&self) -> Duration {
-            self.query(|a| a.pneumatic.wing_anti_ice.wai_timer(0))
-        }
-
-        fn right_valve_controller_timer(&self) -> Duration {
-            self.query(|a| a.pneumatic.wing_anti_ice.wai_timer(1))
+        fn valve_controller_timer(&self) -> Duration {
+            self.query(|a| a.pneumatic.wing_anti_ice.wai_timer())
         }
 
         // fn left_valve_pid_output(&self) -> f64 {
@@ -3439,14 +3435,14 @@ mod tests {
                 .wing_anti_ice_push_button(WingAntiIcePushButtonMode::On)
                 .and_stabilize();
 
-            assert!(test_bed.left_valve_controller_timer() == Duration::from_secs(0));
-            assert!(test_bed.right_valve_controller_timer() == Duration::from_secs(0));
+            assert!(!test_bed.left_precooler_pressurised());
+            assert!(!test_bed.right_precooler_pressurised());
+            assert!(test_bed.valve_controller_timer() > Duration::from_secs(0));
             assert!(test_bed.left_valve_closed());
             assert!(test_bed.right_valve_closed());
             assert!(test_bed.wing_anti_ice_has_fault());
             assert!(test_bed.wing_anti_ice_system_selected());
-            // TO CHECK
-            //assert!(!test_bed.wing_anti_ice_system_on());
+            assert!(test_bed.wing_anti_ice_system_on());
         }
 
         #[test]
@@ -3538,8 +3534,7 @@ mod tests {
                 .and_stabilize();
             test_bed.set_on_ground(true);
 
-            assert!(test_bed.left_valve_controller_timer() == Duration::from_secs(0));
-            assert!(test_bed.right_valve_controller_timer() == Duration::from_secs(0));
+            assert!(test_bed.valve_controller_timer() == Duration::from_secs(0));
 
             test_bed = test_bed.wing_anti_ice_push_button(WingAntiIcePushButtonMode::On);
             test_bed.run_with_delta(Duration::from_millis(16));
@@ -3548,8 +3543,7 @@ mod tests {
             for _ in 0..375 {
                 test_bed.run_with_delta(Duration::from_millis(16));
             }
-            assert!(test_bed.left_valve_controller_timer() < Duration::from_secs(7));
-            assert!(test_bed.right_valve_controller_timer() < Duration::from_secs(7));
+            assert!(test_bed.valve_controller_timer() < Duration::from_secs(7));
             assert!(!test_bed.left_valve_closed());
             assert!(!test_bed.right_valve_closed());
             // TODO Check why fails
@@ -3560,8 +3554,7 @@ mod tests {
             for _ in 0..1625 {
                 test_bed.run_with_delta(Duration::from_millis(16));
             }
-            assert!(test_bed.left_valve_controller_timer() == Duration::from_secs(30));
-            assert!(test_bed.right_valve_controller_timer() == Duration::from_secs(30));
+            assert!(test_bed.valve_controller_timer() == Duration::from_secs(30));
             assert!(test_bed.wing_anti_ice_system_selected());
             assert!(!test_bed.wing_anti_ice_has_fault());
             //TODO CHECK Wiring
@@ -3599,16 +3592,14 @@ mod tests {
             assert!(!test_bed.wing_anti_ice_has_fault());
             assert!(!test_bed.left_valve_closed());
             assert!(!test_bed.right_valve_closed());
-            assert!(test_bed.left_valve_controller_timer() == Duration::from_secs(0));
-            assert!(test_bed.right_valve_controller_timer() == Duration::from_secs(0));
+            assert!(test_bed.valve_controller_timer() == Duration::from_secs(0));
 
             test_bed.set_on_ground(true);
             test_bed.run_with_delta(Duration::from_millis(500));
 
             assert!(!test_bed.left_valve_closed());
             assert!(!test_bed.right_valve_closed());
-            assert!(test_bed.left_valve_controller_timer() > Duration::from_secs(0));
-            assert!(test_bed.right_valve_controller_timer() > Duration::from_secs(0));
+            assert!(test_bed.valve_controller_timer() > Duration::from_secs(0));
 
             test_bed.run_with_delta(Duration::from_secs(30));
             assert!(test_bed.left_valve_closed());
@@ -3616,8 +3607,13 @@ mod tests {
         }
 
         #[test]
+        fn wing_anti_ice_not_working_without_dc_ess_shed_bus() {
+            assert!(false);
+        }
+
+        #[test]
         #[ignore]
-        fn wing_anti_ice_time_to_open() {
+        fn wing_anti_ice_tweak_time_to_open() {
             let altitude = Length::new::<foot>(2000.);
             //let wai_pressure: Pressure = Pressure::new::<psi>(22.5);
             //let pressure_epsilon: Pressure = Pressure::new::<psi>(0.1);

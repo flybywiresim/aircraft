@@ -72,36 +72,23 @@ impl PneumaticValveSignal for WingAntiIceValveSignal {
 // - After 30 seconds, the ON light would turn off.
 // - After takeoff, it should be turned on again.
 pub struct WingAntiIceValveController {
-    wing_anti_ice_button_pos: WingAntiIcePushButtonMode, // The position of the button
     valve_pid: PidController, // PID controller for the valve - to regulate pressure
     valve_setpoint: f64,
-    system_test_timer: Duration, // Timer to count up to 30 seconds
-    system_test_done: bool,      // Timer reached 30 seconds while on the ground
     controller_signals_on: bool, // Status of the ON light. If button is pushed and
     // the test is finished, the ON light should turn off.
     supplier_pressurized: bool,
-
-    is_on_ground_id: VariableIdentifier,
-    is_on_ground: bool, //Needed for the 30 seconds test logic
 }
 impl WingAntiIceValveController {
-    const WAI_TEST_TIME: Duration = Duration::from_secs(30);
     const WAI_VALVE_MEAN_SETPOINT: f64 = 22.5;
     const WAI_VALVE_STD_DEV_SETPOINT: f64 = 2.5;
-    pub fn new(context: &mut InitContext) -> Self {
+    pub fn new() -> Self {
         let random_setpoint = Self::choose_valve_setpoint();
         Self {
-            wing_anti_ice_button_pos: WingAntiIcePushButtonMode::Off,
             valve_setpoint: random_setpoint,
             // Setpoint is 22.5 +/- 2.5 (psi)
             valve_pid: PidController::new(0.05, 0.01, 0., 0., 1., random_setpoint, 1.),
-            system_test_timer: Duration::from_secs(0),
-            system_test_done: false,
             controller_signals_on: false,
             supplier_pressurized: false,
-
-            is_on_ground_id: context.get_identifier("SIM ON GROUND".to_owned()),
-            is_on_ground: Default::default(),
         }
     }
 
@@ -132,49 +119,13 @@ impl WingAntiIceValveController {
     pub fn update(
         &mut self,
         context: &UpdateContext,
-        wing_anti_ice_button_pos: WingAntiIcePushButtonMode,
+        relay_signal: bool,
         supplier_pressurized: bool,
     ) {
         self.update_setpoint(context);
 
-        self.wing_anti_ice_button_pos = wing_anti_ice_button_pos;
+        self.controller_signals_on = relay_signal;
         self.supplier_pressurized = supplier_pressurized;
-
-        if self.wing_anti_ice_button_pos == WingAntiIcePushButtonMode::On {
-            if self.is_on_ground && !self.system_test_done {
-                if self.supplier_pressurized {
-                    self.system_test_timer += context.delta();
-                }
-                self.system_test_timer = self.system_test_timer.min(Self::WAI_TEST_TIME);
-                if self.system_test_timer == Self::WAI_TEST_TIME {
-                    self.system_test_done = true;
-                    self.controller_signals_on = false;
-                } else {
-                    self.controller_signals_on = true;
-                }
-            } else if !self.is_on_ground {
-                self.controller_signals_on = true;
-            }
-        } else {
-            self.controller_signals_on = false;
-        }
-
-        // If the plane has took off, we reset the timer
-        // and set test_done to false in order for the
-        // mechanism to work when landing.
-        if !self.is_on_ground && self.system_test_timer > Duration::from_secs(0) {
-            self.system_test_timer = Duration::from_secs(0);
-            self.system_test_done = false;
-        }
-    }
-
-    pub fn get_timer(&self) -> Duration {
-        self.system_test_timer
-    }
-}
-impl SimulationElement for WingAntiIceValveController {
-    fn read(&mut self, reader: &mut SimulatorReader) {
-        self.is_on_ground = reader.read(&self.is_on_ground_id);
     }
 }
 
@@ -183,19 +134,12 @@ impl SimulationElement for WingAntiIceValveController {
 // is what is returned from this implementation.
 impl ControllerSignal<WingAntiIceValveSignal> for WingAntiIceValveController {
     fn signal(&self) -> Option<WingAntiIceValveSignal> {
-        match self.wing_anti_ice_button_pos {
-            WingAntiIcePushButtonMode::Off => Some(WingAntiIceValveSignal::new_closed()),
-            WingAntiIcePushButtonMode::On => {
-                // Even if the button is pushed, we need to check if either
-                // the plane is airborne or it is within the 30 second timeframe.
-                // Also, we need to check if the supplier is pressurized
-                // since the valve is pneumatically operated.
-                if self.supplier_pressurized
-                    && (!self.is_on_ground || (self.is_on_ground && !self.system_test_done))
-                {
-                    Some(WingAntiIceValveSignal::new(Ratio::new::<ratio>(
-                        self.valve_pid.output(),
-                    )))
+        match self.controller_signals_on {
+            false => Some(WingAntiIceValveSignal::new_closed()),
+            true => {
+                if self.supplier_pressurized {
+                    let valve_ratio: Ratio = Ratio::new::<ratio>(self.valve_pid.output());
+                    Some(WingAntiIceValveSignal::new(valve_ratio))
                 } else {
                     Some(WingAntiIceValveSignal::new_closed())
                 }
@@ -271,6 +215,86 @@ impl WingAntiIceConsumer {
     }
 }
 
+pub struct WingAntiIceRelay {
+    wing_anti_ice_button_pos: WingAntiIcePushButtonMode, // The position of the button
+    system_test_timer: Duration,                         // Timer to count up to 30 seconds
+    system_test_done: bool, // Timer reached 30 seconds while on the ground
+    signal_on: bool,        // Status of the ON light. If button is pushed and
+    // the test is finished, the ON light should turn off.
+    // supplier_pressurized: bool,
+    is_on_ground_id: VariableIdentifier,
+    is_on_ground: bool, //Needed for the 30 seconds test logic
+}
+impl WingAntiIceRelay {
+    const WAI_TEST_TIME: Duration = Duration::from_secs(30);
+    pub fn new(context: &mut InitContext) -> Self {
+        Self {
+            wing_anti_ice_button_pos: WingAntiIcePushButtonMode::Off,
+            system_test_timer: Duration::from_secs(0),
+            system_test_done: false,
+            signal_on: false,
+            // supplier_pressurized: false,
+            is_on_ground_id: context.get_identifier("SIM ON GROUND".to_owned()),
+            is_on_ground: Default::default(),
+        }
+    }
+
+    pub fn signals_on(&self) -> bool {
+        self.signal_on
+    }
+
+    // pub fn controller_valve_pid_output(&self) -> f64 {
+    //     self.valve_pid.output()
+    // }
+
+    pub fn update(
+        &mut self,
+        context: &UpdateContext,
+        wing_anti_ice_button_pos: WingAntiIcePushButtonMode,
+    ) {
+        // Even if the button is pushed, we need to check if either
+        // the plane is airborne or it is within the 30 second timeframe.
+        // Also, we need to check if the supplier is pressurized
+        // since the valve is pneumatically operated.
+        self.wing_anti_ice_button_pos = wing_anti_ice_button_pos;
+        if self.wing_anti_ice_button_pos == WingAntiIcePushButtonMode::On {
+            if self.is_on_ground && !self.system_test_done {
+                // if self.supplier_pressurized {
+                self.system_test_timer += context.delta();
+                // }
+                self.system_test_timer = self.system_test_timer.min(Self::WAI_TEST_TIME);
+                if self.system_test_timer == Self::WAI_TEST_TIME {
+                    self.system_test_done = true;
+                    self.signal_on = false;
+                } else {
+                    self.signal_on = true;
+                }
+            } else if !self.is_on_ground {
+                self.signal_on = true;
+            }
+        } else {
+            self.signal_on = false;
+        }
+
+        // If the plane has taken off, we reset the timer
+        // and set test_done to false in order for the
+        // mechanism to work when landing.
+        if !self.is_on_ground && self.system_test_timer > Duration::from_secs(0) {
+            self.system_test_timer = Duration::from_secs(0);
+            self.system_test_done = false;
+        }
+    }
+
+    pub fn get_timer(&self) -> Duration {
+        self.system_test_timer
+    }
+}
+impl SimulationElement for WingAntiIceRelay {
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        self.is_on_ground = reader.read(&self.is_on_ground_id);
+    }
+}
+
 // FWC FAILURES TO IMPLEMENT
 // WING A.ICE SYS FAULT
 // WING A.ICE L(R) VALVE OPEN
@@ -292,7 +316,8 @@ pub struct WingAntiIceComplex {
     wai_exhaust: [PneumaticExhaust; NUM_OF_WAI],
     wai_valve: [DefaultValve; NUM_OF_WAI],
     wai_consumer: [WingAntiIceConsumer; NUM_OF_WAI],
-    valve_controller: [WingAntiIceValveController; NUM_OF_WAI],
+    wai_valve_controller: [WingAntiIceValveController; NUM_OF_WAI],
+    wai_relay: WingAntiIceRelay,
     wai_system_has_fault: bool,
     wai_system_on: bool,
     wai_selected: bool,
@@ -363,11 +388,12 @@ impl WingAntiIceComplex {
                 WingAntiIceConsumer::new(Volume::new::<cubic_meter>(Self::WAI_PIPE_VOLUME)),
                 WingAntiIceConsumer::new(Volume::new::<cubic_meter>(Self::WAI_PIPE_VOLUME)),
             ],
-            valve_controller: [
-                WingAntiIceValveController::new(context),
-                WingAntiIceValveController::new(context),
+            wai_valve_controller: [
+                WingAntiIceValveController::new(),
+                WingAntiIceValveController::new(),
             ],
 
+            wai_relay: WingAntiIceRelay::new(context),
             wai_system_has_fault: false,
             wai_system_on: false,
             wai_selected: false,
@@ -422,13 +448,19 @@ impl WingAntiIceComplex {
             precooler_pressure > context.ambient_pressure() + Pressure::new::<psi>(10.);
     }
 
-    fn update_valve_controller(
-        &mut self,
-        context: &UpdateContext,
-        wai_mode: WingAntiIcePushButtonMode,
-        number: usize,
-    ) {
-        self.valve_controller[number].update(context, wai_mode, self.wai_bleed_pressurised[number]);
+    fn update_valve_controller(&mut self, context: &UpdateContext, number: usize) {
+        self.wai_valve_controller[number]
+            .valve_pid
+            .next_control_output(
+                self.wai_consumer_pressure(number).get::<psi>(),
+                Some(context.delta()),
+            );
+
+        self.wai_valve_controller[number].update(
+            context,
+            self.wai_relay.signals_on(),
+            self.wai_bleed_pressurised[number],
+        );
     }
 
     pub fn is_wai_valve_closed(&self, number: usize) -> bool {
@@ -451,12 +483,12 @@ impl WingAntiIceComplex {
         self.wai_exhaust[number].fluid_flow()
     }
 
-    pub fn wai_timer(&self, number: usize) -> Duration {
-        self.valve_controller[number].get_timer()
+    pub fn wai_timer(&self) -> Duration {
+        self.wai_relay.get_timer()
     }
 
     pub fn wai_valve_controller_on(&self, number: usize) -> bool {
-        self.valve_controller[number].controller_signals_on()
+        self.wai_valve_controller[number].controller_signals_on()
     }
 
     // This is where the action happens
@@ -467,7 +499,8 @@ impl WingAntiIceComplex {
         wai_mode: WingAntiIcePushButtonMode,
     ) {
         let mut has_fault: bool = false; // Tracks if the system has a fault
-        let mut num_of_on: usize = 0; // Number of controllers that signal `on`
+
+        self.wai_relay.update(context, wai_mode);
 
         for n in 0..NUM_OF_WAI {
             self.update_pressure_above_minimum(
@@ -476,21 +509,15 @@ impl WingAntiIceComplex {
                 n,
             );
 
-            self.valve_controller[n].valve_pid.next_control_output(
-                self.wai_consumer_pressure(n).get::<psi>(),
-                Some(context.delta()),
-            );
-
             // First, we see if the valve's open amount changes this update,
             // as a result of a change in the ovhd panel push button.
             // If the precooler is not pressurized, a FAULT should light.
-            self.update_valve_controller(context, wai_mode, n);
-            self.wai_valve[n].update_open_amount(&self.valve_controller[n]);
+            self.update_valve_controller(context, n);
+            self.wai_valve[n].update_open_amount(&self.wai_valve_controller[n]);
 
             // We need both controllers to signal `on` for the
             // system to be considered on without a fault.
-            if self.valve_controller[n].controller_signals_on() {
-                num_of_on += 1;
+            if self.wai_valve_controller[n].controller_signals_on() {
                 // If a controller signals `on` while its corresponding valve is closed
                 // this means the system has a fault.
                 if self.is_wai_valve_closed(n) {
@@ -535,8 +562,7 @@ impl WingAntiIceComplex {
         }
 
         self.wai_system_has_fault = has_fault;
-        // TODO Check what is the input to system_on
-        self.wai_system_on = num_of_on == NUM_OF_WAI; // && !has_fault;
+        self.wai_system_on = self.wai_relay.signals_on();
         self.wai_selected = wai_mode == WingAntiIcePushButtonMode::On;
     }
 }
@@ -546,9 +572,7 @@ impl SimulationElement for WingAntiIceComplex {
     where
         Self: Sized,
     {
-        for n in 0..NUM_OF_WAI {
-            self.valve_controller[n].accept(visitor);
-        }
+        self.wai_relay.accept(visitor);
         visitor.visit(self);
     }
 
