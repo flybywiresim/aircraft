@@ -280,7 +280,9 @@
             <VOLUME_INCREMENT_HARD>0.01</VOLUME_INCREMENT_HARD>
             <VOLUME_INCREMENT_NAV>0.02</VOLUME_INCREMENT_NAV>
             <PREFIX>AIRLINER</PREFIX>
-            <SEQ1_POWERED>1</SEQ1_POWERED>
+            <SEQ1_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
+            <SEQ2_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
+            <AUDIO_KNOB_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</AUDIO_KNOB_POWERED>
         </DefaultTemplateParameters>
         <OverrideTemplateParameters>
         </OverrideTemplateParameters>
