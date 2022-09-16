@@ -221,7 +221,7 @@ export const ATC = () => {
                                     <TooltipWrapper text={`${t('AirTrafficControl.TT.AtcTypeFilter')} ${option.typeName}`}>
                                         <div>
                                             <SelectItem
-                                                className="overflow-x-hidden w-[120px]"
+                                                className="overflow-hidden w-[120px] whitespace-nowrap"
                                                 selected={controllerTypeFilter === option.atcType}
                                                 onSelect={() => setControllerTypeFilter(option.atcType)}
                                             >
