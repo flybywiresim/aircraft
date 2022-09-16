@@ -354,6 +354,12 @@
     "InteriorLighting": {
       "AircraftNeedsToBePoweredToLoadPresets": "Aircraft Needs to be Powered to Load Presets",
       "AircraftNeedsToBePoweredToSavePresets": "Aircraft Needs to Be Powered to Save Presets",
+      "AutoLoadDawnDusk": "Dawn/Dusk:",
+      "AutoLoadDay": "Day:",
+      "AutoLoadLightingHelpTitle": "Automatic Preset Loading",
+      "AutoLoadLightingPreset": "Enable automatic loading of lighting presets:",
+      "AutoLoadNight": "Night:",
+      "AutoLoadNoneSelection": "None",
       "LoadPreset": "Load Preset",
       "LoadingPreset": "Loading Preset",
       "NewNameConfirmationDialogMsg": "Please confirm the new name for the lighting preset",
@@ -407,13 +413,15 @@
       "SliderSpeed": "Move for desired speed",
       "SystemEnabledOff": "Click to turn the pushback system on.",
       "SystemEnabledOn": "Click to turn the pushback system completely off.",
+      "UseControllerInput": "Turn controller input from rudder and elevator on/off",
       "ZoomIn": "Zoom in",
       "ZoomOut": "Zoom out"
     },
     "TugAttached": "Tug is attached",
     "TugDirection": "Tug Direction",
     "TugInTransit": "Waiting for Tug/Pin",
-    "TugSpeed": "Tug Speed"
+    "TugSpeed": "Tug Speed",
+    "UseControllerInput": "Use Controller Input"
   },
   "Settings": {
     "About": {
@@ -427,6 +435,7 @@
       "LatLonExtendedFormat": "FMGC Lat/Lon Waypoint Format",
       "PaxSigns": "PAX Signs",
       "RmpVhfSpacing": "RMP VHF Spacing",
+      "Satcom": "Satcom",
       "ThrustReductionHeight": "Thrust Reduction Height (ft)",
       "Title": "Aircraft Options / Pin Programs",
       "WeightUnit": "Weight Unit"
@@ -472,11 +481,13 @@
       "AutofillChecklists": "Autofill Checklists",
       "BoardingTime": "Boarding Time",
       "DmcSelfTestTime": "DMC Self Test Time",
+      "FirstOfficerAvatar": "Show First Officer Avatar",
       "HomeCockpitMode": "Home Cockpit Mode",
       "McduFocusTimeout": "MCDU Focus Timeout (seconds)",
       "McduKeyboardInput": "MCDU Keyboard Input",
       "PauseAtTod": "T/D Pause",
       "PauseAtTodDistance": "T/D Pause Distance (nm)",
+      "PilotAvatar": "Show Pilot Avatar",
       "SeparateTillerFromRudderInputs": "Separate Tiller from Rudder Inputs",
       "SyncEfis": "Sync EFIS controls between Captain and FO",
       "Title": "Realism"

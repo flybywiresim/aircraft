@@ -354,6 +354,12 @@
     "InteriorLighting": {
       "AircraftNeedsToBePoweredToLoadPresets": "飞机必须接通电源才能加载预设",
       "AircraftNeedsToBePoweredToSavePresets": "飞机必须接通电源才能保存预设",
+      "AutoLoadDawnDusk": "Dawn/Dusk:",
+      "AutoLoadDay": "Day:",
+      "AutoLoadLightingHelpTitle": "Automatic Preset Loading",
+      "AutoLoadLightingPreset": "Enable automatic loading of lighting presets:",
+      "AutoLoadNight": "Night:",
+      "AutoLoadNoneSelection": "None",
       "LoadPreset": "加载预设",
       "LoadingPreset": "正在加载预设",
       "NewNameConfirmationDialogMsg": "请确认灯光预设配置的新名称",
@@ -407,13 +413,15 @@
       "SliderSpeed": "以所需的速度移动",
       "SystemEnabledOff": "点击以打开退出系统",
       "SystemEnabledOn": "点击以完全关闭推出系统",
+      "UseControllerInput": "Turn controller input from rudder and elevator on/off",
       "ZoomIn": "放大",
       "ZoomOut": "缩小"
     },
     "TugAttached": "拖杆已连接",
     "TugDirection": "后推方向",
     "TugInTransit": "等待拖车/销",
-    "TugSpeed": "后推速度"
+    "TugSpeed": "后推速度",
+    "UseControllerInput": "Use Controller Input"
   },
   "Settings": {
     "About": {
@@ -427,6 +435,7 @@
       "LatLonExtendedFormat": "FMGC 纬度/经度 航点格式",
       "PaxSigns": "客舱标志",
       "RmpVhfSpacing": "RMP 甚高频间隔",
+      "Satcom": "Satcom",
       "ThrustReductionHeight": "减推力高度 (英尺/ft)",
       "Title": "飞机选项/置顶程序",
       "WeightUnit": "重量单位"
@@ -472,11 +481,13 @@
       "AutofillChecklists": "自动填充检查单",
       "BoardingTime": "登机需时",
       "DmcSelfTestTime": "DMC 自检需时",
+      "FirstOfficerAvatar": "Show First Officer Avatar",
       "HomeCockpitMode": "家用驾驶舱模式",
       "McduFocusTimeout": "MCDU 对焦超时 (秒)",
       "McduKeyboardInput": "MCDU 键盘输入",
       "PauseAtTod": "T/D Pause",
       "PauseAtTodDistance": "T/D Pause Distance (nm)",
+      "PilotAvatar": "Show Pilot Avatar",
       "SeparateTillerFromRudderInputs": "将舵柄与脚舵输入分开",
       "SyncEfis": "Sync EFIS controls between Captain and FO",
       "Title": "仿真度"
