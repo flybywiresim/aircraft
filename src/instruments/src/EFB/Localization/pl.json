@@ -354,6 +354,12 @@
     "InteriorLighting": {
       "AircraftNeedsToBePoweredToLoadPresets": "Samolot musi być zasilany, by możliwe było wczytanie ustawień",
       "AircraftNeedsToBePoweredToSavePresets": "Samolot musi być zasilany, by możliwe było zapisanie ustawień",
+      "AutoLoadDawnDusk": "Dawn/Dusk:",
+      "AutoLoadDay": "Day:",
+      "AutoLoadLightingHelpTitle": "Automatic Preset Loading",
+      "AutoLoadLightingPreset": "Enable automatic loading of lighting presets:",
+      "AutoLoadNight": "Night:",
+      "AutoLoadNoneSelection": "None",
       "LoadPreset": "Wczytaj Ustawienia",
       "LoadingPreset": "Wczytywanie Ustawienia",
       "NewNameConfirmationDialogMsg": "Proszę potwierdzić nową nazwę ustawienia oświetlenia wnętrza",
@@ -407,13 +413,15 @@
       "SliderSpeed": "Ustaw pożądaną prędkość",
       "SystemEnabledOff": "Kliknij, aby włączyć system wypychania.",
       "SystemEnabledOn": "Kliknij, aby całkowicie wyłączyć system wypychania.",
+      "UseControllerInput": "Turn controller input from rudder and elevator on/off",
       "ZoomIn": "Przybliż",
       "ZoomOut": "Oddal"
     },
     "TugAttached": "Holownik jest podłączony",
     "TugDirection": "Kierunek Wypychania",
     "TugInTransit": "Oczekuję na Holownik/Kołek",
-    "TugSpeed": "Prędkość Wypychania"
+    "TugSpeed": "Prędkość Wypychania",
+    "UseControllerInput": "Use Controller Input"
   },
   "Settings": {
     "About": {
@@ -427,6 +435,7 @@
       "LatLonExtendedFormat": "Format Punktów Trasy FMGC Szer/Dł Geog.",
       "PaxSigns": "Znaki dla Pasażerów",
       "RmpVhfSpacing": "Odstępy Częstotliwości VHF na Panelu RMP",
+      "Satcom": "Satcom",
       "ThrustReductionHeight": "Wysokość Redukcji Ciągu (ft)",
       "Title": "Opcje Samolotu/Przypięte Programy",
       "WeightUnit": "Jednostka Masy"
@@ -472,11 +481,13 @@
       "AutofillChecklists": "Automatyczne Wypełnianie Checklist",
       "BoardingTime": "Czas Wejścia Pasażerów na Pokład",
       "DmcSelfTestTime": "Czas Autotestu DMC",
+      "FirstOfficerAvatar": "Show First Officer Avatar",
       "HomeCockpitMode": "Tryb Kokpitu Domowego",
       "McduFocusTimeout": "Czas Aktywności MCDU (sekundy)",
       "McduKeyboardInput": "Wprowadzanie Danych Fizyczną Klawiaturą do MCDU",
       "PauseAtTod": "T/D Pause",
       "PauseAtTodDistance": "T/D Pause Distance (nm)",
+      "PilotAvatar": "Show Pilot Avatar",
       "SeparateTillerFromRudderInputs": "Oddziel Sterowanie Kołem od Steru Kierunku",
       "SyncEfis": "Sync EFIS controls between Captain and FO",
       "Title": "Realizm"

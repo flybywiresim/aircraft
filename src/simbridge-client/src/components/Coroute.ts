@@ -1,4 +1,4 @@
-import { simbridgeUrl } from '../common';
+import { getSimBridgeUrl } from '../common';
 import { CoRouteDto } from '../Coroute/coroute';
 
 /**
@@ -12,7 +12,7 @@ export class CompanyRoute {
      */
     public static async getCoRoute(route: String): Promise<CoRouteDto> {
         if (route) {
-            const response = await fetch(`${simbridgeUrl}/api/v1/coroute?rteNum=${route}`);
+            const response = await fetch(`${getSimBridgeUrl()}/api/v1/coroute?rteNum=${route}`);
             if (response.status === 200) {
                 response.json();
             }
@@ -29,7 +29,7 @@ export class CompanyRoute {
      */
     public static async getRouteList(origin: String, dest: String): Promise<CoRouteDto[]> {
         if (origin || dest) {
-            const response = await fetch(`${simbridgeUrl}/api/v1/coroute/list?origin=${origin}&destination=${dest}`);
+            const response = await fetch(`${getSimBridgeUrl()}/api/v1/coroute/list?origin=${origin}&destination=${dest}`);
             if (response.ok) {
                 response.json();
             }

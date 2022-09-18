@@ -354,6 +354,12 @@
     "InteriorLighting": {
       "AircraftNeedsToBePoweredToLoadPresets": "A aeronave precisa ser energizada para carregar predefinições",
       "AircraftNeedsToBePoweredToSavePresets": "A aeronave precisa ser energizada para salvar predefinições",
+      "AutoLoadDawnDusk": "Dawn/Dusk:",
+      "AutoLoadDay": "Day:",
+      "AutoLoadLightingHelpTitle": "Automatic Preset Loading",
+      "AutoLoadLightingPreset": "Enable automatic loading of lighting presets:",
+      "AutoLoadNight": "Night:",
+      "AutoLoadNoneSelection": "None",
       "LoadPreset": "Carregar Predefinição",
       "LoadingPreset": "Carregar Predefinição",
       "NewNameConfirmationDialogMsg": "Por favor, confirme o novo nome da predefinição de iluminação",
@@ -407,13 +413,15 @@
       "SliderSpeed": "Mova-se para a velocidade desejada",
       "SystemEnabledOff": "Clique para ativar o sistema de pushback.",
       "SystemEnabledOn": "Clique para desligar completamente o sistema de pushback.",
+      "UseControllerInput": "Turn controller input from rudder and elevator on/off",
       "ZoomIn": "Aumentar zoom",
       "ZoomOut": "Diminuir zoom"
     },
     "TugAttached": "O rebocador está acoplado",
     "TugDirection": "Direção do rebocador",
     "TugInTransit": "Esperando pelo reboque/pino",
-    "TugSpeed": "Velocidade do rebocador"
+    "TugSpeed": "Velocidade do rebocador",
+    "UseControllerInput": "Use Controller Input"
   },
   "Settings": {
     "About": {
@@ -427,6 +435,7 @@
       "LatLonExtendedFormat": "Formato de Waypont Lat/Lon do FMGC",
       "PaxSigns": "Aviso de Passageiros",
       "RmpVhfSpacing": "Espaçamento RMP VHF",
+      "Satcom": "Satcom",
       "ThrustReductionHeight": "Altura de redução de empuxo (ft)",
       "Title": "Opções da aeronave / Programas fixados",
       "WeightUnit": "Unidade de peso"
@@ -472,11 +481,13 @@
       "AutofillChecklists": "Preenchimento automático dos Checklists",
       "BoardingTime": "Tempo de embarque",
       "DmcSelfTestTime": "Tempo de auto teste do DMC",
+      "FirstOfficerAvatar": "Show First Officer Avatar",
       "HomeCockpitMode": "Modo Home Cockpit",
       "McduFocusTimeout": "Tempo limite de foco da MCDU (segundos)",
       "McduKeyboardInput": "Entrada de teclado MCDU",
       "PauseAtTod": "T/D Pause",
       "PauseAtTodDistance": "T/D Pause Distance (nm)",
+      "PilotAvatar": "Show Pilot Avatar",
       "SeparateTillerFromRudderInputs": "Separar controle de taxi do leme",
       "SyncEfis": "Sync EFIS controls between Captain and FO",
       "Title": "Realismo"
