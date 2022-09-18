@@ -354,6 +354,12 @@
     "InteriorLighting": {
       "AircraftNeedsToBePoweredToLoadPresets": "Helyezze áram alá a repülőgépet a beállítások betöltéséhez",
       "AircraftNeedsToBePoweredToSavePresets": "Helyezze áram alá a repülőgépet a beállítások mentéséhez",
+      "AutoLoadDawnDusk": "Hajnal/szürkület:",
+      "AutoLoadDay": "Nap:",
+      "AutoLoadLightingHelpTitle": "Automatikus beállítás betöltés",
+      "AutoLoadLightingPreset": "Engedélyezze a világítási beállítások automatikus betöltését:",
+      "AutoLoadNight": "Éjszaka:",
+      "AutoLoadNoneSelection": "Nincs",
       "LoadPreset": "Beállítás betöltése",
       "LoadingPreset": "Beállítás betöltée folyamatban",
       "NewNameConfirmationDialogMsg": "Új név megerősítése",
@@ -407,13 +413,15 @@
       "SliderSpeed": "Mozgás a kívánt sebességgel",
       "SystemEnabledOff": "Kattintson a hátratoló rendszer bekapcsolásához.",
       "SystemEnabledOn": "Kattintson a hátratoló rendszer kikapcsolásához.",
+      "UseControllerInput": "Kapcsolja ki/be a vezérlést a oldalkormányról és a magassági kormányról",
       "ZoomIn": "Nagyítás",
       "ZoomOut": "Kicsinyítés"
     },
     "TugAttached": "A vontató csatlakoztatva van\n",
     "TugDirection": "Vontatás iránya",
     "TugInTransit": "Várakozás a vontatóra",
-    "TugSpeed": "Vontatás sebessége"
+    "TugSpeed": "Vontatás sebessége",
+    "UseControllerInput": "Használja a vezérlő bemenetét"
   },
   "Settings": {
     "About": {
@@ -427,6 +435,7 @@
       "LatLonExtendedFormat": "FMGC Lat/Lon Útvonal formátum",
       "PaxSigns": "Övek becsatolását jelző tabló",
       "RmpVhfSpacing": "RMP VHF elosztás",
+      "Satcom": "Satcom megjelenítése",
       "ThrustReductionHeight": "Tolóerő csökkentési magasság (ft)",
       "Title": "Repülő beállításai / Pin programok",
       "WeightUnit": "Súly mértékegység"
@@ -472,11 +481,13 @@
       "AutofillChecklists": "Ellenörző listák automatikus kitöltése",
       "BoardingTime": "Beszállási idő",
       "DmcSelfTestTime": "DMC Öntesztelési idő",
+      "FirstOfficerAvatar": "Mutassa az elsőtisztet",
       "HomeCockpitMode": "Épített kabin mód",
       "McduFocusTimeout": "MCDU Fókusz időtúllépés (másodperc)",
       "McduKeyboardInput": "MCDU Billentyűzet bevitel",
       "PauseAtTod": "T/D Szünet",
       "PauseAtTodDistance": "T/D szüneteltetési távolság (nm)",
+      "PilotAvatar": "Mutassa a pilótát",
       "SeparateTillerFromRudderInputs": "Orrkerék kormányzás leválasztása az oldalkormányzásról",
       "SyncEfis": "Szinkronizálja az EFIS vezérlőket kapitányról",
       "Title": "Realizmus"
@@ -569,8 +580,8 @@
     "Sep": "Szept.",
     "Sun": "Va",
     "TT": {
-      "ConnectedToLocalApi": "Csatlakozva a helyi API-hoz",
-      "DisconnectedFromLocalApi": "Leválasztva a helyi API-ról",
+      "ConnectedToLocalApi": "Csatlakozva a SimBridge-hez",
+      "DisconnectedFromLocalApi": "Lecsatlakozva a SimBridge-ről",
       "TurnOffOrShutdownEfb": "EFB leállítása vagy kikapcsolása"
     },
     "Thu": "Csüt",

@@ -354,6 +354,12 @@
     "InteriorLighting": {
       "AircraftNeedsToBePoweredToLoadPresets": "Flyet skal tændt for at indlæse forudindstillinger",
       "AircraftNeedsToBePoweredToSavePresets": "Flyet skal være tændt for at gemme forudindstillinger",
+      "AutoLoadDawnDusk": "Dawn/Dusk:",
+      "AutoLoadDay": "Day:",
+      "AutoLoadLightingHelpTitle": "Automatic Preset Loading",
+      "AutoLoadLightingPreset": "Enable automatic loading of lighting presets:",
+      "AutoLoadNight": "Night:",
+      "AutoLoadNoneSelection": "None",
       "LoadPreset": "Indlæs forudindstilling",
       "LoadingPreset": "Indlæsning af forudindstilling",
       "NewNameConfirmationDialogMsg": "Bekræft venligst det nye navn for lysforindstillingen",
@@ -407,13 +413,15 @@
       "SliderSpeed": "Sæt den ønskede hastighed",
       "SystemEnabledOff": "Tryk for at aktivere skubbe systemet",
       "SystemEnabledOn": "Tryk for at deaktivere skubbe systemet helt",
+      "UseControllerInput": "Turn controller input from rudder and elevator on/off",
       "ZoomIn": "Zoom ind",
       "ZoomOut": "Zoom ud"
     },
     "TugAttached": "Traktoren er forbundet til flyet",
     "TugDirection": "Skubber Retning",
     "TugInTransit": "Venter på traktoren/styrestift",
-    "TugSpeed": "Skubber hastighed"
+    "TugSpeed": "Skubber hastighed",
+    "UseControllerInput": "Use Controller Input"
   },
   "Settings": {
     "About": {
@@ -427,6 +435,7 @@
       "LatLonExtendedFormat": "FMGC Lat/Lon Waypoint Format",
       "PaxSigns": "Passager skilte",
       "RmpVhfSpacing": "RMP VHF Afstand",
+      "Satcom": "Satcom",
       "ThrustReductionHeight": "Thrustreduktionshøjde (ft)",
       "Title": "Muligheder for fly / Pin programmer",
       "WeightUnit": "Vægt enhed"
@@ -472,11 +481,13 @@
       "AutofillChecklists": "Tjeklister til autoudfyldning",
       "BoardingTime": "Boarding tid",
       "DmcSelfTestTime": "DMC Selv Test Tid",
+      "FirstOfficerAvatar": "Show First Officer Avatar",
       "HomeCockpitMode": "Hjemmecockpit tilstand",
       "McduFocusTimeout": "MCDU Fokus Timeout (sekunder)",
       "McduKeyboardInput": "MCDU Tastatur Input",
       "PauseAtTod": "T/D Pause",
       "PauseAtTodDistance": "T/D Pause Distance (nm)",
+      "PilotAvatar": "Show Pilot Avatar",
       "SeparateTillerFromRudderInputs": "Separat Tiller fra Rudder Inputs",
       "SyncEfis": "Sync EFIS controls between Captain and FO",
       "Title": "Realisme"
