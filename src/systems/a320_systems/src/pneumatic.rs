@@ -3368,7 +3368,7 @@ mod tests {
             let ambient_temperature =
                 InternationalStandardAtmosphere::temperature_at_altitude(altitude);
 
-            let temperature_epsilon = ThermodynamicTemperature::new::<degree_celsius>(0.5);
+            let temperature_epsilon = ThermodynamicTemperature::new::<degree_celsius>(1.);
             let pressure_epsilon = Pressure::new::<psi>(0.1);
             let pressure_epsilon_pressurized = Pressure::new::<psi>(20.);
 
@@ -3466,7 +3466,7 @@ mod tests {
         }
 
         #[test]
-        fn wing_anti_ice_tweak_pid() {
+        fn wing_anti_ice_pid() {
             let altitude = Length::new::<foot>(10.);
 
             let mut test_bed = test_bed_with()
@@ -3526,10 +3526,12 @@ mod tests {
 
         #[test]
         fn wing_anti_ice_valve_close_after_30_seconds_on_ground() {
-            let altitude = Length::new::<foot>(500.);
+            let altitude = Length::new::<foot>(10.);
+            // Holding settings give more pressure to the WAI valve
+            // to make it open completely
             let mut test_bed = test_bed_with()
-                .idle_eng1()
-                .idle_eng2()
+                .holding_eng1()
+                .holding_eng2()
                 .in_isa_atmosphere(altitude)
                 .and_stabilize();
             test_bed.set_on_ground(true);
@@ -3546,8 +3548,7 @@ mod tests {
             assert!(test_bed.valve_controller_timer() < Duration::from_secs(7));
             assert!(!test_bed.left_valve_closed());
             assert!(!test_bed.right_valve_closed());
-            // TODO Check why fails
-            //assert!(!test_bed.wing_anti_ice_has_fault());
+            assert!(!test_bed.wing_anti_ice_has_fault());
             assert!(test_bed.wing_anti_ice_system_on());
 
             // 30 secs from WAI ON
@@ -3584,7 +3585,7 @@ mod tests {
             assert!(test_bed.right_valve_closed());
 
             test_bed.set_on_ground(false);
-            test_bed.run_with_delta(Duration::from_secs(1));
+            test_bed.run_with_delta(Duration::from_secs(4));
 
             assert!(test_bed.wing_anti_ice_system_on());
             assert!(test_bed.wing_anti_ice_system_selected());
@@ -3611,119 +3612,55 @@ mod tests {
         }
 
         #[test]
-        #[ignore]
         fn wing_anti_ice_tweak_time_to_open() {
             let altitude = Length::new::<foot>(2000.);
-            //let wai_pressure: Pressure = Pressure::new::<psi>(22.5);
-            //let pressure_epsilon: Pressure = Pressure::new::<psi>(0.1);
-            let mut test_bed = test_bed()
+            let mut test_bed = test_bed_with()
                 .in_isa_atmosphere(altitude)
                 .holding_eng1()
-                .holding_eng2();
+                .holding_eng2()
+                .and_stabilize();
             test_bed.set_on_ground(false);
-            test_bed = test_bed.and_stabilize();
             test_bed = test_bed.wing_anti_ice_push_button(WingAntiIcePushButtonMode::On);
             test_bed.run_with_delta(Duration::from_millis(16));
 
             let mut time_to_open_valve = Duration::from_millis(0);
-            for _ in 0..1000 {
-                // println!(
-                //     "left pressure = {}",
-                //     test_bed.left_wai_pressure().get::<psi>()
-                // );
-                // println!(
-                //     "left precooler pressurised = {}",
-                //     test_bed.left_precooler_pressurised()
-                // );
-                // println!(
-                //     "left precooler press = {}",
-                //     test_bed.left_precooler_pressure().get::<psi>()
-                // );
-                // println!(
-                //     "left exhaust flow = {}",
-                //     test_bed.left_exhaust_flow().get::<kilogram_per_second>()
-                // );
-                //println!("-----------------------------------------",);
-                // test_bed.left_wai_pressure().get::<psi>() < 22.;
+            for _ in 0..500 {
                 let wai_has_fault = test_bed.wing_anti_ice_has_fault();
                 if wai_has_fault {
                     time_to_open_valve += Duration::from_millis(16);
                 } else {
-                    //break;
+                    break;
                 }
                 test_bed.run_with_delta(Duration::from_millis(16));
             }
             println!(
-                "left pressure = {}",
-                test_bed.left_wai_pressure().get::<psi>()
-            );
-            println!(
-                "left precooler pressurised = {}",
-                test_bed.left_precooler_pressurised()
-            );
-            println!(
-                "left precooler press = {}",
-                test_bed.left_precooler_pressure().get::<psi>()
-            );
-            println!(
-                "left exhaust flow = {}",
-                test_bed.left_exhaust_flow().get::<kilogram_per_second>()
-            );
-            println!("left pack fault = {}", test_bed.pack_1_has_fault());
-            println!("left pack on = {}", test_bed.pack_1_on());
-            println!(
                 "Time to open left valve = {}",
                 time_to_open_valve.as_secs_f32()
             );
-            //assert!(test_bed.left_wai_pressure().get::<psi>() >= 22.);
+            assert!(!test_bed.wing_anti_ice_has_fault());
+            assert!(test_bed.wing_anti_ice_system_on());
+            assert!(test_bed.wing_anti_ice_system_selected());
             assert!(time_to_open_valve.as_secs_f32() >= 2.);
             assert!(time_to_open_valve.as_secs_f32() <= 3.);
-            assert!(test_bed.left_valve_closed());
         }
 
         #[test]
-        #[ignore]
         fn wing_anti_ice_tweak_exhaust() {
             let altitude = Length::new::<foot>(22000.);
-            let ambient_pressure = InternationalStandardAtmosphere::pressure_at_altitude(altitude);
-            let ambient_temperature =
-                InternationalStandardAtmosphere::temperature_at_altitude(altitude);
 
-            let _wai_pressure: Pressure = Pressure::new::<psi>(22.5);
-            let _pressure_epsilon: Pressure = Pressure::new::<psi>(0.1);
-            let test_bed = test_bed()
+            let mut test_bed = test_bed_with()
                 .in_isa_atmosphere(altitude)
                 .toga_eng1()
                 .toga_eng2()
                 .wing_anti_ice_push_button(WingAntiIcePushButtonMode::On)
                 .and_stabilize();
+            test_bed.set_on_ground(false);
 
             assert!(test_bed.left_valve_controller_on());
             assert!(!test_bed.left_valve_closed());
 
             let left_flow_rate = test_bed.left_exhaust_flow().get::<kilogram_per_second>();
             let right_flow_rate = test_bed.right_exhaust_flow().get::<kilogram_per_second>();
-
-            println!("left press = {}", test_bed.left_wai_pressure().get::<psi>());
-            println!(
-                "right press = {}",
-                test_bed.right_wai_pressure().get::<psi>()
-            );
-            println!("ambient press = {}", ambient_pressure.get::<psi>());
-            println!(
-                "left temp = {}",
-                test_bed.left_wai_temperature().get::<degree_celsius>()
-            );
-            println!(
-                "right temp = {}",
-                test_bed.right_wai_temperature().get::<degree_celsius>()
-            );
-            println!(
-                "ambient temp = {}",
-                ambient_temperature.get::<degree_celsius>()
-            );
-            println!("left exhaust flow = {}", left_flow_rate);
-            println!("right exhaust flow = {}", right_flow_rate);
 
             // At 22000ft, flow rate is given at 0.327kg/s
             assert!(((left_flow_rate * 1000.0).round() - 327.0).abs() < 1.);

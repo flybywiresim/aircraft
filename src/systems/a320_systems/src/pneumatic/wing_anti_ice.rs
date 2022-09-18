@@ -221,7 +221,6 @@ pub struct WingAntiIceRelay {
     system_test_done: bool, // Timer reached 30 seconds while on the ground
     signal_on: bool,        // Status of the ON light. If button is pushed and
     // the test is finished, the ON light should turn off.
-    // supplier_pressurized: bool,
     is_on_ground_id: VariableIdentifier,
     is_on_ground: bool, //Needed for the 30 seconds test logic
 }
@@ -233,7 +232,6 @@ impl WingAntiIceRelay {
             system_test_timer: Duration::from_secs(0),
             system_test_done: false,
             signal_on: false,
-            // supplier_pressurized: false,
             is_on_ground_id: context.get_identifier("SIM ON GROUND".to_owned()),
             is_on_ground: Default::default(),
         }
@@ -343,8 +341,9 @@ pub struct WingAntiIceComplex {
 impl WingAntiIceComplex {
     const WAI_MIN_PRESSURE: f64 = 1.; //BAR
     const WAI_MAX_PRESSURE: f64 = 2.1; //BAR
-    const WAI_EXHAUST_SPEED: f64 = 0.17;
-    const WAI_VALVE_TRANSFER_SPEED: f64 = 1.3;
+    const WAI_EXHAUST_SPEED: f64 = 0.1175; // Regulate wing_anti_ice_tweak_exhaust
+    const WAI_VALVE_TRANSFER_SPEED: f64 = 1.3; // Regulate wing_anti_ice_tweak_time_to_open
+
     // Each WAI duct is made of
     // Flow Trimming Restrictor 47mm diameter
     // Lagged Supply Duct 50mm diameter
