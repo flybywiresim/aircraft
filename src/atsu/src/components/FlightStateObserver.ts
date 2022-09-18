@@ -1,4 +1,4 @@
-import { FlightPlanManager } from '@shared/flightplan';
+import { AirplaneData } from '../airplane/AirplaneData';
 import { Atsu } from '../ATSU';
 
 export class Waypoint {
@@ -18,7 +18,7 @@ export class FlightStateObserver {
 
     public PresentPosition = { lat: null, lon: null, altitude: null, heading: null, track: null, indicatedAirspeed: null, groundSpeed: null, verticalSpeed: null };
 
-    public FcuSettings = { apActive: false, speed: null, machMode: false, altitude: null }
+    public FcuSettings = { apActive: false, speed: null, machMode: false, altitude: null };
 
     public EnvironmentData = { windDirection: null, windSpeed: null, temperature: null }
 
@@ -44,39 +44,70 @@ export class FlightStateObserver {
         return null;
     }
 
-    private updatePresentPosition() {
-        this.PresentPosition.lat = SimVar.GetSimVarValue('GPS POSITION LAT', 'degree latitude');
-        this.PresentPosition.lon = SimVar.GetSimVarValue('GPS POSITION LON', 'degree longitude');
-        this.PresentPosition.altitude = Math.round(SimVar.GetSimVarValue('PLANE ALTITUDE', 'feet'));
-        this.PresentPosition.heading = Math.round(SimVar.GetSimVarValue('GPS GROUND TRUE HEADING', 'degree'));
-        this.PresentPosition.track = Math.round(SimVar.GetSimVarValue('GPS GROUND TRUE TRACK', 'degree'));
-        this.PresentPosition.indicatedAirspeed = Math.round(SimVar.GetSimVarValue('AIRSPEED INDICATED', 'knots'));
-        this.PresentPosition.groundSpeed = Math.round(SimVar.GetSimVarValue('GROUND VELOCITY', 'knots'));
-        this.PresentPosition.verticalSpeed = Math.round(SimVar.GetSimVarValue('VERTICAL SPEED', 'feet per second') * 60.0);
+    private resetPresentPosition(): void {
+        this.PresentPosition = { lat: null, lon: null, altitude: null, heading: null, track: null, indicatedAirspeed: null, groundSpeed: null, verticalSpeed: null };
     }
 
-    private updateFcu() {
-        this.FcuSettings.apActive = SimVar.GetSimVarValue('L:A32NX_AUTOPILOT_ACTIVE', 'bool');
-        const thrustMode = SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_MODE', 'number');
+    private updatePresentPosition(airplane: AirplaneData): void {
+        this.resetPresentPosition();
+
+        const latLon = airplane.currentLatLon();
+        if (latLon.valid) {
+            this.PresentPosition.lat = latLon.lat;
+            this.PresentPosition.lon = latLon.lon;
+        }
+
+        const altitude = airplane.currentAltitude();
+        if (altitude.valid) {
+            this.PresentPosition.altitude = altitude.altitude;
+        }
+
+        const heading = airplane.currentTrueHeading();
+        if (heading.valid) {
+            this.PresentPosition.heading = heading.heading;
+        }
+
+        const track = airplane.currentGroundTrack();
+        if (track.valid) {
+            this.PresentPosition.track = track.track;
+        }
+
+        const indicatedAirspeed = airplane.currentIndicatedAirspeed();
+        if (indicatedAirspeed.valid) {
+            this.PresentPosition.indicatedAirspeed = indicatedAirspeed.airspeed;
+        }
+
+        const groundspeed = airplane.currentGroundspeed();
+        if (groundspeed.valid) {
+            this.PresentPosition.groundSpeed = groundspeed.groundspeed;
+        }
+
+        const verticalSpeed = airplane.currentVerticalSpeed();
+        if (verticalSpeed.valid) {
+            this.PresentPosition.verticalSpeed = verticalSpeed.verticalSpeed;
+        }
+    }
+
+    private resetFcuSettings(): void {
+        this.FcuSettings = { apActive: false, speed: null, machMode: false, altitude: null };
+    }
+
+    private updateFcu(airplane: AirplaneData): void {
+        this.resetFcuSettings();
+
+        this.FcuSettings.apActive = airplane.autopilotActive();
 
         if (this.FcuSettings.apActive) {
-            this.FcuSettings.altitude = Math.round(Simplane.getAutoPilotDisplayedAltitudeLockValue());
-            this.FcuSettings.machMode = thrustMode === 8;
-            if (thrustMode === 0) {
-                if (this.FcuSettings.machMode) {
-                    this.FcuSettings.speed = SimVar.GetSimVarValue('L:A32NX_MachPreselVal', 'number');
-                } else {
-                    this.FcuSettings.speed = SimVar.GetSimVarValue('L:A32NX_SpeedPreselVal', 'number');
-                }
-            } else if (this.FcuSettings.machMode) {
-                this.FcuSettings.speed = SimVar.GetSimVarValue('AIRSPEED INDICATED', 'knots');
-            } else {
-                this.FcuSettings.speed = SimVar.GetSimVarValue('AIRSPEED MACH', 'mach');
+            this.FcuSettings.machMode = airplane.autopilotMachModeActive();
+            const apAltitude = airplane.autopilotSelectedAltitude();
+            if (apAltitude.valid) {
+                this.FcuSettings.altitude = apAltitude.altitude;
             }
-        } else {
-            this.FcuSettings.altitude = null;
-            this.FcuSettings.machMode = false;
-            this.FcuSettings.speed = null;
+
+            const apSpeed = airplane.autopilotSelectedSpeed();
+            if (airplane.autopilotAutoThrustActive() && apSpeed.valid) {
+                this.FcuSettings.speed = apSpeed.speed;
+            }
         }
     }
 
@@ -86,17 +117,17 @@ export class FlightStateObserver {
         this.EnvironmentData.temperature = SimVar.GetSimVarValue('AMBIENT TEMPERATURE', 'celsius');
     }
 
-    constructor(mcdu: any, callback: (atsu: Atsu) => void) {
+    constructor(airplane: AirplaneData, atsu: Atsu, callback: (atsu: Atsu) => void) {
         setInterval(() => {
-            const fp = (mcdu.flightPlanManager as FlightPlanManager).activeFlightPlan;
+            const fp = airplane.activeFlightPlan();
             const last = FlightStateObserver.findLastWaypoint(fp);
             const active = fp?.getWaypoint(fp.activeWaypointIndex);
             const next = fp?.getWaypoint(fp.activeWaypointIndex + 1);
             const destination = fp?.getWaypoint(fp.waypoints.length - 1);
             let waypointPassed = false;
 
-            this.updatePresentPosition();
-            this.updateFcu();
+            this.updatePresentPosition(airplane);
+            this.updateFcu(airplane);
             this.updateEnvironment();
 
             if (last) {
@@ -132,7 +163,7 @@ export class FlightStateObserver {
             }
 
             if (waypointPassed) {
-                callback(mcdu.atsu);
+                callback(atsu);
             }
         }, 1000);
     }

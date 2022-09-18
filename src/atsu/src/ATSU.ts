@@ -1,7 +1,6 @@
 //  Copyright (c) 2022 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { FmgcFlightPhase } from '@shared/flightphase';
 import { CpdlcMessage } from './messages/CpdlcMessage';
 import { Datalink } from './com/Datalink';
 import { AtsuStatusCodes } from './AtsuStatusCodes';
@@ -14,6 +13,7 @@ import { CpdlcMessagesDownlink } from './messages/CpdlcMessageElements';
 import { coordinateToString, timestampToString } from './Common';
 import { InputValidation } from './InputValidation';
 import { ATS623 } from './components/ATS623';
+import { AirplaneData } from './airplane/AirplaneData';
 
 /**
  * Defines the ATSU
@@ -37,7 +37,7 @@ export class Atsu {
 
     private listener = RegisterViewListener('JS_LISTENER_SIMVARS', null, true);
 
-    private mcdu = undefined;
+    private airplane: AirplaneData = null;
 
     public static createAutomatedPositionReport(atsu: Atsu): CpdlcMessage {
         const message = new CpdlcMessage();
@@ -175,9 +175,9 @@ export class Atsu {
         }
     }
 
-    constructor(mcdu) {
-        this.flightStateObserver = new FlightStateObserver(mcdu, Atsu.waypointPassedCallback);
-        this.mcdu = mcdu;
+    constructor(airplaneAbstraction: AirplaneData) {
+        this.flightStateObserver = new FlightStateObserver(airplaneAbstraction, this, Atsu.waypointPassedCallback);
+        this.airplane = airplaneAbstraction;
     }
 
     public async connectToNetworks(flightNo: string): Promise<AtsuStatusCodes> {
@@ -194,13 +194,6 @@ export class Atsu {
         }
 
         return code;
-    }
-
-    public flightPhase(): FmgcFlightPhase {
-        if (this.mcdu !== undefined && this.mcdu.flightPhaseManager) {
-            return this.mcdu.flightPhaseManager.phase;
-        }
-        return FmgcFlightPhase.Preflight;
     }
 
     public async disconnectFromNetworks(): Promise<AtsuStatusCodes> {
@@ -265,12 +258,16 @@ export class Atsu {
     }
 
     public publishAtsuStatusCode(code: AtsuStatusCodes): void {
-        this.mcdu.addNewAtsuMessage(code);
+        if (this.airplane !== null) {
+            this.airplane.registerAtsuErrorMessage(code);
+        }
     }
 
     public modifyDcduMessage(message: CpdlcMessage): void {
         this.modificationMessage = message;
-        this.mcdu.tryToShowAtcModifyPage();
+        if (this.airplane !== null) {
+            this.airplane.tryToShowAtcModifyPage();
+        }
     }
 
     public async isRemoteStationAvailable(callsign: string): Promise<AtsuStatusCodes> {
@@ -292,8 +289,9 @@ export class Atsu {
     }
 
     public printMessage(message: AtsuMessage): void {
-        const text = message.serialize(AtsuMessageSerializationFormat.Printer);
-        this.mcdu.printPage(text.split('\n'));
+        if (this.airplane !== null) {
+            this.airplane.sendMessageToPrinter(message.serialize(AtsuMessageSerializationFormat.Printer));
+        }
     }
 
     public lastWaypoint() {
