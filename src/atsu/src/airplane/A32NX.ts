@@ -1,8 +1,31 @@
-import { InputValidation } from '@atsu/InputValidation';
+import { ManagedFlightPlan } from '@fmgc/wtsdk';
 import { Arinc429Word } from '@shared/arinc429';
+import { FmgcFlightPhase } from '@shared/flightphase';
+import { FlightPlanManager } from '@shared/flightplan';
+import { InputValidation } from '../InputValidation';
+import { AtsuStatusCodes } from '../AtsuStatusCodes';
 import { AirplaneData } from './AirplaneData';
 
 export class A32NX implements AirplaneData {
+    private mcdu = undefined;
+
+    private getArincValue(name: string): { valid: boolean, value: number } {
+        const value = SimVar.GetSimVarValue(name, 'number');
+        try {
+            const arincValue = new Arinc429Word(value);
+            if (arincValue.isNormalOperation()) {
+                return { valid: true, value: arincValue.value };
+            }
+            return { valid: false, value: 0 };
+        } catch (e) {
+            return { valid: false, value: 0 };
+        }
+    }
+
+    constructor(mcdu) {
+        this.mcdu = mcdu;
+    }
+
     public satcomDatalinkInstalled(): boolean {
         return false;
     }
@@ -31,19 +54,6 @@ export class A32NX implements AirplaneData {
         return SimVar.GetSimVarValue('L:A32NX_ELEC_AC_1_BUS_IS_POWERED', 'bool') !== 0;
     }
 
-    private getArincValue(name: string): { valid: boolean, value: number } {
-        const value = SimVar.GetSimVarValue(name, 'number');
-        try {
-            const arincValue = new Arinc429Word(value);
-            if (arincValue.isNormalOperation()) {
-                return { valid: true, value: arincValue.value };
-            }
-            return { valid: false, value: 0 };
-        } catch (e) {
-            return { valid: false, value: 0 };
-        }
-    }
-
     public currentLatLon(): { valid: boolean, lat: number, lon: number } {
         const arincLat = this.getArincValue('L:A32NX_ADIRS_IR_1_LATITUDE');
         const arincLon = this.getArincValue('L:A32NX_ADIRS_IR_1_LONGITUDE');
@@ -57,12 +67,12 @@ export class A32NX implements AirplaneData {
 
     public currentTrueHeading(): { valid: boolean, heading: number } {
         const arincHeading = this.getArincValue('L:A32NX_ADIRS_IR_1_TRUE_HEADING');
-        return { valid: arincHeading.valid, heading: arincHeading.value };
+        return { valid: arincHeading.valid, heading: Math.round(arincHeading.value) };
     }
 
     public currentGroundTrack(): { valid: boolean, track: number } {
         const arincTrack = this.getArincValue('L:A32NX_ADIRS_IR_1_TRUE_TRACK');
-        return { valid: arincTrack.valid, track: arincTrack.value };
+        return { valid: arincTrack.valid, track: Math.round(arincTrack.value) };
     }
 
     public currentAirspeed(): { valid: boolean, airspeed: string } {
@@ -76,19 +86,30 @@ export class A32NX implements AirplaneData {
         }
 
         if (arincAirspeed.valid) {
-            return { valid: true, airspeed: InputValidation.formatScratchpadSpeed(arincAirspeed.value.toString()) };
+            return { valid: true, airspeed: InputValidation.formatScratchpadSpeed((mach === true ? arincAirspeed.value : Math.round(arincAirspeed.value)).toString()) };
         }
         return { valid: false, airspeed: '' };
     }
 
+    public currentIndicatedAirspeed(): { valid: boolean, airspeed: number } {
+        return { valid: true, airspeed: Math.round(SimVar.GetSimVarValue('AIRSPEED INDICATED', 'knots')) };
+    }
+
     public currentGroundspeed(): { valid: boolean, groundspeed: number } {
         const arincGroundspeed = this.getArincValue('L:A32NX_ADIRS_IR_1_GROUND_SPEED');
-        return { valid: arincGroundspeed.valid, groundspeed: arincGroundspeed.value };
+        return { valid: arincGroundspeed.valid, groundspeed: Math.round(arincGroundspeed.value) };
     }
 
     public currentVerticalSpeed(): { valid: boolean, verticalSpeed: number } {
         const arincVerticalSpeed = this.getArincValue('L:A32NX_ADIRS_IR_1_VERTICAL_SPEED');
-        return { valid: arincVerticalSpeed.valid, verticalSpeed: arincVerticalSpeed.value };
+        return { valid: arincVerticalSpeed.valid, verticalSpeed: Math.round(arincVerticalSpeed.value) };
+    }
+
+    public currentFlightPhase(): { valid: boolean, flightPhase: FmgcFlightPhase } {
+        if (this.mcdu !== undefined && this.mcdu.flightPhaseManager) {
+            return { valid: true, flightPhase: this.mcdu.flightPhaseManager.phase };
+        }
+        return { valid: false, flightPhase: FmgcFlightPhase.Preflight };
     }
 
     public autopilotActive(): boolean {
@@ -117,5 +138,30 @@ export class A32NX implements AirplaneData {
             return { valid: true, speed: InputValidation.formatScratchpadSpeed(arincSpeed.value.toString()) };
         }
         return { valid: false, speed: '' };
+    }
+
+    public activeFlightPlan(): ManagedFlightPlan {
+        if (this.mcdu !== undefined) {
+            return (this.mcdu.flightPlanManager as FlightPlanManager).activeFlightPlan;
+        }
+        return null;
+    }
+
+    public registerAtsuErrorMessage(code: AtsuStatusCodes): void {
+        if (this.mcdu !== undefined) {
+            this.mcdu.addNewAtsuMessage(code);
+        }
+    }
+
+    public tryToShowAtcModifyPage(): void {
+        if (this.mcdu !== undefined) {
+            this.mcdu.tryToShowAtcModifyPage();
+        }
+    }
+
+    public sendMessageToPrinter(message: string): void {
+        if (this.mcdu !== undefined) {
+            this.mcdu.printPage(message.split('\n'));
+        }
     }
 }
