@@ -5,7 +5,7 @@
 #include "Aircraft/AircraftPreset.h"
 #include "Lighting/LightPreset.h"
 #include "Pushback/Pushback.h"
-#include "ThirdParty/ThirdParty.h"
+#include "ATCServices/ATCServices.h"
 #include <unistd.h>
 
 FlyPadBackend FLYPAD_BACKEND;
@@ -50,7 +50,7 @@ bool FlyPadBackend::initialize() {
   lightPresetPtr = std::make_unique<LightPreset>();
   aircraftPresetPtr = std::make_unique<AircraftPreset>();
   pushbackPtr = std::make_unique<Pushback>(hSimConnect, &pushbackData);
-  thirdPartyPtr = std::make_unique<ThirdParty>(hSimConnect);
+  thirdPartyPtr = std::make_unique<ATCServices>(hSimConnect);
 
   // Simulation data to local data structure mapping
   HRESULT result = S_OK;
@@ -76,7 +76,7 @@ bool FlyPadBackend::initialize() {
   // Do not call SimConnect_CreateClientData since Altitude does it already
   // It would cause errors otherwise
   result &= SimConnect_MapClientDataNameToID(hSimConnect, "IVAO Altitude Data", ClientData::IVAO);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, DataStructureIDs::IVAODataID, 0, sizeof(struct ThirdPartyDataIVAO));
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, DataStructureIDs::IVAODataID, 0, sizeof(ATCServicesDataIVAO));
   result &= SimConnect_RequestClientData(hSimConnect, ClientData::IVAO, DataStructureRequestIDs::IVAORequestID, DataStructureIDs::IVAODataID, SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET, SIMCONNECT_DATA_REQUEST_FLAG_CHANGED);
 
   if (result != S_OK) {
@@ -84,8 +84,8 @@ bool FlyPadBackend::initialize() {
   }
 
   result &= SimConnect_MapClientDataNameToID(hSimConnect, "vPILOT FBW", ClientData::VPILOT);
-  result &= SimConnect_CreateClientData(hSimConnect, ClientData::VPILOT, sizeof(struct ThirdPartyDataVPILOT), SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, DataStructureIDs::VPILOTDataID, 0, sizeof(struct ThirdPartyDataVPILOT));
+  result &= SimConnect_CreateClientData(hSimConnect, ClientData::VPILOT, sizeof(ATCServicesDataVPILOT), SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, DataStructureIDs::VPILOTDataID, 0, sizeof(ATCServicesDataVPILOT));
   result &= SimConnect_RequestClientData(hSimConnect, ClientData::VPILOT, DataStructureRequestIDs::VPILOTRequestID, DataStructureIDs::VPILOTDataID, SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET, SIMCONNECT_DATA_REQUEST_FLAG_CHANGED);
 
   if (result != S_OK) {
@@ -143,7 +143,7 @@ bool FlyPadBackend::onUpdate(double deltaTime) {
 bool FlyPadBackend::shutdown() {
   std::cout << "FLYPAD_BACKEND: Disconnecting ..." << std::endl;
 
-  thirdPartyPtr->notifyShutdownThirdParty();
+  thirdPartyPtr->notifyATCServicesShutdown();
 
   // shutdown suib modules
   lightPresetPtr->shutdown();
@@ -203,13 +203,13 @@ void FlyPadBackend::simConnectProcessClientData(const SIMCONNECT_RECV_CLIENT_DAT
   // process depending on request id from SimConnect_RequestClientData()
   switch (data->dwRequestID) {
     case DataStructureRequestIDs::IVAORequestID:
-      IVAOData = new struct ThirdPartyDataIVAO();
-      *IVAOData = *((struct ThirdPartyDataIVAO*) &data->dwData);
+      IVAOData = new ATCServicesDataIVAO();
+      *IVAOData = *((ATCServicesDataIVAO*) &data->dwData);
       return;
 
     case DataStructureRequestIDs::VPILOTRequestID:
-      VPILOTData = new struct ThirdPartyDataVPILOT();
-      *VPILOTData = *((struct ThirdPartyDataVPILOT*) &data->dwData);
+      VPILOTData = new ATCServicesDataVPILOT();
+      *VPILOTData = *((ATCServicesDataVPILOT*) &data->dwData);
       return;
 
     default:
@@ -222,12 +222,12 @@ void FlyPadBackend::simConnectProcessClientData(const SIMCONNECT_RECV_CLIENT_DAT
 void FlyPadBackend::simConnectProcessDispatchMessage(SIMCONNECT_RECV* pData, DWORD* cbData) {
   switch (pData->dwID) {
     case SIMCONNECT_RECV_ID_OPEN:
-      thirdPartyPtr->notifyStartThirdParty();
+      thirdPartyPtr->notifyATCServicesShutdown();
       cout << "FLYPAD_BACKEND: SimConnect connection established" << endl;
       break;
 
     case SIMCONNECT_RECV_ID_QUIT:
-      thirdPartyPtr->notifyShutdownThirdParty();
+      thirdPartyPtr->notifyATCServicesStart();
       cout << "FLYPAD_BACKEND: Received SimConnect connection quit message" << endl;
       break;
 

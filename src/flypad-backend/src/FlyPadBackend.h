@@ -70,9 +70,9 @@ enum Events {
 class LightPreset;
 class AircraftPreset;
 class Pushback;
-class ThirdParty;
-struct ThirdPartyDataIVAO;
-struct ThirdPartyDataVPILOT;
+class ATCServices;
+struct ATCServicesDataIVAO;
+struct ATCServicesDataVPILOT;
 
 class FlyPadBackend {
 private:
@@ -81,8 +81,8 @@ private:
   // Instance of local data structure for simconnect data
   SimulationData simulationData = {};
   PushbackData pushbackData = {};
-  ThirdPartyDataIVAO *IVAOData = nullptr;
-  ThirdPartyDataVPILOT *VPILOTData = nullptr;
+  ATCServicesDataIVAO *IVAOData = nullptr;
+  ATCServicesDataVPILOT *VPILOTData = nullptr;
 
   /**
    * Flag if connection has been initialized.
@@ -96,7 +96,7 @@ private:
   std::unique_ptr<LightPreset> lightPresetPtr;
   std::unique_ptr<AircraftPreset> aircraftPresetPtr;
   std::unique_ptr<Pushback> pushbackPtr;
-  std::unique_ptr<ThirdParty> thirdPartyPtr;
+  std::unique_ptr<ATCServices> thirdPartyPtr;
 
 public:
   /**
