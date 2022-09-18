@@ -30,21 +30,16 @@ using namespace std;
 enum DataStructureIDs {
   SimulationDataID,
   PushbackDataID,
-  SelcalIVAODataID,
-  VolumeCOM1DataID,
-  VolumeCOM2DataID,
-  AllIVAODataID,
-  AircraftLoadedDataID,
-  SelcalVPILOTDataID,
-  AllVPILOTDataID
+  IVAODataID,
+  VPILOTDataID
 };
 
 // IDs for data structures - must be mapped to data structs
 enum DataStructureRequestIDs {
   SimulationDataRequestID,
   PushbackDataRequestID,
-  AllIVAORequestID,
-  AllVPILOTRequestID
+  IVAORequestID,
+  VPILOTRequestID
 };
 
   enum ClientData {

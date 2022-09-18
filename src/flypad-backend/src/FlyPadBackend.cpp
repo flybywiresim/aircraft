@@ -76,11 +76,8 @@ bool FlyPadBackend::initialize() {
   // Do not call SimConnect_CreateClientData since Altitude does it already
   // It would cause errors otherwise
   result &= SimConnect_MapClientDataNameToID(hSimConnect, "IVAO Altitude Data", ClientData::IVAO);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, DataStructureIDs::SelcalIVAODataID, 0, SIMCONNECT_CLIENTDATATYPE_INT8);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, DataStructureIDs::VolumeCOM1DataID, 1, SIMCONNECT_CLIENTDATATYPE_INT8);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, DataStructureIDs::VolumeCOM2DataID, 2, SIMCONNECT_CLIENTDATATYPE_INT8);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, DataStructureIDs::AllIVAODataID, 0, sizeof(struct ThirdPartyDataIVAO));
-  result &= SimConnect_RequestClientData(hSimConnect, ClientData::IVAO, DataStructureRequestIDs::AllIVAORequestID, DataStructureIDs::AllIVAODataID, SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET, SIMCONNECT_DATA_REQUEST_FLAG_CHANGED);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, DataStructureIDs::IVAODataID, 0, sizeof(struct ThirdPartyDataIVAO));
+  result &= SimConnect_RequestClientData(hSimConnect, ClientData::IVAO, DataStructureRequestIDs::IVAORequestID, DataStructureIDs::IVAODataID, SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET, SIMCONNECT_DATA_REQUEST_FLAG_CHANGED);
 
   if (result != S_OK) {
     std::cout << "FLYPAD_BACKEND: IVAO definition failed! " << std::endl;
@@ -88,10 +85,8 @@ bool FlyPadBackend::initialize() {
 
   result &= SimConnect_MapClientDataNameToID(hSimConnect, "vPILOT FBW", ClientData::VPILOT);
   result &= SimConnect_CreateClientData(hSimConnect, ClientData::VPILOT, sizeof(struct ThirdPartyDataVPILOT), SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, DataStructureIDs::AircraftLoadedDataID, 0, SIMCONNECT_CLIENTDATATYPE_INT8);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, DataStructureIDs::SelcalVPILOTDataID, 1, SIMCONNECT_CLIENTDATATYPE_INT8);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, DataStructureIDs::AllVPILOTDataID, 0, sizeof(struct ThirdPartyDataVPILOT));
-  result &= SimConnect_RequestClientData(hSimConnect, ClientData::VPILOT, DataStructureRequestIDs::AllVPILOTRequestID, DataStructureIDs::AllVPILOTDataID, SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET, SIMCONNECT_DATA_REQUEST_FLAG_CHANGED);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, DataStructureIDs::VPILOTDataID, 0, sizeof(struct ThirdPartyDataVPILOT));
+  result &= SimConnect_RequestClientData(hSimConnect, ClientData::VPILOT, DataStructureRequestIDs::VPILOTRequestID, DataStructureIDs::VPILOTDataID, SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET, SIMCONNECT_DATA_REQUEST_FLAG_CHANGED);
 
   if (result != S_OK) {
     std::cout << "FLYPAD_BACKEND: vPilot definition failed! " << std::endl;
@@ -207,12 +202,12 @@ void FlyPadBackend::simConnectProcessSimObjectData(const SIMCONNECT_RECV_SIMOBJE
 void FlyPadBackend::simConnectProcessClientData(const SIMCONNECT_RECV_CLIENT_DATA* data) {
   // process depending on request id from SimConnect_RequestClientData()
   switch (data->dwRequestID) {
-    case DataStructureRequestIDs::AllIVAORequestID:
+    case DataStructureRequestIDs::IVAORequestID:
       IVAOData = new struct ThirdPartyDataIVAO();
       *IVAOData = *((struct ThirdPartyDataIVAO*) &data->dwData);
       return;
 
-    case DataStructureRequestIDs::AllVPILOTRequestID:
+    case DataStructureRequestIDs::VPILOTRequestID:
       VPILOTData = new struct ThirdPartyDataVPILOT();
       *VPILOTData = *((struct ThirdPartyDataVPILOT*) &data->dwData);
       return;
