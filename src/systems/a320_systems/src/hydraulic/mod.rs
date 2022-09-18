@@ -293,8 +293,8 @@ impl A320CargoDoorFactory {
 
 struct A320AileronFactory {}
 impl A320AileronFactory {
-    const FLOW_CONTROL_PROPORTIONAL_GAIN: f64 = 0.35;
-    const FLOW_CONTROL_INTEGRAL_GAIN: f64 = 5.;
+    const FLOW_CONTROL_PROPORTIONAL_GAIN: f64 = 0.25;
+    const FLOW_CONTROL_INTEGRAL_GAIN: f64 = 3.;
     const FLOW_CONTROL_FORCE_GAIN: f64 = 450000.;
 
     const MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING: f64 = 3500000.;
@@ -465,7 +465,7 @@ impl A320SpoilerFactory {
             control_arm,
             anchor,
             Angle::new::<degree>(-10.),
-            Angle::new::<degree>(40.),
+            Angle::new::<degree>(50.),
             Angle::new::<degree>(-10.),
             50.,
             false,
@@ -489,7 +489,18 @@ impl A320SpoilerFactory {
         let spoiler_4 = Self::new_a320_spoiler_element(context, id, 4);
         let spoiler_5 = Self::new_a320_spoiler_element(context, id, 5);
 
-        SpoilerGroup::new([spoiler_1, spoiler_2, spoiler_3, spoiler_4, spoiler_5])
+        match id {
+            ActuatorSide::Left => SpoilerGroup::new(
+                context,
+                "LEFT",
+                [spoiler_1, spoiler_2, spoiler_3, spoiler_4, spoiler_5],
+            ),
+            ActuatorSide::Right => SpoilerGroup::new(
+                context,
+                "RIGHT",
+                [spoiler_1, spoiler_2, spoiler_3, spoiler_4, spoiler_5],
+            ),
+        }
     }
 
     fn new_a320_spoiler_element(
@@ -1371,16 +1382,17 @@ pub(super) struct A320Hydraulic {
     aft_cargo_door: CargoDoor,
     aft_cargo_door_controller: A320DoorController,
 
-    elac_computer: ElacComputer,
+    elevator_system_controller: ElevatorSystemHydraulicController,
+    aileron_system_controller: AileronSystemHydraulicController,
+
     left_aileron: AileronAssembly,
     right_aileron: AileronAssembly,
     left_elevator: ElevatorAssembly,
     right_elevator: ElevatorAssembly,
 
-    fac_computer: FacComputer,
+    fac_computer: RudderSystemHydraulicController,
     rudder: RudderAssembly,
 
-    spoiler_computer: SpoilerComputer,
     left_spoilers: SpoilerGroup,
     right_spoilers: SpoilerGroup,
 
@@ -1628,16 +1640,17 @@ impl A320Hydraulic {
             ),
             aft_cargo_door_controller: A320DoorController::new(context, Self::AFT_CARGO_DOOR_ID),
 
-            elac_computer: ElacComputer::new(context),
+            elevator_system_controller: ElevatorSystemHydraulicController::new(context),
+            aileron_system_controller: AileronSystemHydraulicController::new(context),
+
             left_aileron: A320AileronFactory::new_aileron(context, ActuatorSide::Left),
             right_aileron: A320AileronFactory::new_aileron(context, ActuatorSide::Right),
             left_elevator: A320ElevatorFactory::new_elevator(context, ActuatorSide::Left),
             right_elevator: A320ElevatorFactory::new_elevator(context, ActuatorSide::Right),
 
-            fac_computer: FacComputer::new(context),
+            fac_computer: RudderSystemHydraulicController::new(context),
             rudder: A320RudderFactory::new_rudder(context),
 
-            spoiler_computer: SpoilerComputer::new(context),
             left_spoilers: A320SpoilerFactory::new_a320_spoiler_group(context, ActuatorSide::Left),
             right_spoilers: A320SpoilerFactory::new_a320_spoiler_group(
                 context,
@@ -1815,28 +1828,28 @@ impl A320Hydraulic {
     ) {
         self.left_aileron.update(
             context,
-            self.elac_computer.left_controllers(),
+            self.aileron_system_controller.left_controllers(),
             self.blue_circuit.system_section(),
             self.green_circuit.system_section(),
         );
 
         self.right_aileron.update(
             context,
-            self.elac_computer.right_controllers(),
+            self.aileron_system_controller.right_controllers(),
             self.blue_circuit.system_section(),
             self.green_circuit.system_section(),
         );
 
         self.left_elevator.update(
             context,
-            self.elac_computer.left_elevator_controllers(),
+            self.elevator_system_controller.left_controllers(),
             self.blue_circuit.system_section(),
             self.green_circuit.system_section(),
         );
 
         self.right_elevator.update(
             context,
-            self.elac_computer.right_elevator_controllers(),
+            self.elevator_system_controller.right_controllers(),
             self.blue_circuit.system_section(),
             self.yellow_circuit.system_section(),
         );
@@ -1851,7 +1864,6 @@ impl A320Hydraulic {
 
         self.left_spoilers.update(
             context,
-            self.spoiler_computer.left_controllers(),
             self.green_circuit.system_section(),
             self.blue_circuit.system_section(),
             self.yellow_circuit.system_section(),
@@ -1859,7 +1871,6 @@ impl A320Hydraulic {
 
         self.right_spoilers.update(
             context,
-            self.spoiler_computer.right_controllers(),
             self.green_circuit.system_section(),
             self.blue_circuit.system_section(),
             self.yellow_circuit.system_section(),
@@ -2023,12 +2034,6 @@ impl A320Hydraulic {
             self.yellow_circuit.system_section(),
         );
 
-        self.elac_computer.update(
-            self.blue_circuit.system_section(),
-            self.green_circuit.system_section(),
-            self.yellow_circuit.system_section(),
-        );
-
         self.slats_flaps_complex
             .update(context, &self.flap_system, &self.slat_system);
 
@@ -2051,16 +2056,15 @@ impl A320Hydraulic {
             .update_system_actuator_volumes(&mut self.braking_circuit_norm);
 
         self.green_circuit.update_system_actuator_volumes(
-            self.left_aileron.actuator(AileronActuatorPosition::Inboard),
+            self.left_aileron.actuator(AileronActuatorPosition::Green),
         );
         self.green_circuit.update_system_actuator_volumes(
-            self.right_aileron
-                .actuator(AileronActuatorPosition::Inboard),
+            self.right_aileron.actuator(AileronActuatorPosition::Green),
         );
 
         self.green_circuit.update_system_actuator_volumes(
             self.left_elevator
-                .actuator(ElevatorActuatorPosition::Inboard),
+                .actuator(LeftElevatorActuatorCircuit::Green as usize),
         );
 
         self.green_circuit
@@ -2107,7 +2111,7 @@ impl A320Hydraulic {
 
         self.yellow_circuit.update_system_actuator_volumes(
             self.right_elevator
-                .actuator(ElevatorActuatorPosition::Inboard),
+                .actuator(RightElevatorActuatorCircuit::Yellow as usize),
         );
 
         self.yellow_circuit
@@ -2134,21 +2138,19 @@ impl A320Hydraulic {
             .update_system_actuator_volumes(&mut self.emergency_gen);
 
         self.blue_circuit.update_system_actuator_volumes(
-            self.left_aileron
-                .actuator(AileronActuatorPosition::Outboard),
+            self.left_aileron.actuator(AileronActuatorPosition::Blue),
         );
         self.blue_circuit.update_system_actuator_volumes(
-            self.right_aileron
-                .actuator(AileronActuatorPosition::Outboard),
+            self.right_aileron.actuator(AileronActuatorPosition::Blue),
         );
 
         self.blue_circuit.update_system_actuator_volumes(
             self.left_elevator
-                .actuator(ElevatorActuatorPosition::Outboard),
+                .actuator(LeftElevatorActuatorCircuit::Blue as usize),
         );
         self.blue_circuit.update_system_actuator_volumes(
             self.right_elevator
-                .actuator(ElevatorActuatorPosition::Outboard),
+                .actuator(RightElevatorActuatorCircuit::Blue as usize),
         );
 
         self.blue_circuit
@@ -2426,7 +2428,9 @@ impl SimulationElement for A320Hydraulic {
         self.flap_system.accept(visitor);
         self.slat_system.accept(visitor);
 
-        self.elac_computer.accept(visitor);
+        self.elevator_system_controller.accept(visitor);
+        self.aileron_system_controller.accept(visitor);
+
         self.left_aileron.accept(visitor);
         self.right_aileron.accept(visitor);
         self.left_elevator.accept(visitor);
@@ -2435,7 +2439,6 @@ impl SimulationElement for A320Hydraulic {
         self.fac_computer.accept(visitor);
         self.rudder.accept(visitor);
 
-        self.spoiler_computer.accept(visitor);
         self.left_spoilers.accept(visitor);
         self.right_spoilers.accept(visitor);
 
@@ -3983,12 +3986,12 @@ impl HydraulicAssemblyController for A320DoorController {
         Ratio::new::<ratio>(0.)
     }
 }
-impl HydraulicLocking for A320DoorController {}
 impl SimulationElement for A320DoorController {
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.position_requested = Ratio::new::<ratio>(reader.read(&self.requested_position_id));
     }
 }
+impl HydraulicLocking for A320DoorController {}
 
 struct CargoDoor {
     hydraulic_assembly: HydraulicLinearActuatorAssembly<1>,
@@ -4146,7 +4149,9 @@ pub struct A320AutobrakeController {
     armed_mode_id_set: VariableIdentifier,
     decel_light_id: VariableIdentifier,
     active_id: VariableIdentifier,
-    spoilers_ground_spoilers_active_id: VariableIdentifier,
+    ground_spoilers_out_sec1_id: VariableIdentifier,
+    ground_spoilers_out_sec2_id: VariableIdentifier,
+    ground_spoilers_out_sec3_id: VariableIdentifier,
     external_disarm_event_id: VariableIdentifier,
 
     deceleration_governor: AutobrakeDecelerationGovernor,
@@ -4188,8 +4193,12 @@ impl A320AutobrakeController {
             armed_mode_id_set: context.get_identifier("AUTOBRAKES_ARMED_MODE_SET".to_owned()),
             decel_light_id: context.get_identifier("AUTOBRAKES_DECEL_LIGHT".to_owned()),
             active_id: context.get_identifier("AUTOBRAKES_ACTIVE".to_owned()),
-            spoilers_ground_spoilers_active_id: context
-                .get_identifier("SPOILERS_GROUND_SPOILERS_ACTIVE".to_owned()),
+            ground_spoilers_out_sec1_id: context
+                .get_identifier("SEC_1_GROUND_SPOILER_OUT".to_owned()),
+            ground_spoilers_out_sec2_id: context
+                .get_identifier("SEC_2_GROUND_SPOILER_OUT".to_owned()),
+            ground_spoilers_out_sec3_id: context
+                .get_identifier("SEC_3_GROUND_SPOILER_OUT".to_owned()),
             external_disarm_event_id: context.get_identifier("AUTOBRAKE_DISARM".to_owned()),
 
             deceleration_governor: AutobrakeDecelerationGovernor::new(),
@@ -4386,7 +4395,12 @@ impl SimulationElement for A320AutobrakeController {
 
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.last_ground_spoilers_are_deployed = self.ground_spoilers_are_deployed;
-        self.ground_spoilers_are_deployed = reader.read(&self.spoilers_ground_spoilers_active_id);
+        let sec_1_gnd_splrs_out = reader.read(&self.ground_spoilers_out_sec1_id);
+        let sec_2_gnd_splrs_out = reader.read(&self.ground_spoilers_out_sec2_id);
+        let sec_3_gnd_splrs_out = reader.read(&self.ground_spoilers_out_sec3_id);
+        self.ground_spoilers_are_deployed = (sec_1_gnd_splrs_out && sec_2_gnd_splrs_out)
+            || (sec_1_gnd_splrs_out && sec_3_gnd_splrs_out)
+            || (sec_2_gnd_splrs_out && sec_3_gnd_splrs_out);
         self.external_disarm_event = reader.read(&self.external_disarm_event_id);
 
         // Reading current mode in sim to initialize correct mode if sim changes it (from .FLT files for example)
@@ -4571,383 +4585,45 @@ impl HydraulicAssemblyController for AileronController {
 }
 impl HydraulicLocking for AileronController {}
 
-enum AileronHydConfiguration {
-    GB,
-    G,
-    B,
-    NoHyd,
-}
-impl AileronHydConfiguration {
-    fn from_hyd_state(
-        green_circuit_available: bool,
-        blue_circuit_available: bool,
-    ) -> AileronHydConfiguration {
-        if green_circuit_available && blue_circuit_available {
-            AileronHydConfiguration::GB
-        } else if green_circuit_available {
-            AileronHydConfiguration::G
-        } else if blue_circuit_available {
-            AileronHydConfiguration::B
-        } else {
-            AileronHydConfiguration::NoHyd
-        }
-    }
-}
+struct AileronSystemHydraulicController {
+    left_aileron_blue_actuator_solenoid_id: VariableIdentifier,
+    right_aileron_blue_actuator_solenoid_id: VariableIdentifier,
+    left_aileron_green_actuator_solenoid_id: VariableIdentifier,
+    right_aileron_green_actuator_solenoid_id: VariableIdentifier,
 
-enum RightElevatorHydConfiguration {
-    YB,
-    Y,
-    B,
-    NoHyd,
-}
-impl RightElevatorHydConfiguration {
-    fn from_hyd_state(
-        blue_circuit_available: bool,
-        yellow_circuit_available: bool,
-    ) -> RightElevatorHydConfiguration {
-        if yellow_circuit_available && blue_circuit_available {
-            RightElevatorHydConfiguration::YB
-        } else if yellow_circuit_available {
-            RightElevatorHydConfiguration::Y
-        } else if blue_circuit_available {
-            RightElevatorHydConfiguration::B
-        } else {
-            RightElevatorHydConfiguration::NoHyd
-        }
-    }
-}
-enum LeftElevatorHydConfiguration {
-    GB,
-    G,
-    B,
-    NoHyd,
-}
-impl LeftElevatorHydConfiguration {
-    fn from_hyd_state(
-        green_circuit_available: bool,
-        blue_circuit_available: bool,
-    ) -> LeftElevatorHydConfiguration {
-        if green_circuit_available && blue_circuit_available {
-            LeftElevatorHydConfiguration::GB
-        } else if green_circuit_available {
-            LeftElevatorHydConfiguration::G
-        } else if blue_circuit_available {
-            LeftElevatorHydConfiguration::B
-        } else {
-            LeftElevatorHydConfiguration::NoHyd
-        }
-    }
-}
-
-/// Implements a placeholder elac computer logic commanding correct hydraulic modes depending
-/// on pressure state.
-/// TODO: Receive each actuator mode and commands directly from a FBW Elac implementation
-struct ElacComputer {
-    left_aileron_requested_position_id: VariableIdentifier,
-    right_aileron_requested_position_id: VariableIdentifier,
-    elevator_requested_position_id: VariableIdentifier,
-
-    left_aileron_requested_position: Ratio,
-    right_aileron_requested_position: Ratio,
-    elevator_requested_position: Ratio,
+    left_aileron_blue_actuator_position_demand_id: VariableIdentifier,
+    right_aileron_blue_actuator_position_demand_id: VariableIdentifier,
+    left_aileron_green_actuator_position_demand_id: VariableIdentifier,
+    right_aileron_green_actuator_position_demand_id: VariableIdentifier,
 
     left_aileron_controllers: [AileronController; 2],
     right_aileron_controllers: [AileronController; 2],
-
-    left_elevator_controllers: [AileronController; 2],
-    right_elevator_controllers: [AileronController; 2],
-
-    green_circuit_available: bool,
-    blue_circuit_available: bool,
-    yellow_circuit_available: bool,
-
-    is_powered: bool,
 }
-impl ElacComputer {
-    const PRESSURE_AVAILABLE_HIGH_HYSTERESIS_PSI: f64 = 1450.;
-    const PRESSURE_AVAILABLE_LOW_HYSTERESIS_PSI: f64 = 800.;
-
-    //TODO hot busses are in reality sub busses 703pp and 704pp
-    const ALL_POWER_BUSES: [ElectricalBusType; 4] = [
-        ElectricalBusType::DirectCurrentEssential,
-        ElectricalBusType::DirectCurrent(2),
-        ElectricalBusType::DirectCurrentHot(1),
-        ElectricalBusType::DirectCurrentHot(2),
-    ];
-
+impl AileronSystemHydraulicController {
     fn new(context: &mut InitContext) -> Self {
         Self {
-            left_aileron_requested_position_id: context
-                .get_identifier("HYD_AILERON_LEFT_DEMAND".to_owned()),
-            right_aileron_requested_position_id: context
-                .get_identifier("HYD_AILERON_RIGHT_DEMAND".to_owned()),
-            elevator_requested_position_id: context
-                .get_identifier("HYD_ELEVATOR_DEMAND".to_owned()),
+            left_aileron_blue_actuator_solenoid_id: context
+                .get_identifier("LEFT_AIL_BLUE_SERVO_SOLENOID_ENERGIZED".to_owned()),
+            right_aileron_blue_actuator_solenoid_id: context
+                .get_identifier("RIGHT_AIL_BLUE_SERVO_SOLENOID_ENERGIZED".to_owned()),
+            left_aileron_green_actuator_solenoid_id: context
+                .get_identifier("LEFT_AIL_GREEN_SERVO_SOLENOID_ENERGIZED".to_owned()),
+            right_aileron_green_actuator_solenoid_id: context
+                .get_identifier("RIGHT_AIL_GREEN_SERVO_SOLENOID_ENERGIZED".to_owned()),
 
-            left_aileron_requested_position: Ratio::default(),
-            right_aileron_requested_position: Ratio::default(),
-            elevator_requested_position: Ratio::default(),
+            left_aileron_blue_actuator_position_demand_id: context
+                .get_identifier("LEFT_AIL_BLUE_COMMANDED_POSITION".to_owned()),
+            right_aileron_blue_actuator_position_demand_id: context
+                .get_identifier("RIGHT_AIL_BLUE_COMMANDED_POSITION".to_owned()),
+            left_aileron_green_actuator_position_demand_id: context
+                .get_identifier("LEFT_AIL_GREEN_COMMANDED_POSITION".to_owned()),
+            right_aileron_green_actuator_position_demand_id: context
+                .get_identifier("RIGHT_AIL_GREEN_COMMANDED_POSITION".to_owned()),
 
             // Controllers are in outward->inward order, so for aileron [Blue circuit, Green circuit]
             left_aileron_controllers: [AileronController::new(), AileronController::new()],
             right_aileron_controllers: [AileronController::new(), AileronController::new()],
-
-            // Controllers are in outboard->inboard order
-            left_elevator_controllers: [AileronController::new(), AileronController::new()],
-            right_elevator_controllers: [AileronController::new(), AileronController::new()],
-
-            green_circuit_available: false,
-            blue_circuit_available: false,
-            yellow_circuit_available: false,
-
-            is_powered: false,
         }
-    }
-
-    fn update_aileron_requested_position(&mut self) {
-        for controller in &mut self.left_aileron_controllers {
-            controller.set_requested_position(self.left_aileron_requested_position);
-        }
-
-        for controller in &mut self.right_aileron_controllers {
-            controller.set_requested_position(self.right_aileron_requested_position);
-        }
-    }
-
-    fn update_elevator_requested_position(&mut self) {
-        for controller in &mut self.left_elevator_controllers {
-            controller.set_requested_position(self.elevator_requested_position);
-        }
-
-        for controller in &mut self.right_elevator_controllers {
-            controller.set_requested_position(self.elevator_requested_position);
-        }
-    }
-
-    fn set_aileron_no_position_control(&mut self) {
-        for controller in &mut self.left_aileron_controllers {
-            controller.set_mode(LinearActuatorMode::ClosedCircuitDamping);
-        }
-
-        for controller in &mut self.right_aileron_controllers {
-            controller.set_mode(LinearActuatorMode::ClosedCircuitDamping);
-        }
-    }
-
-    fn set_elevator_no_position_control(&mut self) {
-        for controller in &mut self.left_elevator_controllers {
-            controller.set_mode(LinearActuatorMode::ClosedCircuitDamping);
-        }
-
-        for controller in &mut self.right_elevator_controllers {
-            controller.set_mode(LinearActuatorMode::ClosedCircuitDamping);
-        }
-    }
-
-    fn set_left_aileron_position_control(
-        &mut self,
-        hydraulic_configuration: AileronHydConfiguration,
-    ) {
-        match hydraulic_configuration {
-            AileronHydConfiguration::GB | AileronHydConfiguration::B => {
-                self.left_aileron_controllers[AileronActuatorPosition::Outboard as usize]
-                    .set_mode(LinearActuatorMode::PositionControl);
-                self.left_aileron_controllers[AileronActuatorPosition::Inboard as usize]
-                    .set_mode(LinearActuatorMode::ActiveDamping);
-            }
-
-            AileronHydConfiguration::G => {
-                self.left_aileron_controllers[AileronActuatorPosition::Outboard as usize]
-                    .set_mode(LinearActuatorMode::ActiveDamping);
-                self.left_aileron_controllers[AileronActuatorPosition::Inboard as usize]
-                    .set_mode(LinearActuatorMode::PositionControl);
-            }
-            AileronHydConfiguration::NoHyd => {
-                self.left_aileron_controllers[AileronActuatorPosition::Outboard as usize]
-                    .set_mode(LinearActuatorMode::ClosedCircuitDamping);
-                self.left_aileron_controllers[AileronActuatorPosition::Inboard as usize]
-                    .set_mode(LinearActuatorMode::ClosedCircuitDamping);
-            }
-        }
-    }
-
-    fn set_right_aileron_position_control(
-        &mut self,
-        hydraulic_configuration: AileronHydConfiguration,
-    ) {
-        match hydraulic_configuration {
-            AileronHydConfiguration::GB | AileronHydConfiguration::G => {
-                self.right_aileron_controllers[AileronActuatorPosition::Outboard as usize]
-                    .set_mode(LinearActuatorMode::ActiveDamping);
-                self.right_aileron_controllers[AileronActuatorPosition::Inboard as usize]
-                    .set_mode(LinearActuatorMode::PositionControl);
-            }
-
-            AileronHydConfiguration::B => {
-                self.right_aileron_controllers[AileronActuatorPosition::Outboard as usize]
-                    .set_mode(LinearActuatorMode::PositionControl);
-                self.right_aileron_controllers[AileronActuatorPosition::Inboard as usize]
-                    .set_mode(LinearActuatorMode::ActiveDamping);
-            }
-            _ => {
-                self.right_aileron_controllers[AileronActuatorPosition::Outboard as usize]
-                    .set_mode(LinearActuatorMode::ClosedCircuitDamping);
-                self.right_aileron_controllers[AileronActuatorPosition::Inboard as usize]
-                    .set_mode(LinearActuatorMode::ClosedCircuitDamping);
-            }
-        }
-    }
-
-    fn set_left_elevator_position_control(
-        &mut self,
-        hydraulic_configuration: LeftElevatorHydConfiguration,
-    ) {
-        match hydraulic_configuration {
-            LeftElevatorHydConfiguration::GB => {
-                if self.elevator_requested_position > Ratio::new::<ratio>(0.8) {
-                    self.left_elevator_controllers[LeftElevatorActuatorCircuit::Blue as usize]
-                        .set_mode(LinearActuatorMode::PositionControl);
-                } else {
-                    self.left_elevator_controllers[LeftElevatorActuatorCircuit::Blue as usize]
-                        .set_mode(LinearActuatorMode::ActiveDamping);
-                }
-                self.left_elevator_controllers[LeftElevatorActuatorCircuit::Green as usize]
-                    .set_mode(LinearActuatorMode::PositionControl);
-            }
-            LeftElevatorHydConfiguration::G => {
-                self.left_elevator_controllers[LeftElevatorActuatorCircuit::Blue as usize]
-                    .set_mode(LinearActuatorMode::ActiveDamping);
-                self.left_elevator_controllers[LeftElevatorActuatorCircuit::Green as usize]
-                    .set_mode(LinearActuatorMode::PositionControl);
-            }
-            LeftElevatorHydConfiguration::B => {
-                self.left_elevator_controllers[LeftElevatorActuatorCircuit::Blue as usize]
-                    .set_mode(LinearActuatorMode::PositionControl);
-                self.left_elevator_controllers[LeftElevatorActuatorCircuit::Green as usize]
-                    .set_mode(LinearActuatorMode::ActiveDamping);
-            }
-            LeftElevatorHydConfiguration::NoHyd => {
-                self.left_elevator_controllers[LeftElevatorActuatorCircuit::Blue as usize]
-                    .set_mode(LinearActuatorMode::ClosedCircuitDamping);
-                self.left_elevator_controllers[LeftElevatorActuatorCircuit::Green as usize]
-                    .set_mode(LinearActuatorMode::ClosedCircuitDamping);
-            }
-        }
-    }
-
-    fn set_right_elevator_position_control(
-        &mut self,
-        hydraulic_configuration: RightElevatorHydConfiguration,
-    ) {
-        match hydraulic_configuration {
-            RightElevatorHydConfiguration::YB => {
-                if self.elevator_requested_position > Ratio::new::<ratio>(0.8) {
-                    self.right_elevator_controllers[RightElevatorActuatorCircuit::Blue as usize]
-                        .set_mode(LinearActuatorMode::PositionControl);
-                } else {
-                    self.right_elevator_controllers[RightElevatorActuatorCircuit::Blue as usize]
-                        .set_mode(LinearActuatorMode::ActiveDamping);
-                }
-                self.right_elevator_controllers[RightElevatorActuatorCircuit::Yellow as usize]
-                    .set_mode(LinearActuatorMode::PositionControl);
-            }
-            RightElevatorHydConfiguration::Y => {
-                self.right_elevator_controllers[RightElevatorActuatorCircuit::Blue as usize]
-                    .set_mode(LinearActuatorMode::ActiveDamping);
-                self.right_elevator_controllers[RightElevatorActuatorCircuit::Yellow as usize]
-                    .set_mode(LinearActuatorMode::PositionControl);
-            }
-            RightElevatorHydConfiguration::B => {
-                self.right_elevator_controllers[RightElevatorActuatorCircuit::Blue as usize]
-                    .set_mode(LinearActuatorMode::PositionControl);
-                self.right_elevator_controllers[RightElevatorActuatorCircuit::Yellow as usize]
-                    .set_mode(LinearActuatorMode::ActiveDamping);
-            }
-            RightElevatorHydConfiguration::NoHyd => {
-                self.right_elevator_controllers[RightElevatorActuatorCircuit::Blue as usize]
-                    .set_mode(LinearActuatorMode::ClosedCircuitDamping);
-                self.right_elevator_controllers[RightElevatorActuatorCircuit::Yellow as usize]
-                    .set_mode(LinearActuatorMode::ClosedCircuitDamping);
-            }
-        }
-    }
-
-    fn update_elevator(&mut self) {
-        if self.is_powered {
-            self.set_left_elevator_position_control(LeftElevatorHydConfiguration::from_hyd_state(
-                self.green_circuit_available,
-                self.blue_circuit_available,
-            ));
-
-            self.set_right_elevator_position_control(
-                RightElevatorHydConfiguration::from_hyd_state(
-                    self.blue_circuit_available,
-                    self.yellow_circuit_available,
-                ),
-            );
-        } else {
-            self.set_elevator_no_position_control();
-        }
-    }
-
-    fn update_aileron(&mut self) {
-        if self.is_powered {
-            self.set_right_aileron_position_control(AileronHydConfiguration::from_hyd_state(
-                self.green_circuit_available,
-                self.blue_circuit_available,
-            ));
-            self.set_left_aileron_position_control(AileronHydConfiguration::from_hyd_state(
-                self.green_circuit_available,
-                self.blue_circuit_available,
-            ));
-        } else {
-            self.set_aileron_no_position_control();
-        }
-    }
-
-    fn circuit_is_available(pressure: Pressure, current_availability: bool) -> bool {
-        if pressure.get::<psi>() > Self::PRESSURE_AVAILABLE_HIGH_HYSTERESIS_PSI {
-            true
-        } else if pressure.get::<psi>() < Self::PRESSURE_AVAILABLE_LOW_HYSTERESIS_PSI {
-            false
-        } else {
-            current_availability
-        }
-    }
-
-    fn update(
-        &mut self,
-        blue_pressure: &impl SectionPressure,
-        green_pressure: &impl SectionPressure,
-        yellow_pressure: &impl SectionPressure,
-    ) {
-        self.update_aileron_requested_position();
-        self.update_elevator_requested_position();
-
-        self.blue_circuit_available = Self::circuit_is_available(
-            blue_pressure.pressure_downstream_leak_valve(),
-            self.blue_circuit_available,
-        );
-        self.green_circuit_available = Self::circuit_is_available(
-            green_pressure.pressure_downstream_leak_valve(),
-            self.green_circuit_available,
-        );
-        self.yellow_circuit_available = Self::circuit_is_available(
-            yellow_pressure.pressure_downstream_leak_valve(),
-            self.yellow_circuit_available,
-        );
-
-        self.update_aileron();
-
-        self.update_elevator();
-    }
-
-    fn left_elevator_controllers(&self) -> &[impl HydraulicAssemblyController + HydraulicLocking] {
-        &self.left_elevator_controllers[..]
-    }
-
-    fn right_elevator_controllers(&self) -> &[impl HydraulicAssemblyController + HydraulicLocking] {
-        &self.right_elevator_controllers[..]
     }
 
     fn left_controllers(&self) -> &[impl HydraulicAssemblyController + HydraulicLocking] {
@@ -4957,27 +4633,283 @@ impl ElacComputer {
     fn right_controllers(&self) -> &[impl HydraulicAssemblyController + HydraulicLocking] {
         &self.right_aileron_controllers[..]
     }
+
+    fn update_aileron_controllers_positions(
+        &mut self,
+        left_position_requests: [Ratio; 2],
+        right_position_requests: [Ratio; 2],
+    ) {
+        self.left_aileron_controllers[AileronActuatorPosition::Blue as usize]
+            .set_requested_position(left_position_requests[AileronActuatorPosition::Blue as usize]);
+        self.left_aileron_controllers[AileronActuatorPosition::Green as usize]
+            .set_requested_position(
+                left_position_requests[AileronActuatorPosition::Green as usize],
+            );
+
+        self.right_aileron_controllers[AileronActuatorPosition::Blue as usize]
+            .set_requested_position(
+                right_position_requests[AileronActuatorPosition::Blue as usize],
+            );
+        self.right_aileron_controllers[AileronActuatorPosition::Green as usize]
+            .set_requested_position(
+                right_position_requests[AileronActuatorPosition::Green as usize],
+            );
+    }
+
+    /// Will drive mode from solenoid state
+    /// -If energized actuator controls position
+    /// -If not energized actuator is slaved in damping
+    /// -We differentiate case of all actuators in damping mode where we set a more dampened
+    /// mode to reach realistic slow droop speed.
+    fn update_aileron_controllers_solenoids(
+        &mut self,
+        left_solenoids_energized: [bool; 2],
+        right_solenoids_energized: [bool; 2],
+    ) {
+        if left_solenoids_energized.iter().any(|x| *x) {
+            self.left_aileron_controllers[AileronActuatorPosition::Blue as usize].set_mode(
+                Self::aileron_actuator_mode_from_solenoid(
+                    left_solenoids_energized[AileronActuatorPosition::Blue as usize],
+                ),
+            );
+            self.left_aileron_controllers[AileronActuatorPosition::Green as usize].set_mode(
+                Self::aileron_actuator_mode_from_solenoid(
+                    left_solenoids_energized[AileronActuatorPosition::Green as usize],
+                ),
+            );
+        } else {
+            for controller in &mut self.left_aileron_controllers {
+                controller.set_mode(LinearActuatorMode::ClosedCircuitDamping);
+            }
+        }
+
+        if right_solenoids_energized.iter().any(|x| *x) {
+            self.right_aileron_controllers[AileronActuatorPosition::Blue as usize].set_mode(
+                Self::aileron_actuator_mode_from_solenoid(
+                    right_solenoids_energized[AileronActuatorPosition::Blue as usize],
+                ),
+            );
+            self.right_aileron_controllers[AileronActuatorPosition::Green as usize].set_mode(
+                Self::aileron_actuator_mode_from_solenoid(
+                    right_solenoids_energized[AileronActuatorPosition::Green as usize],
+                ),
+            );
+        } else {
+            for controller in &mut self.right_aileron_controllers {
+                controller.set_mode(LinearActuatorMode::ClosedCircuitDamping);
+            }
+        }
+    }
+
+    fn aileron_actuator_mode_from_solenoid(solenoid_energized: bool) -> LinearActuatorMode {
+        if solenoid_energized {
+            LinearActuatorMode::PositionControl
+        } else {
+            LinearActuatorMode::ActiveDamping
+        }
+    }
+
+    fn aileron_actuator_position_from_surface_angle(surface_angle: Angle) -> Ratio {
+        Ratio::new::<ratio>(surface_angle.get::<degree>() / 50. + 0.5)
+    }
 }
-impl SimulationElement for ElacComputer {
+impl SimulationElement for AileronSystemHydraulicController {
     fn read(&mut self, reader: &mut SimulatorReader) {
-        self.left_aileron_requested_position =
-            Ratio::new::<ratio>(reader.read(&self.left_aileron_requested_position_id));
-        self.right_aileron_requested_position =
-            Ratio::new::<ratio>(reader.read(&self.right_aileron_requested_position_id));
+        // Note that we reverse left, as positions are just passed through msfs for now
+        self.update_aileron_controllers_positions(
+            [
+                Self::aileron_actuator_position_from_surface_angle(-Angle::new::<degree>(
+                    reader.read(&self.left_aileron_blue_actuator_position_demand_id),
+                )),
+                Self::aileron_actuator_position_from_surface_angle(-Angle::new::<degree>(
+                    reader.read(&self.left_aileron_green_actuator_position_demand_id),
+                )),
+            ],
+            [
+                Self::aileron_actuator_position_from_surface_angle(Angle::new::<degree>(
+                    reader.read(&self.right_aileron_blue_actuator_position_demand_id),
+                )),
+                Self::aileron_actuator_position_from_surface_angle(Angle::new::<degree>(
+                    reader.read(&self.right_aileron_green_actuator_position_demand_id),
+                )),
+            ],
+        );
 
-        self.elevator_requested_position =
-            Ratio::new::<ratio>(reader.read(&self.elevator_requested_position_id));
-    }
-
-    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
-        self.is_powered = buses.any_is_powered(&Self::ALL_POWER_BUSES);
+        self.update_aileron_controllers_solenoids(
+            [
+                reader.read(&self.left_aileron_blue_actuator_solenoid_id),
+                reader.read(&self.left_aileron_green_actuator_solenoid_id),
+            ],
+            [
+                reader.read(&self.right_aileron_blue_actuator_solenoid_id),
+                reader.read(&self.right_aileron_green_actuator_solenoid_id),
+            ],
+        );
     }
 }
 
-/// Implements a placeholder fac computer logic commanding correct hydraulic modes depending
-/// on pressure state.
-/// TODO: Receive each actuator mode and commands directly from a FBW fac implementation
-struct FacComputer {
+struct ElevatorSystemHydraulicController {
+    left_elevator_blue_actuator_solenoid_id: VariableIdentifier,
+    right_elevator_blue_actuator_solenoid_id: VariableIdentifier,
+    left_elevator_green_actuator_solenoid_id: VariableIdentifier,
+    right_elevator_yellow_actuator_solenoid_id: VariableIdentifier,
+
+    left_elevator_blue_actuator_position_demand_id: VariableIdentifier,
+    right_elevator_blue_actuator_position_demand_id: VariableIdentifier,
+    left_elevator_green_actuator_position_demand_id: VariableIdentifier,
+    right_elevator_yellow_actuator_position_demand_id: VariableIdentifier,
+
+    left_controllers: [AileronController; 2],
+    right_controllers: [AileronController; 2],
+}
+impl ElevatorSystemHydraulicController {
+    fn new(context: &mut InitContext) -> Self {
+        Self {
+            left_elevator_blue_actuator_solenoid_id: context
+                .get_identifier("LEFT_ELEV_BLUE_SERVO_SOLENOID_ENERGIZED".to_owned()),
+            right_elevator_blue_actuator_solenoid_id: context
+                .get_identifier("RIGHT_ELEV_BLUE_SERVO_SOLENOID_ENERGIZED".to_owned()),
+            left_elevator_green_actuator_solenoid_id: context
+                .get_identifier("LEFT_ELEV_GREEN_SERVO_SOLENOID_ENERGIZED".to_owned()),
+            right_elevator_yellow_actuator_solenoid_id: context
+                .get_identifier("RIGHT_ELEV_YELLOW_SERVO_SOLENOID_ENERGIZED".to_owned()),
+
+            left_elevator_blue_actuator_position_demand_id: context
+                .get_identifier("LEFT_ELEV_BLUE_COMMANDED_POSITION".to_owned()),
+            right_elevator_blue_actuator_position_demand_id: context
+                .get_identifier("RIGHT_ELEV_BLUE_COMMANDED_POSITION".to_owned()),
+            left_elevator_green_actuator_position_demand_id: context
+                .get_identifier("LEFT_ELEV_GREEN_COMMANDED_POSITION".to_owned()),
+            right_elevator_yellow_actuator_position_demand_id: context
+                .get_identifier("RIGHT_ELEV_YELLOW_COMMANDED_POSITION".to_owned()),
+
+            // Controllers are in outboard->inboard order
+            left_controllers: [AileronController::new(), AileronController::new()],
+            right_controllers: [AileronController::new(), AileronController::new()],
+        }
+    }
+
+    fn left_controllers(&self) -> &[impl HydraulicAssemblyController + HydraulicLocking] {
+        &self.left_controllers[..]
+    }
+
+    fn right_controllers(&self) -> &[impl HydraulicAssemblyController + HydraulicLocking] {
+        &self.right_controllers[..]
+    }
+
+    fn update_elevator_controllers_positions(
+        &mut self,
+        left_position_requests: [Ratio; 2],
+        right_position_requests: [Ratio; 2],
+    ) {
+        self.left_controllers[LeftElevatorActuatorCircuit::Blue as usize].set_requested_position(
+            left_position_requests[LeftElevatorActuatorCircuit::Blue as usize],
+        );
+        self.left_controllers[LeftElevatorActuatorCircuit::Green as usize].set_requested_position(
+            left_position_requests[LeftElevatorActuatorCircuit::Green as usize],
+        );
+
+        self.right_controllers[RightElevatorActuatorCircuit::Blue as usize].set_requested_position(
+            right_position_requests[RightElevatorActuatorCircuit::Blue as usize],
+        );
+        self.right_controllers[RightElevatorActuatorCircuit::Yellow as usize]
+            .set_requested_position(
+                right_position_requests[RightElevatorActuatorCircuit::Yellow as usize],
+            );
+    }
+
+    fn update_elevator_controllers_solenoids(
+        &mut self,
+        left_solenoids_energized: [bool; 2],
+        right_solenoids_energized: [bool; 2],
+    ) {
+        if left_solenoids_energized.iter().all(|x| *x) {
+            for controller in &mut self.left_controllers {
+                controller.set_mode(LinearActuatorMode::ClosedCircuitDamping);
+            }
+        } else {
+            self.left_controllers[LeftElevatorActuatorCircuit::Blue as usize].set_mode(
+                Self::elevator_actuator_mode_from_solenoid(
+                    left_solenoids_energized[LeftElevatorActuatorCircuit::Blue as usize],
+                ),
+            );
+            self.left_controllers[LeftElevatorActuatorCircuit::Green as usize].set_mode(
+                Self::elevator_actuator_mode_from_solenoid(
+                    left_solenoids_energized[LeftElevatorActuatorCircuit::Green as usize],
+                ),
+            );
+        }
+
+        if right_solenoids_energized.iter().all(|x| *x) {
+            for controller in &mut self.right_controllers {
+                controller.set_mode(LinearActuatorMode::ClosedCircuitDamping);
+            }
+        } else {
+            self.right_controllers[RightElevatorActuatorCircuit::Blue as usize].set_mode(
+                Self::elevator_actuator_mode_from_solenoid(
+                    right_solenoids_energized[RightElevatorActuatorCircuit::Blue as usize],
+                ),
+            );
+            self.right_controllers[RightElevatorActuatorCircuit::Yellow as usize].set_mode(
+                Self::elevator_actuator_mode_from_solenoid(
+                    right_solenoids_energized[RightElevatorActuatorCircuit::Yellow as usize],
+                ),
+            );
+        }
+    }
+
+    fn elevator_actuator_mode_from_solenoid(solenoid_energized: bool) -> LinearActuatorMode {
+        // Elevator has reverted logic
+        if !solenoid_energized {
+            LinearActuatorMode::PositionControl
+        } else {
+            LinearActuatorMode::ActiveDamping
+        }
+    }
+
+    fn elevator_actuator_position_from_surface_angle(surface_angle: Angle) -> Ratio {
+        Ratio::new::<ratio>(
+            (-surface_angle.get::<degree>() / 47. + 17. / 47.)
+                .min(1.)
+                .max(0.),
+        )
+    }
+}
+impl SimulationElement for ElevatorSystemHydraulicController {
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        self.update_elevator_controllers_positions(
+            [
+                Self::elevator_actuator_position_from_surface_angle(Angle::new::<degree>(
+                    reader.read(&self.left_elevator_blue_actuator_position_demand_id),
+                )),
+                Self::elevator_actuator_position_from_surface_angle(Angle::new::<degree>(
+                    reader.read(&self.left_elevator_green_actuator_position_demand_id),
+                )),
+            ],
+            [
+                Self::elevator_actuator_position_from_surface_angle(Angle::new::<degree>(
+                    reader.read(&self.right_elevator_blue_actuator_position_demand_id),
+                )),
+                Self::elevator_actuator_position_from_surface_angle(Angle::new::<degree>(
+                    reader.read(&self.right_elevator_yellow_actuator_position_demand_id),
+                )),
+            ],
+        );
+
+        self.update_elevator_controllers_solenoids(
+            [
+                reader.read(&self.left_elevator_blue_actuator_solenoid_id),
+                reader.read(&self.left_elevator_green_actuator_solenoid_id),
+            ],
+            [
+                reader.read(&self.right_elevator_blue_actuator_solenoid_id),
+                reader.read(&self.right_elevator_yellow_actuator_solenoid_id),
+            ],
+        );
+    }
+}
+
+struct RudderSystemHydraulicController {
     requested_rudder_position_id: VariableIdentifier,
 
     rudder_position_requested: Ratio,
@@ -4986,7 +4918,7 @@ struct FacComputer {
 
     is_powered: bool,
 }
-impl FacComputer {
+impl RudderSystemHydraulicController {
     //TODO hot busses of FAC to check
     const ALL_POWER_BUSES: [ElectricalBusType; 4] = [
         ElectricalBusType::DirectCurrentEssential,
@@ -5103,7 +5035,7 @@ impl FacComputer {
         &self.rudder_controllers[..]
     }
 }
-impl SimulationElement for FacComputer {
+impl SimulationElement for RudderSystemHydraulicController {
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.rudder_position_requested =
             Ratio::new::<ratio>(reader.read(&self.requested_rudder_position_id));
@@ -5122,14 +5054,8 @@ enum ActuatorSide {
 
 #[derive(PartialEq, Clone, Copy)]
 enum AileronActuatorPosition {
-    Outboard = 0,
-    Inboard = 1,
-}
-
-#[derive(PartialEq, Clone, Copy)]
-enum ElevatorActuatorPosition {
-    Outboard = 0,
-    Inboard = 1,
+    Blue = 0,
+    Green = 1,
 }
 
 enum RudderActuatorPosition {
@@ -5237,14 +5163,14 @@ impl ElevatorAssembly {
         }
     }
 
-    fn actuator(&mut self, circuit_position: ElevatorActuatorPosition) -> &mut impl Actuator {
-        self.hydraulic_assembly.actuator(circuit_position as usize)
+    fn actuator(&mut self, circuit_position: usize) -> &mut impl Actuator {
+        self.hydraulic_assembly.actuator(circuit_position)
     }
 
     fn update(
         &mut self,
         context: &UpdateContext,
-        aileron_controllers: &[impl HydraulicAssemblyController + HydraulicLocking],
+        elevator_controllers: &[impl HydraulicAssemblyController + HydraulicLocking],
         current_pressure_outward: &impl SectionPressure,
         current_pressure_inward: &impl SectionPressure,
     ) {
@@ -5252,7 +5178,7 @@ impl ElevatorAssembly {
             .update_body(context, self.hydraulic_assembly.body());
         self.hydraulic_assembly.update(
             context,
-            aileron_controllers,
+            elevator_controllers,
             [
                 current_pressure_outward.pressure_downstream_leak_valve(),
                 current_pressure_inward.pressure_downstream_leak_valve(),
@@ -5348,10 +5274,10 @@ impl SpoilerElement {
             hydraulic_assembly,
             position_id: match id {
                 ActuatorSide::Left => {
-                    context.get_identifier(format!("HYD_SPOIL_{}_LEFT_DEFLECTION", id_num))
+                    context.get_identifier(format!("HYD_SPOILER_{}_LEFT_DEFLECTION", id_num))
                 }
                 ActuatorSide::Right => {
-                    context.get_identifier(format!("HYD_SPOIL_{}_RIGHT_DEFLECTION", id_num))
+                    context.get_identifier(format!("HYD_SPOILER_{}_RIGHT_DEFLECTION", id_num))
                 }
             },
             position: Ratio::new::<ratio>(0.),
@@ -5388,44 +5314,53 @@ impl SimulationElement for SpoilerElement {
 
 struct SpoilerGroup {
     spoilers: [SpoilerElement; 5],
+    hydraulic_controllers: [SpoilerController; 5],
 }
 impl SpoilerGroup {
-    fn new(spoilers: [SpoilerElement; 5]) -> Self {
-        Self { spoilers }
+    fn new(context: &mut InitContext, spoiler_side: &str, spoilers: [SpoilerElement; 5]) -> Self {
+        Self {
+            spoilers,
+            hydraulic_controllers: [
+                SpoilerController::new(context, spoiler_side, 1),
+                SpoilerController::new(context, spoiler_side, 2),
+                SpoilerController::new(context, spoiler_side, 3),
+                SpoilerController::new(context, spoiler_side, 4),
+                SpoilerController::new(context, spoiler_side, 5),
+            ],
+        }
     }
 
     fn update(
         &mut self,
         context: &UpdateContext,
-        spoiler_controllers: &[impl HydraulicAssemblyController + HydraulicLocking],
-        green_pressure: &impl SectionPressure,
-        blue_pressure: &impl SectionPressure,
-        yellow_pressure: &impl SectionPressure,
+        green_section: &impl SectionPressure,
+        blue_section: &impl SectionPressure,
+        yellow_section: &impl SectionPressure,
     ) {
         self.spoilers[0].update(
             context,
-            &spoiler_controllers[0],
-            green_pressure.pressure_downstream_leak_valve(),
+            &self.hydraulic_controllers[0],
+            green_section.pressure_downstream_leak_valve(),
         );
         self.spoilers[1].update(
             context,
-            &spoiler_controllers[1],
-            yellow_pressure.pressure_downstream_leak_valve(),
+            &self.hydraulic_controllers[1],
+            yellow_section.pressure_downstream_leak_valve(),
         );
         self.spoilers[2].update(
             context,
-            &spoiler_controllers[2],
-            blue_pressure.pressure_downstream_leak_valve(),
+            &self.hydraulic_controllers[2],
+            blue_section.pressure_downstream_leak_valve(),
         );
         self.spoilers[3].update(
             context,
-            &spoiler_controllers[3],
-            yellow_pressure.pressure_downstream_leak_valve(),
+            &self.hydraulic_controllers[3],
+            yellow_section.pressure_downstream_leak_valve(),
         );
         self.spoilers[4].update(
             context,
-            &spoiler_controllers[4],
-            green_pressure.pressure_downstream_leak_valve(),
+            &self.hydraulic_controllers[4],
+            green_section.pressure_downstream_leak_valve(),
         );
     }
 
@@ -5435,6 +5370,10 @@ impl SpoilerGroup {
 }
 impl SimulationElement for SpoilerGroup {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        for controller in &mut self.hydraulic_controllers {
+            controller.accept(visitor);
+        }
+
         for spoiler in &mut self.spoilers {
             spoiler.accept(visitor);
         }
@@ -5443,25 +5382,24 @@ impl SimulationElement for SpoilerGroup {
     }
 }
 
-#[derive(PartialEq, Clone, Copy)]
 struct SpoilerController {
-    mode: LinearActuatorMode,
+    position_demand_id: VariableIdentifier,
     requested_position: Ratio,
 }
 impl SpoilerController {
-    fn new() -> Self {
+    fn new(context: &mut InitContext, spoiler_side: &str, spoiler_id_number: usize) -> Self {
         Self {
-            mode: LinearActuatorMode::PositionControl,
+            position_demand_id: context.get_identifier(format!(
+                "{}_SPOILER_{}_COMMANDED_POSITION",
+                spoiler_side, spoiler_id_number
+            )),
 
             requested_position: Ratio::new::<ratio>(0.),
         }
     }
 
-    /// Receives a [0;1] position request, 0 is down 1 is up
-    fn set_requested_position(&mut self, requested_position: Ratio) {
-        self.requested_position = requested_position
-            .min(Ratio::new::<ratio>(1.))
-            .max(Ratio::new::<ratio>(0.));
+    fn spoiler_actuator_position_from_surface_angle(surface_angle: Angle) -> Ratio {
+        Ratio::new::<ratio>((surface_angle.get::<degree>() / 50.).min(1.).max(0.))
     }
 }
 impl HydraulicAssemblyController for SpoilerController {
@@ -5481,99 +5419,15 @@ impl HydraulicAssemblyController for SpoilerController {
         Ratio::default()
     }
 }
-impl HydraulicLocking for SpoilerController {}
-
-struct SpoilerComputer {
-    requested_position_left_1_id: VariableIdentifier,
-    requested_position_left_2_id: VariableIdentifier,
-    requested_position_left_3_id: VariableIdentifier,
-    requested_position_left_4_id: VariableIdentifier,
-    requested_position_left_5_id: VariableIdentifier,
-
-    requested_position_right_1_id: VariableIdentifier,
-    requested_position_right_2_id: VariableIdentifier,
-    requested_position_right_3_id: VariableIdentifier,
-    requested_position_right_4_id: VariableIdentifier,
-    requested_position_right_5_id: VariableIdentifier,
-
-    left_positions_requested: [Ratio; 5],
-    right_positions_requested: [Ratio; 5],
-
-    left_controllers: [SpoilerController; 5],
-    right_controllers: [SpoilerController; 5],
-}
-impl SpoilerComputer {
-    fn new(context: &mut InitContext) -> Self {
-        Self {
-            requested_position_left_1_id: context
-                .get_identifier("HYD_SPOILER_1_LEFT_DEMAND".to_owned()),
-            requested_position_left_2_id: context
-                .get_identifier("HYD_SPOILER_2_LEFT_DEMAND".to_owned()),
-            requested_position_left_3_id: context
-                .get_identifier("HYD_SPOILER_3_LEFT_DEMAND".to_owned()),
-            requested_position_left_4_id: context
-                .get_identifier("HYD_SPOILER_4_LEFT_DEMAND".to_owned()),
-            requested_position_left_5_id: context
-                .get_identifier("HYD_SPOILER_5_LEFT_DEMAND".to_owned()),
-
-            requested_position_right_1_id: context
-                .get_identifier("HYD_SPOILER_1_RIGHT_DEMAND".to_owned()),
-            requested_position_right_2_id: context
-                .get_identifier("HYD_SPOILER_2_RIGHT_DEMAND".to_owned()),
-            requested_position_right_3_id: context
-                .get_identifier("HYD_SPOILER_3_RIGHT_DEMAND".to_owned()),
-            requested_position_right_4_id: context
-                .get_identifier("HYD_SPOILER_4_RIGHT_DEMAND".to_owned()),
-            requested_position_right_5_id: context
-                .get_identifier("HYD_SPOILER_5_RIGHT_DEMAND".to_owned()),
-
-            left_positions_requested: [Ratio::default(); 5],
-            right_positions_requested: [Ratio::default(); 5],
-
-            // Controllers are in inward->outward order
-            left_controllers: [SpoilerController::new(); 5],
-            right_controllers: [SpoilerController::new(); 5],
-        }
-    }
-
-    fn update_spoilers_requested_position(&mut self) {
-        for (idx, controller) in &mut self.left_controllers.iter_mut().enumerate() {
-            controller.set_requested_position(self.left_positions_requested[idx]);
-        }
-
-        for (idx, controller) in &mut self.right_controllers.iter_mut().enumerate() {
-            controller.set_requested_position(self.right_positions_requested[idx]);
-        }
-    }
-
-    fn left_controllers(&self) -> &[impl HydraulicAssemblyController + HydraulicLocking] {
-        &self.left_controllers[..]
-    }
-
-    fn right_controllers(&self) -> &[impl HydraulicAssemblyController + HydraulicLocking] {
-        &self.right_controllers[..]
-    }
-}
-impl SimulationElement for SpoilerComputer {
+impl SimulationElement for SpoilerController {
     fn read(&mut self, reader: &mut SimulatorReader) {
-        self.left_positions_requested = [
-            Ratio::new::<ratio>(reader.read(&self.requested_position_left_1_id)),
-            Ratio::new::<ratio>(reader.read(&self.requested_position_left_2_id)),
-            Ratio::new::<ratio>(reader.read(&self.requested_position_left_3_id)),
-            Ratio::new::<ratio>(reader.read(&self.requested_position_left_4_id)),
-            Ratio::new::<ratio>(reader.read(&self.requested_position_left_5_id)),
-        ];
-        self.right_positions_requested = [
-            Ratio::new::<ratio>(reader.read(&self.requested_position_right_1_id)),
-            Ratio::new::<ratio>(reader.read(&self.requested_position_right_2_id)),
-            Ratio::new::<ratio>(reader.read(&self.requested_position_right_3_id)),
-            Ratio::new::<ratio>(reader.read(&self.requested_position_right_4_id)),
-            Ratio::new::<ratio>(reader.read(&self.requested_position_right_5_id)),
-        ];
-
-        self.update_spoilers_requested_position();
+        self.requested_position =
+            Self::spoiler_actuator_position_from_surface_angle(Angle::new::<degree>(
+                reader.read(&self.position_demand_id),
+            ));
     }
 }
+impl HydraulicLocking for SpoilerController {}
 
 struct A320GravityExtension {
     gear_gravity_extension_handle_position_id: VariableIdentifier,
@@ -6365,6 +6219,24 @@ mod tests {
                 Ratio::new::<ratio>(self.read_by_name("HYD_ELEV_LEFT_DEFLECTION"))
             }
 
+            fn get_mean_right_spoilers_position(&mut self) -> Ratio {
+                (Ratio::new::<ratio>(self.read_by_name("HYD_SPOILER_1_RIGHT_DEFLECTION"))
+                    + Ratio::new::<ratio>(self.read_by_name("HYD_SPOILER_2_RIGHT_DEFLECTION"))
+                    + Ratio::new::<ratio>(self.read_by_name("HYD_SPOILER_3_RIGHT_DEFLECTION"))
+                    + Ratio::new::<ratio>(self.read_by_name("HYD_SPOILER_4_RIGHT_DEFLECTION"))
+                    + Ratio::new::<ratio>(self.read_by_name("HYD_SPOILER_5_RIGHT_DEFLECTION")))
+                    / 5.
+            }
+
+            fn get_mean_left_spoilers_position(&mut self) -> Ratio {
+                (Ratio::new::<ratio>(self.read_by_name("HYD_SPOILER_1_LEFT_DEFLECTION"))
+                    + Ratio::new::<ratio>(self.read_by_name("HYD_SPOILER_2_LEFT_DEFLECTION"))
+                    + Ratio::new::<ratio>(self.read_by_name("HYD_SPOILER_3_LEFT_DEFLECTION"))
+                    + Ratio::new::<ratio>(self.read_by_name("HYD_SPOILER_4_LEFT_DEFLECTION"))
+                    + Ratio::new::<ratio>(self.read_by_name("HYD_SPOILER_5_LEFT_DEFLECTION")))
+                    / 5.
+            }
+
             fn get_right_elevator_position(&mut self) -> Ratio {
                 Ratio::new::<ratio>(self.read_by_name("HYD_ELEV_RIGHT_DEFLECTION"))
             }
@@ -6661,44 +6533,6 @@ mod tests {
                 self
             }
 
-            fn set_spoiler_position_demand(
-                mut self,
-                left_demand: Ratio,
-                right_demand: Ratio,
-            ) -> Self {
-                self.write_by_name("HYD_SPOILER_1_RIGHT_DEMAND", right_demand.get::<ratio>());
-                self.write_by_name("HYD_SPOILER_2_RIGHT_DEMAND", right_demand.get::<ratio>());
-                self.write_by_name("HYD_SPOILER_3_RIGHT_DEMAND", right_demand.get::<ratio>());
-                self.write_by_name("HYD_SPOILER_4_RIGHT_DEMAND", right_demand.get::<ratio>());
-                self.write_by_name("HYD_SPOILER_5_RIGHT_DEMAND", right_demand.get::<ratio>());
-
-                self.write_by_name("HYD_SPOILER_1_LEFT_DEMAND", left_demand.get::<ratio>());
-                self.write_by_name("HYD_SPOILER_2_LEFT_DEMAND", left_demand.get::<ratio>());
-                self.write_by_name("HYD_SPOILER_3_LEFT_DEMAND", left_demand.get::<ratio>());
-                self.write_by_name("HYD_SPOILER_4_LEFT_DEMAND", left_demand.get::<ratio>());
-                self.write_by_name("HYD_SPOILER_5_LEFT_DEMAND", left_demand.get::<ratio>());
-
-                self
-            }
-
-            fn get_spoiler_left_mean_position(&mut self) -> Ratio {
-                (Ratio::new::<ratio>(self.read_by_name("HYD_SPOIL_1_LEFT_DEFLECTION"))
-                    + Ratio::new::<ratio>(self.read_by_name("HYD_SPOIL_2_LEFT_DEFLECTION"))
-                    + Ratio::new::<ratio>(self.read_by_name("HYD_SPOIL_3_LEFT_DEFLECTION"))
-                    + Ratio::new::<ratio>(self.read_by_name("HYD_SPOIL_4_LEFT_DEFLECTION"))
-                    + Ratio::new::<ratio>(self.read_by_name("HYD_SPOIL_5_LEFT_DEFLECTION")))
-                    / 5.
-            }
-
-            fn get_spoiler_right_mean_position(&mut self) -> Ratio {
-                (Ratio::new::<ratio>(self.read_by_name("HYD_SPOIL_1_RIGHT_DEFLECTION"))
-                    + Ratio::new::<ratio>(self.read_by_name("HYD_SPOIL_2_RIGHT_DEFLECTION"))
-                    + Ratio::new::<ratio>(self.read_by_name("HYD_SPOIL_3_RIGHT_DEFLECTION"))
-                    + Ratio::new::<ratio>(self.read_by_name("HYD_SPOIL_4_RIGHT_DEFLECTION"))
-                    + Ratio::new::<ratio>(self.read_by_name("HYD_SPOIL_5_RIGHT_DEFLECTION")))
-                    / 5.
-            }
-
             fn set_flaps_handle_position(mut self, pos: u8) -> Self {
                 self.write_by_name("FLAPS_HANDLE_INDEX", pos as f64);
                 self
@@ -6817,6 +6651,7 @@ mod tests {
                     .set_gear_lever_down()
                     .set_pushback_state(false)
                     .air_press_nominal()
+                    .set_elac1_actuators_energized()
                     .set_ailerons_neutral()
                     .set_elevator_neutral()
             }
@@ -6872,41 +6707,137 @@ mod tests {
                 self
             }
 
-            fn set_deploy_spoilers(mut self) -> Self {
-                self.write_by_name("SPOILERS_GROUND_SPOILERS_ACTIVE", true);
+            fn set_deploy_ground_spoilers(mut self) -> Self {
+                self.write_by_name("SEC_1_GROUND_SPOILER_OUT", true);
+                self.write_by_name("SEC_2_GROUND_SPOILER_OUT", true);
+                self.write_by_name("SEC_3_GROUND_SPOILER_OUT", true);
                 self
             }
 
-            fn set_retract_spoilers(mut self) -> Self {
-                self.write_by_name("SPOILERS_GROUND_SPOILERS_ACTIVE", false);
+            fn set_retract_ground_spoilers(mut self) -> Self {
+                self.write_by_name("SEC_1_GROUND_SPOILER_OUT", false);
+                self.write_by_name("SEC_2_GROUND_SPOILER_OUT", false);
+                self.write_by_name("SEC_3_GROUND_SPOILER_OUT", false);
                 self
             }
 
             fn set_ailerons_neutral(mut self) -> Self {
-                self.write_by_name("HYD_AILERON_LEFT_DEMAND", 0.5);
-                self.write_by_name("HYD_AILERON_RIGHT_DEMAND", 0.5);
+                self.write_by_name("LEFT_AIL_BLUE_COMMANDED_POSITION", 0.);
+                self.write_by_name("RIGHT_AIL_BLUE_COMMANDED_POSITION", 0.);
+                self.write_by_name("LEFT_AIL_GREEN_COMMANDED_POSITION", 0.);
+                self.write_by_name("RIGHT_AIL_GREEN_COMMANDED_POSITION", 0.);
                 self
             }
 
             fn set_elevator_neutral(mut self) -> Self {
-                self.write_by_name("HYD_ELEVATOR_DEMAND", 0.5);
+                self.write_by_name("LEFT_ELEV_BLUE_COMMANDED_POSITION", 0.);
+                self.write_by_name("RIGHT_ELEV_BLUE_COMMANDED_POSITION", 0.);
+                self.write_by_name("LEFT_ELEV_GREEN_COMMANDED_POSITION", 0.);
+                self.write_by_name("RIGHT_ELEV_YELLOW_COMMANDED_POSITION", 0.);
                 self
             }
 
             fn set_ailerons_left_turn(mut self) -> Self {
-                self.write_by_name("HYD_AILERON_LEFT_DEMAND", 1.);
-                self.write_by_name("HYD_AILERON_RIGHT_DEMAND", 0.);
+                self.write_by_name("LEFT_AIL_BLUE_COMMANDED_POSITION", -25.);
+                self.write_by_name("RIGHT_AIL_BLUE_COMMANDED_POSITION", -25.);
+                self.write_by_name("LEFT_AIL_GREEN_COMMANDED_POSITION", -25.);
+                self.write_by_name("RIGHT_AIL_GREEN_COMMANDED_POSITION", -25.);
+                self
+            }
+
+            fn set_elac1_actuators_energized(mut self) -> Self {
+                self.write_by_name("LEFT_AIL_BLUE_SERVO_SOLENOID_ENERGIZED", 1.);
+                self.write_by_name("RIGHT_AIL_BLUE_SERVO_SOLENOID_ENERGIZED", 0.);
+                self.write_by_name("LEFT_AIL_GREEN_SERVO_SOLENOID_ENERGIZED", 0.);
+                self.write_by_name("RIGHT_AIL_GREEN_SERVO_SOLENOID_ENERGIZED", 1.);
+
+                self.write_by_name("LEFT_ELEV_BLUE_SERVO_SOLENOID_ENERGIZED", 0.);
+                self.write_by_name("RIGHT_ELEV_BLUE_SERVO_SOLENOID_ENERGIZED", 0.);
+                self.write_by_name("LEFT_ELEV_GREEN_SERVO_SOLENOID_ENERGIZED", 1.);
+                self.write_by_name("RIGHT_ELEV_YELLOW_SERVO_SOLENOID_ENERGIZED", 1.);
+                self
+            }
+
+            fn set_elac_actuators_de_energized(mut self) -> Self {
+                self.write_by_name("LEFT_AIL_BLUE_SERVO_SOLENOID_ENERGIZED", 0.);
+                self.write_by_name("RIGHT_AIL_BLUE_SERVO_SOLENOID_ENERGIZED", 0.);
+                self.write_by_name("LEFT_AIL_GREEN_SERVO_SOLENOID_ENERGIZED", 0.);
+                self.write_by_name("RIGHT_AIL_GREEN_SERVO_SOLENOID_ENERGIZED", 0.);
+
+                self.write_by_name("LEFT_ELEV_BLUE_SERVO_SOLENOID_ENERGIZED", 0.);
+                self.write_by_name("RIGHT_ELEV_BLUE_SERVO_SOLENOID_ENERGIZED", 0.);
+                self.write_by_name("LEFT_ELEV_GREEN_SERVO_SOLENOID_ENERGIZED", 0.);
+                self.write_by_name("RIGHT_ELEV_YELLOW_SERVO_SOLENOID_ENERGIZED", 0.);
+
+                self.write_by_name("LEFT_ELEV_BLUE_COMMANDED_POSITION", 0.);
+                self.write_by_name("RIGHT_ELEV_BLUE_COMMANDED_POSITION", 0.);
+                self.write_by_name("LEFT_ELEV_GREEN_COMMANDED_POSITION", 0.);
+                self.write_by_name("RIGHT_ELEV_YELLOW_COMMANDED_POSITION", 0.);
+                self
+            }
+
+            fn set_left_spoilers_out(mut self) -> Self {
+                self.write_by_name("LEFT_SPOILER_1_COMMANDED_POSITION", 50.);
+                self.write_by_name("LEFT_SPOILER_2_COMMANDED_POSITION", 50.);
+                self.write_by_name("LEFT_SPOILER_3_COMMANDED_POSITION", 50.);
+                self.write_by_name("LEFT_SPOILER_4_COMMANDED_POSITION", 50.);
+                self.write_by_name("LEFT_SPOILER_5_COMMANDED_POSITION", 50.);
+                self
+            }
+
+            fn set_left_spoilers_in(mut self) -> Self {
+                self.write_by_name("LEFT_SPOILER_1_COMMANDED_POSITION", 0.);
+                self.write_by_name("LEFT_SPOILER_2_COMMANDED_POSITION", 0.);
+                self.write_by_name("LEFT_SPOILER_3_COMMANDED_POSITION", 0.);
+                self.write_by_name("LEFT_SPOILER_4_COMMANDED_POSITION", 0.);
+                self.write_by_name("LEFT_SPOILER_5_COMMANDED_POSITION", 0.);
+                self
+            }
+
+            fn set_right_spoilers_out(mut self) -> Self {
+                self.write_by_name("RIGHT_SPOILER_1_COMMANDED_POSITION", 50.);
+                self.write_by_name("RIGHT_SPOILER_2_COMMANDED_POSITION", 50.);
+                self.write_by_name("RIGHT_SPOILER_3_COMMANDED_POSITION", 50.);
+                self.write_by_name("RIGHT_SPOILER_4_COMMANDED_POSITION", 50.);
+                self.write_by_name("RIGHT_SPOILER_5_COMMANDED_POSITION", 50.);
+                self
+            }
+
+            fn set_right_spoilers_in(mut self) -> Self {
+                self.write_by_name("RIGHT_SPOILER_1_COMMANDED_POSITION", 0.);
+                self.write_by_name("RIGHT_SPOILER_2_COMMANDED_POSITION", 0.);
+                self.write_by_name("RIGHT_SPOILER_3_COMMANDED_POSITION", 0.);
+                self.write_by_name("RIGHT_SPOILER_4_COMMANDED_POSITION", 0.);
+                self.write_by_name("RIGHT_SPOILER_5_COMMANDED_POSITION", 0.);
                 self
             }
 
             fn set_ailerons_right_turn(mut self) -> Self {
-                self.write_by_name("HYD_AILERON_LEFT_DEMAND", 0.);
-                self.write_by_name("HYD_AILERON_RIGHT_DEMAND", 1.);
+                self.write_by_name("LEFT_AIL_BLUE_COMMANDED_POSITION", 25.);
+                self.write_by_name("RIGHT_AIL_BLUE_COMMANDED_POSITION", 25.);
+                self.write_by_name("LEFT_AIL_GREEN_COMMANDED_POSITION", 25.);
+                self.write_by_name("RIGHT_AIL_GREEN_COMMANDED_POSITION", 25.);
                 self
             }
 
             fn gear_system_state(&self) -> GearSystemState {
                 self.query(|a| a.lgcius.active_lgciu().gear_system_state())
+            }
+
+            fn set_elevator_full_up(mut self) -> Self {
+                self.write_by_name("LEFT_ELEV_BLUE_COMMANDED_POSITION", -30.);
+                self.write_by_name("RIGHT_ELEV_BLUE_COMMANDED_POSITION", -30.);
+                self.write_by_name("LEFT_ELEV_GREEN_COMMANDED_POSITION", -30.);
+                self.write_by_name("RIGHT_ELEV_YELLOW_COMMANDED_POSITION", -30.);
+                self
+            }
+
+            fn set_elevator_full_down(mut self) -> Self {
+                self.write_by_name("LEFT_ELEV_BLUE_COMMANDED_POSITION", 17.);
+                self.write_by_name("RIGHT_ELEV_BLUE_COMMANDED_POSITION", 17.);
+                self.write_by_name("LEFT_ELEV_GREEN_COMMANDED_POSITION", 17.);
+                self.write_by_name("RIGHT_ELEV_YELLOW_COMMANDED_POSITION", 17.);
+                self
             }
 
             fn empty_brake_accumulator_using_park_brake(mut self) -> Self {
@@ -8434,7 +8365,7 @@ mod tests {
         }
 
         #[test]
-        fn no_brake_inversion() {
+        fn no_norm_brake_inversion() {
             let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
@@ -8449,6 +8380,7 @@ mod tests {
 
             assert!(test_bed.is_green_pressure_switch_pressurised());
             assert!(test_bed.is_yellow_pressure_switch_pressurised());
+
             // Braking left
             test_bed = test_bed
                 .set_left_brake(Ratio::new::<percent>(100.))
@@ -8470,6 +8402,24 @@ mod tests {
             assert!(test_bed.get_brake_right_green_pressure() > Pressure::new::<psi>(2000.));
             assert!(test_bed.get_brake_left_yellow_pressure() < Pressure::new::<psi>(50.));
             assert!(test_bed.get_brake_right_yellow_pressure() < Pressure::new::<psi>(50.));
+        }
+
+        #[test]
+        fn no_alternate_brake_inversion() {
+            let mut test_bed = test_bed_on_ground_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
+
+            test_bed = test_bed
+                .start_eng1(Ratio::new::<percent>(100.))
+                .start_eng2(Ratio::new::<percent>(100.))
+                .set_park_brake(false)
+                .run_waiting_for(Duration::from_secs(5));
+
+            assert!(test_bed.is_green_pressure_switch_pressurised());
+            assert!(test_bed.is_yellow_pressure_switch_pressurised());
 
             // Disabling Askid causes alternate braking to work and release green brakes
             test_bed = test_bed
@@ -8921,7 +8871,7 @@ mod tests {
             assert!(test_bed.autobrake_mode() == AutobrakeMode::MAX);
 
             test_bed = test_bed
-                .set_deploy_spoilers()
+                .set_deploy_ground_spoilers()
                 .run_waiting_for(Duration::from_secs(6));
 
             assert!(test_bed.autobrake_mode() == AutobrakeMode::MAX);
@@ -8949,13 +8899,13 @@ mod tests {
             assert!(test_bed.autobrake_mode() == AutobrakeMode::MAX);
 
             test_bed = test_bed
-                .set_deploy_spoilers()
+                .set_deploy_ground_spoilers()
                 .run_waiting_for(Duration::from_secs(6));
 
             assert!(test_bed.autobrake_mode() == AutobrakeMode::MAX);
 
             test_bed = test_bed
-                .set_retract_spoilers()
+                .set_retract_ground_spoilers()
                 .run_waiting_for(Duration::from_secs(1));
 
             assert!(test_bed.autobrake_mode() == AutobrakeMode::NONE);
@@ -8981,7 +8931,7 @@ mod tests {
             assert!(test_bed.autobrake_mode() == AutobrakeMode::MAX);
 
             test_bed = test_bed
-                .set_deploy_spoilers()
+                .set_deploy_ground_spoilers()
                 .run_waiting_for(Duration::from_secs(6));
 
             assert!(test_bed.autobrake_mode() == AutobrakeMode::MAX);
@@ -9026,7 +8976,7 @@ mod tests {
             assert!(test_bed.autobrake_mode() == AutobrakeMode::MAX);
 
             test_bed = test_bed
-                .set_deploy_spoilers()
+                .set_deploy_ground_spoilers()
                 .run_waiting_for(Duration::from_secs(6));
 
             assert!(test_bed.autobrake_mode() == AutobrakeMode::MAX);
@@ -9074,7 +9024,7 @@ mod tests {
             assert!(test_bed.autobrake_mode() == AutobrakeMode::MED);
 
             test_bed = test_bed
-                .set_deploy_spoilers()
+                .set_deploy_ground_spoilers()
                 .run_waiting_for(Duration::from_secs(6));
 
             assert!(test_bed.autobrake_mode() == AutobrakeMode::MED);
@@ -9119,7 +9069,7 @@ mod tests {
             assert!(test_bed.autobrake_mode() == AutobrakeMode::MED);
 
             test_bed = test_bed
-                .set_deploy_spoilers()
+                .set_deploy_ground_spoilers()
                 .run_waiting_for(Duration::from_secs(6));
 
             assert!(test_bed.autobrake_mode() == AutobrakeMode::MED);
@@ -10337,13 +10287,14 @@ mod tests {
                 .set_cold_dark_inputs()
                 .set_ptu_state(true)
                 .set_yellow_e_pump(false)
+                .set_blue_e_pump_ovrd_pressed(true)
                 .run_one_tick();
 
             test_bed = test_bed
                 .set_ailerons_left_turn()
                 .run_waiting_for(Duration::from_secs_f64(6.));
 
-            assert!(test_bed.is_yellow_pressure_switch_pressurised());
+            assert!(test_bed.is_blue_pressure_switch_pressurised());
             assert!(test_bed.is_green_pressure_switch_pressurised());
             assert!(test_bed.get_left_aileron_position().get::<ratio>() > 0.9);
             assert!(test_bed.get_right_aileron_position().get::<ratio>() < 0.1);
@@ -10352,7 +10303,7 @@ mod tests {
                 .set_ailerons_right_turn()
                 .run_waiting_for(Duration::from_secs_f64(5.));
 
-            assert!(test_bed.is_yellow_pressure_switch_pressurised());
+            assert!(test_bed.is_blue_pressure_switch_pressurised());
             assert!(test_bed.is_green_pressure_switch_pressurised());
             assert!(test_bed.get_left_aileron_position().get::<ratio>() < 0.1);
             assert!(test_bed.get_right_aileron_position().get::<ratio>() > 0.9);
@@ -10366,11 +10317,12 @@ mod tests {
                 .set_cold_dark_inputs()
                 .set_ptu_state(true)
                 .set_yellow_e_pump(false)
+                .set_blue_e_pump_ovrd_pressed(true)
                 .run_one_tick();
 
             test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(8.));
 
-            assert!(test_bed.is_yellow_pressure_switch_pressurised());
+            assert!(test_bed.is_blue_pressure_switch_pressurised());
             assert!(test_bed.is_green_pressure_switch_pressurised());
             assert!(test_bed.get_left_aileron_position().get::<ratio>() > 0.45);
             assert!(test_bed.get_right_aileron_position().get::<ratio>() > 0.45);
@@ -10378,9 +10330,10 @@ mod tests {
             test_bed = test_bed
                 .set_ptu_state(false)
                 .set_yellow_e_pump(true)
+                .set_blue_e_pump(false)
                 .run_waiting_for(Duration::from_secs_f64(50.));
 
-            assert!(!test_bed.is_yellow_pressure_switch_pressurised());
+            assert!(!test_bed.is_blue_pressure_switch_pressurised());
             assert!(!test_bed.is_green_pressure_switch_pressurised());
             assert!(test_bed.get_left_aileron_position().get::<ratio>() < 0.42);
             assert!(test_bed.get_right_aileron_position().get::<ratio>() < 0.42);
@@ -10394,24 +10347,83 @@ mod tests {
                 .set_cold_dark_inputs()
                 .set_ptu_state(true)
                 .set_yellow_e_pump(false)
+                .set_blue_e_pump_ovrd_pressed(true)
                 .run_one_tick();
 
             test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(8.));
 
+            assert!(test_bed.is_blue_pressure_switch_pressurised());
             assert!(test_bed.is_yellow_pressure_switch_pressurised());
             assert!(test_bed.is_green_pressure_switch_pressurised());
-            assert!(test_bed.get_left_elevator_position().get::<ratio>() > 0.45);
-            assert!(test_bed.get_right_elevator_position().get::<ratio>() > 0.45);
+            assert!(test_bed.get_left_elevator_position().get::<ratio>() > 0.35);
+            assert!(test_bed.get_right_elevator_position().get::<ratio>() > 0.35);
 
             test_bed = test_bed
                 .set_ptu_state(false)
                 .set_yellow_e_pump(true)
+                .set_blue_e_pump(false)
                 .run_waiting_for(Duration::from_secs_f64(75.));
 
+            assert!(!test_bed.is_blue_pressure_switch_pressurised());
             assert!(!test_bed.is_yellow_pressure_switch_pressurised());
             assert!(!test_bed.is_green_pressure_switch_pressurised());
+            assert!(test_bed.get_left_elevator_position().get::<ratio>() < 0.3);
+            assert!(test_bed.get_right_elevator_position().get::<ratio>() < 0.3);
+        }
+
+        #[test]
+        fn elevators_can_go_up_and_down_with_pressure() {
+            let mut test_bed = test_bed_on_ground_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .set_blue_e_pump_ovrd_pressed(true)
+                .run_one_tick();
+
+            test_bed = test_bed
+                .set_elevator_full_up()
+                .run_waiting_for(Duration::from_secs_f64(5.));
+
+            assert!(test_bed.is_blue_pressure_switch_pressurised());
+
+            assert!(test_bed.get_left_elevator_position().get::<ratio>() > 0.9);
+            assert!(test_bed.get_right_elevator_position().get::<ratio>() > 0.9);
+
+            test_bed = test_bed
+                .set_elevator_full_down()
+                .run_waiting_for(Duration::from_secs_f64(1.5));
+
+            assert!(test_bed.get_left_elevator_position().get::<ratio>() < 0.1);
+            assert!(test_bed.get_right_elevator_position().get::<ratio>() < 0.1);
+        }
+
+        #[test]
+        fn elevators_centers_with_pressure_but_no_computer_command() {
+            let mut test_bed = test_bed_on_ground_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .set_blue_e_pump_ovrd_pressed(true)
+                .run_one_tick();
+
+            test_bed = test_bed
+                .set_elevator_full_up()
+                .run_waiting_for(Duration::from_secs_f64(5.));
+
+            assert!(test_bed.is_blue_pressure_switch_pressurised());
+
+            assert!(test_bed.get_left_elevator_position().get::<ratio>() > 0.9);
+            assert!(test_bed.get_right_elevator_position().get::<ratio>() > 0.9);
+
+            test_bed = test_bed
+                .set_elac_actuators_de_energized()
+                .run_waiting_for(Duration::from_secs_f64(2.));
+
             assert!(test_bed.get_left_elevator_position().get::<ratio>() < 0.4);
             assert!(test_bed.get_right_elevator_position().get::<ratio>() < 0.4);
+
+            assert!(test_bed.get_left_elevator_position().get::<ratio>() > 0.3);
+            assert!(test_bed.get_right_elevator_position().get::<ratio>() > 0.3);
         }
 
         #[test]
@@ -10705,22 +10717,36 @@ mod tests {
         fn spoilers_move_to_requested_position() {
             let mut test_bed = test_bed_on_ground_with()
                 .set_cold_dark_inputs()
-                .in_flight()
-                .run_waiting_for(Duration::from_secs(10));
+                .set_blue_e_pump_ovrd_pressed(true)
+                .set_yellow_e_pump(false)
+                .run_waiting_for(Duration::from_secs_f64(5.));
 
-            assert!(test_bed.green_pressure() > Pressure::new::<psi>(2900.));
-            assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(2900.));
-            assert!(test_bed.blue_pressure() > Pressure::new::<psi>(2900.));
+            assert!(test_bed.is_blue_pressure_switch_pressurised());
+            assert!(test_bed.is_yellow_pressure_switch_pressurised());
+            assert!(test_bed.is_green_pressure_switch_pressurised());
 
             test_bed = test_bed
-                .set_spoiler_position_demand(Ratio::new::<ratio>(0.7), Ratio::new::<ratio>(0.5))
-                .run_waiting_for(Duration::from_secs(2));
+                .set_left_spoilers_out()
+                .run_waiting_for(Duration::from_secs_f64(2.));
 
-            assert!(test_bed.get_spoiler_left_mean_position().get::<ratio>() > 0.68);
-            assert!(test_bed.get_spoiler_left_mean_position().get::<ratio>() < 0.72);
+            assert!(test_bed.get_mean_left_spoilers_position().get::<ratio>() > 0.9);
+            assert!(test_bed.get_mean_right_spoilers_position().get::<ratio>() < 0.01);
 
-            assert!(test_bed.get_spoiler_right_mean_position().get::<ratio>() > 0.48);
-            assert!(test_bed.get_spoiler_right_mean_position().get::<ratio>() < 0.52);
+            test_bed = test_bed
+                .set_left_spoilers_in()
+                .set_right_spoilers_out()
+                .run_waiting_for(Duration::from_secs_f64(2.));
+
+            assert!(test_bed.get_mean_right_spoilers_position().get::<ratio>() > 0.9);
+            assert!(test_bed.get_mean_left_spoilers_position().get::<ratio>() < 0.01);
+
+            test_bed = test_bed
+                .set_left_spoilers_in()
+                .set_right_spoilers_in()
+                .run_waiting_for(Duration::from_secs_f64(2.));
+
+            assert!(test_bed.get_mean_left_spoilers_position().get::<ratio>() < 0.01);
+            assert!(test_bed.get_mean_right_spoilers_position().get::<ratio>() < 0.01);
         }
 
         #[test]

@@ -1,4 +1,4 @@
-import { simbridgeUrl } from '../common';
+import { getSimBridgeUrl } from '../common';
 
 /**
  * Class pertaining to retrieving static files for general viewing from SimBridge
@@ -12,7 +12,7 @@ export class Viewer {
      */
     public static async getPDFPage(filename: string, pageNumber: number): Promise<Blob> {
         if (filename || pageNumber) {
-            const response = await fetch(`${simbridgeUrl}/api/v1/utility/pdf?filename=${filename}&pagenumber=${pageNumber}`);
+            const response = await fetch(`${getSimBridgeUrl()}/api/v1/utility/pdf?filename=${filename}&pagenumber=${pageNumber}`);
             if (response.ok) {
                 return response.blob();
             }
@@ -28,7 +28,7 @@ export class Viewer {
      */
     public static async getPDFPageNum(filename: string): Promise<Number> {
         if (filename) {
-            const response = await fetch(`${simbridgeUrl}/api/v1/utility/pdf/numpages?filename=${filename}`);
+            const response = await fetch(`${getSimBridgeUrl()}/api/v1/utility/pdf/numpages?filename=${filename}`);
             if (response.ok) {
                 return response.json();
             }
@@ -42,7 +42,7 @@ export class Viewer {
      * @returns an Array of strings
      */
     public static async getPDFList(): Promise<string[]> {
-        const response = await fetch(`${simbridgeUrl}/api/v1/utility/pdf/list`);
+        const response = await fetch(`${getSimBridgeUrl()}/api/v1/utility/pdf/list`);
         if (response.ok) {
             return response.json();
         }
@@ -56,7 +56,7 @@ export class Viewer {
      */
     public static async getImage(filename: string, pageNumber: number): Promise<Blob> {
         if (filename || pageNumber) {
-            const response = await fetch(`${simbridgeUrl}/api/v1/utility/image?filename=${filename}`);
+            const response = await fetch(`${getSimBridgeUrl()}/api/v1/utility/image?filename=${filename}`);
             if (response.ok) {
                 return response.blob();
             }
@@ -70,7 +70,7 @@ export class Viewer {
      * @returns an Array of strings
      */
     public static async getImageList(): Promise<string[]> {
-        const response = await fetch(`${simbridgeUrl}/api/v1/utility/image/list`);
+        const response = await fetch(`${getSimBridgeUrl()}/api/v1/utility/image/list`);
         if (response.ok) {
             return response.json();
         }
