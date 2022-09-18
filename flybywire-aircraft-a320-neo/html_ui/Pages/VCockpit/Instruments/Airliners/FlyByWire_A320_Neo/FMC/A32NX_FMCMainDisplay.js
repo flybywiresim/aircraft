@@ -538,7 +538,7 @@ class FMCMainDisplay extends BaseAirliners {
         this._messageQueue.resetQueue();
 
         // ATSU data
-        this.atsu = new Atsu.Atsu(this);
+        this.atsu = new Atsu.Atsu(new Atsu.A32NX());
 
         // Reset SimVars
         SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", NaN);
