@@ -6,7 +6,6 @@
   - [Contents](#contents)
   - [Uncategorized](#uncategorized)
   - [EIS Display System](#eis-display-system)
-  - [Fly-By-Wire System](#fly-by-wire-system)
   - [ADIRS](#adirs)
   - [Radio Receivers](#radio-receivers)
   - [Flight Management System](#flight-management-system)
@@ -17,6 +16,7 @@
   - [Air Conditioning / Pressurisation / Ventilation](#air-conditioning--pressurisation--ventilation)
   - [Pneumatic](#pneumatic)
   - [Flaps / Slats (ATA 27)](#flaps--slats-ata-27)
+  - [Flight Controls (ATA 27)](#flight-controls-ata-27)
   - [Landing Gear (ATA 32)](#landing-gear-ata-32)
   - [ATC (ATA 34)](#atc-ata-34)
   - [Radio Altimeter (ATA 34)](#radio-altimeter-ata-34)
@@ -309,14 +309,6 @@
     - Number
     - vapp calculated for config full whether A32NX_VSPEEDS_LANDING_CONF3 or not
     - is mach corrected
-
-- A32NX_SPEEDS_ALPHA_PROTECTION
-    - Number (knots)
-    - speed where alpha protection is reached with 1g
-
-- A32NX_SPEEDS_ALPHA_MAX
-    - Number (knots)
-    - speed where alpha max is reached with 1g
 
 - A32NX_TRK_FPA_MODE_ACTIVE
     - Bool
@@ -1111,7 +1103,8 @@
 
 - A32NX_SPOILERS_ARMED
     - Bool
-    - Indicates if the ground spoilers are armed
+    - Indicates if the ground spoiler handle is physically in the armed position.
+        DO NOT USE IN SYSTEMS, USE FCDC INSTEAD
       Value | Meaning
       --- | ---
       0 | disarmed
@@ -1119,19 +1112,12 @@
 
 - A32NX_SPOILERS_HANDLE_POSITION
     - Number
-    - Indicates the physical handler position without arm/disarm
+    - Indicates the physical handler position without arm/disarm.
+        DO NOT USE IN SYSTEMS, USE FCDC INSTEAD
       Value | Position
       --- | ---
       0 | Retracted
       1 | Full extension
-
-- A32NX_SPOILERS_GROUND_SPOILERS_ACTIVE
-    - Bool
-    - Indicates if the ground spoilers are active (fully deployed)
-      Value | Position
-      --- | ---
-      0 | Inactive
-      1 | Active
 
 - A32NX_PERFORMANCE_WARNING_ACTIVE
     - Bool
@@ -1389,150 +1375,6 @@
         - IND
         - RDY
         - FM2
-
-## Fly-By-Wire System
-
-- A32NX_DEV_DIRECT_LAW
-    - Bool
-    - Development only: set to 1 to force full direct law FBW
-
-- A32NX_FLIGHT_CONTROLS_TRACKING_MODE
-    - Bool
-    - Indicates if tracking mode is active: flight controls are coming from external source (ie: YourControls)
-
-- A32NX_LOGGING_FLIGHT_CONTROLS_ENABLED
-    - Bool
-    - Indicates if logging of flight control events is enabled
-
-- A32NX_SIDESTICK_POSITION_X
-    - Number
-    - Provides the direct sidestick position (lateral)
-      Value | Meaning
-      --- | ---
-      -1 | full left
-      0 | neutral
-      1 | full right
-
-- A32NX_SIDESTICK_POSITION_Y
-    - Number
-    - Provides the direct sidestick position (longitudinal)
-      Value | Meaning
-      --- | ---
-      -1 | full forward
-      0 | neutral
-      1 | full backward
-
-- A32NX_RUDDER_PEDAL_POSITION
-    - Number
-    - Provides the rudder pedal position
-      Value | Meaning
-      --- | ---
-      -100 | full left
-      0 | neutral
-      100 | full right
-
-- A32NX_RUDDER_PEDAL_ANIMATION_POSITION
-    - Number
-    - Provides the rudder pedal position including rudder trim for animation
-      Value | Meaning
-      --- | ---
-      -100 | full left
-      0 | neutral
-      100 | full right
-
-- A32NX_ALPHA_MAX_PERCENTAGE
-    - Number (0.0 -> 1.0)
-    - Percentage of current (filtered) alpha to alpha max
-    - alpha max can be overshoot so values beyond 1.0 should be expected
-
-- A32NX_BETA_TARGET
-    - Degrees
-    - Target beta (sideslip) in case of asymmetric thrust
-
-- A32NX_AILERON_LEFT_DEFLECTION_DEMAND
-    - Number
-    - Provides the left aileron position demand to hydraulics
-      Value | Meaning
-      --- | ---
-      -1.0 | full up
-      0.0 | neutral
-      1.0 | full down
-
-- A32NX_AILERON_RIGHT_DEFLECTION_DEMAND
-    - Number
-    - Provides the right aileron position demand to hydraulics
-      Value | Meaning
-      --- | ---
-      -1.0 | full down
-      0.0 | neutral
-      1.0 | full up
-
-- A32NX_HYD_AILERON_LEFT_DEFLECTION
-    - Number
-    - Provides the final left aileron physical position
-      Value | Meaning
-      --- | ---
-      -1.0 | full up
-      0.0 | neutral
-      1.0 | full down
-
-- A32NX_HYD_AILERON_RIGHT_DEFLECTION
-    - Number
-    - Provides the final right aileron physical position
-      Value | Meaning
-      --- | ---
-      -1.0 | full down
-      0.0 | neutral
-      1.0 | full up
-
-- A32NX_THS_{number}_ACTIVE_MODE_COMMANDED
-    - Boolean
-    - Trim electric motor {number} is commanded active
-    - {number}
-        - 1
-        - 2
-        - 3
-
-- A32NX_THS_{number}_COMMANDED_POSITION
-    - Degree
-    - Trim electric motor {number} position demand in trim surface deflection angle
-
-- A32NX_HYD_THS_TRIM_MANUAL_OVERRIDE
-    - Boolean
-    - Feedback signal from the trim actuator system. True if pilot is moving or holding trim wheel
-
-- A32NX_HYD_TRIM_WHEEL_PERCENT
-    - Percent
-    - Trim wheel position in percent
-
-- A32NX_ELEVATOR_DEFLECTION_DEMAND
-    - Number
-    - Provides the elevator position demand to hydraulics
-      Value | Meaning
-      --- | ---
-      -1.0 | full down
-      0.0 | neutral
-      1.0 | full up
-
-- A32NX_RUDDER_DEFLECTION_DEMAND
-    - Number
-    - Provides the rudder position demand to hydraulics
-      Value | Meaning
-      --- | ---
-      -1.0 | full left
-      0.0 | neutral
-      1.0 | full right
-
-- A32NX_SPOILERS_{side}_DEFLECTION_DEMAND
-    - Number
-    - {side}
-        - LEFT
-        - RIGHT
-    - Provides the spoiler position demand to hydraulics
-      Value | Meaning
-      --- | ---
-      0.0 | neutral
-      1.0 | full up
 
 ## ADIRS
 
@@ -2754,6 +2596,373 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Arinc429<Degrees>
     - Note that multiple SFCC are not yet implemented, thus no {number} in the name.
     - The Flap FPPU angle ranges from 0° to 360°
+
+## Flight Controls (ATA 27)
+
+- A32NX_FLIGHT_CONTROLS_TRACKING_MODE
+    - Bool
+    - Indicates if tracking mode is active: flight controls are coming from external source (ie: YourControls)
+
+- A32NX_LOGGING_FLIGHT_CONTROLS_ENABLED
+    - Bool
+    - Indicates if logging of flight control events is enabled
+
+- A32NX_FCDC_{number}_DISCRETE_WORD_1
+    - Arinc429<Discrete>
+    - | Bit |                Description               |
+      |:---:|:----------------------------------------:|
+      | 11  | Pitch Normal Law Active                  |
+      | 12  | Pitch Alternate Law 1 Active             |
+      | 13  | Pitch Alternate Law 2 Active             |
+      | 14  |                                          |
+      | 15  | Pitch Direct Law Active                  |
+      | 16  | Roll Normal Law Active                   |
+      | 17  | Roll Direct Law Active                   |
+      | 18  |                                          |
+      | 19  | ELAC 1 Pitch Fault                       |
+      | 20  | ELAC 1 Roll Fault                        |
+      | 21  | ELAC 2 Pitch Fault                       |
+      | 22  | ELAC 2 Roll Fault                        |
+      | 23  | ELAC 1 Fault                             |
+      | 24  | ELAC 2 Fault                             |
+      | 25  | SEC 1 Fault                              |
+      | 26  | SEC 2 Fault                              |
+      | 27  |                                          |
+      | 28  | FCDC Opposite Fault                      |
+      | 29  | SEC 3 Fault                              |
+
+- A32NX_FCDC_{number}_DISCRETE_WORD_2
+    - Arinc429<Discrete>
+    - | Bit |                Description               |
+      |:---:|:----------------------------------------:|
+      | 11  | Left Aileron Blue Fault                  |
+      | 12  | Left Aileron Green Fault                 |
+      | 13  | Right Aileron Blue Fault                 |
+      | 14  | Right Aileron Green Fault                |
+      | 15  | Left Elevator Blue Fault                 |
+      | 16  | Left Elevator Green Fault                |
+      | 17  | Right Elevator Blue Fault                |
+      | 18  | Right Elevator Yellow Fault              |
+      | 19  | F/O Priority Locked                      |
+      | 20  | Capt Priority Locked                     |
+      | 21  |                                          |
+      | 22  |                                          |
+      | 23  |                                          |
+      | 24  |                                          |
+      | 25  |                                          |
+      | 26  |                                          |
+      | 27  |                                          |
+      | 28  | F/O Sidestick Disabled (Priority)        |
+      | 29  | Capt Sidestick Disabled (Priority)       |
+
+- A32NX_FCDC_{number}_DISCRETE_WORD_3
+    - Arinc429<Discrete>
+    - | Bit |                Description               |
+      |:---:|:----------------------------------------:|
+      | 11  | Left Aileron Blue Avail                  |
+      | 12  | Left Aileron Green Avail                 |
+      | 13  | Right Aileron Blue Avail                 |
+      | 14  | Right Aileron Green Avail                |
+      | 15  | Left Elevator Blue Avail                 |
+      | 16  | Left Elevator Green Avail                |
+      | 17  | Right Elevator Blue Avail                |
+      | 18  | Right Elevator Yellow Avail              |
+      | 19  | ELAC 1 Pushbutton Off                    |
+      | 20  | ELAC 2 Pushbutton Off                    |
+      | 21  | Spoiler 1 Avail                          |
+      | 22  | Spoiler 2 Avail                          |
+      | 23  | Spoiler 3 Avail                          |
+      | 24  | Spoiler 4 Avail                          |
+      | 25  | Spoiler 5 Avail                          |
+      | 26  |                                          |
+      | 27  | SEC 1 Pushbutton Off                     |
+      | 28  | SEC 2 Pushbutton Off                     |
+      | 29  | SEC 3 Pushbutton Off                     |
+
+- A32NX_FCDC_{number}_DISCRETE_WORD_4
+    - Arinc429<Discrete>
+    - | Bit |                Description               |
+      |:---:|:----------------------------------------:|
+      | 11  | Left Spoiler 1 Out                       |
+      | 12  | Right Spoiler 1 Out                      |
+      | 13  | Left Spoiler 2 Out                       |
+      | 14  | Right Spoiler 2 Out                      |
+      | 15  | Left Spoiler 3 Out                       |
+      | 16  | Right Spoiler 3 Out                      |
+      | 17  | Left Spoiler 4 Out                       |
+      | 18  | Right Spoiler 4 Out                      |
+      | 19  | Left Spoiler 5 Out                       |
+      | 20  | Right Spoiler 5 Out                      |
+      | 21  | Spoiler 1 Pos Valid                      |
+      | 22  | Spoiler 2 Pos Valid                      |
+      | 23  | Spoiler 3 Pos Valid                      |
+      | 24  | Spoiler 4 Pos Valid                      |
+      | 25  | Spoiler 5 Pos Valid                      |
+      | 26  | Ground Spoiler Out                       |
+      | 27  | Ground Spoiler Armed                     |
+      | 28  | Speed Brake Command                      |
+      | 29  | Aileron Droop Active                     |
+
+- A32NX_FCDC_{number}_DISCRETE_WORD_5
+    - Arinc429<Discrete>
+    - | Bit |                Description               |
+      |:---:|:----------------------------------------:|
+      | 11  | SEC 1 Spd Brk Lever Fault                |
+      | 12  | SEC 2 Spd Brk Lever Fault                |
+      | 13  | SEC 3 Spd Brk Lever Fault                |
+      | 14  | SEC 1 Gnd Splr Fault                     |
+      | 15  | SEC 2 Gnd Splr Fault                     |
+      | 16  | SEC 3 Gnd Splr Fault                     |
+      | 17  |                                          |
+      | 18  |                                          |
+      | 19  |                                          |
+      | 20  |                                          |
+      | 21  | Spoiler 1 Fault                          |
+      | 22  | Spoiler 2 Fault                          |
+      | 23  | Spoiler 3 Fault                          |
+      | 24  | Spoiler 4 Fault                          |
+      | 25  | Spoiler 5 Fault                          |
+      | 26  | Spd Brk Lever Disagree                   |
+      | 27  | Spd Brk Do Not Use                       |
+      | 28  |                                          |
+      | 29  |                                          |
+
+- A32NX_FCDC_{number}_CAPT_ROLL_COMMAND
+    - Arinc429<Degree>
+
+- A32NX_FCDC_{number}_FO_ROLL_COMMAND
+    - Arinc429<Degree>
+
+- A32NX_FCDC_{number}_CAPT_PITCH_COMMAND
+    - Arinc429<Degree>
+
+- A32NX_FCDC_{number}_FO_PITCH_COMMAND
+    - Arinc429<Degree>
+
+- A32NX_FCDC_{number}_RUDDER_PEDAL_POS
+    - Arinc429<Degree>
+
+- A32NX_FCDC_{number}_AILERON_LEFT_POS
+    - Arinc429<Degree>
+
+- A32NX_FCDC_{number}_ELEVATOR_LEFT_POS
+    - Arinc429<Degree>
+
+- A32NX_FCDC_{number}_AILERON_RIGHT_POS
+    - Arinc429<Degree>
+
+- A32NX_FCDC_{number}_ELEVATOR_RIGHT_POS
+    - Arinc429<Degree>
+
+- A32NX_FCDC_{number}_ELEVATOR_TRIM_POS
+    - Arinc429<Degree>
+
+- A32NX_FCDC_{number}_SPOILER_LEFT_{spoiler}_POS
+    - Arinc429<Degree>
+    - {spoiler}
+      - Number of the spoiler, 1 to 5
+
+- A32NX_FCDC_{number}_SPOILER_RIGHT_{spoiler}_POS
+    - Arinc429<Degree>
+    - {spoiler}
+      - Number of the spoiler, 1 to 5
+
+- A32NX_FCDC_{number}_PRIORITY_LIGHT_{side}_{color}_ON
+    - Boolean
+    - Indicates if the spcified priority light should be illuminated
+    - {side}
+      - CAPT
+      - FO
+    - {color}
+      - GREEN
+      - RED
+
+- A32NX_ELAC_{number}_PUSHBUTTON_PRESSED
+    - Boolean
+
+- A32NX_ELAC_{number}_DIGITAL_OP_VALIDATED
+    - If the ELAC {number} is healthy.
+    - Boolean
+
+- A32NX_SEC_{number}_PUSHBUTTON_PRESSED
+    - Boolean
+
+- A32NX_SEC_{number}_FAULT_LIGHT_ON
+    - If the SEC {number} fault light should be illuminated.
+    - Boolean
+
+- A32NX_SEC_{number}_GROUND_SPOILER_OUT
+    - If the SEC {number} indicates that it's ground spoilers are deployed.
+    - Boolean
+
+- A32NX_FAC_{number}_PUSHBUTTON_PRESSED
+    - Boolean
+
+- A32NX_FAC_{number}_HEALTHY
+    - If the FAC {number} is healthy.
+    - Boolean
+
+- A32NX_{side}_{surface}_{system}_SERVO_SOLENOID_ENERGIZED
+    - Boolean
+    - If the servo mode solenoid of the specified servo should be energized.
+    - {side}
+        - LEFT
+        - RIGHT
+    - {surface}
+        - ELEV
+        - AIL
+    - {system}
+        - GREEN
+        - BLUE
+        - YELLOW
+
+- A32NX_{side}_SPOILER_{number}_COMMANDED_POSITION
+    - Number
+    - The commanded position of the specified servo, in degrees.
+    - {side}
+        - LEFT
+        - RIGHT
+    - {number}
+        - 1 to 5
+
+- A32NX_{side}_{surface}_{system}_COMMANDED_POSITION
+    - Number
+    - The commanded position of the specified servo, in degrees.
+    - {side}
+        - LEFT
+        - RIGHT
+    - {surface}
+        - ELEV
+        - AIL
+    - {system}
+        - GREEN
+        - BLUE
+        - YELLOW
+
+- A32NX_YAW_DAMPER_{system}_SERVO_SOLENOID_ENERGIZED
+    - Boolean
+    - If the servo mode solenoid of the specified servo should be energized.
+    - {system}
+        - GREEN
+        - YELLOW
+
+- A32NX_YAW_DAMPER_{system}_COMMANDED_POSITION
+    - Number
+    - The commanded position of the specified servo, in degrees.
+    - {system}
+        - GREEN
+        - YELLOW
+
+- A32NX_RUDDER_TRIM_{number}_ACTIVE_MODE_COMMANDED
+    - Boolean
+    - Trim electric motor {number} is commanded active
+    - {number}
+        - 1
+        - 2
+
+- A32NX_RUDDER_TRIM_{number}_COMMANDED_POSITION
+    - Degree
+    - Trim electric motor {number} position demand in trim surface deflection angle
+    - {number}
+        - 1
+        - 2
+
+- A32NX_RUDDER_TRAVEL_LIM_{number}_ACTIVE_MODE_COMMANDED
+    - Boolean
+    - RTL electric motor {number} is commanded active
+    - {number}
+        - 1
+        - 2
+
+- A32NX_RUDDER_TRAVEL_LIM_{number}_COMMANDED_POSITION
+    - Degree
+    - RTL electric motor {number} position demand in trim surface deflection angle
+    - {number}
+        - 1
+        - 2
+
+- A32NX_THS_{number}_ACTIVE_MODE_COMMANDED
+    - Boolean
+    - Trim electric motor {number} is commanded active
+    - {number}
+        - 1
+        - 2
+        - 3
+
+- A32NX_THS_{number}_COMMANDED_POSITION
+    - Degree
+    - Trim electric motor {number} position demand in trim surface deflection angle
+
+- A32NX_SIDESTICK_POSITION_X
+    - Number
+    - Provides the direct sidestick position (lateral)
+      Value | Meaning
+      --- | ---
+      -1 | full left
+      0 | neutral
+      1 | full right
+
+- A32NX_SIDESTICK_POSITION_Y
+    - Number
+    - Provides the direct sidestick position (longitudinal)
+      Value | Meaning
+      --- | ---
+      -1 | full forward
+      0 | neutral
+      1 | full backward
+
+- A32NX_RUDDER_PEDAL_POSITION
+    - Number
+    - Provides the rudder pedal position
+      Value | Meaning
+      --- | ---
+      -100 | full left
+      0 | neutral
+      100 | full right
+
+- A32NX_RUDDER_PEDAL_ANIMATION_POSITION
+    - Number
+    - Provides the rudder pedal position including rudder trim for animation
+      Value | Meaning
+      --- | ---
+      -100 | full left
+      0 | neutral
+      100 | full right
+
+- A32NX_HYD_AILERON_LEFT_DEFLECTION
+    - Number
+    - Provides the final left aileron physical position
+      Value | Meaning
+      --- | ---
+      -1.0 | full up
+      0.0 | neutral
+      1.0 | full down
+
+- A32NX_HYD_AILERON_RIGHT_DEFLECTION
+    - Number
+    - Provides the final right aileron physical position
+      Value | Meaning
+      --- | ---
+      -1.0 | full down
+      0.0 | neutral
+      1.0 | full up
+
+- A32NX_HYD_THS_TRIM_MANUAL_OVERRIDE
+    - Boolean
+    - Feedback signal from the trim actuator system. True if pilot is moving or holding trim wheel
+
+- A32NX_HYD_TRIM_WHEEL_PERCENT
+    - Percent
+    - Trim wheel position in percent
+
+- A32NX_RUDDER_DEFLECTION_DEMAND
+    - Number
+    - Provides the rudder position demand to hydraulics
+      Value | Meaning
+      --- | ---
+      -1.0 | full left
+      0.0 | neutral
+      1.0 | full right
 
 ## Landing Gear (ATA 32)
 
