@@ -6,6 +6,7 @@
 #include "Lighting/LightPreset.h"
 #include "Pushback/Pushback.h"
 #include "ThirdParty/ThirdParty.h"
+#include <unistd.h>
 
 FlyPadBackend FLYPAD_BACKEND;
 
@@ -72,8 +73,9 @@ bool FlyPadBackend::initialize() {
     std::cout << "FLYPAD_BACKEND: Events definition failed! " << std::endl;
   }
 
+  // Do not call SimConnect_CreateClientData since Altitude does it already
+  // It would cause errors otherwise
   result &= SimConnect_MapClientDataNameToID(hSimConnect, "IVAO Altitude Data", ClientData::IVAO);
-  result &= SimConnect_CreateClientData(hSimConnect, ClientData::IVAO, sizeof(struct ThirdPartyDataIVAO), SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
   result &= SimConnect_AddToClientDataDefinition(hSimConnect, DataStructureIDs::SelcalIVAODataID, 0, SIMCONNECT_CLIENTDATATYPE_INT8);
   result &= SimConnect_AddToClientDataDefinition(hSimConnect, DataStructureIDs::VolumeCOM1DataID, 1, SIMCONNECT_CLIENTDATATYPE_INT8);
   result &= SimConnect_AddToClientDataDefinition(hSimConnect, DataStructureIDs::VolumeCOM2DataID, 2, SIMCONNECT_CLIENTDATATYPE_INT8);

@@ -59,6 +59,7 @@ void ThirdParty::onUpdate(INT64 volumeCOM1, INT64 volumeCOM2, ThirdPartyDataIVAO
     }
 
     if (update) {
+      // Setting the lvar so the XML behavior can rotate the knobs and inc/dec the volume
       setSimVar(_updateReceiversFromThirdParty, 1);
     }
   } else if (VPILOTData) {
@@ -66,23 +67,23 @@ void ThirdParty::onUpdate(INT64 volumeCOM1, INT64 volumeCOM2, ThirdPartyDataIVAO
   } else {
     if (get_named_variable_value(_selcalReset) == 0) {
       if (this->_selcalActive) {
-        // Make the SELCAL push button blink every SELCAL_LIGHT_TIME_MS
-        // It sets the BLINK_ID (foundable in the XML behaviors) then 0 to make
-        // it blink
+        // Makes the push button blink every SELCAL_LIGHT_TIME_MS
+        // It sets the BLINK_ID (foundable in the XML behaviors) then 0 to make it blink
         auto now = std::chrono::system_clock::now();
         if (std::chrono::duration_cast<std::chrono::milliseconds>(now - this->_previousTime).count() >= SELCAL_LIGHT_TIME_MS) {
           setSimVar(_selcal, get_named_variable_value(_selcal) == this->_selcalActive ? 0 : this->_selcalActive);
           this->_previousTime = now;
-          update = true;
         }
       }
     } else {
+      // Reset everything related to SELCAL if RESET push button was pressed on one ACP
       setSimVar(_selcalReset, 0);
       setSimVar(_selcal, 0);
       this->_selcalActive = 0;
       update = true;
     }
 
+    // Handling the case the volume was changed via the knobs on the ACPs
     if (volumeCOM1 != this->_previousVolumeCOM1 || volumeCOM2 != this->_previousVolumeCOM2) {
       this->_previousVolumeCOM1 = volumeCOM1;
       this->_previousVolumeCOM2 = volumeCOM2;
@@ -100,6 +101,7 @@ void ThirdParty::onUpdate(INT64 volumeCOM1, INT64 volumeCOM2, ThirdPartyDataIVAO
   }
 }
 
+/// @brief Notifying the third party the plane is unloaded
 void ThirdParty::notifyShutdownThirdParty() const {
   // notifying vPilot the aircraft is unloaded
   ThirdPartyDataVPILOT dataVPILOT{0, 0};
@@ -109,6 +111,7 @@ void ThirdParty::notifyShutdownThirdParty() const {
   setThirdPartyDataIVAO(dataIVAO);
 }
 
+/// @brief Notifying the third party the plane is loaded
 void ThirdParty::notifyStartThirdParty() const {
   ThirdPartyDataIVAO dataIVAO{0, 80, 40};
   setThirdPartyDataIVAO(dataIVAO);
