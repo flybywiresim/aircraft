@@ -390,6 +390,10 @@
     - Number
     - The current mode of the right radio management panel.
 
+- A32NX_RMP_{L,R}_NAV_BUTTON_SELECTED
+    - Bool
+    - Whether the NAV push button on the corresponding RMP is pushed or not.
+
 - A32NX_RMP_L_VHF2_STANDBY
     - Hz
     - The VHF 2 standby frequency for the left RMP.
@@ -405,6 +409,42 @@
 - A32NX_RMP_R_VHF3_STANDBY
     - Hz
     - The VHF 3 standby frequency for the right RMP.
+
+- A32NX_RMP_{L,R}_SAVED_ACTIVE_FREQUENCY_VOR
+    - Hz
+    - The VOR active frequency that is saved for display for the left/right RMP.
+
+- A32NX_RMP_{L,R}_SAVED_ACTIVE_FREQUENCY_ILS
+    - Hz
+    - The ILS active frequency that is saved for display for the left/right RMP.
+
+- A32NX_RMP_{L,R}_SAVED_ACTIVE_FREQUENCY_ADF
+    - Hz
+    - The ADF active frequency that is saved for display for the left/right RMP.
+   
+- A32NX_RMP_{L,R}_SAVED_STANDBY_FREQUENCY_VOR
+    - Hz
+    - The VOR standby frequency that is saved for display for the left/right RMP.
+
+- A32NX_RMP_{L,R}_SAVED_STANDBY_FREQUENCY_ILS
+    - Hz
+    - The ILS standby frequency that is saved for display for the left/right RMP.
+
+- A32NX_RMP_{L,R}_SAVED_STANDBY_FREQUENCY_ADF
+    - Hz
+    - The ADF standby frequency that is saved for display for the left/right RMP.
+
+- A32NX_RMP_{L,R}_SAVED_COURSE_VOR
+    - Number
+    - The VOR course tuned via the left/right RMP
+
+- A32NX_RMP_{L,R}_SAVED_COURSE_ILS
+    - Number
+    - The ILS course tuned via the left/right RMP
+
+- A32NX_RMP_ILS_TUNED
+    - Bool
+    - If the ILS is tuned via the RMP
 
 - A32NX_TO_CONFIG_FLAPS_ENTERED
     - Bool
@@ -1029,6 +1069,15 @@
       APPROACH | 5
       GOAROUND | 6
       DONE | 7
+
+- A32NX_FMGC_RADIONAV_TUNING_MODE
+    - Enum
+    - Hold the FMGCs current tuning mode
+      Value | Meaning
+      --- | ---
+      0 | AUTO
+      1 | MANUAL
+      2 | REMOTE VIA RMPs
 
 - A32NX_FLAPS_HANDLE_INDEX
     - Number

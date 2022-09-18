@@ -118,6 +118,7 @@
             <ANIM_TEMPLATE>FBW_RMP_MODE_BUTTON_AND_LED</ANIM_TEMPLATE>
             <INOP>1</INOP>
             <BASE_NAME>HF1</BASE_NAME>
+            <MODE_ID>4</MODE_ID>
         </UseTemplate>
 
         <!-- Inop HF2 mode button and led -->
@@ -126,6 +127,7 @@
             <ANIM_TEMPLATE>FBW_RMP_MODE_BUTTON_AND_LED</ANIM_TEMPLATE>
             <INOP>1</INOP>
             <BASE_NAME>HF2</BASE_NAME>
+            <MODE_ID>5</MODE_ID>
         </UseTemplate>
 
         <!-- Inop AM mode button and led -->
@@ -134,6 +136,7 @@
             <ANIM_TEMPLATE>FBW_RMP_MODE_BUTTON_AND_LED</ANIM_TEMPLATE>
             <INOP>1</INOP>
             <BASE_NAME>AM</BASE_NAME>
+            <MODE_ID>11</MODE_ID>
         </UseTemplate>
 
         <!-- SEL word indicator light -->
@@ -149,11 +152,11 @@
                     alias annunciatorLight = (L:A32NX_OVHD_INTLT_ANN, number);
                     let emissiveDim = if annunciatorLight == 2 { 0.05 } else { 1 };
                     // @todo abnormal defined differently with NAV modes available.
-                    let rmpLeftAbnormal = selectedModeLeft != 1 or selectedModeRight == 1;
-                    let rmpRightAbnormal = selectedModeRight != 2 or selectedModeLeft == 2;
-                    let sideLeftCheck = id == 1;
-                    let sideRightCheck = id == 2;
-                    (if (toggleSwitch and ((rmpLeftAbnormal and sideLeftCheck) or (rmpRightAbnormal and sideRightCheck)) or (annunciatorLight == 0)) and indicatorsPowered {
+
+                    let rmpLeftAbnormal = id == 1 and (selectedModeLeft == 2 or selectedModeLeft == 3 or selectedModeRight == 1);
+                    let rmpRightAbnormal = id == 2 and (selectedModeRight == 1 or selectedModeRight == 3 or selectedModeLeft == 2);
+
+                    (if (toggleSwitch and (rmpLeftAbnormal or rmpRightAbnormal) or (annunciatorLight == 0)) and indicatorsPowered {
                         1 * emissiveDim
                     } else {
                         0
@@ -175,11 +178,11 @@
                     alias annunciatorLight = (L:A32NX_OVHD_INTLT_ANN, number);
                     let emissiveDim = if annunciatorLight == 2 { 0.05 } else { 1 };
                     // @todo abnormal defined differently with NAV modes available.
-                    let rmpLeftAbnormal = selectedModeLeft != 1 or selectedModeRight == 1;
-                    let rmpRightAbnormal = selectedModeRight != 2 or selectedModeLeft == 2;
-                    let sideLeftCheck = id == 1;
-                    let sideRightCheck = id == 2;
-                    (if (toggleSwitch and ((rmpLeftAbnormal and sideLeftCheck) or (rmpRightAbnormal and sideRightCheck)) or (annunciatorLight == 0)) and indicatorsPowered {
+
+                    let rmpLeftAbnormal = id == 1 and (selectedModeLeft == 2 or selectedModeLeft == 3 or selectedModeRight == 1);
+                    let rmpRightAbnormal = id == 2 and (selectedModeRight == 1 or selectedModeRight == 3 or selectedModeLeft == 2);
+
+                    (if (toggleSwitch and (rmpLeftAbnormal or rmpRightAbnormal) or (annunciatorLight == 0)) and indicatorsPowered {
                         1 * emissiveDim
                     } else {
                         0
@@ -216,15 +219,15 @@
         <UseTemplate Name="FBW_Anim_Interactions">
             <ANIM_TYPE>BUTTON</ANIM_TYPE>
             <ANIM_TEMPLATE>FBW_RMP_MODE_BUTTON_AND_LED</ANIM_TEMPLATE>
-            <INOP>1</INOP>
             <BASE_NAME>NAV</BASE_NAME>
+            <MODE_ID>12</MODE_ID>
         </UseTemplate>
 
         <!-- Inop VOR mode button and led -->
         <UseTemplate Name="FBW_Anim_Interactions">
             <ANIM_TYPE>BUTTON</ANIM_TYPE>
             <ANIM_TEMPLATE>FBW_RMP_MODE_BUTTON_AND_LED</ANIM_TEMPLATE>
-            <INOP>1</INOP>
+            <MODE_ID>6</MODE_ID>
             <BASE_NAME>VOR</BASE_NAME>
         </UseTemplate>
 
@@ -232,24 +235,24 @@
         <UseTemplate Name="FBW_Anim_Interactions">
             <ANIM_TYPE>BUTTON</ANIM_TYPE>
             <ANIM_TEMPLATE>FBW_RMP_MODE_BUTTON_AND_LED</ANIM_TEMPLATE>
-            <INOP>1</INOP>
             <BASE_NAME>ILS</BASE_NAME>
+            <MODE_ID>7</MODE_ID>
         </UseTemplate>
 
-        <!-- Inop MLS mode button and led -->
+        <!-- Inop MLS mode button and led. Underlying JS code acts on ILS -->
         <UseTemplate Name="FBW_Anim_Interactions">
             <ANIM_TYPE>BUTTON</ANIM_TYPE>
             <ANIM_TEMPLATE>FBW_RMP_MODE_BUTTON_AND_LED</ANIM_TEMPLATE>
-            <INOP>1</INOP>
             <BASE_NAME>MLS</BASE_NAME>
+            <MODE_ID>8</MODE_ID>
         </UseTemplate>
 
         <!-- Inop ADF mode button and led -->
         <UseTemplate Name="FBW_Anim_Interactions">
             <ANIM_TYPE>BUTTON</ANIM_TYPE>
             <ANIM_TEMPLATE>FBW_RMP_MODE_BUTTON_AND_LED</ANIM_TEMPLATE>
-            <INOP>1</INOP>
             <BASE_NAME>ADF</BASE_NAME>
+            <MODE_ID>9</MODE_ID>
         </UseTemplate>
 
         <!-- Inop BFO mode button and led -->
@@ -258,6 +261,7 @@
             <ANIM_TEMPLATE>FBW_RMP_MODE_BUTTON_AND_LED</ANIM_TEMPLATE>
             <INOP>1</INOP>
             <BASE_NAME>BFO</BASE_NAME>
+            <MODE_ID>10</MODE_ID>
         </UseTemplate>
     </Template>
 
@@ -303,9 +307,10 @@
                     let modeId = #MODE_ID, number#;
                     alias toggleSwitch = (L:A32NX_RMP_#SIDE#_TOGGLE_SWITCH, bool);
                     alias selectedMode = (L:A32NX_RMP_#SIDE#_SELECTED_MODE, number);
+                    alias navButtonPressed = (L:A32NX_RMP_#SIDE#_NAV_BUTTON_SELECTED, bool);
                     alias annunciatorLight = (L:A32NX_OVHD_INTLT_ANN, number);
                     let emissiveDim = if annunciatorLight == 2 { 0.05 } else { 1 };
-                    (if ((!inop and toggleSwitch and (selectedMode == modeId)) or (annunciatorLight == 0)) and indicatorsPowered  {
+                    (if ((!inop and toggleSwitch and ((selectedMode == modeId) or (modeId == 12 and navButtonPressed))) or (annunciatorLight == 0)) and indicatorsPowered  {
                         1 * emissiveDim
                     } else {
                         0
