@@ -13,6 +13,7 @@ import { ApproachMessage } from '../elements/ApproachMessage';
 import { CrossTrack } from '../elements/CrossTrack';
 import { TrackLine } from '../elements/TrackLine';
 import { Traffic } from '../elements/Traffic';
+import { TerrainMap } from '../elements/TerrainMap';
 
 export interface RoseModeProps {
     symbols: NdSymbol[],
@@ -58,6 +59,7 @@ export const RoseMode: FC<RoseModeProps> = ({ symbols, adirsAlign, rangeSetting,
     if (adirsAlign) {
         return (
             <>
+                <TerrainMap x={0} y={134} width={768} height={250} side={side} potentiometerIndex={side === 'L' ? 94 : 95} clipName="rose-mode-map-clip" />
                 <Overlay
                     heading={heading}
                     rangeSetting={rangeSetting}
@@ -148,18 +150,18 @@ const Overlay: FC<OverlayProps> = ({ heading, rangeSetting, tcasMode }) => (
             { (tcasMode > 0 && rangeSetting === 10)
                     && (
                         <g>
-                            <line x1={384} x2={384} y1={264} y2={254} className="White rounded" transform="rotate(0 384 384)" />
-                            <line x1={384} x2={384} y1={264} y2={254} className="White rounded" transform="rotate(30 384 384)" />
-                            <line x1={384} x2={384} y1={264} y2={254} className="White rounded" transform="rotate(60 384 384)" />
-                            <line x1={384} x2={384} y1={264} y2={254} className="White rounded" transform="rotate(90 384 384)" />
-                            <line x1={384} x2={384} y1={264} y2={254} className="White rounded" transform="rotate(120 384 384)" />
-                            <line x1={384} x2={384} y1={264} y2={254} className="White rounded" transform="rotate(150 384 384)" />
-                            <line x1={384} x2={384} y1={264} y2={254} className="White rounded" transform="rotate(180 384 384)" />
-                            <line x1={384} x2={384} y1={264} y2={254} className="White rounded" transform="rotate(210 384 384)" />
-                            <line x1={384} x2={384} y1={264} y2={254} className="White rounded" transform="rotate(240 384 384)" />
-                            <line x1={384} x2={384} y1={264} y2={254} className="White rounded" transform="rotate(270 384 384)" />
-                            <line x1={384} x2={384} y1={264} y2={254} className="White rounded" transform="rotate(300 384 384)" />
-                            <line x1={384} x2={384} y1={264} y2={254} className="White rounded" transform="rotate(330 384 384)" />
+                            <line x1={384} x2={384} y1={264} y2={254} className="rounded White" transform="rotate(0 384 384)" />
+                            <line x1={384} x2={384} y1={264} y2={254} className="rounded White" transform="rotate(30 384 384)" />
+                            <line x1={384} x2={384} y1={264} y2={254} className="rounded White" transform="rotate(60 384 384)" />
+                            <line x1={384} x2={384} y1={264} y2={254} className="rounded White" transform="rotate(90 384 384)" />
+                            <line x1={384} x2={384} y1={264} y2={254} className="rounded White" transform="rotate(120 384 384)" />
+                            <line x1={384} x2={384} y1={264} y2={254} className="rounded White" transform="rotate(150 384 384)" />
+                            <line x1={384} x2={384} y1={264} y2={254} className="rounded White" transform="rotate(180 384 384)" />
+                            <line x1={384} x2={384} y1={264} y2={254} className="rounded White" transform="rotate(210 384 384)" />
+                            <line x1={384} x2={384} y1={264} y2={254} className="rounded White" transform="rotate(240 384 384)" />
+                            <line x1={384} x2={384} y1={264} y2={254} className="rounded White" transform="rotate(270 384 384)" />
+                            <line x1={384} x2={384} y1={264} y2={254} className="rounded White" transform="rotate(300 384 384)" />
+                            <line x1={384} x2={384} y1={264} y2={254} className="rounded White" transform="rotate(330 384 384)" />
                         </g>
                     )}
 
@@ -167,18 +169,18 @@ const Overlay: FC<OverlayProps> = ({ heading, rangeSetting, tcasMode }) => (
             { (tcasMode > 0 && rangeSetting === 20)
                     && (
                         <g>
-                            <line x1={384} x2={384} y1={327} y2={317} className="White rounded" transform="rotate(0 384 384)" />
-                            <line x1={384} x2={384} y1={327} y2={317} className="White rounded" transform="rotate(30 384 384)" />
-                            <line x1={384} x2={384} y1={327} y2={317} className="White rounded" transform="rotate(60 384 384)" />
-                            <line x1={384} x2={384} y1={327} y2={317} className="White rounded" transform="rotate(90 384 384)" />
-                            <line x1={384} x2={384} y1={327} y2={317} className="White rounded" transform="rotate(120 384 384)" />
-                            <line x1={384} x2={384} y1={327} y2={317} className="White rounded" transform="rotate(150 384 384)" />
-                            <line x1={384} x2={384} y1={327} y2={317} className="White rounded" transform="rotate(180 384 384)" />
-                            <line x1={384} x2={384} y1={327} y2={317} className="White rounded" transform="rotate(210 384 384)" />
-                            <line x1={384} x2={384} y1={327} y2={317} className="White rounded" transform="rotate(240 384 384)" />
-                            <line x1={384} x2={384} y1={327} y2={317} className="White rounded" transform="rotate(270 384 384)" />
-                            <line x1={384} x2={384} y1={327} y2={317} className="White rounded" transform="rotate(300 384 384)" />
-                            <line x1={384} x2={384} y1={327} y2={317} className="White rounded" transform="rotate(330 384 384)" />
+                            <line x1={384} x2={384} y1={327} y2={317} className="rounded White" transform="rotate(0 384 384)" />
+                            <line x1={384} x2={384} y1={327} y2={317} className="rounded White" transform="rotate(30 384 384)" />
+                            <line x1={384} x2={384} y1={327} y2={317} className="rounded White" transform="rotate(60 384 384)" />
+                            <line x1={384} x2={384} y1={327} y2={317} className="rounded White" transform="rotate(90 384 384)" />
+                            <line x1={384} x2={384} y1={327} y2={317} className="rounded White" transform="rotate(120 384 384)" />
+                            <line x1={384} x2={384} y1={327} y2={317} className="rounded White" transform="rotate(150 384 384)" />
+                            <line x1={384} x2={384} y1={327} y2={317} className="rounded White" transform="rotate(180 384 384)" />
+                            <line x1={384} x2={384} y1={327} y2={317} className="rounded White" transform="rotate(210 384 384)" />
+                            <line x1={384} x2={384} y1={327} y2={317} className="rounded White" transform="rotate(240 384 384)" />
+                            <line x1={384} x2={384} y1={327} y2={317} className="rounded White" transform="rotate(270 384 384)" />
+                            <line x1={384} x2={384} y1={327} y2={317} className="rounded White" transform="rotate(300 384 384)" />
+                            <line x1={384} x2={384} y1={327} y2={317} className="rounded White" transform="rotate(330 384 384)" />
                         </g>
                     )}
 
@@ -579,13 +581,13 @@ const VorCaptureOverlay: React.FC<{
             </g>
             <path
                 d="M352,256 L416,256 M384,134 L384,294 M384,474 L384,634"
-                className="shadow rounded"
+                className="rounded shadow"
                 id="vor-course-pointer-shadow"
                 strokeWidth={4.5}
             />
             <path
                 d="M352,256 L416,256 M384,134 L384,294 M384,474 L384,634"
-                className="Cyan rounded"
+                className="rounded Cyan"
                 id="vor-course-pointer"
                 strokeWidth={4}
             />
@@ -594,28 +596,28 @@ const VorCaptureOverlay: React.FC<{
                     <>
                         <path
                             d="M372,322 L384,304 L396,322"
-                            className="shadow rounded"
+                            className="rounded shadow"
                             transform={`translate(${cdiPx}, ${toward ? 0 : 160}) rotate(${toward ? 0 : 180} 384 304)`}
                             id="vor-deviation-direction-shadow"
                             strokeWidth={4.5}
                         />
                         <path
                             d="M384,304 L384,464"
-                            className="shadow rounded"
+                            className="rounded shadow"
                             transform={`translate(${cdiPx}, 0)`}
                             id="vor-deviation-shadow"
                             strokeWidth={4.5}
                         />
                         <path
                             d="M372,322 L384,304 L396,322"
-                            className="Cyan rounded"
+                            className="rounded Cyan"
                             transform={`translate(${cdiPx}, ${toward ? 0 : 160}) rotate(${toward ? 0 : 180} 384 304)`}
                             id="vor-deviation-direction"
                             strokeWidth={4}
                         />
                         <path
                             d="M384,304 L384,464"
-                            className="Cyan rounded"
+                            className="rounded Cyan"
                             transform={`translate(${cdiPx}, 0)`}
                             id="vor-deviation"
                             strokeWidth={4}
@@ -650,13 +652,13 @@ const IlsCaptureOverlay: React.FC<{
             </g>
             <path
                 d="M352,256 L416,256 M384,134 L384,294 M384,474 L384,634"
-                className="shadow rounded"
+                className="rounded shadow"
                 id="ils-course-pointer-shadow"
                 strokeWidth={4.5}
             />
             <path
                 d="M352,256 L416,256 M384,134 L384,294 M384,474 L384,634"
-                className="Magenta rounded"
+                className="rounded Magenta"
                 id="ils-course-pointer"
                 strokeWidth={4}
             />
@@ -665,14 +667,14 @@ const IlsCaptureOverlay: React.FC<{
                     <>
                         <path
                             d="M384,304 L384,464"
-                            className="shadow rounded"
+                            className="rounded shadow"
                             transform={`translate(${cdiPx}, 0)`}
                             id="ils-deviation-shadow"
                             strokeWidth={4.5}
                         />
                         <path
                             d="M384,304 L384,464"
-                            className="Magenta rounded"
+                            className="rounded Magenta"
                             transform={`translate(${cdiPx}, 0)`}
                             id="ils-deviation"
                             strokeWidth={4}
@@ -698,13 +700,13 @@ const TrackBug: React.FC<{heading: number, track: number}> = memo(({ heading, tr
             <path
                 d="M384,134 L379,143 L384,152 L389,143 L384,134"
                 transform={`rotate(${diff} 384 384)`}
-                className="shadow rounded"
+                className="rounded shadow"
                 strokeWidth={3.5}
             />
             <path
                 d="M384,134 L379,143 L384,152 L389,143 L384,134"
                 transform={`rotate(${diff} 384 384)`}
-                className="Green rounded"
+                className="rounded Green"
                 strokeWidth={3}
             />
         </>
@@ -722,13 +724,13 @@ const LsCourseBug: React.FC<{heading: number, lsCourse: number}> = ({ heading, l
             <path
                 d="M384,128 L384,96 M376,120 L392,120"
                 transform={`rotate(${diff} 384 384)`}
-                className="shadow rounded"
+                className="rounded shadow"
                 strokeWidth={2.5}
             />
             <path
                 d="M384,128 L384,96 M376,120 L392,120"
                 transform={`rotate(${diff} 384 384)`}
-                className="Magenta rounded"
+                className="rounded Magenta"
                 strokeWidth={2}
             />
         </>
@@ -746,13 +748,13 @@ const SelectedHeadingBug: React.FC<{heading: number, selected: number}> = ({ hea
             <path
                 d="M380,132 L372,114 L396,114 L388,132"
                 transform={`rotate(${diff} 384 384)`}
-                className="shadow rounded"
+                className="rounded shadow"
                 strokeWidth={3.5}
             />
             <path
                 d="M380,132 L372,114 L396,114 L388,132"
                 transform={`rotate(${diff} 384 384)`}
-                className="Cyan rounded"
+                className="rounded Cyan"
                 strokeWidth={3}
             />
         </>
@@ -869,14 +871,14 @@ const GlideSlope: FC = () => {
                 <path
                     d="M10,0 L0,-16 L-10,0"
                     transform={`translate(0 ${Math.max(-128, deviationPx)})`}
-                    className="Magenta rounded"
+                    className="rounded Magenta"
                     strokeWidth={2.5}
                     visibility={(gsAvailable && deviationPx < 128) ? 'visible' : 'hidden'}
                 />
                 <path
                     d="M-10,0 L0,16 L10,0"
                     transform={`translate(0 ${Math.min(128, deviationPx)})`}
-                    className="Magenta rounded"
+                    className="rounded Magenta"
                     strokeWidth={2.5}
                     visibility={(gsAvailable && deviationPx > -128) ? 'visible' : 'hidden'}
                 />
