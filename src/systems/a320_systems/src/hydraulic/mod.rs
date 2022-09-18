@@ -225,6 +225,7 @@ impl A320CargoDoorFactory {
             1000000.,
             Duration::from_millis(100),
             [1., 1., 1., 1., 1., 1.],
+            [1., 1., 1., 1., 1., 1.],
             [0., 0.2, 0.21, 0.79, 0.8, 1.],
             Self::FLOW_CONTROL_PROPORTIONAL_GAIN,
             Self::FLOW_CONTROL_INTEGRAL_GAIN,
@@ -323,6 +324,7 @@ impl A320AileronFactory {
             5000.,
             actuator_characteristics.slow_damping(),
             Duration::from_millis(300),
+            [1., 1., 1., 1., 1., 1.],
             [1., 1., 1., 1., 1., 1.],
             [0., 0.2, 0.21, 0.79, 0.8, 1.],
             Self::FLOW_CONTROL_PROPORTIONAL_GAIN,
@@ -431,6 +433,7 @@ impl A320SpoilerFactory {
             5000.,
             actuator_characteristics.slow_damping(),
             Duration::from_millis(300),
+            [1., 1., 1., 1., 1., 1.],
             [1., 1., 1., 1., 1., 1.],
             [0., 0.2, 0.21, 0.79, 0.8, 1.],
             Self::FLOW_CONTROL_PROPORTIONAL_GAIN,
@@ -549,6 +552,7 @@ impl A320ElevatorFactory {
             actuator_characteristics.slow_damping(),
             Duration::from_millis(300),
             [1., 1., 1., 1., 1., 1.],
+            [1., 1., 1., 1., 1., 1.],
             [0., 0.2, 0.21, 0.79, 0.8, 1.],
             Self::FLOW_CONTROL_PROPORTIONAL_GAIN,
             Self::FLOW_CONTROL_INTEGRAL_GAIN,
@@ -650,6 +654,7 @@ impl A320RudderFactory {
             10000.,
             actuator_characteristics.slow_damping(),
             Duration::from_millis(300),
+            [1., 1., 1., 1., 1., 1.],
             [1., 1., 1., 1., 1., 1.],
             [0., 0.2, 0.21, 0.79, 0.8, 1.],
             Self::FLOW_CONTROL_PROPORTIONAL_GAIN,
@@ -794,7 +799,8 @@ impl A320GearDoorFactory {
             2000.,
             actuator_characteristics.slow_damping(),
             Duration::from_millis(100),
-            [0.5, 0.5, 1., 1., 0.5, 0.5],
+            [1., 1., 1., 1., 0.5, 0.5],
+            [0.5, 0.5, 1., 1., 1., 1.],
             [0., 0.15, 0.16, 0.84, 0.85, 1.],
             FLOW_CONTROL_PROPORTIONAL_GAIN,
             FLOW_CONTROL_INTEGRAL_GAIN,
@@ -989,7 +995,8 @@ impl A320GearFactory {
             50000.,
             actuator_characteristics.slow_damping(),
             Duration::from_millis(100),
-            [0.5, 0.5, 1., 1., 0.5, 0.5],
+            [1., 1., 1., 1., 0.5, 0.5],
+            [0.5, 0.5, 1., 1., 1., 1.],
             [0., 0.1, 0.11, 0.89, 0.9, 1.],
             FLOW_CONTROL_PROPORTIONAL_GAIN,
             FLOW_CONTROL_INTEGRAL_GAIN,
@@ -1026,8 +1033,9 @@ impl A320GearFactory {
             50000.,
             actuator_characteristics.slow_damping(),
             Duration::from_millis(100),
-            [0.5, 0.5, 1., 1., 0.5, 0.5],
-            [0., 0.1, 0.11, 0.89, 0.9, 1.],
+            [1., 1., 1., 1., 0.5, 0.5],
+            [0.2, 0.4, 1., 1., 1., 1.],
+            [0., 0.13, 0.17, 0.95, 0.96, 1.],
             FLOW_CONTROL_PROPORTIONAL_GAIN,
             FLOW_CONTROL_INTEGRAL_GAIN,
             FLOW_CONTROL_FORCE_GAIN,
@@ -5689,9 +5697,12 @@ mod tests {
                 ExternalPowerSource,
             },
             engine::{leap_engine::LeapEngine, EngineFireOverheadPanel},
+            failures::FailureType,
             hydraulic::electrical_generator::TestGenerator,
             landing_gear::{GearSystemState, LandingGear, LandingGearControlInterfaceUnitSet},
-            shared::{EmergencyElectricalState, HydraulicGeneratorControlUnit, PotentialOrigin},
+            shared::{
+                EmergencyElectricalState, HydraulicGeneratorControlUnit, LgciuId, PotentialOrigin,
+            },
             simulation::{
                 test::{ReadByName, SimulationTestBed, TestBed, WriteByName},
                 Aircraft, InitContext,
@@ -10741,14 +10752,14 @@ mod tests {
 
             test_bed = test_bed
                 .stow_emergency_gear_extension()
-                .run_waiting_for(Duration::from_secs_f64(10.));
+                .run_waiting_for(Duration::from_secs_f64(5.));
 
-            // // After 10 seconds we expect gear being retracted and doors still down
+            // After 5 seconds we expect gear being retracted and doors still down
             assert!(test_bed.gear_system_state() == GearSystemState::Retracting);
             assert!(test_bed.is_all_doors_really_down());
             assert!(!test_bed.is_all_gears_really_down());
 
-            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(10.));
+            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(15.));
 
             assert!(test_bed.gear_system_state() == GearSystemState::AllUpLocked);
             assert!(test_bed.is_all_doors_really_up());
@@ -10845,6 +10856,31 @@ mod tests {
 
             assert!(test_bed.get_brake_left_green_pressure() > Pressure::new::<psi>(500.));
             assert!(test_bed.get_brake_right_green_pressure() > Pressure::new::<psi>(500.));
+        }
+
+        #[test]
+        fn gears_do_not_deploy_with_all_lgciu_failed() {
+            let mut test_bed = test_bed_in_flight_with()
+                .set_cold_dark_inputs()
+                .in_flight()
+                .set_gear_lever_up()
+                .run_waiting_for(Duration::from_secs_f64(1.));
+
+            assert!(test_bed.gear_system_state() == GearSystemState::AllUpLocked);
+
+            test_bed.fail(FailureType::LgciuPowerSupply(LgciuId::Lgciu1));
+            test_bed.fail(FailureType::LgciuPowerSupply(LgciuId::Lgciu2));
+
+            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(5.));
+            assert!(test_bed.is_all_gears_really_up());
+            assert!(test_bed.is_all_doors_really_up());
+
+            test_bed = test_bed
+                .set_gear_lever_down()
+                .run_waiting_for(Duration::from_secs_f64(5.));
+
+            assert!(test_bed.is_all_gears_really_up());
+            assert!(test_bed.is_all_doors_really_up());
         }
     }
 }
