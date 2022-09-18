@@ -48,6 +48,8 @@ export class EfisSymbols {
 
     private lastFpVersion;
 
+    private lastVnavDriverVersion: number = -1;
+
     constructor(flightPlanManager: FlightPlanManager, guidanceController: GuidanceController) {
         this.flightPlanManager = flightPlanManager;
         this.guidanceController = guidanceController;
@@ -91,6 +93,8 @@ export class EfisSymbols {
         const planCentre = this.flightPlanManager.getWaypoint(planCentreIndex)?.infos.coordinates;
         const planCentreChanged = planCentre?.lat !== this.lastPlanCentre?.lat || planCentre?.long !== this.lastPlanCentre?.long;
         this.lastPlanCentre = planCentre;
+        const vnavPredictionsChanged = this.lastVnavDriverVersion !== this.guidanceController.vnavDriver.version;
+        this.lastVnavDriverVersion = this.guidanceController.vnavDriver.version;
 
         const activeFp = this.flightPlanManager.getCurrentFlightPlan();
         // TODO temp f-pln
@@ -126,7 +130,15 @@ export class EfisSymbols {
             this.lastEfisOption[side] = efisOption;
             const nearbyOverlayChanged = efisOption !== EfisOption.Constraints && efisOption !== EfisOption.None && nearbyFacilitiesChanged;
 
-            if (!pposChanged && !trueHeadingChanged && !rangeChange && !modeChange && !efisOptionChange && !nearbyOverlayChanged && !fpChanged && !planCentreChanged) {
+            if (!pposChanged
+                && !trueHeadingChanged
+                && !rangeChange
+                && !modeChange
+                && !efisOptionChange
+                && !nearbyOverlayChanged
+                && !fpChanged
+                && !planCentreChanged
+                && !vnavPredictionsChanged) {
                 continue;
             }
 
@@ -295,6 +307,10 @@ export class EfisSymbols {
                 }
             }
 
+            const isInManagedNav = this.guidanceController.vnavDriver.isInManagedNav();
+            const waypointPredictions = this.guidanceController.vnavDriver.currentNavGeometryProfile?.waypointPredictions;
+            const shouldObeyAltitudeConstraints = this.guidanceController.vnavDriver.shouldObeyAltitudeConstraints();
+
             // TODO don't send the waypoint before active once FP sequencing is properly implemented
             // (currently sequences with guidance which is too early)
             // eslint-disable-next-line no-lone-blocks
@@ -354,12 +370,24 @@ export class EfisSymbols {
                         direction = wp.additionalData.course;
                     }
 
-                    if (wp.legAltitudeDescription > 0 && wp.legAltitudeDescription < 6) {
-                    // TODO vnav to predict
-                        type |= NdSymbolTypeFlags.ConstraintUnknown;
+                    const isBehindAircraft = i < activeFp.activeWaypointIndex;
+
+                    if (isInManagedNav && !isBehindAircraft && wp.legAltitudeDescription > 0 && wp.legAltitudeDescription < 6) {
+                        if (shouldObeyAltitudeConstraints) {
+                            type |= NdSymbolTypeFlags.Constraint;
+
+                            const predictionAtWaypoint = waypointPredictions.get(i);
+                            if (predictionAtWaypoint?.isAltitudeConstraintMet) {
+                                type |= NdSymbolTypeFlags.MagentaColor;
+                            } else if (predictionAtWaypoint) {
+                                type |= NdSymbolTypeFlags.AmberColor;
+                            }
+                        } else if (i === activeFp.activeWaypointIndex) {
+                            type |= NdSymbolTypeFlags.Constraint;
+                        }
                     }
 
-                    if (efisOption === EfisOption.Constraints) {
+                    if (!isBehindAircraft && efisOption === EfisOption.Constraints) {
                         const descent = wp.constraintType === WaypointConstraintType.DES;
                         switch (wp.legAltitudeDescription) {
                         case 1:
@@ -426,12 +454,13 @@ export class EfisSymbols {
 
             // Pseudo waypoints
 
-            for (const pwp of this.guidanceController.currentPseudoWaypoints.filter((it) => it)) {
+            for (const pwp of this.guidanceController.currentPseudoWaypoints.filter((it) => it && it.displayedOnNd)) {
                 upsertSymbol({
                     databaseId: `W      ${pwp.ident}`,
                     ident: pwp.ident,
                     location: pwp.efisSymbolLla,
                     type: pwp.efisSymbolFlag,
+                    distanceFromAirplane: pwp.distanceFromStart,
                 });
             }
 

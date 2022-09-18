@@ -185,4 +185,22 @@ export const FMMessageTypes: Readonly<Record<string, FMMessage>> = {
         text: 'TURN AREA EXCEEDANCE',
         color: 'Amber',
     },
+    TdReached: {
+        id: 17,
+        text: 'T/D REACHED',
+        color: 'White',
+        clearable: true,
+    },
+    StepAhead: {
+        id: 18,
+        text: 'STEP AHEAD',
+        color: 'White',
+        clearable: true,
+    },
+    StepDeleted: {
+        id: 19,
+        text: 'STEP DELETED',
+        color: 'White',
+        clearable: true,
+    },
 };
