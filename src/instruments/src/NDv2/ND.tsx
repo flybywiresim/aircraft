@@ -19,6 +19,8 @@ import { RadioNavInfo } from './shared/RadioNavInfo';
 import { RoseNavPage } from './pages/rose/RoseNavPage';
 import { RoseLSPage } from './pages/rose/RoseLSPage';
 import { RoseVorPage } from './pages/rose/RoseVorPage';
+import { NDControlEvents } from './NDControlEvents';
+import { Airplane } from './shared/Airplane';
 
 const PAGE_GENERATION_BASE_DELAY = 500;
 const PAGE_GENERATION_RANDOM_DELAY = 70;
@@ -37,14 +39,6 @@ export class NDComponent extends DisplayComponent<NDProps> {
     private readonly magneticTrackWord = Subject.create(Arinc429Word.empty());
 
     private readonly trueTrackWord = Subject.create(Arinc429Word.empty());
-
-    private readonly pposLatWord = Subject.create(Arinc429Word.empty());
-
-    private readonly pposLongWord = Subject.create(Arinc429Word.empty());
-
-    private selectedWaypointLat = Subject.create(0);
-
-    private selectedWaypointLong = Subject.create(0);
 
     private readonly mapRotation = Subject.create(0);
 
@@ -72,58 +66,19 @@ export class NDComponent extends DisplayComponent<NDProps> {
 
     private rangeChangeInvalidationTimeout = -1;
 
-    private mapCenterLat = MappedSubject.create(([mode, pposLat, selectedWaypointLat]) => {
-        if (mode === EfisNdMode.PLAN) {
-            return selectedWaypointLat;
-        }
-
-        return pposLat.valueOr(0);
-    }, this.currentPageMode, this.pposLatWord, this.selectedWaypointLat);
-
-    private mapCenterLong = MappedSubject.create(([mode, pposLong, selectedWaypointLong]) => {
-        if (mode === EfisNdMode.PLAN) {
-            return selectedWaypointLong;
-        }
-
-        return pposLong.valueOr(0);
-    }, this.currentPageMode, this.pposLongWord, this.selectedWaypointLong);
-
-    private mapVisible = MappedSubject.create(([pposLat, pposLong, trackUp, trueHeading, trueTrack, pageChange, rangeChange]) => {
-        if (!pposLat.isNormalOperation() || !pposLong.isNormalOperation()) {
-            return false;
-        }
-
-        if (trackUp && !trueTrack.isNormalOperation()) {
-            return false;
-        } if (!trueHeading.isNormalOperation()) {
-            return false;
-        }
-
-        return !(pageChange || rangeChange);
-    }, this.pposLatWord, this.pposLongWord, this.isUsingTrackUpMode, this.trueHeadingWord, this.trueTrackWord, this.pageChangeInProgress, this.rangeChangeInProgress);
+    private readonly mapRecomputing = MappedSubject.create(([pageChange, rangeChange]) => {
+        return pageChange || rangeChange;
+    }, this.pageChangeInProgress, this.rangeChangeInProgress);
 
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
 
         this.currentPageInstance = this.arcPage.instance;
 
-        const sub = this.props.bus.getSubscriber<NDSimvars & EcpSimVars & ClockEvents>();
+        this.currentPageInstance.isVisible.set(true);
+        this.currentPageInstance.onShow();
 
-        sub.on('latitude').whenChanged().handle((value) => {
-            this.pposLatWord.set(new Arinc429Word(value));
-        });
-
-        sub.on('longitude').whenChanged().handle((value) => {
-            this.pposLongWord.set(new Arinc429Word(value));
-        });
-
-        sub.on('selectedWaypointLat').whenChanged().handle((value) => {
-            this.selectedWaypointLat.set(value);
-        });
-
-        sub.on('selectedWaypointLong').whenChanged().handle((value) => {
-            this.selectedWaypointLong.set(value);
-        });
+        const sub = this.props.bus.getSubscriber<NDSimvars & NDControlEvents & EcpSimVars & ClockEvents>();
 
         sub.on('heading').whenChangedBy(0.01).handle((value) => {
             this.magneticHeadingWord.set(new Arinc429Word(value));
@@ -142,7 +97,6 @@ export class NDComponent extends DisplayComponent<NDProps> {
 
         sub.on('trueGroundTrack').whenChangedBy(0.01).handle((value) => {
             this.trueTrackWord.set(new Arinc429Word(value));
-            console.log(`magHeading: ${this.magneticHeadingWord.get().value.toFixed(1)}, trueHeading: ${this.trueHeadingWord.get().value.toFixed(1)}, magTrack: ${this.magneticTrackWord.get().value.toFixed(1)}, trueTrack: ${this.trueTrackWord.get().value.toFixed(1)}`);
             this.handleMapRotation();
         });
 
@@ -153,6 +107,10 @@ export class NDComponent extends DisplayComponent<NDProps> {
 
         sub.on('ndMode').whenChanged().handle((mode) => {
             this.handleNewMapPage(mode);
+        });
+
+        this.mapRecomputing.sub((recomputing) => {
+            this.props.bus.getPublisher<NDControlEvents>().pub('set_map_recomputing', recomputing);
         });
     }
 
@@ -184,6 +142,7 @@ export class NDComponent extends DisplayComponent<NDProps> {
         }
 
         this.currentPageInstance.isVisible.set(false);
+        this.currentPageInstance.onHide();
 
         this.currentPageMode.set(mode);
 
@@ -209,6 +168,7 @@ export class NDComponent extends DisplayComponent<NDProps> {
         }
 
         this.currentPageInstance.isVisible.set(true);
+        this.currentPageInstance.onShow();
 
         this.invalidatePage();
     }
@@ -238,7 +198,8 @@ export class NDComponent extends DisplayComponent<NDProps> {
     render(): VNode | null {
         return (
             <DisplayUnit bus={this.props.bus}>
-                <svg class="pfd-svg" viewBox="0 0 768 768">
+                {/* ND Vector graphics - bottom layer */}
+                <svg class="nd-svg" viewBox="0 0 768 768">
                     <WindIndicator bus={this.props.bus} />
                     <SpeedIndicator bus={this.props.bus} />
                     <ToWaypointIndicator bus={this.props.bus} />
@@ -293,15 +254,14 @@ export class NDComponent extends DisplayComponent<NDProps> {
                         ref={this.arcPage}
                         bus={this.props.bus}
                         headingWord={this.magneticHeadingWord}
+                        trueHeadingWord={this.trueHeadingWord}
                         trackWord={this.magneticTrackWord}
+                        trueTrackWord={this.trueTrackWord}
                         isUsingTrackUpMode={this.isUsingTrackUpMode}
                     />
                     <PlanModePage
                         ref={this.planPage}
                         bus={this.props.bus}
-                        mapCenterLat={this.pposLatWord.map((v) => v.valueOr(0))}
-                        mapCenterLong={this.pposLongWord.map((v) => v.valueOr(0))}
-                        mapRangeRadius={this.mapRangeRadius}
                         aircraftTrueHeading={this.trueHeadingWord}
                     />
 
@@ -311,6 +271,7 @@ export class NDComponent extends DisplayComponent<NDProps> {
                     <RadioNavInfo bus={this.props.bus} index={2} />
                 </svg>
 
+                {/* ND Raster map - middle layer */}
                 <CanvasMap
                     bus={this.props.bus}
                     x={Subject.create(384)}
@@ -323,13 +284,12 @@ export class NDComponent extends DisplayComponent<NDProps> {
                     })}
                     width={1240}
                     height={1240}
-                    mapCenterLat={this.mapCenterLat}
-                    mapCenterLong={this.mapCenterLong}
-                    mapRotation={this.mapRotation}
-                    mapRangeRadius={this.mapRangeRadius}
-                    mapMode={this.currentPageMode.map((mode) => mode)}
-                    mapVisible={this.mapVisible}
                 />
+
+                {/* ND Vector graphics - top layer */}
+                <svg class="nd-svg nd-top-layer" viewBox="0 0 768 768">
+                    <Airplane bus={this.props.bus} />
+                </svg>
             </DisplayUnit>
         );
     }

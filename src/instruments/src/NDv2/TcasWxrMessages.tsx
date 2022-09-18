@@ -74,7 +74,7 @@ export class TcasWxrMessages extends DisplayComponent<TcasWXMessagesProps> {
                     y={25}
                     class={this.leftMessage.map((it) => it?.color ?? '')}
                     textAnchor="start"
-                    fontSize={25}
+                    fontSize={27}
                 >
                     {this.leftMessage.map((it) => it?.text ?? '')}
                 </text>
@@ -84,7 +84,7 @@ export class TcasWxrMessages extends DisplayComponent<TcasWXMessagesProps> {
                     y={25}
                     class={this.rightMessage.map((it) => it?.color ?? '')}
                     textAnchor="end"
-                    fontSize={25}
+                    fontSize={27}
                 >
                     {this.rightMessage.map((it) => it?.text ?? '')}
                 </text>

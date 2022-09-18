@@ -6,7 +6,6 @@ import { getSmallestAngle } from '../../../PFD/PFDUtils';
 export interface SelectedHeadingBugProps {
     bus: EventBus,
     rotationOffset: Subscribable<number>,
-    visible: Subscribable<boolean>,
 }
 
 export class SelectedHeadingBug extends DisplayComponent<SelectedHeadingBugProps> {
@@ -17,22 +16,30 @@ export class SelectedHeadingBug extends DisplayComponent<SelectedHeadingBugProps
     private readonly selected = Subject.create(0);
 
     // eslint-disable-next-line
-    private readonly bugShown = MappedSubject.create(([visible, headingWord, diff]) => {
-        if (!visible || !headingWord.isNormalOperation()) {
+    private readonly bugShown = MappedSubject.create(([headingWord, selected, diff]) => {
+        if (headingWord.isNormalOperation()) {
+            return false;
+        }
+
+        if (selected < 0) {
             return false;
         }
 
         return diff <= 40;
-    }, this.props.visible, this.headingWord, this.diffSubject);
+    }, this.headingWord, this.selected, this.diffSubject);
 
     // eslint-disable-next-line
-    private readonly textShown = MappedSubject.create(([visible, headingWord, diff]) => {
-        if (!visible || !headingWord.isNormalOperation()) {
+    private readonly textShown = MappedSubject.create(([headingWord, selected, diff]) => {
+        if (!headingWord.isNormalOperation()) {
+            return false;
+        }
+
+        if (selected < 0) {
             return false;
         }
 
         return diff > 40;
-    }, this.props.visible, this.headingWord, this.diffSubject);
+    }, this.headingWord, this.selected, this.diffSubject);
 
     onAfterRender(node: VNode) {
         super.onAfterRender(node);

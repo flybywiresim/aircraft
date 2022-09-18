@@ -1,5 +1,6 @@
 export namespace PaintUtils {
     export function paintText(isColorLayer: boolean, context: CanvasRenderingContext2D, x: number, y: number, text: string, color: string) {
+        context.save();
         context.translate(x, y);
 
         if (!isColorLayer) {
@@ -11,6 +12,6 @@ export namespace PaintUtils {
             context.fillText(text, 0, 0);
         }
 
-        context.resetTransform();
+        context.restore();
     }
 }

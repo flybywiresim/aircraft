@@ -1,72 +1,146 @@
-import { FSComponent, ComponentProps, DisplayComponent, Subscribable, VNode, Subject, EventBus } from 'msfssdk';
+import { FSComponent, ComponentProps, Subscribable, VNode, Subject, EventBus, ConsumerSubject } from 'msfssdk';
 import { Arinc429Word } from '@shared/arinc429';
-import { Airplane } from '../../shared/Airplane';
+import { rangeSettings } from '@shared/NavigationDisplay';
 import { PlanModeUnderlay } from './PlanModeUnderlay';
 import { MapParameters } from '../../../ND/utils/MapParameters';
 import { NDPage } from '../NDPage';
+import { NDControlEvents } from '../../NDControlEvents';
+import { NDSimvars } from '../../NDSimvarPublisher';
+import { EcpSimVars } from '../../../MsfsAvionicsCommon/providers/EcpBusSimVarPublisher';
+import { AdirsSimVars } from '../../../MsfsAvionicsCommon/SimVarTypes';
 
 export interface PlanModePageProps extends ComponentProps {
     bus: EventBus,
     aircraftTrueHeading: Subscribable<Arinc429Word>,
-    mapCenterLat: Subscribable<number>,
-    mapCenterLong: Subscribable<number>,
-    mapRangeRadius: Subscribable<number>,
 }
 
-export class PlanModePage extends DisplayComponent<PlanModePageProps> implements NDPage {
+export class PlanModePage extends NDPage<PlanModePageProps> {
     public isVisible = Subject.create(false);
 
-    private planeX = Subject.create(0);
+    private readonly controlPublisher = this.props.bus.getPublisher<NDControlEvents>();
 
-    private planeY = Subject.create(0);
+    private readonly subs = this.props.bus.getSubscriber<NDControlEvents & NDSimvars & AdirsSimVars>();
 
-    private planeRotation = Subject.create(0);
+    private readonly pposLatSub = ConsumerSubject.create(this.subs.on('latitude').whenChanged(), -1);
 
-    private planeAvailable = Subject.create(false);
+    private readonly pposLongSub = ConsumerSubject.create(this.subs.on('longitude').whenChanged(), -1);
+
+    private readonly mapCenterLatSub = ConsumerSubject.create(this.subs.on('set_map_center_lat').whenChanged(), -1);
+
+    private readonly mapCenterLonSub = ConsumerSubject.create(this.subs.on('set_map_center_lon').whenChanged(), -1);
+
+    private readonly mapRangeRadiusSub = ConsumerSubject.create(this.subs.on('set_map_range_radius').whenChanged(), -1);
+
+    private readonly selectedWaypointLatSub = ConsumerSubject.create(this.subs.on('selectedWaypointLat').whenChanged(), -1);
+
+    private readonly selectedWaypointLongSub = ConsumerSubject.create(this.subs.on('selectedWaypointLong').whenChanged(), -1);
+
+    private readonly mapRangeSub = ConsumerSubject.create(this.props.bus.getSubscriber<EcpSimVars>().on('ndRangeSetting').whenChanged(), -1);
 
     private readonly mapParams = new MapParameters();
+
+    onShow() {
+        super.onShow();
+
+        this.controlPublisher.pub('set_show_plane', true);
+    }
 
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
 
-        this.props.aircraftTrueHeading.sub((v) => {
-            if (v.isNormalOperation()) {
-                this.planeRotation.set(v.value);
-            } else {
-                this.planeAvailable.set(false);
+        this.isVisible.sub((visible) => {
+            if (visible) {
+                this.handleSelectedWaypointPos();
+                this.handleMovePlane();
+                this.handleRotatePlane();
+                this.handleScaleMap();
             }
         });
 
-        this.props.mapCenterLat.sub(() => {
+        this.props.aircraftTrueHeading.sub(() => this.handleRotatePlane());
+
+        this.pposLatSub.sub(() => this.handleMovePlane());
+
+        this.pposLongSub.sub(() => this.handleMovePlane());
+
+        this.mapCenterLatSub.sub(() => {
             this.handleRecomputeMapParameters();
-            this.handlePpos();
+            this.handleMovePlane();
         });
 
-        this.props.mapCenterLong.sub(() => {
+        this.mapCenterLonSub.sub(() => {
             this.handleRecomputeMapParameters();
-            this.handlePpos();
+            this.handleMovePlane();
         });
 
-        this.props.mapRangeRadius.sub(() => {
+        this.mapRangeRadiusSub.sub(() => {
             this.handleRecomputeMapParameters();
+            this.handleMovePlane();
         });
+
+        this.mapRangeSub.sub(() => this.handleScaleMap());
+
+        this.selectedWaypointLatSub.sub(() => this.handleSelectedWaypointPos());
+        this.selectedWaypointLongSub.sub(() => this.handleSelectedWaypointPos());
     }
 
-    private handlePpos() {
-        const lat = this.props.mapCenterLat.get();
-        const long = this.props.mapCenterLong.get();
+    private handleMovePlane() {
+        if (this.isVisible.get()) {
+            const latWord = new Arinc429Word(this.pposLatSub.get());
+            const longWord = new Arinc429Word(this.pposLongSub.get());
 
-        const [x, y] = this.mapParams.coordinatesToXYy({ lat, long });
+            if (latWord.isNormalOperation() && longWord.isNormalOperation()) {
+                const lat = latWord.value;
+                const long = longWord.value;
 
-        this.planeX.set(x);
-        this.planeY.set(y);
+                const [x, y] = this.mapParams.coordinatesToXYy({ lat, long });
+
+                this.controlPublisher.pub('set_plane_x', 768 / 2 + x);
+                this.controlPublisher.pub('set_plane_y', 768 / 2 + y);
+            }
+        }
+    }
+
+    private handleRotatePlane() {
+        if (this.isVisible.get()) {
+            const planeRotation = this.props.aircraftTrueHeading.get();
+
+            if (planeRotation.isNormalOperation()) {
+                const ndRotation = this.mapParams.rotation(planeRotation.value);
+
+                this.controlPublisher.pub('set_show_plane', true);
+                this.controlPublisher.pub('set_plane_rotation', ndRotation);
+            } else {
+                this.controlPublisher.pub('set_show_plane', false);
+            }
+        }
+    }
+
+    private handleScaleMap() {
+        if (this.isVisible.get()) {
+            const rangeSetting = this.mapRangeSub.get();
+            const range = rangeSettings[rangeSetting];
+
+            this.controlPublisher.pub('set_map_range_radius', range);
+        }
+    }
+
+    private handleSelectedWaypointPos() {
+        const lat = this.selectedWaypointLatSub.get();
+        const long = this.selectedWaypointLongSub.get();
+
+        if (this.isVisible.get()) {
+            this.controlPublisher.pub('set_map_center_lat', lat);
+            this.controlPublisher.pub('set_map_center_lon', long);
+            this.controlPublisher.pub('set_map_up_course', 0);
+        }
     }
 
     private handleRecomputeMapParameters() {
         this.mapParams.compute(
-            { lat: this.props.mapCenterLat.get(), long: this.props.mapCenterLong.get() },
-            this.props.mapRangeRadius.get() * 2,
-            768,
+            { lat: this.mapCenterLatSub.get(), long: this.mapCenterLonSub.get() },
+            this.mapRangeRadiusSub.get() * 2,
+            1240,
             0, // FIXME true north ?
         );
     }
@@ -74,14 +148,7 @@ export class PlanModePage extends DisplayComponent<PlanModePageProps> implements
     render(): VNode | null {
         return (
             <g visibility={this.isVisible.map((visible) => (visible ? 'visible' : 'hidden'))}>
-                <PlanModeUnderlay mapRange={this.props.mapRangeRadius} />
-
-                <Airplane
-                    bus={this.props.bus}
-                    x={this.planeX}
-                    y={this.planeY}
-                    rotation={this.planeRotation}
-                />
+                <PlanModeUnderlay mapRange={this.mapRangeRadiusSub} />
             </g>
         );
     }

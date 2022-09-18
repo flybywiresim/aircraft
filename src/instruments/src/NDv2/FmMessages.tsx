@@ -79,7 +79,7 @@ export class FmMessages extends DisplayComponent<{ bus: EventBus }> {
                     y={25}
                     class={this.lastActiveMessage.map((it) => `${it?.color ?? ''} MiddleAlign`)}
                     textAnchor="middle"
-                    fontSize={25}
+                    fontSize={27}
                 >
                     {this.lastActiveMessage.map((it) => {
                         if (!it) {

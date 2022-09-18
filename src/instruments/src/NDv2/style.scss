@@ -9,12 +9,18 @@
   font-style: normal;
 }
 
-.pfd-svg {
+.nd-svg {
   position: absolute;
+  top: 0;
+  left: 0;
   width: 768px;
   height: 768px;
   background: $display-background;
   font-family: "Ecam", monospace !important;
+}
+
+.nd-top-layer {
+  background: none;
 }
 
 .PulseCyanFill {

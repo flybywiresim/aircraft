@@ -1,8 +1,19 @@
-import { FSComponent, DisplayComponent, EventBus, Subject, VNode, MappedSubject, Subscribable } from 'msfssdk';
+import {
+    FSComponent,
+    DisplayComponent,
+    EventBus,
+    Subject,
+    VNode,
+    MappedSubject,
+    Subscribable,
+    ConsumerSubject,
+} from 'msfssdk';
 import React from 'react';
 import { Arinc429Word } from '@shared/arinc429';
 import { MathUtils } from '@shared/MathUtils';
+import { ArmedLateralMode, isArmed, LateralMode } from '@shared/autopilot';
 import { NDSimvars } from '../NDSimvarPublisher';
+import { FGVars } from '../../MsfsAvionicsCommon/providers/FGDataPublisher';
 
 export interface TrackLineProps {
     bus: EventBus,
@@ -11,13 +22,18 @@ export interface TrackLineProps {
     isUsingTrackUpMode: Subscribable<boolean>,
 }
 
-// TODO hook up to lateral modes
 export class TrackLine extends DisplayComponent<TrackLineProps> {
     private readonly lineRef = FSComponent.createRef<SVGLineElement>();
 
     private headingWord = Subject.create<Arinc429Word>(Arinc429Word.empty());
 
     private trackWord = Subject.create<Arinc429Word>(Arinc429Word.empty());
+
+    private readonly sub = this.props.bus.getSubscriber<FGVars & NDSimvars>();
+
+    private lateralModeSub = ConsumerSubject.create(this.sub.on('fg.fma.lateralMode').whenChanged(), null);
+
+    private lateralArmedSub = ConsumerSubject.create(this.sub.on('fg.fma.lateralArmedBitmask').whenChanged(), null);
 
     private readonly rotate = MappedSubject.create(([heading, track]) => {
         if (this.props.isUsingTrackUpMode.get()) {
@@ -34,24 +50,43 @@ export class TrackLine extends DisplayComponent<TrackLineProps> {
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<NDSimvars>();
+        this.sub.on('heading').whenChanged().handle((v) => {
+            const oldSsm = this.headingWord.get().ssm;
 
-        sub.on('heading').whenChanged().handle((v) => {
             this.headingWord.set(new Arinc429Word(v));
-            this.handleLineVisibility();
+
+            // FIXME make this not sus
+            if (this.headingWord.get().ssm !== oldSsm) {
+                this.handleLineVisibility();
+            }
         });
 
-        sub.on('groundTrack').whenChanged().handle((v) => {
+        this.sub.on('groundTrack').whenChanged().handle((v) => {
+            const oldSsm = this.trackWord.get().ssm;
+
             this.trackWord.set(new Arinc429Word(v));
-            this.handleLineVisibility();
+
+            // FIXME make this not sus
+            if (this.trackWord.get().ssm !== oldSsm) {
+                this.handleLineVisibility();
+            }
         });
+
+        this.lateralModeSub.sub(() => this.handleLineVisibility());
+        this.lateralArmedSub.sub(() => this.handleLineVisibility());
     }
 
     private handleLineVisibility() {
         const headingInvalid = !this.headingWord.get().isNormalOperation();
         const trackInvalid = !this.trackWord.get().isNormalOperation();
 
-        if (headingInvalid || trackInvalid) {
+        const lateralMode = this.lateralModeSub.get();
+        const lateralArmed = this.lateralArmedSub.get();
+
+        const shouldShowLine = (lateralMode === LateralMode.NONE || lateralMode === LateralMode.HDG || lateralMode === LateralMode.TRACK)
+            && !isArmed(lateralArmed, ArmedLateralMode.NAV);
+
+        if (headingInvalid || trackInvalid || !shouldShowLine) {
             this.lineRef.instance.style.visibility = 'hidden';
         } else {
             this.lineRef.instance.style.visibility = 'inherit';

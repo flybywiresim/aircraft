@@ -1,6 +1,5 @@
 import { FSComponent, Subject, VNode } from 'msfssdk';
 import { RoseMode, RoseModeProps } from './RoseMode';
-import { Airplane } from '../../shared/Airplane';
 import { TrackBug } from '../../shared/TrackBug';
 import { RoseModeUnderlay } from './RoseModeUnderlay';
 
@@ -20,12 +19,6 @@ export class RoseLSPage extends RoseMode<RoseModeProps> {
                 <TrackBug
                     bus={this.props.bus}
                     isUsingTrackUpMode={this.props.isUsingTrackUpMode}
-                />
-                <Airplane
-                    bus={this.props.bus}
-                    x={Subject.create(384)}
-                    y={Subject.create(384)}
-                    rotation={Subject.create(0)}
                 />
             </g>
         );

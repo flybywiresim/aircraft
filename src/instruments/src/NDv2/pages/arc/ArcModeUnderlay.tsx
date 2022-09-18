@@ -82,10 +82,10 @@ export class ArcModeUnderlay extends DisplayComponent<ArcModeOverlayProps> {
                         strokeDashoffset="15"
                         clipPath="url(#arc-mode-overlay-clip-3)"
                     />
-                    <text x={58} y={482} class="Cyan FontSmall">
+                    <text x={58} y={482} class="Cyan FontSmallest">
                         {this.rangeValue.map((value) => (value / 4) * 3)}
                     </text>
-                    <text x={709} y={482} class="Cyan FontSmall EndAlign">
+                    <text x={709} y={482} class="Cyan FontSmallest EndAlign">
                         {this.rangeValue.map((value) => (value / 4) * 3)}
                     </text>
 
@@ -97,10 +97,10 @@ export class ArcModeUnderlay extends DisplayComponent<ArcModeOverlayProps> {
                         strokeDashoffset="-6"
                         clipPath="url(#arc-mode-overlay-clip-2)"
                     />
-                    <text x={175} y={528} class="Cyan FontSmall">
+                    <text x={175} y={528} class="Cyan FontSmallest">
                         {this.rangeValue.map((value) => (value / 4) * 2)}
                     </text>
-                    <text x={592} y={528} class="Cyan FontSmall EndAlign">
+                    <text x={592} y={528} class="Cyan FontSmallest EndAlign">
                         {this.rangeValue.map((value) => (value / 4) * 2)}
                     </text>
 
@@ -116,20 +116,20 @@ export class ArcModeUnderlay extends DisplayComponent<ArcModeOverlayProps> {
                     </g>
 
                     <g ref={this.dashedSmallestRangeRef}>
-                        <line x1={384} x2={384} y1={497 - 6} y2={497 + 6} className="White rounded" transform="rotate(-60 384 620)" />
-                        <line x1={384} x2={384} y1={497 - 6} y2={497 + 6} className="White rounded" transform="rotate(-30 384 620)" />
-                        <line x1={384} x2={384} y1={497 - 6} y2={497 + 6} className="White rounded" transform="rotate(0 384 620)" />
-                        <line x1={384} x2={384} y1={497 - 6} y2={497 + 6} className="White rounded" transform="rotate(30 384 620)" />
-                        <line x1={384} x2={384} y1={497 - 6} y2={497 + 6} className="White rounded" transform="rotate(60 384 620)" />
+                        <line x1={384} x2={384} y1={497 - 6} y2={497 + 6} className="rounded White" transform="rotate(-60 384 620)" />
+                        <line x1={384} x2={384} y1={497 - 6} y2={497 + 6} className="rounded White" transform="rotate(-30 384 620)" />
+                        <line x1={384} x2={384} y1={497 - 6} y2={497 + 6} className="rounded White" transform="rotate(0 384 620)" />
+                        <line x1={384} x2={384} y1={497 - 6} y2={497 + 6} className="rounded White" transform="rotate(30 384 620)" />
+                        <line x1={384} x2={384} y1={497 - 6} y2={497 + 6} className="rounded White" transform="rotate(60 384 620)" />
                     </g>
 
                     {/* R = 62 */}
                     <g ref={this.dashedSmallRangeRef}>
-                        <line x1={384} x2={384} y1={558 - 6} y2={558 + 6} className="White rounded" transform="rotate(-60 384 620)" />
-                        <line x1={384} x2={384} y1={558 - 6} y2={558 + 6} className="White rounded" transform="rotate(-30 384 620)" />
-                        <line x1={384} x2={384} y1={558 - 6} y2={558 + 6} className="White rounded" transform="rotate(0 384 620)" />
-                        <line x1={384} x2={384} y1={558 - 6} y2={558 + 6} className="White rounded" transform="rotate(30 384 620)" />
-                        <line x1={384} x2={384} y1={558 - 6} y2={558 + 6} className="White rounded" transform="rotate(60 384 620)" />
+                        <line x1={384} x2={384} y1={558 - 6} y2={558 + 6} className="rounded White" transform="rotate(-60 384 620)" />
+                        <line x1={384} x2={384} y1={558 - 6} y2={558 + 6} className="rounded White" transform="rotate(-30 384 620)" />
+                        <line x1={384} x2={384} y1={558 - 6} y2={558 + 6} className="rounded White" transform="rotate(0 384 620)" />
+                        <line x1={384} x2={384} y1={558 - 6} y2={558 + 6} className="rounded White" transform="rotate(30 384 620)" />
+                        <line x1={384} x2={384} y1={558 - 6} y2={558 + 6} className="rounded White" transform="rotate(60 384 620)" />
                     </g>
                 </g>
             </>

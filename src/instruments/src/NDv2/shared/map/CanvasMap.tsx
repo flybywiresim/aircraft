@@ -1,5 +1,5 @@
 /* eslint-disable max-len */
-import { ClockEvents, DisplayComponent, EventBus, FSComponent, MappedSubject, Subscribable, VNode } from 'msfssdk';
+import { ClockEvents, DisplayComponent, EventBus, FSComponent, MappedSubject, Subject, Subscribable, VNode } from 'msfssdk';
 import { EfisNdMode, EfisVectorsGroup, NdSymbol, NdSymbolTypeFlags, NdTraffic } from '@shared/NavigationDisplay';
 import type { PathVector } from '@fmgc/guidance/lnav/PathVector';
 import { Coordinates, distanceTo } from 'msfs-geo';
@@ -13,6 +13,7 @@ import { ConstraintsLayer } from './ConstraintsLayer';
 import { RunwayLayer } from './RunwayLayer';
 import { TrafficLayer } from './TrafficLayer';
 import { FixInfoLayer } from './FixInfoLayer';
+import { NDControlEvents } from '../../NDControlEvents';
 
 export interface CanvasMapProps {
     bus: EventBus,
@@ -20,18 +21,26 @@ export interface CanvasMapProps {
     y: Subscribable<number>,
     width: number,
     height: number,
-    mapCenterLat: Subscribable<number>,
-    mapCenterLong: Subscribable<number>,
-    mapRotation: Subscribable<number>,
-    mapRangeRadius: Subscribable<number>,
-    mapMode: Subscribable<number>,
-    mapVisible: Subscribable<boolean>,
 }
 
 export class CanvasMap extends DisplayComponent<CanvasMapProps> {
     private readonly canvasRef = FSComponent.createRef<HTMLCanvasElement>();
 
     private readonly touchContainerRef = FSComponent.createRef<HTMLDivElement>();
+
+    private readonly mapCenterLat = Subject.create<number>(-1);
+
+    private readonly mapCenterLong = Subject.create<number>(-1);
+
+    private readonly mapRotation = Subject.create<number>(-1);
+
+    private readonly mapRangeRadius = Subject.create<number>(-1);
+
+    private readonly mapMode = Subject.create<EfisNdMode | -1>(-1);
+
+    private readonly mapVisible = Subject.create<boolean>(false);
+
+    private readonly mapRecomputing = Subject.create<boolean>(false);
 
     private readonly vectors: { [k in EfisVectorsGroup]: PathVector[] } = {
         [EfisVectorsGroup.ACTIVE]: [],
@@ -68,6 +77,16 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
 
+        const sub = this.props.bus.getSubscriber<NDControlEvents>();
+
+        sub.on('set_show_map').handle((show) => this.mapVisible.set(show));
+        sub.on('set_map_recomputing').handle((show) => this.mapRecomputing.set(show));
+        sub.on('set_map_center_lat').handle((v) => this.mapCenterLat.set(v));
+        sub.on('set_map_center_lon').handle((v) => this.mapCenterLong.set(v));
+        sub.on('set_map_up_course').handle((v) => this.mapRotation.set(v));
+        sub.on('set_map_range_radius').handle((v) => this.mapRangeRadius.set(v));
+        sub.on('set_map_efis_mode').handle((v) => this.mapMode.set(v));
+
         this.setupCallbacks();
         this.setupEvents();
     }
@@ -75,25 +94,27 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
     private setupCallbacks() {
         const sub = this.props.bus.getSubscriber<NDSimvars & FmsSymbolsData & ClockEvents>();
 
-        this.props.mapCenterLat.sub(() => {
+        this.mapCenterLat.sub(() => {
             this.handleRecomputeMapParameters();
         });
 
-        this.props.mapCenterLong.sub(() => {
+        this.mapCenterLong.sub(() => {
             this.handleRecomputeMapParameters();
         });
 
-        this.props.mapRotation.sub(() => {
+        this.mapRotation.sub(() => {
             this.handleRecomputeMapParameters();
         });
 
-        this.props.mapRangeRadius.sub(() => {
+        this.mapRangeRadius.sub(() => {
             this.handleRecomputeMapParameters();
         });
 
-        this.props.mapVisible.sub((visible) => {
+        MappedSubject.create(([mapVisible, recomputing]) => {
+            const visible = mapVisible && !recomputing;
+
             this.canvasRef.instance.style.visibility = visible ? 'visible' : 'hidden';
-        }, true);
+        }, this.mapVisible, this.mapRecomputing);
 
         sub.on('symbols').handle((data: NdSymbol[]) => {
             this.handleNewSymbols(data);
@@ -129,10 +150,10 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
 
     private handleRecomputeMapParameters() {
         this.mapParams.compute(
-            { lat: this.props.mapCenterLat.get(), long: this.props.mapCenterLong.get() },
-            this.props.mapRangeRadius.get() * 2,
+            { lat: this.mapCenterLat.get(), long: this.mapCenterLong.get() },
+            this.mapRangeRadius.get() * 2,
             this.props.width,
-            this.props.mapRotation.get(),
+            this.mapRotation.get(),
         );
     }
 
@@ -159,13 +180,13 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
 
     private handleNewTraffic(newTraffic: NdTraffic[]) {
         this.traffic.length = 0; // Reset traffic display
-        if (this.props.mapMode.get() !== EfisNdMode.PLAN) {
+        if (this.mapMode.get() !== EfisNdMode.PLAN) {
             newTraffic.forEach((intruder: NdTraffic) => {
                 const latLong: Coordinates = { lat: intruder.lat, long: intruder.lon };
                 let [x, y] = this.mapParams.coordinatesToXYy(latLong);
 
                 let tcasMask;
-                switch (this.props.mapMode.get()) {
+                switch (this.mapMode.get()) {
                 case EfisNdMode.ARC:
                     tcasMask = [
                         [-384, -310], [-384, 0], [-264, 0], [-210, 59], [-210, 143],
@@ -216,7 +237,7 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
         context.clearRect(0, 0, this.props.width, this.props.height);
 
         context.translate(236, -6);
-        switch (this.props.mapMode.get()) {
+        switch (this.mapMode.get()) {
         case EfisNdMode.ARC:
             context.clip(new Path2D('M0,312 a492,492 0 0 1 768,0 L768,562 L648,562 L591,625 L591,768 L174,768 L174,683 L122,625 L0,625 L0,312'));
             break;
@@ -244,14 +265,14 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
             }
         }
 
+        this.constraintsLayer.paintShadowLayer(context, this.props.width, this.props.height, this.mapParams);
+        this.constraintsLayer.paintColorLayer(context, this.props.width, this.props.height, this.mapParams);
+
         this.waypointLayer.paintShadowLayer(context, this.props.width, this.props.height, this.mapParams);
         this.waypointLayer.paintColorLayer(context, this.props.width, this.props.height, this.mapParams);
 
         this.fixInfoLayer.paintShadowLayer(context, this.props.width, this.props.height, this.mapParams);
         this.fixInfoLayer.paintColorLayer(context, this.props.width, this.props.height, this.mapParams);
-
-        this.constraintsLayer.paintShadowLayer(context, this.props.width, this.props.height, this.mapParams);
-        this.constraintsLayer.paintColorLayer(context, this.props.width, this.props.height, this.mapParams);
 
         this.runwayLayer.paintShadowLayer(context, this.props.width, this.props.height, this.mapParams);
         this.runwayLayer.paintColorLayer(context, this.props.width, this.props.height, this.mapParams);

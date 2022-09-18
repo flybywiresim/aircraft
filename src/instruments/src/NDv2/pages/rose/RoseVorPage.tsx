@@ -1,7 +1,6 @@
 import { FSComponent, DisplayComponent, ComponentProps, MappedSubject, Subject, Subscribable, VNode } from 'msfssdk';
 import { Arinc429Word } from '@shared/arinc429';
 import { RoseMode, RoseModeProps } from './RoseMode';
-import { Airplane } from '../../shared/Airplane';
 import { TrackBug } from '../../shared/TrackBug';
 import { RoseModeUnderlay } from './RoseModeUnderlay';
 import { VorSimVars } from '../../../MsfsAvionicsCommon/providers/VorBusPublisher';
@@ -62,12 +61,6 @@ export class RoseVorPage extends RoseMode<RoseVorProps> {
                 <TrackBug
                     bus={this.props.bus}
                     isUsingTrackUpMode={this.props.isUsingTrackUpMode}
-                />
-                <Airplane
-                    bus={this.props.bus}
-                    x={Subject.create(384)}
-                    y={Subject.create(384)}
-                    rotation={Subject.create(0)}
                 />
 
                 <Flag shown={this.hdgFlagShown} x={384} y={241} class="Red FontLarge">HDG</Flag>
@@ -145,7 +138,7 @@ class VorCaptureOverlay extends DisplayComponent<VorCaptureOverlayProps> {
                     strokeWidth={4}
                 />
 
-                <g visibility={this.props.vorAvailable.map((available) => (available ? 'visible' : 'hidden'))}>
+                <g visibility={this.props.vorAvailable.map((available) => (available ? 'inherit' : 'hidden'))}>
                     <path
                         d="M372,322 L384,304 L396,322"
                         class="rounded shadow"

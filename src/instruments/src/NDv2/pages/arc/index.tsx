@@ -1,10 +1,6 @@
-import {
-    FSComponent, ComponentProps, DisplayComponent, MappedSubject, Subject, Subscribable,
-    VNode, EventBus,
-} from 'msfssdk';
+import { FSComponent, ComponentProps, MappedSubject, Subject, Subscribable, VNode, EventBus, ConsumerSubject } from 'msfssdk';
 import { Arinc429Word } from '@shared/arinc429';
-import { EfisNdMode } from '@shared/NavigationDisplay';
-import { Airplane } from '../../shared/Airplane';
+import { EfisNdMode, rangeSettings } from '@shared/NavigationDisplay';
 import { TrackBug } from '../../shared/TrackBug';
 import { ArcModeUnderlay } from './ArcModeUnderlay';
 import { SelectedHeadingBug } from './SelectedHeadingBug';
@@ -16,16 +12,29 @@ import { CrossTrackError } from '../../shared/CrossTrackError';
 import { RadioNeedle } from '../../shared/RadioNeedle';
 import { TcasWxrMessages } from '../../TcasWxrMessages';
 import { TrackLine } from '../../shared/TrackLine';
+import { NDControlEvents } from '../../NDControlEvents';
+import { AdirsSimVars } from '../../../MsfsAvionicsCommon/SimVarTypes';
+import { EcpSimVars } from '../../../MsfsAvionicsCommon/providers/EcpBusSimVarPublisher';
 
 export interface ArcModePageProps extends ComponentProps {
     bus: EventBus,
     headingWord: Subscribable<Arinc429Word>,
+    trueHeadingWord: Subscribable<Arinc429Word>,
     trackWord: Subscribable<Arinc429Word>,
+    trueTrackWord: Subscribable<Arinc429Word>,
     isUsingTrackUpMode: Subscribable<boolean>,
 }
 
-export class ArcModePage extends DisplayComponent<ArcModePageProps> implements NDPage {
+export class ArcModePage extends NDPage<ArcModePageProps> {
     public isVisible = Subject.create(false);
+
+    // TODO these two should be FM pos maybe ?
+
+    private readonly pposLatWord = Subject.create(Arinc429Word.empty());
+
+    private readonly pposLonWord = Subject.create(Arinc429Word.empty());
+
+    private readonly mapRangeSub = ConsumerSubject.create(this.props.bus.getSubscriber<EcpSimVars>().on('ndRangeSetting').whenChanged(), -1);
 
     private readonly ringAvailable = MappedSubject.create(([isUsingTrackUpMode, headingWord, trackWord]) => {
         if (isUsingTrackUpMode) {
@@ -59,17 +68,45 @@ export class ArcModePage extends DisplayComponent<ArcModePageProps> implements N
 
     private readonly mapFlagShown = MappedSubject.create(([headingWord]) => !headingWord.isNormalOperation(), this.props.headingWord);
 
-    // eslint-disable-next-line
-    private readonly airplaneShown = MappedSubject.create(([isVisible, headingWord]) => {
-        return isVisible && headingWord.isNormalOperation();
-    }, this.isVisible, this.props.headingWord);
+    onShow() {
+        super.onShow();
+
+        this.handleMovePlane();
+
+        const sub = this.props.bus.getSubscriber<AdirsSimVars & EcpSimVars>();
+
+        sub.on('latitude').whenChanged().handle((v) => this.pposLatWord.set(new Arinc429Word(v)));
+        sub.on('longitude').whenChanged().handle((v) => this.pposLonWord.set(new Arinc429Word(v)));
+    }
 
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
 
+        this.isVisible.sub((visible) => {
+            if (visible) {
+                this.handleRotatePlane();
+                this.handleMoveMap();
+                this.handleMapRotation();
+                this.handleScaleMap();
+            }
+        });
+
         this.props.headingWord.sub(() => this.handleRingRotation());
+        this.props.trueHeadingWord.sub(() => this.handleMapRotation());
         this.props.trackWord.sub(() => this.handleRingRotation());
+        this.props.trueTrackWord.sub(() => this.handleMapRotation());
         this.props.isUsingTrackUpMode.sub(() => this.handleRingRotation());
+
+        this.planeRotation.sub(() => {
+            if (this.isVisible.get()) {
+                this.handleRotatePlane();
+            }
+        });
+
+        this.pposLatWord.sub(() => this.handleMoveMap());
+        this.pposLonWord.sub(() => this.handleMoveMap());
+
+        this.mapRangeSub.sub(() => this.handleScaleMap());
     }
 
     private handleRingRotation() {
@@ -80,6 +117,76 @@ export class ArcModePage extends DisplayComponent<ArcModePageProps> implements N
         if (rotationWord.isNormalOperation()) {
             this.ringRotation.set(rotationWord.value);
         }
+    }
+
+    private handleMapRotation() {
+        if (!this.isVisible.get()) {
+            return;
+        }
+
+        const isUsingTrackUpMode = this.props.isUsingTrackUpMode.get();
+
+        const rotationWord = isUsingTrackUpMode ? this.props.trueTrackWord.get() : this.props.trueHeadingWord.get();
+
+        const publisher = this.props.bus.getPublisher<NDControlEvents>();
+
+        if (rotationWord.isNormalOperation()) {
+            publisher.pub('set_map_up_course', rotationWord.value);
+        } else {
+            publisher.pub('set_map_up_course', -1);
+        }
+    }
+
+    private handleMovePlane() {
+        if (!this.isVisible.get()) {
+            return;
+        }
+
+        const publisher = this.props.bus.getPublisher<NDControlEvents>();
+
+        publisher.pub('set_show_plane', true);
+        publisher.pub('set_plane_x', 384);
+        publisher.pub('set_plane_y', 626);
+        publisher.pub('set_show_map', true);
+    }
+
+    private handleMoveMap() {
+        if (!this.isVisible.get()) {
+            return;
+        }
+
+        const publisher = this.props.bus.getPublisher<NDControlEvents>();
+
+        const latWord = this.pposLatWord.get();
+        const lonWord = this.pposLonWord.get();
+
+        if (latWord.isNormalOperation() && lonWord.isNormalOperation()) {
+            publisher.pub('set_show_map', true);
+            publisher.pub('set_map_center_lat', latWord.value);
+            publisher.pub('set_map_center_lon', lonWord.value);
+        } else {
+            publisher.pub('set_show_map', false);
+        }
+    }
+
+    private handleRotatePlane() {
+        if (!this.isVisible.get()) {
+            return;
+        }
+
+        const publisher = this.props.bus.getPublisher<NDControlEvents>();
+
+        publisher.pub('set_plane_rotation', this.planeRotation.get());
+    }
+
+    private handleScaleMap() {
+        if (!this.isVisible.get()) {
+            return;
+        }
+
+        const publisher = this.props.bus.getPublisher<NDControlEvents>();
+
+        publisher.pub('set_map_range_radius', rangeSettings[this.mapRangeSub.get()]);
     }
 
     render(): VNode | null {
@@ -115,7 +222,6 @@ export class ArcModePage extends DisplayComponent<ArcModePageProps> implements N
                 <SelectedHeadingBug
                     bus={this.props.bus}
                     rotationOffset={this.planeRotation}
-                    visible={this.isVisible}
                 />
 
                 <TrackLine
@@ -129,12 +235,6 @@ export class ArcModePage extends DisplayComponent<ArcModePageProps> implements N
                     isUsingTrackUpMode={this.props.isUsingTrackUpMode}
                 />
 
-                <Airplane
-                    bus={this.props.bus}
-                    x={Subject.create(384)}
-                    y={Subject.create(626)}
-                    rotation={this.planeRotation}
-                />
                 <LubberLine
                     available={this.props.headingWord.map((it) => it.isNormalOperation())}
                     rotation={this.planeRotation}
