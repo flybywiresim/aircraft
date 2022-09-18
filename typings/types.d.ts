@@ -16,6 +16,7 @@ declare global {
     type DegreesMagnetic = number;
     type DegreesTrue = number;
     type Seconds = number;
+    type Minutes = number;
     type Percent = number;
     type Radians = number;
     type RotationsPerMinute = number;
@@ -24,6 +25,7 @@ declare global {
     type PercentOver100 = number;
     type Gallons = number;
     type Kilograms = number;
+    type Pounds = number;
     type Celsius = number;
     type InchesOfMercury = number;
     type Millibar = number;
@@ -39,7 +41,7 @@ declare global {
          * `true` if `window.ACE_ENGINE_HANDLE` is present and the instrument is using (but is not necessarily connected to) a remote bridge
          */
         ACE_IS_REMOTE: boolean | undefined
-        
+
         /**
          * `true` if `window.ACE_ENGINE_HANDLE` is present and `window.ACE_IS_REMOTE` is `true` and the instrument is connected to the sim through a remote bridge
          */

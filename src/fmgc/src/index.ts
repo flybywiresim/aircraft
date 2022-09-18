@@ -7,8 +7,7 @@ import { ManagedFlightPlan } from './flightplanning/ManagedFlightPlan';
 import { GuidanceController } from './guidance/GuidanceController';
 import { NavRadioManager } from './radionav/NavRadioManager';
 import { EfisSymbols } from './efis/EfisSymbols';
-import { DescentBuilder } from './guidance/vnav/descent/DescentBuilder';
-import { DecelPathBuilder } from './guidance/vnav/descent/DecelPathBuilder';
+import { DescentPathBuilder } from './guidance/vnav/descent/DescentPathBuilder';
 import { VerticalFlightPlanBuilder } from './guidance/vnav/verticalFlightPlan/VerticalFlightPlanBuilder';
 import { initComponents, updateComponents, recallMessageById } from './components';
 import { WaypointBuilder } from './flightplanning/WaypointBuilder';
@@ -34,8 +33,7 @@ export {
     updateFmgcLoop,
     recallMessageById,
     EfisSymbols,
-    DescentBuilder,
-    DecelPathBuilder,
+    DescentPathBuilder,
     VerticalFlightPlanBuilder,
     WaypointBuilder,
     normaliseApproachName,

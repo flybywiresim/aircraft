@@ -81,6 +81,7 @@
 1. [FLIGHTMODEL] Add SU10 crosswind parameters - @donstim (donbikes#4084)
 1. [MODEL] Visible pilot avatars via flyPad setting - @frankkopp (Frank Kopp)
 1. [MODEL] Fixed screens flickering in SU10 - @tyler58546 (tyler58546)
+1. [EFB] Added pause at T/D function - @2hwk (2Cas#1022)
 
 ## 0.8.0
 
