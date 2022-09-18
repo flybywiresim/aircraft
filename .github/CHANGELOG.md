@@ -75,7 +75,7 @@
 1. [EFB] Added SimBridge Health Check icon to Status Bar - @frankkopp (Frank Kopp)
 1. [HYD] Fix gear extending whith dual lgciu power loss - @Crocket63 (crocket)
 1. [EFB] flyPad pushback option to ignore controller inputs - @frankkopp (Frank Kopp)
-1. [RMP] PA/MECH/CAB, overhead panel and other buttons on the ACPs are usable
+1. [RMP] PA/MECH/CAB knobs/buttons and overhead panel are usable
 
 ## 0.8.0
 
