@@ -111,14 +111,12 @@ void AircraftPreset::onUpdate(double deltaTime) {
     // check if the current step is a condition step and check the condition
     if (currentStepPtr->isConditional) {
       execute_calculator_code(currentStepPtr->actionCode.c_str(), &fvalue, &ivalue, &svalue);
+      std::cout << "FLYPAD_BACKEND: Aircraft Preset Step " << currentStep << " Condition: "
+                << currentStepPtr->description
+                << " (delay between tests: " << currentStepPtr->delayAfter << ")" << std::endl;
       if (static_cast<bool>(fvalue)) {
         currentDelay = 0;
         currentStep++;
-      }
-      else {
-        std::cout << "FLYPAD_BACKEND: Aircraft Preset Step " << currentStep << " Condition: "
-                  << currentStepPtr->description
-                  << " (delay between tests: " << currentStepPtr->delayAfter << ")" << std::endl;
       }
       return;
     }
