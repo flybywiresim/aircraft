@@ -354,6 +354,12 @@
     "InteriorLighting": {
       "AircraftNeedsToBePoweredToLoadPresets": "प्रीसेट लोड करने के लिए विमान को संचालित करने की आवश्यकता है",
       "AircraftNeedsToBePoweredToSavePresets": "प्रीसेट को बचाने के लिए विमान को संचालित करने की आवश्यकता है",
+      "AutoLoadDawnDusk": "Dawn/Dusk:",
+      "AutoLoadDay": "Day:",
+      "AutoLoadLightingHelpTitle": "Automatic Preset Loading",
+      "AutoLoadLightingPreset": "Enable automatic loading of lighting presets:",
+      "AutoLoadNight": "Night:",
+      "AutoLoadNoneSelection": "None",
       "LoadPreset": "प्रीसेट लोड करें",
       "LoadingPreset": "प्रीसेट लोड हो रहा है",
       "NewNameConfirmationDialogMsg": "कृपया प्रकाश प्रीसेट के लिए नए नाम की पुष्टि करें",
@@ -407,13 +413,15 @@
       "SliderSpeed": "वांछित गति के लिए मूव करें",
       "SystemEnabledOff": "पुशबैक सिस्टम को चालू करने के लिए क्लिक करें।",
       "SystemEnabledOn": "पुशबैक सिस्टम को पूरी तरह से बंद करने के लिए क्लिक करें।",
+      "UseControllerInput": "Turn controller input from rudder and elevator on/off",
       "ZoomIn": "ज़ूम इन करें",
       "ZoomOut": "ज़ूम आउट"
     },
     "TugAttached": "टग जुड़ा हुआ है",
     "TugDirection": "टग की दिशा",
     "TugInTransit": "टग/पिन की प्रतीक्षा कर रहा है",
-    "TugSpeed": "टग की स्पीड"
+    "TugSpeed": "टग की स्पीड",
+    "UseControllerInput": "Use Controller Input"
   },
   "Settings": {
     "About": {
@@ -427,6 +435,7 @@
       "LatLonExtendedFormat": "एफएमजीसी लैट/लोन वेपॉइंट फॉर्मेट",
       "PaxSigns": "यात्री संकेत",
       "RmpVhfSpacing": "आरएमपी वीएचएफ स्पेसिंग",
+      "Satcom": "Satcom",
       "ThrustReductionHeight": "थ्रस्ट रिडक्शन हाइट (ft)",
       "Title": "विमान विकल्प/पिन प्रोग्राम",
       "WeightUnit": "वज़न इकाई"
@@ -472,11 +481,13 @@
       "AutofillChecklists": "ऑटोफ़िल चेकलिस्ट",
       "BoardingTime": "बोर्डिंग टाइम",
       "DmcSelfTestTime": "डीएमसी सेल्फ टेस्ट टाइम",
+      "FirstOfficerAvatar": "Show First Officer Avatar",
       "HomeCockpitMode": "होम कॉकपिट मोड",
       "McduFocusTimeout": "एमसीडीयू फोकस टाइमआउट (सेकंड)",
       "McduKeyboardInput": "MCDU कीबोर्ड इनपुट",
       "PauseAtTod": "T/D Pause",
       "PauseAtTodDistance": "T/D Pause Distance (nm)",
+      "PilotAvatar": "Show Pilot Avatar",
       "SeparateTillerFromRudderInputs": "रडर इनपुट्स से अलग टिलर",
       "SyncEfis": "Sync EFIS controls between Captain and FO",
       "Title": "यथार्थवाद"
