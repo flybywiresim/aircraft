@@ -9,17 +9,17 @@
     "SetActive": "アクティブに設定",
     "SetStandby": "スタンバイに設定",
     "ShowAll": "全て",
-    "ShowApproach": "Approach",
+    "ShowApproach": "アプローチ",
     "ShowAtis": "ATIS",
-    "ShowDelivery": "Delivery",
-    "ShowDeparture": "Departure",
-    "ShowGround": "Ground",
-    "ShowRadar": "Radar",
-    "ShowTower": "Tower",
+    "ShowDelivery": "デリバリー",
+    "ShowDeparture": "デパーチャー",
+    "ShowGround": "グランド",
+    "ShowRadar": "レーダー",
+    "ShowTower": "タワー",
     "Standby": "スタンバイ",
     "TT": {
-      "AtcCallSignSearch": "ATC Call-sign Search",
-      "AtcTypeFilter": "Filter for"
+      "AtcCallSignSearch": "ATCコールサイン検索",
+      "AtcTypeFilter": "フィルター対象"
     },
     "Title": "航空交通管制"
   },
