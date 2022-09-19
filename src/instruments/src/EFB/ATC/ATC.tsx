@@ -247,7 +247,7 @@ export const ATC = () => {
                                 ))}
                         </ScrollableContainer>
 
-                        <div className={`absolute flex items-center justify-center inset-0 transition duration-200 bg-theme-body h-full border-2 border-theme-accent rounded-md
+                        <div className={`absolute flex items-center justify-center inset-0 transition duration-200 bg-theme-body top-10 border-2 border-theme-accent rounded-md
                             ${atcDataPending ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
                         >
                             {atcDataPending && (
