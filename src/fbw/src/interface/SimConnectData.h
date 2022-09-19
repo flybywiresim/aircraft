@@ -129,10 +129,18 @@ struct SimData {
   unsigned long long assistanceLandingEnabled;
   unsigned long long aiAutoTrimActive;
   unsigned long long aiControlsActive;
+  double wheelRpmLeft;
+  double wheelRpmRight;
 };
 
 struct SimInput {
   double inputs[3];
+};
+
+struct SimInputRudderTrim {
+  bool rudderTrimSwitchLeft;
+  bool rudderTrimSwitchRight;
+  bool rudderTrimReset;
 };
 
 struct SimInputAutopilot {
