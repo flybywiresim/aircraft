@@ -204,7 +204,7 @@ impl Aircraft for A380 {
 
         self.pneumatic.update(
             context,
-            [&self.engine_1, &self.engine_2],
+            [&self.engine_1, &self.engine_1, &self.engine_2, &self.engine_2],
             &self.pneumatic_overhead,
             &self.engine_fire_overhead,
             &self.apu,
