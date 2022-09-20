@@ -93,10 +93,6 @@ void AircraftPreset::onUpdate(double deltaTime) {
       return;
     }
 
-    // update progress var
-    setProgressAircraftPreset((double) currentStep / currentProcedure->size());
-    setProgressAircraftPresetId(currentProcedure->at(currentStep)->id);
-
     // convenience tmp
     const auto currentStepPtr = currentProcedure->at(currentStep);
 
@@ -110,6 +106,9 @@ void AircraftPreset::onUpdate(double deltaTime) {
 
     // check if the current step is a condition step and check the condition
     if (currentStepPtr->isConditional) {
+      // update progress var
+      setProgressAircraftPreset((double) currentStep / currentProcedure->size());
+      setProgressAircraftPresetId(currentProcedure->at(currentStep)->id);
       execute_calculator_code(currentStepPtr->actionCode.c_str(), &fvalue, &ivalue, &svalue);
       std::cout << "FLYPAD_BACKEND: Aircraft Preset Step " << currentStep << " Condition: "
                 << currentStepPtr->description
@@ -128,15 +127,15 @@ void AircraftPreset::onUpdate(double deltaTime) {
     svalue = "";
     if (!currentStepPtr->expectedStateCheckCode.empty()) {
 #ifdef DEBUG
-      std::cout << "FLYPAD_BACKEND: Aircraft Preset Step " << currentStep << " "
-                << currentStepPtr->description << " TESTING: \""
+      std::cout << "FLYPAD_BACKEND: Aircraft Preset Step " << currentStep << " Test: "
+                << currentStepPtr->description << " TEST: \""
                 << currentStepPtr->expectedStateCheckCode << "\"" << std::endl;
 #endif
       execute_calculator_code(currentStepPtr->expectedStateCheckCode.c_str(), &fvalue, &ivalue, &svalue);
       if (static_cast<bool>(fvalue)) {
 #ifdef DEBUG
-        std::cout << "FLYPAD_BACKEND: Aircraft Preset Step " << currentStep << " "
-                  << currentStepPtr->description << " SKIPPING: \""
+        std::cout << "FLYPAD_BACKEND: Aircraft Preset Step " << currentStep << " Skipping: "
+                  << currentStepPtr->description << " TEST: \""
                   << currentStepPtr->expectedStateCheckCode << "\"" << std::endl;
 #endif
 
@@ -145,6 +144,10 @@ void AircraftPreset::onUpdate(double deltaTime) {
         return;
       }
     }
+
+    // update progress var
+    setProgressAircraftPreset((double) currentStep / currentProcedure->size());
+    setProgressAircraftPresetId(currentProcedure->at(currentStep)->id);
 
     // execute code to set expected state
     std::cout << "FLYPAD_BACKEND: Aircraft Preset Step " << currentStep << " Execute: "
