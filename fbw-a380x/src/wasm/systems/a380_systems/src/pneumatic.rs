@@ -237,6 +237,7 @@ impl A380Pneumatic {
             &self.fadec,
         );
 
+
         for cross_bleed_valve in self.cross_bleed_valves.iter_mut() {
             // TODO: Where does this signal come from?
             cross_bleed_valve.update_open_amount(&self.core_processing_input_output_module_a.units[0])
@@ -247,17 +248,17 @@ impl A380Pneumatic {
         }
 
         for (index, (engine_system, cpiom_unit)) in self.engine_systems
-            .iter_mut()
-            .zip(&self.core_processing_input_output_module_a.units)
-            .enumerate() {
-                engine_system.update(
-                    context,
-                    cpiom_unit,
-                    cpiom_unit,
-                    &self.engine_starter_valve_controllers[index],
-                    cpiom_unit,
-                    engines[index],
-                );
+        .iter_mut()
+        .zip(&self.core_processing_input_output_module_a.units)
+        .enumerate() {
+            engine_system.update(
+                context,
+                cpiom_unit,
+                cpiom_unit,
+                &self.engine_starter_valve_controllers[index],
+                cpiom_unit,
+                engines[index],
+            );
         }
 
         let [engine_1_system, engine_2_system, engine_3_system, engine_4_system] = &mut self.engine_systems;
@@ -267,23 +268,40 @@ impl A380Pneumatic {
             engine_1_system,
         );
 
-        let [left_cross_bleed_valve, center_cross_bleed_valve, right_cross_bleed_valve] = &mut self.cross_bleed_valves;
+        self.hydraulic_reservoir_bleed_air_valves[0].update_move_fluid(
+            context,
+            engine_1_system,
+            &mut self.hydraulic_reservoir_bleed_air_pipe,
+        );
 
-        left_cross_bleed_valve.update_move_fluid(context, engine_1_system, engine_2_system);
-        center_cross_bleed_valve.update_move_fluid(context, engine_2_system, engine_3_system);
-        right_cross_bleed_valve.update_move_fluid(context, engine_3_system, engine_4_system);
+        self.hydraulic_reservoir_bleed_air_valves[1].update_move_fluid(
+            context,
+            engine_4_system,
+            &mut self.hydraulic_reservoir_bleed_air_pipe,
+        );
 
         self.green_hydraulic_reservoir_with_valve
             .update_flow_through_valve(context, &mut self.hydraulic_reservoir_bleed_air_pipe);
         self.yellow_hydraulic_reservoir_with_valve
             .update_flow_through_valve(context, &mut self.hydraulic_reservoir_bleed_air_pipe);
 
-        self.packs
-            .iter_mut()
-            .zip(self.engine_systems.iter_mut())
-            .for_each(|(pack, engine_system)| {
-                pack.update(context, engine_system, pack_flow_valve_signals)
-            });
+        self.green_hydraulic_reservoir_with_valve
+            .update_flow_through_valve(context, &mut engine_1_system.high_pressure_compression_chamber);
+        self.yellow_hydraulic_reservoir_with_valve
+            .update_flow_through_valve(context, &mut engine_4_system.high_pressure_compression_chamber);
+
+        let [left_cross_bleed_valve, center_cross_bleed_valve, right_cross_bleed_valve] = &mut self.cross_bleed_valves;
+
+        left_cross_bleed_valve.update_move_fluid(context, engine_1_system, engine_2_system);
+        center_cross_bleed_valve.update_move_fluid(context, engine_1_system, engine_4_system);
+        right_cross_bleed_valve.update_move_fluid(context, engine_3_system, engine_4_system);
+
+        // PACKS
+        let [pack_1, pack_2] = &mut self.packs;
+        pack_1.update(context, engine_1_system, pack_flow_valve_signals);
+        pack_1.update(context, engine_2_system, pack_flow_valve_signals);
+        pack_2.update(context, engine_3_system, pack_flow_valve_signals);
+        pack_2.update(context, engine_4_system, pack_flow_valve_signals);
     }
 
     // TODO: Returning a mutable reference here is not great. I was running into an issue with the update order:
@@ -541,6 +559,8 @@ impl CoreProcessingInputOutputModuleAUnit {
 
         self.is_apu_bleed_valve_open = apu_bleed_valve.is_open();
         self.is_apu_bleed_on = overhead_panel.apu_bleed_is_on();
+
+        self.cross_bleed_valve_selector = overhead_panel.cross_bleed_mode();
     }
 
     fn should_close_pressure_regulating_valve_because_apu_bleed_is_on(&self) -> bool {
@@ -1519,6 +1539,8 @@ mod tests {
         apu: TestApu,
         engine_1: LeapEngine,
         engine_2: LeapEngine,
+        engine_3: LeapEngine,
+        engine_4: LeapEngine,
         pneumatic_overhead_panel: A380PneumaticOverheadPanel,
         fire_pushbuttons: TestEngineFirePushButtons,
         electrical: A380TestElectrical,
@@ -1542,6 +1564,8 @@ mod tests {
                 apu: TestApu::new(),
                 engine_1: LeapEngine::new(context, 1),
                 engine_2: LeapEngine::new(context, 2),
+                engine_3: LeapEngine::new(context, 3),
+                engine_4: LeapEngine::new(context, 4),
                 pneumatic_overhead_panel: A380PneumaticOverheadPanel::new(context),
                 fire_pushbuttons: TestEngineFirePushButtons::new(),
                 electrical: A380TestElectrical::new(),
@@ -1602,7 +1626,7 @@ mod tests {
             self.apu.update(self.pneumatic.apu_bleed_air_valve());
             self.pneumatic.update(
                 context,
-                [&self.engine_1, &self.engine_1, &self.engine_2, &self.engine_2], // TODO
+                [&self.engine_1, &self.engine_2, &self.engine_3, &self.engine_4],
                 &self.pneumatic_overhead_panel,
                 &self.fire_pushbuttons,
                 &self.apu,
@@ -1610,7 +1634,7 @@ mod tests {
             );
             self.air_conditioning.update(
                 context,
-                [&self.engine_1, &self.engine_2],
+                [&self.engine_1, &self.engine_3],
                 &self.fire_pushbuttons,
                 &self.pneumatic,
                 &self.pneumatic_overhead_panel,
@@ -1624,6 +1648,8 @@ mod tests {
             self.pneumatic.accept(visitor);
             self.engine_1.accept(visitor);
             self.engine_2.accept(visitor);
+            self.engine_3.accept(visitor);
+            self.engine_4.accept(visitor);
             self.pneumatic_overhead_panel.accept(visitor);
             self.air_conditioning.accept(visitor);
 
@@ -2093,12 +2119,12 @@ mod tests {
         let alt = Length::new::<foot>(0.);
 
         let mut test_bed = test_bed_with()
-            .toga_eng1()
-            .toga_eng2()
-            .toga_eng3()
-            .toga_eng4()
+            .idle_eng1()
+            .stop_eng2()
+            .stop_eng3()
+            .stop_eng4()
             .in_isa_atmosphere(alt)
-            .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Auto)
+            .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Shut)
             .mach_number(MachNumber(0.))
             .both_packs_auto();
 
@@ -2128,7 +2154,7 @@ mod tests {
             time_points.push(i as f64 * 16.);
 
             if i == 1000 {
-                test_bed = test_bed.idle_eng1().idle_eng2().idle_eng3().idle_eng4();
+                test_bed = test_bed.cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Open)
             }
 
             high_pressures.push(test_bed.hp_pressure(1).get::<psi>());
@@ -2256,14 +2282,12 @@ mod tests {
 
         let mut test_bed = test_bed_with()
             .in_isa_atmosphere(alt)
-            .stop_eng1()
+            .idle_eng1()
             .stop_eng2()
-            .set_bleed_air_running()
-            .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Auto);
+            .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Shut);
 
         let mut ts = Vec::new();
         let mut green_pressures = Vec::new();
-        let mut blue_pressures = Vec::new();
         let mut yellow_pressures = Vec::new();
 
         for i in 1..1000 {
@@ -2279,7 +2303,7 @@ mod tests {
         assert!(test_bed.yellow_hydraulic_reservoir_pressure() > Pressure::new::<psi>(35.));
 
         // If anyone is wondering, I am using python to plot pressure curves. This will be removed once the model is complete.
-        let data = vec![ts, green_pressures, blue_pressures, yellow_pressures];
+        let data = vec![ts, green_pressures, yellow_pressures];
 
         if fs::create_dir_all("../a320_pneumatic_simulation_graph_data").is_ok() {
             let mut file = File::create(
@@ -2385,6 +2409,8 @@ mod tests {
         let test_bed = test_bed_with()
             .idle_eng1()
             .stop_eng2()
+            .stop_eng3()
+            .stop_eng4()
             .in_isa_atmosphere(altitude)
             .mach_number(MachNumber(0.))
             .and_stabilize();
@@ -2392,25 +2418,25 @@ mod tests {
         let ambient_pressure = InternationalStandardAtmosphere::pressure_at_altitude(altitude);
 
         assert!(test_bed.ip_pressure(1) - ambient_pressure > pressure_tolerance());
-        assert!((test_bed.ip_pressure(2) - ambient_pressure).abs() < pressure_tolerance());
+        assert!((test_bed.ip_pressure(3) - ambient_pressure).abs() < pressure_tolerance());
 
         assert!(test_bed.hp_pressure(1) - ambient_pressure > pressure_tolerance());
-        assert!((test_bed.hp_pressure(2) - ambient_pressure).abs() < pressure_tolerance());
+        assert!((test_bed.hp_pressure(3) - ambient_pressure).abs() < pressure_tolerance());
 
         assert!(test_bed.transfer_pressure(1) - ambient_pressure > pressure_tolerance());
-        assert!((test_bed.transfer_pressure(2) - ambient_pressure).abs() < pressure_tolerance());
+        assert!((test_bed.transfer_pressure(3) - ambient_pressure).abs() < pressure_tolerance());
 
         assert!((test_bed.precooler_inlet_pressure(1) - ambient_pressure) > pressure_tolerance());
-        assert!(!test_bed.precooler_inlet_pressure(2).is_nan());
+        assert!(!test_bed.precooler_inlet_pressure(3).is_nan());
 
         assert!((test_bed.precooler_outlet_pressure(1) - ambient_pressure) > pressure_tolerance());
-        assert!(!test_bed.precooler_outlet_pressure(2).is_nan());
+        assert!(!test_bed.precooler_outlet_pressure(3).is_nan());
 
         assert!(test_bed.hp_valve_is_open(1));
-        assert!(!test_bed.hp_valve_is_open(2));
+        assert!(!test_bed.hp_valve_is_open(3));
 
         assert!(!test_bed.es_valve_is_open(1));
-        assert!(!test_bed.es_valve_is_open(2));
+        assert!(!test_bed.es_valve_is_open(3));
 
         assert!(!test_bed.cross_bleed_valves_are_open());
     }
@@ -2541,65 +2567,105 @@ mod tests {
 
         assert!(test_bed.contains_variable_with_name("PNEU_ENG_1_IP_PRESSURE"));
         assert!(test_bed.contains_variable_with_name("PNEU_ENG_2_IP_PRESSURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_3_IP_PRESSURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_4_IP_PRESSURE"));
 
         assert!(test_bed.contains_variable_with_name("PNEU_ENG_1_HP_PRESSURE"));
         assert!(test_bed.contains_variable_with_name("PNEU_ENG_2_HP_PRESSURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_3_HP_PRESSURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_4_HP_PRESSURE"));
 
         assert!(test_bed.contains_variable_with_name("PNEU_ENG_1_TRANSFER_PRESSURE"));
         assert!(test_bed.contains_variable_with_name("PNEU_ENG_2_TRANSFER_PRESSURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_3_TRANSFER_PRESSURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_4_TRANSFER_PRESSURE"));
 
         assert!(test_bed.contains_variable_with_name("PNEU_ENG_1_PRECOOLER_INLET_PRESSURE"));
         assert!(test_bed.contains_variable_with_name("PNEU_ENG_2_PRECOOLER_INLET_PRESSURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_3_PRECOOLER_INLET_PRESSURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_4_PRECOOLER_INLET_PRESSURE"));
 
         assert!(test_bed.contains_variable_with_name("PNEU_ENG_1_PRECOOLER_OUTLET_PRESSURE"));
         assert!(test_bed.contains_variable_with_name("PNEU_ENG_2_PRECOOLER_OUTLET_PRESSURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_3_PRECOOLER_OUTLET_PRESSURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_4_PRECOOLER_OUTLET_PRESSURE"));
 
         assert!(test_bed.contains_variable_with_name("PNEU_ENG_1_STARTER_CONTAINER_PRESSURE"));
         assert!(test_bed.contains_variable_with_name("PNEU_ENG_2_STARTER_CONTAINER_PRESSURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_3_STARTER_CONTAINER_PRESSURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_4_STARTER_CONTAINER_PRESSURE"));
 
         assert!(test_bed.contains_variable_with_name("PNEU_ENG_1_IP_TEMPERATURE"));
         assert!(test_bed.contains_variable_with_name("PNEU_ENG_2_IP_TEMPERATURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_3_IP_TEMPERATURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_4_IP_TEMPERATURE"));
 
         assert!(test_bed.contains_variable_with_name("PNEU_ENG_1_HP_TEMPERATURE"));
         assert!(test_bed.contains_variable_with_name("PNEU_ENG_2_HP_TEMPERATURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_3_HP_TEMPERATURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_4_HP_TEMPERATURE"));
 
         assert!(test_bed.contains_variable_with_name("PNEU_ENG_1_TRANSFER_TEMPERATURE"));
         assert!(test_bed.contains_variable_with_name("PNEU_ENG_2_TRANSFER_TEMPERATURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_3_TRANSFER_TEMPERATURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_4_TRANSFER_TEMPERATURE"));
 
         assert!(test_bed.contains_variable_with_name("PNEU_ENG_1_PRECOOLER_INLET_TEMPERATURE"));
         assert!(test_bed.contains_variable_with_name("PNEU_ENG_2_PRECOOLER_INLET_TEMPERATURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_3_PRECOOLER_INLET_TEMPERATURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_4_PRECOOLER_INLET_TEMPERATURE"));
 
         assert!(test_bed.contains_variable_with_name("PNEU_ENG_1_PRECOOLER_OUTLET_TEMPERATURE"));
         assert!(test_bed.contains_variable_with_name("PNEU_ENG_2_PRECOOLER_OUTLET_TEMPERATURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_3_PRECOOLER_OUTLET_TEMPERATURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_4_PRECOOLER_OUTLET_TEMPERATURE"));
 
         assert!(test_bed.contains_variable_with_name("PNEU_ENG_1_STARTER_CONTAINER_TEMPERATURE"));
         assert!(test_bed.contains_variable_with_name("PNEU_ENG_2_STARTER_CONTAINER_TEMPERATURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_3_STARTER_CONTAINER_TEMPERATURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_4_STARTER_CONTAINER_TEMPERATURE"));
 
         assert!(test_bed.contains_variable_with_name("PNEU_ENG_1_IP_PRESSURE"));
         assert!(test_bed.contains_variable_with_name("PNEU_ENG_2_IP_PRESSURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_3_IP_PRESSURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_4_IP_PRESSURE"));
 
         assert!(test_bed.contains_variable_with_name("PNEU_ENG_1_IP_VALVE_OPEN"));
         assert!(test_bed.contains_variable_with_name("PNEU_ENG_2_IP_VALVE_OPEN"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_3_IP_VALVE_OPEN"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_4_IP_VALVE_OPEN"));
 
         assert!(test_bed.contains_variable_with_name("PNEU_ENG_1_HP_VALVE_OPEN"));
         assert!(test_bed.contains_variable_with_name("PNEU_ENG_2_HP_VALVE_OPEN"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_3_HP_VALVE_OPEN"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_4_HP_VALVE_OPEN"));
 
         assert!(test_bed.contains_variable_with_name("PNEU_ENG_1_PR_VALVE_OPEN"));
         assert!(test_bed.contains_variable_with_name("PNEU_ENG_2_PR_VALVE_OPEN"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_3_PR_VALVE_OPEN"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_4_PR_VALVE_OPEN"));
 
         assert!(test_bed.contains_variable_with_name("PNEU_ENG_1_STARTER_VALVE_OPEN"));
         assert!(test_bed.contains_variable_with_name("PNEU_ENG_2_STARTER_VALVE_OPEN"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_3_STARTER_VALVE_OPEN"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_4_STARTER_VALVE_OPEN"));
 
         assert!(test_bed.contains_variable_with_name("PNEU_PACK_1_FLOW_VALVE_FLOW_RATE"));
         assert!(test_bed.contains_variable_with_name("PNEU_PACK_2_FLOW_VALVE_FLOW_RATE"));
 
         assert!(test_bed.contains_variable_with_name("OVHD_PNEU_ENG_1_BLEED_PB_HAS_FAULT"));
         assert!(test_bed.contains_variable_with_name("OVHD_PNEU_ENG_2_BLEED_PB_HAS_FAULT"));
+        assert!(test_bed.contains_variable_with_name("OVHD_PNEU_ENG_3_BLEED_PB_HAS_FAULT"));
+        assert!(test_bed.contains_variable_with_name("OVHD_PNEU_ENG_4_BLEED_PB_HAS_FAULT"));
 
         assert!(test_bed.contains_variable_with_name("OVHD_PNEU_ENG_1_BLEED_PB_IS_AUTO"));
         assert!(test_bed.contains_variable_with_name("OVHD_PNEU_ENG_2_BLEED_PB_IS_AUTO"));
+        assert!(test_bed.contains_variable_with_name("OVHD_PNEU_ENG_3_BLEED_PB_IS_AUTO"));
+        assert!(test_bed.contains_variable_with_name("OVHD_PNEU_ENG_4_BLEED_PB_IS_AUTO"));
 
-        assert!(test_bed.contains_variable_with_name("PNEU_XBLEED_VALVE_OPEN"));
+        assert!(test_bed.contains_variable_with_name("PNEU_XBLEED_VALVE_L_OPEN"));
+        assert!(test_bed.contains_variable_with_name("PNEU_XBLEED_VALVE_C_OPEN"));
+        assert!(test_bed.contains_variable_with_name("PNEU_XBLEED_VALVE_R_OPEN"));
     }
 
     #[test]
@@ -2977,6 +3043,8 @@ mod tests {
             let test_bed = test_bed_with()
                 .idle_eng1()
                 .idle_eng2()
+                .idle_eng3()
+                .idle_eng4()
                 .set_pack_flow_pb_is_auto(1, true)
                 .set_pack_flow_pb_is_auto(2, true)
                 .and_stabilize();
@@ -3011,6 +3079,8 @@ mod tests {
             let mut test_bed = test_bed_with()
                 .idle_eng1()
                 .idle_eng2()
+                .idle_eng3()
+                .idle_eng4()
                 .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Shut)
                 .mach_number(MachNumber(0.))
                 .both_packs_auto()
