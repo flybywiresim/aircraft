@@ -2156,6 +2156,7 @@
                             <ID>3</ID>
                             <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                         </UseTemplate>
+                    </Component>
 
                     <Component ID="EVAC">
                         <!-- EVAC COMMAND -->
@@ -2445,8 +2446,8 @@
                     <!-- AUDIO SWITCHING -->
                     <UseTemplate Name="FBW_Anim_Interactions">
                         <ANIM_TYPE>KNOB</ANIM_TYPE>
-                        <ANIM_TEMPLATE>ASOBO_GT_Switch_Dummy</ANIM_TEMPLATE>
-                        <Node_ID>KNOB_OVHD_AUDIOSWITCH</Node_ID>
+                        <ANIM_TEMPLATE>FBW_Airbus_AudioSwitching_Knob</ANIM_TEMPLATE>
+                        <NODE_ID>KNOB_OVHD_AUDIOSWITCH</NODE_ID>
                         <PART_ID>KNOB_OVHD_AUDIOSWITCH</PART_ID>
                         <ANIM_NAME>KNOB_OVHD_AUDIOSWITCH</ANIM_NAME>
                         <NUM_STATES>3</NUM_STATES>
@@ -2455,6 +2456,22 @@
                         <WWISE_EVENT>turnknob</WWISE_EVENT>
                         <INIT_VALUE>1</INIT_VALUE>
                         <SWITCH_POSITION_VAR>KNOB_OVHD_AUDIOSWITCH_Position</SWITCH_POSITION_VAR>
+                        <!-- Have to set COPILOT_TRANSMITTER_SET when knob == 0 becausue PILOT_TRANSMITTER_SET sets the copilot too -->
+                        <ON_SWITCH>
+                            (L:A32NX_AUDIOSWITCHING_KNOB) 0 == if{
+                                (L:A32NX_ACP3_TRANSMIT_CHANNEL)  (&gt;K:PILOT_TRANSMITTER_SET)
+                                (L:A32NX_ACP2_TRANSMIT_CHANNEL)  (&gt;K:COPILOT_TRANSMITTER_SET)
+                            }
+
+                            (L:A32NX_AUDIOSWITCHING_KNOB) 1 == if{
+                                (L:A32NX_ACP1_TRANSMIT_CHANNEL)  (&gt;K:PILOT_TRANSMITTER_SET)
+                                (L:A32NX_ACP2_TRANSMIT_CHANNEL)  (&gt;K:COPILOT_TRANSMITTER_SET)
+                            }
+
+                            (L:A32NX_AUDIOSWITCHING_KNOB) 2 == if{
+                                (L:A32NX_ACP3_TRANSMIT_CHANNEL)  (&gt;K:COPILOT_TRANSMITTER_SET)
+                            }
+                        </ON_SWITCH>
                     </UseTemplate>
                 </Component>
 
@@ -2723,8 +2740,6 @@
                         </UseTemplate>
                     </Component>
                 </Component>
-
-            </Component>
 
                 <Component ID="OverHead_AntiIce">
                     <!-- ANTI ICE ENG 1-->
@@ -3948,8 +3963,7 @@
                 <NO_HIGHLIGHT_NODE_ID>@StopLockHighlight</NO_HIGHLIGHT_NODE_ID>
             </DefaultTemplateParameters>
             <Component ID="Updater">
-                <UseTemplate Name="FBW_AIRLINER_Audio_Panel_Updater">
-                </UseTemplate>
+                <UseTemplate Name="FBW_AIRLINER_Audio_Panel_Updater"></UseTemplate>
             </Component>
             <!-- RMP 1 is powered by AC/DC ESS (via ESS TR for AC) -->
             <!-- For each ACP, VHF1 is powered with ESS (emergency circuit), VHF2 with AC/DC 2 and VHF3 with AC/DC 3 (via corresponding TR for AC) -->
@@ -4853,7 +4867,7 @@
                 <ANIM_TEMPLATE>FBW_Airbus_ATC_MSG_Button</ANIM_TEMPLATE>
                 <NODE_ID>PUSH_AUTOPILOT_LL</NODE_ID>
                 <SEQ1_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-            </UseTemplate>-->
+            </UseTemplate>
             <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
                 <NODE_ID>PUSH_AUTOPILOT_SIDESTICK_L</NODE_ID>
             </UseTemplate>
@@ -4866,7 +4880,7 @@
                 <ANIM_TEMPLATE>FBW_Airbus_ATC_MSG_Button</ANIM_TEMPLATE>
                 <NODE_ID>PUSH_AUTOPILOT_RR</NODE_ID>
                 <SEQ1_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-            </UseTemplate>-->
+            </UseTemplate>
             <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
                 <NODE_ID>SWITCH_RIGHT</NODE_ID>
             </UseTemplate>

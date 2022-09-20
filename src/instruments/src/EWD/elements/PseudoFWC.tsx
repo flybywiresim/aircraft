@@ -298,6 +298,7 @@ const PseudoFWC: React.FC = () => {
     const [excessPressure] = useSimVar('L:A32NX_PRESS_EXCESS_CAB_ALT', 'bool', 500);
 
     const [voiceVHF3] = useSimVar('A:COM ACTIVE FREQUENCY:3', 'number', 500);
+    const [audioSwitchingKnob] = useSimVar('L:A32NX_AUDIOSWITCHING_KNOB', 'number', 500);
 
     /* WARNINGS AND FAILURES */
     const landASAPRed: boolean = !!(!aircraftOnGround
@@ -1398,6 +1399,17 @@ const PseudoFWC: React.FC = () => {
             simVarIsActive: voiceVHF3 !== 0 && [1, 2, 6, 9, 10].includes(flightPhase),
             whichCodeToReturn: [0],
             codesToReturn: ['000056701'],
+            memoInhibit: false,
+            failure: 0,
+            sysPage: -1,
+            side: 'RIGHT',
+        },
+        '0000280': // AUDIO SWITCHING KNOB
+        {
+            flightPhaseInhib: [],
+            simVarIsActive: audioSwitchingKnob !== 1,
+            whichCodeToReturn: [0],
+            codesToReturn: ['000028001'],
             memoInhibit: false,
             failure: 0,
             sysPage: -1,
