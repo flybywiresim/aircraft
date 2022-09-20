@@ -9,16 +9,16 @@
     "SetActive": "Nastavit aktivní",
     "SetStandby": "Nastavit standby",
     "ShowAll": "Vše",
-    "ShowApproach": "Approach",
+    "ShowApproach": "Přiblížení",
     "ShowAtis": "ATIS",
     "ShowDelivery": "Delivery",
-    "ShowDeparture": "Departure",
+    "ShowDeparture": "Odlet",
     "ShowGround": "Ground",
     "ShowRadar": "Radar",
     "ShowTower": "Věž",
     "Standby": "Standby",
     "TT": {
-      "AtcCallSignSearch": "ATC Call-sign Search",
+      "AtcCallSignSearch": "Vyhledávání volacího znaku ATC",
       "AtcTypeFilter": "Filtrovat na"
     },
     "Title": "Řízení letového provozu"
