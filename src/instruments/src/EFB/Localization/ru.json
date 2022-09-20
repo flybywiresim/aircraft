@@ -4,10 +4,23 @@
     "ChangeATISATCSourceButton": "Изменить источник ATIS/ATC",
     "ConnectHoppieACARS": "Подключить Hoppie ACARS",
     "NoInformationAvailableForThisFrequency": "Нет доступной информации по этой частоте",
+    "SearchPlaceholder": "Search",
     "SelectCorrectATISATCSource": "Эта страница доступна только в том случае, если в качестве источника ATIS/ATC выбран IVAO или VATSIM на странице настроек.",
     "SetActive": "Установить активной",
     "SetStandby": "Установить резервной",
+    "ShowAll": "All",
+    "ShowApproach": "Approach",
+    "ShowAtis": "ATIS",
+    "ShowDelivery": "Delivery",
+    "ShowDeparture": "Departure",
+    "ShowGround": "Ground",
+    "ShowRadar": "Radar",
+    "ShowTower": "Tower",
     "Standby": "Резервная",
+    "TT": {
+      "AtcCallSignSearch": "ATC Call-sign Search",
+      "AtcTypeFilter": "Filter for"
+    },
     "Title": "Управление Воздушным Движением"
   },
   "Checklists": {
@@ -183,6 +196,10 @@
     "Altn": "Алтн",
     "ExitFullscreenMode": "Выйти из полноэкранного режима",
     "From": "От",
+    "LoadingImage": "Loading Image",
+    "LoadingImageFailed": "Loading Image failed",
+    "LoadingPdf": "Loading PDF",
+    "LoadingPdfFailed": "Loading PDF failed",
     "LocalFiles": {
       "Both": "Оба",
       "EstablishingConnection": "Установка соединения...",
