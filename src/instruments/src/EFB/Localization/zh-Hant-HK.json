@@ -4,10 +4,23 @@
     "ChangeATISATCSourceButton": "更改 ATIS/ATC 來源",
     "ConnectHoppieACARS": "連接 Hoppie ACARS",
     "NoInformationAvailableForThisFrequency": "此頻率沒有資料",
+    "SearchPlaceholder": "Search",
     "SelectCorrectATISATCSource": "您需要在設置中選擇 IVAO 或 VATSIM 為 ATC 來源才可使用此頁面。",
     "SetActive": "設定為使用中",
     "SetStandby": "設定為待命",
+    "ShowAll": "All",
+    "ShowApproach": "Approach",
+    "ShowAtis": "ATIS",
+    "ShowDelivery": "Delivery",
+    "ShowDeparture": "Departure",
+    "ShowGround": "Ground",
+    "ShowRadar": "Radar",
+    "ShowTower": "Tower",
     "Standby": "待命",
+    "TT": {
+      "AtcCallSignSearch": "ATC Call-sign Search",
+      "AtcTypeFilter": "Filter for"
+    },
     "Title": "空中管制"
   },
   "Checklists": {
@@ -183,6 +196,10 @@
     "Altn": "在備機場",
     "ExitFullscreenMode": "退出全屏模式",
     "From": "由",
+    "LoadingImage": "Loading Image",
+    "LoadingImageFailed": "Loading Image failed",
+    "LoadingPdf": "Loading PDF",
+    "LoadingPdfFailed": "Loading PDF failed",
     "LocalFiles": {
       "Both": "兩者",
       "EstablishingConnection": "正在連接",

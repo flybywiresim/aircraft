@@ -4,10 +4,23 @@
     "ChangeATISATCSourceButton": "Skift ATIS/ATC-kilde",
     "ConnectHoppieACARS": "Forbind Hoppie ACARS",
     "NoInformationAvailableForThisFrequency": "Ingen information tilgængelig for denne frekvens",
+    "SearchPlaceholder": "Search",
     "SelectCorrectATISATCSource": "Denne side er kun tilgængelig, når IVAO eller VATSIM er valgt som ATIS/ATC kilde på indstillingssiden.",
     "SetActive": "Sæt Aktiv",
     "SetStandby": "Sæt Standby",
+    "ShowAll": "All",
+    "ShowApproach": "Approach",
+    "ShowAtis": "ATIS",
+    "ShowDelivery": "Delivery",
+    "ShowDeparture": "Departure",
+    "ShowGround": "Ground",
+    "ShowRadar": "Radar",
+    "ShowTower": "Tower",
     "Standby": "Standby",
+    "TT": {
+      "AtcCallSignSearch": "ATC Call-sign Search",
+      "AtcTypeFilter": "Filter for"
+    },
     "Title": "Lufttrafik Kontrol"
   },
   "Checklists": {
@@ -183,6 +196,10 @@
     "Altn": "Altn",
     "ExitFullscreenMode": "Afslut fuldskærmstilstand",
     "From": "Fra",
+    "LoadingImage": "Loading Image",
+    "LoadingImageFailed": "Loading Image failed",
+    "LoadingPdf": "Loading PDF",
+    "LoadingPdfFailed": "Loading PDF failed",
     "LocalFiles": {
       "Both": "Begge",
       "EstablishingConnection": "Opretter forbindelse",

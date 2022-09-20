@@ -4,10 +4,23 @@
     "ChangeATISATCSourceButton": "Vaihda ATIS/ATC lähde",
     "ConnectHoppieACARS": "Yhdistä Hoppien ACARSiin",
     "NoInformationAvailableForThisFrequency": "Tietoja ei ole saatavilla tälle taajuudelle",
+    "SearchPlaceholder": "Search",
     "SelectCorrectATISATCSource": "Tämä sivu on saatavilla vain, kun IVAO tai VATSIM on valittuna ATIS/ATC lähteeksi asetuksista.",
     "SetActive": "Aseta aktiiviseksi",
     "SetStandby": "Aseta valmiustilaan",
+    "ShowAll": "All",
+    "ShowApproach": "Approach",
+    "ShowAtis": "ATIS",
+    "ShowDelivery": "Delivery",
+    "ShowDeparture": "Departure",
+    "ShowGround": "Ground",
+    "ShowRadar": "Radar",
+    "ShowTower": "Tower",
     "Standby": "Valmiustila",
+    "TT": {
+      "AtcCallSignSearch": "ATC Call-sign Search",
+      "AtcTypeFilter": "Filter for"
+    },
     "Title": "Lennonjohto"
   },
   "Checklists": {
@@ -183,6 +196,10 @@
     "Altn": "Vaihtoehtoinen",
     "ExitFullscreenMode": "Poistu kokoruuduntilasta",
     "From": "Mistä",
+    "LoadingImage": "Loading Image",
+    "LoadingImageFailed": "Loading Image failed",
+    "LoadingPdf": "Loading PDF",
+    "LoadingPdfFailed": "Loading PDF failed",
     "LocalFiles": {
       "Both": "Molemmat",
       "EstablishingConnection": "Muodostetaan yhteyttä",
