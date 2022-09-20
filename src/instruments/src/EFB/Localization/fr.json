@@ -4,10 +4,23 @@
     "ChangeATISATCSourceButton": "Modifier la source ATIS/ATC",
     "ConnectHoppieACARS": "Connecter l'ACARS Hoppie",
     "NoInformationAvailableForThisFrequency": "Aucune information disponible pour cette fréquence",
+    "SearchPlaceholder": "Search",
     "SelectCorrectATISATCSource": "Cette page est uniquement disponible lorsque IVAO ou VATSIM est sélectionné comme source ATIS/ATC dans la page des paramètres.",
     "SetActive": "Activer",
     "SetStandby": "Passer en Standby",
+    "ShowAll": "All",
+    "ShowApproach": "Approach",
+    "ShowAtis": "ATIS",
+    "ShowDelivery": "Delivery",
+    "ShowDeparture": "Departure",
+    "ShowGround": "Ground",
+    "ShowRadar": "Radar",
+    "ShowTower": "Tower",
     "Standby": "Veille",
+    "TT": {
+      "AtcCallSignSearch": "ATC Call-sign Search",
+      "AtcTypeFilter": "Filter for"
+    },
     "Title": "Contrôle du trafic aérien"
   },
   "Checklists": {
@@ -183,6 +196,10 @@
     "Altn": "Altn",
     "ExitFullscreenMode": "Quitter le mode plein-écran",
     "From": "FROM",
+    "LoadingImage": "Loading Image",
+    "LoadingImageFailed": "Loading Image failed",
+    "LoadingPdf": "Loading PDF",
+    "LoadingPdfFailed": "Loading PDF failed",
     "LocalFiles": {
       "Both": "Les deux",
       "EstablishingConnection": "Connexion en cours",

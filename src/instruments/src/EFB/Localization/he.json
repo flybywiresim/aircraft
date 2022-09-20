@@ -4,10 +4,23 @@
     "ChangeATISATCSourceButton": "שינוי מקור ATIS/ATC",
     "ConnectHoppieACARS": "חבר Hoppie ACARS",
     "NoInformationAvailableForThisFrequency": "אין מידע זמין עבור תדר רדיו זה",
+    "SearchPlaceholder": "Search",
     "SelectCorrectATISATCSource": "הדף יהיה זמין רק לאחר ש-VATSIM או IVAO נבחרו כמקור ATIS/ATC בדף ההגדרות. ",
     "SetActive": "הגדר כתדר פעיל",
     "SetStandby": "הגדר כתדר בהמתנה",
+    "ShowAll": "All",
+    "ShowApproach": "Approach",
+    "ShowAtis": "ATIS",
+    "ShowDelivery": "Delivery",
+    "ShowDeparture": "Departure",
+    "ShowGround": "Ground",
+    "ShowRadar": "Radar",
+    "ShowTower": "Tower",
     "Standby": "תדר בהמתנה",
+    "TT": {
+      "AtcCallSignSearch": "ATC Call-sign Search",
+      "AtcTypeFilter": "Filter for"
+    },
     "Title": "בקרת תנועה אווירית"
   },
   "Checklists": {
@@ -183,6 +196,10 @@
     "Altn": "חלופי",
     "ExitFullscreenMode": "צא ממסך מלא",
     "From": "מוצא",
+    "LoadingImage": "Loading Image",
+    "LoadingImageFailed": "Loading Image failed",
+    "LoadingPdf": "Loading PDF",
+    "LoadingPdfFailed": "Loading PDF failed",
     "LocalFiles": {
       "Both": "שניהם",
       "EstablishingConnection": "מייצר חיבור",
