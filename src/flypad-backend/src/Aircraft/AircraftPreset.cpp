@@ -15,10 +15,10 @@ AircraftPreset::~AircraftPreset() {
 }
 
 void AircraftPreset::initialize() {
-  LoadAircraftPresetRequest = register_named_variable("A32NX_LOAD_AIRCRAFT_PRESET");
+  LoadAircraftPresetRequest = register_named_variable("A32NX_AIRCRAFT_PRESET_LOAD");
   this->setLoadAircraftPresetRequest(0);
-  ProgressAircraftPreset = register_named_variable("A32NX_LOAD_AIRCRAFT_PRESET_PROGRESS");
-  ProgressAircraftPresetId = register_named_variable("A32NX_LOAD_AIRCRAFT_PRESET_CURRENT_ID");
+  ProgressAircraftPreset = register_named_variable("A32NX_AIRCRAFT_PRESET_LOAD_PROGRESS");
+  ProgressAircraftPresetId = register_named_variable("A32NX_AIRCRAFT_PRESET_LOAD_CURRENT_ID");
   SimOnGround = get_aircraft_var_enum("SIM ON GROUND");
   isInitialized = true;
   std::cout << "FLYPAD_BACKEND: AircraftPresets initialized" << std::endl;
