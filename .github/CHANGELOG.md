@@ -77,6 +77,7 @@
 1. [HYD] Fix gear extending whith dual lgciu power loss - @Crocket63 (crocket)
 1. [EFB] flyPad pushback option to ignore controller inputs - @frankkopp (Frank Kopp)
 1. [FCTL] Add realistically simulated F/CTL computers: ELAC/SEC/FCDC/FAC - @lukecologne (luke)
+1. [HYD] Accelerations impacts hydraulic reservoir fluid movement - @Crocket63 (crocket)
 
 ## 0.8.0
 
