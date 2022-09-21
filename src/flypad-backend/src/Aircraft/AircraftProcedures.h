@@ -72,13 +72,13 @@ static vector<ProcedureStep*>* TURNAROUND_CONFIG_ON = new vector<ProcedureStep*>
 
     // After fire test we start the APU
   new ProcedureStep {"APU Master On",              1041, false, 3000, "(L:A32NX_ENGINE_STATE:1) 1 == "
-                                                                    "(L:A32NX_ENGINE_STATE:2) 1 == && "
-                                                                    "(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON) 1 == ||",        "1 (>L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON)"},
+                                                                      "(L:A32NX_ENGINE_STATE:2) 1 == && "
+                                                                      "(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON) 1 == ||",      "1 (>L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON)"},
   new ProcedureStep {"APU Start On",               1051, false, 1000, "(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON) ! "
-                                                                    "(L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE) ||",          "1 (>L:A32NX_OVHD_APU_START_PB_IS_ON)"},
+                                                                      "(L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE) ||",        "1 (>L:A32NX_OVHD_APU_START_PB_IS_ON)"},
   new ProcedureStep{"Waiting on APU Availability", 1150, true,  2000, "",                                                   "(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON) ! (L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE) ||"},
   new ProcedureStep{"APU Bleed On",                1160, false, 1000, "(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON) ! "
-                                                                    "(L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON) ||",            "1 (>L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON)"},
+                                                                      "(L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON) ||",          "1 (>L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON)"},
 };
 
 static vector<ProcedureStep*>* TURNAROUND_CONFIG_OFF = new vector<ProcedureStep*>{
