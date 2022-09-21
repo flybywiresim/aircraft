@@ -50,6 +50,10 @@ impl HydraulicCircuitController for TestHydraulicCircuitController {
     fn should_open_leak_measurement_valve(&self) -> bool {
         true
     }
+
+    fn should_route_pump_to_auxiliary(&self, _: usize) -> bool {
+        false
+    }
 }
 
 struct TestPumpController {
@@ -496,6 +500,7 @@ impl Aircraft for A320SimpleMainElecHydraulicsTestAircraft {
             self.hydraulic_circuit.update(
                 &context.with_delta(cur_time_step),
                 &mut vec![&mut self.elec_pump],
+                None::<&mut ElectricPump>,
                 None::<&mut ElectricPump>,
                 None,
                 &self.circuit_controller,

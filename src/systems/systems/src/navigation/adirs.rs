@@ -17,6 +17,7 @@ use uom::si::{
     angular_velocity::degree_per_second,
     f64::*,
     length::foot,
+    pressure::hectopascal,
     ratio::ratio,
     thermodynamic_temperature::degree_celsius,
     velocity::{foot_per_minute, knot},
@@ -715,6 +716,7 @@ struct AirDataReference {
     number: usize,
     is_on: bool,
 
+    corrected_average_static_pressure: AdirsData<Pressure>,
     altitude: AdirsData<Length>,
     computed_airspeed: AdirsData<Velocity>,
     mach: AdirsData<MachNumber>,
@@ -729,6 +731,7 @@ struct AirDataReference {
 }
 impl AirDataReference {
     const INITIALISATION_DURATION: Duration = Duration::from_secs(18);
+    const CORRECTED_AVERAGE_STATIC_PRESSURE: &'static str = "CORRECTED_AVERAGE_STATIC_PRESSURE";
     const ALTITUDE: &'static str = "ALTITUDE";
     const COMPUTED_AIRSPEED: &'static str = "COMPUTED_AIRSPEED";
     const MACH: &'static str = "MACH";
@@ -749,6 +752,11 @@ impl AirDataReference {
             number,
             is_on: true,
 
+            corrected_average_static_pressure: AdirsData::new_adr(
+                context,
+                number,
+                Self::CORRECTED_AVERAGE_STATIC_PRESSURE,
+            ),
             altitude: AdirsData::new_adr(context, number, Self::ALTITUDE),
             computed_airspeed: AdirsData::new_adr(context, number, Self::COMPUTED_AIRSPEED),
             mach: AdirsData::new_adr(context, number, Self::MACH),
@@ -806,6 +814,7 @@ impl AirDataReference {
 
         // If the ADR is off or not initialized, output all labels as FW with value 0.
         if !self.is_valid() {
+            self.corrected_average_static_pressure.set_failure_warning();
             self.altitude.set_failure_warning();
             self.barometric_vertical_speed.set_failure_warning();
             self.computed_airspeed.set_failure_warning();
@@ -818,6 +827,8 @@ impl AirDataReference {
             self.angle_of_attack.set_failure_warning();
         } else {
             // If it is on and initialized, output normal values.
+            self.corrected_average_static_pressure
+                .set_normal_operation_value(context.ambient_pressure());
             self.altitude
                 .set_normal_operation_value(context.indicated_altitude());
             self.barometric_vertical_speed
@@ -893,6 +904,8 @@ impl TrueAirspeedSource for AirDataReference {
 }
 impl SimulationElement for AirDataReference {
     fn write(&self, writer: &mut SimulatorWriter) {
+        self.corrected_average_static_pressure
+            .write_to_converted(writer, |value| value.get::<hectopascal>());
         self.altitude.write_to(writer);
         self.computed_airspeed.write_to(writer);
         self.mach.write_to(writer);
@@ -1619,6 +1632,14 @@ mod tests {
             ))
         }
 
+        fn corrected_average_static_pressure(&mut self, adiru_number: usize) -> Arinc429Word<f64> {
+            self.read_arinc429_by_name(&output_data_id(
+                OutputDataType::Adr,
+                adiru_number,
+                AirDataReference::CORRECTED_AVERAGE_STATIC_PRESSURE,
+            ))
+        }
+
         fn altitude(&mut self, adiru_number: usize) -> Arinc429Word<Length> {
             self.read_arinc429_by_name(&output_data_id(
                 OutputDataType::Adr,
@@ -1897,6 +1918,12 @@ mod tests {
         }
 
         fn assert_adr_data_valid(&mut self, valid: bool, adiru_number: usize) {
+            assert_eq!(
+                !self
+                    .corrected_average_static_pressure(adiru_number)
+                    .is_failure_warning(),
+                valid
+            );
             assert_eq!(!self.altitude(adiru_number).is_failure_warning(), valid);
             assert_eq!(
                 !self.computed_airspeed(adiru_number).is_failure_warning(),
@@ -2408,6 +2435,25 @@ mod tests {
             test_bed.run();
 
             test_bed.assert_adr_data_valid(false, adiru_number);
+        }
+
+        #[rstest]
+        #[case(1)]
+        #[case(2)]
+        #[case(3)]
+        fn corrected_average_static_pressure_is_supplied_by_adr(#[case] adiru_number: usize) {
+            let mut test_bed = all_adirus_aligned_test_bed();
+            test_bed.set_ambient_pressure(Pressure::new::<hectopascal>(1013.));
+
+            test_bed.run();
+
+            assert_about_eq!(
+                test_bed
+                    .corrected_average_static_pressure(adiru_number)
+                    .normal_value()
+                    .unwrap(),
+                1013.
+            );
         }
 
         #[rstest]
