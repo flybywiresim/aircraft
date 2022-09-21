@@ -4,10 +4,23 @@
     "ChangeATISATCSourceButton": "एटिस/एटीसी स्रोत बदलें",
     "ConnectHoppieACARS": "कनेक्ट हॉपी एकारस",
     "NoInformationAvailableForThisFrequency": "इस आवृत्ति के लिए कोई जानकारी उपलब्ध नहीं है",
+    "SearchPlaceholder": "Search",
     "SelectCorrectATISATCSource": "इस मेनू का तभी उपयोग किया जा सकता है जब IVAO या फिर VATSIM को ऐतिस / ऐटीसी में चुना जाता ह। ",
     "SetActive": "सक्रिय सेट करें",
     "SetStandby": "स्टैंडबाय सेट करें",
+    "ShowAll": "All",
+    "ShowApproach": "Approach",
+    "ShowAtis": "ATIS",
+    "ShowDelivery": "Delivery",
+    "ShowDeparture": "Departure",
+    "ShowGround": "Ground",
+    "ShowRadar": "Radar",
+    "ShowTower": "Tower",
     "Standby": "स्टैंडबाय",
+    "TT": {
+      "AtcCallSignSearch": "ATC Call-sign Search",
+      "AtcTypeFilter": "Filter for"
+    },
     "Title": "एयर ट्रैफिक कंट्रोल"
   },
   "Checklists": {
@@ -183,6 +196,10 @@
     "Altn": "एकांतर",
     "ExitFullscreenMode": "फ़ुलस्क्रीन मोड से बाहर निकलें",
     "From": "से",
+    "LoadingImage": "Loading Image",
+    "LoadingImageFailed": "Loading Image failed",
+    "LoadingPdf": "Loading PDF",
+    "LoadingPdfFailed": "Loading PDF failed",
     "LocalFiles": {
       "Both": "दोनों",
       "EstablishingConnection": "कनेक्शन स्थापित हो रहा है...",

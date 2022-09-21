@@ -4,10 +4,23 @@
     "ChangeATISATCSourceButton": "Pakeisti ATIS/ATC šaltinį",
     "ConnectHoppieACARS": "Prijungti Hoppie ACARS",
     "NoInformationAvailableForThisFrequency": "Jokia informacija nėra pasiekiama šiame dažnyje",
+    "SearchPlaceholder": "Search",
     "SelectCorrectATISATCSource": "Šis puslapis pasiekiamas tik pasirinkus IVAO arba VATSIM kaip ATIS/ATC šaltinį nustatymų puslapyje.",
     "SetActive": "Aktyvus",
     "SetStandby": "Atsarginis",
+    "ShowAll": "All",
+    "ShowApproach": "Approach",
+    "ShowAtis": "ATIS",
+    "ShowDelivery": "Delivery",
+    "ShowDeparture": "Departure",
+    "ShowGround": "Ground",
+    "ShowRadar": "Radar",
+    "ShowTower": "Tower",
     "Standby": "Atsarginis",
+    "TT": {
+      "AtcCallSignSearch": "ATC Call-sign Search",
+      "AtcTypeFilter": "Filter for"
+    },
     "Title": "Oro Erdvės Kontrolė"
   },
   "Checklists": {
@@ -183,6 +196,10 @@
     "Altn": "Alternatyvus",
     "ExitFullscreenMode": "Išeiti iš pilno ekrano režimo",
     "From": "Iš",
+    "LoadingImage": "Loading Image",
+    "LoadingImageFailed": "Loading Image failed",
+    "LoadingPdf": "Loading PDF",
+    "LoadingPdfFailed": "Loading PDF failed",
     "LocalFiles": {
       "Both": "Abu",
       "EstablishingConnection": "Nustatomas ryšys",
@@ -354,12 +371,12 @@
     "InteriorLighting": {
       "AircraftNeedsToBePoweredToLoadPresets": "Norint įkelti išankstinius nustatymus, orlaivis turi būti įjungtas",
       "AircraftNeedsToBePoweredToSavePresets": "Norint išsaugoti išankstinius nustatymus, orlaivis turi būti įjungtas",
-      "AutoLoadDawnDusk": "Dawn/Dusk:",
-      "AutoLoadDay": "Day:",
+      "AutoLoadDawnDusk": "Aušra/Prieblanda:",
+      "AutoLoadDay": "Diena:",
       "AutoLoadLightingHelpTitle": "Automatic Preset Loading",
-      "AutoLoadLightingPreset": "Enable automatic loading of lighting presets:",
-      "AutoLoadNight": "Night:",
-      "AutoLoadNoneSelection": "None",
+      "AutoLoadLightingPreset": "Įjunti automatinį šviesų nustatymų užkrovimą:",
+      "AutoLoadNight": "Naktis:",
+      "AutoLoadNoneSelection": "Nėra",
       "LoadPreset": "Įkelti išankstinį nustatymą",
       "LoadingPreset": "Išankstinis nustatymas įkeliamas",
       "NewNameConfirmationDialogMsg": "Prašome patvirtinti naują apšvietimo išankstinio nustatymo pavadinimą",
@@ -421,7 +438,7 @@
     "TugDirection": "Vilkiko kryptis",
     "TugInTransit": "Laukiama vilkiko",
     "TugSpeed": "Vilkiko greitis",
-    "UseControllerInput": "Use Controller Input"
+    "UseControllerInput": "Naudoti valdiklį"
   },
   "Settings": {
     "About": {
@@ -481,15 +498,15 @@
       "AutofillChecklists": "Automatinis patikrinimų sąrašo pildymas",
       "BoardingTime": "Laipinimo trukmė",
       "DmcSelfTestTime": "DMC automatinio patikrinimo trukmė",
-      "FirstOfficerAvatar": "Show First Officer Avatar",
+      "FirstOfficerAvatar": "Įjungti antrojo piloto avatarą",
       "HomeCockpitMode": "Namų kabinos režimas",
       "McduFocusTimeout": "MCDU fokuso praradimas (sekundės)",
       "McduKeyboardInput": "MCDU duomenų įvedimas klaviatūra",
       "PauseAtTod": "Pauzė prieš pradedant leistis",
       "PauseAtTodDistance": "Pauzės atstumas nuo pradėjimo leistis taško",
-      "PilotAvatar": "Show Pilot Avatar",
+      "PilotAvatar": "Rodyti piloto avatarą",
       "SeparateTillerFromRudderInputs": "Išskirti tiller iš krypties vairo komandų",
-      "SyncEfis": "Sync EFIS controls between Captain and FO",
+      "SyncEfis": "Sinchronizuoti EFIS kontroles tarp kapitono ir antrojo piloto",
       "Title": "Realizmas"
     },
     "SimOptions": {
@@ -499,7 +516,7 @@
       "ConesEnabled": "Saugumo kūgiai",
       "DefaultBarometerUnit": "Numatyti barometro vienetai",
       "DynamicRegistrationDecal": "Dinaminis registracijos lipdukas",
-      "EnableSimBridge": "Įjungti SimBridge automatinį prisijungimą (automatiškai išjungiama po 5 minučių, jei nepavyksta prisijungti)",
+      "EnableSimBridge": "Įjungti SimBridge prisijungimą (automatiškai išjungiama po 5 minučių, jei nepavyksta prisijungti)",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Įgalinti MCDU serverio prisijungimą (automatiškai išjungiama po 5 minučių, jei nepavyksta prisijungti)",
       "ExternalMcduServerPort": "Išorinis MCDU serverio port",
       "Hpa": "hPa",
@@ -580,8 +597,8 @@
     "Sep": "Rgs",
     "Sun": "Sek",
     "TT": {
-      "ConnectedToLocalApi": "Prisijungta prie vietinio API",
-      "DisconnectedFromLocalApi": "Atsijungta nuo vietinio API",
+      "ConnectedToLocalApi": "Prisijungta prie SimBridge",
+      "DisconnectedFromLocalApi": "Atsijungta nuo SimBridge",
       "TurnOffOrShutdownEfb": "Išjunkite EFB"
     },
     "Thu": "Ket",

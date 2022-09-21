@@ -4,10 +4,23 @@
     "ChangeATISATCSourceButton": "เปลี่ยนแหล่งที่มา ATIS/ATC",
     "ConnectHoppieACARS": "เชื่อมต่อ Hoppie ACARS",
     "NoInformationAvailableForThisFrequency": "ไม่มีข้อมูลให้สำหรับความถี่นี้",
+    "SearchPlaceholder": "Search",
     "SelectCorrectATISATCSource": "หน้านี้จะใช้ได้เฉพาะเมื่อเลือก IVAO หรือ VATSIM เป็นแหล่งข้อมูล ATIS/ATC ในหน้าการตั้งค่า",
     "SetActive": "ตั้งค่าเป็นใช้งานอยู่",
     "SetStandby": "ตั้งค่าเป็นสแตนด์บาย",
+    "ShowAll": "All",
+    "ShowApproach": "Approach",
+    "ShowAtis": "ATIS",
+    "ShowDelivery": "Delivery",
+    "ShowDeparture": "Departure",
+    "ShowGround": "Ground",
+    "ShowRadar": "Radar",
+    "ShowTower": "Tower",
     "Standby": "สแตนด์บาย",
+    "TT": {
+      "AtcCallSignSearch": "ATC Call-sign Search",
+      "AtcTypeFilter": "Filter for"
+    },
     "Title": "การควบคุมการจราจรทางอากาศ"
   },
   "Checklists": {
@@ -183,6 +196,10 @@
     "Altn": "สำรอง",
     "ExitFullscreenMode": "ออกจากโหมดเต็มหน้าจอ",
     "From": "จาก",
+    "LoadingImage": "Loading Image",
+    "LoadingImageFailed": "Loading Image failed",
+    "LoadingPdf": "Loading PDF",
+    "LoadingPdfFailed": "Loading PDF failed",
     "LocalFiles": {
       "Both": "ทั้งสอง",
       "EstablishingConnection": "กำลังสร้างการเชื่อมต่อ",

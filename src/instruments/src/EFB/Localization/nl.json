@@ -4,10 +4,23 @@
     "ChangeATISATCSourceButton": "ATIS/ATC-bron wijzigen",
     "ConnectHoppieACARS": "Verbindt Hoppie ACARS",
     "NoInformationAvailableForThisFrequency": "Geen informatie beschikbaar voor deze frequentie",
+    "SearchPlaceholder": "Search",
     "SelectCorrectATISATCSource": "Deze pagina is alleen beschikbaar wanneer IVAO of VATSIM is geselecteerd als de ATIS/ATC-bron op de instellingenpagina.",
     "SetActive": "Actief instellen",
     "SetStandby": "Stand-by instellen",
+    "ShowAll": "All",
+    "ShowApproach": "Approach",
+    "ShowAtis": "ATIS",
+    "ShowDelivery": "Delivery",
+    "ShowDeparture": "Departure",
+    "ShowGround": "Ground",
+    "ShowRadar": "Radar",
+    "ShowTower": "Tower",
     "Standby": "Stand-by",
+    "TT": {
+      "AtcCallSignSearch": "ATC Call-sign Search",
+      "AtcTypeFilter": "Filter for"
+    },
     "Title": "Luchtverkeersleiding"
   },
   "Checklists": {
@@ -183,6 +196,10 @@
     "Altn": "Altn",
     "ExitFullscreenMode": "Volledig scherm afsluiten",
     "From": "Van",
+    "LoadingImage": "Loading Image",
+    "LoadingImageFailed": "Loading Image failed",
+    "LoadingPdf": "Loading PDF",
+    "LoadingPdfFailed": "Loading PDF failed",
     "LocalFiles": {
       "Both": "Beide",
       "EstablishingConnection": "Verbinding tot stand brengen...",
