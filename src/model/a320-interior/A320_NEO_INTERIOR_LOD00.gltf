@@ -187175,7 +187175,7 @@
 				1,
 				1
 			],
-			"name": "PILOT_0"
+			"name": "CAPTAIN_AVATAR"
 		},
 		{
 			"translation": [
@@ -187194,7 +187194,7 @@
 				1,
 				1
 			],
-			"name": "PILOT_1"
+			"name": "FIRSTOFFICER_AVATAR"
 		}
 	],
 	"scene": 0,

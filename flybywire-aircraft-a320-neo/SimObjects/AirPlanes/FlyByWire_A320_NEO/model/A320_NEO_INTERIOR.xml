@@ -5238,7 +5238,7 @@
 
         <Component ID="Pilot_Avatars">
             <!-- Pilot -->
-            <Component ID="PILOT_0" Node="PILOT_0">
+            <Component ID="CAPTAIN_AVATAR" Node="CAPTAIN_AVATAR">
                 <UseTemplate Name="ASOBO_GT_Visibility_Code">
                     <VISIBILITY_CODE>
                         (L:A32NX_PILOT_AVATAR_VISIBLE_0) (L:A32NX_PILOT_AVATAR_HIDDEN_0) ! and
@@ -5254,7 +5254,7 @@
                 </UseTemplate>
             </Component>
             <!-- First Officer -->
-            <Component ID="PILOT_1" Node="PILOT_1">
+            <Component ID="FIRSTOFFICER_AVATAR" Node="FIRSTOFFICER_AVATAR">
                 <UseTemplate Name="ASOBO_GT_Visibility_Code">
                     <VISIBILITY_CODE>
                         (L:A32NX_PILOT_AVATAR_VISIBLE_1) (L:A32NX_PILOT_AVATAR_HIDDEN_1) ! and
