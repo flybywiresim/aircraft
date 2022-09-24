@@ -114,8 +114,6 @@ class A32NX_PFD extends BaseInstrument {
 
         this.simVarPublisher.subscribe('vr');
 
-        this.simVarPublisher.subscribe('vMax');
-
         this.simVarPublisher.subscribe('isAltManaged');
 
         this.simVarPublisher.subscribe('mach');
@@ -139,7 +137,6 @@ class A32NX_PFD extends BaseInstrument {
 
         this.simVarPublisher.subscribe('selectedFpa');
         this.simVarPublisher.subscribe('targetSpeedManaged');
-        this.simVarPublisher.subscribe('vfeNext');
         this.simVarPublisher.subscribe('ilsCourse');
         this.simVarPublisher.subscribe('tla1');
         this.simVarPublisher.subscribe('tla2');
@@ -205,6 +202,12 @@ class A32NX_PFD extends BaseInstrument {
         this.simVarPublisher.subscribe('fac2VAlphaMaxRaw');
         this.simVarPublisher.subscribe('fac1VStallWarnRaw');
         this.simVarPublisher.subscribe('fac2VStallWarnRaw');
+        this.simVarPublisher.subscribe('fac1VMaxRaw');
+        this.simVarPublisher.subscribe('fac2VMaxRaw');
+        this.simVarPublisher.subscribe('fac1VFeNextRaw');
+        this.simVarPublisher.subscribe('fac2VFeNextRaw');
+        this.simVarPublisher.subscribe('fac1VCTrendRaw');
+        this.simVarPublisher.subscribe('fac2VCTrendRaw');
         this.simVarPublisher.subscribe('fac1EstimatedBetaRaw');
         this.simVarPublisher.subscribe('fac2EstimatedBetaRaw');
         this.simVarPublisher.subscribe('fac1BetaTargetRaw');

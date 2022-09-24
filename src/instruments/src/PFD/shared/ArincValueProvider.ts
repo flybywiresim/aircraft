@@ -31,6 +31,9 @@ export interface Arinc429Values {
     vAlphaMax: Arinc429Word;
     vAlphaProt: Arinc429Word;
     vStallWarn: Arinc429Word;
+    vMax: Arinc429Word;
+    vFeNext: Arinc429Word;
+    vCTrend: Arinc429Word;
     estimatedBeta: Arinc429Word;
     betaTarget: Arinc429Word;
 }
@@ -347,6 +350,48 @@ export class ArincValueProvider {
         subscriber.on('fac2VStallWarnRaw').handle((word) => {
             if (this.facToUse === 2) {
                 publisher.pub('vStallWarn', new Arinc429Word(word));
+            }
+        });
+
+        subscriber.on('fac1VMaxRaw').handle((word) => {
+            if (this.facToUse === 1) {
+                publisher.pub('vMax', new Arinc429Word(word));
+            } else if (this.facToUse === 0) {
+                publisher.pub('vMax', new Arinc429Word(0));
+            }
+        });
+
+        subscriber.on('fac2VMaxRaw').handle((word) => {
+            if (this.facToUse === 2) {
+                publisher.pub('vMax', new Arinc429Word(word));
+            }
+        });
+
+        subscriber.on('fac1VFeNextRaw').handle((word) => {
+            if (this.facToUse === 1) {
+                publisher.pub('vFeNext', new Arinc429Word(word));
+            } else if (this.facToUse === 0) {
+                publisher.pub('vFeNext', new Arinc429Word(0));
+            }
+        });
+
+        subscriber.on('fac2VFeNextRaw').handle((word) => {
+            if (this.facToUse === 2) {
+                publisher.pub('vFeNext', new Arinc429Word(word));
+            }
+        });
+
+        subscriber.on('fac1VCTrendRaw').handle((word) => {
+            if (this.facToUse === 1) {
+                publisher.pub('vCTrend', new Arinc429Word(word));
+            } else if (this.facToUse === 0) {
+                publisher.pub('vCTrend', new Arinc429Word(0));
+            }
+        });
+
+        subscriber.on('fac2VCTrendRaw').handle((word) => {
+            if (this.facToUse === 2) {
+                publisher.pub('vCTrend', new Arinc429Word(word));
             }
         });
 

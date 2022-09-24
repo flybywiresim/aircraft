@@ -1,6 +1,6 @@
 import { ClockEvents, DisplayComponent, EventBus, FSComponent, NodeReference, Subject, Subscribable, VNode } from 'msfssdk';
 import { Arinc429Word } from '@shared/arinc429';
-import { LagFilter, RateLimiter, SmoothSin } from './PFDUtils';
+import { SmoothSin } from './PFDUtils';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { VerticalTape } from './VerticalTape';
 import { SimplaneValues } from './shared/SimplaneValueProvider';
@@ -135,10 +135,6 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
 
     private vfeNext = FSComponent.createRef<SVGPathElement>();
 
-    private altitude = new Arinc429Word(0);
-
-    private flapHandleIndex = 0;
-
     private barTimeout= 0;
 
     private onGround = Subject.create(true);
@@ -177,29 +173,11 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
 
         const pf = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values>();
 
-        pf.on('vfeNext').whenChanged().handle((vfe) => {
-            if (this.altitude.value < 15000 && this.flapHandleIndex < 4) {
-                const offset = -vfe * DistanceSpacing / ValueSpacing;
+        pf.on('vFeNext').withArinc429Precision(2).handle((vfe) => {
+            if (vfe.isNormalOperation()) {
+                const offset = -vfe.value * DistanceSpacing / ValueSpacing;
                 this.vfeNext.instance.classList.remove('HiddenElement');
                 this.vfeNext.instance.style.transform = `translate3d(0px, ${offset}px, 0px)`;
-            } else {
-                this.vfeNext.instance.classList.add('HiddenElement');
-            }
-        });
-
-        pf.on('altitudeAr').withArinc429Precision(2).handle((a) => {
-            this.altitude = a;
-            if (this.altitude.isNormalOperation() && this.altitude.value < 15000 && this.flapHandleIndex < 4) {
-                this.vfeNext.instance.classList.remove('HiddenElement');
-            } else {
-                this.vfeNext.instance.classList.add('HiddenElement');
-            }
-        });
-
-        pf.on('flapHandleIndex').whenChanged().handle((a) => {
-            this.flapHandleIndex = a;
-            if (this.altitude.isNormalOperation() && this.altitude.value < 15000 && this.flapHandleIndex < 4) {
-                this.vfeNext.instance.classList.remove('HiddenElement');
             } else {
                 this.vfeNext.instance.classList.add('HiddenElement');
             }
@@ -468,47 +446,47 @@ class SpeedTrendArrow extends DisplayComponent<{ airspeed: Subscribable<number>,
 
     private pathString = Subject.create<string>('');
 
-    private lagFilter = new LagFilter(1.6);
+    private vCTrend = new Arinc429Word(0);
 
-    private airspeedAccRateLimiter = new RateLimiter(1.2, -1.2);
+    private vCTrendHysteresis = false;
 
-    private previousAirspeed = 0;
+    private handleVCTrend(): void {
+        if (Math.abs(this.vCTrend.value) < 1) {
+            this.vCTrendHysteresis = false;
+        } else if (Math.abs(this.vCTrend.value) > 2) {
+            this.vCTrendHysteresis = true;
+        }
+
+        if (!this.vCTrendHysteresis || !this.vCTrend.isNormalOperation()) {
+            this.refElement.instance.style.visibility = 'hidden';
+        } else {
+            this.refElement.instance.style.visibility = 'visible';
+            let pathString;
+            const sign = Math.sign(this.vCTrend.value);
+
+            const offset = -this.vCTrend.value * DistanceSpacing / ValueSpacing;
+            const neutralPos = 80.823;
+            if (sign > 0) {
+                pathString = `m15.455 ${neutralPos + offset} l -1.2531 2.4607 M15.455 ${neutralPos + offset} l 1.2531 2.4607`;
+            } else {
+                pathString = `m15.455 ${neutralPos + offset} l 1.2531 -2.4607 M15.455 ${neutralPos + offset} l -1.2531 -2.4607`;
+            }
+
+            this.offset.set(`m15.455 80.823v${offset.toFixed(10)}`);
+
+            this.pathString.set(pathString);
+        }
+    }
 
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<ClockEvents>();
+        const sub = this.props.bus.getSubscriber<Arinc429Values>();
 
-        sub.on('realTime').handle((_t) => {
-            const deltaTime = this.props.instrument.deltaTime;
-            const clamped = Math.max(this.props.airspeed.get(), 30);
-            const airspeedAcc = (clamped - this.previousAirspeed) / deltaTime * 1000;
-            this.previousAirspeed = clamped;
+        sub.on('vCTrend').handle((word) => {
+            this.vCTrend = word;
 
-            let filteredAirspeedAcc = this.lagFilter.step(airspeedAcc, deltaTime / 1000);
-            filteredAirspeedAcc = this.airspeedAccRateLimiter.step(filteredAirspeedAcc, deltaTime / 1000);
-
-            const targetSpeed = filteredAirspeedAcc * 10;
-
-            if (Math.abs(targetSpeed) < 1) {
-                this.refElement.instance.style.visibility = 'hidden';
-            } else {
-                this.refElement.instance.style.visibility = 'visible';
-                let pathString;
-                const sign = Math.sign(filteredAirspeedAcc);
-
-                const offset = -targetSpeed * DistanceSpacing / ValueSpacing;
-                const neutralPos = 80.823;
-                if (sign > 0) {
-                    pathString = `m15.455 ${neutralPos + offset} l -1.2531 2.4607 M15.455 ${neutralPos + offset} l 1.2531 2.4607`;
-                } else {
-                    pathString = `m15.455 ${neutralPos + offset} l 1.2531 -2.4607 M15.455 ${neutralPos + offset} l -1.2531 -2.4607`;
-                }
-
-                this.offset.set(`m15.455 80.823v${offset.toFixed(10)}`);
-
-                this.pathString.set(pathString);
-            }
+            this.handleVCTrend();
         });
     }
 
@@ -724,15 +702,15 @@ class VMaxBar extends DisplayComponent<{ bus: EventBus }> {
 
     private airSpeed = new Arinc429Word(0);
 
-    private vMax = 0;
+    private vMax = new Arinc429Word(0);
 
     private setVMaxBarPath() {
-        if (this.airSpeed.value - this.vMax < -DisplayRange) {
+        if (this.airSpeed.value - this.vMax.value < -DisplayRange || !this.vMax.isNormalOperation()) {
             this.VMaxIndicator.instance.style.visibility = 'hidden';
         } else {
             this.VMaxIndicator.instance.style.visibility = 'visible';
 
-            const delta = Math.min(this.airSpeed.value - this.vMax, DisplayRange);
+            const delta = Math.min(this.airSpeed.value - this.vMax.value, DisplayRange);
             const offset = delta * DistanceSpacing / ValueSpacing;
 
             this.VMaxIndicator.instance.style.transform = `translate3d(0px, ${offset}px, 0px)`;
@@ -749,7 +727,7 @@ class VMaxBar extends DisplayComponent<{ bus: EventBus }> {
             this.setVMaxBarPath();
         });
 
-        sub.on('vMax').withPrecision(2).handle((v) => {
+        sub.on('vMax').withArinc429Precision(2).handle((v) => {
             this.vMax = v;
             this.setVMaxBarPath();
         });
@@ -1091,11 +1069,11 @@ class VProtBug extends DisplayComponent<{bus: EventBus}> {
 
     private fcdcWord1 = new Arinc429Word(0);
 
-    private Vmax = 0;
+    private Vmax = new Arinc429Word(0);
 
     private handleVProtBugDisplay() {
-        const showVProt = this.Vmax > 240;
-        const offset = -(this.Vmax + 6) * DistanceSpacing / ValueSpacing;
+        const showVProt = this.Vmax.value > 240 && this.Vmax.isNormalOperation();
+        const offset = -(this.Vmax.value + 6) * DistanceSpacing / ValueSpacing;
 
         const isNormalLawActive = this.fcdcWord1.getBitValue(11) && !this.fcdcWord1.isFailureWarning();
 
