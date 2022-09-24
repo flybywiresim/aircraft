@@ -936,7 +936,7 @@ class CDUPerformancePage {
 
         if (isFinite(mcdu.accelerationAltitudeGoaround && mcdu.accelerationAltitudeGoaround != 0)) {
             thrRedAcc += mcdu.accelerationAltitudeGoaround.toFixed(0);
-            console.log("inside if line 936 in PERF and accelGOAround is: " + accelerationAltitudeGoaround);
+            console.log("inside if line 936 in PERF and accelGOAround is: " + mcdu.accelerationAltitudeGoaround);
         } else {
             thrRedAcc += "---";
         }
@@ -1086,20 +1086,23 @@ class CDUPerformancePage {
         mcdu.engineOutAccelerationAltitudeIsPilotEntered = false;
         SimVar.SetSimVarValue("L:A32NX_ENG_OUT_ACC_ALT", "feet", alt);
     }
-    static UpdateThrRedAccFromDestination(mcdu) {
+    //Modified to be async like above
+    //***To DO
+    //Implement ability for pilot to enter custom altitudes
+    static async UpdateThrRedAccFromDestination(mcdu) {
+        let elevation = SimVar.GetSimVarValue("GROUND ALTITUDE", "feet");
         const destination = mcdu.flightPlanManager.getDestination();
-        const elevation = destination ? destination.altitudeinFP : SimVar.GetSimVarValue("GROUND ALTITUDE", "feet");
-
-        const offset = +NXDataStore.get("CONFIG_ENG_OUT_ACCEL_ALT", "1500");
-        const alt = Math.round((elevation + offset) / 10) * 10;
-
+        console.log(destination);
+        if (destination) {
+            elevation = await mcdu.facilityLoader.GetAirportFieldElevation(destination.icao);
+        }
+        const alt = Math.round((elevation + 1500) / 10) * 10;
+        console.log("inside new UpdateThru() and alt is: " + alt);
         mcdu.thrustReductionAltitudeGoaround = alt;
         mcdu.accelerationAltitudeGoaround = alt;
-        mcdu.engineOutAccelerationAltitudeGoaround = alt;
-        console.log("inside UpdaTeTHrRedAccFromdest in CDUPERF and thrustReductionAltitudeGoaround is: " + mcdu.thrustReductionAltitudeGoaround + "alt variable is: " + alt);
         SimVar.SetSimVarValue("L:AIRLINER_THR_RED_ALT_GOAROUND", "Number", alt);
         SimVar.SetSimVarValue("L:AIRLINER_ACC_ALT_GOAROUND", "Number", alt);
-        SimVar.SetSimVarValue("L:AIRLINER_ENG_OUT_ACC_ALT_GOAROUND", "Number", alt);
+
     }
 
     static getSelectedTitleAndValue(_isPhaseActive, _isSelected, _preSel) {
