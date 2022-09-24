@@ -65,7 +65,7 @@ export const LightPresets = () => {
     }, []);
 
     return (
-        <div className="p-2 mt-2 mb-2 rounded-lg border-2 h-content-section-reduced border-theme-accent">
+        <div className="p-2 mt-2 mb-2 h-content-section-reduced rounded-lg border-2 border-theme-accent">
             <div className="flex flex-row justify-center items-center p-2 mb-3 space-x-2 h-16 rounded-md border-2 border-theme-accent">
                 {isPowered
                     ? t('Presets.InteriorLighting.SelectAnInteriorLightingPresetToLoadOrSave')
@@ -173,15 +173,15 @@ const SinglePreset = (props: SinglePresetParams) => {
 
     // Light presets are handled in a wasm module as setting the indexed "LIGHT POTENTIOMETER"
     // variable didn't work in Javascript.
-    // To tell the presets.wasm module to load a preset the LVAR "L:A32NX_LOAD_LIGHTING_PRESET"
+    // To tell the presets.wasm module to load a preset the LVAR "L:A32NX_LIGHTING_PRESET_LOAD"
     // needs to be set with a number > 0 where the number is the corresponding preset ID to be loaded.
     // If a preset is not defined for this number a default preset (all lights at 50%) will be loaded.
-    // To tell the presets.wasm module to save a preset the LVAR "L:A32NX_SAVE_LIGHTING_PRESET"
+    // To tell the presets.wasm module to save a preset the LVAR "L:A32NX_LIGHTING_PRESET_SAVE"
     // needs to be set with a number > 0 where the number is the corresponding preset ID to be saved..
     // After loading or saving the wasm module will reset the LVARs to 0.
 
-    const [, setLoadPresetVar] = useSimVar('L:A32NX_LOAD_LIGHTING_PRESET', 'number', 200);
-    const [, setSavePresetVar] = useSimVar('L:A32NX_SAVE_LIGHTING_PRESET', 'number', 200);
+    const [, setLoadPresetVar] = useSimVar('L:A32NX_LIGHTING_PRESET_LOAD', 'number', 200);
+    const [, setSavePresetVar] = useSimVar('L:A32NX_LIGHTING_PRESET_SAVE', 'number', 200);
 
     // Only allow loading and saving when aircraft is powered
     const [isPowered] = useSimVar('L:A32NX_ELEC_AC_1_BUS_IS_POWERED', 'number', 200);
@@ -269,7 +269,7 @@ const SinglePreset = (props: SinglePresetParams) => {
                 {props.presetID}
             </div>
 
-            <div className="flex justify-center items-center mx-4 w-full h-16 rounded-md border-2 text-theme-text bg-theme-accent border-theme-accent">
+            <div className="flex justify-center items-center mx-4 w-full h-16 text-theme-text bg-theme-accent rounded-md border-2 border-theme-accent">
                 <TooltipWrapper text={t('Presets.InteriorLighting.TT.ClickTextToChangeThePresetsName')}>
                     <div>
                         <SimpleInput
