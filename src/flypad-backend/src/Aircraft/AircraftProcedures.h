@@ -279,7 +279,8 @@ public:
     readyForTakeoff->insert(readyForTakeoff->end(), TAKEOFF_CONFIG_ON->begin(), TAKEOFF_CONFIG_ON->end());
   }
 
-  [[nodiscard]] vector<ProcedureStep*>* getProcedure(int64_t pID) const {
+  [[nodiscard]]
+  vector<ProcedureStep*>* getProcedure(int64_t pID) const {
     switch (pID) {
       case 1:
         return coldAndDark;
