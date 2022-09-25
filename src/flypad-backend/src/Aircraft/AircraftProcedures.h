@@ -54,7 +54,9 @@ static vector<ProcedureStep*>* TURNAROUND_CONFIG_ON = new vector<ProcedureStep*>
   new ProcedureStep {"GND CTL On",               1110, false, 1000, "(L:A32NX_ENGINE_STATE:1) 1 == "
                                                                     "(L:A32NX_ENGINE_STATE:2) 1 == || "
                                                                     "(L:A32NX_RCDR_GROUND_CONTROL_ON) 1 == ||",             "1 (>L:A32NX_RCDR_GROUND_CONTROL_ON)"},
-  // TODO CVR Test
+  new ProcedureStep {"CVR Test On",              1115, false, 5000, "(L:A32NX_AIRCRAFT_PRESET_CVR_TEST_DONE)",              "1 (>L:A32NX_RCDR_TEST)"},
+  new ProcedureStep {"CVR Test Off",             1116, false, 2000, "(L:A32NX_AIRCRAFT_PRESET_CVR_TEST_DONE)",              "0 (>L:A32NX_RCDR_TEST) 1 (>L:A32NX_AIRCRAFT_PRESET_CVR_TEST_DONE)"},
+
   new ProcedureStep {"ADIRS 1 Nav",              1080, false, 500,  "(L:A32NX_OVHD_ADIRS_IR_1_MODE_SELECTOR_KNOB) 1 ==",    "1 (>L:A32NX_OVHD_ADIRS_IR_1_MODE_SELECTOR_KNOB)"},
   new ProcedureStep {"ADIRS 2 Nav",              1090, false, 500,  "(L:A32NX_OVHD_ADIRS_IR_2_MODE_SELECTOR_KNOB) 1 ==",    "1 (>L:A32NX_OVHD_ADIRS_IR_2_MODE_SELECTOR_KNOB)"},
   new ProcedureStep {"ADIRS 3 Nav",              1100, false, 1500, "(L:A32NX_OVHD_ADIRS_IR_3_MODE_SELECTOR_KNOB) 1 ==",    "1 (>L:A32NX_OVHD_ADIRS_IR_3_MODE_SELECTOR_KNOB)"},
@@ -112,6 +114,7 @@ static vector<ProcedureStep*>* TURNAROUND_CONFIG_OFF = new vector<ProcedureStep*
   new ProcedureStep {"BAT2 Off",              1280, false, 100,  "(L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO) 0 ==",            "0 (>L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO)"},
   new ProcedureStep {"BAT1 Off",              1290, false, 1000, "(L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO) 0 ==",            "0 (>L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO)"},
   new ProcedureStep {"AC BUS Off Check",      1300, true,  2000, "",                                                     "(L:A32NX_ELEC_AC_1_BUS_IS_POWERED) !"},
+  new ProcedureStep {"CVR Test Reset",        1117, false, 0,    "",                                                     "0 (>L:A32NX_AIRCRAFT_PRESET_CVR_TEST_DONE)"},
   new ProcedureStep {"APU Fire Test Reset",   1037, false, 0,    "",                                                     "0 (>L:A32NX_AIRCRAFT_PRESET_FIRE_TEST_APU_DONE)"},
   new ProcedureStep {"ENG 1 Fire Test Reset", 2006, false, 0,    "",                                                     "0 (>L:A32NX_AIRCRAFT_PRESET_FIRE_TEST_ENG1_DONE)"},
   new ProcedureStep {"ENG 2 Fire Test Reset", 2007, false, 0,    "",                                                     "0 (>L:A32NX_AIRCRAFT_PRESET_FIRE_TEST_ENG2_DONE)"},
@@ -166,17 +169,18 @@ static vector<ProcedureStep*>* TAXI_CONFIG_ON = new vector<ProcedureStep*>{
   // SOP: TAXI
   new ProcedureStep {"NOSE Lt Taxi",         3120, false, 1000,  "(A:CIRCUIT SWITCH ON:20, Bool)",                   "0 (>L:LIGHTING_LANDING_1) (A:CIRCUIT SWITCH ON:20, Bool) ! if{ 20 (>K:ELECTRICAL_CIRCUIT_TOGGLE)"},
   new ProcedureStep {"RWY TURN OFF Lt L On", 3130, false, 0,     "(A:CIRCUIT SWITCH ON:21, Bool)",                   "(A:CIRCUIT SWITCH ON:21, Bool) ! if{ 21 (>K:ELECTRICAL_CIRCUIT_TOGGLE)"},
-  new ProcedureStep {"RWY TURN OFF Lt R On", 3140, false, 1000,  "(A:CIRCUIT SWITCH ON:22, Bool)",                   "(A:CIRCUIT SWITCH ON:22, Bool) ! if{ 22 (>K:ELECTRICAL_CIRCUIT_TOGGLE)"},
+  new ProcedureStep {"RWY TURN OFF Lt R On", 3140, false, 2000,  "(A:CIRCUIT SWITCH ON:22, Bool)",                   "(A:CIRCUIT SWITCH ON:22, Bool) ! if{ 22 (>K:ELECTRICAL_CIRCUIT_TOGGLE)"},
   new ProcedureStep {"PWS Auto",             2070, false, 1000,  "(L:A32NX_SWITCH_RADAR_PWS_POSITION) 1 ==",         "1 (>L:A32NX_SWITCH_RADAR_PWS_POSITION)"},
   new ProcedureStep {"Transponder On",       2080, false, 1000,  "(L:A32NX_TRANSPONDER_MODE) 1 ==",                  "1 (>L:A32NX_TRANSPONDER_MODE)"},
   new ProcedureStep {"ATC ALT RPTG On",      2090, false, 1000,  "(L:A32NX_SWITCH_ATC_ALT) 1 ==",                    "1 (>L:A32NX_SWITCH_ATC_ALT)"},
   new ProcedureStep {"TCAS TRAFFIC ABV",     2100, false, 2000,  "(L:A32NX_SWITCH_TCAS_TRAFFIC_POSITION) 2 ==",      "2 (>L:A32NX_SWITCH_TCAS_TRAFFIC_POSITION)"},
   new ProcedureStep {"Autobrake Max",        3080, false, 2000,  "(L:A32NX_AUTOBRAKES_ARMED_MODE) 3 ==",             "3 (>L:A32NX_AUTOBRAKES_ARMED_MODE_SET)"},
-  // TODO: TERR ON ND
-  // TODO: T.O. CONFIG Test
+  new ProcedureStep {"TERR ON ND Capt. On",  3080, false, 2000,  "(L:A32NX_EFIS_TERR_L_ACTIVE) 1 ==",                "1 (>L:A32NX_EFIS_TERR_L_ACTIVE)"},
+  new ProcedureStep {"T.O. Config",          3085, false, 2000,  "",                                                 "1 (>L:A32NX_TO_CONFIG_NORMAL)"},
 };
 
 static vector<ProcedureStep*>* TAXI_CONFIG_OFF = new vector<ProcedureStep*>{
+  new ProcedureStep {"TERR ON ND Capt. Off",  3080, false, 2000,  "(L:A32NX_EFIS_TERR_L_ACTIVE) 0 ==",          "0 (>L:A32NX_EFIS_TERR_L_ACTIVE)"},
   new ProcedureStep {"Autobrake Off",         3180, false, 2000, "(L:A32NX_AUTOBRAKES_ARMED_MODE) 0 ==",        "0 (>L:A32NX_AUTOBRAKES_ARMED_MODE_SET)"},
   new ProcedureStep {"TCAS TRAFFIC ABV",      2240, false, 1000, "(L:A32NX_SWITCH_TCAS_TRAFFIC_POSITION) 2 ==", "2 (>L:A32NX_SWITCH_TCAS_TRAFFIC_POSITION)"},
   new ProcedureStep {"ATC ALT RPTG Off",      2230, false, 1000, "(L:A32NX_SWITCH_ATC_ALT) 1 ==",               "1 (>L:A32NX_SWITCH_ATC_ALT)"},
@@ -201,7 +205,7 @@ static vector<ProcedureStep*>* TAKEOFF_CONFIG_ON = new vector<ProcedureStep*>{
   // SOP: BEFORE TAKEOFF
   new ProcedureStep {"TCAS Switch TA/RA", 4020, false, 2000, "(L:A32NX_SWITCH_TCAS_POSITION) 2 ==",    "2 (>L:A32NX_SWITCH_TCAS_POSITION)"},
   new ProcedureStep {"Strobe On",         2120, false, 1000, "(A:LIGHT STROBE, Bool)",                 "0 (>L:STROBE_0_AUTO) 0 (>K:STROBES_ON)"},
-  // TODO: CABIN CREW CALL
+  new ProcedureStep {"Cabin Ready",       2125, false, 1000, "",                                       "1 (>L:A32NX_CABIN_READY)"},
   // SOP: TAKE OFF
   new ProcedureStep {"NOSE Lt Takeoff",   4030, false, 1000, "(A:CIRCUIT SWITCH ON:17, Bool)",         "(A:CIRCUIT SWITCH ON:17, Bool) ! if{ 17 (>K:ELECTRICAL_CIRCUIT_TOGGLE)"},
   new ProcedureStep {"LL Lt L On",        4040, false, 0,    "(A:CIRCUIT SWITCH ON:18, Bool)",         "0 (>L:LIGHTING_LANDING_2) 0 (>L:LANDING_2_RETRACTED) (A:CIRCUIT SWITCH ON:18, Bool) ! if{ 18 (>K:ELECTRICAL_CIRCUIT_TOGGLE)"},
@@ -275,7 +279,7 @@ public:
     readyForTakeoff->insert(readyForTakeoff->end(), TAKEOFF_CONFIG_ON->begin(), TAKEOFF_CONFIG_ON->end());
   }
 
-  vector<ProcedureStep*>* getProcedure(int64_t pID) const {
+  [[nodiscard]] vector<ProcedureStep*>* getProcedure(int64_t pID) const {
     switch (pID) {
       case 1:
         return coldAndDark;
