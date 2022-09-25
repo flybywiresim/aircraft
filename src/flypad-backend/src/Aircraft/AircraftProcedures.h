@@ -30,6 +30,7 @@ struct ProcedureStep {
 
 // @formatter:off
 static vector<ProcedureStep*>* TURNAROUND_CONFIG_ON = new vector<ProcedureStep*>{
+  // SOP: PRELIMINARY COCKPIT PREPARATION
   new ProcedureStep {"BAT1 On",                  1010, false, 1000, "(L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO)",                 "1 (>L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO)"},
   new ProcedureStep {"BAT2 On",                  1020, false, 3000, "(L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO)",                 "1 (>L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO)"},
 
@@ -48,6 +49,8 @@ static vector<ProcedureStep*>* TURNAROUND_CONFIG_ON = new vector<ProcedureStep*>
 
   new ProcedureStep {"Waiting on AC BUS Availability", 1060, true,  2000, "",                                               "(L:A32NX_ELEC_AC_1_BUS_IS_POWERED)"},
 
+  // SOP: COCKPIT PREPARATION
+  new ProcedureStep {"Crew Oxy On",              1120, false, 1000, "(L:PUSH_OVHD_OXYGEN_CREW) 0 ==",                       "0 (>L:PUSH_OVHD_OXYGEN_CREW)"},
   new ProcedureStep {"GND CTL On",               1110, false, 1000, "(L:A32NX_ENGINE_STATE:1) 1 == "
                                                                     "(L:A32NX_ENGINE_STATE:2) 1 == || "
                                                                     "(L:A32NX_RCDR_GROUND_CONTROL_ON) 1 == ||",             "1 (>L:A32NX_RCDR_GROUND_CONTROL_ON)"},
@@ -56,10 +59,9 @@ static vector<ProcedureStep*>* TURNAROUND_CONFIG_ON = new vector<ProcedureStep*>
   new ProcedureStep {"ADIRS 2 Nav",              1090, false, 500,  "(L:A32NX_OVHD_ADIRS_IR_2_MODE_SELECTOR_KNOB) 1 ==",    "1 (>L:A32NX_OVHD_ADIRS_IR_2_MODE_SELECTOR_KNOB)"},
   new ProcedureStep {"ADIRS 3 Nav",              1100, false, 1500, "(L:A32NX_OVHD_ADIRS_IR_3_MODE_SELECTOR_KNOB) 1 ==",    "1 (>L:A32NX_OVHD_ADIRS_IR_3_MODE_SELECTOR_KNOB)"},
 
-  new ProcedureStep {"Crew Oxy On",              1120, false, 1000, "(L:PUSH_OVHD_OXYGEN_CREW) 0 ==",                       "0 (>L:PUSH_OVHD_OXYGEN_CREW)"},
-
   new ProcedureStep {"Strobe Auto",              2120, false, 1000, "(A:LIGHT STROBE, Bool)",                               "1 (>L:STROBE_0_AUTO) 0 (>K:STROBES_ON)"},
   new ProcedureStep {"Nav & Logo Lt On",         1070, false, 1000, "(A:LIGHT LOGO, Bool) (A:LIGHT NAV, Bool) &&",          "1 (>K:2:LOGO_LIGHTS_SET) 1 (>K:2:NAV_LIGHTS_SET)"},
+
   new ProcedureStep {"SEAT BELTS On",            2140, false, 1000, "(A:CABIN SEATBELTS ALERT SWITCH:1, BOOL)",             "(A:CABIN SEATBELTS ALERT SWITCH:1, BOOL) ! if{ 1 (>K:CABIN_SEATBELTS_ALERT_SWITCH_TOGGLE) }"},
   new ProcedureStep {"NO SMOKING Auto",          1130, false, 1000, "(L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_POSITION) 1 ==", "1 (>L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_POSITION)"},
   new ProcedureStep {"EMER EXT Lt Arm",          1140, false, 1000, "(L:XMLVAR_SWITCH_OVHD_INTLT_EMEREXIT_POSITION) 1 ==",  "1 (>L:XMLVAR_SWITCH_OVHD_INTLT_EMEREXIT_POSITION)"},
@@ -74,7 +76,6 @@ static vector<ProcedureStep*>* TURNAROUND_CONFIG_ON = new vector<ProcedureStep*>
   // APU fire test
   new ProcedureStep {"APU Fire Test On",         1035, false, 2000, "(L:A32NX_AIRCRAFT_PRESET_FIRE_TEST_APU_DONE)",         "1 (>L:A32NX_FIRE_TEST_APU)"},
   new ProcedureStep {"APU Fire Test Off",        1036, false, 2000, "(L:A32NX_AIRCRAFT_PRESET_FIRE_TEST_APU_DONE)",         "0 (>L:A32NX_FIRE_TEST_APU) 1 (>L:A32NX_AIRCRAFT_PRESET_FIRE_TEST_APU_DONE)"},
-
 
     // After fire test we start the APU
   new ProcedureStep {"APU Master On",            1041, false, 3000, "(L:A32NX_ENGINE_STATE:1) 1 == "
@@ -117,29 +118,23 @@ static vector<ProcedureStep*>* TURNAROUND_CONFIG_OFF = new vector<ProcedureStep*
   new ProcedureStep {"FWC Init Reset",        1066, false, 0,    "",                                                     "0 (>L:A32NX_AIRCRAFT_PRESET_FWC_INIT_DONE)"},
 };
 
-static vector<ProcedureStep*>* PUSHBACK_CONFIG_ON = new vector<ProcedureStep*>{
+static vector<ProcedureStep*>* PUSHBACK_CONFIG_ON = new vector<ProcedureStep*> {
+  // SOP: BEFORE PUSHBACK OR START
   new ProcedureStep {"EXT PWR Off",             2000, false, 3000, "(A:EXTERNAL POWER ON:1, BOOL) !",               "(A:EXTERNAL POWER ON:1, BOOL) if{ 1 (>K:TOGGLE_EXTERNAL_POWER) }"},
+  new ProcedureStep {"Beacon On",               2130, false, 1000, "(A:LIGHT BEACON, Bool)",                        "0 (>K:BEACON_LIGHTS_ON)"},
   new ProcedureStep {"FUEL PUMP 2 On",          2010, false, 100,  "(A:FUELSYSTEM PUMP SWITCH:2, Bool)",            "2 (>K:FUELSYSTEM_PUMP_ON)"},
   new ProcedureStep {"FUEL PUMP 5 On",          2020, false, 500,  "(A:FUELSYSTEM PUMP SWITCH:5, Bool)",            "5 (>K:FUELSYSTEM_PUMP_ON)"},
   new ProcedureStep {"FUEL PUMP 1 On",          2030, false, 100,  "(A:FUELSYSTEM PUMP SWITCH:1, Bool)",            "1 (>K:FUELSYSTEM_PUMP_ON)"},
   new ProcedureStep {"FUEL PUMP 4 On",          2040, false, 500,  "(A:FUELSYSTEM PUMP SWITCH:4, Bool)",            "4 (>K:FUELSYSTEM_PUMP_ON)"},
   new ProcedureStep {"FUEL PUMP 3 On",          2050, false, 100,  "(A:FUELSYSTEM PUMP SWITCH:3, Bool)",            "3 (>K:FUELSYSTEM_PUMP_ON)"},
   new ProcedureStep {"FUEL PUMP 6 On",          2060, false, 2000, "(A:FUELSYSTEM PUMP SWITCH:6, Bool)",            "6 (>K:FUELSYSTEM_PUMP_ON)"},
-  new ProcedureStep {"Transponder On",          2080, false, 1000, "(L:A32NX_TRANSPONDER_MODE) 1 ==",               "1 (>L:A32NX_TRANSPONDER_MODE)"},
-  new ProcedureStep {"ATC ALT RPTG On",         2090, false, 1000, "(L:A32NX_SWITCH_ATC_ALT) 1 ==",                 "1 (>L:A32NX_SWITCH_ATC_ALT)"},
-  new ProcedureStep {"TCAS TRAFFIC ABV",        2100, false, 2000, "(L:A32NX_SWITCH_TCAS_TRAFFIC_POSITION) 2 ==",   "2 (>L:A32NX_SWITCH_TCAS_TRAFFIC_POSITION)"},
   new ProcedureStep {"COCKPIT DOOR LCK",        2110, false, 2000, "(L:A32NX_COCKPIT_DOOR_LOCKED) 1 ==",            "1 (>L:A32NX_COCKPIT_DOOR_LOCKED)"},
-  new ProcedureStep {"Beacon On",               2130, false, 1000, "(A:LIGHT BEACON, Bool)",                        "0 (>K:BEACON_LIGHTS_ON)"},
   new ProcedureStep {"Await ADIRS 1 Alignment", 2150, true,  2000, "",                                              "(L:A32NX_ADIRS_ADIRU_1_STATE) 2 =="},
   new ProcedureStep {"Await ADIRS 2 Alignment", 2160, true,  2000, "",                                              "(L:A32NX_ADIRS_ADIRU_2_STATE) 2 =="},
   new ProcedureStep {"Await ADIRS 3 Alignment", 2170, true,  2000, "",                                              "(L:A32NX_ADIRS_ADIRU_3_STATE) 2 =="},
 };
 
 static vector<ProcedureStep*>* PUSHBACK_CONFIG_OFF = new vector<ProcedureStep*>{
-  new ProcedureStep {"Beacon Off",      2190, false, 1000, "(A:LIGHT BEACON, Bool) !",                    "0 (>K:BEACON_LIGHTS_OFF)"},
-  new ProcedureStep {"Transponder Off", 2220, false, 1000, "(L:A32NX_TRANSPONDER_MODE) 0 ==",             "0 (>L:A32NX_TRANSPONDER_MODE)"},
-  new ProcedureStep {"ATC ALT RPTG Off",2230, false, 1000, "(L:A32NX_SWITCH_ATC_ALT) 1 ==",               "1 (>L:A32NX_SWITCH_ATC_ALT)"},
-  new ProcedureStep {"TCAS TRAFFIC ABV",2240, false, 1000, "(L:A32NX_SWITCH_TCAS_TRAFFIC_POSITION) 2 ==", "2 (>L:A32NX_SWITCH_TCAS_TRAFFIC_POSITION)"},
   new ProcedureStep {"COCKPIT DOOR OP", 2250, false, 2000, "(L:A32NX_COCKPIT_DOOR_LOCKED) 0 ==",          "0 (>L:A32NX_COCKPIT_DOOR_LOCKED)"},
   new ProcedureStep {"FUEL PUMP 2 Off", 2260, false, 100,  "(A:FUELSYSTEM PUMP SWITCH:2, Bool) !",        "2 (>K:FUELSYSTEM_PUMP_OFF)"},
   new ProcedureStep {"FUEL PUMP 5 Off", 2270, false, 500,  "(A:FUELSYSTEM PUMP SWITCH:5, Bool) !",        "5 (>K:FUELSYSTEM_PUMP_OFF)"},
@@ -147,9 +142,11 @@ static vector<ProcedureStep*>* PUSHBACK_CONFIG_OFF = new vector<ProcedureStep*>{
   new ProcedureStep {"FUEL PUMP 4 Off", 2290, false, 500,  "(A:FUELSYSTEM PUMP SWITCH:4, Bool) !",        "4 (>K:FUELSYSTEM_PUMP_OFF)"},
   new ProcedureStep {"FUEL PUMP 3 Off", 2300, false, 100,  "(A:FUELSYSTEM PUMP SWITCH:3, Bool) !",        "3 (>K:FUELSYSTEM_PUMP_OFF)"},
   new ProcedureStep {"FUEL PUMP 6 Off", 2310, false, 1000, "(A:FUELSYSTEM PUMP SWITCH:6, Bool) !",        "6 (>K:FUELSYSTEM_PUMP_OFF)"},
+  new ProcedureStep {"Beacon Off",      2190, false, 1000, "(A:LIGHT BEACON, Bool) !",                    "0 (>K:BEACON_LIGHTS_OFF)"},
 };
 
 static vector<ProcedureStep*>* TAXI_CONFIG_ON = new vector<ProcedureStep*>{
+  // SOP: ENGINE START
   new ProcedureStep {"ENG MODE SEL START",   3000, false, 3000,  "(L:A32NX_ENGINE_STATE:1) 1 == "
                                                                  "(L:A32NX_ENGINE_STATE:2) 1 == && "
                                                                  "(K:TURBINE_IGNITION_SWITCH_SET1) 2 == "
@@ -158,40 +155,54 @@ static vector<ProcedureStep*>* TAXI_CONFIG_ON = new vector<ProcedureStep*>{
   new ProcedureStep {"Await ENG 2 AVAIL",    3020, true,  5000,  "",                                                 "(L:A32NX_ENGINE_STATE:2) 1 =="},
   new ProcedureStep {"ENG 1 ON",             3030, false, 60000, "(A:FUELSYSTEM VALVE OPEN:1, Bool)",                "1 (>K:FUELSYSTEM_VALVE_OPEN)"},
   new ProcedureStep {"Await ENG 1 AVAIL",    3040, true,  5000,  "",                                                 "(L:A32NX_ENGINE_STATE:1) 1 =="},
+  // SOP: AFTER START
   new ProcedureStep {"ENG MODE SEL NORM",    3050, false, 3000,  "(A:TURB ENG IGNITION SWITCH EX1:1, Bool) 1 == "
                                                                  "(A:TURB ENG IGNITION SWITCH EX1:2, Bool) 1 == &&", "1 (>K:TURBINE_IGNITION_SWITCH_SET1) 1 (>K:TURBINE_IGNITION_SWITCH_SET2)"},
   new ProcedureStep {"APU Bleed Off",        3060, false, 2000,  "(L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON) 0 ==",      "0 (>L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON)"},
   new ProcedureStep {"APU Master Off",       3070, false, 2000,  "(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON) 0 ==",       "0 (>L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON)"},
-  new ProcedureStep {"Autobrake Max",        3080, false, 2000,  "(L:A32NX_AUTOBRAKES_ARMED_MODE) 3 ==",             "3 (>L:A32NX_AUTOBRAKES_ARMED_MODE_SET)"},
-  new ProcedureStep {"PWS Auto",             2070, false, 1000,  "(L:A32NX_SWITCH_RADAR_PWS_POSITION) 1 ==",         "1 (>L:A32NX_SWITCH_RADAR_PWS_POSITION)"},
   new ProcedureStep {"Spoiler Arm",          3090, false, 2000,  "(L:A32NX_SPOILERS_ARMED) 1 ==",                    "1 (>K:SPOILERS_ARM_SET)"},
   new ProcedureStep {"Rudder Trim Reset",    3100, false, 2000,  "(A:RUDDER TRIM, Radians) 0 ==",                    "0 (>K:RUDDER_TRIM_SET)"},
   new ProcedureStep {"Flaps 1",              3110, false, 3000,  "(L:A32NX_FLAPS_HANDLE_INDEX) 1 ==",                "1 (>L:A32NX_FLAPS_HANDLE_INDEX)"},
+  // SOP: TAXI
   new ProcedureStep {"NOSE Lt Taxi",         3120, false, 1000,  "(A:CIRCUIT SWITCH ON:20, Bool)",                   "0 (>L:LIGHTING_LANDING_1) (A:CIRCUIT SWITCH ON:20, Bool) ! if{ 20 (>K:ELECTRICAL_CIRCUIT_TOGGLE)"},
   new ProcedureStep {"RWY TURN OFF Lt L On", 3130, false, 0,     "(A:CIRCUIT SWITCH ON:21, Bool)",                   "(A:CIRCUIT SWITCH ON:21, Bool) ! if{ 21 (>K:ELECTRICAL_CIRCUIT_TOGGLE)"},
   new ProcedureStep {"RWY TURN OFF Lt R On", 3140, false, 1000,  "(A:CIRCUIT SWITCH ON:22, Bool)",                   "(A:CIRCUIT SWITCH ON:22, Bool) ! if{ 22 (>K:ELECTRICAL_CIRCUIT_TOGGLE)"},
-
+  new ProcedureStep {"PWS Auto",             2070, false, 1000,  "(L:A32NX_SWITCH_RADAR_PWS_POSITION) 1 ==",         "1 (>L:A32NX_SWITCH_RADAR_PWS_POSITION)"},
+  new ProcedureStep {"Transponder On",       2080, false, 1000,  "(L:A32NX_TRANSPONDER_MODE) 1 ==",                  "1 (>L:A32NX_TRANSPONDER_MODE)"},
+  new ProcedureStep {"ATC ALT RPTG On",      2090, false, 1000,  "(L:A32NX_SWITCH_ATC_ALT) 1 ==",                    "1 (>L:A32NX_SWITCH_ATC_ALT)"},
+  new ProcedureStep {"TCAS TRAFFIC ABV",     2100, false, 2000,  "(L:A32NX_SWITCH_TCAS_TRAFFIC_POSITION) 2 ==",      "2 (>L:A32NX_SWITCH_TCAS_TRAFFIC_POSITION)"},
+  new ProcedureStep {"Autobrake Max",        3080, false, 2000,  "(L:A32NX_AUTOBRAKES_ARMED_MODE) 3 ==",             "3 (>L:A32NX_AUTOBRAKES_ARMED_MODE_SET)"},
+  // TODO: TERR ON ND
+  // TODO: T.O. CONFIG Test
 };
 
 static vector<ProcedureStep*>* TAXI_CONFIG_OFF = new vector<ProcedureStep*>{
-  new ProcedureStep {"NOSE Lt Taxi",          3150, false, 1000, "(A:CIRCUIT SWITCH ON:20, Bool) !",         "2 (>L:LIGHTING_LANDING_1) (A:CIRCUIT SWITCH ON:20, Bool) if{ 20 (>K:ELECTRICAL_CIRCUIT_TOGGLE)"},
-  new ProcedureStep {"RWY TURN OFF Lt L Off", 3160, false, 0,    "(A:CIRCUIT SWITCH ON:21, Bool) !",         "(A:CIRCUIT SWITCH ON:21, Bool) if{ 21 (>K:ELECTRICAL_CIRCUIT_TOGGLE)"},
-  new ProcedureStep {"RWY TURN OFF Lt R Off", 3170, false, 2000, "(A:CIRCUIT SWITCH ON:22, Bool) !",         "(A:CIRCUIT SWITCH ON:22, Bool) if{ 22 (>K:ELECTRICAL_CIRCUIT_TOGGLE)"},
-  new ProcedureStep {"Autobrake Off",         3180, false, 2000, "(L:A32NX_AUTOBRAKES_ARMED_MODE) 0 ==",     "0 (>L:A32NX_AUTOBRAKES_ARMED_MODE_SET)"},
-  new ProcedureStep {"PWS Off",               2210, false, 1000, "(L:A32NX_SWITCH_RADAR_PWS_POSITION) 0 ==", "0 (>L:A32NX_SWITCH_RADAR_PWS_POSITION)"},
-  new ProcedureStep {"Spoiler Disarm",        3190, false, 2000, "(L:A32NX_SPOILERS_ARMED) 0 ==",            "0 (>K:SPOILERS_ARM_SET)"},
-  new ProcedureStep {"Rudder Trim Reset",     3200, false, 2000, "(A:RUDDER TRIM, Radians) 0 ==",            "0 (>K:RUDDER_TRIM_SET)"},
-  new ProcedureStep {"Flaps 0",               3210, false, 2000, "(L:A32NX_FLAPS_HANDLE_INDEX) 0 ==",        "0 (>L:A32NX_FLAPS_HANDLE_INDEX)"},
-  new ProcedureStep {"ENG 1 Off",             3220, false, 2000, "(A:FUELSYSTEM VALVE OPEN:1, Bool) !",      "1 (>K:FUELSYSTEM_VALVE_CLOSE)"},
-  new ProcedureStep {"ENG 2 Off",             3230, false, 2000, "(A:FUELSYSTEM VALVE OPEN:2, Bool) !",      "2 (>K:FUELSYSTEM_VALVE_CLOSE)"},
-  new ProcedureStep {"ENG 1 N1 <3%",          3240, true,  1000, "",                                         "(L:A32NX_ENGINE_N1:1) 3 <"},
-  new ProcedureStep {"ENG 2 N1 <3%",          3250, true,  1000, "",                                         "(L:A32NX_ENGINE_N1:2) 3 <"},
+  new ProcedureStep {"Autobrake Off",         3180, false, 2000, "(L:A32NX_AUTOBRAKES_ARMED_MODE) 0 ==",        "0 (>L:A32NX_AUTOBRAKES_ARMED_MODE_SET)"},
+  new ProcedureStep {"TCAS TRAFFIC ABV",      2240, false, 1000, "(L:A32NX_SWITCH_TCAS_TRAFFIC_POSITION) 2 ==", "2 (>L:A32NX_SWITCH_TCAS_TRAFFIC_POSITION)"},
+  new ProcedureStep {"ATC ALT RPTG Off",      2230, false, 1000, "(L:A32NX_SWITCH_ATC_ALT) 1 ==",               "1 (>L:A32NX_SWITCH_ATC_ALT)"},
+  new ProcedureStep {"Transponder Off",       2220, false, 1000, "(L:A32NX_TRANSPONDER_MODE) 0 ==",             "0 (>L:A32NX_TRANSPONDER_MODE)"},
+  new ProcedureStep {"PWS Off",               2210, false, 1000, "(L:A32NX_SWITCH_RADAR_PWS_POSITION) 0 ==",    "0 (>L:A32NX_SWITCH_RADAR_PWS_POSITION)"},
+  new ProcedureStep {"RWY TURN OFF Lt L Off", 3160, false, 0,    "(A:CIRCUIT SWITCH ON:21, Bool) !",            "(A:CIRCUIT SWITCH ON:21, Bool) if{ 21 (>K:ELECTRICAL_CIRCUIT_TOGGLE)"},
+  new ProcedureStep {"RWY TURN OFF Lt R Off", 3170, false, 2000, "(A:CIRCUIT SWITCH ON:22, Bool) !",            "(A:CIRCUIT SWITCH ON:22, Bool) if{ 22 (>K:ELECTRICAL_CIRCUIT_TOGGLE)"},
+  new ProcedureStep {"NOSE Lt Taxi",          3150, false, 1000, "(A:CIRCUIT SWITCH ON:20, Bool) !",            "2 (>L:LIGHTING_LANDING_1) (A:CIRCUIT SWITCH ON:20, Bool) if{ 20 (>K:ELECTRICAL_CIRCUIT_TOGGLE)"},
+  new ProcedureStep {"Flaps 0",               3210, false, 2000, "(L:A32NX_FLAPS_HANDLE_INDEX) 0 ==",           "0 (>L:A32NX_FLAPS_HANDLE_INDEX)"},
+  new ProcedureStep {"Rudder Trim Reset",     3200, false, 2000, "(A:RUDDER TRIM, Radians) 0 ==",               "0 (>K:RUDDER_TRIM_SET)"},
+  new ProcedureStep {"Spoiler Disarm",        3190, false, 2000, "(L:A32NX_SPOILERS_ARMED) 0 ==",               "0 (>K:SPOILERS_ARM_SET)"},
+  new ProcedureStep {"ENG 1 Off",             3220, false, 2000, "(A:FUELSYSTEM VALVE OPEN:1, Bool) !",         "1 (>K:FUELSYSTEM_VALVE_CLOSE)"},
+  new ProcedureStep {"ENG 2 Off",             3230, false, 2000, "(A:FUELSYSTEM VALVE OPEN:2, Bool) !",         "2 (>K:FUELSYSTEM_VALVE_CLOSE)"},
+  new ProcedureStep {"ENG 1 N1 <3%",          3240, true,  1000, "",                                            "(L:A32NX_ENGINE_N1:1) 3 <"},
+  new ProcedureStep {"ENG 2 N1 <3%",          3250, true,  1000, "",                                            "(L:A32NX_ENGINE_N1:2) 3 <"},
 };
 
 static vector<ProcedureStep*>* TAKEOFF_CONFIG_ON = new vector<ProcedureStep*>{
+  // SOP: TAXI
   new ProcedureStep {"WX Radar On",       4000, false, 1000, "(L:XMLVAR_A320_WEATHERRADAR_SYS) 0 ==",  "0 (>L:XMLVAR_A320_WEATHERRADAR_SYS)"},
   new ProcedureStep {"WX Radar Mode",     4010, false, 1000, "(L:XMLVAR_A320_WEATHERRADAR_MODE) 1 ==", "1 (>L:XMLVAR_A320_WEATHERRADAR_MODE)"},
+  // SOP: BEFORE TAKEOFF
   new ProcedureStep {"TCAS Switch TA/RA", 4020, false, 2000, "(L:A32NX_SWITCH_TCAS_POSITION) 2 ==",    "2 (>L:A32NX_SWITCH_TCAS_POSITION)"},
+  new ProcedureStep {"Strobe On",         2120, false, 1000, "(A:LIGHT STROBE, Bool)",                 "0 (>L:STROBE_0_AUTO) 0 (>K:STROBES_ON)"},
+  // TODO: CABIN CREW CALL
+  // SOP: TAKE OFF
   new ProcedureStep {"NOSE Lt Takeoff",   4030, false, 1000, "(A:CIRCUIT SWITCH ON:17, Bool)",         "(A:CIRCUIT SWITCH ON:17, Bool) ! if{ 17 (>K:ELECTRICAL_CIRCUIT_TOGGLE)"},
   new ProcedureStep {"LL Lt L On",        4040, false, 0,    "(A:CIRCUIT SWITCH ON:18, Bool)",         "0 (>L:LIGHTING_LANDING_2) 0 (>L:LANDING_2_RETRACTED) (A:CIRCUIT SWITCH ON:18, Bool) ! if{ 18 (>K:ELECTRICAL_CIRCUIT_TOGGLE)"},
   new ProcedureStep {"LL Lt R On",        4050, false, 1000, "(A:CIRCUIT SWITCH ON:19, Bool)",         "0 (>L:LIGHTING_LANDING_3) 0 (>L:LANDING_3_RETRACTED) (A:CIRCUIT SWITCH ON:19, Bool) ! if{ 19 (>K:ELECTRICAL_CIRCUIT_TOGGLE)"},
@@ -201,9 +212,10 @@ static vector<ProcedureStep*>* TAKEOFF_CONFIG_OFF = new vector<ProcedureStep*>{
   new ProcedureStep {"LL Lt L Off",       4060, false, 0,    "(A:CIRCUIT SWITCH ON:18, Bool) ! (L:LANDING_2_RETRACTED) &&", "2 (>L:LIGHTING_LANDING_2) 1 (>L:LANDING_2_RETRACTED) (A:CIRCUIT SWITCH ON:18, Bool) if{ 18 (>K:ELECTRICAL_CIRCUIT_TOGGLE)"},
   new ProcedureStep {"LL Lt R Off",       4070, false, 1000, "(A:CIRCUIT SWITCH ON:19, Bool) ! (L:LANDING_3_RETRACTED) &&", "2 (>L:LIGHTING_LANDING_3) 1 (>L:LANDING_3_RETRACTED) (A:CIRCUIT SWITCH ON:19, Bool) if{ 19 (>K:ELECTRICAL_CIRCUIT_TOGGLE)"},
   new ProcedureStep {"NOSE Lt Takeoff",   4080, false, 2000, "(A:CIRCUIT SWITCH ON:17, Bool) !",                            "(A:CIRCUIT SWITCH ON:17, Bool) if{ 17 (>K:ELECTRICAL_CIRCUIT_TOGGLE)"},
+  new ProcedureStep {"Strobe Auto",       2180, false, 1000, "(A:LIGHT STROBE, Bool) !",                                    "1 (>L:STROBE_0_AUTO) 0 (>K:STROBES_OFF)"},
   new ProcedureStep {"TCAS Switch TA/RA", 4090, false, 1000, "(L:A32NX_SWITCH_TCAS_POSITION) 0 ==",                         "0 (>L:A32NX_SWITCH_TCAS_POSITION)"},
-  new ProcedureStep {"WX Radar Off",      4100, false, 1000, "(L:XMLVAR_A320_WEATHERRADAR_SYS) 1 ==",                       "1 (>L:XMLVAR_A320_WEATHERRADAR_SYS)"},
   new ProcedureStep {"WX Radar Mode",     4110, false, 1000, "(L:XMLVAR_A320_WEATHERRADAR_MODE) 1 ==",                      "1 (>L:XMLVAR_A320_WEATHERRADAR_MODE)"},
+  new ProcedureStep {"WX Radar Off",      4100, false, 1000, "(L:XMLVAR_A320_WEATHERRADAR_SYS) 1 ==",                       "1 (>L:XMLVAR_A320_WEATHERRADAR_SYS)"},
 };
 // @formatter:on
 
