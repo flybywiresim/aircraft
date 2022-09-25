@@ -4,10 +4,23 @@
     "ChangeATISATCSourceButton": "Ubah sumber ATIS/ATC",
     "ConnectHoppieACARS": "Hubungkan Hoppie ACARS",
     "NoInformationAvailableForThisFrequency": "Tidak ada informasi yang tersedia untuk frekuensi ini",
+    "SearchPlaceholder": "Search",
     "SelectCorrectATISATCSource": "Halaman ini hanya tersedia apabila IVAO atau VATSIM telah terpilih sebagai ATIS/ATC di bagian pengaturan.",
     "SetActive": "Aktifkan",
     "SetStandby": "Setel Standby",
+    "ShowAll": "All",
+    "ShowApproach": "Approach",
+    "ShowAtis": "ATIS",
+    "ShowDelivery": "Delivery",
+    "ShowDeparture": "Departure",
+    "ShowGround": "Ground",
+    "ShowRadar": "Radar",
+    "ShowTower": "Tower",
     "Standby": "Standby",
+    "TT": {
+      "AtcCallSignSearch": "ATC Call-sign Search",
+      "AtcTypeFilter": "Filter for"
+    },
     "Title": "Air Traffic Control"
   },
   "Checklists": {
@@ -183,6 +196,10 @@
     "Altn": "Alternatif",
     "ExitFullscreenMode": "Keluar dari Mode Layar Penuh",
     "From": "Asal",
+    "LoadingImage": "Loading Image",
+    "LoadingImageFailed": "Loading Image failed",
+    "LoadingPdf": "Loading PDF",
+    "LoadingPdfFailed": "Loading PDF failed",
     "LocalFiles": {
       "Both": "Keduanya",
       "EstablishingConnection": "Menghubungkan Koneksi",

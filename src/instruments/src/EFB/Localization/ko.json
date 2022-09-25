@@ -4,10 +4,23 @@
     "ChangeATISATCSourceButton": "ATIS/ATC 출처 변경",
     "ConnectHoppieACARS": "Hoppie ACARS 연결",
     "NoInformationAvailableForThisFrequency": "이 주파수에서 사용할 수 있는 정보 없음",
+    "SearchPlaceholder": "검색",
     "SelectCorrectATISATCSource": "이 페이지는 설정 페이지의 ATIS/ATC 출처를 IVAO 또는 VATSIM으로 설정했을 때만 사용할 수 있습니다.",
     "SetActive": "활성 주파수로 설정",
     "SetStandby": "대기 주파수로 설정",
+    "ShowAll": "모두",
+    "ShowApproach": "접근",
+    "ShowAtis": "ATIS",
+    "ShowDelivery": "인가",
+    "ShowDeparture": "출발",
+    "ShowGround": "지상",
+    "ShowRadar": "레이더",
+    "ShowTower": "타워",
     "Standby": "대기",
+    "TT": {
+      "AtcCallSignSearch": "ATC 콜사인 검색",
+      "AtcTypeFilter": "필터"
+    },
     "Title": "항공 교통 관제"
   },
   "Checklists": {
@@ -183,6 +196,10 @@
     "Altn": "대체",
     "ExitFullscreenMode": "전체화면 모드 종료",
     "From": "이륙 공항",
+    "LoadingImage": "이미지 로딩 중",
+    "LoadingImageFailed": "이미지 로딩 실패",
+    "LoadingPdf": "PDF 로딩 중",
+    "LoadingPdfFailed": "PDF 로딩 실패",
     "LocalFiles": {
       "Both": "모두",
       "EstablishingConnection": "연결 설정 중...",

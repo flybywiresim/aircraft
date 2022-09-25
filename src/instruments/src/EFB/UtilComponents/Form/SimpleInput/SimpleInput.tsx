@@ -1,5 +1,6 @@
 import { usePersistentNumberProperty } from '@instruments/common/persistence';
 import React, { useEffect, useRef, useState, PropsWithChildren } from 'react';
+import { getRootElement } from '@instruments/common/defaults';
 import { useAppDispatch } from '../../../Store/store';
 import { setOffsetY } from '../../../Store/features/keyboard';
 import { KeyboardWrapper } from '../../KeyboardWrapper';
@@ -144,6 +145,12 @@ export const SimpleInput = (props: PropsWithChildren<SimpleInputProps>) => {
         return split.join('.');
     };
 
+    const blurInputField = () => {
+        if (inputRef.current) {
+            inputRef.current.blur();
+        }
+    };
+
     useEffect(() => {
         if (focused) {
             Coherent.trigger('FOCUS_INPUT_FIELD');
@@ -155,11 +162,13 @@ export const SimpleInput = (props: PropsWithChildren<SimpleInputProps>) => {
         };
     }, [focused]);
 
-    const blurInputField = () => {
-        if (inputRef.current) {
-            inputRef.current.blur();
+    // unfocus the search field when user presses enter
+    getRootElement().addEventListener('keypress', (event: KeyboardEvent) => {
+        // 'keyCode' is deprecated but 'key' is not supported in MSFS
+        if (event.keyCode === 13) {
+            blurInputField();
         }
-    };
+    });
 
     return (
         <>

@@ -4,10 +4,23 @@
     "ChangeATISATCSourceButton": "ATIS/ATC forrás módosítása",
     "ConnectHoppieACARS": "Csatlakozás Hoppie ACARS-hoz",
     "NoInformationAvailableForThisFrequency": "Nincs információ erről a frekvenciáról",
+    "SearchPlaceholder": "Search",
     "SelectCorrectATISATCSource": "Ez az oldal csak akkor érhető el, ha az IVAO vagy a VATSIM van kiválasztva ATIS/ATC forrásként a beállítások oldalon.",
     "SetActive": "Beállítás aktívként",
     "SetStandby": "Beállítás készenléti állapotba",
+    "ShowAll": "All",
+    "ShowApproach": "Approach",
+    "ShowAtis": "ATIS",
+    "ShowDelivery": "Delivery",
+    "ShowDeparture": "Departure",
+    "ShowGround": "Ground",
+    "ShowRadar": "Radar",
+    "ShowTower": "Tower",
     "Standby": "Készenléti ",
+    "TT": {
+      "AtcCallSignSearch": "ATC Call-sign Search",
+      "AtcTypeFilter": "Filter for"
+    },
     "Title": "Légiforgalmi irányítás"
   },
   "Checklists": {
@@ -183,6 +196,10 @@
     "Altn": "Kitérő reptér",
     "ExitFullscreenMode": "Kilépés teljes képernyős üzemmódból",
     "From": "Induló",
+    "LoadingImage": "Loading Image",
+    "LoadingImageFailed": "Loading Image failed",
+    "LoadingPdf": "Loading PDF",
+    "LoadingPdfFailed": "Loading PDF failed",
     "LocalFiles": {
       "Both": "Mindkettő",
       "EstablishingConnection": "Kapcsolat létrehozása",
