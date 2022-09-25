@@ -1143,19 +1143,19 @@
       0 or greater | Seconds elapsed
       -1 | Empty value
 
-- A32NX_LOAD_LIGHTING_PRESET
+- A32NX_LIGHTING_PRESET_LOAD
     - Number
     - ID for preset
     - When set to >0 the corresponding preset will be loaded if defined
     - Will be reset to 0 after loading is done
 
-- A32NX_SAVE_LIGHTING_PRESET
+- A32NX_LIGHTING_PRESET_SAVE
     - Number
     - ID for preset
     - When set to >0 the corresponding preset will be overwritten and saved to an ini file
     - Will be reset to 0 after saving is done
 
-- A32NX_LOAD_AIRCRAFT_PRESET
+- A32NX_AIRCRAFT_PRESET_LOAD
     - Number
     - ID for preset (1..5)
     - When set to >0 the corresponding preset will be loaded if defined
@@ -1169,7 +1169,7 @@
       | 4     | Ready for Taxi     |
       | 5     | Ready for Takeoff  |
 
-- A32NX_LOAD_AIRCRAFT_PRESET_PROGRESS
+- A32NX_AIRCRAFT_PRESET_LOAD_PROGRESS
     - Number (0.0..1.0)
     - While loading a preset this will contain the percentage of the total progress of loading
 

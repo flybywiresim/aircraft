@@ -13,6 +13,7 @@
 
 #include "Units.h"
 #include "FlyPadBackend.h"
+#include "InertialDampener.h"
 
 class InertialDampener;
 
@@ -62,7 +63,7 @@ public:
   /**
    * Destructor
    */
-  ~Pushback();
+  ~Pushback() = default;
 
   /**
    * Called when SimConnect is initialized
