@@ -35,7 +35,7 @@
     "@babel/preset-react": "^7.12.1",
     "@babel/preset-typescript": "~7.12.7",
     "@flybywiresim/eslint-config": "~0.1.0",
-    "@flybywiresim/fragmenter": "^0.5.1",
+    "@flybywiresim/fragmenter": "^0.7.0",
     "@flybywiresim/igniter": "^1.2.2",
     "@flybywiresim/rnp": "^2.1.0",
     "@flybywiresim/rollup-plugin-msfs": "~0.3.0",
