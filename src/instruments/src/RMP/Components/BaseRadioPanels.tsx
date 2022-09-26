@@ -1,5 +1,4 @@
-import React, { useState, useRef } from 'react';
-import useInterval from '@instruments/common/useInterval';
+import React, { useState } from 'react';
 import { useSimVar, useInteractionSimVar } from '@instruments/common/simVars';
 import { useInteractionEvent } from '@instruments/common/hooks';
 import { TransceiverType } from './StandbyFrequency';

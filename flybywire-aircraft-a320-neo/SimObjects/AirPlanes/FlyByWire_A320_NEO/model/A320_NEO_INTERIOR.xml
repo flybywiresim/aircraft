@@ -2471,6 +2471,8 @@
                             (L:A32NX_AUDIOSWITCHING_KNOB) 2 == if{
                                 (L:A32NX_ACP3_TRANSMIT_CHANNEL)  (&gt;K:COPILOT_TRANSMITTER_SET)
                             }
+
+                            1 (&gt;L:XMLVAR_COM_UpdateReceivers)
                         </ON_SWITCH>
                     </UseTemplate>
                 </Component>
