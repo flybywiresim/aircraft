@@ -1585,6 +1585,8 @@ class E2Cell extends ShowForSecondsComponent<CellProps> {
 class E3Cell extends ShowForSecondsComponent<CellProps> {
     private classSub = Subject.create('');
 
+    private posSub = Subject.create(0);
+
     constructor(props: CellProps) {
         super(props, 9);
     }
@@ -1594,10 +1596,10 @@ class E3Cell extends ShowForSecondsComponent<CellProps> {
         this.isShown = true;
         switch (athrStatus) {
         case 1:
-            className = 'Cyan';
+            className = 'Cyan FontSmall';
             break;
         case 2:
-            className = 'White';
+            className = 'White FontMedium';
             break;
         default:
             this.isShown = false;
@@ -1613,7 +1615,8 @@ class E3Cell extends ShowForSecondsComponent<CellProps> {
 
         sub.on('athrStatus').whenChanged().handle((a) => {
             const className = this.getClass(a);
-            this.classSub.set(`FontMedium MiddleAlign ${className}`);
+            this.posSub.set(a === 1 ? 21.253048 : 21.753487);
+            this.classSub.set(`MiddleAlign ${className}`);
             if (className !== 'HiddenElement') {
                 this.displayModeChangedPath();
             } else {
@@ -1626,7 +1629,7 @@ class E3Cell extends ShowForSecondsComponent<CellProps> {
         return (
             <g>
                 <path ref={this.modeChangedPathRef} class="NormalStroke White" visibility="hidden" d="m135.32 16.329h20.81v6.0476h-20.81z" />
-                <text class={this.classSub} x="145.75578" y="21.434536">A/THR</text>
+                <text class={this.classSub} x="145.75578" y={this.posSub}>A/THR</text>
             </g>
         );
     }
