@@ -929,7 +929,6 @@ class CDUPerformancePage {
         let thrRedAcc = "---";
         if (isFinite(mcdu.thrustReductionAltitudeGoaround) && mcdu.thrustReductionAltitudeGoaround != 0) {
             thrRedAcc = mcdu.thrustReductionAltitudeGoaround.toFixed(0);
-            console.log("inside if line 930 in PERF and thruREDGOAround is: " + mcdu.thrustReductionAltitudeGoaround);
         }
 
         thrRedAcc += "/";
