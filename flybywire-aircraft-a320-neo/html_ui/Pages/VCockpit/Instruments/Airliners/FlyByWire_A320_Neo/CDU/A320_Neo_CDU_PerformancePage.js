@@ -935,7 +935,6 @@ class CDUPerformancePage {
 
         if (isFinite(mcdu.accelerationAltitudeGoaround && mcdu.accelerationAltitudeGoaround != 0)) {
             thrRedAcc += mcdu.accelerationAltitudeGoaround.toFixed(0);
-            console.log("inside if line 936 in PERF and accelGOAround is: " + mcdu.accelerationAltitudeGoaround);
         } else {
             thrRedAcc += "---";
         }
