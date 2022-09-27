@@ -4,6 +4,7 @@ const fs = require('fs');
 const execute = async () => {
     try {
         const result = await fragmenter.pack({
+            packOptions: { splitFileSize: 536_870_912, keepCompleteModulesAfterSplit: true },
             baseDir: './flybywire-aircraft-a320-neo',
             outDir: './build-modules',
             modules: [{

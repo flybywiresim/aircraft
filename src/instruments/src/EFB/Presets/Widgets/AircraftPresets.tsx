@@ -11,21 +11,21 @@ import { StepDescription } from './Procedures';
 
 export const AircraftPresets = () => {
     // Aircraft presets are handled by a backend WASM module. This frontend will
-    // use the LVAR A32NX_LOAD_AIRCRAFT_PRESET to signal the backend that the user
+    // use the LVAR A32NX_AIRCRAFT_PRESET_LOAD to signal the backend that the user
     // requests a preset to be loaded.
     // The backend will reset the LVAR to 0 when done.
     // As long as the LVAR is 1 the backend is still applying the preset.
     // If the LVAR is set to 0 before the backend is finished applying the preset
     // will be stopped by the backend.
     // The progress while loading an aircraft preset can be read from
-    // the LVAR A32NX_LOAD_AIRCRAFT_PRESET_PROGRESS.
-    // The current step ID can be read via A32NX_LOAD_AIRCRAFT_PRESET_CURRENT_ID
+    // the LVAR A32NX_AIRCRAFT_PRESET_LOAD_PROGRESS.
+    // The current step ID can be read via A32NX_AIRCRAFT_PRESET_LOAD_CURRENT_ID
     // and then use the StepDescription from './Procedures' to get the string.
 
     const [simOnGround] = useSimVar('SIM ON GROUND', 'number', 200);
-    const [loadPresetVar, setLoadPresetVar] = useSimVar('L:A32NX_LOAD_AIRCRAFT_PRESET', 'number', 200);
-    const [loadPresetProgress] = useSimVar('L:A32NX_LOAD_AIRCRAFT_PRESET_PROGRESS', 'number', 100);
-    const [loadPresetCurrentId] = useSimVar('L:A32NX_LOAD_AIRCRAFT_PRESET_CURRENT_ID', 'number', 100);
+    const [loadPresetVar, setLoadPresetVar] = useSimVar('L:A32NX_AIRCRAFT_PRESET_LOAD', 'number', 200);
+    const [loadPresetProgress] = useSimVar('L:A32NX_AIRCRAFT_PRESET_LOAD_PROGRESS', 'number', 100);
+    const [loadPresetCurrentId] = useSimVar('L:A32NX_AIRCRAFT_PRESET_LOAD_CURRENT_ID', 'number', 100);
     const { showModal } = useModals();
 
     // These need to align with the IDs in the Presets C++ WASM.

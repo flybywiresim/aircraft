@@ -17,6 +17,10 @@ export class AttitudeIndicatorFixedUpper extends DisplayComponent<AttitudeIndica
 
     private visibilitySub = Subject.create('hidden');
 
+    private rollProtSymbol = FSComponent.createRef<SVGGElement>();
+
+    private rollProtLostSymbol = FSComponent.createRef<SVGGElement>();
+
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
@@ -39,16 +43,24 @@ export class AttitudeIndicatorFixedUpper extends DisplayComponent<AttitudeIndica
                 this.visibilitySub.set('visible');
             }
         });
+
+        sub.on('fcdcDiscreteWord1').handle((fcdcWord1) => {
+            const isNormalLawActive = fcdcWord1.getBitValue(11) && !fcdcWord1.isFailureWarning();
+
+            this.rollProtSymbol.instance.style.display = isNormalLawActive ? 'block' : 'none';
+
+            this.rollProtLostSymbol.instance.style.display = !isNormalLawActive ? 'block' : 'none';
+        });
     }
 
     render(): VNode {
         return (
             <g id="AttitudeUpperInfoGroup" visibility={this.visibilitySub}>
-                <g id="RollProtGroup" class="SmallStroke Green">
+                <g id="RollProtGroup" ref={this.rollProtSymbol} style="display: none" class="SmallStroke Green">
                     <path id="RollProtRight" d="m105.64 62.887 1.5716-0.8008m-1.5716-0.78293 1.5716-0.8008" />
                     <path id="RollProtLeft" d="m32.064 61.303-1.5716-0.8008m1.5716 2.3845-1.5716-0.8008" />
                 </g>
-                <g id="RollProtLost" style="display: none" class="NormalStroke Amber">
+                <g id="RollProtLost" ref={this.rollProtLostSymbol} style="display: none" class="NormalStroke Amber">
                     <path id="RollProtLostRight" d="m107.77 60.696-1.7808 1.7818m1.7808 0-1.7808-1.7818" />
                     <path id="RollProtLostLeft" d="m30.043 62.478 1.7808-1.7818m-1.7808 0 1.7808 1.7818" />
                 </g>
@@ -394,9 +406,17 @@ class FlightDirector extends DisplayComponent<{ bus: EventBus }> {
 }
 
 class SidestickIndicator extends DisplayComponent<{ bus: EventBus }> {
-    private sideStickX = 0;
+    private captPitchCommand = new Arinc429Word(0);
 
-    private sideStickY = 0;
+    private foPitchCommand = new Arinc429Word(0);
+
+    private captRollCommand = new Arinc429Word(0);
+
+    private foRollCommand = new Arinc429Word(0);
+
+    private fcdc1DiscreteWord2 = new Arinc429Word(0);
+
+    private fcdc2DiscreteWord2 = new Arinc429Word(0);
 
     private onGround = true;
 
@@ -411,31 +431,37 @@ class SidestickIndicator extends DisplayComponent<{ bus: EventBus }> {
     private handleSideStickIndication() {
         const oneEngineRunning = this.engOneRunning || this.engTwoRunning;
 
-        if (!this.onGround || !oneEngineRunning) {
+        const showIndicator = this.onGround && oneEngineRunning
+                        && !this.captPitchCommand.isFailureWarning()
+                        && !this.captRollCommand.isFailureWarning()
+                        && !this.foPitchCommand.isFailureWarning()
+                        && !this.foRollCommand.isFailureWarning();
+
+        const foStickDisabledFcdc1 = this.fcdc1DiscreteWord2.getBitValueOr(29, false);
+        const foStickDisabledFcdc2 = this.fcdc2DiscreteWord2.getBitValueOr(29, false);
+        const captStickDisabledFcdc1 = this.fcdc1DiscreteWord2.getBitValueOr(28, false);
+        const captStickDisabledFcdc2 = this.fcdc2DiscreteWord2.getBitValueOr(28, false);
+        const foStickDisabled = foStickDisabledFcdc1 || foStickDisabledFcdc2;
+        const captStickDisabled = captStickDisabledFcdc1 || captStickDisabledFcdc2;
+
+        const totalPitchCommand = Math.max(Math.min(((foStickDisabled ? 0 : this.foPitchCommand.value) + (captStickDisabled ? 0 : this.captPitchCommand.value)), 16), -16) * -1.43875;
+        const totalRollCommand = Math.max(Math.min((foStickDisabled ? 0 : this.foRollCommand.value) + (captStickDisabled ? 0 : this.captRollCommand.value), 20), -20) * 1.478;
+
+        if (!showIndicator) {
             this.onGroundForVisibility.set('hidden');
         } else {
             this.onGroundForVisibility.set('visible');
-            this.crossHairRef.instance.style.transform = `translate3d(${this.sideStickX}px, ${this.sideStickY}px, 0px)`;
+            this.crossHairRef.instance.style.transform = `translate3d(${totalRollCommand}px, ${totalPitchCommand}px, 0px)`;
         }
     }
 
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<PFDSimvars>();
+        const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values>();
 
         sub.on('noseGearCompressed').whenChanged().handle((g) => {
             this.onGround = g;
-            this.handleSideStickIndication();
-        });
-
-        sub.on('sideStickX').whenChanged().handle((x) => {
-            this.sideStickX = x * 29.56;
-            this.handleSideStickIndication();
-        });
-
-        sub.on('sideStickY').whenChanged().handle((y) => {
-            this.sideStickY = -y * 23.02;
             this.handleSideStickIndication();
         });
 
@@ -446,6 +472,36 @@ class SidestickIndicator extends DisplayComponent<{ bus: EventBus }> {
 
         sub.on('engTwoRunning').whenChanged().handle((e) => {
             this.engTwoRunning = e;
+            this.handleSideStickIndication();
+        });
+
+        sub.on('fcdc1DiscreteWord2').whenChanged().handle((discreteWord2) => {
+            this.fcdc1DiscreteWord2 = discreteWord2;
+            this.handleSideStickIndication();
+        });
+
+        sub.on('fcdc2DiscreteWord2').whenChanged().handle((discreteWord2) => {
+            this.fcdc2DiscreteWord2 = discreteWord2;
+            this.handleSideStickIndication();
+        });
+
+        sub.on('fcdcCaptPitchCommand').whenChanged().handle((x) => {
+            this.captPitchCommand = x;
+            this.handleSideStickIndication();
+        });
+
+        sub.on('fcdcFoPitchCommand').whenChanged().handle((x) => {
+            this.foPitchCommand = x;
+            this.handleSideStickIndication();
+        });
+
+        sub.on('fcdcCaptRollCommand').whenChanged().handle((y) => {
+            this.captRollCommand = y;
+            this.handleSideStickIndication();
+        });
+
+        sub.on('fcdcFoRollCommand').whenChanged().handle((y) => {
+            this.foRollCommand = y;
             this.handleSideStickIndication();
         });
     }
