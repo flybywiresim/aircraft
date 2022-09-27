@@ -1094,7 +1094,6 @@ class CDUPerformancePage {
             elevation = await mcdu.facilityLoader.GetAirportFieldElevation(destination.icao);
         }
         const alt = Math.round((elevation + 1500) / 10) * 10;
-        console.log("inside new UpdateThru() and alt is: " + alt);
         mcdu.thrustReductionAltitudeGoaround = alt;
         mcdu.accelerationAltitudeGoaround = alt;
         SimVar.SetSimVarValue("L:AIRLINER_THR_RED_ALT_GOAROUND", "Number", alt);
