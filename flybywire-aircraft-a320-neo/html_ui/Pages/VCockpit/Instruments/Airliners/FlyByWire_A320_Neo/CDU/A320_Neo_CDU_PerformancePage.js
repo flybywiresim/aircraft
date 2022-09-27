@@ -1090,7 +1090,6 @@ class CDUPerformancePage {
     static async UpdateThrRedAccFromDestination(mcdu) {
         let elevation = SimVar.GetSimVarValue("GROUND ALTITUDE", "feet");
         const destination = mcdu.flightPlanManager.getDestination();
-        console.log(destination);
         if (destination) {
             elevation = await mcdu.facilityLoader.GetAirportFieldElevation(destination.icao);
         }
