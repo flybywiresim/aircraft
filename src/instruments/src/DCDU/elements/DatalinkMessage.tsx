@@ -6,10 +6,11 @@ import { MessageVisualization } from './MessageVisualization';
 
 type DatalinkMessageProps = {
     messages: CpdlcMessage[],
-    updateSystemStatusMessage: (status: DcduStatusMessage) => void
+    updateSystemStatusMessage: (status: DcduStatusMessage) => void,
+    reachedEndOfMessage: (uid: number, reachedEnd: boolean) => void
 }
 
-export const DatalinkMessage: React.FC<DatalinkMessageProps> = ({ messages, updateSystemStatusMessage }) => {
+export const DatalinkMessage: React.FC<DatalinkMessageProps> = ({ messages, updateSystemStatusMessage, reachedEndOfMessage }) => {
     // define the correct background color
     let backgroundColor: [number, number, number] = [0, 0, 0];
     if (messages[0].Direction === AtsuMessageDirection.Downlink) {
@@ -91,11 +92,12 @@ export const DatalinkMessage: React.FC<DatalinkMessageProps> = ({ messages, upda
                 content += `${text}\n`;
             }
         });
+        content += '//';
 
         if (messages[0].SemanticResponseRequired && messages[0].Response) {
             messageSeperatorLine = content.split('\n').length;
             content += '------------------------------\n';
-            content += `${messages[0].Response.serialize(AtsuMessageSerializationFormat.DCDU)}\n`;
+            content += `${messages[0].Response.serialize(AtsuMessageSerializationFormat.DCDU)}//\n`;
         }
     }
 
@@ -114,6 +116,7 @@ export const DatalinkMessage: React.FC<DatalinkMessageProps> = ({ messages, upda
     return (
         <g>
             <MessageVisualization
+                messageUid={messages.length !== 0 ? messages[0].UniqueMessageID : -1}
                 message={content}
                 seperatorLine={messageSeperatorLine}
                 backgroundColor={backgroundColor}
@@ -125,6 +128,7 @@ export const DatalinkMessage: React.FC<DatalinkMessageProps> = ({ messages, upda
                 deltaY={240}
                 watchdogIndices={watchdogIndices}
                 updateSystemStatusMessage={updateSystemStatusMessage}
+                reachedEndOfMessage={reachedEndOfMessage}
             />
         </g>
     );

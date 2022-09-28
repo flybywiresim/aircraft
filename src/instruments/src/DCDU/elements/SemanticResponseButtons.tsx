@@ -6,6 +6,7 @@ import { Button } from './Button';
 
 type SemanticResponseButtonsProps = {
     message: CpdlcMessage,
+    reachedEndOfMessage: boolean,
     dataIncomplete: boolean,
     messageUnderModification: boolean,
     invertResponse: (message: number) => void,
@@ -15,11 +16,11 @@ type SemanticResponseButtonsProps = {
 }
 
 export const SemanticResponseButtons: React.FC<SemanticResponseButtonsProps> = ({
-    message, dataIncomplete, messageUnderModification, invertResponse,
+    message, reachedEndOfMessage, dataIncomplete, messageUnderModification, invertResponse,
     modifyResponse, sendMessage, closeMessage,
 }) => {
     const showAnswers = !message.Response || (message.Response.ComStatus !== AtsuMessageComStatus.Sending && message.Response.ComStatus !== AtsuMessageComStatus.Sent);
-    const buttonsBlocked = message.Response?.ComStatus === AtsuMessageComStatus.Sending || messageUnderModification;
+    const buttonsBlocked = message.Response?.ComStatus === AtsuMessageComStatus.Sending || messageUnderModification || reachedEndOfMessage === false;
 
     const clicked = (index: string) : void => {
         if (message.UniqueMessageID === -1 || buttonsBlocked) {
