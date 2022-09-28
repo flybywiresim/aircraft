@@ -114,7 +114,7 @@ export class TcasTraffic {
     constructor(tf: JS_NPCPlane, ppos: LatLongData, alt: number) {
         this.alive = true;
         this.seen = 0;
-        this.ID = tf.uId.toFixed(0);
+        this.ID = tf.uId.toFixed(0); // 7 Digit = NPC; 20 digit = player
         this.lat = tf.lat;
         this.lon = tf.lon;
         this.alt = tf.alt * 3.281;
@@ -415,6 +415,7 @@ export class TcasComputer implements TcasComponent {
                 traffic.closureAccel = (newClosureRate - traffic.closureRate) / (_deltaTime / 1000);
                 traffic.closureRate = newClosureRate;
                 traffic.slantDistance = newSlantDist;
+                traffic.onGround = tf.isOnGround;
                 traffic.lat = tf.lat;
                 traffic.lon = tf.lon;
                 traffic.alt = tf.alt * 3.281;
@@ -473,15 +474,8 @@ export class TcasComputer implements TcasComponent {
                 return;
             }
 
-            // Check if traffic is on ground. Mode-S transponders would transmit that information themselves, but since Asobo doesn't provide that
-            // information, we need to rely on the fallback method
-            // this also leads to problems above 1750 ft (the threshold for ground detection), since the aircraft on ground are then shown again.
-            // Currently just hide all above currently ground alt (of ppos) + 380, not ideal but works better than other solutions.
-            const groundAlt = this.planeAlt - this.radioAlt.value; // altitude of the terrain
-            const onGround = traffic.alt < (groundAlt + 360) || traffic.groundSpeed < 30;
-            traffic.onGround = onGround;
             let isDisplayed = false;
-            if (!onGround) {
+            if (!traffic.onGround) {
                 if (traffic.groundSpeed >= 30) { // Workaround for MSFS live traffic, TODO: add option to disable
                     if (this.tcasThreat === TcasThreat.THREAT) {
                         if (traffic.intrusionLevel >= TaRaIntrusion.TA
