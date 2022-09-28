@@ -79,6 +79,8 @@
 1. [FCTL] Add realistically simulated F/CTL computers: ELAC/SEC/FCDC/FAC - @lukecologne (luke)
 1. [HYD] Accelerations impacts hydraulic reservoir fluid movement - @Crocket63 (crocket)
 1. [FLIGHTMODEL] Add SU10 crosswind parameters - @donstim (donbikes#4084)
+1. [MODEL] Visible pilot avatars via flyPad setting - @frankkopp (Frank Kopp)
+1. [MODEL] Fixed screens flickering in SU10 - @tyler58546 (tyler58546)
 
 ## 0.8.0
 

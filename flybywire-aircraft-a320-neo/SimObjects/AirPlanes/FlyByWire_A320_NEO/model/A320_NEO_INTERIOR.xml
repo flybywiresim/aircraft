@@ -5235,5 +5235,41 @@
                 <NODE_ID>COCKPIT_COFFEE_R</NODE_ID>
             </UseTemplate>
         </Component>
+
+        <Component ID="Pilot_Avatars">
+            <!-- Pilot -->
+            <Component ID="CAPTAIN_AVATAR" Node="CAPTAIN_AVATAR">
+                <UseTemplate Name="ASOBO_GT_Visibility_Code">
+                    <VISIBILITY_CODE>
+                        (L:A32NX_PILOT_AVATAR_VISIBLE_0) (L:A32NX_PILOT_AVATAR_HIDDEN_0) ! and
+                        (A:CAMERA STATE, Enum) 2 != or
+                    </VISIBILITY_CODE>
+                </UseTemplate>
+            </Component>
+            <Component ID="Seatbelt_L" Node="Seatbelt_L">
+                <UseTemplate Name="ASOBO_GT_Visibility_Code">
+                    <VISIBILITY_CODE>
+                        (L:A32NX_PILOT_AVATAR_VISIBLE_0) ! (L:A32NX_PILOT_AVATAR_HIDDEN_0) or
+                    </VISIBILITY_CODE>
+                </UseTemplate>
+            </Component>
+            <!-- First Officer -->
+            <Component ID="FIRSTOFFICER_AVATAR" Node="FIRSTOFFICER_AVATAR">
+                <UseTemplate Name="ASOBO_GT_Visibility_Code">
+                    <VISIBILITY_CODE>
+                        (L:A32NX_PILOT_AVATAR_VISIBLE_1) (L:A32NX_PILOT_AVATAR_HIDDEN_1) ! and
+                        (A:CAMERA STATE, Enum) 2 != or
+                    </VISIBILITY_CODE>
+                </UseTemplate>
+            </Component>
+            <Component ID="Seatbelt_R" Node="Seatbelt_R">
+                <UseTemplate Name="ASOBO_GT_Visibility_Code">
+                    <VISIBILITY_CODE>
+                        (L:A32NX_PILOT_AVATAR_VISIBLE_1) ! (L:A32NX_PILOT_AVATAR_HIDDEN_1) or
+                    </VISIBILITY_CODE>
+                </UseTemplate>
+            </Component>
+        </Component>
+
     </Behaviors>
 </ModelInfo>

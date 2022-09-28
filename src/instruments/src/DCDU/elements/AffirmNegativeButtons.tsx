@@ -6,6 +6,7 @@ import { Button } from './Button';
 
 type AffirmNegativeButtonsProps = {
     message: CpdlcMessage,
+    reachedEndOfMessage: boolean,
     selectedResponse: number,
     setMessageStatus(message: number, response: number),
     sendResponse: (message: number, response: number) => void,
@@ -15,10 +16,10 @@ type AffirmNegativeButtonsProps = {
 }
 
 export const AffirmNegativeButtons: React.FC<AffirmNegativeButtonsProps> = ({
-    message, selectedResponse, setMessageStatus, sendResponse, closeMessage,
+    message, reachedEndOfMessage, selectedResponse, setMessageStatus, sendResponse, closeMessage,
     monitorMessage, cancelMessageMonitoring,
 }) => {
-    const buttonsBlocked = message.Response?.ComStatus === AtsuMessageComStatus.Sending;
+    const buttonsBlocked = message.Response?.ComStatus === AtsuMessageComStatus.Sending || reachedEndOfMessage === false;
 
     // define the rules for the visualization of the buttons
     let showAnswers = false;

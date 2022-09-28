@@ -19,8 +19,6 @@ Pushback::Pushback(HANDLE hdl, PushbackData* data) {
   inertialDampenerPtr = std::make_unique<InertialDampener>(0.0, 0.15);
 }
 
-Pushback::~Pushback() = default;;
-
 void Pushback::initialize() {
   // LVARs are initialized here
   pushbackSystemEnabled = register_named_variable("A32NX_PUSHBACK_SYSTEM_ENABLED");
