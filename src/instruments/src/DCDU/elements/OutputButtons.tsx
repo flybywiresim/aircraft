@@ -5,13 +5,14 @@ import { Button } from './Button';
 
 type OutputButtonsProps = {
     message: CpdlcMessage,
+    reachedEndOfMessage: boolean,
     sendMessage: (message: number) => void,
     deleteMessage: (message: number) => void,
     closeMessage: (message: number) => void
 }
 
-export const OutputButtons: React.FC<OutputButtonsProps> = ({ message, sendMessage, deleteMessage, closeMessage }) => {
-    const buttonsBlocked = message.ComStatus === AtsuMessageComStatus.Sending;
+export const OutputButtons: React.FC<OutputButtonsProps> = ({ message, reachedEndOfMessage, sendMessage, deleteMessage, closeMessage }) => {
+    const buttonsBlocked = message.ComStatus === AtsuMessageComStatus.Sending || reachedEndOfMessage === false;
 
     // define the rules for the visualization of the buttons
     let showAnswers = false;

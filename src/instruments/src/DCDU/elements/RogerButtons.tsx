@@ -6,6 +6,7 @@ import { Button } from './Button';
 
 type RogerButtonsProps = {
     message: CpdlcMessage,
+    reachedEndOfMessage: boolean,
     selectedResponse: number,
     setMessageStatus(message: number, response: number),
     sendResponse: (message: number, response: number) => void,
@@ -14,8 +15,11 @@ type RogerButtonsProps = {
     cancelMessageMonitoring: (message: number) => void,
 }
 
-export const RogerButtons: React.FC<RogerButtonsProps> = ({ message, selectedResponse, setMessageStatus, sendResponse, closeMessage, monitorMessage, cancelMessageMonitoring }) => {
-    const buttonsBlocked = message.Response?.ComStatus === AtsuMessageComStatus.Sending;
+export const RogerButtons: React.FC<RogerButtonsProps> = ({
+    message, reachedEndOfMessage, selectedResponse, setMessageStatus, sendResponse,
+    closeMessage, monitorMessage, cancelMessageMonitoring,
+}) => {
+    const buttonsBlocked = message.Response?.ComStatus === AtsuMessageComStatus.Sending || reachedEndOfMessage === false;
 
     // define the rules for the visualization of the buttons
     let showAnswers = false;
