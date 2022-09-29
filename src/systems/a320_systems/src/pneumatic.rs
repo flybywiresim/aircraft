@@ -3626,17 +3626,6 @@ mod tests {
             assert!(test_bed.wing_anti_ice_system_selected());
             assert!(!test_bed.wing_anti_ice_system_on());
             assert!(!test_bed.wing_anti_ice_has_fault());
-
-            // test_bed = test_bed.toga_eng1().toga_eng2().and_stabilize();
-
-            // // If and_stabilize exceeds 30s, then valves will close and test will fail
-            // // at the moment and_stabilize is only 16sec
-            // assert!(!test_bed.left_valve_closed());
-            // assert!(!test_bed.right_valve_closed());
-            // assert!(test_bed.valve_controller_timer() > Duration::from_secs(0));
-            // assert!(test_bed.wing_anti_ice_system_on());
-            // assert!(test_bed.wing_anti_ice_system_selected());
-            // assert!(test_bed.wing_anti_ice_has_fault());
         }
 
         #[test]
