@@ -9,7 +9,10 @@ class Keypad {
                 mcdu.eraseTemporaryFlightPlan();
                 CDUDirectToPage.ShowPage(mcdu);
             },
-            "FPLN": () => CDUFlightPlanPage.ShowPage(mcdu),
+            "FPLN": () => {
+                // reset to top if the FPLAN is pressed twice
+                CDUFlightPlanPage.ShowPage(mcdu, mcdu.page.Current === mcdu.page.FlightPlanPage ? 0 : undefined);
+            },
             "FUEL": () => mcdu.goToFuelPredPage(),
             "INIT": () => {
                 if (mcdu.flightPhaseManager.phase === FmgcFlightPhases.DONE) {

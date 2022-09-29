@@ -24,7 +24,7 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
         }
         mcdu.onLeftInput[5] = async () => {
             mcdu.eraseTemporaryFlightPlan(() => {
-                CDUFlightPlanPage.ShowPage(mcdu, 0);
+                CDUFlightPlanPage.ShowPage(mcdu);
             });
         };
         let showInput = false;

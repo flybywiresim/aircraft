@@ -26,6 +26,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.clrStop = false;
         this.allSelected = false;
         this.updateRequest = false;
+        this.fpOffset = 0;
         this.initB = false;
         this.lastPowerState = 0;
         this.PageTimeout = {
