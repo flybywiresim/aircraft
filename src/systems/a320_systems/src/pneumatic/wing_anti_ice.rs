@@ -4,6 +4,7 @@ use crate::{pneumatic::EngineBleedAirSystem, UpdateContext};
 
 use uom::si::{
     f64::*,
+    power::watt,
     pressure::{bar, psi},
     ratio::{percent, ratio},
     temperature_interval,
@@ -17,7 +18,8 @@ use systems::{
         PneumaticContainer, PneumaticPipe, PneumaticValveSignal, WingAntiIcePushButtonMode,
     },
     shared::{
-        pid::PidController, random_from_normal_distribution, ControllerSignal, PneumaticValve,
+        pid::PidController, random_from_normal_distribution, ConsumePower, ControllerSignal,
+        ElectricalBusType, ElectricalBuses, PneumaticValve,
     },
     simulation::{
         InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -223,6 +225,8 @@ pub struct WingAntiIceRelay {
     // the test is finished, the ON light should turn off.
     is_on_ground_id: VariableIdentifier,
     is_on_ground: bool, //Needed for the 30 seconds test logic
+    powered_by: ElectricalBusType,
+    is_powered: bool,
 }
 impl WingAntiIceRelay {
     const WAI_TEST_TIME: Duration = Duration::from_secs(30);
@@ -234,6 +238,8 @@ impl WingAntiIceRelay {
             signal_on: false,
             is_on_ground_id: context.get_identifier("SIM ON GROUND".to_owned()),
             is_on_ground: Default::default(),
+            powered_by: ElectricalBusType::DirectCurrentEssentialShed,
+            is_powered: false,
         }
     }
 
@@ -255,11 +261,11 @@ impl WingAntiIceRelay {
         // Also, we need to check if the supplier is pressurized
         // since the valve is pneumatically operated.
         self.wing_anti_ice_button_pos = wing_anti_ice_button_pos;
-        if self.wing_anti_ice_button_pos == WingAntiIcePushButtonMode::On {
+        if !self.is_powered {
+            self.signal_on = false;
+        } else if self.wing_anti_ice_button_pos == WingAntiIcePushButtonMode::On {
             if self.is_on_ground && !self.system_test_done {
-                // if self.supplier_pressurized {
                 self.system_test_timer += context.delta();
-                // }
                 self.system_test_timer = self.system_test_timer.min(Self::WAI_TEST_TIME);
                 if self.system_test_timer == Self::WAI_TEST_TIME {
                     self.system_test_done = true;
@@ -278,18 +284,29 @@ impl WingAntiIceRelay {
         // and set test_done to false in order for the
         // mechanism to work when landing.
         if !self.is_on_ground && self.system_test_timer > Duration::from_secs(0) {
-            self.system_test_timer = Duration::from_secs(0);
-            self.system_test_done = false;
+            self.relay_reset();
         }
     }
 
     pub fn get_timer(&self) -> Duration {
         self.system_test_timer
     }
+
+    fn relay_reset(&mut self) {
+        self.system_test_timer = Duration::from_secs(0);
+        self.system_test_done = false;
+    }
 }
 impl SimulationElement for WingAntiIceRelay {
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.is_on_ground = reader.read(&self.is_on_ground_id);
+    }
+
+    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
+        if self.is_powered != buses.is_powered(self.powered_by) {
+            self.relay_reset();
+        }
+        self.is_powered = buses.is_powered(self.powered_by);
     }
 }
 
@@ -596,4 +613,12 @@ impl SimulationElement for WingAntiIceComplex {
         writer.write(&self.wai_left_low_pressure_id, self.wai_low_pressure[0]);
         writer.write(&self.wai_right_low_pressure_id, self.wai_low_pressure[1]);
     }
+
+    // CB is 3A --> 40W roughly
+    // Split power by valve
+    // fn consume_power<T: ConsumePower>(&mut self, _: &UpdateContext, consumption: &mut T) {
+    //     if self.is_powered {
+    //         consumption.consume_from_bus(self.powered_by, Power::new::<watt>(40.))
+    //     }
+    // }
 }
