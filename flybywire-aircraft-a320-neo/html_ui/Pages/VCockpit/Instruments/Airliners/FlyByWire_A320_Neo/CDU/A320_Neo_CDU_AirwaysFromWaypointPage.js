@@ -18,7 +18,10 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
                 mcdu.insertTemporaryFlightPlan(() => {
                     mcdu.copyAirwaySelections();
                     mcdu.updateConstraints();
-                    CDUFlightPlanPage.ShowPage(mcdu, 0);
+
+                    const tmpWaypoints = mcdu.flightPlanManager.getWaypointsCount(1);
+                    const activeWaypoints = mcdu.flightPlanManager.getWaypointsCount(0);
+                    CDUFlightPlanPage.ShowPage(mcdu, mcdu.fpOffset + (tmpWaypoints - activeWaypoints));
                 });
             };
         }
