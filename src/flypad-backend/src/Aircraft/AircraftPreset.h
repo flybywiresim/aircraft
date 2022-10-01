@@ -24,7 +24,7 @@ using namespace std;
  */
 class AircraftPreset {
 private:
-  Units* m_Units{};
+  std::unique_ptr<Units> m_Units;
 
   // Sim LVAR IDs
   ID LoadAircraftPresetRequest{};
@@ -56,12 +56,14 @@ public:
   /**
    * Creates an instance of the LightPreset class.
    */
-  AircraftPreset();
+  AircraftPreset() {
+    m_Units = std::make_unique<Units>();
+  }
 
   /**
    * Destructor
    */
-  ~AircraftPreset();
+  ~AircraftPreset() = default;
 
   /**
    * Called when SimConnect is initialized

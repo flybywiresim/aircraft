@@ -2,13 +2,13 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { EfisSide } from '@shared/NavigationDisplay';
-import { simbridgeUrl } from '../common';
+import { getSimBridgeUrl } from '../common';
 
 export class Terrain {
     private static endpointsAvailable: boolean = false;
 
     public static async mapdataAvailable(): Promise<boolean> {
-        return fetch(`${simbridgeUrl}/api/v1/terrain/available`).then((response) => {
+        return fetch(`${getSimBridgeUrl()}/api/v1/terrain/available`).then((response) => {
             Terrain.endpointsAvailable = response.ok;
             return response.ok;
         }).catch((_ex) => {
@@ -19,7 +19,7 @@ export class Terrain {
 
     public static async setCurrentPosition(latitude: number, longitude: number, heading: number, altitude: number, verticalSpeed: number): Promise<void> {
         if (Terrain.endpointsAvailable) {
-            fetch(`${simbridgeUrl}/api/v1/terrain/position`, {
+            fetch(`${getSimBridgeUrl()}/api/v1/terrain/position`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ latitude, longitude, heading, altitude, verticalSpeed }),
@@ -40,7 +40,7 @@ export class Terrain {
         gearDown: boolean
     }): Promise<void> {
         if (Terrain.endpointsAvailable) {
-            fetch(`${simbridgeUrl}/api/v1/terrain/displaysettings?display=${side}`, {
+            fetch(`${getSimBridgeUrl()}/api/v1/terrain/displaysettings?display=${side}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(settings),
@@ -52,7 +52,7 @@ export class Terrain {
 
     public static async ndMapAvailable(side: EfisSide, timestamp: number): Promise<boolean> {
         if (Terrain.endpointsAvailable) {
-            return fetch(`${simbridgeUrl}/api/v1/terrain/ndMapAvailable?display=${side}&timestamp=${timestamp}`).then((response) => {
+            return fetch(`${getSimBridgeUrl()}/api/v1/terrain/ndMapAvailable?display=${side}&timestamp=${timestamp}`).then((response) => {
                 if (response.ok) {
                     return response.text().then((text) => text === 'true');
                 }
@@ -65,7 +65,7 @@ export class Terrain {
 
     public static async ndTransitionMaps(side: EfisSide, timestamp: number): Promise<string[]> {
         if (Terrain.endpointsAvailable) {
-            return fetch(`${simbridgeUrl}/api/v1/terrain/ndmaps?display=${side}&timestamp=${timestamp}`, {
+            return fetch(`${getSimBridgeUrl()}/api/v1/terrain/ndmaps?display=${side}&timestamp=${timestamp}`, {
                 method: 'GET',
                 headers: { Accept: 'application/json' },
             }).then((response) => response.json().then((imageBase64) => imageBase64));
@@ -84,7 +84,7 @@ export class Terrain {
         maxElevationIsCaution: boolean
     }> {
         if (Terrain.endpointsAvailable) {
-            return fetch(`${simbridgeUrl}/api/v1/terrain/terrainRange?display=${side}&timestamp=${timestamp}`, {
+            return fetch(`${getSimBridgeUrl()}/api/v1/terrain/terrainRange?display=${side}&timestamp=${timestamp}`, {
                 method: 'GET',
                 headers: { Accept: 'application/json' },
             }).then((response) => response.json().then((data) => data));
@@ -95,7 +95,7 @@ export class Terrain {
 
     public static async renderNdMap(side: EfisSide): Promise<number> {
         if (Terrain.endpointsAvailable) {
-            return fetch(`${simbridgeUrl}/api/v1/terrain/renderMap?display=${side}`).then((response) => response.text().then((text) => parseInt(text)));
+            return fetch(`${getSimBridgeUrl()}/api/v1/terrain/renderMap?display=${side}`).then((response) => response.text().then((text) => parseInt(text)));
         }
 
         throw new Error('Endpoints unavailable');

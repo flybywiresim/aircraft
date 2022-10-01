@@ -4,10 +4,23 @@
     "ChangeATISATCSourceButton": "Zmena zdroja ATIS/ATC",
     "ConnectHoppieACARS": "Pripojiť Hoppie ACARS",
     "NoInformationAvailableForThisFrequency": "Nie sú k dispozícii žiadne informácie o tejto frekvencii",
+    "SearchPlaceholder": "Search",
     "SelectCorrectATISATCSource": "Táto stránka je dostupná len vtedy, keď je na stránke nastavení vybratá funkcia IVAO alebo VATSIM ako zdroj ATIS/ATC.",
     "SetActive": "Nastaviť aktívnu",
     "SetStandby": "Nastaviť pohotovostný režim",
+    "ShowAll": "All",
+    "ShowApproach": "Approach",
+    "ShowAtis": "ATIS",
+    "ShowDelivery": "Delivery",
+    "ShowDeparture": "Departure",
+    "ShowGround": "Ground",
+    "ShowRadar": "Radar",
+    "ShowTower": "Tower",
     "Standby": "Pohotovostný režim",
+    "TT": {
+      "AtcCallSignSearch": "ATC Call-sign Search",
+      "AtcTypeFilter": "Filter for"
+    },
     "Title": "Riadenie letovej prevádzky"
   },
   "Checklists": {
@@ -183,6 +196,10 @@
     "Altn": "Altn",
     "ExitFullscreenMode": "Skončiť režim na celú obrazovku",
     "From": "Od",
+    "LoadingImage": "Loading Image",
+    "LoadingImageFailed": "Loading Image failed",
+    "LoadingPdf": "Loading PDF",
+    "LoadingPdfFailed": "Loading PDF failed",
     "LocalFiles": {
       "Both": "Obidva",
       "EstablishingConnection": "Pripájam",
