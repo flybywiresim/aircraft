@@ -297,9 +297,9 @@ export class FlightPlanManager {
     public async clearFlightPlan(callback = EmptyCallback.Void): Promise<void> {
         await this._flightPlans[this._currentFlightPlanIndex].clearPlan().catch(console.error);
         for (const fixInfo of this._fixInfos) {
-            await fixInfo.setRefFix();
+            fixInfo.setRefFix(undefined, false /* disable version update */);
         }
-        // updateFlightPlanVersion is called within each setRefFix
+        await this.updateFlightPlanVersion().catch(console.error);
         callback();
     }
 
@@ -339,13 +339,13 @@ export class FlightPlanManager {
             await currentFlightPlan.clearPlan().catch(console.error);
             await currentFlightPlan.addWaypoint(airport, 0);
             // clear pilot trans alt
-            await this.setOriginTransitionAltitude(undefined, false);
+            await this._setOriginTransitionAltitude(undefined, false);
             // TODO get origin trans alt from database
             // until then, don't erase the database value from ATSU if same airport as before
             if (!sameAirport) {
-                await this.setOriginTransitionAltitude(undefined, true);
+                await this._setOriginTransitionAltitude(undefined, true);
             }
-            // updateFlightPlanVersion is called within setOriginTransitionAltitude
+            await this.updateFlightPlanVersion().catch(console.error);
         }
         callback();
     }
@@ -759,13 +759,13 @@ export class FlightPlanManager {
         */
 
         // clear pilot trans level
-        await this.setDestinationTransitionLevel(undefined, false);
+        this._setDestinationTransitionLevel(undefined, false);
         // TODO get destination trans level from database
         // until then, don't erase the database value from ATSU if same airport as before
         if (!sameAirport) {
-            await this.setDestinationTransitionLevel(undefined, true);
+            this._setDestinationTransitionLevel(undefined, true);
         }
-        // updateFlightPlanVersion is called within setDestinationTransitionLevel
+        await this.updateFlightPlanVersion().catch(console.error);
         callback();
     }
 
@@ -1841,19 +1841,29 @@ export class FlightPlanManager {
     }
 
     /**
-     * Set the transition altitude for the origin
+     * Set the transition altitude for the origin and updates FP version
      * @param altitude transition altitude
      * @param database is this value from the database, or pilot?
      * @param flightPlanIndex index of flight plan to be edited, defaults to current plan being edited (not active!)
      */
     public async setOriginTransitionAltitude(altitude?: number, database: boolean = false, flightPlanIndex = this._currentFlightPlanIndex): Promise<void> {
+        this._setOriginTransitionAltitude(altitude, database, flightPlanIndex);
+        await this.updateFlightPlanVersion().catch(console.error);
+    }
+
+    /**
+     * Set the transition altitude for the origin
+     * @param altitude transition altitude
+     * @param database is this value from the database, or pilot?
+     * @param flightPlanIndex index of flight plan to be edited, defaults to current plan being edited (not active!)
+     */
+    private _setOriginTransitionAltitude(altitude?: number, database: boolean = false, flightPlanIndex = this._currentFlightPlanIndex): void {
         const currentFlightPlan = this._flightPlans[flightPlanIndex];
         if (database) {
             currentFlightPlan.originTransitionAltitudeDb = altitude;
         } else {
             currentFlightPlan.originTransitionAltitudePilot = altitude;
         }
-        await this.updateFlightPlanVersion().catch(console.error);
     }
 
     public getDestinationTransitionLevel(flightPlanIndex: number = this._currentFlightPlanIndex): FlightLevel | undefined {
@@ -1881,19 +1891,29 @@ export class FlightPlanManager {
     }
 
     /**
-     * Set the transition level for the destination
+     * Set the transition level for the destination and updates FP version
      * @param flightLevel transition level
      * @param database is this value from the database, or pilot?
      * @param flightPlanIndex index of flight plan to be edited, defaults to current plan being edited (not active!)
      */
     public async setDestinationTransitionLevel(flightLevel?: FlightLevel, database: boolean = false, flightPlanIndex = this._currentFlightPlanIndex): Promise<void> {
+        this._setDestinationTransitionLevel(flightLevel, database, flightPlanIndex);
+        await this.updateFlightPlanVersion().catch(console.error);
+    }
+
+    /**
+     * Set the transition level for the destination
+     * @param flightLevel transition level
+     * @param database is this value from the database, or pilot?
+     * @param flightPlanIndex index of flight plan to be edited, defaults to current plan being edited (not active!)
+     */
+    private _setDestinationTransitionLevel(flightLevel?: FlightLevel, database: boolean = false, flightPlanIndex = this._currentFlightPlanIndex): void {
         const currentFlightPlan = this._flightPlans[flightPlanIndex];
         if (database) {
             currentFlightPlan.destinationTransitionLevelDb = flightLevel;
         } else {
             currentFlightPlan.destinationTransitionLevelPilot = flightLevel;
         }
-        await this.updateFlightPlanVersion().catch(console.error);
     }
 
     public getFixInfo(index: 0 | 1 | 2 | 3): FixInfo {

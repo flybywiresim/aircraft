@@ -35,12 +35,14 @@ export class FixInfo {
         this.flightPlanManager = flightPlanManager;
     }
 
-    async setRefFix(fix?: WayPoint): Promise<void> {
+    async setRefFix(fix?: WayPoint, updateVersion = true): Promise<void> {
         this.radials.length = 0;
         this.radius = undefined;
         this.abeam = false;
         this.refFix = fix;
-        await this.flightPlanManager.updateFlightPlanVersion();
+        if (updateVersion) {
+            await this.flightPlanManager.updateFlightPlanVersion();
+        }
     }
 
     getRefFix(): WayPoint | undefined {
