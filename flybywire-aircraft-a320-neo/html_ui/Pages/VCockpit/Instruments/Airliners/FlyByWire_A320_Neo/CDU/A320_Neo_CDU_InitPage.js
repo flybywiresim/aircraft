@@ -194,6 +194,7 @@ class CDUInitPage {
                         CDUPerformancePage.UpdateThrRedAccFromOrigin(mcdu);
                         CDUPerformancePage.UpdateEngOutAccFromOrigin(mcdu);
                         CDUPerformancePage.UpdateThrRedAccFromDestination(mcdu);
+                        mcdu.fpOffset = 0; // reset F-Plan offset
                         CDUAvailableFlightPlanPage.ShowPage(mcdu);
                     } else {
                         scratchpadCallback();

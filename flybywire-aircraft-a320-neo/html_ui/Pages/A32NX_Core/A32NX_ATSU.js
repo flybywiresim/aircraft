@@ -147,6 +147,8 @@ const insertUplink = (mcdu) => {
             if (mcdu.page.Current === mcdu.page.InitPageA) {
                 CDUInitPage.ShowPage1(mcdu);
             }
+
+            mcdu.fpOffset = 0; // reset F-Plan offset
         }
     }).catch((e) => {
         if (e instanceof McduMessage) {
