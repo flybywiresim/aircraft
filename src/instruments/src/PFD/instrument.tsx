@@ -119,11 +119,6 @@ class A32NX_PFD extends BaseInstrument {
         this.simVarPublisher.subscribe('mach');
         this.simVarPublisher.subscribe('flapHandleIndex');
 
-        this.simVarPublisher.subscribe('greenDotSpeed');
-
-        this.simVarPublisher.subscribe('slatSpeed');
-
-        this.simVarPublisher.subscribe('fSpeed');
         this.simVarPublisher.subscribe('transAlt');
         this.simVarPublisher.subscribe('transAltAppr');
 
@@ -154,7 +149,6 @@ class A32NX_PFD extends BaseInstrument {
         this.simVarPublisher.subscribe('engTwoRunning');
         this.simVarPublisher.subscribe('expediteMode');
         this.simVarPublisher.subscribe('setHoldSpeed');
-        this.simVarPublisher.subscribe('vls');
         this.simVarPublisher.subscribe('trkFpaDeselectedTCAS');
         this.simVarPublisher.subscribe('tcasRaInhibited');
         this.simVarPublisher.subscribe('groundSpeed');
@@ -208,6 +202,14 @@ class A32NX_PFD extends BaseInstrument {
         this.simVarPublisher.subscribe('fac2VFeNextRaw');
         this.simVarPublisher.subscribe('fac1VCTrendRaw');
         this.simVarPublisher.subscribe('fac2VCTrendRaw');
+        this.simVarPublisher.subscribe('fac1VManRaw');
+        this.simVarPublisher.subscribe('fac2VManRaw');
+        this.simVarPublisher.subscribe('fac1V4Raw');
+        this.simVarPublisher.subscribe('fac2V4Raw');
+        this.simVarPublisher.subscribe('fac1V3Raw');
+        this.simVarPublisher.subscribe('fac2V3Raw');
+        this.simVarPublisher.subscribe('fac1VLsRaw');
+        this.simVarPublisher.subscribe('fac2VLsRaw');
         this.simVarPublisher.subscribe('fac1EstimatedBetaRaw');
         this.simVarPublisher.subscribe('fac2EstimatedBetaRaw');
         this.simVarPublisher.subscribe('fac1BetaTargetRaw');

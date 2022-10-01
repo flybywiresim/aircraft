@@ -57,9 +57,6 @@ export interface PFDSimvars {
     targetSpeedManaged: number;
     mach: number;
     flapHandleIndex: number;
-    greenDotSpeed: number;
-    slatSpeed: number;
-    fSpeed: number;
     transAlt: number;
     transAltAppr: number;
     groundTrack: number;
@@ -86,7 +83,6 @@ export interface PFDSimvars {
     engTwoRunning: boolean;
     expediteMode: boolean;
     setHoldSpeed: boolean;
-    vls: number;
     trkFpaDeselectedTCAS: boolean;
     tcasRaInhibited: boolean;
     groundSpeed: number;
@@ -136,6 +132,14 @@ export interface PFDSimvars {
     fac2VFeNextRaw: number;
     fac1VCTrendRaw: number;
     fac2VCTrendRaw: number;
+    fac1VManRaw: number;
+    fac2VManRaw: number;
+    fac1V4Raw: number;
+    fac2V4Raw: number;
+    fac1V3Raw: number;
+    fac2V3Raw: number;
+    fac1VLsRaw: number;
+    fac2VLsRaw: number;
     fac1EstimatedBetaRaw: number;
     fac2EstimatedBetaRaw: number;
     fac1BetaTargetRaw: number;
@@ -199,9 +203,6 @@ export enum PFDVars {
     targetSpeedManaged = 'L:A32NX_SPEEDS_MANAGED_PFD',
     mach = 'L:A32NX_ADIRS_ADR_1_MACH',
     flapHandleIndex = 'L:A32NX_FLAPS_HANDLE_INDEX',
-    greenDotSpeed = 'L:A32NX_SPEEDS_GD',
-    slatSpeed = 'L:A32NX_SPEEDS_S',
-    fSpeed = 'L:A32NX_SPEEDS_F',
     transAlt = 'L:AIRLINER_TRANS_ALT',
     transAltAppr = 'L:AIRLINER_APPR_TRANS_ALT',
     groundTrack = 'L:A32NX_ADIRS_IR_1_TRACK',
@@ -227,7 +228,6 @@ export enum PFDVars {
     engTwoRunning = 'GENERAL ENG COMBUSTION:2',
     expediteMode = 'L:A32NX_FMA_EXPEDITE_MODE',
     setHoldSpeed = 'L:A32NX_PFD_MSG_SET_HOLD_SPEED',
-    vls = 'L:A32NX_SPEEDS_VLS',
     trkFpaDeselectedTCAS= 'L:A32NX_AUTOPILOT_TCAS_MESSAGE_TRK_FPA_DESELECTION',
     tcasRaInhibited = 'L:A32NX_AUTOPILOT_TCAS_MESSAGE_RA_INHIBITED',
     groundSpeed = 'L:A32NX_ADIRS_IR_1_GROUND_SPEED',
@@ -277,6 +277,14 @@ export enum PFDVars {
     fac2VFeNextRaw = 'L:A32NX_FAC_2_V_FE_NEXT',
     fac1VCTrendRaw = 'L:A32NX_FAC_1_SPEED_TREND',
     fac2VCTrendRaw = 'L:A32NX_FAC_2_SPEED_TREND',
+    fac1VManRaw = 'L:A32NX_FAC_1_V_MAN',
+    fac2VManRaw = 'L:A32NX_FAC_2_V_MAN',
+    fac1V4Raw = 'L:A32NX_FAC_1_V_4',
+    fac2V4Raw = 'L:A32NX_FAC_2_V_4',
+    fac1V3Raw = 'L:A32NX_FAC_1_V_3',
+    fac2V3Raw = 'L:A32NX_FAC_2_V_3',
+    fac1VLsRaw = 'L:A32NX_FAC_1_V_LS',
+    fac2VLsRaw = 'L:A32NX_FAC_2_V_LS',
     fac1EstimatedBetaRaw = 'L:A32NX_FAC_1_ESTIMATED_SIDESLIP',
     fac2EstimatedBetaRaw = 'L:A32NX_FAC_2_ESTIMATED_SIDESLIP',
     fac1BetaTargetRaw = 'L:A32NX_FAC_1_SIDESLIP_TARGET',
@@ -342,9 +350,6 @@ export class PFDSimvarPublisher extends SimVarPublisher<PFDSimvars> {
         ['targetSpeedManaged', { name: PFDVars.targetSpeedManaged, type: SimVarValueType.Knots }],
         ['mach', { name: PFDVars.mach, type: SimVarValueType.Number }],
         ['flapHandleIndex', { name: PFDVars.flapHandleIndex, type: SimVarValueType.Number }],
-        ['greenDotSpeed', { name: PFDVars.greenDotSpeed, type: SimVarValueType.Number }],
-        ['slatSpeed', { name: PFDVars.slatSpeed, type: SimVarValueType.Number }],
-        ['fSpeed', { name: PFDVars.fSpeed, type: SimVarValueType.Number }],
         ['transAlt', { name: PFDVars.transAlt, type: SimVarValueType.Number }],
         ['transAltAppr', { name: PFDVars.transAltAppr, type: SimVarValueType.Number }],
         ['groundTrack', { name: PFDVars.groundTrack, type: SimVarValueType.Number }],
@@ -370,7 +375,6 @@ export class PFDSimvarPublisher extends SimVarPublisher<PFDSimvars> {
         ['engTwoRunning', { name: PFDVars.engTwoRunning, type: SimVarValueType.Bool }],
         ['expediteMode', { name: PFDVars.expediteMode, type: SimVarValueType.Bool }],
         ['setHoldSpeed', { name: PFDVars.setHoldSpeed, type: SimVarValueType.Bool }],
-        ['vls', { name: PFDVars.vls, type: SimVarValueType.Number }],
         ['trkFpaDeselectedTCAS', { name: PFDVars.trkFpaDeselectedTCAS, type: SimVarValueType.Bool }],
         ['tcasRaInhibited', { name: PFDVars.tcasRaInhibited, type: SimVarValueType.Bool }],
         ['groundSpeed', { name: PFDVars.groundSpeed, type: SimVarValueType.Number }],
@@ -420,6 +424,14 @@ export class PFDSimvarPublisher extends SimVarPublisher<PFDSimvars> {
         ['fac2VFeNextRaw', { name: PFDVars.fac2VFeNextRaw, type: SimVarValueType.Number }],
         ['fac1VCTrendRaw', { name: PFDVars.fac1VCTrendRaw, type: SimVarValueType.Number }],
         ['fac2VCTrendRaw', { name: PFDVars.fac2VCTrendRaw, type: SimVarValueType.Number }],
+        ['fac1VManRaw', { name: PFDVars.fac1VManRaw, type: SimVarValueType.Number }],
+        ['fac2VManRaw', { name: PFDVars.fac2VManRaw, type: SimVarValueType.Number }],
+        ['fac1V4Raw', { name: PFDVars.fac1V4Raw, type: SimVarValueType.Number }],
+        ['fac2V4Raw', { name: PFDVars.fac2V4Raw, type: SimVarValueType.Number }],
+        ['fac1V3Raw', { name: PFDVars.fac1V3Raw, type: SimVarValueType.Number }],
+        ['fac2V3Raw', { name: PFDVars.fac2V3Raw, type: SimVarValueType.Number }],
+        ['fac1VLsRaw', { name: PFDVars.fac1VLsRaw, type: SimVarValueType.Number }],
+        ['fac2VLsRaw', { name: PFDVars.fac2VLsRaw, type: SimVarValueType.Number }],
         ['fac1EstimatedBetaRaw', { name: PFDVars.fac1EstimatedBetaRaw, type: SimVarValueType.Number }],
         ['fac2EstimatedBetaRaw', { name: PFDVars.fac2EstimatedBetaRaw, type: SimVarValueType.Number }],
         ['fac1BetaTargetRaw', { name: PFDVars.fac1BetaTargetRaw, type: SimVarValueType.Number }],

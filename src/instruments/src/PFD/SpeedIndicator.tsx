@@ -1,6 +1,5 @@
 import { ClockEvents, DisplayComponent, EventBus, FSComponent, NodeReference, Subject, Subscribable, VNode } from 'msfssdk';
 import { Arinc429Word } from '@shared/arinc429';
-import { SmoothSin } from './PFDUtils';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { VerticalTape } from './VerticalTape';
 import { SimplaneValues } from './shared/SimplaneValueProvider';
@@ -295,39 +294,34 @@ class FlapsSpeedPointBugs extends DisplayComponent<{bus: EventBus}> {
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<PFDSimvars>();
+        const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values>();
 
-        sub.on('flapHandleIndex').whenChanged().handle((f) => {
-            if (f === 0) {
-                this.greenDotBug.instance.style.visibility = 'visible';
-                this.flapsBug.instance.style.visibility = 'hidden';
-                this.slatBug.instance.style.visibility = 'hidden';
-            } else if (f === 1) {
-                this.greenDotBug.instance.style.visibility = 'hidden';
-                this.flapsBug.instance.style.visibility = 'hidden';
-                this.slatBug.instance.style.visibility = 'visible';
-            } else if (f === 2 || f === 3) {
-                this.greenDotBug.instance.style.visibility = 'hidden';
-                this.flapsBug.instance.style.visibility = 'visible';
-                this.slatBug.instance.style.visibility = 'hidden';
-            } else {
-                this.greenDotBug.instance.style.visibility = 'hidden';
-                this.flapsBug.instance.style.visibility = 'hidden';
-                this.slatBug.instance.style.visibility = 'hidden';
-            }
-        });
-
-        sub.on('greenDotSpeed').whenChanged()
+        sub.on('vMan').withArinc429Precision(2)
             .handle((gd) => {
-                this.greenDotBug.instance.style.transform = `translate3d(0px,${getSpeedTapeOffset(gd)}px, 0px`;
+                if (gd.isNormalOperation()) {
+                    this.greenDotBug.instance.style.visibility = 'visible';
+                    this.greenDotBug.instance.style.transform = `translate3d(0px,${getSpeedTapeOffset(gd.value)}px, 0px`;
+                } else {
+                    this.greenDotBug.instance.style.visibility = 'hidden';
+                }
             });
-        sub.on('slatSpeed').whenChanged()
+        sub.on('v4').withArinc429Precision(2)
             .handle((sls) => {
-                this.slatBug.instance.style.transform = `translate3d(0px,${getSpeedTapeOffset(sls)}px, 0px`;
+                if (sls.isNormalOperation()) {
+                    this.slatBug.instance.style.visibility = 'visible';
+                    this.slatBug.instance.style.transform = `translate3d(0px,${getSpeedTapeOffset(sls.value)}px, 0px`;
+                } else {
+                    this.slatBug.instance.style.visibility = 'hidden';
+                }
             });
-        sub.on('fSpeed').whenChanged()
+        sub.on('v3').withArinc429Precision(2)
             .handle((fs) => {
-                this.flapsBug.instance.style.transform = `translate3d(0px,${getSpeedTapeOffset(fs)}px, 0px`;
+                if (fs.isNormalOperation()) {
+                    this.flapsBug.instance.style.visibility = 'visible';
+                    this.flapsBug.instance.style.transform = `translate3d(0px,${getSpeedTapeOffset(fs.value)}px, 0px`;
+                } else {
+                    this.flapsBug.instance.style.visibility = 'hidden';
+                }
             });
     }
 }
@@ -501,9 +495,9 @@ class SpeedTrendArrow extends DisplayComponent<{ airspeed: Subscribable<number>,
 }
 
 class VLsBar extends DisplayComponent<{ bus: EventBus }> {
-    private previousTime = (new Date() as any).appTime();
-
     private vlsPath = Subject.create<string>('');
+
+    private refElement = FSComponent.createRef<SVGGElement>();
 
     private vAlphaProt = new Arinc429Word(0);
 
@@ -511,29 +505,25 @@ class VLsBar extends DisplayComponent<{ bus: EventBus }> {
 
     private airSpeed= new Arinc429Word(0);
 
-    private vls= 0;
+    private vls= new Arinc429Word(0);
 
     private fcdc1DiscreteWord1 = new Arinc429Word(0);
 
     private fcdc2DiscreteWord1 = new Arinc429Word(0);
 
-    private smoothSpeeds = (vlsDestination: number) => {
-        const currentTime = (new Date() as any).appTime();
-        const deltaTime = currentTime - this.previousTime;
-
-        const seconds = deltaTime / 1000;
-        const vls = SmoothSin(this.vls, vlsDestination, 0.5, seconds);
-        this.previousTime = currentTime;
-        return vls;
-    };
-
     private setVlsPath() {
-        const normalLawActive = this.fcdc1DiscreteWord1.getBitValueOr(11, false) || this.fcdc2DiscreteWord1.getBitValueOr(11, false);
+        if (this.vls.isNormalOperation()) {
+            this.refElement.instance.style.visibility = 'visible';
 
-        const VLsPos = (this.airSpeed.value - this.vls) * DistanceSpacing / ValueSpacing + 80.818;
-        const offset = (this.vls - (normalLawActive ? this.vAlphaProt.valueOr(0) : this.vStallWarn.valueOr(0))) * DistanceSpacing / ValueSpacing;
+            const normalLawActive = this.fcdc1DiscreteWord1.getBitValueOr(11, false) || this.fcdc2DiscreteWord1.getBitValueOr(11, false);
 
-        this.vlsPath.set(`m19.031 ${VLsPos}h 1.9748v${offset}`);
+            const VLsPos = (this.airSpeed.value - this.vls.value) * DistanceSpacing / ValueSpacing + 80.818;
+            const offset = (this.vls.value - (normalLawActive ? this.vAlphaProt.valueOr(0) : this.vStallWarn.valueOr(0))) * DistanceSpacing / ValueSpacing;
+
+            this.vlsPath.set(`m19.031 ${VLsPos}h 1.9748v${offset}`);
+        } else {
+            this.refElement.instance.style.visibility = 'hidden';
+        }
     }
 
     onAfterRender(node: VNode): void {
@@ -556,8 +546,8 @@ class VLsBar extends DisplayComponent<{ bus: EventBus }> {
             this.setVlsPath();
         });
 
-        sub.on('vls').handle((vls) => {
-            this.vls = this.smoothSpeeds(vls);
+        sub.on('vLs').handle((vls) => {
+            this.vls = vls;
             this.setVlsPath();
         });
 
@@ -573,7 +563,7 @@ class VLsBar extends DisplayComponent<{ bus: EventBus }> {
     }
 
     render(): VNode {
-        return <path id="VLsIndicator" class="NormalStroke Amber" d={this.vlsPath} />;
+        return <path id="VLsIndicator" class="NormalStroke Amber" d={this.vlsPath} ref={this.refElement} />;
     }
 }
 

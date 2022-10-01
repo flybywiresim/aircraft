@@ -400,8 +400,11 @@ struct base_fac_flight_envelope_outputs
   real_T v_ls_kn;
   real_T v_stall_kn;
   real_T v_3_kn;
+  boolean_T v_3_visible;
   real_T v_4_kn;
+  boolean_T v_4_visible;
   real_T v_man_kn;
+  boolean_T v_man_visible;
   real_T v_max_kn;
   real_T v_fe_next_kn;
   boolean_T v_fe_next_visible;
@@ -501,10 +504,10 @@ struct struct_fAEsrEZhvvruiP1ICEwvRC
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_struct_VxYiXZRYbIa4SzJ8nAiyVD_
-#define DEFINED_TYPEDEF_FOR_struct_VxYiXZRYbIa4SzJ8nAiyVD_
+#ifndef DEFINED_TYPEDEF_FOR_struct_NHciy9HFthvyJ1C8wWfWlB_
+#define DEFINED_TYPEDEF_FOR_struct_NHciy9HFthvyJ1C8wWfWlB_
 
-struct struct_VxYiXZRYbIa4SzJ8nAiyVD
+struct struct_NHciy9HFthvyJ1C8wWfWlB
 {
   real_T estimated_beta_deg;
   real_T beta_target_deg;
@@ -519,8 +522,11 @@ struct struct_VxYiXZRYbIa4SzJ8nAiyVD
   real_T v_ls_kn;
   real_T v_stall_kn;
   real_T v_3_kn;
+  boolean_T v_3_visible;
   real_T v_4_kn;
+  boolean_T v_4_visible;
   real_T v_man_kn;
+  boolean_T v_man_visible;
   real_T v_max_kn;
   real_T v_fe_next_kn;
   real_T v_fe_next_visible;
