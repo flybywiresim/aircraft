@@ -114,7 +114,7 @@ export class TcasTraffic {
     constructor(tf: JS_NPCPlane, ppos: LatLongData, alt: number) {
         this.alive = true;
         this.seen = 0;
-        this.ID = tf.uId.toFixed(0);
+        this.ID = tf.uId.toFixed(0); // 7 Digit = NPC; 20 digit = player
         this.lat = tf.lat;
         this.lon = tf.lon;
         this.alt = tf.alt * 3.281;
@@ -477,6 +477,7 @@ export class TcasComputer implements TcasComponent {
             // information, we need to rely on the fallback method
             // this also leads to problems above 1750 ft (the threshold for ground detection), since the aircraft on ground are then shown again.
             // Currently just hide all above currently ground alt (of ppos) + 380, not ideal but works better than other solutions.
+            // SU X: traffic.isOnGround is currently broken for injected traffic, still using fallback method
             const groundAlt = this.planeAlt - this.radioAlt.value; // altitude of the terrain
             const onGround = traffic.alt < (groundAlt + 360) || traffic.groundSpeed < 30;
             traffic.onGround = onGround;

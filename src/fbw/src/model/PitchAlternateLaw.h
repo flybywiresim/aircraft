@@ -58,7 +58,8 @@ class PitchAlternateLaw final
   };
 
   struct Parameters_PitchAlternateLaw_T {
-    real_T ScheduledGain_BreakpointsForDimension1[5];
+    real_T ScheduledGain_BreakpointsForDimension1[6];
+    real_T ScheduledGain_BreakpointsForDimension1_d[5];
     real_T LagFilter_C1;
     real_T WashoutFilter_C1;
     real_T LagFilter_C1_p;
@@ -89,7 +90,8 @@ class PitchAlternateLaw final
     real_T DiscreteDerivativeVariableTs2_InitialCondition_c;
     real_T RateLimitereta_InitialCondition;
     real_T DiscreteTimeIntegratorVariableTs_LowerLimit;
-    real_T ScheduledGain_Table[5];
+    real_T ScheduledGain_Table[6];
+    real_T ScheduledGain_Table_h[5];
     real_T DiscreteTimeIntegratorVariableTs_UpperLimit;
     real_T RateLimiterVariableTs2_lo;
     real_T RateLimiterVariableTs_lo;

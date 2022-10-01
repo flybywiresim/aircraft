@@ -34,9 +34,6 @@ const execute = async () => {
             }, {
                 name: 'Panels',
                 sourceDir: './SimObjects/AirPlanes/FlyByWire_A320_NEO/panel'
-            }, {
-                name: 'MarketplaceData',
-                sourceDir: './MarketplaceData'
             }]
         });
         console.log(result);
