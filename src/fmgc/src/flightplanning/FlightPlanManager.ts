@@ -381,7 +381,7 @@ export class FlightPlanManager {
         // we allow the last leg to be sequenced therefore the index can be 1 past the end of the plan length
         if (index >= 0 && index <= currentFlightPlan.length) {
             currentFlightPlan.activeWaypointIndex = index;
-            Coherent.call('SET_ACTIVE_WAYPOINT_INDEX', index + 1).catch(console.error);
+            await Coherent.call('SET_ACTIVE_WAYPOINT_INDEX', index + 1).catch(console.error);
 
             if (currentFlightPlan.directTo.isActive && currentFlightPlan.directTo.waypointIsInFlightPlan
                 && currentFlightPlan.activeWaypointIndex > currentFlightPlan.directTo.planWaypointIndex) {
