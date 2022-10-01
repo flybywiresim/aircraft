@@ -537,7 +537,7 @@ export class ArincValueProvider {
         if (getDisplayIndex() === 1 && fac1Valid) {
             this.facToUse = 1;
         } else if (getDisplayIndex() === 2 && fac2Valid) {
-            this.facToUse = 1;
+            this.facToUse = 2;
         } else if (fac1Valid) {
             this.facToUse = 1;
         } else if (fac2Valid) {
