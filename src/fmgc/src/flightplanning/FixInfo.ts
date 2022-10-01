@@ -35,12 +35,12 @@ export class FixInfo {
         this.flightPlanManager = flightPlanManager;
     }
 
-    setRefFix(fix?: WayPoint): void {
+    async setRefFix(fix?: WayPoint): Promise<void> {
         this.radials.length = 0;
         this.radius = undefined;
         this.abeam = false;
         this.refFix = fix;
-        this.flightPlanManager.updateFlightPlanVersion();
+        await this.flightPlanManager.updateFlightPlanVersion();
     }
 
     getRefFix(): WayPoint | undefined {
@@ -51,7 +51,7 @@ export class FixInfo {
         return this.refFix?.ident;
     }
 
-    setRadial(index: 0 | 1, magneticBearing?: number): void {
+    async setRadial(index: 0 | 1, magneticBearing?: number): Promise<void> {
         if (magneticBearing !== undefined) {
             const trueBearing = Avionics.Utils.clampAngle(magneticBearing + Facilities.getMagVar(this.refFix.infos.coordinates.lat, this.refFix.infos.coordinates.long));
             this.radials[index] = { magneticBearing, trueBearing };
@@ -59,7 +59,7 @@ export class FixInfo {
             this.radials.splice(index, 1);
         }
         // TODO calculate flight plan intercepts
-        this.flightPlanManager.updateFlightPlanVersion();
+        await this.flightPlanManager.updateFlightPlanVersion();
     }
 
     getRadial(index: 0 | 1): FixInfoRadial | undefined {
@@ -70,14 +70,14 @@ export class FixInfo {
         return this.radials.map((r) => r.trueBearing);
     }
 
-    setRadius(radius?: number): void {
+    async setRadius(radius?: number): Promise<void> {
         if (radius !== undefined) {
             this.radius = { radius };
         } else {
             this.radius = undefined;
         }
         // TODO calculate flight plan intercepts
-        this.flightPlanManager.updateFlightPlanVersion();
+        await this.flightPlanManager.updateFlightPlanVersion();
     }
 
     getRadius(): FixInfoRadius | undefined {
