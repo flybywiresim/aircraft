@@ -206,12 +206,13 @@ class FacComputer final
     real_T Constant_Value_n;
     real_T Constant2_Value;
     real_T Constant3_Value;
+    real_T Constant1_Value;
     real_T Constant_Value_l;
     real_T uDLookupTable_tableData[7];
     real_T uDLookupTable_bp01Data[7];
     real_T Saturation_UpperSat;
     real_T Saturation_LowerSat;
-    real_T Constant1_Value;
+    real_T Constant1_Value_m;
     real_T Gain2_Gain;
     real_T Gain_Gain;
     real_T Gain_Gain_p;
@@ -242,6 +243,8 @@ class FacComputer final
     real_T uDLookupTable3_bp01Data[6];
     real_T uDLookupTable2_tableData[6];
     real_T uDLookupTable2_bp01Data[6];
+    real_T Saturation_UpperSat_o;
+    real_T Saturation_LowerSat_b;
     real_T uDLookupTable_tableData_g[2];
     real_T uDLookupTable_bp01Data_b[2];
     real_T Vmcl_Value;
@@ -358,6 +361,7 @@ class FacComputer final
   static void FacComputer_RateLimiter_o_Reset(rtDW_RateLimiter_FacComputer_b_T *localDW);
   static void FacComputer_RateLimiter_f(real_T rtu_u, real_T rtu_up, real_T rtu_lo, real_T rtu_Ts, real_T rtu_init,
     boolean_T rtu_reset, real_T *rty_Y, rtDW_RateLimiter_FacComputer_b_T *localDW);
+  static void FacComputer_MATLABFunction_l(const base_arinc_429 *rtu_u, boolean_T *rty_y);
   static void FacComputer_MATLABFunction_i_Reset(rtDW_MATLABFunction_FacComputer_f_T *localDW);
   static void FacComputer_MATLABFunction_p(boolean_T rtu_u, real_T rtu_Ts, boolean_T rtu_isRisingEdge, real_T
     rtu_timeDelay, boolean_T *rty_y, rtDW_MATLABFunction_FacComputer_f_T *localDW);
