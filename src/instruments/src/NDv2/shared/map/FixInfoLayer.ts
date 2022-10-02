@@ -3,6 +3,9 @@ import { MathUtils } from '@shared/MathUtils';
 import { MapLayer } from './MapLayer';
 import { MapParameters } from '../../../ND/utils/MapParameters';
 
+const FIX_INFO_DASHES = [15, 12];
+const NO_DASHES = [];
+
 export class FixInfoLayer implements MapLayer<NdSymbol> {
     data: NdSymbol[] = [];
 
@@ -15,7 +18,7 @@ export class FixInfoLayer implements MapLayer<NdSymbol> {
             const radials = symbol.radials;
             const radii = symbol.radii;
 
-            context.setLineDash([15, 12]);
+            context.setLineDash(FIX_INFO_DASHES);
             context.beginPath();
 
             for (const radial of radials) {
@@ -31,7 +34,7 @@ export class FixInfoLayer implements MapLayer<NdSymbol> {
             }
 
             context.stroke();
-            context.setLineDash([]);
+            context.setLineDash(NO_DASHES);
         }
     }
 
@@ -44,7 +47,7 @@ export class FixInfoLayer implements MapLayer<NdSymbol> {
             const radials = symbol.radials;
             const radii = symbol.radii;
 
-            context.setLineDash([15, 12]);
+            context.setLineDash(FIX_INFO_DASHES);
             context.beginPath();
 
             for (const radial of radials) {
@@ -60,7 +63,7 @@ export class FixInfoLayer implements MapLayer<NdSymbol> {
             }
 
             context.stroke();
-            context.setLineDash([]);
+            context.setLineDash(NO_DASHES);
         }
     }
 
@@ -71,8 +74,8 @@ export class FixInfoLayer implements MapLayer<NdSymbol> {
         const rotation = mapParameters.rotation(bearing) * MathUtils.DEGREES_TO_RADIANS;
 
         // TODO how long should a piece of string be?
-        const x2 = Math.sin(rotation) * 9000;
-        const y2 = -Math.cos(rotation) * 9000;
+        const x2 = Math.sin(rotation) * 800;
+        const y2 = -Math.cos(rotation) * 800;
 
         context.moveTo(cx, cy);
         context.lineTo(cx + x2, cy + y2);

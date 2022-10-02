@@ -17,6 +17,8 @@ export class RunwayLayer implements MapLayer<NdSymbol> {
                 if ((mapParameters.nmRadius / 2) < 80) {
                     this.paintScaledRunway(false, context, rx, ry, symbol, mapParameters);
                 }
+
+                // TODO paint unscaled runway
             }
         }
     }

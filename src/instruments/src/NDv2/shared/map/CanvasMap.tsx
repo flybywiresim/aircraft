@@ -15,6 +15,9 @@ import { TrafficLayer } from './TrafficLayer';
 import { FixInfoLayer } from './FixInfoLayer';
 import { NDControlEvents } from '../../NDControlEvents';
 
+const DASHES = [15, 12];
+const NO_DASHES = [];
+
 export interface CanvasMapProps {
     bus: EventBus,
     x: Subscribable<number>,
@@ -161,7 +164,7 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
         this.symbols.length = 0;
         this.symbols.push(...symbols);
 
-        const waypoints = this.symbols.filter((it) => it.type & NdSymbolTypeFlags.Waypoint | NdSymbolTypeFlags.FlightPlan && !(it.type & NdSymbolTypeFlags.Runway));
+        const waypoints = this.symbols.filter((it) => it.type & (NdSymbolTypeFlags.Waypoint | NdSymbolTypeFlags.FlightPlan | NdSymbolTypeFlags.Vor | NdSymbolTypeFlags.VorDme | NdSymbolTypeFlags.Dme) && !(it.type & NdSymbolTypeFlags.Runway));
 
         this.waypointLayer.data = waypoints;
 
@@ -255,6 +258,9 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
         }
         context.resetTransform();
 
+        this.constraintsLayer.paintShadowLayer(context, this.props.width, this.props.height, this.mapParams);
+        this.constraintsLayer.paintColorLayer(context, this.props.width, this.props.height, this.mapParams);
+
         for (const key in this.vectors) {
             if (this.vectors[key].length > 0) {
                 context.beginPath();
@@ -264,9 +270,6 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
                 context.stroke();
             }
         }
-
-        this.constraintsLayer.paintShadowLayer(context, this.props.width, this.props.height, this.mapParams);
-        this.constraintsLayer.paintColorLayer(context, this.props.width, this.props.height, this.mapParams);
 
         this.waypointLayer.paintShadowLayer(context, this.props.width, this.props.height, this.mapParams);
         this.waypointLayer.paintColorLayer(context, this.props.width, this.props.height, this.mapParams);
@@ -285,15 +288,15 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
         switch (group) {
         case EfisVectorsGroup.ACTIVE:
             context.strokeStyle = '#0f0';
-            context.setLineDash([]);
+            context.setLineDash(NO_DASHES);
             break;
         case EfisVectorsGroup.TEMPORARY:
             context.strokeStyle = '#ffff00';
-            context.setLineDash([15, 12]);
+            context.setLineDash(DASHES);
             break;
         default:
             context.strokeStyle = '#f00';
-            context.setLineDash([]);
+            context.setLineDash(NO_DASHES);
             break;
         }
 
