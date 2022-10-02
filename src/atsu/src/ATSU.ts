@@ -77,7 +77,7 @@ export class Atsu {
         if (atsu.flightStateObserver.LastWaypoint) {
             // define the overhead
             extension = CpdlcMessagesDownlink.DM67[1].deepCopy();
-            extension.Content[0].Value = `OVHD:${atsu.flightStateObserver.LastWaypoint.ident}`;
+            extension.Content[0].Value = `OVHD: ${atsu.flightStateObserver.LastWaypoint.ident}`;
             message.Content.push(extension);
             extension = CpdlcMessagesDownlink.DM67[1].deepCopy();
             extension.Content[0].Value = `AT ${timestampToString(atsu.flightStateObserver.LastWaypoint.utc)}Z/${passedAltitude}`;
@@ -86,52 +86,56 @@ export class Atsu {
 
         // define the present position
         extension = CpdlcMessagesDownlink.DM67[1].deepCopy();
-        extension.Content[0].Value = `PPOS:${coordinateToString({ lat: atsu.flightStateObserver.PresentPosition.lat, lon: atsu.flightStateObserver.PresentPosition.lon }, false)}`;
+        extension.Content[0].Value = `PPOS: ${coordinateToString({ lat: atsu.flightStateObserver.PresentPosition.lat, lon: atsu.flightStateObserver.PresentPosition.lon }, false)}`;
         message.Content.push(extension);
         extension = CpdlcMessagesDownlink.DM67[1].deepCopy();
         extension.Content[0].Value = `AT ${timestampToString(SimVar.GetSimVarValue('E:ZULU TIME', 'seconds'))}Z/${currentAltitude}`;
         message.Content.push(extension);
 
         if (atsu.flightStateObserver.ActiveWaypoint) {
-        // define the active position
+            // define the active position
             extension = CpdlcMessagesDownlink.DM67[1].deepCopy();
-            extension.Content[0].Value = `NEXT:${atsu.flightStateObserver.ActiveWaypoint.ident}`;
-            message.Content.push(extension);
-            extension = CpdlcMessagesDownlink.DM67[1].deepCopy();
-            extension.Content[0].Value = `AT ${timestampToString(atsu.flightStateObserver.ActiveWaypoint.utc)}Z`;
+            extension.Content[0].Value = `TO: ${atsu.flightStateObserver.ActiveWaypoint.ident} AT ${timestampToString(atsu.flightStateObserver.ActiveWaypoint.utc)}Z`;
             message.Content.push(extension);
         }
 
         if (atsu.flightStateObserver.NextWaypoint) {
-        // define the next position
+            // define the next position
             extension = CpdlcMessagesDownlink.DM67[1].deepCopy();
-            extension.Content[0].Value = `ENSUING:${atsu.flightStateObserver.NextWaypoint.ident}`;
+            extension.Content[0].Value = `NEXT: ${atsu.flightStateObserver.NextWaypoint.ident}`;
+            message.Content.push(extension);
+        }
+
+        // define wind and SAT
+        if (atsu.flightStateObserver.EnvironmentData.windDirection && atsu.flightStateObserver.EnvironmentData.windSpeed && atsu.flightStateObserver.EnvironmentData.temperature) {
+            extension = CpdlcMessagesDownlink.DM67[1].deepCopy();
+            const windInput = `${atsu.flightStateObserver.EnvironmentData.windDirection}/${atsu.flightStateObserver.EnvironmentData.windSpeed}KT`;
+            extension.Content[0].Value = `WIND: ${InputValidation.formatScratchpadWind(windInput)}`;
+            extension.Content[0].Value = `${extension.Content[0].Value} SAT: ${atsu.flightStateObserver.EnvironmentData.temperature}C`;
             message.Content.push(extension);
         }
 
         if (atsu.destinationWaypoint()) {
-        // define ETA
+            // define ETA
             extension = CpdlcMessagesDownlink.DM67[1].deepCopy();
-            extension.Content[0].Value = `DEST ETA:${timestampToString(atsu.destinationWaypoint().utc)}Z`;
+            extension.Content[0].Value = `DEST ETA: ${timestampToString(atsu.destinationWaypoint().utc)}Z`;
             message.Content.push(extension);
         }
-
-        // TODO define deviating
 
         // define descending/climbing and VS
         if (Math.abs(atsu.flightStateObserver.FcuSettings.altitude - atsu.flightStateObserver.PresentPosition.altitude) >= 500) {
             if (atsu.flightStateObserver.FcuSettings.altitude > atsu.flightStateObserver.PresentPosition.altitude) {
                 extension = CpdlcMessagesDownlink.DM67[1].deepCopy();
-                extension.Content[0].Value = `CLIMBING TO ${targetAltitude}`;
+                extension.Content[0].Value = `CLIMBING TO: ${targetAltitude}`;
                 message.Content.push(extension);
             } else {
                 extension = CpdlcMessagesDownlink.DM67[1].deepCopy();
-                extension.Content[0].Value = `DESCENDING TO ${targetAltitude}`;
+                extension.Content[0].Value = `DESCENDING TO: ${targetAltitude}`;
                 message.Content.push(extension);
             }
 
             extension = CpdlcMessagesDownlink.DM67[1].deepCopy();
-            extension.Content[0].Value = `VS:${InputValidation.formatScratchpadVerticalSpeed(`${atsu.flightStateObserver.PresentPosition.verticalSpeed}FTM`)}`;
+            extension.Content[0].Value = `VS: ${InputValidation.formatScratchpadVerticalSpeed(`${atsu.flightStateObserver.PresentPosition.verticalSpeed}FTM`)}`;
             message.Content.push(extension);
         }
 
@@ -141,6 +145,20 @@ export class Atsu {
         extension = CpdlcMessagesDownlink.DM67[1].deepCopy();
         extension.Content[0].Value = `SPD: ${ias} GS: ${gs}`;
         message.Content.push(extension);
+
+        // define HDG
+        const hdg = atsu.flightStateObserver.PresentPosition.heading.toString();
+        extension = CpdlcMessagesDownlink.DM67[1].deepCopy();
+        extension.Content[0].Value = `HDG: ${hdg}°TRUE`;
+        message.Content.push(extension);
+
+        // define track
+        const trk = atsu.flightStateObserver.PresentPosition.track.toString();
+        extension = CpdlcMessagesDownlink.DM67[1].deepCopy();
+        extension.Content[0].Value = `TRK: ${trk}°`;
+        message.Content.push(extension);
+
+        // TODO define deviating
 
         return message;
     }

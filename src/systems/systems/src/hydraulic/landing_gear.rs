@@ -14,7 +14,8 @@ use crate::{
 use super::{
     aerodynamic_model::AerodynamicModel,
     linear_actuator::{
-        Actuator, HydraulicAssemblyController, HydraulicLinearActuatorAssembly, LinearActuatorMode,
+        Actuator, HydraulicAssemblyController, HydraulicLinearActuatorAssembly, HydraulicLocking,
+        LinearActuatorMode,
     },
 };
 
@@ -590,6 +591,8 @@ struct GearSystemComponentHydraulicController {
     jammed_actuator_failure: Failure,
     jamming_position: Ratio,
     jamming_is_effective: bool,
+
+    soft_downlock_is_active: bool,
 }
 impl GearSystemComponentHydraulicController {
     fn new(id: GearActuatorId, is_inverted_control: bool, is_soft_downlock: bool) -> Self {
@@ -603,6 +606,7 @@ impl GearSystemComponentHydraulicController {
             jammed_actuator_failure: Failure::new(FailureType::GearActuatorJammed(id)),
             jamming_position: Ratio::new::<ratio>(random_from_range(0., 1.)),
             jamming_is_effective: false,
+            soft_downlock_is_active: false,
         }
     }
 
@@ -631,6 +635,8 @@ impl GearSystemComponentHydraulicController {
             Ratio::new::<ratio>(0.)
         };
 
+        self.update_soft_downlock();
+
         self.update_jamming();
     }
 
@@ -651,13 +657,8 @@ impl GearSystemComponentHydraulicController {
             self.jamming_position = Ratio::new::<ratio>(random_from_range(0., 1.));
         }
     }
-}
-impl HydraulicAssemblyController for GearSystemComponentHydraulicController {
-    fn requested_mode(&self) -> LinearActuatorMode {
-        if self.jamming_is_effective {
-            return LinearActuatorMode::ClosedValves;
-        }
 
+    fn update_soft_downlock(&mut self) {
         if self.is_soft_downlock {
             if (!self.is_inverted_control
                 && self.requested_position.get::<ratio>() >= 1.
@@ -666,10 +667,29 @@ impl HydraulicAssemblyController for GearSystemComponentHydraulicController {
                     && self.requested_position.get::<ratio>() <= 0.
                     && self.actual_position.get::<ratio>() <= 0.02)
             {
-                LinearActuatorMode::ClosedValves
-            } else {
-                LinearActuatorMode::PositionControl
+                self.soft_downlock_is_active = true;
             }
+
+            // We disable soft locking only if position demand is far away from current position
+            if self.soft_downlock_is_active
+                && (self.requested_position - self.actual_position)
+                    .abs()
+                    .get::<ratio>()
+                    > 0.5
+            {
+                self.soft_downlock_is_active = false;
+            }
+        }
+    }
+}
+impl HydraulicAssemblyController for GearSystemComponentHydraulicController {
+    fn requested_mode(&self) -> LinearActuatorMode {
+        if self.jamming_is_effective {
+            return LinearActuatorMode::ClosedValves;
+        }
+
+        if self.soft_downlock_is_active {
+            LinearActuatorMode::ClosedValves
         } else {
             LinearActuatorMode::PositionControl
         }
@@ -695,6 +715,7 @@ impl HydraulicAssemblyController for GearSystemComponentHydraulicController {
         }
     }
 }
+impl HydraulicLocking for GearSystemComponentHydraulicController {}
 impl SimulationElement for GearSystemComponentHydraulicController {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.jammed_actuator_failure.accept(visitor);
@@ -1479,6 +1500,8 @@ mod tests {
             DEFAULT_I_GAIN,
             DEFAULT_FORCE_GAIN,
             true,
+            false,
+            None,
         )
     }
 
@@ -1555,6 +1578,8 @@ mod tests {
             DEFAULT_I_GAIN,
             DEFAULT_FORCE_GAIN,
             true,
+            false,
+            None,
         )
     }
 

@@ -5,7 +5,9 @@
 import React, { useEffect, useState } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import { toast } from 'react-toastify';
-import { usePersistentProperty } from '@instruments/common/persistence';
+import { usePersistentNumberProperty, usePersistentProperty } from '@instruments/common/persistence';
+import { Toggle } from '../../UtilComponents/Form/Toggle';
+import { SelectInput } from '../../UtilComponents/Form/SelectInput/SelectInput';
 import { t } from '../../translation';
 import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
@@ -82,7 +84,78 @@ export const LightPresets = () => {
                         />
                     ))}
                 </div>
+                <AutoLoadConfiguration namesMap={namesMap} storedNames={storedNames} />
             </ScrollableContainer>
+        </div>
+    );
+};
+
+type AutoLoadConfigurationProps = {
+    namesMap: Map<number, string>,
+    storedNames: string
+}
+
+const AutoLoadConfiguration = (props: AutoLoadConfigurationProps) => {
+    const [autoLoadPreset, setAutoLoadPreset] = usePersistentNumberProperty('LIGHT_PRESET_AUTOLOAD', 0);
+
+    // State for persistent copy of autoload preset IDs
+    const [autoLoadDayPresetID, setAutoLoadDayPresetID] = usePersistentNumberProperty('LIGHT_PRESET_AUTOLOAD_DAY', 0);
+    const [autoLoadDawnDuskPresetID, setAutoLoadDawnDuskPresetID] = usePersistentNumberProperty('LIGHT_PRESET_AUTOLOAD_DAWNDUSK', 0);
+    const [autoLoadNightPresetID, setAutoLoadNightPresetID] = usePersistentNumberProperty('LIGHT_PRESET_AUTOLOAD_NIGHT', 0);
+
+    const [presetSelectionOptions, setPresetSelectionOptions] = useState([{ value: 0, displayValue: t('Presets.InteriorLighting.AutoLoadNoneSelection') }]);
+
+    // Creates the option list for the selections, ignoring any that are the default NoName title
+    const generatePresetSelectionOptions = () => {
+        const options: Array<{value: number, displayValue: string}> = [{ value: 0, displayValue: t('Presets.InteriorLighting.AutoLoadNoneSelection') }];
+        props.namesMap.forEach((value, key) => {
+            options.push({ value: key, displayValue: value });
+        });
+        return options;
+    };
+
+    useEffect(() => {
+        setPresetSelectionOptions(generatePresetSelectionOptions());
+    }, []);
+
+    useEffect(() => {
+        setPresetSelectionOptions(generatePresetSelectionOptions());
+    }, [props.namesMap, props.storedNames]);
+
+    return (
+        <div className="py-2 px-4 mt-2 rounded-md border-2 border-theme-accent">
+            <div className="flex flex-row items-center h-10">
+                <div className="pr-3">
+                    {t('Presets.InteriorLighting.AutoLoadLightingPreset')}
+                </div>
+                <Toggle value={!!autoLoadPreset} onToggle={(value) => (setAutoLoadPreset(value ? 1 : 0))} />
+            </div>
+            <div className="flex flex-row justify-start items-center mt-3 space-x-4">
+                <div>{t('Presets.InteriorLighting.AutoLoadDay')}</div>
+                <SelectInput
+                    className="w-72 h-12"
+                    options={presetSelectionOptions}
+                    value={autoLoadDayPresetID}
+                    dropdownOnTop
+                    onChange={(newPreset) => (setAutoLoadDayPresetID(newPreset as number))}
+                />
+                <div>{t('Presets.InteriorLighting.AutoLoadDawnDusk')}</div>
+                <SelectInput
+                    className="w-72 h-12"
+                    options={presetSelectionOptions}
+                    value={autoLoadDawnDuskPresetID}
+                    dropdownOnTop
+                    onChange={(newPreset) => (setAutoLoadDawnDuskPresetID(newPreset as number))}
+                />
+                <div>{t('Presets.InteriorLighting.AutoLoadNight')}</div>
+                <SelectInput
+                    className="w-72 h-12"
+                    options={presetSelectionOptions}
+                    value={autoLoadNightPresetID}
+                    dropdownOnTop
+                    onChange={(newPreset) => (setAutoLoadNightPresetID(newPreset as number))}
+                />
+            </div>
         </div>
     );
 };
@@ -100,15 +173,15 @@ const SinglePreset = (props: SinglePresetParams) => {
 
     // Light presets are handled in a wasm module as setting the indexed "LIGHT POTENTIOMETER"
     // variable didn't work in Javascript.
-    // To tell the presets.wasm module to load a preset the LVAR "L:A32NX_LOAD_LIGHTING_PRESET"
+    // To tell the presets.wasm module to load a preset the LVAR "L:A32NX_LIGHTING_PRESET_LOAD"
     // needs to be set with a number > 0 where the number is the corresponding preset ID to be loaded.
     // If a preset is not defined for this number a default preset (all lights at 50%) will be loaded.
-    // To tell the presets.wasm module to save a preset the LVAR "L:A32NX_SAVE_LIGHTING_PRESET"
+    // To tell the presets.wasm module to save a preset the LVAR "L:A32NX_LIGHTING_PRESET_SAVE"
     // needs to be set with a number > 0 where the number is the corresponding preset ID to be saved..
     // After loading or saving the wasm module will reset the LVARs to 0.
 
-    const [, setLoadPresetVar] = useSimVar('L:A32NX_LOAD_LIGHTING_PRESET', 'number', 200);
-    const [, setSavePresetVar] = useSimVar('L:A32NX_SAVE_LIGHTING_PRESET', 'number', 200);
+    const [, setLoadPresetVar] = useSimVar('L:A32NX_LIGHTING_PRESET_LOAD', 'number', 200);
+    const [, setSavePresetVar] = useSimVar('L:A32NX_LIGHTING_PRESET_SAVE', 'number', 200);
 
     // Only allow loading and saving when aircraft is powered
     const [isPowered] = useSimVar('L:A32NX_ELEC_AC_1_BUS_IS_POWERED', 'number', 200);
@@ -196,7 +269,7 @@ const SinglePreset = (props: SinglePresetParams) => {
                 {props.presetID}
             </div>
 
-            <div className="flex justify-center items-center mx-4 w-full h-20 text-theme-text bg-theme-accent rounded-md border-2 border-theme-accent">
+            <div className="flex justify-center items-center mx-4 w-full h-16 text-theme-text bg-theme-accent rounded-md border-2 border-theme-accent">
                 <TooltipWrapper text={t('Presets.InteriorLighting.TT.ClickTextToChangeThePresetsName')}>
                     <div>
                         <SimpleInput
@@ -212,7 +285,7 @@ const SinglePreset = (props: SinglePresetParams) => {
 
             <TooltipWrapper text={isPowered ? t('Presets.InteriorLighting.TT.LoadThisPreset') : t('Presets.InteriorLighting.TT.AircraftMustBePowered')}>
                 <div
-                    className={`flex justify-center items-center mx-4 w-full h-20 text-theme-text hover:text-theme-body bg-theme-accent hover:bg-theme-highlight rounded-md border-2 border-theme-accent transition duration-100 ${!isPowered && 'opacity-50'}`}
+                    className={`flex justify-center items-center mx-4 w-full h-16 text-theme-text hover:text-theme-body bg-theme-accent hover:bg-theme-highlight rounded-md border-2 border-theme-accent transition duration-100 ${!isPowered && 'opacity-50'}`}
                     onClick={() => handleLoad()}
                 >
                     {t('Presets.InteriorLighting.LoadPreset')}
@@ -221,7 +294,7 @@ const SinglePreset = (props: SinglePresetParams) => {
 
             <TooltipWrapper text={isPowered ? t('Presets.InteriorLighting.TT.SaveTheCurrentLightingLevels') : t('Presets.InteriorLighting.TT.AircraftMustBePowered')}>
                 <div
-                    className={`flex justify-center items-center mx-4 w-full h-20 text-white bg-green-700 hover:bg-green-500 rounded-md border-2 border-green-700 hover:border-green-800 transition duration-100 ${!isPowered && 'opacity-50'}`}
+                    className={`flex justify-center items-center mx-4 w-full h-16 text-white bg-green-700 hover:bg-green-500 rounded-md border-2 border-green-700 hover:border-green-800 transition duration-100 ${!isPowered && 'opacity-50'}`}
                     onClick={() => handleSave()}
                 >
                     {t('Presets.InteriorLighting.SavePreset')}

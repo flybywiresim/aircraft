@@ -42,6 +42,12 @@ export const SelectInput = (props: SelectInputProps) => {
         setValue(option.displayValue);
     }, [props.value]);
 
+    // This useEffect is to support dynamically generated option lists.
+    useEffect(() => {
+        const option = props.options.find((option) => option.value === props.value) ?? defaultOption;
+        setValue(option.displayValue);
+    }, [props.options]);
+
     const onOptionClicked = (option: Option) => {
         if (props.onChange) {
             props.onChange(option.value);

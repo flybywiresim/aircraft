@@ -392,8 +392,8 @@ declare global {
         function getTrimNeutral(): PercentOver100 | null;
         function setTransponderToRegion(): void;
         function setTransponderToZero(): void;
-        function getTotalAirTemperature(): Celcius | null;
-        function getAmbientTemperature(): Celcius | null;
+        function getTotalAirTemperature(): Celsius | null;
+        function getAmbientTemperature(): Celsius | null;
         function getFlexTemperature(): number | null;
         function getFuelPercent(): Percent;
         function getFuelQuantity(): Gallons;
