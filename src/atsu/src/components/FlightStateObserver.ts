@@ -111,10 +111,21 @@ export class FlightStateObserver {
         }
     }
 
-    private updateEnvironment() {
-        this.EnvironmentData.windDirection = SimVar.GetSimVarValue('AMBIENT WIND DIRECTION', 'degrees');
-        this.EnvironmentData.windSpeed = SimVar.GetSimVarValue('AMBIENT WIND VELOCITY', 'knots');
-        this.EnvironmentData.temperature = SimVar.GetSimVarValue('AMBIENT TEMPERATURE', 'celsius');
+    private updateEnvironment(airplane: AirplaneData): void {
+        const direction = airplane.windDirection();
+        if (direction.valid) {
+            this.EnvironmentData.windDirection = direction.direction;
+        }
+
+        const speed = airplane.windSpeed();
+        if (speed.valid) {
+            this.EnvironmentData.windSpeed = speed.speed;
+        }
+
+        const temperatur = airplane.staticAirTemperature();
+        if (temperatur.valid) {
+            this.EnvironmentData.temperature = temperatur.temperatur;
+        }
     }
 
     constructor(airplane: AirplaneData, atsu: Atsu, callback: (atsu: Atsu) => void) {
@@ -128,7 +139,7 @@ export class FlightStateObserver {
 
             this.updatePresentPosition(airplane);
             this.updateFcu(airplane);
-            this.updateEnvironment();
+            this.updateEnvironment(airplane);
 
             if (last) {
                 if (!this.LastWaypoint || last.ident !== this.LastWaypoint.ident) {
