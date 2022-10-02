@@ -140,6 +140,30 @@ export class A32NX implements AirplaneData {
         return { valid: false, speed: '' };
     }
 
+    public windDirection(): { valid: boolean, direction: number } {
+        const arincDirection = this.getArincValue('L:A32NX_ADIRS_IR_1_WIND_DIRECTION');
+        if (arincDirection.valid) {
+            return { valid: true, direction: Math.round(arincDirection.value) };
+        }
+        return { valid: false, direction: 0 };
+    }
+
+    public windSpeed(): { valid: boolean, speed: number } {
+        const arincSpeed = this.getArincValue('L:A32NX_ADIRS_IR_1_WIND_VELOCITY');
+        if (arincSpeed.valid) {
+            return { valid: true, speed: Math.round(arincSpeed.value) };
+        }
+        return { valid: false, speed: 0 };
+    }
+
+    public staticAirTemperature(): { valid: boolean, temperatur: number } {
+        const arincSAT = this.getArincValue('L:A32NX_ADIRS_ADR_1_STATIC_AIR_TEMPERATURE');
+        if (arincSAT.valid) {
+            return { valid: true, temperatur: Math.round(arincSAT.value) };
+        }
+        return { valid: false, temperatur: 0 };
+    }
+
     public activeFlightPlan(): ManagedFlightPlan {
         if (this.mcdu !== undefined) {
             return (this.mcdu.flightPlanManager as FlightPlanManager).activeFlightPlan;

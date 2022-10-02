@@ -27,6 +27,10 @@ export interface AirplaneData {
     autopilotSelectedAltitude(): { valid: boolean, altitude: number };
     autopilotSelectedSpeed(): { valid: boolean, speed: string };
 
+    windDirection(): { valid: boolean, direction: number };
+    windSpeed(): { valid: boolean, speed: number };
+    staticAirTemperature(): { valid: boolean, temperatur: number };
+
     activeFlightPlan(): ManagedFlightPlan;
     registerAtsuErrorMessage(code: AtsuStatusCodes): void;
     tryToShowAtcModifyPage(): void;
