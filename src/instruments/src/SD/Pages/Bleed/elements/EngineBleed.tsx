@@ -32,9 +32,9 @@ const EngineBleed: FC<EngineBleedProps> = ({ x, y, engine, sdacDatum, enginePRVa
     const [wingAntiIceLowPressure] = useSimVar(`L:A32NX_PNEU_${engine}_WING_ANTI_ICE_LOW_PRESSURE`, 'bool', 500);
 
     /* When onGround, it should become AMBER after 10s that it's open */
-    const WingAntiIceTriangleColour = (onGround && wingAntiIceTimer >= 10 && !wingAntiIceValveClosedBool) 
-        || wingAntiIceValveClosedBool === wingAntiIceOn 
-        || wingAntiIceHighPressure === 1 
+    const WingAntiIceTriangleColour = (onGround && wingAntiIceTimer >= 10 && !wingAntiIceValveClosedBool)
+        || wingAntiIceValveClosedBool === wingAntiIceOn
+        || wingAntiIceHighPressure === 1
         || wingAntiIceLowPressure === 1
         ? 'Amber' : 'Green';
     const ShowWingAntiIceTriangle = wingAntiIceOn || !wingAntiIceValveClosedBool;
@@ -58,8 +58,15 @@ const EngineBleed: FC<EngineBleedProps> = ({ x, y, engine, sdacDatum, enginePRVa
             {/* Anti-ice */}
             {/* When switch is ON, but command is to turn WAI OFF (i.e. ground), hide EngineBleed from the BLEED page. */}
             <g id={`anti-ice-engine-${engine}`}>
-                <Triangle className={ShowWingAntiIceTriangle ? 'Show' : 'Hide'} x={engine === 1 ? x - 41 : x + 41} y={y + 206}
-                    colour={WingAntiIceTriangleColour} orientation={engine === 1 ? -90 : 90} fill={0} scale={0.75} />
+                <Triangle
+                    className={ShowWingAntiIceTriangle ? 'Show' : 'Hide'}
+                    x={engine === 1 ? x - 41 : x + 41}
+                    y={y + 206}
+                    colour={WingAntiIceTriangleColour}
+                    orientation={engine === 1 ? -90 : 90}
+                    fill={0}
+                    scale={0.75}
+                />
                 <text className={`Medium White ${wingAntiIceOn ? 'Show' : 'Hide'}`} x={engine === 1 ? x - 80 : x + 42} y={y + 195}>ANTI</text>
                 <text className={`Medium White ${wingAntiIceOn ? 'Show' : 'Hide'}`} x={engine === 1 ? x - 80 : x + 52} y={y + 215}>ICE</text>
             </g>
