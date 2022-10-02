@@ -160,7 +160,6 @@ class CDUVerticalRevisionPage {
                     return;
                 }
 
-                const climb = mcdu.flightPhaseManager.phase < FmgcFlightPhases.CRUISE;
                 if (value === FMCMainDisplay.clrValue) {
                     if (showDesSpeedLim) {
                         if (mcdu.descentSpeedLimitPilot) {
