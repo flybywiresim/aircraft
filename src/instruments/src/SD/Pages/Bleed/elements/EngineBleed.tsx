@@ -1,5 +1,5 @@
 import { useSimVar } from '@instruments/common/simVars';
-import React, { FC } from 'react';
+import React, { FC, useMemo } from 'react';
 import { Triangle } from '../../../Common/Shapes';
 import BleedGauge from './BleedGauge';
 import Valve from './Valve';
@@ -36,7 +36,8 @@ const EngineBleed: FC<EngineBleedProps> = ({ x, y, engine, sdacDatum, enginePRVa
                                       wingAntiIceValveClosedBool === wingAntiIceOn ||
                                       wingAntiIceHighPressure === 1 ||
                                       wingAntiIceLowPressure === 1
-                                      ? 'Amber' : !wingAntiIceValveClosedBool ? 'Green' : ''
+                                      ? 'Amber' : 'Green'
+    const ShowWingAntiIceTriangle = wingAntiIceOn || !wingAntiIceValveClosedBool
 
     return (
         <g id={`bleed-${engine}`}>
@@ -57,7 +58,7 @@ const EngineBleed: FC<EngineBleedProps> = ({ x, y, engine, sdacDatum, enginePRVa
             {/* Anti-ice */}
             {/* When switch is ON, but command is to turn WAI OFF (i.e. ground), hide EngineBleed from the BLEED page. */}
             <g id={`anti-ice-engine-${engine}`}>
-                <Triangle className={WingAntiIceTriangleColour !== '' ? 'Show' : 'Hide'} x={engine === 1 ? x - 41 : x + 41} y={y + 206} colour={WingAntiIceTriangleColour} orientation={engine === 1 ? -90 : 90} fill={0} scale={0.75} />
+                <Triangle className={ShowWingAntiIceTriangle ? 'Show' : 'Hide'} x={engine === 1 ? x - 41 : x + 41} y={y + 206} colour={WingAntiIceTriangleColour} orientation={engine === 1 ? -90 : 90} fill={0} scale={0.75} />
                 <text className={`Medium White ${wingAntiIceOn ? 'Show' : 'Hide'}`} x={engine === 1 ? x - 80 : x + 42} y={y + 195}>ANTI</text>
                 <text className={`Medium White ${wingAntiIceOn ? 'Show' : 'Hide'}`} x={engine === 1 ? x - 80 : x + 52} y={y + 215}>ICE</text>
             </g>
