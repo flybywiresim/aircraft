@@ -342,6 +342,7 @@ pub struct WingAntiIceComplex {
     wai_on_id: VariableIdentifier,
     wai_selected_id: VariableIdentifier,
     wai_fault_id: VariableIdentifier,
+    wai_ground_timer_id: VariableIdentifier,
     wai_left_pressure_id: VariableIdentifier,
     wai_right_pressure_id: VariableIdentifier,
     wai_left_temperature_id: VariableIdentifier,
@@ -420,6 +421,8 @@ impl WingAntiIceComplex {
             wai_selected_id: context
                 .get_identifier("PNEU_WING_ANTI_ICE_SYSTEM_SELECTED".to_owned()),
             wai_fault_id: context.get_identifier("PNEU_WING_ANTI_ICE_HAS_FAULT".to_owned()),
+            wai_ground_timer_id: context
+                .get_identifier("PNEU_WING_ANTI_ICE_GROUND_TIMER".to_owned()),
 
             wai_left_valve_closed_id: context
                 .get_identifier("PNEU_1_WING_ANTI_ICE_VALVE_CLOSED".to_owned()),
@@ -592,6 +595,7 @@ impl SimulationElement for WingAntiIceComplex {
         writer.write(&self.wai_on_id, self.is_wai_system_on());
         writer.write(&self.wai_selected_id, self.wai_selected);
         writer.write(&self.wai_fault_id, self.wai_system_has_fault);
+        writer.write(&self.wai_ground_timer_id, self.wai_timer().as_secs());
         writer.write(&self.wai_left_pressure_id, self.wai_consumer_pressure(0));
         writer.write(&self.wai_right_pressure_id, self.wai_consumer_pressure(1));
         writer.write(

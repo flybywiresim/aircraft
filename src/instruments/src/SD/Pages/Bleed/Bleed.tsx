@@ -35,6 +35,7 @@ export const BleedPage: FC = () => {
     const aircraftOnGround: boolean = left1LandingGear === 1 || right1LandingGear === 1;
 
     const [wingAntiIceOn] = useSimVar('L:A32NX_PNEU_WING_ANTI_ICE_SYSTEM_ON', 'bool', 500);
+    const [wingAntiIceTimer] = useSimVar('L:A32NX_PNEU_WING_ANTI_ICE_GROUND_TIMER', 'bool', 1000);
 
     const groundAirSupplied = false;
 
@@ -78,6 +79,7 @@ export const BleedPage: FC = () => {
                 packFlowValveOpen={packFlowValve1Open}
                 onGround={aircraftOnGround}
                 wingAntiIceOn={wingAntiIceOn === 1}
+                wingAntiIceTimer={wingAntiIceTimer}
             />
             <EngineBleed
                 x={464}
@@ -88,6 +90,7 @@ export const BleedPage: FC = () => {
                 packFlowValveOpen={packFlowValve2Open}
                 onGround={aircraftOnGround}
                 wingAntiIceOn={wingAntiIceOn === 1}
+                wingAntiIceTimer={wingAntiIceTimer}
             />
 
             {/* Ground Supply of Compressed Air */}

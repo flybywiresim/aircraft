@@ -2180,21 +2180,9 @@ mod tests {
             self.read_by_name("PNEU_WING_ANTI_ICE_SYSTEM_SELECTED")
         }
 
-        // fn is_sim_on_ground(&mut self) -> bool {
-        //     self.read_by_name("SIM ON GROUND")
-        // }
-
         fn wing_anti_ice_has_fault(&mut self) -> bool {
             self.read_by_name("PNEU_WING_ANTI_ICE_HAS_FAULT")
         }
-
-        // fn pack_1_has_fault(&mut self) -> bool {
-        //     self.read_by_name("OVHD_COND_PACK_1_PB_HAS_FAULT")
-        // }
-
-        // fn pack_1_on(&mut self) -> bool {
-        //     self.read_by_name("OVHD_COND_PACK_2_PB_IS_ON")
-        // }
 
         fn left_precooler_pressurised(&self) -> bool {
             self.query(|a| a.pneumatic.wing_anti_ice.is_precoooler_pressurised(0))
@@ -2220,53 +2208,9 @@ mod tests {
             self.query(|a| a.pneumatic.wing_anti_ice.wai_consumer_temperature(1))
         }
 
-        // fn left_precooler_pressure(&self) -> Pressure {
-        //     self.query(|a| a.pneumatic.engine_systems[0].precooler_outlet_pressure())
-        // }
-
-        // fn right_precooler_pressure(&self) -> Pressure {
-        //     self.query(|a| a.pneumatic.engine_systems[1].precooler_outlet_pressure())
-        // }
-
-        // fn left_precooler_temperature(&self) -> ThermodynamicTemperature {
-        //     self.query(|a| a.pneumatic.engine_systems[0].precooler_outlet_temperature())
-        // }
-
-        // fn right_precooler_temperature(&self) -> ThermodynamicTemperature {
-        //     self.query(|a| a.pneumatic.engine_systems[1].precooler_outlet_temperature())
-        // }
-
-        // fn left_valve_open_amount(&self) -> f64 {
-        //     self.query(|a| {
-        //         a.pneumatic.wing_anti_ice.wai_valve[0]
-        //             .open_amount()
-        //             .get::<ratio>()
-        //     })
-        // }
-
-        // fn right_valve_open_amount(&self) -> f64 {
-        //     self.query(|a| {
-        //         a.pneumatic.wing_anti_ice.wai_valve[1]
-        //             .open_amount()
-        //             .get::<ratio>()
-        //     })
-        // }
-
         fn valve_controller_timer(&self) -> Duration {
             self.query(|a| a.pneumatic.wing_anti_ice.wai_timer())
         }
-
-        // fn left_valve_pid_output(&self) -> f64 {
-        //     self.query(|a| {
-        //         a.pneumatic.wing_anti_ice.valve_controller[0].controller_valve_pid_output()
-        //     })
-        // }
-
-        // fn right_valve_pid_output(&self) -> f64 {
-        //     self.query(|a| {
-        //         a.pneumatic.wing_anti_ice.valve_controller[1].controller_valve_pid_output()
-        //     })
-        // }
 
         fn left_valve_controller_on(&self) -> bool {
             self.query(|a| a.pneumatic.wing_anti_ice.wai_valve_controller_on(0))
@@ -2283,14 +2227,6 @@ mod tests {
         fn right_valve_closed(&self) -> bool {
             self.query(|a| a.pneumatic.wing_anti_ice.is_wai_valve_closed(1))
         }
-
-        // fn left_valve_open(&self) -> bool {
-        //     !self.left_valve_closed()
-        // }
-
-        // fn right_valve_open(&self) -> bool {
-        //     !self.right_valve_closed()
-        // }
 
         fn left_exhaust_flow(&self) -> MassRate {
             self.query(|a| a.pneumatic.wing_anti_ice.wai_mass_flow(0))
@@ -2842,6 +2778,7 @@ mod tests {
         assert!(test_bed.contains_variable_with_name("PNEU_WING_ANTI_ICE_SYSTEM_ON"));
         assert!(test_bed.contains_variable_with_name("PNEU_WING_ANTI_ICE_SYSTEM_SELECTED"));
         assert!(test_bed.contains_variable_with_name("PNEU_WING_ANTI_ICE_HAS_FAULT"));
+        assert!(test_bed.contains_variable_with_name("PNEU_WING_ANTI_ICE_GROUND_TIMER"));
         assert!(test_bed.contains_variable_with_name("PNEU_1_WING_ANTI_ICE_CONSUMER_PRESSURE"));
         assert!(test_bed.contains_variable_with_name("PNEU_2_WING_ANTI_ICE_CONSUMER_PRESSURE"));
         assert!(test_bed.contains_variable_with_name("PNEU_1_WING_ANTI_ICE_CONSUMER_TEMPERATURE"));

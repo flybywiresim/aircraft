@@ -2680,6 +2680,10 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Indicates wheter the wing anti ice p/b is ON
     - Bool
 
+- A32NX_PNEU_WING_ANTI_ICE_GROUND_TIMER:
+    - Reports the duration in seconds of the wing anti ice ground relay (4DL)
+    - Duration
+
 - A32NX_PNEU_1_WING_ANTI_ICE_CONSUMER_PRESSURE:
     - Pressure in the left wing anti ice pipe
     - PSI
