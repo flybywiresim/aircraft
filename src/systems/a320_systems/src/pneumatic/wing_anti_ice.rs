@@ -416,8 +416,6 @@ impl WingAntiIceComplex {
             wai_low_pressure: [false, false],
             wai_bleed_pressurised: [false, false],
 
-            // When switch is ON, but command is to turn WAI OFF (i.e. ground), hide EngineBleed from the BLEED page.
-            // Implement relay 5DL
             wai_on_id: context.get_identifier("PNEU_WING_ANTI_ICE_SYSTEM_ON".to_owned()),
             wai_selected_id: context
                 .get_identifier("PNEU_WING_ANTI_ICE_SYSTEM_SELECTED".to_owned()),
@@ -436,7 +434,6 @@ impl WingAntiIceComplex {
             wai_right_low_pressure_id: context
                 .get_identifier("PNEU_2_WING_ANTI_ICE_LOW_PRESSURE".to_owned()),
 
-            // REMOVE!
             wai_left_pressure_id: context
                 .get_identifier("PNEU_1_WING_ANTI_ICE_CONSUMER_PRESSURE".to_owned()),
             wai_right_pressure_id: context

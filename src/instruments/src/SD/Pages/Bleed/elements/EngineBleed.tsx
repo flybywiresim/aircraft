@@ -54,6 +54,7 @@ const EngineBleed: FC<EngineBleedProps> = ({ x, y, engine, sdacDatum, enginePRVa
             <BleedGauge x={x} y={y + 150} sdacDatum={sdacDatum} packFlowValveOpen={packFlowValveOpen} engine={engine} />
 
             {/* Anti-ice */}
+            {/* When switch is ON, but command is to turn WAI OFF (i.e. ground), hide EngineBleed from the BLEED page. */}
             <g id={`anti-ice-engine-${engine}`} className={wingAntiIceOn ? 'Show' : 'Hide'}>
                 <Triangle x={engine === 1 ? x - 41 : x + 41} y={y + 206} colour={WingAntiIceTriangleColour} orientation={engine === 1 ? -90 : 90} fill={0} scale={0.75} />
                 <text className="Medium White" x={engine === 1 ? x - 80 : x + 42} y={y + 195}>ANTI</text>
