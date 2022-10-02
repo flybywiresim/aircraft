@@ -4,7 +4,6 @@ use crate::{pneumatic::EngineBleedAirSystem, UpdateContext};
 
 use uom::si::{
     f64::*,
-    power::watt,
     pressure::{bar, psi},
     ratio::{percent, ratio},
     temperature_interval,
@@ -18,8 +17,8 @@ use systems::{
         PneumaticContainer, PneumaticPipe, PneumaticValveSignal, WingAntiIcePushButtonMode,
     },
     shared::{
-        pid::PidController, random_from_normal_distribution, ConsumePower, ControllerSignal,
-        ElectricalBusType, ElectricalBuses, PneumaticValve,
+        pid::PidController, random_from_normal_distribution, ControllerSignal, ElectricalBusType,
+        ElectricalBuses, PneumaticValve,
     },
     simulation::{
         InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -614,11 +613,5 @@ impl SimulationElement for WingAntiIceComplex {
         writer.write(&self.wai_right_low_pressure_id, self.wai_low_pressure[1]);
     }
 
-    // CB is 3A --> 40W roughly
-    // Split power by valve
-    // fn consume_power<T: ConsumePower>(&mut self, _: &UpdateContext, consumption: &mut T) {
-    //     if self.is_powered {
-    //         consumption.consume_from_bus(self.powered_by, Power::new::<watt>(40.))
-    //     }
-    // }
+    // WAI doesn't have any indicated power consumption
 }
