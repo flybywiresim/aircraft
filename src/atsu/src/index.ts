@@ -1,6 +1,5 @@
 import { AtsuStatusCodes } from './AtsuStatusCodes';
 import { Atsu } from './ATSU';
-import { AirplaneData } from './airplane/AirplaneData';
 import { A32NX } from './airplane/A32NX';
 import { FreetextMessage } from './messages/FreetextMessage';
 import { AtsuMessage, AtsuMessageComStatus, AtsuMessageDirection, AtsuMessageSerializationFormat, AtsuMessageNetwork, AtsuMessageType } from './messages/AtsuMessage';
@@ -59,6 +58,5 @@ export {
     UplinkMessageInterpretation,
     UplinkMessageStateMachine,
     UplinkMonitor,
-    AirplaneData,
     A32NX,
 };
