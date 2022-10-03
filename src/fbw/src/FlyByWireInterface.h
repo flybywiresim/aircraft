@@ -94,6 +94,25 @@ class FlyByWireInterface {
   bool last_ls1_active = false;
   bool last_ls2_active = false;
 
+  // Fix missing data for FDR Analysis
+  // controller input data
+  double inputElevator = 0.0;
+  double inputAileron = 0.0;
+  double inputRudder = 0.0;
+  // additional
+  double simulation_rate = 0.0;
+  // ambient data
+  double ice_structure_percent = 0.0;
+  double ambient_pressure_mbar = 0.0;
+  double ambient_wind_velocity_kn = 0.0;
+  double ambient_wind_direction_deg = 0.0;
+  double total_air_temperature_celsius = 0.0;
+  // aoa - these are not correct yet
+  double alpha_floor_command = 0.0;
+  double protection_ap_disc = 0.0;
+  double v_alpha_prot_kn = 0.0;
+  double v_alpha_max_kn = 0.0;
+
   FlightDataRecorder flightDataRecorder;
 
   SimConnectInterface simConnectInterface;

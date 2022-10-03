@@ -38,4 +38,23 @@ struct AdditionalData {
   double ls2Active;
   double IsisLsActive;
   double wingAntiIce;
+  // Fix missing data for FDR Analysis
+  // controller input data
+  double inputElevator;
+  double inputAileron;
+  double inputRudder;
+  // additional
+  double simulation_rate;
+  // ambient data
+  double ice_structure_percent;
+  double ambient_pressure_mbar;
+  double ambient_wind_velocity_kn;
+  double ambient_wind_direction_deg;
+  double total_air_temperature_celsius;
+  // aoa - these are not correct yet
+  double alpha_floor_command;
+  double protection_ap_disc;
+  double v_alpha_prot_kn;
+  double v_alpha_max_kn;
+
 };

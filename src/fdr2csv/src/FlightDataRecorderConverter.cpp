@@ -443,6 +443,21 @@ void FlightDataRecorderConverter::writeHeader(ofstream& out, const string& delim
   fmt::print(out, "data.ls1Active{}", delimiter);
   fmt::print(out, "data.ls2Active{}", delimiter);
   fmt::print(out, "data.IsisLsActive{}", delimiter);
+  // Fix missing data for FDR Analysis
+  fmt::print(out, "data.inputElevator{}", delimiter);
+  fmt::print(out, "data.inputAileron{}", delimiter);
+  fmt::print(out, "data.inputRudder{}", delimiter);
+  fmt::print(out, "data.simulation_rate{}", delimiter);
+  fmt::print(out, "data.ice_structure_percent{}", delimiter);
+  fmt::print(out, "data.ambient_pressure_mbar{}", delimiter);
+  fmt::print(out, "data.ambient_wind_velocity_kn{}", delimiter);
+  fmt::print(out, "data.ambient_wind_direction_deg{}", delimiter);
+  fmt::print(out, "data.total_air_temperature_celsius{}", delimiter);
+  fmt::print(out, "data.alpha_floor_command{}", delimiter);
+  fmt::print(out, "data.protection_ap_disc{}", delimiter);
+  fmt::print(out, "data.v_alpha_prot_kn{}", delimiter);
+  fmt::print(out, "data.v_alpha_max_kn{}", delimiter);
+
   fmt::print(out, "\n");
 }
 
@@ -890,5 +905,19 @@ void FlightDataRecorderConverter::writeStruct(ofstream& out,
   fmt::print(out, "{}{}", data.ls1Active, delimiter);
   fmt::print(out, "{}{}", data.ls2Active, delimiter);
   fmt::print(out, "{}{}", data.IsisLsActive, delimiter);
+  // Fix missing data for FDR Analysis
+  fmt::print(out, "{}{}", data.inputElevator, delimiter);
+  fmt::print(out, "{}{}", data.inputAileron, delimiter);
+  fmt::print(out, "{}{}", data.inputRudder, delimiter);
+  fmt::print(out, "{}{}", data.simulation_rate, delimiter);
+  fmt::print(out, "{}{}", data.ice_structure_percent, delimiter);
+  fmt::print(out, "{}{}", data.ambient_pressure_mbar, delimiter);
+  fmt::print(out, "{}{}", data.ambient_wind_velocity_kn, delimiter);
+  fmt::print(out, "{}{}", data.ambient_wind_direction_deg, delimiter);
+  fmt::print(out, "{}{}", data.total_air_temperature_celsius, delimiter);
+  fmt::print(out, "{}{}", data.alpha_floor_command, delimiter);
+  fmt::print(out, "{}{}", data.protection_ap_disc, delimiter);
+  fmt::print(out, "{}{}", data.v_alpha_prot_kn, delimiter);
+  fmt::print(out, "{}{}", data.v_alpha_max_kn, delimiter);
   fmt::print(out, "\n");
 }
