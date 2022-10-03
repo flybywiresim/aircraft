@@ -93,7 +93,9 @@ export const AtaChaptersTitle = {
 };
 
 export const AtaChaptersDescription = Object.freeze({
+    22: 'The Autoflight systems are responsible for a multitude of functions, including but not limited to: Flight Guidance (AP, FD, A/THR), Flight Management, Flight Augmentation (yaw damper, etc.), and Flight Envelope (Speed scale, Alpha floor, etc.).',
     24: 'All things related to the electrical system. The electrical system supplies power from the engines, APU, batteries, or emergency generator to all cockpit instruments.',
+    27: 'The flight controls contain the various systems used to control the aircraft in flight, such as control surfaces, but also flight control computers. Failure of these systems may lead to loss of control over the aircraft, and/or loss of information about the status of the flight controls.',
     29: 'The hydraulic system connects to the flight controls, flaps and landing gear to provide pressure to these surfaces. Failing these can cause loss of control over some flight surfaces.',
     31: 'The cockpit displays give critical flight information to the pilots. In a failure where displays are lost, the pilots must deal with a lack of flight data given to them.',
     32: 'The landing gear components are responsible for supporting and steering the aircraft on the ground, and make it possible to retract and store the landing gear in flight. Includes the functioning and maintenance aspects of the landing gear doors.',

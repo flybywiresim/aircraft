@@ -100,6 +100,51 @@
         "gltf": "./cockpit/gearemer.gltf",
         "bin": "./cockpit/gearemer.bin",
         "maxLod": 0
+      },
+      {
+        "combineFiles": [
+          "./a320-interior/A320_NEO_INTERIOR_LOD00.gltf"
+        ],
+        "nodes": [
+          {
+            "translation": [
+              0.5676975,
+              1.26269531,
+              10.7851953
+            ],
+            "rotation": [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            "scale": [
+              1.0,
+              1.0,
+              1.0
+            ],
+            "name": "CAPTAIN_AVATAR"
+          },
+          {
+            "translation": [
+              -0.567698,
+              1.262695,
+              10.7851953
+            ],
+            "rotation": [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            "scale": [
+              1.0,
+              1.0,
+              1.0
+            ],
+            "name": "FIRSTOFFICER_AVATAR"
+          }
+        ]
       }
     ],
     "modifications": [
@@ -966,6 +1011,10 @@
       {
         "gltf": "./cone/cone.gltf",
         "bin": "./cone/cone.bin"
+      },
+      {
+        "gltf": "./satcom/HoneywellJetwave.gltf",
+        "bin": "./satcom/HoneywellJetwave.bin"
       },
       {
         "combineFiles": ["./a320-exterior/A320_NEO_LOD00.gltf"],

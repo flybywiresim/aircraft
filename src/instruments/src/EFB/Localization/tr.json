@@ -4,10 +4,23 @@
     "ChangeATISATCSourceButton": "ATIS/ATC Kaynağını Değiştir",
     "ConnectHoppieACARS": "Hoppie ACARS'a bağlan",
     "NoInformationAvailableForThisFrequency": "BU FREKANS İÇİN MEVCUT BİLGİ YOK",
+    "SearchPlaceholder": "Search",
     "SelectCorrectATISATCSource": "Bu sayfa yalnızca ayarlar sayfasında ATIS/ATC kaynağı olarak IVAO veya VATSIM seçildiğinde kullanılabilir.",
     "SetActive": "Etkinleştir",
     "SetStandby": "Beklemede Ayarla",
+    "ShowAll": "All",
+    "ShowApproach": "Approach",
+    "ShowAtis": "ATIS",
+    "ShowDelivery": "Delivery",
+    "ShowDeparture": "Departure",
+    "ShowGround": "Ground",
+    "ShowRadar": "Radar",
+    "ShowTower": "Tower",
     "Standby": "Beklemede",
+    "TT": {
+      "AtcCallSignSearch": "ATC Call-sign Search",
+      "AtcTypeFilter": "Filter for"
+    },
     "Title": "Hava Trafik Kontrol"
   },
   "Checklists": {
@@ -183,6 +196,10 @@
     "Altn": "Alternatif",
     "ExitFullscreenMode": "Tam Ekran Modundan Çık",
     "From": "Kalkış",
+    "LoadingImage": "Loading Image",
+    "LoadingImageFailed": "Loading Image failed",
+    "LoadingPdf": "PDF Yükleniyor",
+    "LoadingPdfFailed": "Loading PDF failed",
     "LocalFiles": {
       "Both": "İkisi de",
       "EstablishingConnection": "Bağlantı Kuruluyor",
@@ -354,6 +371,12 @@
     "InteriorLighting": {
       "AircraftNeedsToBePoweredToLoadPresets": "Ön Ayarları Yüklemek için Uçağa Güç Verilmesi Gerekiyor",
       "AircraftNeedsToBePoweredToSavePresets": "Ön Ayarları Kaydetmek için Uçağa Güç Verilmesi Gerekiyor",
+      "AutoLoadDawnDusk": "Gün batımı:",
+      "AutoLoadDay": "Gündüz:",
+      "AutoLoadLightingHelpTitle": "Automatic Preset Loading",
+      "AutoLoadLightingPreset": "Aydınlatma ön ayarlarının otomatik yüklenmesini etkinleştirin:",
+      "AutoLoadNight": "Akşam:",
+      "AutoLoadNoneSelection": "Boş",
       "LoadPreset": "Ön Ayarı Yükle",
       "LoadingPreset": "Ön Ayar Yükleniyor",
       "NewNameConfirmationDialogMsg": "Lütfen aydınlatma ön ayarının yeni adını onaylayın",
@@ -407,13 +430,15 @@
       "SliderSpeed": "İstediğiniz hıza hareket ettirin",
       "SystemEnabledOff": "Pushback sistemini etkinleştirmek için tıklayın.",
       "SystemEnabledOn": "Pushback sistemini tamamen devre dışı bırakmak için tıklayın.",
+      "UseControllerInput": "Turn controller input from rudder and elevator on/off",
       "ZoomIn": "Büyüt",
       "ZoomOut": "Küçült"
     },
     "TugAttached": "Römorkör bağlı",
     "TugDirection": "Römorkör Yönü",
     "TugInTransit": "Römorkör/Pin Bekleniyor",
-    "TugSpeed": "Römorkör Hızı"
+    "TugSpeed": "Römorkör Hızı",
+    "UseControllerInput": "Use Controller Input"
   },
   "Settings": {
     "About": {
@@ -427,6 +452,7 @@
       "LatLonExtendedFormat": "FMGC Enlem/Boylam Yol-noktası Biçimi",
       "PaxSigns": "Yolcu İşaretleri",
       "RmpVhfSpacing": "RMP VHF Aralığı",
+      "Satcom": "Satcom",
       "ThrustReductionHeight": "İtki Azaltma İrtifası (ft)",
       "Title": "Uçak Seçenekleri / Pin Programları",
       "WeightUnit": "Ağırlık Birimi"
@@ -472,11 +498,13 @@
       "AutofillChecklists": "Kontrol listelerini Otomatik Doldur",
       "BoardingTime": "Biniş Süresi",
       "DmcSelfTestTime": "DMC Self Test Süresi",
+      "FirstOfficerAvatar": "Show First Officer Avatar",
       "HomeCockpitMode": "Ev Kokpit Modu",
       "McduFocusTimeout": "MCDU Focus Zaman Aşımı (saniye)",
       "McduKeyboardInput": "MCDU Klavye Girişi",
       "PauseAtTod": "T/D Noktasında Duraklat",
       "PauseAtTodDistance": "T/D Noktasında Duraklatma Mesafesi (nm)",
+      "PilotAvatar": "Show Pilot Avatar",
       "SeparateTillerFromRudderInputs": "Tiller'ı Rudder Girişlerinden Ayır",
       "SyncEfis": "EFIS kontrollerini Kaptan'dan FO'ya senkronize edin",
       "Title": "Gerçekçilik"
@@ -569,8 +597,8 @@
     "Sep": "Eyl",
     "Sun": "Paz",
     "TT": {
-      "ConnectedToLocalApi": "Yerel API'ye Bağlandı",
-      "DisconnectedFromLocalApi": "Yerel API bağlantısı kesildi",
+      "ConnectedToLocalApi": "SimBridge’e Bağlandı",
+      "DisconnectedFromLocalApi": "SimBridge Bağlantısı Kesildi",
       "TurnOffOrShutdownEfb": "EFB'yi Kapatın"
     },
     "Thu": "Per",

@@ -51,9 +51,9 @@ public:
     ElecAC1 = register_named_variable("A32NX_ELEC_AC_1_BUS_IS_POWERED");
 
     // Named Variables (LVARs)
-    LoadLightingPresetRequest = register_named_variable("A32NX_LOAD_LIGHTING_PRESET");
+    LoadLightingPresetRequest = register_named_variable("A32NX_LIGHTING_PRESET_LOAD");
     this->setLoadLightingPresetRequest(0);
-    SaveLightingPresetRequest = register_named_variable("A32NX_SAVE_LIGHTING_PRESET");
+    SaveLightingPresetRequest = register_named_variable("A32NX_LIGHTING_PRESET_SAVE");
     this->setSaveLightingPresetRequest(0);
 
     // Sim variables
