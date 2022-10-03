@@ -20,7 +20,7 @@
   position: absolute;
   width: 768px;
   height: 768px;
-  background: $display-background;
+  background: none;
   font-family: "Ecam", monospace !important;
 }
 
@@ -164,4 +164,8 @@ rect.shadow {
 
 .chrono {
   font-family: "NDChrono", monospace !important;
+}
+
+.weather {
+  clip-path: url(#arc-mode-wx-terr-clip)
 }

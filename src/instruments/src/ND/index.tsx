@@ -49,6 +49,10 @@ const NavigationDisplay: React.FC = () => {
     const [rangeIndex] = useSimVar(displayIndex === 1 ? 'L:A32NX_EFIS_L_ND_RANGE' : 'L:A32NX_EFIS_R_ND_RANGE', 'number', 100);
     const [modeIndex] = useSimVar(displayIndex === 1 ? 'L:A32NX_EFIS_L_ND_MODE' : 'L:A32NX_EFIS_R_ND_MODE', 'number', 100);
 
+    const [bingId] = useSimVar('L:A32NX_WEATHER_BING_ID', 'number', 5000);
+
+    const [weatherEnabled] = useSimVar('L:XMLVAR_A320_WeatherRadar_Sys', 'number', 100);
+
     const [modeChangeShown, setModeChangeShown] = useState(false);
     const [rangeChangeShown, setRangeChangeShown] = useState(false);
 
@@ -102,8 +106,14 @@ const NavigationDisplay: React.FC = () => {
             electricitySimvar={displayIndex === 1 ? 'L:A32NX_ELEC_AC_ESS_BUS_IS_POWERED' : 'L:A32NX_ELEC_AC_2_BUS_IS_POWERED'}
             potentiometerIndex={displayIndex === 1 ? 89 : 91}
         >
+            {weatherEnabled === 0 && (
+                <g clipPath="url(#arc-mode-wx-terr-clip)" className="BingMap" style={{ width: '1650px', position: 'absolute', left: '-185px', top: '210px', zIndex: 90 }}>
+                    <img src={`JS_BINGMAP_A32NX_${bingId}`} style={{ position: 'absolute', left: 0, top: 0 }} className="weather" />
+                </g>
+            )}
             <FlightPlanProvider>
-                <svg className="nd-svg" version="1.1" viewBox="0 0 768 768">
+                <svg className="nd-svg" version="1.1" viewBox="0 0 768 768" style={{ position: 'absolute', zIndex: 100 }}>
+
                     <SpeedIndicator adrs={airDataReferenceSource} irs={inertialReferenceSource} />
                     <WindIndicator adrs={airDataReferenceSource} irs={inertialReferenceSource} />
 

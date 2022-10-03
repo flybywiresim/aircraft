@@ -12,7 +12,11 @@ export default new TaskOfTasks('a32nx', [
                 new ExecTask('pfd',
                     'npm run build:pfd',
                     ['src/instruments/src/PFD','flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/PFD']
-                )
+                ),
+                new ExecTask('weather',
+                'npm run build:weather',
+                ['src/instruments/src/nd-weather','flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/ND-Weather']
+            )
             ],
             true),
         new ExecTask('atsu','npm run build:atsu', ['src/atsu', 'flybywire-aircraft-a320-neo/html_ui/JS/atsu']),

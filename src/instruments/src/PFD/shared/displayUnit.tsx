@@ -1,4 +1,4 @@
-import { ClockEvents, DisplayComponent, EventBus, FSComponent, Subscribable, VNode } from 'msfssdk';
+import { ArraySubject, ClockEvents, DisplayComponent, EventBus, FSComponent, MapBingLayer, MapSystemBuilder, MapSystemKeys, MapTerrainColorsModule, MapWxrModule, SortedMappedSubscribableArray, Subject, Subscribable, UnitType, VNode } from 'msfssdk';
 
 import './common.scss';
 import './pixels.scss';
@@ -49,7 +49,8 @@ export class DisplayUnit extends DisplayComponent<DisplayUnitProps> {
             this.updateState();
         });
 
-        sub.on(isCaptainSide ? 'elec' : 'elecFo').whenChanged().handle((value) => {
+        sub.on('elec').whenChanged().handle((value) => {
+            console.log('ELEC', value);
             this.electricityState = value;
             this.updateState();
         });
@@ -87,13 +88,13 @@ export class DisplayUnit extends DisplayComponent<DisplayUnitProps> {
         if (this.state !== DisplayUnitState.Off && this.failed) {
             this.state = DisplayUnitState.Off;
             clearTimeout(this.timeOut);
-        } else if (this.state === DisplayUnitState.On && (this.potentiometer === 0 || this.electricityState === 0)) {
+        } else if (this.state === DisplayUnitState.On && (this.potentiometer === 0 || !this.electricityState)) {
             this.state = DisplayUnitState.Standby;
             this.setTimer(10);
-        } else if (this.state === DisplayUnitState.Standby && (this.potentiometer !== 0 && this.electricityState !== 0)) {
+        } else if (this.state === DisplayUnitState.Standby && (this.potentiometer !== 0 && this.electricityState)) {
             this.state = DisplayUnitState.On;
             clearTimeout(this.timeOut);
-        } else if (this.state === DisplayUnitState.Off && (this.potentiometer !== 0 && this.electricityState !== 0 && !this.failed)) {
+        } else if (this.state === DisplayUnitState.Off && (this.potentiometer !== 0 && this.electricityState && !this.failed)) {
             this.state = DisplayUnitState.Selftest;
             this.setTimer(parseInt(NXDataStore.get('CONFIG_SELF_TEST_TIME', '15')));
         } else if (this.state === DisplayUnitState.Selftest && (this.potentiometer === 0 || this.electricityState === 0)) {
