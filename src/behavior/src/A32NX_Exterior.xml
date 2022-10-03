@@ -225,4 +225,15 @@
         </Component>
     </Template>
 
+    <Template Name="FBW_Satcom">
+        <DefaultTemplateParameters>
+            <SAT_ENABLE></SAT_ENABLE>
+        </DefaultTemplateParameters>
+        <Component ID="#NODE_ID#" Node="#NODE_ID#">
+            <UseTemplate Name="ASOBO_GT_Visibility_Code">
+                <VISIBILITY_CODE>#SAT_ENABLE#</VISIBILITY_CODE>
+            </UseTemplate>
+        </Component>
+    </Template>
+
 </ModelBehaviors>

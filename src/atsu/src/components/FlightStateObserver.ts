@@ -20,6 +20,8 @@ export class FlightStateObserver {
 
     public FcuSettings = { apActive: false, speed: null, machMode: false, altitude: null }
 
+    public EnvironmentData = { windDirection: null, windSpeed: null, temperature: null }
+
     public ActiveWaypoint: Waypoint | undefined = undefined;
 
     public NextWaypoint: Waypoint | undefined = undefined;
@@ -78,6 +80,12 @@ export class FlightStateObserver {
         }
     }
 
+    private updateEnvironment() {
+        this.EnvironmentData.windDirection = SimVar.GetSimVarValue('AMBIENT WIND DIRECTION', 'degrees');
+        this.EnvironmentData.windSpeed = SimVar.GetSimVarValue('AMBIENT WIND VELOCITY', 'knots');
+        this.EnvironmentData.temperature = SimVar.GetSimVarValue('AMBIENT TEMPERATURE', 'celsius');
+    }
+
     constructor(mcdu: any, callback: (atsu: Atsu) => void) {
         setInterval(() => {
             const fp = (mcdu.flightPlanManager as FlightPlanManager).activeFlightPlan;
@@ -89,6 +97,7 @@ export class FlightStateObserver {
 
             this.updatePresentPosition();
             this.updateFcu();
+            this.updateEnvironment();
 
             if (last) {
                 if (!this.LastWaypoint || last.ident !== this.LastWaypoint.ident) {
