@@ -43,16 +43,10 @@ use systems::{
 struct WingAntiIceValveSignal {
     target_open_amount: Ratio,
 }
-// We can create a signal to be 100% open,
-// totally closed, or potentially something in between
 impl WingAntiIceValveSignal {
     pub fn new(target_open_amount: Ratio) -> Self {
         Self { target_open_amount }
     }
-
-    // pub fn new_open() -> Self {
-    //     Self::new(Ratio::new::<percent>(100.))
-    // }
 
     pub fn new_closed() -> Self {
         Self::new(Ratio::new::<percent>(0.))
@@ -112,10 +106,6 @@ impl WingAntiIceValveController {
     pub fn controller_signals_on(&self) -> bool {
         self.controller_signals_on
     }
-
-    // pub fn controller_valve_pid_output(&self) -> f64 {
-    //     self.valve_pid.output()
-    // }
 
     pub fn update(
         &mut self,
@@ -249,10 +239,6 @@ impl WingAntiIceRelay {
     pub fn signals_on(&self) -> bool {
         self.signal_on
     }
-
-    // pub fn controller_valve_pid_output(&self) -> f64 {
-    //     self.valve_pid.output()
-    // }
 
     pub fn update(
         &mut self,
