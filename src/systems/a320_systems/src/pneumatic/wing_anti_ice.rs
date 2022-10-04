@@ -381,6 +381,21 @@ impl WingAntiIceSystem {
             wai_relay.signals_on(),
             self.wai_bleed_pressurised,
         );
+
+        self.wai_valve
+            .update_open_amount(&self.wai_valve_controller);
+
+        // We need both controllers to signal `on` for the
+        // system to be considered on without a fault.
+        if self.wai_valve_controller.controller_signals_on() {
+            // If a controller signals `on` while its corresponding valve is closed
+            // this means the system has a fault.
+            if self.is_wai_valve_closed() {
+                self.wai_has_fault = true;
+            } else {
+                self.wai_has_fault = false;
+            }
+        }
     }
 
     pub fn is_wai_valve_closed(&self) -> bool {
@@ -428,25 +443,11 @@ impl WingAntiIceSystem {
         engine_systems: &mut EngineBleedAirSystem,
         wai_relay: &WingAntiIceRelay,
     ) {
-        self.wai_has_fault = false;
         self.update_pressure_above_minimum(context, engine_systems.precooler_outlet_pressure());
 
         // First, we see if the valve's open amount changes this update,
         // as a result of a change in the ovhd panel push button.
-        // If the precooler is not pressurized, a FAULT should light.
         self.update_valve_controller(context, wai_relay);
-        self.wai_valve
-            .update_open_amount(&self.wai_valve_controller);
-
-        // We need both controllers to signal `on` for the
-        // system to be considered on without a fault.
-        if self.wai_valve_controller.controller_signals_on() {
-            // If a controller signals `on` while its corresponding valve is closed
-            // this means the system has a fault.
-            if self.is_wai_valve_closed() {
-                self.wai_has_fault = true;
-            }
-        }
 
         // An exhaust tick always happens, no matter what
         // the valve's state is
@@ -464,6 +465,7 @@ impl WingAntiIceSystem {
             Self::WAI_VALVE_TRANSFER_SPEED,
         );
 
+        // Check if HIGH or LOW pressure
         if self.wai_consumer_pressure()
             <= Pressure::new::<bar>(Self::WAI_MIN_PRESSURE) + context.ambient_pressure()
             && !self.is_wai_valve_closed()
