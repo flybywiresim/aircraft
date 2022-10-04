@@ -25,6 +25,9 @@ const uint8_T PitchAlternateLaw_IN_ground{ 3U };
 
 PitchAlternateLaw::Parameters_PitchAlternateLaw_T PitchAlternateLaw::PitchAlternateLaw_rtP{
 
+  { 0.0, 1.0, 2.0, 3.0, 4.0, 5.0 },
+
+
   { 0.0, 0.06, 0.1, 0.2, 1.0 },
 
   0.3,
@@ -86,6 +89,9 @@ PitchAlternateLaw::Parameters_PitchAlternateLaw_T PitchAlternateLaw::PitchAltern
   0.0,
 
   -30.0,
+
+
+  { 0.3, 0.5, 0.8, 1.0, 1.0, 1.0 },
 
 
   { 1.0, 1.0, 0.5, 0.3, 0.3 },
@@ -815,8 +821,8 @@ void PitchAlternateLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_
     rtb_TmpSignalConversionAtSFunctionInport1[2] = rtb_Product1_d;
   }
 
-  rtb_Switch_c = look1_binlxpw(*rtu_In_time_dt, PitchAlternateLaw_rtP.ScheduledGain_BreakpointsForDimension1,
-    PitchAlternateLaw_rtP.ScheduledGain_Table, 4U);
+  rtb_Switch_c = look1_binlxpw(*rtu_In_flaps_handle_index, PitchAlternateLaw_rtP.ScheduledGain_BreakpointsForDimension1,
+    PitchAlternateLaw_rtP.ScheduledGain_Table, 5U);
   if (rtb_TmpSignalConversionAtSFunctionInport1[0] < rtb_TmpSignalConversionAtSFunctionInport1[1]) {
     if (rtb_TmpSignalConversionAtSFunctionInport1[1] < rtb_TmpSignalConversionAtSFunctionInport1[2]) {
       rtb_TmpSignalConversionAtSFunct = 1;
@@ -833,8 +839,11 @@ void PitchAlternateLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_
     rtb_TmpSignalConversionAtSFunct = 1;
   }
 
-  rtb_Switch_c = rtb_TmpSignalConversionAtSFunctionInport1[rtb_TmpSignalConversionAtSFunct] * rtb_Switch_c *
-    PitchAlternateLaw_rtP.DiscreteTimeIntegratorVariableTs_Gain * *rtu_In_time_dt;
+  rtb_Divide_c = rtb_TmpSignalConversionAtSFunctionInport1[rtb_TmpSignalConversionAtSFunct] * rtb_Switch_c;
+  rtb_Switch_c = look1_binlxpw(*rtu_In_time_dt, PitchAlternateLaw_rtP.ScheduledGain_BreakpointsForDimension1_d,
+    PitchAlternateLaw_rtP.ScheduledGain_Table_h, 4U);
+  rtb_Switch_c = rtb_Divide_c * rtb_Switch_c * PitchAlternateLaw_rtP.DiscreteTimeIntegratorVariableTs_Gain *
+    *rtu_In_time_dt;
   if (*rtu_In_in_flight > PitchAlternateLaw_rtP.Switch_Threshold) {
     rtb_Switch_i = *rtu_In_eta_deg;
   } else {
