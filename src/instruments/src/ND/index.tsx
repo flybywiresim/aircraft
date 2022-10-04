@@ -49,7 +49,7 @@ const NavigationDisplay: React.FC = () => {
     const [rangeIndex] = useSimVar(displayIndex === 1 ? 'L:A32NX_EFIS_L_ND_RANGE' : 'L:A32NX_EFIS_R_ND_RANGE', 'number', 100);
     const [modeIndex] = useSimVar(displayIndex === 1 ? 'L:A32NX_EFIS_L_ND_MODE' : 'L:A32NX_EFIS_R_ND_MODE', 'number', 100);
 
-    const [bingId] = useSimVar('L:A32NX_WEATHER_BING_ID', 'number', 5000);
+    const [bingId] = useSimVar(`L:A32NX_WEATHER_BING_ID_${displayIndex}`, 'number', 5000);
 
     const [weatherEnabled] = useSimVar('L:XMLVAR_A320_WeatherRadar_Sys', 'number', 100);
 
@@ -109,7 +109,7 @@ const NavigationDisplay: React.FC = () => {
             {weatherEnabled === 0 && (
                 <div className="BingMap">
                     <div className="WeirdWrapper">
-                        <img src={`JS_BINGMAP_A32NX_${bingId}`} style={{ position: 'absolute', left: 0 }} className="weather" />
+                        <img src={`JS_BINGMAP_A32NX_${displayIndex}_${bingId}`} style={{ position: 'absolute', left: 0 }} className="weather" />
                     </div>
                 </div>
             )}

@@ -8,11 +8,6 @@ class ND_WEATHER extends BaseInstrument {
 
     private simVarPublisher: NDWeatherSimvarPublisher;
 
-    getDisplayIndex = () => {
-        const url = document.getElementsByTagName('nd-weather')[0].getAttribute('url');
-        return url ? parseInt(url.substring(url.length - 1), 10) : 0;
-    };
-
     /**
      * "mainmenu" = 0
      * "loading" = 1
@@ -38,10 +33,7 @@ class ND_WEATHER extends BaseInstrument {
     public connectedCallback(): void {
         super.connectedCallback();
 
-        if (this.getDisplayIndex() !== 1) {
-            this.simVarPublisher.updateSimvarSource('ndRange', { name: 'L:A32NX_EFIS_R_ND_RANGE', type: SimVarValueType.Number });
-        }
-        FSComponent.render(<WeatherComponent bus={this.bus} />, document.getElementById('WEATHER_CONTENT'));
+        FSComponent.render(<WeatherComponent bus={this.bus} simVarPublisher={this.simVarPublisher} />, document.getElementById('WEATHER_CONTENT'));
     }
 
     /**
