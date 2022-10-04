@@ -29,7 +29,7 @@ struct ProcedureStep {
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 // @formatter:off
-static vector<ProcedureStep*>* TURNAROUND_CONFIG_ON = new vector<ProcedureStep*>{
+static vector<ProcedureStep*>* POWERED_CONFIG_ON = new vector<ProcedureStep*>{
   // SOP: PRELIMINARY COCKPIT PREPARATION
   new ProcedureStep {"BAT1 On",                  1010, false, 1000, "(L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO)",                 "1 (>L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO)"},
   new ProcedureStep {"BAT2 On",                  1020, false, 3000, "(L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO)",                 "1 (>L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO)"},
@@ -97,7 +97,7 @@ static vector<ProcedureStep*>* TURNAROUND_CONFIG_ON = new vector<ProcedureStep*>
                                                                        "(L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON) ||",       "1 (>L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON)"},
 };
 
-static vector<ProcedureStep*>* TURNAROUND_CONFIG_OFF = new vector<ProcedureStep*>{
+static vector<ProcedureStep*>* POWERED_CONFIG_OFF = new vector<ProcedureStep*>{
   new ProcedureStep {"NO SMOKING Off",        1170, false, 1000, "(L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_POSITION) 2 ==", "2 (>L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_POSITION)"},
   new ProcedureStep {"EMER EXT Lt Off",       1180, false, 1500, "(L:XMLVAR_SWITCH_OVHD_INTLT_EMEREXIT_POSITION) 2 ==",  "2 (>L:XMLVAR_SWITCH_OVHD_INTLT_EMEREXIT_POSITION)"},
   new ProcedureStep {"GND CTL Off",           1200, false, 1000, "(L:A32NX_RCDR_GROUND_CONTROL_ON) 0 ==",                "0 (>L:A32NX_RCDR_GROUND_CONTROL_ON)"},
@@ -225,7 +225,7 @@ static vector<ProcedureStep*>* TAKEOFF_CONFIG_OFF = new vector<ProcedureStep*>{
 
 class AircraftProcedures {
   vector<ProcedureStep*>* coldAndDark = new vector<ProcedureStep*>;
-  vector<ProcedureStep*>* turnaround = new vector<ProcedureStep*>;
+  vector<ProcedureStep*>* powered = new vector<ProcedureStep*>;
   vector<ProcedureStep*>* readyForPushback = new vector<ProcedureStep*>;
   vector<ProcedureStep*>* readyForTaxi = new vector<ProcedureStep*>;
   vector<ProcedureStep*>* readyForTakeoff = new vector<ProcedureStep*>;
@@ -239,14 +239,14 @@ public:
 #ifdef DEBUG
     // This is used to generate a list of IDs which can be printed to console to
     // add them to the EFB code to display the current step.
-    all->insert(all->end(), TURNAROUND_CONFIG_ON->begin(), TURNAROUND_CONFIG_ON->end());
+    all->insert(all->end(), POWERED_CONFIG_ON->begin(), POWERED_CONFIG_ON->end());
     all->insert(all->end(), PUSHBACK_CONFIG_ON->begin(), PUSHBACK_CONFIG_ON->end());
     all->insert(all->end(), TAXI_CONFIG_ON->begin(), TAXI_CONFIG_ON->end());
     all->insert(all->end(), TAKEOFF_CONFIG_ON->begin(), TAKEOFF_CONFIG_ON->end());
     all->insert(all->end(), TAKEOFF_CONFIG_OFF->begin(), TAKEOFF_CONFIG_OFF->end());
     all->insert(all->end(), TAXI_CONFIG_OFF->begin(), TAXI_CONFIG_OFF->end());
     all->insert(all->end(), PUSHBACK_CONFIG_OFF->begin(), PUSHBACK_CONFIG_OFF->end());
-    all->insert(all->end(), TURNAROUND_CONFIG_OFF->begin(), TURNAROUND_CONFIG_OFF->end());
+    all->insert(all->end(), POWERED_CONFIG_OFF->begin(), POWERED_CONFIG_OFF->end());
 
     std::for_each(all->begin(), all->end(), [&](ProcedureStep* item) {
       std::cout << item->id << " = " << item->description << std::endl;
@@ -256,24 +256,24 @@ public:
     coldAndDark->insert(coldAndDark->end(), TAKEOFF_CONFIG_OFF->begin(), TAKEOFF_CONFIG_OFF->end());
     coldAndDark->insert(coldAndDark->end(), TAXI_CONFIG_OFF->begin(), TAXI_CONFIG_OFF->end());
     coldAndDark->insert(coldAndDark->end(), PUSHBACK_CONFIG_OFF->begin(), PUSHBACK_CONFIG_OFF->end());
-    coldAndDark->insert(coldAndDark->end(), TURNAROUND_CONFIG_OFF->begin(), TURNAROUND_CONFIG_OFF->end());
+    coldAndDark->insert(coldAndDark->end(), POWERED_CONFIG_OFF->begin(), POWERED_CONFIG_OFF->end());
 
-    turnaround->insert(turnaround->end(), TAKEOFF_CONFIG_OFF->begin(), TAKEOFF_CONFIG_OFF->end());
-    turnaround->insert(turnaround->end(), TAXI_CONFIG_OFF->begin(), TAXI_CONFIG_OFF->end());
-    turnaround->insert(turnaround->end(), PUSHBACK_CONFIG_OFF->begin(), PUSHBACK_CONFIG_OFF->end());
-    turnaround->insert(turnaround->end(), TURNAROUND_CONFIG_ON->begin(), TURNAROUND_CONFIG_ON->end());
+    powered->insert(powered->end(), TAKEOFF_CONFIG_OFF->begin(), TAKEOFF_CONFIG_OFF->end());
+    powered->insert(powered->end(), TAXI_CONFIG_OFF->begin(), TAXI_CONFIG_OFF->end());
+    powered->insert(powered->end(), PUSHBACK_CONFIG_OFF->begin(), PUSHBACK_CONFIG_OFF->end());
+    powered->insert(powered->end(), POWERED_CONFIG_ON->begin(), POWERED_CONFIG_ON->end());
 
     readyForPushback->insert(readyForPushback->end(), TAKEOFF_CONFIG_OFF->begin(), TAKEOFF_CONFIG_OFF->end());
     readyForPushback->insert(readyForPushback->end(), TAXI_CONFIG_OFF->begin(), TAXI_CONFIG_OFF->end());
-    readyForPushback->insert(readyForPushback->end(), TURNAROUND_CONFIG_ON->begin(), TURNAROUND_CONFIG_ON->end());
+    readyForPushback->insert(readyForPushback->end(), POWERED_CONFIG_ON->begin(), POWERED_CONFIG_ON->end());
     readyForPushback->insert(readyForPushback->end(), PUSHBACK_CONFIG_ON->begin(), PUSHBACK_CONFIG_ON->end());
 
     readyForTaxi->insert(readyForTaxi->end(), TAKEOFF_CONFIG_OFF->begin(), TAKEOFF_CONFIG_OFF->end());
-    readyForTaxi->insert(readyForTaxi->end(), TURNAROUND_CONFIG_ON->begin(), TURNAROUND_CONFIG_ON->end());
+    readyForTaxi->insert(readyForTaxi->end(), POWERED_CONFIG_ON->begin(), POWERED_CONFIG_ON->end());
     readyForTaxi->insert(readyForTaxi->end(), PUSHBACK_CONFIG_ON->begin(), PUSHBACK_CONFIG_ON->end());
     readyForTaxi->insert(readyForTaxi->end(), TAXI_CONFIG_ON->begin(), TAXI_CONFIG_ON->end());
 
-    readyForTakeoff->insert(readyForTakeoff->end(), TURNAROUND_CONFIG_ON->begin(), TURNAROUND_CONFIG_ON->end());
+    readyForTakeoff->insert(readyForTakeoff->end(), POWERED_CONFIG_ON->begin(), POWERED_CONFIG_ON->end());
     readyForTakeoff->insert(readyForTakeoff->end(), PUSHBACK_CONFIG_ON->begin(), PUSHBACK_CONFIG_ON->end());
     readyForTakeoff->insert(readyForTakeoff->end(), TAXI_CONFIG_ON->begin(), TAXI_CONFIG_ON->end());
     readyForTakeoff->insert(readyForTakeoff->end(), TAKEOFF_CONFIG_ON->begin(), TAKEOFF_CONFIG_ON->end());
@@ -285,7 +285,7 @@ public:
       case 1:
         return coldAndDark;
       case 2:
-        return turnaround;
+        return powered;
       case 3:
         return readyForPushback;
       case 4:
