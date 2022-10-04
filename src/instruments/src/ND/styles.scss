@@ -167,5 +167,25 @@ rect.shadow {
 }
 
 .weather {
-  clip-path: url(#arc-mode-wx-terr-clip)
+  clip-path: url(#arc-mode-wx-terr-clip);
+  -webkit-clip-path: url(#arc-mode-wx-terr-clip);
+  z-index: 90 !important;
+  top: 210px;
+}
+.BingMap {
+ // width: 768px;
+  //height: 768px;
+  z-index: 90 !important;
+  background: none;
+
+
+}
+
+.WeirdWrapper {
+  position: absolute;
+  left: -159.05800795126856px;
+   top: -159.05800795126856px;
+   background: none;
+   z-index: 90 !important;
+
 }

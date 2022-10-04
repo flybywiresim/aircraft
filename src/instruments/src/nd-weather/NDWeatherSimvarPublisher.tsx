@@ -9,7 +9,7 @@ export enum PFDVars {
   weatherActive = 'L:XMLVAR_A320_WeatherRadar_Sys',
   ndRange = 'L:A32NX_EFIS_L_ND_RANGE',
 
-  }
+}
 
 /** A publisher to poll and publish nav/com simvars. */
 export class NDWeatherSimvarPublisher extends SimVarPublisher<NDWeatherSimvars> {

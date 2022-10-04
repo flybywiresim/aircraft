@@ -3,6 +3,7 @@ import { ArraySubject, DisplayComponent, EventBus, FSComponent, MapBingLayer, Ma
 
 export class WeatherComponent extends DisplayComponent<{bus: EventBus}> {
     private compiledMap = MapSystemBuilder.create(this.props.bus)
+        // .withFollowAirplane()
         .withModule(MapSystemKeys.Weather, () => new MapWxrModule())
         .withLayer<MapBingLayer, {
     [MapSystemKeys.Weather]: MapWxrModule

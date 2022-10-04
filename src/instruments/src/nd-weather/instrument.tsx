@@ -1,12 +1,17 @@
 import { NDWeatherSimvarPublisher } from 'instruments/src/nd-weather/NDWeatherSimvarPublisher';
 import { WeatherComponent } from 'instruments/src/nd-weather/Weather';
-import { FSComponent, EventBus } from 'msfssdk';
+import { FSComponent, EventBus, SimVarValueType } from 'msfssdk';
 import './style.scss';
 
 class ND_WEATHER extends BaseInstrument {
     private bus: EventBus;
 
     private simVarPublisher: NDWeatherSimvarPublisher;
+
+    getDisplayIndex = () => {
+        const url = document.getElementsByTagName('nd-weather')[0].getAttribute('url');
+        return url ? parseInt(url.substring(url.length - 1), 10) : 0;
+    };
 
     /**
      * "mainmenu" = 0
@@ -33,6 +38,9 @@ class ND_WEATHER extends BaseInstrument {
     public connectedCallback(): void {
         super.connectedCallback();
 
+        if (this.getDisplayIndex() !== 1) {
+            this.simVarPublisher.updateSimvarSource('ndRange', { name: 'L:A32NX_EFIS_R_ND_RANGE', type: SimVarValueType.Number });
+        }
         FSComponent.render(<WeatherComponent bus={this.bus} />, document.getElementById('WEATHER_CONTENT'));
     }
 

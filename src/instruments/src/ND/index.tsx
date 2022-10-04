@@ -107,9 +107,11 @@ const NavigationDisplay: React.FC = () => {
             potentiometerIndex={displayIndex === 1 ? 89 : 91}
         >
             {weatherEnabled === 0 && (
-                <g clipPath="url(#arc-mode-wx-terr-clip)" className="BingMap" style={{ width: '1650px', position: 'absolute', left: '-185px', top: '210px', zIndex: 90 }}>
-                    <img src={`JS_BINGMAP_A32NX_${bingId}`} style={{ position: 'absolute', left: 0, top: 0 }} className="weather" />
-                </g>
+                <div className="BingMap">
+                    <div className="WeirdWrapper">
+                        <img src={`JS_BINGMAP_A32NX_${bingId}`} style={{ position: 'absolute', left: 0 }} className="weather" />
+                    </div>
+                </div>
             )}
             <FlightPlanProvider>
                 <svg className="nd-svg" version="1.1" viewBox="0 0 768 768" style={{ position: 'absolute', zIndex: 100 }}>
