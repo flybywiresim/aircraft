@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use crate::{pneumatic::EngineBleedAirSystem, UpdateContext};
+use crate::UpdateContext;
 
 use uom::si::{
     f64::*,
@@ -440,10 +440,10 @@ impl WingAntiIceSystem {
     pub fn update(
         &mut self,
         context: &UpdateContext,
-        engine_systems: &mut EngineBleedAirSystem,
+        engine_systems: &mut impl PneumaticContainer,
         wai_relay: &WingAntiIceRelay,
     ) {
-        self.update_pressure_above_minimum(context, engine_systems.precooler_outlet_pressure());
+        self.update_pressure_above_minimum(context, engine_systems.pressure());
 
         // First, we see if the valve's open amount changes this update,
         // as a result of a change in the ovhd panel push button.
@@ -460,7 +460,7 @@ impl WingAntiIceSystem {
         // This only changes the volume if open_amount is not zero.
         self.wai_valve.update_move_fluid_with_transfer_speed(
             context,
-            &mut engine_systems.precooler_outlet_pipe,
+            engine_systems,
             &mut self.wai_consumer,
             Self::WAI_VALVE_TRANSFER_SPEED,
         );
@@ -610,7 +610,7 @@ impl WingAntiIceComplex {
     pub fn update(
         &mut self,
         context: &UpdateContext,
-        engine_systems: &mut [EngineBleedAirSystem; 2],
+        engine_systems: &mut [impl PneumaticContainer; 2],
         wai_mode: WingAntiIcePushButtonMode,
     ) {
         // Reset the fault variable, then iterates through to check if there is a fault
