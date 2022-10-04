@@ -248,8 +248,6 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFmgcFlightPhase;
   std::unique_ptr<LocalVariable> idFmgcV2;
   std::unique_ptr<LocalVariable> idFmgcV_APP;
-  std::unique_ptr<LocalVariable> idFmgcV_LS;
-  std::unique_ptr<LocalVariable> idFmgcV_MAX;
   std::unique_ptr<LocalVariable> idFmgcAltitudeConstraint;
   std::unique_ptr<LocalVariable> idFmgcThrustReductionAltitude;
   std::unique_ptr<LocalVariable> idFmgcThrustReductionAltitudeGoAround;

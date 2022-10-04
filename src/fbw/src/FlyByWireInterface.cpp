@@ -339,12 +339,10 @@ void FlyByWireInterface::setupLocalVariables() {
   idAutopilotAutothrustMode = std::make_unique<LocalVariable>("A32NX_AUTOPILOT_AUTOTHRUST_MODE");
 
   // register L variables for flight guidance
-  idFwcFlightPhase = std::make_unique<LocalVariable>("A32NX_FWC_FLIGHT_PHASE");
-  idFmgcFlightPhase = std::make_unique<LocalVariable>("A32NX_FMGC_FLIGHT_PHASE");
-  idFmgcV2 = std::make_unique<LocalVariable>("AIRLINER_V2_SPEED");
-  idFmgcV_APP = std::make_unique<LocalVariable>("AIRLINER_VAPP_SPEED");
-  idFmgcV_LS = std::make_unique<LocalVariable>("A32NX_SPEEDS_VLS");
-  idFmgcV_MAX = std::make_unique<LocalVariable>("A32NX_SPEEDS_VMAX");
+  idFwcFlightPhase = make_unique<LocalVariable>("A32NX_FWC_FLIGHT_PHASE");
+  idFmgcFlightPhase = make_unique<LocalVariable>("A32NX_FMGC_FLIGHT_PHASE");
+  idFmgcV2 = make_unique<LocalVariable>("AIRLINER_V2_SPEED");
+  idFmgcV_APP = make_unique<LocalVariable>("AIRLINER_VAPP_SPEED");
 
   idFmgcAltitudeConstraint = std::make_unique<LocalVariable>("A32NX_FG_ALTITUDE_CONSTRAINT");
   idFmgcThrustReductionAltitude = std::make_unique<LocalVariable>("AIRLINER_THR_RED_ALT");
@@ -806,42 +804,43 @@ bool FlyByWireInterface::readDataAndLocalVariables(double sampleTime) {
   // read local variables and update client data
   // update client data for flight guidance
   if (!autopilotStateMachineEnabled || !autopilotLawsEnabled) {
-    ClientDataLocalVariables clientDataLocalVariables = {idFmgcFlightPhase->get(),
-                                                         idFmgcV2->get(),
-                                                         idFmgcV_APP->get(),
-                                                         idFmgcV_LS->get(),
-                                                         idFmgcV_MAX->get(),
-                                                         idFlightGuidanceAvailable->get(),
-                                                         idFmgcAltitudeConstraint->get(),
-                                                         idFmgcThrustReductionAltitude->get(),
-                                                         idFmgcThrustReductionAltitudeGoAround->get(),
-                                                         idFmgcAccelerationAltitude->get(),
-                                                         idFmgcAccelerationAltitudeEngineOut->get(),
-                                                         idFmgcAccelerationAltitudeGoAround->get(),
-                                                         idFmgcAccelerationAltitudeGoAroundEngineOut->get(),
-                                                         idFmgcCruiseAltitude->get(),
-                                                         simConnectInterface.getSimInputAutopilot().DIR_TO_trigger,
-                                                         idFcuTrkFpaModeActive->get(),
-                                                         idFcuSelectedVs->get(),
-                                                         idFcuSelectedFpa->get(),
-                                                         idFcuSelectedHeading->get(),
-                                                         idFlightGuidanceCrossTrackError->get(),
-                                                         idFlightGuidanceTrackAngleError->get(),
-                                                         idFlightGuidancePhiCommand->get(),
-                                                         idFlightGuidancePhiLimit->get(),
-                                                         static_cast<unsigned long long>(idFlightGuidanceRequestedVerticalMode->get()),
-                                                         idFlightGuidanceTargetAltitude->get(),
-                                                         idFlightGuidanceTargetVerticalSpeed->get(),
-                                                         static_cast<unsigned long long>(idFmRnavAppSelected->get()),
-                                                         static_cast<unsigned long long>(idFmFinalCanEngage->get()),
-                                                         simData.speed_slot_index == 2,
-                                                         autopilotLawsOutput.Phi_loc_c,
-                                                         static_cast<unsigned long long>(idTcasFault->get()),
-                                                         static_cast<unsigned long long>(getTcasModeAvailable()),
-                                                         getTcasAdvisoryState(),
-                                                         idTcasTargetGreenMin->get(),
-                                                         idTcasTargetGreenMax->get(),
-                                                         autopilotLawsOutput.flare_law.condition_Flare};
+    ClientDataLocalVariables clientDataLocalVariables = {
+        idFmgcFlightPhase->get(),
+        idFmgcV2->get(),
+        idFmgcV_APP->get(),
+        facsDiscreteOutputs[0].fac_healthy ? facsBusOutputs[0].v_ls_kn.Data : facsBusOutputs[1].v_ls_kn.Data,
+        facsDiscreteOutputs[0].fac_healthy ? facsBusOutputs[0].v_max_kn.Data : facsBusOutputs[1].v_max_kn.Data,
+        idFlightGuidanceAvailable->get(),
+        idFmgcAltitudeConstraint->get(),
+        idFmgcThrustReductionAltitude->get(),
+        idFmgcThrustReductionAltitudeGoAround->get(),
+        idFmgcAccelerationAltitude->get(),
+        idFmgcAccelerationAltitudeEngineOut->get(),
+        idFmgcAccelerationAltitudeGoAround->get(),
+        idFmgcAccelerationAltitudeGoAroundEngineOut->get(),
+        idFmgcCruiseAltitude->get(),
+        simConnectInterface.getSimInputAutopilot().DIR_TO_trigger,
+        idFcuTrkFpaModeActive->get(),
+        idFcuSelectedVs->get(),
+        idFcuSelectedFpa->get(),
+        idFcuSelectedHeading->get(),
+        idFlightGuidanceCrossTrackError->get(),
+        idFlightGuidanceTrackAngleError->get(),
+        idFlightGuidancePhiCommand->get(),
+        idFlightGuidancePhiLimit->get(),
+        static_cast<unsigned long long>(idFlightGuidanceRequestedVerticalMode->get()),
+        idFlightGuidanceTargetAltitude->get(),
+        idFlightGuidanceTargetVerticalSpeed->get(),
+        static_cast<unsigned long long>(idFmRnavAppSelected->get()),
+        static_cast<unsigned long long>(idFmFinalCanEngage->get()),
+        simData.speed_slot_index == 2,
+        autopilotLawsOutput.Phi_loc_c,
+        static_cast<unsigned long long>(idTcasFault->get()),
+        static_cast<unsigned long long>(getTcasModeAvailable()),
+        getTcasAdvisoryState(),
+        idTcasTargetGreenMin->get(),
+        idTcasTargetGreenMax->get(),
+        autopilotLawsOutput.flare_law.condition_Flare};
     simConnectInterface.setClientDataLocalVariables(clientDataLocalVariables);
   }
 
@@ -1810,8 +1809,10 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
     autopilotStateMachineInput.in.data.flight_phase = idFmgcFlightPhase->get();
     autopilotStateMachineInput.in.data.V2_kn = idFmgcV2->get();
     autopilotStateMachineInput.in.data.VAPP_kn = idFmgcV_APP->get();
-    autopilotStateMachineInput.in.data.VLS_kn = idFmgcV_LS->get();
-    autopilotStateMachineInput.in.data.VMAX_kn = idFmgcV_MAX->get();
+    autopilotStateMachineInput.in.data.VLS_kn =
+        facsDiscreteOutputs[0].fac_healthy ? facsBusOutputs[0].v_ls_kn.Data : facsBusOutputs[1].v_ls_kn.Data;
+    autopilotStateMachineInput.in.data.VMAX_kn =
+        facsDiscreteOutputs[0].fac_healthy ? facsBusOutputs[0].v_max_kn.Data : facsBusOutputs[1].v_max_kn.Data;
     autopilotStateMachineInput.in.data.is_flight_plan_available = idFlightGuidanceAvailable->get();
     autopilotStateMachineInput.in.data.altitude_constraint_ft = idFmgcAltitudeConstraint->get();
     autopilotStateMachineInput.in.data.thrust_reduction_altitude = idFmgcThrustReductionAltitude->get();
@@ -2159,8 +2160,10 @@ bool FlyByWireInterface::updateAutopilotLaws(double sampleTime) {
     autopilotLawsInput.in.data.flight_phase = idFmgcFlightPhase->get();
     autopilotLawsInput.in.data.V2_kn = idFmgcV2->get();
     autopilotLawsInput.in.data.VAPP_kn = idFmgcV_APP->get();
-    autopilotLawsInput.in.data.VLS_kn = idFmgcV_LS->get();
-    autopilotLawsInput.in.data.VMAX_kn = idFmgcV_MAX->get();
+    autopilotLawsInput.in.data.VLS_kn =
+        facsDiscreteOutputs[0].fac_healthy ? facsBusOutputs[0].v_ls_kn.Data : facsBusOutputs[1].v_ls_kn.Data;
+    autopilotLawsInput.in.data.VMAX_kn =
+        facsDiscreteOutputs[0].fac_healthy ? facsBusOutputs[0].v_max_kn.Data : facsBusOutputs[1].v_max_kn.Data;
     autopilotLawsInput.in.data.is_flight_plan_available = idFlightGuidanceAvailable->get();
     autopilotLawsInput.in.data.altitude_constraint_ft = idFmgcAltitudeConstraint->get();
     autopilotLawsInput.in.data.thrust_reduction_altitude = idFmgcThrustReductionAltitude->get();
@@ -2345,8 +2348,8 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
         thrustLeverAngle_1->get(),
         thrustLeverAngle_2->get(),
         simData.ap_V_c_kn,
-        idFmgcV_LS->get(),
-        idFmgcV_MAX->get(),
+        facsDiscreteOutputs[0].fac_healthy ? facsBusOutputs[0].v_ls_kn.Data : facsBusOutputs[1].v_ls_kn.Data,
+        facsDiscreteOutputs[0].fac_healthy ? facsBusOutputs[0].v_max_kn.Data : facsBusOutputs[1].v_max_kn.Data,
         idAutothrustThrustLimitREV->get(),
         idAutothrustThrustLimitIDLE->get(),
         idAutothrustThrustLimitCLB->get(),
@@ -2411,8 +2414,9 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
     autoThrustInput.in.input.TLA_1_deg = thrustLeverAngle_1->get();
     autoThrustInput.in.input.TLA_2_deg = thrustLeverAngle_2->get();
     autoThrustInput.in.input.V_c_kn = simData.ap_V_c_kn;
-    autoThrustInput.in.input.V_LS_kn = idFmgcV_LS->get();
-    autoThrustInput.in.input.V_MAX_kn = idFmgcV_MAX->get();
+    autoThrustInput.in.input.V_LS_kn = facsDiscreteOutputs[0].fac_healthy ? facsBusOutputs[0].v_ls_kn.Data : facsBusOutputs[1].v_ls_kn.Data;
+    autoThrustInput.in.input.V_MAX_kn =
+        facsDiscreteOutputs[0].fac_healthy ? facsBusOutputs[0].v_max_kn.Data : facsBusOutputs[1].v_max_kn.Data;
     autoThrustInput.in.input.thrust_limit_REV_percent = idAutothrustThrustLimitREV->get();
     autoThrustInput.in.input.thrust_limit_IDLE_percent = idAutothrustThrustLimitIDLE->get();
     autoThrustInput.in.input.thrust_limit_CLB_percent = idAutothrustThrustLimitCLB->get();
