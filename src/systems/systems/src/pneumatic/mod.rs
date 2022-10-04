@@ -416,7 +416,7 @@ pub struct WingAntiIcePushButton {
 impl WingAntiIcePushButton {
     pub fn new_off(context: &mut InitContext) -> Self {
         Self {
-            mode_id: context.get_identifier("BUTTON_OVHD_ANTI_ICE_WING_Position".to_owned()),
+            mode_id: context.get_identifier("BUTTON_OVHD_ANTI_ICE_WING_POSITION".to_owned()),
             mode: WingAntiIcePushButtonMode::Off,
         }
     }

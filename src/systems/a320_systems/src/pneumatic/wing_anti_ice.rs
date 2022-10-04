@@ -95,12 +95,12 @@ impl WingAntiIceValveController {
 
     fn choose_valve_setpoint() -> f64 {
         if cfg!(test) {
-            return Self::WAI_VALVE_MEAN_SETPOINT;
+            Self::WAI_VALVE_MEAN_SETPOINT
         } else {
-            return random_from_normal_distribution(
+            random_from_normal_distribution(
                 Self::WAI_VALVE_MEAN_SETPOINT,
                 Self::WAI_VALVE_STD_DEV_SETPOINT,
-            );
+            )
         }
     }
 
@@ -222,7 +222,8 @@ pub struct WingAntiIceRelay {
     system_test_done: bool, // Timer reached 30 seconds while on the ground
     signal_on: bool,        // Status of the ON light. If button is pushed and
     // the test is finished, the ON light should turn off.
-    is_on_ground_id: VariableIdentifier,
+    left_gear_compressed_id: VariableIdentifier,
+    right_gear_compressed_id: VariableIdentifier,
     is_on_ground: bool, //Needed for the 30 seconds test logic
     powered_by: ElectricalBusType,
     is_powered: bool,
@@ -235,7 +236,10 @@ impl WingAntiIceRelay {
             system_test_timer: Duration::from_secs(0),
             system_test_done: false,
             signal_on: false,
-            is_on_ground_id: context.get_identifier("SIM ON GROUND".to_owned()),
+            left_gear_compressed_id: context
+                .get_identifier("LGCIU_1_LEFT_GEAR_COMPRESSED".to_owned()),
+            right_gear_compressed_id: context
+                .get_identifier("LGCIU_2_RIGHT_GEAR_COMPRESSED".to_owned()),
             is_on_ground: Default::default(),
             powered_by: ElectricalBusType::DirectCurrentEssentialShed,
             is_powered: false,
@@ -298,7 +302,8 @@ impl WingAntiIceRelay {
 }
 impl SimulationElement for WingAntiIceRelay {
     fn read(&mut self, reader: &mut SimulatorReader) {
-        self.is_on_ground = reader.read(&self.is_on_ground_id);
+        self.is_on_ground = reader.read(&self.left_gear_compressed_id)
+            || reader.read(&self.right_gear_compressed_id);
     }
 
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
@@ -315,13 +320,9 @@ impl SimulationElement for WingAntiIceRelay {
 // WING A.ICE OPEN ON GND
 // WING A.ICE L(R) HI PR
 
-// The entire WAI system could have been hard coded
-// into A320Pneumatic, however I think this is cleaner.
 // The complex includes both WAI parts. Each part contains
 // a consumer, a valve and an exhaust.
-//
 // There are two valve controllers, one for each.
-// Still need to figure out whether this is how it works.
 
 // const not inside WingAntiIceComplex to link
 // it with the size of the arrays in the struct
@@ -482,38 +483,42 @@ impl WingAntiIceComplex {
         !self.wai_valve[number].is_open()
     }
 
-    pub fn is_precoooler_pressurised(&self, number: usize) -> bool {
-        self.wai_bleed_pressurised[number]
-    }
-
     pub fn wai_consumer_pressure(&self, number: usize) -> Pressure {
         self.wai_consumer[number].pressure()
-    }
-
-    pub fn wai_consumer_temperature(&self, number: usize) -> ThermodynamicTemperature {
-        self.wai_consumer[number].temperature()
-    }
-
-    pub fn wai_mass_flow(&self, number: usize) -> MassRate {
-        self.wai_exhaust[number].fluid_flow()
     }
 
     pub fn wai_timer(&self) -> Duration {
         self.wai_relay.get_timer()
     }
 
+    #[cfg(test)]
     pub fn wai_valve_controller_on(&self, number: usize) -> bool {
         self.wai_valve_controller[number].controller_signals_on()
     }
 
-    // This is where the action happens
+    #[cfg(test)]
+    pub fn is_precoooler_pressurised(&self, number: usize) -> bool {
+        self.wai_bleed_pressurised[number]
+    }
+
+    #[cfg(test)]
+    pub fn wai_consumer_temperature(&self, number: usize) -> ThermodynamicTemperature {
+        self.wai_consumer[number].temperature()
+    }
+
+    #[cfg(test)]
+    pub fn wai_mass_flow(&self, number: usize) -> MassRate {
+        self.wai_exhaust[number].fluid_flow()
+    }
+
     pub fn update(
         &mut self,
         context: &UpdateContext,
         engine_systems: &mut [EngineBleedAirSystem; 2],
         wai_mode: WingAntiIcePushButtonMode,
     ) {
-        let mut has_fault: bool = false; // Tracks if the system has a fault
+        // Tracks if the system has a fault
+        let mut has_fault: bool = false;
 
         self.wai_relay.update(context, wai_mode);
 
@@ -569,7 +574,6 @@ impl WingAntiIceComplex {
                 self.wai_high_pressure[n] = true;
                 self.wai_low_pressure[n] = false;
                 // High pressure doesn't turn the FAULT light ON
-                // has_fault = true;
             } else {
                 self.wai_high_pressure[n] = false;
                 self.wai_low_pressure[n] = false;

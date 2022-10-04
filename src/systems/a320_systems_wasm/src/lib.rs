@@ -254,7 +254,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
 
         builder.copy(
             Variable::aircraft("STRUCTURAL DEICE SWITCH", "Bool", 0),
-            Variable::aspect("BUTTON_OVHD_ANTI_ICE_WING_Position"),
+            Variable::aspect("BUTTON_OVHD_ANTI_ICE_WING_POSITION"),
         );
 
         builder.map(
