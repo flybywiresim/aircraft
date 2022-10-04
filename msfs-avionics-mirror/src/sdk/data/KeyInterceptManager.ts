@@ -1,3 +1,6 @@
+/// <reference types="msfstypes/JS/simvar" />
+
+
 import { EventBus } from './EventBus';
 import { GameStateProvider } from './GameStateProvider';
 

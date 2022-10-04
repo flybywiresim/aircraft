@@ -1,17 +1,9 @@
-export * from './autopilot';
 export * from './components';
 export * from './data';
-export * from './fadec';
-export * from './flightplan';
 export * from './geo';
-export * from './graphics';
 export * from './instruments';
 export * from './math';
-export * from './navigation';
-export * from './settings';
 export * from './sub';
-export * from './system';
-export * from './traffic';
 export * from './utils';
 
 export * from './components/FSComponent';

@@ -1,61 +1,38 @@
 /* eslint-disable jsdoc/require-jsdoc */
 import { EventBus } from '../../data/EventBus';
-import { FlightPlanner } from '../../flightplan/FlightPlanner';
 import { NumberUnitInterface, UnitFamily, UnitType } from '../../math';
 import { ReadonlyFloat64Array, Vec2Math } from '../../math/VecMath';
 import { VecNSubject } from '../../math/VectorSubject';
-import { LodBoundary, LodBoundaryCache } from '../../navigation';
 import { Subject } from '../../sub/Subject';
 import { Subscribable } from '../../sub/Subscribable';
 import { MutableSubscribableSet, SubscribableSet } from '../../sub/SubscribableSet';
-import { Tcas, TcasIntruder } from '../../traffic/TCAS';
 import { ResourceModerator } from '../../utils/resource';
 import { FSComponent, VNode } from '../FSComponent';
-import { GenericAirspaceRenderManager } from '../map/GenericAirspaceRenderManager';
-import { MapAirspaceLayer, MapAirspaceLayerModules, MapAirspaceLayerProps } from '../map/layers/MapAirspaceLayer';
 import { MapBingLayer } from '../map/layers/MapBingLayer';
 import { MapCullableTextLayer } from '../map/layers/MapCullableTextLayer';
 import { MapOwnAirplaneLayer, MapOwnAirplaneLayerModules } from '../map/layers/MapOwnAirplaneLayer';
-import { MapAirspaceRenderer } from '../map/MapAirspaceRenderer';
 import { MapCullableTextLabelManager } from '../map/MapCullableTextLabel';
 import { MapLayer } from '../map/MapLayer';
 import { MapProjection } from '../map/MapProjection';
-import { MapAirspaceModule, MapAirspaceShowTypes } from '../map/modules/MapAirspaceModule';
-import { MapAutopilotPropsModule } from '../map/modules/MapAutopilotPropsModule';
 import { MapOwnAirplaneIconModule } from '../map/modules/MapOwnAirplaneIconModule';
 import { MapOwnAirplanePropsModule } from '../map/modules/MapOwnAirplanePropsModule';
-import { MapAutopilotPropsController, MapAutopilotPropsControllerModules, MapAutopilotPropsKey } from './controllers/MapAutopilotPropsController';
 import { MapBinding, MapBindingsController, MapTransformedBinding } from './controllers/MapBindingsController';
 import { MapClockUpdateController, MapClockUpdateControllerContext } from './controllers/MapClockUpdateController';
-import { MapFlightPlanController, MapFlightPlanControllerContext, MapFlightPlanControllerModules } from './controllers/MapFlightPlanController';
 import { MapFollowAirplaneController, MapFollowAirplaneControllerContext, MapFollowAirplaneControllerModules } from './controllers/MapFollowAirplaneController';
-import { MapOwnAirplanePropsController, MapOwnAirplanePropsControllerModules, MapOwnAirplanePropsKey } from './controllers/MapOwnAirplanePropsController';
 import { MapRotationController, MapRotationControllerContext, MapRotationControllerModules } from './controllers/MapRotationController';
-import { FlightPlanDisplayBuilder } from './FlightPlanDisplayBuilder';
-import { MapSystemFlightPlanLayer, MapSystemFlightPlanLayerModules } from './layers/MapSystemFlightPlanLayer';
-import { MapSystemTrafficLayer, MapSystemTrafficLayerModules, MapTrafficIntruderIconFactory } from './layers/MapSystemTrafficLayer';
-import { MapSystemWaypointsLayer, MapSystemWaypointsLayerModules } from './layers/MapSystemWaypointsLayer';
 import { MapSystemComponent, MapSystemComponentProps } from './MapSystemComponent';
 import { DefaultMapSystemContext, MapSystemContext, MutableMapContext } from './MapSystemContext';
 import { MapSystemController } from './MapSystemController';
-import { MapSystemGenericController } from './MapSystemGenericController';
 import { MapSystemKeys } from './MapSystemKeys';
-import { MapSystemPlanRenderer } from './MapSystemPlanRenderer';
 import {
   CompiledMapSystem, ContextRecord, ControllerRecord, EmptyRecord, LayerRecord, ModuleRecord, RequiredControllerContext, RequiredControllerLayers,
   RequiredControllerModules, RequiredLayerModules
 } from './MapSystemTypes';
 import { MapSystemUtils } from './MapSystemUtils';
-import { MapSystemWaypointRoles } from './MapSystemWaypointRoles';
-import { MapSystemIconFactory, MapSystemLabelFactory, MapSystemWaypointsRenderer } from './MapSystemWaypointsRenderer';
-import { MapFlightPlanModule } from './modules/MapFlightPlanModule';
 import { MapFollowAirplaneModule } from './modules/MapFollowAirplaneModule';
 import { MapRotationModule } from './modules/MapRotationModule';
 import { MapTerrainColorsModule } from './modules/MapTerrainColorsModule';
-import { MapTrafficModule } from './modules/MapTrafficModule';
-import { MapWaypointDisplayModule } from './modules/MapWaypointDisplayModule';
 import { MapWxrModule } from './modules/MapWxrModule';
-import { WaypointDisplayBuilder } from './WaypointDisplayBuilder';
 
 /**
  * A function which defines a custom build step.
@@ -153,27 +130,6 @@ type IsAny<T> = boolean extends (T extends never ? true : false) ? true : false;
 
 /** Returns a type if it is not `any`, otherwise returns a default type. */
 type DefaultIfAny<T, Default> = IsAny<T> extends true ? Default : T;
-
-/**
- * Options for handling off-scale and out-of-bounds traffic intruders on a traffic layer.
- */
-export type TrafficOffScaleOobOptions = {
-  /** A subscribable set to update with off-scale intruders. */
-  offScaleIntruders?: MutableSubscribableSet<TcasIntruder>,
-
-  /**
-   * A subscribable set to update with intruders that are not off-scale but whose projected positions are considered
-   * out-of-bounds.
-   */
-  oobIntruders?: MutableSubscribableSet<TcasIntruder>,
-
-  /**
-   * A subscribable which provides the offset of the intruder out-of-bounds boundaries relative to the boundaries of
-   * the map's projected window, as `[left, top, right, bottom]` in pixels. Positive offsets are directed toward the
-   * center of the map. Defaults to `[0, 0, 0, 0]`.
-   */
-  oobOffset?: ReadonlyFloat64Array | Subscribable<ReadonlyFloat64Array>,
-}
 
 /**
  * Builds maps. Each builder is configured with a series of build steps which collectively define how the builder
@@ -631,68 +587,8 @@ export class MapSystemBuilder<
       }, order);
   }
 
-  /**
-   * Configures this builder to bind properties in an added {@link MapOwnAirplanePropsModule} to data derived from
-   * event bus events.
-   *
-   * Requires the module `[MapSystemKeys.OwnAirplaneProps]: MapOwnAirplanePropsModule`.
-   *
-   * Adds the controller `[MapSystemKeys.OwnAirplaneProps]: MapOwnAirplanePropsController`.
-   * @param properties The properties to bind.
-   * @param updateFreq The update frequency, in hertz, or a subscribable which provides it.
-   * @returns This builder, after it has been configured.
-   */
-  public withOwnAirplanePropBindings<UseModules = any>(
-    properties: Iterable<MapOwnAirplanePropsKey>,
-    updateFreq: number | Subscribable<number>
-  ): ConditionalReturn<
-    DefaultIfAny<UseModules, Modules>,
-    MapOwnAirplanePropsControllerModules,
-    any, any,
-    any, any,
-    this
-  > {
-    return this.withController<MapOwnAirplanePropsController, MapOwnAirplanePropsControllerModules>(
-      MapSystemKeys.OwnAirplaneProps,
-      context => new MapOwnAirplanePropsController(context, properties, typeof updateFreq === 'number' ? Subject.create(updateFreq) : updateFreq)
-    ) as any;
-  }
 
-  /**
-   * Configures this builder to add a module describing the player airplane's autopilot properties, and optionally
-   * binds the module's properties to data received over the event bus.
-   *
-   * Adds the following...
-   *
-   * Modules:
-   * * `[MapSystemKeys.AutopilotProps]: MapAutopilotPropsModule`
-   *
-   * Controllers:
-   * * `[MapSystemKeys.AutopilotProps]: MapAutopilotPropsController` (optional)
-   * @param propertiesToBind Properties on the autopilot module to bind to data received over the event bus.
-   * @param updateFreq The update frequency, in hertz, of the data bindings, or a subscribable which provides it. If
-   * not defined, the data bindings will update every frame. Ignored if `propertiesToBind` is undefined.
-   * @returns This builder, after it has been configured.
-   */
-  public withAutopilotProps(
-    propertiesToBind?: Iterable<MapAutopilotPropsKey>,
-    updateFreq?: number | Subscribable<number>
-  ): this {
-    this.withModule(MapSystemKeys.AutopilotProps, () => new MapAutopilotPropsModule());
 
-    if (propertiesToBind !== undefined) {
-      this.withController<MapAutopilotPropsController, MapAutopilotPropsControllerModules>(
-        MapSystemKeys.AutopilotProps,
-        context => new MapAutopilotPropsController(
-          context,
-          propertiesToBind,
-          typeof updateFreq === 'number' ? Subject.create(updateFreq) : updateFreq
-        )
-      );
-    }
-
-    return this;
-  }
 
   /**
    * Configures this builder to generate a map which includes a layer displaying text.
@@ -775,353 +671,8 @@ export class MapSystemBuilder<
       }, order);
   }
 
-  /**
-   * Configures this builder to generate a map which uses a {@link MapSystemWaypointsRenderer} to render waypoints.
-   *
-   * Requires the `[MapSystemKeys.TextManager]: MapCullableTextLabelManager` context property.
-   *
-   * Adds the `[MapSystemKeys.WaypointRenderer]: MapSystemWaypointsRenderer` context property.
-   * @returns This builder, after it has been configured.
-   */
-  public withWaypoints<UseContext = any>(
-  ): ConditionalReturn<
-    any, any,
-    any, any,
-    DefaultIfAny<UseContext, Context>, { [MapSystemKeys.TextManager]: MapCullableTextLabelManager },
-    this
-  > {
-    return this
-      .withContext(MapSystemKeys.WaypointRenderer, context => new MapSystemWaypointsRenderer(context[MapSystemKeys.TextManager]))
-      .withController<
-        MapSystemGenericController<any, any, any, { [MapSystemKeys.WaypointRenderer]: MapSystemWaypointsRenderer }>,
-        any, any, any,
-        { [MapSystemKeys.WaypointRenderer]: MapSystemWaypointsRenderer }
-      >(
-        'waypointRendererUpdate',
-        context => new MapSystemGenericController(
-          context,
-          {
-            onAfterUpdated: (contextArg): void => { contextArg[MapSystemKeys.WaypointRenderer].update(context.projection); }
-          }
-        )
-      ) as any;
-  }
 
-  /**
-   * Configures this builder to generate a map which displays waypoints near the map center or target. Waypoints
-   * displayed in this manner are rendered by a {@link MapSystemWaypointsRenderer}.
-   *
-   * If a text layer has already been added to the builder, its order will be changed so that it is rendered above the
-   * waypoint layer. Otherwise, a text layer will be added to the builder after the waypoint layer.
-   *
-   * Adds the following...
-   *
-   * Context properties:
-   * * `[MapSystemKeys.TextManager]: MapCullableTextLabelManager`
-   * * `[MapSystemKeys.IconFactory]: MapSystemIconFactory`
-   * * `[MapSystemKeys.LabelFactory]: MapSystemLabelFactory`
-   *
-   * Modules:
-   * * `[MapSystemKeys.NearestWaypoints]: MapWaypointDisplayModule`
-   *
-   * Layers:
-   * * `[MapSystemKeys.NearestWaypoints]: MapSystemWaypointsLayer`
-   * * `[MapSystemKeys.TextLayer]: MapCullableTextLayer`
-   * @param configure A function to configure the waypoint display.
-   * @param enableTextCulling Whether to enable text culling on the text manager.
-   * @param order The order to assign to the waypoint layer. Layers with lower assigned order will be attached to the
-   * map before and appear below layers with greater assigned order values. Defaults to the number of layers already
-   * added to this builder.
-   * @returns This builder, after it has been configured.
-   */
-  public withNearestWaypoints(
-    configure: (builder: WaypointDisplayBuilder) => void,
-    enableTextCulling = false,
-    order?: number
-  ): this {
-    this
-      .withTextLayer(enableTextCulling)
-      .withModule(MapSystemKeys.NearestWaypoints, () => new MapWaypointDisplayModule())
-      .withWaypoints()
-      .withContext(MapSystemKeys.IconFactory, () => new MapSystemIconFactory())
-      .withContext(MapSystemKeys.LabelFactory, () => new MapSystemLabelFactory())
-      .withContext<{
-        [MapSystemKeys.WaypointRenderer]: MapSystemWaypointsRenderer,
-        [MapSystemKeys.IconFactory]: MapSystemIconFactory,
-        [MapSystemKeys.LabelFactory]: MapSystemLabelFactory
-      }>('useTargetAsWaypointSearchCenter', context => {
-        context[MapSystemKeys.WaypointRenderer].addRenderRole(MapSystemWaypointRoles.Normal, undefined, MapSystemWaypointRoles.Normal);
 
-        const builder = new WaypointDisplayBuilder(context[MapSystemKeys.IconFactory], context[MapSystemKeys.LabelFactory], context[MapSystemKeys.WaypointRenderer]);
-        configure(builder);
-        return builder.getIsCenterTarget();
-      });
-
-    const layerCount = this.layerCount;
-
-    return this
-      .withLayer<
-        MapSystemWaypointsLayer,
-        MapSystemWaypointsLayerModules,
-        {
-          [MapSystemKeys.WaypointRenderer]: MapSystemWaypointsRenderer,
-          [MapSystemKeys.IconFactory]: MapSystemIconFactory,
-          [MapSystemKeys.LabelFactory]: MapSystemLabelFactory,
-          'useTargetAsWaypointSearchCenter': boolean
-        }
-      >(MapSystemKeys.NearestWaypoints, context => {
-        return (
-          <MapSystemWaypointsLayer
-            bus={context.bus}
-            waypointRenderer={context[MapSystemKeys.WaypointRenderer]}
-            model={context.model}
-            mapProjection={context.projection}
-            iconFactory={context[MapSystemKeys.IconFactory]}
-            labelFactory={context[MapSystemKeys.LabelFactory]}
-            useMapTargetAsSearchCenter={context.useTargetAsWaypointSearchCenter}
-          />
-        );
-      }, order)
-      .withLayerOrder(MapSystemKeys.TextLayer, order ?? layerCount);
-  }
-
-  /**
-   * Configures this builder to generate a map which displays a flight plan. Waypoints displayed as part of the flight
-   * plan are rendered by a {@link MapSystemWaypointsRenderer}.
-   *
-   * If a text layer has already been added to the builder, its order will be changed so that it is rendered above the
-   * waypoint layer. Otherwise, a text layer will be added to the builder after the waypoint layer.
-   *
-   * Adds the following...
-   *
-   * Context properties:
-   * * `[MapSystemKeys.FlightPlanner]: FlightPlanner`
-   * * `[MapSystemKeys.TextManager]: MapCullableTextLabelManager`
-   * * `[MapSystemKeys.IconFactory]: MapSystemIconFactory`
-   * * `[MapSystemKeys.LabelFactory]: MapSystemLabelFactory`
-   * * `[MapSystemKeys.FlightPathRenderer]: MapSystemPlanRenderer`
-   *
-   * Modules:
-   * * `[MapSystemKeys.FlightPlan]: MapFlightPlanModule`
-   *
-   * Layers:
-   * * `` `${[MapSystemKeys.FlightPlan]}${planIndex}`: MapSystemFlightPlanLayer ``
-   * * `[MapSystemKeys.TextLayer]: MapCullableTextLayer`
-   *
-   * Controllers:
-   * * `[MapSystemKeys.FlightPlan]: MapFlightPlanController`
-   * @param configure A function to configure the waypoint display.
-   * @param flightPlanner The flight planner.
-   * @param planIndex The index of the flight plan to display.
-   * @param enableTextCulling Whether to enable text culling on the text manager.
-   * @param order The order to assign to the plan layer. Layers with lower assigned order will be attached to the
-   * map before and appear below layers with greater assigned order values. Defaults to the number of layers already
-   * added to this builder.
-   * @returns This builder, after it has been configured.
-   */
-  public withFlightPlan(
-    configure: (builder: FlightPlanDisplayBuilder) => void,
-    flightPlanner: FlightPlanner,
-    planIndex: number,
-    enableTextCulling = false,
-    order?: number
-  ): this {
-    this
-      .withTextLayer(enableTextCulling)
-      .withModule(MapSystemKeys.FlightPlan, () => new MapFlightPlanModule())
-      .withWaypoints()
-      .withContext(MapSystemKeys.FlightPlanner, () => flightPlanner)
-      .withContext(MapSystemKeys.IconFactory, () => new MapSystemIconFactory())
-      .withContext(MapSystemKeys.LabelFactory, () => new MapSystemLabelFactory())
-      .withContext(MapSystemKeys.FlightPathRenderer, () => new MapSystemPlanRenderer(1))
-      .withController<
-        MapFlightPlanController,
-        MapFlightPlanControllerModules,
-        any, any,
-        MapFlightPlanControllerContext
-      >(MapSystemKeys.FlightPlan, context => new MapFlightPlanController(context))
-      .withInit<
-        any, any, any,
-        {
-          [MapSystemKeys.WaypointRenderer]: MapSystemWaypointsRenderer,
-          [MapSystemKeys.IconFactory]: MapSystemIconFactory,
-          [MapSystemKeys.LabelFactory]: MapSystemLabelFactory,
-          [MapSystemKeys.FlightPathRenderer]: MapSystemPlanRenderer,
-        }
-      >(`${MapSystemKeys.FlightPlan}${planIndex}`, context => {
-        const builder = new FlightPlanDisplayBuilder(
-          context[MapSystemKeys.IconFactory],
-          context[MapSystemKeys.LabelFactory],
-          context[MapSystemKeys.WaypointRenderer],
-          context[MapSystemKeys.FlightPathRenderer],
-          planIndex
-        );
-
-        context[MapSystemKeys.WaypointRenderer].insertRenderRole(MapSystemWaypointRoles.FlightPlan, MapSystemWaypointRoles.Normal, undefined, `${MapSystemWaypointRoles.FlightPlan}_${planIndex}`);
-        configure(builder);
-      });
-
-    const layerCount = this.layerCount;
-
-    return this
-      .withLayer<
-        MapSystemFlightPlanLayer,
-        MapSystemFlightPlanLayerModules,
-        {
-          [MapSystemKeys.WaypointRenderer]: MapSystemWaypointsRenderer,
-          [MapSystemKeys.IconFactory]: MapSystemIconFactory,
-          [MapSystemKeys.LabelFactory]: MapSystemLabelFactory,
-          [MapSystemKeys.FlightPathRenderer]: MapSystemPlanRenderer,
-        }
-      >(`${MapSystemKeys.FlightPlan}${planIndex}`, (context) => {
-        return (
-          <MapSystemFlightPlanLayer
-            bus={context.bus}
-            waypointRenderer={context[MapSystemKeys.WaypointRenderer]}
-            model={context.model}
-            mapProjection={context.projection}
-            iconFactory={context[MapSystemKeys.IconFactory]}
-            labelFactory={context[MapSystemKeys.LabelFactory]}
-            flightPathRenderer={context[MapSystemKeys.FlightPathRenderer]}
-            planIndex={planIndex}
-          />
-        );
-      }, order)
-      .withLayerOrder(MapSystemKeys.TextLayer, order ?? layerCount);
-  }
-
-  /**
-   * Configures this builder to generate a map which displays airspaces.
-   *
-   * Adds the following...
-   *
-   * Context properties:
-   * * `[MapSystemKeys.AirspaceManager]: GenericAirspaceRenderManager`
-   *
-   * Modules:
-   * * `[MapSystemKeys.Airspace]: MapAirspaceModule`
-   *
-   * Layers:
-   * * `[MapSystemKeys.Airspace]: MapAirspaceLayer`
-   * @param cache The airspace cache to use to store airspaces retrieved for rendering.
-   * @param showTypes The airspace show types to define in the airspace module. Each show type will be assigned a
-   * {@link Subject} in the `show` property of the module. The Subject controls the visibility of airspace types
-   * included in its show type. Airspace types that are not included in any defined show type will never be displayed.
-   * @param selectRenderer A function which selects a {@link MapAirspaceRenderer}
-   * @param renderOrder A function which determines the rendering order of airspaces. The function should return a
-   * negative number when airspace `a` should be rendered before (below) airspace `b`, a positive number when airspace
-   * `a` should be rendered after (above) airspace `b`, and `0` when the relative render order of the two airspaces
-   * does not matter. If not defined, there will be no guarantee on the order in which airspaces are rendered.
-   * @param options Options for the airspace layer. Option defaults are as follows:
-   * * `maxSearchRadius`: 10 nautical miles
-   * * `maxSearchItemCount`: 100
-   * * `searchDebounceDelay`: 500 (milliseconds)
-   * * `renderTimeBudget`: 0.2 (milliseconds)
-   * @param order The order to assign to the airspace layer. Layers with lower assigned order will be attached to the
-   * map before and appear below layers with greater assigned order values. Defaults to the number of layers already
-   * added to this builder.
-   * @returns This builder, after it has been configured.
-   */
-  public withAirspaces(
-    cache: LodBoundaryCache,
-    showTypes: MapAirspaceShowTypes,
-    selectRenderer: (airspace: LodBoundary) => MapAirspaceRenderer,
-    renderOrder: (a: LodBoundary, b: LodBoundary) => number = (): number => 0,
-    options?: Partial<Pick<MapAirspaceLayerProps, 'maxSearchRadius' | 'maxSearchItemCount' | 'searchDebounceDelay' | 'renderTimeBudget'>>,
-    order?: number
-  ): this {
-    return this
-      .withModule(MapSystemKeys.Airspace, () => new MapAirspaceModule(showTypes))
-      .withContext(MapSystemKeys.AirspaceManager, () => new GenericAirspaceRenderManager(renderOrder, selectRenderer))
-      .withLayer<
-        MapAirspaceLayer,
-        MapAirspaceLayerModules,
-        { [MapSystemKeys.AirspaceManager]: GenericAirspaceRenderManager }
-      >(MapSystemKeys.Airspace, context => {
-        const optionsToUse = { ...options };
-
-        optionsToUse.maxSearchRadius ??= Subject.create(UnitType.NMILE.createNumber(10));
-        optionsToUse.maxSearchItemCount ??= Subject.create(100);
-
-        return (
-          <MapAirspaceLayer
-            model={context.model}
-            mapProjection={context.projection}
-            bus={context.bus}
-            lodBoundaryCache={cache}
-            airspaceRenderManager={context[MapSystemKeys.AirspaceManager]}
-            {...(optionsToUse as any)}
-          />
-        );
-      }, order);
-  }
-
-  /**
-   * Configures this builder to generate a map which displays TCAS intruders.
-   *
-   * Adds the following...
-   *
-   * Modules:
-   * * `[MapSystemKeys.OwnAirplaneProps]: MapOwnAirplanePropsModule`
-   * * `[MapSystemKeys.Traffic]: MapTrafficModule`
-   *
-   * Layers:
-   * * `[MapSystemKeys.Traffic]: MapSystemTrafficLayer`
-   * @param tcas The TCAS used by the traffic display.
-   * @param iconFactory A function which creates intruder icons for the traffic display.
-   * @param initCanvasStyles A function which initializes global canvas styles for the traffic display.
-   * @param offScaleOobOptions A function which generates options for handling off-scale and out-of-bounds intruders.
-   * @param order The order to assign to the traffic layer. Layers with lower assigned order will be attached to the
-   * map before and appear below layers with greater assigned order values. Defaults to the number of layers already
-   * added to this builder.
-   * @returns This builder, after it has been configured.
-   */
-  public withTraffic<
-    UseModules = any,
-    UseLayers extends LayerRecord = any,
-    UserControllers extends ControllerRecord = any,
-    UseContext = any
-  >(
-    tcas: Tcas,
-    iconFactory: MapTrafficIntruderIconFactory<
-      DefaultIfAny<UseModules, Modules>,
-      DefaultIfAny<UseLayers, Layers>,
-      DefaultIfAny<UserControllers, Controllers>,
-      DefaultIfAny<UseContext, Context>
-    >,
-    initCanvasStyles?: (context: CanvasRenderingContext2D) => void,
-    offScaleOobOptions?: (
-      context: MapSystemContext<
-        DefaultIfAny<UseModules, Modules>,
-        DefaultIfAny<UseLayers, Layers>,
-        DefaultIfAny<UserControllers, Controllers>,
-        DefaultIfAny<UseContext, Context>
-      >) => TrafficOffScaleOobOptions,
-    order?: number
-  ): this {
-    return this
-      .withModule(MapSystemKeys.OwnAirplaneProps, () => new MapOwnAirplanePropsModule())
-      .withModule(MapSystemKeys.Traffic, () => new MapTrafficModule(tcas))
-      .withLayer<MapSystemTrafficLayer, MapSystemTrafficLayerModules>('traffic', context => {
-
-        const options = offScaleOobOptions !== undefined ? { ...offScaleOobOptions(context as any) } : {};
-
-        if (options.oobOffset !== undefined && !('isSubscribable' in options.oobOffset)) {
-          options.oobOffset = Subject.create(options.oobOffset);
-        }
-
-        return (
-          <MapSystemTrafficLayer
-            context={context}
-            model={context.model}
-            mapProjection={context.projection}
-            iconFactory={iconFactory}
-            initCanvasStyles={initCanvasStyles}
-            {...options as any}
-          />
-        );
-      }, order);
-  }
 
   /**
    * Configures this builder using a custom build step.

@@ -1,3 +1,6 @@
+/// <reference types="msfstypes/Pages/VCockpit/Instruments/Shared/BaseInstrument" />
+
+
 import { Subject } from '../sub/Subject';
 import { Subscribable } from '../sub/Subscribable';
 
