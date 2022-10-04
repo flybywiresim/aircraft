@@ -300,49 +300,17 @@ impl SimulationElement for WingAntiIceRelay {
     }
 }
 
-// FWC FAILURES TO IMPLEMENT
-// WING A.ICE SYS FAULT
-// WING A.ICE L(R) VALVE OPEN
-// WING A.ICE OPEN ON GND
-// WING A.ICE L(R) HI PR
-
-// The complex includes both WAI parts. Each part contains
-// a consumer, a valve and an exhaust.
-// There are two valve controllers, one for each.
-
-// const not inside WingAntiIceComplex to link
-// it with the size of the arrays in the struct
-const NUM_OF_WAI: usize = 2;
-pub struct WingAntiIceComplex {
-    wai_exhaust: [PneumaticExhaust; NUM_OF_WAI],
-    wai_valve: [DefaultValve; NUM_OF_WAI],
-    wai_consumer: [WingAntiIceConsumer; NUM_OF_WAI],
-    wai_valve_controller: [WingAntiIceValveController; NUM_OF_WAI],
-    wai_relay: WingAntiIceRelay,
-    wai_system_has_fault: bool,
-    wai_system_on: bool,
-    wai_selected: bool,
-    wai_high_pressure: [bool; NUM_OF_WAI],
-    wai_low_pressure: [bool; NUM_OF_WAI],
-    wai_bleed_pressurised: [bool; NUM_OF_WAI],
-
-    wai_on_id: VariableIdentifier,
-    wai_selected_id: VariableIdentifier,
-    wai_fault_id: VariableIdentifier,
-    wai_ground_timer_id: VariableIdentifier,
-    wai_left_pressure_id: VariableIdentifier,
-    wai_right_pressure_id: VariableIdentifier,
-    wai_left_temperature_id: VariableIdentifier,
-    wai_right_temperature_id: VariableIdentifier,
-    wai_left_valve_closed_id: VariableIdentifier,
-    wai_right_valve_closed_id: VariableIdentifier,
-
-    wai_left_high_pressure_id: VariableIdentifier,
-    wai_right_high_pressure_id: VariableIdentifier,
-    wai_left_low_pressure_id: VariableIdentifier,
-    wai_right_low_pressure_id: VariableIdentifier,
+pub struct WingAntiIceSystem {
+    wai_exhaust: PneumaticExhaust,
+    wai_valve: DefaultValve,
+    wai_consumer: WingAntiIceConsumer,
+    wai_valve_controller: WingAntiIceValveController,
+    wai_has_fault: bool,
+    wai_high_pressure: bool,
+    wai_low_pressure: bool,
+    wai_bleed_pressurised: bool,
 }
-impl WingAntiIceComplex {
+impl WingAntiIceSystem {
     const WAI_MIN_PRESSURE: f64 = 1.; //BAR
     const WAI_MAX_PRESSURE: f64 = 2.1; //BAR
     const WAI_EXHAUST_SPEED: f64 = 0.1175; // Regulate wing_anti_ice_tweak_exhaust
@@ -367,42 +335,201 @@ impl WingAntiIceComplex {
     // Total volume of ducts is around 2m^3. Assuming telescopic duct retracted
     const WAI_PIPE_VOLUME: f64 = 2.;
 
-    pub fn new(context: &mut InitContext) -> Self {
+    pub fn new() -> Self {
+        let wai_pipe_volume: Volume = Volume::new::<cubic_meter>(Self::WAI_PIPE_VOLUME);
+
         Self {
             // At 22000ft, flow rate is given at 0.327kg/s
-            wai_exhaust: [
-                // Leaking failure not simulated
-                PneumaticExhaust::new(
-                    Self::WAI_EXHAUST_SPEED,
-                    Self::WAI_EXHAUST_SPEED,
-                    Pressure::new::<psi>(0.),
-                ),
-                PneumaticExhaust::new(
-                    Self::WAI_EXHAUST_SPEED,
-                    Self::WAI_EXHAUST_SPEED,
-                    Pressure::new::<psi>(0.),
-                ),
-            ],
+            // Leaking failure not simulated
+            wai_exhaust: PneumaticExhaust::new(
+                Self::WAI_EXHAUST_SPEED,
+                Self::WAI_EXHAUST_SPEED,
+                Pressure::new::<psi>(0.),
+            ),
             // If the pressure increases to 2.1 bar (30.4579 psi)
             // the switch gives a 'high pressure' signal. If the pressure decreases
             // to 1.0 bar (14.5038 psi) the related switch gives a 'low pressure' signal.
-            wai_valve: [DefaultValve::new_closed(), DefaultValve::new_closed()],
-            wai_consumer: [
-                WingAntiIceConsumer::new(Volume::new::<cubic_meter>(Self::WAI_PIPE_VOLUME)),
-                WingAntiIceConsumer::new(Volume::new::<cubic_meter>(Self::WAI_PIPE_VOLUME)),
-            ],
-            wai_valve_controller: [
-                WingAntiIceValveController::new(),
-                WingAntiIceValveController::new(),
-            ],
+            wai_valve: DefaultValve::new_closed(),
+            wai_consumer: WingAntiIceConsumer::new(wai_pipe_volume),
+            wai_valve_controller: WingAntiIceValveController::new(),
 
+            wai_has_fault: false,
+            wai_high_pressure: false,
+            wai_low_pressure: false,
+            wai_bleed_pressurised: false,
+        }
+    }
+
+    fn update_pressure_above_minimum(
+        &mut self,
+        context: &UpdateContext,
+        precooler_pressure: Pressure,
+    ) {
+        // The WAI valves open at min 10psi of pressure (difference)
+        self.wai_bleed_pressurised =
+            precooler_pressure > context.ambient_pressure() + Pressure::new::<psi>(10.);
+    }
+
+    fn update_valve_controller(&mut self, context: &UpdateContext, wai_relay: &WingAntiIceRelay) {
+        self.wai_valve_controller.valve_pid.next_control_output(
+            self.wai_consumer_pressure().get::<psi>(),
+            Some(context.delta()),
+        );
+
+        self.wai_valve_controller.update(
+            context,
+            wai_relay.signals_on(),
+            self.wai_bleed_pressurised,
+        );
+    }
+
+    pub fn is_wai_valve_closed(&self) -> bool {
+        !self.wai_valve.is_open()
+    }
+
+    pub fn wai_consumer_pressure(&self) -> Pressure {
+        self.wai_consumer.pressure()
+    }
+
+    pub fn wai_has_fault(&self) -> bool {
+        self.wai_has_fault
+    }
+
+    pub fn wai_consumer_temperature(&self) -> ThermodynamicTemperature {
+        self.wai_consumer.temperature()
+    }
+
+    pub fn wai_valve_high_pressure(&self) -> bool {
+        self.wai_high_pressure
+    }
+
+    pub fn wai_valve_low_pressure(&self) -> bool {
+        self.wai_low_pressure
+    }
+
+    #[cfg(test)]
+    pub fn wai_valve_controller_on(&self) -> bool {
+        self.wai_valve_controller.controller_signals_on()
+    }
+
+    #[cfg(test)]
+    pub fn is_precoooler_pressurised(&self) -> bool {
+        self.wai_bleed_pressurised
+    }
+
+    #[cfg(test)]
+    pub fn wai_mass_flow(&self) -> MassRate {
+        self.wai_exhaust.fluid_flow()
+    }
+
+    pub fn update(
+        &mut self,
+        context: &UpdateContext,
+        engine_systems: &mut EngineBleedAirSystem,
+        wai_relay: &WingAntiIceRelay,
+    ) {
+        self.wai_has_fault = false;
+        self.update_pressure_above_minimum(context, engine_systems.precooler_outlet_pressure());
+
+        // First, we see if the valve's open amount changes this update,
+        // as a result of a change in the ovhd panel push button.
+        // If the precooler is not pressurized, a FAULT should light.
+        self.update_valve_controller(context, wai_relay);
+        self.wai_valve
+            .update_open_amount(&self.wai_valve_controller);
+
+        // We need both controllers to signal `on` for the
+        // system to be considered on without a fault.
+        if self.wai_valve_controller.controller_signals_on() {
+            // If a controller signals `on` while its corresponding valve is closed
+            // this means the system has a fault.
+            if self.is_wai_valve_closed() {
+                self.wai_has_fault = true;
+            }
+        }
+
+        // An exhaust tick always happens, no matter what
+        // the valve's state is
+        self.wai_exhaust
+            .update_move_fluid(context, &mut self.wai_consumer);
+
+        // The heated slats radiate energy to the ambient atmosphere.
+        self.wai_consumer.radiate_heat_to_ambient(context);
+
+        // This only changes the volume if open_amount is not zero.
+        self.wai_valve.update_move_fluid_with_transfer_speed(
+            context,
+            &mut engine_systems.precooler_outlet_pipe,
+            &mut self.wai_consumer,
+            Self::WAI_VALVE_TRANSFER_SPEED,
+        );
+
+        if self.wai_consumer_pressure()
+            <= Pressure::new::<bar>(Self::WAI_MIN_PRESSURE) + context.ambient_pressure()
+            && !self.is_wai_valve_closed()
+        {
+            self.wai_high_pressure = false;
+            self.wai_low_pressure = true;
+            self.wai_has_fault = true;
+        } else if self.wai_consumer_pressure()
+            >= Pressure::new::<bar>(Self::WAI_MAX_PRESSURE) + context.ambient_pressure()
+            && !self.is_wai_valve_closed()
+        {
+            self.wai_high_pressure = true;
+            self.wai_low_pressure = false;
+            // High pressure doesn't turn the FAULT light ON
+        } else {
+            self.wai_high_pressure = false;
+            self.wai_low_pressure = false;
+        }
+    }
+}
+
+// FWC FAILURES TO IMPLEMENT
+// WING A.ICE SYS FAULT
+// WING A.ICE L(R) VALVE OPEN
+// WING A.ICE OPEN ON GND
+// WING A.ICE L(R) HI PR
+
+// The complex includes both WingAntiIceSystem parts.
+// Each WingAntiIceSystem contains a consumer, a valve,
+// an exhaust and a valve controller.
+// There is one (shared) ground sense relay.
+
+// const not inside WingAntiIceComplex to link
+// it with the size of the arrays in the struct
+const NUM_OF_WAI: usize = 2;
+pub struct WingAntiIceComplex {
+    wai_systems: [WingAntiIceSystem; NUM_OF_WAI],
+    wai_relay: WingAntiIceRelay,
+    wai_system_has_fault: bool,
+    wai_system_on: bool,
+    wai_selected: bool,
+
+    wai_on_id: VariableIdentifier,
+    wai_selected_id: VariableIdentifier,
+    wai_fault_id: VariableIdentifier,
+    wai_ground_timer_id: VariableIdentifier,
+    wai_left_pressure_id: VariableIdentifier,
+    wai_right_pressure_id: VariableIdentifier,
+    wai_left_temperature_id: VariableIdentifier,
+    wai_right_temperature_id: VariableIdentifier,
+    wai_left_valve_closed_id: VariableIdentifier,
+    wai_right_valve_closed_id: VariableIdentifier,
+
+    wai_left_high_pressure_id: VariableIdentifier,
+    wai_right_high_pressure_id: VariableIdentifier,
+    wai_left_low_pressure_id: VariableIdentifier,
+    wai_right_low_pressure_id: VariableIdentifier,
+}
+impl WingAntiIceComplex {
+    pub fn new(context: &mut InitContext) -> Self {
+        Self {
+            wai_systems: [WingAntiIceSystem::new(), WingAntiIceSystem::new()],
             wai_relay: WingAntiIceRelay::new(context),
             wai_system_has_fault: false,
             wai_system_on: false,
             wai_selected: false,
-            wai_high_pressure: [false, false],
-            wai_low_pressure: [false, false],
-            wai_bleed_pressurised: [false, false],
 
             wai_on_id: context.get_identifier("PNEU_WING_ANTI_ICE_SYSTEM_ON".to_owned()),
             wai_selected_id: context
@@ -439,62 +566,43 @@ impl WingAntiIceComplex {
         self.wai_system_on
     }
 
-    fn update_pressure_above_minimum(
-        &mut self,
-        context: &UpdateContext,
-        precooler_pressure: Pressure,
-        number: usize,
-    ) {
-        // The WAI valves open at min 10psi of pressure (difference)
-        self.wai_bleed_pressurised[number] =
-            precooler_pressure > context.ambient_pressure() + Pressure::new::<psi>(10.);
-    }
-
-    fn update_valve_controller(&mut self, context: &UpdateContext, number: usize) {
-        self.wai_valve_controller[number]
-            .valve_pid
-            .next_control_output(
-                self.wai_consumer_pressure(number).get::<psi>(),
-                Some(context.delta()),
-            );
-
-        self.wai_valve_controller[number].update(
-            context,
-            self.wai_relay.signals_on(),
-            self.wai_bleed_pressurised[number],
-        );
-    }
-
     pub fn is_wai_valve_closed(&self, number: usize) -> bool {
-        !self.wai_valve[number].is_open()
+        self.wai_systems[number].is_wai_valve_closed()
     }
 
     pub fn wai_consumer_pressure(&self, number: usize) -> Pressure {
-        self.wai_consumer[number].pressure()
+        self.wai_systems[number].wai_consumer_pressure()
     }
 
     pub fn wai_timer(&self) -> Duration {
         self.wai_relay.get_timer()
     }
 
+    pub fn wai_consumer_temperature(&self, number: usize) -> ThermodynamicTemperature {
+        self.wai_systems[number].wai_consumer_temperature()
+    }
+
+    pub fn wai_valve_high_pressure(&self, number: usize) -> bool {
+        self.wai_systems[number].wai_valve_high_pressure()
+    }
+
+    pub fn wai_valve_low_pressure(&self, number: usize) -> bool {
+        self.wai_systems[number].wai_valve_low_pressure()
+    }
+
     #[cfg(test)]
     pub fn wai_valve_controller_on(&self, number: usize) -> bool {
-        self.wai_valve_controller[number].controller_signals_on()
+        self.wai_systems[number].wai_valve_controller_on()
     }
 
     #[cfg(test)]
     pub fn is_precoooler_pressurised(&self, number: usize) -> bool {
-        self.wai_bleed_pressurised[number]
-    }
-
-    #[cfg(test)]
-    pub fn wai_consumer_temperature(&self, number: usize) -> ThermodynamicTemperature {
-        self.wai_consumer[number].temperature()
+        self.wai_systems[number].is_precoooler_pressurised()
     }
 
     #[cfg(test)]
     pub fn wai_mass_flow(&self, number: usize) -> MassRate {
-        self.wai_exhaust[number].fluid_flow()
+        self.wai_systems[number].wai_mass_flow()
     }
 
     pub fn update(
@@ -503,70 +611,16 @@ impl WingAntiIceComplex {
         engine_systems: &mut [EngineBleedAirSystem; 2],
         wai_mode: WingAntiIcePushButtonMode,
     ) {
-        // Tracks if the system has a fault
-        let mut has_fault: bool = false;
+        // Reset the fault variable, then iterates through to check if there is a fault
+        self.wai_system_has_fault = false;
 
         self.wai_relay.update(context, wai_mode);
 
-        for n in 0..NUM_OF_WAI {
-            self.update_pressure_above_minimum(
-                context,
-                engine_systems[n].precooler_outlet_pressure(),
-                n,
-            );
-
-            // First, we see if the valve's open amount changes this update,
-            // as a result of a change in the ovhd panel push button.
-            // If the precooler is not pressurized, a FAULT should light.
-            self.update_valve_controller(context, n);
-            self.wai_valve[n].update_open_amount(&self.wai_valve_controller[n]);
-
-            // We need both controllers to signal `on` for the
-            // system to be considered on without a fault.
-            if self.wai_valve_controller[n].controller_signals_on() {
-                // If a controller signals `on` while its corresponding valve is closed
-                // this means the system has a fault.
-                if self.is_wai_valve_closed(n) {
-                    has_fault = true;
-                }
-            }
-
-            // An exhaust tick always happens, no matter what
-            // the valve's state is
-            self.wai_exhaust[n].update_move_fluid(context, &mut self.wai_consumer[n]);
-
-            // The heated slats radiate energy to the ambient atmosphere.
-            self.wai_consumer[n].radiate_heat_to_ambient(context);
-
-            // This only changes the volume if open_amount is not zero.
-            self.wai_valve[n].update_move_fluid_with_transfer_speed(
-                context,
-                &mut engine_systems[n].precooler_outlet_pipe,
-                &mut self.wai_consumer[n],
-                Self::WAI_VALVE_TRANSFER_SPEED,
-            );
-
-            if self.wai_consumer_pressure(n)
-                <= Pressure::new::<bar>(Self::WAI_MIN_PRESSURE) + context.ambient_pressure()
-                && !self.is_wai_valve_closed(n)
-            {
-                self.wai_high_pressure[n] = false;
-                self.wai_low_pressure[n] = true;
-                has_fault = true;
-            } else if self.wai_consumer_pressure(n)
-                >= Pressure::new::<bar>(Self::WAI_MAX_PRESSURE) + context.ambient_pressure()
-                && !self.is_wai_valve_closed(n)
-            {
-                self.wai_high_pressure[n] = true;
-                self.wai_low_pressure[n] = false;
-                // High pressure doesn't turn the FAULT light ON
-            } else {
-                self.wai_high_pressure[n] = false;
-                self.wai_low_pressure[n] = false;
-            }
+        for (wai_system, engine_system) in self.wai_systems.iter_mut().zip(engine_systems) {
+            wai_system.update(context, engine_system, &self.wai_relay);
+            self.wai_system_has_fault = self.wai_system_has_fault || wai_system.wai_has_fault();
         }
 
-        self.wai_system_has_fault = has_fault;
         self.wai_system_on = self.wai_relay.signals_on();
         self.wai_selected = wai_mode == WingAntiIcePushButtonMode::On;
     }
@@ -590,18 +644,30 @@ impl SimulationElement for WingAntiIceComplex {
         writer.write(&self.wai_right_pressure_id, self.wai_consumer_pressure(1));
         writer.write(
             &self.wai_left_temperature_id,
-            self.wai_consumer[0].temperature(),
+            self.wai_consumer_temperature(0),
         );
         writer.write(
             &self.wai_right_temperature_id,
-            self.wai_consumer[1].temperature(),
+            self.wai_consumer_temperature(1),
         );
         writer.write(&self.wai_left_valve_closed_id, self.is_wai_valve_closed(0));
         writer.write(&self.wai_right_valve_closed_id, self.is_wai_valve_closed(1));
-        writer.write(&self.wai_left_high_pressure_id, self.wai_high_pressure[0]);
-        writer.write(&self.wai_right_high_pressure_id, self.wai_high_pressure[1]);
-        writer.write(&self.wai_left_low_pressure_id, self.wai_low_pressure[0]);
-        writer.write(&self.wai_right_low_pressure_id, self.wai_low_pressure[1]);
+        writer.write(
+            &self.wai_left_high_pressure_id,
+            self.wai_valve_high_pressure(0),
+        );
+        writer.write(
+            &self.wai_right_high_pressure_id,
+            self.wai_valve_high_pressure(1),
+        );
+        writer.write(
+            &self.wai_left_low_pressure_id,
+            self.wai_valve_low_pressure(0),
+        );
+        writer.write(
+            &self.wai_right_low_pressure_id,
+            self.wai_valve_low_pressure(1),
+        );
     }
 
     // WAI doesn't have any indicated power consumption
