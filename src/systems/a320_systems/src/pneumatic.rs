@@ -1103,10 +1103,6 @@ impl A320PneumaticOverheadPanel {
         self.cross_bleed.mode()
     }
 
-    // pub fn wing_anti_ice_is_on(&self) -> bool {
-    //     !matches!(self.wing_anti_ice.mode(), WingAntiIcePushButtonMode::Off)
-    // }
-
     pub fn engine_bleed_pb_is_auto(&self, engine_number: usize) -> bool {
         match engine_number {
             1 => self.engine_1_bleed.is_auto(),
