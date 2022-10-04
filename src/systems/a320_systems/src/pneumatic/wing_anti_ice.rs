@@ -440,10 +440,10 @@ impl WingAntiIceSystem {
     pub fn update(
         &mut self,
         context: &UpdateContext,
-        engine_systems: &mut impl PneumaticContainer,
+        engine_system: &mut impl PneumaticContainer,
         wai_relay: &WingAntiIceRelay,
     ) {
-        self.update_pressure_above_minimum(context, engine_systems.pressure());
+        self.update_pressure_above_minimum(context, engine_system.pressure());
 
         // First, we see if the valve's open amount changes this update,
         // as a result of a change in the ovhd panel push button.
@@ -460,7 +460,7 @@ impl WingAntiIceSystem {
         // This only changes the volume if open_amount is not zero.
         self.wai_valve.update_move_fluid_with_transfer_speed(
             context,
-            engine_systems,
+            engine_system,
             &mut self.wai_consumer,
             Self::WAI_VALVE_TRANSFER_SPEED,
         );
