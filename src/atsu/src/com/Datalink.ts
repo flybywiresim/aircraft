@@ -1,6 +1,7 @@
 //  Copyright (c) 2021 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
+import { FmgcFlightPhase } from '@shared/flightphase';
 import { AtsuStatusCodes } from '../AtsuStatusCodes';
 import { Atsu } from '../ATSU';
 import { CpdlcMessage } from '../messages/CpdlcMessage';
@@ -42,7 +43,13 @@ export class Datalink {
 
         setInterval(() => {
             if (this.waitedComUpdate <= 30000) {
-                this.vdl.simulateTransmissionTimes(parent.flightPhase());
+                const phase = parent.airplane.currentFlightPhase();
+                let flightPhase: FmgcFlightPhase = FmgcFlightPhase.Preflight;
+                if (phase.valid) {
+                    flightPhase = phase.flightPhase;
+                }
+
+                this.vdl.simulateTransmissionTimes(flightPhase);
                 this.waitedComUpdate = 0;
             } else {
                 this.waitedComUpdate += 5000;
