@@ -18,11 +18,11 @@ use systems::{
     },
     shared::{
         pid::PidController, random_from_normal_distribution, ControllerSignal, ElectricalBusType,
-        ElectricalBuses, PneumaticValve,
+        ElectricalBuses, LgciuWeightOnWheels, PneumaticValve,
     },
     simulation::{
-        InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
-        SimulatorWriter, VariableIdentifier, Write,
+        InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter,
+        VariableIdentifier, Write,
     },
 };
 
@@ -207,30 +207,20 @@ impl WingAntiIceConsumer {
 }
 
 pub struct WingAntiIceRelay {
-    wing_anti_ice_button_pos: WingAntiIcePushButtonMode, // The position of the button
-    system_test_timer: Duration,                         // Timer to count up to 30 seconds
-    system_test_done: bool, // Timer reached 30 seconds while on the ground
-    signal_on: bool,        // Status of the ON light. If button is pushed and
+    system_test_timer: Duration, // Timer to count up to 30 seconds
+    system_test_done: bool,      // Timer reached 30 seconds while on the ground
+    signal_on: bool,             // Status of the ON light. If button is pushed and
     // the test is finished, the ON light should turn off.
-    left_gear_compressed_id: VariableIdentifier,
-    right_gear_compressed_id: VariableIdentifier,
-    is_on_ground: bool, //Needed for the 30 seconds test logic
     powered_by: ElectricalBusType,
     is_powered: bool,
 }
 impl WingAntiIceRelay {
     const WAI_TEST_TIME: Duration = Duration::from_secs(30);
-    pub fn new(context: &mut InitContext) -> Self {
+    pub fn new() -> Self {
         Self {
-            wing_anti_ice_button_pos: WingAntiIcePushButtonMode::Off,
             system_test_timer: Duration::from_secs(0),
             system_test_done: false,
             signal_on: false,
-            left_gear_compressed_id: context
-                .get_identifier("LGCIU_1_LEFT_GEAR_COMPRESSED".to_owned()),
-            right_gear_compressed_id: context
-                .get_identifier("LGCIU_2_RIGHT_GEAR_COMPRESSED".to_owned()),
-            is_on_ground: Default::default(),
             powered_by: ElectricalBusType::DirectCurrentEssentialShed,
             is_powered: false,
         }
@@ -244,16 +234,19 @@ impl WingAntiIceRelay {
         &mut self,
         context: &UpdateContext,
         wing_anti_ice_button_pos: WingAntiIcePushButtonMode,
+        lgciu: [&impl LgciuWeightOnWheels; 2],
     ) {
         // Even if the button is pushed, we need to check if either
         // the plane is airborne or it is within the 30 second timeframe.
         // Also, we need to check if the supplier is pressurized
         // since the valve is pneumatically operated.
-        self.wing_anti_ice_button_pos = wing_anti_ice_button_pos;
+        let is_on_ground =
+            !(lgciu[0].left_gear_extended(false) || lgciu[1].right_gear_extended(false));
+
         if !self.is_powered {
             self.signal_on = false;
-        } else if self.wing_anti_ice_button_pos == WingAntiIcePushButtonMode::On {
-            if self.is_on_ground && !self.system_test_done {
+        } else if wing_anti_ice_button_pos == WingAntiIcePushButtonMode::On {
+            if is_on_ground && !self.system_test_done {
                 self.system_test_timer += context.delta();
                 self.system_test_timer = self.system_test_timer.min(Self::WAI_TEST_TIME);
                 if self.system_test_timer == Self::WAI_TEST_TIME {
@@ -262,7 +255,7 @@ impl WingAntiIceRelay {
                 } else {
                     self.signal_on = true;
                 }
-            } else if !self.is_on_ground {
+            } else if !is_on_ground {
                 self.signal_on = true;
             }
         } else {
@@ -272,7 +265,7 @@ impl WingAntiIceRelay {
         // If the plane has taken off, we reset the timer
         // and set test_done to false in order for the
         // mechanism to work when landing.
-        if !self.is_on_ground && self.system_test_timer > Duration::from_secs(0) {
+        if !is_on_ground && self.system_test_timer > Duration::from_secs(0) {
             self.relay_reset();
         }
     }
@@ -287,11 +280,6 @@ impl WingAntiIceRelay {
     }
 }
 impl SimulationElement for WingAntiIceRelay {
-    fn read(&mut self, reader: &mut SimulatorReader) {
-        self.is_on_ground = reader.read(&self.left_gear_compressed_id)
-            || reader.read(&self.right_gear_compressed_id);
-    }
-
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
         if self.is_powered != buses.is_powered(self.powered_by) {
             self.relay_reset();
@@ -497,12 +485,9 @@ impl WingAntiIceSystem {
 // Each WingAntiIceSystem contains a consumer, a valve,
 // an exhaust and a valve controller.
 // There is one (shared) ground sense relay.
-
-// const not inside WingAntiIceComplex to link
-// it with the size of the arrays in the struct
-const NUM_OF_WAI: usize = 2;
 pub struct WingAntiIceComplex {
-    wai_systems: [WingAntiIceSystem; NUM_OF_WAI],
+    // Left and Right wing
+    wai_systems: [WingAntiIceSystem; 2],
     wai_relay: WingAntiIceRelay,
     wai_system_has_fault: bool,
     wai_system_on: bool,
@@ -528,7 +513,7 @@ impl WingAntiIceComplex {
     pub fn new(context: &mut InitContext) -> Self {
         Self {
             wai_systems: [WingAntiIceSystem::new(), WingAntiIceSystem::new()],
-            wai_relay: WingAntiIceRelay::new(context),
+            wai_relay: WingAntiIceRelay::new(),
             wai_system_has_fault: false,
             wai_system_on: false,
             wai_selected: false,
@@ -612,11 +597,12 @@ impl WingAntiIceComplex {
         context: &UpdateContext,
         engine_systems: &mut [impl PneumaticContainer; 2],
         wai_mode: WingAntiIcePushButtonMode,
+        lgciu: [&impl LgciuWeightOnWheels; 2],
     ) {
         // Reset the fault variable, then iterates through to check if there is a fault
         self.wai_system_has_fault = false;
 
-        self.wai_relay.update(context, wai_mode);
+        self.wai_relay.update(context, wai_mode, lgciu);
 
         for (wai_system, engine_system) in self.wai_systems.iter_mut().zip(engine_systems) {
             wai_system.update(context, engine_system, &self.wai_relay);

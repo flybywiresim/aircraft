@@ -25,8 +25,8 @@ use systems::{
     shared::{
         pid::PidController, update_iterator::MaxStepLoop, ControllerSignal, ElectricalBusType,
         ElectricalBuses, EngineBleedPushbutton, EngineCorrectedN1, EngineCorrectedN2,
-        EngineFirePushButtons, EngineStartState, HydraulicColor, PackFlowValveState,
-        PneumaticBleed, PneumaticValve, ReservoirAirPressure,
+        EngineFirePushButtons, EngineStartState, HydraulicColor, LgciuWeightOnWheels,
+        PackFlowValveState, PneumaticBleed, PneumaticValve, ReservoirAirPressure,
     },
     simulation::{
         InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -222,6 +222,7 @@ impl A320Pneumatic {
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         apu: &impl ControllerSignal<TargetPressureTemperatureSignal>,
         pack_flow_valve_signals: &impl PackFlowControllers<3>,
+        lgciu: [&impl LgciuWeightOnWheels; 2],
     ) {
         self.physics_updater.update(context);
 
@@ -233,6 +234,7 @@ impl A320Pneumatic {
                 engine_fire_push_buttons,
                 apu,
                 pack_flow_valve_signals,
+                lgciu,
             );
         }
     }
@@ -245,6 +247,7 @@ impl A320Pneumatic {
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         apu: &impl ControllerSignal<TargetPressureTemperatureSignal>,
         pack_flow_valve_signals: &impl PackFlowControllers<3>,
+        lgciu: [&impl LgciuWeightOnWheels; 2],
     ) {
         self.apu_compression_chamber.update(apu);
 
@@ -307,6 +310,7 @@ impl A320Pneumatic {
             context,
             &mut self.engine_systems,
             overhead_panel.wing_anti_ice.mode(),
+            lgciu,
         );
         let [left_system, right_system] = &mut self.engine_systems;
         self.apu_bleed_air_valve.update_move_fluid(
@@ -1391,9 +1395,7 @@ mod tests {
 
     struct TestAirConditioning {
         a320_air_conditioning_system: AirConditioningSystem<3>,
-
         adirs: TestAdirs,
-        lgciu: TestLgciu,
         pressurization: TestPressurization,
         pressurization_overhead: PressurizationOverheadPanel,
     }
@@ -1409,9 +1411,7 @@ mod tests {
                     vec![ElectricalBusType::DirectCurrent(1)],
                     vec![ElectricalBusType::DirectCurrent(2)],
                 ),
-
                 adirs: TestAdirs::new(),
-                lgciu: TestLgciu::new(true),
                 pressurization: TestPressurization::new(),
                 pressurization_overhead: PressurizationOverheadPanel::new(context),
             }
@@ -1423,6 +1423,7 @@ mod tests {
             engine_fire_push_buttons: &impl EngineFirePushButtons,
             pneumatic: &(impl EngineStartState + PackFlowValveState + PneumaticBleed),
             pneumatic_overhead: &impl EngineBleedPushbutton,
+            lgciu: [&impl LgciuWeightOnWheels; 2],
         ) {
             self.a320_air_conditioning_system.update(
                 context,
@@ -1433,7 +1434,7 @@ mod tests {
                 pneumatic_overhead,
                 &self.pressurization,
                 &self.pressurization_overhead,
-                [&self.lgciu; 2],
+                lgciu,
             );
         }
     }
@@ -1493,6 +1494,10 @@ mod tests {
     impl TestLgciu {
         fn new(compressed: bool) -> Self {
             Self { compressed }
+        }
+
+        pub fn set_on_ground(&mut self, is_on_ground: bool) {
+            self.compressed = is_on_ground;
         }
     }
     impl LgciuWeightOnWheels for TestLgciu {
@@ -1617,6 +1622,7 @@ mod tests {
     struct PneumaticTestAircraft {
         pneumatic: A320Pneumatic,
         air_conditioning: TestAirConditioning,
+        lgciu: TestLgciu,
         apu: TestApu,
         engine_1: LeapEngine,
         engine_2: LeapEngine,
@@ -1639,6 +1645,7 @@ mod tests {
             Self {
                 pneumatic: A320Pneumatic::new(context),
                 air_conditioning: TestAirConditioning::new(context),
+                lgciu: TestLgciu::new(true),
                 apu: TestApu::new(),
                 engine_1: LeapEngine::new(context, 1),
                 engine_2: LeapEngine::new(context, 2),
@@ -1707,6 +1714,7 @@ mod tests {
                 &self.fire_pushbuttons,
                 &self.apu,
                 &self.air_conditioning,
+                [&self.lgciu; 2],
             );
             self.air_conditioning.update(
                 context,
@@ -1714,6 +1722,7 @@ mod tests {
                 &self.fire_pushbuttons,
                 &self.pneumatic,
                 &self.pneumatic_overhead_panel,
+                [&self.lgciu; 2],
             )
         }
     }
@@ -2154,8 +2163,7 @@ mod tests {
 
         fn set_lgciu_on_ground(&mut self, is_on_ground: bool) {
             self.set_on_ground(is_on_ground);
-            self.write_by_name("LGCIU_1_LEFT_GEAR_COMPRESSED", is_on_ground);
-            self.write_by_name("LGCIU_2_RIGHT_GEAR_COMPRESSED", is_on_ground);
+            self.command(|a| a.lgciu.set_on_ground(is_on_ground));
         }
 
         fn wing_anti_ice_push_button(mut self, mode: WingAntiIcePushButtonMode) -> Self {
