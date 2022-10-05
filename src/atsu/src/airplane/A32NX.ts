@@ -92,7 +92,8 @@ export class A32NX implements AirplaneData {
     }
 
     public currentIndicatedAirspeed(): { valid: boolean, airspeed: number } {
-        return { valid: true, airspeed: Math.round(SimVar.GetSimVarValue('AIRSPEED INDICATED', 'knots')) };
+        const arincIndicatedAirspeed = this.getArincValue('L:A32NX_ADIRS_ADR_1_COMPUTED_AIRSPEED');
+        return { valid: arincIndicatedAirspeed.valid, airspeed: Math.round(arincIndicatedAirspeed.value) };
     }
 
     public currentGroundspeed(): { valid: boolean, groundspeed: number } {
