@@ -126,7 +126,8 @@ export class Atc {
         message.DcduRelevantMessage = false;
 
         this.nextAtc = station;
-        this.parent.registerMessages([message]);
+        const status = this.parent.registerMessages([message]);
+        if (status !== AtsuStatusCodes.Ok) return status;
         this.dcduLink.setAtcLogonMessage(`NEXT ATC: ${station}`);
         this.notificationTime = SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
 
@@ -194,7 +195,8 @@ export class Atc {
         message.DcduRelevantMessage = false;
 
         this.maxUplinkDelay = -1;
-        this.parent.registerMessages([message]);
+        const status = this.parent.registerMessages([message]);
+        if (status !== AtsuStatusCodes.Ok) return status;
 
         return this.datalink.sendMessage(message, true).then((error) => error);
     }
