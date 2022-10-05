@@ -190,6 +190,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.landingElevation = undefined;
 
         // ATSU data
+        this.atsuAircraftData = undefined;
         this.atsu = undefined;
         this.holdSpeedTarget = undefined;
         this.holdIndex = undefined;
@@ -538,7 +539,8 @@ class FMCMainDisplay extends BaseAirliners {
         this._messageQueue.resetQueue();
 
         // ATSU data
-        this.atsu = new Atsu.Atsu(new Atsu.A32NX());
+        this.atsuAircraftData = new Atsu.A32NX();
+        this.atsu = new Atsu.Atsu(this.atsuAircraftData);
 
         // Reset SimVars
         SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", NaN);
