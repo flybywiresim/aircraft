@@ -62,7 +62,7 @@ export class A32NX implements AirplaneData {
 
     public currentAltitude(): { valid: boolean, altitude: number } {
         const arincAlt = this.getArincValue('L:A32NX_ADIRS_ADR_1_ALTITUDE');
-        return { valid: arincAlt.valid, altitude: arincAlt.value };
+        return { valid: arincAlt.valid, altitude: Math.ceil(arincAlt.value) };
     }
 
     public currentTrueHeading(): { valid: boolean, heading: number } {
