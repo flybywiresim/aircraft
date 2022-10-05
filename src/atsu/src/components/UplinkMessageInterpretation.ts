@@ -78,26 +78,38 @@ export class UplinkMessageInterpretation {
     private static FillPresentData(atsu: Atsu, message: CpdlcMessage): boolean {
         switch (message.Content[0]?.TypeId) {
         case 'UM132':
-            message.Response.Content[0].Content[0].Value = coordinateToString({ lat: atsu.currentFlightState().lat, lon: atsu.currentFlightState().lon }, false);
+            if (atsu.currentFlightState().lat !== undefined && atsu.currentFlightState().lon !== undefined) {
+                message.Response.Content[0].Content[0].Value = coordinateToString({ lat: atsu.currentFlightState().lat, lon: atsu.currentFlightState().lon }, false);
+            }
             return true;
         case 'UM133':
-            message.Response.Content[0].Content[0].Value = InputValidation.formatScratchpadAltitude(Math.round(atsu.currentFlightState().altitude / 100).toString());
+            if (atsu.currentFlightState().altitude !== undefined) {
+                message.Response.Content[0].Content[0].Value = InputValidation.formatScratchpadAltitude(Math.round(atsu.currentFlightState().altitude / 100).toString());
+            }
             return true;
         case 'UM134':
-            message.Response.Content[0].Content[0].Value = InputValidation.formatScratchpadSpeed(atsu.currentFlightState().indicatedAirspeed.toString());
+            if (atsu.currentFlightState().indicatedAirspeed !== undefined) {
+                message.Response.Content[0].Content[0].Value = InputValidation.formatScratchpadSpeed(atsu.currentFlightState().indicatedAirspeed.toString());
+            }
             return true;
         case 'UM144':
             const squawk = UplinkMessageInterpretation.getDigitsFromBco16(SimVar.GetSimVarValue('TRANSPONDER CODE:1', 'Bco16'));
             message.Response.Content[0].Content[0].Value = `${squawk[0]}${squawk[1]}${squawk[2]}${squawk[3]}`;
             return true;
         case 'UM145':
-            message.Response.Content[0].Content[0].Value = atsu.currentFlightState().heading.toString();
+            if (atsu.currentFlightState().heading !== undefined) {
+                message.Response.Content[0].Content[0].Value = atsu.currentFlightState().heading.toString();
+            }
             return true;
         case 'UM146':
-            message.Response.Content[0].Content[0].Value = atsu.currentFlightState().track.toString();
+            if (atsu.currentFlightState().track !== undefined) {
+                message.Response.Content[0].Content[0].Value = atsu.currentFlightState().track.toString();
+            }
             return true;
         case 'UM228':
-            message.Response.Content[0].Content[0].Value = `${timestampToString(atsu.destinationWaypoint().utc)}Z`;
+            if (atsu.destinationWaypoint() !== undefined) {
+                message.Response.Content[0].Content[0].Value = `${timestampToString(atsu.destinationWaypoint().utc)}Z`;
+            }
             return true;
         default:
             return false;
@@ -107,10 +119,14 @@ export class UplinkMessageInterpretation {
     private static FillAssignedData(atsu: Atsu, message: CpdlcMessage): boolean {
         switch (message.Content[0]?.TypeId) {
         case 'UM135':
-            message.Response.Content[0].Content[0].Value = InputValidation.formatScratchpadAltitude(Math.round(atsu.targetFlightState().altitude / 100).toString());
+            if (atsu.targetFlightState().altitude !== undefined) {
+                message.Response.Content[0].Content[0].Value = InputValidation.formatScratchpadAltitude(Math.round(atsu.targetFlightState().altitude / 100).toString());
+            }
             return true;
         case 'UM136':
-            message.Response.Content[0].Content[0].Value = InputValidation.formatScratchpadAltitude(atsu.targetFlightState().speed.toString());
+            if (atsu.targetFlightState().speed !== undefined) {
+                message.Response.Content[0].Content[0].Value = InputValidation.formatScratchpadAltitude(atsu.targetFlightState().speed.toString());
+            }
             return true;
         default:
             return false;
