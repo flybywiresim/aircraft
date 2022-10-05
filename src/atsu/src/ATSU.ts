@@ -216,6 +216,10 @@ export class Atsu {
     }
 
     public async sendMessage(message: AtsuMessage): Promise<AtsuStatusCodes> {
+        if (!this.airplane.atsuPowered()) {
+            return AtsuStatusCodes.ComFailed;
+        }
+
         let retval = AtsuStatusCodes.UnknownMessage;
 
         if (Aoc.isRelevantMessage(message)) {

@@ -2,6 +2,7 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 import { FmgcFlightPhase } from '@shared/flightphase';
+import { AirplaneData } from '../airplane/AirplaneData';
 import { AtsuStatusCodes } from '../AtsuStatusCodes';
 import { Atsu } from '../ATSU';
 import { CpdlcMessage } from '../messages/CpdlcMessage';
@@ -15,6 +16,8 @@ import { HoppieConnector } from './webinterfaces/HoppieConnector';
 import { NXApiConnector } from './webinterfaces/NXApiConnector';
 
 export class Datalink {
+    private airplane: AirplaneData = undefined;
+
     private vdl: Vdl = new Vdl();
 
     private waitedComUpdate = 0;
@@ -26,19 +29,23 @@ export class Datalink {
     private firstPollHoppie = true;
 
     private enqueueReceivedMessages(parent: Atsu, messages: AtsuMessage[]): void {
-        messages.forEach((message) => {
+        // reject all datalink messages if the VHF is not powered
+        if (this.airplane.vhfDatalinkPowered()) {
+            messages.forEach((message) => {
             // ignore empty messages (happens sometimes in CPDLC with buggy ATC software)
-            if (message.Message.length !== 0) {
-                const transmissionTime = this.vdl.enqueueInboundMessage(message);
-                setTimeout(() => {
-                    this.vdl.dequeueInboundMessage(transmissionTime);
-                    parent.registerMessages([message]);
-                }, transmissionTime);
-            }
-        });
+                if (message.Message.length !== 0) {
+                    const transmissionTime = this.vdl.enqueueInboundMessage(message);
+                    setTimeout(() => {
+                        this.vdl.dequeueInboundMessage(transmissionTime);
+                        parent.registerMessages([message]);
+                    }, transmissionTime);
+                }
+            });
+        }
     }
 
     constructor(parent: Atsu) {
+        this.airplane = parent.airplane;
         HoppieConnector.activateHoppie();
 
         setInterval(() => {
@@ -147,6 +154,10 @@ export class Datalink {
     }
 
     public async receiveWeather(requestMetar: boolean, icaos: string[], sentCallback: () => void): Promise<[AtsuStatusCodes, WeatherMessage]> {
+        if (!this.airplane.vhfDatalinkPowered()) {
+            return [AtsuStatusCodes.ComFailed, undefined];
+        }
+
         let message = undefined;
         if (requestMetar === true) {
             message = new MetarMessage();
@@ -158,15 +169,27 @@ export class Datalink {
     }
 
     public async isStationAvailable(callsign: string): Promise<AtsuStatusCodes> {
+        if (!this.airplane.vhfDatalinkPowered()) {
+            return AtsuStatusCodes.ComFailed;
+        }
+
         return HoppieConnector.isStationAvailable(callsign);
     }
 
     public async receiveAtis(icao: string, type: AtisType, sentCallback: () => void): Promise<[AtsuStatusCodes, WeatherMessage]> {
+        if (!this.airplane.vhfDatalinkPowered()) {
+            return [AtsuStatusCodes.ComFailed, undefined];
+        }
+
         const message = new AtisMessage();
         return NXApiConnector.receiveAtis(icao, type, message).then(() => this.simulateWeatherRequestResponse([AtsuStatusCodes.Ok, message], sentCallback));
     }
 
     public async sendMessage(message: AtsuMessage, force: boolean): Promise<AtsuStatusCodes> {
+        if (!this.airplane.vhfDatalinkPowered()) {
+            return AtsuStatusCodes.ComFailed;
+        }
+
         return new Promise((resolve, _reject) => {
             const timeout = this.vdl.enqueueOutboundMessage(message);
             setTimeout(() => {
