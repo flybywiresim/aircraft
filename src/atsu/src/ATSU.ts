@@ -21,17 +21,17 @@ import { AirplaneData } from './airplane/AirplaneData';
 export class Atsu {
     private flightStateObserver: FlightStateObserver = null;
 
-    private datalink = new Datalink(this);
+    private datalink: Datalink = undefined;
 
     private fltNo: string = '';
 
     private messageCounter = 0;
 
-    private ats623 = new ATS623(this);
+    private ats623: ATS623 = undefined;
 
-    public aoc = new Aoc(this.datalink);
+    public aoc: Aoc = undefined;
 
-    public atc = new Atc(this, this.datalink);
+    public atc: Atc = undefined;
 
     public modificationMessage: CpdlcMessage = null;
 
@@ -184,6 +184,11 @@ export class Atsu {
     constructor(airplaneAbstraction: AirplaneData) {
         this.flightStateObserver = new FlightStateObserver(airplaneAbstraction, this, Atsu.waypointPassedCallback);
         this.airplane = airplaneAbstraction;
+
+        this.datalink = new Datalink(this);
+        this.ats623 = new ATS623(this);
+        this.aoc = new Aoc(this.datalink);
+        this.atc = new Atc(this, this.datalink);
     }
 
     public async connectToNetworks(flightNo: string): Promise<AtsuStatusCodes> {
