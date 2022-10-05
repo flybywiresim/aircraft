@@ -26,12 +26,16 @@ class CDUAtcPositionReport {
         }
 
         // will be abreviated during the rendering
-        if (!data.currentPosition[2]) {
+        if (!data.currentPosition[2] && current.lat !== undefined && current.lon !== undefined) {
             mcdu.setScratchpadMessage(NXSystemMessages.latLonAbreviated);
+            data.currentPosition = [current.lat, current.lon, false];
         }
-        data.currentPosition = !data.currentPosition[2] ? [current.lat, current.lon, false] : data.currentPosition;
-        data.currentUtc[0] = !data.currentUtc[1] ? CDUAtcPositionReport.SecondsToString(SimVar.GetSimVarValue('E:ZULU TIME', 'seconds')) : data.currentUtc[0];
-        data.currentAltitude[0] = !data.currentAltitude[1] ? CDUAtcPositionReport.AltitudeToString(current.altitude) : data.currentAltitude[0];
+        if (!data.currentUtc[1]) {
+            data.currentUtc[0] = CDUAtcPositionReport.SecondsToString(SimVar.GetSimVarValue('E:ZULU TIME', 'seconds'));
+        }
+        if (!data.currentAltitude[1] && current.altitude !== undefined) {
+            data.currentAltitude[0] = CDUAtcPositionReport.AltitudeToString(current.altitude);
+        }
 
         if (activeWp && !data.activeWaypoint[2]) {
             data.activeWaypoint[0] = activeWp.ident;
@@ -45,31 +49,48 @@ class CDUAtcPositionReport {
         }
 
         if (!data.wind[1]) {
-            const windDirection = Arinc429Word.fromSimVarValue("L:A32NX_ADIRS_IR_1_WIND_DIRECTION", 500);
-            const windVelocity = Arinc429Word.fromSimVarValue("L:A32NX_ADIRS_IR_1_WIND_VELOCITY", 500);
+            const windDirection = mcdu.atsuAircraftData.windDirection();
+            const windVelocity = mcdu.atsuAircraftData.windSpeed();
 
-            const wind = `${Math.round(windDirection.value)}/${Math.round(windVelocity.value)}`;
-            if (Atsu.InputValidation.validateScratchpadWind(wind) === Atsu.AtsuStatusCodes.Ok) {
-                data.wind[0] = Atsu.InputValidation.formatScratchpadWind(wind);
+            if (windDirection.valid && windVelocity.valid) {
+                const wind = `${Math.round(windDirection.direction)}/${Math.round(windVelocity.speed)}`;
+                if (Atsu.InputValidation.validateScratchpadWind(wind) === Atsu.AtsuStatusCodes.Ok) {
+                    data.wind[0] = Atsu.InputValidation.formatScratchpadWind(wind);
+                }
             }
         }
         if (!data.sat[1]) {
-            const sat = Arinc429Word.fromSimVarValue("L:A32NX_ADIRS_ADR_1_STATIC_AIR_TEMPERATURE", 500);
-            if (Atsu.InputValidation.validateScratchpadTemperature(sat.value) === Atsu.AtsuStatusCodes.Ok) {
-                data.sat[0] = Math.round(Atsu.InputValidation.formatScratchpadTemperature(`${sat.value}`));
+            const sat = mcdu.atsuAircraftData.staticAirTemperature();
+            if (sat.valid && Atsu.InputValidation.validateScratchpadTemperature(sat.temperature.toString()) === Atsu.AtsuStatusCodes.Ok) {
+                data.sat[0] = Math.round(Atsu.InputValidation.formatScratchpadTemperature(sat.temperature.toString()));
             }
         }
 
-        data.indicatedAirspeed[0] = !data.indicatedAirspeed[1] ? Atsu.InputValidation.formatScratchpadSpeed(`${current.indicatedAirspeed}`) : data.indicatedAirspeed[0];
-        data.groundSpeed[0] = !data.groundSpeed[1] ? Atsu.InputValidation.formatScratchpadSpeed(`${current.groundSpeed}`) : data.groundSpeed[0];
-        data.verticalSpeed[0] = !data.verticalSpeed[1] ? Atsu.InputValidation.formatScratchpadVerticalSpeed(`${current.verticalSpeed}`) : data.verticalSpeed[0];
+        if (!data.indicatedAirspeed[1] && current.indicatedAirspeed !== undefined) {
+            data.indicatedAirspeed[0] = Atsu.InputValidation.formatScratchpadSpeed(`${current.indicatedAirspeed}`);
+        }
+        if (!data.groundSpeed[1] && current.groundSpeed !== undefined) {
+            data.groundSpeed[0] = Atsu.InputValidation.formatScratchpadSpeed(`${current.groundSpeed}`);
+        }
+        if (!data.verticalSpeed[1] && current.verticalSpeed !== undefined) {
+            data.verticalSpeed[0] = Atsu.InputValidation.formatScratchpadVerticalSpeed(`${current.verticalSpeed}`);
+        }
+
         // TODO add deviating
-        data.heading[0] = !data.heading[1] ? current.heading : data.heading[0];
-        data.track[0] = !data.track[1] ? current.track : data.track[0];
-        if (target.apActive && current.altitude > target.altitude) {
-            data.descending = CDUAtcPositionReport.AltitudeToString(target.altitude);
-        } else if (target.apActive && current.altitude < target.altitude) {
-            data.climbing = CDUAtcPositionReport.AltitudeToString(target.altitude);
+
+        if (!data.heading[1] && current.heading !== undefined) {
+            data.heading[0] = current.heading;
+        }
+        if (!data.track[1] && current.track !== undefined) {
+            data.track[0] = current.track;
+        }
+
+        if (target.apActive && target.altitude !== undefined && current.altitude !== undefined) {
+            if (current.altitude > target.altitude) {
+                data.descending = CDUAtcPositionReport.AltitudeToString(target.altitude);
+            } else if (current.altitude < target.altitude) {
+                data.climbing = CDUAtcPositionReport.AltitudeToString(target.altitude);
+            }
         }
     }
 
