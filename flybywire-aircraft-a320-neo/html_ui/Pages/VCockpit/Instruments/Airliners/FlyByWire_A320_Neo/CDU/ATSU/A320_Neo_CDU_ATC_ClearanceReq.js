@@ -99,7 +99,10 @@ class CDUAtcClearanceReq {
         mcdu.onRightInput[5] = () => {
             if (mcdu.atsu.atc.fansMode() === Atsu.FansMode.FansA && CDUAtcClearanceReq.CanSendData(data)) {
                 const message = CDUAtcClearanceReq.CreateRequest(mcdu);
-                mcdu.atsu.registerMessages([message]);
+                const status = mcdu.atsu.registerMessages([message]);
+                if (status !== Atsu.AtsuStatusCodes.Ok) {
+                    mcdu.addNewAtsuMessage(status);
+                }
                 CDUAtcClearanceReq.ShowPage(mcdu, title);
             }
         };

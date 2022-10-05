@@ -203,7 +203,10 @@ class CDUAtcSpeedRequest {
                 } else {
                     const messages = CDUAtcSpeedRequest.CreateRequests(mcdu, data);
                     if (messages.length !== 0) {
-                        mcdu.atsu.registerMessages(messages);
+                        const status = mcdu.atsu.registerMessages(messages);
+                        if (status !== Atsu.AtsuStatusCodes.Ok) {
+                            mcdu.addNewAtsuMessage(status);
+                        }
                     }
                     CDUAtcSpeedRequest.ShowPage(mcdu);
                 }

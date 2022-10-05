@@ -267,7 +267,10 @@ class CDUAtcLatRequestFansA {
                 } else {
                     const messages = CDUAtcLatRequestFansA.CreateRequests(mcdu, data);
                     if (messages.length !== 0) {
-                        mcdu.atsu.registerMessages(messages);
+                        const status = mcdu.atsu.registerMessages(messages);
+                        if (status !== Atsu.AtsuStatusCodes.Ok) {
+                            mcdu.addNewAtsuMessage(status);
+                        }
                     }
                     CDUAtcLatRequestFansA.ShowPage1(mcdu);
                 }
@@ -445,7 +448,10 @@ class CDUAtcLatRequestFansA {
                 } else {
                     const messages = CDUAtcLatRequestFansA.CreateRequests(mcdu, data);
                     if (messages.length !== 0) {
-                        mcdu.atsu.registerMessages(messages);
+                        const status = mcdu.atsu.registerMessages(messages);
+                        if (status !== Atsu.AtsuStatusCodes.Ok) {
+                            mcdu.addNewAtsuMessage(status);
+                        }
                     }
                     CDUAtcLatRequestFansA.ShowPage2(mcdu);
                 }

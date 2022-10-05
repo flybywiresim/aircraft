@@ -607,7 +607,10 @@ class CDUAtcPositionReport {
                         requestMessage.Response = report;
                         mcdu.atsu.atc.updateMessage(requestMessage);
                     } else {
-                        mcdu.atsu.registerMessages([report]);
+                        const status = mcdu.atsu.registerMessages([report]);
+                        if (status !== Atsu.AtsuStatusCodes.Ok) {
+                            mcdu.addNewAtsuMessage(status);
+                        }
                     }
                     CDUAtcPositionReport.ShowPage1(mcdu);
                 }
@@ -798,7 +801,10 @@ class CDUAtcPositionReport {
                         requestMessage.Response = report;
                         mcdu.atsu.atc.updateMessage(requestMessage);
                     } else {
-                        mcdu.atsu.registerMessages([report]);
+                        const status = mcdu.atsu.registerMessages([report]);
+                        if (status !== Atsu.AtsuStatusCodes.Ok) {
+                            mcdu.addNewAtsuMessage(status);
+                        }
                     }
                     CDUAtcPositionReport.ShowPage1(mcdu);
                 }
@@ -1080,7 +1086,10 @@ class CDUAtcPositionReport {
                         requestMessage.Response = report;
                         mcdu.atsu.atc.updateMessage(requestMessage);
                     } else {
-                        mcdu.atsu.registerMessages([report]);
+                        const status = mcdu.atsu.registerMessages([report]);
+                        if (status !== Atsu.AtsuStatusCodes.Ok) {
+                            mcdu.addNewAtsuMessage(status);
+                        }
                     }
                     CDUAtcPositionReport.ShowPage1(mcdu);
                 }

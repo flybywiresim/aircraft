@@ -288,7 +288,10 @@ class CDUAtcOceanicReq {
         };
         mcdu.onRightInput[5] = () => {
             if (CDUAtcOceanicReq.CanSendData(mcdu, store)) {
-                mcdu.atsu.registerMessages([CDUAtcOceanicReq.CreateMessage(mcdu, store)]);
+                const status = mcdu.atsu.registerMessages([CDUAtcOceanicReq.CreateMessage(mcdu, store)]);
+                if (status !== Atsu.AtsuStatusCodes.Ok) {
+                    mcdu.addNewAtsuMessage(status);
+                }
                 CDUAtcOceanicReq.ShowPage1(mcdu);
             }
         };

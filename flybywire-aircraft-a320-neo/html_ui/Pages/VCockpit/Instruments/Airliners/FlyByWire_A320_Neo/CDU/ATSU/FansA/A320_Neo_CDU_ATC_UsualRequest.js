@@ -319,7 +319,10 @@ class CDUAtcUsualRequestFansA {
             if (CDUAtcUsualRequestFansA.CanSendData(data)) {
                 const requests = CDUAtcUsualRequestFansA.CreateRequests(mcdu, data);
                 if (requests.length !== 0) {
-                    mcdu.atsu.registerMessages(requests);
+                    const status = mcdu.atsu.registerMessages(requests);
+                    if (status !== Atsu.AtsuStatusCodes.Ok) {
+                        mcdu.addNewAtsuMessage(status);
+                    }
                     CDUAtcUsualRequestFansA.ShowPage(mcdu);
                 }
             }

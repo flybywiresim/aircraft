@@ -261,7 +261,10 @@ class CDUAtcTextFansA {
                     if (prepMessages && prepMessages[0].Content[0].TypeId.includes("UM")) {
                         mcdu.atsu.atc.updateMessage(prepMessages[0]);
                     } else if (prepMessages) {
-                        mcdu.atsu.registerMessages(prepMessages);
+                        const status = mcdu.atsu.registerMessages(prepMessages);
+                        if (status !== Atsu.AtsuStatusCodes.Ok) {
+                            mcdu.addNewAtsuMessage(status);
+                        }
                     }
                     CDUAtcTextFansA.ShowPage1(mcdu);
                 }
@@ -395,7 +398,10 @@ class CDUAtcTextFansA {
                     if (prepMessages && prepMessages[0].Content[0].TypeId.includes("UM")) {
                         mcdu.atsu.atc.updateMessage(prepMessages[0]);
                     } else if (prepMessages) {
-                        mcdu.atsu.registerMessages(prepMessages);
+                        const status = mcdu.atsu.registerMessages(prepMessages);
+                        if (status !== Atsu.AtsuStatusCodes.Ok) {
+                            mcdu.addNewAtsuMessage(status);
+                        }
                     }
                     CDUAtcTextFansA.ShowPage2(mcdu);
                 }

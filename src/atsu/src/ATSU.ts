@@ -221,12 +221,12 @@ export class Atsu {
         if (Aoc.isRelevantMessage(message)) {
             retval = await this.aoc.sendMessage(message);
             if (retval === AtsuStatusCodes.Ok) {
-                this.registerMessages([message]);
+                retval = this.registerMessages([message]);
             }
         } else if (Atc.isRelevantMessage(message)) {
             retval = await this.atc.sendMessage(message);
             if (retval === AtsuStatusCodes.Ok) {
-                this.registerMessages([message]);
+                retval = this.registerMessages([message]);
             }
         }
 
@@ -241,8 +241,9 @@ export class Atsu {
         }
     }
 
-    public registerMessages(messages: AtsuMessage[]): void {
-        if (messages.length === 0) return;
+    public registerMessages(messages: AtsuMessage[]): AtsuStatusCodes {
+        if (!this.airplane.atsuPowered()) return AtsuStatusCodes.ComFailed;
+        if (messages.length === 0) return AtsuStatusCodes.Ok;
 
         messages.forEach((message) => {
             message.UniqueMessageID = ++this.messageCounter;
@@ -256,6 +257,8 @@ export class Atsu {
         } else if (Atc.isRelevantMessage(messages[0])) {
             this.atc.insertMessages(messages);
         }
+
+        return AtsuStatusCodes.Ok;
     }
 
     public messageRead(uid: number): void {

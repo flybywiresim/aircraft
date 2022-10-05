@@ -217,7 +217,10 @@ class CDUAtcDepartReq {
         };
         mcdu.onRightInput[5] = () => {
             if (CDUAtcDepartReq.CanSendData(store)) {
-                mcdu.atsu.registerMessages([CDUAtcDepartReq.CreateMessage(store)]);
+                const status = mcdu.atsu.registerMessages([CDUAtcDepartReq.CreateMessage(store)]);
+                if (status !== Atsu.AtsuStatusCodes.Ok) {
+                    mcdu.addNewAtsuMessage(status);
+                }
                 CDUAtcDepartReq.ShowPage1(mcdu);
             }
         };

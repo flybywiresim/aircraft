@@ -119,7 +119,10 @@ class CDUAtcTextFansB {
                     if (CDUAtcTextFansB.CreateMessages(mcdu, messages, data)) {
                         mcdu.atsu.atc.updateMessage(messages[0]);
                     } else {
-                        mcdu.atsu.registerMessages(messages);
+                        const status = mcdu.atsu.registerMessages(messages);
+                        if (status !== Atsu.AtsuStatusCodes.Ok) {
+                            mcdu.addNewAtsuMessage(status);
+                        }
                     }
                     CDUAtcMenu.ShowPage(mcdu);
                 }
