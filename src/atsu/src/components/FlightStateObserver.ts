@@ -124,7 +124,7 @@ export class FlightStateObserver {
 
         const temperatur = airplane.staticAirTemperature();
         if (temperatur.valid) {
-            this.EnvironmentData.temperature = temperatur.temperatur;
+            this.EnvironmentData.temperature = temperatur.temperature;
         }
     }
 

@@ -156,12 +156,12 @@ export class A32NX implements AirplaneData {
         return { valid: false, speed: 0 };
     }
 
-    public staticAirTemperature(): { valid: boolean, temperatur: number } {
+    public staticAirTemperature(): { valid: boolean, temperature: number } {
         const arincSAT = this.getArincValue('L:A32NX_ADIRS_ADR_1_STATIC_AIR_TEMPERATURE');
         if (arincSAT.valid) {
-            return { valid: true, temperatur: Math.round(arincSAT.value) };
+            return { valid: true, temperature: Math.round(arincSAT.value) };
         }
-        return { valid: false, temperatur: 0 };
+        return { valid: false, temperature: 0 };
     }
 
     public activeFlightPlan(): ManagedFlightPlan {

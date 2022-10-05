@@ -29,7 +29,7 @@ export interface AirplaneData {
 
     windDirection(): { valid: boolean, direction: number };
     windSpeed(): { valid: boolean, speed: number };
-    staticAirTemperature(): { valid: boolean, temperatur: number };
+    staticAirTemperature(): { valid: boolean, temperature: number };
 
     activeFlightPlan(): ManagedFlightPlan;
     registerAtsuErrorMessage(code: AtsuStatusCodes): void;
