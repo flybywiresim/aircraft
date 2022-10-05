@@ -16,11 +16,20 @@ export class Waypoint {
 export class FlightStateObserver {
     public LastWaypoint: Waypoint | undefined = undefined;
 
-    public PresentPosition = { lat: null, lon: null, altitude: null, heading: null, track: null, indicatedAirspeed: null, groundSpeed: null, verticalSpeed: null };
+    public PresentPosition = {
+        lat: undefined,
+        lon: undefined,
+        altitude: undefined,
+        heading: undefined,
+        track: undefined,
+        indicatedAirspeed: undefined,
+        groundSpeed: undefined,
+        verticalSpeed: undefined,
+    };
 
-    public FcuSettings = { apActive: false, speed: null, machMode: false, altitude: null };
+    public FcuSettings = { apActive: false, speed: undefined, machMode: false, altitude: undefined };
 
-    public EnvironmentData = { windDirection: null, windSpeed: null, temperature: null }
+    public EnvironmentData = { windDirection: undefined, windSpeed: undefined, temperature: undefined }
 
     public ActiveWaypoint: Waypoint | undefined = undefined;
 
@@ -45,7 +54,16 @@ export class FlightStateObserver {
     }
 
     private resetPresentPosition(): void {
-        this.PresentPosition = { lat: null, lon: null, altitude: null, heading: null, track: null, indicatedAirspeed: null, groundSpeed: null, verticalSpeed: null };
+        this.PresentPosition = {
+            lat: undefined,
+            lon: undefined,
+            altitude: undefined,
+            heading: undefined,
+            track: undefined,
+            indicatedAirspeed: undefined,
+            groundSpeed: undefined,
+            verticalSpeed: undefined,
+        };
     }
 
     private updatePresentPosition(airplane: AirplaneData): void {
@@ -89,7 +107,7 @@ export class FlightStateObserver {
     }
 
     private resetFcuSettings(): void {
-        this.FcuSettings = { apActive: false, speed: null, machMode: false, altitude: null };
+        this.FcuSettings = { apActive: false, speed: undefined, machMode: false, altitude: undefined };
     }
 
     private updateFcu(airplane: AirplaneData): void {
