@@ -37,7 +37,7 @@ export class Atsu {
 
     private listener = RegisterViewListener('JS_LISTENER_SIMVARS', null, true);
 
-    private airplane: AirplaneData = null;
+    public airplane: AirplaneData = null;
 
     public static createAutomatedPositionReport(atsu: Atsu): CpdlcMessage {
         const message = new CpdlcMessage();
