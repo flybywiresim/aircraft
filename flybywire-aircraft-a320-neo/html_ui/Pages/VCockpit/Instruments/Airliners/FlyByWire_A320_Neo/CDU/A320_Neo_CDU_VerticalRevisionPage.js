@@ -15,6 +15,7 @@ class CDUVerticalRevisionPage {
 
             const confirmConstraint = confirmSpeed !== undefined || confirmAlt !== undefined;
             const constraintType = CDUVerticalRevisionPage.constraintType(mcdu, waypoint);
+            const isOrigin = wpIndex === 0;
             const isDestination = wpIndex === mcdu.flightPlanManager.getDestinationIndex();
 
             let waypointIdent = "---";
@@ -32,10 +33,12 @@ class CDUVerticalRevisionPage {
                 coordinates = waypointInfo.coordinates.toDegreeString();
             }
 
-            const showDesSpeedLim = isDestination ||
+            const showSpeedLim = mcdu._fuelPredDone || isOrigin || isDestination;
+            // the conditions other than isDestination are a workaround for no ToC
+            const showDesSpeedLim = showSpeedLim && (isDestination ||
                 constraintType === WaypointConstraintType.DES ||
                 (mcdu.flightPhaseManager.phase > FmgcFlightPhases.CRUISE &&
-                    mcdu.flightPhaseManager.phase < FmgcFlightPhases.GOAROUND);
+                    mcdu.flightPhaseManager.phase < FmgcFlightPhases.GOAROUND));
 
             let speedLimitTitle = "";
             let speedLimitCell = "";
@@ -46,7 +49,7 @@ class CDUVerticalRevisionPage {
                 } else {
                     speedLimitCell = "{cyan}*[ ]/[   ]{end}";
                 }
-            } else {
+            } else if (showSpeedLim) {
                 speedLimitTitle = "\xa0CLB SPD LIM";
                 if (mcdu.climbSpeedLimit !== undefined) {
                     speedLimitCell = `{magenta}{${mcdu.climbSpeedLimitPilot ? 'big' : 'small'}}${mcdu.climbSpeedLimit.toFixed(0).padStart(3, "0")}/${this.formatFl(mcdu.climbSpeedLimitAlt, mcdu.flightPlanManager.originTransitionAltitude)}{end}{end}`;
@@ -156,7 +159,8 @@ class CDUVerticalRevisionPage {
             ]);
 
             mcdu.onLeftInput[1] = (value, scratchpadCallback) => {
-                if (mcdu.flightPhaseManager.phase === FmgcFlightPhases.CRUISE || mcdu.flightPhaseManager.phase > FmgcFlightPhases.APPROACH) {
+                if (!showSpeedLim) {
+                    scratchpadCallback();
                     return;
                 }
 
