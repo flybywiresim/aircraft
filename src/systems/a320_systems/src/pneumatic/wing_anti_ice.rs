@@ -213,16 +213,18 @@ pub struct WingAntiIceRelay {
     // the test is finished, the ON light should turn off.
     powered_by: ElectricalBusType,
     is_powered: bool,
+    ground_timer_id: VariableIdentifier,
 }
 impl WingAntiIceRelay {
     const WAI_TEST_TIME: Duration = Duration::from_secs(30);
-    pub fn new() -> Self {
+    pub fn new(context: &mut InitContext) -> Self {
         Self {
             system_test_timer: Duration::from_secs(0),
             system_test_done: false,
             signal_on: false,
             powered_by: ElectricalBusType::DirectCurrentEssentialShed,
             is_powered: false,
+            ground_timer_id: context.get_identifier("PNEU_WING_ANTI_ICE_GROUND_TIMER".to_owned()),
         }
     }
 
@@ -280,14 +282,30 @@ impl WingAntiIceRelay {
     }
 }
 impl SimulationElement for WingAntiIceRelay {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T)
+    where
+        Self: Sized,
+    {
+        visitor.visit(self);
+    }
+
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
         if self.is_powered != buses.is_powered(self.powered_by) {
             self.relay_reset();
         }
         self.is_powered = buses.is_powered(self.powered_by);
     }
+
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(&self.ground_timer_id, self.get_timer().as_secs());
+    }
 }
 
+// FWC FAILURES TO IMPLEMENT
+// WING A.ICE SYS FAULT
+// WING A.ICE L(R) VALVE OPEN
+// WING A.ICE OPEN ON GND
+// WING A.ICE L(R) HI PR
 pub struct WingAntiIceSystem {
     wai_exhaust: PneumaticExhaust,
     wai_valve: DefaultValve,
@@ -297,6 +315,13 @@ pub struct WingAntiIceSystem {
     wai_high_pressure: bool,
     wai_low_pressure: bool,
     wai_bleed_pressurised: bool,
+
+    wai_pressure_id: VariableIdentifier,
+    wai_temperature_id: VariableIdentifier,
+    wai_valve_closed_id: VariableIdentifier,
+
+    wai_high_pressure_id: VariableIdentifier,
+    wai_low_pressure_id: VariableIdentifier,
 }
 impl WingAntiIceSystem {
     const WAI_MIN_PRESSURE: f64 = 1.; //BAR
@@ -323,7 +348,7 @@ impl WingAntiIceSystem {
     // Total volume of ducts is around 2m^3. Assuming telescopic duct retracted
     const WAI_PIPE_VOLUME: f64 = 2.;
 
-    pub fn new() -> Self {
+    pub fn new(context: &mut InitContext, number: usize) -> Self {
         let wai_pipe_volume: Volume = Volume::new::<cubic_meter>(Self::WAI_PIPE_VOLUME);
 
         Self {
@@ -345,6 +370,20 @@ impl WingAntiIceSystem {
             wai_high_pressure: false,
             wai_low_pressure: false,
             wai_bleed_pressurised: false,
+
+            wai_valve_closed_id: context
+                .get_identifier(format!("PNEU_WING_ANTI_ICE_{}_VALVE_CLOSED", number)),
+            wai_high_pressure_id: context
+                .get_identifier(format!("PNEU_WING_ANTI_ICE_{}_HIGH_PRESSURE", number)),
+            wai_low_pressure_id: context
+                .get_identifier(format!("PNEU_WING_ANTI_ICE_{}_LOW_PRESSURE", number)),
+
+            wai_pressure_id: context
+                .get_identifier(format!("PNEU_WING_ANTI_ICE_{}_CONSUMER_PRESSURE", number)),
+            wai_temperature_id: context.get_identifier(format!(
+                "PNEU_WING_ANTI_ICE_{}_CONSUMER_TEMPERATURE",
+                number
+            )),
         }
     }
 
@@ -474,12 +513,22 @@ impl WingAntiIceSystem {
         }
     }
 }
+impl SimulationElement for WingAntiIceSystem {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T)
+    where
+        Self: Sized,
+    {
+        visitor.visit(self);
+    }
 
-// FWC FAILURES TO IMPLEMENT
-// WING A.ICE SYS FAULT
-// WING A.ICE L(R) VALVE OPEN
-// WING A.ICE OPEN ON GND
-// WING A.ICE L(R) HI PR
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(&self.wai_pressure_id, self.wai_consumer_pressure());
+        writer.write(&self.wai_temperature_id, self.wai_consumer_temperature());
+        writer.write(&self.wai_valve_closed_id, self.is_wai_valve_closed());
+        writer.write(&self.wai_high_pressure_id, self.wai_valve_high_pressure());
+        writer.write(&self.wai_low_pressure_id, self.wai_valve_low_pressure());
+    }
+}
 
 // The complex includes both WingAntiIceSystem parts.
 // Each WingAntiIceSystem contains a consumer, a valve,
@@ -496,24 +545,15 @@ pub struct WingAntiIceComplex {
     wai_on_id: VariableIdentifier,
     wai_selected_id: VariableIdentifier,
     wai_fault_id: VariableIdentifier,
-    wai_ground_timer_id: VariableIdentifier,
-    wai_left_pressure_id: VariableIdentifier,
-    wai_right_pressure_id: VariableIdentifier,
-    wai_left_temperature_id: VariableIdentifier,
-    wai_right_temperature_id: VariableIdentifier,
-    wai_left_valve_closed_id: VariableIdentifier,
-    wai_right_valve_closed_id: VariableIdentifier,
-
-    wai_left_high_pressure_id: VariableIdentifier,
-    wai_right_high_pressure_id: VariableIdentifier,
-    wai_left_low_pressure_id: VariableIdentifier,
-    wai_right_low_pressure_id: VariableIdentifier,
 }
 impl WingAntiIceComplex {
     pub fn new(context: &mut InitContext) -> Self {
         Self {
-            wai_systems: [WingAntiIceSystem::new(), WingAntiIceSystem::new()],
-            wai_relay: WingAntiIceRelay::new(),
+            wai_systems: [
+                WingAntiIceSystem::new(context, 1),
+                WingAntiIceSystem::new(context, 2),
+            ],
+            wai_relay: WingAntiIceRelay::new(context),
             wai_system_has_fault: false,
             wai_system_on: false,
             wai_selected: false,
@@ -522,30 +562,6 @@ impl WingAntiIceComplex {
             wai_selected_id: context
                 .get_identifier("PNEU_WING_ANTI_ICE_SYSTEM_SELECTED".to_owned()),
             wai_fault_id: context.get_identifier("PNEU_WING_ANTI_ICE_HAS_FAULT".to_owned()),
-            wai_ground_timer_id: context
-                .get_identifier("PNEU_WING_ANTI_ICE_GROUND_TIMER".to_owned()),
-
-            wai_left_valve_closed_id: context
-                .get_identifier("PNEU_1_WING_ANTI_ICE_VALVE_CLOSED".to_owned()),
-            wai_right_valve_closed_id: context
-                .get_identifier("PNEU_2_WING_ANTI_ICE_VALVE_CLOSED".to_owned()),
-            wai_left_high_pressure_id: context
-                .get_identifier("PNEU_1_WING_ANTI_ICE_HIGH_PRESSURE".to_owned()),
-            wai_right_high_pressure_id: context
-                .get_identifier("PNEU_2_WING_ANTI_ICE_HIGH_PRESSURE".to_owned()),
-            wai_left_low_pressure_id: context
-                .get_identifier("PNEU_1_WING_ANTI_ICE_LOW_PRESSURE".to_owned()),
-            wai_right_low_pressure_id: context
-                .get_identifier("PNEU_2_WING_ANTI_ICE_LOW_PRESSURE".to_owned()),
-
-            wai_left_pressure_id: context
-                .get_identifier("PNEU_1_WING_ANTI_ICE_CONSUMER_PRESSURE".to_owned()),
-            wai_right_pressure_id: context
-                .get_identifier("PNEU_2_WING_ANTI_ICE_CONSUMER_PRESSURE".to_owned()),
-            wai_left_temperature_id: context
-                .get_identifier("PNEU_1_WING_ANTI_ICE_CONSUMER_TEMPERATURE".to_owned()),
-            wai_right_temperature_id: context
-                .get_identifier("PNEU_2_WING_ANTI_ICE_CONSUMER_TEMPERATURE".to_owned()),
         }
     }
 
@@ -553,28 +569,24 @@ impl WingAntiIceComplex {
         self.wai_system_on
     }
 
+    #[cfg(test)]
     pub fn is_wai_valve_closed(&self, number: usize) -> bool {
         self.wai_systems[number].is_wai_valve_closed()
     }
 
+    #[cfg(test)]
     pub fn wai_consumer_pressure(&self, number: usize) -> Pressure {
         self.wai_systems[number].wai_consumer_pressure()
     }
 
+    #[cfg(test)]
     pub fn wai_timer(&self) -> Duration {
         self.wai_relay.get_timer()
     }
 
+    #[cfg(test)]
     pub fn wai_consumer_temperature(&self, number: usize) -> ThermodynamicTemperature {
         self.wai_systems[number].wai_consumer_temperature()
-    }
-
-    pub fn wai_valve_high_pressure(&self, number: usize) -> bool {
-        self.wai_systems[number].wai_valve_high_pressure()
-    }
-
-    pub fn wai_valve_low_pressure(&self, number: usize) -> bool {
-        self.wai_systems[number].wai_valve_low_pressure()
     }
 
     #[cfg(test)]
@@ -620,6 +632,9 @@ impl SimulationElement for WingAntiIceComplex {
         Self: Sized,
     {
         self.wai_relay.accept(visitor);
+        for wai_system in self.wai_systems.iter_mut() {
+            wai_system.accept(visitor);
+        }
         visitor.visit(self);
     }
 
@@ -627,35 +642,6 @@ impl SimulationElement for WingAntiIceComplex {
         writer.write(&self.wai_on_id, self.is_wai_system_on());
         writer.write(&self.wai_selected_id, self.wai_selected);
         writer.write(&self.wai_fault_id, self.wai_system_has_fault);
-        writer.write(&self.wai_ground_timer_id, self.wai_timer().as_secs());
-        writer.write(&self.wai_left_pressure_id, self.wai_consumer_pressure(0));
-        writer.write(&self.wai_right_pressure_id, self.wai_consumer_pressure(1));
-        writer.write(
-            &self.wai_left_temperature_id,
-            self.wai_consumer_temperature(0),
-        );
-        writer.write(
-            &self.wai_right_temperature_id,
-            self.wai_consumer_temperature(1),
-        );
-        writer.write(&self.wai_left_valve_closed_id, self.is_wai_valve_closed(0));
-        writer.write(&self.wai_right_valve_closed_id, self.is_wai_valve_closed(1));
-        writer.write(
-            &self.wai_left_high_pressure_id,
-            self.wai_valve_high_pressure(0),
-        );
-        writer.write(
-            &self.wai_right_high_pressure_id,
-            self.wai_valve_high_pressure(1),
-        );
-        writer.write(
-            &self.wai_left_low_pressure_id,
-            self.wai_valve_low_pressure(0),
-        );
-        writer.write(
-            &self.wai_right_low_pressure_id,
-            self.wai_valve_low_pressure(1),
-        );
     }
 
     // WAI doesn't have any indicated power consumption

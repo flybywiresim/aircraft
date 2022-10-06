@@ -748,7 +748,7 @@ impl ControllerSignal<CrossBleedValveSignal> for BleedMonitoringComputerChannel 
     }
 }
 
-pub struct EngineBleedAirSystem {
+struct EngineBleedAirSystem {
     intermediate_pressure_id: VariableIdentifier,
     high_pressure_id: VariableIdentifier,
     transfer_pressure_id: VariableIdentifier,
@@ -2780,22 +2780,22 @@ mod tests {
     fn wing_anti_ice_simvars() {
         let test_bed = test_bed();
 
+        assert!(test_bed.contains_variable_with_name("BUTTON_OVHD_ANTI_ICE_WING_POSITION"));
         assert!(test_bed.contains_variable_with_name("PNEU_WING_ANTI_ICE_SYSTEM_ON"));
         assert!(test_bed.contains_variable_with_name("PNEU_WING_ANTI_ICE_SYSTEM_SELECTED"));
         assert!(test_bed.contains_variable_with_name("PNEU_WING_ANTI_ICE_HAS_FAULT"));
         assert!(test_bed.contains_variable_with_name("PNEU_WING_ANTI_ICE_GROUND_TIMER"));
-        assert!(test_bed.contains_variable_with_name("PNEU_1_WING_ANTI_ICE_CONSUMER_PRESSURE"));
-        assert!(test_bed.contains_variable_with_name("PNEU_2_WING_ANTI_ICE_CONSUMER_PRESSURE"));
-        assert!(test_bed.contains_variable_with_name("PNEU_1_WING_ANTI_ICE_CONSUMER_TEMPERATURE"));
-        assert!(test_bed.contains_variable_with_name("PNEU_2_WING_ANTI_ICE_CONSUMER_TEMPERATURE"));
-        assert!(test_bed.contains_variable_with_name("PNEU_1_WING_ANTI_ICE_VALVE_CLOSED"));
-        assert!(test_bed.contains_variable_with_name("PNEU_2_WING_ANTI_ICE_VALVE_CLOSED"));
-        assert!(test_bed.contains_variable_with_name("BUTTON_OVHD_ANTI_ICE_WING_POSITION"));
+        assert!(test_bed.contains_variable_with_name("PNEU_WING_ANTI_ICE_1_CONSUMER_PRESSURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_WING_ANTI_ICE_2_CONSUMER_PRESSURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_WING_ANTI_ICE_1_CONSUMER_TEMPERATURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_WING_ANTI_ICE_2_CONSUMER_TEMPERATURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_WING_ANTI_ICE_1_VALVE_CLOSED"));
+        assert!(test_bed.contains_variable_with_name("PNEU_WING_ANTI_ICE_2_VALVE_CLOSED"));
 
-        assert!(test_bed.contains_variable_with_name("PNEU_1_WING_ANTI_ICE_HIGH_PRESSURE"));
-        assert!(test_bed.contains_variable_with_name("PNEU_2_WING_ANTI_ICE_HIGH_PRESSURE"));
-        assert!(test_bed.contains_variable_with_name("PNEU_1_WING_ANTI_ICE_LOW_PRESSURE"));
-        assert!(test_bed.contains_variable_with_name("PNEU_2_WING_ANTI_ICE_LOW_PRESSURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_WING_ANTI_ICE_1_HIGH_PRESSURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_WING_ANTI_ICE_2_HIGH_PRESSURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_WING_ANTI_ICE_1_LOW_PRESSURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_WING_ANTI_ICE_2_LOW_PRESSURE"));
     }
 
     #[test]

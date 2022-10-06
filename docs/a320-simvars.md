@@ -2547,43 +2547,43 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Reports the duration in seconds of the wing anti ice ground relay (4DL)
     - Duration
 
-- A32NX_PNEU_1_WING_ANTI_ICE_CONSUMER_PRESSURE:
+- A32NX_PNEU_WING_ANTI_ICE_1_CONSUMER_PRESSURE:
     - Pressure in the left wing anti ice pipe
     - PSI
 
-- A32NX_PNEU_2_WING_ANTI_ICE_CONSUMER_PRESSURE:
+- A32NX_PNEU_WING_ANTI_ICE_2_CONSUMER_PRESSURE:
     - Pressure in the right wing anti ice pipe
     - PSI
 
-- A32NX_PNEU_1_WING_ANTI_ICE_CONSUMER_TEMPERATURE:
+- A32NX_PNEU_WING_ANTI_ICE_1_CONSUMER_TEMPERATURE:
     - Temperature in the left wing anti ice pipe
     - Degree celsius
 
-- A32NX_PNEU_2_WING_ANTI_ICE_CONSUMER_TEMPERATURE:
+- A32NX_PNEU_WING_ANTI_ICE_2_CONSUMER_TEMPERATURE:
     - Temperature in the right wing anti ice pipe
     - Degree celsius
 
-- A32NX_PNEU_1_WING_ANTI_ICE_VALVE_CLOSED:
+- A32NX_PNEU_WING_ANTI_ICE_1_VALVE_CLOSED:
     - Indicates whether the left wing anti ice valve is closed
     - Bool
 
-- A32NX_PNEU_2_WING_ANTI_ICE_VALVE_CLOSED:
+- A32NX_PNEU_WING_ANTI_ICE_2_VALVE_CLOSED:
     - Indicates whether the right wing anti ice valve is closed
     - Bool
 
-- A32NX_PNEU_1_WING_ANTI_ICE_LOW_PRESSURE:
+- A32NX_PNEU_WING_ANTI_ICE_1_LOW_PRESSURE:
     - Low Pressure warning in the left wing anti ice valve
     - Bool
 
-- A32NX_PNEU_2_WING_ANTI_ICE_LOW_PRESSURE:
+- A32NX_PNEU_WING_ANTI_ICE_2_LOW_PRESSURE:
     - Low Pressure warning in the right wing anti ice valve
     - Bool
 
-- A32NX_PNEU_1_WING_ANTI_ICE_HIGH_PRESSURE:
+- A32NX_PNEU_WING_ANTI_ICE_1_HIGH_PRESSURE:
     - High Pressure warning in the left wing anti ice valve
     - Bool
 
-- A32NX_PNEU_2_WING_ANTI_ICE_HIGH_PRESSURE:
+- A32NX_PNEU_WING_ANTI_ICE_2_HIGH_PRESSURE:
     - High Pressure warning in the right wing anti ice valve
     - Bool
 
