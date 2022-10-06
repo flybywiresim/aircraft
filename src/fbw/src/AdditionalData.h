@@ -51,6 +51,8 @@ struct AdditionalData {
   double ambient_wind_velocity_kn;
   double ambient_wind_direction_deg;
   double total_air_temperature_celsius;
+  // failures
+  double failuresActive;
   // aoa - these are not correct yet
   double alpha_floor_command;
   double protection_ap_disc;

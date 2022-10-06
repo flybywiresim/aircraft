@@ -453,6 +453,7 @@ void FlightDataRecorderConverter::writeHeader(ofstream& out, const string& delim
   fmt::print(out, "data.ambient_wind_velocity_kn{}", delimiter);
   fmt::print(out, "data.ambient_wind_direction_deg{}", delimiter);
   fmt::print(out, "data.total_air_temperature_celsius{}", delimiter);
+  fmt::print(out, "data.failuresActive{}", delimiter);
   fmt::print(out, "data.alpha_floor_command{}", delimiter);
   fmt::print(out, "data.protection_ap_disc{}", delimiter);
   fmt::print(out, "data.v_alpha_prot_kn{}", delimiter);
@@ -915,6 +916,7 @@ void FlightDataRecorderConverter::writeStruct(ofstream& out,
   fmt::print(out, "{}{}", data.ambient_wind_velocity_kn, delimiter);
   fmt::print(out, "{}{}", data.ambient_wind_direction_deg, delimiter);
   fmt::print(out, "{}{}", data.total_air_temperature_celsius, delimiter);
+  fmt::print(out, "{}{}", data.failuresActive, delimiter);
   fmt::print(out, "{}{}", data.alpha_floor_command, delimiter);
   fmt::print(out, "{}{}", data.protection_ap_disc, delimiter);
   fmt::print(out, "{}{}", data.v_alpha_prot_kn, delimiter);

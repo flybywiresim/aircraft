@@ -1042,6 +1042,8 @@ bool FlyByWireInterface::updateAdditionalData(double sampleTime) {
   additionalData.ambient_wind_velocity_kn = simData.ambient_wind_velocity_kn;
   additionalData.ambient_wind_direction_deg = simData.ambient_wind_direction_deg;
   additionalData.total_air_temperature_celsius = simData.total_air_temperature_celsius;
+  // failure
+  additionalData.failuresActive = failuresConsumer.isAnyActive() ? 1.0 : 0.0;
   // aoa - these are not correct yet
   additionalData.alpha_floor_command = clientDataFlyByWire.alpha_floor_command;
   additionalData.protection_ap_disc = clientDataFlyByWire.protection_ap_disc;
