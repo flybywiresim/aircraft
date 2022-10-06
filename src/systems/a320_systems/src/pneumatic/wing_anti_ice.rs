@@ -12,6 +12,7 @@ use uom::si::{
 };
 
 use systems::{
+    accept_iterable,
     pneumatic::{
         valve::DefaultValve, valve::PneumaticExhaust, ControllablePneumaticValve,
         PneumaticContainer, PneumaticPipe, PneumaticValveSignal, WingAntiIcePushButtonMode,
@@ -282,13 +283,6 @@ impl WingAntiIceRelay {
     }
 }
 impl SimulationElement for WingAntiIceRelay {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T)
-    where
-        Self: Sized,
-    {
-        visitor.visit(self);
-    }
-
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
         if self.is_powered != buses.is_powered(self.powered_by) {
             self.relay_reset();
@@ -514,13 +508,6 @@ impl WingAntiIceSystem {
     }
 }
 impl SimulationElement for WingAntiIceSystem {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T)
-    where
-        Self: Sized,
-    {
-        visitor.visit(self);
-    }
-
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.wai_pressure_id, self.wai_consumer_pressure());
         writer.write(&self.wai_temperature_id, self.wai_consumer_temperature());
@@ -627,14 +614,10 @@ impl WingAntiIceComplex {
 }
 
 impl SimulationElement for WingAntiIceComplex {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T)
-    where
-        Self: Sized,
-    {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        accept_iterable!(self.wai_systems, visitor);
         self.wai_relay.accept(visitor);
-        for wai_system in self.wai_systems.iter_mut() {
-            wai_system.accept(visitor);
-        }
+
         visitor.visit(self);
     }
 
