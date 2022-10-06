@@ -50,3 +50,12 @@ bool FailuresConsumer::setIfFound(double identifier, bool value) {
     return true;
   }
 }
+
+bool FailuresConsumer::isAnyActive() {
+  if (std::any_of(activeFailures.begin(), activeFailures.end(), [](auto pair) {
+    return pair.second;
+  })) {
+      return true;
+  }
+  return false;
+}
