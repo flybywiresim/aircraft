@@ -215,6 +215,7 @@ pub struct WingAntiIceRelay {
     powered_by: ElectricalBusType,
     is_powered: bool,
     ground_timer_id: VariableIdentifier,
+    system_on_id: VariableIdentifier,
 }
 impl WingAntiIceRelay {
     const WAI_TEST_TIME: Duration = Duration::from_secs(30);
@@ -226,6 +227,7 @@ impl WingAntiIceRelay {
             powered_by: ElectricalBusType::DirectCurrentEssentialShed,
             is_powered: false,
             ground_timer_id: context.get_identifier("PNEU_WING_ANTI_ICE_GROUND_TIMER".to_owned()),
+            system_on_id: context.get_identifier("PNEU_WING_ANTI_ICE_SYSTEM_ON".to_owned()),
         }
     }
 
@@ -292,7 +294,10 @@ impl SimulationElement for WingAntiIceRelay {
 
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.ground_timer_id, self.get_timer().as_secs());
+        writer.write(&self.system_on_id, self.signals_on());
     }
+
+    // WAI doesn't have any indicated power consumption
 }
 
 // FWC FAILURES TO IMPLEMENT
@@ -526,10 +531,8 @@ pub struct WingAntiIceComplex {
     wai_systems: [WingAntiIceSystem; 2],
     wai_relay: WingAntiIceRelay,
     wai_system_has_fault: bool,
-    wai_system_on: bool,
     wai_selected: bool,
 
-    wai_on_id: VariableIdentifier,
     wai_selected_id: VariableIdentifier,
     wai_fault_id: VariableIdentifier,
 }
@@ -542,18 +545,12 @@ impl WingAntiIceComplex {
             ],
             wai_relay: WingAntiIceRelay::new(context),
             wai_system_has_fault: false,
-            wai_system_on: false,
             wai_selected: false,
 
-            wai_on_id: context.get_identifier("PNEU_WING_ANTI_ICE_SYSTEM_ON".to_owned()),
             wai_selected_id: context
                 .get_identifier("PNEU_WING_ANTI_ICE_SYSTEM_SELECTED".to_owned()),
             wai_fault_id: context.get_identifier("PNEU_WING_ANTI_ICE_HAS_FAULT".to_owned()),
         }
-    }
-
-    fn is_wai_system_on(&self) -> bool {
-        self.wai_system_on
     }
 
     #[cfg(test)]
@@ -608,7 +605,6 @@ impl WingAntiIceComplex {
             self.wai_system_has_fault = self.wai_system_has_fault || wai_system.wai_has_fault();
         }
 
-        self.wai_system_on = self.wai_relay.signals_on();
         self.wai_selected = wai_mode == WingAntiIcePushButtonMode::On;
     }
 }
@@ -622,10 +618,7 @@ impl SimulationElement for WingAntiIceComplex {
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(&self.wai_on_id, self.is_wai_system_on());
         writer.write(&self.wai_selected_id, self.wai_selected);
         writer.write(&self.wai_fault_id, self.wai_system_has_fault);
     }
-
-    // WAI doesn't have any indicated power consumption
 }
