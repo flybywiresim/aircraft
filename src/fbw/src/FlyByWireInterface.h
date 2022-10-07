@@ -111,7 +111,7 @@ class FlyByWireInterface {
   double ambient_wind_direction_deg = 0.0;
   double total_air_temperature_celsius = 0.0;
   // aoa - these are not correct yet
-  double alpha_floor_command = 0.0;
+  double alpha_floor_condition = 0.0;
   double protection_ap_disc = 0.0;
   double v_alpha_prot_kn = 0.0;
   double v_alpha_max_kn = 0.0;

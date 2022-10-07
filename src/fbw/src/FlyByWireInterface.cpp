@@ -1053,8 +1053,10 @@ bool FlyByWireInterface::updateAdditionalData(double sampleTime) {
   additionalData.total_air_temperature_celsius = simData.total_air_temperature_celsius;
   // failure
   additionalData.failuresActive = failuresConsumer.isAnyActive() ? 1.0 : 0.0;
-  // aoa - these are not correct yet
-  additionalData.alpha_floor_command = clientDataFlyByWire.alpha_floor_command;
+  // aoa
+  additionalData.alpha_floor_condition = reinterpret_cast<Arinc429DiscreteWord*>(&facsBusOutputs[0].discrete_word_5)->bitFromValueOr(29, false) ||
+                                         reinterpret_cast<Arinc429DiscreteWord*>(&facsBusOutputs[1].discrete_word_5)->bitFromValueOr(29, false);
+  // these are not correct yet
   additionalData.protection_ap_disc = clientDataFlyByWire.protection_ap_disc;
   additionalData.v_alpha_prot_kn = clientDataFlyByWire.v_alpha_prot_kn;
   additionalData.v_alpha_max_kn = clientDataFlyByWire.v_alpha_max_kn;
