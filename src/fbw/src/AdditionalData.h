@@ -55,8 +55,9 @@ struct AdditionalData {
   double total_air_temperature_celsius;
   // failures
   double failuresActive;
-  // aoa - these are not correct yet
+  // a.floor
   double alpha_floor_condition;
+  // these are not correct yet
   double protection_ap_disc;
   double v_alpha_prot_kn;
   double v_alpha_max_kn;
