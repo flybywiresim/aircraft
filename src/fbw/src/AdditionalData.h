@@ -45,6 +45,8 @@ struct AdditionalData {
   double inputRudder;
   // additional
   double simulation_rate;
+  double wasPaused;
+  double slew_on;
   // ambient data
   double ice_structure_percent;
   double ambient_pressure_mbar;
