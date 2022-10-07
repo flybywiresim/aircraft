@@ -849,6 +849,13 @@ bool FlyByWireInterface::readDataAndLocalVariables(double sampleTime) {
   if ((simData.simulationTime == previousSimulationTime) || (simData.simulationTime < 0.2)) {
     pauseDetected = true;
   } else {
+    // As fdr is not written when paused 'wasPaused' is used to detect previous pause state
+    // changes and record them in fdr
+    if (pauseDetected && !wasPaused) {
+      wasPaused = true;
+    } else {
+      wasPaused = false;
+    }
     pauseDetected = false;
   }
 
@@ -1036,6 +1043,8 @@ bool FlyByWireInterface::updateAdditionalData(double sampleTime) {
   additionalData.inputRudder = simInputs.inputs[2];
   // additional
   additionalData.simulation_rate = simData.simulation_rate;
+  additionalData.wasPaused = wasPaused;
+  additionalData.slew_on = wasInSlew;
   // ambient data
   additionalData.ice_structure_percent = simData.ice_structure_percent;
   additionalData.ambient_pressure_mbar = simData.ambient_pressure_mbar;

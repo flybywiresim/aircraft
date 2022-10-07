@@ -66,6 +66,9 @@ class FlyByWireInterface {
   bool wasTcasEngaged = false;
 
   bool pauseDetected = false;
+  // As fdr is not written when paused 'wasPaused' is used to detect previous pause state
+  // changes and record them in fdr
+  bool wasPaused = false;
   bool wasInSlew = false;
 
   double autothrustThrustLimitReverse = -45;
