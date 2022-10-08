@@ -229,11 +229,9 @@ export default class NavigraphClient {
                          `Bearer ${this.accessToken}`,
                     },
                 });
-
             if (callResp.ok) {
                 return callResp.text();
             }
-
             // Unauthorized
             if (callResp.status === 401) {
                 await this.getToken();
