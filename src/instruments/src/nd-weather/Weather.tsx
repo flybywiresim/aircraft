@@ -22,7 +22,7 @@ export class WeatherComponent extends DisplayComponent<{bus: EventBus, simVarPub
                 /** hack to send bing image id to ND
                  * this id is used in BingComponent.tsx to set the image id
                  * to be removed in ndv2  */
-                bingId={`A32NX_${getDisplayIndex()}`}
+                bingId={`A32NX_${getDisplayIndex() === 1 ? 'L' : 'R'}`}
                 reference={Subject.create(EBingReference.SEA)}
                 earthColors={ArraySubject.create()}
                 isoLines={Subject.create(false)}
@@ -45,11 +45,6 @@ export class WeatherComponent extends DisplayComponent<{bus: EventBus, simVarPub
          if (getDisplayIndex() !== 1) {
              this.props.simVarPublisher.updateSimvarSource('ndRange', { name: 'L:A32NX_EFIS_R_ND_RANGE', type: SimVarValueType.Number });
          }
-         //   this.compiledMap.ref.instance.wake();
-
-         //   Coherent.call('SET_MAP_PARAMS', 42, new LatLongAlt(0, 0), 20000, 1);
-
-         // this.compiledMap.context.getLayer(MapSystemKeys.Weather).isEnabled.set(true);
          const map = this.compiledMap.context.getLayer('bing') as MapBingLayer;
 
          this.compiledMap.context.projection.set({ range: UnitType.NMILE.convertTo(20, UnitType.GA_RADIAN) });

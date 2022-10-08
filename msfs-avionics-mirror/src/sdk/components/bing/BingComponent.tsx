@@ -282,7 +282,7 @@ export class BingComponent extends DisplayComponent<BingComponentProps> {
       this.uid = uid;
 
       // NOTE: remove this in NDV2
-      SimVar.SetSimVarValue(`L:A32NX_WEATHER_BING_ID_${getDisplayIndex()}`, "number", uid);
+      SimVar.SetSimVarValue(`L:A32NX_WEATHER_BING_ID_${getDisplayIndex() === 1 ? 'L' : 'R'}`, "number", uid);
       if (this._isBound) {
         return;
       }
