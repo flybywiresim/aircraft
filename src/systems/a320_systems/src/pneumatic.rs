@@ -3550,6 +3550,37 @@ mod tests {
         }
 
         #[test]
+        fn wing_anti_ice_valve_timer_reset_after_dc_ess_shed_bus_power_cycle() {
+            let altitude = Length::new::<foot>(500.);
+            let mut test_bed = test_bed_with()
+                .idle_eng1()
+                .idle_eng2()
+                .in_isa_atmosphere(altitude)
+                .and_stabilize();
+            test_bed.set_lgciu_on_ground(true);
+
+            assert!(test_bed.valve_controller_timer() == Duration::from_secs(0));
+
+            test_bed = test_bed.wing_anti_ice_push_button(WingAntiIcePushButtonMode::On);
+            test_bed.run_with_delta(Duration::from_secs(31));
+
+            assert!(!test_bed.wing_anti_ice_system_on());
+            assert!(test_bed.wing_anti_ice_system_selected());
+            assert!(!test_bed.wing_anti_ice_has_fault());
+            assert!(test_bed.left_valve_closed());
+            assert!(test_bed.right_valve_closed());
+            assert!(test_bed.valve_controller_timer() >= Duration::from_secs(30));
+
+            test_bed = test_bed
+                .wing_anti_ice_push_button(WingAntiIcePushButtonMode::Off)
+                .set_dc_ess_shed_bus_power(false)
+                .and_stabilize();
+            test_bed = test_bed.set_dc_ess_shed_bus_power(true).and_stabilize();
+
+            assert!(test_bed.valve_controller_timer() == Duration::from_secs(0));
+        }
+
+        #[test]
         fn wing_anti_ice_not_working_without_dc_ess_shed_bus() {
             let altitude = Length::new::<foot>(500.);
 
