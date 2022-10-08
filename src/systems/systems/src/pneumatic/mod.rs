@@ -409,6 +409,53 @@ impl CompressionChamber {
     }
 }
 
+pub struct WingAntiIcePushButton {
+    mode_id: VariableIdentifier,
+    mode: WingAntiIcePushButtonMode,
+}
+impl WingAntiIcePushButton {
+    pub fn new_off(context: &mut InitContext) -> Self {
+        Self {
+            mode_id: context.get_identifier("BUTTON_OVHD_ANTI_ICE_WING_POSITION".to_owned()),
+            mode: WingAntiIcePushButtonMode::Off,
+        }
+    }
+
+    pub fn mode(&self) -> WingAntiIcePushButtonMode {
+        self.mode
+    }
+
+    pub fn is_on(&self) -> bool {
+        matches!(self.mode, WingAntiIcePushButtonMode::On)
+    }
+}
+impl SimulationElement for WingAntiIcePushButton {
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(&self.mode_id, self.is_on());
+    }
+
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        self.mode = reader.read(&self.mode_id)
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum WingAntiIcePushButtonMode {
+    Off = 0,
+    On = 1,
+}
+
+read_write_enum!(WingAntiIcePushButtonMode);
+
+impl From<f64> for WingAntiIcePushButtonMode {
+    fn from(value: f64) -> Self {
+        match value as u8 {
+            0 => WingAntiIcePushButtonMode::Off,
+            _ => WingAntiIcePushButtonMode::On,
+        }
+    }
+}
+
 pub struct CrossBleedValveSelectorKnob {
     mode_id: VariableIdentifier,
     mode: CrossBleedValveSelectorMode,

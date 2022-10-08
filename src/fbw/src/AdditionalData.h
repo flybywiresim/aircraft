@@ -37,4 +37,5 @@ struct AdditionalData {
   double ls1Active;
   double ls2Active;
   double IsisLsActive;
+  double wingAntiIce;
 };

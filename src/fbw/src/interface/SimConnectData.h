@@ -92,7 +92,6 @@ struct SimData {
   unsigned long long engine_combustion_2;
   unsigned long long is_mach_mode_active;
   unsigned long long speed_slot_index;
-  unsigned long long wingAntiIce;
   unsigned long long engineAntiIce_1;
   unsigned long long engineAntiIce_2;
   unsigned long long simOnGround;

@@ -82,6 +82,7 @@
 1. [MODEL] Visible pilot avatars via flyPad setting - @frankkopp (Frank Kopp)
 1. [MODEL] Fixed screens flickering in SU10 - @tyler58546 (tyler58546)
 1. [EFB] Added Local Files support - @ErickSharp (Erick Torres) @frankkopp (Frank Kopp)
+1. [BLEED] Added custom Wing Anti-Ice model - @omrygin, @Eagle941 (Joe)
 
 ## 0.8.0
 
