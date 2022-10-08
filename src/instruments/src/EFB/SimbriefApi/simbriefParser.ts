@@ -36,6 +36,12 @@ const simbriefDataParser = (simbriefJson: any): ISimbriefData => {
     const { text } = simbriefJson;
     const { weather } = simbriefJson;
 
+    // Fix/workaround for SimBrief API returning an object instead of a string when the user selected
+    // something other than "CI" for the Cruise Profile (e.g. M78)
+    if (typeof general.costindex !== 'string') {
+        general.costindex = 'n/a';
+    }
+
     return {
         airline: general.icao_airline,
         flightNumber: general.flight_number,
