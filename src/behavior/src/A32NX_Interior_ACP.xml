@@ -257,37 +257,7 @@
             <SEQ2_NODE_ID>#NODE_ID_BUTTON_VOICE_SEQ2#</SEQ2_NODE_ID>
             <LEFT_SINGLE_CODE>
                 (L:A32NX_ACP_NAV_#SIDE#_VOICE_KNOB_VOLUME_DOWN) ! (&gt;L:A32NX_ACP_NAV_#SIDE#_VOICE_KNOB_VOLUME_DOWN)
-                (L:A32NX_ACP_NAV_L_VOICE_KNOB_VOLUME_DOWN) (L:A32NX_ACP_NAV_R_VOICE_KNOB_VOLUME_DOWN) or (&gt;L:A32NX_ACP_NAV_VOICE_KNOB_VOLUME_DOWN)
-
-                (L:A32NX_ACP_NAV_VOICE_KNOB_VOLUME_DOWN) 0 == if{
-                    (L:A32NX_ACP_NAV_L_VOR1_KNOB_VOLUME_DOWN) (L:A32NX_ACP_NAV_R_VOR1_KNOB_VOLUME_DOWN) or if{
-                        1 (&gt;K:RADIO_VOR1_IDENT_ENABLE)
-                        1 (&gt;K:RADIO_DME1_IDENT_ENABLE)
-                    }
-                    (L:A32NX_ACP_NAV_L_VOR2_KNOB_VOLUME_DOWN) (L:A32NX_ACP_NAV_R_VOR2_KNOB_VOLUME_DOWN) or if{
-                        1 (&gt;K:RADIO_VOR2_IDENT_ENABLE)
-                        1 (&gt;K:RADIO_DME2_IDENT_ENABLE)
-                    }
-
-                    (L:A32NX_ACP_NAV_L_ADF1_KNOB_VOLUME_DOWN) (L:A32NX_ACP_NAV_R_ADF1_KNOB_VOLUME_DOWN) or if{
-                        1 (&gt;K:RADIO_ADF_IDENT_ENABLE)
-                    }
-                    (L:A32NX_ACP_NAV_L_ADF2_KNOB_VOLUME_DOWN) (L:A32NX_ACP_NAV_R_ADF2_KNOB_VOLUME_DOWN) or if{
-                        1 (&gt;K:RADIO_ADF2_IDENT_ENABLE)
-                    }
-                }
-
-                (L:A32NX_ACP_NAV_VOICE_KNOB_VOLUME_DOWN) 1 == if{
-                    1 (&gt;K:RADIO_VOR1_IDENT_DISABLE)
-                    1 (&gt;K:RADIO_VOR2_IDENT_DISABLE)
-                    1 (&gt;K:RADIO_ADF_IDENT_DISABLE)
-                    1 (&gt;K:RADIO_ADF2_IDENT_DISABLE)
-
-                    1 (&gt;K:RADIO_DME1_IDENT_DISABLE)
-                    1 (&gt;K:RADIO_DME2_IDENT_DISABLE)
-                    1 (&gt;K:RADIO_DME3_IDENT_DISABLE)
-                    1 (&gt;K:RADIO_DME4_IDENT_DISABLE)
-                }
+                1 (&gt;L:XMLVAR_NAV_UpdateReceivers)
             </LEFT_SINGLE_CODE>
             <WWISE_EVENT_1>fcubutton</WWISE_EVENT_1>
             <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
@@ -309,7 +279,7 @@
             <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
             <WWISE_EVENT_2>fcubutton</WWISE_EVENT_2>
             <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
-            <TOOLTIPID>%((L:A32NX_ACP_NAV_#SIDE#_RESET_KNOB_VOLUME_DOWN))%{if}TT:COCKPIT.TOOLTIPS.NAV_PUSHBUTTON_RESET_OFF%{else}TT:COCKPIT.TOOLTIPS.NAV_PUSHBUTTON_RESET_ON%{end}</TOOLTIPID>
+            <TOOLTIPID>TT:COCKPIT.TOOLTIPS.NAV_PUSHBUTTON_RESET</TOOLTIPID>
         </UseTemplate>
 
         <UseTemplate Name="FBW_Anim_Interactions">
@@ -320,34 +290,6 @@
             <ANIM_NAME_KNOB>#ANIM_NAME_KNOB_RECEIVER_VOR1#</ANIM_NAME_KNOB>
             <ANIM_NAME_SWITCH>#ANIM_NAME_PUSH_RECEIVER_VOR1#</ANIM_NAME_SWITCH>
             <INSTRUMENT>VOR1</INSTRUMENT>
-            <ONCLICK>
-                <!-- Basically the same result of the second condition to reduce maintenance complexity due to RNP notation -->
-                (L:A32NX_ACP_NAV_VOICE_KNOB_VOLUME_DOWN) 0 == if{
-                    (A:NAV SOUND:1, Bool) 1 == (L:A32NX_ACP_NAV_L_VOR1_KNOB_VOLUME_DOWN) 0 == (L:A32NX_ACP_NAV_R_VOR1_KNOB_VOLUME_DOWN) 0 == and and if{
-                        1 (&gt;K:RADIO_VOR1_IDENT_TOGGLE)
-                        1 (&gt;K:RADIO_DME1_IDENT_SET)
-                    }
-
-                    (A:NAV SOUND:1, Bool) 0 == (L:A32NX_ACP_NAV_L_VOR1_KNOB_VOLUME_DOWN) 1 == (L:A32NX_ACP_NAV_R_VOR1_KNOB_VOLUME_DOWN) 1 == or and if{
-                        1 (&gt;K:RADIO_VOR1_IDENT_TOGGLE)
-                        1 (&gt;K:RADIO_DME1_IDENT_SET)
-                    }
-                }
-            </ONCLICK>
-            <!--  We are unable to set the volume with a value, only inc or dec. Once the SDK let us set a value, we will be
-                able to set the maximum of the two knobs straight into the KVar -->
-            <INC_VOLUME>
-                (L:A32NX_ACP_NAV_#SIDE#_VOR1_Volume) #VOLUME_INCREMENT_NAV# + 1 min (&gt;L:A32NX_ACP_NAV_#SIDE#_VOR1_Volume)
-                (L:A32NX_ACP_NAV_#SIDE#_VOR1_Volume) (A:NAV VOLUME:1, percent over 100) &gt; if{
-                   1 (&gt;K:NAV1_VOLUME_INC)
-                }
-            </INC_VOLUME>
-            <DEC_VOLUME>
-                (L:A32NX_ACP_NAV_#SIDE#_VOR1_Volume) #VOLUME_INCREMENT_NAV# - 0 max (&gt;L:A32NX_ACP_NAV_#SIDE#_VOR1_Volume)
-                (L:A32NX_ACP_NAV_L_VOR1_Volume) (L:A32NX_ACP_NAV_R_VOR1_Volume) max (A:NAV VOLUME:1, percent over 100) &lt; if{
-                   1 (&gt;K:NAV1_VOLUME_DEC)
-                }
-            </DEC_VOLUME>
             <TOOLTIP_LEFT>TT:COCKPIT.TOOLTIPS.TRANSMITTER_VOR1_VOLUME_DEC</TOOLTIP_LEFT>
             <TOOLTIP_RIGHT>TT:COCKPIT.TOOLTIPS.TRANSMITTER_VOR1_VOLUME_INC</TOOLTIP_RIGHT>
             <TOOLTIP_HAND>%((L:A32NX_ACP_NAV_#SIDE#_VOR1_KNOB_VOLUME_DOWN))%{if}TT:INPUT.KEY_RADIO_VOR1_IDENT_DISABLE_DESC%{else}TT:INPUT.KEY_RADIO_VOR1_IDENT_ENABLE_DESC%{end}</TOOLTIP_HAND>
@@ -361,34 +303,6 @@
             <ANIM_NAME_KNOB>#ANIM_NAME_KNOB_RECEIVER_VOR2#</ANIM_NAME_KNOB>
             <ANIM_NAME_SWITCH>#ANIM_NAME_PUSH_RECEIVER_VOR2#</ANIM_NAME_SWITCH>
             <INSTRUMENT>VOR2</INSTRUMENT>
-            <ONCLICK>
-                <!-- Basically the same result of the second condition to reduce maintenance complexity due to RNP notation -->
-                (L:A32NX_ACP_NAV_VOICE_KNOB_VOLUME_DOWN) 0 == if{
-                    (A:NAV SOUND:2, Bool) 1 == (L:A32NX_ACP_NAV_L_VOR2_KNOB_VOLUME_DOWN) 0 == (L:A32NX_ACP_NAV_R_VOR2_KNOB_VOLUME_DOWN) 0 == and and if{
-                        1 (&gt;K:RADIO_VOR2_IDENT_TOGGLE)
-                        1 (&gt;K:RADIO_DME2_IDENT_SET)
-                    }
-
-                    (A:NAV SOUND:2, Bool) 0 == (L:A32NX_ACP_NAV_L_VOR2_KNOB_VOLUME_DOWN) 1 == (L:A32NX_ACP_NAV_R_VOR2_KNOB_VOLUME_DOWN) 1 == or and if{
-                        1 (&gt;K:RADIO_VOR2_IDENT_TOGGLE)
-                        1 (&gt;K:RADIO_DME2_IDENT_SET)
-                    }
-                }
-            </ONCLICK>
-            <!--  We are unable to set the volume with a value, only inc or dec. Once the SDK let us set a value, we will be
-                able to set the maximum of the two knobs straight into the KVar -->
-            <INC_VOLUME>
-                (L:A32NX_ACP_NAV_#SIDE#_VOR2_Volume) #VOLUME_INCREMENT_NAV# + 1 min (&gt;L:A32NX_ACP_NAV_#SIDE#_VOR2_Volume)
-                (L:A32NX_ACP_NAV_#SIDE#_VOR2_Volume) (A:NAV VOLUME:2, percent over 100) &gt; if{
-                   1 (&gt;K:NAV2_VOLUME_INC)
-                }
-            </INC_VOLUME>
-            <DEC_VOLUME>
-                (L:A32NX_ACP_NAV_#SIDE#_VOR2_Volume) #VOLUME_INCREMENT_NAV# - 0 max (&gt;L:A32NX_ACP_NAV_#SIDE#_VOR2_Volume)
-                (L:A32NX_ACP_NAV_L_VOR2_Volume) (L:A32NX_ACP_NAV_R_VOR2_Volume) max (A:NAV VOLUME:2, percent over 100) &lt; if{
-                   1 (&gt;K:NAV2_VOLUME_DEC)
-                }
-            </DEC_VOLUME>
             <TOOLTIP_LEFT>TT:COCKPIT.TOOLTIPS.TRANSMITTER_VOR2_VOLUME_DEC</TOOLTIP_LEFT>
             <TOOLTIP_RIGHT>TT:COCKPIT.TOOLTIPS.TRANSMITTER_VOR2_VOLUME_INC</TOOLTIP_RIGHT>
             <TOOLTIP_HAND>%((L:A32NX_ACP_NAV_#SIDE#_VOR2_KNOB_VOLUME_DOWN))%{if}TT:INPUT.KEY_RADIO_VOR2_IDENT_DISABLE_DESC%{else}TT:INPUT.KEY_RADIO_VOR2_IDENT_ENABLE_DESC%{end}</TOOLTIP_HAND>
@@ -402,18 +316,6 @@
             <ANIM_NAME_KNOB>#ANIM_NAME_KNOB_RECEIVER_MKR#</ANIM_NAME_KNOB>
             <ANIM_NAME_SWITCH>#ANIM_NAME_PUSH_RECEIVER_MKR#</ANIM_NAME_SWITCH>
             <INSTRUMENT>MKR</INSTRUMENT>
-            <ONCLICK>
-                (A:MARKER SOUND, Bool) 1 == (L:A32NX_ACP_NAV_L_MKR_KNOB_VOLUME_DOWN) 0 == (L:A32NX_ACP_NAV_R_MKR_KNOB_VOLUME_DOWN) 0 == and and if{
-                    1 (&gt;K:MARKER_SOUND_TOGGLE)
-                }
-
-                (A:MARKER SOUND, Bool) 0 == (L:A32NX_ACP_NAV_L_MKR_KNOB_VOLUME_DOWN) 1 == (L:A32NX_ACP_NAV_R_MKR_KNOB_VOLUME_DOWN) 1 == or and if{
-                    1 (&gt;K:MARKER_SOUND_TOGGLE)
-                }
-            </ONCLICK>
-            <!-- Have to use a local var because marker volume is not used in the simulation yet -->
-            <INC_VOLUME>(L:A32NX_ACP_NAV_#SIDE#_MKR_Volume) #VOLUME_INCREMENT_NAV# + 1 min (&gt;L:A32NX_ACP_NAV_#SIDE#_MKR_Volume)</INC_VOLUME>
-            <DEC_VOLUME>(L:A32NX_ACP_NAV_#SIDE#_MKR_Volume) #VOLUME_INCREMENT_NAV# - 0 max (&gt;L:A32NX_ACP_NAV_#SIDE#_MKR_Volume)</DEC_VOLUME>
             <TOOLTIP_LEFT>TT:COCKPIT.TOOLTIPS.NAV_KNOB_MARKERS_VOLUME_DECREASE</TOOLTIP_LEFT>
             <TOOLTIP_RIGHT>TT:COCKPIT.TOOLTIPS.NAV_KNOB_MARKERS_VOLUME_INCREASE</TOOLTIP_RIGHT>
             <TOOLTIP_HAND>%((L:A32NX_ACP_NAV_#SIDE#_MKR_KNOB_VOLUME_DOWN))%{if}TT:COCKPIT.TOOLTIPS.NAV_KNOB_MARKERS_IDENT_DISABLE%{else}TT:COCKPIT.TOOLTIPS.NAV_KNOB_MARKERS_IDENT_ENABLE%{end}</TOOLTIP_HAND>
@@ -428,19 +330,6 @@
             <ANIM_NAME_SWITCH>#ANIM_NAME_PUSH_RECEIVER_ILS#</ANIM_NAME_SWITCH>
             <NODE_ID_LED>#NODE_ID_LED_RECEIVER_ILS#</NODE_ID_LED>
             <INSTRUMENT>ILS</INSTRUMENT>
-            <ONCLICK>
-                (L:A32NX_ACP_NAV_VOICE_KNOB_VOLUME_DOWN) 0 == if{
-                    (A:NAV SOUND:3, Bool) 1 == (L:A32NX_ACP_NAV_L_ILS_KNOB_VOLUME_DOWN) 0 == (L:A32NX_ACP_NAV_R_ILS_KNOB_VOLUME_DOWN) 0 == and and if{
-                        1 (&gt;K:RADIO_DME3_IDENT_SET)
-                    }
-
-                    (A:NAV SOUND:3, Bool) 0 == (L:A32NX_ACP_NAV_L_ILS_KNOB_VOLUME_DOWN) 1 == (L:A32NX_ACP_NAV_R_ILS_KNOB_VOLUME_DOWN) 1 == or and if{
-                        1 (&gt;K:RADIO_DME3_IDENT_SET)
-                    }
-                }
-            </ONCLICK>
-            <INC_VOLUME>(L:A32NX_ACP_NAV_#SIDE#_ILS_Volume) #VOLUME_INCREMENT_NAV# + 1 min (&gt;L:A32NX_ACP_NAV_#SIDE#_ILS_Volume)</INC_VOLUME>
-            <DEC_VOLUME>(L:A32NX_ACP_NAV_#SIDE#_ILS_Volume) #VOLUME_INCREMENT_NAV# - 0 max (&gt;L:A32NX_ACP_NAV_#SIDE#_ILS_Volume)</DEC_VOLUME>
             <TOOLTIP_LEFT>TT:COCKPIT.TOOLTIPS.NAV_KNOB_ILS_VOLUME_DECREASE</TOOLTIP_LEFT>
             <TOOLTIP_RIGHT>TT:COCKPIT.TOOLTIPS.NAV_KNOB_ILS_VOLUME_INCREASE</TOOLTIP_RIGHT>
             <TOOLTIP_HAND>%((L:A32NX_ACP_NAV_#SIDE#_ILS_KNOB_VOLUME_DOWN))%{if}TT:COCKPIT.TOOLTIPS.NAV_KNOB_ILS_IDENT_DISABLE%{else}TT:COCKPIT.TOOLTIPS.NAV_KNOB_ILS_IDENT_ENABLE%{end}</TOOLTIP_HAND>
@@ -455,17 +344,6 @@
             <ANIM_NAME_SWITCH>#ANIM_NAME_PUSH_RECEIVER_MLS#</ANIM_NAME_SWITCH>
             <NODE_ID_LED>#NODE_ID_LED_RECEIVER_MLS#</NODE_ID_LED>
             <INSTRUMENT>MLS</INSTRUMENT>
-            <ONCLICK>
-                (L:A32NX_ACP_NAV_VOICE_KNOB_VOLUME_DOWN) 0 == if{
-                    (A:NAV SOUND:4, Bool) 1 == (L:A32NX_ACP_NAV_L_MLS_KNOB_VOLUME_DOWN) 0 == (L:A32NX_ACP_NAV_R_MLS_KNOB_VOLUME_DOWN) 0 == and and if{
-                        1 (&gt;K:RADIO_DME4_IDENT_SET)
-                    }
-
-                    (A:NAV SOUND:4, Bool) 0 == (L:A32NX_ACP_NAV_L_MLS_KNOB_VOLUME_DOWN) 1 == (L:A32NX_ACP_NAV_R_MLS_KNOB_VOLUME_DOWN) 1 == or and if{
-                        1 (&gt;K:RADIO_DME4_IDENT_SET)
-                    }
-                }
-            </ONCLICK>
             <INC_VOLUME>(L:A32NX_ACP_NAV_#SIDE#_MLS_Volume) #VOLUME_INCREMENT_NAV# + 1 min (&gt;L:A32NX_ACP_NAV_#SIDE#_MLS_Volume)</INC_VOLUME>
             <DEC_VOLUME>(L:A32NX_ACP_NAV_#SIDE#_MLS_Volume) #VOLUME_INCREMENT_NAV# - 0 max (&gt;L:A32NX_ACP_NAV_#SIDE#_MLS_Volume)</DEC_VOLUME>
             <TOOLTIP_LEFT>TT:COCKPIT.TOOLTIPS.NAV_KNOB_ILS_VOLUME_DECREASE</TOOLTIP_LEFT>
@@ -482,22 +360,6 @@
             <ANIM_NAME_SWITCH>#ANIM_NAME_PUSH_RECEIVER_ADF1#</ANIM_NAME_SWITCH>
             <NODE_ID_LED>#NODE_ID_LED_RECEIVER_ADF1#</NODE_ID_LED>
             <INSTRUMENT>ADF1</INSTRUMENT>
-            <ONCLICK>
-                <!-- Basically the same result of the second condition to reduce maintenance complexity due to RNP notation -->
-                (L:A32NX_ACP_NAV_VOICE_KNOB_VOLUME_DOWN) 0 == if{
-                    (A:ADF SOUND, Bool) 1 == (L:A32NX_ACP_NAV_L_ADF1_KNOB_VOLUME_DOWN) 0 == (L:A32NX_ACP_NAV_R_ADF1_KNOB_VOLUME_DOWN) 0 == and and if{
-                        1 (&gt;K:RADIO_ADF_IDENT_DISABLE)
-                    }
-
-                    (A:ADF SOUND, Bool) 0 == (L:A32NX_ACP_NAV_L_ADF1_KNOB_VOLUME_DOWN) 1 == (L:A32NX_ACP_NAV_R_ADF1_KNOB_VOLUME_DOWN) 1 == or and if{
-                        1 (&gt;K:RADIO_ADF_IDENT_ENABLE)
-                    }
-                }
-            </ONCLICK>
-            <!--  We are unable to set the volume with a value, only inc or dec. Once the SDK let us set a value, we will be
-                able to set the maximum of the two knobs straight into the KVar -->
-            <INC_VOLUME>(L:A32NX_ACP_NAV_#SIDE#_ADF1_Volume) #VOLUME_INCREMENT_NAV# + 1 min (&gt;L:A32NX_ACP_NAV_#SIDE#_ADF1_Volume)</INC_VOLUME>
-            <DEC_VOLUME>(L:A32NX_ACP_NAV_#SIDE#_ADF1_Volume) #VOLUME_INCREMENT_NAV# - 0 max (&gt;L:A32NX_ACP_NAV_#SIDE#_ADF1_Volume)</DEC_VOLUME>
             <TOOLTIP_LEFT>TT:COCKPIT.TOOLTIPS.TRANSMITTER_ADF1_VOLUME_DEC</TOOLTIP_LEFT>
             <TOOLTIP_RIGHT>TT:COCKPIT.TOOLTIPS.TRANSMITTER_ADF1_VOLUME_INC</TOOLTIP_RIGHT>
             <TOOLTIP_HAND>%((L:A32NX_ACP_NAV_#SIDE#_ADF1_KNOB_VOLUME_DOWN))%{if}TT:INPUT.KEY_RADIO_ADF_IDENT_DISABLE_DESC%{else}TT:INPUT.KEY_RADIO_ADF_IDENT_ENABLE_DESC%{end}</TOOLTIP_HAND>
@@ -512,21 +374,6 @@
             <ANIM_NAME_SWITCH>#ANIM_NAME_PUSH_RECEIVER_ADF2#</ANIM_NAME_SWITCH>
             <NODE_ID_LED>#NODE_ID_LED_RECEIVER_ADF2#</NODE_ID_LED>
             <INSTRUMENT>ADF2</INSTRUMENT>
-            <ONCLICK>
-                <!-- Basically the same result of the second condition to reduce maintenance complexity due to RNP notation -->
-                (L:A32NX_ACP_NAV_VOICE_KNOB_VOLUME_DOWN) 0 == if{
-                    (A:ADF SOUND:2, Bool) 1 == (L:A32NX_ACP_NAV_L_ADF2_KNOB_VOLUME_DOWN) 0 == (L:A32NX_ACP_NAV_R_ADF2_KNOB_VOLUME_DOWN) 0 == and and if{
-                        1 (&gt;K:RADIO_ADF2_IDENT_TOGGLE)
-                    }
-
-                    (A:ADF SOUND:2, Bool) 0 == (L:A32NX_ACP_NAV_L_ADF2_KNOB_VOLUME_DOWN) 1 == (L:A32NX_ACP_NAV_R_ADF2_KNOB_VOLUME_DOWN) 1 == or and if{
-                        1 (&gt;K:RADIO_ADF2_IDENT_TOGGLE)
-                    }
-                }
-            </ONCLICK>
-            <!-- We cannot set ADF 2 volume even though it's set to 100 by default -->
-            <INC_VOLUME>(L:A32NX_ACP_NAV_#SIDE#_ADF2_Volume) #VOLUME_INCREMENT_NAV# + 1 min (&gt;L:A32NX_ACP_NAV_#SIDE#_ADF2_Volume)</INC_VOLUME>
-            <DEC_VOLUME>(L:A32NX_ACP_NAV_#SIDE#_ADF2_Volume) #VOLUME_INCREMENT_NAV# - 0 max (&gt;L:A32NX_ACP_NAV_#SIDE#_ADF2_Volume)</DEC_VOLUME>
             <TOOLTIP_LEFT>TT:COCKPIT.TOOLTIPS.TRANSMITTER_ADF2_VOLUME_DEC</TOOLTIP_LEFT>
             <TOOLTIP_RIGHT>TT:COCKPIT.TOOLTIPS.TRANSMITTER_ADF2_VOLUME_INC</TOOLTIP_RIGHT>
             <TOOLTIP_HAND>%((L:A32NX_ACP_NAV_#SIDE#_ADF2_KNOB_VOLUME_DOWN))%{if}TT:INPUT.KEY_RADIO_ADF2_IDENT_DISABLE_DESC%{else}TT:INPUT.KEY_RADIO_ADF2_IDENT_ENABLE_DESC%{end}</TOOLTIP_HAND>
@@ -747,19 +594,18 @@
                 <CENTER_RADIUS>0.002</CENTER_RADIUS>
                 <KNOB_ANIM_CODE>(L:A32NX_ACP_NAV_#SIDE#_#INSTRUMENT#_Volume) 100 *</KNOB_ANIM_CODE>
                 <CLOCKWISE_CODE>
-                    #INC_VOLUME#
-                    1 (&gt;L:XMLVAR_COM_UpdateReceivers)
+                    (L:A32NX_ACP_NAV_#SIDE#_#INSTRUMENT#_VOLUME) #VOLUME_INCREMENT_NAV# + 1 min (&gt;L:A32NX_ACP_NAV_#SIDE#_#INSTRUMENT#_VOLUME)
+                    1 (&gt;L:XMLVAR_NAV_UpdateReceivers)
                 </CLOCKWISE_CODE>
                 <ANTICLOCKWISE_CODE>
-                    #DEC_VOLUME#
-                    1 (&gt;L:XMLVAR_COM_UpdateReceivers)
+                    (L:A32NX_ACP_NAV_#SIDE#_#INSTRUMENT#_VOLUME) #VOLUME_INCREMENT_NAV# - 0 max (&gt;L:A32NX_ACP_NAV_#SIDE#_#INSTRUMENT#_VOLUME)
+                    1 (&gt;L:XMLVAR_NAV_UpdateReceivers)
                 </ANTICLOCKWISE_CODE>
                 <ANIM_CODE_SWITCH> (L:A32NX_ACP_NAV_#SIDE#_#INSTRUMENT#_KNOB_VOLUME_DOWN) 100 *</ANIM_CODE_SWITCH>
                 <ANIM_NAME_PUSH>#ANIM_NAME_SWITCH#</ANIM_NAME_PUSH>
                 <LEFT_SINGLE_CODE>
                     (L:A32NX_ACP_NAV_#SIDE#_#INSTRUMENT#_KNOB_VOLUME_DOWN) ! (&gt;L:A32NX_ACP_NAV_#SIDE#_#INSTRUMENT#_KNOB_VOLUME_DOWN)
-                    #ONCLICK#
-                    1 (&gt;L:XMLVAR_COM_UpdateReceivers)
+                    1 (&gt;L:XMLVAR_NAV_UpdateReceivers)
                 </LEFT_SINGLE_CODE>
                 <WWISE_EVENT></WWISE_EVENT>
                 <WWISE_EVENT_1>mcdubuttons</WWISE_EVENT_1>
@@ -775,6 +621,166 @@
                 <EMISSIVE_CODE>#TRANSMIT_EMISSIVE_CODE#</EMISSIVE_CODE>
             </UseTemplate>
         </Component>
+    </Template>
+
+    <!-- Used two templates due to the number of variables leading to an error of registers -->
+    <Template Name="FBW_AIRLINER_Audio_Panel_NAV_Updater">
+        <UseTemplate Name="ASOBO_GT_Update">
+            <FREQUENCY>15</FREQUENCY>
+            <UPDATE_CODE type="rnp">
+                if (L:XMLVAR_NAV_UpdateReceivers, bool) {
+                    let audioSwitchingKnob = (L:A32NX_AUDIOSWITCHING_KNOB, number);
+
+                    // VORs ACP1 and ACP2
+                    let knobVOR1ACP1 = (L:A32NX_ACP_NAV_L_VOR1_KNOB_VOLUME_DOWN, number);
+                    let knobVOR1ACP2 = (L:A32NX_ACP_NAV_R_VOR1_KNOB_VOLUME_DOWN, number);
+                    let knobVOR2ACP1 = (L:A32NX_ACP_NAV_L_VOR2_KNOB_VOLUME_DOWN, number);
+                    let knobVOR2ACP2 = (L:A32NX_ACP_NAV_R_VOR2_KNOB_VOLUME_DOWN, number);
+                    let volumeVOR1ACP1 = knobVOR1ACP1 * (L:A32NX_ACP_NAV_L_VOR1_VOLUME, number);
+                    let volumeVOR1ACP2 = knobVOR1ACP2 * (L:A32NX_ACP_NAV_R_VOR1_VOLUME, number);
+                    let volumeVOR2ACP1 = knobVOR2ACP1 * (L:A32NX_ACP_NAV_L_VOR2_VOLUME, number);
+                    let volumeVOR2ACP2 = knobVOR2ACP2 * (L:A32NX_ACP_NAV_R_VOR2_VOLUME, number);
+
+                    // ADFs ACP1 and ACP2
+                    let knobADF1ACP1 = (L:A32NX_ACP_NAV_L_ADF1_KNOB_VOLUME_DOWN, number);
+                    let knobADF1ACP2 = (L:A32NX_ACP_NAV_R_ADF1_KNOB_VOLUME_DOWN, number);
+                    let knobADF2ACP1 = (L:A32NX_ACP_NAV_L_ADF2_KNOB_VOLUME_DOWN, number);
+                    let knobADF2ACP2 = (L:A32NX_ACP_NAV_R_ADF2_KNOB_VOLUME_DOWN, number);
+                    let volumeADF1ACP1 = knobADF1ACP1 * (L:A32NX_ACP_NAV_L_ADF1_VOLUME, number);
+                    let volumeADF1ACP2 = knobADF1ACP2 * (L:A32NX_ACP_NAV_R_ADF1_VOLUME, number);
+                    let volumeADF2ACP1 = knobADF2ACP1 * (L:A32NX_ACP_NAV_L_ADF2_VOLUME, number);
+                    let volumeADF2ACP2 = knobADF2ACP2 * (L:A32NX_ACP_NAV_R_ADF2_VOLUME, number);
+
+                    // ILS and GLS ACP1 and ACP2
+                    let knobILSACP1 = (L:A32NX_ACP_NAV_L_ILS_KNOB_VOLUME_DOWN, number);
+                    let knobILSACP2 = (L:A32NX_ACP_NAV_R_ILS_KNOB_VOLUME_DOWN, number);
+                    let knobMLSACP1 = (L:A32NX_ACP_NAV_L_MLS_KNOB_VOLUME_DOWN, number);
+                    let knobMLSACP2 = (L:A32NX_ACP_NAV_R_MLS_KNOB_VOLUME_DOWN, number);
+                    let volumeILSACP1 = knobILSACP1 * (L:A32NX_ACP_NAV_L_ILS_VOLUME, number);
+                    let volumeILSACP2 = knobILSACP2 * (L:A32NX_ACP_NAV_R_ILS_VOLUME, number);
+                    let volumeMLSACP1 = knobMLSACP1 * (L:A32NX_ACP_NAV_L_MLS_VOLUME, number);
+                    let volumeMLSACP2 = knobMLSACP2 * (L:A32NX_ACP_NAV_R_MLS_VOLUME, number);
+
+                    // Markers ACP1 and ACP2
+                    let knobMKRACP1 = (L:A32NX_ACP_NAV_L_MKR_KNOB_VOLUME_DOWN, number);
+                    let knobMKRACP2 = (L:A32NX_ACP_NAV_R_MKR_KNOB_VOLUME_DOWN, number);
+                    let volumeMKRACP1 = knobMKRACP1 * (L:A32NX_ACP_NAV_L_MKR_VOLUME, number);
+                    let volumeMKRACP2 = knobMKRACP2 * (L:A32NX_ACP_NAV_R_MKR_VOLUME, number);
+
+                    // Use third ACP and either captain's or F/O's side depending of AudioSwitching knob position
+                    if audioSwitchingKnob != 1 {
+                        //VORs ACP3
+                        let knobVOR1ACP3 = (L:A32NX_ACP_NAV_OVHD_VOR1_KNOB_VOLUME_DOWN, number);
+                        let knobVOR2ACP3 = (L:A32NX_ACP_NAV_OVHD_VOR2_KNOB_VOLUME_DOWN, number);
+                        let volumeVOR1ACP3 = knobVOR1ACP3 * (L:A32NX_ACP_NAV_OVHD_VOR1_VOLUME, number);
+                        let volumeVOR2ACP3 = knobVOR2ACP3 * (L:A32NX_ACP_NAV_OVHD_VOR2_VOLUME, number);
+
+                        // ADFs ACP3
+                        let knobADF1ACP3 = (L:A32NX_ACP_NAV_OVHD_ADF1_KNOB_VOLUME_DOWN, number);
+                        let knobADF2ACP3 = (L:A32NX_ACP_NAV_OVHD_ADF2_KNOB_VOLUME_DOWN, number);
+                        let volumeADF1ACP3 = knobADF1ACP3 * (L:A32NX_ACP_NAV_OVHD_ADF1_VOLUME, number);
+                        let volumeADF2ACP3 = knobADF2ACP3 * (L:A32NX_ACP_NAV_OVHD_ADF2_VOLUME, number);
+
+                        // ILS and GLS ACP3
+                        let knobILSACP3 = (L:A32NX_ACP_NAV_OVHD_ILS_KNOB_VOLUME_DOWN, number);
+                        let knobMLSACP3 = (L:A32NX_ACP_NAV_OVHD_MLS_KNOB_VOLUME_DOWN, number);
+                        let volumeILSACP3 = knobILSACP3 * (L:A32NX_ACP_NAV_OVHD_ILS_VOLUME, number);
+                        let volumeMLSACP3 = knobMLSACP3 * (L:A32NX_ACP_NAV_OVHD_MLS_VOLUME, number);
+
+                        // Markers ACP3
+                        let knobMKRACP3 = (L:A32NX_ACP_NAV_OVHD_MKR_KNOB_VOLUME_DOWN, number);
+                        let volumeMKRACP3 = knobMKRACP3 * (L:A32NX_ACP_NAV_OVHD_MKR_VOLUME, number);
+
+                        // Use F/O's side as the knob is on captain's side
+                        if audioSwitchingKnob == 0 {
+                            let voice = (L:A32NX_ACP_NAV_OVHD_VOICE_KNOB_VOLUME_DOWN, bool) or (L:A32NX_ACP_NAV_R_VOICE_KNOB_VOLUME_DOWN, bool);
+
+                            (K:ADF1_VOLUME_SET) = volumeADF1ACP3.max(volumeADF1ACP2);
+                            (K:ADF2_VOLUME_SET) = volumeADF2ACP3.max(volumeADF2ACP2);
+
+                            (K:NAV1_VOLUME_SET) = volumeVOR1ACP3.max(volumeVOR1ACP2);
+                            (K:NAV2_VOLUME_SET) = volumeVOR2ACP3.max(volumeVOR2ACP2);
+                            (K:NAV3_VOLUME_SET) = volumeILSACP3.max(volumeILSACP2);
+                            (K:NAV4_VOLUME_SET) = volumeMLSACP3.max(volumeMLSACP2);
+
+                            (K:MARKER_VOLUME_SET) = volumeMKRACP3.max(volumeMKRACP2);
+
+                            (K:RADIO_VOR1_IDENT_SET) = (knobVOR1ACP3 == 1 or knobVOR1ACP2 == 1) and !voice;
+                            (K:RADIO_DME1_IDENT_SET) = (knobVOR1ACP3 == 1 or knobVOR1ACP2 == 1) and !voice;
+
+                            (K:RADIO_VOR2_IDENT_SET) = (knobVOR2ACP3 == 1 or knobVOR2ACP2 == 1) and !voice;
+                            (K:RADIO_DME2_IDENT_SET) = (knobVOR2ACP3 == 1 or knobVOR2ACP2 == 1) and !voice;
+
+                            (K:RADIO_DME3_IDENT_SET) = (knobILSACP3 == 1 or knobILSACP2 == 1) and !voice;
+                            (K:RADIO_DME4_IDENT_SET) = (knobMLSACP3 == 1 or knobMLSACP2 == 1) and !voice;
+
+                            (K:RADIO_ADF_IDENT_SET) = (knobADF1ACP3 == 1 or knobADF1ACP2 == 1) and !voice;
+                            (K:RADIO_ADF2_IDENT_SET) = (knobADF2ACP3 == 1 or knobADF2ACP2 == 1) and !voice;
+
+                            (K:MARKER_SOUND_SET) = (knobMKRACP3 == 1 or knobMKRACP2 == 1) and !voice;
+                        }
+
+                        // Use captains's side as the knob is on F/0's side
+                        if audioSwitchingKnob == 2 {
+                            let voice = (L:A32NX_ACP_NAV_OVHD_VOICE_KNOB_VOLUME_DOWN, bool) or (L:A32NX_ACP_NAV_L_VOICE_KNOB_VOLUME_DOWN, bool);
+
+                            (K:ADF1_VOLUME_SET) = volumeADF1ACP3.max(volumeADF1ACP1);
+                            (K:ADF2_VOLUME_SET) = volumeADF2ACP3.max(volumeADF2ACP1);
+
+                            (K:NAV1_VOLUME_SET) = volumeVOR1ACP3.max(volumeVOR1ACP1);
+                            (K:NAV2_VOLUME_SET) = volumeVOR2ACP3.max(volumeVOR2ACP1);
+                            (K:NAV3_VOLUME_SET) = volumeILSACP3.max(volumeILSACP1);
+                            (K:NAV4_VOLUME_SET) = volumeMLSACP3.max(volumeMLSACP1);
+
+                            (K:MARKER_VOLUME_SET) = volumeMKRACP3.max(volumeMKRACP1);
+
+                            (K:RADIO_VOR1_IDENT_SET) = (knobVOR1ACP3 == 1 or knobVOR1ACP1 == 1) and !voice;
+                            (K:RADIO_DME1_IDENT_SET) = (knobVOR1ACP3 == 1 or knobVOR1ACP1 == 1) and !voice;
+
+                            (K:RADIO_VOR2_IDENT_SET) = (knobVOR2ACP3 == 1 or knobVOR2ACP1 == 1) and !voice;
+                            (K:RADIO_DME2_IDENT_SET) = (knobVOR2ACP3 == 1 or knobVOR2ACP1 == 1) and !voice;
+
+                            (K:RADIO_DME3_IDENT_SET) = (knobILSACP3 == 1 or knobILSACP1 == 1) and !voice;
+                            (K:RADIO_DME4_IDENT_SET) = (knobMLSACP3 == 1 or knobMLSACP1 == 1) and !voice;
+
+                            (K:RADIO_ADF_IDENT_SET) = (knobADF1ACP3 == 1 or knobADF1ACP1 == 1) and !voice;
+                            (K:RADIO_ADF2_IDENT_SET) = (knobADF2ACP3 == 1 or knobADF2ACP1 == 1) and !voice;
+
+                            (K:MARKER_SOUND_SET) = (knobMKRACP3 == 1 or knobMKRACP1 == 1) and !voice;
+                        }
+                    } else {
+                        // Use Captain and F/O's side
+                        let voice = (L:A32NX_ACP_NAV_L_VOICE_KNOB_VOLUME_DOWN, bool) or (L:A32NX_ACP_NAV_R_VOICE_KNOB_VOLUME_DOWN, bool);
+
+                        (K:ADF1_VOLUME_SET) = volumeADF1ACP1.max(volumeADF1ACP2);
+                        (K:ADF2_VOLUME_SET) = volumeADF2ACP1.max(volumeADF2ACP2);
+
+                        (K:NAV1_VOLUME_SET) = volumeVOR1ACP1.max(volumeVOR1ACP2);
+                        (K:NAV2_VOLUME_SET) = volumeVOR2ACP1.max(volumeVOR2ACP2);
+                        (K:NAV3_VOLUME_SET) = volumeILSACP1.max(volumeILSACP2);
+                        (K:NAV4_VOLUME_SET) = volumeMLSACP1.max(volumeMLSACP2);
+
+                        (K:MARKER_VOLUME_SET) = volumeMKRACP1.max(volumeMKRACP2);
+
+                        (K:RADIO_VOR1_IDENT_SET) = (knobVOR1ACP1 == 1 or knobVOR1ACP2 == 1) and !voice;
+                        (K:RADIO_DME1_IDENT_SET) = (knobVOR1ACP1 == 1 or knobVOR1ACP2 == 1) and !voice;
+
+                        (K:RADIO_VOR2_IDENT_SET) = (knobVOR2ACP1 == 1 or knobVOR2ACP2 == 1) and !voice;
+                        (K:RADIO_DME2_IDENT_SET) = (knobVOR2ACP1 == 1 or knobVOR2ACP2 == 1) and !voice;
+
+                        (K:RADIO_DME3_IDENT_SET) = (knobILSACP1 == 1 or knobILSACP2 == 1) and !voice;
+                        (K:RADIO_DME4_IDENT_SET) = (knobMLSACP1 == 1 or knobMLSACP2 == 1) and !voice;
+
+                        (K:RADIO_ADF_IDENT_SET) = (knobADF1ACP1 == 1 or knobADF1ACP2 == 1) and !voice;
+                        (K:RADIO_ADF2_IDENT_SET) = (knobADF2ACP1 == 1 or knobADF2ACP2 == 1) and !voice;
+
+                        (K:MARKER_SOUND_SET) = (knobMKRACP1 == 1 or knobMKRACP2 == 1) and !voice;
+                    }
+
+                    (L:XMLVAR_NAV_UpdateReceivers) = 0;
+                }
+            </UPDATE_CODE>
+        </UseTemplate>
     </Template>
 
     <Template Name="FBW_AIRLINER_Audio_Panel_Updater">
@@ -793,68 +799,76 @@
 
                     let knobCOM1ACP1 = (L:A32NX_ACP1_VHF1_KNOB_VOLUME_DOWN, number);
                     let knobCOM1ACP2 = (L:A32NX_ACP2_VHF1_KNOB_VOLUME_DOWN, number);
-                    let knobCOM1ACP3 = (L:A32NX_ACP3_VHF1_KNOB_VOLUME_DOWN, number);
                     let knobCOM2ACP1 = (L:A32NX_ACP1_VHF2_KNOB_VOLUME_DOWN, number);
                     let knobCOM2ACP2 = (L:A32NX_ACP2_VHF2_KNOB_VOLUME_DOWN, number);
-                    let knobCOM2ACP3 = (L:A32NX_ACP3_VHF2_KNOB_VOLUME_DOWN, number);
                     let knobCOM3ACP1 = (L:A32NX_ACP1_VHF3_KNOB_VOLUME_DOWN, number);
                     let knobCOM3ACP2 = (L:A32NX_ACP2_VHF3_KNOB_VOLUME_DOWN, number);
 
-                    let knobADF1ACP1 = (L:A32NX_ACP_NAV_L_ADF1_KNOB_VOLUME_DOWN, number);
-                    let knobADF1ACP2 = (L:A32NX_ACP_NAV_R_ADF1_KNOB_VOLUME_DOWN, number);
-                    let knobADF2ACP1 = (L:A32NX_ACP_NAV_L_ADF2_KNOB_VOLUME_DOWN, number);
-                    let knobADF2ACP2 = (L:A32NX_ACP_NAV_R_ADF2_KNOB_VOLUME_DOWN, number);
+                    let volumeCOM1ACP1 = knobCOM1ACP1 * (L:A32NX_ACP1_VHF1_VOLUME, number);
+                    let volumeCOM1ACP2 = knobCOM1ACP2 * (L:A32NX_ACP2_VHF1_VOLUME, number);
+                    let volumeCOM2ACP1 = knobCOM2ACP1 * (L:A32NX_ACP1_VHF2_VOLUME, number);
+                    let volumeCOM2ACP2 = knobCOM2ACP2 * (L:A32NX_ACP2_VHF2_VOLUME, number);
+                    let volumeCOM3ACP1 = knobCOM3ACP1 * (L:A32NX_ACP1_VHF3_VOLUME, number);
+                    let volumeCOM3ACP2 = knobCOM3ACP2 * (L:A32NX_ACP2_VHF3_VOLUME, number);
 
-                    let volumeADF1ACP1 = knobADF1ACP1 * (L:A32NX_ACP1_VHF1_VOLUME, number) * 100;
-                    let volumeADF1ACP2 = knobADF1ACP2 * (L:A32NX_ACP1_VHF1_VOLUME, number) * 100;
-                    let volumeADF2ACP1 = knobADF2ACP1 * (L:A32NX_ACP1_VHF1_VOLUME, number) * 100;
-                    let volumeADF2ACP2 = knobADF2ACP2 * (L:A32NX_ACP1_VHF1_VOLUME, number) * 100;
+                    let volumeHF1ACP1 = (L:A32NX_ACP1_HF1_KNOB_VOLUME_DOWN, number) * (L:A32NX_ACP1_HF1_VOLUME, number);
+                    let volumeHF1ACP2 = (L:A32NX_ACP2_HF1_KNOB_VOLUME_DOWN, number) * (L:A32NX_ACP2_HF1_VOLUME, number);
+                    let volumeHF2ACP1 = (L:A32NX_ACP1_HF2_KNOB_VOLUME_DOWN, number) * (L:A32NX_ACP1_HF2_VOLUME, number);
+                    let volumeHF2ACP2 = (L:A32NX_ACP2_HF2_KNOB_VOLUME_DOWN, number) * (L:A32NX_ACP2_HF2_VOLUME, number);
 
-                    let volumeCOM1ACP1 = knobCOM1ACP1 * (L:A32NX_ACP1_VHF1_VOLUME, number) * 100;
-                    let volumeCOM1ACP2 = knobCOM1ACP2 * (L:A32NX_ACP2_VHF1_VOLUME, number) * 100;
-                    let volumeCOM2ACP1 = knobCOM2ACP1 * (L:A32NX_ACP1_VHF2_VOLUME, number) * 100;
-                    let volumeCOM2ACP2 = knobCOM2ACP2 * (L:A32NX_ACP2_VHF2_VOLUME, number) * 100;
-                    let volumeCOM3ACP1 = knobCOM3ACP1 * (L:A32NX_ACP1_VHF3_VOLUME, number) * 100;
-                    let volumeCOM3ACP2 = knobCOM3ACP2 * (L:A32NX_ACP2_VHF3_VOLUME, number) * 100;
+                    let volumePAACP1 = (L:A32NX_ACP1_PA_KNOB_VOLUME_DOWN, number) * (L:A32NX_ACP1_PA_VOLUME, number);
+                    let volumePAACP2 = (L:A32NX_ACP2_PA_KNOB_VOLUME_DOWN, number) * (L:A32NX_ACP2_PA_VOLUME, number);
+                    let volumeATTACP1 = (L:A32NX_ACP1_ATT_KNOB_VOLUME_DOWN, number) * (L:A32NX_ACP1_ATT_VOLUME, number);
+                    let volumeATTACP2 = (L:A32NX_ACP2_ATT_KNOB_VOLUME_DOWN, number) * (L:A32NX_ACP2_ATT_VOLUME, number);
+                    let volumeMECHACP1 = (L:A32NX_ACP1_MECH_KNOB_VOLUME_DOWN, number) * (L:A32NX_ACP1_MECH_VOLUME, number);
+                    let volumeMECHACP2 = (L:A32NX_ACP2_MECH_KNOB_VOLUME_DOWN, number) * (L:A32NX_ACP2_MECH_VOLUME, number);
 
                     // Use third ACP and either captain's or F/O's side depending of AudioSwitching knob position
                     if audioSwitchingKnob != 1 {
-                        let volumeCOM1 = (L:A32NX_ACP3_VHF1_KNOB_VOLUME_DOWN, number) * (L:A32NX_ACP3_VHF1_VOLUME, number) * 100;
-                        let volumeCOM2 = (L:A32NX_ACP3_VHF2_KNOB_VOLUME_DOWN, number) * (L:A32NX_ACP3_VHF2_VOLUME, number) * 100;
-                        let volumeCOM3 = (L:A32NX_ACP3_VHF3_KNOB_VOLUME_DOWN, number) * (L:A32NX_ACP3_VHF3_VOLUME, number) * 100;
+                        let knobCOM1ACP3 = (L:A32NX_ACP3_VHF1_KNOB_VOLUME_DOWN, number);
+                        let knobCOM2ACP3 = (L:A32NX_ACP3_VHF2_KNOB_VOLUME_DOWN, number);
 
-                        let volumeADF1 = (L:A32NX_ACP_NAV_OVHD_ADF1_KNOB_VOLUME_DOWN, number) * (L:A32NX_ACP_NAV_OVHD_ADF1_Volume, number) * 100;
-                        let volumeADF2 = (L:A32NX_ACP_NAV_OVHD_ADF2_KNOB_VOLUME_DOWN, number) * (L:A32NX_ACP_NAV_OVHD_ADF2_Volume, number) * 100;
+                        let volumeCOM1 = knobCOM1ACP3 * (L:A32NX_ACP3_VHF1_VOLUME, number);
+                        let volumeCOM2 = knobCOM2ACP3 * (L:A32NX_ACP3_VHF2_VOLUME, number);
+                        let volumeCOM3 = (L:A32NX_ACP3_VHF3_KNOB_VOLUME_DOWN, number) * (L:A32NX_ACP3_VHF3_VOLUME, number);
+
+                        let volumeHF1 = (L:A32NX_ACP3_HF1_KNOB_VOLUME_DOWN, number) * (L:A32NX_ACP3_HF1_VOLUME, number);
+                        let volumeHF2 = (L:A32NX_ACP3_HF2_KNOB_VOLUME_DOWN, number) * (L:A32NX_ACP3_HF2_VOLUME, number);
+                        let volumePA = (L:A32NX_ACP3_PA_KNOB_VOLUME_DOWN, number) * (L:A32NX_ACP3_PA_VOLUME, number);
+                        let volumeATT = (L:A32NX_ACP3_ATT_KNOB_VOLUME_DOWN, number) * (L:A32NX_ACP3_ATT_VOLUME, number);
+                        let volumeMECH = (L:A32NX_ACP3_MECH_KNOB_VOLUME_DOWN, number) * (L:A32NX_ACP3_MECH_VOLUME, number);
 
                         // Use F/O's side as the knob is on captain's side
                         if audioSwitchingKnob == 0 {
-                            volumeCOM1 = volumeCOM1.max(volumeCOM1ACP2);
-                            volumeCOM2 = volumeCOM2.max(volumeCOM2ACP2);
-                            volumeCOM3 = volumeCOM3.max(volumeCOM3ACP2);
+                            (K:COM1_VOLUME_SET) = volumeCOM1.max(volumeCOM1ACP2);
+                            (K:COM2_VOLUME_SET) = volumeCOM2.max(volumeCOM2ACP2);
+                            (K:COM3_VOLUME_SET) = volumeCOM3.max(volumeCOM3ACP2);
 
                             (K:COM1_RECEIVE_SELECT) = knobCOM1ACP3 == 1 or knobCOM1ACP2 == 1;
                             (K:COM2_RECEIVE_SELECT) = knobCOM2ACP3 == 1 or knobCOM2ACP2 == 1;
 
-                            (K:ADF1_VOLUME_SET) = volumeADF1.max(volumeADF1ACP2);
-                            (K:ADF2_VOLUME_SET) = volumeADF2.max(volumeADF2ACP2);
+                            (L:A32NX_HF1_VOLUME, number) = volumeHF1.max(volumeHF1ACP2);
+                            (L:A32NX_HF2_VOLUME, number) = volumeHF2.max(volumeHF2ACP2);
+                            (L:A32NX_PA_VOLUME, number) = volumePA.max(volumePAACP2);
+                            (L:A32NX_ATT_VOLUME, number) = volumeATT.max(volumeATTACP2);
+                            (L:A32NX_MECH_VOLUME, number) = volumeMECH.max(volumeMECHACP2);
                         }
 
                         // Use captains's side as the knob is on F/0's side
                         if audioSwitchingKnob == 2 {
-                            volumeCOM1 = volumeCOM1.max(volumeCOM1ACP1);
-                            volumeCOM2 = volumeCOM2.max(volumeCOM2ACP1);
-                            volumeCOM3 = volumeCOM3.max(volumeCOM3ACP1);
+                            (K:COM1_VOLUME_SET) = volumeCOM1.max(volumeCOM1ACP1);
+                            (K:COM2_VOLUME_SET) = volumeCOM2.max(volumeCOM2ACP1);
+                            (K:COM3_VOLUME_SET) = volumeCOM3.max(volumeCOM3ACP1);
 
                             (K:COM1_RECEIVE_SELECT) = knobCOM1ACP3 == 1 or knobCOM1ACP1 == 1;
                             (K:COM2_RECEIVE_SELECT) = knobCOM2ACP3 == 1 or knobCOM1ACP1 == 1;
 
-                            (K:ADF1_VOLUME_SET) = volumeADF1.max(volumeADF1ACP1);
-                            (K:ADF2_VOLUME_SET) = volumeADF2.max(volumeADF2ACP1);
+                            (L:A32NX_HF1_VOLUME, number) = volumeHF1.max(volumeHF1ACP1);
+                            (L:A32NX_HF2_VOLUME, number) = volumeHF2.max(volumeHF2ACP1);
+                            (L:A32NX_PA_VOLUME, number) = volumePA.max(volumePAACP1);
+                            (L:A32NX_ATT_VOLUME, number) = volumeATT.max(volumeATTACP1);
+                            (L:A32NX_MECH_VOLUME, number) = volumeMECH.max(volumeMECHACP1);
                         }
-
-                        (K:COM1_VOLUME_SET) = volumeCOM1;
-                        (K:COM2_VOLUME_SET) = volumeCOM2;
-                        (K:COM3_VOLUME_SET) = volumeCOM3;
                     } else {
                         // Use Captain and F/O's side
                         (K:COM1_VOLUME_SET) = volumeCOM1ACP1.max(volumeCOM1ACP2);
@@ -864,8 +878,11 @@
                         (K:COM1_RECEIVE_SELECT) = knobCOM1ACP1 == 1 or knobCOM1ACP2 == 1;
                         (K:COM2_RECEIVE_SELECT) = knobCOM2ACP1 == 1 or knobCOM2ACP2 == 1;
 
-                        (K:ADF1_VOLUME_SET) = volumeADF1ACP1.max(volumeADF1ACP2);
-                        (K:ADF2_VOLUME_SET) = volumeADF2ACP1.max(volumeADF2ACP2);
+                        (L:A32NX_HF1_VOLUME, number) = volumeHF1ACP1.max(volumeHF1ACP2);
+                        (L:A32NX_HF2_VOLUME, number) = volumeHF2ACP1.max(volumeHF2ACP2);
+                        (L:A32NX_PA_VOLUME, number) = volumePAACP1.max(volumePAACP2);
+                        (L:A32NX_ATT_VOLUME, number) = volumeATTACP1.max(volumeATTACP2);
+                        (L:A32NX_MECH_VOLUME, number) = volumeMECHACP1.max(volumeMECHACP2);
                     }
 
                     (L:XMLVAR_COM_UpdateReceivers) = 0;

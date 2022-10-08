@@ -25,6 +25,7 @@
 	  "COCKPIT.TOOLTIPS.NAV_KNOB_ILS_IDENT_ENABLE": "Turn on the ident of the ILS",
 	  "COCKPIT.TOOLTIPS.NAV_KNOB_ILS_IDENT_DISABLE": "Turn off the ident of the ILS",
       "COCKPIT.TOOLTIPS.LIGHTS_NOSMOKE_AUTO": "Set \"no smoke\" prompt light to AUTO",
+      "TT:COCKPIT.TOOLTIPS.NAV_PUSHBUTTON_RESET": "Reset CALL, ATT and MECH"
       "COCKPIT.TOOLTIPS.APU_AVAILABLE": "APU available",
       "A32NX.LOADING.TIPS.A320NEO_001": "The FlyByWire A32NX is a collaboration between hundreds of individual contributors.",
       "A32NX.LOADING.TIPS.A320NEO_002": "Did you know? The A320 can land at crosswinds up to 38 knots and tailwinds of up to 15 knots!",

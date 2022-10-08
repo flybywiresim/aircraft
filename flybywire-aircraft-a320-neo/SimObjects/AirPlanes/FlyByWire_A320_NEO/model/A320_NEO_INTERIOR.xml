@@ -2473,6 +2473,7 @@
                             }
 
                             1 (&gt;L:XMLVAR_COM_UpdateReceivers)
+                            1 (&gt;L:XMLVAR_NAV_UpdateReceivers)
                         </ON_SWITCH>
                     </UseTemplate>
                 </Component>
@@ -3966,6 +3967,7 @@
             </DefaultTemplateParameters>
             <Component ID="Updater">
                 <UseTemplate Name="FBW_AIRLINER_Audio_Panel_Updater"></UseTemplate>
+                <UseTemplate Name="FBW_AIRLINER_Audio_Panel_NAV_Updater"></UseTemplate>
             </Component>
             <!-- RMP 1 is powered by AC/DC ESS (via ESS TR for AC) -->
             <!-- For each ACP, VHF1 is powered with ESS (emergency circuit), VHF2 with AC/DC 2 and VHF3 with AC/DC 3 (via corresponding TR for AC) -->
