@@ -463,10 +463,12 @@ void FlightDataRecorderConverter::writeHeader(ofstream& out, const string& delim
   fmt::print(out, "data.failuresActive{}", delimiter);
   // a.floor
   fmt::print(out, "data.alpha_floor_condition{}", delimiter);
+  // high aoa protection
+  fmt::print(out, "data.high_aoa_protection{}", delimiter);
   // aoa - these are not correct yet
-  fmt::print(out, "data.protection_ap_disc{}", delimiter);
-  fmt::print(out, "data.v_alpha_prot_kn{}", delimiter);
-  fmt::print(out, "data.v_alpha_max_kn{}", delimiter);
+  //  fmt::print(out, "data.protection_ap_disc{}", delimiter);
+  //  fmt::print(out, "data.v_alpha_prot_kn{}", delimiter);
+  //  fmt::print(out, "data.v_alpha_max_kn{}", delimiter);
 
   fmt::print(out, "\n");
 }
@@ -935,10 +937,8 @@ void FlightDataRecorderConverter::writeStruct(ofstream& out,
   fmt::print(out, "{}{}", data.failuresActive, delimiter);
   // a.floor
   fmt::print(out, "{}{}", data.alpha_floor_condition, delimiter);
-  // aoa - these are not correct yet
-  fmt::print(out, "{}{}", data.protection_ap_disc, delimiter);
-  fmt::print(out, "{}{}", data.v_alpha_prot_kn, delimiter);
-  fmt::print(out, "{}{}", data.v_alpha_max_kn, delimiter);
+  // high aoa protection
+  fmt::print(out, "{}{}", data.high_aoa_protection, delimiter);
 
   fmt::print(out, "\n");
 }

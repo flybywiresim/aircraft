@@ -1057,9 +1057,8 @@ bool FlyByWireInterface::updateAdditionalData(double sampleTime) {
   additionalData.alpha_floor_condition = reinterpret_cast<Arinc429DiscreteWord*>(&facsBusOutputs[0].discrete_word_5)->bitFromValueOr(29, false) ||
                                          reinterpret_cast<Arinc429DiscreteWord*>(&facsBusOutputs[1].discrete_word_5)->bitFromValueOr(29, false);
   // these are not correct yet
-  additionalData.protection_ap_disc = clientDataFlyByWire.protection_ap_disc;
-  additionalData.v_alpha_prot_kn = clientDataFlyByWire.v_alpha_prot_kn;
-  additionalData.v_alpha_max_kn = clientDataFlyByWire.v_alpha_max_kn;
+  additionalData.high_aoa_protection = reinterpret_cast<Arinc429DiscreteWord*>(&elacsBusOutputs[0].discrete_status_word_2)->bitFromValueOr(23, false) ||
+                                       reinterpret_cast<Arinc429DiscreteWord*>(&elacsBusOutputs[1].discrete_status_word_2)->bitFromValueOr(23, false);
 
   return true;
 }

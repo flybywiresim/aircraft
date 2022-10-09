@@ -57,9 +57,6 @@ struct AdditionalData {
   double failuresActive;
   // a.floor
   double alpha_floor_condition;
-  // these are not correct yet
-  double protection_ap_disc;
-  double v_alpha_prot_kn;
-  double v_alpha_max_kn;
-
+  // high aoa protection
+  double high_aoa_protection;
 };
