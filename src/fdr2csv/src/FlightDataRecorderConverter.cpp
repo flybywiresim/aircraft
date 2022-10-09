@@ -443,6 +443,7 @@ void FlightDataRecorderConverter::writeHeader(ofstream& out, const string& delim
   fmt::print(out, "data.ls1Active{}", delimiter);
   fmt::print(out, "data.ls2Active{}", delimiter);
   fmt::print(out, "data.IsisLsActive{}", delimiter);
+  fmt::print(out, "data.wingAntiIce{}", delimiter);
   // Fix missing data for FDR Analysis
   // controller input data
   fmt::print(out, "data.inputElevator{}", delimiter);
@@ -914,6 +915,7 @@ void FlightDataRecorderConverter::writeStruct(ofstream& out,
   fmt::print(out, "{}{}", data.ls1Active, delimiter);
   fmt::print(out, "{}{}", data.ls2Active, delimiter);
   fmt::print(out, "{}{}", data.IsisLsActive, delimiter);
+  fmt::print(out, "{}{}", data.wingAntiIce, delimiter);
   // Fix missing data for FDR Analysis
   // controller input data
   fmt::print(out, "{}{}", data.inputElevator, delimiter);
