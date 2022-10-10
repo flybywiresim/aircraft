@@ -2229,18 +2229,6 @@ mod a380_electrical_circuit_tests {
             }
         }
     }
-    impl HydraulicGeneratorControlUnit for TestHydraulicSystem {
-        fn max_allowed_power(&self) -> Power {
-            if self.emergency_motor_speed.get::<revolution_per_minute>() > 10000. {
-                Power::new::<watt>(5000.)
-            } else {
-                Power::new::<watt>(0.)
-            }
-        }
-        fn motor_speed(&self) -> AngularVelocity {
-            self.emergency_motor_speed
-        }
-    }
 
     struct TestLandingGear {}
     impl TestLandingGear {

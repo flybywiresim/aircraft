@@ -5815,19 +5815,19 @@ mod tests {
             }
 
             fn green_edp_has_fault(&mut self) -> bool {
-                self.read_by_name("OVHD_HYD_ENG_1_PUMP_PB_HAS_FAULT")
+                self.read_by_name("OVHD_HYD_ENG_1A_PUMP_PB_HAS_FAULT")
             }
 
             fn yellow_edp_has_fault(&mut self) -> bool {
-                self.read_by_name("OVHD_HYD_ENG_2_PUMP_PB_HAS_FAULT")
+                self.read_by_name("OVHD_HYD_ENG_3A_PUMP_PB_HAS_FAULT")
             }
 
             fn is_yellow_edp_press_low(&mut self) -> bool {
                 self.read_by_name("HYD_YELLOW_EDPUMP_LOW_PRESS")
             }
 
-            fn is_yellow_epump_press_low(&mut self) -> bool {
-                self.read_by_name("HYD_YELLOW_EPUMP_LOW_PRESS")
+            fn is_yellow_epump_a_press_low(&mut self) -> bool {
+                self.read_by_name("HYD_YA_EPUMP_LOW_PRESS")
             }
 
             fn yellow_epump_has_fault(&mut self) -> bool {
@@ -6080,6 +6080,20 @@ mod tests {
                 self
             }
 
+            fn start_eng3(mut self, n2: Ratio) -> Self {
+                self.write_by_name("GENERAL ENG STARTER ACTIVE:3", true);
+                self.write_by_name("ENGINE_N2:3", n2);
+
+                self
+            }
+
+            fn start_eng4(mut self, n2: Ratio) -> Self {
+                self.write_by_name("GENERAL ENG STARTER ACTIVE:4", true);
+                self.write_by_name("ENGINE_N2:4", n2);
+
+                self
+            }
+
             fn stop_eng1(mut self) -> Self {
                 self.write_by_name("GENERAL ENG STARTER ACTIVE:1", false);
                 self.write_by_name("ENGINE_N2:1", 0.);
@@ -6132,23 +6146,18 @@ mod tests {
                 self
             }
 
-            fn set_yellow_e_pump(mut self, is_auto: bool) -> Self {
-                self.write_by_name("OVHD_HYD_EPUMPY_PB_IS_AUTO", is_auto);
+            fn set_yellow_e_pump_a(mut self, is_on: bool) -> Self {
+                self.write_by_name("OVHD_HYD_EPUMPYA_ON_PB_IS_AUTO", !is_on);
                 self
             }
 
             fn set_green_ed_pump(mut self, is_auto: bool) -> Self {
-                self.write_by_name("OVHD_HYD_ENG_1_PUMP_PB_IS_AUTO", is_auto);
+                self.write_by_name("OVHD_HYD_ENG_1A_PUMP_PB_IS_AUTO", is_auto);
                 self
             }
 
             fn set_yellow_ed_pump(mut self, is_auto: bool) -> Self {
-                self.write_by_name("OVHD_HYD_ENG_2_PUMP_PB_IS_AUTO", is_auto);
-                self
-            }
-
-            fn set_ptu_state(mut self, is_auto: bool) -> Self {
-                self.write_by_name("OVHD_HYD_PTU_PB_IS_AUTO", is_auto);
+                self.write_by_name("OVHD_HYD_ENG_3A_PUMP_PB_IS_AUTO", is_auto);
                 self
             }
 
@@ -6258,10 +6267,9 @@ mod tests {
             fn set_cold_dark_inputs(self) -> Self {
                 self.set_eng1_fire_button(false)
                     .set_eng2_fire_button(false)
-                    .set_yellow_e_pump(true)
+                    .set_yellow_e_pump_a(false)
                     .set_green_ed_pump(true)
                     .set_yellow_ed_pump(true)
-                    .set_ptu_state(true)
                     .set_park_brake(true)
                     .set_anti_skid(true)
                     .set_left_brake(Ratio::new::<percent>(0.))
@@ -6666,7 +6674,7 @@ mod tests {
                 .run_waiting_for(Duration::from_secs(5));
 
             assert!(test_bed.is_green_pressure_switch_pressurised());
-            assert!(test_bed.green_pressure() > Pressure::new::<psi>(2900.));
+            assert!(test_bed.green_pressure() > Pressure::new::<psi>(4500.));
 
             assert!(!test_bed.is_yellow_pressure_switch_pressurised());
             assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(50.));
@@ -6677,7 +6685,7 @@ mod tests {
                 .run_waiting_for(Duration::from_secs(20));
 
             assert!(!test_bed.is_green_pressure_switch_pressurised());
-            assert!(test_bed.green_pressure() < Pressure::new::<psi>(500.));
+            assert!(test_bed.green_pressure() < Pressure::new::<psi>(1500.));
 
             assert!(!test_bed.is_yellow_pressure_switch_pressurised());
             assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(50.));
@@ -6957,8 +6965,7 @@ mod tests {
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
-                .set_ptu_state(false)
-                .set_yellow_e_pump(false)
+                .set_yellow_e_pump_a(false)
                 .run_one_tick();
 
             // EDP should be commanded on even without engine running
@@ -6995,47 +7002,6 @@ mod tests {
         }
 
         #[test]
-        fn green_edp_press_low_engine_off_to_on_with_ptu() {
-            let mut test_bed = test_bed_on_ground_with()
-                .on_the_ground()
-                .set_cold_dark_inputs()
-                .set_park_brake(false)
-                .start_eng2(Ratio::new::<percent>(80.))
-                .run_one_tick();
-
-            // EDP should be LOW pressure state
-            assert!(test_bed.is_green_edp_press_low());
-
-            // Waiting for 20s pressure should be at 2300+ psi thanks to ptu
-            test_bed = test_bed.run_waiting_for(Duration::from_secs(20));
-
-            // Yellow pressurised by engine2, green presurised from ptu we expect fault LOW press on EDP1
-            assert!(test_bed.is_yellow_pressure_switch_pressurised());
-            assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(2800.));
-            assert!(test_bed.is_green_pressure_switch_pressurised());
-            assert!(test_bed.green_pressure() > Pressure::new::<psi>(2300.));
-            assert!(test_bed.is_green_edp_press_low());
-
-            // Starting eng 1 N2 is low at start
-            test_bed = test_bed
-                .start_eng1(Ratio::new::<percent>(3.))
-                .run_one_tick();
-
-            // Engine commanded on but pressure couldn't rise enough: we are in fault low
-            assert!(test_bed.is_green_edp_press_low());
-
-            // Waiting for 5s pressure should be at 3000 psi in EDP section
-            test_bed = test_bed
-                .start_eng1(Ratio::new::<percent>(80.))
-                .run_waiting_for(Duration::from_secs(5));
-
-            // No more fault LOW expected
-            assert!(test_bed.is_green_pressure_switch_pressurised());
-            assert!(test_bed.green_pressure() > Pressure::new::<psi>(2900.));
-            assert!(!test_bed.is_green_edp_press_low());
-        }
-
-        #[test]
         fn yellow_epump_press_low_at_pump_on() {
             let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
@@ -7044,13 +7010,13 @@ mod tests {
                 .run_one_tick();
 
             // EDP should not be in fault low when cold start
-            assert!(!test_bed.is_yellow_epump_press_low());
+            assert!(!test_bed.is_yellow_epump_a_press_low());
 
             // Starting epump
-            test_bed = test_bed.set_yellow_e_pump(false).run_one_tick();
+            test_bed = test_bed.set_yellow_e_pump_a(true).run_one_tick();
 
             // Pump commanded on but pressure couldn't rise enough: we are in fault low
-            assert!(test_bed.is_yellow_epump_press_low());
+            assert!(test_bed.is_yellow_epump_a_press_low());
 
             // Waiting for 20s pressure should be at 3000 psi
             test_bed = test_bed.run_waiting_for(Duration::from_secs(20));
@@ -7058,13 +7024,13 @@ mod tests {
             // No more fault LOW expected
             assert!(test_bed.is_yellow_pressure_switch_pressurised());
             assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(2500.));
-            assert!(!test_bed.is_yellow_epump_press_low());
+            assert!(!test_bed.is_yellow_epump_a_press_low());
 
             // Stoping epump, no fault expected
             test_bed = test_bed
-                .set_yellow_e_pump(true)
+                .set_yellow_e_pump_a(true)
                 .run_waiting_for(Duration::from_secs(1));
-            assert!(!test_bed.is_yellow_epump_press_low());
+            assert!(!test_bed.is_yellow_epump_a_press_low());
         }
 
         #[test]
@@ -7073,13 +7039,14 @@ mod tests {
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
-                .set_ptu_state(false)
                 .run_one_tick();
 
             // Starting eng 1 and eng 2
             test_bed = test_bed
                 .start_eng1(Ratio::new::<percent>(80.))
                 .start_eng2(Ratio::new::<percent>(80.))
+                .start_eng3(Ratio::new::<percent>(80.))
+                .start_eng4(Ratio::new::<percent>(80.))
                 .run_one_tick();
 
             // ALMOST No pressure
@@ -7248,14 +7215,13 @@ mod tests {
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
-                .set_ptu_state(false)
                 // Park brake off to not use fluid in brakes
                 .set_park_brake(false)
                 .run_one_tick();
 
             // Starting epump wait for pressure rise to make sure system is primed including brake accumulator
             test_bed = test_bed
-                .set_yellow_e_pump(false)
+                .set_yellow_e_pump_a(false)
                 .run_waiting_for(Duration::from_secs(20));
             assert!(test_bed.is_yellow_pressure_switch_pressurised());
             assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(3500.));
@@ -7263,7 +7229,7 @@ mod tests {
 
             // Shutdown and wait for pressure stabilisation
             test_bed = test_bed
-                .set_yellow_e_pump(true)
+                .set_yellow_e_pump_a(true)
                 .run_waiting_for(Duration::from_secs(50));
             assert!(!test_bed.is_yellow_pressure_switch_pressurised());
             assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(50.));
@@ -7293,7 +7259,7 @@ mod tests {
                 assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(-50.));
 
                 test_bed = test_bed
-                    .set_yellow_e_pump(false)
+                    .set_yellow_e_pump_a(false)
                     .run_waiting_for(Duration::from_secs(50));
 
                 assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(3500.));
@@ -7303,7 +7269,7 @@ mod tests {
                 assert!(current_res_level < reservoir_level_after_priming);
 
                 test_bed = test_bed
-                    .set_yellow_e_pump(true)
+                    .set_yellow_e_pump_a(true)
                     .run_waiting_for(Duration::from_secs(50));
                 assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(50.));
                 assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(-50.));
@@ -7327,7 +7293,6 @@ mod tests {
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
-                .set_ptu_state(false)
                 .run_one_tick();
 
             // Starting EDP wait for pressure rise to make sure system is primed
@@ -7481,7 +7446,7 @@ mod tests {
                 .set_left_brake(Ratio::new::<percent>(0.))
                 .set_right_brake(Ratio::new::<percent>(0.))
                 .set_park_brake(false)
-                .set_yellow_e_pump(false)
+                .set_yellow_e_pump_a(false)
                 .run_waiting_for(Duration::from_secs(30));
 
             assert!(test_bed.is_yellow_pressure_switch_pressurised());
@@ -7726,10 +7691,9 @@ mod tests {
 
             // Disabling green and yellow side so accumulator stop being able to reload
             test_bed = test_bed
-                .set_ptu_state(false)
                 .set_yellow_ed_pump(false)
                 .set_green_ed_pump(false)
-                .set_yellow_e_pump(true)
+                .set_yellow_e_pump_a(true)
                 .run_waiting_for(Duration::from_secs(30));
 
             assert!(test_bed.yellow_pressure() <= Pressure::new::<psi>(100.));
@@ -7846,8 +7810,7 @@ mod tests {
                 .start_eng1(Ratio::new::<percent>(100.))
                 .start_eng2(Ratio::new::<percent>(100.))
                 .set_park_brake(true)
-                .set_ptu_state(false)
-                .set_yellow_e_pump(true)
+                .set_yellow_e_pump_a(true)
                 .set_yellow_ed_pump(false)
                 .run_waiting_for(Duration::from_secs(15));
 
@@ -7959,7 +7922,6 @@ mod tests {
             assert!(test_bed.autobrake_mode() == AutobrakeMode::LOW);
 
             test_bed = test_bed
-                .set_ptu_state(false)
                 .stop_eng1()
                 .run_waiting_for(Duration::from_secs(20));
 
@@ -8274,11 +8236,11 @@ mod tests {
 
             assert!(!test_bed.query(|a| a.is_yellow_epump_controller_pressurising()));
 
-            test_bed = test_bed.set_yellow_e_pump(false).run_one_tick();
+            test_bed = test_bed.set_yellow_e_pump_a(false).run_one_tick();
 
             assert!(test_bed.query(|a| a.is_yellow_epump_controller_pressurising()));
 
-            test_bed = test_bed.set_yellow_e_pump(true).run_one_tick();
+            test_bed = test_bed.set_yellow_e_pump_a(true).run_one_tick();
 
             assert!(!test_bed.query(|a| a.is_yellow_epump_controller_pressurising()));
         }
@@ -8289,7 +8251,7 @@ mod tests {
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
-                .set_yellow_e_pump(false)
+                .set_yellow_e_pump_a(false)
                 .run_one_tick();
 
             assert!(test_bed.query(|a| a.is_yellow_epump_controller_pressurising()));
@@ -8404,7 +8366,7 @@ mod tests {
                 .run_one_tick();
 
             test_bed = test_bed
-                .set_yellow_e_pump(false)
+                .set_yellow_e_pump_a(false)
                 .run_waiting_for(Duration::from_secs(10));
 
             // Yellow epump working
@@ -8435,22 +8397,13 @@ mod tests {
                 .run_one_tick();
 
             test_bed = test_bed
-                .set_yellow_e_pump(false)
-                .set_ptu_state(false)
+                .set_yellow_e_pump_a(false)
                 .set_flaps_handle_position(4)
                 .run_waiting_for(Duration::from_secs(5));
 
             // Only yellow press so only flaps can move
             assert!(test_bed.is_flaps_moving());
             assert!(!test_bed.is_slats_moving());
-
-            // Now slats can move through ptu
-            test_bed = test_bed
-                .set_ptu_state(true)
-                .run_waiting_for(Duration::from_secs(5));
-
-            assert!(test_bed.is_flaps_moving());
-            assert!(test_bed.is_slats_moving());
         }
 
         #[test]
@@ -8462,7 +8415,7 @@ mod tests {
                 .run_one_tick();
 
             test_bed = test_bed
-                .set_yellow_e_pump(false)
+                .set_yellow_e_pump_a(false)
                 .run_waiting_for(Duration::from_secs(10));
 
             // Yellow epump working
@@ -8484,11 +8437,10 @@ mod tests {
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
-                .set_ptu_state(false)
                 .run_one_tick();
 
             test_bed = test_bed
-                .set_yellow_e_pump(false)
+                .set_yellow_e_pump_a(true)
                 .run_waiting_for(Duration::from_secs(20));
 
             assert!(test_bed.is_yellow_pressure_switch_pressurised());
@@ -8622,8 +8574,7 @@ mod tests {
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
-                .set_yellow_e_pump(false)
-                .set_ptu_state(false)
+                .set_yellow_e_pump_a(true)
                 .run_waiting_for(Duration::from_secs_f64(20.));
 
             assert!(test_bed.is_cargo_fwd_door_locked_down());
@@ -8703,7 +8654,7 @@ mod tests {
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
-                .set_yellow_e_pump(false)
+                .set_yellow_e_pump_a(false)
                 .start_eng1(Ratio::new::<percent>(80.))
                 .start_eng2(Ratio::new::<percent>(80.))
                 .run_one_tick();
@@ -8729,7 +8680,7 @@ mod tests {
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
-                .set_yellow_e_pump(false)
+                .set_yellow_e_pump_a(false)
                 .run_one_tick();
 
             test_bed = test_bed
@@ -8753,7 +8704,7 @@ mod tests {
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
-                .set_yellow_e_pump(false)
+                .set_yellow_e_pump_a(false)
                 .start_eng1(Ratio::new::<percent>(80.))
                 .start_eng2(Ratio::new::<percent>(80.))
                 .set_anti_skid(false)
@@ -8773,7 +8724,7 @@ mod tests {
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
-                .set_yellow_e_pump(false)
+                .set_yellow_e_pump_a(false)
                 .start_eng1(Ratio::new::<percent>(80.))
                 .start_eng2(Ratio::new::<percent>(80.))
                 .set_anti_skid(true)
@@ -8825,12 +8776,11 @@ mod tests {
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
-                .set_ptu_state(false)
                 .run_one_tick();
 
             test_bed = test_bed
                 .air_press_nominal()
-                .set_yellow_e_pump(false)
+                .set_yellow_e_pump_a(false)
                 .run_waiting_for(Duration::from_secs_f64(10.));
 
             assert!(test_bed.yellow_pressure().get::<psi>() > 2900.);
@@ -8882,7 +8832,7 @@ mod tests {
             assert!(!test_bed.yellow_epump_has_fault());
 
             test_bed = test_bed
-                .set_yellow_e_pump(false)
+                .set_yellow_e_pump_a(false)
                 .run_waiting_for(Duration::from_secs_f64(10.));
 
             assert!(test_bed.yellow_epump_has_fault());
@@ -8894,7 +8844,7 @@ mod tests {
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
-                .set_yellow_e_pump(false)
+                .set_yellow_e_pump_a(false)
                 .run_waiting_for(Duration::from_millis(8000));
 
             assert!(test_bed.is_yellow_pressure_switch_pressurised());
@@ -8942,8 +8892,7 @@ mod tests {
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
-                .set_ptu_state(true)
-                .set_yellow_e_pump(false)
+                .set_yellow_e_pump_a(false)
                 .run_one_tick();
 
             test_bed = test_bed
@@ -8969,8 +8918,7 @@ mod tests {
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
-                .set_ptu_state(true)
-                .set_yellow_e_pump(false)
+                .set_yellow_e_pump_a(false)
                 .run_one_tick();
 
             test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(8.));
@@ -8980,8 +8928,7 @@ mod tests {
             assert!(test_bed.get_right_aileron_position().get::<ratio>() > 0.45);
 
             test_bed = test_bed
-                .set_ptu_state(false)
-                .set_yellow_e_pump(true)
+                .set_yellow_e_pump_a(true)
                 .run_waiting_for(Duration::from_secs_f64(50.));
 
             assert!(!test_bed.is_green_pressure_switch_pressurised());
@@ -9093,7 +9040,7 @@ mod tests {
                 .set_gear_lever_down()
                 .set_green_ed_pump(false)
                 .set_yellow_ed_pump(false)
-                .set_yellow_e_pump(false)
+                .set_yellow_e_pump_a(false)
                 .run_waiting_for(Duration::from_secs_f64(15.));
 
             assert!(test_bed.is_yellow_pressure_switch_pressurised());
@@ -9135,7 +9082,6 @@ mod tests {
 
             test_bed = test_bed
                 .set_green_ed_pump(false)
-                .set_ptu_state(false)
                 .turn_emergency_gear_extension_n_turns(3)
                 .run_waiting_for(Duration::from_secs_f64(35.));
 
@@ -9223,7 +9169,7 @@ mod tests {
         fn spoilers_move_to_requested_position() {
             let mut test_bed = test_bed_on_ground_with()
                 .set_cold_dark_inputs()
-                .set_yellow_e_pump(false)
+                .set_yellow_e_pump_a(false)
                 .run_waiting_for(Duration::from_secs_f64(5.));
 
             assert!(test_bed.green_pressure() > Pressure::new::<psi>(2900.));
