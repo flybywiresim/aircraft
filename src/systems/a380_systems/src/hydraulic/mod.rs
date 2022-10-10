@@ -6137,11 +6137,6 @@ mod tests {
                 self
             }
 
-            fn set_blue_e_pump(mut self, is_auto: bool) -> Self {
-                self.write_by_name("OVHD_HYD_EPUMPB_PB_IS_AUTO", is_auto);
-                self
-            }
-
             fn set_green_ed_pump(mut self, is_auto: bool) -> Self {
                 self.write_by_name("OVHD_HYD_ENG_1_PUMP_PB_IS_AUTO", is_auto);
                 self
@@ -6263,7 +6258,6 @@ mod tests {
             fn set_cold_dark_inputs(self) -> Self {
                 self.set_eng1_fire_button(false)
                     .set_eng2_fire_button(false)
-                    .set_blue_e_pump(true)
                     .set_yellow_e_pump(true)
                     .set_green_ed_pump(true)
                     .set_yellow_ed_pump(true)
@@ -8633,7 +8627,6 @@ mod tests {
                 .run_waiting_for(Duration::from_secs_f64(20.));
 
             assert!(test_bed.is_cargo_fwd_door_locked_down());
-            assert!(test_bed.is_yellow_pressure_switch_pressurised());
 
             let pressurised_yellow_level_door_closed = test_bed.get_yellow_reservoir_volume();
 
@@ -8944,26 +8937,6 @@ mod tests {
         }
 
         #[test]
-        fn ailerons_do_not_respond_if_only_yellow_pressure() {
-            let mut test_bed = test_bed_on_ground_with()
-                .engines_off()
-                .on_the_ground()
-                .set_cold_dark_inputs()
-                .set_ptu_state(false)
-                .set_yellow_e_pump(false)
-                .run_one_tick();
-
-            test_bed = test_bed
-                .set_ailerons_left_turn()
-                .run_waiting_for(Duration::from_secs_f64(6.));
-
-            assert!(test_bed.is_yellow_pressure_switch_pressurised());
-            assert!(!test_bed.is_green_pressure_switch_pressurised());
-            assert!(test_bed.get_left_aileron_position().get::<ratio>() < 0.1);
-            assert!(test_bed.get_right_aileron_position().get::<ratio>() < 0.1);
-        }
-
-        #[test]
         fn ailerons_respond_if_green_pressure() {
             let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
@@ -9014,118 +8987,6 @@ mod tests {
             assert!(!test_bed.is_green_pressure_switch_pressurised());
             assert!(test_bed.get_left_aileron_position().get::<ratio>() < 0.42);
             assert!(test_bed.get_right_aileron_position().get::<ratio>() < 0.42);
-        }
-
-        #[test]
-        fn elevators_droop_down_after_pressure_is_off() {
-            let mut test_bed = test_bed_on_ground_with()
-                .engines_off()
-                .on_the_ground()
-                .set_cold_dark_inputs()
-                .set_ptu_state(true)
-                .set_yellow_e_pump(false)
-                .run_one_tick();
-
-            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(8.));
-
-            assert!(test_bed.is_yellow_pressure_switch_pressurised());
-            assert!(test_bed.is_green_pressure_switch_pressurised());
-            assert!(test_bed.get_left_elevator_position().get::<ratio>() > 0.35);
-            assert!(test_bed.get_right_elevator_position().get::<ratio>() > 0.35);
-
-            test_bed = test_bed
-                .set_ptu_state(false)
-                .set_yellow_e_pump(true)
-                .run_waiting_for(Duration::from_secs_f64(75.));
-
-            assert!(!test_bed.is_yellow_pressure_switch_pressurised());
-            assert!(!test_bed.is_green_pressure_switch_pressurised());
-            assert!(test_bed.get_left_elevator_position().get::<ratio>() < 0.3);
-            assert!(test_bed.get_right_elevator_position().get::<ratio>() < 0.3);
-        }
-
-        #[test]
-        fn elevators_can_go_up_and_down_with_pressure() {
-            let mut test_bed = test_bed_on_ground_with()
-                .engines_off()
-                .on_the_ground()
-                .set_cold_dark_inputs()
-                .run_one_tick();
-
-            test_bed = test_bed
-                .set_elevator_full_up()
-                .run_waiting_for(Duration::from_secs_f64(5.));
-
-            assert!(test_bed.get_left_elevator_position().get::<ratio>() > 0.9);
-            assert!(test_bed.get_right_elevator_position().get::<ratio>() > 0.9);
-
-            test_bed = test_bed
-                .set_elevator_full_down()
-                .run_waiting_for(Duration::from_secs_f64(1.5));
-
-            assert!(test_bed.get_left_elevator_position().get::<ratio>() < 0.1);
-            assert!(test_bed.get_right_elevator_position().get::<ratio>() < 0.1);
-        }
-
-        #[test]
-        fn elevators_centers_with_pressure_but_no_computer_command() {
-            let mut test_bed = test_bed_on_ground_with()
-                .engines_off()
-                .on_the_ground()
-                .set_cold_dark_inputs()
-                .run_one_tick();
-
-            test_bed = test_bed
-                .set_elevator_full_up()
-                .run_waiting_for(Duration::from_secs_f64(5.));
-
-            assert!(test_bed.get_left_elevator_position().get::<ratio>() > 0.9);
-            assert!(test_bed.get_right_elevator_position().get::<ratio>() > 0.9);
-
-            test_bed = test_bed
-                .set_elac_actuators_de_energized()
-                .run_waiting_for(Duration::from_secs_f64(2.));
-
-            assert!(test_bed.get_left_elevator_position().get::<ratio>() < 0.4);
-            assert!(test_bed.get_right_elevator_position().get::<ratio>() < 0.4);
-
-            assert!(test_bed.get_left_elevator_position().get::<ratio>() > 0.3);
-            assert!(test_bed.get_right_elevator_position().get::<ratio>() > 0.3);
-        }
-
-        #[test]
-        fn cargo_door_operation_closes_yellow_leak_meas_valve() {
-            let mut test_bed = test_bed_on_ground_with()
-                .engines_off()
-                .on_the_ground()
-                .set_cold_dark_inputs()
-                .run_one_tick();
-
-            test_bed = test_bed
-                .open_fwd_cargo_door()
-                .run_waiting_for(Duration::from_secs_f64(10.));
-
-            assert!(test_bed.yellow_pressure().get::<psi>() > 500.);
-            assert!(!test_bed.is_yellow_leak_meas_valve_commanded_open());
-            assert!(!test_bed.is_yellow_pressure_switch_pressurised());
-        }
-
-        #[test]
-        fn cargo_door_operation_but_yellow_epump_on_opens_yellow_leak_meas_valve() {
-            let mut test_bed = test_bed_on_ground_with()
-                .engines_off()
-                .on_the_ground()
-                .set_cold_dark_inputs()
-                .run_one_tick();
-
-            test_bed = test_bed
-                .open_fwd_cargo_door()
-                .set_yellow_e_pump(false)
-                .run_waiting_for(Duration::from_secs_f64(10.));
-
-            assert!(test_bed.yellow_pressure().get::<psi>() > 500.);
-            assert!(test_bed.is_yellow_leak_meas_valve_commanded_open());
-            assert!(test_bed.is_yellow_pressure_switch_pressurised());
         }
 
         #[test]
