@@ -1,5 +1,6 @@
 #include "FailuresConsumer.h"
 #include <utility>
+#include <algorithm>
 
 FailuresConsumer::FailuresConsumer() {
   activeFailures.emplace(std::make_pair<Failures, bool>(Failures::Elac1, false));
