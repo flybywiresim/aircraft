@@ -120,7 +120,7 @@ const PseudoFWC: React.FC = () => {
     /* ANTI-ICE */
     const [eng1AntiIce] = useSimVar('ENG ANTI ICE:1', 'bool', 500);
     const [eng2AntiIce] = useSimVar('ENG ANTI ICE:2', 'bool', 500);
-    const [wingAntiIce] = useSimVar('STRUCTURAL DEICE SWITCH', 'bool', 500);
+    const [wingAntiIce] = useSimVar('L:A32NX_PNEU_WING_ANTI_ICE_SYSTEM_SELECTED', 'bool', 500);
     const [icePercentage] = useSimVar('STRUCTURAL ICE PCT', 'percent over 100', 500);
     const [tat] = useSimVar('TOTAL AIR TEMPERATURE', 'celsius', 1000);
     const [inCloud] = useSimVar('AMBIENT IN CLOUD', 'boolean', 1000);

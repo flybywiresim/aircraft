@@ -491,6 +491,8 @@ void FlyByWireInterface::setupLocalVariables() {
   idLs1Active = make_unique<LocalVariable>("BTN_LS_1_FILTER_ACTIVE");
   idLs2Active = make_unique<LocalVariable>("BTN_LS_2_FILTER_ACTIVE");
   idIsisLsActive = make_unique<LocalVariable>("A32NX_ISIS_LS_ACTIVE");
+  
+  idWingAntiIce = make_unique<LocalVariable>("A32NX_PNEU_WING_ANTI_ICE_SYSTEM_ON");
 
   for (int i = 0; i < 2; i++) {
     string idString = std::to_string(i + 1);
@@ -1023,6 +1025,8 @@ bool FlyByWireInterface::updateAdditionalData(double sampleTime) {
   additionalData.ls1Active = idLs1Active->get();
   additionalData.ls2Active = idLs2Active->get();
   additionalData.IsisLsActive = idIsisLsActive->get();
+
+  additionalData.wingAntiIce = idWingAntiIce->get();
 
   return true;
 }
@@ -2387,7 +2391,7 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
     autoThrustInput.in.input.thrust_reduction_altitude_go_around = idFmgcThrustReductionAltitudeGoAround->get();
     autoThrustInput.in.input.flight_phase = idFmgcFlightPhase->get();
     autoThrustInput.in.input.is_alt_soft_mode_active = autopilotStateMachineOutput.ALT_soft_mode_active;
-    autoThrustInput.in.input.is_anti_ice_wing_active = simData.wingAntiIce == 1;
+    autoThrustInput.in.input.is_anti_ice_wing_active = additionalData.wingAntiIce == 1;
     autoThrustInput.in.input.is_anti_ice_engine_1_active = simData.engineAntiIce_1 == 1;
     autoThrustInput.in.input.is_anti_ice_engine_2_active = simData.engineAntiIce_2 == 1;
     autoThrustInput.in.input.is_air_conditioning_1_active = idAirConditioningPack_1->get();
