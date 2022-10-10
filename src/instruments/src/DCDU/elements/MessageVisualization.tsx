@@ -15,6 +15,7 @@ interface ColorizedLine {
 }
 
 type MessageVisualizationProps = {
+    messageUid: number,
     message: string,
     backgroundColor: [number, number, number],
     keepNewlines?: boolean,
@@ -25,7 +26,8 @@ type MessageVisualizationProps = {
     deltaY: number,
     seperatorLine?: number,
     watchdogIndices?: number[],
-    updateSystemStatusMessage: (status: DcduStatusMessage) => void
+    updateSystemStatusMessage: (status: DcduStatusMessage) => void,
+    reachedEndOfMessage: (uid: number, reachedEnd: boolean) => void
 }
 
 function visualizeLine(line: ColorizedWord[], startIdx: number, startY: number, deltaY: number, useDeltaY: boolean, reminder: boolean, ignoreHighlight: boolean, backgroundActive: boolean) {
@@ -240,8 +242,8 @@ function createVisualizationLines(message: string, keepNewlines: boolean, watchd
 }
 
 export const MessageVisualization: React.FC<MessageVisualizationProps> = memo(({
-    message, backgroundColor, messageIsReminder, keepNewlines = false, ignoreHighlight, cssClass, yStart, deltaY,
-    seperatorLine = null, watchdogIndices = [], updateSystemStatusMessage,
+    messageUid, message, backgroundColor, messageIsReminder, keepNewlines = false, ignoreHighlight, cssClass, yStart, deltaY,
+    seperatorLine = null, watchdogIndices = [], updateSystemStatusMessage, reachedEndOfMessage,
 }) => {
     const [pageIndex, setPageIndex] = useState(0);
     const [pageCount, setPageCount] = useState(0);
@@ -252,6 +254,7 @@ export const MessageVisualization: React.FC<MessageVisualizationProps> = memo(({
             return;
         }
 
+        reachedEndOfMessage(messageUid, pageCount === 1);
         if (pageIndex > 0) {
             updateSystemStatusMessage(DcduStatusMessage.NoMessage);
             setPageIndex(pageIndex - 1);
@@ -264,6 +267,8 @@ export const MessageVisualization: React.FC<MessageVisualizationProps> = memo(({
             return;
         }
 
+        // actual pageIndex is the one below and the index starts at 0 -> increase by one
+        reachedEndOfMessage(messageUid, pageCount <= pageIndex + 2);
         if (pageCount > pageIndex + 1) {
             updateSystemStatusMessage(DcduStatusMessage.NoMessage);
             setPageIndex(pageIndex + 1);
@@ -278,9 +283,12 @@ export const MessageVisualization: React.FC<MessageVisualizationProps> = memo(({
 
     let lines = createVisualizationLines(message, keepNewlines, watchdogIndices);
 
-    // get the number of pages
-    const messagePageCount = Math.ceil(lines.length / maxLines);
+    // calculate visualized lines, incl. repeated last line of previous page
+    // thereafter get the number of pages
+    const messagePageCountWithoutOverlap = Math.ceil(lines.length / maxLines);
+    const messagePageCount = Math.ceil((lines.length + messagePageCountWithoutOverlap - 1) / maxLines);
     if (messagePageCount !== pageCount) {
+        reachedEndOfMessage(messageUid, messagePageCount === 1);
         setPageCount(messagePageCount);
         setPageIndex(0);
     }
@@ -291,7 +299,7 @@ export const MessageVisualization: React.FC<MessageVisualizationProps> = memo(({
     }
 
     // get the indices
-    const startIndex = pageIndex * maxLines;
+    const startIndex = pageIndex * maxLines - pageIndex;
     const endIndex = Math.min(startIndex + maxLines, lines.length);
 
     // get visible lines

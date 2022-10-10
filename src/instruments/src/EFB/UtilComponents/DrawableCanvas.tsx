@@ -25,7 +25,7 @@ export const DrawableCanvas = ({
 
     useEffect(() => {
         if (canvasRef.current) {
-            console.log(canvasRef.current.getContext('2d'));
+            // console.log(canvasRef.current.getContext('2d'));
         }
     }, [canvasRef.current]);
 

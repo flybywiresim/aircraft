@@ -87,6 +87,7 @@ impl A380Electrical {
         self.emergency_elec
             .update(context, electricity, &self.alternating_current);
 
+        // TODO update emergency gen to the A380 rat generator
         // self.emergency_gen.update(gcu);
 
         self.alternating_current.update(
@@ -424,7 +425,7 @@ mod a380_electrical_circuit_tests {
         failures::FailureType,
         shared::{
             ApuAvailable, ContactorSignal, ControllerSignal, ElectricalBusType, ElectricalBuses,
-            HydraulicGeneratorControlUnit, PotentialOrigin,
+            PotentialOrigin,
         },
         simulation::{
             test::{ReadByName, SimulationTestBed, TestBed, WriteByName},
