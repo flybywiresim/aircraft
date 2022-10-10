@@ -83,7 +83,7 @@
 1. [MODEL] Fixed screens flickering in SU10 - @tyler58546 (tyler58546)
 1. [EFB] Added Local Files support - @ErickSharp (Erick Torres) @frankkopp (Frank Kopp)
 1. [BLEED] Added custom Wing Anti-Ice model - @omrygin, @Eagle941 (Joe)
-1. [ENGINE] Improved engine primary parameters performance (EGT & Fuel Flow) - @Taz5150 (TazX [Z+2]#0405)
+1.  [ENGINE] Improved engine primary parameters performance (EGT & Fuel Flow) - @Taz5150 (TazX [Z+2]#0405)
 
 ## 0.8.0
 
