@@ -23,6 +23,7 @@ export type NDSimvars = AdirsSimVars & SwitchingPanelVSimVars & {
     selectedHeading: Degrees;
     pposLat: Degrees;
     pposLong: Degrees;
+    weatherActive: number;
   }
 
 export enum NDVars {
@@ -41,7 +42,8 @@ export enum NDVars {
     selectedWaypointLong = 'L:A32NX_SELECTED_WAYPOINT_LONG',
     selectedHeading = 'L:A32NX_AUTOPILOT_HEADING_SELECTED',
     pposLat = 'PLANE LATITUDE', // TODO replace with fm position
-    pposLong = 'PLANE LONGITUDE', // TODO replace with fm position
+    pposLong = 'PLANE LONGITUDE', // TODO replace with fm position,
+    weatherActive = 'L:XMLVAR_A320_WeatherRadar_Sys',
 }
 
 /** A publisher to poll and publish nav/com simvars. */
@@ -65,6 +67,7 @@ export class NDSimvarPublisher extends SimVarPublisher<NDSimvars> {
         ['selectedHeading', { name: NDVars.selectedHeading, type: SimVarValueType.Degree }],
         ['pposLat', { name: NDVars.pposLat, type: SimVarValueType.Degree }],
         ['pposLong', { name: NDVars.pposLong, type: SimVarValueType.Degree }],
+        ['weatherActive', { name: NDVars.weatherActive, type: SimVarValueType.Number }],
     ])
 
     public constructor(bus: EventBus) {

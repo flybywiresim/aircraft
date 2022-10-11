@@ -15,7 +15,7 @@
   left: 0;
   width: 768px;
   height: 768px;
-  background: $display-background;
+  background: none;
   font-family: "Ecam", monospace !important;
 }
 
@@ -282,4 +282,23 @@ rect.shadow {
   opacity: 0.75;
   background-color: rgba(0, 0, 255, 0.025);
   box-shadow: inset 0px 0px 30px 10px rgba(0, 75, 255, 0.04);
+}
+
+.WeatherWrapper {
+  position: absolute;
+  top: 210px;
+}
+
+.Weather {
+  position: absolute;
+}
+
+.arc {
+  clip-path: url(#arc-mode-wx-terr-clip);
+  -webkit-clip-path: url(#arc-mode-wx-terr-clip);
+}
+
+.rose {
+  clip-path: url(#rose-mode-wx-terr-clip);
+  -webkit-clip-path: url(#rose-mode-wx-terr-clip);
 }

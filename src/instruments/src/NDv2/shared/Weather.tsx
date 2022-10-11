@@ -1,12 +1,16 @@
-import { NDWeatherSimvarPublisher, NDWeatherSimvars } from 'instruments/src/nd-weather/NDWeatherSimvarPublisher';
-import { ArraySubject, DisplayComponent, EventBus, FSComponent, MapBingLayer, MapSystemBuilder, MapSystemKeys, MapWxrModule, SimVarValueType, Subject, UnitType, VNode } from 'msfssdk';
+import { EfisNdMode } from '@shared/NavigationDisplay';
+import { EcpSimVars } from 'instruments/src/MsfsAvionicsCommon/providers/EcpBusSimVarPublisher';
+import {
+    ArraySubject, ConsumerSubject, DisplayComponent, EventBus,
+    FSComponent, MapBingLayer, MapSystemBuilder, MapSystemKeys, MapWxrModule, SetSubject, Subject, UnitType, VNode,
+} from 'msfssdk';
+import { NDSimvars } from '../NDSimvarPublisher';
 
-const getDisplayIndex = () => {
-    const url = document.getElementsByTagName('nd-weather')[0].getAttribute('url');
-    return url ? parseInt(url.substring(url.length - 1), 10) : 0;
-};
+export class WeatherComponent extends DisplayComponent<{bus: EventBus, mode: Subject<number>}> {
+    private bingClass = SetSubject.create('arc');
 
-export class WeatherComponent extends DisplayComponent<{bus: EventBus, simVarPublisher: NDWeatherSimvarPublisher}> {
+    private readonly mapRangeSub = ConsumerSubject.create(this.props.bus.getSubscriber<EcpSimVars>().on('ndRangeSetting').whenChanged(), -1);
+
     private compiledMap = MapSystemBuilder.create(this.props.bus)
         // .withFollowAirplane()
         .withModule(MapSystemKeys.Weather, () => new MapWxrModule())
@@ -19,16 +23,14 @@ export class WeatherComponent extends DisplayComponent<{bus: EventBus, simVarPub
             <MapBingLayer
                 model={context.model}
                 mapProjection={context.projection}
-                /** hack to send bing image id to ND
-                 * this id is used in BingComponent.tsx to set the image id
-                 * to be removed in ndv2  */
-                bingId={`A32NX_${getDisplayIndex() === 1 ? 'L' : 'R'}`}
+                bingId="A32NX_ND_WEATHER"
                 reference={Subject.create(EBingReference.SEA)}
                 earthColors={ArraySubject.create()}
                 isoLines={Subject.create(false)}
                 wxrMode={weather.wxrMode}
                 mode={EBingMode.PLANE}
                 delay={0}
+                class={this.bingClass}
             />
         );
     }, 0)
@@ -41,10 +43,6 @@ export class WeatherComponent extends DisplayComponent<{bus: EventBus, simVarPub
 
      public onAfterRender(node: VNode): void {
          super.onAfterRender(node);
-
-         if (getDisplayIndex() !== 1) {
-             this.props.simVarPublisher.updateSimvarSource('ndRange', { name: 'L:A32NX_EFIS_R_ND_RANGE', type: SimVarValueType.Number });
-         }
          const map = this.compiledMap.context.getLayer('bing') as MapBingLayer;
 
          this.compiledMap.context.projection.set({ range: UnitType.NMILE.convertTo(20, UnitType.GA_RADIAN) });
@@ -53,21 +51,22 @@ export class WeatherComponent extends DisplayComponent<{bus: EventBus, simVarPub
          this.weatherModule.isEnabled.set(true);
          this.weatherModule.weatherRadarArc.set(UnitType.DEGREE.createNumber(360));
 
-         const sub = this.props.bus.getSubscriber<NDWeatherSimvars>();
+         const sub = this.props.bus.getSubscriber<NDSimvars>();
 
          sub.on('weatherActive').whenChanged().handle((w) => {
              if (w === 0) {
-                 //  this.weatherModule.isEnabled.set(true);
+                 this.weatherModule.isEnabled.set(true);
                  this.compiledMap.ref.instance.wake();
                  this.compiledMap.context.projection.set({ range: UnitType.NMILE.convertTo(this.range, UnitType.GA_RADIAN) });
                  map.onUpdated(0, 0);
              } else {
-                 //     this.weatherModule.isEnabled.set(false);
+                 this.weatherModule.isEnabled.set(false);
                  this.compiledMap.ref.instance.sleep();
              }
          });
 
-         sub.on('ndRange').whenChanged().handle((r) => {
+         this.mapRangeSub.sub((r) => {
+             console.log('RANGE', r);
              if (r === 0) {
                  this.range = 10;
              } else if (r === 1) {
@@ -85,16 +84,29 @@ export class WeatherComponent extends DisplayComponent<{bus: EventBus, simVarPub
              map.onUpdated(0, 0);
          });
 
+         this.props.mode.sub((m) => {
+             if (m === EfisNdMode.ARC) {
+                 this.bingClass.add('arc');
+                 this.bingClass.delete('rose');
+             } else if (m === EfisNdMode.ROSE_ILS || EfisNdMode.ROSE_NAV || EfisNdMode.ROSE_VOR) {
+                 this.bingClass.add('rose');
+                 this.bingClass.delete('arc');
+             } else {
+                 this.bingClass.delete('arc');
+                 this.bingClass.delete('rose');
+             }
+         });
+
          setTimeout(() => {
              map.onUpdated(0, 0);
-         }, 5000);
+         }, 100);
      }
 
      render(): VNode {
          return (
-             <>
+             <div class="WeatherWrapper" display={this.props.mode.map((m) => (m === EfisNdMode.PLAN ? 'none' : 'inline'))}>
                  { this.compiledMap.map }
-             </>
+             </div>
 
          );
      }

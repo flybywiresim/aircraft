@@ -4,6 +4,7 @@ import { Arinc429Word } from '@shared/arinc429';
 import { SimVarString } from '@shared/simvar';
 import { EfisNdMode, EfisNdRangeValue, rangeSettings } from '@shared/NavigationDisplay';
 import { TcasMode } from '@tcas/lib/TcasConstants';
+import { WeatherComponent } from './shared/Weather';
 import { DisplayUnit } from '../MsfsAvionicsCommon/displayUnit';
 import { AdirsSimVars } from '../MsfsAvionicsCommon/SimVarTypes';
 import { NDSimvars } from './NDSimvarPublisher';
@@ -198,6 +199,7 @@ export class NDComponent extends DisplayComponent<NDProps> {
     render(): VNode | null {
         return (
             <DisplayUnit bus={this.props.bus}>
+                <WeatherComponent bus={this.props.bus} mode={this.currentPageMode} />
                 {/* ND Vector graphics - bottom layer */}
                 <svg class="nd-svg" viewBox="0 0 768 768">
                     <WindIndicator bus={this.props.bus} />

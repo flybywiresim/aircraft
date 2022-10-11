@@ -167,12 +167,9 @@ rect.shadow {
 }
 
 .weather {
-//  clip-path: url(#arc-mode-wx-terr-clip);
-//@extend  -webkit-clip-path: url(#arc-mode-wx-terr-clip);
   z-index: 90 !important;
   top: 210px;
 }
-
 
 .arc {
   clip-path: url(#arc-mode-wx-terr-clip);

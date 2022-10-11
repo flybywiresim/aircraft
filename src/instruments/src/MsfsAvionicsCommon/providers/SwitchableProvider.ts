@@ -8,7 +8,7 @@ export interface SwitchableSimVarDefinition<TState> {
 
 export abstract class SwitchableSimVarProvider<TSimVar, TState> extends SimVarPublisher<TSimVar> {
     protected constructor(
-        private simVars: Map<keyof TSimVar, SwitchableSimVarDefinition<TState>>,
+        private simVars: Map<any, SwitchableSimVarDefinition<TState>>,
         public stateSubject: Subject<TState>,
         bus: EventBus,
     ) {
@@ -21,15 +21,15 @@ export abstract class SwitchableSimVarProvider<TSimVar, TState> extends SimVarPu
         for (const [key, value] of this.simVars) {
             const newName = value.name(newStateValue);
 
-            this.updateSimVarSource(key, { name: newName, type: value.type });
+            this.updateSimvarSource(key, { name: newName, type: value.type });
         }
     }
 }
 
 function definitions<TSimVar, TState>(
-    simVars: Map<keyof TSimVar, SwitchableSimVarDefinition<TState>>,
+    simVars: Map<any, SwitchableSimVarDefinition<TState>>,
     state: TState,
-): Map<keyof TSimVar, SimVarDefinition> {
+): Map<keyof TSimVar & string, SimVarDefinition> {
     return new Map(Array.from(simVars.entries()).map(([k, v]) => [k, {
         name: v.name(state),
         type: v.type,

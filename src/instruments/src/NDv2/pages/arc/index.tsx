@@ -1,6 +1,9 @@
-import { FSComponent, ComponentProps, MappedSubject, Subject, Subscribable, VNode, EventBus, ConsumerSubject } from 'msfssdk';
+import { FSComponent, ComponentProps, MappedSubject, Subject, Subscribable, VNode, EventBus, ConsumerSubject, ObjectSubject } from 'msfssdk';
 import { Arinc429Word } from '@shared/arinc429';
 import { EfisNdMode, rangeSettings } from '@shared/NavigationDisplay';
+import { WeatherComponent } from 'instruments/src/NDv2/shared/Weather';
+import { NDSimvars } from 'instruments/src/NDv2/NDSimvarPublisher';
+import { Arinc429Values } from 'instruments/src/NDv2/shared/ArincValueProvider';
 import { TrackBug } from '../../shared/TrackBug';
 import { ArcModeUnderlay } from './ArcModeUnderlay';
 import { SelectedHeadingBug } from './SelectedHeadingBug';
@@ -27,6 +30,8 @@ export interface ArcModePageProps extends ComponentProps {
 
 export class ArcModePage extends NDPage<ArcModePageProps> {
     public isVisible = Subject.create(false);
+
+    private isWeatherEnabled = Subject.create(false);
 
     // TODO these two should be FM pos maybe ?
 
@@ -73,10 +78,11 @@ export class ArcModePage extends NDPage<ArcModePageProps> {
 
         this.handleMovePlane();
 
-        const sub = this.props.bus.getSubscriber<AdirsSimVars & EcpSimVars>();
+        const sub = this.props.bus.getSubscriber<AdirsSimVars & EcpSimVars & NDSimvars & Arinc429Values>();
 
-        sub.on('latitude').whenChanged().handle((v) => this.pposLatWord.set(new Arinc429Word(v)));
-        sub.on('longitude').whenChanged().handle((v) => this.pposLonWord.set(new Arinc429Word(v)));
+        sub.on('latitudeAr').withArinc429Precision(3).handle((v) => this.pposLatWord.set(v));
+        sub.on('longitudeAr').withArinc429Precision(3).handle((v) => this.pposLonWord.set(v));
+        sub.on('weatherActive').whenChanged().handle((w) => this.isWeatherEnabled.set(w !== 1));
     }
 
     onAfterRender(node: VNode) {
@@ -192,6 +198,10 @@ export class ArcModePage extends NDPage<ArcModePageProps> {
     render(): VNode | null {
         return (
             <g visibility={this.isVisible.map((visible) => (visible ? 'visible' : 'hidden'))}>
+                <text x={680} y={612} fontSize={22} class="Green" style="white-space: pre;" visibility={this.isWeatherEnabled.map((visible) => (visible ? 'visible' : 'hidden'))}>
+                    {'    WX'}
+
+                </text>
                 <ArcModeUnderlay
                     bus={this.props.bus}
                     ringAvailable={this.ringAvailable}

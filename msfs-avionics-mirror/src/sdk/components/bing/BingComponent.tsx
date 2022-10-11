@@ -23,10 +23,6 @@ export interface WxrMode {
   /** The size of the weather radar arc in front of the plane, in radians. */
   arcRadians: number;
 }
-const getDisplayIndex = () => {
-  const url = document.getElementsByTagName('nd-weather')[0].getAttribute('url');
-  return url ? parseInt(url.substring(url.length - 1), 10) : 0;
-};
 
 /**
  * Component props for the MapComponent.
@@ -281,8 +277,6 @@ export class BingComponent extends DisplayComponent<BingComponentProps> {
       this.binder = binder;
       this.uid = uid;
 
-      // NOTE: remove this in NDV2
-      SimVar.SetSimVarValue(`L:A32NX_WEATHER_BING_ID_${getDisplayIndex() === 1 ? 'L' : 'R'}`, "number", uid);
       if (this._isBound) {
         return;
       }
