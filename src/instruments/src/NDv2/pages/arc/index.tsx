@@ -80,8 +80,8 @@ export class ArcModePage extends NDPage<ArcModePageProps> {
 
         const sub = this.props.bus.getSubscriber<AdirsSimVars & EcpSimVars & NDSimvars & Arinc429Values>();
 
-        sub.on('latitudeAr').withArinc429Precision(3).handle((v) => this.pposLatWord.set(v));
-        sub.on('longitudeAr').withArinc429Precision(3).handle((v) => this.pposLonWord.set(v));
+        sub.on('latitude').handle((v) => this.pposLatWord.set(new Arinc429Word(v)));
+        sub.on('longitude').handle((v) => this.pposLonWord.set(new Arinc429Word(v)));
         sub.on('weatherActive').whenChanged().handle((w) => this.isWeatherEnabled.set(w !== 1));
     }
 

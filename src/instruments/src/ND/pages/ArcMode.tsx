@@ -4,7 +4,6 @@ import { getSmallestAngle } from '@instruments/common/utils';
 import { MathUtils } from '@shared/MathUtils';
 import { EfisNdRangeValue, EfisNdMode, EfisSide, NdSymbol } from '@shared/NavigationDisplay';
 import { ArmedLateralMode, isArmed, LateralMode } from '@shared/autopilot';
-import { WeatherRadarProvider } from '../elements/WeatherRadarProvider';
 import { FlightPlan } from '../elements/FlightPlan';
 import { MapParameters } from '../utils/MapParameters';
 import { RadioNeedle } from '../elements/RadioNeedles';
@@ -21,10 +20,9 @@ export interface ArcModeProps {
     side: EfisSide,
     ppos: LatLongData,
     mapHidden: boolean,
-    weatherEnabled: boolean,
 }
 
-export const ArcMode: React.FC<ArcModeProps> = ({ symbols, adirsAlign, rangeSetting, side, ppos, mapHidden, weatherEnabled }) => {
+export const ArcMode: React.FC<ArcModeProps> = ({ symbols, adirsAlign, rangeSetting, side, ppos, mapHidden }) => {
     const [magHeading] = useSimVar('PLANE HEADING DEGREES MAGNETIC', 'degrees');
     const [magTrack] = useSimVar('GPS GROUND MAGNETIC TRACK', 'degrees');
     const [trueHeading] = useSimVar('PLANE HEADING DEGREES TRUE', 'degrees');
@@ -56,15 +54,9 @@ export const ArcMode: React.FC<ArcModeProps> = ({ symbols, adirsAlign, rangeSett
         mapParams.compute(ppos, rangeSetting, 492, trueHeading);
     }, [ppos.lat, ppos.long, trueHeading, rangeSetting].map((n) => MathUtils.fastToFixed(n, 6)));
 
-    if (true) {
+    if (adirsAlign) {
         return (
             <>
-                {weatherEnabled && (
-                    <text x={680} y={612} fontSize={22} className="Green">
-                        {'    WX'}
-
-                    </text>
-                )}
                 <Overlay
                     heading={heading}
                     rangeSetting={rangeSetting}
@@ -167,22 +159,22 @@ const Overlay: React.FC<OverlayProps> = memo(({ heading, rangeSetting, tcasMode 
             )}
             { (tcasMode > 0 && rangeSetting === 10) && (
                 <g>
-                    <line x1={384} x2={384} y1={497 - 6} y2={497 + 6} className="rounded White" transform="rotate(-60 384 620)" />
-                    <line x1={384} x2={384} y1={497 - 6} y2={497 + 6} className="rounded White" transform="rotate(-30 384 620)" />
-                    <line x1={384} x2={384} y1={497 - 6} y2={497 + 6} className="rounded White" transform="rotate(0 384 620)" />
-                    <line x1={384} x2={384} y1={497 - 6} y2={497 + 6} className="rounded White" transform="rotate(30 384 620)" />
-                    <line x1={384} x2={384} y1={497 - 6} y2={497 + 6} className="rounded White" transform="rotate(60 384 620)" />
+                    <line x1={384} x2={384} y1={497 - 6} y2={497 + 6} className="White rounded" transform="rotate(-60 384 620)" />
+                    <line x1={384} x2={384} y1={497 - 6} y2={497 + 6} className="White rounded" transform="rotate(-30 384 620)" />
+                    <line x1={384} x2={384} y1={497 - 6} y2={497 + 6} className="White rounded" transform="rotate(0 384 620)" />
+                    <line x1={384} x2={384} y1={497 - 6} y2={497 + 6} className="White rounded" transform="rotate(30 384 620)" />
+                    <line x1={384} x2={384} y1={497 - 6} y2={497 + 6} className="White rounded" transform="rotate(60 384 620)" />
                 </g>
             )}
 
             {/* R = 62 */}
             { (tcasMode > 0 && rangeSetting === 20) && (
                 <g>
-                    <line x1={384} x2={384} y1={558 - 6} y2={558 + 6} className="rounded White" transform="rotate(-60 384 620)" />
-                    <line x1={384} x2={384} y1={558 - 6} y2={558 + 6} className="rounded White" transform="rotate(-30 384 620)" />
-                    <line x1={384} x2={384} y1={558 - 6} y2={558 + 6} className="rounded White" transform="rotate(0 384 620)" />
-                    <line x1={384} x2={384} y1={558 - 6} y2={558 + 6} className="rounded White" transform="rotate(30 384 620)" />
-                    <line x1={384} x2={384} y1={558 - 6} y2={558 + 6} className="rounded White" transform="rotate(60 384 620)" />
+                    <line x1={384} x2={384} y1={558 - 6} y2={558 + 6} className="White rounded" transform="rotate(-60 384 620)" />
+                    <line x1={384} x2={384} y1={558 - 6} y2={558 + 6} className="White rounded" transform="rotate(-30 384 620)" />
+                    <line x1={384} x2={384} y1={558 - 6} y2={558 + 6} className="White rounded" transform="rotate(0 384 620)" />
+                    <line x1={384} x2={384} y1={558 - 6} y2={558 + 6} className="White rounded" transform="rotate(30 384 620)" />
+                    <line x1={384} x2={384} y1={558 - 6} y2={558 + 6} className="White rounded" transform="rotate(60 384 620)" />
                 </g>
             )}
         </g>
@@ -613,13 +605,13 @@ const TrackBug: React.FC<{heading: number, track: number}> = memo(({ heading, tr
             <path
                 d="M384,128 L378,138 L384,148 L390,138 L384,128"
                 transform={`rotate(${diff} 384 620)`}
-                className="rounded shadow"
+                className="shadow rounded"
                 strokeWidth={3.5}
             />
             <path
                 d="M384,128 L378,138 L384,148 L390,138 L384,128"
                 transform={`rotate(${diff} 384 620)`}
-                className="rounded Green"
+                className="Green rounded"
                 strokeWidth={3}
             />
         </>
@@ -637,13 +629,13 @@ const LsCourseBug: React.FC<{heading: number, lsCourse: number}> = ({ heading, l
             <path
                 d="M384,122 L384,74 M376,114 L392,114"
                 transform={`rotate(${diff} 384 620)`}
-                className="rounded shadow"
+                className="shadow rounded"
                 strokeWidth={2.5}
             />
             <path
                 d="M384,122 L384,74 M376,114 L392,114"
                 transform={`rotate(${diff} 384 620)`}
-                className="rounded Magenta"
+                className="Magenta rounded"
                 strokeWidth={2}
             />
         </>
@@ -662,13 +654,13 @@ const SelectedHeadingBug: React.FC<{heading: number, selected: number}> = ({ hea
                 <path
                     d="M382,126 L370,99 L398,99 L386,126"
                     transform={`rotate(${diff} 384 620)`}
-                    className="rounded shadow"
+                    className="shadow rounded"
                     strokeWidth={3.5}
                 />
                 <path
                     d="M382,126 L370,99 L398,99 L386,126"
                     transform={`rotate(${diff} 384 620)`}
-                    className="rounded Cyan"
+                    className="Cyan rounded"
                     strokeWidth={3}
                 />
             </>
@@ -680,7 +672,7 @@ const SelectedHeadingBug: React.FC<{heading: number, selected: number}> = ({ hea
             y={60}
             textAnchor="middle"
             transform={`rotate(${(diff) < 0 ? -38 : 38} 384 620)`}
-            className="shadow Cyan"
+            className="Cyan shadow"
             fontSize={22}
         >
             {`${Math.round(selected).toString().padStart(3, '0')}`}

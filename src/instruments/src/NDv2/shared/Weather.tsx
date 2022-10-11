@@ -1,4 +1,4 @@
-import { EfisNdMode } from '@shared/NavigationDisplay';
+import { EfisNdMode, rangeSettings } from '@shared/NavigationDisplay';
 import { EcpSimVars } from 'instruments/src/MsfsAvionicsCommon/providers/EcpBusSimVarPublisher';
 import {
     ArraySubject, ConsumerSubject, DisplayComponent, EventBus,
@@ -66,20 +66,7 @@ export class WeatherComponent extends DisplayComponent<{bus: EventBus, mode: Sub
          });
 
          this.mapRangeSub.sub((r) => {
-             console.log('RANGE', r);
-             if (r === 0) {
-                 this.range = 10;
-             } else if (r === 1) {
-                 this.range = 20;
-             } else if (r === 2) {
-                 this.range = 40;
-             } else if (r === 3) {
-                 this.range = 80;
-             } else if (r === 4) {
-                 this.range = 160;
-             } else if (r === 5) {
-                 this.range = 320;
-             }
+             this.range = rangeSettings[r];
              this.compiledMap.context.projection.set({ range: UnitType.NMILE.convertTo(this.range, UnitType.GA_RADIAN) });
              map.onUpdated(0, 0);
          });

@@ -49,8 +49,6 @@ const NavigationDisplay: React.FC = () => {
     const [rangeIndex] = useSimVar(displayIndex === 1 ? 'L:A32NX_EFIS_L_ND_RANGE' : 'L:A32NX_EFIS_R_ND_RANGE', 'number', 100);
     const [modeIndex] = useSimVar(displayIndex === 1 ? 'L:A32NX_EFIS_L_ND_MODE' : 'L:A32NX_EFIS_R_ND_MODE', 'number', 100);
 
-    const [weatherEnabled] = useSimVar('L:XMLVAR_A320_WeatherRadar_Sys', 'number', 100);
-
     const [modeChangeShown, setModeChangeShown] = useState(false);
     const [rangeChangeShown, setRangeChangeShown] = useState(false);
 
@@ -104,10 +102,8 @@ const NavigationDisplay: React.FC = () => {
             electricitySimvar={displayIndex === 1 ? 'L:A32NX_ELEC_AC_ESS_BUS_IS_POWERED' : 'L:A32NX_ELEC_AC_2_BUS_IS_POWERED'}
             potentiometerIndex={displayIndex === 1 ? 89 : 91}
         >
-
             <FlightPlanProvider>
-                <svg className="nd-svg" version="1.1" viewBox="0 0 768 768" style={{ position: 'absolute', zIndex: 100 }}>
-
+                <svg className="nd-svg" version="1.1" viewBox="0 0 768 768">
                     <SpeedIndicator adrs={airDataReferenceSource} irs={inertialReferenceSource} />
                     <WindIndicator adrs={airDataReferenceSource} irs={inertialReferenceSource} />
 
@@ -133,7 +129,6 @@ const NavigationDisplay: React.FC = () => {
                             side={side}
                             ppos={ppos}
                             mapHidden={modeChangeShown || rangeChangeShown}
-                            weatherEnabled={weatherEnabled !== 1}
                         />
                     )}
                     {(modeIndex === EfisNdMode.ROSE_ILS || modeIndex === EfisNdMode.ROSE_VOR || modeIndex === EfisNdMode.ROSE_NAV)
