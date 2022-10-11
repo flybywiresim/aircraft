@@ -325,7 +325,7 @@ export namespace FSComponent {
           if (actualKey === 'ref' && props.ref !== undefined) {
             props.ref.instance = element;
           } else {
-            const prop = (props as any)[actualKey];
+            const prop = (props as any)[key];
             if (actualKey === 'class' && typeof prop === 'object' && 'isSubscribableSet' in prop) {
               // Bind CSS classes to a subscribable set
               prop.sub((set: any, eventType: SubscribableSetEventType, modifiedKey: any) => {

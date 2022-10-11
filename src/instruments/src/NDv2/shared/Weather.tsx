@@ -12,7 +12,6 @@ export class WeatherComponent extends DisplayComponent<{bus: EventBus, mode: Sub
     private readonly mapRangeSub = ConsumerSubject.create(this.props.bus.getSubscriber<EcpSimVars>().on('ndRangeSetting').whenChanged(), -1);
 
     private compiledMap = MapSystemBuilder.create(this.props.bus)
-        // .withFollowAirplane()
         .withModule(MapSystemKeys.Weather, () => new MapWxrModule())
         .withLayer<MapBingLayer, {
     [MapSystemKeys.Weather]: MapWxrModule
@@ -69,7 +68,7 @@ export class WeatherComponent extends DisplayComponent<{bus: EventBus, mode: Sub
              this.range = rangeSettings[r];
              this.compiledMap.context.projection.set({ range: UnitType.NMILE.convertTo(this.range, UnitType.GA_RADIAN) });
              map.onUpdated(0, 0);
-         });
+         }, true);
 
          this.props.mode.sub((m) => {
              if (m === EfisNdMode.ARC) {
@@ -82,7 +81,7 @@ export class WeatherComponent extends DisplayComponent<{bus: EventBus, mode: Sub
                  this.bingClass.delete('arc');
                  this.bingClass.delete('rose');
              }
-         });
+         }, true);
 
          setTimeout(() => {
              map.onUpdated(0, 0);
