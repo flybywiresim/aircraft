@@ -1,3 +1,4 @@
+import { BasicConsumer } from './BasicConsumer';
 import { Consumer } from './Consumer';
 import { EventBus } from './EventBus';
 
@@ -17,7 +18,9 @@ export class EventSubscriber<E> {
    * @param topic The topic to subscribe to.
    * @returns A consumer to bind the event handler to.
    */
-  public on<K extends keyof E>(topic: K): Consumer<E[K]> {
-    return new Consumer<E[K]>(this.bus, topic as string);
+  public on<K extends keyof E & string>(topic: K): Consumer<E[K]> {
+    return new BasicConsumer<E[K]>((handler, paused) => {
+      return this.bus.on(topic, handler, paused);
+    });
   }
 }

@@ -3,6 +3,7 @@
  */
 export enum SimVarValueType {
     Number = 'number',
+    Percent = 'percent',
     Degree = 'degrees',
     Knots = 'knots',
     Feet = 'feet',
@@ -23,6 +24,7 @@ export enum SimVarValueType {
     Farenheit = 'farenheit',
     PSI = 'psi',
     GAL = 'gallons',
+    LBS = 'pounds',
     Hours = 'Hours',
     Volts = 'Volts',
     Amps = 'Amperes',
@@ -30,7 +32,9 @@ export enum SimVarValueType {
     Enum = 'Enum',
     LLA = 'latlonalt',
     MetersPerSecond = 'meters per second',
-    GForce = 'G Force',
+    Mach = 'mach',
+    Pounds = 'pounds',
+    SlugsPerCubicFoot = 'slug per cubic foot'
 }
 
 /**
@@ -44,9 +48,3 @@ export type SimVarDefinition = {
     /** The value to be used to retrieve this simvar. */
     type: SimVarValueType,
 }
-
-/**
- * Stub type for simvars to extend
- */
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface SimVarEventTypes { }

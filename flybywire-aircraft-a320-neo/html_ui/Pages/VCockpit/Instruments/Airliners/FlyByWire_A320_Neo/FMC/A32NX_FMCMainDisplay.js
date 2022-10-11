@@ -1502,7 +1502,7 @@ class FMCMainDisplay extends BaseAirliners {
             profilePoint.climbSpeed = currentSpeedConstraint;
             profilePoint.previousClimbSpeed = previousSpeedConstraint;
             profilePoint.climbAltitude = currentClbConstraint;
-            profilePoint.descentAltitude = currentDesConstraint;
+            profilePoint.descentAltitude = Math.max(destinationElevation, currentDesConstraint);
             previousSpeedConstraint = currentSpeedConstraint;
 
             // set some data for LNAV to use for coarse predictions while we lack vnav

@@ -18,7 +18,7 @@ export class HEventPublisher extends BasePublisher<HEvent>{
    * @param sync Whether this event should be synced (optional, default false)
    */
   public dispatchHEvent(hEvent: string, sync = false): void {
-    //console.log(`dispaching hevent:  ${hEvent}`);
+    // console.log(`dispaching hevent:  ${hEvent}`);
     this.publish('hEvent', hEvent, sync, false);
   }
 }
