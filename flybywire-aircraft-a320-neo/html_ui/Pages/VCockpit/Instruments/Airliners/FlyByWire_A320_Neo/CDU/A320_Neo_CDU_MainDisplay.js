@@ -1232,12 +1232,16 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         };
 
         this.socket.onmessage = (event) => {
-            const message = event.data;
-            if (message.startsWith("event:")) {
-                SimVar.SetSimVarValue(`H:A320_Neo_CDU_1_BTN_${message.substring(6)}`, "number", 0);
-                SimVar.SetSimVarValue(`L:A32NX_MCDU_PUSH_ANIM_1_${message.substring(6)}`, "Number", 1);
+            const [messageType, ...args] = event.data.split(':');
+            if (messageType === 'event') {
+                // backwards compatible with the old MCDU server...
+                // accepts either event:button_name (old), or event:side:button_name (current)
+                const mcduIndex = (args.length > 1 && args[0] === 'right') ? 2 : 1;
+                const button = args.length > 1 ? args[1] : args[0];
+                SimVar.SetSimVarValue(`H:A320_Neo_CDU_${mcduIndex}_BTN_${button}`, "number", 0);
+                SimVar.SetSimVarValue(`L:A32NX_MCDU_PUSH_ANIM_${mcduIndex}_${button}`, "Number", 1);
             }
-            if (message === "requestUpdate") {
+            if (messageType === "requestUpdate") {
                 this.sendUpdate();
             }
         };

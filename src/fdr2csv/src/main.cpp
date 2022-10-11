@@ -5,17 +5,16 @@
 #include "AutopilotLaws_types.h"
 #include "AutopilotStateMachine_types.h"
 #include "Autothrust_types.h"
-#include "CommandLine.hpp"
 #include "EngineData.h"
 #include "FlightDataRecorderConverter.h"
-#include "FlyByWire_types.h"
-#include "fmt/core.h"
+#include "commandline/CommandLine.hpp"
+#include "fmt/include/fmt/core.h"
 #include "zfstream.h"
 
 using namespace std;
 
 // IMPORTANT: this constant needs to increased with every interface change
-const uint64_t INTERFACE_VERSION = 21;
+const uint64_t INTERFACE_VERSION = 23;
 
 int main(int argc, char* argv[]) {
   // variables for command line parameters
@@ -50,11 +49,6 @@ int main(int argc, char* argv[]) {
     args.printHelp();
     cout << endl;
     return 0;
-  }
-
-  // print size of struct
-  if (printStructSize) {
-    fmt::print("Size of struct for reading is '{}' bytes\n", sizeof(fbw_output));
   }
 
   // check parameters
@@ -117,13 +111,11 @@ int main(int argc, char* argv[]) {
 
   // calculate number of entries
   auto counter = 0;
-  auto numberOfEntries = filesystem::file_size(inFilePath) / sizeof(fbw_output);
 
   // struct for reading
   ap_sm_output data_ap_sm = {};
   ap_raw_output data_ap_laws = {};
   athr_out data_athr = {};
-  fbw_output data_fbw = {};
   EngineData data_engine = {};
   AdditionalData data_additional = {};
 
@@ -133,11 +125,10 @@ int main(int argc, char* argv[]) {
     in->read(reinterpret_cast<char*>(&data_ap_sm), sizeof(ap_sm_output));
     in->read(reinterpret_cast<char*>(&data_ap_laws), sizeof(ap_raw_output));
     in->read(reinterpret_cast<char*>(&data_athr), sizeof(athr_out));
-    in->read(reinterpret_cast<char*>(&data_fbw), sizeof(fbw_output));
     in->read(reinterpret_cast<char*>(&data_engine), sizeof(EngineData));
     in->read(reinterpret_cast<char*>(&data_additional), sizeof(AdditionalData));
     // write struct to csv file
-    FlightDataRecorderConverter::writeStruct(out, delimiter, data_ap_sm, data_ap_laws, data_athr, data_fbw, data_engine, data_additional);
+    FlightDataRecorderConverter::writeStruct(out, delimiter, data_ap_sm, data_ap_laws, data_athr, data_engine, data_additional);
     // print progress
     if (++counter % 1000 == 0) {
       fmt::print("Processed {} entries...\r", counter);

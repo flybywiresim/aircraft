@@ -252,6 +252,11 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
             Variable::aspect("OVHD_ELEC_ENG_GEN_2_PB_IS_ON"),
         );
 
+        builder.copy(
+            Variable::aircraft("STRUCTURAL DEICE SWITCH", "Bool", 0),
+            Variable::aspect("BUTTON_OVHD_ANTI_ICE_WING_POSITION"),
+        );
+
         builder.map(
             ExecuteOn::PreTick,
             Variable::aircraft("INTERACTIVE POINT OPEN", "Position", 5),

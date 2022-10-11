@@ -1,6 +1,7 @@
 import { ComponentProps, DisplayComponent, EventBus, FSComponent, Subject, Subscribable, VNode } from 'msfssdk';
 import { ArmedLateralMode, ArmedVerticalMode, isArmed, LateralMode, VerticalMode } from '@shared/autopilot';
 
+import { Arinc429Word } from '@shared/arinc429';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 
@@ -51,6 +52,10 @@ export class FMA extends DisplayComponent<{ bus: EventBus, isAttExcessive: Subsc
 
     private trkFpaDeselected = Subject.create(false);
 
+    private fcdcDiscreteWord1 = new Arinc429Word(0);
+
+    private fwcFlightPhase = 0;
+
     private firstBorderRef = FSComponent.createRef<SVGPathElement>();
 
     private secondBorderRef = FSComponent.createRef<SVGPathElement>();
@@ -61,7 +66,7 @@ export class FMA extends DisplayComponent<{ bus: EventBus, isAttExcessive: Subsc
         const sharedModeActive = this.activeLateralMode === 32 || this.activeLateralMode === 33
             || this.activeLateralMode === 34 || (this.activeLateralMode === 20 && this.activeVerticalMode === 24);
         const BC3Message = getBC3Message(this.props.isAttExcessive.get(), this.armedVerticalModeSub.get(),
-            this.setHoldSpeed, this.trkFpaDeselected.get(), this.tcasRaInhibited.get())[0] !== null;
+            this.setHoldSpeed, this.trkFpaDeselected.get(), this.tcasRaInhibited.get(), this.fcdcDiscreteWord1, this.fwcFlightPhase)[0] !== null;
 
         const engineMessage = this.athrModeMessage;
         const AB3Message = (this.machPreselVal !== -1
@@ -133,6 +138,16 @@ export class FMA extends DisplayComponent<{ bus: EventBus, isAttExcessive: Subsc
 
         sub.on('trkFpaDeselectedTCAS').whenChanged().handle((trk) => {
             this.trkFpaDeselected.set(trk);
+            this.handleFMABorders();
+        });
+
+        sub.on('fcdcDiscreteWord1').whenChanged().handle((fcdcDiscreteWord1) => {
+            this.fcdcDiscreteWord1 = fcdcDiscreteWord1;
+            this.handleFMABorders();
+        });
+
+        sub.on('fwcFlightPhase').whenChanged().handle((fwcFlightPhase) => {
+            this.fwcFlightPhase = fwcFlightPhase;
             this.handleFMABorders();
         });
     }
@@ -1156,17 +1171,32 @@ class BC1Cell extends ShowForSecondsComponent<CellProps> {
     }
 }
 
-const getBC3Message = (isAttExcessive: boolean, armedVerticalMode: number, setHoldSpeed: boolean, trkFpaDeselectedTCAS: boolean, tcasRaInhibited: boolean) => {
+const getBC3Message = (
+    isAttExcessive: boolean,
+    armedVerticalMode: number,
+    setHoldSpeed: boolean,
+    trkFpaDeselectedTCAS: boolean,
+    tcasRaInhibited: boolean,
+    fcdcWord1: Arinc429Word,
+    fwcFlightPhase: number,
+) => {
     const armedVerticalBitmask = armedVerticalMode;
     const TCASArmed = (armedVerticalBitmask >> 6) & 1;
+
+    const flightPhaseForWarning = fwcFlightPhase >= 2 && fwcFlightPhase <= 9 && fwcFlightPhase !== 4 && fwcFlightPhase !== 5;
 
     let text: string;
     let className: string;
     // All currently unused message are set to false
-    if (false) {
+    if (!fcdcWord1.getBitValue(11)
+        && !fcdcWord1.getBitValue(12)
+        && !fcdcWord1.getBitValue(13)
+        && !fcdcWord1.getBitValue(15)
+        && !fcdcWord1.isFailureWarning()
+        && flightPhaseForWarning) {
         text = 'MAN PITCH TRIM ONLY';
         className = 'Red Blink9Seconds';
-    } else if (false) {
+    } else if (fcdcWord1.getBitValue(15) && !fcdcWord1.isFailureWarning() && flightPhaseForWarning) {
         text = 'USE MAN PITCH TRIM';
         className = 'PulseAmber9Seconds Amber';
     } else if (false) {
@@ -1233,8 +1263,14 @@ class BC3Cell extends DisplayComponent<{ isAttExcessive: Subscribable<boolean>, 
 
     private trkFpaDeselected = false;
 
+    private fcdcDiscreteWord1 = new Arinc429Word(0);
+
+    private fwcFlightPhase = 0;
+
     private fillBC3Cell() {
-        const [text, className] = getBC3Message(this.isAttExcessive, this.armedVerticalMode, this.setHoldSpeed, this.trkFpaDeselected, this.tcasRaInhibited);
+        const [text, className] = getBC3Message(
+            this.isAttExcessive, this.armedVerticalMode, this.setHoldSpeed, this.trkFpaDeselected, this.tcasRaInhibited, this.fcdcDiscreteWord1, this.fwcFlightPhase,
+        );
         this.classNameSub.set(`FontMedium MiddleAlign ${className}`);
         if (text !== null) {
             this.bc3Cell.instance.innerHTML = text;
@@ -1246,7 +1282,7 @@ class BC3Cell extends DisplayComponent<{ isAttExcessive: Subscribable<boolean>, 
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<PFDSimvars>();
+        const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values>();
 
         this.props.isAttExcessive.sub((e) => {
             this.isAttExcessive = e;
@@ -1270,6 +1306,16 @@ class BC3Cell extends DisplayComponent<{ isAttExcessive: Subscribable<boolean>, 
 
         sub.on('trkFpaDeselectedTCAS').whenChanged().handle((trk) => {
             this.trkFpaDeselected = trk;
+            this.fillBC3Cell();
+        });
+
+        sub.on('fcdcDiscreteWord1').whenChanged().handle((fcdcDiscreteWord1) => {
+            this.fcdcDiscreteWord1 = fcdcDiscreteWord1;
+            this.fillBC3Cell();
+        });
+
+        sub.on('fwcFlightPhase').whenChanged().handle((fwcFlightPhase) => {
+            this.fwcFlightPhase = fwcFlightPhase;
             this.fillBC3Cell();
         });
     }
@@ -1539,6 +1585,8 @@ class E2Cell extends ShowForSecondsComponent<CellProps> {
 class E3Cell extends ShowForSecondsComponent<CellProps> {
     private classSub = Subject.create('');
 
+    private posSub = Subject.create(0);
+
     constructor(props: CellProps) {
         super(props, 9);
     }
@@ -1548,10 +1596,10 @@ class E3Cell extends ShowForSecondsComponent<CellProps> {
         this.isShown = true;
         switch (athrStatus) {
         case 1:
-            className = 'Cyan';
+            className = 'Cyan FontSmall';
             break;
         case 2:
-            className = 'White';
+            className = 'White FontMedium';
             break;
         default:
             this.isShown = false;
@@ -1567,7 +1615,8 @@ class E3Cell extends ShowForSecondsComponent<CellProps> {
 
         sub.on('athrStatus').whenChanged().handle((a) => {
             const className = this.getClass(a);
-            this.classSub.set(`FontMedium MiddleAlign ${className}`);
+            this.posSub.set(a === 1 ? 21.253048 : 21.753487);
+            this.classSub.set(`MiddleAlign ${className}`);
             if (className !== 'HiddenElement') {
                 this.displayModeChangedPath();
             } else {
@@ -1580,7 +1629,7 @@ class E3Cell extends ShowForSecondsComponent<CellProps> {
         return (
             <g>
                 <path ref={this.modeChangedPathRef} class="NormalStroke White" visibility="hidden" d="m135.32 16.329h20.81v6.0476h-20.81z" />
-                <text class={this.classSub} x="145.75578" y="21.434536">A/THR</text>
+                <text class={this.classSub} x="145.75578" y={this.posSub}>A/THR</text>
             </g>
         );
     }
