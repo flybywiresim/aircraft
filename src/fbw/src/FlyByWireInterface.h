@@ -366,6 +366,8 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idLs1Active;
   std::unique_ptr<LocalVariable> idLs2Active;
   std::unique_ptr<LocalVariable> idIsisLsActive;
+  
+  std::unique_ptr<LocalVariable> idWingAntiIce;
 
   // RA bus inputs
   std::unique_ptr<LocalVariable> idRadioAltimeterHeight[2];
