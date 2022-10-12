@@ -43,9 +43,10 @@ export class CompanyRoute {
         if (origin && dest) {
             const response = await fetch(`${getSimBridgeUrl()}/api/v1/coroute/list?origin=${origin}&destination=${dest}`);
             if (response.ok) {
+                const filteredData = (await response.json() as CoRouteDto[]).filter((value) => value.name.length < 10);
                 return {
                     success: true,
-                    data: (await response.json() as CoRouteDto[]),
+                    data: filteredData,
                 };
             }
 
