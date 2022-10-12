@@ -2486,7 +2486,6 @@ class FMCMainDisplay extends BaseAirliners {
 
             if (success) {
                 data.forEach((route => {
-                    console.log(route);
                     this.coRoute.routes.push({
                         originIcao: route.origin.icao_code,
                         destinationIcao: route.destination.icao_code,
@@ -2496,8 +2495,6 @@ class FMCMainDisplay extends BaseAirliners {
                         routeName: route.name
                     });
                 }));
-                console.log(`inside getRouteList`);
-                console.log(this.coRoute);
             } else {
                 this.setScratchpadMessage(NXSystemMessages.notInDatabase);
             }
