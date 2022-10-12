@@ -491,7 +491,7 @@ void FlyByWireInterface::setupLocalVariables() {
   idLs1Active = make_unique<LocalVariable>("BTN_LS_1_FILTER_ACTIVE");
   idLs2Active = make_unique<LocalVariable>("BTN_LS_2_FILTER_ACTIVE");
   idIsisLsActive = make_unique<LocalVariable>("A32NX_ISIS_LS_ACTIVE");
-  
+
   idWingAntiIce = make_unique<LocalVariable>("A32NX_PNEU_WING_ANTI_ICE_SYSTEM_ON");
 
   for (int i = 0; i < 2; i++) {
@@ -703,10 +703,10 @@ void FlyByWireInterface::setupLocalVariables() {
 
   idHydYellowSystemPressure = make_unique<LocalVariable>("A32NX_HYD_YELLOW_SYSTEM_1_SECTION_PRESSURE");
   idHydGreenSystemPressure = make_unique<LocalVariable>("A32NX_HYD_GREEN_SYSTEM_1_SECTION_PRESSURE");
-  idHydBlueSystemPressure = make_unique<LocalVariable>("A32NX_HYD_BLUE_SYSTEM_1_SECTION_PRESSURE");
+  idHydBlueSystemPressure = make_unique<LocalVariable>("A32NX_HYD_GREEN_SYSTEM_1_SECTION_PRESSURE");
   idHydYellowPressurised = make_unique<LocalVariable>("A32NX_HYD_YELLOW_SYSTEM_1_SECTION_PRESSURE_SWITCH");
   idHydGreenPressurised = make_unique<LocalVariable>("A32NX_HYD_GREEN_SYSTEM_1_SECTION_PRESSURE_SWITCH");
-  idHydBluePressurised = make_unique<LocalVariable>("A32NX_HYD_BLUE_SYSTEM_1_SECTION_PRESSURE_SWITCH");
+  idHydBluePressurised = make_unique<LocalVariable>("A32NX_HYD_GREEN_SYSTEM_1_SECTION_PRESSURE_SWITCH");
 
   idCaptPriorityButtonPressed = make_unique<LocalVariable>("A32NX_PRIORITY_TAKEOVER:1");
   idFoPriorityButtonPressed = make_unique<LocalVariable>("A32NX_PRIORITY_TAKEOVER:2");
