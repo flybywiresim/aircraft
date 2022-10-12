@@ -2454,10 +2454,16 @@ impl A380HydraulicCircuitController {
         overhead_panel: &A380HydraulicOverheadPanel,
     ) {
         let measurement_valve_open_demand_raw = match &mut self.circuit_id {
-            HydraulicColor::Green => overhead_panel.green_leak_measurement_valve_is_on(),
+            HydraulicColor::Green => {
+                true
+                // TODO
+                // overhead_panel.green_leak_measurement_valve_is_on()
+                //     && !self.cargo_door_in_use.output()
+            }
             HydraulicColor::Yellow => {
-                overhead_panel.yellow_leak_measurement_valve_is_on()
-                    && !self.cargo_door_in_use.output()
+                // TODO
+                // overhead_panel.yellow_leak_measurement_valve_is_on(),
+                true
             }
             HydraulicColor::Blue => false,
         };
