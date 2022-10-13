@@ -1779,7 +1779,7 @@
                 <UseTemplate Name="ASOBO_GT_Update">
                     <FREQUENCY>5</FREQUENCY>
                     <UPDATE_CODE>
-                        (L:A32NX_GEAR_HANDLE_POSITION, Bool) (A:GEAR POSITION, percent) 99.9 &gt; and (&gt;O:_ShouldBeConnectedToPowerGrid)
+                        (L:A32NX_LGCIU_2_NOSE_GEAR_DOWNLOCKED, Bool) 1 == (&gt;O:_ShouldBeConnectedToPowerGrid)
                         (O:_ShouldBeConnectedToPowerGrid) sp0
                         2 (&gt;A:BUS LOOKUP INDEX, Number)
                         (A:CIRCUIT CONNECTION ON:17, Bool) l0 != if{ 17 2 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE) }
