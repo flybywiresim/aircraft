@@ -846,12 +846,23 @@
             </UseTemplate>
 
 
-            <UseTemplate Name="FBW_HANDLING_Gear_Lever_Template">
-                <ANIM_NAME>lever_landing_gear</ANIM_NAME>
-                <NODE_ID>LEVER_LANDINGGEAR</NODE_ID>
-                <ANIM_LENGTH>3</ANIM_LENGTH>
-            </UseTemplate>
-
+            <Component ID="LEVER_LANDINGGEAR" Node="LEVER_LANDINGGEAR">
+                <UseTemplate Name="ASOBO_GT_Switch_Code">
+                    <ANIM_NAME>lever_landing_gear</ANIM_NAME>
+                    <NODE_ID>LEVER_LANDINGGEAR</NODE_ID>
+                    <ANIM_CODE>
+                        (L:A32NX_GEAR_HANDLE_POSITION, Percent) 3 *
+                    </ANIM_CODE>
+                    <ANIM_LENGTH>3</ANIM_LENGTH>
+                    <LEFT_SINGLE_CODE>
+                        (L:A32NX_GEAR_HANDLE_POSITION, Number) 0.95 &gt; if{
+                            (&gt;K:GEAR_UP)
+                            } els{
+                            (&gt;K:GEAR_DOWN)
+                            }
+                    </LEFT_SINGLE_CODE>
+                </UseTemplate>
+            </Component>
 
             <UseTemplate Name="FBW_Airbus_LANDING_GEAR_Light_Template">
                 <NODE_ID>PUSH_AUTOBKR_LDGGEAR_1</NODE_ID>
