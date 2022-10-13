@@ -1652,28 +1652,28 @@ impl A380Hydraulic {
         self.left_aileron.update(
             context,
             self.aileron_system_controller.left_controllers(),
-            self.yellow_circuit.system_section(),
+            self.green_circuit.system_section(),
             self.green_circuit.system_section(),
         );
 
         self.right_aileron.update(
             context,
             self.aileron_system_controller.right_controllers(),
-            self.yellow_circuit.system_section(),
+            self.green_circuit.system_section(),
             self.green_circuit.system_section(),
         );
 
         self.left_elevator.update(
             context,
             self.elevator_system_controller.left_controllers(),
-            self.yellow_circuit.system_section(),
+            self.green_circuit.system_section(),
             self.green_circuit.system_section(),
         );
 
         self.right_elevator.update(
             context,
             self.elevator_system_controller.right_controllers(),
-            self.yellow_circuit.system_section(),
+            self.green_circuit.system_section(),
             self.green_circuit.system_section(),
         );
 
