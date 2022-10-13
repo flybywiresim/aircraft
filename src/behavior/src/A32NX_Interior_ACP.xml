@@ -148,7 +148,7 @@
             <TOOLTIP>TT:COCKPIT.TOOLTIPS.TRANSMITTER_SELECT_HF_L</TOOLTIP>
         </UseTemplate>
 
-        <!-- TRANSMIT_ID not 4 due to PILOT/COPILOT_TRANSMITTER_SET. If set to 4, the pilot/copilit does not listen to any channel -->
+        <!-- TRANSMIT_ID not 4 due to PILOT/COPILOT_TRANSMITTER_SET. If set to 4, the pilot/copilot does not listen to any channel -->
         <UseTemplate Name="FBW_Anim_Interactions">
             <ANIM_TYPE>KNOB</ANIM_TYPE>
             <ANIM_TEMPLATE>FBW_AIRLINER_Audio_Volume_Knob_Template</ANIM_TEMPLATE>
