@@ -6628,33 +6628,6 @@ mod tests {
         }
 
         #[test]
-        fn cargo_door_yellow_epump_powering() {
-            let mut test_bed = test_bed_on_ground_with()
-                .engines_off()
-                .on_the_ground()
-                .set_cold_dark_inputs()
-                .run_one_tick();
-
-            assert!(!test_bed.query(|a| a.is_cargo_powering_yellow_epump()));
-
-            // Need to wait for operator to first unlock, then activate hydraulic control
-            test_bed = test_bed.open_fwd_cargo_door().run_waiting_for(
-                Duration::from_secs(1) + A380DoorController::DELAY_UNLOCK_TO_HYDRAULIC_CONTROL,
-            );
-            assert!(test_bed.query(|a| a.is_cargo_powering_yellow_epump()));
-
-            // Wait for the door to fully open
-            test_bed = test_bed.run_waiting_for(Duration::from_secs(25));
-            assert!(test_bed.is_cargo_fwd_door_locked_up());
-
-            test_bed = test_bed.run_waiting_for(
-                A380ElectricPumpAutoLogic::DURATION_OF_PUMP_ACTIVATION_AFTER_CARGO_DOOR_OPERATION,
-            );
-
-            assert!(!test_bed.query(|a| a.is_cargo_powering_yellow_epump()));
-        }
-
-        #[test]
         fn green_edp_buildup() {
             let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
@@ -7040,594 +7013,6 @@ mod tests {
         }
 
         #[test]
-        fn edp_deactivation() {
-            let mut test_bed = test_bed_on_ground_with()
-                .engines_off()
-                .on_the_ground()
-                .set_cold_dark_inputs()
-                .run_one_tick();
-
-            // Starting eng 1 and eng 2
-            test_bed = test_bed
-                .start_eng1(Ratio::new::<percent>(80.))
-                .start_eng2(Ratio::new::<percent>(80.))
-                .start_eng3(Ratio::new::<percent>(80.))
-                .start_eng4(Ratio::new::<percent>(80.))
-                .run_one_tick();
-
-            // ALMOST No pressure
-            assert!(test_bed.green_pressure() < Pressure::new::<psi>(1000.));
-            assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(1000.));
-
-            // Waiting for 5s pressure should be at 3000 psi
-            test_bed = test_bed.run_waiting_for(Duration::from_secs(5));
-
-            assert!(test_bed.green_pressure() > Pressure::new::<psi>(2900.));
-            assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(2900.));
-
-            // Stoping edp1, pressure should fall in 20s
-            test_bed = test_bed
-                .set_green_ed_pump(false)
-                .run_waiting_for(Duration::from_secs(20));
-
-            assert!(test_bed.green_pressure() < Pressure::new::<psi>(500.));
-            assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(2900.));
-
-            // Stoping edp2, pressure should fall in 20s
-            test_bed = test_bed
-                .set_yellow_ed_pump(false)
-                .run_waiting_for(Duration::from_secs(20));
-
-            assert!(test_bed.green_pressure() < Pressure::new::<psi>(50.));
-            assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(500.));
-        }
-
-        #[test]
-        fn yellow_edp_buildup() {
-            let mut test_bed = test_bed_on_ground_with()
-                .engines_off()
-                .on_the_ground()
-                .set_cold_dark_inputs()
-                .run_one_tick();
-
-            // Starting eng 1
-            test_bed = test_bed
-                .start_eng2(Ratio::new::<percent>(80.))
-                .run_one_tick();
-            // ALMOST No pressure
-            assert!(!test_bed.is_green_pressure_switch_pressurised());
-            assert!(test_bed.green_pressure() < Pressure::new::<psi>(50.));
-
-            assert!(!test_bed.is_yellow_pressure_switch_pressurised());
-            assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(1000.));
-
-            // Waiting for 5s pressure should be at 3000 psi
-            test_bed = test_bed
-                .start_eng2(Ratio::new::<percent>(80.))
-                .run_waiting_for(Duration::from_secs(5));
-
-            assert!(!test_bed.is_green_pressure_switch_pressurised());
-            assert!(test_bed.green_pressure() < Pressure::new::<psi>(50.));
-
-            assert!(test_bed.is_yellow_pressure_switch_pressurised());
-            assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(2800.));
-
-            // Stoping engine, pressure should fall in 20s
-            test_bed = test_bed
-                .stop_eng2()
-                .run_waiting_for(Duration::from_secs(20));
-
-            assert!(!test_bed.is_green_pressure_switch_pressurised());
-            assert!(test_bed.green_pressure() < Pressure::new::<psi>(50.));
-
-            assert!(!test_bed.is_yellow_pressure_switch_pressurised());
-            assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(500.));
-        }
-
-        #[test]
-        fn when_yellow_edp_solenoid_main_power_bus_unavailable_backup_bus_keeps_pump_in_unpressurised_state(
-        ) {
-            let mut test_bed = test_bed_on_ground_with()
-                .engines_off()
-                .on_the_ground()
-                .set_cold_dark_inputs()
-                .run_one_tick();
-
-            test_bed = test_bed
-                .start_eng2(Ratio::new::<percent>(80.))
-                .run_waiting_for(Duration::from_secs(15));
-
-            assert!(test_bed.is_yellow_pressure_switch_pressurised());
-
-            // Stoping EDP manually
-            test_bed = test_bed
-                .set_yellow_ed_pump(false)
-                .run_waiting_for(Duration::from_secs(15));
-
-            assert!(!test_bed.is_yellow_pressure_switch_pressurised());
-
-            test_bed = test_bed
-                .dc_bus_2_lost()
-                .run_waiting_for(Duration::from_secs(15));
-
-            // Yellow solenoid has backup power from DC ESS BUS
-            assert!(!test_bed.is_yellow_pressure_switch_pressurised());
-        }
-
-        #[test]
-        fn when_yellow_edp_solenoid_both_bus_unpowered_yellow_hydraulic_system_is_pressurised() {
-            let mut test_bed = test_bed_on_ground_with()
-                .engines_off()
-                .on_the_ground()
-                .set_cold_dark_inputs()
-                .run_one_tick();
-
-            test_bed = test_bed
-                .start_eng2(Ratio::new::<percent>(80.))
-                .run_waiting_for(Duration::from_secs(15));
-
-            assert!(test_bed.is_yellow_pressure_switch_pressurised());
-
-            // Stoping EDP manually
-            test_bed = test_bed
-                .set_yellow_ed_pump(false)
-                .run_waiting_for(Duration::from_secs(15));
-
-            assert!(!test_bed.is_yellow_pressure_switch_pressurised());
-
-            test_bed = test_bed
-                .dc_ess_lost()
-                .dc_bus_2_lost()
-                .run_waiting_for(Duration::from_secs(15));
-
-            // Now solenoid defaults to pressurised without power
-            assert!(test_bed.is_yellow_pressure_switch_pressurised());
-        }
-
-        #[test]
-        fn when_green_edp_solenoid_unpowered_yellow_hydraulic_system_is_pressurised() {
-            let mut test_bed = test_bed_on_ground_with()
-                .engines_off()
-                .on_the_ground()
-                .set_cold_dark_inputs()
-                .run_one_tick();
-
-            test_bed = test_bed
-                .start_eng1(Ratio::new::<percent>(80.))
-                .run_waiting_for(Duration::from_secs(15));
-
-            assert!(test_bed.is_green_pressure_switch_pressurised());
-
-            // Stoping EDP manually
-            test_bed = test_bed
-                .set_green_ed_pump(false)
-                .run_waiting_for(Duration::from_secs(15));
-
-            assert!(!test_bed.is_green_pressure_switch_pressurised());
-
-            test_bed = test_bed
-                .dc_ess_lost()
-                .run_waiting_for(Duration::from_secs(15));
-
-            // Now solenoid defaults to pressurised
-            assert!(test_bed.is_green_pressure_switch_pressurised());
-        }
-
-        #[test]
-        #[ignore]
-        // Checks numerical stability of reservoir level: level should remain after multiple pressure cycles
-        fn yellow_circuit_reservoir_coherency() {
-            let mut test_bed = test_bed_on_ground_with()
-                .engines_off()
-                .on_the_ground()
-                .set_cold_dark_inputs()
-                // Park brake off to not use fluid in brakes
-                .set_park_brake(false)
-                .run_one_tick();
-
-            // Starting epump wait for pressure rise to make sure system is primed including brake accumulator
-            test_bed = test_bed
-                .set_yellow_e_pump_a(false)
-                .run_waiting_for(Duration::from_secs(20));
-            assert!(test_bed.is_yellow_pressure_switch_pressurised());
-            assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(3500.));
-            assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(2500.));
-
-            // Shutdown and wait for pressure stabilisation
-            test_bed = test_bed
-                .set_yellow_e_pump_a(true)
-                .run_waiting_for(Duration::from_secs(50));
-            assert!(!test_bed.is_yellow_pressure_switch_pressurised());
-            assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(50.));
-            assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(-50.));
-
-            let reservoir_level_after_priming = test_bed.get_yellow_reservoir_volume();
-
-            let total_fluid_res_plus_accumulator_before_loops = reservoir_level_after_priming
-                + test_bed.get_brake_yellow_accumulator_fluid_volume();
-
-            // Now doing cycles of pressurisation on EDP and ePump
-            for _ in 1..6 {
-                test_bed = test_bed
-                    .start_eng2(Ratio::new::<percent>(80.))
-                    .run_waiting_for(Duration::from_secs(50));
-
-                assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(3100.));
-                assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(2500.));
-
-                let mut current_res_level = test_bed.get_yellow_reservoir_volume();
-                assert!(current_res_level < reservoir_level_after_priming);
-
-                test_bed = test_bed
-                    .stop_eng2()
-                    .run_waiting_for(Duration::from_secs(50));
-                assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(50.));
-                assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(-50.));
-
-                test_bed = test_bed
-                    .set_yellow_e_pump_a(false)
-                    .run_waiting_for(Duration::from_secs(50));
-
-                assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(3500.));
-                assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(2500.));
-
-                current_res_level = test_bed.get_yellow_reservoir_volume();
-                assert!(current_res_level < reservoir_level_after_priming);
-
-                test_bed = test_bed
-                    .set_yellow_e_pump_a(true)
-                    .run_waiting_for(Duration::from_secs(50));
-                assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(50.));
-                assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(-50.));
-            }
-            let total_fluid_res_plus_accumulator_after_loops = test_bed
-                .get_yellow_reservoir_volume()
-                + test_bed.get_brake_yellow_accumulator_fluid_volume();
-
-            let total_fluid_difference = total_fluid_res_plus_accumulator_before_loops
-                - total_fluid_res_plus_accumulator_after_loops;
-
-            // Make sure no more deviation than 0.001 gallon is lost after full pressure and unpressurized states
-            assert!(total_fluid_difference.get::<gallon>().abs() < 0.001);
-        }
-
-        #[test]
-        #[ignore]
-        // Checks numerical stability of reservoir level: level should remain after multiple pressure cycles
-        fn green_circuit_reservoir_coherency() {
-            let mut test_bed = test_bed_on_ground_with()
-                .engines_off()
-                .on_the_ground()
-                .set_cold_dark_inputs()
-                .run_one_tick();
-
-            // Starting EDP wait for pressure rise to make sure system is primed
-            test_bed = test_bed
-                .start_eng1(Ratio::new::<percent>(80.))
-                .run_waiting_for(Duration::from_secs(20));
-            assert!(test_bed.is_green_pressure_switch_pressurised());
-            assert!(test_bed.green_pressure() < Pressure::new::<psi>(3500.));
-            assert!(test_bed.green_pressure() > Pressure::new::<psi>(2500.));
-
-            // Shutdown and wait for pressure stabilisation
-            test_bed = test_bed
-                .stop_eng1()
-                .run_waiting_for(Duration::from_secs(50));
-            assert!(!test_bed.is_green_pressure_switch_pressurised());
-            assert!(test_bed.green_pressure() < Pressure::new::<psi>(50.));
-            assert!(test_bed.green_pressure() > Pressure::new::<psi>(-50.));
-
-            let reservoir_level_after_priming = test_bed.get_green_reservoir_volume();
-
-            // Now doing cycles of pressurisation on EDP
-            for _ in 1..6 {
-                test_bed = test_bed
-                    .start_eng1(Ratio::new::<percent>(80.))
-                    .run_waiting_for(Duration::from_secs(50));
-
-                assert!(test_bed.green_pressure() < Pressure::new::<psi>(3500.));
-                assert!(test_bed.green_pressure() > Pressure::new::<psi>(2500.));
-
-                let current_res_level = test_bed.get_green_reservoir_volume();
-                assert!(current_res_level < reservoir_level_after_priming);
-
-                test_bed = test_bed
-                    .stop_eng1()
-                    .run_waiting_for(Duration::from_secs(50));
-                assert!(test_bed.green_pressure() < Pressure::new::<psi>(50.));
-                assert!(test_bed.green_pressure() > Pressure::new::<psi>(-50.));
-            }
-
-            let total_fluid_difference =
-                reservoir_level_after_priming - test_bed.get_green_reservoir_volume();
-
-            // Make sure no more deviation than 0.001 gallon is lost after full pressure and unpressurized states
-            assert!(total_fluid_difference.get::<gallon>().abs() < 0.001);
-        }
-
-        #[test]
-        fn yellow_green_edp_firevalve() {
-            let mut test_bed = test_bed_on_ground_with()
-                .engines_off()
-                .on_the_ground()
-                .set_cold_dark_inputs()
-                .run_one_tick();
-
-            assert!(!test_bed.is_fire_valve_eng1_closed());
-            assert!(!test_bed.is_fire_valve_eng2_closed());
-
-            // Starting eng 1
-            test_bed = test_bed
-                .start_eng2(Ratio::new::<percent>(80.))
-                .start_eng1(Ratio::new::<percent>(80.))
-                .run_waiting_for(Duration::from_secs(5));
-
-            // Waiting for 5s pressure should be at 3000 psi
-            assert!(test_bed.is_green_pressure_switch_pressurised());
-            assert!(test_bed.green_pressure() > Pressure::new::<psi>(2900.));
-
-            assert!(test_bed.is_yellow_pressure_switch_pressurised());
-            assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(2800.));
-
-            assert!(!test_bed.is_fire_valve_eng1_closed());
-            assert!(!test_bed.is_fire_valve_eng2_closed());
-
-            // Green shutoff valve
-            test_bed = test_bed
-                .set_eng1_fire_button(true)
-                .run_waiting_for(Duration::from_secs(20));
-
-            assert!(test_bed.is_fire_valve_eng1_closed());
-            assert!(!test_bed.is_fire_valve_eng2_closed());
-
-            assert!(!test_bed.is_green_pressure_switch_pressurised());
-            assert!(test_bed.green_pressure() < Pressure::new::<psi>(500.));
-
-            assert!(test_bed.is_yellow_pressure_switch_pressurised());
-            assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(2900.));
-
-            // Yellow shutoff valve
-            test_bed = test_bed
-                .set_eng2_fire_button(true)
-                .run_waiting_for(Duration::from_secs(20));
-
-            assert!(test_bed.is_fire_valve_eng1_closed());
-            assert!(test_bed.is_fire_valve_eng2_closed());
-
-            assert!(!test_bed.is_green_pressure_switch_pressurised());
-            assert!(test_bed.green_pressure() < Pressure::new::<psi>(500.));
-
-            assert!(!test_bed.is_yellow_pressure_switch_pressurised());
-            assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(500.));
-        }
-
-        #[test]
-        fn yellow_brake_accumulator() {
-            let mut test_bed = test_bed_on_ground_with()
-                .engines_off()
-                .on_the_ground()
-                .set_cold_dark_inputs()
-                .run_one_tick();
-
-            // Getting accumulator pressure on cold start
-            let mut accumulator_pressure = test_bed.get_brake_yellow_accumulator_pressure();
-
-            // No brakes on green, no more pressure than in accumulator on yellow
-            assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(50.));
-            assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(50.));
-            assert!(
-                test_bed.get_brake_left_yellow_pressure()
-                    < accumulator_pressure + Pressure::new::<psi>(50.)
-            );
-            assert!(
-                test_bed.get_brake_right_yellow_pressure()
-                    < accumulator_pressure + Pressure::new::<psi>(50.)
-            );
-
-            // No brakes even if we brake on green, no more than accumulator pressure on yellow
-            test_bed = test_bed
-                .set_left_brake(Ratio::new::<percent>(100.))
-                .set_right_brake(Ratio::new::<percent>(100.))
-                .run_waiting_for(Duration::from_secs(5));
-
-            accumulator_pressure = test_bed.get_brake_yellow_accumulator_pressure();
-
-            assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(50.));
-            assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(50.));
-            assert!(
-                test_bed.get_brake_left_yellow_pressure()
-                    < accumulator_pressure + Pressure::new::<psi>(50.)
-            );
-            assert!(
-                test_bed.get_brake_right_yellow_pressure()
-                    < accumulator_pressure + Pressure::new::<psi>(50.)
-            );
-            assert!(
-                test_bed.get_brake_yellow_accumulator_pressure()
-                    < accumulator_pressure + Pressure::new::<psi>(50.)
-            );
-
-            // Park brake off, loading accumulator, we expect no brake pressure but accumulator loaded
-            test_bed = test_bed
-                .set_left_brake(Ratio::new::<percent>(0.))
-                .set_right_brake(Ratio::new::<percent>(0.))
-                .set_park_brake(false)
-                .set_yellow_e_pump_a(false)
-                .run_waiting_for(Duration::from_secs(30));
-
-            assert!(test_bed.is_yellow_pressure_switch_pressurised());
-            assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(2500.));
-            assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(3500.));
-
-            assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(50.));
-            assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(50.));
-            assert!(test_bed.get_brake_left_yellow_pressure() < Pressure::new::<psi>(50.));
-            assert!(test_bed.get_brake_right_yellow_pressure() < Pressure::new::<psi>(50.));
-
-            assert!(test_bed.get_brake_yellow_accumulator_pressure() > Pressure::new::<psi>(2500.));
-
-            // Park brake on, loaded accumulator, we expect brakes on yellow side only
-            test_bed = test_bed
-                .set_park_brake(true)
-                .run_waiting_for(Duration::from_secs(3));
-
-            assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(50.));
-            assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(50.));
-            assert!(test_bed.get_brake_left_yellow_pressure() > Pressure::new::<psi>(2000.));
-            assert!(test_bed.get_brake_right_yellow_pressure() > Pressure::new::<psi>(2000.));
-
-            assert!(test_bed.get_brake_yellow_accumulator_pressure() > Pressure::new::<psi>(2500.));
-        }
-
-        #[test]
-        fn norm_brake_vs_altn_brake() {
-            let mut test_bed = test_bed_on_ground_with()
-                .engines_off()
-                .on_the_ground()
-                .set_cold_dark_inputs()
-                .run_one_tick();
-
-            // Getting accumulator pressure on cold start
-            let accumulator_pressure = test_bed.get_brake_yellow_accumulator_pressure();
-
-            // No brakes
-            assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(50.));
-            assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(50.));
-            assert!(
-                test_bed.get_brake_left_yellow_pressure()
-                    < accumulator_pressure + Pressure::new::<psi>(50.)
-            );
-            assert!(
-                test_bed.get_brake_right_yellow_pressure()
-                    < accumulator_pressure + Pressure::new::<psi>(50.)
-            );
-
-            test_bed = test_bed
-                .start_eng1(Ratio::new::<percent>(100.))
-                .start_eng2(Ratio::new::<percent>(100.))
-                .set_park_brake(false)
-                .run_waiting_for(Duration::from_secs(5));
-
-            assert!(test_bed.is_green_pressure_switch_pressurised());
-            assert!(test_bed.is_yellow_pressure_switch_pressurised());
-            // No brakes if we don't brake
-            test_bed = test_bed
-                .set_left_brake(Ratio::new::<percent>(0.))
-                .set_right_brake(Ratio::new::<percent>(0.))
-                .run_waiting_for(Duration::from_secs(1));
-
-            assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(50.));
-            assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(50.));
-            assert!(test_bed.get_brake_left_yellow_pressure() < Pressure::new::<psi>(50.));
-            assert!(test_bed.get_brake_right_yellow_pressure() < Pressure::new::<psi>(50.));
-
-            // Braking cause green braking system to rise
-            test_bed = test_bed
-                .set_left_brake(Ratio::new::<percent>(100.))
-                .set_right_brake(Ratio::new::<percent>(100.))
-                .run_waiting_for(Duration::from_secs(1));
-
-            assert!(test_bed.get_brake_left_green_pressure() > Pressure::new::<psi>(2000.));
-            assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(3500.));
-            assert!(test_bed.get_brake_right_green_pressure() > Pressure::new::<psi>(2000.));
-            assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(3500.));
-            assert!(test_bed.get_brake_left_yellow_pressure() < Pressure::new::<psi>(50.));
-            assert!(test_bed.get_brake_right_yellow_pressure() < Pressure::new::<psi>(50.));
-
-            // Disabling Askid causes alternate braking to work and release green brakes
-            test_bed = test_bed
-                .set_anti_skid(false)
-                .run_waiting_for(Duration::from_secs(2));
-
-            assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(50.));
-            assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(50.));
-            assert!(test_bed.get_brake_left_yellow_pressure() > Pressure::new::<psi>(950.));
-            assert!(test_bed.get_brake_left_yellow_pressure() < Pressure::new::<psi>(3500.));
-            assert!(test_bed.get_brake_right_yellow_pressure() > Pressure::new::<psi>(950.));
-            assert!(test_bed.get_brake_right_yellow_pressure() < Pressure::new::<psi>(3500.));
-        }
-
-        #[test]
-        fn no_norm_brake_inversion() {
-            let mut test_bed = test_bed_on_ground_with()
-                .engines_off()
-                .on_the_ground()
-                .set_cold_dark_inputs()
-                .run_one_tick();
-
-            test_bed = test_bed
-                .start_eng1(Ratio::new::<percent>(100.))
-                .start_eng2(Ratio::new::<percent>(100.))
-                .set_park_brake(false)
-                .run_waiting_for(Duration::from_secs(5));
-
-            assert!(test_bed.is_green_pressure_switch_pressurised());
-            assert!(test_bed.is_yellow_pressure_switch_pressurised());
-
-            // Braking left
-            test_bed = test_bed
-                .set_left_brake(Ratio::new::<percent>(100.))
-                .set_right_brake(Ratio::new::<percent>(0.))
-                .run_waiting_for(Duration::from_secs(1));
-
-            assert!(test_bed.get_brake_left_green_pressure() > Pressure::new::<psi>(2000.));
-            assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(50.));
-            assert!(test_bed.get_brake_left_yellow_pressure() < Pressure::new::<psi>(50.));
-            assert!(test_bed.get_brake_right_yellow_pressure() < Pressure::new::<psi>(50.));
-
-            // Braking right
-            test_bed = test_bed
-                .set_left_brake(Ratio::new::<percent>(0.))
-                .set_right_brake(Ratio::new::<percent>(100.))
-                .run_waiting_for(Duration::from_secs(1));
-
-            assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(50.));
-            assert!(test_bed.get_brake_right_green_pressure() > Pressure::new::<psi>(2000.));
-            assert!(test_bed.get_brake_left_yellow_pressure() < Pressure::new::<psi>(50.));
-            assert!(test_bed.get_brake_right_yellow_pressure() < Pressure::new::<psi>(50.));
-        }
-
-        #[test]
-        fn no_alternate_brake_inversion() {
-            let mut test_bed = test_bed_on_ground_with()
-                .engines_off()
-                .on_the_ground()
-                .set_cold_dark_inputs()
-                .run_one_tick();
-
-            test_bed = test_bed
-                .start_eng1(Ratio::new::<percent>(100.))
-                .start_eng2(Ratio::new::<percent>(100.))
-                .set_park_brake(false)
-                .run_waiting_for(Duration::from_secs(5));
-
-            assert!(test_bed.is_green_pressure_switch_pressurised());
-            assert!(test_bed.is_yellow_pressure_switch_pressurised());
-
-            // Disabling Askid causes alternate braking to work and release green brakes
-            test_bed = test_bed
-                .set_left_brake(Ratio::new::<percent>(0.))
-                .set_right_brake(Ratio::new::<percent>(100.))
-                .set_anti_skid(false)
-                .run_waiting_for(Duration::from_secs(2));
-
-            assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(50.));
-            assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(50.));
-            assert!(test_bed.get_brake_left_yellow_pressure() < Pressure::new::<psi>(50.));
-            assert!(test_bed.get_brake_right_yellow_pressure() > Pressure::new::<psi>(950.));
-
-            test_bed = test_bed
-                .set_left_brake(Ratio::new::<percent>(100.))
-                .set_right_brake(Ratio::new::<percent>(0.))
-                .run_waiting_for(Duration::from_secs(2));
-
-            assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(50.));
-            assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(50.));
-            assert!(test_bed.get_brake_left_yellow_pressure() > Pressure::new::<psi>(950.));
-            assert!(test_bed.get_brake_right_yellow_pressure() < Pressure::new::<psi>(50.));
-        }
-
-        #[test]
         fn auto_brake_at_gear_retraction() {
             let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
@@ -7677,48 +7062,6 @@ mod tests {
 
             assert!(test_bed.get_brake_left_yellow_pressure() < Pressure::new::<psi>(50.));
             assert!(test_bed.get_brake_right_yellow_pressure() < Pressure::new::<psi>(50.));
-        }
-
-        #[test]
-        fn alternate_brake_accumulator_is_emptying_while_braking() {
-            let mut test_bed = test_bed_on_ground_with()
-                .on_the_ground()
-                .set_cold_dark_inputs()
-                .start_eng1(Ratio::new::<percent>(100.))
-                .start_eng2(Ratio::new::<percent>(100.))
-                .set_park_brake(false)
-                .run_waiting_for(Duration::from_secs(15));
-
-            // Check we got yellow pressure and brake accumulator loaded
-            assert!(test_bed.yellow_pressure() >= Pressure::new::<psi>(2500.));
-            assert!(
-                test_bed.get_brake_yellow_accumulator_pressure() >= Pressure::new::<psi>(2500.)
-            );
-
-            // Disabling green and yellow side so accumulator stop being able to reload
-            test_bed = test_bed
-                .set_yellow_ed_pump(false)
-                .set_green_ed_pump(false)
-                .set_yellow_e_pump_a(true)
-                .run_waiting_for(Duration::from_secs(30));
-
-            assert!(test_bed.yellow_pressure() <= Pressure::new::<psi>(100.));
-            assert!(test_bed.green_pressure() <= Pressure::new::<psi>(100.));
-            assert!(
-                test_bed.get_brake_yellow_accumulator_pressure() >= Pressure::new::<psi>(2500.)
-            );
-
-            // Now using brakes and check accumulator gets empty
-            test_bed = test_bed
-                .empty_brake_accumulator_using_pedal_brake()
-                .run_waiting_for(Duration::from_secs(1));
-
-            assert!(
-                test_bed.get_brake_yellow_accumulator_pressure() <= Pressure::new::<psi>(1000.)
-            );
-            assert!(
-                test_bed.get_brake_yellow_accumulator_fluid_volume() <= Volume::new::<gallon>(0.01)
-            );
         }
 
         #[test]
@@ -7908,29 +7251,6 @@ mod tests {
             test_bed = test_bed
                 .set_autobrake_disarmed_with_set_variable()
                 .run_waiting_for(Duration::from_secs(1));
-            assert!(test_bed.autobrake_mode() == AutobrakeMode::NONE);
-        }
-
-        #[test]
-        fn autobrakes_disarms_if_green_pressure_low() {
-            let mut test_bed = test_bed_on_ground_with()
-                .set_cold_dark_inputs()
-                .in_flight()
-                .set_gear_lever_up()
-                .run_waiting_for(Duration::from_secs(12));
-
-            assert!(test_bed.autobrake_mode() == AutobrakeMode::NONE);
-
-            test_bed = test_bed
-                .set_autobrake_low()
-                .run_waiting_for(Duration::from_secs(1));
-
-            assert!(test_bed.autobrake_mode() == AutobrakeMode::LOW);
-
-            test_bed = test_bed
-                .stop_eng1()
-                .run_waiting_for(Duration::from_secs(20));
-
             assert!(test_bed.autobrake_mode() == AutobrakeMode::NONE);
         }
 
@@ -8242,11 +7562,11 @@ mod tests {
 
             assert!(!test_bed.query(|a| a.is_yellow_epump_controller_pressurising()));
 
-            test_bed = test_bed.set_yellow_e_pump_a(false).run_one_tick();
+            test_bed = test_bed.set_yellow_e_pump_a(true).run_one_tick();
 
             assert!(test_bed.query(|a| a.is_yellow_epump_controller_pressurising()));
 
-            test_bed = test_bed.set_yellow_e_pump_a(true).run_one_tick();
+            test_bed = test_bed.set_yellow_e_pump_a(false).run_one_tick();
 
             assert!(!test_bed.query(|a| a.is_yellow_epump_controller_pressurising()));
         }
@@ -8257,7 +7577,7 @@ mod tests {
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
-                .set_yellow_e_pump_a(false)
+                .set_yellow_e_pump_a(true)
                 .run_one_tick();
 
             assert!(test_bed.query(|a| a.is_yellow_epump_controller_pressurising()));
@@ -8265,26 +7585,6 @@ mod tests {
             test_bed = test_bed.dc_bus_2_lost().run_one_tick();
 
             assert!(!test_bed.query(|a| a.is_yellow_epump_controller_pressurising()));
-        }
-
-        #[test]
-        fn controller_yellow_epump_can_operate_from_cargo_door_without_main_control_power_bus() {
-            let mut test_bed = test_bed_on_ground_with()
-                .engines_off()
-                .on_the_ground()
-                .set_cold_dark_inputs()
-                .run_one_tick();
-
-            assert!(!test_bed.query(|a| a.is_cargo_powering_yellow_epump()));
-
-            test_bed = test_bed
-                .dc_ground_service_lost()
-                .open_fwd_cargo_door()
-                .run_waiting_for(
-                    Duration::from_secs(1) + A380DoorController::DELAY_UNLOCK_TO_HYDRAULIC_CONTROL,
-                );
-
-            assert!(test_bed.query(|a| a.is_cargo_powering_yellow_epump()));
         }
 
         #[test]
@@ -8326,28 +7626,6 @@ mod tests {
         }
 
         #[test]
-        fn controller_engine_driven_pump2a_overhead_button_logic_with_eng_on() {
-            let mut test_bed = test_bed_on_ground_with()
-                .engines_off()
-                .on_the_ground()
-                .set_cold_dark_inputs()
-                .run_one_tick();
-
-            assert!(test_bed.query(|a| a.is_edp2a_yellow_pump_controller_pressurising()));
-
-            test_bed = test_bed
-                .start_eng2(Ratio::new::<percent>(65.))
-                .run_one_tick();
-            assert!(test_bed.query(|a| a.is_edp2a_yellow_pump_controller_pressurising()));
-
-            test_bed = test_bed.set_yellow_ed_pump(false).run_one_tick();
-            assert!(!test_bed.query(|a| a.is_edp2a_yellow_pump_controller_pressurising()));
-
-            test_bed = test_bed.set_yellow_ed_pump(true).run_one_tick();
-            assert!(test_bed.query(|a| a.is_edp2a_yellow_pump_controller_pressurising()));
-        }
-
-        #[test]
         fn controller_engine_driven_pump2a_fire_overhead_released_stops_pump() {
             let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
@@ -8372,7 +7650,7 @@ mod tests {
                 .run_one_tick();
 
             test_bed = test_bed
-                .set_yellow_e_pump_a(false)
+                .set_yellow_e_pump_a(true)
                 .run_waiting_for(Duration::from_secs(10));
 
             // Yellow epump working
@@ -8403,62 +7681,13 @@ mod tests {
                 .run_one_tick();
 
             test_bed = test_bed
-                .set_yellow_e_pump_a(false)
+                .set_yellow_e_pump_a(true)
                 .set_flaps_handle_position(4)
                 .run_waiting_for(Duration::from_secs(5));
 
             // Only yellow press so only flaps can move
             assert!(test_bed.is_flaps_moving());
             assert!(!test_bed.is_slats_moving());
-        }
-
-        #[test]
-        fn yellow_epump_can_deploy_flaps_and_slats() {
-            let mut test_bed = test_bed_on_ground_with()
-                .engines_off()
-                .on_the_ground()
-                .set_cold_dark_inputs()
-                .run_one_tick();
-
-            test_bed = test_bed
-                .set_yellow_e_pump_a(false)
-                .run_waiting_for(Duration::from_secs(10));
-
-            // Yellow epump working
-            assert!(test_bed.is_yellow_pressure_switch_pressurised());
-
-            test_bed = test_bed
-                .set_flaps_handle_position(4)
-                .run_waiting_for(Duration::from_secs(80));
-
-            assert!(test_bed.get_flaps_left_position_percent() > 99.);
-            assert!(test_bed.get_flaps_right_position_percent() > 99.);
-            assert!(test_bed.get_slats_left_position_percent() > 99.);
-            assert!(test_bed.get_slats_right_position_percent() > 99.);
-        }
-
-        #[test]
-        fn yellow_epump_no_ptu_can_deploy_flaps_less_33s() {
-            let mut test_bed = test_bed_on_ground_with()
-                .engines_off()
-                .on_the_ground()
-                .set_cold_dark_inputs()
-                .run_one_tick();
-
-            test_bed = test_bed
-                .set_yellow_e_pump_a(true)
-                .run_waiting_for(Duration::from_secs(20));
-
-            assert!(test_bed.is_yellow_pressure_switch_pressurised());
-
-            test_bed = test_bed
-                .set_flaps_handle_position(4)
-                .run_waiting_for(Duration::from_secs(32));
-
-            assert!(test_bed.get_flaps_left_position_percent() > 99.);
-            assert!(test_bed.get_flaps_right_position_percent() > 99.);
-            assert!(test_bed.get_slats_left_position_percent() < 1.);
-            assert!(test_bed.get_slats_right_position_percent() < 1.);
         }
 
         #[test]
@@ -8893,92 +8122,6 @@ mod tests {
         }
 
         #[test]
-        fn ailerons_respond_if_green_pressure() {
-            let mut test_bed = test_bed_on_ground_with()
-                .engines_off()
-                .on_the_ground()
-                .set_cold_dark_inputs()
-                .set_yellow_e_pump_a(false)
-                .run_one_tick();
-
-            test_bed = test_bed
-                .set_ailerons_left_turn()
-                .run_waiting_for(Duration::from_secs_f64(6.));
-
-            assert!(test_bed.is_green_pressure_switch_pressurised());
-            assert!(test_bed.get_left_aileron_position().get::<ratio>() > 0.9);
-            assert!(test_bed.get_right_aileron_position().get::<ratio>() < 0.1);
-
-            test_bed = test_bed
-                .set_ailerons_right_turn()
-                .run_waiting_for(Duration::from_secs_f64(5.));
-
-            assert!(test_bed.is_green_pressure_switch_pressurised());
-            assert!(test_bed.get_left_aileron_position().get::<ratio>() < 0.1);
-            assert!(test_bed.get_right_aileron_position().get::<ratio>() > 0.9);
-        }
-
-        #[test]
-        fn ailerons_droop_down_after_pressure_is_off() {
-            let mut test_bed = test_bed_on_ground_with()
-                .engines_off()
-                .on_the_ground()
-                .set_cold_dark_inputs()
-                .set_yellow_e_pump_a(false)
-                .run_one_tick();
-
-            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(8.));
-
-            assert!(test_bed.is_green_pressure_switch_pressurised());
-            assert!(test_bed.get_left_aileron_position().get::<ratio>() > 0.45);
-            assert!(test_bed.get_right_aileron_position().get::<ratio>() > 0.45);
-
-            test_bed = test_bed
-                .set_yellow_e_pump_a(true)
-                .run_waiting_for(Duration::from_secs_f64(50.));
-
-            assert!(!test_bed.is_green_pressure_switch_pressurised());
-            assert!(test_bed.get_left_aileron_position().get::<ratio>() < 0.42);
-            assert!(test_bed.get_right_aileron_position().get::<ratio>() < 0.42);
-        }
-
-        #[test]
-        fn leak_meas_valve_cant_be_closed_in_flight() {
-            let mut test_bed = test_bed_on_ground_with()
-                .engines_off()
-                .on_the_ground()
-                .set_cold_dark_inputs()
-                .run_one_tick();
-
-            test_bed = test_bed
-                .in_flight()
-                .green_leak_meas_valve_closed()
-                .yellow_leak_meas_valve_closed()
-                .run_waiting_for(Duration::from_secs_f64(1.));
-
-            assert!(test_bed.is_yellow_leak_meas_valve_commanded_open());
-
-            assert!(test_bed.is_green_leak_meas_valve_commanded_open());
-        }
-
-        #[test]
-        fn leak_meas_valve_can_be_closed_on_ground() {
-            let mut test_bed = test_bed_on_ground_with()
-                .engines_off()
-                .on_the_ground()
-                .set_cold_dark_inputs()
-                .run_one_tick();
-
-            test_bed = test_bed
-                .green_leak_meas_valve_closed()
-                .yellow_leak_meas_valve_closed()
-                .run_waiting_for(Duration::from_secs_f64(1.));
-
-            assert!(!test_bed.is_yellow_leak_meas_valve_commanded_open());
-            assert!(!test_bed.is_green_leak_meas_valve_commanded_open());
-        }
-
-        #[test]
         fn nose_wheel_steers_with_pushback_tug() {
             let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
@@ -9035,26 +8178,6 @@ mod tests {
             test_bed = test_bed
                 .set_gear_lever_up()
                 .run_waiting_for(Duration::from_secs_f64(25.));
-            assert!(test_bed.gear_system_state() == GearSystemState::AllUpLocked);
-        }
-
-        #[test]
-        fn gear_retracts_using_yellow_epump_plus_ptu() {
-            let mut test_bed = test_bed_on_ground_with()
-                .set_cold_dark_inputs()
-                .in_flight()
-                .set_gear_lever_down()
-                .set_green_ed_pump(false)
-                .set_yellow_ed_pump(false)
-                .set_yellow_e_pump_a(false)
-                .run_waiting_for(Duration::from_secs_f64(15.));
-
-            assert!(test_bed.is_yellow_pressure_switch_pressurised());
-            assert!(test_bed.gear_system_state() == GearSystemState::AllDownLocked);
-
-            test_bed = test_bed.set_gear_lever_up();
-            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(80.));
-
             assert!(test_bed.gear_system_state() == GearSystemState::AllUpLocked);
         }
 
@@ -9283,34 +8406,6 @@ mod tests {
             assert!(test_bed.get_right_elevator_position().get::<ratio>() < 0.45);
             assert!(test_bed.get_left_elevator_position().get::<ratio>() > 0.35);
             assert!(test_bed.get_right_elevator_position().get::<ratio>() > 0.35);
-        }
-
-        #[test]
-        fn leak_meas_valve_opens_after_yellow_pump_auto_shutdown_plus_a_delay_and_elevators_stay_drooped_down(
-        ) {
-            let mut test_bed = test_bed_on_ground_with()
-                .engines_off()
-                .on_the_ground()
-                .set_cold_dark_inputs()
-                .run_one_tick();
-
-            test_bed = test_bed
-                .open_fwd_cargo_door()
-                .run_waiting_for(Duration::from_secs_f64(45.));
-
-            // Cargo door no more powering yellow epump yet valve is still closed
-            assert!(!test_bed.is_yellow_leak_meas_valve_commanded_open());
-            assert!(!test_bed.query(|a| a.is_cargo_powering_yellow_epump()));
-
-            // Only reopens after a delay
-            test_bed = test_bed.run_waiting_for(
-                A380HydraulicCircuitController::DELAY_TO_REOPEN_LEAK_VALVE_AFTER_CARGO_DOOR_USE,
-            );
-            assert!(test_bed.is_yellow_leak_meas_valve_commanded_open());
-
-            // Check elevators did stay drooped down after valve reopening
-            assert!(test_bed.get_left_elevator_position().get::<ratio>() < 0.1);
-            assert!(test_bed.get_right_elevator_position().get::<ratio>() < 0.1);
         }
 
         #[test]
