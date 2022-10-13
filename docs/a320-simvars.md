@@ -488,6 +488,26 @@
     - Number
     - Volume of PA on the left/right/overhead ACP
 
+- A32NX_HF1_VOLUME
+    - Number
+    - The greatest HF1 volume value between the three ACPs
+
+- A32NX_HF2_VOLUME
+    - Number
+    - The greatest HF2 volume value between the three ACPs
+
+- A32NX_ACP_MECH_VOLUME
+    - Number
+    - The greatest MECH volume value between the three ACPs
+
+- A32NX_ACP_ATT_VOLUME
+    - Number
+    - The greatest CABIN volume value between the three ACPs
+
+- A32NX_ACP_PA_VOLUME
+    - Number
+    - The greatest PA volume value between the three ACPs
+
 - L:A32NX_ACP{1,2,3}_VHF{1,2,3}_KNOB_VOLUME_DOWN
     - Bool
     - If the VHF 1/2/3 volume knob is activated on the left/right/overhead ACP

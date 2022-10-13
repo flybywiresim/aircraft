@@ -695,7 +695,7 @@
                         if audioSwitchingKnob == 0 {
                             let voice = (L:A32NX_ACP_NAV_OVHD_VOICE_KNOB_VOLUME_DOWN, bool) or (L:A32NX_ACP_NAV_R_VOICE_KNOB_VOLUME_DOWN, bool);
 
-                            (K:ADF1_VOLUME_SET) = volumeADF1ACP3.max(volumeADF1ACP2);
+                            (K:ADF_VOLUME_SET) = volumeADF1ACP3.max(volumeADF1ACP2);
                             (K:ADF2_VOLUME_SET) = volumeADF2ACP3.max(volumeADF2ACP2);
 
                             (K:NAV1_VOLUME_SET) = volumeVOR1ACP3.max(volumeVOR1ACP2);
@@ -724,7 +724,7 @@
                         if audioSwitchingKnob == 2 {
                             let voice = (L:A32NX_ACP_NAV_OVHD_VOICE_KNOB_VOLUME_DOWN, bool) or (L:A32NX_ACP_NAV_L_VOICE_KNOB_VOLUME_DOWN, bool);
 
-                            (K:ADF1_VOLUME_SET) = volumeADF1ACP3.max(volumeADF1ACP1);
+                            (K:ADF_VOLUME_SET) = volumeADF1ACP3.max(volumeADF1ACP1);
                             (K:ADF2_VOLUME_SET) = volumeADF2ACP3.max(volumeADF2ACP1);
 
                             (K:NAV1_VOLUME_SET) = volumeVOR1ACP3.max(volumeVOR1ACP1);
@@ -752,7 +752,7 @@
                         // Use Captain and F/O's side
                         let voice = (L:A32NX_ACP_NAV_L_VOICE_KNOB_VOLUME_DOWN, bool) or (L:A32NX_ACP_NAV_R_VOICE_KNOB_VOLUME_DOWN, bool);
 
-                        (K:ADF1_VOLUME_SET) = volumeADF1ACP1.max(volumeADF1ACP2);
+                        (K:ADF_VOLUME_SET) = volumeADF1ACP1.max(volumeADF1ACP2);
                         (K:ADF2_VOLUME_SET) = volumeADF2ACP1.max(volumeADF2ACP2);
 
                         (K:NAV1_VOLUME_SET) = volumeVOR1ACP1.max(volumeVOR1ACP2);
