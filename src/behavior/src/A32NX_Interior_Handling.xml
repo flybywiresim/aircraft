@@ -549,7 +549,9 @@
             <NODE_ID>LEVER_LANDINGGEAR</NODE_ID>
             <PART_ID>LEVER_LANDINGGEAR</PART_ID>
             <ANIM_LAG>0</ANIM_LAG>
-            <WWISE_EVENT>gearleverclick</WWISE_EVENT>
+            <WWISE_EVENT>gear_lever</WWISE_EVENT>
+			<WWISE_EVENT_1>gear_lever_on</WWISE_EVENT_1>
+			<WWISE_EVENT_2>gear_lever_off</WWISE_EVENT_2>
             <DRAG_MIN_VALUE>0</DRAG_MIN_VALUE>
             <DRAG_MAX_VALUE>100</DRAG_MAX_VALUE>
             <DRAG_DELTA>0.001</DRAG_DELTA>
