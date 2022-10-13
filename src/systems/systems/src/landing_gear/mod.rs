@@ -491,9 +491,11 @@ struct LandingGearHandleUnit {
     lever_commanded_down: bool,
 }
 impl LandingGearHandleUnit {
-    const GEAR_LEVER_SPEED_PERCENT_PER_S: f64 = 100.;
+    const GEAR_LEVER_SPEED_PERCENT_PER_S: f64 = 180.;
 
     const GEAR_LEVER_MAX_LOCK_POSITION: f64 = 0.95;
+
+    const GEAR_LEVER_UP_DOWN_DETECTION_POSITION: f64 = 0.5;
 
     fn new(context: &mut InitContext) -> Self {
         let init_gear_down = context.start_gear_down();
@@ -532,14 +534,6 @@ impl LandingGearHandleUnit {
             self.lever_position += Ratio::new::<percent>(
                 Self::GEAR_LEVER_SPEED_PERCENT_PER_S * context.delta_as_secs_f64(),
             );
-
-            println!(
-                "GEAR REQ= {:?} GEAR LOCK = {:?} COULD HIT {:?} GEAR POS= {:.2}",
-                self.lever_commanded_down,
-                self.lever_should_lock_down,
-                false,
-                self.lever_position.get::<ratio>()
-            );
         } else {
             let could_hit_lock_mechanism_after_update = self.lever_position.get::<ratio>()
                 >= Self::GEAR_LEVER_MAX_LOCK_POSITION
@@ -554,14 +548,6 @@ impl LandingGearHandleUnit {
                     .lever_position
                     .max(Ratio::new::<ratio>(Self::GEAR_LEVER_MAX_LOCK_POSITION));
             }
-
-            println!(
-                "GEAR REQ= {:?} GEAR LOCK = {:?} COULD HIT {:?} GEAR POS= {:.2}",
-                self.lever_commanded_down,
-                self.lever_should_lock_down,
-                could_hit_lock_mechanism_after_update,
-                self.lever_position.get::<ratio>()
-            );
         }
 
         self.lever_position = self
@@ -572,7 +558,7 @@ impl LandingGearHandleUnit {
 }
 impl LandingGearHandle for LandingGearHandleUnit {
     fn gear_handle_is_down(&self) -> bool {
-        self.lever_position.get::<ratio>() >= Self::GEAR_LEVER_MAX_LOCK_POSITION
+        self.lever_position.get::<ratio>() >= Self::GEAR_LEVER_UP_DOWN_DETECTION_POSITION
     }
 
     fn gear_handle_baulk_locked(&self) -> bool {
@@ -581,18 +567,8 @@ impl LandingGearHandle for LandingGearHandleUnit {
 }
 impl SimulationElement for LandingGearHandleUnit {
     fn read(&mut self, reader: &mut SimulatorReader) {
-        // let lever_down_raw: bool = reader.read(&self.gear_handle_position_requested_id);
-
-        // self.is_lever_down = lever_down_raw || (self.lever_should_lock_down && self.is_lever_down);
-
         let lever_down_req_raw: bool = reader.read(&self.gear_handle_position_requested_id);
-
         self.lever_commanded_down = lever_down_req_raw;
-
-        // println!(
-        //     "read() DOWN REQ = {:?} lever_commanded_down = {:?}",
-        //     lever_down_req_raw, self.lever_commanded_down
-        // );
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
@@ -600,12 +576,6 @@ impl SimulationElement for LandingGearHandleUnit {
             &self.gear_handle_real_position_id,
             self.lever_position.get::<ratio>(),
         );
-
-        // Aligning request on demand so in sim position is always consistent with system state
-        // writer.write(
-        //     &self.gear_handle_position_requested_id,
-        //     self.gear_handle_is_down(),
-        // );
     }
 }
 
@@ -1390,8 +1360,6 @@ mod tests {
 
         fn is_gear_handle_down(&mut self) -> bool {
             let lever_pos: f64 = self.read_by_name("GEAR_HANDLE_POSITION");
-
-            // println!("TEST REQ ANSWER {:.2}", test);
             lever_pos >= 0.90
         }
 
