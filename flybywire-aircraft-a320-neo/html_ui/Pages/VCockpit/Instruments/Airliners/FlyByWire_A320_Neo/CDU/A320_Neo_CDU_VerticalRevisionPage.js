@@ -33,7 +33,7 @@ class CDUVerticalRevisionPage {
                 coordinates = waypointInfo.coordinates.toDegreeString();
             }
 
-            const showSpeedLim = mcdu._fuelPredDone || isOrigin || isDestination;
+            const showSpeedLim = mcdu._fuelPredDone || isOrigin || isDestination || constraintType !== WaypointConstraintType.Unknown;
             // the conditions other than isDestination are a workaround for no ToC
             const showDesSpeedLim = showSpeedLim && (isDestination ||
                 constraintType === WaypointConstraintType.DES ||
