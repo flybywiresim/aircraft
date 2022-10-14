@@ -6766,221 +6766,6 @@ mod tests {
         }
 
         #[test]
-        fn yellow_edp_fault_on_ground_eng_starting() {
-            let mut test_bed = test_bed_on_ground_with()
-                .engines_off()
-                .on_the_ground()
-                .set_cold_dark_inputs()
-                .run_waiting_for(Duration::from_millis(500));
-
-            // EDP should be commanded on even without engine running
-            assert!(test_bed.is_yellow_edp_commanded_on());
-            // EDP should have no fault
-            assert!(!test_bed.yellow_edp_has_fault());
-
-            test_bed = test_bed
-                .start_eng2(Ratio::new::<percent>(3.))
-                .run_one_tick();
-
-            assert!(!test_bed.yellow_edp_has_fault());
-
-            test_bed = test_bed
-                .start_eng2(Ratio::new::<percent>(80.))
-                .run_one_tick();
-
-            assert!(!test_bed.is_yellow_pressure_switch_pressurised());
-            assert!(test_bed.yellow_edp_has_fault());
-
-            test_bed = test_bed.run_waiting_for(Duration::from_secs(10));
-
-            // When finally pressurised no fault
-            assert!(test_bed.is_yellow_pressure_switch_pressurised());
-            assert!(!test_bed.yellow_edp_has_fault());
-        }
-
-        #[test]
-        fn green_edp_press_low_engine_off_to_on() {
-            let mut test_bed = test_bed_on_ground_with()
-                .engines_off()
-                .on_the_ground()
-                .set_cold_dark_inputs()
-                .run_waiting_for(Duration::from_millis(500));
-
-            // EDP should be commanded on even without engine running
-            assert!(test_bed.is_green_edp_commanded_on());
-
-            // EDP should be LOW pressure state
-            assert!(test_bed.is_green_edp_press_low());
-
-            // Starting eng 1 N2 is low at start
-            test_bed = test_bed
-                .start_eng1(Ratio::new::<percent>(3.))
-                .run_one_tick();
-
-            // Engine commanded on but pressure couldn't rise enough: we are in fault low
-            assert!(test_bed.is_green_edp_press_low());
-
-            // Waiting for 5s pressure should be at 3000 psi
-            test_bed = test_bed
-                .start_eng1(Ratio::new::<percent>(80.))
-                .run_waiting_for(Duration::from_secs(25));
-
-            // No more fault LOW expected
-            assert!(test_bed.is_green_pressure_switch_pressurised());
-            assert!(test_bed.green_pressure() > Pressure::new::<psi>(2900.));
-            assert!(!test_bed.is_green_edp_press_low());
-
-            // Stoping pump, no fault expected
-            test_bed = test_bed
-                .set_green_ed_pump(false)
-                .run_waiting_for(Duration::from_secs(1));
-            assert!(!test_bed.is_green_edp_press_low());
-        }
-
-        #[test]
-        fn green_edp_press_low_engine_on_to_off() {
-            let mut test_bed = test_bed_on_ground_with()
-                .on_the_ground()
-                .set_cold_dark_inputs()
-                .start_eng1(Ratio::new::<percent>(75.))
-                .run_waiting_for(Duration::from_secs(5));
-
-            // EDP should be commanded on even without engine running
-            assert!(test_bed.is_green_edp_commanded_on());
-            assert!(test_bed.is_green_pressure_switch_pressurised());
-            // EDP should not be in fault low when engine running and pressure is ok
-            assert!(!test_bed.is_green_edp_press_low());
-
-            // Stoping eng 1 with N2 still turning
-            test_bed = test_bed.stopping_eng1().run_one_tick();
-
-            // Edp should still be in pressurized mode but as engine just stopped no fault
-            assert!(test_bed.is_green_edp_commanded_on());
-            assert!(!test_bed.is_green_edp_press_low());
-
-            // Waiting for 25s pressure should drop and still no fault
-            test_bed = test_bed
-                .stop_eng1()
-                .run_waiting_for(Duration::from_secs(25));
-
-            assert!(!test_bed.is_green_pressure_switch_pressurised());
-            assert!(test_bed.green_pressure() < Pressure::new::<psi>(500.));
-            assert!(test_bed.is_green_edp_press_low());
-        }
-
-        #[test]
-        fn yellow_edp_press_low_engine_on_to_off() {
-            let mut test_bed = test_bed_on_ground_with()
-                .on_the_ground()
-                .set_cold_dark_inputs()
-                .start_eng2(Ratio::new::<percent>(75.))
-                .run_waiting_for(Duration::from_secs(5));
-
-            // EDP should be commanded on even without engine running
-            assert!(test_bed.is_yellow_edp_commanded_on());
-            assert!(test_bed.is_yellow_pressure_switch_pressurised());
-            // EDP should not be in fault low when engine running and pressure is ok
-            assert!(!test_bed.is_yellow_edp_press_low());
-
-            // Stoping eng 2 with N2 still turning
-            test_bed = test_bed.stopping_eng2().run_one_tick();
-
-            // Edp should still be in pressurized mode but as engine just stopped no fault
-            assert!(test_bed.is_yellow_edp_commanded_on());
-            assert!(!test_bed.is_yellow_edp_press_low());
-
-            // Waiting for 25s pressure should drop and still no fault
-            test_bed = test_bed
-                .stop_eng2()
-                .run_waiting_for(Duration::from_secs(25));
-
-            assert!(!test_bed.is_yellow_pressure_switch_pressurised());
-            assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(500.));
-            assert!(test_bed.is_yellow_edp_press_low());
-        }
-
-        #[test]
-        fn yellow_edp_press_low_engine_off_to_on() {
-            let mut test_bed = test_bed_on_ground_with()
-                .engines_off()
-                .on_the_ground()
-                .set_cold_dark_inputs()
-                .run_one_tick();
-
-            // EDP should be commanded on even without engine running
-            assert!(test_bed.is_yellow_edp_commanded_on());
-
-            // EDP should be LOW pressure state
-            assert!(test_bed.is_yellow_edp_press_low());
-
-            // Starting eng 2 N2 is low at start
-            test_bed = test_bed
-                .start_eng2(Ratio::new::<percent>(3.))
-                .run_one_tick();
-
-            // Engine commanded on but pressure couldn't rise enough: we are in fault low
-            assert!(test_bed.is_yellow_edp_press_low());
-
-            // Waiting for 5s pressure should be at 3000 psi
-            test_bed = test_bed
-                .start_eng2(Ratio::new::<percent>(80.))
-                .run_waiting_for(Duration::from_secs(5));
-
-            // No more fault LOW expected
-            assert!(test_bed.is_yellow_pressure_switch_pressurised());
-            assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(2900.));
-            assert!(!test_bed.is_yellow_edp_press_low());
-
-            // Stoping pump, no fault expected
-            test_bed = test_bed
-                .set_yellow_ed_pump(false)
-                .run_waiting_for(Duration::from_secs(1));
-            assert!(!test_bed.is_yellow_edp_press_low());
-        }
-
-        #[test]
-        fn yellow_edp_press_low_engine_off_to_on_with_e_pump() {
-            let mut test_bed = test_bed_on_ground_with()
-                .engines_off()
-                .on_the_ground()
-                .set_cold_dark_inputs()
-                .set_yellow_e_pump_a(false)
-                .run_one_tick();
-
-            // EDP should be commanded on even without engine running
-            assert!(test_bed.is_yellow_edp_commanded_on());
-
-            // EDP should be LOW pressure state
-            assert!(test_bed.is_yellow_edp_press_low());
-
-            // Waiting for 20s pressure should be at 3000 psi
-            test_bed = test_bed.run_waiting_for(Duration::from_secs(20));
-
-            // Yellow pressurised but edp still off, we expect fault LOW press
-            assert!(test_bed.is_yellow_pressure_switch_pressurised());
-            assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(2900.));
-            assert!(test_bed.is_yellow_edp_press_low());
-
-            // Starting eng 2 N2 is low at start
-            test_bed = test_bed
-                .start_eng2(Ratio::new::<percent>(3.))
-                .run_one_tick();
-
-            // Engine commanded on but pressure couldn't rise enough: we are in fault low
-            assert!(test_bed.is_yellow_edp_press_low());
-
-            // Waiting for 5s pressure should be at 3000 psi in EDP section
-            test_bed = test_bed
-                .start_eng2(Ratio::new::<percent>(80.))
-                .run_waiting_for(Duration::from_secs(5));
-
-            // No more fault LOW expected
-            assert!(test_bed.is_yellow_pressure_switch_pressurised());
-            assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(2900.));
-            assert!(!test_bed.is_yellow_edp_press_low());
-        }
-
-        #[test]
         fn yellow_epump_press_low_at_pump_on() {
             let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
@@ -7804,36 +7589,6 @@ mod tests {
         }
 
         #[test]
-        fn cargo_door_opened_uses_correct_reservoir_amount() {
-            let mut test_bed = test_bed_on_ground_with()
-                .engines_off()
-                .on_the_ground()
-                .set_cold_dark_inputs()
-                .set_yellow_e_pump_a(true)
-                .run_waiting_for(Duration::from_secs_f64(20.));
-
-            assert!(test_bed.is_cargo_fwd_door_locked_down());
-
-            let pressurised_yellow_level_door_closed = test_bed.get_yellow_reservoir_volume();
-
-            test_bed = test_bed
-                .open_fwd_cargo_door()
-                .run_waiting_for(Duration::from_secs_f64(40.));
-
-            assert!(!test_bed.is_cargo_fwd_door_locked_down());
-            assert!(test_bed.cargo_fwd_door_position() > 0.85);
-
-            let pressurised_yellow_level_door_opened = test_bed.get_yellow_reservoir_volume();
-
-            let volume_used_liter = (pressurised_yellow_level_door_closed
-                - pressurised_yellow_level_door_opened)
-                .get::<liter>();
-
-            // For one cargo door we expect losing between 0.6 to 0.8 liter of fluid into the two actuators
-            assert!((0.6..=0.8).contains(&volume_used_liter));
-        }
-
-        #[test]
         fn cargo_door_controller_closes_the_door() {
             let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
@@ -7884,32 +7639,6 @@ mod tests {
         }
 
         #[test]
-        fn nose_steering_responds_to_tiller_demand_if_yellow_pressure_and_engines() {
-            let mut test_bed = test_bed_on_ground_with()
-                .engines_off()
-                .on_the_ground()
-                .set_cold_dark_inputs()
-                .set_yellow_e_pump_a(false)
-                .start_eng1(Ratio::new::<percent>(80.))
-                .start_eng2(Ratio::new::<percent>(80.))
-                .run_one_tick();
-
-            test_bed = test_bed
-                .set_tiller_demand(Ratio::new::<ratio>(1.))
-                .run_waiting_for(Duration::from_secs_f64(5.));
-
-            assert!(test_bed.nose_steering_position().get::<degree>() >= 73.9);
-            assert!(test_bed.nose_steering_position().get::<degree>() <= 74.1);
-
-            test_bed = test_bed
-                .set_tiller_demand(Ratio::new::<ratio>(-1.))
-                .run_waiting_for(Duration::from_secs_f64(10.));
-
-            assert!(test_bed.nose_steering_position().get::<degree>() <= -73.9);
-            assert!(test_bed.nose_steering_position().get::<degree>() >= -74.1);
-        }
-
-        #[test]
         fn nose_steering_does_not_move_if_yellow_pressure_but_no_engine() {
             let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
@@ -7954,58 +7683,6 @@ mod tests {
         }
 
         #[test]
-        fn nose_steering_centers_itself_when_a_skid_off() {
-            let mut test_bed = test_bed_on_ground_with()
-                .engines_off()
-                .on_the_ground()
-                .set_cold_dark_inputs()
-                .set_yellow_e_pump_a(false)
-                .start_eng1(Ratio::new::<percent>(80.))
-                .start_eng2(Ratio::new::<percent>(80.))
-                .set_anti_skid(true)
-                .run_one_tick();
-
-            test_bed = test_bed
-                .set_tiller_demand(Ratio::new::<ratio>(1.))
-                .run_waiting_for(Duration::from_secs_f64(5.));
-
-            assert!(test_bed.nose_steering_position().get::<degree>() >= 70.);
-
-            test_bed = test_bed
-                .set_tiller_demand(Ratio::new::<ratio>(1.))
-                .set_anti_skid(false)
-                .run_waiting_for(Duration::from_secs_f64(5.));
-
-            assert!(test_bed.nose_steering_position().get::<degree>() <= 0.1);
-            assert!(test_bed.nose_steering_position().get::<degree>() >= -0.1);
-        }
-
-        #[test]
-        fn nose_steering_responds_to_autopilot_demand() {
-            let mut test_bed = test_bed_on_ground_with()
-                .engines_off()
-                .on_the_ground()
-                .set_cold_dark_inputs()
-                .start_eng1(Ratio::new::<percent>(80.))
-                .start_eng2(Ratio::new::<percent>(80.))
-                .run_one_tick();
-
-            test_bed = test_bed
-                .set_autopilot_steering_demand(Ratio::new::<ratio>(1.5))
-                .run_waiting_for(Duration::from_secs_f64(2.));
-
-            assert!(test_bed.nose_steering_position().get::<degree>() >= 5.9);
-            assert!(test_bed.nose_steering_position().get::<degree>() <= 6.1);
-
-            test_bed = test_bed
-                .set_autopilot_steering_demand(Ratio::new::<ratio>(-1.8))
-                .run_waiting_for(Duration::from_secs_f64(4.));
-
-            assert!(test_bed.nose_steering_position().get::<degree>() <= -5.9);
-            assert!(test_bed.nose_steering_position().get::<degree>() >= -6.1);
-        }
-
-        #[test]
         fn yellow_epump_has_cavitation_at_low_air_press() {
             let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
@@ -8015,7 +7692,7 @@ mod tests {
 
             test_bed = test_bed
                 .air_press_nominal()
-                .set_yellow_e_pump_a(false)
+                .set_yellow_e_pump_a(true)
                 .run_waiting_for(Duration::from_secs_f64(10.));
 
             assert!(test_bed.yellow_pressure().get::<psi>() > 2900.);
@@ -8046,44 +7723,6 @@ mod tests {
 
             assert!(test_bed.green_edp_has_fault());
             assert!(test_bed.yellow_edp_has_fault());
-        }
-
-        #[test]
-        fn low_air_press_fault_causes_yellow_epump_fault() {
-            let mut test_bed = test_bed_on_ground_with()
-                .engines_off()
-                .on_the_ground()
-                .set_cold_dark_inputs()
-                .start_eng1(Ratio::new::<percent>(80.))
-                .start_eng2(Ratio::new::<percent>(80.))
-                .run_waiting_for(Duration::from_millis(5000));
-
-            assert!(!test_bed.yellow_epump_has_fault());
-
-            test_bed = test_bed
-                .air_press_low()
-                .run_waiting_for(Duration::from_secs_f64(10.));
-
-            assert!(!test_bed.yellow_epump_has_fault());
-
-            test_bed = test_bed
-                .set_yellow_e_pump_a(false)
-                .run_waiting_for(Duration::from_secs_f64(10.));
-
-            assert!(test_bed.yellow_epump_has_fault());
-        }
-
-        #[test]
-        fn no_yellow_epump_fault_after_brake_accumulator_is_filled() {
-            let mut test_bed = test_bed_on_ground_with()
-                .engines_off()
-                .on_the_ground()
-                .set_cold_dark_inputs()
-                .set_yellow_e_pump_a(false)
-                .run_waiting_for(Duration::from_millis(8000));
-
-            assert!(test_bed.is_yellow_pressure_switch_pressurised());
-            assert!(!test_bed.yellow_epump_has_fault());
         }
 
         #[test]
@@ -8292,40 +7931,6 @@ mod tests {
                 (initial_uplocked_fluid_quantity - final_uplocked_fluid_quantity).abs()
                     < Volume::new::<gallon>(0.01)
             );
-        }
-
-        #[test]
-        fn spoilers_move_to_requested_position() {
-            let mut test_bed = test_bed_on_ground_with()
-                .set_cold_dark_inputs()
-                .set_yellow_e_pump_a(false)
-                .run_waiting_for(Duration::from_secs_f64(5.));
-
-            assert!(test_bed.green_pressure() > Pressure::new::<psi>(2900.));
-            assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(2900.));
-
-            test_bed = test_bed
-                .set_left_spoilers_out()
-                .run_waiting_for(Duration::from_secs_f64(2.));
-
-            assert!(test_bed.get_mean_left_spoilers_position().get::<ratio>() > 0.9);
-            assert!(test_bed.get_mean_right_spoilers_position().get::<ratio>() < 0.01);
-
-            test_bed = test_bed
-                .set_left_spoilers_in()
-                .set_right_spoilers_out()
-                .run_waiting_for(Duration::from_secs_f64(2.));
-
-            assert!(test_bed.get_mean_right_spoilers_position().get::<ratio>() > 0.9);
-            assert!(test_bed.get_mean_left_spoilers_position().get::<ratio>() < 0.01);
-
-            test_bed = test_bed
-                .set_left_spoilers_in()
-                .set_right_spoilers_in()
-                .run_waiting_for(Duration::from_secs_f64(2.));
-
-            assert!(test_bed.get_mean_left_spoilers_position().get::<ratio>() < 0.01);
-            assert!(test_bed.get_mean_right_spoilers_position().get::<ratio>() < 0.01);
         }
 
         #[test]
