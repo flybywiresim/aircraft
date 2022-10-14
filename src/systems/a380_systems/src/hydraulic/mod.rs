@@ -1380,7 +1380,7 @@ impl A380Hydraulic {
             ),
             yellow_electric_pump_a_controller: A380ElectricPumpController::new(
                 context,
-                A380ElectricPumpId::EpumpYellowA,
+                A380ElectricPumpId::YellowA,
                 Self::YELLOW_ELEC_PUMP_CONTROL_POWER_BUS,
                 Self::YELLOW_ELEC_PUMP_CONTROL_FROM_CARGO_DOOR_OPERATION_POWER_BUS,
             ),
@@ -1394,7 +1394,7 @@ impl A380Hydraulic {
             ),
             yellow_electric_pump_b_controller: A380ElectricPumpController::new(
                 context,
-                A380ElectricPumpId::EpumpYellowB,
+                A380ElectricPumpId::YellowB,
                 Self::YELLOW_ELEC_PUMP_CONTROL_POWER_BUS,
                 Self::YELLOW_ELEC_PUMP_CONTROL_FROM_CARGO_DOOR_OPERATION_POWER_BUS,
             ),
@@ -1408,7 +1408,7 @@ impl A380Hydraulic {
             ),
             green_electric_pump_a_controller: A380ElectricPumpController::new(
                 context,
-                A380ElectricPumpId::EpumpGreenA,
+                A380ElectricPumpId::GreenA,
                 Self::YELLOW_ELEC_PUMP_CONTROL_POWER_BUS,
                 Self::YELLOW_ELEC_PUMP_CONTROL_FROM_CARGO_DOOR_OPERATION_POWER_BUS,
             ),
@@ -1422,7 +1422,7 @@ impl A380Hydraulic {
             ),
             green_electric_pump_b_controller: A380ElectricPumpController::new(
                 context,
-                A380ElectricPumpId::EpumpGreenB,
+                A380ElectricPumpId::GreenB,
                 Self::YELLOW_ELEC_PUMP_CONTROL_POWER_BUS,
                 Self::YELLOW_ELEC_PUMP_CONTROL_FROM_CARGO_DOOR_OPERATION_POWER_BUS,
             ),
@@ -1600,18 +1600,10 @@ impl A380Hydraulic {
 
     fn epump_has_fault(&self, pump_id: A380ElectricPumpId) -> bool {
         match pump_id {
-            A380ElectricPumpId::EpumpYellowA => {
-                self.yellow_electric_pump_a_controller.has_any_fault()
-            }
-            A380ElectricPumpId::EpumpYellowB => {
-                self.yellow_electric_pump_b_controller.has_any_fault()
-            }
-            A380ElectricPumpId::EpumpGreenA => {
-                self.green_electric_pump_a_controller.has_any_fault()
-            }
-            A380ElectricPumpId::EpumpGreenB => {
-                self.green_electric_pump_b_controller.has_any_fault()
-            }
+            A380ElectricPumpId::YellowA => self.yellow_electric_pump_a_controller.has_any_fault(),
+            A380ElectricPumpId::YellowB => self.yellow_electric_pump_b_controller.has_any_fault(),
+            A380ElectricPumpId::GreenA => self.green_electric_pump_a_controller.has_any_fault(),
+            A380ElectricPumpId::GreenB => self.green_electric_pump_b_controller.has_any_fault(),
         }
     }
 
@@ -1621,12 +1613,6 @@ impl A380Hydraulic {
 
     pub fn yellow_reservoir(&self) -> &Reservoir {
         self.yellow_circuit.reservoir()
-    }
-
-    #[cfg(test)]
-    fn should_pressurise_yellow_pump_for_cargo_door_operation(&self) -> bool {
-        self.yellow_electric_pump_a_controller
-            .should_pressurise_for_cargo_door_operation()
     }
 
     #[cfg(test)]
@@ -2093,7 +2079,7 @@ impl A380Hydraulic {
         self.green_electric_pump_a.update(
             context,
             self.green_circuit
-                .pump_section(A380ElectricPumpId::EpumpGreenA.into_pump_section_index()),
+                .pump_section(A380ElectricPumpId::GreenA.into_pump_section_index()),
             self.green_circuit.reservoir(),
             &self.green_electric_pump_a_controller,
         );
@@ -2107,7 +2093,7 @@ impl A380Hydraulic {
         self.green_electric_pump_b.update(
             context,
             self.green_circuit
-                .pump_section(A380ElectricPumpId::EpumpGreenB.into_pump_section_index()),
+                .pump_section(A380ElectricPumpId::GreenB.into_pump_section_index()),
             self.green_circuit.reservoir(),
             &self.green_electric_pump_b_controller,
         );
@@ -2122,7 +2108,7 @@ impl A380Hydraulic {
         self.yellow_electric_pump_a.update(
             context,
             self.yellow_circuit
-                .pump_section(A380ElectricPumpId::EpumpYellowA.into_pump_section_index()),
+                .pump_section(A380ElectricPumpId::YellowA.into_pump_section_index()),
             self.yellow_circuit.reservoir(),
             &self.yellow_electric_pump_a_controller,
         );
@@ -2137,7 +2123,7 @@ impl A380Hydraulic {
         self.yellow_electric_pump_b.update(
             context,
             self.yellow_circuit
-                .pump_section(A380ElectricPumpId::EpumpYellowB.into_pump_section_index()),
+                .pump_section(A380ElectricPumpId::YellowB.into_pump_section_index()),
             self.yellow_circuit.reservoir(),
             &self.yellow_electric_pump_b_controller,
         );
@@ -2145,7 +2131,6 @@ impl A380Hydraulic {
         self.green_circuit_controller.update(
             context,
             engine_fire_push_buttons,
-            overhead_panel,
             [
                 &self.green_electric_pump_a_controller,
                 &self.green_electric_pump_b_controller,
@@ -2172,7 +2157,6 @@ impl A380Hydraulic {
         self.yellow_circuit_controller.update(
             context,
             engine_fire_push_buttons,
-            overhead_panel,
             [
                 &self.yellow_electric_pump_a_controller,
                 &self.yellow_electric_pump_b_controller,
@@ -2414,7 +2398,6 @@ impl A380HydraulicCircuitController {
         &mut self,
         context: &UpdateContext,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
-        overhead_panel: &A380HydraulicOverheadPanel,
         epump_controllers: [&A380ElectricPumpController; 2],
     ) {
         // No cargo doors on yellow side
@@ -2445,14 +2428,10 @@ impl A380HydraulicCircuitController {
             HydraulicColor::Blue => panic!("NO BLUE CIRCUIT IN A380"),
         };
 
-        self.update_leak_measurement_valve(context, overhead_panel);
+        self.update_leak_measurement_valve(context);
     }
 
-    fn update_leak_measurement_valve(
-        &mut self,
-        context: &UpdateContext,
-        overhead_panel: &A380HydraulicOverheadPanel,
-    ) {
+    fn update_leak_measurement_valve(&mut self, context: &UpdateContext) {
         let measurement_valve_open_demand_raw = match &mut self.circuit_id {
             HydraulicColor::Green => {
                 true
@@ -2499,11 +2478,9 @@ impl HydraulicCircuitController for A380HydraulicCircuitController {
             return false;
         }
 
-        if pump_index < 4 || pump_index >= 4 && !(self.routing_epump_sections_to_aux.output()) {
-            false
-        } else {
-            true
-        }
+        // If it's an engine section (<4) we can't route to aux. Else it's a pump elec section (>=4) so
+        //   we can route it if required to by the boolean
+        pump_index >= 4 && self.routing_epump_sections_to_aux.output()
     }
 }
 
@@ -2520,7 +2497,7 @@ enum A380EngineDrivenPumpId {
     Edp4b,
 }
 impl A380EngineDrivenPumpId {
-    fn into_engine_num(&self) -> usize {
+    fn into_engine_num(self) -> usize {
         match self {
             A380EngineDrivenPumpId::Edp1a => 1,
             A380EngineDrivenPumpId::Edp1b => 1,
@@ -2533,11 +2510,11 @@ impl A380EngineDrivenPumpId {
         }
     }
 
-    fn into_engine_index(&self) -> usize {
+    fn into_engine_index(self) -> usize {
         self.into_engine_num() - 1
     }
 
-    fn into_pump_section_index(&self) -> usize {
+    fn into_pump_section_index(self) -> usize {
         match self {
             A380EngineDrivenPumpId::Edp1a => 0,
             A380EngineDrivenPumpId::Edp1b => 1,
@@ -2567,28 +2544,28 @@ impl Display for A380EngineDrivenPumpId {
 
 #[derive(Clone, Copy, PartialEq)]
 enum A380ElectricPumpId {
-    EpumpGreenA,
-    EpumpGreenB,
-    EpumpYellowA,
-    EpumpYellowB,
+    GreenA,
+    GreenB,
+    YellowA,
+    YellowB,
 }
 impl A380ElectricPumpId {
-    fn into_pump_section_index(&self) -> usize {
+    fn into_pump_section_index(self) -> usize {
         match self {
-            A380ElectricPumpId::EpumpGreenA => 4,
-            A380ElectricPumpId::EpumpYellowA => 4,
-            A380ElectricPumpId::EpumpGreenB => 5,
-            A380ElectricPumpId::EpumpYellowB => 5,
+            A380ElectricPumpId::GreenA => 4,
+            A380ElectricPumpId::YellowA => 4,
+            A380ElectricPumpId::GreenB => 5,
+            A380ElectricPumpId::YellowB => 5,
         }
     }
 }
 impl Display for A380ElectricPumpId {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            A380ElectricPumpId::EpumpGreenA => write!(f, "GA"),
-            A380ElectricPumpId::EpumpYellowA => write!(f, "YA"),
-            A380ElectricPumpId::EpumpGreenB => write!(f, "GB"),
-            A380ElectricPumpId::EpumpYellowB => write!(f, "YB"),
+            A380ElectricPumpId::GreenA => write!(f, "GA"),
+            A380ElectricPumpId::YellowA => write!(f, "YA"),
+            A380ElectricPumpId::GreenB => write!(f, "GB"),
+            A380ElectricPumpId::YellowB => write!(f, "YB"),
         }
     }
 }
@@ -2793,18 +2770,18 @@ impl A380ElectricPumpAutoLogic {
 
         if should_change_pump_for_cargo
             && (self.green_pump_a_selected
-                && !overhead.epump_button_off_is_off(A380ElectricPumpId::EpumpGreenB)
+                && !overhead.epump_button_off_is_off(A380ElectricPumpId::GreenB)
                 || !self.green_pump_a_selected
-                    && !overhead.epump_button_off_is_off(A380ElectricPumpId::EpumpGreenA))
+                    && !overhead.epump_button_off_is_off(A380ElectricPumpId::GreenA))
         {
             self.green_pump_a_selected = !self.green_pump_a_selected
         }
 
         if should_change_pump_for_body_steering
             && (self.yellow_pump_a_selected
-                && !overhead.epump_button_off_is_off(A380ElectricPumpId::EpumpYellowB)
+                && !overhead.epump_button_off_is_off(A380ElectricPumpId::YellowB)
                 || !self.yellow_pump_a_selected
-                    && !overhead.epump_button_off_is_off(A380ElectricPumpId::EpumpYellowA))
+                    && !overhead.epump_button_off_is_off(A380ElectricPumpId::YellowA))
         {
             self.yellow_pump_a_selected = !self.yellow_pump_a_selected
         }
@@ -2814,16 +2791,10 @@ impl A380ElectricPumpAutoLogic {
         let green_operation_required = self.is_required_for_cargo_door_operation.output();
         let yellow_operation_required = self.is_required_for_body_steering_operation.output();
         match pump_id {
-            A380ElectricPumpId::EpumpGreenA => {
-                green_operation_required && self.green_pump_a_selected
-            }
-            A380ElectricPumpId::EpumpGreenB => {
-                green_operation_required && !self.green_pump_a_selected
-            }
-            A380ElectricPumpId::EpumpYellowA => {
-                yellow_operation_required && self.yellow_pump_a_selected
-            }
-            A380ElectricPumpId::EpumpYellowB => {
+            A380ElectricPumpId::GreenA => green_operation_required && self.green_pump_a_selected,
+            A380ElectricPumpId::GreenB => green_operation_required && !self.green_pump_a_selected,
+            A380ElectricPumpId::YellowA => yellow_operation_required && self.yellow_pump_a_selected,
+            A380ElectricPumpId::YellowB => {
                 yellow_operation_required && !self.yellow_pump_a_selected
             }
         }
@@ -4206,14 +4177,14 @@ impl A380HydraulicOverheadPanel {
             .set_fault(hyd.edp_has_fault(A380EngineDrivenPumpId::Edp4b));
 
         self.yellow_epump_a_off_push_button
-            .set_fault(hyd.epump_has_fault(A380ElectricPumpId::EpumpYellowA));
+            .set_fault(hyd.epump_has_fault(A380ElectricPumpId::YellowA));
         self.yellow_epump_b_off_push_button
-            .set_fault(hyd.epump_has_fault(A380ElectricPumpId::EpumpYellowB));
+            .set_fault(hyd.epump_has_fault(A380ElectricPumpId::YellowB));
 
         self.green_epump_a_off_push_button
-            .set_fault(hyd.epump_has_fault(A380ElectricPumpId::EpumpGreenA));
+            .set_fault(hyd.epump_has_fault(A380ElectricPumpId::GreenA));
         self.green_epump_b_off_push_button
-            .set_fault(hyd.epump_has_fault(A380ElectricPumpId::EpumpGreenB));
+            .set_fault(hyd.epump_has_fault(A380ElectricPumpId::GreenB));
 
         if self.yellow_epump_a_off_push_button.is_off() {
             self.yellow_epump_a_on_push_button.push_auto()
@@ -4241,10 +4212,10 @@ impl A380HydraulicOverheadPanel {
 
     fn epump_button_off_is_off(&self, pump_id: A380ElectricPumpId) -> bool {
         match pump_id {
-            A380ElectricPumpId::EpumpGreenA => self.green_epump_a_off_push_button.is_off(),
-            A380ElectricPumpId::EpumpGreenB => self.green_epump_b_off_push_button.is_off(),
-            A380ElectricPumpId::EpumpYellowA => self.yellow_epump_a_off_push_button.is_off(),
-            A380ElectricPumpId::EpumpYellowB => self.yellow_epump_b_off_push_button.is_off(),
+            A380ElectricPumpId::GreenA => self.green_epump_a_off_push_button.is_off(),
+            A380ElectricPumpId::GreenB => self.green_epump_b_off_push_button.is_off(),
+            A380ElectricPumpId::YellowA => self.yellow_epump_a_off_push_button.is_off(),
+            A380ElectricPumpId::YellowB => self.yellow_epump_b_off_push_button.is_off(),
         }
     }
 
@@ -4276,19 +4247,11 @@ impl A380HydraulicOverheadPanel {
 
     fn epump_button_on_is_on(&self, pump_id: A380ElectricPumpId) -> bool {
         match pump_id {
-            A380ElectricPumpId::EpumpGreenA => self.green_epump_a_on_push_button.is_on(),
-            A380ElectricPumpId::EpumpGreenB => self.green_epump_b_on_push_button.is_on(),
-            A380ElectricPumpId::EpumpYellowA => self.yellow_epump_a_on_push_button.is_on(),
-            A380ElectricPumpId::EpumpYellowB => self.yellow_epump_b_on_push_button.is_on(),
+            A380ElectricPumpId::GreenA => self.green_epump_a_on_push_button.is_on(),
+            A380ElectricPumpId::GreenB => self.green_epump_b_on_push_button.is_on(),
+            A380ElectricPumpId::YellowA => self.yellow_epump_a_on_push_button.is_on(),
+            A380ElectricPumpId::YellowB => self.yellow_epump_b_on_push_button.is_on(),
         }
-    }
-
-    fn green_leak_measurement_valve_is_on(&self) -> bool {
-        self.green_leak_measurement_push_button.is_auto()
-    }
-
-    fn yellow_leak_measurement_valve_is_on(&self) -> bool {
-        self.yellow_leak_measurement_push_button.is_auto()
     }
 }
 impl SimulationElement for A380HydraulicOverheadPanel {
@@ -5348,7 +5311,6 @@ mod tests {
             electric_potential::volt,
             length::foot,
             ratio::{percent, ratio},
-            volume::liter,
         };
 
         #[derive(Default)]
@@ -5559,11 +5521,6 @@ mod tests {
                 self.hydraulics.nose_wheel_steering_pin_is_inserted()
             }
 
-            fn is_cargo_powering_yellow_epump(&self) -> bool {
-                self.hydraulics
-                    .should_pressurise_yellow_pump_for_cargo_door_operation()
-            }
-
             fn is_yellow_epump_controller_pressurising(&self) -> bool {
                 self.hydraulics
                     .yellow_electric_pump_a_controller
@@ -5590,23 +5547,11 @@ mod tests {
                 self.hydraulics.is_yellow_pressure_switch_pressurised()
             }
 
-            fn is_yellow_leak_meas_valve_commanded_open(&self) -> bool {
-                self.hydraulics
-                    .yellow_circuit_controller
-                    .should_open_leak_measurement_valve()
-            }
-
-            fn is_green_leak_meas_valve_commanded_open(&self) -> bool {
-                self.hydraulics
-                    .green_circuit_controller
-                    .should_open_leak_measurement_valve()
-            }
-
             fn nose_steering_position(&self) -> Angle {
                 self.hydraulics.nose_steering.position_feedback()
             }
 
-            fn is_cargo_fwd_door_locked_up(&self) -> bool {
+            fn _is_cargo_fwd_door_locked_up(&self) -> bool {
                 self.hydraulics.forward_cargo_door_controller.control_state
                     == DoorControlState::UpLocked
             }
@@ -5619,7 +5564,7 @@ mod tests {
                 self.is_ac_2_powered = bus_is_alive;
             }
 
-            fn set_dc_ground_service_is_powered(&mut self, bus_is_alive: bool) {
+            fn _set_dc_ground_service_is_powered(&mut self, bus_is_alive: bool) {
                 self.is_dc_ground_service_powered = bus_is_alive;
             }
 
@@ -5631,7 +5576,7 @@ mod tests {
                 self.is_dc_2_powered = bus_is_alive;
             }
 
-            fn set_dc_ess_is_powered(&mut self, bus_is_alive: bool) {
+            fn _set_dc_ess_is_powered(&mut self, bus_is_alive: bool) {
                 self.is_dc_ess_powered = bus_is_alive;
             }
         }
@@ -5788,8 +5733,8 @@ mod tests {
                 self.read_by_name("FWD_DOOR_CARGO_LOCKED")
             }
 
-            fn is_cargo_fwd_door_locked_up(&self) -> bool {
-                self.query(|a| a.is_cargo_fwd_door_locked_up())
+            fn _is_cargo_fwd_door_locked_up(&self) -> bool {
+                self.query(|a| a._is_cargo_fwd_door_locked_up())
             }
 
             fn cargo_fwd_door_position(&mut self) -> f64 {
@@ -5812,12 +5757,8 @@ mod tests {
                 self.read_by_name("HYD_GREEN_AUXILIARY_1_SECTION_PRESSURE")
             }
 
-            fn get_yellow_reservoir_volume(&mut self) -> Volume {
+            fn _get_yellow_reservoir_volume(&mut self) -> Volume {
                 self.read_by_name("HYD_YELLOW_RESERVOIR_LEVEL")
-            }
-
-            fn is_green_edp_press_low(&mut self) -> bool {
-                self.read_by_name("HYD_GREEN_EDPUMP_LOW_PRESS")
             }
 
             fn green_edp_has_fault(&mut self) -> bool {
@@ -5828,16 +5769,8 @@ mod tests {
                 self.read_by_name("OVHD_HYD_ENG_3A_PUMP_PB_HAS_FAULT")
             }
 
-            fn is_yellow_edp_press_low(&mut self) -> bool {
-                self.read_by_name("HYD_YELLOW_EDPUMP_LOW_PRESS")
-            }
-
             fn is_yellow_epump_a_press_low(&mut self) -> bool {
                 self.read_by_name("HYD_YA_EPUMP_LOW_PRESS")
-            }
-
-            fn yellow_epump_has_fault(&mut self) -> bool {
-                self.read_by_name("OVHD_HYD_EPUMPY_PB_HAS_FAULT")
             }
 
             fn get_brake_left_yellow_pressure(&mut self) -> Pressure {
@@ -5868,7 +5801,7 @@ mod tests {
                 self.read_by_name("HYD_BRAKE_NORM_RIGHT_PRESS")
             }
 
-            fn get_brake_yellow_accumulator_pressure(&mut self) -> Pressure {
+            fn _get_brake_yellow_accumulator_pressure(&mut self) -> Pressure {
                 self.read_by_name("HYD_BRAKE_ALTN_ACC_PRESS")
             }
 
@@ -5888,7 +5821,7 @@ mod tests {
                 Ratio::new::<ratio>(self.read_by_name("HYD_ELEV_LEFT_DEFLECTION"))
             }
 
-            fn get_mean_right_spoilers_position(&mut self) -> Ratio {
+            fn _get_mean_right_spoilers_position(&mut self) -> Ratio {
                 (Ratio::new::<ratio>(self.read_by_name("HYD_SPOILER_1_RIGHT_DEFLECTION"))
                     + Ratio::new::<ratio>(self.read_by_name("HYD_SPOILER_2_RIGHT_DEFLECTION"))
                     + Ratio::new::<ratio>(self.read_by_name("HYD_SPOILER_3_RIGHT_DEFLECTION"))
@@ -5897,7 +5830,7 @@ mod tests {
                     / 5.
             }
 
-            fn get_mean_left_spoilers_position(&mut self) -> Ratio {
+            fn _get_mean_left_spoilers_position(&mut self) -> Ratio {
                 (Ratio::new::<ratio>(self.read_by_name("HYD_SPOILER_1_LEFT_DEFLECTION"))
                     + Ratio::new::<ratio>(self.read_by_name("HYD_SPOILER_2_LEFT_DEFLECTION"))
                     + Ratio::new::<ratio>(self.read_by_name("HYD_SPOILER_3_LEFT_DEFLECTION"))
@@ -5918,36 +5851,18 @@ mod tests {
                 Ratio::new::<ratio>(self.read_by_name("NOSE_WHEEL_POSITION_RATIO"))
             }
 
-            fn is_fire_valve_eng1_closed(&mut self) -> bool {
+            fn _is_fire_valve_eng1_closed(&mut self) -> bool {
                 !ReadByName::<A380HydraulicsTestBed, bool>::read_by_name(
                     self,
                     "HYD_GREEN_PUMP_1_FIRE_VALVE_OPENED",
                 ) && !self.query(|a| a.hydraulics.green_circuit.is_fire_shutoff_valve_open(0))
             }
 
-            fn is_fire_valve_eng2_closed(&mut self) -> bool {
+            fn _is_fire_valve_eng2_closed(&mut self) -> bool {
                 !ReadByName::<A380HydraulicsTestBed, bool>::read_by_name(
                     self,
                     "HYD_YELLOW_PUMP_1_FIRE_VALVE_OPENED",
                 ) && !self.query(|a| a.hydraulics.green_circuit.is_fire_shutoff_valve_open(0))
-            }
-
-            fn is_yellow_leak_meas_valve_commanded_open(&mut self) -> bool {
-                self.query(|a| a.is_yellow_leak_meas_valve_commanded_open())
-            }
-
-            fn is_green_leak_meas_valve_commanded_open(&mut self) -> bool {
-                self.query(|a| a.is_green_leak_meas_valve_commanded_open())
-            }
-
-            fn green_leak_meas_valve_closed(mut self) -> Self {
-                self.write_by_name("OVHD_HYD_LEAK_MEASUREMENT_G_PB_IS_AUTO", false);
-                self
-            }
-
-            fn yellow_leak_meas_valve_closed(mut self) -> Self {
-                self.write_by_name("OVHD_HYD_LEAK_MEASUREMENT_Y_PB_IS_AUTO", false);
-                self
             }
 
             fn engines_off(self) -> Self {
@@ -5987,22 +5902,6 @@ mod tests {
                 self
             }
 
-            fn rotates_on_runway(mut self) -> Self {
-                self.set_indicated_altitude(Length::new::<foot>(0.));
-                self.set_on_ground(false);
-                self.set_indicated_airspeed(Velocity::new::<knot>(135.));
-                self.write_by_name(
-                    LandingGear::GEAR_CENTER_COMPRESSION,
-                    Ratio::new::<ratio>(0.5),
-                );
-                self.write_by_name(LandingGear::GEAR_LEFT_COMPRESSION, Ratio::new::<ratio>(0.8));
-                self.write_by_name(
-                    LandingGear::GEAR_RIGHT_COMPRESSION,
-                    Ratio::new::<ratio>(0.8),
-                );
-                self
-            }
-
             fn in_flight(mut self) -> Self {
                 self.set_on_ground(false);
                 self.set_indicated_altitude(Length::new::<foot>(2500.));
@@ -6029,7 +5928,7 @@ mod tests {
                 self
             }
 
-            fn set_autopilot_steering_demand(mut self, steering_ratio: Ratio) -> Self {
+            fn _set_autopilot_steering_demand(mut self, steering_ratio: Ratio) -> Self {
                 self.write_by_name("AUTOPILOT_NOSEWHEEL_DEMAND", steering_ratio.get::<ratio>());
                 self
             }
@@ -6086,14 +5985,14 @@ mod tests {
                 self
             }
 
-            fn start_eng3(mut self, n2: Ratio) -> Self {
+            fn _start_eng3(mut self, n2: Ratio) -> Self {
                 self.write_by_name("GENERAL ENG STARTER ACTIVE:3", true);
                 self.write_by_name("ENGINE_N2:3", n2);
 
                 self
             }
 
-            fn start_eng4(mut self, n2: Ratio) -> Self {
+            fn _start_eng4(mut self, n2: Ratio) -> Self {
                 self.write_by_name("GENERAL ENG STARTER ACTIVE:4", true);
                 self.write_by_name("ENGINE_N2:4", n2);
 
@@ -6107,7 +6006,7 @@ mod tests {
                 self
             }
 
-            fn stopping_eng1(mut self) -> Self {
+            fn _stopping_eng1(mut self) -> Self {
                 self.write_by_name("GENERAL ENG STARTER ACTIVE:1", false);
                 self.write_by_name("ENGINE_N2:1", 25.);
 
@@ -6121,7 +6020,7 @@ mod tests {
                 self
             }
 
-            fn stopping_eng2(mut self) -> Self {
+            fn _stopping_eng2(mut self) -> Self {
                 self.write_by_name("GENERAL ENG STARTER ACTIVE:2", false);
                 self.write_by_name("ENGINE_N2:2", 25.);
 
@@ -6241,12 +6140,13 @@ mod tests {
                 self
             }
 
-            fn dc_ground_service_lost(mut self) -> Self {
-                self.command(|a| a.set_dc_ground_service_is_powered(false));
+            fn _dc_ground_service_lost(mut self) -> Self {
+                self.command(|a| a._set_dc_ground_service_is_powered(false));
                 self
             }
-            fn dc_ground_service_avail(mut self) -> Self {
-                self.command(|a| a.set_dc_ground_service_is_powered(true));
+
+            fn _dc_ground_service_avail(mut self) -> Self {
+                self.command(|a| a._set_dc_ground_service_is_powered(true));
                 self
             }
 
@@ -6260,13 +6160,13 @@ mod tests {
                 self
             }
 
-            fn dc_ess_lost(mut self) -> Self {
-                self.command(|a| a.set_dc_ess_is_powered(false));
+            fn _dc_ess_lost(mut self) -> Self {
+                self.command(|a| a._set_dc_ess_is_powered(false));
                 self
             }
 
-            fn dc_ess_active(mut self) -> Self {
-                self.command(|a| a.set_dc_ess_is_powered(true));
+            fn _dc_ess_active(mut self) -> Self {
+                self.command(|a| a._set_dc_ess_is_powered(true));
                 self
             }
 
@@ -6390,7 +6290,7 @@ mod tests {
                 self
             }
 
-            fn set_elac_actuators_de_energized(mut self) -> Self {
+            fn _set_elac_actuators_de_energized(mut self) -> Self {
                 self.write_by_name("LEFT_AIL_BLUE_SERVO_SOLENOID_ENERGIZED", 0.);
                 self.write_by_name("RIGHT_AIL_BLUE_SERVO_SOLENOID_ENERGIZED", 0.);
                 self.write_by_name("LEFT_AIL_GREEN_SERVO_SOLENOID_ENERGIZED", 0.);
@@ -6408,7 +6308,7 @@ mod tests {
                 self
             }
 
-            fn set_left_spoilers_out(mut self) -> Self {
+            fn _set_left_spoilers_out(mut self) -> Self {
                 self.write_by_name("LEFT_SPOILER_1_COMMANDED_POSITION", 50.);
                 self.write_by_name("LEFT_SPOILER_2_COMMANDED_POSITION", 50.);
                 self.write_by_name("LEFT_SPOILER_3_COMMANDED_POSITION", 50.);
@@ -6417,7 +6317,7 @@ mod tests {
                 self
             }
 
-            fn set_left_spoilers_in(mut self) -> Self {
+            fn _set_left_spoilers_in(mut self) -> Self {
                 self.write_by_name("LEFT_SPOILER_1_COMMANDED_POSITION", 0.);
                 self.write_by_name("LEFT_SPOILER_2_COMMANDED_POSITION", 0.);
                 self.write_by_name("LEFT_SPOILER_3_COMMANDED_POSITION", 0.);
@@ -6426,7 +6326,7 @@ mod tests {
                 self
             }
 
-            fn set_right_spoilers_out(mut self) -> Self {
+            fn _set_right_spoilers_out(mut self) -> Self {
                 self.write_by_name("RIGHT_SPOILER_1_COMMANDED_POSITION", 50.);
                 self.write_by_name("RIGHT_SPOILER_2_COMMANDED_POSITION", 50.);
                 self.write_by_name("RIGHT_SPOILER_3_COMMANDED_POSITION", 50.);
@@ -6435,7 +6335,7 @@ mod tests {
                 self
             }
 
-            fn set_right_spoilers_in(mut self) -> Self {
+            fn _set_right_spoilers_in(mut self) -> Self {
                 self.write_by_name("RIGHT_SPOILER_1_COMMANDED_POSITION", 0.);
                 self.write_by_name("RIGHT_SPOILER_2_COMMANDED_POSITION", 0.);
                 self.write_by_name("RIGHT_SPOILER_3_COMMANDED_POSITION", 0.);
@@ -6456,7 +6356,7 @@ mod tests {
                 self.query(|a| a.lgcius.active_lgciu().gear_system_state())
             }
 
-            fn set_elevator_full_up(mut self) -> Self {
+            fn _set_elevator_full_up(mut self) -> Self {
                 self.write_by_name("LEFT_ELEV_BLUE_COMMANDED_POSITION", -30.);
                 self.write_by_name("RIGHT_ELEV_BLUE_COMMANDED_POSITION", -30.);
                 self.write_by_name("LEFT_ELEV_GREEN_COMMANDED_POSITION", -30.);
@@ -6464,7 +6364,7 @@ mod tests {
                 self
             }
 
-            fn set_elevator_full_down(mut self) -> Self {
+            fn _set_elevator_full_down(mut self) -> Self {
                 self.write_by_name("LEFT_ELEV_BLUE_COMMANDED_POSITION", 17.);
                 self.write_by_name("RIGHT_ELEV_BLUE_COMMANDED_POSITION", 17.);
                 self.write_by_name("LEFT_ELEV_GREEN_COMMANDED_POSITION", 17.);
@@ -6496,35 +6396,6 @@ mod tests {
                     .set_park_brake(false)
                     .run_waiting_for(Duration::from_secs(1))
                     .set_park_brake(true)
-                    .run_waiting_for(Duration::from_secs(1));
-
-                self
-            }
-
-            fn empty_brake_accumulator_using_pedal_brake(mut self) -> Self {
-                let mut number_of_loops = 0;
-                while self
-                    .get_brake_yellow_accumulator_fluid_volume()
-                    .get::<gallon>()
-                    > 0.001
-                {
-                    self = self
-                        .set_left_brake(Ratio::new::<percent>(100.))
-                        .set_right_brake(Ratio::new::<percent>(100.))
-                        .run_waiting_for(Duration::from_secs(1))
-                        .set_left_brake(Ratio::new::<percent>(0.))
-                        .set_right_brake(Ratio::new::<percent>(0.))
-                        .run_waiting_for(Duration::from_secs(1));
-                    number_of_loops += 1;
-                    assert!(number_of_loops < 50);
-                }
-
-                self = self
-                    .set_left_brake(Ratio::new::<percent>(100.))
-                    .set_right_brake(Ratio::new::<percent>(100.))
-                    .run_waiting_for(Duration::from_secs(1))
-                    .set_left_brake(Ratio::new::<percent>(0.))
-                    .set_right_brake(Ratio::new::<percent>(0.))
                     .run_waiting_for(Duration::from_secs(1));
 
                 self
