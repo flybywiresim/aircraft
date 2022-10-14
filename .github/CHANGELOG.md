@@ -4,6 +4,7 @@
 <!-- Always use "1." at the start instead of "2. " or "X. " as GitHub will auto renumber everything. -->
 <!-- Use the following format below -->
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
+
 ## 0.9.0
 
 1. [MODEL] Add Wheel Chocks and GSE Safety Cones - @bouveng (Johan Bouveng)
@@ -21,18 +22,19 @@
 1. [HYD] Gear system now supports spawning in flight gear up - @Crocket63 (crocket)
 1. [MCDU] Added imperial runway length - @derl30n (Leon)
 1. [MCDU] Refactor and improve input handling and conversions in MCDU W&B - @sidnov (Sid)
-1. [MCDU] Improved arrivals/departure page scrolling, more true-to-life behaviour and cosmetic apperance - @2hwk (2Cas#1022)
+1. [MCDU] Improved arrivals/departure page scrolling, more true-to-life behaviour and cosmetic apperance - @2hwk ( 2Cas#1022)
 1. [PFD] Show yellow GS reference line in correct conditions - @saschl (saschl#9432)
 1. [ECAM] Fix erroneous SLATS NOT IN T.O CONFIG warning during flaps 3 takeoff - @beheh (Benedict Etzel)
 1. [MODEL] Improved rivet mesh with more variation and detail - @Grinde (Grinde#4017)
 1. [ELEC] Make battery voltmeters update one digit at a time - @beheh (Benedict Etzel)
 1. [EWD] E/WD visual improvements - @lukecologne (luke)
-1. [SFCC] Add SFCC bus outputs  - @lukecologne (luke)
-1. [EWD] Use FPPU angles for flaps/slats display  - @lukecologne (luke)
+1. [SFCC] Add SFCC bus outputs - @lukecologne (luke)
+1. [EWD] Use FPPU angles for flaps/slats display - @lukecologne (luke)
 1. [FMGC] Basic RNP at or below 0.3 support - @tracernz (Mike)
 1. [SD] Improve F/CTL and WHEEL SD pages visuals - @lukecologne (luke)
 1. [MCDU] Added formatter to improve text alignment and ease integration - @derl30n (Leon)
 1. [EFB] Fix default unit to match UI and other consumers - @tracernz (Mike)
+1. [HYD] Added possibility to lock or limit hydraulic actuators velocity - @Crocket63 (crocket)
 1. [HYD] Added a new THS mechanism simulation - @Crocket63 (crocket)
 1. [HYD] More prox sensors and gear actuator failures - @Crocket63 (crocket)
 1. [MCDU] Added 4:3 aspect ratio compatibility to remote mcdu client - @tyler58546 (tyler58546)
@@ -64,6 +66,23 @@
 1. [EFB] Added Payload Loading to EFB - @2hwk (2Cas#1022)
 1. [MODEL] Remove blue highlights in lock mode - @tracernz (Mike)
 1. [RMP] Fixed the behavior of the RMPs and ACPs (VHFs only) - Julian Sebline (Julian Sebline#8476 on Discord)
+1. [PFD] Added option to sync FD/LS buttons between CPT and FO - @Eagle941 (Joe)
+1. [EFB] Add automatic loading of a lighting preset - @SpiritZephyr (Ben)
+1. [COND] Connect Air Conditioning System to Electrical System - @mjuhe (Miquel Juhe)
+1. [ADDON] Simbridge Integration - @lucky38i (Alex)
+1. [SD] Visual and functional improvements/fixes to the HYD SD page - @lukecologne (luke)
+1. [HYD] Added optional auxiliary hydraulic section in core hydraulic circuits - @Crocket63
+1. [EFB] Added SimBridge Health Check icon to Status Bar - @frankkopp (Frank Kopp)
+1. [HYD] Fixed opened gear door wobbling - @Crocket63
+1. [HYD] Fix gear extending whith dual lgciu power loss - @Crocket63 (crocket)
+1. [EFB] flyPad pushback option to ignore controller inputs - @frankkopp (Frank Kopp)
+1. [FCTL] Add realistically simulated F/CTL computers: ELAC/SEC/FCDC/FAC - @lukecologne (luke)
+1. [HYD] Accelerations impacts hydraulic reservoir fluid movement - @Crocket63 (crocket)
+1. [FLIGHTMODEL] Add SU10 crosswind parameters - @donstim (donbikes#4084)
+1. [MODEL] Visible pilot avatars via flyPad setting - @frankkopp (Frank Kopp)
+1. [MODEL] Fixed screens flickering in SU10 - @tyler58546 (tyler58546)
+1. [EFB] Added Local Files support - @ErickSharp (Erick Torres) @frankkopp (Frank Kopp)
+1. [BLEED] Added custom Wing Anti-Ice model - @omrygin, @Eagle941 (Joe)
 
 ## 0.8.0
 
@@ -299,8 +318,7 @@
 1. [GPWS] Mute "100 above" callout during autoland - @patmack14 (Patrick Macken)
 1. [MCDU] Refactored mcdu key input events - @derl30n - (Leon)
 1. [AUTOTHRUST] Added configuration option to allow change of key increment size - @aguther (Andreas Guther)
-1. [FLIGHTMODEL] Start fuel transfer for both tanks when EITHER inner tank reaches the trigger level - @donstim (
-   donbikes#4084)
+1. [FLIGHTMODEL] Start fuel transfer for both tanks when EITHER inner tank reaches the trigger level - @donstim ( donbikes#4084)
 1. [FMGC] Add lat/lon waypoint ident option - @tracernz (Mike)
 1. [HYD] PTU model refinement and simulated potential wear state probabilities - @Crocket63
 1. [HYD] Reduced engine driven pumps efficiency in active regulation area - @Crocket63
@@ -1097,4 +1115,5 @@
 1. [MISC] Standby Instrument stays ON if emergency power should be available, bug fixes - @2hwk (2Cas#1022 on discord)
 1. [CDU] Full +/- button functionality - @lhoenig (Lukas Hoenig)
 1. [DCDU] Fixed MSG- and MSG+ button labels - @tyler58546 (tyler58546)
-1. [ISIS] Fixed issue where ISIS was allowing a bug to be set while in the OFF state - Patrick Macken (@Pat M on Discord)
+1. [ISIS] Fixed issue where ISIS was allowing a bug to be set while in the OFF state - Patrick Macken (@Pat M on
+   Discord)

@@ -4,10 +4,23 @@
     "ChangeATISATCSourceButton": "Change ATIS/ATC source",
     "ConnectHoppieACARS": "Connect Hoppie ACARS",
     "NoInformationAvailableForThisFrequency": "No information available for this frequency",
+    "SearchPlaceholder": "Search",
     "SelectCorrectATISATCSource": "This page is only available when IVAO or VATSIM is selected as the ATIS/ATC source in the settings page.",
     "SetActive": "Set Active",
     "SetStandby": "Set Standby",
+    "ShowAll": "All",
+    "ShowApproach": "Approach",
+    "ShowAtis": "ATIS",
+    "ShowDelivery": "Delivery",
+    "ShowDeparture": "Departure",
+    "ShowGround": "Ground",
+    "ShowRadar": "Radar",
+    "ShowTower": "Tower",
     "Standby": "Standby",
+    "TT": {
+      "AtcCallSignSearch": "ATC Call-sign Search",
+      "AtcTypeFilter": "Filter for"
+    },
     "Title": "Air Traffic Control"
   },
   "Checklists": {
@@ -112,27 +125,6 @@
     "Title": "Failures"
   },
   "Ground": {
-    "Payload": {
-      "Passengers": "Passengers",
-      "Cargo": "Cargo",
-      "ZFW": "ZFW",
-      "ZFWCG": "ZFWCG",
-      "Planned": "Planned",
-      "Current": "Current",
-      "BoardingTime": "Boarding Time",
-      "Title": "Payload",
-      "TT": {
-        "MaxPassengers": "Maximum Passengers",
-        "MaxCargo": "Maximum Cargo",
-        "MaxZFW": "Maximum ZFW",
-        "MaxZFWCG": "Maximum ZFWCG",
-        "PerPaxWeight": "Per Passenger Weight",
-        "PerPaxBagWeight": "Per Passenger Bag Weight",
-        "FillPayloadFromSimbrief": "Fill Payload Information from Simbrief",
-        "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Aircraft Must Be On the Ground and Have Engines Shutdown to Change Boarding Duration",
-        "StartBoarding": "Begin Boarding"
-      }
-    },
     "Fuel": {
       "CenterTank": "Center Tank",
       "Completed": "Completed",
@@ -204,6 +196,10 @@
     "Altn": "Altn",
     "ExitFullscreenMode": "Exit Fullscreen Mode",
     "From": "From",
+    "LoadingImage": "Loading Image",
+    "LoadingImageFailed": "Loading Image failed",
+    "LoadingPdf": "Loading PDF",
+    "LoadingPdfFailed": "Loading PDF failed",
     "LocalFiles": {
       "Both": "Both",
       "EstablishingConnection": "Establishing Connection",
@@ -363,6 +359,7 @@
       "ConfirmationDialogMsg": "Please confirm loading of preset.",
       "CurrentProcedureStep": "Current Procedure Step",
       "PleaseConfirmLoadingOfPreset": "Please confirm loading of preset.",
+      "Powered": "Powered",
       "ReadyPushback": "Ready for Pushback",
       "ReadyTakeoff": "Ready for Takeoff",
       "ReadyTaxi": "Ready for Taxi",
@@ -375,6 +372,12 @@
     "InteriorLighting": {
       "AircraftNeedsToBePoweredToLoadPresets": "Aircraft Needs to be Powered to Load Presets",
       "AircraftNeedsToBePoweredToSavePresets": "Aircraft Needs to Be Powered to Save Presets",
+      "AutoLoadDawnDusk": "Dawn/Dusk:",
+      "AutoLoadDay": "Day:",
+      "AutoLoadLightingHelpTitle": "Automatic Preset Loading",
+      "AutoLoadLightingPreset": "Enable automatic loading of lighting presets:",
+      "AutoLoadNight": "Night:",
+      "AutoLoadNoneSelection": "None",
       "LoadPreset": "Load Preset",
       "LoadingPreset": "Loading Preset",
       "NewNameConfirmationDialogMsg": "Please confirm the new name for the lighting preset",
@@ -428,13 +431,15 @@
       "SliderSpeed": "Move for desired speed",
       "SystemEnabledOff": "Click to turn the pushback system on.",
       "SystemEnabledOn": "Click to turn the pushback system completely off.",
+      "UseControllerInput": "Turn controller input from rudder and elevator on/off",
       "ZoomIn": "Zoom in",
       "ZoomOut": "Zoom out"
     },
     "TugAttached": "Tug is attached",
     "TugDirection": "Tug Direction",
     "TugInTransit": "Waiting for Tug/Pin",
-    "TugSpeed": "Tug Speed"
+    "TugSpeed": "Tug Speed",
+    "UseControllerInput": "Use Controller Input"
   },
   "Settings": {
     "About": {
@@ -448,6 +453,7 @@
       "LatLonExtendedFormat": "FMGC Lat/Lon Waypoint Format",
       "PaxSigns": "PAX Signs",
       "RmpVhfSpacing": "RMP VHF Spacing",
+      "Satcom": "Satcom",
       "ThrustReductionHeight": "Thrust Reduction Height (ft)",
       "Title": "Aircraft Options / Pin Programs",
       "WeightUnit": "Weight Unit"
@@ -493,12 +499,15 @@
       "AutofillChecklists": "Autofill Checklists",
       "BoardingTime": "Boarding Time",
       "DmcSelfTestTime": "DMC Self Test Time",
+      "FirstOfficerAvatar": "Show First Officer Avatar",
       "HomeCockpitMode": "Home Cockpit Mode",
       "McduFocusTimeout": "MCDU Focus Timeout (seconds)",
       "McduKeyboardInput": "MCDU Keyboard Input",
       "PauseAtTod": "T/D Pause",
       "PauseAtTodDistance": "T/D Pause Distance (nm)",
+      "PilotAvatar": "Show Pilot Avatar",
       "SeparateTillerFromRudderInputs": "Separate Tiller from Rudder Inputs",
+      "SyncEfis": "Sync EFIS controls between Captain and FO",
       "Title": "Realism"
     },
     "SimOptions": {
@@ -508,7 +517,7 @@
       "ConesEnabled": "Safety Cones",
       "DefaultBarometerUnit": "Default Barometer Unit",
       "DynamicRegistrationDecal": "Dynamic Registration Decal",
-      "EnableSimBridge": "Enable SimBridge Connection (Auto deactivates after 5 minutes if no successful connection)",
+      "EnableSimBridge": "Enable Simbridge Connection (Auto deactivates after 5 minutes if no successful connection)",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Enable MCDU Server Connection (Auto deactivates after 5 minutes if no successful connection)",
       "ExternalMcduServerPort": "External MCDU Server Port",
       "Hpa": "hPa",
@@ -589,8 +598,8 @@
     "Sep": "Sep",
     "Sun": "Sun",
     "TT": {
-      "ConnectedToLocalApi": "Connected to Local API",
-      "DisconnectedFromLocalApi": "Disconnected from Local API",
+      "ConnectedToLocalApi": "Connected to SimBridge",
+      "DisconnectedFromLocalApi": "Disconnected from SimBridge",
       "TurnOffOrShutdownEfb": "Turn off or Shutdown EFB"
     },
     "Thu": "Thu",

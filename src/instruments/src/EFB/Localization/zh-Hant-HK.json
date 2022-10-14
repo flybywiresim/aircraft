@@ -4,10 +4,23 @@
     "ChangeATISATCSourceButton": "更改 ATIS/ATC 來源",
     "ConnectHoppieACARS": "連接 Hoppie ACARS",
     "NoInformationAvailableForThisFrequency": "此頻率沒有資料",
+    "SearchPlaceholder": "Search",
     "SelectCorrectATISATCSource": "您需要在設置中選擇 IVAO 或 VATSIM 為 ATC 來源才可使用此頁面。",
     "SetActive": "設定為使用中",
     "SetStandby": "設定為待命",
+    "ShowAll": "All",
+    "ShowApproach": "Approach",
+    "ShowAtis": "ATIS",
+    "ShowDelivery": "Delivery",
+    "ShowDeparture": "Departure",
+    "ShowGround": "Ground",
+    "ShowRadar": "Radar",
+    "ShowTower": "Tower",
     "Standby": "待命",
+    "TT": {
+      "AtcCallSignSearch": "ATC Call-sign Search",
+      "AtcTypeFilter": "Filter for"
+    },
     "Title": "空中管制"
   },
   "Checklists": {
@@ -183,6 +196,10 @@
     "Altn": "在備機場",
     "ExitFullscreenMode": "退出全屏模式",
     "From": "由",
+    "LoadingImage": "Loading Image",
+    "LoadingImageFailed": "Loading Image failed",
+    "LoadingPdf": "Loading PDF",
+    "LoadingPdfFailed": "Loading PDF failed",
     "LocalFiles": {
       "Both": "兩者",
       "EstablishingConnection": "正在連接",
@@ -342,6 +359,7 @@
       "ConfirmationDialogMsg": "請確認加載預設。",
       "CurrentProcedureStep": "現時程步",
       "PleaseConfirmLoadingOfPreset": "請確認加載預設。",
+      "Powered": "Powered",
       "ReadyPushback": "推機前",
       "ReadyTakeoff": "起飛前",
       "ReadyTaxi": "開咗引擎",
@@ -354,6 +372,12 @@
     "InteriorLighting": {
       "AircraftNeedsToBePoweredToLoadPresets": "飛機必須通電才能加載預設",
       "AircraftNeedsToBePoweredToSavePresets": "飛機必須通電才能儲存預設",
+      "AutoLoadDawnDusk": "Dawn/Dusk:",
+      "AutoLoadDay": "Day:",
+      "AutoLoadLightingHelpTitle": "Automatic Preset Loading",
+      "AutoLoadLightingPreset": "Enable automatic loading of lighting presets:",
+      "AutoLoadNight": "Night:",
+      "AutoLoadNoneSelection": "None",
       "LoadPreset": "加載預設",
       "LoadingPreset": "正在加載預設",
       "NewNameConfirmationDialogMsg": "請確認新照明預設的名稱",
@@ -407,13 +431,15 @@
       "SliderSpeed": "移動到所需速度",
       "SystemEnabledOff": "Click to turn the pushback system on.",
       "SystemEnabledOn": "Click to turn the pushback system completely off.",
+      "UseControllerInput": "Turn controller input from rudder and elevator on/off",
       "ZoomIn": "放大",
       "ZoomOut": "縮小"
     },
     "TugAttached": "Tug is attached",
     "TugDirection": "推機方向",
     "TugInTransit": "Waiting for Tug/Pin",
-    "TugSpeed": "推機速度"
+    "TugSpeed": "推機速度",
+    "UseControllerInput": "Use Controller Input"
   },
   "Settings": {
     "About": {
@@ -427,6 +453,7 @@
       "LatLonExtendedFormat": "FMGC 緯度/經度 (Lat/Lon) 航點格式",
       "PaxSigns": "客倉標誌",
       "RmpVhfSpacing": "RMP 高頻間距",
+      "Satcom": "Satcom",
       "ThrustReductionHeight": "減油高度 (英尺，ft)",
       "Title": "飛機選項/電針程式",
       "WeightUnit": "重量單位"
@@ -472,12 +499,15 @@
       "AutofillChecklists": "Checklist 自動填充",
       "BoardingTime": "登機需時",
       "DmcSelfTestTime": "DMC 自檢需時",
+      "FirstOfficerAvatar": "Show First Officer Avatar",
       "HomeCockpitMode": "砌機駕駛艙模式",
       "McduFocusTimeout": "MCDU 對焦超時 (秒)",
       "McduKeyboardInput": "MCDU 鍵盤輸入",
       "PauseAtTod": "T/D Pause",
       "PauseAtTodDistance": "T/D Pause Distance (nm)",
+      "PilotAvatar": "Show Pilot Avatar",
       "SeparateTillerFromRudderInputs": "將舵柄與腳踏輸入分開",
+      "SyncEfis": "Sync EFIS controls between Captain and FO",
       "Title": "仿真度"
     },
     "SimOptions": {

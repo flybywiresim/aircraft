@@ -35,6 +35,7 @@ class NavSystem extends BaseInstrument {
         this.alwaysUpdateList = new Array();
         this.accumulatedDeltaTime = 0;
     }
+    /** @type {FlightPlanManager} */
     get flightPlanManager() {
         return this.currFlightPlanManager;
     }

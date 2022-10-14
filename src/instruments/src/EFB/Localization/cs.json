@@ -4,10 +4,23 @@
     "ChangeATISATCSourceButton": "Změnit zdroj ATIS/ATC",
     "ConnectHoppieACARS": "Připojit ACARS Hoppie",
     "NoInformationAvailableForThisFrequency": "Pro tuto frekvenci nejsou dostupné žádné informace",
+    "SearchPlaceholder": "Hledat",
     "SelectCorrectATISATCSource": "Tato stránka je dostupná pouze pokud je v nastavení jako zdroj ATIS/ATC vybrána možnost IVAO nebo VATSIM.",
     "SetActive": "Nastavit aktivní",
     "SetStandby": "Nastavit standby",
+    "ShowAll": "Vše",
+    "ShowApproach": "Přiblížení",
+    "ShowAtis": "ATIS",
+    "ShowDelivery": "Delivery",
+    "ShowDeparture": "Odlet",
+    "ShowGround": "Ground",
+    "ShowRadar": "Radar",
+    "ShowTower": "Věž",
     "Standby": "Standby",
+    "TT": {
+      "AtcCallSignSearch": "Vyhledávání volacího znaku ATC",
+      "AtcTypeFilter": "Filtrovat na"
+    },
     "Title": "Řízení letového provozu"
   },
   "Checklists": {
@@ -64,7 +77,7 @@
     "YourFlight": {
       "Alternate": "Náhradní letiště",
       "AverageWind": "Průměrný vítr",
-      "CompanyRoute": "Company Route",
+      "CompanyRoute": "Linka společnosti",
       "CostIndex": "Cost Index",
       "CruiseAlt": "Letová hladina",
       "ImportSimBriefData": "Importovat SimBrief data",
@@ -183,6 +196,10 @@
     "Altn": "Náhr.",
     "ExitFullscreenMode": "Ukončit režim celé obrazovky",
     "From": "Od",
+    "LoadingImage": "Načítání obrázku",
+    "LoadingImageFailed": "Načítání obrázku selhalo",
+    "LoadingPdf": "Načítání PDF",
+    "LoadingPdfFailed": "Načítání PDF selhalo",
     "LocalFiles": {
       "Both": "Obojí",
       "EstablishingConnection": "Navazuji spojení",
@@ -342,6 +359,7 @@
       "ConfirmationDialogMsg": "Potvrďte prosím načtení přednastaveného stavu.",
       "CurrentProcedureStep": "Aktuální krok v postupu",
       "PleaseConfirmLoadingOfPreset": "Potvrďte prosím načtení přednastaveného stavu.",
+      "Powered": "Powered",
       "ReadyPushback": "Připraveno k vytlačení",
       "ReadyTakeoff": "Připraveno ke vzletu",
       "ReadyTaxi": "Připraveno k pojíždění",
@@ -354,6 +372,12 @@
     "InteriorLighting": {
       "AircraftNeedsToBePoweredToLoadPresets": "K načtení předvoleb musí být letadlo napájené",
       "AircraftNeedsToBePoweredToSavePresets": "K uložení předvoleb musí být letadlo napájené",
+      "AutoLoadDawnDusk": "Svítání/Soumrak:",
+      "AutoLoadDay": "Den:",
+      "AutoLoadLightingHelpTitle": "Automatické načítání předvoleb",
+      "AutoLoadLightingPreset": "Povolit automatické načítání předvoleb osvětlení:",
+      "AutoLoadNight": "Noc:",
+      "AutoLoadNoneSelection": "Žádné",
       "LoadPreset": "Načíst předvolbu",
       "LoadingPreset": "Načítání předvolby",
       "NewNameConfirmationDialogMsg": "Prosím potvrďte změnu názvu předvolby osvětlení",
@@ -407,13 +431,15 @@
       "SliderSpeed": "Posuňte pro požadovanou rychlost",
       "SystemEnabledOff": "Klikněte pro zapnutí systému pro vytlačení.",
       "SystemEnabledOn": "Klikněte pro úplné vypnutí systému pro vytlačení.",
+      "UseControllerInput": "Zapne nebo vypne vstup z ovládání směrovky a výškovky",
       "ZoomIn": "Přiblížit",
       "ZoomOut": "Oddálit"
     },
     "TugAttached": "Pushback je připojen",
     "TugDirection": "Směr vytlačení",
     "TugInTransit": "Čekání na pushback/pin",
-    "TugSpeed": "Rychlost vytlačení"
+    "TugSpeed": "Rychlost vytlačení",
+    "UseControllerInput": "Používat vstup z ovladače"
   },
   "Settings": {
     "About": {
@@ -427,6 +453,7 @@
       "LatLonExtendedFormat": "Formát FMGC Lat/Lon Waypointů",
       "PaxSigns": "Znamení cestujícím",
       "RmpVhfSpacing": "RMP VHF rozteč",
+      "Satcom": "Satcom",
       "ThrustReductionHeight": "Výška snížení tahu (ft AGL)",
       "Title": "Možnosti letadla / Pin programy",
       "WeightUnit": "Jednotky hmotnosti"
@@ -472,12 +499,15 @@
       "AutofillChecklists": "Automaticky vyplňovat checklisty",
       "BoardingTime": "Čas nastupování cestujících",
       "DmcSelfTestTime": "Inicializační test DMC",
+      "FirstOfficerAvatar": "Zobrazit avatar prvního důstojníka",
       "HomeCockpitMode": "Režim domácího kokpitu",
       "McduFocusTimeout": "Časový limit vstupu MCDU z klávesnice (sekundy)",
       "McduKeyboardInput": "MCDU zadávání pomocí klávesnice",
       "PauseAtTod": "Pauza na T/D",
       "PauseAtTodDistance": "Vzdálenost zapauzování před T/D (nm)",
+      "PilotAvatar": "Zobrazit avatar pilota",
       "SeparateTillerFromRudderInputs": "Oddělit vstupy pro tiller a směrovku",
+      "SyncEfis": "Synchronizovat EFIS mezi kapitánem a FO",
       "Title": "Realismus"
     },
     "SimOptions": {
@@ -568,8 +598,8 @@
     "Sep": "Zář",
     "Sun": "Ne",
     "TT": {
-      "ConnectedToLocalApi": "Připojeno k místnímu API",
-      "DisconnectedFromLocalApi": "Odpojeno od místního API",
+      "ConnectedToLocalApi": "Připojeno k SimBridge",
+      "DisconnectedFromLocalApi": "Odpojeno od SimBridge",
       "TurnOffOrShutdownEfb": "Uspat nebo vypnout EFB"
     },
     "Thu": "Čt",

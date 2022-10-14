@@ -25,6 +25,11 @@ public:
   InertialDampener(double startValue, double accelStepSize);
 
   /**
+   * Destructor
+   */
+  ~InertialDampener() = default;
+
+  /**
    * Given a target value this returns a value increased or decreased from the last
    * returned value towards the new target value. The value is increased or decreased
    * by the accelStepSize provided when creating the instance.

@@ -3,6 +3,10 @@
 
 .ecam-common-styles {
 
+.Hide {
+  display: none;
+}
+
 .ThickCyanLine {
   stroke: $display-cyan  !important;
   stroke-width: 6;
@@ -16,7 +20,12 @@
   stroke-width: 2;
   stroke-linejoin: round;
   stroke-linecap: round;
-  fill: none;
+  &:not(.FillAmber) {
+    fill: none;
+  }
+  &.FillAmber {
+    fill: $display-amber;
+  }
 }
 
 .RedLine {
@@ -32,7 +41,12 @@
   stroke-width: 2;
   stroke-linejoin: round;
   stroke-linecap: round;
-  fill: none;
+  &:not(.FillGreen) {
+    fill: none;
+  }
+  &.FillGreen {
+    fill: $display-green;
+  }
 }
 
 .WhiteLine {

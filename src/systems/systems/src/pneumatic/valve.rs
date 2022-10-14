@@ -197,6 +197,23 @@ impl DefaultValve {
             .update_move_fluid(context, container_one, container_two);
     }
 
+    pub fn update_move_fluid_with_transfer_speed(
+        &mut self,
+        context: &UpdateContext,
+        container_one: &mut impl PneumaticContainer,
+        container_two: &mut impl PneumaticContainer,
+        transfer_speed: f64,
+    ) {
+        self.connector
+            .with_transfer_speed_factor(self.open_amount)
+            .update_move_fluid_with_transfer_speed(
+                context,
+                container_one,
+                container_two,
+                transfer_speed,
+            );
+    }
+
     pub fn fluid_flow(&self) -> MassRate {
         self.connector.fluid_flow()
     }
@@ -240,11 +257,36 @@ impl PneumaticContainerConnector {
         container_one: &mut impl PneumaticContainer,
         container_two: &mut impl PneumaticContainer,
     ) {
+        self.update_move_fluid_internal(
+            context,
+            container_one,
+            container_two,
+            Self::TRANSFER_SPEED,
+        );
+    }
+
+    pub fn update_move_fluid_with_transfer_speed(
+        &mut self,
+        context: &UpdateContext,
+        container_one: &mut impl PneumaticContainer,
+        container_two: &mut impl PneumaticContainer,
+        transfer_speed: f64,
+    ) {
+        self.update_move_fluid_internal(context, container_one, container_two, transfer_speed);
+    }
+
+    fn update_move_fluid_internal(
+        &mut self,
+        context: &UpdateContext,
+        container_one: &mut impl PneumaticContainer,
+        container_two: &mut impl PneumaticContainer,
+        transfer_speed: f64,
+    ) {
         self.heat_conduction(context, container_one, container_two);
 
         let air_mass = container_one.get_mass_flow_for_equilibrium(container_two)
             * self.transfer_speed_factor
-            * (1. - (-Self::TRANSFER_SPEED * context.delta_as_secs_f64()).exp());
+            * (1. - (-transfer_speed * context.delta_as_secs_f64()).exp());
 
         self.move_mass(container_one, container_two, air_mass);
 
