@@ -474,6 +474,8 @@ export const ServicesPage = () => {
         }
     }, [groundServicesAvailable]);
 
+    const serviceIndicationCss = 'text-2xl font-bold text-utility-amber w-min';
+
     return (
         <div className="relative h-content-section-reduced">
             <GroundServiceOutline className="inset-x-0 mx-auto w-full h-full text-theme-text" />
@@ -509,8 +511,9 @@ export const ServicesPage = () => {
 
             </ServiceButtonWrapper>
 
-            {/* GPU */}
             <ServiceButtonWrapper xl={850} y={64} className="">
+
+                {/* GPU */}
                 <GroundServiceButton
                     name={t('Ground.Services.ExternalPower')}
                     state={gpuButtonState}
@@ -590,7 +593,7 @@ export const ServicesPage = () => {
             {/* Visual indications for tug and doors */}
             {!!pushBackAttached && (
                 <div
-                    className="text-2xl font-bold text-utility-amber"
+                    className={serviceIndicationCss}
                     style={{ position: 'absolute', left: 540, right: 0, top: 0 }}
                 >
                     TUG
@@ -598,7 +601,7 @@ export const ServicesPage = () => {
             )}
             {!!cabinDoorOpen && (
                 <div
-                    className="text-xl font-bold text-utility-amber"
+                    className={serviceIndicationCss}
                     style={{ position: 'absolute', left: 515, right: 0, top: 105 }}
                 >
                     CABIN
@@ -606,7 +609,7 @@ export const ServicesPage = () => {
             )}
             {!!aftDoorOpen && (
                 <div
-                    className="text-xl font-bold text-utility-amber"
+                    className={serviceIndicationCss}
                     style={{ position: 'absolute', left: 705, right: 0, top: 665 }}
                 >
                     CABIN
@@ -614,7 +617,7 @@ export const ServicesPage = () => {
             )}
             {!!cargoDoorOpen && (
                 <div
-                    className="text-xl font-bold text-utility-amber"
+                    className={serviceIndicationCss}
                     style={{ position: 'absolute', left: 705, right: 0, top: 200 }}
                 >
                     CARGO
@@ -622,7 +625,7 @@ export const ServicesPage = () => {
             )}
             {!!gpuActive && (
                 <div
-                    className="text-xl font-bold text-utility-amber"
+                    className={serviceIndicationCss}
                     style={{ position: 'absolute', left: 705, right: 0, top: 70 }}
                 >
                     GPU
