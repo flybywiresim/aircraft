@@ -2225,6 +2225,12 @@ class FMCMainDisplay extends BaseAirliners {
         });
     }
 
+    setDepartureTransitionIndex(transIndex, callback = EmptyCallback.Boolean) {
+        this.ensureCurrentFlightPlanIsTemporary(() => {
+            this.flightPlanManager.setDepartureEnRouteTransitionIndex(transIndex, callback);
+        });
+    }
+
     setApproachTransitionIndex(transitionIndex, callback = EmptyCallback.Boolean) {
         //console.log("FMCMainDisplay: setApproachTransitionIndex = ", transitionIndex);
         const arrivalIndex = this.flightPlanManager.getArrivalProcIndex();
