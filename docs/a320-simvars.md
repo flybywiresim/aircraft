@@ -2531,6 +2531,62 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Indicates whether the fault light is on for the engine bleed push button
     - Bool
 
+- A32NX_PNEU_WING_ANTI_ICE_SYSTEM_ON:
+    - Indicates wheter the wing anti ice system is on
+    - Bool
+
+- A32NX_PNEU_WING_ANTI_ICE_HAS_FAULT:
+    - Indicates wheter the wing anti ice system has a fault
+    - Bool
+
+- A32NX_PNEU_WING_ANTI_ICE_SYSTEM_SELECTED:
+    - Indicates wheter the wing anti ice p/b is ON
+    - Bool
+
+- A32NX_PNEU_WING_ANTI_ICE_GROUND_TIMER:
+    - Reports the duration in seconds of the wing anti ice ground relay (4DL)
+    - Duration
+
+- A32NX_PNEU_WING_ANTI_ICE_1_CONSUMER_PRESSURE:
+    - Pressure in the left wing anti ice pipe
+    - PSI
+
+- A32NX_PNEU_WING_ANTI_ICE_2_CONSUMER_PRESSURE:
+    - Pressure in the right wing anti ice pipe
+    - PSI
+
+- A32NX_PNEU_WING_ANTI_ICE_1_CONSUMER_TEMPERATURE:
+    - Temperature in the left wing anti ice pipe
+    - Degree celsius
+
+- A32NX_PNEU_WING_ANTI_ICE_2_CONSUMER_TEMPERATURE:
+    - Temperature in the right wing anti ice pipe
+    - Degree celsius
+
+- A32NX_PNEU_WING_ANTI_ICE_1_VALVE_CLOSED:
+    - Indicates whether the left wing anti ice valve is closed
+    - Bool
+
+- A32NX_PNEU_WING_ANTI_ICE_2_VALVE_CLOSED:
+    - Indicates whether the right wing anti ice valve is closed
+    - Bool
+
+- A32NX_PNEU_WING_ANTI_ICE_1_LOW_PRESSURE:
+    - Low Pressure warning in the left wing anti ice valve
+    - Bool
+
+- A32NX_PNEU_WING_ANTI_ICE_2_LOW_PRESSURE:
+    - Low Pressure warning in the right wing anti ice valve
+    - Bool
+
+- A32NX_PNEU_WING_ANTI_ICE_1_HIGH_PRESSURE:
+    - High Pressure warning in the left wing anti ice valve
+    - Bool
+
+- A32NX_PNEU_WING_ANTI_ICE_2_HIGH_PRESSURE:
+    - High Pressure warning in the right wing anti ice valve
+    - Bool
+
 ## Flaps / Slats (ATA 27)
 
 - A32NX_SFCC_SLAT_FLAP_SYSTEM_STATUS_WORD

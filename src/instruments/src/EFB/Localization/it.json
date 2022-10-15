@@ -359,6 +359,7 @@
       "ConfirmationDialogMsg": "Prego conferma caricamento del preset.",
       "CurrentProcedureStep": "Stato Processo in Corso",
       "PleaseConfirmLoadingOfPreset": "Prego conferma caricamento del preset.",
+      "Powered": "Powered",
       "ReadyPushback": "Pronto per Pushback",
       "ReadyTakeoff": "Pronto per Decollo",
       "ReadyTaxi": "Pronto per Rullaggio",
@@ -430,7 +431,7 @@
       "SliderSpeed": "Sposta per velocità desiderata",
       "SystemEnabledOff": "Clicca per attivare il sistema pushback.",
       "SystemEnabledOn": "Clicca per disattivare completamente il sistema pushback.",
-      "UseControllerInput": "Turn controller input from rudder and elevator on/off",
+      "UseControllerInput": "On/off input controller da timone ed equilibratore",
       "ZoomIn": "Ingrandisci",
       "ZoomOut": "Rimpicciolisci"
     },
@@ -452,7 +453,7 @@
       "LatLonExtendedFormat": "Formato Waypoint Lat/Lon FMGC",
       "PaxSigns": "PAX Sign",
       "RmpVhfSpacing": "Spaziatura VHF RMP",
-      "Satcom": "Mostra Satcom",
+      "Satcom": "Satcom",
       "ThrustReductionHeight": "Altezza Riduzione Spinta (ft)",
       "Title": "Opzioni Aeromobile / Definisci Comportamenti",
       "WeightUnit": "Unità Peso"
@@ -505,7 +506,7 @@
       "PauseAtTod": "Interruzione T/D",
       "PauseAtTodDistance": "Distanza Interruzione T/D (nm)",
       "PilotAvatar": "Mostra Avatar Pilota",
-      "SeparateTillerFromRudderInputs": "Separa gli Input del Tiller e dei Pedali",
+      "SeparateTillerFromRudderInputs": "Separa Tiller dagli Input del Timone",
       "SyncEfis": "Sincronizza controlli EFIS tra Comandante e Primo Ufficiale",
       "Title": "Realismo"
     },

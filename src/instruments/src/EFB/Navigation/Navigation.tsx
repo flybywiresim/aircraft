@@ -1,4 +1,4 @@
-/* eslint-disable max-len,react/no-this-in-sfc */
+/* eslint-disable max-len,react/no-this-in-sfc,no-console */
 import React, { useEffect, useRef, useState } from 'react';
 import {
     ArrowClockwise,
@@ -9,35 +9,36 @@ import {
     FullscreenExit,
     MoonFill,
     Plus,
-    SunFill, XCircleFill,
+    SunFill,
+    XCircleFill,
 } from 'react-bootstrap-icons';
 import { useSimVar } from '@instruments/common/simVars';
 import { ReactZoomPanPinchRef, TransformComponent, TransformWrapper } from 'react-zoom-pan-pinch';
 import { t } from '../translation';
 import { TooltipWrapper } from '../UtilComponents/TooltipWrapper';
-import { DrawableCanvas } from '../UtilComponents/DrawableCanvas';
+// import { DrawableCanvas } from '../UtilComponents/DrawableCanvas';
 import { useNavigraph } from '../ChartsApi/Navigraph';
 import { SimpleInput } from '../UtilComponents/Form/SimpleInput/SimpleInput';
 import { useAppDispatch, useAppSelector } from '../Store/store';
 import {
-    NavigationTab,
-    setBoundingBox,
-    setUsingDarkTheme,
-    setSelectedNavigationTabIndex,
-    editTabProperty,
-    ProviderTab,
-    setProvider,
     ChartProvider,
+    editTabProperty,
+    NavigationTab,
+    ProviderTab,
+    setBoundingBox,
+    setProvider,
+    setSelectedNavigationTabIndex,
+    setUsingDarkTheme,
 } from '../Store/features/navigationPage';
 import { PageLink, PageRedirect, TabRoutes } from '../Utils/routing';
 import { Navbar } from '../UtilComponents/Navbar';
 import { NavigraphPage } from './Pages/NavigraphPage/NavigraphPage';
-import { getPdfUrl } from './Pages/LocalFilesPage/LocalFilesPage';
+import { getPdfUrl, LocalFilesPage } from './Pages/LocalFilesPage/LocalFilesPage';
 import { PinnedChartUI } from './Pages/PinnedChartsPage';
 
 export const navigationTabs: (PageLink & {associatedTab: NavigationTab})[] = [
     { name: 'Navigraph', alias: '', component: <NavigraphPage />, associatedTab: NavigationTab.NAVIGRAPH },
-    // { name: 'Local Files', alias: '', component: <LocalFilesPage />, associatedTab: NavigationTab.LOCAL_FILES },
+    { name: 'Local Files', alias: '', component: <LocalFilesPage />, associatedTab: NavigationTab.LOCAL_FILES },
     { name: 'Pinned Charts', alias: '', component: <PinnedChartUI />, associatedTab: NavigationTab.PINNED_CHARTS },
 ];
 
@@ -46,8 +47,8 @@ export const Navigation = () => {
 
     if (navigationTabs) {
         navigationTabs[0].alias = t('NavigationAndCharts.Navigraph.Title');
-        // navigationTabs[1].alias = t('NavigationAndCharts.LocalFiles.Title');
-        navigationTabs[1].alias = t('NavigationAndCharts.PinnedCharts.Title');
+        navigationTabs[1].alias = t('NavigationAndCharts.LocalFiles.Title');
+        navigationTabs[2].alias = t('NavigationAndCharts.PinnedCharts.Title');
     }
 
     return (
@@ -60,7 +61,6 @@ export const Navigation = () => {
                     basePath="/navigation"
                     onSelected={(index) => {
                         const associatedTab = ChartProvider[navigationTabs[index].associatedTab];
-
                         dispatch(setSelectedNavigationTabIndex(index));
                         dispatch(setBoundingBox(undefined));
                         dispatch(setProvider(associatedTab));
@@ -98,13 +98,12 @@ export const ChartViewer = () => {
         chartRotation,
     } = useAppSelector((state) => state.navigationTab[currentTab]);
 
-    const [drawMode] = useState(false);
-    const [brushSize] = useState(10);
+    // const [drawMode] = useState(false);
+    // const [brushSize] = useState(10);
 
     const { userName } = useNavigraph();
 
     const ref = useRef<HTMLDivElement>(null);
-
     const chartRef = useRef<HTMLDivElement>(null);
 
     const [aircraftIconVisible, setAircraftIconVisible] = useState(false);
@@ -115,8 +114,6 @@ export const ChartViewer = () => {
 
     useEffect(() => {
         let visible = false;
-
-        // console.log(boundingBox, aircraftLatitude, aircraftLongitude);
 
         if (boundingBox
             && aircraftLatitude >= boundingBox.bottomLeft.lat
@@ -137,76 +134,68 @@ export const ChartViewer = () => {
         setAircraftIconVisible(visible);
     }, [boundingBox, chartLinks, aircraftLatitude.toFixed(2), aircraftLongitude.toFixed(2), aircraftTrueHeading.toFixed(1)]);
 
+    const handleRotateRight = () => {
+        dispatch(editTabProperty({ tab: currentTab, chartRotation: (chartRotation + 90) % 360 }));
+    };
+
+    const handleRotateLeft = () => {
+        dispatch(editTabProperty({ tab: currentTab, chartRotation: (chartRotation - 90) % 360 }));
+    };
+
+    useEffect(() => {
+        const img = new Image();
+        // eslint-disable-next-line func-names
+        img.onload = function () {
+            if (ref.current) {
+                // @ts-ignore
+                const imgWidth = this.width;
+                // @ts-ignore
+                const imgHeight = this.height;
+                const chartDimensions: { width: number, height: number } = {
+                    width: -1,
+                    height: -1,
+                };
+
+                if (imgWidth > imgHeight) { // landscape
+                    chartDimensions.height = ref.current.clientHeight;
+                    chartDimensions.width = imgWidth * (ref.current.clientHeight / imgHeight);
+                } else { // portrait
+                    chartDimensions.height = imgHeight * (ref.current.clientWidth / imgWidth);
+                    chartDimensions.width = ref.current.clientWidth;
+                }
+
+                dispatch(editTabProperty({
+                    tab: currentTab,
+                    chartDimensions,
+                }));
+            }
+        };
+        img.src = chartLinks.light;
+    }, [chartLinks, currentPage]);
+
     useEffect(() => {
         const { width, height } = chartDimensions;
-
-        if (chartRef.current) {
-            if (width) {
+        if (chartRef.current && width && height) {
+            if (width > height) {
                 chartRef.current.style.width = `${width}px`;
+                chartRef.current.style.height = `${height}px`;
             }
-
-            if (height) {
+            if (height > width) {
+                chartRef.current.style.width = `${width}px`;
                 chartRef.current.style.height = `${height}px`;
             }
         }
     }, [chartRef, chartDimensions]);
 
     useEffect(() => {
-        if (planeInFocus) {
-            dispatch(editTabProperty({ tab: currentTab, chartRotation: 360 - aircraftIconPosition.r }));
-            // TODO: implement the chart translation
-            // if (ref.current) {
-            //     ref.current.scrollTop = aircraftIconPosition.y + ((ref.current.clientHeight - aircraftIconPosition.y) / 2);
-            //     ref.current.scrollLeft = -(ref.current.clientWidth - aircraftIconPosition.x) / 2;
-            // }
-        }
-    }, [aircraftIconPosition.r, planeInFocus]);
-
-    // The functions that handle rotation get the closest 45 degree angle increment to the current angle
-    const handleRotateRight = () => {
-        dispatch(editTabProperty({ tab: currentTab, chartRotation: chartRotation + (45 - chartRotation % 45) }));
-    };
-
-    const handleRotateLeft = () => {
-        dispatch(editTabProperty({ tab: currentTab, chartRotation: chartRotation - (45 + chartRotation % 45) }));
-    };
-
-    useEffect(() => {
-        if (!chartDimensions.height && !chartDimensions.width) {
-            const img = new Image();
-            img.onload = function () {
-                if (ref.current) {
-                    const chartDimensions: {width: number, height: number} = {
-                        width: -1,
-                        height: -1,
-                    };
-
-                    // @ts-ignore
-                    if (this.height * (ref.current.clientWidth / this.width) < ref.current.clientHeight) {
-                        // @ts-ignore
-                        chartDimensions.width = this.width * (ref.current.clientHeight / this.height);
-                        chartDimensions.height = ref.current.clientHeight;
-                    } else {
-                        chartDimensions.width = ref.current.clientWidth;
-                        // @ts-ignore
-                        chartDimensions.height = this.height * (ref.current.clientWidth / this.width);
-                    }
-
-                    dispatch(editTabProperty({
-                        tab: currentTab,
-                        chartDimensions,
-                    }));
-                }
-            };
-            img.src = chartLinks.light;
-        }
-    }, [chartLinks]);
-
-    useEffect(() => {
         if (pagesViewable > 1) {
-            getPdfUrl(chartId, currentPage).then((url) => {
-                dispatch(editTabProperty({ tab: currentTab, chartName: { light: url, dark: url } }));
-            });
+            getPdfUrl(chartId, currentPage)
+                .then((url) => {
+                    dispatch(editTabProperty({ tab: currentTab, chartName: { light: url, dark: url } }));
+                })
+                .catch((error) => {
+                    console.error(`Error: ${error}`);
+                });
         }
     }, [currentPage]);
 
@@ -233,6 +222,7 @@ export const ChartViewer = () => {
         );
     }
 
+    // noinspection PointlessBooleanExpressionJS
     return (
         <div
             className={`relative ${!isFullScreen && 'rounded-l-none ml-6'}`}
@@ -247,25 +237,15 @@ export const ChartViewer = () => {
                     disabled: true,
                     sensitivity: 0,
                 }}
+                minScale={0.05}
+                maxScale={5}
+                limitToBounds={false}
             >
                 {({ zoomIn, zoomOut, setTransform, state }) => (
                     <div
                         className="h-full"
                         onMouseUp={() => dispatch(editTabProperty({ tab: currentTab, chartPosition: { ...state } }))}
                     >
-                        {/* <div className="overflow-hidden absolute bottom-6 left-6 z-30 rounded-md">
-                            {drawMode && (
-                                <Slider min={1} max={30} value={brushSize} onChange={(value) => setBrushSize(value)} />
-                            )}
-                            <button
-                                type="button"
-                                onClick={() => setDrawMode((old) => !old)}
-                                className={`p-2 transition hover:text-theme-body duration-100 cursor-pointer bg-theme-secondary hover:bg-theme-highlight ${drawMode && 'text-theme-body bg-theme-highlight'}`}
-                            >
-                                <PencilFill className="fill-current" size={40} />
-                            </button>
-                        </div> */}
-
                         {pagesViewable > 1 && (
                             <div className="flex overflow-hidden absolute top-6 left-6 z-40 flex-row items-center rounded-md">
                                 <div
@@ -294,7 +274,6 @@ export const ChartViewer = () => {
                                     className={`flex flex-row justify-center items-center h-14 bg-opacity-40 transition duration-100 cursor-pointer hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight ${currentPage === pagesViewable && 'opacity-50 pointer-events-none'}`}
                                     onClick={() => dispatch(editTabProperty({ tab: currentTab, currentPage: currentPage + 1 }))}
                                 >
-
                                     <Plus size={40} />
                                 </div>
                             </div>
@@ -311,15 +290,6 @@ export const ChartViewer = () => {
                                         <ArrowCounterclockwise size={40} />
                                     </button>
                                 </TooltipWrapper>
-                                {/* {boundingBox && (
-                                    <button
-                                        type="button"
-                                        onClick={() => dispatch(setPlaneInFocus(!planeInFocus))}
-                                        className={`p-2 transition hover:text-theme-body duration-100 cursor-pointer bg-theme-secondary hover:bg-theme-highlight ${planeInFocus && 'text-theme-highlight  hover:text-theme-text'}`}
-                                    >
-                                        <Bullseye size={40} />
-                                    </button>
-                                )} */}
                                 <TooltipWrapper text={t('NavigationAndCharts.TT.RotateRight45Degrees')}>
                                     <button
                                         type="button"
@@ -336,16 +306,37 @@ export const ChartViewer = () => {
                                         type="button"
                                         onClick={() => {
                                             if (ref.current && chartRef.current) {
-                                                const newScale = ref.current.clientHeight / chartRef.current.clientHeight;
-                                                const chartWidthExceedsBoundary = chartRef.current.clientWidth > ref.current.clientWidth;
-                                                const offsetX = chartWidthExceedsBoundary ? 0 : (ref.current.clientWidth - (chartRef.current.clientWidth * newScale)) / 2;
+                                                const rotated90degree = Math.abs(chartRotation) === 90 || Math.abs(chartRotation) === 270;
+                                                let newScale: number;
+                                                let offsetX = 0;
+                                                let offsetY = 0;
 
-                                                setTransform(offsetX, 0, newScale);
+                                                if (chartRef.current.clientHeight >= chartRef.current.clientWidth) { // portrait
+                                                    if (rotated90degree) {
+                                                        newScale = ref.current.clientHeight / chartRef.current.clientWidth;
+                                                        offsetX = (ref.current.clientWidth - ref.current.clientHeight) / 2;
+                                                        offsetY = ((chartRef.current.clientWidth - chartRef.current.clientHeight) / 2) * newScale;
+                                                    } else {
+                                                        newScale = ref.current.clientHeight / chartRef.current.clientHeight;
+                                                        offsetX = (ref.current.clientWidth - (chartRef.current.clientWidth * newScale)) / 2;
+                                                    }
+                                                } else { // landscape
+                                                    // eslint-disable-next-line no-lonely-if
+                                                    if (rotated90degree) {
+                                                        newScale = ref.current.clientHeight / chartRef.current.clientWidth;
+                                                        offsetY = ((chartRef.current.clientWidth - chartRef.current.clientHeight) / 2) * newScale;
+                                                    } else {
+                                                        newScale = ref.current.clientHeight / chartRef.current.clientHeight;
+                                                        offsetX = (ref.current.clientWidth - (chartRef.current.clientWidth * newScale)) / 2;
+                                                    }
+                                                }
+
+                                                setTransform(offsetX, offsetY, newScale);
                                                 dispatch(editTabProperty({
                                                     tab: currentTab,
                                                     chartPosition: {
                                                         positionX: offsetX,
-                                                        positionY: 0,
+                                                        positionY: offsetY,
                                                         scale: newScale,
                                                     },
                                                 }));
@@ -362,15 +353,36 @@ export const ChartViewer = () => {
                                         type="button"
                                         onClick={() => {
                                             if (ref.current && chartRef.current) {
-                                                const newScale = ref.current.clientWidth / chartRef.current.clientWidth;
-                                                const chartHeightExceedsBoundary = chartRef.current.clientHeight > ref.current.clientHeight;
-                                                const offsetY = chartHeightExceedsBoundary ? 0 : (ref.current.clientHeight - (chartRef.current.clientHeight * newScale)) / 2;
+                                                const rotated90degree = Math.abs(chartRotation) === 90 || Math.abs(chartRotation) === 270;
+                                                let newScale: number;
+                                                let offsetX = 0;
+                                                let offsetY = 0;
 
-                                                setTransform(0, offsetY, newScale);
+                                                if (chartRef.current.clientHeight >= chartRef.current.clientWidth) { // portrait
+                                                    if (rotated90degree) {
+                                                        newScale = ref.current.clientWidth / chartRef.current.clientHeight;
+                                                        offsetX = ((chartRef.current.clientHeight - chartRef.current.clientWidth) / 2) * newScale;
+                                                        offsetY = (ref.current.clientHeight - ref.current.clientWidth) / 2;
+                                                    } else {
+                                                        newScale = ref.current.clientWidth / chartRef.current.clientWidth;
+                                                        offsetY = (ref.current.clientHeight - (chartRef.current.clientHeight * newScale)) / 2;
+                                                    }
+                                                } else { // landscape
+                                                    // eslint-disable-next-line no-lonely-if
+                                                    if (rotated90degree) {
+                                                        newScale = ref.current.clientWidth / chartRef.current.clientHeight;
+                                                        offsetX = ((chartRef.current.clientHeight - chartRef.current.clientWidth) / 2) * newScale;
+                                                    } else {
+                                                        newScale = ref.current.clientWidth / chartRef.current.clientWidth;
+                                                        offsetY = (ref.current.clientHeight - (chartRef.current.clientHeight * newScale)) / 2;
+                                                    }
+                                                }
+
+                                                setTransform(offsetX, offsetY, newScale);
                                                 dispatch(editTabProperty({
                                                     tab: currentTab,
                                                     chartPosition: {
-                                                        positionX: 0,
+                                                        positionX: offsetX,
                                                         positionY: offsetY,
                                                         scale: newScale,
                                                     },
@@ -388,6 +400,7 @@ export const ChartViewer = () => {
                                         type="button"
                                         onClick={() => {
                                             setTransform(0, 0, 1);
+                                            dispatch(editTabProperty({ tab: currentTab, chartRotation: 0 }));
                                             dispatch(editTabProperty({ tab: currentTab, chartPosition: { ...chartPosition, positionX: 0, positionY: 0, scale: 1 } }));
                                         }}
                                         className="p-2 hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight transition duration-100 cursor-pointer"
@@ -420,28 +433,10 @@ export const ChartViewer = () => {
                                 <div
                                     className="p-2 hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight rounded-md transition duration-100 cursor-pointer"
                                     onClick={() => {
-                                        // TODO: THIS NEEDS TO WORK BETTER
                                         dispatch(editTabProperty({ tab: currentTab, isFullScreen: !isFullScreen }));
-
                                         if (chartRef.current && ref.current) {
-                                            const newScale = ref.current.clientWidth / chartRef.current.clientWidth;
-
-                                            const chartHeightExceedsBoundary = chartRef.current.clientHeight > ref.current.clientHeight;
-
-                                            const offsetY = chartHeightExceedsBoundary ? 0 : (ref.current.clientHeight - (chartRef.current.clientHeight * newScale)) / 2;
-                                            console.log(state.scale, newScale);
-                                            if (state.scale === newScale) {
-                                                console.log('called');
-                                                setTransform(0, offsetY, newScale);
-                                                dispatch(editTabProperty({
-                                                    tab: currentTab,
-                                                    chartPosition: {
-                                                        positionX: 0,
-                                                        positionY: offsetY,
-                                                        scale: newScale,
-                                                    },
-                                                }));
-                                            }
+                                            setTransform(0, 0, 1);
+                                            dispatch(editTabProperty({ tab: currentTab, chartPosition: { ...chartPosition, positionX: 0, positionY: 0, scale: 1 } }));
                                         }
                                     }}
                                 >
@@ -466,15 +461,15 @@ export const ChartViewer = () => {
                             ref={ref}
                         >
                             <TransformComponent wrapperStyle={{ height: ref.current?.clientHeight, width: ref.current?.clientWidth }}>
-                                <DrawableCanvas
-                                    className="absolute inset-0 z-10 transition duration-100"
-                                    rotation={chartRotation}
-                                    brushSize={brushSize}
-                                    width={chartDimensions.width ?? 0}
-                                    height={chartDimensions.height ?? 0}
-                                    resolutionScalar={4}
-                                    disabled={!drawMode}
-                                />
+                                {/* <DrawableCanvas */}
+                                {/*    className="absolute inset-0 z-10 transition duration-100" */}
+                                {/*    rotation={chartRotation} */}
+                                {/*    brushSize={brushSize} */}
+                                {/*    width={chartDimensions.width ?? 0} */}
+                                {/*    height={chartDimensions.height ?? 0} */}
+                                {/*    resolutionScalar={4} */}
+                                {/*    disabled={!drawMode} */}
+                                {/* /> */}
 
                                 <div
                                     className="relative m-auto transition duration-100"
@@ -513,6 +508,7 @@ export const ChartViewer = () => {
                                             draggable={false}
                                             src={chartLinks.dark}
                                             alt="chart"
+
                                         />
                                         <img
                                             className={`absolute left-0 w-full transition duration-100 select-none ${usingDarkTheme && 'opacity-0'}`}
