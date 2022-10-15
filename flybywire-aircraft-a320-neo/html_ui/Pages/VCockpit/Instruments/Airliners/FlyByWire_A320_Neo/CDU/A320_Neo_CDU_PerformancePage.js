@@ -1084,9 +1084,8 @@ class CDUPerformancePage {
         mcdu.engineOutAccelerationAltitudeIsPilotEntered = false;
         SimVar.SetSimVarValue("L:A32NX_ENG_OUT_ACC_ALT", "feet", alt);
     }
-    //Modified to be async like above
-    //***To DO
-    //Implement ability for pilot to enter custom altitudes
+// Modified to be async like above
+// TODO: Implement ability for pilot to enter custom altitudes
     static async UpdateThrRedAccFromDestination(mcdu) {
         let elevation = SimVar.GetSimVarValue("GROUND ALTITUDE", "feet");
         const destination = mcdu.flightPlanManager.getDestination();
