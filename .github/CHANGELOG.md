@@ -88,6 +88,7 @@
 1. [LIGHTS] Increased max brightness of cockpit displays - @frankkopp (Frank Kopp)
 1. [EFB] Improved Aircraft Presets procedures - @frankkopp (Frank Kopp)
 1. [FMGC] Make DES SPD LIM available prior to descent - @tracernz (Mike)
+1. [FMGC] Rework f-pln departure page - @tracernz (Mike)
 
 ## 0.8.0
 
