@@ -27,7 +27,6 @@ export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
     const [monthOfYear] = useSimVar('E:ZULU MONTH OF YEAR', 'number');
     const [dayOfMonth] = useSimVar('E:ZULU DAY OF MONTH', 'number');
     const [showStatusBarFlightProgress] = usePersistentNumberProperty('EFB_SHOW_STATUSBAR_FLIGHTPROGRESS', 1);
-    const [simbridgeEnabled] = usePersistentProperty('CONFIG_SIMBRIDGE_ENABLED', 'AUTO ON');
 
     const history = useHistory();
 
@@ -94,10 +93,6 @@ export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
     const shutoffTimerRef = useRef<NodeJS.Timer | null>(null);
 
     const setConnectedState = async () => {
-        if (simbridgeEnabled !== 'AUTO ON') {
-            setSimBridgeConnected(false);
-            return;
-        }
         try {
             const health = await Health.getHealth();
             if (health) {
