@@ -32,6 +32,7 @@ pub mod aerodynamic_model;
 pub mod brake_circuit;
 pub mod electrical_generator;
 pub mod electrical_pump_physics;
+pub mod electro_hydraulic_actuator;
 pub mod flap_slat;
 pub mod landing_gear;
 pub mod linear_actuator;
