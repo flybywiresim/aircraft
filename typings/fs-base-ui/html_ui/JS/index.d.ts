@@ -8,6 +8,7 @@ export * from './dataStorage';
 export * from './Flight';
 export * from './Inputs';
 export * from './NetBingMap';
+// export * from './SimbridgeClient';
 export * from './SimPlane';
 export * from './simvar';
 export * from './slider';

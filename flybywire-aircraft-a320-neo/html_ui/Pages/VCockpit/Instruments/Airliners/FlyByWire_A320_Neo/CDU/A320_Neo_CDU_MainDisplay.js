@@ -240,6 +240,12 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         NXDataStore.subscribe('*', () => {
             this.requestUpdate();
         });
+
+        const test = new NotificationParams();
+        const remoteMcdu = new RemoteMcdu();
+        RemoteMcdu.test();
+        console.log("RemoteMcdu: " + remoteMcdu);
+
     }
 
     requestUpdate() {
