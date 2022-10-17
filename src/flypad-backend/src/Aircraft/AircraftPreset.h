@@ -15,7 +15,7 @@
 
 #include "../inih/ini.h"
 #include "AircraftProcedures.h"
-#include "Units.h"
+#include "../Units.h"
 
 using namespace std;
 
@@ -88,33 +88,30 @@ private:
    * Reads the  preset loading request variable.
    * @return INT64 signifying the preset to be loaded
    */
-  inline FLOAT64
-  getLoadAircraftPresetRequest() const { return get_named_variable_value(LoadAircraftPresetRequest); }
+ [[nodiscard]]
+ inline FLOAT64 getLoadAircraftPresetRequest() const { return get_named_variable_value(LoadAircraftPresetRequest); }
 
   /**
    * Sets the loading request value. Typically used to reset to 0 after the preset has been loaded.
    * @param value usually loadFromData to 0 to reset the request.
    */
-  inline void setLoadAircraftPresetRequest(
-    FLOAT64 value) const { set_named_variable_value(LoadAircraftPresetRequest, value); }
+  inline void setLoadAircraftPresetRequest( FLOAT64 value) const { set_named_variable_value(LoadAircraftPresetRequest, value); }
 
   /**
    * Sets the curren progress in percent (0.0..1.0)
    * @param value 0.0..1.0 progress in percent
    */
-  inline void setProgressAircraftPreset(
-    FLOAT64 value) const { set_named_variable_value(ProgressAircraftPreset, value); }
+  inline void setProgressAircraftPreset( FLOAT64 value) const { set_named_variable_value(ProgressAircraftPreset, value); }
 
   /**
    * Sets the ID of the current procedure step to the LVAR
    * @param value current procedure step ID
    */
-  inline void setProgressAircraftPresetId(
-    FLOAT64 value) const { set_named_variable_value(ProgressAircraftPresetId, value); }
+  inline void setProgressAircraftPresetId( FLOAT64 value) const { set_named_variable_value(ProgressAircraftPresetId, value); }
   /**
    * Retrieves the SIM ON GROUND var from the simulator.
    * @return value true if one ground, false otherwise
    */
-  inline bool
-  getSimOnGround() const { return static_cast<bool>(aircraft_varget(SimOnGround, m_Units->Bool, 1)); }
+  [[nodiscard]]
+  inline bool getSimOnGround() const { return static_cast<bool>(aircraft_varget(SimOnGround, m_Units->Bool, 1)); }
 };
