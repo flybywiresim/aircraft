@@ -12,7 +12,7 @@
 class FlightDataRecorder {
  public:
   // IMPORTANT: this constant needs to increased with every interface change
-  const uint64_t INTERFACE_VERSION = 23;
+  const uint64_t INTERFACE_VERSION = 24;
 
   void initialize();
 

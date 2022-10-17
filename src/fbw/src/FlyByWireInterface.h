@@ -66,6 +66,9 @@ class FlyByWireInterface {
   bool wasTcasEngaged = false;
 
   bool pauseDetected = false;
+  // As fdr is not written when paused 'wasPaused' is used to detect previous pause state
+  // changes and record them in fdr
+  bool wasPaused = false;
   bool wasInSlew = false;
 
   double autothrustThrustLimitReverse = -45;
@@ -366,7 +369,7 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idLs1Active;
   std::unique_ptr<LocalVariable> idLs2Active;
   std::unique_ptr<LocalVariable> idIsisLsActive;
-  
+
   std::unique_ptr<LocalVariable> idWingAntiIce;
 
   // RA bus inputs
