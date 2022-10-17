@@ -84,6 +84,7 @@
 1. [EFB] Added Local Files support - @ErickSharp (Erick Torres) @frankkopp (Frank Kopp)
 1. [BLEED] Added custom Wing Anti-Ice model - @omrygin, @Eagle941 (Joe)
 1. [MISC] Fix FDR data for support analysis - @frankkopp (Frank Kopp)
+1. [LIGHTS] Increased max brightness of cockpit displays - @frankkopp (Frank Kopp)
 
 ## 0.8.0
 
