@@ -3,7 +3,7 @@ use crate::{
     overhead::{IndicationLight, OnOffFaultPushButton},
     shared::{
         arinc429::{Arinc429Word, SignStatus},
-        AdirsDiscreteOutputs, GroundSpeed, MachNumber,
+        AdirsDiscreteOutputs, AirDataSource, GroundSpeed, MachNumber,
     },
     simulation::{
         Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -419,6 +419,10 @@ impl AirDataInertialReferenceSystem {
     fn ir_has_fault(&self, number: usize) -> bool {
         self.adirus[number - 1].ir_has_fault()
     }
+
+    pub fn adirus(&self, n: usize) -> &AirDataInertialReferenceUnit {
+        &self.adirus[n]
+    }
 }
 impl SimulationElement for AirDataInertialReferenceSystem {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
@@ -466,7 +470,7 @@ impl AdirsDiscreteOutputs for AirDataInertialReferenceSystem {
     }
 }
 
-struct AirDataInertialReferenceUnit {
+pub struct AirDataInertialReferenceUnit {
     state_id: VariableIdentifier,
 
     adr: AirDataReference,
@@ -536,6 +540,14 @@ impl AirDataInertialReferenceUnit {
         self.ir.has_fault()
     }
 
+    pub fn computed_airspeed(&self) -> Arinc429Word<Velocity> {
+        self.adr.computed_airspeed()
+    }
+
+    pub fn alpha(&self) -> Arinc429Word<Angle> {
+        self.adr.alpha()
+    }
+
     fn update_discrete_outputs(&mut self) {
         let speed_knot = self.adr.computed_airspeed_raw().get::<knot>();
 
@@ -598,6 +610,7 @@ impl GroundSpeed for AirDataInertialReferenceUnit {
     }
 }
 
+#[derive(Clone, Copy)]
 struct AdirsData<T> {
     id: VariableIdentifier,
     value: T,
@@ -703,6 +716,14 @@ fn output_data_id(data_type: OutputDataType, number: usize, name: &str) -> Strin
 
 trait TrueAirspeedSource {
     fn true_airspeed(&self) -> Arinc429Word<Velocity>;
+}
+
+trait ComputedAirspeedSource {
+    fn computed_airspeed(&self) -> Arinc429Word<Velocity>;
+}
+
+trait AlphaSource {
+    fn alpha(&self) -> Arinc429Word<Angle>;
 }
 
 struct AirDataReference {
@@ -888,9 +909,33 @@ impl AirDataReference {
         self.computed_airspeed.value()
     }
 }
+impl<T: Copy> From<AdirsData<T>> for Arinc429Word<T> {
+    fn from(data: AdirsData<T>) -> Self {
+        Arinc429Word::new(data.value, data.ssm)
+    }
+}
 impl TrueAirspeedSource for AirDataReference {
     fn true_airspeed(&self) -> Arinc429Word<Velocity> {
-        Arinc429Word::new(self.true_airspeed.value(), self.true_airspeed.ssm())
+        self.true_airspeed.into()
+    }
+}
+impl ComputedAirspeedSource for AirDataReference {
+    fn computed_airspeed(&self) -> Arinc429Word<Velocity> {
+        self.computed_airspeed.into()
+    }
+}
+impl AlphaSource for AirDataReference {
+    fn alpha(&self) -> Arinc429Word<Angle> {
+        self.angle_of_attack.into()
+    }
+}
+impl AirDataSource for AirDataInertialReferenceUnit {
+    fn computed_airspeed(&self) -> Arinc429Word<Velocity> {
+        self.computed_airspeed()
+    }
+
+    fn alpha(&self) -> Arinc429Word<Angle> {
+        self.alpha()
     }
 }
 impl SimulationElement for AirDataReference {

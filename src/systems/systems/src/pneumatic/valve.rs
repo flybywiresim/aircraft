@@ -494,6 +494,7 @@ mod tests {
             Angle::new::<radian>(0.),
             Angle::new::<radian>(0.),
             MachNumber(0.),
+            Angle::new::<radian>(0.),
         )
     }
 

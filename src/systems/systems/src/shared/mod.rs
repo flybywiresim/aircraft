@@ -20,6 +20,7 @@ pub mod update_iterator;
 mod random;
 pub use random::*;
 pub mod arinc429;
+use arinc429::Arinc429Word;
 
 pub trait ReservoirAirPressure {
     fn green_reservoir_pressure(&self) -> Pressure;
@@ -70,8 +71,65 @@ pub trait EmergencyGeneratorPower {
     fn generated_power(&self) -> Power;
 }
 
-pub trait FeedbackPositionPickoffUnit {
+pub trait PositionPickoffUnit {
     fn angle(&self) -> Angle;
+}
+
+pub trait SfccChannel {
+    fn receive_signal_fppu(&mut self, feedback: &impl PositionPickoffUnit);
+    fn send_signal_to_motors(&self) -> (Option<ChannelCommand>, Option<ChannelCommand>);
+    fn generate_configuration(
+        &self,
+        context: &UpdateContext,
+        flaps_handle: &impl HandlePositionMemory,
+        adiru: &impl AirDataSource,
+    ) -> FlapsConf;
+}
+
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub enum ChannelCommand {
+    Extend,
+    Retract,
+}
+
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub enum ChannelCommandMode {
+    Normal,
+    Slow,
+}
+
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub enum FlapsConf {
+    Conf0,
+    Conf1,
+    Conf1F,
+    Conf2,
+    Conf3,
+    ConfFull,
+}
+
+impl From<u8> for FlapsConf {
+    fn from(value: u8) -> Self {
+        match value {
+            0 => FlapsConf::Conf0,
+            1 => FlapsConf::Conf1,
+            2 => FlapsConf::Conf1F,
+            3 => FlapsConf::Conf2,
+            4 => FlapsConf::Conf3,
+            5 => FlapsConf::ConfFull,
+            i => panic!("Cannot convert from {} to FlapsConf.", i),
+        }
+    }
+}
+
+pub trait HandlePositionMemory {
+    fn position(&self) -> u8;
+    fn previous_position(&self) -> u8;
+}
+
+pub trait AirDataSource {
+    fn computed_airspeed(&self) -> Arinc429Word<Velocity>;
+    fn alpha(&self) -> Arinc429Word<Angle>;
 }
 
 pub trait LgciuWeightOnWheels {

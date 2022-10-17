@@ -1,5 +1,5 @@
 use crate::systems::shared::arinc429::{Arinc429Word, SignStatus};
-use systems::shared::FeedbackPositionPickoffUnit;
+use systems::shared::PositionPickoffUnit;
 
 use systems::simulation::{
     InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -173,8 +173,8 @@ impl SlatFlapControlComputer {
         &mut self,
         context: &UpdateContext,
         flaps_handle: &FlapsHandle,
-        flaps_feedback: &impl FeedbackPositionPickoffUnit,
-        slats_feedback: &impl FeedbackPositionPickoffUnit,
+        flaps_feedback: &impl PositionPickoffUnit,
+        slats_feedback: &impl PositionPickoffUnit,
     ) {
         self.flaps_conf = self.generate_configuration(flaps_handle, context);
 
@@ -361,18 +361,18 @@ impl SlatFlapComplex {
     pub fn update(
         &mut self,
         context: &UpdateContext,
-        flaps_feedback: &impl FeedbackPositionPickoffUnit,
-        slats_feedback: &impl FeedbackPositionPickoffUnit,
+        flaps_feedback: &impl PositionPickoffUnit,
+        slats_feedback: &impl PositionPickoffUnit,
     ) {
         self.sfcc
             .update(context, &self.flaps_handle, flaps_feedback, slats_feedback);
     }
 
-    pub fn flap_demand(&self) -> Option<Angle> {
+    pub fn flap_demand(&self, n: usize) -> Option<Angle> {
         self.sfcc.signal_demanded_angle("FLAPS")
     }
 
-    pub fn slat_demand(&self) -> Option<Angle> {
+    pub fn slat_demand(&self, n: usize) -> Option<Angle> {
         self.sfcc.signal_demanded_angle("SLATS")
     }
 }
@@ -405,7 +405,7 @@ mod tests {
         right_position_angle_id: VariableIdentifier,
         surface_type: String,
     }
-    impl FeedbackPositionPickoffUnit for SlatFlapGear {
+    impl PositionPickoffUnit for SlatFlapGear {
         fn angle(&self) -> Angle {
             self.current_angle
         }
