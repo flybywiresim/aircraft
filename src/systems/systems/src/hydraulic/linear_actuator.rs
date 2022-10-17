@@ -703,7 +703,7 @@ impl LinearActuator {
         }
     }
 
-    fn update_before_rigid_body(
+    pub fn update_before_rigid_body(
         &mut self,
         context: &UpdateContext,
         connected_body: &mut LinearActuatedRigidBodyOnHingeAxis,
@@ -722,7 +722,7 @@ impl LinearActuator {
         connected_body.apply_control_arm_force(self.core_hydraulics.force());
     }
 
-    fn update_after_rigid_body(
+    pub fn update_after_rigid_body(
         &mut self,
         context: &UpdateContext,
         connected_body: &LinearActuatedRigidBodyOnHingeAxis,
@@ -779,22 +779,30 @@ impl LinearActuator {
         }
     }
 
-    fn set_position_target(&mut self, target_position: Ratio) {
+    pub fn set_position_target(&mut self, target_position: Ratio) {
         self.requested_position = target_position;
     }
 
-    fn position_normalized(&self) -> Ratio {
+    pub fn position_normalized(&self) -> Ratio {
         self.position_normalized
     }
 
-    #[cfg(test)]
     fn force(&self) -> Force {
         self.core_hydraulics.force()
     }
 
-    #[cfg(test)]
-    fn signed_flow(&self) -> VolumeRate {
+    pub fn signed_flow(&self) -> VolumeRate {
         self.signed_flow
+    }
+
+    pub fn pressure(&self) -> Pressure {
+        let area = if self.speed > Velocity::new::<meter_per_second>(0.) {
+            self.bore_side_area
+        } else {
+            self.rod_side_area
+        };
+
+        self.core_hydraulics.force() / area
     }
 }
 impl Actuator for LinearActuator {
@@ -838,7 +846,7 @@ pub trait HydraulicLocking {
     }
 }
 
-fn get_more_restrictive_soft_lock_velocities(
+pub fn get_more_restrictive_soft_lock_velocities(
     controller1: &impl HydraulicLocking,
     controller2: &impl HydraulicLocking,
 ) -> (AngularVelocity, AngularVelocity) {

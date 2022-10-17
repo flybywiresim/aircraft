@@ -5,6 +5,7 @@ use uom::si::{
     f64::*,
     power::watt,
     pressure::{pascal, psi},
+    ratio::ratio,
     volume::{cubic_inch, cubic_meter, gallon},
     volume_rate::{gallon_per_minute, gallon_per_second},
 };
@@ -14,317 +15,385 @@ use crate::shared::{
     ElectricalBuses,
 };
 
-use crate::simulation::{InitContext, SimulatorWriter, UpdateContext, VariableIdentifier, Write};
+use crate::simulation::{
+    InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
+    VariableIdentifier, Write,
+};
 
 use crate::hydraulic::{Accumulator, Actuator, Fluid};
 
-pub struct Reservoir {
-    max_capacity: Volume,
-    current_level: Volume,
-    // leak_failure: Failure,
+struct VariableSpeedPump {
+    speed: LowPassFilter<AngularVelocity>,
+
+    is_powered: bool,
+    powered_by: ElectricalBusType,
+
+    consumed_power: Power,
+
+    circuit_pressure: Pressure,
 }
-impl Reservoir {
-    const MIN_USABLE_VOLUME_GAL: f64 = 0.2;
+impl VariableSpeedPump {
+    const FLOW_CONSTANT_RPM_CUBIC_INCH_TO_GPM: f64 = 231.;
+    const DISPLACEMENT_CU_IN: f64 = 0.214;
+    const NOMINAL_MAX_PRESSURE_PSI: f64 = 5000.;
 
-    const LEAK_FAILURE_FLOW_GAL_PER_S: f64 = 0.1;
+    const LOW_PASS_RPM_TRANSIENT_TIME_CONSTANT: Duration = Duration::from_millis(100);
 
-    pub fn new(context: &mut InitContext, max_capacity: Volume, current_level: Volume) -> Self {
+    pub fn new(powered_by: ElectricalBusType) -> Self {
         Self {
-            max_capacity,
-            current_level,
-            // leak_failure: Failure::new(FailureType::ReservoirLeak(hyd_loop_id)),
-        }
-    }
-
-    fn update(&mut self, context: &UpdateContext) {
-        self.update_leak_failure(context);
-    }
-
-    fn update_leak_failure(&mut self, context: &UpdateContext) {
-        // if self.leak_failure.is_active() {
-        //     self.current_level -=
-        //         VolumeRate::new::<gallon_per_second>(Self::LEAK_FAILURE_FLOW_GAL_PER_S)
-        //             * context.delta_as_time();
-
-        //     self.current_level = self.current_level.max(Volume::new::<gallon>(0.));
-        // }
-    }
-
-    // Try to take volume from reservoir. Will return only what's currently available
-    fn try_take_volume(&mut self, volume: Volume) -> Volume {
-        let volume_taken = self
-            .fluid_level_reachable_by_pumps()
-            .min(volume)
-            .max(Volume::new::<gallon>(0.));
-
-        self.current_level -= volume_taken;
-
-        volume_taken
-    }
-
-    // Try to take flow from reservoir. Will return only what's currently available
-    fn try_take_flow(&mut self, context: &UpdateContext, flow: VolumeRate) -> VolumeRate {
-        let desired_volume = flow * context.delta_as_time();
-        let volume_taken = self.try_take_volume(desired_volume);
-        volume_taken / context.delta_as_time()
-    }
-
-    // What's current flow available
-    fn request_flow_availability(&self, context: &UpdateContext, flow: VolumeRate) -> VolumeRate {
-        let desired_volume = flow * context.delta_as_time();
-        self.fluid_level_reachable_by_pumps().min(desired_volume) / context.delta_as_time()
-    }
-
-    fn add_return_volume(&mut self, volume: Volume) {
-        self.current_level = (self.current_level + volume).min(self.max_capacity);
-    }
-
-    fn fluid_level_real(&self) -> Volume {
-        self.current_level
-    }
-
-    fn fluid_level_reachable_by_pumps(&self) -> Volume {
-        self.current_level
-            - Volume::new::<gallon>(Self::MIN_USABLE_VOLUME_GAL).max(Volume::new::<gallon>(0.))
-    }
-
-    fn is_empty(&self) -> bool {
-        self.fluid_level_reachable_by_pumps() <= Volume::new::<gallon>(0.01)
-    }
-}
-
-struct HighPressureCircuit {
-    accumulator: Accumulator,
-
-    volume_target: Volume,
-    current_volume: Volume,
-    max_high_press_volume: Volume,
-
-    current_pressure: Pressure,
-    current_flow: VolumeRate,
-
-    delta_volume_flow_pass: Volume,
-    static_leak_at_max_press: VolumeRate,
-
-    total_actuator_consumed_volume: Volume,
-    total_actuator_returned_volume: Volume,
-}
-impl HighPressureCircuit {
-    const ACCUMULATOR_GAS_PRE_CHARGE_PSI: f64 = 3885.0;
-    const ACCUMULATOR_MAX_VOLUME_GALLONS: f64 = 0.1;
-
-    const REGULATED_PRESSURE_PSI: f64 = 5000.;
-
-    fn new() -> Self {
-        Self {
-            accumulator: Accumulator::new(
-                Pressure::new::<psi>(Self::ACCUMULATOR_GAS_PRE_CHARGE_PSI),
-                Volume::new::<gallon>(Self::ACCUMULATOR_MAX_VOLUME_GALLONS),
-                Volume::new::<gallon>(0.),
-                false,
-                Pressure::new::<psi>(Self::REGULATED_PRESSURE_PSI),
+            speed: LowPassFilter::<AngularVelocity>::new(
+                Self::LOW_PASS_RPM_TRANSIENT_TIME_CONSTANT,
             ),
-            volume_target: Volume::default(),
-            current_volume: Volume::new::<gallon>(0.5),
-            max_high_press_volume: Volume::new::<gallon>(0.5),
+            is_powered: false,
+            powered_by,
+            consumed_power: Power::default(),
 
-            current_pressure: Pressure::new::<psi>(14.),
-            current_flow: VolumeRate::default(),
-
-            delta_volume_flow_pass: Volume::default(),
-            static_leak_at_max_press: VolumeRate::new::<gallon_per_second>(0.01),
-
-            total_actuator_consumed_volume: Volume::default(),
-            total_actuator_returned_volume: Volume::default(),
+            circuit_pressure: Pressure::default(),
         }
     }
 
     fn update(
         &mut self,
         context: &UpdateContext,
-        reservoir: &mut Reservoir,
-        pump: &VariableSpeedPump,
-        fluid: &Fluid,
+        actuator_flow: VolumeRate,
+        actuator_pressure: Pressure,
     ) {
-        self.update_flow(context, reservoir, pump);
+        self.circuit_pressure = actuator_pressure;
 
-        self.update_target_volume_after_flow_update(
-            Pressure::new::<psi>(Self::REGULATED_PRESSURE_PSI),
-            fluid,
-        );
-
-        self.update_final_delta_vol_and_pressure(context, fluid);
-    }
-
-    fn update_final_delta_vol_and_pressure(&mut self, context: &UpdateContext, fluid: &Fluid) {
-        self.current_volume += self.delta_volume_flow_pass;
-
-        self.update_pressure(context, fluid);
-
-        self.current_flow = self.delta_volume_flow_pass / context.delta_as_time();
-    }
-
-    pub fn update_flow(
-        &mut self,
-        context: &UpdateContext,
-        reservoir: &mut Reservoir,
-        pump: &VariableSpeedPump,
-    ) {
-        let static_leak = self.static_leak(context);
-        let mut delta_volume_flow_pass = -static_leak;
-
-        reservoir.add_return_volume(static_leak);
-
-        self.accumulator.update(
-            context,
-            &mut delta_volume_flow_pass,
-            self.current_pressure,
-            self.volume_target,
-        );
-
-        delta_volume_flow_pass -= self.total_actuator_consumed_volume;
-        reservoir.add_return_volume(self.total_actuator_returned_volume);
-
-        self.delta_volume_flow_pass =
-            delta_volume_flow_pass + pump.flow() * context.delta_as_time();
-
-        self.reset_actuator_volumes();
-    }
-
-    pub fn update_target_volume_after_flow_update(
-        &mut self,
-        target_pressure: Pressure,
-        fluid: &Fluid,
-    ) {
-        self.volume_target = if self.is_primed() {
-            self.volume_to_reach_target(target_pressure, fluid)
+        let new_speed = if self.is_powered {
+            AngularVelocity::new::<revolution_per_minute>(
+                actuator_flow.get::<gallon_per_minute>()
+                    * Self::FLOW_CONSTANT_RPM_CUBIC_INCH_TO_GPM
+                    / Self::DISPLACEMENT_CU_IN,
+            )
         } else {
-            self.max_high_press_volume - self.current_volume
-                + self.volume_to_reach_target(target_pressure, fluid)
+            AngularVelocity::default()
         };
 
-        self.volume_target -= self.delta_volume_flow_pass;
-    }
-
-    fn is_primed(&self) -> bool {
-        self.current_volume >= self.max_high_press_volume
-    }
-
-    fn volume_to_reach_target(&self, target_press: Pressure, fluid: &Fluid) -> Volume {
-        (target_press - self.current_pressure) * (self.max_high_press_volume) / fluid.bulk_mod()
-    }
-
-    fn static_leak(&self, context: &UpdateContext) -> Volume {
-        self.static_leak_at_max_press
-            * context.delta_as_time()
-            * (self.current_pressure - Pressure::new::<psi>(14.7))
-            / Pressure::new::<psi>(Self::REGULATED_PRESSURE_PSI)
-    }
-
-    fn update_actuator_volumes(&mut self, actuator: &mut impl Actuator) {
-        self.total_actuator_consumed_volume += actuator.used_volume();
-        self.total_actuator_returned_volume += actuator.reservoir_return();
-        actuator.reset_volumes();
-    }
-
-    fn reset_actuator_volumes(&mut self) {
-        self.total_actuator_returned_volume = Volume::new::<gallon>(0.);
-        self.total_actuator_consumed_volume = Volume::new::<gallon>(0.);
-    }
-
-    fn update_pressure(&mut self, context: &UpdateContext, fluid: &Fluid) {
-        let fluid_volume_compressed = self.current_volume - self.max_high_press_volume;
-
-        self.current_pressure = Pressure::new::<psi>(14.7)
-            + self.delta_pressure_from_delta_volume(fluid_volume_compressed, fluid);
-        self.current_pressure = self.current_pressure.max(Pressure::new::<psi>(14.7));
-    }
-
-    fn delta_pressure_from_delta_volume(&self, delta_vol: Volume, fluid: &Fluid) -> Pressure {
-        return delta_vol / self.max_high_press_volume * fluid.bulk_mod();
-    }
-
-    fn pressure(&self) -> Pressure {
-        self.current_pressure
-    }
-}
-
-struct VariableSpeedPump {
-    speed: AngularVelocity,
-
-    speed_controller: PidController,
-}
-impl VariableSpeedPump {
-    const DEFAULT_P_GAIN: f64 = 1.5;
-    const DEFAULT_I_GAIN: f64 = 1.;
-
-    const FLOW_CONSTANT_RPM_CUBIC_INCH_TO_GPM: f64 = 231.;
-    const DISPLACEMENT_CU_IN: f64 = 0.05;
-
-    pub fn new(context: &mut InitContext, bus_type: ElectricalBusType) -> Self {
-        Self {
-            speed: AngularVelocity::default(),
-            speed_controller: PidController::new(
-                Self::DEFAULT_P_GAIN,
-                Self::DEFAULT_I_GAIN,
-                0.,
-                0.,
-                12000.,
-                5000.,
-                1.,
-            ),
-        }
-    }
-
-    fn update(&mut self, context: &UpdateContext, pressure: Pressure) {
-        self.speed = AngularVelocity::new::<revolution_per_minute>(
-            self.speed_controller
-                .next_control_output(pressure.get::<psi>(), Some(context.delta())),
-        );
+        self.speed.update(context.delta(), new_speed);
     }
 
     fn speed(&self) -> AngularVelocity {
-        self.speed
+        self.speed.output()
     }
 
-    fn flow(&self) -> VolumeRate {
-        if self.speed.get::<revolution_per_minute>() > 0. {
-            VolumeRate::new::<gallon_per_minute>(
-                self.speed.get::<revolution_per_minute>() * Self::DISPLACEMENT_CU_IN
-                    / Self::FLOW_CONSTANT_RPM_CUBIC_INCH_TO_GPM,
-            )
+    fn max_available_pressure(&self, accumulator: &LowPressureAccumulator) -> Pressure {
+        if self.is_powered && accumulator.pressure().get::<psi>() > 100. {
+            Pressure::new::<psi>(Self::NOMINAL_MAX_PRESSURE_PSI)
         } else {
-            VolumeRate::new::<gallon_per_second>(0.)
+            Pressure::default()
         }
     }
 }
+impl SimulationElement for VariableSpeedPump {
+    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
+        self.is_powered = buses.is_powered(self.powered_by);
+    }
 
-struct ElectroHydraulicActuatorAssembly {
-    pump: VariableSpeedPump,
-    reservoir: Reservoir,
-    hydraulic_circuit: HighPressureCircuit,
-    fluid: Fluid,
+    fn consume_power<T: ConsumePower>(&mut self, _: &UpdateContext, consumption: &mut T) {
+        consumption.consume_from_bus(self.powered_by, self.consumed_power);
+    }
 }
-impl ElectroHydraulicActuatorAssembly {
-    const FLUID_BULK_MODULUS_PASCAL: f64 = 1450000000.0;
 
-    fn new(context: &mut InitContext) -> Self {
+struct LowPressureAccumulator {
+    pressure: LowPassFilter<Pressure>,
+}
+impl LowPressureAccumulator {
+    // TODO randomize
+    const INIT_ACCUMULATOR_PRESSURE_PSI: f64 = 800.;
+
+    const MAX_ACCUMULATOR_PRESSURE_PSI: f64 = 1300.;
+
+    const PRESSURE_TIME_CONSTANT: Duration = Duration::from_millis(1000);
+    fn new() -> Self {
         Self {
-            pump: VariableSpeedPump::new(context, ElectricalBusType::AlternatingCurrent(1)),
-            reservoir: Reservoir::new(
-                context,
-                Volume::new::<gallon>(0.2),
-                Volume::new::<gallon>(0.2),
+            pressure: LowPassFilter::<Pressure>::new_with_init_value(
+                Self::PRESSURE_TIME_CONSTANT,
+                Pressure::new::<psi>(Self::INIT_ACCUMULATOR_PRESSURE_PSI),
             ),
-            hydraulic_circuit: HighPressureCircuit::new(),
-            fluid: Fluid::new(Pressure::new::<pascal>(Self::FLUID_BULK_MODULUS_PASCAL)),
         }
     }
 
-    fn update(&mut self, context: &UpdateContext) {
-        self.pump.update(context, self.hydraulic_circuit.pressure());
-        self.hydraulic_circuit
-            .update(context, &mut self.reservoir, &self.pump, &self.fluid);
+    fn update(
+        &mut self,
+        context: &UpdateContext,
+        input_pressure: Pressure,
+        should_open_external_filling: bool,
+    ) {
+        let mut new_pressure =
+            if input_pressure > self.pressure.output() && should_open_external_filling {
+                Pressure::new::<psi>(1800.)
+            } else {
+                self.pressure.output()
+            };
+
+        new_pressure = new_pressure
+            .min(Pressure::new::<psi>(Self::MAX_ACCUMULATOR_PRESSURE_PSI))
+            .max(Pressure::new::<psi>(0.));
+
+        self.pressure.update(context.delta(), new_pressure);
+    }
+
+    fn pressure(&self) -> Pressure {
+        self.pressure.output()
+    }
+}
+
+use crate::hydraulic::aerodynamic_model::AerodynamicBody;
+use crate::hydraulic::linear_actuator::{
+    get_more_restrictive_soft_lock_velocities, BoundedLinearLength, HydraulicAssemblyController,
+    HydraulicLocking, LinearActuatedRigidBodyOnHingeAxis, LinearActuator, LinearActuatorMode,
+};
+
+use std::time::Duration;
+
+pub enum ElectroHydrostaticActuatorType {
+    EHA,
+    EBHA,
+}
+
+pub struct LinearActuatorElectroHydrostatic {
+    accumulator: LowPressureAccumulator,
+    pump: VariableSpeedPump,
+    actuator: LinearActuator,
+
+    mode: ElectroHydrostaticActuatorType,
+}
+impl LinearActuatorElectroHydrostatic {
+    pub fn new(
+        powered_by: ElectricalBusType,
+        actuator: LinearActuator,
+        mode: ElectroHydrostaticActuatorType,
+    ) -> Self {
+        Self {
+            accumulator: LowPressureAccumulator::new(),
+            pump: VariableSpeedPump::new(powered_by),
+            actuator,
+            mode,
+        }
+    }
+
+    // TODO next two fn might be some Trait to declare
+    fn update_before_rigid_body(
+        &mut self,
+        context: &UpdateContext,
+        connected_body: &mut LinearActuatedRigidBodyOnHingeAxis,
+        requested_mode: LinearActuatorMode,
+        current_pressure: Pressure,
+    ) {
+        self.accumulator.update(context, current_pressure, false);
+        self.pump.update(
+            context,
+            self.actuator.signed_flow(),
+            self.actuator.pressure(),
+        );
+
+        self.actuator.update_before_rigid_body(
+            context,
+            connected_body,
+            requested_mode,
+            self.pump.max_available_pressure(&self.accumulator),
+        );
+
+        println!(
+            "Actuator pos {:.2} Actuator Flow {:.3} Pump speed {:.5} Pump max press {:.0}",
+            self.actuator.position_normalized().get::<ratio>(),
+            self.actuator.signed_flow().get::<gallon_per_second>(),
+            self.pump.speed().get::<revolution_per_minute>(),
+            self.pump
+                .max_available_pressure(&self.accumulator)
+                .get::<psi>()
+        );
+    }
+
+    fn update_after_rigid_body(
+        &mut self,
+        context: &UpdateContext,
+        connected_body: &LinearActuatedRigidBodyOnHingeAxis,
+    ) {
+        self.actuator
+            .update_after_rigid_body(context, connected_body);
+    }
+
+    fn set_position_target(&mut self, target_position: Ratio) {
+        self.actuator.set_position_target(target_position);
+    }
+
+    fn position_normalized(&self) -> Ratio {
+        self.actuator.position_normalized()
+    }
+}
+impl Actuator for LinearActuatorElectroHydrostatic {
+    fn used_volume(&self) -> Volume {
+        self.actuator.used_volume()
+    }
+
+    fn reservoir_return(&self) -> Volume {
+        self.actuator.reservoir_return()
+    }
+
+    fn reset_volumes(&mut self) {
+        self.actuator.reset_volumes()
+    }
+}
+impl HydraulicLocking for LinearActuatorElectroHydrostatic {
+    fn should_soft_lock(&self) -> bool {
+        self.actuator.should_soft_lock()
+    }
+
+    fn soft_lock_velocity(&self) -> (AngularVelocity, AngularVelocity) {
+        self.actuator.soft_lock_velocity()
+    }
+}
+impl SimulationElement for LinearActuatorElectroHydrostatic {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.pump.accept(visitor);
+
+        visitor.visit(self);
+    }
+}
+
+pub struct HydraulicLinearElectroHydrostaticActuatorAssembly<const N: usize> {
+    linear_actuators: [LinearActuatorElectroHydrostatic; N],
+    rigid_body: LinearActuatedRigidBodyOnHingeAxis,
+}
+impl<const N: usize> HydraulicLinearElectroHydrostaticActuatorAssembly<N> {
+    pub fn new(
+        linear_actuators: [LinearActuatorElectroHydrostatic; N],
+        rigid_body: LinearActuatedRigidBodyOnHingeAxis,
+    ) -> Self {
+        Self {
+            linear_actuators,
+            rigid_body,
+        }
+    }
+
+    pub fn actuator(&mut self, index: usize) -> &mut impl Actuator {
+        assert!(index < N);
+        &mut self.linear_actuators[index]
+    }
+
+    pub fn body(&mut self) -> &mut impl AerodynamicBody {
+        &mut self.rigid_body
+    }
+
+    pub fn update(
+        &mut self,
+        context: &UpdateContext,
+        assembly_controllers: &[impl HydraulicAssemblyController + HydraulicLocking],
+        current_pressure: [Pressure; N],
+    ) {
+        for (index, actuator) in self.linear_actuators.iter_mut().enumerate() {
+            actuator.set_position_target(
+                self.rigid_body
+                    .linear_actuator_pos_normalized_from_angular_position_normalized(
+                        assembly_controllers[index].requested_position(),
+                    ),
+            );
+        }
+
+        self.update_hard_lock_mechanism(assembly_controllers);
+
+        if !self.rigid_body.is_locked() {
+            self.update_soft_lock_mechanism(assembly_controllers);
+
+            for (index, actuator) in self.linear_actuators.iter_mut().enumerate() {
+                actuator.update_before_rigid_body(
+                    context,
+                    &mut self.rigid_body,
+                    assembly_controllers[index].requested_mode(),
+                    current_pressure[index],
+                );
+            }
+
+            self.rigid_body.update(context);
+
+            for actuator in &mut self.linear_actuators {
+                actuator.update_after_rigid_body(context, &self.rigid_body);
+            }
+        } else {
+            self.rigid_body.update(context);
+        }
+    }
+
+    fn update_hard_lock_mechanism(
+        &mut self,
+        assembly_controllers: &[impl HydraulicAssemblyController],
+    ) {
+        // The first controller requesting a lock locks the body
+        let mut no_lock = true;
+        for controller in assembly_controllers {
+            if controller.should_lock() {
+                self.rigid_body
+                    .lock_at_position_normalized(controller.requested_lock_position());
+
+                no_lock = false;
+
+                break;
+            }
+        }
+
+        if no_lock {
+            self.rigid_body.unlock();
+        }
+    }
+
+    fn update_soft_lock_mechanism(&mut self, assembly_controllers: &[impl HydraulicLocking]) {
+        let mut no_lock = true;
+
+        let mut min_velocity = AngularVelocity::new::<radian_per_second>(-10000.);
+        let mut max_velocity = AngularVelocity::new::<radian_per_second>(10000.);
+
+        // Min velocity will be the max one amongst all the limit velocities requested
+        // Max velocity will be the min one amongst all the limit velocities requested
+        // This way we use the more restrictive speed limitation over all the controller demands
+        for (idx, controller) in assembly_controllers.iter().enumerate() {
+            if controller.should_soft_lock() || self.linear_actuators[idx].should_soft_lock() {
+                // If actuator itself already is locking we take the more restrictive locking speeds, else we only use external locking speeds
+                let (new_min, new_max) = if controller.should_soft_lock()
+                    && self.linear_actuators[idx].should_soft_lock()
+                {
+                    get_more_restrictive_soft_lock_velocities(
+                        controller,
+                        &self.linear_actuators[idx],
+                    )
+                } else if controller.should_soft_lock() {
+                    controller.soft_lock_velocity()
+                } else {
+                    self.linear_actuators[idx].soft_lock_velocity()
+                };
+
+                max_velocity = max_velocity.min(new_max);
+                min_velocity = min_velocity.max(new_min);
+
+                no_lock = false;
+            }
+        }
+
+        if no_lock {
+            self.rigid_body.soft_unlock();
+        } else {
+            self.rigid_body.soft_lock(min_velocity, max_velocity)
+        }
+    }
+
+    pub fn is_locked(&self) -> bool {
+        self.rigid_body.is_locked()
+    }
+
+    pub fn position_normalized(&self) -> Ratio {
+        self.rigid_body.position_normalized()
+    }
+
+    pub fn actuator_position_normalized(&self, index: usize) -> Ratio {
+        self.linear_actuators[index].position_normalized()
+    }
+}
+impl SimulationElement for HydraulicLinearElectroHydrostaticActuatorAssembly<1> {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.linear_actuators[0].accept(visitor);
+
+        visitor.visit(self);
     }
 }
 
@@ -340,26 +409,113 @@ mod tests {
 
     use crate::simulation::test::{SimulationTestBed, TestBed};
     use std::time::Duration;
-    use uom::si::{pressure::psi, volume::gallon};
+    use uom::si::{
+        angle::degree, force::newton, length::meter, mass::kilogram, pressure::psi, ratio::ratio,
+        volume::gallon,
+    };
 
-    struct TestPump {
-        fast_hydraulic_updater: MaxStepLoop,
+    use nalgebra::Vector3;
 
-        pump: VariableSpeedPump,
+    #[derive(PartialEq, Clone, Copy)]
+    struct TestHydraulicAssemblyController {
+        mode: LinearActuatorMode,
+        requested_position: Ratio,
+        lock_request: bool,
+        lock_position: Ratio,
 
-        pressure: Pressure,
+        soft_lock_request: bool,
+        soft_lock_velocity: (AngularVelocity, AngularVelocity),
+    }
+    impl TestHydraulicAssemblyController {
+        fn new() -> Self {
+            Self {
+                mode: LinearActuatorMode::ClosedValves,
+
+                requested_position: Ratio::new::<ratio>(0.),
+                lock_request: false,
+                lock_position: Ratio::new::<ratio>(0.),
+                soft_lock_request: false,
+                soft_lock_velocity: (AngularVelocity::default(), AngularVelocity::default()),
+            }
+        }
+
+        fn set_mode(&mut self, mode: LinearActuatorMode) {
+            self.mode = mode;
+        }
+
+        fn set_lock(&mut self, lock_position: Ratio) {
+            self.lock_request = true;
+            self.lock_position = lock_position;
+        }
+
+        fn set_unlock(&mut self) {
+            self.lock_request = false;
+        }
+
+        fn set_position_target(&mut self, requested_position: Ratio) {
+            self.requested_position = requested_position;
+        }
+
+        fn set_soft_lock(&mut self, lock_velocity: (AngularVelocity, AngularVelocity)) {
+            self.soft_lock_request = true;
+            self.soft_lock_velocity = lock_velocity;
+        }
+    }
+    impl HydraulicAssemblyController for TestHydraulicAssemblyController {
+        fn requested_mode(&self) -> LinearActuatorMode {
+            self.mode
+        }
+
+        fn requested_position(&self) -> Ratio {
+            self.requested_position
+        }
+
+        fn should_lock(&self) -> bool {
+            self.lock_request
+        }
+
+        fn requested_lock_position(&self) -> Ratio {
+            self.lock_position
+        }
+    }
+    impl HydraulicLocking for TestHydraulicAssemblyController {
+        fn should_soft_lock(&self) -> bool {
+            self.soft_lock_request
+        }
+
+        fn soft_lock_velocity(&self) -> (AngularVelocity, AngularVelocity) {
+            self.soft_lock_velocity
+        }
+    }
+
+    struct TestAircraft<const N: usize> {
+        loop_updater: MaxStepLoop,
+
+        hydraulic_assembly: HydraulicLinearElectroHydrostaticActuatorAssembly<N>,
+
+        controllers: [TestHydraulicAssemblyController; N],
+
+        pressures: [Pressure; N],
 
         powered_source_ac: TestElectricitySource,
         ac_1_bus: ElectricalBus,
         is_ac_1_powered: bool,
     }
-    impl TestPump {
-        fn new(context: &mut InitContext) -> Self {
+    impl<const N: usize> TestAircraft<N> {
+        fn new(
+            context: &mut InitContext,
+            time_step: Duration,
+            hydraulic_assembly: HydraulicLinearElectroHydrostaticActuatorAssembly<N>,
+        ) -> Self {
             Self {
-                fast_hydraulic_updater: MaxStepLoop::new(Duration::from_millis(10)),
-                pump: variable_speed_pump(context),
+                loop_updater: MaxStepLoop::new(time_step),
 
-                pressure: Pressure::default(),
+                hydraulic_assembly,
+
+                controllers: [TestHydraulicAssemblyController::new(); N],
+
+                pressures: [Pressure::new::<psi>(0.); N],
+
                 powered_source_ac: TestElectricitySource::powered(
                     context,
                     PotentialOrigin::EngineGenerator(1),
@@ -369,15 +525,72 @@ mod tests {
             }
         }
 
-        fn set_current_pressure(&mut self, current_pressure: Pressure) {
-            self.pressure = current_pressure;
+        fn set_pressures(&mut self, pressures: [Pressure; N]) {
+            self.pressures = pressures;
+        }
+
+        fn command_active_damping_mode(&mut self, actuator_id: usize) {
+            assert!(actuator_id < N);
+            self.controllers[actuator_id].set_mode(LinearActuatorMode::ActiveDamping);
+        }
+
+        fn command_closed_circuit_damping_mode(&mut self, actuator_id: usize) {
+            assert!(actuator_id < N);
+            self.controllers[actuator_id].set_mode(LinearActuatorMode::ClosedCircuitDamping);
+        }
+
+        fn command_closed_valve_mode(&mut self, actuator_id: usize) {
+            assert!(actuator_id < N);
+            self.controllers[actuator_id].set_mode(LinearActuatorMode::ClosedValves);
+        }
+
+        fn command_position_control(&mut self, position: Ratio, actuator_id: usize) {
+            assert!(actuator_id < N);
+            self.controllers[actuator_id].set_mode(LinearActuatorMode::PositionControl);
+            self.controllers[actuator_id].set_position_target(position);
+        }
+
+        fn command_lock(&mut self, lock_position: Ratio) {
+            for controller in &mut self.controllers {
+                controller.set_lock(lock_position);
+            }
+        }
+
+        fn command_soft_lock(&mut self, lock_velocity: (AngularVelocity, AngularVelocity)) {
+            for controller in &mut self.controllers {
+                controller.set_soft_lock(lock_velocity);
+            }
+        }
+
+        fn command_unlock(&mut self) {
+            for controller in &mut self.controllers {
+                controller.set_unlock();
+            }
+        }
+
+        fn body_position(&self) -> Ratio {
+            self.hydraulic_assembly.position_normalized()
+        }
+
+        fn is_locked(&self) -> bool {
+            self.hydraulic_assembly.is_locked()
+        }
+
+        fn update_actuator_physics(&mut self, context: &UpdateContext) {
+            self.hydraulic_assembly
+                .update(context, &self.controllers[..], self.pressures);
+
+            // println!(
+            //     "Body Npos {:.3}",
+            //     self.hydraulic_assembly.position_normalized().get::<ratio>()
+            // );
         }
 
         fn set_ac_1_power(&mut self, is_powered: bool) {
             self.is_ac_1_powered = is_powered;
         }
     }
-    impl Aircraft for TestPump {
+    impl Aircraft for TestAircraft<1> {
         fn update_before_power_distribution(
             &mut self,
             _: &UpdateContext,
@@ -393,167 +606,137 @@ mod tests {
         }
 
         fn update_after_power_distribution(&mut self, context: &UpdateContext) {
-            self.fast_hydraulic_updater.update(context);
+            self.loop_updater.update(context);
 
-            for cur_time_step in &mut self.fast_hydraulic_updater {
-                self.pump
-                    .update(&context.with_delta(cur_time_step), self.pressure);
-
-                println!(
-                    "Pump speed {:.0}, current pressure {:.1}",
-                    self.pump.speed().get::<revolution_per_minute>(),
-                    self.pressure.get::<psi>()
-                );
+            for cur_time_step in self.loop_updater {
+                self.update_actuator_physics(&context.with_delta(cur_time_step));
             }
         }
     }
-    impl SimulationElement for TestPump {
+    impl SimulationElement for TestAircraft<1> {
         fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+            self.hydraulic_assembly.accept(visitor);
+
             visitor.visit(self);
         }
     }
 
-    struct TestElectroHydraulicAssembly {
-        fast_hydraulic_updater: MaxStepLoop,
-
-        eha: ElectroHydraulicActuatorAssembly,
-
-        powered_source_ac: TestElectricitySource,
-        ac_1_bus: ElectricalBus,
-        is_ac_1_powered: bool,
-    }
-    impl TestElectroHydraulicAssembly {
-        fn new(context: &mut InitContext) -> Self {
-            Self {
-                fast_hydraulic_updater: MaxStepLoop::new(Duration::from_millis(10)),
-                eha: ElectroHydraulicActuatorAssembly::new(context),
-
-                powered_source_ac: TestElectricitySource::powered(
-                    context,
-                    PotentialOrigin::EngineGenerator(1),
-                ),
-                ac_1_bus: ElectricalBus::new(context, ElectricalBusType::AlternatingCurrent(1)),
-                is_ac_1_powered: false,
-            }
-        }
-
-        fn set_ac_1_power(&mut self, is_powered: bool) {
-            self.is_ac_1_powered = is_powered;
-        }
-    }
-    impl Aircraft for TestElectroHydraulicAssembly {
-        fn update_before_power_distribution(
-            &mut self,
-            _: &UpdateContext,
-            electricity: &mut Electricity,
-        ) {
-            self.powered_source_ac
-                .power_with_potential(ElectricPotential::new::<volt>(115.));
-            electricity.supplied_by(&self.powered_source_ac);
-
-            if self.is_ac_1_powered {
-                electricity.flow(&self.powered_source_ac, &self.ac_1_bus);
-            }
-        }
-
+    impl Aircraft for TestAircraft<2> {
         fn update_after_power_distribution(&mut self, context: &UpdateContext) {
-            self.fast_hydraulic_updater.update(context);
+            self.loop_updater.update(context);
 
-            for cur_time_step in &mut self.fast_hydraulic_updater {
-                self.eha.update(&context.with_delta(cur_time_step));
-
-                println!(
-                    "Pump speed {:.0}, current pressure {:.1}, acc level {:.2}, acc_gas_pressure {:.1} Reslevel {:.2}",
-                    self.eha.pump.speed().get::<revolution_per_minute>(),
-                    self.eha.hydraulic_circuit.pressure().get::<psi>(),
-                    self.eha.hydraulic_circuit.accumulator.fluid_volume().get::<gallon>(),
-                    self.eha.hydraulic_circuit.accumulator.gas_pressure.get::<psi>(),
-                    self.eha.reservoir.current_level.get::<gallon>()
-                );
+            for cur_time_step in self.loop_updater {
+                self.update_actuator_physics(&context.with_delta(cur_time_step));
             }
         }
     }
-    impl SimulationElement for TestElectroHydraulicAssembly {
-        fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-            visitor.visit(self);
-        }
+    impl SimulationElement for TestAircraft<2> {}
+
+    fn elevator_body() -> LinearActuatedRigidBodyOnHingeAxis {
+        let size = Vector3::new(6., 0.405, 1.125);
+        let cg_offset = Vector3::new(0., 0., -0.5 * size[2]);
+        let aero_center_offset = Vector3::new(0., 0., -0.3 * size[2]);
+
+        let control_arm = Vector3::new(0., -0.091, 0.);
+        let anchor = Vector3::new(0., -0.091, 0.41);
+
+        LinearActuatedRigidBodyOnHingeAxis::new(
+            Mass::new::<kilogram>(58.6),
+            size,
+            cg_offset,
+            aero_center_offset,
+            control_arm,
+            anchor,
+            Angle::new::<degree>(-17.),
+            Angle::new::<degree>(47.),
+            Angle::new::<degree>(15.),
+            100.,
+            false,
+            Vector3::new(1., 0., 0.),
+        )
+    }
+
+    fn elevator_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
+        const DEFAULT_I_GAIN: f64 = 5.;
+        const DEFAULT_P_GAIN: f64 = 1.;
+        const DEFAULT_FORCE_GAIN: f64 = 450000.;
+
+        LinearActuator::new(
+            bounded_linear_length,
+            1,
+            Length::new::<meter>(0.0407),
+            Length::new::<meter>(0.),
+            VolumeRate::new::<gallon_per_second>(0.029),
+            80000.,
+            1500.,
+            20000.,
+            10000000.,
+            Duration::from_millis(300),
+            [1., 1., 1., 1., 1., 1.],
+            [1., 1., 1., 1., 1., 1.],
+            [0., 0.2, 0.21, 0.79, 0.8, 1.],
+            DEFAULT_P_GAIN,
+            DEFAULT_I_GAIN,
+            DEFAULT_FORCE_GAIN,
+            false,
+            false,
+            None,
+        )
+    }
+
+    fn elevator_eha(
+        bounded_linear_length: &impl BoundedLinearLength,
+    ) -> LinearActuatorElectroHydrostatic {
+        LinearActuatorElectroHydrostatic::new(
+            ElectricalBusType::AlternatingCurrent(1),
+            elevator_actuator(bounded_linear_length),
+            ElectroHydrostaticActuatorType::EHA,
+        )
+    }
+
+    fn elevator_eha_assembly() -> HydraulicLinearElectroHydrostaticActuatorAssembly<1> {
+        let rigid_body = elevator_body();
+        let actuator = elevator_eha(&rigid_body);
+
+        HydraulicLinearElectroHydrostaticActuatorAssembly::new([actuator], rigid_body)
     }
 
     #[test]
-    fn pump_inactive_at_init() {
-        let test_bed = SimulationTestBed::new(TestPump::new);
-
-        assert_eq!(
-            test_bed.query(|a| a.pump.speed()),
-            AngularVelocity::new::<revolution_per_minute>(0.)
-        );
-    }
-
-    #[test]
-    fn pump_spools_up_less_than_half_second() {
-        let mut test_bed = SimulationTestBed::new(TestPump::new);
-
+    fn electro_hydraulic_assembly_with_electrical_power_can_move_to_position() {
+        let mut test_bed = SimulationTestBed::new(|context| {
+            TestAircraft::new(context, Duration::from_millis(10), elevator_eha_assembly())
+        });
         test_bed.command(|a| a.set_ac_1_power(true));
 
-        test_bed.run_with_delta(Duration::from_secs_f64(0.5));
+        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(0.2), 0));
 
-        assert!(
-            test_bed.query(|a| a.pump.speed())
-                >= AngularVelocity::new::<revolution_per_minute>(10000.)
-        );
+        test_bed.run_with_delta(Duration::from_secs_f64(1.));
 
-        assert!(
-            test_bed.query(|a| a.pump.speed())
-                <= AngularVelocity::new::<revolution_per_minute>(13000.)
-        );
+        assert!(test_bed.query(|a| a.body_position().get::<ratio>()) >= 0.18);
+        assert!(test_bed.query(|a| a.body_position().get::<ratio>()) <= 0.22);
+
+        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(0.8), 0));
+
+        test_bed.run_with_delta(Duration::from_secs_f64(1.));
+
+        assert!(test_bed.query(|a| a.body_position().get::<ratio>()) >= 0.78);
+        assert!(test_bed.query(|a| a.body_position().get::<ratio>()) <= 0.82);
     }
 
     #[test]
-    fn pump_slows_when_on_target() {
-        let mut test_bed = SimulationTestBed::new(TestPump::new);
+    fn electro_hydraulic_assembly_without_electrical_power_cannot_move_to_position() {
+        let mut test_bed = SimulationTestBed::new(|context| {
+            TestAircraft::new(context, Duration::from_millis(10), elevator_eha_assembly())
+        });
+        test_bed.command(|a| a.set_ac_1_power(false));
 
-        test_bed.command(|a| a.set_ac_1_power(true));
+        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(0.2), 0));
 
         test_bed.run_with_delta(Duration::from_secs_f64(1.));
 
         assert!(
-            test_bed.query(|a| a.pump.speed())
-                >= AngularVelocity::new::<revolution_per_minute>(11000.)
+            test_bed.query(|a| a.body_position().get::<ratio>()) > 0.25
+                || test_bed.query(|a| a.body_position().get::<ratio>()) < 0.15
         );
-
-        test_bed.command(|a| a.set_current_pressure(Pressure::new::<psi>(5000.)));
-        test_bed.run_with_delta(Duration::from_secs_f64(1.));
-
-        assert!(
-            test_bed.query(|a| a.pump.speed())
-                <= AngularVelocity::new::<revolution_per_minute>(5000.)
-        );
-
-        assert!(
-            test_bed.query(|a| a.pump.speed()) >= AngularVelocity::new::<revolution_per_minute>(0.)
-        );
-    }
-
-    fn variable_speed_pump(context: &mut InitContext) -> VariableSpeedPump {
-        VariableSpeedPump::new(context, ElectricalBusType::AlternatingCurrent(1))
-    }
-
-    #[test]
-    fn electro_hydraulic_assembly_at_init() {
-        let mut test_bed = SimulationTestBed::new(TestElectroHydraulicAssembly::new);
-
-        test_bed.command(|a| a.set_ac_1_power(true));
-
-        test_bed.run_with_delta(Duration::from_secs_f64(5.));
-
-        // assert!(
-        //     test_bed.query(|a| a.pump.speed())
-        //         >= AngularVelocity::new::<revolution_per_minute>(10000.)
-        // );
-
-        // assert!(
-        //     test_bed.query(|a| a.pump.speed())
-        //         <= AngularVelocity::new::<revolution_per_minute>(13000.)
-        // );
     }
 }
