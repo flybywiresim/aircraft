@@ -11,9 +11,3 @@ export class McduServer {
         console.debug('MyFunnyTest.test() called');
     }
 }
-
-export class MyEvenMoreFunnyTest {
-    public static test() {
-        console.debug('MyEvenMoreFunnyTest.test() called');
-    }
-}
