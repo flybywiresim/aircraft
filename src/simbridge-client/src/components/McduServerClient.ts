@@ -6,8 +6,8 @@ console.log('SimBrief-Client JS loaded');
 /**
  * Class to communicate with the SimBridge MCDU server
  */
-export class McduServer {
+export class McduServerClient {
     public static test() {
-        console.debug('MyFunnyTest.test() called');
+        console.debug('McduServerClient.test() called');
     }
 }
