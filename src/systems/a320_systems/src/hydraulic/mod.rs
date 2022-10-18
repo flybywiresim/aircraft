@@ -233,6 +233,7 @@ impl A320CargoDoorFactory {
             false,
             false,
             None,
+            None,
         )
     }
 
@@ -332,6 +333,7 @@ impl A320AileronFactory {
             Self::FLOW_CONTROL_FORCE_GAIN,
             false,
             false,
+            None,
             None,
         )
     }
@@ -445,6 +447,7 @@ impl A320SpoilerFactory {
                 AngularVelocity::new::<radian_per_second>(-10000.),
                 AngularVelocity::new::<radian_per_second>(0.),
             )),
+            None,
         )
     }
 
@@ -571,6 +574,7 @@ impl A320ElevatorFactory {
             false,
             false,
             None,
+            None,
         )
     }
 
@@ -673,6 +677,7 @@ impl A320RudderFactory {
             Self::FLOW_CONTROL_FORCE_GAIN,
             false,
             false,
+            None,
             None,
         )
     }
@@ -819,6 +824,7 @@ impl A320GearDoorFactory {
             true,
             false,
             None,
+            None,
         )
     }
 
@@ -858,6 +864,7 @@ impl A320GearDoorFactory {
             FLOW_CONTROL_FORCE_GAIN,
             true,
             false,
+            None,
             None,
         )
     }
@@ -1015,6 +1022,7 @@ impl A320GearFactory {
             true,
             false,
             None,
+            None,
         )
     }
 
@@ -1052,6 +1060,7 @@ impl A320GearFactory {
             FLOW_CONTROL_FORCE_GAIN,
             true,
             false,
+            None,
             None,
         )
     }

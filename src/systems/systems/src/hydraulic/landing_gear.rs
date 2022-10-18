@@ -1502,6 +1502,7 @@ mod tests {
             true,
             false,
             None,
+            None,
         )
     }
 
@@ -1579,6 +1580,7 @@ mod tests {
             DEFAULT_FORCE_GAIN,
             true,
             false,
+            None,
             None,
         )
     }

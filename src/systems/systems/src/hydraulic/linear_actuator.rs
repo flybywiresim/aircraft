@@ -3,7 +3,7 @@ use nalgebra::{Rotation3, Unit, Vector3};
 use uom::si::{
     angle::radian,
     angular_acceleration::radian_per_second_squared,
-    angular_velocity::radian_per_second,
+    angular_velocity::{radian_per_second, revolution_per_minute},
     area::square_meter,
     f64::*,
     force::newton,
@@ -14,14 +14,15 @@ use uom::si::{
     torque::newton_meter,
     velocity::meter_per_second,
     volume::{cubic_meter, gallon},
-    volume_rate::gallon_per_second,
+    volume_rate::{gallon_per_minute, gallon_per_second},
 };
 
 use crate::{
     shared::{
         interpolation, low_pass_filter::LowPassFilter, pid::PidController, random_from_range,
+        ConsumePower, ElectricalBusType, ElectricalBuses,
     },
-    simulation::UpdateContext,
+    simulation::{SimulationElement, UpdateContext},
 };
 
 use super::aerodynamic_model::AerodynamicBody;
@@ -51,6 +52,156 @@ pub enum LinearActuatorMode {
     PositionControl,
     ActiveDamping,
     ClosedCircuitDamping,
+}
+
+#[derive(PartialEq, Copy, Clone)]
+struct VariableSpeedPump {
+    speed: LowPassFilter<AngularVelocity>,
+
+    is_powered: bool,
+    is_active: bool,
+    powered_by: ElectricalBusType,
+    consumed_power: Power,
+}
+impl VariableSpeedPump {
+    const FLOW_CONSTANT_RPM_CUBIC_INCH_TO_GPM: f64 = 231.;
+    const DISPLACEMENT_CU_IN: f64 = 0.214;
+    const NOMINAL_MAX_PRESSURE_PSI: f64 = 5000.;
+
+    const LOW_PASS_RPM_TRANSIENT_TIME_CONSTANT: Duration = Duration::from_millis(100);
+
+    pub fn new(powered_by: ElectricalBusType) -> Self {
+        Self {
+            speed: LowPassFilter::<AngularVelocity>::new(
+                Self::LOW_PASS_RPM_TRANSIENT_TIME_CONSTANT,
+            ),
+            is_powered: false,
+            is_active: false,
+            powered_by,
+            consumed_power: Power::default(),
+        }
+    }
+
+    fn update(
+        &mut self,
+        context: &UpdateContext,
+        actuator_flow: VolumeRate,
+        should_activate: bool,
+    ) {
+        self.is_active = should_activate;
+
+        let new_speed = if self.is_active() {
+            AngularVelocity::new::<revolution_per_minute>(
+                actuator_flow.get::<gallon_per_minute>()
+                    * Self::FLOW_CONSTANT_RPM_CUBIC_INCH_TO_GPM
+                    / Self::DISPLACEMENT_CU_IN,
+            )
+        } else {
+            AngularVelocity::default()
+        };
+
+        self.speed.update(context.delta(), new_speed);
+    }
+
+    fn is_active(&self) -> bool {
+        self.is_active && self.is_powered
+    }
+
+    fn speed(&self) -> AngularVelocity {
+        self.speed.output()
+    }
+
+    fn max_available_pressure(&self, accumulator: &LowPressureAccumulator) -> Pressure {
+        if self.is_active() && accumulator.pressure().get::<psi>() > 100. {
+            Pressure::new::<psi>(Self::NOMINAL_MAX_PRESSURE_PSI)
+        } else {
+            Pressure::default()
+        }
+    }
+}
+impl SimulationElement for VariableSpeedPump {
+    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
+        self.is_powered = buses.is_powered(self.powered_by);
+    }
+
+    fn consume_power<T: ConsumePower>(&mut self, _: &UpdateContext, consumption: &mut T) {
+        consumption.consume_from_bus(self.powered_by, self.consumed_power);
+    }
+}
+
+#[derive(PartialEq, Copy, Clone)]
+struct LowPressureAccumulator {
+    pressure: LowPassFilter<Pressure>,
+}
+impl LowPressureAccumulator {
+    // TODO randomize
+    const INIT_ACCUMULATOR_PRESSURE_PSI: f64 = 800.;
+
+    const MAX_ACCUMULATOR_PRESSURE_PSI: f64 = 1300.;
+
+    const PRESSURE_TIME_CONSTANT: Duration = Duration::from_millis(1000);
+    fn new() -> Self {
+        Self {
+            pressure: LowPassFilter::<Pressure>::new_with_init_value(
+                Self::PRESSURE_TIME_CONSTANT,
+                Pressure::new::<psi>(Self::INIT_ACCUMULATOR_PRESSURE_PSI),
+            ),
+        }
+    }
+
+    fn update(
+        &mut self,
+        context: &UpdateContext,
+        input_pressure: Pressure,
+        should_open_external_filling: bool,
+    ) {
+        let mut new_pressure =
+            if input_pressure > self.pressure.output() && should_open_external_filling {
+                Pressure::new::<psi>(1800.)
+            } else {
+                self.pressure.output()
+            };
+
+        new_pressure = new_pressure
+            .min(Pressure::new::<psi>(Self::MAX_ACCUMULATOR_PRESSURE_PSI))
+            .max(Pressure::new::<psi>(0.));
+
+        self.pressure.update(context.delta(), new_pressure);
+    }
+
+    fn pressure(&self) -> Pressure {
+        self.pressure.output()
+    }
+}
+
+#[derive(PartialEq, Copy, Clone)]
+pub struct ElectroHydrostaticBackup {
+    accumulator: LowPressureAccumulator,
+    pump: VariableSpeedPump,
+}
+impl ElectroHydrostaticBackup {
+    pub fn new(powered_by: ElectricalBusType) -> Self {
+        Self {
+            accumulator: LowPressureAccumulator::new(),
+            pump: VariableSpeedPump::new(powered_by),
+        }
+    }
+
+    fn update(
+        &mut self,
+        context: &UpdateContext,
+        should_activate: bool,
+        current_pressure: Pressure,
+        current_actuator_flow: VolumeRate,
+    ) {
+        self.accumulator.update(context, current_pressure, false);
+        self.pump
+            .update(context, current_actuator_flow, should_activate);
+    }
+
+    fn max_available_pressure(&self) -> Pressure {
+        self.pump.max_available_pressure(&self.accumulator)
+    }
 }
 
 /// Represents an abstraction of the low level hydraulic actuator control system that would in real life consist of a lot of
@@ -589,6 +740,8 @@ pub struct LinearActuator {
     requested_position: Ratio,
 
     core_hydraulics: CoreHydraulicForce,
+
+    electro_hydrostatic_backup: Option<ElectroHydrostaticBackup>,
 }
 impl LinearActuator {
     pub fn new(
@@ -612,6 +765,8 @@ impl LinearActuator {
 
         locks_position_in_closed_mode: bool,
         soft_lock_velocity: Option<(AngularVelocity, AngularVelocity)>,
+
+        electro_hydrostatic_backup: Option<ElectroHydrostaticBackup>,
     ) -> Self {
         let total_travel = (bounded_linear_length.max_absolute_length_to_anchor()
             - bounded_linear_length.min_absolute_length_to_anchor())
@@ -700,6 +855,7 @@ impl LinearActuator {
                 locks_position_in_closed_mode,
                 soft_lock_velocity,
             ),
+            electro_hydrostatic_backup,
         }
     }
 
@@ -708,14 +864,33 @@ impl LinearActuator {
         context: &UpdateContext,
         connected_body: &mut LinearActuatedRigidBodyOnHingeAxis,
         requested_mode: LinearActuatorMode,
-        current_pressure: Pressure,
+        eha_requested_active: bool,
+        current_input_pressure: Pressure,
     ) {
+        if let Some(eha) = self.electro_hydrostatic_backup.as_mut() {
+            eha.update(
+                context,
+                eha_requested_active,
+                current_input_pressure,
+                self.signed_flow,
+            );
+        }
+
+        let internal_actuator_pressure =
+            if eha_requested_active && self.electro_hydrostatic_backup.is_some() {
+                self.electro_hydrostatic_backup
+                    .unwrap()
+                    .max_available_pressure()
+            } else {
+                current_input_pressure
+            };
+
         self.core_hydraulics.update_force(
             context,
             self.requested_position,
             requested_mode,
             self.position_normalized,
-            current_pressure,
+            internal_actuator_pressure,
             self.signed_flow,
             self.speed,
         );
@@ -834,6 +1009,9 @@ pub trait HydraulicAssemblyController {
     fn requested_position(&self) -> Ratio;
     fn should_lock(&self) -> bool;
     fn requested_lock_position(&self) -> Ratio;
+    fn should_run_electro_hydrostatic_backup(&self) -> bool {
+        false
+    }
 }
 
 pub trait HydraulicLocking {
@@ -911,6 +1089,7 @@ impl<const N: usize> HydraulicLinearActuatorAssembly<N> {
                     context,
                     &mut self.rigid_body,
                     assembly_controllers[index].requested_mode(),
+                    assembly_controllers[index].should_run_electro_hydrostatic_backup(),
                     current_pressure[index],
                 );
             }
@@ -2933,6 +3112,7 @@ mod tests {
             false,
             false,
             None,
+            None,
         )
     }
 
@@ -3012,6 +3192,7 @@ mod tests {
             true,
             false,
             None,
+            None,
         )
     }
 
@@ -3035,6 +3216,7 @@ mod tests {
             0.,
             false,
             false,
+            None,
             None,
         )
     }
@@ -3124,6 +3306,7 @@ mod tests {
             true,
             false,
             None,
+            None,
         )
     }
 
@@ -3205,6 +3388,7 @@ mod tests {
             true,
             false,
             None,
+            None,
         )
     }
 
@@ -3263,6 +3447,7 @@ mod tests {
             true,
             false,
             None,
+            None,
         )
     }
 
@@ -3320,6 +3505,7 @@ mod tests {
             DEFAULT_FORCE_GAIN,
             false,
             false,
+            None,
             None,
         )
     }
@@ -3386,6 +3572,7 @@ mod tests {
             false,
             false,
             None,
+            None,
         )
     }
 
@@ -3448,6 +3635,7 @@ mod tests {
                 AngularVelocity::new::<radian_per_second>(-10000.),
                 AngularVelocity::new::<radian_per_second>(0.),
             )),
+            None,
         )
     }
 

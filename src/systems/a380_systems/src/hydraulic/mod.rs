@@ -233,6 +233,7 @@ impl A380CargoDoorFactory {
             false,
             false,
             None,
+            None,
         )
     }
 
@@ -332,6 +333,7 @@ impl A380AileronFactory {
             Self::FLOW_CONTROL_FORCE_GAIN,
             false,
             false,
+            None,
             None,
         )
     }
@@ -445,6 +447,7 @@ impl A380SpoilerFactory {
                 AngularVelocity::new::<radian_per_second>(-10000.),
                 AngularVelocity::new::<radian_per_second>(0.),
             )),
+            None,
         )
     }
 
@@ -560,6 +563,7 @@ impl A380ElevatorFactory {
             false,
             false,
             None,
+            None,
         )
     }
 
@@ -662,6 +666,7 @@ impl A380RudderFactory {
             Self::FLOW_CONTROL_FORCE_GAIN,
             false,
             false,
+            None,
             None,
         )
     }
@@ -808,6 +813,7 @@ impl A380GearDoorFactory {
             true,
             false,
             None,
+            None,
         )
     }
 
@@ -847,6 +853,7 @@ impl A380GearDoorFactory {
             FLOW_CONTROL_FORCE_GAIN,
             true,
             false,
+            None,
             None,
         )
     }
@@ -1004,6 +1011,7 @@ impl A380GearFactory {
             true,
             false,
             None,
+            None,
         )
     }
 
@@ -1041,6 +1049,7 @@ impl A380GearFactory {
             FLOW_CONTROL_FORCE_GAIN,
             true,
             false,
+            None,
             None,
         )
     }
