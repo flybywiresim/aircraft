@@ -662,6 +662,7 @@
                     let volumeMLSACP2 = knobMLSACP2 * (L:A32NX_ACP_NAV_R_MLS_VOLUME, number) * 100;
 
                     // Markers ACP1 and ACP2
+                    let soundMarker = (A:MARKER SOUND, bool);
                     let knobMKRACP1 = (L:A32NX_ACP_NAV_L_MKR_KNOB_VOLUME_DOWN, number);
                     let knobMKRACP2 = (L:A32NX_ACP_NAV_R_MKR_KNOB_VOLUME_DOWN, number);
                     let volumeMKRACP1 = knobMKRACP1 * (L:A32NX_ACP_NAV_L_MKR_VOLUME, number) * 100;
@@ -717,7 +718,8 @@
                             (K:RADIO_ADF_IDENT_SET) = (knobADF1ACP3 == 1 or knobADF1ACP2 == 1) and !voice;
                             (K:RADIO_ADF2_IDENT_SET) = (knobADF2ACP3 == 1 or knobADF2ACP2 == 1) and !voice;
 
-                            (K:MARKER_SOUND_SET) = (knobMKRACP3 == 1 or knobMKRACP2 == 1) and !voice;
+                            // Can't use MARKER_SOUND_SET as it's not used in the simulation yet
+                            (K:MARKER_SOUND_TOGGLE) = ((soundMarker and (knobMKRACP3 == 0 and knobMKRACP2 == 0)) or (!soundMarker and (knobMKRACP3 == 1 or knobMKRACP2 == 1))) and !voice;
                         }
 
                         // Use captains's side as the knob is on F/0's side
@@ -746,7 +748,8 @@
                             (K:RADIO_ADF_IDENT_SET) = (knobADF1ACP3 == 1 or knobADF1ACP1 == 1) and !voice;
                             (K:RADIO_ADF2_IDENT_SET) = (knobADF2ACP3 == 1 or knobADF2ACP1 == 1) and !voice;
 
-                            (K:MARKER_SOUND_SET) = (knobMKRACP3 == 1 or knobMKRACP1 == 1) and !voice;
+                            // Can't use MARKER_SOUND_SET as it's not used in the simulation yet
+                            (K:MARKER_SOUND_TOGGLE) = ((soundMarker and (knobMKRACP3 == 0 and knobMKRACP1 == 0)) or (!soundMarker and (knobMKRACP3 == 1 or knobMKRACP1 == 1))) and !voice;
                         }
                     } else {
                         // Use Captain and F/O's side
@@ -774,7 +777,8 @@
                         (K:RADIO_ADF_IDENT_SET) = (knobADF1ACP1 == 1 or knobADF1ACP2 == 1) and !voice;
                         (K:RADIO_ADF2_IDENT_SET) = (knobADF2ACP1 == 1 or knobADF2ACP2 == 1) and !voice;
 
-                        (K:MARKER_SOUND_SET) = (knobMKRACP1 == 1 or knobMKRACP2 == 1) and !voice;
+                        // Can't use MARKER_SOUND_SET as it's not used in the simulation yet
+                        (K:MARKER_SOUND_TOGGLE) = ((soundMarker and (knobMKRACP1 == 0 and knobMKRACP2 == 0)) or (!soundMarker and (knobMKRACP1 == 1 or knobMKRACP2 == 1))) and !voice;
                     }
 
                     (L:XMLVAR_NAV_UpdateReceivers) = 0;
