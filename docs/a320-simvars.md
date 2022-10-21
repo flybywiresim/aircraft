@@ -3144,6 +3144,10 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Indicates the actual position of the gear handle
     - Percent over 100
 
+- A32NX_GEAR_HANDLE_HITS_LOCK_SOUND
+    - Indicates that gear lever just hit the baulk lock mechanism
+    - Boolean
+
 ## ATC (ATA 34)
 
 - A32NX_TRANSPONDER_MODE

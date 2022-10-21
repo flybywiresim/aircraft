@@ -484,11 +484,14 @@ impl LandingGearHandle for LandingGearControlInterfaceUnitSet {
 struct LandingGearHandleUnit {
     gear_handle_real_position_id: VariableIdentifier,
     gear_handle_position_requested_id: VariableIdentifier,
+    gear_handle_hits_lock_sound_id: VariableIdentifier,
 
     lever_should_lock_down: bool,
 
     lever_position: Ratio,
     lever_commanded_down: bool,
+
+    lever_just_hit_lock_sound: bool,
 }
 impl LandingGearHandleUnit {
     const GEAR_LEVER_SPEED_PERCENT_PER_S: f64 = 180.;
@@ -504,6 +507,8 @@ impl LandingGearHandleUnit {
             gear_handle_real_position_id: context.get_identifier("GEAR_HANDLE_POSITION".to_owned()),
             gear_handle_position_requested_id: context
                 .get_identifier("GEAR_LEVER_POSITION_REQUEST".to_owned()),
+            gear_handle_hits_lock_sound_id: context
+                .get_identifier("GEAR_HANDLE_HITS_LOCK_SOUND".to_owned()),
 
             lever_should_lock_down: init_gear_down,
 
@@ -514,6 +519,8 @@ impl LandingGearHandleUnit {
             },
 
             lever_commanded_down: init_gear_down,
+
+            lever_just_hit_lock_sound: false,
         }
     }
 
@@ -530,6 +537,8 @@ impl LandingGearHandleUnit {
     }
 
     fn update_position(&mut self, context: &UpdateContext) {
+        let previous_position = self.lever_position;
+
         if self.lever_commanded_down {
             self.lever_position += Ratio::new::<percent>(
                 Self::GEAR_LEVER_SPEED_PERCENT_PER_S * context.delta_as_secs_f64(),
@@ -554,6 +563,10 @@ impl LandingGearHandleUnit {
             .lever_position
             .max(Ratio::new::<ratio>(0.))
             .min(Ratio::new::<ratio>(1.));
+
+        self.lever_just_hit_lock_sound = previous_position.get::<ratio>()
+            > Self::GEAR_LEVER_MAX_LOCK_POSITION
+            && self.lever_position == Ratio::new::<ratio>(Self::GEAR_LEVER_MAX_LOCK_POSITION);
     }
 }
 impl LandingGearHandle for LandingGearHandleUnit {
@@ -575,6 +588,11 @@ impl SimulationElement for LandingGearHandleUnit {
         writer.write(
             &self.gear_handle_real_position_id,
             self.lever_position.get::<ratio>(),
+        );
+
+        writer.write(
+            &self.gear_handle_hits_lock_sound_id,
+            self.lever_just_hit_lock_sound,
         );
     }
 }
@@ -1363,6 +1381,10 @@ mod tests {
             lever_pos >= 0.90
         }
 
+        fn is_gear_lever_lock_makes_sound(&mut self) -> bool {
+            self.read_by_name("GEAR_HANDLE_HITS_LOCK_SOUND")
+        }
+
         fn fail_hyd_pressure(&mut self) {
             self.command(|a| a.set_no_pressure());
         }
@@ -1437,6 +1459,26 @@ mod tests {
         assert!(test_bed.is_gear_handle_lock_down_active());
 
         assert!(test_bed.is_gear_handle_down());
+    }
+
+    #[test]
+    fn gear_lever_locked_makes_locked_sound_once_when_trying_up() {
+        let mut test_bed = test_bed_on_ground_with().on_the_ground().run_one_tick();
+
+        assert!(test_bed.is_gear_handle_lock_down_active());
+        assert!(test_bed.is_gear_handle_down());
+        assert!(!test_bed.is_gear_lever_lock_makes_sound());
+
+        test_bed = test_bed.on_the_ground().set_gear_handle_up();
+
+        assert!(test_bed.is_gear_lever_lock_makes_sound());
+
+        // Make sure next ticks sound doesn't play anymore
+        test_bed = test_bed.run_one_tick();
+        assert!(!test_bed.is_gear_lever_lock_makes_sound());
+
+        test_bed = test_bed.run_one_tick();
+        assert!(!test_bed.is_gear_lever_lock_makes_sound());
     }
 
     #[test]
