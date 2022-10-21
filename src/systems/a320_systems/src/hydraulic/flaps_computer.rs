@@ -1,5 +1,5 @@
 use crate::systems::shared::arinc429::{Arinc429Word, SignStatus};
-use systems::shared::PositionPickoffUnit;
+use systems::shared::{FlapsConf, PositionPickoffUnit};
 
 use systems::simulation::{
     InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -9,38 +9,13 @@ use systems::simulation::{
 use std::panic;
 use uom::si::{angle::degree, f64::*, velocity::knot};
 
-#[derive(Debug, Copy, Clone, PartialEq)]
-enum FlapsConf {
-    Conf0,
-    Conf1,
-    Conf1F,
-    Conf2,
-    Conf3,
-    ConfFull,
-}
-
-impl From<u8> for FlapsConf {
-    fn from(value: u8) -> Self {
-        match value {
-            0 => FlapsConf::Conf0,
-            1 => FlapsConf::Conf1,
-            2 => FlapsConf::Conf1F,
-            3 => FlapsConf::Conf2,
-            4 => FlapsConf::Conf3,
-            5 => FlapsConf::ConfFull,
-            i => panic!("Cannot convert from {} to FlapsConf.", i),
-        }
-    }
-}
-
 /// A struct to read the handle position
-struct FlapsHandle {
+pub struct CommandSensorUnit {
     handle_position_id: VariableIdentifier,
     position: u8,
     previous_position: u8,
 }
-
-impl FlapsHandle {
+impl CommandSensorUnit {
     fn new(context: &mut InitContext) -> Self {
         Self {
             handle_position_id: context.get_identifier("FLAPS_HANDLE_INDEX".to_owned()),
@@ -49,8 +24,13 @@ impl FlapsHandle {
         }
     }
 
-    fn position(&self) -> u8 {
+    pub fn position(&self) -> u8 {
         self.position
+    }
+
+    fn is_valid(self) -> bool {
+        // No invalid signals from CSU are simulated
+        true
     }
 
     fn previous_position(&self) -> u8 {
@@ -58,7 +38,7 @@ impl FlapsHandle {
     }
 }
 
-impl SimulationElement for FlapsHandle {
+impl SimulationElement for CommandSensorUnit {
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.previous_position = self.position;
         self.position = reader.read(&self.handle_position_id);
@@ -73,18 +53,27 @@ struct SlatFlapControlComputer {
     slat_flap_actual_position_word_id: VariableIdentifier,
     slat_actual_position_word_id: VariableIdentifier,
     flap_actual_position_word_id: VariableIdentifier,
+    alpha_lock_engaged_id: VariableIdentifier,
 
     flaps_demanded_angle: Angle,
     slats_demanded_angle: Angle,
     flaps_feedback_angle: Angle,
     slats_feedback_angle: Angle,
     flaps_conf: FlapsConf,
+
+    alpha_lock_engaged: bool,
+    alpha_lock_engaged_speed: bool,
+    alpha_lock_engaged_alpha: bool,
 }
 
 impl SlatFlapControlComputer {
     const EQUAL_ANGLE_DELTA_DEGREE: f64 = 0.177;
     const HANDLE_ONE_CONF_AIRSPEED_THRESHOLD_KNOTS: f64 = 100.;
     const CONF1F_TO_CONF1_AIRSPEED_THRESHOLD_KNOTS: f64 = 210.;
+    const ALPHA_LOCK_ENGAGE_SPEED_KNOTS: f64 = 148.;
+    const ALPHA_LOCK_DISENGAGE_SPEED_KNOTS: f64 = 154.;
+    const ALPHA_LOCK_ENGAGE_ALPHA_DEGREES: f64 = 8.6;
+    const ALPHA_LOCK_DISENGAGE_ALPHA_DEGREES: f64 = 7.6;
 
     fn new(context: &mut InitContext) -> Self {
         Self {
@@ -99,12 +88,17 @@ impl SlatFlapControlComputer {
                 .get_identifier("SFCC_SLAT_ACTUAL_POSITION_WORD".to_owned()),
             flap_actual_position_word_id: context
                 .get_identifier("SFCC_FLAP_ACTUAL_POSITION_WORD".to_owned()),
+            alpha_lock_engaged_id: context.get_identifier("ALPHA_LOCK_ENGAGED".to_owned()),
 
             flaps_demanded_angle: Angle::new::<degree>(0.),
             slats_demanded_angle: Angle::new::<degree>(0.),
             flaps_feedback_angle: Angle::new::<degree>(0.),
             slats_feedback_angle: Angle::new::<degree>(0.),
             flaps_conf: FlapsConf::Conf0,
+
+            alpha_lock_engaged: false,
+            alpha_lock_engaged_speed: false,
+            alpha_lock_engaged_alpha: false,
         }
     }
 
@@ -134,7 +128,7 @@ impl SlatFlapControlComputer {
 
     fn generate_configuration(
         &self,
-        flaps_handle: &FlapsHandle,
+        flaps_handle: &CommandSensorUnit,
         context: &UpdateContext,
     ) -> FlapsConf {
         match (flaps_handle.previous_position(), flaps_handle.position()) {
@@ -159,6 +153,7 @@ impl SlatFlapControlComputer {
                 FlapsConf::Conf1F
             }
             (_, 1) => FlapsConf::Conf1,
+            (_, 0) if self.alpha_lock_engaged => FlapsConf::Conf1,
             (_, 0) => FlapsConf::Conf0,
             (from, to) if from != to => FlapsConf::from(to + 1),
             (_, _) => self.flaps_conf,
@@ -169,10 +164,57 @@ impl SlatFlapControlComputer {
         (demanded_angle - feedback_angle).get::<degree>().abs() > Self::EQUAL_ANGLE_DELTA_DEGREE
     }
 
+    fn alpha_lock_check(&mut self, context: &UpdateContext, flaps_handle: &CommandSensorUnit) {
+        let airspeed: Velocity = context.indicated_airspeed();
+        let alpha: Angle = context.alpha();
+
+        match self.alpha_lock_engaged_speed {
+            true => {
+                if airspeed.get::<knot>() > Self::ALPHA_LOCK_DISENGAGE_SPEED_KNOTS {
+                    self.alpha_lock_engaged_speed = false;
+                }
+            }
+            false => {
+                if airspeed.get::<knot>() < Self::ALPHA_LOCK_ENGAGE_SPEED_KNOTS {
+                    self.alpha_lock_engaged_speed = true;
+                }
+            }
+        }
+
+        match self.alpha_lock_engaged_alpha {
+            true => {
+                if alpha.get::<degree>() < Self::ALPHA_LOCK_DISENGAGE_ALPHA_DEGREES {
+                    self.alpha_lock_engaged_alpha = false;
+                }
+            }
+            false => {
+                if alpha.get::<degree>() > Self::ALPHA_LOCK_ENGAGE_ALPHA_DEGREES {
+                    self.alpha_lock_engaged_alpha = true;
+                }
+            }
+        }
+
+        match self.alpha_lock_engaged {
+            false => {
+                if (self.alpha_lock_engaged_alpha || self.alpha_lock_engaged_speed)
+                    && flaps_handle.position() > 0
+                    && !(context.is_on_ground() && airspeed.get::<knot>() < 60.)
+                {
+                    self.alpha_lock_engaged = true;
+                }
+            }
+
+            true => {
+                self.alpha_lock_engaged =
+                    self.alpha_lock_engaged_speed || self.alpha_lock_engaged_alpha
+            }
+        }
+    }
+
     pub fn update(
         &mut self,
         context: &UpdateContext,
-        flaps_handle: &FlapsHandle,
+        flaps_handle: &CommandSensorUnit,
         flaps_feedback: &impl PositionPickoffUnit,
         slats_feedback: &impl PositionPickoffUnit,
     ) {
@@ -342,19 +384,24 @@ impl SimulationElement for SlatFlapControlComputer {
             &self.flap_actual_position_word_id,
             self.flap_actual_position_word(),
         );
+
+        writer.write(&self.alpha_lock_engaged_id, self.alpha_lock_engaged);
     }
 }
 
 pub struct SlatFlapComplex {
-    sfcc: SlatFlapControlComputer,
-    flaps_handle: FlapsHandle,
+    sfcc: [SlatFlapControlComputer; 2],
+    flaps_handle: CommandSensorUnit,
 }
 
 impl SlatFlapComplex {
     pub fn new(context: &mut InitContext) -> Self {
         Self {
-            sfcc: SlatFlapControlComputer::new(context),
-            flaps_handle: FlapsHandle::new(context),
+            sfcc: [
+                SlatFlapControlComputer::new(context),
+                SlatFlapControlComputer::new(context),
+            ],
+            flaps_handle: CommandSensorUnit::new(context),
         }
     }
 
@@ -364,22 +411,23 @@ impl SlatFlapComplex {
         flaps_feedback: &impl PositionPickoffUnit,
         slats_feedback: &impl PositionPickoffUnit,
     ) {
-        self.sfcc
-            .update(context, &self.flaps_handle, flaps_feedback, slats_feedback);
+        self.sfcc[0].update(context, &self.flaps_handle, flaps_feedback, slats_feedback);
+        self.sfcc[1].update(context, &self.flaps_handle, flaps_feedback, slats_feedback);
     }
 
     pub fn flap_demand(&self, n: usize) -> Option<Angle> {
-        self.sfcc.signal_demanded_angle("FLAPS")
+        self.sfcc[n].signal_demanded_angle("FLAPS")
     }
 
     pub fn slat_demand(&self, n: usize) -> Option<Angle> {
-        self.sfcc.signal_demanded_angle("SLATS")
+        self.sfcc[n].signal_demanded_angle("SLATS")
     }
 }
 impl SimulationElement for SlatFlapComplex {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.flaps_handle.accept(visitor);
-        self.sfcc.accept(visitor);
+        self.sfcc[0].accept(visitor);
+        self.sfcc[1].accept(visitor);
         visitor.visit(self);
     }
 }
@@ -442,14 +490,14 @@ mod tests {
         fn update(
             &mut self,
             context: &UpdateContext,
-            sfcc: &impl SlatFlapLane,
+            sfcc: &[impl SlatFlapLane; 2],
             hydraulic_pressure_left_side: Pressure,
             hydraulic_pressure_right_side: Pressure,
         ) {
             if hydraulic_pressure_left_side.get::<psi>() > 1500.
                 || hydraulic_pressure_right_side.get::<psi>() > 1500.
             {
-                if let Some(demanded_angle) = sfcc.signal_demanded_angle(&self.surface_type) {
+                if let Some(demanded_angle) = sfcc[0].signal_demanded_angle(&self.surface_type) {
                     let actual_minus_target_ffpu = demanded_angle - self.angle();
 
                     let fppu_angle = self.angle();
@@ -629,10 +677,14 @@ mod tests {
             self
         }
 
+        fn set_alpha(mut self, alpha: f64) -> Self {
+            self.write_by_name("INCIDENCE ALPHA", alpha);
+            self
+        }
+
         fn get_flaps_demanded_angle(&self) -> f64 {
             self.query(|a| {
-                a.slat_flap_complex
-                    .sfcc
+                a.slat_flap_complex.sfcc[0]
                     .flaps_demanded_angle
                     .get::<degree>()
             })
@@ -640,15 +692,22 @@ mod tests {
 
         fn get_slats_demanded_angle(&self) -> f64 {
             self.query(|a| {
-                a.slat_flap_complex
-                    .sfcc
+                a.slat_flap_complex.sfcc[0]
                     .slats_demanded_angle
                     .get::<degree>()
             })
         }
 
+        fn is_alpha_lock_engaged(&self) -> bool {
+            self.query(|a| a.slat_flap_complex.sfcc[0].alpha_lock_engaged)
+        }
+
+        fn is_alpha_lock_engaged_speed(&self) -> bool {
+            self.query(|a| a.slat_flap_complex.sfcc[0].alpha_lock_engaged_speed)
+        }
+
         fn get_flaps_conf(&self) -> FlapsConf {
-            self.query(|a| a.slat_flap_complex.sfcc.flaps_conf)
+            self.query(|a| a.slat_flap_complex.sfcc[0].flaps_conf)
         }
 
         fn get_flaps_fppu_feedback(&self) -> f64 {
@@ -708,6 +767,104 @@ mod tests {
         assert!(test_bed.contains_variable_with_name("RIGHT_SLATS_POSITION_PERCENT"));
 
         assert!(test_bed.contains_variable_with_name("FLAPS_CONF_INDEX"));
+        assert!(test_bed.contains_variable_with_name("ALPHA_LOCK_ENGAGED"));
+    }
+
+    #[test]
+    fn flaps_test_alpha_lock() {
+        let mut test_bed = test_bed_with()
+            .set_green_hyd_pressure()
+            .set_indicated_airspeed(50.)
+            .set_alpha(0.);
+        test_bed.set_on_ground(true);
+        test_bed = test_bed.set_flaps_handle_position(1).run_one_tick();
+
+        assert!(!test_bed.is_alpha_lock_engaged());
+
+        //alpha lock should not engaged while on ground
+        test_bed = test_bed.set_alpha(8.7).run_one_tick();
+        assert!(!test_bed.is_alpha_lock_engaged());
+
+        //alpha lock test angle logic - airspeed fixed
+        test_bed = test_bed_with()
+            .set_green_hyd_pressure()
+            .set_indicated_airspeed(160.)
+            .set_flaps_handle_position(1);
+        test_bed.set_on_ground(false);
+
+        test_bed = test_bed.set_alpha(8.7).run_one_tick();
+        assert!(test_bed.is_alpha_lock_engaged());
+        test_bed = test_bed.set_flaps_handle_position(0).run_one_tick();
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1);
+
+        test_bed = test_bed.set_alpha(8.).run_one_tick();
+        assert!(test_bed.is_alpha_lock_engaged());
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1);
+
+        test_bed = test_bed.set_alpha(7.5).run_one_tick();
+        assert!(!test_bed.is_alpha_lock_engaged());
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf0);
+
+        //alpha lock should not work if already at handle pos 0
+        test_bed = test_bed.set_alpha(8.7).run_one_tick();
+        assert!(!test_bed.is_alpha_lock_engaged());
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf0);
+
+        //alpha lock test speed logic - angle fixed
+        test_bed = test_bed_with()
+            .set_green_hyd_pressure()
+            .set_alpha(0.)
+            .set_flaps_handle_position(1);
+        test_bed.set_on_ground(false);
+
+        test_bed = test_bed.set_indicated_airspeed(145.).run_one_tick();
+        assert!(test_bed.is_alpha_lock_engaged());
+        test_bed = test_bed.set_flaps_handle_position(0).run_one_tick();
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1);
+
+        test_bed = test_bed.set_indicated_airspeed(153.).run_one_tick();
+        assert!(test_bed.is_alpha_lock_engaged());
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1);
+
+        test_bed = test_bed.set_indicated_airspeed(155.).run_one_tick();
+        assert!(!test_bed.is_alpha_lock_engaged());
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf0);
+
+        //alpha lock should not work if already at handle pos 0
+        test_bed = test_bed.set_indicated_airspeed(140.).run_one_tick();
+        assert!(!test_bed.is_alpha_lock_engaged());
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf0);
+
+        //alpha lock test combined
+        test_bed = test_bed_with()
+            .set_green_hyd_pressure()
+            .set_flaps_handle_position(1);
+        test_bed.set_on_ground(false);
+
+        test_bed = test_bed
+            .set_indicated_airspeed(130.)
+            .set_alpha(9.)
+            .run_one_tick();
+        assert!(test_bed.is_alpha_lock_engaged());
+        test_bed = test_bed.set_alpha(7.).run_one_tick();
+        assert!(test_bed.is_alpha_lock_engaged());
+        test_bed = test_bed
+            .set_indicated_airspeed(130.)
+            .set_alpha(9.)
+            .run_one_tick();
+        test_bed = test_bed.set_indicated_airspeed(180.).run_one_tick();
+        assert!(test_bed.is_alpha_lock_engaged());
+
+        test_bed = test_bed
+            .set_indicated_airspeed(130.)
+            .set_alpha(9.)
+            .run_one_tick();
+        assert!(test_bed.is_alpha_lock_engaged());
+        test_bed = test_bed
+            .set_indicated_airspeed(180.)
+            .set_alpha(7.)
+            .run_one_tick();
+        assert!(!test_bed.is_alpha_lock_engaged());
     }
 
     #[test]

@@ -99,6 +99,28 @@ pub enum ChannelCommandMode {
 }
 
 #[derive(Debug, Copy, Clone, PartialEq)]
+pub enum CSUPosition {
+    Conf0,
+    Conf1,
+    Conf2,
+    Conf3,
+    ConfFull,
+}
+
+impl From<u8> for CSUPosition {
+    fn from(value: u8) -> Self {
+        match value {
+            0 => CSUPosition::Conf0,
+            1 => CSUPosition::Conf1,
+            2 => CSUPosition::Conf2,
+            3 => CSUPosition::Conf3,
+            4 => CSUPosition::ConfFull,
+            i => panic!("Cannot convert from {} to CSUPosition.", i),
+        }
+    }
+}
+
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub enum FlapsConf {
     Conf0,
     Conf1,
