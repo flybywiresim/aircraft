@@ -20,8 +20,9 @@ use uom::si::{
 
 use crate::{
     shared::{
-        interpolation, low_pass_filter::LowPassFilter, pid::PidController, random_from_range,
-        ConsumePower, ElectricalBusType, ElectricalBuses,
+        interpolation, low_pass_filter::LowPassFilter, pid::PidController,
+        random_from_normal_distribution, random_from_range, ConsumePower, ElectricalBusType,
+        ElectricalBuses,
     },
     simulation::{SimulationElement, SimulationElementVisitor, UpdateContext},
 };
@@ -128,8 +129,8 @@ impl VariableSpeedPump {
         self.should_activate_electrical_mode && self.is_powered
     }
 
-    fn max_available_pressure(&self, accumulator: &LowPressureAccumulator) -> Pressure {
-        if self.is_active() && accumulator.pressure().get::<psi>() > 100. {
+    fn max_available_pressure(&self, accumulator_pressure: Pressure) -> Pressure {
+        if self.is_active() && accumulator_pressure.get::<psi>() > 100. {
             Pressure::new::<psi>(Self::NOMINAL_MAX_PRESSURE_PSI)
         } else {
             Pressure::default()
@@ -149,20 +150,30 @@ impl SimulationElement for VariableSpeedPump {
 #[derive(PartialEq, Copy, Clone)]
 struct LowPressureAccumulator {
     pressure: LowPassFilter<Pressure>,
+    total_volume_to_actuator: Volume,
 }
 impl LowPressureAccumulator {
-    // TODO randomize
-    const INIT_ACCUMULATOR_PRESSURE_PSI: f64 = 800.;
+    const MEAN_ACCUMULATOR_PRESSURE_PSI: f64 = 800.;
+    const STDEV_ACCUMULATOR_PRESSURE_PSI: f64 = 200.;
 
     const MAX_ACCUMULATOR_PRESSURE_PSI: f64 = 1300.;
 
     const PRESSURE_TIME_CONSTANT: Duration = Duration::from_millis(1000);
+
+    const REFILL_FLOW_GALLON_PER_S: f64 = 0.05;
+
     fn new() -> Self {
+        let init_pressure_psi = random_from_normal_distribution(
+            Self::MEAN_ACCUMULATOR_PRESSURE_PSI,
+            Self::STDEV_ACCUMULATOR_PRESSURE_PSI,
+        );
+
         Self {
             pressure: LowPassFilter::<Pressure>::new_with_init_value(
                 Self::PRESSURE_TIME_CONSTANT,
-                Pressure::new::<psi>(Self::INIT_ACCUMULATOR_PRESSURE_PSI),
+                Pressure::new::<psi>(init_pressure_psi),
             ),
+            total_volume_to_actuator: Volume::default(),
         }
     }
 
@@ -183,11 +194,42 @@ impl LowPressureAccumulator {
             .min(Pressure::new::<psi>(Self::MAX_ACCUMULATOR_PRESSURE_PSI))
             .max(Pressure::new::<psi>(0.));
 
+        let refill_flow_present = controller.should_open_refill_valve()
+            && (new_pressure - Pressure::new::<psi>(50.)) > self.pressure.output();
+
+        self.update_flow(context, refill_flow_present);
+
         self.pressure.update(context.delta(), new_pressure);
+    }
+
+    fn update_flow(&mut self, context: &UpdateContext, refill_flow_present: bool) {
+        if refill_flow_present {
+            self.total_volume_to_actuator +=
+                VolumeRate::new::<gallon_per_second>(Self::REFILL_FLOW_GALLON_PER_S)
+                    * context.delta_as_time();
+        }
     }
 
     fn pressure(&self) -> Pressure {
         self.pressure.output()
+    }
+
+    #[cfg(test)]
+    pub fn empty_accumulator(&mut self) {
+        self.pressure.reset(Pressure::default());
+    }
+}
+impl Actuator for LowPressureAccumulator {
+    fn used_volume(&self) -> Volume {
+        self.total_volume_to_actuator
+    }
+
+    fn reservoir_return(&self) -> Volume {
+        Volume::default()
+    }
+
+    fn reset_volumes(&mut self) {
+        self.total_volume_to_actuator = Volume::new::<gallon>(0.);
     }
 }
 
@@ -242,11 +284,17 @@ impl ElectroHydrostaticBackup {
     }
 
     fn max_available_pressure(&self) -> Pressure {
-        self.pump.max_available_pressure(&self.accumulator)
+        self.pump
+            .max_available_pressure(self.accumulator.pressure())
     }
 
     fn can_move_using_aircraft_hydraulic_pressure(&self) -> bool {
         self.backup_type == ElectroHydrostaticActuatorType::EBHA
+    }
+
+    #[cfg(test)]
+    fn accumulator_pressure(&self) -> Pressure {
+        self.accumulator.pressure()
     }
 }
 impl SimulationElement for ElectroHydrostaticBackup {
@@ -254,6 +302,19 @@ impl SimulationElement for ElectroHydrostaticBackup {
         self.pump.accept(visitor);
 
         visitor.visit(self);
+    }
+}
+impl Actuator for ElectroHydrostaticBackup {
+    fn used_volume(&self) -> Volume {
+        self.accumulator.used_volume()
+    }
+
+    fn reservoir_return(&self) -> Volume {
+        self.accumulator.reservoir_return()
+    }
+
+    fn reset_volumes(&mut self) {
+        self.accumulator.reset_volumes();
     }
 }
 
@@ -1045,7 +1106,12 @@ impl LinearActuator {
 }
 impl Actuator for LinearActuator {
     fn used_volume(&self) -> Volume {
-        self.total_volume_to_actuator
+        let mut eha_volume_used = Volume::default();
+        if let Some(eha) = self.electro_hydrostatic_backup.as_ref() {
+            eha_volume_used = eha.used_volume();
+        }
+
+        self.total_volume_to_actuator + eha_volume_used
     }
 
     fn reservoir_return(&self) -> Volume {
@@ -1055,6 +1121,10 @@ impl Actuator for LinearActuator {
     fn reset_volumes(&mut self) {
         self.total_volume_to_reservoir = Volume::new::<gallon>(0.);
         self.total_volume_to_actuator = Volume::new::<gallon>(0.);
+
+        if let Some(eha) = self.electro_hydrostatic_backup.as_mut() {
+            eha.reset_volumes();
+        }
     }
 }
 impl HydraulicLocking for LinearActuator {
@@ -1702,6 +1772,7 @@ mod tests {
     use crate::electrical::ElectricalBus;
     use crate::electrical::Electricity;
 
+    use crate::shared::PowerConsumptionReport;
     use crate::shared::{update_iterator::MaxStepLoop, PotentialOrigin};
     use crate::simulation::test::{ElementCtorFn, SimulationTestBed, TestBed, WriteByName};
     use crate::simulation::{Aircraft, InitContext, SimulationElement};
@@ -1719,6 +1790,7 @@ mod tests {
         soft_lock_velocity: (AngularVelocity, AngularVelocity),
 
         should_activate_elec_backup: bool,
+        should_activate_elec_backup_refill: bool,
     }
     impl TestHydraulicAssemblyController {
         fn new() -> Self {
@@ -1732,6 +1804,7 @@ mod tests {
                 soft_lock_velocity: (AngularVelocity::default(), AngularVelocity::default()),
 
                 should_activate_elec_backup: false,
+                should_activate_elec_backup_refill: false,
             }
         }
 
@@ -1759,6 +1832,10 @@ mod tests {
 
         fn set_elec_backup(&mut self, is_on: bool) {
             self.should_activate_elec_backup = is_on;
+        }
+
+        fn set_elec_backup_refill(&mut self, is_on: bool) {
+            self.should_activate_elec_backup_refill = is_on;
         }
     }
     impl HydraulicAssemblyController for TestHydraulicAssemblyController {
@@ -1790,6 +1867,10 @@ mod tests {
     impl ElectroHydrostaticPowered for TestHydraulicAssemblyController {
         fn should_activate_electrical_mode(&self) -> bool {
             self.should_activate_elec_backup
+        }
+
+        fn should_open_refill_valve(&self) -> bool {
+            self.should_activate_elec_backup_refill
         }
     }
 
@@ -1826,6 +1907,7 @@ mod tests {
         powered_source_ac: TestElectricitySource,
         ac_1_bus: ElectricalBus,
         is_ac_1_powered: bool,
+        power_consumption: Power,
     }
     impl<const N: usize> TestAircraft<N> {
         fn new(
@@ -1850,6 +1932,7 @@ mod tests {
                 ),
                 ac_1_bus: ElectricalBus::new(context, ElectricalBusType::AlternatingCurrent(1)),
                 is_ac_1_powered: false,
+                power_consumption: Power::default(),
             }
         }
 
@@ -1883,6 +1966,35 @@ mod tests {
             self.controllers[actuator_id].set_elec_backup(is_active);
         }
 
+        fn command_electro_backup_refill(&mut self, is_active: bool, actuator_id: usize) {
+            assert!(actuator_id < N);
+            self.controllers[actuator_id].set_elec_backup_refill(is_active);
+        }
+
+        fn accumulator_pressure(&self, actuator_id: usize) -> Pressure {
+            if let Some(eha) =
+                self.hydraulic_assembly.linear_actuators[actuator_id].electro_hydrostatic_backup
+            {
+                eha.accumulator_pressure()
+            } else {
+                Pressure::default()
+            }
+        }
+
+        fn actuator_used_volume(&self, actuator_id: usize) -> Volume {
+            self.hydraulic_assembly.linear_actuators[actuator_id].used_volume()
+        }
+
+        fn command_empty_eha_accumulator(&mut self, actuator_id: usize) {
+            assert!(actuator_id < N);
+            if let Some(eha) = self.hydraulic_assembly.linear_actuators[actuator_id]
+                .electro_hydrostatic_backup
+                .as_mut()
+            {
+                eha.accumulator.empty_accumulator();
+            }
+        }
+
         fn command_lock(&mut self, lock_position: Ratio) {
             for controller in &mut self.controllers {
                 controller.set_lock(lock_position);
@@ -1903,6 +2015,10 @@ mod tests {
 
         fn body_position(&self) -> Ratio {
             self.hydraulic_assembly.position_normalized()
+        }
+
+        fn current_power_consumption(&self) -> Power {
+            self.power_consumption
         }
 
         fn apply_up_aero_forces(&mut self, force_up: Force) {
@@ -1971,6 +2087,15 @@ mod tests {
 
             visitor.visit(self);
         }
+
+        fn process_power_consumption_report<T: PowerConsumptionReport>(
+            &mut self,
+            _: &UpdateContext,
+            report: &T,
+        ) {
+            self.power_consumption =
+                report.total_consumption_of(PotentialOrigin::EngineGenerator(1));
+        }
     }
 
     impl Aircraft for TestAircraft<2> {
@@ -2001,6 +2126,15 @@ mod tests {
             self.hydraulic_assembly.accept(visitor);
 
             visitor.visit(self);
+        }
+
+        fn process_power_consumption_report<T: PowerConsumptionReport>(
+            &mut self,
+            _: &UpdateContext,
+            report: &T,
+        ) {
+            self.power_consumption =
+                report.total_consumption_of(PotentialOrigin::EngineGenerator(1));
         }
     }
 
@@ -3514,6 +3648,114 @@ mod tests {
         test_bed.run_with_delta(Duration::from_secs_f64(0.8));
 
         assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.8));
+    }
+
+    #[test]
+    fn electro_hydrostatic_actuator_consumes_power_when_moving() {
+        let mut test_bed = SimulationTestBed::new(|context| {
+            TestAircraft::new(context, Duration::from_millis(10), spoiler_assembly(true))
+        });
+
+        test_bed.command(|a| a.command_unlock());
+        test_bed.command(|a| a.set_pressures([Pressure::new::<psi>(0.)]));
+
+        assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.01));
+
+        test_bed.command(|a| a.set_ac_1_power(true));
+        test_bed.command(|a| a.command_electro_backup(true, 0));
+        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(1.), 0));
+        test_bed.run_with_delta(Duration::from_secs_f64(0.2));
+
+        assert!(
+            test_bed
+                .query(|a| a.current_power_consumption())
+                .get::<watt>()
+                > 150.
+        );
+    }
+
+    #[test]
+    fn electro_hydrostatic_actuator_do_not_consume_power_when_inactive() {
+        let mut test_bed = SimulationTestBed::new(|context| {
+            TestAircraft::new(context, Duration::from_millis(10), spoiler_assembly(true))
+        });
+
+        test_bed.command(|a| a.command_unlock());
+        test_bed.command(|a| a.set_pressures([Pressure::new::<psi>(0.)]));
+
+        assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.01));
+
+        test_bed.command(|a| a.set_ac_1_power(true));
+        test_bed.command(|a| a.command_electro_backup(false, 0));
+        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(1.), 0));
+        test_bed.run_with_delta(Duration::from_secs_f64(0.2));
+
+        assert!(
+            test_bed
+                .query(|a| a.current_power_consumption())
+                .get::<watt>()
+                < 100.
+        );
+    }
+
+    #[test]
+    fn spoiler_electro_hydrostatic_cannot_move_once_accumulator_empty() {
+        let mut test_bed = SimulationTestBed::new(|context| {
+            TestAircraft::new(context, Duration::from_millis(10), spoiler_assembly(true))
+        });
+
+        test_bed.command(|a| a.command_unlock());
+        test_bed.command(|a| a.set_pressures([Pressure::new::<psi>(0.)]));
+
+        assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.01));
+
+        test_bed.command(|a| a.set_ac_1_power(true));
+        test_bed.command(|a| a.command_electro_backup(true, 0));
+        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(1.), 0));
+        test_bed.run_with_delta(Duration::from_secs_f64(0.8));
+
+        assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.8));
+
+        test_bed.command(|a| a.command_empty_eha_accumulator(0));
+        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(0.3), 0));
+        test_bed.run_with_delta(Duration::from_secs_f64(0.8));
+
+        assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.8));
+    }
+
+    #[test]
+    fn electro_hydrostatic_accumulator_pressure_increase_when_refilled() {
+        let mut test_bed = SimulationTestBed::new(|context| {
+            TestAircraft::new(context, Duration::from_millis(10), spoiler_assembly(true))
+        });
+
+        let accumulator_press_init = test_bed.query(|a| a.accumulator_pressure(0));
+
+        test_bed.command(|a| a.command_unlock());
+        test_bed.command(|a| a.set_pressures([Pressure::new::<psi>(3000.)]));
+        test_bed.command(|a| a.command_electro_backup_refill(true, 0));
+        test_bed.run_with_delta(Duration::from_secs_f64(1.));
+
+        assert!(test_bed.query(|a| a.accumulator_pressure(0)) > accumulator_press_init);
+        assert!(test_bed.query(|a| a.actuator_used_volume(0).get::<gallon>()) >= 0.01);
+    }
+
+    #[test]
+    fn electro_hydrostatic_accumulator_pressure_wont_increase_when_refilled_if_low_pressure_input()
+    {
+        let mut test_bed = SimulationTestBed::new(|context| {
+            TestAircraft::new(context, Duration::from_millis(10), spoiler_assembly(true))
+        });
+
+        let accumulator_press_init = test_bed.query(|a| a.accumulator_pressure(0));
+
+        test_bed.command(|a| a.command_unlock());
+        test_bed.command(|a| a.set_pressures([Pressure::new::<psi>(300.)]));
+        test_bed.command(|a| a.command_electro_backup_refill(true, 0));
+        test_bed.run_with_delta(Duration::from_secs_f64(1.));
+
+        assert!(test_bed.query(|a| a.accumulator_pressure(0)) == accumulator_press_init);
+        assert!(test_bed.query(|a| a.actuator_used_volume(0).get::<gallon>()) <= 0.0001);
     }
 
     fn cargo_door_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
