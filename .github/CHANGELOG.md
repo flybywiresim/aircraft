@@ -86,6 +86,7 @@
 1. [MISC] Fix FDR data for support analysis - @frankkopp (Frank Kopp)
 1. [LIGHTS] Increased max brightness of cockpit displays - @frankkopp (Frank Kopp)
 1. [EFB] Improved Aircraft Presets procedures - @frankkopp (Frank Kopp)
+1. [ENGINE] Refactor FADEC code for A32NX & A380X options- @Taz5150 (TazX [Z+2]#0405)
 
 ## 0.8.0
 
