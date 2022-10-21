@@ -107,14 +107,6 @@ impl VariableSpeedPump {
         };
 
         self.update_power_consumed(actuator_flow, actuator_pressure);
-        println!(
-            "NEW SPEED {:.1} Current actuator flow gpm {:.5} Current press {:.1} Power consumption watt = {:.1}",
-            self.speed.output().get::<revolution_per_minute>(),
-            actuator_flow.get::<gallon_per_minute>(),
-            actuator_pressure.get::<psi>(),
-            self.consumed_power.get::<watt>()
-        );
-
         self.speed.update(context.delta(), new_speed);
     }
 
@@ -927,11 +919,6 @@ impl LinearActuator {
         controller: &(impl HydraulicAssemblyController + HydraulicLocking + ElectroHydrostaticPowered),
         current_input_pressure: Pressure,
     ) {
-        // println!(
-        //     "DEBUG ACTUATOR update_before_rigid_body, has eha {:?}",
-        //     self.electro_hydrostatic_backup.is_some()
-        // );
-
         let mut can_move_using_aircraft_hydraulic_pressure = true;
 
         let internal_actuator_pressure = self.pressure();
