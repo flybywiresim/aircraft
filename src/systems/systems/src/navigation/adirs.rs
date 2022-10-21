@@ -544,29 +544,34 @@ impl AirDataInertialReferenceUnit {
     fn update_discrete_outputs(&mut self) {
         let speed_knot = self.adr.computed_airspeed_raw().get::<knot>();
 
-        let data_unavailable = !self.adr_is_valid();
-
         if speed_knot < 100. {
-            self.low_speed_warning_1_104kts = data_unavailable;
+            self.low_speed_warning_1_104kts = false;
         } else if speed_knot > 104. {
             self.low_speed_warning_1_104kts = true;
         }
 
         if speed_knot < 50. {
-            self.low_speed_warning_2_54kts = data_unavailable;
+            self.low_speed_warning_2_54kts = false;
         } else if speed_knot > 54. {
             self.low_speed_warning_2_54kts = true;
         }
 
         if speed_knot < 155. {
-            self.low_speed_warning_3_159kts = data_unavailable;
+            self.low_speed_warning_3_159kts = false;
         } else if speed_knot > 159. {
             self.low_speed_warning_3_159kts = true;
         }
 
         if speed_knot < 260. {
-            self.low_speed_warning_4_260kts = data_unavailable;
+            self.low_speed_warning_4_260kts = false;
         } else if speed_knot > 264. {
+            self.low_speed_warning_4_260kts = true;
+        }
+
+        if !self.adr_is_valid() {
+            self.low_speed_warning_1_104kts = true;
+            self.low_speed_warning_2_54kts = true;
+            self.low_speed_warning_3_159kts = true;
             self.low_speed_warning_4_260kts = true;
         }
     }
