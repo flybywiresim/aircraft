@@ -202,6 +202,7 @@ impl Aircraft for A320 {
             &self.engine_fire_overhead,
             &self.apu,
             &self.air_conditioning,
+            [self.lgcius.lgciu1(), self.lgcius.lgciu2()],
         );
         self.air_conditioning.update(
             context,

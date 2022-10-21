@@ -109,7 +109,6 @@ class SimVars {
   ENUM FuelWeightGallon = get_aircraft_var_enum("FUEL WEIGHT PER GALLON");
 
   ENUM NacelleAntiIce = get_aircraft_var_enum("ENG ANTI ICE");
-  ENUM WingAntiIce = get_aircraft_var_enum("STRUCTURAL DEICE SWITCH");
 
   /// <summary>
   /// Collection of LVars for the A32NX
@@ -136,6 +135,7 @@ class SimVars {
   ID Engine2PreFF;
   ID EngineCycleTime;
   ID EngineImbalance;
+  ID WingAntiIce;
   ID FuelUsedLeft;
   ID FuelUsedRight;
   ID FuelLeftPre;
@@ -204,6 +204,7 @@ class SimVars {
     Engine1PreFF = register_named_variable("A32NX_ENGINE_PRE_FF:1");
     Engine2PreFF = register_named_variable("A32NX_ENGINE_PRE_FF:2");
     EngineImbalance = register_named_variable("A32NX_ENGINE_IMBALANCE");
+    WingAntiIce = register_named_variable("A32NX_PNEU_WING_ANTI_ICE_SYSTEM_ON");
     FuelUsedLeft = register_named_variable("A32NX_FUEL_USED:1");
     FuelUsedRight = register_named_variable("A32NX_FUEL_USED:2");
     FuelLeftPre = register_named_variable("A32NX_FUEL_LEFT_PRE");
@@ -352,6 +353,7 @@ class SimVars {
   FLOAT64 getEngine1PreFF() { return get_named_variable_value(Engine1PreFF); }
   FLOAT64 getEngine2PreFF() { return get_named_variable_value(Engine2PreFF); }
   FLOAT64 getEngineImbalance() { return get_named_variable_value(EngineImbalance); }
+  FLOAT64 getWAI() { return get_named_variable_value(WingAntiIce); }
   FLOAT64 getFuelUsedLeft() { return get_named_variable_value(FuelUsedLeft); }
   FLOAT64 getFuelUsedRight() { return get_named_variable_value(FuelUsedRight); }
   FLOAT64 getFuelLeftPre() { return get_named_variable_value(FuelLeftPre); }
@@ -426,5 +428,4 @@ class SimVars {
   FLOAT64 getEngineCombustion(int index) { return aircraft_varget(EngineCombustion, m_Units->Bool, index); }
   FLOAT64 getAnimDeltaTime() { return aircraft_varget(animDeltaTime, m_Units->Seconds, 0); }
   FLOAT64 getNAI(int index) { return aircraft_varget(NacelleAntiIce, m_Units->Bool, index); }
-  FLOAT64 getWAI() { return aircraft_varget(WingAntiIce, m_Units->Bool, 0); }
 };

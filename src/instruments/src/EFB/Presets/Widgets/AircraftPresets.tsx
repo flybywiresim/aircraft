@@ -32,7 +32,7 @@ export const AircraftPresets = () => {
     // WASM: src/presets/src/Aircraft/AircraftProcedures.h
     const AircraftPresetsList: { index: number, name: string }[] = [
         { index: 1, name: `${t('Presets.AircraftStates.ColdDark')}` }, // 'Cold & Dark' },
-        { index: 2, name: `${t('Presets.AircraftStates.Turnaround')}` },
+        { index: 2, name: `${t('Presets.AircraftStates.Powered')}` },
         { index: 3, name: `${t('Presets.AircraftStates.ReadyPushback')}` },
         { index: 4, name: `${t('Presets.AircraftStates.ReadyTaxi')}` },
         { index: 5, name: `${t('Presets.AircraftStates.ReadyTakeoff')}` },

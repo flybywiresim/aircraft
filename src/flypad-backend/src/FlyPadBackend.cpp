@@ -27,7 +27,7 @@ FlyPadBackend_gauge_callback(__attribute__((unused)) FsContext ctx, int service_
       return FLYPAD_BACKEND.onUpdate(drawData->dt);
     }
     case PANEL_SERVICE_PRE_KILL: {
-      return FLYPAD_BACKEND.shutdown();;
+      return FLYPAD_BACKEND.shutdown();
     }
     default:
       break;
@@ -98,7 +98,7 @@ bool FlyPadBackend::onUpdate(double deltaTime) {
 bool FlyPadBackend::shutdown() {
   std::cout << "FLYPAD_BACKEND: Disconnecting ..." << std::endl;
 
-  // shutdown suib modules
+  // shutdown submodules
   lightPresetPtr->shutdown();
   aircraftPresetPtr->shutdown();
   pushbackPtr->shutdown();
