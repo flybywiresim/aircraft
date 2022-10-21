@@ -973,7 +973,7 @@ impl LinearActuator {
         }
     }
 
-    pub fn update_before_rigid_body(
+    fn update_before_rigid_body(
         &mut self,
         context: &UpdateContext,
         connected_body: &mut LinearActuatedRigidBodyOnHingeAxis,
@@ -1021,7 +1021,7 @@ impl LinearActuator {
         connected_body.apply_control_arm_force(self.core_hydraulics.force());
     }
 
-    pub fn update_after_rigid_body(
+    fn update_after_rigid_body(
         &mut self,
         context: &UpdateContext,
         connected_body: &LinearActuatedRigidBodyOnHingeAxis,
@@ -1094,7 +1094,7 @@ impl LinearActuator {
         self.signed_flow
     }
 
-    pub fn pressure(&self) -> Pressure {
+    fn pressure(&self) -> Pressure {
         let area = if self.speed > Velocity::new::<meter_per_second>(0.) {
             self.bore_side_area
         } else {
