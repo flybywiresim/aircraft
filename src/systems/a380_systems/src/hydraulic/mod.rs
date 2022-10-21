@@ -28,7 +28,7 @@ use systems::{
         flap_slat::FlapSlatAssembly,
         landing_gear::{GearGravityExtension, GearSystemController, HydraulicGearSystem},
         linear_actuator::{
-            Actuator, BoundedLinearLength, HydraulicAssemblyController,
+            Actuator, BoundedLinearLength, ElectroHydrostaticPowered, HydraulicAssemblyController,
             HydraulicLinearActuatorAssembly, HydraulicLocking, LinearActuatedRigidBodyOnHingeAxis,
             LinearActuator, LinearActuatorCharacteristics, LinearActuatorMode,
         },
@@ -3993,6 +3993,7 @@ impl HydraulicAssemblyController for A380DoorController {
     }
 }
 impl HydraulicLocking for A380DoorController {}
+impl ElectroHydrostaticPowered for A380DoorController {}
 impl SimulationElement for A380DoorController {
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.position_requested = Ratio::new::<ratio>(reader.read(&self.requested_position_id));
@@ -4045,7 +4046,9 @@ impl CargoDoor {
     fn update(
         &mut self,
         context: &UpdateContext,
-        cargo_door_controller: &(impl HydraulicAssemblyController + HydraulicLocking),
+        cargo_door_controller: &(impl HydraulicAssemblyController
+              + HydraulicLocking
+              + ElectroHydrostaticPowered),
         current_pressure: &impl SectionPressure,
     ) {
         self.aerodynamic_model
@@ -4579,6 +4582,7 @@ impl HydraulicAssemblyController for AileronController {
     }
 }
 impl HydraulicLocking for AileronController {}
+impl ElectroHydrostaticPowered for AileronController {}
 
 enum AileronHydConfiguration {
     GB,
@@ -4951,19 +4955,27 @@ impl ElacComputer {
         self.update_elevator();
     }
 
-    fn left_elevator_controllers(&self) -> &[impl HydraulicAssemblyController + HydraulicLocking] {
+    fn left_elevator_controllers(
+        &self,
+    ) -> &[impl HydraulicAssemblyController + HydraulicLocking + ElectroHydrostaticPowered] {
         &self.left_elevator_controllers[..]
     }
 
-    fn right_elevator_controllers(&self) -> &[impl HydraulicAssemblyController + HydraulicLocking] {
+    fn right_elevator_controllers(
+        &self,
+    ) -> &[impl HydraulicAssemblyController + HydraulicLocking + ElectroHydrostaticPowered] {
         &self.right_elevator_controllers[..]
     }
 
-    fn left_controllers(&self) -> &[impl HydraulicAssemblyController + HydraulicLocking] {
+    fn left_controllers(
+        &self,
+    ) -> &[impl HydraulicAssemblyController + HydraulicLocking + ElectroHydrostaticPowered] {
         &self.left_aileron_controllers[..]
     }
 
-    fn right_controllers(&self) -> &[impl HydraulicAssemblyController + HydraulicLocking] {
+    fn right_controllers(
+        &self,
+    ) -> &[impl HydraulicAssemblyController + HydraulicLocking + ElectroHydrostaticPowered] {
         &self.right_aileron_controllers[..]
     }
 }
@@ -5108,7 +5120,9 @@ impl FacComputer {
         );
     }
 
-    fn rudder_controllers(&self) -> &[impl HydraulicAssemblyController + HydraulicLocking] {
+    fn rudder_controllers(
+        &self,
+    ) -> &[impl HydraulicAssemblyController + HydraulicLocking + ElectroHydrostaticPowered] {
         &self.rudder_controllers[..]
     }
 }
@@ -5193,7 +5207,9 @@ impl AileronAssembly {
     fn update(
         &mut self,
         context: &UpdateContext,
-        aileron_controllers: &[impl HydraulicAssemblyController + HydraulicLocking],
+        aileron_controllers: &[impl HydraulicAssemblyController
+              + HydraulicLocking
+              + ElectroHydrostaticPowered],
         current_pressure_outward: &impl SectionPressure,
         current_pressure_inward: &impl SectionPressure,
     ) {
@@ -5253,7 +5269,9 @@ impl ElevatorAssembly {
     fn update(
         &mut self,
         context: &UpdateContext,
-        aileron_controllers: &[impl HydraulicAssemblyController + HydraulicLocking],
+        aileron_controllers: &[impl HydraulicAssemblyController
+              + HydraulicLocking
+              + ElectroHydrostaticPowered],
         current_pressure_outward: &impl SectionPressure,
         current_pressure_inward: &impl SectionPressure,
     ) {
@@ -5309,7 +5327,9 @@ impl RudderAssembly {
     fn update(
         &mut self,
         context: &UpdateContext,
-        rudder_controllers: &[impl HydraulicAssemblyController + HydraulicLocking],
+        rudder_controllers: &[impl HydraulicAssemblyController
+              + HydraulicLocking
+              + ElectroHydrostaticPowered],
         current_pressure_green: &impl SectionPressure,
         current_pressure_blue: &impl SectionPressure,
         current_pressure_yellow: &impl SectionPressure,
@@ -5375,7 +5395,9 @@ impl SpoilerElement {
     fn update(
         &mut self,
         context: &UpdateContext,
-        spoiler_controller: &(impl HydraulicAssemblyController + HydraulicLocking),
+        spoiler_controller: &(impl HydraulicAssemblyController
+              + HydraulicLocking
+              + ElectroHydrostaticPowered),
         current_pressure: Pressure,
     ) {
         self.aerodynamic_model
@@ -5406,7 +5428,9 @@ impl SpoilerGroup {
     fn update(
         &mut self,
         context: &UpdateContext,
-        spoiler_controllers: &[impl HydraulicAssemblyController + HydraulicLocking],
+        spoiler_controllers: &[impl HydraulicAssemblyController
+              + HydraulicLocking
+              + ElectroHydrostaticPowered],
         green_pressure: &impl SectionPressure,
         blue_pressure: &impl SectionPressure,
         yellow_pressure: &impl SectionPressure,
@@ -5491,6 +5515,7 @@ impl HydraulicAssemblyController for SpoilerController {
     }
 }
 impl HydraulicLocking for SpoilerController {}
+impl ElectroHydrostaticPowered for SpoilerController {}
 
 struct SpoilerComputer {
     requested_position_left_1_id: VariableIdentifier,
@@ -5555,11 +5580,15 @@ impl SpoilerComputer {
         }
     }
 
-    fn left_controllers(&self) -> &[impl HydraulicAssemblyController + HydraulicLocking] {
+    fn left_controllers(
+        &self,
+    ) -> &[impl HydraulicAssemblyController + HydraulicLocking + ElectroHydrostaticPowered] {
         &self.left_controllers[..]
     }
 
-    fn right_controllers(&self) -> &[impl HydraulicAssemblyController + HydraulicLocking] {
+    fn right_controllers(
+        &self,
+    ) -> &[impl HydraulicAssemblyController + HydraulicLocking + ElectroHydrostaticPowered] {
         &self.right_controllers[..]
     }
 }
