@@ -825,7 +825,9 @@ mod a380_electrical_circuit_tests {
 
     /// # Source
     /// A320 manual electrical distribution table
+    /// TODO emergency generation on A380 to be done, test ignored
     #[test]
+    #[ignore]
     fn distribution_table_emergency_config_after_emergency_gen_available() {
         let test_bed = test_bed_with().running_emergency_generator().run();
 
@@ -1026,7 +1028,9 @@ mod a380_electrical_circuit_tests {
 
     /// # Source
     /// A320 manual electrical distribution table
+    /// TODO emergency generation on A380 to be done, test ignored
     #[test]
+    #[ignore]
     fn distribution_table_on_ground_bat_and_emergency_gen_only_speed_above_100_knots() {
         let test_bed = test_bed_with()
             .running_emergency_generator()
