@@ -10799,10 +10799,10 @@ mod tests {
                 .in_flight()
                 .run_one_tick();
 
-            assert!(test_bed.get_left_aileron_position().get::<ratio>() < 0.51);
-            assert!(test_bed.get_right_aileron_position().get::<ratio>() < 0.51);
-            assert!(test_bed.get_left_aileron_position().get::<ratio>() > 0.49);
-            assert!(test_bed.get_right_aileron_position().get::<ratio>() > 0.49);
+            assert!(test_bed.get_left_aileron_position().get::<ratio>() < 0.55);
+            assert!(test_bed.get_right_aileron_position().get::<ratio>() < 0.55);
+            assert!(test_bed.get_left_aileron_position().get::<ratio>() > 0.45);
+            assert!(test_bed.get_right_aileron_position().get::<ratio>() > 0.45);
         }
 
         #[test]
