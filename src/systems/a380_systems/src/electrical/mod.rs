@@ -1972,7 +1972,9 @@ mod a380_electrical_circuit_tests {
         assert!(!test_bed.rat_and_emer_gen_has_fault());
     }
 
+    // TODO update accordingly with a380, ignored for now
     #[test]
+    #[ignore]
     fn when_rat_and_emer_gen_man_on_push_button_is_pressed_at_an_earlier_time_in_case_of_ac_1_and_2_unavailable_emergency_generator_provides_power_immediately(
     ) {
         let test_bed = test_bed_with()
