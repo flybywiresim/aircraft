@@ -9,6 +9,7 @@ use uom::si::{
     force::newton,
     length::meter,
     mass::kilogram,
+    power::{horsepower, watt},
     pressure::psi,
     ratio::ratio,
     torque::newton_meter,
@@ -64,6 +65,10 @@ struct VariableSpeedPump {
     consumed_power: Power,
 }
 impl VariableSpeedPump {
+    // Coefficient to convert hyd power in elec power 1.1 means we lose 10% efficiency from the pump
+    const HYD_TO_ELEC_POWER_EFFICIENCY: f64 = 1.15;
+    const MIN_STATIC_POWER_CONSUMPTION_WATT: f64 = 150.;
+
     const FLOW_CONSTANT_RPM_CUBIC_INCH_TO_GPM: f64 = 231.;
     const DISPLACEMENT_CU_IN: f64 = 0.214;
     const NOMINAL_MAX_PRESSURE_PSI: f64 = 5000.;
@@ -86,6 +91,7 @@ impl VariableSpeedPump {
         &mut self,
         context: &UpdateContext,
         actuator_flow: VolumeRate,
+        actuator_pressure: Pressure,
         controller: &impl ElectroHydrostaticPowered,
     ) {
         self.should_activate_electrical_mode = controller.should_activate_electrical_mode();
@@ -100,21 +106,34 @@ impl VariableSpeedPump {
             AngularVelocity::default()
         };
 
-        // println!(
-        //     "NEW SPEED {:.1} Current actuator flow gpm {:.5}",
-        //     self.speed.output().get::<revolution_per_minute>(),
-        //     actuator_flow.get::<gallon_per_minute>()
-        // );
+        self.update_power_consumed(actuator_flow, actuator_pressure);
+        println!(
+            "NEW SPEED {:.1} Current actuator flow gpm {:.5} Current press {:.1} Power consumption watt = {:.1}",
+            self.speed.output().get::<revolution_per_minute>(),
+            actuator_flow.get::<gallon_per_minute>(),
+            actuator_pressure.get::<psi>(),
+            self.consumed_power.get::<watt>()
+        );
 
         self.speed.update(context.delta(), new_speed);
     }
 
-    fn is_active(&self) -> bool {
-        self.should_activate_electrical_mode && self.is_powered
+    fn update_power_consumed(&mut self, actuator_flow: VolumeRate, actuator_pressure: Pressure) {
+        // Horsepower = Pressure (PSIG) × Flow (GPM)/ 1714
+        let current_fluid_power = Power::new::<horsepower>(
+            actuator_pressure.get::<psi>() * actuator_flow.get::<gallon_per_minute>() / 1714.,
+        );
+
+        self.consumed_power = if self.is_active() {
+            (current_fluid_power * Self::HYD_TO_ELEC_POWER_EFFICIENCY)
+                .max(Power::new::<watt>(Self::MIN_STATIC_POWER_CONSUMPTION_WATT))
+        } else {
+            Power::default()
+        };
     }
 
-    fn speed(&self) -> AngularVelocity {
-        self.speed.output()
+    fn is_active(&self) -> bool {
+        self.should_activate_electrical_mode && self.is_powered
     }
 
     fn max_available_pressure(&self, accumulator: &LowPressureAccumulator) -> Pressure {
@@ -128,7 +147,6 @@ impl VariableSpeedPump {
 impl SimulationElement for VariableSpeedPump {
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
         self.is_powered = buses.is_powered(self.powered_by);
-        println!("PUMP POWERED {:?}", self.is_powered);
     }
 
     fn consume_power<T: ConsumePower>(&mut self, _: &UpdateContext, consumption: &mut T) {
@@ -219,10 +237,16 @@ impl ElectroHydrostaticBackup {
         controller: &impl ElectroHydrostaticPowered,
         current_pressure: Pressure,
         current_actuator_flow: VolumeRate,
+        current_actuator_pressure: Pressure,
     ) {
         self.accumulator
             .update(context, current_pressure, controller);
-        self.pump.update(context, current_actuator_flow, controller);
+        self.pump.update(
+            context,
+            current_actuator_flow,
+            current_actuator_pressure,
+            controller,
+        );
     }
 
     fn max_available_pressure(&self) -> Pressure {
@@ -910,12 +934,15 @@ impl LinearActuator {
 
         let mut can_move_using_aircraft_hydraulic_pressure = true;
 
+        let internal_actuator_pressure = self.pressure();
+
         if let Some(eha) = self.electro_hydrostatic_backup.as_mut() {
             eha.update(
                 context,
                 controller,
                 current_input_pressure,
                 self.signed_flow,
+                internal_actuator_pressure,
             );
 
             can_move_using_aircraft_hydraulic_pressure =
@@ -928,12 +955,10 @@ impl LinearActuator {
             self.electro_hydrostatic_backup
                 .unwrap()
                 .max_available_pressure()
+        } else if can_move_using_aircraft_hydraulic_pressure {
+            current_input_pressure
         } else {
-            if can_move_using_aircraft_hydraulic_pressure {
-                current_input_pressure
-            } else {
-                Pressure::default()
-            }
+            Pressure::default()
         };
 
         self.core_hydraulics.update_force(
