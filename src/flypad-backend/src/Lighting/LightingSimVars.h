@@ -71,6 +71,7 @@ public:
    * Get the ElecAC1 state
    * @return INT64 0 if AC1 bus is unpowered, 1 otherwise
    */
+  [[nodiscard]]
   inline FLOAT64 getElecAC1State() const {
     return get_named_variable_value(ElecAC1);
   }
@@ -79,6 +80,7 @@ public:
    * Reads the  preset loading request variable.
    * @return INT64 signifying the preset to be loaded
    */
+  [[nodiscard]]
   inline FLOAT64 getLoadLightingPresetRequest() const {
     return get_named_variable_value(LoadLightingPresetRequest);
   }
@@ -87,6 +89,7 @@ public:
    * Sets the loading request value. Typically used to reset to 0 after the preset has been loaded.
    * @param value usually loadFromData to 0 to reset the request.
    */
+  [[nodiscard]]
   inline void setLoadLightingPresetRequest(FLOAT64 value) const {
     set_named_variable_value(LoadLightingPresetRequest, value);
   }
@@ -95,6 +98,7 @@ public:
    * Reads the request preset save variable.
    * @return INT64 signifying the preset to be loaded
    */
+  [[nodiscard]]
   inline FLOAT64 getSaveLightingPresetRequest() const {
     return get_named_variable_value(SaveLightingPresetRequest);
   }
@@ -103,6 +107,7 @@ public:
    * Sets the save request value. Typically used to reset to 0 after the preset has been loaded.
    * @param value usually loadFromData to 0 to reset the request.
    */
+  [[nodiscard]]
   inline void setSaveLightingPresetRequest(FLOAT64 value) const {
     set_named_variable_value(SaveLightingPresetRequest, value);
   }
@@ -111,6 +116,7 @@ public:
    * Retrieves the EFB brightness setting from the simulator.
    * @return value in percent over 100 (0..100)
    */
+  [[nodiscard]]
   inline FLOAT64 getEfbBrightness() const {
     return get_named_variable_value(EfbBrightness);
   }
@@ -128,6 +134,7 @@ public:
    * @param s Side.Left or Side.Right
    * @return value in percent (0.0 .. 1.0)
    */
+  [[nodiscard]]
   FLOAT64 getDcduLightLevel(Side s) const {
     switch (s) {
       case Left:
@@ -157,6 +164,7 @@ public:
    * @param s Side.Left or Side.Right
    * @return value in percent (0.0 .. 1.0)
    */
+  [[nodiscard]]
   FLOAT64 getMcduLightLevel(Side s) const {
     switch (s) {
       case Left:
@@ -186,6 +194,7 @@ public:
    * @param index of the light potentiometer
    * @return value in percent over 100 (0..100)
    */
+  [[nodiscard]]
   inline FLOAT64 getLightPotentiometer(int index) const {
     return aircraft_varget(lightPotentiometer, m_Units->Percent, index);
   }
@@ -209,6 +218,7 @@ public:
    * 0 = switch pos OFF, 50 = switch pos DIM, 100 = switch pos BRT
    * @return value in percent over 100 (0..100)
    */
+  [[nodiscard]]
   inline FLOAT64 getLightCabin() const {
     return getLightPotentiometer(7);
   }
