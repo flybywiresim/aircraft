@@ -59,7 +59,7 @@ struct VariableSpeedPump {
     speed: LowPassFilter<AngularVelocity>,
 
     is_powered: bool,
-    is_active: bool,
+    should_activate_electrical_mode: bool,
     powered_by: ElectricalBusType,
     consumed_power: Power,
 }
@@ -76,7 +76,7 @@ impl VariableSpeedPump {
                 Self::LOW_PASS_RPM_TRANSIENT_TIME_CONSTANT,
             ),
             is_powered: false,
-            is_active: false,
+            should_activate_electrical_mode: false,
             powered_by,
             consumed_power: Power::default(),
         }
@@ -86,9 +86,9 @@ impl VariableSpeedPump {
         &mut self,
         context: &UpdateContext,
         actuator_flow: VolumeRate,
-        should_activate: bool,
+        controller: &impl ElectroHydrostaticPowered,
     ) {
-        self.is_active = should_activate;
+        self.should_activate_electrical_mode = controller.should_activate_electrical_mode();
 
         let new_speed = if self.is_active() {
             AngularVelocity::new::<revolution_per_minute>(
@@ -104,7 +104,7 @@ impl VariableSpeedPump {
     }
 
     fn is_active(&self) -> bool {
-        self.is_active && self.is_powered
+        self.should_activate_electrical_mode && self.is_powered
     }
 
     fn speed(&self) -> AngularVelocity {
@@ -153,10 +153,10 @@ impl LowPressureAccumulator {
         &mut self,
         context: &UpdateContext,
         input_pressure: Pressure,
-        should_open_external_filling: bool,
+        controller: &impl ElectroHydrostaticPowered,
     ) {
         let mut new_pressure =
-            if input_pressure > self.pressure.output() && should_open_external_filling {
+            if input_pressure > self.pressure.output() && controller.should_open_refill_valve() {
                 Pressure::new::<psi>(1800.)
             } else {
                 self.pressure.output()
@@ -171,6 +171,16 @@ impl LowPressureAccumulator {
 
     fn pressure(&self) -> Pressure {
         self.pressure.output()
+    }
+}
+
+trait ElectroHydrostaticPowered {
+    fn should_open_refill_valve(&self) -> bool {
+        false
+    }
+
+    fn should_activate_electrical_mode(&self) -> bool {
+        false
     }
 }
 
@@ -190,13 +200,13 @@ impl ElectroHydrostaticBackup {
     fn update(
         &mut self,
         context: &UpdateContext,
-        should_activate: bool,
+        controller: &impl ElectroHydrostaticPowered,
         current_pressure: Pressure,
         current_actuator_flow: VolumeRate,
     ) {
-        self.accumulator.update(context, current_pressure, false);
-        self.pump
-            .update(context, current_actuator_flow, should_activate);
+        self.accumulator
+            .update(context, current_pressure, controller);
+        self.pump.update(context, current_actuator_flow, controller);
     }
 
     fn max_available_pressure(&self) -> Pressure {
@@ -863,32 +873,32 @@ impl LinearActuator {
         &mut self,
         context: &UpdateContext,
         connected_body: &mut LinearActuatedRigidBodyOnHingeAxis,
-        requested_mode: LinearActuatorMode,
-        eha_requested_active: bool,
+        controller: &(impl HydraulicAssemblyController + HydraulicLocking + ElectroHydrostaticPowered),
         current_input_pressure: Pressure,
     ) {
         if let Some(eha) = self.electro_hydrostatic_backup.as_mut() {
             eha.update(
                 context,
-                eha_requested_active,
+                controller,
                 current_input_pressure,
                 self.signed_flow,
             );
         }
 
-        let internal_actuator_pressure =
-            if eha_requested_active && self.electro_hydrostatic_backup.is_some() {
-                self.electro_hydrostatic_backup
-                    .unwrap()
-                    .max_available_pressure()
-            } else {
-                current_input_pressure
-            };
+        let internal_actuator_pressure = if controller.should_activate_electrical_mode()
+            && self.electro_hydrostatic_backup.is_some()
+        {
+            self.electro_hydrostatic_backup
+                .unwrap()
+                .max_available_pressure()
+        } else {
+            current_input_pressure
+        };
 
         self.core_hydraulics.update_force(
             context,
             self.requested_position,
-            requested_mode,
+            controller.requested_mode(),
             self.position_normalized,
             internal_actuator_pressure,
             self.signed_flow,
@@ -1067,7 +1077,9 @@ impl<const N: usize> HydraulicLinearActuatorAssembly<N> {
     pub fn update(
         &mut self,
         context: &UpdateContext,
-        assembly_controllers: &[impl HydraulicAssemblyController + HydraulicLocking],
+        assembly_controllers: &[impl HydraulicAssemblyController
+              + HydraulicLocking
+              + ElectroHydrostaticPowered],
         current_pressure: [Pressure; N],
     ) {
         for (index, actuator) in self.linear_actuators.iter_mut().enumerate() {
@@ -1088,8 +1100,7 @@ impl<const N: usize> HydraulicLinearActuatorAssembly<N> {
                 actuator.update_before_rigid_body(
                     context,
                     &mut self.rigid_body,
-                    assembly_controllers[index].requested_mode(),
-                    assembly_controllers[index].should_run_electro_hydrostatic_backup(),
+                    &assembly_controllers[index],
                     current_pressure[index],
                 );
             }
@@ -1619,6 +1630,8 @@ mod tests {
 
         soft_lock_request: bool,
         soft_lock_velocity: (AngularVelocity, AngularVelocity),
+
+        should_activate_elec_backup: bool,
     }
     impl TestHydraulicAssemblyController {
         fn new() -> Self {
@@ -1630,6 +1643,8 @@ mod tests {
                 lock_position: Ratio::new::<ratio>(0.),
                 soft_lock_request: false,
                 soft_lock_velocity: (AngularVelocity::default(), AngularVelocity::default()),
+
+                should_activate_elec_backup: false,
             }
         }
 
@@ -1653,6 +1668,10 @@ mod tests {
         fn set_soft_lock(&mut self, lock_velocity: (AngularVelocity, AngularVelocity)) {
             self.soft_lock_request = true;
             self.soft_lock_velocity = lock_velocity;
+        }
+
+        fn set_elec_backup(&mut self, is_on: bool) {
+            self.should_activate_elec_backup = is_on;
         }
     }
     impl HydraulicAssemblyController for TestHydraulicAssemblyController {
@@ -1679,6 +1698,11 @@ mod tests {
 
         fn soft_lock_velocity(&self) -> (AngularVelocity, AngularVelocity) {
             self.soft_lock_velocity
+        }
+    }
+    impl ElectroHydrostaticPowered for TestHydraulicAssemblyController {
+        fn should_activate_electrical_mode(&self) -> bool {
+            self.should_activate_elec_backup
         }
     }
 
