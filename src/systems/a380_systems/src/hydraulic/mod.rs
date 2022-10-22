@@ -9125,15 +9125,10 @@ mod tests {
                 .set_park_brake(false)
                 .start_eng1(Ratio::new::<percent>(100.))
                 .start_eng2(Ratio::new::<percent>(100.))
-                .run_waiting_for(Duration::from_secs(10));
+                .run_waiting_for(Duration::from_secs(1));
 
             test_bed = test_bed
                 .set_autobrake_med()
-                .run_waiting_for(Duration::from_secs(1));
-
-            assert!(test_bed.autobrake_mode() == AutobrakeMode::MED);
-
-            test_bed = test_bed
                 .set_deploy_spoilers()
                 .run_waiting_for(Duration::from_secs(6));
 
