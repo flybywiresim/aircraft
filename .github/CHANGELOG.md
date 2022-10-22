@@ -87,6 +87,7 @@
 1. [LIGHTS] Increased max brightness of cockpit displays - @frankkopp (Frank Kopp)
 1. [EFB] Improved Aircraft Presets procedures - @frankkopp (Frank Kopp)
 1. [FMGC] Make DES SPD LIM available prior to descent - @tracernz (Mike)
+1. [ENGINE] Fix Engine Flex Calculations - @Taz5150 (TazX [Z+2]#0405)
 
 ## 0.8.0
 
