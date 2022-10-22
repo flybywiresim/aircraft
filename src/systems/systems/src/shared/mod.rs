@@ -106,7 +106,6 @@ pub enum CSUPosition {
     Conf3,
     ConfFull,
 }
-
 impl From<u8> for CSUPosition {
     fn from(value: u8) -> Self {
         match value {
@@ -129,7 +128,6 @@ pub enum FlapsConf {
     Conf3,
     ConfFull,
 }
-
 impl From<u8> for FlapsConf {
     fn from(value: u8) -> Self {
         match value {

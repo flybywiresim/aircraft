@@ -1,9 +1,11 @@
 use crate::systems::shared::arinc429::{Arinc429Word, SignStatus};
-use systems::shared::{FlapsConf, PositionPickoffUnit};
 
-use systems::simulation::{
-    InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
-    SimulatorWriter, UpdateContext, VariableIdentifier, Write,
+use systems::{
+    shared::{FlapsConf, PositionPickoffUnit},
+    simulation::{
+        InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
+        SimulatorWriter, UpdateContext, VariableIdentifier, Write,
+    },
 };
 
 use std::panic;
