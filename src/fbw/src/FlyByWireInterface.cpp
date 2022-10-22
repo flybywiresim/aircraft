@@ -491,7 +491,7 @@ void FlyByWireInterface::setupLocalVariables() {
   idLs1Active = make_unique<LocalVariable>("BTN_LS_1_FILTER_ACTIVE");
   idLs2Active = make_unique<LocalVariable>("BTN_LS_2_FILTER_ACTIVE");
   idIsisLsActive = make_unique<LocalVariable>("A32NX_ISIS_LS_ACTIVE");
-  
+
   idWingAntiIce = make_unique<LocalVariable>("A32NX_PNEU_WING_ANTI_ICE_SYSTEM_ON");
 
   for (int i = 0; i < 2; i++) {
@@ -849,6 +849,13 @@ bool FlyByWireInterface::readDataAndLocalVariables(double sampleTime) {
   if ((simData.simulationTime == previousSimulationTime) || (simData.simulationTime < 0.2)) {
     pauseDetected = true;
   } else {
+    // As fdr is not written when paused 'wasPaused' is used to detect previous pause state
+    // changes and record them in fdr
+    if (pauseDetected && !wasPaused) {
+      wasPaused = true;
+    } else {
+      wasPaused = false;
+    }
     pauseDetected = false;
   }
 
@@ -905,7 +912,7 @@ bool FlyByWireInterface::handleSimulationRate(double sampleTime) {
   targetSimulationRate = simData.simulation_rate;
   targetSimulationRateModified = false;
 
-  // nothing to do if simuation rate is '1x'
+  // nothing to do if simulation rate is '1x'
   if (simData.simulation_rate == 1) {
     return true;
   }
@@ -998,8 +1005,7 @@ bool FlyByWireInterface::updateAdditionalData(double sampleTime) {
   additionalData.spoilers_handle_pos = idSpoilersHandlePosition->get();
   additionalData.spoilers_armed = idSpoilersArmed->get();
   additionalData.spoilers_handle_sim_pos = simData.spoilers_handle_position;
-  additionalData.ground_spoilers_active =
-      idSecGroundSpoilersOut[0]->get() || idSecGroundSpoilersOut[1]->get() || idSecGroundSpoilersOut[2]->get();
+  additionalData.ground_spoilers_active = idSecGroundSpoilersOut[0]->get() || idSecGroundSpoilersOut[1]->get() || idSecGroundSpoilersOut[2]->get();
   additionalData.flaps_handle_percent = idFlapsHandlePercent->get();
   additionalData.flaps_handle_index = idFlapsHandleIndex->get();
   additionalData.flaps_handle_configuration_index = flapsHandleIndexFlapConf->get();
@@ -1019,14 +1025,40 @@ bool FlyByWireInterface::updateAdditionalData(double sampleTime) {
   additionalData.realisticTillerEnabled = idRealisticTillerEnabled->get() == 1;
   additionalData.tillerHandlePosition = idTillerHandlePosition->get();
   additionalData.noseWheelPosition = idNoseWheelPosition->get();
-
   additionalData.syncFoEfisEnabled = idSyncFoEfisEnabled->get();
-
   additionalData.ls1Active = idLs1Active->get();
   additionalData.ls2Active = idLs2Active->get();
   additionalData.IsisLsActive = idIsisLsActive->get();
 
   additionalData.wingAntiIce = idWingAntiIce->get();
+
+  // Fix missing data for FDR Analysis
+  auto simInputs = simConnectInterface.getSimInput();
+  auto clientDataFlyByWire = simConnectInterface.getClientDataFlyByWire();
+  auto clientDataAutothrust = simConnectInterface.getClientDataAutothrust();
+
+  // controller input data
+  additionalData.inputElevator = simInputs.inputs[0];
+  additionalData.inputAileron = simInputs.inputs[1];
+  additionalData.inputRudder = simInputs.inputs[2];
+  // additional
+  additionalData.simulation_rate = simData.simulation_rate;
+  additionalData.wasPaused = wasPaused;
+  additionalData.slew_on = wasInSlew;
+  // ambient data
+  additionalData.ice_structure_percent = simData.ice_structure_percent;
+  additionalData.ambient_pressure_mbar = simData.ambient_pressure_mbar;
+  additionalData.ambient_wind_velocity_kn = simData.ambient_wind_velocity_kn;
+  additionalData.ambient_wind_direction_deg = simData.ambient_wind_direction_deg;
+  additionalData.total_air_temperature_celsius = simData.total_air_temperature_celsius;
+  // failure
+  additionalData.failuresActive = failuresConsumer.isAnyActive() ? 1.0 : 0.0;
+  // aoa
+  additionalData.alpha_floor_condition = reinterpret_cast<Arinc429DiscreteWord*>(&facsBusOutputs[0].discrete_word_5)->bitFromValueOr(29, false) ||
+                                         reinterpret_cast<Arinc429DiscreteWord*>(&facsBusOutputs[1].discrete_word_5)->bitFromValueOr(29, false);
+  // these are not correct yet
+  additionalData.high_aoa_protection = reinterpret_cast<Arinc429DiscreteWord*>(&elacsBusOutputs[0].discrete_status_word_2)->bitFromValueOr(23, false) ||
+                                       reinterpret_cast<Arinc429DiscreteWord*>(&elacsBusOutputs[1].discrete_status_word_2)->bitFromValueOr(23, false);
 
   return true;
 }

@@ -602,7 +602,7 @@ export const ServicesPage = () => {
             {!!cabinDoorOpen && (
                 <div
                     className={serviceIndicationCss}
-                    style={{ position: 'absolute', left: 515, right: 0, top: 105 }}
+                    style={{ position: 'absolute', left: 500, right: 0, top: 100 }}
                 >
                     CABIN
                 </div>
@@ -610,7 +610,7 @@ export const ServicesPage = () => {
             {!!aftDoorOpen && (
                 <div
                     className={serviceIndicationCss}
-                    style={{ position: 'absolute', left: 705, right: 0, top: 665 }}
+                    style={{ position: 'absolute', left: 700, right: 0, top: 665 }}
                 >
                     CABIN
                 </div>
@@ -618,7 +618,7 @@ export const ServicesPage = () => {
             {!!cargoDoorOpen && (
                 <div
                     className={serviceIndicationCss}
-                    style={{ position: 'absolute', left: 705, right: 0, top: 200 }}
+                    style={{ position: 'absolute', left: 700, right: 0, top: 165 }}
                 >
                     CARGO
                 </div>
@@ -626,7 +626,7 @@ export const ServicesPage = () => {
             {!!gpuActive && (
                 <div
                     className={serviceIndicationCss}
-                    style={{ position: 'absolute', left: 705, right: 0, top: 70 }}
+                    style={{ position: 'absolute', left: 700, right: 0, top: 60 }}
                 >
                     GPU
                 </div>
