@@ -473,7 +473,7 @@ void FlyByWireInterface::setupLocalVariables() {
   idSpoilersArmed = make_unique<LocalVariable>("A32NX_SPOILERS_ARMED");
   idSpoilersHandlePosition = make_unique<LocalVariable>("A32NX_SPOILERS_HANDLE_POSITION");
 
-  idRudderPosition = make_unique<LocalVariable>("A32NX_RUDDER_DEFLECTION_DEMAND");
+  // idRudderPosition = make_unique<LocalVariable>("A32NX_RUDDER_DEFLECTION_DEMAND");
 
   idRadioReceiverUsageEnabled = make_unique<LocalVariable>("A32NX_RADIO_RECEIVER_USAGE_ENABLED");
   idRadioReceiverLocalizerValid = make_unique<LocalVariable>("A32NX_RADIO_RECEIVER_LOC_IS_VALID");
@@ -1005,7 +1005,8 @@ bool FlyByWireInterface::updateAdditionalData(double sampleTime) {
   additionalData.spoilers_handle_pos = idSpoilersHandlePosition->get();
   additionalData.spoilers_armed = idSpoilersArmed->get();
   additionalData.spoilers_handle_sim_pos = simData.spoilers_handle_position;
-  additionalData.ground_spoilers_active = idSecGroundSpoilersOut[0]->get() || idSecGroundSpoilersOut[1]->get() || idSecGroundSpoilersOut[2]->get();
+  additionalData.ground_spoilers_active =
+      idSecGroundSpoilersOut[0]->get() || idSecGroundSpoilersOut[1]->get() || idSecGroundSpoilersOut[2]->get();
   additionalData.flaps_handle_percent = idFlapsHandlePercent->get();
   additionalData.flaps_handle_index = idFlapsHandleIndex->get();
   additionalData.flaps_handle_configuration_index = flapsHandleIndexFlapConf->get();
@@ -1054,11 +1055,13 @@ bool FlyByWireInterface::updateAdditionalData(double sampleTime) {
   // failure
   additionalData.failuresActive = failuresConsumer.isAnyActive() ? 1.0 : 0.0;
   // aoa
-  additionalData.alpha_floor_condition = reinterpret_cast<Arinc429DiscreteWord*>(&facsBusOutputs[0].discrete_word_5)->bitFromValueOr(29, false) ||
-                                         reinterpret_cast<Arinc429DiscreteWord*>(&facsBusOutputs[1].discrete_word_5)->bitFromValueOr(29, false);
+  additionalData.alpha_floor_condition =
+      reinterpret_cast<Arinc429DiscreteWord*>(&facsBusOutputs[0].discrete_word_5)->bitFromValueOr(29, false) ||
+      reinterpret_cast<Arinc429DiscreteWord*>(&facsBusOutputs[1].discrete_word_5)->bitFromValueOr(29, false);
   // these are not correct yet
-  additionalData.high_aoa_protection = reinterpret_cast<Arinc429DiscreteWord*>(&elacsBusOutputs[0].discrete_status_word_2)->bitFromValueOr(23, false) ||
-                                       reinterpret_cast<Arinc429DiscreteWord*>(&elacsBusOutputs[1].discrete_status_word_2)->bitFromValueOr(23, false);
+  additionalData.high_aoa_protection =
+      reinterpret_cast<Arinc429DiscreteWord*>(&elacsBusOutputs[0].discrete_status_word_2)->bitFromValueOr(23, false) ||
+      reinterpret_cast<Arinc429DiscreteWord*>(&elacsBusOutputs[1].discrete_status_word_2)->bitFromValueOr(23, false);
 
   return true;
 }
@@ -1698,18 +1701,19 @@ bool FlyByWireInterface::updateServoSolenoidStatus() {
   idRudderTravelLimitActiveModeCommanded[1]->set(facsDiscreteOutputs[1].rudder_travel_lim_engaged);
   idRudderTravelLimCommandedPosition[1]->set(facsAnalogOutputs[1].rudder_travel_limit_order_deg);
 
-  SimInput simInput = simConnectInterface.getSimInput();
+  // SimInput simInput = simConnectInterface.getSimInput();
 
-  idRudderPosition->set(-simInput.inputs[2] - (facsAnalogOutputs[0].yaw_damper_order_deg + facsAnalogOutputs[1].yaw_damper_order_deg) / 30);
+  // idRudderPosition->set(-simInput.inputs[2] - (facsAnalogOutputs[0].yaw_damper_order_deg + facsAnalogOutputs[1].yaw_damper_order_deg) /
+  // 30);
 
-  SimOutputZetaTrim outputZetaTrim = {};
-  outputZetaTrim.zeta_trim_pos = -(facsAnalogOutputs[0].rudder_trim_order_deg + facsAnalogOutputs[1].rudder_trim_order_deg) / 20;
-  if (facsDiscreteOutputs[0].rudder_trim_engaged || facsDiscreteOutputs[1].rudder_trim_engaged) {
-    if (!simConnectInterface.sendData(outputZetaTrim)) {
-      cout << "WASM: Write data failed!" << endl;
-      return false;
-    }
-  }
+  // SimOutputZetaTrim outputZetaTrim = {};
+  // outputZetaTrim.zeta_trim_pos = -(facsAnalogOutputs[0].rudder_trim_order_deg + facsAnalogOutputs[1].rudder_trim_order_deg) / 20;
+  // if (facsDiscreteOutputs[0].rudder_trim_engaged || facsDiscreteOutputs[1].rudder_trim_engaged) {
+  //   if (!simConnectInterface.sendData(outputZetaTrim)) {
+  //     cout << "WASM: Write data failed!" << endl;
+  //     return false;
+  //   }
+  // }
 
   if (facsDiscreteOutputs[0].rudder_travel_lim_engaged || facsDiscreteOutputs[1].rudder_travel_lim_engaged) {
     rudderTravelLimiterPosition = facsAnalogOutputs[0].rudder_travel_limit_order_deg + facsAnalogOutputs[1].rudder_travel_limit_order_deg;

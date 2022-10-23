@@ -56,7 +56,7 @@ impl SimulationElement for ElecMotor {
     }
 }
 
-trait YawDamperActuatorController {
+pub trait YawDamperActuatorController {
     fn is_solenoid_energized(&self) -> bool;
     fn angle_request(&self) -> Angle;
 }
@@ -198,11 +198,11 @@ impl YawDamperMechanism {
     fn update(
         &mut self,
         context: &UpdateContext,
-        controllers: [&impl YawDamperActuatorController; 2],
+        controllers: &[impl YawDamperActuatorController; 2],
         pressures: [Pressure; 2],
     ) {
-        self.actuators[0].update(context, controllers[0], pressures[0]);
-        self.actuators[1].update(context, controllers[1], pressures[1]);
+        self.actuators[0].update(context, &controllers[0], pressures[0]);
+        self.actuators[1].update(context, &controllers[1], pressures[1]);
 
         self.update_position_of_slaved_actuator();
     }
@@ -457,7 +457,7 @@ impl SimulationElement for RudderTravelLimiter {
     }
 }
 
-struct RudderMechanicalControl {
+pub struct RudderMechanicalControl {
     travel_limiter: RudderTravelLimiter,
     trim: RudderTrimActuator,
     yaw_damper: YawDamperMechanism,
@@ -465,7 +465,7 @@ struct RudderMechanicalControl {
     final_actuators_input: Angle,
 }
 impl RudderMechanicalControl {
-    fn new(context: &mut InitContext) -> Self {
+    pub fn new(context: &mut InitContext) -> Self {
         Self {
             travel_limiter: RudderTravelLimiter::new(context),
             trim: RudderTrimActuator::new(context),
@@ -475,13 +475,13 @@ impl RudderMechanicalControl {
         }
     }
 
-    fn update(
+    pub fn update(
         &mut self,
         context: &UpdateContext,
         rudder_pedal_position_requested: Angle,
         trim_controller: &impl AngularPositioningController,
         travel_limiter_controller: &impl AngularPositioningController,
-        yaw_damper_controllers: [&impl YawDamperActuatorController; 2],
+        yaw_damper_controllers: &[impl YawDamperActuatorController; 2],
         pressures: [Pressure; 2],
     ) {
         self.travel_limiter
@@ -496,12 +496,16 @@ impl RudderMechanicalControl {
                 .max(self.travel_limiter.min())
     }
 
-    fn green_actuator(&mut self) -> &mut impl Actuator {
+    pub fn green_actuator(&mut self) -> &mut impl Actuator {
         self.yaw_damper.green_actuator()
     }
 
-    fn yellow_actuator(&mut self) -> &mut impl Actuator {
+    pub fn yellow_actuator(&mut self) -> &mut impl Actuator {
         self.yaw_damper.yellow_actuator()
+    }
+
+    pub fn final_actuators_input(&self) -> Angle {
+        self.final_actuators_input
     }
 }
 impl SimulationElement for RudderMechanicalControl {

@@ -351,7 +351,7 @@ class FlyByWireInterface {
 
   std::shared_ptr<ElevatorTrimHandler> elevatorTrimHandler;
 
-  std::unique_ptr<LocalVariable> idRudderPosition;
+  // std::unique_ptr<LocalVariable> idRudderPosition;
 
   std::unique_ptr<LocalVariable> idRadioReceiverUsageEnabled;
   std::unique_ptr<LocalVariable> idRadioReceiverLocalizerValid;

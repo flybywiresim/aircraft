@@ -3011,15 +3011,6 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Percent
     - Trim wheel position in percent
 
-- A32NX_RUDDER_DEFLECTION_DEMAND
-    - Number
-    - Provides the rudder position demand to hydraulics
-      Value | Meaning
-      --- | ---
-      -1.0 | full left
-      0.0 | neutral
-      1.0 | full right
-
 ## Landing Gear (ATA 32)
 
 - A32NX_LGCIU_{number}_DISCRETE_WORD_1
