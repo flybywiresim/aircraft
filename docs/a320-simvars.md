@@ -1162,9 +1162,9 @@
     - Will be reset to 0 after loading is done
     - When set to 0 during loading will stop and cancel the loading process
     - | Value | Meaning            |
-            |-------|--------------------|
+      |-------|--------------------|
       | 1     | Cold & Dark        |
-      | 2     | Turnaround         |
+      | 2     | Powered            |
       | 3     | Ready for Pushback |
       | 4     | Ready for Taxi     |
       | 5     | Ready for Takeoff  |

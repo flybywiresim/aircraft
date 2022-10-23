@@ -13,6 +13,8 @@ class FailuresConsumer {
 
   bool isActive(Failures failure);
 
+  bool isAnyActive();
+
   void initialize();
 
  private:

@@ -98,7 +98,8 @@ public:
    * Produces a string with the current settings and their values.
    * @return string with the current settings and their values.
    */
-  __attribute__((unused)) std::string sprint() const;
+  [[nodiscard]] __attribute__((unused))
+  std::string sprint() const;
 
 private:
   /**
