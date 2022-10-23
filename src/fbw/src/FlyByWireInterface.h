@@ -179,7 +179,7 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idSideStickPositionX;
   std::unique_ptr<LocalVariable> idSideStickPositionY;
   std::unique_ptr<LocalVariable> idRudderPedalPosition;
-  std::unique_ptr<LocalVariable> idRudderPedalAnimationPosition;
+  // std::unique_ptr<LocalVariable> idRudderPedalAnimationPosition;
   std::unique_ptr<LocalVariable> idAutopilotNosewheelDemand;
 
   std::unique_ptr<LocalVariable> idFmaLateralMode;

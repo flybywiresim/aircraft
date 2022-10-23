@@ -72,7 +72,7 @@ struct YawDamperActuator {
     total_volume_to_reservoir: Volume,
 }
 impl YawDamperActuator {
-    const POSITION_FILTER_TIME_CONSTANT: Duration = Duration::from_millis(1500);
+    const POSITION_FILTER_TIME_CONSTANT: Duration = Duration::from_millis(300);
     const POSITION_FILTER_MECHANICAL_CENTERING_TIME_CONSTANT: Duration =
         Duration::from_millis(3000);
 
@@ -297,7 +297,7 @@ impl AngularPositioningWithDualElecMotors {
         for (index, motor) in self.motors.iter_mut().enumerate() {
             motor.set_active(
                 controller.energised_motor()[index],
-                controller.commanded_position()[index],
+                controller.commanded_position()[index].abs(),
             );
         }
     }
@@ -462,6 +462,8 @@ pub struct RudderMechanicalControl {
     trim: RudderTrimActuator,
     yaw_damper: YawDamperMechanism,
 
+    pedal_position: Angle,
+
     final_actuators_input: Angle,
 }
 impl RudderMechanicalControl {
@@ -470,6 +472,8 @@ impl RudderMechanicalControl {
             travel_limiter: RudderTravelLimiter::new(context),
             trim: RudderTrimActuator::new(context),
             yaw_damper: YawDamperMechanism::new(),
+
+            pedal_position: Angle::default(),
 
             final_actuators_input: Angle::default(),
         }
@@ -493,7 +497,18 @@ impl RudderMechanicalControl {
         self.final_actuators_input =
             (rudder_pedal_position_requested + self.trim.angle() + self.yaw_damper.angle())
                 .min(self.travel_limiter.max())
-                .max(self.travel_limiter.min())
+                .max(self.travel_limiter.min());
+
+        self.pedal_position = rudder_pedal_position_requested + self.trim.angle();
+
+        println!("TRIM MECH POS: {:.3} , YAW DAMPER POS {:.3}, LIMITER +/- {:.3} Final actuator input {:.3} Flows gpm G Y {:.2} {:.2}",
+                    self.trim.mechanism.angle.get::<degree>(),
+                    self.yaw_damper.angle().get::<degree>(),
+                    self.travel_limiter.mechanism.angle.get::<degree>(),
+                    self.final_actuators_input.get::<degree>(),
+                    self.yaw_damper.actuators[0].flow.get::<gallon_per_minute>(),
+                    self.yaw_damper.actuators[1].flow.get::<gallon_per_minute>()
+                );
     }
 
     pub fn green_actuator(&mut self) -> &mut impl Actuator {
@@ -506,6 +521,10 @@ impl RudderMechanicalControl {
 
     pub fn final_actuators_input(&self) -> Angle {
         self.final_actuators_input
+    }
+
+    pub fn pedal_position(&self) -> Angle {
+        self.pedal_position
     }
 }
 impl SimulationElement for RudderMechanicalControl {
@@ -691,7 +710,7 @@ mod tests {
                     self.rudder_pedal_input,
                     &self.trim_controller,
                     &self.limiter_controller,
-                    [
+                    &[
                         &self.green_yaw_damper_controller,
                         &self.yellow_yaw_damper_controller,
                     ],

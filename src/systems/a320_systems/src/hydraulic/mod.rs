@@ -4951,7 +4951,8 @@ impl YawDamperActuatorController for A320YawDamperController {
     }
 
     fn angle_request(&self) -> Angle {
-        self.angle_demand
+        // Reversing angle as FBW negative is right, whereas in systems negative is left
+        -self.angle_demand
     }
 }
 impl SimulationElement for A320YawDamperController {
@@ -5006,6 +5007,7 @@ impl SimulationElement for A320RudderTrimTravelLimiterController {
 }
 
 struct RudderSystemHydraulicController {
+    rudder_pedal_control_input_id: VariableIdentifier,
     rudder_pedal_position_id: VariableIdentifier,
 
     rudder_position_requested: Angle,
@@ -5030,7 +5032,10 @@ impl RudderSystemHydraulicController {
 
     fn new(context: &mut InitContext) -> Self {
         Self {
-            rudder_pedal_position_id: context.get_identifier("RUDDER_PEDAL_POSITION".to_owned()),
+            rudder_pedal_control_input_id: context
+                .get_identifier("RUDDER_PEDAL_POSITION".to_owned()),
+            rudder_pedal_position_id: context
+                .get_identifier("RUDDER_PEDAL_ANIMATION_POSITION".to_owned()),
 
             rudder_position_requested: Angle::default(),
 
@@ -5041,7 +5046,7 @@ impl RudderSystemHydraulicController {
             trim_control: A320RudderTrimTravelLimiterController::new(context, "TRIM"),
             travel_limiter_control: A320RudderTrimTravelLimiterController::new(
                 context,
-                "TRAVEL_LIMITER",
+                "TRAVEL_LIM",
             ),
 
             rudder_mechanical_assembly: RudderMechanicalControl::new(context),
@@ -5188,6 +5193,15 @@ impl RudderSystemHydraulicController {
             ],
         );
 
+        println!(
+            "RUDDER PEDAL {:.2}, YAW DAMP DEM [{:.2} {:.2}] Trim dem [{:.2} {:.2}]",
+            self.rudder_position_requested.get::<degree>(),
+            self.yaw_damper_control[0].angle_demand.get::<degree>(),
+            self.yaw_damper_control[1].angle_demand.get::<degree>(),
+            self.trim_control.commanded_position[0].get::<degree>(),
+            self.trim_control.commanded_position[1].get::<degree>(),
+        );
+
         self.update_rudder_control_state();
     }
 
@@ -5214,7 +5228,21 @@ impl SimulationElement for RudderSystemHydraulicController {
     }
 
     fn read(&mut self, reader: &mut SimulatorReader) {
-        self.rudder_position_requested = reader.read(&self.rudder_pedal_position_id);
+        let rudder_position_pedal_demand: f64 = reader.read(&self.rudder_pedal_control_input_id);
+
+        self.rudder_position_requested = Angle::new::<degree>(
+            rudder_position_pedal_demand * Self::RUDDER_MAX_TRAVEL_DEGREES / 2. / 100.,
+        )
+    }
+
+    fn write(&self, writer: &mut SimulatorWriter) {
+        let pedal_position = self
+            .rudder_mechanical_assembly
+            .pedal_position()
+            .get::<degree>()
+            * 100.
+            / (Self::RUDDER_MAX_TRAVEL_DEGREES / 2.);
+        writer.write(&self.rudder_pedal_position_id, pedal_position);
     }
 }
 
