@@ -263,7 +263,7 @@ export class TcasComputer implements TcasComponent {
      */
     private updateVars(): void {
         // Note: these values are calculated/not used in the real TCAS computer, here we just read SimVars
-        this.debug = NXDataStore.get('TCAS_DEBUG', '0') !== '0';
+        // this.debug = NXDataStore.get('TCAS_DEBUG', '0') !== '0';
         this.verticalSpeed = SimVar.GetSimVarValue('VERTICAL SPEED', 'feet per minute');
         this.ppos.lat = SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude');
         this.ppos.long = SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude');
