@@ -183,7 +183,7 @@
     <Template Name="FBW_HANDLING_Rudder_Template">
         <UseTemplate Name="ASOBO_GT_Anim_Code">
             <ANIM_NAME>rudder_percent_key</ANIM_NAME>
-            <ANIM_CODE>(L:A32NX_HYD_RUDDER_DEFLECTION, percent) </ANIM_CODE>
+            <ANIM_CODE>(L:A32NX_HYD_RUDDER_DEFLECTION, percent) 100 + 2 / </ANIM_CODE>
         </UseTemplate>
     </Template>
 
