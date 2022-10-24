@@ -35,7 +35,10 @@ class CDUAvailableDeparturesPage {
             /** @type {OneWayRunway[]} */
             const availableRunways = airportInfo.oneWayRunways;
             /** @type {[number, RawDeparture | string][]} */
-            let availableSids = airportInfo.departures.map((sid, index) => [index, sid]);
+            let availableSids = airportInfo.departures
+                .map((sid, index) => [index, sid])
+                // Workaround for an MSFS bug that results in invalid SIDs with no legs
+                .filter(([index, sid]) => sid.runwayTransitions.length > 0 || sid.commonLegs.length > 0);
             /** @type {[number, RawEnRouteTransition | string][]} */
             let availableTransitions = [];
 
