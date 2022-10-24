@@ -91,7 +91,7 @@ class CDUAvailableDeparturesPage {
                 selectedSidCellColor = selectedColour;
             }
 
-            if (selectedDeparture) {
+            if (selectedDeparture || availableSids.length === 0) {
                 if (availableTransitions.length === 0) {
                     selectedTransCell = "NONE";
                     selectedTransCellColor = selectedColour;
