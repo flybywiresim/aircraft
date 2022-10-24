@@ -50,6 +50,11 @@ class CDUAvailableDeparturesPage {
                 );
             }
 
+            // NO SID/NO TRANS option is available at the start of the list when non-zero options
+            if (availableSids.length > 0) {
+                availableSids.unshift([-2, "NO SID"]);
+            }
+
             let selectedSidPage = -1;
             if (selectedDeparture) {
                 availableTransitions = selectedDeparture.enRouteTransitions.map((trans, index) => [index, trans]);
@@ -59,10 +64,6 @@ class CDUAvailableDeparturesPage {
 
             const selectedRunwayPage = selectedRunway ? Math.floor((availableRunways.findIndex((runway) => runway.designation === selectedRunway.designation)) / DeparturePagination.DEPT_PAGE) : -1;
 
-            // NO SID/NO TRANS option is available at the start of the list when non-zero options
-            if (availableSids.length > 0) {
-                availableSids.unshift([-2, "NO SID"]);
-            }
             if (availableTransitions.length > 0) {
                 availableTransitions.unshift([-2, "NO TRANS"]);
             }
@@ -185,15 +186,15 @@ class CDUAvailableDeparturesPage {
 
             let up = false;
             let down = false;
-            let maxPage = 0;
+            let numPages = 0;
             if (sidSelection) {
-                const sidPages = Math.floor(availableSids.length / DeparturePagination.DEPT_PAGE);
-                const transPages = Math.floor(availableTransitions.length / DeparturePagination.DEPT_PAGE);
-                maxPage = Math.max(sidPages, transPages, selectedSidPage + transPages);
+                const sidPages = Math.ceil(availableSids.length / DeparturePagination.DEPT_PAGE);
+                const transPages = Math.ceil(availableTransitions.length / DeparturePagination.DEPT_PAGE);
+                numPages = Math.max(sidPages, transPages, selectedSidPage + transPages);
             } else {
-                maxPage = Math.floor(availableRunways.length / DeparturePagination.DEPT_PAGE);
+                numPages = Math.ceil(availableRunways.length / DeparturePagination.DEPT_PAGE);
             }
-            if (pageCurrent < maxPage) {
+            if (pageCurrent < (numPages - 1)) {
                 mcdu.onUp = () => {
                     pageCurrent++;
                     if (pageCurrent < 0) {
