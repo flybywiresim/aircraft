@@ -559,7 +559,6 @@ export class TcasComputer implements TcasComponent {
             const desiredIntrusionLevel: TaRaIntrusion = Math.min(...intrusionLevel);
             switch (traffic.intrusionLevel) {
             case TaRaIntrusion.RA:
-                // Downgrade test
                 if (this.activeRa.info === null
                     || this.activeRa.secondsSinceStart < TCAS.MIN_RA_DURATION
                     || (traffic.taTau > TCAS.TAU[this.sensitivity.getVar()][TaRaIndex.TA] * TCAS.VOL_BOOST
@@ -572,16 +571,14 @@ export class TcasComputer implements TcasComponent {
                 break;
             case TaRaIntrusion.TA:
                 switch (desiredIntrusionLevel) {
-                // Upgrade to RA
                 case TaRaIntrusion.RA:
                     if (!this.isSlewActive) {
                         traffic.intrusionLevel = desiredIntrusionLevel;
                         if (this.debug) console.log(`${traffic.ID} new intrusion level is ${desiredIntrusionLevel}`);
                     }
                     break;
-                // Downgrade test
                 case TaRaIntrusion.TA:
-                    console.log(`${traffic.ID} resetting seconds since last TA to 0`);
+                    if (this.debug) console.log(`${traffic.ID} resetting seconds since last TA to 0`);
                     traffic.secondsSinceLastTa = 0;
                     break;
                 default:
@@ -1033,7 +1030,7 @@ export class TcasComputer implements TcasComponent {
      */
     private updateAdvisoryState(_deltaTime) {
         const taThreatCount = this.airTraffic.reduce((acc, aircraft) => acc + (aircraft.alive && aircraft.intrusionLevel === TaRaIntrusion.TA ? 1 : 0), 0);
-        if (taThreatCount > 0) {
+        if (taThreatCount > 0 && this.debug) {
             console.log(`TA THREAT COUNT IS ${taThreatCount}`);
         }
         const raThreatCount = this.raTraffic.length;
