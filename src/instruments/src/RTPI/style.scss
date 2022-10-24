@@ -1,4 +1,4 @@
-$colour-main: hsl(32, 100%, 69%);
+$colour-main: hsl(40, 100%, 50%);
 
 @font-face {
   font-family: "AirbusRTPI";
@@ -8,7 +8,8 @@ $colour-main: hsl(32, 100%, 69%);
 }
 
 .rtpi-svg {
-  background-color: hsl(53, 82%, 6%);
+  background-color: hsl(55, 82%, 2%);
+  box-shadow: inset 0px 0px 110px -20px rgba(255,175,0,0.5);
   position: absolute;
   width: 105%;
   height: 100%;
