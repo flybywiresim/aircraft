@@ -19,27 +19,45 @@ use super::linear_actuator::Actuator;
 
 use std::time::Duration;
 
+/// Electric motor can run when demanded active and powered by main supply,
+///    or directly when using second emergency power supply
 struct ElecMotor {
     powered_by: ElectricalBusType,
+    powered_by_when_emergency: ElectricalBusType,
+
     is_powered: bool,
+    is_emergency_powered: bool,
 
     is_active: bool,
 
     target_angle: Angle,
 }
 impl ElecMotor {
-    fn new(powered_by: ElectricalBusType) -> Self {
+    fn new(powered_by: [ElectricalBusType; 2]) -> Self {
         Self {
-            powered_by,
+            powered_by: powered_by[0],
+            powered_by_when_emergency: powered_by[1],
+
             is_powered: false,
+            is_emergency_powered: false,
+
             is_active: false,
             target_angle: Angle::default(),
         }
     }
 
-    fn set_active(&mut self, is_commanded_active: bool, target_position: Angle) {
+    fn set_active(
+        &mut self,
+        is_commanded_active: bool,
+        target_position: Angle,
+        is_emergency_supply_mode: bool,
+    ) {
         self.target_angle = target_position;
-        self.is_active = is_commanded_active && self.is_powered
+        self.is_active = if is_emergency_supply_mode {
+            self.is_emergency_powered
+        } else {
+            is_commanded_active && self.is_powered
+        }
     }
 
     fn is_active(&self) -> bool {
@@ -53,6 +71,7 @@ impl ElecMotor {
 impl SimulationElement for ElecMotor {
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
         self.is_powered = buses.is_powered(self.powered_by);
+        self.is_emergency_powered = buses.is_powered(self.powered_by_when_emergency);
     }
 }
 
@@ -263,8 +282,8 @@ impl AngularPositioningWithDualElecMotors {
         max_angle: Angle,
         min_angle: Angle,
         init_angle: Angle,
-        motor1_powered_by: ElectricalBusType,
-        motor2_powered_by: ElectricalBusType,
+        motor1_powered_by: [ElectricalBusType; 2],
+        motor2_powered_by: [ElectricalBusType; 2],
     ) -> Self {
         Self {
             angle: init_angle,
@@ -284,7 +303,7 @@ impl AngularPositioningWithDualElecMotors {
     fn update(&mut self, context: &UpdateContext, controller: &impl AngularPositioningController) {
         self.update_motors_command(controller);
 
-        if let Some(angle_request) = self.active_position_request() {
+        if let Some(angle_request) = self.current_angle_followed_by_any_motor() {
             self.update_trim_speed_from_angle_request(context, angle_request);
         } else {
             self.speed.update(
@@ -299,17 +318,18 @@ impl AngularPositioningWithDualElecMotors {
     fn update_motors_command(&mut self, controller: &impl AngularPositioningController) {
         for (index, motor) in self.motors.iter_mut().enumerate() {
             if controller.emergency_reset_active() {
-                motor.set_active(true, self.max_angle);
+                motor.set_active(false, self.max_angle, true);
             } else {
                 motor.set_active(
                     controller.energised_motor()[index],
                     controller.commanded_position()[index],
+                    false,
                 );
             }
         }
     }
 
-    fn active_position_request(&self) -> Option<Angle> {
+    fn current_angle_followed_by_any_motor(&self) -> Option<Angle> {
         if self.motors[0].is_active() {
             Some(self.motors[0].target_angle())
         } else if self.motors[1].is_active() {
@@ -368,8 +388,8 @@ struct RudderTrimActuator {
 }
 
 impl RudderTrimActuator {
-    const MOTOR1_POWER_BUS: ElectricalBusType = ElectricalBusType::AlternatingCurrentEssential;
-    const MOTOR2_POWER_BUS: ElectricalBusType = ElectricalBusType::AlternatingCurrent(2);
+    const MOTOR1_POWER_BUS: ElectricalBusType = ElectricalBusType::DirectCurrentEssential;
+    const MOTOR2_POWER_BUS: ElectricalBusType = ElectricalBusType::DirectCurrent(2);
 
     const TRIM_SPEED_DEG_PER_S: f64 = 1.;
     const MIN_ANGLE_DEG: f64 = -25.;
@@ -385,8 +405,8 @@ impl RudderTrimActuator {
                 Angle::new::<degree>(Self::MAX_ANGLE_DEG),
                 Angle::new::<degree>(Self::MIN_ANGLE_DEG),
                 Angle::default(),
-                Self::MOTOR1_POWER_BUS,
-                Self::MOTOR2_POWER_BUS,
+                [Self::MOTOR1_POWER_BUS, Self::MOTOR1_POWER_BUS],
+                [Self::MOTOR2_POWER_BUS, Self::MOTOR2_POWER_BUS],
             ),
         }
     }
@@ -417,8 +437,12 @@ struct RudderTravelLimiter {
     mechanism: AngularPositioningWithDualElecMotors,
 }
 impl RudderTravelLimiter {
-    const MOTOR1_POWER_BUS: ElectricalBusType = ElectricalBusType::AlternatingCurrentEssential;
-    const MOTOR2_POWER_BUS: ElectricalBusType = ElectricalBusType::AlternatingCurrent(2);
+    const MOTOR1_POWER_BUS: ElectricalBusType = ElectricalBusType::DirectCurrentEssential; //801PP
+    const MOTOR1_EMERGENCY_POWER_BUS: ElectricalBusType =
+        ElectricalBusType::AlternatingCurrentEssential; //431XP-A
+
+    const MOTOR2_POWER_BUS: ElectricalBusType = ElectricalBusType::DirectCurrent(2); //206PP
+    const MOTOR2_EMERGENCY_POWER_BUS: ElectricalBusType = ElectricalBusType::AlternatingCurrent(2); //231XP-1
 
     const SPEED_DEG_PER_S: f64 = 1.;
     const MIN_ANGLE_DEG: f64 = 3.5;
@@ -434,8 +458,8 @@ impl RudderTravelLimiter {
                 Angle::new::<degree>(Self::MAX_ANGLE_DEG),
                 Angle::new::<degree>(Self::MIN_ANGLE_DEG),
                 Angle::new::<degree>(Self::MAX_ANGLE_DEG),
-                Self::MOTOR1_POWER_BUS,
-                Self::MOTOR2_POWER_BUS,
+                [Self::MOTOR1_POWER_BUS, Self::MOTOR1_EMERGENCY_POWER_BUS],
+                [Self::MOTOR2_POWER_BUS, Self::MOTOR2_EMERGENCY_POWER_BUS],
             ),
         }
     }
@@ -636,9 +660,12 @@ mod tests {
         hydraulic_pressures: [Pressure; 2],
 
         powered_source_ac: TestElectricitySource,
-        ac_1_bus: ElectricalBus,
+        dc_ess_bus: ElectricalBus,
+        dc_2_bus: ElectricalBus,
+        ac_ess_bus: ElectricalBus,
         ac_2_bus: ElectricalBus,
-        is_elec_powered: bool,
+        is_nominal_elec_powered: bool,
+        is_emergency_elec_powered: bool,
     }
     impl TestAircraft {
         fn new(context: &mut InitContext) -> Self {
@@ -662,13 +689,16 @@ mod tests {
                     PotentialOrigin::EngineGenerator(1),
                 ),
 
-                ac_1_bus: ElectricalBus::new(
+                dc_ess_bus: ElectricalBus::new(context, ElectricalBusType::DirectCurrentEssential),
+                dc_2_bus: ElectricalBus::new(context, ElectricalBusType::DirectCurrent(2)),
+                ac_ess_bus: ElectricalBus::new(
                     context,
                     ElectricalBusType::AlternatingCurrentEssential,
                 ),
                 ac_2_bus: ElectricalBus::new(context, ElectricalBusType::AlternatingCurrent(2)),
 
-                is_elec_powered: true,
+                is_nominal_elec_powered: true,
+                is_emergency_elec_powered: true,
             }
         }
 
@@ -698,8 +728,12 @@ mod tests {
             self.rudder_pedal_input = pedal_angle;
         }
 
-        fn set_no_elec_power(&mut self) {
-            self.is_elec_powered = false;
+        fn set_nominal_elec_power(&mut self, is_on: bool) {
+            self.is_nominal_elec_powered = is_on;
+        }
+
+        fn set_emergency_elec_power(&mut self, is_on: bool) {
+            self.is_emergency_elec_powered = is_on;
         }
 
         fn set_yaw_damper_states(&mut self, energized_relays: [bool; 2], angle_demand: [Angle; 2]) {
@@ -717,8 +751,13 @@ mod tests {
                 .power_with_potential(ElectricPotential::new::<volt>(140.));
             electricity.supplied_by(&self.powered_source_ac);
 
-            if self.is_elec_powered {
-                electricity.flow(&self.powered_source_ac, &self.ac_1_bus);
+            if self.is_nominal_elec_powered {
+                electricity.flow(&self.powered_source_ac, &self.dc_2_bus);
+                electricity.flow(&self.powered_source_ac, &self.dc_ess_bus);
+            }
+
+            if self.is_emergency_elec_powered {
+                electricity.flow(&self.powered_source_ac, &self.ac_ess_bus);
                 electricity.flow(&self.powered_source_ac, &self.ac_2_bus);
             }
         }
@@ -911,6 +950,69 @@ mod tests {
 
         let limiter_deflection: Angle = test_bed.read_by_name("HYD_RUDDER_LIMITER_FEEDBACK_ANGLE");
         assert!(limiter_deflection.get::<degree>() > 10.);
+    }
+
+    #[test]
+    fn limiter_in_emergency_reset_goes_to_max_angle_without_nominal_elec() {
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
+
+        test_bed.command(|a| {
+            a.set_limiter_demand(
+                [true, false],
+                [Angle::new::<degree>(3.5), Angle::new::<degree>(3.5)],
+            )
+        });
+        test_bed.run_with_delta(Duration::from_millis(20000));
+
+        let limiter_deflection: Angle = test_bed.read_by_name("HYD_RUDDER_LIMITER_FEEDBACK_ANGLE");
+        assert!(limiter_deflection.get::<degree>() < 10.);
+
+        test_bed.command(|a| {
+            a.set_limiter_demand(
+                [false, false],
+                [Angle::new::<degree>(3.5), Angle::new::<degree>(3.5)],
+            )
+        });
+
+        test_bed.command(|a| a.set_nominal_elec_power(false));
+        test_bed.command(|a| a.set_limiter_emergency_reset());
+
+        test_bed.run_with_delta(Duration::from_millis(20000));
+
+        let limiter_deflection: Angle = test_bed.read_by_name("HYD_RUDDER_LIMITER_FEEDBACK_ANGLE");
+        assert!(limiter_deflection.get::<degree>() > 10.);
+    }
+
+    #[test]
+    fn limiter_in_emergency_reset_stuck_without_emergency_elec() {
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
+
+        test_bed.command(|a| {
+            a.set_limiter_demand(
+                [true, false],
+                [Angle::new::<degree>(3.5), Angle::new::<degree>(3.5)],
+            )
+        });
+        test_bed.run_with_delta(Duration::from_millis(20000));
+
+        let limiter_deflection: Angle = test_bed.read_by_name("HYD_RUDDER_LIMITER_FEEDBACK_ANGLE");
+        assert!(limiter_deflection.get::<degree>() < 10.);
+
+        test_bed.command(|a| {
+            a.set_limiter_demand(
+                [false, false],
+                [Angle::new::<degree>(3.5), Angle::new::<degree>(3.5)],
+            )
+        });
+
+        test_bed.command(|a| a.set_nominal_elec_power(true));
+        test_bed.command(|a| a.set_emergency_elec_power(false));
+        test_bed.command(|a| a.set_limiter_emergency_reset());
+
+        test_bed.run_with_delta(Duration::from_millis(20000));
+
+        let limiter_deflection: Angle = test_bed.read_by_name("HYD_RUDDER_LIMITER_FEEDBACK_ANGLE");
+        assert!(limiter_deflection.get::<degree>() < 10.);
     }
 
     #[test]
