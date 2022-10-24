@@ -302,7 +302,7 @@ void FlyByWireInterface::setupLocalVariables() {
   idSideStickPositionX = make_unique<LocalVariable>("A32NX_SIDESTICK_POSITION_X");
   idSideStickPositionY = make_unique<LocalVariable>("A32NX_SIDESTICK_POSITION_Y");
   idRudderPedalPosition = make_unique<LocalVariable>("A32NX_RUDDER_PEDAL_POSITION");
-  // idRudderPedalAnimationPosition = make_unique<LocalVariable>("A32NX_RUDDER_PEDAL_ANIMATION_POSITION");
+
   idAutopilotNosewheelDemand = make_unique<LocalVariable>("A32NX_AUTOPILOT_NOSEWHEEL_DEMAND");
 
   // register L variable for custom fly-by-wire interface
@@ -472,8 +472,6 @@ void FlyByWireInterface::setupLocalVariables() {
 
   idSpoilersArmed = make_unique<LocalVariable>("A32NX_SPOILERS_ARMED");
   idSpoilersHandlePosition = make_unique<LocalVariable>("A32NX_SPOILERS_HANDLE_POSITION");
-
-  // idRudderPosition = make_unique<LocalVariable>("A32NX_RUDDER_DEFLECTION_DEMAND");
 
   idRadioReceiverUsageEnabled = make_unique<LocalVariable>("A32NX_RADIO_RECEIVER_USAGE_ENABLED");
   idRadioReceiverLocalizerValid = make_unique<LocalVariable>("A32NX_RADIO_RECEIVER_LOC_IS_VALID");
@@ -1707,25 +1705,6 @@ bool FlyByWireInterface::updateServoSolenoidStatus() {
   idRudderTravelLimitActiveModeCommanded[1]->set(facsDiscreteOutputs[1].rudder_travel_lim_engaged);
   idRudderTravelLimCommandedPosition[1]->set(facsAnalogOutputs[1].rudder_travel_limit_order_deg);
 
-  // SimInput simInput = simConnectInterface.getSimInput();
-
-  // idRudderPosition->set(-simInput.inputs[2] - (facsAnalogOutputs[0].yaw_damper_order_deg + facsAnalogOutputs[1].yaw_damper_order_deg) /
-  // 30);
-
-  // SimOutputZetaTrim outputZetaTrim = {};
-  // outputZetaTrim.zeta_trim_pos = -(facsAnalogOutputs[0].rudder_trim_order_deg + facsAnalogOutputs[1].rudder_trim_order_deg) / 20;
-  // if (facsDiscreteOutputs[0].rudder_trim_engaged || facsDiscreteOutputs[1].rudder_trim_engaged) {
-  //   if (!simConnectInterface.sendData(outputZetaTrim)) {
-  //     cout << "WASM: Write data failed!" << endl;
-  //     return false;
-  //   }
-  // }
-
-  // if (facsDiscreteOutputs[0].rudder_travel_lim_engaged || facsDiscreteOutputs[1].rudder_travel_lim_engaged) {
-  //   rudderTravelLimiterPosition = facsAnalogOutputs[0].rudder_travel_limit_order_deg +
-  //   facsAnalogOutputs[1].rudder_travel_limit_order_deg;
-  // }
-
   double totalSpoilersLeftDeflection = idLeftSpoilerPosition[0]->get() + idLeftSpoilerPosition[1]->get() + idLeftSpoilerPosition[2]->get() +
                                        idLeftSpoilerPosition[3]->get() + idLeftSpoilerPosition[4]->get();
   double totalSpoilersRightDeflection = idRightSpoilerPosition[0]->get() + idRightSpoilerPosition[1]->get() +
@@ -2302,7 +2281,6 @@ bool FlyByWireInterface::updateFlyByWire(double sampleTime) {
 
   // set rudder pedals position
   idRudderPedalPosition->set(max(-100, min(100, (-100.0 * simInput.inputs[2]))));
-  // idRudderPedalAnimationPosition->set(max(-100, min(100, (-100.0 * simInput.inputs[2]) + (100.0 * simData.zeta_trim_pos))));
 
   // provide tracking mode state
   idTrackingMode->set(wasInSlew || pauseDetected || idExternalOverride->get());
