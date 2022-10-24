@@ -532,6 +532,7 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFacDiscreteWord5[2];
   std::unique_ptr<LocalVariable> idFacDeltaRRudderTrim[2];
   std::unique_ptr<LocalVariable> idFacRudderTrimPos[2];
+  std::unique_ptr<LocalVariable> idFacRudderTravelLimitReset[2];
 
   std::unique_ptr<LocalVariable> idLeftAileronPosition;
   std::unique_ptr<LocalVariable> idRightAileronPosition;

@@ -635,6 +635,7 @@ void FlyByWireInterface::setupLocalVariables() {
     idFacDiscreteWord5[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_DISCRETE_WORD_5");
     idFacDeltaRRudderTrim[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_DELTA_R_RUDDER_TRIM");
     idFacRudderTrimPos[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_RUDDER_TRIM_POS");
+    idFacRudderTravelLimitReset[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_RTL_EMER_RESET");
   }
 
   for (int i = 0; i < 2; i++) {
@@ -1646,6 +1647,8 @@ bool FlyByWireInterface::updateFac(double sampleTime, int facIndex) {
   idFacDiscreteWord5[facIndex]->set(Arinc429Utils::toSimVar(facsBusOutputs[facIndex].discrete_word_5));
   idFacDeltaRRudderTrim[facIndex]->set(Arinc429Utils::toSimVar(facsBusOutputs[facIndex].delta_r_rudder_trim_deg));
   idFacRudderTrimPos[facIndex]->set(Arinc429Utils::toSimVar(facsBusOutputs[facIndex].rudder_trim_pos_deg));
+
+  idFacRudderTravelLimitReset[facIndex]->set(facsDiscreteOutputs[facIndex].rudder_travel_lim_emergency_reset);
 
   return true;
 }

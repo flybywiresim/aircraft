@@ -4983,8 +4983,8 @@ struct A320RudderTrimTravelLimiterController {
     id_commanded_position_1: VariableIdentifier,
     id_commanded_position_2: VariableIdentifier,
 
-    id_emergency_reset_1: VariableIdentifier,
-    id_emergency_reset_2: VariableIdentifier,
+    id_emergency_reset_1: Option<VariableIdentifier>,
+    id_emergency_reset_2: Option<VariableIdentifier>,
 
     commanded_position: [Angle; 2],
     active_mode: [bool; 2],
@@ -5008,10 +5008,16 @@ impl A320RudderTrimTravelLimiterController {
                 format!("RUDDER_{}_2_COMMANDED_POSITION", component_type).to_owned(),
             ),
 
-            id_emergency_reset_1: context
-                .get_identifier(format!("RUDDER_{}_1_EMERGENCY_RESET", component_type).to_owned()),
-            id_emergency_reset_2: context
-                .get_identifier(format!("RUDDER_{}_2_EMERGENCY_RESET", component_type).to_owned()),
+            id_emergency_reset_1: if component_type == RudderComponent::Limiter {
+                Some(context.get_identifier("FAC_1_RTL_EMER_RESET".to_owned()))
+            } else {
+                None
+            },
+            id_emergency_reset_2: if component_type == RudderComponent::Limiter {
+                Some(context.get_identifier("FAC_2_RTL_EMER_RESET".to_owned()))
+            } else {
+                None
+            },
 
             commanded_position: [Angle::default(); 2],
             active_mode: [false; 2],
@@ -5050,8 +5056,8 @@ impl SimulationElement for A320RudderTrimTravelLimiterController {
 
         // Only limiter has an emergency reset system
         if self.component_type == RudderComponent::Limiter {
-            self.is_emergency_reset =
-                reader.read(&self.id_emergency_reset_1) || reader.read(&self.id_emergency_reset_2);
+            self.is_emergency_reset = reader.read(&self.id_emergency_reset_1.unwrap())
+                || reader.read(&self.id_emergency_reset_2.unwrap());
         }
     }
 }
