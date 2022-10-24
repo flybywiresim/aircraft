@@ -394,7 +394,7 @@
                     <!-- Trim_Base configuration -->
                     <ARROW_TYPE>Curved</ARROW_TYPE>
                     <TRIM_NAME>RudderTrim</TRIM_NAME>
-                    <GET_TRIM>(A:RUDDER TRIM PCT, Percent) 2 * 100 -</GET_TRIM>
+                    <GET_TRIM>(A:RUDDER TRIM PCT, Percent)</GET_TRIM>
                     <SET_TRIM>(&gt;K:RUDDER_TRIM_SET_EX1)</SET_TRIM>
                     <ADDITIONAL_TESTS>(A:AUTOPILOT MASTER, Bool) ! and</ADDITIONAL_TESTS>
                 </UseTemplate>
