@@ -237,6 +237,9 @@ impl YawDamperMechanism {
 pub trait AngularPositioningController {
     fn commanded_position(&self) -> [Angle; 2];
     fn energised_motor(&self) -> [bool; 2];
+    fn emergency_reset_active(&self) -> bool {
+        false
+    }
 }
 
 /// Position an output shaft with the help of two elec motors.
@@ -295,10 +298,14 @@ impl AngularPositioningWithDualElecMotors {
 
     fn update_motors_command(&mut self, controller: &impl AngularPositioningController) {
         for (index, motor) in self.motors.iter_mut().enumerate() {
-            motor.set_active(
-                controller.energised_motor()[index],
-                controller.commanded_position()[index],
-            );
+            if controller.emergency_reset_active() {
+                motor.set_active(true, self.max_angle);
+            } else {
+                motor.set_active(
+                    controller.energised_motor()[index],
+                    controller.commanded_position()[index],
+                );
+            }
         }
     }
 
@@ -554,18 +561,24 @@ mod tests {
     struct TestPositionController {
         motor_active: [bool; 2],
         position_request: [Angle; 2],
+        emergency_reset: bool,
     }
     impl TestPositionController {
         fn default() -> Self {
             Self {
                 motor_active: [false; 2],
                 position_request: [Angle::default(); 2],
+                emergency_reset: false,
             }
         }
 
         fn set_active(&mut self, motor_active: [bool; 2], position_request: [Angle; 2]) {
             self.motor_active = motor_active;
             self.position_request = position_request;
+        }
+
+        fn set_emergency(&mut self, is_emergency_reset: bool) {
+            self.emergency_reset = is_emergency_reset;
         }
     }
     impl AngularPositioningController for TestPositionController {
@@ -575,6 +588,10 @@ mod tests {
 
         fn energised_motor(&self) -> [bool; 2] {
             self.motor_active
+        }
+
+        fn emergency_reset_active(&self) -> bool {
+            self.emergency_reset
         }
     }
 
@@ -671,6 +688,10 @@ mod tests {
         fn set_limiter_demand(&mut self, motor_active: [bool; 2], position_request: [Angle; 2]) {
             self.limiter_controller
                 .set_active(motor_active, position_request);
+        }
+
+        fn set_limiter_emergency_reset(&mut self) {
+            self.limiter_controller.set_emergency(true)
         }
 
         fn set_rudder_pedal_angle(&mut self, pedal_angle: Angle) {
@@ -860,6 +881,36 @@ mod tests {
 
         let final_rudder_deflection: Angle = test_bed.query(|a| a.final_rudder_demand());
         assert!((final_rudder_deflection.get::<degree>() - -3.5).abs() < 0.1);
+    }
+
+    #[test]
+    fn limiter_in_emergency_reset_goes_to_max_angle() {
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
+
+        test_bed.command(|a| {
+            a.set_limiter_demand(
+                [true, false],
+                [Angle::new::<degree>(3.5), Angle::new::<degree>(3.5)],
+            )
+        });
+        test_bed.run_with_delta(Duration::from_millis(20000));
+
+        let limiter_deflection: Angle = test_bed.read_by_name("HYD_RUDDER_LIMITER_FEEDBACK_ANGLE");
+        assert!(limiter_deflection.get::<degree>() < 10.);
+
+        test_bed.command(|a| {
+            a.set_limiter_demand(
+                [false, false],
+                [Angle::new::<degree>(3.5), Angle::new::<degree>(3.5)],
+            )
+        });
+
+        test_bed.command(|a| a.set_limiter_emergency_reset());
+
+        test_bed.run_with_delta(Duration::from_millis(20000));
+
+        let limiter_deflection: Angle = test_bed.read_by_name("HYD_RUDDER_LIMITER_FEEDBACK_ANGLE");
+        assert!(limiter_deflection.get::<degree>() > 10.);
     }
 
     #[test]

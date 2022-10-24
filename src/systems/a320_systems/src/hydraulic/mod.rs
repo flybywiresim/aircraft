@@ -4983,8 +4983,12 @@ struct A320RudderTrimTravelLimiterController {
     id_commanded_position_1: VariableIdentifier,
     id_commanded_position_2: VariableIdentifier,
 
+    id_emergency_reset_1: VariableIdentifier,
+    id_emergency_reset_2: VariableIdentifier,
+
     commanded_position: [Angle; 2],
     active_mode: [bool; 2],
+    is_emergency_reset: bool,
 
     component_type: RudderComponent,
 }
@@ -5003,8 +5007,16 @@ impl A320RudderTrimTravelLimiterController {
             id_commanded_position_2: context.get_identifier(
                 format!("RUDDER_{}_2_COMMANDED_POSITION", component_type).to_owned(),
             ),
+
+            id_emergency_reset_1: context
+                .get_identifier(format!("RUDDER_{}_1_EMERGENCY_RESET", component_type).to_owned()),
+            id_emergency_reset_2: context
+                .get_identifier(format!("RUDDER_{}_2_EMERGENCY_RESET", component_type).to_owned()),
+
             commanded_position: [Angle::default(); 2],
             active_mode: [false; 2],
+            is_emergency_reset: false,
+
             component_type: component_type,
         }
     }
@@ -5016,6 +5028,10 @@ impl AngularPositioningController for A320RudderTrimTravelLimiterController {
 
     fn energised_motor(&self) -> [bool; 2] {
         self.active_mode
+    }
+
+    fn emergency_reset_active(&self) -> bool {
+        self.is_emergency_reset
     }
 }
 impl SimulationElement for A320RudderTrimTravelLimiterController {
@@ -5031,6 +5047,12 @@ impl SimulationElement for A320RudderTrimTravelLimiterController {
 
         self.active_mode[0] = reader.read(&self.id_active_mode_1);
         self.active_mode[1] = reader.read(&self.id_active_mode_2);
+
+        // Only limiter has an emergency reset system
+        if self.component_type == RudderComponent::Limiter {
+            self.is_emergency_reset =
+                reader.read(&self.id_emergency_reset_1) || reader.read(&self.id_emergency_reset_2);
+        }
     }
 }
 
