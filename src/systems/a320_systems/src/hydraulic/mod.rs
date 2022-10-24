@@ -1,6 +1,7 @@
 use nalgebra::Vector3;
 
-use std::time::Duration;
+use std::{fmt::Display, time::Duration};
+
 use uom::si::{
     acceleration::meter_per_second_squared,
     angle::{degree, radian},
@@ -4962,6 +4963,20 @@ impl SimulationElement for A320YawDamperController {
     }
 }
 
+#[derive(Clone, Copy, Debug, PartialEq)]
+enum RudderComponent {
+    Limiter,
+    Trim,
+}
+impl Display for RudderComponent {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Limiter => write!(f, "TRAVEL_LIM"),
+            Self::Trim => write!(f, "TRIM"),
+        }
+    }
+}
+
 struct A320RudderTrimTravelLimiterController {
     id_active_mode_1: VariableIdentifier,
     id_active_mode_2: VariableIdentifier,
@@ -4970,20 +4985,27 @@ struct A320RudderTrimTravelLimiterController {
 
     commanded_position: [Angle; 2],
     active_mode: [bool; 2],
+
+    component_type: RudderComponent,
 }
 impl A320RudderTrimTravelLimiterController {
-    fn new(context: &mut InitContext, id: &str) -> Self {
+    fn new(context: &mut InitContext, component_type: RudderComponent) -> Self {
         Self {
-            id_active_mode_1: context
-                .get_identifier(format!("RUDDER_{}_1_ACTIVE_MODE_COMMANDED", id).to_owned()),
-            id_active_mode_2: context
-                .get_identifier(format!("RUDDER_{}_2_ACTIVE_MODE_COMMANDED", id).to_owned()),
-            id_commanded_position_1: context
-                .get_identifier(format!("RUDDER_{}_1_COMMANDED_POSITION", id).to_owned()),
-            id_commanded_position_2: context
-                .get_identifier(format!("RUDDER_{}_2_COMMANDED_POSITION", id).to_owned()),
+            id_active_mode_1: context.get_identifier(
+                format!("RUDDER_{}_1_ACTIVE_MODE_COMMANDED", component_type).to_owned(),
+            ),
+            id_active_mode_2: context.get_identifier(
+                format!("RUDDER_{}_2_ACTIVE_MODE_COMMANDED", component_type).to_owned(),
+            ),
+            id_commanded_position_1: context.get_identifier(
+                format!("RUDDER_{}_1_COMMANDED_POSITION", component_type).to_owned(),
+            ),
+            id_commanded_position_2: context.get_identifier(
+                format!("RUDDER_{}_2_COMMANDED_POSITION", component_type).to_owned(),
+            ),
             commanded_position: [Angle::default(); 2],
             active_mode: [false; 2],
+            component_type: component_type,
         }
     }
 }
@@ -5000,6 +5022,12 @@ impl SimulationElement for A320RudderTrimTravelLimiterController {
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.commanded_position[0] = reader.read(&self.id_commanded_position_1);
         self.commanded_position[1] = reader.read(&self.id_commanded_position_2);
+
+        // Trim commands from FBW is negative for right positive for left, opposite convention in hydraulics
+        if self.component_type == RudderComponent::Trim {
+            self.commanded_position[0] = -self.commanded_position[0];
+            self.commanded_position[1] = -self.commanded_position[1];
+        }
 
         self.active_mode[0] = reader.read(&self.id_active_mode_1);
         self.active_mode[1] = reader.read(&self.id_active_mode_2);
@@ -5043,10 +5071,13 @@ impl RudderSystemHydraulicController {
                 A320YawDamperController::new(context, HydraulicColor::Green),
                 A320YawDamperController::new(context, HydraulicColor::Yellow),
             ],
-            trim_control: A320RudderTrimTravelLimiterController::new(context, "TRIM"),
+            trim_control: A320RudderTrimTravelLimiterController::new(
+                context,
+                RudderComponent::Trim,
+            ),
             travel_limiter_control: A320RudderTrimTravelLimiterController::new(
                 context,
-                "TRAVEL_LIM",
+                RudderComponent::Limiter,
             ),
 
             rudder_mechanical_assembly: RudderMechanicalControl::new(context),
@@ -5194,12 +5225,14 @@ impl RudderSystemHydraulicController {
         );
 
         println!(
-            "RUDDER PEDAL {:.2}, YAW DAMP DEM [{:.2} {:.2}] Trim dem [{:.2} {:.2}]",
+            "RUDDER PEDAL {:.2}, YAW DAMP DEM [{:.2} {:.2}] Trim dem [{:.2} {:.2}] Lim dem [{:.2} {:.2}]",
             self.rudder_position_requested.get::<degree>(),
             self.yaw_damper_control[0].angle_demand.get::<degree>(),
             self.yaw_damper_control[1].angle_demand.get::<degree>(),
             self.trim_control.commanded_position[0].get::<degree>(),
             self.trim_control.commanded_position[1].get::<degree>(),
+            self.travel_limiter_control.commanded_position[0].get::<degree>(),
+            self.travel_limiter_control.commanded_position[1].get::<degree>(),
         );
 
         self.update_rudder_control_state();

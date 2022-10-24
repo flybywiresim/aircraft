@@ -72,7 +72,7 @@ struct YawDamperActuator {
     total_volume_to_reservoir: Volume,
 }
 impl YawDamperActuator {
-    const POSITION_FILTER_TIME_CONSTANT: Duration = Duration::from_millis(300);
+    const POSITION_FILTER_TIME_CONSTANT: Duration = Duration::from_millis(100);
     const POSITION_FILTER_MECHANICAL_CENTERING_TIME_CONSTANT: Duration =
         Duration::from_millis(3000);
 
@@ -297,7 +297,7 @@ impl AngularPositioningWithDualElecMotors {
         for (index, motor) in self.motors.iter_mut().enumerate() {
             motor.set_active(
                 controller.energised_motor()[index],
-                controller.commanded_position()[index].abs(),
+                controller.commanded_position()[index],
             );
         }
     }
@@ -610,8 +610,8 @@ mod tests {
 
         trim_controller: TestPositionController,
         limiter_controller: TestPositionController,
-        green_yaw_damper_controller: TestYawDamperController,
-        yellow_yaw_damper_controller: TestYawDamperController,
+        yaw_damper_controllers: [TestYawDamperController; 2],
+
         rudder_pedal_input: Angle,
 
         rudder_control: RudderMechanicalControl,
@@ -629,8 +629,11 @@ mod tests {
                 updater_fixed_step: FixedStepLoop::new(Duration::from_millis(33)),
                 trim_controller: TestPositionController::default(),
                 limiter_controller: TestPositionController::default(),
-                green_yaw_damper_controller: TestYawDamperController::default(),
-                yellow_yaw_damper_controller: TestYawDamperController::default(),
+                yaw_damper_controllers: [
+                    TestYawDamperController::default(),
+                    TestYawDamperController::default(),
+                ],
+
                 rudder_pedal_input: Angle::default(),
 
                 rudder_control: RudderMechanicalControl::new(context),
@@ -679,10 +682,8 @@ mod tests {
         }
 
         fn set_yaw_damper_states(&mut self, energized_relays: [bool; 2], angle_demand: [Angle; 2]) {
-            self.green_yaw_damper_controller
-                .set_active(energized_relays[0], angle_demand[0]);
-            self.yellow_yaw_damper_controller
-                .set_active(energized_relays[1], angle_demand[1])
+            self.yaw_damper_controllers[0].set_active(energized_relays[0], angle_demand[0]);
+            self.yaw_damper_controllers[1].set_active(energized_relays[1], angle_demand[1])
         }
     }
     impl Aircraft for TestAircraft {
@@ -710,10 +711,7 @@ mod tests {
                     self.rudder_pedal_input,
                     &self.trim_controller,
                     &self.limiter_controller,
-                    &[
-                        &self.green_yaw_damper_controller,
-                        &self.yellow_yaw_damper_controller,
-                    ],
+                    &self.yaw_damper_controllers,
                     self.hydraulic_pressures,
                 );
 

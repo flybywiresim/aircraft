@@ -696,6 +696,9 @@ void FlyByWireInterface::setupLocalVariables() {
   idLeftElevatorPosition = make_unique<LocalVariable>("A32NX_HYD_ELEVATOR_LEFT_DEFLECTION");
   idRightElevatorPosition = make_unique<LocalVariable>("A32NX_HYD_ELEVATOR_RIGHT_DEFLECTION");
 
+  idRudderTrimPosition = make_unique<LocalVariable>("A32NX_HYD_RUDDER_TRIM_FEEDBACK_ANGLE");
+  idRudderTravelLimiterPosition = make_unique<LocalVariable>("A32NX_HYD_RUDDER_LIMITER_FEEDBACK_ANGLE");
+
   idElecDcBus2Powered = make_unique<LocalVariable>("A32NX_ELEC_DC_2_BUS_IS_POWERED");
   idElecDcEssShedBusPowered = make_unique<LocalVariable>("A32NX_ELEC_DC_ESS_SHED_BUS_IS_POWERED");
   idElecDcEssBusPowered = make_unique<LocalVariable>("A32NX_ELEC_DC_ESS_BUS_IS_POWERED");
@@ -1576,8 +1579,8 @@ bool FlyByWireInterface::updateFac(double sampleTime, int facIndex) {
       facIndex == 0 ? idHydGreenPressurised->get() : idHydYellowPressurised->get();
 
   facs[facIndex].modelInputs.in.analog_inputs.yaw_damper_position_deg = 0;
-  facs[facIndex].modelInputs.in.analog_inputs.rudder_trim_position_deg = -simData.zeta_trim_pos * 20;
-  facs[facIndex].modelInputs.in.analog_inputs.rudder_travel_lim_position_deg = rudderTravelLimiterPosition;
+  facs[facIndex].modelInputs.in.analog_inputs.rudder_trim_position_deg = -idRudderTrimPosition->get();
+  facs[facIndex].modelInputs.in.analog_inputs.rudder_travel_lim_position_deg = idRudderTravelLimiterPosition->get();
 
   facs[facIndex].modelInputs.in.bus_inputs.fac_opp_bus = facsBusOutputs[oppFacIndex];
   facs[facIndex].modelInputs.in.bus_inputs.adr_own_bus = facIndex == 0 ? adrBusOutputs[0] : adrBusOutputs[1];
@@ -1715,9 +1718,10 @@ bool FlyByWireInterface::updateServoSolenoidStatus() {
   //   }
   // }
 
-  if (facsDiscreteOutputs[0].rudder_travel_lim_engaged || facsDiscreteOutputs[1].rudder_travel_lim_engaged) {
-    rudderTravelLimiterPosition = facsAnalogOutputs[0].rudder_travel_limit_order_deg + facsAnalogOutputs[1].rudder_travel_limit_order_deg;
-  }
+  // if (facsDiscreteOutputs[0].rudder_travel_lim_engaged || facsDiscreteOutputs[1].rudder_travel_lim_engaged) {
+  //   rudderTravelLimiterPosition = facsAnalogOutputs[0].rudder_travel_limit_order_deg +
+  //   facsAnalogOutputs[1].rudder_travel_limit_order_deg;
+  // }
 
   double totalSpoilersLeftDeflection = idLeftSpoilerPosition[0]->get() + idLeftSpoilerPosition[1]->get() + idLeftSpoilerPosition[2]->get() +
                                        idLeftSpoilerPosition[3]->get() + idLeftSpoilerPosition[4]->get();
