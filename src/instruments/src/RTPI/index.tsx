@@ -5,7 +5,7 @@ import { useSimVar } from '../Common/simVars';
 
 const RTPIDisplay = () => {
     const [ltsTest] = useSimVar('L:A32NX_OVHD_INTLT_ANN', 'Bool', 400);
-    const [rudderTrim] = useSimVar('RUDDER TRIM', 'degrees', 100);
+    const [rudderTrim] = useSimVar('L:A32NX_HYD_RUDDER_TRIM_FEEDBACK_ANGLE', 'degrees', 100);
 
     const directionText = rudderTrim <= 0 ? 'L' : 'R';
 
