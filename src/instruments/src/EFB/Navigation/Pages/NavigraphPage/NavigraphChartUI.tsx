@@ -41,10 +41,8 @@ export const NavigraphChartUI = () => {
 
     const assignAirportInfo = async () => {
         setIcaoAndNameDisagree(true);
-
         const airportInfo = await navigraph.getAirportInfo(searchQuery);
         setStatusBarInfo(airportInfo?.name || t('NavigationAndCharts.Navigraph.AirportDoesNotExist'));
-
         setIcaoAndNameDisagree(false);
     };
 
@@ -68,27 +66,22 @@ export const NavigraphChartUI = () => {
     }, [charts]);
 
     useEffect(() => {
-        const fetchCharts = async () => {
-            const light = await navigraph.chartCall(searchQuery, chartName.light);
-
-            const dark = await navigraph.chartCall(searchQuery, chartName.dark);
-
-            dispatch(editTabProperty({ tab: NavigationTab.NAVIGRAPH, chartLinks: { light, dark } }));
-        };
-
-        fetchCharts();
+        if (chartName && (chartName.light !== '' || chartName.dark !== '')) {
+            const fetchCharts = async () => {
+                const light = await navigraph.chartCall(searchQuery, chartName.light);
+                const dark = await navigraph.chartCall(searchQuery, chartName.dark);
+                dispatch(editTabProperty({ tab: NavigationTab.NAVIGRAPH, chartLinks: { light, dark } }));
+            };
+            fetchCharts();
+        }
     }, [chartName]);
 
     const handleIcaoChange = async (value: string) => {
         if (value.length !== 4) return;
-
         const newValue = value.toUpperCase();
-
         dispatch(editTabProperty({ tab: NavigationTab.NAVIGRAPH, searchQuery: newValue }));
-
         setChartListDisagrees(true);
         const chartList = await navigraph.getChartList(newValue);
-
         if (chartList) {
             setCharts(chartList);
         }
@@ -105,11 +98,9 @@ export const NavigraphChartUI = () => {
         if (searchQuery.length !== 4) {
             return t('NavigationAndCharts.Navigraph.NoAirportSelected');
         }
-
         if (loading) {
             return t('NavigationAndCharts.PleaseWait');
         }
-
         return statusBarInfo;
     };
 
@@ -117,7 +108,7 @@ export const NavigraphChartUI = () => {
     const simbriefDataLoaded = isSimbriefDataLoaded();
 
     return (
-        <div className="flex overflow-x-hidden flex-row w-full rounded-lg h-content-section-reduced">
+        <div className="flex overflow-x-hidden flex-row w-full h-content-section-reduced rounded-lg">
             <>
                 {!isFullScreen && (
                     <div className="flex-shrink-0" style={{ width: '450px' }}>

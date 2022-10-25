@@ -69,8 +69,8 @@
 
 :root {
   --main-display-colour-background: hsl(53, 82%, 2%);
-  --main-display-colour: hsl(32, 100%, 69%);
-  --main-display-colour-inactive: hsl(0, 0%, 4%);
+  --main-display-colour: hsl(30, 100%, 45%);
+  --main-display-colour-inactive: hsl(53, 82%, 1%);
 }
 
 :root text.Common {
@@ -88,6 +88,7 @@
   font-family: "Poppins-SemiBold";
   font-size: 28px;
   fill: var(--main-display-colour-inactive);
+  opacity: 0.1;
 }
 
 :root text.Value {
@@ -110,7 +111,7 @@
 a320-neo-fcu-element {
   width: 100%;
   height: 100%;
-  background-color: var(--main-display-colour-background);
+  background: var(--main-display-colour-background);
   font-family: "Poppins-SemiBold";
   position: relative;
   overflow: hidden;
@@ -129,6 +130,7 @@ a320-neo-fcu-element #Mainframe #LargeScreen {
   display: block;
   position: absolute;
   background-color: var(--main-display-colour-background);
+  box-shadow: inset 0px 0px 110px -20px rgba(255,98,0,0.5);
 }
 
 a320-neo-fcu-element #Mainframe #LargeScreen #Speed {
@@ -180,6 +182,7 @@ a320-neo-fcu-element #Mainframe #SmallScreen {
   position: absolute;
   top: 8%;
   background-color: var(--main-display-colour-background);
+  box-shadow: inset 0px 0px 110px -40px rgba(255,98,0,0.5);
 }
 
 a320-neo-fcu-element #Mainframe #SmallScreen #Selected,

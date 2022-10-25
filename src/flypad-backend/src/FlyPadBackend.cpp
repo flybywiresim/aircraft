@@ -29,7 +29,7 @@ FlyPadBackend_gauge_callback(__attribute__((unused)) FsContext ctx, int service_
       return FLYPAD_BACKEND.onUpdate(drawData->dt);
     }
     case PANEL_SERVICE_PRE_KILL: {
-      return FLYPAD_BACKEND.shutdown();;
+      return FLYPAD_BACKEND.shutdown();
     }
     default:
       break;
@@ -142,14 +142,12 @@ bool FlyPadBackend::onUpdate(double deltaTime) {
 
 bool FlyPadBackend::shutdown() {
   std::cout << "FLYPAD_BACKEND: Disconnecting ..." << std::endl;
-
+  
+  // shutdown submodules
   thirdPartyPtr->notifyATCServicesShutdown();
-
-  // shutdown suib modules
   lightPresetPtr->shutdown();
   aircraftPresetPtr->shutdown();
   pushbackPtr->shutdown();
-  thirdPartyPtr->shutdown();
 
   isConnected = false;
   unregister_all_named_vars();
@@ -222,12 +220,12 @@ void FlyPadBackend::simConnectProcessClientData(const SIMCONNECT_RECV_CLIENT_DAT
 void FlyPadBackend::simConnectProcessDispatchMessage(SIMCONNECT_RECV* pData, DWORD* cbData) {
   switch (pData->dwID) {
     case SIMCONNECT_RECV_ID_OPEN:
-      thirdPartyPtr->notifyATCServicesShutdown();
+      thirdPartyPtr->notifyATCServicesStart();
       cout << "FLYPAD_BACKEND: SimConnect connection established" << endl;
       break;
 
     case SIMCONNECT_RECV_ID_QUIT:
-      thirdPartyPtr->notifyATCServicesStart();
+      thirdPartyPtr->notifyATCServicesShutdown();
       cout << "FLYPAD_BACKEND: Received SimConnect connection quit message" << endl;
       break;
 
