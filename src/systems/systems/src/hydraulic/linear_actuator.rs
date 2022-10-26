@@ -185,7 +185,7 @@ impl LowPressureAccumulator {
     ) {
         let mut new_pressure =
             if input_pressure > self.pressure.output() && controller.should_open_refill_valve() {
-                Pressure::new::<psi>(1800.)
+                Pressure::new::<psi>(Self::MAX_ACCUMULATOR_PRESSURE_PSI)
             } else {
                 self.pressure.output()
             };
@@ -245,8 +245,8 @@ pub trait ElectroHydrostaticPowered {
 
 #[derive(PartialEq, Copy, Clone)]
 pub enum ElectroHydrostaticActuatorType {
-    EHA,  // Can only run on electric mode or is damping
-    EBHA, // Can run in electric or from aircraft hydraulic pressure
+    ElectroHydrostaticActuator, // Can only run on electric mode or is damping
+    ElectroBackupHydrostaticActuator, // Can run either in electric backup mode or from aircraft hydraulic pressure
 }
 
 #[derive(PartialEq, Copy, Clone)]
@@ -289,7 +289,7 @@ impl ElectroHydrostaticBackup {
     }
 
     fn can_move_using_aircraft_hydraulic_pressure(&self) -> bool {
-        self.backup_type == ElectroHydrostaticActuatorType::EBHA
+        self.backup_type == ElectroHydrostaticActuatorType::ElectroBackupHydrostaticActuator
     }
 
     #[cfg(test)]
@@ -4249,7 +4249,7 @@ mod tests {
             if has_electro_backup {
                 Some(ElectroHydrostaticBackup::new(
                     ElectricalBusType::AlternatingCurrent(1),
-                    ElectroHydrostaticActuatorType::EHA,
+                    ElectroHydrostaticActuatorType::ElectroHydrostaticActuator,
                 ))
             } else {
                 None
@@ -4322,7 +4322,7 @@ mod tests {
             if has_electro_backup {
                 Some(ElectroHydrostaticBackup::new(
                     ElectricalBusType::AlternatingCurrent(1),
-                    ElectroHydrostaticActuatorType::EBHA,
+                    ElectroHydrostaticActuatorType::ElectroBackupHydrostaticActuator,
                 ))
             } else {
                 None
