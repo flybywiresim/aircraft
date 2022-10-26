@@ -88,9 +88,10 @@ fn hyd_deflection_to_msfs_deflection(
 
     let normalized_angle = surface_angle / max_actual_angle;
 
-    if normalized_angle <= 0. {
-        normalized_angle * max_actual_angle / min_actual_angle
-    } else {
-        normalized_angle
-    }
+    println!(
+        "Pos normalized Hyd val {:.2} FBW fb {:.2}",
+        hyd_deflection, normalized_angle
+    );
+
+    normalized_angle
 }

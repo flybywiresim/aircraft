@@ -4868,6 +4868,13 @@ impl ElevatorSystemHydraulicController {
     }
 
     fn elevator_actuator_position_from_surface_angle(surface_angle: Angle) -> Ratio {
+        println!(
+            "ANGLE REQ FBW {:.2} -> Hyd val {:.2}",
+            surface_angle.get::<degree>(),
+            (-surface_angle.get::<degree>() / 47. + 17. / 47.)
+                .min(1.)
+                .max(0.),
+        );
         Ratio::new::<ratio>(
             (-surface_angle.get::<degree>() / 47. + 17. / 47.)
                 .min(1.)
