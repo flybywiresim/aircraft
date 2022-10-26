@@ -1,4 +1,4 @@
-$colour-main: hsl(31, 69%, 35%);
+$colour-main: hsl(40, 100%, 50%);
 
 @font-face {
   src: url("/Fonts/AirbusRMP.ttf") format("truetype");
@@ -8,7 +8,8 @@ $colour-main: hsl(31, 69%, 35%);
 }
 
 .atc-svg {
-  background-color: hsl(31, 69%, 6%);
+  background-color: hsl(55, 82%, 2%);
+  box-shadow: inset 0px 0px 110px -20px rgba(255,175,0,0.5);
   height: 100%;
   width: 100%;
   left: 0;
