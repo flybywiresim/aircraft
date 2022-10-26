@@ -9,13 +9,13 @@ use uom::si::{
     force::newton,
     length::meter,
     mass::kilogram,
-    power::{horsepower, watt},
-    pressure::psi,
+    power::watt,
+    pressure::{pascal, psi},
     ratio::ratio,
     torque::newton_meter,
     velocity::meter_per_second,
     volume::{cubic_meter, gallon},
-    volume_rate::{gallon_per_minute, gallon_per_second},
+    volume_rate::{cubic_meter_per_second, gallon_per_minute, gallon_per_second},
 };
 
 use crate::{
@@ -112,7 +112,6 @@ impl VariableSpeedPump {
     }
 
     fn update_power_consumed(&mut self, actuator_flow: VolumeRate, actuator_pressure: Pressure) {
-        // Horsepower = Pressure (PSIG) × Flow (GPM)/ 1714
         let current_fluid_power = Power::new::<watt>(
             actuator_pressure.get::<pascal>() * actuator_flow.get::<cubic_meter_per_second>(),
         );
