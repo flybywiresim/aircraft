@@ -5,7 +5,6 @@ use crate::simulation::{
 
 use uom::si::{
     angle::degree, angular_velocity::degree_per_second, f64::*, pressure::psi, volume::gallon,
-    volume_rate::gallon_per_minute,
 };
 
 use crate::shared::{low_pass_filter::LowPassFilter, ElectricalBusType, ElectricalBuses};
@@ -558,8 +557,7 @@ impl SimulationElement for RudderMechanicalControl {
 
 #[cfg(test)]
 mod tests {
-    use uom::si::angle::degree;
-    use uom::si::electric_potential::volt;
+    use uom::si::{angle::degree, electric_potential::volt, volume_rate::gallon_per_minute};
 
     use crate::electrical::test::TestElectricitySource;
     use crate::electrical::ElectricalBus;
