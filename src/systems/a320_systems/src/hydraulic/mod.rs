@@ -5248,17 +5248,6 @@ impl RudderSystemHydraulicController {
             ],
         );
 
-        println!(
-            "RUDDER PEDAL {:.2}, YAW DAMP DEM [{:.2} {:.2}] Trim dem [{:.2} {:.2}] Lim dem [{:.2} {:.2}]",
-            self.rudder_position_requested.get::<degree>(),
-            self.yaw_damper_control[0].angle_demand.get::<degree>(),
-            self.yaw_damper_control[1].angle_demand.get::<degree>(),
-            self.trim_control.commanded_position[0].get::<degree>(),
-            self.trim_control.commanded_position[1].get::<degree>(),
-            self.travel_limiter_control.commanded_position[0].get::<degree>(),
-            self.travel_limiter_control.commanded_position[1].get::<degree>(),
-        );
-
         self.update_rudder_control_state();
     }
 
