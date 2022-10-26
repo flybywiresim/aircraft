@@ -8,13 +8,6 @@ use msfs::{sim_connect::SimConnect, sim_connect::SIMCONNECT_OBJECT_ID_USER};
 use systems_wasm::{set_data_on_sim_object, Variable};
 
 pub(super) fn rudder(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>> {
-    // builder.map(
-    //     ExecuteOn::PreTick,
-    //     Variable::named("RUDDER_DEFLECTION_DEMAND"),
-    //     |value| (value + 1.) / 2.,
-    //     Variable::aspect("HYD_RUDDER_DEMAND"),
-    // );
-
     builder.map(
         ExecuteOn::PostTick,
         Variable::aspect("HYD_RUD_DEFLECTION"),
@@ -22,7 +15,7 @@ pub(super) fn rudder(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Erro
         Variable::named("HYD_RUDDER_DEFLECTION"),
     );
 
-    // AILERON POSITION FEEDBACK TO SIM
+    // RUDDER POSITION FEEDBACK TO SIM FLIGHT MODEL
     builder.map(
         ExecuteOn::PostTick,
         Variable::aspect("HYD_RUD_DEFLECTION"),
