@@ -69,6 +69,7 @@
 1. [PFD] Added option to sync FD/LS buttons between CPT and FO - @Eagle941 (Joe)
 1. [EFB] Add automatic loading of a lighting preset - @SpiritZephyr (Ben)
 1. [COND] Connect Air Conditioning System to Electrical System - @mjuhe (Miquel Juhe)
+1. [HYD] Default discrete of failed ADIRs impacts gear safety valve correctly - @Crocket63 (crocket)
 1. [ADDON] Simbridge Integration - @lucky38i (Alex)
 1. [SD] Visual and functional improvements/fixes to the HYD SD page - @lukecologne (luke)
 1. [HYD] Added optional auxiliary hydraulic section in core hydraulic circuits - @Crocket63
@@ -87,6 +88,7 @@
 1. [LIGHTS] Increased max brightness of cockpit displays - @frankkopp (Frank Kopp)
 1. [EFB] Improved Aircraft Presets procedures - @frankkopp (Frank Kopp)
 1. [FMGC] Make DES SPD LIM available prior to descent - @tracernz (Mike)
+1. [LIGHTS] Redone cockpit emissives panels and ambient lighting -@FinalLightNL (FinalLight)
 1. [HYD] Implemented Electro Hydrostatic actuators - @Crocket63 (crocket)
 
 ## 0.8.0
