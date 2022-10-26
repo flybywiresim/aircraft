@@ -113,8 +113,8 @@ impl VariableSpeedPump {
 
     fn update_power_consumed(&mut self, actuator_flow: VolumeRate, actuator_pressure: Pressure) {
         // Horsepower = Pressure (PSIG) × Flow (GPM)/ 1714
-        let current_fluid_power = Power::new::<horsepower>(
-            actuator_pressure.get::<psi>() * actuator_flow.get::<gallon_per_minute>() / 1714.,
+        let current_fluid_power = Power::new::<watt>(
+            actuator_pressure.get::<pascal>() * actuator_flow.get::<cubic_meter_per_second>(),
         );
 
         self.consumed_power = if self.is_active() {
