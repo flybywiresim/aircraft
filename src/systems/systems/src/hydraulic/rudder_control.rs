@@ -4,13 +4,8 @@ use crate::simulation::{
 };
 
 use uom::si::{
-    angle::degree,
-    angular_velocity::degree_per_second,
-    f64::*,
-    pressure::psi,
-    ratio::ratio,
-    volume::gallon,
-    volume_rate::{gallon_per_minute, gallon_per_second},
+    angle::degree, angular_velocity::degree_per_second, f64::*, pressure::psi, volume::gallon,
+    volume_rate::gallon_per_minute,
 };
 
 use crate::shared::{low_pass_filter::LowPassFilter, ElectricalBusType, ElectricalBuses};
@@ -530,16 +525,10 @@ impl RudderMechanicalControl {
                 .min(self.travel_limiter.max())
                 .max(self.travel_limiter.min());
 
-        self.pedal_position = rudder_pedal_position_requested + self.trim.angle();
-
-        println!("TRIM MECH POS: {:.3} , YAW DAMPER POS {:.3}, LIMITER +/- {:.3} Final actuator input {:.3} Flows gpm G Y {:.2} {:.2}",
-                    self.trim.mechanism.angle.get::<degree>(),
-                    self.yaw_damper.angle().get::<degree>(),
-                    self.travel_limiter.mechanism.angle.get::<degree>(),
-                    self.final_actuators_input.get::<degree>(),
-                    self.yaw_damper.actuators[0].flow.get::<gallon_per_minute>(),
-                    self.yaw_damper.actuators[1].flow.get::<gallon_per_minute>()
-                );
+        // Travel limiter also limits pedal travel while trim position mechanism can still be further than travel limit from references we found
+        self.pedal_position = (rudder_pedal_position_requested + self.trim.angle())
+            .max(self.travel_limiter.min())
+            .min(self.travel_limiter.max());
     }
 
     pub fn green_actuator(&mut self) -> &mut impl Actuator {
@@ -570,7 +559,7 @@ impl SimulationElement for RudderMechanicalControl {
 #[cfg(test)]
 mod tests {
     use uom::si::angle::degree;
-    use uom::si::{angular_velocity::degree_per_second, electric_potential::volt, ratio::percent};
+    use uom::si::electric_potential::volt;
 
     use crate::electrical::test::TestElectricitySource;
     use crate::electrical::ElectricalBus;
@@ -726,6 +715,10 @@ mod tests {
 
         fn set_rudder_pedal_angle(&mut self, pedal_angle: Angle) {
             self.rudder_pedal_input = pedal_angle;
+        }
+
+        fn rudder_pedal_angle(&self) -> Angle {
+            self.rudder_control.pedal_position()
         }
 
         fn set_nominal_elec_power(&mut self, is_on: bool) {
@@ -1118,5 +1111,29 @@ mod tests {
 
         let final_rudder_deflection: Angle = test_bed.query(|a| a.final_rudder_demand());
         assert!((final_rudder_deflection.get::<degree>() - 0.).abs() < 0.1);
+    }
+
+    #[test]
+    fn limiter_limits_pedal_position() {
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
+
+        test_bed.command(|a| a.set_rudder_pedal_angle(Angle::new::<degree>(-25.)));
+        test_bed.command(|a| {
+            a.set_limiter_demand(
+                [true, false],
+                [Angle::new::<degree>(3.5), Angle::new::<degree>(3.5)],
+            )
+        });
+        test_bed.run_with_delta(Duration::from_millis(100));
+        assert!(test_bed.query(|a| a.rudder_pedal_angle()).get::<degree>() < -22.);
+
+        test_bed.run_with_delta(Duration::from_millis(30000));
+
+        assert!(test_bed.query(|a| a.rudder_pedal_angle()).get::<degree>() > -4.);
+
+        test_bed.command(|a| a.set_rudder_pedal_angle(Angle::new::<degree>(25.)));
+
+        test_bed.run_with_delta(Duration::from_millis(100));
+        assert!(test_bed.query(|a| a.rudder_pedal_angle()).get::<degree>() < 4.);
     }
 }

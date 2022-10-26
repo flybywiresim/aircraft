@@ -4995,18 +4995,14 @@ struct A320RudderTrimTravelLimiterController {
 impl A320RudderTrimTravelLimiterController {
     fn new(context: &mut InitContext, component_type: RudderComponent) -> Self {
         Self {
-            id_active_mode_1: context.get_identifier(
-                format!("RUDDER_{}_1_ACTIVE_MODE_COMMANDED", component_type).to_owned(),
-            ),
-            id_active_mode_2: context.get_identifier(
-                format!("RUDDER_{}_2_ACTIVE_MODE_COMMANDED", component_type).to_owned(),
-            ),
-            id_commanded_position_1: context.get_identifier(
-                format!("RUDDER_{}_1_COMMANDED_POSITION", component_type).to_owned(),
-            ),
-            id_commanded_position_2: context.get_identifier(
-                format!("RUDDER_{}_2_COMMANDED_POSITION", component_type).to_owned(),
-            ),
+            id_active_mode_1: context
+                .get_identifier(format!("RUDDER_{}_1_ACTIVE_MODE_COMMANDED", component_type)),
+            id_active_mode_2: context
+                .get_identifier(format!("RUDDER_{}_2_ACTIVE_MODE_COMMANDED", component_type)),
+            id_commanded_position_1: context
+                .get_identifier(format!("RUDDER_{}_1_COMMANDED_POSITION", component_type)),
+            id_commanded_position_2: context
+                .get_identifier(format!("RUDDER_{}_2_COMMANDED_POSITION", component_type)),
 
             id_emergency_reset_1: if component_type == RudderComponent::Limiter {
                 Some(context.get_identifier("FAC_1_RTL_EMER_RESET".to_owned()))
@@ -5023,7 +5019,7 @@ impl A320RudderTrimTravelLimiterController {
             active_mode: [false; 2],
             is_emergency_reset: false,
 
-            component_type: component_type,
+            component_type,
         }
     }
 }
