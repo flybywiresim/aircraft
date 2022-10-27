@@ -2211,9 +2211,9 @@ class FMCMainDisplay extends BaseAirliners {
                 if (currentRunway) {
                     SimVar.SetSimVarValue("L:A32NX_DEPARTURE_ELEVATION", "feet", A32NX_Util.meterToFeet(currentRunway.elevation));
                     const departure = this.flightPlanManager.getDeparture();
-                    const departureRunwayIndex = departure.runwayTransitions.findIndex(t => {
+                    const departureRunwayIndex = departure ? departure.runwayTransitions.findIndex(t => {
                         return t.runwayNumber === currentRunway.number && t.runwayDesignation === currentRunway.designator;
-                    });
+                    }) : -1;
                     if (departureRunwayIndex >= -1) {
                         return this.flightPlanManager.setDepartureRunwayIndex(departureRunwayIndex, () => {
                             return callback(true);
@@ -2222,6 +2222,12 @@ class FMCMainDisplay extends BaseAirliners {
                 }
                 return callback(true);
             }).catch(console.error);
+        });
+    }
+
+    setDepartureTransitionIndex(transIndex, callback = EmptyCallback.Boolean) {
+        this.ensureCurrentFlightPlanIsTemporary(() => {
+            this.flightPlanManager.setDepartureEnRouteTransitionIndex(transIndex, callback);
         });
     }
 

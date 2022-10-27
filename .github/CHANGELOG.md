@@ -89,6 +89,7 @@
 1. [EFB] Improved Aircraft Presets procedures - @frankkopp (Frank Kopp)
 1. [FMGC] Make DES SPD LIM available prior to descent - @tracernz (Mike)
 1. [LIGHTS] Redone cockpit emissives panels and ambient lighting -@FinalLightNL (FinalLight)
+1. [FMGC] Rework f-pln departure page - @tracernz (Mike)
 
 ## 0.8.0
 
