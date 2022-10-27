@@ -245,7 +245,7 @@ pub trait ElectroHydrostaticPowered {
 #[derive(PartialEq, Copy, Clone)]
 pub enum ElectroHydrostaticActuatorType {
     ElectroHydrostaticActuator, // Can only run on electric mode or is damping
-    ElectroBackupHydrostaticActuator, // Can run either in electric backup mode or from aircraft hydraulic pressure
+    ElectricalBackupHydraulicActuator, // Can run either in electric backup mode or from aircraft hydraulic pressure
 }
 
 #[derive(PartialEq, Copy, Clone)]
@@ -288,7 +288,7 @@ impl ElectroHydrostaticBackup {
     }
 
     fn can_move_using_aircraft_hydraulic_pressure(&self) -> bool {
-        self.backup_type == ElectroHydrostaticActuatorType::ElectroBackupHydrostaticActuator
+        self.backup_type == ElectroHydrostaticActuatorType::ElectricalBackupHydraulicActuator
     }
 
     #[cfg(test)]
@@ -4321,7 +4321,7 @@ mod tests {
             if has_electro_backup {
                 Some(ElectroHydrostaticBackup::new(
                     ElectricalBusType::AlternatingCurrent(1),
-                    ElectroHydrostaticActuatorType::ElectroBackupHydrostaticActuator,
+                    ElectroHydrostaticActuatorType::ElectricalBackupHydraulicActuator,
                 ))
             } else {
                 None
