@@ -2035,7 +2035,7 @@ mod tests {
                 .update(context, &self.controllers[..], self.pressures);
 
             println!(
-                "Body angle {:.2} Body Npos {:.3}, Act Npos {:.3}, Act force {:.1} ",
+                "Body angle {:.2} Body Npos {:.3}, Act Npos {:.3}, Act force {:.1} , Fluid used act0 {:.5}",
                 self.hydraulic_assembly
                     .rigid_body
                     .angular_position
@@ -2050,6 +2050,7 @@ mod tests {
                 self.hydraulic_assembly.linear_actuators[0]
                     .force()
                     .get::<newton>(),
+                (self.hydraulic_assembly.linear_actuators[0].used_volume() - self.hydraulic_assembly.linear_actuators[0].reservoir_return()).get::<gallon>()
             );
         }
 
