@@ -69,21 +69,28 @@
 1. [PFD] Added option to sync FD/LS buttons between CPT and FO - @Eagle941 (Joe)
 1. [EFB] Add automatic loading of a lighting preset - @SpiritZephyr (Ben)
 1. [COND] Connect Air Conditioning System to Electrical System - @mjuhe (Miquel Juhe)
+1. [HYD] Default discrete of failed ADIRs impacts gear safety valve correctly - @Crocket63 (crocket)
 1. [ADDON] Simbridge Integration - @lucky38i (Alex)
-2. [SD] Visual and functional improvements/fixes to the HYD SD page - @lukecologne (luke)
-3. [HYD] Added optional auxiliary hydraulic section in core hydraulic circuits - @Crocket63
-4. [EFB] Added SimBridge Health Check icon to Status Bar - @frankkopp (Frank Kopp)
-5. [HYD] Fixed opened gear door wobbling - @Crocket63
-6. [HYD] Fix gear extending whith dual lgciu power loss - @Crocket63 (crocket)
-7. [EFB] flyPad pushback option to ignore controller inputs - @frankkopp (Frank Kopp)
-8. [FCTL] Add realistically simulated F/CTL computers: ELAC/SEC/FCDC/FAC - @lukecologne (luke)
-9.  [HYD] Accelerations impacts hydraulic reservoir fluid movement - @Crocket63 (crocket)
-10. [FLIGHTMODEL] Add SU10 crosswind parameters - @donstim (donbikes#4084)
-11. [MODEL] Visible pilot avatars via flyPad setting - @frankkopp (Frank Kopp)
-12. [MODEL] Fixed screens flickering in SU10 - @tyler58546 (tyler58546)
-13. [EFB] Added Local Files support - @ErickSharp (Erick Torres) @frankkopp (Frank Kopp)
-14. [BLEED] Added custom Wing Anti-Ice model - @omrygin, @Eagle941 (Joe)
-15. [MCDU] Support coroute loading and viewing - @lucky38i (Alex)
+1. [SD] Visual and functional improvements/fixes to the HYD SD page - @lukecologne (luke)
+1. [HYD] Added optional auxiliary hydraulic section in core hydraulic circuits - @Crocket63
+1. [EFB] Added SimBridge Health Check icon to Status Bar - @frankkopp (Frank Kopp)
+1. [HYD] Fixed opened gear door wobbling - @Crocket63
+1. [HYD] Fix gear extending whith dual lgciu power loss - @Crocket63 (crocket)
+1. [EFB] flyPad pushback option to ignore controller inputs - @frankkopp (Frank Kopp)
+1. [FCTL] Add realistically simulated F/CTL computers: ELAC/SEC/FCDC/FAC - @lukecologne (luke)
+1. [HYD] Accelerations impacts hydraulic reservoir fluid movement - @Crocket63 (crocket)
+1. [FLIGHTMODEL] Add SU10 crosswind parameters - @donstim (donbikes#4084)
+1. [MODEL] Visible pilot avatars via flyPad setting - @frankkopp (Frank Kopp)
+1. [MODEL] Fixed screens flickering in SU10 - @tyler58546 (tyler58546)
+1. [EFB] Added Local Files support - @ErickSharp (Erick Torres) @frankkopp (Frank Kopp)
+1. [BLEED] Added custom Wing Anti-Ice model - @omrygin, @Eagle941 (Joe)
+1. [MISC] Fix FDR data for support analysis - @frankkopp (Frank Kopp)
+1. [LIGHTS] Increased max brightness of cockpit displays - @frankkopp (Frank Kopp)
+1. [EFB] Improved Aircraft Presets procedures - @frankkopp (Frank Kopp)
+1. [FMGC] Make DES SPD LIM available prior to descent - @tracernz (Mike)
+1. [LIGHTS] Redone cockpit emissives panels and ambient lighting -@FinalLightNL (FinalLight)
+1. [FMGC] Rework f-pln departure page - @tracernz (Mike)
+1. [MCDU] Support coroute loading and viewing - @lucky38i (Alex)
 
 ## 0.8.0
 
