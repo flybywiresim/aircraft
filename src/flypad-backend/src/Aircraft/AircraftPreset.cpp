@@ -38,8 +38,8 @@ void AircraftPreset::onUpdate(double deltaTime) {
     // needs to be initialized
     if (!loadingIsActive) {
       // check if procedure ID exists
-      const auto* requestedProcedure = procedures.getProcedure(loadAircraftPresetRequest);
-      if (requestedProcedure == nullptr) {
+      const auto [firstProcedure, lastProcedure] = procedures.getProcedure(loadAircraftPresetRequest);
+      if (!firstProcedure && !lastProcedure) {
         std::cout << "FLYPAD_BACKEND: Preset " << loadAircraftPresetRequest << " not found!"
                   << std::endl;
         setLoadAircraftPresetRequest(0);
@@ -49,7 +49,7 @@ void AircraftPreset::onUpdate(double deltaTime) {
 
       // initialize new loading process
       currentProcedureID = loadAircraftPresetRequest;
-      currentProcedure = requestedProcedure;
+      currentProcedure = std::make_pair(firstProcedure, lastProcedure);
       currentLoadingTime = 0;
       currentDelay = 0;
       currentStep = 0;
@@ -67,7 +67,8 @@ void AircraftPreset::onUpdate(double deltaTime) {
     setLoadAircraftPresetRequest(static_cast<FLOAT64>(currentProcedureID));
 
     // check if all procedure steps are done and the procedure is finished
-    if (currentStep >= currentProcedure->size()) {
+    const auto procedureSize = currentProcedure.second - currentProcedure.first;
+    if (currentStep >= procedureSize) {
       std::cout << "FLYPAD_BACKEND: Aircraft Preset " << currentProcedureID << " done!"
                 << std::endl;
       setProgressAircraftPreset(0);
@@ -86,7 +87,7 @@ void AircraftPreset::onUpdate(double deltaTime) {
     }
 
     // convenience tmp
-    const auto currentStepPtr = currentProcedure->at(currentStep);
+    const auto currentStepPtr = currentProcedure.first + currentStep;
 
     // calculate next delay
     currentDelay = currentLoadingTime + currentStepPtr->delayAfter;
@@ -99,8 +100,8 @@ void AircraftPreset::onUpdate(double deltaTime) {
     // check if the current step is a condition step and check the condition
     if (currentStepPtr->isConditional) {
       // update progress var
-      setProgressAircraftPreset((double) currentStep / currentProcedure->size());
-      setProgressAircraftPresetId(currentProcedure->at(currentStep)->id);
+      setProgressAircraftPreset((double) currentStep / procedureSize);
+      setProgressAircraftPresetId(currentStepPtr->id);
       execute_calculator_code(currentStepPtr->actionCode.c_str(), &fvalue, &ivalue, &svalue);
       std::cout << "FLYPAD_BACKEND: Aircraft Preset Step " << currentStep << " Condition: "
                 << currentStepPtr->description
@@ -138,8 +139,8 @@ void AircraftPreset::onUpdate(double deltaTime) {
     }
 
     // update progress var
-    setProgressAircraftPreset((double) currentStep / currentProcedure->size());
-    setProgressAircraftPresetId(currentProcedure->at(currentStep)->id);
+    setProgressAircraftPreset((double) currentStep / procedureSize);
+    setProgressAircraftPresetId(currentStepPtr->id);
 
     // execute code to set expected state
     std::cout << "FLYPAD_BACKEND: Aircraft Preset Step " << currentStep << " Execute: "
