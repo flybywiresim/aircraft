@@ -255,6 +255,10 @@ const HydReservoir = ({ system, x, y, lowLevel } : HydReservoirProps) => {
 
     const [lowAirPress] = useSimVar(`L:A32NX_HYD_${system}_RESERVOIR_AIR_PRESSURE_IS_LOW`, 'boolean', 1000);
 
+    // The overheat indication should be computed by the EIS itself from the numerical temperature value,
+    // by applying a hysteresis logic. For now, we just use a boolean from the hydraulics directly.
+    const [overheat] = useSimVar(`L:A32NX_HYD_${system}_RESERVOIR_OVHT`, 'boolean', 1000);
+
     const fluidLevelInLitres = fluidLevel * litersPerGallon;
 
     const values = levels[system];
@@ -282,6 +286,9 @@ const HydReservoir = ({ system, x, y, lowLevel } : HydReservoirProps) => {
 
             <text className={lowAirPress ? 'Large Amber' : 'Hide'} x={20} y={-80}>LO AIR</text>
             <text className={lowAirPress ? 'Large Amber' : 'Hide'} x={20} y={-50}>PRESS</text>
+
+            { /* Not sure about the exact placement, have to wait for an IRL ref */ }
+            <text className={overheat ? 'Large Amber' : 'Hide'} x={20} y={-5}>OVHT</text>
         </SvgGroup>
     );
 };
