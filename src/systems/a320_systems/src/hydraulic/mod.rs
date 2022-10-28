@@ -41,10 +41,10 @@ use systems::{
             ManualPitchTrimController, PitchTrimActuatorController,
             TrimmableHorizontalStabilizerAssembly,
         },
-        ElectricPump, EngineDrivenPump, HydraulicCircuit, HydraulicCircuitController,
-        HydraulicPressureSensors, PowerTransferUnit, PowerTransferUnitCharacteristics,
-        PowerTransferUnitController, PressureSwitch, PressureSwitchType, PumpController,
-        RamAirTurbine, RamAirTurbineController, Reservoir,
+        ElectricPump, EngineDrivenPump, HeatingElement, HydraulicCircuit,
+        HydraulicCircuitController, HydraulicPressureSensors, PowerTransferUnit,
+        PowerTransferUnitCharacteristics, PowerTransferUnitController, PressureSwitch,
+        PressureSwitchType, PumpController, RamAirTurbine, RamAirTurbineController, Reservoir,
     },
     landing_gear::{GearSystemSensors, LandingGearControlInterfaceUnitSet},
     overhead::{
@@ -1746,6 +1746,7 @@ impl A320Hydraulic {
         self.power_transfer_unit_controller
             .has_air_pressure_low_fault()
             || self.power_transfer_unit_controller.has_low_level_fault()
+            || self.power_transfer_unit_controller.has_overheat_fault()
     }
 
     fn green_edp_has_fault(&self) -> bool {
@@ -2188,7 +2189,9 @@ impl A320Hydraulic {
             lgciu2,
             self.green_circuit.reservoir(),
             self.yellow_circuit.reservoir(),
+            &self.power_transfer_unit,
         );
+
         self.power_transfer_unit.update(
             context,
             self.green_circuit.system_section(),
@@ -3110,6 +3113,7 @@ struct A320PowerTransferUnitController {
 
     has_air_pressure_low_fault: bool,
     has_low_level_fault: bool,
+    has_overheat_fault: bool,
 }
 impl A320PowerTransferUnitController {
     const DURATION_OF_PTU_INHIBIT_AFTER_CARGO_DOOR_OPERATION: Duration = Duration::from_secs(40);
@@ -3135,6 +3139,7 @@ impl A320PowerTransferUnitController {
 
             has_air_pressure_low_fault: false,
             has_low_level_fault: false,
+            has_overheat_fault: false,
         }
     }
 
@@ -3148,6 +3153,7 @@ impl A320PowerTransferUnitController {
         lgciu2: &impl LgciuInterface,
         reservoir_left_side: &Reservoir,
         reservoir_right_side: &Reservoir,
+        ptu: &impl HeatingElement,
     ) {
         self.should_inhibit_ptu_after_cargo_door_operation.update(
             context,
@@ -3172,6 +3178,8 @@ impl A320PowerTransferUnitController {
         self.update_low_air_pressure(reservoir_left_side, reservoir_right_side, overhead_panel);
 
         self.update_low_level(reservoir_left_side, reservoir_right_side, overhead_panel);
+
+        self.has_overheat_fault = ptu.is_overheating();
     }
 
     fn update_low_air_pressure(
@@ -3202,6 +3210,10 @@ impl A320PowerTransferUnitController {
 
     fn has_low_level_fault(&self) -> bool {
         self.has_low_level_fault
+    }
+
+    fn has_overheat_fault(&self) -> bool {
+        self.has_overheat_fault
     }
 }
 impl PowerTransferUnitController for A320PowerTransferUnitController {

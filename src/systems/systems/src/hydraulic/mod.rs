@@ -74,14 +74,35 @@ pub trait PressureSource {
 
 pub struct Fluid {
     current_bulk: Pressure,
+    heat_state: HeatingProperties,
 }
 impl Fluid {
     pub fn new(bulk: Pressure) -> Self {
-        Self { current_bulk: bulk }
+        Self {
+            current_bulk: bulk,
+            heat_state: HeatingProperties::new(
+                Duration::from_secs_f64(0.5 * 60.),
+                Duration::from_secs_f64(3. * 60.),
+                Duration::from_secs_f64(3. * 60.),
+            ),
+        }
     }
 
     pub fn bulk_mod(&self) -> Pressure {
         self.current_bulk
+    }
+
+    fn update(&mut self, context: &UpdateContext, is_heating: bool) {
+        self.heat_state.update(context, is_heating);
+    }
+}
+impl HeatingElement for Fluid {
+    fn is_overheating(&self) -> bool {
+        self.heat_state.is_overheating()
+    }
+
+    fn is_damaged(&self) -> bool {
+        self.heat_state.is_damaged()
     }
 }
 
@@ -173,6 +194,60 @@ impl LevelSwitch {
     }
 }
 
+pub trait HeatingElement {
+    fn is_overheating(&self) -> bool;
+    fn is_damaged(&self) -> bool;
+}
+
+struct HeatingProperties {
+    is_overheating: bool,
+    is_damaged_by_heat: bool,
+
+    damaging_time: DelayedTrueLogicGate,
+
+    heat_factor: LowPassFilter<Ratio>,
+    heat_time: Duration,
+    cool_time: Duration,
+}
+impl HeatingProperties {
+    fn new(heat_time: Duration, cool_time: Duration, damage_time: Duration) -> Self {
+        Self {
+            is_overheating: false,
+            is_damaged_by_heat: false,
+            damaging_time: DelayedTrueLogicGate::new(damage_time),
+            heat_factor: LowPassFilter::new(heat_time),
+            heat_time,
+            cool_time,
+        }
+    }
+
+    fn update(&mut self, context: &UpdateContext, is_heating: bool) {
+        if is_heating {
+            self.heat_factor.set_time_constant(self.heat_time);
+            self.heat_factor
+                .update(context.delta(), Ratio::new::<ratio>(1.));
+        } else {
+            self.heat_factor.set_time_constant(self.cool_time);
+            self.heat_factor
+                .update(context.delta(), Ratio::new::<ratio>(0.));
+        };
+
+        self.is_overheating = self.heat_factor.output().get::<ratio>() > 0.5;
+
+        self.damaging_time.update(context, self.is_overheating);
+        self.is_damaged_by_heat = self.is_damaged_by_heat || self.damaging_time.output();
+    }
+}
+impl HeatingElement for HeatingProperties {
+    fn is_overheating(&self) -> bool {
+        self.is_overheating
+    }
+
+    fn is_damaged(&self) -> bool {
+        self.is_damaged_by_heat
+    }
+}
+
 pub trait PowerTransferUnitController {
     fn should_enable(&self) -> bool;
 }
@@ -223,6 +298,8 @@ pub struct PowerTransferUnit {
     has_stopped_since_last_write: bool,
 
     efficiency: Ratio,
+
+    heat_state: HeatingProperties,
 }
 impl PowerTransferUnit {
     const MIN_SPEED_SIMULATION_RPM: f64 = 50.;
@@ -303,6 +380,12 @@ impl PowerTransferUnit {
             has_stopped_since_last_write: false,
 
             efficiency: characteristics.efficiency(),
+
+            heat_state: HeatingProperties::new(
+                Duration::from_secs_f64(1. * 60.),
+                Duration::from_secs_f64(3. * 60.),
+                Duration::from_secs_f64(5. * 60.),
+            ),
         }
     }
 
@@ -337,6 +420,18 @@ impl PowerTransferUnit {
         self.update_continuous_state(context);
         self.capture_bark_strength();
         self.update_flows();
+
+        self.heat_state.update(
+            context,
+            self.shaft_speed.get::<revolution_per_minute>() > 2000.,
+        );
+
+        println!(
+            "PTU SPEED {:.0} PTU HEAT FACTOR {:.2} PTU DAMAGED {:?}",
+            self.shaft_speed.get::<revolution_per_minute>(),
+            self.heat_state.heat_factor.output().get::<ratio>(),
+            self.heat_state.is_damaged(),
+        );
     }
 
     fn update_displacement(
@@ -431,12 +526,16 @@ impl PowerTransferUnit {
         let left_side_torque = -Self::calc_generated_torque(left_pressure, self.left_displacement);
         let right_side_torque =
             Self::calc_generated_torque(right_pressure, self.right_displacement.output());
+
         let friction_torque = Torque::new::<newton_meter>(
             Self::SHAFT_FRICTION * -self.shaft_speed.get::<radian_per_second>(),
         );
+
         let total_torque = friction_torque + left_side_torque + right_side_torque;
 
-        if self.is_rotating() || total_torque.abs().get::<newton_meter>() > Self::BREAKOUT_TORQUE_NM
+        if !self.heat_state.is_damaged()
+            && (self.is_rotating()
+                || total_torque.abs().get::<newton_meter>() > Self::BREAKOUT_TORQUE_NM)
         {
             let acc = total_torque.get::<newton_meter>() / Self::SHAFT_INERTIA;
             self.shaft_speed +=
@@ -593,6 +692,15 @@ impl SimulationElement for PowerTransferUnit {
         self.has_stopped_since_last_write = false;
     }
 }
+impl HeatingElement for PowerTransferUnit {
+    fn is_overheating(&self) -> bool {
+        self.heat_state.is_overheating()
+    }
+
+    fn is_damaged(&self) -> bool {
+        self.heat_state.is_damaged()
+    }
+}
 
 pub trait HydraulicCircuitController {
     fn should_open_fire_shutoff_valve(&self, pump_index: usize) -> bool;
@@ -728,6 +836,8 @@ pub struct HydraulicCircuit {
     pump_sections: Vec<Section>,
     system_section: Section,
     auxiliary_section: Option<Section>,
+
+    id: HydraulicColor,
 
     pump_sections_check_valves: Vec<CheckValve>,
 
@@ -873,7 +983,7 @@ impl HydraulicCircuit {
             } else {
                 None
             },
-
+            id,
             pump_sections_check_valves: pump_to_system_check_valves,
             pump_section_routed_to_auxiliary_section: pump_section_to_auxiliary,
             fluid: Fluid::new(Pressure::new::<pascal>(Self::FLUID_BULK_MODULUS_PASCAL)),
@@ -908,7 +1018,29 @@ impl HydraulicCircuit {
         controller: &impl HydraulicCircuitController,
         reservoir_pressure: Pressure,
     ) {
-        self.reservoir.update(context, reservoir_pressure);
+        let mut ptu_overheats_fluid = false;
+        if let Some(ptu) = ptu.as_ref() {
+            if ptu.is_overheating() && ptu.is_rotating() {
+                ptu_overheats_fluid = true;
+            }
+        }
+        self.fluid.update(context, ptu_overheats_fluid);
+
+        self.reservoir
+            .update(context, reservoir_pressure, &self.fluid);
+
+        println!(
+            "LOOP {:?}, PTU OH {:?}  FLUID ratio {:?} RES ratio {:?} Res flow gps{:.3}",
+            self.id,
+            ptu_overheats_fluid,
+            self.fluid.heat_state.heat_factor.output().get::<ratio>(),
+            self.reservoir
+                .heat_state
+                .heat_factor
+                .output()
+                .get::<ratio>(),
+            self.reservoir.total_return_flow.get::<gallon_per_second>()
+        );
 
         self.update_shutoff_valves(controller);
         self.update_leak_measurement_valves(context, controller);
@@ -1950,6 +2082,11 @@ pub struct Reservoir {
     return_failure: Failure,
 
     fluid_physics: FluidPhysics,
+
+    heat_state: HeatingProperties,
+
+    total_return_flow: VolumeRate,
+    total_return_volume: Volume,
 }
 impl Reservoir {
     const MIN_USABLE_VOLUME_GAL: f64 = 0.2;
@@ -1985,11 +2122,27 @@ impl Reservoir {
             air_pressure_switches,
             level_switch: LevelSwitch::new(low_level_threshold),
             fluid_physics: FluidPhysics::new(),
+
+            heat_state: HeatingProperties::new(
+                Duration::from_secs_f64(0.5 * 60.),
+                Duration::from_secs_f64(3. * 60.),
+                Duration::from_secs_f64(5. * 60.),
+            ),
+            total_return_flow: VolumeRate::default(),
+            total_return_volume: Volume::default(),
         }
     }
 
-    fn update(&mut self, context: &UpdateContext, air_pressure: Pressure) {
+    fn update(
+        &mut self,
+        context: &UpdateContext,
+        air_pressure: Pressure,
+        fluid: &impl HeatingElement,
+    ) {
         self.air_pressure = air_pressure;
+
+        self.update_return_flow(context);
+        self.update_heat(context, fluid);
 
         self.fluid_physics.update(context);
 
@@ -2001,6 +2154,17 @@ impl Reservoir {
         self.update_pressure_switches(context);
 
         self.update_leak_failure(context);
+    }
+
+    fn update_return_flow(&mut self, context: &UpdateContext) {
+        self.total_return_flow = self.total_return_volume / context.delta_as_time();
+        self.total_return_volume = Volume::default();
+    }
+
+    fn update_heat(&mut self, context: &UpdateContext, fluid: &impl HeatingElement) {
+        let has_fluid_return = self.total_return_flow.get::<gallon_per_second>() > 0.1;
+        self.heat_state
+            .update(context, has_fluid_return && fluid.is_overheating())
     }
 
     fn update_leak_failure(&mut self, context: &UpdateContext) {
@@ -2052,6 +2216,8 @@ impl Reservoir {
         };
 
         self.current_level = (self.current_level + volume_actually_returned).min(self.max_capacity);
+
+        self.total_return_volume += volume_actually_returned;
     }
 
     fn fluid_level_real(&self) -> Volume {
@@ -2103,6 +2269,15 @@ impl SimulationElement for Reservoir {
 impl PressurizeableReservoir for Reservoir {
     fn available_volume(&self) -> Volume {
         self.max_capacity - self.fluid_level_real()
+    }
+}
+impl HeatingElement for Reservoir {
+    fn is_damaged(&self) -> bool {
+        self.heat_state.is_damaged()
+    }
+
+    fn is_overheating(&self) -> bool {
+        self.heat_state.is_overheating()
     }
 }
 
@@ -2174,8 +2349,10 @@ impl Pump {
 
     fn update_cavitation(&mut self, reservoir: &Reservoir) {
         self.cavitation_efficiency = if !reservoir.is_empty() {
-            self.pump_characteristics
-                .cavitation_efficiency(reservoir.air_pressure())
+            self.pump_characteristics.cavitation_efficiency(
+                reservoir.air_pressure(),
+                reservoir.heat_state.heat_factor.output(),
+            )
         } else {
             Ratio::new::<ratio>(0.)
         };
