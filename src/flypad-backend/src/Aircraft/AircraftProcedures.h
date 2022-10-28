@@ -220,11 +220,11 @@ class AircraftProcedures {
   ProcedureStep{"WX Radar Off",      4100, false, 1000, "(L:XMLVAR_A320_WEATHERRADAR_SYS) 1 ==",                       "1 (>L:XMLVAR_A320_WEATHERRADAR_SYS)"},
 };
 
-  static inline constexpr std::size_t COLD_DARK_SIZE = TAKEOFF_CONFIG_OFF.size() + TAXI_CONFIG_OFF.size() + PUSHBACK_CONFIG_OFF.size() + POWERED_CONFIG_OFF.size();
-  static inline constexpr std::size_t POWERED_SIZE = TAKEOFF_CONFIG_OFF.size() + TAXI_CONFIG_OFF.size() + PUSHBACK_CONFIG_OFF.size() + POWERED_CONFIG_ON.size();
-  static inline constexpr std::size_t RDY_FOR_PUSHBACK_SIZE = TAKEOFF_CONFIG_OFF.size() + TAXI_CONFIG_OFF.size() + POWERED_CONFIG_ON.size() + PUSHBACK_CONFIG_ON.size();
-  static inline constexpr std::size_t RDY_FOR_TAXI_SIZE = TAKEOFF_CONFIG_OFF.size() + POWERED_CONFIG_ON.size() + PUSHBACK_CONFIG_ON.size() + TAXI_CONFIG_ON.size();
-  static inline constexpr std::size_t RDY_FOR_TAKEOFF_SIZE = POWERED_CONFIG_ON.size() + PUSHBACK_CONFIG_ON.size() + TAXI_CONFIG_ON.size() + TAKEOFF_CONFIG_ON.size();
+  static constexpr std::size_t COLD_DARK_SIZE = TAKEOFF_CONFIG_OFF.size() + TAXI_CONFIG_OFF.size() + PUSHBACK_CONFIG_OFF.size() + POWERED_CONFIG_OFF.size();
+  static constexpr std::size_t POWERED_SIZE = TAKEOFF_CONFIG_OFF.size() + TAXI_CONFIG_OFF.size() + PUSHBACK_CONFIG_OFF.size() + POWERED_CONFIG_ON.size();
+  static constexpr std::size_t RDY_FOR_PUSHBACK_SIZE = TAKEOFF_CONFIG_OFF.size() + TAXI_CONFIG_OFF.size() + POWERED_CONFIG_ON.size() + PUSHBACK_CONFIG_ON.size();
+  static constexpr std::size_t RDY_FOR_TAXI_SIZE = TAKEOFF_CONFIG_OFF.size() + POWERED_CONFIG_ON.size() + PUSHBACK_CONFIG_ON.size() + TAXI_CONFIG_ON.size();
+  static constexpr std::size_t RDY_FOR_TAKEOFF_SIZE = POWERED_CONFIG_ON.size() + PUSHBACK_CONFIG_ON.size() + TAXI_CONFIG_ON.size() + TAKEOFF_CONFIG_ON.size();
 
   std::array<const ProcedureStep*, COLD_DARK_SIZE> coldAndDark;
   std::array<const ProcedureStep*, POWERED_SIZE> powered;
