@@ -233,7 +233,7 @@ class AircraftProcedures {
   std::array<const ProcedureStep*, RDY_FOR_TAKEOFF_SIZE> readyForTakeoff;
 
   template<std::size_t N1, std::size_t N2>
-  static void doInsertProcedures(std::array<const ProcedureStep*, N1>& dest, const std::array<ProcedureStep, N2>& src) {
+  static consteval void doInsertProcedures(std::array<const ProcedureStep*, N1>& dest, const std::array<ProcedureStep, N2>& src) {
     static_assert(N1 == N2, "Sizes of arrays do not match, overflow prevented.");
     std::transform(begin(src), end(src), begin(dest), [](const auto& procedure) {
       return &procedure;
@@ -241,12 +241,12 @@ class AircraftProcedures {
   }
 
   template<std::size_t I, class... Arrays>
-  static void insertProcedures(std::array<const ProcedureStep*, I>& dest, const Arrays&... procedures) {
+  static consteval void insertProcedures(std::array<const ProcedureStep*, I>& dest, const Arrays&... procedures) {
     (doInsertProcedures(dest, procedures), ...);
   }
 
 public:
-  AircraftProcedures();
+  consteval AircraftProcedures();
 
   [[nodiscard]]
   std::pair<const ProcedureStep*, const ProcedureStep*> getProcedure(int64_t pID) const;
