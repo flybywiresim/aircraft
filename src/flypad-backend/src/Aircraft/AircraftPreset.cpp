@@ -102,7 +102,7 @@ void AircraftPreset::onUpdate(double deltaTime) {
       // update progress var
       setProgressAircraftPreset((double) currentStep / procedureSize);
       setProgressAircraftPresetId(currentStepPtr->id);
-      execute_calculator_code(currentStepPtr->actionCode.c_str(), &fvalue, &ivalue, &svalue);
+      execute_calculator_code(currentStepPtr->actionCode, &fvalue, &ivalue, &svalue);
       std::cout << "FLYPAD_BACKEND: Aircraft Preset Step " << currentStep << " Condition: "
                 << currentStepPtr->description
                 << " (delay between tests: " << currentStepPtr->delayAfter << ")" << std::endl;
@@ -118,13 +118,13 @@ void AircraftPreset::onUpdate(double deltaTime) {
     fvalue = 0;
     ivalue = 0;
     svalue = "";
-    if (!currentStepPtr->expectedStateCheckCode.empty()) {
+    if (currentStepPtr->expectedStateCheckCode) {
 #ifdef DEBUG
       std::cout << "FLYPAD_BACKEND: Aircraft Preset Step " << currentStep << " Test: "
                 << currentStepPtr->description << " TEST: \""
                 << currentStepPtr->expectedStateCheckCode << "\"" << std::endl;
 #endif
-      execute_calculator_code(currentStepPtr->expectedStateCheckCode.c_str(), &fvalue, &ivalue, &svalue);
+      execute_calculator_code(currentStepPtr->expectedStateCheckCode, &fvalue, &ivalue, &svalue);
       if (static_cast<bool>(fvalue)) {
 #ifdef DEBUG
         std::cout << "FLYPAD_BACKEND: Aircraft Preset Step " << currentStep << " Skipping: "
@@ -146,7 +146,7 @@ void AircraftPreset::onUpdate(double deltaTime) {
     std::cout << "FLYPAD_BACKEND: Aircraft Preset Step " << currentStep << " Execute: "
               << currentStepPtr->description
               << " (delay after: " << currentStepPtr->delayAfter << ")" << std::endl;
-    execute_calculator_code(currentStepPtr->actionCode.c_str(), &fvalue, &ivalue, &svalue);
+    execute_calculator_code(currentStepPtr->actionCode, &fvalue, &ivalue, &svalue);
     currentStep++;
 
   }
