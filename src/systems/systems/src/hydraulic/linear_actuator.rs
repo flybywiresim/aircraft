@@ -170,7 +170,11 @@ impl LowPressureAccumulator {
         Self {
             pressure: LowPassFilter::<Pressure>::new_with_init_value(
                 Self::PRESSURE_TIME_CONSTANT,
-                Pressure::new::<psi>(init_pressure_psi),
+                Pressure::new::<psi>(
+                    init_pressure_psi
+                        .max(0.)
+                        .min(Self::MAX_ACCUMULATOR_PRESSURE_PSI),
+                ),
             ),
             total_volume_to_actuator: Volume::default(),
         }
@@ -3750,7 +3754,7 @@ mod tests {
         let accumulator_press_init = test_bed.query(|a| a.accumulator_pressure(0));
 
         test_bed.command(|a| a.command_unlock());
-        test_bed.command(|a| a.set_pressures([Pressure::new::<psi>(300.)]));
+        test_bed.command(|a| a.set_pressures([Pressure::new::<psi>(15.)]));
         test_bed.command(|a| a.command_electro_backup_refill(true, 0));
         test_bed.run_with_delta(Duration::from_secs_f64(1.));
 
