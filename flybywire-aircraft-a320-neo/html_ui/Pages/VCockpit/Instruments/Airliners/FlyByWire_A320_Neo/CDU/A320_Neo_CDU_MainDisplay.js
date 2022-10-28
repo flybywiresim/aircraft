@@ -128,7 +128,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             NXDataStore.set("CONFIG_SIMBRIDGE_ENABLED", 'AUTO ON');
             this.simbridgeConnect = 'AUTO ON';
         } else {
-            console.log("MCDU server connection attempts permanently deactivated.");
+            console.log("SimBridge connection attempts permanently deactivated.");
         }
     }
 
@@ -1211,7 +1211,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             if (this.socketConnectionAttempts > 0) {
                 return;
             }
-            console.log(`WebSocket connection error. Maybe MCDU Server disconnected? (${url})`);
+            console.log(`WebSocket connection error. Maybe SimBridge disconnected? (${url})`);
         };
 
         this.socket.onclose = () => {
@@ -1220,12 +1220,12 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             if (this.socketConnectionAttempts > 0) {
                 return;
             }
-            console.log(`Websocket connection to MCDU Server closed. (${url})`);
+            console.log(`Websocket connection to SimBridge closed. (${url})`);
         };
 
         this.socket.onopen = () => {
-            console.log(`Websocket connection to MCDU Server established. (${url})`);
-            (new NXNotifManager).showNotification({title: "MCDU CONNECTED", message: "Successfully connected to MCDU server.", timeout: 5000});
+            console.log(`Websocket connection to SimBridge established. (${url})`);
+            (new NXNotifManager).showNotification({title: "MCDU CONNECTED", message: "Successfully connected to SimBridge.", timeout: 5000});
             this.sendToSocket("mcduConnected");
             this.sendUpdate();
             this.socketConnectionAttempts = 0;
