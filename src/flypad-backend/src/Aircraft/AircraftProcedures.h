@@ -27,7 +27,7 @@ class AircraftProcedures {
   // if you make any changes to this list.
   // src/instruments/src/EFB/Presets/Widgets/AircraftPresets.tsx
   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  static constexpr std::array<ProcedureStep, 32> POWERED_CONFIG_ON {
+  static constexpr std::array POWERED_CONFIG_ON {
   // SOP: PRELIMINARY COCKPIT PREPARATION
   ProcedureStep{"BAT1 On",                  1010, false, 1000, "(L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO)",                 "1 (>L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO)"},
   ProcedureStep{"BAT2 On",                  1020, false, 3000, "(L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO)",                 "1 (>L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO)"},
@@ -95,7 +95,7 @@ class AircraftProcedures {
                                                                        "(L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON) ||",       "1 (>L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON)"}
 };
 
-  static constexpr std::array<ProcedureStep, 21> POWERED_CONFIG_OFF = {
+  static constexpr std::array POWERED_CONFIG_OFF = {
   ProcedureStep{"NO SMOKING Off",        1170, false, 1000, "(L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_POSITION) 2 ==", "2 (>L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_POSITION)"},
   ProcedureStep{"EMER EXT Lt Off",       1180, false, 1500, "(L:XMLVAR_SWITCH_OVHD_INTLT_EMEREXIT_POSITION) 2 ==",  "2 (>L:XMLVAR_SWITCH_OVHD_INTLT_EMEREXIT_POSITION)"},
   ProcedureStep{"GND CTL Off",           1200, false, 1000, "(L:A32NX_RCDR_GROUND_CONTROL_ON) 0 ==",                "0 (>L:A32NX_RCDR_GROUND_CONTROL_ON)"},
@@ -119,7 +119,7 @@ class AircraftProcedures {
   ProcedureStep{"FWC Init Reset",        1066, false, 0,    "",                                                     "0 (>L:A32NX_AIRCRAFT_PRESET_FWC_INIT_DONE)"}
 };
 
-  static constexpr std::array<ProcedureStep, 12> PUSHBACK_CONFIG_ON = {
+  static constexpr std::array PUSHBACK_CONFIG_ON = {
   // SOP: BEFORE PUSHBACK OR START
   ProcedureStep{"EXT PWR Off",             2000, false, 3000, "(A:EXTERNAL POWER ON:1, BOOL) !",               "(A:EXTERNAL POWER ON:1, BOOL) if{ 1 (>K:TOGGLE_EXTERNAL_POWER) }"},
   ProcedureStep{"Beacon On",               2130, false, 1000, "(A:LIGHT BEACON, Bool)",                        "0 (>K:BEACON_LIGHTS_ON)"},
@@ -135,7 +135,7 @@ class AircraftProcedures {
   ProcedureStep{"Await ADIRS 3 Alignment", 2170, true,  2000, "",                                              "(L:A32NX_ADIRS_ADIRU_3_STATE) 2 =="},
 };
 
-  static constexpr std::array<ProcedureStep, 8> PUSHBACK_CONFIG_OFF = {
+  static constexpr std::array PUSHBACK_CONFIG_OFF = {
   ProcedureStep{"COCKPIT DOOR OP", 2250, false, 2000, "(L:A32NX_COCKPIT_DOOR_LOCKED) 0 ==",          "0 (>L:A32NX_COCKPIT_DOOR_LOCKED)"},
   ProcedureStep{"FUEL PUMP 2 Off", 2260, false, 100,  "(A:FUELSYSTEM PUMP SWITCH:2, Bool) !",        "2 (>K:FUELSYSTEM_PUMP_OFF)"},
   ProcedureStep{"FUEL PUMP 5 Off", 2270, false, 500,  "(A:FUELSYSTEM PUMP SWITCH:5, Bool) !",        "5 (>K:FUELSYSTEM_PUMP_OFF)"},
@@ -146,7 +146,7 @@ class AircraftProcedures {
   ProcedureStep{"Beacon Off",      2190, false, 1000, "(A:LIGHT BEACON, Bool) !",                    "0 (>K:BEACON_LIGHTS_OFF)"},
 };
 
-  static constexpr std::array<ProcedureStep, 21> TAXI_CONFIG_ON = {
+  static constexpr std::array TAXI_CONFIG_ON = {
   // SOP: ENGINE START
   ProcedureStep{"ENG MODE SEL START",   3000, false, 3000,  "(L:A32NX_ENGINE_STATE:1) 1 == "
                                                                  "(L:A32NX_ENGINE_STATE:2) 1 == && "
@@ -177,7 +177,7 @@ class AircraftProcedures {
   ProcedureStep{"T.O. Config",          3085, false, 2000,  "",                                                 "1 (>L:A32NX_TO_CONFIG_NORMAL)"},
 };
 
-  static constexpr std::array<ProcedureStep, 16> TAXI_CONFIG_OFF = {
+  static constexpr std::array TAXI_CONFIG_OFF = {
   ProcedureStep{"TERR ON ND Capt. Off",  3080, false, 2000,  "(L:A32NX_EFIS_TERR_L_ACTIVE) 0 ==",          "0 (>L:A32NX_EFIS_TERR_L_ACTIVE)"},
   ProcedureStep{"Autobrake Off",         3180, false, 2000, "(L:A32NX_AUTOBRAKES_ARMED_MODE) 0 ==",        "0 (>L:A32NX_AUTOBRAKES_ARMED_MODE_SET)"},
   ProcedureStep{"TCAS TRAFFIC ABV",      2240, false, 1000, "(L:A32NX_SWITCH_TCAS_TRAFFIC_POSITION) 2 ==", "2 (>L:A32NX_SWITCH_TCAS_TRAFFIC_POSITION)"},
@@ -196,7 +196,7 @@ class AircraftProcedures {
   ProcedureStep{"ENG 2 N1 <3%",          3250, true,  1000, "",                                            "(L:A32NX_ENGINE_N1:2) 3 <"}
 };
 
-  static constexpr std::array<ProcedureStep, 8> TAKEOFF_CONFIG_ON = {
+  static constexpr std::array TAKEOFF_CONFIG_ON = {
   // SOP: TAXI
   ProcedureStep{"WX Radar On",       4000, false, 1000, "(L:XMLVAR_A320_WEATHERRADAR_SYS) 0 ==",  "0 (>L:XMLVAR_A320_WEATHERRADAR_SYS)"},
   ProcedureStep{"WX Radar Mode",     4010, false, 1000, "(L:XMLVAR_A320_WEATHERRADAR_MODE) 1 ==", "1 (>L:XMLVAR_A320_WEATHERRADAR_MODE)"},
@@ -210,7 +210,7 @@ class AircraftProcedures {
   ProcedureStep{"LL Lt R On",        4050, false, 1000, "(A:CIRCUIT SWITCH ON:19, Bool)",         "0 (>L:LIGHTING_LANDING_3) 0 (>L:LANDING_3_RETRACTED) (A:CIRCUIT SWITCH ON:19, Bool) ! if{ 19 (>K:ELECTRICAL_CIRCUIT_TOGGLE)"},
 };
 
-  static constexpr std::array<ProcedureStep, 7> TAKEOFF_CONFIG_OFF = {
+  static constexpr std::array TAKEOFF_CONFIG_OFF = {
   ProcedureStep{"LL Lt L Off",       4060, false, 0,    "(A:CIRCUIT SWITCH ON:18, Bool) ! (L:LANDING_2_RETRACTED) &&", "2 (>L:LIGHTING_LANDING_2) 1 (>L:LANDING_2_RETRACTED) (A:CIRCUIT SWITCH ON:18, Bool) if{ 18 (>K:ELECTRICAL_CIRCUIT_TOGGLE)"},
   ProcedureStep{"LL Lt R Off",       4070, false, 1000, "(A:CIRCUIT SWITCH ON:19, Bool) ! (L:LANDING_3_RETRACTED) &&", "2 (>L:LIGHTING_LANDING_3) 1 (>L:LANDING_3_RETRACTED) (A:CIRCUIT SWITCH ON:19, Bool) if{ 19 (>K:ELECTRICAL_CIRCUIT_TOGGLE)"},
   ProcedureStep{"NOSE Lt Takeoff",   4080, false, 2000, "(A:CIRCUIT SWITCH ON:17, Bool) !",                            "(A:CIRCUIT SWITCH ON:17, Bool) if{ 17 (>K:ELECTRICAL_CIRCUIT_TOGGLE)"},
