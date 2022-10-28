@@ -1756,6 +1756,7 @@ impl A320Hydraulic {
                 .engine_driven_pump_1_controller
                 .has_air_pressure_low_fault()
             || self.engine_driven_pump_1_controller.has_low_level_fault()
+            || self.green_reservoir().is_overheating()
     }
 
     fn yellow_epump_has_fault(&self) -> bool {
@@ -1765,6 +1766,7 @@ impl A320Hydraulic {
                 .yellow_electric_pump_controller
                 .has_air_pressure_low_fault()
             || self.yellow_electric_pump_controller.has_low_level_fault()
+            || self.yellow_reservoir().is_overheating()
     }
 
     fn yellow_edp_has_fault(&self) -> bool {
@@ -1774,6 +1776,7 @@ impl A320Hydraulic {
                 .engine_driven_pump_2_controller
                 .has_air_pressure_low_fault()
             || self.engine_driven_pump_2_controller.has_low_level_fault()
+            || self.yellow_reservoir().is_overheating()
     }
 
     fn blue_epump_has_fault(&self) -> bool {
@@ -1782,6 +1785,7 @@ impl A320Hydraulic {
                 .blue_electric_pump_controller
                 .has_air_pressure_low_fault()
             || self.blue_electric_pump_controller.has_low_level_fault()
+            || self.blue_reservoir().is_overheating()
     }
 
     pub fn green_reservoir(&self) -> &Reservoir {

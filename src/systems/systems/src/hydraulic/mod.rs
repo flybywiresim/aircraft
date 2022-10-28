@@ -2067,6 +2067,7 @@ pub struct Reservoir {
     level_id: VariableIdentifier,
     low_level_id: VariableIdentifier,
     low_air_press_id: VariableIdentifier,
+    overheating_id: VariableIdentifier,
 
     max_capacity: Volume,
     max_gaugeable: Volume,
@@ -2111,6 +2112,7 @@ impl Reservoir {
                 .get_identifier(format!("HYD_{}_RESERVOIR_LEVEL_IS_LOW", hyd_loop_id)),
             low_air_press_id: context
                 .get_identifier(format!("HYD_{}_RESERVOIR_AIR_PRESSURE_IS_LOW", hyd_loop_id)),
+            overheating_id: context.get_identifier(format!("HYD_{}_RESERVOIR_OVHT", hyd_loop_id)),
 
             max_capacity,
             max_gaugeable,
@@ -2264,6 +2266,7 @@ impl SimulationElement for Reservoir {
         writer.write(&self.level_id, self.fluid_level_from_gauge());
         writer.write(&self.low_level_id, self.is_low_level());
         writer.write(&self.low_air_press_id, self.is_low_air_pressure());
+        writer.write(&self.overheating_id, self.is_overheating());
     }
 }
 impl PressurizeableReservoir for Reservoir {
