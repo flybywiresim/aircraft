@@ -193,11 +193,15 @@ const PseudoFWC: React.FC = () => {
     const [blueLP] = useSimVar('L:A32NX_HYD_BLUE_EDPUMP_LOW_PRESS', 'bool', 500);
     const [blueSysPressurised] = useSimVar('L:A32NX_HYD_BLUE_SYSTEM_1_SECTION_PRESSURE_SWITCH', 'bool', 500);
     const [blueRvrLow] = useSimVar('L:A32NX_HYD_BLUE_RESERVOIR_LEVEL_IS_LOW', 'bool', 500);
+
+    const [yellowRvrOvht] = useSimVar('L:A32NX_HYD_YELLOW_RESERVOIR_OVHT', 'bool', 500);
     const [blueElecPumpPBAuto] = useSimVar('L:A32NX_OVHD_HYD_EPUMPB_PB_IS_AUTO', 'bool', 500);
     const [yellowLP] = useSimVar('L:A32NX_HYD_YELLOW_EDPUMP_LOW_PRESS', 'bool', 500);
     const [yellowSysPressurised] = useSimVar('L:A32NX_HYD_YELLOW_SYSTEM_1_SECTION_PRESSURE_SWITCH', 'bool', 500);
     const [eng1pumpPBisAuto] = useSimVar('L:A32NX_OVHD_HYD_ENG_1_PUMP_PB_IS_AUTO', 'bool', 500);
     const [eng2pumpPBisAuto] = useSimVar('L:A32NX_OVHD_HYD_ENG_2_PUMP_PB_IS_AUTO', 'bool', 500);
+    const [yepumpPBisAuto] = useSimVar('L:A32NX_OVHD_HYD_EPUMPY_PB_IS_AUTO', 'bool', 500);
+    const [ptuIsAuto] = useSimVar('L:A32NX_OVHD_HYD_PTU_PB_IS_AUTO', 'bool', 500);
     const [hydPTU] = useSimVar('L:A32NX_HYD_PTU_ON_ECAM_MEMO', 'bool', 500);
     const [ratDeployed] = useSimVar('L:A32NX_HYD_RAT_STOW_POSITION', 'percent over 100', 500);
 
@@ -1181,6 +1185,22 @@ const PseudoFWC: React.FC = () => {
             sysPage: -1,
             side: 'LEFT',
         },
+        2900127: // *HYD  - Yellow reservoir overheat
+        {
+            flightPhaseInhib: [3, 4, 5, 7, 8],
+            simVarIsActive: yellowRvrOvht,
+            whichCodeToReturn: [
+                0,
+                ptuIsAuto ? 1 : null,
+                eng2pumpPBisAuto ? 2 : null,
+                !yepumpPBisAuto ? 3 : null,
+            ],
+            codesToReturn: ['290012701', '290012702', '290012703', '290012704'],
+            memoInhibit: false,
+            failure: 2,
+            sysPage: 4,
+            side: 'LEFT',
+        },
         2900310: // *HYD  - Blue
         {
             flightPhaseInhib: [4, 5],
@@ -1708,7 +1728,7 @@ const PseudoFWC: React.FC = () => {
             }
         }
     }, [
-        engine1Generator, engine2Generator, blueLP, greenLP, yellowLP, eng1pumpPBisAuto, eng2pumpPBisAuto,
+        engine1Generator, engine2Generator, blueLP, greenLP, yellowLP, eng1pumpPBisAuto, eng2pumpPBisAuto, yepumpPBisAuto, ptuIsAuto,
         flapsMcdu, flapsMcduEntered, speedBrakeCommand, parkBrake, v1Speed, vrSpeed, v2Speed, cabin,
         catering, cargoaftLocked, cargofwdLocked, toconfigBtn, tomemo, flapsHandle, brakesHot,
     ]);
@@ -1937,6 +1957,7 @@ const PseudoFWC: React.FC = () => {
         eng2Agent2PB,
         eng2AntiIce,
         eng2FireTest,
+        eng2pumpPBisAuto,
         engine2State,
         engDualFault,
         engSelectorPosition,
@@ -1984,6 +2005,7 @@ const PseudoFWC: React.FC = () => {
         packOffNotFailure2,
         parkBrake,
         predWSOn,
+        ptuIsAuto,
         ratDeployed,
         recallReset,
         rightOuterInnerValve,
@@ -2008,6 +2030,8 @@ const PseudoFWC: React.FC = () => {
         usrStartRefueling,
         wingAntiIce,
         voiceVHF3,
+        yellowRvrOvht,
+        yepumpPBisAuto,
     ]);
 
     useEffect(() => {

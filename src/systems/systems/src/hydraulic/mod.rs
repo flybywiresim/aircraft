@@ -81,7 +81,7 @@ impl Fluid {
         Self {
             current_bulk: bulk,
             heat_state: HeatingProperties::new(
-                Duration::from_secs_f64(0.5 * 60.),
+                Duration::from_secs_f64(0.6 * 60.),
                 Duration::from_secs_f64(3. * 60.),
                 Duration::from_secs_f64(3. * 60.),
             ),
@@ -236,6 +236,18 @@ impl HeatingProperties {
 
         self.damaging_time.update(context, self.is_overheating);
         self.is_damaged_by_heat = self.is_damaged_by_heat || self.damaging_time.output();
+    }
+
+    fn overheat_ratio(&self) -> Ratio {
+        if self.heat_factor.output().get::<ratio>() < 0.5 {
+            Ratio::new::<ratio>(1.)
+        } else {
+            Ratio::new::<ratio>(
+                (self.heat_factor.output().get::<ratio>() - 0.5 * 2.)
+                    .max(0.)
+                    .min(1.),
+            )
+        }
     }
 }
 impl HeatingElement for HeatingProperties {
@@ -2126,7 +2138,7 @@ impl Reservoir {
             fluid_physics: FluidPhysics::new(),
 
             heat_state: HeatingProperties::new(
-                Duration::from_secs_f64(0.5 * 60.),
+                Duration::from_secs_f64(0.6 * 60.),
                 Duration::from_secs_f64(3. * 60.),
                 Duration::from_secs_f64(5. * 60.),
             ),
@@ -2354,7 +2366,7 @@ impl Pump {
         self.cavitation_efficiency = if !reservoir.is_empty() {
             self.pump_characteristics.cavitation_efficiency(
                 reservoir.air_pressure(),
-                reservoir.heat_state.heat_factor.output(),
+                reservoir.heat_state.overheat_ratio(),
             )
         } else {
             Ratio::new::<ratio>(0.)
