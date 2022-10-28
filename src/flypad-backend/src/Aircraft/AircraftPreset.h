@@ -35,12 +35,12 @@ private:
   bool isInitialized = false;
 
   // Procedures
-  AircraftProcedures procedures{};
+  AircraftProcedures procedures;
 
   // current procedure ID
   int64_t currentProcedureID = 0;
   // current procedure, containing a pointer to the begin of the array and to the end of the array
-  std::pair<const ProcedureStep*, const ProcedureStep*> currentProcedure{};
+  std::pair<const ProcedureStep*, const ProcedureStep*> currentProcedure = std::make_pair(nullptr, nullptr);
   // flag to signal that a loading process is ongoing
   bool loadingIsActive = false;
   // in ms
