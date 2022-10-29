@@ -3,6 +3,8 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <algorithm>
+#include <iostream>
 #include <array>
 #include <span>
 

@@ -1,8 +1,5 @@
 #include "AircraftProcedures.h"
 
-#include <iostream>
-#include <algorithm>
-
 
 std::span<const ProcedureStep*> AircraftProcedures::getProcedure(int64_t pID) const {
   switch (pID) {
