@@ -894,6 +894,13 @@
         - BLUE
         - YELLOW
 
+- A32NX_HYD_{loop_name}_EPUMP_OVHT
+    - Bool
+    - Electric pump of {loop_name} hydraulic circuit is overheating
+    - {loop_name}
+        - BLUE
+        - YELLOW
+
 - A32NX_HYD_{loop_name}_PUMP_1_FIRE_VALVE_OPENED
     - Bool
     - Engine driven pump of {loop_name} hydraulic circuit can receive hydraulic fluid
