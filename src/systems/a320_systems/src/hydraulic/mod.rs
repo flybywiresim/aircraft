@@ -1500,7 +1500,7 @@ impl A320Hydraulic {
 
             engine_driven_pump_1: EngineDrivenPump::new(
                 context,
-                "GREEN",
+                HydraulicColor::Green,
                 PumpCharacteristics::a320_edp(),
             ),
             engine_driven_pump_1_controller: A320EngineDrivenPumpController::new(
@@ -1511,7 +1511,7 @@ impl A320Hydraulic {
 
             engine_driven_pump_2: EngineDrivenPump::new(
                 context,
-                "YELLOW",
+                HydraulicColor::Yellow,
                 PumpCharacteristics::a320_edp(),
             ),
             engine_driven_pump_2_controller: A320EngineDrivenPumpController::new(
@@ -1525,7 +1525,7 @@ impl A320Hydraulic {
 
             blue_electric_pump: ElectricPump::new(
                 context,
-                "BLUE",
+                HydraulicColor::Blue,
                 Self::BLUE_ELEC_PUMP_SUPPLY_POWER_BUS,
                 ElectricCurrent::new::<ampere>(Self::ELECTRIC_PUMP_MAX_CURRENT_AMPERE),
                 PumpCharacteristics::a320_electric_pump(),
@@ -1537,7 +1537,7 @@ impl A320Hydraulic {
 
             yellow_electric_pump: ElectricPump::new(
                 context,
-                "YELLOW",
+                HydraulicColor::Yellow,
                 Self::YELLOW_ELEC_PUMP_SUPPLY_POWER_BUS,
                 ElectricCurrent::new::<ampere>(Self::ELECTRIC_PUMP_MAX_CURRENT_AMPERE),
                 PumpCharacteristics::a320_electric_pump(),

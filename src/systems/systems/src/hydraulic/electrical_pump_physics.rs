@@ -6,17 +6,20 @@ use uom::si::{
     f64::*,
     power::watt,
     pressure::psi,
+    ratio::ratio,
     torque::{newton_meter, pound_force_inch},
     volume::cubic_inch,
 };
 
-use crate::hydraulic::SectionPressure;
+use crate::failures::{Failure, FailureType};
+use crate::hydraulic::{HeatingElement, HeatingProperties, SectionPressure};
 use crate::shared::{
     low_pass_filter::LowPassFilter, pid::PidController, ConsumePower, ElectricalBusType,
-    ElectricalBuses,
+    ElectricalBuses, HydraulicColor,
 };
 use crate::simulation::{
-    InitContext, SimulationElement, SimulatorWriter, UpdateContext, VariableIdentifier, Write,
+    InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
+    VariableIdentifier, Write,
 };
 
 use std::time::Duration;
@@ -43,6 +46,9 @@ pub(super) struct ElectricalPumpPhysics {
     current_controller: PidController,
 
     displacement_filtered: LowPassFilter<Volume>,
+
+    overheat_failure: Failure,
+    heat_state: HeatingProperties,
 }
 impl ElectricalPumpPhysics {
     const DEFAULT_INERTIA: f64 = 0.011;
@@ -62,7 +68,7 @@ impl ElectricalPumpPhysics {
 
     pub fn new(
         context: &mut InitContext,
-        id: &str,
+        id: HydraulicColor,
         bus_type: ElectricalBusType,
         max_current: ElectricCurrent,
         regulated_speed: AngularVelocity,
@@ -97,6 +103,12 @@ impl ElectricalPumpPhysics {
             displacement_filtered: LowPassFilter::<Volume>::new(
                 Self::SPEED_DISPLACEMENT_FILTER_TIME_CONSTANT,
             ),
+            overheat_failure: Failure::new(FailureType::ElecPumpOverheat(id)),
+            heat_state: HeatingProperties::new(
+                Duration::from_secs_f64(30.),
+                Duration::from_secs_f64(2. * 60.),
+                Duration::from_secs_f64(2. * 60.),
+            ),
         }
     }
 
@@ -106,6 +118,17 @@ impl ElectricalPumpPhysics {
         section: &impl SectionPressure,
         current_displacement: Volume,
     ) {
+        println!("ELECPUMP overheatRatio {:.2}, is overheat {:?}, is damaged {:?}, current {:.1}, speed {:.0}",
+            self.heat_state.overheat_ratio().get::<ratio>(),
+            self.heat_state.is_overheating(),
+            self.heat_state.is_damaged(),
+            self.output_current.get::<ampere>(),
+            self.speed().get::<revolution_per_minute>()
+
+    );
+        self.heat_state
+            .update(context, self.overheat_failure.is_active());
+
         self.displacement_filtered
             .update(context.delta(), current_displacement);
 
@@ -155,7 +178,16 @@ impl ElectricalPumpPhysics {
             Torque::new::<newton_meter>(Self::DEFAULT_RESISTANT_TORQUE_WHEN_OFF_NEWTON_METER)
         };
 
-        self.resistant_torque = pumping_torque + dynamic_friction_torque;
+        let overheat_resistant_torque_factor = if !self.heat_state.is_overheating() {
+            1.
+        } else if !self.heat_state.is_damaged() {
+            30. * self.heat_state.overheat_ratio().get::<ratio>()
+        } else {
+            80.
+        };
+
+        self.resistant_torque =
+            pumping_torque + dynamic_friction_torque * overheat_resistant_torque_factor;
     }
 
     fn update_current_control(&mut self, context: &UpdateContext) {
@@ -217,6 +249,11 @@ impl ElectricalPumpPhysics {
     }
 }
 impl SimulationElement for ElectricalPumpPhysics {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.overheat_failure.accept(visitor);
+        visitor.visit(self);
+    }
+
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.active_id, self.is_active);
         writer.write(&self.rpm_id, self.speed());
@@ -229,6 +266,15 @@ impl SimulationElement for ElectricalPumpPhysics {
 
     fn consume_power<T: ConsumePower>(&mut self, _: &UpdateContext, consumption: &mut T) {
         consumption.consume_from_bus(self.powered_by, self.consumed_power);
+    }
+}
+impl HeatingElement for ElectricalPumpPhysics {
+    fn is_damaged(&self) -> bool {
+        self.heat_state.is_damaged()
+    }
+
+    fn is_overheating(&self) -> bool {
+        self.heat_state.is_overheating()
     }
 }
 

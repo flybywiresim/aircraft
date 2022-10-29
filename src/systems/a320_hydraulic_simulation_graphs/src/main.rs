@@ -358,7 +358,7 @@ fn hydraulic_loop(context: &mut InitContext, loop_color: HydraulicColor) -> Hydr
 fn electric_pump(context: &mut InitContext) -> ElectricPump {
     ElectricPump::new(
         context,
-        "DEFAULT",
+        HydraulicColor::Green,
         ElectricalBusType::AlternatingCurrentGndFltService,
         ElectricCurrent::new::<ampere>(45.),
         PumpCharacteristics::a320_electric_pump(),
@@ -366,7 +366,11 @@ fn electric_pump(context: &mut InitContext) -> ElectricPump {
 }
 
 fn _engine_driven_pump(context: &mut InitContext) -> EngineDrivenPump {
-    EngineDrivenPump::new(context, "DEFAULT", PumpCharacteristics::a320_edp())
+    EngineDrivenPump::new(
+        context,
+        HydraulicColor::Green,
+        PumpCharacteristics::a320_edp(),
+    )
 }
 
 struct A320TestPneumatics {

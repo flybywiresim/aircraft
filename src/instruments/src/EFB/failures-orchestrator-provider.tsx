@@ -35,6 +35,10 @@ const createOrchestrator = () => new FailuresOrchestrator('A32NX', [
     [29, A320Failure.GreenReservoirReturnLeak, 'Green reservoir return leak'],
     [29, A320Failure.BlueReservoirReturnLeak, 'Blue reservoir return leak'],
     [29, A320Failure.YellowReservoirReturnLeak, 'Yellow reservoir return leak'],
+    [29, A320Failure.GreenEdpOverheat, 'Green engine pump overheat'],
+    [29, A320Failure.BlueEpumpOverheat, 'Blue electric pump overheat'],
+    [29, A320Failure.YellowEdpOverheat, 'Yellow engine pump overheat'],
+    [29, A320Failure.YellowEpumpOverheat, 'Yellow electric pump overheat'],
 
     [31, A320Failure.LeftPfdDisplay, 'Captain PFD display'],
     [31, A320Failure.RightPfdDisplay, 'F/O PFD display'],

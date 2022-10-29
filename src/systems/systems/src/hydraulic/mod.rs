@@ -199,7 +199,7 @@ pub trait HeatingElement {
     fn is_damaged(&self) -> bool;
 }
 
-struct HeatingProperties {
+pub struct HeatingProperties {
     is_overheating: bool,
     is_damaged_by_heat: bool,
 
@@ -210,6 +210,8 @@ struct HeatingProperties {
     cool_time: Duration,
 }
 impl HeatingProperties {
+    const OVERHEATING_THRESHOLD: f64 = 0.5;
+
     fn new(heat_time: Duration, cool_time: Duration, damage_time: Duration) -> Self {
         Self {
             is_overheating: false,
@@ -232,22 +234,22 @@ impl HeatingProperties {
                 .update(context.delta(), Ratio::new::<ratio>(0.));
         };
 
-        self.is_overheating = self.heat_factor.output().get::<ratio>() > 0.5;
+        self.is_overheating =
+            self.heat_factor.output().get::<ratio>() > Self::OVERHEATING_THRESHOLD;
 
         self.damaging_time.update(context, self.is_overheating);
         self.is_damaged_by_heat = self.is_damaged_by_heat || self.damaging_time.output();
     }
 
+    /// When overheating, provides a ratio of the heating severity
+    ///   Above OVERHEATING_THRESHOLD it will rise from 0 to 1, while always 0 under the threshold
     fn overheat_ratio(&self) -> Ratio {
-        if self.heat_factor.output().get::<ratio>() < 0.5 {
-            Ratio::new::<ratio>(1.)
-        } else {
-            Ratio::new::<ratio>(
-                (self.heat_factor.output().get::<ratio>() - 0.5 * 2.)
-                    .max(0.)
-                    .min(1.),
-            )
-        }
+        Ratio::new::<ratio>(
+            ((self.heat_factor.output().get::<ratio>() - Self::OVERHEATING_THRESHOLD) * 1.
+                / (1. - Self::OVERHEATING_THRESHOLD))
+                .max(0.)
+                .min(1.),
+        )
     }
 }
 impl HeatingElement for HeatingProperties {
@@ -2471,7 +2473,7 @@ pub struct ElectricPump {
 impl ElectricPump {
     pub fn new(
         context: &mut InitContext,
-        id: &str,
+        id: HydraulicColor,
         bus_type: ElectricalBusType,
         max_current: ElectricCurrent,
         pump_characteristics: PumpCharacteristics,
@@ -2571,11 +2573,14 @@ pub struct EngineDrivenPump {
     is_active: bool,
     speed: AngularVelocity,
     pump: Pump,
+
+    overheat_failure: Failure,
+    heat_state: HeatingProperties,
 }
 impl EngineDrivenPump {
     pub fn new(
         context: &mut InitContext,
-        id: &str,
+        id: HydraulicColor,
         pump_characteristics: PumpCharacteristics,
     ) -> Self {
         Self {
@@ -2583,6 +2588,12 @@ impl EngineDrivenPump {
             is_active: false,
             speed: AngularVelocity::new::<revolution_per_minute>(0.),
             pump: Pump::new(pump_characteristics),
+            overheat_failure: Failure::new(FailureType::EnginePumpOverheat(id)),
+            heat_state: HeatingProperties::new(
+                Duration::from_secs_f64(30.),
+                Duration::from_secs_f64(2. * 60.),
+                Duration::from_secs_f64(2. * 60.),
+            ),
         }
     }
 
@@ -2594,9 +2605,18 @@ impl EngineDrivenPump {
         pump_speed: AngularVelocity,
         controller: &impl PumpController,
     ) {
-        self.speed = pump_speed;
+        self.heat_state
+            .update(context, self.overheat_failure.is_active());
+
+        self.speed = if !self.is_damaged() {
+            pump_speed
+        } else {
+            AngularVelocity::default()
+        };
+
         self.pump
             .update(context, section, reservoir, pump_speed, controller);
+
         self.is_active = controller.should_pressurise();
     }
 }
@@ -2629,8 +2649,22 @@ impl PressureSource for EngineDrivenPump {
     }
 }
 impl SimulationElement for EngineDrivenPump {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.overheat_failure.accept(visitor);
+        visitor.visit(self);
+    }
+
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.active_id, self.is_active);
+    }
+}
+impl HeatingElement for EngineDrivenPump {
+    fn is_damaged(&self) -> bool {
+        self.heat_state.is_damaged()
+    }
+
+    fn is_overheating(&self) -> bool {
+        self.heat_state.is_overheating()
     }
 }
 

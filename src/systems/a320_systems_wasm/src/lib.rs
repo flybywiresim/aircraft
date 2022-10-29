@@ -80,6 +80,19 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
             29_008,
             FailureType::ReservoirReturnLeak(HydraulicColor::Yellow),
         ),
+        (
+            29_009,
+            FailureType::EnginePumpOverheat(HydraulicColor::Green),
+        ),
+        (
+            29_011,
+            FailureType::EnginePumpOverheat(HydraulicColor::Yellow),
+        ),
+        (29_010, FailureType::ElecPumpOverheat(HydraulicColor::Blue)),
+        (
+            29_012,
+            FailureType::ElecPumpOverheat(HydraulicColor::Yellow),
+        ),
         (32_000, FailureType::LgciuPowerSupply(LgciuId::Lgciu1)),
         (32_001, FailureType::LgciuPowerSupply(LgciuId::Lgciu2)),
         (32_002, FailureType::LgciuInternalError(LgciuId::Lgciu1)),

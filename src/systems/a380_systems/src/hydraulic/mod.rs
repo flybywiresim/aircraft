@@ -1488,7 +1488,7 @@ impl A380Hydraulic {
 
             engine_driven_pump_1: EngineDrivenPump::new(
                 context,
-                "GREEN",
+                HydraulicColor::Green,
                 PumpCharacteristics::a380_edp(),
             ),
             engine_driven_pump_1_controller: A380EngineDrivenPumpController::new(
@@ -1499,7 +1499,7 @@ impl A380Hydraulic {
 
             engine_driven_pump_2: EngineDrivenPump::new(
                 context,
-                "YELLOW",
+                HydraulicColor::Yellow,
                 PumpCharacteristics::a380_edp(),
             ),
             engine_driven_pump_2_controller: A380EngineDrivenPumpController::new(
@@ -1513,7 +1513,7 @@ impl A380Hydraulic {
 
             blue_electric_pump: ElectricPump::new(
                 context,
-                "BLUE",
+                HydraulicColor::Blue,
                 Self::BLUE_ELEC_PUMP_SUPPLY_POWER_BUS,
                 ElectricCurrent::new::<ampere>(Self::ELECTRIC_PUMP_MAX_CURRENT_AMPERE),
                 PumpCharacteristics::a320_electric_pump(),
@@ -1525,7 +1525,7 @@ impl A380Hydraulic {
 
             yellow_electric_pump: ElectricPump::new(
                 context,
-                "YELLOW",
+                HydraulicColor::Yellow,
                 Self::YELLOW_ELEC_PUMP_SUPPLY_POWER_BUS,
                 ElectricCurrent::new::<ampere>(Self::ELECTRIC_PUMP_MAX_CURRENT_AMPERE),
                 PumpCharacteristics::a320_electric_pump(),
