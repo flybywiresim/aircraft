@@ -242,12 +242,7 @@ class AircraftProcedures {
       return &procedure;
     });
   }
-
-  template<class Tuple, std::size_t S, std::size_t... I>
-  static constexpr void doInsertProcedures(std::array<const ProcedureStep*, S>& dest, const Tuple& procedures, std::index_sequence<I...>) {
-    (doInsertProcedures(dest, std::get<I>(procedures), (I == 0 ? 0 : I - 1) * std::get<(I == 0 ? 0 : I - 1)>(procedures).size()), ...);
-  }
-
+  
   template<std::size_t... I>
   static constexpr void doInsertProcedures(auto& dest, const auto& sources, const auto& offsets, std::index_sequence<I...>) {
     (doInsertProcedures(dest, std::get<I>(sources), offsets[I]), ...);
