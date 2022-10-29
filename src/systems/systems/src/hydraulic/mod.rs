@@ -2496,6 +2496,7 @@ impl PressureSource for Pump {
 
 pub struct ElectricPump {
     cavitation_id: VariableIdentifier,
+    overheat_id: VariableIdentifier,
     pump: Pump,
     pump_physics: ElectricalPumpPhysics,
 }
@@ -2510,6 +2511,7 @@ impl ElectricPump {
         let regulated_speed = pump_characteristics.regulated_speed();
         Self {
             cavitation_id: context.get_identifier(format!("HYD_{}_EPUMP_CAVITATION", id)),
+            overheat_id: context.get_identifier(format!("HYD_{}_EPUMP_OVHT", id)),
             pump: Pump::new(pump_characteristics),
             pump_physics: ElectricalPumpPhysics::new(
                 context,
@@ -2593,6 +2595,7 @@ impl SimulationElement for ElectricPump {
             &self.cavitation_id,
             self.cavitation_efficiency().get::<ratio>(),
         );
+        writer.write(&self.overheat_id, self.is_overheating());
     }
 }
 impl HeatingElement for ElectricPump {

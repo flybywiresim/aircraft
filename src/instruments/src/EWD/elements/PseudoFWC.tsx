@@ -195,6 +195,8 @@ const PseudoFWC: React.FC = () => {
     const [blueRvrLow] = useSimVar('L:A32NX_HYD_BLUE_RESERVOIR_LEVEL_IS_LOW', 'bool', 500);
 
     const [yellowRvrOvht] = useSimVar('L:A32NX_HYD_YELLOW_RESERVOIR_OVHT', 'bool', 500);
+    const [greenRvrOvht] = useSimVar('L:A32NX_HYD_GREEN_RESERVOIR_OVHT', 'bool', 500);
+    const [blueRvrOvht] = useSimVar('L:A32NX_HYD_BLUE_RESERVOIR_OVHT', 'bool', 500);
     const [blueElecPumpPBAuto] = useSimVar('L:A32NX_OVHD_HYD_EPUMPB_PB_IS_AUTO', 'bool', 500);
     const [yellowLP] = useSimVar('L:A32NX_HYD_YELLOW_EDPUMP_LOW_PRESS', 'bool', 500);
     const [yellowSysPressurised] = useSimVar('L:A32NX_HYD_YELLOW_SYSTEM_1_SECTION_PRESSURE_SWITCH', 'bool', 500);
@@ -1185,6 +1187,20 @@ const PseudoFWC: React.FC = () => {
             sysPage: -1,
             side: 'LEFT',
         },
+        2900126: // *HYD  - Blue reservoir overheat
+        {
+            flightPhaseInhib: [3, 4, 5, 7, 8],
+            simVarIsActive: blueRvrOvht,
+            whichCodeToReturn: [
+                0,
+                blueElecPumpPBAuto ? 1 : null,
+            ],
+            codesToReturn: ['290012601', '290012602'],
+            memoInhibit: false,
+            failure: 2,
+            sysPage: 4,
+            side: 'LEFT',
+        },
         2900127: // *HYD  - Yellow reservoir overheat
         {
             flightPhaseInhib: [3, 4, 5, 7, 8],
@@ -1196,6 +1212,21 @@ const PseudoFWC: React.FC = () => {
                 !yepumpPBisAuto ? 3 : null,
             ],
             codesToReturn: ['290012701', '290012702', '290012703', '290012704'],
+            memoInhibit: false,
+            failure: 2,
+            sysPage: 4,
+            side: 'LEFT',
+        },
+        2900128: // *HYD  - Green reservoir overheat
+        {
+            flightPhaseInhib: [3, 4, 5, 7, 8],
+            simVarIsActive: greenRvrOvht,
+            whichCodeToReturn: [
+                0,
+                ptuIsAuto ? 1 : null,
+                eng1pumpPBisAuto ? 2 : null,
+            ],
+            codesToReturn: ['290012801', '290012802', '290012803'],
             memoInhibit: false,
             failure: 2,
             sysPage: 4,
@@ -1917,6 +1948,7 @@ const PseudoFWC: React.FC = () => {
         autoThrustStatus,
         blueElecPumpPBAuto,
         blueRvrLow,
+        blueRvrOvht,
         brakeFan,
         cabAltSetResetState1,
         cabAltSetResetState2,
@@ -1953,6 +1985,7 @@ const PseudoFWC: React.FC = () => {
         eng1AntiIce,
         eng1FireTest,
         engine1State,
+        eng1pumpPBisAuto,
         eng2Agent1PB,
         eng2Agent2PB,
         eng2AntiIce,
@@ -1979,6 +2012,7 @@ const PseudoFWC: React.FC = () => {
         gpwsFlaps3,
         gpwsTerrOff,
         greenHydEng1PBAuto,
+        greenRvrOvht,
         height1Failed,
         height2Failed,
         hydPTU,

@@ -1756,7 +1756,7 @@ impl A320Hydraulic {
                 .engine_driven_pump_1_controller
                 .has_air_pressure_low_fault()
             || self.engine_driven_pump_1_controller.has_low_level_fault()
-            || self.green_reservoir().is_overheating()
+            || self.engine_driven_pump_1_controller.has_overheat_fault()
     }
 
     fn yellow_epump_has_fault(&self) -> bool {
@@ -1766,7 +1766,7 @@ impl A320Hydraulic {
                 .yellow_electric_pump_controller
                 .has_air_pressure_low_fault()
             || self.yellow_electric_pump_controller.has_low_level_fault()
-            || self.yellow_reservoir().is_overheating()
+            || self.yellow_electric_pump_controller.has_overheat_fault()
     }
 
     fn yellow_edp_has_fault(&self) -> bool {
@@ -1776,7 +1776,7 @@ impl A320Hydraulic {
                 .engine_driven_pump_2_controller
                 .has_air_pressure_low_fault()
             || self.engine_driven_pump_2_controller.has_low_level_fault()
-            || self.yellow_reservoir().is_overheating()
+            || self.engine_driven_pump_2_controller.has_overheat_fault()
     }
 
     fn blue_epump_has_fault(&self) -> bool {
@@ -1785,7 +1785,7 @@ impl A320Hydraulic {
                 .blue_electric_pump_controller
                 .has_air_pressure_low_fault()
             || self.blue_electric_pump_controller.has_low_level_fault()
-            || self.blue_reservoir().is_overheating()
+            || self.blue_electric_pump_controller.has_overheat_fault()
     }
 
     pub fn green_reservoir(&self) -> &Reservoir {
@@ -2193,9 +2193,7 @@ impl A320Hydraulic {
             lgciu2,
             self.green_circuit.reservoir(),
             self.yellow_circuit.reservoir(),
-            &self.power_transfer_unit,
         );
-
         self.power_transfer_unit.update(
             context,
             self.green_circuit.system_section(),
@@ -2247,6 +2245,7 @@ impl A320Hydraulic {
             lgciu1,
             lgciu2,
             self.blue_circuit.reservoir(),
+            &self.blue_electric_pump,
         );
         self.blue_electric_pump.update(
             context,
@@ -2263,6 +2262,7 @@ impl A320Hydraulic {
             &self.aft_cargo_door_controller,
             &self.yellow_circuit,
             self.yellow_circuit.reservoir(),
+            &self.yellow_electric_pump,
         );
         self.yellow_electric_pump.update(
             context,
@@ -2663,6 +2663,7 @@ struct A320EngineDrivenPumpController {
     has_air_pressure_low_fault: bool,
     has_low_level_fault: bool,
     is_pressure_low: bool,
+    has_overheat_fault: bool,
 }
 impl A320EngineDrivenPumpController {
     fn new(
@@ -2686,6 +2687,8 @@ impl A320EngineDrivenPumpController {
             has_low_level_fault: false,
 
             is_pressure_low: true,
+
+            has_overheat_fault: false,
         }
     }
 
@@ -2752,6 +2755,8 @@ impl A320EngineDrivenPumpController {
         self.update_low_air_pressure(reservoir, overhead_panel);
 
         self.update_low_level(reservoir, overhead_panel);
+
+        self.has_overheat_fault = reservoir.is_overheating();
     }
 
     fn has_pressure_low_fault(&self) -> bool {
@@ -2764,6 +2769,10 @@ impl A320EngineDrivenPumpController {
 
     fn has_low_level_fault(&self) -> bool {
         self.has_low_level_fault
+    }
+
+    fn has_overheat_fault(&self) -> bool {
+        self.has_overheat_fault
     }
 }
 impl PumpController for A320EngineDrivenPumpController {
@@ -2797,6 +2806,7 @@ struct A320BlueElectricPumpController {
     has_air_pressure_low_fault: bool,
     has_low_level_fault: bool,
     is_pressure_low: bool,
+    has_overheat_fault: bool,
 }
 impl A320BlueElectricPumpController {
     fn new(context: &mut InitContext, powered_by: ElectricalBusType) -> Self {
@@ -2812,6 +2822,8 @@ impl A320BlueElectricPumpController {
             has_low_level_fault: false,
 
             is_pressure_low: true,
+
+            has_overheat_fault: false,
         }
     }
 
@@ -2824,6 +2836,7 @@ impl A320BlueElectricPumpController {
         lgciu1: &impl LgciuInterface,
         lgciu2: &impl LgciuInterface,
         reservoir: &Reservoir,
+        elec_pump: &impl HeatingElement,
     ) {
         let mut should_pressurise_if_powered = false;
         if overhead_panel.blue_epump_push_button.is_auto() {
@@ -2854,6 +2867,9 @@ impl A320BlueElectricPumpController {
         self.update_low_air_pressure(reservoir, overhead_panel);
 
         self.update_low_level(reservoir, overhead_panel);
+
+        // Elec pump has temperature sensor so we check also pump overheating state
+        self.has_overheat_fault = elec_pump.is_overheating() || reservoir.is_overheating();
     }
 
     fn update_low_pressure(
@@ -2910,6 +2926,10 @@ impl A320BlueElectricPumpController {
     fn has_low_level_fault(&self) -> bool {
         self.has_low_level_fault
     }
+
+    fn has_overheat_fault(&self) -> bool {
+        self.has_low_level_fault
+    }
 }
 impl PumpController for A320BlueElectricPumpController {
     fn should_pressurise(&self) -> bool {
@@ -2942,6 +2962,8 @@ struct A320YellowElectricPumpController {
     should_pressurise_for_cargo_door_operation: bool,
 
     low_pressure_hystereris: bool,
+
+    has_overheat_fault: bool,
 }
 impl A320YellowElectricPumpController {
     const DURATION_OF_YELLOW_PUMP_ACTIVATION_AFTER_CARGO_DOOR_OPERATION: Duration =
@@ -2974,6 +2996,8 @@ impl A320YellowElectricPumpController {
             should_pressurise_for_cargo_door_operation: false,
 
             low_pressure_hystereris: false,
+
+            has_overheat_fault: false,
         }
     }
 
@@ -2985,6 +3009,7 @@ impl A320YellowElectricPumpController {
         aft_cargo_door_controller: &A320DoorController,
         hydraulic_circuit: &impl HydraulicPressureSensors,
         reservoir: &Reservoir,
+        elec_pump: &impl HeatingElement,
     ) {
         self.update_cargo_door_logic(
             context,
@@ -3002,6 +3027,9 @@ impl A320YellowElectricPumpController {
         self.update_low_air_pressure(reservoir, overhead_panel);
 
         self.update_low_level(reservoir, overhead_panel);
+
+        // Elec pump has temperature sensor so we check also pump overheating state
+        self.has_overheat_fault = elec_pump.is_overheating() || reservoir.is_overheating();
     }
 
     fn update_low_pressure(&mut self, hydraulic_circuit: &impl HydraulicPressureSensors) {
@@ -3077,6 +3105,10 @@ impl A320YellowElectricPumpController {
 
     fn has_low_level_fault(&self) -> bool {
         self.has_low_level_fault
+    }
+
+    fn has_overheat_fault(&self) -> bool {
+        self.has_overheat_fault
     }
 
     fn should_pressurise_for_cargo_door_operation(&self) -> bool {
@@ -3157,7 +3189,6 @@ impl A320PowerTransferUnitController {
         lgciu2: &impl LgciuInterface,
         reservoir_left_side: &Reservoir,
         reservoir_right_side: &Reservoir,
-        ptu: &impl HeatingElement,
     ) {
         self.should_inhibit_ptu_after_cargo_door_operation.update(
             context,
@@ -3183,7 +3214,8 @@ impl A320PowerTransferUnitController {
 
         self.update_low_level(reservoir_left_side, reservoir_right_side, overhead_panel);
 
-        self.has_overheat_fault = ptu.is_overheating();
+        self.has_overheat_fault =
+            reservoir_left_side.is_overheating() || reservoir_right_side.is_overheating();
     }
 
     fn update_low_air_pressure(
