@@ -7,6 +7,7 @@
 #endif
 #include <array>
 #include <span>
+#include <numeric>
 
 struct ProcedureStep {
   const char* description;
@@ -244,14 +245,30 @@ class AircraftProcedures {
 
   template<class Tuple, std::size_t S, std::size_t... I>
   static constexpr void doInsertProcedures(std::array<const ProcedureStep*, S>& dest, const Tuple& procedures, std::index_sequence<I...>) {
-    (doInsertProcedures(dest, std::get<I>(procedures), I * std::get<(I == 0 ? 0 : I - 1)>(procedures).size()), ...);
+    (doInsertProcedures(dest, std::get<I>(procedures), (I == 0 ? 0 : I - 1) * std::get<(I == 0 ? 0 : I - 1)>(procedures).size()), ...);
+  }
+
+  template<std::size_t... I>
+  static constexpr void doInsertProcedures(auto& dest, const auto& sources, const auto& offsets, std::index_sequence<I...>) {
+    (doInsertProcedures(dest, std::get<I>(sources), offsets[I]), ...);
+  }
+
+  template<class Tuple, std::size_t... I>
+  static constexpr std::array<std::size_t, sizeof...(I) + 1> getOffsets(const Tuple& procedures, std::index_sequence<I...>) {
+    std::array sizes = {(std::size_t)0, std::get<I>(procedures).size()...};
+    std::array<size_t, sizeof...(I) + 1> offsets{};
+    std::inclusive_scan(begin(sizes), end(sizes), begin(offsets));
+    return offsets;
   }
 
   template<std::size_t I, class... Arrays>
   static constexpr void insertProcedures(std::array<const ProcedureStep*, I>& dest, const Arrays&... procedures) {
     constexpr std::size_t accumulatedSize = (... + std::tuple_size<Arrays>::value);
     static_assert(I == accumulatedSize, "Accumulated array sizes do not match. Append more arrays to match size of dest.");
-    doInsertProcedures(dest, std::make_tuple(procedures...), std::make_index_sequence<sizeof...(Arrays)>());
+
+    const auto tupleProcedures = std::make_tuple(procedures...);
+    auto offsets = getOffsets(tupleProcedures, std::make_index_sequence<sizeof...(Arrays) - 1>());
+    doInsertProcedures(dest, tupleProcedures, offsets, std::make_index_sequence<sizeof...(Arrays)>());
   }
 
 #ifdef DEBUG
