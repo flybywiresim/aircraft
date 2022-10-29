@@ -265,7 +265,7 @@ static constexpr std::array<std::size_t, sizeof...(I)> getOffsets(const Tuple& p
     static_assert(I == accumulatedSize, "Accumulated array sizes do not match. Append more arrays to match size of dest.");
 
     const auto tupleProcedures = std::make_tuple(procedures...);
-    auto offsets = getOffsets(tupleProcedures, std::make_index_sequence<sizeof...(Arrays) - 1>());
+    auto offsets = getOffsets(tupleProcedures, std::make_index_sequence<sizeof...(Arrays)>());
     doInsertProcedures(dest, tupleProcedures, offsets, std::make_index_sequence<sizeof...(Arrays)>());
   }
 
