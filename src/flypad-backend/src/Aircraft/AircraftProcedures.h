@@ -255,7 +255,7 @@ class AircraftProcedures {
   }
 
   template<std::size_t S>
-  void printProcedure(const std::array<const ProcedureStep, S>& procedures) {
+  void printProcedure(const std::array<ProcedureStep, S>& procedures) {
     for (const auto& p : procedures) {
       std::cout << p.id << " = " << p.description << std::endl;
     }
