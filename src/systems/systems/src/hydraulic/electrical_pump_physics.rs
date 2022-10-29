@@ -193,7 +193,7 @@ impl ElectricalPumpPhysics {
     }
 
     fn update_current_control(&mut self, context: &UpdateContext) {
-        self.output_current = if self.pump_should_run() {
+        self.output_current = if self.pump_should_run() && !self.is_damaged() {
             ElectricCurrent::new::<ampere>(self.current_controller.next_control_output(
                 self.speed_raw.get::<revolution_per_minute>(),
                 Some(context.delta()),
