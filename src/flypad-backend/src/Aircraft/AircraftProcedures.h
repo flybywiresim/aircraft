@@ -242,17 +242,14 @@ class AircraftProcedures {
       return &procedure;
     });
   }
-  
+
   template<std::size_t... I>
   static constexpr void doInsertProcedures(auto& dest, const auto& sources, const auto& offsets, std::index_sequence<I...>) {
     (doInsertProcedures(dest, std::get<I>(sources), offsets[I]), ...);
   }
 
   template<class Tuple, std::size_t... I>
-  static constexpr std::array<std::size_t, sizeof...(I) + 1> getOffsets(const Tuple& procedures, std::index_sequence<I...>) {
-    std::array sizes = {(std::size_t)0, std::get<I>(procedures).size()...};
-    std::array<size_t, sizeof...(I) + 1> offsets{};
-static constexpr std::array<std::size_t, sizeof...(I)> getOffsets(const Tuple& procedures, std::index_sequence<I...>) {
+  static constexpr std::array<std::size_t, sizeof...(I)> getOffsets(const Tuple& procedures, std::index_sequence<I...>) {
     std::array sizes = {std::get<I>(procedures).size()...};
     std::array<size_t, sizeof...(I)> offsets{};
     std::exclusive_scan(begin(sizes), end(sizes), begin(offsets), 0);
