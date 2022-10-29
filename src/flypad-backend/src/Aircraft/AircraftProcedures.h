@@ -1,10 +1,10 @@
 #pragma once
 
-#include <map>
-#include <string>
 #include <vector>
 #include <algorithm>
+#ifdef DEBUG
 #include <iostream>
+#endif
 #include <array>
 #include <span>
 
@@ -237,14 +237,14 @@ class AircraftProcedures {
 
   template<std::size_t N1, std::size_t N2>
   static constexpr void doInsertProcedures(std::array<const ProcedureStep*, N1>& dest, const std::array<ProcedureStep, N2>& src, const std::size_t offset) {
-    std::transform(begin(src), end(src), begin(dest) + offset * N2, [](const auto& procedure) {
+    std::transform(begin(src), end(src), begin(dest) + offset, [](const auto& procedure) {
       return &procedure;
     });
   }
 
   template<class Tuple, std::size_t S, std::size_t... I>
   static constexpr void doInsertProcedures(std::array<const ProcedureStep*, S>& dest, const Tuple& procedures, std::index_sequence<I...>) {
-    (doInsertProcedures(dest, std::get<I>(procedures), I), ...);
+    (doInsertProcedures(dest, std::get<I>(procedures), I * std::get<(I == 0 ? 0 : I - 1)>(procedures).size()), ...);
   }
 
   template<std::size_t I, class... Arrays>
@@ -254,12 +254,14 @@ class AircraftProcedures {
     doInsertProcedures(dest, std::make_tuple(procedures...), std::make_index_sequence<sizeof...(Arrays)>());
   }
 
+#ifdef DEBUG
   template<std::size_t S>
   void printProcedure(const std::array<ProcedureStep, S>& procedures) {
     for (const auto& p : procedures) {
       std::cout << p.id << " = " << p.description << std::endl;
     }
   }
+#endif
 public:
 #ifdef DEBUG
   AircraftProcedures() {
