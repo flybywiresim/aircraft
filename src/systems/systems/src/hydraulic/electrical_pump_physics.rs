@@ -181,9 +181,9 @@ impl ElectricalPumpPhysics {
         let overheat_resistant_torque_factor = if !self.heat_state.is_overheating() {
             1.
         } else if !self.heat_state.is_damaged() {
-            30. * self.heat_state.overheat_ratio().get::<ratio>()
+            50. * self.heat_state.overheat_ratio().get::<ratio>()
         } else {
-            80.
+            100.
         };
 
         self.resistant_torque =

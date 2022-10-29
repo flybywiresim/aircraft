@@ -195,8 +195,12 @@ impl LevelSwitch {
 }
 
 pub trait HeatingElement {
-    fn is_overheating(&self) -> bool;
-    fn is_damaged(&self) -> bool;
+    fn is_overheating(&self) -> bool {
+        false
+    }
+    fn is_damaged(&self) -> bool {
+        false
+    }
 }
 
 pub struct HeatingProperties {
@@ -1025,20 +1029,45 @@ impl HydraulicCircuit {
     pub fn update(
         &mut self,
         context: &UpdateContext,
-        main_section_pumps: &mut Vec<&mut impl PressureSource>,
-        system_section_pump: Option<&mut impl PressureSource>,
-        auxiliary_section_pump: Option<&mut impl PressureSource>,
+        main_section_pumps: &mut Vec<&mut (impl PressureSource + HeatingElement)>,
+        system_section_pump: Option<&mut (impl PressureSource + HeatingElement)>,
+        auxiliary_section_pump: Option<&mut (impl PressureSource + HeatingElement)>,
         ptu: Option<&PowerTransferUnit>,
         controller: &impl HydraulicCircuitController,
         reservoir_pressure: Pressure,
     ) {
+        let mut any_pump_is_overheating = false;
+        for pump in main_section_pumps.as_slice() {
+            if pump.flow().get::<gallon_per_second>() > 0.01 && pump.is_overheating() {
+                // println!(
+                //     "MAIN PUMP FLOW {:.2} OVERHEAT? {:?}",
+                //     pump.flow().get::<gallon_per_second>(),
+                //     pump.is_overheating()
+                // );
+                any_pump_is_overheating = true;
+            }
+        }
+
+        if let Some(pump) = system_section_pump.as_ref() {
+            if pump.flow().get::<gallon_per_second>() > 0.01 && pump.is_overheating() {
+                any_pump_is_overheating = true;
+            }
+        }
+
+        if let Some(pump) = auxiliary_section_pump.as_ref() {
+            if pump.flow().get::<gallon_per_second>() > 0.01 && pump.is_overheating() {
+                any_pump_is_overheating = true;
+            }
+        }
+
         let mut ptu_overheats_fluid = false;
         if let Some(ptu) = ptu.as_ref() {
             if ptu.is_overheating() && ptu.is_rotating() {
                 ptu_overheats_fluid = true;
             }
         }
-        self.fluid.update(context, ptu_overheats_fluid);
+        self.fluid
+            .update(context, ptu_overheats_fluid || any_pump_is_overheating);
 
         self.reservoir
             .update(context, reservoir_pressure, &self.fluid);
@@ -2178,7 +2207,7 @@ impl Reservoir {
     }
 
     fn update_heat(&mut self, context: &UpdateContext, fluid: &impl HeatingElement) {
-        let has_fluid_return = self.total_return_flow.get::<gallon_per_second>() > 0.1;
+        let has_fluid_return = self.total_return_flow.get::<gallon_per_second>() > 0.01;
         self.heat_state
             .update(context, has_fluid_return && fluid.is_overheating())
     }
@@ -2566,6 +2595,15 @@ impl SimulationElement for ElectricPump {
         );
     }
 }
+impl HeatingElement for ElectricPump {
+    fn is_damaged(&self) -> bool {
+        self.pump_physics.is_damaged()
+    }
+
+    fn is_overheating(&self) -> bool {
+        self.pump_physics.is_overheating()
+    }
+}
 
 pub struct EngineDrivenPump {
     active_id: VariableIdentifier,
@@ -2902,6 +2940,7 @@ impl SimulationElement for RamAirTurbine {
         writer.write(&self.stow_position_id, self.position);
     }
 }
+impl HeatingElement for RamAirTurbine {}
 
 #[cfg(test)]
 mod tests {
