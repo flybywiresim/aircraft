@@ -126,8 +126,10 @@ impl ElectricalPumpPhysics {
             self.speed().get::<revolution_per_minute>()
 
     );
-        self.heat_state
-            .update(context, self.overheat_failure.is_active());
+        self.heat_state.update(
+            context,
+            self.overheat_failure.is_active() && self.speed().get::<revolution_per_minute>() > 100.,
+        );
 
         self.displacement_filtered
             .update(context.delta(), current_displacement);
@@ -219,7 +221,7 @@ impl ElectricalPumpPhysics {
 
         self.update_electrical_power_consumption();
 
-        if self.pump_should_run() {
+        if self.pump_should_run() && !self.is_damaged() {
             if self.speed_raw.get::<revolution_per_minute>() < 5.
                 && self.output_current.get::<ampere>() > 0.
             {
