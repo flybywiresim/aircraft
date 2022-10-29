@@ -38,8 +38,8 @@ void AircraftPreset::onUpdate(double deltaTime) {
     // needs to be initialized
     if (!loadingIsActive) {
       // check if procedure ID exists
-      const auto [firstProcedure, lastProcedure] = procedures.getProcedure(loadAircraftPresetRequest);
-      if (!firstProcedure && !lastProcedure) {
+      const auto procedure = procedures.getProcedure(loadAircraftPresetRequest);
+      if (procedure.empty()) {
         std::cout << "FLYPAD_BACKEND: Preset " << loadAircraftPresetRequest << " not found!"
                   << std::endl;
         setLoadAircraftPresetRequest(0);
@@ -49,7 +49,7 @@ void AircraftPreset::onUpdate(double deltaTime) {
 
       // initialize new loading process
       currentProcedureID = loadAircraftPresetRequest;
-      currentProcedure = std::make_pair(firstProcedure, lastProcedure);
+      currentProcedure = procedure;
       currentLoadingTime = 0;
       currentDelay = 0;
       currentStep = 0;
@@ -67,7 +67,7 @@ void AircraftPreset::onUpdate(double deltaTime) {
     setLoadAircraftPresetRequest(static_cast<FLOAT64>(currentProcedureID));
 
     // check if all procedure steps are done and the procedure is finished
-    const auto procedureSize = currentProcedure.second - currentProcedure.first;
+    const auto procedureSize = currentProcedure.size();
     if (currentStep >= procedureSize) {
       std::cout << "FLYPAD_BACKEND: Aircraft Preset " << currentProcedureID << " done!"
                 << std::endl;
@@ -87,7 +87,7 @@ void AircraftPreset::onUpdate(double deltaTime) {
     }
 
     // convenience tmp
-    const auto currentStepPtr = currentProcedure.first + currentStep;
+    const auto currentStepPtr = currentProcedure[currentStep];
 
     // calculate next delay
     currentDelay = currentLoadingTime + currentStepPtr->delayAfter;

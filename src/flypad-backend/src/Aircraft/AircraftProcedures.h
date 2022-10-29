@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <array>
+#include <span>
 
 struct ProcedureStep {
   const char* description;
@@ -233,21 +234,34 @@ class AircraftProcedures {
   std::array<const ProcedureStep*, RDY_FOR_TAKEOFF_SIZE> readyForTakeoff;
 
   template<std::size_t N1, std::size_t N2>
-  static constexpr void doInsertProcedures(std::array<const ProcedureStep*, N1>& dest, const std::array<ProcedureStep, N2>& src) {
-    std::transform(begin(src), end(src), begin(dest), [](const auto& procedure) {
+  static constexpr void doInsertProcedures(std::array<const ProcedureStep*, N1>& dest, const std::array<ProcedureStep, N2>& src, const std::size_t offset) {
+    std::transform(begin(src), end(src), begin(dest) + offset * N2, [](const auto& procedure) {
       return &procedure;
     });
   }
 
-  template<std::size_t I, class... Arrays>
-  static constexpr void insertProcedures(std::array<const ProcedureStep*, I>& dest, const Arrays&... procedures) {
-    (doInsertProcedures(dest, procedures), ...);
+  template<class Tuple, std::size_t S, std::size_t... I>
+  static constexpr void doInsertProcedures(std::array<const ProcedureStep*, S>& dest, const Tuple& procedures, std::index_sequence<I...>) {
+    (doInsertProcedures(dest, std::get<I>(procedures), I), ...);
   }
 
+  template<std::size_t I, class... Arrays>
+  static constexpr void insertProcedures(std::array<const ProcedureStep*, I>& dest, const Arrays&... procedures) {
+    constexpr std::size_t accumulatedSize = (... + std::tuple_size<Arrays>::value);
+    static_assert(I == accumulatedSize, "Accumulated array sizes do not match. Append more arrays to match size of dest.");
+    doInsertProcedures(dest, std::make_tuple(procedures...), std::make_index_sequence<sizeof...(Arrays)>());
+  }
+
+  template<std::size_t S>
+  void printProcedure(const std::array<const ProcedureStep, S>& procedures) {
+    for (const auto& p : procedures) {
+      std::cout << p.id << " = " << p.description << std::endl;
+    }
+  }
 public:
-  constexpr AircraftProcedures() {
-    // Map the procedure groups
 #ifdef DEBUG
+  AircraftProcedures() {
+    // Map the procedure groups
     // P{rint to console to add them to the EFB code to display the current step.
     printProcedure(POWERED_CONFIG_ON);
     printProcedure(PUSHBACK_CONFIG_ON);
@@ -257,6 +271,8 @@ public:
     printProcedure(TAXI_CONFIG_OFF);
     printProcedure(PUSHBACK_CONFIG_OFF);
     printProcedure(POWERED_CONFIG_OFF);
+#else
+  constexpr AircraftProcedures() {
 #endif
     insertProcedures(coldAndDark, TAKEOFF_CONFIG_OFF, TAXI_CONFIG_OFF, PUSHBACK_CONFIG_OFF, POWERED_CONFIG_OFF);
     insertProcedures(powered, TAKEOFF_CONFIG_OFF, TAXI_CONFIG_OFF, PUSHBACK_CONFIG_OFF, POWERED_CONFIG_ON);
@@ -266,5 +282,5 @@ public:
   }
 
   [[nodiscard]]
-  std::pair<const ProcedureStep*, const ProcedureStep*> getProcedure(int64_t pID) const;
+  std::span<const ProcedureStep*> getProcedure(int64_t pID) const;
 };

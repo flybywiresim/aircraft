@@ -3,27 +3,20 @@
 #include <iostream>
 #include <algorithm>
 
-namespace {
-  void printProcedure(const std::vector<const ProcedureStep*>& procedures) {
-    for (const auto& p : procedures) {
-      std::cout << p->id << " = " << p->description << std::endl;
-    }
-  }
-}
 
-std::pair<const ProcedureStep*, const ProcedureStep*> AircraftProcedures::getProcedure(int64_t pID) const {
+std::span<const ProcedureStep*> AircraftProcedures::getProcedure(int64_t pID) const {
   switch (pID) {
     case 1:
-      return { coldAndDark.data(), coldAndDark.data() + coldAndDark.size() };
+      return coldAndDark;
     case 2:
-      return { powered.data(), powered.data() + powered.size() };
+      return powered;
     case 3:
-      return { readyForPushback.data(), readyForPushback.data() + readyForPushback.size() };
+      return readyForPushback;
     case 4:
-      return { readyForTaxi.data(), readyForTaxi.data() + readyForTaxi.size() };
+      return readyForTaxi;
     case 5:
-      return { readyForTakeoff.data(), readyForTakeoff.data() + readyForTakeoff.size() };
+      return readyForTakeoff;
     default:
-      return { nullptr, nullptr };
+      return nullptr;
   }
 }
