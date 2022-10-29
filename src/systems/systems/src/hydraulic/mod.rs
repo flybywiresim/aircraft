@@ -2957,6 +2957,24 @@ mod tests {
 
     use super::*;
 
+    struct TestFluid {
+        is_hot: bool,
+    }
+    impl TestFluid {
+        fn overheat() -> Self {
+            Self { is_hot: true }
+        }
+
+        fn nominal() -> Self {
+            Self { is_hot: true }
+        }
+    }
+    impl HeatingElement for TestFluid {
+        fn is_overheating(&self) -> bool {
+            self.is_hot
+        }
+    }
+
     #[test]
     fn section_writes_its_state() {
         let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
@@ -3082,7 +3100,7 @@ mod tests {
         }));
 
         test_bed.set_update_after_power_distribution(|reservoir, context| {
-            reservoir.update(context, Pressure::new::<psi>(50.))
+            reservoir.update(context, Pressure::new::<psi>(50.), &TestFluid::nominal())
         });
 
         test_bed.fail(FailureType::ReservoirLeak(HydraulicColor::Green));
@@ -3105,7 +3123,7 @@ mod tests {
         }));
 
         test_bed.set_update_after_power_distribution(|reservoir, context| {
-            reservoir.update(context, Pressure::new::<psi>(50.))
+            reservoir.update(context, Pressure::new::<psi>(50.), &TestFluid::nominal())
         });
 
         test_bed.fail(FailureType::ReservoirLeak(HydraulicColor::Green));
@@ -3128,7 +3146,7 @@ mod tests {
         }));
 
         test_bed.set_update_after_power_distribution(|reservoir, context| {
-            reservoir.update(context, Pressure::new::<psi>(50.))
+            reservoir.update(context, Pressure::new::<psi>(50.), &TestFluid::nominal())
         });
 
         let is_low: bool = test_bed.read_by_name("HYD_GREEN_RESERVOIR_LEVEL_IS_LOW");
@@ -3154,7 +3172,7 @@ mod tests {
         }));
 
         test_bed.set_update_after_power_distribution(|reservoir, context| {
-            reservoir.update(context, Pressure::new::<psi>(50.))
+            reservoir.update(context, Pressure::new::<psi>(50.), &TestFluid::nominal())
         });
 
         test_bed.run_multiple_frames(Duration::from_secs(2));
@@ -3181,7 +3199,7 @@ mod tests {
             )
         }))
         .with_update_after_power_distribution(|el, context| {
-            el.update(context, Pressure::new::<psi>(50.))
+            el.update(context, Pressure::new::<psi>(50.), &TestFluid::nominal())
         });
 
         test_bed.write_by_name("PLANE BANK DEGREES", 180.);
@@ -3311,7 +3329,11 @@ mod tests {
     }
 
     fn engine_driven_pump(context: &mut InitContext) -> EngineDrivenPump {
-        EngineDrivenPump::new(context, "DEFAULT", PumpCharacteristics::a320_edp())
+        EngineDrivenPump::new(
+            context,
+            HydraulicColor::Green,
+            PumpCharacteristics::a320_edp(),
+        )
     }
 
     #[cfg(test)]

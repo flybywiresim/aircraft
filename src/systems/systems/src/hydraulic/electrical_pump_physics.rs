@@ -488,7 +488,7 @@ mod tests {
     fn physical_pump(context: &mut InitContext) -> ElectricalPumpPhysics {
         ElectricalPumpPhysics::new(
             context,
-            "YELLOW",
+            HydraulicColor::Yellow,
             ElectricalBusType::AlternatingCurrent(1),
             ElectricCurrent::new::<ampere>(45.),
             AngularVelocity::new::<revolution_per_minute>(7600.),
