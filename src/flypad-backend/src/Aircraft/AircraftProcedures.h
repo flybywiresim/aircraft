@@ -252,7 +252,10 @@ class AircraftProcedures {
   static constexpr std::array<std::size_t, sizeof...(I) + 1> getOffsets(const Tuple& procedures, std::index_sequence<I...>) {
     std::array sizes = {(std::size_t)0, std::get<I>(procedures).size()...};
     std::array<size_t, sizeof...(I) + 1> offsets{};
-    std::inclusive_scan(begin(sizes), end(sizes), begin(offsets));
+static constexpr std::array<std::size_t, sizeof...(I)> getOffsets(const Tuple& procedures, std::index_sequence<I...>) {
+    std::array sizes = {std::get<I>(procedures).size()...};
+    std::array<size_t, sizeof...(I)> offsets{};
+    std::exclusive_scan(begin(sizes), end(sizes), begin(offsets), 0);
     return offsets;
   }
 
