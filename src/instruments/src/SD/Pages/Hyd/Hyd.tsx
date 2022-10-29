@@ -44,6 +44,8 @@ export const HydPage = () => {
 
     const [ACBus1IsPowered] = useSimVar('L:A32NX_ELEC_AC_1_BUS_IS_POWERED', 'bool', 1000);
 
+    const [blueElecPumpOvht] = useSimVar('L:A32NX_HYD_BLUE_EPUMP_OVHT', 'bool', 1000);
+
     const [engine1Running, setEngine1Running] = useState(false);
     const [engine2Running, setEngine2Running] = useState(false);
 
@@ -110,6 +112,13 @@ export const HydPage = () => {
                     y={384}
                 >
                     ELEC
+                </text>
+                <text
+                    className={blueElecPumpOvht ? 'Large Amber' : 'Hide'}
+                    x={420}
+                    y={414}
+                >
+                    OVHT
                 </text>
 
                 <YellowElecPump pumpPushbuttonOn={yellowElectricPumpStatus} pressure={yellowPressure} enginePumpPressureLowSwitch={!yellowPumpPressurisedSwitch} />
@@ -302,6 +311,8 @@ type YellowElecPumpProps = {
 const YellowElecPump = ({ pumpPushbuttonOn, pressure, enginePumpPressureLowSwitch }: YellowElecPumpProps) => {
     const [ACBus2IsPowered] = useSimVar('L:A32NX_ELEC_AC_2_BUS_IS_POWERED', 'bool', 1000);
 
+    const [yellowElecPumpOvht] = useSimVar('L:A32NX_HYD_YELLOW_EPUMP_OVHT', 'bool', 1000);
+
     let elecHorizontalLineFormat: string;
     let verticalLineFormat: string;
     let elecTriangleFill: number;
@@ -332,6 +343,13 @@ const YellowElecPump = ({ pumpPushbuttonOn, pressure, enginePumpPressureLowSwitc
                 y={292}
             >
                 ELEC
+            </text>
+            <text
+                className={yellowElecPumpOvht ? 'Large Amber' : 'Hide'}
+                x={676}
+                y={322}
+            >
+                OVHT
             </text>
             <Triangle x={642} y={283} scale={4 / 3} colour={elecTriangleColour} fill={elecTriangleFill} orientation={-90} />
             <line className={elecHorizontalLineFormat} x1={631} y1={283} x2={642} y2={283} />
