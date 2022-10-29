@@ -118,7 +118,7 @@ void AircraftPreset::onUpdate(double deltaTime) {
     fvalue = 0;
     ivalue = 0;
     svalue = "";
-    if (currentStepPtr->expectedStateCheckCode) {
+    if (std::strlen(currentStepPtr->expectedStateCheckCode)) {
 #ifdef DEBUG
       std::cout << "FLYPAD_BACKEND: Aircraft Preset Step " << currentStep << " Test: "
                 << currentStepPtr->description << " TEST: \""
