@@ -20,7 +20,6 @@ bool FlyByWireInterface::connect() {
 
   // setup handlers
   spoilersHandler = make_shared<SpoilersHandler>();
-  elevatorTrimHandler = make_shared<ElevatorTrimHandler>();
 
   // initialize failures handler
   failuresConsumer.initialize();
@@ -35,8 +34,8 @@ bool FlyByWireInterface::connect() {
 
   // connect to sim connect
   return simConnectInterface.connect(clientDataEnabled, autopilotStateMachineEnabled, autopilotLawsEnabled, flyByWireEnabled, elacDisabled,
-                                     secDisabled, facDisabled, throttleAxis, spoilersHandler, elevatorTrimHandler,
-                                     flightControlsKeyChangeAileron, flightControlsKeyChangeElevator, flightControlsKeyChangeRudder,
+                                     secDisabled, facDisabled, throttleAxis, spoilersHandler, flightControlsKeyChangeAileron,
+                                     flightControlsKeyChangeElevator, flightControlsKeyChangeRudder,
                                      disableXboxCompatibilityRudderAxisPlusMinus, idMinimumSimulationRate->get(),
                                      idMaximumSimulationRate->get(), limitSimulationRateByPerformance);
 }
@@ -1005,7 +1004,8 @@ bool FlyByWireInterface::updateAdditionalData(double sampleTime) {
   additionalData.spoilers_handle_pos = idSpoilersHandlePosition->get();
   additionalData.spoilers_armed = idSpoilersArmed->get();
   additionalData.spoilers_handle_sim_pos = simData.spoilers_handle_position;
-  additionalData.ground_spoilers_active = idSecGroundSpoilersOut[0]->get() || idSecGroundSpoilersOut[1]->get() || idSecGroundSpoilersOut[2]->get();
+  additionalData.ground_spoilers_active =
+      idSecGroundSpoilersOut[0]->get() || idSecGroundSpoilersOut[1]->get() || idSecGroundSpoilersOut[2]->get();
   additionalData.flaps_handle_percent = idFlapsHandlePercent->get();
   additionalData.flaps_handle_index = idFlapsHandleIndex->get();
   additionalData.flaps_handle_configuration_index = flapsHandleIndexFlapConf->get();
@@ -1054,11 +1054,13 @@ bool FlyByWireInterface::updateAdditionalData(double sampleTime) {
   // failure
   additionalData.failuresActive = failuresConsumer.isAnyActive() ? 1.0 : 0.0;
   // aoa
-  additionalData.alpha_floor_condition = reinterpret_cast<Arinc429DiscreteWord*>(&facsBusOutputs[0].discrete_word_5)->bitFromValueOr(29, false) ||
-                                         reinterpret_cast<Arinc429DiscreteWord*>(&facsBusOutputs[1].discrete_word_5)->bitFromValueOr(29, false);
+  additionalData.alpha_floor_condition =
+      reinterpret_cast<Arinc429DiscreteWord*>(&facsBusOutputs[0].discrete_word_5)->bitFromValueOr(29, false) ||
+      reinterpret_cast<Arinc429DiscreteWord*>(&facsBusOutputs[1].discrete_word_5)->bitFromValueOr(29, false);
   // these are not correct yet
-  additionalData.high_aoa_protection = reinterpret_cast<Arinc429DiscreteWord*>(&elacsBusOutputs[0].discrete_status_word_2)->bitFromValueOr(23, false) ||
-                                       reinterpret_cast<Arinc429DiscreteWord*>(&elacsBusOutputs[1].discrete_status_word_2)->bitFromValueOr(23, false);
+  additionalData.high_aoa_protection =
+      reinterpret_cast<Arinc429DiscreteWord*>(&elacsBusOutputs[0].discrete_status_word_2)->bitFromValueOr(23, false) ||
+      reinterpret_cast<Arinc429DiscreteWord*>(&elacsBusOutputs[1].discrete_status_word_2)->bitFromValueOr(23, false);
 
   return true;
 }
