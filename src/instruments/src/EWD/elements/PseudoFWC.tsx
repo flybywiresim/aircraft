@@ -1759,7 +1759,7 @@ const PseudoFWC: React.FC = () => {
             }
         }
     }, [
-        engine1Generator, engine2Generator, blueLP, greenLP, yellowLP, eng1pumpPBisAuto, eng2pumpPBisAuto, yepumpPBisAuto, ptuIsAuto,
+        engine1Generator, engine2Generator, blueLP, greenLP, yellowLP, eng1pumpPBisAuto, eng2pumpPBisAuto,
         flapsMcdu, flapsMcduEntered, speedBrakeCommand, parkBrake, v1Speed, vrSpeed, v2Speed, cabin,
         catering, cargoaftLocked, cargofwdLocked, toconfigBtn, tomemo, flapsHandle, brakesHot,
     ]);
