@@ -2690,7 +2690,7 @@ impl EngineDrivenPump {
         };
 
         self.pump
-            .update(context, section, reservoir, pump_speed, controller);
+            .update(context, section, reservoir, self.speed, controller);
 
         self.is_active = controller.should_pressurise();
     }
