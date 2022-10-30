@@ -497,7 +497,7 @@ class SpeedTrendArrow extends DisplayComponent<{ airspeed: Subscribable<number>,
 class VLsBar extends DisplayComponent<{ bus: EventBus }> {
     private vlsPath = Subject.create<string>('');
 
-    private refElement = FSComponent.createRef<SVGGElement>();
+    private vlsVisbility = Subject.create<string>('hidden');
 
     private vAlphaProt = new Arinc429Word(0);
 
@@ -513,7 +513,7 @@ class VLsBar extends DisplayComponent<{ bus: EventBus }> {
 
     private setVlsPath() {
         if (this.vls.isNormalOperation()) {
-            this.refElement.instance.style.visibility = 'visible';
+            this.vlsVisbility.set('visible');
 
             const normalLawActive = this.fcdc1DiscreteWord1.getBitValueOr(11, false) || this.fcdc2DiscreteWord1.getBitValueOr(11, false);
 
@@ -522,7 +522,7 @@ class VLsBar extends DisplayComponent<{ bus: EventBus }> {
 
             this.vlsPath.set(`m19.031 ${VLsPos}h 1.9748v${offset}`);
         } else {
-            this.refElement.instance.style.visibility = 'hidden';
+            this.vlsVisbility.set('hidden');
         }
     }
 
@@ -563,7 +563,7 @@ class VLsBar extends DisplayComponent<{ bus: EventBus }> {
     }
 
     render(): VNode {
-        return <path id="VLsIndicator" class="NormalStroke Amber" d={this.vlsPath} ref={this.refElement} />;
+        return <path id="VLsIndicator" class="NormalStroke Amber" d={this.vlsPath} visibility={this.vlsVisbility} />;
     }
 }
 
