@@ -38,8 +38,8 @@ void AircraftPreset::onUpdate(double deltaTime) {
     // needs to be initialized
     if (!loadingIsActive) {
       // check if procedure ID exists
-      const auto procedure = procedures.getProcedure(loadAircraftPresetRequest);
-      if (procedure.empty()) {
+      const std::vector<const ProcedureStep*>* requestedProcedure = procedures.getProcedure(loadAircraftPresetRequest);
+      if (requestedProcedure->empty()) {
         std::cout << "FLYPAD_BACKEND: Preset " << loadAircraftPresetRequest << " not found!"
                   << std::endl;
         setLoadAircraftPresetRequest(0);
@@ -49,7 +49,7 @@ void AircraftPreset::onUpdate(double deltaTime) {
 
       // initialize new loading process
       currentProcedureID = loadAircraftPresetRequest;
-      currentProcedure = procedure;
+      currentProcedure = requestedProcedure;
       currentLoadingTime = 0;
       currentDelay = 0;
       currentStep = 0;
@@ -67,8 +67,7 @@ void AircraftPreset::onUpdate(double deltaTime) {
     setLoadAircraftPresetRequest(static_cast<FLOAT64>(currentProcedureID));
 
     // check if all procedure steps are done and the procedure is finished
-    const auto procedureSize = currentProcedure.size();
-    if (currentStep >= procedureSize) {
+    if (currentStep >= currentProcedure->size()) {
       std::cout << "FLYPAD_BACKEND: Aircraft Preset " << currentProcedureID << " done!"
                 << std::endl;
       setProgressAircraftPreset(0);
@@ -87,7 +86,7 @@ void AircraftPreset::onUpdate(double deltaTime) {
     }
 
     // convenience tmp
-    const auto currentStepPtr = currentProcedure[currentStep];
+    const ProcedureStep* currentStepPtr = (*currentProcedure)[currentStep];
 
     // calculate next delay
     currentDelay = currentLoadingTime + currentStepPtr->delayAfter;
@@ -100,9 +99,9 @@ void AircraftPreset::onUpdate(double deltaTime) {
     // check if the current step is a condition step and check the condition
     if (currentStepPtr->isConditional) {
       // update progress var
-      setProgressAircraftPreset((double) currentStep / procedureSize);
+      setProgressAircraftPreset(static_cast<double>(currentStep) / currentProcedure->size());
       setProgressAircraftPresetId(currentStepPtr->id);
-      execute_calculator_code(currentStepPtr->actionCode, &fvalue, &ivalue, &svalue);
+      execute_calculator_code(currentStepPtr->actionCode.c_str(), &fvalue, &ivalue, &svalue);
       std::cout << "FLYPAD_BACKEND: Aircraft Preset Step " << currentStep << " Condition: "
                 << currentStepPtr->description
                 << " (delay between tests: " << currentStepPtr->delayAfter << ")" << std::endl;
@@ -118,13 +117,13 @@ void AircraftPreset::onUpdate(double deltaTime) {
     fvalue = 0;
     ivalue = 0;
     svalue = "";
-    if (std::strlen(currentStepPtr->expectedStateCheckCode)) {
+    if (!currentStepPtr->expectedStateCheckCode.empty()) {
 #ifdef DEBUG
       std::cout << "FLYPAD_BACKEND: Aircraft Preset Step " << currentStep << " Test: "
                 << currentStepPtr->description << " TEST: \""
                 << currentStepPtr->expectedStateCheckCode << "\"" << std::endl;
 #endif
-      execute_calculator_code(currentStepPtr->expectedStateCheckCode, &fvalue, &ivalue, &svalue);
+      execute_calculator_code(currentStepPtr->expectedStateCheckCode.c_str(), &fvalue, &ivalue, &svalue);
       if (static_cast<bool>(fvalue)) {
 #ifdef DEBUG
         std::cout << "FLYPAD_BACKEND: Aircraft Preset Step " << currentStep << " Skipping: "
@@ -139,14 +138,14 @@ void AircraftPreset::onUpdate(double deltaTime) {
     }
 
     // update progress var
-    setProgressAircraftPreset((double) currentStep / procedureSize);
+    setProgressAircraftPreset(static_cast<double>(currentStep) / currentProcedure->size());
     setProgressAircraftPresetId(currentStepPtr->id);
 
     // execute code to set expected state
     std::cout << "FLYPAD_BACKEND: Aircraft Preset Step " << currentStep << " Execute: "
               << currentStepPtr->description
               << " (delay after: " << currentStepPtr->delayAfter << ")" << std::endl;
-    execute_calculator_code(currentStepPtr->actionCode, &fvalue, &ivalue, &svalue);
+    execute_calculator_code(currentStepPtr->actionCode.c_str(), &fvalue, &ivalue, &svalue);
     currentStep++;
 
   }

@@ -40,7 +40,7 @@ private:
   // current procedure ID
   int64_t currentProcedureID = 0;
   // current procedure, containing a pointer to the begin of the array and to the end of the array
-  std::span<const ProcedureStep*> currentProcedure;
+  const std::vector<const ProcedureStep*>* currentProcedure = nullptr;
   // flag to signal that a loading process is ongoing
   bool loadingIsActive = false;
   // in ms
