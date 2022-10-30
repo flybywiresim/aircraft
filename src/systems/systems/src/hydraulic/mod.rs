@@ -77,13 +77,25 @@ pub struct Fluid {
     heat_state: HeatingProperties,
 }
 impl Fluid {
+    const HEATING_TIME_CONSTANT_MEAN_S: f64 = 40.;
+    const HEATING_TIME_CONSTANT_STD_S: f64 = 10.;
+
+    const COOLING_TIME_CONSTANT: Duration = Duration::from_secs(60 * 3);
+    const DAMAGE_TIME_CONSTANT: Duration = Duration::from_secs(60 * 3);
+
     pub fn new(bulk: Pressure) -> Self {
         Self {
             current_bulk: bulk,
             heat_state: HeatingProperties::new(
-                Duration::from_secs_f64(0.6 * 60.),
-                Duration::from_secs_f64(3. * 60.),
-                Duration::from_secs_f64(3. * 60.),
+                Duration::from_secs_f64(
+                    random_from_normal_distribution(
+                        Self::HEATING_TIME_CONSTANT_MEAN_S,
+                        Self::HEATING_TIME_CONSTANT_STD_S,
+                    )
+                    .max(10.),
+                ),
+                Self::COOLING_TIME_CONSTANT,
+                Self::DAMAGE_TIME_CONSTANT,
             ),
         }
     }
@@ -352,6 +364,11 @@ impl PowerTransferUnit {
     const THRESHOLD_DELTA_TO_DECLARE_CONTINUOUS_RPM: f64 = 400.;
     const DURATION_BEFORE_CAPTURING_BARK_STRENGTH_SPEED: Duration = Duration::from_millis(133);
 
+    const HEATING_TIME_CONSTANT_MEAN_S: f64 = 60.;
+    const HEATING_TIME_CONSTANT_STD_S: f64 = 10.;
+    const COOLING_TIME_CONSTANT: Duration = Duration::from_secs(60 * 3);
+    const DAMAGE_TIME_CONSTANT: Duration = Duration::from_secs(60 * 3);
+
     pub fn new(
         context: &mut InitContext,
         characteristics: &impl PowerTransferUnitCharacteristics,
@@ -400,9 +417,15 @@ impl PowerTransferUnit {
             efficiency: characteristics.efficiency(),
 
             heat_state: HeatingProperties::new(
-                Duration::from_secs_f64(1. * 60.),
-                Duration::from_secs_f64(3. * 60.),
-                Duration::from_secs_f64(5. * 60.),
+                Duration::from_secs_f64(
+                    random_from_normal_distribution(
+                        Self::HEATING_TIME_CONSTANT_MEAN_S,
+                        Self::HEATING_TIME_CONSTANT_STD_S,
+                    )
+                    .max(10.),
+                ),
+                Self::COOLING_TIME_CONSTANT,
+                Self::DAMAGE_TIME_CONSTANT,
             ),
         }
     }
@@ -442,13 +465,6 @@ impl PowerTransferUnit {
         self.heat_state.update(
             context,
             self.shaft_speed.get::<revolution_per_minute>() > 2000.,
-        );
-
-        println!(
-            "PTU SPEED {:.0} PTU HEAT FACTOR {:.2} PTU DAMAGED {:?}",
-            self.shaft_speed.get::<revolution_per_minute>(),
-            self.heat_state.heat_factor.output().get::<ratio>(),
-            self.heat_state.is_damaged(),
         );
     }
 
@@ -1039,11 +1055,6 @@ impl HydraulicCircuit {
         let mut any_pump_is_overheating = false;
         for pump in main_section_pumps.as_slice() {
             if pump.flow().get::<gallon_per_second>() > 0.01 && pump.is_overheating() {
-                // println!(
-                //     "MAIN PUMP FLOW {:.2} OVERHEAT? {:?}",
-                //     pump.flow().get::<gallon_per_second>(),
-                //     pump.is_overheating()
-                // );
                 any_pump_is_overheating = true;
             }
         }
@@ -1060,22 +1071,16 @@ impl HydraulicCircuit {
             }
         }
 
-        let mut ptu_overheats_fluid = false;
-        if let Some(ptu) = ptu.as_ref() {
-            if ptu.is_overheating() && ptu.is_rotating() {
-                ptu_overheats_fluid = true;
-            }
-        }
-        self.fluid
-            .update(context, ptu_overheats_fluid || any_pump_is_overheating);
-
-        self.reservoir
-            .update(context, reservoir_pressure, &self.fluid);
+        let ptu_overheats_fluid = if let Some(ptu) = ptu.as_ref() {
+            ptu.is_overheating() && ptu.is_rotating()
+        } else {
+            false
+        };
 
         println!(
-            "LOOP {:?}, PTU OH {:?}  FLUID ratio {:?} RES ratio {:?} Res flow gps{:.3}",
+            "LOOP {:?}, PTU OH {:?} ANYpump OH fluid {:?} FLUID ratio {:?} RES ratio {:?} Res flow gps{:.3}",
             self.id,
-            ptu_overheats_fluid,
+            ptu_overheats_fluid,any_pump_is_overheating,
             self.fluid.heat_state.heat_factor.output().get::<ratio>(),
             self.reservoir
                 .heat_state
@@ -1084,6 +1089,12 @@ impl HydraulicCircuit {
                 .get::<ratio>(),
             self.reservoir.total_return_flow.get::<gallon_per_second>()
         );
+
+        self.fluid
+            .update(context, ptu_overheats_fluid || any_pump_is_overheating);
+
+        self.reservoir
+            .update(context, reservoir_pressure, &self.fluid);
 
         self.update_shutoff_valves(controller);
         self.update_leak_measurement_valves(context, controller);
@@ -2140,6 +2151,11 @@ impl Reservoir {
     // Part of the fluid lost instead of returning to reservoir
     const RETURN_FAILURE_LEAK_RATIO: f64 = 0.1;
 
+    const HEATING_TIME_CONSTANT_MEAN_S: f64 = 30.;
+    const HEATING_TIME_CONSTANT_STD_S: f64 = 5.;
+    const COOLING_TIME_CONSTANT: Duration = Duration::from_secs(60 * 3);
+    const DAMAGE_TIME_CONSTANT: Duration = Duration::from_secs(60 * 5);
+
     pub fn new(
         context: &mut InitContext,
         hyd_loop_id: HydraulicColor,
@@ -2169,9 +2185,15 @@ impl Reservoir {
             fluid_physics: FluidPhysics::new(),
 
             heat_state: HeatingProperties::new(
-                Duration::from_secs_f64(0.6 * 60.),
-                Duration::from_secs_f64(3. * 60.),
-                Duration::from_secs_f64(5. * 60.),
+                Duration::from_secs_f64(
+                    random_from_normal_distribution(
+                        Self::HEATING_TIME_CONSTANT_MEAN_S,
+                        Self::HEATING_TIME_CONSTANT_STD_S,
+                    )
+                    .max(10.),
+                ),
+                Self::COOLING_TIME_CONSTANT,
+                Self::DAMAGE_TIME_CONSTANT,
             ),
             total_return_flow: VolumeRate::default(),
             total_return_volume: Volume::default(),
@@ -2619,6 +2641,12 @@ pub struct EngineDrivenPump {
     heat_state: HeatingProperties,
 }
 impl EngineDrivenPump {
+    const HEATING_TIME_CONSTANT_MEAN_S: f64 = 30.;
+    const HEATING_TIME_CONSTANT_STD_S: f64 = 5.;
+
+    const COOLING_TIME_CONSTANT: Duration = Duration::from_secs(60 * 2);
+    const DAMAGE_TIME_CONSTANT: Duration = Duration::from_secs(60 * 2);
+
     pub fn new(
         context: &mut InitContext,
         id: HydraulicColor,
@@ -2631,9 +2659,15 @@ impl EngineDrivenPump {
             pump: Pump::new(pump_characteristics),
             overheat_failure: Failure::new(FailureType::EnginePumpOverheat(id)),
             heat_state: HeatingProperties::new(
-                Duration::from_secs_f64(30.),
-                Duration::from_secs_f64(2. * 60.),
-                Duration::from_secs_f64(2. * 60.),
+                Duration::from_secs_f64(
+                    random_from_normal_distribution(
+                        Self::HEATING_TIME_CONSTANT_MEAN_S,
+                        Self::HEATING_TIME_CONSTANT_STD_S,
+                    )
+                    .max(10.),
+                ),
+                Self::COOLING_TIME_CONSTANT,
+                Self::DAMAGE_TIME_CONSTANT,
             ),
         }
     }
