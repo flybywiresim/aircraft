@@ -3276,6 +3276,58 @@ mod tests {
         );
     }
 
+    #[test]
+    fn reservoir_receiving_heating_fluid_overheats() {
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            reservoir(
+                context,
+                HydraulicColor::Green,
+                Volume::new::<gallon>(5.),
+                Volume::new::<gallon>(2.),
+                Volume::new::<gallon>(0.5),
+            )
+        }));
+
+        test_bed.set_update_after_power_distribution(|reservoir, context| {
+            reservoir.update(context, Pressure::new::<psi>(50.), &TestFluid::overheat());
+
+            reservoir.try_take_volume(Volume::new::<gallon>(0.10));
+
+            reservoir.add_return_volume(Volume::new::<gallon>(0.10));
+        });
+
+        test_bed.run_multiple_frames(Duration::from_secs_f64(
+            Reservoir::HEATING_TIME_CONSTANT_MEAN_S + 4. * Reservoir::HEATING_TIME_CONSTANT_STD_S,
+        ));
+
+        let is_overheating: bool = test_bed.read_by_name("HYD_GREEN_RESERVOIR_OVHT");
+        assert!(is_overheating);
+    }
+
+    #[test]
+    fn reservoir_receiving_zero_flow_of_heating_fluid_do_not_overheat() {
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            reservoir(
+                context,
+                HydraulicColor::Green,
+                Volume::new::<gallon>(5.),
+                Volume::new::<gallon>(2.),
+                Volume::new::<gallon>(0.5),
+            )
+        }));
+
+        test_bed.set_update_after_power_distribution(|reservoir, context| {
+            reservoir.update(context, Pressure::new::<psi>(50.), &TestFluid::overheat());
+        });
+
+        test_bed.run_multiple_frames(Duration::from_secs_f64(
+            Reservoir::HEATING_TIME_CONSTANT_MEAN_S + 4. * Reservoir::HEATING_TIME_CONSTANT_STD_S,
+        ));
+
+        let is_overheating: bool = test_bed.read_by_name("HYD_GREEN_RESERVOIR_OVHT");
+        assert!(!is_overheating);
+    }
+
     fn section(
         context: &mut InitContext,
         loop_id: HydraulicColor,

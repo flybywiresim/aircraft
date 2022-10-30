@@ -14,8 +14,8 @@ use uom::si::{
 use crate::failures::{Failure, FailureType};
 use crate::hydraulic::{HeatingElement, HeatingProperties, SectionPressure};
 use crate::shared::{
-    low_pass_filter::LowPassFilter, pid::PidController, ConsumePower, ElectricalBusType,
-    ElectricalBuses, HydraulicColor,
+    low_pass_filter::LowPassFilter, pid::PidController, random_from_normal_distribution,
+    ConsumePower, ElectricalBusType, ElectricalBuses, HydraulicColor,
 };
 use crate::simulation::{
     InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
@@ -66,6 +66,12 @@ impl ElectricalPumpPhysics {
     const DEFAULT_P_GAIN: f64 = 0.1;
     const DEFAULT_I_GAIN: f64 = 0.45;
 
+    const HEATING_TIME_CONSTANT_MEAN_S: f64 = 30.;
+    const HEATING_TIME_CONSTANT_STD_S: f64 = 5.;
+
+    const COOLING_TIME_CONSTANT: Duration = Duration::from_secs(60 * 2);
+    const DAMAGE_TIME_CONSTANT: Duration = Duration::from_secs(60 * 2);
+
     pub fn new(
         context: &mut InitContext,
         id: HydraulicColor,
@@ -105,9 +111,15 @@ impl ElectricalPumpPhysics {
             ),
             overheat_failure: Failure::new(FailureType::ElecPumpOverheat(id)),
             heat_state: HeatingProperties::new(
-                Duration::from_secs_f64(30.),
-                Duration::from_secs_f64(2. * 60.),
-                Duration::from_secs_f64(2. * 60.),
+                Duration::from_secs_f64(
+                    random_from_normal_distribution(
+                        Self::HEATING_TIME_CONSTANT_MEAN_S,
+                        Self::HEATING_TIME_CONSTANT_STD_S,
+                    )
+                    .max(10.),
+                ),
+                Self::COOLING_TIME_CONSTANT,
+                Self::DAMAGE_TIME_CONSTANT,
             ),
         }
     }
@@ -118,14 +130,6 @@ impl ElectricalPumpPhysics {
         section: &impl SectionPressure,
         current_displacement: Volume,
     ) {
-        println!("ELECPUMP overheatRatio {:.2}, is overheat {:?}, is damaged {:?}, current {:.1}, speed {:.0}",
-            self.heat_state.overheat_ratio().get::<ratio>(),
-            self.heat_state.is_overheating(),
-            self.heat_state.is_damaged(),
-            self.output_current.get::<ampere>(),
-            self.speed().get::<revolution_per_minute>()
-
-    );
         self.heat_state.update(
             context,
             self.overheat_failure.is_active() && self.speed().get::<revolution_per_minute>() > 100.,
@@ -485,6 +489,41 @@ mod tests {
 
         assert!(
             test_bed.query(|a| a.pump.speed()) < AngularVelocity::new::<revolution_per_minute>(10.)
+        );
+    }
+
+    #[test]
+    fn pump_with_overheat_fail_overheats_and_fails() {
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
+
+        test_bed.command(|a| a.set_ac_1_power(true));
+        test_bed.command(|a| a.pump.set_active(true));
+        test_bed.command(|a| a.set_current_displacement(Volume::new::<cubic_inch>(0.)));
+        test_bed.command(|a| a.set_current_pressure(Pressure::new::<psi>(3000.)));
+
+        test_bed.run_with_delta(Duration::from_secs_f64(1.));
+
+        assert!(
+            test_bed.query(|a| a.pump.speed())
+                >= AngularVelocity::new::<revolution_per_minute>(7000.)
+        );
+
+        test_bed.fail(FailureType::ElecPumpOverheat(HydraulicColor::Yellow));
+
+        test_bed.run_with_delta(Duration::from_secs_f64(
+            ElectricalPumpPhysics::HEATING_TIME_CONSTANT_MEAN_S
+                + 4. * ElectricalPumpPhysics::HEATING_TIME_CONSTANT_STD_S,
+        ));
+
+        assert!(test_bed.query(|a| a.pump.is_overheating()));
+
+        test_bed.run_with_delta(ElectricalPumpPhysics::DAMAGE_TIME_CONSTANT);
+
+        assert!(test_bed.query(|a| a.pump.is_damaged()));
+
+        assert!(
+            test_bed.query(|a| a.pump.speed())
+                <= AngularVelocity::new::<revolution_per_minute>(100.)
         );
     }
 
