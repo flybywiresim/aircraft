@@ -477,7 +477,7 @@ class SpeedTrendArrow extends DisplayComponent<{ airspeed: Subscribable<number>,
 
         const sub = this.props.bus.getSubscriber<Arinc429Values>();
 
-        sub.on('vCTrend').handle((word) => {
+        sub.on('vCTrend').withArinc429Precision(2).handle((word) => {
             this.vCTrend = word;
 
             this.handleVCTrend();
@@ -546,7 +546,7 @@ class VLsBar extends DisplayComponent<{ bus: EventBus }> {
             this.setVlsPath();
         });
 
-        sub.on('vLs').handle((vls) => {
+        sub.on('vLs').withArinc429Precision(2).handle((vls) => {
             this.vls = vls;
             this.setVlsPath();
         });
