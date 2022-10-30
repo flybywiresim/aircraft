@@ -257,7 +257,10 @@ impl SimulationElement for ElectricalPumpPhysics {
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(&self.active_id, self.is_active);
+        writer.write(
+            &self.active_id,
+            self.is_active && self.speed().get::<revolution_per_minute>() > 10.,
+        );
         writer.write(&self.rpm_id, self.speed());
     }
 
