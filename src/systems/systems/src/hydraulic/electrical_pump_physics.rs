@@ -72,6 +72,8 @@ impl ElectricalPumpPhysics {
     const COOLING_TIME_CONSTANT: Duration = Duration::from_secs(60 * 2);
     const DAMAGE_TIME_CONSTANT: Duration = Duration::from_secs(60 * 2);
 
+    const MIN_SPEED_TO_REPORT_ACTIVE_RPM: f64 = 10.;
+
     pub fn new(
         context: &mut InitContext,
         id: HydraulicColor,
@@ -263,7 +265,9 @@ impl SimulationElement for ElectricalPumpPhysics {
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(
             &self.active_id,
-            self.is_active && self.speed().get::<revolution_per_minute>() > 10.,
+            self.is_active
+                && self.speed().get::<revolution_per_minute>()
+                    > Self::MIN_SPEED_TO_REPORT_ACTIVE_RPM,
         );
         writer.write(&self.rpm_id, self.speed());
     }

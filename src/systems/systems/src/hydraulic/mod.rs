@@ -369,6 +369,8 @@ impl PowerTransferUnit {
     const COOLING_TIME_CONSTANT: Duration = Duration::from_secs(60 * 3);
     const DAMAGE_TIME_CONSTANT: Duration = Duration::from_secs(60 * 3);
 
+    const MAX_SPEED_BEFORE_HEATING_UP_RPM: f64 = 2000.;
+
     pub fn new(
         context: &mut InitContext,
         characteristics: &impl PowerTransferUnitCharacteristics,
@@ -464,7 +466,7 @@ impl PowerTransferUnit {
 
         self.heat_state.update(
             context,
-            self.shaft_speed.get::<revolution_per_minute>() > 2000.,
+            self.shaft_speed.get::<revolution_per_minute>() > Self::MAX_SPEED_BEFORE_HEATING_UP_RPM,
         );
     }
 
@@ -871,8 +873,6 @@ pub struct HydraulicCircuit {
     system_section: Section,
     auxiliary_section: Option<Section>,
 
-    id: HydraulicColor,
-
     pump_sections_check_valves: Vec<CheckValve>,
 
     // True routed to auxiliary False routed to system section
@@ -1017,7 +1017,6 @@ impl HydraulicCircuit {
             } else {
                 None
             },
-            id,
             pump_sections_check_valves: pump_to_system_check_valves,
             pump_section_routed_to_auxiliary_section: pump_section_to_auxiliary,
             fluid: Fluid::new(Pressure::new::<pascal>(Self::FLUID_BULK_MODULUS_PASCAL)),
@@ -1076,19 +1075,6 @@ impl HydraulicCircuit {
         } else {
             false
         };
-
-        println!(
-            "LOOP {:?}, PTU OH {:?} ANYpump OH fluid {:?} FLUID ratio {:?} RES ratio {:?} Res flow gps{:.3}",
-            self.id,
-            ptu_overheats_fluid,any_pump_is_overheating,
-            self.fluid.heat_state.heat_factor.output().get::<ratio>(),
-            self.reservoir
-                .heat_state
-                .heat_factor
-                .output()
-                .get::<ratio>(),
-            self.reservoir.total_return_flow.get::<gallon_per_second>()
-        );
 
         self.fluid
             .update(context, ptu_overheats_fluid || any_pump_is_overheating);
@@ -2647,6 +2633,8 @@ impl EngineDrivenPump {
     const COOLING_TIME_CONSTANT: Duration = Duration::from_secs(60 * 2);
     const DAMAGE_TIME_CONSTANT: Duration = Duration::from_secs(60 * 2);
 
+    const MIN_SPEED_TO_REPORT_HEATING_RPM: f64 = 200.;
+
     pub fn new(
         context: &mut InitContext,
         id: HydraulicColor,
@@ -2680,8 +2668,12 @@ impl EngineDrivenPump {
         pump_speed: AngularVelocity,
         controller: &impl PumpController,
     ) {
-        self.heat_state
-            .update(context, self.overheat_failure.is_active());
+        self.heat_state.update(
+            context,
+            self.overheat_failure.is_active()
+                && pump_speed.get::<revolution_per_minute>()
+                    > Self::MIN_SPEED_TO_REPORT_HEATING_RPM,
+        );
 
         self.speed = if !self.is_damaged() {
             pump_speed
