@@ -8431,67 +8431,6 @@ mod tests {
         }
 
         #[test]
-        fn no_brake_inversion() {
-            let mut test_bed = test_bed_on_ground_with()
-                .engines_off()
-                .on_the_ground()
-                .set_cold_dark_inputs()
-                .run_one_tick();
-
-            test_bed = test_bed
-                .start_eng1(Ratio::new::<percent>(100.))
-                .start_eng2(Ratio::new::<percent>(100.))
-                .set_park_brake(false)
-                .run_waiting_for(Duration::from_secs(5));
-
-            assert!(test_bed.is_green_pressure_switch_pressurised());
-            assert!(test_bed.is_yellow_pressure_switch_pressurised());
-            // Braking left
-            test_bed = test_bed
-                .set_left_brake(Ratio::new::<percent>(100.))
-                .set_right_brake(Ratio::new::<percent>(0.))
-                .run_waiting_for(Duration::from_secs(1));
-
-            assert!(test_bed.get_brake_left_green_pressure() > Pressure::new::<psi>(2000.));
-            assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(50.));
-            assert!(test_bed.get_brake_left_yellow_pressure() < Pressure::new::<psi>(50.));
-            assert!(test_bed.get_brake_right_yellow_pressure() < Pressure::new::<psi>(50.));
-
-            // Braking right
-            test_bed = test_bed
-                .set_left_brake(Ratio::new::<percent>(0.))
-                .set_right_brake(Ratio::new::<percent>(100.))
-                .run_waiting_for(Duration::from_secs(1));
-
-            assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(50.));
-            assert!(test_bed.get_brake_right_green_pressure() > Pressure::new::<psi>(2000.));
-            assert!(test_bed.get_brake_left_yellow_pressure() < Pressure::new::<psi>(50.));
-            assert!(test_bed.get_brake_right_yellow_pressure() < Pressure::new::<psi>(50.));
-
-            // Disabling Askid causes alternate braking to work and release green brakes
-            test_bed = test_bed
-                .set_left_brake(Ratio::new::<percent>(0.))
-                .set_right_brake(Ratio::new::<percent>(100.))
-                .set_anti_skid(false)
-                .run_waiting_for(Duration::from_secs(2));
-
-            assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(50.));
-            assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(50.));
-            assert!(test_bed.get_brake_left_yellow_pressure() < Pressure::new::<psi>(50.));
-            assert!(test_bed.get_brake_right_yellow_pressure() > Pressure::new::<psi>(950.));
-
-            test_bed = test_bed
-                .set_left_brake(Ratio::new::<percent>(100.))
-                .set_right_brake(Ratio::new::<percent>(0.))
-                .run_waiting_for(Duration::from_secs(2));
-
-            assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(50.));
-            assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(50.));
-            assert!(test_bed.get_brake_left_yellow_pressure() > Pressure::new::<psi>(950.));
-            assert!(test_bed.get_brake_right_yellow_pressure() < Pressure::new::<psi>(50.));
-        }
-
-        #[test]
         fn auto_brake_at_gear_retraction() {
             let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
