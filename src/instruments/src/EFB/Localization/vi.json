@@ -4,10 +4,23 @@
     "ChangeATISATCSourceButton": "Thay đổi nguồn ATIS/ATC",
     "ConnectHoppieACARS": "Kết nối Hoppie ACARS",
     "NoInformationAvailableForThisFrequency": "Không có thông tin có sẵn cho tần số này",
+    "SearchPlaceholder": "Tìm kiếm",
     "SelectCorrectATISATCSource": "Trang này chỉ khả dụng khi IVAO hoặc VATSIM được sử dụng làm nguồn ATIS/ATC trong trang Cài đặt.",
     "SetActive": "Đặt hoạt động",
     "SetStandby": "Đặt chế độ chờ",
+    "ShowAll": "Tất cả",
+    "ShowApproach": "Approach",
+    "ShowAtis": "ATIS",
+    "ShowDelivery": "Delivery",
+    "ShowDeparture": "Departure",
+    "ShowGround": "Mặt đất",
+    "ShowRadar": "Radar",
+    "ShowTower": "Tower",
     "Standby": "Chế độ chờ",
+    "TT": {
+      "AtcCallSignSearch": "ATC Call-sign Search",
+      "AtcTypeFilter": "Filter for"
+    },
     "Title": "Điều khiển không lưu"
   },
   "Checklists": {
@@ -39,7 +52,7 @@
         "Title": "Biểu đồ đã ghim"
       },
       "TT": {
-        "RearrangeWidgets": "Sắp xếp lại widgets"
+        "RearrangeWidgets": "Sắp xếp lại các widgets"
       },
       "Title": "Thông tin quan trọng",
       "Weather": {
@@ -183,6 +196,10 @@
     "Altn": "Thay thế",
     "ExitFullscreenMode": "Thoát chế độ toàn màn hình",
     "From": "Từ",
+    "LoadingImage": "Đang tải hình ảnh",
+    "LoadingImageFailed": "Tải ảnh thất bại",
+    "LoadingPdf": "Đang tải PDF",
+    "LoadingPdfFailed": "Tải PDF thất bại",
     "LocalFiles": {
       "Both": "Cả hai",
       "EstablishingConnection": "Đang thiết lập kết nối",
@@ -342,6 +359,7 @@
       "ConfirmationDialogMsg": "Vui lòng xác nhận tải cấu hình sẵn.",
       "CurrentProcedureStep": "Bước thủ tục hiện tại",
       "PleaseConfirmLoadingOfPreset": "Vui lòng xác nhận tải cấu hình sẵn.",
+      "Powered": "Powered",
       "ReadyPushback": "Sẵn sàng để đẩy lùi",
       "ReadyTakeoff": "Sẵn sàng để cất cánh",
       "ReadyTaxi": "Sẵn sàng để lăn",
@@ -354,6 +372,12 @@
     "InteriorLighting": {
       "AircraftNeedsToBePoweredToLoadPresets": "Máy bay cần được cung cấp năng lượng để tải cấu hình đặt sẵn",
       "AircraftNeedsToBePoweredToSavePresets": "Máy bay cần được cung cấp năng lượng để lưu cấu hình đặt sẵn",
+      "AutoLoadDawnDusk": "Bình minh/Hoàng hôn:",
+      "AutoLoadDay": "Ban ngày:",
+      "AutoLoadLightingHelpTitle": "Tự động nạp cấu hình sẵn",
+      "AutoLoadLightingPreset": "Bật tự động tải cài đặt đèn:",
+      "AutoLoadNight": "Ban đêm:",
+      "AutoLoadNoneSelection": "Không",
       "LoadPreset": "Tải cấu hình sẵn",
       "LoadingPreset": "Đang tải cấu hình sẵn",
       "NewNameConfirmationDialogMsg": "Vui lòng xác nhận tên mới của cấu hình đèn đặt sẵn",
@@ -379,7 +403,7 @@
     "CallTug": "Gọi xe kéo",
     "DisableSystemMessageBody": "Bạn có chắc muốn vô hiệu hóa hệ thống đẩy lùi không? Điều này sẽ làm ngắt kết nối với xe lai dắt.",
     "DisableSystemMessageTitle": "Vô hiệu hóa hệ thống đẩy lùi",
-    "EnableSystemMessageBody": "Hệ thống đẩy lùi mới của flyPadOS 3 có thể gây xung đột với các tiện ích đẩy lùi khác. Chúng tôi khuyến khích bạn không nên kích hoạt hệ thống này nếu bạn định dùng một tiện ích đẩy lùi khác.",
+    "EnableSystemMessageBody": "Hệ thống đẩy lùi mới của flyPadOS 3 có thể gây xung đột với các tiện ích đẩy lùi khác. Chúng tôi khuyến khích bạn không nên kích hoạt hệ thống này nếu bạn định dùng tiện ích đẩy lùi khác.",
     "EnableSystemMessageTitle": "Kích hoạt hệ thống đẩy lùi",
     "Forward": "Tiến",
     "Halt": "Tạm dừng",
@@ -407,13 +431,15 @@
       "SliderSpeed": "Di chuyển thanh trượt cho tốc độ mong muốn",
       "SystemEnabledOff": "Nhấp để bật hệ thống đẩy lùi.",
       "SystemEnabledOn": "Nhấp để tắt hoàn toàn hệ thống đẩy lùi.",
+      "UseControllerInput": "Bật/tắt đầu vào bộ điều khiển cho bàn đạp và bánh lái độ cao",
       "ZoomIn": "Phóng to",
       "ZoomOut": "Thu nhỏ"
     },
     "TugAttached": "Xe lai dắt được kết nối",
     "TugDirection": "Hướng của xe kéo",
     "TugInTransit": "Đang chờ xe đẩy",
-    "TugSpeed": "Tốc độ xe kéo"
+    "TugSpeed": "Tốc độ xe kéo",
+    "UseControllerInput": "Sử dụng đầu vào từ bộ điều khiển"
   },
   "Settings": {
     "About": {
@@ -427,6 +453,7 @@
       "LatLonExtendedFormat": "Định dạng điểm trên FMGC dạng vĩ/kinh",
       "PaxSigns": "Đèn báo hiệu hành khách",
       "RmpVhfSpacing": "Khoảng cách RMP VHF",
+      "Satcom": "Satcom",
       "ThrustReductionHeight": "Độ cao giảm lực đẩy (ft)",
       "Title": "Tùy chọn máy bay / Pin Programs",
       "WeightUnit": "Đơn vị trọng lượng"
@@ -472,13 +499,15 @@
       "AutofillChecklists": "Tự đồng điền danh sách kiểm tra",
       "BoardingTime": "Thời gian lên máy bay",
       "DmcSelfTestTime": "Thời gian tự kiểm tra của DMC",
+      "FirstOfficerAvatar": "Hiển thị Avatar Cơ Phó",
       "HomeCockpitMode": "Chế độ buồng lái tại nhà",
       "McduFocusTimeout": "Thời gian chờ MCDU chỉnh (giây)",
       "McduKeyboardInput": "Dùng bàn phím cho MCDU",
       "PauseAtTod": "Dừng tại điểm hạ độ cao",
       "PauseAtTodDistance": "Khoảng cách dừng từ điểm hạ độ cao (nm)",
+      "PilotAvatar": "Hiện thị Avatar Phi công",
       "SeparateTillerFromRudderInputs": "Tách rời Điều Khiển Bánh Mũi với Bàn Đạp",
-      "SyncEfis": "Sync EFIS controls from Captain to FO",
+      "SyncEfis": "Đồng bộ hóa các điều khiển EFIS giữa cơ trưởng và cơ phó",
       "Title": "Mức thực tế"
     },
     "SimOptions": {
@@ -488,7 +517,7 @@
       "ConesEnabled": "Chóp nón An toàn",
       "DefaultBarometerUnit": "Đơn vị áp kế mặc định",
       "DynamicRegistrationDecal": "Đề-can đăng ký động",
-      "EnableSimBridge": "Bật kết nối SimBridge (Tự động ngừng kích hoạt sau 5 phút nếu không có kết nối thành công)",
+      "EnableSimBridge": "Bật kết nối Simbridge (Tự động ngừng kích hoạt sau 5 phút nếu không có kết nối thành công)",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Bật kết nối máy chủ MCDU (Tự động ngừng kích hoạt sau 5 phút nếu không có kết nối thành công)",
       "ExternalMcduServerPort": "Cổng máy chủ MCDU bên ngoài",
       "Hpa": "hPa",
@@ -569,8 +598,8 @@
     "Sep": "Thg 9",
     "Sun": "CN",
     "TT": {
-      "ConnectedToLocalApi": "Kết nối tới API cục bộ",
-      "DisconnectedFromLocalApi": "Ngắt kết nối khỏi API cục bộ",
+      "ConnectedToLocalApi": "Đã được kết nối tới SimBridge",
+      "DisconnectedFromLocalApi": "Đã ngắt kết nối khỏi SimBridge",
       "TurnOffOrShutdownEfb": "Tắt hoặc tắt máy EFB"
     },
     "Thu": "Th 5",

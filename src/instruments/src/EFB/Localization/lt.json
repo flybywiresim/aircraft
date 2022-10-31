@@ -4,10 +4,23 @@
     "ChangeATISATCSourceButton": "Pakeisti ATIS/ATC šaltinį",
     "ConnectHoppieACARS": "Prijungti Hoppie ACARS",
     "NoInformationAvailableForThisFrequency": "Jokia informacija nėra pasiekiama šiame dažnyje",
+    "SearchPlaceholder": "Paieška",
     "SelectCorrectATISATCSource": "Šis puslapis pasiekiamas tik pasirinkus IVAO arba VATSIM kaip ATIS/ATC šaltinį nustatymų puslapyje.",
     "SetActive": "Aktyvus",
     "SetStandby": "Atsarginis",
+    "ShowAll": "Visi",
+    "ShowApproach": "Atvykimas",
+    "ShowAtis": "ATIS",
+    "ShowDelivery": "Pristatymas",
+    "ShowDeparture": "Išvykimas",
+    "ShowGround": "Paslaugos",
+    "ShowRadar": "Radaras",
+    "ShowTower": "Bokštelis",
     "Standby": "Atsarginis",
+    "TT": {
+      "AtcCallSignSearch": "Oro erdvės kontrolės šaukinio paieška",
+      "AtcTypeFilter": "Filtras"
+    },
     "Title": "Oro Erdvės Kontrolė"
   },
   "Checklists": {
@@ -183,6 +196,10 @@
     "Altn": "Alternatyvus",
     "ExitFullscreenMode": "Išeiti iš pilno ekrano režimo",
     "From": "Iš",
+    "LoadingImage": "Įkeliamas vaizdas",
+    "LoadingImageFailed": "Vaizdo įkėlimas nepavyko",
+    "LoadingPdf": "Užkraunamas dokumentas",
+    "LoadingPdfFailed": "PDF įkėlimas nepavyko",
     "LocalFiles": {
       "Both": "Abu",
       "EstablishingConnection": "Nustatomas ryšys",
@@ -342,6 +359,7 @@
       "ConfirmationDialogMsg": "Patvirtinkite išankstinio nustatymo įkėlimą.",
       "CurrentProcedureStep": "Dabartinis procedūros žingsnis",
       "PleaseConfirmLoadingOfPreset": "Patvirtinkite išankstinio nustatymo įkėlimą.",
+      "Powered": "Powered",
       "ReadyPushback": "Paruoštas išstumimui",
       "ReadyTakeoff": "Paruoštas pakilimui",
       "ReadyTaxi": "Paruoštas riedėjimui",
@@ -354,6 +372,12 @@
     "InteriorLighting": {
       "AircraftNeedsToBePoweredToLoadPresets": "Norint įkelti išankstinius nustatymus, orlaivis turi būti įjungtas",
       "AircraftNeedsToBePoweredToSavePresets": "Norint išsaugoti išankstinius nustatymus, orlaivis turi būti įjungtas",
+      "AutoLoadDawnDusk": "Aušra/Prieblanda:",
+      "AutoLoadDay": "Diena:",
+      "AutoLoadLightingHelpTitle": "Automatinis nustatymų užkrovimas",
+      "AutoLoadLightingPreset": "Įjunti automatinį šviesų nustatymų užkrovimą:",
+      "AutoLoadNight": "Naktis:",
+      "AutoLoadNoneSelection": "Nėra",
       "LoadPreset": "Įkelti išankstinį nustatymą",
       "LoadingPreset": "Išankstinis nustatymas įkeliamas",
       "NewNameConfirmationDialogMsg": "Prašome patvirtinti naują apšvietimo išankstinio nustatymo pavadinimą",
@@ -407,13 +431,15 @@
       "SliderSpeed": "Pasirinkite norimą greitį",
       "SystemEnabledOff": "Paspauskite norint įjungti išstumimo sistemą.",
       "SystemEnabledOn": "Paspauskite norint pilnai išjungti išstumimo sistemą.",
+      "UseControllerInput": "Turn controller input from rudder and elevator on/off",
       "ZoomIn": "Priartinti",
       "ZoomOut": "Nutolinti"
     },
     "TugAttached": "Vilkikas prisijungęs",
     "TugDirection": "Vilkiko kryptis",
     "TugInTransit": "Laukiama vilkiko",
-    "TugSpeed": "Vilkiko greitis"
+    "TugSpeed": "Vilkiko greitis",
+    "UseControllerInput": "Naudoti valdiklį"
   },
   "Settings": {
     "About": {
@@ -427,6 +453,7 @@
       "LatLonExtendedFormat": "FMGC skrydžio taškų koordinačių formatas",
       "PaxSigns": "Keleivių ženklai",
       "RmpVhfSpacing": "RMP VHF Spacing",
+      "Satcom": "Satcom",
       "ThrustReductionHeight": "Traukos mažinimo aukštis (pėdos)",
       "Title": "Lėktuvo parinktys",
       "WeightUnit": "Svorio vienetai"
@@ -472,13 +499,15 @@
       "AutofillChecklists": "Automatinis patikrinimų sąrašo pildymas",
       "BoardingTime": "Laipinimo trukmė",
       "DmcSelfTestTime": "DMC automatinio patikrinimo trukmė",
+      "FirstOfficerAvatar": "Įjungti antrojo piloto avatarą",
       "HomeCockpitMode": "Namų kabinos režimas",
       "McduFocusTimeout": "MCDU fokuso praradimas (sekundės)",
       "McduKeyboardInput": "MCDU duomenų įvedimas klaviatūra",
       "PauseAtTod": "Pauzė prieš pradedant leistis",
       "PauseAtTodDistance": "Pauzės atstumas nuo pradėjimo leistis taško",
+      "PilotAvatar": "Rodyti piloto avatarą",
       "SeparateTillerFromRudderInputs": "Išskirti tiller iš krypties vairo komandų",
-      "SyncEfis": "Sync EFIS controls from Captain to FO",
+      "SyncEfis": "Sinchronizuoti EFIS kontroles tarp kapitono ir antrojo piloto",
       "Title": "Realizmas"
     },
     "SimOptions": {
@@ -488,7 +517,7 @@
       "ConesEnabled": "Saugumo kūgiai",
       "DefaultBarometerUnit": "Numatyti barometro vienetai",
       "DynamicRegistrationDecal": "Dinaminis registracijos lipdukas",
-      "EnableSimBridge": "Įjungti SimBridge automatinį prisijungimą (automatiškai išjungiama po 5 minučių, jei nepavyksta prisijungti)",
+      "EnableSimBridge": "Įjungti SimBridge prisijungimą (automatiškai išjungiama po 5 minučių, jei nepavyksta prisijungti)",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Įgalinti MCDU serverio prisijungimą (automatiškai išjungiama po 5 minučių, jei nepavyksta prisijungti)",
       "ExternalMcduServerPort": "Išorinis MCDU serverio port",
       "Hpa": "hPa",
@@ -569,8 +598,8 @@
     "Sep": "Rgs",
     "Sun": "Sek",
     "TT": {
-      "ConnectedToLocalApi": "Prisijungta prie vietinio API",
-      "DisconnectedFromLocalApi": "Atsijungta nuo vietinio API",
+      "ConnectedToLocalApi": "Prisijungta prie SimBridge",
+      "DisconnectedFromLocalApi": "Atsijungta nuo SimBridge",
       "TurnOffOrShutdownEfb": "Išjunkite EFB"
     },
     "Thu": "Ket",

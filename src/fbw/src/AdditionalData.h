@@ -33,4 +33,30 @@ struct AdditionalData {
   unsigned long long realisticTillerEnabled;
   double tillerHandlePosition;
   double noseWheelPosition;
+  double syncFoEfisEnabled;
+  double ls1Active;
+  double ls2Active;
+  double IsisLsActive;
+  double wingAntiIce;
+  // Fix missing data for FDR Analysis
+  // controller input data
+  double inputElevator;
+  double inputAileron;
+  double inputRudder;
+  // additional
+  double simulation_rate;
+  double wasPaused;
+  double slew_on;
+  // ambient data
+  double ice_structure_percent;
+  double ambient_pressure_mbar;
+  double ambient_wind_velocity_kn;
+  double ambient_wind_direction_deg;
+  double total_air_temperature_celsius;
+  // failures
+  double failuresActive;
+  // a.floor
+  double alpha_floor_condition;
+  // high aoa protection
+  double high_aoa_protection;
 };

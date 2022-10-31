@@ -22,7 +22,7 @@ export default new TaskOfTasks('a32nx', [
         new ExecTask('model','node src/model/build.js', ['src/model', 'flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/model']),
         new ExecTask('fmgc','npm run build:fmgc', ['src/fmgc', 'flybywire-aircraft-a320-neo/html_ui/JS/fmgc']),
         new ExecTask('systems', [
-            'cargo build --target wasm32-wasi --release',
+            'cargo build -p a320_systems_wasm --target wasm32-wasi --release',
             'wasm-opt -O3 -o flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/systems.wasm target/wasm32-wasi/release/a320_systems_wasm.wasm',
         ], ['src/systems', 'Cargo.lock', 'Cargo.toml', 'flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/systems.wasm']),
         new ExecTask('systems-autopilot', [
@@ -39,10 +39,6 @@ export default new TaskOfTasks('a32nx', [
         ], ['src/flypad-backend', 'flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/flypad-backend.wasm']),
         new TaskOfTasks('simbridge', [
             new ExecTask('client', ['npm run build:simbridge-client'], ['src/simbridge-client', 'flybywire-aircraft-a320-neo/html_ui/JS/simbridge-client']),
-        ]),
-        new TaskOfTasks('mcdu-server', [
-            new ExecTask('client', ['npm run build:mcdu-client'], ['src/mcdu-server/client', 'src/mcdu-server/client/build']),
-            new ExecTask('server', ['npm run build:mcdu-server'], ['src/mcdu-server', 'flybywire-aircraft-a320-neo/MCDU SERVER/server.exe']),
         ]),
     ], true),
 

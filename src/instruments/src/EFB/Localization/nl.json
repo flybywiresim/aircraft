@@ -4,10 +4,23 @@
     "ChangeATISATCSourceButton": "ATIS/ATC-bron wijzigen",
     "ConnectHoppieACARS": "Verbindt Hoppie ACARS",
     "NoInformationAvailableForThisFrequency": "Geen informatie beschikbaar voor deze frequentie",
+    "SearchPlaceholder": "Search",
     "SelectCorrectATISATCSource": "Deze pagina is alleen beschikbaar wanneer IVAO of VATSIM is geselecteerd als de ATIS/ATC-bron op de instellingenpagina.",
     "SetActive": "Actief instellen",
     "SetStandby": "Stand-by instellen",
+    "ShowAll": "All",
+    "ShowApproach": "Approach",
+    "ShowAtis": "ATIS",
+    "ShowDelivery": "Delivery",
+    "ShowDeparture": "Departure",
+    "ShowGround": "Ground",
+    "ShowRadar": "Radar",
+    "ShowTower": "Tower",
     "Standby": "Stand-by",
+    "TT": {
+      "AtcCallSignSearch": "ATC Call-sign Search",
+      "AtcTypeFilter": "Filter for"
+    },
     "Title": "Luchtverkeersleiding"
   },
   "Checklists": {
@@ -183,6 +196,10 @@
     "Altn": "Altn",
     "ExitFullscreenMode": "Volledig scherm afsluiten",
     "From": "Van",
+    "LoadingImage": "Loading Image",
+    "LoadingImageFailed": "Loading Image failed",
+    "LoadingPdf": "Loading PDF",
+    "LoadingPdfFailed": "Loading PDF failed",
     "LocalFiles": {
       "Both": "Beide",
       "EstablishingConnection": "Verbinding tot stand brengen...",
@@ -342,6 +359,7 @@
       "ConfirmationDialogMsg": "Bevestig het laden van de voorinstelling.",
       "CurrentProcedureStep": "Stap van de huidige procedure",
       "PleaseConfirmLoadingOfPreset": "Bevestig het laden van de voorinstelling.",
+      "Powered": "Powered",
       "ReadyPushback": "Klaar voor pushback",
       "ReadyTakeoff": "Klaar voor opstijgen",
       "ReadyTaxi": "Klaar voor taxi",
@@ -354,6 +372,12 @@
     "InteriorLighting": {
       "AircraftNeedsToBePoweredToLoadPresets": "Vliegtuig moet voeding hebben om instellingen te kunnen laden",
       "AircraftNeedsToBePoweredToSavePresets": "Vliegtuigen moeten worden aangedreven om presets op te slaan",
+      "AutoLoadDawnDusk": "Dawn/Dusk:",
+      "AutoLoadDay": "Day:",
+      "AutoLoadLightingHelpTitle": "Automatic Preset Loading",
+      "AutoLoadLightingPreset": "Enable automatic loading of lighting presets:",
+      "AutoLoadNight": "Night:",
+      "AutoLoadNoneSelection": "None",
       "LoadPreset": "Voorinstelling laden",
       "LoadingPreset": "Voorinstelling laden",
       "NewNameConfirmationDialogMsg": "Bevestig de nieuwe naam voor de voorinstelling voor verlichting",
@@ -407,13 +431,15 @@
       "SliderSpeed": "Move for desired speed",
       "SystemEnabledOff": "Click to turn the pushback system on.",
       "SystemEnabledOn": "Click to turn the pushback system completely off.",
+      "UseControllerInput": "Turn controller input from rudder and elevator on/off",
       "ZoomIn": "Zoom in",
       "ZoomOut": "Zoom out"
     },
     "TugAttached": "Tug is attached",
     "TugDirection": "Richting tug",
     "TugInTransit": "Waiting for Tug/Pin",
-    "TugSpeed": "Tug snelheid"
+    "TugSpeed": "Tug snelheid",
+    "UseControllerInput": "Use Controller Input"
   },
   "Settings": {
     "About": {
@@ -427,6 +453,7 @@
       "LatLonExtendedFormat": "FMGC Lat/Lon Waypoint-indeling",
       "PaxSigns": "PAX Signs",
       "RmpVhfSpacing": "RMP VHF Afstand",
+      "Satcom": "Satcom",
       "ThrustReductionHeight": "Hoogte stuwkrachtreductie (ft)",
       "Title": "Vliegtuig Opties / Pin Programma's",
       "WeightUnit": "Gewichtseenheid"
@@ -472,13 +499,15 @@
       "AutofillChecklists": "Checklists automatisch invullen",
       "BoardingTime": "Instaptijd",
       "DmcSelfTestTime": "DMC zelf testtijd",
+      "FirstOfficerAvatar": "Show First Officer Avatar",
       "HomeCockpitMode": "Home Cockpit Modus",
       "McduFocusTimeout": "MCDU Focus Time-out (seconden)",
       "McduKeyboardInput": "MCDU Toetsenbordinvoer",
       "PauseAtTod": "T/D Pause",
       "PauseAtTodDistance": "T/D Pause Distance (nm)",
+      "PilotAvatar": "Show Pilot Avatar",
       "SeparateTillerFromRudderInputs": "Scheid Tiller van Roer invoer",
-      "SyncEfis": "Sync EFIS controls from Captain to FO",
+      "SyncEfis": "Sync EFIS controls between Captain and FO",
       "Title": "Realisme"
     },
     "SimOptions": {

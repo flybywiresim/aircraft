@@ -7,20 +7,18 @@
 #include "AutopilotStateMachine.h"
 #include "Autothrust.h"
 #include "EngineData.h"
-#include "FlyByWire.h"
 #include "zfstream.h"
 
 class FlightDataRecorder {
  public:
   // IMPORTANT: this constant needs to increased with every interface change
-  const uint64_t INTERFACE_VERSION = 21;
+  const uint64_t INTERFACE_VERSION = 24;
 
   void initialize();
 
   void update(AutopilotStateMachineModelClass* autopilotStateMachine,
               AutopilotLawsModelClass* autopilotLaws,
               AutothrustModelClass* autoThrust,
-              FlyByWireModelClass* flyByWire,
               const EngineData& engineData,
               const AdditionalData& additionalData);
 

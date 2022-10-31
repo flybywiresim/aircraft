@@ -37,6 +37,7 @@ export interface JS_NPCPlane {
     lat: number,
     lon: number,
     alt: number,
+    isOnGround: boolean,
     heading: number
 }
 

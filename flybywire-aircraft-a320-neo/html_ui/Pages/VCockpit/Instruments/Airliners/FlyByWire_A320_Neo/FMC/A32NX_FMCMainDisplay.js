@@ -183,6 +183,11 @@ class FMCMainDisplay extends BaseAirliners {
         this.efisSymbols = undefined;
         this.groundTempAuto = undefined;
         this.groundTempPilot = undefined;
+        /**
+         * Landing elevation in feet MSL.
+         * This is the destination runway threshold elevation, or airport elevation if runway is not selected.
+         */
+        this.landingElevation = undefined;
 
         // ATSU data
         this.atsu = undefined;
@@ -310,7 +315,10 @@ class FMCMainDisplay extends BaseAirliners {
         this.costIndexSet = false;
         this.maxCruiseFL = 390;
         this.routeIndex = 0;
-        this.coRoute = "";
+        this.coRoute = {
+            routeNumber: undefined,
+            routes: []
+        };
         this.tmpOrigin = "";
         this.perfTOTemp = NaN;
         this._overridenFlapApproachSpeed = NaN;
@@ -521,6 +529,8 @@ class FMCMainDisplay extends BaseAirliners {
         this.speedLimitExceeded = false;
         this.groundTempAuto = undefined;
         this.groundTempPilot = undefined;
+        this.landingElevation = undefined;
+
         this.onAirport = () => { };
 
         if (this.navigation) {
@@ -601,6 +611,7 @@ class FMCMainDisplay extends BaseAirliners {
 
         if (flightPlanChanged) {
             this.updateManagedProfile();
+            this.updateLandingElevation();
         }
 
         this.updateAutopilot();
@@ -1494,7 +1505,7 @@ class FMCMainDisplay extends BaseAirliners {
             profilePoint.climbSpeed = currentSpeedConstraint;
             profilePoint.previousClimbSpeed = previousSpeedConstraint;
             profilePoint.climbAltitude = currentClbConstraint;
-            profilePoint.descentAltitude = currentDesConstraint;
+            profilePoint.descentAltitude = Math.max(destinationElevation, currentDesConstraint);
             previousSpeedConstraint = currentSpeedConstraint;
 
             // set some data for LNAV to use for coarse predictions while we lack vnav
@@ -1523,6 +1534,45 @@ class FMCMainDisplay extends BaseAirliners {
                 wp.additionalData.predictedSpeed = Math.min(250, wp.additionalData.predictedSpeed);
             }
         }
+    }
+
+    async updateLandingElevation() {
+        let landingElevation;
+
+        /** @type {OneWayRunway} */
+        const runway = this.flightPlanManager.getDestinationRunway(FlightPlans.Active);
+        if (runway) {
+            landingElevation = A32NX_Util.meterToFeet(runway.thresholdElevation);
+        } else {
+            const airport = this.flightPlanManager.getDestination(FlightPlans.Active);
+            if (airport) {
+                const ele = await this.facilityLoader.GetAirportFieldElevation(airport.icao);
+                landingElevation = isFinite(ele) ? ele : undefined;
+            }
+        }
+
+        if (this.landingElevation !== landingElevation) {
+            this.landingElevation = landingElevation;
+
+            const ssm = landingElevation !== undefined ? Arinc429Word.SignStatusMatrix.NormalOperation : Arinc429Word.SignStatusMatrix.NoComputedData;
+
+            this.setBnrArincSimVar('LANDING_ELEVATION', landingElevation ? landingElevation : 0, ssm, 14, 16384, -2048);
+            // FIXME CPCs should use the FM ARINC vars, and transmit their own vars as well
+            SimVar.SetSimVarValue("L:A32NX_PRESS_AUTO_LANDING_ELEVATION", "feet", landingElevation ? landingElevation : 0);
+        }
+    }
+
+    async setBnrArincSimVar(name, value, ssm, bits, rangeMax, rangeMin = 0) {
+        const quantum = Math.max(Math.abs(rangeMin), rangeMax) / 2 ** bits;
+        const data = Math.max(rangeMin, Math.min(rangeMax, Math.round(value / quantum) * quantum));
+
+        // TODO change our ARINC429 format so JS can write it, then drop the SSM simvars
+        return Promise.all([
+            SimVar.SetSimVarValue(`L:A32NX_FM1_${name}`, "number", data),
+            SimVar.SetSimVarValue(`L:A32NX_FM1_${name}_SSM`, "number", ssm),
+            SimVar.SetSimVarValue(`L:A32NX_FM2_${name}`, "number", data),
+            SimVar.SetSimVarValue(`L:A32NX_FM2_${name}_SSM`, "number", ssm),
+        ]);
     }
 
     getClbManagedSpeedFromCostIndex() {
@@ -1897,11 +1947,13 @@ class FMCMainDisplay extends BaseAirliners {
                                 this.flightPlanManager.setOrigin(airportFrom.icao, () => {
                                     this.tmpOrigin = airportFrom.ident;
                                     this.setGroundTempFromOrigin();
-                                    this.flightPlanManager.setDestination(airportTo.icao, () => {
+                                    this.flightPlanManager.setDestination(airportTo.icao, async () => {
                                         this.flightPlanManager.getWaypoint(0).endsInDiscontinuity = true;
                                         this.flightPlanManager.getWaypoint(0).discontinuityCanBeCleared = true;
                                         this.tmpOrigin = airportTo.ident;
                                         SimVar.SetSimVarValue("L:FLIGHTPLAN_USE_DECEL_WAYPOINT", "number", 1);
+
+                                        await this.getCoRouteList();
                                         callback(true);
                                     }).catch(console.error);
                                 }).catch(console.error);
@@ -2164,9 +2216,9 @@ class FMCMainDisplay extends BaseAirliners {
                 if (currentRunway) {
                     SimVar.SetSimVarValue("L:A32NX_DEPARTURE_ELEVATION", "feet", A32NX_Util.meterToFeet(currentRunway.elevation));
                     const departure = this.flightPlanManager.getDeparture();
-                    const departureRunwayIndex = departure.runwayTransitions.findIndex(t => {
+                    const departureRunwayIndex = departure ? departure.runwayTransitions.findIndex(t => {
                         return t.runwayNumber === currentRunway.number && t.runwayDesignation === currentRunway.designator;
-                    });
+                    }) : -1;
                     if (departureRunwayIndex >= -1) {
                         return this.flightPlanManager.setDepartureRunwayIndex(departureRunwayIndex, () => {
                             return callback(true);
@@ -2175,6 +2227,12 @@ class FMCMainDisplay extends BaseAirliners {
                 }
                 return callback(true);
             }).catch(console.error);
+        });
+    }
+
+    setDepartureTransitionIndex(transIndex, callback = EmptyCallback.Boolean) {
+        this.ensureCurrentFlightPlanIsTemporary(() => {
+            this.flightPlanManager.setDepartureEnRouteTransitionIndex(transIndex, callback);
         });
     }
 
@@ -2214,13 +2272,6 @@ class FMCMainDisplay extends BaseAirliners {
         //console.log("FMCMainDisplay: setApproachIndex = ", approachIndex);
         this.ensureCurrentFlightPlanIsTemporary(() => {
             this.flightPlanManager.setApproachIndex(approachIndex, () => {
-                const approach = this.flightPlanManager.getApproach();
-                if (approach) {
-                    const runway = this.flightPlanManager.getDestinationRunway();
-                    if (runway) {
-                        SimVar.SetSimVarValue("L:A32NX_PRESS_AUTO_LANDING_ELEVATION", "feet", A32NX_Util.meterToFeet(runway.elevation));
-                    }
-                }
                 this.tempFpPendingAutoTune = true;
                 callback(true);
             }).catch(console.error);
@@ -2398,19 +2449,64 @@ class FMCMainDisplay extends BaseAirliners {
         });
     }
 
-    updateCoRoute(coRoute, callback = EmptyCallback.Boolean) {
-        if (coRoute.length > 2) {
-            if (coRoute.length < 10) {
-                if (coRoute === "NONE") {
-                    this.coRoute = undefined;
-                } else {
-                    this.coRoute = coRoute;
+    async updateCoRoute(coRouteNum, callback = EmptyCallback.Boolean) {
+        try {
+            if (coRouteNum.length > 2 && (coRouteNum !== FMCMainDisplay.clrValue)) {
+                if (coRouteNum.length < 10) {
+                    if (coRouteNum === "NONE") {
+                        this.coRoute = { routeNumber: undefined};
+                    } else {
+                        const {success, data} = await SimBridgeClient.CompanyRoute.getCoRoute(coRouteNum);
+                        if (success) {
+                            this.coRoute["originIcao"] = data.origin.icao_code;
+                            this.coRoute["destinationIcao"] = data.destination.icao_code;
+                            this.coRoute["route"] = data.general.route;
+                            if (data.alternate) {
+                                this.coRoute["alternateIcao"] = data.alternate.icao_code;
+                            }
+                            this.coRoute["navlog"] = data.navlog.fix;
+
+                            insertCoRoute(this);
+                            this.coRoute["routeNumber"] = coRouteNum;
+                        } else {
+                            this.setScratchpadMessage(NXSystemMessages.notInDatabase);
+                        }
+                    }
+                    return callback(true);
                 }
-                return callback(true);
             }
+            this.setScratchpadMessage(NXSystemMessages.notAllowed);
+            return callback(false);
+        } catch (error) {
+            console.error(`Error retrieving coroute from SimBridge ${error}`);
+            this.setScratchpadMessage(NXFictionalMessages.unknownDownlinkErr);
+            return callback(false);
         }
-        this.setScratchpadMessage(NXSystemMessages.notAllowed);
-        return callback(false);
+    }
+
+    async getCoRouteList() {
+        try {
+            const origin = this.flightPlanManager.getOrigin().ident;
+            const dest = this.flightPlanManager.getDestination().ident;
+            const {success, data} = await SimBridgeClient.CompanyRoute.getRouteList(origin, dest);
+
+            if (success) {
+                data.forEach((route => {
+                    this.coRoute.routes.push({
+                        originIcao: route.origin.icao_code,
+                        destinationIcao: route.destination.icao_code,
+                        alternateIcao: route.alternate ? route.alternate : undefined,
+                        route: route.general.route,
+                        navlog: route.navlog.fix,
+                        routeName: route.name
+                    });
+                }));
+            } else {
+                this.setScratchpadMessage(NXSystemMessages.notInDatabase);
+            }
+        } catch (error) {
+            console.error(`Error retrieving coroute list ${error}`);
+        }
     }
 
     getTotalTripTime() {

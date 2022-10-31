@@ -4,10 +4,23 @@
     "ChangeATISATCSourceButton": "एटिस/एटीसी स्रोत बदलें",
     "ConnectHoppieACARS": "कनेक्ट हॉपी एकारस",
     "NoInformationAvailableForThisFrequency": "इस आवृत्ति के लिए कोई जानकारी उपलब्ध नहीं है",
+    "SearchPlaceholder": "Search",
     "SelectCorrectATISATCSource": "इस मेनू का तभी उपयोग किया जा सकता है जब IVAO या फिर VATSIM को ऐतिस / ऐटीसी में चुना जाता ह। ",
     "SetActive": "सक्रिय सेट करें",
     "SetStandby": "स्टैंडबाय सेट करें",
+    "ShowAll": "All",
+    "ShowApproach": "Approach",
+    "ShowAtis": "ATIS",
+    "ShowDelivery": "Delivery",
+    "ShowDeparture": "Departure",
+    "ShowGround": "Ground",
+    "ShowRadar": "Radar",
+    "ShowTower": "Tower",
     "Standby": "स्टैंडबाय",
+    "TT": {
+      "AtcCallSignSearch": "ATC Call-sign Search",
+      "AtcTypeFilter": "Filter for"
+    },
     "Title": "एयर ट्रैफिक कंट्रोल"
   },
   "Checklists": {
@@ -183,6 +196,10 @@
     "Altn": "एकांतर",
     "ExitFullscreenMode": "फ़ुलस्क्रीन मोड से बाहर निकलें",
     "From": "से",
+    "LoadingImage": "Loading Image",
+    "LoadingImageFailed": "Loading Image failed",
+    "LoadingPdf": "Loading PDF",
+    "LoadingPdfFailed": "Loading PDF failed",
     "LocalFiles": {
       "Both": "दोनों",
       "EstablishingConnection": "कनेक्शन स्थापित हो रहा है...",
@@ -342,6 +359,7 @@
       "ConfirmationDialogMsg": "कृपया प्रीसेट लोड करने की पुष्टि करें।",
       "CurrentProcedureStep": "वर्तमान प्रक्रिया चरण",
       "PleaseConfirmLoadingOfPreset": "कृपया प्रीसेट लोड करने की पुष्टि करें।",
+      "Powered": "Powered",
       "ReadyPushback": "पुशबैक के लिए तैयार",
       "ReadyTakeoff": "टेकऑफ़ के लिए तैयार",
       "ReadyTaxi": "टैक्सी के लिए तैयार",
@@ -354,6 +372,12 @@
     "InteriorLighting": {
       "AircraftNeedsToBePoweredToLoadPresets": "प्रीसेट लोड करने के लिए विमान को संचालित करने की आवश्यकता है",
       "AircraftNeedsToBePoweredToSavePresets": "प्रीसेट को बचाने के लिए विमान को संचालित करने की आवश्यकता है",
+      "AutoLoadDawnDusk": "Dawn/Dusk:",
+      "AutoLoadDay": "Day:",
+      "AutoLoadLightingHelpTitle": "Automatic Preset Loading",
+      "AutoLoadLightingPreset": "Enable automatic loading of lighting presets:",
+      "AutoLoadNight": "Night:",
+      "AutoLoadNoneSelection": "None",
       "LoadPreset": "प्रीसेट लोड करें",
       "LoadingPreset": "प्रीसेट लोड हो रहा है",
       "NewNameConfirmationDialogMsg": "कृपया प्रकाश प्रीसेट के लिए नए नाम की पुष्टि करें",
@@ -407,13 +431,15 @@
       "SliderSpeed": "वांछित गति के लिए मूव करें",
       "SystemEnabledOff": "पुशबैक सिस्टम को चालू करने के लिए क्लिक करें।",
       "SystemEnabledOn": "पुशबैक सिस्टम को पूरी तरह से बंद करने के लिए क्लिक करें।",
+      "UseControllerInput": "Turn controller input from rudder and elevator on/off",
       "ZoomIn": "ज़ूम इन करें",
       "ZoomOut": "ज़ूम आउट"
     },
     "TugAttached": "टग जुड़ा हुआ है",
     "TugDirection": "टग की दिशा",
     "TugInTransit": "टग/पिन की प्रतीक्षा कर रहा है",
-    "TugSpeed": "टग की स्पीड"
+    "TugSpeed": "टग की स्पीड",
+    "UseControllerInput": "Use Controller Input"
   },
   "Settings": {
     "About": {
@@ -427,6 +453,7 @@
       "LatLonExtendedFormat": "एफएमजीसी लैट/लोन वेपॉइंट फॉर्मेट",
       "PaxSigns": "यात्री संकेत",
       "RmpVhfSpacing": "आरएमपी वीएचएफ स्पेसिंग",
+      "Satcom": "Satcom",
       "ThrustReductionHeight": "थ्रस्ट रिडक्शन हाइट (ft)",
       "Title": "विमान विकल्प/पिन प्रोग्राम",
       "WeightUnit": "वज़न इकाई"
@@ -472,13 +499,15 @@
       "AutofillChecklists": "ऑटोफ़िल चेकलिस्ट",
       "BoardingTime": "बोर्डिंग टाइम",
       "DmcSelfTestTime": "डीएमसी सेल्फ टेस्ट टाइम",
+      "FirstOfficerAvatar": "Show First Officer Avatar",
       "HomeCockpitMode": "होम कॉकपिट मोड",
       "McduFocusTimeout": "एमसीडीयू फोकस टाइमआउट (सेकंड)",
       "McduKeyboardInput": "MCDU कीबोर्ड इनपुट",
       "PauseAtTod": "T/D Pause",
       "PauseAtTodDistance": "T/D Pause Distance (nm)",
+      "PilotAvatar": "Show Pilot Avatar",
       "SeparateTillerFromRudderInputs": "रडर इनपुट्स से अलग टिलर",
-      "SyncEfis": "Sync EFIS controls from Captain to FO",
+      "SyncEfis": "Sync EFIS controls between Captain and FO",
       "Title": "यथार्थवाद"
     },
     "SimOptions": {
