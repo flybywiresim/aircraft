@@ -8,7 +8,6 @@
 #include "AutopilotStateMachine.h"
 #include "Autothrust.h"
 #include "CalculatedRadioReceiver.h"
-#include "ElevatorTrimHandler.h"
 #include "EngineData.h"
 #include "FlightDataRecorder.h"
 #include "InterpolatingLookupTable.h"
@@ -348,8 +347,6 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idSpoilersArmed;
   std::unique_ptr<LocalVariable> idSpoilersHandlePosition;
   std::shared_ptr<SpoilersHandler> spoilersHandler;
-
-  std::shared_ptr<ElevatorTrimHandler> elevatorTrimHandler;
 
   std::unique_ptr<LocalVariable> idRudderPosition;
 
