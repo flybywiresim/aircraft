@@ -234,7 +234,6 @@ class AircraftProcedures {
     });
   }
 
-
 #ifdef DEBUG
   static inline void printProcedure(const std::vector<ProcedureStep>& procedures) {
     for (const auto& p : procedures) {
