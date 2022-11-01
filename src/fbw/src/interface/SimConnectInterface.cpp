@@ -20,7 +20,6 @@ bool SimConnectInterface::connect(bool clientDataEnabled,
                                   int facDisabled,
                                   const std::vector<std::shared_ptr<ThrottleAxisMapping>>& throttleAxis,
                                   std::shared_ptr<SpoilersHandler> spoilersHandler,
-                                  std::shared_ptr<ElevatorTrimHandler> elevatorTrimHandler,
                                   double keyChangeAileron,
                                   double keyChangeElevator,
                                   double keyChangeRudder,
@@ -42,8 +41,6 @@ bool SimConnectInterface::connect(bool clientDataEnabled,
     this->throttleAxis = throttleAxis;
     // store spoilers handler
     this->spoilersHandler = spoilersHandler;
-    // store elevator trim handler
-    this->elevatorTrimHandler = elevatorTrimHandler;
     // store maximum allowed simulation rate
     this->minSimulationRate = minSimulationRate;
     this->maxSimulationRate = maxSimulationRate;
