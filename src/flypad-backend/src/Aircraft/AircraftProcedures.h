@@ -247,7 +247,7 @@ public:
   AircraftProcedures() {
 #ifdef DEBUG
     // Map the procedure groups
-    // P{rint to console to add them to the EFB code to display the current step.
+    // Print to console to add them to the EFB code to display the current step.
     printProcedure(POWERED_CONFIG_ON);
     printProcedure(PUSHBACK_CONFIG_ON);
     printProcedure(TAXI_CONFIG_ON);
