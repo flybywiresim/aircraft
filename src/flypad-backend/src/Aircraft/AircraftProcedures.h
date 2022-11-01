@@ -257,6 +257,7 @@ public:
     printProcedure(PUSHBACK_CONFIG_OFF);
     printProcedure(POWERED_CONFIG_OFF);
 #endif
+
     insert(coldAndDark, TAKEOFF_CONFIG_OFF);
     insert(coldAndDark, TAXI_CONFIG_OFF);
     insert(coldAndDark, PUSHBACK_CONFIG_OFF);
