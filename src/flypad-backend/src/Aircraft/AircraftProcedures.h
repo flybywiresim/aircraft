@@ -242,6 +242,7 @@ class AircraftProcedures {
     }
   }
 #endif
+
 public:
   AircraftProcedures() {
 
