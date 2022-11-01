@@ -222,7 +222,6 @@ class AircraftProcedures {
     ProcedureStep{"WX Radar Off",      4100, false, 1000, "(L:XMLVAR_A320_WEATHERRADAR_SYS) 1 ==",                       "1 (>L:XMLVAR_A320_WEATHERRADAR_SYS)"},
 };
 
-
   std::vector<const ProcedureStep*> coldAndDark;
   std::vector<const ProcedureStep*> powered;
   std::vector<const ProcedureStep*> readyForPushback;
