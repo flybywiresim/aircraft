@@ -39,7 +39,7 @@ void AircraftPreset::onUpdate(double deltaTime) {
     if (!loadingIsActive) {
       // check if procedure ID exists
       const std::vector<const ProcedureStep*>* requestedProcedure = procedures.getProcedure(loadAircraftPresetRequest);
-      if (requestedProcedure->empty()) {
+      if (requestedProcedure == nullptr) {
         std::cout << "FLYPAD_BACKEND: Preset " << loadAircraftPresetRequest << " not found!"
                   << std::endl;
         setLoadAircraftPresetRequest(0);
