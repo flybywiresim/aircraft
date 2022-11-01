@@ -93,6 +93,7 @@
 1. [MCDU] Support coroute loading and viewing - @lucky38i (Alex)
 1. [HYD] Fixed autobrake controller tuning - @Crocket63 (crocket)
 1. [ENGINE] Improved engine primary parameters performance (EGT & Fuel Flow) - @Taz5150 (TazX [Z+2]#0405)
+1. [ENGINE] Fix Engine Flex Calculations - @Taz5150 (TazX [Z+2]#0405)
 
 ## 0.8.0
 
