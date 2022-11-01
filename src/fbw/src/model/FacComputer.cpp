@@ -799,16 +799,16 @@ void FacComputer::step()
 
     rtb_mach = look1_binlxpw(rtb_Switch_b, FacComputer_P.uDLookupTable_bp01Data_b,
       FacComputer_P.uDLookupTable_tableData_g, 1U) + rtb_Switch1_a;
-    FacComputer_MATLABFunction2(look1_binlxpw(FacComputer_P.Constant_Value_k, FacComputer_P.uDLookupTable1_bp01Data,
-      FacComputer_P.uDLookupTable1_tableData, 5U), look1_binlxpw(FacComputer_P.Constant_Value_k,
-      FacComputer_P.uDLookupTable2_bp01Data_b, FacComputer_P.uDLookupTable2_tableData_e, 5U), static_cast<real_T>
+    FacComputer_MATLABFunction2(look1_binlxpw(FacComputer_P.Constant_Value_k, FacComputer_P.uDLookupTable6_bp01Data,
+      FacComputer_P.uDLookupTable6_tableData, 5U), look1_binlxpw(FacComputer_P.Constant_Value_k,
+      FacComputer_P.uDLookupTable5_bp01Data, FacComputer_P.uDLookupTable5_tableData, 5U), static_cast<real_T>
       (rtb_DataTypeConversion2), &rtb_Switch1_a);
     rtb_Switch1_a = std::fmax(FacComputer_P.Gain1_Gain * rtb_Switch1_a, FacComputer_P.Vmcl_Value_a +
       FacComputer_P.Bias_Bias);
     rtb_Switch_b = FacComputer_P.Vmcl_Value_a + FacComputer_P.Bias2_Bias;
-    FacComputer_MATLABFunction2(look1_binlxpw(FacComputer_P.Constant1_Value_h, FacComputer_P.uDLookupTable3_bp01Data_k,
-      FacComputer_P.uDLookupTable3_tableData_o, 5U), look1_binlxpw(FacComputer_P.Constant1_Value_h,
-      FacComputer_P.uDLookupTable4_bp01Data, FacComputer_P.uDLookupTable4_tableData, 5U), static_cast<real_T>
+    FacComputer_MATLABFunction2(look1_binlxpw(FacComputer_P.Constant1_Value_h, FacComputer_P.uDLookupTable8_bp01Data,
+      FacComputer_P.uDLookupTable8_tableData, 5U), look1_binlxpw(FacComputer_P.Constant1_Value_h,
+      FacComputer_P.uDLookupTable7_bp01Data, FacComputer_P.uDLookupTable7_tableData, 5U), static_cast<real_T>
       (rtb_DataTypeConversion2), &rtb_Switch4_f);
     rtb_Switch4_f = std::fmax(FacComputer_P.Gain_Gain_o * rtb_Switch4_f, rtb_Switch_b);
     rtb_v_gd = (rtb_v_gd * 2.0 + 85.0) + std::fmax(rtb_alt - 20000.0, 0.0) / 1000.0;
@@ -858,7 +858,7 @@ void FacComputer::step()
     FacComputer_MATLABFunction_d(rtb_OR_k, rtb_DataTypeConversion_do, rtb_DataTypeConversion_he,
       rtb_DataTypeConversion_e0, rtb_DataTypeConversion_jc, rtb_y_c != 0U, &rtb_Switch1_a);
     rtb_BusAssignment_f_flight_envelope_v_fe_next_kn = look1_binlxpw(rtb_Switch1_a,
-      FacComputer_P.uDLookupTable1_bp01Data_p, FacComputer_P.uDLookupTable1_tableData_o, 5U);
+      FacComputer_P.uDLookupTable1_bp01Data, FacComputer_P.uDLookupTable1_tableData, 5U);
     rtb_OR_k = ((rtb_Switch1_a < FacComputer_P.CompareToConstant_const_i) && (rtb_alt <=
       FacComputer_P.CompareToConstant1_const_i));
     if (rtb_Switch_i_idx_2) {
