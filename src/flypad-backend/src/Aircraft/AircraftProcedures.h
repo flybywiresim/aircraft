@@ -237,8 +237,7 @@ class AircraftProcedures {
 
 
 #ifdef DEBUG
-  template<std::size_t S>
-  void printProcedure(const std::vector<ProcedureStep, S>& procedures) {
+  static inline void printProcedure(const std::vector<ProcedureStep>& procedures) {
     for (const auto& p : procedures) {
       std::cout << p.id << " = " << p.description << std::endl;
     }
