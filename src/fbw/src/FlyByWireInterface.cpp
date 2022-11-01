@@ -20,7 +20,6 @@ bool FlyByWireInterface::connect() {
 
   // setup handlers
   spoilersHandler = make_shared<SpoilersHandler>();
-  elevatorTrimHandler = make_shared<ElevatorTrimHandler>();
 
   // initialize failures handler
   failuresConsumer.initialize();
@@ -35,8 +34,8 @@ bool FlyByWireInterface::connect() {
 
   // connect to sim connect
   return simConnectInterface.connect(clientDataEnabled, autopilotStateMachineEnabled, autopilotLawsEnabled, flyByWireEnabled, elacDisabled,
-                                     secDisabled, facDisabled, throttleAxis, spoilersHandler, elevatorTrimHandler,
-                                     flightControlsKeyChangeAileron, flightControlsKeyChangeElevator, flightControlsKeyChangeRudder,
+                                     secDisabled, facDisabled, throttleAxis, spoilersHandler, flightControlsKeyChangeAileron,
+                                     flightControlsKeyChangeElevator, flightControlsKeyChangeRudder,
                                      disableXboxCompatibilityRudderAxisPlusMinus, idMinimumSimulationRate->get(),
                                      idMaximumSimulationRate->get(), limitSimulationRateByPerformance);
 }

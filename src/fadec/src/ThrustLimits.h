@@ -221,12 +221,20 @@ limitN1(int type, double altitude, double ambientTemp, double ambientPressure, d
   cn1Last = interpolate(altitude, limits[loAltRow][0], limits[hiAltRow][0], limits[loAltRow][4], limits[hiAltRow][4]);
   cn1Flex = interpolate(altitude, limits[loAltRow][0], limits[hiAltRow][0], limits[loAltRow][5], limits[hiAltRow][5]);
 
-  // Calculating  CN1 for all cases
-  if (flexTemp > lp && type <= 1) {  // Flexible TO Case
-    m = (cn1Flex - cn1Last) / (100 - lp);
-    b = cn1Flex - m * 100;
-    cn1 = (m * flexTemp) + b;
-  } else {
+  if (flexTemp > 0 && type <= 1) { // CN1 for Flex Case
+    if (flexTemp <= cp) {
+      cn1 = cn1Flat;
+    } else if (flexTemp > lp) {
+      m = (cn1Flex - cn1Last) / (100 - lp);
+      b = cn1Flex - m * 100;
+      cn1 = (m * flexTemp) + b;
+    } else {
+      m = (cn1Last - cn1Flat) / (lp - cp);
+      b = cn1Last - m * lp;
+      cn1 = (m * flexTemp) + b;
+    }
+  }
+  else { // CN1 for All other cases
     if (ambientTemp <= cp) {
       cn1 = cn1Flat;
     } else {
