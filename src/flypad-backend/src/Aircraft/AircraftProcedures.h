@@ -29,6 +29,7 @@ class AircraftProcedures {
   // if you make any changes to this list.
   // src/instruments/src/EFB/Presets/Widgets/AircraftPresets.tsx
   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
   static const inline std::vector POWERED_CONFIG_ON {
     // SOP: PRELIMINARY COCKPIT PREPARATION
     ProcedureStep{"BAT1 On",                  1010, false, 1000, "(L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO)",                 "1 (>L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO)"},
