@@ -24,6 +24,7 @@ struct ProcedureStep {
 };
 
 class AircraftProcedures {
+
   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   // Please remember to also update the EFB Presets page for the step description
   // if you make any changes to this list.
