@@ -8,7 +8,6 @@
 #include "AutopilotStateMachine.h"
 #include "Autothrust.h"
 #include "CalculatedRadioReceiver.h"
-#include "ElevatorTrimHandler.h"
 #include "EngineData.h"
 #include "FlightDataRecorder.h"
 #include "InterpolatingLookupTable.h"
@@ -66,6 +65,9 @@ class FlyByWireInterface {
   bool wasTcasEngaged = false;
 
   bool pauseDetected = false;
+  // As fdr is not written when paused 'wasPaused' is used to detect previous pause state
+  // changes and record them in fdr
+  bool wasPaused = false;
   bool wasInSlew = false;
 
   double autothrustThrustLimitReverse = -45;
@@ -346,8 +348,6 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idSpoilersHandlePosition;
   std::shared_ptr<SpoilersHandler> spoilersHandler;
 
-  std::shared_ptr<ElevatorTrimHandler> elevatorTrimHandler;
-
   std::unique_ptr<LocalVariable> idRudderPosition;
 
   std::unique_ptr<LocalVariable> idRadioReceiverUsageEnabled;
@@ -366,7 +366,7 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idLs1Active;
   std::unique_ptr<LocalVariable> idLs2Active;
   std::unique_ptr<LocalVariable> idIsisLsActive;
-  
+
   std::unique_ptr<LocalVariable> idWingAntiIce;
 
   // RA bus inputs

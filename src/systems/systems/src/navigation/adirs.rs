@@ -536,6 +536,11 @@ impl AirDataInertialReferenceUnit {
         self.ir.has_fault()
     }
 
+    fn adr_is_valid(&self) -> bool {
+        self.adr.is_valid()
+    }
+
+    // If above speed threshold OR if data is unavailable: all discrete are set to TRUE
     fn update_discrete_outputs(&mut self) {
         let speed_knot = self.adr.computed_airspeed_raw().get::<knot>();
 
@@ -560,6 +565,13 @@ impl AirDataInertialReferenceUnit {
         if speed_knot < 260. {
             self.low_speed_warning_4_260kts = false;
         } else if speed_knot > 264. {
+            self.low_speed_warning_4_260kts = true;
+        }
+
+        if !self.adr_is_valid() {
+            self.low_speed_warning_1_104kts = true;
+            self.low_speed_warning_2_54kts = true;
+            self.low_speed_warning_3_159kts = true;
             self.low_speed_warning_4_260kts = true;
         }
     }
@@ -802,13 +814,11 @@ impl AirDataReference {
     }
 
     fn update_values(&mut self, context: &UpdateContext, simulator_data: AdirsSimulatorData) {
-        let is_valid = self.is_on && self.is_initialised();
-
         // For now some of the data will be read from the context. Later the context will no longer
         // contain this information (and instead all usages will be replaced by requests to the ADIRUs).
 
         // If the ADR is off or not initialized, output all labels as FW with value 0.
-        if !is_valid {
+        if !self.is_valid() {
             self.corrected_average_static_pressure.set_failure_warning();
             self.altitude.set_failure_warning();
             self.barometric_vertical_speed.set_failure_warning();
@@ -871,6 +881,10 @@ impl AirDataReference {
 
     fn is_initialised(&self) -> bool {
         self.remaining_initialisation_duration == Some(Duration::from_secs(0))
+    }
+
+    fn is_valid(&self) -> bool {
+        self.is_on && self.is_initialised()
     }
 
     fn international_standard_atmosphere_delta(
@@ -3444,6 +3458,32 @@ mod tests {
 
             test_bed.set_indicated_airspeed(Velocity::new::<knot>(265.));
             test_bed.run();
+            assert!(
+                test_bed.query(|a| a.adirs.adirus[adiru_number - 1].low_speed_warning_4_260kts())
+            );
+        }
+
+        #[rstest]
+        #[case(1)]
+        #[case(2)]
+        #[case(3)]
+        fn discrete_output_speed_warnings_with_off_adir(#[case] adiru_number: usize) {
+            let mut test_bed = test_bed();
+            test_bed.set_indicated_airspeed(Velocity::new::<knot>(5.));
+            test_bed.run();
+
+            assert!(
+                test_bed.query(|a| a.adirs.adirus[adiru_number - 1].low_speed_warning_1_104kts())
+            );
+
+            assert!(
+                test_bed.query(|a| a.adirs.adirus[adiru_number - 1].low_speed_warning_2_54kts())
+            );
+
+            assert!(
+                test_bed.query(|a| a.adirs.adirus[adiru_number - 1].low_speed_warning_3_159kts())
+            );
+
             assert!(
                 test_bed.query(|a| a.adirs.adirus[adiru_number - 1].low_speed_warning_4_260kts())
             );
