@@ -245,6 +245,7 @@ class AircraftProcedures {
 #endif
 public:
   AircraftProcedures() {
+
 #ifdef DEBUG
     // Map the procedure groups
     // Print to console to add them to the EFB code to display the current step.
