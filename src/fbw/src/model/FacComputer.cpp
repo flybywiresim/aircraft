@@ -763,7 +763,9 @@ void FacComputer::step()
     rtb_v_gd = rtb_DataTypeConversion2 / 2205.0;
     y_value = (rtb_v_gd * 0.19807001167721894 - 0.0347376119873668) * 1.3 + -5.9;
     rtb_mach = std::fmax(0.87796 - std::exp(std::sqrt(std::log((std::exp(-(rtb_alt / 100.0) / 257.94012) * 103.20207 +
-      -10.79423) / std::fmax(y_value - (y_value - -6.5) / 410.0 * -20.0, 1.0))) * 1.39441) * 0.09660256358198574, 0.0);
+      -10.79423) / std::fmax(y_value - (y_value - -6.5) / (FacComputer_U.in.bus_inputs.fmgc_own_bus.fm_cg_percent.Data -
+      -405.0) * (FacComputer_U.in.bus_inputs.fmgc_own_bus.fm_cg_percent.Data - 25.0), 1.0))) * 1.39441) *
+                         0.09660256358198574, 0.0);
     if ((!rtb_AND1) && rtb_y_j && rtb_Switch_i_idx_1) {
       FacComputer_DWork.takeoff_config = rtb_Switch4_f;
     } else if (FacComputer_DWork.takeoff_config != rtb_Switch4_f) {
