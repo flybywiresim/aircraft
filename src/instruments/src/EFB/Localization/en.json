@@ -367,7 +367,8 @@
       "TheAircraftMustBeOnTheGroundToLoadAPreset": "The aircraft must be on the ground to load a preset.",
       "TheAircraftMustBeOntheGroundToLoadAPreset": "The aircraft must be on the ground to load a preset.",
       "Title": "Aircraft States",
-      "Turnaround": "Turnaround"
+      "Turnaround": "Turnaround",
+      "Powered": "Powered"
     },
     "InteriorLighting": {
       "AircraftNeedsToBePoweredToLoadPresets": "Aircraft Needs to be Powered to Load Presets",

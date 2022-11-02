@@ -4176,10 +4176,10 @@ impl A320AutobrakeController {
 
     // Dynamic decel target map versus time for any mode that needs it
     const LOW_MODE_DECEL_PROFILE_ACCEL_MS2: [f64; 4] = [4., 4., 0., -2.];
-    const LOW_MODE_DECEL_PROFILE_TIME_S: [f64; 4] = [0., 1.99, 2., 4.5];
+    const LOW_MODE_DECEL_PROFILE_TIME_S: [f64; 4] = [0., 1.99, 2., 3.];
 
     const MED_MODE_DECEL_PROFILE_ACCEL_MS2: [f64; 5] = [4., 4., 0., -2., -3.];
-    const MED_MODE_DECEL_PROFILE_TIME_S: [f64; 5] = [0., 1.99, 2., 2.5, 4.];
+    const MED_MODE_DECEL_PROFILE_TIME_S: [f64; 5] = [0., 1.99, 2., 2.5, 3.];
 
     const MAX_MODE_DECEL_TARGET_MS2: f64 = -6.;
     const OFF_MODE_DECEL_TARGET_MS2: f64 = 5.;
@@ -10799,10 +10799,10 @@ mod tests {
                 .in_flight()
                 .run_one_tick();
 
-            assert!(test_bed.get_left_aileron_position().get::<ratio>() < 0.51);
-            assert!(test_bed.get_right_aileron_position().get::<ratio>() < 0.51);
-            assert!(test_bed.get_left_aileron_position().get::<ratio>() > 0.49);
-            assert!(test_bed.get_right_aileron_position().get::<ratio>() > 0.49);
+            assert!(test_bed.get_left_aileron_position().get::<ratio>() < 0.55);
+            assert!(test_bed.get_right_aileron_position().get::<ratio>() < 0.55);
+            assert!(test_bed.get_left_aileron_position().get::<ratio>() > 0.45);
+            assert!(test_bed.get_right_aileron_position().get::<ratio>() > 0.45);
         }
 
         #[test]

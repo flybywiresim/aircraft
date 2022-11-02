@@ -1,5 +1,6 @@
 #include "FailuresConsumer.h"
 #include <utility>
+#include <algorithm>
 
 FailuresConsumer::FailuresConsumer() {
   activeFailures.emplace(std::make_pair<Failures, bool>(Failures::Elac1, false));
@@ -49,4 +50,13 @@ bool FailuresConsumer::setIfFound(double identifier, bool value) {
     (*pair).second = value;
     return true;
   }
+}
+
+bool FailuresConsumer::isAnyActive() {
+  if (std::any_of(activeFailures.begin(), activeFailures.end(), [](auto pair) {
+    return pair.second;
+  })) {
+      return true;
+  }
+  return false;
 }
