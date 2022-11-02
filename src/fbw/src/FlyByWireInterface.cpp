@@ -247,7 +247,7 @@ void FlyByWireInterface::loadConfiguration() {
 
   // --------------------------------------------------------------------------
   // create axis and load configuration
-  for (size_t i = 1; i <= 2; i++) {
+  for (size_t i = 1; i <= 4; i++) {
     // create new mapping
     auto axis = make_shared<ThrottleAxisMapping>(i);
     // load configuration from file
@@ -392,6 +392,8 @@ void FlyByWireInterface::setupLocalVariables() {
 
   idThrottlePosition3d_1 = make_unique<LocalVariable>("A32NX_3D_THROTTLE_LEVER_POSITION_1");
   idThrottlePosition3d_2 = make_unique<LocalVariable>("A32NX_3D_THROTTLE_LEVER_POSITION_2");
+  idThrottlePosition3d_3 = make_unique<LocalVariable>("A32NX_3D_THROTTLE_LEVER_POSITION_3");
+  idThrottlePosition3d_4 = make_unique<LocalVariable>("A32NX_3D_THROTTLE_LEVER_POSITION_4");
 
   idAutothrustStatus = make_unique<LocalVariable>("A32NX_AUTOTHRUST_STATUS");
   idAutothrustMode = make_unique<LocalVariable>("A32NX_AUTOTHRUST_MODE");
@@ -414,12 +416,20 @@ void FlyByWireInterface::setupLocalVariables() {
   idAutothrustThrustLimitTOGA = make_unique<LocalVariable>("A32NX_AUTOTHRUST_THRUST_LIMIT_TOGA");
   thrustLeverAngle_1 = make_unique<LocalVariable>("A32NX_AUTOTHRUST_TLA:1");
   thrustLeverAngle_2 = make_unique<LocalVariable>("A32NX_AUTOTHRUST_TLA:2");
+  thrustLeverAngle_3 = make_unique<LocalVariable>("A32NX_AUTOTHRUST_TLA:3");
+  thrustLeverAngle_4 = make_unique<LocalVariable>("A32NX_AUTOTHRUST_TLA:4");
   idAutothrustN1_TLA_1 = make_unique<LocalVariable>("A32NX_AUTOTHRUST_TLA_N1:1");
   idAutothrustN1_TLA_2 = make_unique<LocalVariable>("A32NX_AUTOTHRUST_TLA_N1:2");
+  idAutothrustN1_TLA_3 = make_unique<LocalVariable>("A32NX_AUTOTHRUST_TLA_N1:3");
+  idAutothrustN1_TLA_4 = make_unique<LocalVariable>("A32NX_AUTOTHRUST_TLA_N1:4");
   idAutothrustReverse_1 = make_unique<LocalVariable>("A32NX_AUTOTHRUST_REVERSE:1");
   idAutothrustReverse_2 = make_unique<LocalVariable>("A32NX_AUTOTHRUST_REVERSE:2");
+  idAutothrustReverse_3 = make_unique<LocalVariable>("A32NX_AUTOTHRUST_REVERSE:3");
+  idAutothrustReverse_4 = make_unique<LocalVariable>("A32NX_AUTOTHRUST_REVERSE:4");
   idAutothrustN1_c_1 = make_unique<LocalVariable>("A32NX_AUTOTHRUST_N1_COMMANDED:1");
   idAutothrustN1_c_2 = make_unique<LocalVariable>("A32NX_AUTOTHRUST_N1_COMMANDED:2");
+  idAutothrustN1_c_3 = make_unique<LocalVariable>("A32NX_AUTOTHRUST_N1_COMMANDED:3");
+  idAutothrustN1_c_4 = make_unique<LocalVariable>("A32NX_AUTOTHRUST_N1_COMMANDED:4");
 
   idMasterWarning = make_unique<LocalVariable>("A32NX_MASTER_WARNING");
   idMasterCaution = make_unique<LocalVariable>("A32NX_MASTER_CAUTION");
@@ -1858,7 +1868,7 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
     autopilotStateMachineInput.in.input.is_FLX_active = autoThrust.getExternalOutputs().out.data_computed.is_FLX_active;
     autopilotStateMachineInput.in.input.Slew_trigger = wasInSlew;
     autopilotStateMachineInput.in.input.MACH_mode = simData.is_mach_mode_active;
-    autopilotStateMachineInput.in.input.ATHR_engaged = (autoThrustOutput.status == 2);
+    autopilotStateMachineInput.in.input.ATHR_engaged = (autoThrustOutput.status == athr_status::ENGAGED_ACTIVE);
     autopilotStateMachineInput.in.input.is_SPEED_managed = (simData.speed_slot_index == 2);
     autopilotStateMachineInput.in.input.FDR_event = idFdrEvent->get();
     autopilotStateMachineInput.in.input.Phi_loc_c = autopilotLawsOutput.Phi_loc_c;
@@ -1995,7 +2005,7 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
   // CAT3 requires two valid RA which are not simulated yet
   bool landModeArmedOrActive = (isLocArmed || isLocEngaged) && (isGsArmed || isGsEngaged);
   int numberOfAutopilotsEngaged = autopilotStateMachineOutput.enabled_AP1 + autopilotStateMachineOutput.enabled_AP2;
-  bool autoThrustEngaged = (autoThrustOutput.status == 2);
+  bool autoThrustEngaged = (autoThrustOutput.status == athr_status::ENGAGED_ACTIVE);
   bool radioAltimeterAvailable = (simData.H_radio_ft <= 5000);
   bool isCat1 = landModeArmedOrActive;
   bool isCat2 = landModeArmedOrActive && radioAltimeterAvailable && !autoThrustEngaged && numberOfAutopilotsEngaged >= 1;
@@ -2316,16 +2326,20 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
   // set ground / flight for throttle handling
   if (idLgciuLeftMainGearCompressed[0]->get() || idLgciuLeftMainGearCompressed[1]->get() || idLgciuRightMainGearCompressed[0]->get() ||
       idLgciuRightMainGearCompressed[1]->get()) {
-    throttleAxis[0]->setOnGround();
     throttleAxis[1]->setOnGround();
+    throttleAxis[2]->setOnGround();
   } else {
-    throttleAxis[0]->setInFlight();
     throttleAxis[1]->setInFlight();
+    throttleAxis[2]->setInFlight();
   }
+  throttleAxis[0]->setInFlight();
+  throttleAxis[3]->setInFlight();
 
   // set position for 3D animation
   idThrottlePosition3d_1->set(idThrottlePositionLookupTable3d.get(thrustLeverAngle_1->get()));
   idThrottlePosition3d_2->set(idThrottlePositionLookupTable3d.get(thrustLeverAngle_2->get()));
+  idThrottlePosition3d_3->set(idThrottlePositionLookupTable3d.get(thrustLeverAngle_3->get()));
+  idThrottlePosition3d_4->set(idThrottlePositionLookupTable3d.get(thrustLeverAngle_4->get()));
 
   // set client data if needed
   if (!autoThrustEnabled || !autopilotStateMachineEnabled || !flyByWireEnabled) {
@@ -2386,12 +2400,20 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
     autoThrustInput.in.data.flap_handle_index = flapsHandleIndexFlapConf->get();
     autoThrustInput.in.data.is_engine_operative_1 = simData.engine_combustion_1;
     autoThrustInput.in.data.is_engine_operative_2 = simData.engine_combustion_2;
+    autoThrustInput.in.data.is_engine_operative_3 = simData.engine_combustion_3;
+    autoThrustInput.in.data.is_engine_operative_4 = simData.engine_combustion_4;
     autoThrustInput.in.data.commanded_engine_N1_1_percent = simData.commanded_engine_N1_1_percent;
     autoThrustInput.in.data.commanded_engine_N1_2_percent = simData.commanded_engine_N1_2_percent;
+    autoThrustInput.in.data.commanded_engine_N1_3_percent = simData.commanded_engine_N1_3_percent;
+    autoThrustInput.in.data.commanded_engine_N1_4_percent = simData.commanded_engine_N1_4_percent;
     autoThrustInput.in.data.engine_N1_1_percent = simData.engine_N1_1_percent;
     autoThrustInput.in.data.engine_N1_2_percent = simData.engine_N1_2_percent;
+    autoThrustInput.in.data.engine_N1_3_percent = simData.engine_N1_3_percent;
+    autoThrustInput.in.data.engine_N1_4_percent = simData.engine_N1_4_percent;
     autoThrustInput.in.data.corrected_engine_N1_1_percent = simData.corrected_engine_N1_1_percent;
     autoThrustInput.in.data.corrected_engine_N1_2_percent = simData.corrected_engine_N1_2_percent;
+    autoThrustInput.in.data.corrected_engine_N1_3_percent = simData.corrected_engine_N1_3_percent;
+    autoThrustInput.in.data.corrected_engine_N1_4_percent = simData.corrected_engine_N1_4_percent;
     autoThrustInput.in.data.TAT_degC = simData.total_air_temperature_celsius;
     autoThrustInput.in.data.OAT_degC = simData.ambient_temperature_celsius;
 
@@ -2400,6 +2422,8 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
         simConnectInterface.getSimInputThrottles().ATHR_disconnect || idAutothrustDisconnect->get() == 1;
     autoThrustInput.in.input.TLA_1_deg = thrustLeverAngle_1->get();
     autoThrustInput.in.input.TLA_2_deg = thrustLeverAngle_2->get();
+    autoThrustInput.in.input.TLA_3_deg = thrustLeverAngle_3->get();
+    autoThrustInput.in.input.TLA_4_deg = thrustLeverAngle_4->get();
     autoThrustInput.in.input.V_c_kn = simData.ap_V_c_kn;
     autoThrustInput.in.input.V_LS_kn = idFmgcV_LS->get();
     autoThrustInput.in.input.V_MAX_kn = idFmgcV_MAX->get();
@@ -2448,7 +2472,12 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
     // write output to sim --------------------------------------------------------------------------------------------
     SimOutputThrottles simOutputThrottles = {fmin(99.9999999999999, autoThrustOutput.sim_throttle_lever_1_pos),
                                              fmin(99.9999999999999, autoThrustOutput.sim_throttle_lever_2_pos),
-                                             autoThrustOutput.sim_thrust_mode_1, autoThrustOutput.sim_thrust_mode_2};
+                                             fmin(99.9999999999999, autoThrustOutput.sim_throttle_lever_3_pos),
+                                             fmin(99.9999999999999, autoThrustOutput.sim_throttle_lever_4_pos),
+                                             autoThrustOutput.sim_thrust_mode_1,
+                                             autoThrustOutput.sim_thrust_mode_2,
+                                             autoThrustOutput.sim_thrust_mode_3,
+                                             autoThrustOutput.sim_thrust_mode_4};
     if (!simConnectInterface.sendData(simOutputThrottles)) {
       cout << "WASM: Write data failed!" << endl;
       return false;
@@ -2472,15 +2501,21 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
   // update local variables
   idAutothrustN1_TLA_1->set(autoThrustOutput.N1_TLA_1_percent);
   idAutothrustN1_TLA_2->set(autoThrustOutput.N1_TLA_2_percent);
+  idAutothrustN1_TLA_3->set(autoThrustOutput.N1_TLA_3_percent);
+  idAutothrustN1_TLA_4->set(autoThrustOutput.N1_TLA_4_percent);
   idAutothrustReverse_1->set(autoThrustOutput.is_in_reverse_1);
   idAutothrustReverse_2->set(autoThrustOutput.is_in_reverse_2);
-  idAutothrustThrustLimitType->set(autoThrustOutput.thrust_limit_type);
+  idAutothrustReverse_3->set(autoThrustOutput.is_in_reverse_3);
+  idAutothrustReverse_4->set(autoThrustOutput.is_in_reverse_4);
+  idAutothrustThrustLimitType->set(static_cast<double>(autoThrustOutput.thrust_limit_type));
   idAutothrustThrustLimit->set(autoThrustOutput.thrust_limit_percent);
   idAutothrustN1_c_1->set(autoThrustOutput.N1_c_1_percent);
   idAutothrustN1_c_2->set(autoThrustOutput.N1_c_2_percent);
-  idAutothrustStatus->set(autoThrustOutput.status);
-  idAutothrustMode->set(autoThrustOutput.mode);
-  idAutothrustModeMessage->set(autoThrustOutput.mode_message);
+  idAutothrustN1_c_3->set(autoThrustOutput.N1_c_3_percent);
+  idAutothrustN1_c_4->set(autoThrustOutput.N1_c_4_percent);
+  idAutothrustStatus->set(static_cast<double>(autoThrustOutput.status));
+  idAutothrustMode->set(static_cast<double>(autoThrustOutput.mode));
+  idAutothrustModeMessage->set(static_cast<double>(autoThrustOutput.mode_message));
 
   // update warnings
   auto fwcFlightPhase = idFwcFlightPhase->get();

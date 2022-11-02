@@ -110,8 +110,8 @@ class FlyByWireInterface {
   AutopilotLawsModelClass::ExternalInputs_AutopilotLaws_T autopilotLawsInput = {};
   ap_raw_output autopilotLawsOutput;
 
-  AutothrustModelClass autoThrust;
-  AutothrustModelClass::ExternalInputs_Autothrust_T autoThrustInput = {};
+  Autothrust autoThrust;
+  Autothrust::ExternalInputs_Autothrust_T autoThrustInput = {};
   athr_output autoThrustOutput;
 
   base_ra_bus raBusOutputs[2] = {};
@@ -266,10 +266,16 @@ class FlyByWireInterface {
 
   std::unique_ptr<LocalVariable> thrustLeverAngle_1;
   std::unique_ptr<LocalVariable> thrustLeverAngle_2;
+  std::unique_ptr<LocalVariable> thrustLeverAngle_3;
+  std::unique_ptr<LocalVariable> thrustLeverAngle_4;
   std::unique_ptr<LocalVariable> idAutothrustN1_TLA_1;
   std::unique_ptr<LocalVariable> idAutothrustN1_TLA_2;
+  std::unique_ptr<LocalVariable> idAutothrustN1_TLA_3;
+  std::unique_ptr<LocalVariable> idAutothrustN1_TLA_4;
   std::unique_ptr<LocalVariable> idAutothrustReverse_1;
   std::unique_ptr<LocalVariable> idAutothrustReverse_2;
+  std::unique_ptr<LocalVariable> idAutothrustReverse_3;
+  std::unique_ptr<LocalVariable> idAutothrustReverse_4;
   std::unique_ptr<LocalVariable> idAutothrustThrustLimitType;
   std::unique_ptr<LocalVariable> idAutothrustThrustLimit;
   std::unique_ptr<LocalVariable> idAutothrustThrustLimitREV;
@@ -280,6 +286,8 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idAutothrustThrustLimitTOGA;
   std::unique_ptr<LocalVariable> idAutothrustN1_c_1;
   std::unique_ptr<LocalVariable> idAutothrustN1_c_2;
+  std::unique_ptr<LocalVariable> idAutothrustN1_c_3;
+  std::unique_ptr<LocalVariable> idAutothrustN1_c_4;
   std::unique_ptr<LocalVariable> idAutothrustStatus;
   std::unique_ptr<LocalVariable> idAutothrustMode;
   std::unique_ptr<LocalVariable> idAutothrustModeMessage;
@@ -289,6 +297,8 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idAutothrustDisconnect;
   std::unique_ptr<LocalVariable> idThrottlePosition3d_1;
   std::unique_ptr<LocalVariable> idThrottlePosition3d_2;
+  std::unique_ptr<LocalVariable> idThrottlePosition3d_3;
+  std::unique_ptr<LocalVariable> idThrottlePosition3d_4;
   InterpolatingLookupTable idThrottlePositionLookupTable3d;
 
   std::vector<std::shared_ptr<ThrottleAxisMapping>> throttleAxis;
