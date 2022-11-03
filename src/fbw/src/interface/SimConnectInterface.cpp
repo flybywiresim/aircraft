@@ -2596,6 +2596,8 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
     case Events::THROTTLE_REVERSE_THRUST_TOGGLE: {
       throttleAxis[0]->onEventReverseToggle();
       throttleAxis[1]->onEventReverseToggle();
+      throttleAxis[2]->onEventReverseToggle();
+      throttleAxis[3]->onEventReverseToggle();
       if (loggingThrottlesEnabled) {
         cout << "WASM: THROTTLE_REVERSE_THRUST_TOGGLE" << endl;
       }
@@ -2604,6 +2606,8 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
     case Events::THROTTLE_REVERSE_THRUST_HOLD: {
       throttleAxis[0]->onEventReverseHold(static_cast<bool>(event->dwData));
       throttleAxis[1]->onEventReverseHold(static_cast<bool>(event->dwData));
+      throttleAxis[2]->onEventReverseHold(static_cast<bool>(event->dwData));
+      throttleAxis[3]->onEventReverseHold(static_cast<bool>(event->dwData));
       if (loggingThrottlesEnabled) {
         cout << "WASM: THROTTLE_REVERSE_THRUST_HOLD: " << static_cast<long>(event->dwData) << endl;
       }
