@@ -364,8 +364,8 @@ impl PowerTransferUnit {
     const THRESHOLD_DELTA_TO_DECLARE_CONTINUOUS_RPM: f64 = 400.;
     const DURATION_BEFORE_CAPTURING_BARK_STRENGTH_SPEED: Duration = Duration::from_millis(133);
 
-    const HEATING_TIME_CONSTANT_MEAN_S: f64 = 60.;
-    const HEATING_TIME_CONSTANT_STD_S: f64 = 10.;
+    const HEATING_TIME_CONSTANT_MEAN_S: f64 = 20.;
+    const HEATING_TIME_CONSTANT_STD_S: f64 = 5.;
     const COOLING_TIME_CONSTANT: Duration = Duration::from_secs(60 * 3);
     const DAMAGE_TIME_CONSTANT: Duration = Duration::from_secs(60 * 3);
 
@@ -466,7 +466,8 @@ impl PowerTransferUnit {
 
         self.heat_state.update(
             context,
-            self.shaft_speed.get::<revolution_per_minute>() > Self::MAX_SPEED_BEFORE_HEATING_UP_RPM,
+            self.shaft_speed.get::<revolution_per_minute>().abs()
+                > Self::MAX_SPEED_BEFORE_HEATING_UP_RPM,
         );
     }
 

@@ -2385,6 +2385,7 @@ impl A320Hydraulic {
             > Pressure::new::<psi>(Self::HIGH_PITCH_PTU_SOUND_DELTA_PRESS_THRESHOLD_PSI)
             && is_ptu_rotating
             && !self.ptu_high_pitch_sound_active.output()
+            && !self.power_transfer_unit.is_in_continuous_mode()
     }
 
     pub fn gear_system(&self) -> &impl GearSystemSensors {
@@ -6197,6 +6198,14 @@ mod tests {
 
             fn yellow_epump_has_fault(&mut self) -> bool {
                 self.read_by_name("OVHD_HYD_EPUMPY_PB_HAS_FAULT")
+            }
+
+            fn yellow_reservoir_has_overheat_fault(&mut self) -> bool {
+                self.read_by_name("HYD_YELLOW_RESERVOIR_OVHT")
+            }
+
+            fn green_reservoir_has_overheat_fault(&mut self) -> bool {
+                self.read_by_name("HYD_GREEN_RESERVOIR_OVHT")
             }
 
             fn ptu_has_fault(&mut self) -> bool {
@@ -10955,6 +10964,34 @@ mod tests {
 
             assert!(test_bed.is_all_gears_really_up());
             assert!(test_bed.is_all_doors_really_up());
+        }
+
+        #[test]
+        #[ignore]
+        fn empty_green_reservoir_causes_yellow_overheat_if_ptu_on() {
+            let mut test_bed = test_bed_in_flight_with()
+                .set_cold_dark_inputs()
+                .in_flight()
+                .run_waiting_for(Duration::from_secs_f64(1.));
+
+            test_bed.fail(FailureType::ReservoirLeak(HydraulicColor::Green));
+
+            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(120.));
+            assert!(test_bed.yellow_reservoir_has_overheat_fault());
+        }
+
+        #[test]
+        #[ignore]
+        fn empty_yellow_reservoir_causes_green_overheat_if_ptu_on() {
+            let mut test_bed = test_bed_in_flight_with()
+                .set_cold_dark_inputs()
+                .in_flight()
+                .run_waiting_for(Duration::from_secs_f64(1.));
+
+            test_bed.fail(FailureType::ReservoirLeak(HydraulicColor::Yellow));
+
+            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(120.));
+            assert!(test_bed.green_reservoir_has_overheat_fault());
         }
     }
 }
