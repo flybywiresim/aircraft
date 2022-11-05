@@ -7,6 +7,8 @@ export interface CoRouteDto {
 
     origin: Airport;
 
+    alternate: Airport;
+
     destination: Airport;
 
     general: General;

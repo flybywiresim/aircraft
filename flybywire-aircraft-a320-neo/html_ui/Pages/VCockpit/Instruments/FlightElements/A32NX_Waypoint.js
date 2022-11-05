@@ -253,12 +253,18 @@ class WayPointInfo {
 class AirportInfo extends WayPointInfo {
     constructor(_instrument) {
         super(_instrument);
+        /** @type {RawFrequency[]} */
         this.frequencies = [];
         this.namedFrequencies = [];
+        /** @type {RawDeparture[]} */
         this.departures = [];
+        /** @type {RawApproach[]} */
         this.approaches = [];
+        /** @type {RawArrival[]} */
         this.arrivals = [];
+        /** @type {RawRunway[]} */
         this.runways = [];
+        /** @type {OneWayRunway[]} */
         this.oneWayRunways = [];
         this.airportClass = 0;
         this.privateType = 0;
