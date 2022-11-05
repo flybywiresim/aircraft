@@ -64,7 +64,11 @@ struct PushbackData {
 
 enum Events {
   KEY_TUG_HEADING_EVENT,
-  KEY_TUG_SPEED_EVENT
+  KEY_TUG_SPEED_EVENT,
+  PAUSED,
+  UNPAUSED,
+  SIM,
+  SIMSTOP,
 };
 
 class LightPreset;
@@ -152,6 +156,8 @@ private:
    * @param data
    */
   void simConnectProcessClientData(const SIMCONNECT_RECV_CLIENT_DATA* data);
+
+  void simConnectProcessRecvEvent(const SIMCONNECT_RECV_EVENT* data);
 
   /**
    * Returns human-readable descriptions of simconnect exceptions

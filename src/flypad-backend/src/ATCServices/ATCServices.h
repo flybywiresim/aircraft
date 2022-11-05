@@ -57,6 +57,7 @@ class ATCServices {
   void onUpdate(INT64, INT64, ATCServicesDataIVAO*, ATCServicesDataVPILOT*);
   void shutdown();
 
-  void notifyATCServicesShutdown() const;
+  void notifyATCServicesPause() const;
+  void notifyATCServicesShutdown();
   void notifyATCServicesStart() const;
 };

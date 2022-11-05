@@ -1,6 +1,7 @@
 #include "ATCServices.h"
 
 #define SELCAL_LIGHT_TIME_MS 300
+#define FLASHING_LIGHTS_TIMEOUT_MS 60000
 
 ATCServices::ATCServices(HANDLE hSimConnect) : _hSimConnect(hSimConnect) {}
 
@@ -16,6 +17,8 @@ void ATCServices::initialize() {
   _updateReceiversFromATCServices = register_named_variable("A32NX_COM_UpdateReceiversFromATCServices");
 
   _isInitialized = true;
+
+  notifyATCServicesStart();
 
   std::cout << "FLYPAD_BACKEND (ATCServices): ATCServices initialized" << std::endl;
 }
@@ -65,22 +68,27 @@ void ATCServices::onUpdate(INT64 volumeCOM1, INT64 volumeCOM2, ATCServicesDataIV
   } else if (VPILOTData) {
     this->_selcalActive = VPILOTData->selcal;
   } else {
-    if (get_named_variable_value(_selcalReset) == 0) {
+    auto now = std::chrono::system_clock::now();
+    auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(now - this->_previousTime).count();
+
+    if (get_named_variable_value(_selcalReset) == 0 && diff < FLASHING_LIGHTS_TIMEOUT_MS) {
       if (this->_selcalActive) {
         // Makes the push button blink every SELCAL_LIGHT_TIME_MS
         // It sets the BLINK_ID (foundable in the XML behaviors) then 0 to make it blink
-        auto now = std::chrono::system_clock::now();
-        if (std::chrono::duration_cast<std::chrono::milliseconds>(now - this->_previousTime).count() >= SELCAL_LIGHT_TIME_MS) {
+        if (diff >= SELCAL_LIGHT_TIME_MS) {
           setSimVar(_selcal, get_named_variable_value(_selcal) == this->_selcalActive ? 0 : this->_selcalActive);
           this->_previousTime = now;
         }
       }
     } else {
       // Reset everything related to SELCAL if RESET push button was pressed on one ACP
+      // OR 60s have passed (according to FCOM)
       setSimVar(_selcalReset, 0);
       setSimVar(_selcal, 0);
       this->_selcalActive = 0;
       update = true;
+
+      this->_previousTime = now;
     }
 
     // Handling the case the volume was changed via the knobs on the ACPs
@@ -101,9 +109,7 @@ void ATCServices::onUpdate(INT64 volumeCOM1, INT64 volumeCOM2, ATCServicesDataIV
   }
 }
 
-/// @brief Notifying the third party the plane is unloaded
-void ATCServices::notifyATCServicesShutdown() const {
-  // notifying vPilot the aircraft is unloaded
+void ATCServices::notifyATCServicesPause() const {
   ATCServicesDataVPILOT dataVPILOT{0, 0};
   setATCServicesDataVPILOT(dataVPILOT);
 
@@ -111,12 +117,22 @@ void ATCServices::notifyATCServicesShutdown() const {
   setATCServicesDataIVAO(dataIVAO);
 }
 
+/// @brief Notifying the third party the plane is unloaded
+void ATCServices::notifyATCServicesShutdown() {
+  // In MSFS's start/stop sequence, start and stop events are called twice therefore
+  // we have to uninit it to make notifyATCServicesStart ineffective
+  _isInitialized = false;
+  notifyATCServicesPause();
+}
+
 /// @brief Notifying the third party the plane is loaded
 void ATCServices::notifyATCServicesStart() const {
-  ATCServicesDataIVAO dataIVAO{0, 80, 40};
-  setATCServicesDataIVAO(dataIVAO);
+  if(_isInitialized) {
+    ATCServicesDataIVAO dataIVAO{0, 80, 40};
+    setATCServicesDataIVAO(dataIVAO);
 
-  // notifying vPilot the aircraft is loaded
-  ATCServicesDataVPILOT dataVPILOT{1, 0};
-  setATCServicesDataVPILOT(dataVPILOT);
+    // notifying vPilot the aircraft is loaded
+    ATCServicesDataVPILOT dataVPILOT{1, 0};
+    setATCServicesDataVPILOT(dataVPILOT);
+  }
 }

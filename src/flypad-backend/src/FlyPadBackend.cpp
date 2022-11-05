@@ -64,13 +64,25 @@ bool FlyPadBackend::initialize() {
   result &= SimConnect_AddToDataDefinition(hSimConnect, DataStructureIDs::PushbackDataID, "ROTATION ACCELERATION BODY X", "RADIANS PER SECOND SQUARED", SIMCONNECT_DATATYPE_FLOAT64);
   if (result != S_OK) {
     std::cout << "FLYPAD_BACKEND: Data definition failed! " << std::endl;
+    return false;
   }
 
   result &= SimConnect_MapClientEventToSimEvent(hSimConnect, Events::KEY_TUG_HEADING_EVENT, "KEY_TUG_HEADING");
   result &= SimConnect_MapClientEventToSimEvent(hSimConnect, Events::KEY_TUG_SPEED_EVENT, "KEY_TUG_SPEED");
 
   if (result != S_OK) {
-    std::cout << "FLYPAD_BACKEND: Events definition failed! " << std::endl;
+    std::cout << "FLYPAD_BACKEND: MapClient Events definition failed! " << std::endl;
+    return false;
+  }
+
+  result &= SimConnect_SubscribeToSystemEvent(hSimConnect, Events::PAUSED, "PAUSED");
+  result &= SimConnect_SubscribeToSystemEvent(hSimConnect, Events::UNPAUSED, "UNPAUSED");
+  result &= SimConnect_SubscribeToSystemEvent(hSimConnect, Events::SIM, "SIM");
+  result &= SimConnect_SubscribeToSystemEvent(hSimConnect, Events::SIMSTOP, "SIMSTOP");
+
+  if (result != S_OK) {
+    std::cout << "FLYPAD_BACKEND: Subscription to Events definition failed! " << std::endl;
+    return false;
   }
 
   // Do not call SimConnect_CreateClientData since Altitude does it already
@@ -81,6 +93,7 @@ bool FlyPadBackend::initialize() {
 
   if (result != S_OK) {
     std::cout << "FLYPAD_BACKEND: IVAO definition failed! " << std::endl;
+    return false;
   }
 
   result &= SimConnect_MapClientDataNameToID(hSimConnect, "vPILOT FBW", ClientData::VPILOT);
@@ -90,6 +103,7 @@ bool FlyPadBackend::initialize() {
 
   if (result != S_OK) {
     std::cout << "FLYPAD_BACKEND: vPilot definition failed! " << std::endl;
+    return false;
   }
 
   if(result == S_OK) {
@@ -142,8 +156,6 @@ bool FlyPadBackend::onUpdate(double deltaTime) {
 
 bool FlyPadBackend::shutdown() {
   std::cout << "FLYPAD_BACKEND: Disconnecting ..." << std::endl;
-
-  thirdPartyPtr->notifyATCServicesShutdown();
 
   // shutdown suib modules
   lightPresetPtr->shutdown();
@@ -219,15 +231,37 @@ void FlyPadBackend::simConnectProcessClientData(const SIMCONNECT_RECV_CLIENT_DAT
   }
 }
 
+void FlyPadBackend::simConnectProcessRecvEvent(const SIMCONNECT_RECV_EVENT* data) {
+  // process depending on request id from SimConnect_RequestClientData()
+  switch (data->uEventID) {
+    case Events::PAUSED:
+    // Make the third party believe the plane is unloaded
+    // to make it play SELCAL sound if a call is received while paused
+      thirdPartyPtr->notifyATCServicesPause();
+      return;
+
+    case Events::UNPAUSED:
+      thirdPartyPtr->notifyATCServicesStart();
+      return;
+
+    case Events::SIMSTOP:
+      thirdPartyPtr->notifyATCServicesShutdown();
+      return;
+
+    default:
+      cout << "FLYPAD_BACKEND: Unknown Client Request id in simConnectProcessSystemState(): ";
+      cout << data->uEventID << endl;
+      return;
+  }
+}
+
 void FlyPadBackend::simConnectProcessDispatchMessage(SIMCONNECT_RECV* pData, DWORD* cbData) {
   switch (pData->dwID) {
     case SIMCONNECT_RECV_ID_OPEN:
-      thirdPartyPtr->notifyATCServicesShutdown();
       cout << "FLYPAD_BACKEND: SimConnect connection established" << endl;
       break;
 
     case SIMCONNECT_RECV_ID_QUIT:
-      thirdPartyPtr->notifyATCServicesStart();
       cout << "FLYPAD_BACKEND: Received SimConnect connection quit message" << endl;
       break;
 
@@ -237,6 +271,10 @@ void FlyPadBackend::simConnectProcessDispatchMessage(SIMCONNECT_RECV* pData, DWO
 
     case SIMCONNECT_RECV_ID_CLIENT_DATA:
       simConnectProcessClientData(static_cast<SIMCONNECT_RECV_CLIENT_DATA*>(pData));
+      break;
+
+    case SIMCONNECT_RECV_ID_EVENT:
+      simConnectProcessRecvEvent(static_cast<SIMCONNECT_RECV_EVENT*>(pData));
       break;
 
     case SIMCONNECT_RECV_ID_EXCEPTION:
