@@ -48,6 +48,7 @@ class FacComputer final
     real_T pY_n;
     real_T takeoff_config;
     real_T sAlphaFloor;
+    uint32_T m_bpIndex[2];
     uint8_T is_active_c15_FacComputer;
     uint8_T is_c15_FacComputer;
     boolean_T Memory_PreviousInput;
@@ -247,6 +248,10 @@ class FacComputer final
     real_T Saturation_LowerSat_b;
     real_T uDLookupTable_tableData_g[2];
     real_T uDLookupTable_bp01Data_b[2];
+    real_T Gain_Gain_km;
+    real_T uDLookupTable_tableData_l[405];
+    real_T uDLookupTable_bp01Data_j[45];
+    real_T uDLookupTable_bp02Data[9];
     real_T Vmcl_Value;
     real_T Vmcl_Value_a;
     real_T Bias_Bias;
@@ -297,6 +302,7 @@ class FacComputer final
     uint32_T alphamax_maxIndex[2];
     uint32_T alphaprotection_maxIndex[2];
     uint32_T alphastallwarn_maxIndex[2];
+    uint32_T uDLookupTable_maxIndex[2];
     boolean_T Constant_Value_c;
     boolean_T Constant_Value_h;
     boolean_T Constant_Value_b5;
