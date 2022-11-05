@@ -356,6 +356,34 @@ export const Payload = () => {
         setBoardingStarted(false);
     };
 
+    // TODO: Rework A32NX_Boarding to make boardingRateMultiplier obsolete. (msDelay)
+    const calculateBoardingTime = () => {
+        let estimatedTimeSeconds = 0;
+        let estimatedPaxBoardingSeconds = 0;
+        let estimatedCargoLoadingSeconds = 0;
+        const boardingRateMultiplier = 5;
+        const differentialPax = Math.abs(totalPaxDesired - totalPax);
+        const differentialCargo = Math.abs(totalCargoDesired - totalCargo);
+
+        if (boardingRate === 'REAL') {
+            estimatedPaxBoardingSeconds += differentialPax * boardingRateMultiplier;
+            estimatedCargoLoadingSeconds += (differentialCargo / 60) * boardingRateMultiplier;
+        } else if (boardingRate === 'FAST') {
+            estimatedPaxBoardingSeconds += differentialPax;
+            estimatedCargoLoadingSeconds += (differentialCargo / 60);
+        }
+
+        if (estimatedPaxBoardingSeconds > estimatedCargoLoadingSeconds) {
+            const differentialLoadingTime = Math.abs(estimatedPaxBoardingSeconds - estimatedCargoLoadingSeconds);
+            estimatedTimeSeconds = estimatedPaxBoardingSeconds + differentialLoadingTime;
+        } else {
+            const differentialLoadingTime = Math.abs(estimatedCargoLoadingSeconds - estimatedPaxBoardingSeconds);
+            estimatedTimeSeconds = estimatedCargoLoadingSeconds + differentialLoadingTime;
+        }
+
+        return ` ${Math.round(estimatedTimeSeconds / 60)}`;
+    };
+
     const boardingStatusClass = useMemo(() => {
         if (!boardingStarted) {
             return 'text-theme-highlight';
@@ -749,6 +777,8 @@ export const Payload = () => {
                                             <div className="absolute top-2 right-3 text-lg text-gray-400">{usingMetric ? 'KG' : 'LB'}</div>
                                         </div>
                                     </TooltipWrapper>
+
+                                    <div className="flex relative flex-row items-center ml-4 text-sm font-light">{`Estimated duration: ${calculateBoardingTime()} minutes`}</div>
 
                                     <TooltipWrapper text={t('Ground.Payload.TT.StartBoarding')}>
                                         <button
