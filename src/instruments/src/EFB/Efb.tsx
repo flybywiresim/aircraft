@@ -3,7 +3,7 @@
 
 import React, { useEffect, useState } from 'react';
 
-import { Redirect, Route, Switch } from 'react-router-dom';
+import { Redirect, Route, Switch, useHistory } from 'react-router-dom';
 import { useSimVar } from '@instruments/common/simVars';
 import { useInteractionEvent } from '@instruments/common/hooks';
 import { Battery } from 'react-bootstrap-icons';
@@ -99,7 +99,7 @@ const Efb = () => {
     const [batteryLevel, setBatteryLevel] = useState<BatteryStatus>({ level: 100, lastChangeTimestamp: absoluteTime, isCharging: dc2BusIsPowered });
 
     const [ac1BusIsPowered] = useSimVar('L:A32NX_ELEC_AC_1_BUS_IS_POWERED', 'number', 1000);
-    const [, setLoadLightingPresetVar] = useSimVar('L:A32NX_LOAD_LIGHTING_PRESET', 'number', 200);
+    const [, setLoadLightingPresetVar] = useSimVar('L:A32NX_LIGHTING_PRESET_LOAD', 'number', 200);
     const [timeOfDay] = useSimVar('E:TIME OF DAY', 'number', 5000);
     const [autoLoadLightingPresetEnabled] = usePersistentNumberProperty('LIGHT_PRESET_AUTOLOAD', 0);
     const [autoLoadDayLightingPresetID] = usePersistentNumberProperty('LIGHT_PRESET_AUTOLOAD_DAY', 0);
@@ -114,6 +114,8 @@ const Efb = () => {
     const [theme] = usePersistentProperty('EFB_UI_THEME', 'blue');
 
     const { showModal } = useModals();
+
+    const history = useHistory();
 
     useEffect(() => {
         document.documentElement.classList.add(`theme-${theme}`, 'animationsEnabled');
@@ -255,6 +257,7 @@ const Efb = () => {
         if (powerState === PowerStates.SHUTOFF) {
             offToLoaded();
         } else {
+            history.push('/');
             setPowerState(PowerStates.SHUTOFF);
         }
     });

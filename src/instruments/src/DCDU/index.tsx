@@ -47,6 +47,8 @@ export class DcduMessageBlock {
     public automaticCloseTimeout: number = -1;
 
     public semanticResponseIncomplete: boolean = false;
+
+    public reachedEndOfMessage: boolean = false;
 }
 
 const sortedMessageArray = (messages: Map<number, DcduMessageBlock>): DcduMessageBlock[] => {
@@ -74,6 +76,21 @@ const DCDU: React.FC = () => {
     const updateSystemStatusMessage = (status: DcduStatusMessage) => {
         setSystemStatusMessage(status);
         setSystemStatusTimer(5000);
+    };
+
+    const reachedEndOfMessage = (uid: number, reachedEnd: boolean) => {
+        if (!messagesRef.current) {
+            return;
+        }
+
+        const updateMap = new Map<number, DcduMessageBlock>(messagesRef.current);
+
+        const entry = updateMap.get(uid);
+        if (entry !== undefined) {
+            entry.reachedEndOfMessage = reachedEnd;
+        }
+
+        setMessages(updateMap);
     };
 
     const setMessageStatus = (uid: number, response: number) => {
@@ -417,6 +434,7 @@ const DCDU: React.FC = () => {
 
     // prepare the data
     let messageIndex = -1;
+    let messageReadComplete: boolean = true;
     let visibleMessagesSemanticResponseIncomplete: boolean = false;
     let visibleMessages: CpdlcMessage[] | undefined = undefined;
     let visibleMessageStatus: DcduStatusMessage = DcduStatusMessage.NoMessage;
@@ -428,6 +446,7 @@ const DCDU: React.FC = () => {
         if (messageIndex !== -1) {
             response = arrMessages[messageIndex].response;
             visibleMessages = arrMessages[messageIndex].messages;
+            messageReadComplete = arrMessages[messageIndex].reachedEndOfMessage;
             visibleMessageStatus = arrMessages[messageIndex].statusMessage;
             visibleMessagesSemanticResponseIncomplete = arrMessages[messageIndex].semanticResponseIncomplete;
         }
@@ -492,6 +511,7 @@ const DCDU: React.FC = () => {
                             <DatalinkMessage
                                 messages={visibleMessages}
                                 updateSystemStatusMessage={updateSystemStatusMessage}
+                                reachedEndOfMessage={reachedEndOfMessage}
                             />
                         </>
                     ))}
@@ -499,6 +519,7 @@ const DCDU: React.FC = () => {
                     && visibleMessages[0].Content[0].ExpectedResponse === CpdlcMessageExpectedResponseType.WilcoUnable && (
                         <WilcoUnableButtons
                             message={visibleMessages[0]}
+                            reachedEndOfMessage={messageReadComplete}
                             selectedResponse={response}
                             setMessageStatus={setMessageStatus}
                             sendResponse={sendResponse}
@@ -511,6 +532,7 @@ const DCDU: React.FC = () => {
                     && visibleMessages[0].Content[0].ExpectedResponse === CpdlcMessageExpectedResponseType.AffirmNegative && (
                         <AffirmNegativeButtons
                             message={visibleMessages[0]}
+                            reachedEndOfMessage={messageReadComplete}
                             selectedResponse={response}
                             setMessageStatus={setMessageStatus}
                             sendResponse={sendResponse}
@@ -523,6 +545,7 @@ const DCDU: React.FC = () => {
                     && visibleMessages[0].Content[0].ExpectedResponse === CpdlcMessageExpectedResponseType.Roger && (
                         <RogerButtons
                             message={visibleMessages[0]}
+                            reachedEndOfMessage={messageReadComplete}
                             selectedResponse={response}
                             setMessageStatus={setMessageStatus}
                             sendResponse={sendResponse}
@@ -535,6 +558,7 @@ const DCDU: React.FC = () => {
                     && visibleMessages[0].Direction === AtsuMessageDirection.Downlink && (
                         <OutputButtons
                             message={visibleMessages[0]}
+                            reachedEndOfMessage={messageReadComplete}
                             sendMessage={sendMessage}
                             deleteMessage={deleteMessage}
                             closeMessage={closeMessage}
@@ -544,6 +568,7 @@ const DCDU: React.FC = () => {
                     && visibleMessages[0].Direction === AtsuMessageDirection.Uplink && (
                         <SemanticResponseButtons
                             message={visibleMessages[0]}
+                            reachedEndOfMessage={messageReadComplete}
                             messageUnderModification={visibleMessageStatus === DcduStatusMessage.McduForModification || visibleMessageStatus === DcduStatusMessage.McduForText}
                             dataIncomplete={visibleMessagesSemanticResponseIncomplete}
                             invertResponse={invertResponse}

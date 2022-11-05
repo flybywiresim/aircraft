@@ -436,7 +436,7 @@ export class Atc {
                 // logon accepted by ATC
                 if (response.Content[0]?.TypeId === 'UM9997') {
                     response.DcduRelevantMessage = false;
-                    this.dcduLink.setAtcLogonMessage(`CURRENT ATC UNIT @${this.nextAtc}@`);
+                    this.dcduLink.setAtcLogonMessage(`CURRENT ATC UNIT @${this.nextAtc}@ CTL`);
                     this.currentFansMode = FutureAirNavigationSystem.currentFansMode(this.nextAtc);
                     InputValidation.FANS = this.currentFansMode;
                     this.currentAtc = this.nextAtc;

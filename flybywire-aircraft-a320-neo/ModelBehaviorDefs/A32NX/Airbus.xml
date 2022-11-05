@@ -629,7 +629,6 @@
         </UseTemplate>
     </Template>
 
-
     <Template Name="FBW_AIRBUS_WeatherRadar_Mode_Template">
         <DefaultTemplateParameters>
             <NODE_ID>AIRBUS_Knob_WeatherRader_Mode</NODE_ID>

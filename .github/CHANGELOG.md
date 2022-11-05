@@ -69,13 +69,27 @@
 1. [PFD] Added option to sync FD/LS buttons between CPT and FO - @Eagle941 (Joe)
 1. [EFB] Add automatic loading of a lighting preset - @SpiritZephyr (Ben)
 1. [COND] Connect Air Conditioning System to Electrical System - @mjuhe (Miquel Juhe)
+1. [HYD] Default discrete of failed ADIRs impacts gear safety valve correctly - @Crocket63 (crocket)
 1. [ADDON] Simbridge Integration - @lucky38i (Alex)
 1. [SD] Visual and functional improvements/fixes to the HYD SD page - @lukecologne (luke)
 1. [HYD] Added optional auxiliary hydraulic section in core hydraulic circuits - @Crocket63
 1. [EFB] Added SimBridge Health Check icon to Status Bar - @frankkopp (Frank Kopp)
+1. [HYD] Fixed opened gear door wobbling - @Crocket63
 1. [HYD] Fix gear extending whith dual lgciu power loss - @Crocket63 (crocket)
 1. [EFB] flyPad pushback option to ignore controller inputs - @frankkopp (Frank Kopp)
-1. [FMGC] SELCAL support (vPilot and Altitude IVAO) and volume control via vPilot/ACPs - Julian Sebline (Julian Sebline#8476 on Discord)
+1. [FCTL] Add realistically simulated F/CTL computers: ELAC/SEC/FCDC/FAC - @lukecologne (luke)
+1. [HYD] Accelerations impacts hydraulic reservoir fluid movement - @Crocket63 (crocket)
+1. [FLIGHTMODEL] Add SU10 crosswind parameters - @donstim (donbikes#4084)
+1. [MODEL] Visible pilot avatars via flyPad setting - @frankkopp (Frank Kopp)
+1. [MODEL] Fixed screens flickering in SU10 - @tyler58546 (tyler58546)
+1. [EFB] Added Local Files support - @ErickSharp (Erick Torres) @frankkopp (Frank Kopp)
+1. [BLEED] Added custom Wing Anti-Ice model - @omrygin, @Eagle941 (Joe)
+1. [MISC] Fix FDR data for support analysis - @frankkopp (Frank Kopp)
+1. [LIGHTS] Increased max brightness of cockpit displays - @frankkopp (Frank Kopp)
+1. [EFB] Improved Aircraft Presets procedures - @frankkopp (Frank Kopp)
+1. [FMGC] Make DES SPD LIM available prior to descent - @tracernz (Mike)
+1. [LIGHTS] Redone cockpit emissives panels and ambient lighting -@FinalLightNL (FinalLight)
+1. [MISC] SELCAL support - Julian Sebline (Julian #8476 on Discord)
 
 ## 0.8.0
 
@@ -311,8 +325,7 @@
 1. [GPWS] Mute "100 above" callout during autoland - @patmack14 (Patrick Macken)
 1. [MCDU] Refactored mcdu key input events - @derl30n - (Leon)
 1. [AUTOTHRUST] Added configuration option to allow change of key increment size - @aguther (Andreas Guther)
-1. [FLIGHTMODEL] Start fuel transfer for both tanks when EITHER inner tank reaches the trigger level - @donstim (
-   donbikes#4084)
+1. [FLIGHTMODEL] Start fuel transfer for both tanks when EITHER inner tank reaches the trigger level - @donstim ( donbikes#4084)
 1. [FMGC] Add lat/lon waypoint ident option - @tracernz (Mike)
 1. [HYD] PTU model refinement and simulated potential wear state probabilities - @Crocket63
 1. [HYD] Reduced engine driven pumps efficiency in active regulation area - @Crocket63
@@ -320,8 +333,7 @@
 1. [RMP] Fixed colour of SEL indicator - @tracernz (Mike)
 1. [MISC] Added custom Autobrake event for SimConnect - @aguther (Andreas Guther)
 1. [EWD] Fixed failures not re-triggering when resolved - @tricky_dicky (Richard Pilbery)
-1. [SOUND] Prevent autopilot disconnect from sounding on C+D spawn - @tricky_dicky (Richard Pilbery) and @saschl (
-   saschl#9432)
+1. [SOUND] Prevent autopilot disconnect from sounding on C+D spawn - @tricky_dicky (Richard Pilbery) and @saschl (saschl#9432)
 1. [FMGC] Removed flight phase transition from TAKEOFF to PREFLIGHT - @beheh (Benedict Etzel)
 1. [FMGC] Added flight phase transition to DONE when on ground > 30 s and engines off - @aguther (Andreas Guther)
 1. [ATSU] Add FANS-C simulation for CPDLC - @Sven [de en] - (Sven Czarnian)
@@ -1112,3 +1124,4 @@
 1. [DCDU] Fixed MSG- and MSG+ button labels - @tyler58546 (tyler58546)
 1. [ISIS] Fixed issue where ISIS was allowing a bug to be set while in the OFF state - Patrick Macken (@Pat M on
    Discord)
+   

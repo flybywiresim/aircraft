@@ -618,7 +618,7 @@
                     <PART_ID>SCREEN_PFD1</PART_ID>
                     <CAMERA_TITLE>PFD</CAMERA_TITLE>
                     <!-- Effects such as pixels and glass reflections require the screen brightness to be increased -->
-                    <EMISSIVE_CODE>6</EMISSIVE_CODE>
+                    <EMISSIVE_CODE>12</EMISSIVE_CODE>
                 </UseTemplate>
 
                 <!-- CPT EFIS GPWS G/S -->
@@ -729,7 +729,7 @@
                     <PART_ID>SCREEN_MFD1</PART_ID>
                     <CAMERA_TITLE>MFD</CAMERA_TITLE>
                     <!-- Effects such as pixels and glass reflections require the screen brightness to be increased -->
-                    <EMISSIVE_CODE>6</EMISSIVE_CODE>
+                    <EMISSIVE_CODE>12</EMISSIVE_CODE>
                 </UseTemplate>
 
                 <!-- DCDU -->
@@ -738,7 +738,7 @@
                     <!-- Effects such as pixels and glass reflections require the screen brightness to be increased -->
                     <EMISSIVE_CODE>
                         (L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool) if{
-                            6 (L:#PLANE_NAME#_PANEL_DCDU_L_BRIGHTNESS, percent over 100) *
+                            12 (L:#PLANE_NAME#_PANEL_DCDU_L_BRIGHTNESS, percent over 100) *
                         } els{
                             0
                         }
@@ -777,7 +777,7 @@
                     <POTENTIOMETER>90</POTENTIOMETER>
                     <PART_ID>SCREEN_PFD2</PART_ID>
                     <!-- Effects such as pixels and glass reflections require the screen brightness to be increased -->
-                    <EMISSIVE_CODE>6</EMISSIVE_CODE>
+                    <EMISSIVE_CODE>12</EMISSIVE_CODE>
                 </UseTemplate>
 
                 <!-- F/O ND BRIGHTNESS -->
@@ -795,7 +795,7 @@
                     <POTENTIOMETER>91</POTENTIOMETER>
                     <PART_ID>SCREEN_MFD2</PART_ID>
                     <!-- Effects such as pixels and glass reflections require the screen brightness to be increased -->
-                    <EMISSIVE_CODE>6</EMISSIVE_CODE>
+                    <EMISSIVE_CODE>12</EMISSIVE_CODE>
                 </UseTemplate>
 
                 <!-- F/O ND WX BRIGHTNESS -->
@@ -813,7 +813,7 @@
                     <!-- Effects such as pixels and glass reflections require the screen brightness to be increased -->
                     <EMISSIVE_CODE>
                         (L:A32NX_ELEC_DC_2_BUS_IS_POWERED, Bool) if{
-                            6 (L:#PLANE_NAME#_PANEL_DCDU_R_BRIGHTNESS, percent over 100) *
+                            12 (L:#PLANE_NAME#_PANEL_DCDU_R_BRIGHTNESS, percent over 100) *
                         } els{
                             0
                         }
@@ -939,7 +939,7 @@
                 <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
                     <NODE_ID>DYN_SCREEN</NODE_ID>
                     <!-- Effects such as pixels and glass reflections require the screen brightness to be increased -->
-                    <EMISSIVE_CODE>6</EMISSIVE_CODE>
+                    <EMISSIVE_CODE>10</EMISSIVE_CODE>
                 </UseTemplate>
                 <CameraTitle>PA</CameraTitle>
 
@@ -997,17 +997,6 @@
                 </Component>
             </Component>
 
-            <Component ID="Dummies">
-                <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
-                    <NODE_ID>PUSH_AUTOPILOT_SIDESTICK_L</NODE_ID>
-                    <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
-                </UseTemplate>
-                <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
-                    <NODE_ID>PUSH_AUTOPILOT_SIDESTICK_R</NODE_ID>
-                    <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
-                </UseTemplate>
-            </Component>
-
             <Component ID="EICAS_Screens">
 
                 <!-- UPPER ECAM SCREEN -->
@@ -1024,7 +1013,7 @@
                     <PART_ID>SCREEN_EICAS1</PART_ID>
                     <CAMERA_TITLE>ECAM</CAMERA_TITLE>
                     <!-- Effects such as pixels and glass reflections require the screen brightness to be increased -->
-                    <EMISSIVE_CODE>6</EMISSIVE_CODE>
+                    <EMISSIVE_CODE>12</EMISSIVE_CODE>
                 </UseTemplate>
 
                 <!-- LOWER ECAM SCREEN -->
@@ -1041,7 +1030,7 @@
                     <PART_ID>SCREEN_EICAS2</PART_ID>
                     <CAMERA_TITLE>ECAM</CAMERA_TITLE>
                     <!-- Effects such as pixels and glass reflections require the screen brightness to be increased -->
-                    <EMISSIVE_CODE>6</EMISSIVE_CODE>
+                    <EMISSIVE_CODE>12</EMISSIVE_CODE>
                 </UseTemplate>
             </Component>
 
@@ -2589,27 +2578,35 @@
                     <!-- FLT CTL -->
                     <Component ID="Flight_Controls_Right">
                         <!-- FLT CTL ELAC 2 -->
-                        <UseTemplate Name="FBW_AIRBUS_Push_ELAC_Template">
-                            <ID>2</ID>
+                        <UseTemplate Name="FBW_Anim_Interactions">
+                            <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                            <ANIM_TEMPLATE>FBW_AIRBUS_Push_ELAC_Template</ANIM_TEMPLATE>
                             <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
+                            <ID>2</ID>
                         </UseTemplate>
 
                         <!-- FLT CTL SEC 2 -->
-                        <UseTemplate Name="FBW_AIRBUS_Push_SEC_Template">
-                            <ID>2</ID>
+                        <UseTemplate Name="FBW_Anim_Interactions">
+                            <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                            <ANIM_TEMPLATE>FBW_AIRBUS_Push_SEC_Template</ANIM_TEMPLATE>
                             <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
+                            <ID>2</ID>
                         </UseTemplate>
 
                         <!-- FLT CTL SEC 3 -->
-                        <UseTemplate Name="FBW_AIRBUS_Push_SEC_Template">
-                            <ID>3</ID>
+                        <UseTemplate Name="FBW_Anim_Interactions">
+                            <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                            <ANIM_TEMPLATE>FBW_AIRBUS_Push_SEC_Template</ANIM_TEMPLATE>
                             <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
+                            <ID>3</ID>
                         </UseTemplate>
 
                         <!-- FLT CTL FAC 2 -->
-                        <UseTemplate Name="FBW_AIRBUS_Push_FAC_Template">
-                            <ID>2</ID>
+                        <UseTemplate Name="FBW_Anim_Interactions">
+                            <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                            <ANIM_TEMPLATE>FBW_AIRBUS_Push_FAC_Template</ANIM_TEMPLATE>
                             <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
+                            <ID>2</ID>
                         </UseTemplate>
                     </Component>
 
@@ -3496,6 +3493,18 @@
                 <BUS_BOTTOM>AC_2</BUS_BOTTOM>
             </UseTemplate>
 
+            <!-- SIDESTICK PRIORITY LEFT-->
+            <UseTemplate Name="FBW_Push_Toggle">
+                <NODE_ID>PUSH_AUTOPILOT_SIDESTICK_L</NODE_ID>
+                <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
+                <SEQ1_CODE>(L:A32NX_FCDC_1_PRIORITY_LIGHT_CAPT_GREEN_ON, Bool) (L:A32NX_FCDC_2_PRIORITY_LIGHT_CAPT_GREEN_ON, Bool) or</SEQ1_CODE>
+                <SEQ2_CODE>(L:A32NX_FCDC_1_PRIORITY_LIGHT_CAPT_RED_ON, Bool) (L:A32NX_FCDC_2_PRIORITY_LIGHT_CAPT_RED_ON, Bool) or</SEQ2_CODE>
+                <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                <SEQ1_EMISSIVE_DRIVES_VISIBILITY>True</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
+                <SEQ2_EMISSIVE_DRIVES_VISIBILITY>True</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                <DUMMY_BUTTON/>
+            </UseTemplate>
+
             <!-- AUTO LAND R -->
             <UseTemplate Name="FBW_Anim_Interactions">
                 <ANIM_TYPE>KORRY_HELD</ANIM_TYPE>
@@ -3503,6 +3512,17 @@
                 <SIDE>R</SIDE>
                 <BUS_TOP>AC_2</BUS_TOP>
                 <BUS_BOTTOM>AC_ESS_SHED</BUS_BOTTOM>
+            </UseTemplate>
+
+            <!-- SIDESTICK PRIORITY RIGHT-->
+            <UseTemplate Name="FBW_Push_Toggle">
+                <NODE_ID>PUSH_AUTOPILOT_SIDESTICK_R</NODE_ID>
+                <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
+                <SEQ1_CODE>(L:A32NX_FCDC_1_PRIORITY_LIGHT_FO_GREEN_ON, Bool) (L:A32NX_FCDC_2_PRIORITY_LIGHT_FO_GREEN_ON, Bool) or</SEQ1_CODE>
+                <SEQ2_CODE>(L:A32NX_FCDC_1_PRIORITY_LIGHT_FO_RED_ON, Bool) (L:A32NX_FCDC_2_PRIORITY_LIGHT_FO_RED_ON, Bool) or</SEQ2_CODE>
+                <SEQ1_EMISSIVE_DRIVES_VISIBILITY>True</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
+                <SEQ2_EMISSIVE_DRIVES_VISIBILITY>True</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                <DUMMY_BUTTON/>
             </UseTemplate>
 
             <!-- FCU SPD MACH -->
@@ -4856,12 +4876,6 @@
                 <NODE_ID>PUSH_AUTOPILOT_LL</NODE_ID>
                 <SEQ1_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
             </UseTemplate>-->
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_AUTOPILOT_SIDESTICK_L</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_AUTOPILOT_SIDESTICK_R</NODE_ID>
-            </UseTemplate>
             <!-- ATC MSG F/O -->
             <UseTemplate Name="FBW_Anim_Interactions">
                 <ANIM_TYPE>KORRY_HELD</ANIM_TYPE>
@@ -4991,5 +5005,41 @@
                 <NODE_ID>COCKPIT_COFFEE_R</NODE_ID>
             </UseTemplate>
         </Component>
+
+        <Component ID="Pilot_Avatars">
+            <!-- Pilot -->
+            <Component ID="CAPTAIN_AVATAR" Node="CAPTAIN_AVATAR">
+                <UseTemplate Name="ASOBO_GT_Visibility_Code">
+                    <VISIBILITY_CODE>
+                        (L:A32NX_PILOT_AVATAR_VISIBLE_0) (L:A32NX_PILOT_AVATAR_HIDDEN_0) ! and
+                        (A:CAMERA STATE, Enum) 2 != or
+                    </VISIBILITY_CODE>
+                </UseTemplate>
+            </Component>
+            <Component ID="Seatbelt_L" Node="Seatbelt_L">
+                <UseTemplate Name="ASOBO_GT_Visibility_Code">
+                    <VISIBILITY_CODE>
+                        (L:A32NX_PILOT_AVATAR_VISIBLE_0) ! (L:A32NX_PILOT_AVATAR_HIDDEN_0) or
+                    </VISIBILITY_CODE>
+                </UseTemplate>
+            </Component>
+            <!-- First Officer -->
+            <Component ID="FIRSTOFFICER_AVATAR" Node="FIRSTOFFICER_AVATAR">
+                <UseTemplate Name="ASOBO_GT_Visibility_Code">
+                    <VISIBILITY_CODE>
+                        (L:A32NX_PILOT_AVATAR_VISIBLE_1) (L:A32NX_PILOT_AVATAR_HIDDEN_1) ! and
+                        (A:CAMERA STATE, Enum) 2 != or
+                    </VISIBILITY_CODE>
+                </UseTemplate>
+            </Component>
+            <Component ID="Seatbelt_R" Node="Seatbelt_R">
+                <UseTemplate Name="ASOBO_GT_Visibility_Code">
+                    <VISIBILITY_CODE>
+                        (L:A32NX_PILOT_AVATAR_VISIBLE_1) ! (L:A32NX_PILOT_AVATAR_HIDDEN_1) or
+                    </VISIBILITY_CODE>
+                </UseTemplate>
+            </Component>
+        </Component>
+
     </Behaviors>
 </ModelInfo>

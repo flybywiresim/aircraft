@@ -1,20 +1,23 @@
 import React from 'react';
-import { CloudArrowDown, PinFill, Pin } from 'react-bootstrap-icons';
+import { CloudArrowDown, Pin, PinFill } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
+import { usePersistentProperty } from '@instruments/common/persistence';
 import { t } from '../../../translation';
 import {
-    NavigationTab,
+    addPinnedChart,
+    ChartProvider,
+    editPinnedChart,
     editTabProperty,
+    isChartPinned,
+    NavigationTab,
+    removedPinnedChart,
     setBoundingBox,
     setProvider,
-    ChartProvider,
-    isChartPinned,
-    removedPinnedChart,
-    addPinnedChart,
-    editPinnedChart,
 } from '../../../Store/features/navigationPage';
 import { useAppDispatch, useAppSelector } from '../../../Store/store';
 import { navigationTabs } from '../../Navigation';
+import { Viewer } from '../../../../../../simbridge-client/src';
+import { getImageUrl, getPdfUrl } from './LocalFilesPage';
 
 export type LocalFileChart = {
     fileName: string;
@@ -33,6 +36,8 @@ interface LocalFileChartSelectorProps {
 
 export const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartSelectorProps) => {
     const dispatch = useAppDispatch();
+
+    const [simbridgeEnabled] = usePersistentProperty('CONFIG_SIMBRIDGE_ENABLED', 'AUTO ON');
 
     const { chartId, selectedTabIndex } = useAppSelector((state) => state.navigationTab[NavigationTab.LOCAL_FILES]);
     const { pinnedCharts } = useAppSelector((state) => state.navigationTab);
@@ -59,54 +64,46 @@ export const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartS
         );
     }
 
-    const getChartResourceUrl = async (chart: LocalFileChart) => {
-        const resp = await fetch(chart.type === 'PDF'
-            ? `http://localhost:8380/api/v1/utility/pdf?filename=${chart.fileName}&pagenumber=1`
-            : `http://localhost:8380/api/v1/utility/image?filename=${chart.fileName}`);
-
-        if (!resp.ok) {
+    const getChartResourceUrl = async (chart: LocalFileChart): Promise<string> => {
+        try {
+            if (chart.type === 'PDF') {
+                return await getPdfUrl(chart.fileName, 1);
+            }
+            return await getImageUrl(chart.fileName);
+        } catch (err) {
             return Promise.reject();
         }
-
-        const blob = await resp.blob();
-        return URL.createObjectURL(blob);
     };
 
     const getPagesViewable = async (chart: LocalFileChart): Promise<number> => {
-        if (chart.type === 'PDF') {
-            const pageNumResp = await fetch(`http://localhost:8380/api/v1/utility/pdf/numpages?filename=${chart.fileName}`);
-            return pageNumResp.json();
+        if (simbridgeEnabled !== 'AUTO ON') {
+            return Promise.reject();
         }
-
-        return 1;
+        if (chart.type === 'PDF') {
+            try {
+                return await Viewer.getPDFPageNum(chart.fileName);
+            } catch (err) {
+                return Promise.reject();
+            }
+        }
+        return 1; // return 1 if called on a non-pdf file
     };
 
     const handleChartClick = async (chart: LocalFileChart) => {
         const oldChartId = chartId;
         dispatch(editTabProperty({ tab: NavigationTab.LOCAL_FILES, chartId: chart.fileName }));
-
         try {
-            const pagesViewable = await getPagesViewable(chart);
-            dispatch(editTabProperty({ tab: NavigationTab.LOCAL_FILES, pagesViewable }));
-
             const url = await getChartResourceUrl(chart);
-
             dispatch(editTabProperty({ tab: NavigationTab.LOCAL_FILES, chartDimensions: { width: undefined, height: undefined } }));
             dispatch(editTabProperty({ tab: NavigationTab.LOCAL_FILES, chartName: { light: url, dark: url } }));
             dispatch(setBoundingBox(undefined));
+            const pagesViewable = await getPagesViewable(chart);
+            dispatch(editTabProperty({ tab: NavigationTab.LOCAL_FILES, pagesViewable }));
         } catch (_) {
-            if (chart.type === 'PDF') {
-                toast.error('Failed to retrieve requested PDF Document.');
-            } else {
-                toast.error('Failed to retrieve requested image.');
-            }
-
             dispatch(editTabProperty({ tab: NavigationTab.LOCAL_FILES, chartId: oldChartId }));
-
             return;
         }
         dispatch(setProvider(ChartProvider.LOCAL_FILES));
-
         dispatch(editTabProperty({ tab: NavigationTab.LOCAL_FILES, currentPage: 1 }));
     };
 
