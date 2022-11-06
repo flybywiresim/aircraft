@@ -3,7 +3,7 @@ import { Consumer } from '../data/Consumer';
 import { EventBus, Publisher } from '../data/EventBus';
 import { GeoPoint, GeoPointInterface, GeoPointReadOnly } from '../geo/GeoPoint';
 import { GeoPointSubject } from '../geo/GeoPointSubject';
-import { AdcEvents } from '../instruments/Adc';
+import { AdcEvents } from '../instruments/ADC';
 import { ClockEvents } from '../instruments/Clock';
 import { GNSSEvents } from '../instruments/GNSS';
 import { TrafficContact, TrafficEvents, TrafficInstrument } from '../instruments/Traffic';

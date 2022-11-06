@@ -1,6 +1,6 @@
 import { MathUtils } from '../math/MathUtils';
 import { NumberUnitInterface, UnitFamily, UnitType } from '../math/NumberUnit';
-import { TcasAdvisoryParameters, TcasSensitivity, TcasSensitivityParameters, TcasTcaParameters } from './Tcas';
+import { TcasAdvisoryParameters, TcasSensitivity, TcasSensitivityParameters, TcasTcaParameters } from './TCAS';
 
 /**
  * Standard TCAS-II sensitivity parameters.

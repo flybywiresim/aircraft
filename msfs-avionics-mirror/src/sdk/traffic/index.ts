@@ -1,3 +1,3 @@
 export * from './Adsb';
-export * from './Tcas';
+export * from './TCAS';
 export * from './TcasIISensitivity';

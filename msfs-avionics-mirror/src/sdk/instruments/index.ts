@@ -1,4 +1,4 @@
-export * from './Adc';
+export * from './ADC';
 export * from './Ahrs';
 export * from './BasePublishers';
 export * from './Backplane';

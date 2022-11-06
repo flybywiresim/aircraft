@@ -1,5 +1,5 @@
 import { EventSubscriber } from '../../../data/EventSubscriber';
-import { AdcEvents } from '../../../instruments/Adc';
+import { AdcEvents } from '../../../instruments/ADC';
 import { AhrsEvents } from '../../../instruments/Ahrs';
 import { GNSSEvents } from '../../../instruments/GNSS';
 import { UnitType } from '../../../math/NumberUnit';
