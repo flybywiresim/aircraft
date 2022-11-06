@@ -1,8 +1,9 @@
 /* eslint-disable no-inner-declarations */
-import { ComputedSubject } from '../utils/ComputedSubject';
-import { MappedSubject, Subject } from '../utils/Subject';
-import { Subscribable } from '../utils/Subscribable';
-import { JSXDefinitions } from './JSXDefinitions';
+import { ObjectSubject } from '../sub/ObjectSubject';
+import { Subject } from '../sub/Subject';
+import { Subscribable } from '../sub/Subscribable';
+import { MutableSubscribableSet, SubscribableSet, SubscribableSetEventType } from '../sub/SubscribableSet';
+import { Subscription } from '../sub/Subscription';
 
 /**
  * An interface that describes a virtual DOM node.
@@ -26,10 +27,10 @@ export interface VNode {
 }
 
 /** A union of possible types of a VNode instance. */
-export type NodeInstance = HTMLElement | SVGElement | DisplayComponent<any> | string | number | null;
+export type NodeInstance = HTMLElement | SVGElement | DisplayComponent<any> | string | number | null | Subscribable<any>;
 
 /** A union of possible child element types. */
-type DisplayChildren = VNode | string | number | (VNode | string | number)[] | null;
+type DisplayChildren = VNode | string | number | Subscribable<any> | (VNode | string | number | Subscribable<any>)[] | null;
 
 /** A releative render position. */
 export enum RenderPosition {
@@ -172,7 +173,7 @@ export class NodeReference<T extends (DisplayComponent<any> | HTMLElement | SVGE
 /**
  * Provides a context of data that can be passed down to child components via a provider.
  */
-class Context<T> {
+export class Context<T> {
   /**
    * The provider component that can be set to a specific context value.
    * @param props The props of the provider component.
@@ -226,8 +227,19 @@ export namespace FSComponent {
   /**
    * Definitions for JSX transpilation.
    */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  export import JSX = JSXDefinitions;
+  // eslint-disable-next-line @typescript-eslint/no-namespace, @typescript-eslint/no-unused-vars
+  export namespace JSX {
+    /**
+     * The intrinsic DOM elements that can be defined.
+     */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    export interface IntrinsicElements {
+      [elemName: string]: any;
+
+      /** A reference to the HTML element node. */
+      ref?: NodeReference<any>;
+    }
+  }
 
   /**
    * Valid SVG element tags.
@@ -298,11 +310,27 @@ export namespace FSComponent {
             props.ref.instance = element;
           } else {
             const prop = (props as any)[key];
-            if (prop instanceof Subject || prop instanceof MappedSubject || prop instanceof ComputedSubject) {
-              element.setAttribute(key, prop.get());
-              prop.sub((v) => {
-                element.setAttribute(key, v);
-              });
+            if (key === 'class' && typeof prop === 'object' && 'isSubscribableSet' in prop) {
+              // Bind CSS classes to a subscribable set
+              prop.sub((set: any, eventType: SubscribableSetEventType, modifiedKey: any) => {
+                if (eventType === SubscribableSetEventType.Added) {
+                  element.classList.add(modifiedKey);
+                } else {
+                  element.classList.remove(modifiedKey);
+                }
+              }, true);
+            } else if (typeof prop === 'object' && 'isSubscribable' in prop) {
+              if (key === 'style' && prop instanceof ObjectSubject) {
+                // Bind CSS styles to an object subject.
+                prop.sub((v: any, style: string | number | symbol, newValue: any) => {
+                  element.style.setProperty(style.toString(), newValue);
+                }, true);
+              } else {
+                // Bind an attribute to a subscribable.
+                prop.sub((v: any) => {
+                  element.setAttribute(key, v);
+                }, true);
+              }
             } else {
               element.setAttribute(key, prop);
             }
@@ -330,7 +358,7 @@ export namespace FSComponent {
         let childNodes = (type as FragmentFactory)(props as any) as VNode[] | null;
 
         //Handle the case where the single fragment children is an array of nodes passsed down from above
-        if (childNodes !== null && childNodes.length > 0 && Array.isArray(childNodes[0])) {
+        while (childNodes !== null && childNodes.length > 0 && Array.isArray(childNodes[0])) {
           childNodes = childNodes[0];
         }
 
@@ -341,10 +369,22 @@ export namespace FSComponent {
         };
       } else {
         let instance: DisplayComponent<P>;
+        const pluginSystem = ((window as any)._pluginSystem) as PluginSystem<any, any> | undefined;
+
         try {
           instance = (type as any)(props as any);
         } catch {
-          instance = new (type as DisplayComponentFactory<P>)(props as any);
+          let pluginInstance: DisplayComponent<P> | undefined = undefined;
+          if (pluginSystem !== undefined) {
+            pluginInstance = pluginSystem.onComponentCreating(type as DisplayComponentFactory<P>, props);
+          }
+
+          if (pluginInstance !== undefined) {
+            instance = pluginInstance;
+          } else {
+            instance = new (type as DisplayComponentFactory<P>)(props as any);
+          }
+
         }
 
         if (props !== null && props.ref !== null && props.ref !== undefined) {
@@ -353,6 +393,10 @@ export namespace FSComponent {
 
         if (instance.contextType !== undefined) {
           instance.context = (instance.contextType as readonly any[]).map(c => Subject.create<any>(c.defaultValue)) as any;
+        }
+
+        if (pluginSystem !== undefined) {
+          pluginSystem.onComponentCreated(instance);
         }
 
         vnode = {
@@ -379,34 +423,37 @@ export namespace FSComponent {
 
       for (const child of children) {
         if (child !== null) {
-          if (child instanceof Subject || child instanceof MappedSubject || child instanceof ComputedSubject) {
-            const subjectValue = child.get().toString();
-            const node: VNode = {
-              instance: subjectValue === '' ? ' ' : subjectValue,
-              children: null,
-              props: null,
-              root: undefined,
-            };
-            child.sub((v) => {
-              if (node.root !== undefined) {
-                // TODO workaround. gotta find a solution for the text node vanishing when text is empty
-                node.root.nodeValue = v === '' ? ' ' : v.toString();
-              } else {
-                // for debugging
-                // console.warn('Subject has no node!');
-              }
-            });
-            vnodes.push(node);
-          } else if (child instanceof Array) {
+          if (child instanceof Array) {
             const arrayNodes = createChildNodes(parent, child);
 
             if (arrayNodes !== null) {
               vnodes.push(...arrayNodes);
             }
+          } else if (typeof child === 'object') {
+            if ('isSubscribable' in child) {
+              const node: VNode = {
+                instance: child,
+                children: null,
+                props: null,
+                root: undefined,
+              };
+              child.sub((v) => {
+                if (node.root !== undefined) {
+                  // TODO workaround. gotta find a solution for the text node vanishing when text is empty
+                  node.root.nodeValue = (v === '' || v === null || v === undefined)
+                    ? ' '
+                    : v.toString();
+                } else {
+                  // for debugging
+                  // console.warn('Subject has no node!');
+                }
+              });
+              vnodes.push(node);
+            } else {
+              vnodes.push(child);
+            }
           } else if (typeof child === 'string' || typeof child === 'number') {
             vnodes.push(createStaticContentNode(child));
-          } else if (typeof child === 'object') {
-            vnodes.push(child);
           }
         }
       }
@@ -445,14 +492,29 @@ export namespace FSComponent {
       if (node.instance instanceof HTMLElement || node.instance instanceof SVGElement) {
         insertNode(node, position, element);
       } else {
-        for (const child of node.children) {
-          insertNode(child, position, element);
+        if (position === RenderPosition.After) {
+          for (let i = node.children.length - 1; i >= 0; i--) {
+            if (node.children[i] === undefined || node.children[i] === null) {
+              continue;
+            }
+            insertNode(node.children[i], position, element);
+          }
+        } else {
+          for (let i = 0; i < node.children.length; i++) {
+            if (node.children[i] === undefined || node.children[i] === null) {
+              continue;
+            }
+            insertNode(node.children[i], position, element);
+          }
         }
       }
 
       const instance = node.instance;
       if (instance instanceof ContextProvider) {
         visitNodes(node, (n: VNode): boolean => {
+          if (n === undefined || n === null) {
+            return false;
+          }
           const nodeInstance = n.instance as DisplayComponent<any> | null;
 
           if (nodeInstance !== null && nodeInstance.contextType !== undefined) {
@@ -476,7 +538,12 @@ export namespace FSComponent {
       }
 
       if (componentInstance !== null && componentInstance.onAfterRender !== undefined) {
+        const pluginSystem = ((window as any)._pluginSystem) as PluginSystem<any, any> | undefined;
         componentInstance.onAfterRender(node);
+
+        if (pluginSystem !== undefined) {
+          pluginSystem.onComponentRendered(node);
+        }
       }
     }
   }
@@ -508,27 +575,52 @@ export namespace FSComponent {
           insertNode(child, RenderPosition.In, node.instance);
         }
       }
-    } else if (typeof node.instance === 'string') {
+    } else if (
+      typeof node.instance === 'string'
+      || (
+        typeof node.instance === 'object'
+        && node.instance !== null &&
+        'isSubscribable' in node.instance
+      )
+    ) {
+      let toRender: string;
+
+      if (typeof node.instance === 'string') {
+        toRender = node.instance;
+      } else {
+        toRender = node.instance.get();
+
+        if (toRender === '') {
+          toRender = ' '; // prevent disappearing text node
+        }
+      }
+
       switch (position) {
         case RenderPosition.In:
-          element.insertAdjacentHTML('beforeend', node.instance);
+          element.insertAdjacentHTML('beforeend', toRender);
           node.root = element.lastChild ?? undefined;
           break;
         case RenderPosition.Before:
-          element.insertAdjacentHTML('beforebegin', node.instance);
+          element.insertAdjacentHTML('beforebegin', toRender);
           node.root = element.previousSibling ?? undefined;
           break;
         case RenderPosition.After:
-          element.insertAdjacentHTML('afterend', node.instance);
+          element.insertAdjacentHTML('afterend', toRender);
           node.root = element.nextSibling ?? undefined;
           break;
       }
     } else if (Array.isArray(node)) {
-      for (let i = 0; i < node.length; i++) {
-        render(node[i], element);
+      if (position === RenderPosition.After) {
+        for (let i = node.length - 1; i >= 0; i--) {
+          render(node[i], element, position);
+        }
+      } else {
+        for (let i = 0; i < node.length; i++) {
+          render(node[i], element, position);
+        }
       }
     } else {
-      render(node, element);
+      render(node, element, position);
     }
   }
 
@@ -567,7 +659,7 @@ export namespace FSComponent {
    * Creates a component or element node reference.
    * @returns A new component or element node reference.
    */
-  export function createRef<T extends (DisplayComponent<any> | HTMLElement | SVGElement)>(): NodeReference<T> {
+  export function createRef<T extends (DisplayComponent<any, any> | HTMLElement | SVGElement)>(): NodeReference<T> {
     return new NodeReference<T>();
   }
 
@@ -589,7 +681,7 @@ export namespace FSComponent {
    */
   export function visitNodes(node: VNode, visitor: (node: VNode) => boolean): boolean {
     const stopVisitation = visitor(node);
-    if (!stopVisitation && node.children !== null) {
+    if (node !== undefined && node !== null && !stopVisitation && node.children !== undefined && node.children !== null) {
       for (let i = 0; i < node.children.length; i++) {
         visitNodes(node.children[i], visitor);
       }
@@ -599,9 +691,294 @@ export namespace FSComponent {
   }
 
   /**
+   * Parses a space-delimited CSS class string into an array of CSS classes.
+   * @param classString A space-delimited CSS class string.
+   * @returns An array of CSS classes derived from the specified CSS class string.
+   */
+  export function parseCssClassesFromString(classString: string): string[] {
+    return classString.split(' ').filter(str => str !== '');
+  }
+
+  /**
+   * Binds a {@link MutableSubscribableSet} to a subscribable set of CSS classes. CSS classes added to and removed from
+   * the subscribed set will also be added to and removed from the bound set, with the exception of a set of reserved
+   * classes. The presence or absence of any of the reserved classes in the bound set is not affected by the subscribed
+   * set; these reserved classes may be freely added to and removed from the bound set.
+   * @param setToBind The set to bind.
+   * @param classesToSubscribe A set of CSS classes to which to subscribe.
+   * @param reservedClasses An iterable of reserved classes.
+   * @returns The newly created subscription to the subscribed CSS class set.
+   */
+  export function bindCssClassSet(
+    setToBind: MutableSubscribableSet<string>,
+    classesToSubscribe: SubscribableSet<string>,
+    reservedClasses: Iterable<string>
+  ): Subscription {
+    const reservedClassSet = new Set(reservedClasses);
+
+    if (reservedClassSet.size === 0) {
+      return classesToSubscribe.sub((set, type, key) => {
+        if (type === SubscribableSetEventType.Added) {
+          setToBind.add(key);
+        } else {
+          setToBind.delete(key);
+        }
+      }, true);
+    } else {
+      return classesToSubscribe.sub((set, type, key) => {
+        if (reservedClassSet.has(key)) {
+          return;
+        }
+
+        if (type === SubscribableSetEventType.Added) {
+          setToBind.add(key);
+        } else {
+          setToBind.delete(key);
+        }
+      }, true);
+    }
+  }
+
+  /**
    * An empty callback handler.
    */
   export const EmptyHandler = (): void => { return; };
+}
+
+/**
+ * A system that handles the registration and boostrapping of plugin scripts.
+ */
+export class PluginSystem<T extends AvionicsPlugin<B>, B> {
+  private readonly scripts: string[] = [];
+  private readonly plugins: T[] = [];
+
+  /** The avionics specific plugin binder to inject into each plugin. */
+  public binder?: B;
+
+  /** An event subscribable that publishes when a new component is about to be created. */
+  public readonly creatingHandlers: ((constructor: DisplayComponentFactory<any>, props: any) => DisplayComponent<any> | undefined)[] = [];
+
+  /** An event subscribable that publishes when a new component is created. */
+  public readonly createdHandlers: ((component: DisplayComponent<any>) => void)[] = [];
+
+  /** An event subscribable that publishes when a component has finished rendering. */
+  public readonly renderedHandlers: ((node: VNode) => void)[] = [];
+
+  /**
+   * Adds plugin scripts to load to the system.
+   * @param document The panel.xml document to load scripts from.
+   * @param instrumentId The ID of the instrument.
+   */
+  public addScripts(document: XMLDocument, instrumentId: string): void {
+    let pluginTags: HTMLCollectionOf<Element> | undefined = undefined;
+
+    const instrumentConfigs = document.getElementsByTagName('Instrument');
+    for (let i = 0; i < instrumentConfigs.length; i++) {
+      const el = instrumentConfigs.item(i);
+
+      if (el !== null) {
+        const nameEl = el.getElementsByTagName('Name');
+        if (nameEl.length > 0 && nameEl[0].textContent === instrumentId) {
+          pluginTags = el.getElementsByTagName('Plugin');
+        }
+      }
+    }
+
+    if (pluginTags !== undefined) {
+      for (let i = 0; i < pluginTags.length; i++) {
+        const scriptUri = pluginTags[i].textContent;
+        if (scriptUri !== null) {
+          this.scripts.push(scriptUri);
+        }
+      }
+    }
+  }
+
+  /**
+   * Starts the plugin system with the included avionics specific plugin binder.
+   * @param binder The plugin binder to pass to the individual plugins.
+   */
+  public async startSystem(binder: B): Promise<void> {
+    (window as any)._pluginSystem = this;
+    this.binder = binder;
+
+    const loadPromises: Promise<void>[] = [];
+
+    for (const script of this.scripts) {
+      const scriptTag = document.createElement('script');
+      scriptTag.src = script;
+      scriptTag.async = false;
+
+      document.head.append(scriptTag);
+      loadPromises.push(new Promise<void>((resolve, reject) => {
+        scriptTag.onload = (): void => resolve();
+        scriptTag.onerror = (ev): void => reject(ev);
+      }).catch(e => console.error(e)));
+    }
+
+    await Promise.all(loadPromises).then(() => {
+      for (const plugin of this.plugins) {
+        plugin.onInstalled();
+      }
+    });
+  }
+
+  /**
+   * Adds a plugin to the plugin system.
+   * @param plugin The plugin to add.
+   */
+  public addPlugin(plugin: T): void {
+    this.plugins.push(plugin);
+  }
+
+  /**
+   * Runs the provided function on all of the registered plugins.
+   * @param fun The function to run.
+   */
+  public callPlugins(fun: (plugin: T) => void): void {
+    for (const plugin of this.plugins) {
+      fun(plugin);
+    }
+  }
+
+  /**
+   * Subscribes a handler to the component creating hook.
+   * @param handler The handler to subscribe.
+   */
+  public subscribeOnComponentCreating(handler: (constructor: DisplayComponentFactory<any>, props: any) => DisplayComponent<any> | undefined): void {
+    this.creatingHandlers.push(handler);
+  }
+
+  /**
+   * A hook that allows plugins to replace components that are about to be created with their own implementations.
+   * @param constructor The display component constructor that is going to be used.
+   * @param props The component props that will be passed into the component.
+   * @returns Returns either the display component that will replace, or undefined if the component should not be replaced.
+   */
+  public onComponentCreating(constructor: DisplayComponentFactory<any>, props: any): DisplayComponent<any> | undefined {
+    let component: DisplayComponent<any> | undefined = undefined;
+    for (let i = 0; i < this.creatingHandlers.length; i++) {
+      component = this.creatingHandlers[i](constructor, props);
+      if (component !== undefined) {
+        return component;
+      }
+    }
+
+    return undefined;
+  }
+
+  /**
+   * Subscribes a handler to the component created hook.
+   * @param handler The handler to subscribe.
+   */
+  public subscribeOnComponentCreated(handler: (component: DisplayComponent<any>) => void): void {
+    this.createdHandlers.push(handler);
+  }
+
+  /**
+   * A hook that allows plugins to observe components as they are created.
+   * @param component The component that was created.
+   */
+  public onComponentCreated(component: DisplayComponent<any>): void {
+    for (let i = 0; i < this.creatingHandlers.length; i++) {
+      this.createdHandlers[i](component);
+    }
+  }
+
+  /**
+   * Subscribes a handler to the component rendered hook.
+   * @param handler The handler to subscribe.
+   */
+  public subscribeOnComponentRendered(handler: (node: VNode) => void): void {
+    this.renderedHandlers.push(handler);
+  }
+
+  /**
+   * A hook that allows plugins to observe built VNodes after they are rendered.
+   * @param node The node that was rendered.
+   */
+  public onComponentRendered(node: VNode): void {
+    for (let i = 0; i < this.creatingHandlers.length; i++) {
+      this.renderedHandlers[i](node);
+    }
+  }
+}
+
+/**
+ * A plugin that is created and managed by the plugin system.
+ */
+export abstract class AvionicsPlugin<T> {
+  /**
+   * Creates an instance of a Plugin.
+   * @param binder The avionics specific plugin binder to accept from the system.
+   */
+  constructor(protected readonly binder: T) { }
+
+  /**
+   * A callback run when the plugin has been installed.
+   */
+  public abstract onInstalled(): void;
+
+  /**
+   * An optional hook called when a component is about to be created. Returning a component causes
+   * that component to be used instead of the one that was to be created, and returning undefined
+   * will cause the original component to be created. If this hook is present, it will be called
+   * for EVERY component instantiation, so be sure to ensure that this code is well optimized.
+   */
+  public onComponentCreating?: (constructor: DisplayComponentFactory<any>, props: any) => DisplayComponent<any> | undefined;
+
+  /**
+   * An optional hook called when a component is created. If this hook is present,
+   * it will be called for EVERY component instantiation, so be sure to ensure
+   * that this code is well optimized.
+   */
+  public onComponentCreated?: (component: DisplayComponent<any>) => void;
+
+  /**
+   * An optional hook called when a component has completed rendering. If this hook
+   * is present, it will be called for EVERY component render completion, so be sure
+   * to ensure that this code is well optimized.
+   */
+  public onComponentRendered?: (node: VNode) => void;
+
+  /**
+   * Loads a CSS file into the instrument.
+   * @param uri The URI to the CSS file.
+   */
+  protected async loadCss(uri: string): Promise<void> {
+    const linkTag = document.createElement('link');
+    linkTag.rel = 'stylesheet';
+    linkTag.href = uri;
+
+    document.head.append(linkTag);
+    return new Promise<void>((resolve) => {
+      linkTag.onload = (): void => resolve();
+    });
+  }
+}
+
+/**
+ * Registers a plugin with the plugin system.
+ * @param plugin The plugin to register.
+ */
+export function registerPlugin<T>(plugin: new (binder: T) => AvionicsPlugin<T>): void {
+  const pluginSystem = (window as any)._pluginSystem as PluginSystem<AvionicsPlugin<T>, T>;
+  if (pluginSystem.binder !== undefined) {
+    const instance = new plugin(pluginSystem.binder);
+    pluginSystem.addPlugin(instance);
+
+    if (instance.onComponentCreating !== undefined) {
+      pluginSystem.subscribeOnComponentCreating(instance.onComponentCreating);
+    }
+
+    if (instance.onComponentCreated !== undefined) {
+      pluginSystem.subscribeOnComponentCreated(instance.onComponentCreated);
+    }
+
+    if (instance.onComponentRendered !== undefined) {
+      pluginSystem.subscribeOnComponentRendered(instance.onComponentRendered);
+    }
+  }
 }
 
 const Fragment = FSComponent.Fragment;

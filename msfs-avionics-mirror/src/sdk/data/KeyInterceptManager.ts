@@ -1,5 +1,5 @@
-import { Wait } from '..';
 import { EventBus } from './EventBus';
+import { GameStateProvider } from './GameStateProvider';
 
 /**
  * Key intercept event data.
@@ -48,6 +48,11 @@ export class KeyInterceptManager {
    * @param value The value of the key event.
    */
   private onKeyIntercepted(key: string, index?: number, value?: number): void {
+    // Even though values are uint32, we will do what the sim does and pretend they're actually sint32
+    if (value !== undefined && value >= 2147483648) {
+      value -= 4294967296;
+    }
+
     this.bus.pub('key_intercept', { key, index, value }, false, false);
   }
 
@@ -99,14 +104,31 @@ export class KeyInterceptManager {
    * @param bus The event bus.
    * @returns A Promise which is fulfilled with a new instance of KeyInterceptManager after it has been created.
    */
-  private static async create(bus: EventBus): Promise<KeyInterceptManager> {
-    // HINT: we do this purely to try avoid the weird CTD
-    await Wait.awaitDelay(3000);
+  private static create(bus: EventBus): Promise<KeyInterceptManager> {
+    return new Promise((resolve, reject) => {
+      const gameState = GameStateProvider.get();
+      const sub = gameState.sub(state => {
+        if ((window as any)['IsDestroying']) {
+          sub.destroy();
+          reject('KeyInterceptManager: cannot create a key intercept manager after the Coherent JS view has been destroyed');
+          return;
+        }
 
-    return new Promise(resolve => {
-      const keyListener = RegisterViewListener('JS_LISTENER_KEYEVENT', () => {
-        resolve(new KeyInterceptManager(keyListener, bus));
-      });
+        if (state === GameState.briefing || state === GameState.ingame) {
+          sub.destroy();
+
+          const keyListener = RegisterViewListener('JS_LISTENER_KEYEVENT', () => {
+            if ((window as any)['IsDestroying']) {
+              reject('KeyInterceptManager: cannot create a key intercept manager after the Coherent JS view has been destroyed');
+              return;
+            }
+
+            resolve(new KeyInterceptManager(keyListener, bus));
+          });
+        }
+      }, false, true);
+
+      sub.resume(true);
     });
   }
 }

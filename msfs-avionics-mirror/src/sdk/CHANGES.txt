@@ -1,0 +1,62 @@
+# Working Title Avionics Framework v0.3
+
+## SDK changes by directory
+
+### autopilot
+* [Breaking Change] `AltitudeSelectManager` now publishes selected altitude initialization state to `alt_select_is_initialized` topic.
+* `AltitudeSelectManager` now supports `initOnInput` option.
+* Added `lnavdata_waypoint_ident` event to `LNavDataEvents`.
+* Added configuration parameters for pitch min/max and increment to `APPitchDirector`
+* `BottomTargetPathCalculator` now checks the invalid constraints on each calculate event to determine if any invalid constrant could now be valid and re-added to the vertical flight plan.
+* Change `getFafIndexReverse` method in `VNavUtils` to return the last leg if no FAF exists.
+* Fix criteria for adding a constraint to the vertical plan in `BottomTargetPathCalculator.buildVerticalPath()`.
+
+* ### components
+* Added Altitude Arc layer and module to map system.
+* `onBoundCallback` is now an optional prop on `BingComponent`.
+* `MapProjection` no longer notifies change listeners when there is no change after calling `set()`.
+
+### data
+* Added new `EventRepublisher` class.
+
+### geo
+* [Breaking Change] `NavAngleUnit` is now an interface.
+* [Breaking Change] `NavAngleSubject` was renamed to `BasicNavAngleSubject`, and slightly refactored to support the new `BasicNavAngleUnit` class.
+
+* Added new method `angularWidth()` to `GeoCircle`.
+* `GeoCircle.angleAlong()` and `GeoCircle.distanceAlong()` now support optional equality tolerance arguments.
+* Added `BasicNavAngleUnit` class, which implements `NavAngleUnit`.
+* Fixed missing unit conversion when calling `GeoPoint.distance()` with `LatLonInterface` arguments.
+
+### graphics
+* Fixed a bug where `AffineTransformPathStream` was not applying the correct rotation to arcs.
+
+### flightplan
+* [Breaking Change] Added optional `inclusive` argument to `FlightPathUtils.isPointAlongArc()`.
+* [Breaking Change] `TurnToCourseBuilder` no longer builds a vector if the turn start and end would be equivalent.
+* Added several new flight path vector flags.
+* `FlightPathCalculator` now supports fallback state.
+* `LegCalculations` now has a `isFallback` property which is set to `true` when the calculated flight path for the leg ends in a fallback state.
+* Improved flight path calculations for CF/FD/FC legs.
+* Improved fallback case handling for CI/VI/CR/VR/CD/VD legs.
+* `FlightPathUtils.resolveIngressToEgress()` now handles cases where the end of an ingress vector or start of an egress vector joins a base flight path vector outside the bounds of the joined vector.
+* Fixed a bug in `FlightPathUtils.isPointAlongArc()` where tolerances were not being handled correctly.
+* Fixed a unit conversion error in `CircleInterceptLegCalculator`.
+* CF leg calc now respects a leg's lat/lon fields if they are defined.
+
+
+### instruments
+* `InstrumentBackplane` now uses the `BackplanePublisher` interface instead of `BasePublisher`.
+* Added `nav_dme_lla` and `adf_lla` to `NavProcSimVars` events.
+* ADC publishing now pauses when slew is active
+* Added NAV/COM volume support.
+* Fixed various issues causing edge case errors for bearing source data and pointers.
+
+### navigation
+* added `getRegionCode` static method to `ICAO`.
+* `LodBoundary` no longer uses unsimplified vectors for all LODs when grabbing LOD'd vectors from the sim.
+* Added `FacilityILSFrequency` interface to and updated various runway structures to use it.
+
+### sub
+* Added `NUMERIC_NAN_EQUALITY` function to `SubscribableUtils`.
+* `pause()` and `resume()` methods on `Subscription` and `MappedSubscribable` now return `this`.

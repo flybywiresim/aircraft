@@ -1,14 +1,19 @@
-export * from './components/FSComponent';
-export * from './components/JSXDefinitions';
-export * from './components/CollectionComponent';
-
-export * from './utils/Wait';
-export * from './utils/Subscribable';
-export * from './utils/Subject';
-export * from './utils/ArraySubject';
-export * from './utils/ComputedSubject';
-
-export * from './utils/SubEvent';
-
+export * from './autopilot';
+export * from './components';
 export * from './data';
+export * from './fadec';
+export * from './flightplan';
+export * from './geo';
+export * from './graphics';
 export * from './instruments';
+export * from './math';
+export * from './navigation';
+export * from './settings';
+export * from './sub';
+export * from './system';
+export * from './traffic';
+export * from './utils';
+
+export * from './components/FSComponent';
+export * from './components/CollectionComponent';
+export * from './FsInstrument';

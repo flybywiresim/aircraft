@@ -1,10 +1,10 @@
 {
   "name": "msfssdk",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "description": "HTML and Typescript SDK for MSFS Coherent based instruments and aircraft development.",
-  "main": "index.ts",
+  "main": "msfssdk.js",
   "scripts": {
-    "build": "tsc"
+    "build": "tsc && npx copyfiles package.json ./build"
   },
   "repository": {
     "type": "git",
@@ -16,7 +16,11 @@
   "devDependencies": {
     "@types/geodesy": "^2.2.2",
     "@types/node": "^17.0.21",
-    "msfstypes": "file:../msfstypes/msfstypes-1.14.6.tgz",
-    "typescript": "~4.4.4"
+    "copyfiles": "^2.4.1",
+    "msfstypes": "file:../msfstypes",
+    "typescript": "~4.5.5"
+  },
+  "dependencies": {
+    "rollup-plugin-dts": "^4.2.0"
   }
 }
