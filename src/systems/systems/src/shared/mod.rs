@@ -71,12 +71,31 @@ pub trait EmergencyGeneratorPower {
     fn generated_power(&self) -> Power;
 }
 
-pub trait PositionPickoffUnit {
+pub trait Synchro {
+    fn get_angle(&self) -> Angle;
+}
+
+pub trait WingTipBrake {
+    fn get_angle(&self) -> Angle;
+}
+
+pub trait PowerControlUnit {
+    fn retract_energise(&self);
+    fn retract_deenergise(&self);
+
+    fn extend_energise(&self);
+    fn extend_deenergise(&self);
+
+    fn pob_energise(&self);
+    fn pob_deenergise(&self);
+}
+
+pub trait FeedbackPositionPickoffUnit {
     fn angle(&self) -> Angle;
 }
 
 pub trait SfccChannel {
-    fn receive_signal_fppu(&mut self, feedback: &impl PositionPickoffUnit);
+    fn receive_signal_fppu(&mut self, feedback: &impl FeedbackPositionPickoffUnit);
     fn send_signal_to_motors(&self) -> (Option<ChannelCommand>, Option<ChannelCommand>);
     fn generate_configuration(
         &self,
@@ -96,6 +115,29 @@ pub enum ChannelCommand {
 pub enum ChannelCommandMode {
     Normal,
     Slow,
+}
+
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub enum PCUState {
+    Idle,
+    Starting,
+    Accel,
+    Decel,
+    LowSpeed,
+    GetPositionThreshold,
+}
+impl From<u8> for PCUState {
+    fn from(value: u8) -> Self {
+        match value {
+            0b000 => PCUState::Idle,
+            0b100 => PCUState::Starting,
+            0b101 => PCUState::Accel,
+            0b011 => PCUState::Decel,
+            0b111 => PCUState::LowSpeed,
+            0b010 => PCUState::GetPositionThreshold,
+            i => panic!("Cannot convert from {} to SFCCStates.", i),
+        }
+    }
 }
 
 #[derive(Debug, Copy, Clone, PartialEq)]

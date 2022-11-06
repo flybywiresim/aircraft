@@ -9,3 +9,6 @@ These features are simplified for MSFS:
 - XSFCC signals
 - Pin programming only for A320NEO
 - Iteration rate not realistic
+- Single process for each channel
+- No parity check in arinc429.rs
+- No A429 transmission failure checks in sfcc.rs

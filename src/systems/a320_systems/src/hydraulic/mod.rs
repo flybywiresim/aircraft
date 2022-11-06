@@ -2005,8 +2005,8 @@ impl A320Hydraulic {
             &self.pushback_tug,
         );
 
-        self.slats_flaps_complex
-            .update(context, &self.flap_system, &self.slat_system);
+        // self.slats_flaps_complex
+        //     .update(context, &self.flap_system, &self.slat_system);
 
         self.flap_system.update(
             context,

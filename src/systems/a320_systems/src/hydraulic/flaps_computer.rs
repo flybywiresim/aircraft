@@ -1,7 +1,7 @@
 use crate::systems::shared::arinc429::{Arinc429Word, SignStatus};
 
 use systems::{
-    shared::{FlapsConf, PositionPickoffUnit},
+    shared::{FeedbackPositionPickoffUnit, FlapsConf},
     simulation::{
         InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
         SimulatorWriter, UpdateContext, VariableIdentifier, Write,
@@ -217,8 +217,8 @@ impl SlatFlapControlComputer {
         &mut self,
         context: &UpdateContext,
         flaps_handle: &CommandSensorUnit,
-        flaps_feedback: &impl PositionPickoffUnit,
-        slats_feedback: &impl PositionPickoffUnit,
+        flaps_feedback: &impl FeedbackPositionPickoffUnit,
+        slats_feedback: &impl FeedbackPositionPickoffUnit,
     ) {
         self.flaps_conf = self.generate_configuration(flaps_handle, context);
 
@@ -410,8 +410,8 @@ impl SlatFlapComplex {
     pub fn update(
         &mut self,
         context: &UpdateContext,
-        flaps_feedback: &impl PositionPickoffUnit,
-        slats_feedback: &impl PositionPickoffUnit,
+        flaps_feedback: &impl FeedbackPositionPickoffUnit,
+        slats_feedback: &impl FeedbackPositionPickoffUnit,
     ) {
         self.sfcc[0].update(context, &self.flaps_handle, flaps_feedback, slats_feedback);
         self.sfcc[1].update(context, &self.flaps_handle, flaps_feedback, slats_feedback);
@@ -455,7 +455,7 @@ mod tests {
         right_position_angle_id: VariableIdentifier,
         surface_type: String,
     }
-    impl PositionPickoffUnit for SlatFlapGear {
+    impl FeedbackPositionPickoffUnit for SlatFlapGear {
         fn angle(&self) -> Angle {
             self.current_angle
         }
