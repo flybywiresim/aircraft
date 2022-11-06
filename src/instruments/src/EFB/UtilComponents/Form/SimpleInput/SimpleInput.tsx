@@ -24,6 +24,8 @@ interface SimpleInputProps {
 }
 
 export const SimpleInput = (props: PropsWithChildren<SimpleInputProps>) => {
+    const [guid] = useState(`SI-${Utils.generateGUID()}`);
+
     const [displayValue, setDisplayValue] = useState(props.value?.toString() ?? '');
     const [focused, setFocused] = useState(false);
 
@@ -153,12 +155,12 @@ export const SimpleInput = (props: PropsWithChildren<SimpleInputProps>) => {
 
     useEffect(() => {
         if (focused) {
-            Coherent.trigger('FOCUS_INPUT_FIELD');
+            Coherent.trigger('FOCUS_INPUT_FIELD', guid);
         } else {
-            Coherent.trigger('UNFOCUS_INPUT_FIELD');
+            Coherent.trigger('UNFOCUS_INPUT_FIELD', guid);
         }
         return () => {
-            Coherent.trigger('UNFOCUS_INPUT_FIELD');
+            Coherent.trigger('UNFOCUS_INPUT_FIELD', guid);
         };
     }, [focused]);
 
