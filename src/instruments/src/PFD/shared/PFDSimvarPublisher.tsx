@@ -417,4 +417,14 @@ export class PFDSimvarPublisher extends SimVarPublisher<PFDSimvars> {
     public constructor(bus: EventBus) {
         super(PFDSimvarPublisher.simvars, bus);
     }
+
+    /**
+     * Change the simvar read for a given key.
+     * @param key The key of the simvar in simVarMap
+     * @param value The new value to set the simvar to.
+     * @deprecated Removed upstream and won't be needed when DMC switching implemented properly
+     */
+    public updateSimVarSource(key: keyof PFDSimvars, value: SimVarDefinition): void {
+        this.simvars.set(key, value);
+    }
 }
