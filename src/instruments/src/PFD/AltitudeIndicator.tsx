@@ -1,6 +1,7 @@
 import { ClockEvents, DisplayComponent, EventBus, FSComponent, Subject, Subscribable, VNode } from 'msfssdk';
 import { Arinc429Word } from '@shared/arinc429';
 import { VerticalMode } from '@shared/autopilot';
+import { ArincEventBus } from '@shared/event-bus';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { DigitalAltitudeReadout } from './DigitalAltitudeReadout';
 import { SimplaneValues } from './shared/SimplaneValueProvider';
@@ -107,7 +108,7 @@ class RadioAltIndicator extends DisplayComponent<{ bus: EventBus, filteredRadioA
     }
 }
 
-class MinimumDescentAltitudeIndicator extends DisplayComponent<{ bus: EventBus }> {
+class MinimumDescentAltitudeIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
     private visibility = Subject.create('hidden');
 
     private path = Subject.create('');
@@ -157,7 +158,7 @@ class MinimumDescentAltitudeIndicator extends DisplayComponent<{ bus: EventBus }
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values & SimplaneValues>();
+        const sub = this.props.bus.getArincSubscriber<PFDSimvars & Arinc429Values & SimplaneValues>();
 
         sub.on('chosenRa').whenArinc429SsmChanged().handle((ra) => {
             this.radioAltitudeValid = !ra.isFailureWarning() && !ra.isNoComputedData();
@@ -202,7 +203,7 @@ class MinimumDescentAltitudeIndicator extends DisplayComponent<{ bus: EventBus }
 
 interface AltitudeIndicatorProps {
 
-    bus: EventBus;
+    bus: ArincEventBus;
 }
 
 export class AltitudeIndicator extends DisplayComponent<AltitudeIndicatorProps> {
@@ -254,7 +255,7 @@ class AltTapeBackground extends DisplayComponent<any> {
 }
 
  interface AltitudeIndicatorOfftapeProps {
-    bus: EventBus;
+    bus: ArincEventBus;
     filteredRadioAltitude: Subscribable<number>;
 }
 
@@ -323,7 +324,7 @@ export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicator
 }
 
 interface SelectedAltIndicatorProps {
-    bus: EventBus
+    bus: ArincEventBus
 }
 
 class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
@@ -452,7 +453,7 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values & SimplaneValues>();
+        const sub = this.props.bus.getArincSubscriber<PFDSimvars & Arinc429Values & SimplaneValues>();
 
         sub.on('activeVerticalMode').whenChanged().handle((v) => {
             this.activeVerticalMode = v;

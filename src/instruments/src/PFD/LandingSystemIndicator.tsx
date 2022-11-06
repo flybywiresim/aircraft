@@ -1,11 +1,12 @@
-import { DisplayComponent, EventBus, FSComponent, HEvent, Subject, VNode } from 'msfssdk';
+import { DisplayComponent, FSComponent, HEvent, Subject, VNode } from 'msfssdk';
 import { getDisplayIndex } from 'instruments/src/PFD/PFD';
 import { Arinc429Word } from '@shared/arinc429';
+import { ArincEventBus } from '@shared/event-bus';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { LagFilter } from './PFDUtils';
 
-export class LandingSystem extends DisplayComponent<{ bus: EventBus, instrument: BaseInstrument }> {
+export class LandingSystem extends DisplayComponent<{ bus: ArincEventBus, instrument: BaseInstrument }> {
     private lsButtonPressedVisibility = false;
 
     private xtkValid = Subject.create(false);
@@ -105,7 +106,7 @@ export class LandingSystem extends DisplayComponent<{ bus: EventBus, instrument:
     }
 }
 
-class LandingSystemInfo extends DisplayComponent<{ bus: EventBus }> {
+class LandingSystemInfo extends DisplayComponent<{ bus: ArincEventBus }> {
     private hasDme = false;
 
     private identText = Subject.create('');
@@ -207,7 +208,7 @@ class LandingSystemInfo extends DisplayComponent<{ bus: EventBus }> {
     }
 }
 
-class LocalizerIndicator extends DisplayComponent<{bus: EventBus, instrument: BaseInstrument}> {
+class LocalizerIndicator extends DisplayComponent<{bus: ArincEventBus, instrument: BaseInstrument}> {
     private lagFilter = new LagFilter(1.5);
 
     private rightDiamond = FSComponent.createRef<SVGPathElement>();
@@ -278,7 +279,7 @@ class LocalizerIndicator extends DisplayComponent<{bus: EventBus, instrument: Ba
     }
 }
 
-class GlideSlopeIndicator extends DisplayComponent<{bus: EventBus, instrument: BaseInstrument}> {
+class GlideSlopeIndicator extends DisplayComponent<{bus: ArincEventBus, instrument: BaseInstrument}> {
     private lagFilter = new LagFilter(1.5);
 
     private upperDiamond = FSComponent.createRef<SVGPathElement>();
@@ -355,7 +356,7 @@ class GlideSlopeIndicator extends DisplayComponent<{bus: EventBus, instrument: B
     }
 }
 
-class VDevIndicator extends DisplayComponent<{bus: EventBus}> {
+class VDevIndicator extends DisplayComponent<{bus: ArincEventBus}> {
     private VDevSymbolLower = FSComponent.createRef<SVGPathElement>();
 
     private VDevSymbolUpper = FSComponent.createRef<SVGPathElement>();
@@ -401,7 +402,7 @@ class VDevIndicator extends DisplayComponent<{bus: EventBus}> {
     }
 }
 
-class LDevIndicator extends DisplayComponent<{bus: EventBus}> {
+class LDevIndicator extends DisplayComponent<{bus: ArincEventBus}> {
     private LDevSymbolLeft = FSComponent.createRef<SVGPathElement>();
 
     private LDevSymbolRight = FSComponent.createRef<SVGPathElement>();
@@ -450,7 +451,7 @@ class LDevIndicator extends DisplayComponent<{bus: EventBus}> {
     }
 }
 
-class MarkerBeaconIndicator extends DisplayComponent<{ bus: EventBus }> {
+class MarkerBeaconIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
     private classNames = Subject.create('HiddenElement');
 
     private markerText = Subject.create('');

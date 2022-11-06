@@ -1,7 +1,8 @@
 import { A320Failure, FailuresConsumer } from '@flybywiresim/failures';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { ClockEvents, ComponentProps, DisplayComponent, EventBus, FSComponent, Subject, VNode } from 'msfssdk';
+import { ClockEvents, ComponentProps, DisplayComponent, FSComponent, Subject, VNode } from 'msfssdk';
 import { Arinc429Word } from '@shared/arinc429';
+import { ArincEventBus } from '@shared/event-bus';
 import { LagFilter } from './PFDUtils';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { DisplayUnit } from './shared/displayUnit';
@@ -21,7 +22,7 @@ export const getDisplayIndex = () => {
 };
 
 interface PFDProps extends ComponentProps {
-    bus: EventBus;
+    bus: ArincEventBus;
     instrument: BaseInstrument;
 }
 

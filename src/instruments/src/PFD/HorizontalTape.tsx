@@ -1,4 +1,5 @@
-import { EventBus, DisplayComponent, FSComponent, NodeReference, VNode, Subscribable } from 'msfssdk';
+import { ArincEventBus } from '@shared/event-bus';
+import { DisplayComponent, FSComponent, NodeReference, VNode, Subscribable } from 'msfssdk';
 import { Arinc429Values } from './shared/ArincValueProvider';
 
 interface HorizontalTapeProps {
@@ -6,7 +7,7 @@ interface HorizontalTapeProps {
     valueSpacing: number;
     distanceSpacing: number;
     type: 'horizon' | 'headingTape'
-    bus: EventBus;
+    bus: ArincEventBus;
     yOffset?: Subscribable<number>;
 }
 export class HorizontalTape extends DisplayComponent<HorizontalTapeProps> {

@@ -1,4 +1,5 @@
-import { DisplayComponent, EventBus, FSComponent, NodeReference, Subject, Subscribable, VNode } from 'msfssdk';
+import { ArincEventBus } from '@shared/event-bus';
+import { DisplayComponent, FSComponent, NodeReference, Subject, Subscribable, VNode } from 'msfssdk';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 
@@ -48,7 +49,7 @@ const TenThousandsDigit = (value: number) => {
 };
 
 interface DigitalAltitudeReadoutProps {
-    bus: EventBus;
+    bus: ArincEventBus;
 }
 
 export class DigitalAltitudeReadout extends DisplayComponent<DigitalAltitudeReadoutProps> {

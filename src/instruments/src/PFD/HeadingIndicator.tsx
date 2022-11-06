@@ -1,4 +1,5 @@
-import { DisplayComponent, EventBus, FSComponent, HEvent, Subject, Subscribable, VNode } from 'msfssdk';
+import { DisplayComponent, FSComponent, HEvent, Subject, Subscribable, VNode } from 'msfssdk';
+import { ArincEventBus } from '@shared/event-bus';
 import { HorizontalTape } from './HorizontalTape';
 import { getSmallestAngle } from './PFDUtils';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
@@ -11,7 +12,7 @@ const DistanceSpacing = 7.555;
 const ValueSpacing = 5;
 
 interface HeadingTapeProps {
-    bus: EventBus;
+    bus: ArincEventBus;
     failed: Subscribable<boolean>;
 }
 
@@ -46,7 +47,7 @@ export class HeadingTape extends DisplayComponent<HeadingTapeProps> {
     }
 }
 
-export class HeadingOfftape extends DisplayComponent<{ bus: EventBus, failed: Subscribable<boolean>}> {
+export class HeadingOfftape extends DisplayComponent<{ bus: ArincEventBus, failed: Subscribable<boolean>}> {
     private normalRef = FSComponent.createRef<SVGGElement>();
 
     private abnormalRef = FSComponent.createRef<SVGGElement>();
@@ -106,7 +107,7 @@ export class HeadingOfftape extends DisplayComponent<{ bus: EventBus, failed: Su
 }
 
 interface SelectedHeadingProps {
-    bus: EventBus;
+    bus: ArincEventBus;
     heading: Subscribable<number>;
 }
 
@@ -198,7 +199,7 @@ class SelectedHeading extends DisplayComponent<SelectedHeadingProps> {
 
 interface GroundTrackBugProps {
     heading: Subscribable<number>;
-    bus: EventBus;
+    bus: ArincEventBus;
 }
 
 class GroundTrackBug extends DisplayComponent<GroundTrackBugProps> {
