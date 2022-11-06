@@ -1251,8 +1251,8 @@ bool FlyByWireInterface::updateElac(double sampleTime, int elacIndex) {
   elacs[elacIndex].modelInputs.in.analog_inputs.fo_roll_stick_pos = 0;
   double leftElevPos = -idLeftElevatorPosition->get();
   double rightElevPos = -idRightElevatorPosition->get();
-  elacs[elacIndex].modelInputs.in.analog_inputs.left_elevator_pos_deg = leftElevPos > 0 ? leftElevPos * 17 : leftElevPos * 30;
-  elacs[elacIndex].modelInputs.in.analog_inputs.right_elevator_pos_deg = rightElevPos > 0 ? rightElevPos * 17 : rightElevPos * 30;
+  elacs[elacIndex].modelInputs.in.analog_inputs.left_elevator_pos_deg = leftElevPos * 30;
+  elacs[elacIndex].modelInputs.in.analog_inputs.right_elevator_pos_deg = rightElevPos * 30;
   elacs[elacIndex].modelInputs.in.analog_inputs.ths_pos_deg = -simData.eta_trim_deg;
   elacs[elacIndex].modelInputs.in.analog_inputs.left_aileron_pos_deg = idLeftAileronPosition->get() * 25;
   elacs[elacIndex].modelInputs.in.analog_inputs.right_aileron_pos_deg = -idRightAileronPosition->get() * 25;
@@ -1381,8 +1381,8 @@ bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
     secs[secIndex].modelInputs.in.analog_inputs.fo_pitch_stick_pos = 0;
     double leftElevPos = -idLeftElevatorPosition->get();
     double rightElevPos = -idRightElevatorPosition->get();
-    secs[secIndex].modelInputs.in.analog_inputs.left_elevator_pos_deg = leftElevPos > 0 ? leftElevPos * 17 : leftElevPos * 30;
-    secs[secIndex].modelInputs.in.analog_inputs.right_elevator_pos_deg = rightElevPos > 0 ? rightElevPos * 17 : rightElevPos * 30;
+    secs[secIndex].modelInputs.in.analog_inputs.left_elevator_pos_deg = leftElevPos * 30;
+    secs[secIndex].modelInputs.in.analog_inputs.right_elevator_pos_deg = rightElevPos * 30;
     secs[secIndex].modelInputs.in.analog_inputs.ths_pos_deg = -simData.eta_trim_deg;
     secs[secIndex].modelInputs.in.analog_inputs.load_factor_acc_1_g = 0;
     secs[secIndex].modelInputs.in.analog_inputs.load_factor_acc_2_g = 0;
