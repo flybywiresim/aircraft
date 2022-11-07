@@ -27,25 +27,15 @@
 using namespace std;
 
 // IDs for data structures - must be mapped to data structs
-enum DataStructureIDs {
-  SimulationDataID,
-  PushbackDataID,
-  IVAODataID,
-  VPILOTDataID
-};
+enum DataStructureIDs { SimulationDataID, PushbackDataID, IVAODataID, VPILOTDataID };
 
 // IDs for data structures - must be mapped to data structs
-enum DataStructureRequestIDs {
-  SimulationDataRequestID,
-  PushbackDataRequestID,
-  IVAORequestID,
-  VPILOTRequestID
-};
+enum DataStructureRequestIDs { SimulationDataRequestID, PushbackDataRequestID, IVAORequestID, VPILOTRequestID };
 
-  enum ClientData {
-    IVAO,
-    VPILOT,
-  };
+enum ClientData {
+  IVAO,
+  VPILOT,
+};
 
 // Local data structure for simconnect data
 struct SimulationData {
@@ -67,7 +57,6 @@ enum Events {
   KEY_TUG_SPEED_EVENT,
   PAUSED,
   UNPAUSED,
-  SIM,
   SIMSTOP,
 };
 
@@ -79,14 +68,14 @@ struct ATCServicesDataIVAO;
 struct ATCServicesDataVPILOT;
 
 class FlyPadBackend {
-private:
+ private:
   HANDLE hSimConnect;
 
   // Instance of local data structure for simconnect data
   SimulationData simulationData = {};
   PushbackData pushbackData = {};
-  ATCServicesDataIVAO *IVAOData = nullptr;
-  ATCServicesDataVPILOT *VPILOTData = nullptr;
+  ATCServicesDataIVAO* IVAOData = nullptr;
+  ATCServicesDataVPILOT* VPILOTData = nullptr;
 
   /**
    * Flag if connection has been initialized.
@@ -102,7 +91,7 @@ private:
   std::unique_ptr<Pushback> pushbackPtr;
   std::unique_ptr<ATCServices> thirdPartyPtr;
 
-public:
+ public:
   /**
    * Initialize the gauge (instead of a constructor).
    * Sets up data for the gauge and also connect to SimConnect.
@@ -124,7 +113,7 @@ public:
    */
   bool shutdown();
 
-private:
+ private:
   /**
    * Requests simconnect data in preparation of reading it into a local data structure.
    * @return true if request was successful, false otherwise

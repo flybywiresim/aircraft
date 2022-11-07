@@ -83,7 +83,6 @@ bool FlyPadBackend::initialize() {
 
   result &= SimConnect_SubscribeToSystemEvent(hSimConnect, Events::PAUSED, "PAUSED");
   result &= SimConnect_SubscribeToSystemEvent(hSimConnect, Events::UNPAUSED, "UNPAUSED");
-  result &= SimConnect_SubscribeToSystemEvent(hSimConnect, Events::SIM, "SIM");
   result &= SimConnect_SubscribeToSystemEvent(hSimConnect, Events::SIMSTOP, "SIMSTOP");
 
   if (result != S_OK) {

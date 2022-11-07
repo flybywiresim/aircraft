@@ -1050,7 +1050,7 @@
                         Here getting the maximum of one channel between the three ACPs.
                         Multiplying each by their "Knob_Volume_Down" to take into account their value if the knob is pushed. 0 otherwise
                 -->
-                (L:A32NX_COM_UpdateReceivers) (L:A32NX_COM_UpdateReceiversFromATCServices) or if{
+                (L:A32NX_COM_UpdateReceivers) if{
                     (L:A32NX_ACP1_VHF1_Knob_Volume_Down) (L:A32NX_ACP2_VHF1_Knob_Volume_Down) (L:A32NX_ACP3_VHF1_Knob_Volume_Down) or or (&gt;K:COM1_RECEIVE_SELECT)
                     (L:A32NX_ACP1_VHF2_Knob_Volume_Down) (L:A32NX_ACP2_VHF2_Knob_Volume_Down) (L:A32NX_ACP3_VHF2_Knob_Volume_Down) or or (&gt;K:COM2_RECEIVE_SELECT)
 
@@ -1063,13 +1063,7 @@
                     (L:A32NX_ACP1_VHF3_Knob_Volume_Down) (L:A32NX_ACP1_Volume_VHF3) 100 * * (L:A32NX_ACP2_VHF3_Knob_Volume_Down) (L:A32NX_ACP2_Volume_VHF3) 100 * * max (&gt;K:COM3_VOLUME_SET)
                     (L:A32NX_ACP3_VHF3_Knob_Volume_Down) (L:A32NX_ACP3_Volume_VHF3) 100 * * (A:COM VOLUME:3, percent) max (&gt;K:COM3_VOLUME_SET)
 
-                    (L:A32NX_COM_UpdateReceiversFromATCServices) 1 == if{
-                        0 (&gt;L:A32NX_COM_UpdateReceiversFromATCServices)
-                    }
-
-                    (L:A32NX_COM_UpdateReceivers) 1 == if{
-                        0 (&gt;L:A32NX_COM_UpdateReceivers)
-                    }
+                    1 (&gt;L:A32NX_COM_updateATCServicesFromACPsLVar)
                 }
             </UPDATE_CODE>
         </UseTemplate>

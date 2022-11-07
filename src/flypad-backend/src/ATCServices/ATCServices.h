@@ -23,15 +23,21 @@ class ATCServices {
   HANDLE _hSimConnect;
   bool _isInitialized = false;
 
-  ID _selcal{};
-  ID _selcalReset{};
-  ID _volumeCOM1ACP1{};
-  ID _volumeCOM1ACP2{};
-  ID _volumeCOM1ACP3{};
-  ID _volumeCOM2ACP1{};
-  ID _volumeCOM2ACP2{};
-  ID _volumeCOM2ACP3{};
-  ID _updateReceiversFromATCServices{};
+  ID _selcalLVar{};
+  ID _selcalResetLVar{};
+  ID _volumeCOM1ACP1LVar{};
+  ID _volumeCOM1ACP2LVar{};
+  ID _volumeCOM1ACP3LVar{};
+  ID _volumeCOM2ACP1LVar{};
+  ID _volumeCOM2ACP2LVar{};
+  ID _volumeCOM2ACP3LVar{};
+  ID _knobCOM1ACP1LVar{};
+  ID _knobCOM1ACP2LVar{};
+  ID _knobCOM1ACP3LVar{};
+  ID _knobCOM2ACP1LVar{};
+  ID _knobCOM2ACP2LVar{};
+  ID _knobCOM2ACP3LVar{};
+  ID _updateATCServicesFromACPsLVar{};
 
   INT64 _previousVolumeCOM1 = 0;
   INT64 _previousVolumeCOM2 = 0;
