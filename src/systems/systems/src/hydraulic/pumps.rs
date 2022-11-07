@@ -48,6 +48,12 @@ impl PumpCharacteristics {
     const A380_EDP_DISPLACEMENT_MAP_CUBIC_INCH: [f64; 9] =
         [2.4, 2.4, 2.4, 1., 0.3, 0.1, 0.0, 0.0, 0.0];
 
+    const A380_EPUMP_DISPLACEMENT_BREAKPTS_PSI: [f64; 9] = [
+        0.0, 500.0, 1000.0, 1500.0, 3175.0, 4850.0, 5000.0, 5100.0, 5500.0,
+    ];
+    const A380_EPUMP_DISPLACEMENT_MAP_CUBIC_INCH: [f64; 9] =
+        [0.263, 0.263, 0.263, 0.263, 0.263, 0.15, 0.0, 0.0, 0.0];
+
     fn new(
         pressure_map_breakpoints_psi: [f64; 9],
         displacement_map_cubic_inch: [f64; 9],
@@ -92,6 +98,18 @@ impl PumpCharacteristics {
         PumpCharacteristics::new(
             Self::A320_EPUMP_DISPLACEMENT_BREAKPTS_PSI,
             Self::A320_EPUMP_DISPLACEMENT_MAP_CUBIC_INCH,
+            Self::AIR_PRESSURE_BREAKPTS_PSI,
+            Self::AIR_PRESSURE_CARAC_RATIO,
+            Some(AngularVelocity::new::<revolution_per_minute>(
+                Self::A320_EPUMP_REGULATED_SPEED_RPM,
+            )),
+        )
+    }
+
+    pub fn a380_electric_pump() -> Self {
+        PumpCharacteristics::new(
+            Self::A380_EPUMP_DISPLACEMENT_BREAKPTS_PSI,
+            Self::A380_EPUMP_DISPLACEMENT_MAP_CUBIC_INCH,
             Self::AIR_PRESSURE_BREAKPTS_PSI,
             Self::AIR_PRESSURE_CARAC_RATIO,
             Some(AngularVelocity::new::<revolution_per_minute>(

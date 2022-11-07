@@ -110,10 +110,10 @@ impl A380HydraulicReservoirFactory {
 
 pub struct A380HydraulicCircuitFactory {}
 impl A380HydraulicCircuitFactory {
-    const MIN_PRESS_EDP_SECTION_LO_HYST: f64 = 2740.0;
-    const MIN_PRESS_EDP_SECTION_HI_HYST: f64 = 2900.0;
-    const MIN_PRESS_PRESSURISED_LO_HYST: f64 = 2740.0;
-    const MIN_PRESS_PRESSURISED_HI_HYST: f64 = 2900.0;
+    const MIN_PRESS_EDP_SECTION_LO_HYST: f64 = 2900.0;
+    const MIN_PRESS_EDP_SECTION_HI_HYST: f64 = 3700.0;
+    const MIN_PRESS_PRESSURISED_LO_HYST: f64 = 2900.0;
+    const MIN_PRESS_PRESSURISED_HI_HYST: f64 = 3700.0;
     const HYDRAULIC_TARGET_PRESSURE_PSI: f64 = 5100.;
 
     pub fn new_green_circuit(context: &mut InitContext) -> HydraulicCircuit {
@@ -1240,7 +1240,7 @@ impl A380Hydraulic {
     const FORWARD_CARGO_DOOR_ID: &'static str = "FWD";
     const AFT_CARGO_DOOR_ID: &'static str = "AFT";
 
-    const ELECTRIC_PUMP_MAX_CURRENT_AMPERE: f64 = 45.;
+    const ELECTRIC_PUMP_MAX_CURRENT_AMPERE: f64 = 55.;
 
     const YELLOW_ELEC_PUMP_CONTROL_POWER_BUS: ElectricalBusType =
         ElectricalBusType::DirectCurrent(2);
@@ -1376,7 +1376,7 @@ impl A380Hydraulic {
                 "YELLOW_A",
                 Self::YELLOW_ELEC_PUMP_SUPPLY_POWER_BUS,
                 ElectricCurrent::new::<ampere>(Self::ELECTRIC_PUMP_MAX_CURRENT_AMPERE),
-                PumpCharacteristics::a320_electric_pump(),
+                PumpCharacteristics::a380_electric_pump(),
             ),
             yellow_electric_pump_a_controller: A380ElectricPumpController::new(
                 context,
@@ -1390,7 +1390,7 @@ impl A380Hydraulic {
                 "YELLOW_B",
                 Self::YELLOW_ELEC_PUMP_SUPPLY_POWER_BUS,
                 ElectricCurrent::new::<ampere>(Self::ELECTRIC_PUMP_MAX_CURRENT_AMPERE),
-                PumpCharacteristics::a320_electric_pump(),
+                PumpCharacteristics::a380_electric_pump(),
             ),
             yellow_electric_pump_b_controller: A380ElectricPumpController::new(
                 context,
@@ -1404,7 +1404,7 @@ impl A380Hydraulic {
                 "GREEN_A",
                 Self::YELLOW_ELEC_PUMP_SUPPLY_POWER_BUS,
                 ElectricCurrent::new::<ampere>(Self::ELECTRIC_PUMP_MAX_CURRENT_AMPERE),
-                PumpCharacteristics::a320_electric_pump(),
+                PumpCharacteristics::a380_electric_pump(),
             ),
             green_electric_pump_a_controller: A380ElectricPumpController::new(
                 context,
@@ -1418,7 +1418,7 @@ impl A380Hydraulic {
                 "GREEN_B",
                 Self::YELLOW_ELEC_PUMP_SUPPLY_POWER_BUS,
                 ElectricCurrent::new::<ampere>(Self::ELECTRIC_PUMP_MAX_CURRENT_AMPERE),
-                PumpCharacteristics::a320_electric_pump(),
+                PumpCharacteristics::a380_electric_pump(),
             ),
             green_electric_pump_b_controller: A380ElectricPumpController::new(
                 context,
