@@ -2572,6 +2572,7 @@ impl Display for A380ElectricPumpId {
 
 struct A380EngineDrivenPumpController {
     low_press_id: VariableIdentifier,
+    disconnected_id: VariableIdentifier,
 
     is_powered: bool,
     powered_by: Vec<ElectricalBusType>,
@@ -2581,6 +2582,8 @@ struct A380EngineDrivenPumpController {
     has_air_pressure_low_fault: bool,
     has_low_level_fault: bool,
     is_pressure_low: bool,
+
+    are_pumps_disconnected: bool,
 }
 impl A380EngineDrivenPumpController {
     fn new(
@@ -2590,6 +2593,8 @@ impl A380EngineDrivenPumpController {
     ) -> Self {
         Self {
             low_press_id: context.get_identifier(format!("HYD_EDPUMP_{}_LOW_PRESS", pump_id)),
+            disconnected_id: context
+                .get_identifier(format!("HYD_ENG_{}AB_PUMP_DISC", pump_id.into_engine_num())),
 
             is_powered: false,
             powered_by,
@@ -2601,6 +2606,8 @@ impl A380EngineDrivenPumpController {
             has_low_level_fault: false,
 
             is_pressure_low: true,
+
+            are_pumps_disconnected: false,
         }
     }
 
@@ -2658,10 +2665,13 @@ impl A380EngineDrivenPumpController {
             should_pressurise_if_powered = false;
         }
 
+        self.are_pumps_disconnected = self.are_pumps_disconnected
+            || overhead_panel.engines_edp_disconnected(self.pump_id.into_engine_num());
+
         // Inverted logic, no power means solenoid valve always leave pump in pressurise mode
         // TODO disconnected pump is just depressurising it as a placeholder for disc mechanism
-        self.should_pressurise = (!self.is_powered || should_pressurise_if_powered)
-            && !overhead_panel.engines_edp_disconnected(self.pump_id.into_engine_num());
+        self.should_pressurise =
+            (!self.is_powered || should_pressurise_if_powered) && !self.are_pumps_disconnected;
 
         self.update_low_pressure(engines, hydraulic_circuit, lgciu);
 
@@ -2682,6 +2692,7 @@ impl PumpController for A380EngineDrivenPumpController {
 impl SimulationElement for A380EngineDrivenPumpController {
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.low_press_id, self.is_pressure_low);
+        writer.write(&self.disconnected_id, self.are_pumps_disconnected);
     }
 
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
