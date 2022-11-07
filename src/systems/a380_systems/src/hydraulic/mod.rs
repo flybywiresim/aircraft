@@ -2148,7 +2148,7 @@ impl A380Hydraulic {
 
         self.green_circuit.update(
             context,
-            &mut vec![
+            &mut [
                 &mut self.engine_driven_pump_1a,
                 &mut self.engine_driven_pump_1b,
                 &mut self.engine_driven_pump_2a,
@@ -2173,7 +2173,7 @@ impl A380Hydraulic {
         );
         self.yellow_circuit.update(
             context,
-            &mut vec![
+            &mut [
                 &mut self.engine_driven_pump_3a,
                 &mut self.engine_driven_pump_3b,
                 &mut self.engine_driven_pump_4a,

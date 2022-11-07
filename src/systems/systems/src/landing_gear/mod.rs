@@ -999,7 +999,7 @@ impl LandingGearHandle for LandingGearControlInterfaceUnit {
 
 impl LgciuInterface for LandingGearControlInterfaceUnit {}
 
-#[derive(PartialEq, Clone, Copy, Debug)]
+#[derive(PartialEq, Eq, Clone, Copy, Debug)]
 pub enum GearSystemState {
     AllUpLocked,
     Retracting,
@@ -1428,7 +1428,7 @@ mod tests {
 
     #[test]
     fn gear_state_downlock_on_init() {
-        let test_bed = SimulationTestBed::new(|context| TestGearAircraft::new(context));
+        let test_bed = SimulationTestBed::new(TestGearAircraft::new);
 
         assert!(test_bed.query(|a| a.lgcius.gear_system_state()) == GearSystemState::AllDownLocked);
     }
