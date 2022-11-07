@@ -7566,13 +7566,13 @@ mod tests {
                 .set_yellow_e_pump_a(true)
                 .run_waiting_for(Duration::from_secs_f64(10.));
 
-            assert!(test_bed.yellow_pressure().get::<psi>() > 2900.);
+            assert!(test_bed.yellow_pressure().get::<psi>() > 4500.);
 
             test_bed = test_bed
                 .air_press_low()
                 .run_waiting_for(Duration::from_secs_f64(10.));
 
-            assert!(test_bed.yellow_pressure().get::<psi>() < 2000.);
+            assert!(test_bed.yellow_pressure().get::<psi>() < 3500.);
         }
 
         #[test]
