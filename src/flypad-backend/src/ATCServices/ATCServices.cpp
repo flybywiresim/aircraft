@@ -4,10 +4,6 @@
 #define SELCAL_LIGHT_TIME_MS 300
 #define FLASHING_LIGHTS_TIMEOUT_MS 60000
 
-INT64 clamp(INT64 val, INT64 low, INT64 high) {
-  return val < low ? low : val > high ? high : val;
-}
-
 ATCServices::ATCServices(HANDLE hSimConnect) : _hSimConnect(hSimConnect) {}
 
 void ATCServices::initialize() {
@@ -53,18 +49,13 @@ void ATCServices::onUpdate(INT64 volumeCOM1, INT64 volumeCOM2, ATCServicesDataIV
       std::cout << "New Volume COM1 from IVAO " << (unsigned)IVAOData->volumeCOM1 << "     Previous was "
                 << (unsigned)this->_previousVolumeCOM1 << std::endl;
 
-      setSimVar(_volumeCOM1ACP1LVar, volumeCOM1over100);
-      setSimVar(_volumeCOM1ACP2LVar, volumeCOM1over100);
-      setSimVar(_volumeCOM1ACP3LVar, volumeCOM1over100);
+      set_named_variable_value(_volumeCOM1ACP1LVar, volumeCOM1over100);
+      set_named_variable_value(_volumeCOM1ACP2LVar, volumeCOM1over100);
+      set_named_variable_value(_volumeCOM1ACP3LVar, volumeCOM1over100);
 
-      std::string calculator_code = std::to_string(
-          IVAOData->volumeCOM1 * clamp((get_named_variable_value(_knobCOM1ACP1LVar) + get_named_variable_value(_knobCOM1ACP2LVar) +
-                                        get_named_variable_value(_knobCOM1ACP3LVar)),
-                                       0, 1));
+      std::string calculator_code = std::to_string(IVAOData->volumeCOM1);
       calculator_code += " (>K:COM1_VOLUME_SET)";
       execute_calculator_code(calculator_code.c_str(), nullptr, nullptr, nullptr);
-
-      std::cout << calculator_code.c_str() << std::endl;
 
       this->_previousVolumeCOM1 = IVAOData->volumeCOM1;
     }
@@ -75,18 +66,13 @@ void ATCServices::onUpdate(INT64 volumeCOM1, INT64 volumeCOM2, ATCServicesDataIV
       std::cout << "New Volume COM2 from IVAO " << (unsigned)IVAOData->volumeCOM2 << "     Previous was "
                 << (unsigned)this->_previousVolumeCOM2 << std::endl;
 
-      setSimVar(_volumeCOM2ACP1LVar, volumeCOM2over100);
-      setSimVar(_volumeCOM2ACP2LVar, volumeCOM2over100);
-      setSimVar(_volumeCOM2ACP3LVar, volumeCOM2over100);
+      set_named_variable_value(_volumeCOM2ACP1LVar, volumeCOM2over100);
+      set_named_variable_value(_volumeCOM2ACP2LVar, volumeCOM2over100);
+      set_named_variable_value(_volumeCOM2ACP3LVar, volumeCOM2over100);
 
-      std::string calculator_code = std::to_string(
-          IVAOData->volumeCOM2 * clamp((get_named_variable_value(_knobCOM2ACP1LVar) + get_named_variable_value(_knobCOM2ACP2LVar) +
-                                        get_named_variable_value(_knobCOM2ACP3LVar)),
-                                       0, 1));
+      std::string calculator_code = std::to_string(IVAOData->volumeCOM2);
       calculator_code += " (>K:COM2_VOLUME_SET)";
       execute_calculator_code(calculator_code.c_str(), nullptr, nullptr, nullptr);
-
-      std::cout << calculator_code.c_str() << std::endl;
 
       this->_previousVolumeCOM2 = IVAOData->volumeCOM2;
     }
@@ -103,15 +89,15 @@ void ATCServices::onUpdate(INT64 volumeCOM1, INT64 volumeCOM2, ATCServicesDataIV
         // Makes the push button blink every SELCAL_LIGHT_TIME_MS
         // It sets the BLINK_ID (foundable in the XML behaviors) then 0 to make it blink
         if (diff >= SELCAL_LIGHT_TIME_MS) {
-          setSimVar(_selcalLVar, get_named_variable_value(_selcalLVar) == this->_selcalActive ? 0 : this->_selcalActive);
+          set_named_variable_value(_selcalLVar, get_named_variable_value(_selcalLVar) == this->_selcalActive ? 0 : this->_selcalActive);
           this->_previousTime = now;
         }
       }
     } else {
       // Reset everything related to SELCAL if RESET push button was pressed on one ACP
       // OR 60s have passed (according to FCOM)
-      setSimVar(_selcalResetLVar, 0);
-      setSimVar(_selcalLVar, 0);
+      set_named_variable_value(_selcalResetLVar, 0);
+      set_named_variable_value(_selcalLVar, 0);
       this->_selcalActive = 0;
       update = true;
 

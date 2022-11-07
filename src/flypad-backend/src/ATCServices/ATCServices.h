@@ -54,8 +54,6 @@ class ATCServices {
                                             SIMCONNECT_CLIENT_DATA_SET_FLAG_DEFAULT, 0, sizeof(output), &output);
   }
 
-  static inline void setSimVar(ID var, FLOAT64 value) { set_named_variable_value(var, value); }
-
  public:
   explicit ATCServices(HANDLE);
 
