@@ -1,6 +1,11 @@
 import { getSimBridgeUrl } from '../common';
 import { CoRouteDto } from '../Coroute/coroute';
 
+type coRouteCall = {
+    success: boolean,
+    data: CoRouteDto | CoRouteDto[]
+}
+
 /**
  * Class responsible for retrieving data related to company routes from SimBridge
  */
@@ -10,13 +15,20 @@ export class CompanyRoute {
      * @param route The routename in question
      * @returns Returns the CoRoute DTO
      */
-    public static async getCoRoute(route: String): Promise<CoRouteDto> {
+    public static async getCoRoute(route: String): Promise<coRouteCall> {
         if (route) {
             const response = await fetch(`${getSimBridgeUrl()}/api/v1/coroute?rteNum=${route}`);
-            if (response.status === 200) {
-                response.json();
+            if (response.ok) {
+                return {
+                    success: true,
+                    data: (await response.json()) as CoRouteDto,
+                };
             }
-            throw new Error('Server Error');
+
+            return {
+                success: false,
+                data: null,
+            };
         }
         throw new Error('No Company route provided');
     }
@@ -27,13 +39,21 @@ export class CompanyRoute {
      * @param dest the destination
      * @returns Returns a list of CoRoute DTOs
      */
-    public static async getRouteList(origin: String, dest: String): Promise<CoRouteDto[]> {
-        if (origin || dest) {
+    public static async getRouteList(origin: String, dest: String): Promise<coRouteCall> {
+        if (origin && dest) {
             const response = await fetch(`${getSimBridgeUrl()}/api/v1/coroute/list?origin=${origin}&destination=${dest}`);
             if (response.ok) {
-                response.json();
+                const filteredData = (await response.json() as CoRouteDto[]).filter((value) => value.name.length < 10);
+                return {
+                    success: true,
+                    data: filteredData,
+                };
             }
-            throw new Error('Server Error');
+
+            return {
+                success: false,
+                data: null,
+            };
         }
         throw new Error('Origin or Destination missing');
     }
