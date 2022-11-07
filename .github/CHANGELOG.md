@@ -94,6 +94,8 @@
 1. [HYD] Fixed autobrake controller tuning - @Crocket63 (crocket)
 1. [ENGINE] Improved engine primary parameters performance (EGT & Fuel Flow) - @Taz5150 (TazX [Z+2]#0405)
 1. [ENGINE] Fix Engine Flex Calculations - @Taz5150 (TazX [Z+2]#0405)
+1. [FLIGHTMODEL] Flight Model update - @donstim (donbikes#4084)
+1. [HYD] Fix incorrect gain in down pitch commands - @Crocket63 (crocket)
 
 ## 0.8.0
 
