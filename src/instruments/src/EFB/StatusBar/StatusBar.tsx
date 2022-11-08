@@ -116,7 +116,7 @@ export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
         setConnectedState();
     }, 15_000);
 
-    const bind = useLongPress(() => {}, {
+    const longPressPowerButton = useLongPress(() => {}, {
         threshold: 100_000,
         onCancel: () => {
             if (shutoffTimerRef.current) {
@@ -209,7 +209,7 @@ export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
                 <BatteryStatus batteryLevel={batteryLevel} isCharging={isCharging} />
 
                 <TooltipWrapper text={t('StatusBar.TT.TurnOffOrShutdownEfb')}>
-                    <Power size={26} {...bind} />
+                    <Power size={26} {...longPressPowerButton} />
                 </TooltipWrapper>
             </div>
         </div>

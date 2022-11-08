@@ -4,10 +4,23 @@
     "ChangeATISATCSourceButton": "Изменить источник ATIS/ATC",
     "ConnectHoppieACARS": "Подключить Hoppie ACARS",
     "NoInformationAvailableForThisFrequency": "Нет доступной информации по этой частоте",
+    "SearchPlaceholder": "Search",
     "SelectCorrectATISATCSource": "Эта страница доступна только в том случае, если в качестве источника ATIS/ATC выбран IVAO или VATSIM на странице настроек.",
     "SetActive": "Установить активной",
     "SetStandby": "Установить резервной",
+    "ShowAll": "All",
+    "ShowApproach": "Approach",
+    "ShowAtis": "ATIS",
+    "ShowDelivery": "Delivery",
+    "ShowDeparture": "Departure",
+    "ShowGround": "Ground",
+    "ShowRadar": "Radar",
+    "ShowTower": "Tower",
     "Standby": "Резервная",
+    "TT": {
+      "AtcCallSignSearch": "ATC Call-sign Search",
+      "AtcTypeFilter": "Filter for"
+    },
     "Title": "Управление Воздушным Движением"
   },
   "Checklists": {
@@ -183,6 +196,10 @@
     "Altn": "Алтн",
     "ExitFullscreenMode": "Выйти из полноэкранного режима",
     "From": "От",
+    "LoadingImage": "Loading Image",
+    "LoadingImageFailed": "Loading Image failed",
+    "LoadingPdf": "Loading PDF",
+    "LoadingPdfFailed": "Loading PDF failed",
     "LocalFiles": {
       "Both": "Оба",
       "EstablishingConnection": "Установка соединения...",
@@ -342,6 +359,7 @@
       "ConfirmationDialogMsg": "Подтвердите загрузку пресета.",
       "CurrentProcedureStep": "Текущий этап процедуры",
       "PleaseConfirmLoadingOfPreset": "Подтвердите загрузку пресета.",
+      "Powered": "Powered",
       "ReadyPushback": "Готов к откату",
       "ReadyTakeoff": "Готов к взлету",
       "ReadyTaxi": "Готов к такси",
@@ -354,6 +372,12 @@
     "InteriorLighting": {
       "AircraftNeedsToBePoweredToLoadPresets": "Самолёт должен иметь питание для загрузки пресетов",
       "AircraftNeedsToBePoweredToSavePresets": "Самолёт должен иметь питание для загрузки пресетов",
+      "AutoLoadDawnDusk": "Dawn/Dusk:",
+      "AutoLoadDay": "Day:",
+      "AutoLoadLightingHelpTitle": "Automatic Preset Loading",
+      "AutoLoadLightingPreset": "Enable automatic loading of lighting presets:",
+      "AutoLoadNight": "Night:",
+      "AutoLoadNoneSelection": "None",
       "LoadPreset": "Загрузить пресет",
       "LoadingPreset": "Загрузка пресета...",
       "NewNameConfirmationDialogMsg": "Подтвердите новое имя для пресета освещения",
@@ -407,13 +431,15 @@
       "SliderSpeed": "Перемещение на желаемую скорость",
       "SystemEnabledOff": "Нажмите, чтобы включить систему буксировки.",
       "SystemEnabledOn": "Нажмите, чтобы полностью отключить систему буксировки.",
+      "UseControllerInput": "Turn controller input from rudder and elevator on/off",
       "ZoomIn": "Увеличить",
       "ZoomOut": "Уменьшить"
     },
     "TugAttached": "Буксир прикреплен",
     "TugDirection": "Направление буксира",
     "TugInTransit": "Ожидание буксира",
-    "TugSpeed": "Скорость буксира"
+    "TugSpeed": "Скорость буксира",
+    "UseControllerInput": "Use Controller Input"
   },
   "Settings": {
     "About": {
@@ -427,6 +453,7 @@
       "LatLonExtendedFormat": "Формат промежуточных точек FMGC для широты/долготы",
       "PaxSigns": "Табло салона",
       "RmpVhfSpacing": "Интервал RMP VHF",
+      "Satcom": "Satcom",
       "ThrustReductionHeight": "Высота уменьшения тяги (фт)",
       "Title": "Опции самолёта / Пин-программы",
       "WeightUnit": "Единицы измерения веса"
@@ -472,11 +499,13 @@
       "AutofillChecklists": "Автозаполнение контрольных списков",
       "BoardingTime": "Скорость посадки",
       "DmcSelfTestTime": "Время самотестирования DMC",
+      "FirstOfficerAvatar": "Show First Officer Avatar",
       "HomeCockpitMode": "Режим домашней кабины",
       "McduFocusTimeout": "Тайм-аут фокуса MCDU (секунды)",
       "McduKeyboardInput": "Ввод с клавиатуры MCDU",
       "PauseAtTod": "Т/Д Пауза",
       "PauseAtTodDistance": "Расстояние паузы Т/Д (нм)",
+      "PilotAvatar": "Show Pilot Avatar",
       "SeparateTillerFromRudderInputs": "Отдельный румпель от входов руля",
       "SyncEfis": "Sync EFIS controls between Captain and FO",
       "Title": "Реализм"

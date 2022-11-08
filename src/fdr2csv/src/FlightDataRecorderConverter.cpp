@@ -1,11 +1,9 @@
 #include "FlightDataRecorderConverter.h"
 
-#include "fmt/core.h"
-#include "fmt/ostream.h"
+#include "fmt/include/fmt/core.h"
+#include "fmt/include/fmt/ostream.h"
 
-using namespace std;
-
-void FlightDataRecorderConverter::writeHeader(ofstream& out, const string& delimiter) {
+void FlightDataRecorderConverter::writeHeader(std::ofstream& out, const std::string& delimiter) {
   fmt::print(out, "ap_sm.time.dt{}", delimiter);
   fmt::print(out, "ap_sm.time.simulation_time{}", delimiter);
   fmt::print(out, "ap_sm.data.aircraft_position.lat{}", delimiter);
@@ -358,142 +356,6 @@ void FlightDataRecorderConverter::writeHeader(ofstream& out, const string& delim
   fmt::print(out, "athr.output.mode_message{}", delimiter);
   fmt::print(out, "athr.output.thrust_lever_warning_flex{}", delimiter);
   fmt::print(out, "athr.output.thrust_lever_warning_toga{}", delimiter);
-  fmt::print(out, "fbw.sim.time.monotonic_time{}", delimiter);
-  fmt::print(out, "fbw.sim.time.dt{}", delimiter);
-  fmt::print(out, "fbw.sim.time.simulation_time{}", delimiter);
-  fmt::print(out, "fbw.sim.time.monotonic_time{}", delimiter);
-  fmt::print(out, "fbw.sim.data.nz_g{}", delimiter);
-  fmt::print(out, "fbw.sim.data.Theta_deg{}", delimiter);
-  fmt::print(out, "fbw.sim.data.Phi_deg{}", delimiter);
-  fmt::print(out, "fbw.sim.data.q_deg_s{}", delimiter);
-  fmt::print(out, "fbw.sim.data.r_deg_s{}", delimiter);
-  fmt::print(out, "fbw.sim.data.p_deg_s{}", delimiter);
-  fmt::print(out, "fbw.sim.data.qk_deg_s{}", delimiter);
-  fmt::print(out, "fbw.sim.data.rk_deg_s{}", delimiter);
-  fmt::print(out, "fbw.sim.data.pk_deg_s{}", delimiter);
-  fmt::print(out, "fbw.sim.data.qk_dot_deg_s2{}", delimiter);
-  fmt::print(out, "fbw.sim.data.rk_dot_deg_s2{}", delimiter);
-  fmt::print(out, "fbw.sim.data.pk_dot_deg_s2{}", delimiter);
-  fmt::print(out, "fbw.sim.data.psi_magnetic_deg{}", delimiter);
-  fmt::print(out, "fbw.sim.data.psi_true_deg{}", delimiter);
-  fmt::print(out, "fbw.sim.data.eta_deg{}", delimiter);
-  fmt::print(out, "fbw.sim.data.eta_trim_deg{}", delimiter);
-  fmt::print(out, "fbw.sim.data.xi_deg{}", delimiter);
-  fmt::print(out, "fbw.sim.data.zeta_deg{}", delimiter);
-  fmt::print(out, "fbw.sim.data.zeta_trim_deg{}", delimiter);
-  fmt::print(out, "fbw.sim.data.alpha_deg{}", delimiter);
-  fmt::print(out, "fbw.sim.data.beta_deg{}", delimiter);
-  fmt::print(out, "fbw.sim.data.beta_dot_deg_s{}", delimiter);
-  fmt::print(out, "fbw.sim.data.V_ias_kn{}", delimiter);
-  fmt::print(out, "fbw.sim.data.V_tas_kn{}", delimiter);
-  fmt::print(out, "fbw.sim.data.V_mach{}", delimiter);
-  fmt::print(out, "fbw.sim.data.H_ft{}", delimiter);
-  fmt::print(out, "fbw.sim.data.H_ind_ft{}", delimiter);
-  fmt::print(out, "fbw.sim.data.H_radio_ft{}", delimiter);
-  fmt::print(out, "fbw.sim.data.CG_percent_MAC{}", delimiter);
-  fmt::print(out, "fbw.sim.data.total_weight_kg{}", delimiter);
-  fmt::print(out, "fbw.sim.data.gear_strut_compression_0{}", delimiter);
-  fmt::print(out, "fbw.sim.data.gear_strut_compression_1{}", delimiter);
-  fmt::print(out, "fbw.sim.data.gear_strut_compression_2{}", delimiter);
-  fmt::print(out, "fbw.sim.data.flaps_handle_index{}", delimiter);
-  fmt::print(out, "fbw.sim.data.spoilers_left_pos{}", delimiter);
-  fmt::print(out, "fbw.sim.data.spoilers_right_pos{}", delimiter);
-  fmt::print(out, "fbw.sim.data.autopilot_master_on{}", delimiter);
-  fmt::print(out, "fbw.sim.data.slew_on{}", delimiter);
-  fmt::print(out, "fbw.sim.data.pause_on{}", delimiter);
-  fmt::print(out, "fbw.sim.data.tracking_mode_on_override{}", delimiter);
-  fmt::print(out, "fbw.sim.data.autopilot_custom_on{}", delimiter);
-  fmt::print(out, "fbw.sim.data.autopilot_custom_Theta_c_deg{}", delimiter);
-  fmt::print(out, "fbw.sim.data.autopilot_custom_Phi_c_deg{}", delimiter);
-  fmt::print(out, "fbw.sim.data.autopilot_custom_Beta_c_deg{}", delimiter);
-  fmt::print(out, "fbw.sim.data.simulation_rate{}", delimiter);
-  fmt::print(out, "fbw.sim.data.ice_structure_percent{}", delimiter);
-  fmt::print(out, "fbw.sim.data.linear_cl_alpha_per_deg{}", delimiter);
-  fmt::print(out, "fbw.sim.data.alpha_stall_deg{}", delimiter);
-  fmt::print(out, "fbw.sim.data.alpha_zero_lift_deg{}", delimiter);
-  fmt::print(out, "fbw.sim.data.ambient_density_kg_per_m3{}", delimiter);
-  fmt::print(out, "fbw.sim.data.ambient_pressure_mbar{}", delimiter);
-  fmt::print(out, "fbw.sim.data.ambient_temperature_celsius{}", delimiter);
-  fmt::print(out, "fbw.sim.data.ambient_wind_x_kn{}", delimiter);
-  fmt::print(out, "fbw.sim.data.ambient_wind_y_kn{}", delimiter);
-  fmt::print(out, "fbw.sim.data.ambient_wind_z_kn{}", delimiter);
-  fmt::print(out, "fbw.sim.data.ambient_wind_velocity_kn{}", delimiter);
-  fmt::print(out, "fbw.sim.data.ambient_wind_direction_deg{}", delimiter);
-  fmt::print(out, "fbw.sim.data.total_air_temperature_celsius{}", delimiter);
-  fmt::print(out, "fbw.sim.data.latitude_deg{}", delimiter);
-  fmt::print(out, "fbw.sim.data.longitude_deg{}", delimiter);
-  fmt::print(out, "fbw.sim.data.engine_1_thrust_lbf{}", delimiter);
-  fmt::print(out, "fbw.sim.data.engine_2_thrust_lbf{}", delimiter);
-  fmt::print(out, "fbw.sim.data.thrust_lever_1_pos{}", delimiter);
-  fmt::print(out, "fbw.sim.data.thrust_lever_2_pos{}", delimiter);
-  fmt::print(out, "fbw.sim.data_computed.on_ground{}", delimiter);
-  fmt::print(out, "fbw.sim.data_computed.tracking_mode_on{}", delimiter);
-  fmt::print(out, "fbw.sim.data_computed.high_aoa_prot_active{}", delimiter);
-  fmt::print(out, "fbw.sim.data_computed.alpha_floor_command{}", delimiter);
-  fmt::print(out, "fbw.sim.data_computed.protection_ap_disc{}", delimiter);
-  fmt::print(out, "fbw.sim.data_computed.high_speed_prot_active{}", delimiter);
-  fmt::print(out, "fbw.sim.data_computed.high_speed_prot_low_kn{}", delimiter);
-  fmt::print(out, "fbw.sim.data_computed.high_speed_prot_high_kn{}", delimiter);
-  fmt::print(out, "fbw.sim.data_speeds_aoa.v_alpha_max_kn{}", delimiter);
-  fmt::print(out, "fbw.sim.data_speeds_aoa.alpha_max_deg{}", delimiter);
-  fmt::print(out, "fbw.sim.data_speeds_aoa.v_alpha_prot_kn{}", delimiter);
-  fmt::print(out, "fbw.sim.data_speeds_aoa.alpha_prot_deg{}", delimiter);
-  fmt::print(out, "fbw.sim.data_speeds_aoa.alpha_floor_deg{}", delimiter);
-  fmt::print(out, "fbw.sim.data_speeds_aoa.alpha_filtered_deg{}", delimiter);
-  fmt::print(out, "fbw.sim.input.delta_eta_pos{}", delimiter);
-  fmt::print(out, "fbw.sim.input.delta_xi_pos{}", delimiter);
-  fmt::print(out, "fbw.sim.input.delta_zeta_pos{}", delimiter);
-  fmt::print(out, "fbw.pitch.data_computed.eta_trim_deg_limit_lo{}", delimiter);
-  fmt::print(out, "fbw.pitch.data_computed.eta_trim_deg_limit_up{}", delimiter);
-  fmt::print(out, "fbw.pitch.data_computed.delta_eta_deg{}", delimiter);
-  fmt::print(out, "fbw.pitch.data_computed.in_flight{}", delimiter);
-  fmt::print(out, "fbw.pitch.data_computed.in_rotation{}", delimiter);
-  fmt::print(out, "fbw.pitch.data_computed.in_flare{}", delimiter);
-  fmt::print(out, "fbw.pitch.data_computed.in_flight_gain{}", delimiter);
-  fmt::print(out, "fbw.pitch.data_computed.in_rotation_gain{}", delimiter);
-  fmt::print(out, "fbw.pitch.data_computed.nz_limit_up_g{}", delimiter);
-  fmt::print(out, "fbw.pitch.data_computed.nz_limit_lo_g{}", delimiter);
-  fmt::print(out, "fbw.pitch.data_computed.eta_trim_deg_should_freeze{}", delimiter);
-  fmt::print(out, "fbw.pitch.data_computed.eta_trim_deg_reset{}", delimiter);
-  fmt::print(out, "fbw.pitch.data_computed.eta_trim_deg_reset_deg{}", delimiter);
-  fmt::print(out, "fbw.pitch.data_computed.eta_trim_deg_should_write{}", delimiter);
-  fmt::print(out, "fbw.pitch.data_computed.eta_trim_deg_rate_limit_up_deg_s{}", delimiter);
-  fmt::print(out, "fbw.pitch.data_computed.eta_trim_deg_rate_limit_lo_deg_s{}", delimiter);
-  fmt::print(out, "fbw.pitch.data_computed.flare_Theta_deg{}", delimiter);
-  fmt::print(out, "fbw.pitch.data_computed.flare_Theta_c_deg{}", delimiter);
-  fmt::print(out, "fbw.pitch.data_computed.flare_Theta_c_rate_deg_s{}", delimiter);
-  fmt::print(out, "fbw.pitch.law_rotation.qk_c_deg_s{}", delimiter);
-  fmt::print(out, "fbw.pitch.law_rotation.eta_deg{}", delimiter);
-  fmt::print(out, "fbw.pitch.law_normal.nz_c_g{}", delimiter);
-  fmt::print(out, "fbw.pitch.law_normal.Cstar_g{}", delimiter);
-  fmt::print(out, "fbw.pitch.law_normal.protection_alpha_c_deg{}", delimiter);
-  fmt::print(out, "fbw.pitch.law_normal.protection_V_c_kn{}", delimiter);
-  fmt::print(out, "fbw.pitch.law_normal.eta_dot_deg_s{}", delimiter);
-  fmt::print(out, "fbw.pitch.vote.eta_dot_deg_s{}", delimiter);
-  fmt::print(out, "fbw.pitch.integrated.eta_deg{}", delimiter);
-  fmt::print(out, "fbw.pitch.output.eta_deg{}", delimiter);
-  fmt::print(out, "fbw.pitch.output.eta_trim_deg{}", delimiter);
-  fmt::print(out, "fbw.roll.data_computed.delta_xi_deg{}", delimiter);
-  fmt::print(out, "fbw.roll.data_computed.delta_zeta_deg{}", delimiter);
-  fmt::print(out, "fbw.roll.data_computed.in_flight{}", delimiter);
-  fmt::print(out, "fbw.roll.data_computed.in_flight_gain{}", delimiter);
-  fmt::print(out, "fbw.roll.data_computed.zeta_trim_deg_should_write{}", delimiter);
-  fmt::print(out, "fbw.roll.data_computed.beta_target_deg{}", delimiter);
-  fmt::print(out, "fbw.roll.law_normal.pk_c_deg_s{}", delimiter);
-  fmt::print(out, "fbw.roll.law_normal.Phi_c_deg{}", delimiter);
-  fmt::print(out, "fbw.roll.law_normal.xi_deg{}", delimiter);
-  fmt::print(out, "fbw.roll.law_normal.zeta_deg{}", delimiter);
-  fmt::print(out, "fbw.roll.law_normal.zeta_tc_yd_deg{}", delimiter);
-  fmt::print(out, "fbw.roll.output.xi_deg{}", delimiter);
-  fmt::print(out, "fbw.roll.output.zeta_deg{}", delimiter);
-  fmt::print(out, "fbw.roll.output.zeta_trim_deg{}", delimiter);
-  fmt::print(out, "fbw.output.eta_pos{}", delimiter);
-  fmt::print(out, "fbw.output.eta_trim_deg{}", delimiter);
-  fmt::print(out, "fbw.output.eta_trim_deg_should_write{}", delimiter);
-  fmt::print(out, "fbw.output.xi_pos{}", delimiter);
-  fmt::print(out, "fbw.output.zeta_pos{}", delimiter);
-  fmt::print(out, "fbw.output.zeta_trim_pos{}", delimiter);
-  fmt::print(out, "fbw.output.zeta_trim_pos_should_write{}", delimiter);
   fmt::print(out, "engine.simOnGround{}", delimiter);
   fmt::print(out, "engine.generalEngineElapsedTime_1{}", delimiter);
   fmt::print(out, "engine.generalEngineElapsedTime_2{}", delimiter);
@@ -575,15 +437,45 @@ void FlightDataRecorderConverter::writeHeader(ofstream& out, const string& delim
   fmt::print(out, "data.realisticTillerEnabled{}", delimiter);
   fmt::print(out, "data.tillerHandlePosition{}", delimiter);
   fmt::print(out, "data.noseWheelPosition{}", delimiter);
+  fmt::print(out, "data.syncFoEfisEnabled{}", delimiter);
+  fmt::print(out, "data.ls1Active{}", delimiter);
+  fmt::print(out, "data.ls2Active{}", delimiter);
+  fmt::print(out, "data.IsisLsActive{}", delimiter);
+  fmt::print(out, "data.wingAntiIce{}", delimiter);
+  // Fix missing data for FDR Analysis
+  // controller input data
+  fmt::print(out, "data.inputElevator{}", delimiter);
+  fmt::print(out, "data.inputAileron{}", delimiter);
+  fmt::print(out, "data.inputRudder{}", delimiter);
+  // additional
+  fmt::print(out, "data.simulation_rate{}", delimiter);
+  fmt::print(out, "data.wasPaused{}", delimiter);
+  fmt::print(out, "data.slew_on{}", delimiter);
+  // ambient data
+  fmt::print(out, "data.ice_structure_percent{}", delimiter);
+  fmt::print(out, "data.ambient_pressure_mbar{}", delimiter);
+  fmt::print(out, "data.ambient_wind_velocity_kn{}", delimiter);
+  fmt::print(out, "data.ambient_wind_direction_deg{}", delimiter);
+  fmt::print(out, "data.total_air_temperature_celsius{}", delimiter);
+  // failures
+  fmt::print(out, "data.failuresActive{}", delimiter);
+  // a.floor
+  fmt::print(out, "data.alpha_floor_condition{}", delimiter);
+  // high aoa protection
+  fmt::print(out, "data.high_aoa_protection{}", delimiter);
+  // aoa - these are not correct yet
+  //  fmt::print(out, "data.protection_ap_disc{}", delimiter);
+  //  fmt::print(out, "data.v_alpha_prot_kn{}", delimiter);
+  //  fmt::print(out, "data.v_alpha_max_kn{}", delimiter);
+
   fmt::print(out, "\n");
 }
 
-void FlightDataRecorderConverter::writeStruct(ofstream& out,
-                                              const string& delimiter,
+void FlightDataRecorderConverter::writeStruct(std::ofstream& out,
+                                              const std::string& delimiter,
                                               const ap_sm_output& ap_sm,
                                               const ap_raw_output& ap_law,
                                               const athr_out& athr,
-                                              const fbw_output& fbw,
                                               const EngineData& engine,
                                               const AdditionalData& data) {
   fmt::print(out, "{}{}", ap_sm.time.dt, delimiter);
@@ -938,142 +830,6 @@ void FlightDataRecorderConverter::writeStruct(ofstream& out,
   fmt::print(out, "{}{}", athr.output.mode_message, delimiter);
   fmt::print(out, "{}{}", static_cast<unsigned int>(athr.output.thrust_lever_warning_flex), delimiter);
   fmt::print(out, "{}{}", static_cast<unsigned int>(athr.output.thrust_lever_warning_toga), delimiter);
-  fmt::print(out, "{}{}", fbw.sim.time.monotonic_time, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.time.dt, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.time.simulation_time, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.time.monotonic_time, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data.nz_g, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data.Theta_deg, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data.Phi_deg, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data.q_deg_s, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data.r_deg_s, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data.p_deg_s, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data.qk_deg_s, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data.rk_deg_s, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data.pk_deg_s, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data.qk_dot_deg_s2, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data.rk_dot_deg_s2, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data.pk_dot_deg_s2, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data.psi_magnetic_deg, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data.psi_true_deg, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data.eta_deg, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data.eta_trim_deg, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data.xi_deg, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data.zeta_deg, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data.zeta_trim_deg, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data.alpha_deg, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data.beta_deg, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data.beta_dot_deg_s, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data.V_ias_kn, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data.V_tas_kn, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data.V_mach, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data.H_ft, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data.H_ind_ft, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data.H_radio_ft, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data.CG_percent_MAC, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data.total_weight_kg, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data.gear_strut_compression_0, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data.gear_strut_compression_1, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data.gear_strut_compression_2, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data.flaps_handle_index, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data.spoilers_left_pos, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data.spoilers_right_pos, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data.autopilot_master_on, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data.slew_on, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data.pause_on, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data.tracking_mode_on_override, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data.autopilot_custom_on, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data.autopilot_custom_Theta_c_deg, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data.autopilot_custom_Phi_c_deg, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data.autopilot_custom_Beta_c_deg, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data.simulation_rate, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data.ice_structure_percent, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data.linear_cl_alpha_per_deg, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data.alpha_stall_deg, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data.alpha_zero_lift_deg, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data.ambient_density_kg_per_m3, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data.ambient_pressure_mbar, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data.ambient_temperature_celsius, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data.ambient_wind_x_kn, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data.ambient_wind_y_kn, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data.ambient_wind_z_kn, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data.ambient_wind_velocity_kn, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data.ambient_wind_direction_deg, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data.total_air_temperature_celsius, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data.latitude_deg, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data.longitude_deg, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data.engine_1_thrust_lbf, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data.engine_2_thrust_lbf, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data.thrust_lever_1_pos, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data.thrust_lever_2_pos, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data_computed.on_ground, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data_computed.tracking_mode_on, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data_computed.high_aoa_prot_active, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data_computed.alpha_floor_command, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data_computed.protection_ap_disc, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data_computed.high_speed_prot_active, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data_computed.high_speed_prot_low_kn, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data_computed.high_speed_prot_high_kn, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data_speeds_aoa.v_alpha_max_kn, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data_speeds_aoa.alpha_max_deg, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data_speeds_aoa.v_alpha_prot_kn, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data_speeds_aoa.alpha_prot_deg, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data_speeds_aoa.alpha_floor_deg, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.data_speeds_aoa.alpha_filtered_deg, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.input.delta_eta_pos, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.input.delta_xi_pos, delimiter);
-  fmt::print(out, "{}{}", fbw.sim.input.delta_zeta_pos, delimiter);
-  fmt::print(out, "{}{}", fbw.pitch.data_computed.eta_trim_deg_limit_lo, delimiter);
-  fmt::print(out, "{}{}", fbw.pitch.data_computed.eta_trim_deg_limit_up, delimiter);
-  fmt::print(out, "{}{}", fbw.pitch.data_computed.delta_eta_deg, delimiter);
-  fmt::print(out, "{}{}", fbw.pitch.data_computed.in_flight, delimiter);
-  fmt::print(out, "{}{}", fbw.pitch.data_computed.in_rotation, delimiter);
-  fmt::print(out, "{}{}", fbw.pitch.data_computed.in_flare, delimiter);
-  fmt::print(out, "{}{}", fbw.pitch.data_computed.in_flight_gain, delimiter);
-  fmt::print(out, "{}{}", fbw.pitch.data_computed.in_rotation_gain, delimiter);
-  fmt::print(out, "{}{}", fbw.pitch.data_computed.nz_limit_up_g, delimiter);
-  fmt::print(out, "{}{}", fbw.pitch.data_computed.nz_limit_lo_g, delimiter);
-  fmt::print(out, "{}{}", static_cast<unsigned int>(fbw.pitch.data_computed.eta_trim_deg_should_freeze), delimiter);
-  fmt::print(out, "{}{}", static_cast<unsigned int>(fbw.pitch.data_computed.eta_trim_deg_reset), delimiter);
-  fmt::print(out, "{}{}", fbw.pitch.data_computed.eta_trim_deg_reset_deg, delimiter);
-  fmt::print(out, "{}{}", static_cast<unsigned int>(fbw.pitch.data_computed.eta_trim_deg_should_write), delimiter);
-  fmt::print(out, "{}{}", fbw.pitch.data_computed.eta_trim_deg_rate_limit_up_deg_s, delimiter);
-  fmt::print(out, "{}{}", fbw.pitch.data_computed.eta_trim_deg_rate_limit_lo_deg_s, delimiter);
-  fmt::print(out, "{}{}", fbw.pitch.data_computed.flare_Theta_deg, delimiter);
-  fmt::print(out, "{}{}", fbw.pitch.data_computed.flare_Theta_c_deg, delimiter);
-  fmt::print(out, "{}{}", fbw.pitch.data_computed.flare_Theta_c_rate_deg_s, delimiter);
-  fmt::print(out, "{}{}", fbw.pitch.law_rotation.qk_c_deg_s, delimiter);
-  fmt::print(out, "{}{}", fbw.pitch.law_rotation.eta_deg, delimiter);
-  fmt::print(out, "{}{}", fbw.pitch.law_normal.nz_c_g, delimiter);
-  fmt::print(out, "{}{}", fbw.pitch.law_normal.Cstar_g, delimiter);
-  fmt::print(out, "{}{}", fbw.pitch.law_normal.protection_alpha_c_deg, delimiter);
-  fmt::print(out, "{}{}", fbw.pitch.law_normal.protection_V_c_kn, delimiter);
-  fmt::print(out, "{}{}", fbw.pitch.law_normal.eta_dot_deg_s, delimiter);
-  fmt::print(out, "{}{}", fbw.pitch.vote.eta_dot_deg_s, delimiter);
-  fmt::print(out, "{}{}", fbw.pitch.integrated.eta_deg, delimiter);
-  fmt::print(out, "{}{}", fbw.pitch.output.eta_deg, delimiter);
-  fmt::print(out, "{}{}", fbw.pitch.output.eta_trim_deg, delimiter);
-  fmt::print(out, "{}{}", fbw.roll.data_computed.delta_xi_deg, delimiter);
-  fmt::print(out, "{}{}", fbw.roll.data_computed.delta_zeta_deg, delimiter);
-  fmt::print(out, "{}{}", fbw.roll.data_computed.in_flight, delimiter);
-  fmt::print(out, "{}{}", fbw.roll.data_computed.in_flight_gain, delimiter);
-  fmt::print(out, "{}{}", static_cast<unsigned int>(fbw.roll.data_computed.zeta_trim_deg_should_write), delimiter);
-  fmt::print(out, "{}{}", fbw.roll.data_computed.beta_target_deg, delimiter);
-  fmt::print(out, "{}{}", fbw.roll.law_normal.pk_c_deg_s, delimiter);
-  fmt::print(out, "{}{}", fbw.roll.law_normal.Phi_c_deg, delimiter);
-  fmt::print(out, "{}{}", fbw.roll.law_normal.xi_deg, delimiter);
-  fmt::print(out, "{}{}", fbw.roll.law_normal.zeta_deg, delimiter);
-  fmt::print(out, "{}{}", fbw.roll.law_normal.zeta_tc_yd_deg, delimiter);
-  fmt::print(out, "{}{}", fbw.roll.output.xi_deg, delimiter);
-  fmt::print(out, "{}{}", fbw.roll.output.zeta_deg, delimiter);
-  fmt::print(out, "{}{}", fbw.roll.output.zeta_trim_deg, delimiter);
-  fmt::print(out, "{}{}", fbw.output.eta_pos, delimiter);
-  fmt::print(out, "{}{}", fbw.output.eta_trim_deg, delimiter);
-  fmt::print(out, "{}{}", static_cast<unsigned int>(fbw.output.eta_trim_deg_should_write), delimiter);
-  fmt::print(out, "{}{}", fbw.output.xi_pos, delimiter);
-  fmt::print(out, "{}{}", fbw.output.zeta_pos, delimiter);
-  fmt::print(out, "{}{}", fbw.output.zeta_trim_pos, delimiter);
-  fmt::print(out, "{}{}", static_cast<unsigned int>(fbw.output.zeta_trim_pos_should_write), delimiter);
   fmt::print(out, "{}{}", engine.simOnGround, delimiter);
   fmt::print(out, "{}{}", engine.generalEngineElapsedTime_1, delimiter);
   fmt::print(out, "{}{}", engine.generalEngineElapsedTime_2, delimiter);
@@ -1155,5 +911,32 @@ void FlightDataRecorderConverter::writeStruct(ofstream& out,
   fmt::print(out, "{}{}", data.realisticTillerEnabled, delimiter);
   fmt::print(out, "{}{}", data.tillerHandlePosition, delimiter);
   fmt::print(out, "{}{}", data.noseWheelPosition, delimiter);
+  fmt::print(out, "{}{}", data.syncFoEfisEnabled, delimiter);
+  fmt::print(out, "{}{}", data.ls1Active, delimiter);
+  fmt::print(out, "{}{}", data.ls2Active, delimiter);
+  fmt::print(out, "{}{}", data.IsisLsActive, delimiter);
+  fmt::print(out, "{}{}", data.wingAntiIce, delimiter);
+  // Fix missing data for FDR Analysis
+  // controller input data
+  fmt::print(out, "{}{}", data.inputElevator, delimiter);
+  fmt::print(out, "{}{}", data.inputAileron, delimiter);
+  fmt::print(out, "{}{}", data.inputRudder, delimiter);
+  // additional sim data
+  fmt::print(out, "{}{}", data.simulation_rate, delimiter);
+  fmt::print(out, "{}{}", data.wasPaused, delimiter);
+  fmt::print(out, "{}{}", data.slew_on, delimiter);
+  // ambient data
+  fmt::print(out, "{}{}", data.ice_structure_percent, delimiter);
+  fmt::print(out, "{}{}", data.ambient_pressure_mbar, delimiter);
+  fmt::print(out, "{}{}", data.ambient_wind_velocity_kn, delimiter);
+  fmt::print(out, "{}{}", data.ambient_wind_direction_deg, delimiter);
+  fmt::print(out, "{}{}", data.total_air_temperature_celsius, delimiter);
+  // failure
+  fmt::print(out, "{}{}", data.failuresActive, delimiter);
+  // a.floor
+  fmt::print(out, "{}{}", data.alpha_floor_condition, delimiter);
+  // high aoa protection
+  fmt::print(out, "{}{}", data.high_aoa_protection, delimiter);
+
   fmt::print(out, "\n");
 }
