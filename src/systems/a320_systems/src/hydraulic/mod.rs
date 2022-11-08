@@ -2845,7 +2845,14 @@ impl A320BlueElectricPumpController {
 
         self.should_pressurise = self.is_powered && should_pressurise_if_powered;
 
-        self.update_low_pressure(hydraulic_circuit, engine1, engine2, lgciu1, lgciu2);
+        self.update_low_pressure(
+            overhead_panel,
+            hydraulic_circuit,
+            engine1,
+            engine2,
+            lgciu1,
+            lgciu2,
+        );
 
         self.update_low_air_pressure(reservoir, overhead_panel);
 
@@ -2854,6 +2861,7 @@ impl A320BlueElectricPumpController {
 
     fn update_low_pressure(
         &mut self,
+        overhead_panel: &A320HydraulicOverheadPanel,
         hydraulic_circuit: &impl HydraulicPressureSensors,
         engine1: &impl Engine,
         engine2: &impl Engine,
@@ -2873,7 +2881,8 @@ impl A320BlueElectricPumpController {
                 && lgciu1.left_gear_compressed(false)
                 && lgciu1.right_gear_compressed(false)
                 && lgciu2.left_gear_compressed(false)
-                && lgciu2.right_gear_compressed(false)));
+                && lgciu2.right_gear_compressed(false)
+                && !overhead_panel.blue_epump_override_push_button_is_on()));
     }
 
     fn update_low_air_pressure(
