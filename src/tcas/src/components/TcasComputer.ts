@@ -523,40 +523,42 @@ export class TcasComputer implements TcasComponent {
             }
             traffic.isDisplayed = isDisplayed;
 
-            const intrusionLevel: TaRaIntrusion[] = [0, 0, 0];
+            let rangeTest = 0;
+            let altTest = 0;
+            let accelTest = 0;
 
             // Perform range test
             if (traffic.raTau < TCAS.TAU[this.sensitivity.getVar()][TaRaIndex.RA]
                     || traffic.slantDistance < TCAS.DMOD[this.sensitivity.getVar()][TaRaIndex.RA]) {
-                intrusionLevel[Intrude.RANGE] = TaRaIntrusion.RA;
+                rangeTest = TaRaIntrusion.RA;
             } else if (traffic.taTau < TCAS.TAU[this.sensitivity.getVar()][TaRaIndex.TA]
                     || traffic.slantDistance < TCAS.DMOD[this.sensitivity.getVar()][TaRaIndex.TA]) {
-                intrusionLevel[Intrude.RANGE] = TaRaIntrusion.TA;
+                rangeTest = TaRaIntrusion.TA;
             } else if (traffic.hrzDistance < 6) {
-                intrusionLevel[Intrude.RANGE] = TaRaIntrusion.PROXIMITY;
+                rangeTest = TaRaIntrusion.PROXIMITY;
             }
 
             // Perform altitude test
             if (traffic.vTau < ((Math.abs(this.verticalSpeed) <= 600) ? TCAS.TVTHR[this.sensitivity.getVar()] : TCAS.TAU[this.sensitivity.getVar()][TaRaIndex.RA])
             || Math.abs(traffic.relativeAlt) < TCAS.ZTHR[this.sensitivity.getVar()][TaRaIndex.RA]) {
-                intrusionLevel[Intrude.ALT] = TaRaIntrusion.RA;
+                altTest = TaRaIntrusion.RA;
             } else if (traffic.vTau < TCAS.TAU[this.sensitivity.getVar()][TaRaIndex.TA] || Math.abs(traffic.relativeAlt) < TCAS.ZTHR[this.sensitivity.getVar()][TaRaIndex.TA]) {
-                intrusionLevel[Intrude.ALT] = TaRaIntrusion.TA;
+                altTest = TaRaIntrusion.TA;
             } else if (Math.abs(traffic.relativeAlt) < 1200) {
-                intrusionLevel[Intrude.ALT] = TaRaIntrusion.PROXIMITY;
+                altTest = TaRaIntrusion.PROXIMITY;
             }
 
             // Perform acceleration test
             // TODO FIXME: Proper HMD based true-to-life filtering
             if (Math.abs(traffic.closureAccel) <= TCAS.ACCEL[this.sensitivity.getVar()][TaRaIndex.RA]) {
-                intrusionLevel[Intrude.SPEED] = TaRaIntrusion.RA;
+                accelTest = TaRaIntrusion.RA;
             } else if (Math.abs(traffic.closureAccel) <= TCAS.ACCEL[this.sensitivity.getVar()][TaRaIndex.TA]) {
-                intrusionLevel[Intrude.SPEED] = TaRaIntrusion.TA;
+                accelTest = TaRaIntrusion.TA;
             } else {
-                intrusionLevel[Intrude.SPEED] = TaRaIntrusion.PROXIMITY;
+                accelTest = TaRaIntrusion.PROXIMITY;
             }
 
-            const desiredIntrusionLevel: TaRaIntrusion = Math.min(...intrusionLevel);
+            const desiredIntrusionLevel: TaRaIntrusion = Math.min(rangeTest, altTest, accelTest);
             switch (traffic.intrusionLevel) {
             case TaRaIntrusion.RA:
                 if (this.activeRa.info === null
@@ -1029,7 +1031,7 @@ export class TcasComputer implements TcasComponent {
      * @param _deltaTime time of this frame
      */
     private updateAdvisoryState(_deltaTime) {
-        const taThreatCount = this.airTraffic.reduce((acc, aircraft) => acc + (aircraft.alive && aircraft.intrusionLevel === TaRaIntrusion.TA ? 1 : 0), 0);
+        const taThreatCount = this.airTraffic.reduce((acc, aircraft) => acc + (aircraft.alive && aircraft.isDisplayed && aircraft.intrusionLevel === TaRaIntrusion.TA ? 1 : 0), 0);
         if (taThreatCount > 0 && this.debug) {
             console.log(`TA THREAT COUNT IS ${taThreatCount}`);
         }
