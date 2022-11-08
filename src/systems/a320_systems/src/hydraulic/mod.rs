@@ -2704,8 +2704,9 @@ impl A320EngineDrivenPumpController {
 
         // Fault inhibited if on ground AND engine oil pressure is low (11KS1 elec relay)
         self.has_pressure_low_fault = self.is_pressure_low
-            && (!engine.oil_pressure_is_low()
-                || !(lgciu.right_gear_compressed(false) && lgciu.left_gear_compressed(false)));
+            && (!(engine.oil_pressure_is_low()
+                && lgciu.right_gear_compressed(false)
+                && lgciu.left_gear_compressed(false)));
     }
 
     fn update_low_air_pressure(
@@ -2844,14 +2845,7 @@ impl A320BlueElectricPumpController {
 
         self.should_pressurise = self.is_powered && should_pressurise_if_powered;
 
-        self.update_low_pressure(
-            overhead_panel,
-            hydraulic_circuit,
-            engine1,
-            engine2,
-            lgciu1,
-            lgciu2,
-        );
+        self.update_low_pressure(hydraulic_circuit, engine1, engine2, lgciu1, lgciu2);
 
         self.update_low_air_pressure(reservoir, overhead_panel);
 
@@ -2860,7 +2854,6 @@ impl A320BlueElectricPumpController {
 
     fn update_low_pressure(
         &mut self,
-        overhead_panel: &A320HydraulicOverheadPanel,
         hydraulic_circuit: &impl HydraulicPressureSensors,
         engine1: &impl Engine,
         engine2: &impl Engine,
@@ -2876,11 +2869,11 @@ impl A320BlueElectricPumpController {
             );
 
         self.has_pressure_low_fault = self.is_pressure_low
-            && (!is_both_engine_low_oil_pressure
-                || (!(lgciu1.left_gear_compressed(false) && lgciu1.right_gear_compressed(false))
-                    || !(lgciu2.left_gear_compressed(false)
-                        && lgciu2.right_gear_compressed(false)))
-                || overhead_panel.blue_epump_override_push_button_is_on());
+            && (!(is_both_engine_low_oil_pressure
+                && lgciu1.left_gear_compressed(false)
+                && lgciu1.right_gear_compressed(false)
+                && lgciu2.left_gear_compressed(false)
+                && lgciu2.right_gear_compressed(false)));
     }
 
     fn update_low_air_pressure(
@@ -4410,8 +4403,8 @@ impl SimulationElement for A320AutobrakeController {
         let sec_1_gnd_splrs_out = reader.read(&self.ground_spoilers_out_sec1_id);
         let sec_2_gnd_splrs_out = reader.read(&self.ground_spoilers_out_sec2_id);
         let sec_3_gnd_splrs_out = reader.read(&self.ground_spoilers_out_sec3_id);
-        self.ground_spoilers_are_deployed = (sec_1_gnd_splrs_out && sec_2_gnd_splrs_out)
-            || (sec_1_gnd_splrs_out && sec_3_gnd_splrs_out)
+        self.ground_spoilers_are_deployed = (sec_1_gnd_splrs_out
+            && (sec_3_gnd_splrs_out || sec_2_gnd_splrs_out))
             || (sec_2_gnd_splrs_out && sec_3_gnd_splrs_out);
         self.external_disarm_event = reader.read(&self.external_disarm_event_id);
 

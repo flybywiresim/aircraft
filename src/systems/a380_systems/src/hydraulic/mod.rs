@@ -2632,8 +2632,9 @@ impl A380EngineDrivenPumpController {
 
         // TODO Fault inhibit copied from A320
         self.has_pressure_low_fault = self.is_pressure_low
-            && (!engines[self.pump_id.into_engine_index()].oil_pressure_is_low()
-                || !(lgciu.right_gear_compressed(false) && lgciu.left_gear_compressed(false)));
+            && (!(engines[self.pump_id.into_engine_index()].oil_pressure_is_low()
+                && lgciu.right_gear_compressed(false)
+                && lgciu.left_gear_compressed(false)));
     }
 
     fn update_low_air_pressure(
