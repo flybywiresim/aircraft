@@ -48,11 +48,12 @@ impl PumpCharacteristics {
     const A380_EDP_DISPLACEMENT_MAP_CUBIC_INCH: [f64; 9] =
         [2.4, 2.4, 2.4, 1., 0.3, 0.1, 0.0, 0.0, 0.0];
 
-    const A380_EPUMP_DISPLACEMENT_BREAKPTS_PSI: [f64; 9] = [
-        0.0, 500.0, 1000.0, 1500.0, 3175.0, 4850.0, 5000.0, 5100.0, 5500.0,
-    ];
+    const A380_EPUMP_REGULATED_SPEED_RPM: f64 = 8000.0;
+
+    const A380_EPUMP_DISPLACEMENT_BREAKPTS_PSI: [f64; 9] =
+        [0., 2000., 3000., 4000., 5000., 5100., 5200., 5300., 5350.];
     const A380_EPUMP_DISPLACEMENT_MAP_CUBIC_INCH: [f64; 9] =
-        [0.263, 0.263, 0.263, 0.263, 0.263, 0.15, 0.0, 0.0, 0.0];
+        [0.294525, 0.28875, 0.2858625, 0.231, 0.17325, 0., 0., 0., 0.];
 
     fn new(
         pressure_map_breakpoints_psi: [f64; 9],
@@ -113,7 +114,7 @@ impl PumpCharacteristics {
             Self::AIR_PRESSURE_BREAKPTS_PSI,
             Self::AIR_PRESSURE_CARAC_RATIO,
             Some(AngularVelocity::new::<revolution_per_minute>(
-                Self::A320_EPUMP_REGULATED_SPEED_RPM,
+                Self::A380_EPUMP_REGULATED_SPEED_RPM,
             )),
         )
     }

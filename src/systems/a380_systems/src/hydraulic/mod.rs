@@ -1240,7 +1240,7 @@ impl A380Hydraulic {
     const FORWARD_CARGO_DOOR_ID: &'static str = "FWD";
     const AFT_CARGO_DOOR_ID: &'static str = "AFT";
 
-    const ELECTRIC_PUMP_MAX_CURRENT_AMPERE: f64 = 55.;
+    const ELECTRIC_PUMP_MAX_CURRENT_AMPERE: f64 = 75.;
 
     const YELLOW_ELEC_PUMP_CONTROL_POWER_BUS: ElectricalBusType =
         ElectricalBusType::DirectCurrent(2);
