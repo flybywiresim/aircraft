@@ -109,12 +109,9 @@ impl ElectricalBus {
     pub fn new(context: &mut InitContext, bus_type: ElectricalBusType) -> ElectricalBus {
         ElectricalBus {
             identifier: context.next_electrical_identifier_for_bus(bus_type),
-            bus_powered_id: context
-                .get_identifier(format!("ELEC_{}_BUS_IS_POWERED", bus_type)),
-            bus_potential_normal_id: context.get_identifier(format!(
-                "ELEC_{}_BUS_POTENTIAL_NORMAL",
-                bus_type
-            )),
+            bus_powered_id: context.get_identifier(format!("ELEC_{}_BUS_IS_POWERED", bus_type)),
+            bus_potential_normal_id: context
+                .get_identifier(format!("ELEC_{}_BUS_POTENTIAL_NORMAL", bus_type)),
             potential: ElectricPotential::new::<volt>(0.),
             bus_type,
         }

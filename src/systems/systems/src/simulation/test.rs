@@ -511,13 +511,13 @@ impl<T: SimulationElement> From<T> for SimulationTestBed<TestAircraft<T>> {
     }
 }
 
-type UpdateBeforePowerDistributionFn<T> = dyn Fn(&mut T, &UpdateContext, &mut Electricity) + 'static;
+type UpdateBeforePowerDistributionFn<T> =
+    dyn Fn(&mut T, &UpdateContext, &mut Electricity) + 'static;
 type UpdateAfterPowerDistributionFn<T> = dyn Fn(&mut T, &UpdateContext) + 'static;
 
 pub struct TestAircraft<T: SimulationElement> {
     element: T,
-    update_before_power_distribution_fn:
-        Box<UpdateBeforePowerDistributionFn<T>>,
+    update_before_power_distribution_fn: Box<UpdateBeforePowerDistributionFn<T>>,
     update_after_power_distribution_fn: Box<UpdateAfterPowerDistributionFn<T>>,
 }
 impl<T: SimulationElement> TestAircraft<T> {

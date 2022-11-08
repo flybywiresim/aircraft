@@ -238,12 +238,7 @@ impl<'a, 'b> MsfsAspectBuilder<'a, 'b> {
     }
 
     /// Execute the given function whenever any of the observed variable values changes.
-    pub fn on_change(
-        &mut self,
-        execute_on: ExecuteOn,
-        observed: Vec<Variable>,
-        func: OnChangeFn,
-    ) {
+    pub fn on_change(&mut self, execute_on: ExecuteOn, observed: Vec<Variable>, func: OnChangeFn) {
         let observed = self.variables.register_many(&observed);
         let starting_values = self.variables.read_many(&observed);
 
