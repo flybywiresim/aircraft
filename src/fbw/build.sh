@@ -55,6 +55,7 @@ clang \
 clang++ \
   -c \
   ${CLANG_ARGS} \
+  -std=c++20 \
   -Wno-unused-command-line-argument \
   -Wno-ignored-attributes \
   -Wno-macro-redefined \
