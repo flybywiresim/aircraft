@@ -270,11 +270,11 @@ void FlyPadBackend::simConnectProcessRecvEvent(const SIMCONNECT_RECV_EVENT* data
 void FlyPadBackend::simConnectProcessDispatchMessage(SIMCONNECT_RECV* pData, DWORD* cbData) {
   switch (pData->dwID) {
     case SIMCONNECT_RECV_ID_OPEN:
-      cout << "FLYPAD_BACKEND: SimConnect connection established" << endl;
+      std::cout << "FLYPAD_BACKEND: SimConnect connection established" << std::endl;
       break;
 
     case SIMCONNECT_RECV_ID_QUIT:
-      cout << "FLYPAD_BACKEND: Received SimConnect connection quit message" << endl;
+      std::cout << "FLYPAD_BACKEND: Received SimConnect connection quit message" << std::endl;
       break;
 
     case SIMCONNECT_RECV_ID_SIMOBJECT_DATA:
@@ -290,11 +290,11 @@ void FlyPadBackend::simConnectProcessDispatchMessage(SIMCONNECT_RECV* pData, DWO
       break;
 
     case SIMCONNECT_RECV_ID_EXCEPTION:
-      cout << "FLYPAD_BACKEND: Exception in SimConnect connection: ";
-      cout << getSimConnectExceptionString(static_cast<SIMCONNECT_EXCEPTION>(static_cast<SIMCONNECT_RECV_EXCEPTION*>(pData)->dwException));
-      cout << "ID = " << static_cast<SIMCONNECT_RECV_EXCEPTION*>(pData)->dwID;
-      cout << "  Index = " << static_cast<SIMCONNECT_RECV_EXCEPTION*>(pData)->dwIndex;
-      cout << endl;
+      std::cout << "FLYPAD_BACKEND: Exception in SimConnect connection: ";
+      std::cout << getSimConnectExceptionString(
+        static_cast<SIMCONNECT_EXCEPTION>(
+          static_cast<SIMCONNECT_RECV_EXCEPTION*>(pData)->dwException));
+      std::cout << std::endl;
       break;
 
     default:

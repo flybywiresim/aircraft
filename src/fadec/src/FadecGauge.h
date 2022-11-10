@@ -29,8 +29,6 @@
 
 #define DEFAULT_AIRCRAFT_REGISTRATION "ASX320"
 
-using namespace std;
-
 class FadecGauge {
  private:
   bool isConnected = false;
@@ -186,12 +184,12 @@ class FadecGauge {
     switch (pData->dwID) {
       case SIMCONNECT_RECV_ID_OPEN:
         // connection established
-        cout << "FADEC: SimConnect connection established" << endl;
+        std::cout << "FADEC: SimConnect connection established" << std::endl;
         break;
 
       case SIMCONNECT_RECV_ID_QUIT:
         // connection lost
-        cout << "FADEC: Received SimConnect connection quit message" << endl;
+        std::cout << "FADEC: Received SimConnect connection quit message" << std::endl;
         break;
 
       case SIMCONNECT_RECV_ID_SIMOBJECT_DATA:
@@ -201,10 +199,10 @@ class FadecGauge {
 
       case SIMCONNECT_RECV_ID_EXCEPTION:
         // exception
-        cout << "FADEC: Exception in SimConnect connection: ";
-        cout << getSimConnectExceptionString(
+        std::cout << "FADEC: Exception in SimConnect connection: ";
+        std::cout << getSimConnectExceptionString(
             static_cast<SIMCONNECT_EXCEPTION>(static_cast<SIMCONNECT_RECV_EXCEPTION*>(pData)->dwException));
-        cout << endl;
+        std::cout << std::endl;
         break;
 
       default:
@@ -222,15 +220,15 @@ class FadecGauge {
       case 8:
         simulationDataLivery = *((SimulationDataLivery*)&data->dwData);
         if(simulationDataLivery.atc_id[0] == '\0') {
-          cout << "FADEC: Use default aircraft registration " << DEFAULT_AIRCRAFT_REGISTRATION << endl;;
+          std::cout << "FADEC: Use default aircraft registration " << DEFAULT_AIRCRAFT_REGISTRATION << std::endl;
           strncpy(simulationDataLivery.atc_id, DEFAULT_AIRCRAFT_REGISTRATION, sizeof(simulationDataLivery.atc_id));
         }
         return;
 
       default:
         // print unknown request id
-        cout << "FADEC: Unknown request id in SimConnect connection: ";
-        cout << data->dwRequestID << endl;
+        std::cout << "FADEC: Unknown request id in SimConnect connection: ";
+        std::cout << data->dwRequestID << std::endl;
         return;
     }
   }

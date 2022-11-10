@@ -96,7 +96,8 @@
 1. [ENGINE] Fix Engine Flex Calculations - @Taz5150 (TazX [Z+2]#0405)
 1. [FLIGHTMODEL] Flight Model update - @donstim (donbikes#4084)
 1. [HYD] Fix incorrect gain in down pitch commands - @Crocket63 (crocket)
-1. [MISC] SELCAL support - Julian Sebline (Julian #8476 on Discord)
+1. [PFD] Improve appearance of L/DEV and V/DEV scales - @tracernz (Mike)
+1. [MISC] SELCAL support - @Julian [Z+2 fr en esp]#8476 (Julian Sebline)
 
 ## 0.8.0
 
@@ -1131,4 +1132,3 @@
 1. [DCDU] Fixed MSG- and MSG+ button labels - @tyler58546 (tyler58546)
 1. [ISIS] Fixed issue where ISIS was allowing a bug to be set while in the OFF state - Patrick Macken (@Pat M on
    Discord)
-   
