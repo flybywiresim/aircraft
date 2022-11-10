@@ -251,7 +251,7 @@ impl A380AileronFactory {
     const FLOW_CONTROL_FORCE_GAIN: f64 = 450000.;
 
     const MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING: f64 = 3500000.;
-    const MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT: f64 = 1.;
+    const MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT: f64 = 25.;
 
     fn a380_aileron_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
         let actuator_characteristics = LinearActuatorCharacteristics::new(
@@ -1664,6 +1664,7 @@ impl A380Hydraulic {
                 self.green_circuit.system_section(),
                 self.yellow_circuit.system_section(),
             ],
+            "left",
         );
 
         self.right_aileron.update(
@@ -1686,6 +1687,7 @@ impl A380Hydraulic {
                 self.green_circuit.system_section(),
                 self.yellow_circuit.system_section(),
             ],
+            "right",
         );
 
         self.left_elevator.update(
@@ -1784,7 +1786,7 @@ impl A380Hydraulic {
         engine1: &impl Engine,
         engine2: &impl Engine,
     ) {
-        self.aileron_system_controller.update(context);
+        self.aileron_system_controller.update(context, lgciu1);
 
         self.nose_steering.update(
             context,
@@ -4467,12 +4469,16 @@ impl AileronSystemHydraulicController {
         &self.right_aileron_controllers[panel as usize][..]
     }
 
-    fn update(&mut self, context: &UpdateContext) {
-        self.update_aileron_controllers_positions(context);
+    fn update(&mut self, context: &UpdateContext, lgciu1: &impl LgciuWeightOnWheels) {
+        self.update_aileron_controllers_positions(context, lgciu1);
         self.update_aileron_controllers_modes();
     }
 
-    fn update_aileron_controllers_positions(&mut self, context: &UpdateContext) {
+    fn update_aileron_controllers_positions(
+        &mut self,
+        context: &UpdateContext,
+        lgciu1: &impl LgciuWeightOnWheels,
+    ) {
         let left_pos_request_final = if self.left_solenoid_energized_from_fbw[0] {
             self.left_side_is_controlled = true;
             self.left_position_requests_from_fbw[0]
@@ -4494,20 +4500,37 @@ impl AileronSystemHydraulicController {
             Ratio::new::<ratio>(0.)
         };
 
-        let outward_left_pos_req = (left_pos_request_final - Ratio::new::<ratio>(0.5))
-            * Ratio::new::<ratio>(0.4)
-            + Ratio::new::<ratio>(0.5);
-        let outward_right_pos_req = (right_pos_request_final - Ratio::new::<ratio>(0.5))
-            * Ratio::new::<ratio>(0.4)
-            + Ratio::new::<ratio>(0.5);
+        let is_ground_mode = lgciu1.left_and_right_gear_compressed(true);
+
+        let outward_left_pos_req = if is_ground_mode {
+            left_pos_request_final
+        } else {
+            (left_pos_request_final - Ratio::new::<ratio>(0.5)) * Ratio::new::<ratio>(0.4)
+                + Ratio::new::<ratio>(0.5)
+        };
+
+        let outward_right_pos_req = if is_ground_mode {
+            right_pos_request_final
+        } else {
+            (right_pos_request_final - Ratio::new::<ratio>(0.5)) * Ratio::new::<ratio>(0.4)
+                + Ratio::new::<ratio>(0.5)
+        };
 
         self.middle_left_position_delayed
             .update(context.delta(), left_pos_request_final);
         self.middle_right_position_delayed
             .update(context.delta(), right_pos_request_final);
 
-        let middle_left_pos_req = self.middle_left_position_delayed.output();
-        let middle_right_pos_req = self.middle_right_position_delayed.output();
+        let middle_left_pos_req = if is_ground_mode {
+            left_pos_request_final
+        } else {
+            self.middle_left_position_delayed.output()
+        };
+        let middle_right_pos_req = if is_ground_mode {
+            right_pos_request_final
+        } else {
+            self.middle_right_position_delayed.output()
+        };
 
         let inward_left_pos_req = left_pos_request_final;
         let inward_right_pos_req = right_pos_request_final;
@@ -4565,13 +4588,13 @@ impl AileronSystemHydraulicController {
             self.left_aileron_controllers[AileronPanelPosition::Outward as usize]
                 [AileronActuatorPosition::Outward as usize]
                 .set_mode(Self::aileron_actuator_mode_from_solenoid(
-                    self.left_solenoid_energized_from_fbw
-                        [AileronActuatorPosition::Outward as usize],
+                    self.left_solenoid_energized_from_fbw[AileronActuatorPosition::Inward as usize],
                 ));
             self.left_aileron_controllers[AileronPanelPosition::Outward as usize]
                 [AileronActuatorPosition::Inward as usize]
                 .set_mode(Self::aileron_actuator_mode_from_solenoid(
-                    self.left_solenoid_energized_from_fbw[AileronActuatorPosition::Inward as usize],
+                    self.left_solenoid_energized_from_fbw
+                        [AileronActuatorPosition::Outward as usize],
                 ));
 
             self.left_aileron_controllers[AileronPanelPosition::Middle as usize]
@@ -4589,13 +4612,13 @@ impl AileronSystemHydraulicController {
             self.left_aileron_controllers[AileronPanelPosition::Inward as usize]
                 [AileronActuatorPosition::Outward as usize]
                 .set_mode(Self::aileron_actuator_mode_from_solenoid(
-                    self.left_solenoid_energized_from_fbw
-                        [AileronActuatorPosition::Outward as usize],
+                    self.left_solenoid_energized_from_fbw[AileronActuatorPosition::Inward as usize],
                 ));
             self.left_aileron_controllers[AileronPanelPosition::Inward as usize]
                 [AileronActuatorPosition::Inward as usize]
                 .set_mode(Self::aileron_actuator_mode_from_solenoid(
-                    self.left_solenoid_energized_from_fbw[AileronActuatorPosition::Inward as usize],
+                    self.left_solenoid_energized_from_fbw
+                        [AileronActuatorPosition::Outward as usize],
                 ));
         } else {
             for controller in &mut self.left_aileron_controllers {
@@ -4611,13 +4634,13 @@ impl AileronSystemHydraulicController {
                 [AileronActuatorPosition::Outward as usize]
                 .set_mode(Self::aileron_actuator_mode_from_solenoid(
                     self.right_solenoid_energized_from_fbw
-                        [AileronActuatorPosition::Outward as usize],
+                        [AileronActuatorPosition::Inward as usize],
                 ));
             self.right_aileron_controllers[AileronPanelPosition::Outward as usize]
                 [AileronActuatorPosition::Inward as usize]
                 .set_mode(Self::aileron_actuator_mode_from_solenoid(
                     self.right_solenoid_energized_from_fbw
-                        [AileronActuatorPosition::Inward as usize],
+                        [AileronActuatorPosition::Outward as usize],
                 ));
 
             self.right_aileron_controllers[AileronPanelPosition::Middle as usize]
@@ -4637,13 +4660,13 @@ impl AileronSystemHydraulicController {
                 [AileronActuatorPosition::Outward as usize]
                 .set_mode(Self::aileron_actuator_mode_from_solenoid(
                     self.right_solenoid_energized_from_fbw
-                        [AileronActuatorPosition::Outward as usize],
+                        [AileronActuatorPosition::Inward as usize],
                 ));
             self.right_aileron_controllers[AileronPanelPosition::Inward as usize]
                 [AileronActuatorPosition::Inward as usize]
                 .set_mode(Self::aileron_actuator_mode_from_solenoid(
                     self.right_solenoid_energized_from_fbw
-                        [AileronActuatorPosition::Inward as usize],
+                        [AileronActuatorPosition::Outward as usize],
                 ));
         } else {
             for controller in &mut self.right_aileron_controllers {
@@ -5098,6 +5121,7 @@ impl AileronAssembly {
         controllers: [&[impl HydraulicAssemblyController + HydraulicLocking]; 3],
         current_pressure_outward: [&impl SectionPressure; 3],
         current_pressure_inward: [&impl SectionPressure; 3],
+        side: &str,
     ) {
         for idx in 0..3 {
             self.aerodynamic_models[idx]
@@ -5113,6 +5137,17 @@ impl AileronAssembly {
 
             self.positions[idx] = self.hydraulic_assemblies[idx].position_normalized();
         }
+
+        // println!(
+        //     "ACT MODES REQ {:?} => {:?}-{:?} / {:?}-{:?} / {:?}-{:?}",
+        //     side,
+        //     controllers[0][0].requested_mode(),
+        //     controllers[0][1].requested_mode(),
+        //     controllers[1][0].requested_mode(),
+        //     controllers[1][1].requested_mode(),
+        //     controllers[2][0].requested_mode(),
+        //     controllers[2][1].requested_mode(),
+        // );
     }
 }
 impl SimulationElement for AileronAssembly {
