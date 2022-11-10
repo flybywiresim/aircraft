@@ -4075,8 +4075,8 @@ impl SimulationElement for A380AutobrakeController {
         let sec_1_gnd_splrs_out = reader.read(&self.ground_spoilers_out_sec1_id);
         let sec_2_gnd_splrs_out = reader.read(&self.ground_spoilers_out_sec2_id);
         let sec_3_gnd_splrs_out = reader.read(&self.ground_spoilers_out_sec3_id);
-        self.ground_spoilers_are_deployed = (sec_1_gnd_splrs_out && sec_2_gnd_splrs_out)
-            || (sec_1_gnd_splrs_out && sec_3_gnd_splrs_out)
+        self.ground_spoilers_are_deployed = sec_1_gnd_splrs_out
+            && (sec_3_gnd_splrs_out || sec_2_gnd_splrs_out)
             || (sec_2_gnd_splrs_out && sec_3_gnd_splrs_out);
         self.external_disarm_event = reader.read(&self.external_disarm_event_id);
 
