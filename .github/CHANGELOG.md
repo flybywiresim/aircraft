@@ -96,6 +96,7 @@
 1. [ENGINE] Fix Engine Flex Calculations - @Taz5150 (TazX [Z+2]#0405)
 1. [FLIGHTMODEL] Flight Model update - @donstim (donbikes#4084)
 1. [HYD] Fix incorrect gain in down pitch commands - @Crocket63 (crocket)
+1. [PFD] Improve appearance of L/DEV and V/DEV scales - @tracernz (Mike)
 
 ## 0.8.0
 
