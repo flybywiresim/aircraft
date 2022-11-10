@@ -1064,6 +1064,7 @@
                     (L:A32NX_ACP3_VHF3_Knob_Volume_Down) (L:A32NX_ACP3_Volume_VHF3) 100 * * (A:COM VOLUME:3, percent) max (&gt;K:COM3_VOLUME_SET)
 
                     1 (&gt;L:A32NX_COM_updateATCServicesFromACPsLVar)
+                    0 (&gt;L:A32NX_COM_UpdateReceivers)
                 }
             </UPDATE_CODE>
         </UseTemplate>

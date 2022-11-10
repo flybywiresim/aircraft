@@ -1,5 +1,4 @@
 #include "ATCServices.h"
-#include <algorithm>
 
 #define SELCAL_LIGHT_TIME_MS 300
 #define FLASHING_LIGHTS_TIMEOUT_MS 60000
@@ -35,49 +34,56 @@ void ATCServices::shutdown() {
   std::cout << "FLYPAD_BACKEND (ATCServices): ATCServices shutdown" << std::endl;
 }
 
-void ATCServices::onUpdate(INT64 volumeCOM1, INT64 volumeCOM2, ATCServicesDataIVAO* IVAOData, ATCServicesDataVPILOT* VPILOTData) {
+void ATCServices::updateData(ATCServicesDataIVAO* data) {
+  _data.selcal = data->selcal;
+  _data.volumeCOM1 = data->volumeCOM1;
+  _data.volumeCOM2 = data->volumeCOM2;
+
+  new_data_available = true;
+}
+void ATCServices::updateData(ATCServicesDataVPILOT* data) {
+  _data.selcal = data->selcal;
+  new_data_available = true;
+}
+
+void ATCServices::onUpdate(INT64 volumeCOM1, INT64 volumeCOM2) {
   if (!_isInitialized)
     return;
 
-  if (IVAOData) {
-    this->_selcalActive = IVAOData->selcal;
-    std::cout << "UPDATE IVAO " << (unsigned)IVAOData->volumeCOM1 << "     Previous was " << (unsigned)this->_previousVolumeCOM1
-              << std::endl;
-    if ((unsigned)IVAOData->volumeCOM1 != (unsigned)this->_previousVolumeCOM1) {
-      double volumeCOM1over100 = IVAOData->volumeCOM1 / 100.0;
+  if (this->new_data_available) {
+    this->new_data_available = false;
 
-      std::cout << "New Volume COM1 from IVAO " << (unsigned)IVAOData->volumeCOM1 << "     Previous was "
+    this->_selcalActive = _data.selcal;
+
+    if ((unsigned)_data.volumeCOM1 != (unsigned)this->_previousVolumeCOM1) {
+      double volumeCOM1over100 = _data.volumeCOM1 / 100.0;
+
+      std::cout << "New Volume COM1 from third party " << (unsigned)_data.volumeCOM1 << "     Previous was "
                 << (unsigned)this->_previousVolumeCOM1 << std::endl;
 
       set_named_variable_value(_volumeCOM1ACP1LVar, volumeCOM1over100);
       set_named_variable_value(_volumeCOM1ACP2LVar, volumeCOM1over100);
       set_named_variable_value(_volumeCOM1ACP3LVar, volumeCOM1over100);
 
-      std::string calculator_code = std::to_string(IVAOData->volumeCOM1);
-      calculator_code += " (>K:COM1_VOLUME_SET)";
-      execute_calculator_code(calculator_code.c_str(), nullptr, nullptr, nullptr);
+      execute_calculator_code((std::to_string(_data.volumeCOM1) + " (>K:COM1_VOLUME_SET)").c_str(), nullptr, nullptr, nullptr);
 
-      this->_previousVolumeCOM1 = IVAOData->volumeCOM1;
+      this->_previousVolumeCOM1 = _data.volumeCOM1;
     }
 
-    if ((unsigned)IVAOData->volumeCOM2 != (unsigned)this->_previousVolumeCOM2) {
-      double volumeCOM2over100 = IVAOData->volumeCOM2 / 100.0;
+    if ((unsigned)_data.volumeCOM2 != (unsigned)this->_previousVolumeCOM2) {
+      double volumeCOM2over100 = _data.volumeCOM2 / 100.0;
 
-      std::cout << "New Volume COM2 from IVAO " << (unsigned)IVAOData->volumeCOM2 << "     Previous was "
+      std::cout << "New Volume COM2 from third party " << (unsigned)_data.volumeCOM2 << "     Previous was "
                 << (unsigned)this->_previousVolumeCOM2 << std::endl;
 
       set_named_variable_value(_volumeCOM2ACP1LVar, volumeCOM2over100);
       set_named_variable_value(_volumeCOM2ACP2LVar, volumeCOM2over100);
       set_named_variable_value(_volumeCOM2ACP3LVar, volumeCOM2over100);
 
-      std::string calculator_code = std::to_string(IVAOData->volumeCOM2);
-      calculator_code += " (>K:COM2_VOLUME_SET)";
-      execute_calculator_code(calculator_code.c_str(), nullptr, nullptr, nullptr);
+      execute_calculator_code((std::to_string(_data.volumeCOM2) + " (>K:COM2_VOLUME_SET)").c_str(), nullptr, nullptr, nullptr);
 
-      this->_previousVolumeCOM2 = IVAOData->volumeCOM2;
+      this->_previousVolumeCOM2 = _data.volumeCOM2;
     }
-  } else if (VPILOTData) {
-    this->_selcalActive = VPILOTData->selcal;
   } else {
     bool update = false;
 
@@ -121,21 +127,10 @@ void ATCServices::onUpdate(INT64 volumeCOM1, INT64 volumeCOM2, ATCServicesDataIV
     }
 
     if (update) {
-      ATCServicesDataIVAO IVAODataTmp{this->_selcalActive, (uint8_t)this->_previousVolumeCOM1, (uint8_t)this->_previousVolumeCOM2};
-      ATCServicesDataVPILOT VPILOTDataTmp{1, this->_selcalActive};
-
-      setATCServicesDataIVAO(IVAODataTmp);
-      setATCServicesDataVPILOT(VPILOTDataTmp);
+      setATCServicesDataIVAO(this->_selcalActive, this->_previousVolumeCOM1, this->_previousVolumeCOM2);
+      setATCServicesDataVPILOT(1, this->_selcalActive);
     }
   }
-}
-
-void ATCServices::notifyATCServicesPause() const {
-  ATCServicesDataVPILOT dataVPILOT{0, 0};
-  setATCServicesDataVPILOT(dataVPILOT);
-
-  ATCServicesDataIVAO dataIVAO{0, 0, 0};
-  setATCServicesDataIVAO(dataIVAO);
 }
 
 /// @brief Notifying the third party the plane is unloaded
@@ -143,17 +138,16 @@ void ATCServices::notifyATCServicesShutdown() {
   // In MSFS's start/stop sequence, start and stop events are called twice therefore
   // we have to uninit it to make notifyATCServicesStart ineffective
   _isInitialized = false;
-  notifyATCServicesPause();
+  setATCServicesDataVPILOT(false, false);
+  setATCServicesDataIVAO(false, 0, 0);
 }
 
 /// @brief Notifying the third party the plane is loaded
 void ATCServices::notifyATCServicesStart() const {
   if (_isInitialized) {
-    ATCServicesDataIVAO dataIVAO{0, 80, 40};
-    setATCServicesDataIVAO(dataIVAO);
+    setATCServicesDataIVAO(false, 80, 40);
 
     // notifying vPilot the aircraft is loaded
-    ATCServicesDataVPILOT dataVPILOT{1, 0};
-    setATCServicesDataVPILOT(dataVPILOT);
+    setATCServicesDataVPILOT(true, false);
   }
 }

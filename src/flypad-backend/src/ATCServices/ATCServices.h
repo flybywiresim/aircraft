@@ -7,21 +7,12 @@
 
 #include "FlyPadBackend.h"
 
-struct ATCServicesDataIVAO {
-  uint8_t selcal;
-  uint8_t volumeCOM1;
-  uint8_t volumeCOM2;
-};
-
-struct ATCServicesDataVPILOT {
-  uint8_t loaded;  // Set to 1 if the aircraft is loaded. 0 once unloaded. If loaded, vPilot does not play the SELCAL sound
-  uint8_t selcal;
-};
-
 class ATCServices {
  private:
   HANDLE _hSimConnect;
+
   bool _isInitialized = false;
+  bool new_data_available;
 
   ID _selcalLVar{};
   ID _selcalResetLVar{};
@@ -43,13 +34,19 @@ class ATCServices {
   INT64 _previousVolumeCOM2 = 0;
   uint8_t _selcalActive = 0;  // Set to 1,2,4,8 depending on the receiver. 0 if inactive.
 
+  ATCServicesData _data;
+
   std::chrono::system_clock::time_point _previousTime = std::chrono::system_clock::now();
 
-  inline bool setATCServicesDataVPILOT(struct ATCServicesDataVPILOT& output) const {
+  inline bool setATCServicesDataVPILOT(bool loaded, bool selcalActive) const {
+    ATCServicesDataVPILOT output{loaded, selcalActive};
+
     return S_OK == SimConnect_SetClientData(_hSimConnect, ClientData::VPILOT, DataStructureIDs::VPILOTDataID,
                                             SIMCONNECT_CLIENT_DATA_SET_FLAG_DEFAULT, 0, sizeof(output), &output);
   }
-  inline bool setATCServicesDataIVAO(struct ATCServicesDataIVAO& output) const {
+  inline bool setATCServicesDataIVAO(bool selcalActive, uint8_t volumeCOM1, uint8_t volumeCOM2) const {
+    ATCServicesDataIVAO output{selcalActive, volumeCOM1, volumeCOM2};
+
     return S_OK == SimConnect_SetClientData(_hSimConnect, ClientData::IVAO, DataStructureIDs::IVAODataID,
                                             SIMCONNECT_CLIENT_DATA_SET_FLAG_DEFAULT, 0, sizeof(output), &output);
   }
@@ -58,10 +55,11 @@ class ATCServices {
   explicit ATCServices(HANDLE);
 
   void initialize();
-  void onUpdate(INT64, INT64, ATCServicesDataIVAO*, ATCServicesDataVPILOT*);
+  void updateData(ATCServicesDataIVAO*);
+  void updateData(ATCServicesDataVPILOT*);
+  void onUpdate(INT64, INT64);
   void shutdown();
 
-  void notifyATCServicesPause() const;
   void notifyATCServicesShutdown();
   void notifyATCServicesStart() const;
 };

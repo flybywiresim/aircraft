@@ -10,6 +10,9 @@
 
 FlyPadBackend FLYPAD_BACKEND;
 
+struct ATCServicesDataIVAO;
+struct ATCServicesDataVPILOT;
+
 /**
  * Gauge Callback
  * @see
@@ -81,8 +84,7 @@ bool FlyPadBackend::initialize() {
     return false;
   }
 
-  result &= SimConnect_SubscribeToSystemEvent(hSimConnect, Events::PAUSED, "PAUSED");
-  result &= SimConnect_SubscribeToSystemEvent(hSimConnect, Events::UNPAUSED, "UNPAUSED");
+  // To be able to notity vPilot the plane is unloaded
   result &= SimConnect_SubscribeToSystemEvent(hSimConnect, Events::SIMSTOP, "SIMSTOP");
 
   if (result != S_OK) {
@@ -147,17 +149,7 @@ bool FlyPadBackend::onUpdate(double deltaTime) {
     lightPresetPtr->onUpdate(deltaTime);
     aircraftPresetPtr->onUpdate(deltaTime);
     pushbackPtr->onUpdate(deltaTime);
-    thirdPartyPtr->onUpdate(simulationData.volumeCOM1, simulationData.volumeCOM2, IVAOData, VPILOTData);
-
-    if (IVAOData) {
-      delete IVAOData;
-      IVAOData = nullptr;
-    }
-
-    if (VPILOTData) {
-      delete VPILOTData;
-      VPILOTData = nullptr;
-    }
+    thirdPartyPtr->onUpdate(simulationData.volumeCOM1, simulationData.volumeCOM2);
 
     return true;
   }
@@ -217,8 +209,8 @@ void FlyPadBackend::simConnectProcessSimObjectData(const SIMCONNECT_RECV_SIMOBJE
       return;
 
     default:
-      cout << "FLYPAD_BACKEND: Unknown request id in simConnectProcessSimObjectData(): ";
-      cout << data->dwRequestID << endl;
+      std::cout << "FLYPAD_BACKEND: Unknown request id in simConnectProcessSimObjectData(): ";
+      std::cout << data->dwRequestID << std::endl;
       return;
   }
 }
@@ -227,42 +219,30 @@ void FlyPadBackend::simConnectProcessClientData(const SIMCONNECT_RECV_CLIENT_DAT
   // process depending on request id from SimConnect_RequestClientData()
   switch (data->dwRequestID) {
     case DataStructureRequestIDs::IVAORequestID:
-      IVAOData = new ATCServicesDataIVAO();
-      *IVAOData = *((ATCServicesDataIVAO*)&data->dwData);
+      thirdPartyPtr->updateData((ATCServicesDataIVAO*)(&data->dwData));
       return;
 
     case DataStructureRequestIDs::VPILOTRequestID:
-      VPILOTData = new ATCServicesDataVPILOT();
-      *VPILOTData = *((ATCServicesDataVPILOT*)&data->dwData);
+      thirdPartyPtr->updateData((ATCServicesDataVPILOT*)(&data->dwData));
       return;
 
     default:
-      cout << "FLYPAD_BACKEND: Unknown Client Request id in simConnectProcessClientData(): ";
-      cout << data->dwRequestID << endl;
+      std::cout << "FLYPAD_BACKEND: Unknown Client Request id in simConnectProcessClientData(): ";
+      std::cout << data->dwRequestID << std::endl;
       return;
   }
 }
 
-void FlyPadBackend::simConnectProcessRecvEvent(const SIMCONNECT_RECV_EVENT* data) {
-  // process depending on request id from SimConnect_RequestClientData()
+void FlyPadBackend::simConnectProcessRecvSubscribedEvent(const SIMCONNECT_RECV_EVENT* data) {
+  // process depending on request id from SimConnect_SubscribeToSystemEvent()
   switch (data->uEventID) {
-    case Events::PAUSED:
-      // Make the third party believe the plane is unloaded
-      // to make it play SELCAL sound if a call is received while paused
-      thirdPartyPtr->notifyATCServicesPause();
-      return;
-
-    case Events::UNPAUSED:
-      thirdPartyPtr->notifyATCServicesStart();
-      return;
-
     case Events::SIMSTOP:
       thirdPartyPtr->notifyATCServicesShutdown();
       return;
 
     default:
-      cout << "FLYPAD_BACKEND: Unknown Client Request id in simConnectProcessSystemState(): ";
-      cout << data->uEventID << endl;
+      std::cout << "FLYPAD_BACKEND: Unknown Client Request id in simConnectProcessRecvEvent(): ";
+      std::cout << data->uEventID << std::endl;
       return;
   }
 }
@@ -286,19 +266,18 @@ void FlyPadBackend::simConnectProcessDispatchMessage(SIMCONNECT_RECV* pData, DWO
       break;
 
     case SIMCONNECT_RECV_ID_EVENT:
-      simConnectProcessRecvEvent(static_cast<SIMCONNECT_RECV_EVENT*>(pData));
+      simConnectProcessRecvSubscribedEvent(static_cast<SIMCONNECT_RECV_EVENT*>(pData));
       break;
 
     case SIMCONNECT_RECV_ID_EXCEPTION:
       std::cout << "FLYPAD_BACKEND: Exception in SimConnect connection: ";
       std::cout << getSimConnectExceptionString(
-        static_cast<SIMCONNECT_EXCEPTION>(
-          static_cast<SIMCONNECT_RECV_EXCEPTION*>(pData)->dwException));
+          static_cast<SIMCONNECT_EXCEPTION>(static_cast<SIMCONNECT_RECV_EXCEPTION*>(pData)->dwException));
       std::cout << std::endl;
       break;
 
     default:
-      cout << "FLYPAD_BACKEND: Unknown received in simConnectProcessDispatchMessage (" << pData->dwID << ")" << endl;
+      std::cout << "FLYPAD_BACKEND: Unknown received in simConnectProcessDispatchMessage (" << pData->dwID << ")" << std::endl;
       break;
   }
 }

@@ -50,6 +50,24 @@ struct PushbackData {
   FLOAT64 rotAccelBodyX;
 };
 
+struct ATCServicesData {
+  uint8_t loaded;
+  uint8_t selcal;
+  uint8_t volumeCOM1;
+  uint8_t volumeCOM2;
+};
+
+struct ATCServicesDataIVAO {
+  uint8_t selcal;
+  uint8_t volumeCOM1;
+  uint8_t volumeCOM2;
+};
+
+struct ATCServicesDataVPILOT {
+  uint8_t loaded;  // Set to 1 if the aircraft is loaded. 0 once unloaded. If loaded, vPilot does not play the SELCAL sound
+  uint8_t selcal;
+};
+
 enum Events {
   KEY_TUG_HEADING_EVENT,
   KEY_TUG_SPEED_EVENT,
@@ -72,8 +90,6 @@ class FlyPadBackend {
   // Instance of local data structure for simconnect data
   SimulationData simulationData = {};
   PushbackData pushbackData = {};
-  ATCServicesDataIVAO* IVAOData = nullptr;
-  ATCServicesDataVPILOT* VPILOTData = nullptr;
 
   /**
    * Flag if connection has been initialized.
@@ -144,7 +160,11 @@ class FlyPadBackend {
    */
   void simConnectProcessClientData(const SIMCONNECT_RECV_CLIENT_DATA* data);
 
-  void simConnectProcessRecvEvent(const SIMCONNECT_RECV_EVENT* data);
+  /**
+   * Process received subscribed events
+   * @param data
+   */
+  void simConnectProcessRecvSubscribedEvent(const SIMCONNECT_RECV_EVENT* data);
 
   /**
    * Returns human-readable descriptions of simconnect exceptions
