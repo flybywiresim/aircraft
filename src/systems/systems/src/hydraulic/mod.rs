@@ -901,7 +901,7 @@ impl HydraulicCircuit {
     pub fn update(
         &mut self,
         context: &UpdateContext,
-        main_section_pumps: &mut Vec<&mut impl PressureSource>,
+        main_section_pumps: &mut Vec<&mut dyn PressureSource>,
         system_section_pump: Option<&mut impl PressureSource>,
         auxiliary_section_pump: Option<&mut impl PressureSource>,
         ptu: Option<&PowerTransferUnit>,
@@ -976,7 +976,7 @@ impl HydraulicCircuit {
     fn update_pumps(
         &mut self,
         context: &UpdateContext,
-        main_section_pumps: &mut Vec<&mut impl PressureSource>,
+        main_section_pumps: &mut Vec<&mut dyn PressureSource>,
         system_section_pump: Option<&mut impl PressureSource>,
         auxiliary_section_pump: Option<&mut impl PressureSource>,
     ) {
@@ -1028,7 +1028,7 @@ impl HydraulicCircuit {
 
     fn update_maximum_pumping_capacities(
         &mut self,
-        main_section_pumps: &mut Vec<&mut impl PressureSource>,
+        main_section_pumps: &mut Vec<&mut dyn PressureSource>,
         system_section_pump: &Option<&mut impl PressureSource>,
         auxiliary_section_pump: &Option<&mut impl PressureSource>,
     ) {
@@ -1186,6 +1186,14 @@ impl HydraulicCircuit {
 
     pub fn system_section(&self) -> &impl SectionPressure {
         &self.system_section
+    }
+
+    pub fn auxiliary_section(&self) -> &impl SectionPressure {
+        if self.auxiliary_section.is_some() {
+            self.auxiliary_section.as_ref().unwrap()
+        } else {
+            &self.system_section
+        }
     }
 
     pub fn pump_section(&self, pump_index: usize) -> &impl SectionPressure {
@@ -1413,7 +1421,7 @@ impl Section {
         self.total_actuator_consumed_volume = Volume::new::<gallon>(0.);
     }
 
-    pub fn update_maximum_pumping_capacity(&mut self, pump: &impl PressureSource) {
+    pub fn update_maximum_pumping_capacity(&mut self, pump: &dyn PressureSource) {
         self.max_pumpable_volume = if self.fire_valve_is_open() {
             pump.delta_vol_max()
         } else {
@@ -1434,7 +1442,7 @@ impl Section {
     pub fn update_pump_state(
         &mut self,
         context: &UpdateContext,
-        pump: &mut impl PressureSource,
+        pump: &mut dyn PressureSource,
         reservoir: &mut Reservoir,
     ) {
         // Final volume target to reach target pressure is:
