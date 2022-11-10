@@ -338,8 +338,17 @@ impl A380AileronFactory {
 
     fn new_aileron(context: &mut InitContext, id: ActuatorSide) -> AileronAssembly {
         let init_drooped_down = !context.is_in_flight();
-        let assembly = Self::a380_aileron_assembly(init_drooped_down);
-        AileronAssembly::new(context, id, assembly, Self::new_a380_aileron_aero_model())
+        let assembly_outward = Self::a380_aileron_assembly(init_drooped_down);
+        let assembly_middle = Self::a380_aileron_assembly(init_drooped_down);
+        let assembly_inward = Self::a380_aileron_assembly(init_drooped_down);
+        AileronAssembly::new(
+            context,
+            id,
+            assembly_outward,
+            assembly_middle,
+            assembly_inward,
+            Self::new_a380_aileron_aero_model(),
+        )
     }
 
     fn new_a380_aileron_aero_model() -> AerodynamicModel {
@@ -1637,16 +1646,46 @@ impl A380Hydraulic {
     ) {
         self.left_aileron.update(
             context,
-            self.aileron_system_controller.left_controllers(),
-            self.green_circuit.system_section(),
-            self.green_circuit.system_section(),
+            [
+                self.aileron_system_controller
+                    .left_controllers(AileronPanelPosition::Outward),
+                self.aileron_system_controller
+                    .left_controllers(AileronPanelPosition::Middle),
+                self.aileron_system_controller
+                    .left_controllers(AileronPanelPosition::Inward),
+            ],
+            [
+                self.green_circuit.system_section(),
+                self.yellow_circuit.system_section(),
+                self.green_circuit.system_section(),
+            ],
+            [
+                self.yellow_circuit.system_section(),
+                self.green_circuit.system_section(),
+                self.yellow_circuit.system_section(),
+            ],
         );
 
         self.right_aileron.update(
             context,
-            self.aileron_system_controller.right_controllers(),
-            self.green_circuit.system_section(),
-            self.green_circuit.system_section(),
+            [
+                self.aileron_system_controller
+                    .right_controllers(AileronPanelPosition::Outward),
+                self.aileron_system_controller
+                    .right_controllers(AileronPanelPosition::Middle),
+                self.aileron_system_controller
+                    .right_controllers(AileronPanelPosition::Inward),
+            ],
+            [
+                self.green_circuit.system_section(),
+                self.yellow_circuit.system_section(),
+                self.green_circuit.system_section(),
+            ],
+            [
+                self.yellow_circuit.system_section(),
+                self.green_circuit.system_section(),
+                self.yellow_circuit.system_section(),
+            ],
         );
 
         self.left_elevator.update(
@@ -1745,6 +1784,8 @@ impl A380Hydraulic {
         engine1: &impl Engine,
         engine2: &impl Engine,
     ) {
+        self.aileron_system_controller.update(context);
+
         self.nose_steering.update(
             context,
             self.yellow_circuit.system_section(),
@@ -1834,12 +1875,12 @@ impl A380Hydraulic {
         self.green_circuit
             .update_system_actuator_volumes(&mut self.braking_circuit_norm);
 
-        self.green_circuit.update_system_actuator_volumes(
-            self.left_aileron.actuator(AileronActuatorPosition::Green),
-        );
-        self.green_circuit.update_system_actuator_volumes(
-            self.right_aileron.actuator(AileronActuatorPosition::Green),
-        );
+        // self.green_circuit.update_system_actuator_volumes(
+        //     self.left_aileron.actuator(AileronActuatorPosition::Green),
+        // );
+        // self.green_circuit.update_system_actuator_volumes(
+        //     self.right_aileron.actuator(AileronActuatorPosition::Green),
+        // );
 
         self.green_circuit.update_system_actuator_volumes(
             self.left_elevator
@@ -4299,6 +4340,7 @@ impl SimulationElement for A380HydraulicOverheadPanel {
     }
 }
 
+#[derive(Clone, Copy, PartialEq)]
 struct AileronController {
     mode: LinearActuatorMode,
     requested_position: Ratio,
@@ -4342,6 +4384,8 @@ impl HydraulicAssemblyController for AileronController {
 }
 impl HydraulicLocking for AileronController {}
 
+// TODO This implements a placeholder logic using A320 FBW system outputs to compute expected A380 aileron orders
+// To be rewritten once correct A380 FBW logic gives correct solenoid commads
 struct AileronSystemHydraulicController {
     left_aileron_blue_actuator_solenoid_id: VariableIdentifier,
     right_aileron_blue_actuator_solenoid_id: VariableIdentifier,
@@ -4353,10 +4397,23 @@ struct AileronSystemHydraulicController {
     left_aileron_green_actuator_position_demand_id: VariableIdentifier,
     right_aileron_green_actuator_position_demand_id: VariableIdentifier,
 
-    left_aileron_controllers: [AileronController; 2],
-    right_aileron_controllers: [AileronController; 2],
+    left_position_requests_from_fbw: [Ratio; 2],
+    left_solenoid_energized_from_fbw: [bool; 2],
+    right_position_requests_from_fbw: [Ratio; 2],
+    right_solenoid_energized_from_fbw: [bool; 2],
+
+    middle_left_position_delayed: LowPassFilter<Ratio>,
+    middle_right_position_delayed: LowPassFilter<Ratio>,
+
+    left_side_is_controlled: bool,
+    right_side_is_controlled: bool,
+
+    left_aileron_controllers: [[AileronController; 2]; 3],
+    right_aileron_controllers: [[AileronController; 2]; 3],
 }
 impl AileronSystemHydraulicController {
+    const MIDDLE_AILERON_LOAD_ALLEV_DELAY: Duration = Duration::from_millis(350);
+
     fn new(context: &mut InitContext) -> Self {
         Self {
             left_aileron_blue_actuator_solenoid_id: context
@@ -4377,40 +4434,125 @@ impl AileronSystemHydraulicController {
             right_aileron_green_actuator_position_demand_id: context
                 .get_identifier("RIGHT_AIL_GREEN_COMMANDED_POSITION".to_owned()),
 
+            left_position_requests_from_fbw: [Ratio::default(); 2],
+            left_solenoid_energized_from_fbw: [false; 2],
+            right_position_requests_from_fbw: [Ratio::default(); 2],
+            right_solenoid_energized_from_fbw: [false; 2],
+
+            middle_left_position_delayed: LowPassFilter::new(Self::MIDDLE_AILERON_LOAD_ALLEV_DELAY),
+            middle_right_position_delayed: LowPassFilter::new(
+                Self::MIDDLE_AILERON_LOAD_ALLEV_DELAY,
+            ),
+
+            left_side_is_controlled: false,
+            right_side_is_controlled: false,
+
             // Controllers are in outward->inward order, so for aileron [Blue circuit, Green circuit]
-            left_aileron_controllers: [AileronController::new(), AileronController::new()],
-            right_aileron_controllers: [AileronController::new(), AileronController::new()],
+            left_aileron_controllers: [[AileronController::new(), AileronController::new()]; 3],
+            right_aileron_controllers: [[AileronController::new(), AileronController::new()]; 3],
         }
     }
 
-    fn left_controllers(&self) -> &[impl HydraulicAssemblyController + HydraulicLocking] {
-        &self.left_aileron_controllers[..]
+    fn left_controllers(
+        &self,
+        panel: AileronPanelPosition,
+    ) -> &[impl HydraulicAssemblyController + HydraulicLocking] {
+        &self.left_aileron_controllers[panel as usize][..]
     }
 
-    fn right_controllers(&self) -> &[impl HydraulicAssemblyController + HydraulicLocking] {
-        &self.right_aileron_controllers[..]
+    fn right_controllers(
+        &self,
+        panel: AileronPanelPosition,
+    ) -> &[impl HydraulicAssemblyController + HydraulicLocking] {
+        &self.right_aileron_controllers[panel as usize][..]
     }
 
-    fn update_aileron_controllers_positions(
-        &mut self,
-        left_position_requests: [Ratio; 2],
-        right_position_requests: [Ratio; 2],
-    ) {
-        self.left_aileron_controllers[AileronActuatorPosition::Blue as usize]
-            .set_requested_position(left_position_requests[AileronActuatorPosition::Blue as usize]);
-        self.left_aileron_controllers[AileronActuatorPosition::Green as usize]
-            .set_requested_position(
-                left_position_requests[AileronActuatorPosition::Green as usize],
-            );
+    fn update(&mut self, context: &UpdateContext) {
+        self.update_aileron_controllers_positions(context);
+        self.update_aileron_controllers_modes();
+    }
 
-        self.right_aileron_controllers[AileronActuatorPosition::Blue as usize]
-            .set_requested_position(
-                right_position_requests[AileronActuatorPosition::Blue as usize],
-            );
-        self.right_aileron_controllers[AileronActuatorPosition::Green as usize]
-            .set_requested_position(
-                right_position_requests[AileronActuatorPosition::Green as usize],
-            );
+    fn update_aileron_controllers_positions(&mut self, context: &UpdateContext) {
+        let left_pos_request_final = if self.left_solenoid_energized_from_fbw[0] {
+            self.left_side_is_controlled = true;
+            self.left_position_requests_from_fbw[0]
+        } else if self.left_solenoid_energized_from_fbw[1] {
+            self.left_side_is_controlled = true;
+            self.left_position_requests_from_fbw[1]
+        } else {
+            self.left_side_is_controlled = false;
+            Ratio::new::<ratio>(0.)
+        };
+        let right_pos_request_final = if self.right_solenoid_energized_from_fbw[0] {
+            self.right_side_is_controlled = true;
+            self.right_position_requests_from_fbw[0]
+        } else if self.right_solenoid_energized_from_fbw[1] {
+            self.right_side_is_controlled = true;
+            self.right_position_requests_from_fbw[1]
+        } else {
+            self.right_side_is_controlled = false;
+            Ratio::new::<ratio>(0.)
+        };
+
+        let outward_left_pos_req = (left_pos_request_final - Ratio::new::<ratio>(0.5))
+            * Ratio::new::<ratio>(0.4)
+            + Ratio::new::<ratio>(0.5);
+        let outward_right_pos_req = (right_pos_request_final - Ratio::new::<ratio>(0.5))
+            * Ratio::new::<ratio>(0.4)
+            + Ratio::new::<ratio>(0.5);
+
+        self.middle_left_position_delayed
+            .update(context.delta(), left_pos_request_final);
+        self.middle_right_position_delayed
+            .update(context.delta(), right_pos_request_final);
+
+        let middle_left_pos_req = self.middle_left_position_delayed.output();
+        let middle_right_pos_req = self.middle_right_position_delayed.output();
+
+        let inward_left_pos_req = left_pos_request_final;
+        let inward_right_pos_req = right_pos_request_final;
+
+        self.left_aileron_controllers[AileronPanelPosition::Outward as usize]
+            [AileronActuatorPosition::Outward as usize]
+            .set_requested_position(outward_left_pos_req);
+        self.left_aileron_controllers[AileronPanelPosition::Outward as usize]
+            [AileronActuatorPosition::Inward as usize]
+            .set_requested_position(outward_left_pos_req);
+
+        self.left_aileron_controllers[AileronPanelPosition::Middle as usize]
+            [AileronActuatorPosition::Outward as usize]
+            .set_requested_position(middle_left_pos_req);
+        self.left_aileron_controllers[AileronPanelPosition::Middle as usize]
+            [AileronActuatorPosition::Inward as usize]
+            .set_requested_position(middle_left_pos_req);
+
+        self.left_aileron_controllers[AileronPanelPosition::Inward as usize]
+            [AileronActuatorPosition::Outward as usize]
+            .set_requested_position(inward_left_pos_req);
+        self.left_aileron_controllers[AileronPanelPosition::Inward as usize]
+            [AileronActuatorPosition::Inward as usize]
+            .set_requested_position(inward_left_pos_req);
+
+        self.right_aileron_controllers[AileronPanelPosition::Outward as usize]
+            [AileronActuatorPosition::Outward as usize]
+            .set_requested_position(outward_right_pos_req);
+        self.right_aileron_controllers[AileronPanelPosition::Outward as usize]
+            [AileronActuatorPosition::Inward as usize]
+            .set_requested_position(outward_right_pos_req);
+
+        self.right_aileron_controllers[AileronPanelPosition::Middle as usize]
+            [AileronActuatorPosition::Outward as usize]
+            .set_requested_position(middle_right_pos_req);
+        self.right_aileron_controllers[AileronPanelPosition::Middle as usize]
+            [AileronActuatorPosition::Inward as usize]
+            .set_requested_position(middle_right_pos_req);
+
+        self.right_aileron_controllers[AileronPanelPosition::Inward as usize]
+            [AileronActuatorPosition::Outward as usize]
+            .set_requested_position(inward_right_pos_req);
+        self.right_aileron_controllers[AileronPanelPosition::Inward as usize]
+            [AileronActuatorPosition::Inward as usize]
+            .set_requested_position(inward_right_pos_req);
     }
 
     /// Will drive mode from solenoid state
@@ -4418,42 +4560,97 @@ impl AileronSystemHydraulicController {
     /// -If not energized actuator is slaved in damping
     /// -We differentiate case of all actuators in damping mode where we set a more dampened
     /// mode to reach realistic slow droop speed.
-    fn update_aileron_controllers_solenoids(
-        &mut self,
-        left_solenoids_energized: [bool; 2],
-        right_solenoids_energized: [bool; 2],
-    ) {
-        if left_solenoids_energized.iter().any(|x| *x) {
-            self.left_aileron_controllers[AileronActuatorPosition::Blue as usize].set_mode(
-                Self::aileron_actuator_mode_from_solenoid(
-                    left_solenoids_energized[AileronActuatorPosition::Blue as usize],
-                ),
-            );
-            self.left_aileron_controllers[AileronActuatorPosition::Green as usize].set_mode(
-                Self::aileron_actuator_mode_from_solenoid(
-                    left_solenoids_energized[AileronActuatorPosition::Green as usize],
-                ),
-            );
+    fn update_aileron_controllers_modes(&mut self) {
+        if self.left_side_is_controlled {
+            self.left_aileron_controllers[AileronPanelPosition::Outward as usize]
+                [AileronActuatorPosition::Outward as usize]
+                .set_mode(Self::aileron_actuator_mode_from_solenoid(
+                    self.left_solenoid_energized_from_fbw
+                        [AileronActuatorPosition::Outward as usize],
+                ));
+            self.left_aileron_controllers[AileronPanelPosition::Outward as usize]
+                [AileronActuatorPosition::Inward as usize]
+                .set_mode(Self::aileron_actuator_mode_from_solenoid(
+                    self.left_solenoid_energized_from_fbw[AileronActuatorPosition::Inward as usize],
+                ));
+
+            self.left_aileron_controllers[AileronPanelPosition::Middle as usize]
+                [AileronActuatorPosition::Outward as usize]
+                .set_mode(Self::aileron_actuator_mode_from_solenoid(
+                    self.left_solenoid_energized_from_fbw
+                        [AileronActuatorPosition::Outward as usize],
+                ));
+            self.left_aileron_controllers[AileronPanelPosition::Middle as usize]
+                [AileronActuatorPosition::Inward as usize]
+                .set_mode(Self::aileron_actuator_mode_from_solenoid(
+                    self.left_solenoid_energized_from_fbw[AileronActuatorPosition::Inward as usize],
+                ));
+
+            self.left_aileron_controllers[AileronPanelPosition::Inward as usize]
+                [AileronActuatorPosition::Outward as usize]
+                .set_mode(Self::aileron_actuator_mode_from_solenoid(
+                    self.left_solenoid_energized_from_fbw
+                        [AileronActuatorPosition::Outward as usize],
+                ));
+            self.left_aileron_controllers[AileronPanelPosition::Inward as usize]
+                [AileronActuatorPosition::Inward as usize]
+                .set_mode(Self::aileron_actuator_mode_from_solenoid(
+                    self.left_solenoid_energized_from_fbw[AileronActuatorPosition::Inward as usize],
+                ));
         } else {
             for controller in &mut self.left_aileron_controllers {
-                controller.set_mode(LinearActuatorMode::ClosedCircuitDamping);
+                controller[AileronActuatorPosition::Inward as usize]
+                    .set_mode(LinearActuatorMode::ClosedCircuitDamping);
+                controller[AileronActuatorPosition::Outward as usize]
+                    .set_mode(LinearActuatorMode::ClosedCircuitDamping);
             }
         }
 
-        if right_solenoids_energized.iter().any(|x| *x) {
-            self.right_aileron_controllers[AileronActuatorPosition::Blue as usize].set_mode(
-                Self::aileron_actuator_mode_from_solenoid(
-                    right_solenoids_energized[AileronActuatorPosition::Blue as usize],
-                ),
-            );
-            self.right_aileron_controllers[AileronActuatorPosition::Green as usize].set_mode(
-                Self::aileron_actuator_mode_from_solenoid(
-                    right_solenoids_energized[AileronActuatorPosition::Green as usize],
-                ),
-            );
+        if self.right_side_is_controlled {
+            self.right_aileron_controllers[AileronPanelPosition::Outward as usize]
+                [AileronActuatorPosition::Outward as usize]
+                .set_mode(Self::aileron_actuator_mode_from_solenoid(
+                    self.right_solenoid_energized_from_fbw
+                        [AileronActuatorPosition::Outward as usize],
+                ));
+            self.right_aileron_controllers[AileronPanelPosition::Outward as usize]
+                [AileronActuatorPosition::Inward as usize]
+                .set_mode(Self::aileron_actuator_mode_from_solenoid(
+                    self.right_solenoid_energized_from_fbw
+                        [AileronActuatorPosition::Inward as usize],
+                ));
+
+            self.right_aileron_controllers[AileronPanelPosition::Middle as usize]
+                [AileronActuatorPosition::Outward as usize]
+                .set_mode(Self::aileron_actuator_mode_from_solenoid(
+                    self.right_solenoid_energized_from_fbw
+                        [AileronActuatorPosition::Outward as usize],
+                ));
+            self.right_aileron_controllers[AileronPanelPosition::Middle as usize]
+                [AileronActuatorPosition::Inward as usize]
+                .set_mode(Self::aileron_actuator_mode_from_solenoid(
+                    self.right_solenoid_energized_from_fbw
+                        [AileronActuatorPosition::Inward as usize],
+                ));
+
+            self.right_aileron_controllers[AileronPanelPosition::Inward as usize]
+                [AileronActuatorPosition::Outward as usize]
+                .set_mode(Self::aileron_actuator_mode_from_solenoid(
+                    self.right_solenoid_energized_from_fbw
+                        [AileronActuatorPosition::Outward as usize],
+                ));
+            self.right_aileron_controllers[AileronPanelPosition::Inward as usize]
+                [AileronActuatorPosition::Inward as usize]
+                .set_mode(Self::aileron_actuator_mode_from_solenoid(
+                    self.right_solenoid_energized_from_fbw
+                        [AileronActuatorPosition::Inward as usize],
+                ));
         } else {
             for controller in &mut self.right_aileron_controllers {
-                controller.set_mode(LinearActuatorMode::ClosedCircuitDamping);
+                controller[AileronActuatorPosition::Inward as usize]
+                    .set_mode(LinearActuatorMode::ClosedCircuitDamping);
+                controller[AileronActuatorPosition::Outward as usize]
+                    .set_mode(LinearActuatorMode::ClosedCircuitDamping);
             }
         }
     }
@@ -4473,35 +4670,31 @@ impl AileronSystemHydraulicController {
 impl SimulationElement for AileronSystemHydraulicController {
     fn read(&mut self, reader: &mut SimulatorReader) {
         // Note that we reverse left, as positions are just passed through msfs for now
-        self.update_aileron_controllers_positions(
-            [
-                Self::aileron_actuator_position_from_surface_angle(-Angle::new::<degree>(
-                    reader.read(&self.left_aileron_blue_actuator_position_demand_id),
-                )),
-                Self::aileron_actuator_position_from_surface_angle(-Angle::new::<degree>(
-                    reader.read(&self.left_aileron_green_actuator_position_demand_id),
-                )),
-            ],
-            [
-                Self::aileron_actuator_position_from_surface_angle(Angle::new::<degree>(
-                    reader.read(&self.right_aileron_blue_actuator_position_demand_id),
-                )),
-                Self::aileron_actuator_position_from_surface_angle(Angle::new::<degree>(
-                    reader.read(&self.right_aileron_green_actuator_position_demand_id),
-                )),
-            ],
-        );
+        self.left_position_requests_from_fbw = [
+            Self::aileron_actuator_position_from_surface_angle(-Angle::new::<degree>(
+                reader.read(&self.left_aileron_blue_actuator_position_demand_id),
+            )),
+            Self::aileron_actuator_position_from_surface_angle(-Angle::new::<degree>(
+                reader.read(&self.left_aileron_green_actuator_position_demand_id),
+            )),
+        ];
+        self.left_solenoid_energized_from_fbw = [
+            reader.read(&self.left_aileron_blue_actuator_solenoid_id),
+            reader.read(&self.left_aileron_green_actuator_solenoid_id),
+        ];
 
-        self.update_aileron_controllers_solenoids(
-            [
-                reader.read(&self.left_aileron_blue_actuator_solenoid_id),
-                reader.read(&self.left_aileron_green_actuator_solenoid_id),
-            ],
-            [
-                reader.read(&self.right_aileron_blue_actuator_solenoid_id),
-                reader.read(&self.right_aileron_green_actuator_solenoid_id),
-            ],
-        );
+        self.right_position_requests_from_fbw = [
+            Self::aileron_actuator_position_from_surface_angle(Angle::new::<degree>(
+                reader.read(&self.right_aileron_blue_actuator_position_demand_id),
+            )),
+            Self::aileron_actuator_position_from_surface_angle(Angle::new::<degree>(
+                reader.read(&self.right_aileron_green_actuator_position_demand_id),
+            )),
+        ];
+        self.right_solenoid_energized_from_fbw = [
+            reader.read(&self.right_aileron_blue_actuator_solenoid_id),
+            reader.read(&self.right_aileron_green_actuator_solenoid_id),
+        ];
     }
 }
 
@@ -4811,10 +5004,16 @@ enum ActuatorSide {
 
 #[derive(PartialEq, Clone, Copy)]
 enum AileronActuatorPosition {
-    Blue = 0,
-    Green = 1,
+    Outward = 0,
+    Inward = 1,
 }
 
+#[derive(PartialEq, Clone, Copy)]
+enum AileronPanelPosition {
+    Outward = 0,
+    Middle = 1,
+    Inward = 2,
+}
 enum RudderActuatorPosition {
     Green = 0,
     Blue = 1,
@@ -4832,62 +5031,95 @@ enum RightElevatorActuatorCircuit {
 }
 
 struct AileronAssembly {
-    hydraulic_assembly: HydraulicLinearActuatorAssembly<2>,
+    hydraulic_assemblies: [HydraulicLinearActuatorAssembly<2>; 3],
 
-    position_id: VariableIdentifier,
+    position_out_id: VariableIdentifier,
+    position_mid_id: VariableIdentifier,
+    position_in_id: VariableIdentifier,
 
-    position: Ratio,
-
-    aerodynamic_model: AerodynamicModel,
+    positions: [Ratio; 3],
+    aerodynamic_models: [AerodynamicModel; 3],
 }
 impl AileronAssembly {
     fn new(
         context: &mut InitContext,
         id: ActuatorSide,
-        hydraulic_assembly: HydraulicLinearActuatorAssembly<2>,
+        outward_hydraulic_assembly: HydraulicLinearActuatorAssembly<2>,
+        middle_hydraulic_assembly: HydraulicLinearActuatorAssembly<2>,
+        inward_hydraulic_assembly: HydraulicLinearActuatorAssembly<2>,
         aerodynamic_model: AerodynamicModel,
     ) -> Self {
         Self {
-            hydraulic_assembly,
-            position_id: match id {
-                ActuatorSide::Left => context.get_identifier("HYD_AIL_LEFT_DEFLECTION".to_owned()),
+            hydraulic_assemblies: [
+                outward_hydraulic_assembly,
+                middle_hydraulic_assembly,
+                inward_hydraulic_assembly,
+            ],
+            position_out_id: match id {
+                ActuatorSide::Left => {
+                    context.get_identifier("HYD_AIL_LEFT_OUTWARD_DEFLECTION".to_owned())
+                }
                 ActuatorSide::Right => {
-                    context.get_identifier("HYD_AIL_RIGHT_DEFLECTION".to_owned())
+                    context.get_identifier("HYD_AIL_RIGHT_OUTWARD_DEFLECTION".to_owned())
                 }
             },
-            position: Ratio::new::<ratio>(0.),
-            aerodynamic_model,
+            position_mid_id: match id {
+                ActuatorSide::Left => {
+                    context.get_identifier("HYD_AIL_LEFT_MIDDLE_DEFLECTION".to_owned())
+                }
+                ActuatorSide::Right => {
+                    context.get_identifier("HYD_AIL_RIGHT_MIDDLE_DEFLECTION".to_owned())
+                }
+            },
+            position_in_id: match id {
+                ActuatorSide::Left => {
+                    context.get_identifier("HYD_AIL_LEFT_INWARD_DEFLECTION".to_owned())
+                }
+                ActuatorSide::Right => {
+                    context.get_identifier("HYD_AIL_RIGHT_INWARD_DEFLECTION".to_owned())
+                }
+            },
+            positions: [Ratio::new::<ratio>(0.); 3],
+            aerodynamic_models: [aerodynamic_model; 3],
         }
     }
 
-    fn actuator(&mut self, circuit_position: AileronActuatorPosition) -> &mut impl Actuator {
-        self.hydraulic_assembly.actuator(circuit_position as usize)
+    fn actuator(
+        &mut self,
+        circuit_position: AileronActuatorPosition,
+        panel_position: AileronPanelPosition,
+    ) -> &mut impl Actuator {
+        self.hydraulic_assemblies[panel_position as usize].actuator(circuit_position as usize)
     }
 
     fn update(
         &mut self,
         context: &UpdateContext,
-        aileron_controllers: &[impl HydraulicAssemblyController + HydraulicLocking],
-        current_pressure_outward: &impl SectionPressure,
-        current_pressure_inward: &impl SectionPressure,
+        controllers: [&[impl HydraulicAssemblyController + HydraulicLocking]; 3],
+        current_pressure_outward: [&impl SectionPressure; 3],
+        current_pressure_inward: [&impl SectionPressure; 3],
     ) {
-        self.aerodynamic_model
-            .update_body(context, self.hydraulic_assembly.body());
-        self.hydraulic_assembly.update(
-            context,
-            aileron_controllers,
-            [
-                current_pressure_outward.pressure_downstream_leak_valve(),
-                current_pressure_inward.pressure_downstream_leak_valve(),
-            ],
-        );
+        for idx in 0..3 {
+            self.aerodynamic_models[idx]
+                .update_body(context, self.hydraulic_assemblies[idx].body());
+            self.hydraulic_assemblies[idx].update(
+                context,
+                controllers[idx],
+                [
+                    current_pressure_outward[idx].pressure_downstream_leak_valve(),
+                    current_pressure_inward[idx].pressure_downstream_leak_valve(),
+                ],
+            );
 
-        self.position = self.hydraulic_assembly.position_normalized();
+            self.positions[idx] = self.hydraulic_assemblies[idx].position_normalized();
+        }
     }
 }
 impl SimulationElement for AileronAssembly {
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(&self.position_id, self.position.get::<ratio>());
+        writer.write(&self.position_out_id, self.positions[0].get::<ratio>());
+        writer.write(&self.position_mid_id, self.positions[1].get::<ratio>());
+        writer.write(&self.position_in_id, self.positions[2].get::<ratio>());
     }
 }
 
