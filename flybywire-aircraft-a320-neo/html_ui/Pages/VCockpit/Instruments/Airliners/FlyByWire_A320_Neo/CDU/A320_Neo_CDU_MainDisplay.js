@@ -170,7 +170,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     Init() {
         super.Init();
         try {
-            Coherent.trigger('UNFOCUS_INPUT_FIELD');// note: without this, resetting mcdu kills camera
+            Coherent.trigger('UNFOCUS_INPUT_FIELD', this.scratchpad.guid);// note: without this, resetting mcdu kills camera
         } catch (e) {
             console.error(e);
         }
@@ -782,7 +782,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.inFocus = false;
         this.allSelected = false;
         try {
-            Coherent.trigger('UNFOCUS_INPUT_FIELD');
+            Coherent.trigger('UNFOCUS_INPUT_FIELD', this.scratchpad.guid);
         } catch (e) {
             console.error(e);
         }
@@ -808,7 +808,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     this.getChildById("header").style = "background: linear-gradient(180deg, rgba(2,182,217,1.0) 65%, rgba(255,255,255,0.0) 65%);";
                     this.scratchpad.setDisplayStyle("display: inline-block; width:87%; background: rgba(255,255,255,0.2);");
                     try {
-                        Coherent.trigger('FOCUS_INPUT_FIELD');
+                        Coherent.trigger('FOCUS_INPUT_FIELD', this.scratchpad.guid);
                     } catch (e) {
                         console.error(e);
                     }
