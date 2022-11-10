@@ -280,8 +280,8 @@ const HydReservoir = ({ system, x, y, lowLevel } : HydReservoirProps) => {
             <line className={lowLevel ? 'AmberLine' : 'GreenLine'} x1={0} y1={fluidHeight} x2={-12} y2={fluidHeight} />
             <line className={lowLevel ? 'AmberLine' : 'GreenLine'} x1={0} y1={fluidHeight} x2={-13} y2={fluidHeight - 11} />
 
-            <text className={lowAirPress ? 'Large Amber' : 'Hide'} x={20} y={-80}>LO AIR</text>
-            <text className={lowAirPress ? 'Large Amber' : 'Hide'} x={20} y={-50}>PRESS</text>
+            <text className={lowAirPress ? 'Large Amber' : 'Hide'} x={12} y={-72}>LO AIR</text>
+            <text className={lowAirPress ? 'Large Amber' : 'Hide'} x={12} y={-45}>PRESS</text>
         </SvgGroup>
     );
 };
