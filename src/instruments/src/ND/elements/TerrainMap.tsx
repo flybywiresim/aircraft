@@ -254,12 +254,18 @@ export const TerrainMap: React.FC<TerrainMapProps> = ({ potentiometerIndex, x, y
             setMapVisualization(newVisualizationData);
         }
 
-        const meterPerPixel = Math.round(rangeSettings[rangeIndex] * METRES_TO_NAUTICAL_MILES / height);
+        let meterPerPixel = Math.round(rangeSettings[rangeIndex] * METRES_TO_NAUTICAL_MILES / height);
+        // scaling is required due to bigger area than visualized (clipped areas)
+        if (modeIndex === Mode.ARC) {
+            meterPerPixel *= 2;
+        }
+        meterPerPixel += (10 - (meterPerPixel % 10));
+
         const displayConfiguration = {
             active: modeIndex !== Mode.PLAN && terrOnNdActive !== 0,
             mapWidth: width,
             mapHeight: height,
-            meterPerPixel: meterPerPixel + (10 - (meterPerPixel % 10)),
+            meterPerPixel,
             mapTransitionTime: MAP_TRANSITION_DURATION,
             mapTransitionFps: MAP_TRANSITION_FRAMERATE,
             arcMode: modeIndex === Mode.ARC,
