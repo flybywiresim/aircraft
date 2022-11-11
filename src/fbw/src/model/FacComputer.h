@@ -249,9 +249,13 @@ class FacComputer final
     real_T uDLookupTable_tableData_g[2];
     real_T uDLookupTable_bp01Data_b[2];
     real_T Gain_Gain_km;
-    real_T uDLookupTable_tableData_l[405];
-    real_T uDLookupTable_bp01Data_j[45];
-    real_T uDLookupTable_bp02Data[9];
+    real_T Saturation2_UpperSat;
+    real_T Saturation2_LowerSat;
+    real_T uDLookupTable_tableData_c[495];
+    real_T uDLookupTable_bp01Data_g[45];
+    real_T uDLookupTable_bp02Data[11];
+    real_T Saturation1_UpperSat_ok;
+    real_T Saturation1_LowerSat_o;
     real_T Vmcl_Value;
     real_T Vmcl_Value_a;
     real_T Bias_Bias;
