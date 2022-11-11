@@ -1,4 +1,4 @@
-import { getSimBridgeUrl } from '../common';
+import { fetchWithTimeout, getSimBridgeUrl } from '../common';
 import { CoRouteDto } from '../Coroute/coroute';
 
 type coRouteCall = {
@@ -17,7 +17,7 @@ export class CompanyRoute {
      */
     public static async getCoRoute(route: String): Promise<coRouteCall> {
         if (route) {
-            const response = await fetch(`${getSimBridgeUrl()}/api/v1/coroute?rteNum=${route}`);
+            const response = await fetchWithTimeout(`${getSimBridgeUrl()}/api/v1/coroute?rteNum=${route}`);
             if (response.ok) {
                 return {
                     success: true,
@@ -41,7 +41,7 @@ export class CompanyRoute {
      */
     public static async getRouteList(origin: String, dest: String): Promise<coRouteCall> {
         if (origin && dest) {
-            const response = await fetch(`${getSimBridgeUrl()}/api/v1/coroute/list?origin=${origin}&destination=${dest}`);
+            const response = await fetchWithTimeout(`${getSimBridgeUrl()}/api/v1/coroute/list?origin=${origin}&destination=${dest}`);
             if (response.ok) {
                 const filteredData = (await response.json() as CoRouteDto[]).filter((value) => value.name.length < 10);
                 return {
