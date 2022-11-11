@@ -184,11 +184,6 @@ class FMCMainDisplay extends BaseAirliners {
         this.groundTempAuto = undefined;
         this.groundTempPilot = undefined;
         /**
-         * Departure elevation in feet MSL.
-         * This is the origin runway threshold elevation, or airport elevation if runway is not selected.
-         */
-        this.departureElevation = undefined;
-        /**
          * Landing elevation in feet MSL.
          * This is the destination runway threshold elevation, or airport elevation if runway is not selected.
          */
@@ -534,7 +529,6 @@ class FMCMainDisplay extends BaseAirliners {
         this.speedLimitExceeded = false;
         this.groundTempAuto = undefined;
         this.groundTempPilot = undefined;
-        this.departureElevation = undefined;
         this.landingElevation = undefined;
 
         this.onAirport = () => { };
@@ -617,7 +611,6 @@ class FMCMainDisplay extends BaseAirliners {
 
         if (flightPlanChanged) {
             this.updateManagedProfile();
-            this.updateDepartureElevation();
             this.updateLandingElevation();
         }
 
@@ -1540,30 +1533,6 @@ class FMCMainDisplay extends BaseAirliners {
                 wp.additionalData.predictedAltitude = Math.min(destinationElevation + 10000, wp.additionalData.predictedAltitude);
                 wp.additionalData.predictedSpeed = Math.min(250, wp.additionalData.predictedSpeed);
             }
-        }
-    }
-
-    async updateDepartureElevation() {
-        let departureElevation;
-
-        /** @type {OneWayRunway} */
-        const runway = this.flightPlanManager.getOriginRunway(FlightPlans.Active);
-        if (runway) {
-            departureElevation = A32NX_Util.meterToFeet(runway.thresholdElevation);
-        } else {
-            const airport = this.flightPlanManager.getOrigin(FlightPlans.Active);
-            if (airport) {
-                const ele = await this.facilityLoader.GetAirportFieldElevation(airport.icao);
-                departureElevation = isFinite(ele) ? ele : undefined;
-            }
-        }
-
-        if (this.departureElevation !== departureElevation) {
-            this.departureElevation = departureElevation;
-
-            const ssm = departureElevation !== undefined ? Arinc429Word.SignStatusMatrix.NormalOperation : Arinc429Word.SignStatusMatrix.NoComputedData;
-
-            this.setBnrArincSimVar('DEPARTURE_ELEVATION', departureElevation ? departureElevation : 0, ssm, 14, 16384, -2048);
         }
     }
 

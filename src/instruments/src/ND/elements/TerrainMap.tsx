@@ -149,7 +149,6 @@ export const TerrainMap: React.FC<TerrainMapProps> = ({ potentiometerIndex, x, y
     const [terrOnNdActive] = useSimVar(`L:A32NX_EFIS_TERR_${side}_ACTIVE`, 'boolean', 100);
     const [rangeIndex] = useSimVar(`L:A32NX_EFIS_${side}_ND_RANGE`, 'number', 100);
     const [modeIndex] = useSimVar(`L:A32NX_EFIS_${side}_ND_MODE`, 'number', 100);
-    const [departureElevation] = useSimVar(`L:A32NX_FM${side === 'L' ? 1 : 2}_DEPARTURE_ELEVATION`, 'number', 100);
     const [landingElevation] = useSimVar(`L:A32NX_FM${side === 'L' ? 1 : 2}_LANDING_ELEVATION`, 'number', 100);
     const [flightPhase] = useSimVar('L:A32NX_FMGC_FLIGHT_PHASE', 'number', 100);
     const [gearMode] = useSimVar('GEAR POSITION:0', 'Enum', 100);
@@ -258,10 +257,6 @@ export const TerrainMap: React.FC<TerrainMapProps> = ({ potentiometerIndex, x, y
             setMapVisualization(newVisualizationData);
         }
 
-        console.log(flightPhase);
-        console.log(departureElevation);
-        console.log(landingElevation);
-
         let meterPerPixel = Math.round(rangeSettings[rangeIndex] * METRES_TO_NAUTICAL_MILES / height);
         // scaling is required due to bigger area than visualized (clipped areas)
         if (modeIndex === Mode.ARC) {
@@ -271,9 +266,7 @@ export const TerrainMap: React.FC<TerrainMapProps> = ({ potentiometerIndex, x, y
 
         // send the runway elevation to the renderer to activate the elevation filter
         let runwayElevation = 0;
-        if (flightPhase < FmgcFlightPhase.Cruise) {
-            runwayElevation = departureElevation;
-        } else {
+        if (flightPhase >= FmgcFlightPhase.Cruise) {
             runwayElevation = landingElevation;
         }
 
@@ -289,7 +282,7 @@ export const TerrainMap: React.FC<TerrainMapProps> = ({ potentiometerIndex, x, y
             runwayElevation,
         };
         Terrain.setDisplaySettings(side, displayConfiguration).catch((_ex) => setMapVisualization(new MapVisualizationData()));
-    }, [terrOnNdActive, rangeIndex, modeIndex, gearMode, flightPhase, departureElevation, landingElevation]);
+    }, [terrOnNdActive, rangeIndex, modeIndex, gearMode, flightPhase, landingElevation]);
 
     if (!terrOnNdActive || modeIndex === Mode.PLAN) {
         return <></>;
