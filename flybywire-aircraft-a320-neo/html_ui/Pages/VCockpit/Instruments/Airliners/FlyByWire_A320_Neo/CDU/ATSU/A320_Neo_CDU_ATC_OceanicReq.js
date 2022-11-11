@@ -3,25 +3,19 @@ class CDUAtcOceanicReq {
         return {
             firstCall: true,
             callsign: null,
+            destination: null,
             entryPoint: null,
             entryTime: null,
             requestedMach: null,
             requestedFlightlevel: null,
-            freetext: [ '', '', '', '', '', '' ]
+            freetext: [ '', '', '', '', '', '' ],
+            station: null,
+            stationManual: false
         };
     }
 
-    static CanSendData(mcdu, data) {
-        if (!data.callsign) {
-            return false;
-        }
-        if (!mcdu.flightPlanManager.getDestination() || mcdu.flightPlanManager.getDestination().ident === "") {
-            return false;
-        }
-        if (mcdu.atsu.atc.currentStation() === "") {
-            return false;
-        }
-        return data.entryPoint && data.entryTime && data.requestedMach && data.requestedFlightlevel;
+    static CanSendData(data) {
+        return data.callsign && data.destination && data.entryPoint && data.entryTime && data.requestedMach && data.requestedFlightlevel && data.station;
     }
 
     static CreateMessage(mcdu, data) {
@@ -84,6 +78,7 @@ class CDUAtcOceanicReq {
 
     static ShowPage1(mcdu, store = CDUAtcOceanicReq.CreateDataBlock()) {
         mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.ATCOceanicRequest;
 
         let flightNo = "{white}-------{end}";
         let atcStation = "{white}----{end}";
@@ -233,9 +228,15 @@ class CDUAtcOceanicReq {
             }
         );
 
-        if (store.firstCall && !store.callsign) {
-            if (mcdu.atsu.flightNumber().length !== 0) {
+        if (store.firstCall) {
+            if (!store.callsign && mcdu.atsu.flightNumber().length !== 0) {
                 store.callsign = mcdu.atsu.flightNumber();
+            }
+            if (!store.destination && mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident !== "") {
+                store.destination = mcdu.flightPlanManager.getDestination().ident;
+            }
+            if (!store.station && mcdu.atsu.atc.currentStation() !== "") {
+                store.station = mcdu.atsu.atc.currentStation();
             }
         }
         store.firstCall = false;
@@ -249,7 +250,7 @@ class CDUAtcOceanicReq {
 
         // check if all required information are available to prepare the PDC message
         let reqDisplButton = "{cyan}DCDU\xa0{end}";
-        if (CDUAtcOceanicReq.CanSendData(mcdu, store)) {
+        if (CDUAtcOceanicReq.CanSendData(store)) {
             reqDisplButton = "{cyan}DCDU*{end}";
         }
 
@@ -269,6 +270,28 @@ class CDUAtcOceanicReq {
             ["<RETURN", reqDisplButton]
         ]);
 
+        mcdu.rightInputDelay[1] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+        mcdu.onRightInput[1] = async (value) => {
+            if (value === FMCMainDisplay.clrValue) {
+                store.station = "";
+            } else if (/^[A-Z0-9]{4}$/.test(value)) {
+                mcdu.atsu.isRemoteStationAvailable(value).then((code) => {
+                    if (code !== Atsu.AtsuStatusCodes.Ok) {
+                        mcdu.addNewAtsuMessage(code);
+                    } else {
+                        store.station = value;
+                        store.stationManual = true;
+                    }
+
+                    if (mcdu.page.Current === mcdu.page.ATCOceanicRequest) {
+                        CDUAtcOceanicReq.ShowPage1(mcdu, store);
+                    }
+                });
+            }
+        };
+
         mcdu.rightInputDelay[4] = () => {
             return mcdu.getDelaySwitchPage();
         };
@@ -287,7 +310,7 @@ class CDUAtcOceanicReq {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onRightInput[5] = () => {
-            if (CDUAtcOceanicReq.CanSendData(mcdu, store)) {
+            if (CDUAtcOceanicReq.CanSendData(store)) {
                 const status = mcdu.atsu.registerMessages([CDUAtcOceanicReq.CreateMessage(mcdu, store)]);
                 if (status !== Atsu.AtsuStatusCodes.Ok) {
                     mcdu.addNewAtsuMessage(status);

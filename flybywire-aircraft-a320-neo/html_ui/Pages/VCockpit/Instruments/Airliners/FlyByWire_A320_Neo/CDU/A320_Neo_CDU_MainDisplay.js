@@ -90,7 +90,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             AOCMenu: 47,
             AOCRequestWeather: 48,
             AOCRequestAtis: 49,
-            AOCDepartRequest: 50,
+            ATCDepartRequest: 50,
             ATCMenu: 51,
             ATCModify: 52,
             ATCAtis: 53,
@@ -107,16 +107,17 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             ATCGroundRequest: 64,
             ATCReports: 65,
             ATCEmergency: 66,
-            ATCComLastId: 67, // This is needed for automatic page changes triggered by DCDU
-            ATSUMenu: 68,
-            ATSUDatalinkStatus: 69,
-            ClimbWind: 70,
-            CruiseWind: 71,
-            DescentWind: 72,
-            FixInfoPage: 73,
-            AOCRcvdMsgs: 74,
-            AOCSentMsgs: 75,
-            AOCFreeText: 76,
+            ATCOceanicRequest: 67,
+            ATCComLastId: 68, // This is needed for automatic page changes triggered by DCDU
+            ATSUMenu: 69,
+            ATSUDatalinkStatus: 70,
+            ClimbWind: 71,
+            CruiseWind: 72,
+            DescentWind: 73,
+            FixInfoPage: 74,
+            AOCRcvdMsgs: 75,
+            AOCSentMsgs: 76,
+            AOCFreeText: 77,
         };
 
         // Handling of MCDU Sever connection attempts

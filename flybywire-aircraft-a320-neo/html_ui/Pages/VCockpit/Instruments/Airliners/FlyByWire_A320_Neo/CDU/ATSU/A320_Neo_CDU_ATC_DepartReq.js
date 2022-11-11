@@ -34,7 +34,7 @@ class CDUAtcDepartReq {
 
     static ShowPage1(mcdu, store = CDUAtcDepartReq.CreateDataBlock()) {
         mcdu.clearDisplay();
-        mcdu.page.Current = mcdu.page.ATCDepartReq;
+        mcdu.page.Current = mcdu.page.ATCDepartRequest;
 
         if (store.firstCall && store.callsign === "") {
             if (mcdu.atsu.flightNumber().length !== 0) {
@@ -206,7 +206,7 @@ class CDUAtcDepartReq {
                         store.stationManual = true;
                     }
 
-                    if (mcdu.page.Current === mcdu.page.ATCDepartReq) {
+                    if (mcdu.page.Current === mcdu.page.ATCDepartRequest) {
                         CDUAtcDepartReq.ShowPage1(mcdu, store);
                     }
                 });
