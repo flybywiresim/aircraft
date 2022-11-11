@@ -119,17 +119,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             AOCFreeText: 76,
         };
 
-        // Handling of MCDU Sever connection attempts
-        this.socket = undefined;
-        this.socketConnectionAttempts = 0;
-        this.maxConnectionAttempts = 60;
-        this.simbridgeConnect = NXDataStore.get("CONFIG_SIMBRIDGE_ENABLED", 'AUTO ON');
-        if (this.simbridgeConnect !== 'PERM OFF') {
-            NXDataStore.set("CONFIG_SIMBRIDGE_ENABLED", 'AUTO ON');
-            this.simbridgeConnect = 'AUTO ON';
-        } else {
-            console.log("SimBridge connection attempts permanently deactivated.");
-        }
+        this.mcduServerClient = undefined;
     }
 
     setupFmgcTriggers() {
@@ -163,9 +153,41 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         });
     }
 
-    initMcduVariables() {
-        this.setScratchpadText("");
-    }
+    mcduServerClientEventHandler(event) {
+        switch (event.type) {
+            case 'open': {
+                console.log(`Websocket connection to SimBridge opened. (${SimBridgeClient.McduServerClient.url}): ${event.reason}`);
+                (new NXNotifManager).showNotification({title: "MCDU CONNECTED", message: "Successfully connected to SimBridge.", timeout: 5000});
+                this.sendToMcduServerClient("mcduConnected");
+                this.sendUpdate();
+                break;
+            }
+            case 'close': {
+                console.log(`Websocket connection to SimBridge closed. (${SimBridgeClient.McduServerClient.url}): ${event.reason}`);
+                break;
+            }
+            case 'error': {
+                console.log(`Websocket connection to SimBridge error. (${SimBridgeClient.McduServerClient.url}): ${event.reason}`);
+                break;
+            }
+            case 'message': {
+                // console.log(`Websocket message received. (${SimBridgeClient.McduServerClient.url}): ${event.data}`);
+                const [messageType, ...args] = event.data.split(':');
+                if (messageType === 'event') {
+                    // backwards compatible with the old MCDU server...
+                    // accepts either event:button_name (old), or event:side:button_name (current)
+                    const mcduIndex = (args.length > 1 && args[0] === 'right') ? 2 : 1;
+                    const button = args.length > 1 ? args[1] : args[0];
+                    SimVar.SetSimVarValue(`H:A320_Neo_CDU_${mcduIndex}_BTN_${button}`, "number", 0);
+                    SimVar.SetSimVarValue(`L:A32NX_MCDU_PUSH_ANIM_${mcduIndex}_${button}`, "Number", 1);
+                }
+                if (messageType === "requestUpdate") {
+                    this.sendUpdate();
+                }
+                break;
+            }
+        }
+    };
 
     Init() {
         super.Init();
@@ -176,7 +198,10 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.scratchpad = new ScratchpadDataLink(this, display);
 
         try {
-            Coherent.trigger('UNFOCUS_INPUT_FIELD', this.scratchpad.guid);// note: without this, resetting mcdu kills camera
+            // note: without this, resetting mcdu kills camera
+            if (this.scratchpad && this.scratchpad.guid) {
+                Coherent.trigger('UNFOCUS_INPUT_FIELD', this.scratchpad.guid);
+            }
         } catch (e) {
             console.error(e);
         }
@@ -241,23 +266,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             this.requestUpdate();
         });
 
-        console.debug("DEBUG");
+        this.mcduServerClient = new SimBridgeClient.McduServerClient();
 
-        SimBridgeClient.Health.getHealth().then(
-            (health) => {
-                console.debug("SimBridge Health: " + JSON.stringify(health));
-            }
-        ).catch(
-            (error) => {
-                console.debug("SimBridge Health Error: " + error);
-            }
-        );
-        SimBridgeClient.McduServerClient.test();
-
-        const mcduServerClient = new SimBridgeClient.McduServerClient();
-        mcduServerClient.testInstance();
-
-        console.debug("DEBUG done");
     }
 
     requestUpdate() {
@@ -275,46 +285,22 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             }
         }
 
-        // The MCDU is a client to Simbridge and tries to connect in regular intervals.
-        // Due to an issue with the sim's Coherent engine we need to avoid trying
-        // to connect the websocket continuously. The below solution based on an EFB setting
-        // and a maximal number of attempts should mitigate the issue until
-        // Asobo has fixed the core issue.
+        // Create a connection to the SimBridge MCDU Server if it is not already connected
         if (this.mcduServerConnectUpdateThrottler.canUpdate(_deltaTime) !== -1
-            && this.getGameState() === GameState.ingame) {
-
-            // Try to connect websocket if enabled in EFB and no connection established
-            this.simbridgeConnect = NXDataStore.get("CONFIG_SIMBRIDGE_ENABLED", 'AUTO ON');
-            if (this.simbridgeConnect === 'AUTO ON' && (!this.socket || this.socket.readyState !== 1)) {
-                // We try to connect for a fixed amount of attempts, then we deactivate the connection setting
-                if (this.socketConnectionAttempts++ >= this.maxConnectionAttempts) {
-                    console.log("Maximum number of connection attempts to Simbridge exceeded. No more attempts.");
-                    NXDataStore.set("CONFIG_SIMBRIDGE_ENABLED", 'AUTO OFF');
-                    this.socketConnectionAttempts = 0;
-                } else {
-                    console.log(`Attempting Simbridge connection ${this.socketConnectionAttempts} of ${this.maxConnectionAttempts} attempts.`);
-                    this.connectWebsocket(NXDataStore.get("CONFIG_SIMBRIDGE_PORT", "8380"));
-                }
-            } else if (this.simbridgeConnect !== 'AUTO ON') {
-                if (this.socketConnectionAttempts > 0) {
-                    console.log("Simbridge connection attempts deactivated. No more attempts.");
-                    this.socketConnectionAttempts = 0;
-                }
-                if (this.socket) {
-                    // If there is a connection established but the EFB setting has been changed
-                    // then close connection
-                    this.socket.close();
-                    this.socket = undefined;
-                }
-            }
+            && this.getGameState() === GameState.ingame
+            && this.mcduServerClient
+            && !this.mcduServerClient.isConnected()
+        ) {
+            this.mcduServerClient.connect(this.mcduServerClientEventHandler);
         }
 
         // There is no (known) event when power is turned on or off (e.g. Ext Pwr) and remote clients
         // would not be updated (cleared or updated). Therefore, monitoring power is necessary.
         // every 500ms
         if (this.powerCheckUpdateThrottler.canUpdate(_deltaTime) !== -1
-            && this.socket && this.socket.readyState) {
-
+            && this.mcduServerClient
+            && this.mcduServerClient.isConnected()
+        ) {
             const isPoweredL = SimVar.GetSimVarValue("L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED", "Number");
             if (this.lastPowerState !== isPoweredL) {
                 this.lastPowerState = isPoweredL;
@@ -1195,7 +1181,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         SimVar.SetSimVarValue("L:A32NX_PAGE_ID", "number", SimVar.GetSimVarValue("L:A32NX_PAGE_ID", "number") + 1);
         SimVar.SetSimVarValue("L:A32NX_PRINTER_PRINTING", "bool", 0).then(v => {
             this.fmgcMesssagesListener.triggerToAllSubscribers('A32NX_PRINT', formattedValues);
-            this.sendToSocket(`print:${JSON.stringify({lines: websocketLines})}`);
+            this.sendToMcduServerClient(`print:${JSON.stringify({lines: websocketLines})}`);
             setTimeout(() => {
                 SimVar.SetSimVarValue("L:A32NX_PRINTER_PRINTING", "bool", 1);
                 this.printing = false;
@@ -1204,76 +1190,16 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
 
     /* END OF MCDU AOC MESSAGE SYSTEM */
-    /* WEBSOCKET */
 
-    /**
-     * Attempts to connect to simbridge
-     */
-    connectWebsocket(port) {
-
-        if (this.socket) {
-            // Trying to close a socket in readState == 0 leads to
-            // an error message ('WebSocket is closed before the connection is established')
-            // in the console.
-            // Not closing sockets in readyState 0 leads to an accumulation of
-            // unclosed sockets
-            this.socket.close();
-            this.socket = undefined;
-        }
-
-        const url = `ws://127.0.0.1:${port}/interfaces/v1/mcdu`.replace(/\s+/g, '');
-
-        this.socket = new WebSocket(url);
-
-        this.socket.onerror = () => {
-            // Check this to only log possible errors once connected.
-            // Otherwise, it just spams the log when attempting to connect.
-            if (this.socketConnectionAttempts > 0) {
-                return;
-            }
-            console.log(`WebSocket connection error. Maybe SimBridge disconnected? (${url})`);
-        };
-
-        this.socket.onclose = () => {
-            // Check this to only log possible errors once connected.
-            // Otherwise, it just spams the log when attempting to connect.
-            if (this.socketConnectionAttempts > 0) {
-                return;
-            }
-            console.log(`Websocket connection to SimBridge closed. (${url})`);
-        };
-
-        this.socket.onopen = () => {
-            console.log(`Websocket connection to SimBridge established. (${url})`);
-            (new NXNotifManager).showNotification({title: "MCDU CONNECTED", message: "Successfully connected to SimBridge.", timeout: 5000});
-            this.sendToSocket("mcduConnected");
-            this.sendUpdate();
-            this.socketConnectionAttempts = 0;
-        };
-
-        this.socket.onmessage = (event) => {
-            const [messageType, ...args] = event.data.split(':');
-            if (messageType === 'event') {
-                // backwards compatible with the old MCDU server...
-                // accepts either event:button_name (old), or event:side:button_name (current)
-                const mcduIndex = (args.length > 1 && args[0] === 'right') ? 2 : 1;
-                const button = args.length > 1 ? args[1] : args[0];
-                SimVar.SetSimVarValue(`H:A320_Neo_CDU_${mcduIndex}_BTN_${button}`, "number", 0);
-                SimVar.SetSimVarValue(`L:A32NX_MCDU_PUSH_ANIM_${mcduIndex}_${button}`, "Number", 1);
-            }
-            if (messageType === "requestUpdate") {
-                this.sendUpdate();
-            }
-        };
-    }
+    /* MCDU SERVER CLIENT */
 
     /**
      * Sends a message to the websocket server (if connected)
      * @param {string} message
      */
-    sendToSocket(message) {
-        if (this.socket && this.socket.readyState) {
-            this.socket.send(message);
+    sendToMcduServerClient(message) {
+        if (this.mcduServerClient && this.mcduServerClient.isConnected()) {
+            this.mcduServerClient.send(message);
         }
     }
 
@@ -1281,8 +1207,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
      * Sends an update to the websocket server (if connected) with the current state of the MCDU
      */
     sendUpdate() {
-        // only calculate update when socket is established.
-        if (!this.socket || !this.socket.readyState) {
+        // only calculate update when mcduServerClient is established.
+        if (this.mcduServerClient && !this.mcduServerClient.isConnected()) {
             return;
         }
         let left = {
@@ -1335,7 +1261,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             right = left;
         }
         const content = {right, left};
-        this.sendToSocket(`update:${JSON.stringify(content)}`);
+        this.sendToMcduServerClient(`update:${JSON.stringify(content)}`);
     }
     /* END OF WEBSOCKET */
 
