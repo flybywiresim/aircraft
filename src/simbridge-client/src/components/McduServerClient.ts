@@ -8,20 +8,13 @@ import { ClientState } from './ClientState';
  * Class to communicate with the SimBridge MCDU server
  */
 export class McduServerClient {
-    private state: ClientState = undefined;
-
-    private socket: WebSocket = undefined;
-
     public static port: string = NXDataStore.get('CONFIG_SIMBRIDGE_PORT', '8380');
 
     public static url: string = `ws://127.0.0.1:${this.port}/interfaces/v1/mcdu`.replace(/\s+/g, '');
 
-    /**
-     * Creates an instance of the McduServerClient class
-     */
-    constructor() {
-        this.state = ClientState.getInstance();
-    }
+    private state: ClientState = ClientState.getInstance();
+
+    private socket: WebSocket = undefined;
 
     /**
      * Will attempt to connect to the SimBridge MCDU server. Will throw an error if the connection fails.
