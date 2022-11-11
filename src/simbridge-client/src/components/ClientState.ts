@@ -22,7 +22,7 @@ export class ClientState {
     private simbridgeConnect: string = 'AUTO ON';
 
     // how many times to attempt to connect to the server before giving up
-    private static maxSimBridgeConnectionAttempts: number = 20;
+    private static maxSimBridgeConnectionAttempts: number = 60;
 
     /**
      * Constructor for the singleton. Start checking the server availability regularly
@@ -38,7 +38,7 @@ export class ClientState {
         // Try to connect websocket if enabled in EFB and no connection established
         setInterval(() => {
             this.checkServerAvailability();
-        }, 15_000);
+        }, 5_000);
     }
 
     /**
