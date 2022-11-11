@@ -10,4 +10,12 @@ export class McduServerClient {
     public static test() {
         console.debug('McduServerClient.test() called');
     }
+
+    constructor() {
+        console.debug('McduServerClient constructor called');
+    }
+
+    public testInstance() {
+        console.debug('McduServerClient.testInstance() called');
+    }
 }

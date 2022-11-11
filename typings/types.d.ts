@@ -1,5 +1,4 @@
 import { FlightPhaseManager as FlightPhaseManager_ } from "../src/fmgc/src";
-import { McduServerClient as McduServerClient_ } from "../src/simbridge-client/src";
 
 declare global {
     type NauticalMiles = number;
@@ -51,9 +50,6 @@ declare global {
         const FlightPhaseManager: typeof FlightPhaseManager_
     }
 
-    namespace RemoteMcdu {
-        const McduServerClient: typeof McduServerClient_
-    }
 }
 
 export {};

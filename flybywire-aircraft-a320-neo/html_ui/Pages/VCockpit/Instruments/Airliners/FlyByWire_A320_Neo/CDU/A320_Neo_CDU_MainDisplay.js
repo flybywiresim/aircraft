@@ -241,12 +241,23 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             this.requestUpdate();
         });
 
-        console.log("DEBUG attempt");
+        console.debug("DEBUG");
 
-        RemoteMcdu.test();
-        // const test3 = new McduServer();
+        SimBridgeClient.Health.getHealth().then(
+            (health) => {
+                console.debug("SimBridge Health: " + JSON.stringify(health));
+            }
+        ).catch(
+            (error) => {
+                console.debug("SimBridge Health Error: " + error);
+            }
+        );
+        SimBridgeClient.McduServerClient.test();
 
-        console.log("DEBUG attempt done");
+        const mcduServerClient = new SimBridgeClient.McduServerClient();
+        mcduServerClient.testInstance();
+
+        console.debug("DEBUG done");
     }
 
     requestUpdate() {
