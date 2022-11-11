@@ -265,8 +265,8 @@ export const TerrainMap: React.FC<TerrainMapProps> = ({ potentiometerIndex, x, y
         meterPerPixel += (10 - (meterPerPixel % 10));
 
         // send the runway elevation to the renderer to activate the elevation filter
-        let runwayElevation = 0;
-        if (flightPhase >= FmgcFlightPhase.Cruise) {
+        let runwayElevation: number | undefined = undefined;
+        if (flightPhase > FmgcFlightPhase.Cruise) {
             runwayElevation = landingElevation;
         }
 
