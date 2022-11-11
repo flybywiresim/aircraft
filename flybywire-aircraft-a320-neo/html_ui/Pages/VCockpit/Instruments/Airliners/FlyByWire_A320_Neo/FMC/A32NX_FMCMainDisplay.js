@@ -2505,7 +2505,7 @@ class FMCMainDisplay extends BaseAirliners {
                 this.setScratchpadMessage(NXSystemMessages.notInDatabase);
             }
         } catch (error) {
-            console.error(`Error retrieving coroute list ${error}`);
+            console.info(`Error retrieving coroute list ${error}`);
         }
     }
 
