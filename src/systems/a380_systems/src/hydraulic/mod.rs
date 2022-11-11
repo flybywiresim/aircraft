@@ -374,7 +374,7 @@ impl A380SpoilerFactory {
 
     const MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING: f64 = 400000.;
 
-    const MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT: f64 = 3.;
+    const MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT: f64 = 20.;
 
     fn a380_spoiler_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
         let actuator_characteristics = LinearActuatorCharacteristics::new(
@@ -450,19 +450,21 @@ impl A380SpoilerFactory {
         let spoiler_3 = Self::new_a380_spoiler_element(context, id, 3);
         let spoiler_4 = Self::new_a380_spoiler_element(context, id, 4);
         let spoiler_5 = Self::new_a380_spoiler_element(context, id, 5);
+        let spoiler_6 = Self::new_a380_spoiler_element(context, id, 6);
+        let spoiler_7 = Self::new_a380_spoiler_element(context, id, 7);
+        let spoiler_8 = Self::new_a380_spoiler_element(context, id, 8);
 
-        match id {
-            ActuatorSide::Left => SpoilerGroup::new(
-                context,
-                "LEFT",
-                [spoiler_1, spoiler_2, spoiler_3, spoiler_4, spoiler_5],
-            ),
-            ActuatorSide::Right => SpoilerGroup::new(
-                context,
-                "RIGHT",
-                [spoiler_1, spoiler_2, spoiler_3, spoiler_4, spoiler_5],
-            ),
-        }
+        SpoilerGroup::new(
+            context,
+            match id {
+                ActuatorSide::Left => "LEFT",
+                ActuatorSide::Right => "RIGHT",
+            },
+            [
+                spoiler_1, spoiler_2, spoiler_3, spoiler_4, spoiler_5, spoiler_6, spoiler_7,
+                spoiler_8,
+            ],
+        )
     }
 
     fn new_a380_spoiler_element(
@@ -1715,13 +1717,11 @@ impl A380Hydraulic {
         self.left_spoilers.update(
             context,
             self.green_circuit.system_section(),
-            self.green_circuit.system_section(),
             self.yellow_circuit.system_section(),
         );
 
         self.right_spoilers.update(
             context,
-            self.green_circuit.system_section(),
             self.green_circuit.system_section(),
             self.yellow_circuit.system_section(),
         );
@@ -1877,12 +1877,43 @@ impl A380Hydraulic {
         self.green_circuit
             .update_system_actuator_volumes(&mut self.braking_circuit_norm);
 
-        // self.green_circuit.update_system_actuator_volumes(
-        //     self.left_aileron.actuator(AileronActuatorPosition::Green),
-        // );
-        // self.green_circuit.update_system_actuator_volumes(
-        //     self.right_aileron.actuator(AileronActuatorPosition::Green),
-        // );
+        self.green_circuit
+            .update_system_actuator_volumes(self.left_aileron.actuator(
+                AileronActuatorPosition::Outward,
+                AileronPanelPosition::Outward,
+            ));
+
+        // This one is EHA, TODO check if it's connected to green or yellow for filling
+        self.green_circuit
+            .update_system_actuator_volumes(self.left_aileron.actuator(
+                AileronActuatorPosition::Inward,
+                AileronPanelPosition::Middle,
+            ));
+
+        self.green_circuit
+            .update_system_actuator_volumes(self.left_aileron.actuator(
+                AileronActuatorPosition::Outward,
+                AileronPanelPosition::Inward,
+            ));
+
+        self.green_circuit
+            .update_system_actuator_volumes(self.right_aileron.actuator(
+                AileronActuatorPosition::Outward,
+                AileronPanelPosition::Outward,
+            ));
+
+        // This one is EHA, TODO check if it's connected to green or yellow for filling
+        self.green_circuit
+            .update_system_actuator_volumes(self.right_aileron.actuator(
+                AileronActuatorPosition::Inward,
+                AileronPanelPosition::Middle,
+            ));
+
+        self.green_circuit
+            .update_system_actuator_volumes(self.right_aileron.actuator(
+                AileronActuatorPosition::Outward,
+                AileronPanelPosition::Inward,
+            ));
 
         self.green_circuit.update_system_actuator_volumes(
             self.left_elevator
@@ -1922,6 +1953,44 @@ impl A380Hydraulic {
     }
 
     fn update_yellow_actuators_volume(&mut self) {
+        self.yellow_circuit
+            .update_system_actuator_volumes(self.left_aileron.actuator(
+                AileronActuatorPosition::Inward,
+                AileronPanelPosition::Outward,
+            ));
+
+        self.yellow_circuit
+            .update_system_actuator_volumes(self.left_aileron.actuator(
+                AileronActuatorPosition::Outward,
+                AileronPanelPosition::Middle,
+            ));
+
+        // This one is EHA, TODO check if it's connected to green or yellow for filling
+        self.yellow_circuit
+            .update_system_actuator_volumes(self.left_aileron.actuator(
+                AileronActuatorPosition::Inward,
+                AileronPanelPosition::Inward,
+            ));
+
+        self.yellow_circuit
+            .update_system_actuator_volumes(self.right_aileron.actuator(
+                AileronActuatorPosition::Inward,
+                AileronPanelPosition::Outward,
+            ));
+
+        self.yellow_circuit
+            .update_system_actuator_volumes(self.right_aileron.actuator(
+                AileronActuatorPosition::Outward,
+                AileronPanelPosition::Middle,
+            ));
+
+        // This one is EHA, TODO check if it's connected to green or yellow for filling
+        self.yellow_circuit
+            .update_system_actuator_volumes(self.right_aileron.actuator(
+                AileronActuatorPosition::Inward,
+                AileronPanelPosition::Inward,
+            ));
+
         self.yellow_circuit
             .update_system_actuator_volumes(&mut self.braking_circuit_altn);
 
@@ -5337,11 +5406,11 @@ impl SimulationElement for SpoilerElement {
 }
 
 struct SpoilerGroup {
-    spoilers: [SpoilerElement; 5],
-    hydraulic_controllers: [SpoilerController; 5],
+    spoilers: [SpoilerElement; 8],
+    hydraulic_controllers: [SpoilerController; 8],
 }
 impl SpoilerGroup {
-    fn new(context: &mut InitContext, spoiler_side: &str, spoilers: [SpoilerElement; 5]) -> Self {
+    fn new(context: &mut InitContext, spoiler_side: &str, spoilers: [SpoilerElement; 8]) -> Self {
         Self {
             spoilers,
             hydraulic_controllers: [
@@ -5350,6 +5419,9 @@ impl SpoilerGroup {
                 SpoilerController::new(context, spoiler_side, 3),
                 SpoilerController::new(context, spoiler_side, 4),
                 SpoilerController::new(context, spoiler_side, 5),
+                SpoilerController::new(context, spoiler_side, 6),
+                SpoilerController::new(context, spoiler_side, 7),
+                SpoilerController::new(context, spoiler_side, 8),
             ],
         }
     }
@@ -5358,7 +5430,6 @@ impl SpoilerGroup {
         &mut self,
         context: &UpdateContext,
         green_section: &impl SectionPressure,
-        blue_section: &impl SectionPressure,
         yellow_section: &impl SectionPressure,
     ) {
         self.spoilers[0].update(
@@ -5374,7 +5445,7 @@ impl SpoilerGroup {
         self.spoilers[2].update(
             context,
             &self.hydraulic_controllers[2],
-            blue_section.pressure_downstream_leak_valve(),
+            green_section.pressure_downstream_leak_valve(),
         );
         self.spoilers[3].update(
             context,
@@ -5385,6 +5456,21 @@ impl SpoilerGroup {
             context,
             &self.hydraulic_controllers[4],
             green_section.pressure_downstream_leak_valve(),
+        );
+        self.spoilers[5].update(
+            context,
+            &self.hydraulic_controllers[5],
+            yellow_section.pressure_downstream_leak_valve(),
+        );
+        self.spoilers[6].update(
+            context,
+            &self.hydraulic_controllers[6],
+            green_section.pressure_downstream_leak_valve(),
+        );
+        self.spoilers[7].update(
+            context,
+            &self.hydraulic_controllers[7],
+            yellow_section.pressure_downstream_leak_valve(),
         );
     }
 
