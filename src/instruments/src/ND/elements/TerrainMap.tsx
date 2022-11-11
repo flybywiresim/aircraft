@@ -1,8 +1,9 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useArinc429Var } from '@instruments/common/arinc429';
+import { useUpdate } from '@instruments/common/hooks';
 import { useSimVar } from '@instruments/common/simVars';
 import { Mode, EfisSide, rangeSettings } from '@shared/NavigationDisplay';
-import { useUpdate } from '@instruments/common/hooks';
+import { FmgcFlightPhase } from '@shared/flightphase';
 import { Terrain } from '../../../../simbridge-client/src/index';
 
 const MAP_TRANSITION_FRAMERATE = 15;
@@ -148,6 +149,9 @@ export const TerrainMap: React.FC<TerrainMapProps> = ({ potentiometerIndex, x, y
     const [terrOnNdActive] = useSimVar(`L:A32NX_EFIS_TERR_${side}_ACTIVE`, 'boolean', 100);
     const [rangeIndex] = useSimVar(`L:A32NX_EFIS_${side}_ND_RANGE`, 'number', 100);
     const [modeIndex] = useSimVar(`L:A32NX_EFIS_${side}_ND_MODE`, 'number', 100);
+    const [departureElevation] = useSimVar(`L:A32NX_FM${side === 'L' ? 1 : 2}_DEPARTURE_ELEVATION`, 'number', 100);
+    const [landingElevation] = useSimVar(`L:A32NX_FM${side === 'L' ? 1 : 2}_LANDING_ELEVATION`, 'number', 100);
+    const [flightPhase] = useSimVar('L:A32NX_FMGC_FLIGHT_PHASE', 'number', 100);
     const [gearMode] = useSimVar('GEAR POSITION:0', 'Enum', 100);
     const mapVisualizationRef = useRef<MapVisualizationData>();
     mapVisualizationRef.current = mapVisualization;
@@ -254,12 +258,24 @@ export const TerrainMap: React.FC<TerrainMapProps> = ({ potentiometerIndex, x, y
             setMapVisualization(newVisualizationData);
         }
 
+        console.log(flightPhase);
+        console.log(departureElevation);
+        console.log(landingElevation);
+
         let meterPerPixel = Math.round(rangeSettings[rangeIndex] * METRES_TO_NAUTICAL_MILES / height);
         // scaling is required due to bigger area than visualized (clipped areas)
         if (modeIndex === Mode.ARC) {
             meterPerPixel *= 2;
         }
         meterPerPixel += (10 - (meterPerPixel % 10));
+
+        // send the runway elevation to the renderer to activate the elevation filter
+        let runwayElevation = 0;
+        if (flightPhase < FmgcFlightPhase.Cruise) {
+            runwayElevation = departureElevation;
+        } else {
+            runwayElevation = landingElevation;
+        }
 
         const displayConfiguration = {
             active: modeIndex !== Mode.PLAN && terrOnNdActive !== 0,
@@ -270,9 +286,10 @@ export const TerrainMap: React.FC<TerrainMapProps> = ({ potentiometerIndex, x, y
             mapTransitionFps: MAP_TRANSITION_FRAMERATE,
             arcMode: modeIndex === Mode.ARC,
             gearDown: SimVar.GetSimVarValue('GEAR POSITION:0', 'Enum') !== 1,
+            runwayElevation,
         };
         Terrain.setDisplaySettings(side, displayConfiguration).catch((_ex) => setMapVisualization(new MapVisualizationData()));
-    }, [terrOnNdActive, rangeIndex, modeIndex, gearMode]);
+    }, [terrOnNdActive, rangeIndex, modeIndex, gearMode, flightPhase, departureElevation, landingElevation]);
 
     if (!terrOnNdActive || modeIndex === Mode.PLAN) {
         return <></>;
