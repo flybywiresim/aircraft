@@ -688,7 +688,7 @@ void FlyByWireInterface::setupLocalVariables() {
     idAilFaultRight[i] = make_unique<LocalVariable>("A32NX_RIGHT_AIL_SERVO_" + idString + "_FAILED");
   }
 
-  for (int i = 0; i < 5; i++) {
+  for (int i = 0; i < 8; i++) {
     string idString = std::to_string(i + 1);
     idLeftSpoilerCommandedPosition[i] = make_unique<LocalVariable>("A32NX_LEFT_SPOILER_" + idString + "_COMMANDED_POSITION");
     idRightSpoilerCommandedPosition[i] = make_unique<LocalVariable>("A32NX_RIGHT_SPOILER_" + idString + "_COMMANDED_POSITION");
@@ -1666,16 +1666,23 @@ bool FlyByWireInterface::updateServoSolenoidStatus() {
   idRightAileronSolenoidEnergized[1]->set(elacsDiscreteOutputs[1].right_aileron_active_mode);
   idRightAileronCommandedPosition[1]->set(-elacsAnalogOutputs[1].right_aileron_pos_order);
 
+  // Trying to map 5 A320 spoilers to 8 A380 spoilers
   idLeftSpoilerCommandedPosition[0]->set(-secsAnalogOutputs[2].left_spoiler_1_pos_order_deg);
   idRightSpoilerCommandedPosition[0]->set(-secsAnalogOutputs[2].right_spoiler_1_pos_order_deg);
-  idLeftSpoilerCommandedPosition[1]->set(-secsAnalogOutputs[2].left_spoiler_2_pos_order_deg);
-  idRightSpoilerCommandedPosition[1]->set(-secsAnalogOutputs[2].right_spoiler_2_pos_order_deg);
-  idLeftSpoilerCommandedPosition[2]->set(-secsAnalogOutputs[0].left_spoiler_1_pos_order_deg);
-  idRightSpoilerCommandedPosition[2]->set(-secsAnalogOutputs[0].right_spoiler_1_pos_order_deg);
-  idLeftSpoilerCommandedPosition[3]->set(-secsAnalogOutputs[0].left_spoiler_2_pos_order_deg);
-  idRightSpoilerCommandedPosition[3]->set(-secsAnalogOutputs[0].right_spoiler_2_pos_order_deg);
-  idLeftSpoilerCommandedPosition[4]->set(-secsAnalogOutputs[1].left_spoiler_1_pos_order_deg);
-  idRightSpoilerCommandedPosition[4]->set(-secsAnalogOutputs[1].right_spoiler_1_pos_order_deg);
+  idLeftSpoilerCommandedPosition[1]->set(-secsAnalogOutputs[2].left_spoiler_1_pos_order_deg);
+  idRightSpoilerCommandedPosition[1]->set(-secsAnalogOutputs[2].right_spoiler_1_pos_order_deg);
+  idLeftSpoilerCommandedPosition[2]->set(-secsAnalogOutputs[2].left_spoiler_2_pos_order_deg);
+  idRightSpoilerCommandedPosition[2]->set(-secsAnalogOutputs[2].right_spoiler_2_pos_order_deg);
+  idLeftSpoilerCommandedPosition[3]->set(-secsAnalogOutputs[2].left_spoiler_2_pos_order_deg);
+  idRightSpoilerCommandedPosition[3]->set(-secsAnalogOutputs[2].right_spoiler_2_pos_order_deg);
+  idLeftSpoilerCommandedPosition[4]->set(-secsAnalogOutputs[0].left_spoiler_1_pos_order_deg);
+  idRightSpoilerCommandedPosition[4]->set(-secsAnalogOutputs[0].right_spoiler_1_pos_order_deg);
+  idLeftSpoilerCommandedPosition[5]->set(-secsAnalogOutputs[0].left_spoiler_1_pos_order_deg);
+  idRightSpoilerCommandedPosition[5]->set(-secsAnalogOutputs[0].right_spoiler_1_pos_order_deg);
+  idLeftSpoilerCommandedPosition[6]->set(-secsAnalogOutputs[0].left_spoiler_2_pos_order_deg);
+  idRightSpoilerCommandedPosition[6]->set(-secsAnalogOutputs[0].right_spoiler_2_pos_order_deg);
+  idLeftSpoilerCommandedPosition[7]->set(-secsAnalogOutputs[1].left_spoiler_1_pos_order_deg);
+  idRightSpoilerCommandedPosition[7]->set(-secsAnalogOutputs[1].right_spoiler_1_pos_order_deg);
 
   idLeftElevatorSolenoidEnergized[0]->set(elacsDiscreteOutputs[1].left_elevator_damping_mode ||
                                           secsDiscreteOutputs[1].left_elevator_damping_mode);
