@@ -908,13 +908,13 @@ export class ManagedFlightPlan {
         }
 
         // Set origin fix coordinates to runway beginning coordinates
-        if (origin && selectedOriginRunwayIndex !== -1) {
+        if (origin && selectedOriginRunwayIndex >= 0) {
             origin.infos.coordinates = airportInfo.oneWayRunways[selectedOriginRunwayIndex].beginningCoordinates;
             origin.additionalData.runwayElevation = airportInfo.oneWayRunways[selectedOriginRunwayIndex].elevation * 3.2808399;
             origin.additionalData.runwayLength = airportInfo.oneWayRunways[selectedOriginRunwayIndex].length;
         }
 
-        if (departureIndex !== -1 && runwayIndex !== -1) {
+        if (departureIndex >= 0 && runwayIndex >= 0) {
             const runwayTransition: RawRunwayTransition = airportInfo.departures[departureIndex].runwayTransitions[runwayIndex];
             const departure: RawDeparture = airportInfo.departures[departureIndex];
             if (runwayTransition) {
@@ -925,13 +925,13 @@ export class ManagedFlightPlan {
             }
         }
 
-        if (departureIndex !== -1) {
+        if (departureIndex >= 0) {
             const departure: RawDeparture = airportInfo.departures[departureIndex];
             legs.push(...departure.commonLegs);
             legAnnotations.push(...departure.commonLegs.map(_ => departure.name));
         }
 
-        if (transitionIndex !== -1 && departureIndex !== -1) {
+        if (transitionIndex >= 0 && departureIndex >= 0) {
             if (airportInfo.departures[departureIndex].enRouteTransitions.length > 0) {
                 const transition: RawEnRouteTransition = airportInfo.departures[departureIndex].enRouteTransitions[transitionIndex];
                 legs.push(...transition.legs);
@@ -948,7 +948,7 @@ export class ManagedFlightPlan {
             this.removeSegment(segment.type);
         }
 
-        if (legs.length > 0 || selectedOriginRunwayIndex !== -1 || (departureIndex !== -1 && runwayIndex !== -1)) {
+        if (legs.length > 0 || selectedOriginRunwayIndex >= 0 || (departureIndex >= 0 && runwayIndex >= 0)) {
             segment = this.addSegment(SegmentType.Departure);
             let procedure = new LegsProcedure(legs, origin, this._parentInstrument, airportMagVar, undefined, legAnnotations);
 
@@ -957,7 +957,7 @@ export class ManagedFlightPlan {
             if (runway) {
                 // console.error('bruh');
                 // Reference : AMM - 22-71-00 PB001, Page 4
-                if (departureIndex === -1 && transitionIndex === -1) {
+                if (departureIndex < 0 && transitionIndex < 0) {
                     const TEMPORARY_VERTICAL_SPEED = 2000.0; // ft/min
                     const TEMPORARY_GROUND_SPEED = 160; // knots
 
@@ -1019,7 +1019,7 @@ export class ManagedFlightPlan {
         const destinationInfo = destination.infos as AirportInfo;
         const airportMagVar = Facilities.getMagVar(destinationInfo.coordinates.lat, destinationInfo.coordinates.long);
 
-        if (arrivalIndex !== -1 && arrivalTransitionIndex !== -1) {
+        if (arrivalIndex >= 0 && arrivalTransitionIndex >= 0) {
             const transition: RawEnRouteTransition = destinationInfo.arrivals[arrivalIndex].enRouteTransitions[arrivalTransitionIndex];
             if (transition !== undefined) {
                 legs.push(...transition.legs);
@@ -1028,21 +1028,25 @@ export class ManagedFlightPlan {
             }
         }
 
-        if (arrivalIndex !== -1) {
+        if (arrivalIndex >= 0) {
+            // string the common legs in the middle of the STAR
             const arrival: RawArrival = destinationInfo.arrivals[arrivalIndex];
             legs.push(...arrival.commonLegs);
             legAnnotations.push(...arrival.commonLegs.map(_ => arrival.name));
             // console.log('MFP: buildArrival - pushing STAR legs ->', legs);
-        }
 
-        if (arrivalIndex !== -1 && arrivalRunwayIndex !== -1) {
-            const arrival: RawArrival = destinationInfo.arrivals[arrivalIndex];
-            const runwayTransition: RawRunwayTransition = destinationInfo.arrivals[arrivalIndex].runwayTransitions[arrivalRunwayIndex];
+            // if no runway is selected at all (non-runway-specific approach)
+            // and the selected STAR only has runway transition legs... string them
+            // TODO research IRL behaviour
+            const starHasOneRunwayTrans = arrival.commonLegs.length === 0 && arrival.runwayTransitions.length === 1;
+            const approachIsRunwaySpecific = this.procedureDetails.destinationRunwayIndex >= 0;
+            const runwayTransIndex = arrivalRunwayIndex < 0 && starHasOneRunwayTrans && !approachIsRunwaySpecific ? 0 : arrivalRunwayIndex;
+
+            const runwayTransition = arrival.runwayTransitions[runwayTransIndex];
             if (runwayTransition) {
                 legs.push(...runwayTransition.legs);
                 legAnnotations.push(...runwayTransition.legs.map(_ => arrival.name));
             }
-            // console.log('MFP: buildArrival - pushing VIA legs ->', legs);
         }
 
         let { _startIndex, segment } = this.truncateSegment(SegmentType.Arrival);
@@ -1093,23 +1097,35 @@ export class ManagedFlightPlan {
         const approach: RawApproach = destinationInfo.approaches[approachIndex];
         const approachName = approach && approach.approachType !== ApproachType.APPROACH_TYPE_UNKNOWN ? approach.name : '';
 
-        if (approachIndex !== -1 && approachTransitionIndex !== -1) {
+        if (approachIndex >= 0 && approachTransitionIndex >= 0) {
             const transition: RawApproachTransition = destinationInfo.approaches[approachIndex].transitions[approachTransitionIndex];
             legs.push(...transition.legs);
             legAnnotations.push(...transition.legs.map(_ => transition.name));
             // console.log('MFP: buildApproach - pushing approachTransition legs ->', legs);
         }
 
-        if (approachIndex !== -1) {
+        if (approachIndex >= 0) {
+            const finalLegs = [...approach.finalLegs];
+            // PI legs can only occur in approach vias
+            // if the via ends in one, we must omit the IF leg at the start of the approach
+            const viaLastLegType = legs[legs.length - 1]?.type;
+            if (viaLastLegType === LegType.PI && finalLegs[0]?.type === LegType.IF) {
+                finalLegs.splice(0, 1);
+                // @ts-expect-error (ts compiler doesn't see that splice mutates finalLegs)
+                if (finalLegs[0]?.type !== LegType.CF) {
+                    console.error('PI must be followed by CF!');
+                }
+            }
+
             this.procedureDetails.approachType = approach.approachType;
-            legs.push(...approach.finalLegs);
-            legAnnotations.push(...approach.finalLegs.map(_ => approachName));
+            legs.push(...finalLegs);
+            legAnnotations.push(...finalLegs.map(_ => approachName));
             missedLegs.push(...approach.missedLegs);
         }
 
         let { _startIndex, segment } = this.truncateSegment(SegmentType.Approach);
 
-        if (legs.length > 0 || approachIndex !== -1 || destinationRunwayIndex !== -1) {
+        if (legs.length > 0 || approachIndex >= 0 || destinationRunwayIndex >= 0) {
             if (segment === FlightPlanSegment.Empty) {
                 segment = this.addSegment(SegmentType.Approach);
                 _startIndex = segment.offset;
@@ -1159,18 +1175,13 @@ export class ManagedFlightPlan {
                 } else {
                     selectedRunwayOutput = `0${runway.designation}`;
                 }
-                if (approachIndex === -1 && destinationRunwayIndex !== -1 && destinationRunwayExtension !== -1) {
-                    const runwayExtensionWaypoint = procedure.buildWaypoint(`RX${selectedRunwayOutput}`,
-                        Avionics.Utils.bearingDistanceToCoordinates(runway.direction + 180, destinationRunwayExtension, runway.beginningCoordinates.lat, runway.beginningCoordinates.long));
-                    this.addWaypoint(runwayExtensionWaypoint);
-                }
 
                 // When adding approach, edit destination waypoint
                 this.destinationAirfield.infos.coordinates = runway.beginningCoordinates;
                 this.destinationAirfield.legAltitudeDescription = 1;
                 this.destinationAirfield.legAltitude1 = Math.round((runway.elevation * 3.28084 + 50) / 10) * 10;
                 this.destinationAirfield.isRunway = true;
-                if (approachIndex !== -1) {
+                if (approachIndex >= 0) {
                     const lastLeg = approach.finalLegs[approach.finalLegs.length - 1];
                     if (lastLeg.type === LegType.CF) {
                         const magCourse = lastLeg.trueDegrees ? A32NX_Util.trueToMagnetic(lastLeg.course, Facilities.getMagVar(runway.beginningCoordinates.lat, runway.beginningCoordinates.long)) : lastLeg.course;
@@ -1553,7 +1564,7 @@ export class ManagedFlightPlan {
 
     public getOriginRunway(): OneWayRunway | null {
         if (this.originAirfield) {
-            if (this.procedureDetails.originRunwayIndex !== -1) {
+            if (this.procedureDetails.originRunwayIndex >= 0) {
                 return this.originAirfield.infos.oneWayRunways[this.procedureDetails.originRunwayIndex];
             }
         }
@@ -1562,7 +1573,7 @@ export class ManagedFlightPlan {
 
     public getDestinationRunway(): OneWayRunway | null {
         if (this.destinationAirfield) {
-            if (this.procedureDetails.destinationRunwayIndex !== -1) {
+            if (this.procedureDetails.destinationRunwayIndex >= 0) {
                 return this.destinationAirfield.infos.oneWayRunways[this.procedureDetails.destinationRunwayIndex];
             }
         }

@@ -23,6 +23,9 @@ export const RealismPage = () => {
     const [realisticTiller, setRealisticTiller] = usePersistentNumberProperty('REALISTIC_TILLER_ENABLED', 0);
     const [homeCockpit, setHomeCockpit] = usePersistentProperty('HOME_COCKPIT_ENABLED', '0');
     const [autoFillChecklists, setAutoFillChecklists] = usePersistentNumberProperty('EFB_AUTOFILL_CHECKLISTS', 0);
+    const [syncEfis, setFoEfis] = usePersistentNumberProperty('FO_SYNC_EFIS_ENABLED', 0);
+    const [pilotAvatar, setPilotAvatar] = usePersistentNumberProperty('CONFIG_PILOT_AVATAR_VISIBLE', 0);
+    const [firstOfficerAvatar, setFirstOfficerAvatar] = usePersistentNumberProperty('CONFIG_FIRST_OFFICER_AVATAR_VISIBLE', 0);
 
     const adirsAlignTimeButtons: (ButtonType & SimVarButton)[] = [
         { name: t('Settings.Instant'), setting: 'INSTANT', simVarValue: 1 },
@@ -120,6 +123,18 @@ export const RealismPage = () => {
                     </SettingItem>
                 )}
             </SettingGroup>
+
+            <SettingItem name={t('Settings.Realism.SyncEfis')} unrealistic>
+                <Toggle value={!!syncEfis} onToggle={(value) => setFoEfis(value ? 1 : 0)} />
+            </SettingItem>
+
+            <SettingItem name={t('Settings.Realism.PilotAvatar')}>
+                <Toggle value={!!pilotAvatar} onToggle={(value) => setPilotAvatar(value ? 1 : 0)} />
+            </SettingItem>
+
+            <SettingItem name={t('Settings.Realism.FirstOfficerAvatar')}>
+                <Toggle value={!!firstOfficerAvatar} onToggle={(value) => setFirstOfficerAvatar(value ? 1 : 0)} />
+            </SettingItem>
 
         </SettingsPage>
     );

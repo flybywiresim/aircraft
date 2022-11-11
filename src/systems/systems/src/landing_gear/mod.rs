@@ -653,21 +653,23 @@ impl LandingGearControlInterfaceUnit {
             self.is_powered,
         );
 
-        if is_master_computer && !self.is_active_computer_previous_state {
-            self.actions_when_becoming_master();
-        }
+        if self.is_powered {
+            if is_master_computer && !self.is_active_computer_previous_state {
+                self.actions_when_becoming_master();
+            }
 
-        if !is_master_computer {
-            self.actions_when_slave();
-        }
+            if !is_master_computer {
+                self.actions_when_slave();
+            }
 
-        if self.is_powered && !self.is_powered_previous_state {
-            self.actions_when_startup();
-        }
+            if !self.is_powered_previous_state {
+                self.actions_when_startup();
+            }
 
-        if is_master_computer {
-            self.gear_system_control
-                .update(&self.sensor_inputs, !self.is_gear_lever_down);
+            if is_master_computer {
+                self.gear_system_control
+                    .update(&self.sensor_inputs, !self.is_gear_lever_down);
+            }
         }
 
         if context.is_sim_ready() {
@@ -1026,7 +1028,13 @@ impl GearSystemStateMachine {
                 if !gear_handle_position_is_up {
                     GearSystemState::Extending
                 } else {
-                    self.gears_state
+                    // Checking consistency as we should be all uplocked with lever up
+                    if lgciu.all_up_and_locked() && lgciu.all_closed_and_locked() {
+                        self.gears_state
+                    } else {
+                        // Else we are supposed to be all uplocked but we aren't so back to retraction
+                        GearSystemState::Retracting
+                    }
                 }
             }
             GearSystemState::Retracting => {

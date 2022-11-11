@@ -54,6 +54,8 @@ interface DigitalAltitudeReadoutProps {
 export class DigitalAltitudeReadout extends DisplayComponent<DigitalAltitudeReadoutProps> {
     private mda = 0;
 
+    private altitude = 0;
+
     private isNegativeSub = Subject.create('hidden')
 
     private colorSub = Subject.create('')
@@ -81,16 +83,15 @@ export class DigitalAltitudeReadout extends DisplayComponent<DigitalAltitudeRead
 
         sub.on('mda').whenChanged().handle((mda) => {
             this.mda = mda;
-            const color = this.mda !== 0 ? 'Amber' : 'Green';
-            this.colorSub.set(color);
+            this.updateColor();
         });
 
         sub.on('altitudeAr').handle((altitude) => {
             const isNegative = altitude.value < 0;
             this.isNegativeSub.set(isNegative ? 'visible' : 'hidden');
 
-            const color = (this.mda !== 0 && altitude.value < this.mda) ? 'Amber' : 'Green';
-            this.colorSub.set(color);
+            this.altitude = altitude.value;
+            this.updateColor();
 
             const absAlt = Math.abs(Math.max(Math.min(altitude.value, 50000), -1500));
             const tensDigits = absAlt % 100;
@@ -128,6 +129,11 @@ export class DigitalAltitudeReadout extends DisplayComponent<DigitalAltitudeRead
 
             this.showThousandsZeroSub.set(showThousandsZero);
         });
+    }
+
+    private updateColor() {
+        const color = (this.mda !== 0 && this.altitude < this.mda) ? 'Amber' : 'Green';
+        this.colorSub.set(color);
     }
 
     render(): VNode {

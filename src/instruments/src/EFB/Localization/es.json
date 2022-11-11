@@ -4,10 +4,23 @@
     "ChangeATISATCSourceButton": "Cambiar la fuente ATIS/ATC",
     "ConnectHoppieACARS": "Conectar Hoppie ACARS",
     "NoInformationAvailableForThisFrequency": "No hay información disponible para esta frecuencia",
+    "SearchPlaceholder": "Search",
     "SelectCorrectATISATCSource": "Esta página solo está disponible cuando se selecciona IVAO o VATSIM como fuente de ATIS/ATC en la página de configuración.",
     "SetActive": "Establecer como activo",
     "SetStandby": "Establecer modo de espera",
+    "ShowAll": "All",
+    "ShowApproach": "Approach",
+    "ShowAtis": "ATIS",
+    "ShowDelivery": "Delivery",
+    "ShowDeparture": "Departure",
+    "ShowGround": "Ground",
+    "ShowRadar": "Radar",
+    "ShowTower": "Tower",
     "Standby": "En espera",
+    "TT": {
+      "AtcCallSignSearch": "ATC Call-sign Search",
+      "AtcTypeFilter": "Filter for"
+    },
     "Title": "Control de tráfico aéreo"
   },
   "Checklists": {
@@ -85,6 +98,7 @@
       "YouHaveNotYetImportedAnySimBriefData": "Aún no ha importado datos de SimBrief."
     },
     "Overview": {
+      "ActualGW": "Actual GW",
       "Engines": "Motores",
       "MMO": "MMO",
       "MRW": "MRW",
@@ -133,6 +147,27 @@
       "TotalFuel": "Combustible Total",
       "Unavailable": "No disponible"
     },
+    "Payload": {
+      "BoardingTime": "Boarding Time",
+      "Cargo": "Cargo",
+      "Current": "Current",
+      "Passengers": "Passengers",
+      "Planned": "Planned",
+      "TT": {
+        "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Aircraft Must Be On the Ground and Have Engines Shutdown to Change Boarding Duration",
+        "FillPayloadFromSimbrief": "Fill Payload Information from Simbrief",
+        "MaxCargo": "Max Cargo",
+        "MaxPassengers": "Maximum Passengers",
+        "MaxZFW": "Maximum ZFW",
+        "MaxZFWCG": "Maximum ZFWCG",
+        "PerPaxBagWeight": "Per Passenger Bag Weight",
+        "PerPaxWeight": "Per Passenger Weight",
+        "StartBoarding": "Begin Boarding"
+      },
+      "Title": "Payload",
+      "ZFW": "ZFW",
+      "ZFWCG": "ZFWCG"
+    },
     "Pushback": {
       "Title": "Pushback"
     },
@@ -161,6 +196,10 @@
     "Altn": "Altn",
     "ExitFullscreenMode": "Salir de modo pantalla completa",
     "From": "De",
+    "LoadingImage": "Loading Image",
+    "LoadingImageFailed": "Loading Image failed",
+    "LoadingPdf": "Loading PDF",
+    "LoadingPdfFailed": "Loading PDF failed",
     "LocalFiles": {
       "Both": "Ambos",
       "EstablishingConnection": "Estableciendo conexión",
@@ -320,6 +359,7 @@
       "ConfirmationDialogMsg": "Confirme la carga del ajuste preestablecido.",
       "CurrentProcedureStep": "Paso actual del procedimiento",
       "PleaseConfirmLoadingOfPreset": "Confirme la carga del ajuste preestablecido.",
+      "Powered": "Powered",
       "ReadyPushback": "Preparado para retroceso",
       "ReadyTakeoff": "Listo para despegar",
       "ReadyTaxi": "Listo para Taxi",
@@ -332,6 +372,12 @@
     "InteriorLighting": {
       "AircraftNeedsToBePoweredToLoadPresets": "El avión debe tener alimentación para cargar los preajustes",
       "AircraftNeedsToBePoweredToSavePresets": "El avión debe tener alimentación para guardar los preajustes",
+      "AutoLoadDawnDusk": "Dawn/Dusk:",
+      "AutoLoadDay": "Day:",
+      "AutoLoadLightingHelpTitle": "Automatic Preset Loading",
+      "AutoLoadLightingPreset": "Enable automatic loading of lighting presets:",
+      "AutoLoadNight": "Night:",
+      "AutoLoadNoneSelection": "None",
       "LoadPreset": "Cargar preajuste",
       "LoadingPreset": "Cargando preajuste",
       "NewNameConfirmationDialogMsg": "Por favor, confirme el nuevo nombre del ajuste preestablecido de iluminación",
@@ -385,13 +431,15 @@
       "SliderSpeed": "Mover a la velocidad deseada",
       "SystemEnabledOff": "Haz click para encender el sistema de remolque.",
       "SystemEnabledOn": "Haz click para apagar completamente el sistema de remolque ",
+      "UseControllerInput": "Turn controller input from rudder and elevator on/off",
       "ZoomIn": "Acercar",
       "ZoomOut": "Alejar"
     },
     "TugAttached": "El remolcador está unido",
     "TugDirection": "Dirección del remolcador",
     "TugInTransit": "Esperando al Remolcador/Pin",
-    "TugSpeed": "Velocidad del remolcador"
+    "TugSpeed": "Velocidad del remolcador",
+    "UseControllerInput": "Use Controller Input"
   },
   "Settings": {
     "About": {
@@ -405,6 +453,7 @@
       "LatLonExtendedFormat": "Formato de punto Lat/Long FMGC",
       "PaxSigns": "Señales PAX",
       "RmpVhfSpacing": "Espaciado VHF RMP",
+      "Satcom": "Satcom",
       "ThrustReductionHeight": "Altura de reducción de empuje (ft)",
       "Title": "Opciones de aeronave/ Programas de pin",
       "WeightUnit": "Unidad de peso"
@@ -450,12 +499,15 @@
       "AutofillChecklists": "Autocompletar listas de verificación",
       "BoardingTime": "Tiempo de embarque",
       "DmcSelfTestTime": "Tiempo de autocomprobación DMC",
+      "FirstOfficerAvatar": "Show First Officer Avatar",
       "HomeCockpitMode": "Modo Home Cockpit",
       "McduFocusTimeout": "Tiempo de espera del MCDU (segundos)",
       "McduKeyboardInput": "Entrada de teclado MCDU",
       "PauseAtTod": "Pausa T/D",
       "PauseAtTodDistance": "Distancia de Pausa T/D (nm)",
+      "PilotAvatar": "Show Pilot Avatar",
       "SeparateTillerFromRudderInputs": "Separar Tiller de la entrada del Timón",
+      "SyncEfis": "Sync EFIS controls between Captain and FO",
       "Title": "Realismo"
     },
     "SimOptions": {
@@ -465,6 +517,7 @@
       "ConesEnabled": "Conos de seguridad",
       "DefaultBarometerUnit": "Unidad del barómetro predeterminado",
       "DynamicRegistrationDecal": "Calcomanía de registro dinámica",
+      "EnableSimBridge": "Activar la conexión con el servidor MCDU (se desactivará automáticamente tras 5 minutos si no ha habido una conexión exitosa)",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Activar la conexión con el servidor MCDU (se desactivará automáticamente tras 5 minutos si no ha habido una conexión exitosa)",
       "ExternalMcduServerPort": "Puerto del servidor MCDU externo",
       "Hpa": "hPa",
@@ -473,6 +526,7 @@
       "None": "Ninguno",
       "Off": "Desactivado",
       "Save": "Guardar",
+      "SimBridgePort": "Puerto del servidor MCDU externo",
       "SyncMsfsFlightPlan": "Sincronizar plan de vuelo de MSFS",
       "ThrottleDetents": "Throttle Detents",
       "Title": "Opciones de simulación",

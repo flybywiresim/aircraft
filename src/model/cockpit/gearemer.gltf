@@ -1,0 +1,1325 @@
+{
+    "accessors": [
+        {
+            "bufferView": 0,
+            "componentType": 5126,
+            "count": 300,
+            "min": [
+                0
+            ],
+            "max": [
+                12.458333333333334
+            ],
+            "type": "SCALAR"
+        },
+        {
+            "bufferView": 1,
+            "componentType": 5126,
+            "count": 300,
+            "type": "VEC3"
+        },
+        {
+            "bufferView": 2,
+            "componentType": 5126,
+            "count": 300,
+            "type": "VEC4"
+        },
+        {
+            "bufferView": 3,
+            "componentType": 5126,
+            "count": 300,
+            "type": "VEC3"
+        },
+        {
+            "bufferView": 4,
+            "componentType": 5126,
+            "count": 300,
+            "type": "VEC3"
+        },
+        {
+            "bufferView": 5,
+            "componentType": 5126,
+            "count": 300,
+            "type": "VEC4"
+        },
+        {
+            "bufferView": 6,
+            "componentType": 5126,
+            "count": 300,
+            "type": "VEC3"
+        },
+        {
+            "bufferView": 7,
+            "componentType": 5126,
+            "count": 101,
+            "min": [
+                4.166666666666667
+            ],
+            "max": [
+                8.333333333333334
+            ],
+            "type": "SCALAR"
+        },
+        {
+            "bufferView": 8,
+            "componentType": 5126,
+            "count": 101,
+            "type": "VEC4"
+        },
+        {
+            "bufferView": 9,
+            "componentType": 5126,
+            "count": 2,
+            "type": "MAT4"
+        },
+        {
+            "bufferView": 10,
+            "componentType": 5126,
+            "count": 1508,
+            "min": [
+                -0.008255073800683022,
+                -3.765705685054854e-7,
+                -0.02963937260210514
+            ],
+            "max": [
+                0.008255073800683022,
+                0.0029436075128614902,
+                0.030382798984646797
+            ],
+            "type": "VEC3",
+            "name": "Cylinder.010_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 10,
+            "byteOffset": 12,
+            "componentType": 5120,
+            "count": 1508,
+            "type": "VEC4",
+            "name": "Cylinder.010_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 10,
+            "byteOffset": 16,
+            "componentType": 5120,
+            "count": 1508,
+            "type": "VEC4",
+            "name": "Cylinder.010_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 10,
+            "byteOffset": 20,
+            "componentType": 5122,
+            "count": 1508,
+            "type": "VEC2",
+            "name": "Cylinder.010_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 10,
+            "byteOffset": 24,
+            "componentType": 5122,
+            "count": 1508,
+            "type": "VEC2",
+            "name": "Cylinder.010_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 10,
+            "byteOffset": 28,
+            "componentType": 5123,
+            "count": 1508,
+            "type": "VEC4",
+            "name": "Cylinder.010_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 11,
+            "componentType": 5123,
+            "count": 8436,
+            "type": "SCALAR",
+            "name": "Cylinder.010_indices#0"
+        },
+        {
+            "bufferView": 10,
+            "byteOffset": 54288,
+            "componentType": 5126,
+            "count": 24,
+            "min": [
+                -0.011657074093818665,
+                -0.034728121012449265,
+                -0.010439824312925339
+            ],
+            "max": [
+                0.011656958609819412,
+                0.03472788259387016,
+                0.000955621711909771
+            ],
+            "type": "VEC3",
+            "name": "x0_LEVER_GRAVITYGEAR_BUTTON_CLICKZONE_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 10,
+            "byteOffset": 54300,
+            "componentType": 5120,
+            "count": 24,
+            "type": "VEC4",
+            "name": "x0_LEVER_GRAVITYGEAR_BUTTON_CLICKZONE_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 10,
+            "byteOffset": 54304,
+            "componentType": 5120,
+            "count": 24,
+            "type": "VEC4",
+            "name": "x0_LEVER_GRAVITYGEAR_BUTTON_CLICKZONE_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 10,
+            "byteOffset": 54308,
+            "componentType": 5122,
+            "count": 24,
+            "type": "VEC2",
+            "name": "x0_LEVER_GRAVITYGEAR_BUTTON_CLICKZONE_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 10,
+            "byteOffset": 54312,
+            "componentType": 5122,
+            "count": 24,
+            "type": "VEC2",
+            "name": "x0_LEVER_GRAVITYGEAR_BUTTON_CLICKZONE_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 10,
+            "byteOffset": 54316,
+            "componentType": 5123,
+            "count": 24,
+            "type": "VEC4",
+            "name": "x0_LEVER_GRAVITYGEAR_BUTTON_CLICKZONE_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 11,
+            "byteOffset": 16872,
+            "componentType": 5123,
+            "count": 36,
+            "type": "SCALAR",
+            "name": "x0_LEVER_GRAVITYGEAR_BUTTON_CLICKZONE_indices#0"
+        },
+        {
+            "bufferView": 10,
+            "byteOffset": 55152,
+            "componentType": 5126,
+            "count": 13806,
+            "min": [
+                -0.023231318220496178,
+                -0.013297613710165024,
+                -0.03927605226635933
+            ],
+            "max": [
+                0.023231318220496178,
+                0.07573427259922028,
+                0.11693088710308075
+            ],
+            "type": "VEC3",
+            "name": "Cylinder.011_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 10,
+            "byteOffset": 55164,
+            "componentType": 5120,
+            "count": 13806,
+            "type": "VEC4",
+            "name": "Cylinder.011_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 10,
+            "byteOffset": 55168,
+            "componentType": 5120,
+            "count": 13806,
+            "type": "VEC4",
+            "name": "Cylinder.011_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 10,
+            "byteOffset": 55172,
+            "componentType": 5122,
+            "count": 13806,
+            "type": "VEC2",
+            "name": "Cylinder.011_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 10,
+            "byteOffset": 55176,
+            "componentType": 5122,
+            "count": 13806,
+            "type": "VEC2",
+            "name": "Cylinder.011_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 10,
+            "byteOffset": 55180,
+            "componentType": 5123,
+            "count": 13806,
+            "type": "VEC4",
+            "name": "Cylinder.011_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 11,
+            "byteOffset": 16944,
+            "componentType": 5123,
+            "count": 67656,
+            "type": "SCALAR",
+            "name": "Cylinder.011_indices#0"
+        },
+        {
+            "bufferView": 10,
+            "byteOffset": 552168,
+            "componentType": 5126,
+            "count": 24,
+            "min": [
+                -0.024191241711378098,
+                -0.02419125847518444,
+                -0.0241912379860878
+            ],
+            "max": [
+                0.024191241711378098,
+                0.02419126033782959,
+                0.024191245436668396
+            ],
+            "type": "VEC3",
+            "name": "Cube.002_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 10,
+            "byteOffset": 552180,
+            "componentType": 5120,
+            "count": 24,
+            "type": "VEC4",
+            "name": "Cube.002_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 10,
+            "byteOffset": 552184,
+            "componentType": 5120,
+            "count": 24,
+            "type": "VEC4",
+            "name": "Cube.002_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 10,
+            "byteOffset": 552188,
+            "componentType": 5122,
+            "count": 24,
+            "type": "VEC2",
+            "name": "Cube.002_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 10,
+            "byteOffset": 552192,
+            "componentType": 5122,
+            "count": 24,
+            "type": "VEC2",
+            "name": "Cube.002_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 10,
+            "byteOffset": 552196,
+            "componentType": 5123,
+            "count": 24,
+            "type": "VEC4",
+            "name": "Cube.002_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 11,
+            "byteOffset": 152256,
+            "componentType": 5123,
+            "count": 36,
+            "type": "SCALAR",
+            "name": "Cube.002_indices#0"
+        },
+        {
+            "bufferView": 10,
+            "byteOffset": 553032,
+            "componentType": 5126,
+            "count": 44,
+            "min": [
+                -0.01227574422955513,
+                -0.00024389397003687918,
+                -0.032475024461746216
+            ],
+            "max": [
+                0.011588790453970432,
+                0.00018276508490089327,
+                0.01718912087380886
+            ],
+            "type": "VEC3",
+            "name": "x0_GEAR_EXTN_Decal_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 10,
+            "byteOffset": 553044,
+            "componentType": 5120,
+            "count": 44,
+            "type": "VEC4",
+            "name": "x0_GEAR_EXTN_Decal_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 10,
+            "byteOffset": 553048,
+            "componentType": 5120,
+            "count": 44,
+            "type": "VEC4",
+            "name": "x0_GEAR_EXTN_Decal_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 10,
+            "byteOffset": 553052,
+            "componentType": 5122,
+            "count": 44,
+            "type": "VEC2",
+            "name": "x0_GEAR_EXTN_Decal_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 10,
+            "byteOffset": 553056,
+            "componentType": 5122,
+            "count": 44,
+            "type": "VEC2",
+            "name": "x0_GEAR_EXTN_Decal_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 10,
+            "byteOffset": 553060,
+            "componentType": 5123,
+            "count": 44,
+            "type": "VEC4",
+            "name": "x0_GEAR_EXTN_Decal_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 11,
+            "byteOffset": 152328,
+            "componentType": 5123,
+            "count": 66,
+            "type": "SCALAR",
+            "name": "x0_GEAR_EXTN_Decal_indices#0"
+        },
+        {
+            "bufferView": 10,
+            "byteOffset": 554616,
+            "componentType": 5126,
+            "count": 50,
+            "min": [
+                -0.02056143805384636,
+                -0.15580104291439056,
+                -0.08455947786569595
+            ],
+            "max": [
+                0.020561382174491882,
+                0.020561516284942627,
+                0.030059248208999634
+            ],
+            "type": "VEC3",
+            "name": "x0_LEVER_GRAVITYGEAR_ACTIVATE_CLICKZONE_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 10,
+            "byteOffset": 554628,
+            "componentType": 5120,
+            "count": 50,
+            "type": "VEC4",
+            "name": "x0_LEVER_GRAVITYGEAR_ACTIVATE_CLICKZONE_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 10,
+            "byteOffset": 554632,
+            "componentType": 5120,
+            "count": 50,
+            "type": "VEC4",
+            "name": "x0_LEVER_GRAVITYGEAR_ACTIVATE_CLICKZONE_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 10,
+            "byteOffset": 554636,
+            "componentType": 5122,
+            "count": 50,
+            "type": "VEC2",
+            "name": "x0_LEVER_GRAVITYGEAR_ACTIVATE_CLICKZONE_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 10,
+            "byteOffset": 554640,
+            "componentType": 5122,
+            "count": 50,
+            "type": "VEC2",
+            "name": "x0_LEVER_GRAVITYGEAR_ACTIVATE_CLICKZONE_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 10,
+            "byteOffset": 554644,
+            "componentType": 5123,
+            "count": 50,
+            "type": "VEC4",
+            "name": "x0_LEVER_GRAVITYGEAR_ACTIVATE_CLICKZONE_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 11,
+            "byteOffset": 152460,
+            "componentType": 5123,
+            "count": 84,
+            "type": "SCALAR",
+            "name": "x0_LEVER_GRAVITYGEAR_ACTIVATE_CLICKZONE_indices#0"
+        },
+        {
+            "bufferView": 10,
+            "byteOffset": 556416,
+            "componentType": 5126,
+            "count": 8682,
+            "min": [
+                -0.04486844316124916,
+                -0.005818461999297142,
+                -0.02952420897781849
+            ],
+            "max": [
+                0.04486844316124916,
+                0.0003153801371809095,
+                0.029504334554076195
+            ],
+            "type": "VEC3",
+            "name": "Cube.001_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 10,
+            "byteOffset": 556428,
+            "componentType": 5120,
+            "count": 8682,
+            "type": "VEC4",
+            "name": "Cube.001_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 10,
+            "byteOffset": 556432,
+            "componentType": 5120,
+            "count": 8682,
+            "type": "VEC4",
+            "name": "Cube.001_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 10,
+            "byteOffset": 556436,
+            "componentType": 5122,
+            "count": 8682,
+            "type": "VEC2",
+            "name": "Cube.001_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 10,
+            "byteOffset": 556440,
+            "componentType": 5122,
+            "count": 8682,
+            "type": "VEC2",
+            "name": "Cube.001_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 10,
+            "byteOffset": 556444,
+            "componentType": 5123,
+            "count": 8682,
+            "type": "VEC4",
+            "name": "Cube.001_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 11,
+            "byteOffset": 152628,
+            "componentType": 5123,
+            "count": 40962,
+            "type": "SCALAR",
+            "name": "Cube.001_indices#0"
+        },
+        {
+            "bufferView": 10,
+            "byteOffset": 868968,
+            "componentType": 5126,
+            "count": 1873,
+            "min": [
+                -0.024881934747099876,
+                -0.03018627129495144,
+                -0.02490352839231491
+            ],
+            "max": [
+                0.024881934747099876,
+                -0.00007844436186132953,
+                0.020607840269804
+            ],
+            "type": "VEC3",
+            "name": "Cylinder.001_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 10,
+            "byteOffset": 868980,
+            "componentType": 5120,
+            "count": 1873,
+            "type": "VEC4",
+            "name": "Cylinder.001_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 10,
+            "byteOffset": 868984,
+            "componentType": 5120,
+            "count": 1873,
+            "type": "VEC4",
+            "name": "Cylinder.001_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 10,
+            "byteOffset": 868988,
+            "componentType": 5122,
+            "count": 1873,
+            "type": "VEC2",
+            "name": "Cylinder.001_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 10,
+            "byteOffset": 868992,
+            "componentType": 5122,
+            "count": 1873,
+            "type": "VEC2",
+            "name": "Cylinder.001_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 10,
+            "byteOffset": 868996,
+            "componentType": 5123,
+            "count": 1873,
+            "type": "VEC4",
+            "name": "Cylinder.001_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 11,
+            "byteOffset": 234552,
+            "componentType": 5123,
+            "count": 9312,
+            "type": "SCALAR",
+            "name": "Cylinder.001_indices#0"
+        }
+    ],
+    "animations": [
+        {
+            "name": "LEVER_GRAVITYGEAR",
+            "channels": [
+                {
+                    "sampler": 0,
+                    "target": {
+                        "node": 6,
+                        "path": "translation"
+                    }
+                },
+                {
+                    "sampler": 1,
+                    "target": {
+                        "node": 6,
+                        "path": "rotation"
+                    }
+                },
+                {
+                    "sampler": 2,
+                    "target": {
+                        "node": 6,
+                        "path": "scale"
+                    }
+                },
+                {
+                    "sampler": 3,
+                    "target": {
+                        "node": 2,
+                        "path": "translation"
+                    }
+                },
+                {
+                    "sampler": 4,
+                    "target": {
+                        "node": 2,
+                        "path": "rotation"
+                    }
+                },
+                {
+                    "sampler": 5,
+                    "target": {
+                        "node": 2,
+                        "path": "scale"
+                    }
+                },
+                {
+                    "sampler": 6,
+                    "target": {
+                        "node": 10,
+                        "path": "rotation"
+                    }
+                }
+            ],
+            "samplers": [
+                {
+                    "input": 0,
+                    "output": 1,
+                    "interpolation": "LINEAR"
+                },
+                {
+                    "input": 0,
+                    "output": 2,
+                    "interpolation": "LINEAR"
+                },
+                {
+                    "input": 0,
+                    "output": 3,
+                    "interpolation": "LINEAR"
+                },
+                {
+                    "input": 0,
+                    "output": 4,
+                    "interpolation": "LINEAR"
+                },
+                {
+                    "input": 0,
+                    "output": 5,
+                    "interpolation": "LINEAR"
+                },
+                {
+                    "input": 0,
+                    "output": 6,
+                    "interpolation": "LINEAR"
+                },
+                {
+                    "input": 7,
+                    "output": 8,
+                    "interpolation": "LINEAR"
+                }
+            ]
+        }
+    ],
+    "asset": {
+        "generator": "Khronos glTF Blender I/O v3.2.40 and Asobo Studio MSFS Blender I/O v1.1.6",
+        "version": "2.0",
+        "extensions": {
+            "ASOBO_asset_optimized": {
+                "BoundingBoxMax": [
+                    0.04486844316124916,
+                    0.07573427259922028,
+                    0.11693088710308075
+                ],
+                "BoundingBoxMin": [
+                    -0.04486844316124916,
+                    -0.15580104291439056,
+                    -0.08455947786569595
+                ],
+                "MajorVersion": 4,
+                "MinorVersion": 4,
+                "UseCheckerboardMaterialForMissingTextures": true,
+                "UseOnlyFilenameForImageURI": true
+            },
+            "ASOBO_normal_map_convention": {
+                "tangent_space_convention": "DirectX"
+            }
+        }
+    },
+    "bufferViews": [
+        {
+            "buffer": 0,
+            "byteLength": 1200
+        },
+        {
+            "buffer": 0,
+            "byteLength": 3600,
+            "byteOffset": 1200
+        },
+        {
+            "buffer": 0,
+            "byteLength": 4800,
+            "byteOffset": 4800
+        },
+        {
+            "buffer": 0,
+            "byteLength": 3600,
+            "byteOffset": 9600
+        },
+        {
+            "buffer": 0,
+            "byteLength": 3600,
+            "byteOffset": 13200
+        },
+        {
+            "buffer": 0,
+            "byteLength": 4800,
+            "byteOffset": 16800
+        },
+        {
+            "buffer": 0,
+            "byteLength": 3600,
+            "byteOffset": 21600
+        },
+        {
+            "buffer": 0,
+            "byteLength": 404,
+            "byteOffset": 25200
+        },
+        {
+            "buffer": 0,
+            "byteLength": 1616,
+            "byteOffset": 25604
+        },
+        {
+            "buffer": 0,
+            "byteLength": 128,
+            "byteOffset": 27220
+        },
+        {
+            "buffer": 0,
+            "byteLength": 936396,
+            "byteStride": 36,
+            "byteOffset": 27348,
+            "target": 34962,
+            "name": "BufferViewVertexND"
+        },
+        {
+            "buffer": 0,
+            "byteLength": 253176,
+            "byteOffset": 963744,
+            "target": 34963,
+            "name": "BufferViewIndex"
+        }
+    ],
+    "extensionsRequired": [
+        "MSFT_texture_dds"
+    ],
+    "materials": [
+        {
+            "name": "GravityGear_Invisible",
+            "pbrMetallicRoughness": {
+                "baseColorFactor": [
+                    0.800000011920929,
+                    0.800000011920929,
+                    0.800000011920929,
+                    1
+                ]
+            },
+            "extensions": {
+                "ASOBO_material_invisible": {}
+            }
+        },
+        {
+            "name": "EMERG_GEAR_EXT",
+            "normalTexture": {
+                "index": 0
+            },
+            "occlusionTexture": {
+                "index": 1
+            },
+            "pbrMetallicRoughness": {
+                "baseColorTexture": {
+                    "index": 2
+                },
+                "metallicRoughnessTexture": {
+                    "index": 1
+                }
+            }
+        }
+    ],
+    "meshes": [
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 22,
+                        "NORMAL": 19,
+                        "POSITION": 17,
+                        "TANGENT": 18,
+                        "TEXCOORD_0": 20,
+                        "TEXCOORD_1": 21
+                    },
+                    "indices": 23,
+                    "material": 0,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 12,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "x0_LEVER_GRAVITYGEAR_BUTTON_CLICKZONE"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 15,
+                        "NORMAL": 12,
+                        "POSITION": 10,
+                        "TANGENT": 11,
+                        "TEXCOORD_0": 13,
+                        "TEXCOORD_1": 14
+                    },
+                    "indices": 16,
+                    "material": 1,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 2812,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "Cylinder.010"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 36,
+                        "NORMAL": 33,
+                        "POSITION": 31,
+                        "TANGENT": 32,
+                        "TEXCOORD_0": 34,
+                        "TEXCOORD_1": 35
+                    },
+                    "indices": 37,
+                    "material": 0,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 12,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "Cube.002"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 43,
+                        "NORMAL": 40,
+                        "POSITION": 38,
+                        "TANGENT": 39,
+                        "TEXCOORD_0": 41,
+                        "TEXCOORD_1": 42
+                    },
+                    "indices": 44,
+                    "material": "TEXT_NoEmi",
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 22,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "x0_GEAR_EXTN_Decal"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 29,
+                        "NORMAL": 26,
+                        "POSITION": 24,
+                        "TANGENT": 25,
+                        "TEXCOORD_0": 27,
+                        "TEXCOORD_1": 28
+                    },
+                    "indices": 30,
+                    "material": 1,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 22552,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "Cylinder.011"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 50,
+                        "NORMAL": 47,
+                        "POSITION": 45,
+                        "TANGENT": 46,
+                        "TEXCOORD_0": 48,
+                        "TEXCOORD_1": 49
+                    },
+                    "indices": 51,
+                    "material": 0,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 28,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "x0_LEVER_GRAVITYGEAR_ACTIVATE_CLICKZONE"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 57,
+                        "NORMAL": 54,
+                        "POSITION": 52,
+                        "TANGENT": 53,
+                        "TEXCOORD_0": 55,
+                        "TEXCOORD_1": 56
+                    },
+                    "indices": 58,
+                    "material": 1,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 13654,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "Cube.001"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 64,
+                        "NORMAL": 61,
+                        "POSITION": 59,
+                        "TANGENT": 60,
+                        "TEXCOORD_0": 62,
+                        "TEXCOORD_1": 63
+                    },
+                    "indices": 65,
+                    "material": 1,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 3104,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "Cylinder.001"
+        }
+    ],
+    "nodes": [
+        {
+            "translation": [
+                0,
+                -0.000002063562760667992,
+                0
+            ],
+            "rotation": [
+                0,
+                -0.7048596739768982,
+                0.7093467712402344,
+                9.752679375196749e-8
+            ],
+            "scale": [
+                0.8849125504493713,
+                0.8849127292633057,
+                0.8849127292633057
+            ],
+            "mesh": 0,
+            "name": "LEVER_GRAVITYGEAR_BUTTON_CLICKZONE"
+        },
+        {
+            "translation": [
+                0.0001805223000701517,
+                0.0005181958549655974,
+                0.0008159926510415971
+            ],
+            "rotation": [
+                -0.7048595547676086,
+                4.449356652003189e-7,
+                2.123630480355132e-7,
+                0.7093468904495239
+            ],
+            "mesh": 1,
+            "name": "LEVER_GRAVITYGEAR_BUTTON",
+            "children": [
+                0
+            ]
+        },
+        {
+            "translation": [
+                -1.637992852465686e-8,
+                0.05134981498122215,
+                -0.005761315114796162
+            ],
+            "rotation": [
+                0.7071067094802856,
+                -8.432149201098582e-9,
+                -1.1520227616301781e-7,
+                0.7071068286895752
+            ],
+            "name": "button",
+            "children": [
+                1
+            ]
+        },
+        {
+            "translation": [
+                -0.0004391938273329288,
+                0.05593426525592804,
+                0.10457681864500046
+            ],
+            "rotation": [
+                0,
+                1,
+                0.00021082900639157745,
+                7.557741099617489e-8
+            ],
+            "scale": [
+                0.8849125504493713,
+                0.8849125504493713,
+                0.8849125504493713
+            ],
+            "mesh": 2,
+            "name": "LEVER_GRAVITYGEAR_CRANE_CLICKZONE"
+        },
+        {
+            "translation": [
+                -0.00043922202894464135,
+                0.010206574574112892,
+                -0.014734471216797829
+            ],
+            "rotation": [
+                0,
+                -0.70710688829422,
+                0.7071066498756409,
+                1.067701376200603e-7
+            ],
+            "scale": [
+                0.8849125504493713,
+                0.8849125504493713,
+                0.8849125504493713
+            ],
+            "mesh": 3,
+            "name": "LEVER_GRAVITYGEAR_DECAL"
+        },
+        {
+            "translation": [
+                0.0001805584179237485,
+                -0.0003965531650464982,
+                0.0003793853975366801
+            ],
+            "rotation": [
+                -8.146032826061855e-8,
+                7.549785863147919e-8,
+                2.264936824758479e-7,
+                1
+            ],
+            "mesh": 4,
+            "name": "LEVER_GRAVITYGEAR_CRANE",
+            "children": [
+                3,
+                4
+            ]
+        },
+        {
+            "translation": [
+                3.183231456205249e-12,
+                0,
+                -9.536470315651968e-7
+            ],
+            "rotation": [
+                0.7071067094802856,
+                -5.338507236274381e-8,
+                -5.338507591545749e-8,
+                0.7071068286895752
+            ],
+            "name": "crank",
+            "children": [
+                2,
+                5
+            ]
+        },
+        {
+            "translation": [
+                0.00018055501277558503,
+                0.048293232917785645,
+                0.0004749298677779734
+            ],
+            "name": "GearEmerExt",
+            "children": [
+                6
+            ]
+        },
+        {
+            "translation": [
+                -0.00007811502291588113,
+                0.06264817714691162,
+                0.010286331176757812
+            ],
+            "rotation": [
+                0,
+                1,
+                0,
+                1.6292068494294656e-7
+            ],
+            "scale": [
+                0.8849125504493713,
+                0.8849125504493713,
+                0.8849125504493713
+            ],
+            "mesh": 5,
+            "name": "LEVER_GRAVITYGEAR_ACTIVATE_CLICKZONE"
+        },
+        {
+            "translation": [
+                0.00018055483815260231,
+                0.0624462366104126,
+                0.001103401300497353
+            ],
+            "mesh": 6,
+            "name": "LEVER_GRAVITYGEAR_BASE"
+        },
+        {
+            "translation": [
+                0.00018055576947517693,
+                0.0622633695602417,
+                0.00012874609092250466
+            ],
+            "mesh": 7,
+            "name": "LEVER_GRAVITYGEAR_ROTOR"
+        },
+        {
+            "translation": [
+                0,
+                1.1405932903289795,
+                10.956473350524902
+            ],
+            "rotation": [
+                0,
+                -1,
+                0,
+                1.6292068494294656e-7
+            ],
+            "scale": [
+                1.1300551891326904,
+                1.1300551891326904,
+                1.1300551891326904
+            ],
+            "name": "LEVER_GRAVITYGEAR",
+            "children": [
+                7,
+                8,
+                9,
+                10
+            ]
+        }
+    ],
+    "scene": 0,
+    "scenes": [
+        {
+            "nodes": [
+                11
+            ],
+            "name": "Scene"
+        }
+    ],
+    "skins": [
+        {
+            "inverseBindMatrices": 9,
+            "joints": [
+                6,
+                2
+            ],
+            "skeleton": -1,
+            "name": "GearEmerExt"
+        }
+    ],
+    "textures": [
+        {
+            "extensions": {
+                "MSFT_texture_dds": {
+                    "source": 0
+                }
+            }
+        },
+        {
+            "extensions": {
+                "MSFT_texture_dds": {
+                    "source": 1
+                }
+            }
+        },
+        {
+            "extensions": {
+                "MSFT_texture_dds": {
+                    "source": 2
+                }
+            }
+        },
+        {
+            "extensions": {
+                "MSFT_texture_dds": {
+                    "source": 3
+                }
+            }
+        }
+    ],
+    "samplers": [
+        {
+            "magFilter": 9729,
+            "minFilter": 9987,
+            "wrapS": 10497,
+            "wrapT": 10497
+        }
+    ],
+    "extensionsUsed": [
+        "ASOBO_normal_map_convention",
+        "ASOBO_material_invisible",
+        "ASOBO_material_shadow_options",
+        "MSFT_texture_dds",
+        "ASOBO_asset_optimized"
+    ],
+    "buffers": [
+        {
+            "byteLength": 1216920,
+            "uri": "gearemer.bin"
+        }
+    ],
+    "images": [
+        {
+            "uri": "EMERG_GEAR_EXT_NORMAL.PNG.DDS",
+            "name": "EMERG_GEAR_EXT_NORMAL",
+            "extras": "ASOBO_image_converted_meta"
+        },
+        {
+            "uri": "EMERG_GEAR_EXT_COMP.PNG.DDS",
+            "name": "EMERG_GEAR_EXT_COMP",
+            "extras": "ASOBO_image_converted_meta"
+        },
+        {
+            "uri": "EMERG_GEAR_EXT_ALBEDO.PNG.DDS",
+            "name": "EMERG_GEAR_EXT_ALBEDO",
+            "extras": "ASOBO_image_converted_meta"
+        },
+        {
+            "uri": "A320NEO_COCKPIT_DECALSTEXT_ALBD_TIF.PNG.DDS",
+            "name": "A320NEO_COCKPIT_DECALSTEXT_ALBD.TIF",
+            "extras": "ASOBO_image_converted_meta"
+        }
+    ]
+}

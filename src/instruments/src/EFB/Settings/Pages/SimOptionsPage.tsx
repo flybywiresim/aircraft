@@ -16,10 +16,10 @@ export const SimOptionsPage = () => {
     const [showThrottleSettings, setShowThrottleSettings] = useState(false);
 
     const [defaultBaro, setDefaultBaro] = usePersistentProperty('CONFIG_INIT_BARO_UNIT', 'AUTO');
-    const [dynamicRegistration, setDynamicRegistration] = usePersistentProperty('DYNAMIC_REGISTRATION_DECAL', 'DISABLED');
+    const [dynamicRegistration, setDynamicRegistration] = usePersistentProperty('DYNAMIC_REGISTRATION_DECAL', '0');
     const [fpSync, setFpSync] = usePersistentProperty('FP_SYNC', 'LOAD');
-    const [mcduServerPort, setMcduServerPort] = usePersistentProperty('CONFIG_EXTERNAL_MCDU_PORT', '8380');
-    const [mcduServerEnabled, setMcduServerEnabled] = usePersistentProperty('CONFIG_EXTERNAL_MCDU_SERVER_ENABLED', 'AUTO ON');
+    const [simbridgePort, setSimbridgePort] = usePersistentProperty('CONFIG_SIMBRIDGE_PORT', '8380');
+    const [simbridgeEnabled, setSimbridgeEnabled] = usePersistentProperty('CONFIG_SIMBRIDGE_ENABLED', 'AUTO ON');
     const [radioReceiverUsage, setRadioReceiverUsage] = usePersistentProperty('RADIO_RECEIVER_USAGE_ENABLED', '0');
     const [, setRadioReceiverUsageSimVar] = useSimVar('L:A32NX_RADIO_RECEIVER_USAGE_ENABLED', 'number', 0);
     const [wheelChocksEnabled, setWheelChocksEnabled] = usePersistentNumberProperty('MODEL_WHEELCHOCKS_ENABLED', 1);
@@ -68,40 +68,40 @@ export const SimOptionsPage = () => {
                         </SelectGroup>
                     </SettingItem>
 
-                    <SettingItem name={t('Settings.SimOptions.EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection')}>
+                    <SettingItem name={t('Settings.SimOptions.EnableSimBridge')}>
                         <SelectGroup>
                             <SelectItem
                                 className="text-center color-red"
-                                onSelect={() => setMcduServerEnabled('AUTO ON')}
-                                selected={mcduServerEnabled === 'AUTO ON' || mcduServerEnabled === 'AUTO OFF'}
+                                onSelect={() => setSimbridgeEnabled('AUTO ON')}
+                                selected={simbridgeEnabled === 'AUTO ON' || simbridgeEnabled === 'AUTO OFF'}
 
                             >
                                 {t('Settings.SimOptions.Auto')}
                             </SelectItem>
                             <SelectItem
-                                onSelect={() => setMcduServerEnabled('PERM OFF')}
-                                selected={mcduServerEnabled === 'PERM OFF'}
+                                onSelect={() => setSimbridgeEnabled('PERM OFF')}
+                                selected={simbridgeEnabled === 'PERM OFF'}
                             >
                                 {t('Settings.SimOptions.Off')}
                             </SelectItem>
                         </SelectGroup>
                         <div className="pt-2 text-center">
-                            {mcduServerEnabled === 'AUTO ON' ? t('Settings.SimOptions.Active') : t('Settings.SimOptions.Inactive')}
+                            {simbridgeEnabled === 'AUTO ON' ? t('Settings.SimOptions.Active') : t('Settings.SimOptions.Inactive')}
                         </div>
                     </SettingItem>
 
-                    <SettingItem name={t('Settings.SimOptions.ExternalMcduServerPort')}>
+                    <SettingItem name={t('Settings.SimOptions.SimBridgePort')}>
                         <SimpleInput
                             className="text-center w-30"
-                            value={mcduServerPort}
+                            value={simbridgePort}
                             onChange={(event) => {
-                                setMcduServerPort(event);
+                                setSimbridgePort(event.replace(/[^0-9]+/g, ''));
                             }}
                         />
                     </SettingItem>
 
                     <SettingItem name={t('Settings.SimOptions.DynamicRegistrationDecal')}>
-                        <Toggle value={dynamicRegistration === 'ENABLED'} onToggle={(value) => setDynamicRegistration(value ? 'ENABLED' : 'DISABLED')} />
+                        <Toggle value={dynamicRegistration === '1'} onToggle={(value) => setDynamicRegistration(value ? '1' : '0')} />
                     </SettingItem>
 
                     <SettingItem name={t('Settings.SimOptions.UseCalculatedIlsSignals')}>
@@ -135,7 +135,7 @@ export const SimOptionsPage = () => {
                     <SettingItem name={t('Settings.SimOptions.ThrottleDetents')}>
                         <button
                             type="button"
-                            className="py-2.5 px-5 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100"
+                            className="py-2.5 px-5 rounded-md border-2 transition duration-100 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight"
                             onClick={() => setShowThrottleSettings(true)}
                         >
                             {t('Settings.SimOptions.Calibrate')}

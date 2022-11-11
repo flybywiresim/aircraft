@@ -2,12 +2,20 @@ import React, { useEffect, useState } from 'react';
 import { render } from '@instruments/common/index';
 import { useSimVar } from '@instruments/common/simVars';
 import { setIsEcamPage } from '@instruments/common/defaults';
-import { ptuArray, levels } from './common';
+import { SvgGroup } from '../../Common/SvgGroup';
 import { Triangle } from '../../Common/Shapes';
 
-import './Hyd.scss';
+import '../../Common/CommonStyles.scss';
 
 setIsEcamPage('hyd_page');
+
+const litersPerGallon = 3.79;
+
+enum HydSystem {
+    GREEN = 'GREEN',
+    BLUE = 'BLUE',
+    YELLOW = 'YELLOW',
+}
 
 export const HydPage = () => {
     // The FADEC SimVars include a test for the fire button.
@@ -18,24 +26,26 @@ export const HydPage = () => {
     const [yellowPressure] = useSimVar('L:A32NX_HYD_YELLOW_SYSTEM_1_SECTION_PRESSURE', 'psi', 500);
     const [bluePressure] = useSimVar('L:A32NX_HYD_BLUE_SYSTEM_1_SECTION_PRESSURE', 'psi', 500);
 
-    const [greenPumpPBStatus] = useSimVar('L:A32NX_OVHD_HYD_ENG_1_PUMP_PB_IS_AUTO', 'boolean', 500);
-    const [yellowPumpPBStatus] = useSimVar('L:A32NX_OVHD_HYD_ENG_2_PUMP_PB_IS_AUTO', 'boolean', 500);
-    const [bluePumpPBStatus] = useSimVar('L:A32NX_OVHD_HYD_EPUMPB_PB_IS_AUTO', 'boolean', 500);
+    const [yellowPumpPressurisedSwitch] = useSimVar('L:A32NX_HYD_YELLOW_PUMP_1_SECTION_PRESSURE_SWITCH', 'boolean', 500);
+    const [greenPumpPressurisedSwitch] = useSimVar('L:A32NX_HYD_GREEN_PUMP_1_SECTION_PRESSURE_SWITCH', 'boolean', 500);
+
+    const [yellowFluidLevel] = useSimVar('L:A32NX_HYD_YELLOW_RESERVOIR_LEVEL', 'gallon', 1000);
+    const [greenFluidLevel] = useSimVar('L:A32NX_HYD_GREEN_RESERVOIR_LEVEL', 'gallon', 1000);
+
+    const [greenPumpPBOn] = useSimVar('L:A32NX_OVHD_HYD_ENG_1_PUMP_PB_IS_AUTO', 'boolean', 500);
+    const [yellowPumpPBOn] = useSimVar('L:A32NX_OVHD_HYD_ENG_2_PUMP_PB_IS_AUTO', 'boolean', 500);
+    const [bluePumpPBAuto] = useSimVar('L:A32NX_OVHD_HYD_EPUMPB_PB_IS_AUTO', 'boolean', 500);
+    const [bluePumpActive] = useSimVar('L:A32NX_HYD_BLUE_EPUMP_ACTIVE', 'boolean', 500);
 
     const [yellowElectricPumpStatus] = useSimVar('L:A32NX_HYD_YELLOW_EPUMP_ACTIVE', 'boolean', 500);
-
-    const [greenHydLevel] = useSimVar('L:A32NX_HYD_GREEN_RESERVOIR_LEVEL', 'gallon', 1000);
-    const [yellowHydLevel] = useSimVar('L:A32NX_HYD_YELLOW_RESERVOIR_LEVEL', 'gallon', 1000);
-    const [blueHydLevel] = useSimVar('L:A32NX_HYD_BLUE_RESERVOIR_LEVEL', 'gallon', 1000);
 
     const [greenFireValve] = useSimVar('L:A32NX_HYD_GREEN_PUMP_1_FIRE_VALVE_OPENED', 'boolean', 500);
     const [yellowFireValve] = useSimVar('L:A32NX_HYD_YELLOW_PUMP_1_FIRE_VALVE_OPENED', 'boolean', 500);
 
     const [ACBus1IsPowered] = useSimVar('L:A32NX_ELEC_AC_1_BUS_IS_POWERED', 'bool', 1000);
-    const [ACBus2IsPowered] = useSimVar('L:A32NX_ELEC_AC_2_BUS_IS_POWERED', 'bool', 1000);
 
-    const [engine1Running, setEngine1Running] = useState(0);
-    const [engine2Running, setEngine2Running] = useState(0);
+    const [engine1Running, setEngine1Running] = useState(false);
+    const [engine2Running, setEngine2Running] = useState(false);
 
     useEffect(() => {
         setEngine1Running(Eng1N2 > 15 && greenFireValve);
@@ -43,157 +53,69 @@ export const HydPage = () => {
     }, [Eng1N2, Eng2N2]);
 
     // PTU variables
-    const [ptuAvailable] = useSimVar('L:A32NX_HYD_PTU_VALVE_OPENED', 'boolean', 500);
-    const [ptuScenario, setPtuScenario] = useState('normal');
-
-    type PressureChartType = {
-        high: string,
-        low: string,
-        highValue: number,
-        lowValue: number,
-        ptuScenario: string
-    }
-
-    const [pressureChart, setPressureChart] = useState<PressureChartType>({ high: '', low: '', highValue: -1, lowValue: -1, ptuScenario: 'normal' });
-    const [ptuActive, setPtuActive] = useState(0);
-
-    const [elecRightFormat, setElecRightFormat] = useState('hide');
-    const [elecTriangleFill, setElecTriangleFill] = useState(0);
-    const [elecTriangleColour, setElecTriangleColour] = useState('white');
-
-    function setPressures(clearState = false) {
-        if (clearState) {
-            setPressureChart({ high: '', low: '', highValue: -1, lowValue: -1, ptuScenario: 'normal' });
-        } else if (yellowPressure > greenPressure) {
-            setPressureChart({
-                high: 'YELLOW',
-                low: 'GREEN',
-                highValue: yellowPressure,
-                lowValue: greenPressure,
-                ptuScenario: 'right-to-left',
-            });
-        } else {
-            setPressureChart({
-                high: 'GREEN',
-                low: 'YELLOW',
-                highValue: greenPressure,
-                lowValue: yellowPressure,
-                ptuScenario: 'left-to-right',
-            });
-        }
-    }
-
-    useEffect(() => {
-        setPtuScenario(pressureChart.ptuScenario);
-    }, [pressureChart]);
-
-    // PTU logic
-    useEffect(() => {
-        if (yellowElectricPumpStatus) {
-            setElecTriangleFill(1);
-            setElecTriangleColour(yellowPressure <= 1450 ? 'Amber' : 'Green');
-            setElecRightFormat(yellowPressure <= 1450 ? 'AmberLine' : 'GreenLine');
-        } else {
-            setElecTriangleFill(0);
-            setElecTriangleColour('White');
-            setElecRightFormat('Hide');
-        }
-
-        if (ptuAvailable && !yellowElectricPumpStatus) {
-            // The PTU valve has to be open and the yellow electric pump should not be on
-            const pressureDifferential = Math.abs(greenPressure - yellowPressure);
-            const maxPressure = Math.max(yellowPressure, greenPressure);
-            // const minPressure = Math.min(yellowPressure, greenPressure);
-            const negativePressureDifferential = pressureChart.low === 'GREEN' ? pressureChart.lowValue - yellowPressure : pressureChart.lowValue - greenPressure;
-            if (maxPressure < 1450 || (greenPressure > 2990 && yellowPressure > 2990)) {
-                setPressures(true);
-                setPtuActive(0);
-            } else if (pressureDifferential > 200 && maxPressure > 1450 && !ptuActive) {
-                setPtuActive(1);
-                setPressures();
-            } else if (negativePressureDifferential <= -500 && ptuActive) {
-                setPressures(true);
-                setPtuActive(0);
-            }
-        } else if (ptuAvailable && yellowElectricPumpStatus && greenPressure <= 2990) {
-            setPtuScenario('right-to-left');
-            setPtuActive(1);
-        } else {
-            setPtuScenario(ptuAvailable ? 'normal' : 'PTU-off');
-        }
-    }, [greenPressure, yellowPressure, yellowElectricPumpStatus, ptuAvailable]);
-
-    const y = 45;
+    const [ptuControlValveOpen] = useSimVar('L:A32NX_HYD_PTU_VALVE_OPENED', 'boolean', 500);
 
     return (
         <>
             {/* This is already in an svg so we should remove the containing one - TODO remove style once we are not in the Asobo ECAM */}
-            <svg id="hyd-page" viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg" style={{ marginTop: '-60px' }}>
-                <text id="PageTitle" className="PageTitle" x="300" y="16" alignmentBaseline="central">HYD</text>
-                <text className={`EngineNumber ${engine1Running ? 'FillWhite' : 'FillAmber'}`} x="160" y={y + 260} alignmentBaseline="central">1</text>
-                <text className={`EngineNumber ${engine2Running ? 'FillWhite' : 'FillAmber'}`} x="440" y={y + 260} alignmentBaseline="central">2</text>
+            <svg id="hyd-page" className="ecam-common-styles" viewBox="0 0 768 768" xmlns="http://www.w3.org/2000/svg" style={{ marginTop: '-60px' }}>
+                <text className="Title UnderlineWhite" x="351" y="39">HYD</text>
+                <text className={`${engine1Running ? '' : 'Amber '}Title`} x="187" y="404">1</text>
+                <text className={`${engine2Running ? '' : 'Amber '}Title`} x="562" y="404">2</text>
 
                 <HydSys
-                    title="GREEN"
+                    system={HydSystem.GREEN}
                     pressure={greenPressure}
-                    hydLevel={greenHydLevel}
-                    x={110}
-                    y={y}
+                    x={136}
+                    y={65}
                     fireValve={greenFireValve}
-                    pumpPBStatus={greenPumpPBStatus}
-                    yellowElectricPumpStatus={yellowElectricPumpStatus}
+                    pumpPBOn={greenPumpPBOn}
                 />
                 <HydSys
-                    title="BLUE"
+                    system={HydSystem.BLUE}
                     pressure={bluePressure}
-                    hydLevel={blueHydLevel}
-                    x={300}
-                    y={y}
-                    fireValve={0}
-                    pumpPBStatus={bluePumpPBStatus}
-                    yellowElectricPumpStatus={yellowElectricPumpStatus}
+                    x={383}
+                    y={65}
+                    fireValve={false}
+                    pumpPBOn={bluePumpPBAuto && bluePumpActive}
                 />
                 <HydSys
-                    title="YELLOW"
+                    system={HydSystem.YELLOW}
                     pressure={yellowPressure}
-                    hydLevel={yellowHydLevel}
-                    x={490}
-                    y={y}
+                    x={630}
+                    y={65}
                     fireValve={yellowFireValve}
-                    pumpPBStatus={yellowPumpPBStatus}
-                    yellowElectricPumpStatus={yellowElectricPumpStatus}
+                    pumpPBOn={yellowPumpPBOn}
                 />
 
-                <PTU x={300} y={y + 126} ptuScenario={ptuScenario} />
+                <PTU
+                    x={383}
+                    y={216}
+                    yellowPressure={yellowPressure}
+                    greenPressure={greenPressure}
+                    yellowPumpLowPressure={!yellowPumpPressurisedSwitch}
+                    greenPumpLowPressure={!greenPumpPressurisedSwitch}
+                    yellowQuantity={yellowFluidLevel}
+                    greenQuantity={greenFluidLevel}
+                    ptuControlValveOff={!ptuControlValveOpen}
+                    yellowElecPumpOn={yellowElectricPumpStatus}
+                />
 
-                <RAT x={290} y={y} />
+                <RAT x={372} y={282} />
 
                 <text
                     id="ELEC-centre"
-                    className={!ACBus1IsPowered ? 'RatPtuElec FillAmber' : 'RatPtuElec FillWhite'}
-                    x={350}
-                    y={y + 245}
-                    alignmentBaseline="central"
+                    className={!ACBus1IsPowered ? 'Large Amber' : 'Large'}
+                    x={420}
+                    y={384}
                 >
                     ELEC
-
                 </text>
 
-                <text
-                    id="ELEC-right"
-                    className={!ACBus2IsPowered ? 'RatPtuElec FillAmber' : 'RatPtuElec FillWhite'}
-                    x={548}
-                    y={y + 180}
-                    alignmentBaseline="central"
-                >
-                    ELEC
+                <YellowElecPump pumpPushbuttonOn={yellowElectricPumpStatus} pressure={yellowPressure} enginePumpPressureLowSwitch={!yellowPumpPressurisedSwitch} />
 
-                </text>
-                <Triangle x={500} y={y + 180} colour={elecTriangleColour} fill={elecTriangleFill} orientation={-90} />
-                <line className={elecRightFormat} x1={490} y1={y + 180} x2={500} y2={y + 180} />
-
-                <text className="Psi" x={205} y={y + 70} alignmentBaseline="central">PSI</text>
-                <text className="Psi" x={395} y={y + 70} alignmentBaseline="central">PSI</text>
+                <text className="Cyan Standard" x={243} y={157}>PSI</text>
+                <text className="Cyan Standard" x={481} y={157}>PSI</text>
 
             </svg>
         </>
@@ -209,243 +131,325 @@ const RAT = ({ x, y }: RATProps) => {
     const [RatStowed] = useSimVar('L:A32NX_HYD_RAT_STOW_POSITION', 'percent over 100', 500);
 
     return (
-        <>
-            <text className="RatPtuElec FillWhite" x={x - 42} y={y + 180} alignmentBaseline="central">RAT</text>
-            <line className={`GreenLine ${RatStowed > 0.1 ? '' : 'Hide'}`} x1={x} y1={y + 180} x2={x + 10} y2={y + 180} />
-            <Triangle x={x} y={y + 180} colour={RatStowed > 0.1 ? 'Green' : 'White'} fill={RatStowed > 0.1 ? 1 : 0} orientation={90} />
-        </>
+        <SvgGroup x={x} y={y}>
+            <text className="Large" x={-78} y={10}>RAT</text>
+            <line className={`GreenLine ${RatStowed > 0.1 ? '' : 'Hide'}`} x1={0} y1={0} x2={10} y2={0} />
+            <Triangle x={0} y={0} scale={4 / 3} colour={RatStowed > 0.1 ? 'Green' : 'White'} fill={RatStowed > 0.1 ? 1 : 0} orientation={90} />
+        </SvgGroup>
     );
 };
 
 type HydSysProps = {
-    title: string,
+    system: HydSystem,
     pressure: number,
-    hydLevel: number,
     x: number,
     y: number,
-    fireValve: number,
-    pumpPBStatus: number,
-    yellowElectricPumpStatus: number
+    fireValve: boolean,
+    pumpPBOn: boolean,
 }
 
-const HydSys = ({ title, pressure, hydLevel, x, y, fireValve, pumpPBStatus, yellowElectricPumpStatus } : HydSysProps) => {
-    const [hydLevelLow, setHydLevelLow] = useState(false);
+const HydSys = ({ system, pressure, x, y, fireValve, pumpPBOn } : HydSysProps) => {
     const lowPressure = 1450;
     const pressureNearest50 = Math.round(pressure / 50) * 50 >= 100 ? Math.round(pressure / 50) * 50 : 0;
 
-    const [greenPumpActive] = useSimVar('L:A32NX_HYD_GREEN_EDPUMP_ACTIVE', 'boolean', 500);
-    const [yellowPumpActive] = useSimVar('L:A32NX_HYD_YELLOW_EDPUMP_ACTIVE', 'boolean', 500);
-    const [bluePumpActive] = useSimVar('L:A32NX_HYD_BLUE_EPUMP_ACTIVE', 'boolean', 500);
+    const [pumpPressurisedSwitch] = useSimVar(`L:A32NX_HYD_${system}_PUMP_1_SECTION_PRESSURE_SWITCH`, 'boolean', 500);
+    const [systemPressurisedSwitch] = useSimVar(`L:A32NX_HYD_${system}_SYSTEM_1_SECTION_PRESSURE_SWITCH`, 'boolean', 500);
 
-    const [greenPumpLowPressure] = useSimVar('L:A32NX_HYD_GREEN_EDPUMP_LOW_PRESS', 'boolean', 500);
-    const [yellowPumpLowPressure] = useSimVar('L:A32NX_HYD_YELLOW_EDPUMP_LOW_PRESS', 'boolean', 500);
-    const [bluePumpLowPressure] = useSimVar('L:A32NX_HYD_BLUE_EPUMP_LOW_PRESS', 'boolean', 500);
+    const [reservoirLowQuantitySwitch] = useSimVar(`L:A32NX_HYD_${system}_RESERVOIR_LEVEL_IS_LOW`, 'boolean', 500);
 
-    function checkPumpLowPressure(pump) {
-        switch (pump) {
-        case 'GREEN':
-            return greenPumpLowPressure || !greenPumpActive;
-        case 'BLUE':
-            return bluePumpLowPressure || !bluePumpActive;
-        case 'YELLOW':
-            return yellowPumpLowPressure || !yellowPumpActive;
-        default:
-            return 1;
-        }
+    let hydTitleXPos: number;
+    if (system === HydSystem.GREEN) {
+        hydTitleXPos = -2;
+    } else if (system === HydSystem.BLUE) {
+        hydTitleXPos = 1;
+    } else {
+        hydTitleXPos = 3;
     }
 
-    const pumpDetectLowPressure = checkPumpLowPressure(title);
-
-    const hydLevelBoolean = (value: boolean) => {
-        setHydLevelLow(value);
-    };
-
     return (
-        <>
-            <Triangle x={x} y={y} colour={pressureNearest50 <= lowPressure ? 'Amber' : 'Green'} fill={0} orientation={0} />
-            <text className={`Title ${pressureNearest50 <= lowPressure ? 'FillAmber' : 'FillWhite'}`} x={x} y={y + 43}>{title}</text>
-            <text className={`Pressure ${pressureNearest50 <= lowPressure ? 'FillAmber' : 'FillGreen'}`} x={x} y={y + 75}>{pressureNearest50}</text>
+        <SvgGroup x={x} y={y}>
+            <Triangle x={0} y={0} colour={!systemPressurisedSwitch ? 'Amber' : 'Green'} fill={0} orientation={0} />
+            <text className={`Huge Center${!systemPressurisedSwitch ? ' Amber' : ''}`} x={hydTitleXPos} y={50}>{system}</text>
+            <text className={`Huge Center ${pressureNearest50 <= lowPressure ? 'Amber' : 'Green'}`} x={1} y={92}>{pressureNearest50}</text>
 
-            {/* The colour of these lines will be affected by the yellow electric pump */}
-            <line className={pressureNearest50 <= lowPressure ? 'AmberLine' : 'GreenLine'} x1={x} y1={y + 126} x2={x} y2={y + 83} />
-            <line
-                className={pressureNearest50 <= lowPressure
-                 || (pumpDetectLowPressure && title === 'GREEN')
-                 || (pumpDetectLowPressure && !yellowElectricPumpStatus && title === 'YELLOW') ? 'AmberLine' : 'GreenLine'}
-                x1={x}
-                y1={y + 181}
-                x2={x}
-                y2={y + 125}
-            />
-            <line className={pressureNearest50 <= lowPressure || (pumpDetectLowPressure && title !== 'BLUE') ? 'AmberLine' : 'GreenLine'} x1={x} y1={y + 221} x2={x} y2={y + 180} />
+            <line className={pressureNearest50 <= lowPressure ? 'AmberLine' : 'GreenLine'} x1={0} y1={system === HydSystem.BLUE ? 217 : 151} x2={0} y2={103} />
 
             <HydEngPump
-                system={title}
-                pumpOn={pumpPBStatus}
-                x={x}
-                y={y + 290}
-                hydLevelLow={hydLevelLow}
-                fireValve={fireValve}
-                pumpDetectLowPressure={pumpDetectLowPressure}
-                pressure={pressureNearest50}
+                system={system}
+                pumpPBOn={pumpPBOn}
+                x={0}
+                y={system === HydSystem.BLUE ? 370 : 303}
+                pumpSwitchLowPressure={!pumpPressurisedSwitch}
             />
-            <HydEngValve system={title} x={x} y={y + 290} fireValve={fireValve} hydLevelLow={hydLevelLow} />
+            {
+                system !== HydSystem.BLUE && <HydEngValve x={0} y={372} fireValve={fireValve} lowLevel={reservoirLowQuantitySwitch} />
+            }
             {/* Reservoir */}
-            <HydReservoir system={title} x={x} y={495} fluidLevel={hydLevel} setHydLevel={hydLevelBoolean} />
-        </>
+            <HydReservoir system={system} x={0} y={576} lowLevel={reservoirLowQuantitySwitch} />
+        </SvgGroup>
     );
 };
 
 type HydEngPumpProps = {
-    system: string,
-    pumpOn: number,
+    system: HydSystem,
+    pumpPBOn: boolean,
     x: number,
     y: number,
-    hydLevelLow: boolean,
-    fireValve: number,
-    pumpDetectLowPressure: number
-    pressure: number
+    pumpSwitchLowPressure: boolean
 }
 
-const HydEngPump = ({ system, pumpOn, x, y, hydLevelLow, fireValve, pumpDetectLowPressure, pressure } : HydEngPumpProps) => {
-    const lowPressure = 1450;
-    if (system === 'BLUE') {
-        return (
-            <>
-                <line className={pressure <= lowPressure ? 'AmberLine' : 'GreenLine'} x1={x} y1={y - 32} x2={x} y2={y - 80} />
-                <rect className={pumpDetectLowPressure ? 'AmberLine' : 'GreenLine'} x={x - 16} y={y - 32} width={32} height={32} />
-                <line className={!pumpDetectLowPressure ? 'GreenLine' : 'Hide'} x1={x} y1={y} x2={x} y2={y - 32} />
-                <line className={pumpOn ? 'Hide' : 'AmberLine'} x1={x - 12} y1={y - 16} x2={x + 12} y2={y - 16} />
-                <text id="ELEC-centre" className={pumpDetectLowPressure && pumpOn ? 'RatPtuElec FillAmber' : 'Hide'} x={x} y={y - 16} alignmentBaseline="central">LO</text>
-
-            </>
-        );
+const HydEngPump = ({ system, pumpPBOn, x, y, pumpSwitchLowPressure } : HydEngPumpProps) => {
+    let pumpLineYUpper: number;
+    if (system === HydSystem.GREEN) {
+        pumpLineYUpper = -151;
+    } else if (system === HydSystem.BLUE) {
+        pumpLineYUpper = -153;
+    } else {
+        pumpLineYUpper = -84;
     }
 
     return (
-        <>
-            <rect className={pumpDetectLowPressure ? 'AmberLine' : 'GreenLine'} x={x - 16} y={y - 80} width={32} height={32} />
-            <line className={!pumpDetectLowPressure ? 'GreenLine' : 'Hide'} x1={x} y1={y} x2={x} y2={y - 80} />
-            <line className={pumpOn ? 'Hide' : 'AmberLine'} x1={x - 12} y1={y - 64} x2={x + 12} y2={y - 64} />
-            <line className={hydLevelLow || !fireValve ? 'AmberLine' : 'GreenLine'} x1={x} y1={y} x2={x} y2={y - 48} />
-            <text
-                id="ELEC-centre"
-                className={
-                    pumpDetectLowPressure && pumpOn ? 'RatPtuElec FillAmber' : 'Hide'
-                }
-                x={x}
-                y={y - 64}
-                alignmentBaseline="central"
-            >
-                LO
-
-            </text>
-
-        </>
+        <SvgGroup x={x} y={y}>
+            <line className={pumpSwitchLowPressure ? 'AmberLine' : 'GreenLine'} x1={0} y1={-42} x2={0} y2={pumpLineYUpper} />
+            <rect className={pumpSwitchLowPressure || !pumpPBOn ? 'AmberLine' : 'GreenLine'} x={-21} y={-42} width={42} height={42} />
+            <line className={!pumpSwitchLowPressure && pumpPBOn ? 'GreenLine' : 'Hide'} x1={0} y1={-1} x2={0} y2={-41} />
+            <line className={pumpPBOn ? 'Hide' : 'AmberLine'} x1={-12} y1={-21} x2={12} y2={-21} />
+            <text className={pumpSwitchLowPressure && pumpPBOn ? 'Standard Amber' : 'Hide'} x={-13} y={-14}>LO</text>
+        </SvgGroup>
     );
 };
 
 type HydEngValveProps = {
-    system: string,
     x: number,
     y: number,
-    fireValve: number,
-    hydLevelLow: boolean
+    fireValve: boolean,
+    lowLevel: boolean
 }
 
-const HydEngValve = ({ system, x, y, fireValve, hydLevelLow } : HydEngValveProps) => {
-    if (system === 'BLUE') {
-        return (
-            <line className={!hydLevelLow ? 'GreenLine' : 'AmberLine'} x1={x} y1={y + 33} x2={x} y2={y} />
-        );
+const HydEngValve = ({ x, y, fireValve, lowLevel } : HydEngValveProps) => (
+    <SvgGroup x={x} y={y}>
+        <line className={fireValve && !lowLevel ? 'GreenLine' : 'AmberLine'} x1={-0} y1={0} x2={0} y2={-68} />
+        <circle className={fireValve ? 'GreenLine' : 'AmberLine'} cx={0} cy={21} r="21" />
+        <line className={fireValve ? 'GreenLine' : 'Hide'} x1={0} y1={42} x2={x} y2={0} />
+        <line className={fireValve ? 'Hide' : 'AmberLine'} x1={-21} y1={21} x2={21} y2={21} />
+    </SvgGroup>
+);
+
+type Levels = {max: number, low: number, norm: number};
+
+const levels = {
+    GREEN: { max: 14.5, low: 3.5, norm: 2.6 } as Levels,
+    BLUE: { max: 6.5, low: 2.4, norm: 1.6 } as Levels,
+    YELLOW: { max: 12.5, low: 3.5, norm: 2.6 } as Levels,
+};
+
+type HydReservoirProps = {
+    system: HydSystem,
+    x: number,
+    y: number,
+    lowLevel: boolean,
+}
+
+const HydReservoir = ({ system, x, y, lowLevel } : HydReservoirProps) => {
+    const [fluidLevel] = useSimVar(`L:A32NX_HYD_${system}_RESERVOIR_LEVEL`, 'gallon', 1000);
+
+    const [lowAirPress] = useSimVar(`L:A32NX_HYD_${system}_RESERVOIR_AIR_PRESSURE_IS_LOW`, 'boolean', 1000);
+
+    const fluidLevelInLitres = fluidLevel * litersPerGallon;
+
+    const values = levels[system];
+    const litersPerPixel = 121 / values.max;
+    const reserveHeight = (litersPerPixel * values.low);
+    const upperReserve = -reserveHeight;
+    const lowerNorm = -121 + (litersPerPixel * values.norm);
+    const fluidLevelPerPixel = 121 / values.max;
+    const fluidHeight = -(fluidLevelPerPixel * fluidLevelInLitres);
+
+    return (
+        <SvgGroup x={x} y={y}>
+            <line className={lowLevel ? 'AmberLine' : 'GreenLine'} x1={0} y1={-121} x2={0} y2={system === HydSystem.BLUE ? -205 : -161} />
+            <line className={lowLevel ? 'AmberLine' : 'WhiteLine'} x1={0} y1={upperReserve.toFixed(0)} x2={0} y2={-121} />
+            <line className="GreenLine" x1={0} y1={-121} x2={6} y2={-121} />
+            <line className="GreenLine" x1={6} y1={lowerNorm.toFixed(0)} x2={6} y2={-121} />
+            <line className="GreenLine" x1={0} y1={lowerNorm.toFixed(0)} x2={6} y2={lowerNorm.toFixed(0)} />
+            <rect className="AmberLine" x={0} y={upperReserve.toFixed(0)} width={6} height={reserveHeight} />
+
+            {/* Hydraulic level */}
+            <line className={lowLevel ? 'AmberLine' : 'GreenLine'} x1={0} y1={0} x2={-12} y2={0} />
+            <line className={lowLevel ? 'AmberLine' : 'GreenLine'} x1={-12} y1={0} x2={-12} y2={fluidHeight} />
+            <line className={lowLevel ? 'AmberLine' : 'GreenLine'} x1={0} y1={fluidHeight} x2={-12} y2={fluidHeight} />
+            <line className={lowLevel ? 'AmberLine' : 'GreenLine'} x1={0} y1={fluidHeight} x2={-13} y2={fluidHeight - 11} />
+
+            <text className={lowAirPress ? 'Large Amber' : 'Hide'} x={12} y={-72}>LO AIR</text>
+            <text className={lowAirPress ? 'Large Amber' : 'Hide'} x={12} y={-45}>PRESS</text>
+        </SvgGroup>
+    );
+};
+
+type YellowElecPumpProps = {
+    pumpPushbuttonOn: boolean,
+    pressure: number,
+    enginePumpPressureLowSwitch: boolean,
+};
+
+const YellowElecPump = ({ pumpPushbuttonOn, pressure, enginePumpPressureLowSwitch }: YellowElecPumpProps) => {
+    const [ACBus2IsPowered] = useSimVar('L:A32NX_ELEC_AC_2_BUS_IS_POWERED', 'bool', 1000);
+
+    let elecHorizontalLineFormat: string;
+    let verticalLineFormat: string;
+    let elecTriangleFill: number;
+    let elecTriangleColour: string;
+
+    if (!pumpPushbuttonOn) {
+        elecTriangleFill = 0;
+        elecHorizontalLineFormat = 'Hide';
+        elecTriangleColour = 'White';
+    } else {
+        elecTriangleFill = 1;
+        elecHorizontalLineFormat = pressure <= 1450 ? 'AmberLine' : 'GreenLine';
+        elecTriangleColour = pressure <= 1450 ? 'Amber' : 'Green';
+    }
+
+    if ((enginePumpPressureLowSwitch && !pumpPushbuttonOn) || pressure <= 1450) {
+        verticalLineFormat = 'AmberLine';
+    } else {
+        verticalLineFormat = 'GreenLine';
     }
 
     return (
         <>
-            <circle className={fireValve ? 'GreenLine' : 'AmberLine'} cx={x} cy={y + 16} r="16" />
-            <line className={fireValve ? 'GreenLine' : 'Hide'} x1={x} y1={y + 32} x2={x} y2={y} />
-            <line className={fireValve ? 'Hide' : 'AmberLine'} x1={x - 10} y1={y + 16} x2={x + 10} y2={y + 16} />
+            <text
+                id="ELEC-right"
+                className={!ACBus2IsPowered ? 'Large Amber' : 'Large'}
+                x={676}
+                y={292}
+            >
+                ELEC
+            </text>
+            <Triangle x={642} y={283} scale={4 / 3} colour={elecTriangleColour} fill={elecTriangleFill} orientation={-90} />
+            <line className={elecHorizontalLineFormat} x1={631} y1={283} x2={642} y2={283} />
+            <line className={verticalLineFormat} x1={630} y1={217} x2={630} y2={283} />
         </>
     );
 };
 
-type HydReservoirProps = {
-    system: string,
-    x: number,
-    y: number,
-    fluidLevel: number,
-    setHydLevel: React.RefCallback<
-    Boolean>
+enum TransferColor {
+    Green = 'Green',
+    Amber = 'Amber',
 }
 
-const HydReservoir = ({ system, x, y, fluidLevel, setHydLevel } : HydReservoirProps) => {
-    const fluidLevelInLitres = fluidLevel * 3.79;
-
-    const values = levels.filter((item) => item.system === system);
-    const litersPerPixel = 96 / values[0].max;
-    const reserveHeight = (litersPerPixel * values[0].low);
-    const upperReserve = y - reserveHeight;
-    const lowerNorm = y - 96 + (litersPerPixel * values[0].norm);
-    const fluidLevelPerPixel = 96 / values[0].max;
-    const fluidHeight = y - (fluidLevelPerPixel * fluidLevelInLitres);
-
-    useEffect(() => {
-        if (fluidLevelInLitres < values[0].low) {
-            setHydLevel(true);
-        } else {
-            setHydLevel(false);
-        }
-    }, [fluidLevelInLitres]);
-
-    return (
-        <>
-            <line className={fluidLevelInLitres < values[0].low ? 'AmberLine' : 'GreenLine'} x1={x} y1={y - 96} x2={x} y2={y - 128} />
-            <line className={fluidLevelInLitres < values[0].low ? 'AmberLine' : 'WhiteLine'} x1={x} y1={upperReserve.toFixed(0)} x2={x} y2={y - 96} />
-            <line className="GreenLine" x1={x} y1={y - 96} x2={x + 4} y2={y - 96} strokeLinejoin="miter" />
-            <line className="GreenLine" x1={x + 4} y1={lowerNorm.toFixed(0)} x2={x + 4} y2={y - 96} strokeLinejoin="miter" />
-            <line className="GreenLine" x1={x} y1={lowerNorm.toFixed(0)} x2={x + 4} y2={lowerNorm.toFixed(0)} strokeLinejoin="miter" />
-            <rect className="AmberLine" x={x} y={upperReserve.toFixed(0)} width={4} height={reserveHeight} />
-
-            {/* Hydraulic level */}
-            <line className={fluidLevelInLitres < values[0].low ? 'AmberLine' : 'GreenLine'} x1={x} y1={y} x2={x - 8} y2={y} strokeLinejoin="miter" />
-            <line className={fluidLevelInLitres < values[0].low ? 'AmberLine' : 'GreenLine'} x1={x - 8} y1={y} x2={x - 8} y2={fluidHeight} strokeLinejoin="miter" />
-            <line className={fluidLevelInLitres < values[0].low ? 'AmberLine' : 'GreenLine'} x1={x} y1={fluidHeight} x2={x - 8} y2={fluidHeight} strokeLinejoin="miter" />
-            <line className={fluidLevelInLitres < values[0].low ? 'AmberLine' : 'GreenLine'} x1={x} y1={fluidHeight} x2={x - 8} y2={fluidHeight - 8} strokeLinejoin="miter" />
-        </>
-    );
-};
+enum TransferState {
+    GreenToYellow,
+    YellowToGreen,
+    None
+}
 
 type PTUProps = {
     x: number,
     y: number,
-    ptuScenario: string
+    yellowPressure: number,
+    greenPressure: number,
+    yellowPumpLowPressure: boolean,
+    greenPumpLowPressure: boolean,
+    yellowQuantity: number,
+    greenQuantity: number,
+    ptuControlValveOff: boolean
+    yellowElecPumpOn: boolean,
 }
 
-const PTU = ({ x, y, ptuScenario } : PTUProps) => {
-    const semiCircleD = `M${x - 16},${y} C${x - 16},${y + 24} ${x + 16},${y + 24} ${x + 16},${y}`;
+const shouldTransferActivate = (
+    lowerPressureSystemQuantity: number,
+    lowerPressureSystemPressure: number,
+    highPressureSystemPressure: number,
+    lowerPressureSystemPumpLowPress: boolean,
+    yellowElecPumpOn: boolean,
+    transferDirection: TransferState,
+) => {
+    if (transferDirection === TransferState.None) {
+        return false;
+    }
 
-    const result: any = ptuArray.find(({ scenario }) => scenario === ptuScenario);
-    const ptu1 = result.format.find(({ id }) => id === 'ptu1');
-    const ptu2 = result.format.find(({ id }) => id === 'ptu2');
-    const ptu3 = result.format.find(({ id }) => id === 'ptu3');
-    const ptu4 = result.format.find(({ id }) => id === 'ptu4');
-    const ptu5 = result.format.find(({ id }) => id === 'ptu5');
-    const triangle1 = result.format.find(({ id }) => id === 'triangle1');
-    const triangle2 = result.format.find(({ id }) => id === 'triangle2');
-    const triangle3 = result.format.find(({ id }) => id === 'triangle3');
+    return lowerPressureSystemPumpLowPress
+        && (transferDirection === TransferState.GreenToYellow && !yellowElecPumpOn || transferDirection === TransferState.YellowToGreen)
+        && ((highPressureSystemPressure > 1450 && lowerPressureSystemQuantity * litersPerGallon < 2.5)
+        || (lowerPressureSystemPressure > 1500 && lowerPressureSystemQuantity * litersPerGallon > 2.5));
+};
+
+const PTU = ({ x, y, yellowPressure, greenPressure, yellowPumpLowPressure, greenPumpLowPressure, yellowQuantity, greenQuantity, ptuControlValveOff, yellowElecPumpOn } : PTUProps) => {
+    const [transferState, setTransferState] = useState(TransferState.None);
+
+    useEffect(() => {
+        let newTransferState;
+
+        if (ptuControlValveOff) {
+            newTransferState = TransferState.None;
+        } else if (transferState === TransferState.None) {
+            if (yellowPressure - greenPressure > 200) {
+                newTransferState = TransferState.YellowToGreen;
+            } else if (greenPressure - yellowPressure > 200) {
+                newTransferState = TransferState.GreenToYellow;
+            }
+        } else if (transferState === TransferState.GreenToYellow && greenPressure - yellowPressure < -300) {
+            newTransferState = TransferState.YellowToGreen;
+        } else if (transferState === TransferState.YellowToGreen && yellowPressure - greenPressure < -300) {
+            newTransferState = TransferState.GreenToYellow;
+        } else {
+            newTransferState = transferState;
+        }
+
+        let lowPressureSystemPressure: number;
+        let highPressureSystemPressure: number;
+        let lowPressureSystemQuantity: number;
+        let lowerPressureSystemPumpLowPress: boolean;
+        if (newTransferState === TransferState.GreenToYellow) {
+            highPressureSystemPressure = greenPressure;
+            lowPressureSystemPressure = yellowPressure;
+            lowPressureSystemQuantity = yellowQuantity;
+            lowerPressureSystemPumpLowPress = yellowPumpLowPressure;
+        } else if (newTransferState === TransferState.YellowToGreen) {
+            highPressureSystemPressure = yellowPressure;
+            lowPressureSystemPressure = greenPressure;
+            lowPressureSystemQuantity = greenQuantity;
+            lowerPressureSystemPumpLowPress = greenPumpLowPressure;
+        } else {
+            highPressureSystemPressure = 0;
+            lowPressureSystemPressure = 0;
+            lowPressureSystemQuantity = 0;
+            lowerPressureSystemPumpLowPress = false;
+        }
+
+        if (shouldTransferActivate(lowPressureSystemQuantity, lowPressureSystemPressure, highPressureSystemPressure, lowerPressureSystemPumpLowPress, yellowElecPumpOn, newTransferState)) {
+            setTransferState(newTransferState);
+        } else {
+            setTransferState(TransferState.None);
+        }
+    }, [yellowPressure, greenPressure, yellowPumpLowPressure, greenPumpLowPressure, yellowQuantity, greenQuantity, ptuControlValveOff, yellowElecPumpOn]);
+
+    // Should also be amber if PTU fault
+    let transferColor: TransferColor;
+    if (ptuControlValveOff) {
+        transferColor = TransferColor.Amber;
+    } else {
+        transferColor = TransferColor.Green;
+    }
+
+    const triangleFill = transferState !== TransferState.None ? 1 : 0;
+    const triangle1Orientation = transferState !== TransferState.GreenToYellow ? -90 : 90;
+    const triangle2Orientation = transferState !== TransferState.GreenToYellow ? -90 : 90;
+    const triangle3Orientation = transferState !== TransferState.YellowToGreen ? 90 : -90;
 
     return (
-        <>
-            <line id="ptu1" className={ptu1.className} x1={x - 82} y1={y} x2={x - 190} y2={y} />
-            <line id="ptu2" className={ptu2.className} x1={x - 82} y1={y} x2={x - 16} y2={y} />
-            <path id="ptu3" className={ptu3.className} d={semiCircleD} />
-            <line id="ptu4" className={ptu4.className} x1={x + 16} y1={y} x2={x + 50} y2={y} />
-            <line id="ptu5" className={ptu5.className} x1={x + 135} y1={y} x2={x + 190} y2={y} />
-            <text className="RatPtuElec FillWhite" x={x + 92} y={y} alignmentBaseline="central">PTU</text>
-            <Triangle x={triangle1.orientation < 0 ? x - 100 : x - 82} y={y} colour={triangle1.colour} fill={triangle1.fill} orientation={triangle1.orientation} />
-            <Triangle x={triangle2.orientation > 0 ? x + 70 : x + 50} y={y} colour={triangle2.colour} fill={triangle2.fill} orientation={triangle2.orientation} />
-            <Triangle x={triangle3.orientation > 0 ? x + 135 : x + 117} y={y} colour={triangle3.colour} fill={triangle3.fill} orientation={triangle3.orientation} />
-        </>
+        <SvgGroup x={x} y={y}>
+            <line id="ptu1" className={`${transferState === TransferState.None ? 'Hide ' : ''}${transferColor}Line`} x1={-132} y1={0} x2={-246} y2={0} />
+            <line id="ptu2" className={`${transferColor}Line`} x1={-107} y1={0} x2={-20} y2={0} />
+            <path id="ptu3" className={`${transferColor}Line`} d="M-20 0 A20 20 0 0 0 20 0" />
+            <line id="ptu4" className={`${transferColor}Line`} x1={20} y1={0} x2={56} y2={0} />
+            <line id="ptu5" className={`${transferState === TransferState.None ? 'Hide ' : ''}${transferColor}Line`} x1={177} y1={0} x2={246} y2={0} />
+            <text className="Large" x={92} y={10}>PTU</text>
+            <Triangle scale={4 / 3} x={triangle1Orientation < 0 ? -131 : -107} y={0} colour={transferColor} fill={triangleFill} orientation={triangle1Orientation} />
+            <Triangle scale={4 / 3} x={triangle2Orientation > 0 ? 80 : 56} y={0} colour={transferColor} fill={triangleFill} orientation={triangle2Orientation} />
+            <Triangle scale={4 / 3} x={triangle3Orientation > 0 ? 177 : 153} y={0} colour={transferColor} fill={triangleFill} orientation={triangle3Orientation} />
+        </SvgGroup>
     );
 };
 

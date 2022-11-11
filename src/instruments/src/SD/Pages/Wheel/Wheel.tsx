@@ -31,7 +31,7 @@ export const WheelPage = () => {
     const lgciu2DiscreteWord3 = useArinc429Var('L:A32NX_LGCIU_2_DISCRETE_WORD_3');
 
     return (
-        <svg id="main-wheel" viewBox="0 0 768 768" style={{ marginTop: '-60px' }} xmlns="http://www.w3.org/2000/svg">
+        <svg id="main-wheel" className="ecam-common-styles" viewBox="0 0 768 768" style={{ marginTop: '-60px' }} xmlns="http://www.w3.org/2000/svg">
             <text className="Title UnderlineWhite" x={15} y={149}>WHEEL</text>
 
             <HydraulicsProvider>

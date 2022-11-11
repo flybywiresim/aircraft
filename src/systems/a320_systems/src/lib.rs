@@ -52,7 +52,7 @@ pub struct A320 {
     fuel: A320Fuel,
     engine_1: LeapEngine,
     engine_2: LeapEngine,
-    engine_fire_overhead: EngineFireOverheadPanel,
+    engine_fire_overhead: EngineFireOverheadPanel<2>,
     electrical: A320Electrical,
     power_consumption: A320PowerConsumption,
     ext_pwr: ExternalPowerSource,
@@ -201,6 +201,8 @@ impl Aircraft for A320 {
             &self.pneumatic_overhead,
             &self.engine_fire_overhead,
             &self.apu,
+            &self.air_conditioning,
+            [self.lgcius.lgciu1(), self.lgcius.lgciu2()],
         );
         self.air_conditioning.update(
             context,

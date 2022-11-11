@@ -11,9 +11,20 @@ interface FailuresOrchestratorContext {
 }
 
 const createOrchestrator = () => new FailuresOrchestrator('A32NX', [
+    [22, A320Failure.Fac1Failure, 'FAC 1'],
+    [22, A320Failure.Fac2Failure, 'FAC 2'],
+
     [24, A320Failure.TransformerRectifier1, 'TR 1'],
     [24, A320Failure.TransformerRectifier2, 'TR 2'],
     [24, A320Failure.TransformerRectifierEssential, 'ESS TR'],
+
+    [27, A320Failure.Elac1Failure, 'ELAC 1'],
+    [27, A320Failure.Elac2Failure, 'ELAC 2'],
+    [27, A320Failure.Sec1Failure, 'SEC 1'],
+    [27, A320Failure.Sec2Failure, 'SEC 2'],
+    [27, A320Failure.Sec3Failure, 'SEC 3'],
+    [27, A320Failure.Fcdc1Failure, 'FCDC 1'],
+    [27, A320Failure.Fcdc2Failure, 'FCDC 2'],
 
     [29, A320Failure.GreenReservoirLeak, 'Green reservoir leak'],
     [29, A320Failure.BlueReservoirLeak, 'Blue reservoir leak'],
@@ -32,10 +43,26 @@ const createOrchestrator = () => new FailuresOrchestrator('A32NX', [
     [32, A320Failure.LgciuPowerSupply2, 'LGCIU 2 Power supply'],
     [32, A320Failure.LgciuInternalError1, 'LGCIU 1 Internal error'],
     [32, A320Failure.LgciuInternalError2, 'LGCIU 2 Internal error'],
-    [32, A320Failure.GearProxSensorDamageGearUplockLeft1, 'Proximity Sensor Uplock Damage Left Gear #1'],
-    [32, A320Failure.GearProxSensorDamageDoorDownlockRight2, 'Proximity Sensor Downlock Damage Right Door #2'],
-    [32, A320Failure.GearProxSensorDamageGearUplockNose1, 'Proximity Sensor Uplock Damage Center Gear #1'],
-    [32, A320Failure.GearProxSensorDamageDoorUplockLeft2, 'Proximity Sensor Uplock Damage Left Door #2'],
+
+    [32, A320Failure.GearProxSensorDamageGearUplockNose1, 'Proximity sensor damage uplock nose gear #1'],
+    [32, A320Failure.GearProxSensorDamageGearDownlockNose2, 'Proximity sensor damage downlock nose gear #2'],
+    [32, A320Failure.GearProxSensorDamageGearUplockRight1, 'Proximity sensor damage uplock right gear #1'],
+    [32, A320Failure.GearProxSensorDamageGearDownlockRight2, 'Proximity sensor damage downlock right gear #2'],
+    [32, A320Failure.GearProxSensorDamageGearUplockLeft2, 'Proximity sensor damage uplock left gear #2'],
+    [32, A320Failure.GearProxSensorDamageGearDownlockLeft1, 'Proximity sensor damage downlock left gear #1'],
+    [32, A320Failure.GearProxSensorDamageGearDoorClosedNose1, 'Proximity sensor damage closed nose gear door #1'],
+    [32, A320Failure.GearProxSensorDamageGearDoorOpenedNose2, 'Proximity sensor damage opened nose gear door #2'],
+    [32, A320Failure.GearProxSensorDamageGearDoorClosedRight2, 'Proximity sensor damage closed right gear door #2'],
+    [32, A320Failure.GearProxSensorDamageGearDoorOpenedRight1, 'Proximity sensor damage opened right gear door #1'],
+    [32, A320Failure.GearProxSensorDamageGearDoorClosedLeft2, 'Proximity sensor damage closed left gear door #2'],
+    [32, A320Failure.GearProxSensorDamageGearDoorOpenedLeft1, 'Proximity sensor damage opened left gear door #1'],
+
+    [32, A320Failure.GearActuatorJammedGearNose, 'Nose gear jammed actuator'],
+    [32, A320Failure.GearActuatorJammedGearLeft, 'Main left gear jammed actuator'],
+    [32, A320Failure.GearActuatorJammedGearRight, 'Main right gear jammed actuator'],
+    [32, A320Failure.GearActuatorJammedGearDoorNose, 'Nose gear door jammed actuator'],
+    [32, A320Failure.GearActuatorJammedGearDoorLeft, 'Main left gear door jammed actuator'],
+    [32, A320Failure.GearActuatorJammedGearDoorRight, 'Main right gear door jammed actuator'],
 
     [34, A320Failure.RadioAltimeter1, 'RA 1'],
     [34, A320Failure.RadioAltimeter2, 'RA 2'],

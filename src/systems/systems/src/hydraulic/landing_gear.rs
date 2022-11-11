@@ -2,8 +2,8 @@ use crate::{
     failures::{Failure, FailureType},
     landing_gear::GearSystemSensors,
     shared::{
-        low_pass_filter::LowPassFilter, GearWheel, LgciuGearControl, LgciuId, ProximityDetectorId,
-        SectionPressure,
+        low_pass_filter::LowPassFilter, random_from_range, GearActuatorId, GearWheel,
+        LgciuGearControl, LgciuId, ProximityDetectorId, SectionPressure,
     },
     simulation::{
         InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
@@ -11,8 +11,12 @@ use crate::{
     },
 };
 
-use super::linear_actuator::{
-    Actuator, HydraulicAssemblyController, HydraulicLinearActuatorAssembly, LinearActuatorMode,
+use super::{
+    aerodynamic_model::AerodynamicModel,
+    linear_actuator::{
+        Actuator, HydraulicAssemblyController, HydraulicLinearActuatorAssembly, HydraulicLocking,
+        LinearActuatorMode,
+    },
 };
 
 use uom::si::{f64::*, pressure::psi, ratio::ratio};
@@ -25,6 +29,8 @@ pub trait GearGravityExtension {
 
 pub struct HydraulicGearSystem {
     door_center_position_id: VariableIdentifier,
+    door_center_gear_slaved_position_id: VariableIdentifier,
+
     door_left_position_id: VariableIdentifier,
     door_right_position_id: VariableIdentifier,
 
@@ -51,9 +57,18 @@ impl HydraulicGearSystem {
         nose_gear: HydraulicLinearActuatorAssembly<1>,
         left_gear: HydraulicLinearActuatorAssembly<1>,
         right_gear: HydraulicLinearActuatorAssembly<1>,
+        gear_door_left_aerodynamic: AerodynamicModel,
+        gear_door_right_aerodynamic: AerodynamicModel,
+        gear_door_nose_aerodynamic: AerodynamicModel,
+        gear_left_aerodynamic: AerodynamicModel,
+        gear_right_aerodynamic: AerodynamicModel,
+        gear_nose_aerodynamic: AerodynamicModel,
     ) -> Self {
         Self {
             door_center_position_id: context.get_identifier("GEAR_DOOR_CENTER_POSITION".to_owned()),
+            door_center_gear_slaved_position_id: context
+                .get_identifier("GEAR_CENTER_SMALL_POSITION".to_owned()),
+
             door_left_position_id: context.get_identifier("GEAR_DOOR_LEFT_POSITION".to_owned()),
             door_right_position_id: context.get_identifier("GEAR_DOOR_RIGHT_POSITION".to_owned()),
 
@@ -64,7 +79,7 @@ impl HydraulicGearSystem {
             hydraulic_supply: GearSystemHydraulicSupply::new(),
 
             nose_door_assembly: GearSystemComponentAssembly::new(
-                GearSysComponentId::Door,
+                GearActuatorId::GearDoorNose,
                 false,
                 nose_door,
                 false,
@@ -76,9 +91,10 @@ impl HydraulicGearSystem {
                     ProximityDetectorId::DownlockDoorNose1,
                     ProximityDetectorId::DownlockDoorNose2,
                 ],
+                gear_door_nose_aerodynamic,
             ),
             left_door_assembly: GearSystemComponentAssembly::new(
-                GearSysComponentId::Door,
+                GearActuatorId::GearDoorLeft,
                 false,
                 left_door,
                 false,
@@ -90,9 +106,10 @@ impl HydraulicGearSystem {
                     ProximityDetectorId::DownlockDoorLeft1,
                     ProximityDetectorId::DownlockDoorLeft2,
                 ],
+                gear_door_left_aerodynamic,
             ),
             right_door_assembly: GearSystemComponentAssembly::new(
-                GearSysComponentId::Door,
+                GearActuatorId::GearDoorRight,
                 false,
                 right_door,
                 false,
@@ -104,11 +121,12 @@ impl HydraulicGearSystem {
                     ProximityDetectorId::DownlockDoorRight1,
                     ProximityDetectorId::DownlockDoorRight2,
                 ],
+                gear_door_right_aerodynamic,
             ),
 
             // Nose gear has pull to retract system while main gears have push to retract
             nose_gear_assembly: GearSystemComponentAssembly::new(
-                GearSysComponentId::Gear,
+                GearActuatorId::GearNose,
                 false,
                 nose_gear,
                 true,
@@ -120,9 +138,10 @@ impl HydraulicGearSystem {
                     ProximityDetectorId::DownlockGearNose1,
                     ProximityDetectorId::DownlockGearNose2,
                 ],
+                gear_nose_aerodynamic,
             ),
             left_gear_assembly: GearSystemComponentAssembly::new(
-                GearSysComponentId::Gear,
+                GearActuatorId::GearLeft,
                 true,
                 left_gear,
                 true,
@@ -134,9 +153,10 @@ impl HydraulicGearSystem {
                     ProximityDetectorId::DownlockGearLeft1,
                     ProximityDetectorId::DownlockGearLeft2,
                 ],
+                gear_left_aerodynamic,
             ),
             right_gear_assembly: GearSystemComponentAssembly::new(
-                GearSysComponentId::Gear,
+                GearActuatorId::GearRight,
                 true,
                 right_gear,
                 true,
@@ -148,6 +168,7 @@ impl HydraulicGearSystem {
                     ProximityDetectorId::DownlockGearRight1,
                     ProximityDetectorId::DownlockGearRight2,
                 ],
+                gear_right_aerodynamic,
             ),
         }
     }
@@ -270,6 +291,11 @@ impl SimulationElement for HydraulicGearSystem {
             self.nose_door_assembly.position_normalized(),
         );
         writer.write(
+            &self.door_center_gear_slaved_position_id,
+            self.nose_gear_assembly.position_normalized(),
+        );
+
+        writer.write(
             &self.door_left_position_id,
             self.left_door_assembly.position_normalized(),
         );
@@ -353,6 +379,18 @@ enum GearSysComponentId {
     Door,
     Gear,
 }
+impl From<GearActuatorId> for GearSysComponentId {
+    fn from(id: GearActuatorId) -> Self {
+        match id {
+            GearActuatorId::GearDoorLeft
+            | GearActuatorId::GearDoorRight
+            | GearActuatorId::GearDoorNose => GearSysComponentId::Door,
+            GearActuatorId::GearLeft | GearActuatorId::GearRight | GearActuatorId::GearNose => {
+                GearSysComponentId::Gear
+            }
+        }
+    }
+}
 
 struct GearSystemComponentAssembly {
     component_id: GearSysComponentId,
@@ -363,6 +401,8 @@ struct GearSystemComponentAssembly {
     uplock_proximity_detectors: [ProximityDetector; 2],
     hydraulic_uplock: HydraulicLock,
     hydraulic_downlock: Option<HydraulicLock>,
+
+    aerodynamic_model: AerodynamicModel,
 }
 impl GearSystemComponentAssembly {
     const OPENED_PROXIMITY_DETECTOR_MOUNTING_POSITION_RATIO: f64 = 1.;
@@ -372,17 +412,19 @@ impl GearSystemComponentAssembly {
     const UPLOCKED_PROXIMITY_DETECTOR_TRIG_DISTANCE_RATIO: f64 = 0.01;
 
     fn new(
-        component_id: GearSysComponentId,
+        id: GearActuatorId,
         is_inverted_control: bool,
         hydraulic_assembly: HydraulicLinearActuatorAssembly<1>,
         has_hydraulic_downlock: bool,
         uplock_id: [ProximityDetectorId; 2],
         downlock_id: [ProximityDetectorId; 2],
+        aerodynamic_model: AerodynamicModel,
     ) -> Self {
         let mut obj = Self {
-            component_id,
+            component_id: id.into(),
             is_inverted_control,
             hydraulic_controller: GearSystemComponentHydraulicController::new(
+                id,
                 is_inverted_control,
                 !has_hydraulic_downlock,
             ),
@@ -417,6 +459,7 @@ impl GearSystemComponentAssembly {
             } else {
                 None
             },
+            aerodynamic_model,
         };
 
         obj.update_proximity_detectors();
@@ -434,6 +477,9 @@ impl GearSystemComponentAssembly {
         self.update_proximity_detectors();
 
         self.update_hydraulic_control(gear_system_controller, valves_controller, current_pressure);
+
+        self.aerodynamic_model
+            .update_body(context, self.hydraulic_assembly.body());
 
         self.hydraulic_assembly.update(
             context,
@@ -527,6 +573,7 @@ impl SimulationElement for GearSystemComponentAssembly {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         accept_iterable!(self.uplock_proximity_detectors, visitor);
         accept_iterable!(self.fully_opened_proximity_detectors, visitor);
+        self.hydraulic_controller.accept(visitor);
 
         visitor.visit(self);
     }
@@ -540,9 +587,15 @@ struct GearSystemComponentHydraulicController {
     lock_position: Ratio,
 
     actual_position: Ratio,
+
+    jammed_actuator_failure: Failure,
+    jamming_position: Ratio,
+    jamming_is_effective: bool,
+
+    soft_downlock_is_active: bool,
 }
 impl GearSystemComponentHydraulicController {
-    fn new(is_inverted_control: bool, is_soft_downlock: bool) -> Self {
+    fn new(id: GearActuatorId, is_inverted_control: bool, is_soft_downlock: bool) -> Self {
         Self {
             is_inverted_control,
             is_soft_downlock,
@@ -550,6 +603,10 @@ impl GearSystemComponentHydraulicController {
             should_lock: true,
             lock_position: Ratio::new::<ratio>(0.),
             actual_position: Ratio::new::<ratio>(0.5),
+            jammed_actuator_failure: Failure::new(FailureType::GearActuatorJammed(id)),
+            jamming_position: Ratio::new::<ratio>(random_from_range(0., 1.)),
+            jamming_is_effective: false,
+            soft_downlock_is_active: false,
         }
     }
 
@@ -564,9 +621,9 @@ impl GearSystemComponentHydraulicController {
         self.actual_position = actual_position;
 
         self.requested_position = if should_open {
-            Ratio::new::<ratio>(1.5)
+            Ratio::new::<ratio>(1.1)
         } else {
-            Ratio::new::<ratio>(-0.5)
+            Ratio::new::<ratio>(-0.1)
         };
 
         self.should_lock = actual_position.get::<ratio>() > 0.5 && should_downlock
@@ -577,12 +634,31 @@ impl GearSystemComponentHydraulicController {
         } else {
             Ratio::new::<ratio>(0.)
         };
-    }
-}
-impl HydraulicAssemblyController for GearSystemComponentHydraulicController {
-    fn requested_mode(&self) -> LinearActuatorMode {
-        // TODO if vent valve opened -> damping else -> valve closed mode
 
+        self.update_soft_downlock();
+
+        self.update_jamming();
+    }
+
+    fn update_jamming(&mut self) {
+        // If jamming and actuator reaches jammed position, we activate the jamming
+        if self.jammed_actuator_failure.is_active()
+            && (self.jamming_position - self.actual_position)
+                .abs()
+                .get::<ratio>()
+                < 0.2
+        {
+            self.jamming_is_effective = true;
+        };
+
+        if !self.jammed_actuator_failure.is_active() {
+            self.jamming_is_effective = false;
+            // Taking a new random jamming position when failure is switched off for more new fun later
+            self.jamming_position = Ratio::new::<ratio>(random_from_range(0., 1.));
+        }
+    }
+
+    fn update_soft_downlock(&mut self) {
         if self.is_soft_downlock {
             if (!self.is_inverted_control
                 && self.requested_position.get::<ratio>() >= 1.
@@ -591,10 +667,29 @@ impl HydraulicAssemblyController for GearSystemComponentHydraulicController {
                     && self.requested_position.get::<ratio>() <= 0.
                     && self.actual_position.get::<ratio>() <= 0.02)
             {
-                LinearActuatorMode::ClosedValves
-            } else {
-                LinearActuatorMode::PositionControl
+                self.soft_downlock_is_active = true;
             }
+
+            // We disable soft locking only if position demand is far away from current position
+            if self.soft_downlock_is_active
+                && (self.requested_position - self.actual_position)
+                    .abs()
+                    .get::<ratio>()
+                    > 0.5
+            {
+                self.soft_downlock_is_active = false;
+            }
+        }
+    }
+}
+impl HydraulicAssemblyController for GearSystemComponentHydraulicController {
+    fn requested_mode(&self) -> LinearActuatorMode {
+        if self.jamming_is_effective {
+            return LinearActuatorMode::ClosedValves;
+        }
+
+        if self.soft_downlock_is_active {
+            LinearActuatorMode::ClosedValves
         } else {
             LinearActuatorMode::PositionControl
         }
@@ -618,6 +713,14 @@ impl HydraulicAssemblyController for GearSystemComponentHydraulicController {
         } else {
             self.lock_position
         }
+    }
+}
+impl HydraulicLocking for GearSystemComponentHydraulicController {}
+impl SimulationElement for GearSystemComponentHydraulicController {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.jammed_actuator_failure.accept(visitor);
+
+        visitor.visit(self);
     }
 }
 
@@ -914,7 +1017,7 @@ mod tests {
                 loop_updater: MaxStepLoop::new(time_step),
 
                 door_assembly: GearSystemComponentAssembly::new(
-                    GearSysComponentId::Door,
+                    GearActuatorId::GearDoorNose,
                     false,
                     door_hydraulic_assembly,
                     false,
@@ -926,9 +1029,10 @@ mod tests {
                         ProximityDetectorId::DownlockDoorRight1,
                         ProximityDetectorId::DownlockDoorRight2,
                     ],
+                    gear_door_aero(),
                 ),
                 gear_assembly: GearSystemComponentAssembly::new(
-                    GearSysComponentId::Gear,
+                    GearActuatorId::GearNose,
                     true,
                     gear_hydraulic_assembly,
                     true,
@@ -940,6 +1044,7 @@ mod tests {
                         ProximityDetectorId::DownlockGearRight1,
                         ProximityDetectorId::DownlockGearRight2,
                     ],
+                    gear_aero(),
                 ),
 
                 component_controller: TestGearSystemController::new(),
@@ -1382,18 +1487,21 @@ mod tests {
             1,
             Length::new::<meter>(0.055),
             Length::new::<meter>(0.03),
-            VolumeRate::new::<gallon_per_second>(0.08),
+            VolumeRate::new::<gallon_per_second>(0.09),
             20000.,
             5000.,
             2000.,
-            28000.,
+            9000.,
             Duration::from_millis(100),
-            [0.5, 1., 1., 1., 1., 0.5],
-            [0., 0.2, 0.21, 0.79, 0.8, 1.],
+            [1., 1., 1., 1., 0.5, 0.5],
+            [0.5, 0.5, 1., 1., 1., 1.],
+            [0., 0.15, 0.16, 0.84, 0.85, 1.],
             DEFAULT_P_GAIN,
             DEFAULT_I_GAIN,
             DEFAULT_FORCE_GAIN,
             true,
+            false,
+            None,
         )
     }
 
@@ -1407,6 +1515,7 @@ mod tests {
         LinearActuatedRigidBodyOnHingeAxis::new(
             Mass::new::<kilogram>(50.),
             size,
+            cg_offset,
             cg_offset,
             control_arm,
             anchor,
@@ -1426,6 +1535,26 @@ mod tests {
         HydraulicLinearActuatorAssembly::new([actuator], rigid_body)
     }
 
+    fn gear_door_aero() -> AerodynamicModel {
+        AerodynamicModel::new(
+            &main_gear_door_right_body(true),
+            Some(Vector3::new(-1., 0., 0.)),
+            None,
+            None,
+            Ratio::new::<ratio>(1.0),
+        )
+    }
+
+    fn gear_aero() -> AerodynamicModel {
+        AerodynamicModel::new(
+            &main_gear_right_body(true),
+            Some(Vector3::new(-1., 0., 0.)),
+            None,
+            None,
+            Ratio::new::<ratio>(1.0),
+        )
+    }
+
     fn main_gear_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
         const DEFAULT_I_GAIN: f64 = 5.;
         const DEFAULT_P_GAIN: f64 = 0.05;
@@ -1436,18 +1565,21 @@ mod tests {
             1,
             Length::new::<meter>(0.145),
             Length::new::<meter>(0.105),
-            VolumeRate::new::<gallon_per_second>(0.15),
+            VolumeRate::new::<gallon_per_second>(0.17),
             800000.,
             15000.,
             50000.,
             1200000.,
             Duration::from_millis(100),
-            [1., 1., 1., 1., 1., 1.],
-            [0., 0.2, 0.21, 0.79, 0.8, 1.],
+            [1., 1., 1., 1., 0.5, 0.5],
+            [0.5, 0.5, 1., 1., 1., 1.],
+            [0., 0.1, 0.11, 0.89, 0.9, 1.],
             DEFAULT_P_GAIN,
             DEFAULT_I_GAIN,
             DEFAULT_FORCE_GAIN,
             true,
+            false,
+            None,
         )
     }
 
@@ -1461,6 +1593,7 @@ mod tests {
         LinearActuatedRigidBodyOnHingeAxis::new(
             Mass::new::<kilogram>(700.),
             size,
+            cg_offset,
             cg_offset,
             control_arm,
             anchor,

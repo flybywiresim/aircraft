@@ -4,22 +4,25 @@
 #include <SimConnect.h>
 
 #include "AdditionalData.h"
-#include "AnimationAileronHandler.h"
 #include "AutopilotLaws.h"
 #include "AutopilotStateMachine.h"
 #include "Autothrust.h"
 #include "CalculatedRadioReceiver.h"
-#include "ElevatorTrimHandler.h"
 #include "EngineData.h"
 #include "FlightDataRecorder.h"
-#include "FlyByWire.h"
 #include "InterpolatingLookupTable.h"
 #include "LocalVariable.h"
 #include "RateLimiter.h"
-#include "RudderTrimHandler.h"
 #include "SimConnectInterface.h"
 #include "SpoilersHandler.h"
 #include "ThrottleAxisMapping.h"
+#include "elac/Elac.h"
+#include "fac/Fac.h"
+#include "failures/FailuresConsumer.h"
+#include "fcdc/Fcdc.h"
+#include "sec/Sec.h"
+
+#include "utils/HysteresisNode.h"
 
 class FlyByWireInterface {
  public:
@@ -39,6 +42,8 @@ class FlyByWireInterface {
   double previousSimulationTime = 0;
   double calculatedSampleTime = 0;
 
+  double monotonicTime = 0;
+
   int currentApproachCapability = 0;
   double previousApproachCapabilityUpdateTime = 0;
 
@@ -51,12 +56,18 @@ class FlyByWireInterface {
   bool autopilotStateMachineEnabled = false;
   bool autopilotLawsEnabled = false;
   bool flyByWireEnabled = false;
+  int elacDisabled = -1;
+  int secDisabled = -1;
+  int facDisabled = -1;
   bool autoThrustEnabled = false;
   bool tailstrikeProtectionEnabled = true;
 
   bool wasTcasEngaged = false;
 
   bool pauseDetected = false;
+  // As fdr is not written when paused 'wasPaused' is used to detect previous pause state
+  // changes and record them in fdr
+  bool wasPaused = false;
   bool wasInSlew = false;
 
   double autothrustThrustLimitReverse = -45;
@@ -73,17 +84,23 @@ class FlyByWireInterface {
   double flightControlsKeyChangeElevator = 0.0;
   double flightControlsKeyChangeRudder = 0.0;
 
+  double rudderTravelLimiterPosition = 25;
+
   bool disableXboxCompatibilityRudderAxisPlusMinus = false;
 
   bool clientDataEnabled = false;
+
+  bool last_fd1_active = false;
+  bool last_fd2_active = false;
+
+  bool last_ls1_active = false;
+  bool last_ls2_active = false;
 
   FlightDataRecorder flightDataRecorder;
 
   SimConnectInterface simConnectInterface;
 
-  FlyByWireModelClass flyByWire;
-  FlyByWireModelClass::ExternalInputs_FlyByWire_T flyByWireInput = {};
-  fbw_output flyByWireOutput;
+  FailuresConsumer failuresConsumer;
 
   AutopilotStateMachineModelClass autopilotStateMachine;
   AutopilotStateMachineModelClass::ExternalInputs_AutopilotStateMachine_T autopilotStateMachineInput = {};
@@ -96,6 +113,36 @@ class FlyByWireInterface {
   AutothrustModelClass autoThrust;
   AutothrustModelClass::ExternalInputs_Autothrust_T autoThrustInput = {};
   athr_output autoThrustOutput;
+
+  base_ra_bus raBusOutputs[2] = {};
+
+  base_lgciu_bus lgciuBusOutputs[2] = {};
+
+  base_sfcc_bus sfccBusOutputs[2] = {};
+
+  base_fmgc_b_bus fmgcBBusOutputs = {};
+
+  base_adr_bus adrBusOutputs[3] = {};
+  base_ir_bus irBusOutputs[3] = {};
+
+  Elac elacs[2] = {Elac(true), Elac(false)};
+  base_elac_discrete_outputs elacsDiscreteOutputs[2] = {};
+  base_elac_analog_outputs elacsAnalogOutputs[2] = {};
+  base_elac_out_bus elacsBusOutputs[2] = {};
+
+  Sec secs[3] = {Sec(true, false), Sec(false, false), Sec(false, true)};
+  base_sec_discrete_outputs secsDiscreteOutputs[3] = {};
+  base_sec_analog_outputs secsAnalogOutputs[3] = {};
+  base_sec_out_bus secsBusOutputs[3] = {};
+
+  Fcdc fcdcs[2] = {Fcdc(true), Fcdc(false)};
+  FcdcDiscreteOutputs fcdcsDiscreteOutputs[2] = {};
+  base_fcdc_bus fcdcsBusOutputs[2] = {};
+
+  Fac facs[2] = {Fac(true), Fac(false)};
+  base_fac_discrete_outputs facsDiscreteOutputs[2] = {};
+  base_fac_analog_outputs facsAnalogOutputs[2] = {};
+  base_fac_bus facsBusOutputs[2] = {};
 
   InterpolatingLookupTable throttleLookupTable;
 
@@ -123,6 +170,7 @@ class FlyByWireInterface {
 
   std::unique_ptr<LocalVariable> idPerformanceWarningActive;
 
+  std::unique_ptr<LocalVariable> idTrackingMode;
   std::unique_ptr<LocalVariable> idExternalOverride;
 
   std::unique_ptr<LocalVariable> idFdrEvent;
@@ -132,11 +180,6 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idRudderPedalPosition;
   std::unique_ptr<LocalVariable> idRudderPedalAnimationPosition;
   std::unique_ptr<LocalVariable> idAutopilotNosewheelDemand;
-
-  std::unique_ptr<LocalVariable> idSpeedAlphaProtection;
-  std::unique_ptr<LocalVariable> idSpeedAlphaMax;
-
-  std::unique_ptr<LocalVariable> idAlphaMaxPercentage;
 
   std::unique_ptr<LocalVariable> idFmaLateralMode;
   std::unique_ptr<LocalVariable> idFmaLateralArmed;
@@ -157,9 +200,6 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFlightDirectorBank;
   std::unique_ptr<LocalVariable> idFlightDirectorPitch;
   std::unique_ptr<LocalVariable> idFlightDirectorYaw;
-
-  std::unique_ptr<LocalVariable> idBetaTarget;
-  std::unique_ptr<LocalVariable> idBetaTargetActive;
 
   std::unique_ptr<LocalVariable> idAutopilotAutolandWarning;
 
@@ -306,17 +346,9 @@ class FlyByWireInterface {
 
   std::unique_ptr<LocalVariable> idSpoilersArmed;
   std::unique_ptr<LocalVariable> idSpoilersHandlePosition;
-  std::unique_ptr<LocalVariable> idSpoilersGroundSpoilersActive;
   std::shared_ptr<SpoilersHandler> spoilersHandler;
-  std::unique_ptr<LocalVariable> idSpoilersPositionLeft;
-  std::unique_ptr<LocalVariable> idSpoilersPositionRight;
 
-  std::shared_ptr<ElevatorTrimHandler> elevatorTrimHandler;
-  std::shared_ptr<RudderTrimHandler> rudderTrimHandler;
-
-  std::unique_ptr<LocalVariable> idAileronPositionLeft;
-  std::unique_ptr<LocalVariable> idAileronPositionRight;
-  std::shared_ptr<AnimationAileronHandler> animationAileronHandler;
+  std::unique_ptr<LocalVariable> idRudderPosition;
 
   std::unique_ptr<LocalVariable> idRadioReceiverUsageEnabled;
   std::unique_ptr<LocalVariable> idRadioReceiverLocalizerValid;
@@ -328,6 +360,197 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idRealisticTillerEnabled;
   std::unique_ptr<LocalVariable> idTillerHandlePosition;
   std::unique_ptr<LocalVariable> idNoseWheelPosition;
+
+  std::unique_ptr<LocalVariable> idSyncFoEfisEnabled;
+
+  std::unique_ptr<LocalVariable> idLs1Active;
+  std::unique_ptr<LocalVariable> idLs2Active;
+  std::unique_ptr<LocalVariable> idIsisLsActive;
+
+  std::unique_ptr<LocalVariable> idWingAntiIce;
+
+  // RA bus inputs
+  std::unique_ptr<LocalVariable> idRadioAltimeterHeight[2];
+
+  // LGCIU inputs
+  std::unique_ptr<LocalVariable> idLgciuNoseGearCompressed[2];
+  std::unique_ptr<LocalVariable> idLgciuLeftMainGearCompressed[2];
+  std::unique_ptr<LocalVariable> idLgciuRightMainGearCompressed[2];
+  std::unique_ptr<LocalVariable> idLgciuDiscreteWord1[2];
+  std::unique_ptr<LocalVariable> idLgciuDiscreteWord2[2];
+  std::unique_ptr<LocalVariable> idLgciuDiscreteWord3[2];
+
+  // SFCC inputs
+  std::unique_ptr<LocalVariable> idSfccSlatFlapComponentStatusWord;
+  std::unique_ptr<LocalVariable> idSfccSlatFlapSystemStatusWord;
+  std::unique_ptr<LocalVariable> idSfccSlatFlapActualPositionWord;
+  std::unique_ptr<LocalVariable> idSfccSlatActualPositionWord;
+  std::unique_ptr<LocalVariable> idSfccFlapActualPositionWord;
+
+  // ADR bus inputs
+  std::unique_ptr<LocalVariable> idAdrAltitudeCorrected[3];
+  std::unique_ptr<LocalVariable> idAdrMach[3];
+  std::unique_ptr<LocalVariable> idAdrAirspeedComputed[3];
+  std::unique_ptr<LocalVariable> idAdrAirspeedTrue[3];
+  std::unique_ptr<LocalVariable> idAdrVerticalSpeed[3];
+  std::unique_ptr<LocalVariable> idAdrAoaCorrected[3];
+  std::unique_ptr<LocalVariable> idAdrCorrectedAverageStaticPressure[3];
+
+  // IR bus inputs
+  std::unique_ptr<LocalVariable> idIrLatitude[3];
+  std::unique_ptr<LocalVariable> idIrLongitude[3];
+  std::unique_ptr<LocalVariable> idIrGroundSpeed[3];
+  std::unique_ptr<LocalVariable> idIrWindSpeed[3];
+  std::unique_ptr<LocalVariable> idIrWindDirectionTrue[3];
+  std::unique_ptr<LocalVariable> idIrTrackAngleMagnetic[3];
+  std::unique_ptr<LocalVariable> idIrHeadingMagnetic[3];
+  std::unique_ptr<LocalVariable> idIrDriftAngle[3];
+  std::unique_ptr<LocalVariable> idIrFlightPathAngle[3];
+  std::unique_ptr<LocalVariable> idIrPitchAngle[3];
+  std::unique_ptr<LocalVariable> idIrRollAngle[3];
+  std::unique_ptr<LocalVariable> idIrBodyPitchRate[3];
+  std::unique_ptr<LocalVariable> idIrBodyRollRate[3];
+  std::unique_ptr<LocalVariable> idIrBodyYawRate[3];
+  std::unique_ptr<LocalVariable> idIrBodyLongAccel[3];
+  std::unique_ptr<LocalVariable> idIrBodyLatAccel[3];
+  std::unique_ptr<LocalVariable> idIrBodyNormalAccel[3];
+  std::unique_ptr<LocalVariable> idIrTrackAngleRate[3];
+  std::unique_ptr<LocalVariable> idIrPitchAttRate[3];
+  std::unique_ptr<LocalVariable> idIrRollAttRate[3];
+  std::unique_ptr<LocalVariable> idIrInertialVerticalSpeed[3];
+
+  // FCDC bus label Lvars
+  std::unique_ptr<LocalVariable> idFcdcDiscreteWord1[2];
+  std::unique_ptr<LocalVariable> idFcdcDiscreteWord2[2];
+  std::unique_ptr<LocalVariable> idFcdcDiscreteWord3[2];
+  std::unique_ptr<LocalVariable> idFcdcDiscreteWord4[2];
+  std::unique_ptr<LocalVariable> idFcdcDiscreteWord5[2];
+  std::unique_ptr<LocalVariable> idFcdcCaptRollCommand[2];
+  std::unique_ptr<LocalVariable> idFcdcFoRollCommand[2];
+  std::unique_ptr<LocalVariable> idFcdcCaptPitchCommand[2];
+  std::unique_ptr<LocalVariable> idFcdcFoPitchCommand[2];
+  std::unique_ptr<LocalVariable> idFcdcRudderPedalPos[2];
+  std::unique_ptr<LocalVariable> idFcdcAileronLeftPos[2];
+  std::unique_ptr<LocalVariable> idFcdcElevatorLeftPos[2];
+  std::unique_ptr<LocalVariable> idFcdcAileronRightPos[2];
+  std::unique_ptr<LocalVariable> idFcdcElevatorRightPos[2];
+  std::unique_ptr<LocalVariable> idFcdcElevatorTrimPos[2];
+  std::unique_ptr<LocalVariable> idFcdcSpoilerLeft1Pos[2];
+  std::unique_ptr<LocalVariable> idFcdcSpoilerLeft2Pos[2];
+  std::unique_ptr<LocalVariable> idFcdcSpoilerLeft3Pos[2];
+  std::unique_ptr<LocalVariable> idFcdcSpoilerLeft4Pos[2];
+  std::unique_ptr<LocalVariable> idFcdcSpoilerLeft5Pos[2];
+  std::unique_ptr<LocalVariable> idFcdcSpoilerRight1Pos[2];
+  std::unique_ptr<LocalVariable> idFcdcSpoilerRight2Pos[2];
+  std::unique_ptr<LocalVariable> idFcdcSpoilerRight3Pos[2];
+  std::unique_ptr<LocalVariable> idFcdcSpoilerRight4Pos[2];
+  std::unique_ptr<LocalVariable> idFcdcSpoilerRight5Pos[2];
+
+  // FCDC discrete output Lvars
+  std::unique_ptr<LocalVariable> idFcdcPriorityCaptGreen[2];
+  std::unique_ptr<LocalVariable> idFcdcPriorityCaptRed[2];
+  std::unique_ptr<LocalVariable> idFcdcPriorityFoGreen[2];
+  std::unique_ptr<LocalVariable> idFcdcPriorityFoRed[2];
+
+  // fault input Lvars
+  std::unique_ptr<LocalVariable> idElevFaultLeft[2];
+  std::unique_ptr<LocalVariable> idElevFaultRight[2];
+  std::unique_ptr<LocalVariable> idAilFaultLeft[2];
+  std::unique_ptr<LocalVariable> idAilFaultRight[2];
+  std::unique_ptr<LocalVariable> idSplrFaultLeft[5];
+  std::unique_ptr<LocalVariable> idSplrFaultRight[5];
+
+  // THS Override Signal LVar
+  std::unique_ptr<LocalVariable> idThsOverrideActive;
+
+  // ELAC discrete input Lvars
+  std::unique_ptr<LocalVariable> idElacPushbuttonPressed[2];
+
+  // ELAC discrete output Lvars
+  std::unique_ptr<LocalVariable> idElacDigitalOpValidated[2];
+
+  // SEC discrete input Lvars
+  std::unique_ptr<LocalVariable> idSecPushbuttonPressed[3];
+
+  // SEC discrete output Lvars
+  std::unique_ptr<LocalVariable> idSecFaultLightOn[3];
+  std::unique_ptr<LocalVariable> idSecGroundSpoilersOut[3];
+
+  // Flight controls solenoid valve energization Lvars
+  std::unique_ptr<LocalVariable> idLeftAileronSolenoidEnergized[2];
+  std::unique_ptr<LocalVariable> idLeftAileronCommandedPosition[2];
+  std::unique_ptr<LocalVariable> idRightAileronSolenoidEnergized[2];
+  std::unique_ptr<LocalVariable> idRightAileronCommandedPosition[2];
+  std::unique_ptr<LocalVariable> idLeftSpoilerCommandedPosition[5];
+  std::unique_ptr<LocalVariable> idRightSpoilerCommandedPosition[5];
+  std::unique_ptr<LocalVariable> idLeftElevatorSolenoidEnergized[2];
+  std::unique_ptr<LocalVariable> idLeftElevatorCommandedPosition[2];
+  std::unique_ptr<LocalVariable> idRightElevatorSolenoidEnergized[2];
+  std::unique_ptr<LocalVariable> idRightElevatorCommandedPosition[2];
+  std::unique_ptr<LocalVariable> idTHSActiveModeCommanded[3];
+  std::unique_ptr<LocalVariable> idTHSCommandedPosition[3];
+  std::unique_ptr<LocalVariable> idYawDamperSolenoidEnergized[2];
+  std::unique_ptr<LocalVariable> idYawDamperCommandedPosition[2];
+  std::unique_ptr<LocalVariable> idRudderTrimActiveModeCommanded[2];
+  std::unique_ptr<LocalVariable> idRudderTrimCommandedPosition[2];
+  std::unique_ptr<LocalVariable> idRudderTravelLimitActiveModeCommanded[2];
+  std::unique_ptr<LocalVariable> idRudderTravelLimCommandedPosition[2];
+
+  // FAC discrete input Lvars
+  std::unique_ptr<LocalVariable> idFacPushbuttonPressed[2];
+  // FAC discrete output Lvars
+  std::unique_ptr<LocalVariable> idFacHealthy[2];
+
+  std::unique_ptr<LocalVariable> idFacDiscreteWord1[2];
+  std::unique_ptr<LocalVariable> idFacGammaA[2];
+  std::unique_ptr<LocalVariable> idFacGammaT[2];
+  std::unique_ptr<LocalVariable> idFacWeight[2];
+  std::unique_ptr<LocalVariable> idFacCenterOfGravity[2];
+  std::unique_ptr<LocalVariable> idFacSideslipTarget[2];
+  std::unique_ptr<LocalVariable> idFacSlatAngle[2];
+  std::unique_ptr<LocalVariable> idFacFlapAngle[2];
+  std::unique_ptr<LocalVariable> idFacDiscreteWord2[2];
+  std::unique_ptr<LocalVariable> idFacRudderTravelLimitCommand[2];
+  std::unique_ptr<LocalVariable> idFacDeltaRYawDamperVoted[2];
+  std::unique_ptr<LocalVariable> idFacEstimatedSideslip[2];
+  std::unique_ptr<LocalVariable> idFacVAlphaLim[2];
+  std::unique_ptr<LocalVariable> idFacVLs[2];
+  std::unique_ptr<LocalVariable> idFacVStall[2];
+  std::unique_ptr<LocalVariable> idFacVAlphaProt[2];
+  std::unique_ptr<LocalVariable> idFacVStallWarn[2];
+  std::unique_ptr<LocalVariable> idFacSpeedTrend[2];
+  std::unique_ptr<LocalVariable> idFacV3[2];
+  std::unique_ptr<LocalVariable> idFacV4[2];
+  std::unique_ptr<LocalVariable> idFacVMan[2];
+  std::unique_ptr<LocalVariable> idFacVMax[2];
+  std::unique_ptr<LocalVariable> idFacVFeNext[2];
+  std::unique_ptr<LocalVariable> idFacDiscreteWord3[2];
+  std::unique_ptr<LocalVariable> idFacDiscreteWord4[2];
+  std::unique_ptr<LocalVariable> idFacDiscreteWord5[2];
+  std::unique_ptr<LocalVariable> idFacDeltaRRudderTrim[2];
+  std::unique_ptr<LocalVariable> idFacRudderTrimPos[2];
+
+  std::unique_ptr<LocalVariable> idLeftAileronPosition;
+  std::unique_ptr<LocalVariable> idRightAileronPosition;
+  std::unique_ptr<LocalVariable> idLeftElevatorPosition;
+  std::unique_ptr<LocalVariable> idRightElevatorPosition;
+  std::unique_ptr<LocalVariable> idLeftSpoilerPosition[5];
+  std::unique_ptr<LocalVariable> idRightSpoilerPosition[5];
+
+  std::unique_ptr<LocalVariable> idElecDcBus2Powered;
+  std::unique_ptr<LocalVariable> idElecDcEssShedBusPowered;
+  std::unique_ptr<LocalVariable> idElecDcEssBusPowered;
+  std::unique_ptr<LocalVariable> idElecBat1HotBusPowered;
+
+  std::unique_ptr<LocalVariable> idHydYellowSystemPressure;
+  std::unique_ptr<LocalVariable> idHydGreenSystemPressure;
+  std::unique_ptr<LocalVariable> idHydBlueSystemPressure;
+  std::unique_ptr<LocalVariable> idHydYellowPressurised;
+  std::unique_ptr<LocalVariable> idHydGreenPressurised;
+  std::unique_ptr<LocalVariable> idHydBluePressurised;
+
+  std::unique_ptr<LocalVariable> idCaptPriorityButtonPressed;
+  std::unique_ptr<LocalVariable> idFoPriorityButtonPressed;
 
   void loadConfiguration();
   void setupLocalVariables();
@@ -349,7 +572,27 @@ class FlyByWireInterface {
   bool updateFlyByWire(double sampleTime);
   bool updateAutothrust(double sampleTime);
 
+  bool updateRa(int raIndex);
+
+  bool updateLgciu(int lgciuIndex);
+
+  bool updateSfcc(int sfccIndex);
+
+  bool updateAdirs(int adirsIndex);
+
+  bool updateElac(double sampleTime, int elacIndex);
+
+  bool updateSec(double sampleTime, int secIndex);
+
+  bool updateFcdc(double sampleTime, int fcdcIndex);
+
+  bool updateFac(double sampleTime, int facIndex);
+
+  bool updateServoSolenoidStatus();
+
   bool updateSpoilers(double sampleTime);
+
+  bool updateFoSide(double sampleTime);
 
   bool updateAltimeterSetting(double sampleTime);
 

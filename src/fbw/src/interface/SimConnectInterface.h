@@ -5,12 +5,14 @@
 #include <string>
 #include <vector>
 
-#include "../ElevatorTrimHandler.h"
 #include "../LocalVariable.h"
-#include "../RudderTrimHandler.h"
 #include "../SpoilersHandler.h"
 #include "../ThrottleAxisMapping.h"
 #include "SimConnectData.h"
+
+#include "../model/ElacComputer_types.h"
+#include "../model/FacComputer_types.h"
+#include "../model/SecComputer_types.h"
 
 class SimConnectInterface {
  public:
@@ -36,10 +38,6 @@ class SimConnectInterface {
     ELEVATOR_SET,
     ELEV_DOWN,
     ELEV_UP,
-    ELEV_TRIM_DN,
-    ELEV_TRIM_UP,
-    ELEVATOR_TRIM_SET,
-    AXIS_ELEV_TRIM_SET,
     AP_MASTER,
     AUTOPILOT_OFF,
     AUTOPILOT_ON,
@@ -187,10 +185,11 @@ class SimConnectInterface {
                bool autopilotStateMachineEnabled,
                bool autopilotLawsEnabled,
                bool flyByWireEnabled,
+               int elacDisabled,
+               int secDisabled,
+               int facDisabled,
                const std::vector<std::shared_ptr<ThrottleAxisMapping>>& throttleAxis,
                std::shared_ptr<SpoilersHandler> spoilersHandler,
-               std::shared_ptr<ElevatorTrimHandler> elevatorTrimHandler,
-               std::shared_ptr<RudderTrimHandler> rudderTrimHandler,
                double keyChangeAileron,
                double keyChangeElevator,
                double keyChangeRudder,
@@ -208,10 +207,6 @@ class SimConnectInterface {
   bool requestData();
 
   bool readData();
-
-  bool sendData(SimOutput output);
-
-  bool sendData(SimOutputEtaTrim output);
 
   bool sendData(SimOutputZetaTrim output);
 
@@ -233,6 +228,8 @@ class SimConnectInterface {
 
   bool setClientDataLocalVariablesAutothrust(ClientDataLocalVariablesAutothrust output);
 
+  void resetSimInputRudderTrim();
+
   void resetSimInputAutopilot();
 
   void resetSimInputThrottles();
@@ -242,6 +239,8 @@ class SimConnectInterface {
   SimInput getSimInput();
 
   SimInputAutopilot getSimInputAutopilot();
+
+  SimInputRudderTrim getSimInputRudderTrim();
 
   SimInputThrottles getSimInputThrottles();
 
@@ -257,6 +256,37 @@ class SimConnectInterface {
 
   bool setClientDataFlyByWire(ClientDataFlyByWire output);
   ClientDataFlyByWire getClientDataFlyByWire();
+
+  bool setClientDataElacDiscretes(base_elac_discrete_inputs output);
+  bool setClientDataElacAnalog(base_elac_analog_inputs output);
+  bool setClientDataElacBusInput(base_elac_out_bus output, int elacIndex);
+
+  base_elac_discrete_outputs getClientDataElacDiscretesOutput();
+  base_elac_analog_outputs getClientDataElacAnalogsOutput();
+  base_elac_out_bus getClientDataElacBusOutput();
+
+  bool setClientDataSecDiscretes(base_sec_discrete_inputs output);
+  bool setClientDataSecAnalog(base_sec_analog_inputs output);
+  bool setClientDataSecBus(base_sec_out_bus output, int secIndex);
+
+  base_sec_discrete_outputs getClientDataSecDiscretesOutput();
+  base_sec_analog_outputs getClientDataSecAnalogsOutput();
+  base_sec_out_bus getClientDataSecBusOutput();
+
+  bool setClientDataFacDiscretes(base_fac_discrete_inputs output);
+  bool setClientDataFacAnalog(base_fac_analog_inputs output);
+  bool setClientDataFacBus(base_fac_bus output, int facIndex);
+
+  base_fac_discrete_outputs getClientDataFacDiscretesOutput();
+  base_fac_analog_outputs getClientDataFacAnalogsOutput();
+  base_fac_bus getClientDataFacBusOutput();
+
+  bool setClientDataAdr(base_adr_bus output, int adrIndex);
+  bool setClientDataIr(base_ir_bus output, int irIndex);
+  bool setClientDataRa(base_ra_bus output, int raIndex);
+  bool setClientDataLgciu(base_lgciu_bus output, int lgciuIndex);
+  bool setClientDataSfcc(base_sfcc_bus output, int sfccIndex);
+  bool setClientDataFmgcB(base_fmgc_b_bus output, int fmgcIndex);
 
   void setLoggingFlightControlsEnabled(bool enabled);
   bool getLoggingFlightControlsEnabled();
@@ -274,8 +304,38 @@ class SimConnectInterface {
     AUTOPILOT_STATE_MACHINE,
     AUTOPILOT_LAWS,
     AUTOTHRUST,
-    FLY_BY_WIRE_INPUT,
-    FLY_BY_WIRE,
+    ELAC_DISCRETE_INPUTS,
+    ELAC_ANALOG_INPUTS,
+    ELAC_DISCRETE_OUTPUTS,
+    ELAC_ANALOG_OUTPUTS,
+    ELAC_1_BUS_OUTPUT,
+    ELAC_2_BUS_OUTPUT,
+    SEC_DISCRETE_INPUTS,
+    SEC_ANALOG_INPUTS,
+    SEC_DISCRETE_OUTPUTS,
+    SEC_ANALOG_OUTPUTS,
+    SEC_1_BUS_OUTPUT,
+    SEC_2_BUS_OUTPUT,
+    FAC_DISCRETE_INPUTS,
+    FAC_ANALOG_INPUTS,
+    FAC_DISCRETE_OUTPUTS,
+    FAC_ANALOG_OUTPUTS,
+    FAC_1_BUS_OUTPUT,
+    FAC_2_BUS_OUTPUT,
+    ADR_1_INPUTS,
+    ADR_2_INPUTS,
+    ADR_3_INPUTS,
+    IR_1_INPUTS,
+    IR_2_INPUTS,
+    IR_3_INPUTS,
+    RA_1_BUS,
+    RA_2_BUS,
+    LGCIU_1_BUS,
+    LGCIU_2_BUS,
+    SFCC_1_BUS,
+    SFCC_2_BUS,
+    FMGC_1_B_BUS,
+    FMGC_2_B_BUS,
     LOCAL_VARIABLES,
     LOCAL_VARIABLES_AUTOTHRUST,
   };
@@ -290,6 +350,10 @@ class SimConnectInterface {
   bool limitSimulationRateByPerformance = true;
   bool clientDataEnabled = false;
 
+  int elacDisabled = -1;
+  int secDisabled = -1;
+  int facDisabled = -1;
+
   // change to non-static when aileron events can be processed via SimConnect
   static bool loggingFlightControlsEnabled;
   bool loggingThrottlesEnabled = false;
@@ -297,19 +361,30 @@ class SimConnectInterface {
   SimData simData = {};
   // change to non-static when aileron events can be processed via SimConnect
   static SimInput simInput;
+  SimInputRudderTrim simInputRudderTrim = {};
   SimInputAutopilot simInputAutopilot = {};
 
   SimInputThrottles simInputThrottles = {};
   std::vector<std::shared_ptr<ThrottleAxisMapping>> throttleAxis;
 
   std::shared_ptr<SpoilersHandler> spoilersHandler;
-  std::shared_ptr<ElevatorTrimHandler> elevatorTrimHandler;
-  std::shared_ptr<RudderTrimHandler> rudderTrimHandler;
 
   ClientDataAutopilotStateMachine clientDataAutopilotStateMachine = {};
   ClientDataAutopilotLaws clientDataAutopilotLaws = {};
   ClientDataAutothrust clientDataAutothrust = {};
   ClientDataFlyByWire clientDataFlyByWire = {};
+
+  base_elac_discrete_outputs clientDataElacDiscreteOutputs = {};
+  base_elac_analog_outputs clientDataElacAnalogOutputs = {};
+  base_elac_out_bus clientDataElacBusOutputs = {};
+
+  base_sec_discrete_outputs clientDataSecDiscreteOutputs = {};
+  base_sec_analog_outputs clientDataSecAnalogOutputs = {};
+  base_sec_out_bus clientDataSecBusOutputs = {};
+
+  base_fac_discrete_outputs clientDataFacDiscreteOutputs = {};
+  base_fac_analog_outputs clientDataFacAnalogOutputs = {};
+  base_fac_bus clientDataFacBusOutputs = {};
 
   // change to non-static when aileron events can be processed via SimConnect
   static double flightControlsKeyChangeAileron;

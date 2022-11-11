@@ -120,6 +120,7 @@ export const OilComponent = () => {
 
 export const PressureComponent = () => {
     const [landingElevDialPosition] = useSimVar('L:XMLVAR_KNOB_OVHD_CABINPRESS_LDGELEV', 'Number', 100);
+    // FIXME Use CPC landing elev ARINC vars when made and get them via SDACs when made
     const [landingRunwayElevation] = useSimVar('L:A32NX_PRESS_AUTO_LANDING_ELEVATION', 'feet', 1000);
     const [autoMode] = useSimVar('L:A32NX_OVHD_PRESS_MODE_SEL_PB_IS_AUTO', 'Bool', 1000);
     const [ldgElevMode, setLdgElevMode] = useState('AUTO');

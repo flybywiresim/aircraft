@@ -4,10 +4,23 @@
     "ChangeATISATCSourceButton": "تغيير مصدر ATIS/ATC",
     "ConnectHoppieACARS": "قم بتوصيل لHoppie ACARS",
     "NoInformationAvailableForThisFrequency": "لا توجد معلومات متاحة لهذا التردد",
+    "SearchPlaceholder": "Search",
     "SelectCorrectATISATCSource": "هذه الصفحة متاحة فقط عند تحديد IVAO أو VATSIM كمصدر ATIS/ATC في صفحة الإعدادات.",
     "SetActive": "شغل",
     "SetStandby": "تعيين الاستعداد",
+    "ShowAll": "All",
+    "ShowApproach": "Approach",
+    "ShowAtis": "ATIS",
+    "ShowDelivery": "Delivery",
+    "ShowDeparture": "Departure",
+    "ShowGround": "Ground",
+    "ShowRadar": "Radar",
+    "ShowTower": "Tower",
     "Standby": "الإستعداد",
+    "TT": {
+      "AtcCallSignSearch": "ATC Call-sign Search",
+      "AtcTypeFilter": "Filter for"
+    },
     "Title": "مراقبة الحركة الجوية"
   },
   "Checklists": {
@@ -85,6 +98,7 @@
       "YouHaveNotYetImportedAnySimBriefData": "لم تستورد بعد أي بيانات SimBrief.\n"
     },
     "Overview": {
+      "ActualGW": "Actual GW",
       "Engines": "محركات",
       "MMO": "MMO",
       "MRW": "MRW",
@@ -133,6 +147,27 @@
       "TotalFuel": "كمية الوقود الكاملة ",
       "Unavailable": "غير متوفر"
     },
+    "Payload": {
+      "BoardingTime": "Boarding Time",
+      "Cargo": "Cargo",
+      "Current": "Current",
+      "Passengers": "Passengers",
+      "Planned": "Planned",
+      "TT": {
+        "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Aircraft Must Be On the Ground and Have Engines Shutdown to Change Boarding Duration",
+        "FillPayloadFromSimbrief": "Fill Payload Information from Simbrief",
+        "MaxCargo": "Max Cargo",
+        "MaxPassengers": "Maximum Passengers",
+        "MaxZFW": "Maximum ZFW",
+        "MaxZFWCG": "Maximum ZFWCG",
+        "PerPaxBagWeight": "Per Passenger Bag Weight",
+        "PerPaxWeight": "Per Passenger Weight",
+        "StartBoarding": "Begin Boarding"
+      },
+      "Title": "Payload",
+      "ZFW": "ZFW",
+      "ZFWCG": "ZFWCG"
+    },
     "Pushback": {
       "Title": "دفع الى الخلف"
     },
@@ -161,6 +196,10 @@
     "Altn": "البديل ",
     "ExitFullscreenMode": "الخروج من الشاشة الكاملة ",
     "From": "من",
+    "LoadingImage": "Loading Image",
+    "LoadingImageFailed": "Loading Image failed",
+    "LoadingPdf": "Loading PDF",
+    "LoadingPdfFailed": "Loading PDF failed",
     "LocalFiles": {
       "Both": "كلاهما",
       "EstablishingConnection": "جارٍ انشاء اتصال…",
@@ -320,6 +359,7 @@
       "ConfirmationDialogMsg": "يرجى تأكيد تحميل الإعداد المسبق.",
       "CurrentProcedureStep": "خطوة الإجراء الحالية",
       "PleaseConfirmLoadingOfPreset": "يرجى تأكيد تحميل الإعداد المسبق.",
+      "Powered": "Powered",
       "ReadyPushback": "جاهز للدفع من البوابة",
       "ReadyTakeoff": "جاهز للإقلاع",
       "ReadyTaxi": "جاهز للتحرك الارضي ",
@@ -332,6 +372,12 @@
     "InteriorLighting": {
       "AircraftNeedsToBePoweredToLoadPresets": "يجب أن تكون الطائرات تعمل بالطاقة لتحميل الإعدادات المسبقة",
       "AircraftNeedsToBePoweredToSavePresets": "تحتاج الطائرات إلى أن تكون مدعومة بالطاقه لحفظ الإعدادات المسبقة",
+      "AutoLoadDawnDusk": "Dawn/Dusk:",
+      "AutoLoadDay": "Day:",
+      "AutoLoadLightingHelpTitle": "Automatic Preset Loading",
+      "AutoLoadLightingPreset": "Enable automatic loading of lighting presets:",
+      "AutoLoadNight": "Night:",
+      "AutoLoadNoneSelection": "None",
       "LoadPreset": "تحميل الإعداد المسبق",
       "LoadingPreset": "تحميل الإعداد المسبق",
       "NewNameConfirmationDialogMsg": "يرجى تأكيد الاسم الجديد للإعداد المسبق للإضاءة",
@@ -385,13 +431,15 @@
       "SliderSpeed": "تحرك للحصول على السرعة المطلوبة",
       "SystemEnabledOff": "انقر لتشغيل نظام الدفع.",
       "SystemEnabledOn": "انقر لإيقاف تشغيل نظام الدفع تمامًا.",
+      "UseControllerInput": "Turn controller input from rudder and elevator on/off",
       "ZoomIn": "تكبير",
       "ZoomOut": "تصغير"
     },
     "TugAttached": "وحدة الدفع متصلة",
     "TugDirection": "اتجاه الدفع ",
     "TugInTransit": "Waiting for Tug/Pin",
-    "TugSpeed": "سرعة الدفع "
+    "TugSpeed": "سرعة الدفع ",
+    "UseControllerInput": "Use Controller Input"
   },
   "Settings": {
     "About": {
@@ -405,6 +453,7 @@
       "LatLonExtendedFormat": "FMGC Lat/Lon Waypoint Format",
       "PaxSigns": "علامات الركاب",
       "RmpVhfSpacing": "تباعد RMP VHF",
+      "Satcom": "Satcom",
       "ThrustReductionHeight": "ارتفاع تخفيض النفاث (قدم)",
       "Title": "Aircraft Options / Pin Programs",
       "WeightUnit": "وحدة الوزن"
@@ -450,12 +499,15 @@
       "AutofillChecklists": "ملئ تلقائي لقوائم الفحص",
       "BoardingTime": "وقت الصعود",
       "DmcSelfTestTime": "وقت الاختبار الذاتي DMC",
+      "FirstOfficerAvatar": "Show First Officer Avatar",
       "HomeCockpitMode": "وضع قمرة القيادة المنزلية",
       "McduFocusTimeout": "مهلة التركيز MCDU (ثواني)",
       "McduKeyboardInput": "لوحة مفاتيح تدخيل MCDU",
       "PauseAtTod": "T/D Pause",
       "PauseAtTodDistance": "T/D Pause Distance (nm)",
+      "PilotAvatar": "Show Pilot Avatar",
       "SeparateTillerFromRudderInputs": "فصل الحارث عن مدخلات الدفة",
+      "SyncEfis": "Sync EFIS controls between Captain and FO",
       "Title": "الواقعية"
     },
     "SimOptions": {
@@ -465,6 +517,7 @@
       "ConesEnabled": "اقماع الامان",
       "DefaultBarometerUnit": "وحدة البارومتر الافتراضية",
       "DynamicRegistrationDecal": "ملصق تسجيل ديناميكي",
+      "EnableSimBridge": "تمكين اتصال خادم MCDU (إلغاء التنشيط التلقائي بعد 5 دقائق إذا لم يكن هناك اتصال ناجح)",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "تمكين اتصال خادم MCDU (إلغاء التنشيط التلقائي بعد 5 دقائق إذا لم يكن هناك اتصال ناجح)",
       "ExternalMcduServerPort": "منفذ خادم MCDU خارجي",
       "Hpa": "هيكتو باسكال",
@@ -473,6 +526,7 @@
       "None": "لا شيء",
       "Off": "إيقاف",
       "Save": "حفظ",
+      "SimBridgePort": "منفذ خادم MCDU خارجي",
       "SyncMsfsFlightPlan": "مزامنة خطة رحلة MSFS",
       "ThrottleDetents": "محددات دفة تحكم النفاث ",
       "Title": "خيارات المحاكاة ",

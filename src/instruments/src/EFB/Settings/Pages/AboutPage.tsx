@@ -64,7 +64,7 @@ export const AboutPage = () => {
     useEffect(() => {
         listener.on('SetGamercardInfo', onSetPlayerData, null);
 
-        fetch('/VFS/build_info.json').then((response) => response.json()).then((json) => setBuildInfo({
+        fetch('/VFS/a32nx_build_info.json').then((response) => response.json()).then((json) => setBuildInfo({
             built: json.built,
             ref: json.ref,
             sha: json.sha,

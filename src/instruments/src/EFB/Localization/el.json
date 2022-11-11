@@ -4,10 +4,23 @@
     "ChangeATISATCSourceButton": "Αλλαγή πηγής ATIS/ATC",
     "ConnectHoppieACARS": "Σύνδεση Hoppie ACARS",
     "NoInformationAvailableForThisFrequency": "Δεν υπάρχουν διαθέσιμες πληροφορίες για αυτή τη συχνότητα",
+    "SearchPlaceholder": "Search",
     "SelectCorrectATISATCSource": "Αυτή η σελίδα είναι διαθέσιμη μόνο όταν έχει επιλεγεί το IVAO ή το VATSIM ως πηγή ATIS/ATC στη σελίδα ρυθμίσεων.",
     "SetActive": "Θέστε Ενεργό",
     "SetStandby": "Θέστε σε Αναμονή",
+    "ShowAll": "All",
+    "ShowApproach": "Approach",
+    "ShowAtis": "ATIS",
+    "ShowDelivery": "Delivery",
+    "ShowDeparture": "Departure",
+    "ShowGround": "Ground",
+    "ShowRadar": "Radar",
+    "ShowTower": "Tower",
     "Standby": "Αναμονή",
+    "TT": {
+      "AtcCallSignSearch": "ATC Call-sign Search",
+      "AtcTypeFilter": "Filter for"
+    },
     "Title": "Έλεγχος Εναέριας Κυκλοφορίας"
   },
   "Checklists": {
@@ -85,6 +98,7 @@
       "YouHaveNotYetImportedAnySimBriefData": "Δεν έχετε εισαγάγει ακόμη δεδομένα Simbrief."
     },
     "Overview": {
+      "ActualGW": "Actual GW",
       "Engines": "Κινητήρες",
       "MMO": "Μέγιστη Ταχύτητα Mach Αριθμού ",
       "MRW": "Μέγιστο Βάρος Πίστας",
@@ -133,6 +147,27 @@
       "TotalFuel": "Σύνολο Καυσίμων",
       "Unavailable": "Μη διαθέσιμο"
     },
+    "Payload": {
+      "BoardingTime": "Boarding Time",
+      "Cargo": "Cargo",
+      "Current": "Current",
+      "Passengers": "Passengers",
+      "Planned": "Planned",
+      "TT": {
+        "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Aircraft Must Be On the Ground and Have Engines Shutdown to Change Boarding Duration",
+        "FillPayloadFromSimbrief": "Fill Payload Information from Simbrief",
+        "MaxCargo": "Max Cargo",
+        "MaxPassengers": "Maximum Passengers",
+        "MaxZFW": "Maximum ZFW",
+        "MaxZFWCG": "Maximum ZFWCG",
+        "PerPaxBagWeight": "Per Passenger Bag Weight",
+        "PerPaxWeight": "Per Passenger Weight",
+        "StartBoarding": "Begin Boarding"
+      },
+      "Title": "Payload",
+      "ZFW": "ZFW",
+      "ZFWCG": "ZFWCG"
+    },
     "Pushback": {
       "Title": "Οπισθοδρόμηση"
     },
@@ -161,6 +196,10 @@
     "Altn": "Εναλλακτικό",
     "ExitFullscreenMode": "Έξοδος από Πλήρη Οθόνη",
     "From": "Από",
+    "LoadingImage": "Loading Image",
+    "LoadingImageFailed": "Loading Image failed",
+    "LoadingPdf": "Loading PDF",
+    "LoadingPdfFailed": "Loading PDF failed",
     "LocalFiles": {
       "Both": "Και τα δύο",
       "EstablishingConnection": "Δημιουργία Σύνδεσης",
@@ -320,6 +359,7 @@
       "ConfirmationDialogMsg": "Παρακαλώ επιβεβαιώστε τη φόρτωση της προκαθορισμένης ρύθμισης.",
       "CurrentProcedureStep": "Τρέχουσα Διαδικασία",
       "PleaseConfirmLoadingOfPreset": "Επιβεβαιώστε τη φόρτωση της προκαθορισμένης ρύθμισης.",
+      "Powered": "Powered",
       "ReadyPushback": "Έτοιμοι για οπισθοδρόμηση",
       "ReadyTakeoff": "Έτοιμοι για Απογείωση",
       "ReadyTaxi": "Έτοιμοι για Τροχοδρόμηση ",
@@ -332,6 +372,12 @@
     "InteriorLighting": {
       "AircraftNeedsToBePoweredToLoadPresets": "Τα αεροσκάφος πρέπει να τροφοδοτείται για να φορτώσει προκαθορισμένες ρυθμίσεις",
       "AircraftNeedsToBePoweredToSavePresets": "Το αεροσκάφος πρέπει να τροφοδοτείται για να εξοικονομήσει προεπιλογές",
+      "AutoLoadDawnDusk": "Dawn/Dusk:",
+      "AutoLoadDay": "Day:",
+      "AutoLoadLightingHelpTitle": "Automatic Preset Loading",
+      "AutoLoadLightingPreset": "Enable automatic loading of lighting presets:",
+      "AutoLoadNight": "Night:",
+      "AutoLoadNoneSelection": "None",
       "LoadPreset": "Φόρτωση Προκαθορισμένης Ρύθμισης",
       "LoadingPreset": "Φόρτωση Προκαθορισμένης Ρύθμισης",
       "NewNameConfirmationDialogMsg": "Παρακαλώ επιβεβαιώστε το νέο όνομα για την προκαθορισμένη ρύθμιση φωτισμού",
@@ -385,13 +431,15 @@
       "SliderSpeed": "Move for desired speed",
       "SystemEnabledOff": "Click to turn the pushback system on.",
       "SystemEnabledOn": "Click to turn the pushback system completely off.",
+      "UseControllerInput": "Turn controller input from rudder and elevator on/off",
       "ZoomIn": "Zoom in",
       "ZoomOut": "Zoom out"
     },
     "TugAttached": "Tug is attached",
     "TugDirection": "Κατεύθυνση Ρυμουλκού",
     "TugInTransit": "Waiting for Tug/Pin",
-    "TugSpeed": "Ταχύτητα Ρυμουλκού"
+    "TugSpeed": "Ταχύτητα Ρυμουλκού",
+    "UseControllerInput": "Use Controller Input"
   },
   "Settings": {
     "About": {
@@ -405,6 +453,7 @@
       "LatLonExtendedFormat": "Μορφή Σημείου Αναφοράς Lat/Lon FMGC",
       "PaxSigns": "Πινακίδες Επιβατών",
       "RmpVhfSpacing": "Απόσταση VHF RMP",
+      "Satcom": "Satcom",
       "ThrustReductionHeight": "Ύψος Mείωσης Ώσης (ft)",
       "Title": "Επιλογές Αεροσκάφους / Προγράμματα Pin",
       "WeightUnit": "Μονάδα Βάρους"
@@ -450,12 +499,15 @@
       "AutofillChecklists": "Λίστες Ελέγχου Αυτόματης Συμπλήρωσης",
       "BoardingTime": "Χρόνος Επιβίβασης ",
       "DmcSelfTestTime": "Χρόνος Αυτοδοκιμής DMC",
+      "FirstOfficerAvatar": "Show First Officer Avatar",
       "HomeCockpitMode": "Λειτουργία θαλάμου πιλοτηρίου οικιακής χρήσης",
       "McduFocusTimeout": "Χρονικό Όριο Εστίασης MCDU (δευτερόλεπτα)",
       "McduKeyboardInput": "Είσαγωγή Πληκτρολογίου MCDU",
       "PauseAtTod": "T/D Pause",
       "PauseAtTodDistance": "T/D Pause Distance (nm)",
+      "PilotAvatar": "Show Pilot Avatar",
       "SeparateTillerFromRudderInputs": "Ξεχωριστό Οιακοστροφίο απο τις Εισαγωγές Πηδαλίου",
+      "SyncEfis": "Sync EFIS controls between Captain and FO",
       "Title": "Ρεαλισμός"
     },
     "SimOptions": {
@@ -465,6 +517,7 @@
       "ConesEnabled": "Safety Cones",
       "DefaultBarometerUnit": "Προκαθορισμένη Βαρομετρική Μονάδα",
       "DynamicRegistrationDecal": "Δυναμική Χαλκομανία Εγγραφής",
+      "EnableSimBridge": "Ενεργοποίηση σύνδεσης διακομιστή MCDU (Αυτόματη απενεργοποίηση μετά από 5 λεπτά εάν δεν υπάρχει επιτυχής σύνδεση)",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Ενεργοποίηση σύνδεσης διακομιστή MCDU (Αυτόματη απενεργοποίηση μετά από 5 λεπτά εάν δεν υπάρχει επιτυχής σύνδεση)",
       "ExternalMcduServerPort": "Εξωτερική Θύρα Διακομιστή MCDU",
       "Hpa": "hPa",
@@ -473,6 +526,7 @@
       "None": "Κανένα",
       "Off": "Απενεργοποιημένο",
       "Save": "Αποθήκευση",
+      "SimBridgePort": "Εξωτερική Θύρα Διακομιστή MCDU",
       "SyncMsfsFlightPlan": "Συγχρονισμός του Σχεδίου Πτήσεως MSFS",
       "ThrottleDetents": "Αναστολέας Γκαζιού",
       "Title": "Επιλογές Sim",

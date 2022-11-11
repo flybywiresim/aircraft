@@ -3,7 +3,7 @@ import { useInteractionEvents, useUpdate } from './hooks';
 
 type SimVarSetter = <T extends SimVarValue>(oldValue: T) => T;
 
-type UnitName = string | any; // once typings is next to tsconfig.json, use those units
+type UnitName = SimVar.SimVarUnit;
 type SimVarValue = number | any;
 
 /**

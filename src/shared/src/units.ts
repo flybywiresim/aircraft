@@ -22,7 +22,7 @@ export class Units {
         if (Units.mMetricUnits === undefined) {
             NXDataStore.getAndSubscribe('CONFIG_USING_METRIC_UNIT', (_: string, value: string) => {
                 Units.mMetricUnits = value === '1';
-            });
+            }, '1');
         }
         return Units.mMetricUnits;
     }
@@ -41,6 +41,10 @@ export class Units {
 
     static kilogramToUser(value: KiloGram): Pound | KiloGram {
         return Units.usingMetric ? value : Units.kilogramToPound(value);
+    }
+
+    static poundToUser(value: KiloGram): Pound | KiloGram {
+        return Units.usingMetric ? Units.poundToKilogram(value) : value;
     }
 
     static get userWeightSuffixEis2(): 'kg' | 'lbs' {

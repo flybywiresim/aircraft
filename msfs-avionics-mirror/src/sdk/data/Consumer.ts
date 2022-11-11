@@ -121,6 +121,19 @@ export class Consumer<T> {
   }
 
   /**
+   * Filter the subscription to consume only when the SSM value changes.
+   * @returns A new consumer with the applied ssm filter.
+   */
+  public whenArinc429SsmChanged(): Consumer<T> {
+    return new Consumer<T>(this.bus, this.topic, { lastValue: 0 }, (data, state, next) => {
+        if ((data as any).ssm !== state.lastSsm) {
+            state.lastSsm = (data as any).ssm;
+            this.with(data, next);
+        }
+    });
+  }
+
+  /**
    * Filter the subscription to consume only when the value has changed by a minimum amount.
    * @param amount The minimum amount threshold below which the consumer will not consume.
    * @returns A new consumer with the applied change threshold filter.

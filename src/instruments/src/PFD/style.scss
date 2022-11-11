@@ -191,6 +191,10 @@ text.Green {
   stroke: $display-amber;
   fill: none;
 }
+.Amber.Fill {
+  fill: $display-amber;
+  stroke: none;
+}
 text.Amber {
   fill: $display-amber;
   stroke: none;
@@ -253,14 +257,4 @@ text.Red {
 
 .HiddenElement {
   display: none;
-}
-
-.BacklightBleed {
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  z-index: 998;
-  opacity: 0.75;
-  background-color: rgba(0, 0, 255, 0.025);
-  box-shadow: inset 0px 0px 30px 10px rgba(0, 75, 255, 0.04);
 }

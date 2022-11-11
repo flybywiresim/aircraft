@@ -4,10 +4,23 @@
     "ChangeATISATCSourceButton": "Cambia fonte ATIS/ATC",
     "ConnectHoppieACARS": "Connetti ACARS Hoppie",
     "NoInformationAvailableForThisFrequency": "Nessuna informazione disponibile per questa frequenza",
+    "SearchPlaceholder": "Cerca",
     "SelectCorrectATISATCSource": "Questa pagina è disponibile solo quando IVAO o VATSIM sono selezionati come fonte ATIS/ATC nella pagina delle impostazioni",
     "SetActive": "Imposta Attivo",
     "SetStandby": "Imposta Standby",
+    "ShowAll": "Tutti",
+    "ShowApproach": "Avvicinamento",
+    "ShowAtis": "ATIS",
+    "ShowDelivery": "Autorizzazione",
+    "ShowDeparture": "Partenza",
+    "ShowGround": "Terra",
+    "ShowRadar": "Radar",
+    "ShowTower": "Torre",
     "Standby": "Standby",
+    "TT": {
+      "AtcCallSignSearch": "Cerca Call-sign ATC",
+      "AtcTypeFilter": "Filtra per"
+    },
     "Title": "Controllo Traffico Aereo"
   },
   "Checklists": {
@@ -20,7 +33,7 @@
     "ResetAll": "Ripristina Tutto",
     "ResetChecklist": "Ripristina Checklist",
     "TheLastChecklistIsComplete": "L'ultima checklist è completa",
-    "ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted": "Ci sono campi rimanenti per l'autocompilazione della checklist, che non sono ancora stati completati",
+    "ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted": "Ci sono campi rimanenti per l'autocompletamento della checklist, che non sono ancora stati completati",
     "Title": "Checklist"
   },
   "Dashboard": {
@@ -85,6 +98,7 @@
       "YouHaveNotYetImportedAnySimBriefData": "Non hai ancora importato alcun dato SimBrief."
     },
     "Overview": {
+      "ActualGW": "GW effettivo",
       "Engines": "Motori",
       "MMO": "MMO",
       "MRW": "MRW",
@@ -117,14 +131,14 @@
       "Defueling": "Scaricamento",
       "EstimatedDuration": "Durata stimata (minuti)",
       "EstimatedTime": "Estimated Time",
-      "LeftInnerTank": "Serbatoio Sinistro Interno",
-      "LeftOuterTank": "Serbatoio Sinistro Esterno",
+      "LeftInnerTank": "Serbatoio Interno Sinistro",
+      "LeftOuterTank": "Serbatoio Esterno Sinistro",
       "ReadyToStart": "Pronto a Iniziare",
       "Refuel": "Rifornimento",
       "RefuelTime": "Durata Rifornimento",
       "Refueling": "Caricamento",
-      "RightInnerTank": "Serbatoio Destro Interno",
-      "RightOuterTank": "Serbatoio Destro Esterno",
+      "RightInnerTank": "Serbatoio Interno Destro",
+      "RightOuterTank": "Serbatoio Esterno Destro",
       "TT": {
         "AircraftMustBeColdAndDarkToChangeRefuelTimes": "Cambiare la durata del rifornimento soltanto a terra con motori spenti",
         "FillBlockFuelFromSimBrief": "Inserisci Block Fuel da SimBrief"
@@ -132,6 +146,27 @@
       "Title": "Carburante",
       "TotalFuel": "Carburante Totale",
       "Unavailable": "Non Disponibile"
+    },
+    "Payload": {
+      "BoardingTime": "Durata Imbarco",
+      "Cargo": "Carico",
+      "Current": "Corrente",
+      "Passengers": "Passeggeri",
+      "Planned": "Pianificato",
+      "TT": {
+        "AircraftMustBeColdAndDarkToChangeBoardingTimes": "L'Aeromobile Deve Essere A Terra e Avere i Motori Spenti Per Modificare la Durata dell'Imbarco",
+        "FillPayloadFromSimbrief": "Inserisci Payload da SimBrief",
+        "MaxCargo": "Carico Massimo",
+        "MaxPassengers": "Passeggeri Massimi",
+        "MaxZFW": "ZFW Massimo",
+        "MaxZFWCG": "ZFWCG Massimo",
+        "PerPaxBagWeight": "Peso Bagaglio per Passeggero",
+        "PerPaxWeight": "Peso per Passeggero",
+        "StartBoarding": "Inizia Imbarco"
+      },
+      "Title": "Payload",
+      "ZFW": "ZFW",
+      "ZFWCG": "ZFWCG"
     },
     "Pushback": {
       "Title": "Pushback"
@@ -141,13 +176,13 @@
       "CateringTruck": "Veicolo Catering",
       "Cones": "Coni di Sicurezza",
       "DoorAft": "Porta Post.",
-      "DoorCargo": "Porta Cargo",
+      "DoorCargo": "Porta Carico",
       "DoorFwd": "Porta Ant.",
-      "ExternalPower": "Unità di Alimentazione Esterna",
+      "ExternalPower": "Ground Power Unit",
       "FuelTruck": "Veicolo Carburante",
-      "JetBridge": "Ponte Imbarco",
+      "JetBridge": "Ponte d'Imbarco",
       "Title": "Servizi",
-      "WheelChocks": "Tacchi per Ruote"
+      "WheelChocks": "Tacchi Fermaruote"
     },
     "Title": "Terra"
   },
@@ -159,8 +194,12 @@
   "NavigationAndCharts": {
     "All": "Tutti",
     "Altn": "Altn",
-    "ExitFullscreenMode": "Esci dalla Modalità a Schermo Intero",
+    "ExitFullscreenMode": "Esci dalla Modalità Schermo Intero",
     "From": "Da",
+    "LoadingImage": "Caricamento Immagine",
+    "LoadingImageFailed": "Caricamento Immagine fallito",
+    "LoadingPdf": "Caricamento PDF",
+    "LoadingPdfFailed": "Caricamento PDF fallito",
     "LocalFiles": {
       "Both": "Entrambi",
       "EstablishingConnection": "Connessione in Corso",
@@ -178,7 +217,7 @@
       "IntoYourBrowserAndEnterTheCodeBelow": "nel tuo browser e inserisci il codice riportato di seguito",
       "LoadingMsg": "Caricamento",
       "NoAirportSelected": "Nessun Aeroporto Selezionato",
-      "ResetNavigraphAuthentication": "Rimuovi Autenticazione con Navigraph",
+      "ResetNavigraphAuthentication": "Rimuovi Autenticazione Navigraph",
       "ScanTheQrCodeOrOpen": "Scansiona il Codice QR o Apri",
       "Title": "Navigraph"
     },
@@ -187,7 +226,7 @@
       "Edit": "Modifica",
       "NoItemsFound": "Nessun Elemento Trovato",
       "SearchPlaceholder": "Cerca",
-      "ShowingChartsFromAllProviders": "Visualizzazione delle Carte da tutti i Fornitori",
+      "ShowingChartsFromAllProviders": "Visualizzazione Carte da Tutti i Fornitori",
       "SortMethods": {
         "AlphabeticalAZ": "Alfabetico - A -> Z",
         "AlphabeticalZA": "Alfabetico - Z -> A",
@@ -259,7 +298,7 @@
       "RunwaySlope": "Pendenza Pista",
       "TT": {
         "YouNeedToEnterAnIcaoCodeInOrderToMakeAMetarRequest": "Devi inserire un codice ICAO in modo da effettuare una richiesta METAR",
-        "YouNeedToLoadSimBriefDataInOrderToAutofillData": "Devi caricare dati SimBrief per l'inserimento automatico dei dati"
+        "YouNeedToLoadSimBriefDataInOrderToAutofillData": "Devi caricare i dati SimBrief per l'inserimento automatico dei dati"
       },
       "Temperature": "Temperatura",
       "Title": "Atterraggio",
@@ -320,6 +359,7 @@
       "ConfirmationDialogMsg": "Prego conferma caricamento del preset.",
       "CurrentProcedureStep": "Stato Processo in Corso",
       "PleaseConfirmLoadingOfPreset": "Prego conferma caricamento del preset.",
+      "Powered": "Powered",
       "ReadyPushback": "Pronto per Pushback",
       "ReadyTakeoff": "Pronto per Decollo",
       "ReadyTaxi": "Pronto per Rullaggio",
@@ -332,6 +372,12 @@
     "InteriorLighting": {
       "AircraftNeedsToBePoweredToLoadPresets": "L'Aeromobile deve essere Alimentato per Caricare i Preset",
       "AircraftNeedsToBePoweredToSavePresets": "L'Aeromobile deve essere Alimentato per Salvare i Preset",
+      "AutoLoadDawnDusk": "Alba/Crepuscolo:",
+      "AutoLoadDay": "Giorno:",
+      "AutoLoadLightingHelpTitle": "Caricamento Preset Automatico",
+      "AutoLoadLightingPreset": "Abilita il caricamento automatico dei preset di illuminazione:",
+      "AutoLoadNight": "Notte:",
+      "AutoLoadNoneSelection": "No",
       "LoadPreset": "Carica Preset",
       "LoadingPreset": "Caricamento Preset",
       "NewNameConfirmationDialogMsg": "Prego conferma nuovo nome per il preset di illuminazione",
@@ -375,8 +421,8 @@
     "TT": {
       "CallReleaseTug": "Chiama o allontana tug",
       "CenterPlaneMode": "Centra mappa sull'aereo On/Off",
-      "DecreaseSpeed": "Indietro o avanti lentamente",
-      "IncreaseSpeed": "Avanti o indietro lentamente",
+      "DecreaseSpeed": "Indietro o lentamente avanti",
+      "IncreaseSpeed": "Avanti o lentamente indietro",
       "Left": "Vai a sinistra",
       "PausePushback": "Interrompi o riavvia pushback",
       "Right": "Vai a destra",
@@ -385,13 +431,15 @@
       "SliderSpeed": "Sposta per velocità desiderata",
       "SystemEnabledOff": "Clicca per attivare il sistema pushback.",
       "SystemEnabledOn": "Clicca per disattivare completamente il sistema pushback.",
+      "UseControllerInput": "On/off input controller da timone ed equilibratore",
       "ZoomIn": "Ingrandisci",
       "ZoomOut": "Rimpicciolisci"
     },
     "TugAttached": "Tug è collegato",
     "TugDirection": "Direzione Tug",
     "TugInTransit": "In Attesa del Tug",
-    "TugSpeed": "Velocità Tug"
+    "TugSpeed": "Velocità Tug",
+    "UseControllerInput": "Usa Input Controller"
   },
   "Settings": {
     "About": {
@@ -405,6 +453,7 @@
       "LatLonExtendedFormat": "Formato Waypoint Lat/Lon FMGC",
       "PaxSigns": "PAX Sign",
       "RmpVhfSpacing": "Spaziatura VHF RMP",
+      "Satcom": "Satcom",
       "ThrustReductionHeight": "Altezza Riduzione Spinta (ft)",
       "Title": "Opzioni Aeromobile / Definisci Comportamenti",
       "WeightUnit": "Unità Peso"
@@ -418,7 +467,7 @@
       "HoppieEnabled": "Hoppie Abilitato",
       "HoppieUserId": "ID Utente Hoppie",
       "MetarSource": "Fonte METAR",
-      "OptionalA32nxErrorReporting": "Segnalazione Errori A32NX Opzionale",
+      "OptionalA32nxErrorReporting": "Segnalazione Errori A32NX Opzionali",
       "PleaseCheckThatYouHaveCorrectlyEnteredYourSimbBriefUsernameOrPilotId": "Verifica di aver inserito correttamente il tuo nome utente o ID pilota SimBrief",
       "SimBriefUsernamePilotId": "Nome Utente/ID Pilota SimBrief",
       "TafSource": "Fonte TAF",
@@ -447,15 +496,18 @@
     "Real": "Reale",
     "Realism": {
       "AdirsAlignTime": "Durata Allineamento ADIRS",
-      "AutofillChecklists": "Autocompila Checklist",
+      "AutofillChecklists": "Autocompleta Checklist",
       "BoardingTime": "Durata Imbarco",
       "DmcSelfTestTime": "Durata Autotest DMC",
+      "FirstOfficerAvatar": "Mostra Avatar Primo Ufficiale",
       "HomeCockpitMode": "Modalità Home Cockpit",
       "McduFocusTimeout": "Rilascio Selezione su MCDU (secondi)",
       "McduKeyboardInput": "Input Tastiera su MCDU",
       "PauseAtTod": "Interruzione T/D",
       "PauseAtTodDistance": "Distanza Interruzione T/D (nm)",
-      "SeparateTillerFromRudderInputs": "Separa gli Input del Tiller e dei Pedali",
+      "PilotAvatar": "Mostra Avatar Pilota",
+      "SeparateTillerFromRudderInputs": "Separa Tiller dagli Input del Timone",
+      "SyncEfis": "Sincronizza controlli EFIS tra Comandante e Primo Ufficiale",
       "Title": "Realismo"
     },
     "SimOptions": {
@@ -465,6 +517,7 @@
       "ConesEnabled": "Coni di Sicurezza",
       "DefaultBarometerUnit": "Unità Barometro Predefinita",
       "DynamicRegistrationDecal": "Decalco Registrazione Dinamico",
+      "EnableSimBridge": "Abilita Connessione SimBridge (Disattivazione automatica dopo 5 minuti in caso di connessione non riuscita)",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Abilita Connessione Server MCDU (Disattivazione automatica dopo 5 minuti in caso di connessione non riuscita)",
       "ExternalMcduServerPort": "Porta Esterna Server MCDU",
       "Hpa": "hPa",
@@ -473,11 +526,12 @@
       "None": "No",
       "Off": "Off",
       "Save": "Sì",
+      "SimBridgePort": "Porta Esterna Server SimBridge",
       "SyncMsfsFlightPlan": "Sincronizza Piano di Volo MSFS",
       "ThrottleDetents": "Posizioni Manetta",
       "Title": "Opzioni Sim",
       "UseCalculatedIlsSignals": "Usa Segnali ILS Calcolati",
-      "WheelChocksEnabled": "Tacchi per Ruote",
+      "WheelChocksEnabled": "Tacchi Fermaruote",
       "inHg": "inHg"
     },
     "ThrottleConfig": {
@@ -487,7 +541,7 @@
       "Back": "Indietro",
       "ConfigureEnd": "Configura Fine",
       "ConfigureStart": "Configura Inizio",
-      "CurrentValue": "Valore Attuale",
+      "CurrentValue": "Valore Corrente",
       "Deadband": "Zona Morta",
       "ErrorOverlapMsg": "confligge con",
       "IndependentAxis": "Assi Separate",
@@ -544,8 +598,8 @@
     "Sep": "Set",
     "Sun": "Dom",
     "TT": {
-      "ConnectedToLocalApi": "Connesso all'API Locale",
-      "DisconnectedFromLocalApi": "Sconnesso dall'API Locale",
+      "ConnectedToLocalApi": "Connesso a SimBridge",
+      "DisconnectedFromLocalApi": "Disconnesso da SimBridge",
       "TurnOffOrShutdownEfb": "Spegni o Arresta EFB"
     },
     "Thu": "Gio",

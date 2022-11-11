@@ -3,6 +3,8 @@
 members = [
     "src/systems/a320_systems",
     "src/systems/a320_systems_wasm",
+    "src/systems/a380_systems",
+    "src/systems/a380_systems_wasm",
     "src/systems/systems",
     "src/systems/systems_wasm",
     "src/systems/a320_hydraulic_simulation_graphs",

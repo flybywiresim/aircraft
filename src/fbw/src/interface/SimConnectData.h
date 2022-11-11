@@ -92,7 +92,6 @@ struct SimData {
   unsigned long long engine_combustion_2;
   unsigned long long is_mach_mode_active;
   unsigned long long speed_slot_index;
-  unsigned long long wingAntiIce;
   unsigned long long engineAntiIce_1;
   unsigned long long engineAntiIce_2;
   unsigned long long simOnGround;
@@ -129,10 +128,18 @@ struct SimData {
   unsigned long long assistanceLandingEnabled;
   unsigned long long aiAutoTrimActive;
   unsigned long long aiControlsActive;
+  double wheelRpmLeft;
+  double wheelRpmRight;
 };
 
 struct SimInput {
   double inputs[3];
+};
+
+struct SimInputRudderTrim {
+  bool rudderTrimSwitchLeft;
+  bool rudderTrimSwitchRight;
+  bool rudderTrimReset;
 };
 
 struct SimInputAutopilot {
@@ -156,16 +163,6 @@ struct SimInputThrottles {
   double ATHR_push;
   double ATHR_disconnect;
   double ATHR_reset_disable;
-};
-
-struct SimOutput {
-  double eta;
-  double xi;
-  double zeta;
-};
-
-struct SimOutputEtaTrim {
-  double eta_trim_deg;
 };
 
 struct SimOutputZetaTrim {

@@ -20,6 +20,41 @@ class CDU_Field {
     onSelect(value) {
         this.selectedCallback(this.currentValue);
     }
+
+    getFieldAsColumnParameters() {
+        const text = this.getValue();
+        let color = Column.white;
+
+        if (text.includes("[color]amber")) {
+            color = Column.amber;
+        } else if (text.includes("[color]red")) {
+            color = Column.red;
+        } else if (text.includes("[color]green")) {
+            color = Column.green;
+        } else if (text.includes("[color]cyan")) {
+            color = Column.cyan;
+        } else if (text.includes("[color]magenta")) {
+            color = Column.magenta;
+        } else if (text.includes("[color]yellow")) {
+            color = Column.yellow;
+        } else if (text.includes("[color]inop")) {
+            color = Column.inop;
+        }
+
+        return [
+            this.onSelect.bind(this),
+            text
+                .replace("[color]white", "")
+                .replace("[color]amber", "")
+                .replace("[color]red", "")
+                .replace("[color]green", "")
+                .replace("[color]cyan", "")
+                .replace("[color]magenta", "")
+                .replace("[color]yellow", "")
+                .replace("[color]inop", "")
+            , color
+        ];
+    }
 }
 
 /**

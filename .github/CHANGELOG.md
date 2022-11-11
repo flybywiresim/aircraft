@@ -4,6 +4,7 @@
 <!-- Always use "1." at the start instead of "2. " or "X. " as GitHub will auto renumber everything. -->
 <!-- Use the following format below -->
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
+
 ## 0.9.0
 
 1. [MODEL] Add Wheel Chocks and GSE Safety Cones - @bouveng (Johan Bouveng)
@@ -21,18 +22,82 @@
 1. [HYD] Gear system now supports spawning in flight gear up - @Crocket63 (crocket)
 1. [MCDU] Added imperial runway length - @derl30n (Leon)
 1. [MCDU] Refactor and improve input handling and conversions in MCDU W&B - @sidnov (Sid)
-1. [MCDU] Improved arrivals/departure page scrolling, more true-to-life behaviour and cosmetic apperance - @2hwk (2Cas#1022)
+1. [MCDU] Improved arrivals/departure page scrolling, more true-to-life behaviour and cosmetic apperance - @2hwk ( 2Cas#1022)
 1. [PFD] Show yellow GS reference line in correct conditions - @saschl (saschl#9432)
 1. [ECAM] Fix erroneous SLATS NOT IN T.O CONFIG warning during flaps 3 takeoff - @beheh (Benedict Etzel)
 1. [MODEL] Improved rivet mesh with more variation and detail - @Grinde (Grinde#4017)
 1. [ELEC] Make battery voltmeters update one digit at a time - @beheh (Benedict Etzel)
 1. [EWD] E/WD visual improvements - @lukecologne (luke)
-1. [SFCC] Add SFCC bus outputs  - @lukecologne (luke)
-1. [EWD] Use FPPU angles for flaps/slats display  - @lukecologne (luke)
+1. [SFCC] Add SFCC bus outputs - @lukecologne (luke)
+1. [EWD] Use FPPU angles for flaps/slats display - @lukecologne (luke)
 1. [FMGC] Basic RNP at or below 0.3 support - @tracernz (Mike)
 1. [ND] Add TERR ON ND peaks mode map visualization - @Sven [de en] (Sven Czarnian)
 1. [SD] Improve F/CTL and WHEEL SD pages visuals - @lukecologne (luke)
 1. [MCDU] Added formatter to improve text alignment and ease integration - @derl30n (Leon)
+1. [EFB] Fix default unit to match UI and other consumers - @tracernz (Mike)
+1. [HYD] Added possibility to lock or limit hydraulic actuators velocity - @Crocket63 (crocket)
+1. [HYD] Added a new THS mechanism simulation - @Crocket63 (crocket)
+1. [HYD] More prox sensors and gear actuator failures - @Crocket63 (crocket)
+1. [MCDU] Added 4:3 aspect ratio compatibility to remote mcdu client - @tyler58546 (tyler58546)
+1. [HYD] Fixed too slow leak measurement valves operation - @Crocket63 (crocket)
+1. [ISIS] Added temporary ISIS font with arrows - @aweissoertel (Alexibexi#7550)
+1. [PFD] Improve PFD barberpole rendering and behaviour - @lukecologne (luke)
+1. [HYD] Fixed actuator position control demand consistency - @Crocket63 (crocket)
+1. [FMGC] Only emit decel point when an approach is selected - @tracernz (Mike)
+1. [HYD] Fixed SFCC computer failing to send FPPU commands - @Crocket63 (crocket)
+1. [MCDU] Fix padding of arc radii on F-PLN - @tracernz (Mike)
+1. [FMGC] Allow stringing of STARs with non-runway approaches - @tracernz (Mike)
+1. [SD] Improve COND page visuals, fix some visual bugs on the SD - @lukecologne (luke)
+1. [HYD] Aerodynamic forces applied on gear system - @Crocket63 (crocket)
+1. [HYD] Fixed Lgciu state machine when reverting gravity extension - @Crocket63 (crocket)
+1. [FMGC] Fix unnatural turn direction for path capture transition - @tracernz (Mike)
+1. [FMGC] Fix unnatural turn direction for course capture transition - @tracernz (Mike)
+1. [FMGC] Update spoiler CD for MSFS SDK clarification - @donstim (donbikes#4084)
+1. [HYD] Actuators damping chambers can be asymetrical - @Crocket63 (crocket)
+1. [FMGC] Implement procedure turns (PI leg) - @tracernz (Mike)
+1. [ECAM] Move EWD to correct AC bus - @tracernz (Mike)
+1. [FMGC] Fix inbound leg time for holds - @tracernz (Mike)
+1. [MCDU] Improved visuals of Init-A and Init-B page - @derl30n (Leon)
+1. [MODEL] Added new animated gear gravity extension handle- @tyler58546 (tyler58546), @MoreRightRudder (Mike), @Crocket63 (crocket), @Lantarius
+1. [HYD] Randomised per actuator flow restrictions at plane init - @Crocket63 (crocket)
+1. [MCDU] Hide stored elements on A/C Status when there are none - @tracernz (Mike)
+1. [FMGC] Fix ident for CD legs - @tracernz (Mike)
+1. [HYD] Refactor plane accelerations and added filtering to handle ground collisions - @Crocket63 (crocket)
+1. [FMGC] Improve procedure loading performance - @tracernz (Mike)
+1. [EFB] Added Payload Loading to EFB - @2hwk (2Cas#1022)
+1. [MODEL] Remove blue highlights in lock mode - @tracernz (Mike)
+1. [RMP] Fixed the behavior of the RMPs and ACPs (VHFs only) - Julian Sebline (Julian Sebline#8476 on Discord)
+1. [PFD] Added option to sync FD/LS buttons between CPT and FO - @Eagle941 (Joe)
+1. [EFB] Add automatic loading of a lighting preset - @SpiritZephyr (Ben)
+1. [COND] Connect Air Conditioning System to Electrical System - @mjuhe (Miquel Juhe)
+1. [HYD] Default discrete of failed ADIRs impacts gear safety valve correctly - @Crocket63 (crocket)
+1. [ADDON] Simbridge Integration - @lucky38i (Alex)
+1. [SD] Visual and functional improvements/fixes to the HYD SD page - @lukecologne (luke)
+1. [HYD] Added optional auxiliary hydraulic section in core hydraulic circuits - @Crocket63
+1. [EFB] Added SimBridge Health Check icon to Status Bar - @frankkopp (Frank Kopp)
+1. [HYD] Fixed opened gear door wobbling - @Crocket63
+1. [HYD] Fix gear extending whith dual lgciu power loss - @Crocket63 (crocket)
+1. [EFB] flyPad pushback option to ignore controller inputs - @frankkopp (Frank Kopp)
+1. [FCTL] Add realistically simulated F/CTL computers: ELAC/SEC/FCDC/FAC - @lukecologne (luke)
+1. [HYD] Accelerations impacts hydraulic reservoir fluid movement - @Crocket63 (crocket)
+1. [FLIGHTMODEL] Add SU10 crosswind parameters - @donstim (donbikes#4084)
+1. [MODEL] Visible pilot avatars via flyPad setting - @frankkopp (Frank Kopp)
+1. [MODEL] Fixed screens flickering in SU10 - @tyler58546 (tyler58546)
+1. [EFB] Added Local Files support - @ErickSharp (Erick Torres) @frankkopp (Frank Kopp)
+1. [BLEED] Added custom Wing Anti-Ice model - @omrygin, @Eagle941 (Joe)
+1. [MISC] Fix FDR data for support analysis - @frankkopp (Frank Kopp)
+1. [LIGHTS] Increased max brightness of cockpit displays - @frankkopp (Frank Kopp)
+1. [EFB] Improved Aircraft Presets procedures - @frankkopp (Frank Kopp)
+1. [FMGC] Make DES SPD LIM available prior to descent - @tracernz (Mike)
+1. [LIGHTS] Redone cockpit emissives panels and ambient lighting -@FinalLightNL (FinalLight)
+1. [FMGC] Rework f-pln departure page - @tracernz (Mike)
+1. [MCDU] Support coroute loading and viewing - @lucky38i (Alex)
+1. [HYD] Fixed autobrake controller tuning - @Crocket63 (crocket)
+1. [ENGINE] Improved engine primary parameters performance (EGT & Fuel Flow) - @Taz5150 (TazX [Z+2]#0405)
+1. [ENGINE] Fix Engine Flex Calculations - @Taz5150 (TazX [Z+2]#0405)
+1. [FLIGHTMODEL] Flight Model update - @donstim (donbikes#4084)
+1. [HYD] Fix incorrect gain in down pitch commands - @Crocket63 (crocket)
+1. [PFD] Improve appearance of L/DEV and V/DEV scales - @tracernz (Mike)
 
 ## 0.8.0
 
@@ -268,8 +333,7 @@
 1. [GPWS] Mute "100 above" callout during autoland - @patmack14 (Patrick Macken)
 1. [MCDU] Refactored mcdu key input events - @derl30n - (Leon)
 1. [AUTOTHRUST] Added configuration option to allow change of key increment size - @aguther (Andreas Guther)
-1. [FLIGHTMODEL] Start fuel transfer for both tanks when EITHER inner tank reaches the trigger level - @donstim (
-   donbikes#4084)
+1. [FLIGHTMODEL] Start fuel transfer for both tanks when EITHER inner tank reaches the trigger level - @donstim ( donbikes#4084)
 1. [FMGC] Add lat/lon waypoint ident option - @tracernz (Mike)
 1. [HYD] PTU model refinement and simulated potential wear state probabilities - @Crocket63
 1. [HYD] Reduced engine driven pumps efficiency in active regulation area - @Crocket63
@@ -282,6 +346,8 @@
 1. [FMGC] Added flight phase transition to DONE when on ground > 30 s and engines off - @aguther (Andreas Guther)
 1. [ATSU] Add FANS-C simulation for CPDLC - @Sven [de en] - (Sven Czarnian)
 1. [ATSU] Add VDL3-simulation of datalink transport protocol - @Sven [de en] - (Sven Czarnian)
+1. [FMGC] Improve robustness of ILS auto-tuning - @tracernz (Mike)
+1. [OVHD] Fixed fire push button not being able to be stowed - Julian Sebline (Julian Sebline#8476 on Discord)
 
 ## 0.7.0
 
@@ -1064,5 +1130,5 @@
 1. [MISC] Standby Instrument stays ON if emergency power should be available, bug fixes - @2hwk (2Cas#1022 on discord)
 1. [CDU] Full +/- button functionality - @lhoenig (Lukas Hoenig)
 1. [DCDU] Fixed MSG- and MSG+ button labels - @tyler58546 (tyler58546)
-1. [OVHD] Fixed fire push button not being able to be stowed - Julian Sebline (Julian Sebline#8476 on Discord)
-1. [ISIS] Fixed issue where ISIS was allowing a bug to be set while in the OFF state - Patrick Macken (@Pat M on Discord)
+1. [ISIS] Fixed issue where ISIS was allowing a bug to be set while in the OFF state - Patrick Macken (@Pat M on
+   Discord)
