@@ -2583,7 +2583,7 @@ class FMCMainDisplay extends BaseAirliners {
             }).catch((err) => {
                 if (err instanceof McduMessage) {
                     this.setScratchpadMessage(err);
-                } else {
+                } else if (err) {
                     console.error(err);
                 }
                 return callback(false);
@@ -4621,7 +4621,7 @@ class FMCMainDisplay extends BaseAirliners {
                             if (waypoint) {
                                 resolve(waypoint);
                             } else {
-                                reject('User aborted');
+                                reject();
                             }
                         }, { ident: s });
                     });
@@ -4652,7 +4652,7 @@ class FMCMainDisplay extends BaseAirliners {
             }).catch((err) => {
                 if (err instanceof McduMessage) {
                     this.setScratchpadMessage(err);
-                } else {
+                } else if (err) {
                     console.error(err);
                 }
                 return callback(false);
