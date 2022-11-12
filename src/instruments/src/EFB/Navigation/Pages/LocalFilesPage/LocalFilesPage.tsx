@@ -2,8 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { CloudArrowDown } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
-import { usePersistentProperty } from '@instruments/common/persistence';
-import { Viewer } from '../../../../../../simbridge-client/src';
+import { ClientState, Viewer } from '../../../../../../simbridge-client/src';
 import { t } from '../../../translation';
 import { LocalFileChartUI } from './LocalFileChartUI';
 
@@ -45,21 +44,15 @@ export const getImageUrl = async (fileName: string): Promise<string> => {
 
 export const LocalFilesPage = () => {
     const [connectionState, setConnectionState] = useState(ConnectionState.ATTEMPTING);
-    const [simbridgePort] = usePersistentProperty('CONFIG_SIMBRIDGE_PORT', '8080');
 
     const setConnectedState = async () => {
-        try {
-            const healthRes = await fetch(`http://localhost:${simbridgePort}/health`);
-            const healthJson = await healthRes.json();
-
-            if (healthJson.info.api.status === 'up') {
-                setConnectionState(ConnectionState.ESTABLISHED);
-            } else {
+        if (!ClientState.getInstance().isAvailable()) {
+            setTimeout(() => {
                 setConnectionState(ConnectionState.FAILED);
-            }
-        } catch (_) {
-            setConnectionState(ConnectionState.FAILED);
+            }, 500);
+            return;
         }
+        setConnectionState(ConnectionState.ESTABLISHED);
     };
 
     const handleConnectionRetry = () => {
