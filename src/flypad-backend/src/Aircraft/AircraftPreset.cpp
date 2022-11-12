@@ -38,7 +38,7 @@ void AircraftPreset::onUpdate(double deltaTime) {
     // needs to be initialized
     if (!loadingIsActive) {
       // check if procedure ID exists
-      vector<ProcedureStep*>* requestedProcedure = procedures.getProcedure(loadAircraftPresetRequest);
+      const std::vector<const ProcedureStep*>* requestedProcedure = procedures.getProcedure(loadAircraftPresetRequest);
       if (requestedProcedure == nullptr) {
         std::cout << "FLYPAD_BACKEND: Preset " << loadAircraftPresetRequest << " not found!"
                   << std::endl;
@@ -86,7 +86,7 @@ void AircraftPreset::onUpdate(double deltaTime) {
     }
 
     // convenience tmp
-    const auto currentStepPtr = currentProcedure->at(currentStep);
+    const ProcedureStep* currentStepPtr = (*currentProcedure)[currentStep];
 
     // calculate next delay
     currentDelay = currentLoadingTime + currentStepPtr->delayAfter;
@@ -99,8 +99,8 @@ void AircraftPreset::onUpdate(double deltaTime) {
     // check if the current step is a condition step and check the condition
     if (currentStepPtr->isConditional) {
       // update progress var
-      setProgressAircraftPreset((double) currentStep / currentProcedure->size());
-      setProgressAircraftPresetId(currentProcedure->at(currentStep)->id);
+      setProgressAircraftPreset(static_cast<double>(currentStep) / currentProcedure->size());
+      setProgressAircraftPresetId(currentStepPtr->id);
       execute_calculator_code(currentStepPtr->actionCode.c_str(), &fvalue, &ivalue, &svalue);
       std::cout << "FLYPAD_BACKEND: Aircraft Preset Step " << currentStep << " Condition: "
                 << currentStepPtr->description
@@ -138,8 +138,8 @@ void AircraftPreset::onUpdate(double deltaTime) {
     }
 
     // update progress var
-    setProgressAircraftPreset((double) currentStep / currentProcedure->size());
-    setProgressAircraftPresetId(currentProcedure->at(currentStep)->id);
+    setProgressAircraftPreset(static_cast<double>(currentStep) / currentProcedure->size());
+    setProgressAircraftPresetId(currentStepPtr->id);
 
     // execute code to set expected state
     std::cout << "FLYPAD_BACKEND: Aircraft Preset Step " << currentStep << " Execute: "

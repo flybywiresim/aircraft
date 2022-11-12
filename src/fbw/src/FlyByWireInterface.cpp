@@ -8,7 +8,6 @@
 #include "FlyByWireInterface.h"
 #include "SimConnectData.h"
 
-using namespace std;
 using namespace mINI;
 
 bool FlyByWireInterface::connect() {
@@ -19,7 +18,7 @@ bool FlyByWireInterface::connect() {
   loadConfiguration();
 
   // setup handlers
-  spoilersHandler = make_shared<SpoilersHandler>();
+  spoilersHandler = std::make_shared<SpoilersHandler>();
 
   // initialize failures handler
   failuresConsumer.initialize();
@@ -185,15 +184,15 @@ void FlyByWireInterface::loadConfiguration() {
                        !autopilotLawsEnabled || !autoThrustEnabled || !flyByWireEnabled);
 
   // print configuration into console
-  cout << "WASM: MODEL     : CLIENT_DATA_ENABLED (auto)           = " << clientDataEnabled << endl;
-  cout << "WASM: MODEL     : AUTOPILOT_STATE_MACHINE_ENABLED      = " << autopilotStateMachineEnabled << endl;
-  cout << "WASM: MODEL     : AUTOPILOT_LAWS_ENABLED               = " << autopilotLawsEnabled << endl;
-  cout << "WASM: MODEL     : AUTOTHRUST_ENABLED                   = " << autoThrustEnabled << endl;
-  cout << "WASM: MODEL     : FLY_BY_WIRE_ENABLED                  = " << flyByWireEnabled << endl;
-  cout << "WASM: MODEL     : ELAC_DISABLED                        = " << elacDisabled << endl;
-  cout << "WASM: MODEL     : SEC_DISABLED                         = " << secDisabled << endl;
-  cout << "WASM: MODEL     : FAC_DISABLED                         = " << facDisabled << endl;
-  cout << "WASM: MODEL     : TAILSTRIKE_PROTECTION_ENABLED        = " << tailstrikeProtectionEnabled << endl;
+  std::cout << "WASM: MODEL     : CLIENT_DATA_ENABLED (auto)           = " << clientDataEnabled << std::endl;
+  std::cout << "WASM: MODEL     : AUTOPILOT_STATE_MACHINE_ENABLED      = " << autopilotStateMachineEnabled << std::endl;
+  std::cout << "WASM: MODEL     : AUTOPILOT_LAWS_ENABLED               = " << autopilotLawsEnabled << std::endl;
+  std::cout << "WASM: MODEL     : AUTOTHRUST_ENABLED                   = " << autoThrustEnabled << std::endl;
+  std::cout << "WASM: MODEL     : FLY_BY_WIRE_ENABLED                  = " << flyByWireEnabled << std::endl;
+  std::cout << "WASM: MODEL     : ELAC_DISABLED                        = " << elacDisabled << std::endl;
+  std::cout << "WASM: MODEL     : SEC_DISABLED                         = " << secDisabled << std::endl;
+  std::cout << "WASM: MODEL     : FAC_DISABLED                         = " << facDisabled << std::endl;
+  std::cout << "WASM: MODEL     : TAILSTRIKE_PROTECTION_ENABLED        = " << tailstrikeProtectionEnabled << std::endl;
 
   // --------------------------------------------------------------------------
   // load values - autopilot
@@ -203,10 +202,10 @@ void FlyByWireInterface::loadConfiguration() {
   simulationRateReductionEnabled = INITypeConversion::getBoolean(iniStructure, "AUTOPILOT", "SIMULATION_RATE_REDUCTION_ENABLED", true);
 
   // print configuration into console
-  cout << "WASM: AUTOPILOT : MINIMUM_SIMULATION_RATE                     = " << idMinimumSimulationRate->get() << endl;
-  cout << "WASM: AUTOPILOT : MAXIMUM_SIMULATION_RATE                     = " << idMaximumSimulationRate->get() << endl;
-  cout << "WASM: AUTOPILOT : LIMIT_SIMULATION_RATE_BY_PERFORMANCE        = " << limitSimulationRateByPerformance << endl;
-  cout << "WASM: AUTOPILOT : SIMULATION_RATE_REDUCTION_ENABLED           = " << simulationRateReductionEnabled << endl;
+  std::cout << "WASM: AUTOPILOT : MINIMUM_SIMULATION_RATE                     = " << idMinimumSimulationRate->get() << std::endl;
+  std::cout << "WASM: AUTOPILOT : MAXIMUM_SIMULATION_RATE                     = " << idMaximumSimulationRate->get() << std::endl;
+  std::cout << "WASM: AUTOPILOT : LIMIT_SIMULATION_RATE_BY_PERFORMANCE        = " << limitSimulationRateByPerformance << std::endl;
+  std::cout << "WASM: AUTOPILOT : SIMULATION_RATE_REDUCTION_ENABLED           = " << simulationRateReductionEnabled << std::endl;
 
   // --------------------------------------------------------------------------
   // load values - autothrust
@@ -216,7 +215,7 @@ void FlyByWireInterface::loadConfiguration() {
   idAutothrustThrustLimitREV->set(autothrustThrustLimitReverse);
 
   // print configuration into console
-  cout << "WASM: AUTOTHRUST : THRUST_LIMIT_REVERSE    = " << autothrustThrustLimitReverse << endl;
+  std::cout << "WASM: AUTOTHRUST : THRUST_LIMIT_REVERSE    = " << autothrustThrustLimitReverse << std::endl;
 
   // --------------------------------------------------------------------------
   // load values - flight controls
@@ -230,11 +229,11 @@ void FlyByWireInterface::loadConfiguration() {
       INITypeConversion::getBoolean(iniStructure, "FLIGHT_CONTROLS", "DISABLE_XBOX_COMPATIBILITY_RUDDER_AXIS_PLUS_MINUS", false);
 
   // print configuration into console
-  cout << "WASM: FLIGHT_CONTROLS : KEY_CHANGE_AILERON = " << flightControlsKeyChangeAileron << endl;
-  cout << "WASM: FLIGHT_CONTROLS : KEY_CHANGE_ELEVATOR = " << flightControlsKeyChangeElevator << endl;
-  cout << "WASM: FLIGHT_CONTROLS : KEY_CHANGE_RUDDER = " << flightControlsKeyChangeRudder << endl;
-  cout << "WASM: FLIGHT_CONTROLS : DISABLE_XBOX_COMPATIBILITY_RUDDER_AXIS_PLUS_MINUS = " << disableXboxCompatibilityRudderAxisPlusMinus
-       << endl;
+  std::cout << "WASM: FLIGHT_CONTROLS : KEY_CHANGE_AILERON = " << flightControlsKeyChangeAileron << std::endl;
+  std::cout << "WASM: FLIGHT_CONTROLS : KEY_CHANGE_ELEVATOR = " << flightControlsKeyChangeElevator << std::endl;
+  std::cout << "WASM: FLIGHT_CONTROLS : KEY_CHANGE_RUDDER = " << flightControlsKeyChangeRudder << std::endl;
+  std::cout << "WASM: FLIGHT_CONTROLS : DISABLE_XBOX_COMPATIBILITY_RUDDER_AXIS_PLUS_MINUS = " << disableXboxCompatibilityRudderAxisPlusMinus
+       << std::endl;
 
   // --------------------------------------------------------------------------
   // load values - logging
@@ -242,14 +241,14 @@ void FlyByWireInterface::loadConfiguration() {
   idLoggingThrottlesEnabled->set(INITypeConversion::getBoolean(iniStructure, "LOGGING", "THROTTLES_ENABLED", false));
 
   // print configuration into console
-  cout << "WASM: LOGGING : FLIGHT_CONTROLS_ENABLED = " << idLoggingFlightControlsEnabled->get() << endl;
-  cout << "WASM: LOGGING : THROTTLES_ENABLED = " << idLoggingThrottlesEnabled->get() << endl;
+  std::cout << "WASM: LOGGING : FLIGHT_CONTROLS_ENABLED = " << idLoggingFlightControlsEnabled->get() << std::endl;
+  std::cout << "WASM: LOGGING : THROTTLES_ENABLED = " << idLoggingThrottlesEnabled->get() << std::endl;
 
   // --------------------------------------------------------------------------
   // create axis and load configuration
   for (size_t i = 1; i <= 2; i++) {
     // create new mapping
-    auto axis = make_shared<ThrottleAxisMapping>(i);
+    auto axis = std::make_shared<ThrottleAxisMapping>(i);
     // load configuration from file
     axis->loadFromFile();
     // store axis
@@ -257,7 +256,7 @@ void FlyByWireInterface::loadConfiguration() {
   }
 
   // create mapping for 3D animation position
-  vector<pair<double, double>> mappingTable3d;
+  std::vector<std::pair<double, double>> mappingTable3d;
   mappingTable3d.emplace_back(-20.0, 0.0);
   mappingTable3d.emplace_back(0.0, 25.0);
   mappingTable3d.emplace_back(25.0, 50.0);
@@ -268,447 +267,447 @@ void FlyByWireInterface::loadConfiguration() {
 
 void FlyByWireInterface::setupLocalVariables() {
   // regsiter L variable for init state and ready signal
-  idIsReady = make_unique<LocalVariable>("A32NX_IS_READY");
-  idStartState = make_unique<LocalVariable>("A32NX_START_STATE");
+  idIsReady = std::make_unique<LocalVariable>("A32NX_IS_READY");
+  idStartState = std::make_unique<LocalVariable>("A32NX_START_STATE");
 
   // regsiter L variable for logging
-  idLoggingFlightControlsEnabled = make_unique<LocalVariable>("A32NX_LOGGING_FLIGHT_CONTROLS_ENABLED");
-  idLoggingThrottlesEnabled = make_unique<LocalVariable>("A32NX_LOGGING_THROTTLES_ENABLED");
+  idLoggingFlightControlsEnabled = std::make_unique<LocalVariable>("A32NX_LOGGING_FLIGHT_CONTROLS_ENABLED");
+  idLoggingThrottlesEnabled = std::make_unique<LocalVariable>("A32NX_LOGGING_THROTTLES_ENABLED");
 
   // register L variables for Autoland
-  idDevelopmentAutoland_condition_Flare = make_unique<LocalVariable>("A32NX_DEV_FLARE_CONDITION");
-  idDevelopmentAutoland_H_dot_c_fpm = make_unique<LocalVariable>("A32NX_DEV_FLARE_H_DOT_C");
-  idDevelopmentAutoland_delta_Theta_H_dot_deg = make_unique<LocalVariable>("A32NX_DEV_FLARE_DELTA_THETA_H_DOT");
-  idDevelopmentAutoland_delta_Theta_bz_deg = make_unique<LocalVariable>("A32NX_DEV_FLARE_DELTA_THETA_BZ");
-  idDevelopmentAutoland_delta_Theta_bx_deg = make_unique<LocalVariable>("A32NX_DEV_FLARE_DELTA_THETA_BX");
-  idDevelopmentAutoland_delta_Theta_beta_c_deg = make_unique<LocalVariable>("A32NX_DEV_FLARE_DELTA_THETA_BETA_C");
+  idDevelopmentAutoland_condition_Flare = std::make_unique<LocalVariable>("A32NX_DEV_FLARE_CONDITION");
+  idDevelopmentAutoland_H_dot_c_fpm = std::make_unique<LocalVariable>("A32NX_DEV_FLARE_H_DOT_C");
+  idDevelopmentAutoland_delta_Theta_H_dot_deg = std::make_unique<LocalVariable>("A32NX_DEV_FLARE_DELTA_THETA_H_DOT");
+  idDevelopmentAutoland_delta_Theta_bz_deg = std::make_unique<LocalVariable>("A32NX_DEV_FLARE_DELTA_THETA_BZ");
+  idDevelopmentAutoland_delta_Theta_bx_deg = std::make_unique<LocalVariable>("A32NX_DEV_FLARE_DELTA_THETA_BX");
+  idDevelopmentAutoland_delta_Theta_beta_c_deg = std::make_unique<LocalVariable>("A32NX_DEV_FLARE_DELTA_THETA_BETA_C");
 
   // register L variable for simulation rate limits
-  idMinimumSimulationRate = make_unique<LocalVariable>("A32NX_SIMULATION_RATE_LIMIT_MINIMUM");
-  idMaximumSimulationRate = make_unique<LocalVariable>("A32NX_SIMULATION_RATE_LIMIT_MAXIMUM");
+  idMinimumSimulationRate = std::make_unique<LocalVariable>("A32NX_SIMULATION_RATE_LIMIT_MINIMUM");
+  idMaximumSimulationRate = std::make_unique<LocalVariable>("A32NX_SIMULATION_RATE_LIMIT_MAXIMUM");
 
   // register L variable for performance warning
-  idPerformanceWarningActive = make_unique<LocalVariable>("A32NX_PERFORMANCE_WARNING_ACTIVE");
+  idPerformanceWarningActive = std::make_unique<LocalVariable>("A32NX_PERFORMANCE_WARNING_ACTIVE");
 
   // register L variable for external override
-  idTrackingMode = make_unique<LocalVariable>("A32NX_FLIGHT_CONTROLS_TRACKING_MODE");
-  idExternalOverride = make_unique<LocalVariable>("A32NX_EXTERNAL_OVERRIDE");
+  idTrackingMode = std::make_unique<LocalVariable>("A32NX_FLIGHT_CONTROLS_TRACKING_MODE");
+  idExternalOverride = std::make_unique<LocalVariable>("A32NX_EXTERNAL_OVERRIDE");
 
   // register L variable for FDR event
-  idFdrEvent = make_unique<LocalVariable>("A32NX_DFDR_EVENT_ON");
+  idFdrEvent = std::make_unique<LocalVariable>("A32NX_DFDR_EVENT_ON");
 
   // register L variables for the sidestick
-  idSideStickPositionX = make_unique<LocalVariable>("A32NX_SIDESTICK_POSITION_X");
-  idSideStickPositionY = make_unique<LocalVariable>("A32NX_SIDESTICK_POSITION_Y");
-  idRudderPedalPosition = make_unique<LocalVariable>("A32NX_RUDDER_PEDAL_POSITION");
-  idRudderPedalAnimationPosition = make_unique<LocalVariable>("A32NX_RUDDER_PEDAL_ANIMATION_POSITION");
-  idAutopilotNosewheelDemand = make_unique<LocalVariable>("A32NX_AUTOPILOT_NOSEWHEEL_DEMAND");
+  idSideStickPositionX = std::make_unique<LocalVariable>("A32NX_SIDESTICK_POSITION_X");
+  idSideStickPositionY = std::make_unique<LocalVariable>("A32NX_SIDESTICK_POSITION_Y");
+  idRudderPedalPosition = std::make_unique<LocalVariable>("A32NX_RUDDER_PEDAL_POSITION");
+  idRudderPedalAnimationPosition = std::make_unique<LocalVariable>("A32NX_RUDDER_PEDAL_ANIMATION_POSITION");
+  idAutopilotNosewheelDemand = std::make_unique<LocalVariable>("A32NX_AUTOPILOT_NOSEWHEEL_DEMAND");
 
   // register L variable for custom fly-by-wire interface
-  idFmaLateralMode = make_unique<LocalVariable>("A32NX_FMA_LATERAL_MODE");
-  idFmaLateralArmed = make_unique<LocalVariable>("A32NX_FMA_LATERAL_ARMED");
-  idFmaVerticalMode = make_unique<LocalVariable>("A32NX_FMA_VERTICAL_MODE");
-  idFmaVerticalArmed = make_unique<LocalVariable>("A32NX_FMA_VERTICAL_ARMED");
-  idFmaExpediteModeActive = make_unique<LocalVariable>("A32NX_FMA_EXPEDITE_MODE");
-  idFmaSpeedProtectionActive = make_unique<LocalVariable>("A32NX_FMA_SPEED_PROTECTION_MODE");
-  idFmaSoftAltModeActive = make_unique<LocalVariable>("A32NX_FMA_SOFT_ALT_MODE");
-  idFmaCruiseAltModeActive = make_unique<LocalVariable>("A32NX_FMA_CRUISE_ALT_MODE");
-  idFmaApproachCapability = make_unique<LocalVariable>("A32NX_ApproachCapability");
-  idFmaTripleClick = make_unique<LocalVariable>("A32NX_FMA_TRIPLE_CLICK");
-  idFmaModeReversion = make_unique<LocalVariable>("A32NX_FMA_MODE_REVERSION");
+  idFmaLateralMode = std::make_unique<LocalVariable>("A32NX_FMA_LATERAL_MODE");
+  idFmaLateralArmed = std::make_unique<LocalVariable>("A32NX_FMA_LATERAL_ARMED");
+  idFmaVerticalMode = std::make_unique<LocalVariable>("A32NX_FMA_VERTICAL_MODE");
+  idFmaVerticalArmed = std::make_unique<LocalVariable>("A32NX_FMA_VERTICAL_ARMED");
+  idFmaExpediteModeActive = std::make_unique<LocalVariable>("A32NX_FMA_EXPEDITE_MODE");
+  idFmaSpeedProtectionActive = std::make_unique<LocalVariable>("A32NX_FMA_SPEED_PROTECTION_MODE");
+  idFmaSoftAltModeActive = std::make_unique<LocalVariable>("A32NX_FMA_SOFT_ALT_MODE");
+  idFmaCruiseAltModeActive = std::make_unique<LocalVariable>("A32NX_FMA_CRUISE_ALT_MODE");
+  idFmaApproachCapability = std::make_unique<LocalVariable>("A32NX_ApproachCapability");
+  idFmaTripleClick = std::make_unique<LocalVariable>("A32NX_FMA_TRIPLE_CLICK");
+  idFmaModeReversion = std::make_unique<LocalVariable>("A32NX_FMA_MODE_REVERSION");
 
-  idAutopilotTcasMessageDisarm = make_unique<LocalVariable>("A32NX_AUTOPILOT_TCAS_MESSAGE_DISARM");
-  idAutopilotTcasMessageRaInhibited = make_unique<LocalVariable>("A32NX_AUTOPILOT_TCAS_MESSAGE_RA_INHIBITED");
-  idAutopilotTcasMessageTrkFpaDeselection = make_unique<LocalVariable>("A32NX_AUTOPILOT_TCAS_MESSAGE_TRK_FPA_DESELECTION");
+  idAutopilotTcasMessageDisarm = std::make_unique<LocalVariable>("A32NX_AUTOPILOT_TCAS_MESSAGE_DISARM");
+  idAutopilotTcasMessageRaInhibited = std::make_unique<LocalVariable>("A32NX_AUTOPILOT_TCAS_MESSAGE_RA_INHIBITED");
+  idAutopilotTcasMessageTrkFpaDeselection = std::make_unique<LocalVariable>("A32NX_AUTOPILOT_TCAS_MESSAGE_TRK_FPA_DESELECTION");
 
   // register L variable for flight director
-  idFlightDirectorBank = make_unique<LocalVariable>("A32NX_FLIGHT_DIRECTOR_BANK");
-  idFlightDirectorPitch = make_unique<LocalVariable>("A32NX_FLIGHT_DIRECTOR_PITCH");
-  idFlightDirectorYaw = make_unique<LocalVariable>("A32NX_FLIGHT_DIRECTOR_YAW");
+  idFlightDirectorBank = std::make_unique<LocalVariable>("A32NX_FLIGHT_DIRECTOR_BANK");
+  idFlightDirectorPitch = std::make_unique<LocalVariable>("A32NX_FLIGHT_DIRECTOR_PITCH");
+  idFlightDirectorYaw = std::make_unique<LocalVariable>("A32NX_FLIGHT_DIRECTOR_YAW");
 
   // register L variables for autoland warning
-  idAutopilotAutolandWarning = make_unique<LocalVariable>("A32NX_AUTOPILOT_AUTOLAND_WARNING");
+  idAutopilotAutolandWarning = std::make_unique<LocalVariable>("A32NX_AUTOPILOT_AUTOLAND_WARNING");
 
   // register L variables for relative speed to ground
-  idAutopilot_H_dot_radio = make_unique<LocalVariable>("A32NX_AUTOPILOT_H_DOT_RADIO");
+  idAutopilot_H_dot_radio = std::make_unique<LocalVariable>("A32NX_AUTOPILOT_H_DOT_RADIO");
 
   // register L variables for autopilot
-  idAutopilotActiveAny = make_unique<LocalVariable>("A32NX_AUTOPILOT_ACTIVE");
-  idAutopilotActive_1 = make_unique<LocalVariable>("A32NX_AUTOPILOT_1_ACTIVE");
-  idAutopilotActive_2 = make_unique<LocalVariable>("A32NX_AUTOPILOT_2_ACTIVE");
+  idAutopilotActiveAny = std::make_unique<LocalVariable>("A32NX_AUTOPILOT_ACTIVE");
+  idAutopilotActive_1 = std::make_unique<LocalVariable>("A32NX_AUTOPILOT_1_ACTIVE");
+  idAutopilotActive_2 = std::make_unique<LocalVariable>("A32NX_AUTOPILOT_2_ACTIVE");
 
-  idAutopilotAutothrustMode = make_unique<LocalVariable>("A32NX_AUTOPILOT_AUTOTHRUST_MODE");
+  idAutopilotAutothrustMode = std::make_unique<LocalVariable>("A32NX_AUTOPILOT_AUTOTHRUST_MODE");
 
   // register L variables for flight guidance
-  idFwcFlightPhase = make_unique<LocalVariable>("A32NX_FWC_FLIGHT_PHASE");
-  idFmgcFlightPhase = make_unique<LocalVariable>("A32NX_FMGC_FLIGHT_PHASE");
-  idFmgcV2 = make_unique<LocalVariable>("AIRLINER_V2_SPEED");
-  idFmgcV_APP = make_unique<LocalVariable>("AIRLINER_VAPP_SPEED");
-  idFmgcV_LS = make_unique<LocalVariable>("A32NX_SPEEDS_VLS");
-  idFmgcV_MAX = make_unique<LocalVariable>("A32NX_SPEEDS_VMAX");
+  idFwcFlightPhase = std::make_unique<LocalVariable>("A32NX_FWC_FLIGHT_PHASE");
+  idFmgcFlightPhase = std::make_unique<LocalVariable>("A32NX_FMGC_FLIGHT_PHASE");
+  idFmgcV2 = std::make_unique<LocalVariable>("AIRLINER_V2_SPEED");
+  idFmgcV_APP = std::make_unique<LocalVariable>("AIRLINER_VAPP_SPEED");
+  idFmgcV_LS = std::make_unique<LocalVariable>("A32NX_SPEEDS_VLS");
+  idFmgcV_MAX = std::make_unique<LocalVariable>("A32NX_SPEEDS_VMAX");
 
-  idFmgcAltitudeConstraint = make_unique<LocalVariable>("A32NX_FG_ALTITUDE_CONSTRAINT");
-  idFmgcThrustReductionAltitude = make_unique<LocalVariable>("AIRLINER_THR_RED_ALT");
-  idFmgcThrustReductionAltitudeGoAround = make_unique<LocalVariable>("AIRLINER_THR_RED_ALT_GOAROUND");
-  idFmgcAccelerationAltitude = make_unique<LocalVariable>("AIRLINER_ACC_ALT");
-  idFmgcAccelerationAltitudeEngineOut = make_unique<LocalVariable>("A32NX_ENG_OUT_ACC_ALT");
-  idFmgcAccelerationAltitudeGoAround = make_unique<LocalVariable>("AIRLINER_ACC_ALT_GOAROUND");
-  idFmgcAccelerationAltitudeGoAroundEngineOut = make_unique<LocalVariable>("AIRLINER_ENG_OUT_ACC_ALT_GOAROUND");
-  idFmgcCruiseAltitude = make_unique<LocalVariable>("AIRLINER_CRUISE_ALTITUDE");
-  idFmgcFlexTemperature = make_unique<LocalVariable>("AIRLINER_TO_FLEX_TEMP");
+  idFmgcAltitudeConstraint = std::make_unique<LocalVariable>("A32NX_FG_ALTITUDE_CONSTRAINT");
+  idFmgcThrustReductionAltitude = std::make_unique<LocalVariable>("AIRLINER_THR_RED_ALT");
+  idFmgcThrustReductionAltitudeGoAround = std::make_unique<LocalVariable>("AIRLINER_THR_RED_ALT_GOAROUND");
+  idFmgcAccelerationAltitude = std::make_unique<LocalVariable>("AIRLINER_ACC_ALT");
+  idFmgcAccelerationAltitudeEngineOut = std::make_unique<LocalVariable>("A32NX_ENG_OUT_ACC_ALT");
+  idFmgcAccelerationAltitudeGoAround = std::make_unique<LocalVariable>("AIRLINER_ACC_ALT_GOAROUND");
+  idFmgcAccelerationAltitudeGoAroundEngineOut = std::make_unique<LocalVariable>("AIRLINER_ENG_OUT_ACC_ALT_GOAROUND");
+  idFmgcCruiseAltitude = std::make_unique<LocalVariable>("AIRLINER_CRUISE_ALTITUDE");
+  idFmgcFlexTemperature = std::make_unique<LocalVariable>("AIRLINER_TO_FLEX_TEMP");
 
-  idFlightGuidanceAvailable = make_unique<LocalVariable>("A32NX_FG_AVAIL");
-  idFlightGuidanceCrossTrackError = make_unique<LocalVariable>("A32NX_FG_CROSS_TRACK_ERROR");
-  idFlightGuidanceTrackAngleError = make_unique<LocalVariable>("A32NX_FG_TRACK_ANGLE_ERROR");
-  idFlightGuidancePhiCommand = make_unique<LocalVariable>("A32NX_FG_PHI_COMMAND");
-  idFlightGuidancePhiLimit = make_unique<LocalVariable>("A32NX_FG_PHI_LIMIT");
-  idFlightGuidanceRequestedVerticalMode = make_unique<LocalVariable>("A32NX_FG_REQUESTED_VERTICAL_MODE");
-  idFlightGuidanceTargetAltitude = make_unique<LocalVariable>("A32NX_FG_TARGET_ALTITUDE");
-  idFlightGuidanceTargetVerticalSpeed = make_unique<LocalVariable>("A32NX_FG_TARGET_VERTICAL_SPEED");
-  idFmRnavAppSelected = make_unique<LocalVariable>("A32NX_FG_RNAV_APP_SELECTED");
-  idFmFinalCanEngage = make_unique<LocalVariable>("A32NX_FG_FINAL_CAN_ENGAGE");
+  idFlightGuidanceAvailable = std::make_unique<LocalVariable>("A32NX_FG_AVAIL");
+  idFlightGuidanceCrossTrackError = std::make_unique<LocalVariable>("A32NX_FG_CROSS_TRACK_ERROR");
+  idFlightGuidanceTrackAngleError = std::make_unique<LocalVariable>("A32NX_FG_TRACK_ANGLE_ERROR");
+  idFlightGuidancePhiCommand = std::make_unique<LocalVariable>("A32NX_FG_PHI_COMMAND");
+  idFlightGuidancePhiLimit = std::make_unique<LocalVariable>("A32NX_FG_PHI_LIMIT");
+  idFlightGuidanceRequestedVerticalMode = std::make_unique<LocalVariable>("A32NX_FG_REQUESTED_VERTICAL_MODE");
+  idFlightGuidanceTargetAltitude = std::make_unique<LocalVariable>("A32NX_FG_TARGET_ALTITUDE");
+  idFlightGuidanceTargetVerticalSpeed = std::make_unique<LocalVariable>("A32NX_FG_TARGET_VERTICAL_SPEED");
+  idFmRnavAppSelected = std::make_unique<LocalVariable>("A32NX_FG_RNAV_APP_SELECTED");
+  idFmFinalCanEngage = std::make_unique<LocalVariable>("A32NX_FG_FINAL_CAN_ENGAGE");
 
-  idTcasFault = make_unique<LocalVariable>("A32NX_TCAS_FAULT");
-  idTcasMode = make_unique<LocalVariable>("A32NX_TCAS_MODE");
-  idTcasTaOnly = make_unique<LocalVariable>("A32NX_TCAS_TA_ONLY");
-  idTcasState = make_unique<LocalVariable>("A32NX_TCAS_STATE");
-  idTcasRaCorrective = make_unique<LocalVariable>("A32NX_TCAS_RA_CORRECTIVE");
-  idTcasTargetGreenMin = make_unique<LocalVariable>("A32NX_TCAS_VSPEED_GREEN:1");
-  idTcasTargetGreenMax = make_unique<LocalVariable>("A32NX_TCAS_VSPEED_GREEN:2");
-  idTcasTargetRedMin = make_unique<LocalVariable>("A32NX_TCAS_VSPEED_RED:1");
-  idTcasTargetRedMax = make_unique<LocalVariable>("A32NX_TCAS_VSPEED_RED:2");
+  idTcasFault = std::make_unique<LocalVariable>("A32NX_TCAS_FAULT");
+  idTcasMode = std::make_unique<LocalVariable>("A32NX_TCAS_MODE");
+  idTcasTaOnly = std::make_unique<LocalVariable>("A32NX_TCAS_TA_ONLY");
+  idTcasState = std::make_unique<LocalVariable>("A32NX_TCAS_STATE");
+  idTcasRaCorrective = std::make_unique<LocalVariable>("A32NX_TCAS_RA_CORRECTIVE");
+  idTcasTargetGreenMin = std::make_unique<LocalVariable>("A32NX_TCAS_VSPEED_GREEN:1");
+  idTcasTargetGreenMax = std::make_unique<LocalVariable>("A32NX_TCAS_VSPEED_GREEN:2");
+  idTcasTargetRedMin = std::make_unique<LocalVariable>("A32NX_TCAS_VSPEED_RED:1");
+  idTcasTargetRedMax = std::make_unique<LocalVariable>("A32NX_TCAS_VSPEED_RED:2");
 
-  idFcuTrkFpaModeActive = make_unique<LocalVariable>("A32NX_TRK_FPA_MODE_ACTIVE");
-  idFcuSelectedFpa = make_unique<LocalVariable>("A32NX_AUTOPILOT_FPA_SELECTED");
-  idFcuSelectedVs = make_unique<LocalVariable>("A32NX_AUTOPILOT_VS_SELECTED");
-  idFcuSelectedHeading = make_unique<LocalVariable>("A32NX_AUTOPILOT_HEADING_SELECTED");
+  idFcuTrkFpaModeActive = std::make_unique<LocalVariable>("A32NX_TRK_FPA_MODE_ACTIVE");
+  idFcuSelectedFpa = std::make_unique<LocalVariable>("A32NX_AUTOPILOT_FPA_SELECTED");
+  idFcuSelectedVs = std::make_unique<LocalVariable>("A32NX_AUTOPILOT_VS_SELECTED");
+  idFcuSelectedHeading = std::make_unique<LocalVariable>("A32NX_AUTOPILOT_HEADING_SELECTED");
 
-  idFcuLocModeActive = make_unique<LocalVariable>("A32NX_FCU_LOC_MODE_ACTIVE");
-  idFcuApprModeActive = make_unique<LocalVariable>("A32NX_FCU_APPR_MODE_ACTIVE");
-  idFcuHeadingSync = make_unique<LocalVariable>("A32NX_FCU_HEADING_SYNC");
-  idFcuModeReversionActive = make_unique<LocalVariable>("A32NX_FCU_MODE_REVERSION_ACTIVE");
-  idFcuModeReversionTrkFpaActive = make_unique<LocalVariable>("A32NX_FCU_MODE_REVERSION_TRK_FPA_ACTIVE");
-  idFcuModeReversionTargetFpm = make_unique<LocalVariable>("A32NX_FCU_MODE_REVERSION_TARGET_FPM");
+  idFcuLocModeActive = std::make_unique<LocalVariable>("A32NX_FCU_LOC_MODE_ACTIVE");
+  idFcuApprModeActive = std::make_unique<LocalVariable>("A32NX_FCU_APPR_MODE_ACTIVE");
+  idFcuHeadingSync = std::make_unique<LocalVariable>("A32NX_FCU_HEADING_SYNC");
+  idFcuModeReversionActive = std::make_unique<LocalVariable>("A32NX_FCU_MODE_REVERSION_ACTIVE");
+  idFcuModeReversionTrkFpaActive = std::make_unique<LocalVariable>("A32NX_FCU_MODE_REVERSION_TRK_FPA_ACTIVE");
+  idFcuModeReversionTargetFpm = std::make_unique<LocalVariable>("A32NX_FCU_MODE_REVERSION_TARGET_FPM");
 
-  idThrottlePosition3d_1 = make_unique<LocalVariable>("A32NX_3D_THROTTLE_LEVER_POSITION_1");
-  idThrottlePosition3d_2 = make_unique<LocalVariable>("A32NX_3D_THROTTLE_LEVER_POSITION_2");
+  idThrottlePosition3d_1 = std::make_unique<LocalVariable>("A32NX_3D_THROTTLE_LEVER_POSITION_1");
+  idThrottlePosition3d_2 = std::make_unique<LocalVariable>("A32NX_3D_THROTTLE_LEVER_POSITION_2");
 
-  idAutothrustStatus = make_unique<LocalVariable>("A32NX_AUTOTHRUST_STATUS");
-  idAutothrustMode = make_unique<LocalVariable>("A32NX_AUTOTHRUST_MODE");
-  idAutothrustModeMessage = make_unique<LocalVariable>("A32NX_AUTOTHRUST_MODE_MESSAGE");
-  idAutothrustDisabled = make_unique<LocalVariable>("A32NX_AUTOTHRUST_DISABLED");
-  idAutothrustThrustLeverWarningFlex = make_unique<LocalVariable>("A32NX_AUTOTHRUST_THRUST_LEVER_WARNING_FLEX");
-  idAutothrustThrustLeverWarningToga = make_unique<LocalVariable>("A32NX_AUTOTHRUST_THRUST_LEVER_WARNING_TOGA");
-  idAutothrustDisconnect = make_unique<LocalVariable>("A32NX_AUTOTHRUST_DISCONNECT");
+  idAutothrustStatus = std::make_unique<LocalVariable>("A32NX_AUTOTHRUST_STATUS");
+  idAutothrustMode = std::make_unique<LocalVariable>("A32NX_AUTOTHRUST_MODE");
+  idAutothrustModeMessage = std::make_unique<LocalVariable>("A32NX_AUTOTHRUST_MODE_MESSAGE");
+  idAutothrustDisabled = std::make_unique<LocalVariable>("A32NX_AUTOTHRUST_DISABLED");
+  idAutothrustThrustLeverWarningFlex = std::make_unique<LocalVariable>("A32NX_AUTOTHRUST_THRUST_LEVER_WARNING_FLEX");
+  idAutothrustThrustLeverWarningToga = std::make_unique<LocalVariable>("A32NX_AUTOTHRUST_THRUST_LEVER_WARNING_TOGA");
+  idAutothrustDisconnect = std::make_unique<LocalVariable>("A32NX_AUTOTHRUST_DISCONNECT");
 
-  idAirConditioningPack_1 = make_unique<LocalVariable>("A32NX_OVHD_COND_PACK_1_PB_IS_ON");
-  idAirConditioningPack_2 = make_unique<LocalVariable>("A32NX_OVHD_COND_PACK_2_PB_IS_ON");
+  idAirConditioningPack_1 = std::make_unique<LocalVariable>("A32NX_OVHD_COND_PACK_1_PB_IS_ON");
+  idAirConditioningPack_2 = std::make_unique<LocalVariable>("A32NX_OVHD_COND_PACK_2_PB_IS_ON");
 
-  idAutothrustThrustLimitType = make_unique<LocalVariable>("A32NX_AUTOTHRUST_THRUST_LIMIT_TYPE");
-  idAutothrustThrustLimit = make_unique<LocalVariable>("A32NX_AUTOTHRUST_THRUST_LIMIT");
-  idAutothrustThrustLimitREV = make_unique<LocalVariable>("A32NX_AUTOTHRUST_THRUST_LIMIT_REV");
-  idAutothrustThrustLimitIDLE = make_unique<LocalVariable>("A32NX_AUTOTHRUST_THRUST_LIMIT_IDLE");
-  idAutothrustThrustLimitCLB = make_unique<LocalVariable>("A32NX_AUTOTHRUST_THRUST_LIMIT_CLB");
-  idAutothrustThrustLimitMCT = make_unique<LocalVariable>("A32NX_AUTOTHRUST_THRUST_LIMIT_MCT");
-  idAutothrustThrustLimitFLX = make_unique<LocalVariable>("A32NX_AUTOTHRUST_THRUST_LIMIT_FLX");
-  idAutothrustThrustLimitTOGA = make_unique<LocalVariable>("A32NX_AUTOTHRUST_THRUST_LIMIT_TOGA");
-  thrustLeverAngle_1 = make_unique<LocalVariable>("A32NX_AUTOTHRUST_TLA:1");
-  thrustLeverAngle_2 = make_unique<LocalVariable>("A32NX_AUTOTHRUST_TLA:2");
-  idAutothrustN1_TLA_1 = make_unique<LocalVariable>("A32NX_AUTOTHRUST_TLA_N1:1");
-  idAutothrustN1_TLA_2 = make_unique<LocalVariable>("A32NX_AUTOTHRUST_TLA_N1:2");
-  idAutothrustReverse_1 = make_unique<LocalVariable>("A32NX_AUTOTHRUST_REVERSE:1");
-  idAutothrustReverse_2 = make_unique<LocalVariable>("A32NX_AUTOTHRUST_REVERSE:2");
-  idAutothrustN1_c_1 = make_unique<LocalVariable>("A32NX_AUTOTHRUST_N1_COMMANDED:1");
-  idAutothrustN1_c_2 = make_unique<LocalVariable>("A32NX_AUTOTHRUST_N1_COMMANDED:2");
+  idAutothrustThrustLimitType = std::make_unique<LocalVariable>("A32NX_AUTOTHRUST_THRUST_LIMIT_TYPE");
+  idAutothrustThrustLimit = std::make_unique<LocalVariable>("A32NX_AUTOTHRUST_THRUST_LIMIT");
+  idAutothrustThrustLimitREV = std::make_unique<LocalVariable>("A32NX_AUTOTHRUST_THRUST_LIMIT_REV");
+  idAutothrustThrustLimitIDLE = std::make_unique<LocalVariable>("A32NX_AUTOTHRUST_THRUST_LIMIT_IDLE");
+  idAutothrustThrustLimitCLB = std::make_unique<LocalVariable>("A32NX_AUTOTHRUST_THRUST_LIMIT_CLB");
+  idAutothrustThrustLimitMCT = std::make_unique<LocalVariable>("A32NX_AUTOTHRUST_THRUST_LIMIT_MCT");
+  idAutothrustThrustLimitFLX = std::make_unique<LocalVariable>("A32NX_AUTOTHRUST_THRUST_LIMIT_FLX");
+  idAutothrustThrustLimitTOGA = std::make_unique<LocalVariable>("A32NX_AUTOTHRUST_THRUST_LIMIT_TOGA");
+  thrustLeverAngle_1 = std::make_unique<LocalVariable>("A32NX_AUTOTHRUST_TLA:1");
+  thrustLeverAngle_2 = std::make_unique<LocalVariable>("A32NX_AUTOTHRUST_TLA:2");
+  idAutothrustN1_TLA_1 = std::make_unique<LocalVariable>("A32NX_AUTOTHRUST_TLA_N1:1");
+  idAutothrustN1_TLA_2 = std::make_unique<LocalVariable>("A32NX_AUTOTHRUST_TLA_N1:2");
+  idAutothrustReverse_1 = std::make_unique<LocalVariable>("A32NX_AUTOTHRUST_REVERSE:1");
+  idAutothrustReverse_2 = std::make_unique<LocalVariable>("A32NX_AUTOTHRUST_REVERSE:2");
+  idAutothrustN1_c_1 = std::make_unique<LocalVariable>("A32NX_AUTOTHRUST_N1_COMMANDED:1");
+  idAutothrustN1_c_2 = std::make_unique<LocalVariable>("A32NX_AUTOTHRUST_N1_COMMANDED:2");
 
-  idMasterWarning = make_unique<LocalVariable>("A32NX_MASTER_WARNING");
-  idMasterCaution = make_unique<LocalVariable>("A32NX_MASTER_CAUTION");
-  idParkBrakeLeverPos = make_unique<LocalVariable>("A32NX_PARK_BRAKE_LEVER_POS");
-  idBrakePedalLeftPos = make_unique<LocalVariable>("A32NX_LEFT_BRAKE_PEDAL_INPUT");
-  idBrakePedalRightPos = make_unique<LocalVariable>("A32NX_RIGHT_BRAKE_PEDAL_INPUT");
-  idAutobrakeArmedMode = make_unique<LocalVariable>("A32NX_AUTOBRAKES_ARMED_MODE");
-  idAutobrakeDecelLight = make_unique<LocalVariable>("A32NX_AUTOBRAKES_DECEL_LIGHT");
-  idFlapsHandlePercent = make_unique<LocalVariable>("A32NX_FLAPS_HANDLE_PERCENT");
-  idFlapsHandleIndex = make_unique<LocalVariable>("A32NX_FLAPS_HANDLE_INDEX");
-  idHydraulicGreenPressure = make_unique<LocalVariable>("A32NX_HYD_GREEN_SYSTEM_1_SECTION_PRESSURE");
-  idHydraulicBluePressure = make_unique<LocalVariable>("A32NX_HYD_BLUE_SYSTEM_1_SECTION_PRESSURE");
-  idHydraulicYellowPressure = make_unique<LocalVariable>("A32NX_HYD_YELLOW_SYSTEM_1_SECTION_PRESSURE");
+  idMasterWarning = std::make_unique<LocalVariable>("A32NX_MASTER_WARNING");
+  idMasterCaution = std::make_unique<LocalVariable>("A32NX_MASTER_CAUTION");
+  idParkBrakeLeverPos = std::make_unique<LocalVariable>("A32NX_PARK_BRAKE_LEVER_POS");
+  idBrakePedalLeftPos = std::make_unique<LocalVariable>("A32NX_LEFT_BRAKE_PEDAL_INPUT");
+  idBrakePedalRightPos = std::make_unique<LocalVariable>("A32NX_RIGHT_BRAKE_PEDAL_INPUT");
+  idAutobrakeArmedMode = std::make_unique<LocalVariable>("A32NX_AUTOBRAKES_ARMED_MODE");
+  idAutobrakeDecelLight = std::make_unique<LocalVariable>("A32NX_AUTOBRAKES_DECEL_LIGHT");
+  idFlapsHandlePercent = std::make_unique<LocalVariable>("A32NX_FLAPS_HANDLE_PERCENT");
+  idFlapsHandleIndex = std::make_unique<LocalVariable>("A32NX_FLAPS_HANDLE_INDEX");
+  idHydraulicGreenPressure = std::make_unique<LocalVariable>("A32NX_HYD_GREEN_SYSTEM_1_SECTION_PRESSURE");
+  idHydraulicBluePressure = std::make_unique<LocalVariable>("A32NX_HYD_BLUE_SYSTEM_1_SECTION_PRESSURE");
+  idHydraulicYellowPressure = std::make_unique<LocalVariable>("A32NX_HYD_YELLOW_SYSTEM_1_SECTION_PRESSURE");
 
-  engineEngine1N2 = make_unique<LocalVariable>("A32NX_ENGINE_N2:1");
-  engineEngine2N2 = make_unique<LocalVariable>("A32NX_ENGINE_N2:2");
-  engineEngine1N1 = make_unique<LocalVariable>("A32NX_ENGINE_N1:1");
-  engineEngine2N1 = make_unique<LocalVariable>("A32NX_ENGINE_N1:2");
-  engineEngineIdleN1 = make_unique<LocalVariable>("A32NX_ENGINE_IDLE_N1");
-  engineEngineIdleN2 = make_unique<LocalVariable>("A32NX_ENGINE_IDLE_N2");
-  engineEngineIdleFF = make_unique<LocalVariable>("A32NX_ENGINE_IDLE_FF");
-  engineEngineIdleEGT = make_unique<LocalVariable>("A32NX_ENGINE_IDLE_EGT");
-  engineEngine1EGT = make_unique<LocalVariable>("A32NX_ENGINE_EGT:1");
-  engineEngine2EGT = make_unique<LocalVariable>("A32NX_ENGINE_EGT:2");
-  engineEngine1Oil = make_unique<LocalVariable>("A32NX_ENGINE_TANK_OIL:1");
-  engineEngine2Oil = make_unique<LocalVariable>("A32NX_ENGINE_TANK_OIL:2");
-  engineEngine1TotalOil = make_unique<LocalVariable>("A32NX_ENGINE_TOTAL_OIL:1");
-  engineEngine2TotalOil = make_unique<LocalVariable>("A32NX_ENGINE_TOTAL_OIL:2");
-  engineEngine1FF = make_unique<LocalVariable>("A32NX_ENGINE_FF:1");
-  engineEngine2FF = make_unique<LocalVariable>("A32NX_ENGINE_FF:2");
-  engineEngine1PreFF = make_unique<LocalVariable>("A32NX_ENGINE_PRE_FF:1");
-  engineEngine2PreFF = make_unique<LocalVariable>("A32NX_ENGINE_PRE_FF:2");
-  engineEngineImbalance = make_unique<LocalVariable>("A32NX_ENGINE_IMBALANCE");
-  engineFuelUsedLeft = make_unique<LocalVariable>("A32NX_FUEL_USED:1");
-  engineFuelUsedRight = make_unique<LocalVariable>("A32NX_FUEL_USED:2");
-  engineFuelLeftPre = make_unique<LocalVariable>("A32NX_FUEL_LEFT_PRE");
-  engineFuelRightPre = make_unique<LocalVariable>("A32NX_FUEL_RIGHT_PRE");
-  engineFuelAuxLeftPre = make_unique<LocalVariable>("A32NX_FUEL_AUX_LEFT_PRE");
-  engineFuelAuxRightPre = make_unique<LocalVariable>("A32NX_FUEL_AUX_RIGHT_PRE");
-  engineFuelCenterPre = make_unique<LocalVariable>("A32NX_FUEL_CENTER_PRE");
-  engineEngineCycleTime = make_unique<LocalVariable>("A32NX_ENGINE_CYCLE_TIME");
-  engineEngine1State = make_unique<LocalVariable>("A32NX_ENGINE_STATE:1");
-  engineEngine2State = make_unique<LocalVariable>("A32NX_ENGINE_STATE:2");
-  engineEngine1Timer = make_unique<LocalVariable>("A32NX_ENGINE_TIMER:1");
-  engineEngine2Timer = make_unique<LocalVariable>("A32NX_ENGINE_TIMER:2");
+  engineEngine1N2 = std::make_unique<LocalVariable>("A32NX_ENGINE_N2:1");
+  engineEngine2N2 = std::make_unique<LocalVariable>("A32NX_ENGINE_N2:2");
+  engineEngine1N1 = std::make_unique<LocalVariable>("A32NX_ENGINE_N1:1");
+  engineEngine2N1 = std::make_unique<LocalVariable>("A32NX_ENGINE_N1:2");
+  engineEngineIdleN1 = std::make_unique<LocalVariable>("A32NX_ENGINE_IDLE_N1");
+  engineEngineIdleN2 = std::make_unique<LocalVariable>("A32NX_ENGINE_IDLE_N2");
+  engineEngineIdleFF = std::make_unique<LocalVariable>("A32NX_ENGINE_IDLE_FF");
+  engineEngineIdleEGT = std::make_unique<LocalVariable>("A32NX_ENGINE_IDLE_EGT");
+  engineEngine1EGT = std::make_unique<LocalVariable>("A32NX_ENGINE_EGT:1");
+  engineEngine2EGT = std::make_unique<LocalVariable>("A32NX_ENGINE_EGT:2");
+  engineEngine1Oil = std::make_unique<LocalVariable>("A32NX_ENGINE_TANK_OIL:1");
+  engineEngine2Oil = std::make_unique<LocalVariable>("A32NX_ENGINE_TANK_OIL:2");
+  engineEngine1TotalOil = std::make_unique<LocalVariable>("A32NX_ENGINE_TOTAL_OIL:1");
+  engineEngine2TotalOil = std::make_unique<LocalVariable>("A32NX_ENGINE_TOTAL_OIL:2");
+  engineEngine1FF = std::make_unique<LocalVariable>("A32NX_ENGINE_FF:1");
+  engineEngine2FF = std::make_unique<LocalVariable>("A32NX_ENGINE_FF:2");
+  engineEngine1PreFF = std::make_unique<LocalVariable>("A32NX_ENGINE_PRE_FF:1");
+  engineEngine2PreFF = std::make_unique<LocalVariable>("A32NX_ENGINE_PRE_FF:2");
+  engineEngineImbalance = std::make_unique<LocalVariable>("A32NX_ENGINE_IMBALANCE");
+  engineFuelUsedLeft = std::make_unique<LocalVariable>("A32NX_FUEL_USED:1");
+  engineFuelUsedRight = std::make_unique<LocalVariable>("A32NX_FUEL_USED:2");
+  engineFuelLeftPre = std::make_unique<LocalVariable>("A32NX_FUEL_LEFT_PRE");
+  engineFuelRightPre = std::make_unique<LocalVariable>("A32NX_FUEL_RIGHT_PRE");
+  engineFuelAuxLeftPre = std::make_unique<LocalVariable>("A32NX_FUEL_AUX_LEFT_PRE");
+  engineFuelAuxRightPre = std::make_unique<LocalVariable>("A32NX_FUEL_AUX_RIGHT_PRE");
+  engineFuelCenterPre = std::make_unique<LocalVariable>("A32NX_FUEL_CENTER_PRE");
+  engineEngineCycleTime = std::make_unique<LocalVariable>("A32NX_ENGINE_CYCLE_TIME");
+  engineEngine1State = std::make_unique<LocalVariable>("A32NX_ENGINE_STATE:1");
+  engineEngine2State = std::make_unique<LocalVariable>("A32NX_ENGINE_STATE:2");
+  engineEngine1Timer = std::make_unique<LocalVariable>("A32NX_ENGINE_TIMER:1");
+  engineEngine2Timer = std::make_unique<LocalVariable>("A32NX_ENGINE_TIMER:2");
 
-  flapsHandleIndexFlapConf = make_unique<LocalVariable>("A32NX_FLAPS_CONF_INDEX");
-  flapsPosition = make_unique<LocalVariable>("A32NX_LEFT_FLAPS_ANGLE");
+  flapsHandleIndexFlapConf = std::make_unique<LocalVariable>("A32NX_FLAPS_CONF_INDEX");
+  flapsPosition = std::make_unique<LocalVariable>("A32NX_LEFT_FLAPS_ANGLE");
 
-  idSpoilersArmed = make_unique<LocalVariable>("A32NX_SPOILERS_ARMED");
-  idSpoilersHandlePosition = make_unique<LocalVariable>("A32NX_SPOILERS_HANDLE_POSITION");
+  idSpoilersArmed = std::make_unique<LocalVariable>("A32NX_SPOILERS_ARMED");
+  idSpoilersHandlePosition = std::make_unique<LocalVariable>("A32NX_SPOILERS_HANDLE_POSITION");
 
-  idRudderPosition = make_unique<LocalVariable>("A32NX_RUDDER_DEFLECTION_DEMAND");
+  idRudderPosition = std::make_unique<LocalVariable>("A32NX_RUDDER_DEFLECTION_DEMAND");
 
-  idRadioReceiverUsageEnabled = make_unique<LocalVariable>("A32NX_RADIO_RECEIVER_USAGE_ENABLED");
-  idRadioReceiverLocalizerValid = make_unique<LocalVariable>("A32NX_RADIO_RECEIVER_LOC_IS_VALID");
-  idRadioReceiverLocalizerDeviation = make_unique<LocalVariable>("A32NX_RADIO_RECEIVER_LOC_DEVIATION");
-  idRadioReceiverLocalizerDistance = make_unique<LocalVariable>("A32NX_RADIO_RECEIVER_LOC_DISTANCE");
-  idRadioReceiverGlideSlopeValid = make_unique<LocalVariable>("A32NX_RADIO_RECEIVER_GS_IS_VALID");
-  idRadioReceiverGlideSlopeDeviation = make_unique<LocalVariable>("A32NX_RADIO_RECEIVER_GS_DEVIATION");
+  idRadioReceiverUsageEnabled = std::make_unique<LocalVariable>("A32NX_RADIO_RECEIVER_USAGE_ENABLED");
+  idRadioReceiverLocalizerValid = std::make_unique<LocalVariable>("A32NX_RADIO_RECEIVER_LOC_IS_VALID");
+  idRadioReceiverLocalizerDeviation = std::make_unique<LocalVariable>("A32NX_RADIO_RECEIVER_LOC_DEVIATION");
+  idRadioReceiverLocalizerDistance = std::make_unique<LocalVariable>("A32NX_RADIO_RECEIVER_LOC_DISTANCE");
+  idRadioReceiverGlideSlopeValid = std::make_unique<LocalVariable>("A32NX_RADIO_RECEIVER_GS_IS_VALID");
+  idRadioReceiverGlideSlopeDeviation = std::make_unique<LocalVariable>("A32NX_RADIO_RECEIVER_GS_DEVIATION");
 
-  idRealisticTillerEnabled = make_unique<LocalVariable>("A32NX_REALISTIC_TILLER_ENABLED");
-  idTillerHandlePosition = make_unique<LocalVariable>("A32NX_TILLER_HANDLE_POSITION");
-  idNoseWheelPosition = make_unique<LocalVariable>("A32NX_NOSE_WHEEL_POSITION");
+  idRealisticTillerEnabled = std::make_unique<LocalVariable>("A32NX_REALISTIC_TILLER_ENABLED");
+  idTillerHandlePosition = std::make_unique<LocalVariable>("A32NX_TILLER_HANDLE_POSITION");
+  idNoseWheelPosition = std::make_unique<LocalVariable>("A32NX_NOSE_WHEEL_POSITION");
 
-  idSyncFoEfisEnabled = make_unique<LocalVariable>("A32NX_FO_SYNC_EFIS_ENABLED");
+  idSyncFoEfisEnabled = std::make_unique<LocalVariable>("A32NX_FO_SYNC_EFIS_ENABLED");
 
-  idLs1Active = make_unique<LocalVariable>("BTN_LS_1_FILTER_ACTIVE");
-  idLs2Active = make_unique<LocalVariable>("BTN_LS_2_FILTER_ACTIVE");
-  idIsisLsActive = make_unique<LocalVariable>("A32NX_ISIS_LS_ACTIVE");
+  idLs1Active = std::make_unique<LocalVariable>("BTN_LS_1_FILTER_ACTIVE");
+  idLs2Active = std::make_unique<LocalVariable>("BTN_LS_2_FILTER_ACTIVE");
+  idIsisLsActive = std::make_unique<LocalVariable>("A32NX_ISIS_LS_ACTIVE");
 
-  idWingAntiIce = make_unique<LocalVariable>("A32NX_PNEU_WING_ANTI_ICE_SYSTEM_ON");
+  idWingAntiIce = std::make_unique<LocalVariable>("A32NX_PNEU_WING_ANTI_ICE_SYSTEM_ON");
 
   for (int i = 0; i < 2; i++) {
-    string idString = std::to_string(i + 1);
-    idRadioAltimeterHeight[i] = make_unique<LocalVariable>("A32NX_RA_" + idString + "_RADIO_ALTITUDE");
+    std::string idString = std::to_string(i + 1);
+    idRadioAltimeterHeight[i] = std::make_unique<LocalVariable>("A32NX_RA_" + idString + "_RADIO_ALTITUDE");
   }
 
   for (int i = 0; i < 2; i++) {
-    string idString = std::to_string(i + 1);
-    idLgciuNoseGearCompressed[i] = make_unique<LocalVariable>("A32NX_LGCIU_" + idString + "_NOSE_GEAR_COMPRESSED");
-    idLgciuLeftMainGearCompressed[i] = make_unique<LocalVariable>("A32NX_LGCIU_" + idString + "_LEFT_GEAR_COMPRESSED");
-    idLgciuRightMainGearCompressed[i] = make_unique<LocalVariable>("A32NX_LGCIU_" + idString + "_RIGHT_GEAR_COMPRESSED");
-    idLgciuDiscreteWord1[i] = make_unique<LocalVariable>("A32NX_LGCIU_" + idString + "_DISCRETE_WORD_1");
-    idLgciuDiscreteWord2[i] = make_unique<LocalVariable>("A32NX_LGCIU_" + idString + "_DISCRETE_WORD_2");
-    idLgciuDiscreteWord3[i] = make_unique<LocalVariable>("A32NX_LGCIU_" + idString + "_DISCRETE_WORD_3");
+    std::string idString = std::to_string(i + 1);
+    idLgciuNoseGearCompressed[i] = std::make_unique<LocalVariable>("A32NX_LGCIU_" + idString + "_NOSE_GEAR_COMPRESSED");
+    idLgciuLeftMainGearCompressed[i] = std::make_unique<LocalVariable>("A32NX_LGCIU_" + idString + "_LEFT_GEAR_COMPRESSED");
+    idLgciuRightMainGearCompressed[i] = std::make_unique<LocalVariable>("A32NX_LGCIU_" + idString + "_RIGHT_GEAR_COMPRESSED");
+    idLgciuDiscreteWord1[i] = std::make_unique<LocalVariable>("A32NX_LGCIU_" + idString + "_DISCRETE_WORD_1");
+    idLgciuDiscreteWord2[i] = std::make_unique<LocalVariable>("A32NX_LGCIU_" + idString + "_DISCRETE_WORD_2");
+    idLgciuDiscreteWord3[i] = std::make_unique<LocalVariable>("A32NX_LGCIU_" + idString + "_DISCRETE_WORD_3");
   }
 
-  idSfccSlatFlapComponentStatusWord = make_unique<LocalVariable>("A32NX_SFCC_SLAT_FLAP_COMPONENT_STATUS_WORD");
-  idSfccSlatFlapSystemStatusWord = make_unique<LocalVariable>("A32NX_SFCC_SLAT_FLAP_SYSTEM_STATUS_WORD");
-  idSfccSlatFlapActualPositionWord = make_unique<LocalVariable>("A32NX_SFCC_SLAT_FLAP_ACTUAL_POSITION_WORD");
-  idSfccSlatActualPositionWord = make_unique<LocalVariable>("A32NX_SFCC_SLAT_ACTUAL_POSITION_WORD");
-  idSfccFlapActualPositionWord = make_unique<LocalVariable>("A32NX_SFCC_FLAP_ACTUAL_POSITION_WORD");
+  idSfccSlatFlapComponentStatusWord = std::make_unique<LocalVariable>("A32NX_SFCC_SLAT_FLAP_COMPONENT_STATUS_WORD");
+  idSfccSlatFlapSystemStatusWord = std::make_unique<LocalVariable>("A32NX_SFCC_SLAT_FLAP_SYSTEM_STATUS_WORD");
+  idSfccSlatFlapActualPositionWord = std::make_unique<LocalVariable>("A32NX_SFCC_SLAT_FLAP_ACTUAL_POSITION_WORD");
+  idSfccSlatActualPositionWord = std::make_unique<LocalVariable>("A32NX_SFCC_SLAT_ACTUAL_POSITION_WORD");
+  idSfccFlapActualPositionWord = std::make_unique<LocalVariable>("A32NX_SFCC_FLAP_ACTUAL_POSITION_WORD");
 
   for (int i = 0; i < 3; i++) {
-    string idString = std::to_string(i + 1);
-    idAdrAltitudeCorrected[i] = make_unique<LocalVariable>("A32NX_ADIRS_ADR_" + idString + "_ALTITUDE");
-    idAdrMach[i] = make_unique<LocalVariable>("A32NX_ADIRS_ADR_" + idString + "_MACH");
-    idAdrAirspeedComputed[i] = make_unique<LocalVariable>("A32NX_ADIRS_ADR_" + idString + "_COMPUTED_AIRSPEED");
-    idAdrAirspeedTrue[i] = make_unique<LocalVariable>("A32NX_ADIRS_ADR_" + idString + "_TRUE_AIRSPEED");
-    idAdrVerticalSpeed[i] = make_unique<LocalVariable>("A32NX_ADIRS_ADR_" + idString + "_BAROMETRIC_VERTICAL_SPEED");
-    idAdrAoaCorrected[i] = make_unique<LocalVariable>("A32NX_ADIRS_ADR_" + idString + "_ANGLE_OF_ATTACK");
+    std::string idString = std::to_string(i + 1);
+    idAdrAltitudeCorrected[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_ADR_" + idString + "_ALTITUDE");
+    idAdrMach[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_ADR_" + idString + "_MACH");
+    idAdrAirspeedComputed[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_ADR_" + idString + "_COMPUTED_AIRSPEED");
+    idAdrAirspeedTrue[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_ADR_" + idString + "_TRUE_AIRSPEED");
+    idAdrVerticalSpeed[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_ADR_" + idString + "_BAROMETRIC_VERTICAL_SPEED");
+    idAdrAoaCorrected[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_ADR_" + idString + "_ANGLE_OF_ATTACK");
     idAdrCorrectedAverageStaticPressure[i] =
-        make_unique<LocalVariable>("A32NX_ADIRS_ADR_" + idString + "_CORRECTED_AVERAGE_STATIC_PRESSURE");
+        std::make_unique<LocalVariable>("A32NX_ADIRS_ADR_" + idString + "_CORRECTED_AVERAGE_STATIC_PRESSURE");
 
-    idIrLatitude[i] = make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_LATITUDE");
-    idIrLongitude[i] = make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_LONGITUDE");
-    idIrGroundSpeed[i] = make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_GROUND_SPEED");
-    idIrWindSpeed[i] = make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_WIND_VELOCITY");
-    idIrWindDirectionTrue[i] = make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_WIND_DIRECTION");
-    idIrTrackAngleMagnetic[i] = make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_TRACK");
-    idIrHeadingMagnetic[i] = make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_HEADING");
-    idIrDriftAngle[i] = make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_DRIFT_ANGLE");
-    idIrFlightPathAngle[i] = make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_FLIGHT_PATH_ANGLE");
-    idIrPitchAngle[i] = make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_PITCH");
-    idIrRollAngle[i] = make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_ROLL");
-    idIrBodyPitchRate[i] = make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_BODY_PITCH_RATE");
-    idIrBodyRollRate[i] = make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_BODY_ROLL_RATE");
-    idIrBodyYawRate[i] = make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_BODY_YAW_RATE");
-    idIrBodyLongAccel[i] = make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_BODY_LONGITUDINAL_ACC");
-    idIrBodyLatAccel[i] = make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_BODY_LATERAL_ACC");
-    idIrBodyNormalAccel[i] = make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_BODY_NORMAL_ACC");
-    idIrTrackAngleRate[i] = make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_HEADING_RATE");
-    idIrPitchAttRate[i] = make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_PITCH_ATT_RATE");
-    idIrRollAttRate[i] = make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_ROLL_ATT_RATE");
-    idIrInertialVerticalSpeed[i] = make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_VERTICAL_SPEED");
+    idIrLatitude[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_LATITUDE");
+    idIrLongitude[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_LONGITUDE");
+    idIrGroundSpeed[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_GROUND_SPEED");
+    idIrWindSpeed[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_WIND_VELOCITY");
+    idIrWindDirectionTrue[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_WIND_DIRECTION");
+    idIrTrackAngleMagnetic[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_TRACK");
+    idIrHeadingMagnetic[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_HEADING");
+    idIrDriftAngle[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_DRIFT_ANGLE");
+    idIrFlightPathAngle[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_FLIGHT_PATH_ANGLE");
+    idIrPitchAngle[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_PITCH");
+    idIrRollAngle[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_ROLL");
+    idIrBodyPitchRate[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_BODY_PITCH_RATE");
+    idIrBodyRollRate[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_BODY_ROLL_RATE");
+    idIrBodyYawRate[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_BODY_YAW_RATE");
+    idIrBodyLongAccel[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_BODY_LONGITUDINAL_ACC");
+    idIrBodyLatAccel[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_BODY_LATERAL_ACC");
+    idIrBodyNormalAccel[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_BODY_NORMAL_ACC");
+    idIrTrackAngleRate[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_HEADING_RATE");
+    idIrPitchAttRate[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_PITCH_ATT_RATE");
+    idIrRollAttRate[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_ROLL_ATT_RATE");
+    idIrInertialVerticalSpeed[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_VERTICAL_SPEED");
   }
 
   for (int i = 0; i < 2; i++) {
-    string idString = std::to_string(i + 1);
+    std::string idString = std::to_string(i + 1);
 
-    idFcdcDiscreteWord1[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_DISCRETE_WORD_1");
-    idFcdcDiscreteWord2[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_DISCRETE_WORD_2");
-    idFcdcDiscreteWord3[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_DISCRETE_WORD_3");
-    idFcdcDiscreteWord4[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_DISCRETE_WORD_4");
-    idFcdcDiscreteWord5[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_DISCRETE_WORD_5");
-    idFcdcCaptRollCommand[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_CAPT_ROLL_COMMAND");
-    idFcdcFoRollCommand[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_FO_ROLL_COMMAND");
-    idFcdcCaptPitchCommand[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_CAPT_PITCH_COMMAND");
-    idFcdcFoPitchCommand[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_FO_PITCH_COMMAND");
-    idFcdcRudderPedalPos[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_RUDDER_PEDAL_POS");
-    idFcdcAileronLeftPos[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_AILERON_LEFT_POS");
-    idFcdcElevatorLeftPos[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_ELEVATOR_LEFT_POS");
-    idFcdcAileronRightPos[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_AILERON_RIGHT_POS");
-    idFcdcElevatorRightPos[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_ELEVATOR_RIGHT_POS");
-    idFcdcElevatorTrimPos[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_ELEVATOR_TRIM_POS");
-    idFcdcSpoilerLeft1Pos[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_SPOILER_LEFT_1_POS");
-    idFcdcSpoilerLeft2Pos[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_SPOILER_LEFT_2_POS");
-    idFcdcSpoilerLeft3Pos[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_SPOILER_LEFT_3_POS");
-    idFcdcSpoilerLeft4Pos[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_SPOILER_LEFT_4_POS");
-    idFcdcSpoilerLeft5Pos[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_SPOILER_LEFT_5_POS");
-    idFcdcSpoilerRight1Pos[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_SPOILER_RIGHT_1_POS");
-    idFcdcSpoilerRight2Pos[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_SPOILER_RIGHT_2_POS");
-    idFcdcSpoilerRight3Pos[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_SPOILER_RIGHT_3_POS");
-    idFcdcSpoilerRight4Pos[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_SPOILER_RIGHT_4_POS");
-    idFcdcSpoilerRight5Pos[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_SPOILER_RIGHT_5_POS");
+    idFcdcDiscreteWord1[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_DISCRETE_WORD_1");
+    idFcdcDiscreteWord2[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_DISCRETE_WORD_2");
+    idFcdcDiscreteWord3[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_DISCRETE_WORD_3");
+    idFcdcDiscreteWord4[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_DISCRETE_WORD_4");
+    idFcdcDiscreteWord5[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_DISCRETE_WORD_5");
+    idFcdcCaptRollCommand[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_CAPT_ROLL_COMMAND");
+    idFcdcFoRollCommand[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_FO_ROLL_COMMAND");
+    idFcdcCaptPitchCommand[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_CAPT_PITCH_COMMAND");
+    idFcdcFoPitchCommand[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_FO_PITCH_COMMAND");
+    idFcdcRudderPedalPos[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_RUDDER_PEDAL_POS");
+    idFcdcAileronLeftPos[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_AILERON_LEFT_POS");
+    idFcdcElevatorLeftPos[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_ELEVATOR_LEFT_POS");
+    idFcdcAileronRightPos[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_AILERON_RIGHT_POS");
+    idFcdcElevatorRightPos[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_ELEVATOR_RIGHT_POS");
+    idFcdcElevatorTrimPos[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_ELEVATOR_TRIM_POS");
+    idFcdcSpoilerLeft1Pos[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_SPOILER_LEFT_1_POS");
+    idFcdcSpoilerLeft2Pos[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_SPOILER_LEFT_2_POS");
+    idFcdcSpoilerLeft3Pos[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_SPOILER_LEFT_3_POS");
+    idFcdcSpoilerLeft4Pos[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_SPOILER_LEFT_4_POS");
+    idFcdcSpoilerLeft5Pos[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_SPOILER_LEFT_5_POS");
+    idFcdcSpoilerRight1Pos[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_SPOILER_RIGHT_1_POS");
+    idFcdcSpoilerRight2Pos[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_SPOILER_RIGHT_2_POS");
+    idFcdcSpoilerRight3Pos[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_SPOILER_RIGHT_3_POS");
+    idFcdcSpoilerRight4Pos[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_SPOILER_RIGHT_4_POS");
+    idFcdcSpoilerRight5Pos[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_SPOILER_RIGHT_5_POS");
 
-    idFcdcPriorityCaptGreen[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_PRIORITY_LIGHT_CAPT_GREEN_ON");
-    idFcdcPriorityCaptRed[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_PRIORITY_LIGHT_CAPT_RED_ON");
-    idFcdcPriorityFoGreen[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_PRIORITY_LIGHT_FO_GREEN_ON");
-    idFcdcPriorityFoRed[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_PRIORITY_LIGHT_FO_RED_ON");
+    idFcdcPriorityCaptGreen[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_PRIORITY_LIGHT_CAPT_GREEN_ON");
+    idFcdcPriorityCaptRed[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_PRIORITY_LIGHT_CAPT_RED_ON");
+    idFcdcPriorityFoGreen[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_PRIORITY_LIGHT_FO_GREEN_ON");
+    idFcdcPriorityFoRed[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_PRIORITY_LIGHT_FO_RED_ON");
   }
 
-  idThsOverrideActive = make_unique<LocalVariable>("A32NX_HYD_THS_TRIM_MANUAL_OVERRIDE");
+  idThsOverrideActive = std::make_unique<LocalVariable>("A32NX_HYD_THS_TRIM_MANUAL_OVERRIDE");
 
   for (int i = 0; i < 2; i++) {
-    string idString = std::to_string(i + 1);
+    std::string idString = std::to_string(i + 1);
 
-    idElacPushbuttonPressed[i] = make_unique<LocalVariable>("A32NX_ELAC_" + idString + "_PUSHBUTTON_PRESSED");
-    idElacDigitalOpValidated[i] = make_unique<LocalVariable>("A32NX_ELAC_" + idString + "_DIGITAL_OP_VALIDATED");
+    idElacPushbuttonPressed[i] = std::make_unique<LocalVariable>("A32NX_ELAC_" + idString + "_PUSHBUTTON_PRESSED");
+    idElacDigitalOpValidated[i] = std::make_unique<LocalVariable>("A32NX_ELAC_" + idString + "_DIGITAL_OP_VALIDATED");
   }
 
   for (int i = 0; i < 3; i++) {
-    string idString = std::to_string(i + 1);
+    std::string idString = std::to_string(i + 1);
 
-    idSecPushbuttonPressed[i] = make_unique<LocalVariable>("A32NX_SEC_" + idString + "_PUSHBUTTON_PRESSED");
-    idSecFaultLightOn[i] = make_unique<LocalVariable>("A32NX_SEC_" + idString + "_FAULT_LIGHT_ON");
-    idSecGroundSpoilersOut[i] = make_unique<LocalVariable>("A32NX_SEC_" + idString + "_GROUND_SPOILER_OUT");
+    idSecPushbuttonPressed[i] = std::make_unique<LocalVariable>("A32NX_SEC_" + idString + "_PUSHBUTTON_PRESSED");
+    idSecFaultLightOn[i] = std::make_unique<LocalVariable>("A32NX_SEC_" + idString + "_FAULT_LIGHT_ON");
+    idSecGroundSpoilersOut[i] = std::make_unique<LocalVariable>("A32NX_SEC_" + idString + "_GROUND_SPOILER_OUT");
   }
 
   for (int i = 0; i < 2; i++) {
-    string idString = std::to_string(i + 1);
+    std::string idString = std::to_string(i + 1);
 
-    idFacPushbuttonPressed[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_PUSHBUTTON_PRESSED");
-    idFacHealthy[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_HEALTHY");
+    idFacPushbuttonPressed[i] = std::make_unique<LocalVariable>("A32NX_FAC_" + idString + "_PUSHBUTTON_PRESSED");
+    idFacHealthy[i] = std::make_unique<LocalVariable>("A32NX_FAC_" + idString + "_HEALTHY");
 
-    idFacDiscreteWord1[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_DISCRETE_WORD_1");
-    idFacGammaA[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_GAMMA_A");
-    idFacGammaT[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_GAMMA_T");
-    idFacWeight[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_WEIGHT");
-    idFacCenterOfGravity[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_CENTER_OF_GRAVITY");
-    idFacSideslipTarget[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_SIDESLIP_TARGET");
-    idFacSlatAngle[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_SLATS_ANGLE");
-    idFacFlapAngle[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_FLAPS_ANGLE");
-    idFacDiscreteWord2[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_DISCRETE_WORD_2");
-    idFacRudderTravelLimitCommand[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_RUDDER_TRAVEL_LIMIT_COMMAND");
-    idFacDeltaRYawDamperVoted[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_DELTA_R_YAW_DAMPER");
-    idFacEstimatedSideslip[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_ESTIMATED_SIDESLIP");
-    idFacVAlphaLim[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_V_ALPHA_LIM");
-    idFacVLs[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_V_LS");
-    idFacVStall[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_V_STALL_1G");
-    idFacVAlphaProt[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_V_ALPHA_PROT");
-    idFacVStallWarn[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_V_STALL_WARN");
-    idFacSpeedTrend[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_SPEED_TREND");
-    idFacV3[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_V_3");
-    idFacV4[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_V_4");
-    idFacVMan[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_V_MAN");
-    idFacVMax[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_V_MAX");
-    idFacVFeNext[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_V_FE_NEXT");
-    idFacDiscreteWord3[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_DISCRETE_WORD_3");
-    idFacDiscreteWord4[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_DISCRETE_WORD_4");
-    idFacDiscreteWord5[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_DISCRETE_WORD_5");
-    idFacDeltaRRudderTrim[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_DELTA_R_RUDDER_TRIM");
-    idFacRudderTrimPos[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_RUDDER_TRIM_POS");
+    idFacDiscreteWord1[i] = std::make_unique<LocalVariable>("A32NX_FAC_" + idString + "_DISCRETE_WORD_1");
+    idFacGammaA[i] = std::make_unique<LocalVariable>("A32NX_FAC_" + idString + "_GAMMA_A");
+    idFacGammaT[i] = std::make_unique<LocalVariable>("A32NX_FAC_" + idString + "_GAMMA_T");
+    idFacWeight[i] = std::make_unique<LocalVariable>("A32NX_FAC_" + idString + "_WEIGHT");
+    idFacCenterOfGravity[i] = std::make_unique<LocalVariable>("A32NX_FAC_" + idString + "_CENTER_OF_GRAVITY");
+    idFacSideslipTarget[i] = std::make_unique<LocalVariable>("A32NX_FAC_" + idString + "_SIDESLIP_TARGET");
+    idFacSlatAngle[i] = std::make_unique<LocalVariable>("A32NX_FAC_" + idString + "_SLATS_ANGLE");
+    idFacFlapAngle[i] = std::make_unique<LocalVariable>("A32NX_FAC_" + idString + "_FLAPS_ANGLE");
+    idFacDiscreteWord2[i] = std::make_unique<LocalVariable>("A32NX_FAC_" + idString + "_DISCRETE_WORD_2");
+    idFacRudderTravelLimitCommand[i] = std::make_unique<LocalVariable>("A32NX_FAC_" + idString + "_RUDDER_TRAVEL_LIMIT_COMMAND");
+    idFacDeltaRYawDamperVoted[i] = std::make_unique<LocalVariable>("A32NX_FAC_" + idString + "_DELTA_R_YAW_DAMPER");
+    idFacEstimatedSideslip[i] = std::make_unique<LocalVariable>("A32NX_FAC_" + idString + "_ESTIMATED_SIDESLIP");
+    idFacVAlphaLim[i] = std::make_unique<LocalVariable>("A32NX_FAC_" + idString + "_V_ALPHA_LIM");
+    idFacVLs[i] = std::make_unique<LocalVariable>("A32NX_FAC_" + idString + "_V_LS");
+    idFacVStall[i] = std::make_unique<LocalVariable>("A32NX_FAC_" + idString + "_V_STALL_1G");
+    idFacVAlphaProt[i] = std::make_unique<LocalVariable>("A32NX_FAC_" + idString + "_V_ALPHA_PROT");
+    idFacVStallWarn[i] = std::make_unique<LocalVariable>("A32NX_FAC_" + idString + "_V_STALL_WARN");
+    idFacSpeedTrend[i] = std::make_unique<LocalVariable>("A32NX_FAC_" + idString + "_SPEED_TREND");
+    idFacV3[i] = std::make_unique<LocalVariable>("A32NX_FAC_" + idString + "_V_3");
+    idFacV4[i] = std::make_unique<LocalVariable>("A32NX_FAC_" + idString + "_V_4");
+    idFacVMan[i] = std::make_unique<LocalVariable>("A32NX_FAC_" + idString + "_V_MAN");
+    idFacVMax[i] = std::make_unique<LocalVariable>("A32NX_FAC_" + idString + "_V_MAX");
+    idFacVFeNext[i] = std::make_unique<LocalVariable>("A32NX_FAC_" + idString + "_V_FE_NEXT");
+    idFacDiscreteWord3[i] = std::make_unique<LocalVariable>("A32NX_FAC_" + idString + "_DISCRETE_WORD_3");
+    idFacDiscreteWord4[i] = std::make_unique<LocalVariable>("A32NX_FAC_" + idString + "_DISCRETE_WORD_4");
+    idFacDiscreteWord5[i] = std::make_unique<LocalVariable>("A32NX_FAC_" + idString + "_DISCRETE_WORD_5");
+    idFacDeltaRRudderTrim[i] = std::make_unique<LocalVariable>("A32NX_FAC_" + idString + "_DELTA_R_RUDDER_TRIM");
+    idFacRudderTrimPos[i] = std::make_unique<LocalVariable>("A32NX_FAC_" + idString + "_RUDDER_TRIM_POS");
   }
 
   for (int i = 0; i < 2; i++) {
-    string aileronStringLeft = i == 0 ? "BLUE" : "GREEN";
-    string aileronStringRight = i == 0 ? "GREEN" : "BLUE";
-    string elevatorStringLeft = i == 0 ? "BLUE" : "GREEN";
-    string elevatorStringRight = i == 0 ? "BLUE" : "YELLOW";
-    string yawDamperString = i == 0 ? "GREEN" : "YELLOW";
-    string idString = std::to_string(i + 1);
+    std::string aileronStringLeft = i == 0 ? "BLUE" : "GREEN";
+    std::string aileronStringRight = i == 0 ? "GREEN" : "BLUE";
+    std::string elevatorStringLeft = i == 0 ? "BLUE" : "GREEN";
+    std::string elevatorStringRight = i == 0 ? "BLUE" : "YELLOW";
+    std::string yawDamperString = i == 0 ? "GREEN" : "YELLOW";
+    std::string idString = std::to_string(i + 1);
 
-    idLeftAileronSolenoidEnergized[i] = make_unique<LocalVariable>("A32NX_LEFT_AIL_" + aileronStringLeft + "_SERVO_SOLENOID_ENERGIZED");
-    idLeftAileronCommandedPosition[i] = make_unique<LocalVariable>("A32NX_LEFT_AIL_" + aileronStringLeft + "_COMMANDED_POSITION");
-    idRightAileronSolenoidEnergized[i] = make_unique<LocalVariable>("A32NX_RIGHT_AIL_" + aileronStringRight + "_SERVO_SOLENOID_ENERGIZED");
-    idRightAileronCommandedPosition[i] = make_unique<LocalVariable>("A32NX_RIGHT_AIL_" + aileronStringRight + "_COMMANDED_POSITION");
-    idLeftElevatorSolenoidEnergized[i] = make_unique<LocalVariable>("A32NX_LEFT_ELEV_" + elevatorStringLeft + "_SERVO_SOLENOID_ENERGIZED");
-    idLeftElevatorCommandedPosition[i] = make_unique<LocalVariable>("A32NX_LEFT_ELEV_" + elevatorStringLeft + "_COMMANDED_POSITION");
+    idLeftAileronSolenoidEnergized[i] = std::make_unique<LocalVariable>("A32NX_LEFT_AIL_" + aileronStringLeft + "_SERVO_SOLENOID_ENERGIZED");
+    idLeftAileronCommandedPosition[i] = std::make_unique<LocalVariable>("A32NX_LEFT_AIL_" + aileronStringLeft + "_COMMANDED_POSITION");
+    idRightAileronSolenoidEnergized[i] = std::make_unique<LocalVariable>("A32NX_RIGHT_AIL_" + aileronStringRight + "_SERVO_SOLENOID_ENERGIZED");
+    idRightAileronCommandedPosition[i] = std::make_unique<LocalVariable>("A32NX_RIGHT_AIL_" + aileronStringRight + "_COMMANDED_POSITION");
+    idLeftElevatorSolenoidEnergized[i] = std::make_unique<LocalVariable>("A32NX_LEFT_ELEV_" + elevatorStringLeft + "_SERVO_SOLENOID_ENERGIZED");
+    idLeftElevatorCommandedPosition[i] = std::make_unique<LocalVariable>("A32NX_LEFT_ELEV_" + elevatorStringLeft + "_COMMANDED_POSITION");
     idRightElevatorSolenoidEnergized[i] =
-        make_unique<LocalVariable>("A32NX_RIGHT_ELEV_" + elevatorStringRight + "_SERVO_SOLENOID_ENERGIZED");
-    idRightElevatorCommandedPosition[i] = make_unique<LocalVariable>("A32NX_RIGHT_ELEV_" + elevatorStringRight + "_COMMANDED_POSITION");
+        std::make_unique<LocalVariable>("A32NX_RIGHT_ELEV_" + elevatorStringRight + "_SERVO_SOLENOID_ENERGIZED");
+    idRightElevatorCommandedPosition[i] = std::make_unique<LocalVariable>("A32NX_RIGHT_ELEV_" + elevatorStringRight + "_COMMANDED_POSITION");
 
-    idYawDamperSolenoidEnergized[i] = make_unique<LocalVariable>("A32NX_YAW_DAMPER_" + yawDamperString + "_SERVO_SOLENOID_ENERGIZED");
-    idYawDamperCommandedPosition[i] = make_unique<LocalVariable>("A32NX_YAW_DAMPER_" + yawDamperString + "_COMMANDED_POSITION");
-    idRudderTrimActiveModeCommanded[i] = make_unique<LocalVariable>("A32NX_RUDDER_TRIM_" + idString + "_ACTIVE_MODE_COMMANDED");
-    idRudderTrimCommandedPosition[i] = make_unique<LocalVariable>("A32NX_RUDDER_TRIM_" + idString + "_COMMANDED_POSITION");
+    idYawDamperSolenoidEnergized[i] = std::make_unique<LocalVariable>("A32NX_YAW_DAMPER_" + yawDamperString + "_SERVO_SOLENOID_ENERGIZED");
+    idYawDamperCommandedPosition[i] = std::make_unique<LocalVariable>("A32NX_YAW_DAMPER_" + yawDamperString + "_COMMANDED_POSITION");
+    idRudderTrimActiveModeCommanded[i] = std::make_unique<LocalVariable>("A32NX_RUDDER_TRIM_" + idString + "_ACTIVE_MODE_COMMANDED");
+    idRudderTrimCommandedPosition[i] = std::make_unique<LocalVariable>("A32NX_RUDDER_TRIM_" + idString + "_COMMANDED_POSITION");
     idRudderTravelLimitActiveModeCommanded[i] =
-        make_unique<LocalVariable>("A32NX_RUDDER_TRAVEL_LIM_" + idString + "_ACTIVE_MODE_COMMANDED");
-    idRudderTravelLimCommandedPosition[i] = make_unique<LocalVariable>("A32NX_RUDDER_TRAVEL_LIM_" + idString + "_COMMANDED_POSITION");
+        std::make_unique<LocalVariable>("A32NX_RUDDER_TRAVEL_LIM_" + idString + "_ACTIVE_MODE_COMMANDED");
+    idRudderTravelLimCommandedPosition[i] = std::make_unique<LocalVariable>("A32NX_RUDDER_TRAVEL_LIM_" + idString + "_COMMANDED_POSITION");
   }
 
   for (int i = 0; i < 3; i++) {
-    string idString = std::to_string(i + 1);
+    std::string idString = std::to_string(i + 1);
 
-    idTHSActiveModeCommanded[i] = make_unique<LocalVariable>("A32NX_THS_" + idString + "_ACTIVE_MODE_COMMANDED");
-    idTHSCommandedPosition[i] = make_unique<LocalVariable>("A32NX_THS_" + idString + "_COMMANDED_POSITION");
+    idTHSActiveModeCommanded[i] = std::make_unique<LocalVariable>("A32NX_THS_" + idString + "_ACTIVE_MODE_COMMANDED");
+    idTHSCommandedPosition[i] = std::make_unique<LocalVariable>("A32NX_THS_" + idString + "_COMMANDED_POSITION");
   }
 
   for (int i = 0; i < 2; i++) {
-    string idString = std::to_string(i + 1);
-    idElevFaultLeft[i] = make_unique<LocalVariable>("A32NX_LEFT_ELEV_SERVO_" + idString + "_FAILED");
-    idElevFaultRight[i] = make_unique<LocalVariable>("A32NX_RIGHT_ELEV_SERVO_" + idString + "_FAILED");
-    idAilFaultLeft[i] = make_unique<LocalVariable>("A32NX_LEFT_AIL_SERVO_" + idString + "_FAILED");
-    idAilFaultRight[i] = make_unique<LocalVariable>("A32NX_RIGHT_AIL_SERVO_" + idString + "_FAILED");
+    std::string idString = std::to_string(i + 1);
+    idElevFaultLeft[i] = std::make_unique<LocalVariable>("A32NX_LEFT_ELEV_SERVO_" + idString + "_FAILED");
+    idElevFaultRight[i] = std::make_unique<LocalVariable>("A32NX_RIGHT_ELEV_SERVO_" + idString + "_FAILED");
+    idAilFaultLeft[i] = std::make_unique<LocalVariable>("A32NX_LEFT_AIL_SERVO_" + idString + "_FAILED");
+    idAilFaultRight[i] = std::make_unique<LocalVariable>("A32NX_RIGHT_AIL_SERVO_" + idString + "_FAILED");
   }
 
   for (int i = 0; i < 5; i++) {
-    string idString = std::to_string(i + 1);
-    idLeftSpoilerCommandedPosition[i] = make_unique<LocalVariable>("A32NX_LEFT_SPOILER_" + idString + "_COMMANDED_POSITION");
-    idRightSpoilerCommandedPosition[i] = make_unique<LocalVariable>("A32NX_RIGHT_SPOILER_" + idString + "_COMMANDED_POSITION");
+    std::string idString = std::to_string(i + 1);
+    idLeftSpoilerCommandedPosition[i] = std::make_unique<LocalVariable>("A32NX_LEFT_SPOILER_" + idString + "_COMMANDED_POSITION");
+    idRightSpoilerCommandedPosition[i] = std::make_unique<LocalVariable>("A32NX_RIGHT_SPOILER_" + idString + "_COMMANDED_POSITION");
 
-    idLeftSpoilerPosition[i] = make_unique<LocalVariable>("A32NX_HYD_SPOILER_" + idString + "_LEFT_DEFLECTION");
-    idRightSpoilerPosition[i] = make_unique<LocalVariable>("A32NX_HYD_SPOILER_" + idString + "_RIGHT_DEFLECTION");
+    idLeftSpoilerPosition[i] = std::make_unique<LocalVariable>("A32NX_HYD_SPOILER_" + idString + "_LEFT_DEFLECTION");
+    idRightSpoilerPosition[i] = std::make_unique<LocalVariable>("A32NX_HYD_SPOILER_" + idString + "_RIGHT_DEFLECTION");
 
-    idSplrFaultLeft[i] = make_unique<LocalVariable>("A32NX_LEFT_SPLR_" + idString + "_SERVO_FAILED");
-    idSplrFaultRight[i] = make_unique<LocalVariable>("A32NX_RIGHT_SPLR_" + idString + "_SERVO_FAILED");
+    idSplrFaultLeft[i] = std::make_unique<LocalVariable>("A32NX_LEFT_SPLR_" + idString + "_SERVO_FAILED");
+    idSplrFaultRight[i] = std::make_unique<LocalVariable>("A32NX_RIGHT_SPLR_" + idString + "_SERVO_FAILED");
   }
 
-  idLeftAileronPosition = make_unique<LocalVariable>("A32NX_HYD_AILERON_LEFT_DEFLECTION");
-  idRightAileronPosition = make_unique<LocalVariable>("A32NX_HYD_AILERON_RIGHT_DEFLECTION");
-  idLeftElevatorPosition = make_unique<LocalVariable>("A32NX_HYD_ELEVATOR_LEFT_DEFLECTION");
-  idRightElevatorPosition = make_unique<LocalVariable>("A32NX_HYD_ELEVATOR_RIGHT_DEFLECTION");
+  idLeftAileronPosition = std::make_unique<LocalVariable>("A32NX_HYD_AILERON_LEFT_DEFLECTION");
+  idRightAileronPosition = std::make_unique<LocalVariable>("A32NX_HYD_AILERON_RIGHT_DEFLECTION");
+  idLeftElevatorPosition = std::make_unique<LocalVariable>("A32NX_HYD_ELEVATOR_LEFT_DEFLECTION");
+  idRightElevatorPosition = std::make_unique<LocalVariable>("A32NX_HYD_ELEVATOR_RIGHT_DEFLECTION");
 
-  idElecDcBus2Powered = make_unique<LocalVariable>("A32NX_ELEC_DC_2_BUS_IS_POWERED");
-  idElecDcEssShedBusPowered = make_unique<LocalVariable>("A32NX_ELEC_DC_ESS_SHED_BUS_IS_POWERED");
-  idElecDcEssBusPowered = make_unique<LocalVariable>("A32NX_ELEC_DC_ESS_BUS_IS_POWERED");
-  idElecBat1HotBusPowered = make_unique<LocalVariable>("A32NX_ELEC_DC_HOT_1_BUS_IS_POWERED");
+  idElecDcBus2Powered = std::make_unique<LocalVariable>("A32NX_ELEC_DC_2_BUS_IS_POWERED");
+  idElecDcEssShedBusPowered = std::make_unique<LocalVariable>("A32NX_ELEC_DC_ESS_SHED_BUS_IS_POWERED");
+  idElecDcEssBusPowered = std::make_unique<LocalVariable>("A32NX_ELEC_DC_ESS_BUS_IS_POWERED");
+  idElecBat1HotBusPowered = std::make_unique<LocalVariable>("A32NX_ELEC_DC_HOT_1_BUS_IS_POWERED");
 
-  idHydYellowSystemPressure = make_unique<LocalVariable>("A32NX_HYD_YELLOW_SYSTEM_1_SECTION_PRESSURE");
-  idHydGreenSystemPressure = make_unique<LocalVariable>("A32NX_HYD_GREEN_SYSTEM_1_SECTION_PRESSURE");
-  idHydBlueSystemPressure = make_unique<LocalVariable>("A32NX_HYD_BLUE_SYSTEM_1_SECTION_PRESSURE");
-  idHydYellowPressurised = make_unique<LocalVariable>("A32NX_HYD_YELLOW_SYSTEM_1_SECTION_PRESSURE_SWITCH");
-  idHydGreenPressurised = make_unique<LocalVariable>("A32NX_HYD_GREEN_SYSTEM_1_SECTION_PRESSURE_SWITCH");
-  idHydBluePressurised = make_unique<LocalVariable>("A32NX_HYD_BLUE_SYSTEM_1_SECTION_PRESSURE_SWITCH");
+  idHydYellowSystemPressure = std::make_unique<LocalVariable>("A32NX_HYD_YELLOW_SYSTEM_1_SECTION_PRESSURE");
+  idHydGreenSystemPressure = std::make_unique<LocalVariable>("A32NX_HYD_GREEN_SYSTEM_1_SECTION_PRESSURE");
+  idHydBlueSystemPressure = std::make_unique<LocalVariable>("A32NX_HYD_BLUE_SYSTEM_1_SECTION_PRESSURE");
+  idHydYellowPressurised = std::make_unique<LocalVariable>("A32NX_HYD_YELLOW_SYSTEM_1_SECTION_PRESSURE_SWITCH");
+  idHydGreenPressurised = std::make_unique<LocalVariable>("A32NX_HYD_GREEN_SYSTEM_1_SECTION_PRESSURE_SWITCH");
+  idHydBluePressurised = std::make_unique<LocalVariable>("A32NX_HYD_BLUE_SYSTEM_1_SECTION_PRESSURE_SWITCH");
 
-  idCaptPriorityButtonPressed = make_unique<LocalVariable>("A32NX_PRIORITY_TAKEOVER:1");
-  idFoPriorityButtonPressed = make_unique<LocalVariable>("A32NX_PRIORITY_TAKEOVER:2");
+  idCaptPriorityButtonPressed = std::make_unique<LocalVariable>("A32NX_PRIORITY_TAKEOVER:1");
+  idFoPriorityButtonPressed = std::make_unique<LocalVariable>("A32NX_PRIORITY_TAKEOVER:2");
 }
 
 bool FlyByWireInterface::handleFcuInitialization(double sampleTime) {
@@ -731,8 +730,8 @@ bool FlyByWireInterface::handleFcuInitialization(double sampleTime) {
   // determine if we need to run init code
   if (idStartState->get() >= 5 && timeSinceReady > 6.0) {
     // init FCU for in flight configuration
-    double targetAltitude = round(simData.H_ind_ft / 1000.0) * 1000.0;
-    double targetHeading = fmod(round(simData.Psi_magnetic_deg / 10.0) * 10.0, 360.0);
+    double targetAltitude = std::round(simData.H_ind_ft / 1000.0) * 1000.0;
+    double targetHeading = std::fmod(std::round(simData.Psi_magnetic_deg / 10.0) * 10.0, 360.0);
     simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_SPD_PUSH);
     simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_HDG_SET, targetHeading);
     simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_HDG_PULL);
@@ -747,7 +746,7 @@ bool FlyByWireInterface::handleFcuInitialization(double sampleTime) {
     wasFcuInitialized = true;
   } else if (idStartState->get() == 4 && timeSinceReady > 1.0) {
     // init FCU for on runway -> ready for take-off
-    double targetHeading = fmod(round(simData.Psi_magnetic_deg), 360.0);
+    double targetHeading = std::fmod(std::round(simData.Psi_magnetic_deg), 360.0);
     simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_SPD_SET, 150);
     simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_SPD_PULL);
     simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_HDG_SET, targetHeading);
@@ -783,13 +782,13 @@ bool FlyByWireInterface::readDataAndLocalVariables(double sampleTime) {
 
   // request data
   if (!simConnectInterface.requestData()) {
-    cout << "WASM: Request data failed!" << endl;
+    std::cout << "WASM: Request data failed!" << std::endl;
     return false;
   }
 
   // read data
   if (!simConnectInterface.readData()) {
-    cout << "WASM: Read data failed!" << endl;
+    std::cout << "WASM: Read data failed!" << std::endl;
     return false;
   }
 
@@ -884,10 +883,10 @@ bool FlyByWireInterface::updatePerformanceMonitoring(double sampleTime) {
   if (lowPerformanceTimer >= LOW_PERFORMANCE_TIMER_THRESHOLD) {
     if (idPerformanceWarningActive->get() <= 0) {
       idPerformanceWarningActive->set(1);
-      cout << "WASM: WARNING Performance issues detected, at least stable ";
-      cout << round(simConnectInterface.getSimData().simulation_rate / MAX_ACCEPTABLE_SAMPLE_TIME);
-      cout << " fps or more are needed at this simrate!";
-      cout << endl;
+      std::cout << "WASM: WARNING Performance issues detected, at least stable ";
+      std::cout << std::round(simConnectInterface.getSimData().simulation_rate / MAX_ACCEPTABLE_SAMPLE_TIME);
+      std::cout << " fps or more are needed at this simrate!";
+      std::cout << std::endl;
     }
   } else if (idPerformanceWarningActive > 0) {
     idPerformanceWarningActive->set(0);
@@ -924,8 +923,8 @@ bool FlyByWireInterface::handleSimulationRate(double sampleTime) {
     // sed event to reduce simulation rate
     simConnectInterface.sendEvent(SimConnectInterface::Events::SIM_RATE_DECR, 0, SIMCONNECT_GROUP_PRIORITY_DEFAULT);
     // log event of reduction
-    cout << "WASM: WARNING Reducing simulation rate to " << simData.simulation_rate / 2;
-    cout << " (maximum allowed is " << idMaximumSimulationRate->get() << ")!" << endl;
+    std::cout << "WASM: WARNING Reducing simulation rate to " << simData.simulation_rate / 2;
+    std::cout << " (maximum allowed is " << idMaximumSimulationRate->get() << ")!" << std::endl;
   }
 
   // check if simulation rate reduction is enabled
@@ -948,9 +947,9 @@ bool FlyByWireInterface::handleSimulationRate(double sampleTime) {
     // reset low performance timer
     lowPerformanceTimer = 0;
     // log event of reduction
-    cout << "WASM: WARNING Reducing simulation rate from " << simData.simulation_rate;
-    cout << " to " << simData.simulation_rate / 2;
-    cout << " due to performance issues or abnormal situation!" << endl;
+    std::cout << "WASM: WARNING Reducing simulation rate from " << simData.simulation_rate;
+    std::cout << " to " << simData.simulation_rate / 2;
+    std::cout << " due to performance issues or abnormal situation!" << std::endl;
   }
 
   // success
@@ -1708,7 +1707,7 @@ bool FlyByWireInterface::updateServoSolenoidStatus() {
   outputZetaTrim.zeta_trim_pos = -(facsAnalogOutputs[0].rudder_trim_order_deg + facsAnalogOutputs[1].rudder_trim_order_deg) / 20;
   if (facsDiscreteOutputs[0].rudder_trim_engaged || facsDiscreteOutputs[1].rudder_trim_engaged) {
     if (!simConnectInterface.sendData(outputZetaTrim)) {
-      cout << "WASM: Write data failed!" << endl;
+      std::cout << "WASM: Write data failed!" << std::endl;
       return false;
     }
   }
@@ -2446,11 +2445,11 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
     idAutothrustDisabled->set(autoThrust.getExternalOutputs().out.data_computed.ATHR_disabled);
 
     // write output to sim --------------------------------------------------------------------------------------------
-    SimOutputThrottles simOutputThrottles = {fmin(99.9999999999999, autoThrustOutput.sim_throttle_lever_1_pos),
-                                             fmin(99.9999999999999, autoThrustOutput.sim_throttle_lever_2_pos),
+    SimOutputThrottles simOutputThrottles = {std::fmin(99.9999999999999, autoThrustOutput.sim_throttle_lever_1_pos),
+                                             std::fmin(99.9999999999999, autoThrustOutput.sim_throttle_lever_2_pos),
                                              autoThrustOutput.sim_thrust_mode_1, autoThrustOutput.sim_thrust_mode_2};
     if (!simConnectInterface.sendData(simOutputThrottles)) {
-      cout << "WASM: Write data failed!" << endl;
+      std::cout << "WASM: Write data failed!" << std::endl;
       return false;
     }
   } else {
