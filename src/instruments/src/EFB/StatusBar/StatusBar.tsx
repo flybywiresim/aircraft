@@ -1,3 +1,6 @@
+// Copyright (c) 2022 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
 import React, { useEffect, useRef, useState } from 'react';
 import { Power, Wifi, WifiOff } from 'react-bootstrap-icons';
 import { useSimVar } from '@instruments/common/simVars';
@@ -8,11 +11,9 @@ import { useInterval } from '@flybywiresim/react-components';
 import { t } from '../translation';
 import { TooltipWrapper } from '../UtilComponents/TooltipWrapper';
 import { PowerStates, usePower } from '../Efb';
-
 import { BatteryStatus } from './BatteryStatus';
 import { useAppSelector } from '../Store/store';
 import { initialState } from '../Store/features/simBrief';
-
 import { ClientState } from '../../../../simbridge-client/src';
 
 interface StatusBarProps {
