@@ -45,6 +45,15 @@ export class McduServerClient {
     }
 
     /**
+     * Checks if the connection to the SimBridge MCDU Server is still valid.
+     * If the user deactivated the SimBridge MCDU Server in the EFB or if the SimBridge connection is not established
+     * this will return false (see ClientState.isAvailable()).
+     */
+    public validateConnection() {
+        return this.state.isAvailable();
+    }
+
+    /**
      * Will disconnect from the SimBridge MCDU server. If no connection is active, then nothing will happen.
      */
     public disconnect() {

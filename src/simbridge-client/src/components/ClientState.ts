@@ -70,7 +70,6 @@ export class ClientState {
         }
 
         if (this.connectionAttemptCounter++ >= ClientState.maxSimBridgeConnectionAttempts) {
-            console.log('[SimBridge-Client] Maximum number of connection attempts to Simbridge exceeded. No more attempts.');
             NXDataStore.set('CONFIG_SIMBRIDGE_ENABLED', 'AUTO OFF');
             this.connectionAttemptCounter = 0;
         } else {

@@ -120,6 +120,29 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         };
 
         this.mcduServerClient = undefined;
+
+        this.emptyLines = {
+            lines: [
+                ['', '', ''],
+                ['', '', ''],
+                ['', '', ''],
+                ['', '', ''],
+                ['', '', ''],
+                ['', '', ''],
+                ['', '', ''],
+                ['', '', ''],
+                ['', '', ''],
+                ['', '', ''],
+                ['', '', ''],
+                ['', '', ''],
+            ],
+            scratchpad: '',
+            title: '',
+            titleLeft: '',
+            page: '',
+            arrows: [false, false, false, false]
+        };
+
     }
 
     setupFmgcTriggers() {
@@ -161,11 +184,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 console.log(`[MCDU] Websocket connection to SimBridge opened. (${SimBridgeClient.McduServerClient.url})`);
                 (new NXNotifManager).showNotification({title: "MCDU CONNECTED",
                     message: "A32NX MCDU successfully connected to SimBridge MCDU Server.", timeout: 5000});
-                try {
-                    caller.sendToMcduServerClient("mcduConnected");
-                } catch (e) {
-                    debugger;
-                }
+                caller.sendToMcduServerClient("mcduConnected");
                 caller.sendUpdate();
                 break;
             }
@@ -296,9 +315,17 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         if (this.mcduServerConnectUpdateThrottler.canUpdate(_deltaTime) !== -1
             && this.getGameState() === GameState.ingame
             && this.mcduServerClient
-            && !this.mcduServerClient.isConnected()
         ) {
-            this.mcduServerClient.connect(this, this.mcduServerClientEventHandler);
+            if (this.mcduServerClient.isConnected()) {
+                // check if connection or SimBridge Setting is still valid
+                if (!this.mcduServerClient.validateConnection()) {
+                    this.sendClearScreen();
+                    this.mcduServerClient.disconnect();
+                }
+            } else {
+                // not connected - try to connect
+                this.mcduServerClient.connect(this, this.mcduServerClientEventHandler);
+            }
         }
 
         // There is no (known) event when power is turned on or off (e.g. Ext Pwr) and remote clients
@@ -1218,27 +1245,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         if (this.mcduServerClient && !this.mcduServerClient.isConnected()) {
             return;
         }
-        let left = {
-            lines: [
-                ['', '', ''],
-                ['', '', ''],
-                ['', '', ''],
-                ['', '', ''],
-                ['', '', ''],
-                ['', '', ''],
-                ['', '', ''],
-                ['', '', ''],
-                ['', '', ''],
-                ['', '', ''],
-                ['', '', ''],
-                ['', '', ''],
-            ],
-            scratchpad: '',
-            title: '',
-            titleLeft: '',
-            page: '',
-            arrows: [false, false, false, false]
-        };
+        let left = this.emptyLines;
         let right = left;
         if (SimVar.GetSimVarValue("L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED", "bool")) {
             left = {
@@ -1270,6 +1277,21 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         const content = {right, left};
         this.sendToMcduServerClient(`update:${JSON.stringify(content)}`);
     }
+
+    /**
+     * Clears the remote MCDU clients' screens
+     */
+    sendClearScreen() {
+        // only calculate update when mcduServerClient is established.
+        if (this.mcduServerClient && !this.mcduServerClient.isConnected()) {
+            return;
+        }
+        const left = this.emptyLines;
+        const right = left;
+        const content = {right, left};
+        this.sendToMcduServerClient(`update:${JSON.stringify(content)}`);
+    }
+
     /* END OF WEBSOCKET */
 
     goToFuelPredPage() {
