@@ -18,8 +18,15 @@ export class McduServerClient {
 
     /**
      * Will attempt to connect to the SimBridge MCDU server. Will throw an error if the connection fails.
+     * @param caller back reference to the caller - see notes below.
+     * @param eventHandler The callback to be called when an event is received from the socket.
+     *  See https://developer.mozilla.org/en-US/docs/Web/API/WebSocket#events for possible events.
+     *
+     * Note: This method requires the caller object to be provided, so it can send it back to the event handler when an
+     * event is triggered. Otherwise, the event handler in McduServerClient will not be able to call the caller's
+     * methods as it will not recognize "this" (will be undefined).
      */
-    public connect(eventHandler: (e: Event) => void) {
+    public connect(caller: any, eventHandler: (c, e: Event) => void) {
         if (this.state.isAvailable()) {
             // first disconnect to clean up any previous connection
             this.disconnect();
@@ -29,10 +36,10 @@ export class McduServerClient {
 
             // Setup up event handler from the caller
             if (eventHandler && typeof (eventHandler) === 'function') {
-                this.socket.onerror = (event) => eventHandler(event);
-                this.socket.onclose = (event) => eventHandler(event);
-                this.socket.onopen = (event) => eventHandler(event);
-                this.socket.onmessage = (event) => eventHandler(event);
+                this.socket.onerror = (event) => eventHandler(caller, event);
+                this.socket.onclose = (event) => eventHandler(caller, event);
+                this.socket.onopen = (event) => eventHandler(caller, event);
+                this.socket.onmessage = (event) => eventHandler(caller, event);
             }
         }
     }

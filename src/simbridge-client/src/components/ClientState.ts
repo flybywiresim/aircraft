@@ -70,7 +70,7 @@ export class ClientState {
         }
 
         if (this.connectionAttemptCounter++ >= ClientState.maxSimBridgeConnectionAttempts) {
-            console.log('[ClientState] Maximum number of connection attempts to Simbridge exceeded. No more attempts.');
+            console.log('[SimBridge-Client] Maximum number of connection attempts to Simbridge exceeded. No more attempts.');
             NXDataStore.set('CONFIG_SIMBRIDGE_ENABLED', 'AUTO OFF');
             this.connectionAttemptCounter = 0;
         } else {
@@ -79,18 +79,19 @@ export class ClientState {
                 (result) => {
                     if (result) {
                         if (!this.available) {
-                            console.log('[ClientState] SimBridge available.');
+                            console.log('[SimBridge-Client] SimBridge available.');
                         }
                         this.available = true;
                         this.connectionAttemptCounter = 0;
                     } else {
                         this.available = false;
-                        console.log(`[ClientState] SimBridge is not available. Connection attempt counter: ${this.connectionAttemptCounter}`);
+                        console.log(`[SimBridge-Client] SimBridge is not available. Connection attempt counter: 
+                                    ${this.connectionAttemptCounter} of ${ClientState.maxSimBridgeConnectionAttempts}`);
                     }
                 },
             ).catch(() => {
                 this.available = false;
-                console.log(`[ClientState] SimBridge is not available. Connection attempt counter: ${this.connectionAttemptCounter}`);
+                console.log(`[SimBridge-Client] SimBridge is not available. Connection attempt counter: ${this.connectionAttemptCounter} of ${ClientState.maxSimBridgeConnectionAttempts}`);
             });
         }
     }
