@@ -155,7 +155,7 @@ export const SimpleInput = (props: PropsWithChildren<SimpleInputProps>) => {
 
     useEffect(() => {
         if (focused) {
-            Coherent.trigger('FOCUS_INPUT_FIELD', guid);
+            Coherent.trigger('FOCUS_INPUT_FIELD', guid, '', '', '', false);
         } else {
             Coherent.trigger('UNFOCUS_INPUT_FIELD', guid);
         }
