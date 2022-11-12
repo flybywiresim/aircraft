@@ -77,13 +77,8 @@ clang++ \
   -I "${DIR}/src/inih" \
   -I "${DIR}/src/interface" \
   "${DIR}/src/interface/SimConnectInterface.cpp" \
-  -I "${DIR}/src/busStructures" \
-  -I "${DIR}/src/elac" \
-  "${DIR}/src/elac/Elac.cpp" \
-  -I "${DIR}/src/sec" \
-  "${DIR}/src/sec/Sec.cpp" \
-  -I "${DIR}/src/fcdc" \
-  "${DIR}/src/fcdc/Fcdc.cpp" \
+  -I "${DIR}/src/prim" \
+  "${DIR}/src/prim/Prim.cpp" \
   -I "${DIR}/src/fac" \
   "${DIR}/src/fac/Fac.cpp" \
   -I "${DIR}/src/failures" \
@@ -101,15 +96,13 @@ clang++ \
   "${DIR}/src/model/Autothrust_data.cpp" \
   "${DIR}/src/model/Autothrust.cpp" \
   "${DIR}/src/model/Double2MultiWord.cpp" \
-  "${DIR}/src/model/ElacComputer_data.cpp" \
-  "${DIR}/src/model/ElacComputer.cpp" \
-  "${DIR}/src/model/SecComputer_data.cpp" \
-  "${DIR}/src/model/SecComputer.cpp" \
-  "${DIR}/src/model/PitchNormalLaw.cpp" \
-  "${DIR}/src/model/PitchAlternateLaw.cpp" \
-  "${DIR}/src/model/PitchDirectLaw.cpp" \
-  "${DIR}/src/model/LateralNormalLaw.cpp" \
-  "${DIR}/src/model/LateralDirectLaw.cpp" \
+  "${DIR}/src/model/A380PrimComputer_data.cpp" \
+  "${DIR}/src/model/A380PrimComputer.cpp" \
+  "${DIR}/src/model/A380PitchNormalLaw.cpp" \
+  "${DIR}/src/model/A380PitchAlternateLaw.cpp" \
+  "${DIR}/src/model/A380PitchDirectLaw.cpp" \
+  "${DIR}/src/model/A380LateralNormalLaw.cpp" \
+  "${DIR}/src/model/A380LateralDirectLaw.cpp" \
   "${DIR}/src/model/FacComputer_data.cpp" \
   "${DIR}/src/model/FacComputer.cpp" \
   "${DIR}/src/model/look1_binlxpw.cpp" \
@@ -124,7 +117,6 @@ clang++ \
   "${DIR}/src/zlib/zfstream.cc" \
   "${DIR}/src/FlyByWireInterface.cpp" \
   "${DIR}/src/FlightDataRecorder.cpp" \
-  "${DIR}/src/Arinc429.cpp" \
   "${DIR}/src/Arinc429Utils.cpp" \
   "${DIR}/src/LocalVariable.cpp" \
   "${DIR}/src/InterpolatingLookupTable.cpp" \

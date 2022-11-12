@@ -3,11 +3,11 @@
 #include <MSFS/Legacy/gauges.h>
 #include <SimConnect.h>
 
-#include <ini.h>
 #include <iomanip>
 #include <iostream>
 #include <memory>
 #include <string>
+#include "inih/ini.h"
 
 #include "InterpolatingLookupTable.h"
 #include "LocalVariable.h"

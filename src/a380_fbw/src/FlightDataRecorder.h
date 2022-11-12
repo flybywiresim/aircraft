@@ -3,11 +3,11 @@
 #include <fstream>
 
 #include "AdditionalData.h"
-#include "AutopilotLaws.h"
-#include "AutopilotStateMachine.h"
-#include "Autothrust.h"
 #include "EngineData.h"
-#include "zfstream.h"
+#include "model/AutopilotLaws.h"
+#include "model/AutopilotStateMachine.h"
+#include "model/Autothrust.h"
+#include "zlib/zfstream.h"
 
 class FlightDataRecorder {
  public:

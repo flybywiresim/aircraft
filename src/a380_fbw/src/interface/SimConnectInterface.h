@@ -10,9 +10,9 @@
 #include "../ThrottleAxisMapping.h"
 #include "SimConnectData.h"
 
-#include "../model/ElacComputer_types.h"
+#include "../model/A380PrimComputer_types.h"
 #include "../model/FacComputer_types.h"
-#include "../model/SecComputer_types.h"
+//#include "../model/SecComputer_types.h"
 
 class SimConnectInterface {
  public:
@@ -257,21 +257,21 @@ class SimConnectInterface {
   bool setClientDataFlyByWire(ClientDataFlyByWire output);
   ClientDataFlyByWire getClientDataFlyByWire();
 
-  bool setClientDataElacDiscretes(base_elac_discrete_inputs output);
-  bool setClientDataElacAnalog(base_elac_analog_inputs output);
-  bool setClientDataElacBusInput(base_elac_out_bus output, int elacIndex);
+  bool setClientDataPrimDiscretes(base_prim_discrete_inputs output);
+  bool setClientDataPrimAnalog(base_prim_analog_inputs output);
+  bool setClientDataPrimBusInput(base_elac_out_bus output, int elacIndex);
 
-  base_elac_discrete_outputs getClientDataElacDiscretesOutput();
-  base_elac_analog_outputs getClientDataElacAnalogsOutput();
-  base_elac_out_bus getClientDataElacBusOutput();
+  base_prim_discrete_outputs getClientDataPrimDiscretesOutput();
+  base_prim_analog_outputs getClientDataPrimAnalogsOutput();
+  base_elac_out_bus getClientDataPrimBusOutput();
 
-  bool setClientDataSecDiscretes(base_sec_discrete_inputs output);
-  bool setClientDataSecAnalog(base_sec_analog_inputs output);
-  bool setClientDataSecBus(base_sec_out_bus output, int secIndex);
-
-  base_sec_discrete_outputs getClientDataSecDiscretesOutput();
-  base_sec_analog_outputs getClientDataSecAnalogsOutput();
-  base_sec_out_bus getClientDataSecBusOutput();
+  // bool setClientDataSecDiscretes(base_sec_discrete_inputs output);
+  // bool setClientDataSecAnalog(base_sec_analog_inputs output);
+  // bool setClientDataSecBus(base_sec_out_bus output, int secIndex);
+  //
+  // base_sec_discrete_outputs getClientDataSecDiscretesOutput();
+  // base_sec_analog_outputs getClientDataSecAnalogsOutput();
+  // base_sec_out_bus getClientDataSecBusOutput();
 
   bool setClientDataFacDiscretes(base_fac_discrete_inputs output);
   bool setClientDataFacAnalog(base_fac_analog_inputs output);
@@ -304,10 +304,10 @@ class SimConnectInterface {
     AUTOPILOT_STATE_MACHINE,
     AUTOPILOT_LAWS,
     AUTOTHRUST,
-    ELAC_DISCRETE_INPUTS,
-    ELAC_ANALOG_INPUTS,
-    ELAC_DISCRETE_OUTPUTS,
-    ELAC_ANALOG_OUTPUTS,
+    PRIM_DISCRETE_INPUTS,
+    PRIM_ANALOG_INPUTS,
+    PRIM_DISCRETE_OUTPUTS,
+    PRIM_ANALOG_OUTPUTS,
     ELAC_1_BUS_OUTPUT,
     ELAC_2_BUS_OUTPUT,
     SEC_DISCRETE_INPUTS,
@@ -374,13 +374,13 @@ class SimConnectInterface {
   ClientDataAutothrust clientDataAutothrust = {};
   ClientDataFlyByWire clientDataFlyByWire = {};
 
-  base_elac_discrete_outputs clientDataElacDiscreteOutputs = {};
-  base_elac_analog_outputs clientDataElacAnalogOutputs = {};
-  base_elac_out_bus clientDataElacBusOutputs = {};
+  base_prim_discrete_outputs clientDataPrimDiscreteOutputs = {};
+  base_prim_analog_outputs clientDataPrimAnalogOutputs = {};
+  base_elac_out_bus clientDataPrimBusOutputs = {};
 
-  base_sec_discrete_outputs clientDataSecDiscreteOutputs = {};
-  base_sec_analog_outputs clientDataSecAnalogOutputs = {};
-  base_sec_out_bus clientDataSecBusOutputs = {};
+  // base_sec_discrete_outputs clientDataSecDiscreteOutputs = {};
+  // base_sec_analog_outputs clientDataSecAnalogOutputs = {};
+  // base_sec_out_bus clientDataSecBusOutputs = {};
 
   base_fac_discrete_outputs clientDataFacDiscreteOutputs = {};
   base_fac_analog_outputs clientDataFacAnalogOutputs = {};

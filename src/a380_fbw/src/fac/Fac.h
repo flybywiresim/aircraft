@@ -1,10 +1,9 @@
 #pragma once
 
-#include "../Arinc429.h"
+#include "../Arinc429Utils.h"
 #include "../model/FacComputer.h"
 #include "../utils/PulseNode.h"
 #include "../utils/SRFlipFlop.h"
-#include "FacIO.h"
 
 class Fac {
  public:

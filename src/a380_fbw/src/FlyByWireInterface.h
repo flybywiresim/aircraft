@@ -4,23 +4,23 @@
 #include <SimConnect.h>
 
 #include "AdditionalData.h"
-#include "AutopilotLaws.h"
-#include "AutopilotStateMachine.h"
-#include "Autothrust.h"
 #include "CalculatedRadioReceiver.h"
 #include "EngineData.h"
 #include "FlightDataRecorder.h"
 #include "InterpolatingLookupTable.h"
 #include "LocalVariable.h"
 #include "RateLimiter.h"
-#include "SimConnectInterface.h"
 #include "SpoilersHandler.h"
 #include "ThrottleAxisMapping.h"
-#include "elac/Elac.h"
 #include "fac/Fac.h"
 #include "failures/FailuresConsumer.h"
-#include "fcdc/Fcdc.h"
-#include "sec/Sec.h"
+#include "interface/SimConnectInterface.h"
+#include "model/AutopilotLaws.h"
+#include "model/AutopilotStateMachine.h"
+#include "model/Autothrust.h"
+// #include "fcdc/Fcdc.h"
+#include "prim/Prim.h"
+// #include "sec/Sec.h"
 
 #include "utils/HysteresisNode.h"
 
@@ -125,19 +125,19 @@ class FlyByWireInterface {
   base_adr_bus adrBusOutputs[3] = {};
   base_ir_bus irBusOutputs[3] = {};
 
-  Elac elacs[2] = {Elac(true), Elac(false)};
-  base_elac_discrete_outputs elacsDiscreteOutputs[2] = {};
-  base_elac_analog_outputs elacsAnalogOutputs[2] = {};
-  base_elac_out_bus elacsBusOutputs[2] = {};
+  Prim prims[3] = {Prim(true, false, false), Prim(false, true, false), Prim(false, false, true)};
+  base_prim_discrete_outputs primsDiscreteOutputs[3] = {};
+  base_prim_analog_outputs primsAnalogOutputs[3] = {};
+  base_elac_out_bus primsBusOutputs[3] = {};
 
-  Sec secs[3] = {Sec(true, false), Sec(false, false), Sec(false, true)};
-  base_sec_discrete_outputs secsDiscreteOutputs[3] = {};
-  base_sec_analog_outputs secsAnalogOutputs[3] = {};
-  base_sec_out_bus secsBusOutputs[3] = {};
-
-  Fcdc fcdcs[2] = {Fcdc(true), Fcdc(false)};
-  FcdcDiscreteOutputs fcdcsDiscreteOutputs[2] = {};
-  base_fcdc_bus fcdcsBusOutputs[2] = {};
+  // Sec secs[3] = {Sec(true, false), Sec(false, false), Sec(false, true)};
+  // base_sec_discrete_outputs secsDiscreteOutputs[3] = {};
+  // base_sec_analog_outputs secsAnalogOutputs[3] = {};
+  // base_sec_out_bus secsBusOutputs[3] = {};
+  //
+  // Fcdc fcdcs[2] = {Fcdc(true), Fcdc(false)};
+  // FcdcDiscreteOutputs fcdcsDiscreteOutputs[2] = {};
+  // base_fcdc_bus fcdcsBusOutputs[2] = {};
 
   Fac facs[2] = {Fac(true), Fac(false)};
   base_fac_discrete_outputs facsDiscreteOutputs[2] = {};
@@ -477,24 +477,40 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idSecGroundSpoilersOut[3];
 
   // Flight controls solenoid valve energization Lvars
-  std::unique_ptr<LocalVariable> idLeftAileronSolenoidEnergized[2];
-  std::unique_ptr<LocalVariable> idLeftAileronCommandedPosition[2];
-  std::unique_ptr<LocalVariable> idRightAileronSolenoidEnergized[2];
-  std::unique_ptr<LocalVariable> idRightAileronCommandedPosition[2];
-  std::unique_ptr<LocalVariable> idLeftSpoilerCommandedPosition[5];
-  std::unique_ptr<LocalVariable> idRightSpoilerCommandedPosition[5];
-  std::unique_ptr<LocalVariable> idLeftElevatorSolenoidEnergized[2];
-  std::unique_ptr<LocalVariable> idLeftElevatorCommandedPosition[2];
-  std::unique_ptr<LocalVariable> idRightElevatorSolenoidEnergized[2];
-  std::unique_ptr<LocalVariable> idRightElevatorCommandedPosition[2];
-  std::unique_ptr<LocalVariable> idTHSActiveModeCommanded[3];
-  std::unique_ptr<LocalVariable> idTHSCommandedPosition[3];
-  std::unique_ptr<LocalVariable> idYawDamperSolenoidEnergized[2];
-  std::unique_ptr<LocalVariable> idYawDamperCommandedPosition[2];
+  std::unique_ptr<LocalVariable> idLeftInboardAileronSolenoidEnergized[2];
+  std::unique_ptr<LocalVariable> idLeftInboardAileronCommandedPosition[2];
+  std::unique_ptr<LocalVariable> idRightInboardAileronSolenoidEnergized[2];
+  std::unique_ptr<LocalVariable> idRightInboardAileronCommandedPosition[2];
+  std::unique_ptr<LocalVariable> idLeftMidboardAileronSolenoidEnergized[2];
+  std::unique_ptr<LocalVariable> idLeftMidboardAileronCommandedPosition[2];
+  std::unique_ptr<LocalVariable> idRightMidboardAileronSolenoidEnergized[2];
+  std::unique_ptr<LocalVariable> idRightMidboardAileronCommandedPosition[2];
+  std::unique_ptr<LocalVariable> idLeftOutboardAileronSolenoidEnergized[2];
+  std::unique_ptr<LocalVariable> idLeftOutboardAileronCommandedPosition[2];
+  std::unique_ptr<LocalVariable> idRightOutboardAileronSolenoidEnergized[2];
+  std::unique_ptr<LocalVariable> idRightOutboardAileronCommandedPosition[2];
+  std::unique_ptr<LocalVariable> idLeftSpoiler6EbhaElectronicEnable;
+  std::unique_ptr<LocalVariable> idLeftSpoilerCommandedPosition[8];
+  std::unique_ptr<LocalVariable> idRightSpoiler6EbhaElectronicEnable;
+  std::unique_ptr<LocalVariable> idRightSpoilerCommandedPosition[8];
+  std::unique_ptr<LocalVariable> idLeftInboardElevatorSolenoidEnergized[2];
+  std::unique_ptr<LocalVariable> idLeftInboardElevatorCommandedPosition[2];
+  std::unique_ptr<LocalVariable> idRightInboardElevatorSolenoidEnergized[2];
+  std::unique_ptr<LocalVariable> idRightInboardElevatorCommandedPosition[2];
+  std::unique_ptr<LocalVariable> idLeftOutboardElevatorSolenoidEnergized[2];
+  std::unique_ptr<LocalVariable> idLeftOutboardElevatorCommandedPosition[2];
+  std::unique_ptr<LocalVariable> idRightOutboardElevatorSolenoidEnergized[2];
+  std::unique_ptr<LocalVariable> idRightOutboardElevatorCommandedPosition[2];
+  std::unique_ptr<LocalVariable> idTHSSolenoidEnergized[2];
+  std::unique_ptr<LocalVariable> idTHSCommandedPosition[2];
+  std::unique_ptr<LocalVariable> idUpperRudderHydraulicModeSolenoidEnergized[2];
+  std::unique_ptr<LocalVariable> idUpperRudderElectricModeSolenoidEnergized[2];
+  std::unique_ptr<LocalVariable> idUpperRudderCommandedPosition[2];
+  std::unique_ptr<LocalVariable> idLowerRudderHydraulicModeSolenoidEnergized[2];
+  std::unique_ptr<LocalVariable> idLowerRudderElectricModeSolenoidEnergized[2];
+  std::unique_ptr<LocalVariable> idLowerRudderCommandedPosition[2];
   std::unique_ptr<LocalVariable> idRudderTrimActiveModeCommanded[2];
   std::unique_ptr<LocalVariable> idRudderTrimCommandedPosition[2];
-  std::unique_ptr<LocalVariable> idRudderTravelLimitActiveModeCommanded[2];
-  std::unique_ptr<LocalVariable> idRudderTravelLimCommandedPosition[2];
 
   // FAC discrete input Lvars
   std::unique_ptr<LocalVariable> idFacPushbuttonPressed[2];
@@ -580,11 +596,11 @@ class FlyByWireInterface {
 
   bool updateAdirs(int adirsIndex);
 
-  bool updateElac(double sampleTime, int elacIndex);
+  bool updatePrim(double sampleTime, int primIndex);
 
-  bool updateSec(double sampleTime, int secIndex);
+  // bool updateSec(double sampleTime, int secIndex);
 
-  bool updateFcdc(double sampleTime, int fcdcIndex);
+  // bool updateFcdc(double sampleTime, int fcdcIndex);
 
   bool updateFac(double sampleTime, int facIndex);
 
