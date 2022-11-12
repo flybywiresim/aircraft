@@ -259,11 +259,11 @@ class SimConnectInterface {
 
   bool setClientDataPrimDiscretes(base_prim_discrete_inputs output);
   bool setClientDataPrimAnalog(base_prim_analog_inputs output);
-  bool setClientDataPrimBusInput(base_elac_out_bus output, int elacIndex);
+  bool setClientDataPrimBusInput(base_prim_out_bus output, int primIndex);
 
   base_prim_discrete_outputs getClientDataPrimDiscretesOutput();
   base_prim_analog_outputs getClientDataPrimAnalogsOutput();
-  base_elac_out_bus getClientDataPrimBusOutput();
+  base_prim_out_bus getClientDataPrimBusOutput();
 
   // bool setClientDataSecDiscretes(base_sec_discrete_inputs output);
   // bool setClientDataSecAnalog(base_sec_analog_inputs output);
@@ -308,14 +308,16 @@ class SimConnectInterface {
     PRIM_ANALOG_INPUTS,
     PRIM_DISCRETE_OUTPUTS,
     PRIM_ANALOG_OUTPUTS,
-    ELAC_1_BUS_OUTPUT,
-    ELAC_2_BUS_OUTPUT,
+    PRIM_1_BUS_OUTPUT,
+    PRIM_2_BUS_OUTPUT,
+    PRIM_3_BUS_OUTPUT,
     SEC_DISCRETE_INPUTS,
     SEC_ANALOG_INPUTS,
     SEC_DISCRETE_OUTPUTS,
     SEC_ANALOG_OUTPUTS,
     SEC_1_BUS_OUTPUT,
     SEC_2_BUS_OUTPUT,
+    SEC_3_BUS_OUTPUT,
     FAC_DISCRETE_INPUTS,
     FAC_ANALOG_INPUTS,
     FAC_DISCRETE_OUTPUTS,
@@ -376,7 +378,7 @@ class SimConnectInterface {
 
   base_prim_discrete_outputs clientDataPrimDiscreteOutputs = {};
   base_prim_analog_outputs clientDataPrimAnalogOutputs = {};
-  base_elac_out_bus clientDataPrimBusOutputs = {};
+  base_prim_out_bus clientDataPrimBusOutputs = {};
 
   // base_sec_discrete_outputs clientDataSecDiscreteOutputs = {};
   // base_sec_analog_outputs clientDataSecAnalogOutputs = {};

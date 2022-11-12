@@ -92,25 +92,37 @@ void Prim::updateSelfTest(double deltaTime) {
 }
 
 // Write the bus output data and return it.
-base_elac_out_bus Prim::getBusOutputs() {
-  base_elac_out_bus output = {};
+base_prim_out_bus Prim::getBusOutputs() {
+  base_prim_out_bus output = {};
 
   if (!monitoringHealthy) {
-    output.left_aileron_position_deg.SSM = Arinc429SignStatus::FailureWarning;
-    output.right_aileron_position_deg.SSM = Arinc429SignStatus::FailureWarning;
-    output.left_elevator_position_deg.SSM = Arinc429SignStatus::FailureWarning;
-    output.right_elevator_position_deg.SSM = Arinc429SignStatus::FailureWarning;
-    output.ths_position_deg.SSM = Arinc429SignStatus::FailureWarning;
+    output.left_inboard_aileron_command_deg.SSM = Arinc429SignStatus::FailureWarning;
+    output.right_inboard_aileron_command_deg.SSM = Arinc429SignStatus::FailureWarning;
+    output.left_midboard_aileron_command_deg.SSM = Arinc429SignStatus::FailureWarning;
+    output.right_midboard_aileron_command_deg.SSM = Arinc429SignStatus::FailureWarning;
+    output.left_outboard_aileron_command_deg.SSM = Arinc429SignStatus::FailureWarning;
+    output.right_outboard_aileron_command_deg.SSM = Arinc429SignStatus::FailureWarning;
+    output.left_spoiler_1_2_command_deg.SSM = Arinc429SignStatus::FailureWarning;
+    output.right_spoiler_1_2_command_deg.SSM = Arinc429SignStatus::FailureWarning;
+    output.left_spoiler_3_5_command_deg.SSM = Arinc429SignStatus::FailureWarning;
+    output.right_spoiler_3_5_command_deg.SSM = Arinc429SignStatus::FailureWarning;
+    output.left_spoiler_6_8_command_deg.SSM = Arinc429SignStatus::FailureWarning;
+    output.right_spoiler_6_8_command_deg.SSM = Arinc429SignStatus::FailureWarning;
+    output.elevator_command_deg.SSM = Arinc429SignStatus::FailureWarning;
+    output.ths_command_deg.SSM = Arinc429SignStatus::FailureWarning;
+    output.upper_rudder_command_deg.SSM = Arinc429SignStatus::FailureWarning;
+    output.lower_rudder_command_deg.SSM = Arinc429SignStatus::FailureWarning;
     output.left_sidestick_pitch_command_deg.SSM = Arinc429SignStatus::FailureWarning;
     output.right_sidestick_pitch_command_deg.SSM = Arinc429SignStatus::FailureWarning;
     output.left_sidestick_roll_command_deg.SSM = Arinc429SignStatus::FailureWarning;
     output.right_sidestick_roll_command_deg.SSM = Arinc429SignStatus::FailureWarning;
     output.rudder_pedal_position_deg.SSM = Arinc429SignStatus::FailureWarning;
-    output.aileron_command_deg.SSM = Arinc429SignStatus::FailureWarning;
-    output.roll_spoiler_command_deg.SSM = Arinc429SignStatus::FailureWarning;
-    output.yaw_damper_command_deg.SSM = Arinc429SignStatus::FailureWarning;
-    output.discrete_status_word_1.SSM = Arinc429SignStatus::FailureWarning;
-    output.discrete_status_word_2.SSM = Arinc429SignStatus::FailureWarning;
+    output.aileron_status_word.SSM = Arinc429SignStatus::FailureWarning;
+    output.spoiler_status_word.SSM = Arinc429SignStatus::FailureWarning;
+    output.elevator_status_word.SSM = Arinc429SignStatus::FailureWarning;
+    output.rudder_status_word.SSM = Arinc429SignStatus::FailureWarning;
+    output.fctl_law_status_word.SSM = Arinc429SignStatus::FailureWarning;
+    output.misc_data_status_word.SSM = Arinc429SignStatus::FailureWarning;
 
     return output;
   }

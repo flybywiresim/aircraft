@@ -14,7 +14,7 @@ class Prim {
 
   void update(double deltaTime, double simulationTime, bool faultActive, bool isPowered);
 
-  base_elac_out_bus getBusOutputs();
+  base_prim_out_bus getBusOutputs();
 
   base_prim_discrete_outputs getDiscreteOutputs();
 

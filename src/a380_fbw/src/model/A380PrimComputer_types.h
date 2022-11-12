@@ -8,12 +8,12 @@
 enum class pitch_efcs_law
   : int32_T {
   NormalLaw = 0,
-  AlternateLaw1A = 1,
-  AlternateLaw1B = 5,
-  AlternateLaw1C = 6,
-  AlternateLaw2 = 2,
-  DirectLaw = 3,
-  None = 4
+  AlternateLaw1A,
+  AlternateLaw1B,
+  AlternateLaw1C,
+  AlternateLaw2,
+  DirectLaw,
+  None
 };
 
 #endif
@@ -218,6 +218,42 @@ struct base_sfcc_bus
 
 #endif
 
+#ifndef DEFINED_TYPEDEF_FOR_base_prim_out_bus_
+#define DEFINED_TYPEDEF_FOR_base_prim_out_bus_
+
+struct base_prim_out_bus
+{
+  base_arinc_429 left_inboard_aileron_command_deg;
+  base_arinc_429 right_inboard_aileron_command_deg;
+  base_arinc_429 left_midboard_aileron_command_deg;
+  base_arinc_429 right_midboard_aileron_command_deg;
+  base_arinc_429 left_outboard_aileron_command_deg;
+  base_arinc_429 right_outboard_aileron_command_deg;
+  base_arinc_429 left_spoiler_1_2_command_deg;
+  base_arinc_429 right_spoiler_1_2_command_deg;
+  base_arinc_429 left_spoiler_3_5_command_deg;
+  base_arinc_429 right_spoiler_3_5_command_deg;
+  base_arinc_429 left_spoiler_6_8_command_deg;
+  base_arinc_429 right_spoiler_6_8_command_deg;
+  base_arinc_429 elevator_command_deg;
+  base_arinc_429 ths_command_deg;
+  base_arinc_429 upper_rudder_command_deg;
+  base_arinc_429 lower_rudder_command_deg;
+  base_arinc_429 left_sidestick_pitch_command_deg;
+  base_arinc_429 right_sidestick_pitch_command_deg;
+  base_arinc_429 left_sidestick_roll_command_deg;
+  base_arinc_429 right_sidestick_roll_command_deg;
+  base_arinc_429 rudder_pedal_position_deg;
+  base_arinc_429 aileron_status_word;
+  base_arinc_429 spoiler_status_word;
+  base_arinc_429 elevator_status_word;
+  base_arinc_429 rudder_status_word;
+  base_arinc_429 fctl_law_status_word;
+  base_arinc_429 misc_data_status_word;
+};
+
+#endif
+
 #ifndef DEFINED_TYPEDEF_FOR_base_prim_bus_inputs_
 #define DEFINED_TYPEDEF_FOR_base_prim_bus_inputs_
 
@@ -243,8 +279,8 @@ struct base_prim_bus_inputs
   base_sfcc_bus sfcc_2_bus;
   real_T fcu_own_bus;
   real_T fcu_opp_bus;
-  real_T prim_x_bus;
-  real_T prim_y_bus;
+  base_prim_out_bus prim_x_bus;
+  base_prim_out_bus prim_y_bus;
   real_T sec_1_bus;
   real_T sec_2_bus;
   real_T sec_3_bus;
@@ -494,31 +530,6 @@ struct base_prim_analog_outputs
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_base_elac_out_bus_
-#define DEFINED_TYPEDEF_FOR_base_elac_out_bus_
-
-struct base_elac_out_bus
-{
-  base_arinc_429 left_aileron_position_deg;
-  base_arinc_429 right_aileron_position_deg;
-  base_arinc_429 left_elevator_position_deg;
-  base_arinc_429 right_elevator_position_deg;
-  base_arinc_429 ths_position_deg;
-  base_arinc_429 left_sidestick_pitch_command_deg;
-  base_arinc_429 right_sidestick_pitch_command_deg;
-  base_arinc_429 left_sidestick_roll_command_deg;
-  base_arinc_429 right_sidestick_roll_command_deg;
-  base_arinc_429 rudder_pedal_position_deg;
-  base_arinc_429 aileron_command_deg;
-  base_arinc_429 roll_spoiler_command_deg;
-  base_arinc_429 yaw_damper_command_deg;
-  base_arinc_429 elevator_double_pressurization_command_deg;
-  base_arinc_429 discrete_status_word_1;
-  base_arinc_429 discrete_status_word_2;
-};
-
-#endif
-
 #ifndef DEFINED_TYPEDEF_FOR_prim_outputs_
 #define DEFINED_TYPEDEF_FOR_prim_outputs_
 
@@ -529,7 +540,7 @@ struct prim_outputs
   base_prim_logic_outputs logic;
   base_prim_discrete_outputs discrete_outputs;
   base_prim_analog_outputs analog_outputs;
-  base_elac_out_bus bus_outputs;
+  base_prim_out_bus bus_outputs;
 };
 
 #endif
@@ -839,27 +850,38 @@ struct struct_2OohiAWrazWy5wDS5iisgF
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_struct_XUfKEhVD4cm2MFYfzn8ySH_
-#define DEFINED_TYPEDEF_FOR_struct_XUfKEhVD4cm2MFYfzn8ySH_
+#ifndef DEFINED_TYPEDEF_FOR_struct_HmdPIChtdKjDeRjPg8vQxE_
+#define DEFINED_TYPEDEF_FOR_struct_HmdPIChtdKjDeRjPg8vQxE_
 
-struct struct_XUfKEhVD4cm2MFYfzn8ySH
+struct struct_HmdPIChtdKjDeRjPg8vQxE
 {
-  struct_2OohiAWrazWy5wDS5iisgF left_aileron_position_deg;
-  struct_2OohiAWrazWy5wDS5iisgF right_aileron_position_deg;
-  struct_2OohiAWrazWy5wDS5iisgF left_elevator_position_deg;
-  struct_2OohiAWrazWy5wDS5iisgF right_elevator_position_deg;
-  struct_2OohiAWrazWy5wDS5iisgF ths_position_deg;
+  struct_2OohiAWrazWy5wDS5iisgF left_inboard_aileron_command_deg;
+  struct_2OohiAWrazWy5wDS5iisgF right_inboard_aileron_command_deg;
+  struct_2OohiAWrazWy5wDS5iisgF left_midboard_aileron_command_deg;
+  struct_2OohiAWrazWy5wDS5iisgF right_midboard_aileron_command_deg;
+  struct_2OohiAWrazWy5wDS5iisgF left_outboard_aileron_command_deg;
+  struct_2OohiAWrazWy5wDS5iisgF right_outboard_aileron_command_deg;
+  struct_2OohiAWrazWy5wDS5iisgF left_spoiler_1_2_command_deg;
+  struct_2OohiAWrazWy5wDS5iisgF right_spoiler_1_2_command_deg;
+  struct_2OohiAWrazWy5wDS5iisgF left_spoiler_3_5_command_deg;
+  struct_2OohiAWrazWy5wDS5iisgF right_spoiler_3_5_command_deg;
+  struct_2OohiAWrazWy5wDS5iisgF left_spoiler_6_8_command_deg;
+  struct_2OohiAWrazWy5wDS5iisgF right_spoiler_6_8_command_deg;
+  struct_2OohiAWrazWy5wDS5iisgF elevator_command_deg;
+  struct_2OohiAWrazWy5wDS5iisgF ths_command_deg;
+  struct_2OohiAWrazWy5wDS5iisgF upper_rudder_command_deg;
+  struct_2OohiAWrazWy5wDS5iisgF lower_rudder_command_deg;
   struct_2OohiAWrazWy5wDS5iisgF left_sidestick_pitch_command_deg;
   struct_2OohiAWrazWy5wDS5iisgF right_sidestick_pitch_command_deg;
   struct_2OohiAWrazWy5wDS5iisgF left_sidestick_roll_command_deg;
   struct_2OohiAWrazWy5wDS5iisgF right_sidestick_roll_command_deg;
   struct_2OohiAWrazWy5wDS5iisgF rudder_pedal_position_deg;
-  struct_2OohiAWrazWy5wDS5iisgF aileron_command_deg;
-  struct_2OohiAWrazWy5wDS5iisgF roll_spoiler_command_deg;
-  struct_2OohiAWrazWy5wDS5iisgF yaw_damper_command_deg;
-  struct_2OohiAWrazWy5wDS5iisgF elevator_double_pressurization_command_deg;
-  struct_2OohiAWrazWy5wDS5iisgF discrete_status_word_1;
-  struct_2OohiAWrazWy5wDS5iisgF discrete_status_word_2;
+  struct_2OohiAWrazWy5wDS5iisgF aileron_status_word;
+  struct_2OohiAWrazWy5wDS5iisgF spoiler_status_word;
+  struct_2OohiAWrazWy5wDS5iisgF elevator_status_word;
+  struct_2OohiAWrazWy5wDS5iisgF rudder_status_word;
+  struct_2OohiAWrazWy5wDS5iisgF fctl_law_status_word;
+  struct_2OohiAWrazWy5wDS5iisgF misc_data_status_word;
 };
 
 #endif

@@ -128,7 +128,7 @@ class FlyByWireInterface {
   Prim prims[3] = {Prim(true, false, false), Prim(false, true, false), Prim(false, false, true)};
   base_prim_discrete_outputs primsDiscreteOutputs[3] = {};
   base_prim_analog_outputs primsAnalogOutputs[3] = {};
-  base_elac_out_bus primsBusOutputs[3] = {};
+  base_prim_out_bus primsBusOutputs[3] = {};
 
   // Sec secs[3] = {Sec(true, false), Sec(false, false), Sec(false, true)};
   // base_sec_discrete_outputs secsDiscreteOutputs[3] = {};

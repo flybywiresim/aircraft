@@ -1240,7 +1240,7 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
   prims[primIndex].modelInputs.in.sim_data.tracking_mode_on_override = idExternalOverride->get() == 1;
   prims[primIndex].modelInputs.in.sim_data.tailstrike_protection_on = tailstrikeProtectionEnabled;
 
-  prims[primIndex].modelInputs.in.discrete_inputs.prim_overhead_button_pressed = false;
+  prims[primIndex].modelInputs.in.discrete_inputs.prim_overhead_button_pressed = idPrimPushbuttonPressed[primIndex]->get();
   prims[primIndex].modelInputs.in.discrete_inputs.is_unit_1 = primIndex == 0;
   prims[primIndex].modelInputs.in.discrete_inputs.is_unit_2 = primIndex == 1;
   prims[primIndex].modelInputs.in.discrete_inputs.is_unit_3 = primIndex == 2;
@@ -1300,12 +1300,34 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
   prims[primIndex].modelInputs.in.bus_inputs.ir_1_bus = irBusOutputs[0];
   prims[primIndex].modelInputs.in.bus_inputs.ir_2_bus = irBusOutputs[1];
   prims[primIndex].modelInputs.in.bus_inputs.ir_3_bus = irBusOutputs[2];
+  prims[primIndex].modelInputs.in.bus_inputs.isis_1_bus = {};
+  prims[primIndex].modelInputs.in.bus_inputs.isis_2_bus = {};
+  prims[primIndex].modelInputs.in.bus_inputs.rate_gyro_pitch_1_bus = {};
+  prims[primIndex].modelInputs.in.bus_inputs.rate_gyro_pitch_2_bus = {};
+  prims[primIndex].modelInputs.in.bus_inputs.rate_gyro_roll_1_bus = {};
+  prims[primIndex].modelInputs.in.bus_inputs.rate_gyro_roll_2_bus = {};
+  prims[primIndex].modelInputs.in.bus_inputs.rate_gyro_yaw_1_bus = {};
+  prims[primIndex].modelInputs.in.bus_inputs.rate_gyro_yaw_2_bus = {};
   prims[primIndex].modelInputs.in.bus_inputs.ra_1_bus = raBusOutputs[0];
   prims[primIndex].modelInputs.in.bus_inputs.ra_2_bus = raBusOutputs[1];
   prims[primIndex].modelInputs.in.bus_inputs.sfcc_1_bus = sfccBusOutputs[0];
   prims[primIndex].modelInputs.in.bus_inputs.sfcc_2_bus = sfccBusOutputs[1];
+  prims[primIndex].modelInputs.in.bus_inputs.fcu_own_bus = {};
+  prims[primIndex].modelInputs.in.bus_inputs.fcu_opp_bus = {};
+  if (primIndex == 0) {
+    prims[primIndex].modelInputs.in.bus_inputs.prim_x_bus = primsBusOutputs[1];
+    prims[primIndex].modelInputs.in.bus_inputs.prim_y_bus = primsBusOutputs[2];
+  } else if (primIndex == 1) {
+    prims[primIndex].modelInputs.in.bus_inputs.prim_x_bus = primsBusOutputs[0];
+    prims[primIndex].modelInputs.in.bus_inputs.prim_y_bus = primsBusOutputs[2];
+  } else {
+    prims[primIndex].modelInputs.in.bus_inputs.prim_x_bus = primsBusOutputs[0];
+    prims[primIndex].modelInputs.in.bus_inputs.prim_y_bus = primsBusOutputs[1];
+  }
+
   prims[primIndex].modelInputs.in.bus_inputs.sec_1_bus = {};
   prims[primIndex].modelInputs.in.bus_inputs.sec_2_bus = {};
+  prims[primIndex].modelInputs.in.bus_inputs.sec_3_bus = {};
 
   if (primIndex == primDisabled) {
     simConnectInterface.setClientDataPrimDiscretes(prims[primIndex].modelInputs.in.discrete_inputs);

@@ -657,15 +657,15 @@ bool SimConnectInterface::prepareClientDataDefinitions() {
 
   // ------------------------------------------------------------------------------------------------------------------
 
-  for (int i = 0; i < 2; i++) {
-    auto defineId = ClientData::ELAC_1_BUS_OUTPUT + i;
+  for (int i = 0; i < 3; i++) {
+    auto defineId = ClientData::PRIM_1_BUS_OUTPUT + i;
 
     // map client id
-    result &= SimConnect_MapClientDataNameToID(hSimConnect, ("A32NX_CLIENT_DATA_ELAC_" + std::to_string(i + 1) + "_BUS").c_str(), defineId);
+    result &= SimConnect_MapClientDataNameToID(hSimConnect, ("A32NX_CLIENT_DATA_PRIM_" + std::to_string(i + 1) + "_BUS").c_str(), defineId);
     // create client data
     result &= SimConnect_CreateClientData(hSimConnect, defineId, sizeof(base_elac_out_bus), SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
     // add data definitions
-    for (int i = 0; i < 16; i++) {
+    for (int i = 0; i < 27; i++) {
       result &=
           SimConnect_AddToClientDataDefinition(hSimConnect, defineId, SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_FLOAT64);
     }
@@ -1280,8 +1280,8 @@ bool SimConnectInterface::setClientDataPrimAnalog(base_prim_analog_inputs output
   return sendClientData(ClientData::PRIM_ANALOG_INPUTS, sizeof(output), &output);
 }
 
-bool SimConnectInterface::setClientDataPrimBusInput(base_elac_out_bus output, int elacIndex) {
-  return sendClientData(ClientData::ELAC_1_BUS_OUTPUT + elacIndex, sizeof(output), &output);
+bool SimConnectInterface::setClientDataPrimBusInput(base_prim_out_bus output, int primIndex) {
+  return sendClientData(ClientData::PRIM_1_BUS_OUTPUT + primIndex, sizeof(output), &output);
 }
 
 // bool SimConnectInterface::setClientDataSecDiscretes(base_sec_discrete_inputs output) {
@@ -1320,7 +1320,7 @@ base_prim_analog_outputs SimConnectInterface::getClientDataPrimAnalogsOutput() {
   return clientDataPrimAnalogOutputs;
 }
 
-base_elac_out_bus SimConnectInterface::getClientDataPrimBusOutput() {
+base_prim_out_bus SimConnectInterface::getClientDataPrimBusOutput() {
   return clientDataPrimBusOutputs;
 }
 
@@ -2765,14 +2765,19 @@ void SimConnectInterface::simConnectProcessClientData(const SIMCONNECT_RECV_CLIE
       clientDataPrimAnalogOutputs = *((base_prim_analog_outputs*)&data->dwData);
       return;
 
-    case ClientData::ELAC_1_BUS_OUTPUT:
+    case ClientData::PRIM_1_BUS_OUTPUT:
       // store aircraft data
-      clientDataPrimBusOutputs = *((base_elac_out_bus*)&data->dwData);
+      clientDataPrimBusOutputs = *((base_prim_out_bus*)&data->dwData);
       return;
 
-    case ClientData::ELAC_2_BUS_OUTPUT:
+    case ClientData::PRIM_2_BUS_OUTPUT:
       // store aircraft data
-      clientDataPrimBusOutputs = *((base_elac_out_bus*)&data->dwData);
+      clientDataPrimBusOutputs = *((base_prim_out_bus*)&data->dwData);
+      return;
+
+    case ClientData::PRIM_3_BUS_OUTPUT:
+      // store aircraft data
+      clientDataPrimBusOutputs = *((base_prim_out_bus*)&data->dwData);
       return;
 
       //     case ClientData::SEC_DISCRETE_OUTPUTS:
