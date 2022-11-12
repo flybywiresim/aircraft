@@ -185,7 +185,7 @@ class SimConnectInterface {
                bool autopilotStateMachineEnabled,
                bool autopilotLawsEnabled,
                bool flyByWireEnabled,
-               int elacDisabled,
+               int primDisabled,
                int secDisabled,
                int facDisabled,
                const std::vector<std::shared_ptr<ThrottleAxisMapping>>& throttleAxis,
@@ -350,7 +350,7 @@ class SimConnectInterface {
   bool limitSimulationRateByPerformance = true;
   bool clientDataEnabled = false;
 
-  int elacDisabled = -1;
+  int primDisabled = -1;
   int secDisabled = -1;
   int facDisabled = -1;
 

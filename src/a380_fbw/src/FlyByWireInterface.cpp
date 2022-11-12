@@ -32,7 +32,7 @@ bool FlyByWireInterface::connect() {
   flightDataRecorder.initialize();
 
   // connect to sim connect
-  return simConnectInterface.connect(clientDataEnabled, autopilotStateMachineEnabled, autopilotLawsEnabled, flyByWireEnabled, elacDisabled,
+  return simConnectInterface.connect(clientDataEnabled, autopilotStateMachineEnabled, autopilotLawsEnabled, flyByWireEnabled, primDisabled,
                                      secDisabled, facDisabled, throttleAxis, spoilersHandler, flightControlsKeyChangeAileron,
                                      flightControlsKeyChangeElevator, flightControlsKeyChangeRudder,
                                      disableXboxCompatibilityRudderAxisPlusMinus, idMinimumSimulationRate->get(),
@@ -174,13 +174,13 @@ void FlyByWireInterface::loadConfiguration() {
   autopilotLawsEnabled = INITypeConversion::getBoolean(iniStructure, "MODEL", "AUTOPILOT_LAWS_ENABLED", true);
   autoThrustEnabled = INITypeConversion::getBoolean(iniStructure, "MODEL", "AUTOTHRUST_ENABLED", true);
   flyByWireEnabled = INITypeConversion::getBoolean(iniStructure, "MODEL", "FLY_BY_WIRE_ENABLED", true);
-  elacDisabled = INITypeConversion::getInteger(iniStructure, "MODEL", "ELAC_DISABLED", -1);
+  primDisabled = INITypeConversion::getInteger(iniStructure, "MODEL", "PRIM_DISABLED", -1);
   secDisabled = INITypeConversion::getInteger(iniStructure, "MODEL", "SEC_DISABLED", -1);
   facDisabled = INITypeConversion::getInteger(iniStructure, "MODEL", "FAC_DISABLED", -1);
   tailstrikeProtectionEnabled = INITypeConversion::getBoolean(iniStructure, "MODEL", "TAILSTRIKE_PROTECTION_ENABLED", false);
 
   // if any model is deactivated we need to enable client data
-  clientDataEnabled = (elacDisabled != -1 || secDisabled != -1 || facDisabled != -1 || !autopilotStateMachineEnabled ||
+  clientDataEnabled = (primDisabled != -1 || secDisabled != -1 || facDisabled != -1 || !autopilotStateMachineEnabled ||
                        !autopilotLawsEnabled || !autoThrustEnabled || !flyByWireEnabled);
 
   // print configuration into console
@@ -189,7 +189,7 @@ void FlyByWireInterface::loadConfiguration() {
   std::cout << "WASM: MODEL     : AUTOPILOT_LAWS_ENABLED               = " << autopilotLawsEnabled << std::endl;
   std::cout << "WASM: MODEL     : AUTOTHRUST_ENABLED                   = " << autoThrustEnabled << std::endl;
   std::cout << "WASM: MODEL     : FLY_BY_WIRE_ENABLED                  = " << flyByWireEnabled << std::endl;
-  std::cout << "WASM: MODEL     : ELAC_DISABLED                        = " << elacDisabled << std::endl;
+  std::cout << "WASM: MODEL     : PRIM_DISABLED                        = " << primDisabled << std::endl;
   std::cout << "WASM: MODEL     : SEC_DISABLED                         = " << secDisabled << std::endl;
   std::cout << "WASM: MODEL     : FAC_DISABLED                         = " << facDisabled << std::endl;
   std::cout << "WASM: MODEL     : TAILSTRIKE_PROTECTION_ENABLED        = " << tailstrikeProtectionEnabled << std::endl;
@@ -1309,7 +1309,7 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
   prims[primIndex].modelInputs.in.bus_inputs.sec_1_bus = {};
   prims[primIndex].modelInputs.in.bus_inputs.sec_2_bus = {};
 
-  if (primIndex == elacDisabled) {
+  if (primIndex == primDisabled) {
     simConnectInterface.setClientDataPrimDiscretes(prims[primIndex].modelInputs.in.discrete_inputs);
     simConnectInterface.setClientDataPrimAnalog(prims[primIndex].modelInputs.in.analog_inputs);
 
@@ -1320,6 +1320,8 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
     bool powerSupplyAvailable = false;
     if (primIndex == 0) {
       powerSupplyAvailable = idElecDcEssBusPowered->get();
+    } else if (primIndex == 1) {
+      powerSupplyAvailable = idElecDcBus2Powered->get();
     } else {
       powerSupplyAvailable = idElecDcBus2Powered->get();
     }
@@ -1332,7 +1334,7 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
     primsBusOutputs[primIndex] = prims[primIndex].getBusOutputs();
   }
 
-  if ((elacDisabled != -1 && primIndex != elacDisabled) || secDisabled != -1 || facDisabled != -1) {
+  if ((primDisabled != -1 && primIndex != primDisabled) || secDisabled != -1 || facDisabled != -1) {
     simConnectInterface.setClientDataPrimBusInput(primsBusOutputs[primIndex], primIndex);
   }
 
@@ -2307,7 +2309,7 @@ bool FlyByWireInterface::updateAutopilotLaws(double sampleTime) {
   fmgcBBusOutputs.delta_q_cmd_deg.SSM = Arinc429SignStatus::NormalOperation;
   fmgcBBusOutputs.delta_q_cmd_deg.Data = autopilotLawsOutput.autopilot.Theta_c_deg;
 
-  if (elacDisabled != -1 || facDisabled != -1) {
+  if (primDisabled != -1 || facDisabled != -1) {
     simConnectInterface.setClientDataFmgcB(fmgcBBusOutputs, 0);
   }
 

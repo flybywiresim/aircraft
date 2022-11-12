@@ -15,7 +15,7 @@ bool SimConnectInterface::connect(bool clientDataEnabled,
                                   bool autopilotStateMachineEnabled,
                                   bool autopilotLawsEnabled,
                                   bool flyByWireEnabled,
-                                  int elacDisabled,
+                                  int primDisabled,
                                   int secDisabled,
                                   int facDisabled,
                                   const std::vector<std::shared_ptr<ThrottleAxisMapping>>& throttleAxis,
@@ -47,7 +47,7 @@ bool SimConnectInterface::connect(bool clientDataEnabled,
     this->limitSimulationRateByPerformance = limitSimulationRateByPerformance;
     // store is client data is enabled
     this->clientDataEnabled = clientDataEnabled;
-    this->elacDisabled = elacDisabled;
+    this->primDisabled = primDisabled;
     this->secDisabled = secDisabled;
     this->facDisabled = facDisabled;
     // store key change value for each axis
@@ -603,7 +603,7 @@ bool SimConnectInterface::prepareClientDataDefinitions() {
   result &= SimConnect_CreateClientData(hSimConnect, ClientData::PRIM_DISCRETE_INPUTS, sizeof(base_prim_discrete_inputs),
                                         SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
   // add data definitions
-  for (int i = 0; i < 32; i++) {
+  for (int i = 0; i < 18; i++) {
     result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::PRIM_DISCRETE_INPUTS, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
                                                    SIMCONNECT_CLIENTDATATYPE_INT8);
   }
@@ -616,7 +616,7 @@ bool SimConnectInterface::prepareClientDataDefinitions() {
   result &= SimConnect_CreateClientData(hSimConnect, ClientData::PRIM_ANALOG_INPUTS, sizeof(base_prim_analog_inputs),
                                         SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
   // add data definitions
-  for (int i = 0; i < 15; i++) {
+  for (int i = 0; i < 33; i++) {
     result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::PRIM_ANALOG_INPUTS, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
                                                    SIMCONNECT_CLIENTDATATYPE_FLOAT64);
   }
@@ -629,7 +629,7 @@ bool SimConnectInterface::prepareClientDataDefinitions() {
   result &= SimConnect_CreateClientData(hSimConnect, ClientData::PRIM_DISCRETE_OUTPUTS, sizeof(base_prim_discrete_outputs),
                                         SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
   // add data definitions
-  for (int i = 0; i < 12; i++) {
+  for (int i = 0; i < 18; i++) {
     result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::PRIM_DISCRETE_OUTPUTS, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
                                                    SIMCONNECT_CLIENTDATATYPE_INT8);
   }
@@ -646,7 +646,7 @@ bool SimConnectInterface::prepareClientDataDefinitions() {
   result &= SimConnect_CreateClientData(hSimConnect, ClientData::PRIM_ANALOG_OUTPUTS, sizeof(base_prim_analog_outputs),
                                         SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
   // add data definitions
-  for (int i = 0; i < 5; i++) {
+  for (int i = 0; i < 12; i++) {
     result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::PRIM_ANALOG_OUTPUTS, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
                                                    SIMCONNECT_CLIENTDATATYPE_FLOAT64);
   }
@@ -671,7 +671,7 @@ bool SimConnectInterface::prepareClientDataDefinitions() {
     }
 
     // request data to be updated when set
-    if (i == elacDisabled) {
+    if (i == primDisabled) {
       result &= SimConnect_RequestClientData(hSimConnect, defineId, defineId, defineId, SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET);
     }
   }
