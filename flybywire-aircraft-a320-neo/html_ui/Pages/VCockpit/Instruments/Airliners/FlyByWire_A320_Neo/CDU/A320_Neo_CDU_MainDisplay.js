@@ -1233,7 +1233,11 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
      */
     sendToMcduServerClient(message) {
         if (this.mcduServerClient && this.mcduServerClient.isConnected()) {
-            this.mcduServerClient.send(message);
+            try {
+                this.mcduServerClient.send(message);
+            } catch (e) {
+                /** ignore **/
+            }
         }
     }
 

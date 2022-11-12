@@ -6,7 +6,7 @@ import { Health } from './Health';
 
 /**
  * This class is a singleton that is used to manage the state of the client connection to the SimBridge server.
- * The aim is to prevent other services to constantly try to connect to the server when it is not available.
+ * The aim is to prevent simbridge-client services to constantly try to connect to the server when it is not available.
  */
 export class ClientState {
     // The singleton instance
@@ -15,11 +15,11 @@ export class ClientState {
     // flag to indicate if the client is available
     private available: boolean = false;
 
-    // counter for failed connection attempts
-    private connectionAttemptCounter: number = 0;
-
     // SimBridge Connect setting
     private simbridgeConnect: string = 'AUTO ON';
+
+    // counter for failed connection attempts
+    private connectionAttemptCounter: number = 0;
 
     // how many times to attempt to connect to the server before giving up
     private static maxSimBridgeConnectionAttempts: number = 60;
