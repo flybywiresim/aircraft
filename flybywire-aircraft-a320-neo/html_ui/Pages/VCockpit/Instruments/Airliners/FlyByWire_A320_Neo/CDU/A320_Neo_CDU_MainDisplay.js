@@ -157,7 +157,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         switch (event.type) {
             case 'open': {
                 console.log(`Websocket connection to SimBridge opened. (${SimBridgeClient.McduServerClient.url}): ${event.reason}`);
-                (new NXNotifManager).showNotification({title: "MCDU CONNECTED", message: "Successfully connected to SimBridge.", timeout: 5000});
+                (new NXNotifManager).showNotification({title: "MCDU CONNECTED", message: "A32NX MCDU successfully connected to SimBridge MCDU Server.", timeout: 5000});
                 this.sendToMcduServerClient("mcduConnected");
                 this.sendUpdate();
                 break;
