@@ -464,17 +464,16 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idThsOverrideActive;
 
   // ELAC discrete input Lvars
-  std::unique_ptr<LocalVariable> idElacPushbuttonPressed[2];
+  std::unique_ptr<LocalVariable> idPrimPushbuttonPressed[3];
 
   // ELAC discrete output Lvars
-  std::unique_ptr<LocalVariable> idElacDigitalOpValidated[2];
+  std::unique_ptr<LocalVariable> idPrimHealthy[3];
 
   // SEC discrete input Lvars
   std::unique_ptr<LocalVariable> idSecPushbuttonPressed[3];
 
   // SEC discrete output Lvars
-  std::unique_ptr<LocalVariable> idSecFaultLightOn[3];
-  std::unique_ptr<LocalVariable> idSecGroundSpoilersOut[3];
+  std::unique_ptr<LocalVariable> idSecHealthy[3];
 
   // Flight controls solenoid valve energization Lvars
   std::unique_ptr<LocalVariable> idLeftInboardAileronSolenoidEnergized[2];

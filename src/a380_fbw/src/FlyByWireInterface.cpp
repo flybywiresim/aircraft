@@ -584,19 +584,18 @@ void FlyByWireInterface::setupLocalVariables() {
 
   idThsOverrideActive = std::make_unique<LocalVariable>("A32NX_HYD_THS_TRIM_MANUAL_OVERRIDE");
 
-  for (int i = 0; i < 2; i++) {
+  for (int i = 0; i < 3; i++) {
     std::string idString = std::to_string(i + 1);
 
-    idElacPushbuttonPressed[i] = std::make_unique<LocalVariable>("A32NX_ELAC_" + idString + "_PUSHBUTTON_PRESSED");
-    idElacDigitalOpValidated[i] = std::make_unique<LocalVariable>("A32NX_ELAC_" + idString + "_DIGITAL_OP_VALIDATED");
+    idPrimPushbuttonPressed[i] = std::make_unique<LocalVariable>("A32NX_PRIM_" + idString + "_PUSHBUTTON_PRESSED");
+    idPrimHealthy[i] = std::make_unique<LocalVariable>("A32NX_PRIM_" + idString + "_HEALTHY");
   }
 
   for (int i = 0; i < 3; i++) {
     std::string idString = std::to_string(i + 1);
 
     idSecPushbuttonPressed[i] = std::make_unique<LocalVariable>("A32NX_SEC_" + idString + "_PUSHBUTTON_PRESSED");
-    idSecFaultLightOn[i] = std::make_unique<LocalVariable>("A32NX_SEC_" + idString + "_FAULT_LIGHT_ON");
-    idSecGroundSpoilersOut[i] = std::make_unique<LocalVariable>("A32NX_SEC_" + idString + "_GROUND_SPOILER_OUT");
+    idSecHealthy[i] = std::make_unique<LocalVariable>("A32NX_SEC_" + idString + "_HEALTHY");
   }
 
   for (int i = 0; i < 2; i++) {
@@ -1036,8 +1035,7 @@ bool FlyByWireInterface::updateAdditionalData(double sampleTime) {
   additionalData.spoilers_handle_pos = idSpoilersHandlePosition->get();
   additionalData.spoilers_armed = idSpoilersArmed->get();
   additionalData.spoilers_handle_sim_pos = simData.spoilers_handle_position;
-  additionalData.ground_spoilers_active =
-      idSecGroundSpoilersOut[0]->get() || idSecGroundSpoilersOut[1]->get() || idSecGroundSpoilersOut[2]->get();
+  additionalData.ground_spoilers_active = false;
   additionalData.flaps_handle_percent = idFlapsHandlePercent->get();
   additionalData.flaps_handle_index = idFlapsHandleIndex->get();
   additionalData.flaps_handle_configuration_index = flapsHandleIndexFlapConf->get();
@@ -1258,8 +1256,8 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
   prims[primIndex].modelInputs.in.discrete_inputs.adr_3_on_fo = false;
   prims[primIndex].modelInputs.in.discrete_inputs.pitch_trim_up_pressed = false;
   prims[primIndex].modelInputs.in.discrete_inputs.pitch_trim_down_pressed = false;
-  prims[primIndex].modelInputs.in.discrete_inputs.green_low_pressure = idHydGreenPressurised->get();
-  prims[primIndex].modelInputs.in.discrete_inputs.yellow_low_pressure = idHydYellowPressurised->get();
+  prims[primIndex].modelInputs.in.discrete_inputs.green_low_pressure = !idHydGreenPressurised->get();
+  prims[primIndex].modelInputs.in.discrete_inputs.yellow_low_pressure = !idHydYellowPressurised->get();
 
   prims[primIndex].modelInputs.in.analog_inputs.capt_pitch_stick_pos = -simInput.inputs[0];
   prims[primIndex].modelInputs.in.analog_inputs.fo_pitch_stick_pos = 0;
@@ -1338,7 +1336,7 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
     simConnectInterface.setClientDataPrimBusInput(primsBusOutputs[primIndex], primIndex);
   }
 
-  idElacDigitalOpValidated[primIndex]->set(primsDiscreteOutputs[primIndex].prim_healthy);
+  idPrimHealthy[primIndex]->set(primsDiscreteOutputs[primIndex].prim_healthy);
 
   return true;
 }
