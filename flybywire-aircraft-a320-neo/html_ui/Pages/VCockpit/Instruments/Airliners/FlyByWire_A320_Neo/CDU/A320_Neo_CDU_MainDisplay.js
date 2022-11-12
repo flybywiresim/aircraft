@@ -3,7 +3,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         super(...arguments);
 
         this.minPageUpdateThrottler = new UpdateThrottler(100);
-        this.mcduServerConnectUpdateThrottler = new UpdateThrottler(5000);
+        this.mcduServerConnectUpdateThrottler = new UpdateThrottler(1000);
         this.powerCheckUpdateThrottler = new UpdateThrottler(500);
 
         this._registered = false;
@@ -286,6 +286,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         }
 
         // Create a connection to the SimBridge MCDU Server if it is not already connected
+        // every 1000ms
         if (this.mcduServerConnectUpdateThrottler.canUpdate(_deltaTime) !== -1
             && this.getGameState() === GameState.ingame
             && this.mcduServerClient
