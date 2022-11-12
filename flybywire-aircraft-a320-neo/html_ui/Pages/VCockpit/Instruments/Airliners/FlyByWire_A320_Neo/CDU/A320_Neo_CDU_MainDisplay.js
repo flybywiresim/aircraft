@@ -188,7 +188,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     SimVar.SetSimVarValue(`L:A32NX_MCDU_PUSH_ANIM_${mcduIndex}_${button}`, "Number", 1);
                 }
                 if (messageType === "requestUpdate") {
-                    this.sendUpdate();
+                    caller.sendUpdate();
                 }
                 break;
             }
