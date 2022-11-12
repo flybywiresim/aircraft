@@ -1934,8 +1934,14 @@ class FMCMainDisplay extends BaseAirliners {
             this.setScratchpadMessage(NXSystemMessages.notAllowed);
             return callback(false);
         }
-        const from = fromTo.split("/")[0];
-        const to = fromTo.split("/")[1];
+
+        const match = fromTo.match(/^([A-Z]{4})\/([A-Z]{4})$/);
+        if (match === null) {
+            this.setScratchpadMessage(NXSystemMessages.formatError);
+            return callback(false);
+        }
+        const [, from, to] = match;
+
         this.dataManager.GetAirportByIdent(from).then((airportFrom) => {
             if (airportFrom) {
                 this.dataManager.GetAirportByIdent(to).then((airportTo) => {
