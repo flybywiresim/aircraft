@@ -22,7 +22,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.costIndexSet = undefined;
         this.maxCruiseFL = undefined;
         this.routeIndex = undefined;
-        this.coRoute = undefined;
+        this.coRoute = { routeNumber: undefined, routes: undefined };
         this.tmpOrigin = undefined;
         this.perfTOTemp = undefined;
         this._overridenFlapApproachSpeed = undefined;
@@ -315,10 +315,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.costIndexSet = false;
         this.maxCruiseFL = 390;
         this.routeIndex = 0;
-        this.coRoute = {
-            routeNumber: undefined,
-            routes: []
-        };
+        this.resetCoroute();
         this.tmpOrigin = "";
         this.perfTOTemp = NaN;
         this._overridenFlapApproachSpeed = NaN;
@@ -1929,6 +1926,11 @@ class FMCMainDisplay extends BaseAirliners {
         }
     }
 
+    resetCoroute() {
+        this.coRoute.routeNumber = undefined;
+        this.coRoute.routes = [];
+    }
+
     tryUpdateFromTo(fromTo, callback = EmptyCallback.Boolean) {
         if (fromTo === FMCMainDisplay.clrValue) {
             this.setScratchpadMessage(NXSystemMessages.notAllowed);
@@ -1941,6 +1943,8 @@ class FMCMainDisplay extends BaseAirliners {
             return callback(false);
         }
         const [, from, to] = match;
+
+        this.resetCoroute();
 
         this.dataManager.GetAirportByIdent(from).then((airportFrom) => {
             if (airportFrom) {
@@ -2460,7 +2464,7 @@ class FMCMainDisplay extends BaseAirliners {
             if (coRouteNum.length > 2 && (coRouteNum !== FMCMainDisplay.clrValue)) {
                 if (coRouteNum.length < 10) {
                     if (coRouteNum === "NONE") {
-                        this.coRoute = { routeNumber: undefined};
+                        this.resetCoroute();
                     } else {
                         const {success, data} = await SimBridgeClient.CompanyRoute.getCoRoute(coRouteNum);
                         if (success) {
