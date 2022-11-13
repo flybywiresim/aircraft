@@ -26,7 +26,7 @@ export class McduServerClient {
      * event is triggered. Otherwise, the event handler in McduServerClient will not be able to call the caller's
      * methods as it will not recognize "this" (will be undefined).
      */
-    public connect(caller: any, eventHandler: (c, e: Event) => void) {
+    public connect(eventHandler: (e: Event) => void) {
         if (this.state.isAvailable()) {
             // first disconnect to clean up any previous connection
             this.disconnect();
@@ -36,10 +36,10 @@ export class McduServerClient {
 
             // Setup up event handler from the caller
             if (eventHandler && typeof (eventHandler) === 'function') {
-                this.socket.onerror = (event) => eventHandler(caller, event);
-                this.socket.onclose = (event) => eventHandler(caller, event);
-                this.socket.onopen = (event) => eventHandler(caller, event);
-                this.socket.onmessage = (event) => eventHandler(caller, event);
+                this.socket.onerror = (event) => eventHandler(event);
+                this.socket.onclose = (event) => eventHandler(event);
+                this.socket.onopen = (event) => eventHandler(event);
+                this.socket.onmessage = (event) => eventHandler(event);
             }
         }
     }
