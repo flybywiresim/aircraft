@@ -299,9 +299,6 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idBrakePedalRightPos;
   std::unique_ptr<LocalVariable> idAutobrakeArmedMode;
   std::unique_ptr<LocalVariable> idAutobrakeDecelLight;
-  std::unique_ptr<LocalVariable> idHydraulicGreenPressure;
-  std::unique_ptr<LocalVariable> idHydraulicBluePressure;
-  std::unique_ptr<LocalVariable> idHydraulicYellowPressure;
   std::unique_ptr<LocalVariable> idMasterWarning;
   std::unique_ptr<LocalVariable> idMasterCaution;
 
@@ -452,17 +449,6 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFcdcPriorityFoGreen[2];
   std::unique_ptr<LocalVariable> idFcdcPriorityFoRed[2];
 
-  // fault input Lvars
-  std::unique_ptr<LocalVariable> idElevFaultLeft[2];
-  std::unique_ptr<LocalVariable> idElevFaultRight[2];
-  std::unique_ptr<LocalVariable> idAilFaultLeft[2];
-  std::unique_ptr<LocalVariable> idAilFaultRight[2];
-  std::unique_ptr<LocalVariable> idSplrFaultLeft[5];
-  std::unique_ptr<LocalVariable> idSplrFaultRight[5];
-
-  // THS Override Signal LVar
-  std::unique_ptr<LocalVariable> idThsOverrideActive;
-
   // ELAC discrete input Lvars
   std::unique_ptr<LocalVariable> idPrimPushbuttonPressed[3];
 
@@ -559,10 +545,8 @@ class FlyByWireInterface {
 
   std::unique_ptr<LocalVariable> idHydYellowSystemPressure;
   std::unique_ptr<LocalVariable> idHydGreenSystemPressure;
-  std::unique_ptr<LocalVariable> idHydBlueSystemPressure;
   std::unique_ptr<LocalVariable> idHydYellowPressurised;
   std::unique_ptr<LocalVariable> idHydGreenPressurised;
-  std::unique_ptr<LocalVariable> idHydBluePressurised;
 
   std::unique_ptr<LocalVariable> idCaptPriorityButtonPressed;
   std::unique_ptr<LocalVariable> idFoPriorityButtonPressed;

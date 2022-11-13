@@ -429,9 +429,6 @@ void FlyByWireInterface::setupLocalVariables() {
   idAutobrakeDecelLight = std::make_unique<LocalVariable>("A32NX_AUTOBRAKES_DECEL_LIGHT");
   idFlapsHandlePercent = std::make_unique<LocalVariable>("A32NX_FLAPS_HANDLE_PERCENT");
   idFlapsHandleIndex = std::make_unique<LocalVariable>("A32NX_FLAPS_HANDLE_INDEX");
-  idHydraulicGreenPressure = std::make_unique<LocalVariable>("A32NX_HYD_GREEN_SYSTEM_1_SECTION_PRESSURE");
-  idHydraulicBluePressure = std::make_unique<LocalVariable>("A32NX_HYD_BLUE_SYSTEM_1_SECTION_PRESSURE");
-  idHydraulicYellowPressure = std::make_unique<LocalVariable>("A32NX_HYD_YELLOW_SYSTEM_1_SECTION_PRESSURE");
 
   engineEngine1N2 = std::make_unique<LocalVariable>("A32NX_ENGINE_N2:1");
   engineEngine2N2 = std::make_unique<LocalVariable>("A32NX_ENGINE_N2:2");
@@ -581,8 +578,6 @@ void FlyByWireInterface::setupLocalVariables() {
     idFcdcPriorityFoGreen[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_PRIORITY_LIGHT_FO_GREEN_ON");
     idFcdcPriorityFoRed[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_PRIORITY_LIGHT_FO_RED_ON");
   }
-
-  idThsOverrideActive = std::make_unique<LocalVariable>("A32NX_HYD_THS_TRIM_MANUAL_OVERRIDE");
 
   for (int i = 0; i < 3; i++) {
     std::string idString = std::to_string(i + 1);
@@ -1041,9 +1036,9 @@ bool FlyByWireInterface::updateAdditionalData(double sampleTime) {
   additionalData.flaps_handle_configuration_index = flapsHandleIndexFlapConf->get();
   additionalData.flaps_handle_sim_index = simData.flapsHandleIndex;
   additionalData.gear_handle_pos = simData.gearHandlePosition;
-  additionalData.hydraulic_green_pressure = idHydraulicGreenPressure->get();
-  additionalData.hydraulic_blue_pressure = idHydraulicBluePressure->get();
-  additionalData.hydraulic_yellow_pressure = idHydraulicYellowPressure->get();
+  additionalData.hydraulic_green_pressure = idHydGreenSystemPressure->get();
+  additionalData.hydraulic_blue_pressure = 0;
+  additionalData.hydraulic_yellow_pressure = idHydGreenSystemPressure->get();
   additionalData.throttle_lever_1_pos = simData.throttle_lever_1_pos;
   additionalData.throttle_lever_2_pos = simData.throttle_lever_2_pos;
   additionalData.corrected_engine_N1_1_percent = simData.corrected_engine_N1_1_percent;
