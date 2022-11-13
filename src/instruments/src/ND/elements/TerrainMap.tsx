@@ -149,7 +149,8 @@ export const TerrainMap: React.FC<TerrainMapProps> = ({ potentiometerIndex, x, y
     const [terrOnNdActive] = useSimVar(`L:A32NX_EFIS_TERR_${side}_ACTIVE`, 'boolean', 100);
     const [rangeIndex] = useSimVar(`L:A32NX_EFIS_${side}_ND_RANGE`, 'number', 100);
     const [modeIndex] = useSimVar(`L:A32NX_EFIS_${side}_ND_MODE`, 'number', 100);
-    const [landingElevation] = useSimVar(`L:A32NX_FM${side === 'L' ? 1 : 2}_LANDING_ELEVATION`, 'number', 100);
+    const destinationLatitude = useArinc429Var(`L:A32NX_FM${side === 'L' ? 1 : 2}_DEST_LAT`, 100);
+    const destinationLongitude = useArinc429Var(`L:A32NX_FM${side === 'L' ? 1 : 2}_DEST_LONG`, 100);
     const [flightPhase] = useSimVar('L:A32NX_FMGC_FLIGHT_PHASE', 'number', 100);
     const [gearMode] = useSimVar('GEAR POSITION:0', 'Enum', 100);
     const mapVisualizationRef = useRef<MapVisualizationData>();
@@ -264,10 +265,14 @@ export const TerrainMap: React.FC<TerrainMapProps> = ({ potentiometerIndex, x, y
         }
         meterPerPixel += (10 - (meterPerPixel % 10));
 
-        // send the runway elevation to the renderer to activate the elevation filter
-        let runwayElevation: number | undefined = undefined;
-        if (flightPhase > FmgcFlightPhase.Cruise) {
-            runwayElevation = landingElevation;
+        let latitude: number | undefined = undefined;
+        let longitude: number | undefined = undefined;
+        if (destinationLatitude.isNormalOperation() && destinationLongitude.isNormalOperation()) {
+            latitude = destinationLatitude.value;
+            longitude = destinationLongitude.value;
+            console.log(`${latitude}, ${longitude}`);
+        } else {
+            console.log('NOT SET');
         }
 
         const displayConfiguration = {
@@ -279,10 +284,11 @@ export const TerrainMap: React.FC<TerrainMapProps> = ({ potentiometerIndex, x, y
             mapTransitionFps: MAP_TRANSITION_FRAMERATE,
             arcMode: modeIndex === Mode.ARC,
             gearDown: SimVar.GetSimVarValue('GEAR POSITION:0', 'Enum') !== 1,
-            runwayElevation,
+            destinationLatitude: latitude,
+            destinationLongitude: longitude,
         };
         Terrain.setDisplaySettings(side, displayConfiguration).catch((_ex) => setMapVisualization(new MapVisualizationData()));
-    }, [terrOnNdActive, rangeIndex, modeIndex, gearMode, flightPhase, landingElevation]);
+    }, [terrOnNdActive, rangeIndex, modeIndex, gearMode, flightPhase, destinationLatitude, destinationLongitude]);
 
     if (!terrOnNdActive || modeIndex === Mode.PLAN) {
         return <></>;
