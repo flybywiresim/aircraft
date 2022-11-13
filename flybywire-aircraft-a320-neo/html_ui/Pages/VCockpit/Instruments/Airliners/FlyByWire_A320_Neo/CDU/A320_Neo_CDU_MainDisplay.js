@@ -15,6 +15,12 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this._lines = [];
         this._keypad = new Keypad(this);
         this.scratchpad = null;
+        this._inout = null;
+        this._brightness = 12;
+        /** @type {HTMLSpanElement | null} */
+        this._brightnessIndicator = null;
+        /** @type {number | null} */
+        this._brightnessTimer = null;
         this._arrows = [false, false, false, false];
         this.onLeftInput = [];
         this.onRightInput = [];
@@ -172,6 +178,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
         this.generateHTMLLayout(this.getChildById("Mainframe") || this);
 
+        this.setBrightness(this._brightness);
+
         const display = new ScratchpadDisplay(this.getChildById("in-out"));
         this.scratchpad = new ScratchpadDataLink(this, display);
 
@@ -219,6 +227,10 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.onRightFunction = (f) => this.onLsk(this.onRightInput[f], this.rightInputDelay[f]);
         this.onOvfy = () => this.scratchpad.addChar('Δ');
         this.onUnload = () => {};
+        this.onBrightnessIncrement = (increment) => {
+            this.setBrightness(this._brightness + increment);
+            this.showBrightness(this._brightness);
+        };
 
         CDUMenuPage.ShowPage(this);
 
@@ -310,6 +322,34 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         }
         this.checkAocTimes();
         this.updateMCDU();
+    }
+
+    /**
+     * Set the current display brightness
+     * @param {number} brightness brightness on 0-24 scale
+     */
+    setBrightness(brightness) {
+        this._brightness = Math.min(24, Math.max(0, brightness));
+        const factor = this._brightness === 0 ? 0 : 8 * Math.exp(-4 + this._brightness / 6);
+        SimVar.SetSimVarValue(`L:A32NX_MCDU_L_BRIGHTNESS`, 'number', factor);
+        SimVar.SetSimVarValue(`L:A32NX_MCDU_R_BRIGHTNESS`, 'number', factor);
+    }
+
+    /** Show the brightness indicator over top of the scratchpad */
+    showBrightness() {
+        if (this._brightnessTimer !== null) {
+            clearTimeout(this._brightnessTimer);
+        }
+
+        const text = `${'\u2588'.repeat(this._brightness)}${'\xa0'.repeat(Math.max(0, 24 - this._brightness - 1))}${this._brightness < 24 ? '+' : ''}`;
+        this._brightnessIndicator.innerText = text;
+
+        this._inOut.classList.add("hidden");
+        this._brightnessIndicator.classList.remove('hidden');
+        this._brightnessTimer = setTimeout(() => {
+            this._brightnessIndicator.classList.add('hidden');
+            this._inOut.classList.remove("hidden");
+        }, 1000);
     }
 
     /* MCDU UPDATE */
@@ -762,13 +802,16 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         }
         const footer = document.createElement("div");
         footer.classList.add("line");
-        const inout = document.createElement("span");
-        inout.id = "in-out";
+        this._inOut = document.createElement("span");
+        this._inOut.id = "in-out";
+        this._brightnessIndicator = document.createElement("span");
+        this._brightnessIndicator.id = "brightness-indicator";
         this.arrowVertical = document.createElement("span");
         this.arrowVertical.id = "arrow-vertical";
         this.arrowVertical.innerHTML = "↓↑\xa0";
 
-        footer.appendChild(inout);
+        footer.appendChild(this._inOut);
+        footer.appendChild(this._brightnessIndicator);
         footer.appendChild(this.arrowVertical);
         parent.appendChild(footer);
     }
@@ -1051,6 +1094,10 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 if (isFinite(v)) {
                     this.onRightFunction(v);
                 }
+            } else if (input === "BRTINC") {
+                this.onBrightnessIncrement(1);
+            } else if (input === "BRTDEC") {
+                this.onBrightnessIncrement(-1);
             } else {
                 console.log("'" + input + "'");
             }

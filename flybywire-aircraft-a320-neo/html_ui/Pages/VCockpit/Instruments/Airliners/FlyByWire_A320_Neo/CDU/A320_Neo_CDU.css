@@ -245,7 +245,8 @@ span .s-text {
   text-align: center;
 }
 
-#in-out {
+#in-out,
+#brightness-indicator {
   padding-left: 4%;
 }
 
