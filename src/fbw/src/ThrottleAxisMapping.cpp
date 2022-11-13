@@ -3,7 +3,6 @@
 #include <cmath>
 #include "ini_type_conversion.h"
 
-using namespace std;
 using namespace mINI;
 
 ThrottleAxisMapping::ThrottleAxisMapping(unsigned int id) {
@@ -11,7 +10,7 @@ ThrottleAxisMapping::ThrottleAxisMapping(unsigned int id) {
   this->id = id;
 
   // update string variables
-  string stringId = to_string(id);
+  auto stringId = std::to_string(id);
   CONFIGURATION_SECTION_AXIS = CONFIGURATION_SECTION_AXIS.append(stringId);
   LVAR_INPUT_VALUE = LVAR_INPUT_VALUE.append(stringId);
   LVAR_THRUST_LEVER_ANGLE = LVAR_THRUST_LEVER_ANGLE.append(stringId);
@@ -31,24 +30,24 @@ ThrottleAxisMapping::ThrottleAxisMapping(unsigned int id) {
   LVAR_DETENT_TOGA_HIGH = LVAR_DETENT_TOGA_HIGH.append(stringId);
 
   // register local variables
-  idInputValue = make_unique<LocalVariable>(LVAR_INPUT_VALUE.c_str());
-  idThrustLeverAngle = make_unique<LocalVariable>(LVAR_THRUST_LEVER_ANGLE.c_str());
-  idUsingConfig = make_unique<LocalVariable>(LVAR_LOAD_CONFIG.c_str());
-  idUseReverseOnAxis = make_unique<LocalVariable>(LVAR_USE_REVERSE_ON_AXIS.c_str());
-  idIncrementNormal = make_unique<LocalVariable>(LVAR_INCREMENT_NORMAL.c_str());
-  idIncrementSmall = make_unique<LocalVariable>(LVAR_INCREMENT_SMALL.c_str());
-  idDetentReverseLow = make_unique<LocalVariable>(LVAR_DETENT_REVERSE_LOW.c_str());
-  idDetentReverseHigh = make_unique<LocalVariable>(LVAR_DETENT_REVERSE_HIGH.c_str());
-  idDetentReverseIdleLow = make_unique<LocalVariable>(LVAR_DETENT_REVERSEIDLE_LOW.c_str());
-  idDetentReverseIdleHigh = make_unique<LocalVariable>(LVAR_DETENT_REVERSEIDLE_HIGH.c_str());
-  idDetentIdleLow = make_unique<LocalVariable>(LVAR_DETENT_IDLE_LOW.c_str());
-  idDetentIdleHigh = make_unique<LocalVariable>(LVAR_DETENT_IDLE_HIGH.c_str());
-  idDetentClimbLow = make_unique<LocalVariable>(LVAR_DETENT_CLIMB_LOW.c_str());
-  idDetentClimbHigh = make_unique<LocalVariable>(LVAR_DETENT_CLIMB_HIGH.c_str());
-  idDetentFlexMctLow = make_unique<LocalVariable>(LVAR_DETENT_FLEXMCT_LOW.c_str());
-  idDetentFlexMctHigh = make_unique<LocalVariable>(LVAR_DETENT_FLEXMCT_HIGH.c_str());
-  idDetentTogaLow = make_unique<LocalVariable>(LVAR_DETENT_TOGA_LOW.c_str());
-  idDetentTogaHigh = make_unique<LocalVariable>(LVAR_DETENT_TOGA_HIGH.c_str());
+  idInputValue = std::make_unique<LocalVariable>(LVAR_INPUT_VALUE.c_str());
+  idThrustLeverAngle = std::make_unique<LocalVariable>(LVAR_THRUST_LEVER_ANGLE.c_str());
+  idUsingConfig = std::make_unique<LocalVariable>(LVAR_LOAD_CONFIG.c_str());
+  idUseReverseOnAxis = std::make_unique<LocalVariable>(LVAR_USE_REVERSE_ON_AXIS.c_str());
+  idIncrementNormal = std::make_unique<LocalVariable>(LVAR_INCREMENT_NORMAL.c_str());
+  idIncrementSmall = std::make_unique<LocalVariable>(LVAR_INCREMENT_SMALL.c_str());
+  idDetentReverseLow = std::make_unique<LocalVariable>(LVAR_DETENT_REVERSE_LOW.c_str());
+  idDetentReverseHigh = std::make_unique<LocalVariable>(LVAR_DETENT_REVERSE_HIGH.c_str());
+  idDetentReverseIdleLow = std::make_unique<LocalVariable>(LVAR_DETENT_REVERSEIDLE_LOW.c_str());
+  idDetentReverseIdleHigh = std::make_unique<LocalVariable>(LVAR_DETENT_REVERSEIDLE_HIGH.c_str());
+  idDetentIdleLow = std::make_unique<LocalVariable>(LVAR_DETENT_IDLE_LOW.c_str());
+  idDetentIdleHigh = std::make_unique<LocalVariable>(LVAR_DETENT_IDLE_HIGH.c_str());
+  idDetentClimbLow = std::make_unique<LocalVariable>(LVAR_DETENT_CLIMB_LOW.c_str());
+  idDetentClimbHigh = std::make_unique<LocalVariable>(LVAR_DETENT_CLIMB_HIGH.c_str());
+  idDetentFlexMctLow = std::make_unique<LocalVariable>(LVAR_DETENT_FLEXMCT_LOW.c_str());
+  idDetentFlexMctHigh = std::make_unique<LocalVariable>(LVAR_DETENT_FLEXMCT_HIGH.c_str());
+  idDetentTogaLow = std::make_unique<LocalVariable>(LVAR_DETENT_TOGA_LOW.c_str());
+  idDetentTogaHigh = std::make_unique<LocalVariable>(LVAR_DETENT_TOGA_HIGH.c_str());
 }
 
 void ThrottleAxisMapping::setInFlight() {
@@ -81,7 +80,7 @@ bool ThrottleAxisMapping::loadFromLocalVariables() {
 
 bool ThrottleAxisMapping::applyDefaults() {
   Configuration configuration;
-  cout << "WASM: Throttle configuration set to use default" << endl;
+  std::cout << "WASM: Throttle configuration set to use default" << std::endl;
   configuration = getDefaultConfiguration();
 
   // save values to local variables
@@ -102,7 +101,7 @@ bool ThrottleAxisMapping::loadFromFile() {
   // read configuration from file or use default
   Configuration configuration;
   if (!iniFile.read(iniStructure)) {
-    cout << "WASM: failed to read throttle configuration from disk -> create and use default" << endl;
+    std::cout << "WASM: failed to read throttle configuration from disk -> create and use default" << std::endl;
     configuration = getDefaultConfiguration();
   } else {
     configuration = loadConfigurationFromIniStructure(iniStructure);
@@ -354,20 +353,20 @@ ThrottleAxisMapping::Configuration ThrottleAxisMapping::loadConfigurationFromIni
 
 void ThrottleAxisMapping::storeConfigurationInIniStructure(INIStructure& structure, const Configuration& configuration) {
   structure[CONFIGURATION_SECTION_COMMON]["REVERSE_ON_AXIS"] = configuration.useReverseOnAxis ? "true" : "false";
-  structure[CONFIGURATION_SECTION_COMMON]["KEY_INCREMENT_NORMAL"] = to_string(configuration.incrementNormal);
-  structure[CONFIGURATION_SECTION_COMMON]["KEY_INCREMENT_SMALL"] = to_string(configuration.incrementSmall);
-  structure[CONFIGURATION_SECTION_AXIS]["REVERSE_LOW"] = to_string(configuration.reverseLow);
-  structure[CONFIGURATION_SECTION_AXIS]["REVERSE_HIGH"] = to_string(configuration.reverseHigh);
-  structure[CONFIGURATION_SECTION_AXIS]["REVERSE_IDLE_LOW"] = to_string(configuration.reverseIdleLow);
-  structure[CONFIGURATION_SECTION_AXIS]["REVERSE_IDLE_HIGH"] = to_string(configuration.reverseIdleHigh);
-  structure[CONFIGURATION_SECTION_AXIS]["IDLE_LOW"] = to_string(configuration.idleLow);
-  structure[CONFIGURATION_SECTION_AXIS]["IDLE_HIGH"] = to_string(configuration.idleHigh);
-  structure[CONFIGURATION_SECTION_AXIS]["CLIMB_LOW"] = to_string(configuration.climbLow);
-  structure[CONFIGURATION_SECTION_AXIS]["CLIMB_HIGH"] = to_string(configuration.climbHigh);
-  structure[CONFIGURATION_SECTION_AXIS]["FLEX_MCT_LOW"] = to_string(configuration.flxMctLow);
-  structure[CONFIGURATION_SECTION_AXIS]["FLEX_MCT_HIGH"] = to_string(configuration.flxMctHigh);
-  structure[CONFIGURATION_SECTION_AXIS]["TOGA_LOW"] = to_string(configuration.togaLow);
-  structure[CONFIGURATION_SECTION_AXIS]["TOGA_HIGH"] = to_string(configuration.togaHigh);
+  structure[CONFIGURATION_SECTION_COMMON]["KEY_INCREMENT_NORMAL"] = std::to_string(configuration.incrementNormal);
+  structure[CONFIGURATION_SECTION_COMMON]["KEY_INCREMENT_SMALL"] = std::to_string(configuration.incrementSmall);
+  structure[CONFIGURATION_SECTION_AXIS]["REVERSE_LOW"] = std::to_string(configuration.reverseLow);
+  structure[CONFIGURATION_SECTION_AXIS]["REVERSE_HIGH"] = std::to_string(configuration.reverseHigh);
+  structure[CONFIGURATION_SECTION_AXIS]["REVERSE_IDLE_LOW"] = std::to_string(configuration.reverseIdleLow);
+  structure[CONFIGURATION_SECTION_AXIS]["REVERSE_IDLE_HIGH"] = std::to_string(configuration.reverseIdleHigh);
+  structure[CONFIGURATION_SECTION_AXIS]["IDLE_LOW"] = std::to_string(configuration.idleLow);
+  structure[CONFIGURATION_SECTION_AXIS]["IDLE_HIGH"] = std::to_string(configuration.idleHigh);
+  structure[CONFIGURATION_SECTION_AXIS]["CLIMB_LOW"] = std::to_string(configuration.climbLow);
+  structure[CONFIGURATION_SECTION_AXIS]["CLIMB_HIGH"] = std::to_string(configuration.climbHigh);
+  structure[CONFIGURATION_SECTION_AXIS]["FLEX_MCT_LOW"] = std::to_string(configuration.flxMctLow);
+  structure[CONFIGURATION_SECTION_AXIS]["FLEX_MCT_HIGH"] = std::to_string(configuration.flxMctHigh);
+  structure[CONFIGURATION_SECTION_AXIS]["TOGA_LOW"] = std::to_string(configuration.togaLow);
+  structure[CONFIGURATION_SECTION_AXIS]["TOGA_HIGH"] = std::to_string(configuration.togaHigh);
 }
 
 void ThrottleAxisMapping::updateMappingFromConfiguration(const Configuration& configuration) {
@@ -378,8 +377,8 @@ void ThrottleAxisMapping::updateMappingFromConfiguration(const Configuration& co
   incrementNormal = configuration.incrementNormal;
   incrementSmall = configuration.incrementSmall;
 
-  // mapping table vector
-  vector<pair<double, double>> mappingTable;
+  // mapping table std::vector
+  std::vector<std::pair<double, double>> mappingTable;
 
   if (configuration.useReverseOnAxis) {
     // reverse

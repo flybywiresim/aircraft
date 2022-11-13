@@ -24,8 +24,6 @@
 #include <memory>
 #include <string>
 
-using namespace std;
-
 // IDs for data structures - must be mapped to data structs
 enum DataStructureIDs {
   SimulationDataID,

@@ -334,13 +334,10 @@ impl A380Pneumatic {
     pub fn update_hydraulic_reservoir_spatial_volumes(
         &mut self,
         green_hydraulic_reservoir: &impl PressurizeableReservoir,
-        blue_hydraulic_reservoir: &impl PressurizeableReservoir,
         yellow_hydraulic_reservoir: &impl PressurizeableReservoir,
     ) {
         self.green_hydraulic_reservoir_with_valve
             .change_spatial_volume(green_hydraulic_reservoir.available_volume());
-        self.blue_hydraulic_reservoir_with_valve
-            .change_spatial_volume(blue_hydraulic_reservoir.available_volume());
         self.yellow_hydraulic_reservoir_with_valve
             .change_spatial_volume(yellow_hydraulic_reservoir.available_volume());
     }
