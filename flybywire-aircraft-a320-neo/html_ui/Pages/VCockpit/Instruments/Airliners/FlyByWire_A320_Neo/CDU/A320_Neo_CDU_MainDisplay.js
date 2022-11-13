@@ -178,6 +178,10 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         });
     }
 
+    // The callback is called when an event is received from the McduServerClient's socket.
+    // See https://developer.mozilla.org/en-US/docs/Web/API/WebSocket#events for possible events.
+    // This will be used as a parameter when the McduServerClient's connect method is called.
+    // this.mcduServerClient.connect(this, this.mcduServerClientEventHandler);
     mcduServerClientEventHandler(caller, event) {
         switch (event.type) {
             case 'open': {
@@ -317,7 +321,12 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             && this.mcduServerClient
         ) {
             if (this.mcduServerClient.isConnected()) {
-                // check if connection or SimBridge Setting is still valid
+                // Check if connection or SimBridge Setting is still valid.
+                // validateConnection() will return false if the connection is not established
+                // any longer (probably not the case here as we test isConnected) or if the
+                // SimBridge Enabled setting (persistent property CONFIG_SIMBRIDGE_ENABLED) is set
+                // to off - this is the case where this clears the remote MCDU screen and
+                // disconnects the client.
                 if (!this.mcduServerClient.validateConnection()) {
                     this.sendClearScreen();
                     this.mcduServerClient.disconnect();
