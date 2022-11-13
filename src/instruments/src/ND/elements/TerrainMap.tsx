@@ -2,8 +2,8 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useArinc429Var } from '@instruments/common/arinc429';
 import { useUpdate } from '@instruments/common/hooks';
 import { useSimVar } from '@instruments/common/simVars';
+import { Arinc429Word } from '@shared/arinc429';
 import { Mode, EfisSide, rangeSettings } from '@shared/NavigationDisplay';
-import { FmgcFlightPhase } from '@shared/flightphase';
 import { Terrain } from '../../../../simbridge-client/src/index';
 
 const MAP_TRANSITION_FRAMERATE = 15;
@@ -144,16 +144,18 @@ export interface TerrainMapProps {
 }
 
 export const TerrainMap: React.FC<TerrainMapProps> = ({ potentiometerIndex, x, y, width, height, side, clipName }) => {
+    const [destinationLongitudeSsm] = useSimVar(`L:A32NX_FM${side === 'L' ? 1 : 2}_DEST_LONG_SSM`, 'number', 100);
+    const [destinationLatitudeSsm] = useSimVar(`L:A32NX_FM${side === 'L' ? 1 : 2}_DEST_LAT_SSM`, 'number', 100);
+    const [destinationLongitude] = useSimVar(`L:A32NX_FM${side === 'L' ? 1 : 2}_DEST_LONG`, 'number', 100);
+    const [destinationLatitude] = useSimVar(`L:A32NX_FM${side === 'L' ? 1 : 2}_DEST_LAT`, 'number', 100);
     const [mapVisualization, setMapVisualization] = useState<MapVisualizationData>(new MapVisualizationData());
     const [potentiometer] = useSimVar(`LIGHT POTENTIOMETER:${potentiometerIndex}`, 'percent over 100', 200);
     const [terrOnNdActive] = useSimVar(`L:A32NX_EFIS_TERR_${side}_ACTIVE`, 'boolean', 100);
     const [rangeIndex] = useSimVar(`L:A32NX_EFIS_${side}_ND_RANGE`, 'number', 100);
     const [modeIndex] = useSimVar(`L:A32NX_EFIS_${side}_ND_MODE`, 'number', 100);
-    const destinationLatitude = useArinc429Var(`L:A32NX_FM${side === 'L' ? 1 : 2}_DEST_LAT`, 100);
-    const destinationLongitude = useArinc429Var(`L:A32NX_FM${side === 'L' ? 1 : 2}_DEST_LONG`, 100);
-    const [flightPhase] = useSimVar('L:A32NX_FMGC_FLIGHT_PHASE', 'number', 100);
     const [gearMode] = useSimVar('GEAR POSITION:0', 'Enum', 100);
     const mapVisualizationRef = useRef<MapVisualizationData>();
+
     mapVisualizationRef.current = mapVisualization;
 
     const syncWithRenderer = (timestamp: number) => {
@@ -267,12 +269,11 @@ export const TerrainMap: React.FC<TerrainMapProps> = ({ potentiometerIndex, x, y
 
         let latitude: number | undefined = undefined;
         let longitude: number | undefined = undefined;
-        if (destinationLatitude.isNormalOperation() && destinationLongitude.isNormalOperation()) {
-            latitude = destinationLatitude.value;
-            longitude = destinationLongitude.value;
-            console.log(`${latitude}, ${longitude}`);
-        } else {
-            console.log('NOT SET');
+        if (destinationLatitudeSsm === Arinc429Word.SignStatusMatrix.NormalOperation
+            && destinationLongitudeSsm === Arinc429Word.SignStatusMatrix.NormalOperation
+        ) {
+            latitude = destinationLatitude;
+            longitude = destinationLongitude;
         }
 
         const displayConfiguration = {
@@ -288,7 +289,7 @@ export const TerrainMap: React.FC<TerrainMapProps> = ({ potentiometerIndex, x, y
             destinationLongitude: longitude,
         };
         Terrain.setDisplaySettings(side, displayConfiguration).catch((_ex) => setMapVisualization(new MapVisualizationData()));
-    }, [terrOnNdActive, rangeIndex, modeIndex, gearMode, flightPhase, destinationLatitude, destinationLongitude]);
+    }, [terrOnNdActive, rangeIndex, modeIndex, gearMode, destinationLatitude, destinationLatitudeSsm, destinationLongitude, destinationLongitudeSsm]);
 
     if (!terrOnNdActive || modeIndex === Mode.PLAN) {
         return <></>;
