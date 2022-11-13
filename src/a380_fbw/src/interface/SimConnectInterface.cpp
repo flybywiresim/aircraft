@@ -663,7 +663,7 @@ bool SimConnectInterface::prepareClientDataDefinitions() {
     // map client id
     result &= SimConnect_MapClientDataNameToID(hSimConnect, ("A32NX_CLIENT_DATA_PRIM_" + std::to_string(i + 1) + "_BUS").c_str(), defineId);
     // create client data
-    result &= SimConnect_CreateClientData(hSimConnect, defineId, sizeof(base_elac_out_bus), SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
+    result &= SimConnect_CreateClientData(hSimConnect, defineId, sizeof(base_prim_out_bus), SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
     // add data definitions
     for (int i = 0; i < 27; i++) {
       result &=
