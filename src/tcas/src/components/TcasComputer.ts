@@ -2,6 +2,7 @@
 /* eslint-disable no-empty-function */
 /* eslint-disable no-useless-constructor */
 /* eslint-disable no-underscore-dangle */
+/* eslint-disable no-console */
 import { UpdateThrottler } from '@shared/UpdateThrottler';
 import { MathUtils } from '@shared/MathUtils';
 import { Arinc429Word } from '@shared/arinc429';
@@ -13,7 +14,7 @@ import { FlowEventSync } from '@shared/FlowEventSync';
 import {
     TCAS_CONST as TCAS, JS_NPCPlane,
     TcasState, TcasMode, XpdrMode, TcasThreat,
-    RaParams, RaSense, RaType, TaRaIndex, TaRaIntrusion, Intrude,
+    RaParams, RaSense, RaType, TaRaIndex, TaRaIntrusion,
     Inhibit, Limits,
 } from '../lib/TcasConstants';
 import { TcasSoundManager } from './TcasSoundManager';
