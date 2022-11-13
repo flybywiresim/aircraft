@@ -15,7 +15,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this._lines = [];
         this._keypad = new Keypad(this);
         this.scratchpad = null;
-        this._inout = null;
+        this._inOut = null;
         this._brightness = 12;
         /** @type {HTMLSpanElement | null} */
         this._brightnessIndicator = null;
