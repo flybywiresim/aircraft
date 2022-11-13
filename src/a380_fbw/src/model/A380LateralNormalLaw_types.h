@@ -47,6 +47,7 @@ struct lateral_normal_input
 struct base_roll_data_computed
 {
   real_T delta_xi_deg;
+  real_T delta_zeta_deg;
   real_T in_flight;
   real_T in_flight_gain;
 };
@@ -74,6 +75,7 @@ struct base_roll_output
   real_T xi_inboard_deg;
   real_T xi_midboard_deg;
   real_T xi_outboard_deg;
+  real_T xi_spoiler_deg;
   real_T zeta_upper_deg;
   real_T zeta_lower_deg;
 };

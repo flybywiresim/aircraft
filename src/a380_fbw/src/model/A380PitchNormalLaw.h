@@ -44,6 +44,7 @@ class A380PitchNormalLaw final
   };
 
   struct BlockIO_A380PitchNormalLaw_T {
+    real_T in_flight;
     real_T flare_Theta_c_deg;
     real_T flare_Theta_c_rate_deg_s;
   };
@@ -84,12 +85,16 @@ class A380PitchNormalLaw final
     real_T Delay_DSTATE_ej;
     real_T Delay_DSTATE_e4;
     real_T Delay_DSTATE_cl;
+    real_T on_ground_time;
+    real_T in_flight_time;
     uint8_T is_active_c6_A380PitchNormalLaw;
     uint8_T is_c6_A380PitchNormalLaw;
     uint8_T is_active_c7_A380PitchNormalLaw;
     uint8_T is_c7_A380PitchNormalLaw;
     uint8_T is_active_c8_A380PitchNormalLaw;
     uint8_T is_c8_A380PitchNormalLaw;
+    uint8_T is_active_c3_A380PitchNormalLaw;
+    uint8_T is_c3_A380PitchNormalLaw;
     uint8_T is_active_c9_A380PitchNormalLaw;
     uint8_T is_c9_A380PitchNormalLaw;
     uint8_T is_active_c2_A380PitchNormalLaw;
@@ -285,7 +290,6 @@ class A380PitchNormalLaw final
     real_T Saturation_LowerSat_p;
     real_T Constant1_Value_h;
     real_T Constant_Value_o;
-    real_T Constant_Value_n;
     real_T Constant1_Value_k;
     real_T Constant_Value_p;
     real_T Saturation_UpperSat_c;
@@ -478,19 +482,19 @@ class A380PitchNormalLaw final
   A380PitchNormalLaw& operator= (A380PitchNormalLaw const&) & = delete;
   A380PitchNormalLaw(A380PitchNormalLaw &&) = delete;
   A380PitchNormalLaw& operator= (A380PitchNormalLaw &&) = delete;
-  void step(const real_T *rtu_In_time_dt, const real_T *rtu_In_nz_g, const real_T *rtu_In_Theta_deg, const real_T
-            *rtu_In_Phi_deg, const real_T *rtu_In_qk_deg_s, const real_T *rtu_In_qk_dot_deg_s2, const real_T
-            *rtu_In_eta_deg, const real_T *rtu_In_eta_trim_deg, const real_T *rtu_In_alpha_deg, const real_T
-            *rtu_In_V_ias_kn, const real_T *rtu_In_V_tas_kn, const real_T *rtu_In_H_radio_ft, const real_T
-            *rtu_In_flaps_handle_index, const real_T *rtu_In_spoilers_left_pos, const real_T *rtu_In_spoilers_right_pos,
-            const real_T *rtu_In_thrust_lever_1_pos, const real_T *rtu_In_thrust_lever_2_pos, const boolean_T
-            *rtu_In_tailstrike_protection_on, const real_T *rtu_In_VLS_kn, const real_T *rtu_In_delta_eta_pos, const
-            boolean_T *rtu_In_on_ground, const boolean_T *rtu_In_tracking_mode_on, const boolean_T
-            *rtu_In_high_aoa_prot_active, const boolean_T *rtu_In_high_speed_prot_active, const real_T
-            *rtu_In_alpha_prot, const real_T *rtu_In_alpha_max, const real_T *rtu_In_high_speed_prot_high_kn, const
-            real_T *rtu_In_high_speed_prot_low_kn, const real_T *rtu_In_ap_theta_c_deg, const boolean_T
-            *rtu_In_any_ap_engaged, real_T *rty_Out_eta_deg, real_T *rty_Out_eta_trim_dot_deg_s, real_T
-            *rty_Out_eta_trim_limit_lo, real_T *rty_Out_eta_trim_limit_up);
+  void step(const real_T *rtu_In_time_dt, const real_T *rtu_In_time_simulation_time, const real_T *rtu_In_nz_g, const
+            real_T *rtu_In_Theta_deg, const real_T *rtu_In_Phi_deg, const real_T *rtu_In_qk_deg_s, const real_T
+            *rtu_In_qk_dot_deg_s2, const real_T *rtu_In_eta_deg, const real_T *rtu_In_eta_trim_deg, const real_T
+            *rtu_In_alpha_deg, const real_T *rtu_In_V_ias_kn, const real_T *rtu_In_V_tas_kn, const real_T
+            *rtu_In_H_radio_ft, const real_T *rtu_In_flaps_handle_index, const real_T *rtu_In_spoilers_left_pos, const
+            real_T *rtu_In_spoilers_right_pos, const real_T *rtu_In_thrust_lever_1_pos, const real_T
+            *rtu_In_thrust_lever_2_pos, const boolean_T *rtu_In_tailstrike_protection_on, const real_T *rtu_In_VLS_kn,
+            const real_T *rtu_In_delta_eta_pos, const boolean_T *rtu_In_on_ground, const boolean_T
+            *rtu_In_tracking_mode_on, const boolean_T *rtu_In_high_aoa_prot_active, const boolean_T
+            *rtu_In_high_speed_prot_active, const real_T *rtu_In_alpha_prot, const real_T *rtu_In_alpha_max, const
+            real_T *rtu_In_high_speed_prot_high_kn, const real_T *rtu_In_high_speed_prot_low_kn, const real_T
+            *rtu_In_ap_theta_c_deg, const boolean_T *rtu_In_any_ap_engaged, real_T *rty_Out_eta_deg, real_T
+            *rty_Out_eta_trim_dot_deg_s, real_T *rty_Out_eta_trim_limit_lo, real_T *rty_Out_eta_trim_limit_up);
   void reset();
   A380PitchNormalLaw();
   ~A380PitchNormalLaw();

@@ -22,6 +22,14 @@ const uint8_T A380PitchNormalLaw_IN_frozen{ 1U };
 
 const uint8_T A380PitchNormalLaw_IN_running{ 2U };
 
+const uint8_T A380PitchNormalLaw_IN_Flight{ 1U };
+
+const uint8_T A380PitchNormalLaw_IN_FlightToGroundTransition{ 2U };
+
+const uint8_T A380PitchNormalLaw_IN_GroundToFlightTransition{ 4U };
+
+const uint8_T A380PitchNormalLaw_IN_Ground_m{ 3U };
+
 const uint8_T A380PitchNormalLaw_IN_automatic{ 1U };
 
 const uint8_T A380PitchNormalLaw_IN_manual{ 2U };
@@ -257,7 +265,7 @@ A380PitchNormalLaw::Parameters_A380PitchNormalLaw_T A380PitchNormalLaw::A380Pitc
 
   17.0,
 
-  -0.2,
+  -10.0,
 
   -0.5,
 
@@ -372,8 +380,6 @@ A380PitchNormalLaw::Parameters_A380PitchNormalLaw_T A380PitchNormalLaw::A380Pitc
   0.0,
 
   30.0,
-
-  0.0,
 
   0.0,
 
@@ -1026,6 +1032,11 @@ void A380PitchNormalLaw::reset(void)
   A380PitchNormalLaw_DWork.Delay_DSTATE_e4 = A380PitchNormalLaw_rtP.DiscreteDerivativeVariableTs_InitialCondition_p;
   A380PitchNormalLaw_DWork.icLoad_p = true;
   A380PitchNormalLaw_LagFilter_Reset(&A380PitchNormalLaw_DWork.sf_LagFilter);
+  A380PitchNormalLaw_DWork.is_active_c3_A380PitchNormalLaw = 0U;
+  A380PitchNormalLaw_DWork.is_c3_A380PitchNormalLaw = A380PitchNormalLaw_IN_NO_ACTIVE_CHILD;
+  A380PitchNormalLaw_DWork.on_ground_time = 0.0;
+  A380PitchNormalLaw_DWork.in_flight_time = 0.0;
+  A380PitchNormalLaw_B.in_flight = 0.0;
   A380PitchNormalLaw_DWork.is_active_c2_A380PitchNormalLaw = 0U;
   A380PitchNormalLaw_DWork.is_c2_A380PitchNormalLaw = A380PitchNormalLaw_IN_NO_ACTIVE_CHILD;
   rtb_in_flare = 0.0;
@@ -1069,18 +1080,18 @@ void A380PitchNormalLaw::reset(void)
   A380PitchNormalLaw_RateLimiter_Reset(&A380PitchNormalLaw_DWork.sf_RateLimiter_b);
 }
 
-void A380PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_nz_g, const real_T *rtu_In_Theta_deg,
-  const real_T *rtu_In_Phi_deg, const real_T *rtu_In_qk_deg_s, const real_T *rtu_In_qk_dot_deg_s2, const real_T
-  *rtu_In_eta_deg, const real_T *rtu_In_eta_trim_deg, const real_T *rtu_In_alpha_deg, const real_T *rtu_In_V_ias_kn,
-  const real_T *rtu_In_V_tas_kn, const real_T *rtu_In_H_radio_ft, const real_T *rtu_In_flaps_handle_index, const real_T *
-  rtu_In_spoilers_left_pos, const real_T *rtu_In_spoilers_right_pos, const real_T *rtu_In_thrust_lever_1_pos, const
-  real_T *rtu_In_thrust_lever_2_pos, const boolean_T *rtu_In_tailstrike_protection_on, const real_T *rtu_In_VLS_kn,
-  const real_T *rtu_In_delta_eta_pos, const boolean_T *rtu_In_on_ground, const boolean_T *rtu_In_tracking_mode_on, const
-  boolean_T *rtu_In_high_aoa_prot_active, const boolean_T *rtu_In_high_speed_prot_active, const real_T
-  *rtu_In_alpha_prot, const real_T *rtu_In_alpha_max, const real_T *rtu_In_high_speed_prot_high_kn, const real_T
-  *rtu_In_high_speed_prot_low_kn, const real_T *rtu_In_ap_theta_c_deg, const boolean_T *rtu_In_any_ap_engaged, real_T
-  *rty_Out_eta_deg, real_T *rty_Out_eta_trim_dot_deg_s, real_T *rty_Out_eta_trim_limit_lo, real_T
-  *rty_Out_eta_trim_limit_up)
+void A380PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_time_simulation_time, const real_T
+  *rtu_In_nz_g, const real_T *rtu_In_Theta_deg, const real_T *rtu_In_Phi_deg, const real_T *rtu_In_qk_deg_s, const
+  real_T *rtu_In_qk_dot_deg_s2, const real_T *rtu_In_eta_deg, const real_T *rtu_In_eta_trim_deg, const real_T
+  *rtu_In_alpha_deg, const real_T *rtu_In_V_ias_kn, const real_T *rtu_In_V_tas_kn, const real_T *rtu_In_H_radio_ft,
+  const real_T *rtu_In_flaps_handle_index, const real_T *rtu_In_spoilers_left_pos, const real_T
+  *rtu_In_spoilers_right_pos, const real_T *rtu_In_thrust_lever_1_pos, const real_T *rtu_In_thrust_lever_2_pos, const
+  boolean_T *rtu_In_tailstrike_protection_on, const real_T *rtu_In_VLS_kn, const real_T *rtu_In_delta_eta_pos, const
+  boolean_T *rtu_In_on_ground, const boolean_T *rtu_In_tracking_mode_on, const boolean_T *rtu_In_high_aoa_prot_active,
+  const boolean_T *rtu_In_high_speed_prot_active, const real_T *rtu_In_alpha_prot, const real_T *rtu_In_alpha_max, const
+  real_T *rtu_In_high_speed_prot_high_kn, const real_T *rtu_In_high_speed_prot_low_kn, const real_T
+  *rtu_In_ap_theta_c_deg, const boolean_T *rtu_In_any_ap_engaged, real_T *rty_Out_eta_deg, real_T
+  *rty_Out_eta_trim_dot_deg_s, real_T *rty_Out_eta_trim_limit_lo, real_T *rty_Out_eta_trim_limit_up)
 {
   real_T rtb_nz_limit_up_g;
   real_T rtb_nz_limit_lo_g;
@@ -1139,6 +1150,56 @@ void A380PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In
   boolean_T rtb_eta_trim_deg_should_freeze;
   A380PitchNormalLaw_LagFilter(rtu_In_Theta_deg, A380PitchNormalLaw_rtP.LagFilter_C1, rtu_In_time_dt, &rtb_Sum_j4,
     &A380PitchNormalLaw_DWork.sf_LagFilter);
+  if (A380PitchNormalLaw_DWork.is_active_c3_A380PitchNormalLaw == 0U) {
+    A380PitchNormalLaw_DWork.is_active_c3_A380PitchNormalLaw = 1U;
+    A380PitchNormalLaw_DWork.is_c3_A380PitchNormalLaw = A380PitchNormalLaw_IN_Ground_m;
+    A380PitchNormalLaw_B.in_flight = 0.0;
+  } else {
+    switch (A380PitchNormalLaw_DWork.is_c3_A380PitchNormalLaw) {
+     case A380PitchNormalLaw_IN_Flight:
+      if ((*rtu_In_on_ground) && (*rtu_In_Theta_deg < 0.5)) {
+        A380PitchNormalLaw_DWork.on_ground_time = *rtu_In_time_simulation_time;
+        A380PitchNormalLaw_DWork.in_flight_time = 0.0;
+        A380PitchNormalLaw_DWork.is_c3_A380PitchNormalLaw = A380PitchNormalLaw_IN_FlightToGroundTransition;
+      } else {
+        A380PitchNormalLaw_B.in_flight = 1.0;
+      }
+      break;
+
+     case A380PitchNormalLaw_IN_FlightToGroundTransition:
+      if (*rtu_In_time_simulation_time - A380PitchNormalLaw_DWork.on_ground_time >= 5.0) {
+        A380PitchNormalLaw_DWork.is_c3_A380PitchNormalLaw = A380PitchNormalLaw_IN_Ground_m;
+        A380PitchNormalLaw_B.in_flight = 0.0;
+      } else if ((!*rtu_In_on_ground) || (*rtu_In_Theta_deg >= 0.5)) {
+        A380PitchNormalLaw_DWork.on_ground_time = 0.0;
+        A380PitchNormalLaw_DWork.is_c3_A380PitchNormalLaw = A380PitchNormalLaw_IN_Flight;
+        A380PitchNormalLaw_B.in_flight = 1.0;
+      }
+      break;
+
+     case A380PitchNormalLaw_IN_Ground_m:
+      if (!*rtu_In_on_ground) {
+        A380PitchNormalLaw_DWork.on_ground_time = 0.0;
+        A380PitchNormalLaw_DWork.in_flight_time = *rtu_In_time_simulation_time;
+        A380PitchNormalLaw_DWork.is_c3_A380PitchNormalLaw = A380PitchNormalLaw_IN_GroundToFlightTransition;
+      } else {
+        A380PitchNormalLaw_B.in_flight = 0.0;
+      }
+      break;
+
+     default:
+      if (*rtu_In_time_simulation_time - A380PitchNormalLaw_DWork.in_flight_time >= 5.0) {
+        A380PitchNormalLaw_DWork.is_c3_A380PitchNormalLaw = A380PitchNormalLaw_IN_Flight;
+        A380PitchNormalLaw_B.in_flight = 1.0;
+      } else if (*rtu_In_on_ground) {
+        A380PitchNormalLaw_DWork.in_flight_time = 0.0;
+        A380PitchNormalLaw_DWork.is_c3_A380PitchNormalLaw = A380PitchNormalLaw_IN_Ground_m;
+        A380PitchNormalLaw_B.in_flight = 0.0;
+      }
+      break;
+    }
+  }
+
   if (A380PitchNormalLaw_rtP.ManualSwitch_CurrentSetting == 1) {
     rtb_ManualSwitch = A380PitchNormalLaw_rtP.Constant1_Value_k;
   } else {
@@ -1154,7 +1215,7 @@ void A380PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In
   } else {
     switch (A380PitchNormalLaw_DWork.is_c2_A380PitchNormalLaw) {
      case A380PitchNormalLaw_IN_Flare_Reduce_Theta_c:
-      if (A380PitchNormalLaw_rtP.Constant_Value_n == 0.0) {
+      if (A380PitchNormalLaw_B.in_flight == 0.0) {
         A380PitchNormalLaw_DWork.is_c2_A380PitchNormalLaw = A380PitchNormalLaw_IN_Ground;
         rtb_in_flare = 0.0;
         A380PitchNormalLaw_B.flare_Theta_c_deg = rtb_Sum_j4;
@@ -1230,7 +1291,7 @@ void A380PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In
       break;
 
      default:
-      if (A380PitchNormalLaw_rtP.Constant_Value_n == 1.0) {
+      if (A380PitchNormalLaw_B.in_flight == 1.0) {
         A380PitchNormalLaw_DWork.is_c2_A380PitchNormalLaw = A380PitchNormalLaw_IN_Flight_Low;
         rtb_in_flare = 0.0;
         A380PitchNormalLaw_B.flare_Theta_c_deg = rtb_Sum_j4;
@@ -1269,7 +1330,7 @@ void A380PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In
   } else {
     switch (A380PitchNormalLaw_DWork.is_c8_A380PitchNormalLaw) {
      case A380PitchNormalLaw_IN_automatic:
-      if (A380PitchNormalLaw_rtP.Constant_Value_n == 0.0) {
+      if (A380PitchNormalLaw_B.in_flight == 0.0) {
         A380PitchNormalLaw_DWork.is_c8_A380PitchNormalLaw = A380PitchNormalLaw_IN_reset;
       } else if (*rtu_In_tracking_mode_on) {
         A380PitchNormalLaw_DWork.is_c8_A380PitchNormalLaw = A380PitchNormalLaw_IN_tracking;
@@ -1277,13 +1338,13 @@ void A380PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In
       break;
 
      case A380PitchNormalLaw_IN_manual:
-      if (A380PitchNormalLaw_rtP.Constant_Value_n != 0.0) {
+      if (A380PitchNormalLaw_B.in_flight != 0.0) {
         A380PitchNormalLaw_DWork.is_c8_A380PitchNormalLaw = A380PitchNormalLaw_IN_automatic;
       }
       break;
 
      case A380PitchNormalLaw_IN_reset:
-      if ((A380PitchNormalLaw_rtP.Constant_Value_n == 0.0) && (*rtu_In_eta_trim_deg == 0.0)) {
+      if ((A380PitchNormalLaw_B.in_flight == 0.0) && (*rtu_In_eta_trim_deg == 0.0)) {
         A380PitchNormalLaw_DWork.is_c8_A380PitchNormalLaw = A380PitchNormalLaw_IN_manual;
       }
       break;
@@ -1312,7 +1373,7 @@ void A380PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In
         rtb_eta_trim_deg_rate_limit_lo_deg_s = -0.7;
         rtb_nz_limit_up_g = 2.0;
         rtb_nz_limit_lo_g = 0.0;
-      } else if (A380PitchNormalLaw_rtP.Constant_Value_n == 0.0) {
+      } else if (A380PitchNormalLaw_B.in_flight == 0.0) {
         A380PitchNormalLaw_DWork.is_c7_A380PitchNormalLaw = A380PitchNormalLaw_IN_ground;
         rtb_eta_trim_deg_rate_limit_up_deg_s = 0.7;
         rtb_eta_trim_deg_rate_limit_lo_deg_s = -0.7;
@@ -1333,7 +1394,7 @@ void A380PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In
         rtb_eta_trim_deg_rate_limit_lo_deg_s = -0.3;
         rtb_nz_limit_up_g = 2.5;
         rtb_nz_limit_lo_g = -1.0;
-      } else if (A380PitchNormalLaw_rtP.Constant_Value_n == 0.0) {
+      } else if (A380PitchNormalLaw_B.in_flight == 0.0) {
         A380PitchNormalLaw_DWork.is_c7_A380PitchNormalLaw = A380PitchNormalLaw_IN_ground;
         rtb_eta_trim_deg_rate_limit_up_deg_s = 0.7;
         rtb_eta_trim_deg_rate_limit_lo_deg_s = -0.7;
@@ -1348,13 +1409,13 @@ void A380PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In
       break;
 
      default:
-      if ((A380PitchNormalLaw_rtP.Constant_Value_n != 0.0) && (*rtu_In_flaps_handle_index == 0.0)) {
+      if ((A380PitchNormalLaw_B.in_flight != 0.0) && (*rtu_In_flaps_handle_index == 0.0)) {
         A380PitchNormalLaw_DWork.is_c7_A380PitchNormalLaw = A380PitchNormalLaw_IN_flight_clean;
         rtb_eta_trim_deg_rate_limit_up_deg_s = 0.3;
         rtb_eta_trim_deg_rate_limit_lo_deg_s = -0.3;
         rtb_nz_limit_up_g = 2.5;
         rtb_nz_limit_lo_g = -1.0;
-      } else if ((A380PitchNormalLaw_rtP.Constant_Value_n != 0.0) && (*rtu_In_flaps_handle_index != 0.0)) {
+      } else if ((A380PitchNormalLaw_B.in_flight != 0.0) && (*rtu_In_flaps_handle_index != 0.0)) {
         A380PitchNormalLaw_DWork.is_c7_A380PitchNormalLaw = A380PitchNormalLaw_IN_flight_flaps;
         rtb_eta_trim_deg_rate_limit_up_deg_s = 0.7;
         rtb_eta_trim_deg_rate_limit_lo_deg_s = -0.7;
@@ -1370,12 +1431,12 @@ void A380PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In
     }
   }
 
-  if (A380PitchNormalLaw_rtP.Constant_Value_n > A380PitchNormalLaw_rtP.Saturation_UpperSat_c) {
+  if (A380PitchNormalLaw_B.in_flight > A380PitchNormalLaw_rtP.Saturation_UpperSat_c) {
     rtb_Y_j = A380PitchNormalLaw_rtP.Saturation_UpperSat_c;
-  } else if (A380PitchNormalLaw_rtP.Constant_Value_n < A380PitchNormalLaw_rtP.Saturation_LowerSat_n) {
+  } else if (A380PitchNormalLaw_B.in_flight < A380PitchNormalLaw_rtP.Saturation_LowerSat_n) {
     rtb_Y_j = A380PitchNormalLaw_rtP.Saturation_LowerSat_n;
   } else {
-    rtb_Y_j = A380PitchNormalLaw_rtP.Constant_Value_n;
+    rtb_Y_j = A380PitchNormalLaw_B.in_flight;
   }
 
   A380PitchNormalLaw_RateLimiter(rtb_Y_j, A380PitchNormalLaw_rtP.RateLimiterVariableTs_up,
@@ -1908,7 +1969,7 @@ void A380PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In
   rtb_Sum_j4 = look1_binlxpw(*rtu_In_time_dt, A380PitchNormalLaw_rtP.ScheduledGain_BreakpointsForDimension1_d,
     A380PitchNormalLaw_rtP.ScheduledGain_Table_hh, 4U);
   rtb_Sum_j4 = rtb_Y_o2 * rtb_Sum_j4 * A380PitchNormalLaw_rtP.DiscreteTimeIntegratorVariableTs_Gain * *rtu_In_time_dt;
-  if (A380PitchNormalLaw_rtP.Constant_Value_n > A380PitchNormalLaw_rtP.Switch_Threshold) {
+  if (A380PitchNormalLaw_B.in_flight > A380PitchNormalLaw_rtP.Switch_Threshold) {
     rtb_Y_n = *rtu_In_eta_deg;
   } else {
     rtb_Y_n = rtb_Gain;

@@ -35,6 +35,7 @@ struct base_roll_output
   real_T xi_inboard_deg;
   real_T xi_midboard_deg;
   real_T xi_outboard_deg;
+  real_T xi_spoiler_deg;
   real_T zeta_upper_deg;
   real_T zeta_lower_deg;
 };

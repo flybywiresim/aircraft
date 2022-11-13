@@ -2,10 +2,10 @@
 #define RTW_HEADER_A380PrimComputer_types_h_
 #include "rtwtypes.h"
 
-#ifndef DEFINED_TYPEDEF_FOR_pitch_efcs_law_
-#define DEFINED_TYPEDEF_FOR_pitch_efcs_law_
+#ifndef DEFINED_TYPEDEF_FOR_a380_pitch_efcs_law_
+#define DEFINED_TYPEDEF_FOR_a380_pitch_efcs_law_
 
-enum class pitch_efcs_law
+enum class a380_pitch_efcs_law
   : int32_T {
   NormalLaw = 0,
   AlternateLaw1A,
@@ -342,7 +342,6 @@ struct base_prim_pitch_law_outputs
 {
   real_T elevator_command_deg;
   real_T ths_command_deg;
-  boolean_T elevator_double_pressurization_active;
 };
 
 #endif
@@ -358,10 +357,10 @@ struct base_prim_laws_outputs
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_lateral_efcs_law_
-#define DEFINED_TYPEDEF_FOR_lateral_efcs_law_
+#ifndef DEFINED_TYPEDEF_FOR_a380_lateral_efcs_law_
+#define DEFINED_TYPEDEF_FOR_a380_lateral_efcs_law_
 
-enum class lateral_efcs_law
+enum class a380_lateral_efcs_law
   : int32_T {
   NormalLaw = 0,
   DirectLaw,
@@ -408,10 +407,10 @@ struct base_prim_logic_outputs
 {
   boolean_T on_ground;
   boolean_T tracking_mode_on;
-  lateral_efcs_law lateral_law_capability;
-  lateral_efcs_law active_lateral_law;
-  pitch_efcs_law pitch_law_capability;
-  pitch_efcs_law active_pitch_law;
+  a380_lateral_efcs_law lateral_law_capability;
+  a380_lateral_efcs_law active_lateral_law;
+  a380_pitch_efcs_law pitch_law_capability;
+  a380_pitch_efcs_law active_pitch_law;
   boolean_T abnormal_condition_law_active;
   boolean_T is_master_prim;
   boolean_T elevator_1_avail;
@@ -553,6 +552,7 @@ struct base_roll_output
   real_T xi_inboard_deg;
   real_T xi_midboard_deg;
   real_T xi_outboard_deg;
+  real_T xi_spoiler_deg;
   real_T zeta_upper_deg;
   real_T zeta_lower_deg;
 };
@@ -605,6 +605,7 @@ struct lateral_normal_input
 struct base_roll_data_computed
 {
   real_T delta_xi_deg;
+  real_T delta_zeta_deg;
   real_T in_flight;
   real_T in_flight_gain;
 };
@@ -812,29 +813,6 @@ struct base_pitch_rotation
 {
   real_T qk_c_deg_s;
   real_T eta_deg;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_struct_AS8ihRtYtxSipjDCqtVGCE_
-#define DEFINED_TYPEDEF_FOR_struct_AS8ihRtYtxSipjDCqtVGCE_
-
-struct struct_AS8ihRtYtxSipjDCqtVGCE
-{
-  real_T elevator_command_deg;
-  real_T ths_command_deg;
-  real_T elevator_double_pressurization_active;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_struct_6mdumiqW0YNytYlsQcQC1_
-#define DEFINED_TYPEDEF_FOR_struct_6mdumiqW0YNytYlsQcQC1_
-
-struct struct_6mdumiqW0YNytYlsQcQC1
-{
-  base_prim_lateral_law_outputs lateral_law_outputs;
-  struct_AS8ihRtYtxSipjDCqtVGCE pitch_law_outputs;
 };
 
 #endif

@@ -3,10 +3,10 @@
 base_prim_logic_outputs rtP_prim_logic_output_MATLABStruct{
   false,
   false,
-  lateral_efcs_law::None,
-  lateral_efcs_law::None,
-  pitch_efcs_law::None,
-  pitch_efcs_law::None,
+  a380_lateral_efcs_law::None,
+  a380_lateral_efcs_law::None,
+  a380_pitch_efcs_law::None,
+  a380_pitch_efcs_law::None,
   false,
   false,
   false,
@@ -90,6 +90,40 @@ base_prim_logic_outputs rtP_prim_logic_output_MATLABStruct{
   },
   0.0,
   false
+} ;
+
+base_prim_laws_outputs rtP_prim_laws_output_MATLABStruct{
+  {
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  },
+
+  {
+    0.0,
+    0.0
+  }
 } ;
 
 base_prim_analog_outputs rtP_prim_analog_output_MATLABStruct{
@@ -148,21 +182,17 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
 
   23.0,
 
-  17.0,
+  11.0,
 
-  18.0,
+  12.0,
 
-  19.0,
+  13.0,
 
-  20.0,
+  11.0,
 
-  21.0,
+  12.0,
 
-  26.0,
-
-  19.0,
-
-  19.0,
+  13.0,
 
   17.0,
 
@@ -176,6 +206,12 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
 
   26.0,
 
+  19.0,
+
+  19.0,
+
+  21.0,
+
   17.0,
 
   18.0,
@@ -187,6 +223,20 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
   21.0,
 
   26.0,
+
+  17.0,
+
+  18.0,
+
+  19.0,
+
+  20.0,
+
+  21.0,
+
+  26.0,
+
+  21.0,
 
   23.0,
 
@@ -236,6 +286,8 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
 
   0.0,
 
+  0.0,
+
   1.0,
 
   2.0,
@@ -244,11 +296,9 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
 
   4.0,
 
-  0.0,
+  5.0,
 
   1.0,
-
-  5.0,
 
   3700.0,
 
@@ -261,6 +311,14 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
   -1.0,
 
   -20.0,
+
+  -50.0,
+
+  -50.0,
+
+  -50.0,
+
+  -50.0,
 
   -50.0,
 
@@ -298,11 +356,19 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
 
   50.0,
 
+  50.0,
+
+  50.0,
+
+  50.0,
+
+  50.0,
+
   SignStatusMatrix::NoComputedData,
 
   SignStatusMatrix::NormalOperation,
 
-  pitch_efcs_law::AlternateLaw2,
+  a380_pitch_efcs_law::AlternateLaw2,
 
   50.0F,
 
@@ -1395,18 +1461,17 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
 
       {
         0.0,
-        0.0,
-        false
+        0.0
       }
     },
 
     {
       false,
       false,
-      lateral_efcs_law::NormalLaw,
-      lateral_efcs_law::NormalLaw,
-      pitch_efcs_law::NormalLaw,
-      pitch_efcs_law::NormalLaw,
+      a380_lateral_efcs_law::NormalLaw,
+      a380_lateral_efcs_law::NormalLaw,
+      a380_pitch_efcs_law::NormalLaw,
+      a380_pitch_efcs_law::NormalLaw,
       false,
       false,
       false,
@@ -1663,42 +1728,6 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
         0U,
         0.0F
       }
-    }
-  },
-
-
-  {
-    {
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0
-    },
-
-    {
-      0.0,
-      0.0,
-      false
     }
   },
 
@@ -1848,11 +1877,11 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
 
   0.0,
 
-  0.0,
-
   3.5,
 
   -11.0,
+
+  0.0,
 
   0.0,
 
@@ -1940,21 +1969,37 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
 
   0.0,
 
+  20.0,
 
-  { 30.0, 30.0, 20.0, 12.4, 8.0, 6.0, 6.0 },
-
-
-  { 0.0, 180.0, 220.0, 280.0, 350.0, 400.0, 450.0 },
-
-  25.0,
-
-  -25.0,
+  -30.0,
 
   -1.0,
 
-  25.0,
+  20.0,
 
-  -25.0,
+  -30.0,
+
+  20.0,
+
+  -30.0,
+
+  -1.0,
+
+  20.0,
+
+  -30.0,
+
+  20.0,
+
+  -30.0,
+
+  -1.0,
+
+  20.0,
+
+  -30.0,
+
+  0.0,
 
   0.0,
 
