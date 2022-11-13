@@ -2472,8 +2472,8 @@
                                 (L:A32NX_ACP3_TRANSMIT_CHANNEL)  (&gt;K:COPILOT_TRANSMITTER_SET)
                             }
 
-                            1 (&gt;L:XMLVAR_COM_UpdateReceivers)
-                            1 (&gt;L:XMLVAR_NAV_UpdateReceivers)
+                            1 (&gt;L:A32NX_COM_UpdateReceivers)
+                            1 (&gt;L:A32NX_NAV_UpdateReceivers)
                         </ON_SWITCH>
                     </UseTemplate>
                 </Component>

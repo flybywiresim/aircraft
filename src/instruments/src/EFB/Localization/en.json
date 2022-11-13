@@ -525,7 +525,11 @@
       "Title": "Sim Options",
       "UseCalculatedIlsSignals": "Use Calculated ILS Signals",
       "WheelChocksEnabled": "Wheel Chocks",
-      "inHg": "inHg"
+      "inHg": "inHg",
+      "Side": "Side",
+      "Captain": "Captain",
+      "Copilot": "Copilot",
+      "CommSync": "Synchronize communications panels"
     },
     "ThrottleConfig": {
       "Apply": "Apply",

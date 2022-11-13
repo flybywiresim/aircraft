@@ -276,9 +276,9 @@
     <Template Name="FBW_AIRLINER_Audio_Panel_Template">
         <DefaultTemplateParameters>
             <ID>1</ID>
-            <VOLUME_INCREMENT>0.04</VOLUME_INCREMENT>
-            <VOLUME_INCREMENT_HARD>0.01</VOLUME_INCREMENT_HARD>
-            <VOLUME_INCREMENT_NAV>0.02</VOLUME_INCREMENT_NAV>
+            <VOLUME_INCREMENT>4</VOLUME_INCREMENT>
+            <VOLUME_INCREMENT_HARD>1</VOLUME_INCREMENT_HARD>
+            <VOLUME_INCREMENT_NAV>2</VOLUME_INCREMENT_NAV>
             <PREFIX>AIRLINER</PREFIX>
             <SEQ1_POWERED>1</SEQ1_POWERED>
         </DefaultTemplateParameters>

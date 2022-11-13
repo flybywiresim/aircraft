@@ -22,13 +22,24 @@ export const SimOptionsPage = () => {
     const [simbridgeEnabled, setSimbridgeEnabled] = usePersistentProperty('CONFIG_SIMBRIDGE_ENABLED', 'AUTO ON');
     const [radioReceiverUsage, setRadioReceiverUsage] = usePersistentProperty('RADIO_RECEIVER_USAGE_ENABLED', '0');
     const [, setRadioReceiverUsageSimVar] = useSimVar('L:A32NX_RADIO_RECEIVER_USAGE_ENABLED', 'number', 0);
+    const [, setUpdateNavReceivers] = useSimVar('L:A32NX_NAV_UpdateReceivers', 'number', 0);
+    const [, setUpdateComReceivers] = useSimVar('L:A32NX_COM_UpdateReceivers', 'number', 0);
     const [wheelChocksEnabled, setWheelChocksEnabled] = usePersistentNumberProperty('MODEL_WHEELCHOCKS_ENABLED', 1);
     const [conesEnabled, setConesEnabled] = usePersistentNumberProperty('MODEL_CONES_ENABLED', 1);
+    const [commSync, setCommSync] = usePersistentNumberProperty('COMMUNICATIONS_PANELS_SYNC_ENABLED', 1);
+
+    // Disabled as long as the user wants to keep the panels synchronized
+    const [side, setSide] = usePersistentNumberProperty('SIDE_PLAYING', 1);
 
     const defaultBaroButtons: ButtonType[] = [
         { name: t('Settings.SimOptions.Auto'), setting: 'AUTO' },
         { name: t('Settings.SimOptions.inHg'), setting: 'IN HG' },
         { name: t('Settings.SimOptions.Hpa'), setting: 'HPA' },
+    ];
+
+    const defaultSideButtons: ButtonType[] = [
+        { name: t('Settings.SimOptions.Captain'), setting: '1' },
+        { name: t('Settings.SimOptions.Copilot'), setting: '0' },
     ];
 
     const fpSyncButtons: ButtonType[] = [
@@ -140,6 +151,36 @@ export const SimOptionsPage = () => {
                         >
                             {t('Settings.SimOptions.Calibrate')}
                         </button>
+                    </SettingItem>
+
+                    <SettingItem name={t('Settings.SimOptions.CommSync')}>
+                        <Toggle
+                            value={commSync === 1}
+                            onToggle={(value) => {
+                                setCommSync(value ? 1 : 0);
+                            }}
+                        />
+                    </SettingItem>
+
+                    <SettingItem name={t('Settings.SimOptions.Side')} disabled={commSync === 1}>
+                        <SelectGroup>
+                            {defaultSideButtons.map((button) => (
+                                <SelectItem
+                                    onSelect={() => {
+                                        setSide(parseInt(button.setting));
+                                        let i = 0;
+                                        while (i !== 1000000) {
+                                            ++i;
+                                        }
+                                        setUpdateComReceivers(1);
+                                        setUpdateNavReceivers(1);
+                                    }}
+                                    selected={side === parseInt(button.setting)}
+                                >
+                                    {button.name}
+                                </SelectItem>
+                            ))}
+                        </SelectGroup>
                     </SettingItem>
 
                 </SettingsPage>
