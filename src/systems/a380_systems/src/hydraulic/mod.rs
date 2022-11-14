@@ -681,19 +681,14 @@ impl A380RudderFactory {
 
     /// Builds an aileron assembly consisting of the aileron physical rigid body and two hydraulic actuators connected
     /// to it
-    fn a380_rudder_assembly(init_at_center: bool) -> HydraulicLinearActuatorAssembly<3> {
+    fn a380_rudder_assembly(init_at_center: bool) -> HydraulicLinearActuatorAssembly<2> {
         let rudder_body = Self::a380_rudder_body(init_at_center);
 
-        let rudder_actuator_green = Self::a380_rudder_actuator(&rudder_body);
-        let rudder_actuator_blue = Self::a380_rudder_actuator(&rudder_body);
-        let rudder_actuator_yellow = Self::a380_rudder_actuator(&rudder_body);
+        let rudder_actuator_upper = Self::a380_rudder_actuator(&rudder_body);
+        let rudder_actuator_lower = Self::a380_rudder_actuator(&rudder_body);
 
         HydraulicLinearActuatorAssembly::new(
-            [
-                rudder_actuator_green,
-                rudder_actuator_blue,
-                rudder_actuator_yellow,
-            ],
+            [rudder_actuator_upper, rudder_actuator_lower],
             rudder_body,
         )
     }
@@ -703,8 +698,14 @@ impl A380RudderFactory {
             || context.start_state() == StartState::Runway
             || context.is_in_flight();
 
-        let assembly = Self::a380_rudder_assembly(init_at_center);
-        RudderAssembly::new(context, assembly, Self::new_a380_rudder_aero_model())
+        let upper_assembly = Self::a380_rudder_assembly(init_at_center);
+        let lower_assembly = Self::a380_rudder_assembly(init_at_center);
+        RudderAssembly::new(
+            context,
+            upper_assembly,
+            lower_assembly,
+            Self::new_a380_rudder_aero_model(),
+        )
     }
 
     fn new_a380_rudder_aero_model() -> AerodynamicModel {
@@ -1226,7 +1227,7 @@ pub(super) struct A380Hydraulic {
     left_elevator: ElevatorAssembly,
     right_elevator: ElevatorAssembly,
 
-    fac_computer: RudderSystemHydraulicController,
+    rudder_system_controller: RudderSystemHydraulicController,
     rudder: RudderAssembly,
 
     left_spoilers: SpoilerGroup,
@@ -1521,7 +1522,7 @@ impl A380Hydraulic {
             left_elevator: A380ElevatorFactory::new_elevator(context, ActuatorSide::Left),
             right_elevator: A380ElevatorFactory::new_elevator(context, ActuatorSide::Right),
 
-            fac_computer: RudderSystemHydraulicController::new(context),
+            rudder_system_controller: RudderSystemHydraulicController::new(context),
             rudder: A380RudderFactory::new_rudder(context),
 
             left_spoilers: A380SpoilerFactory::new_a380_spoiler_group(context, ActuatorSide::Left),
@@ -1737,10 +1738,20 @@ impl A380Hydraulic {
 
         self.rudder.update(
             context,
-            self.fac_computer.rudder_controllers(),
-            self.green_circuit.system_section(),
-            self.green_circuit.system_section(),
-            self.yellow_circuit.system_section(),
+            [
+                self.rudder_system_controller
+                    .controllers(RudderPanelPosition::Upper),
+                self.rudder_system_controller
+                    .controllers(RudderPanelPosition::Lower),
+            ],
+            [
+                self.yellow_circuit.system_section(),
+                self.green_circuit.system_section(),
+            ],
+            [
+                self.green_circuit.system_section(),
+                self.green_circuit.system_section(),
+            ],
         );
 
         self.left_spoilers.update(
@@ -1819,6 +1830,8 @@ impl A380Hydraulic {
 
         self.elevator_system_controller.update();
 
+        self.rudder_system_controller.update();
+
         self.nose_steering.update(
             context,
             self.yellow_circuit.system_section(),
@@ -1882,12 +1895,6 @@ impl A380Hydraulic {
 
         self.slats_flaps_complex
             .update(context, &self.flap_system, &self.slat_system);
-
-        self.fac_computer.update(
-            self.green_circuit.system_section(),
-            self.green_circuit.system_section(),
-            self.yellow_circuit.system_section(),
-        );
 
         self.epump_auto_logic.update(
             context,
@@ -1978,8 +1985,14 @@ impl A380Hydraulic {
         self.green_circuit
             .update_auxiliary_actuator_volumes(self.aft_cargo_door.actuator());
 
-        self.green_circuit
-            .update_system_actuator_volumes(self.rudder.actuator(RudderActuatorPosition::Green));
+        self.green_circuit.update_system_actuator_volumes(
+            self.rudder
+                .actuator(RudderActuatorPosition::Lower, RudderPanelPosition::Upper),
+        );
+        self.green_circuit.update_system_actuator_volumes(
+            self.rudder
+                .actuator(RudderActuatorPosition::Upper, RudderPanelPosition::Lower),
+        );
 
         self.green_circuit
             .update_system_actuator_volumes(self.flap_system.left_motor());
@@ -2078,8 +2091,14 @@ impl A380Hydraulic {
                 ElevatorPanelPosition::Inward,
             ));
 
-        self.yellow_circuit
-            .update_system_actuator_volumes(self.rudder.actuator(RudderActuatorPosition::Yellow));
+        self.yellow_circuit.update_system_actuator_volumes(
+            self.rudder
+                .actuator(RudderActuatorPosition::Upper, RudderPanelPosition::Upper),
+        );
+        self.yellow_circuit.update_system_actuator_volumes(
+            self.rudder
+                .actuator(RudderActuatorPosition::Lower, RudderPanelPosition::Lower),
+        );
 
         self.yellow_circuit
             .update_system_actuator_volumes(self.left_spoilers.actuator(1));
@@ -2442,13 +2461,12 @@ impl SimulationElement for A380Hydraulic {
 
         self.elevator_system_controller.accept(visitor);
         self.aileron_system_controller.accept(visitor);
+        self.rudder_system_controller.accept(visitor);
 
         self.left_aileron.accept(visitor);
         self.right_aileron.accept(visitor);
         self.left_elevator.accept(visitor);
         self.right_elevator.accept(visitor);
-
-        self.fac_computer.accept(visitor);
         self.rudder.accept(visitor);
 
         self.left_spoilers.accept(visitor);
@@ -5313,139 +5331,223 @@ impl SimulationElement for ElevatorSystemHydraulicController {
 }
 
 struct RudderSystemHydraulicController {
-    requested_rudder_position_id: VariableIdentifier,
+    upper_rudder_yellow_actuator_hydraulic_solenoid_id: VariableIdentifier,
+    upper_rudder_yellow_actuator_electric_solenoid_id: VariableIdentifier,
+    upper_rudder_green_actuator_hydraulic_solenoid_id: VariableIdentifier,
+    upper_rudder_green_actuator_electric_solenoid_id: VariableIdentifier,
+    lower_rudder_yellow_actuator_hydraulic_solenoid_id: VariableIdentifier,
+    lower_rudder_yellow_actuator_electric_solenoid_id: VariableIdentifier,
+    lower_rudder_green_actuator_hydraulic_solenoid_id: VariableIdentifier,
+    lower_rudder_green_actuator_electric_solenoid_id: VariableIdentifier,
 
-    rudder_position_requested: Ratio,
+    upper_rudder_yellow_actuator_position_demand_id: VariableIdentifier,
+    upper_rudder_green_actuator_position_demand_id: VariableIdentifier,
+    lower_rudder_yellow_actuator_position_demand_id: VariableIdentifier,
+    lower_rudder_green_actuator_position_demand_id: VariableIdentifier,
 
-    rudder_controllers: [AileronController; 3],
+    upper_position_requests_from_fbw: [Ratio; 2],
+    upper_hydraulic_mode_solenoid_energized_from_fbw: [bool; 2],
+    upper_electric_mode_solenoid_energized_from_fbw: [bool; 2],
+    lower_position_requests_from_fbw: [Ratio; 2],
+    lower_hydraulic_mode_solenoid_energized_from_fbw: [bool; 2],
+    lower_electric_mode_solenoid_energized_from_fbw: [bool; 2],
 
-    is_powered: bool,
+    rudder_controllers: [[AileronController; 2]; 2],
 }
 impl RudderSystemHydraulicController {
-    //TODO hot busses of FAC to check
-    const ALL_POWER_BUSES: [ElectricalBusType; 4] = [
-        ElectricalBusType::DirectCurrentEssential,
-        ElectricalBusType::DirectCurrent(2),
-        ElectricalBusType::DirectCurrentHot(1),
-        ElectricalBusType::DirectCurrentHot(2),
-    ];
-
     fn new(context: &mut InitContext) -> Self {
         Self {
-            requested_rudder_position_id: context.get_identifier("HYD_RUDDER_DEMAND".to_owned()),
+            upper_rudder_yellow_actuator_hydraulic_solenoid_id: context.get_identifier(
+                "UPPER_RUDDER_YELLOW_EBHA_HYDRAULIC_MODE_SOLENOID_ENERGIZED".to_owned(),
+            ),
+            upper_rudder_yellow_actuator_electric_solenoid_id: context.get_identifier(
+                "UPPER_RUDDER_YELLOW_EBHA_ELECTRIC_MODE_SOLENOID_ENERGIZED".to_owned(),
+            ),
+            upper_rudder_green_actuator_hydraulic_solenoid_id: context.get_identifier(
+                "UPPER_RUDDER_GREEN_EBHA_HYDRAULIC_MODE_SOLENOID_ENERGIZED".to_owned(),
+            ),
+            upper_rudder_green_actuator_electric_solenoid_id: context.get_identifier(
+                "UPPER_RUDDER_GREEN_EBHA_ELECTRIC_MODE_SOLENOID_ENERGIZED".to_owned(),
+            ),
+            lower_rudder_yellow_actuator_hydraulic_solenoid_id: context.get_identifier(
+                "LOWER_RUDDER_YELLOW_EBHA_HYDRAULIC_MODE_SOLENOID_ENERGIZED".to_owned(),
+            ),
+            lower_rudder_yellow_actuator_electric_solenoid_id: context.get_identifier(
+                "LOWER_RUDDER_YELLOW_EBHA_ELECTRIC_MODE_SOLENOID_ENERGIZED".to_owned(),
+            ),
+            lower_rudder_green_actuator_hydraulic_solenoid_id: context.get_identifier(
+                "LOWER_RUDDER_GREEN_EBHA_HYDRAULIC_MODE_SOLENOID_ENERGIZED".to_owned(),
+            ),
+            lower_rudder_green_actuator_electric_solenoid_id: context.get_identifier(
+                "LOWER_RUDDER_GREEN_EBHA_ELECTRIC_MODE_SOLENOID_ENERGIZED".to_owned(),
+            ),
 
-            rudder_position_requested: Ratio::default(),
+            upper_rudder_yellow_actuator_position_demand_id: context
+                .get_identifier("UPPER_RUDDER_YELLOW_EBHA_COMMANDED_POSITION".to_owned()),
+            upper_rudder_green_actuator_position_demand_id: context
+                .get_identifier("UPPER_RUDDER_GREEN_EBHA_COMMANDED_POSITION".to_owned()),
+            lower_rudder_yellow_actuator_position_demand_id: context
+                .get_identifier("LOWER_RUDDER_YELLOW_EBHA_COMMANDED_POSITION".to_owned()),
+            lower_rudder_green_actuator_position_demand_id: context
+                .get_identifier("LOWER_RUDDER_GREEN_EBHA_COMMANDED_POSITION".to_owned()),
 
-            // Controllers are in [ Green circuit, Blue circuit, Yellow circuit] order
-            rudder_controllers: [
-                AileronController::new(),
-                AileronController::new(),
-                AileronController::new(),
-            ],
+            upper_position_requests_from_fbw: [Ratio::default(); 2],
+            upper_hydraulic_mode_solenoid_energized_from_fbw: [false; 2],
+            upper_electric_mode_solenoid_energized_from_fbw: [false; 2],
+            lower_position_requests_from_fbw: [Ratio::default(); 2],
+            lower_hydraulic_mode_solenoid_energized_from_fbw: [false; 2],
+            lower_electric_mode_solenoid_energized_from_fbw: [false; 2],
 
-            is_powered: false,
+            // Controllers are in Upper -> Lower order
+            rudder_controllers: [[AileronController::new(), AileronController::new()]; 2],
         }
     }
 
-    fn update_rudder_requested_position(&mut self) {
-        for controller in &mut self.rudder_controllers {
-            controller.set_requested_position(self.rudder_position_requested);
-        }
+    fn controllers(
+        &self,
+        panel: RudderPanelPosition,
+    ) -> &[impl HydraulicAssemblyController + HydraulicLocking] {
+        &self.rudder_controllers[panel as usize][..]
     }
 
-    fn set_rudder_no_position_control(&mut self) {
-        for controller in &mut self.rudder_controllers {
-            controller.set_mode(LinearActuatorMode::ClosedCircuitDamping);
-        }
+    fn update(&mut self) {
+        self.update_rudder_controllers_positions();
+        self.update_rudder_controllers_solenoids();
     }
 
-    fn set_rudder_position_control(
-        &mut self,
-        green_circuit_available: bool,
-        blue_circuit_available: bool,
-        yellow_circuit_available: bool,
-    ) {
-        if green_circuit_available {
-            self.rudder_controllers[RudderActuatorPosition::Green as usize]
-                .set_mode(LinearActuatorMode::PositionControl);
-        } else {
-            self.rudder_controllers[RudderActuatorPosition::Green as usize]
-                .set_mode(LinearActuatorMode::ActiveDamping);
-        }
-
-        if blue_circuit_available {
-            self.rudder_controllers[RudderActuatorPosition::Blue as usize]
-                .set_mode(LinearActuatorMode::PositionControl);
-        } else {
-            self.rudder_controllers[RudderActuatorPosition::Blue as usize]
-                .set_mode(LinearActuatorMode::ActiveDamping);
-        }
-
-        if yellow_circuit_available {
-            self.rudder_controllers[RudderActuatorPosition::Yellow as usize]
-                .set_mode(LinearActuatorMode::PositionControl);
-        } else {
-            self.rudder_controllers[RudderActuatorPosition::Yellow as usize]
-                .set_mode(LinearActuatorMode::ActiveDamping);
-        }
-    }
-
-    fn update_rudder(
-        &mut self,
-        green_circuit_available: bool,
-        blue_circuit_available: bool,
-        yellow_circuit_available: bool,
-    ) {
-        let no_hydraulics =
-            !green_circuit_available && !blue_circuit_available && !yellow_circuit_available;
-
-        if self.is_powered && !no_hydraulics {
-            self.set_rudder_position_control(
-                green_circuit_available,
-                blue_circuit_available,
-                yellow_circuit_available,
+    fn update_rudder_controllers_positions(&mut self) {
+        self.rudder_controllers[RudderPanelPosition::Upper as usize]
+            [RudderPanelPosition::Upper as usize]
+            .set_requested_position(
+                self.upper_position_requests_from_fbw[RudderPanelPosition::Upper as usize],
             );
+        self.rudder_controllers[RudderPanelPosition::Upper as usize]
+            [RudderPanelPosition::Lower as usize]
+            .set_requested_position(
+                self.upper_position_requests_from_fbw[RudderPanelPosition::Lower as usize],
+            );
+        self.rudder_controllers[RudderPanelPosition::Lower as usize]
+            [RudderPanelPosition::Upper as usize]
+            .set_requested_position(
+                self.lower_position_requests_from_fbw[RudderPanelPosition::Upper as usize],
+            );
+        self.rudder_controllers[RudderPanelPosition::Lower as usize]
+            [RudderPanelPosition::Lower as usize]
+            .set_requested_position(
+                self.lower_position_requests_from_fbw[RudderPanelPosition::Lower as usize],
+            );
+    }
+
+    fn update_rudder_controllers_solenoids(&mut self) {
+        if self
+            .upper_hydraulic_mode_solenoid_energized_from_fbw
+            .iter()
+            .any(|x| *x)
+            || self
+                .upper_electric_mode_solenoid_energized_from_fbw
+                .iter()
+                .any(|x| *x)
+        {
+            self.rudder_controllers[RudderPanelPosition::Upper as usize]
+                [RudderActuatorPosition::Upper as usize]
+                .set_mode(Self::rudder_actuator_mode_from_solenoid(
+                    self.upper_hydraulic_mode_solenoid_energized_from_fbw
+                        [RudderActuatorPosition::Upper as usize]
+                        || self.upper_electric_mode_solenoid_energized_from_fbw
+                            [RudderActuatorPosition::Upper as usize],
+                ));
+            self.rudder_controllers[RudderPanelPosition::Upper as usize]
+                [RudderActuatorPosition::Lower as usize]
+                .set_mode(Self::rudder_actuator_mode_from_solenoid(
+                    self.upper_hydraulic_mode_solenoid_energized_from_fbw
+                        [RudderActuatorPosition::Lower as usize]
+                        || self.upper_electric_mode_solenoid_energized_from_fbw
+                            [RudderActuatorPosition::Lower as usize],
+                ));
         } else {
-            self.set_rudder_no_position_control();
+            for controller in &mut self.rudder_controllers[RudderPanelPosition::Upper as usize] {
+                controller.set_mode(LinearActuatorMode::ClosedCircuitDamping);
+            }
+        }
+        if self
+            .lower_hydraulic_mode_solenoid_energized_from_fbw
+            .iter()
+            .any(|x| *x)
+            || self
+                .lower_electric_mode_solenoid_energized_from_fbw
+                .iter()
+                .any(|x| *x)
+        {
+            self.rudder_controllers[RudderPanelPosition::Lower as usize]
+                [RudderActuatorPosition::Upper as usize]
+                .set_mode(Self::rudder_actuator_mode_from_solenoid(
+                    self.lower_hydraulic_mode_solenoid_energized_from_fbw
+                        [RudderActuatorPosition::Upper as usize]
+                        || self.lower_electric_mode_solenoid_energized_from_fbw
+                            [RudderActuatorPosition::Upper as usize],
+                ));
+            self.rudder_controllers[RudderPanelPosition::Lower as usize]
+                [RudderActuatorPosition::Lower as usize]
+                .set_mode(Self::rudder_actuator_mode_from_solenoid(
+                    self.lower_hydraulic_mode_solenoid_energized_from_fbw
+                        [RudderActuatorPosition::Lower as usize]
+                        || self.lower_electric_mode_solenoid_energized_from_fbw
+                            [RudderActuatorPosition::Lower as usize],
+                ));
+        } else {
+            for controller in &mut self.rudder_controllers[RudderPanelPosition::Lower as usize] {
+                controller.set_mode(LinearActuatorMode::ClosedCircuitDamping);
+            }
         }
     }
 
-    fn update(
-        &mut self,
-        green_pressure: &impl SectionPressure,
-        blue_pressure: &impl SectionPressure,
-        yellow_pressure: &impl SectionPressure,
-    ) {
-        self.update_rudder_requested_position();
-
-        let blue_circuit_available =
-            blue_pressure.pressure_downstream_leak_valve().get::<psi>() > 1500.;
-        let green_circuit_available =
-            green_pressure.pressure_downstream_leak_valve().get::<psi>() > 1500.;
-        let yellow_circuit_available = yellow_pressure
-            .pressure_downstream_leak_valve()
-            .get::<psi>()
-            > 1500.;
-
-        self.update_rudder(
-            green_circuit_available,
-            blue_circuit_available,
-            yellow_circuit_available,
-        );
+    fn rudder_actuator_mode_from_solenoid(solenoid_energized: bool) -> LinearActuatorMode {
+        if solenoid_energized {
+            LinearActuatorMode::PositionControl
+        } else {
+            LinearActuatorMode::ActiveDamping
+        }
     }
 
-    fn rudder_controllers(&self) -> &[impl HydraulicAssemblyController + HydraulicLocking] {
-        &self.rudder_controllers[..]
+    fn rudder_actuator_position_from_surface_angle(surface_angle: Angle) -> Ratio {
+        Ratio::new::<ratio>(surface_angle.get::<degree>() / 60. + 0.5)
     }
 }
 impl SimulationElement for RudderSystemHydraulicController {
     fn read(&mut self, reader: &mut SimulatorReader) {
-        self.rudder_position_requested =
-            Ratio::new::<ratio>(reader.read(&self.requested_rudder_position_id));
-    }
+        self.upper_position_requests_from_fbw = [
+            Self::rudder_actuator_position_from_surface_angle(Angle::new::<degree>(
+                reader.read(&self.upper_rudder_yellow_actuator_position_demand_id),
+            )),
+            Self::rudder_actuator_position_from_surface_angle(Angle::new::<degree>(
+                reader.read(&self.upper_rudder_green_actuator_position_demand_id),
+            )),
+        ];
+        self.upper_hydraulic_mode_solenoid_energized_from_fbw = [
+            reader.read(&self.upper_rudder_yellow_actuator_hydraulic_solenoid_id),
+            reader.read(&self.upper_rudder_green_actuator_hydraulic_solenoid_id),
+        ];
+        self.upper_electric_mode_solenoid_energized_from_fbw = [
+            reader.read(&self.upper_rudder_yellow_actuator_electric_solenoid_id),
+            reader.read(&self.upper_rudder_green_actuator_electric_solenoid_id),
+        ];
 
-    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
-        self.is_powered = buses.any_is_powered(&Self::ALL_POWER_BUSES);
+        self.lower_position_requests_from_fbw = [
+            Self::rudder_actuator_position_from_surface_angle(Angle::new::<degree>(
+                reader.read(&self.lower_rudder_green_actuator_position_demand_id),
+            )),
+            Self::rudder_actuator_position_from_surface_angle(Angle::new::<degree>(
+                reader.read(&self.lower_rudder_yellow_actuator_position_demand_id),
+            )),
+        ];
+        self.lower_hydraulic_mode_solenoid_energized_from_fbw = [
+            reader.read(&self.lower_rudder_green_actuator_hydraulic_solenoid_id),
+            reader.read(&self.lower_rudder_yellow_actuator_hydraulic_solenoid_id),
+        ];
+        self.lower_electric_mode_solenoid_energized_from_fbw = [
+            reader.read(&self.lower_rudder_green_actuator_electric_solenoid_id),
+            reader.read(&self.lower_rudder_yellow_actuator_electric_solenoid_id),
+        ];
     }
 }
 
@@ -5468,9 +5570,13 @@ enum AileronPanelPosition {
     Inward = 2,
 }
 enum RudderActuatorPosition {
-    Green = 0,
-    Blue = 1,
-    Yellow = 2,
+    Upper = 0,
+    Lower = 1,
+}
+
+enum RudderPanelPosition {
+    Upper = 0,
+    Lower = 1,
 }
 
 enum ElevatorActuatorPosition {
@@ -5675,61 +5781,78 @@ impl SimulationElement for ElevatorAssembly {
 }
 
 struct RudderAssembly {
-    hydraulic_assembly: HydraulicLinearActuatorAssembly<3>,
-    name_id: VariableIdentifier,
+    hydraulic_assemblies: [HydraulicLinearActuatorAssembly<2>; 2],
 
-    position: Ratio,
+    position_upper_id: VariableIdentifier,
 
-    aerodynamic_model: AerodynamicModel,
+    position_lower_id: VariableIdentifier,
+
+    positions: [Ratio; 2],
+
+    aerodynamic_models: [AerodynamicModel; 2],
 }
 impl RudderAssembly {
     fn new(
         context: &mut InitContext,
-        hydraulic_assembly: HydraulicLinearActuatorAssembly<3>,
+        upper_hydraulic_assembly: HydraulicLinearActuatorAssembly<2>,
+        lower_hydraulic_assembly: HydraulicLinearActuatorAssembly<2>,
         aerodynamic_model: AerodynamicModel,
     ) -> Self {
         Self {
-            hydraulic_assembly,
+            hydraulic_assemblies: [upper_hydraulic_assembly, lower_hydraulic_assembly],
 
-            name_id: context.get_identifier("HYD_RUD_DEFLECTION".to_owned()),
+            position_upper_id: context.get_identifier("HYD_UPPER_RUD_DEFLECTION".to_owned()),
 
-            position: Ratio::new::<ratio>(0.5),
+            position_lower_id: context.get_identifier("HYD_LOWER_RUD_DEFLECTION".to_owned()),
 
-            aerodynamic_model,
+            positions: [Ratio::new::<ratio>(0.); 2],
+
+            aerodynamic_models: [aerodynamic_model; 2],
         }
     }
 
-    fn actuator(&mut self, circuit_position: RudderActuatorPosition) -> &mut impl Actuator {
-        self.hydraulic_assembly.actuator(circuit_position as usize)
+    fn actuator(
+        &mut self,
+        circuit_position: RudderActuatorPosition,
+        panel_position: RudderPanelPosition,
+    ) -> &mut impl Actuator {
+        self.hydraulic_assemblies[panel_position as usize].actuator(circuit_position as usize)
     }
 
     fn update(
         &mut self,
         context: &UpdateContext,
-        rudder_controllers: &[impl HydraulicAssemblyController + HydraulicLocking],
-        current_pressure_green: &impl SectionPressure,
-        current_pressure_blue: &impl SectionPressure,
-        current_pressure_yellow: &impl SectionPressure,
+        rudder_controllers: [&[impl HydraulicAssemblyController + HydraulicLocking]; 2],
+        current_pressure_upper: [&impl SectionPressure; 2],
+        current_pressure_lower: [&impl SectionPressure; 2],
     ) {
-        self.aerodynamic_model
-            .update_body(context, self.hydraulic_assembly.body());
+        for idx in 0..2 {
+            self.aerodynamic_models[idx]
+                .update_body(context, self.hydraulic_assemblies[idx].body());
 
-        self.hydraulic_assembly.update(
-            context,
-            rudder_controllers,
-            [
-                current_pressure_green.pressure_downstream_leak_valve(),
-                current_pressure_blue.pressure_downstream_leak_valve(),
-                current_pressure_yellow.pressure_downstream_leak_valve(),
-            ],
-        );
+            self.hydraulic_assemblies[idx].update(
+                context,
+                rudder_controllers[idx],
+                [
+                    current_pressure_upper[idx].pressure_downstream_leak_valve(),
+                    current_pressure_lower[idx].pressure_downstream_leak_valve(),
+                ],
+            );
 
-        self.position = self.hydraulic_assembly.position_normalized();
+            self.positions[idx] = self.hydraulic_assemblies[idx].position_normalized();
+        }
     }
 }
 impl SimulationElement for RudderAssembly {
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(&self.name_id, self.position.get::<ratio>());
+        writer.write(
+            &self.position_upper_id,
+            self.positions[RudderPanelPosition::Upper as usize].get::<ratio>(),
+        );
+        writer.write(
+            &self.position_lower_id,
+            self.positions[RudderPanelPosition::Lower as usize].get::<ratio>(),
+        );
     }
 }
 
