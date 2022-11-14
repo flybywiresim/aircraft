@@ -215,6 +215,7 @@ pub trait HeatingElement {
         false
     }
 }
+pub trait HeatingPressureSource: PressureSource + HeatingElement {}
 
 pub struct HeatingProperties {
     is_overheating: bool,
@@ -1046,9 +1047,9 @@ impl HydraulicCircuit {
     pub fn update(
         &mut self,
         context: &UpdateContext,
-        main_section_pumps: &mut Vec<&mut (impl PressureSource + HeatingElement)>,
-        system_section_pump: Option<&mut (impl PressureSource + HeatingElement)>,
-        auxiliary_section_pump: Option<&mut (impl PressureSource + HeatingElement)>,
+        main_section_pumps: &mut Vec<&mut dyn HeatingPressureSource>,
+        system_section_pump: Option<&mut impl HeatingPressureSource>,
+        auxiliary_section_pump: Option<&mut impl HeatingPressureSource>,
         ptu: Option<&PowerTransferUnit>,
         controller: &impl HydraulicCircuitController,
         reservoir_pressure: Pressure,
@@ -1150,9 +1151,9 @@ impl HydraulicCircuit {
     fn update_pumps(
         &mut self,
         context: &UpdateContext,
-        main_section_pumps: &mut Vec<&mut impl PressureSource>,
-        system_section_pump: Option<&mut impl PressureSource>,
-        auxiliary_section_pump: Option<&mut impl PressureSource>,
+        main_section_pumps: &mut Vec<&mut dyn HeatingPressureSource>,
+        system_section_pump: Option<&mut impl HeatingPressureSource>,
+        auxiliary_section_pump: Option<&mut impl HeatingPressureSource>,
     ) {
         for (pump_index, section) in self.pump_sections.iter_mut().enumerate() {
             section.update_pump_state(context, main_section_pumps[pump_index], &mut self.reservoir);
@@ -1202,9 +1203,9 @@ impl HydraulicCircuit {
 
     fn update_maximum_pumping_capacities(
         &mut self,
-        main_section_pumps: &mut Vec<&mut impl PressureSource>,
-        system_section_pump: &Option<&mut impl PressureSource>,
-        auxiliary_section_pump: &Option<&mut impl PressureSource>,
+        main_section_pumps: &mut Vec<&mut dyn HeatingPressureSource>,
+        system_section_pump: &Option<&mut impl HeatingPressureSource>,
+        auxiliary_section_pump: &Option<&mut impl HeatingPressureSource>,
     ) {
         for (pump_index, section) in self.pump_sections.iter_mut().enumerate() {
             section.update_maximum_pumping_capacity(main_section_pumps[pump_index]);
@@ -1360,6 +1361,14 @@ impl HydraulicCircuit {
 
     pub fn system_section(&self) -> &impl SectionPressure {
         &self.system_section
+    }
+
+    pub fn auxiliary_section(&self) -> &impl SectionPressure {
+        if self.auxiliary_section.is_some() {
+            self.auxiliary_section.as_ref().unwrap()
+        } else {
+            &self.system_section
+        }
     }
 
     pub fn pump_section(&self, pump_index: usize) -> &impl SectionPressure {
@@ -1587,7 +1596,7 @@ impl Section {
         self.total_actuator_consumed_volume = Volume::new::<gallon>(0.);
     }
 
-    pub fn update_maximum_pumping_capacity(&mut self, pump: &impl PressureSource) {
+    pub fn update_maximum_pumping_capacity(&mut self, pump: &dyn HeatingPressureSource) {
         self.max_pumpable_volume = if self.fire_valve_is_open() {
             pump.delta_vol_max()
         } else {
@@ -1608,7 +1617,7 @@ impl Section {
     pub fn update_pump_state(
         &mut self,
         context: &UpdateContext,
-        pump: &mut impl PressureSource,
+        pump: &mut dyn HeatingPressureSource,
         reservoir: &mut Reservoir,
     ) {
         // Final volume target to reach target pressure is:
@@ -2617,6 +2626,7 @@ impl HeatingElement for ElectricPump {
         self.pump_physics.is_overheating()
     }
 }
+impl HeatingPressureSource for ElectricPump {}
 
 pub struct EngineDrivenPump {
     active_id: VariableIdentifier,
@@ -2736,6 +2746,7 @@ impl HeatingElement for EngineDrivenPump {
         self.heat_state.is_overheating()
     }
 }
+impl HeatingPressureSource for EngineDrivenPump {}
 
 struct WindTurbine {
     rpm_id: VariableIdentifier,
@@ -2972,6 +2983,7 @@ impl SimulationElement for RamAirTurbine {
     }
 }
 impl HeatingElement for RamAirTurbine {}
+impl HeatingPressureSource for RamAirTurbine {}
 
 #[cfg(test)]
 mod tests {
@@ -3411,7 +3423,7 @@ mod tests {
     fn engine_driven_pump(context: &mut InitContext) -> EngineDrivenPump {
         EngineDrivenPump::new(
             context,
-            HydraulicColor::Green,
+            AirbusEngineDrivenPumpId::Green,
             PumpCharacteristics::a320_edp(),
         )
     }

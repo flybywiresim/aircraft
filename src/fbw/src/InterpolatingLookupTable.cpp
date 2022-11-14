@@ -1,8 +1,6 @@
 #include "InterpolatingLookupTable.h"
 
-using namespace std;
-
-void InterpolatingLookupTable::initialize(vector<pair<double, double>> mapping, double minimum, double maximum) {
+void InterpolatingLookupTable::initialize(std::vector<std::pair<double, double>> mapping, double minimum, double maximum) {
   mappingTable = std::move(mapping);
   mappingMinimum = minimum;
   mappingMaximum = maximum;

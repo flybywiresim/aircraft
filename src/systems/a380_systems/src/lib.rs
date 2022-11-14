@@ -52,7 +52,9 @@ pub struct A380 {
     fuel: A380Fuel,
     engine_1: LeapEngine,
     engine_2: LeapEngine,
-    engine_fire_overhead: EngineFireOverheadPanel<2>,
+    engine_3: LeapEngine,
+    engine_4: LeapEngine,
+    engine_fire_overhead: EngineFireOverheadPanel<4>,
     electrical: A380Electrical,
     power_consumption: A380PowerConsumption,
     ext_pwr: ExternalPowerSource,
@@ -87,6 +89,8 @@ impl A380 {
             fuel: A380Fuel::new(context),
             engine_1: LeapEngine::new(context, 1),
             engine_2: LeapEngine::new(context, 2),
+            engine_3: LeapEngine::new(context, 3),
+            engine_4: LeapEngine::new(context, 4),
             engine_fire_overhead: EngineFireOverheadPanel::new(context),
             electrical: A380Electrical::new(context),
             power_consumption: A380PowerConsumption::new(context),
@@ -138,7 +142,6 @@ impl Aircraft for A380 {
             &self.apu_overhead,
             &self.engine_fire_overhead,
             [&self.engine_1, &self.engine_2],
-            &self.hydraulic,
             self.lgcius.lgciu1(),
         );
 
@@ -170,21 +173,22 @@ impl Aircraft for A380 {
 
         self.hydraulic.update(
             context,
-            &self.engine_1,
-            &self.engine_2,
+            [
+                &self.engine_1,
+                &self.engine_2,
+                &self.engine_3,
+                &self.engine_4,
+            ],
             &self.hydraulic_overhead,
             &self.autobrake_panel,
             &self.engine_fire_overhead,
             &self.lgcius,
-            &self.emergency_electrical_overhead,
-            &self.electrical,
             &self.pneumatic,
             &self.adirs,
         );
 
         self.pneumatic.update_hydraulic_reservoir_spatial_volumes(
             self.hydraulic.green_reservoir(),
-            self.hydraulic.blue_reservoir(),
             self.hydraulic.yellow_reservoir(),
         );
 
@@ -230,6 +234,8 @@ impl SimulationElement for A380 {
         self.pneumatic_overhead.accept(visitor);
         self.engine_1.accept(visitor);
         self.engine_2.accept(visitor);
+        self.engine_3.accept(visitor);
+        self.engine_4.accept(visitor);
         self.engine_fire_overhead.accept(visitor);
         self.electrical.accept(visitor);
         self.power_consumption.accept(visitor);

@@ -66,8 +66,11 @@ impl VariablesToObject for PitchSimOutput {
         ]
     }
 
+    // Using a corrective factor because flight model do not have the real deflection
+    // Real deflection is -17/30
+    // If flight model deflection is -17/25, corrective factor is 17/25 / 17/30 = 1.2
     fn write(&mut self, values: Vec<f64>) -> ObjectWrite {
-        self.elevator = values[0];
+        self.elevator = 1.2 * values[0];
 
         // Not writing control feedback when in tracking mode
         ObjectWrite::on(!to_bool(values[1]))
@@ -86,11 +89,5 @@ fn hyd_deflection_to_msfs_deflection(
     let angle_zero_offset = hyd_deflection * elevator_range;
     let surface_angle = angle_zero_offset - min_actual_angle;
 
-    let normalized_angle = surface_angle / max_actual_angle;
-
-    if normalized_angle <= 0. {
-        normalized_angle * max_actual_angle / min_actual_angle
-    } else {
-        normalized_angle
-    }
+    surface_angle / max_actual_angle
 }
