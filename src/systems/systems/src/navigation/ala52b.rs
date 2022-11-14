@@ -61,13 +61,14 @@ impl Ala52BTransceiverPair {
     /// Returns the height over ground of the physical transmitter antenna.
     fn transmitter_height_over_ground(&self) -> Length {
         let vertical_offset = self.pitch.sin() * self.transmitter.z();
-        self.alt_above_ground + vertical_offset - self.transmitter.y()
+        (self.alt_above_ground + vertical_offset - self.transmitter.y())
+            .max(Length::new::<foot>(0.))
     }
 
     /// Returns the height over ground of the physical receiver antenna.
     fn receiver_height_over_ground(&self) -> Length {
         let vertical_offset = self.pitch.sin() * self.receiver.z();
-        self.alt_above_ground + vertical_offset - self.receiver.y()
+        (self.alt_above_ground + vertical_offset - self.receiver.y()).max(Length::new::<foot>(0.))
     }
 
     /// Returns the direct distance between the antennas (usually along the aircraft's fuselage)
