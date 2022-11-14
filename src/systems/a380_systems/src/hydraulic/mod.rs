@@ -27,7 +27,8 @@ use systems::{
         flap_slat::FlapSlatAssembly,
         landing_gear::{GearGravityExtension, GearSystemController, HydraulicGearSystem},
         linear_actuator::{
-            Actuator, BoundedLinearLength, ElectroHydrostaticPowered, HydraulicAssemblyController,
+            Actuator, BoundedLinearLength, ElectroHydrostaticActuatorType,
+            ElectroHydrostaticBackup, ElectroHydrostaticPowered, HydraulicAssemblyController,
             HydraulicLinearActuatorAssembly, HydraulicLocking, LinearActuatedRigidBodyOnHingeAxis,
             LinearActuator, LinearActuatorCharacteristics, LinearActuatorMode,
         },
@@ -254,7 +255,15 @@ impl A380AileronFactory {
     const MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING: f64 = 3500000.;
     const MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT: f64 = 25.;
 
-    fn a380_aileron_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
+    //TODO should be ACEss 1
+    const MIDDLE_PANEL_EHA_BUS: ElectricalBusType = ElectricalBusType::AlternatingCurrentEssential;
+    //TODO should be ACEss 2
+    const INWARD_PANEL_EHA_BUS: ElectricalBusType = ElectricalBusType::AlternatingCurrentEssential;
+
+    fn a380_aileron_actuator(
+        bounded_linear_length: &impl BoundedLinearLength,
+        powered_by: Option<ElectricalBusType>,
+    ) -> LinearActuator {
         let actuator_characteristics = LinearActuatorCharacteristics::new(
             Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING / 3.,
             Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING,
@@ -287,7 +296,14 @@ impl A380AileronFactory {
             false,
             false,
             None,
-            None,
+            if let Some(bus) = powered_by {
+                Some(ElectroHydrostaticBackup::new(
+                    bus,
+                    ElectroHydrostaticActuatorType::ElectroHydrostaticActuator,
+                ))
+            } else {
+                None
+            },
         )
     }
 
@@ -326,11 +342,14 @@ impl A380AileronFactory {
 
     /// Builds an aileron assembly consisting of the aileron physical rigid body and two hydraulic actuators connected
     /// to it
-    fn a380_aileron_assembly(init_drooped_down: bool) -> HydraulicLinearActuatorAssembly<2> {
+    fn a380_aileron_assembly(
+        init_drooped_down: bool,
+        powered_by: Option<ElectricalBusType>,
+    ) -> HydraulicLinearActuatorAssembly<2> {
         let aileron_body = Self::a380_aileron_body(init_drooped_down);
 
-        let aileron_actuator_outward = Self::a380_aileron_actuator(&aileron_body);
-        let aileron_actuator_inward = Self::a380_aileron_actuator(&aileron_body);
+        let aileron_actuator_outward = Self::a380_aileron_actuator(&aileron_body, None);
+        let aileron_actuator_inward = Self::a380_aileron_actuator(&aileron_body, powered_by);
 
         HydraulicLinearActuatorAssembly::new(
             [aileron_actuator_outward, aileron_actuator_inward],
@@ -340,9 +359,11 @@ impl A380AileronFactory {
 
     fn new_aileron(context: &mut InitContext, id: ActuatorSide) -> AileronAssembly {
         let init_drooped_down = !context.is_in_flight();
-        let assembly_outward = Self::a380_aileron_assembly(init_drooped_down);
-        let assembly_middle = Self::a380_aileron_assembly(init_drooped_down);
-        let assembly_inward = Self::a380_aileron_assembly(init_drooped_down);
+        let assembly_outward = Self::a380_aileron_assembly(init_drooped_down, None);
+        let assembly_middle =
+            Self::a380_aileron_assembly(init_drooped_down, Some(Self::MIDDLE_PANEL_EHA_BUS));
+        let assembly_inward =
+            Self::a380_aileron_assembly(init_drooped_down, Some(Self::INWARD_PANEL_EHA_BUS));
         AileronAssembly::new(
             context,
             id,
