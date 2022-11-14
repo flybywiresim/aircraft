@@ -20,6 +20,8 @@ declare global {
          * @param args any extra arguments to be passed to the event handlers.
          */
         function trigger(name: string, ...args: any[]): void;
+        function trigger(name: 'FOCUS_INPUT_FIELD', id: string, title?: string, description?: string, defaultValue?: string, isNumeric: boolean): void;
+        function trigger(name: 'UNFOCUS_INPUT_FIELD', id: string);
 
         /**
          * Add a handler for an event.
