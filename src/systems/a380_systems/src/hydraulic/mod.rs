@@ -4578,7 +4578,11 @@ impl HydraulicAssemblyController for AileronController {
     }
 }
 impl HydraulicLocking for AileronController {}
-impl ElectroHydrostaticPowered for AileronController {}
+impl ElectroHydrostaticPowered for AileronController {
+    fn should_activate_electrical_mode(&self) -> bool {
+        self.requested_mode() == LinearActuatorMode::PositionControl
+    }
+}
 
 struct AileronSystemHydraulicController {
     left_inboard_aileron_green_actuator_solenoid_id: VariableIdentifier,
