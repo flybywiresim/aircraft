@@ -97,6 +97,7 @@
 1. [FLIGHTMODEL] Flight Model update - @donstim (donbikes#4084)
 1. [HYD] Fix incorrect gain in down pitch commands - @Crocket63 (crocket)
 1. [PFD] Improve appearance of L/DEV and V/DEV scales - @tracernz (Mike)
+1. [HYD] Implemented Electro Hydrostatic actuators - @Crocket63 (crocket)
 
 ## 0.8.0
 

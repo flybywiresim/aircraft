@@ -3,25 +3,28 @@ use nalgebra::{Rotation3, Unit, Vector3};
 use uom::si::{
     angle::radian,
     angular_acceleration::radian_per_second_squared,
-    angular_velocity::radian_per_second,
+    angular_velocity::{radian_per_second, revolution_per_minute},
     area::square_meter,
     f64::*,
     force::newton,
     length::meter,
     mass::kilogram,
-    pressure::psi,
+    power::watt,
+    pressure::{pascal, psi},
     ratio::ratio,
     torque::newton_meter,
     velocity::meter_per_second,
     volume::{cubic_meter, gallon},
-    volume_rate::gallon_per_second,
+    volume_rate::{cubic_meter_per_second, gallon_per_minute, gallon_per_second},
 };
 
 use crate::{
     shared::{
-        interpolation, low_pass_filter::LowPassFilter, pid::PidController, random_from_range,
+        interpolation, low_pass_filter::LowPassFilter, pid::PidController,
+        random_from_normal_distribution, random_from_range, ConsumePower, ElectricalBusType,
+        ElectricalBuses,
     },
-    simulation::UpdateContext,
+    simulation::{SimulationElement, SimulationElementVisitor, UpdateContext},
 };
 
 use super::aerodynamic_model::AerodynamicBody;
@@ -51,6 +54,271 @@ pub enum LinearActuatorMode {
     PositionControl,
     ActiveDamping,
     ClosedCircuitDamping,
+}
+
+#[derive(PartialEq, Copy, Clone)]
+struct VariableSpeedPump {
+    speed: LowPassFilter<AngularVelocity>,
+
+    is_powered: bool,
+    should_activate_electrical_mode: bool,
+    powered_by: ElectricalBusType,
+    consumed_power: Power,
+}
+impl VariableSpeedPump {
+    // Coefficient to convert hyd power in elec power 1.1 means we lose 10% efficiency from the pump
+    const HYD_TO_ELEC_POWER_EFFICIENCY: f64 = 1.15;
+    const MIN_STATIC_POWER_CONSUMPTION_WATT: f64 = 150.;
+
+    const FLOW_CONSTANT_RPM_CUBIC_INCH_TO_GPM: f64 = 231.;
+    const DISPLACEMENT_CU_IN: f64 = 0.214;
+    const NOMINAL_MAX_PRESSURE_PSI: f64 = 5000.;
+
+    const LOW_PASS_RPM_TRANSIENT_TIME_CONSTANT: Duration = Duration::from_millis(100);
+
+    pub fn new(powered_by: ElectricalBusType) -> Self {
+        Self {
+            speed: LowPassFilter::<AngularVelocity>::new(
+                Self::LOW_PASS_RPM_TRANSIENT_TIME_CONSTANT,
+            ),
+            is_powered: false,
+            should_activate_electrical_mode: false,
+            powered_by,
+            consumed_power: Power::default(),
+        }
+    }
+
+    fn update(
+        &mut self,
+        context: &UpdateContext,
+        actuator_flow: VolumeRate,
+        actuator_pressure: Pressure,
+        controller: &impl ElectroHydrostaticPowered,
+    ) {
+        self.should_activate_electrical_mode = controller.should_activate_electrical_mode();
+
+        let new_speed = if self.is_active() {
+            AngularVelocity::new::<revolution_per_minute>(
+                actuator_flow.get::<gallon_per_minute>()
+                    * Self::FLOW_CONSTANT_RPM_CUBIC_INCH_TO_GPM
+                    / Self::DISPLACEMENT_CU_IN,
+            )
+        } else {
+            AngularVelocity::default()
+        };
+
+        self.update_power_consumed(actuator_flow, actuator_pressure);
+        self.speed.update(context.delta(), new_speed);
+    }
+
+    fn update_power_consumed(&mut self, actuator_flow: VolumeRate, actuator_pressure: Pressure) {
+        let current_fluid_power = Power::new::<watt>(
+            actuator_pressure.get::<pascal>() * actuator_flow.get::<cubic_meter_per_second>(),
+        );
+
+        self.consumed_power = if self.is_active() {
+            (current_fluid_power * Self::HYD_TO_ELEC_POWER_EFFICIENCY)
+                .max(Power::new::<watt>(Self::MIN_STATIC_POWER_CONSUMPTION_WATT))
+        } else {
+            Power::default()
+        };
+    }
+
+    fn is_active(&self) -> bool {
+        self.should_activate_electrical_mode && self.is_powered
+    }
+
+    fn max_available_pressure(&self, accumulator_pressure: Pressure) -> Pressure {
+        if self.is_active() && accumulator_pressure.get::<psi>() > 100. {
+            Pressure::new::<psi>(Self::NOMINAL_MAX_PRESSURE_PSI)
+        } else {
+            Pressure::default()
+        }
+    }
+}
+impl SimulationElement for VariableSpeedPump {
+    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
+        self.is_powered = buses.is_powered(self.powered_by);
+    }
+
+    fn consume_power<T: ConsumePower>(&mut self, _: &UpdateContext, consumption: &mut T) {
+        consumption.consume_from_bus(self.powered_by, self.consumed_power);
+    }
+}
+
+#[derive(PartialEq, Copy, Clone)]
+struct LowPressureAccumulator {
+    pressure: LowPassFilter<Pressure>,
+    total_volume_to_actuator: Volume,
+}
+impl LowPressureAccumulator {
+    const MEAN_ACCUMULATOR_PRESSURE_PSI: f64 = 800.;
+    const STDEV_ACCUMULATOR_PRESSURE_PSI: f64 = 200.;
+
+    const MAX_ACCUMULATOR_PRESSURE_PSI: f64 = 1300.;
+
+    const PRESSURE_TIME_CONSTANT: Duration = Duration::from_millis(1000);
+
+    const REFILL_FLOW_GALLON_PER_S: f64 = 0.05;
+
+    fn new() -> Self {
+        let init_pressure_psi = random_from_normal_distribution(
+            Self::MEAN_ACCUMULATOR_PRESSURE_PSI,
+            Self::STDEV_ACCUMULATOR_PRESSURE_PSI,
+        );
+
+        Self {
+            pressure: LowPassFilter::<Pressure>::new_with_init_value(
+                Self::PRESSURE_TIME_CONSTANT,
+                Pressure::new::<psi>(
+                    init_pressure_psi
+                        .max(0.)
+                        .min(Self::MAX_ACCUMULATOR_PRESSURE_PSI),
+                ),
+            ),
+            total_volume_to_actuator: Volume::default(),
+        }
+    }
+
+    fn update(
+        &mut self,
+        context: &UpdateContext,
+        input_pressure: Pressure,
+        controller: &impl ElectroHydrostaticPowered,
+    ) {
+        let mut new_pressure =
+            if input_pressure > self.pressure.output() && controller.should_open_refill_valve() {
+                Pressure::new::<psi>(Self::MAX_ACCUMULATOR_PRESSURE_PSI)
+            } else {
+                self.pressure.output()
+            };
+
+        new_pressure = new_pressure
+            .min(Pressure::new::<psi>(Self::MAX_ACCUMULATOR_PRESSURE_PSI))
+            .max(Pressure::new::<psi>(0.));
+
+        let refill_flow_present = controller.should_open_refill_valve()
+            && (new_pressure - Pressure::new::<psi>(50.)) > self.pressure.output();
+
+        self.update_flow(context, refill_flow_present);
+
+        self.pressure.update(context.delta(), new_pressure);
+    }
+
+    fn update_flow(&mut self, context: &UpdateContext, refill_flow_present: bool) {
+        if refill_flow_present {
+            self.total_volume_to_actuator +=
+                VolumeRate::new::<gallon_per_second>(Self::REFILL_FLOW_GALLON_PER_S)
+                    * context.delta_as_time();
+        }
+    }
+
+    fn pressure(&self) -> Pressure {
+        self.pressure.output()
+    }
+
+    #[cfg(test)]
+    pub fn empty_accumulator(&mut self) {
+        self.pressure.reset(Pressure::default());
+    }
+}
+impl Actuator for LowPressureAccumulator {
+    fn used_volume(&self) -> Volume {
+        self.total_volume_to_actuator
+    }
+
+    fn reservoir_return(&self) -> Volume {
+        Volume::default()
+    }
+
+    fn reset_volumes(&mut self) {
+        self.total_volume_to_actuator = Volume::new::<gallon>(0.);
+    }
+}
+
+pub trait ElectroHydrostaticPowered {
+    fn should_open_refill_valve(&self) -> bool {
+        false
+    }
+
+    fn should_activate_electrical_mode(&self) -> bool {
+        false
+    }
+}
+
+#[derive(PartialEq, Copy, Clone)]
+pub enum ElectroHydrostaticActuatorType {
+    ElectroHydrostaticActuator, // Can only run on electric mode or is damping
+    ElectricalBackupHydraulicActuator, // Can run either in electric backup mode or from aircraft hydraulic pressure
+}
+
+#[derive(PartialEq, Copy, Clone)]
+pub struct ElectroHydrostaticBackup {
+    accumulator: LowPressureAccumulator,
+    pump: VariableSpeedPump,
+
+    backup_type: ElectroHydrostaticActuatorType,
+}
+impl ElectroHydrostaticBackup {
+    pub fn new(powered_by: ElectricalBusType, backup_type: ElectroHydrostaticActuatorType) -> Self {
+        Self {
+            accumulator: LowPressureAccumulator::new(),
+            pump: VariableSpeedPump::new(powered_by),
+            backup_type,
+        }
+    }
+
+    fn update(
+        &mut self,
+        context: &UpdateContext,
+        controller: &impl ElectroHydrostaticPowered,
+        current_pressure: Pressure,
+        current_actuator_flow: VolumeRate,
+        current_actuator_pressure: Pressure,
+    ) {
+        self.accumulator
+            .update(context, current_pressure, controller);
+        self.pump.update(
+            context,
+            current_actuator_flow,
+            current_actuator_pressure,
+            controller,
+        );
+    }
+
+    fn max_available_pressure(&self) -> Pressure {
+        self.pump
+            .max_available_pressure(self.accumulator.pressure())
+    }
+
+    fn can_move_using_aircraft_hydraulic_pressure(&self) -> bool {
+        self.backup_type == ElectroHydrostaticActuatorType::ElectricalBackupHydraulicActuator
+    }
+
+    #[cfg(test)]
+    fn accumulator_pressure(&self) -> Pressure {
+        self.accumulator.pressure()
+    }
+}
+impl SimulationElement for ElectroHydrostaticBackup {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.pump.accept(visitor);
+
+        visitor.visit(self);
+    }
+}
+impl Actuator for ElectroHydrostaticBackup {
+    fn used_volume(&self) -> Volume {
+        self.accumulator.used_volume()
+    }
+
+    fn reservoir_return(&self) -> Volume {
+        self.accumulator.reservoir_return()
+    }
+
+    fn reset_volumes(&mut self) {
+        self.accumulator.reset_volumes();
+    }
 }
 
 /// Represents an abstraction of the low level hydraulic actuator control system that would in real life consist of a lot of
@@ -589,6 +857,8 @@ pub struct LinearActuator {
     requested_position: Ratio,
 
     core_hydraulics: CoreHydraulicForce,
+
+    electro_hydrostatic_backup: Option<ElectroHydrostaticBackup>,
 }
 impl LinearActuator {
     pub fn new(
@@ -612,6 +882,8 @@ impl LinearActuator {
 
         locks_position_in_closed_mode: bool,
         soft_lock_velocity: Option<(AngularVelocity, AngularVelocity)>,
+
+        electro_hydrostatic_backup: Option<ElectroHydrostaticBackup>,
     ) -> Self {
         let total_travel = (bounded_linear_length.max_absolute_length_to_anchor()
             - bounded_linear_length.min_absolute_length_to_anchor())
@@ -700,6 +972,7 @@ impl LinearActuator {
                 locks_position_in_closed_mode,
                 soft_lock_velocity,
             ),
+            electro_hydrostatic_backup,
         }
     }
 
@@ -707,15 +980,44 @@ impl LinearActuator {
         &mut self,
         context: &UpdateContext,
         connected_body: &mut LinearActuatedRigidBodyOnHingeAxis,
-        requested_mode: LinearActuatorMode,
-        current_pressure: Pressure,
+        controller: &(impl HydraulicAssemblyController + HydraulicLocking + ElectroHydrostaticPowered),
+        current_input_pressure: Pressure,
     ) {
+        let mut can_move_using_aircraft_hydraulic_pressure = true;
+
+        let internal_actuator_pressure = self.pressure();
+
+        if let Some(eha) = self.electro_hydrostatic_backup.as_mut() {
+            eha.update(
+                context,
+                controller,
+                current_input_pressure,
+                self.signed_flow,
+                internal_actuator_pressure,
+            );
+
+            can_move_using_aircraft_hydraulic_pressure =
+                eha.can_move_using_aircraft_hydraulic_pressure();
+        }
+
+        let internal_actuator_pressure = if controller.should_activate_electrical_mode()
+            && self.electro_hydrostatic_backup.is_some()
+        {
+            self.electro_hydrostatic_backup
+                .unwrap()
+                .max_available_pressure()
+        } else if can_move_using_aircraft_hydraulic_pressure {
+            current_input_pressure
+        } else {
+            Pressure::default()
+        };
+
         self.core_hydraulics.update_force(
             context,
             self.requested_position,
-            requested_mode,
+            controller.requested_mode(),
             self.position_normalized,
-            current_pressure,
+            internal_actuator_pressure,
             self.signed_flow,
             self.speed,
         );
@@ -779,27 +1081,40 @@ impl LinearActuator {
         }
     }
 
-    fn set_position_target(&mut self, target_position: Ratio) {
+    pub fn set_position_target(&mut self, target_position: Ratio) {
         self.requested_position = target_position;
     }
 
-    fn position_normalized(&self) -> Ratio {
+    pub fn position_normalized(&self) -> Ratio {
         self.position_normalized
     }
 
-    #[cfg(test)]
     fn force(&self) -> Force {
         self.core_hydraulics.force()
     }
 
-    #[cfg(test)]
-    fn signed_flow(&self) -> VolumeRate {
+    pub fn signed_flow(&self) -> VolumeRate {
         self.signed_flow
+    }
+
+    fn pressure(&self) -> Pressure {
+        let area = if self.speed > Velocity::new::<meter_per_second>(0.) {
+            self.bore_side_area
+        } else {
+            self.rod_side_area
+        };
+
+        self.force() / area
     }
 }
 impl Actuator for LinearActuator {
     fn used_volume(&self) -> Volume {
-        self.total_volume_to_actuator
+        let mut eha_volume_used = Volume::default();
+        if let Some(eha) = self.electro_hydrostatic_backup.as_ref() {
+            eha_volume_used = eha.used_volume();
+        }
+
+        self.total_volume_to_actuator + eha_volume_used
     }
 
     fn reservoir_return(&self) -> Volume {
@@ -809,6 +1124,10 @@ impl Actuator for LinearActuator {
     fn reset_volumes(&mut self) {
         self.total_volume_to_reservoir = Volume::new::<gallon>(0.);
         self.total_volume_to_actuator = Volume::new::<gallon>(0.);
+
+        if let Some(eha) = self.electro_hydrostatic_backup.as_mut() {
+            eha.reset_volumes();
+        }
     }
 }
 impl HydraulicLocking for LinearActuator {
@@ -820,12 +1139,24 @@ impl HydraulicLocking for LinearActuator {
         self.core_hydraulics.soft_lock_velocity()
     }
 }
+impl SimulationElement for LinearActuator {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        if let Some(eha) = self.electro_hydrostatic_backup.as_mut() {
+            eha.accept(visitor);
+        };
+
+        visitor.visit(self);
+    }
+}
 
 pub trait HydraulicAssemblyController {
     fn requested_mode(&self) -> LinearActuatorMode;
     fn requested_position(&self) -> Ratio;
     fn should_lock(&self) -> bool;
     fn requested_lock_position(&self) -> Ratio;
+    fn should_run_electro_hydrostatic_backup(&self) -> bool {
+        false
+    }
 }
 
 pub trait HydraulicLocking {
@@ -838,7 +1169,7 @@ pub trait HydraulicLocking {
     }
 }
 
-fn get_more_restrictive_soft_lock_velocities(
+pub fn get_more_restrictive_soft_lock_velocities(
     controller1: &impl HydraulicLocking,
     controller2: &impl HydraulicLocking,
 ) -> (AngularVelocity, AngularVelocity) {
@@ -881,7 +1212,9 @@ impl<const N: usize> HydraulicLinearActuatorAssembly<N> {
     pub fn update(
         &mut self,
         context: &UpdateContext,
-        assembly_controllers: &[impl HydraulicAssemblyController + HydraulicLocking],
+        assembly_controllers: &[impl HydraulicAssemblyController
+              + HydraulicLocking
+              + ElectroHydrostaticPowered],
         current_pressure: [Pressure; N],
     ) {
         for (index, actuator) in self.linear_actuators.iter_mut().enumerate() {
@@ -902,7 +1235,7 @@ impl<const N: usize> HydraulicLinearActuatorAssembly<N> {
                 actuator.update_before_rigid_body(
                     context,
                     &mut self.rigid_body,
-                    assembly_controllers[index].requested_mode(),
+                    &assembly_controllers[index],
                     current_pressure[index],
                 );
             }
@@ -993,6 +1326,27 @@ impl<const N: usize> HydraulicLinearActuatorAssembly<N> {
     #[cfg(test)]
     pub fn actuator_flow(&self, index: usize) -> VolumeRate {
         self.linear_actuators[index].signed_flow().abs()
+    }
+}
+impl SimulationElement for HydraulicLinearActuatorAssembly<1> {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        accept_iterable!(self.linear_actuators, visitor);
+
+        visitor.visit(self);
+    }
+}
+impl SimulationElement for HydraulicLinearActuatorAssembly<2> {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        accept_iterable!(self.linear_actuators, visitor);
+
+        visitor.visit(self);
+    }
+}
+impl SimulationElement for HydraulicLinearActuatorAssembly<3> {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        accept_iterable!(self.linear_actuators, visitor);
+
+        visitor.visit(self);
     }
 }
 
@@ -1417,11 +1771,16 @@ mod tests {
 
     use super::*;
 
-    use crate::shared::update_iterator::MaxStepLoop;
+    use crate::electrical::test::TestElectricitySource;
+    use crate::electrical::ElectricalBus;
+    use crate::electrical::Electricity;
+
+    use crate::shared::PowerConsumptionReport;
+    use crate::shared::{update_iterator::MaxStepLoop, PotentialOrigin};
     use crate::simulation::test::{ElementCtorFn, SimulationTestBed, TestBed, WriteByName};
-    use crate::simulation::{Aircraft, SimulationElement};
+    use crate::simulation::{Aircraft, InitContext, SimulationElement};
     use std::time::Duration;
-    use uom::si::{angle::degree, mass::kilogram, pressure::psi};
+    use uom::si::{angle::degree, electric_potential::volt, mass::kilogram, pressure::psi};
 
     #[derive(PartialEq, Clone, Copy)]
     struct TestHydraulicAssemblyController {
@@ -1432,6 +1791,9 @@ mod tests {
 
         soft_lock_request: bool,
         soft_lock_velocity: (AngularVelocity, AngularVelocity),
+
+        should_activate_elec_backup: bool,
+        should_activate_elec_backup_refill: bool,
     }
     impl TestHydraulicAssemblyController {
         fn new() -> Self {
@@ -1443,6 +1805,9 @@ mod tests {
                 lock_position: Ratio::new::<ratio>(0.),
                 soft_lock_request: false,
                 soft_lock_velocity: (AngularVelocity::default(), AngularVelocity::default()),
+
+                should_activate_elec_backup: false,
+                should_activate_elec_backup_refill: false,
             }
         }
 
@@ -1466,6 +1831,14 @@ mod tests {
         fn set_soft_lock(&mut self, lock_velocity: (AngularVelocity, AngularVelocity)) {
             self.soft_lock_request = true;
             self.soft_lock_velocity = lock_velocity;
+        }
+
+        fn set_elec_backup(&mut self, is_on: bool) {
+            self.should_activate_elec_backup = is_on;
+        }
+
+        fn set_elec_backup_refill(&mut self, is_on: bool) {
+            self.should_activate_elec_backup_refill = is_on;
         }
     }
     impl HydraulicAssemblyController for TestHydraulicAssemblyController {
@@ -1492,6 +1865,15 @@ mod tests {
 
         fn soft_lock_velocity(&self) -> (AngularVelocity, AngularVelocity) {
             self.soft_lock_velocity
+        }
+    }
+    impl ElectroHydrostaticPowered for TestHydraulicAssemblyController {
+        fn should_activate_electrical_mode(&self) -> bool {
+            self.should_activate_elec_backup
+        }
+
+        fn should_open_refill_valve(&self) -> bool {
+            self.should_activate_elec_backup_refill
         }
     }
 
@@ -1524,9 +1906,15 @@ mod tests {
         pressures: [Pressure; N],
 
         aero_forces: TestAerodynamicModel,
+
+        powered_source_ac: TestElectricitySource,
+        ac_1_bus: ElectricalBus,
+        is_ac_1_powered: bool,
+        power_consumption: Power,
     }
     impl<const N: usize> TestAircraft<N> {
         fn new(
+            context: &mut InitContext,
             time_step: Duration,
             hydraulic_assembly: HydraulicLinearActuatorAssembly<N>,
         ) -> Self {
@@ -1540,6 +1928,14 @@ mod tests {
                 pressures: [Pressure::new::<psi>(0.); N],
 
                 aero_forces: TestAerodynamicModel::new(),
+
+                powered_source_ac: TestElectricitySource::powered(
+                    context,
+                    PotentialOrigin::EngineGenerator(1),
+                ),
+                ac_1_bus: ElectricalBus::new(context, ElectricalBusType::AlternatingCurrent(1)),
+                is_ac_1_powered: false,
+                power_consumption: Power::default(),
             }
         }
 
@@ -1568,6 +1964,40 @@ mod tests {
             self.controllers[actuator_id].set_position_target(position);
         }
 
+        fn command_electro_backup(&mut self, is_active: bool, actuator_id: usize) {
+            assert!(actuator_id < N);
+            self.controllers[actuator_id].set_elec_backup(is_active);
+        }
+
+        fn command_electro_backup_refill(&mut self, is_active: bool, actuator_id: usize) {
+            assert!(actuator_id < N);
+            self.controllers[actuator_id].set_elec_backup_refill(is_active);
+        }
+
+        fn accumulator_pressure(&self, actuator_id: usize) -> Pressure {
+            if let Some(eha) =
+                self.hydraulic_assembly.linear_actuators[actuator_id].electro_hydrostatic_backup
+            {
+                eha.accumulator_pressure()
+            } else {
+                Pressure::default()
+            }
+        }
+
+        fn actuator_used_volume(&self, actuator_id: usize) -> Volume {
+            self.hydraulic_assembly.linear_actuators[actuator_id].used_volume()
+        }
+
+        fn command_empty_eha_accumulator(&mut self, actuator_id: usize) {
+            assert!(actuator_id < N);
+            if let Some(eha) = self.hydraulic_assembly.linear_actuators[actuator_id]
+                .electro_hydrostatic_backup
+                .as_mut()
+            {
+                eha.accumulator.empty_accumulator();
+            }
+        }
+
         fn command_lock(&mut self, lock_position: Ratio) {
             for controller in &mut self.controllers {
                 controller.set_lock(lock_position);
@@ -1590,6 +2020,10 @@ mod tests {
             self.hydraulic_assembly.position_normalized()
         }
 
+        fn current_power_consumption(&self) -> Power {
+            self.power_consumption
+        }
+
         fn apply_up_aero_forces(&mut self, force_up: Force) {
             self.aero_forces.apply_up_force(force_up);
         }
@@ -1605,7 +2039,7 @@ mod tests {
                 .update(context, &self.controllers[..], self.pressures);
 
             println!(
-                "Body angle {:.2} Body Npos {:.3}, Act Npos {:.3}, Act force {:.1}",
+                "Body angle {:.2} Body Npos {:.3}, Act Npos {:.3}, Act force {:.1} , Fluid used act0 {:.5}",
                 self.hydraulic_assembly
                     .rigid_body
                     .angular_position
@@ -1620,10 +2054,29 @@ mod tests {
                 self.hydraulic_assembly.linear_actuators[0]
                     .force()
                     .get::<newton>(),
+                (self.hydraulic_assembly.linear_actuators[0].used_volume() - self.hydraulic_assembly.linear_actuators[0].reservoir_return()).get::<gallon>()
             );
+        }
+
+        fn set_ac_1_power(&mut self, is_powered: bool) {
+            self.is_ac_1_powered = is_powered;
         }
     }
     impl Aircraft for TestAircraft<1> {
+        fn update_before_power_distribution(
+            &mut self,
+            _: &UpdateContext,
+            electricity: &mut Electricity,
+        ) {
+            self.powered_source_ac
+                .power_with_potential(ElectricPotential::new::<volt>(115.));
+            electricity.supplied_by(&self.powered_source_ac);
+
+            if self.is_ac_1_powered {
+                electricity.flow(&self.powered_source_ac, &self.ac_1_bus);
+            }
+        }
+
         fn update_after_power_distribution(&mut self, context: &UpdateContext) {
             self.loop_updater.update(context);
 
@@ -1632,9 +2085,38 @@ mod tests {
             }
         }
     }
-    impl SimulationElement for TestAircraft<1> {}
+    impl SimulationElement for TestAircraft<1> {
+        fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+            self.hydraulic_assembly.accept(visitor);
+
+            visitor.visit(self);
+        }
+
+        fn process_power_consumption_report<T: PowerConsumptionReport>(
+            &mut self,
+            _: &UpdateContext,
+            report: &T,
+        ) {
+            self.power_consumption =
+                report.total_consumption_of(PotentialOrigin::EngineGenerator(1));
+        }
+    }
 
     impl Aircraft for TestAircraft<2> {
+        fn update_before_power_distribution(
+            &mut self,
+            _: &UpdateContext,
+            electricity: &mut Electricity,
+        ) {
+            self.powered_source_ac
+                .power_with_potential(ElectricPotential::new::<volt>(115.));
+            electricity.supplied_by(&self.powered_source_ac);
+
+            if self.is_ac_1_powered {
+                electricity.flow(&self.powered_source_ac, &self.ac_1_bus);
+            }
+        }
+
         fn update_after_power_distribution(&mut self, context: &UpdateContext) {
             self.loop_updater.update(context);
 
@@ -1643,7 +2125,22 @@ mod tests {
             }
         }
     }
-    impl SimulationElement for TestAircraft<2> {}
+    impl SimulationElement for TestAircraft<2> {
+        fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+            self.hydraulic_assembly.accept(visitor);
+
+            visitor.visit(self);
+        }
+
+        fn process_power_consumption_report<T: PowerConsumptionReport>(
+            &mut self,
+            _: &UpdateContext,
+            report: &T,
+        ) {
+            self.power_consumption =
+                report.total_consumption_of(PotentialOrigin::EngineGenerator(1));
+        }
+    }
 
     impl SimulationElement for LinearActuatedRigidBodyOnHingeAxis {}
 
@@ -1876,8 +2373,12 @@ mod tests {
 
     #[test]
     fn linear_actuator_not_moving_on_locked_rigid_body() {
-        let mut test_bed = SimulationTestBed::new(|_| {
-            TestAircraft::new(Duration::from_millis(33), cargo_door_assembly(true))
+        let mut test_bed = SimulationTestBed::new(|context| {
+            TestAircraft::new(
+                context,
+                Duration::from_millis(33),
+                cargo_door_assembly(true),
+            )
         });
 
         let actuator_position_init = test_bed.query(|a| a.body_position());
@@ -1889,8 +2390,12 @@ mod tests {
 
     #[test]
     fn linear_actuator_moving_on_unlocked_rigid_body() {
-        let mut test_bed = SimulationTestBed::new(|_| {
-            TestAircraft::new(Duration::from_millis(33), cargo_door_assembly(true))
+        let mut test_bed = SimulationTestBed::new(|context| {
+            TestAircraft::new(
+                context,
+                Duration::from_millis(33),
+                cargo_door_assembly(true),
+            )
         });
 
         let actuator_position_init = test_bed.query(|a| a.body_position());
@@ -1907,8 +2412,12 @@ mod tests {
 
     #[test]
     fn linear_actuator_can_move_rigid_body_up() {
-        let mut test_bed = SimulationTestBed::new(|_| {
-            TestAircraft::new(Duration::from_millis(33), cargo_door_assembly(true))
+        let mut test_bed = SimulationTestBed::new(|context| {
+            TestAircraft::new(
+                context,
+                Duration::from_millis(33),
+                cargo_door_assembly(true),
+            )
         });
 
         let actuator_position_init = test_bed.query(|a| a.body_position());
@@ -1929,8 +2438,12 @@ mod tests {
 
     #[test]
     fn linear_actuator_resists_body_drop_when_valves_closed() {
-        let mut test_bed = SimulationTestBed::new(|_| {
-            TestAircraft::new(Duration::from_millis(33), cargo_door_assembly(true))
+        let mut test_bed = SimulationTestBed::new(|context| {
+            TestAircraft::new(
+                context,
+                Duration::from_millis(33),
+                cargo_door_assembly(true),
+            )
         });
 
         test_bed.command(|a| a.command_unlock());
@@ -1951,8 +2464,12 @@ mod tests {
 
     #[test]
     fn linear_actuator_dampens_body_drop_when_active_damping_mode() {
-        let mut test_bed = SimulationTestBed::new(|_| {
-            TestAircraft::new(Duration::from_millis(33), cargo_door_assembly(true))
+        let mut test_bed = SimulationTestBed::new(|context| {
+            TestAircraft::new(
+                context,
+                Duration::from_millis(33),
+                cargo_door_assembly(true),
+            )
         });
 
         test_bed.command(|a| a.command_unlock());
@@ -1974,8 +2491,12 @@ mod tests {
 
     #[test]
     fn linear_actuator_dampens_super_slow_body_drop_when_slow_damping_mode() {
-        let mut test_bed = SimulationTestBed::new(|_| {
-            TestAircraft::new(Duration::from_millis(33), cargo_door_assembly(true))
+        let mut test_bed = SimulationTestBed::new(|context| {
+            TestAircraft::new(
+                context,
+                Duration::from_millis(33),
+                cargo_door_assembly(true),
+            )
         });
 
         test_bed.command(|a| a.command_unlock());
@@ -1997,8 +2518,12 @@ mod tests {
 
     #[test]
     fn linear_actuator_without_hyd_pressure_cant_move_body_up() {
-        let mut test_bed = SimulationTestBed::new(|_| {
-            TestAircraft::new(Duration::from_millis(33), cargo_door_assembly(true))
+        let mut test_bed = SimulationTestBed::new(|context| {
+            TestAircraft::new(
+                context,
+                Duration::from_millis(33),
+                cargo_door_assembly(true),
+            )
         });
 
         test_bed.command(|a| a.command_unlock());
@@ -2013,8 +2538,12 @@ mod tests {
 
     #[test]
     fn linear_actuator_losing_hyd_pressure_half_way_cant_move_body_up() {
-        let mut test_bed = SimulationTestBed::new(|_| {
-            TestAircraft::new(Duration::from_millis(33), cargo_door_assembly(true))
+        let mut test_bed = SimulationTestBed::new(|context| {
+            TestAircraft::new(
+                context,
+                Duration::from_millis(33),
+                cargo_door_assembly(true),
+            )
         });
 
         test_bed.command(|a| a.command_unlock());
@@ -2038,8 +2567,12 @@ mod tests {
 
     #[test]
     fn body_gravity_movement_if_unlocked() {
-        let mut test_bed = SimulationTestBed::new(|_| {
-            TestAircraft::new(Duration::from_millis(33), cargo_door_assembly(false))
+        let mut test_bed = SimulationTestBed::new(|context| {
+            TestAircraft::new(
+                context,
+                Duration::from_millis(33),
+                cargo_door_assembly(false),
+            )
         });
 
         test_bed.command(|a| a.command_unlock());
@@ -2056,8 +2589,12 @@ mod tests {
 
     #[test]
     fn start_moving_once_unlocked() {
-        let mut test_bed = SimulationTestBed::new(|_| {
-            TestAircraft::new(Duration::from_millis(33), cargo_door_assembly(true))
+        let mut test_bed = SimulationTestBed::new(|context| {
+            TestAircraft::new(
+                context,
+                Duration::from_millis(33),
+                cargo_door_assembly(true),
+            )
         });
 
         test_bed.write_by_name(UpdateContext::PLANE_BANK_KEY, -45.);
@@ -2077,8 +2614,12 @@ mod tests {
 
     #[test]
     fn locks_at_required_position() {
-        let mut test_bed = SimulationTestBed::new(|_| {
-            TestAircraft::new(Duration::from_millis(33), cargo_door_assembly(true))
+        let mut test_bed = SimulationTestBed::new(|context| {
+            TestAircraft::new(
+                context,
+                Duration::from_millis(33),
+                cargo_door_assembly(true),
+            )
         });
 
         test_bed.write_by_name(UpdateContext::PLANE_BANK_KEY, -45.);
@@ -2105,8 +2646,12 @@ mod tests {
 
     #[test]
     fn soft_lock_with_zero_velocity_stops_the_body() {
-        let mut test_bed = SimulationTestBed::new(|_| {
-            TestAircraft::new(Duration::from_millis(33), cargo_door_assembly(true))
+        let mut test_bed = SimulationTestBed::new(|context| {
+            TestAircraft::new(
+                context,
+                Duration::from_millis(33),
+                cargo_door_assembly(true),
+            )
         });
 
         test_bed.write_by_name(UpdateContext::PLANE_BANK_KEY, -45.);
@@ -2143,8 +2688,12 @@ mod tests {
 
     #[test]
     fn linear_actuator_can_control_position() {
-        let mut test_bed = SimulationTestBed::new(|_| {
-            TestAircraft::new(Duration::from_millis(33), cargo_door_assembly(true))
+        let mut test_bed = SimulationTestBed::new(|context| {
+            TestAircraft::new(
+                context,
+                Duration::from_millis(33),
+                cargo_door_assembly(true),
+            )
         });
 
         test_bed.command(|a| a.command_unlock());
@@ -2166,8 +2715,9 @@ mod tests {
 
     #[test]
     fn right_main_gear_door_drops_when_unlocked() {
-        let mut test_bed = SimulationTestBed::new(|_| {
+        let mut test_bed = SimulationTestBed::new(|context| {
             TestAircraft::new(
+                context,
                 Duration::from_millis(10),
                 main_gear_door_right_assembly(true),
             )
@@ -2182,8 +2732,9 @@ mod tests {
 
     #[test]
     fn right_main_gear_door_drops_freefall_when_unlocked_with_broken_actuator() {
-        let mut test_bed = SimulationTestBed::new(|_| {
+        let mut test_bed = SimulationTestBed::new(|context| {
             TestAircraft::new(
+                context,
                 Duration::from_millis(10),
                 main_gear_door_right_broken_assembly(true),
             )
@@ -2198,8 +2749,9 @@ mod tests {
 
     #[test]
     fn right_main_gear_door_cant_open_fully_if_banking_right() {
-        let mut test_bed = SimulationTestBed::new(|_| {
+        let mut test_bed = SimulationTestBed::new(|context| {
             TestAircraft::new(
+                context,
                 Duration::from_millis(10),
                 main_gear_door_right_assembly(true),
             )
@@ -2217,8 +2769,9 @@ mod tests {
 
     #[test]
     fn right_main_gear_door_closes_after_opening_with_pressure() {
-        let mut test_bed = SimulationTestBed::new(|_| {
+        let mut test_bed = SimulationTestBed::new(|context| {
             TestAircraft::new(
+                context,
                 Duration::from_millis(10),
                 main_gear_door_right_assembly(true),
             )
@@ -2243,8 +2796,12 @@ mod tests {
 
     #[test]
     fn nose_gear_door_closes_after_opening_with_pressure() {
-        let mut test_bed = SimulationTestBed::new(|_| {
-            TestAircraft::new(Duration::from_millis(10), nose_gear_door_assembly())
+        let mut test_bed = SimulationTestBed::new(|context| {
+            TestAircraft::new(
+                context,
+                Duration::from_millis(10),
+                nose_gear_door_assembly(),
+            )
         });
 
         test_bed.command(|a| a.set_pressures([Pressure::new::<psi>(3000.)]));
@@ -2266,8 +2823,9 @@ mod tests {
 
     #[test]
     fn left_main_gear_door_drops_when_unlocked() {
-        let mut test_bed = SimulationTestBed::new(|_| {
+        let mut test_bed = SimulationTestBed::new(|context| {
             TestAircraft::new(
+                context,
                 Duration::from_millis(10),
                 main_gear_door_left_assembly(true),
             )
@@ -2282,8 +2840,9 @@ mod tests {
 
     #[test]
     fn left_main_gear_door_can_open_fully_if_banking_right() {
-        let mut test_bed = SimulationTestBed::new(|_| {
+        let mut test_bed = SimulationTestBed::new(|context| {
             TestAircraft::new(
+                context,
                 Duration::from_millis(10),
                 main_gear_door_left_assembly(true),
             )
@@ -2299,8 +2858,9 @@ mod tests {
 
     #[test]
     fn left_main_gear_door_opens_with_pressure() {
-        let mut test_bed = SimulationTestBed::new(|_| {
+        let mut test_bed = SimulationTestBed::new(|context| {
             TestAircraft::new(
+                context,
                 Duration::from_millis(10),
                 main_gear_door_left_assembly(true),
             )
@@ -2316,8 +2876,12 @@ mod tests {
 
     #[test]
     fn right_main_gear_retracts_with_pressure() {
-        let mut test_bed = SimulationTestBed::new(|_| {
-            TestAircraft::new(Duration::from_millis(10), main_gear_right_assembly(true))
+        let mut test_bed = SimulationTestBed::new(|context| {
+            TestAircraft::new(
+                context,
+                Duration::from_millis(10),
+                main_gear_right_assembly(true),
+            )
         });
 
         test_bed.command(|a| a.set_pressures([Pressure::new::<psi>(3000.)]));
@@ -2330,8 +2894,12 @@ mod tests {
 
     #[test]
     fn right_main_gear_locked_down_at_init() {
-        let mut test_bed = SimulationTestBed::new(|_| {
-            TestAircraft::new(Duration::from_millis(33), main_gear_right_assembly(true))
+        let mut test_bed = SimulationTestBed::new(|context| {
+            TestAircraft::new(
+                context,
+                Duration::from_millis(33),
+                main_gear_right_assembly(true),
+            )
         });
 
         assert!(test_bed.query(|a| a.is_locked()));
@@ -2345,8 +2913,12 @@ mod tests {
 
     #[test]
     fn right_main_gear_locks_up_when_retracted() {
-        let mut test_bed = SimulationTestBed::new(|_| {
-            TestAircraft::new(Duration::from_millis(10), main_gear_right_assembly(true))
+        let mut test_bed = SimulationTestBed::new(|context| {
+            TestAircraft::new(
+                context,
+                Duration::from_millis(10),
+                main_gear_right_assembly(true),
+            )
         });
 
         test_bed.command(|a| a.set_pressures([Pressure::new::<psi>(3000.)]));
@@ -2363,8 +2935,12 @@ mod tests {
 
     #[test]
     fn right_main_gear_locks_down_when_extended_by_gravity() {
-        let mut test_bed = SimulationTestBed::new(|_| {
-            TestAircraft::new(Duration::from_millis(10), main_gear_right_assembly(true))
+        let mut test_bed = SimulationTestBed::new(|context| {
+            TestAircraft::new(
+                context,
+                Duration::from_millis(10),
+                main_gear_right_assembly(true),
+            )
         });
 
         // FIRST GEAR UP
@@ -2393,8 +2969,12 @@ mod tests {
 
     #[test]
     fn left_main_gear_retracts_with_pressure() {
-        let mut test_bed = SimulationTestBed::new(|_| {
-            TestAircraft::new(Duration::from_millis(10), main_gear_left_assembly(true))
+        let mut test_bed = SimulationTestBed::new(|context| {
+            TestAircraft::new(
+                context,
+                Duration::from_millis(10),
+                main_gear_left_assembly(true),
+            )
         });
 
         test_bed.command(|a| a.set_pressures([Pressure::new::<psi>(3000.)]));
@@ -2407,8 +2987,12 @@ mod tests {
 
     #[test]
     fn left_main_gear_retracts_with_limited_pressure() {
-        let mut test_bed = SimulationTestBed::new(|_| {
-            TestAircraft::new(Duration::from_millis(10), main_gear_left_assembly(true))
+        let mut test_bed = SimulationTestBed::new(|context| {
+            TestAircraft::new(
+                context,
+                Duration::from_millis(10),
+                main_gear_left_assembly(true),
+            )
         });
 
         test_bed.command(|a| a.set_pressures([Pressure::new::<psi>(1500.)]));
@@ -2421,8 +3005,12 @@ mod tests {
 
     #[test]
     fn left_main_gear_locked_down_at_init() {
-        let mut test_bed = SimulationTestBed::new(|_| {
-            TestAircraft::new(Duration::from_millis(33), main_gear_left_assembly(true))
+        let mut test_bed = SimulationTestBed::new(|context| {
+            TestAircraft::new(
+                context,
+                Duration::from_millis(33),
+                main_gear_left_assembly(true),
+            )
         });
 
         assert!(test_bed.query(|a| a.is_locked()));
@@ -2436,8 +3024,12 @@ mod tests {
 
     #[test]
     fn left_main_gear_locks_up_when_retracted() {
-        let mut test_bed = SimulationTestBed::new(|_| {
-            TestAircraft::new(Duration::from_millis(10), main_gear_left_assembly(true))
+        let mut test_bed = SimulationTestBed::new(|context| {
+            TestAircraft::new(
+                context,
+                Duration::from_millis(10),
+                main_gear_left_assembly(true),
+            )
         });
 
         test_bed.command(|a| a.set_pressures([Pressure::new::<psi>(3000.)]));
@@ -2454,8 +3046,12 @@ mod tests {
 
     #[test]
     fn left_main_gear_locks_down_when_extended_by_gravity() {
-        let mut test_bed = SimulationTestBed::new(|_| {
-            TestAircraft::new(Duration::from_millis(10), main_gear_left_assembly(true))
+        let mut test_bed = SimulationTestBed::new(|context| {
+            TestAircraft::new(
+                context,
+                Duration::from_millis(10),
+                main_gear_left_assembly(true),
+            )
         });
 
         // FIRST GEAR UP
@@ -2484,8 +3080,8 @@ mod tests {
 
     #[test]
     fn nose_gear_locks_up_when_retracted() {
-        let mut test_bed = SimulationTestBed::new(|_| {
-            TestAircraft::new(Duration::from_millis(10), nose_gear_assembly())
+        let mut test_bed = SimulationTestBed::new(|context| {
+            TestAircraft::new(context, Duration::from_millis(10), nose_gear_assembly())
         });
 
         test_bed.command(|a| a.set_pressures([Pressure::new::<psi>(3000.)]));
@@ -2502,8 +3098,8 @@ mod tests {
 
     #[test]
     fn aileron_initialized_down_stays_down_with_broken_actuator() {
-        let mut test_bed = SimulationTestBed::new(|_| {
-            TestAircraft::new(Duration::from_millis(10), aileron_assembly(true))
+        let mut test_bed = SimulationTestBed::new(|context| {
+            TestAircraft::new(context, Duration::from_millis(10), aileron_assembly(true))
         });
 
         test_bed.command(|a| a.command_unlock());
@@ -2516,8 +3112,8 @@ mod tests {
 
     #[test]
     fn aileron_initialized_down_moves_up_when_commanded() {
-        let mut test_bed = SimulationTestBed::new(|_| {
-            TestAircraft::new(Duration::from_millis(10), aileron_assembly(true))
+        let mut test_bed = SimulationTestBed::new(|context| {
+            TestAircraft::new(context, Duration::from_millis(10), aileron_assembly(true))
         });
 
         test_bed.command(|a| a.command_unlock());
@@ -2533,8 +3129,8 @@ mod tests {
 
     #[test]
     fn aileron_drops_from_middle_pos_in_more_20s_in_closed_circuit_damping() {
-        let mut test_bed = SimulationTestBed::new(|_| {
-            TestAircraft::new(Duration::from_millis(10), aileron_assembly(false))
+        let mut test_bed = SimulationTestBed::new(|context| {
+            TestAircraft::new(context, Duration::from_millis(10), aileron_assembly(false))
         });
 
         test_bed.command(|a| a.command_unlock());
@@ -2550,8 +3146,8 @@ mod tests {
 
     #[test]
     fn aileron_drops_from_middle_pos_and_damping_is_stable() {
-        let mut test_bed = SimulationTestBed::new(|_| {
-            TestAircraft::new(Duration::from_millis(10), aileron_assembly(false))
+        let mut test_bed = SimulationTestBed::new(|context| {
+            TestAircraft::new(context, Duration::from_millis(10), aileron_assembly(false))
         });
 
         test_bed.command(|a| a.command_unlock());
@@ -2569,8 +3165,8 @@ mod tests {
 
     #[test]
     fn aileron_position_control_is_stable() {
-        let mut test_bed = SimulationTestBed::new(|_| {
-            TestAircraft::new(Duration::from_millis(10), aileron_assembly(false))
+        let mut test_bed = SimulationTestBed::new(|context| {
+            TestAircraft::new(context, Duration::from_millis(10), aileron_assembly(false))
         });
 
         test_bed.command(|a| a.command_unlock());
@@ -2604,8 +3200,8 @@ mod tests {
 
     #[test]
     fn aileron_position_control_from_down_to_up_less_0_5s() {
-        let mut test_bed = SimulationTestBed::new(|_| {
-            TestAircraft::new(Duration::from_millis(10), aileron_assembly(false))
+        let mut test_bed = SimulationTestBed::new(|context| {
+            TestAircraft::new(context, Duration::from_millis(10), aileron_assembly(false))
         });
 
         test_bed.command(|a| a.command_unlock());
@@ -2627,8 +3223,8 @@ mod tests {
 
     #[test]
     fn aileron_position_control_resists_step_change_in_aero_force() {
-        let mut test_bed = SimulationTestBed::new(|_| {
-            TestAircraft::new(Duration::from_millis(10), aileron_assembly(false))
+        let mut test_bed = SimulationTestBed::new(|context| {
+            TestAircraft::new(context, Duration::from_millis(10), aileron_assembly(false))
         });
 
         test_bed.command(|a| a.command_unlock());
@@ -2654,8 +3250,8 @@ mod tests {
 
     #[test]
     fn aileron_position_control_fails_when_aero_force_over_max_force() {
-        let mut test_bed = SimulationTestBed::new(|_| {
-            TestAircraft::new(Duration::from_millis(10), aileron_assembly(false))
+        let mut test_bed = SimulationTestBed::new(|context| {
+            TestAircraft::new(context, Duration::from_millis(10), aileron_assembly(false))
         });
 
         test_bed.command(|a| a.command_unlock());
@@ -2688,8 +3284,8 @@ mod tests {
     #[test]
     fn aileron_position_control_fails_when_lower_pressure_and_back_in_position_with_pressure_back()
     {
-        let mut test_bed = SimulationTestBed::new(|_| {
-            TestAircraft::new(Duration::from_millis(10), aileron_assembly(false))
+        let mut test_bed = SimulationTestBed::new(|context| {
+            TestAircraft::new(context, Duration::from_millis(10), aileron_assembly(false))
         });
 
         test_bed.command(|a| a.command_unlock());
@@ -2732,8 +3328,8 @@ mod tests {
 
     #[test]
     fn aileron_position_control_from_down_to_up_less_0_5s_with_limited_pressure() {
-        let mut test_bed = SimulationTestBed::new(|_| {
-            TestAircraft::new(Duration::from_millis(10), aileron_assembly(false))
+        let mut test_bed = SimulationTestBed::new(|context| {
+            TestAircraft::new(context, Duration::from_millis(10), aileron_assembly(false))
         });
 
         test_bed.command(|a| a.command_unlock());
@@ -2755,8 +3351,8 @@ mod tests {
 
     #[test]
     fn elevator_position_control_is_stable_with_all_actuators_in_control() {
-        let mut test_bed = SimulationTestBed::new(|_| {
-            TestAircraft::new(Duration::from_millis(10), elevator_assembly())
+        let mut test_bed = SimulationTestBed::new(|context| {
+            TestAircraft::new(context, Duration::from_millis(10), elevator_assembly())
         });
 
         test_bed.command(|a| a.command_unlock());
@@ -2792,8 +3388,8 @@ mod tests {
 
     #[test]
     fn elevator_droop_control_is_stable_engaged_at_full_speed() {
-        let mut test_bed = SimulationTestBed::new(|_| {
-            TestAircraft::new(Duration::from_millis(10), elevator_assembly())
+        let mut test_bed = SimulationTestBed::new(|context| {
+            TestAircraft::new(context, Duration::from_millis(10), elevator_assembly())
         });
 
         test_bed.command(|a| a.command_unlock());
@@ -2832,8 +3428,8 @@ mod tests {
 
     #[test]
     fn spoiler_position_control_from_down_to_up_less_0_8s() {
-        let mut test_bed = SimulationTestBed::new(|_| {
-            TestAircraft::new(Duration::from_millis(10), spoiler_assembly())
+        let mut test_bed = SimulationTestBed::new(|context| {
+            TestAircraft::new(context, Duration::from_millis(10), spoiler_assembly(false))
         });
 
         test_bed.command(|a| a.command_unlock());
@@ -2849,8 +3445,8 @@ mod tests {
 
     #[test]
     fn spoiler_position_can_go_down_but_not_up_when_soft_locked_up() {
-        let mut test_bed = SimulationTestBed::new(|_| {
-            TestAircraft::new(Duration::from_millis(10), spoiler_assembly())
+        let mut test_bed = SimulationTestBed::new(|context| {
+            TestAircraft::new(context, Duration::from_millis(10), spoiler_assembly(false))
         });
 
         test_bed.command(|a| a.command_unlock());
@@ -2886,8 +3482,8 @@ mod tests {
 
     #[test]
     fn spoiler_position_cant_go_up_when_not_pressurised() {
-        let mut test_bed = SimulationTestBed::new(|_| {
-            TestAircraft::new(Duration::from_millis(10), spoiler_assembly())
+        let mut test_bed = SimulationTestBed::new(|context| {
+            TestAircraft::new(context, Duration::from_millis(10), spoiler_assembly(false))
         });
 
         test_bed.command(|a| a.command_unlock());
@@ -2898,6 +3494,272 @@ mod tests {
         test_bed.run_with_delta(Duration::from_secs_f64(2.));
 
         assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.2));
+    }
+
+    #[test]
+    fn elevator_electro_hydrostatic_cannot_move_with_elec_and_no_pressure_but_backup_not_active() {
+        let mut test_bed = SimulationTestBed::new(|context| {
+            TestAircraft::new(
+                context,
+                Duration::from_millis(10),
+                elevator_electro_hydrostatic_assembly(),
+            )
+        });
+
+        test_bed.command(|a| a.command_unlock());
+        test_bed.command(|a| a.set_pressures([Pressure::new::<psi>(0.), Pressure::new::<psi>(0.)]));
+        test_bed.command(|a| a.set_ac_1_power(true));
+
+        test_bed.command(|a| a.command_active_damping_mode(0));
+        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(0.8), 1));
+
+        test_bed.run_with_delta(Duration::from_secs_f64(1.));
+
+        assert!(
+            test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.75)
+                || test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.85)
+        );
+    }
+
+    #[test]
+    fn elevator_electro_hydrostatic_can_move_with_elec_and_no_pressure() {
+        let mut test_bed = SimulationTestBed::new(|context| {
+            TestAircraft::new(
+                context,
+                Duration::from_millis(10),
+                elevator_electro_hydrostatic_assembly(),
+            )
+        });
+
+        test_bed.command(|a| a.command_unlock());
+        test_bed.command(|a| a.set_pressures([Pressure::new::<psi>(0.), Pressure::new::<psi>(0.)]));
+
+        test_bed.command(|a| a.set_ac_1_power(true));
+
+        test_bed.command(|a| a.command_active_damping_mode(0));
+        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(0.8), 1));
+        test_bed.command(|a| a.command_electro_backup(true, 1));
+
+        test_bed.run_with_delta(Duration::from_secs_f64(1.));
+
+        assert!(
+            test_bed.query(|a| a.body_position()) >= Ratio::new::<ratio>(0.75)
+                && test_bed.query(|a| a.body_position()) <= Ratio::new::<ratio>(0.85)
+        );
+    }
+
+    #[test]
+    fn elevator_electro_hydrostatic_losing_elec_cannot_move_anymore() {
+        let mut test_bed = SimulationTestBed::new(|context| {
+            TestAircraft::new(
+                context,
+                Duration::from_millis(10),
+                elevator_electro_hydrostatic_assembly(),
+            )
+        });
+
+        test_bed.command(|a| a.command_unlock());
+        test_bed.command(|a| a.set_pressures([Pressure::new::<psi>(0.), Pressure::new::<psi>(0.)]));
+
+        test_bed.command(|a| a.set_ac_1_power(true));
+
+        test_bed.command(|a| a.command_active_damping_mode(0));
+        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(0.8), 1));
+        test_bed.command(|a| a.command_electro_backup(true, 1));
+
+        test_bed.run_with_delta(Duration::from_secs_f64(1.));
+
+        assert!(
+            test_bed.query(|a| a.body_position()) >= Ratio::new::<ratio>(0.75)
+                && test_bed.query(|a| a.body_position()) <= Ratio::new::<ratio>(0.85)
+        );
+
+        test_bed.command(|a| a.set_ac_1_power(false));
+
+        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(0.2), 1));
+
+        test_bed.run_with_delta(Duration::from_secs_f64(5.));
+
+        assert!(test_bed.query(|a| a.body_position()) >= Ratio::new::<ratio>(0.4));
+    }
+
+    #[test]
+    fn spoiler_electro_hydrostatic_can_move_with_pressure() {
+        let mut test_bed = SimulationTestBed::new(|context| {
+            TestAircraft::new(context, Duration::from_millis(10), spoiler_assembly(true))
+        });
+
+        test_bed.command(|a| a.command_unlock());
+        test_bed.command(|a| a.set_pressures([Pressure::new::<psi>(3000.)]));
+
+        assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.01));
+
+        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(1.), 0));
+        test_bed.run_with_delta(Duration::from_secs_f64(0.8));
+
+        assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.95));
+    }
+
+    #[test]
+    fn spoiler_electro_hydrostatic_cannot_move_without_pressure_without_backup_active() {
+        let mut test_bed = SimulationTestBed::new(|context| {
+            TestAircraft::new(context, Duration::from_millis(10), spoiler_assembly(true))
+        });
+
+        test_bed.command(|a| a.command_unlock());
+        test_bed.command(|a| a.set_pressures([Pressure::new::<psi>(0.)]));
+
+        assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.01));
+
+        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(1.), 0));
+        test_bed.run_with_delta(Duration::from_secs_f64(0.8));
+
+        assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.01));
+    }
+
+    #[test]
+    fn spoiler_electro_hydrostatic_cannot_move_without_pressure_without_elec_with_backup_active() {
+        let mut test_bed = SimulationTestBed::new(|context| {
+            TestAircraft::new(context, Duration::from_millis(10), spoiler_assembly(true))
+        });
+
+        test_bed.command(|a| a.command_unlock());
+        test_bed.command(|a| a.set_pressures([Pressure::new::<psi>(0.)]));
+
+        assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.01));
+
+        test_bed.command(|a| a.command_electro_backup(true, 0));
+        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(1.), 0));
+        test_bed.run_with_delta(Duration::from_secs_f64(0.8));
+
+        assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.01));
+    }
+
+    #[test]
+    fn spoiler_electro_hydrostatic_can_move_without_pressure_with_elec_with_backup_active() {
+        let mut test_bed = SimulationTestBed::new(|context| {
+            TestAircraft::new(context, Duration::from_millis(10), spoiler_assembly(true))
+        });
+
+        test_bed.command(|a| a.command_unlock());
+        test_bed.command(|a| a.set_pressures([Pressure::new::<psi>(0.)]));
+
+        assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.01));
+
+        test_bed.command(|a| a.set_ac_1_power(true));
+        test_bed.command(|a| a.command_electro_backup(true, 0));
+        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(1.), 0));
+        test_bed.run_with_delta(Duration::from_secs_f64(0.8));
+
+        assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.8));
+    }
+
+    #[test]
+    fn electro_hydrostatic_actuator_consumes_power_when_moving() {
+        let mut test_bed = SimulationTestBed::new(|context| {
+            TestAircraft::new(context, Duration::from_millis(10), spoiler_assembly(true))
+        });
+
+        test_bed.command(|a| a.command_unlock());
+        test_bed.command(|a| a.set_pressures([Pressure::new::<psi>(0.)]));
+
+        assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.01));
+
+        test_bed.command(|a| a.set_ac_1_power(true));
+        test_bed.command(|a| a.command_electro_backup(true, 0));
+        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(1.), 0));
+        test_bed.run_with_delta(Duration::from_secs_f64(0.2));
+
+        assert!(
+            test_bed
+                .query(|a| a.current_power_consumption())
+                .get::<watt>()
+                > 150.
+        );
+    }
+
+    #[test]
+    fn electro_hydrostatic_actuator_do_not_consume_power_when_inactive() {
+        let mut test_bed = SimulationTestBed::new(|context| {
+            TestAircraft::new(context, Duration::from_millis(10), spoiler_assembly(true))
+        });
+
+        test_bed.command(|a| a.command_unlock());
+        test_bed.command(|a| a.set_pressures([Pressure::new::<psi>(0.)]));
+
+        assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.01));
+
+        test_bed.command(|a| a.set_ac_1_power(true));
+        test_bed.command(|a| a.command_electro_backup(false, 0));
+        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(1.), 0));
+        test_bed.run_with_delta(Duration::from_secs_f64(0.2));
+
+        assert!(
+            test_bed
+                .query(|a| a.current_power_consumption())
+                .get::<watt>()
+                < 100.
+        );
+    }
+
+    #[test]
+    fn spoiler_electro_hydrostatic_cannot_move_once_accumulator_empty() {
+        let mut test_bed = SimulationTestBed::new(|context| {
+            TestAircraft::new(context, Duration::from_millis(10), spoiler_assembly(true))
+        });
+
+        test_bed.command(|a| a.command_unlock());
+        test_bed.command(|a| a.set_pressures([Pressure::new::<psi>(0.)]));
+
+        assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.01));
+
+        test_bed.command(|a| a.set_ac_1_power(true));
+        test_bed.command(|a| a.command_electro_backup(true, 0));
+        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(1.), 0));
+        test_bed.run_with_delta(Duration::from_secs_f64(0.8));
+
+        assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.8));
+
+        test_bed.command(|a| a.command_empty_eha_accumulator(0));
+        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(0.3), 0));
+        test_bed.run_with_delta(Duration::from_secs_f64(0.8));
+
+        assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.8));
+    }
+
+    #[test]
+    fn electro_hydrostatic_accumulator_pressure_increase_when_refilled() {
+        let mut test_bed = SimulationTestBed::new(|context| {
+            TestAircraft::new(context, Duration::from_millis(10), spoiler_assembly(true))
+        });
+
+        let accumulator_press_init = test_bed.query(|a| a.accumulator_pressure(0));
+
+        test_bed.command(|a| a.command_unlock());
+        test_bed.command(|a| a.set_pressures([Pressure::new::<psi>(3000.)]));
+        test_bed.command(|a| a.command_electro_backup_refill(true, 0));
+        test_bed.run_with_delta(Duration::from_secs_f64(1.));
+
+        assert!(test_bed.query(|a| a.accumulator_pressure(0)) > accumulator_press_init);
+        assert!(test_bed.query(|a| a.actuator_used_volume(0).get::<gallon>()) >= 0.01);
+    }
+
+    #[test]
+    fn electro_hydrostatic_accumulator_pressure_wont_increase_when_refilled_if_low_pressure_input()
+    {
+        let mut test_bed = SimulationTestBed::new(|context| {
+            TestAircraft::new(context, Duration::from_millis(10), spoiler_assembly(true))
+        });
+
+        let accumulator_press_init = test_bed.query(|a| a.accumulator_pressure(0));
+
+        test_bed.command(|a| a.command_unlock());
+        test_bed.command(|a| a.set_pressures([Pressure::new::<psi>(15.)]));
+        test_bed.command(|a| a.command_electro_backup_refill(true, 0));
+        test_bed.run_with_delta(Duration::from_secs_f64(1.));
+
+        assert!(test_bed.query(|a| a.accumulator_pressure(0)) == accumulator_press_init);
+        assert!(test_bed.query(|a| a.actuator_used_volume(0).get::<gallon>()) <= 0.0001);
     }
 
     fn cargo_door_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
@@ -2924,6 +3786,7 @@ mod tests {
             DEFAULT_FORCE_GAIN,
             false,
             false,
+            None,
             None,
         )
     }
@@ -3004,6 +3867,7 @@ mod tests {
             true,
             false,
             None,
+            None,
         )
     }
 
@@ -3027,6 +3891,7 @@ mod tests {
             0.,
             false,
             false,
+            None,
             None,
         )
     }
@@ -3116,6 +3981,7 @@ mod tests {
             true,
             false,
             None,
+            None,
         )
     }
 
@@ -3197,6 +4063,7 @@ mod tests {
             true,
             false,
             None,
+            None,
         )
     }
 
@@ -3254,6 +4121,7 @@ mod tests {
             DEFAULT_FORCE_GAIN,
             true,
             false,
+            None,
             None,
         )
     }
@@ -3313,6 +4181,7 @@ mod tests {
             false,
             false,
             None,
+            None,
         )
     }
 
@@ -3348,12 +4217,15 @@ mod tests {
 
     fn elevator_assembly() -> HydraulicLinearActuatorAssembly<2> {
         let rigid_body = elevator_body();
-        let actuator = elevator_actuator(&rigid_body);
+        let actuator = elevator_actuator(&rigid_body, false);
 
         HydraulicLinearActuatorAssembly::new([actuator, actuator], rigid_body)
     }
 
-    fn elevator_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
+    fn elevator_actuator(
+        bounded_linear_length: &impl BoundedLinearLength,
+        has_electro_backup: bool,
+    ) -> LinearActuator {
         const DEFAULT_I_GAIN: f64 = 5.;
         const DEFAULT_P_GAIN: f64 = 1.;
         const DEFAULT_FORCE_GAIN: f64 = 450000.;
@@ -3378,6 +4250,14 @@ mod tests {
             false,
             false,
             None,
+            if has_electro_backup {
+                Some(ElectroHydrostaticBackup::new(
+                    ElectricalBusType::AlternatingCurrent(1),
+                    ElectroHydrostaticActuatorType::ElectroHydrostaticActuator,
+                ))
+            } else {
+                None
+            },
         )
     }
 
@@ -3405,14 +4285,17 @@ mod tests {
         )
     }
 
-    fn spoiler_assembly() -> HydraulicLinearActuatorAssembly<1> {
+    fn spoiler_assembly(has_eletro_backup: bool) -> HydraulicLinearActuatorAssembly<1> {
         let rigid_body = spoiler_body();
-        let actuator = spoiler_actuator(&rigid_body);
+        let actuator = spoiler_actuator(&rigid_body, has_eletro_backup);
 
         HydraulicLinearActuatorAssembly::new([actuator], rigid_body)
     }
 
-    fn spoiler_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
+    fn spoiler_actuator(
+        bounded_linear_length: &impl BoundedLinearLength,
+        has_electro_backup: bool,
+    ) -> LinearActuator {
         const DEFAULT_I_GAIN: f64 = 1.;
         const DEFAULT_P_GAIN: f64 = 0.15;
         const DEFAULT_FORCE_GAIN: f64 = 450000.;
@@ -3440,6 +4323,14 @@ mod tests {
                 AngularVelocity::new::<radian_per_second>(-10000.),
                 AngularVelocity::new::<radian_per_second>(0.),
             )),
+            if has_electro_backup {
+                Some(ElectroHydrostaticBackup::new(
+                    ElectricalBusType::AlternatingCurrent(1),
+                    ElectroHydrostaticActuatorType::ElectricalBackupHydraulicActuator,
+                ))
+            } else {
+                None
+            },
         )
     }
 
@@ -3465,5 +4356,13 @@ mod tests {
             false,
             Vector3::new(1., 0., 0.),
         )
+    }
+
+    fn elevator_electro_hydrostatic_assembly() -> HydraulicLinearActuatorAssembly<2> {
+        let rigid_body = elevator_body();
+        let standard_actuator = elevator_actuator(&rigid_body, false);
+        let eha_actuator = elevator_actuator(&rigid_body, true);
+
+        HydraulicLinearActuatorAssembly::new([standard_actuator, eha_actuator], rigid_body)
     }
 }
