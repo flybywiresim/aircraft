@@ -11,15 +11,18 @@ use uom::si::{
     volume::cubic_inch,
 };
 
-use crate::failures::{Failure, FailureType};
 use crate::hydraulic::{HeatingElement, HeatingProperties, SectionPressure};
 use crate::shared::{
     low_pass_filter::LowPassFilter, pid::PidController, random_from_normal_distribution,
-    ConsumePower, ElectricalBusType, ElectricalBuses, HydraulicColor,
+    ConsumePower, ElectricalBusType, ElectricalBuses,
 };
 use crate::simulation::{
     InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
     VariableIdentifier, Write,
+};
+use crate::{
+    failures::{Failure, FailureType},
+    shared::AirbusElectricPumpId,
 };
 
 use std::time::Duration;
@@ -76,7 +79,7 @@ impl ElectricalPumpPhysics {
 
     pub fn new(
         context: &mut InitContext,
-        id: HydraulicColor,
+        id: AirbusElectricPumpId,
         bus_type: ElectricalBusType,
         max_current: ElectricCurrent,
         regulated_speed: AngularVelocity,

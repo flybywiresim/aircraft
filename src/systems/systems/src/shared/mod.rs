@@ -236,6 +236,80 @@ impl Display for HydraulicColor {
     }
 }
 
+#[derive(Clone, Copy, PartialEq)]
+pub enum AirbusEngineDrivenPumpId {
+    Edp1a,
+    Edp1b,
+    Edp2a,
+    Edp2b,
+    Edp3a,
+    Edp3b,
+    Edp4a,
+    Edp4b,
+    Green,
+    Yellow,
+}
+impl AirbusEngineDrivenPumpId {
+    fn into_engine_num(self) -> usize {
+        match self {
+            AirbusEngineDrivenPumpId::Edp1a => 1,
+            AirbusEngineDrivenPumpId::Edp1b => 1,
+            AirbusEngineDrivenPumpId::Edp2a => 2,
+            AirbusEngineDrivenPumpId::Edp2b => 2,
+            AirbusEngineDrivenPumpId::Edp3a => 3,
+            AirbusEngineDrivenPumpId::Edp3b => 3,
+            AirbusEngineDrivenPumpId::Edp4a => 4,
+            AirbusEngineDrivenPumpId::Edp4b => 4,
+            AirbusEngineDrivenPumpId::Green => 1,
+            AirbusEngineDrivenPumpId::Yellow => 2,
+        }
+    }
+
+    fn into_engine_index(self) -> usize {
+        self.into_engine_num() - 1
+    }
+}
+impl Display for AirbusEngineDrivenPumpId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            AirbusEngineDrivenPumpId::Edp1a => write!(f, "GREEN_1A"),
+            AirbusEngineDrivenPumpId::Edp1b => write!(f, "GREEN_1B"),
+            AirbusEngineDrivenPumpId::Edp2a => write!(f, "GREEN_2A"),
+            AirbusEngineDrivenPumpId::Edp2b => write!(f, "GREEN_2B"),
+            AirbusEngineDrivenPumpId::Edp3a => write!(f, "YELLOW_3A"),
+            AirbusEngineDrivenPumpId::Edp3b => write!(f, "YELLOW_3B"),
+            AirbusEngineDrivenPumpId::Edp4a => write!(f, "YELLOW_4A"),
+            AirbusEngineDrivenPumpId::Edp4b => write!(f, "YELLOW_4B"),
+            AirbusEngineDrivenPumpId::Green => write!(f, "GREEN"),
+            AirbusEngineDrivenPumpId::Yellow => write!(f, "YELLOW"),
+        }
+    }
+}
+
+#[derive(Clone, Copy, PartialEq)]
+pub enum AirbusElectricPumpId {
+    GreenA,
+    GreenB,
+    YellowA,
+    YellowB,
+    Green,
+    Blue,
+    Yellow,
+}
+impl Display for AirbusElectricPumpId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            AirbusElectricPumpId::GreenA => write!(f, "GA"),
+            AirbusElectricPumpId::YellowA => write!(f, "YA"),
+            AirbusElectricPumpId::GreenB => write!(f, "GB"),
+            AirbusElectricPumpId::YellowB => write!(f, "YB"),
+            AirbusElectricPumpId::Green => write!(f, "GREEN"),
+            AirbusElectricPumpId::Blue => write!(f, "BLUE"),
+            AirbusElectricPumpId::Yellow => write!(f, "YELLOW"),
+        }
+    }
+}
+
 /// The common types of electrical buses within Airbus aircraft.
 /// These include types such as AC, DC, AC ESS, etc.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]

@@ -4,10 +4,11 @@ use crate::hydraulic::{
     electrical_pump_physics::ElectricalPumpPhysics, pumps::PumpCharacteristics,
 };
 use crate::pneumatic::PressurizeableReservoir;
+
 use crate::shared::{
     interpolation, low_pass_filter::LowPassFilter, random_from_normal_distribution,
-    random_from_range, DelayedTrueLogicGate, ElectricalBusType, ElectricalBuses, HydraulicColor,
-    SectionPressure,
+    random_from_range, AirbusElectricPumpId, AirbusEngineDrivenPumpId, DelayedTrueLogicGate,
+    ElectricalBusType, ElectricalBuses, HydraulicColor, SectionPressure,
 };
 use crate::simulation::{
     InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -2512,7 +2513,7 @@ pub struct ElectricPump {
 impl ElectricPump {
     pub fn new(
         context: &mut InitContext,
-        id: HydraulicColor,
+        id: AirbusElectricPumpId,
         bus_type: ElectricalBusType,
         max_current: ElectricCurrent,
         pump_characteristics: PumpCharacteristics,
@@ -2638,7 +2639,7 @@ impl EngineDrivenPump {
 
     pub fn new(
         context: &mut InitContext,
-        id: HydraulicColor,
+        id: AirbusEngineDrivenPumpId,
         pump_characteristics: PumpCharacteristics,
     ) -> Self {
         Self {
