@@ -515,7 +515,7 @@ mod tests {
                 >= AngularVelocity::new::<revolution_per_minute>(7000.)
         );
 
-        test_bed.fail(FailureType::ElecPumpOverheat(HydraulicColor::Yellow));
+        test_bed.fail(FailureType::ElecPumpOverheat(AirbusElectricPumpId::Yellow));
 
         test_bed.run_with_delta(Duration::from_secs_f64(
             ElectricalPumpPhysics::HEATING_TIME_CONSTANT_MEAN_S
@@ -537,7 +537,7 @@ mod tests {
     fn physical_pump(context: &mut InitContext) -> ElectricalPumpPhysics {
         ElectricalPumpPhysics::new(
             context,
-            HydraulicColor::Yellow,
+            AirbusElectricPumpId::Yellow,
             ElectricalBusType::AlternatingCurrent(1),
             ElectricCurrent::new::<ampere>(45.),
             AngularVelocity::new::<revolution_per_minute>(7600.),

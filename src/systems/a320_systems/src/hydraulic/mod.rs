@@ -9029,11 +9029,6 @@ mod tests {
 
             test_bed = test_bed
                 .set_autobrake_max()
-                .run_waiting_for(Duration::from_secs(1));
-
-            assert!(test_bed.autobrake_mode() == AutobrakeMode::MAX);
-
-            test_bed = test_bed
                 .set_deploy_ground_spoilers()
                 .run_waiting_for(Duration::from_secs(6));
 
@@ -9077,11 +9072,6 @@ mod tests {
 
             test_bed = test_bed
                 .set_autobrake_med()
-                .run_waiting_for(Duration::from_secs(1));
-
-            assert!(test_bed.autobrake_mode() == AutobrakeMode::MED);
-
-            test_bed = test_bed
                 .set_deploy_ground_spoilers()
                 .run_waiting_for(Duration::from_secs(6));
 
@@ -9118,15 +9108,10 @@ mod tests {
                 .set_park_brake(false)
                 .start_eng1(Ratio::new::<percent>(100.))
                 .start_eng2(Ratio::new::<percent>(100.))
-                .run_waiting_for(Duration::from_secs(10));
+                .run_waiting_for(Duration::from_secs(5));
 
             test_bed = test_bed
                 .set_autobrake_med()
-                .run_waiting_for(Duration::from_secs(1));
-
-            assert!(test_bed.autobrake_mode() == AutobrakeMode::MED);
-
-            test_bed = test_bed
                 .set_deploy_ground_spoilers()
                 .run_waiting_for(Duration::from_secs(6));
 
@@ -9165,7 +9150,7 @@ mod tests {
                 .set_park_brake(false)
                 .start_eng1(Ratio::new::<percent>(100.))
                 .start_eng2(Ratio::new::<percent>(100.))
-                .run_waiting_for(Duration::from_secs(10));
+                .run_waiting_for(Duration::from_secs(5));
 
             test_bed = test_bed
                 .set_autobrake_max()

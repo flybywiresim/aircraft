@@ -249,26 +249,6 @@ pub enum AirbusEngineDrivenPumpId {
     Green,
     Yellow,
 }
-impl AirbusEngineDrivenPumpId {
-    fn into_engine_num(self) -> usize {
-        match self {
-            AirbusEngineDrivenPumpId::Edp1a => 1,
-            AirbusEngineDrivenPumpId::Edp1b => 1,
-            AirbusEngineDrivenPumpId::Edp2a => 2,
-            AirbusEngineDrivenPumpId::Edp2b => 2,
-            AirbusEngineDrivenPumpId::Edp3a => 3,
-            AirbusEngineDrivenPumpId::Edp3b => 3,
-            AirbusEngineDrivenPumpId::Edp4a => 4,
-            AirbusEngineDrivenPumpId::Edp4b => 4,
-            AirbusEngineDrivenPumpId::Green => 1,
-            AirbusEngineDrivenPumpId::Yellow => 2,
-        }
-    }
-
-    fn into_engine_index(self) -> usize {
-        self.into_engine_num() - 1
-    }
-}
 impl Display for AirbusEngineDrivenPumpId {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
