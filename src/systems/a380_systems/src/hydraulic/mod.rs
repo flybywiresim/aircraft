@@ -585,8 +585,15 @@ impl A380ElevatorFactory {
 
     fn new_elevator(context: &mut InitContext, id: ActuatorSide) -> ElevatorAssembly {
         let init_drooped_down = !context.is_in_flight();
-        let assembly = Self::a380_elevator_assembly(init_drooped_down);
-        ElevatorAssembly::new(context, id, assembly, Self::new_a380_elevator_aero_model())
+        let assembly_outward = Self::a380_elevator_assembly(init_drooped_down);
+        let assembly_inward = Self::a380_elevator_assembly(init_drooped_down);
+        ElevatorAssembly::new(
+            context,
+            id,
+            assembly_outward,
+            assembly_inward,
+            Self::new_a380_elevator_aero_model(),
+        )
     }
 
     fn new_a380_elevator_aero_model() -> AerodynamicModel {
@@ -1694,16 +1701,38 @@ impl A380Hydraulic {
 
         self.left_elevator.update(
             context,
-            self.elevator_system_controller.left_controllers(),
-            self.green_circuit.system_section(),
-            self.green_circuit.system_section(),
+            [
+                self.elevator_system_controller
+                    .left_controllers(ElevatorPanelPosition::Outward),
+                self.elevator_system_controller
+                    .left_controllers(ElevatorPanelPosition::Inward),
+            ],
+            [
+                self.green_circuit.system_section(),
+                self.green_circuit.system_section(),
+            ],
+            [
+                self.green_circuit.system_section(),
+                self.green_circuit.system_section(),
+            ],
         );
 
         self.right_elevator.update(
             context,
-            self.elevator_system_controller.right_controllers(),
-            self.green_circuit.system_section(),
-            self.green_circuit.system_section(),
+            [
+                self.elevator_system_controller
+                    .right_controllers(ElevatorPanelPosition::Outward),
+                self.elevator_system_controller
+                    .right_controllers(ElevatorPanelPosition::Inward),
+            ],
+            [
+                self.yellow_circuit.system_section(),
+                self.yellow_circuit.system_section(),
+            ],
+            [
+                self.yellow_circuit.system_section(),
+                self.yellow_circuit.system_section(),
+            ],
         );
 
         self.rudder.update(
@@ -1787,6 +1816,8 @@ impl A380Hydraulic {
         engine2: &impl Engine,
     ) {
         self.aileron_system_controller.update();
+
+        self.elevator_system_controller.update();
 
         self.nose_steering.update(
             context,
@@ -1915,10 +1946,31 @@ impl A380Hydraulic {
                 AileronPanelPosition::Inward,
             ));
 
-        self.green_circuit.update_system_actuator_volumes(
-            self.left_elevator
-                .actuator(LeftElevatorActuatorCircuit::Green as usize),
-        );
+        self.green_circuit
+            .update_system_actuator_volumes(self.left_elevator.actuator(
+                ElevatorActuatorPosition::Outward,
+                ElevatorPanelPosition::Outward,
+            ));
+
+        // This one is EHA, TODO check if it's connected to green or yellow for filling
+        self.green_circuit
+            .update_system_actuator_volumes(self.left_elevator.actuator(
+                ElevatorActuatorPosition::Inward,
+                ElevatorPanelPosition::Outward,
+            ));
+
+        self.green_circuit
+            .update_system_actuator_volumes(self.left_elevator.actuator(
+                ElevatorActuatorPosition::Outward,
+                ElevatorPanelPosition::Inward,
+            ));
+
+        // This one is EHA, TODO check if it's connected to green or yellow for filling
+        self.green_circuit
+            .update_system_actuator_volumes(self.left_elevator.actuator(
+                ElevatorActuatorPosition::Inward,
+                ElevatorPanelPosition::Inward,
+            ));
 
         self.green_circuit
             .update_auxiliary_actuator_volumes(self.forward_cargo_door.actuator());
@@ -2000,10 +2052,31 @@ impl A380Hydraulic {
         self.yellow_circuit
             .update_system_actuator_volumes(&mut self.nose_steering);
 
-        self.yellow_circuit.update_system_actuator_volumes(
-            self.right_elevator
-                .actuator(RightElevatorActuatorCircuit::Yellow as usize),
-        );
+        self.yellow_circuit
+            .update_system_actuator_volumes(self.right_elevator.actuator(
+                ElevatorActuatorPosition::Outward,
+                ElevatorPanelPosition::Outward,
+            ));
+
+        // This one is EHA, TODO check if it's connected to green or yellow for filling
+        self.yellow_circuit
+            .update_system_actuator_volumes(self.right_elevator.actuator(
+                ElevatorActuatorPosition::Inward,
+                ElevatorPanelPosition::Outward,
+            ));
+
+        self.yellow_circuit
+            .update_system_actuator_volumes(self.right_elevator.actuator(
+                ElevatorActuatorPosition::Outward,
+                ElevatorPanelPosition::Inward,
+            ));
+
+        // This one is EHA, TODO check if it's connected to green or yellow for filling
+        self.yellow_circuit
+            .update_system_actuator_volumes(self.right_elevator.actuator(
+                ElevatorActuatorPosition::Inward,
+                ElevatorPanelPosition::Inward,
+            ));
 
         self.yellow_circuit
             .update_system_actuator_volumes(self.rudder.actuator(RudderActuatorPosition::Yellow));
@@ -4922,118 +4995,253 @@ impl SimulationElement for AileronSystemHydraulicController {
 }
 
 struct ElevatorSystemHydraulicController {
-    left_elevator_blue_actuator_solenoid_id: VariableIdentifier,
-    right_elevator_blue_actuator_solenoid_id: VariableIdentifier,
-    left_elevator_green_actuator_solenoid_id: VariableIdentifier,
-    right_elevator_yellow_actuator_solenoid_id: VariableIdentifier,
+    left_inboard_elevator_green_actuator_solenoid_id: VariableIdentifier,
+    left_inboard_elevator_eha_actuator_solenoid_id: VariableIdentifier,
+    left_outboard_elevator_green_actuator_solenoid_id: VariableIdentifier,
+    left_outboard_elevator_eha_actuator_solenoid_id: VariableIdentifier,
+    right_inboard_elevator_yellow_actuator_solenoid_id: VariableIdentifier,
+    right_inboard_elevator_eha_actuator_solenoid_id: VariableIdentifier,
+    right_outboard_elevator_yellow_actuator_solenoid_id: VariableIdentifier,
+    right_outboard_elevator_eha_actuator_solenoid_id: VariableIdentifier,
 
-    left_elevator_blue_actuator_position_demand_id: VariableIdentifier,
-    right_elevator_blue_actuator_position_demand_id: VariableIdentifier,
-    left_elevator_green_actuator_position_demand_id: VariableIdentifier,
-    right_elevator_yellow_actuator_position_demand_id: VariableIdentifier,
+    left_inboard_elevator_green_actuator_position_demand_id: VariableIdentifier,
+    left_inboard_elevator_eha_actuator_position_demand_id: VariableIdentifier,
+    left_outboard_elevator_green_actuator_position_demand_id: VariableIdentifier,
+    left_outboard_elevator_eha_actuator_position_demand_id: VariableIdentifier,
+    right_inboard_elevator_yellow_actuator_position_demand_id: VariableIdentifier,
+    right_inboard_elevator_eha_actuator_position_demand_id: VariableIdentifier,
+    right_outboard_elevator_yellow_actuator_position_demand_id: VariableIdentifier,
+    right_outboard_elevator_eha_actuator_position_demand_id: VariableIdentifier,
 
-    left_controllers: [AileronController; 2],
-    right_controllers: [AileronController; 2],
+    left_inboard_position_requests_from_fbw: [Ratio; 2],
+    left_inboard_solenoid_energized_from_fbw: [bool; 2],
+    left_outboard_position_requests_from_fbw: [Ratio; 2],
+    left_outboard_solenoid_energized_from_fbw: [bool; 2],
+    right_inboard_position_requests_from_fbw: [Ratio; 2],
+    right_inboard_solenoid_energized_from_fbw: [bool; 2],
+    right_outboard_position_requests_from_fbw: [Ratio; 2],
+    right_outboard_solenoid_energized_from_fbw: [bool; 2],
+
+    left_controllers: [[AileronController; 2]; 2],
+    right_controllers: [[AileronController; 2]; 2],
 }
 impl ElevatorSystemHydraulicController {
     fn new(context: &mut InitContext) -> Self {
         Self {
-            left_elevator_blue_actuator_solenoid_id: context
-                .get_identifier("LEFT_ELEV_BLUE_SERVO_SOLENOID_ENERGIZED".to_owned()),
-            right_elevator_blue_actuator_solenoid_id: context
-                .get_identifier("RIGHT_ELEV_BLUE_SERVO_SOLENOID_ENERGIZED".to_owned()),
-            left_elevator_green_actuator_solenoid_id: context
-                .get_identifier("LEFT_ELEV_GREEN_SERVO_SOLENOID_ENERGIZED".to_owned()),
-            right_elevator_yellow_actuator_solenoid_id: context
-                .get_identifier("RIGHT_ELEV_YELLOW_SERVO_SOLENOID_ENERGIZED".to_owned()),
+            left_inboard_elevator_green_actuator_solenoid_id: context
+                .get_identifier("LEFT_INBOARD_ELEV_GREEN_SERVO_SOLENOID_ENERGIZED".to_owned()),
+            left_inboard_elevator_eha_actuator_solenoid_id: context
+                .get_identifier("LEFT_INBOARD_ELEV_EHA_SERVO_SOLENOID_ENERGIZED".to_owned()),
+            left_outboard_elevator_green_actuator_solenoid_id: context
+                .get_identifier("LEFT_OUTBOARD_ELEV_GREEN_SERVO_SOLENOID_ENERGIZED".to_owned()),
+            left_outboard_elevator_eha_actuator_solenoid_id: context
+                .get_identifier("LEFT_OUTBOARD_ELEV_EHA_SERVO_SOLENOID_ENERGIZED".to_owned()),
+            right_inboard_elevator_yellow_actuator_solenoid_id: context
+                .get_identifier("RIGHT_INBOARD_ELEV_YELLOW_SERVO_SOLENOID_ENERGIZED".to_owned()),
+            right_inboard_elevator_eha_actuator_solenoid_id: context
+                .get_identifier("RIGHT_INBOARD_ELEV_EHA_SERVO_SOLENOID_ENERGIZED".to_owned()),
+            right_outboard_elevator_yellow_actuator_solenoid_id: context
+                .get_identifier("RIGHT_OUTBOARD_ELEV_YELLOW_SERVO_SOLENOID_ENERGIZED".to_owned()),
+            right_outboard_elevator_eha_actuator_solenoid_id: context
+                .get_identifier("RIGHT_OUTBOARD_ELEV_EHA_SERVO_SOLENOID_ENERGIZED".to_owned()),
 
-            left_elevator_blue_actuator_position_demand_id: context
-                .get_identifier("LEFT_ELEV_BLUE_COMMANDED_POSITION".to_owned()),
-            right_elevator_blue_actuator_position_demand_id: context
-                .get_identifier("RIGHT_ELEV_BLUE_COMMANDED_POSITION".to_owned()),
-            left_elevator_green_actuator_position_demand_id: context
-                .get_identifier("LEFT_ELEV_GREEN_COMMANDED_POSITION".to_owned()),
-            right_elevator_yellow_actuator_position_demand_id: context
-                .get_identifier("RIGHT_ELEV_YELLOW_COMMANDED_POSITION".to_owned()),
+            left_inboard_elevator_green_actuator_position_demand_id: context
+                .get_identifier("LEFT_INBOARD_ELEV_GREEN_COMMANDED_POSITION".to_owned()),
+            left_inboard_elevator_eha_actuator_position_demand_id: context
+                .get_identifier("LEFT_INBOARD_ELEV_EHA_COMMANDED_POSITION".to_owned()),
+            left_outboard_elevator_green_actuator_position_demand_id: context
+                .get_identifier("LEFT_OUTBOARD_ELEV_GREEN_COMMANDED_POSITION".to_owned()),
+            left_outboard_elevator_eha_actuator_position_demand_id: context
+                .get_identifier("LEFT_OUTBOARD_ELEV_EHA_COMMANDED_POSITION".to_owned()),
+            right_inboard_elevator_yellow_actuator_position_demand_id: context
+                .get_identifier("RIGHT_INBOARD_ELEV_YELLOW_COMMANDED_POSITION".to_owned()),
+            right_inboard_elevator_eha_actuator_position_demand_id: context
+                .get_identifier("RIGHT_INBOARD_ELEV_EHA_COMMANDED_POSITION".to_owned()),
+            right_outboard_elevator_yellow_actuator_position_demand_id: context
+                .get_identifier("RIGHT_OUTBOARD_ELEV_YELLOW_COMMANDED_POSITION".to_owned()),
+            right_outboard_elevator_eha_actuator_position_demand_id: context
+                .get_identifier("RIGHT_OUTBOARD_ELEV_EHA_COMMANDED_POSITION".to_owned()),
+
+            left_inboard_position_requests_from_fbw: [Ratio::default(); 2],
+            left_inboard_solenoid_energized_from_fbw: [false; 2],
+            left_outboard_position_requests_from_fbw: [Ratio::default(); 2],
+            left_outboard_solenoid_energized_from_fbw: [false; 2],
+            right_inboard_position_requests_from_fbw: [Ratio::default(); 2],
+            right_inboard_solenoid_energized_from_fbw: [false; 2],
+            right_outboard_position_requests_from_fbw: [Ratio::default(); 2],
+            right_outboard_solenoid_energized_from_fbw: [false; 2],
 
             // Controllers are in outboard->inboard order
-            left_controllers: [AileronController::new(), AileronController::new()],
-            right_controllers: [AileronController::new(), AileronController::new()],
+            left_controllers: [[AileronController::new(), AileronController::new()]; 2],
+            right_controllers: [[AileronController::new(), AileronController::new()]; 2],
         }
     }
 
-    fn left_controllers(&self) -> &[impl HydraulicAssemblyController + HydraulicLocking] {
-        &self.left_controllers[..]
+    fn left_controllers(
+        &self,
+        panel: ElevatorPanelPosition,
+    ) -> &[impl HydraulicAssemblyController + HydraulicLocking] {
+        &self.left_controllers[panel as usize][..]
     }
 
-    fn right_controllers(&self) -> &[impl HydraulicAssemblyController + HydraulicLocking] {
-        &self.right_controllers[..]
+    fn right_controllers(
+        &self,
+        panel: ElevatorPanelPosition,
+    ) -> &[impl HydraulicAssemblyController + HydraulicLocking] {
+        &self.right_controllers[panel as usize][..]
     }
 
-    fn update_elevator_controllers_positions(
-        &mut self,
-        left_position_requests: [Ratio; 2],
-        right_position_requests: [Ratio; 2],
-    ) {
-        self.left_controllers[LeftElevatorActuatorCircuit::Blue as usize].set_requested_position(
-            left_position_requests[LeftElevatorActuatorCircuit::Blue as usize],
-        );
-        self.left_controllers[LeftElevatorActuatorCircuit::Green as usize].set_requested_position(
-            left_position_requests[LeftElevatorActuatorCircuit::Green as usize],
-        );
+    fn update(&mut self) {
+        self.update_elevator_controllers_positions();
+        self.update_elevator_controllers_solenoids();
+    }
 
-        self.right_controllers[RightElevatorActuatorCircuit::Blue as usize].set_requested_position(
-            right_position_requests[RightElevatorActuatorCircuit::Blue as usize],
-        );
-        self.right_controllers[RightElevatorActuatorCircuit::Yellow as usize]
+    fn update_elevator_controllers_positions(&mut self) {
+        self.left_controllers[ElevatorPanelPosition::Outward as usize]
+            [ElevatorActuatorPosition::Outward as usize]
             .set_requested_position(
-                right_position_requests[RightElevatorActuatorCircuit::Yellow as usize],
+                self.left_outboard_position_requests_from_fbw
+                    [ElevatorActuatorPosition::Outward as usize],
+            );
+        self.left_controllers[ElevatorPanelPosition::Outward as usize]
+            [ElevatorActuatorPosition::Inward as usize]
+            .set_requested_position(
+                self.left_outboard_position_requests_from_fbw
+                    [ElevatorActuatorPosition::Inward as usize],
+            );
+        self.left_controllers[ElevatorPanelPosition::Inward as usize]
+            [ElevatorActuatorPosition::Outward as usize]
+            .set_requested_position(
+                self.left_inboard_position_requests_from_fbw
+                    [ElevatorActuatorPosition::Outward as usize],
+            );
+        self.left_controllers[ElevatorPanelPosition::Inward as usize]
+            [ElevatorActuatorPosition::Inward as usize]
+            .set_requested_position(
+                self.left_inboard_position_requests_from_fbw
+                    [ElevatorActuatorPosition::Inward as usize],
+            );
+
+        self.right_controllers[ElevatorPanelPosition::Outward as usize]
+            [ElevatorActuatorPosition::Outward as usize]
+            .set_requested_position(
+                self.right_outboard_position_requests_from_fbw
+                    [ElevatorActuatorPosition::Outward as usize],
+            );
+        self.right_controllers[ElevatorPanelPosition::Outward as usize]
+            [ElevatorActuatorPosition::Inward as usize]
+            .set_requested_position(
+                self.right_outboard_position_requests_from_fbw
+                    [ElevatorActuatorPosition::Inward as usize],
+            );
+        self.right_controllers[ElevatorPanelPosition::Inward as usize]
+            [ElevatorActuatorPosition::Outward as usize]
+            .set_requested_position(
+                self.right_inboard_position_requests_from_fbw
+                    [ElevatorActuatorPosition::Outward as usize],
+            );
+        self.right_controllers[ElevatorPanelPosition::Inward as usize]
+            [ElevatorActuatorPosition::Inward as usize]
+            .set_requested_position(
+                self.right_inboard_position_requests_from_fbw
+                    [ElevatorActuatorPosition::Inward as usize],
             );
     }
 
-    fn update_elevator_controllers_solenoids(
-        &mut self,
-        left_solenoids_energized: [bool; 2],
-        right_solenoids_energized: [bool; 2],
-    ) {
-        if left_solenoids_energized.iter().all(|x| *x) {
-            for controller in &mut self.left_controllers {
+    fn update_elevator_controllers_solenoids(&mut self) {
+        if self
+            .left_outboard_solenoid_energized_from_fbw
+            .iter()
+            .any(|x| *x)
+        {
+            self.left_controllers[ElevatorPanelPosition::Outward as usize]
+                [ElevatorActuatorPosition::Outward as usize]
+                .set_mode(Self::elevator_actuator_mode_from_solenoid(
+                    self.left_outboard_solenoid_energized_from_fbw
+                        [ElevatorActuatorPosition::Outward as usize],
+                ));
+            self.left_controllers[ElevatorPanelPosition::Outward as usize]
+                [ElevatorActuatorPosition::Inward as usize]
+                .set_mode(Self::elevator_actuator_mode_from_solenoid(
+                    self.left_outboard_solenoid_energized_from_fbw
+                        [AileronActuatorPosition::Inward as usize],
+                ));
+        } else {
+            for controller in &mut self.left_controllers[ElevatorPanelPosition::Outward as usize] {
                 controller.set_mode(LinearActuatorMode::ClosedCircuitDamping);
             }
+        }
+        if self
+            .left_inboard_solenoid_energized_from_fbw
+            .iter()
+            .any(|x| *x)
+        {
+            self.left_controllers[ElevatorPanelPosition::Inward as usize]
+                [ElevatorActuatorPosition::Outward as usize]
+                .set_mode(Self::elevator_actuator_mode_from_solenoid(
+                    self.left_inboard_solenoid_energized_from_fbw
+                        [ElevatorActuatorPosition::Outward as usize],
+                ));
+            self.left_controllers[ElevatorPanelPosition::Inward as usize]
+                [ElevatorActuatorPosition::Inward as usize]
+                .set_mode(Self::elevator_actuator_mode_from_solenoid(
+                    self.left_inboard_solenoid_energized_from_fbw
+                        [AileronActuatorPosition::Inward as usize],
+                ));
         } else {
-            self.left_controllers[LeftElevatorActuatorCircuit::Blue as usize].set_mode(
-                Self::elevator_actuator_mode_from_solenoid(
-                    left_solenoids_energized[LeftElevatorActuatorCircuit::Blue as usize],
-                ),
-            );
-            self.left_controllers[LeftElevatorActuatorCircuit::Green as usize].set_mode(
-                Self::elevator_actuator_mode_from_solenoid(
-                    left_solenoids_energized[LeftElevatorActuatorCircuit::Green as usize],
-                ),
-            );
+            for controller in &mut self.left_controllers[ElevatorPanelPosition::Inward as usize] {
+                controller.set_mode(LinearActuatorMode::ClosedCircuitDamping);
+            }
         }
 
-        if right_solenoids_energized.iter().all(|x| *x) {
-            for controller in &mut self.right_controllers {
+        if self
+            .right_outboard_solenoid_energized_from_fbw
+            .iter()
+            .any(|x| *x)
+        {
+            self.right_controllers[ElevatorPanelPosition::Outward as usize]
+                [ElevatorActuatorPosition::Outward as usize]
+                .set_mode(Self::elevator_actuator_mode_from_solenoid(
+                    self.right_outboard_solenoid_energized_from_fbw
+                        [ElevatorActuatorPosition::Outward as usize],
+                ));
+            self.right_controllers[ElevatorPanelPosition::Outward as usize]
+                [ElevatorActuatorPosition::Inward as usize]
+                .set_mode(Self::elevator_actuator_mode_from_solenoid(
+                    self.right_outboard_solenoid_energized_from_fbw
+                        [AileronActuatorPosition::Inward as usize],
+                ));
+        } else {
+            for controller in &mut self.right_controllers[ElevatorPanelPosition::Outward as usize] {
                 controller.set_mode(LinearActuatorMode::ClosedCircuitDamping);
             }
+        }
+        if self
+            .right_inboard_solenoid_energized_from_fbw
+            .iter()
+            .any(|x| *x)
+        {
+            self.right_controllers[ElevatorPanelPosition::Inward as usize]
+                [ElevatorActuatorPosition::Outward as usize]
+                .set_mode(Self::elevator_actuator_mode_from_solenoid(
+                    self.right_inboard_solenoid_energized_from_fbw
+                        [ElevatorActuatorPosition::Outward as usize],
+                ));
+            self.right_controllers[ElevatorPanelPosition::Inward as usize]
+                [ElevatorActuatorPosition::Inward as usize]
+                .set_mode(Self::elevator_actuator_mode_from_solenoid(
+                    self.right_inboard_solenoid_energized_from_fbw
+                        [AileronActuatorPosition::Inward as usize],
+                ));
         } else {
-            self.right_controllers[RightElevatorActuatorCircuit::Blue as usize].set_mode(
-                Self::elevator_actuator_mode_from_solenoid(
-                    right_solenoids_energized[RightElevatorActuatorCircuit::Blue as usize],
-                ),
-            );
-            self.right_controllers[RightElevatorActuatorCircuit::Yellow as usize].set_mode(
-                Self::elevator_actuator_mode_from_solenoid(
-                    right_solenoids_energized[RightElevatorActuatorCircuit::Yellow as usize],
-                ),
-            );
+            for controller in &mut self.right_controllers[ElevatorPanelPosition::Inward as usize] {
+                controller.set_mode(LinearActuatorMode::ClosedCircuitDamping);
+            }
         }
     }
 
     fn elevator_actuator_mode_from_solenoid(solenoid_energized: bool) -> LinearActuatorMode {
-        // Elevator has reverted logic
-        if !solenoid_energized {
+        if solenoid_energized {
             LinearActuatorMode::PositionControl
         } else {
             LinearActuatorMode::ActiveDamping
@@ -5050,35 +5258,57 @@ impl ElevatorSystemHydraulicController {
 }
 impl SimulationElement for ElevatorSystemHydraulicController {
     fn read(&mut self, reader: &mut SimulatorReader) {
-        self.update_elevator_controllers_positions(
-            [
-                Self::elevator_actuator_position_from_surface_angle(Angle::new::<degree>(
-                    reader.read(&self.left_elevator_blue_actuator_position_demand_id),
-                )),
-                Self::elevator_actuator_position_from_surface_angle(Angle::new::<degree>(
-                    reader.read(&self.left_elevator_green_actuator_position_demand_id),
-                )),
-            ],
-            [
-                Self::elevator_actuator_position_from_surface_angle(Angle::new::<degree>(
-                    reader.read(&self.right_elevator_blue_actuator_position_demand_id),
-                )),
-                Self::elevator_actuator_position_from_surface_angle(Angle::new::<degree>(
-                    reader.read(&self.right_elevator_yellow_actuator_position_demand_id),
-                )),
-            ],
-        );
+        self.left_inboard_position_requests_from_fbw = [
+            Self::elevator_actuator_position_from_surface_angle(Angle::new::<degree>(
+                reader.read(&self.left_inboard_elevator_green_actuator_position_demand_id),
+            )),
+            Self::elevator_actuator_position_from_surface_angle(Angle::new::<degree>(
+                reader.read(&self.left_inboard_elevator_eha_actuator_position_demand_id),
+            )),
+        ];
+        self.left_inboard_solenoid_energized_from_fbw = [
+            reader.read(&self.left_inboard_elevator_green_actuator_solenoid_id),
+            reader.read(&self.left_inboard_elevator_eha_actuator_solenoid_id),
+        ];
 
-        self.update_elevator_controllers_solenoids(
-            [
-                reader.read(&self.left_elevator_blue_actuator_solenoid_id),
-                reader.read(&self.left_elevator_green_actuator_solenoid_id),
-            ],
-            [
-                reader.read(&self.right_elevator_blue_actuator_solenoid_id),
-                reader.read(&self.right_elevator_yellow_actuator_solenoid_id),
-            ],
-        );
+        self.left_outboard_position_requests_from_fbw = [
+            Self::elevator_actuator_position_from_surface_angle(Angle::new::<degree>(
+                reader.read(&self.left_outboard_elevator_green_actuator_position_demand_id),
+            )),
+            Self::elevator_actuator_position_from_surface_angle(Angle::new::<degree>(
+                reader.read(&self.left_outboard_elevator_eha_actuator_position_demand_id),
+            )),
+        ];
+        self.left_outboard_solenoid_energized_from_fbw = [
+            reader.read(&self.left_outboard_elevator_green_actuator_solenoid_id),
+            reader.read(&self.left_outboard_elevator_eha_actuator_solenoid_id),
+        ];
+
+        self.right_inboard_position_requests_from_fbw = [
+            Self::elevator_actuator_position_from_surface_angle(Angle::new::<degree>(
+                reader.read(&self.right_inboard_elevator_yellow_actuator_position_demand_id),
+            )),
+            Self::elevator_actuator_position_from_surface_angle(Angle::new::<degree>(
+                reader.read(&self.right_inboard_elevator_eha_actuator_position_demand_id),
+            )),
+        ];
+        self.right_inboard_solenoid_energized_from_fbw = [
+            reader.read(&self.right_inboard_elevator_yellow_actuator_solenoid_id),
+            reader.read(&self.right_inboard_elevator_eha_actuator_solenoid_id),
+        ];
+
+        self.right_outboard_position_requests_from_fbw = [
+            Self::elevator_actuator_position_from_surface_angle(Angle::new::<degree>(
+                reader.read(&self.right_outboard_elevator_yellow_actuator_position_demand_id),
+            )),
+            Self::elevator_actuator_position_from_surface_angle(Angle::new::<degree>(
+                reader.read(&self.right_outboard_elevator_eha_actuator_position_demand_id),
+            )),
+        ];
+        self.right_outboard_solenoid_energized_from_fbw = [
+            reader.read(&self.right_outboard_elevator_yellow_actuator_solenoid_id),
+            reader.read(&self.right_outboard_elevator_eha_actuator_solenoid_id),
+        ];
     }
 }
 
@@ -5243,14 +5473,14 @@ enum RudderActuatorPosition {
     Yellow = 2,
 }
 
-enum LeftElevatorActuatorCircuit {
-    Blue = 0,
-    Green = 1,
+enum ElevatorActuatorPosition {
+    Outward = 0,
+    Inward = 1,
 }
 
-enum RightElevatorActuatorCircuit {
-    Blue = 0,
-    Yellow = 1,
+enum ElevatorPanelPosition {
+    Outward = 0,
+    Inward = 1,
 }
 
 struct AileronAssembly {
@@ -5359,62 +5589,88 @@ impl SimulationElement for AileronAssembly {
 }
 
 struct ElevatorAssembly {
-    hydraulic_assembly: HydraulicLinearActuatorAssembly<2>,
+    hydraulic_assemblies: [HydraulicLinearActuatorAssembly<2>; 2],
 
-    position_id: VariableIdentifier,
+    position_out_id: VariableIdentifier,
 
-    position: Ratio,
+    position_in_id: VariableIdentifier,
 
-    aerodynamic_model: AerodynamicModel,
+    positions: [Ratio; 2],
+
+    aerodynamic_models: [AerodynamicModel; 2],
 }
 impl ElevatorAssembly {
     fn new(
         context: &mut InitContext,
         id: ActuatorSide,
-        hydraulic_assembly: HydraulicLinearActuatorAssembly<2>,
+        outward_hydraulic_assembly: HydraulicLinearActuatorAssembly<2>,
+        inward_hydraulic_assembly: HydraulicLinearActuatorAssembly<2>,
         aerodynamic_model: AerodynamicModel,
     ) -> Self {
         Self {
-            hydraulic_assembly,
-            position_id: match id {
-                ActuatorSide::Left => context.get_identifier("HYD_ELEV_LEFT_DEFLECTION".to_owned()),
+            hydraulic_assemblies: [outward_hydraulic_assembly, inward_hydraulic_assembly],
+            position_out_id: match id {
+                ActuatorSide::Left => {
+                    context.get_identifier("HYD_ELEV_LEFT_OUTWARD_DEFLECTION".to_owned())
+                }
                 ActuatorSide::Right => {
-                    context.get_identifier("HYD_ELEV_RIGHT_DEFLECTION".to_owned())
+                    context.get_identifier("HYD_ELEV_RIGHT_OUTWARD_DEFLECTION".to_owned())
                 }
             },
-            position: Ratio::new::<ratio>(0.),
-            aerodynamic_model,
+            position_in_id: match id {
+                ActuatorSide::Left => {
+                    context.get_identifier("HYD_ELEV_LEFT_INWARD_DEFLECTION".to_owned())
+                }
+                ActuatorSide::Right => {
+                    context.get_identifier("HYD_ELEV_RIGHT_INWARD_DEFLECTION".to_owned())
+                }
+            },
+            positions: [Ratio::new::<ratio>(0.); 2],
+            aerodynamic_models: [aerodynamic_model; 2],
         }
     }
 
-    fn actuator(&mut self, circuit_position: usize) -> &mut impl Actuator {
-        self.hydraulic_assembly.actuator(circuit_position)
+    fn actuator(
+        &mut self,
+        circuit_position: ElevatorActuatorPosition,
+        panel_position: ElevatorPanelPosition,
+    ) -> &mut impl Actuator {
+        self.hydraulic_assemblies[panel_position as usize].actuator(circuit_position as usize)
     }
 
     fn update(
         &mut self,
         context: &UpdateContext,
-        elevator_controllers: &[impl HydraulicAssemblyController + HydraulicLocking],
-        current_pressure_outward: &impl SectionPressure,
-        current_pressure_inward: &impl SectionPressure,
+        elevator_controllers: [&[impl HydraulicAssemblyController + HydraulicLocking]; 2],
+        current_pressure_outward: [&impl SectionPressure; 2],
+        current_pressure_inward: [&impl SectionPressure; 2],
     ) {
-        self.aerodynamic_model
-            .update_body(context, self.hydraulic_assembly.body());
-        self.hydraulic_assembly.update(
-            context,
-            elevator_controllers,
-            [
-                current_pressure_outward.pressure_downstream_leak_valve(),
-                current_pressure_inward.pressure_downstream_leak_valve(),
-            ],
-        );
+        for idx in 0..2 {
+            self.aerodynamic_models[idx]
+                .update_body(context, self.hydraulic_assemblies[idx].body());
+            self.hydraulic_assemblies[idx].update(
+                context,
+                elevator_controllers[idx],
+                [
+                    current_pressure_outward[idx].pressure_downstream_leak_valve(),
+                    current_pressure_inward[idx].pressure_downstream_leak_valve(),
+                ],
+            );
 
-        self.position = self.hydraulic_assembly.position_normalized();
+            self.positions[idx] = self.hydraulic_assemblies[idx].position_normalized();
+        }
     }
 }
 impl SimulationElement for ElevatorAssembly {
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(&self.position_id, self.position.get::<ratio>());
+        writer.write(
+            &self.position_out_id,
+            self.positions[ElevatorPanelPosition::Outward as usize].get::<ratio>(),
+        );
+        writer.write(
+            &self.position_in_id,
+            self.positions[ElevatorPanelPosition::Inward as usize].get::<ratio>(),
+        );
     }
 }
 
