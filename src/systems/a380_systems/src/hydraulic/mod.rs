@@ -5510,7 +5510,7 @@ impl RudderSystemHydraulicController {
     }
 
     fn rudder_actuator_position_from_surface_angle(surface_angle: Angle) -> Ratio {
-        Ratio::new::<ratio>(surface_angle.get::<degree>() / 60. + 0.5)
+        Ratio::new::<ratio>(-surface_angle.get::<degree>() / 60. + 0.5)
     }
 }
 impl SimulationElement for RudderSystemHydraulicController {
