@@ -1786,7 +1786,7 @@ impl A380Hydraulic {
         engine1: &impl Engine,
         engine2: &impl Engine,
     ) {
-        self.aileron_system_controller.update(context, lgciu1);
+        self.aileron_system_controller.update();
 
         self.nose_steering.update(
             context,
@@ -4455,68 +4455,114 @@ impl HydraulicAssemblyController for AileronController {
 }
 impl HydraulicLocking for AileronController {}
 
-// TODO This implements a placeholder logic using A320 FBW system outputs to compute expected A380 aileron orders
-// To be rewritten once correct A380 FBW logic gives correct solenoid commads
 struct AileronSystemHydraulicController {
-    left_aileron_blue_actuator_solenoid_id: VariableIdentifier,
-    right_aileron_blue_actuator_solenoid_id: VariableIdentifier,
-    left_aileron_green_actuator_solenoid_id: VariableIdentifier,
-    right_aileron_green_actuator_solenoid_id: VariableIdentifier,
+    left_inboard_aileron_green_actuator_solenoid_id: VariableIdentifier,
+    left_inboard_aileron_eha_actuator_solenoid_id: VariableIdentifier,
+    left_midboard_aileron_yellow_actuator_solenoid_id: VariableIdentifier,
+    left_midboard_aileron_eha_actuator_solenoid_id: VariableIdentifier,
+    left_outboard_aileron_green_actuator_solenoid_id: VariableIdentifier,
+    left_outboard_aileron_yellow_actuator_solenoid_id: VariableIdentifier,
+    right_inboard_aileron_green_actuator_solenoid_id: VariableIdentifier,
+    right_inboard_aileron_eha_actuator_solenoid_id: VariableIdentifier,
+    right_midboard_aileron_yellow_actuator_solenoid_id: VariableIdentifier,
+    right_midboard_aileron_eha_actuator_solenoid_id: VariableIdentifier,
+    right_outboard_aileron_green_actuator_solenoid_id: VariableIdentifier,
+    right_outboard_aileron_yellow_actuator_solenoid_id: VariableIdentifier,
 
-    left_aileron_blue_actuator_position_demand_id: VariableIdentifier,
-    right_aileron_blue_actuator_position_demand_id: VariableIdentifier,
-    left_aileron_green_actuator_position_demand_id: VariableIdentifier,
-    right_aileron_green_actuator_position_demand_id: VariableIdentifier,
+    left_inboard_aileron_green_actuator_position_demand_id: VariableIdentifier,
+    left_inboard_aileron_eha_actuator_position_demand_id: VariableIdentifier,
+    left_midboard_aileron_yellow_actuator_position_demand_id: VariableIdentifier,
+    left_midboard_aileron_eha_actuator_position_demand_id: VariableIdentifier,
+    left_outboard_aileron_green_actuator_position_demand_id: VariableIdentifier,
+    left_outboard_aileron_yellow_actuator_position_demand_id: VariableIdentifier,
+    right_inboard_aileron_green_actuator_position_demand_id: VariableIdentifier,
+    right_inboard_aileron_eha_actuator_position_demand_id: VariableIdentifier,
+    right_midboard_aileron_yellow_actuator_position_demand_id: VariableIdentifier,
+    right_midboard_aileron_eha_actuator_position_demand_id: VariableIdentifier,
+    right_outboard_aileron_green_actuator_position_demand_id: VariableIdentifier,
+    right_outboard_aileron_yellow_actuator_position_demand_id: VariableIdentifier,
 
-    left_position_requests_from_fbw: [Ratio; 2],
-    left_solenoid_energized_from_fbw: [bool; 2],
-    right_position_requests_from_fbw: [Ratio; 2],
-    right_solenoid_energized_from_fbw: [bool; 2],
-
-    middle_left_position_delayed: LowPassFilter<Ratio>,
-    middle_right_position_delayed: LowPassFilter<Ratio>,
-
-    left_side_is_controlled: bool,
-    right_side_is_controlled: bool,
+    left_inboard_position_requests_from_fbw: [Ratio; 2],
+    left_inboard_solenoid_energized_from_fbw: [bool; 2],
+    left_midboard_position_requests_from_fbw: [Ratio; 2],
+    left_midboard_solenoid_energized_from_fbw: [bool; 2],
+    left_outboard_position_requests_from_fbw: [Ratio; 2],
+    left_outboard_solenoid_energized_from_fbw: [bool; 2],
+    right_inboard_position_requests_from_fbw: [Ratio; 2],
+    right_inboard_solenoid_energized_from_fbw: [bool; 2],
+    right_midboard_position_requests_from_fbw: [Ratio; 2],
+    right_midboard_solenoid_energized_from_fbw: [bool; 2],
+    right_outboard_position_requests_from_fbw: [Ratio; 2],
+    right_outboard_solenoid_energized_from_fbw: [bool; 2],
 
     left_aileron_controllers: [[AileronController; 2]; 3],
     right_aileron_controllers: [[AileronController; 2]; 3],
 }
 impl AileronSystemHydraulicController {
-    const MIDDLE_AILERON_LOAD_ALLEV_DELAY: Duration = Duration::from_millis(350);
-
     fn new(context: &mut InitContext) -> Self {
         Self {
-            left_aileron_blue_actuator_solenoid_id: context
-                .get_identifier("LEFT_AIL_BLUE_SERVO_SOLENOID_ENERGIZED".to_owned()),
-            right_aileron_blue_actuator_solenoid_id: context
-                .get_identifier("RIGHT_AIL_BLUE_SERVO_SOLENOID_ENERGIZED".to_owned()),
-            left_aileron_green_actuator_solenoid_id: context
-                .get_identifier("LEFT_AIL_GREEN_SERVO_SOLENOID_ENERGIZED".to_owned()),
-            right_aileron_green_actuator_solenoid_id: context
-                .get_identifier("RIGHT_AIL_GREEN_SERVO_SOLENOID_ENERGIZED".to_owned()),
+            left_inboard_aileron_green_actuator_solenoid_id: context
+                .get_identifier("LEFT_INBOARD_AIL_GREEN_SERVO_SOLENOID_ENERGIZED".to_owned()),
+            left_inboard_aileron_eha_actuator_solenoid_id: context
+                .get_identifier("LEFT_INBOARD_AIL_EHA_SERVO_SOLENOID_ENERGIZED".to_owned()),
+            left_midboard_aileron_yellow_actuator_solenoid_id: context
+                .get_identifier("LEFT_MIDBOARD_AIL_YELLOW_SERVO_SOLENOID_ENERGIZED".to_owned()),
+            left_midboard_aileron_eha_actuator_solenoid_id: context
+                .get_identifier("LEFT_MIDBOARD_AIL_EHA_SERVO_SOLENOID_ENERGIZED".to_owned()),
+            left_outboard_aileron_green_actuator_solenoid_id: context
+                .get_identifier("LEFT_OUTBOARD_AIL_GREEN_SERVO_SOLENOID_ENERGIZED".to_owned()),
+            left_outboard_aileron_yellow_actuator_solenoid_id: context
+                .get_identifier("LEFT_OUTBOARD_AIL_YELLOW_SERVO_SOLENOID_ENERGIZED".to_owned()),
+            right_inboard_aileron_green_actuator_solenoid_id: context
+                .get_identifier("RIGHT_INBOARD_AIL_GREEN_SERVO_SOLENOID_ENERGIZED".to_owned()),
+            right_inboard_aileron_eha_actuator_solenoid_id: context
+                .get_identifier("RIGHT_INBOARD_AIL_EHA_SERVO_SOLENOID_ENERGIZED".to_owned()),
+            right_midboard_aileron_yellow_actuator_solenoid_id: context
+                .get_identifier("RIGHT_MIDBOARD_AIL_YELLOW_SERVO_SOLENOID_ENERGIZED".to_owned()),
+            right_midboard_aileron_eha_actuator_solenoid_id: context
+                .get_identifier("RIGHT_MIDBOARD_AIL_EHA_SERVO_SOLENOID_ENERGIZED".to_owned()),
+            right_outboard_aileron_green_actuator_solenoid_id: context
+                .get_identifier("RIGHT_OUTBOARD_AIL_GREEN_SERVO_SOLENOID_ENERGIZED".to_owned()),
+            right_outboard_aileron_yellow_actuator_solenoid_id: context
+                .get_identifier("RIGHT_OUTBOARD_AIL_YELLOW_SERVO_SOLENOID_ENERGIZED".to_owned()),
 
-            left_aileron_blue_actuator_position_demand_id: context
-                .get_identifier("LEFT_AIL_BLUE_COMMANDED_POSITION".to_owned()),
-            right_aileron_blue_actuator_position_demand_id: context
-                .get_identifier("RIGHT_AIL_BLUE_COMMANDED_POSITION".to_owned()),
-            left_aileron_green_actuator_position_demand_id: context
-                .get_identifier("LEFT_AIL_GREEN_COMMANDED_POSITION".to_owned()),
-            right_aileron_green_actuator_position_demand_id: context
-                .get_identifier("RIGHT_AIL_GREEN_COMMANDED_POSITION".to_owned()),
+            left_inboard_aileron_green_actuator_position_demand_id: context
+                .get_identifier("LEFT_INBOARD_AIL_GREEN_COMMANDED_POSITION".to_owned()),
+            left_inboard_aileron_eha_actuator_position_demand_id: context
+                .get_identifier("LEFT_INBOARD_AIL_EHA_COMMANDED_POSITION".to_owned()),
+            left_midboard_aileron_yellow_actuator_position_demand_id: context
+                .get_identifier("LEFT_MIDBOARD_AIL_YELLOW_COMMANDED_POSITION".to_owned()),
+            left_midboard_aileron_eha_actuator_position_demand_id: context
+                .get_identifier("LEFT_MIDBOARD_AIL_EHA_COMMANDED_POSITION".to_owned()),
+            left_outboard_aileron_green_actuator_position_demand_id: context
+                .get_identifier("LEFT_OUTBOARD_AIL_GREEN_COMMANDED_POSITION".to_owned()),
+            left_outboard_aileron_yellow_actuator_position_demand_id: context
+                .get_identifier("LEFT_OUTBOARD_AIL_YELLOW_COMMANDED_POSITION".to_owned()),
+            right_inboard_aileron_green_actuator_position_demand_id: context
+                .get_identifier("RIGHT_INBOARD_AIL_GREEN_COMMANDED_POSITION".to_owned()),
+            right_inboard_aileron_eha_actuator_position_demand_id: context
+                .get_identifier("RIGHT_INBOARD_AIL_EHA_COMMANDED_POSITION".to_owned()),
+            right_midboard_aileron_yellow_actuator_position_demand_id: context
+                .get_identifier("RIGHT_MIDBOARD_AIL_YELLOW_COMMANDED_POSITION".to_owned()),
+            right_midboard_aileron_eha_actuator_position_demand_id: context
+                .get_identifier("RIGHT_MIDBOARD_AIL_EHA_COMMANDED_POSITION".to_owned()),
+            right_outboard_aileron_green_actuator_position_demand_id: context
+                .get_identifier("RIGHT_OUTBOARD_AIL_GREEN_COMMANDED_POSITION".to_owned()),
+            right_outboard_aileron_yellow_actuator_position_demand_id: context
+                .get_identifier("RIGHT_OUTBOARD_AIL_YELLOW_COMMANDED_POSITION".to_owned()),
 
-            left_position_requests_from_fbw: [Ratio::default(); 2],
-            left_solenoid_energized_from_fbw: [false; 2],
-            right_position_requests_from_fbw: [Ratio::default(); 2],
-            right_solenoid_energized_from_fbw: [false; 2],
-
-            middle_left_position_delayed: LowPassFilter::new(Self::MIDDLE_AILERON_LOAD_ALLEV_DELAY),
-            middle_right_position_delayed: LowPassFilter::new(
-                Self::MIDDLE_AILERON_LOAD_ALLEV_DELAY,
-            ),
-
-            left_side_is_controlled: false,
-            right_side_is_controlled: false,
+            left_inboard_position_requests_from_fbw: [Ratio::default(); 2],
+            left_inboard_solenoid_energized_from_fbw: [false; 2],
+            left_midboard_position_requests_from_fbw: [Ratio::default(); 2],
+            left_midboard_solenoid_energized_from_fbw: [false; 2],
+            left_outboard_position_requests_from_fbw: [Ratio::default(); 2],
+            left_outboard_solenoid_energized_from_fbw: [false; 2],
+            right_inboard_position_requests_from_fbw: [Ratio::default(); 2],
+            right_inboard_solenoid_energized_from_fbw: [false; 2],
+            right_midboard_position_requests_from_fbw: [Ratio::default(); 2],
+            right_midboard_solenoid_energized_from_fbw: [false; 2],
+            right_outboard_position_requests_from_fbw: [Ratio::default(); 2],
+            right_outboard_solenoid_energized_from_fbw: [false; 2],
 
             // Controllers are in outward->inward order, so for aileron [Blue circuit, Green circuit]
             left_aileron_controllers: [[AileronController::new(), AileronController::new()]; 3],
@@ -4538,113 +4584,89 @@ impl AileronSystemHydraulicController {
         &self.right_aileron_controllers[panel as usize][..]
     }
 
-    fn update(&mut self, context: &UpdateContext, lgciu1: &impl LgciuWeightOnWheels) {
-        self.update_aileron_controllers_positions(context, lgciu1);
+    fn update(&mut self) {
+        self.update_aileron_controllers_positions();
         self.update_aileron_controllers_modes();
     }
 
-    fn update_aileron_controllers_positions(
-        &mut self,
-        context: &UpdateContext,
-        lgciu1: &impl LgciuWeightOnWheels,
-    ) {
-        let left_pos_request_final = if self.left_solenoid_energized_from_fbw[0] {
-            self.left_side_is_controlled = true;
-            self.left_position_requests_from_fbw[0]
-        } else if self.left_solenoid_energized_from_fbw[1] {
-            self.left_side_is_controlled = true;
-            self.left_position_requests_from_fbw[1]
-        } else {
-            self.left_side_is_controlled = false;
-            Ratio::new::<ratio>(0.)
-        };
-        let right_pos_request_final = if self.right_solenoid_energized_from_fbw[0] {
-            self.right_side_is_controlled = true;
-            self.right_position_requests_from_fbw[0]
-        } else if self.right_solenoid_energized_from_fbw[1] {
-            self.right_side_is_controlled = true;
-            self.right_position_requests_from_fbw[1]
-        } else {
-            self.right_side_is_controlled = false;
-            Ratio::new::<ratio>(0.)
-        };
-
-        let is_ground_mode = lgciu1.left_and_right_gear_compressed(true);
-
-        let outward_left_pos_req = if is_ground_mode {
-            left_pos_request_final
-        } else {
-            (left_pos_request_final - Ratio::new::<ratio>(0.5)) * Ratio::new::<ratio>(0.4)
-                + Ratio::new::<ratio>(0.5)
-        };
-
-        let outward_right_pos_req = if is_ground_mode {
-            right_pos_request_final
-        } else {
-            (right_pos_request_final - Ratio::new::<ratio>(0.5)) * Ratio::new::<ratio>(0.4)
-                + Ratio::new::<ratio>(0.5)
-        };
-
-        self.middle_left_position_delayed
-            .update(context.delta(), left_pos_request_final);
-        self.middle_right_position_delayed
-            .update(context.delta(), right_pos_request_final);
-
-        let middle_left_pos_req = if is_ground_mode {
-            left_pos_request_final
-        } else {
-            self.middle_left_position_delayed.output()
-        };
-        let middle_right_pos_req = if is_ground_mode {
-            right_pos_request_final
-        } else {
-            self.middle_right_position_delayed.output()
-        };
-
-        let inward_left_pos_req = left_pos_request_final;
-        let inward_right_pos_req = right_pos_request_final;
-
+    fn update_aileron_controllers_positions(&mut self) {
         self.left_aileron_controllers[AileronPanelPosition::Outward as usize]
             [AileronActuatorPosition::Outward as usize]
-            .set_requested_position(outward_left_pos_req);
+            .set_requested_position(
+                self.left_outboard_position_requests_from_fbw
+                    [AileronActuatorPosition::Outward as usize],
+            );
         self.left_aileron_controllers[AileronPanelPosition::Outward as usize]
             [AileronActuatorPosition::Inward as usize]
-            .set_requested_position(outward_left_pos_req);
+            .set_requested_position(
+                self.left_outboard_position_requests_from_fbw
+                    [AileronActuatorPosition::Inward as usize],
+            );
 
         self.left_aileron_controllers[AileronPanelPosition::Middle as usize]
             [AileronActuatorPosition::Outward as usize]
-            .set_requested_position(middle_left_pos_req);
+            .set_requested_position(
+                self.left_midboard_position_requests_from_fbw
+                    [AileronActuatorPosition::Outward as usize],
+            );
         self.left_aileron_controllers[AileronPanelPosition::Middle as usize]
             [AileronActuatorPosition::Inward as usize]
-            .set_requested_position(middle_left_pos_req);
+            .set_requested_position(
+                self.left_midboard_position_requests_from_fbw
+                    [AileronActuatorPosition::Inward as usize],
+            );
 
         self.left_aileron_controllers[AileronPanelPosition::Inward as usize]
             [AileronActuatorPosition::Outward as usize]
-            .set_requested_position(inward_left_pos_req);
+            .set_requested_position(
+                self.left_inboard_position_requests_from_fbw
+                    [AileronActuatorPosition::Outward as usize],
+            );
         self.left_aileron_controllers[AileronPanelPosition::Inward as usize]
             [AileronActuatorPosition::Inward as usize]
-            .set_requested_position(inward_left_pos_req);
+            .set_requested_position(
+                self.left_inboard_position_requests_from_fbw
+                    [AileronActuatorPosition::Inward as usize],
+            );
 
         self.right_aileron_controllers[AileronPanelPosition::Outward as usize]
             [AileronActuatorPosition::Outward as usize]
-            .set_requested_position(outward_right_pos_req);
+            .set_requested_position(
+                self.right_outboard_position_requests_from_fbw
+                    [AileronActuatorPosition::Outward as usize],
+            );
         self.right_aileron_controllers[AileronPanelPosition::Outward as usize]
             [AileronActuatorPosition::Inward as usize]
-            .set_requested_position(outward_right_pos_req);
+            .set_requested_position(
+                self.right_outboard_position_requests_from_fbw
+                    [AileronActuatorPosition::Inward as usize],
+            );
 
         self.right_aileron_controllers[AileronPanelPosition::Middle as usize]
             [AileronActuatorPosition::Outward as usize]
-            .set_requested_position(middle_right_pos_req);
+            .set_requested_position(
+                self.right_midboard_position_requests_from_fbw
+                    [AileronActuatorPosition::Outward as usize],
+            );
         self.right_aileron_controllers[AileronPanelPosition::Middle as usize]
             [AileronActuatorPosition::Inward as usize]
-            .set_requested_position(middle_right_pos_req);
+            .set_requested_position(
+                self.right_midboard_position_requests_from_fbw
+                    [AileronActuatorPosition::Inward as usize],
+            );
 
         self.right_aileron_controllers[AileronPanelPosition::Inward as usize]
             [AileronActuatorPosition::Outward as usize]
-            .set_requested_position(inward_right_pos_req);
+            .set_requested_position(
+                self.right_inboard_position_requests_from_fbw
+                    [AileronActuatorPosition::Outward as usize],
+            );
         self.right_aileron_controllers[AileronPanelPosition::Inward as usize]
             [AileronActuatorPosition::Inward as usize]
-            .set_requested_position(inward_right_pos_req);
+            .set_requested_position(
+                self.right_inboard_position_requests_from_fbw
+                    [AileronActuatorPosition::Inward as usize],
+            );
     }
 
     /// Will drive mode from solenoid state
@@ -4653,96 +4675,153 @@ impl AileronSystemHydraulicController {
     /// -We differentiate case of all actuators in damping mode where we set a more dampened
     /// mode to reach realistic slow droop speed.
     fn update_aileron_controllers_modes(&mut self) {
-        if self.left_side_is_controlled {
+        if self
+            .left_outboard_solenoid_energized_from_fbw
+            .iter()
+            .any(|x| *x)
+        {
             self.left_aileron_controllers[AileronPanelPosition::Outward as usize]
                 [AileronActuatorPosition::Outward as usize]
                 .set_mode(Self::aileron_actuator_mode_from_solenoid(
-                    self.left_solenoid_energized_from_fbw[AileronActuatorPosition::Inward as usize],
+                    self.left_outboard_solenoid_energized_from_fbw
+                        [AileronActuatorPosition::Outward as usize],
                 ));
             self.left_aileron_controllers[AileronPanelPosition::Outward as usize]
                 [AileronActuatorPosition::Inward as usize]
                 .set_mode(Self::aileron_actuator_mode_from_solenoid(
-                    self.left_solenoid_energized_from_fbw
-                        [AileronActuatorPosition::Outward as usize],
-                ));
-
-            self.left_aileron_controllers[AileronPanelPosition::Middle as usize]
-                [AileronActuatorPosition::Outward as usize]
-                .set_mode(Self::aileron_actuator_mode_from_solenoid(
-                    self.left_solenoid_energized_from_fbw
-                        [AileronActuatorPosition::Outward as usize],
-                ));
-            self.left_aileron_controllers[AileronPanelPosition::Middle as usize]
-                [AileronActuatorPosition::Inward as usize]
-                .set_mode(Self::aileron_actuator_mode_from_solenoid(
-                    self.left_solenoid_energized_from_fbw[AileronActuatorPosition::Inward as usize],
-                ));
-
-            self.left_aileron_controllers[AileronPanelPosition::Inward as usize]
-                [AileronActuatorPosition::Outward as usize]
-                .set_mode(Self::aileron_actuator_mode_from_solenoid(
-                    self.left_solenoid_energized_from_fbw[AileronActuatorPosition::Inward as usize],
-                ));
-            self.left_aileron_controllers[AileronPanelPosition::Inward as usize]
-                [AileronActuatorPosition::Inward as usize]
-                .set_mode(Self::aileron_actuator_mode_from_solenoid(
-                    self.left_solenoid_energized_from_fbw
-                        [AileronActuatorPosition::Outward as usize],
+                    self.left_outboard_solenoid_energized_from_fbw
+                        [AileronActuatorPosition::Inward as usize],
                 ));
         } else {
-            for controller in &mut self.left_aileron_controllers {
-                controller[AileronActuatorPosition::Inward as usize]
-                    .set_mode(LinearActuatorMode::ClosedCircuitDamping);
-                controller[AileronActuatorPosition::Outward as usize]
-                    .set_mode(LinearActuatorMode::ClosedCircuitDamping);
+            for controller in
+                &mut self.left_aileron_controllers[AileronPanelPosition::Outward as usize]
+            {
+                controller.set_mode(LinearActuatorMode::ClosedCircuitDamping);
             }
         }
 
-        if self.right_side_is_controlled {
+        if self
+            .left_midboard_solenoid_energized_from_fbw
+            .iter()
+            .any(|x| *x)
+        {
+            self.left_aileron_controllers[AileronPanelPosition::Middle as usize]
+                [AileronActuatorPosition::Outward as usize]
+                .set_mode(Self::aileron_actuator_mode_from_solenoid(
+                    self.left_midboard_solenoid_energized_from_fbw
+                        [AileronActuatorPosition::Outward as usize],
+                ));
+            self.left_aileron_controllers[AileronPanelPosition::Middle as usize]
+                [AileronActuatorPosition::Inward as usize]
+                .set_mode(Self::aileron_actuator_mode_from_solenoid(
+                    self.left_midboard_solenoid_energized_from_fbw
+                        [AileronActuatorPosition::Inward as usize],
+                ));
+        } else {
+            for controller in
+                &mut self.left_aileron_controllers[AileronPanelPosition::Middle as usize]
+            {
+                controller.set_mode(LinearActuatorMode::ClosedCircuitDamping);
+            }
+        }
+
+        if self
+            .left_inboard_solenoid_energized_from_fbw
+            .iter()
+            .any(|x| *x)
+        {
+            self.left_aileron_controllers[AileronPanelPosition::Inward as usize]
+                [AileronActuatorPosition::Outward as usize]
+                .set_mode(Self::aileron_actuator_mode_from_solenoid(
+                    self.left_inboard_solenoid_energized_from_fbw
+                        [AileronActuatorPosition::Outward as usize],
+                ));
+            self.left_aileron_controllers[AileronPanelPosition::Inward as usize]
+                [AileronActuatorPosition::Inward as usize]
+                .set_mode(Self::aileron_actuator_mode_from_solenoid(
+                    self.left_inboard_solenoid_energized_from_fbw
+                        [AileronActuatorPosition::Inward as usize],
+                ));
+        } else {
+            for controller in
+                &mut self.left_aileron_controllers[AileronPanelPosition::Inward as usize]
+            {
+                controller.set_mode(LinearActuatorMode::ClosedCircuitDamping);
+            }
+        }
+
+        if self
+            .right_outboard_solenoid_energized_from_fbw
+            .iter()
+            .any(|x| *x)
+        {
             self.right_aileron_controllers[AileronPanelPosition::Outward as usize]
                 [AileronActuatorPosition::Outward as usize]
                 .set_mode(Self::aileron_actuator_mode_from_solenoid(
-                    self.right_solenoid_energized_from_fbw
-                        [AileronActuatorPosition::Inward as usize],
+                    self.right_outboard_solenoid_energized_from_fbw
+                        [AileronActuatorPosition::Outward as usize],
                 ));
             self.right_aileron_controllers[AileronPanelPosition::Outward as usize]
                 [AileronActuatorPosition::Inward as usize]
                 .set_mode(Self::aileron_actuator_mode_from_solenoid(
-                    self.right_solenoid_energized_from_fbw
-                        [AileronActuatorPosition::Outward as usize],
+                    self.right_outboard_solenoid_energized_from_fbw
+                        [AileronActuatorPosition::Inward as usize],
                 ));
+        } else {
+            for controller in
+                &mut self.right_aileron_controllers[AileronPanelPosition::Outward as usize]
+            {
+                controller.set_mode(LinearActuatorMode::ClosedCircuitDamping);
+            }
+        }
 
+        if self
+            .right_midboard_solenoid_energized_from_fbw
+            .iter()
+            .any(|x| *x)
+        {
             self.right_aileron_controllers[AileronPanelPosition::Middle as usize]
                 [AileronActuatorPosition::Outward as usize]
                 .set_mode(Self::aileron_actuator_mode_from_solenoid(
-                    self.right_solenoid_energized_from_fbw
+                    self.right_midboard_solenoid_energized_from_fbw
                         [AileronActuatorPosition::Outward as usize],
                 ));
             self.right_aileron_controllers[AileronPanelPosition::Middle as usize]
                 [AileronActuatorPosition::Inward as usize]
                 .set_mode(Self::aileron_actuator_mode_from_solenoid(
-                    self.right_solenoid_energized_from_fbw
+                    self.right_midboard_solenoid_energized_from_fbw
                         [AileronActuatorPosition::Inward as usize],
                 ));
+        } else {
+            for controller in
+                &mut self.right_aileron_controllers[AileronPanelPosition::Middle as usize]
+            {
+                controller.set_mode(LinearActuatorMode::ClosedCircuitDamping);
+            }
+        }
 
+        if self
+            .right_inboard_solenoid_energized_from_fbw
+            .iter()
+            .any(|x| *x)
+        {
             self.right_aileron_controllers[AileronPanelPosition::Inward as usize]
                 [AileronActuatorPosition::Outward as usize]
                 .set_mode(Self::aileron_actuator_mode_from_solenoid(
-                    self.right_solenoid_energized_from_fbw
+                    self.right_inboard_solenoid_energized_from_fbw
                         [AileronActuatorPosition::Inward as usize],
                 ));
             self.right_aileron_controllers[AileronPanelPosition::Inward as usize]
                 [AileronActuatorPosition::Inward as usize]
                 .set_mode(Self::aileron_actuator_mode_from_solenoid(
-                    self.right_solenoid_energized_from_fbw
+                    self.right_inboard_solenoid_energized_from_fbw
                         [AileronActuatorPosition::Outward as usize],
                 ));
         } else {
-            for controller in &mut self.right_aileron_controllers {
-                controller[AileronActuatorPosition::Inward as usize]
-                    .set_mode(LinearActuatorMode::ClosedCircuitDamping);
-                controller[AileronActuatorPosition::Outward as usize]
-                    .set_mode(LinearActuatorMode::ClosedCircuitDamping);
+            for controller in
+                &mut self.right_aileron_controllers[AileronPanelPosition::Inward as usize]
+            {
+                controller.set_mode(LinearActuatorMode::ClosedCircuitDamping);
             }
         }
     }
@@ -4762,30 +4841,82 @@ impl AileronSystemHydraulicController {
 impl SimulationElement for AileronSystemHydraulicController {
     fn read(&mut self, reader: &mut SimulatorReader) {
         // Note that we reverse left, as positions are just passed through msfs for now
-        self.left_position_requests_from_fbw = [
+        self.left_inboard_position_requests_from_fbw = [
             Self::aileron_actuator_position_from_surface_angle(-Angle::new::<degree>(
-                reader.read(&self.left_aileron_blue_actuator_position_demand_id),
+                reader.read(&self.left_inboard_aileron_green_actuator_position_demand_id),
             )),
             Self::aileron_actuator_position_from_surface_angle(-Angle::new::<degree>(
-                reader.read(&self.left_aileron_green_actuator_position_demand_id),
+                reader.read(&self.left_inboard_aileron_eha_actuator_position_demand_id),
             )),
         ];
-        self.left_solenoid_energized_from_fbw = [
-            reader.read(&self.left_aileron_blue_actuator_solenoid_id),
-            reader.read(&self.left_aileron_green_actuator_solenoid_id),
+        self.left_inboard_solenoid_energized_from_fbw = [
+            reader.read(&self.left_inboard_aileron_green_actuator_solenoid_id),
+            reader.read(&self.left_inboard_aileron_eha_actuator_solenoid_id),
         ];
 
-        self.right_position_requests_from_fbw = [
-            Self::aileron_actuator_position_from_surface_angle(Angle::new::<degree>(
-                reader.read(&self.right_aileron_blue_actuator_position_demand_id),
+        self.left_midboard_position_requests_from_fbw = [
+            Self::aileron_actuator_position_from_surface_angle(-Angle::new::<degree>(
+                reader.read(&self.left_midboard_aileron_yellow_actuator_position_demand_id),
             )),
-            Self::aileron_actuator_position_from_surface_angle(Angle::new::<degree>(
-                reader.read(&self.right_aileron_green_actuator_position_demand_id),
+            Self::aileron_actuator_position_from_surface_angle(-Angle::new::<degree>(
+                reader.read(&self.left_midboard_aileron_eha_actuator_position_demand_id),
             )),
         ];
-        self.right_solenoid_energized_from_fbw = [
-            reader.read(&self.right_aileron_blue_actuator_solenoid_id),
-            reader.read(&self.right_aileron_green_actuator_solenoid_id),
+        self.left_midboard_solenoid_energized_from_fbw = [
+            reader.read(&self.left_midboard_aileron_yellow_actuator_solenoid_id),
+            reader.read(&self.left_midboard_aileron_eha_actuator_solenoid_id),
+        ];
+
+        self.left_outboard_position_requests_from_fbw = [
+            Self::aileron_actuator_position_from_surface_angle(-Angle::new::<degree>(
+                reader.read(&self.left_outboard_aileron_green_actuator_position_demand_id),
+            )),
+            Self::aileron_actuator_position_from_surface_angle(-Angle::new::<degree>(
+                reader.read(&self.left_outboard_aileron_yellow_actuator_position_demand_id),
+            )),
+        ];
+        self.left_outboard_solenoid_energized_from_fbw = [
+            reader.read(&self.left_outboard_aileron_green_actuator_solenoid_id),
+            reader.read(&self.left_outboard_aileron_yellow_actuator_solenoid_id),
+        ];
+
+        self.right_inboard_position_requests_from_fbw = [
+            Self::aileron_actuator_position_from_surface_angle(-Angle::new::<degree>(
+                reader.read(&self.right_inboard_aileron_green_actuator_position_demand_id),
+            )),
+            Self::aileron_actuator_position_from_surface_angle(-Angle::new::<degree>(
+                reader.read(&self.right_inboard_aileron_eha_actuator_position_demand_id),
+            )),
+        ];
+        self.right_inboard_solenoid_energized_from_fbw = [
+            reader.read(&self.right_inboard_aileron_green_actuator_solenoid_id),
+            reader.read(&self.right_inboard_aileron_eha_actuator_solenoid_id),
+        ];
+
+        self.right_midboard_position_requests_from_fbw = [
+            Self::aileron_actuator_position_from_surface_angle(-Angle::new::<degree>(
+                reader.read(&self.right_midboard_aileron_yellow_actuator_position_demand_id),
+            )),
+            Self::aileron_actuator_position_from_surface_angle(-Angle::new::<degree>(
+                reader.read(&self.right_midboard_aileron_eha_actuator_position_demand_id),
+            )),
+        ];
+        self.right_midboard_solenoid_energized_from_fbw = [
+            reader.read(&self.right_midboard_aileron_yellow_actuator_solenoid_id),
+            reader.read(&self.right_midboard_aileron_eha_actuator_solenoid_id),
+        ];
+
+        self.right_outboard_position_requests_from_fbw = [
+            Self::aileron_actuator_position_from_surface_angle(-Angle::new::<degree>(
+                reader.read(&self.right_outboard_aileron_green_actuator_position_demand_id),
+            )),
+            Self::aileron_actuator_position_from_surface_angle(-Angle::new::<degree>(
+                reader.read(&self.right_outboard_aileron_yellow_actuator_position_demand_id),
+            )),
+        ];
+        self.right_outboard_solenoid_energized_from_fbw = [
+            reader.read(&self.right_outboard_aileron_green_actuator_solenoid_id),
+            reader.read(&self.right_outboard_aileron_yellow_actuator_solenoid_id),
         ];
     }
 }
