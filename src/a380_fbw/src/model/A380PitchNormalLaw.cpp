@@ -261,7 +261,7 @@ A380PitchNormalLaw::Parameters_A380PitchNormalLaw_T A380PitchNormalLaw::A380Pitc
 
   { 1.0, 1.0, 0.5, 0.3, 0.3 },
 
-  17.0,
+  20.0,
 
   17.0,
 
@@ -557,7 +557,7 @@ A380PitchNormalLaw::Parameters_A380PitchNormalLaw_T A380PitchNormalLaw::A380Pitc
 
   1.0,
 
-  1.0,
+  0.6,
 
   0.017453292519943295,
 
@@ -598,13 +598,13 @@ A380PitchNormalLaw::Parameters_A380PitchNormalLaw_T A380PitchNormalLaw::A380Pitc
   0.017453292519943295,
 
 
-  { 13.5, 13.5 },
+  { 11.5, 11.5 },
 
 
   { 0.0, 350.0 },
 
 
-  { 0.5, 0.5 },
+  { 0.3, 0.3 },
 
 
   { 0.0, 350.0 },
@@ -787,7 +787,7 @@ A380PitchNormalLaw::Parameters_A380PitchNormalLaw_T A380PitchNormalLaw::A380Pitc
 
   1.0,
 
-  17.0,
+  20.0,
 
   -30.0,
 

@@ -63,6 +63,7 @@ struct base_roll_normal
   real_T Phi_c_deg;
   real_T xi_deg;
   real_T zeta_deg;
+  real_T zeta_tc_yd_deg;
 };
 
 #endif

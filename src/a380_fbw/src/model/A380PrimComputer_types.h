@@ -100,6 +100,7 @@ struct base_prim_analog_inputs
   real_T thr_lever_4_pos;
   real_T elevator_1_pos_deg;
   real_T elevator_2_pos_deg;
+  real_T elevator_3_pos_deg;
   real_T ths_pos_deg;
   real_T left_aileron_1_pos_deg;
   real_T left_aileron_2_pos_deg;
@@ -245,9 +246,20 @@ struct base_prim_out_bus
   base_arinc_429 right_sidestick_roll_command_deg;
   base_arinc_429 rudder_pedal_position_deg;
   base_arinc_429 aileron_status_word;
+  base_arinc_429 left_aileron_1_position_deg;
+  base_arinc_429 left_aileron_2_position_deg;
+  base_arinc_429 right_aileron_1_position_deg;
+  base_arinc_429 right_aileron_2_position_deg;
   base_arinc_429 spoiler_status_word;
+  base_arinc_429 left_spoiler_position_deg;
+  base_arinc_429 right_spoiler_position_deg;
   base_arinc_429 elevator_status_word;
+  base_arinc_429 elevator_1_position_deg;
+  base_arinc_429 elevator_2_position_deg;
+  base_arinc_429 elevator_3_position_deg;
   base_arinc_429 rudder_status_word;
+  base_arinc_429 rudder_1_position_deg;
+  base_arinc_429 rudder_2_position_deg;
   base_arinc_429 fctl_law_status_word;
   base_arinc_429 misc_data_status_word;
 };
@@ -621,6 +633,7 @@ struct base_roll_normal
   real_T Phi_c_deg;
   real_T xi_deg;
   real_T zeta_deg;
+  real_T zeta_tc_yd_deg;
 };
 
 #endif
@@ -828,10 +841,10 @@ struct struct_2OohiAWrazWy5wDS5iisgF
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_struct_HmdPIChtdKjDeRjPg8vQxE_
-#define DEFINED_TYPEDEF_FOR_struct_HmdPIChtdKjDeRjPg8vQxE_
+#ifndef DEFINED_TYPEDEF_FOR_struct_LoojKUtH7OhvwR6a9eDiYC_
+#define DEFINED_TYPEDEF_FOR_struct_LoojKUtH7OhvwR6a9eDiYC_
 
-struct struct_HmdPIChtdKjDeRjPg8vQxE
+struct struct_LoojKUtH7OhvwR6a9eDiYC
 {
   struct_2OohiAWrazWy5wDS5iisgF left_inboard_aileron_command_deg;
   struct_2OohiAWrazWy5wDS5iisgF right_inboard_aileron_command_deg;
@@ -855,9 +868,20 @@ struct struct_HmdPIChtdKjDeRjPg8vQxE
   struct_2OohiAWrazWy5wDS5iisgF right_sidestick_roll_command_deg;
   struct_2OohiAWrazWy5wDS5iisgF rudder_pedal_position_deg;
   struct_2OohiAWrazWy5wDS5iisgF aileron_status_word;
+  struct_2OohiAWrazWy5wDS5iisgF left_aileron_1_position_deg;
+  struct_2OohiAWrazWy5wDS5iisgF left_aileron_2_position_deg;
+  struct_2OohiAWrazWy5wDS5iisgF right_aileron_1_position_deg;
+  struct_2OohiAWrazWy5wDS5iisgF right_aileron_2_position_deg;
   struct_2OohiAWrazWy5wDS5iisgF spoiler_status_word;
+  struct_2OohiAWrazWy5wDS5iisgF left_spoiler_position_deg;
+  struct_2OohiAWrazWy5wDS5iisgF right_spoiler_position_deg;
   struct_2OohiAWrazWy5wDS5iisgF elevator_status_word;
+  struct_2OohiAWrazWy5wDS5iisgF elevator_1_position_deg;
+  struct_2OohiAWrazWy5wDS5iisgF elevator_2_position_deg;
+  struct_2OohiAWrazWy5wDS5iisgF elevator_3_position_deg;
   struct_2OohiAWrazWy5wDS5iisgF rudder_status_word;
+  struct_2OohiAWrazWy5wDS5iisgF rudder_1_position_deg;
+  struct_2OohiAWrazWy5wDS5iisgF rudder_2_position_deg;
   struct_2OohiAWrazWy5wDS5iisgF fctl_law_status_word;
   struct_2OohiAWrazWy5wDS5iisgF misc_data_status_word;
 };

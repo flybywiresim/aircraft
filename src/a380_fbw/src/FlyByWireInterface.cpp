@@ -1276,6 +1276,7 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
   prims[primIndex].modelInputs.in.analog_inputs.thr_lever_4_pos = 0;
   prims[primIndex].modelInputs.in.analog_inputs.elevator_1_pos_deg = 0;
   prims[primIndex].modelInputs.in.analog_inputs.elevator_2_pos_deg = 0;
+  prims[primIndex].modelInputs.in.analog_inputs.elevator_3_pos_deg = 0;
   prims[primIndex].modelInputs.in.analog_inputs.ths_pos_deg = 0;
   prims[primIndex].modelInputs.in.analog_inputs.left_aileron_1_pos_deg = 0;
   prims[primIndex].modelInputs.in.analog_inputs.left_aileron_2_pos_deg = 0;
