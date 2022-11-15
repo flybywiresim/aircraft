@@ -45,8 +45,8 @@ pub trait PackFlow {
     fn pack_flow(&self) -> MassRate;
 }
 
-pub trait PackFlowControllers<const ZONES: usize> {
-    fn pack_flow_controller(&self, pack_id: Pack) -> PackFlowController<ZONES>;
+pub trait PackFlowControllers<const ZONES: usize, const ENGINES: usize> {
+    fn pack_flow_controller(&self, pack_id: Pack) -> PackFlowController<ZONES, ENGINES>;
 }
 
 trait OutletAir {
@@ -81,9 +81,9 @@ impl Display for ZoneType {
     }
 }
 
-pub struct AirConditioningSystem<const ZONES: usize, const FANS: usize> {
+pub struct AirConditioningSystem<const ZONES: usize, const FANS: usize, const ENGINES: usize> {
     acs_overhead: AirConditioningSystemOverhead<ZONES>,
-    acsc: AirConditioningSystemController<ZONES>,
+    acsc: AirConditioningSystemController<ZONES, ENGINES>,
     cabin_fans: [CabinFan; FANS],
     mixer_unit: MixerUnit<ZONES>,
     // Temporary structure until packs are simulated
@@ -91,7 +91,9 @@ pub struct AirConditioningSystem<const ZONES: usize, const FANS: usize> {
     trim_air_system: TrimAirSystem<ZONES>,
 }
 
-impl<const ZONES: usize, const FANS: usize> AirConditioningSystem<ZONES, FANS> {
+impl<const ZONES: usize, const FANS: usize, const ENGINES: usize>
+    AirConditioningSystem<ZONES, FANS, ENGINES>
+{
     pub fn new(
         context: &mut InitContext,
         cabin_zones: [ZoneType; ZONES],
@@ -122,7 +124,7 @@ impl<const ZONES: usize, const FANS: usize> AirConditioningSystem<ZONES, FANS> {
         engines: [&impl EngineCorrectedN1; 2],
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         pneumatic: &(impl EngineStartState + PackFlowValveState + PneumaticBleed),
-        pneumatic_overhead: &impl EngineBleedPushbutton,
+        pneumatic_overhead: &impl EngineBleedPushbutton<ENGINES>,
         pressurization: &impl CabinAir,
         pressurization_overhead: &PressurizationOverheadPanel,
         lgciu: [&impl LgciuWeightOnWheels; 2],
@@ -189,7 +191,7 @@ impl<const ZONES: usize, const FANS: usize> PackFlow for AirConditioningSystem<Z
     }
 }
 
-impl<const ZONES: usize, const FANS: usize> PackFlowControllers<ZONES>
+impl<const ZONES: usize, const FANS: usize> PackFlowControllers<ZONES, ENGINES>
     for AirConditioningSystem<ZONES, FANS>
 {
     fn pack_flow_controller(&self, pack_id: Pack) -> PackFlowController<ZONES> {

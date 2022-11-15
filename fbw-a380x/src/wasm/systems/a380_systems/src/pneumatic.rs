@@ -14,9 +14,8 @@ use systems::{
     air_conditioning::PackFlowControllers,
     overhead::{AutoOffFaultPushButton, OnOffFaultPushButton},
     pneumatic::{
-        valve::*,
-        BleedMonitoringComputerIsAliveSignal, CompressionChamber, ControllablePneumaticValve,
-        CrossBleedValveSelectorKnob, CrossBleedValveSelectorMode,
+        valve::*, BleedMonitoringComputerIsAliveSignal, CompressionChamber,
+        ControllablePneumaticValve, CrossBleedValveSelectorKnob, CrossBleedValveSelectorMode,
         EngineCompressionChamberController, EngineModeSelector, EngineState, PneumaticContainer,
         PneumaticPipe, PneumaticValveSignal, Precooler, PressurisedReservoirWithExhaustValve,
         PressurizeableReservoir, TargetPressureTemperatureSignal, VariableVolumeContainer,
@@ -138,7 +137,9 @@ impl A380Pneumatic {
             physics_updater: MaxStepLoop::new(Self::PNEUMATIC_SIM_MAX_TIME_STEP),
             apu_bleed_air_valve_open_id: context
                 .get_identifier("APU_BLEED_AIR_VALVE_OPEN".to_owned()),
-            core_processing_input_output_module_a: CoreProcessingInputoutputModuleA::new(ElectricalBusType::AlternatingCurrent(1)), // TODO: Correct bus
+            core_processing_input_output_module_a: CoreProcessingInputoutputModuleA::new(
+                ElectricalBusType::AlternatingCurrent(1),
+            ), // TODO: Correct bus
             engine_systems: [
                 EngineBleedAirSystem::new(context, 1, ElectricalBusType::DirectCurrent(1)),
                 EngineBleedAirSystem::new(context, 2, ElectricalBusType::DirectCurrent(1)),
@@ -201,7 +202,7 @@ impl A380Pneumatic {
         overhead_panel: &A380PneumaticOverheadPanel,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         apu: &impl ControllerSignal<TargetPressureTemperatureSignal>,
-        pack_flow_valve_signals: &impl PackFlowControllers<3>,
+        pack_flow_valve_signals: &impl PackFlowControllers<3, 4>,
     ) {
         self.physics_updater.update(context);
 
@@ -224,7 +225,7 @@ impl A380Pneumatic {
         overhead_panel: &A380PneumaticOverheadPanel,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         apu: &impl ControllerSignal<TargetPressureTemperatureSignal>,
-        pack_flow_valve_signals: &impl PackFlowControllers<3>,
+        pack_flow_valve_signals: &impl PackFlowControllers<3, 4>,
     ) {
         self.apu_compression_chamber.update(apu);
 
@@ -237,20 +238,22 @@ impl A380Pneumatic {
             &self.fadec,
         );
 
-
         for cross_bleed_valve in self.cross_bleed_valves.iter_mut() {
             // TODO: Where does this signal come from?
-            cross_bleed_valve.update_open_amount(&self.core_processing_input_output_module_a.units[0])
+            cross_bleed_valve
+                .update_open_amount(&self.core_processing_input_output_module_a.units[0])
         }
 
         for controller in self.engine_starter_valve_controllers.iter_mut() {
             controller.update(&self.fadec);
         }
 
-        for (index, (engine_system, cpiom_unit)) in self.engine_systems
-        .iter_mut()
-        .zip(&self.core_processing_input_output_module_a.units)
-        .enumerate() {
+        for (index, (engine_system, cpiom_unit)) in self
+            .engine_systems
+            .iter_mut()
+            .zip(&self.core_processing_input_output_module_a.units)
+            .enumerate()
+        {
             engine_system.update(
                 context,
                 cpiom_unit,
@@ -261,7 +264,8 @@ impl A380Pneumatic {
             );
         }
 
-        let [engine_1_system, engine_2_system, engine_3_system, engine_4_system] = &mut self.engine_systems;
+        let [engine_1_system, engine_2_system, engine_3_system, engine_4_system] =
+            &mut self.engine_systems;
         self.apu_bleed_air_valve.update_move_fluid(
             context,
             &mut self.apu_compression_chamber,
@@ -286,11 +290,18 @@ impl A380Pneumatic {
             .update_flow_through_valve(context, &mut self.hydraulic_reservoir_bleed_air_pipe);
 
         self.green_hydraulic_reservoir_with_valve
-            .update_flow_through_valve(context, &mut engine_1_system.high_pressure_compression_chamber);
+            .update_flow_through_valve(
+                context,
+                &mut engine_1_system.high_pressure_compression_chamber,
+            );
         self.yellow_hydraulic_reservoir_with_valve
-            .update_flow_through_valve(context, &mut engine_4_system.high_pressure_compression_chamber);
+            .update_flow_through_valve(
+                context,
+                &mut engine_4_system.high_pressure_compression_chamber,
+            );
 
-        let [left_cross_bleed_valve, center_cross_bleed_valve, right_cross_bleed_valve] = &mut self.cross_bleed_valves;
+        let [left_cross_bleed_valve, center_cross_bleed_valve, right_cross_bleed_valve] =
+            &mut self.cross_bleed_valves;
 
         left_cross_bleed_valve.update_move_fluid(context, engine_1_system, engine_2_system);
         center_cross_bleed_valve.update_move_fluid(context, engine_1_system, engine_4_system);
@@ -298,10 +309,18 @@ impl A380Pneumatic {
 
         // PACKS
         let [pack_1, pack_2] = &mut self.packs;
-        pack_1.update(context, engine_1_system, pack_flow_valve_signals);
-        pack_1.update(context, engine_2_system, pack_flow_valve_signals);
-        pack_2.update(context, engine_3_system, pack_flow_valve_signals);
-        pack_2.update(context, engine_4_system, pack_flow_valve_signals);
+        pack_1.update(
+            context,
+            engine_1_system,
+            engine_2_system,
+            pack_flow_valve_signals,
+        );
+        pack_2.update(
+            context,
+            engine_3_system,
+            engine_4_system,
+            pack_flow_valve_signals,
+        );
     }
 
     // TODO: Returning a mutable reference here is not great. I was running into an issue with the update order:
@@ -346,10 +365,12 @@ impl EngineStartState for A380Pneumatic {
 }
 impl PackFlowValveState for A380Pneumatic {
     fn pack_flow_valve_is_open(&self, pack_id: usize) -> bool {
-        self.packs[pack_id].pack_flow_valve_is_open()
+        self.packs[pack_id].left_pack_flow_valve_is_open()
+        // TODO: Need to make this use both PACK valves
     }
     fn pack_flow_valve_air_flow(&self, pack_id: usize) -> MassRate {
-        self.packs[pack_id].pack_flow_valve_air_flow()
+        // TODO: Need to make this use both PACK valves
+        self.packs[pack_id].left_pack_flow_valve_air_flow()
     }
 }
 impl SimulationElement for A380Pneumatic {
@@ -421,9 +442,7 @@ struct CoreProcessingInputoutputModuleA {
     is_powered: bool,
 }
 impl CoreProcessingInputoutputModuleA {
-    fn new(
-        powered_by: ElectricalBusType,
-    ) -> Self {
+    fn new(powered_by: ElectricalBusType) -> Self {
         Self {
             units: [
                 CoreProcessingInputOutputModuleAUnit::new(1),
@@ -457,10 +476,7 @@ impl CoreProcessingInputoutputModuleA {
         }
     }
 
-    pub fn unit_for_engine(
-        &self,
-        engine_number: usize,
-    ) -> &CoreProcessingInputOutputModuleAUnit {
+    pub fn unit_for_engine(&self, engine_number: usize) -> &CoreProcessingInputOutputModuleAUnit {
         &self.units[engine_number - 1]
     }
 
@@ -502,9 +518,7 @@ struct CoreProcessingInputOutputModuleAUnit {
 impl CoreProcessingInputOutputModuleAUnit {
     const PRESSURE_REGULATING_VALVE_TARGET_PSI: f64 = 40.; // FCOM
 
-    fn new(
-        engine_number: usize,
-    ) -> Self {
+    fn new(engine_number: usize) -> Self {
         Self {
             engine_number,
             pressure_regulating_valve_is_closed: false,
@@ -517,7 +531,15 @@ impl CoreProcessingInputOutputModuleAUnit {
             is_apu_bleed_valve_open: false,
             is_apu_bleed_on: false,
             high_pressure_valve_pid: PidController::new(0.05, 0.05, 0., 0., 1., 50., 1.),
-            pressure_regulating_valve_pid: PidController::new(0.1, 0.05, 0., 0., 1., Self::PRESSURE_REGULATING_VALVE_TARGET_PSI, 1.),
+            pressure_regulating_valve_pid: PidController::new(
+                0.1,
+                0.05,
+                0.,
+                0.,
+                1.,
+                Self::PRESSURE_REGULATING_VALVE_TARGET_PSI,
+                1.,
+            ),
             fan_air_valve_pid: PidController::new(-0.005, -0.001, 0., 0., 1., 200., 1.),
             cross_bleed_valve_selector: CrossBleedValveSelectorMode::Auto,
         }
@@ -564,8 +586,7 @@ impl CoreProcessingInputOutputModuleAUnit {
     }
 
     fn should_close_pressure_regulating_valve_because_apu_bleed_is_on(&self) -> bool {
-        self.is_apu_bleed_on
-            && self.is_apu_bleed_valve_open
+        self.is_apu_bleed_on && self.is_apu_bleed_valve_open
     }
 }
 impl ControllerSignal<HighPressureValveSignal> for CoreProcessingInputOutputModuleAUnit {
@@ -1000,9 +1021,14 @@ impl A380PneumaticOverheadPanel {
         }
     }
 }
-impl EngineBleedPushbutton for A380PneumaticOverheadPanel {
-    fn engine_bleed_pushbuttons_are_auto(&self) -> [bool; 2] {
-        [self.engine_1_bleed.is_auto(), self.engine_2_bleed.is_auto()]
+impl EngineBleedPushbutton<4> for A380PneumaticOverheadPanel {
+    fn engine_bleed_pushbuttons_are_auto(&self) -> [bool; 4] {
+        [
+            self.engine_1_bleed.is_auto(),
+            self.engine_2_bleed.is_auto(),
+            self.engine_3_bleed.is_auto(),
+            self.engine_4_bleed.is_auto(),
+        ]
     }
 }
 impl SimulationElement for A380PneumaticOverheadPanel {
@@ -1074,57 +1100,97 @@ impl SimulationElement for FullAuthorityDigitalEngineControl {
 
 /// A struct to hold all the pack related components
 struct PackComplex {
-    engine_number: usize,
-    pack_flow_valve_id: VariableIdentifier,
-    pack_flow_valve_flow_rate_id: VariableIdentifier,
+    pack_number: usize,
+    left_pack_flow_valve_id: VariableIdentifier,
+    right_pack_flow_valve_id: VariableIdentifier,
+    left_pack_flow_valve_flow_rate_id: VariableIdentifier,
+    right_pack_flow_valve_flow_rate_id: VariableIdentifier,
     pack_container: PneumaticPipe,
     exhaust: PneumaticExhaust,
-    pack_flow_valve: DefaultValve,
+    left_pack_flow_valve: DefaultValve,
+    right_pack_flow_valve: DefaultValve,
 }
 impl PackComplex {
-    fn new(context: &mut InitContext, engine_number: usize) -> Self {
+    fn new(context: &mut InitContext, pack_number: usize) -> Self {
         Self {
-            engine_number,
-            pack_flow_valve_id: context.get_identifier(Self::pack_flow_valve_id(engine_number)),
-            pack_flow_valve_flow_rate_id: context
-                .get_identifier(format!("PNEU_PACK_{}_FLOW_VALVE_FLOW_RATE", engine_number)),
+            pack_number,
+            left_pack_flow_valve_id: context
+                .get_identifier(Self::pack_flow_valve_id(pack_number, 1)),
+            right_pack_flow_valve_id: context
+                .get_identifier(Self::pack_flow_valve_id(pack_number, 2)),
+            left_pack_flow_valve_flow_rate_id: context.get_identifier(format!(
+                "PNEU_PACK_{}_FLOW_VALVE_{}_FLOW_RATE",
+                pack_number, 1
+            )),
+            right_pack_flow_valve_flow_rate_id: context.get_identifier(format!(
+                "PNEU_PACK_{}_FLOW_VALVE_{}_FLOW_RATE",
+                pack_number, 2
+            )),
             pack_container: PneumaticPipe::new(
                 Volume::new::<cubic_meter>(2.),
                 Pressure::new::<psi>(14.7),
                 ThermodynamicTemperature::new::<degree_celsius>(15.),
             ),
             exhaust: PneumaticExhaust::new(0.3, 0.3, Pressure::new::<psi>(0.)),
-            pack_flow_valve: DefaultValve::new_closed(),
+            left_pack_flow_valve: DefaultValve::new_closed(),
+            right_pack_flow_valve: DefaultValve::new_closed(),
         }
     }
 
-    fn pack_flow_valve_id(number: usize) -> String {
-        format!("COND_PACK_FLOW_VALVE_{}_IS_OPEN", number)
+    fn pack_flow_valve_id(pack_number: usize, number: usize) -> String {
+        format!("COND_PACK_{}_FLOW_VALVE_{}_IS_OPEN", pack_number, number)
     }
 
     fn update(
         &mut self,
         context: &UpdateContext,
-        from: &mut impl PneumaticContainer,
-        pack_flow_valve_signals: &impl PackFlowControllers<3>,
+        left_input: &mut impl PneumaticContainer,
+        right_input: &mut impl PneumaticContainer,
+        pack_flow_valve_signals: &impl PackFlowControllers<3, 4>,
     ) {
-        self.pack_flow_valve.update_open_amount(
-            &pack_flow_valve_signals.pack_flow_controller(self.engine_number.into()),
+        self.left_pack_flow_valve.update_open_amount(
+            &pack_flow_valve_signals.pack_flow_controller(self.pack_number.into()),
         );
 
-        self.pack_flow_valve
-            .update_move_fluid(context, from, &mut self.pack_container);
+        self.right_pack_flow_valve.update_open_amount(
+            &pack_flow_valve_signals.pack_flow_controller(self.pack_number.into()),
+        );
+
+        self.left_pack_flow_valve
+            .update_move_fluid(context, left_input, &mut self.pack_container);
+
+        self.right_pack_flow_valve.update_move_fluid(
+            context,
+            right_input,
+            &mut self.pack_container,
+        );
 
         self.exhaust
             .update_move_fluid(context, &mut self.pack_container);
     }
 
-    fn pack_flow_valve_is_open(&self) -> bool {
-        self.pack_flow_valve.is_open()
+    fn left_pack_flow_valve_is_open(&self) -> Ratio {
+        self.left_pack_flow_valve.is_open()
     }
 
-    fn pack_flow_valve_air_flow(&self) -> MassRate {
-        self.pack_flow_valve.fluid_flow()
+    fn right_pack_flow_valve_is_open(&self) -> Ratio {
+        self.right_pack_flow_valve.is_open()
+    }
+
+    fn left_pack_flow_valve_open_amount(&self) -> Ratio {
+        self.left_pack_flow_valve.open_amount()
+    }
+
+    fn right_pack_flow_valve_open_amount(&self) -> Ratio {
+        self.right_pack_flow_valve.open_amount()
+    }
+
+    fn left_pack_flow_valve_air_flow(&self) -> MassRate {
+        self.left_pack_flow_valve.fluid_flow()
+    }
+
+    fn right_pack_flow_valve_air_flow(&self) -> MassRate {
+        self.right_pack_flow_valve.fluid_flow()
     }
 }
 impl PneumaticContainer for PackComplex {
@@ -1160,10 +1226,21 @@ impl PneumaticContainer for PackComplex {
 }
 impl SimulationElement for PackComplex {
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(&self.pack_flow_valve_id, self.pack_flow_valve_is_open());
         writer.write(
-            &self.pack_flow_valve_flow_rate_id,
-            self.pack_flow_valve.fluid_flow(),
+            &self.left_pack_flow_valve_id,
+            self.left_pack_flow_valve_is_open(),
+        );
+        writer.write(
+            &self.right_pack_flow_valve_id,
+            self.right_pack_flow_valve_is_open(),
+        );
+        writer.write(
+            &self.left_pack_flow_valve_flow_rate_id,
+            self.left_pack_flow_valve.fluid_flow(),
+        );
+        writer.write(
+            &self.right_pack_flow_valve_flow_rate_id,
+            self.right_pack_flow_valve.fluid_flow(),
         );
     }
 }
@@ -1242,10 +1319,7 @@ impl SimulationElement for CrossBleedValve {
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(
-            &self.valve_id,
-            self.is_open(),
-        );
+        writer.write(&self.valve_id, self.is_open());
     }
 }
 
@@ -1260,9 +1334,8 @@ mod tests {
         engine::leap_engine::LeapEngine,
         failures::FailureType,
         pneumatic::{
-            BleedMonitoringComputerChannelOperationMode, ControllablePneumaticValve,
-            CrossBleedValveSelectorMode, EngineState, PneumaticContainer, PneumaticValveSignal,
-            TargetPressureTemperatureSignal,
+            ControllablePneumaticValve, CrossBleedValveSelectorMode, EngineState,
+            PneumaticContainer, PneumaticValveSignal, TargetPressureTemperatureSignal,
         },
         pressurization::PressurizationOverheadPanel,
         shared::{
@@ -1293,9 +1366,9 @@ mod tests {
     use super::{A380Pneumatic, A380PneumaticOverheadPanel};
 
     struct TestAirConditioning {
-        a380_air_conditioning_system: AirConditioningSystem<3, 2>,
-        test_cabin: TestCabin,
+        a380_air_conditioning_system: AirConditioningSystem<3, 2, 4>,
 
+        test_cabin: TestCabin,
         adirs: TestAdirs,
         pressurization: TestPressurization,
         pressurization_overhead: PressurizationOverheadPanel,
@@ -1323,10 +1396,10 @@ mod tests {
         fn update(
             &mut self,
             context: &UpdateContext,
-            engines: [&impl EngineCorrectedN1; 2],
+            engines: [&impl EngineCorrectedN1; 4],
             engine_fire_push_buttons: &impl EngineFirePushButtons,
             pneumatic: &(impl EngineStartState + PackFlowValveState + PneumaticBleed),
-            pneumatic_overhead: &impl EngineBleedPushbutton,
+            pneumatic_overhead: &impl EngineBleedPushbutton<4>,
             lgciu: [&impl LgciuWeightOnWheels; 2],
         ) {
             self.a380_air_conditioning_system.update(
@@ -1343,8 +1416,8 @@ mod tests {
             );
         }
     }
-    impl PackFlowControllers<3> for TestAirConditioning {
-        fn pack_flow_controller(&self, pack_id: Pack) -> PackFlowController<3> {
+    impl PackFlowControllers<3, 4> for TestAirConditioning {
+        fn pack_flow_controller(&self, pack_id: Pack) -> PackFlowController<3, 4> {
             self.a380_air_conditioning_system
                 .pack_flow_controller(pack_id)
         }
@@ -1626,7 +1699,12 @@ mod tests {
             self.apu.update(self.pneumatic.apu_bleed_air_valve());
             self.pneumatic.update(
                 context,
-                [&self.engine_1, &self.engine_2, &self.engine_3, &self.engine_4],
+                [
+                    &self.engine_1,
+                    &self.engine_2,
+                    &self.engine_3,
+                    &self.engine_4,
+                ],
                 &self.pneumatic_overhead_panel,
                 &self.fire_pushbuttons,
                 &self.apu,
@@ -1634,7 +1712,12 @@ mod tests {
             );
             self.air_conditioning.update(
                 context,
-                [&self.engine_1, &self.engine_3],
+                [
+                    &self.engine_1,
+                    &self.engine_2,
+                    &self.engine_3,
+                    &self.engine_4,
+                ],
                 &self.fire_pushbuttons,
                 &self.pneumatic,
                 &self.pneumatic_overhead_panel,
@@ -2021,7 +2104,12 @@ mod tests {
         }
 
         fn cross_bleed_valves_are_open(&self) -> bool {
-            self.query(|a| a.pneumatic.cross_bleed_valves.iter().all(|cbv| cbv.is_open()))
+            self.query(|a| {
+                a.pneumatic
+                    .cross_bleed_valves
+                    .iter()
+                    .all(|cbv| cbv.is_open())
+            })
         }
 
         fn cross_bleed_valve_selector(&self) -> CrossBleedValveSelectorMode {
@@ -2046,8 +2134,20 @@ mod tests {
             self
         }
 
-        fn pack_flow_valve_is_open(&self, number: usize) -> bool {
-            self.query(|a| a.pneumatic.packs[number - 1].pack_flow_valve.is_open())
+        fn left_pack_flow_valve_is_open(&self, pack_number: usize) -> bool {
+            self.query(|a| {
+                a.pneumatic.packs[pack_number - 1]
+                    .left_pack_flow_valve
+                    .is_open()
+            })
+        }
+
+        fn right_pack_flow_valve_is_open(&self, pack_number: usize) -> bool {
+            self.query(|a| {
+                a.pneumatic.packs[pack_number - 1]
+                    .right_pack_flow_valve
+                    .is_open()
+            })
         }
 
         fn both_packs_auto(self) -> Self {
@@ -2067,28 +2167,34 @@ mod tests {
             self
         }
 
-        fn pack_flow_valve_flow(&self, engine_number: usize) -> MassRate {
-            self.query(|a| {
-                a.pneumatic.packs[engine_number - 1]
-                    .pack_flow_valve
-                    .fluid_flow()
-            })
+        fn left_pack_flow_valve_flow(&self, pack_number: usize) -> MassRate {
+            self.query(|a| a.pneumatic.packs[pack_number - 1].left_pack_flow_valve_air_flow())
         }
 
-        fn pack_pressure(&self, engine_number: usize) -> Pressure {
-            self.query(|a| {
-                a.pneumatic.packs[engine_number - 1]
-                    .pack_container
-                    .pressure()
-            })
+        fn right_pack_flow_valve_flow(&self, pack_number: usize) -> MassRate {
+            self.query(|a| a.pneumatic.packs[pack_number - 1].right_pack_flow_valve_air_flow())
+        }
+
+        fn pack_pressure(&self, pack_number: usize) -> Pressure {
+            self.query(|a| a.pneumatic.packs[pack_number - 1].pack_container.pressure())
         }
 
         fn cross_bleed_valves_are_powered_for_automatic_control(&self) -> bool {
-            self.query(|a| a.pneumatic.cross_bleed_valves.iter().all(|cbv| cbv.is_powered_for_automatic_control))
+            self.query(|a| {
+                a.pneumatic
+                    .cross_bleed_valves
+                    .iter()
+                    .all(|cbv| cbv.is_powered_for_automatic_control)
+            })
         }
 
         fn cross_bleed_valves_are_powered_for_manual_control(&self) -> bool {
-            self.query(|a| a.pneumatic.cross_bleed_valves.iter().all(|cbv| cbv.is_powered_for_manual_control))
+            self.query(|a| {
+                a.pneumatic
+                    .cross_bleed_valves
+                    .iter()
+                    .all(|cbv| cbv.is_powered_for_manual_control)
+            })
         }
 
         fn command_pack_flow_selector_position(&mut self, value: u8) {
@@ -2154,7 +2260,8 @@ mod tests {
             time_points.push(i as f64 * 16.);
 
             if i == 1000 {
-                test_bed = test_bed.cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Open)
+                test_bed =
+                    test_bed.cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Open)
             }
 
             high_pressures.push(test_bed.hp_pressure(1).get::<psi>());
@@ -2938,7 +3045,6 @@ mod tests {
         assert!(test_bed.yellow_hydraulic_reservoir_pressure() >= pressure_before_yellow);
     }
 
-
     #[test]
     fn cross_bleed_valve_does_not_accept_manual_signal_when_bus_unpowered() {
         let mut test_bed = test_bed_with()
@@ -3034,8 +3140,10 @@ mod tests {
         fn pack_flow_valve_starts_closed() {
             let test_bed = test_bed();
 
-            assert!(!test_bed.pack_flow_valve_is_open(1));
-            assert!(!test_bed.pack_flow_valve_is_open(2));
+            assert!(!test_bed.left_pack_flow_valve_is_open(1));
+            assert!(!test_bed.right_pack_flow_valve_is_open(1));
+            assert!(!test_bed.left_pack_flow_valve_is_open(2));
+            assert!(!test_bed.right_pack_flow_valve_is_open(2));
         }
 
         #[test]
@@ -3049,8 +3157,10 @@ mod tests {
                 .set_pack_flow_pb_is_auto(2, true)
                 .and_stabilize();
 
-            assert!(test_bed.pack_flow_valve_is_open(1));
-            assert!(test_bed.pack_flow_valve_is_open(2));
+            assert!(test_bed.left_pack_flow_valve_is_open(1));
+            assert!(test_bed.right_pack_flow_valve_is_open(1));
+            assert!(test_bed.left_pack_flow_valve_is_open(2));
+            assert!(test_bed.right_pack_flow_valve_is_open(2));
         }
 
         #[test]
@@ -3062,16 +3172,20 @@ mod tests {
                 .set_pack_flow_pb_is_auto(2, false)
                 .and_stabilize();
 
-            assert!(test_bed.pack_flow_valve_is_open(1));
-            assert!(!test_bed.pack_flow_valve_is_open(2));
+            assert!(test_bed.left_pack_flow_valve_is_open(1));
+            assert!(test_bed.right_pack_flow_valve_is_open(1));
+            assert!(!test_bed.left_pack_flow_valve_is_open(2));
+            assert!(!test_bed.right_pack_flow_valve_is_open(2));
 
             test_bed = test_bed
                 .set_pack_flow_pb_is_auto(1, false)
                 .and_run()
                 .and_run();
 
-            assert!(!test_bed.pack_flow_valve_is_open(1));
-            assert!(!test_bed.pack_flow_valve_is_open(2));
+            assert!(!test_bed.left_pack_flow_valve_is_open(1));
+            assert!(!test_bed.right_pack_flow_valve_is_open(1));
+            assert!(!test_bed.left_pack_flow_valve_is_open(2));
+            assert!(!test_bed.right_pack_flow_valve_is_open(2));
         }
 
         #[test]
@@ -3086,8 +3200,10 @@ mod tests {
                 .both_packs_auto()
                 .and_stabilize();
 
-            assert!(test_bed.pack_flow_valve_flow(1) > flow_rate_tolerance());
-            assert!(test_bed.pack_flow_valve_flow(2) > flow_rate_tolerance());
+            assert!(test_bed.left_pack_flow_valve_flow(1) > flow_rate_tolerance());
+            assert!(test_bed.right_pack_flow_valve_flow(1) > flow_rate_tolerance());
+            assert!(test_bed.left_pack_flow_valve_flow(2) > flow_rate_tolerance());
+            assert!(test_bed.right_pack_flow_valve_flow(2) > flow_rate_tolerance());
 
             test_bed = test_bed
                 .set_pack_flow_pb_is_auto(1, false)
@@ -3095,8 +3211,56 @@ mod tests {
                 .and_run()
                 .and_run();
 
-            assert!(test_bed.pack_flow_valve_flow(1) < flow_rate_tolerance());
-            assert!(test_bed.pack_flow_valve_flow(2) < flow_rate_tolerance());
+            assert!(test_bed.left_pack_flow_valve_flow(1) < flow_rate_tolerance());
+            assert!(test_bed.right_pack_flow_valve_flow(1) < flow_rate_tolerance());
+            assert!(test_bed.left_pack_flow_valve_flow(2) < flow_rate_tolerance());
+            assert!(test_bed.right_pack_flow_valve_flow(2) < flow_rate_tolerance());
+        }
+
+        #[test]
+        fn pack_flow_valve_closes_with_fire_pb_pressed() {
+            let mut test_bed = test_bed_with()
+                .idle_eng1()
+                .idle_eng2()
+                .idle_eng3()
+                .idle_eng4()
+                .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Shut)
+                .mach_number(MachNumber(0.))
+                .both_packs_auto()
+                .and_stabilize();
+
+            assert!(test_bed.left_pack_flow_valve_is_open(1));
+            assert!(test_bed.right_pack_flow_valve_is_open(1));
+            assert!(test_bed.left_pack_flow_valve_is_open(2));
+            assert!(test_bed.right_pack_flow_valve_is_open(2));
+
+            test_bed = test_bed.release_fire_pushbutton(1).and_run().and_run();
+
+            assert!(!test_bed.left_pack_flow_valve_is_open(1));
+            assert!(test_bed.right_pack_flow_valve_is_open(1));
+            assert!(test_bed.left_pack_flow_valve_is_open(2));
+            assert!(test_bed.right_pack_flow_valve_is_open(2));
+
+            test_bed = test_bed.release_fire_pushbutton(2).and_run();
+
+            assert!(!test_bed.left_pack_flow_valve_is_open(1));
+            assert!(!test_bed.right_pack_flow_valve_is_open(1));
+            assert!(test_bed.left_pack_flow_valve_is_open(2));
+            assert!(test_bed.right_pack_flow_valve_is_open(2));
+
+            test_bed = test_bed.release_fire_pushbutton(3).and_run();
+
+            assert!(!test_bed.left_pack_flow_valve_is_open(1));
+            assert!(!test_bed.right_pack_flow_valve_is_open(1));
+            assert!(!test_bed.left_pack_flow_valve_is_open(2));
+            assert!(test_bed.right_pack_flow_valve_is_open(2));
+
+            test_bed = test_bed.release_fire_pushbutton(4).and_run();
+
+            assert!(!test_bed.left_pack_flow_valve_is_open(1));
+            assert!(!test_bed.right_pack_flow_valve_is_open(1));
+            assert!(!test_bed.left_pack_flow_valve_is_open(2));
+            assert!(!test_bed.right_pack_flow_valve_is_open(2));
         }
     }
 }

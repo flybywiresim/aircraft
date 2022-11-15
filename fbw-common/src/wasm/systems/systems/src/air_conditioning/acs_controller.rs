@@ -35,20 +35,19 @@ enum ACSCActiveComputer {
     None,
 }
 
-pub(super) struct AirConditioningSystemController<const ZONES: usize> {
-    aircraft_state: AirConditioningStateManager,
+pub(super) struct AirConditioningSystemController<const ZONES: usize, const ENGINES: usize> {
+    aircraft_state: AirConditioningStateManager<ENGINES>,
     zone_controller: Vec<ZoneController<ZONES>>,
-    pack_flow_controller: [PackFlowController<ZONES>; 2],
+    pack_flow_controller: [PackFlowController<ZONES, ENGINES>; 2],
     trim_air_system_controller: TrimAirSystemController<ZONES>,
     cabin_fans_controller: CabinFanController<ZONES>,
-
     primary_powered_by: Vec<ElectricalBusType>,
     primary_is_powered: bool,
     secondary_powered_by: Vec<ElectricalBusType>,
     secondary_is_powered: bool,
 }
 
-impl<const ZONES: usize> AirConditioningSystemController<ZONES> {
+impl<const ZONES: usize, const ENGINES: usize> AirConditioningSystemController<ZONES, ENGINES> {
     pub fn new(
         context: &mut InitContext,
         cabin_zone_ids: &[ZoneType; ZONES],
@@ -82,10 +81,10 @@ impl<const ZONES: usize> AirConditioningSystemController<ZONES> {
         adirs: &impl GroundSpeed,
         acs_overhead: &AirConditioningSystemOverhead<ZONES>,
         cabin_temperature: &impl CabinTemperature,
-        engines: [&impl EngineCorrectedN1; 2],
+        engines: [&impl EngineCorrectedN1; ENGINES],
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         pneumatic: &(impl EngineStartState + PackFlowValveState + PneumaticBleed),
-        pneumatic_overhead: &impl EngineBleedPushbutton,
+        pneumatic_overhead: &impl EngineBleedPushbutton<ENGINES>,
         pressurization: &impl CabinAir,
         pressurization_overhead: &PressurizationOverheadPanel,
         lgciu: [&impl LgciuWeightOnWheels; 2],
@@ -176,19 +175,25 @@ impl<const ZONES: usize> AirConditioningSystemController<ZONES> {
     }
 }
 
-impl<const ZONES: usize> PackFlow for AirConditioningSystemController<ZONES> {
+impl<const ZONES: usize, const ENGINES: usize> PackFlow
+    for AirConditioningSystemController<ZONES, ENGINES>
+{
     fn pack_flow(&self) -> MassRate {
         self.pack_flow_controller[0].pack_flow() + self.pack_flow_controller[1].pack_flow()
     }
 }
 
-impl<const ZONES: usize> PackFlowControllers<ZONES> for AirConditioningSystemController<ZONES> {
-    fn pack_flow_controller(&self, pack_id: Pack) -> PackFlowController<ZONES> {
+impl<const ZONES: usize, const ENGINES: usize> PackFlowControllers<ZONES, ENGINES>
+    for AirConditioningSystemController<ZONES, ENGINES>
+{
+    fn pack_flow_controller(&self, pack_id: Pack) -> PackFlowController<ZONES, ENGINES> {
         self.pack_flow_controller[pack_id.to_index()]
     }
 }
 
-impl<const ZONES: usize> SimulationElement for AirConditioningSystemController<ZONES> {
+impl<const ZONES: usize, const ENGINES: usize> SimulationElement
+    for AirConditioningSystemController<ZONES, ENGINES>
+{
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         accept_iterable!(self.pack_flow_controller, visitor);
         self.trim_air_system_controller.accept(visitor);
@@ -206,17 +211,17 @@ impl<const ZONES: usize> SimulationElement for AirConditioningSystemController<Z
 }
 
 #[derive(Copy, Clone)]
-enum AirConditioningStateManager {
-    Initialisation(AirConditioningState<Initialisation>),
-    OnGround(AirConditioningState<OnGround>),
-    BeginTakeOff(AirConditioningState<BeginTakeOff>),
-    EndTakeOff(AirConditioningState<EndTakeOff>),
-    InFlight(AirConditioningState<InFlight>),
-    BeginLanding(AirConditioningState<BeginLanding>),
-    EndLanding(AirConditioningState<EndLanding>),
+enum AirConditioningStateManager<const ENGINES: usize> {
+    Initialisation(AirConditioningState<Initialisation, ENGINES>),
+    OnGround(AirConditioningState<OnGround, ENGINES>),
+    BeginTakeOff(AirConditioningState<BeginTakeOff, ENGINES>),
+    EndTakeOff(AirConditioningState<EndTakeOff, ENGINES>),
+    InFlight(AirConditioningState<InFlight, ENGINES>),
+    BeginLanding(AirConditioningState<BeginLanding, ENGINES>),
+    EndLanding(AirConditioningState<EndLanding, ENGINES>),
 }
 
-impl AirConditioningStateManager {
+impl<const ENGINES: usize> AirConditioningStateManager<ENGINES> {
     const TAKEOFF_THRESHOLD_SPEED_KNOTS: f64 = 70.;
 
     fn new() -> Self {
@@ -227,7 +232,7 @@ impl AirConditioningStateManager {
         mut self,
         context: &UpdateContext,
         adirs: &impl GroundSpeed,
-        engines: [&impl EngineCorrectedN1; 2],
+        engines: [&impl EngineCorrectedN1; ENGINES],
         lgciu: [&impl LgciuWeightOnWheels; 2],
     ) -> Self {
         self = match self {
@@ -246,7 +251,7 @@ impl AirConditioningStateManager {
         lgciu.iter().all(|a| a.left_and_right_gear_compressed(true))
     }
 
-    fn engines_are_in_takeoff(engines: [&impl EngineCorrectedN1; 2]) -> bool {
+    fn engines_are_in_takeoff(engines: [&impl EngineCorrectedN1; ENGINES]) -> bool {
         engines
             .iter()
             .all(|x| x.corrected_n1() > Ratio::new::<percent>(70.))
@@ -255,8 +260,10 @@ impl AirConditioningStateManager {
 
 macro_rules! transition {
     ($from: ty, $to: tt) => {
-        impl From<AirConditioningState<$from>> for AirConditioningState<$to> {
-            fn from(_: AirConditioningState<$from>) -> AirConditioningState<$to> {
+        impl<const ENGINES: usize> From<AirConditioningState<$from, ENGINES>>
+            for AirConditioningState<$to, ENGINES>
+        {
+            fn from(_: AirConditioningState<$from, ENGINES>) -> AirConditioningState<$to, ENGINES> {
                 AirConditioningState {
                     aircraft_state: std::marker::PhantomData,
                     timer: Duration::from_secs(0),
@@ -267,12 +274,12 @@ macro_rules! transition {
 }
 
 #[derive(Copy, Clone)]
-struct AirConditioningState<S> {
+struct AirConditioningState<S, const ENGINES: usize> {
     aircraft_state: std::marker::PhantomData<S>,
     timer: Duration,
 }
 
-impl<S> AirConditioningState<S> {
+impl<S, const ENGINES: usize> AirConditioningState<S, ENGINES> {
     fn increase_timer(mut self, context: &UpdateContext) -> Self {
         self.timer += context.delta();
         self
@@ -282,7 +289,7 @@ impl<S> AirConditioningState<S> {
 #[derive(Copy, Clone)]
 struct Initialisation;
 
-impl AirConditioningState<Initialisation> {
+impl<const ENGINES: usize> AirConditioningState<Initialisation, ENGINES> {
     fn init() -> Self {
         Self {
             aircraft_state: std::marker::PhantomData,
@@ -291,10 +298,10 @@ impl AirConditioningState<Initialisation> {
     }
 
     fn step(
-        self: AirConditioningState<Initialisation>,
+        self: AirConditioningState<Initialisation, ENGINES>,
         lgciu: [&impl LgciuWeightOnWheels; 2],
-    ) -> AirConditioningStateManager {
-        if AirConditioningStateManager::landing_gear_is_compressed(lgciu) {
+    ) -> AirConditioningStateManager<ENGINES> {
+        if AirConditioningStateManager::<ENGINES>::landing_gear_is_compressed(lgciu) {
             AirConditioningStateManager::OnGround(self.into())
         } else {
             AirConditioningStateManager::InFlight(self.into())
@@ -308,16 +315,16 @@ transition!(Initialisation, InFlight);
 #[derive(Copy, Clone)]
 struct OnGround;
 
-impl AirConditioningState<OnGround> {
+impl<const ENGINES: usize> AirConditioningState<OnGround, ENGINES> {
     fn step(
-        self: AirConditioningState<OnGround>,
-        engines: [&impl EngineCorrectedN1; 2],
+        self: AirConditioningState<OnGround, ENGINES>,
+        engines: [&impl EngineCorrectedN1; ENGINES],
         lgciu: [&impl LgciuWeightOnWheels; 2],
-    ) -> AirConditioningStateManager {
-        if !AirConditioningStateManager::landing_gear_is_compressed(lgciu) {
+    ) -> AirConditioningStateManager<ENGINES> {
+        if !AirConditioningStateManager::<ENGINES>::landing_gear_is_compressed(lgciu) {
             AirConditioningStateManager::InFlight(self.into())
         } else if AirConditioningStateManager::engines_are_in_takeoff(engines)
-            && AirConditioningStateManager::landing_gear_is_compressed(lgciu)
+            && AirConditioningStateManager::<ENGINES>::landing_gear_is_compressed(lgciu)
         {
             AirConditioningStateManager::BeginTakeOff(self.into())
         } else {
@@ -332,16 +339,16 @@ transition!(OnGround, BeginTakeOff);
 #[derive(Copy, Clone)]
 struct BeginTakeOff;
 
-impl AirConditioningState<BeginTakeOff> {
+impl<const ENGINES: usize> AirConditioningState<BeginTakeOff, ENGINES> {
     fn step(
-        self: AirConditioningState<BeginTakeOff>,
+        self: AirConditioningState<BeginTakeOff, ENGINES>,
         context: &UpdateContext,
         adirs: &impl GroundSpeed,
-        engines: [&impl EngineCorrectedN1; 2],
-    ) -> AirConditioningStateManager {
+        engines: [&impl EngineCorrectedN1; ENGINES],
+    ) -> AirConditioningStateManager<ENGINES> {
         if (AirConditioningStateManager::engines_are_in_takeoff(engines)
             && adirs.ground_speed().get::<knot>()
-                > AirConditioningStateManager::TAKEOFF_THRESHOLD_SPEED_KNOTS)
+                > AirConditioningStateManager::<ENGINES>::TAKEOFF_THRESHOLD_SPEED_KNOTS)
             || self.timer > Duration::from_secs(35)
         {
             AirConditioningStateManager::EndTakeOff(self.into())
@@ -356,13 +363,13 @@ transition!(BeginTakeOff, EndTakeOff);
 #[derive(Copy, Clone)]
 struct EndTakeOff;
 
-impl AirConditioningState<EndTakeOff> {
+impl<const ENGINES: usize> AirConditioningState<EndTakeOff, ENGINES> {
     fn step(
-        self: AirConditioningState<EndTakeOff>,
+        self: AirConditioningState<EndTakeOff, ENGINES>,
         context: &UpdateContext,
         lgciu: [&impl LgciuWeightOnWheels; 2],
-    ) -> AirConditioningStateManager {
-        if !AirConditioningStateManager::landing_gear_is_compressed(lgciu)
+    ) -> AirConditioningStateManager<ENGINES> {
+        if !AirConditioningStateManager::<ENGINES>::landing_gear_is_compressed(lgciu)
             || self.timer > Duration::from_secs(10)
         {
             AirConditioningStateManager::InFlight(self.into())
@@ -377,14 +384,14 @@ transition!(EndTakeOff, InFlight);
 #[derive(Copy, Clone)]
 struct InFlight;
 
-impl AirConditioningState<InFlight> {
+impl<const ENGINES: usize> AirConditioningState<InFlight, ENGINES> {
     fn step(
-        self: AirConditioningState<InFlight>,
-        engines: [&impl EngineCorrectedN1; 2],
+        self: AirConditioningState<InFlight, ENGINES>,
+        engines: [&impl EngineCorrectedN1; ENGINES],
         lgciu: [&impl LgciuWeightOnWheels; 2],
-    ) -> AirConditioningStateManager {
+    ) -> AirConditioningStateManager<ENGINES> {
         if !AirConditioningStateManager::engines_are_in_takeoff(engines)
-            && AirConditioningStateManager::landing_gear_is_compressed(lgciu)
+            && AirConditioningStateManager::<ENGINES>::landing_gear_is_compressed(lgciu)
         {
             AirConditioningStateManager::BeginLanding(self.into())
         } else {
@@ -398,16 +405,16 @@ transition!(InFlight, BeginLanding);
 #[derive(Copy, Clone)]
 struct BeginLanding;
 
-impl AirConditioningState<BeginLanding> {
+impl<const ENGINES: usize> AirConditioningState<BeginLanding, ENGINES> {
     fn step(
-        self: AirConditioningState<BeginLanding>,
+        self: AirConditioningState<BeginLanding, ENGINES>,
         context: &UpdateContext,
         adirs: &impl GroundSpeed,
-        engines: [&impl EngineCorrectedN1; 2],
-    ) -> AirConditioningStateManager {
+        engines: [&impl EngineCorrectedN1; ENGINES],
+    ) -> AirConditioningStateManager<ENGINES> {
         if (!AirConditioningStateManager::engines_are_in_takeoff(engines)
             && adirs.ground_speed().get::<knot>()
-                < AirConditioningStateManager::TAKEOFF_THRESHOLD_SPEED_KNOTS)
+                < AirConditioningStateManager::<ENGINES>::TAKEOFF_THRESHOLD_SPEED_KNOTS)
             || self.timer > Duration::from_secs(35)
         {
             AirConditioningStateManager::EndLanding(self.into())
@@ -422,11 +429,11 @@ transition!(BeginLanding, EndLanding);
 #[derive(Copy, Clone)]
 struct EndLanding;
 
-impl AirConditioningState<EndLanding> {
+impl<const ENGINES: usize> AirConditioningState<EndLanding, ENGINES> {
     fn step(
-        self: AirConditioningState<EndLanding>,
+        self: AirConditioningState<EndLanding, ENGINES>,
         context: &UpdateContext,
-    ) -> AirConditioningStateManager {
+    ) -> AirConditioningStateManager<ENGINES> {
         if self.timer > Duration::from_secs(10) {
             AirConditioningStateManager::OnGround(self.into())
         } else {
@@ -651,7 +658,7 @@ impl From<usize> for Pack {
 }
 
 #[derive(Copy, Clone)]
-pub struct PackFlowController<const ZONES: usize> {
+pub struct PackFlowController<const ZONES: usize, const ENGINES: usize> {
     pack_flow_id: VariableIdentifier,
 
     id: usize,
@@ -666,7 +673,7 @@ pub struct PackFlowController<const ZONES: usize> {
     fcv_timer_open: Duration,
 }
 
-impl<const ZONES: usize> PackFlowController<ZONES> {
+impl<const ZONES: usize, const ENGINES: usize> PackFlowController<ZONES, ENGINES> {
     const PACK_START_TIME_SECOND: f64 = 30.;
     const PACK_START_FLOW_LIMIT: f64 = 100.;
     const APU_SUPPLY_FLOW_LIMIT: f64 = 120.;
@@ -701,12 +708,12 @@ impl<const ZONES: usize> PackFlowController<ZONES> {
     fn update(
         &mut self,
         context: &UpdateContext,
-        aircraft_state: &AirConditioningStateManager,
+        aircraft_state: &AirConditioningStateManager<ENGINES>,
         acs_overhead: &AirConditioningSystemOverhead<ZONES>,
-        engines: [&impl EngineCorrectedN1; 2],
+        engines: [&impl EngineCorrectedN1; ENGINES],
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         pneumatic: &(impl EngineStartState + PackFlowValveState + PneumaticBleed),
-        pneumatic_overhead: &impl EngineBleedPushbutton,
+        pneumatic_overhead: &impl EngineBleedPushbutton<ENGINES>,
         pressurization: &impl CabinAir,
         pressurization_overhead: &PressurizationOverheadPanel,
         operation_mode: ACSCActiveComputer,
@@ -745,7 +752,7 @@ impl<const ZONES: usize> PackFlowController<ZONES> {
 
     fn flow_demand_determination(
         &self,
-        aircraft_state: &AirConditioningStateManager,
+        aircraft_state: &AirConditioningStateManager<ENGINES>,
         acs_overhead: &AirConditioningSystemOverhead<ZONES>,
         pneumatic: &(impl EngineStartState + PackFlowValveState + PneumaticBleed),
     ) -> Ratio {
@@ -837,9 +844,9 @@ impl<const ZONES: usize> PackFlowController<ZONES> {
 
     fn can_move_fcv(
         &self,
-        engines: [&impl EngineCorrectedN1; 2],
+        engines: [&impl EngineCorrectedN1; ENGINES],
         pneumatic: &(impl PneumaticBleed + EngineStartState),
-        pneumatic_overhead: &impl EngineBleedPushbutton,
+        pneumatic_overhead: &impl EngineBleedPushbutton<ENGINES>,
     ) -> bool {
         // Pneumatic overhead represents engine bleed pushbutton for left [0] and right [1] engine(s)
         ((engines[self.id].corrected_n1() >= Ratio::new::<percent>(15.)
@@ -863,13 +870,15 @@ impl<const ZONES: usize> PackFlowController<ZONES> {
     }
 }
 
-impl<const ZONES: usize> PackFlow for PackFlowController<ZONES> {
+impl<const ZONES: usize, const ENGINES: usize> PackFlow for PackFlowController<ZONES, ENGINES> {
     fn pack_flow(&self) -> MassRate {
         self.pack_flow
     }
 }
 
-impl<const ZONES: usize> ControllerSignal<PackFlowValveSignal> for PackFlowController<ZONES> {
+impl<const ZONES: usize, const ENGINES: usize> ControllerSignal<PackFlowValveSignal>
+    for PackFlowController<ZONES, ENGINES>
+{
     fn signal(&self) -> Option<PackFlowValveSignal> {
         // Only send signal to move the valve if the computer is powered
         if !matches!(self.operation_mode, ACSCActiveComputer::None) {
@@ -885,14 +894,16 @@ impl<const ZONES: usize> ControllerSignal<PackFlowValveSignal> for PackFlowContr
     }
 }
 
-impl<const ZONES: usize> SimulationElement for PackFlowController<ZONES> {
+impl<const ZONES: usize, const ENGINES: usize> SimulationElement
+    for PackFlowController<ZONES, ENGINES>
+{
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.pack_flow_id, self.flow_demand);
     }
 }
 
 #[derive(Clone, Copy)]
-struct TrimAirSystemController<const ZONES: usize> {
+struct TrimAirSystemController<const ZONES: usize, const ENGINES: usize> {
     hot_air_is_enabled_id: VariableIdentifier,
     hot_air_is_open_id: VariableIdentifier,
 
@@ -901,7 +912,7 @@ struct TrimAirSystemController<const ZONES: usize> {
     trim_air_valve_controllers: [TrimAirValveController; ZONES],
 }
 
-impl<const ZONES: usize> TrimAirSystemController<ZONES> {
+impl<const ZONES: usize, const ENGINES: usize> TrimAirSystemController<ZONES, ENGINES> {
     fn new(context: &mut InitContext) -> Self {
         Self {
             hot_air_is_enabled_id: context.get_identifier("HOT_AIR_VALVE_IS_ENABLED".to_owned()),
@@ -918,7 +929,7 @@ impl<const ZONES: usize> TrimAirSystemController<ZONES> {
         context: &UpdateContext,
         acs_overhead: &AirConditioningSystemOverhead<ZONES>,
         duct_demand_temperature: &[ThermodynamicTemperature],
-        pack_flow_controller: &[PackFlowController<ZONES>; 2],
+        pack_flow_controller: &[PackFlowController<ZONES, ENGINES>; 2],
         operation_mode: ACSCActiveComputer,
         pneumatic: &impl PackFlowValveState,
         trim_air_system: &TrimAirSystem<ZONES>,
@@ -953,7 +964,7 @@ impl<const ZONES: usize> TrimAirSystemController<ZONES> {
 
     fn trim_air_pressure_regulating_valve_is_open_determination(
         &self,
-        pack_flow_controller: &[PackFlowController<ZONES>; 2],
+        pack_flow_controller: &[PackFlowController<ZONES, ENGINES>; 2],
         pneumatic: &impl PackFlowValveState,
     ) -> bool {
         !pack_flow_controller
@@ -975,7 +986,9 @@ impl<const ZONES: usize> TrimAirSystemController<ZONES> {
     }
 }
 
-impl<const ZONES: usize> SimulationElement for TrimAirSystemController<ZONES> {
+impl<const ZONES: usize, const ENGINES: usize> SimulationElement
+    for TrimAirSystemController<ZONES, ENGINES>
+{
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.hot_air_is_enabled_id, self.is_enabled());
         writer.write(&self.hot_air_is_open_id, self.is_open());
@@ -1244,7 +1257,7 @@ mod acs_controller_tests {
         }
     }
 
-    impl EngineBleedPushbutton for TestPneumaticOverhead {
+    impl EngineBleedPushbutton<2> for TestPneumaticOverhead {
         fn engine_bleed_pushbuttons_are_auto(&self) -> [bool; 2] {
             [self.engine_1_bleed.is_auto(), self.engine_2_bleed.is_auto()]
         }
@@ -1327,7 +1340,7 @@ mod acs_controller_tests {
         fn update(
             &mut self,
             context: &UpdateContext,
-            pack_flow_valve_signals: &impl PackFlowControllers<2>,
+            pack_flow_valve_signals: &impl PackFlowControllers<2, 2>,
             engine_bleed: [&impl EngineCorrectedN1; 2],
         ) {
             self.engine_bleed
@@ -1507,7 +1520,7 @@ mod acs_controller_tests {
             &mut self,
             context: &UpdateContext,
             from: &mut impl PneumaticContainer,
-            pack_flow_valve_signals: &impl PackFlowControllers<2>,
+            pack_flow_valve_signals: &impl PackFlowControllers<2, 2>,
         ) {
             self.pack_flow_valve.update_open_amount(
                 &pack_flow_valve_signals.pack_flow_controller(self.engine_number.into()),
@@ -1641,7 +1654,7 @@ mod acs_controller_tests {
     }
 
     struct TestAircraft {
-        acsc: AirConditioningSystemController<2>,
+        acsc: AirConditioningSystemController<2, 2>,
         acs_overhead: AirConditioningSystemOverhead<2>,
         adirs: TestAdirs,
         cabin_fans: [CabinFan; 2],
