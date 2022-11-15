@@ -22,8 +22,6 @@ export const SimOptionsPage = () => {
     const [simbridgeEnabled, setSimbridgeEnabled] = usePersistentProperty('CONFIG_SIMBRIDGE_ENABLED', 'AUTO ON');
     const [radioReceiverUsage, setRadioReceiverUsage] = usePersistentProperty('RADIO_RECEIVER_USAGE_ENABLED', '0');
     const [, setRadioReceiverUsageSimVar] = useSimVar('L:A32NX_RADIO_RECEIVER_USAGE_ENABLED', 'number', 0);
-    const [, setUpdateNavReceivers] = useSimVar('L:A32NX_NAV_UpdateReceivers', 'number', 0);
-    const [, setUpdateComReceivers] = useSimVar('L:A32NX_COM_UpdateReceivers', 'number', 0);
     const [wheelChocksEnabled, setWheelChocksEnabled] = usePersistentNumberProperty('MODEL_WHEELCHOCKS_ENABLED', 1);
     const [conesEnabled, setConesEnabled] = usePersistentNumberProperty('MODEL_CONES_ENABLED', 1);
     const [commSync, setCommSync] = usePersistentNumberProperty('COMMUNICATIONS_PANELS_SYNC_ENABLED', 1);
@@ -168,12 +166,6 @@ export const SimOptionsPage = () => {
                                 <SelectItem
                                     onSelect={() => {
                                         setSide(parseInt(button.setting));
-                                        let i = 0;
-                                        while (i !== 1000000) {
-                                            ++i;
-                                        }
-                                        setUpdateComReceivers(1);
-                                        setUpdateNavReceivers(1);
                                     }}
                                     selected={side === parseInt(button.setting)}
                                 >

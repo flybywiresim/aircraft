@@ -453,20 +453,13 @@
     - Bool
     - If the ILS is tuned via the RMP
 
-- A32NX_ACP{1,2}_TRANSMIT_CHANNEL
-    - Enum
-    - Indicates on which channel the pilot (1) or copilot (2) is transmitting
+- A32NX_ACP{1,2,3}_VHF{1,2}_TRANSMIT
+    - Bool
+    - Indicates which VHF is selected for transmission on which ACP
       Value | Meaning
       --- | ---
-      VHF1 | 0
-      VHF2 | 1
-      VHF3 | 2
-      HF1 | 3
-      NONE (due to the SDK) | 4
-      HF2 | 5
-      MECH | 6
-      CABIN | 7
-      PA | 8
+      0 | Not selected
+      1 | Selected
 
 - A32NX_ACP{1,2,3}_VHF{1,2,3}_VOLUME
     - Number
@@ -528,43 +521,43 @@
     - Bool
     - If the PA volume knob is activated on the left/right/overhead ACP
 
-- L:A32NX_ACP_NAV_{L,R,OVHD}_VOR{1,2}_KNOB_VOLUME_DOWN
+- L:A32NX_ACP{1,2,3}_VOR{1,2}_KNOB_VOLUME_DOWN
     - Bool
     - If the VOR 1/2 volume knob is activated on the left/right/overhead ACP
 
-- L:A32NX_ACP_NAV_{L,R,OVHD}_ILS_KNOB_VOLUME_DOWN
+- L:A32NX_ACP{1,2,3}_ILS_KNOB_VOLUME_DOWN
     - Bool
     - If the ILS volume knob is activated on the left/right/overhead ACP
 
-- L:A32NX_ACP_NAV_{L,R,OVHD}_MLS_KNOB_VOLUME_DOWN
+- L:A32NX_ACP{1,2,3}_MLS_KNOB_VOLUME_DOWN
     - Bool
     - If the MLS volume knob is activated on the left/right/overhead ACP
 
-- L:A32NX_ACP_NAV_{L,R,OVHD}_MKR_KNOB_VOLUME_DOWN
+- L:A32NX_ACP{1,2,3}_MKR_KNOB_VOLUME_DOWN
     - Bool
     - If the ILS Markers volume knob is activated on the left/right/overhead ACP
 
-- L:A32NX_ACP_NAV_{L,R,OVHD}_ADF{1,2}_KNOB_VOLUME_DOWN
+- L:A32NX_ACP{1,2,3}_ADF{1,2}_KNOB_VOLUME_DOWN
     - Bool
     - If the ADF 1/2 volume knob is activated on the left/right/overhead ACP
 
-- L:A32NX_ACP_NAV_{L,R,OVHD}_VOR{1,2}_Volume
+- L:A32NX_ACP{1,2,3}_VOR{1,2}_VOLUME
     - Number
     - Volume of VOR 1/2 on the left/right/overhead ACP
 
-- L:A32NX_ACP_NAV_{L,R,OVHD}_ILS_Volume
+- L:A32NX_ACP{1,2,3}_ILS_VOLUME
     - Number
     - Volume of ILS on the left/right/overhead ACP
 
-- L:A32NX_ACP_NAV_{L,R,OVHD}_MLS_Volume
+- L:A32NX_ACP{1,2,3}_MLS_VOLUME
     - Number
     - Volume of MLS on the left/right/overhead ACP
 
-- L:A32NX_ACP_NAV_{L,R,OVHD}_MKR_Volume
+- L:A32NX_ACP{1,2,3}_MKR_VOLUME
     - Number
     - Volume of the ILS Markers on the left/right/overhead ACP
 
-- L:A32NX_ACP_NAV_{L,R,OVHD}_ADF{1,2}_Volume
+- L:A32NX_ACP{1,2,3}_ADF{1,2}_VOLUME
     - Number
     - Volume of ADF 1/2 on the left/right/overhead ACP
 

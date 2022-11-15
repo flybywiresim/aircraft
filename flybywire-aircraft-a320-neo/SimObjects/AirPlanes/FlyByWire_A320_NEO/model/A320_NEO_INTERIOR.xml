@@ -2456,25 +2456,6 @@
                         <WWISE_EVENT>turnknob</WWISE_EVENT>
                         <INIT_VALUE>1</INIT_VALUE>
                         <SWITCH_POSITION_VAR>KNOB_OVHD_AUDIOSWITCH_Position</SWITCH_POSITION_VAR>
-                        <!-- Have to set COPILOT_TRANSMITTER_SET when knob == 0 becausue PILOT_TRANSMITTER_SET sets the copilot too -->
-                        <ON_SWITCH>
-                            (L:A32NX_AUDIOSWITCHING_KNOB) 0 == if{
-                                (L:A32NX_ACP3_TRANSMIT_CHANNEL)  (&gt;K:PILOT_TRANSMITTER_SET)
-                                (L:A32NX_ACP2_TRANSMIT_CHANNEL)  (&gt;K:COPILOT_TRANSMITTER_SET)
-                            }
-
-                            (L:A32NX_AUDIOSWITCHING_KNOB) 1 == if{
-                                (L:A32NX_ACP1_TRANSMIT_CHANNEL)  (&gt;K:PILOT_TRANSMITTER_SET)
-                                (L:A32NX_ACP2_TRANSMIT_CHANNEL)  (&gt;K:COPILOT_TRANSMITTER_SET)
-                            }
-
-                            (L:A32NX_AUDIOSWITCHING_KNOB) 2 == if{
-                                (L:A32NX_ACP3_TRANSMIT_CHANNEL)  (&gt;K:COPILOT_TRANSMITTER_SET)
-                            }
-
-                            1 (&gt;L:A32NX_COM_UpdateReceivers)
-                            1 (&gt;L:A32NX_NAV_UpdateReceivers)
-                        </ON_SWITCH>
                     </UseTemplate>
                 </Component>
 
@@ -3965,10 +3946,6 @@
                 <!-- disable lock mode blue highlight -->
                 <NO_HIGHLIGHT_NODE_ID>@StopLockHighlight</NO_HIGHLIGHT_NODE_ID>
             </DefaultTemplateParameters>
-            <Component ID="Updater">
-                <UseTemplate Name="FBW_AIRLINER_Audio_Panel_Updater"></UseTemplate>
-                <UseTemplate Name="FBW_AIRLINER_Audio_Panel_NAV_Updater"></UseTemplate>
-            </Component>
             <!-- RMP 1 is powered by AC/DC ESS (via ESS TR for AC) -->
             <!-- For each ACP, VHF1 is powered with ESS (emergency circuit), VHF2 with AC/DC 2 and VHF3 with AC/DC 3 (via corresponding TR for AC) -->
             <!-- Hence, in case of total electrical failure, only RMP 1 and VHF1 on both ACP are powered via ESS circuit -->
@@ -4370,8 +4347,8 @@
             <!-- MARKER DEFAULT VALUE IS 1 BUT IT IS UNDESIRED
                 ADF2 volume set do not exist in the sdk for now. Hopefully in the future -->
             <Update Once="True">
-                0 (&gt;L:A32NX_ACP1_TRANSMIT_CHANNEL)
-                4 (&gt;L:A32NX_ACP2_TRANSMIT_CHANNEL)
+                0 (&gt;L:A32NX_ACP1_TRANSMIT)
+                4 (&gt;L:A32NX_ACP2_TRANSMIT)
 
                 1 (&gt;L:A32NX_ACP1_VHF1_KNOB_VOLUME_DOWN)
                 1 (&gt;L:A32NX_ACP1_VHF2_KNOB_VOLUME_DOWN)

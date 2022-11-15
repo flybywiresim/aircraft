@@ -12,7 +12,7 @@ use uom::si::{
 use super::{Read, SimulatorReader};
 use crate::{
     shared::{low_pass_filter::LowPassFilter, MachNumber},
-    simulation::{InitContext, VariableIdentifier},
+    simulation::{InitContext, VariableIdentifier, SidePlaying},
 };
 use nalgebra::{Rotation3, Vector3};
 
@@ -166,6 +166,7 @@ pub struct UpdateContext {
     plane_bank_id: VariableIdentifier,
     plane_true_heading_id: VariableIdentifier,
     mach_number_id: VariableIdentifier,
+    side_playing_id: VariableIdentifier,
 
     delta: Delta,
     simulation_time: f64,
@@ -188,6 +189,8 @@ pub struct UpdateContext {
     mach_number: MachNumber,
     air_density: MassDensity,
     true_heading: Angle,
+
+    side_playing: SidePlaying,
 }
 impl UpdateContext {
     pub(crate) const IS_READY_KEY: &'static str = "IS_READY";
@@ -212,6 +215,7 @@ impl UpdateContext {
     pub(crate) const LOCAL_LATERAL_SPEED_KEY: &'static str = "VELOCITY BODY X";
     pub(crate) const LOCAL_LONGITUDINAL_SPEED_KEY: &'static str = "VELOCITY BODY Z";
     pub(crate) const LOCAL_VERTICAL_SPEED_KEY: &'static str = "VELOCITY BODY Y";
+    pub(crate) const SIDE_PLAYING: &'static str = "A32NX_SIDE_PLAYING";
 
     // Plane accelerations can become crazy with msfs collision handling.
     // Having such filtering limits high frequencies transients in accelerations used for physics
@@ -235,6 +239,7 @@ impl UpdateContext {
         pitch: Angle,
         bank: Angle,
         mach_number: MachNumber,
+        side_playing: SidePlaying,
     ) -> UpdateContext {
         UpdateContext {
             is_ready_id: context.get_identifier(Self::IS_READY_KEY.to_owned()),
@@ -263,6 +268,7 @@ impl UpdateContext {
             plane_bank_id: context.get_identifier(Self::PLANE_BANK_KEY.to_owned()),
             plane_true_heading_id: context.get_identifier(Self::TRUE_HEADING_KEY.to_owned()),
             mach_number_id: context.get_identifier(Self::MACH_NUMBER_KEY.to_owned()),
+            side_playing_id: context.get_identifier(Self::SIDE_PLAYING.to_owned()),
 
             delta: delta.into(),
             simulation_time,
@@ -303,6 +309,7 @@ impl UpdateContext {
             mach_number,
             air_density: MassDensity::new::<kilogram_per_cubic_meter>(1.22),
             true_heading: Default::default(),
+            side_playing: SidePlaying::CAPTAIN,
         }
     }
 
@@ -330,6 +337,7 @@ impl UpdateContext {
             plane_bank_id: context.get_identifier("PLANE BANK DEGREES".to_owned()),
             plane_true_heading_id: context.get_identifier("PLANE HEADING DEGREES TRUE".to_owned()),
             mach_number_id: context.get_identifier("AIRSPEED MACH".to_owned()),
+            side_playing_id: context.get_identifier("A32NX_SIDE_PLAYING".to_owned()),
 
             delta: Default::default(),
             simulation_time: Default::default(),
@@ -342,6 +350,7 @@ impl UpdateContext {
             is_on_ground: Default::default(),
             vertical_speed: Default::default(),
             local_acceleration: Default::default(),
+            side_playing: SidePlaying::CAPTAIN,
 
             local_acceleration_plane_reference_filtered:
                 LowPassFilter::<Vector3<f64>>::new_with_init_value(
@@ -420,6 +429,8 @@ impl UpdateContext {
         self.air_density = reader.read(&self.ambient_density_id);
 
         self.true_heading = reader.read(&self.plane_true_heading_id);
+
+        self.side_playing = reader.read(&self.side_playing_id);
 
         self.update_relative_wind();
 
@@ -582,6 +593,10 @@ impl UpdateContext {
 
     pub fn mach_number(&self) -> MachNumber {
         self.mach_number
+    }
+
+    pub fn side_playing(&self) -> SidePlaying {
+        self.side_playing
     }
 
     pub fn with_delta(&self, delta: Duration) -> Self {

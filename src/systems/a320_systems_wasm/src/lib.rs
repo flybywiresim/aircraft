@@ -221,11 +221,11 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("ROTATION VELOCITY BODY Z", "degree per second", 0)?
     .provides_aircraft_variable("NAV SOUND", "Bool", 1)?
     .provides_aircraft_variable("NAV SOUND", "Bool", 2)?
-    .provides_aircraft_variable("NAV SOUND", "Bool",3)?
-    .provides_aircraft_variable("NAV SOUND", "Bool",4)?
-    .provides_aircraft_variable("ADF SOUND", "Bool",1)?
-    .provides_aircraft_variable("ADF SOUND", "Bool",2)?
-    .provides_aircraft_variable("MARKER SOUND", "Bool",0)?
+    .provides_aircraft_variable("NAV SOUND", "Bool", 3)?
+    .provides_aircraft_variable("NAV SOUND", "Bool", 4)?
+    .provides_aircraft_variable("ADF SOUND", "Bool", 1)?
+    .provides_aircraft_variable("ADF SOUND", "Bool", 2)?
+    .provides_aircraft_variable("MARKER SOUND", "Bool", 1)?
     .with_aspect(|builder| {
         builder.copy(
             Variable::aircraft("APU GENERATOR SWITCH", "Bool", 0),
