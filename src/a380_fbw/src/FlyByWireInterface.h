@@ -355,8 +355,6 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idSpoilersHandlePosition;
   std::shared_ptr<SpoilersHandler> spoilersHandler;
 
-  std::unique_ptr<LocalVariable> idRudderPosition;
-
   std::unique_ptr<LocalVariable> idRadioReceiverUsageEnabled;
   std::unique_ptr<LocalVariable> idRadioReceiverLocalizerValid;
   std::unique_ptr<LocalVariable> idRadioReceiverLocalizerDeviation;
@@ -541,12 +539,21 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFacDeltaRRudderTrim[2];
   std::unique_ptr<LocalVariable> idFacRudderTrimPos[2];
 
-  std::unique_ptr<LocalVariable> idLeftAileronPosition;
-  std::unique_ptr<LocalVariable> idRightAileronPosition;
-  std::unique_ptr<LocalVariable> idLeftElevatorPosition;
-  std::unique_ptr<LocalVariable> idRightElevatorPosition;
-  std::unique_ptr<LocalVariable> idLeftSpoilerPosition[5];
-  std::unique_ptr<LocalVariable> idRightSpoilerPosition[5];
+  std::unique_ptr<LocalVariable> idLeftAileronInwardPosition;
+  std::unique_ptr<LocalVariable> idLeftAileronMiddlePosition;
+  std::unique_ptr<LocalVariable> idLeftAileronOutwardPosition;
+  std::unique_ptr<LocalVariable> idRightAileronInwardPosition;
+  std::unique_ptr<LocalVariable> idRightAileronMiddlePosition;
+  std::unique_ptr<LocalVariable> idRightAileronOutwardPosition;
+  std::unique_ptr<LocalVariable> idLeftSpoilerPosition[8];
+  std::unique_ptr<LocalVariable> idRightSpoilerPosition[8];
+  std::unique_ptr<LocalVariable> idLeftElevatorInwardPosition;
+  std::unique_ptr<LocalVariable> idLeftElevatorOutwardPosition;
+  std::unique_ptr<LocalVariable> idRightElevatorInwardPosition;
+  std::unique_ptr<LocalVariable> idRightElevatorOutwardPosition;
+  std::unique_ptr<LocalVariable> idThsPosition;
+  std::unique_ptr<LocalVariable> idUpperRudderPosition;
+  std::unique_ptr<LocalVariable> idLowerRudderPosition;
 
   std::unique_ptr<LocalVariable> idElecDcBus2Powered;
   std::unique_ptr<LocalVariable> idElecDcEssShedBusPowered;

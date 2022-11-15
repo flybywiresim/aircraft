@@ -478,8 +478,6 @@ void FlyByWireInterface::setupLocalVariables() {
   idSpoilersArmed = std::make_unique<LocalVariable>("A32NX_SPOILERS_ARMED");
   idSpoilersHandlePosition = std::make_unique<LocalVariable>("A32NX_SPOILERS_HANDLE_POSITION");
 
-  idRudderPosition = std::make_unique<LocalVariable>("A32NX_RUDDER_DEFLECTION_DEMAND");
-
   idRadioReceiverUsageEnabled = std::make_unique<LocalVariable>("A32NX_RADIO_RECEIVER_USAGE_ENABLED");
   idRadioReceiverLocalizerValid = std::make_unique<LocalVariable>("A32NX_RADIO_RECEIVER_LOC_IS_VALID");
   idRadioReceiverLocalizerDeviation = std::make_unique<LocalVariable>("A32NX_RADIO_RECEIVER_LOC_DEVIATION");
@@ -728,10 +726,25 @@ void FlyByWireInterface::setupLocalVariables() {
     idRudderTrimCommandedPosition[i] = std::make_unique<LocalVariable>("A32NX_RUDDER_TRIM_" + idString + "_COMMANDED_POSITION");
   }
 
-  idLeftAileronPosition = std::make_unique<LocalVariable>("A32NX_HYD_AILERON_LEFT_DEFLECTION");
-  idRightAileronPosition = std::make_unique<LocalVariable>("A32NX_HYD_AILERON_RIGHT_DEFLECTION");
-  idLeftElevatorPosition = std::make_unique<LocalVariable>("A32NX_HYD_ELEVATOR_LEFT_DEFLECTION");
-  idRightElevatorPosition = std::make_unique<LocalVariable>("A32NX_HYD_ELEVATOR_RIGHT_DEFLECTION");
+  idLeftAileronInwardPosition = std::make_unique<LocalVariable>("A32NX_HYD_AILERON_LEFT_INWARD_DEFLECTION");
+  idLeftAileronMiddlePosition = std::make_unique<LocalVariable>("A32NX_HYD_AILERON_LEFT_MIDDLE_DEFLECTION");
+  idLeftAileronOutwardPosition = std::make_unique<LocalVariable>("A32NX_HYD_AILERON_LEFT_OUTWARD_DEFLECTION");
+  idRightAileronInwardPosition = std::make_unique<LocalVariable>("A32NX_HYD_AILERON_RIGHT_INWARD_DEFLECTION");
+  idRightAileronMiddlePosition = std::make_unique<LocalVariable>("A32NX_HYD_AILERON_RIGHT_MIDDLE_DEFLECTION");
+  idRightAileronOutwardPosition = std::make_unique<LocalVariable>("A32NX_HYD_AILERON_RIGHT_OUTWARD_DEFLECTION");
+  for (int i = 0; i < 8; i++) {
+    std::string idString = std::to_string(i + 1);
+
+    idLeftSpoilerPosition[i] = std::make_unique<LocalVariable>("A32NX_HYD_SPOILER_" + idString + "_LEFT_DEFLECTION");
+    idRightSpoilerPosition[i] = std::make_unique<LocalVariable>("A32NX_HYD_SPOILER_" + idString + "_RIGHT_DEFLECTION");
+  }
+  idLeftElevatorInwardPosition = std::make_unique<LocalVariable>("A32NX_HYD_ELEVATOR_LEFT_INWARD_DEFLECTION");
+  idLeftElevatorOutwardPosition = std::make_unique<LocalVariable>("A32NX_HYD_ELEVATOR_LEFT_OUTWARD_DEFLECTION");
+  idRightElevatorInwardPosition = std::make_unique<LocalVariable>("A32NX_HYD_ELEVATOR_RIGHT_INWARD_DEFLECTION");
+  idRightElevatorOutwardPosition = std::make_unique<LocalVariable>("A32NX_HYD_ELEVATOR_RIGHT_OUTWARD_DEFLECTION");
+  idThsPosition = std::make_unique<LocalVariable>("A32NX_HYD_THS_DEFLECTION");
+  idUpperRudderPosition = std::make_unique<LocalVariable>("A32NX_HYD_UPPER_RUDDER_DEFLECTION");
+  idLowerRudderPosition = std::make_unique<LocalVariable>("A32NX_HYD_LOWER_RUDDER_DEFLECTION");
 
   idElecDcBus2Powered = std::make_unique<LocalVariable>("A32NX_ELEC_DC_2_BUS_IS_POWERED");
   idElecDcEssShedBusPowered = std::make_unique<LocalVariable>("A32NX_ELEC_DC_ESS_SHED_BUS_IS_POWERED");
@@ -1236,6 +1249,71 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
   SimData simData = simConnectInterface.getSimData();
   SimInput simInput = simConnectInterface.getSimInput();
 
+  double leftAileron1Position;
+  double rightAileron1Position;
+  double leftAileron2Position;
+  double rightAileron2Position;
+  double leftSpoilerPosition;
+  double rightSpoilerPosition;
+  double elevator1Position;
+  double elevator2Position;
+  double elevator3Position;
+  double thsPosition;
+  double rudder1Position;
+  double rudder2Position;
+  if (primIndex == 0) {
+    leftAileron1Position = idLeftAileronInwardPosition->get();
+    rightAileron1Position = idRightAileronInwardPosition->get();
+    leftAileron2Position = idLeftAileronMiddlePosition->get();
+    rightAileron2Position = idRightAileronMiddlePosition->get();
+
+    leftSpoilerPosition = idLeftSpoilerPosition[5]->get();
+    rightSpoilerPosition = idRightSpoilerPosition[5]->get();
+
+    elevator1Position = idLeftElevatorOutwardPosition->get();
+    elevator2Position = idLeftElevatorInwardPosition->get();
+    elevator3Position = idRightElevatorOutwardPosition->get();
+
+    thsPosition = idThsPosition->get();
+
+    rudder1Position = idLowerRudderPosition->get();
+    rudder2Position = idUpperRudderPosition->get();
+  } else if (primIndex == 1) {
+    leftAileron1Position = idLeftAileronOutwardPosition->get();
+    rightAileron1Position = idRightAileronOutwardPosition->get();
+    leftAileron2Position = idLeftAileronInwardPosition->get();
+    rightAileron2Position = idRightAileronInwardPosition->get();
+
+    leftSpoilerPosition = idLeftSpoilerPosition[4]->get();
+    rightSpoilerPosition = idRightSpoilerPosition[4]->get();
+
+    elevator1Position = idRightElevatorOutwardPosition->get();
+    elevator2Position = idLeftElevatorOutwardPosition->get();
+    elevator3Position = idRightElevatorInwardPosition->get();
+
+    thsPosition = 0;
+
+    rudder1Position = idUpperRudderPosition->get();
+    rudder2Position = 0;
+  } else {
+    leftAileron1Position = idLeftAileronMiddlePosition->get();
+    rightAileron1Position = idRightAileronMiddlePosition->get();
+    leftAileron2Position = idLeftAileronOutwardPosition->get();
+    rightAileron2Position = idRightAileronOutwardPosition->get();
+
+    leftSpoilerPosition = idLeftSpoilerPosition[3]->get();
+    rightSpoilerPosition = idRightSpoilerPosition[3]->get();
+
+    elevator1Position = idLeftElevatorInwardPosition->get();
+    elevator2Position = idRightElevatorInwardPosition->get();
+    elevator3Position = 0;
+
+    thsPosition = idThsPosition->get();
+
+    rudder1Position = idLowerRudderPosition->get();
+    rudder2Position = 0;
+  }
+
   prims[primIndex].modelInputs.in.time.dt = sampleTime;
   prims[primIndex].modelInputs.in.time.simulation_time = simData.simulationTime;
   prims[primIndex].modelInputs.in.time.monotonic_time = monotonicTime;
@@ -1274,18 +1352,18 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
   prims[primIndex].modelInputs.in.analog_inputs.thr_lever_2_pos = 0;
   prims[primIndex].modelInputs.in.analog_inputs.thr_lever_3_pos = 0;
   prims[primIndex].modelInputs.in.analog_inputs.thr_lever_4_pos = 0;
-  prims[primIndex].modelInputs.in.analog_inputs.elevator_1_pos_deg = 0;
-  prims[primIndex].modelInputs.in.analog_inputs.elevator_2_pos_deg = 0;
-  prims[primIndex].modelInputs.in.analog_inputs.elevator_3_pos_deg = 0;
-  prims[primIndex].modelInputs.in.analog_inputs.ths_pos_deg = 0;
-  prims[primIndex].modelInputs.in.analog_inputs.left_aileron_1_pos_deg = 0;
-  prims[primIndex].modelInputs.in.analog_inputs.left_aileron_2_pos_deg = 0;
-  prims[primIndex].modelInputs.in.analog_inputs.right_aileron_1_pos_deg = 0;
-  prims[primIndex].modelInputs.in.analog_inputs.right_aileron_2_pos_deg = 0;
-  prims[primIndex].modelInputs.in.analog_inputs.left_spoiler_pos_deg = 0;
-  prims[primIndex].modelInputs.in.analog_inputs.right_spoiler_pos_deg = 0;
-  prims[primIndex].modelInputs.in.analog_inputs.rudder_1_pos_deg = 0;
-  prims[primIndex].modelInputs.in.analog_inputs.rudder_2_pos_deg = 0;
+  prims[primIndex].modelInputs.in.analog_inputs.elevator_1_pos_deg = 30. * elevator1Position;
+  prims[primIndex].modelInputs.in.analog_inputs.elevator_2_pos_deg = 30. * elevator2Position;
+  prims[primIndex].modelInputs.in.analog_inputs.elevator_3_pos_deg = 30. * elevator3Position;
+  prims[primIndex].modelInputs.in.analog_inputs.ths_pos_deg = thsPosition;
+  prims[primIndex].modelInputs.in.analog_inputs.left_aileron_1_pos_deg = 30. * leftAileron1Position;
+  prims[primIndex].modelInputs.in.analog_inputs.left_aileron_2_pos_deg = 30. * leftAileron2Position;
+  prims[primIndex].modelInputs.in.analog_inputs.right_aileron_1_pos_deg = -30. * rightAileron1Position;
+  prims[primIndex].modelInputs.in.analog_inputs.right_aileron_2_pos_deg = -30. * rightAileron2Position;
+  prims[primIndex].modelInputs.in.analog_inputs.left_spoiler_pos_deg = -50. * leftSpoilerPosition;
+  prims[primIndex].modelInputs.in.analog_inputs.right_spoiler_pos_deg = -50. * rightSpoilerPosition;
+  prims[primIndex].modelInputs.in.analog_inputs.rudder_1_pos_deg = -30. * rudder1Position;
+  prims[primIndex].modelInputs.in.analog_inputs.rudder_2_pos_deg = -30. * rudder1Position;
   prims[primIndex].modelInputs.in.analog_inputs.rudder_pedal_pos = -simInput.inputs[2];
   prims[primIndex].modelInputs.in.analog_inputs.yellow_hyd_pressure_psi = idHydYellowSystemPressure->get();
   prims[primIndex].modelInputs.in.analog_inputs.green_hyd_pressure_psi = idHydGreenSystemPressure->get();
