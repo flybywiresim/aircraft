@@ -246,7 +246,7 @@ pub trait ElectroHydrostaticPowered {
     }
 }
 
-#[derive(PartialEq, Copy, Clone)]
+#[derive(PartialEq, Eq, Copy, Clone)]
 pub enum ElectroHydrostaticActuatorType {
     ElectroHydrostaticActuator, // Can only run on electric mode or is damping
     ElectricalBackupHydraulicActuator, // Can run either in electric backup mode or from aircraft hydraulic pressure
