@@ -198,12 +198,20 @@ bool SimConnectInterface::prepareSimDataSimConnectDataDefinitions() {
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "GPS COURSE TO STEER", "DEGREES");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "TURB ENG COMMANDED N1:1", "PERCENT");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "TURB ENG COMMANDED N1:2", "PERCENT");
+  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "TURB ENG COMMANDED N1:3", "PERCENT");
+  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "TURB ENG COMMANDED N1:4", "PERCENT");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "TURB ENG N1:1", "PERCENT");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "TURB ENG N1:2", "PERCENT");
+  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "TURB ENG N1:3", "PERCENT");
+  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "TURB ENG N1:4", "PERCENT");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "TURB ENG CORRECTED N1:1", "PERCENT");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "TURB ENG CORRECTED N1:2", "PERCENT");
+  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "TURB ENG CORRECTED N1:3", "PERCENT");
+  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "TURB ENG CORRECTED N1:4", "PERCENT");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_INT64, "ENG COMBUSTION:1", "BOOL");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_INT64, "ENG COMBUSTION:2", "BOOL");
+  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_INT64, "ENG COMBUSTION:3", "BOOL");
+  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_INT64, "ENG COMBUSTION:4", "BOOL");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_INT64, "AUTOPILOT MANAGED SPEED IN MACH", "BOOL");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_INT64, "AUTOPILOT SPEED SLOT INDEX", "NUMBER");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_INT64, "ENG ANTI ICE:1", "BOOL");
@@ -371,10 +379,14 @@ bool SimConnectInterface::prepareSimInputSimConnectDataDefinitions() {
   result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE_SET, "THROTTLE_SET", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE1_SET, "THROTTLE1_SET", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE2_SET, "THROTTLE2_SET", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE3_SET, "THROTTLE3_SET", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE4_SET, "THROTTLE4_SET", true);
 
   result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE_AXIS_SET_EX1, "THROTTLE_AXIS_SET_EX1", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE1_AXIS_SET_EX1, "THROTTLE1_AXIS_SET_EX1", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE2_AXIS_SET_EX1, "THROTTLE2_AXIS_SET_EX1", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE3_AXIS_SET_EX1, "THROTTLE3_AXIS_SET_EX1", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE4_AXIS_SET_EX1, "THROTTLE4_AXIS_SET_EX1", true);
 
   result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE_FULL, "THROTTLE_FULL", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE_CUT, "THROTTLE_CUT", true);
@@ -436,8 +448,12 @@ bool SimConnectInterface::prepareSimOutputSimConnectDataDefinitions() {
 
   result &= addDataDefinition(hSimConnect, 4, SIMCONNECT_DATATYPE_FLOAT64, "GENERAL ENG THROTTLE LEVER POSITION:1", "PERCENT");
   result &= addDataDefinition(hSimConnect, 4, SIMCONNECT_DATATYPE_FLOAT64, "GENERAL ENG THROTTLE LEVER POSITION:2", "PERCENT");
+  result &= addDataDefinition(hSimConnect, 4, SIMCONNECT_DATATYPE_FLOAT64, "GENERAL ENG THROTTLE LEVER POSITION:3", "PERCENT");
+  result &= addDataDefinition(hSimConnect, 4, SIMCONNECT_DATATYPE_FLOAT64, "GENERAL ENG THROTTLE LEVER POSITION:4", "PERCENT");
   result &= addDataDefinition(hSimConnect, 4, SIMCONNECT_DATATYPE_FLOAT64, "GENERAL ENG THROTTLE MANAGED MODE:1", "NUMBER");
   result &= addDataDefinition(hSimConnect, 4, SIMCONNECT_DATATYPE_FLOAT64, "GENERAL ENG THROTTLE MANAGED MODE:2", "NUMBER");
+  result &= addDataDefinition(hSimConnect, 4, SIMCONNECT_DATATYPE_FLOAT64, "GENERAL ENG THROTTLE MANAGED MODE:3", "NUMBER");
+  result &= addDataDefinition(hSimConnect, 4, SIMCONNECT_DATATYPE_FLOAT64, "GENERAL ENG THROTTLE MANAGED MODE:4", "NUMBER");
 
   result &= addDataDefinition(hSimConnect, 6, SIMCONNECT_DATATYPE_FLOAT64, "SPOILERS HANDLE POSITION", "POSITION");
 
@@ -2256,6 +2272,8 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
     case Events::THROTTLE_SET: {
       throttleAxis[0]->onEventThrottleSet(static_cast<long>(event->dwData));
       throttleAxis[1]->onEventThrottleSet(static_cast<long>(event->dwData));
+      throttleAxis[2]->onEventThrottleSet(static_cast<long>(event->dwData));
+      throttleAxis[3]->onEventThrottleSet(static_cast<long>(event->dwData));
       if (loggingThrottlesEnabled) {
         std::cout << "WASM: THROTTLE_SET: " << static_cast<long>(event->dwData) << std::endl;
       }
@@ -2278,9 +2296,27 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
       break;
     }
 
+    case Events::THROTTLE3_SET: {
+      throttleAxis[2]->onEventThrottleSet(static_cast<long>(event->dwData));
+      if (loggingThrottlesEnabled) {
+        std::cout << "WASM: THROTTLE3_SET: " << static_cast<long>(event->dwData) << std::endl;
+      }
+      break;
+    }
+
+    case Events::THROTTLE4_SET: {
+      throttleAxis[3]->onEventThrottleSet(static_cast<long>(event->dwData));
+      if (loggingThrottlesEnabled) {
+        std::cout << "WASM: THROTTLE4_SET: " << static_cast<long>(event->dwData) << std::endl;
+      }
+      break;
+    }
+
     case Events::THROTTLE_AXIS_SET_EX1: {
       throttleAxis[0]->onEventThrottleSet(static_cast<long>(event->dwData));
       throttleAxis[1]->onEventThrottleSet(static_cast<long>(event->dwData));
+      throttleAxis[2]->onEventThrottleSet(static_cast<long>(event->dwData));
+      throttleAxis[3]->onEventThrottleSet(static_cast<long>(event->dwData));
       if (loggingThrottlesEnabled) {
         std::cout << "WASM: THROTTLE_AXIS_SET_EX1: " << static_cast<long>(event->dwData) << std::endl;
       }
@@ -2303,9 +2339,27 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
       break;
     }
 
+    case Events::THROTTLE3_AXIS_SET_EX1: {
+      throttleAxis[2]->onEventThrottleSet(static_cast<long>(event->dwData));
+      if (loggingThrottlesEnabled) {
+        std::cout << "WASM: THROTTLE3_AXIS_SET_EX1: " << static_cast<long>(event->dwData) << std::endl;
+      }
+      break;
+    }
+
+    case Events::THROTTLE4_AXIS_SET_EX1: {
+      throttleAxis[3]->onEventThrottleSet(static_cast<long>(event->dwData));
+      if (loggingThrottlesEnabled) {
+        std::cout << "WASM: THROTTLE4_AXIS_SET_EX1: " << static_cast<long>(event->dwData) << std::endl;
+      }
+      break;
+    }
+
     case Events::THROTTLE_FULL: {
       throttleAxis[0]->onEventThrottleFull();
       throttleAxis[1]->onEventThrottleFull();
+      throttleAxis[2]->onEventThrottleFull();
+      throttleAxis[3]->onEventThrottleFull();
       if (loggingThrottlesEnabled) {
         std::cout << "WASM: THROTTLE_FULL" << std::endl;
       }
@@ -2315,6 +2369,8 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
     case Events::THROTTLE_CUT: {
       throttleAxis[0]->onEventThrottleCut();
       throttleAxis[1]->onEventThrottleCut();
+      throttleAxis[2]->onEventThrottleCut();
+      throttleAxis[3]->onEventThrottleCut();
       if (loggingThrottlesEnabled) {
         std::cout << "WASM: THROTTLE_CUT" << std::endl;
       }
@@ -2324,6 +2380,8 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
     case Events::THROTTLE_INCR: {
       throttleAxis[0]->onEventThrottleIncrease();
       throttleAxis[1]->onEventThrottleIncrease();
+      throttleAxis[2]->onEventThrottleIncrease();
+      throttleAxis[3]->onEventThrottleIncrease();
       if (loggingThrottlesEnabled) {
         std::cout << "WASM: THROTTLE_INCR" << std::endl;
       }
@@ -2333,6 +2391,8 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
     case Events::THROTTLE_DECR: {
       throttleAxis[0]->onEventThrottleDecrease();
       throttleAxis[1]->onEventThrottleDecrease();
+      throttleAxis[2]->onEventThrottleDecrease();
+      throttleAxis[3]->onEventThrottleDecrease();
       if (loggingThrottlesEnabled) {
         std::cout << "WASM: THROTTLE_DECR" << std::endl;
       }
@@ -2537,6 +2597,8 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
     case Events::THROTTLE_REVERSE_THRUST_TOGGLE: {
       throttleAxis[0]->onEventReverseToggle();
       throttleAxis[1]->onEventReverseToggle();
+      throttleAxis[2]->onEventReverseToggle();
+      throttleAxis[3]->onEventReverseToggle();
       if (loggingThrottlesEnabled) {
         std::cout << "WASM: THROTTLE_REVERSE_THRUST_TOGGLE" << std::endl;
       }
@@ -2545,6 +2607,8 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
     case Events::THROTTLE_REVERSE_THRUST_HOLD: {
       throttleAxis[0]->onEventReverseHold(static_cast<bool>(event->dwData));
       throttleAxis[1]->onEventReverseHold(static_cast<bool>(event->dwData));
+      throttleAxis[2]->onEventReverseHold(static_cast<bool>(event->dwData));
+      throttleAxis[3]->onEventReverseHold(static_cast<bool>(event->dwData));
       if (loggingThrottlesEnabled) {
         std::cout << "WASM: THROTTLE_REVERSE_THRUST_HOLD: " << static_cast<long>(event->dwData) << std::endl;
       }

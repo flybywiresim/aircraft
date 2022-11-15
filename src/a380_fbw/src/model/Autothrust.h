@@ -1,10 +1,9 @@
 #ifndef RTW_HEADER_Autothrust_h_
 #define RTW_HEADER_Autothrust_h_
-#include <cmath>
 #include "rtwtypes.h"
 #include "Autothrust_types.h"
 
-class AutothrustModelClass
+class Autothrust final
 {
  public:
   struct rtDW_TimeSinceCondition_Autothrust_T {
@@ -42,14 +41,20 @@ class AutothrustModelClass
     real_T Delay_DSTATE_a;
     real_T Delay_DSTATE_lz;
     real_T Delay_DSTATE_h;
+    real_T Delay_DSTATE_au;
+    real_T Delay_DSTATE_j;
+    real_T Delay_DSTATE_o;
+    real_T Delay_DSTATE_e1;
+    real_T Delay_DSTATE_lr;
+    real_T Delay_DSTATE_p;
     real_T eventTime;
-    real_T eventTime_l;
-    real_T eventTime_i;
-    real_T eventTime_a;
+    real_T eventTime_j;
+    real_T eventTime_j1;
     real_T eventTime_o;
+    real_T eventTime_m;
     real_T pY;
-    real_T eventTime_k;
-    real_T eventTime_c;
+    real_T eventTime_oa;
+    real_T eventTime_jx;
     athr_mode pMode;
     athr_status pStatus;
     boolean_T Delay_DSTATE_as;
@@ -59,28 +64,28 @@ class AutothrustModelClass
     boolean_T Memory_PreviousInput_m;
     boolean_T icLoad;
     boolean_T eventTime_not_empty;
-    boolean_T eventTime_not_empty_h;
+    boolean_T eventTime_not_empty_j;
     boolean_T ATHR_ENGAGED;
     boolean_T prev_condition_AlphaFloor;
     boolean_T prev_condition_TCAS;
     boolean_T prev_SRS_TO_GA_mode_active;
     boolean_T condition_TOGA_latch;
-    boolean_T eventTime_not_empty_l;
-    boolean_T eventTime_not_empty_j;
+    boolean_T eventTime_not_empty_a;
+    boolean_T eventTime_not_empty_b;
     boolean_T pConditionAlphaFloor;
     boolean_T was_SRS_TO_active;
     boolean_T was_SRS_GA_active;
     boolean_T inhibitAboveThrustReductionAltitude;
     boolean_T condition_THR_LK;
-    boolean_T eventTime_not_empty_b;
+    boolean_T eventTime_not_empty_ac;
     boolean_T pThrustMemoActive;
     boolean_T pUseAutoThrustControl;
     boolean_T pY_not_empty;
     boolean_T latch;
     boolean_T sInhibit;
     boolean_T prev_TCAS_active;
-    boolean_T eventTime_not_empty_m;
-    boolean_T eventTime_not_empty_n;
+    boolean_T eventTime_not_empty_p;
+    boolean_T eventTime_not_empty_c;
     rtDW_WashoutFilter_Autothrust_T sf_WashoutFilter_h;
     rtDW_LagFilter_Autothrust_T sf_LagFilter_a;
     rtDW_LagFilter_Autothrust_T sf_LagFilter;
@@ -100,7 +105,7 @@ class AutothrustModelClass
   };
 
   struct Parameters_Autothrust_T {
-    athr_out athr_out_MATLABStruct;
+    struct_QMVdjQ6NWn0vSjcEHgvQjC athr_out_MATLABStruct;
     real_T ScheduledGain1_BreakpointsForDimension1[5];
     real_T ScheduledGain2_BreakpointsForDimension1[4];
     real_T ScheduledGain4_BreakpointsForDimension1[2];
@@ -124,6 +129,12 @@ class AutothrustModelClass
     real_T DiscreteTimeIntegratorVariableTs_Gain_b;
     real_T DiscreteTimeIntegratorVariableTs_Gain_k;
     real_T DiscreteTimeIntegratorVariableTs1_Gain_l;
+    real_T DiscreteTimeIntegratorVariableTs_Gain_bg;
+    real_T DiscreteTimeIntegratorVariableTs_Gain_e;
+    real_T DiscreteTimeIntegratorVariableTs1_Gain_p;
+    real_T DiscreteTimeIntegratorVariableTs_Gain_d;
+    real_T DiscreteTimeIntegratorVariableTs_Gain_n;
+    real_T DiscreteTimeIntegratorVariableTs1_Gain_m;
     real_T DiscreteDerivativeVariableTs_InitialCondition;
     real_T RateLimiterVariableTs_InitialCondition;
     real_T DiscreteTimeIntegratorVariableTs_InitialCondition;
@@ -132,12 +143,24 @@ class AutothrustModelClass
     real_T DiscreteTimeIntegratorVariableTs_InitialCondition_f;
     real_T DiscreteTimeIntegratorVariableTs_InitialCondition_n;
     real_T DiscreteTimeIntegratorVariableTs1_InitialCondition_e;
+    real_T DiscreteTimeIntegratorVariableTs_InitialCondition_i;
+    real_T DiscreteTimeIntegratorVariableTs_InitialCondition_a;
+    real_T DiscreteTimeIntegratorVariableTs1_InitialCondition_g;
+    real_T DiscreteTimeIntegratorVariableTs_InitialCondition_fg;
+    real_T DiscreteTimeIntegratorVariableTs_InitialCondition_o;
+    real_T DiscreteTimeIntegratorVariableTs1_InitialCondition_d;
     real_T DiscreteTimeIntegratorVariableTs_LowerLimit;
     real_T DiscreteTimeIntegratorVariableTs_LowerLimit_d;
     real_T DiscreteTimeIntegratorVariableTs1_LowerLimit;
     real_T DiscreteTimeIntegratorVariableTs_LowerLimit_i;
     real_T DiscreteTimeIntegratorVariableTs_LowerLimit_e;
     real_T DiscreteTimeIntegratorVariableTs1_LowerLimit_h;
+    real_T DiscreteTimeIntegratorVariableTs_LowerLimit_a;
+    real_T DiscreteTimeIntegratorVariableTs_LowerLimit_n;
+    real_T DiscreteTimeIntegratorVariableTs1_LowerLimit_o;
+    real_T DiscreteTimeIntegratorVariableTs_LowerLimit_c;
+    real_T DiscreteTimeIntegratorVariableTs_LowerLimit_p;
+    real_T DiscreteTimeIntegratorVariableTs1_LowerLimit_m;
     real_T ScheduledGain1_Table[5];
     real_T ScheduledGain2_Table[4];
     real_T ScheduledGain4_Table[2];
@@ -147,6 +170,12 @@ class AutothrustModelClass
     real_T DiscreteTimeIntegratorVariableTs_UpperLimit_m;
     real_T DiscreteTimeIntegratorVariableTs_UpperLimit_p;
     real_T DiscreteTimeIntegratorVariableTs1_UpperLimit_o;
+    real_T DiscreteTimeIntegratorVariableTs_UpperLimit_k;
+    real_T DiscreteTimeIntegratorVariableTs_UpperLimit_e;
+    real_T DiscreteTimeIntegratorVariableTs1_UpperLimit_d;
+    real_T DiscreteTimeIntegratorVariableTs_UpperLimit_pn;
+    real_T DiscreteTimeIntegratorVariableTs_UpperLimit_g;
+    real_T DiscreteTimeIntegratorVariableTs1_UpperLimit_h;
     real_T CompareToConstant_const;
     real_T CompareToConstant2_const;
     real_T RateLimiterVariableTs_lo;
@@ -156,8 +185,8 @@ class AutothrustModelClass
     athr_mode CompareToConstant2_const_c;
     athr_mode CompareToConstant3_const_k;
     athr_status CompareToConstant_const_d;
-    boolean_T CompareToConstant1_const;
     boolean_T CompareToConstant_const_j;
+    boolean_T CompareToConstant1_const;
     boolean_T SRFlipFlop_initial_condition;
     boolean_T SRFlipFlop_initial_condition_g;
     real_T Constant1_Value;
@@ -223,13 +252,21 @@ class AutothrustModelClass
     real_T Gain_Gain_f;
     real_T Gain_Gain_b;
     real_T Gain1_Gain_g;
+    real_T Gain_Gain_i;
+    real_T Gain_Gain_n;
+    real_T Gain1_Gain_a;
+    real_T Gain_Gain_a;
+    real_T Gain_Gain_p;
+    real_T Gain1_Gain_pv;
     boolean_T Logic_table[16];
     boolean_T Delay_InitialCondition;
     boolean_T Logic_table_m[16];
   };
 
-  AutothrustModelClass(AutothrustModelClass const&) =delete;
-  AutothrustModelClass& operator= (AutothrustModelClass const&) & = delete;
+  Autothrust(Autothrust const&) = delete;
+  Autothrust& operator= (Autothrust const&) & = delete;
+  Autothrust(Autothrust &&) = delete;
+  Autothrust& operator= (Autothrust &&) = delete;
   void setExternalInputs(const ExternalInputs_Autothrust_T *pExternalInputs_Autothrust_T)
   {
     Autothrust_U = *pExternalInputs_Autothrust_T;
@@ -243,8 +280,8 @@ class AutothrustModelClass
   void initialize();
   void step();
   static void terminate();
-  AutothrustModelClass();
-  ~AutothrustModelClass();
+  Autothrust();
+  ~Autothrust();
  private:
   ExternalInputs_Autothrust_T Autothrust_U;
   ExternalOutputs_Autothrust_T Autothrust_Y;

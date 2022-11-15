@@ -5,34 +5,36 @@
 #ifndef DEFINED_TYPEDEF_FOR_athr_mode_
 #define DEFINED_TYPEDEF_FOR_athr_mode_
 
-typedef enum {
-  athr_mode_NONE = 0,
-  athr_mode_MAN_TOGA,
-  athr_mode_MAN_GA_SOFT,
-  athr_mode_MAN_FLEX,
-  athr_mode_MAN_DTO,
-  athr_mode_MAN_MCT,
-  athr_mode_MAN_THR,
-  athr_mode_SPEED,
-  athr_mode_MACH,
-  athr_mode_THR_MCT,
-  athr_mode_THR_CLB,
-  athr_mode_THR_LVR,
-  athr_mode_THR_IDLE,
-  athr_mode_A_FLOOR,
-  athr_mode_TOGA_LK
-} athr_mode;
+enum class athr_mode
+  : int32_T {
+  NONE = 0,
+  MAN_TOGA,
+  MAN_GA_SOFT,
+  MAN_FLEX,
+  MAN_DTO,
+  MAN_MCT,
+  MAN_THR,
+  SPEED,
+  MACH,
+  THR_MCT,
+  THR_CLB,
+  THR_LVR,
+  THR_IDLE,
+  A_FLOOR,
+  TOGA_LK
+};
 
 #endif
 
 #ifndef DEFINED_TYPEDEF_FOR_athr_status_
 #define DEFINED_TYPEDEF_FOR_athr_status_
 
-typedef enum {
-  athr_status_DISENGAGED = 0,
-  athr_status_ENGAGED_ARMED,
-  athr_status_ENGAGED_ACTIVE
-} athr_status;
+enum class athr_status
+  : int32_T {
+  DISENGAGED = 0,
+  ENGAGED_ARMED,
+  ENGAGED_ACTIVE
+};
 
 #endif
 
@@ -74,12 +76,20 @@ struct athr_raw_data
   real_T flap_handle_index;
   boolean_T is_engine_operative_1;
   boolean_T is_engine_operative_2;
+  real_T is_engine_operative_3;
+  real_T is_engine_operative_4;
   real_T commanded_engine_N1_1_percent;
   real_T commanded_engine_N1_2_percent;
+  real_T commanded_engine_N1_3_percent;
+  real_T commanded_engine_N1_4_percent;
   real_T engine_N1_1_percent;
   real_T engine_N1_2_percent;
+  real_T engine_N1_3_percent;
+  real_T engine_N1_4_percent;
   real_T corrected_engine_N1_1_percent;
   real_T corrected_engine_N1_2_percent;
+  real_T corrected_engine_N1_3_percent;
+  real_T corrected_engine_N1_4_percent;
   real_T TAT_degC;
   real_T OAT_degC;
   real_T ambient_density_kg_per_m3;
@@ -96,6 +106,8 @@ struct athr_input
   boolean_T ATHR_disconnect;
   real_T TLA_1_deg;
   real_T TLA_2_deg;
+  real_T TLA_3_deg;
+  real_T TLA_4_deg;
   real_T V_c_kn;
   real_T V_LS_kn;
   real_T V_MAX_kn;
@@ -145,28 +157,30 @@ struct athr_in
 #ifndef DEFINED_TYPEDEF_FOR_athr_thrust_limit_type_
 #define DEFINED_TYPEDEF_FOR_athr_thrust_limit_type_
 
-typedef enum {
-  athr_thrust_limit_type_NONE = 0,
-  athr_thrust_limit_type_CLB,
-  athr_thrust_limit_type_MCT,
-  athr_thrust_limit_type_FLEX,
-  athr_thrust_limit_type_TOGA,
-  athr_thrust_limit_type_REVERSE
-} athr_thrust_limit_type;
+enum class athr_thrust_limit_type
+  : int32_T {
+  NONE = 0,
+  CLB,
+  MCT,
+  FLEX,
+  TOGA,
+  REVERSE
+};
 
 #endif
 
 #ifndef DEFINED_TYPEDEF_FOR_athr_mode_message_
 #define DEFINED_TYPEDEF_FOR_athr_mode_message_
 
-typedef enum {
-  athr_mode_message_NONE = 0,
-  athr_mode_message_THR_LK,
-  athr_mode_message_LVR_TOGA,
-  athr_mode_message_LVR_CLB,
-  athr_mode_message_LVR_MCT,
-  athr_mode_message_LVR_ASYM
-} athr_mode_message;
+enum class athr_mode_message
+  : int32_T {
+  NONE = 0,
+  THR_LK,
+  LVR_TOGA,
+  LVR_CLB,
+  LVR_MCT,
+  LVR_ASYM
+};
 
 #endif
 
@@ -199,10 +213,16 @@ struct athr_data
   real_T flap_handle_index;
   boolean_T is_engine_operative_1;
   boolean_T is_engine_operative_2;
+  real_T is_engine_operative_3;
+  real_T is_engine_operative_4;
   real_T commanded_engine_N1_1_percent;
   real_T commanded_engine_N1_2_percent;
+  real_T commanded_engine_N1_3_percent;
+  real_T commanded_engine_N1_4_percent;
   real_T engine_N1_1_percent;
   real_T engine_N1_2_percent;
+  real_T engine_N1_3_percent;
+  real_T engine_N1_4_percent;
   real_T TAT_degC;
   real_T OAT_degC;
   real_T ISA_degC;
@@ -233,16 +253,26 @@ struct athr_output
 {
   real_T sim_throttle_lever_1_pos;
   real_T sim_throttle_lever_2_pos;
+  real_T sim_throttle_lever_3_pos;
+  real_T sim_throttle_lever_4_pos;
   real_T sim_thrust_mode_1;
   real_T sim_thrust_mode_2;
+  real_T sim_thrust_mode_3;
+  real_T sim_thrust_mode_4;
   real_T N1_TLA_1_percent;
   real_T N1_TLA_2_percent;
+  real_T N1_TLA_3_percent;
+  real_T N1_TLA_4_percent;
   boolean_T is_in_reverse_1;
   boolean_T is_in_reverse_2;
+  boolean_T is_in_reverse_3;
+  boolean_T is_in_reverse_4;
   athr_thrust_limit_type thrust_limit_type;
   real_T thrust_limit_percent;
   real_T N1_c_1_percent;
   real_T N1_c_2_percent;
+  real_T N1_c_3_percent;
+  real_T N1_c_4_percent;
   athr_status status;
   athr_mode mode;
   athr_mode_message mode_message;
@@ -259,6 +289,67 @@ struct athr_out
 {
   athr_time time;
   athr_data data;
+  athr_data_computed data_computed;
+  athr_input input;
+  athr_output output;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_struct_AToClpcym1Jfdzal25tWQD_
+#define DEFINED_TYPEDEF_FOR_struct_AToClpcym1Jfdzal25tWQD_
+
+struct struct_AToClpcym1Jfdzal25tWQD
+{
+  real_T nz_g;
+  real_T Theta_deg;
+  real_T Phi_deg;
+  real_T V_ias_kn;
+  real_T V_tas_kn;
+  real_T V_mach;
+  real_T V_gnd_kn;
+  real_T alpha_deg;
+  real_T H_ft;
+  real_T H_ind_ft;
+  real_T H_radio_ft;
+  real_T H_dot_fpm;
+  real_T ax_m_s2;
+  real_T ay_m_s2;
+  real_T az_m_s2;
+  real_T bx_m_s2;
+  real_T by_m_s2;
+  real_T bz_m_s2;
+  real_T Psi_magnetic_deg;
+  real_T Psi_magnetic_track_deg;
+  boolean_T on_ground;
+  real_T flap_handle_index;
+  boolean_T is_engine_operative_1;
+  boolean_T is_engine_operative_2;
+  boolean_T is_engine_operative_3;
+  boolean_T is_engine_operative_4;
+  real_T commanded_engine_N1_1_percent;
+  real_T commanded_engine_N1_2_percent;
+  real_T commanded_engine_N1_3_percent;
+  real_T commanded_engine_N1_4_percent;
+  real_T engine_N1_1_percent;
+  real_T engine_N1_2_percent;
+  real_T engine_N1_3_percent;
+  real_T engine_N1_4_percent;
+  real_T TAT_degC;
+  real_T OAT_degC;
+  real_T ISA_degC;
+  real_T ambient_density_kg_per_m3;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_struct_QMVdjQ6NWn0vSjcEHgvQjC_
+#define DEFINED_TYPEDEF_FOR_struct_QMVdjQ6NWn0vSjcEHgvQjC_
+
+struct struct_QMVdjQ6NWn0vSjcEHgvQjC
+{
+  athr_time time;
+  struct_AToClpcym1Jfdzal25tWQD data;
   athr_data_computed data_computed;
   athr_input input;
   athr_output output;

@@ -84,12 +84,20 @@ struct SimData {
   double gpsCourseToSteer;
   double commanded_engine_N1_1_percent;
   double commanded_engine_N1_2_percent;
+  double commanded_engine_N1_3_percent;
+  double commanded_engine_N1_4_percent;
   double engine_N1_1_percent;
   double engine_N1_2_percent;
+  double engine_N1_3_percent;
+  double engine_N1_4_percent;
   double corrected_engine_N1_1_percent;
   double corrected_engine_N1_2_percent;
+  double corrected_engine_N1_3_percent;
+  double corrected_engine_N1_4_percent;
   unsigned long long engine_combustion_1;
   unsigned long long engine_combustion_2;
+  unsigned long long engine_combustion_3;
+  unsigned long long engine_combustion_4;
   unsigned long long is_mach_mode_active;
   unsigned long long speed_slot_index;
   unsigned long long engineAntiIce_1;
@@ -181,8 +189,12 @@ struct SimOutputZetaTrim {
 struct SimOutputThrottles {
   double throttleLeverPosition_1;
   double throttleLeverPosition_2;
+  double throttleLeverPosition_3;
+  double throttleLeverPosition_4;
   double throttleManagedMode_1;
   double throttleManagedMode_2;
+  double throttleManagedMode_3;
+  double throttleManagedMode_4;
 };
 
 struct SimOutputFlaps {
