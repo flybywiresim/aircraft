@@ -4347,8 +4347,8 @@
             <!-- MARKER DEFAULT VALUE IS 1 BUT IT IS UNDESIRED
                 ADF2 volume set do not exist in the sdk for now. Hopefully in the future -->
             <Update Once="True">
-                0 (&gt;L:A32NX_ACP1_TRANSMIT)
-                4 (&gt;L:A32NX_ACP2_TRANSMIT)
+                1 (&gt;L:A32NX_ACP1_VHF1_TRANSMIT)
+                1 (&gt;L:A32NX_ACP2_VHF1_TRANSMIT)
 
                 1 (&gt;L:A32NX_ACP1_VHF1_KNOB_VOLUME_DOWN)
                 1 (&gt;L:A32NX_ACP1_VHF2_KNOB_VOLUME_DOWN)

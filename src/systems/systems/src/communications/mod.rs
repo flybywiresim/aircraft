@@ -22,7 +22,7 @@ pub enum TransmitType {
 read_write_enum!(TransmitType);
 
 impl From<f64> for TransmitType {
-    fn from(value: f64) -> Self {
+    fn from(value: f64) -> TransmitType {
         match value as u8 {
             0 => TransmitType::COM1,
             1 => TransmitType::COM2,
@@ -66,6 +66,11 @@ pub struct Communications {
     audio_switching_knob_id: VariableIdentifier,
     audio_switching_knob: AudioSwitchingKnobPosition,
 
+    pilot_transmit_id: VariableIdentifier,
+    copilot_transmit_id: VariableIdentifier,
+
+    // transmit_com1_id: VariableIdentifier,
+    // transmit_com2_id: VariableIdentifier,
     receive_com1_id: VariableIdentifier,
     receive_com2_id: VariableIdentifier,
     //receive_com3_id: VariableIdentifier, deactivated since vPilot needs com3 to be always on
@@ -93,9 +98,11 @@ pub struct Communications {
     volume_markers_id: VariableIdentifier,
     sound_markers_id: VariableIdentifier,
 
-    transmit_com1: bool,
-    transmit_com2: bool,
+    pilot_transmit: TransmitType,
+    copilot_transmit: TransmitType,
 
+    // transmit_com1: bool,
+    // transmit_com2: bool,
     receive_com1: bool,
     receive_com2: bool,
     receive_adf1: bool,
@@ -137,40 +144,47 @@ impl Communications {
             acp2: AudioControlPanel::new(context, 2),
             acp3: AudioControlPanel::new(context, 3),
 
-            audio_switching_knob_id: context.get_identifier("A32NX_AUDIOSWITCHING_KNOB".to_owned()),
+            audio_switching_knob_id: context.get_identifier("AUDIOSWITCHING_KNOB".to_owned()),
             audio_switching_knob: AudioSwitchingKnobPosition::NORM,
 
-            receive_com1_id: context.get_identifier("COM1_RECEIVE_SELECT".to_owned()),
-            receive_com2_id: context.get_identifier("COM2_RECEIVE_SELECT".to_owned()),
+            pilot_transmit_id: context.get_identifier("PILOT_TRANSMIT".to_owned()),
+            copilot_transmit_id: context.get_identifier("COPILOT_TRANSMIT".to_owned()),
+
+            // transmit_com1_id: context.get_identifier("COM1_TRANSMIT".to_owned()),
+            // transmit_com2_id: context.get_identifier("COM2_TRANSMIT".to_owned()),
+            receive_com1_id: context.get_identifier("COM1_RECEIVE".to_owned()),
+            receive_com2_id: context.get_identifier("COM2_RECEIVE".to_owned()),
             //receive_com3_id: VariableIdentifier, deactivated since vPilot needs com3 to be always on
-            receive_adf1_id: context.get_identifier("RADIO_ADF1_IDENT_SET".to_owned()),
-            receive_adf2_id: context.get_identifier("RADIO_ADF2_IDENT_SET".to_owned()),
-            receive_vor1_id: context.get_identifier("RADIO_VOR1_IDENT_SET".to_owned()),
-            receive_vor2_id: context.get_identifier("RADIO_VOR2_IDENT_SET".to_owned()),
-            receive_ils_id: context.get_identifier("RADIO_DME3_IDENT_SET".to_owned()),
-            receive_gls_id: context.get_identifier("RADIO_DME4_IDENT_SET".to_owned()),
-            receive_markers_id: context.get_identifier("MARKER_SOUND_TOGGLE".to_owned()),
+            receive_adf1_id: context.get_identifier("ADF1_IDENT".to_owned()),
+            receive_adf2_id: context.get_identifier("ADF2_IDENT".to_owned()),
+            receive_vor1_id: context.get_identifier("VOR1_IDENT".to_owned()),
+            receive_vor2_id: context.get_identifier("VOR2_IDENT".to_owned()),
+            receive_ils_id: context.get_identifier("ILS_IDENT".to_owned()),
+            receive_gls_id: context.get_identifier("GLS_IDENT".to_owned()),
+            receive_markers_id: context.get_identifier("MARKER_IDENT".to_owned()),
 
             sound_markers_id: context.get_identifier("MARKER SOUND".to_owned()),
 
-            volume_com1_id: context.get_identifier("COM1_VOLUME_SET".to_owned()),
-            volume_com2_id: context.get_identifier("COM2_VOLUME_SET".to_owned()),
-            volume_hf1_id: context.get_identifier("A32NX_HF1_VOLUME".to_owned()),
-            volume_hf2_id: context.get_identifier("A32NX_HF2_VOLUME".to_owned()),
-            volume_pa_id: context.get_identifier("A32NX_PA_VOLUME".to_owned()),
-            volume_att_id: context.get_identifier("A32NX_ATT_VOLUME".to_owned()),
-            volume_mech_id: context.get_identifier("A32NX_MECH_VOLUME".to_owned()),
-            volume_adf1_id: context.get_identifier("ADF_VOLUME_SET".to_owned()),
-            volume_adf2_id: context.get_identifier("ADF2_VOLUME_SET".to_owned()),
-            volume_vor1_id: context.get_identifier("NAV1_VOLUME_SET_EX1".to_owned()),
-            volume_vor2_id: context.get_identifier("NAV2_VOLUME_SET_EX1".to_owned()),
-            volume_ils_id: context.get_identifier("NAV3_VOLUME_SET_EX1".to_owned()),
-            volume_gls_id: context.get_identifier("NAV4_VOLUME_SET_EX1".to_owned()),
-            volume_markers_id: context.get_identifier("MARKER_VOLUME_SET".to_owned()),
+            volume_com1_id: context.get_identifier("VHF1_VOLUME".to_owned()),
+            volume_com2_id: context.get_identifier("VHF2_VOLUME".to_owned()),
+            volume_hf1_id: context.get_identifier("HF1_VOLUME".to_owned()),
+            volume_hf2_id: context.get_identifier("HF2_VOLUME".to_owned()),
+            volume_pa_id: context.get_identifier("PA_VOLUME".to_owned()),
+            volume_att_id: context.get_identifier("ATT_VOLUME".to_owned()),
+            volume_mech_id: context.get_identifier("MECH_VOLUME".to_owned()),
+            volume_adf1_id: context.get_identifier("ADF1_VOLUME".to_owned()),
+            volume_adf2_id: context.get_identifier("ADF2_VOLUME".to_owned()),
+            volume_vor1_id: context.get_identifier("VOR1_VOLUME".to_owned()),
+            volume_vor2_id: context.get_identifier("VOR2_VOLUME".to_owned()),
+            volume_ils_id: context.get_identifier("ILS_VOLUME".to_owned()),
+            volume_gls_id: context.get_identifier("GLS_VOLUME".to_owned()),
+            volume_markers_id: context.get_identifier("MARKER_VOLUME".to_owned()),
 
-            transmit_com1: false,
-            transmit_com2: false,
+            pilot_transmit: TransmitType::NONE,
+            copilot_transmit: TransmitType::NONE,
 
+            // transmit_com1: false,
+            // transmit_com2: false,
             receive_com1: false,
             receive_com2: false,
             receive_adf1: false,
@@ -210,18 +224,51 @@ impl Communications {
     pub fn update(&mut self, context: &UpdateContext) {
         let side: SidePlaying = context.side_playing();
 
-        self.transmit_com1 = self.guess(
+        let (transmit_com1, side_com1) = self.guess_transmit(
             self.acp1.get_transmit_com1(),
             self.acp2.get_transmit_com1(),
             self.acp3.get_transmit_com1(),
             &side,
         );
-        self.transmit_com2 = self.guess(
+        let (transmit_com2, _side_com2) = self.guess_transmit(
             self.acp1.get_transmit_com2(),
             self.acp2.get_transmit_com2(),
             self.acp3.get_transmit_com2(),
             &side,
         );
+
+        self.pilot_transmit = TransmitType::NONE;
+        self.copilot_transmit = TransmitType::NONE;
+
+        if transmit_com1 || transmit_com2 {
+            match side_com1 {
+                SideTransmission::CAPTAIN => {
+                    self.pilot_transmit = if transmit_com1 {
+                        TransmitType::COM1
+                    } else {
+                        TransmitType::COM2
+                    };
+                }
+                SideTransmission::FO => {
+                    self.copilot_transmit = if transmit_com1 {
+                        TransmitType::COM1
+                    } else {
+                        TransmitType::COM2
+                    };
+                }
+                _ => {
+                    self.pilot_transmit = if transmit_com1 {
+                        TransmitType::COM1
+                    } else {
+                        TransmitType::COM2
+                    };
+                    self.copilot_transmit = self.pilot_transmit;
+                }
+            }
+        }
+
+        println!("Going to write pilot {}", self.pilot_transmit as u8);
+        println!("Going to write copilot {}", self.copilot_transmit as u8);
 
         self.receive_com1 = self.guess(
             self.acp1.get_receive_com1(),
@@ -285,6 +332,9 @@ impl Communications {
             self.acp3.get_volume_com1(),
             &side,
         );
+
+        println!("Going to write volume_com1 {}", self.volume_com1 as u32);
+
         self.volume_com2 = self.guess(
             self.acp1.get_volume_com2(),
             self.acp2.get_volume_com2(),
@@ -418,11 +468,15 @@ impl Communications {
             transmit_to_use = to_use_acp3;
 
             if self.audio_switching_knob == AudioSwitchingKnobPosition::CAPTAIN {
+                side = SideTransmission::CAPTAIN;
+
                 if matches!(side_playing, SidePlaying::FO) {
                     transmit_to_use = to_use_acp2;
                     side = SideTransmission::FO;
                 }
             } else {
+                side = SideTransmission::FO;
+
                 if matches!(side_playing, SidePlaying::CAPTAIN) {
                     transmit_to_use = to_use_acp1;
                     side = SideTransmission::CAPTAIN;
@@ -483,6 +537,12 @@ impl SimulationElement for Communications {
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(&self.pilot_transmit_id, self.pilot_transmit);
+        writer.write(&self.copilot_transmit_id, self.copilot_transmit);
+
+        // writer.write(&self.transmit_com1_id, self.transmit_com1);
+        // writer.write(&self.transmit_com2_id, self.transmit_com2);
+
         writer.write(&self.receive_com1_id, self.receive_com1);
         writer.write(&self.receive_com2_id, self.receive_com2);
         writer.write(&self.receive_adf1_id, self.receive_adf1);
@@ -498,6 +558,7 @@ impl SimulationElement for Communications {
         }
 
         writer.write(&self.volume_com1_id, self.volume_com1);
+        println!("Wrote volume_com1 {}", self.volume_com1 as u32);
         writer.write(&self.volume_com2_id, self.volume_com2);
         writer.write(&self.volume_adf1_id, self.volume_adf1);
         writer.write(&self.volume_adf2_id, self.volume_adf2);

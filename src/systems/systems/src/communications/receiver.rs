@@ -23,14 +23,12 @@ pub struct VHF {
 impl VHF {
     pub fn new(context: &mut InitContext, id_transceiver: usize, id_acp: usize) -> Self {
         Self {
-            transmit_id: context.get_identifier(format!(
-                "A32NX_ACP{}_VHF{}_TRANSMIT",
-                id_acp, id_transceiver
-            )),
+            transmit_id: context
+                .get_identifier(format!("ACP{}_VHF{}_TRANSMIT", id_acp, id_transceiver)),
             volume_id: context
-                .get_identifier(format!("A32NX_ACP{}_VHF{}_VOLUME", id_acp, id_transceiver)),
+                .get_identifier(format!("ACP{}_VHF{}_VOLUME", id_acp, id_transceiver)),
             knob_id: context.get_identifier(format!(
-                "A32NX_ACP{}_VHF{}_KNOB_VOLUME_DOWN",
+                "ACP{}_VHF{}_KNOB_VOLUME_DOWN",
                 id_acp, id_transceiver
             )),
             transmit: false,
@@ -79,12 +77,10 @@ impl COMM {
         id_acp: usize,
     ) -> Self {
         Self {
-            volume_id: context.get_identifier(format!(
-                "A32NX_ACP{}_{}{}_VOLUME",
-                id_acp, name, id_transceiver
-            )),
+            volume_id: context
+                .get_identifier(format!("ACP{}_{}{}_VOLUME", id_acp, name, id_transceiver)),
             knob_id: context.get_identifier(format!(
-                "A32NX_ACP{}_{}{}_KNOB_VOLUME_DOWN",
+                "ACP{}_{}{}_KNOB_VOLUME_DOWN",
                 id_acp, name, id_transceiver
             )),
             volume: 0,
@@ -121,9 +117,9 @@ impl ADF {
     pub fn new(context: &mut InitContext, id_transceiver: usize, id_acp: usize) -> Self {
         Self {
             volume_id: context
-                .get_identifier(format!("A32NX_ACP{}_ADF{}_VOLUME", id_acp, id_transceiver)),
+                .get_identifier(format!("ACP{}_ADF{}_VOLUME", id_acp, id_transceiver)),
             knob_id: context.get_identifier(format!(
-                "A32NX_ACP{}_ADF{}_KNOB_VOLUME_DOWN",
+                "ACP{}_ADF{}_KNOB_VOLUME_DOWN",
                 id_acp, id_transceiver
             )),
             knob: false,
@@ -160,9 +156,9 @@ impl VOR {
     pub fn new(context: &mut InitContext, id_transceiver: usize, id_acp: usize) -> Self {
         Self {
             volume_id: context
-                .get_identifier(format!("A32NX_ACP{}_VOR{}_VOLUME", id_acp, id_transceiver)),
+                .get_identifier(format!("ACP{}_VOR{}_VOLUME", id_acp, id_transceiver)),
             knob_id: context.get_identifier(format!(
-                "A32NX_ACP{}_VOR{}_KNOB_VOLUME_DOWN",
+                "ACP{}_VOR{}_KNOB_VOLUME_DOWN",
                 id_acp, id_transceiver
             )),
             volume: 0,
@@ -198,8 +194,8 @@ pub struct ILS {
 impl ILS {
     pub fn new(context: &mut InitContext, id_acp: usize) -> Self {
         Self {
-            volume_id: context.get_identifier(format!("A32NX_ACP{}_ILS_VOLUME", id_acp)),
-            knob_id: context.get_identifier(format!("A32NX_ACP{}_ILS_KNOB_VOLUME_DOWN", id_acp)),
+            volume_id: context.get_identifier(format!("ACP{}_ILS_VOLUME", id_acp)),
+            knob_id: context.get_identifier(format!("ACP{}_ILS_KNOB_VOLUME_DOWN", id_acp)),
             volume: 0,
             knob: false,
         }
@@ -233,8 +229,8 @@ pub struct GLS {
 impl GLS {
     pub fn new(context: &mut InitContext, id_acp: usize) -> Self {
         Self {
-            volume_id: context.get_identifier(format!("A32NX_ACP{}_GLS_VOLUME", id_acp)),
-            knob_id: context.get_identifier(format!("A32NX_ACP{}_GLS_KNOB_VOLUME_DOWN", id_acp)),
+            volume_id: context.get_identifier(format!("ACP{}_GLS_VOLUME", id_acp)),
+            knob_id: context.get_identifier(format!("ACP{}_GLS_KNOB_VOLUME_DOWN", id_acp)),
             volume: 0,
             knob: false,
         }
@@ -268,8 +264,8 @@ pub struct MARKERS {
 impl MARKERS {
     pub fn new(context: &mut InitContext, id_acp: usize) -> Self {
         Self {
-            volume_id: context.get_identifier(format!("A32NX_ACP{}_MKR_VOLUME", id_acp)),
-            knob_id: context.get_identifier(format!("A32NX_ACP{}_MKR_KNOB_VOLUME_DOWN", id_acp)),
+            volume_id: context.get_identifier(format!("ACP{}_MKR_VOLUME", id_acp)),
+            knob_id: context.get_identifier(format!("ACP{}_MKR_KNOB_VOLUME_DOWN", id_acp)),
             volume: 0,
             knob: false,
         }

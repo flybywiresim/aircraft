@@ -12,7 +12,7 @@ use uom::si::{
 use super::{Read, SimulatorReader};
 use crate::{
     shared::{low_pass_filter::LowPassFilter, MachNumber},
-    simulation::{InitContext, VariableIdentifier, SidePlaying},
+    simulation::{InitContext, SidePlaying, VariableIdentifier},
 };
 use nalgebra::{Rotation3, Vector3};
 
@@ -215,7 +215,7 @@ impl UpdateContext {
     pub(crate) const LOCAL_LATERAL_SPEED_KEY: &'static str = "VELOCITY BODY X";
     pub(crate) const LOCAL_LONGITUDINAL_SPEED_KEY: &'static str = "VELOCITY BODY Z";
     pub(crate) const LOCAL_VERTICAL_SPEED_KEY: &'static str = "VELOCITY BODY Y";
-    pub(crate) const SIDE_PLAYING: &'static str = "A32NX_SIDE_PLAYING";
+    pub(crate) const SIDE_PLAYING: &'static str = "SIDE_PLAYING";
 
     // Plane accelerations can become crazy with msfs collision handling.
     // Having such filtering limits high frequencies transients in accelerations used for physics
@@ -337,7 +337,7 @@ impl UpdateContext {
             plane_bank_id: context.get_identifier("PLANE BANK DEGREES".to_owned()),
             plane_true_heading_id: context.get_identifier("PLANE HEADING DEGREES TRUE".to_owned()),
             mach_number_id: context.get_identifier("AIRSPEED MACH".to_owned()),
-            side_playing_id: context.get_identifier("A32NX_SIDE_PLAYING".to_owned()),
+            side_playing_id: context.get_identifier("SIDE_PLAYING".to_owned()),
 
             delta: Default::default(),
             simulation_time: Default::default(),

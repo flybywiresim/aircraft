@@ -21,8 +21,7 @@ impl AudioControlPanel {
     pub fn new(context: &mut InitContext, id_acp: usize) -> Self {
         Self {
             id: id_acp,
-            voice_button_id: context
-                .get_identifier(format!("A32NX_ACP{}_VOICE_BUTTON_DOWN", id_acp)),
+            voice_button_id: context.get_identifier(format!("ACP{}_VOICE_BUTTON_DOWN", id_acp)),
             voice_button: false,
             vhfs: [
                 VHF::new(context, 1, id_acp),
