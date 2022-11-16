@@ -4938,13 +4938,13 @@ impl AileronSystemHydraulicController {
                 [AileronActuatorPosition::Outward as usize]
                 .set_mode(Self::aileron_actuator_mode_from_solenoid(
                     self.right_inboard_solenoid_energized_from_fbw
-                        [AileronActuatorPosition::Inward as usize],
+                        [AileronActuatorPosition::Outward as usize],
                 ));
             self.right_aileron_controllers[AileronPanelPosition::Inward as usize]
                 [AileronActuatorPosition::Inward as usize]
                 .set_mode(Self::aileron_actuator_mode_from_solenoid(
                     self.right_inboard_solenoid_energized_from_fbw
-                        [AileronActuatorPosition::Outward as usize],
+                        [AileronActuatorPosition::Inward as usize],
                 ));
         } else {
             for controller in
