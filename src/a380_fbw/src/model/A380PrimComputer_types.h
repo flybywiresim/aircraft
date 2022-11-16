@@ -467,6 +467,7 @@ struct base_prim_logic_outputs
   boolean_T right_sidestick_priority_locked;
   real_T total_sidestick_pitch_command;
   real_T total_sidestick_roll_command;
+  boolean_T speed_brake_inhibited;
   boolean_T ground_spoilers_armed;
   boolean_T ground_spoilers_out;
   boolean_T phased_lift_dumping_active;

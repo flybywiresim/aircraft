@@ -136,8 +136,10 @@ struct SimData {
   unsigned long long assistanceLandingEnabled;
   unsigned long long aiAutoTrimActive;
   unsigned long long aiControlsActive;
-  double wheelRpmLeft;
-  double wheelRpmRight;
+  double wheelRpmLeftBlg;
+  double wheelRpmRightBlg;
+  double wheelRpmLeftWlg;
+  double wheelRpmRightWlg;
 };
 
 struct SimInput {

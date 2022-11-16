@@ -27,6 +27,16 @@ class A380PrimComputer final
     boolean_T pY_not_empty;
   };
 
+  struct rtDW_RateLimiter_A380PrimComputer_e_T {
+    real_T pY;
+    boolean_T pY_not_empty;
+  };
+
+  struct rtDW_RateLimiter_A380PrimComputer_d_T {
+    real_T pY;
+    boolean_T pY_not_empty;
+  };
+
   struct rtDW_LagFilter_A380PrimComputer_T {
     real_T pY;
     real_T pU;
@@ -39,7 +49,7 @@ class A380PrimComputer final
     boolean_T previousInput_not_empty;
   };
 
-  struct rtDW_MATLABFunction_A380PrimComputer_kz_T {
+  struct rtDW_MATLABFunction_A380PrimComputer_k_T {
     real_T timeSinceCondition;
     boolean_T output;
   };
@@ -106,7 +116,6 @@ class A380PrimComputer final
     real_T left_wing_wheel_speed;
     real_T right_body_wheel_speed;
     real_T right_wing_wheel_speed;
-    real_T xi_spoiler_deg;
     uint32_T SSM;
     uint32_T SSM_k;
     uint32_T SSM_kx;
@@ -556,6 +565,7 @@ class A380PrimComputer final
     uint8_T is_active_c28_A380PrimComputer;
     uint8_T is_c28_A380PrimComputer;
     boolean_T Memory_PreviousInput;
+    boolean_T Memory_PreviousInput_j;
     boolean_T icLoad;
     boolean_T pLeftStickDisabled;
     boolean_T pRightStickDisabled;
@@ -567,34 +577,55 @@ class A380PrimComputer final
     boolean_T sProtActive;
     boolean_T eventTime_not_empty_a;
     boolean_T Runtime_MODE;
+    rtDW_MATLABFunction_A380PrimComputer_k_T sf_MATLABFunction_al;
     rtDW_MATLABFunction_A380PrimComputer_j_T sf_MATLABFunction_nu;
     rtDW_MATLABFunction_A380PrimComputer_j_T sf_MATLABFunction_g4;
-    rtDW_MATLABFunction_A380PrimComputer_kz_T sf_MATLABFunction_j2;
-    rtDW_MATLABFunction_A380PrimComputer_kz_T sf_MATLABFunction_g24;
-    rtDW_MATLABFunction_A380PrimComputer_kz_T sf_MATLABFunction_lf;
-    rtDW_MATLABFunction_A380PrimComputer_kz_T sf_MATLABFunction_jl;
-    rtDW_MATLABFunction_A380PrimComputer_kz_T sf_MATLABFunction_jz;
+    rtDW_MATLABFunction_A380PrimComputer_k_T sf_MATLABFunction_j2;
+    rtDW_MATLABFunction_A380PrimComputer_k_T sf_MATLABFunction_g24;
+    rtDW_MATLABFunction_A380PrimComputer_k_T sf_MATLABFunction_lf;
+    rtDW_MATLABFunction_A380PrimComputer_k_T sf_MATLABFunction_jl;
+    rtDW_MATLABFunction_A380PrimComputer_k_T sf_MATLABFunction_jz;
     rtDW_RateLimiter_A380PrimComputer_b_T sf_RateLimiter_mr;
     rtDW_RateLimiter_A380PrimComputer_b_T sf_RateLimiter_ne;
-    rtDW_MATLABFunction_A380PrimComputer_kz_T sf_MATLABFunction_n;
+    rtDW_MATLABFunction_A380PrimComputer_k_T sf_MATLABFunction_n;
     rtDW_MATLABFunction_A380PrimComputer_km_T sf_MATLABFunction_br;
     rtDW_MATLABFunction_A380PrimComputer_km_T sf_MATLABFunction_jg;
-    rtDW_MATLABFunction_A380PrimComputer_kz_T sf_MATLABFunction_gfx;
-    rtDW_MATLABFunction_A380PrimComputer_kz_T sf_MATLABFunction_cj;
+    rtDW_MATLABFunction_A380PrimComputer_k_T sf_MATLABFunction_gfx;
+    rtDW_MATLABFunction_A380PrimComputer_k_T sf_MATLABFunction_cj;
     rtDW_MATLABFunction_A380PrimComputer_j_T sf_MATLABFunction_jj;
     rtDW_MATLABFunction_A380PrimComputer_j_T sf_MATLABFunction_ej;
     rtDW_MATLABFunction_A380PrimComputer_j_T sf_MATLABFunction_ja;
     rtDW_MATLABFunction_A380PrimComputer_j_T sf_MATLABFunction_mb;
     rtDW_LagFilter_A380PrimComputer_T sf_LagFilter_a;
     rtDW_LagFilter_A380PrimComputer_T sf_LagFilter;
-    rtDW_RateLimiter_A380PrimComputer_g_T sf_RateLimiter_i;
+    rtDW_RateLimiter_A380PrimComputer_e_T sf_RateLimiter_cd;
+    rtDW_RateLimiter_A380PrimComputer_e_T sf_RateLimiter_j4;
+    rtDW_RateLimiter_A380PrimComputer_g_T sf_RateLimiter_iy;
     rtDW_RateLimiter_A380PrimComputer_g_T sf_RateLimiter_np;
-    rtDW_RateLimiter_A380PrimComputer_g_T sf_RateLimiter_l;
-    rtDW_RateLimiter_A380PrimComputer_g_T sf_RateLimiter_m;
+    rtDW_RateLimiter_A380PrimComputer_g_T sf_RateLimiter_lm;
+    rtDW_RateLimiter_A380PrimComputer_g_T sf_RateLimiter_mn;
     rtDW_RateLimiter_A380PrimComputer_g_T sf_RateLimiter_au;
+    rtDW_RateLimiter_A380PrimComputer_d_T sf_RateLimiter_md;
+    rtDW_RateLimiter_A380PrimComputer_d_T sf_RateLimiter_me;
+    rtDW_RateLimiter_A380PrimComputer_e_T sf_RateLimiter_f1;
+    rtDW_RateLimiter_A380PrimComputer_e_T sf_RateLimiter_i;
+    rtDW_RateLimiter_A380PrimComputer_e_T sf_RateLimiter_nl;
+    rtDW_RateLimiter_A380PrimComputer_e_T sf_RateLimiter_gm;
     rtDW_RateLimiter_A380PrimComputer_g_T sf_RateLimiter_f;
+    rtDW_RateLimiter_A380PrimComputer_e_T sf_RateLimiter_j;
+    rtDW_RateLimiter_A380PrimComputer_e_T sf_RateLimiter_n2;
+    rtDW_RateLimiter_A380PrimComputer_e_T sf_RateLimiter_bo;
+    rtDW_RateLimiter_A380PrimComputer_e_T sf_RateLimiter_k;
+    rtDW_RateLimiter_A380PrimComputer_e_T sf_RateLimiter_nh;
+    rtDW_RateLimiter_A380PrimComputer_e_T sf_RateLimiter_gr;
+    rtDW_RateLimiter_A380PrimComputer_e_T sf_RateLimiter_m;
+    rtDW_RateLimiter_A380PrimComputer_e_T sf_RateLimiter_c5;
+    rtDW_RateLimiter_A380PrimComputer_e_T sf_RateLimiter_d;
+    rtDW_RateLimiter_A380PrimComputer_e_T sf_RateLimiter_l;
     rtDW_RateLimiter_A380PrimComputer_g_T sf_RateLimiter_n;
     rtDW_RateLimiter_A380PrimComputer_g_T sf_RateLimiter_a;
+    rtDW_RateLimiter_A380PrimComputer_T sf_RateLimiter_g;
+    rtDW_RateLimiter_A380PrimComputer_T sf_RateLimiter_c;
     rtDW_RateLimiter_A380PrimComputer_T sf_RateLimiter_b;
     rtDW_RateLimiter_A380PrimComputer_T sf_RateLimiter;
   };
@@ -614,6 +645,10 @@ class A380PrimComputer final
     real_T DiscreteTimeIntegratorVariableTsLimit_Gain;
     real_T RateLimiterVariableTs2_InitialCondition;
     real_T RateLimiterVariableTs3_InitialCondition;
+    real_T RateLimiterVariableTs4_InitialCondition;
+    real_T RateLimiterVariableTs6_InitialCondition;
+    real_T RateLimiterGenericVariableTs24_InitialCondition;
+    real_T RateLimiterGenericVariableTs25_InitialCondition;
     real_T DiscreteDerivativeVariableTs_InitialCondition;
     real_T BitfromLabel_bit;
     real_T BitfromLabel1_bit;
@@ -647,20 +682,27 @@ class A380PrimComputer final
     real_T BitfromLabel4_bit_i;
     real_T BitfromLabel5_bit_l;
     real_T BitfromLabel_bit_of;
-    real_T BitfromLabel_bit_a;
-    real_T BitfromLabel1_bit_p;
     real_T CompareToConstant_const;
     real_T CompareToConstant_const_l;
-    real_T CompareToConstant11_const;
-    real_T CompareToConstant12_const;
-    real_T CompareToConstant5_const;
-    real_T CompareToConstant6_const;
-    real_T CompareToConstant_const_m;
-    real_T CompareToConstant15_const;
-    real_T CompareToConstant1_const;
-    real_T CompareToConstant2_const;
     real_T CompareToConstant3_const;
     real_T CompareToConstant4_const;
+    real_T CompareToConstant1_const;
+    real_T CompareToConstant2_const;
+    real_T CompareToConstant_const_n;
+    real_T CompareToConstant23_const;
+    real_T CompareToConstant21_const;
+    real_T CompareToConstant22_const;
+    real_T CompareToConstant24_const;
+    real_T CompareToConstant5_const;
+    real_T CompareToConstant6_const;
+    real_T CompareToConstant19_const;
+    real_T CompareToConstant20_const;
+    real_T CompareToConstant_const_m;
+    real_T CompareToConstant15_const;
+    real_T CompareToConstant1_const_p;
+    real_T CompareToConstant2_const_i;
+    real_T CompareToConstant3_const_e;
+    real_T CompareToConstant4_const_c;
     real_T CompareToConstant13_const;
     real_T CompareToConstant14_const;
     real_T CompareToConstant10_const;
@@ -676,7 +718,7 @@ class A380PrimComputer final
     real_T CompareToConstant3_const_o;
     real_T CompareToConstant4_const_o;
     real_T CompareToConstant5_const_b;
-    real_T CompareToConstant1_const_p;
+    real_T CompareToConstant1_const_pv;
     real_T CompareToConstant1_const_d;
     real_T HysteresisNode2_highTrigger;
     real_T HysteresisNode3_highTrigger;
@@ -690,6 +732,26 @@ class A380PrimComputer final
     real_T RateLimiterGenericVariableTs3_lo;
     real_T RateLimiterGenericVariableTs4_lo;
     real_T RateLimiterGenericVariableTs5_lo;
+    real_T RateLimiterVariableTs4_lo;
+    real_T RateLimiterVariableTs6_lo;
+    real_T RateLimiterGenericVariableTs24_lo;
+    real_T RateLimiterGenericVariableTs25_lo;
+    real_T RateLimiterGenericVariableTs8_lo;
+    real_T RateLimiterGenericVariableTs9_lo;
+    real_T RateLimiterGenericVariableTs10_lo;
+    real_T RateLimiterGenericVariableTs11_lo;
+    real_T RateLimiterGenericVariableTs14_lo;
+    real_T RateLimiterGenericVariableTs15_lo;
+    real_T RateLimiterGenericVariableTs12_lo;
+    real_T RateLimiterGenericVariableTs13_lo;
+    real_T RateLimiterGenericVariableTs18_lo;
+    real_T RateLimiterGenericVariableTs19_lo;
+    real_T RateLimiterGenericVariableTs16_lo;
+    real_T RateLimiterGenericVariableTs17_lo;
+    real_T RateLimiterGenericVariableTs22_lo;
+    real_T RateLimiterGenericVariableTs23_lo;
+    real_T RateLimiterGenericVariableTs20_lo;
+    real_T RateLimiterGenericVariableTs21_lo;
     real_T RateLimiterGenericVariableTs6_lo;
     real_T RateLimiterGenericVariableTs7_lo;
     real_T HysteresisNode2_lowTrigger;
@@ -702,6 +764,7 @@ class A380PrimComputer final
     real_T ConfirmNode_timeDelay_d;
     real_T ConfirmNode1_timeDelay_a;
     real_T ConfirmNode_timeDelay_a;
+    real_T ConfirmNode_timeDelay_g;
     real_T RateLimiterGenericVariableTs_up;
     real_T RateLimiterGenericVariableTs1_up;
     real_T RateLimiterVariableTs2_up;
@@ -712,6 +775,26 @@ class A380PrimComputer final
     real_T RateLimiterGenericVariableTs3_up;
     real_T RateLimiterGenericVariableTs4_up;
     real_T RateLimiterGenericVariableTs5_up;
+    real_T RateLimiterVariableTs4_up;
+    real_T RateLimiterVariableTs6_up;
+    real_T RateLimiterGenericVariableTs24_up;
+    real_T RateLimiterGenericVariableTs25_up;
+    real_T RateLimiterGenericVariableTs8_up;
+    real_T RateLimiterGenericVariableTs9_up;
+    real_T RateLimiterGenericVariableTs10_up;
+    real_T RateLimiterGenericVariableTs11_up;
+    real_T RateLimiterGenericVariableTs14_up;
+    real_T RateLimiterGenericVariableTs15_up;
+    real_T RateLimiterGenericVariableTs12_up;
+    real_T RateLimiterGenericVariableTs13_up;
+    real_T RateLimiterGenericVariableTs18_up;
+    real_T RateLimiterGenericVariableTs19_up;
+    real_T RateLimiterGenericVariableTs16_up;
+    real_T RateLimiterGenericVariableTs17_up;
+    real_T RateLimiterGenericVariableTs22_up;
+    real_T RateLimiterGenericVariableTs23_up;
+    real_T RateLimiterGenericVariableTs20_up;
+    real_T RateLimiterGenericVariableTs21_up;
     real_T RateLimiterGenericVariableTs6_up;
     real_T RateLimiterGenericVariableTs7_up;
     SignStatusMatrix EnumeratedConstant_Value;
@@ -719,6 +802,7 @@ class A380PrimComputer final
     a380_pitch_efcs_law EnumeratedConstant_Value_b;
     real32_T CompareToConstant_const_ll;
     boolean_T SRFlipFlop_initial_condition;
+    boolean_T SRFlipFlop_initial_condition_c;
     boolean_T ConfirmNode_isRisingEdge;
     boolean_T ConfirmNode2_isRisingEdge;
     boolean_T ConfirmNode1_isRisingEdge;
@@ -729,16 +813,23 @@ class A380PrimComputer final
     boolean_T PulseNode1_isRisingEdge;
     boolean_T ConfirmNode1_isRisingEdge_k;
     boolean_T ConfirmNode_isRisingEdge_j;
+    boolean_T ConfirmNode_isRisingEdge_c;
     boolean_T PulseNode3_isRisingEdge;
     boolean_T PulseNode2_isRisingEdge;
     boolean_T PulseNode1_isRisingEdge_c;
     boolean_T PulseNode_isRisingEdge_n;
     prim_outputs out_Y0;
     base_prim_out_bus Constant4_Value;
+    real_T Constant5_Value;
+    real_T Constant6_Value;
+    real_T Constant9_Value;
+    real_T uDLookupTable_tableData[5];
+    real_T uDLookupTable_bp01Data[5];
     real_T Constant2_Value;
     real_T Constant1_Value;
     real_T Constant4_Value_a;
     real_T Constant3_Value;
+    real_T Constant_Value;
     real_T Constant2_Value_l;
     real_T Constant3_Value_h;
     real_T Constant10_Value;
@@ -747,12 +838,12 @@ class A380PrimComputer final
     real_T Constant2_Value_k;
     real_T Constant3_Value_g;
     real_T Constant4_Value_i;
-    real_T Constant5_Value;
-    real_T Constant6_Value;
+    real_T Constant5_Value_n;
+    real_T Constant6_Value_f;
     real_T Constant7_Value;
     real_T Constant8_Value;
-    real_T Constant9_Value;
-    real_T Constant_Value;
+    real_T Constant9_Value_n;
+    real_T Constant_Value_b;
     real_T Constant_Value_p;
     real_T Saturation_UpperSat;
     real_T Saturation_LowerSat;
@@ -774,8 +865,8 @@ class A380PrimComputer final
     real_T uDLookupTable1_bp01Data[4];
     real_T uDLookupTable2_tableData[4];
     real_T uDLookupTable2_bp01Data[4];
-    real_T uDLookupTable_tableData[4];
-    real_T uDLookupTable_bp01Data[4];
+    real_T uDLookupTable_tableData_n[4];
+    real_T uDLookupTable_bp01Data_m[4];
     real_T Constant_Value_a;
     real_T Constant_Value_c;
     real_T Gain_Gain;
@@ -793,6 +884,8 @@ class A380PrimComputer final
     real_T Saturation5_LowerSat;
     real_T Saturation6_UpperSat;
     real_T Saturation6_LowerSat;
+    real_T Gain5_Gain;
+    real_T Constant8_Value_d;
     real_T Constant_Value_g;
     real_T Constant_Value_af;
     real32_T Constant10_Value_l;
@@ -824,9 +917,14 @@ class A380PrimComputer final
     boolean_T Delay1_InitialCondition;
     boolean_T reset_Value;
     boolean_T reset_Value_j;
+    boolean_T Constant_Value_h;
     boolean_T Logic_table[16];
+    boolean_T Logic_table_h[16];
     boolean_T Delay1_InitialCondition_n;
     boolean_T Delay_InitialCondition_d;
+    boolean_T reset_Value_f;
+    boolean_T Constant7_Value_n;
+    boolean_T reset_Value_l;
     boolean_T Constant16_Value;
     boolean_T Constant17_Value;
     boolean_T Constant18_Value;
@@ -834,7 +932,7 @@ class A380PrimComputer final
     boolean_T Constant21_Value;
     boolean_T Constant22_Value;
     boolean_T Constant1_Value_f;
-    boolean_T Constant_Value_b;
+    boolean_T Constant_Value_ba;
   };
 
   A380PrimComputer(A380PrimComputer const&) = delete;
@@ -862,14 +960,23 @@ class A380PrimComputer final
   BlockIO_A380PrimComputer_T A380PrimComputer_B;
   D_Work_A380PrimComputer_T A380PrimComputer_DWork;
   static Parameters_A380PrimComputer_T A380PrimComputer_P;
-  static void A380PrimComputer_MATLABFunction(const base_arinc_429 *rtu_u, boolean_T *rty_y);
-  static void A380PrimComputer_MATLABFunction_j(const base_arinc_429 *rtu_u, real_T rtu_bit, uint32_T *rty_y);
   static void A380PrimComputer_RateLimiter_Reset(rtDW_RateLimiter_A380PrimComputer_T *localDW);
   static void A380PrimComputer_RateLimiter(real_T rtu_u, real_T rtu_up, real_T rtu_lo, real_T rtu_Ts, real_T rtu_init,
     real_T *rty_Y, rtDW_RateLimiter_A380PrimComputer_T *localDW);
   static void A380PrimComputer_RateLimiter_b_Reset(rtDW_RateLimiter_A380PrimComputer_g_T *localDW);
   static void A380PrimComputer_RateLimiter_a(real_T rtu_u, real_T rtu_up, real_T rtu_lo, real_T rtu_Ts, real_T rtu_init,
     boolean_T rtu_reset, real_T *rty_Y, rtDW_RateLimiter_A380PrimComputer_g_T *localDW);
+  static void A380PrimComputer_RateLimiter_h_Reset(rtDW_RateLimiter_A380PrimComputer_e_T *localDW);
+  static void A380PrimComputer_RateLimiter_l(real_T rtu_u, real_T rtu_up, real_T rtu_lo, real_T rtu_Ts, real_T rtu_init,
+    real_T rtu_reset, real_T *rty_Y, rtDW_RateLimiter_A380PrimComputer_e_T *localDW);
+  static void A380PrimComputer_RateLimiter_bb_Reset(rtDW_RateLimiter_A380PrimComputer_d_T *localDW);
+  static void A380PrimComputer_RateLimiter_m(real_T rtu_u, real_T rtu_up, real_T rtu_lo, real_T rtu_Ts, real_T rtu_init,
+    boolean_T rtu_reset, real_T *rty_Y, rtDW_RateLimiter_A380PrimComputer_d_T *localDW);
+  static void A380PrimComputer_Spoiler12SpeedbrakeGain(real_T rtu_spdBrkDeflection, real_T *rty_spdBrkDeflectionOut);
+  static void A380PrimComputer_Spoiler345Computation(real_T rtu_xiSplr, real_T rtu_speedBrakeDeflection, real_T
+    *rty_leftCommand, real_T *rty_rightCommand);
+  static void A380PrimComputer_MATLABFunction(const base_arinc_429 *rtu_u, boolean_T *rty_y);
+  static void A380PrimComputer_MATLABFunction_e(const base_arinc_429 *rtu_u, real_T rtu_bit, uint32_T *rty_y);
   static void A380PrimComputer_MATLABFunction_o(boolean_T rtu_bit1, boolean_T rtu_bit2, boolean_T rtu_bit3, boolean_T
     rtu_bit4, boolean_T rtu_bit5, boolean_T rtu_bit6, real_T *rty_handleIndex);
   static void A380PrimComputer_LagFilter_Reset(rtDW_LagFilter_A380PrimComputer_T *localDW);
@@ -879,13 +986,13 @@ class A380PrimComputer final
   static void A380PrimComputer_MATLABFunction_m_Reset(rtDW_MATLABFunction_A380PrimComputer_j_T *localDW);
   static void A380PrimComputer_MATLABFunction_m(boolean_T rtu_u, boolean_T rtu_isRisingEdge, boolean_T *rty_y,
     rtDW_MATLABFunction_A380PrimComputer_j_T *localDW);
-  static void A380PrimComputer_MATLABFunction_p_Reset(rtDW_MATLABFunction_A380PrimComputer_kz_T *localDW);
+  static void A380PrimComputer_MATLABFunction_p_Reset(rtDW_MATLABFunction_A380PrimComputer_k_T *localDW);
   static void A380PrimComputer_MATLABFunction_c(boolean_T rtu_u, real_T rtu_Ts, boolean_T rtu_isRisingEdge, real_T
-    rtu_timeDelay, boolean_T *rty_y, rtDW_MATLABFunction_A380PrimComputer_kz_T *localDW);
-  static void A380PrimComputer_MATLABFunction_f_Reset(rtDW_MATLABFunction_A380PrimComputer_km_T *localDW);
-  static void A380PrimComputer_MATLABFunction_jg(real_T rtu_u, real_T rtu_highTrigger, real_T rtu_lowTrigger, boolean_T *
-    rty_y, rtDW_MATLABFunction_A380PrimComputer_km_T *localDW);
-  static void A380PrimComputer_MATLABFunction_e(boolean_T rtu_bit1, boolean_T rtu_bit2, boolean_T rtu_bit3, boolean_T
+    rtu_timeDelay, boolean_T *rty_y, rtDW_MATLABFunction_A380PrimComputer_k_T *localDW);
+  static void A380PrimComputer_MATLABFunction_j_Reset(rtDW_MATLABFunction_A380PrimComputer_km_T *localDW);
+  static void A380PrimComputer_MATLABFunction_j(real_T rtu_u, real_T rtu_highTrigger, real_T rtu_lowTrigger, boolean_T
+    *rty_y, rtDW_MATLABFunction_A380PrimComputer_km_T *localDW);
+  static void A380PrimComputer_MATLABFunction_ek(boolean_T rtu_bit1, boolean_T rtu_bit2, boolean_T rtu_bit3, boolean_T
     rtu_valid, a380_pitch_efcs_law *rty_law);
   static void A380PrimComputer_GetIASforMach4(real_T rtu_m, real_T rtu_m_t, real_T rtu_v, real_T *rty_v_t);
   static void A380PrimComputer_RateLimiter_e_Reset(rtDW_RateLimiter_A380PrimComputer_b_T *localDW);

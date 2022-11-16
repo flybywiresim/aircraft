@@ -1348,10 +1348,10 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
   prims[primIndex].modelInputs.in.analog_inputs.fo_roll_stick_pos = 0;
   prims[primIndex].modelInputs.in.analog_inputs.speed_brake_lever_pos =
       spoilersHandler->getIsArmed() ? -0.05 : spoilersHandler->getHandlePosition();
-  prims[primIndex].modelInputs.in.analog_inputs.thr_lever_1_pos = 0;
-  prims[primIndex].modelInputs.in.analog_inputs.thr_lever_2_pos = 0;
-  prims[primIndex].modelInputs.in.analog_inputs.thr_lever_3_pos = 0;
-  prims[primIndex].modelInputs.in.analog_inputs.thr_lever_4_pos = 0;
+  prims[primIndex].modelInputs.in.analog_inputs.thr_lever_1_pos = thrustLeverAngle_1->get();
+  prims[primIndex].modelInputs.in.analog_inputs.thr_lever_2_pos = thrustLeverAngle_2->get();
+  prims[primIndex].modelInputs.in.analog_inputs.thr_lever_3_pos = thrustLeverAngle_3->get();
+  prims[primIndex].modelInputs.in.analog_inputs.thr_lever_4_pos = thrustLeverAngle_4->get();
   prims[primIndex].modelInputs.in.analog_inputs.elevator_1_pos_deg = 30. * elevator1Position;
   prims[primIndex].modelInputs.in.analog_inputs.elevator_2_pos_deg = 30. * elevator2Position;
   prims[primIndex].modelInputs.in.analog_inputs.elevator_3_pos_deg = 30. * elevator3Position;
@@ -1373,10 +1373,10 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
   prims[primIndex].modelInputs.in.analog_inputs.lat_acc_1_g = 0;
   prims[primIndex].modelInputs.in.analog_inputs.lat_acc_2_g = 0;
   prims[primIndex].modelInputs.in.analog_inputs.lat_acc_3_g = 0;
-  prims[primIndex].modelInputs.in.analog_inputs.left_body_wheel_speed = 0;
-  prims[primIndex].modelInputs.in.analog_inputs.left_wing_wheel_speed = 0;
-  prims[primIndex].modelInputs.in.analog_inputs.right_body_wheel_speed = 0;
-  prims[primIndex].modelInputs.in.analog_inputs.right_wing_wheel_speed = 0;
+  prims[primIndex].modelInputs.in.analog_inputs.left_body_wheel_speed = simData.wheelRpmLeftBlg;
+  prims[primIndex].modelInputs.in.analog_inputs.left_wing_wheel_speed = simData.wheelRpmLeftWlg;
+  prims[primIndex].modelInputs.in.analog_inputs.right_body_wheel_speed = simData.wheelRpmRightBlg;
+  prims[primIndex].modelInputs.in.analog_inputs.right_wing_wheel_speed = simData.wheelRpmRightWlg;
 
   prims[primIndex].modelInputs.in.bus_inputs.adr_1_bus = adrBusOutputs[0];
   prims[primIndex].modelInputs.in.bus_inputs.adr_2_bus = adrBusOutputs[1];
@@ -1813,14 +1813,14 @@ bool FlyByWireInterface::updateServoSolenoidStatus() {
   idRightSpoilerCommandedPosition[1]->set(0);
   idLeftSpoilerCommandedPosition[2]->set(0);
   idRightSpoilerCommandedPosition[2]->set(0);
-  idLeftSpoilerCommandedPosition[3]->set(primsAnalogOutputs[2].left_spoiler_pos_order_deg);
-  idRightSpoilerCommandedPosition[3]->set(primsAnalogOutputs[2].right_spoiler_pos_order_deg);
-  idLeftSpoilerCommandedPosition[4]->set(primsAnalogOutputs[1].left_spoiler_pos_order_deg);
-  idRightSpoilerCommandedPosition[4]->set(primsAnalogOutputs[1].right_spoiler_pos_order_deg);
-  idLeftSpoiler6EbhaElectronicEnable->set(primsDiscreteOutputs[0].left_spoiler_electronic_module_enable);
-  idLeftSpoilerCommandedPosition[5]->set(primsAnalogOutputs[0].left_spoiler_pos_order_deg);
-  idRightSpoiler6EbhaElectronicEnable->set(primsDiscreteOutputs[0].right_spoiler_electronic_module_enable);
-  idRightSpoilerCommandedPosition[5]->set(primsAnalogOutputs[0].right_spoiler_pos_order_deg);
+  idLeftSpoilerCommandedPosition[3]->set(-primsAnalogOutputs[2].left_spoiler_pos_order_deg);
+  idRightSpoilerCommandedPosition[3]->set(-primsAnalogOutputs[2].right_spoiler_pos_order_deg);
+  idLeftSpoilerCommandedPosition[4]->set(-primsAnalogOutputs[1].left_spoiler_pos_order_deg);
+  idRightSpoilerCommandedPosition[4]->set(-primsAnalogOutputs[1].right_spoiler_pos_order_deg);
+  idLeftSpoiler6EbhaElectronicEnable->set(-primsDiscreteOutputs[0].left_spoiler_electronic_module_enable);
+  idLeftSpoilerCommandedPosition[5]->set(-primsAnalogOutputs[0].left_spoiler_pos_order_deg);
+  idRightSpoiler6EbhaElectronicEnable->set(-primsDiscreteOutputs[0].right_spoiler_electronic_module_enable);
+  idRightSpoilerCommandedPosition[5]->set(-primsAnalogOutputs[0].right_spoiler_pos_order_deg);
   idLeftSpoilerCommandedPosition[6]->set(0);
   idRightSpoilerCommandedPosition[6]->set(0);
   idLeftSpoilerCommandedPosition[7]->set(0);
