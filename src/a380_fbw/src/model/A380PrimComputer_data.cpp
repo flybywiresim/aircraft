@@ -203,6 +203,18 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
 
   21.0,
 
+  19.0,
+
+  13.0,
+
+  20.0,
+
+  14.0,
+
+  13.0,
+
+  14.0,
+
   11.0,
 
   12.0,
