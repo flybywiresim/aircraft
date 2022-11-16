@@ -587,7 +587,7 @@ class A380PrimComputer final
     rtDW_MATLABFunction_A380PrimComputer_k_T sf_MATLABFunction_jz;
     rtDW_RateLimiter_A380PrimComputer_b_T sf_RateLimiter_mr;
     rtDW_RateLimiter_A380PrimComputer_b_T sf_RateLimiter_ne;
-    rtDW_MATLABFunction_A380PrimComputer_k_T sf_MATLABFunction_n;
+    rtDW_MATLABFunction_A380PrimComputer_k_T sf_MATLABFunction_nb;
     rtDW_MATLABFunction_A380PrimComputer_km_T sf_MATLABFunction_br;
     rtDW_MATLABFunction_A380PrimComputer_km_T sf_MATLABFunction_jg;
     rtDW_MATLABFunction_A380PrimComputer_k_T sf_MATLABFunction_gfx;
@@ -652,11 +652,17 @@ class A380PrimComputer final
     real_T DiscreteDerivativeVariableTs_InitialCondition;
     real_T BitfromLabel_bit;
     real_T BitfromLabel1_bit;
+    real_T BitfromLabel2_bit;
+    real_T BitfromLabel1_bit_b;
+    real_T BitfromLabel1_bit_n;
+    real_T BitfromLabel3_bit;
+    real_T BitfromLabel2_bit_l;
+    real_T BitfromLabel1_bit_bv;
     real_T BitfromLabel_bit_o;
     real_T BitfromLabel1_bit_e;
-    real_T BitfromLabel2_bit;
+    real_T BitfromLabel2_bit_h;
     real_T BitfromLabel6_bit;
-    real_T BitfromLabel3_bit;
+    real_T BitfromLabel3_bit_l;
     real_T BitfromLabel4_bit;
     real_T BitfromLabel5_bit;
     real_T BitfromLabel7_bit;
