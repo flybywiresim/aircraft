@@ -336,6 +336,7 @@ class SimConnectInterface {
     IR_3_INPUTS,
     RA_1_BUS,
     RA_2_BUS,
+    RA_3_BUS,
     LGCIU_1_BUS,
     LGCIU_2_BUS,
     SFCC_1_BUS,

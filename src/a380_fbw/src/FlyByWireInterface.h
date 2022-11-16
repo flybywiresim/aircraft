@@ -114,7 +114,7 @@ class FlyByWireInterface {
   Autothrust::ExternalInputs_Autothrust_T autoThrustInput = {};
   athr_output autoThrustOutput;
 
-  base_ra_bus raBusOutputs[2] = {};
+  base_ra_bus raBusOutputs[3] = {};
 
   base_lgciu_bus lgciuBusOutputs[2] = {};
 
@@ -375,7 +375,7 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idWingAntiIce;
 
   // RA bus inputs
-  std::unique_ptr<LocalVariable> idRadioAltimeterHeight[2];
+  std::unique_ptr<LocalVariable> idRadioAltimeterHeight[3];
 
   // LGCIU inputs
   std::unique_ptr<LocalVariable> idLgciuNoseGearCompressed[2];

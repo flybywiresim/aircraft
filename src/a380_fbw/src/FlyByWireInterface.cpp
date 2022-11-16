@@ -101,7 +101,7 @@ bool FlyByWireInterface::update(double sampleTime) {
   // get throttle data and process it
   result &= updateAutothrust(calculatedSampleTime);
 
-  for (int i = 0; i < 2; i++) {
+  for (int i = 0; i < 3; i++) {
     result &= updateRa(i);
   }
 
@@ -497,7 +497,7 @@ void FlyByWireInterface::setupLocalVariables() {
 
   idWingAntiIce = std::make_unique<LocalVariable>("A32NX_PNEU_WING_ANTI_ICE_SYSTEM_ON");
 
-  for (int i = 0; i < 2; i++) {
+  for (int i = 0; i < 3; i++) {
     std::string idString = std::to_string(i + 1);
     idRadioAltimeterHeight[i] = std::make_unique<LocalVariable>("A32NX_RA_" + idString + "_RADIO_ALTITUDE");
   }
@@ -1261,6 +1261,8 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
   double thsPosition;
   double rudder1Position;
   double rudder2Position;
+  base_ra_bus ra1Bus;
+  base_ra_bus ra2Bus;
   if (primIndex == 0) {
     leftAileron1Position = idLeftAileronInwardPosition->get();
     rightAileron1Position = idRightAileronInwardPosition->get();
@@ -1278,6 +1280,9 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
 
     rudder1Position = idLowerRudderPosition->get();
     rudder2Position = idUpperRudderPosition->get();
+
+    ra1Bus = raBusOutputs[0];
+    ra2Bus = raBusOutputs[2];
   } else if (primIndex == 1) {
     leftAileron1Position = idLeftAileronOutwardPosition->get();
     rightAileron1Position = idRightAileronOutwardPosition->get();
@@ -1295,6 +1300,9 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
 
     rudder1Position = idUpperRudderPosition->get();
     rudder2Position = 0;
+
+    ra1Bus = raBusOutputs[1];
+    ra2Bus = raBusOutputs[2];
   } else {
     leftAileron1Position = idLeftAileronMiddlePosition->get();
     rightAileron1Position = idRightAileronMiddlePosition->get();
@@ -1312,6 +1320,9 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
 
     rudder1Position = idLowerRudderPosition->get();
     rudder2Position = 0;
+
+    ra1Bus = raBusOutputs[0];
+    ra2Bus = raBusOutputs[1];
   }
 
   prims[primIndex].modelInputs.in.time.dt = sampleTime;
@@ -1392,8 +1403,8 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
   prims[primIndex].modelInputs.in.bus_inputs.rate_gyro_roll_2_bus = {};
   prims[primIndex].modelInputs.in.bus_inputs.rate_gyro_yaw_1_bus = {};
   prims[primIndex].modelInputs.in.bus_inputs.rate_gyro_yaw_2_bus = {};
-  prims[primIndex].modelInputs.in.bus_inputs.ra_1_bus = raBusOutputs[0];
-  prims[primIndex].modelInputs.in.bus_inputs.ra_2_bus = raBusOutputs[1];
+  prims[primIndex].modelInputs.in.bus_inputs.ra_1_bus = ra1Bus;
+  prims[primIndex].modelInputs.in.bus_inputs.ra_2_bus = ra2Bus;
   prims[primIndex].modelInputs.in.bus_inputs.sfcc_1_bus = sfccBusOutputs[0];
   prims[primIndex].modelInputs.in.bus_inputs.sfcc_2_bus = sfccBusOutputs[1];
   prims[primIndex].modelInputs.in.bus_inputs.fcu_own_bus = {};
