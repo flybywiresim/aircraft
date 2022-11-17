@@ -17,6 +17,7 @@ use uom::si::{
 };
 
 use systems::{
+    accept_iterable,
     engine::Engine,
     hydraulic::{
         aerodynamic_model::AerodynamicModel,
@@ -5713,20 +5714,15 @@ impl AileronAssembly {
 
             self.positions[idx] = self.hydraulic_assemblies[idx].position_normalized();
         }
-
-        // println!(
-        //     "ACT MODES REQ {:?} => {:?}-{:?} / {:?}-{:?} / {:?}-{:?}",
-        //     side,
-        //     controllers[0][0].requested_mode(),
-        //     controllers[0][1].requested_mode(),
-        //     controllers[1][0].requested_mode(),
-        //     controllers[1][1].requested_mode(),
-        //     controllers[2][0].requested_mode(),
-        //     controllers[2][1].requested_mode(),
-        // );
     }
 }
 impl SimulationElement for AileronAssembly {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        accept_iterable!(self.hydraulic_assemblies, visitor);
+
+        visitor.visit(self);
+    }
+
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.position_out_id, self.positions[0].get::<ratio>());
         writer.write(&self.position_mid_id, self.positions[1].get::<ratio>());
@@ -6338,6 +6334,7 @@ mod tests {
             powered_source_ac: TestElectricitySource,
             ac_ground_service_bus: ElectricalBus,
             dc_ground_service_bus: ElectricalBus,
+            ac_ess_bus: ElectricalBus,
             ac_1_bus: ElectricalBus,
             ac_2_bus: ElectricalBus,
             dc_1_bus: ElectricalBus,
@@ -6349,6 +6346,7 @@ mod tests {
             // Electric buses states to be able to kill them dynamically
             is_ac_ground_service_powered: bool,
             is_dc_ground_service_powered: bool,
+            is_ac_ess_powered: bool,
             is_ac_1_powered: bool,
             is_ac_2_powered: bool,
             is_dc_1_powered: bool,
@@ -6390,6 +6388,10 @@ mod tests {
                         context,
                         ElectricalBusType::DirectCurrentGndFltService,
                     ),
+                    ac_ess_bus: ElectricalBus::new(
+                        context,
+                        ElectricalBusType::AlternatingCurrentEssential,
+                    ),
                     ac_1_bus: ElectricalBus::new(context, ElectricalBusType::AlternatingCurrent(1)),
                     ac_2_bus: ElectricalBus::new(context, ElectricalBusType::AlternatingCurrent(2)),
                     dc_1_bus: ElectricalBus::new(context, ElectricalBusType::DirectCurrent(1)),
@@ -6408,6 +6410,7 @@ mod tests {
                     ),
                     is_ac_ground_service_powered: true,
                     is_dc_ground_service_powered: true,
+                    is_ac_ess_powered: true,
                     is_ac_1_powered: true,
                     is_ac_2_powered: true,
                     is_dc_1_powered: true,
@@ -6495,6 +6498,10 @@ mod tests {
                 self.is_dc_2_powered = bus_is_alive;
             }
 
+            fn set_ac_ess_is_powered(&mut self, bus_is_alive: bool) {
+                self.is_ac_ess_powered = bus_is_alive;
+            }
+
             fn _set_dc_ess_is_powered(&mut self, bus_is_alive: bool) {
                 self.is_dc_ess_powered = bus_is_alive;
             }
@@ -6524,6 +6531,10 @@ mod tests {
 
                 if self.is_dc_ground_service_powered {
                     electricity.flow(&self.powered_source_ac, &self.dc_ground_service_bus);
+                }
+
+                if self.is_ac_ess_powered {
+                    electricity.flow(&self.powered_source_ac, &self.ac_ess_bus);
                 }
 
                 if self.is_dc_1_powered {
@@ -7136,6 +7147,16 @@ mod tests {
 
             fn _dc_ess_active(mut self) -> Self {
                 self.command(|a| a._set_dc_ess_is_powered(true));
+                self
+            }
+
+            fn ac_ess_lost(mut self) -> Self {
+                self.command(|a| a.set_ac_ess_is_powered(false));
+                self
+            }
+
+            fn ac_ess_active(mut self) -> Self {
+                self.command(|a| a.set_ac_ess_is_powered(true));
                 self
             }
 
@@ -7860,6 +7881,7 @@ mod tests {
                 .on_the_ground()
                 .set_cold_dark_inputs()
                 .reset_all_aileron_commands()
+                .ac_ess_lost()
                 .set_aileron_panel_neutral(
                     ActuatorSide::Left,
                     AileronPanelPosition::Middle,
@@ -7879,7 +7901,7 @@ mod tests {
 
             test_bed = test_bed
                 .reset_all_aileron_commands()
-                .external_power(true)
+                .ac_ess_active()
                 .set_aileron_panel_neutral(
                     ActuatorSide::Left,
                     AileronPanelPosition::Middle,
