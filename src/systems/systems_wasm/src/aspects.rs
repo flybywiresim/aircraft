@@ -860,6 +860,7 @@ struct ToEvent {
     write_on: VariableToEventWriteOn,
     event_id: sys::DWORD,
     last_written_value: Option<f64>,
+    event_name_member: String,
 }
 
 impl ToEvent {
@@ -876,6 +877,7 @@ impl ToEvent {
             write_on,
             event_id: sim_connect.map_client_event_to_sim_event(event_name, false)?,
             last_written_value: None,
+            event_name_member: event_name.to_owned(),
         })
     }
 
@@ -891,6 +893,7 @@ impl ToEvent {
             write_on,
             event_id,
             last_written_value: None,
+            event_name_member: "".to_owned(),
         }
     }
 }
@@ -913,6 +916,11 @@ impl ExecutableVariableAction for ToEvent {
                 None => true,
             },
         };
+
+        println!("Execute");
+        if self.event_name_member.eq("COM1_VOLUME_SET") {
+            println!("Ecriture COM1_VOLUME_SET with {}. Should write is {}", value, should_write);
+        }
 
         if should_write {
             sim_connect.transmit_client_event(

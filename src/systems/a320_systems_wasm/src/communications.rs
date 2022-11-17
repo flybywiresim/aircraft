@@ -14,7 +14,7 @@ pub(super) fn communications(builder: &mut MsfsAspectBuilder) -> Result<(), Box<
         "PILOT_TRANSMITTER_SET",
     )?;
     builder.variable_to_event(
-        Variable::named("COPILOT_TRANSMIT"),
+        Variable::aspect("COPILOT_TRANSMIT"),
         VariableToEventMapping::EventDataRaw,
         VariableToEventWriteOn::EveryTick,
         "COPILOT_TRANSMITTER_SET",
@@ -32,7 +32,7 @@ pub(super) fn communications(builder: &mut MsfsAspectBuilder) -> Result<(), Box<
         "COM2_RECEIVE_SELECT",
     )?;
     builder.variable_to_event(
-        Variable::named("VHF1_VOLUME"),
+        Variable::aspect("VHF1_VOLUME"),
         VariableToEventMapping::EventDataRaw,
         VariableToEventWriteOn::Change,
         "COM1_VOLUME_SET",

@@ -23,7 +23,7 @@ read_write_enum!(TransmitType);
 
 impl From<f64> for TransmitType {
     fn from(value: f64) -> TransmitType {
-        match value as u8 {
+        match value as u32 {
             0 => TransmitType::COM1,
             1 => TransmitType::COM2,
             2 => TransmitType::COM3,
@@ -267,8 +267,8 @@ impl Communications {
             }
         }
 
-        println!("Going to write pilot {}", self.pilot_transmit as u8);
-        println!("Going to write copilot {}", self.copilot_transmit as u8);
+        println!("Going to write pilot {}", self.pilot_transmit as u32);
+        println!("Going to write copilot {}", self.copilot_transmit as u32);
 
         self.receive_com1 = self.guess(
             self.acp1.get_receive_com1(),
@@ -333,7 +333,7 @@ impl Communications {
             &side,
         );
 
-        println!("Going to write volume_com1 {}", self.volume_com1 as u32);
+        println!("Going to write volume_com1 {}", self.volume_com1 as f64);
 
         self.volume_com2 = self.guess(
             self.acp1.get_volume_com2(),
@@ -784,7 +784,7 @@ impl SimulationElement for Morse {
 mod communications_tests {
     use super::*;
     use crate::simulation::{
-        test::{SimulationTestBed, TestBed},
+        test::{SimulationTestBed, TestBed, WriteByName, ReadByName},
         Aircraft,
     };
 
@@ -805,6 +805,7 @@ mod communications_tests {
 
     impl SimulationElement for TestCommunications {
         fn accept<V: SimulationElementVisitor>(&mut self, visitor: &mut V) {
+            self.communications.accept(visitor);
             visitor.visit(self);
         }
     }
@@ -845,7 +846,13 @@ mod communications_tests {
     fn test_unpack() {
         let mut test_bed = test_bed();
         //13831281
+        test_bed.write_by_name("ACP1_VHF1_VOLUME", 50);
+        test_bed.write_by_name("AUDIOSWITCHING_KNOB", 1);
+        test_bed.write_by_name("SIDE_PLAYING", 1);
+
         test_bed.run();
-        // assert!(test_bed.query(|e| e.receiver.morse.eq("PPOS")));
+
+        let value: f64 = test_bed.read_by_name("COM VOLUME:1");
+        assert!(value == 50.0);
     }
 }
