@@ -385,6 +385,12 @@ export class ManagedFlightPlan {
             this.procedureDetails.approachIndex = -1;
             this.procedureDetails.approachTransitionIndex = -1;
 
+            const previousWp = this.waypoints[this.waypoints.length - 2];
+            if (previousWp) {
+                previousWp.endsInDiscontinuity = true;
+                previousWp.discontinuityCanBeCleared = true;
+            }
+
             this.reflowSegments();
             this.reflowDistances();
         } else {

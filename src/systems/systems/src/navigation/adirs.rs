@@ -1284,7 +1284,7 @@ impl InertialReference {
 
     fn alignment_starting(&self, selected_mode: InertialReferenceMode) -> bool {
         selected_mode != InertialReferenceMode::Off
-            && self.remaining_attitude_initialisation_duration == None
+            && self.remaining_attitude_initialisation_duration.is_none()
     }
 
     fn total_alignment_duration(configured_align_time: AlignTime, latitude: Angle) -> Duration {

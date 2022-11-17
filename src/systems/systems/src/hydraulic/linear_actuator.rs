@@ -48,7 +48,7 @@ pub trait BoundedLinearLength {
     fn absolute_length_to_anchor(&self) -> Length;
 }
 
-#[derive(PartialEq, Clone, Copy, Debug)]
+#[derive(PartialEq, Eq, Clone, Copy, Debug)]
 pub enum LinearActuatorMode {
     ClosedValves,
     PositionControl,
@@ -246,7 +246,7 @@ pub trait ElectroHydrostaticPowered {
     }
 }
 
-#[derive(PartialEq, Copy, Clone)]
+#[derive(PartialEq, Eq, Copy, Clone)]
 pub enum ElectroHydrostaticActuatorType {
     ElectroHydrostaticActuator, // Can only run on electric mode or is damping
     ElectricalBackupHydraulicActuator, // Can run either in electric backup mode or from aircraft hydraulic pressure

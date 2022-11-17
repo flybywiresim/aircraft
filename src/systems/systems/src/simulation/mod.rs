@@ -42,10 +42,7 @@ pub struct VariableIdentifier(usize, usize);
 
 impl VariableIdentifier {
     pub fn new<T: Into<usize>>(variable_type: T) -> Self {
-        Self {
-            0: variable_type.into(),
-            1: 0,
-        }
+        Self(variable_type.into(), 0)
     }
 
     pub fn identifier_type(&self) -> usize {
@@ -59,10 +56,7 @@ impl VariableIdentifier {
 
 impl VariableIdentifier {
     pub fn next(&self) -> Self {
-        Self {
-            0: self.0,
-            1: self.1 + 1,
-        }
+        Self(self.0, self.1 + 1)
     }
 }
 
@@ -532,7 +526,7 @@ impl<'a> SimulatorToSimulationVisitor<'a> {
 }
 impl SimulationElementVisitor for SimulatorToSimulationVisitor<'_> {
     fn visit<T: SimulationElement>(&mut self, visited: &mut T) {
-        visited.read(&mut self.reader);
+        visited.read(self.reader);
     }
 }
 
@@ -548,7 +542,7 @@ impl<'a> SimulationToSimulatorVisitor<'a> {
 }
 impl<'a> SimulationElementVisitor for SimulationToSimulatorVisitor<'a> {
     fn visit<T: SimulationElement>(&mut self, visited: &mut T) {
-        visited.write(&mut self.writer);
+        visited.write(self.writer);
     }
 }
 
