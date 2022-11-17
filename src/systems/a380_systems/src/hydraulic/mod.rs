@@ -5066,7 +5066,7 @@ impl AileronSystemHydraulicController {
     }
 
     fn aileron_actuator_position_from_surface_angle(surface_angle: Angle) -> Ratio {
-        Ratio::new::<ratio>(surface_angle.get::<degree>() / 50. + 0.5)
+        Ratio::new::<ratio>(surface_angle.get::<degree>() / 50. + 20. / 50.)
     }
 }
 impl SimulationElement for AileronSystemHydraulicController {
@@ -5408,7 +5408,7 @@ impl ElevatorSystemHydraulicController {
 
     fn elevator_actuator_position_from_surface_angle(surface_angle: Angle) -> Ratio {
         Ratio::new::<ratio>(
-            (-surface_angle.get::<degree>() / 47. + 17. / 47.)
+            (-surface_angle.get::<degree>() / 50. + 20. / 50.)
                 .min(1.)
                 .max(0.),
         )
