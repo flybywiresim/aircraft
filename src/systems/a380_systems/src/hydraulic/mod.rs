@@ -7542,7 +7542,7 @@ mod tests {
         }
 
         #[test]
-        fn outward_left_aileron_panel_responds_only_with_green_pressure() {
+        fn outward_left_aileron_panel_responds_only_with_green_pressure_on_outward_jack() {
             let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
@@ -7594,7 +7594,7 @@ mod tests {
         }
 
         #[test]
-        fn outward_right_aileron_panel_responds_only_with_green_pressure() {
+        fn outward_right_aileron_panel_responds_only_with_green_pressure_on_outward_jack() {
             let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
@@ -7628,6 +7628,110 @@ mod tests {
                     ActuatorSide::Right,
                     AileronPanelPosition::Outward,
                     AileronActuatorPosition::Outward,
+                )
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(
+                test_bed
+                    .get_right_aileron_panel_position(AileronPanelPosition::Outward,)
+                    .get::<ratio>()
+                    > 0.4
+            );
+            assert!(
+                test_bed
+                    .get_right_aileron_panel_position(AileronPanelPosition::Outward,)
+                    .get::<ratio>()
+                    < 0.6
+            );
+        }
+
+        #[test]
+        fn outward_left_aileron_panel_responds_only_with_yellow_pressure_on_inward_jack() {
+            let mut test_bed = test_bed_on_ground_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .start_eng3(Ratio::new::<percent>(80.))
+                .run_waiting_for(Duration::from_secs(5));
+
+            assert!(!test_bed.is_green_pressure_switch_pressurised());
+            assert!(test_bed.is_yellow_pressure_switch_pressurised());
+
+            // Outward actuator on green hyds: shall not move
+            test_bed = test_bed
+                .reset_all_aileron_commands()
+                .set_aileron_panel_neutral(
+                    ActuatorSide::Left,
+                    AileronPanelPosition::Outward,
+                    AileronActuatorPosition::Outward,
+                )
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(
+                test_bed
+                    .get_left_aileron_panel_position(AileronPanelPosition::Outward)
+                    .get::<ratio>()
+                    < 0.1
+            );
+
+            test_bed = test_bed
+                .reset_all_aileron_commands()
+                .set_aileron_panel_neutral(
+                    ActuatorSide::Left,
+                    AileronPanelPosition::Outward,
+                    AileronActuatorPosition::Inward,
+                )
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(
+                test_bed
+                    .get_left_aileron_panel_position(AileronPanelPosition::Outward,)
+                    .get::<ratio>()
+                    > 0.4
+            );
+            assert!(
+                test_bed
+                    .get_left_aileron_panel_position(AileronPanelPosition::Outward,)
+                    .get::<ratio>()
+                    < 0.6
+            );
+        }
+
+        #[test]
+        fn outward_right_aileron_panel_responds_only_with_yellow_pressure_on_inward_jack() {
+            let mut test_bed = test_bed_on_ground_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .start_eng3(Ratio::new::<percent>(80.))
+                .run_waiting_for(Duration::from_secs(5));
+
+            assert!(!test_bed.is_green_pressure_switch_pressurised());
+            assert!(test_bed.is_yellow_pressure_switch_pressurised());
+
+            // Outward actuator on green hyds: shall not move
+            test_bed = test_bed
+                .reset_all_aileron_commands()
+                .set_aileron_panel_neutral(
+                    ActuatorSide::Right,
+                    AileronPanelPosition::Outward,
+                    AileronActuatorPosition::Outward,
+                )
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(
+                test_bed
+                    .get_right_aileron_panel_position(AileronPanelPosition::Outward)
+                    .get::<ratio>()
+                    < 0.1
+            );
+
+            test_bed = test_bed
+                .reset_all_aileron_commands()
+                .set_aileron_panel_neutral(
+                    ActuatorSide::Right,
+                    AileronPanelPosition::Outward,
+                    AileronActuatorPosition::Inward,
                 )
                 .run_waiting_for(Duration::from_secs(1));
 
