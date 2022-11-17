@@ -1705,7 +1705,6 @@ impl A380Hydraulic {
                 self.green_circuit.system_section(),
                 self.yellow_circuit.system_section(),
             ],
-            "left",
         );
 
         self.right_aileron.update(
@@ -1728,7 +1727,6 @@ impl A380Hydraulic {
                 self.green_circuit.system_section(),
                 self.yellow_circuit.system_section(),
             ],
-            "right",
         );
 
         self.left_elevator.update(
@@ -5698,7 +5696,6 @@ impl AileronAssembly {
             3],
         current_pressure_outward: [&impl SectionPressure; 3],
         current_pressure_inward: [&impl SectionPressure; 3],
-        side: &str,
     ) {
         for idx in 0..3 {
             self.aerodynamic_models[idx]
