@@ -400,7 +400,15 @@ impl A380SpoilerFactory {
 
     const MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT: f64 = 20.;
 
-    fn a380_spoiler_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
+    //TODO should be ACEss 2
+    const SPOILER_5_EBHA_BUS: ElectricalBusType = ElectricalBusType::AlternatingCurrentEssential;
+    //TODO should be ACEss 1
+    const SPOILER_6_EBHA_BUS: ElectricalBusType = ElectricalBusType::AlternatingCurrentEssential;
+
+    fn a380_spoiler_actuator(
+        bounded_linear_length: &impl BoundedLinearLength,
+        powered_by: Option<ElectricalBusType>,
+    ) -> LinearActuator {
         let actuator_characteristics = LinearActuatorCharacteristics::new(
             Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING / 5.,
             Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING,
@@ -431,7 +439,14 @@ impl A380SpoilerFactory {
                 AngularVelocity::new::<radian_per_second>(-10000.),
                 AngularVelocity::new::<radian_per_second>(0.),
             )),
-            None,
+            if let Some(bus) = powered_by {
+                Some(ElectroHydrostaticBackup::new(
+                    bus,
+                    ElectroHydrostaticActuatorType::ElectricalBackupHydraulicActuator,
+                ))
+            } else {
+                None
+            },
         )
     }
 
@@ -461,23 +476,27 @@ impl A380SpoilerFactory {
     }
 
     /// Builds a spoiler assembly consisting of the spoiler physical rigid body and one hydraulic actuator
-    fn a380_spoiler_assembly() -> HydraulicLinearActuatorAssembly<1> {
+    fn a380_spoiler_assembly(
+        powered_by: Option<ElectricalBusType>,
+    ) -> HydraulicLinearActuatorAssembly<1> {
         let spoiler_body = Self::a380_spoiler_body();
 
-        let spoiler_actuator = Self::a380_spoiler_actuator(&spoiler_body);
+        let spoiler_actuator = Self::a380_spoiler_actuator(&spoiler_body, powered_by);
 
         HydraulicLinearActuatorAssembly::new([spoiler_actuator], spoiler_body)
     }
 
     fn new_a380_spoiler_group(context: &mut InitContext, id: ActuatorSide) -> SpoilerGroup {
-        let spoiler_1 = Self::new_a380_spoiler_element(context, id, 1);
-        let spoiler_2 = Self::new_a380_spoiler_element(context, id, 2);
-        let spoiler_3 = Self::new_a380_spoiler_element(context, id, 3);
-        let spoiler_4 = Self::new_a380_spoiler_element(context, id, 4);
-        let spoiler_5 = Self::new_a380_spoiler_element(context, id, 5);
-        let spoiler_6 = Self::new_a380_spoiler_element(context, id, 6);
-        let spoiler_7 = Self::new_a380_spoiler_element(context, id, 7);
-        let spoiler_8 = Self::new_a380_spoiler_element(context, id, 8);
+        let spoiler_1 = Self::new_a380_spoiler_element(context, id, 1, None);
+        let spoiler_2 = Self::new_a380_spoiler_element(context, id, 2, None);
+        let spoiler_3 = Self::new_a380_spoiler_element(context, id, 3, None);
+        let spoiler_4 = Self::new_a380_spoiler_element(context, id, 4, None);
+        let spoiler_5 =
+            Self::new_a380_spoiler_element(context, id, 5, Some(Self::SPOILER_5_EBHA_BUS));
+        let spoiler_6 =
+            Self::new_a380_spoiler_element(context, id, 6, Some(Self::SPOILER_6_EBHA_BUS));
+        let spoiler_7 = Self::new_a380_spoiler_element(context, id, 7, None);
+        let spoiler_8 = Self::new_a380_spoiler_element(context, id, 8, None);
 
         SpoilerGroup::new(
             context,
@@ -496,8 +515,9 @@ impl A380SpoilerFactory {
         context: &mut InitContext,
         id: ActuatorSide,
         id_number: usize,
+        powered_by: Option<ElectricalBusType>,
     ) -> SpoilerElement {
-        let assembly = Self::a380_spoiler_assembly();
+        let assembly = Self::a380_spoiler_assembly(powered_by);
         SpoilerElement::new(
             context,
             id,
@@ -5947,6 +5967,12 @@ impl SpoilerElement {
     }
 }
 impl SimulationElement for SpoilerElement {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.hydraulic_assembly.accept(visitor);
+
+        visitor.visit(self);
+    }
+
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.position_id, self.position.get::<ratio>());
     }
@@ -5982,42 +6008,42 @@ impl SpoilerGroup {
         self.spoilers[0].update(
             context,
             &self.hydraulic_controllers[0],
-            green_section.pressure_downstream_leak_valve(),
+            yellow_section.pressure_downstream_leak_valve(),
         );
         self.spoilers[1].update(
             context,
             &self.hydraulic_controllers[1],
-            yellow_section.pressure_downstream_leak_valve(),
+            green_section.pressure_downstream_leak_valve(),
         );
         self.spoilers[2].update(
             context,
             &self.hydraulic_controllers[2],
-            green_section.pressure_downstream_leak_valve(),
+            yellow_section.pressure_downstream_leak_valve(),
         );
         self.spoilers[3].update(
             context,
             &self.hydraulic_controllers[3],
-            yellow_section.pressure_downstream_leak_valve(),
+            green_section.pressure_downstream_leak_valve(),
         );
         self.spoilers[4].update(
             context,
             &self.hydraulic_controllers[4],
-            green_section.pressure_downstream_leak_valve(),
+            yellow_section.pressure_downstream_leak_valve(),
         );
         self.spoilers[5].update(
             context,
             &self.hydraulic_controllers[5],
-            yellow_section.pressure_downstream_leak_valve(),
+            green_section.pressure_downstream_leak_valve(),
         );
         self.spoilers[6].update(
             context,
             &self.hydraulic_controllers[6],
-            green_section.pressure_downstream_leak_valve(),
+            yellow_section.pressure_downstream_leak_valve(),
         );
         self.spoilers[7].update(
             context,
             &self.hydraulic_controllers[7],
-            yellow_section.pressure_downstream_leak_valve(),
+            green_section.pressure_downstream_leak_valve(),
         );
     }
 
