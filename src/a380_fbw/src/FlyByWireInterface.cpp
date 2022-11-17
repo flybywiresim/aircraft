@@ -1828,9 +1828,9 @@ bool FlyByWireInterface::updateServoSolenoidStatus() {
   idRightSpoilerCommandedPosition[3]->set(-primsAnalogOutputs[2].right_spoiler_pos_order_deg);
   idLeftSpoilerCommandedPosition[4]->set(-primsAnalogOutputs[1].left_spoiler_pos_order_deg);
   idRightSpoilerCommandedPosition[4]->set(-primsAnalogOutputs[1].right_spoiler_pos_order_deg);
-  idLeftSpoiler6EbhaElectronicEnable->set(-primsDiscreteOutputs[0].left_spoiler_electronic_module_enable);
+  idLeftSpoiler6EbhaElectronicEnable->set(primsDiscreteOutputs[0].left_spoiler_electronic_module_enable);
   idLeftSpoilerCommandedPosition[5]->set(-primsAnalogOutputs[0].left_spoiler_pos_order_deg);
-  idRightSpoiler6EbhaElectronicEnable->set(-primsDiscreteOutputs[0].right_spoiler_electronic_module_enable);
+  idRightSpoiler6EbhaElectronicEnable->set(primsDiscreteOutputs[0].right_spoiler_electronic_module_enable);
   idRightSpoilerCommandedPosition[5]->set(-primsAnalogOutputs[0].right_spoiler_pos_order_deg);
   idLeftSpoilerCommandedPosition[6]->set(0);
   idRightSpoilerCommandedPosition[6]->set(0);
