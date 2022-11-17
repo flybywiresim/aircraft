@@ -549,7 +549,23 @@ impl A380ElevatorFactory {
     const MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING: f64 = 15000000.;
     const MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT: f64 = 1.;
 
-    fn a380_elevator_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
+    //TODO should be ACEss 2
+    const LEFT_OUTWARD_PANEL_EHA_BUS: ElectricalBusType =
+        ElectricalBusType::AlternatingCurrentEssential;
+    //TODO should be ACEss 1
+    const RIGHT_OUTWARD_PANEL_EHA_BUS: ElectricalBusType =
+        ElectricalBusType::AlternatingCurrentEssential;
+    //TODO should be ACEss 1
+    const LEFT_INWARD_PANEL_EHA_BUS: ElectricalBusType =
+        ElectricalBusType::AlternatingCurrentEssential;
+    //TODO should be ACEss 2
+    const RIGHT_INWARD_PANEL_EHA_BUS: ElectricalBusType =
+        ElectricalBusType::AlternatingCurrentEssential;
+
+    fn a380_elevator_actuator(
+        bounded_linear_length: &impl BoundedLinearLength,
+        powered_by: Option<ElectricalBusType>,
+    ) -> LinearActuator {
         let actuator_characteristics = LinearActuatorCharacteristics::new(
             Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING / 5.,
             Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING,
@@ -577,7 +593,14 @@ impl A380ElevatorFactory {
             false,
             false,
             None,
-            None,
+            if let Some(bus) = powered_by {
+                Some(ElectroHydrostaticBackup::new(
+                    bus,
+                    ElectroHydrostaticActuatorType::ElectroHydrostaticActuator,
+                ))
+            } else {
+                None
+            },
         )
     }
 
@@ -614,11 +637,14 @@ impl A380ElevatorFactory {
 
     /// Builds an aileron assembly consisting of the aileron physical rigid body and two hydraulic actuators connected
     /// to it
-    fn a380_elevator_assembly(init_drooped_down: bool) -> HydraulicLinearActuatorAssembly<2> {
+    fn a380_elevator_assembly(
+        init_drooped_down: bool,
+        powered_by: Option<ElectricalBusType>,
+    ) -> HydraulicLinearActuatorAssembly<2> {
         let elevator_body = Self::a380_elevator_body(init_drooped_down);
 
-        let elevator_actuator_outboard = Self::a380_elevator_actuator(&elevator_body);
-        let elevator_actuator_inbord = Self::a380_elevator_actuator(&elevator_body);
+        let elevator_actuator_outboard = Self::a380_elevator_actuator(&elevator_body, None);
+        let elevator_actuator_inbord = Self::a380_elevator_actuator(&elevator_body, powered_by);
 
         HydraulicLinearActuatorAssembly::new(
             [elevator_actuator_outboard, elevator_actuator_inbord],
@@ -628,8 +654,23 @@ impl A380ElevatorFactory {
 
     fn new_elevator(context: &mut InitContext, id: ActuatorSide) -> ElevatorAssembly {
         let init_drooped_down = !context.is_in_flight();
-        let assembly_outward = Self::a380_elevator_assembly(init_drooped_down);
-        let assembly_inward = Self::a380_elevator_assembly(init_drooped_down);
+
+        let assembly_outward = Self::a380_elevator_assembly(
+            init_drooped_down,
+            if id == ActuatorSide::Left {
+                Some(Self::LEFT_OUTWARD_PANEL_EHA_BUS)
+            } else {
+                Some(Self::RIGHT_OUTWARD_PANEL_EHA_BUS)
+            },
+        );
+        let assembly_inward = Self::a380_elevator_assembly(
+            init_drooped_down,
+            if id == ActuatorSide::Left {
+                Some(Self::LEFT_INWARD_PANEL_EHA_BUS)
+            } else {
+                Some(Self::RIGHT_INWARD_PANEL_EHA_BUS)
+            },
+        );
         ElevatorAssembly::new(
             context,
             id,
@@ -5835,6 +5876,12 @@ impl ElevatorAssembly {
     }
 }
 impl SimulationElement for ElevatorAssembly {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        accept_iterable!(self.hydraulic_assemblies, visitor);
+
+        visitor.visit(self);
+    }
+
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(
             &self.position_out_id,
