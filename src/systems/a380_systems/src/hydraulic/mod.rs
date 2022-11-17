@@ -400,8 +400,6 @@ impl A380SpoilerFactory {
 
     const MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT: f64 = 20.;
 
-    //TODO should be ACEss 2
-    const SPOILER_5_EBHA_BUS: ElectricalBusType = ElectricalBusType::AlternatingCurrentEssential;
     //TODO should be ACEss 1
     const SPOILER_6_EBHA_BUS: ElectricalBusType = ElectricalBusType::AlternatingCurrentEssential;
 
@@ -491,8 +489,7 @@ impl A380SpoilerFactory {
         let spoiler_2 = Self::new_a380_spoiler_element(context, id, 2, None);
         let spoiler_3 = Self::new_a380_spoiler_element(context, id, 3, None);
         let spoiler_4 = Self::new_a380_spoiler_element(context, id, 4, None);
-        let spoiler_5 =
-            Self::new_a380_spoiler_element(context, id, 5, Some(Self::SPOILER_5_EBHA_BUS));
+        let spoiler_5 = Self::new_a380_spoiler_element(context, id, 5, None);
         let spoiler_6 =
             Self::new_a380_spoiler_element(context, id, 6, Some(Self::SPOILER_6_EBHA_BUS));
         let spoiler_7 = Self::new_a380_spoiler_element(context, id, 7, None);
@@ -2049,14 +2046,22 @@ impl A380Hydraulic {
             .update_system_actuator_volumes(self.slat_system.right_motor());
 
         self.green_circuit
-            .update_system_actuator_volumes(self.left_spoilers.actuator(0));
+            .update_system_actuator_volumes(self.left_spoilers.actuator(1));
         self.green_circuit
-            .update_system_actuator_volumes(self.left_spoilers.actuator(4));
+            .update_system_actuator_volumes(self.left_spoilers.actuator(3));
+        self.green_circuit
+            .update_system_actuator_volumes(self.left_spoilers.actuator(5));
+        self.green_circuit
+            .update_system_actuator_volumes(self.left_spoilers.actuator(7));
 
         self.green_circuit
-            .update_system_actuator_volumes(self.right_spoilers.actuator(0));
+            .update_system_actuator_volumes(self.right_spoilers.actuator(1));
         self.green_circuit
-            .update_system_actuator_volumes(self.right_spoilers.actuator(4));
+            .update_system_actuator_volumes(self.right_spoilers.actuator(3));
+        self.green_circuit
+            .update_system_actuator_volumes(self.right_spoilers.actuator(5));
+        self.green_circuit
+            .update_system_actuator_volumes(self.right_spoilers.actuator(7));
 
         for actuator in self.gear_system.all_actuators() {
             self.green_circuit.update_system_actuator_volumes(actuator);
@@ -2150,14 +2155,22 @@ impl A380Hydraulic {
         );
 
         self.yellow_circuit
-            .update_system_actuator_volumes(self.left_spoilers.actuator(1));
+            .update_system_actuator_volumes(self.left_spoilers.actuator(0));
         self.yellow_circuit
-            .update_system_actuator_volumes(self.left_spoilers.actuator(3));
+            .update_system_actuator_volumes(self.left_spoilers.actuator(2));
+        self.yellow_circuit
+            .update_system_actuator_volumes(self.left_spoilers.actuator(4));
+        self.yellow_circuit
+            .update_system_actuator_volumes(self.left_spoilers.actuator(6));
 
         self.yellow_circuit
-            .update_system_actuator_volumes(self.right_spoilers.actuator(1));
+            .update_system_actuator_volumes(self.right_spoilers.actuator(0));
         self.yellow_circuit
-            .update_system_actuator_volumes(self.right_spoilers.actuator(3));
+            .update_system_actuator_volumes(self.right_spoilers.actuator(2));
+        self.yellow_circuit
+            .update_system_actuator_volumes(self.right_spoilers.actuator(4));
+        self.yellow_circuit
+            .update_system_actuator_volumes(self.right_spoilers.actuator(6));
 
         self.yellow_circuit
             .update_system_actuator_volumes(self.trim_assembly.right_motor());
@@ -6047,8 +6060,8 @@ impl SpoilerGroup {
         );
     }
 
-    fn actuator(&mut self, spoiler_id: usize) -> &mut impl Actuator {
-        self.spoilers[spoiler_id].actuator()
+    fn actuator(&mut self, spoiler_idx: usize) -> &mut impl Actuator {
+        self.spoilers[spoiler_idx].actuator()
     }
 }
 impl SimulationElement for SpoilerGroup {
@@ -6067,7 +6080,9 @@ impl SimulationElement for SpoilerGroup {
 
 struct SpoilerController {
     position_demand_id: VariableIdentifier,
+    electrical_mode_ena_id: Option<VariableIdentifier>,
     requested_position: Ratio,
+    elec_backup_active: bool,
 }
 impl SpoilerController {
     fn new(context: &mut InitContext, spoiler_side: &str, spoiler_id_number: usize) -> Self {
@@ -6076,8 +6091,19 @@ impl SpoilerController {
                 "{}_SPOILER_{}_COMMANDED_POSITION",
                 spoiler_side, spoiler_id_number
             )),
+            electrical_mode_ena_id: if spoiler_id_number == 6 {
+                Some(
+                    context.get_identifier(format!(
+                        "{}_SPOILER_6_EBHA_ELECTRONIC_ENABLE",
+                        spoiler_side
+                    )),
+                )
+            } else {
+                None
+            },
 
             requested_position: Ratio::new::<ratio>(0.),
+            elec_backup_active: false,
         }
     }
 
@@ -6108,10 +6134,18 @@ impl SimulationElement for SpoilerController {
             Self::spoiler_actuator_position_from_surface_angle(Angle::new::<degree>(
                 reader.read(&self.position_demand_id),
             ));
+
+        if let Some(elec_mode_id) = self.electrical_mode_ena_id {
+            self.elec_backup_active = reader.read(&elec_mode_id);
+        };
     }
 }
 impl HydraulicLocking for SpoilerController {}
-impl ElectroHydrostaticPowered for SpoilerController {}
+impl ElectroHydrostaticPowered for SpoilerController {
+    fn should_activate_electrical_mode(&self) -> bool {
+        self.elec_backup_active
+    }
+}
 
 struct A380GravityExtension {
     gear_gravity_extension_handle_position_id: VariableIdentifier,
@@ -6229,6 +6263,7 @@ mod tests {
 
     mod a380_hydraulics {
         use super::*;
+        use rstest::rstest;
         use systems::{
             electrical::{
                 test::TestElectricitySource, ElectricalBus, Electricity, ElectricitySource,
@@ -6808,22 +6843,42 @@ mod tests {
                 Ratio::new::<ratio>(self.read_by_name("HYD_ELEV_LEFT_DEFLECTION"))
             }
 
-            fn _get_mean_right_spoilers_position(&mut self) -> Ratio {
+            fn get_mean_right_spoilers_position(&mut self) -> Ratio {
                 (Ratio::new::<ratio>(self.read_by_name("HYD_SPOILER_1_RIGHT_DEFLECTION"))
                     + Ratio::new::<ratio>(self.read_by_name("HYD_SPOILER_2_RIGHT_DEFLECTION"))
                     + Ratio::new::<ratio>(self.read_by_name("HYD_SPOILER_3_RIGHT_DEFLECTION"))
                     + Ratio::new::<ratio>(self.read_by_name("HYD_SPOILER_4_RIGHT_DEFLECTION"))
-                    + Ratio::new::<ratio>(self.read_by_name("HYD_SPOILER_5_RIGHT_DEFLECTION")))
-                    / 5.
+                    + Ratio::new::<ratio>(self.read_by_name("HYD_SPOILER_5_RIGHT_DEFLECTION"))
+                    + Ratio::new::<ratio>(self.read_by_name("HYD_SPOILER_6_RIGHT_DEFLECTION"))
+                    + Ratio::new::<ratio>(self.read_by_name("HYD_SPOILER_7_RIGHT_DEFLECTION"))
+                    + Ratio::new::<ratio>(self.read_by_name("HYD_SPOILER_8_RIGHT_DEFLECTION")))
+                    / 8.
             }
 
-            fn _get_mean_left_spoilers_position(&mut self) -> Ratio {
+            fn get_mean_left_spoilers_position(&mut self) -> Ratio {
                 (Ratio::new::<ratio>(self.read_by_name("HYD_SPOILER_1_LEFT_DEFLECTION"))
                     + Ratio::new::<ratio>(self.read_by_name("HYD_SPOILER_2_LEFT_DEFLECTION"))
                     + Ratio::new::<ratio>(self.read_by_name("HYD_SPOILER_3_LEFT_DEFLECTION"))
                     + Ratio::new::<ratio>(self.read_by_name("HYD_SPOILER_4_LEFT_DEFLECTION"))
-                    + Ratio::new::<ratio>(self.read_by_name("HYD_SPOILER_5_LEFT_DEFLECTION")))
-                    / 5.
+                    + Ratio::new::<ratio>(self.read_by_name("HYD_SPOILER_5_LEFT_DEFLECTION"))
+                    + Ratio::new::<ratio>(self.read_by_name("HYD_SPOILER_6_LEFT_DEFLECTION"))
+                    + Ratio::new::<ratio>(self.read_by_name("HYD_SPOILER_7_LEFT_DEFLECTION"))
+                    + Ratio::new::<ratio>(self.read_by_name("HYD_SPOILER_8_LEFT_DEFLECTION")))
+                    / 8.
+            }
+
+            fn get_right_spoiler_position(&mut self, panel_id: usize) -> Ratio {
+                Ratio::new::<ratio>(
+                    self.read_by_name(
+                        format!("HYD_SPOILER_{}_RIGHT_DEFLECTION", panel_id).as_str(),
+                    ),
+                )
+            }
+
+            fn get_left_spoiler_position(&mut self, panel_id: usize) -> Ratio {
+                Ratio::new::<ratio>(
+                    self.read_by_name(format!("HYD_SPOILER_{}_LEFT_DEFLECTION", panel_id).as_str()),
+                )
             }
 
             fn get_right_elevator_position(&mut self) -> Ratio {
@@ -7252,6 +7307,16 @@ mod tests {
                 self
             }
 
+            fn set_left_spoiler_6_elec_backup_active(mut self) -> Self {
+                self.write_by_name("LEFT_SPOILER_6_EBHA_ELECTRONIC_ENABLE", true);
+                self
+            }
+
+            fn set_right_spoiler_6_elec_backup_active(mut self) -> Self {
+                self.write_by_name("RIGHT_SPOILER_6_EBHA_ELECTRONIC_ENABLE", true);
+                self
+            }
+
             fn set_deploy_ground_spoilers(mut self) -> Self {
                 self.write_by_name("SEC_1_GROUND_SPOILER_OUT", true);
                 self.write_by_name("SEC_2_GROUND_SPOILER_OUT", true);
@@ -7454,39 +7519,83 @@ mod tests {
                 self
             }
 
-            fn _set_left_spoilers_out(mut self) -> Self {
-                self.write_by_name("LEFT_SPOILER_1_COMMANDED_POSITION", 50.);
-                self.write_by_name("LEFT_SPOILER_2_COMMANDED_POSITION", 50.);
-                self.write_by_name("LEFT_SPOILER_3_COMMANDED_POSITION", 50.);
-                self.write_by_name("LEFT_SPOILER_4_COMMANDED_POSITION", 50.);
-                self.write_by_name("LEFT_SPOILER_5_COMMANDED_POSITION", 50.);
+            fn set_left_spoiler_out(mut self, panel_id: usize) -> Self {
+                self.write_by_name(
+                    format!("LEFT_SPOILER_{}_COMMANDED_POSITION", panel_id).as_str(),
+                    50.,
+                );
                 self
             }
 
-            fn _set_left_spoilers_in(mut self) -> Self {
-                self.write_by_name("LEFT_SPOILER_1_COMMANDED_POSITION", 0.);
-                self.write_by_name("LEFT_SPOILER_2_COMMANDED_POSITION", 0.);
-                self.write_by_name("LEFT_SPOILER_3_COMMANDED_POSITION", 0.);
-                self.write_by_name("LEFT_SPOILER_4_COMMANDED_POSITION", 0.);
-                self.write_by_name("LEFT_SPOILER_5_COMMANDED_POSITION", 0.);
+            fn set_right_spoiler_out(mut self, panel_id: usize) -> Self {
+                self.write_by_name(
+                    format!("RIGHT_SPOILER_{}_COMMANDED_POSITION", panel_id).as_str(),
+                    50.,
+                );
                 self
             }
 
-            fn _set_right_spoilers_out(mut self) -> Self {
-                self.write_by_name("RIGHT_SPOILER_1_COMMANDED_POSITION", 50.);
-                self.write_by_name("RIGHT_SPOILER_2_COMMANDED_POSITION", 50.);
-                self.write_by_name("RIGHT_SPOILER_3_COMMANDED_POSITION", 50.);
-                self.write_by_name("RIGHT_SPOILER_4_COMMANDED_POSITION", 50.);
-                self.write_by_name("RIGHT_SPOILER_5_COMMANDED_POSITION", 50.);
+            fn set_left_spoiler_in(mut self, panel_id: usize) -> Self {
+                self.write_by_name(
+                    format!("LEFT_SPOILER_{}_COMMANDED_POSITION", panel_id).as_str(),
+                    0.,
+                );
                 self
             }
 
-            fn _set_right_spoilers_in(mut self) -> Self {
-                self.write_by_name("RIGHT_SPOILER_1_COMMANDED_POSITION", 0.);
-                self.write_by_name("RIGHT_SPOILER_2_COMMANDED_POSITION", 0.);
-                self.write_by_name("RIGHT_SPOILER_3_COMMANDED_POSITION", 0.);
-                self.write_by_name("RIGHT_SPOILER_4_COMMANDED_POSITION", 0.);
-                self.write_by_name("RIGHT_SPOILER_5_COMMANDED_POSITION", 0.);
+            fn set_right_spoiler_in(mut self, panel_id: usize) -> Self {
+                self.write_by_name(
+                    format!("RIGHT_SPOILER_{}_COMMANDED_POSITION", panel_id).as_str(),
+                    0.,
+                );
+                self
+            }
+
+            fn set_right_spoilers_out(mut self) -> Self {
+                self = self.set_right_spoiler_out(1);
+                self = self.set_right_spoiler_out(2);
+                self = self.set_right_spoiler_out(3);
+                self = self.set_right_spoiler_out(4);
+                self = self.set_right_spoiler_out(5);
+                self = self.set_right_spoiler_out(6);
+                self = self.set_right_spoiler_out(7);
+                self = self.set_right_spoiler_out(8);
+                self
+            }
+
+            fn set_right_spoilers_in(mut self) -> Self {
+                self = self.set_right_spoiler_in(1);
+                self = self.set_right_spoiler_in(2);
+                self = self.set_right_spoiler_in(3);
+                self = self.set_right_spoiler_in(4);
+                self = self.set_right_spoiler_in(5);
+                self = self.set_right_spoiler_in(6);
+                self = self.set_right_spoiler_in(7);
+                self = self.set_right_spoiler_in(8);
+                self
+            }
+
+            fn set_left_spoilers_out(mut self) -> Self {
+                self = self.set_left_spoiler_out(1);
+                self = self.set_left_spoiler_out(2);
+                self = self.set_left_spoiler_out(3);
+                self = self.set_left_spoiler_out(4);
+                self = self.set_left_spoiler_out(5);
+                self = self.set_left_spoiler_out(6);
+                self = self.set_left_spoiler_out(7);
+                self = self.set_left_spoiler_out(8);
+                self
+            }
+
+            fn set_left_spoilers_in(mut self) -> Self {
+                self = self.set_left_spoiler_in(1);
+                self = self.set_left_spoiler_in(2);
+                self = self.set_left_spoiler_in(3);
+                self = self.set_left_spoiler_in(4);
+                self = self.set_left_spoiler_in(5);
+                self = self.set_left_spoiler_in(6);
+                self = self.set_left_spoiler_in(7);
+                self = self.set_left_spoiler_in(8);
                 self
             }
 
@@ -8195,12 +8304,184 @@ mod tests {
             );
         }
 
-        ////////////////////////////////////
-        /// /////////////////
-        ///
-        ///
-        ///
-        ///
+        #[rstest]
+        #[case(2)]
+        #[case(4)]
+        #[case(6)]
+        #[case(8)]
+        fn green_right_spoilers_can_deploy_with_green_press(#[case] spoiler_id: usize) {
+            let mut test_bed = test_bed_on_ground_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .start_eng3(Ratio::new::<percent>(80.))
+                .set_right_spoiler_out(spoiler_id)
+                .run_waiting_for(Duration::from_secs(5));
+
+            assert!(!test_bed.is_green_pressure_switch_pressurised());
+            assert!(test_bed.is_yellow_pressure_switch_pressurised());
+
+            assert!(
+                test_bed
+                    .get_right_spoiler_position(spoiler_id)
+                    .get::<ratio>()
+                    < 0.1
+            );
+
+            test_bed = test_bed
+                .start_eng1(Ratio::new::<percent>(80.))
+                .run_waiting_for(Duration::from_secs(5));
+
+            assert!(
+                test_bed
+                    .get_right_spoiler_position(spoiler_id)
+                    .get::<ratio>()
+                    > 0.8
+            );
+        }
+
+        #[rstest]
+        #[case(2)]
+        #[case(4)]
+        #[case(6)]
+        #[case(8)]
+        fn green_left_spoilers_can_deploy_with_green_press(#[case] spoiler_id: usize) {
+            let mut test_bed = test_bed_on_ground_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .start_eng3(Ratio::new::<percent>(80.))
+                .set_left_spoiler_out(spoiler_id)
+                .run_waiting_for(Duration::from_secs(5));
+
+            assert!(!test_bed.is_green_pressure_switch_pressurised());
+            assert!(test_bed.is_yellow_pressure_switch_pressurised());
+
+            assert!(
+                test_bed
+                    .get_left_spoiler_position(spoiler_id)
+                    .get::<ratio>()
+                    < 0.1
+            );
+
+            test_bed = test_bed
+                .start_eng1(Ratio::new::<percent>(80.))
+                .run_waiting_for(Duration::from_secs(5));
+
+            assert!(
+                test_bed
+                    .get_left_spoiler_position(spoiler_id)
+                    .get::<ratio>()
+                    > 0.8
+            );
+        }
+
+        #[rstest]
+        #[case(1)]
+        #[case(3)]
+        #[case(5)]
+        #[case(7)]
+        fn yellow_right_spoilers_can_deploy_with_green_press(#[case] spoiler_id: usize) {
+            let mut test_bed = test_bed_on_ground_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .start_eng1(Ratio::new::<percent>(80.))
+                .set_right_spoiler_out(spoiler_id)
+                .run_waiting_for(Duration::from_secs(5));
+
+            assert!(test_bed.is_green_pressure_switch_pressurised());
+            assert!(!test_bed.is_yellow_pressure_switch_pressurised());
+
+            assert!(
+                test_bed
+                    .get_right_spoiler_position(spoiler_id)
+                    .get::<ratio>()
+                    < 0.1
+            );
+
+            test_bed = test_bed
+                .start_eng3(Ratio::new::<percent>(80.))
+                .run_waiting_for(Duration::from_secs(5));
+
+            assert!(
+                test_bed
+                    .get_right_spoiler_position(spoiler_id)
+                    .get::<ratio>()
+                    > 0.8
+            );
+        }
+
+        #[rstest]
+        #[case(1)]
+        #[case(3)]
+        #[case(5)]
+        #[case(7)]
+        fn yellow_left_spoilers_can_deploy_with_green_press(#[case] spoiler_id: usize) {
+            let mut test_bed = test_bed_on_ground_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .start_eng1(Ratio::new::<percent>(80.))
+                .set_left_spoiler_out(spoiler_id)
+                .run_waiting_for(Duration::from_secs(5));
+
+            assert!(test_bed.is_green_pressure_switch_pressurised());
+            assert!(!test_bed.is_yellow_pressure_switch_pressurised());
+
+            assert!(
+                test_bed
+                    .get_left_spoiler_position(spoiler_id)
+                    .get::<ratio>()
+                    < 0.1
+            );
+
+            test_bed = test_bed
+                .start_eng3(Ratio::new::<percent>(80.))
+                .run_waiting_for(Duration::from_secs(5));
+
+            assert!(
+                test_bed
+                    .get_left_spoiler_position(spoiler_id)
+                    .get::<ratio>()
+                    > 0.8
+            );
+        }
+
+        #[test]
+        fn spoilers_6_deploys_in_elec_mode() {
+            let mut test_bed = test_bed_on_ground_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .set_left_spoilers_out()
+                .set_right_spoilers_out()
+                .run_waiting_for(Duration::from_secs(5));
+
+            assert!(!test_bed.is_green_pressure_switch_pressurised());
+            assert!(!test_bed.is_yellow_pressure_switch_pressurised());
+
+            assert!(test_bed.get_mean_right_spoilers_position().get::<ratio>() < 0.01);
+
+            assert!(test_bed.get_mean_left_spoilers_position().get::<ratio>() < 0.01);
+
+            test_bed = test_bed
+                .ac_ess_active()
+                .set_left_spoiler_6_elec_backup_active()
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.get_left_spoiler_position(6).get::<ratio>() > 0.8);
+            assert!(test_bed.get_right_spoiler_position(6).get::<ratio>() < 0.1);
+
+            test_bed = test_bed
+                .ac_ess_active()
+                .set_right_spoiler_6_elec_backup_active()
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.get_left_spoiler_position(6).get::<ratio>() > 0.8);
+            assert!(test_bed.get_right_spoiler_position(6).get::<ratio>() > 0.8);
+        }
+
         #[test]
         fn pressure_state_at_init_one_simulation_step() {
             let mut test_bed = test_bed_on_ground_with()
