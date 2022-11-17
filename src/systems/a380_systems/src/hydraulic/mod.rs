@@ -7794,7 +7794,6 @@ mod tests {
                     < 0.1
             );
 
-            // Outward actuator on green hyds: shall not move
             test_bed = test_bed
                 .reset_all_aileron_commands()
                 .start_eng3(Ratio::new::<percent>(80.))
@@ -7846,7 +7845,6 @@ mod tests {
                     < 0.1
             );
 
-            // Outward actuator on green hyds: shall not move
             test_bed = test_bed
                 .reset_all_aileron_commands()
                 .start_eng3(Ratio::new::<percent>(80.))
@@ -7923,6 +7921,263 @@ mod tests {
             );
         }
 
+        #[test]
+        fn middle_right_aileron_panel_responds_with_no_hyds_on_eha_jack() {
+            let mut test_bed = test_bed_on_ground_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .reset_all_aileron_commands()
+                .ac_ess_lost()
+                .set_aileron_panel_neutral(
+                    ActuatorSide::Right,
+                    AileronPanelPosition::Middle,
+                    AileronActuatorPosition::Inward,
+                )
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(!test_bed.is_green_pressure_switch_pressurised());
+            assert!(!test_bed.is_yellow_pressure_switch_pressurised());
+
+            assert!(
+                test_bed
+                    .get_right_aileron_panel_position(AileronPanelPosition::Middle)
+                    .get::<ratio>()
+                    < 0.1
+            );
+
+            test_bed = test_bed
+                .reset_all_aileron_commands()
+                .ac_ess_active()
+                .set_aileron_panel_neutral(
+                    ActuatorSide::Right,
+                    AileronPanelPosition::Middle,
+                    AileronActuatorPosition::Inward,
+                )
+                .run_waiting_for(Duration::from_secs(5));
+
+            assert!(
+                test_bed
+                    .get_right_aileron_panel_position(AileronPanelPosition::Middle,)
+                    .get::<ratio>()
+                    > 0.4
+            );
+            assert!(
+                test_bed
+                    .get_right_aileron_panel_position(AileronPanelPosition::Middle,)
+                    .get::<ratio>()
+                    < 0.6
+            );
+        }
+
+        #[test]
+        fn inner_right_aileron_panel_responds_only_with_green_pressure_on_outward_jack() {
+            let mut test_bed = test_bed_on_ground_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .reset_all_aileron_commands()
+                .set_aileron_panel_neutral(
+                    ActuatorSide::Right,
+                    AileronPanelPosition::Inward,
+                    AileronActuatorPosition::Outward,
+                )
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(!test_bed.is_green_pressure_switch_pressurised());
+            assert!(!test_bed.is_yellow_pressure_switch_pressurised());
+
+            assert!(
+                test_bed
+                    .get_right_aileron_panel_position(AileronPanelPosition::Inward)
+                    .get::<ratio>()
+                    < 0.1
+            );
+
+            // Outward actuator on green hyds: shall not move
+            test_bed = test_bed
+                .reset_all_aileron_commands()
+                .start_eng1(Ratio::new::<percent>(80.))
+                .set_aileron_panel_neutral(
+                    ActuatorSide::Right,
+                    AileronPanelPosition::Inward,
+                    AileronActuatorPosition::Outward,
+                )
+                .run_waiting_for(Duration::from_secs(5));
+
+            assert!(test_bed.is_green_pressure_switch_pressurised());
+            assert!(!test_bed.is_yellow_pressure_switch_pressurised());
+
+            assert!(
+                test_bed
+                    .get_right_aileron_panel_position(AileronPanelPosition::Inward,)
+                    .get::<ratio>()
+                    > 0.4
+            );
+            assert!(
+                test_bed
+                    .get_right_aileron_panel_position(AileronPanelPosition::Inward,)
+                    .get::<ratio>()
+                    < 0.6
+            );
+        }
+
+        #[test]
+        fn inner_left_aileron_panel_responds_only_with_green_pressure_on_outward_jack() {
+            let mut test_bed = test_bed_on_ground_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .reset_all_aileron_commands()
+                .set_aileron_panel_neutral(
+                    ActuatorSide::Left,
+                    AileronPanelPosition::Inward,
+                    AileronActuatorPosition::Outward,
+                )
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(!test_bed.is_green_pressure_switch_pressurised());
+            assert!(!test_bed.is_yellow_pressure_switch_pressurised());
+
+            assert!(
+                test_bed
+                    .get_left_aileron_panel_position(AileronPanelPosition::Inward)
+                    .get::<ratio>()
+                    < 0.1
+            );
+
+            // Outward actuator on green hyds: shall not move
+            test_bed = test_bed
+                .reset_all_aileron_commands()
+                .start_eng1(Ratio::new::<percent>(80.))
+                .set_aileron_panel_neutral(
+                    ActuatorSide::Left,
+                    AileronPanelPosition::Inward,
+                    AileronActuatorPosition::Outward,
+                )
+                .run_waiting_for(Duration::from_secs(5));
+
+            assert!(test_bed.is_green_pressure_switch_pressurised());
+            assert!(!test_bed.is_yellow_pressure_switch_pressurised());
+
+            assert!(
+                test_bed
+                    .get_left_aileron_panel_position(AileronPanelPosition::Inward,)
+                    .get::<ratio>()
+                    > 0.4
+            );
+            assert!(
+                test_bed
+                    .get_left_aileron_panel_position(AileronPanelPosition::Inward,)
+                    .get::<ratio>()
+                    < 0.6
+            );
+        }
+
+        #[test]
+        fn inner_left_aileron_panel_responds_with_no_hyds_on_eha_jack() {
+            let mut test_bed = test_bed_on_ground_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .reset_all_aileron_commands()
+                .ac_ess_lost()
+                .set_aileron_panel_neutral(
+                    ActuatorSide::Left,
+                    AileronPanelPosition::Inward,
+                    AileronActuatorPosition::Inward,
+                )
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(!test_bed.is_green_pressure_switch_pressurised());
+            assert!(!test_bed.is_yellow_pressure_switch_pressurised());
+
+            assert!(
+                test_bed
+                    .get_left_aileron_panel_position(AileronPanelPosition::Inward)
+                    .get::<ratio>()
+                    < 0.1
+            );
+
+            test_bed = test_bed
+                .reset_all_aileron_commands()
+                .ac_ess_active()
+                .set_aileron_panel_neutral(
+                    ActuatorSide::Left,
+                    AileronPanelPosition::Inward,
+                    AileronActuatorPosition::Inward,
+                )
+                .run_waiting_for(Duration::from_secs(5));
+
+            assert!(
+                test_bed
+                    .get_left_aileron_panel_position(AileronPanelPosition::Inward,)
+                    .get::<ratio>()
+                    > 0.4
+            );
+            assert!(
+                test_bed
+                    .get_left_aileron_panel_position(AileronPanelPosition::Inward,)
+                    .get::<ratio>()
+                    < 0.6
+            );
+        }
+
+        #[test]
+        fn inner_right_aileron_panel_responds_with_no_hyds_on_eha_jack() {
+            let mut test_bed = test_bed_on_ground_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .reset_all_aileron_commands()
+                .ac_ess_lost()
+                .set_aileron_panel_neutral(
+                    ActuatorSide::Right,
+                    AileronPanelPosition::Inward,
+                    AileronActuatorPosition::Inward,
+                )
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(!test_bed.is_green_pressure_switch_pressurised());
+            assert!(!test_bed.is_yellow_pressure_switch_pressurised());
+
+            assert!(
+                test_bed
+                    .get_right_aileron_panel_position(AileronPanelPosition::Inward)
+                    .get::<ratio>()
+                    < 0.1
+            );
+
+            test_bed = test_bed
+                .reset_all_aileron_commands()
+                .ac_ess_active()
+                .set_aileron_panel_neutral(
+                    ActuatorSide::Right,
+                    AileronPanelPosition::Inward,
+                    AileronActuatorPosition::Inward,
+                )
+                .run_waiting_for(Duration::from_secs(5));
+
+            assert!(
+                test_bed
+                    .get_right_aileron_panel_position(AileronPanelPosition::Inward,)
+                    .get::<ratio>()
+                    > 0.4
+            );
+            assert!(
+                test_bed
+                    .get_right_aileron_panel_position(AileronPanelPosition::Inward,)
+                    .get::<ratio>()
+                    < 0.6
+            );
+        }
+
+        ////////////////////////////////////
+        /// /////////////////
+        ///
+        ///
+        ///
+        ///
         #[test]
         fn pressure_state_at_init_one_simulation_step() {
             let mut test_bed = test_bed_on_ground_with()
