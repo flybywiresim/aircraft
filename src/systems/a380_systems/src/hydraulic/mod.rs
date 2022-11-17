@@ -6728,12 +6728,46 @@ mod tests {
                 self.query(|a| a.get_yellow_brake_accumulator_fluid_volume())
             }
 
-            fn get_left_aileron_position(&mut self) -> Ratio {
-                Ratio::new::<ratio>(self.read_by_name("HYD_AIL_LEFT_DEFLECTION"))
+            fn get_left_aileron_panel_position(&mut self, panel: AileronPanelPosition) -> Ratio {
+                match panel {
+                    AileronPanelPosition::Outward => {
+                        Ratio::new::<ratio>(self.read_by_name("HYD_AIL_LEFT_OUTWARD_DEFLECTION"))
+                    }
+                    AileronPanelPosition::Middle => {
+                        Ratio::new::<ratio>(self.read_by_name("HYD_AIL_LEFT_MIDDLE_DEFLECTION"))
+                    }
+                    AileronPanelPosition::Inward => {
+                        Ratio::new::<ratio>(self.read_by_name("HYD_AIL_LEFT_INWARD_DEFLECTION"))
+                    }
+                }
             }
 
-            fn get_right_aileron_position(&mut self) -> Ratio {
-                Ratio::new::<ratio>(self.read_by_name("HYD_AIL_RIGHT_DEFLECTION"))
+            fn get_right_aileron_panel_position(&mut self, panel: AileronPanelPosition) -> Ratio {
+                match panel {
+                    AileronPanelPosition::Outward => {
+                        Ratio::new::<ratio>(self.read_by_name("HYD_AIL_RIGHT_OUTWARD_DEFLECTION"))
+                    }
+                    AileronPanelPosition::Middle => {
+                        Ratio::new::<ratio>(self.read_by_name("HYD_AIL_RIGHT_MIDDLE_DEFLECTION"))
+                    }
+                    AileronPanelPosition::Inward => {
+                        Ratio::new::<ratio>(self.read_by_name("HYD_AIL_RIGHT_INWARD_DEFLECTION"))
+                    }
+                }
+            }
+
+            fn get_left_aileron_mean_position(&mut self) -> Ratio {
+                (self.get_left_aileron_panel_position(AileronPanelPosition::Outward)
+                    + self.get_left_aileron_panel_position(AileronPanelPosition::Middle)
+                    + self.get_left_aileron_panel_position(AileronPanelPosition::Inward))
+                    / 3.
+            }
+
+            fn get_right_aileron_mean_position(&mut self) -> Ratio {
+                (self.get_right_aileron_panel_position(AileronPanelPosition::Outward)
+                    + self.get_right_aileron_panel_position(AileronPanelPosition::Middle)
+                    + self.get_right_aileron_panel_position(AileronPanelPosition::Inward))
+                    / 3.
             }
 
             fn get_left_elevator_position(&mut self) -> Ratio {
@@ -6785,7 +6819,7 @@ mod tests {
             }
 
             fn engines_off(self) -> Self {
-                self.stop_eng1().stop_eng2()
+                self.stop_eng1().stop_eng2().stop_eng3().stop_eng4()
             }
 
             fn external_power(mut self, is_connected: bool) -> Self {
@@ -6827,6 +6861,8 @@ mod tests {
                 self.set_indicated_airspeed(Velocity::new::<knot>(180.));
                 self.start_eng1(Ratio::new::<percent>(80.))
                     .start_eng2(Ratio::new::<percent>(80.))
+                    .start_eng3(Ratio::new::<percent>(80.))
+                    .start_eng4(Ratio::new::<percent>(80.))
                     .set_gear_lever_up()
                     .set_park_brake(false)
                     .external_power(false)
@@ -6904,14 +6940,14 @@ mod tests {
                 self
             }
 
-            fn _start_eng3(mut self, n2: Ratio) -> Self {
+            fn start_eng3(mut self, n2: Ratio) -> Self {
                 self.write_by_name("GENERAL ENG STARTER ACTIVE:3", true);
                 self.write_by_name("ENGINE_N2:3", n2);
 
                 self
             }
 
-            fn _start_eng4(mut self, n2: Ratio) -> Self {
+            fn start_eng4(mut self, n2: Ratio) -> Self {
                 self.write_by_name("GENERAL ENG STARTER ACTIVE:4", true);
                 self.write_by_name("ENGINE_N2:4", n2);
 
@@ -6942,6 +6978,20 @@ mod tests {
             fn _stopping_eng2(mut self) -> Self {
                 self.write_by_name("GENERAL ENG STARTER ACTIVE:2", false);
                 self.write_by_name("ENGINE_N2:2", 25.);
+
+                self
+            }
+
+            fn stop_eng3(mut self) -> Self {
+                self.write_by_name("GENERAL ENG STARTER ACTIVE:3", false);
+                self.write_by_name("ENGINE_N2:2", 0.);
+
+                self
+            }
+
+            fn stop_eng4(mut self) -> Self {
+                self.write_by_name("GENERAL ENG STARTER ACTIVE:4", false);
+                self.write_by_name("ENGINE_N2:2", 0.);
 
                 self
             }
@@ -7180,6 +7230,139 @@ mod tests {
                 self
             }
 
+            fn base_string_for_aileron_control(
+                side: ActuatorSide,
+                panel: AileronPanelPosition,
+                actuator: AileronActuatorPosition,
+            ) -> String {
+                let base_string = match panel {
+                    AileronPanelPosition::Outward => match actuator {
+                        AileronActuatorPosition::Inward => "OUTBOARD_AIL_YELLOW",
+                        AileronActuatorPosition::Outward => "OUTBOARD_AIL_GREEN",
+                    },
+
+                    AileronPanelPosition::Middle => match actuator {
+                        AileronActuatorPosition::Inward => "MIDBOARD_AIL_EHA",
+                        AileronActuatorPosition::Outward => "MIDBOARD_AIL_YELLOW",
+                    },
+
+                    AileronPanelPosition::Inward => match actuator {
+                        AileronActuatorPosition::Inward => "INBOARD_AIL_EHA",
+                        AileronActuatorPosition::Outward => "INBOARD_AIL_GREEN",
+                    },
+                };
+
+                match side {
+                    ActuatorSide::Left => format!("LEFT_{}", base_string),
+                    ActuatorSide::Right => format!("RIGHT_{}", base_string),
+                }
+            }
+
+            fn base_string_for_aileron_solenoid(
+                side: ActuatorSide,
+                panel: AileronPanelPosition,
+                actuator: AileronActuatorPosition,
+            ) -> String {
+                format!(
+                    "{}_SERVO_SOLENOID_ENERGIZED",
+                    Self::base_string_for_aileron_control(side, panel, actuator)
+                )
+            }
+
+            fn base_string_for_aileron_position(
+                side: ActuatorSide,
+                panel: AileronPanelPosition,
+                actuator: AileronActuatorPosition,
+            ) -> String {
+                format!(
+                    "{}_COMMANDED_POSITION",
+                    Self::base_string_for_aileron_control(side, panel, actuator)
+                )
+            }
+
+            fn reset_all_aileron_commands_per_side(mut self, side: ActuatorSide) -> Self {
+                self.write_by_name(
+                    Self::base_string_for_aileron_solenoid(
+                        side,
+                        AileronPanelPosition::Outward,
+                        AileronActuatorPosition::Outward,
+                    )
+                    .as_str(),
+                    0.,
+                );
+                self.write_by_name(
+                    Self::base_string_for_aileron_solenoid(
+                        side,
+                        AileronPanelPosition::Outward,
+                        AileronActuatorPosition::Inward,
+                    )
+                    .as_str(),
+                    0.,
+                );
+                self.write_by_name(
+                    Self::base_string_for_aileron_solenoid(
+                        side,
+                        AileronPanelPosition::Middle,
+                        AileronActuatorPosition::Outward,
+                    )
+                    .as_str(),
+                    0.,
+                );
+                self.write_by_name(
+                    Self::base_string_for_aileron_solenoid(
+                        side,
+                        AileronPanelPosition::Middle,
+                        AileronActuatorPosition::Inward,
+                    )
+                    .as_str(),
+                    0.,
+                );
+                self.write_by_name(
+                    Self::base_string_for_aileron_solenoid(
+                        side,
+                        AileronPanelPosition::Inward,
+                        AileronActuatorPosition::Outward,
+                    )
+                    .as_str(),
+                    0.,
+                );
+                self.write_by_name(
+                    Self::base_string_for_aileron_solenoid(
+                        side,
+                        AileronPanelPosition::Inward,
+                        AileronActuatorPosition::Inward,
+                    )
+                    .as_str(),
+                    0.,
+                );
+
+                self
+            }
+
+            fn reset_all_aileron_commands(mut self) -> Self {
+                self = self.reset_all_aileron_commands_per_side(ActuatorSide::Left);
+                self = self.reset_all_aileron_commands_per_side(ActuatorSide::Right);
+
+                self
+            }
+
+            fn set_aileron_panel_neutral(
+                mut self,
+                side: ActuatorSide,
+                panel: AileronPanelPosition,
+                actuator: AileronActuatorPosition,
+            ) -> Self {
+                self.write_by_name(
+                    Self::base_string_for_aileron_solenoid(side, panel, actuator).as_str(),
+                    1.,
+                );
+                self.write_by_name(
+                    Self::base_string_for_aileron_position(side, panel, actuator).as_str(),
+                    0.,
+                );
+                self
+            }
+
             fn set_elevator_neutral(mut self) -> Self {
                 self.write_by_name("LEFT_ELEV_BLUE_COMMANDED_POSITION", 0.);
                 self.write_by_name("RIGHT_ELEV_BLUE_COMMANDED_POSITION", 0.);
@@ -7356,6 +7539,110 @@ mod tests {
 
         fn test_bed_in_flight_with() -> A380HydraulicsTestBed {
             test_bed_in_flight()
+        }
+
+        #[test]
+        fn outward_left_aileron_panel_responds_only_with_green_pressure() {
+            let mut test_bed = test_bed_on_ground_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .start_eng1(Ratio::new::<percent>(80.))
+                .run_waiting_for(Duration::from_secs(5));
+
+            assert!(test_bed.is_green_pressure_switch_pressurised());
+            assert!(!test_bed.is_yellow_pressure_switch_pressurised());
+
+            // Inward actuator on yellow hyds: shall not move
+            test_bed = test_bed
+                .reset_all_aileron_commands()
+                .set_aileron_panel_neutral(
+                    ActuatorSide::Left,
+                    AileronPanelPosition::Outward,
+                    AileronActuatorPosition::Inward,
+                )
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(
+                test_bed
+                    .get_left_aileron_panel_position(AileronPanelPosition::Outward)
+                    .get::<ratio>()
+                    < 0.1
+            );
+
+            test_bed = test_bed
+                .reset_all_aileron_commands()
+                .set_aileron_panel_neutral(
+                    ActuatorSide::Left,
+                    AileronPanelPosition::Outward,
+                    AileronActuatorPosition::Outward,
+                )
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(
+                test_bed
+                    .get_left_aileron_panel_position(AileronPanelPosition::Outward,)
+                    .get::<ratio>()
+                    > 0.4
+            );
+            assert!(
+                test_bed
+                    .get_left_aileron_panel_position(AileronPanelPosition::Outward,)
+                    .get::<ratio>()
+                    < 0.6
+            );
+        }
+
+        #[test]
+        fn outward_right_aileron_panel_responds_only_with_green_pressure() {
+            let mut test_bed = test_bed_on_ground_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .start_eng1(Ratio::new::<percent>(80.))
+                .run_waiting_for(Duration::from_secs(5));
+
+            assert!(test_bed.is_green_pressure_switch_pressurised());
+            assert!(!test_bed.is_yellow_pressure_switch_pressurised());
+
+            // Inward actuator on yellow hyds: shall not move
+            test_bed = test_bed
+                .reset_all_aileron_commands()
+                .set_aileron_panel_neutral(
+                    ActuatorSide::Right,
+                    AileronPanelPosition::Outward,
+                    AileronActuatorPosition::Inward,
+                )
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(
+                test_bed
+                    .get_right_aileron_panel_position(AileronPanelPosition::Outward)
+                    .get::<ratio>()
+                    < 0.1
+            );
+
+            test_bed = test_bed
+                .reset_all_aileron_commands()
+                .set_aileron_panel_neutral(
+                    ActuatorSide::Right,
+                    AileronPanelPosition::Outward,
+                    AileronActuatorPosition::Outward,
+                )
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(
+                test_bed
+                    .get_right_aileron_panel_position(AileronPanelPosition::Outward,)
+                    .get::<ratio>()
+                    > 0.4
+            );
+            assert!(
+                test_bed
+                    .get_right_aileron_panel_position(AileronPanelPosition::Outward,)
+                    .get::<ratio>()
+                    < 0.6
+            );
         }
 
         #[test]
@@ -8523,8 +8810,8 @@ mod tests {
                 .set_cold_dark_inputs()
                 .run_one_tick();
 
-            assert!(test_bed.get_left_aileron_position().get::<ratio>() < 0.1);
-            assert!(test_bed.get_right_aileron_position().get::<ratio>() < 0.1);
+            assert!(test_bed.get_left_aileron_mean_position().get::<ratio>() < 0.1);
+            assert!(test_bed.get_right_aileron_mean_position().get::<ratio>() < 0.1);
         }
 
         #[test]
@@ -8539,15 +8826,15 @@ mod tests {
                 .set_ailerons_left_turn()
                 .run_waiting_for(Duration::from_secs_f64(2.));
 
-            assert!(test_bed.get_left_aileron_position().get::<ratio>() < 0.1);
-            assert!(test_bed.get_right_aileron_position().get::<ratio>() < 0.1);
+            assert!(test_bed.get_left_aileron_mean_position().get::<ratio>() < 0.1);
+            assert!(test_bed.get_right_aileron_mean_position().get::<ratio>() < 0.1);
 
             test_bed = test_bed
                 .set_ailerons_right_turn()
                 .run_waiting_for(Duration::from_secs_f64(2.));
 
-            assert!(test_bed.get_left_aileron_position().get::<ratio>() < 0.1);
-            assert!(test_bed.get_right_aileron_position().get::<ratio>() < 0.1);
+            assert!(test_bed.get_left_aileron_mean_position().get::<ratio>() < 0.1);
+            assert!(test_bed.get_right_aileron_mean_position().get::<ratio>() < 0.1);
         }
 
         #[test]
