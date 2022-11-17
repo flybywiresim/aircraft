@@ -275,7 +275,7 @@ pub trait Turbine {
     fn bleed_air_pressure(&self) -> Pressure;
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Eq)]
 pub enum TurbineState {
     Shutdown,
     Starting,
@@ -2109,7 +2109,7 @@ pub mod tests {
             let mut powered: bool = test_bed.apu_generator_output_within_normal_parameters();
             while test_bed.n().normal_value().unwrap().get::<percent>() < 100. {
                 let still_powered: bool = test_bed.apu_generator_output_within_normal_parameters();
-                assert!(!powered || (powered && still_powered));
+                assert!(!powered || still_powered);
                 powered = still_powered;
                 test_bed.run_with_delta(Duration::from_millis(1));
             }
