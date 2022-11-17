@@ -1,7 +1,6 @@
 // Copyright (c) 2022 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { getSimBridgeUrl } from '../common';
 import { fetchWithTimeout, getSimBridgeUrl } from '../common';
 import { CoRouteDto } from '../Coroute/coroute';
 import { ClientState } from './ClientState';
