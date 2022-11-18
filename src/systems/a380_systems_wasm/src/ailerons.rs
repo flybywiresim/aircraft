@@ -114,17 +114,6 @@ pub(super) fn ailerons(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Er
                 / 3.;
             let spoiler_roll_asymetry = SPOILER_ROLL_COEFF * (values[8] - values[9]);
 
-            // println!(
-            //     "AIL {:.1} {:.1} {:.1} / {:.1} {:.1} {:.1}  -> ROLL COMPONENT {:.2}",
-            //     values[0],
-            //     values[1],
-            //     values[2],
-            //     values[5],
-            //     values[4],
-            //     values[3],
-            //     aileron_roll_asymetry
-            // );
-
             aileron_roll_asymetry + spoiler_roll_asymetry + elevator_roll_component
         },
         Variable::aspect("HYD_FINAL_AILERON_FEEDBACK"),
