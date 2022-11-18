@@ -236,7 +236,7 @@ impl Display for HydraulicColor {
     }
 }
 
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 pub enum AirbusEngineDrivenPumpId {
     Edp1a,
     Edp1b,
@@ -266,7 +266,7 @@ impl Display for AirbusEngineDrivenPumpId {
     }
 }
 
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 pub enum AirbusElectricPumpId {
     GreenA,
     GreenB,

@@ -503,7 +503,7 @@ impl Aircraft for A320SimpleMainElecHydraulicsTestAircraft {
 
             self.hydraulic_circuit.update(
                 &context.with_delta(cur_time_step),
-                &mut [&mut self.elec_pump],
+                &mut vec![&mut self.elec_pump],
                 None::<&mut ElectricPump>,
                 None::<&mut ElectricPump>,
                 None,
