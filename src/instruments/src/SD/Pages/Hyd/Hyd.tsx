@@ -295,6 +295,10 @@ const HydReservoir = ({ system, x, y, lowLevel } : HydReservoirProps) => {
 
             <text className={lowAirPress ? 'Large Amber' : 'Hide'} x={12} y={-72}>LO AIR</text>
             <text className={lowAirPress ? 'Large Amber' : 'Hide'} x={12} y={-45}>PRESS</text>
+
+            { /* Not sure about the exact placement, have to wait for an IRL ref */ }
+            <text className={overheat ? 'Large Amber' : 'Hide'} x={20} y={-5}>OVHT</text>
+
         </SvgGroup>
     );
 };
