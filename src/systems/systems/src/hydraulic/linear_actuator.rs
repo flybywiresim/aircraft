@@ -145,6 +145,17 @@ impl SimulationElement for VariableSpeedPump {
         consumption.consume_from_bus(self.powered_by, self.consumed_power);
     }
 }
+impl Debug for VariableSpeedPump {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "\nEHA pump => is powered {:?} / Is active? {:?} / Rpm {:0}",
+            self.is_powered,
+            self.is_active(),
+            self.speed.output().get::<revolution_per_minute>()
+        )
+    }
+}
 
 #[derive(PartialEq, Copy, Clone)]
 struct LowPressureAccumulator {
@@ -295,7 +306,6 @@ impl ElectroHydrostaticBackup {
         self.backup_type == ElectroHydrostaticActuatorType::ElectricalBackupHydraulicActuator
     }
 
-    #[cfg(test)]
     fn accumulator_pressure(&self) -> Pressure {
         self.accumulator.pressure()
     }
@@ -318,6 +328,17 @@ impl Actuator for ElectroHydrostaticBackup {
 
     fn reset_volumes(&mut self) {
         self.accumulator.reset_volumes();
+    }
+}
+impl Debug for ElectroHydrostaticBackup {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "\nEHA system => Acc pressure {:?} / Max pressure {:.0} Pump {:?}",
+            self.accumulator_pressure().get::<psi>(),
+            self.max_available_pressure().get::<psi>(),
+            self.pump
+        )
     }
 }
 
@@ -784,6 +805,16 @@ impl HydraulicLocking for CoreHydraulicForce {
         self.soft_lock_velocity
     }
 }
+impl Debug for CoreHydraulicForce {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "\nCOREHYD => Mode {:?} Force(N) {:.0}",
+            self.current_mode,
+            self.force().get::<newton>()
+        )
+    }
+}
 
 pub struct LinearActuatorCharacteristics {
     max_flow: VolumeRate,
@@ -1148,6 +1179,20 @@ impl SimulationElement for LinearActuator {
         visitor.visit(self);
     }
 }
+impl Debug for LinearActuator {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        if self.electro_hydrostatic_backup.is_some() {
+            write!(
+                f,
+                "Actuator => Type:EHA {:?} / {:?}",
+                self.electro_hydrostatic_backup.unwrap(),
+                self.core_hydraulics,
+            )
+        } else {
+            write!(f, "Actuator => Type:Standard / {:?}", self.core_hydraulics,)
+        }
+    }
+}
 
 pub trait HydraulicAssemblyController {
     fn requested_mode(&self) -> LinearActuatorMode;
@@ -1335,6 +1380,15 @@ impl SimulationElement for HydraulicLinearActuatorAssembly<1> {
         visitor.visit(self);
     }
 }
+impl Debug for HydraulicLinearActuatorAssembly<1> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "\nHYD ASSEMBLY => \nActuator {:?}",
+            self.linear_actuators[0],
+        )
+    }
+}
 impl SimulationElement for HydraulicLinearActuatorAssembly<2> {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         accept_iterable!(self.linear_actuators, visitor);
@@ -1342,11 +1396,29 @@ impl SimulationElement for HydraulicLinearActuatorAssembly<2> {
         visitor.visit(self);
     }
 }
+impl Debug for HydraulicLinearActuatorAssembly<2> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "\nHYD ASSEMBLY => \nActuator1 {:?} \nActuator2 {:?}",
+            self.linear_actuators[0], self.linear_actuators[1],
+        )
+    }
+}
 impl SimulationElement for HydraulicLinearActuatorAssembly<3> {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         accept_iterable!(self.linear_actuators, visitor);
 
         visitor.visit(self);
+    }
+}
+impl Debug for HydraulicLinearActuatorAssembly<3> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "\nHYD ASSEMBLY => \nActuator1 {:?} \nActuator2 {:?} \nActuator3 {:?}",
+            self.linear_actuators[0], self.linear_actuators[1], self.linear_actuators[2],
+        )
     }
 }
 
