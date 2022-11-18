@@ -10953,7 +10953,6 @@ mod tests {
         }
 
         #[test]
-        #[ignore]
         fn empty_green_reservoir_causes_yellow_overheat_if_ptu_on() {
             let mut test_bed = test_bed_in_flight_with()
                 .set_cold_dark_inputs()
@@ -10967,7 +10966,6 @@ mod tests {
         }
 
         #[test]
-        #[ignore]
         fn empty_yellow_reservoir_causes_green_overheat_if_ptu_on() {
             let mut test_bed = test_bed_in_flight_with()
                 .set_cold_dark_inputs()
@@ -10978,6 +10976,55 @@ mod tests {
 
             test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(120.));
             assert!(test_bed.green_reservoir_has_overheat_fault());
+        }
+
+        #[test]
+        fn green_edp_overheat_failure_causes_green_reservoir_overheat() {
+            let mut test_bed = test_bed_in_flight_with()
+                .set_cold_dark_inputs()
+                .in_flight()
+                .run_waiting_for(Duration::from_secs_f64(1.));
+
+            test_bed.fail(FailureType::EnginePumpOverheat(
+                AirbusEngineDrivenPumpId::Green,
+            ));
+
+            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(120.));
+            assert!(test_bed.green_reservoir_has_overheat_fault());
+        }
+
+        #[test]
+        fn green_edp_overheat_failure_do_not_causes_green_reservoir_overheat_if_unpressurised() {
+            let mut test_bed = test_bed_in_flight_with()
+                .set_cold_dark_inputs()
+                .in_flight()
+                .run_waiting_for(Duration::from_secs_f64(1.));
+
+            test_bed.fail(FailureType::EnginePumpOverheat(
+                AirbusEngineDrivenPumpId::Green,
+            ));
+
+            test_bed = test_bed
+                .set_green_ed_pump(false)
+                .run_waiting_for(Duration::from_secs_f64(120.));
+            assert!(!test_bed.green_reservoir_has_overheat_fault());
+        }
+
+        #[test]
+        fn yellow_edp_overheat_failure_do_not_causes_yellow_reservoir_overheat_if_unpressurised() {
+            let mut test_bed = test_bed_in_flight_with()
+                .set_cold_dark_inputs()
+                .in_flight()
+                .run_waiting_for(Duration::from_secs_f64(1.));
+
+            test_bed.fail(FailureType::EnginePumpOverheat(
+                AirbusEngineDrivenPumpId::Yellow,
+            ));
+
+            test_bed = test_bed
+                .set_yellow_ed_pump(false)
+                .run_waiting_for(Duration::from_secs_f64(120.));
+            assert!(!test_bed.yellow_reservoir_has_overheat_fault());
         }
     }
 }

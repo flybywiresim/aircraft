@@ -500,7 +500,7 @@ mod tests {
     }
 
     #[test]
-    fn pump_with_overheat_fail_overheats_and_fails() {
+    fn pump_with_overheat_failure_overheats_and_fails() {
         let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
         test_bed.command(|a| a.set_ac_1_power(true));
