@@ -22,8 +22,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.costIndexSet = undefined;
         this.maxCruiseFL = undefined;
         this.routeIndex = undefined;
-        this.coRoute = undefined;
-        this.tmpOrigin = undefined;
+        this.coRoute = { routeNumber: undefined, routes: undefined };
         this.perfTOTemp = undefined;
         this._overridenFlapApproachSpeed = undefined;
         this._overridenSlatApproachSpeed = undefined;
@@ -255,7 +254,6 @@ class FMCMainDisplay extends BaseAirliners {
                 this.flightPlanManager.updateCurrentApproach();
                 const callback = () => {
                     this.flightPlanManager.createNewFlightPlan();
-                    SimVar.SetSimVarValue("L:FLIGHTPLAN_USE_DECEL_WAYPOINT", "number", 1);
                     SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", NaN);
                     SimVar.SetSimVarValue("L:AIRLINER_V2_SPEED", "Knots", NaN);
                     SimVar.SetSimVarValue("L:AIRLINER_VR_SPEED", "Knots", NaN);
@@ -315,11 +313,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.costIndexSet = false;
         this.maxCruiseFL = 390;
         this.routeIndex = 0;
-        this.coRoute = {
-            routeNumber: undefined,
-            routes: []
-        };
-        this.tmpOrigin = "";
+        this.resetCoroute();
         this.perfTOTemp = NaN;
         this._overridenFlapApproachSpeed = NaN;
         this._overridenSlatApproachSpeed = NaN;
@@ -1929,46 +1923,71 @@ class FMCMainDisplay extends BaseAirliners {
         }
     }
 
+    resetCoroute() {
+        this.coRoute.routeNumber = undefined;
+        this.coRoute.routes = [];
+    }
+
+    /** MCDU Init page method for FROM/TO, NOT for programmatic use */
     tryUpdateFromTo(fromTo, callback = EmptyCallback.Boolean) {
         if (fromTo === FMCMainDisplay.clrValue) {
             this.setScratchpadMessage(NXSystemMessages.notAllowed);
             return callback(false);
         }
-        const from = fromTo.split("/")[0];
-        const to = fromTo.split("/")[1];
-        this.dataManager.GetAirportByIdent(from).then((airportFrom) => {
-            if (airportFrom) {
-                this.dataManager.GetAirportByIdent(to).then((airportTo) => {
-                    if (airportTo) {
-                        this.atsu.atc.resetAtisAutoUpdate();
-                        this.eraseTemporaryFlightPlan(() => {
-                            this.flightPlanManager.clearFlightPlan(() => {
-                                this.tempFpPendingAutoTune = true;
-                                this.flightPlanManager.setOrigin(airportFrom.icao, () => {
-                                    this.tmpOrigin = airportFrom.ident;
-                                    this.setGroundTempFromOrigin();
-                                    this.flightPlanManager.setDestination(airportTo.icao, async () => {
-                                        this.flightPlanManager.getWaypoint(0).endsInDiscontinuity = true;
-                                        this.flightPlanManager.getWaypoint(0).discontinuityCanBeCleared = true;
-                                        this.tmpOrigin = airportTo.ident;
-                                        SimVar.SetSimVarValue("L:FLIGHTPLAN_USE_DECEL_WAYPOINT", "number", 1);
 
-                                        await this.getCoRouteList();
-                                        callback(true);
-                                    }).catch(console.error);
-                                }).catch(console.error);
-                            }).catch(console.error);
-                        });
-                    } else {
-                        this.setScratchpadMessage(NXSystemMessages.notInDatabase);
-                        callback(false);
-                    }
-                }).catch(console.error);
+        const match = fromTo.match(/^([A-Z]{4})\/([A-Z]{4})$/);
+        if (match === null) {
+            this.setScratchpadMessage(NXSystemMessages.formatError);
+            return callback(false);
+        }
+        const [, from, to] = match;
+
+        this.resetCoroute();
+
+        this.setFromTo(from, to).then(() => {
+            this.getCoRouteList().then(() => callback(true)).catch(console.log);
+        }).catch((e) => {
+            if (e instanceof McduMessage) {
+                this.setScratchpadMessage(e);
             } else {
-                this.setScratchpadMessage(NXSystemMessages.notInDatabase);
-                callback(false);
+                console.warn(e);
             }
-        }).catch(console.error);
+            callback(false);
+        });
+    }
+
+    /**
+     * Programmatic method to set from/to
+     * @param {string} from 4-letter icao code for origin airport
+     * @param {string} to 4-letter icao code for destination airport
+     * @throws NXSystemMessage on error (you are responsible for pushing to the scratchpad if appropriate)
+     */
+    async setFromTo(from, to) {
+        let airportFrom, airportTo;
+        try {
+            airportFrom = await this.dataManager.GetAirportByIdent(from);
+            airportTo = await this.dataManager.GetAirportByIdent(to);
+            if (!airportFrom || !airportTo) {
+                throw NXSystemMessages.notInDatabase;
+            }
+        } catch (e) {
+            console.log(e);
+            throw NXSystemMessages.notInDatabase;
+        }
+
+        this.atsu.atc.resetAtisAutoUpdate();
+
+        return new Promise((resolve, reject) => {
+            this.eraseTemporaryFlightPlan(() => {
+                this.flightPlanManager.clearFlightPlan(() => {
+                    this.tempFpPendingAutoTune = true;
+                    this.flightPlanManager.setOrigin(airportFrom.icao, () => {
+                        this.setGroundTempFromOrigin();
+                        this.flightPlanManager.setDestination(airportTo.icao, () => resolve(true)).catch(reject);
+                    }).catch(reject);
+                }).catch(reject);
+            });
+        });
     }
 
     /**
@@ -2454,7 +2473,7 @@ class FMCMainDisplay extends BaseAirliners {
             if (coRouteNum.length > 2 && (coRouteNum !== FMCMainDisplay.clrValue)) {
                 if (coRouteNum.length < 10) {
                     if (coRouteNum === "NONE") {
-                        this.coRoute = { routeNumber: undefined};
+                        this.resetCoroute();
                     } else {
                         const {success, data} = await SimBridgeClient.CompanyRoute.getCoRoute(coRouteNum);
                         if (success) {
@@ -2505,7 +2524,7 @@ class FMCMainDisplay extends BaseAirliners {
                 this.setScratchpadMessage(NXSystemMessages.notInDatabase);
             }
         } catch (error) {
-            console.error(`Error retrieving coroute list ${error}`);
+            console.info(`Error retrieving coroute list ${error}`);
         }
     }
 
@@ -2748,7 +2767,6 @@ class FMCMainDisplay extends BaseAirliners {
                     this.flightPlanManager.truncateWaypoints(index);
                     // add the new destination, which will insert a discontinuity
                     this.flightPlanManager.setDestination(airportTo.icao, () => {
-                        this.tmpOrigin = airportTo.ident;
                         callback(true);
                     }).catch(console.error);
                 });

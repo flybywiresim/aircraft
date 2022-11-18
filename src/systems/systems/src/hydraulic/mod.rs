@@ -119,7 +119,7 @@ impl HeatingElement for Fluid {
     }
 }
 
-#[derive(PartialEq, Clone, Copy)]
+#[derive(PartialEq, Eq, Clone, Copy)]
 pub enum PressureSwitchState {
     Pressurised,
     NotPressurised,
@@ -1294,7 +1294,7 @@ impl HydraulicCircuit {
         }
 
         let downstream_section = if to_auxiliary {
-            &self.auxiliary_section.as_ref().unwrap()
+            self.auxiliary_section.as_ref().unwrap()
         } else {
             &self.system_section
         };

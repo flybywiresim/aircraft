@@ -4,7 +4,7 @@ use crate::shared::{
 };
 use crate::simulation::SimulationElement;
 
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 pub enum FailureType {
     TransformerRectifier(usize),
     ReservoirLeak(HydraulicColor),
