@@ -54,7 +54,7 @@ A380LateralNormalLaw::Parameters_A380LateralNormalLaw_T A380LateralNormalLaw::A3
   { 1.1, 1.0, 0.6, 0.3, 0.1 },
 
 
-  { 1.5, 1.5, 1.5, 1.0, 0.7, 0.5, 0.5 },
+  { 1.5, 1.5, 1.5, 1.0, 0.7, 0.15, 0.15 },
 
 
   { 1.4, 1.4, 1.4, 1.2, 1.0, 0.8, 0.8 },
@@ -137,9 +137,9 @@ A380LateralNormalLaw::Parameters_A380LateralNormalLaw_T A380LateralNormalLaw::A3
 
   -67.0,
 
-  25.0,
+  30.0,
 
-  -25.0,
+  -30.0,
 
   1.0,
 
@@ -167,15 +167,11 @@ A380LateralNormalLaw::Parameters_A380LateralNormalLaw_T A380LateralNormalLaw::A3
 
   1.0,
 
-  0.3,
+  0.017453292519943295,
 
   0.017453292519943295,
 
-  0.3,
-
-  0.017453292519943295,
-
-  0.2,
+  0.6,
 
   0.017453292519943295,
 
@@ -237,17 +233,17 @@ A380LateralNormalLaw::Parameters_A380LateralNormalLaw_T A380LateralNormalLaw::A3
 
   57.295779513082323,
 
-  25.0,
+  30.0,
 
-  -25.0,
+  -30.0,
 
   1.0,
 
   0.0,
 
-  25.0,
+  30.0,
 
-  -25.0,
+  -30.0,
 
   1.0,
 
@@ -586,13 +582,12 @@ void A380LateralNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_
   r = look1_binlxpw(*rtu_In_time_dt, A380LateralNormalLaw_rtP.ScheduledGain_BreakpointsForDimension1_j,
                     A380LateralNormalLaw_rtP.ScheduledGain_Table_i, 4U);
   A380LateralNormalLaw_DWork.Delay_DSTATE = ((-(dynamic_pressure / Vias * 122.0 * 320.40999999999997 * -0.487 / 1.0E+6 +
-    1.414 * omega_0) / L_xi * A380LateralNormalLaw_rtP.Gain_Gain_f * rtb_Gain1_c + A380LateralNormalLaw_rtP.Gain1_Gain_h
-    * k_phi * rtb_Gain1_l) + A380LateralNormalLaw_rtP.Gain2_Gain_g * -k_phi * (A380LateralNormalLaw_rtP.Gain1_Gain_n *
-    rtb_Sum_x0)) * r * A380LateralNormalLaw_rtP.Gain_Gain_p;
-  A380LateralNormalLaw_RateLimiter(A380LateralNormalLaw_rtP.Gain_Gain_fz * A380LateralNormalLaw_DWork.Delay_DSTATE * ca
-    + (A380LateralNormalLaw_rtP.Constant_Value_j - ca) * rtb_Gain_b,
-    A380LateralNormalLaw_rtP.RateLimiterVariableTs1_up_d, A380LateralNormalLaw_rtP.RateLimiterVariableTs1_lo_k,
-    rtu_In_time_dt, A380LateralNormalLaw_rtP.RateLimiterVariableTs1_InitialCondition_e, &dynamic_pressure,
+    1.414 * omega_0) / L_xi * A380LateralNormalLaw_rtP.Gain_Gain_g * rtb_Gain1_c + k_phi * rtb_Gain1_l) +
+    A380LateralNormalLaw_rtP.Gain1_Gain_n * rtb_Sum_x0 * -k_phi) * r * A380LateralNormalLaw_rtP.Gain_Gain_p;
+  A380LateralNormalLaw_RateLimiter(A380LateralNormalLaw_rtP.Gain_Gain_f * A380LateralNormalLaw_DWork.Delay_DSTATE * ca +
+    (A380LateralNormalLaw_rtP.Constant_Value_j - ca) * rtb_Gain_b, A380LateralNormalLaw_rtP.RateLimiterVariableTs1_up_d,
+    A380LateralNormalLaw_rtP.RateLimiterVariableTs1_lo_k, rtu_In_time_dt,
+    A380LateralNormalLaw_rtP.RateLimiterVariableTs1_InitialCondition_e, &dynamic_pressure,
     &A380LateralNormalLaw_DWork.sf_RateLimiter_i);
   if (A380LateralNormalLaw_rtP.Constant_Value_li) {
     ca = dynamic_pressure;

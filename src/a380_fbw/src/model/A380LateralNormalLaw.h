@@ -106,14 +106,12 @@ class A380LateralNormalLaw final
     real_T Saturation_UpperSat_h;
     real_T Saturation_LowerSat_a;
     real_T Constant_Value_j;
-    real_T Gain2_Gain_g;
     real_T Gain1_Gain_n;
-    real_T Gain1_Gain_h;
     real_T Gain1_Gain_bq;
-    real_T Gain_Gain_f;
+    real_T Gain_Gain_g;
     real_T Gain1_Gain_c;
     real_T Gain_Gain_p;
-    real_T Gain_Gain_fz;
+    real_T Gain_Gain_f;
     real_T Gain1_Gain_m;
     real_T Saturation2_UpperSat;
     real_T Saturation2_LowerSat;

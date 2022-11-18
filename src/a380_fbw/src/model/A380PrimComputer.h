@@ -83,9 +83,14 @@ class A380PrimComputer final
     real_T rate_gyro_yaw_2_bus;
     real_T speed_brake_lever_pos;
     real_T thr_lever_1_pos;
+    real_T irdc_1_bus;
+    real_T irdc_2_bus;
+    real_T irdc_3_bus;
+    real_T thr_lever_2_pos;
+    real_T irdc_4_a_bus;
+    real_T irdc_4_b_bus;
     real_T fcu_own_bus;
     real_T fcu_opp_bus;
-    real_T thr_lever_2_pos;
     real_T thr_lever_3_pos;
     real_T thr_lever_4_pos;
     real_T elevator_1_pos_deg;

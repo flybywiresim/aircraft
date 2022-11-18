@@ -289,6 +289,11 @@ struct base_prim_bus_inputs
   base_ra_bus ra_2_bus;
   base_sfcc_bus sfcc_1_bus;
   base_sfcc_bus sfcc_2_bus;
+  real_T irdc_1_bus;
+  real_T irdc_2_bus;
+  real_T irdc_3_bus;
+  real_T irdc_4_a_bus;
+  real_T irdc_4_b_bus;
   real_T fcu_own_bus;
   real_T fcu_opp_bus;
   base_prim_out_bus prim_x_bus;
