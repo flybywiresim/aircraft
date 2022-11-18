@@ -1865,7 +1865,7 @@ impl A380Hydraulic {
             ],
             [
                 self.green_circuit.system_section(),
-                self.green_circuit.system_section(),
+                self.yellow_circuit.system_section(),
             ],
         );
 
