@@ -1526,22 +1526,17 @@
                     }
                 </Update>
 
-                <!-- INT LT STROBE -->
-                <UseTemplate Name="FBW_Anim_Interactions">
+                <!-- INT SEATBELTS -->
+                <UseTemplate Name="FBW_Switch_LeftClick_MouseWheel">
+                    <ANIM_NAME>SWITCH_OVHD_INTLT_SEATBELT</ANIM_NAME>
                     <ANIM_TYPE>SWITCH</ANIM_TYPE>
-                    <ANIM_TEMPLATE>FBW_GT_Switch</ANIM_TEMPLATE>
                     <NODE_ID>SWITCH_OVHD_INTLT_SEATBELT</NODE_ID>
                     <PART_ID>Seatbelt_Switch</PART_ID>
-                    <ANIM_NAME>SWITCH_OVHD_INTLT_SEATBELT</ANIM_NAME>
-                    <ANIM_SIMVAR>CABIN SEATBELTS ALERT SWITCH</ANIM_SIMVAR>
+                    <TOGGLE_EVENT>CABIN_SEATBELTS_ALERT_SWITCH_TOGGLE</TOGGLE_EVENT>
+                    <SIMVAR_NAME>CABIN SEATBELTS ALERT SWITCH</SIMVAR_NAME>
                     <LIGHT_TYPE>SEATBELT</LIGHT_TYPE>
-                    <EVENTID>CABIN_SEATBELTS_ALERT_SWITCH_TOGGLE</EVENTID>
-                    <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTS_SEATBELT_OFF</ANIMTIP_0>
-                    <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTS_SEATBELT_ON</ANIMTIP_1>
-                    <WWISE_EVENT_1>lswitch</WWISE_EVENT_1>
-                    <WWISE_EVENT_2>lswitch</WWISE_EVENT_2>
-                    <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
-                    <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+                    <ANIMTIP_0>Turn ON seatbelt light</ANIMTIP_0>
+                    <ANIMTIP_1>Turn OFF seatbelt light</ANIMTIP_1>
                 </UseTemplate>
 
                 <!-- INT LT NO SMOKING -->
@@ -1618,53 +1613,45 @@
                 </UseTemplate>
 
                 <!-- INT LT ICE IND & STBY COMPASS -->
-                <UseTemplate Name="FBW_Anim_Interactions">
-                    <ANIM_TYPE>SWITCH</ANIM_TYPE>
-                    <ANIM_TEMPLATE>ASOBO_GT_Switch_Dummy</ANIM_TEMPLATE>
-                    <NODE_ID>SWITCH_OVHD_INTLT_STBYCOMPAS</NODE_ID>
+                <UseTemplate Name="FBW_Switch_LeftClick_MouseWheel">
                     <ANIM_NAME>SWITCH_OVHD_INTLT_STBYCOMPAS</ANIM_NAME>
+                    <ANIM_TYPE>SWITCH</ANIM_TYPE>
+                    <NODE_ID>SWITCH_OVHD_INTLT_STBYCOMPAS</NODE_ID>
+                    <PART_ID>SWITCH_OVHD_INTLT_STBYCOMPAS</PART_ID>
+                    <TOGGLE_EVENT>A32NX_STBY_COMPASS_LIGHT_TOGGLE</TOGGLE_EVENT>
+                    <SIMVAR_NAME>A32NX_STBY_COMPASS_LIGHT_TOGGLE</SIMVAR_NAME>
+                    <SIMVAR_GROUP>L</SIMVAR_GROUP>
                     <LIGHT_TYPE>STBYCOMPAS</LIGHT_TYPE>
                     <ANIMTIP_0>Turn ON standby compass light</ANIMTIP_0>
                     <ANIMTIP_1>Turn OFF standby compass light</ANIMTIP_1>
-                    <WWISE_EVENT_1>lswitch</WWISE_EVENT_1>
-                    <WWISE_EVENT_2>lswitch</WWISE_EVENT_2>
-                    <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
-                    <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
-                    <SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
-                    <SWITCH_POSITION_VAR>A32NX_STBY_COMPASS_LIGHT_TOGGLE</SWITCH_POSITION_VAR>
                 </UseTemplate>
 
                 <!-- EXT LT BEACON -->
-                <UseTemplate Name="FBW_Anim_Interactions">
+                 <UseTemplate Name="FBW_Switch_LeftClick_MouseWheel">
                     <ANIM_TYPE>SWITCH</ANIM_TYPE>
-                    <ANIM_TEMPLATE>FBW_Airbus_LIGHTING_Switch_Light_Beacon_Template</ANIM_TEMPLATE>
                     <NODE_ID>SWITCH_OVHD_EXTLT_BEACON</NODE_ID>
                     <PART_ID>Beacon_Light_Switch</PART_ID>
                     <ANIM_NAME>SWITCH_OVHD_EXTLT_BEACON</ANIM_NAME>
-                    <!-- TODO Remove when fixed in Asobo base files -->
-                    <TT_DESCRIPTION_ID>COCKPIT.TOOLTIPSV2.LIGHTING_SWITCH_LIGHT_BEACON_ACTION_SET</TT_DESCRIPTION_ID>
-                    <SIMVAR_INDEX>0</SIMVAR_INDEX>
-                    <WWISE_EVENT_1>lswitch</WWISE_EVENT_1>
-                    <WWISE_EVENT_2>lswitch</WWISE_EVENT_2>
+                    <SIMVAR_NAME>LIGHT BEACON</SIMVAR_NAME>
+                    <TOGGLE_EVENT>BEACON_LIGHTS_SET</TOGGLE_EVENT>
+                    <ANIMTIP_0>TT:COCKPIT.TOOLTIPSV2.LIGHTING_SWITCH_LIGHT_BEACON_ACTION_SET</ANIMTIP_0>
+                    <ANIMTIP_1>TT:COCKPIT.TOOLTIPSV2.LIGHTING_SWITCH_LIGHT_BEACON_ACTION_SET</ANIMTIP_1>
                 </UseTemplate>
 
                 <!-- EXT LT RWY TURN OFF -->
-                <UseTemplate Name="FBW_Anim_Interactions">
+                  <UseTemplate Name="FBW_Switch_LeftClick_MouseWheel">
                     <ANIM_TYPE>SWITCH</ANIM_TYPE>
-                    <ANIM_TEMPLATE>ASOBO_LIGHTING_Switch_Light_Taxi_Template</ANIM_TEMPLATE>
                     <NODE_ID>SWITCH_OVHD_EXTLT_RWY</NODE_ID>
                     <PART_ID>EXTLT_RWY</PART_ID>
                     <ANIM_NAME>SWITCH_OVHD_EXTLT_RWY</ANIM_NAME>
-                    <!-- TODO Remove when fixed in Asobo base files -->
-                    <TT_DESCRIPTION_ID>COCKPIT.TOOLTIPSV2.LIGHTING_SWITCH_LIGHT_TAXI_ACTION_SET</TT_DESCRIPTION_ID>
-                    <ID>1</ID>
-                    <SIMVAR_INDEX>2</SIMVAR_INDEX>
+                    <SIMVAR_NAME>LIGHT TAXI</SIMVAR_NAME>
+                    <SIMVAR_NAME_2>LIGHT TAXI</SIMVAR_NAME_2>
+                    <TOGGLE_EVENT>TAXI_LIGHTS_SET</TOGGLE_EVENT>
+                    <TOGGLE_EVENT_2>TAXI_LIGHTS_SET</TOGGLE_EVENT_2>
+                    <SIMVAR_INDEX_1>2</SIMVAR_INDEX_1>
                     <SIMVAR_INDEX_2>3</SIMVAR_INDEX_2>
                     <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.RWY_TURNOFF_LIGHTS_OFF</ANIMTIP_0>
                     <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.RWY_TURNOFF_LIGHTS_ON</ANIMTIP_1>
-                    <TYPE>OnOff_TwoSimvars</TYPE>
-                    <WWISE_EVENT_1>lswitch</WWISE_EVENT_1>
-                    <WWISE_EVENT_2>lswitch</WWISE_EVENT_2>
                 </UseTemplate>
 
                 <!-- EXT LT LAND L -->
@@ -1718,31 +1705,35 @@
                 </UseTemplate>
 
                 <!-- EXT LT WING -->
-                <UseTemplate Name="FBW_Anim_Interactions">
+                <UseTemplate Name="FBW_Switch_LeftClick_MouseWheel">
                     <ANIM_TYPE>SWITCH</ANIM_TYPE>
-                    <ANIM_TEMPLATE>FBW_Airbus_LIGHTING_Switch_Light_Wing_Template</ANIM_TEMPLATE>
                     <NODE_ID>SWITCH_OVHD_EXTLT_WING</NODE_ID>
                     <PART_ID>EXTLT_WING</PART_ID>
                     <ANIM_NAME>SWITCH_OVHD_EXTLT_WING</ANIM_NAME>
-                    <SIMVAR_INDEX>0</SIMVAR_INDEX>
-                    <WWISE_EVENT>lswitch</WWISE_EVENT>
-                    <WWISE_EVENT_1>lswitch</WWISE_EVENT_1>
-                    <WWISE_EVENT_2>lswitch</WWISE_EVENT_2>
+                    <SIMVAR_NAME>LIGHT WING</ANIM_NAME>
+                    <SIMVAR_NAME_2>LIGHT WING</ANIM_NAME>
+                    <TOGGLE_EVENT>WING_LIGHTS_SET</TOGGLE_EVENT>
+                    <TOGGLE_EVENT_2>WING_LIGHTS_SET</TOGGLE_EVENT>
+                    <SIMVAR_INDEX_1>0</SIMVAR_INDEX_1>
+                    <SIMVAR_INDEX_2>1</SIMVAR_INDEX_2>
+                    <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.PANEL_DEICE_WING_LIGHT_OFF</ANIMTIP_0>
+                    <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.PANEL_DEICE_WING_LIGHT_ON</ANIMTIP_1>
                 </UseTemplate>
 
                 <!-- EXT LT NAV & LOGO -->
-                <UseTemplate Name="FBW_Anim_Interactions">
+                 <UseTemplate Name="FBW_Switch_LeftClick_MouseWheel">
                     <ANIM_TYPE>SWITCH</ANIM_TYPE>
-                    <ANIM_TEMPLATE>ASOBO_LIGHTING_Switch_Light_Navigation_Template</ANIM_TEMPLATE>
                     <NODE_ID>SWITCH_OVHD_EXTLT_NAVLOGO</NODE_ID>
                     <PART_ID>SWITCH_OVHD_EXTLT_NAVLOGO</PART_ID>
                     <ANIM_NAME>SWITCH_OVHD_EXTLT_NAVLOGO</ANIM_NAME>
-                    <SIMVAR_INDEX>0</SIMVAR_INDEX>
+                    <SIMVAR_NAME>LIGHT LOGO</ANIM_NAME>
+                    <SIMVAR_NAME_2>LIGHT NAV</ANIM_NAME>
+                    <TOGGLE_EVENT>LOGO_LIGHTS_SET</TOGGLE_EVENT>
+                    <TOGGLE_EVENT_2>NAV_LIGHTS_SET</TOGGLE_EVENT>
+                    <SIMVAR_INDEX_1>0</SIMVAR_INDEX_1>
                     <SIMVAR_INDEX_2>0</SIMVAR_INDEX_2>
-                    <LIGHT_TYPE_2>LOGO</LIGHT_TYPE_2>
-                    <TYPE>OnOff_TwoSimvars</TYPE>
-                    <WWISE_EVENT_1>lswitch</WWISE_EVENT_1>
-                    <WWISE_EVENT_2>lswitch</WWISE_EVENT_2>
+                    <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LOGO_LIGHT_OFF</ANIMTIP_0>
+                    <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LOGO_LIGHT_OFF</ANIMTIP_1>
                 </UseTemplate>
 
                 <!-- turn off the connection to the logo lights when the plane is not on ground and the flaps are retracted -->
