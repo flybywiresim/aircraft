@@ -2148,7 +2148,7 @@ impl A380Hydraulic {
 
         self.green_circuit.update(
             context,
-            &mut vec![
+            &mut [
                 &mut self.engine_driven_pump_1a,
                 &mut self.engine_driven_pump_1b,
                 &mut self.engine_driven_pump_2a,
@@ -2173,7 +2173,7 @@ impl A380Hydraulic {
         );
         self.yellow_circuit.update(
             context,
-            &mut vec![
+            &mut [
                 &mut self.engine_driven_pump_3a,
                 &mut self.engine_driven_pump_3b,
                 &mut self.engine_driven_pump_4a,
@@ -2632,8 +2632,9 @@ impl A380EngineDrivenPumpController {
 
         // TODO Fault inhibit copied from A320
         self.has_pressure_low_fault = self.is_pressure_low
-            && (!engines[self.pump_id.into_engine_index()].oil_pressure_is_low()
-                || !(lgciu.right_gear_compressed(false) && lgciu.left_gear_compressed(false)));
+            && (!(engines[self.pump_id.into_engine_index()].oil_pressure_is_low()
+                && lgciu.right_gear_compressed(false)
+                && lgciu.left_gear_compressed(false)));
     }
 
     fn update_low_air_pressure(
@@ -4074,8 +4075,8 @@ impl SimulationElement for A380AutobrakeController {
         let sec_1_gnd_splrs_out = reader.read(&self.ground_spoilers_out_sec1_id);
         let sec_2_gnd_splrs_out = reader.read(&self.ground_spoilers_out_sec2_id);
         let sec_3_gnd_splrs_out = reader.read(&self.ground_spoilers_out_sec3_id);
-        self.ground_spoilers_are_deployed = (sec_1_gnd_splrs_out && sec_2_gnd_splrs_out)
-            || (sec_1_gnd_splrs_out && sec_3_gnd_splrs_out)
+        self.ground_spoilers_are_deployed = sec_1_gnd_splrs_out
+            && (sec_3_gnd_splrs_out || sec_2_gnd_splrs_out)
             || (sec_2_gnd_splrs_out && sec_3_gnd_splrs_out);
         self.external_disarm_event = reader.read(&self.external_disarm_event_id);
 

@@ -91,7 +91,7 @@ impl From<Arinc429Word<f64>> for f64 {
     }
 }
 
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum SignStatus {
     FailureWarning,
     NoComputedData,

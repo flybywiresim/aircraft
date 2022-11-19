@@ -229,7 +229,7 @@ macro_rules! transition {
         impl From<AirConditioningState<$from>> for AirConditioningState<$to> {
             fn from(_: AirConditioningState<$from>) -> AirConditioningState<$to> {
                 AirConditioningState {
-                    aircraft_state: $to,
+                    aircraft_state: std::marker::PhantomData,
                     timer: Duration::from_secs(0),
                 }
             }
@@ -239,7 +239,7 @@ macro_rules! transition {
 
 #[derive(Copy, Clone)]
 struct AirConditioningState<S> {
-    aircraft_state: S,
+    aircraft_state: std::marker::PhantomData<S>,
     timer: Duration,
 }
 
@@ -256,7 +256,7 @@ struct Initialisation;
 impl AirConditioningState<Initialisation> {
     fn init() -> Self {
         Self {
-            aircraft_state: Initialisation,
+            aircraft_state: std::marker::PhantomData,
             timer: Duration::from_secs(0),
         }
     }

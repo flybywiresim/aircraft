@@ -961,7 +961,7 @@ mod tests {
     #[case(1)]
     #[case(2)]
     fn trim_assembly_trim_up_trim_down_motor_n(#[case] motor_idx: usize) {
-        let mut test_bed = SimulationTestBed::new(|context| TestAircraft::new(context));
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
         test_bed.command(|a| a.set_elec_trim_demand(Angle::new::<degree>(13.), motor_idx));
         test_bed.command(|a| a.set_no_manual_input());
@@ -1005,7 +1005,7 @@ mod tests {
 
     #[test]
     fn trim_assembly_max_motor_0() {
-        let mut test_bed = SimulationTestBed::new(|context| TestAircraft::new(context));
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
         test_bed.command(|a| a.set_elec_trim_demand(Angle::new::<degree>(13.5), 0));
         test_bed.run_with_delta(Duration::from_millis(20000));
@@ -1021,7 +1021,7 @@ mod tests {
 
     #[test]
     fn trim_assembly_motor_0_without_elec_is_stuck() {
-        let mut test_bed = SimulationTestBed::new(|context| TestAircraft::new(context));
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
         test_bed.command(|a| a.set_elec_trim_demand(Angle::new::<degree>(13.5), 0));
         test_bed.command(|a| a.set_no_elec_power());
@@ -1034,7 +1034,7 @@ mod tests {
 
     #[test]
     fn trim_assembly_min_motor_0() {
-        let mut test_bed = SimulationTestBed::new(|context| TestAircraft::new(context));
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
         test_bed.command(|a| a.set_elec_trim_demand(Angle::new::<degree>(-4.), 0));
         test_bed.run_with_delta(Duration::from_millis(20000));
