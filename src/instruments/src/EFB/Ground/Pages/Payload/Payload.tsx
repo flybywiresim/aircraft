@@ -803,7 +803,9 @@ export const Payload = () => {
                         <div className="flex flex-row mt-4">
                             <Card className="w-full h-full" childrenContainerClassName="flex flex-col w-full h-full">
                                 <div className="flex flex-row justify-between items-center">
-                                    <div className="flex font-medium">Loading Time </div>
+                                    <div className="flex font-medium">
+                                        {t('Ground.Payload.LoadingTime')}
+                                    </div>
 
                                     <SelectGroup>
                                         <SelectItem
