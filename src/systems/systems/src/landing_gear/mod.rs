@@ -13,15 +13,97 @@ use crate::{
     },
 };
 use uom::si::{
+    angle::degree,
     f64::*,
+    length::meter,
     ratio::{percent, ratio},
 };
 
+use nalgebra::Vector3;
 pub trait GearSystemSensors {
     fn is_wheel_id_up_and_locked(&self, wheel_id: GearWheel, lgciu_id: LgciuId) -> bool;
     fn is_wheel_id_down_and_locked(&self, wheel_id: GearWheel, lgciu_id: LgciuId) -> bool;
     fn is_door_id_up_and_locked(&self, wheel_id: GearWheel, lgciu_id: LgciuId) -> bool;
     fn is_door_id_down_and_locked(&self, wheel_id: GearWheel, lgciu_id: LgciuId) -> bool;
+}
+
+struct TiltingGear {
+    tilt_animation_id: VariableIdentifier,
+    compression_id: VariableIdentifier,
+
+    tilt_height_from_low_to_up: Length,
+    contact_point_offset_from_datum_ref_meters: Vector3<f64>,
+    tilting_max_angle: Angle,
+
+    current_compression: Ratio,
+    tilt_position: Ratio,
+}
+impl TiltingGear {
+    fn new(
+        context: &mut InitContext,
+        tilt_height_from_low_to_up: Length,
+        contact_point_id: usize,
+        contact_point_offset_from_datum_ref_meters: Vector3<f64>,
+        tilting_max_angle: Angle,
+    ) -> Self {
+        Self {
+            tilt_animation_id: context
+                .get_identifier(format!("GEAR_{}_TILT_POSITION", contact_point_id).to_owned()),
+            compression_id: context
+                .get_identifier(format!("GEAR ANIMATION POSITION:{}", contact_point_id).to_owned()),
+            tilt_height_from_low_to_up,
+            contact_point_offset_from_datum_ref_meters,
+            tilting_max_angle,
+
+            current_compression: Ratio::default(),
+            tilt_position: Ratio::default(),
+        }
+    }
+
+    fn update(&mut self, context: &UpdateContext) {
+        if self.current_compression.get::<ratio>() > 0.5 {
+            self.update_compressed_mode(context);
+        } else {
+            self.update_uncompressed_mode(context);
+        }
+    }
+
+    fn update_compressed_mode(&mut self, context: &UpdateContext) {
+        let plane_pitch = context.pitch();
+
+        let pitch_offset = Angle::new::<degree>(0.);
+
+        let offset_pitch = plane_pitch - pitch_offset;
+
+        self.tilt_position = offset_pitch
+            .max(Angle::new::<degree>(0.))
+            .min(self.tilting_max_angle)
+            / self.tilting_max_angle
+    }
+
+    fn update_uncompressed_mode(&mut self, context: &UpdateContext) {
+        let current_tire_height =
+            context.height_over_ground(self.contact_point_offset_from_datum_ref_meters);
+
+        self.tilt_position = if current_tire_height.get::<meter>() <= 0.01 {
+            Ratio::new::<ratio>(
+                (1. - (current_tire_height.abs() / self.tilt_height_from_low_to_up).get::<ratio>())
+                    .min(1.)
+                    .max(0.),
+            )
+        } else {
+            Ratio::default()
+        };
+    }
+}
+impl SimulationElement for TiltingGear {
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(&self.tilt_animation_id, self.tilt_position.get::<ratio>());
+    }
+
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        self.current_compression = reader.read(&self.compression_id);
+    }
 }
 
 /// Represents a landing gear on Airbus aircraft.
@@ -1549,6 +1631,35 @@ mod tests {
         test_bed.run_with_delta(Duration::from_secs(3));
         assert!(test_bed.query(|a| a.lgcius.lgciu2().status) == LgciuStatus::FailedNoChangeOver);
         assert!(test_bed.query(|a| a.lgcius.lgciu1().status) == LgciuStatus::Ok);
+    }
+
+    #[test]
+    fn tilting_gear_does_not_tilt_when_no_pitch_on_ground() {
+        let mut test_bed =
+            SimulationTestBed::from(ElementCtorFn(|context| test_tilting_gear_left(context)))
+                .with_update_before_power_distribution(|el, context, _| {
+                    el.update(context);
+                });
+
+        test_bed.write_by_name("PLANE PITCH DEGREES", 0.);
+        test_bed.write_by_name("PLANE ALT ABOVE GROUND", 2.);
+
+        test_bed.run();
+
+        // assert_about_eq!(
+        //     test_bed.query_element(|e| e.get_velocity_x().get::<meter_per_second>()),
+        //     0.
+        // );
+    }
+
+    fn test_tilting_gear_left(context: &mut InitContext) -> TiltingGear {
+        TiltingGear::new(
+            context,
+            Length::new::<meter>(0.28),
+            1,
+            Vector3::new(-5., -2., -5.),
+            Angle::new::<degree>(9.),
+        )
     }
 
     fn run_test_bed_on_with_compression(
