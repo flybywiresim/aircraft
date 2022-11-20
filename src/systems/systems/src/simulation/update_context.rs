@@ -1,7 +1,7 @@
 use std::time::Duration;
 use uom::si::{
     acceleration::meter_per_second_squared,
-    angle::radian,
+    angle::{degree, radian},
     f64::*,
     length::meter,
     mass_density::kilogram_per_cubic_meter,
@@ -447,8 +447,38 @@ impl UpdateContext {
         // );
 
         // println!(
-        //     "TEST ON 0 0 -5 => {:.3}",
-        //     self.height_over_ground(Vector3::new(0., 0., -5.))
+        //     "TEST ON -2., 0., 0. => {:.3}",
+        //     self.height_over_ground(Vector3::new(-2., 0., 0.))
+        //         .get::<meter>()
+        // );
+
+        // println!(
+        //     "TEST ON 0., -2., 0. => {:.3}",
+        //     self.height_over_ground(Vector3::new(0., -2., 0.))
+        //         .get::<meter>()
+        // );
+
+        // println!(
+        //     "TEST ON 0., 0., -2. => {:.3}",
+        //     self.height_over_ground(Vector3::new(0., 0., -2.))
+        //         .get::<meter>()
+        // );
+
+        // println!(
+        //     "TEST ON 2., 0., 0. => {:.3}",
+        //     self.height_over_ground(Vector3::new(2., 0., 0.))
+        //         .get::<meter>()
+        // );
+
+        // println!(
+        //     "TEST ON 0., 2., 0. => {:.3}",
+        //     self.height_over_ground(Vector3::new(0., 2., 0.))
+        //         .get::<meter>()
+        // );
+
+        // println!(
+        //     "TEST ON 0., 0., 2. => {:.3}",
+        //     self.height_over_ground(Vector3::new(0., 0., 2.))
         //         .get::<meter>()
         // );
     }
@@ -623,12 +653,15 @@ impl UpdateContext {
     }
 
     pub fn height_over_ground(&self, offset_from_plane_reference: Vector3<f64>) -> Length {
-        let ref_point_height = self.plane_height;
+        //let ref_point_height = self.plane_height;
 
         // println!("REF HEIGHT {:.3}", ref_point_height.get::<meter>());
 
-        let offset_including_plane_rotation = self.attitude().pitch_rotation_transform().inverse()
-            * (self.attitude().bank_rotation_transform() * offset_from_plane_reference);
+        // let offset_including_plane_rotation = self.attitude().bank_rotation_transform()
+        //     * (self.attitude().pitch_rotation_transform().inverse() * offset_from_plane_reference);
+
+        let offset_including_plane_rotation = self.attitude().pitch_rotation_transform()
+            * (self.attitude().bank_rotation_transform().inverse() * offset_from_plane_reference);
 
         // println!(
         //     "OFFSET POS {:.3} {:.3} {:.3}",
@@ -992,7 +1025,7 @@ mod tests {
                 el.update(context);
             });
 
-        test_bed.write_by_name("PLANE ALT ABOVE GROUND", 0.);
+        test_bed.write_by_name("PLANE ALT ABOVE GROUND", Length::new::<meter>(0.));
 
         test_bed.run();
 
@@ -1027,7 +1060,7 @@ mod tests {
             });
 
         // MSFS bank right is negative angle
-        test_bed.write_by_name("PLANE BANK DEGREES", -45.);
+        test_bed.write_by_name("PLANE BANK DEGREES", Angle::new::<degree>(-45.));
         test_bed.write_by_name("PLANE ALT ABOVE GROUND", 0.);
 
         test_bed.run();
@@ -1046,8 +1079,8 @@ mod tests {
             });
 
         // MSFS pitch up is negative angle
-        test_bed.write_by_name("PLANE PITCH DEGREES", -45.);
-        test_bed.write_by_name("PLANE ALT ABOVE GROUND", 0.);
+        test_bed.write_by_name("PLANE PITCH DEGREES", Angle::new::<degree>(-15.));
+        test_bed.write_by_name("PLANE ALT ABOVE GROUND", Length::new::<meter>(0.));
 
         test_bed.run();
 

@@ -61,6 +61,10 @@ impl TiltingGear {
     }
 
     fn update(&mut self, context: &UpdateContext) {
+        println!(
+            "UPDATE WITH COM {:.2}",
+            self.current_compression.get::<ratio>()
+        );
         if self.current_compression.get::<ratio>() > 0.5 {
             self.update_compressed_mode(context);
         } else {
@@ -69,7 +73,7 @@ impl TiltingGear {
     }
 
     fn update_compressed_mode(&mut self, context: &UpdateContext) {
-        let plane_pitch = context.pitch();
+        let plane_pitch = -context.pitch();
 
         let pitch_offset = Angle::new::<degree>(0.);
 
@@ -78,21 +82,43 @@ impl TiltingGear {
         self.tilt_position = offset_pitch
             .max(Angle::new::<degree>(0.))
             .min(self.tilting_max_angle)
-            / self.tilting_max_angle
+            / self.tilting_max_angle;
+
+        println!(
+            "update_compressed_mode planePitch {:.2}, offset {:.2} offset_pitch {:.2} TiltPos {:.2}",
+            plane_pitch.get::<degree>(),
+            pitch_offset.get::<degree>(),
+            offset_pitch.get::<degree>(),
+            self.tilt_position.get::<ratio>()
+        );
     }
 
     fn update_uncompressed_mode(&mut self, context: &UpdateContext) {
         let current_tire_height =
             context.height_over_ground(self.contact_point_offset_from_datum_ref_meters);
 
+        println!(
+            "update_uncompressed_mode tire height {:.2}",
+            current_tire_height.get::<meter>()
+        );
+
         self.tilt_position = if current_tire_height.get::<meter>() <= 0.01 {
+            println!(
+                "TOUCHING -> current_tire_height.abs() {:.2} / self.tilt_height_from_low_to_up {:.2} == {:.2}",
+                current_tire_height.abs() .get::<meter>(),
+                self.tilt_height_from_low_to_up.get::<meter>(),
+                (1. - (current_tire_height.abs() / self.tilt_height_from_low_to_up).get::<ratio>())
+                .min(1.)
+                .max(0.)
+            );
+
             Ratio::new::<ratio>(
                 (1. - (current_tire_height.abs() / self.tilt_height_from_low_to_up).get::<ratio>())
                     .min(1.)
                     .max(0.),
             )
         } else {
-            Ratio::default()
+            Ratio::new::<ratio>(1.)
         };
     }
 }
@@ -1642,14 +1668,103 @@ mod tests {
                 });
 
         test_bed.write_by_name("PLANE PITCH DEGREES", 0.);
-        test_bed.write_by_name("PLANE ALT ABOVE GROUND", 2.);
+        test_bed.write_by_name("PLANE ALT ABOVE GROUND", Length::new::<meter>(2.));
+        test_bed.write_by_name("GEAR ANIMATION POSITION:1", Ratio::new::<ratio>(0.95));
 
         test_bed.run();
 
-        // assert_about_eq!(
-        //     test_bed.query_element(|e| e.get_velocity_x().get::<meter_per_second>()),
-        //     0.
-        // );
+        let tilt_position = Ratio::new::<ratio>(test_bed.read_by_name("GEAR_1_TILT_POSITION"));
+        assert!(tilt_position.get::<ratio>() <= 0.1);
+    }
+
+    #[test]
+    fn tilting_gear_tilts_when_up_pitch_on_ground() {
+        let mut test_bed =
+            SimulationTestBed::from(ElementCtorFn(|context| test_tilting_gear_left(context)))
+                .with_update_before_power_distribution(|el, context, _| {
+                    el.update(context);
+                });
+
+        test_bed.write_by_name("PLANE PITCH DEGREES", -5.);
+        test_bed.write_by_name("PLANE ALT ABOVE GROUND", Length::new::<meter>(2.5));
+        test_bed.write_by_name("GEAR ANIMATION POSITION:1", Ratio::new::<ratio>(0.95));
+
+        test_bed.run();
+
+        let tilt_position = Ratio::new::<ratio>(test_bed.read_by_name("GEAR_1_TILT_POSITION"));
+        assert!(tilt_position.get::<ratio>() >= 0.2 && tilt_position.get::<ratio>() <= 0.8);
+    }
+
+    #[test]
+    fn tilting_gear_tilts_at_max_angle_when_high_up_pitch_on_ground() {
+        let mut test_bed =
+            SimulationTestBed::from(ElementCtorFn(|context| test_tilting_gear_left(context)))
+                .with_update_before_power_distribution(|el, context, _| {
+                    el.update(context);
+                });
+
+        test_bed.write_by_name("PLANE PITCH DEGREES", -15.);
+        test_bed.write_by_name("PLANE ALT ABOVE GROUND", Length::new::<meter>(2.));
+        test_bed.write_by_name("GEAR ANIMATION POSITION:1", Ratio::new::<ratio>(0.95));
+
+        test_bed.run();
+
+        let tilt_position = Ratio::new::<ratio>(test_bed.read_by_name("GEAR_1_TILT_POSITION"));
+        assert!(tilt_position.get::<ratio>() >= 1.);
+    }
+
+    #[test]
+    fn tilting_gear_tilts_at_max_angle_when_not_compressed_and_not_touching_ground() {
+        let mut test_bed =
+            SimulationTestBed::from(ElementCtorFn(|context| test_tilting_gear_left(context)))
+                .with_update_before_power_distribution(|el, context, _| {
+                    el.update(context);
+                });
+
+        test_bed.write_by_name("PLANE PITCH DEGREES", -15.);
+        test_bed.write_by_name("PLANE ALT ABOVE GROUND", Length::new::<meter>(20.));
+        test_bed.write_by_name("GEAR ANIMATION POSITION:1", Ratio::new::<ratio>(0.5));
+
+        test_bed.run();
+
+        let tilt_position = Ratio::new::<ratio>(test_bed.read_by_name("GEAR_1_TILT_POSITION"));
+        assert!(tilt_position.get::<ratio>() >= 1.);
+    }
+
+    #[test]
+    fn tilting_gear_at_max_tilt_when_not_compressed_and_just_touching_ground() {
+        let mut test_bed =
+            SimulationTestBed::from(ElementCtorFn(|context| test_tilting_gear_left(context)))
+                .with_update_before_power_distribution(|el, context, _| {
+                    el.update(context);
+                });
+
+        test_bed.write_by_name("PLANE PITCH DEGREES", -0.);
+        test_bed.write_by_name("PLANE ALT ABOVE GROUND", Length::new::<meter>(2.));
+        test_bed.write_by_name("GEAR ANIMATION POSITION:1", Ratio::new::<ratio>(0.5));
+
+        test_bed.run();
+
+        let tilt_position = Ratio::new::<ratio>(test_bed.read_by_name("GEAR_1_TILT_POSITION"));
+        assert!(tilt_position.get::<ratio>() >= 1.);
+    }
+
+    #[test]
+    fn tilting_gear_start_tilting_when_not_compressed_and_touching_ground() {
+        let mut test_bed =
+            SimulationTestBed::from(ElementCtorFn(|context| test_tilting_gear_left(context)))
+                .with_update_before_power_distribution(|el, context, _| {
+                    el.update(context);
+                });
+
+        test_bed.write_by_name("PLANE PITCH DEGREES", -0.);
+        test_bed.write_by_name("PLANE ALT ABOVE GROUND", Length::new::<meter>(1.9));
+        test_bed.write_by_name("GEAR ANIMATION POSITION:1", Ratio::new::<ratio>(0.5));
+
+        test_bed.run();
+
+        let tilt_position = Ratio::new::<ratio>(test_bed.read_by_name("GEAR_1_TILT_POSITION"));
+        assert!(tilt_position.get::<ratio>() < 1. && tilt_position.get::<ratio>() > 0.);
     }
 
     fn test_tilting_gear_left(context: &mut InitContext) -> TiltingGear {
