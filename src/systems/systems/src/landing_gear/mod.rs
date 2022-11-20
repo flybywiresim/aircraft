@@ -27,7 +27,7 @@ pub trait GearSystemSensors {
     fn is_door_id_down_and_locked(&self, wheel_id: GearWheel, lgciu_id: LgciuId) -> bool;
 }
 
-struct TiltingGear {
+pub struct TiltingGear {
     tilt_animation_id: VariableIdentifier,
     compression_id: VariableIdentifier,
 
@@ -39,7 +39,7 @@ struct TiltingGear {
     tilt_position: Ratio,
 }
 impl TiltingGear {
-    fn new(
+    pub fn new(
         context: &mut InitContext,
         tilt_height_from_low_to_up: Length,
         contact_point_id: usize,
@@ -60,11 +60,11 @@ impl TiltingGear {
         }
     }
 
-    fn update(&mut self, context: &UpdateContext) {
-        println!(
-            "UPDATE WITH COM {:.2}",
-            self.current_compression.get::<ratio>()
-        );
+    pub fn update(&mut self, context: &UpdateContext) {
+        // println!(
+        //     "UPDATE WITH COM {:.2}",
+        //     self.current_compression.get::<ratio>()
+        // );
         if self.current_compression.get::<ratio>() > 0.5 {
             self.update_compressed_mode(context);
         } else {
@@ -97,10 +97,10 @@ impl TiltingGear {
         let current_tire_height =
             context.height_over_ground(self.contact_point_offset_from_datum_ref_meters);
 
-        println!(
-            "update_uncompressed_mode tire height {:.2}",
-            current_tire_height.get::<meter>()
-        );
+        // println!(
+        //     "update_uncompressed_mode tire height {:.2}",
+        //     current_tire_height.get::<meter>()
+        // );
 
         self.tilt_position = if current_tire_height.get::<meter>() <= 0.01 {
             println!(
