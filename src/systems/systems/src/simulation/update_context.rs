@@ -1,7 +1,7 @@
 use std::time::Duration;
 use uom::si::{
     acceleration::meter_per_second_squared,
-    angle::{degree, radian},
+    angle::radian,
     f64::*,
     length::meter,
     mass_density::kilogram_per_cubic_meter,

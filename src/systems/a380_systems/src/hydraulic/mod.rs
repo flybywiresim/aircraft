@@ -67,6 +67,59 @@ use flaps_computer::SlatFlapComplex;
 #[cfg(test)]
 use systems::hydraulic::PressureSwitchState;
 
+struct A380TiltingGearsFactory {}
+impl A380TiltingGearsFactory {
+    fn new_a380_body_gear(context: &mut InitContext, is_left: bool) -> TiltingGear {
+        let mut x_offset_meters = 2.85569;
+        let y_offset_meters = -5.04847;
+        let z_offset_meters = -0.235999;
+
+        if is_left {
+            x_offset_meters *= -1.;
+        }
+
+        TiltingGear::new(
+            context,
+            Length::new::<meter>(0.280065),
+            if is_left { 1 } else { 2 },
+            Vector3::new(x_offset_meters, y_offset_meters, z_offset_meters),
+            Angle::new::<degree>(9.89),
+        )
+    }
+
+    fn new_a380_wing_gear(context: &mut InitContext, is_left: bool) -> TiltingGear {
+        let mut x_offset_meters = 6.18848;
+        let y_offset_meters = -4.86875;
+        let z_offset_meters = 2.6551;
+
+        if is_left {
+            x_offset_meters *= -1.;
+        }
+
+        TiltingGear::new(
+            context,
+            Length::new::<meter>(0.134608),
+            if is_left { 3 } else { 4 },
+            Vector3::new(x_offset_meters, y_offset_meters, z_offset_meters),
+            Angle::new::<degree>(9.),
+        )
+    }
+
+    fn new_a380_tilt_assembly(context: &mut InitContext) -> A380TiltingGears {
+        let left_body_gear = Self::new_a380_body_gear(context, true);
+        let right_body_gear = Self::new_a380_body_gear(context, false);
+        let left_wing_gear = Self::new_a380_wing_gear(context, true);
+        let right_wing_gear = Self::new_a380_wing_gear(context, false);
+
+        A380TiltingGears::new(
+            left_body_gear,
+            right_body_gear,
+            left_wing_gear,
+            right_wing_gear,
+        )
+    }
+}
+
 struct A380HydraulicReservoirFactory {}
 impl A380HydraulicReservoirFactory {
     fn new_green_reservoir(context: &mut InitContext) -> Reservoir {
@@ -1233,10 +1286,7 @@ pub(super) struct A380Hydraulic {
 
     epump_auto_logic: A380ElectricPumpAutoLogic,
 
-    left_body_gear_tilt: TiltingGear,
-    right_body_gear_tilt: TiltingGear,
-    left_wing_gear_tilt: TiltingGear,
-    right_wing_gear_tilt: TiltingGear,
+    tilting_gears: A380TiltingGears,
 }
 impl A380Hydraulic {
     const FLAP_FPPU_TO_SURFACE_ANGLE_BREAKPTS: [f64; 12] = [
@@ -1545,34 +1595,7 @@ impl A380Hydraulic {
 
             epump_auto_logic: A380ElectricPumpAutoLogic::default(),
 
-            left_body_gear_tilt: TiltingGear::new(
-                context,
-                Length::new::<meter>(0.280065),
-                1,
-                Vector3::new(-2.85569, -5.04847, -0.235999),
-                Angle::new::<degree>(9.89),
-            ),
-            right_body_gear_tilt: TiltingGear::new(
-                context,
-                Length::new::<meter>(0.280065),
-                2,
-                Vector3::new(2.85569, -5.04847, -0.235999),
-                Angle::new::<degree>(9.89),
-            ),
-            left_wing_gear_tilt: TiltingGear::new(
-                context,
-                Length::new::<meter>(0.134608),
-                3,
-                Vector3::new(-6.18848, -4.86875, 2.6551),
-                Angle::new::<degree>(9.89),
-            ),
-            right_wing_gear_tilt: TiltingGear::new(
-                context,
-                Length::new::<meter>(0.134608),
-                4,
-                Vector3::new(6.18848, -4.86875, 2.6551),
-                Angle::new::<degree>(9.89),
-            ),
+            tilting_gears: A380TiltingGearsFactory::new_a380_tilt_assembly(context),
         }
     }
 
@@ -1788,10 +1811,7 @@ impl A380Hydraulic {
         engine1: &impl Engine,
         engine2: &impl Engine,
     ) {
-        self.left_body_gear_tilt.update(context);
-        self.right_body_gear_tilt.update(context);
-        self.left_wing_gear_tilt.update(context);
-        self.right_wing_gear_tilt.update(context);
+        self.tilting_gears.update(context);
 
         self.nose_steering.update(
             context,
@@ -2324,10 +2344,7 @@ impl SimulationElement for A380Hydraulic {
         self.trim_controller.accept(visitor);
         self.trim_assembly.accept(visitor);
 
-        self.left_body_gear_tilt.accept(visitor);
-        self.right_body_gear_tilt.accept(visitor);
-        self.left_wing_gear_tilt.accept(visitor);
-        self.right_wing_gear_tilt.accept(visitor);
+        self.tilting_gears.accept(visitor);
 
         visitor.visit(self);
     }
@@ -5370,6 +5387,45 @@ impl SimulationElement for A380TrimInputController {
 
         self.manual_control = reader.read(&self.manual_control_active_id);
         self.manual_control_speed = reader.read(&self.manual_control_speed_id);
+    }
+}
+
+struct A380TiltingGears {
+    left_body_gear: TiltingGear,
+    right_body_gear: TiltingGear,
+    left_wing_gear: TiltingGear,
+    right_wing_gear: TiltingGear,
+}
+impl A380TiltingGears {
+    fn new(
+        left_body_gear: TiltingGear,
+        right_body_gear: TiltingGear,
+        left_wing_gear: TiltingGear,
+        right_wing_gear: TiltingGear,
+    ) -> Self {
+        Self {
+            left_body_gear,
+            right_body_gear,
+            left_wing_gear,
+            right_wing_gear,
+        }
+    }
+
+    fn update(&mut self, context: &UpdateContext) {
+        self.left_body_gear.update(context);
+        self.right_body_gear.update(context);
+        self.left_wing_gear.update(context);
+        self.right_wing_gear.update(context);
+    }
+}
+impl SimulationElement for A380TiltingGears {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.left_body_gear.accept(visitor);
+        self.right_body_gear.accept(visitor);
+        self.left_wing_gear.accept(visitor);
+        self.right_wing_gear.accept(visitor);
+
+        visitor.visit(self);
     }
 }
 

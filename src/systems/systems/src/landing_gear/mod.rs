@@ -37,10 +37,16 @@ pub struct TiltingGear {
 
     current_compression: Ratio,
     tilt_position: Ratio,
-
-    contact_point_id: usize,
 }
 impl TiltingGear {
+    // Indicates the tilt angle already used with plane on ground standing still
+    const PLANE_PITCH_OFFSET_ON_GROUND_DEGREES: f64 = 0.8;
+
+    const HEIGHT_TO_ACTIVATE_GROUND_COLLISION_METER: f64 = 0.0005;
+
+    // Max speed at which tilt can move if gear is instantly in the air
+    const TILT_SPEED_WHEN_AIRBORN_RATIO_PER_SECOND: f64 = 0.5;
+
     pub fn new(
         context: &mut InitContext,
         tilt_height_from_low_to_up: Length,
@@ -59,64 +65,47 @@ impl TiltingGear {
 
             current_compression: Ratio::default(),
             tilt_position: Ratio::default(),
-
-            contact_point_id,
         }
     }
 
     pub fn update(&mut self, context: &UpdateContext) {
-        // println!(
-        //     "UPDATE WITH COM {:.2}",
-        //     self.current_compression.get::<ratio>()
-        // );
-        // if self.current_compression.get::<ratio>() > 0.5 {
-        // self.update_compressed_mode(context);
-        // } else {
-        //      self.update_uncompressed_mode(context);
-        //  }
-
-        let max_tilt_on_ground = self.max_ground_tilt_from_plane_pitch(context);
-
         let current_tire_height =
             context.height_over_ground(self.contact_point_offset_from_datum_ref_meters);
 
-        if self.contact_point_id == 1 {
-            println!(
-                "MAX GROUND TILT = {:.2}, HEIGHT= {:.2} COMP {:.2}",
-                max_tilt_on_ground.get::<ratio>(),
-                current_tire_height.get::<meter>(),
-                self.current_compression.get::<ratio>()
-            );
-        }
-
-        self.tilt_position = if current_tire_height.get::<meter>() <= 0.0005 {
+        self.tilt_position = if current_tire_height.get::<meter>()
+            <= Self::HEIGHT_TO_ACTIVATE_GROUND_COLLISION_METER
+        {
             let ground_tilt_raw = Ratio::new::<ratio>(
                 (1. - (current_tire_height.abs() / self.tilt_height_from_low_to_up).get::<ratio>())
                     .min(1.)
                     .max(0.),
             );
 
-            if self.contact_point_id == 1 {
-                println!(
-                    "GROUND MODE INTERSECT = raw_tilt {:.2} limited by pitch {:.2}",
-                    ground_tilt_raw.get::<ratio>(),
-                    ground_tilt_raw.max(max_tilt_on_ground).get::<ratio>()
-                );
-            }
-
-            ground_tilt_raw.max(max_tilt_on_ground)
+            ground_tilt_raw.max(self.max_ground_tilt_from_plane_pitch(context))
         } else {
-            if self.contact_point_id == 1 {
-                println!("AIR MODE = 1.");
-            }
-            Ratio::new::<ratio>(1.)
+            // Tilt for positive Gs else untilt for negative Gs
+            let delta_tilt = if context.acceleration_plane_reference_filtered_ms2_vector()[1] <= 0.
+            {
+                Ratio::new::<ratio>(
+                    Self::TILT_SPEED_WHEN_AIRBORN_RATIO_PER_SECOND * context.delta_as_secs_f64(),
+                )
+            } else {
+                Ratio::new::<ratio>(
+                    -1. * Self::TILT_SPEED_WHEN_AIRBORN_RATIO_PER_SECOND
+                        * context.delta_as_secs_f64(),
+                )
+            };
+
+            (self.tilt_position + delta_tilt)
+                .min(Ratio::new::<ratio>(1.))
+                .max(Ratio::new::<ratio>(0.))
         };
     }
 
     fn max_ground_tilt_from_plane_pitch(&self, context: &UpdateContext) -> Ratio {
         let plane_pitch = -context.pitch();
 
-        let pitch_offset = Angle::new::<degree>(-0.5);
+        let pitch_offset = Angle::new::<degree>(-Self::PLANE_PITCH_OFFSET_ON_GROUND_DEGREES);
 
         let offset_pitch = plane_pitch - pitch_offset;
 
@@ -124,58 +113,6 @@ impl TiltingGear {
             .max(Angle::new::<degree>(0.))
             .min(self.tilting_max_angle)
             / self.tilting_max_angle
-    }
-
-    fn update_compressed_mode(&mut self, context: &UpdateContext) {
-        let plane_pitch = -context.pitch();
-
-        let pitch_offset = Angle::new::<degree>(-0.5);
-
-        let offset_pitch = plane_pitch - pitch_offset;
-
-        self.tilt_position = offset_pitch
-            .max(Angle::new::<degree>(0.))
-            .min(self.tilting_max_angle)
-            / self.tilting_max_angle;
-
-        if self.contact_point_id == 1 {
-            println!(
-            "update_compressed_mode planePitch {:.2}, offset {:.2} offset_pitch {:.2} TiltPos {:.2}",
-            plane_pitch.get::<degree>(),
-            pitch_offset.get::<degree>(),
-            offset_pitch.get::<degree>(),
-            self.tilt_position.get::<ratio>()
-            );
-        }
-    }
-
-    fn update_uncompressed_mode(&mut self, context: &UpdateContext) {
-        let current_tire_height =
-            context.height_over_ground(self.contact_point_offset_from_datum_ref_meters);
-
-        // println!(
-        //     "update_uncompressed_mode tire height {:.2}",
-        //     current_tire_height.get::<meter>()
-        // );
-
-        self.tilt_position = if current_tire_height.get::<meter>() <= 0.01 {
-            println!(
-                "TOUCHING -> current_tire_height.abs() {:.2} / self.tilt_height_from_low_to_up {:.2} == {:.2}",
-                current_tire_height.abs() .get::<meter>(),
-                self.tilt_height_from_low_to_up.get::<meter>(),
-                (1. - (current_tire_height.abs() / self.tilt_height_from_low_to_up).get::<ratio>())
-                .min(1.)
-                .max(0.)
-            );
-
-            Ratio::new::<ratio>(
-                (1. - (current_tire_height.abs() / self.tilt_height_from_low_to_up).get::<ratio>())
-                    .min(1.)
-                    .max(0.),
-            )
-        } else {
-            Ratio::new::<ratio>(1.)
-        };
     }
 }
 impl SimulationElement for TiltingGear {
