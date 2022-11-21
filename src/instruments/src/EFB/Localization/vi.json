@@ -151,6 +151,11 @@
       "BoardingTime": "Thời gian lên máy bay",
       "Cargo": "Hàng hóa",
       "Current": "Hiện tại",
+      "DeboardConfirmationBody": "Please confirm deboarding all passengers",
+      "DeboardConfirmationCancel": "Cancel",
+      "DeboardConfirmationConfirm": "Deboard",
+      "DeboardConfirmationTitle": "Deboard all Passengers?",
+      "LoadingTime": "Loading Time",
       "Passengers": "Hành khách",
       "Planned": "Đã lên kế hoạch",
       "TT": {
@@ -162,7 +167,8 @@
         "MaxZFWCG": "ZFWCG tối đa",
         "PerPaxBagWeight": "Trọng lượng mỗi túi hành khách",
         "PerPaxWeight": "Trọng lượng mỗi hành khách",
-        "StartBoarding": "Bắt đầu lên máy bay"
+        "StartBoarding": "Bắt đầu lên máy bay",
+        "StartDeboarding": "Begin Deboarding"
       },
       "Title": "Tải trọng",
       "ZFW": "Trọng lượng máy bay không kể nhiên liệu",

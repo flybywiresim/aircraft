@@ -151,6 +151,11 @@
       "BoardingTime": "Čas nastupování",
       "Cargo": "Náklad",
       "Current": "Současné",
+      "DeboardConfirmationBody": "Please confirm deboarding all passengers",
+      "DeboardConfirmationCancel": "Zrušit",
+      "DeboardConfirmationConfirm": "Deboard",
+      "DeboardConfirmationTitle": "Deboard all Passengers?",
+      "LoadingTime": "Loading Time",
       "Passengers": "Cestující",
       "Planned": "Plánované",
       "TT": {
@@ -162,7 +167,8 @@
         "MaxZFWCG": "Maximální ZFWCG",
         "PerPaxBagWeight": "Hmotnost zavazadel na cestujícího",
         "PerPaxWeight": "Váha cestujících",
-        "StartBoarding": "Zahájit nastupování"
+        "StartBoarding": "Zahájit nastupování",
+        "StartDeboarding": "Begin Deboarding"
       },
       "Title": "Náklad",
       "ZFW": "ZFW",
