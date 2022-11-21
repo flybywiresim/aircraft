@@ -99,6 +99,7 @@
 1. [PFD] Improve appearance of L/DEV and V/DEV scales - @tracernz (Mike)
 1. [HYD] Implemented Electro Hydrostatic actuators - @Crocket63 (crocket)
 1. [HYD] Tilting gear mechanism - @Crocket63 (crocket)
+1. [FAC] Move Speedscale computation to FAC - @lukecologne (luke)
 
 ## 0.8.0
 
