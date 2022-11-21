@@ -3,9 +3,7 @@
 #include "fmt/include/fmt/core.h"
 #include "fmt/include/fmt/ostream.h"
 
-using namespace std;
-
-void FlightDataRecorderConverter::writeHeader(ofstream& out, const string& delimiter) {
+void FlightDataRecorderConverter::writeHeader(std::ofstream& out, const std::string& delimiter) {
   fmt::print(out, "ap_sm.time.dt{}", delimiter);
   fmt::print(out, "ap_sm.time.simulation_time{}", delimiter);
   fmt::print(out, "ap_sm.data.aircraft_position.lat{}", delimiter);
@@ -443,11 +441,38 @@ void FlightDataRecorderConverter::writeHeader(ofstream& out, const string& delim
   fmt::print(out, "data.ls1Active{}", delimiter);
   fmt::print(out, "data.ls2Active{}", delimiter);
   fmt::print(out, "data.IsisLsActive{}", delimiter);
+  fmt::print(out, "data.wingAntiIce{}", delimiter);
+  // Fix missing data for FDR Analysis
+  // controller input data
+  fmt::print(out, "data.inputElevator{}", delimiter);
+  fmt::print(out, "data.inputAileron{}", delimiter);
+  fmt::print(out, "data.inputRudder{}", delimiter);
+  // additional
+  fmt::print(out, "data.simulation_rate{}", delimiter);
+  fmt::print(out, "data.wasPaused{}", delimiter);
+  fmt::print(out, "data.slew_on{}", delimiter);
+  // ambient data
+  fmt::print(out, "data.ice_structure_percent{}", delimiter);
+  fmt::print(out, "data.ambient_pressure_mbar{}", delimiter);
+  fmt::print(out, "data.ambient_wind_velocity_kn{}", delimiter);
+  fmt::print(out, "data.ambient_wind_direction_deg{}", delimiter);
+  fmt::print(out, "data.total_air_temperature_celsius{}", delimiter);
+  // failures
+  fmt::print(out, "data.failuresActive{}", delimiter);
+  // a.floor
+  fmt::print(out, "data.alpha_floor_condition{}", delimiter);
+  // high aoa protection
+  fmt::print(out, "data.high_aoa_protection{}", delimiter);
+  // aoa - these are not correct yet
+  //  fmt::print(out, "data.protection_ap_disc{}", delimiter);
+  //  fmt::print(out, "data.v_alpha_prot_kn{}", delimiter);
+  //  fmt::print(out, "data.v_alpha_max_kn{}", delimiter);
+
   fmt::print(out, "\n");
 }
 
-void FlightDataRecorderConverter::writeStruct(ofstream& out,
-                                              const string& delimiter,
+void FlightDataRecorderConverter::writeStruct(std::ofstream& out,
+                                              const std::string& delimiter,
                                               const ap_sm_output& ap_sm,
                                               const ap_raw_output& ap_law,
                                               const athr_out& athr,
@@ -890,5 +915,28 @@ void FlightDataRecorderConverter::writeStruct(ofstream& out,
   fmt::print(out, "{}{}", data.ls1Active, delimiter);
   fmt::print(out, "{}{}", data.ls2Active, delimiter);
   fmt::print(out, "{}{}", data.IsisLsActive, delimiter);
+  fmt::print(out, "{}{}", data.wingAntiIce, delimiter);
+  // Fix missing data for FDR Analysis
+  // controller input data
+  fmt::print(out, "{}{}", data.inputElevator, delimiter);
+  fmt::print(out, "{}{}", data.inputAileron, delimiter);
+  fmt::print(out, "{}{}", data.inputRudder, delimiter);
+  // additional sim data
+  fmt::print(out, "{}{}", data.simulation_rate, delimiter);
+  fmt::print(out, "{}{}", data.wasPaused, delimiter);
+  fmt::print(out, "{}{}", data.slew_on, delimiter);
+  // ambient data
+  fmt::print(out, "{}{}", data.ice_structure_percent, delimiter);
+  fmt::print(out, "{}{}", data.ambient_pressure_mbar, delimiter);
+  fmt::print(out, "{}{}", data.ambient_wind_velocity_kn, delimiter);
+  fmt::print(out, "{}{}", data.ambient_wind_direction_deg, delimiter);
+  fmt::print(out, "{}{}", data.total_air_temperature_celsius, delimiter);
+  // failure
+  fmt::print(out, "{}{}", data.failuresActive, delimiter);
+  // a.floor
+  fmt::print(out, "{}{}", data.alpha_floor_condition, delimiter);
+  // high aoa protection
+  fmt::print(out, "{}{}", data.high_aoa_protection, delimiter);
+
   fmt::print(out, "\n");
 }

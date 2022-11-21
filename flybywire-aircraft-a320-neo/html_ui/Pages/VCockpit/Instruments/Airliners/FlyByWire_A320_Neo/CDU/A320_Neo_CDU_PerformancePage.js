@@ -1084,20 +1084,20 @@ class CDUPerformancePage {
         mcdu.engineOutAccelerationAltitudeIsPilotEntered = false;
         SimVar.SetSimVarValue("L:A32NX_ENG_OUT_ACC_ALT", "feet", alt);
     }
-    static UpdateThrRedAccFromDestination(mcdu) {
+    // Modified to be async like above
+    // TODO: Implement ability for pilot to enter custom altitudes
+    static async UpdateThrRedAccFromDestination(mcdu) {
+        let elevation = SimVar.GetSimVarValue("GROUND ALTITUDE", "feet");
         const destination = mcdu.flightPlanManager.getDestination();
-        const elevation = destination ? destination.altitudeinFP : SimVar.GetSimVarValue("GROUND ALTITUDE", "feet");
-
-        const offset = +NXDataStore.get("CONFIG_ENG_OUT_ACCEL_ALT", "1500");
-        const alt = Math.round((elevation + offset) / 10) * 10;
-
+        if (destination) {
+            elevation = await mcdu.facilityLoader.GetAirportFieldElevation(destination.icao);
+        }
+        const alt = Math.round((elevation + 1500) / 10) * 10;
         mcdu.thrustReductionAltitudeGoaround = alt;
         mcdu.accelerationAltitudeGoaround = alt;
-        mcdu.engineOutAccelerationAltitudeGoaround = alt;
-
         SimVar.SetSimVarValue("L:AIRLINER_THR_RED_ALT_GOAROUND", "Number", alt);
         SimVar.SetSimVarValue("L:AIRLINER_ACC_ALT_GOAROUND", "Number", alt);
-        SimVar.SetSimVarValue("L:AIRLINER_ENG_OUT_ACC_ALT_GOAROUND", "Number", alt);
+
     }
 
     static getSelectedTitleAndValue(_isPhaseActive, _isSelected, _preSel) {
