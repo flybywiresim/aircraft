@@ -727,7 +727,7 @@ mod tests {
     use crate::simulation::SimulationElement;
     use ntest::assert_about_eq;
 
-    use uom::si::{f64::*, velocity::foot_per_second};
+    use uom::si::{angle::degree, f64::*, velocity::foot_per_second};
 
     use super::*;
 

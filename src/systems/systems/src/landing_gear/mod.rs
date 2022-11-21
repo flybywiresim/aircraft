@@ -1661,8 +1661,7 @@ mod tests {
                 });
 
         test_bed.write_by_name("PLANE PITCH DEGREES", 0.);
-        test_bed.write_by_name("PLANE ALT ABOVE GROUND", Length::new::<meter>(2.));
-        test_bed.write_by_name("GEAR ANIMATION POSITION:1", Ratio::new::<ratio>(0.95));
+        test_bed.write_by_name("PLANE ALT ABOVE GROUND", Length::new::<meter>(0.5));
 
         test_bed.run();
 
@@ -1679,8 +1678,7 @@ mod tests {
                 });
 
         test_bed.write_by_name("PLANE PITCH DEGREES", -5.);
-        test_bed.write_by_name("PLANE ALT ABOVE GROUND", Length::new::<meter>(2.5));
-        test_bed.write_by_name("GEAR ANIMATION POSITION:1", Ratio::new::<ratio>(0.95));
+        test_bed.write_by_name("PLANE ALT ABOVE GROUND", Length::new::<meter>(0.5));
 
         test_bed.run();
 
@@ -1697,17 +1695,16 @@ mod tests {
                 });
 
         test_bed.write_by_name("PLANE PITCH DEGREES", -15.);
-        test_bed.write_by_name("PLANE ALT ABOVE GROUND", Length::new::<meter>(2.));
-        test_bed.write_by_name("GEAR ANIMATION POSITION:1", Ratio::new::<ratio>(0.95));
+        test_bed.write_by_name("PLANE ALT ABOVE GROUND", Length::new::<meter>(0.5));
 
         test_bed.run();
 
         let tilt_position = Ratio::new::<ratio>(test_bed.read_by_name("GEAR_1_TILT_POSITION"));
-        assert!(tilt_position.get::<ratio>() >= 1.);
+        assert!(tilt_position.get::<ratio>() >= 0.99);
     }
 
     #[test]
-    fn tilting_gear_tilts_at_max_angle_when_not_compressed_and_not_touching_ground() {
+    fn tilting_gear_tilts_at_max_angle_when_not_touching_ground() {
         let mut test_bed =
             SimulationTestBed::from(ElementCtorFn(|context| test_tilting_gear_left(context)))
                 .with_update_before_power_distribution(|el, context, _| {
@@ -1716,12 +1713,30 @@ mod tests {
 
         test_bed.write_by_name("PLANE PITCH DEGREES", -15.);
         test_bed.write_by_name("PLANE ALT ABOVE GROUND", Length::new::<meter>(20.));
-        test_bed.write_by_name("GEAR ANIMATION POSITION:1", Ratio::new::<ratio>(0.5));
 
-        test_bed.run();
+        // Give time to tilt mechanism to go down
+        test_bed.run_with_delta(Duration::from_secs(2));
 
         let tilt_position = Ratio::new::<ratio>(test_bed.read_by_name("GEAR_1_TILT_POSITION"));
-        assert!(tilt_position.get::<ratio>() >= 1.);
+        assert!(tilt_position.get::<ratio>() >= 0.99);
+    }
+
+    #[test]
+    fn tilting_gear_untilts_when_plane_inverted() {
+        let mut test_bed =
+            SimulationTestBed::from(ElementCtorFn(|context| test_tilting_gear_left(context)))
+                .with_update_before_power_distribution(|el, context, _| {
+                    el.update(context);
+                });
+
+        test_bed.write_by_name("PLANE BANK DEGREES", -180.);
+        test_bed.write_by_name("PLANE ALT ABOVE GROUND", Length::new::<meter>(20.));
+
+        // Give time to tilt mechanism to go down
+        test_bed.run_with_delta(Duration::from_secs(2));
+
+        let tilt_position = Ratio::new::<ratio>(test_bed.read_by_name("GEAR_1_TILT_POSITION"));
+        assert!(tilt_position.get::<ratio>() <= 0.01);
     }
 
     #[test]
@@ -1732,27 +1747,25 @@ mod tests {
                     el.update(context);
                 });
 
-        test_bed.write_by_name("PLANE PITCH DEGREES", -0.);
+        test_bed.write_by_name("PLANE PITCH DEGREES", 0.);
         test_bed.write_by_name("PLANE ALT ABOVE GROUND", Length::new::<meter>(2.));
-        test_bed.write_by_name("GEAR ANIMATION POSITION:1", Ratio::new::<ratio>(0.5));
 
         test_bed.run();
 
         let tilt_position = Ratio::new::<ratio>(test_bed.read_by_name("GEAR_1_TILT_POSITION"));
-        assert!(tilt_position.get::<ratio>() >= 1.);
+        assert!(tilt_position.get::<ratio>() >= 0.99);
     }
 
     #[test]
-    fn tilting_gear_start_tilting_when_not_compressed_and_touching_ground() {
+    fn tilting_gear_start_tilting_when_touching_ground() {
         let mut test_bed =
             SimulationTestBed::from(ElementCtorFn(|context| test_tilting_gear_left(context)))
                 .with_update_before_power_distribution(|el, context, _| {
                     el.update(context);
                 });
 
-        test_bed.write_by_name("PLANE PITCH DEGREES", -0.);
+        test_bed.write_by_name("PLANE PITCH DEGREES", 0.);
         test_bed.write_by_name("PLANE ALT ABOVE GROUND", Length::new::<meter>(1.9));
-        test_bed.write_by_name("GEAR ANIMATION POSITION:1", Ratio::new::<ratio>(0.5));
 
         test_bed.run();
 
