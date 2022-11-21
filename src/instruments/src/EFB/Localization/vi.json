@@ -9,17 +9,17 @@
     "SetActive": "Đặt hoạt động",
     "SetStandby": "Đặt chế độ chờ",
     "ShowAll": "Tất cả",
-    "ShowApproach": "Approach",
+    "ShowApproach": "Tiếp cận",
     "ShowAtis": "ATIS",
-    "ShowDelivery": "Delivery",
-    "ShowDeparture": "Departure",
+    "ShowDelivery": "Vận chuyển",
+    "ShowDeparture": "Khởi hành",
     "ShowGround": "Mặt đất",
-    "ShowRadar": "Radar",
-    "ShowTower": "Tower",
+    "ShowRadar": "Rađa",
+    "ShowTower": "Tháp không lưu",
     "Standby": "Chế độ chờ",
     "TT": {
-      "AtcCallSignSearch": "ATC Call-sign Search",
-      "AtcTypeFilter": "Filter for"
+      "AtcCallSignSearch": "Tìm kiếm tín hiệu gọi trên ATC",
+      "AtcTypeFilter": "Lọc cho"
     },
     "Title": "Điều khiển không lưu"
   },
@@ -359,7 +359,7 @@
       "ConfirmationDialogMsg": "Vui lòng xác nhận tải cấu hình sẵn.",
       "CurrentProcedureStep": "Bước thủ tục hiện tại",
       "PleaseConfirmLoadingOfPreset": "Vui lòng xác nhận tải cấu hình sẵn.",
-      "Powered": "Powered",
+      "Powered": "Được cấp nguồn",
       "ReadyPushback": "Sẵn sàng để đẩy lùi",
       "ReadyTakeoff": "Sẵn sàng để cất cánh",
       "ReadyTaxi": "Sẵn sàng để lăn",

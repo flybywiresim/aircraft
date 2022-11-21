@@ -17,8 +17,6 @@
 #include "AircraftProcedures.h"
 #include "../Units.h"
 
-using namespace std;
-
 /**
  * Class for handling aircraft presets.
  */
@@ -37,12 +35,12 @@ private:
   bool isInitialized = false;
 
   // Procedures
-  AircraftProcedures procedures{};
+  AircraftProcedures procedures;
 
   // current procedure ID
   int64_t currentProcedureID = 0;
   // current procedure
-  vector<struct ProcedureStep*>* currentProcedure = nullptr;
+  const std::vector<const ProcedureStep*>* currentProcedure = nullptr;
   // flag to signal that a loading process is ongoing
   bool loadingIsActive = false;
   // in ms

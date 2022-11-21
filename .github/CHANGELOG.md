@@ -92,6 +92,13 @@
 1. [FMGC] Rework f-pln departure page - @tracernz (Mike)
 1. [MCDU] Support coroute loading and viewing - @lucky38i (Alex)
 1. [HYD] Fixed autobrake controller tuning - @Crocket63 (crocket)
+1. [ENGINE] Improved engine primary parameters performance (EGT & Fuel Flow) - @Taz5150 (TazX [Z+2]#0405)
+1. [ENGINE] Fix Engine Flex Calculations - @Taz5150 (TazX [Z+2]#0405)
+1. [FLIGHTMODEL] Flight Model update - @donstim (donbikes#4084)
+1. [HYD] Fix incorrect gain in down pitch commands - @Crocket63 (crocket)
+1. [PFD] Improve appearance of L/DEV and V/DEV scales - @tracernz (Mike)
+1. [HYD] Implemented Electro Hydrostatic actuators - @Crocket63 (crocket)
+1. [FAC] Move Speedscale computation to FAC - @lukecologne (luke)
 1. [HYD] Trimmable physical assemblies - @Crocket63 (crocket)
 
 ## 0.8.0

@@ -6,13 +6,16 @@ class CDUInitPage {
         mcdu.activeSystem = 'FMGC';
         mcdu.coRoute.routes = [];
 
+        const haveFlightPlan = mcdu.flightPlanManager.getPersistentOrigin()
+            && mcdu.flightPlanManager.getDestination();
+
         const fromTo = new Column(23, "____|____", Column.amber, Column.right);
         const [coRouteAction, coRouteText, coRouteColor] = new CDU_SingleValueField(
             mcdu,
             "string",
             mcdu.coRoute.routeNumber,
             {
-                emptyValue: "__________[color]amber",
+                emptyValue: haveFlightPlan ? "" : "__________[color]amber",
                 suffix: "[color]cyan",
                 maxLength: 10,
             },

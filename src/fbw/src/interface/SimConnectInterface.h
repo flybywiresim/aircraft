@@ -5,7 +5,6 @@
 #include <string>
 #include <vector>
 
-#include "../ElevatorTrimHandler.h"
 #include "../LocalVariable.h"
 #include "../SpoilersHandler.h"
 #include "../ThrottleAxisMapping.h"
@@ -191,7 +190,6 @@ class SimConnectInterface {
                int facDisabled,
                const std::vector<std::shared_ptr<ThrottleAxisMapping>>& throttleAxis,
                std::shared_ptr<SpoilersHandler> spoilersHandler,
-               std::shared_ptr<ElevatorTrimHandler> elevatorTrimHandler,
                double keyChangeAileron,
                double keyChangeElevator,
                double keyChangeRudder,
@@ -370,7 +368,6 @@ class SimConnectInterface {
   std::vector<std::shared_ptr<ThrottleAxisMapping>> throttleAxis;
 
   std::shared_ptr<SpoilersHandler> spoilersHandler;
-  std::shared_ptr<ElevatorTrimHandler> elevatorTrimHandler;
 
   ClientDataAutopilotStateMachine clientDataAutopilotStateMachine = {};
   ClientDataAutopilotLaws clientDataAutopilotLaws = {};

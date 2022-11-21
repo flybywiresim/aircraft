@@ -439,7 +439,7 @@ impl SimulationElement for WingAntiIcePushButton {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum WingAntiIcePushButtonMode {
     Off = 0,
     On = 1,
@@ -482,7 +482,7 @@ impl SimulationElement for CrossBleedValveSelectorKnob {
     }
 }
 
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum CrossBleedValveSelectorMode {
     Shut = 0,
     Auto = 1,
@@ -502,7 +502,7 @@ impl From<f64> for CrossBleedValveSelectorMode {
     }
 }
 
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum EngineState {
     Off = 0,
     On = 1,
@@ -750,7 +750,7 @@ impl PneumaticContainerWithConnector<VariableVolumeContainer> {
 
 pub struct BleedMonitoringComputerIsAliveSignal;
 
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum BleedMonitoringComputerChannelOperationMode {
     Master,
     Slave,
@@ -760,7 +760,7 @@ pub trait PressurizeableReservoir {
     fn available_volume(&self) -> Volume;
 }
 
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum EngineModeSelector {
     Crank = 0,
     Norm = 1,
