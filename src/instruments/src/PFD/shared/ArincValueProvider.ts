@@ -31,6 +31,13 @@ export interface Arinc429Values {
     vAlphaMax: Arinc429Word;
     vAlphaProt: Arinc429Word;
     vStallWarn: Arinc429Word;
+    vMax: Arinc429Word;
+    vFeNext: Arinc429Word;
+    vCTrend: Arinc429Word;
+    vMan: Arinc429Word;
+    v4: Arinc429Word;
+    v3: Arinc429Word;
+    vLs: Arinc429Word;
     estimatedBeta: Arinc429Word;
     betaTarget: Arinc429Word;
 }
@@ -350,6 +357,104 @@ export class ArincValueProvider {
             }
         });
 
+        subscriber.on('fac1VMaxRaw').handle((word) => {
+            if (this.facToUse === 1) {
+                publisher.pub('vMax', new Arinc429Word(word));
+            } else if (this.facToUse === 0) {
+                publisher.pub('vMax', new Arinc429Word(0));
+            }
+        });
+
+        subscriber.on('fac2VMaxRaw').handle((word) => {
+            if (this.facToUse === 2) {
+                publisher.pub('vMax', new Arinc429Word(word));
+            }
+        });
+
+        subscriber.on('fac1VFeNextRaw').handle((word) => {
+            if (this.facToUse === 1) {
+                publisher.pub('vFeNext', new Arinc429Word(word));
+            } else if (this.facToUse === 0) {
+                publisher.pub('vFeNext', new Arinc429Word(0));
+            }
+        });
+
+        subscriber.on('fac2VFeNextRaw').handle((word) => {
+            if (this.facToUse === 2) {
+                publisher.pub('vFeNext', new Arinc429Word(word));
+            }
+        });
+
+        subscriber.on('fac1VCTrendRaw').handle((word) => {
+            if (this.facToUse === 1) {
+                publisher.pub('vCTrend', new Arinc429Word(word));
+            } else if (this.facToUse === 0) {
+                publisher.pub('vCTrend', new Arinc429Word(0));
+            }
+        });
+
+        subscriber.on('fac2VCTrendRaw').handle((word) => {
+            if (this.facToUse === 2) {
+                publisher.pub('vCTrend', new Arinc429Word(word));
+            }
+        });
+
+        subscriber.on('fac1VManRaw').handle((word) => {
+            if (this.facToUse === 1) {
+                publisher.pub('vMan', new Arinc429Word(word));
+            } else if (this.facToUse === 0) {
+                publisher.pub('vMan', new Arinc429Word(0));
+            }
+        });
+
+        subscriber.on('fac2VManRaw').handle((word) => {
+            if (this.facToUse === 2) {
+                publisher.pub('vMan', new Arinc429Word(word));
+            }
+        });
+
+        subscriber.on('fac1V4Raw').handle((word) => {
+            if (this.facToUse === 1) {
+                publisher.pub('v4', new Arinc429Word(word));
+            } else if (this.facToUse === 0) {
+                publisher.pub('v4', new Arinc429Word(0));
+            }
+        });
+
+        subscriber.on('fac2V4Raw').handle((word) => {
+            if (this.facToUse === 2) {
+                publisher.pub('v4', new Arinc429Word(word));
+            }
+        });
+
+        subscriber.on('fac1V3Raw').handle((word) => {
+            if (this.facToUse === 1) {
+                publisher.pub('v3', new Arinc429Word(word));
+            } else if (this.facToUse === 0) {
+                publisher.pub('v3', new Arinc429Word(0));
+            }
+        });
+
+        subscriber.on('fac2V3Raw').handle((word) => {
+            if (this.facToUse === 2) {
+                publisher.pub('v3', new Arinc429Word(word));
+            }
+        });
+
+        subscriber.on('fac1VLsRaw').handle((word) => {
+            if (this.facToUse === 1) {
+                publisher.pub('vLs', new Arinc429Word(word));
+            } else if (this.facToUse === 0) {
+                publisher.pub('vLs', new Arinc429Word(0));
+            }
+        });
+
+        subscriber.on('fac2VLsRaw').handle((word) => {
+            if (this.facToUse === 2) {
+                publisher.pub('vLs', new Arinc429Word(word));
+            }
+        });
+
         subscriber.on('fac1EstimatedBetaRaw').handle((word) => {
             if (this.facToUse === 1) {
                 publisher.pub('estimatedBeta', new Arinc429Word(word));
@@ -432,7 +537,7 @@ export class ArincValueProvider {
         if (getDisplayIndex() === 1 && fac1Valid) {
             this.facToUse = 1;
         } else if (getDisplayIndex() === 2 && fac2Valid) {
-            this.facToUse = 1;
+            this.facToUse = 2;
         } else if (fac1Valid) {
             this.facToUse = 1;
         } else if (fac2Valid) {
