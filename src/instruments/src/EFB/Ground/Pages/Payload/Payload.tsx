@@ -381,7 +381,7 @@ export const Payload = () => {
             estimatedTimeSeconds = estimatedCargoLoadingSeconds + differentialLoadingTime;
         }
 
-        return ` ${Math.round(estimatedTimeSeconds / 60)}`;
+        return Math.round(estimatedTimeSeconds / 60);
     };
 
     const boardingStatusClass = useMemo(() => {
