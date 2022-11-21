@@ -37,6 +37,8 @@ pub struct TiltingGear {
 
     current_compression: Ratio,
     tilt_position: Ratio,
+
+    contact_point_id: usize,
 }
 impl TiltingGear {
     pub fn new(
@@ -57,6 +59,8 @@ impl TiltingGear {
 
             current_compression: Ratio::default(),
             tilt_position: Ratio::default(),
+
+            contact_point_id,
         }
     }
 
@@ -65,17 +69,67 @@ impl TiltingGear {
         //     "UPDATE WITH COM {:.2}",
         //     self.current_compression.get::<ratio>()
         // );
-        if self.current_compression.get::<ratio>() > 0.5 {
-            self.update_compressed_mode(context);
-        } else {
-            self.update_uncompressed_mode(context);
+        // if self.current_compression.get::<ratio>() > 0.5 {
+        // self.update_compressed_mode(context);
+        // } else {
+        //      self.update_uncompressed_mode(context);
+        //  }
+
+        let max_tilt_on_ground = self.max_ground_tilt_from_plane_pitch(context);
+
+        let current_tire_height =
+            context.height_over_ground(self.contact_point_offset_from_datum_ref_meters);
+
+        if self.contact_point_id == 1 {
+            println!(
+                "MAX GROUND TILT = {:.2}, HEIGHT= {:.2} COMP {:.2}",
+                max_tilt_on_ground.get::<ratio>(),
+                current_tire_height.get::<meter>(),
+                self.current_compression.get::<ratio>()
+            );
         }
+
+        self.tilt_position = if current_tire_height.get::<meter>() <= 0.0005 {
+            let ground_tilt_raw = Ratio::new::<ratio>(
+                (1. - (current_tire_height.abs() / self.tilt_height_from_low_to_up).get::<ratio>())
+                    .min(1.)
+                    .max(0.),
+            );
+
+            if self.contact_point_id == 1 {
+                println!(
+                    "GROUND MODE INTERSECT = raw_tilt {:.2} limited by pitch {:.2}",
+                    ground_tilt_raw.get::<ratio>(),
+                    ground_tilt_raw.max(max_tilt_on_ground).get::<ratio>()
+                );
+            }
+
+            ground_tilt_raw.max(max_tilt_on_ground)
+        } else {
+            if self.contact_point_id == 1 {
+                println!("AIR MODE = 1.");
+            }
+            Ratio::new::<ratio>(1.)
+        };
+    }
+
+    fn max_ground_tilt_from_plane_pitch(&self, context: &UpdateContext) -> Ratio {
+        let plane_pitch = -context.pitch();
+
+        let pitch_offset = Angle::new::<degree>(-0.5);
+
+        let offset_pitch = plane_pitch - pitch_offset;
+
+        offset_pitch
+            .max(Angle::new::<degree>(0.))
+            .min(self.tilting_max_angle)
+            / self.tilting_max_angle
     }
 
     fn update_compressed_mode(&mut self, context: &UpdateContext) {
         let plane_pitch = -context.pitch();
 
-        let pitch_offset = Angle::new::<degree>(0.);
+        let pitch_offset = Angle::new::<degree>(-0.5);
 
         let offset_pitch = plane_pitch - pitch_offset;
 
@@ -84,13 +138,15 @@ impl TiltingGear {
             .min(self.tilting_max_angle)
             / self.tilting_max_angle;
 
-        println!(
+        if self.contact_point_id == 1 {
+            println!(
             "update_compressed_mode planePitch {:.2}, offset {:.2} offset_pitch {:.2} TiltPos {:.2}",
             plane_pitch.get::<degree>(),
             pitch_offset.get::<degree>(),
             offset_pitch.get::<degree>(),
             self.tilt_position.get::<ratio>()
-        );
+            );
+        }
     }
 
     fn update_uncompressed_mode(&mut self, context: &UpdateContext) {

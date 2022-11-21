@@ -1561,16 +1561,16 @@ impl A380Hydraulic {
             ),
             left_wing_gear_tilt: TiltingGear::new(
                 context,
-                Length::new::<meter>(0.280065),
+                Length::new::<meter>(0.134608),
                 3,
-                Vector3::new(-6.18848, -4.86875, -2.6551),
+                Vector3::new(-6.18848, -4.86875, 2.6551),
                 Angle::new::<degree>(9.89),
             ),
             right_wing_gear_tilt: TiltingGear::new(
                 context,
-                Length::new::<meter>(0.280065),
+                Length::new::<meter>(0.134608),
                 4,
-                Vector3::new(6.18848, -4.86875, -2.6551),
+                Vector3::new(6.18848, -4.86875, 2.6551),
                 Angle::new::<degree>(9.89),
             ),
         }
