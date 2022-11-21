@@ -4,8 +4,7 @@ use msfs::sim_connect;
 use msfs::{sim_connect::SimConnect, sim_connect::SIMCONNECT_OBJECT_ID_USER};
 
 use systems_wasm::aspects::{
-    EventToVariableMapping, ExecuteOn, MsfsAspectBuilder, ObjectWrite, VariableToEventMapping,
-    VariableToEventWriteOn, VariablesToObject,
+    EventToVariableMapping, MsfsAspectBuilder, ObjectWrite, VariablesToObject,
 };
 use systems_wasm::{set_data_on_sim_object, Variable};
 
