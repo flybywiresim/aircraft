@@ -20,21 +20,6 @@ export const calculateVerticalOffsetFromRoll = (roll: number) => {
     return offset;
 };
 
-export const SmoothSin = (origin: number, destination: number, smoothFactor: number, dTime: number) => {
-    if (origin === undefined) {
-        return destination;
-    }
-    if (Math.abs(destination - origin) < Number.EPSILON) {
-        return destination;
-    }
-    const delta = destination - origin;
-    let result = origin + delta * Math.sin(Math.min(smoothFactor * dTime, 1.0) * Math.PI / 2.0);
-    if ((origin < destination && result > destination) || (origin > destination && result < destination)) {
-        result = destination;
-    }
-    return result;
-};
-
 export class LagFilter {
     private PreviousInput: number;
 
