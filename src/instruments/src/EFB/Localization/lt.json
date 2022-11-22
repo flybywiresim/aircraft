@@ -155,6 +155,7 @@
       "DeboardConfirmationCancel": "Cancel",
       "DeboardConfirmationConfirm": "Deboard",
       "DeboardConfirmationTitle": "Deboard all Passengers?",
+      "EstimatedDurationUnit": "minutes",
       "LoadingTime": "Loading Time",
       "Passengers": "Keleiviai",
       "Planned": "Suplanuotas",

@@ -155,6 +155,7 @@
       "DeboardConfirmationCancel": "취소",
       "DeboardConfirmationConfirm": "하차",
       "DeboardConfirmationTitle": "모든 승객을 하차시키겠습니까?",
+      "EstimatedDurationUnit": "분",
       "LoadingTime": "탑승 시간",
       "Passengers": "승객",
       "Planned": "계획",
