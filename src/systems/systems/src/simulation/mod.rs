@@ -24,8 +24,9 @@ pub mod test;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum SidePlaying {
-    FO,
     CAPTAIN,
+    FO,
+    SYNC,
 }
 
 read_write_enum!(SidePlaying);
@@ -33,8 +34,9 @@ read_write_enum!(SidePlaying);
 impl From<f64> for SidePlaying {
     fn from(value: f64) -> Self {
         match value as u8 {
-            0 => SidePlaying::FO,
-            _ => SidePlaying::CAPTAIN,
+            0 => SidePlaying::CAPTAIN,
+            1 => SidePlaying::FO,
+            _ => SidePlaying::SYNC,
         }
     }
 }

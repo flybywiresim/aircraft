@@ -4347,46 +4347,11 @@
             <!-- MARKER DEFAULT VALUE IS 1 BUT IT IS UNDESIRED
                 ADF2 volume set do not exist in the sdk for now. Hopefully in the future -->
             <Update Once="True">
-                1 (&gt;L:A32NX_ACP1_VHF1_TRANSMIT)
-                1 (&gt;L:A32NX_ACP2_VHF1_TRANSMIT)
-
-                1 (&gt;L:A32NX_ACP1_VHF1_KNOB_VOLUME_DOWN)
-                1 (&gt;L:A32NX_ACP1_VHF2_KNOB_VOLUME_DOWN)
-                1 (&gt;L:A32NX_ACP2_VHF1_KNOB_VOLUME_DOWN)
-                1 (&gt;L:A32NX_ACP2_VHF2_KNOB_VOLUME_DOWN)
-
-                1 (&gt;K:COM1_RECEIVE_SELECT)
-                1 (&gt;K:COM2_RECEIVE_SELECT)
                 1 (&gt;K:COM3_RECEIVE_SELECT)
-
-                0.8 (&gt;L:A32NX_ACP1_VHF1_VOLUME)
-                0.4 (&gt;L:A32NX_ACP1_VHF2_VOLUME)
-                0.8 (&gt;L:A32NX_ACP2_VHF1_VOLUME)
-                0.4 (&gt;L:A32NX_ACP2_VHF2_VOLUME)
-                0.8 (&gt;L:A32NX_ACP3_VHF1_VOLUME)
-                0.4 (&gt;L:A32NX_ACP3_VHF2_VOLUME)
-
-                (L:A32NX_ACP1_VHF1_VOLUME) 100 * (&gt;K:COM1_VOLUME_SET)
-                (L:A32NX_ACP1_VHF2_VOLUME) 100 * (&gt;K:COM2_VOLUME_SET)
-                0 (&gt;K:COM3_VOLUME_SET)
-
-                11345000 (&gt;L:A32NX_RMP_HF1_ACTIVE_FREQUENCY)
-                8930000 (&gt;L:A32NX_RMP_HF2_ACTIVE_FREQUENCY)
-                17916000 (&gt;L:A32NX_RMP_L_HF1_STANDBY_FREQUENCY)
-                5541000 (&gt;L:A32NX_RMP_L_HF2_STANDBY_FREQUENCY)
-                13342000 (&gt;L:A32NX_RMP_R_HF1_STANDBY_FREQUENCY)
-                3494000 (&gt;L:A32NX_RMP_R_HF2_STANDBY_FREQUENCY)
 
                 (A:MARKER SOUND, Bool) 1 == {
                     (&gt;K:MARKER_SOUND_TOGGLE)
                 }
-
-                0 (&gt;K:NAV1_VOLUME_SET)
-                0 (&gt;K:NAV2_VOLUME_SET)
-                0 (&gt;K:NAV3_VOLUME_SET)
-
-                0 (&gt;K:ADF_VOLUME_SET)
-                0 (&gt;K:ADF2_VOLUME_SET)
 
                 113000000 (&gt;L:A32NX_RMP_L_SAVED_ACTIVE_FREQUENCY_VOR)
                 117800000 (&gt;L:A32NX_RMP_L_SAVED_STANDBY_FREQUENCY_VOR)
@@ -4402,11 +4367,6 @@
                 433000 (&gt;L:A32NX_RMP_L_SAVED_STANDBY_FREQUENCY_ADF)
                 433000 (&gt;L:A32NX_RMP_R_SAVED_ACTIVE_FREQUENCY_ADF)
                 433000 (&gt;L:A32NX_RMP_R_SAVED_STANDBY_FREQUENCY_ADF)
-
-                22 (&gt;L:A32NX_RMP_L_SAVED_COURSE_VOR)
-                202 (&gt;L:A32NX_RMP_L_SAVED_COURSE_ILS)
-                87 (&gt;L:A32NX_RMP_R_SAVED_COURSE_VOR)
-                271 (&gt;L:A32NX_RMP_R_SAVED_COURSE_ILS)
             </Update>
         </Component>
 

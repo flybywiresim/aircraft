@@ -518,7 +518,7 @@
       "Side": "Côté",
       "Captain": "Commandant",
       "Copilot": "Copilote",
-      "CommSync": "Synchroniser les panneaux de communications"
+      "Both": "Synchronisés"
     },
     "ThrottleConfig": {
       "Apply": "Appliquer",

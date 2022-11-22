@@ -917,9 +917,24 @@ impl ExecutableVariableAction for ToEvent {
             },
         };
 
-        println!("Execute");
-        if self.event_name_member.eq("COM1_VOLUME_SET") {
-            println!("Ecriture COM1_VOLUME_SET with {}. Should write is {}", value, should_write);
+        // if self.event_name_member.eq("COM1_VOLUME_SET") {
+        //     println!(
+        //         "Ecriture COM1_VOLUME_SET with {}. Should write is {}",
+        //         value, should_write
+        //     );
+        // }
+
+        if self.event_name_member.eq("NAV1_VOLUME_SET_EX1") {
+            println!(
+                "Ecriture NAV1_VOLUME_SET_EX1 with {}. Should write is {}",
+                value, should_write
+            );
+        }
+        if self.event_name_member.eq("COM1_RECEIVE_SELECT") {
+            println!(
+                "Ecriture COM1_RECEIVE_SELECT with {}. Should write is {}",
+                value, should_write
+            );
         }
 
         if should_write {

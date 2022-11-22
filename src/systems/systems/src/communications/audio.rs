@@ -1,14 +1,16 @@
 use crate::simulation::{
     InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
-    VariableIdentifier,
+    SimulatorWriter, VariableIdentifier, Write,
 };
 
 use crate::communications::receiver::{Transceiver, ADF, COMM, GLS, ILS, MARKERS, VHF, VOR};
 
 pub struct AudioControlPanel {
     id: usize,
+    transmit_channel_id: VariableIdentifier,
     voice_button_id: VariableIdentifier,
     voice_button: bool,
+    transmit_channel: u8,
     vhfs: [VHF; 3],
     comms: [COMM; 5], // Transceivers not simulated. Jus to make the knobs rotate
     adfs: [ADF; 2],
@@ -22,18 +24,20 @@ impl AudioControlPanel {
         Self {
             id: id_acp,
             voice_button_id: context.get_identifier(format!("ACP{}_VOICE_BUTTON_DOWN", id_acp)),
+            transmit_channel_id: context.get_identifier(format!("ACP{}_TRANSMIT_CHANNEL", id_acp)),
             voice_button: false,
+            transmit_channel: 1,
             vhfs: [
-                VHF::new(context, 1, id_acp),
-                VHF::new(context, 2, id_acp),
-                VHF::new(context, 3, id_acp),
+                VHF::new_vhf1(context, id_acp, 1),
+                VHF::new_vhf2(context, id_acp),
+                VHF::new_vhf3(context, id_acp),
             ],
             comms: [
-                COMM::new(context, "HF", 1, id_acp),
-                COMM::new(context, "HF", 2, id_acp),
-                COMM::new(context, "PA", 0, id_acp),
-                COMM::new(context, "MECH", 0, id_acp),
-                COMM::new(context, "ATT", 0, id_acp),
+                COMM::new_long(context, "HF", 1, id_acp),
+                COMM::new_long(context, "HF", 2, id_acp),
+                COMM::new_short(context, "PA", id_acp),
+                COMM::new_short(context, "MECH", id_acp),
+                COMM::new_short(context, "ATT", id_acp),
             ],
             adfs: [ADF::new(context, 1, id_acp), ADF::new(context, 2, id_acp)],
             vors: [VOR::new(context, 1, id_acp), VOR::new(context, 2, id_acp)],
@@ -44,11 +48,11 @@ impl AudioControlPanel {
     }
 
     pub fn get_transmit_com1(&self) -> bool {
-        self.vhfs[0].get_transmit()
+        self.transmit_channel == 1
     }
 
     pub fn get_transmit_com2(&self) -> bool {
-        self.vhfs[1].get_transmit()
+        self.transmit_channel == 2
     }
 
     pub fn get_volume_com1(&self) -> u8 {
@@ -57,6 +61,10 @@ impl AudioControlPanel {
 
     pub fn get_volume_com2(&self) -> u8 {
         self.vhfs[1].get_volume()
+    }
+
+    pub fn get_volume_com3(&self) -> u8 {
+        self.vhfs[2].get_volume()
     }
 
     pub fn get_volume_adf1(&self) -> u8 {
@@ -115,6 +123,31 @@ impl AudioControlPanel {
         self.vhfs[1].get_receive()
     }
 
+    // Force it to true otherwise vPilot won't be working anymore
+    pub fn get_receive_com3(&self) -> bool {
+        true
+    }
+
+    pub fn get_receive_hf1(&self) -> bool {
+        self.comms[0].get_receive()
+    }
+
+    pub fn get_receive_hf2(&self) -> bool {
+        self.comms[1].get_receive()
+    }
+
+    pub fn get_receive_pa(&self) -> bool {
+        self.comms[2].get_receive()
+    }
+
+    pub fn get_receive_mech(&self) -> bool {
+        self.comms[3].get_receive()
+    }
+
+    pub fn get_receive_att(&self) -> bool {
+        self.comms[4].get_receive()
+    }
+
     pub fn get_receive_adf1(&self) -> bool {
         self.adfs[0].get_receive() && !self.voice_button
     }
@@ -142,6 +175,62 @@ impl AudioControlPanel {
     pub fn get_receive_markers(&self) -> bool {
         self.markers.get_receive() && !self.voice_button
     }
+
+    pub fn get_voice_button(&self) -> bool {
+        self.voice_button
+    }
+
+    pub fn update_volume(&mut self, other_acp: &AudioControlPanel) {
+        if self.id != 1 {
+            self.vhfs[0].set_volume(other_acp.get_volume_com1());
+            self.vhfs[1].set_volume(other_acp.get_volume_com2());
+            self.vhfs[2].set_volume(other_acp.get_volume_com3());
+
+            self.comms[0].set_volume(other_acp.get_volume_hf1());
+            self.comms[1].set_volume(other_acp.get_volume_hf2());
+            self.comms[2].set_volume(other_acp.get_volume_pa());
+            self.comms[3].set_volume(other_acp.get_volume_mech());
+            self.comms[4].set_volume(other_acp.get_volume_att());
+
+            self.vors[0].set_volume(other_acp.get_volume_vor1());
+            self.vors[1].set_volume(other_acp.get_volume_vor2());
+
+            self.adfs[0].set_volume(other_acp.get_volume_adf1());
+            self.adfs[1].set_volume(other_acp.get_volume_adf2());
+
+            self.ils.set_volume(other_acp.get_volume_ils());
+            self.gls.set_volume(other_acp.get_volume_gls());
+
+            self.markers.set_volume(other_acp.get_volume_markers());
+        }
+    }
+
+    pub fn update_receive(&mut self, other_acp: &AudioControlPanel) {
+        if self.id != 1 {
+            self.voice_button = other_acp.get_voice_button();
+
+            self.vhfs[0].set_receive(other_acp.get_receive_com1());
+            self.vhfs[1].set_receive(other_acp.get_receive_com2());
+            self.vhfs[2].set_receive(other_acp.get_receive_com3());
+
+            self.comms[0].set_receive(other_acp.get_receive_hf1());
+            self.comms[1].set_receive(other_acp.get_receive_hf2());
+            self.comms[2].set_receive(other_acp.get_receive_pa());
+            self.comms[3].set_receive(other_acp.get_receive_mech());
+            self.comms[4].set_receive(other_acp.get_receive_att());
+
+            self.vors[0].set_receive(other_acp.get_receive_vor1());
+            self.vors[1].set_receive(other_acp.get_receive_vor2());
+
+            self.adfs[0].set_receive(other_acp.get_receive_adf1());
+            self.adfs[1].set_receive(other_acp.get_receive_adf2());
+
+            self.ils.set_receive(other_acp.get_receive_ils());
+            self.gls.set_receive(other_acp.get_receive_gls());
+
+            self.markers.set_receive(other_acp.get_receive_markers());
+        }
+    }
 }
 
 impl SimulationElement for AudioControlPanel {
@@ -168,6 +257,11 @@ impl SimulationElement for AudioControlPanel {
 
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.voice_button = reader.read(&self.voice_button_id);
+        self.transmit_channel = reader.read(&self.transmit_channel_id);
+    }
+
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(&self.voice_button_id, self.voice_button);
     }
 }
 

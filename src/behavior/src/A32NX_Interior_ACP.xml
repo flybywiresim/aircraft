@@ -57,6 +57,7 @@
             <ANIM_NAME_SWITCH>#ANIM_NAME_PUSH_RECEIVER_VHF_L#</ANIM_NAME_SWITCH>
             <FREQ_ID>VHF1</FREQ_ID>
             <INSTRUMENT_VAR>COM</INSTRUMENT_VAR>
+            <INSTRUMENT_VAR_2>RECEIVE</INSTRUMENT_VAR_2>
             <INDEX_VAR>1</INDEX_VAR>
             <TOOLTIP_LEFT>TT:COCKPIT.TOOLTIPS.TRANSMITTER_VHF_L_VOLUME_DEC</TOOLTIP_LEFT>
             <TOOLTIP_RIGHT>TT:COCKPIT.TOOLTIPS.TRANSMITTER_VHF_L_VOLUME_INC</TOOLTIP_RIGHT>
@@ -71,6 +72,7 @@
             <NODE_ID_SEQ1>#NODE_ID_BUTTON_SEQ1_VHF_L#</NODE_ID_SEQ1>
             <NODE_ID_SEQ2>#NODE_ID_BUTTON_SEQ2_VHF_L#</NODE_ID_SEQ2>
             <FREQ_ID>VHF1</FREQ_ID>
+            <TRANSMIT_ID>1</TRANSMIT_ID>
             <TOOLTIP_PB>TT:COCKPIT.TOOLTIPS.TRANSMITTER_SELECT_VHF_L</TOOLTIP_PB>
         </UseTemplate>
 
@@ -83,6 +85,7 @@
             <ANIM_NAME_SWITCH>#ANIM_NAME_PUSH_RECEIVER_VHF_C#</ANIM_NAME_SWITCH>
             <FREQ_ID>VHF2</FREQ_ID>
             <INSTRUMENT_VAR>COM</INSTRUMENT_VAR>
+            <INSTRUMENT_VAR_2>RECEIVE</INSTRUMENT_VAR_2>
             <INDEX_VAR>2</INDEX_VAR>
             <TOOLTIP_LEFT>TT:COCKPIT.TOOLTIPS.TRANSMITTER_VHF_C_VOLUME_DEC</TOOLTIP_LEFT>
             <TOOLTIP_RIGHT>TT:COCKPIT.TOOLTIPS.TRANSMITTER_VHF_C_VOLUME_INC</TOOLTIP_RIGHT>
@@ -97,6 +100,7 @@
             <NODE_ID_SEQ1>#NODE_ID_BUTTON_SEQ1_VHF_C#</NODE_ID_SEQ1>
             <NODE_ID_SEQ2>#NODE_ID_BUTTON_SEQ2_VHF_C#</NODE_ID_SEQ2>
             <FREQ_ID>VHF2</FREQ_ID>
+            <TRANSMIT_ID>2</TRANSMIT_ID>
             <TOOLTIP>TT:COCKPIT.TOOLTIPS.TRANSMITTER_SELECT_VHF_C</TOOLTIP>
         </UseTemplate>
 
@@ -108,8 +112,6 @@
             <ANIM_NAME_KNOB>#ANIM_NAME_KNOB_RECEIVER_VHF_R#</ANIM_NAME_KNOB>
             <ANIM_NAME_SWITCH>#ANIM_NAME_PUSH_RECEIVER_VHF_R#</ANIM_NAME_SWITCH>
             <FREQ_ID>VHF3</FREQ_ID>
-            <INSTRUMENT_VAR>COM</INSTRUMENT_VAR>
-            <INDEX_VAR>3</INDEX_VAR>
             <TOOLTIP_LEFT>TT:COCKPIT.TOOLTIPS.TRANSMITTER_VHF_R_VOLUME_DEC</TOOLTIP_LEFT>
             <TOOLTIP_RIGHT>TT:COCKPIT.TOOLTIPS.TRANSMITTER_VHF_R_VOLUME_INC</TOOLTIP_RIGHT>
             <TOOLTIP_HAND>TT:COCKPIT.TOOLTIPS.TRANSMITTER_VHF_R_AUDIO_TOGGLE</TOOLTIP_HAND>
@@ -123,6 +125,7 @@
             <NODE_ID_SEQ1>#NODE_ID_BUTTON_SEQ1_VHF_R#</NODE_ID_SEQ1>
             <NODE_ID_SEQ2>#NODE_ID_BUTTON_SEQ2_VHF_R#</NODE_ID_SEQ2>
             <FREQ_ID>VHF3</FREQ_ID>
+            <TRANSMIT_ID>3</TRANSMIT_ID>
             <TOOLTIP>TT:COCKPIT.TOOLTIPS.TRANSMITTER_SELECT_VHF_R</TOOLTIP>
         </UseTemplate>
 
@@ -147,6 +150,7 @@
             <NODE_ID_SEQ1>#NODE_ID_BUTTON_SEQ1_HF1#</NODE_ID_SEQ1>
             <NODE_ID_SEQ2>#NODE_ID_BUTTON_SEQ2_HF1#</NODE_ID_SEQ2>
             <FREQ_ID>HF1</FREQ_ID>
+            <TRANSMIT_ID>5</TRANSMIT_ID>
             <TOOLTIP>TT:COCKPIT.TOOLTIPS.TRANSMITTER_SELECT_HF_L</TOOLTIP>
         </UseTemplate>
 
@@ -171,6 +175,7 @@
             <NODE_ID_SEQ1>#NODE_ID_BUTTON_SEQ1_HF2#</NODE_ID_SEQ1>
             <NODE_ID_SEQ2>#NODE_ID_BUTTON_SEQ2_HF2#</NODE_ID_SEQ2>
             <FREQ_ID>HF2</FREQ_ID>
+            <TRANSMIT_ID>6</TRANSMIT_ID>
             <TOOLTIP>TT:COCKPIT.TOOLTIPS.TRANSMITTER_SELECT_HF_R</TOOLTIP>
         </UseTemplate>
 
@@ -195,6 +200,7 @@
             <NODE_ID_SEQ1>#NODE_ID_BUTTON_SEQ1_MECH#</NODE_ID_SEQ1>
             <NODE_ID_SEQ2>#NODE_ID_BUTTON_SEQ2_MECH#</NODE_ID_SEQ2>
             <FREQ_ID>MECH</FREQ_ID>
+            <TRANSMIT_ID>7</TRANSMIT_ID>
             <TOOLTIP>TT:COCKPIT.TOOLTIPS.TRANSMITTER_SELECT_INT</TOOLTIP>
         </UseTemplate>
 
@@ -219,6 +225,7 @@
             <NODE_ID_SEQ1>#NODE_ID_BUTTON_SEQ1_ATT#</NODE_ID_SEQ1>
             <NODE_ID_SEQ2>#NODE_ID_BUTTON_SEQ2_ATT#</NODE_ID_SEQ2>
             <FREQ_ID>ATT</FREQ_ID>
+            <TRANSMIT_ID>8</TRANSMIT_ID>
             <TOOLTIP>TT:COCKPIT.TOOLTIPS.TRANSMITTER_SELECT_CAB</TOOLTIP>
         </UseTemplate>
 
@@ -243,6 +250,7 @@
             <NODE_ID_SEQ1>#NODE_ID_BUTTON_SEQ1_PA#</NODE_ID_SEQ1>
             <NODE_ID_SEQ2>#NODE_ID_BUTTON_SEQ2_PA#</NODE_ID_SEQ2>
             <FREQ_ID>PA</FREQ_ID>
+            <TRANSMIT_ID>9</TRANSMIT_ID>
             <TOOLTIPID>TT:COCKPIT.TOOLTIPS.TRANSMITTER_SELECT_PA</TOOLTIPID>
         </UseTemplate>
 
@@ -280,13 +288,14 @@
 
         <UseTemplate Name="FBW_Anim_Interactions">
             <ANIM_TYPE>KNOB</ANIM_TYPE>
-            <ANIM_TEMPLATE>FBW_AIRLINER_Audio_NAV_Volume_Knob_Template</ANIM_TEMPLATE>
+            <ANIM_TEMPLATE>FBW_AIRLINER_Audio_Volume_Knob_Template</ANIM_TEMPLATE>
             <NODE_ID>#NODE_ID_RECEIVER_VOR1#</NODE_ID>
             <NODE_ID_LIGHT>#NODE_ID_LIGHT_RECEIVER_VOR1#</NODE_ID_LIGHT>
             <ANIM_NAME_KNOB>#ANIM_NAME_KNOB_RECEIVER_VOR1#</ANIM_NAME_KNOB>
             <ANIM_NAME_SWITCH>#ANIM_NAME_PUSH_RECEIVER_VOR1#</ANIM_NAME_SWITCH>
-            <INSTRUMENT>VOR1</INSTRUMENT>
+            <FREQ_ID>VOR1</FREQ_ID>
             <INSTRUMENT_VAR>NAV</INSTRUMENT_VAR>
+            <INSTRUMENT_VAR_2>SOUND</INSTRUMENT_VAR_2>
             <INDEX_VAR>1</INDEX_VAR>
             <TOOLTIP_LEFT>TT:COCKPIT.TOOLTIPS.TRANSMITTER_VOR1_VOLUME_DEC</TOOLTIP_LEFT>
             <TOOLTIP_RIGHT>TT:COCKPIT.TOOLTIPS.TRANSMITTER_VOR1_VOLUME_INC</TOOLTIP_RIGHT>
@@ -295,13 +304,14 @@
 
         <UseTemplate Name="FBW_Anim_Interactions">
             <ANIM_TYPE>KNOB</ANIM_TYPE>
-            <ANIM_TEMPLATE>FBW_AIRLINER_Audio_NAV_Volume_Knob_Template</ANIM_TEMPLATE>
+            <ANIM_TEMPLATE>FBW_AIRLINER_Audio_Volume_Knob_Template</ANIM_TEMPLATE>
             <NODE_ID>#NODE_ID_RECEIVER_VOR2#</NODE_ID>
             <NODE_ID_LIGHT>#NODE_ID_LIGHT_RECEIVER_VOR2#</NODE_ID_LIGHT>
             <ANIM_NAME_KNOB>#ANIM_NAME_KNOB_RECEIVER_VOR2#</ANIM_NAME_KNOB>
             <ANIM_NAME_SWITCH>#ANIM_NAME_PUSH_RECEIVER_VOR2#</ANIM_NAME_SWITCH>
-            <INSTRUMENT>VOR2</INSTRUMENT>
+            <FREQ_ID>VOR2</FREQ_ID>
             <INSTRUMENT_VAR>NAV</INSTRUMENT_VAR>
+            <INSTRUMENT_VAR_2>SOUND</INSTRUMENT_VAR_2>
             <INDEX_VAR>2</INDEX_VAR>
             <TOOLTIP_LEFT>TT:COCKPIT.TOOLTIPS.TRANSMITTER_VOR2_VOLUME_DEC</TOOLTIP_LEFT>
             <TOOLTIP_RIGHT>TT:COCKPIT.TOOLTIPS.TRANSMITTER_VOR2_VOLUME_INC</TOOLTIP_RIGHT>
@@ -310,13 +320,12 @@
 
         <UseTemplate Name="FBW_Anim_Interactions">
             <ANIM_TYPE>KNOB</ANIM_TYPE>
-            <ANIM_TEMPLATE>FBW_AIRLINER_Audio_NAV_Volume_Knob_Template</ANIM_TEMPLATE>
+            <ANIM_TEMPLATE>FBW_AIRLINER_Audio_Volume_Knob_Template</ANIM_TEMPLATE>
             <NODE_ID>#NODE_ID_RECEIVER_MKR#</NODE_ID>
             <NODE_ID_LIGHT>#NODE_ID_LIGHT_RECEIVER_MKR#</NODE_ID_LIGHT>
             <ANIM_NAME_KNOB>#ANIM_NAME_KNOB_RECEIVER_MKR#</ANIM_NAME_KNOB>
             <ANIM_NAME_SWITCH>#ANIM_NAME_PUSH_RECEIVER_MKR#</ANIM_NAME_SWITCH>
-            <INSTRUMENT>MKR</INSTRUMENT>
-            <INSTRUMENT_VAR>MARKER</INSTRUMENT_VAR>
+            <FREQ_ID>MKR</FREQ_ID>
             <TOOLTIP_LEFT>TT:COCKPIT.TOOLTIPS.NAV_KNOB_MARKERS_VOLUME_DECREASE</TOOLTIP_LEFT>
             <TOOLTIP_RIGHT>TT:COCKPIT.TOOLTIPS.NAV_KNOB_MARKERS_VOLUME_INCREASE</TOOLTIP_RIGHT>
             <TOOLTIP_HAND>%((L:A32NX_ACP#ID#_MKR_KNOB_VOLUME_DOWN))%{if}TT:COCKPIT.TOOLTIPS.NAV_KNOB_MARKERS_IDENT_DISABLE%{else}TT:COCKPIT.TOOLTIPS.NAV_KNOB_MARKERS_IDENT_ENABLE%{end}</TOOLTIP_HAND>
@@ -324,14 +333,15 @@
 
         <UseTemplate Name="FBW_Anim_Interactions">
             <ANIM_TYPE>KNOB</ANIM_TYPE>
-            <ANIM_TEMPLATE>FBW_AIRLINER_Audio_NAV_Volume_Knob_Template</ANIM_TEMPLATE>
+            <ANIM_TEMPLATE>FBW_AIRLINER_Audio_Volume_Knob_Template</ANIM_TEMPLATE>
             <NODE_ID>#NODE_ID_RECEIVER_ILS#</NODE_ID>
             <NODE_ID_LIGHT>#NODE_ID_LIGHT_RECEIVER_ILS#</NODE_ID_LIGHT>
             <ANIM_NAME_KNOB>#ANIM_NAME_KNOB_RECEIVER_ILS#</ANIM_NAME_KNOB>
             <ANIM_NAME_SWITCH>#ANIM_NAME_PUSH_RECEIVER_ILS#</ANIM_NAME_SWITCH>
             <NODE_ID_LED>#NODE_ID_LED_RECEIVER_ILS#</NODE_ID_LED>
-            <INSTRUMENT>ILS</INSTRUMENT>
+            <FREQ_ID>ILS</FREQ_ID>
             <INSTRUMENT_VAR>NAV</INSTRUMENT_VAR>
+            <INSTRUMENT_VAR_2>SOUND</INSTRUMENT_VAR_2>
             <INDEX_VAR>3</INDEX_VAR>
             <TOOLTIP_LEFT>TT:COCKPIT.TOOLTIPS.NAV_KNOB_ILS_VOLUME_DECREASE</TOOLTIP_LEFT>
             <TOOLTIP_RIGHT>TT:COCKPIT.TOOLTIPS.NAV_KNOB_ILS_VOLUME_INCREASE</TOOLTIP_RIGHT>
@@ -340,17 +350,16 @@
 
         <UseTemplate Name="FBW_Anim_Interactions">
             <ANIM_TYPE>KNOB</ANIM_TYPE>
-            <ANIM_TEMPLATE>FBW_AIRLINER_Audio_NAV_Volume_Knob_Template</ANIM_TEMPLATE>
+            <ANIM_TEMPLATE>FBW_AIRLINER_Audio_Volume_Knob_Template</ANIM_TEMPLATE>
             <NODE_ID>#NODE_ID_RECEIVER_MLS#</NODE_ID>
             <NODE_ID_LIGHT>#NODE_ID_LIGHT_RECEIVER_MLS#</NODE_ID_LIGHT>
             <ANIM_NAME_KNOB>#ANIM_NAME_KNOB_RECEIVER_MLS#</ANIM_NAME_KNOB>
             <ANIM_NAME_SWITCH>#ANIM_NAME_PUSH_RECEIVER_MLS#</ANIM_NAME_SWITCH>
             <NODE_ID_LED>#NODE_ID_LED_RECEIVER_MLS#</NODE_ID_LED>
-            <INSTRUMENT>MLS</INSTRUMENT>
+            <FREQ_ID>MLS</FREQ_ID>
             <INSTRUMENT_VAR>NAV</INSTRUMENT_VAR>
+            <INSTRUMENT_VAR_2>SOUND</INSTRUMENT_VAR_2>
             <INDEX_VAR>4</INDEX_VAR>
-            <INC_VOLUME>(L:A32NX_ACP#ID#_MLS_Volume) #VOLUME_INCREMENT_NAV# + 100 min (&gt;L:A32NX_ACP#ID#_MLS_Volume)</INC_VOLUME>
-            <DEC_VOLUME>(L:A32NX_ACP#ID#_MLS_Volume) #VOLUME_INCREMENT_NAV# - 0 max (&gt;L:A32NX_ACP#ID#_MLS_Volume)</DEC_VOLUME>
             <TOOLTIP_LEFT>TT:COCKPIT.TOOLTIPS.NAV_KNOB_ILS_VOLUME_DECREASE</TOOLTIP_LEFT>
             <TOOLTIP_RIGHT>TT:COCKPIT.TOOLTIPS.NAV_KNOB_ILS_VOLUME_INCREASE</TOOLTIP_RIGHT>
             <TOOLTIP_HAND>%((L:A32NX_ACP#ID#_MLS_KNOB_VOLUME_DOWN))%{if}TT:COCKPIT.TOOLTIPS.NAV_KNOB_ILS_IDENT_DISABLE%{else}TT:COCKPIT.TOOLTIPS.NAV_KNOB_ILS_IDENT_ENABLE%{end}</TOOLTIP_HAND>
@@ -358,14 +367,15 @@
 
         <UseTemplate Name="FBW_Anim_Interactions">
             <ANIM_TYPE>KNOB</ANIM_TYPE>
-            <ANIM_TEMPLATE>FBW_AIRLINER_Audio_NAV_Volume_Knob_Template</ANIM_TEMPLATE>
+            <ANIM_TEMPLATE>FBW_AIRLINER_Audio_Volume_Knob_Template</ANIM_TEMPLATE>
             <NODE_ID>#NODE_ID_RECEIVER_ADF1#</NODE_ID>
             <NODE_ID_LIGHT>#NODE_ID_LIGHT_RECEIVER_ADF1#</NODE_ID_LIGHT>
             <ANIM_NAME_KNOB>#ANIM_NAME_KNOB_RECEIVER_ADF1#</ANIM_NAME_KNOB>
             <ANIM_NAME_SWITCH>#ANIM_NAME_PUSH_RECEIVER_ADF1#</ANIM_NAME_SWITCH>
             <NODE_ID_LED>#NODE_ID_LED_RECEIVER_ADF1#</NODE_ID_LED>
-            <INSTRUMENT>ADF1</INSTRUMENT>
+            <FREQ_ID>ADF1</FREQ_ID>
             <INSTRUMENT_VAR>ADF</INSTRUMENT_VAR>
+            <INSTRUMENT_VAR_2>SOUND</INSTRUMENT_VAR_2>
             <INDEX_VAR>1</INDEX_VAR>
             <TOOLTIP_LEFT>TT:COCKPIT.TOOLTIPS.TRANSMITTER_ADF1_VOLUME_DEC</TOOLTIP_LEFT>
             <TOOLTIP_RIGHT>TT:COCKPIT.TOOLTIPS.TRANSMITTER_ADF1_VOLUME_INC</TOOLTIP_RIGHT>
@@ -374,14 +384,15 @@
 
         <UseTemplate Name="FBW_Anim_Interactions">
             <ANIM_TYPE>KNOB</ANIM_TYPE>
-            <ANIM_TEMPLATE>FBW_AIRLINER_Audio_NAV_Volume_Knob_Template</ANIM_TEMPLATE>
+            <ANIM_TEMPLATE>FBW_AIRLINER_Audio_Volume_Knob_Template</ANIM_TEMPLATE>
             <NODE_ID>#NODE_ID_RECEIVER_ADF2#</NODE_ID>
             <NODE_ID_LIGHT>#NODE_ID_LIGHT_RECEIVER_ADF2#</NODE_ID_LIGHT>
             <ANIM_NAME_KNOB>#ANIM_NAME_KNOB_RECEIVER_ADF2#</ANIM_NAME_KNOB>
             <ANIM_NAME_SWITCH>#ANIM_NAME_PUSH_RECEIVER_ADF2#</ANIM_NAME_SWITCH>
             <NODE_ID_LED>#NODE_ID_LED_RECEIVER_ADF2#</NODE_ID_LED>
-            <INSTRUMENT>ADF2</INSTRUMENT>
+            <FREQ_ID>ADF2</FREQ_ID>
             <INSTRUMENT_VAR>ADF</INSTRUMENT_VAR>
+            <INSTRUMENT_VAR_2>SOUND</INSTRUMENT_VAR_2>
             <INDEX_VAR>2</INDEX_VAR>
             <TOOLTIP_LEFT>TT:COCKPIT.TOOLTIPS.TRANSMITTER_ADF2_VOLUME_DEC</TOOLTIP_LEFT>
             <TOOLTIP_RIGHT>TT:COCKPIT.TOOLTIPS.TRANSMITTER_ADF2_VOLUME_INC</TOOLTIP_RIGHT>
@@ -411,7 +422,15 @@
                 <EMISSIVE_DIM>(L:A32NX_OVHD_INTLT_ANN, number) 2 == if{ 0.1 } els{ 1 }</EMISSIVE_DIM>
                 <LEFT_SINGLE_CODE>
                     #SEQ1_POWERED# if{
-                        (L:A32NX_ACP#ID#_#FREQ_ID#_TRANSMIT) ! (&gt;L:A32NX_ACP#ID#_#FREQ_ID#_TRANSMIT)
+                        (L:A32NX_ACP#ID#_TRANSMIT_CHANNEL) #TRANSMIT_ID# == if{
+                            4 (&gt;L:A32NX_ACP#ID#_TRANSMIT_CHANNEL)
+                        } els{
+                            #TRANSMIT_ID# (&gt;L:A32NX_ACP#ID#_TRANSMIT_CHANNEL)
+                        }
+
+                        (L:A32NX_SIDE_PLAYING, number) 2 == if{
+                            (L:A32NX_ACP#ID#_TRANSMIT_CHANNEL) (&gt;L:A32NX_ACP1_TRANSMIT_CHANNEL)
+                        }
                     }
                 </LEFT_SINGLE_CODE>
             </DefaultTemplateParameters>
@@ -419,13 +438,21 @@
                 <!-- Green light -->
                 <SEQ1_EMISSIVE_CODE>
                     #SEQ1_POWERED# if{
-                        (L:A32NX_ACP#ID#_#FREQ_ID#_TRANSMIT) (L:A32NX_OVHD_INTLT_ANN) 0 == or #EMISSIVE_DIM# *
+                        (L:A32NX_SIDE_PLAYING, number) 2 == if{
+                            (L:A32NX_ACP1_TRANSMIT_CHANNEL) #TRANSMIT_ID# == (L:A32NX_OVHD_INTLT_ANN) 0 == or #EMISSIVE_DIM# *
+                        } els{
+                            (L:A32NX_ACP#ID#_TRANSMIT_CHANNEL) #TRANSMIT_ID# == (L:A32NX_OVHD_INTLT_ANN) 0 == or #EMISSIVE_DIM# *
+                        }
                     }
                 </SEQ1_EMISSIVE_CODE>
                     <!-- Button name light (for example CALL or MECH)-->
                 <SEQ2_EMISSIVE_CODE>
                     #SEQ1_POWERED# if{
-                        (L:A32NX_ACP#ID#_#FREQ_ID#_TRANSMIT) (L:A32NX_OVHD_INTLT_ANN) 0 == or #EMISSIVE_DIM# *
+                        (L:A32NX_SIDE_PLAYING, number) 2 == if{
+                            (L:A32NX_ACP1_TRANSMIT_CHANNEL) #TRANSMIT_ID# == (L:A32NX_OVHD_INTLT_ANN) 0 == or #EMISSIVE_DIM# *
+                        } els{
+                            (L:A32NX_ACP#ID#_TRANSMIT_CHANNEL) #TRANSMIT_ID# == (L:A32NX_OVHD_INTLT_ANN) 0 == or #EMISSIVE_DIM# *
+                        }
                     }
                 </SEQ2_EMISSIVE_CODE>
                 <WWISE_EVENT_1>fcubutton</WWISE_EVENT_1>
@@ -446,17 +473,19 @@
             <EMISSIVE_DIM>(L:A32NX_OVHD_INTLT_ANN, number) 2 == if{ 0.1 } els{ 1 }</EMISSIVE_DIM>
         </DefaultTemplateParameters>
         <OverrideTemplateParameters>
-            <TRANSMIT_EMISSIVE_CODE>
-                #SEQ1_POWERED# ! if{
-                    0
-                } els{
-                    1 (L:A32NX_ACP#ID#_#FREQ_ID#_KNOB_VOLUME_DOWN) == (L:A32NX_OVHD_INTLT_ANN) 0 == or if{
-                        3.0 #EMISSIVE_DIM# *
-                    } els{
-                        0.1 #EMISSIVE_DIM# *
-                    }
+        <TRANSMIT_EMISSIVE_CODE type="rnp" return="number">
+            let ret = 0;
+
+            if #SEQ1_POWERED, bool# {
+                if (L:A32NX_ACP#ID#_#FREQ_ID#_KNOB_VOLUME_DOWN, bool) or !(L:A32NX_OVHD_INTLT_ANN, bool) {
+                    ret = 3.0 * #EMISSIVE_DIM, number#;
+                } else {
+                    ret = 0.1 * #EMISSIVE_DIM, number#;
                 }
-            </TRANSMIT_EMISSIVE_CODE>
+            }
+
+            ret
+        </TRANSMIT_EMISSIVE_CODE>
         </OverrideTemplateParameters>
 
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
@@ -475,126 +504,60 @@
                 <USE_SIMVAR_FOR_BUTTON_ANIM>False</USE_SIMVAR_FOR_BUTTON_ANIM>
                 <USE_SIMVAR_FOR_KNOB_ANIM>False</USE_SIMVAR_FOR_KNOB_ANIM>
                 <CENTER_RADIUS>0.002</CENTER_RADIUS>
-                <Condition Valid="INSTRUMENT_VAR">
-                    <True>
-                        <KNOB_ANIM_CODE>
-                            (L:A32NX_COMMUNICATIONS_PANELS_SYNC_ENABLED, bool) if{
-                                (A:#INSTRUMENT_VAR# VOLUME:#INDEX_VAR#, percent)
-                            } els{
-                                (L:A32NX_ACP#ID#_#FREQ_ID#_VOLUME, number)
-                            }
-                        </KNOB_ANIM_CODE>
-                    </True>
-                    <False>
-                        <KNOB_ANIM_CODE>
-                            (L:A32NX_COMMUNICATIONS_PANELS_SYNC_ENABLED, bool) if{
-                                (L:A32NX_#FREQ_ID#_VOLUME, number)
-                            } els{
-                                (L:A32NX_ACP#ID#_#FREQ_ID#_VOLUME, number)
-                            }
-                        </KNOB_ANIM_CODE>
-                    </False>
-                </Condition>
-                <CLOCKWISE_CODE>
-                    0 (L:A32NX_ACP#ID#_#FREQ_ID#_KNOB_VOLUME_DOWN) == if{
-                        (L:A32NX_ACP#ID#_#FREQ_ID#_VOLUME) #VOLUME_INCREMENT_HARD# + 100 min (&gt;L:A32NX_ACP#ID#_#FREQ_ID#_VOLUME)
-                    } els{
-                        (L:A32NX_ACP#ID#_#FREQ_ID#_VOLUME) #VOLUME_INCREMENT# + 100 min (&gt;L:A32NX_ACP#ID#_#FREQ_ID#_VOLUME)
-                    }
-                </CLOCKWISE_CODE>
-                <ANTICLOCKWISE_CODE>
-                    0 (L:A32NX_ACP#ID#_#FREQ_ID#_KNOB_VOLUME_DOWN) == if{
-                        (L:A32NX_ACP#ID#_#FREQ_ID#_VOLUME) #VOLUME_INCREMENT_HARD# - 0 max (&gt;L:A32NX_ACP#ID#_#FREQ_ID#_VOLUME)
-                    } els{
-                        (L:A32NX_ACP#ID#_#FREQ_ID#_VOLUME) #VOLUME_INCREMENT# - 0 max (&gt;L:A32NX_ACP#ID#_#FREQ_ID#_VOLUME)
-                    }
-                </ANTICLOCKWISE_CODE>
-                <ANIM_CODE_SWITCH>(L:A32NX_ACP#ID#_#FREQ_ID#_KNOB_VOLUME_DOWN)</ANIM_CODE_SWITCH>
-                <ANIM_NAME_PUSH>#ANIM_NAME_SWITCH#</ANIM_NAME_PUSH>
-                <LEFT_SINGLE_CODE>
-                    #SEQ1_POWERED# if{
-                        (L:A32NX_ACP#ID#_#FREQ_ID#_KNOB_VOLUME_DOWN) ! (&gt;L:A32NX_ACP#ID#_#FREQ_ID#_KNOB_VOLUME_DOWN)
-                    }
-                </LEFT_SINGLE_CODE>
-                <SEQ1_EMISSIVE_CODE>
-                    #SEQ1_POWERED# if{
-                        1 (L:A32NX_ACP#ID#_#FREQ_ID#_KNOB_VOLUME_DOWN) == (L:A32NX_OVHD_INTLT_ANN) 0 == or #EMISSIVE_DIM# *
-                    }
-                </SEQ1_EMISSIVE_CODE>
-                <WWISE_EVENT></WWISE_EVENT>
-                <WWISE_EVENT_1>mcdubuttons</WWISE_EVENT_1>
-                <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
-                <WWISE_EVENT_2>mcdubuttons</WWISE_EVENT_2>
-                <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
-                <COUNT>36</COUNT>
-            </UseTemplate>
-        </Component>
-
-        <Component ID="#NODE_ID_LIGHT#_Light" Node="#NODE_ID_LIGHT#">
-            <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
-                <EMISSIVE_CODE>#TRANSMIT_EMISSIVE_CODE#</EMISSIVE_CODE>
-            </UseTemplate>
-        </Component>
-    </Template>
-
-    <Template Name="FBW_AIRLINER_Audio_NAV_Volume_Knob_Template">
-        <DefaultTemplateParameters>
-            <TOOLTIP_LEFT></TOOLTIP_LEFT>
-            <TOOLTIP_RIGHT></TOOLTIP_RIGHT>
-            <TOOLTIP_HAND></TOOLTIP_HAND>
-            <TOOLTIP_PB></TOOLTIP_PB>
-            <KNOB_TEMPLATE>ASOBO_GT_Knob_Finite_Switch</KNOB_TEMPLATE>
-            <ANIM_KNOB_PARAM_NAME>#ANIM_CODE_SWITCH#</ANIM_KNOB_PARAM_NAME>
-            <EMISSIVE_DIM>(L:A32NX_OVHD_INTLT_ANN, number) 2 == if{ 0.1 } els{ 1 }</EMISSIVE_DIM>
-        </DefaultTemplateParameters>
-        <OverrideTemplateParameters>
-            <TRANSMIT_EMISSIVE_CODE>
-                #SEQ1_POWERED# ! if{
-                    0
-                } els{
-                    (L:A32NX_ACP#ID#_#INSTRUMENT#_KNOB_VOLUME_DOWN) 1 == (L:A32NX_OVHD_INTLT_ANN) 0 == or if{
-                        3.0 #EMISSIVE_DIM# *
-                    } els{
-                        0.1 #EMISSIVE_DIM# *
-                    }
-                }
-            </TRANSMIT_EMISSIVE_CODE>
-        </OverrideTemplateParameters>
-
-        <Component ID="#NODE_ID#" Node="#NODE_ID#">
-            <UseTemplate Name="#KNOB_TEMPLATE#">
-                <ANIM_NAME>#ANIM_NAME_KNOB#</ANIM_NAME>
-                <ANIMREF_ID>1</ANIMREF_ID>
-                <ANIMCURSOR_MIN>0</ANIMCURSOR_MIN>
-                <ANIMCURSOR_MAX>1</ANIMCURSOR_MAX>
-                <ANIMTIP_0_ON_CURSOR>TurnLeft</ANIMTIP_0_ON_CURSOR>
-                <ANIMTIP_1_ON_CURSOR>TurnRight</ANIMTIP_1_ON_CURSOR>
-                <ANIMTIP_2_ON_CURSOR>Hand</ANIMTIP_2_ON_CURSOR>
-                <ANIMTIP_0>#TOOLTIP_LEFT#</ANIMTIP_0>
-                <ANIMTIP_1>#TOOLTIP_RIGHT#</ANIMTIP_1>
-                <ANIMTIP_2>#TOOLTIP_HAND#</ANIMTIP_2>
-                <PUSH>True</PUSH>
-                <USE_SIMVAR_FOR_BUTTON_ANIM>False</USE_SIMVAR_FOR_BUTTON_ANIM>
-                <USE_SIMVAR_FOR_KNOB_ANIM>False</USE_SIMVAR_FOR_KNOB_ANIM>
-                <CENTER_RADIUS>0.002</CENTER_RADIUS>
-                <KNOB_ANIM_CODE>
-                    (L:A32NX_COMMUNICATIONS_PANELS_SYNC_ENABLED, bool) if{
-                        (L:A32NX_#INSTRUMENT#_VOLUME, number)
-                    } els{
-                        (L:A32NX_ACP#ID#_#INSTRUMENT#_VOLUME, number)
-                    }
+                <KNOB_ANIM_CODE>(L:A32NX_ACP#ID#_#FREQ_ID#_VOLUME, number)(L:A32NX_ACP#ID#_#FREQ_ID#_VOLUME, number)
                 </KNOB_ANIM_CODE>
-                <CLOCKWISE_CODE>
-                    (L:A32NX_ACP#ID#_#INSTRUMENT#_VOLUME) #VOLUME_INCREMENT_NAV# + 100 min (&gt;L:A32NX_ACP#ID#_#INSTRUMENT#_VOLUME)
+                <CLOCKWISE_CODE type="rnp">
+                    let increment = #VOLUME_INCREMENT, number#;
+
+                    if !(L:A32NX_ACP#ID#_#FREQ_ID#_KNOB_VOLUME_DOWN, bool) {
+                        increment = #VOLUME_INCREMENT_HARD, number#;
+                    }
+
+                    if (L:A32NX_SIDE_PLAYING, number) == 2 {
+                        alias var = (L:A32NX_ACP1_#FREQ_ID#_VOLUME, number);
+                        var = (var + increment).min(100);
+                    } else {
+                        alias var = (L:A32NX_ACP#ID#_#FREQ_ID#_VOLUME, number);
+                        var = (var + increment).min(100);
+                    }
                 </CLOCKWISE_CODE>
-                <ANTICLOCKWISE_CODE>
-                    (L:A32NX_ACP#ID#_#INSTRUMENT#_VOLUME) #VOLUME_INCREMENT_NAV# - 0 max (&gt;L:A32NX_ACP#ID#_#INSTRUMENT#_VOLUME)
+                <ANTICLOCKWISE_CODE type="rnp">
+                    let increment = #VOLUME_INCREMENT, number#;
+
+                    if !(L:A32NX_ACP#ID#_#FREQ_ID#_KNOB_VOLUME_DOWN, bool) {
+                        increment = #VOLUME_INCREMENT_HARD, number#;
+                    }
+
+                    if (L:A32NX_SIDE_PLAYING, number) == 2 {
+                        alias var = (L:A32NX_ACP1_#FREQ_ID#_VOLUME, number);
+                        var = (var - increment).max(0);
+                    } else {
+                        alias var = (L:A32NX_ACP#ID#_#FREQ_ID#_VOLUME, number);
+                        var = (var - increment).max(0);
+                    }
                 </ANTICLOCKWISE_CODE>
-                <ANIM_CODE_SWITCH> (L:A32NX_ACP#ID#_#INSTRUMENT#_KNOB_VOLUME_DOWN)</ANIM_CODE_SWITCH>
+                <ANIM_CODE_SWITCH>(L:A32NX_ACP#ID#_#FREQ_ID#_KNOB_VOLUME_DOWN, number) 100 *</ANIM_CODE_SWITCH>
                 <ANIM_NAME_PUSH>#ANIM_NAME_SWITCH#</ANIM_NAME_PUSH>
-                <LEFT_SINGLE_CODE>
-                    (L:A32NX_ACP#ID#_#INSTRUMENT#_KNOB_VOLUME_DOWN) ! (&gt;L:A32NX_ACP#ID#_#INSTRUMENT#_KNOB_VOLUME_DOWN)
+                <LEFT_SINGLE_CODE type="rnp">
+                    if #SEQ1_POWERED, bool# {
+                        if (L:A32NX_SIDE_PLAYING, number) == 2 {
+                            (L:A32NX_ACP1_#FREQ_ID#_KNOB_VOLUME_DOWN, bool) = !(L:A32NX_ACP1_#FREQ_ID#_KNOB_VOLUME_DOWN, bool);
+                        } else {
+                            (L:A32NX_ACP#ID#_#FREQ_ID#_KNOB_VOLUME_DOWN, bool) = !(L:A32NX_ACP#ID#_#FREQ_ID#_KNOB_VOLUME_DOWN, bool);
+                        }
+                    }
                 </LEFT_SINGLE_CODE>
+                <SEQ1_EMISSIVE_CODE type="rnp" return="number">
+                    let ret = 0;
+
+                    if #SEQ1_POWERED, bool# {
+                        if (L:A32NX_ACP#ID#_#FREQ_ID#_KNOB_VOLUME_DOWN, bool) or !(L:A32NX_OVHD_INTLT_ANN, bool) {
+                            ret = #EMISSIVE_DIM, number#;
+                        }
+                    }
+
+                    ret
+                </SEQ1_EMISSIVE_CODE>
                 <WWISE_EVENT></WWISE_EVENT>
                 <WWISE_EVENT_1>mcdubuttons</WWISE_EVENT_1>
                 <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>

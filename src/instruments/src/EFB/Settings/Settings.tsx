@@ -18,6 +18,7 @@ import { FlyPadPage } from './Pages/FlyPadPage';
 export type ButtonType = {
     name: string,
     setting: string,
+    index?: number,
 }
 
 interface SelectionTabsProps {

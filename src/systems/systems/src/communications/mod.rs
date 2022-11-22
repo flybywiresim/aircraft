@@ -11,7 +11,7 @@ use crate::{
 use std::time::Duration;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
-pub enum TransmitType {
+enum TransmitType {
     COM1,
     COM2,
     COM3,
@@ -33,7 +33,7 @@ impl From<f64> for TransmitType {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
-pub enum SideTransmission {
+enum SideTransmission {
     CAPTAIN,
     FO,
     BOTH,
@@ -58,6 +58,12 @@ pub enum AudioSwitchingKnobPosition {
     FO,
 }
 
+enum AcpChosen {
+    ACP1,
+    ACP2,
+    ACP3,
+}
+
 pub struct Communications {
     acp1: AudioControlPanel,
     acp2: AudioControlPanel,
@@ -69,10 +75,13 @@ pub struct Communications {
     pilot_transmit_id: VariableIdentifier,
     copilot_transmit_id: VariableIdentifier,
 
-    // transmit_com1_id: VariableIdentifier,
-    // transmit_com2_id: VariableIdentifier,
     receive_com1_id: VariableIdentifier,
     receive_com2_id: VariableIdentifier,
+    receive_hf1_id: VariableIdentifier,
+    receive_hf2_id: VariableIdentifier,
+    receive_mech_id: VariableIdentifier,
+    receive_att_id: VariableIdentifier,
+    receive_pa_id: VariableIdentifier,
     //receive_com3_id: VariableIdentifier, deactivated since vPilot needs com3 to be always on
     receive_adf1_id: VariableIdentifier,
     receive_adf2_id: VariableIdentifier,
@@ -98,13 +107,18 @@ pub struct Communications {
     volume_markers_id: VariableIdentifier,
     sound_markers_id: VariableIdentifier,
 
+    voice_button_id: VariableIdentifier,
+
     pilot_transmit: TransmitType,
     copilot_transmit: TransmitType,
 
-    // transmit_com1: bool,
-    // transmit_com2: bool,
     receive_com1: bool,
     receive_com2: bool,
+    receive_hf1: bool,
+    receive_hf2: bool,
+    receive_mech: bool,
+    receive_att: bool,
+    receive_pa: bool,
     receive_adf1: bool,
     receive_adf2: bool,
     receive_vor1: bool,
@@ -113,6 +127,7 @@ pub struct Communications {
     receive_gls: bool,
     receive_markers: bool,
     sound_markers: bool,
+    voice_button: bool,
 
     volume_com1: u8,
     volume_com2: u8,
@@ -150,10 +165,13 @@ impl Communications {
             pilot_transmit_id: context.get_identifier("PILOT_TRANSMIT".to_owned()),
             copilot_transmit_id: context.get_identifier("COPILOT_TRANSMIT".to_owned()),
 
-            // transmit_com1_id: context.get_identifier("COM1_TRANSMIT".to_owned()),
-            // transmit_com2_id: context.get_identifier("COM2_TRANSMIT".to_owned()),
             receive_com1_id: context.get_identifier("COM1_RECEIVE".to_owned()),
             receive_com2_id: context.get_identifier("COM2_RECEIVE".to_owned()),
+            receive_hf1_id: context.get_identifier("HF1_RECEIVE".to_owned()),
+            receive_hf2_id: context.get_identifier("HF2_RECEIVE".to_owned()),
+            receive_pa_id: context.get_identifier("PA_RECEIVE".to_owned()),
+            receive_att_id: context.get_identifier("ATT_RECEIVE".to_owned()),
+            receive_mech_id: context.get_identifier("MECH_RECEIVE".to_owned()),
             //receive_com3_id: VariableIdentifier, deactivated since vPilot needs com3 to be always on
             receive_adf1_id: context.get_identifier("ADF1_IDENT".to_owned()),
             receive_adf2_id: context.get_identifier("ADF2_IDENT".to_owned()),
@@ -178,15 +196,20 @@ impl Communications {
             volume_vor2_id: context.get_identifier("VOR2_VOLUME".to_owned()),
             volume_ils_id: context.get_identifier("ILS_VOLUME".to_owned()),
             volume_gls_id: context.get_identifier("GLS_VOLUME".to_owned()),
-            volume_markers_id: context.get_identifier("MARKER_VOLUME".to_owned()),
+            volume_markers_id: context.get_identifier("MKR_VOLUME".to_owned()),
 
-            pilot_transmit: TransmitType::NONE,
-            copilot_transmit: TransmitType::NONE,
+            voice_button_id: context.get_identifier("VOICE_BUTTON_DOWN".to_owned()),
 
-            // transmit_com1: false,
-            // transmit_com2: false,
+            pilot_transmit: TransmitType::COM1,
+            copilot_transmit: TransmitType::COM1,
+
             receive_com1: false,
             receive_com2: false,
+            receive_hf1: false,
+            receive_hf2: false,
+            receive_mech: false,
+            receive_att: false,
+            receive_pa: false,
             receive_adf1: false,
             receive_adf2: false,
             receive_vor1: false,
@@ -194,8 +217,8 @@ impl Communications {
             receive_ils: false,
             receive_gls: false,
             receive_markers: false,
-
             sound_markers: false,
+            voice_button: false,
 
             volume_com1: 0,
             volume_com2: 0,
@@ -221,198 +244,79 @@ impl Communications {
         }
     }
 
+    /*
+     * This function gets data from an elected acp
+     * according to AudioSwitchKnob position and side played
+     *
+     * If both sides are sync, let's skip this update
+     * since the volume is common between all acps
+     * and it's update within the Behaviors
+     */
     pub fn update(&mut self, context: &UpdateContext) {
-        let side: SidePlaying = context.side_playing();
-
-        let (transmit_com1, side_com1) = self.guess_transmit(
-            self.acp1.get_transmit_com1(),
-            self.acp2.get_transmit_com1(),
-            self.acp3.get_transmit_com1(),
-            &side,
-        );
-        let (transmit_com2, _side_com2) = self.guess_transmit(
-            self.acp1.get_transmit_com2(),
-            self.acp2.get_transmit_com2(),
-            self.acp3.get_transmit_com2(),
-            &side,
-        );
+        let chosen_acp: &AudioControlPanel = match self.guess_acp(&context.side_playing()) {
+            AcpChosen::ACP1 => &(self.acp1),
+            AcpChosen::ACP2 => &(self.acp2),
+            AcpChosen::ACP3 => &(self.acp3),
+        };
 
         self.pilot_transmit = TransmitType::NONE;
         self.copilot_transmit = TransmitType::NONE;
 
-        if transmit_com1 || transmit_com2 {
-            match side_com1 {
-                SideTransmission::CAPTAIN => {
-                    self.pilot_transmit = if transmit_com1 {
-                        TransmitType::COM1
-                    } else {
-                        TransmitType::COM2
-                    };
+        if chosen_acp.get_transmit_com1() || chosen_acp.get_transmit_com2() {
+            let type_transmit = if chosen_acp.get_transmit_com1() {
+                TransmitType::COM1
+            } else {
+                TransmitType::COM2
+            };
+
+            match context.side_playing() {
+                SidePlaying::CAPTAIN => {
+                    self.pilot_transmit = type_transmit;
                 }
-                SideTransmission::FO => {
-                    self.copilot_transmit = if transmit_com1 {
-                        TransmitType::COM1
-                    } else {
-                        TransmitType::COM2
-                    };
+                SidePlaying::FO => {
+                    self.copilot_transmit = type_transmit;
                 }
-                _ => {
-                    self.pilot_transmit = if transmit_com1 {
-                        TransmitType::COM1
-                    } else {
-                        TransmitType::COM2
-                    };
-                    self.copilot_transmit = self.pilot_transmit;
+                SidePlaying::SYNC => {
+                    self.pilot_transmit = type_transmit;
+                    self.copilot_transmit = type_transmit;
                 }
             }
         }
 
-        println!("Going to write pilot {}", self.pilot_transmit as u32);
-        println!("Going to write copilot {}", self.copilot_transmit as u32);
+        self.voice_button = chosen_acp.get_voice_button();
 
-        self.receive_com1 = self.guess(
-            self.acp1.get_receive_com1(),
-            self.acp2.get_receive_com1(),
-            self.acp3.get_receive_com1(),
-            &side,
-        );
-        self.receive_com2 = self.guess(
-            self.acp1.get_receive_com2(),
-            self.acp2.get_receive_com2(),
-            self.acp3.get_receive_com2(),
-            &side,
-        );
-        self.receive_adf1 = self.guess(
-            self.acp1.get_receive_adf1(),
-            self.acp2.get_receive_adf1(),
-            self.acp3.get_receive_adf1(),
-            &side,
-        );
-        self.receive_adf2 = self.guess(
-            self.acp1.get_receive_adf2(),
-            self.acp2.get_receive_adf2(),
-            self.acp3.get_receive_adf2(),
-            &side,
-        );
-        self.receive_vor1 = self.guess(
-            self.acp1.get_receive_vor1(),
-            self.acp2.get_receive_vor1(),
-            self.acp3.get_receive_vor1(),
-            &side,
-        );
-        self.receive_vor2 = self.guess(
-            self.acp1.get_receive_vor2(),
-            self.acp2.get_receive_vor2(),
-            self.acp3.get_receive_vor2(),
-            &side,
-        );
-        self.receive_ils = self.guess(
-            self.acp1.get_receive_ils(),
-            self.acp2.get_receive_ils(),
-            self.acp3.get_receive_ils(),
-            &side,
-        );
-        self.receive_gls = self.guess(
-            self.acp1.get_receive_gls(),
-            self.acp2.get_receive_gls(),
-            self.acp3.get_receive_gls(),
-            &side,
-        );
+        self.receive_com1 = chosen_acp.get_receive_com1();
+        println!("Going to write receive_com1 {:?}", self.receive_com1);
+        self.receive_com2 = chosen_acp.get_receive_com2();
+        self.receive_hf1 = chosen_acp.get_receive_hf1();
+        self.receive_hf2 = chosen_acp.get_receive_hf2();
+        self.receive_mech = chosen_acp.get_receive_mech();
+        self.receive_att = chosen_acp.get_receive_att();
+        self.receive_pa = chosen_acp.get_receive_pa();
+        self.receive_adf1 = chosen_acp.get_receive_adf1();
+        self.receive_adf2 = chosen_acp.get_receive_adf2();
+        self.receive_vor1 = chosen_acp.get_receive_vor1();
+        self.receive_vor2 = chosen_acp.get_receive_vor2();
+        self.receive_ils = chosen_acp.get_receive_ils();
+        self.receive_gls = chosen_acp.get_receive_gls();
 
-        // Special case for markers as there's no XXXX_SET function. Only Toggle
-        self.receive_markers = self.guess_receive_markers(
-            self.acp1.get_receive_markers(),
-            self.acp2.get_receive_markers(),
-            self.acp3.get_receive_markers(),
-        );
+        self.receive_markers = (self.sound_markers && !chosen_acp.get_receive_markers())
+            || (!self.sound_markers && chosen_acp.get_receive_markers());
 
-        self.volume_com1 = self.guess(
-            self.acp1.get_volume_com1(),
-            self.acp2.get_volume_com1(),
-            self.acp3.get_volume_com1(),
-            &side,
-        );
-
-        println!("Going to write volume_com1 {}", self.volume_com1 as f64);
-
-        self.volume_com2 = self.guess(
-            self.acp1.get_volume_com2(),
-            self.acp2.get_volume_com2(),
-            self.acp3.get_volume_com2(),
-            &side,
-        );
-        self.volume_adf1 = self.guess(
-            self.acp1.get_volume_adf1(),
-            self.acp2.get_volume_adf1(),
-            self.acp3.get_volume_adf1(),
-            &side,
-        );
-        self.volume_adf2 = self.guess(
-            self.acp1.get_volume_adf2(),
-            self.acp2.get_volume_adf2(),
-            self.acp3.get_volume_adf2(),
-            &side,
-        );
-        self.volume_vor1 = self.guess(
-            self.acp1.get_volume_vor1(),
-            self.acp2.get_volume_vor1(),
-            self.acp3.get_volume_vor1(),
-            &side,
-        );
-        self.volume_vor2 = self.guess(
-            self.acp1.get_volume_vor2(),
-            self.acp2.get_volume_vor2(),
-            self.acp3.get_volume_vor2(),
-            &side,
-        );
-        self.volume_ils = self.guess(
-            self.acp1.get_volume_ils(),
-            self.acp2.get_volume_ils(),
-            self.acp3.get_volume_ils(),
-            &side,
-        );
-        self.volume_gls = self.guess(
-            self.acp1.get_volume_gls(),
-            self.acp2.get_volume_gls(),
-            self.acp3.get_volume_gls(),
-            &side,
-        );
-        self.volume_hf1 = self.guess(
-            self.acp1.get_volume_hf1(),
-            self.acp2.get_volume_hf1(),
-            self.acp3.get_volume_hf1(),
-            &side,
-        );
-        self.volume_hf2 = self.guess(
-            self.acp1.get_volume_hf2(),
-            self.acp2.get_volume_hf2(),
-            self.acp3.get_volume_hf2(),
-            &side,
-        );
-        self.volume_pa = self.guess(
-            self.acp1.get_volume_pa(),
-            self.acp2.get_volume_pa(),
-            self.acp3.get_volume_pa(),
-            &side,
-        );
-        self.volume_att = self.guess(
-            self.acp1.get_volume_att(),
-            self.acp2.get_volume_att(),
-            self.acp3.get_volume_att(),
-            &side,
-        );
-        self.volume_mech = self.guess(
-            self.acp1.get_volume_mech(),
-            self.acp2.get_volume_mech(),
-            self.acp3.get_volume_mech(),
-            &side,
-        );
-        self.volume_markers = self.guess(
-            self.acp1.get_volume_markers(),
-            self.acp2.get_volume_markers(),
-            self.acp3.get_volume_markers(),
-            &side,
-        );
+        self.volume_com1 = chosen_acp.get_volume_com1();
+        self.volume_com2 = chosen_acp.get_volume_com2();
+        self.volume_adf1 = chosen_acp.get_volume_adf1();
+        self.volume_adf2 = chosen_acp.get_volume_adf2();
+        self.volume_vor1 = chosen_acp.get_volume_vor1();
+        self.volume_vor2 = chosen_acp.get_volume_vor2();
+        self.volume_ils = chosen_acp.get_volume_ils();
+        self.volume_gls = chosen_acp.get_volume_gls();
+        self.volume_hf1 = chosen_acp.get_volume_hf1();
+        self.volume_hf2 = chosen_acp.get_volume_hf2();
+        self.volume_pa = chosen_acp.get_volume_pa();
+        self.volume_att = chosen_acp.get_volume_att();
+        self.volume_mech = chosen_acp.get_volume_mech();
+        self.volume_markers = chosen_acp.get_volume_markers();
 
         self.morse_adf1.update(context);
         self.morse_adf2.update(context);
@@ -420,93 +324,48 @@ impl Communications {
         self.morse_vor2.update(context);
         self.morse_ils.update(context);
         self.morse_gls.update(context);
+
+        // Update ACP 2/3 with ACP1 as ACP1 is the preffered one
+        // when both sides are synchronised
+        if context.side_playing() == SidePlaying::SYNC {
+            self.acp2.update_volume(&self.acp1);
+            self.acp3.update_volume(&self.acp1);
+
+            self.acp2.update_receive(&self.acp1);
+            self.acp3.update_receive(&self.acp1);
+        }
     }
 
-    fn guess<T: Copy>(
-        &self,
-        to_use_acp1: T,
-        to_use_acp2: T,
-        to_use_acp3: T,
-        side_playing: &SidePlaying,
-    ) -> T {
-        // By default, let's use Captain's side
-        let mut receive_to_use: T = to_use_acp1;
+    /*
+     * This functions guesses which ACP to use for calculations
+     * according to AudioSwitchingKnob position and the side
+     * the player is playing on
+     */
+    fn guess_acp(&self, side_playing: &SidePlaying) -> AcpChosen {
+        let mut chosen_acp = AcpChosen::ACP1;
 
-        if self.audio_switching_knob != AudioSwitchingKnobPosition::NORM {
-            receive_to_use = to_use_acp3;
+        // If the sides are sync, let's choose ACP1 as it doewn't matter
+        if !matches!(side_playing, SidePlaying::SYNC) {
+            if self.audio_switching_knob != AudioSwitchingKnobPosition::NORM {
+                chosen_acp = AcpChosen::ACP3;
 
-            if self.audio_switching_knob == AudioSwitchingKnobPosition::CAPTAIN {
+                if self.audio_switching_knob == AudioSwitchingKnobPosition::CAPTAIN {
+                    if matches!(side_playing, SidePlaying::FO) {
+                        chosen_acp = AcpChosen::ACP2;
+                    }
+                } else {
+                    if matches!(side_playing, SidePlaying::CAPTAIN) {
+                        chosen_acp = AcpChosen::ACP1;
+                    }
+                }
+            } else {
                 if matches!(side_playing, SidePlaying::FO) {
-                    receive_to_use = to_use_acp2;
+                    chosen_acp = AcpChosen::ACP2;
                 }
-            } else {
-                if matches!(side_playing, SidePlaying::CAPTAIN) {
-                    receive_to_use = to_use_acp1;
-                }
-            }
-        } else {
-            if matches!(side_playing, SidePlaying::FO) {
-                receive_to_use = to_use_acp2;
             }
         }
 
-        receive_to_use
-    }
-
-    fn guess_transmit(
-        &self,
-        to_use_acp1: bool,
-        to_use_acp2: bool,
-        to_use_acp3: bool,
-        side_playing: &SidePlaying,
-    ) -> (bool, SideTransmission) {
-        // By default, let's use Captain's side
-        let mut transmit_to_use = to_use_acp1;
-        let mut side = SideTransmission::BOTH;
-
-        if self.audio_switching_knob != AudioSwitchingKnobPosition::NORM {
-            transmit_to_use = to_use_acp3;
-
-            if self.audio_switching_knob == AudioSwitchingKnobPosition::CAPTAIN {
-                side = SideTransmission::CAPTAIN;
-
-                if matches!(side_playing, SidePlaying::FO) {
-                    transmit_to_use = to_use_acp2;
-                    side = SideTransmission::FO;
-                }
-            } else {
-                side = SideTransmission::FO;
-
-                if matches!(side_playing, SidePlaying::CAPTAIN) {
-                    transmit_to_use = to_use_acp1;
-                    side = SideTransmission::CAPTAIN;
-                }
-            }
-        } else {
-            if matches!(side_playing, SidePlaying::FO) {
-                transmit_to_use = to_use_acp2;
-            }
-        }
-
-        (transmit_to_use, side)
-    }
-
-    fn guess_receive_markers(&self, knob_acp1: bool, knob_acp2: bool, knob_acp3: bool) -> bool {
-        let mut receive_to_return_1 = knob_acp1;
-        let mut receive_to_return_2 = knob_acp2;
-
-        if self.audio_switching_knob != AudioSwitchingKnobPosition::NORM {
-            receive_to_return_2 = knob_acp3;
-
-            if self.audio_switching_knob == AudioSwitchingKnobPosition::CAPTAIN {
-                receive_to_return_1 = knob_acp2;
-            } else {
-                receive_to_return_1 = knob_acp1;
-            }
-        }
-
-        (self.sound_markers && (!receive_to_return_1 && !receive_to_return_2))
-            || (!self.sound_markers && (receive_to_return_1 || receive_to_return_2))
+        chosen_acp
     }
 }
 
@@ -537,14 +396,20 @@ impl SimulationElement for Communications {
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(&self.voice_button_id, self.voice_button);
+
         writer.write(&self.pilot_transmit_id, self.pilot_transmit);
         writer.write(&self.copilot_transmit_id, self.copilot_transmit);
 
-        // writer.write(&self.transmit_com1_id, self.transmit_com1);
-        // writer.write(&self.transmit_com2_id, self.transmit_com2);
-
+        println!("Writing receive_com1 {:?}", self.receive_com1);
         writer.write(&self.receive_com1_id, self.receive_com1);
         writer.write(&self.receive_com2_id, self.receive_com2);
+        writer.write(&self.receive_hf1_id, self.receive_hf1);
+        writer.write(&self.receive_hf2_id, self.receive_hf2);
+        writer.write(&self.receive_mech_id, self.receive_mech);
+        writer.write(&self.receive_att_id, self.receive_att);
+        writer.write(&self.receive_pa_id, self.receive_pa);
+
         writer.write(&self.receive_adf1_id, self.receive_adf1);
         writer.write(&self.receive_adf2_id, self.receive_adf2);
         writer.write(&self.receive_vor1_id, self.receive_vor1);
@@ -558,7 +423,6 @@ impl SimulationElement for Communications {
         }
 
         writer.write(&self.volume_com1_id, self.volume_com1);
-        println!("Wrote volume_com1 {}", self.volume_com1 as u32);
         writer.write(&self.volume_com2_id, self.volume_com2);
         writer.write(&self.volume_adf1_id, self.volume_adf1);
         writer.write(&self.volume_adf2_id, self.volume_adf2);
@@ -571,6 +435,7 @@ impl SimulationElement for Communications {
         writer.write(&self.volume_pa_id, self.volume_pa);
         writer.write(&self.volume_att_id, self.volume_att);
         writer.write(&self.volume_mech_id, self.volume_mech);
+        writer.write(&self.volume_markers_id, self.volume_markers);
     }
 }
 
@@ -784,7 +649,7 @@ impl SimulationElement for Morse {
 mod communications_tests {
     use super::*;
     use crate::simulation::{
-        test::{SimulationTestBed, TestBed, WriteByName, ReadByName},
+        test::{ReadByName, SimulationTestBed, TestBed, WriteByName},
         Aircraft,
     };
 

@@ -12,6 +12,13 @@ pub enum FailureType {
     GearProxSensorDamage(ProximityDetectorId),
     GearActuatorJammed(GearActuatorId),
     RadioAltimeter(usize),
+    AudioControlPanel(usize),
+    RadioManagementPanel(usize),
+    VHF(usize),
+    VOR(usize),
+    ADF(usize),
+    ILS,
+    GLS,
 }
 
 pub struct Failure {

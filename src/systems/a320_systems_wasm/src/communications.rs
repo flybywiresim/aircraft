@@ -79,12 +79,23 @@ pub(super) fn communications(builder: &mut MsfsAspectBuilder) -> Result<(), Box<
         VariableToEventWriteOn::Change,
         "NAV4_VOLUME_SET_EX1",
     )?;
-
+    builder.variable_to_event(
+        Variable::aspect("MKR_VOLUME"),
+        VariableToEventMapping::EventDataRaw,
+        VariableToEventWriteOn::Change,
+        "MARKER_VOLUME_SET",
+    )?;
+    builder.variable_to_event(
+        Variable::aspect("MKR_IDENT"),
+        VariableToEventMapping::EventDataRaw,
+        VariableToEventWriteOn::Change,
+        "MARKER_SOUND_TOGGLE",
+    )?;
     builder.variable_to_event(
         Variable::aspect("ADF1_IDENT"),
         VariableToEventMapping::EventDataRaw,
         VariableToEventWriteOn::Change,
-        "RADIO_ADF1_IDENT_SET",
+        "RADIO_ADF_IDENT_SET",
     )?;
     builder.variable_to_event(
         Variable::aspect("ADF2_IDENT"),
@@ -96,25 +107,39 @@ pub(super) fn communications(builder: &mut MsfsAspectBuilder) -> Result<(), Box<
         Variable::aspect("VOR1_IDENT"),
         VariableToEventMapping::EventDataRaw,
         VariableToEventWriteOn::Change,
-        "NAV1_VOLUME_SET_EX1",
+        "RADIO_VOR1_IDENT_SET",
+    )?;
+    builder.variable_to_event(
+        Variable::aspect("VOR1_IDENT"),
+        VariableToEventMapping::EventDataRaw,
+        VariableToEventWriteOn::Change,
+        "RADIO_DME1_IDENT_SET",
     )?;
     builder.variable_to_event(
         Variable::aspect("VOR2_IDENT"),
         VariableToEventMapping::EventDataRaw,
         VariableToEventWriteOn::Change,
-        "NAV2_VOLUME_SET_EX1",
+        "RADIO_VOR2_IDENT_SET",
     )?;
+    builder.variable_to_event(
+        Variable::aspect("VOR2_IDENT"),
+        VariableToEventMapping::EventDataRaw,
+        VariableToEventWriteOn::Change,
+        "RADIO_DME2_IDENT_SET",
+    )?;
+    // For the next two, they are not VOR but
+    // the SDK does not allow us to call RADIO_DM3/4 yet
     builder.variable_to_event(
         Variable::aspect("ILS_IDENT"),
         VariableToEventMapping::EventDataRaw,
         VariableToEventWriteOn::Change,
-        "RADIO_DME3_IDENT_SET",
+        "RADIO_VOR3_IDENT_SET",
     )?;
     builder.variable_to_event(
         Variable::aspect("GLS_IDENT"),
         VariableToEventMapping::EventDataRaw,
         VariableToEventWriteOn::Change,
-        "RADIO_DME4_IDENT_SET",
+        "RADIO_VOR4_IDENT_SET",
     )?;
 
     Ok(())

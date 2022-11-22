@@ -527,9 +527,9 @@
       "WheelChocksEnabled": "Wheel Chocks",
       "inHg": "inHg",
       "Side": "Side",
+      "Both": "Synchronized",
       "Captain": "Captain",
-      "Copilot": "Copilot",
-      "CommSync": "Synchronize communications panels"
+      "Copilot": "Copilot"
     },
     "ThrottleConfig": {
       "Apply": "Apply",

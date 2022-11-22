@@ -309,7 +309,7 @@ impl UpdateContext {
             mach_number,
             air_density: MassDensity::new::<kilogram_per_cubic_meter>(1.22),
             true_heading: Default::default(),
-            side_playing: SidePlaying::CAPTAIN,
+            side_playing,
         }
     }
 
@@ -350,7 +350,7 @@ impl UpdateContext {
             is_on_ground: Default::default(),
             vertical_speed: Default::default(),
             local_acceleration: Default::default(),
-            side_playing: SidePlaying::CAPTAIN,
+            side_playing: SidePlaying::SYNC,
 
             local_acceleration_plane_reference_filtered:
                 LowPassFilter::<Vector3<f64>>::new_with_init_value(
