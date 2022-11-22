@@ -3,7 +3,6 @@ use uom::si::{
     acceleration::meter_per_second_squared,
     angle::radian,
     f64::*,
-    length::meter,
     mass_density::kilogram_per_cubic_meter,
     pressure::inch_of_mercury,
     time::second,
@@ -183,7 +182,7 @@ pub struct UpdateContext {
     mach_number: MachNumber,
     air_density: MassDensity,
     true_heading: Angle,
-    plane_height: Length,
+    plane_height_over_ground: Length,
 }
 impl UpdateContext {
     pub(crate) const IS_READY_KEY: &'static str = "IS_READY";
@@ -301,7 +300,7 @@ impl UpdateContext {
             mach_number,
             air_density: MassDensity::new::<kilogram_per_cubic_meter>(1.22),
             true_heading: Default::default(),
-            plane_height: Length::default(),
+            plane_height_over_ground: Length::default(),
         }
     }
 
@@ -368,7 +367,7 @@ impl UpdateContext {
             mach_number: Default::default(),
             air_density: MassDensity::new::<kilogram_per_cubic_meter>(1.22),
             true_heading: Default::default(),
-            plane_height: Length::default(),
+            plane_height_over_ground: Length::default(),
         }
     }
 
@@ -422,7 +421,7 @@ impl UpdateContext {
 
         self.true_heading = reader.read(&self.plane_true_heading_id);
 
-        self.plane_height = reader.read(&self.plane_height_id);
+        self.plane_height_over_ground = reader.read(&self.plane_height_id);
 
         self.update_relative_wind();
 
@@ -652,31 +651,8 @@ impl UpdateContext {
         Rotation3::from_axis_angle(&Vector3::y_axis(), self.true_heading.get::<radian>())
     }
 
-    pub fn height_over_ground(&self, offset_from_plane_reference: Vector3<f64>) -> Length {
-        //let ref_point_height = self.plane_height;
-
-        // println!("REF HEIGHT {:.3}", ref_point_height.get::<meter>());
-
-        // let offset_including_plane_rotation = self.attitude().bank_rotation_transform()
-        //     * (self.attitude().pitch_rotation_transform().inverse() * offset_from_plane_reference);
-
-        let offset_including_plane_rotation = self.attitude().pitch_rotation_transform()
-            * (self.attitude().bank_rotation_transform().inverse() * offset_from_plane_reference);
-
-        // println!(
-        //     "OFFSET POS {:.3} {:.3} {:.3}",
-        //     offset_from_plane_reference[0],
-        //     offset_from_plane_reference[1],
-        //     offset_from_plane_reference[2]
-        // );
-
-        // println!(
-        //     "final height {:.3}",
-        //     (Length::new::<meter>(offset_including_plane_rotation[1]) + self.plane_height)
-        //         .get::<meter>()
-        // );
-
-        Length::new::<meter>(offset_including_plane_rotation[1]) + self.plane_height
+    pub fn plane_height_over_ground(&self) -> Length {
+        self.plane_height_over_ground
     }
 }
 
@@ -727,7 +703,7 @@ mod tests {
     use crate::simulation::SimulationElement;
     use ntest::assert_about_eq;
 
-    use uom::si::{angle::degree, f64::*, velocity::foot_per_second};
+    use uom::si::{f64::*, velocity::foot_per_second};
 
     use super::*;
 
@@ -1016,77 +992,5 @@ mod tests {
         );
         assert!(test_bed.query_element(|e| e.get_velocity_y().get::<meter_per_second>()) < 0.);
         assert!(test_bed.query_element(|e| e.get_velocity_z().get::<meter_per_second>()) < 0.);
-    }
-
-    #[test]
-    fn height_on_offset_point_0_when_plane_not_rotated() {
-        let mut test_bed = SimulationTestBed::from(ElementUnderTest::default())
-            .with_update_before_power_distribution(|el, context, _| {
-                el.update(context);
-            });
-
-        test_bed.write_by_name("PLANE ALT ABOVE GROUND", Length::new::<meter>(0.));
-
-        test_bed.run();
-
-        // assert_about_eq!(
-        //     test_bed.query_element(|e| e.height_over_ground(Vector3::default())[1]),
-        //     0.
-        // );
-    }
-
-    #[test]
-    fn height_on_offset_point_0_increase_when_higher_when_plane_not_rotated() {
-        let mut test_bed = SimulationTestBed::from(ElementUnderTest::default())
-            .with_update_before_power_distribution(|el, context, _| {
-                el.update(context);
-            });
-
-        test_bed.write_by_name("PLANE ALT ABOVE GROUND", Length::new::<meter>(5.));
-
-        test_bed.run();
-
-        // assert_about_eq!(
-        //     test_bed.query_element(|e| e.height_over_ground(Vector3::default())[1]),
-        //     0.
-        // );
-    }
-
-    #[test]
-    fn height_on_offset_point_changes_when_plane_banked() {
-        let mut test_bed = SimulationTestBed::from(ElementUnderTest::default())
-            .with_update_before_power_distribution(|el, context, _| {
-                el.update(context);
-            });
-
-        // MSFS bank right is negative angle
-        test_bed.write_by_name("PLANE BANK DEGREES", Angle::new::<degree>(-45.));
-        test_bed.write_by_name("PLANE ALT ABOVE GROUND", 0.);
-
-        test_bed.run();
-
-        // assert_about_eq!(
-        //     test_bed.query_element(|e| e.get_velocity_x().get::<meter_per_second>()),
-        //     0.
-        // );
-    }
-
-    #[test]
-    fn height_on_offset_point_changes_when_plane_pitches_up() {
-        let mut test_bed = SimulationTestBed::from(ElementUnderTest::default())
-            .with_update_before_power_distribution(|el, context, _| {
-                el.update(context);
-            });
-
-        // MSFS pitch up is negative angle
-        test_bed.write_by_name("PLANE PITCH DEGREES", Angle::new::<degree>(-15.));
-        test_bed.write_by_name("PLANE ALT ABOVE GROUND", Length::new::<meter>(0.));
-
-        test_bed.run();
-
-        // assert_about_eq!(
-        //     test_bed.query_element(|e| e.get_velocity_x().get::<meter_per_second>()),
-        //     0.
-        // );
     }
 }

@@ -4,8 +4,9 @@ use crate::{
     failures::{Failure, FailureType},
     shared::arinc429::{Arinc429Word, SignStatus},
     shared::{
-        ElectricalBusType, ElectricalBuses, GearWheel, LandingGearHandle, LgciuDoorPosition,
-        LgciuGearControl, LgciuGearExtension, LgciuId, LgciuInterface, LgciuWeightOnWheels,
+        height_over_ground, ElectricalBusType, ElectricalBuses, GearWheel, LandingGearHandle,
+        LgciuDoorPosition, LgciuGearControl, LgciuGearExtension, LgciuId, LgciuInterface,
+        LgciuWeightOnWheels,
     },
     simulation::{
         InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -70,7 +71,7 @@ impl TiltingGear {
 
     pub fn update(&mut self, context: &UpdateContext) {
         let current_tire_height =
-            context.height_over_ground(self.contact_point_offset_from_datum_ref_meters);
+            height_over_ground(context, self.contact_point_offset_from_datum_ref_meters);
 
         self.tilt_position = if current_tire_height.get::<meter>()
             <= Self::HEIGHT_TO_ACTIVATE_GROUND_COLLISION_METER
