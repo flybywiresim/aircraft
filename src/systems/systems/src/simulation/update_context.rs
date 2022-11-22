@@ -426,60 +426,6 @@ impl UpdateContext {
         self.update_relative_wind();
 
         self.update_local_acceleration_plane_reference(delta);
-
-        // println!(
-        //     "TEST ON 0 0 0 => {:.3}",
-        //     self.height_over_ground(Vector3::new(0., 0., 0.))
-        //         .get::<meter>()
-        // );
-
-        // println!(
-        //     "TEST ON 5 0 0 => {:.3}",
-        //     self.height_over_ground(Vector3::new(5., 0., 0.))
-        //         .get::<meter>()
-        // );
-
-        // println!(
-        //     "TEST ON 0 -5 0 => {:.3}",
-        //     self.height_over_ground(Vector3::new(0., -5., 0.))
-        //         .get::<meter>()
-        // );
-
-        // println!(
-        //     "TEST ON -2., 0., 0. => {:.3}",
-        //     self.height_over_ground(Vector3::new(-2., 0., 0.))
-        //         .get::<meter>()
-        // );
-
-        // println!(
-        //     "TEST ON 0., -2., 0. => {:.3}",
-        //     self.height_over_ground(Vector3::new(0., -2., 0.))
-        //         .get::<meter>()
-        // );
-
-        // println!(
-        //     "TEST ON 0., 0., -2. => {:.3}",
-        //     self.height_over_ground(Vector3::new(0., 0., -2.))
-        //         .get::<meter>()
-        // );
-
-        // println!(
-        //     "TEST ON 2., 0., 0. => {:.3}",
-        //     self.height_over_ground(Vector3::new(2., 0., 0.))
-        //         .get::<meter>()
-        // );
-
-        // println!(
-        //     "TEST ON 0., 2., 0. => {:.3}",
-        //     self.height_over_ground(Vector3::new(0., 2., 0.))
-        //         .get::<meter>()
-        // );
-
-        // println!(
-        //     "TEST ON 0., 0., 2. => {:.3}",
-        //     self.height_over_ground(Vector3::new(0., 0., 2.))
-        //         .get::<meter>()
-        // );
     }
 
     // Computes local acceleration including world gravity and plane acceleration
