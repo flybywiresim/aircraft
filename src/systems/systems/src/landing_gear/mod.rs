@@ -57,9 +57,9 @@ impl TiltingGear {
     ) -> Self {
         Self {
             tilt_animation_id: context
-                .get_identifier(format!("GEAR_{}_TILT_POSITION", contact_point_id).to_owned()),
+                .get_identifier(format!("GEAR_{}_TILT_POSITION", contact_point_id)),
             compression_id: context
-                .get_identifier(format!("GEAR ANIMATION POSITION:{}", contact_point_id).to_owned()),
+                .get_identifier(format!("GEAR ANIMATION POSITION:{}", contact_point_id)),
             tilt_height_from_low_to_up,
             contact_point_offset_from_datum_ref_meters,
             tilting_max_angle,
@@ -1655,11 +1655,10 @@ mod tests {
 
     #[test]
     fn tilting_gear_does_not_tilt_when_no_pitch_on_ground() {
-        let mut test_bed =
-            SimulationTestBed::from(ElementCtorFn(|context| test_tilting_gear_left(context)))
-                .with_update_before_power_distribution(|el, context, _| {
-                    el.update(context);
-                });
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(test_tilting_gear_left))
+            .with_update_before_power_distribution(|el, context, _| {
+                el.update(context);
+            });
 
         test_bed.write_by_name("PLANE PITCH DEGREES", 0.);
         test_bed.write_by_name("PLANE ALT ABOVE GROUND", Length::new::<meter>(0.5));
@@ -1672,11 +1671,10 @@ mod tests {
 
     #[test]
     fn tilting_gear_tilts_when_up_pitch_on_ground() {
-        let mut test_bed =
-            SimulationTestBed::from(ElementCtorFn(|context| test_tilting_gear_left(context)))
-                .with_update_before_power_distribution(|el, context, _| {
-                    el.update(context);
-                });
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(test_tilting_gear_left))
+            .with_update_before_power_distribution(|el, context, _| {
+                el.update(context);
+            });
 
         test_bed.write_by_name("PLANE PITCH DEGREES", -5.);
         test_bed.write_by_name("PLANE ALT ABOVE GROUND", Length::new::<meter>(0.5));
@@ -1689,11 +1687,10 @@ mod tests {
 
     #[test]
     fn tilting_gear_tilts_at_max_angle_when_high_up_pitch_on_ground() {
-        let mut test_bed =
-            SimulationTestBed::from(ElementCtorFn(|context| test_tilting_gear_left(context)))
-                .with_update_before_power_distribution(|el, context, _| {
-                    el.update(context);
-                });
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(test_tilting_gear_left))
+            .with_update_before_power_distribution(|el, context, _| {
+                el.update(context);
+            });
 
         test_bed.write_by_name("PLANE PITCH DEGREES", -15.);
         test_bed.write_by_name("PLANE ALT ABOVE GROUND", Length::new::<meter>(0.5));
@@ -1706,11 +1703,10 @@ mod tests {
 
     #[test]
     fn tilting_gear_tilts_at_max_angle_when_not_touching_ground() {
-        let mut test_bed =
-            SimulationTestBed::from(ElementCtorFn(|context| test_tilting_gear_left(context)))
-                .with_update_before_power_distribution(|el, context, _| {
-                    el.update(context);
-                });
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(test_tilting_gear_left))
+            .with_update_before_power_distribution(|el, context, _| {
+                el.update(context);
+            });
 
         test_bed.write_by_name("PLANE PITCH DEGREES", -15.);
         test_bed.write_by_name("PLANE ALT ABOVE GROUND", Length::new::<meter>(20.));
@@ -1724,11 +1720,10 @@ mod tests {
 
     #[test]
     fn tilting_gear_untilts_when_plane_inverted() {
-        let mut test_bed =
-            SimulationTestBed::from(ElementCtorFn(|context| test_tilting_gear_left(context)))
-                .with_update_before_power_distribution(|el, context, _| {
-                    el.update(context);
-                });
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(test_tilting_gear_left))
+            .with_update_before_power_distribution(|el, context, _| {
+                el.update(context);
+            });
 
         test_bed.write_by_name("PLANE BANK DEGREES", -180.);
         test_bed.write_by_name("PLANE ALT ABOVE GROUND", Length::new::<meter>(20.));
@@ -1742,11 +1737,10 @@ mod tests {
 
     #[test]
     fn tilting_gear_at_max_tilt_when_not_compressed_and_just_touching_ground() {
-        let mut test_bed =
-            SimulationTestBed::from(ElementCtorFn(|context| test_tilting_gear_left(context)))
-                .with_update_before_power_distribution(|el, context, _| {
-                    el.update(context);
-                });
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(test_tilting_gear_left))
+            .with_update_before_power_distribution(|el, context, _| {
+                el.update(context);
+            });
 
         test_bed.write_by_name("PLANE PITCH DEGREES", 0.);
         test_bed.write_by_name("PLANE ALT ABOVE GROUND", Length::new::<meter>(2.));
@@ -1759,11 +1753,10 @@ mod tests {
 
     #[test]
     fn tilting_gear_start_tilting_when_touching_ground() {
-        let mut test_bed =
-            SimulationTestBed::from(ElementCtorFn(|context| test_tilting_gear_left(context)))
-                .with_update_before_power_distribution(|el, context, _| {
-                    el.update(context);
-                });
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(test_tilting_gear_left))
+            .with_update_before_power_distribution(|el, context, _| {
+                el.update(context);
+            });
 
         test_bed.write_by_name("PLANE PITCH DEGREES", 0.);
         test_bed.write_by_name("PLANE ALT ABOVE GROUND", Length::new::<meter>(1.9));
