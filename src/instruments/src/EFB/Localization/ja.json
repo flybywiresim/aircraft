@@ -155,7 +155,7 @@
       "DeboardConfirmationCancel": "取消",
       "DeboardConfirmationConfirm": "降機",
       "DeboardConfirmationTitle": "乗客を全て降機させますか？",
-      "EstimatedDurationUnit": "minutes",
+      "EstimatedDurationUnit": "分",
       "LoadingTime": "積込時間",
       "Passengers": "乗客数",
       "Planned": "計画値",
