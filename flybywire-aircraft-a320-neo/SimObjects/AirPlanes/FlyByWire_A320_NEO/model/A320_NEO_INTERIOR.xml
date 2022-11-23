@@ -1527,7 +1527,9 @@
                 </Update>
 
                 <!-- INT SEATBELTS -->
-                <UseTemplate Name="FBW_Switch_LeftClick_MouseWheel">
+                <UseTemplate Name="FBW_Anim_Interactions">
+                    <ANIM_TYPE>SWITCH</ANIM_TYPE>
+                    <ANIM_TEMPLATE>FBW_Switch_LeftClick_MouseWheel</ANIM_TEMPLATE>
                     <ANIM_NAME>SWITCH_OVHD_INTLT_SEATBELT</ANIM_NAME>
                     <ANIM_TYPE>SWITCH</ANIM_TYPE>
                     <NODE_ID>SWITCH_OVHD_INTLT_SEATBELT</NODE_ID>
@@ -1613,9 +1615,10 @@
                 </UseTemplate>
 
                 <!-- INT LT ICE IND & STBY COMPASS -->
-                <UseTemplate Name="FBW_Switch_LeftClick_MouseWheel">
-                    <ANIM_NAME>SWITCH_OVHD_INTLT_STBYCOMPAS</ANIM_NAME>
+                <UseTemplate Name="FBW_Anim_Interactions">
                     <ANIM_TYPE>SWITCH</ANIM_TYPE>
+                    <ANIM_TEMPLATE>FBW_Switch_LeftClick_MouseWheel</ANIM_TEMPLATE>
+                    <ANIM_NAME>SWITCH_OVHD_INTLT_STBYCOMPAS</ANIM_NAME>
                     <NODE_ID>SWITCH_OVHD_INTLT_STBYCOMPAS</NODE_ID>
                     <PART_ID>SWITCH_OVHD_INTLT_STBYCOMPAS</PART_ID>
                     <TOGGLE_EVENT>A32NX_STBY_COMPASS_LIGHT_TOGGLE</TOGGLE_EVENT>
@@ -1627,8 +1630,9 @@
                 </UseTemplate>
 
                 <!-- EXT LT BEACON -->
-                 <UseTemplate Name="FBW_Switch_LeftClick_MouseWheel">
+                <UseTemplate Name="FBW_Anim_Interactions">
                     <ANIM_TYPE>SWITCH</ANIM_TYPE>
+                    <ANIM_TEMPLATE>FBW_Switch_LeftClick_MouseWheel</ANIM_TEMPLATE>
                     <NODE_ID>SWITCH_OVHD_EXTLT_BEACON</NODE_ID>
                     <PART_ID>Beacon_Light_Switch</PART_ID>
                     <ANIM_NAME>SWITCH_OVHD_EXTLT_BEACON</ANIM_NAME>
@@ -1639,8 +1643,9 @@
                 </UseTemplate>
 
                 <!-- EXT LT RWY TURN OFF -->
-                  <UseTemplate Name="FBW_Switch_LeftClick_MouseWheel">
+                <UseTemplate Name="FBW_Anim_Interactions">
                     <ANIM_TYPE>SWITCH</ANIM_TYPE>
+                    <ANIM_TEMPLATE>FBW_Switch_LeftClick_MouseWheel</ANIM_TEMPLATE>
                     <NODE_ID>SWITCH_OVHD_EXTLT_RWY</NODE_ID>
                     <PART_ID>EXTLT_RWY</PART_ID>
                     <ANIM_NAME>SWITCH_OVHD_EXTLT_RWY</ANIM_NAME>
@@ -1705,8 +1710,9 @@
                 </UseTemplate>
 
                 <!-- EXT LT WING -->
-                <UseTemplate Name="FBW_Switch_LeftClick_MouseWheel">
+                <UseTemplate Name="FBW_Anim_Interactions">
                     <ANIM_TYPE>SWITCH</ANIM_TYPE>
+                    <ANIM_TEMPLATE>FBW_Switch_LeftClick_MouseWheel</ANIM_TEMPLATE>
                     <NODE_ID>SWITCH_OVHD_EXTLT_WING</NODE_ID>
                     <PART_ID>EXTLT_WING</PART_ID>
                     <ANIM_NAME>SWITCH_OVHD_EXTLT_WING</ANIM_NAME>
@@ -1721,8 +1727,9 @@
                 </UseTemplate>
 
                 <!-- EXT LT NAV & LOGO -->
-                 <UseTemplate Name="FBW_Switch_LeftClick_MouseWheel">
+                <UseTemplate Name="FBW_Anim_Interactions">
                     <ANIM_TYPE>SWITCH</ANIM_TYPE>
+                    <ANIM_TEMPLATE>FBW_Switch_LeftClick_MouseWheel</ANIM_TEMPLATE>
                     <NODE_ID>SWITCH_OVHD_EXTLT_NAVLOGO</NODE_ID>
                     <PART_ID>SWITCH_OVHD_EXTLT_NAVLOGO</PART_ID>
                     <ANIM_NAME>SWITCH_OVHD_EXTLT_NAVLOGO</ANIM_NAME>
