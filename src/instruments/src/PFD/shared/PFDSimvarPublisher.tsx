@@ -54,13 +54,9 @@ export interface PFDSimvars {
     glideSlopeError: number;
     markerBeacon: number;
     isAltManaged: boolean;
-    vMax: number;
     targetSpeedManaged: number;
     mach: number;
     flapHandleIndex: number;
-    greenDotSpeed: number;
-    slatSpeed: number;
-    fSpeed: number;
     transAlt: number;
     transAltAppr: number;
     groundTrack: number;
@@ -71,7 +67,6 @@ export interface PFDSimvars {
     groundHeadingTrue: number;
     groundTrackTrue: number;
     selectedFpa: number;
-    vfeNext: number;
     ilsCourse: number;
     metricAltToggle: boolean;
     tla1: number;
@@ -88,7 +83,6 @@ export interface PFDSimvars {
     engTwoRunning: boolean;
     expediteMode: boolean;
     setHoldSpeed: boolean;
-    vls: number;
     trkFpaDeselectedTCAS: boolean;
     tcasRaInhibited: boolean;
     groundSpeed: number;
@@ -132,6 +126,20 @@ export interface PFDSimvars {
     fac2VAlphaMaxRaw: number;
     fac1VStallWarnRaw: number;
     fac2VStallWarnRaw: number;
+    fac1VMaxRaw: number;
+    fac2VMaxRaw: number;
+    fac1VFeNextRaw: number;
+    fac2VFeNextRaw: number;
+    fac1VCTrendRaw: number;
+    fac2VCTrendRaw: number;
+    fac1VManRaw: number;
+    fac2VManRaw: number;
+    fac1V4Raw: number;
+    fac2V4Raw: number;
+    fac1V3Raw: number;
+    fac2V3Raw: number;
+    fac1VLsRaw: number;
+    fac2VLsRaw: number;
     fac1EstimatedBetaRaw: number;
     fac2EstimatedBetaRaw: number;
     fac1BetaTargetRaw: number;
@@ -193,12 +201,8 @@ export enum PFDVars {
     markerBeacon = 'MARKER BEACON STATE',
     isAltManaged = 'L:A32NX_FCU_ALT_MANAGED',
     targetSpeedManaged = 'L:A32NX_SPEEDS_MANAGED_PFD',
-    vMax = 'L:A32NX_SPEEDS_VMAX',
     mach = 'L:A32NX_ADIRS_ADR_1_MACH',
     flapHandleIndex = 'L:A32NX_FLAPS_HANDLE_INDEX',
-    greenDotSpeed = 'L:A32NX_SPEEDS_GD',
-    slatSpeed = 'L:A32NX_SPEEDS_S',
-    fSpeed = 'L:A32NX_SPEEDS_F',
     transAlt = 'L:AIRLINER_TRANS_ALT',
     transAltAppr = 'L:AIRLINER_APPR_TRANS_ALT',
     groundTrack = 'L:A32NX_ADIRS_IR_1_TRACK',
@@ -209,7 +213,6 @@ export enum PFDVars {
     groundHeadingTrue = 'GPS GROUND TRUE HEADING',
     groundTrackTrue = 'GPS GROUND TRUE TRACK',
     selectedFpa = 'L:A32NX_AUTOPILOT_FPA_SELECTED',
-    vfeNext = 'L:A32NX_SPEEDS_VFEN',
     ilsCourse = 'L:A32NX_FM_LS_COURSE',
     metricAltToggle = 'L:A32NX_METRIC_ALT_TOGGLE',
     tla1='L:A32NX_AUTOTHRUST_TLA:1',
@@ -225,7 +228,6 @@ export enum PFDVars {
     engTwoRunning = 'GENERAL ENG COMBUSTION:2',
     expediteMode = 'L:A32NX_FMA_EXPEDITE_MODE',
     setHoldSpeed = 'L:A32NX_PFD_MSG_SET_HOLD_SPEED',
-    vls = 'L:A32NX_SPEEDS_VLS',
     trkFpaDeselectedTCAS= 'L:A32NX_AUTOPILOT_TCAS_MESSAGE_TRK_FPA_DESELECTION',
     tcasRaInhibited = 'L:A32NX_AUTOPILOT_TCAS_MESSAGE_RA_INHIBITED',
     groundSpeed = 'L:A32NX_ADIRS_IR_1_GROUND_SPEED',
@@ -269,6 +271,20 @@ export enum PFDVars {
     fac2VAlphaMaxRaw = 'L:A32NX_FAC_2_V_ALPHA_LIM',
     fac1VStallWarnRaw = 'L:A32NX_FAC_1_V_STALL_WARN',
     fac2VStallWarnRaw = 'L:A32NX_FAC_2_V_STALL_WARN',
+    fac1VMaxRaw = 'L:A32NX_FAC_1_V_MAX',
+    fac2VMaxRaw = 'L:A32NX_FAC_2_V_MAX',
+    fac1VFeNextRaw = 'L:A32NX_FAC_1_V_FE_NEXT',
+    fac2VFeNextRaw = 'L:A32NX_FAC_2_V_FE_NEXT',
+    fac1VCTrendRaw = 'L:A32NX_FAC_1_SPEED_TREND',
+    fac2VCTrendRaw = 'L:A32NX_FAC_2_SPEED_TREND',
+    fac1VManRaw = 'L:A32NX_FAC_1_V_MAN',
+    fac2VManRaw = 'L:A32NX_FAC_2_V_MAN',
+    fac1V4Raw = 'L:A32NX_FAC_1_V_4',
+    fac2V4Raw = 'L:A32NX_FAC_2_V_4',
+    fac1V3Raw = 'L:A32NX_FAC_1_V_3',
+    fac2V3Raw = 'L:A32NX_FAC_2_V_3',
+    fac1VLsRaw = 'L:A32NX_FAC_1_V_LS',
+    fac2VLsRaw = 'L:A32NX_FAC_2_V_LS',
     fac1EstimatedBetaRaw = 'L:A32NX_FAC_1_ESTIMATED_SIDESLIP',
     fac2EstimatedBetaRaw = 'L:A32NX_FAC_2_ESTIMATED_SIDESLIP',
     fac1BetaTargetRaw = 'L:A32NX_FAC_1_SIDESLIP_TARGET',
@@ -332,12 +348,8 @@ export class PFDSimvarPublisher extends SimVarPublisher<PFDSimvars> {
         ['markerBeacon', { name: PFDVars.markerBeacon, type: SimVarValueType.Enum }],
         ['isAltManaged', { name: PFDVars.isAltManaged, type: SimVarValueType.Bool }],
         ['targetSpeedManaged', { name: PFDVars.targetSpeedManaged, type: SimVarValueType.Knots }],
-        ['vMax', { name: PFDVars.vMax, type: SimVarValueType.Number }],
         ['mach', { name: PFDVars.mach, type: SimVarValueType.Number }],
         ['flapHandleIndex', { name: PFDVars.flapHandleIndex, type: SimVarValueType.Number }],
-        ['greenDotSpeed', { name: PFDVars.greenDotSpeed, type: SimVarValueType.Number }],
-        ['slatSpeed', { name: PFDVars.slatSpeed, type: SimVarValueType.Number }],
-        ['fSpeed', { name: PFDVars.fSpeed, type: SimVarValueType.Number }],
         ['transAlt', { name: PFDVars.transAlt, type: SimVarValueType.Number }],
         ['transAltAppr', { name: PFDVars.transAltAppr, type: SimVarValueType.Number }],
         ['groundTrack', { name: PFDVars.groundTrack, type: SimVarValueType.Number }],
@@ -348,7 +360,6 @@ export class PFDSimvarPublisher extends SimVarPublisher<PFDSimvars> {
         ['groundHeadingTrue', { name: PFDVars.groundHeadingTrue, type: SimVarValueType.Degree }],
         ['groundTrackTrue', { name: PFDVars.groundTrackTrue, type: SimVarValueType.Degree }],
         ['selectedFpa', { name: PFDVars.selectedFpa, type: SimVarValueType.Degree }],
-        ['vfeNext', { name: PFDVars.vfeNext, type: SimVarValueType.Number }],
         ['ilsCourse', { name: PFDVars.ilsCourse, type: SimVarValueType.Number }],
         ['metricAltToggle', { name: PFDVars.metricAltToggle, type: SimVarValueType.Bool }],
         ['tla1', { name: PFDVars.tla1, type: SimVarValueType.Number }],
@@ -364,7 +375,6 @@ export class PFDSimvarPublisher extends SimVarPublisher<PFDSimvars> {
         ['engTwoRunning', { name: PFDVars.engTwoRunning, type: SimVarValueType.Bool }],
         ['expediteMode', { name: PFDVars.expediteMode, type: SimVarValueType.Bool }],
         ['setHoldSpeed', { name: PFDVars.setHoldSpeed, type: SimVarValueType.Bool }],
-        ['vls', { name: PFDVars.vls, type: SimVarValueType.Number }],
         ['trkFpaDeselectedTCAS', { name: PFDVars.trkFpaDeselectedTCAS, type: SimVarValueType.Bool }],
         ['tcasRaInhibited', { name: PFDVars.tcasRaInhibited, type: SimVarValueType.Bool }],
         ['groundSpeed', { name: PFDVars.groundSpeed, type: SimVarValueType.Number }],
@@ -408,6 +418,20 @@ export class PFDSimvarPublisher extends SimVarPublisher<PFDSimvars> {
         ['fac2VAlphaMaxRaw', { name: PFDVars.fac2VAlphaMaxRaw, type: SimVarValueType.Number }],
         ['fac1VStallWarnRaw', { name: PFDVars.fac1VStallWarnRaw, type: SimVarValueType.Number }],
         ['fac2VStallWarnRaw', { name: PFDVars.fac2VStallWarnRaw, type: SimVarValueType.Number }],
+        ['fac1VMaxRaw', { name: PFDVars.fac1VMaxRaw, type: SimVarValueType.Number }],
+        ['fac2VMaxRaw', { name: PFDVars.fac2VMaxRaw, type: SimVarValueType.Number }],
+        ['fac1VFeNextRaw', { name: PFDVars.fac1VFeNextRaw, type: SimVarValueType.Number }],
+        ['fac2VFeNextRaw', { name: PFDVars.fac2VFeNextRaw, type: SimVarValueType.Number }],
+        ['fac1VCTrendRaw', { name: PFDVars.fac1VCTrendRaw, type: SimVarValueType.Number }],
+        ['fac2VCTrendRaw', { name: PFDVars.fac2VCTrendRaw, type: SimVarValueType.Number }],
+        ['fac1VManRaw', { name: PFDVars.fac1VManRaw, type: SimVarValueType.Number }],
+        ['fac2VManRaw', { name: PFDVars.fac2VManRaw, type: SimVarValueType.Number }],
+        ['fac1V4Raw', { name: PFDVars.fac1V4Raw, type: SimVarValueType.Number }],
+        ['fac2V4Raw', { name: PFDVars.fac2V4Raw, type: SimVarValueType.Number }],
+        ['fac1V3Raw', { name: PFDVars.fac1V3Raw, type: SimVarValueType.Number }],
+        ['fac2V3Raw', { name: PFDVars.fac2V3Raw, type: SimVarValueType.Number }],
+        ['fac1VLsRaw', { name: PFDVars.fac1VLsRaw, type: SimVarValueType.Number }],
+        ['fac2VLsRaw', { name: PFDVars.fac2VLsRaw, type: SimVarValueType.Number }],
         ['fac1EstimatedBetaRaw', { name: PFDVars.fac1EstimatedBetaRaw, type: SimVarValueType.Number }],
         ['fac2EstimatedBetaRaw', { name: PFDVars.fac2EstimatedBetaRaw, type: SimVarValueType.Number }],
         ['fac1BetaTargetRaw', { name: PFDVars.fac1BetaTargetRaw, type: SimVarValueType.Number }],
