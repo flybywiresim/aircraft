@@ -9,7 +9,7 @@ const mod = (x: number, n: number) => x - Math.floor(x / n) * n;
 export const WindIndicator: FC<AdirsTasDrivenIndicatorProps> = ({ irs }) => {
     const windDirection: Arinc429Word = useArinc429Var(`L:A32NX_ADIRS_IR_${irs}_WIND_DIRECTION_BNR`, 500);
     const windSpeed: Arinc429Word = useArinc429Var(`L:A32NX_ADIRS_IR_${irs}_WIND_SPEED_BNR`, 500);
-    const planeHeading: Arinc429Word = useArinc429Var(`L:A32NX_ADIRS_IR_${irs}_HEADING`, 500);
+    const planeHeading: Arinc429Word = useArinc429Var(`L:A32NX_ADIRS_IR_${irs}_TRUE_HEADING`, 500);
 
     const windDirection360 = windDirection.value < 0 ? windDirection.value + 360 : windDirection.value;
 
