@@ -235,12 +235,6 @@ struct AdirsSimulatorData {
     ground_speed_id: VariableIdentifier,
     ground_speed: Velocity,
 
-    wind_direction_id: VariableIdentifier,
-    wind_direction: Angle,
-
-    wind_velocity_id: VariableIdentifier,
-    wind_velocity: Velocity,
-
     total_air_temperature_id: VariableIdentifier,
     total_air_temperature: ThermodynamicTemperature,
 
@@ -263,8 +257,6 @@ impl AdirsSimulatorData {
     const TRACK: &'static str = "GPS GROUND MAGNETIC TRACK";
     const TRUE_TRACK: &'static str = "GPS GROUND TRUE TRACK";
     const GROUND_SPEED: &'static str = "GPS GROUND SPEED";
-    const WIND_DIRECTION: &'static str = "AMBIENT WIND DIRECTION";
-    const WIND_VELOCITY: &'static str = "AMBIENT WIND VELOCITY";
     const TOTAL_AIR_TEMPERATURE: &'static str = "TOTAL AIR TEMPERATURE";
     const ANGLE_OF_ATTACK: &'static str = "INCIDENCE ALPHA";
 
@@ -315,12 +307,6 @@ impl AdirsSimulatorData {
             ground_speed_id: context.get_identifier(Self::GROUND_SPEED.to_owned()),
             ground_speed: Default::default(),
 
-            wind_direction_id: context.get_identifier(Self::WIND_DIRECTION.to_owned()),
-            wind_direction: Default::default(),
-
-            wind_velocity_id: context.get_identifier(Self::WIND_VELOCITY.to_owned()),
-            wind_velocity: Default::default(),
-
             total_air_temperature_id: context
                 .get_identifier(Self::TOTAL_AIR_TEMPERATURE.to_owned()),
             total_air_temperature: Default::default(),
@@ -352,8 +338,6 @@ impl SimulationElement for AdirsSimulatorData {
         self.track = reader.read(&self.track_id);
         self.true_track = reader.read(&self.true_track_id);
         self.ground_speed = reader.read(&self.ground_speed_id);
-        self.wind_direction = reader.read(&self.wind_direction_id);
-        self.wind_velocity = reader.read(&self.wind_velocity_id);
         self.total_air_temperature = reader.read(&self.total_air_temperature_id);
         self.angle_of_attack = reader.read(&self.angle_of_attack_id);
     }
@@ -979,13 +963,13 @@ struct InertialReference {
     roll_att_rate: AdirsData<AngularVelocity>,
     vertical_speed: AdirsData<f64>,
     ground_speed: AdirsData<Velocity>,
-    /// label 015, 2 Hz, [0, 359]
-    wind_speed: AdirsData<Velocity>,
     /// Label 016, 2 Hz [0, 256)
+    wind_speed: AdirsData<Velocity>,
+    /// label 015, 2 Hz, [0, 359]
     wind_direction: AdirsData<Angle>,
-    /// Label 315, 10 Hz (-180, 180]
-    wind_speed_bnr: AdirsData<Velocity>,
     /// Label 316, 10 Hz [0, 256)
+    wind_speed_bnr: AdirsData<Velocity>,
+    /// Label 315, 10 Hz (-180, 180]
     wind_direction_bnr: AdirsData<Angle>,
     latitude: AdirsData<Angle>,
     longitude: AdirsData<Angle>,
@@ -1016,7 +1000,7 @@ impl InertialReference {
     const WIND_DIRECTION: &'static str = "WIND_DIRECTION";
     const WIND_DIRECTION_BNR: &'static str = "WIND_DIRECTION_BNR";
     const WIND_SPEED: &'static str = "WIND_SPEED";
-    const WIND_SPEED_BNR: &'static str = "WIND_SPEED_HIGH_BNR";
+    const WIND_SPEED_BNR: &'static str = "WIND_SPEED_BNR";
     const LATITUDE: &'static str = "LATITUDE";
     const LONGITUDE: &'static str = "LONGITUDE";
     const MINIMUM_TRUE_AIRSPEED_FOR_WIND_DETERMINATION_KNOTS: f64 = 100.;
@@ -1230,7 +1214,7 @@ impl InertialReference {
         let no_transmission = match overhead.mode_of(self.number) {
             InertialReferenceMode::Navigation => false,
             InertialReferenceMode::Off | InertialReferenceMode::Attitude => true,
-        };
+        } || !self.is_on;
 
         // The IR does not compute the wind if the TAS is less than 100 knots or NCD
         let true_airspeed_above_minimum_threshold = true_airspeed_source
@@ -1241,7 +1225,7 @@ impl InertialReference {
 
         let ssm = if no_transmission {
             SignStatus::FailureWarning // TODO should be no transmission
-        } else if true_airspeed_above_minimum_threshold {
+        } else if true_airspeed_above_minimum_threshold && self.is_fully_aligned() {
             SignStatus::NormalOperation
         } else {
             SignStatus::NoComputedData
@@ -1251,7 +1235,7 @@ impl InertialReference {
         let mut wind_direction: f64 = 0.;
         let mut wind_speed: f64 = 0.;
 
-        if true_airspeed_above_minimum_threshold && !no_transmission {
+        if true_airspeed_above_minimum_threshold && !no_transmission && self.is_fully_aligned() {
             // should be label 324 from ADR
             let pitch_angle = simulator_data.pitch;
 
@@ -1272,17 +1256,10 @@ impl InertialReference {
             wind_speed = self.wind_velocity.output().magnitude().clamp(0., 255.).round();
 
             let direction = Rotation2::rotation_between(&self.wind_velocity.output(), &Vector2::y());
-            wind_direction = Angle::new::<radian>(direction.angle()).get::<degree>();
-
-            while wind_direction < 0. {
-                wind_direction += 360.;
-            }
-            wind_direction += 180.;
-            while wind_direction >= 360. {
-                wind_direction -= 360.;
-            }
+            //wind_direction = (Radians(direction.angle()).normalized() + Degrees(180.)).normalized().in_degrees();
+            wind_direction = (Angle::new::<radian>(direction.angle()).normalised() + Angle::HALF_TURN).normalised().get::<degree>();
         } else {
-            self.wind_velocity.reset(Vector2::new(0., 0.));
+            self.wind_velocity.reset(Vector2::default());
         }
 
         // set all the labels...
@@ -1486,6 +1463,47 @@ fn subtract_delta_from_duration(context: &UpdateContext, duration: Duration) -> 
     Duration::from_secs_f64((duration.as_secs_f64() - context.delta_as_secs_f64()).max(0.))
 }
 
+trait NormaliseAngleExt {
+    fn normalised(self) -> Angle;
+    fn normalised_180(self) -> Angle;
+}
+
+impl NormaliseAngleExt for Angle {
+    /// Create a new angle by normalizing the value into the range of
+    /// [0, 2π) rad.
+    #[inline]
+    fn normalised(self) -> Angle {
+        if self < Angle::FULL_TURN && self >= Angle::default() {
+            self
+        } else {
+            let v = self % Angle::FULL_TURN;
+
+            if v >= Angle::default() {
+                v
+            } else {
+                v + Angle::FULL_TURN
+            }
+        }
+    }
+
+    /// Create a new angle by normalizing the value into the range of
+    /// [-π, π) rad.
+    #[inline]
+    fn normalised_180(self) -> Angle {
+        if self < Angle::HALF_TURN && self >= -Angle::HALF_TURN {
+            self
+        } else {
+            let v = self % Angle::FULL_TURN;
+
+            if v < Angle::HALF_TURN {
+                v
+            } else {
+                v - Angle::FULL_TURN
+            }
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1656,9 +1674,28 @@ mod tests {
             self
         }
 
-        fn wind_of(mut self, angle: Angle, velocity: Velocity) -> Self {
-            self.write_by_name(AdirsSimulatorData::WIND_DIRECTION, angle);
-            self.write_by_name(AdirsSimulatorData::WIND_VELOCITY, velocity);
+        /// caution: sets tas, true heading, gs, true track, and pitch angle
+        fn wind_of(self, angle: Angle, velocity: Velocity) -> Self {
+            let tas = Velocity::new::<knot>(
+                InertialReference::MINIMUM_TRUE_AIRSPEED_FOR_WIND_DETERMINATION_KNOTS + 10.,
+            );
+            let heading = Angle::new::<degree>(0.);
+
+            let gs = Velocity::new::<knot>((
+                (velocity.get::<knot>() * (angle + Angle::HALF_TURN).sin().get::<ratio>()).powi(2) +
+                (tas.get::<knot>() + velocity.get::<knot>() * (angle + Angle::HALF_TURN).cos().get::<ratio>()).powi(2)
+            ).sqrt());
+            let track = (tas / gs).acos();
+
+            self.true_airspeed_of(tas)
+                .true_heading_of(heading)
+                .ground_speed_of(gs)
+                .true_track_of(track)
+                .pitch_angle_of(Angle::default())
+        }
+
+        fn pitch_angle_of(mut self, angle: Angle) -> Self {
+            self.write_by_name(AdirsSimulatorData::PITCH, angle);
             self
         }
 
@@ -1992,11 +2029,19 @@ mod tests {
             ))
         }
 
-        fn wind_velocity(&mut self, adiru_number: usize) -> Arinc429Word<Velocity> {
+        fn wind_speed(&mut self, adiru_number: usize) -> Arinc429Word<Velocity> {
             self.read_arinc429_by_name(&output_data_id(
                 OutputDataType::Ir,
                 adiru_number,
                 InertialReference::WIND_SPEED,
+            ))
+        }
+
+        fn wind_speed_bnr(&mut self, adiru_number: usize) -> Arinc429Word<Velocity> {
+            self.read_arinc429_by_name(&output_data_id(
+                OutputDataType::Ir,
+                adiru_number,
+                InertialReference::WIND_SPEED_BNR,
             ))
         }
 
@@ -2107,7 +2152,15 @@ mod tests {
                 available
             );
             assert_eq!(
-                self.wind_velocity(adiru_number).is_normal_operation(),
+                self.wind_direction_bnr(adiru_number).is_normal_operation(),
+                available
+            );
+            assert_eq!(
+                self.wind_speed(adiru_number).is_normal_operation(),
+                available
+            );
+            assert_eq!(
+                self.wind_speed_bnr(adiru_number).is_normal_operation(),
                 available
             );
             assert_eq!(self.latitude(adiru_number).is_normal_operation(), available);
@@ -2167,15 +2220,25 @@ mod tests {
         fn assert_wind_direction_and_velocity_zero(&mut self, adiru_number: usize) {
             assert_about_eq!(
                 self.wind_direction(adiru_number)
-                    .normal_value()
-                    .unwrap()
+                    .value()
                     .get::<degree>(),
                 0.
             );
             assert_about_eq!(
-                self.wind_velocity(adiru_number)
-                    .normal_value()
-                    .unwrap()
+                self.wind_direction_bnr(adiru_number)
+                    .value()
+                    .get::<degree>(),
+                0.
+            );
+            assert_about_eq!(
+                self.wind_speed(adiru_number)
+                    .value()
+                    .get::<knot>(),
+                0.
+            );
+            assert_about_eq!(
+                self.wind_speed_bnr(adiru_number)
+                    .value()
                     .get::<knot>(),
                 0.
             );
@@ -2840,6 +2903,13 @@ mod tests {
                 test_bed.run();
             }
 
+            test_bed = test_bed
+                .then_continue_with()
+                .true_airspeed_of(Velocity::new::<knot>(
+                    InertialReference::MINIMUM_TRUE_AIRSPEED_FOR_WIND_DETERMINATION_KNOTS + 0.01,
+                ));
+            test_bed.run();
+
             test_bed.assert_all_ir_data_available(true, adiru_number);
         }
 
@@ -2848,7 +2918,10 @@ mod tests {
         #[case(2)]
         #[case(3)]
         fn data_is_no_longer_available_when_adiru_mode_selector_off(#[case] adiru_number: usize) {
-            let mut test_bed = all_adirus_aligned_test_bed();
+            let mut test_bed = all_adirus_aligned_test_bed_with()
+                .true_airspeed_of(Velocity::new::<knot>(
+                    InertialReference::MINIMUM_TRUE_AIRSPEED_FOR_WIND_DETERMINATION_KNOTS + 0.01,
+                ));
             test_bed.run();
             test_bed.assert_all_ir_data_available(true, adiru_number);
 
@@ -3367,26 +3440,36 @@ mod tests {
         fn wind_is_supplied_when_true_airspeed_greater_than_or_equal_to_100_knots(
             #[case] adiru_number: usize,
         ) {
-            let wind_angle = Angle::new::<degree>(150.);
-            let wind_velocity = Velocity::new::<knot>(40.);
+            let wind_angle = Angle::new::<degree>(270.);
+            let wind_speed = Velocity::new::<knot>(40.);
+
             let mut test_bed = all_adirus_aligned_test_bed_with()
-                .wind_of(wind_angle, wind_velocity)
-                .and()
-                .true_airspeed_of(Velocity::new::<knot>(
-                    InertialReference::MINIMUM_TRUE_AIRSPEED_FOR_WIND_DETERMINATION_KNOTS,
-                ));
+                .wind_of(wind_angle, wind_speed);
             test_bed.run();
 
-            assert_eq!(
+            assert_about_eq!(
                 test_bed
                     .wind_direction(adiru_number)
                     .normal_value()
-                    .unwrap(),
-                wind_angle
+                    .unwrap()
+                    .get::<degree>(),
+                wind_angle.get::<degree>()
             );
-            assert_eq!(
-                test_bed.wind_velocity(adiru_number).normal_value().unwrap(),
-                wind_velocity
+            assert_about_eq!(
+                test_bed
+                    .wind_direction_bnr(adiru_number)
+                    .normal_value()
+                    .unwrap()
+                    .get::<degree>(),
+                wind_angle.normalised_180().get::<degree>()
+            );
+            assert_about_eq!(
+                test_bed.wind_speed(adiru_number).normal_value().unwrap().get::<knot>(),
+                wind_speed.get::<knot>()
+            );
+            assert_about_eq!(
+                test_bed.wind_speed_bnr(adiru_number).normal_value().unwrap().get::<knot>(),
+                wind_speed.get::<knot>()
             );
         }
 
@@ -3413,9 +3496,6 @@ mod tests {
         fn wind_is_zero_when_true_airspeed_is_unavailable(#[case] adiru_number: usize) {
             let mut test_bed = all_adirus_aligned_test_bed_with()
                 .wind_of(Angle::new::<degree>(150.), Velocity::new::<knot>(40.))
-                .true_airspeed_of(Velocity::new::<knot>(
-                    InertialReference::MINIMUM_TRUE_AIRSPEED_FOR_WIND_DETERMINATION_KNOTS,
-                ))
                 .and()
                 .adr_push_button_off(adiru_number);
 
