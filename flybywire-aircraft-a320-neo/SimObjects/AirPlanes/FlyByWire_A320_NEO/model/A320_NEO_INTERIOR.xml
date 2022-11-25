@@ -463,46 +463,41 @@
 
                 <UseTemplate Name="FBW_Anim_Interactions">
                     <ANIM_TYPE>SWITCH</ANIM_TYPE>
-                    <ANIM_TEMPLATE>A32NX_GT_Switch_Dummy</ANIM_TEMPLATE>
-                    <NODE_ID>SWITCH_RADAR_PWS</NODE_ID>
-                    <Part_ID>PWS_Switch</Part_ID>
+                    <ANIM_TEMPLATE>FBW_Switch_LeftClick_MouseWheel</ANIM_TEMPLATE>
                     <ANIM_NAME>SWITCH_RADAR_PWS</ANIM_NAME>
-                    <SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
-                    <SWITCH_POSITION_VAR>A32NX_SWITCH_RADAR_PWS_Position</SWITCH_POSITION_VAR>
+                    <NODE_ID>SWITCH_RADAR_PWS</NODE_ID>
+                    <PART_ID>PWS_Switch</PART_ID>
+                    <TOGGLE_EVENT>A32NX_SWITCH_RADAR_PWS_Position</TOGGLE_EVENT>
+                    <SIMVAR_NAME>A32NX_SWITCH_RADAR_PWS_Position</SIMVAR_NAME>
+                    <SIMVAR_GROUP>L</SIMVAR_GROUP>
                     <ANIMTIP_0>Set predictive windshear to AUTO (INOP)</ANIMTIP_0>
                     <ANIMTIP_1>Turn OFF predictive windshear (Inop.)</ANIMTIP_1>
-                    <WWISE_EVENT_1>lswitch</WWISE_EVENT_1>
-                    <WWISE_EVENT_2>lswitch</WWISE_EVENT_2>
-                    <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
-                    <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
                 </UseTemplate>
 
                 <UseTemplate Name="FBW_Anim_Interactions">
                     <ANIM_TYPE>SWITCH</ANIM_TYPE>
-                    <ANIM_TEMPLATE>A32NX_GT_Switch_Dummy</ANIM_TEMPLATE>
-                    <NODE_ID>SWITCH_RADAR_MULTISCAN</NODE_ID>
+                    <ANIM_TEMPLATE>FBW_Switch_LeftClick_MouseWheel</ANIM_TEMPLATE>
                     <ANIM_NAME>SWITCH_RADAR_MULTISCAN</ANIM_NAME>
-                    <TOGGLE_SIMVAR>L:A32NX_RADAR_MULTISCAN_AUTO</TOGGLE_SIMVAR>
+                    <NODE_ID>SWITCH_RADAR_MULTISCAN</NODE_ID>
+                    <PART_ID>SWITCH_RADAR_MULTISCAN</PART_ID>
+                    <TOGGLE_EVENT>A32NX_RADAR_MULTISCAN_AUTO</TOGGLE_EVENT>
+                    <SIMVAR_NAME>A32NX_RADAR_MULTISCAN_AUTO</SIMVAR_NAME>
+                    <SIMVAR_GROUP>L</SIMVAR_GROUP>
                     <ANIMTIP_0>Set Multiscans to AUTO (Inop.)</ANIMTIP_0>
                     <ANIMTIP_1>Set Multiscans to MAN (Inop.)</ANIMTIP_1>
-                    <WWISE_EVENT_1>lswitch</WWISE_EVENT_1>
-                    <WWISE_EVENT_2>lswitch</WWISE_EVENT_2>
-                    <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
-                    <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
                 </UseTemplate>
 
                 <UseTemplate Name="FBW_Anim_Interactions">
                     <ANIM_TYPE>SWITCH</ANIM_TYPE>
-                    <ANIM_TEMPLATE>A32NX_GT_Switch_Dummy</ANIM_TEMPLATE>
-                    <NODE_ID>SWITCH_RADAR_GCS</NODE_ID>
-                    <TOGGLE_SIMVAR>L:A32NX_RADAR_GCS_AUTO</TOGGLE_SIMVAR>
+                    <ANIM_TEMPLATE>FBW_Switch_LeftClick_MouseWheel</ANIM_TEMPLATE>
                     <ANIM_NAME>SWITCH_RADAR_GCS</ANIM_NAME>
+                    <NODE_ID>SWITCH_RADAR_GCS</NODE_ID>
+                    <PART_ID>SWITCH_RADAR_GCS</PART_ID>
+                    <TOGGLE_EVENT>A32NX_RADAR_GCS_AUTO</TOGGLE_EVENT>
+                    <SIMVAR_NAME>A32NX_RADAR_GCS_AUTO</SIMVAR_NAME>
+                    <SIMVAR_GROUP>L</SIMVAR_GROUP>
                     <ANIMTIP_0>Set GCS to AUTO (Inop.)</ANIMTIP_0>
                     <ANIMTIP_1>Set GCS to OFF (Inop.)</ANIMTIP_1>
-                    <WWISE_EVENT_1>lswitch</WWISE_EVENT_1>
-                    <WWISE_EVENT_2>lswitch</WWISE_EVENT_2>
-                    <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
-                    <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
                 </UseTemplate>
 
             </Component>
@@ -923,12 +918,15 @@
                 <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                 <TOOLTIPID>Auto brake MAX</TOOLTIPID>
             </UseTemplate>
+
             <UseTemplate Name="FBW_Anim_Interactions">
                 <ANIM_TYPE>SWITCH</ANIM_TYPE>
-                <ANIM_TEMPLATE>FBW_HANDLING_Switch_AntiSkid_Template</ANIM_TEMPLATE>
+                <ANIM_TEMPLATE>FBW_Switch_LeftClick_MouseWheel</ANIM_TEMPLATE>
+                <ANIM_NAME>SWITCH_AUTOBKR_ASKID</ANIM_NAME>
                 <NODE_ID>SWITCH_AUTOBKR_ASKID</NODE_ID>
                 <PART_ID>Antiskid_Switch</PART_ID>
-                <ANIM_NAME>SWITCH_AUTOBKR_ASKID</ANIM_NAME>
+                <TOGGLE_EVENT>ANTISKID_BRAKES_TOGGLE</TOGGLE_EVENT>
+                <SIMVAR_NAME>ANTISKID BRAKES ACTIVE</SIMVAR_NAME>
                 <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.ANTISKID_TURN_ON</ANIMTIP_0>
                 <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.ANTISKID_TURN_OFF</ANIMTIP_1>
             </UseTemplate>
@@ -1534,7 +1532,6 @@
                     <ANIM_TYPE>SWITCH</ANIM_TYPE>
                     <ANIM_TEMPLATE>FBW_Switch_LeftClick_MouseWheel</ANIM_TEMPLATE>
                     <ANIM_NAME>SWITCH_OVHD_INTLT_SEATBELT</ANIM_NAME>
-                    <ANIM_TYPE>SWITCH</ANIM_TYPE>
                     <NODE_ID>SWITCH_OVHD_INTLT_SEATBELT</NODE_ID>
                     <PART_ID>Seatbelt_Switch</PART_ID>
                     <TOGGLE_EVENT>CABIN_SEATBELTS_ALERT_SWITCH_TOGGLE</TOGGLE_EVENT>
@@ -2184,14 +2181,16 @@
                         <!-- EVAC CAPT & PURS -->
                         <UseTemplate Name="FBW_Anim_Interactions">
                             <ANIM_TYPE>SWITCH</ANIM_TYPE>
-                            <ANIM_TEMPLATE>ASOBO_GT_Switch_Dummy</ANIM_TEMPLATE>
+                            <ANIM_TEMPLATE>FBW_Switch_LeftClick_MouseWheel</ANIM_TEMPLATE>
+                            <ANIM_NAME>SWITCH_OVHD_EVAC_CAPT</ANIM_NAME>
                             <NODE_ID>SWITCH_OVHD_EVAC_CAPT</NODE_ID>
                             <PART_ID>SWITCH_OVHD_EVAC_CAPT</PART_ID>
-                            <ANIM_NAME>SWITCH_OVHD_EVAC_CAPT</ANIM_NAME>
-                            <ANIM_CODE>100</ANIM_CODE>
-                            <WWISE_EVENT_1>lswitch</WWISE_EVENT_1>
-                            <WWISE_EVENT_2>lswitch</WWISE_EVENT_2>
-                            <LEFT_SINGLE_CODE>(L:A32NX_EVAC_CAPT_TOGGLE) ! (>L:A32NX_EVAC_CAPT_TOGGLE)</LEFT_SINGLE_CODE>
+                            <TOGGLE_EVENT>A32NX_EVAC_CAPT_TOGGLE</TOGGLE_EVENT>
+                            <SIMVAR_NAME>A32NX_EVAC_CAPT_TOGGLE</SIMVAR_NAME>
+                            <SIMVAR_GROUP>L</SIMVAR_GROUP>
+                            <LIGHT_TYPE>STBYCOMPAS</LIGHT_TYPE>
+                            <ANIMTIP_0></ANIMTIP_0>
+                            <ANIMTIP_1></ANIMTIP_1>
                         </UseTemplate>
                     </Component>
 
