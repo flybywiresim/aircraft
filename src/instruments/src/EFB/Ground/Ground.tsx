@@ -17,9 +17,9 @@ export interface StatefulButton {
 export const Ground = () => {
     const tabs: PageLink[] = [
         { name: 'Services', alias: t('Ground.Services.Title'), component: <ServicesPage /> },
-        { name: 'Pushback', alias: t('Ground.Pushback.Title'), component: <PushbackPage /> },
         { name: 'Fuel', alias: t('Ground.Fuel.Title'), component: <FuelPage /> },
         { name: 'Payload', alias: t('Ground.Payload.Title'), component: <Payload /> },
+        { name: 'Pushback', alias: t('Ground.Pushback.Title'), component: <PushbackPage /> },
     ];
 
     return (
