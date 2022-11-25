@@ -187,6 +187,16 @@ class FMCMainDisplay extends BaseAirliners {
          * This is the destination runway threshold elevation, or airport elevation if runway is not selected.
          */
         this.landingElevation = undefined;
+        /*
+         * Latitude part of the touch down coordinate.
+         * This is the destination runway coordinate, or airport coordinate if runway is not selected
+         */
+        this.destinationLatitude = undefined;
+        /*
+         * Latitude part of the touch down coordinate.
+         * This is the destination runway coordinate, or airport coordinate if runway is not selected
+         */
+        this.destinationLongitude = undefined;
 
         // ATSU data
         this.atsu = undefined;
@@ -524,6 +534,8 @@ class FMCMainDisplay extends BaseAirliners {
         this.groundTempAuto = undefined;
         this.groundTempPilot = undefined;
         this.landingElevation = undefined;
+        this.destinationLatitude = undefined;
+        this.destinationLongitude = undefined;
 
         this.onAirport = () => { };
 
@@ -605,7 +617,7 @@ class FMCMainDisplay extends BaseAirliners {
 
         if (flightPlanChanged) {
             this.updateManagedProfile();
-            this.updateLandingElevation();
+            this.updateDestinationData();
         }
 
         this.updateAutopilot();
@@ -1530,18 +1542,24 @@ class FMCMainDisplay extends BaseAirliners {
         }
     }
 
-    async updateLandingElevation() {
+    async updateDestinationData() {
         let landingElevation;
+        let latitude;
+        let longitude;
 
         /** @type {OneWayRunway} */
         const runway = this.flightPlanManager.getDestinationRunway(FlightPlans.Active);
         if (runway) {
             landingElevation = A32NX_Util.meterToFeet(runway.thresholdElevation);
+            latitude = runway.thresholdCoordinates.lat;
+            longitude = runway.thresholdCoordinates.long;
         } else {
             const airport = this.flightPlanManager.getDestination(FlightPlans.Active);
             if (airport) {
                 const ele = await this.facilityLoader.GetAirportFieldElevation(airport.icao);
                 landingElevation = isFinite(ele) ? ele : undefined;
+                latitude = airport.GetInfos().coordinates.lat;
+                longitude = airport.GetInfos().coordinates.long;
             }
         }
 
@@ -1553,6 +1571,22 @@ class FMCMainDisplay extends BaseAirliners {
             this.setBnrArincSimVar('LANDING_ELEVATION', landingElevation ? landingElevation : 0, ssm, 14, 16384, -2048);
             // FIXME CPCs should use the FM ARINC vars, and transmit their own vars as well
             SimVar.SetSimVarValue("L:A32NX_PRESS_AUTO_LANDING_ELEVATION", "feet", landingElevation ? landingElevation : 0);
+        }
+
+        if (this.destinationLatitude !== latitude) {
+            this.destinationLatitude = latitude;
+
+            const ssm = latitude !== undefined ? Arinc429Word.SignStatusMatrix.NormalOperation : Arinc429Word.SignStatusMatrix.NoComputedData;
+
+            this.setBnrArincSimVar('DEST_LAT', latitude ? latitude : 0, ssm, 18, 180, -180);
+        }
+
+        if (this.destinationLongitude !== longitude) {
+            this.destinationLongitude = longitude;
+
+            const ssm = longitude !== undefined ? Arinc429Word.SignStatusMatrix.NormalOperation : Arinc429Word.SignStatusMatrix.NoComputedData;
+
+            this.setBnrArincSimVar('DEST_LONG', longitude ? longitude : 0, ssm, 18, 180, -180);
         }
     }
 
