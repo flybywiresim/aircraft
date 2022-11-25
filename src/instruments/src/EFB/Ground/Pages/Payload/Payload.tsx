@@ -781,7 +781,7 @@ export const Payload = () => {
                                     <TooltipWrapper text={t('Ground.Payload.TT.StartBoarding')}>
                                         <button
                                             type="button"
-                                            className={`flex justify-center rounded-lg items-center ml-auto w-24 h-12 
+                                            className={`flex justify-center rounded-lg items-center ml-auto w-24 h-12
                                                         ${boardingStatusClass} bg-current`}
                                             onClick={() => setBoardingStarted(!boardingStarted)}
                                         >
@@ -795,7 +795,7 @@ export const Payload = () => {
                                     <TooltipWrapper text={t('Ground.Payload.TT.StartDeboarding')}>
                                         <button
                                             type="button"
-                                            className={`flex justify-center items-center ml-1 w-16 h-12 text-theme-highlight bg-current rounded-lg 
+                                            className={`flex justify-center items-center ml-1 w-16 h-12 text-theme-highlight bg-current rounded-lg
                                                         ${totalPax === 0 && totalCargo === 0 && 'opacity-20 pointer-events-none'}`}
                                             onClick={() => handleDeboarding()}
                                         >
@@ -817,8 +817,8 @@ export const Payload = () => {
                                 && (
                                     <TooltipWrapper text={t('Ground.Payload.TT.FillPayloadFromSimbrief')}>
                                         <div
-                                            className={`flex justify-center items-center px-2 h-auto text-theme-body 
-                                                       hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body 
+                                            className={`flex justify-center items-center px-2 h-auto text-theme-body
+                                                       hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body
                                                        rounded-md rounded-l-none border-2 border-theme-highlight transition duration-100`}
                                             onClick={setSimBriefValues}
                                         >
