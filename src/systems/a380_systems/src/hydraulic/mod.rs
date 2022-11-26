@@ -614,11 +614,11 @@ impl A380ElevatorFactory {
         let cg_offset = Vector3::new(0., 0., -0.5 * size[2]);
         let aero_center = Vector3::new(0., 0., -0.3 * size[2]);
 
-        let control_arm = Vector3::new(0., -0.091, 0.);
-        let anchor = Vector3::new(0., -0.091, 0.41);
+        let control_arm = Vector3::new(0., -0.154, 0.);
+        let anchor = Vector3::new(0., -0.154, 0.41);
 
         let init_position = if init_drooped_down {
-            Angle::new::<degree>(-11.5)
+            Angle::new::<degree>(-20.)
         } else {
             Angle::new::<degree>(0.)
         };
@@ -631,8 +631,8 @@ impl A380ElevatorFactory {
             aero_center,
             control_arm,
             anchor,
-            Angle::new::<degree>(-11.5),
-            Angle::new::<degree>(27.5),
+            Angle::new::<degree>(-20.),
+            Angle::new::<degree>(50.),
             init_position,
             100.,
             false,
