@@ -550,7 +550,7 @@ impl A380ElevatorFactory {
     const FLOW_CONTROL_FORCE_GAIN: f64 = 450000.;
 
     const MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING: f64 = 15000000.;
-    const MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT: f64 = 1.;
+    const MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT: f64 = 10.;
 
     //TODO should be ACEss 2
     const LEFT_OUTWARD_PANEL_EHA_BUS: ElectricalBusType =
@@ -747,7 +747,7 @@ impl A380RudderFactory {
         let actuator_characteristics = LinearActuatorCharacteristics::new(
             Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING / 4.,
             Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING,
-            VolumeRate::new::<gallon_per_second>(0.0499),
+            VolumeRate::new::<gallon_per_second>(0.48),
             Ratio::new::<percent>(Self::MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT),
         );
 
