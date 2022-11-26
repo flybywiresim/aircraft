@@ -274,10 +274,11 @@ impl A380AileronFactory {
         );
 
         // Aileron actuator real data:
-        // Max force of 13500DaN @ 5000psi. Max flow at rated max travel speed 81mm/s around 0.0086 gal/s
-        // This gives a 0.0004 squared meter of piston surface
-        // This gives piston diameter of 0.02256 meters
+        // Max force of 13500daN @ nominal 350bar. This gives a 0.003857m^2 of piston surface
+        // This gives piston diameter of 2 * 0.035m = 0.07 meters
         // We use 0 as rod diameter as this is a symmetrical actuator so same surface each side
+        // Max flow at rated max travel speed 81mm/s, this gives 0.003857m^2 * 81mm/s = 0.000312 m^2/s
+        // = 0.08254 gal/s
         LinearActuator::new(
             bounded_linear_length,
             1,
@@ -767,6 +768,10 @@ impl A380RudderFactory {
             Ratio::new::<percent>(Self::MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT),
         );
 
+        // Rudder actuator real data:
+        // Piston surface is 77.18cm^2, this gives a piston diameter of 0.099m.
+        // Actuator maximum speed is 236.5 mm/s, this gives a maximum flow rate of
+        // 0.001825 m^3/s = 0.4822 gal/s.
         LinearActuator::new(
             bounded_linear_length,
             1,
