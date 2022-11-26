@@ -269,19 +269,19 @@ impl A380AileronFactory {
         let actuator_characteristics = LinearActuatorCharacteristics::new(
             Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING / 3.,
             Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING,
-            VolumeRate::new::<gallon_per_second>(0.055),
+            VolumeRate::new::<gallon_per_second>(0.0825),
             Ratio::new::<percent>(Self::MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT),
         );
 
         // Aileron actuator real data:
-        // Max force of 4700DaN @ 3000psi. Max flow 3.302 US gal/min thus 0.055033333 gal/s
-        // This gives a 0.00227225 squared meter of piston surface
-        // This gives piston diameter of 0.0537878 meters
+        // Max force of 13500DaN @ 5000psi. Max flow at rated max travel speed 81mm/s around 0.0086 gal/s
+        // This gives a 0.0004 squared meter of piston surface
+        // This gives piston diameter of 0.02256 meters
         // We use 0 as rod diameter as this is a symmetrical actuator so same surface each side
         LinearActuator::new(
             bounded_linear_length,
             1,
-            Length::new::<meter>(0.0537878),
+            Length::new::<meter>(0.07),
             Length::new::<meter>(0.),
             actuator_characteristics.max_flow(),
             80000.,
@@ -311,22 +311,30 @@ impl A380AileronFactory {
     }
 
     /// Builds an aileron control surface body for A380-800
-    fn a380_aileron_body(init_drooped_down: bool) -> LinearActuatedRigidBodyOnHingeAxis {
-        let size = Vector3::new(3.325, 0.16, 0.58);
+    fn a380_aileron_body(
+        init_drooped_down: bool,
+        panel: AileronPanelPosition,
+    ) -> LinearActuatedRigidBodyOnHingeAxis {
+        let size = match panel {
+            AileronPanelPosition::Outward => Vector3::new(3.325, 0.16, 0.58),
+            AileronPanelPosition::Middle => Vector3::new(3.325, 0.16, 0.58),
+            AileronPanelPosition::Inward => Vector3::new(3.325, 0.16, 0.58),
+        };
 
         // CG at half the size
         let cg_offset = Vector3::new(0., 0., -0.5 * size[2]);
         let aero_center = Vector3::new(0., 0., -0.4 * size[2]);
 
-        let control_arm = Vector3::new(0., -0.0525, 0.);
-        let anchor = Vector3::new(0., -0.0525, 0.33);
+        let control_arm = Vector3::new(0., -0.1, 0.);
+        let anchor = Vector3::new(0., -0.1, 0.33);
 
         let init_position = if init_drooped_down {
-            Angle::new::<degree>(-25.)
+            Angle::new::<degree>(-20.)
         } else {
             Angle::new::<degree>(0.)
         };
 
+        println!("AILERONS");
         LinearActuatedRigidBodyOnHingeAxis::new(
             Mass::new::<kilogram>(24.65),
             size,
@@ -334,8 +342,8 @@ impl A380AileronFactory {
             aero_center,
             control_arm,
             anchor,
-            Angle::new::<degree>(-25.),
-            Angle::new::<degree>(50.),
+            Angle::new::<degree>(-20.),
+            Angle::new::<degree>(60.),
             init_position,
             1.,
             false,
@@ -348,8 +356,9 @@ impl A380AileronFactory {
     fn a380_aileron_assembly(
         init_drooped_down: bool,
         powered_by: Option<ElectricalBusType>,
+        panel: AileronPanelPosition,
     ) -> HydraulicLinearActuatorAssembly<2> {
-        let aileron_body = Self::a380_aileron_body(init_drooped_down);
+        let aileron_body = Self::a380_aileron_body(init_drooped_down, panel);
 
         let aileron_actuator_outward = Self::a380_aileron_actuator(&aileron_body, None);
         let aileron_actuator_inward = Self::a380_aileron_actuator(&aileron_body, powered_by);
@@ -362,23 +371,30 @@ impl A380AileronFactory {
 
     fn new_aileron(context: &mut InitContext, id: ActuatorSide) -> AileronAssembly {
         let init_drooped_down = !context.is_in_flight();
-        let assembly_outward = Self::a380_aileron_assembly(init_drooped_down, None);
-        let assembly_middle =
-            Self::a380_aileron_assembly(init_drooped_down, Some(Self::MIDDLE_PANEL_EHA_BUS));
-        let assembly_inward =
-            Self::a380_aileron_assembly(init_drooped_down, Some(Self::INWARD_PANEL_EHA_BUS));
+        let assembly_outward =
+            Self::a380_aileron_assembly(init_drooped_down, None, AileronPanelPosition::Outward);
+        let assembly_middle = Self::a380_aileron_assembly(
+            init_drooped_down,
+            Some(Self::MIDDLE_PANEL_EHA_BUS),
+            AileronPanelPosition::Middle,
+        );
+        let assembly_inward = Self::a380_aileron_assembly(
+            init_drooped_down,
+            Some(Self::INWARD_PANEL_EHA_BUS),
+            AileronPanelPosition::Inward,
+        );
         AileronAssembly::new(
             context,
             id,
             assembly_outward,
             assembly_middle,
             assembly_inward,
-            Self::new_a380_aileron_aero_model(),
+            Self::new_a380_aileron_aero_model(AileronPanelPosition::Outward),
         )
     }
 
-    fn new_a380_aileron_aero_model() -> AerodynamicModel {
-        let body = Self::a380_aileron_body(true);
+    fn new_a380_aileron_aero_model(panel: AileronPanelPosition) -> AerodynamicModel {
+        let body = Self::a380_aileron_body(true, panel);
 
         // Aerodynamic object has a little rotation from horizontal direction so that at X°
         // of wing AOA the aileron gets some X°+Y° AOA as the overwing pressure sucks the aileron up
