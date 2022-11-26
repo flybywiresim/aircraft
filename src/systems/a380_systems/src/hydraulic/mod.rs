@@ -609,8 +609,22 @@ impl A380ElevatorFactory {
     }
 
     /// Builds an aileron control surface body for A380-800
-    fn a380_elevator_body(init_drooped_down: bool) -> LinearActuatedRigidBodyOnHingeAxis {
-        let size = Vector3::new(6., 0.405, 1.125);
+    fn a380_elevator_body(
+        init_drooped_down: bool,
+        is_outter: bool,
+    ) -> LinearActuatedRigidBodyOnHingeAxis {
+        let size = if is_outter {
+            Vector3::new(9., 0.405, 2.23)
+        } else {
+            Vector3::new(5., 0.405, 2.49)
+        };
+
+        let mass = if is_outter {
+            Mass::new::<kilogram>(80.)
+        } else {
+            Mass::new::<kilogram>(60.)
+        };
+
         let cg_offset = Vector3::new(0., 0., -0.5 * size[2]);
         let aero_center = Vector3::new(0., 0., -0.3 * size[2]);
 
@@ -623,9 +637,8 @@ impl A380ElevatorFactory {
             Angle::new::<degree>(0.)
         };
 
-        println!("ELEVATOR!!");
         LinearActuatedRigidBodyOnHingeAxis::new(
-            Mass::new::<kilogram>(58.6),
+            mass,
             size,
             cg_offset,
             aero_center,
@@ -645,8 +658,9 @@ impl A380ElevatorFactory {
     fn a380_elevator_assembly(
         init_drooped_down: bool,
         powered_by: Option<ElectricalBusType>,
+        is_outter: bool,
     ) -> HydraulicLinearActuatorAssembly<2> {
-        let elevator_body = Self::a380_elevator_body(init_drooped_down);
+        let elevator_body = Self::a380_elevator_body(init_drooped_down, is_outter);
 
         let elevator_actuator_outboard = Self::a380_elevator_actuator(&elevator_body, None);
         let elevator_actuator_inbord = Self::a380_elevator_actuator(&elevator_body, powered_by);
@@ -667,6 +681,7 @@ impl A380ElevatorFactory {
             } else {
                 Some(Self::RIGHT_OUTWARD_PANEL_EHA_BUS)
             },
+            true,
         );
         let assembly_inward = Self::a380_elevator_assembly(
             init_drooped_down,
@@ -675,24 +690,33 @@ impl A380ElevatorFactory {
             } else {
                 Some(Self::RIGHT_INWARD_PANEL_EHA_BUS)
             },
+            false,
         );
         ElevatorAssembly::new(
             context,
             id,
             assembly_outward,
             assembly_inward,
-            Self::new_a380_elevator_aero_model(),
+            Self::new_a380_elevator_aero_model(true),
+            Self::new_a380_elevator_aero_model(false),
         )
     }
 
-    fn new_a380_elevator_aero_model() -> AerodynamicModel {
-        let body = Self::a380_elevator_body(true);
+    fn new_a380_elevator_aero_model(is_outter: bool) -> AerodynamicModel {
+        let body = Self::a380_elevator_body(true, is_outter);
+
+        let area_coeff = if is_outter {
+            Ratio::new::<ratio>(0.723)
+        } else {
+            Ratio::new::<ratio>(0.822)
+        };
+
         AerodynamicModel::new(
             &body,
             Some(Vector3::new(0., 1., 0.)),
             Some(Vector3::new(0., 0., 1.)),
             Some(Vector3::new(0., 1., 0.)),
-            Ratio::new::<ratio>(0.8),
+            area_coeff,
         )
     }
 }
@@ -5949,7 +5973,8 @@ impl ElevatorAssembly {
         id: ActuatorSide,
         outward_hydraulic_assembly: HydraulicLinearActuatorAssembly<2>,
         inward_hydraulic_assembly: HydraulicLinearActuatorAssembly<2>,
-        aerodynamic_model: AerodynamicModel,
+        aerodynamic_model_outter: AerodynamicModel,
+        aerodynamic_model_inner: AerodynamicModel,
     ) -> Self {
         Self {
             hydraulic_assemblies: [outward_hydraulic_assembly, inward_hydraulic_assembly],
@@ -5970,7 +5995,7 @@ impl ElevatorAssembly {
                 }
             },
             positions: [Ratio::new::<ratio>(0.); 2],
-            aerodynamic_models: [aerodynamic_model; 2],
+            aerodynamic_models: [aerodynamic_model_outter, aerodynamic_model_inner],
         }
     }
 
