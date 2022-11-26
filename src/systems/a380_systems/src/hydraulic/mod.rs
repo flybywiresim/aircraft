@@ -572,14 +572,14 @@ impl A380ElevatorFactory {
         let actuator_characteristics = LinearActuatorCharacteristics::new(
             Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING / 5.,
             Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING,
-            VolumeRate::new::<gallon_per_second>(0.029),
+            VolumeRate::new::<gallon_per_second>(0.15),
             Ratio::new::<percent>(Self::MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT),
         );
 
         LinearActuator::new(
             bounded_linear_length,
             1,
-            Length::new::<meter>(0.0407),
+            Length::new::<meter>(0.0265),
             Length::new::<meter>(0.),
             actuator_characteristics.max_flow(),
             80000.,
