@@ -116,7 +116,7 @@ impl A380HydraulicCircuitFactory {
     const MIN_PRESS_EDP_SECTION_HI_HYST: f64 = 3700.0;
     const MIN_PRESS_PRESSURISED_LO_HYST: f64 = 2900.0;
     const MIN_PRESS_PRESSURISED_HI_HYST: f64 = 3700.0;
-    const HYDRAULIC_TARGET_PRESSURE_PSI: f64 = 5100.;
+    const HYDRAULIC_TARGET_PRESSURE_PSI: f64 = 5250.;
 
     pub fn new_green_circuit(context: &mut InitContext) -> HydraulicCircuit {
         let reservoir = A380HydraulicReservoirFactory::new_green_reservoir(context);
@@ -189,6 +189,7 @@ impl A380CargoDoorFactory {
             false,
             None,
             None,
+            Pressure::new::<psi>(A380HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
         )
     }
 
@@ -305,6 +306,7 @@ impl A380AileronFactory {
             } else {
                 None
             },
+            Pressure::new::<psi>(A380HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
         )
     }
 
@@ -445,6 +447,7 @@ impl A380SpoilerFactory {
             } else {
                 None
             },
+            Pressure::new::<psi>(A380HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
         )
     }
 
@@ -601,6 +604,7 @@ impl A380ElevatorFactory {
             } else {
                 None
             },
+            Pressure::new::<psi>(A380HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
         )
     }
 
@@ -619,6 +623,7 @@ impl A380ElevatorFactory {
             Angle::new::<degree>(0.)
         };
 
+        println!("ELEVATOR!!");
         LinearActuatedRigidBodyOnHingeAxis::new(
             Mass::new::<kilogram>(58.6),
             size,
@@ -695,11 +700,11 @@ impl A380ElevatorFactory {
 struct A380RudderFactory {}
 impl A380RudderFactory {
     const FLOW_CONTROL_PROPORTIONAL_GAIN: f64 = 1.5;
-    const FLOW_CONTROL_INTEGRAL_GAIN: f64 = 2.;
-    const FLOW_CONTROL_FORCE_GAIN: f64 = 350000.;
+    const FLOW_CONTROL_INTEGRAL_GAIN: f64 = 3.;
+    const FLOW_CONTROL_FORCE_GAIN: f64 = 450000.;
 
     const MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING: f64 = 1000000.;
-    const MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT: f64 = 1.;
+    const MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT: f64 = 10.;
 
     //TODO should be ACEss 2
     const UPPER_AND_LOWER_PANEL_UPPER_EBHA_BUS: ElectricalBusType =
@@ -718,14 +723,14 @@ impl A380RudderFactory {
         let actuator_characteristics = LinearActuatorCharacteristics::new(
             Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING / 4.,
             Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING,
-            VolumeRate::new::<gallon_per_second>(0.0792),
+            VolumeRate::new::<gallon_per_second>(0.0499),
             Ratio::new::<percent>(Self::MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT),
         );
 
         LinearActuator::new(
             bounded_linear_length,
             1,
-            Length::new::<meter>(0.06),
+            Length::new::<meter>(0.099),
             Length::new::<meter>(0.),
             actuator_characteristics.max_flow(),
             80000.,
@@ -746,17 +751,31 @@ impl A380RudderFactory {
                 powered_by,
                 ElectroHydrostaticActuatorType::ElectricalBackupHydraulicActuator,
             )),
+            Pressure::new::<psi>(A380HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
         )
     }
 
-    /// Builds an aileron control surface body for A380-800
-    fn a380_rudder_body(init_at_center: bool) -> LinearActuatedRigidBodyOnHingeAxis {
-        let size = Vector3::new(0.42, 6.65, 1.8);
+    fn a380_rudder_body(
+        init_at_center: bool,
+        is_upper_body: bool,
+    ) -> LinearActuatedRigidBodyOnHingeAxis {
+        let size = if is_upper_body {
+            Vector3::new(0.5, 9.63, 2.9)
+        } else {
+            Vector3::new(0.5, 4.72, 3.41)
+        };
+
+        let mass = if is_upper_body {
+            Mass::new::<kilogram>(150.)
+        } else {
+            Mass::new::<kilogram>(135.)
+        };
+
         let cg_offset = Vector3::new(0., 0.5 * size[1], -0.5 * size[2]);
         let aero_center = Vector3::new(0., 0.5 * size[1], -0.3 * size[2]);
 
-        let control_arm = Vector3::new(-0.144, 0., 0.);
-        let anchor = Vector3::new(-0.144, 0., 0.50);
+        let control_arm = Vector3::new(-0.18, 0., 0.);
+        let anchor = Vector3::new(-0.18, 0., 0.850);
 
         let randomized_init_position_angle_degree = if init_at_center {
             0.
@@ -765,14 +784,14 @@ impl A380RudderFactory {
         };
 
         LinearActuatedRigidBodyOnHingeAxis::new(
-            Mass::new::<kilogram>(95.),
+            mass,
             size,
             cg_offset,
             aero_center,
             control_arm,
             anchor,
-            Angle::new::<degree>(-25.),
-            Angle::new::<degree>(50.),
+            Angle::new::<degree>(-30.),
+            Angle::new::<degree>(60.),
             Angle::new::<degree>(randomized_init_position_angle_degree),
             100.,
             false,
@@ -784,10 +803,11 @@ impl A380RudderFactory {
     /// to it
     fn a380_rudder_assembly(
         init_at_center: bool,
+        is_upper_body: bool,
         upper_powered_by: ElectricalBusType,
         lower_powered_by: ElectricalBusType,
     ) -> HydraulicLinearActuatorAssembly<2> {
-        let rudder_body = Self::a380_rudder_body(init_at_center);
+        let rudder_body = Self::a380_rudder_body(init_at_center, is_upper_body);
 
         let rudder_actuator_upper = Self::a380_rudder_actuator(&rudder_body, upper_powered_by);
         let rudder_actuator_lower = Self::a380_rudder_actuator(&rudder_body, lower_powered_by);
@@ -805,11 +825,13 @@ impl A380RudderFactory {
 
         let upper_assembly = Self::a380_rudder_assembly(
             init_at_center,
+            true,
             Self::UPPER_AND_LOWER_PANEL_UPPER_EBHA_BUS,
             Self::UPPER_PANEL_LOWER_EBHA_BUS,
         );
         let lower_assembly = Self::a380_rudder_assembly(
             init_at_center,
+            false,
             Self::UPPER_AND_LOWER_PANEL_UPPER_EBHA_BUS,
             Self::LOWER_PANEL_LOWER_EBHA_BUS,
         );
@@ -817,18 +839,26 @@ impl A380RudderFactory {
             context,
             upper_assembly,
             lower_assembly,
-            Self::new_a380_rudder_aero_model(),
+            Self::new_a380_rudder_aero_model(true),
+            Self::new_a380_rudder_aero_model(false),
         )
     }
 
-    fn new_a380_rudder_aero_model() -> AerodynamicModel {
-        let body = Self::a380_rudder_body(true);
+    fn new_a380_rudder_aero_model(is_upper_body: bool) -> AerodynamicModel {
+        let body = Self::a380_rudder_body(true, is_upper_body);
+
+        let coeff_area = if is_upper_body {
+            Ratio::new::<ratio>(0.725)
+        } else {
+            Ratio::new::<ratio>(0.915)
+        };
+
         AerodynamicModel::new(
             &body,
             Some(Vector3::new(1., 0., 0.)),
             Some(Vector3::new(0., 0., 1.)),
             Some(Vector3::new(1., 0., 0.)),
-            Ratio::new::<ratio>(0.4),
+            coeff_area,
         )
     }
 }
@@ -905,6 +935,7 @@ impl A380GearDoorFactory {
             false,
             None,
             None,
+            Pressure::new::<psi>(A380HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
         )
     }
 
@@ -946,6 +977,7 @@ impl A380GearDoorFactory {
             false,
             None,
             None,
+            Pressure::new::<psi>(A380HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
         )
     }
 
@@ -1103,6 +1135,7 @@ impl A380GearFactory {
             false,
             None,
             None,
+            Pressure::new::<psi>(A380HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
         )
     }
 
@@ -1142,6 +1175,7 @@ impl A380GearFactory {
             false,
             None,
             None,
+            Pressure::new::<psi>(A380HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
         )
     }
 
@@ -6007,7 +6041,8 @@ impl RudderAssembly {
         context: &mut InitContext,
         upper_hydraulic_assembly: HydraulicLinearActuatorAssembly<2>,
         lower_hydraulic_assembly: HydraulicLinearActuatorAssembly<2>,
-        aerodynamic_model: AerodynamicModel,
+        aerodynamic_model_upper: AerodynamicModel,
+        aerodynamic_model_lower: AerodynamicModel,
     ) -> Self {
         Self {
             hydraulic_assemblies: [upper_hydraulic_assembly, lower_hydraulic_assembly],
@@ -6018,7 +6053,7 @@ impl RudderAssembly {
 
             positions: [Ratio::new::<ratio>(0.); 2],
 
-            aerodynamic_models: [aerodynamic_model; 2],
+            aerodynamic_models: [aerodynamic_model_upper, aerodynamic_model_lower],
         }
     }
 

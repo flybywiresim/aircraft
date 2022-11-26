@@ -234,6 +234,7 @@ impl A320CargoDoorFactory {
             false,
             None,
             None,
+            Pressure::new::<psi>(A320HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
         )
     }
 
@@ -335,6 +336,7 @@ impl A320AileronFactory {
             false,
             None,
             None,
+            Pressure::new::<psi>(A320HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
         )
     }
 
@@ -448,6 +450,7 @@ impl A320SpoilerFactory {
                 AngularVelocity::new::<radian_per_second>(0.),
             )),
             None,
+            Pressure::new::<psi>(A320HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
         )
     }
 
@@ -575,6 +578,7 @@ impl A320ElevatorFactory {
             false,
             None,
             None,
+            Pressure::new::<psi>(A320HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
         )
     }
 
@@ -679,6 +683,7 @@ impl A320RudderFactory {
             false,
             None,
             None,
+            Pressure::new::<psi>(A320HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
         )
     }
 
@@ -825,6 +830,7 @@ impl A320GearDoorFactory {
             false,
             None,
             None,
+            Pressure::new::<psi>(A320HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
         )
     }
 
@@ -866,6 +872,7 @@ impl A320GearDoorFactory {
             false,
             None,
             None,
+            Pressure::new::<psi>(A320HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
         )
     }
 
@@ -1023,6 +1030,7 @@ impl A320GearFactory {
             false,
             None,
             None,
+            Pressure::new::<psi>(A320HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
         )
     }
 
@@ -1062,6 +1070,7 @@ impl A320GearFactory {
             false,
             None,
             None,
+            Pressure::new::<psi>(A320HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
         )
     }
 

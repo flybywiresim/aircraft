@@ -415,6 +415,7 @@ impl CoreHydraulicForce {
         slow_hydraulic_damping_filtering_constant: Duration,
         fluid_compression_spring_constant: f64,
         fluid_compression_damping_constant: f64,
+
         max_flow: VolumeRate,
         min_flow: VolumeRate,
         bore_side_area: Area,
@@ -429,9 +430,11 @@ impl CoreHydraulicForce {
 
         locks_position_in_closed_mode: bool,
         soft_lock_velocity: Option<(AngularVelocity, AngularVelocity)>,
+
+        max_working_pressure: Pressure,
     ) -> Self {
-        let max_force = Pressure::new::<psi>(3000.) * bore_side_area;
-        let min_force = -Pressure::new::<psi>(3000.) * rod_side_area;
+        let max_force = max_working_pressure * bore_side_area;
+        let min_force = -max_working_pressure * rod_side_area;
         Self {
             current_mode: LinearActuatorMode::ClosedCircuitDamping,
             closed_valves_reference_position: init_position,
@@ -915,6 +918,8 @@ impl LinearActuator {
         soft_lock_velocity: Option<(AngularVelocity, AngularVelocity)>,
 
         electro_hydrostatic_backup: Option<ElectroHydrostaticBackup>,
+
+        max_working_pressure: Pressure,
     ) -> Self {
         let total_travel = (bounded_linear_length.max_absolute_length_to_anchor()
             - bounded_linear_length.min_absolute_length_to_anchor())
@@ -1002,6 +1007,7 @@ impl LinearActuator {
                 has_flow_restriction,
                 locks_position_in_closed_mode,
                 soft_lock_velocity,
+                max_working_pressure,
             ),
             electro_hydrostatic_backup,
         }
@@ -1768,6 +1774,15 @@ impl LinearActuatedRigidBodyOnHingeAxis {
     fn init_min_max_linear_length(&mut self) {
         let length_at_min_angle = self.absolute_length_to_anchor_at_angle(self.min_angle);
         let length_at_max_angle = self.absolute_length_to_anchor_at_angle(self.max_angle);
+
+        println!(
+            "MIN LENGTH m {:.3} MIDDLE LENGTH {:.3}  TRAVEL {:.3}",
+            length_at_max_angle.get::<meter>(),
+            self.absolute_length_to_anchor_at_angle(Angle::new::<radian>(0.))
+                .get::<meter>(),
+            (length_at_min_angle - length_at_max_angle).get::<meter>(),
+        );
+
         self.min_absolute_length_to_anchor = length_at_min_angle.min(length_at_max_angle);
         self.max_absolute_length_to_anchor = length_at_min_angle.max(length_at_max_angle);
     }
@@ -3860,6 +3875,7 @@ mod tests {
             false,
             None,
             None,
+            Pressure::new::<psi>(3000.),
         )
     }
 
@@ -3940,6 +3956,7 @@ mod tests {
             false,
             None,
             None,
+            Pressure::new::<psi>(3000.),
         )
     }
 
@@ -3965,6 +3982,7 @@ mod tests {
             false,
             None,
             None,
+            Pressure::new::<psi>(3000.),
         )
     }
 
@@ -4054,6 +4072,7 @@ mod tests {
             false,
             None,
             None,
+            Pressure::new::<psi>(3000.),
         )
     }
 
@@ -4136,6 +4155,7 @@ mod tests {
             false,
             None,
             None,
+            Pressure::new::<psi>(3000.),
         )
     }
 
@@ -4195,6 +4215,7 @@ mod tests {
             false,
             None,
             None,
+            Pressure::new::<psi>(3000.),
         )
     }
 
@@ -4254,6 +4275,7 @@ mod tests {
             false,
             None,
             None,
+            Pressure::new::<psi>(3000.),
         )
     }
 
@@ -4330,6 +4352,7 @@ mod tests {
             } else {
                 None
             },
+            Pressure::new::<psi>(3000.),
         )
     }
 
@@ -4403,6 +4426,7 @@ mod tests {
             } else {
                 None
             },
+            Pressure::new::<psi>(3000.),
         )
     }
 
