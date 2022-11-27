@@ -1650,7 +1650,11 @@
                     <PART_ID>EXTLT_RWY</PART_ID>
                     <ANIM_NAME>SWITCH_OVHD_EXTLT_RWY</ANIM_NAME>
                     <SIMVAR_NAME>LIGHT TAXI</SIMVAR_NAME>
-                    <TOGGLE_EVENT>TOGGLE_TAXI_LIGHTS</TOGGLE_EVENT>
+                    <SIMVAR_NAME_2>LIGHT TAXI</SIMVAR_NAME_2>
+                    <TOGGLE_EVENT>TAXI_LIGHTS_SET</TOGGLE_EVENT>
+                    <TOGGLE_EVENT_2>TAXI_LIGHTS_SET</TOGGLE_EVENT_2>
+                    <SIMVAR_INDEX_1>2</SIMVAR_INDEX_1>
+                    <SIMVAR_INDEX_2>3</SIMVAR_INDEX_2>
                     <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.RWY_TURNOFF_LIGHTS_OFF</ANIMTIP_0>
                     <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.RWY_TURNOFF_LIGHTS_ON</ANIMTIP_1>
                 </UseTemplate>
