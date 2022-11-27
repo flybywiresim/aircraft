@@ -151,6 +151,12 @@
       "BoardingTime": "Ombordstigningstid",
       "Cargo": "Frakt",
       "Current": "Nuvarande",
+      "DeboardConfirmationBody": "Bekräfta avstigning av alla passagerare",
+      "DeboardConfirmationCancel": "Avbryt",
+      "DeboardConfirmationConfirm": "Avbordstigning",
+      "DeboardConfirmationTitle": "Släppa alla passagerare?",
+      "EstimatedDurationUnit": "minuter",
+      "LoadingTime": "Loading Time",
       "Passengers": "Passagerare",
       "Planned": "Planerad",
       "TT": {
@@ -162,7 +168,8 @@
         "MaxZFWCG": "Maximal ZFWCG",
         "PerPaxBagWeight": "Per passagerarväska vikt",
         "PerPaxWeight": "Vikt per passagerare",
-        "StartBoarding": "Börja Boarding"
+        "StartBoarding": "Börja Boarding",
+        "StartDeboarding": "Börja avbordstigning"
       },
       "Title": "Nyttolast",
       "ZFW": "ZFW",

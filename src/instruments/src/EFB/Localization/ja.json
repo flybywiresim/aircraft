@@ -151,6 +151,12 @@
       "BoardingTime": "搭乗時間",
       "Cargo": "貨物",
       "Current": "現在値",
+      "DeboardConfirmationBody": "乗客を全て降機させるか確認してください",
+      "DeboardConfirmationCancel": "取消",
+      "DeboardConfirmationConfirm": "降機",
+      "DeboardConfirmationTitle": "乗客を全て降機させますか？",
+      "EstimatedDurationUnit": "分",
+      "LoadingTime": "積込時間",
       "Passengers": "乗客数",
       "Planned": "計画値",
       "TT": {
@@ -162,7 +168,8 @@
         "MaxZFWCG": "最大ZFWCG",
         "PerPaxBagWeight": "乗客1人あたりの手荷物重量",
         "PerPaxWeight": "乗客1人あたりの重量",
-        "StartBoarding": "搭乗開始"
+        "StartBoarding": "搭乗開始",
+        "StartDeboarding": "降機開始"
       },
       "Title": "積載物",
       "ZFW": "ZFW",
