@@ -1,5 +1,6 @@
 import { usePersistentNumberProperty } from '@instruments/common/persistence';
 import React, { useEffect, useRef, useState, PropsWithChildren } from 'react';
+import { getRootElement } from '@instruments/common/defaults';
 import { useAppDispatch } from '../../../Store/store';
 import { setOffsetY } from '../../../Store/features/keyboard';
 import { KeyboardWrapper } from '../../KeyboardWrapper';
@@ -23,6 +24,8 @@ interface SimpleInputProps {
 }
 
 export const SimpleInput = (props: PropsWithChildren<SimpleInputProps>) => {
+    const [guid] = useState(`SI-${Utils.generateGUID()}`);
+
     const [displayValue, setDisplayValue] = useState(props.value?.toString() ?? '');
     const [focused, setFocused] = useState(false);
 
@@ -144,22 +147,30 @@ export const SimpleInput = (props: PropsWithChildren<SimpleInputProps>) => {
         return split.join('.');
     };
 
-    useEffect(() => {
-        if (focused) {
-            Coherent.trigger('FOCUS_INPUT_FIELD');
-        } else {
-            Coherent.trigger('UNFOCUS_INPUT_FIELD');
-        }
-        return () => {
-            Coherent.trigger('UNFOCUS_INPUT_FIELD');
-        };
-    }, [focused]);
-
     const blurInputField = () => {
         if (inputRef.current) {
             inputRef.current.blur();
         }
     };
+
+    useEffect(() => {
+        if (focused) {
+            Coherent.trigger('FOCUS_INPUT_FIELD', guid, '', '', '', false);
+        } else {
+            Coherent.trigger('UNFOCUS_INPUT_FIELD', guid);
+        }
+        return () => {
+            Coherent.trigger('UNFOCUS_INPUT_FIELD', guid);
+        };
+    }, [focused]);
+
+    // unfocus the search field when user presses enter
+    getRootElement().addEventListener('keypress', (event: KeyboardEvent) => {
+        // 'keyCode' is deprecated but 'key' is not supported in MSFS
+        if (event.keyCode === 13) {
+            blurInputField();
+        }
+    });
 
     return (
         <>

@@ -97,6 +97,8 @@ declare global {
          * @param args any extra arguments to be passed to the event handlers.
          */
         function trigger(name: string, ...args: any[]): void;
+        function trigger(name: 'FOCUS_INPUT_FIELD', id: string, title?: string, description?: string, defaultValue?: string, isNumeric: boolean): void;
+        function trigger(name: 'UNFOCUS_INPUT_FIELD', id: string);
         /**
          * Shows the debugging overlay in the browser.
          * Will also work in Coherent GT only if engineForceEnableMocking is set to true.

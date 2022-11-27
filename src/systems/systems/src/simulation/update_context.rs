@@ -93,7 +93,7 @@ impl LocalAcceleration {
     }
 }
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Default)]
 pub struct Velocity3D {
     velocity: [Velocity; 3],
 }
@@ -130,13 +130,6 @@ impl Velocity3D {
             self.vert_velocity().get::<meter_per_second>(),
             self.long_velocity().get::<meter_per_second>(),
         )
-    }
-}
-impl Default for Velocity3D {
-    fn default() -> Self {
-        Self {
-            velocity: [Velocity::default(); 3],
-        }
     }
 }
 

@@ -120,14 +120,12 @@ const insertUplink = (mcdu) => {
         callsign
     } = mcdu.simbrief;
 
-    const fromTo = `${originIcao}/${destinationIcao}`;
-
     mcdu.setScratchpadMessage(NXSystemMessages.uplinkInsertInProg);
 
     /**
      * AOC ACT F-PLN UPLINK
      */
-    mcdu.tryUpdateFromTo(fromTo, async (result) => {
+    mcdu.setFromTo(originIcao, destinationIcao).then(async (result) => {
         if (result) {
             CDUPerformancePage.UpdateThrRedAccFromOrigin(mcdu);
             CDUPerformancePage.UpdateEngOutAccFromOrigin(mcdu);
@@ -149,6 +147,12 @@ const insertUplink = (mcdu) => {
             if (mcdu.page.Current === mcdu.page.InitPageA) {
                 CDUInitPage.ShowPage1(mcdu);
             }
+        }
+    }).catch((e) => {
+        if (e instanceof McduMessage) {
+            mcdu.setScratchpadMessage(e);
+        } else {
+            console.warn(e);
         }
     });
     mcdu.updateFlightNo(callsign, (result) => {
@@ -222,8 +226,44 @@ const addLatLonWaypoint = async (mcdu, lat, lon) => {
     }
 };
 
-const uplinkRoute = async (mcdu) => {
-    const {navlog} = mcdu.simbrief;
+/**
+ * Inserts the located company route's origin, destination and if provided alternate.
+ * @param {FMCMainDisplay} mcdu
+ */
+const insertCoRoute = async (mcdu) => {
+    const {
+        originIcao,
+        destinationIcao,
+        alternateIcao,
+    } = mcdu.coRoute;
+
+    const fromTo = `${originIcao}/${destinationIcao}`;
+
+    mcdu.setFromTo(originIcao, destinationIcao).then(async (result) => {
+        if (result) {
+            CDUPerformancePage.UpdateThrRedAccFromOrigin(mcdu);
+            CDUPerformancePage.UpdateEngOutAccFromOrigin(mcdu);
+
+            if (alternateIcao) {
+                await mcdu.tryUpdateAltDestination(alternateIcao);
+            }
+
+            await uplinkRoute(mcdu, true);
+            if (mcdu.page.Current === mcdu.page.InitPageA) {
+                CDUInitPage.ShowPage1(mcdu);
+            }
+        }
+    }).catch((e) => {
+        if (e instanceof McduMessage) {
+            mcdu.setScratchpadMessage(e);
+        } else {
+            console.warn(e);
+        }
+    });
+};
+
+const uplinkRoute = async (mcdu, coroute = false) => {
+    const {navlog} = coroute ? mcdu.coRoute : mcdu.simbrief;
 
     const procedures = new Set(navlog.filter(fix => fix.is_sid_star === "1").map(fix => fix.via_airway));
 

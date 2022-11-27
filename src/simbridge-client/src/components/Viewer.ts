@@ -22,11 +22,24 @@ export class Viewer {
     }
 
     /**
+     * Used to retrieve a URL to the rendered image of the specified PDF page.
+     * It internally calls getPDFPage and then calls createObjectURL().
+     * @see https://developer.mozilla.org/en-US/docs/web/api/url/createobjecturl
+     * @param filename required field, filename of the pdf
+     * @param pageNumber required field, The page of the PDF file
+     * @returns url to the image (object blob) of the PDF page
+     */
+    public static async getPDFPageUrl(filename: string, pageNumber: number): Promise<string> {
+        const blob = await Viewer.getPDFPage(filename, pageNumber);
+        return URL.createObjectURL(blob);
+    }
+
+    /**
      * Retrieve the number of pages within a specified PDF file
      * @param filename required field, filename of the pdf
      * @returns A number
      */
-    public static async getPDFPageNum(filename: string): Promise<Number> {
+    public static async getPDFPageNum(filename: string): Promise<number> {
         if (filename) {
             const response = await fetch(`${getSimBridgeUrl()}/api/v1/utility/pdf/numpages?filename=${filename}`);
             if (response.ok) {
@@ -54,8 +67,8 @@ export class Viewer {
      * @param filename required field, filename of the image
      * @returns A Blob
      */
-    public static async getImage(filename: string, pageNumber: number): Promise<Blob> {
-        if (filename || pageNumber) {
+    public static async getImage(filename: string): Promise<Blob> {
+        if (filename) {
             const response = await fetch(`${getSimBridgeUrl()}/api/v1/utility/image?filename=${filename}`);
             if (response.ok) {
                 return response.blob();
@@ -63,6 +76,18 @@ export class Viewer {
             throw new Error(`SimBridge Error: ${response.status}`);
         }
         throw new Error('File name or page number missing');
+    }
+
+    /**
+     * Used to retrieve a URL to the image.
+     * It internally calls getPDFImage and then calls createObjectURL().
+     * @see https://developer.mozilla.org/en-US/docs/web/api/url/createobjecturl
+     * @param filename required field, filename of the pdf
+     * @returns url to the image (object blob)
+     */
+    public static async getImageUrl(filename: string): Promise<string> {
+        const blob = await Viewer.getImage(filename);
+        return URL.createObjectURL(blob);
     }
 
     /**

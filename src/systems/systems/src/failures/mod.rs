@@ -1,7 +1,7 @@
 use crate::shared::{GearActuatorId, HydraulicColor, LgciuId, ProximityDetectorId};
 use crate::simulation::SimulationElement;
 
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 pub enum FailureType {
     TransformerRectifier(usize),
     ReservoirLeak(HydraulicColor),

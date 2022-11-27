@@ -11,7 +11,6 @@
 
 #include "FlightDataRecorder.h"
 
-using namespace std;
 using namespace mINI;
 
 void FlightDataRecorder::initialize() {
@@ -32,16 +31,15 @@ void FlightDataRecorder::initialize() {
   maximumSampleCounter = INITypeConversion::getInteger(iniStructure, "FLIGHT_DATA_RECORDER", "MAXIMUM_NUMBER_OF_ENTRIES_PER_FILE", 864000);
 
   // print configuration
-  cout << "WASM: Flight Data Recorder Configuration : Enabled                        = " << isEnabled << endl;
-  cout << "WASM: Flight Data Recorder Configuration : MaximumNumberOfFiles           = " << maximumFileCount << endl;
-  cout << "WASM: Flight Data Recorder Configuration : MaximumNumberOfEntriesPerFile  = " << maximumSampleCounter << endl;
-  cout << "WASM: Flight Data Recorder Configuration : Interface Version              = " << INTERFACE_VERSION << endl;
+  std::cout << "WASM: Flight Data Recorder Configuration : Enabled                        = " << isEnabled << std::endl;
+  std::cout << "WASM: Flight Data Recorder Configuration : MaximumNumberOfFiles           = " << maximumFileCount << std::endl;
+  std::cout << "WASM: Flight Data Recorder Configuration : MaximumNumberOfEntriesPerFile  = " << maximumSampleCounter << std::endl;
+  std::cout << "WASM: Flight Data Recorder Configuration : Interface Version              = " << INTERFACE_VERSION << std::endl;
 }
 
 void FlightDataRecorder::update(AutopilotStateMachineModelClass* autopilotStateMachine,
                                 AutopilotLawsModelClass* autopilotLaws,
                                 AutothrustModelClass* autoThrust,
-                                FlyByWireModelClass* flyByWire,
                                 const EngineData& engineData,
                                 const AdditionalData& additionalData) {
   // check if enabled
@@ -56,7 +54,6 @@ void FlightDataRecorder::update(AutopilotStateMachineModelClass* autopilotStateM
   fileStream->write((char*)(&autopilotStateMachine->getExternalOutputs().out), sizeof(autopilotStateMachine->getExternalOutputs().out));
   fileStream->write((char*)(&autopilotLaws->getExternalOutputs().out.output), sizeof(autopilotLaws->getExternalOutputs().out.output));
   fileStream->write((char*)(&autoThrust->getExternalOutputs().out), sizeof(autoThrust->getExternalOutputs().out));
-  fileStream->write((char*)(&flyByWire->getExternalOutputs().out), sizeof(flyByWire->getExternalOutputs().out));
   fileStream->write((char*)(&engineData), sizeof(engineData));
   fileStream->write((char*)(&additionalData), sizeof(additionalData));
 }
@@ -85,7 +82,7 @@ void FlightDataRecorder::manageFlightDataRecorderFiles() {
 
   if (!fileStream) {
     // create new file
-    fileStream = make_shared<gzofstream>(getFlightDataRecorderFilename().c_str());
+    fileStream = std::make_shared<gzofstream>(getFlightDataRecorderFilename().c_str());
     // write version to file
     fileStream->write((char*)&INTERFACE_VERSION, sizeof(INTERFACE_VERSION));
     // clean up directory
@@ -93,24 +90,24 @@ void FlightDataRecorder::manageFlightDataRecorderFiles() {
   }
 }
 
-string FlightDataRecorder::getFlightDataRecorderFilename() {
+std::string FlightDataRecorder::getFlightDataRecorderFilename() {
   // get time
-  auto in_time_t = chrono::system_clock::to_time_t(chrono::system_clock::now());
+  auto in_time_t = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
 
   // get filepath based on time
-  stringstream result;
-  result << put_time(gmtime(&in_time_t), "\\work\\%Y-%m-%d-%H-%M-%S.fdr");
+  std::stringstream result;
+  result << std::put_time(std::gmtime(&in_time_t), "\\work\\%Y-%m-%d-%H-%M-%S.fdr");
 
   // return result
   return result.str();
 }
 
 void FlightDataRecorder::cleanUpFlightDataRecorderFiles() {
-  // vector for directory entries
-  vector<string> files;
+  // std::vector for directory entries
+  std::vector<std::string> files;
 
   // extension
-  string extension = "fdr";
+  std::string extension = "fdr";
 
   // structure representing an directory entry
   struct dirent* directoryEntry;
@@ -120,20 +117,20 @@ void FlightDataRecorder::cleanUpFlightDataRecorderFiles() {
 
   // read directory until end
   while ((directoryEntry = readdir(directory)) != NULL) {
-    // get filename as string
-    string filename = directoryEntry->d_name;
+    // get filename as std::string
+    std::string filename = directoryEntry->d_name;
 
     // check if file has right extension
-    if (filename.find(extension, (filename.length() - extension.length())) != string::npos) {
-      files.push_back(filename);
+    if (filename.find(extension, (filename.length() - extension.length())) != std::string::npos) {
+      files.push_back(std::move(filename));
     }
   }
 
   // close directory
   closedir(directory);
 
-  // sort vector
-  sort(files.begin(), files.end(), std::greater<>());
+  // sort std::vector
+  std::sort(files.begin(), files.end(), std::greater<>());
 
   // remove older files
   while (files.size() > maximumFileCount) {
