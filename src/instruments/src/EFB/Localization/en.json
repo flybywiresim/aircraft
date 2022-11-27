@@ -159,6 +159,11 @@
       "LoadingTime": "Loading Time",
       "Passengers": "Passengers",
       "Planned": "Planned",
+      "DeboardConfirmationTitle": "Deboard all Passengers?",
+      "DeboardConfirmationBody":"Please confirm deboarding all passengers",
+      "DeboardConfirmationConfirm": "Deboard",
+      "DeboardConfirmationCancel":"Cancel",
+      "LoadingTime": "Loading Time",
       "TT": {
         "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Aircraft Must Be On the Ground and Have Engines Shutdown to Change Boarding Duration",
         "FillPayloadFromSimbrief": "Fill Payload Information from Simbrief",

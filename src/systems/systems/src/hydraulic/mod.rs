@@ -85,7 +85,7 @@ impl Fluid {
     }
 }
 
-#[derive(PartialEq, Clone, Copy)]
+#[derive(PartialEq, Eq, Clone, Copy)]
 pub enum PressureSwitchState {
     Pressurised,
     NotPressurised,
@@ -901,7 +901,7 @@ impl HydraulicCircuit {
     pub fn update(
         &mut self,
         context: &UpdateContext,
-        main_section_pumps: &mut Vec<&mut dyn PressureSource>,
+        main_section_pumps: &mut [&mut dyn PressureSource],
         system_section_pump: Option<&mut impl PressureSource>,
         auxiliary_section_pump: Option<&mut impl PressureSource>,
         ptu: Option<&PowerTransferUnit>,
@@ -976,7 +976,7 @@ impl HydraulicCircuit {
     fn update_pumps(
         &mut self,
         context: &UpdateContext,
-        main_section_pumps: &mut Vec<&mut dyn PressureSource>,
+        main_section_pumps: &mut [&mut dyn PressureSource],
         system_section_pump: Option<&mut impl PressureSource>,
         auxiliary_section_pump: Option<&mut impl PressureSource>,
     ) {
@@ -1028,7 +1028,7 @@ impl HydraulicCircuit {
 
     fn update_maximum_pumping_capacities(
         &mut self,
-        main_section_pumps: &mut Vec<&mut dyn PressureSource>,
+        main_section_pumps: &mut [&mut dyn PressureSource],
         system_section_pump: &Option<&mut impl PressureSource>,
         auxiliary_section_pump: &Option<&mut impl PressureSource>,
     ) {
@@ -1119,7 +1119,7 @@ impl HydraulicCircuit {
         }
 
         let downstream_section = if to_auxiliary {
-            &self.auxiliary_section.as_ref().unwrap()
+            self.auxiliary_section.as_ref().unwrap()
         } else {
             &self.system_section
         };

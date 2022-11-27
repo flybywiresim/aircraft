@@ -187,7 +187,7 @@ impl<'a, 'b> MsfsAspectBuilder<'a, 'b> {
         let target = self.variables.register(&target);
 
         let event_to_variable = EventToVariable::new(
-            &mut self.sim_connect,
+            self.sim_connect,
             event_name,
             mapping,
             target,
@@ -213,7 +213,7 @@ impl<'a, 'b> MsfsAspectBuilder<'a, 'b> {
         let input = self.variables.register(&input);
 
         self.actions.push((
-            ToEvent::new(&mut self.sim_connect, input, mapping, write_on, event_name)?.into(),
+            ToEvent::new(self.sim_connect, input, mapping, write_on, event_name)?.into(),
             ExecuteOn::PostTick,
         ));
 
@@ -238,12 +238,7 @@ impl<'a, 'b> MsfsAspectBuilder<'a, 'b> {
     }
 
     /// Execute the given function whenever any of the observed variable values changes.
-    pub fn on_change(
-        &mut self,
-        execute_on: ExecuteOn,
-        observed: Vec<Variable>,
-        func: Box<dyn Fn(&[f64], &[f64])>,
-    ) {
+    pub fn on_change(&mut self, execute_on: ExecuteOn, observed: Vec<Variable>, func: OnChangeFn) {
         let observed = self.variables.register_many(&observed);
         let starting_values = self.variables.read_many(&observed);
 
@@ -335,7 +330,7 @@ impl Aspect for MsfsAspect {
     }
 }
 
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 /// Declares when to execute the action.
 pub enum ExecuteOn {
     PreTick,
@@ -496,7 +491,7 @@ pub fn min(accumulator: f64, item: f64) -> f64 {
     accumulator.min(item)
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Eq)]
 pub enum ObjectWrite {
     Ignore,
     ToSim,
@@ -932,17 +927,19 @@ impl ExecutableVariableAction for ToEvent {
     }
 }
 
+type OnChangeFn = Box<dyn Fn(&[f64], &[f64])>;
+
 struct OnChange {
     observed_variables: Vec<VariableIdentifier>,
     previous_values: Vec<f64>,
-    func: Box<dyn Fn(&[f64], &[f64])>,
+    func: OnChangeFn,
 }
 
 impl OnChange {
     fn new(
         observed_variables: Vec<VariableIdentifier>,
         starting_values: Vec<f64>,
-        func: Box<dyn Fn(&[f64], &[f64])>,
+        func: OnChangeFn,
     ) -> Self {
         Self {
             observed_variables,

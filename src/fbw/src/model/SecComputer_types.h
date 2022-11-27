@@ -204,6 +204,7 @@ struct base_elac_out_bus
   base_arinc_429 roll_spoiler_command_deg;
   base_arinc_429 yaw_damper_command_deg;
   base_arinc_429 elevator_double_pressurization_command_deg;
+  base_arinc_429 speedbrake_extension_deg;
   base_arinc_429 discrete_status_word_1;
   base_arinc_429 discrete_status_word_2;
 };
@@ -315,6 +316,7 @@ struct base_sec_lateral_law_outputs
   real_T right_spoiler_1_command_deg;
   real_T left_spoiler_2_command_deg;
   real_T right_spoiler_2_command_deg;
+  real_T speedbrake_command_deg;
 };
 
 #endif
@@ -473,6 +475,7 @@ struct base_sec_out_bus
   base_arinc_429 left_sidestick_roll_command_deg;
   base_arinc_429 right_sidestick_roll_command_deg;
   base_arinc_429 speed_brake_lever_command_deg;
+  base_arinc_429 speed_brake_command_deg;
   base_arinc_429 thrust_lever_angle_1_deg;
   base_arinc_429 thrust_lever_angle_2_deg;
   base_arinc_429 discrete_status_word_1;
@@ -640,10 +643,10 @@ struct struct_2OohiAWrazWy5wDS5iisgF
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_struct_7m2qji9xkXJ1tCsn7SH04E_
-#define DEFINED_TYPEDEF_FOR_struct_7m2qji9xkXJ1tCsn7SH04E_
+#ifndef DEFINED_TYPEDEF_FOR_struct_tXqQxauZPGP7M6uUMzLxgB_
+#define DEFINED_TYPEDEF_FOR_struct_tXqQxauZPGP7M6uUMzLxgB_
 
-struct struct_7m2qji9xkXJ1tCsn7SH04E
+struct struct_tXqQxauZPGP7M6uUMzLxgB
 {
   struct_2OohiAWrazWy5wDS5iisgF left_spoiler_1_position_deg;
   struct_2OohiAWrazWy5wDS5iisgF right_spoiler_1_position_deg;
@@ -657,6 +660,7 @@ struct struct_7m2qji9xkXJ1tCsn7SH04E
   struct_2OohiAWrazWy5wDS5iisgF left_sidestick_roll_command_deg;
   struct_2OohiAWrazWy5wDS5iisgF right_sidestick_roll_command_deg;
   struct_2OohiAWrazWy5wDS5iisgF speed_brake_lever_command_deg;
+  struct_2OohiAWrazWy5wDS5iisgF speed_brake_command_deg;
   struct_2OohiAWrazWy5wDS5iisgF thrust_lever_angle_1_deg;
   struct_2OohiAWrazWy5wDS5iisgF thrust_lever_angle_2_deg;
   struct_2OohiAWrazWy5wDS5iisgF discrete_status_word_1;
