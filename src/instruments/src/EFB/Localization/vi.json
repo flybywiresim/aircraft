@@ -52,14 +52,14 @@
         "Title": "Biểu đồ đã ghim"
       },
       "TT": {
-        "RearrangeWidgets": "Sắp xếp lại các widgets"
+        "RearrangeWidgets": "Sắp xếp lại các widget"
       },
       "Title": "Thông tin quan trọng",
       "Weather": {
         "AirPressure": "Áp suất không khí",
         "DewPoint": "Điểm sương",
         "IcaoInvalid": "ICAO không hợp lệ hoặc không có METAR",
-        "Loading": "Đang tải…",
+        "Loading": "Đang tải",
         "MetarParsingError": "METAR đã nhận không thể phân tích được",
         "NoIcaoProvided": "Chưa cung cấp mã ICAO",
         "NotAvailableShort": "Không có",
@@ -151,6 +151,12 @@
       "BoardingTime": "Thời gian lên máy bay",
       "Cargo": "Hàng hóa",
       "Current": "Hiện tại",
+      "DeboardConfirmationBody": "Please confirm deboarding all passengers",
+      "DeboardConfirmationCancel": "Cancel",
+      "DeboardConfirmationConfirm": "Deboard",
+      "DeboardConfirmationTitle": "Deboard all Passengers?",
+      "EstimatedDurationUnit": "minutes",
+      "LoadingTime": "Loading Time",
       "Passengers": "Hành khách",
       "Planned": "Đã lên kế hoạch",
       "TT": {
@@ -162,7 +168,8 @@
         "MaxZFWCG": "ZFWCG tối đa",
         "PerPaxBagWeight": "Trọng lượng mỗi túi hành khách",
         "PerPaxWeight": "Trọng lượng mỗi hành khách",
-        "StartBoarding": "Bắt đầu lên máy bay"
+        "StartBoarding": "Bắt đầu lên máy bay",
+        "StartDeboarding": "Begin Deboarding"
       },
       "Title": "Tải trọng",
       "ZFW": "Trọng lượng máy bay không kể nhiên liệu",
@@ -423,9 +430,9 @@
       "CenterPlaneMode": "Đặt trung tâm bản đồ là tàu bay Bật/Tắt",
       "DecreaseSpeed": "Lùi ngược hoặc chậm hơn về phía trước",
       "IncreaseSpeed": "Tiến lên hoặc chậm hơn về phía sau",
-      "Left": "Rẽ trái (nhấp đúp để đi thẳng)",
+      "Left": "Rẽ trái",
       "PausePushback": "Tạm dừng hoặc tiếp tục đẩy lùi",
-      "Right": "Rẽ phải (nhấp đúp để đi thẳng)",
+      "Right": "Rẽ phải",
       "SetReleaseParkingBrake": "Cài hoặc nhả phanh tay",
       "SliderDirection": "Di chuyển thanh trượt cho hướng mong muốn",
       "SliderSpeed": "Di chuyển thanh trượt cho tốc độ mong muốn",
@@ -536,7 +543,7 @@
     },
     "ThrottleConfig": {
       "Apply": "Áp dụng",
-      "AreYouSureThatYouWantToResetYourCurrentThrottleConfigurationToTheirDefaultStates": "Bạn có chắc chắn rằng bạn muốn đặt lại cấu hình cần ga trở về mặc định? Không thể hoàn tác hành động này.",
+      "AreYouSureThatYouWantToResetYourCurrentThrottleConfigurationToTheirDefaultStates": "Bạn có chắc chắn rằng bạn muốn đặt lại cấu hình cần ga hiện tại trở về mặc định? Không thể hoàn tác hành động này.",
       "Axis": "Trục",
       "Back": "Quay lại",
       "ConfigureEnd": "Cấu hình cuối",
@@ -600,7 +607,7 @@
     "TT": {
       "ConnectedToLocalApi": "Đã được kết nối tới SimBridge",
       "DisconnectedFromLocalApi": "Đã ngắt kết nối khỏi SimBridge",
-      "TurnOffOrShutdownEfb": "Tắt hoặc tắt máy EFB"
+      "TurnOffOrShutdownEfb": "Tắt hoặc Tắt máy EFB"
     },
     "Thu": "Th 5",
     "Tue": "Th 3",
