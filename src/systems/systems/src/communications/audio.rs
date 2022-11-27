@@ -123,9 +123,8 @@ impl AudioControlPanel {
         self.vhfs[1].get_receive()
     }
 
-    // Force it to true otherwise vPilot won't be working anymore
     pub fn get_receive_com3(&self) -> bool {
-        true
+        self.vhfs[2].get_receive()
     }
 
     pub fn get_receive_hf1(&self) -> bool {

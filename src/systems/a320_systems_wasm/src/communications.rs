@@ -128,7 +128,7 @@ pub(super) fn communications(builder: &mut MsfsAspectBuilder) -> Result<(), Box<
         "RADIO_DME2_IDENT_SET",
     )?;
     // For the next two, they are not VOR but
-    // the SDK does not allow us to call RADIO_DM3/4 yet
+    // the SDK does not allow us to call RADIO_DM3/4_IDENT_SET yet
     builder.variable_to_event(
         Variable::aspect("ILS_IDENT"),
         VariableToEventMapping::EventDataRaw,
