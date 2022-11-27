@@ -480,8 +480,7 @@
                 <USE_SIMVAR_FOR_BUTTON_ANIM>False</USE_SIMVAR_FOR_BUTTON_ANIM>
                 <USE_SIMVAR_FOR_KNOB_ANIM>False</USE_SIMVAR_FOR_KNOB_ANIM>
                 <CENTER_RADIUS>0.002</CENTER_RADIUS>
-                <KNOB_ANIM_CODE>(L:A32NX_ACP#ID#_#FREQ_ID#_VOLUME, number)(L:A32NX_ACP#ID#_#FREQ_ID#_VOLUME, number)
-                </KNOB_ANIM_CODE>
+                <KNOB_ANIM_CODE>(L:A32NX_ACP#ID#_#FREQ_ID#_VOLUME, number)</KNOB_ANIM_CODE>
                 <CLOCKWISE_CODE type="rnp">
                     let increment = #VOLUME_INCREMENT, number#;
 
