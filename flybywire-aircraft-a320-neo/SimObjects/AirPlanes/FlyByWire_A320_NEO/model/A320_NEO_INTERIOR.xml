@@ -1650,11 +1650,7 @@
                     <PART_ID>EXTLT_RWY</PART_ID>
                     <ANIM_NAME>SWITCH_OVHD_EXTLT_RWY</ANIM_NAME>
                     <SIMVAR_NAME>LIGHT TAXI</SIMVAR_NAME>
-                    <SIMVAR_NAME_2>LIGHT TAXI</SIMVAR_NAME_2>
-                    <TOGGLE_EVENT>TAXI_LIGHTS_SET</TOGGLE_EVENT>
-                    <TOGGLE_EVENT_2>TAXI_LIGHTS_SET</TOGGLE_EVENT_2>
-                    <SIMVAR_INDEX_1>2</SIMVAR_INDEX_1>
-                    <SIMVAR_INDEX_2>3</SIMVAR_INDEX_2>
+                    <TOGGLE_EVENT>TOGGLE_TAXI_LIGHTS</TOGGLE_EVENT>
                     <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.RWY_TURNOFF_LIGHTS_OFF</ANIMTIP_0>
                     <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.RWY_TURNOFF_LIGHTS_ON</ANIMTIP_1>
                 </UseTemplate>
@@ -1716,12 +1712,8 @@
                     <NODE_ID>SWITCH_OVHD_EXTLT_WING</NODE_ID>
                     <PART_ID>EXTLT_WING</PART_ID>
                     <ANIM_NAME>SWITCH_OVHD_EXTLT_WING</ANIM_NAME>
-                    <SIMVAR_NAME>LIGHT WING</ANIM_NAME>
-                    <SIMVAR_NAME_2>LIGHT WING</ANIM_NAME>
-                    <TOGGLE_EVENT>WING_LIGHTS_SET</TOGGLE_EVENT>
-                    <TOGGLE_EVENT_2>WING_LIGHTS_SET</TOGGLE_EVENT>
-                    <SIMVAR_INDEX_1>0</SIMVAR_INDEX_1>
-                    <SIMVAR_INDEX_2>1</SIMVAR_INDEX_2>
+                    <SIMVAR_NAME>LIGHT WING</SIMVAR_NAME>
+                    <TOGGLE_EVENT>TOGGLE_WING_LIGHTS</TOGGLE_EVENT>
                     <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.PANEL_DEICE_WING_LIGHT_OFF</ANIMTIP_0>
                     <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.PANEL_DEICE_WING_LIGHT_ON</ANIMTIP_1>
                 </UseTemplate>
