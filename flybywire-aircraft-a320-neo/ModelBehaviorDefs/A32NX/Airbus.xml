@@ -768,6 +768,7 @@
         <ANIM_DELTA>FALSE</ANIM_DELTA>
         <ANIM_BLENDWEIGHT>1.0</ANIM_BLENDWEIGHT>
         <SIMVAR_GROUP>A</SIMVAR_GROUP>
+        <ADDITIONAL_EVENT_CODE></ADDITIONAL_EVENT_CODE>
     </DefaultTemplateParameters>
     <EditableTemplateParameters>
         <AddParams>
