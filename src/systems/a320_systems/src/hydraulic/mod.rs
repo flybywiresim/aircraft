@@ -55,7 +55,7 @@ use systems::{
         low_pass_filter::LowPassFilter,
         random_from_normal_distribution, random_from_range,
         update_iterator::{FixedStepLoop, MaxStepLoop},
-        AdirsDiscreteOutputs, DelayedFalseLogicGate, DelayedPulseTrueLogicGate,
+        AdirsDiscreteOutputs, AirDataSource, DelayedFalseLogicGate, DelayedPulseTrueLogicGate,
         DelayedTrueLogicGate, ElectricalBusType, ElectricalBuses, EmergencyElectricalRatPushButton,
         EmergencyElectricalState, EmergencyGeneratorPower, EngineFirePushButtons, GearWheel,
         HydraulicColor, HydraulicGeneratorControlUnit, LandingGearHandle, LgciuInterface,
@@ -1694,7 +1694,7 @@ impl A320Hydraulic {
         rat_and_emer_gen_man_on: &impl EmergencyElectricalRatPushButton,
         emergency_elec: &(impl EmergencyElectricalState + EmergencyGeneratorPower),
         reservoir_pneumatics: &impl ReservoirAirPressure,
-        adirs: &impl AdirsDiscreteOutputs,
+        adirs: &(impl AdirsDiscreteOutputs + AirDataSource),
     ) {
         self.core_hydraulic_updater.update(context);
         self.physics_updater.update(context);
@@ -1721,6 +1721,7 @@ impl A320Hydraulic {
             lgcius.lgciu2(),
             engine1,
             engine2,
+            adirs,
         );
 
         for cur_time_step in self.ultra_fast_physics_updater {
@@ -1963,6 +1964,7 @@ impl A320Hydraulic {
         lgciu2: &impl LgciuInterface,
         engine1: &impl Engine,
         engine2: &impl Engine,
+        adiru: &impl AirDataSource,
     ) {
         self.nose_steering.update(
             context,
@@ -2037,7 +2039,7 @@ impl A320Hydraulic {
         );
 
         self.slats_flaps_complex
-            .update(context, &self.flap_system, &self.slat_system);
+            .update(context, &self.flap_system, &self.slat_system, adiru);
 
         self.fac_computer.update(
             self.green_circuit.system_section(),
@@ -5557,6 +5559,7 @@ mod tests {
             hydraulic::electrical_generator::TestGenerator,
             landing_gear::{GearSystemState, LandingGear, LandingGearControlInterfaceUnitSet},
             shared::{
+                arinc429::{Arinc429Word, SignStatus},
                 EmergencyElectricalState, HydraulicGeneratorControlUnit, LgciuId, PotentialOrigin,
             },
             simulation::{
@@ -5603,10 +5606,12 @@ mod tests {
         #[derive(Default)]
         struct A320TestAdirus {
             airspeed: Velocity,
+            aoa: Angle,
         }
         impl A320TestAdirus {
             fn update(&mut self, context: &UpdateContext) {
-                self.airspeed = context.true_airspeed()
+                self.airspeed = context.true_airspeed();
+                self.aoa = context.alpha();
             }
         }
         impl AdirsDiscreteOutputs for A320TestAdirus {
@@ -5624,6 +5629,15 @@ mod tests {
 
             fn low_speed_warning_4_260kts(&self, _: usize) -> bool {
                 self.airspeed.get::<knot>() > 260.
+            }
+        }
+        impl AirDataSource for A320TestAdirus {
+            fn computed_airspeed(&self, _: usize) -> Arinc429Word<Velocity> {
+                Arinc429Word::new(self.airspeed, SignStatus::NormalOperation)
+            }
+
+            fn alpha(&self, _: usize) -> Arinc429Word<Angle> {
+                Arinc429Word::new(self.aoa, SignStatus::NormalOperation)
             }
         }
 

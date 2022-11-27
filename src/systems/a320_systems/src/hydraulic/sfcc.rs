@@ -1,3 +1,4 @@
+#![allow(warnings, unused)]
 use systems::{
     shared::{
         AirDataSource, CSUPosition, ElectricalBusType, ElectricalBuses, LgciuWeightOnWheels,
@@ -399,11 +400,11 @@ impl FlapChannel {
         }
     }
 
-    fn update_cas(&mut self, adiru: [&impl AirDataSource; 3]) {
-        self.cas1_valid = adiru[0].computed_airspeed().is_normal_operation();
-        self.cas2_valid = adiru[1].computed_airspeed().is_normal_operation();
-        self.cas1 = adiru[0].computed_airspeed().normal_value().unwrap();
-        self.cas2 = adiru[1].computed_airspeed().normal_value().unwrap();
+    fn update_cas(&mut self, adiru: &impl AirDataSource) {
+        self.cas1_valid = adiru.computed_airspeed(1).is_normal_operation();
+        self.cas2_valid = adiru.computed_airspeed(2).is_normal_operation();
+        self.cas1 = adiru.computed_airspeed(1).normal_value().unwrap();
+        self.cas2 = adiru.computed_airspeed(2).normal_value().unwrap();
 
         // No connection with ADIRU3
 
@@ -421,9 +422,9 @@ impl FlapChannel {
         }
     }
 
-    fn update_aoa(&mut self, context: &UpdateContext, adiru: [&impl AirDataSource; 3]) {
-        let alpha: Angle = match adiru[0].alpha().ssm() {
-            SignStatus::NormalOperation => adiru[0].alpha().value(),
+    fn update_aoa(&mut self, context: &UpdateContext, adiru: &impl AirDataSource) {
+        let alpha: Angle = match adiru.alpha(1).ssm() {
+            SignStatus::NormalOperation => adiru.alpha(1).value(),
             _ => context.alpha(),
         };
         self.aoa = alpha;
@@ -434,7 +435,7 @@ impl FlapChannel {
         context: &UpdateContext,
         lgciu: &impl LgciuWeightOnWheels,
         csu: &CommandSensorUnit,
-        adiru: [&impl AirDataSource; 3],
+        adiru: &impl AirDataSource,
     ) {
         // LGCIU1 to SFCC1
         // LGCIU2 to SFCC2

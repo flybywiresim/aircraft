@@ -469,6 +469,15 @@ impl AdirsDiscreteOutputs for AirDataInertialReferenceSystem {
         self.adirus[adiru_number - 1].low_speed_warning_4_260kts()
     }
 }
+impl AirDataSource for AirDataInertialReferenceSystem {
+    fn computed_airspeed(&self, adiru_number: usize) -> Arinc429Word<Velocity> {
+        self.adirus[adiru_number - 1].computed_airspeed()
+    }
+
+    fn alpha(&self, adiru_number: usize) -> Arinc429Word<Angle> {
+        self.adirus[adiru_number - 1].alpha()
+    }
+}
 
 pub struct AirDataInertialReferenceUnit {
     state_id: VariableIdentifier,
@@ -642,6 +651,7 @@ impl<T: Copy + Default + PartialOrd> AdirsData<T> {
         self.value
     }
 
+    #[allow(dead_code)]
     fn ssm(&self) -> SignStatus {
         self.ssm
     }
@@ -927,15 +937,6 @@ impl ComputedAirspeedSource for AirDataReference {
 impl AlphaSource for AirDataReference {
     fn alpha(&self) -> Arinc429Word<Angle> {
         self.angle_of_attack.into()
-    }
-}
-impl AirDataSource for AirDataInertialReferenceUnit {
-    fn computed_airspeed(&self) -> Arinc429Word<Velocity> {
-        self.computed_airspeed()
-    }
-
-    fn alpha(&self) -> Arinc429Word<Angle> {
-        self.alpha()
     }
 }
 impl SimulationElement for AirDataReference {

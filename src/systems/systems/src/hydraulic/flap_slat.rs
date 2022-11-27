@@ -116,10 +116,13 @@ pub struct FlapSlatAssembly {
     angle_right_id: VariableIdentifier,
     is_moving_id: VariableIdentifier,
 
+    // fppu: PositionPickoffUnit,
+    // ippu: PositionPickoffUnit,
+    // appu: [PositionPickoffUnit;2],
     surface_control_arm_position: Angle,
 
     max_synchro_gear_position: Angle,
-    final_requested_synchro_gear_position: Angle,
+    final_requested_synchro_gear_position: Angle, // Requested flaps/slats position from SFCC 1 or 2
 
     speed: AngularVelocity,
     current_max_speed: LowPassFilter<AngularVelocity>,
@@ -222,6 +225,7 @@ impl FlapSlatAssembly {
     }
 
     fn update_speed_and_position(&mut self, context: &UpdateContext) {
+        let zero_speed = AngularVelocity::new::<radian_per_second>(0.);
         if self.final_requested_synchro_gear_position > self.position_feedback() {
             self.surface_control_arm_position += Angle::new::<radian>(
                 self.max_speed().get::<radian_per_second>() * context.delta_as_secs_f64(),
@@ -233,17 +237,17 @@ impl FlapSlatAssembly {
             );
             self.speed = -self.max_speed();
         } else {
-            self.speed = AngularVelocity::new::<radian_per_second>(0.);
+            self.speed = zero_speed;
         }
 
-        if self.speed > AngularVelocity::new::<radian_per_second>(0.)
-            && self.final_requested_synchro_gear_position < self.position_feedback()
-            || self.speed < AngularVelocity::new::<radian_per_second>(0.)
-                && self.final_requested_synchro_gear_position > self.position_feedback()
-        {
-            self.surface_control_arm_position =
-                self.synchro_angle_to_surface_angle(self.final_requested_synchro_gear_position);
-        }
+        // if self.speed > zero_speed
+        //     && self.final_requested_synchro_gear_position < self.position_feedback()
+        //     || self.speed < zero_speed
+        //         && self.final_requested_synchro_gear_position > self.position_feedback()
+        // {
+        //     self.surface_control_arm_position =
+        //         self.synchro_angle_to_surface_angle(self.final_requested_synchro_gear_position);
+        // }
 
         self.surface_control_arm_position = self
             .surface_control_arm_position
@@ -267,8 +271,8 @@ impl FlapSlatAssembly {
         &mut self,
         sfcc1_is_active: bool,
         sfcc2_is_active: bool,
-        left_pressure: Pressure,
-        right_pressure: Pressure,
+        left_pressure: Pressure,  // Hydraulic circuit B/G/Y
+        right_pressure: Pressure, // Hydraulic circuit B/G/Y
         context: &UpdateContext,
     ) {
         // Final pressures are the current pressure or 0 if corresponding sfcc is offline
@@ -317,7 +321,7 @@ impl FlapSlatAssembly {
     ) -> f64 {
         let press_corrected =
             current_pressure.get::<psi>() - Self::BRAKE_PRESSURE_MIN_TO_ALLOW_MOVEMENT_PSI;
-        if current_pressure > Pressure::new::<psi>(Self::BRAKE_PRESSURE_MIN_TO_ALLOW_MOVEMENT_PSI) {
+        if current_pressure.get::<psi>() > Self::BRAKE_PRESSURE_MIN_TO_ALLOW_MOVEMENT_PSI {
             (0.0004 * press_corrected.powi(2)
                 / (circuit_target_pressure.get::<psi>()
                     - Self::BRAKE_PRESSURE_MIN_TO_ALLOW_MOVEMENT_PSI))

@@ -142,7 +142,7 @@ impl From<u8> for PCUState {
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum CSUPosition {
-    Conf0,
+    Conf0 = 0,
     Conf1,
     Conf2,
     Conf3,
@@ -187,11 +187,6 @@ impl From<u8> for FlapsConf {
 pub trait HandlePositionMemory {
     fn position(&self) -> u8;
     fn previous_position(&self) -> u8;
-}
-
-pub trait AirDataSource {
-    fn computed_airspeed(&self) -> Arinc429Word<Velocity>;
-    fn alpha(&self) -> Arinc429Word<Angle>;
 }
 
 pub trait LgciuWeightOnWheels {
@@ -326,6 +321,11 @@ pub trait AdirsDiscreteOutputs {
     fn low_speed_warning_2_54kts(&self, adiru_number: usize) -> bool;
     fn low_speed_warning_3_159kts(&self, adiru_number: usize) -> bool;
     fn low_speed_warning_4_260kts(&self, adiru_number: usize) -> bool;
+}
+
+pub trait AirDataSource {
+    fn computed_airspeed(&self, adiru_number: usize) -> Arinc429Word<Velocity>;
+    fn alpha(&self, adiru_number: usize) -> Arinc429Word<Angle>;
 }
 
 pub enum GearWheel {
