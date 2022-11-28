@@ -3688,8 +3688,8 @@ mod tests {
     #[test]
     fn spoiler_electro_hydrostatic_can_move_without_pressure_with_elec_with_backup_active() {
         let mut test_bed = SimulationTestBed::new(|context| {
-            let tested_object = cargo_door_assembly(context, true);
-            TestAircraft::new(context, Duration::from_millis(10), spoiler_assembly(true))
+            let tested_object = spoiler_assembly(context, true);
+            TestAircraft::new(context, Duration::from_millis(10), tested_object)
         });
 
         test_bed.command(|a| a.command_unlock());
@@ -3708,8 +3708,8 @@ mod tests {
     #[test]
     fn electro_hydrostatic_actuator_consumes_power_when_moving() {
         let mut test_bed = SimulationTestBed::new(|context| {
-            let tested_object = cargo_door_assembly(context, true);
-            TestAircraft::new(context, Duration::from_millis(10), spoiler_assembly(true))
+            let tested_object = spoiler_assembly(context, true);
+            TestAircraft::new(context, Duration::from_millis(10), tested_object)
         });
 
         test_bed.command(|a| a.command_unlock());
@@ -3733,8 +3733,8 @@ mod tests {
     #[test]
     fn electro_hydrostatic_actuator_do_not_consume_power_when_inactive() {
         let mut test_bed = SimulationTestBed::new(|context| {
-            let tested_object = cargo_door_assembly(context, true);
-            TestAircraft::new(context, Duration::from_millis(10), spoiler_assembly(true))
+            let tested_object = spoiler_assembly(context, true);
+            TestAircraft::new(context, Duration::from_millis(10), tested_object)
         });
 
         test_bed.command(|a| a.command_unlock());
@@ -3758,8 +3758,8 @@ mod tests {
     #[test]
     fn spoiler_electro_hydrostatic_cannot_move_once_accumulator_empty() {
         let mut test_bed = SimulationTestBed::new(|context| {
-            let tested_object = cargo_door_assembly(context, true);
-            TestAircraft::new(context, Duration::from_millis(10), spoiler_assembly(true))
+            let tested_object = spoiler_assembly(context, true);
+            TestAircraft::new(context, Duration::from_millis(10), tested_object)
         });
 
         test_bed.command(|a| a.command_unlock());
@@ -3784,8 +3784,8 @@ mod tests {
     #[test]
     fn electro_hydrostatic_accumulator_pressure_increase_when_refilled() {
         let mut test_bed = SimulationTestBed::new(|context| {
-            let tested_object = cargo_door_assembly(context, true);
-            TestAircraft::new(context, Duration::from_millis(10), spoiler_assembly(true))
+            let tested_object = spoiler_assembly(context, true);
+            TestAircraft::new(context, Duration::from_millis(10), tested_object)
         });
 
         let accumulator_press_init = test_bed.query(|a| a.accumulator_pressure(0));
@@ -3803,8 +3803,8 @@ mod tests {
     fn electro_hydrostatic_accumulator_pressure_wont_increase_when_refilled_if_low_pressure_input()
     {
         let mut test_bed = SimulationTestBed::new(|context| {
-            let tested_object = cargo_door_assembly(context, true);
-            TestAircraft::new(context, Duration::from_millis(10), spoiler_assembly(true))
+            let tested_object = spoiler_assembly(context, true);
+            TestAircraft::new(context, Duration::from_millis(10), tested_object)
         });
 
         let accumulator_press_init = test_bed.query(|a| a.accumulator_pressure(0));
