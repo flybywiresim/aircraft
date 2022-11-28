@@ -1236,7 +1236,7 @@ impl InertialReference {
         let mut wind_speed: f64 = 0.;
 
         if true_airspeed_above_minimum_threshold && !no_transmission && self.is_fully_aligned() {
-            // should be label 324 from ADR
+            // should be label 324 from IR
             let pitch_angle = simulator_data.pitch;
 
             // should be tas label xx from ADR, hdg label 314 from IR, pitch angle label 324 from IR
