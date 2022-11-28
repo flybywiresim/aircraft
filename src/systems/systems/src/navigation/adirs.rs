@@ -3,14 +3,15 @@ use crate::{
     overhead::{IndicationLight, OnOffFaultPushButton},
     shared::{
         arinc429::{Arinc429Word, SignStatus},
-        AdirsDiscreteOutputs, GroundSpeed, MachNumber,
         low_pass_filter::LowPassFilter,
+        AdirsDiscreteOutputs, GroundSpeed, MachNumber,
     },
     simulation::{
         Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
         SimulatorWriter, UpdateContext, Write, Writer,
     },
 };
+use nalgebra::{Rotation2, Vector2};
 use std::{fmt::Display, time::Duration};
 use uom::si::acceleration::meter_per_second_squared;
 use uom::si::{
@@ -23,10 +24,6 @@ use uom::si::{
     ratio::ratio,
     thermodynamic_temperature::degree_celsius,
     velocity::{foot_per_minute, knot},
-};
-use nalgebra::{
-    Rotation2,
-    Vector2,
 };
 
 pub struct AirDataInertialReferenceSystemOverheadPanel {
@@ -1241,33 +1238,45 @@ impl InertialReference {
 
             // should be tas label xx from ADR, hdg label 314 from IR, pitch angle label 324 from IR
             let tas_vector = Vector2::new(
-                simulator_data.true_airspeed.get::<knot>() * simulator_data.true_heading.sin().get::<ratio>(),
-                simulator_data.true_airspeed.get::<knot>() * simulator_data.true_heading.cos().get::<ratio>()
+                simulator_data.true_airspeed.get::<knot>()
+                    * simulator_data.true_heading.sin().get::<ratio>(),
+                simulator_data.true_airspeed.get::<knot>()
+                    * simulator_data.true_heading.cos().get::<ratio>(),
             ) * pitch_angle.cos().get::<ratio>();
 
             // should be label 367/366 from ADR
             let gs_vector = Vector2::new(
-                simulator_data.ground_speed.get::<knot>() * simulator_data.true_track.sin().get::<ratio>(),
-                simulator_data.ground_speed.get::<knot>() * simulator_data.true_track.cos().get::<ratio>()
+                simulator_data.ground_speed.get::<knot>()
+                    * simulator_data.true_track.sin().get::<ratio>(),
+                simulator_data.ground_speed.get::<knot>()
+                    * simulator_data.true_track.cos().get::<ratio>(),
             );
 
-            self.wind_velocity.update(context.delta(), gs_vector - tas_vector);
+            self.wind_velocity
+                .update(context.delta(), gs_vector - tas_vector);
 
-            wind_speed = self.wind_velocity.output().magnitude().clamp(0., 255.).round();
+            wind_speed = self
+                .wind_velocity
+                .output()
+                .magnitude()
+                .clamp(0., 255.)
+                .round();
 
-            let direction = Rotation2::rotation_between(&self.wind_velocity.output(), &Vector2::y());
+            let direction =
+                Rotation2::rotation_between(&self.wind_velocity.output(), &Vector2::y());
             //wind_direction = (Radians(direction.angle()).normalized() + Degrees(180.)).normalized().in_degrees();
-            wind_direction = (Angle::new::<radian>(direction.angle()).normalised() + Angle::HALF_TURN).normalised().get::<degree>();
+            wind_direction = (Angle::new::<radian>(direction.angle()).normalised()
+                + Angle::HALF_TURN)
+                .normalised()
+                .get::<degree>();
         } else {
             self.wind_velocity.reset(Vector2::default());
         }
 
         // set all the labels...
         // TODO build out bus implementation for correct period, bnr/bcd encoding and no transmission state
-        self.wind_direction.set_value(
-            Angle::new::<degree>(wind_direction.round()),
-            ssm,
-        );
+        self.wind_direction
+            .set_value(Angle::new::<degree>(wind_direction.round()), ssm);
 
         self.wind_direction_bnr.set_value(
             Angle::new::<degree>(
@@ -1275,20 +1284,18 @@ impl InertialReference {
                     wind_direction - 360.
                 } else {
                     wind_direction
-                } / 0.05).round() * 0.05
+                } / 0.05)
+                    .round()
+                    * 0.05,
             ),
             ssm,
         );
 
-        self.wind_speed.set_value(
-            Velocity::new::<knot>(wind_speed),
-            ssm,
-        );
+        self.wind_speed
+            .set_value(Velocity::new::<knot>(wind_speed), ssm);
 
-        self.wind_speed_bnr.set_value(
-            Velocity::new::<knot>(wind_speed),
-            ssm,
-        );
+        self.wind_speed_bnr
+            .set_value(Velocity::new::<knot>(wind_speed), ssm);
     }
 
     fn update_non_attitude_values(
@@ -1681,10 +1688,15 @@ mod tests {
             );
             let heading = Angle::new::<degree>(0.);
 
-            let gs = Velocity::new::<knot>((
-                (velocity.get::<knot>() * (angle + Angle::HALF_TURN).sin().get::<ratio>()).powi(2) +
-                (tas.get::<knot>() + velocity.get::<knot>() * (angle + Angle::HALF_TURN).cos().get::<ratio>()).powi(2)
-            ).sqrt());
+            let gs = Velocity::new::<knot>(
+                ((velocity.get::<knot>() * (angle + Angle::HALF_TURN).sin().get::<ratio>())
+                    .powi(2)
+                    + (tas.get::<knot>()
+                        + velocity.get::<knot>()
+                            * (angle + Angle::HALF_TURN).cos().get::<ratio>())
+                    .powi(2))
+                .sqrt(),
+            );
             let track = (tas / gs).acos();
 
             self.true_airspeed_of(tas)
@@ -2219,9 +2231,7 @@ mod tests {
 
         fn assert_wind_direction_and_velocity_zero(&mut self, adiru_number: usize) {
             assert_about_eq!(
-                self.wind_direction(adiru_number)
-                    .value()
-                    .get::<degree>(),
+                self.wind_direction(adiru_number).value().get::<degree>(),
                 0.
             );
             assert_about_eq!(
@@ -2230,18 +2240,8 @@ mod tests {
                     .get::<degree>(),
                 0.
             );
-            assert_about_eq!(
-                self.wind_speed(adiru_number)
-                    .value()
-                    .get::<knot>(),
-                0.
-            );
-            assert_about_eq!(
-                self.wind_speed_bnr(adiru_number)
-                    .value()
-                    .get::<knot>(),
-                0.
-            );
+            assert_about_eq!(self.wind_speed(adiru_number).value().get::<knot>(), 0.);
+            assert_about_eq!(self.wind_speed_bnr(adiru_number).value().get::<knot>(), 0.);
         }
 
         fn realistic_navigation_align_until(
@@ -2918,8 +2918,8 @@ mod tests {
         #[case(2)]
         #[case(3)]
         fn data_is_no_longer_available_when_adiru_mode_selector_off(#[case] adiru_number: usize) {
-            let mut test_bed = all_adirus_aligned_test_bed_with()
-                .true_airspeed_of(Velocity::new::<knot>(
+            let mut test_bed =
+                all_adirus_aligned_test_bed_with().true_airspeed_of(Velocity::new::<knot>(
                     InertialReference::MINIMUM_TRUE_AIRSPEED_FOR_WIND_DETERMINATION_KNOTS + 0.01,
                 ));
             test_bed.run();
@@ -3443,8 +3443,7 @@ mod tests {
             let wind_angle = Angle::new::<degree>(270.);
             let wind_speed = Velocity::new::<knot>(40.);
 
-            let mut test_bed = all_adirus_aligned_test_bed_with()
-                .wind_of(wind_angle, wind_speed);
+            let mut test_bed = all_adirus_aligned_test_bed_with().wind_of(wind_angle, wind_speed);
             test_bed.run();
 
             assert_about_eq!(
@@ -3464,11 +3463,19 @@ mod tests {
                 wind_angle.normalised_180().get::<degree>()
             );
             assert_about_eq!(
-                test_bed.wind_speed(adiru_number).normal_value().unwrap().get::<knot>(),
+                test_bed
+                    .wind_speed(adiru_number)
+                    .normal_value()
+                    .unwrap()
+                    .get::<knot>(),
                 wind_speed.get::<knot>()
             );
             assert_about_eq!(
-                test_bed.wind_speed_bnr(adiru_number).normal_value().unwrap().get::<knot>(),
+                test_bed
+                    .wind_speed_bnr(adiru_number)
+                    .normal_value()
+                    .unwrap()
+                    .get::<knot>(),
                 wind_speed.get::<knot>()
             );
         }
