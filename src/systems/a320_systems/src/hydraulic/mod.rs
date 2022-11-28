@@ -267,14 +267,14 @@ impl A320CargoDoorFactory {
 
     /// Builds a cargo door assembly consisting of the door physical rigid body and the hydraulic actuator connected
     /// to it
-    fn a320_cargo_door_assembly() -> HydraulicLinearActuatorAssembly<1> {
+    fn a320_cargo_door_assembly(context: &mut InitContext) -> HydraulicLinearActuatorAssembly<1> {
         let cargo_door_body = Self::a320_cargo_door_body(true);
-        let cargo_door_actuator = Self::a320_cargo_door_actuator(&cargo_door_body);
+        let cargo_door_actuator = Self::a320_cargo_door_actuator(context, &cargo_door_body);
         HydraulicLinearActuatorAssembly::new([cargo_door_actuator], cargo_door_body)
     }
 
     fn new_a320_cargo_door(context: &mut InitContext, id: &str) -> CargoDoor {
-        let assembly = Self::a320_cargo_door_assembly();
+        let assembly = Self::a320_cargo_door_assembly(context);
         CargoDoor::new(
             context,
             id,
@@ -398,7 +398,7 @@ impl A320AileronFactory {
 
     fn new_aileron(context: &mut InitContext, id: ActuatorSide) -> AileronAssembly {
         let init_drooped_down = !context.is_in_flight();
-        let assembly = Self::a320_aileron_assembly(init_drooped_down);
+        let assembly = Self::a320_aileron_assembly(context, init_drooped_down);
         AileronAssembly::new(context, id, assembly, Self::new_a320_aileron_aero_model())
     }
 
@@ -527,7 +527,7 @@ impl A320SpoilerFactory {
         id: ActuatorSide,
         id_number: usize,
     ) -> SpoilerElement {
-        let assembly = Self::a320_spoiler_assembly();
+        let assembly = Self::a320_spoiler_assembly(context);
         SpoilerElement::new(
             context,
             id,
@@ -562,7 +562,10 @@ impl A320ElevatorFactory {
     const MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING: f64 = 15000000.;
     const MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT: f64 = 1.;
 
-    fn a320_elevator_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
+    fn a320_elevator_actuator(
+        context: &mut InitContext,
+        bounded_linear_length: &impl BoundedLinearLength,
+    ) -> LinearActuator {
         let actuator_characteristics = LinearActuatorCharacteristics::new(
             Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING / 5.,
             Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING,
@@ -571,6 +574,7 @@ impl A320ElevatorFactory {
         );
 
         LinearActuator::new(
+            context,
             bounded_linear_length,
             1,
             Length::new::<meter>(0.0407),
@@ -628,11 +632,14 @@ impl A320ElevatorFactory {
 
     /// Builds an aileron assembly consisting of the aileron physical rigid body and two hydraulic actuators connected
     /// to it
-    fn a320_elevator_assembly(init_drooped_down: bool) -> HydraulicLinearActuatorAssembly<2> {
+    fn a320_elevator_assembly(
+        context: &mut InitContext,
+        init_drooped_down: bool,
+    ) -> HydraulicLinearActuatorAssembly<2> {
         let elevator_body = Self::a320_elevator_body(init_drooped_down);
 
-        let elevator_actuator_outboard = Self::a320_elevator_actuator(&elevator_body);
-        let elevator_actuator_inbord = Self::a320_elevator_actuator(&elevator_body);
+        let elevator_actuator_outboard = Self::a320_elevator_actuator(context, &elevator_body);
+        let elevator_actuator_inbord = Self::a320_elevator_actuator(context, &elevator_body);
 
         HydraulicLinearActuatorAssembly::new(
             [elevator_actuator_outboard, elevator_actuator_inbord],
@@ -642,7 +649,7 @@ impl A320ElevatorFactory {
 
     fn new_elevator(context: &mut InitContext, id: ActuatorSide) -> ElevatorAssembly {
         let init_drooped_down = !context.is_in_flight();
-        let assembly = Self::a320_elevator_assembly(init_drooped_down);
+        let assembly = Self::a320_elevator_assembly(context, init_drooped_down);
         ElevatorAssembly::new(context, id, assembly, Self::new_a320_elevator_aero_model())
     }
 
@@ -667,7 +674,10 @@ impl A320RudderFactory {
     const MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING: f64 = 1000000.;
     const MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT: f64 = 1.;
 
-    fn a320_rudder_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
+    fn a320_rudder_actuator(
+        context: &mut InitContext,
+        bounded_linear_length: &impl BoundedLinearLength,
+    ) -> LinearActuator {
         let actuator_characteristics = LinearActuatorCharacteristics::new(
             Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING / 4.,
             Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING,
@@ -676,6 +686,7 @@ impl A320RudderFactory {
         );
 
         LinearActuator::new(
+            context,
             bounded_linear_length,
             1,
             Length::new::<meter>(0.06),
@@ -733,12 +744,15 @@ impl A320RudderFactory {
 
     /// Builds an aileron assembly consisting of the aileron physical rigid body and two hydraulic actuators connected
     /// to it
-    fn a320_rudder_assembly(init_at_center: bool) -> HydraulicLinearActuatorAssembly<3> {
+    fn a320_rudder_assembly(
+        context: &mut InitContext,
+        init_at_center: bool,
+    ) -> HydraulicLinearActuatorAssembly<3> {
         let rudder_body = Self::a320_rudder_body(init_at_center);
 
-        let rudder_actuator_green = Self::a320_rudder_actuator(&rudder_body);
-        let rudder_actuator_blue = Self::a320_rudder_actuator(&rudder_body);
-        let rudder_actuator_yellow = Self::a320_rudder_actuator(&rudder_body);
+        let rudder_actuator_green = Self::a320_rudder_actuator(context, &rudder_body);
+        let rudder_actuator_blue = Self::a320_rudder_actuator(context, &rudder_body);
+        let rudder_actuator_yellow = Self::a320_rudder_actuator(context, &rudder_body);
 
         HydraulicLinearActuatorAssembly::new(
             [
@@ -755,7 +769,7 @@ impl A320RudderFactory {
             || context.start_state() == StartState::Runway
             || context.is_in_flight();
 
-        let assembly = Self::a320_rudder_assembly(init_at_center);
+        let assembly = Self::a320_rudder_assembly(context, init_at_center);
         RudderAssembly::new(context, assembly, Self::new_a320_rudder_aero_model())
     }
 
