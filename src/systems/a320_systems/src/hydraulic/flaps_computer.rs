@@ -155,35 +155,29 @@ impl SlatFlapControlComputer {
     }
 
     // Returns a flap demanded angle in FPPU reference degree (feedback sensor)
-    fn demanded_flaps_fppu_angle_from_conf(flap_conf: FlapsConf) -> Angle {
-        match flap_conf {
-            FlapsConf::Conf0 => Angle::new::<degree>(0.),
-            FlapsConf::Conf1 => Angle::new::<degree>(0.),
-            FlapsConf::Conf1F => Angle::new::<degree>(120.22),
-            FlapsConf::Conf2 => Angle::new::<degree>(145.51),
-            FlapsConf::Conf3 => Angle::new::<degree>(168.35),
-            FlapsConf::ConfFull => Angle::new::<degree>(251.97),
+    fn demanded_flaps_fppu_angle_from_conf(handle_conf: CSUPosition) -> Angle {
+        match handle_conf {
+            CSUPosition::Conf0 => Angle::new::<degree>(0.),
+            CSUPosition::Conf1 => Angle::new::<degree>(0.),
+            CSUPosition::Conf2 => Angle::new::<degree>(145.51),
+            CSUPosition::Conf3 => Angle::new::<degree>(168.35),
+            CSUPosition::ConfFull => Angle::new::<degree>(251.97),
         }
     }
 
     // Returns a slat demanded angle in FPPU reference degree (feedback sensor)
-    fn demanded_slats_fppu_angle_from_conf(flap_conf: FlapsConf) -> Angle {
-        match flap_conf {
-            FlapsConf::Conf0 => Angle::new::<degree>(0.),
-            FlapsConf::Conf1 => Angle::new::<degree>(222.27),
-            FlapsConf::Conf1F => Angle::new::<degree>(222.27),
-            FlapsConf::Conf2 => Angle::new::<degree>(272.27),
-            FlapsConf::Conf3 => Angle::new::<degree>(272.27),
-            FlapsConf::ConfFull => Angle::new::<degree>(334.16),
+    fn demanded_slats_fppu_angle_from_conf(handle_conf: CSUPosition) -> Angle {
+        match handle_conf {
+            CSUPosition::Conf0 => Angle::new::<degree>(0.),
+            CSUPosition::Conf1 => Angle::new::<degree>(222.27),
+            CSUPosition::Conf2 => Angle::new::<degree>(272.27),
+            CSUPosition::Conf3 => Angle::new::<degree>(272.27),
+            CSUPosition::ConfFull => Angle::new::<degree>(334.16),
         }
     }
 
-    fn generate_configuration(
-        &self,
-        flaps_handle: &CommandSensorUnit,
-        context: &UpdateContext,
-    ) -> FlapsConf {
-        match (flaps_handle.previous_position(), flaps_handle.position()) {
+    fn generate_configuration(&self, context: &UpdateContext) -> FlapsConf {
+        match (self.csu_previous_position, self.csu_current_position) {
             (CSUPosition::Conf0, CSUPosition::Conf1)
                 if context.indicated_airspeed().get::<knot>()
                     <= Self::HANDLE_ONE_CONF_AIRSPEED_THRESHOLD_KNOTS =>
@@ -228,8 +222,8 @@ impl SlatFlapControlComputer {
         return self.restore_angle;
     }
 
-    fn update_flap_relief(&mut self, flaps_handle: &CommandSensorUnit) {
-        if flaps_handle.position() != CSUPosition::ConfFull {
+    fn update_flap_relief(&mut self) {
+        if self.csu_current_position != CSUPosition::ConfFull {
             self.flap_relief_active = false;
             self.flap_relief_engaged = false;
             return;
@@ -262,8 +256,8 @@ impl SlatFlapControlComputer {
         }
     }
 
-    fn update_flap_auto_command(&mut self, flaps_handle: &CommandSensorUnit) {
-        if flaps_handle.position() != CSUPosition::Conf1 {
+    fn update_flap_auto_command(&mut self) {
+        if self.csu_current_position != CSUPosition::Conf1 {
             self.flap_auto_command_active = false;
             return;
         }
@@ -303,118 +297,25 @@ impl SlatFlapControlComputer {
         }
     }
 
-    fn generate_flap_configuration(&mut self, flaps_handle: &CommandSensorUnit) -> Angle {
-        let csu_previous_position = flaps_handle.previous_position();
-        let csu_current_position = flaps_handle.position();
+    fn generate_flap_configuration(&mut self) -> Angle {
+        let calulated_angle = Self::demanded_flaps_fppu_angle_from_conf(self.csu_current_position);
 
-        self.update_flap_relief(flaps_handle);
+        self.update_flap_relief();
+        self.update_flap_auto_command();
 
         if self.flap_relief_active {
             return self.calculate_commanded_angle();
         }
 
-        self.update_flap_auto_command(flaps_handle);
-
         if self.flap_auto_command_active {
             return self.auto_command_angle;
         }
 
-        if csu_previous_position != csu_current_position {
-            return Self::demanded_flaps_fppu_angle_from_conf(FlapsConf::from(
-                csu_current_position as u8 + 1,
-            ));
-        }
-
-        Self::demanded_flaps_fppu_angle_from_conf(self.flaps_conf)
-
-        // match (flaps_handle.previous_position(), flaps_handle.position()) {
-        //     (CSUPosition::Conf0, CSUPosition::Conf1)
-        //         if context.indicated_airspeed().get::<knot>()
-        //             <= Self::HANDLE_ONE_CONF_AIRSPEED_THRESHOLD_KNOTS =>
-        //     {
-        //         Self::demanded_flaps_fppu_angle_from_conf(FlapsConf::Conf1F)
-        //     }
-        //     (CSUPosition::Conf0, CSUPosition::Conf1) => {
-        //         Self::demanded_flaps_fppu_angle_from_conf(FlapsConf::Conf1)
-        //     }
-        //     (CSUPosition::Conf1, CSUPosition::Conf1)
-        //         if context.indicated_airspeed().get::<knot>()
-        //             > Self::CONF1F_TO_CONF1_AIRSPEED_THRESHOLD_KNOTS =>
-        //     {
-        //         Self::demanded_flaps_fppu_angle_from_conf(FlapsConf::Conf1)
-        //     }
-        //     (CSUPosition::Conf1, CSUPosition::Conf1) => {
-        //         Self::demanded_flaps_fppu_angle_from_conf(self.flaps_conf)
-        //     }
-        //     (_, CSUPosition::Conf1)
-        //         if context.indicated_airspeed().get::<knot>()
-        //             <= Self::CONF1F_TO_CONF1_AIRSPEED_THRESHOLD_KNOTS =>
-        //     {
-        //         Self::demanded_flaps_fppu_angle_from_conf(FlapsConf::Conf1F)
-        //     }
-        //     (_, CSUPosition::Conf1) => Self::demanded_flaps_fppu_angle_from_conf(FlapsConf::Conf1),
-        //     (_, CSUPosition::Conf0) if self.alpha_lock_engaged => {
-        //         Self::demanded_flaps_fppu_angle_from_conf(FlapsConf::Conf1)
-        //     }
-        //     (_, CSUPosition::Conf0) => Self::demanded_flaps_fppu_angle_from_conf(FlapsConf::Conf0),
-        //     (from, to) if from != to => {
-        //         Self::demanded_flaps_fppu_angle_from_conf(FlapsConf::from(to as u8 + 1))
-        //     }
-        //     (_, _) => Self::demanded_flaps_fppu_angle_from_conf(self.flaps_conf),
-        // }
+        return calulated_angle;
     }
 
-    fn generate_slat_configuration(&self, flaps_handle: &CommandSensorUnit) -> Angle {
-        let csu_previous_position = flaps_handle.previous_position();
-        let csu_current_position = flaps_handle.position();
-
-        if csu_current_position == CSUPosition::Conf0 {
-            return Self::demanded_slats_fppu_angle_from_conf(FlapsConf::Conf0);
-        }
-
-        if csu_previous_position != csu_current_position {
-            return Self::demanded_slats_fppu_angle_from_conf(FlapsConf::from(
-                csu_current_position as u8 + 1,
-            ));
-        }
-
-        Self::demanded_slats_fppu_angle_from_conf(self.flaps_conf)
-
-        // match (flaps_handle.previous_position(), flaps_handle.position()) {
-        //     (CSUPosition::Conf0, CSUPosition::Conf1)
-        //         if context.indicated_airspeed().get::<knot>()
-        //             <= Self::HANDLE_ONE_CONF_AIRSPEED_THRESHOLD_KNOTS =>
-        //     {
-        //         Self::demanded_slats_fppu_angle_from_conf(FlapsConf::Conf1F)
-        //     }
-        //     (CSUPosition::Conf0, CSUPosition::Conf1) => {
-        //         Self::demanded_slats_fppu_angle_from_conf(FlapsConf::Conf1)
-        //     }
-        //     (CSUPosition::Conf1, CSUPosition::Conf1)
-        //         if context.indicated_airspeed().get::<knot>()
-        //             > Self::CONF1F_TO_CONF1_AIRSPEED_THRESHOLD_KNOTS =>
-        //     {
-        //         Self::demanded_slats_fppu_angle_from_conf(FlapsConf::Conf1)
-        //     }
-        //     (CSUPosition::Conf1, CSUPosition::Conf1) => {
-        //         Self::demanded_slats_fppu_angle_from_conf(self.flaps_conf)
-        //     }
-        //     (_, CSUPosition::Conf1)
-        //         if context.indicated_airspeed().get::<knot>()
-        //             <= Self::CONF1F_TO_CONF1_AIRSPEED_THRESHOLD_KNOTS =>
-        //     {
-        //         Self::demanded_slats_fppu_angle_from_conf(FlapsConf::Conf1F)
-        //     }
-        //     (_, CSUPosition::Conf1) => Self::demanded_slats_fppu_angle_from_conf(FlapsConf::Conf1),
-        //     (_, CSUPosition::Conf0) if self.alpha_lock_engaged => {
-        //         Self::demanded_slats_fppu_angle_from_conf(FlapsConf::Conf1)
-        //     }
-        //     (_, CSUPosition::Conf0) => Self::demanded_slats_fppu_angle_from_conf(FlapsConf::Conf0),
-        //     (from, to) if from != to => {
-        //         Self::demanded_slats_fppu_angle_from_conf(FlapsConf::from(to as u8 + 1))
-        //     }
-        //     (_, _) => Self::demanded_slats_fppu_angle_from_conf(self.flaps_conf),
-        // }
+    fn generate_slat_configuration(&self) -> Angle {
+        Self::demanded_slats_fppu_angle_from_conf(self.csu_current_position)
     }
 
     fn surface_movement_required(demanded_angle: Angle, feedback_angle: Angle) -> bool {
@@ -484,10 +385,10 @@ impl SlatFlapControlComputer {
         self.update_csu_positions(flaps_handle);
         self.update_cas(adiru);
 
-        self.flaps_conf = self.generate_configuration(flaps_handle, context);
+        self.flaps_conf = self.generate_configuration(context);
 
-        self.flaps_demanded_angle = self.generate_flap_configuration(flaps_handle);
-        self.slats_demanded_angle = self.generate_slat_configuration(flaps_handle);
+        self.flaps_demanded_angle = self.generate_flap_configuration();
+        self.slats_demanded_angle = self.generate_slat_configuration();
 
         self.flaps_feedback_angle = flaps_feedback.angle();
         self.slats_feedback_angle = slats_feedback.angle();
