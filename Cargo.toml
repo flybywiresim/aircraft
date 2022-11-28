@@ -15,6 +15,6 @@ lto = true
 strip = true
 
 [profile.test]
-opt-level=1
+opt-level=0
 debug-assertions=true
 debug=true

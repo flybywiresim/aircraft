@@ -63,6 +63,8 @@ use systems::{
     },
 };
 
+use std::fmt::Debug;
+
 mod flaps_computer;
 use flaps_computer::SlatFlapComplex;
 
@@ -166,9 +168,11 @@ impl A380CargoDoorFactory {
     const FLOW_CONTROL_FORCE_GAIN: f64 = 200000.;
 
     fn a380_cargo_door_actuator(
+        context: &mut InitContext,
         bounded_linear_length: &impl BoundedLinearLength,
     ) -> LinearActuator {
         LinearActuator::new(
+            context,
             bounded_linear_length,
             2,
             Length::new::<meter>(0.04422),
@@ -220,14 +224,14 @@ impl A380CargoDoorFactory {
 
     /// Builds a cargo door assembly consisting of the door physical rigid body and the hydraulic actuator connected
     /// to it
-    fn a380_cargo_door_assembly() -> HydraulicLinearActuatorAssembly<1> {
+    fn a380_cargo_door_assembly(context: &mut InitContext) -> HydraulicLinearActuatorAssembly<1> {
         let cargo_door_body = Self::a380_cargo_door_body(true);
-        let cargo_door_actuator = Self::a380_cargo_door_actuator(&cargo_door_body);
+        let cargo_door_actuator = Self::a380_cargo_door_actuator(context, &cargo_door_body);
         HydraulicLinearActuatorAssembly::new([cargo_door_actuator], cargo_door_body)
     }
 
     fn new_a380_cargo_door(context: &mut InitContext, id: &str) -> CargoDoor {
-        let assembly = Self::a380_cargo_door_assembly();
+        let assembly = Self::a380_cargo_door_assembly(context);
         CargoDoor::new(
             context,
             id,
@@ -250,9 +254,9 @@ impl A380CargoDoorFactory {
 
 struct A380AileronFactory {}
 impl A380AileronFactory {
-    const FLOW_CONTROL_PROPORTIONAL_GAIN: f64 = 0.25;
-    const FLOW_CONTROL_INTEGRAL_GAIN: f64 = 3.;
-    const FLOW_CONTROL_FORCE_GAIN: f64 = 450000.;
+    const FLOW_CONTROL_PROPORTIONAL_GAIN: f64 = 2.;
+    const FLOW_CONTROL_INTEGRAL_GAIN: f64 = 1.5;
+    const FLOW_CONTROL_FORCE_GAIN: f64 = 500000.;
 
     const MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING: f64 = 3500000.;
     const MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT: f64 = 25.;
@@ -263,6 +267,7 @@ impl A380AileronFactory {
     const INWARD_PANEL_EHA_BUS: ElectricalBusType = ElectricalBusType::AlternatingCurrentEssential;
 
     fn a380_aileron_actuator(
+        context: &mut InitContext,
         bounded_linear_length: &impl BoundedLinearLength,
         powered_by: Option<ElectricalBusType>,
     ) -> LinearActuator {
@@ -277,9 +282,10 @@ impl A380AileronFactory {
         // Max force of 13500daN @ nominal 350bar. This gives a 0.003857m^2 of piston surface
         // This gives piston diameter of 2 * 0.035m = 0.07 meters
         // We use 0 as rod diameter as this is a symmetrical actuator so same surface each side
-        // Max flow at rated max travel speed 81mm/s, this gives 0.003857m^2 * 81mm/s = 0.000312 m^2/s
+        // Max flow at rated max travel speed 81mm/s, this gives 0.003857m^2 * 81mm/s = 0.000312 m^3/s
         // = 0.08254 gal/s
         LinearActuator::new(
+            context,
             bounded_linear_length,
             1,
             Length::new::<meter>(0.07),
@@ -317,9 +323,15 @@ impl A380AileronFactory {
         panel: AileronPanelPosition,
     ) -> LinearActuatedRigidBodyOnHingeAxis {
         let size = match panel {
-            AileronPanelPosition::Outward => Vector3::new(3.325, 0.16, 0.58),
-            AileronPanelPosition::Middle => Vector3::new(3.325, 0.16, 0.58),
-            AileronPanelPosition::Inward => Vector3::new(3.325, 0.16, 0.58),
+            AileronPanelPosition::Outward => Vector3::new(4.06, 0.16, 1.4),
+            AileronPanelPosition::Middle => Vector3::new(2.9, 0.16, 1.37),
+            AileronPanelPosition::Inward => Vector3::new(2.26, 0.16, 1.6),
+        };
+
+        let mass = match panel {
+            AileronPanelPosition::Outward => Mass::new::<kilogram>(128.),
+            AileronPanelPosition::Middle => Mass::new::<kilogram>(118.),
+            AileronPanelPosition::Inward => Mass::new::<kilogram>(108.),
         };
 
         // CG at half the size
@@ -335,9 +347,8 @@ impl A380AileronFactory {
             Angle::new::<degree>(0.)
         };
 
-        println!("AILERONS");
         LinearActuatedRigidBodyOnHingeAxis::new(
-            Mass::new::<kilogram>(24.65),
+            mass,
             size,
             cg_offset,
             aero_center,
@@ -355,14 +366,16 @@ impl A380AileronFactory {
     /// Builds an aileron assembly consisting of the aileron physical rigid body and two hydraulic actuators connected
     /// to it
     fn a380_aileron_assembly(
+        context: &mut InitContext,
         init_drooped_down: bool,
         powered_by: Option<ElectricalBusType>,
         panel: AileronPanelPosition,
     ) -> HydraulicLinearActuatorAssembly<2> {
         let aileron_body = Self::a380_aileron_body(init_drooped_down, panel);
 
-        let aileron_actuator_outward = Self::a380_aileron_actuator(&aileron_body, None);
-        let aileron_actuator_inward = Self::a380_aileron_actuator(&aileron_body, powered_by);
+        let aileron_actuator_outward = Self::a380_aileron_actuator(context, &aileron_body, None);
+        let aileron_actuator_inward =
+            Self::a380_aileron_actuator(context, &aileron_body, powered_by);
 
         HydraulicLinearActuatorAssembly::new(
             [aileron_actuator_outward, aileron_actuator_inward],
@@ -372,14 +385,20 @@ impl A380AileronFactory {
 
     fn new_aileron(context: &mut InitContext, id: ActuatorSide) -> AileronAssembly {
         let init_drooped_down = !context.is_in_flight();
-        let assembly_outward =
-            Self::a380_aileron_assembly(init_drooped_down, None, AileronPanelPosition::Outward);
+        let assembly_outward = Self::a380_aileron_assembly(
+            context,
+            init_drooped_down,
+            None,
+            AileronPanelPosition::Outward,
+        );
         let assembly_middle = Self::a380_aileron_assembly(
+            context,
             init_drooped_down,
             Some(Self::MIDDLE_PANEL_EHA_BUS),
             AileronPanelPosition::Middle,
         );
         let assembly_inward = Self::a380_aileron_assembly(
+            context,
             init_drooped_down,
             Some(Self::INWARD_PANEL_EHA_BUS),
             AileronPanelPosition::Inward,
@@ -391,11 +410,19 @@ impl A380AileronFactory {
             assembly_middle,
             assembly_inward,
             Self::new_a380_aileron_aero_model(AileronPanelPosition::Outward),
+            Self::new_a380_aileron_aero_model(AileronPanelPosition::Middle),
+            Self::new_a380_aileron_aero_model(AileronPanelPosition::Inward),
         )
     }
 
     fn new_a380_aileron_aero_model(panel: AileronPanelPosition) -> AerodynamicModel {
         let body = Self::a380_aileron_body(true, panel);
+
+        let area_coeff = match panel {
+            AileronPanelPosition::Outward => Ratio::new::<ratio>(0.829),
+            AileronPanelPosition::Middle => Ratio::new::<ratio>(0.896),
+            AileronPanelPosition::Inward => Ratio::new::<ratio>(0.874),
+        };
 
         // Aerodynamic object has a little rotation from horizontal direction so that at X°
         // of wing AOA the aileron gets some X°+Y° AOA as the overwing pressure sucks the aileron up
@@ -404,7 +431,7 @@ impl A380AileronFactory {
             Some(Vector3::new(0., 1., 0.)),
             Some(Vector3::new(0., 0.208, 0.978)),
             Some(Vector3::new(0., 0.978, -0.208)),
-            Ratio::new::<ratio>(1.),
+            area_coeff,
         )
     }
 }
@@ -423,20 +450,22 @@ impl A380SpoilerFactory {
     const SPOILER_6_EBHA_BUS: ElectricalBusType = ElectricalBusType::AlternatingCurrentEssential;
 
     fn a380_spoiler_actuator(
+        context: &mut InitContext,
         bounded_linear_length: &impl BoundedLinearLength,
         powered_by: Option<ElectricalBusType>,
     ) -> LinearActuator {
         let actuator_characteristics = LinearActuatorCharacteristics::new(
             Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING / 5.,
             Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING,
-            VolumeRate::new::<gallon_per_second>(0.03),
+            VolumeRate::new::<gallon_per_second>(0.08),
             Ratio::new::<percent>(Self::MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT),
         );
 
         LinearActuator::new(
+            context,
             bounded_linear_length,
             1,
-            Length::new::<meter>(0.03),
+            Length::new::<meter>(0.05),
             Length::new::<meter>(0.),
             actuator_characteristics.max_flow(),
             80000.,
@@ -478,7 +507,7 @@ impl A380SpoilerFactory {
         let anchor = Vector3::new(0., -0.26 * size[2], 0.26 * size[2]);
 
         LinearActuatedRigidBodyOnHingeAxis::new(
-            Mass::new::<kilogram>(16.),
+            Mass::new::<kilogram>(42.),
             size,
             cg_offset,
             aero_center,
@@ -495,11 +524,12 @@ impl A380SpoilerFactory {
 
     /// Builds a spoiler assembly consisting of the spoiler physical rigid body and one hydraulic actuator
     fn a380_spoiler_assembly(
+        context: &mut InitContext,
         powered_by: Option<ElectricalBusType>,
     ) -> HydraulicLinearActuatorAssembly<1> {
         let spoiler_body = Self::a380_spoiler_body();
 
-        let spoiler_actuator = Self::a380_spoiler_actuator(&spoiler_body, powered_by);
+        let spoiler_actuator = Self::a380_spoiler_actuator(context, &spoiler_body, powered_by);
 
         HydraulicLinearActuatorAssembly::new([spoiler_actuator], spoiler_body)
     }
@@ -534,7 +564,7 @@ impl A380SpoilerFactory {
         id_number: usize,
         powered_by: Option<ElectricalBusType>,
     ) -> SpoilerElement {
-        let assembly = Self::a380_spoiler_assembly(powered_by);
+        let assembly = Self::a380_spoiler_assembly(context, powered_by);
         SpoilerElement::new(
             context,
             id,
@@ -562,12 +592,12 @@ impl A380SpoilerFactory {
 
 struct A380ElevatorFactory {}
 impl A380ElevatorFactory {
-    const FLOW_CONTROL_PROPORTIONAL_GAIN: f64 = 1.;
-    const FLOW_CONTROL_INTEGRAL_GAIN: f64 = 5.;
-    const FLOW_CONTROL_FORCE_GAIN: f64 = 450000.;
+    const FLOW_CONTROL_PROPORTIONAL_GAIN: f64 = 1.5;
+    const FLOW_CONTROL_INTEGRAL_GAIN: f64 = 0.5;
+    const FLOW_CONTROL_FORCE_GAIN: f64 = 400000.;
 
     const MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING: f64 = 15000000.;
-    const MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT: f64 = 10.;
+    const MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT: f64 = 5.;
 
     //TODO should be ACEss 2
     const LEFT_OUTWARD_PANEL_EHA_BUS: ElectricalBusType =
@@ -583,6 +613,7 @@ impl A380ElevatorFactory {
         ElectricalBusType::AlternatingCurrentEssential;
 
     fn a380_elevator_actuator(
+        context: &mut InitContext,
         bounded_linear_length: &impl BoundedLinearLength,
         powered_by: Option<ElectricalBusType>,
     ) -> LinearActuator {
@@ -594,9 +625,10 @@ impl A380ElevatorFactory {
         );
 
         LinearActuator::new(
+            context,
             bounded_linear_length,
             1,
-            Length::new::<meter>(0.0265),
+            Length::new::<meter>(0.08),
             Length::new::<meter>(0.),
             actuator_characteristics.max_flow(),
             80000.,
@@ -637,9 +669,9 @@ impl A380ElevatorFactory {
         };
 
         let mass = if is_outter {
-            Mass::new::<kilogram>(80.)
+            Mass::new::<kilogram>(243.)
         } else {
-            Mass::new::<kilogram>(60.)
+            Mass::new::<kilogram>(189.)
         };
 
         let cg_offset = Vector3::new(0., 0., -0.5 * size[2]);
@@ -673,14 +705,17 @@ impl A380ElevatorFactory {
     /// Builds an aileron assembly consisting of the aileron physical rigid body and two hydraulic actuators connected
     /// to it
     fn a380_elevator_assembly(
+        context: &mut InitContext,
         init_drooped_down: bool,
         powered_by: Option<ElectricalBusType>,
         is_outter: bool,
     ) -> HydraulicLinearActuatorAssembly<2> {
         let elevator_body = Self::a380_elevator_body(init_drooped_down, is_outter);
 
-        let elevator_actuator_outboard = Self::a380_elevator_actuator(&elevator_body, None);
-        let elevator_actuator_inbord = Self::a380_elevator_actuator(&elevator_body, powered_by);
+        let elevator_actuator_outboard =
+            Self::a380_elevator_actuator(context, &elevator_body, None);
+        let elevator_actuator_inbord =
+            Self::a380_elevator_actuator(context, &elevator_body, powered_by);
 
         HydraulicLinearActuatorAssembly::new(
             [elevator_actuator_outboard, elevator_actuator_inbord],
@@ -692,6 +727,7 @@ impl A380ElevatorFactory {
         let init_drooped_down = !context.is_in_flight();
 
         let assembly_outward = Self::a380_elevator_assembly(
+            context,
             init_drooped_down,
             if id == ActuatorSide::Left {
                 Some(Self::LEFT_OUTWARD_PANEL_EHA_BUS)
@@ -701,6 +737,7 @@ impl A380ElevatorFactory {
             true,
         );
         let assembly_inward = Self::a380_elevator_assembly(
+            context,
             init_drooped_down,
             if id == ActuatorSide::Left {
                 Some(Self::LEFT_INWARD_PANEL_EHA_BUS)
@@ -740,7 +777,7 @@ impl A380ElevatorFactory {
 
 struct A380RudderFactory {}
 impl A380RudderFactory {
-    const FLOW_CONTROL_PROPORTIONAL_GAIN: f64 = 1.5;
+    const FLOW_CONTROL_PROPORTIONAL_GAIN: f64 = 5.;
     const FLOW_CONTROL_INTEGRAL_GAIN: f64 = 3.;
     const FLOW_CONTROL_FORCE_GAIN: f64 = 450000.;
 
@@ -758,13 +795,14 @@ impl A380RudderFactory {
         ElectricalBusType::AlternatingCurrentEssential;
 
     fn a380_rudder_actuator(
+        context: &mut InitContext,
         bounded_linear_length: &impl BoundedLinearLength,
         powered_by: ElectricalBusType,
     ) -> LinearActuator {
         let actuator_characteristics = LinearActuatorCharacteristics::new(
             Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING / 4.,
             Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING,
-            VolumeRate::new::<gallon_per_second>(0.48),
+            VolumeRate::new::<gallon_per_second>(0.25),
             Ratio::new::<percent>(Self::MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT),
         );
 
@@ -773,6 +811,7 @@ impl A380RudderFactory {
         // Actuator maximum speed is 236.5 mm/s, this gives a maximum flow rate of
         // 0.001825 m^3/s = 0.4822 gal/s.
         LinearActuator::new(
+            context,
             bounded_linear_length,
             1,
             Length::new::<meter>(0.099),
@@ -811,9 +850,9 @@ impl A380RudderFactory {
         };
 
         let mass = if is_upper_body {
-            Mass::new::<kilogram>(150.)
+            Mass::new::<kilogram>(357.)
         } else {
-            Mass::new::<kilogram>(135.)
+            Mass::new::<kilogram>(304.)
         };
 
         let cg_offset = Vector3::new(0., 0.5 * size[1], -0.5 * size[2]);
@@ -847,6 +886,7 @@ impl A380RudderFactory {
     /// Builds an aileron assembly consisting of the aileron physical rigid body and two hydraulic actuators connected
     /// to it
     fn a380_rudder_assembly(
+        context: &mut InitContext,
         init_at_center: bool,
         is_upper_body: bool,
         upper_powered_by: ElectricalBusType,
@@ -854,8 +894,10 @@ impl A380RudderFactory {
     ) -> HydraulicLinearActuatorAssembly<2> {
         let rudder_body = Self::a380_rudder_body(init_at_center, is_upper_body);
 
-        let rudder_actuator_upper = Self::a380_rudder_actuator(&rudder_body, upper_powered_by);
-        let rudder_actuator_lower = Self::a380_rudder_actuator(&rudder_body, lower_powered_by);
+        let rudder_actuator_upper =
+            Self::a380_rudder_actuator(context, &rudder_body, upper_powered_by);
+        let rudder_actuator_lower =
+            Self::a380_rudder_actuator(context, &rudder_body, lower_powered_by);
 
         HydraulicLinearActuatorAssembly::new(
             [rudder_actuator_upper, rudder_actuator_lower],
@@ -869,12 +911,14 @@ impl A380RudderFactory {
             || context.is_in_flight();
 
         let upper_assembly = Self::a380_rudder_assembly(
+            context,
             init_at_center,
             true,
             Self::UPPER_AND_LOWER_PANEL_UPPER_EBHA_BUS,
             Self::UPPER_PANEL_LOWER_EBHA_BUS,
         );
         let lower_assembly = Self::a380_rudder_assembly(
+            context,
             init_at_center,
             false,
             Self::UPPER_AND_LOWER_PANEL_UPPER_EBHA_BUS,
@@ -943,6 +987,7 @@ impl A380GearDoorFactory {
     }
 
     fn a380_nose_gear_door_actuator(
+        context: &mut InitContext,
         bounded_linear_length: &impl BoundedLinearLength,
     ) -> LinearActuator {
         const FLOW_CONTROL_INTEGRAL_GAIN: f64 = 5.;
@@ -960,6 +1005,7 @@ impl A380GearDoorFactory {
         );
 
         LinearActuator::new(
+            context,
             bounded_linear_length,
             1,
             Length::new::<meter>(0.0378),
@@ -985,6 +1031,7 @@ impl A380GearDoorFactory {
     }
 
     fn a380_main_gear_door_actuator(
+        context: &mut InitContext,
         bounded_linear_length: &impl BoundedLinearLength,
     ) -> LinearActuator {
         const FLOW_CONTROL_INTEGRAL_GAIN: f64 = 5.;
@@ -1002,6 +1049,7 @@ impl A380GearDoorFactory {
         );
 
         LinearActuator::new(
+            context,
             bounded_linear_length,
             1,
             Length::new::<meter>(0.055),
@@ -1095,16 +1143,19 @@ impl A380GearDoorFactory {
         )
     }
 
-    fn a380_gear_door_assembly(wheel_id: GearWheel) -> HydraulicLinearActuatorAssembly<1> {
+    fn a380_gear_door_assembly(
+        context: &mut InitContext,
+        wheel_id: GearWheel,
+    ) -> HydraulicLinearActuatorAssembly<1> {
         let gear_door_body = match wheel_id {
             GearWheel::NOSE => Self::a380_nose_gear_door_body(),
             GearWheel::LEFT => Self::a380_left_gear_door_body(),
             GearWheel::RIGHT => Self::a380_right_gear_door_body(),
         };
         let gear_door_actuator = match wheel_id {
-            GearWheel::NOSE => Self::a380_nose_gear_door_actuator(&gear_door_body),
+            GearWheel::NOSE => Self::a380_nose_gear_door_actuator(context, &gear_door_body),
             GearWheel::LEFT | GearWheel::RIGHT => {
-                Self::a380_main_gear_door_actuator(&gear_door_body)
+                Self::a380_main_gear_door_actuator(context, &gear_door_body)
             }
         };
 
@@ -1144,7 +1195,10 @@ impl A380GearFactory {
         )
     }
 
-    fn a380_nose_gear_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
+    fn a380_nose_gear_actuator(
+        context: &mut InitContext,
+        bounded_linear_length: &impl BoundedLinearLength,
+    ) -> LinearActuator {
         const FLOW_CONTROL_INTEGRAL_GAIN: f64 = 5.;
         const FLOW_CONTROL_PROPORTIONAL_GAIN: f64 = 0.3;
         const FLOW_CONTROL_FORCE_GAIN: f64 = 250000.;
@@ -1160,6 +1214,7 @@ impl A380GearFactory {
         );
 
         LinearActuator::new(
+            context,
             bounded_linear_length,
             1,
             Length::new::<meter>(0.0792),
@@ -1184,7 +1239,10 @@ impl A380GearFactory {
         )
     }
 
-    fn a380_main_gear_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
+    fn a380_main_gear_actuator(
+        context: &mut InitContext,
+        bounded_linear_length: &impl BoundedLinearLength,
+    ) -> LinearActuator {
         const FLOW_CONTROL_INTEGRAL_GAIN: f64 = 5.0;
         const FLOW_CONTROL_PROPORTIONAL_GAIN: f64 = 0.3;
         const FLOW_CONTROL_FORCE_GAIN: f64 = 250000.;
@@ -1200,6 +1258,7 @@ impl A380GearFactory {
         );
 
         LinearActuator::new(
+            context,
             bounded_linear_length,
             1,
             Length::new::<meter>(0.145),
@@ -1306,6 +1365,7 @@ impl A380GearFactory {
     }
 
     fn a380_gear_assembly(
+        context: &mut InitContext,
         wheel_id: GearWheel,
         init_downlocked: bool,
     ) -> HydraulicLinearActuatorAssembly<1> {
@@ -1318,9 +1378,11 @@ impl A380GearFactory {
         };
 
         let gear_actuator = match wheel_id {
-            GearWheel::NOSE => Self::a380_nose_gear_actuator(&gear_body),
+            GearWheel::NOSE => Self::a380_nose_gear_actuator(context, &gear_body),
 
-            GearWheel::LEFT | GearWheel::RIGHT => Self::a380_main_gear_actuator(&gear_body),
+            GearWheel::LEFT | GearWheel::RIGHT => {
+                Self::a380_main_gear_actuator(context, &gear_body)
+            }
         };
 
         HydraulicLinearActuatorAssembly::new([gear_actuator], gear_body)
@@ -1332,14 +1394,25 @@ impl A380GearSystemFactory {
     fn a380_gear_system(context: &mut InitContext) -> HydraulicGearSystem {
         let init_downlocked = context.start_gear_down();
 
+        let nose_door = A380GearDoorFactory::a380_gear_door_assembly(context, GearWheel::NOSE);
+        let left_door = A380GearDoorFactory::a380_gear_door_assembly(context, GearWheel::LEFT);
+        let right_door = A380GearDoorFactory::a380_gear_door_assembly(context, GearWheel::RIGHT);
+
+        let nose_gear =
+            A380GearFactory::a380_gear_assembly(context, GearWheel::NOSE, init_downlocked);
+        let left_gear =
+            A380GearFactory::a380_gear_assembly(context, GearWheel::LEFT, init_downlocked);
+        let right_gear =
+            A380GearFactory::a380_gear_assembly(context, GearWheel::RIGHT, init_downlocked);
+
         HydraulicGearSystem::new(
             context,
-            A380GearDoorFactory::a380_gear_door_assembly(GearWheel::NOSE),
-            A380GearDoorFactory::a380_gear_door_assembly(GearWheel::LEFT),
-            A380GearDoorFactory::a380_gear_door_assembly(GearWheel::RIGHT),
-            A380GearFactory::a380_gear_assembly(GearWheel::NOSE, init_downlocked),
-            A380GearFactory::a380_gear_assembly(GearWheel::LEFT, init_downlocked),
-            A380GearFactory::a380_gear_assembly(GearWheel::RIGHT, init_downlocked),
+            nose_door,
+            left_door,
+            right_door,
+            nose_gear,
+            left_gear,
+            right_gear,
             A380GearDoorFactory::a380_left_gear_door_aerodynamics(),
             A380GearDoorFactory::a380_right_gear_door_aerodynamics(),
             A380GearDoorFactory::a380_nose_gear_door_aerodynamics(),
@@ -5894,7 +5967,9 @@ impl AileronAssembly {
         outward_hydraulic_assembly: HydraulicLinearActuatorAssembly<2>,
         middle_hydraulic_assembly: HydraulicLinearActuatorAssembly<2>,
         inward_hydraulic_assembly: HydraulicLinearActuatorAssembly<2>,
-        aerodynamic_model: AerodynamicModel,
+        aerodynamic_model_outter: AerodynamicModel,
+        aerodynamic_model_middle: AerodynamicModel,
+        aerodynamic_model_inner: AerodynamicModel,
     ) -> Self {
         Self {
             hydraulic_assemblies: [
@@ -5927,7 +6002,11 @@ impl AileronAssembly {
                 }
             },
             positions: [Ratio::new::<ratio>(0.); 3],
-            aerodynamic_models: [aerodynamic_model; 3],
+            aerodynamic_models: [
+                aerodynamic_model_outter,
+                aerodynamic_model_middle,
+                aerodynamic_model_inner,
+            ],
         }
     }
 
@@ -6068,6 +6147,15 @@ impl SimulationElement for ElevatorAssembly {
             &self.position_in_id,
             self.positions[ElevatorPanelPosition::Inward as usize].get::<ratio>(),
         );
+    }
+}
+impl Debug for ElevatorAssembly {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "\nElevator assembly => Outward assembly / {:?} Inward assembly / {:?}",
+            self.hydraulic_assemblies[0], self.hydraulic_assemblies[1]
+        )
     }
 }
 
