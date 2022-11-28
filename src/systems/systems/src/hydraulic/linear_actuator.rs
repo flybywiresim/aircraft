@@ -24,7 +24,7 @@ use crate::{
         random_from_normal_distribution, random_from_range, ConsumePower, ElectricalBusType,
         ElectricalBuses,
     },
-    simulation::{SimulationElement, SimulationElementVisitor, UpdateContext},
+    simulation::{InitContext, SimulationElement, SimulationElementVisitor, UpdateContext},
 };
 
 use super::aerodynamic_model::AerodynamicBody;
@@ -896,6 +896,7 @@ pub struct LinearActuator {
 }
 impl LinearActuator {
     pub fn new(
+        context: &mut InitContext,
         bounded_linear_length: &impl BoundedLinearLength,
         number_of_actuators: u8,
         bore_side_diameter: Length,
