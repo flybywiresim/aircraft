@@ -3271,8 +3271,8 @@ mod tests {
     #[test]
     fn aileron_position_control_resists_step_change_in_aero_force() {
         let mut test_bed = SimulationTestBed::new(|context| {
-            let tested_object = cargo_door_assembly(context, true);
-            TestAircraft::new(context, Duration::from_millis(10), aileron_assembly(false))
+            let tested_object = aileron_assembly(context, false);
+            TestAircraft::new(context, Duration::from_millis(10), tested_object)
         });
 
         test_bed.command(|a| a.command_unlock());
@@ -3299,8 +3299,8 @@ mod tests {
     #[test]
     fn aileron_position_control_fails_when_aero_force_over_max_force() {
         let mut test_bed = SimulationTestBed::new(|context| {
-            let tested_object = cargo_door_assembly(context, true);
-            TestAircraft::new(context, Duration::from_millis(10), aileron_assembly(false))
+            let tested_object = aileron_assembly(context, false);
+            TestAircraft::new(context, Duration::from_millis(10), tested_object)
         });
 
         test_bed.command(|a| a.command_unlock());
@@ -3334,8 +3334,8 @@ mod tests {
     fn aileron_position_control_fails_when_lower_pressure_and_back_in_position_with_pressure_back()
     {
         let mut test_bed = SimulationTestBed::new(|context| {
-            let tested_object = cargo_door_assembly(context, true);
-            TestAircraft::new(context, Duration::from_millis(10), aileron_assembly(false))
+            let tested_object = aileron_assembly(context, false);
+            TestAircraft::new(context, Duration::from_millis(10), tested_object)
         });
 
         test_bed.command(|a| a.command_unlock());
@@ -3379,8 +3379,8 @@ mod tests {
     #[test]
     fn aileron_position_control_from_down_to_up_less_0_5s_with_limited_pressure() {
         let mut test_bed = SimulationTestBed::new(|context| {
-            let tested_object = cargo_door_assembly(context, true);
-            TestAircraft::new(context, Duration::from_millis(10), aileron_assembly(false))
+            let tested_object = aileron_assembly(context, false);
+            TestAircraft::new(context, Duration::from_millis(10), tested_object)
         });
 
         test_bed.command(|a| a.command_unlock());
@@ -3403,8 +3403,8 @@ mod tests {
     #[test]
     fn elevator_position_control_is_stable_with_all_actuators_in_control() {
         let mut test_bed = SimulationTestBed::new(|context| {
-            let tested_object = cargo_door_assembly(context, true);
-            TestAircraft::new(context, Duration::from_millis(10), elevator_assembly())
+            let tested_object = elevator_assembly(context);
+            TestAircraft::new(context, Duration::from_millis(10), tested_object)
         });
 
         test_bed.command(|a| a.command_unlock());
@@ -3441,8 +3441,8 @@ mod tests {
     #[test]
     fn elevator_droop_control_is_stable_engaged_at_full_speed() {
         let mut test_bed = SimulationTestBed::new(|context| {
-            let tested_object = cargo_door_assembly(context, true);
-            TestAircraft::new(context, Duration::from_millis(10), elevator_assembly())
+            let tested_object = elevator_assembly(context);
+            TestAircraft::new(context, Duration::from_millis(10), tested_object)
         });
 
         test_bed.command(|a| a.command_unlock());
@@ -3482,8 +3482,8 @@ mod tests {
     #[test]
     fn spoiler_position_control_from_down_to_up_less_0_8s() {
         let mut test_bed = SimulationTestBed::new(|context| {
-            let tested_object = cargo_door_assembly(context, true);
-            TestAircraft::new(context, Duration::from_millis(10), spoiler_assembly(false))
+            let tested_object = spoiler_assembly(context, false);
+            TestAircraft::new(context, Duration::from_millis(10), tested_object)
         });
 
         test_bed.command(|a| a.command_unlock());
@@ -3500,8 +3500,8 @@ mod tests {
     #[test]
     fn spoiler_position_can_go_down_but_not_up_when_soft_locked_up() {
         let mut test_bed = SimulationTestBed::new(|context| {
-            let tested_object = cargo_door_assembly(context, true);
-            TestAircraft::new(context, Duration::from_millis(10), spoiler_assembly(false))
+            let tested_object = spoiler_assembly(context, false);
+            TestAircraft::new(context, Duration::from_millis(10), tested_object)
         });
 
         test_bed.command(|a| a.command_unlock());
@@ -3538,8 +3538,8 @@ mod tests {
     #[test]
     fn spoiler_position_cant_go_up_when_not_pressurised() {
         let mut test_bed = SimulationTestBed::new(|context| {
-            let tested_object = cargo_door_assembly(context, true);
-            TestAircraft::new(context, Duration::from_millis(10), spoiler_assembly(false))
+            let tested_object = spoiler_assembly(context, false);
+            TestAircraft::new(context, Duration::from_millis(10), tested_object)
         });
 
         test_bed.command(|a| a.command_unlock());
@@ -3555,12 +3555,8 @@ mod tests {
     #[test]
     fn elevator_electro_hydrostatic_cannot_move_with_elec_and_no_pressure_but_backup_not_active() {
         let mut test_bed = SimulationTestBed::new(|context| {
-            let tested_object = cargo_door_assembly(context, true);
-            TestAircraft::new(
-                context,
-                Duration::from_millis(10),
-                elevator_electro_hydrostatic_assembly(),
-            )
+            let tested_object = elevator_electro_hydrostatic_assembly(context);
+            TestAircraft::new(context, Duration::from_millis(10), tested_object)
         });
 
         test_bed.command(|a| a.command_unlock());
@@ -3581,12 +3577,8 @@ mod tests {
     #[test]
     fn elevator_electro_hydrostatic_can_move_with_elec_and_no_pressure() {
         let mut test_bed = SimulationTestBed::new(|context| {
-            let tested_object = cargo_door_assembly(context, true);
-            TestAircraft::new(
-                context,
-                Duration::from_millis(10),
-                elevator_electro_hydrostatic_assembly(),
-            )
+            let tested_object = elevator_electro_hydrostatic_assembly(context);
+            TestAircraft::new(context, Duration::from_millis(10), tested_object)
         });
 
         test_bed.command(|a| a.command_unlock());
@@ -3609,12 +3601,8 @@ mod tests {
     #[test]
     fn elevator_electro_hydrostatic_losing_elec_cannot_move_anymore() {
         let mut test_bed = SimulationTestBed::new(|context| {
-            let tested_object = cargo_door_assembly(context, true);
-            TestAircraft::new(
-                context,
-                Duration::from_millis(10),
-                elevator_electro_hydrostatic_assembly(),
-            )
+            let tested_object = elevator_electro_hydrostatic_assembly(context);
+            TestAircraft::new(context, Duration::from_millis(10), tested_object)
         });
 
         test_bed.command(|a| a.command_unlock());
@@ -3645,8 +3633,8 @@ mod tests {
     #[test]
     fn spoiler_electro_hydrostatic_can_move_with_pressure() {
         let mut test_bed = SimulationTestBed::new(|context| {
-            let tested_object = cargo_door_assembly(context, true);
-            TestAircraft::new(context, Duration::from_millis(10), spoiler_assembly(true))
+            let tested_object = spoiler_assembly(context, true);
+            TestAircraft::new(context, Duration::from_millis(10), tested_object)
         });
 
         test_bed.command(|a| a.command_unlock());
@@ -3663,8 +3651,8 @@ mod tests {
     #[test]
     fn spoiler_electro_hydrostatic_cannot_move_without_pressure_without_backup_active() {
         let mut test_bed = SimulationTestBed::new(|context| {
-            let tested_object = cargo_door_assembly(context, true);
-            TestAircraft::new(context, Duration::from_millis(10), spoiler_assembly(true))
+            let tested_object = spoiler_assembly(context, true);
+            TestAircraft::new(context, Duration::from_millis(10), tested_object)
         });
 
         test_bed.command(|a| a.command_unlock());
@@ -3681,8 +3669,8 @@ mod tests {
     #[test]
     fn spoiler_electro_hydrostatic_cannot_move_without_pressure_without_elec_with_backup_active() {
         let mut test_bed = SimulationTestBed::new(|context| {
-            let tested_object = cargo_door_assembly(context, true);
-            TestAircraft::new(context, Duration::from_millis(10), spoiler_assembly(true))
+            let tested_object = spoiler_assembly(context, true);
+            TestAircraft::new(context, Duration::from_millis(10), tested_object)
         });
 
         test_bed.command(|a| a.command_unlock());
@@ -4412,7 +4400,10 @@ mod tests {
         )
     }
 
-    fn spoiler_assembly(has_eletro_backup: bool) -> HydraulicLinearActuatorAssembly<1> {
+    fn spoiler_assembly(
+        context: &mut InitContext,
+        has_eletro_backup: bool,
+    ) -> HydraulicLinearActuatorAssembly<1> {
         let rigid_body = spoiler_body();
         let actuator = spoiler_actuator(context, &rigid_body, has_eletro_backup);
 
