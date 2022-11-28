@@ -3892,12 +3892,16 @@ mod tests {
         assert!(test_bed.query(|a| a.actuator_used_volume(0).get::<gallon>()) <= 0.0001);
     }
 
-    fn cargo_door_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
+    fn cargo_door_actuator(
+        context: &mut InitContext,
+        bounded_linear_length: &impl BoundedLinearLength,
+    ) -> LinearActuator {
         const DEFAULT_I_GAIN: f64 = 5.;
         const DEFAULT_P_GAIN: f64 = 0.05;
         const DEFAULT_FORCE_GAIN: f64 = 200000.;
 
         LinearActuator::new(
+            context,
             bounded_linear_length,
             2,
             Length::new::<meter>(0.04422),
@@ -3922,9 +3926,12 @@ mod tests {
         )
     }
 
-    fn cargo_door_assembly(is_locked: bool) -> HydraulicLinearActuatorAssembly<1> {
+    fn cargo_door_assembly(
+        context: &mut InitContext,
+        is_locked: bool,
+    ) -> HydraulicLinearActuatorAssembly<1> {
         let rigid_body = cargo_door_body(is_locked);
-        let actuator = cargo_door_actuator(&rigid_body);
+        let actuator = cargo_door_actuator(context, &rigid_body);
 
         HydraulicLinearActuatorAssembly::new([actuator], rigid_body)
     }
@@ -3952,33 +3959,46 @@ mod tests {
         )
     }
 
-    fn main_gear_door_right_assembly(is_locked: bool) -> HydraulicLinearActuatorAssembly<1> {
+    fn main_gear_door_right_assembly(
+        context: &mut InitContext,
+        is_locked: bool,
+    ) -> HydraulicLinearActuatorAssembly<1> {
         let rigid_body = main_gear_door_right_body(is_locked);
-        let actuator = main_gear_door_actuator(&rigid_body);
+        let actuator = main_gear_door_actuator(context, &rigid_body);
 
         HydraulicLinearActuatorAssembly::new([actuator], rigid_body)
     }
 
-    fn main_gear_door_left_assembly(is_locked: bool) -> HydraulicLinearActuatorAssembly<1> {
+    fn main_gear_door_left_assembly(
+        context: &mut InitContext,
+        is_locked: bool,
+    ) -> HydraulicLinearActuatorAssembly<1> {
         let rigid_body = main_gear_door_left_body(is_locked);
-        let actuator = main_gear_door_actuator(&rigid_body);
+        let actuator = main_gear_door_actuator(context, &rigid_body);
 
         HydraulicLinearActuatorAssembly::new([actuator], rigid_body)
     }
 
-    fn main_gear_door_right_broken_assembly(is_locked: bool) -> HydraulicLinearActuatorAssembly<1> {
+    fn main_gear_door_right_broken_assembly(
+        context: &mut InitContext,
+        is_locked: bool,
+    ) -> HydraulicLinearActuatorAssembly<1> {
         let rigid_body = main_gear_door_right_body(is_locked);
-        let actuator = disconnected_actuator(&rigid_body);
+        let actuator = disconnected_actuator(context, &rigid_body);
 
         HydraulicLinearActuatorAssembly::new([actuator], rigid_body)
     }
 
-    fn main_gear_door_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
+    fn main_gear_door_actuator(
+        context: &mut InitContext,
+        bounded_linear_length: &impl BoundedLinearLength,
+    ) -> LinearActuator {
         const DEFAULT_I_GAIN: f64 = 5.;
         const DEFAULT_P_GAIN: f64 = 0.7;
         const DEFAULT_FORCE_GAIN: f64 = 200000.;
 
         LinearActuator::new(
+            context,
             bounded_linear_length,
             1,
             Length::new::<meter>(0.055),
@@ -4003,8 +4023,12 @@ mod tests {
         )
     }
 
-    fn disconnected_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
+    fn disconnected_actuator(
+        context: &mut InitContext,
+        bounded_linear_length: &impl BoundedLinearLength,
+    ) -> LinearActuator {
         LinearActuator::new(
+            context,
             bounded_linear_length,
             1,
             Length::new::<meter>(0.055),
@@ -4075,26 +4099,36 @@ mod tests {
         )
     }
 
-    fn main_gear_right_assembly(is_locked: bool) -> HydraulicLinearActuatorAssembly<1> {
+    fn main_gear_right_assembly(
+        context: &mut InitContext,
+        is_locked: bool,
+    ) -> HydraulicLinearActuatorAssembly<1> {
         let rigid_body = main_gear_right_body(is_locked);
-        let actuator = main_gear_actuator(&rigid_body);
+        let actuator = main_gear_actuator(context, &rigid_body);
 
         HydraulicLinearActuatorAssembly::new([actuator], rigid_body)
     }
 
-    fn main_gear_left_assembly(is_locked: bool) -> HydraulicLinearActuatorAssembly<1> {
+    fn main_gear_left_assembly(
+        context: &mut InitContext,
+        is_locked: bool,
+    ) -> HydraulicLinearActuatorAssembly<1> {
         let rigid_body = main_gear_left_body(is_locked);
-        let actuator = main_gear_actuator(&rigid_body);
+        let actuator = main_gear_actuator(context, &rigid_body);
 
         HydraulicLinearActuatorAssembly::new([actuator], rigid_body)
     }
 
-    fn main_gear_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
+    fn main_gear_actuator(
+        context: &mut InitContext,
+        bounded_linear_length: &impl BoundedLinearLength,
+    ) -> LinearActuator {
         const DEFAULT_I_GAIN: f64 = 4.5;
         const DEFAULT_P_GAIN: f64 = 0.3;
         const DEFAULT_FORCE_GAIN: f64 = 250000.;
 
         LinearActuator::new(
+            context,
             bounded_linear_length,
             1,
             Length::new::<meter>(0.145),
@@ -4165,19 +4199,23 @@ mod tests {
         )
     }
 
-    fn nose_gear_assembly() -> HydraulicLinearActuatorAssembly<1> {
+    fn nose_gear_assembly(context: &mut InitContext) -> HydraulicLinearActuatorAssembly<1> {
         let rigid_body = nose_gear_body();
-        let actuator = nose_gear_actuator(&rigid_body);
+        let actuator = nose_gear_actuator(context, &rigid_body);
 
         HydraulicLinearActuatorAssembly::new([actuator], rigid_body)
     }
 
-    fn nose_gear_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
+    fn nose_gear_actuator(
+        context: &mut InitContext,
+        bounded_linear_length: &impl BoundedLinearLength,
+    ) -> LinearActuator {
         const DEFAULT_I_GAIN: f64 = 4.5;
         const DEFAULT_P_GAIN: f64 = 0.3;
         const DEFAULT_FORCE_GAIN: f64 = 200000.;
 
         LinearActuator::new(
+            context,
             bounded_linear_length,
             1,
             Length::new::<meter>(0.0792),
@@ -4225,19 +4263,23 @@ mod tests {
         )
     }
 
-    fn nose_gear_door_assembly() -> HydraulicLinearActuatorAssembly<1> {
+    fn nose_gear_door_assembly(context: &mut InitContext) -> HydraulicLinearActuatorAssembly<1> {
         let rigid_body = nose_gear_door_right_left_body();
-        let actuator = nose_gear_door_actuator(&rigid_body);
+        let actuator = nose_gear_door_actuator(context, &rigid_body);
 
         HydraulicLinearActuatorAssembly::new([actuator], rigid_body)
     }
 
-    fn nose_gear_door_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
+    fn nose_gear_door_actuator(
+        context: &mut InitContext,
+        bounded_linear_length: &impl BoundedLinearLength,
+    ) -> LinearActuator {
         const DEFAULT_I_GAIN: f64 = 5.;
         const DEFAULT_P_GAIN: f64 = 0.15;
         const DEFAULT_FORCE_GAIN: f64 = 200000.;
 
         LinearActuator::new(
+            context,
             bounded_linear_length,
             1,
             Length::new::<meter>(0.0378),
@@ -4285,19 +4327,26 @@ mod tests {
         )
     }
 
-    fn aileron_assembly(is_init_down: bool) -> HydraulicLinearActuatorAssembly<2> {
+    fn aileron_assembly(
+        context: &mut InitContext,
+        is_init_down: bool,
+    ) -> HydraulicLinearActuatorAssembly<2> {
         let rigid_body = aileron_body(is_init_down);
-        let actuator = aileron_actuator(&rigid_body);
+        let actuator = aileron_actuator(context, &rigid_body);
 
         HydraulicLinearActuatorAssembly::new([actuator, actuator], rigid_body)
     }
 
-    fn aileron_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
+    fn aileron_actuator(
+        context: &mut InitContext,
+        bounded_linear_length: &impl BoundedLinearLength,
+    ) -> LinearActuator {
         const DEFAULT_I_GAIN: f64 = 5.;
         const DEFAULT_P_GAIN: f64 = 0.35;
         const DEFAULT_FORCE_GAIN: f64 = 450000.;
 
         LinearActuator::new(
+            context,
             bounded_linear_length,
             1,
             Length::new::<meter>(0.0537878),
@@ -4352,14 +4401,15 @@ mod tests {
         )
     }
 
-    fn elevator_assembly() -> HydraulicLinearActuatorAssembly<2> {
+    fn elevator_assembly(context: &mut InitContext) -> HydraulicLinearActuatorAssembly<2> {
         let rigid_body = elevator_body();
-        let actuator = elevator_actuator(&rigid_body, false);
+        let actuator = elevator_actuator(context, &rigid_body, false);
 
         HydraulicLinearActuatorAssembly::new([actuator, actuator], rigid_body)
     }
 
     fn elevator_actuator(
+        context: &mut InitContext,
         bounded_linear_length: &impl BoundedLinearLength,
         has_electro_backup: bool,
     ) -> LinearActuator {
@@ -4368,6 +4418,7 @@ mod tests {
         const DEFAULT_FORCE_GAIN: f64 = 450000.;
 
         LinearActuator::new(
+            context,
             bounded_linear_length,
             1,
             Length::new::<meter>(0.0407),
@@ -4425,12 +4476,13 @@ mod tests {
 
     fn spoiler_assembly(has_eletro_backup: bool) -> HydraulicLinearActuatorAssembly<1> {
         let rigid_body = spoiler_body();
-        let actuator = spoiler_actuator(&rigid_body, has_eletro_backup);
+        let actuator = spoiler_actuator(context, &rigid_body, has_eletro_backup);
 
         HydraulicLinearActuatorAssembly::new([actuator], rigid_body)
     }
 
     fn spoiler_actuator(
+        context: &mut InitContext,
         bounded_linear_length: &impl BoundedLinearLength,
         has_electro_backup: bool,
     ) -> LinearActuator {
@@ -4439,6 +4491,7 @@ mod tests {
         const DEFAULT_FORCE_GAIN: f64 = 450000.;
 
         LinearActuator::new(
+            context,
             bounded_linear_length,
             1,
             Length::new::<meter>(0.03),
@@ -4497,10 +4550,12 @@ mod tests {
         )
     }
 
-    fn elevator_electro_hydrostatic_assembly() -> HydraulicLinearActuatorAssembly<2> {
+    fn elevator_electro_hydrostatic_assembly(
+        context: &mut InitContext,
+    ) -> HydraulicLinearActuatorAssembly<2> {
         let rigid_body = elevator_body();
-        let standard_actuator = elevator_actuator(&rigid_body, false);
-        let eha_actuator = elevator_actuator(&rigid_body, true);
+        let standard_actuator = elevator_actuator(context, &rigid_body, false);
+        let eha_actuator = elevator_actuator(context, &rigid_body, true);
 
         HydraulicLinearActuatorAssembly::new([standard_actuator, eha_actuator], rigid_body)
     }
