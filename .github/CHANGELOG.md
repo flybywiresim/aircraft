@@ -102,6 +102,7 @@
 1. [MISC] Change 2 way overhead switches to be also controllable with mouse wheel up/down @patsta32 (Pat)
 1. [FAC] Move Speedscale computation to FAC - @lukecologne (luke)
 1. [EFB] Added deboarding button to flyPad Payload - @frankkopp (Frank Kopp)
+1. [EFB] Improved simbridge-client connection handling - @frankkopp (Frank Kopp)
 
 ## 0.8.0
 
