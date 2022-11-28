@@ -116,10 +116,10 @@ impl PidController {
         self.max_output = max;
     }
 
-    pub fn set_gains(&mut self, kp: f64, ki: f64, kf: f64) {
+    pub fn set_gains(&mut self, kp: f64, ki: f64, output_gain: f64) {
         self.kp = kp;
         self.ki = ki;
-        self.output_gain = kf;
+        self.output_gain = output_gain;
     }
 }
 

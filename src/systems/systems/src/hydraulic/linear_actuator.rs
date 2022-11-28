@@ -24,7 +24,10 @@ use crate::{
         random_from_normal_distribution, random_from_range, ConsumePower, ElectricalBusType,
         ElectricalBuses,
     },
-    simulation::{InitContext, SimulationElement, SimulationElementVisitor, UpdateContext},
+    simulation::{
+        InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
+        UpdateContext, VariableIdentifier,
+    },
 };
 
 use super::aerodynamic_model::AerodynamicBody;
@@ -361,6 +364,16 @@ impl Debug for ElectroHydrostaticBackup {
 /// free moving mode, usable for gravity extension, or for aileron droop.
 #[derive(PartialEq, Clone, Copy)]
 struct CoreHydraulicForce {
+    dev_gains_tuning_enable_id: VariableIdentifier,
+    test_p_gain_id: VariableIdentifier,
+    test_i_gain_id: VariableIdentifier,
+    test_force_gain_id: VariableIdentifier,
+
+    test_p_gain: f64,
+    test_i_gain: f64,
+    test_force_gain: f64,
+    is_dev_tuning_active: bool,
+
     current_mode: LinearActuatorMode,
     closed_valves_reference_position: Ratio,
 
@@ -409,6 +422,7 @@ impl CoreHydraulicForce {
     const MIN_PRESSURE_TO_ALLOW_POSITION_CONTROL_PSI: f64 = 400.;
 
     fn new(
+        context: &mut InitContext,
         init_position: Ratio,
         active_hydraulic_damping_constant: f64,
         slow_hydraulic_damping_constant: f64,
@@ -436,6 +450,16 @@ impl CoreHydraulicForce {
         let max_force = max_working_pressure * bore_side_area;
         let min_force = -max_working_pressure * rod_side_area;
         Self {
+            dev_gains_tuning_enable_id: context.get_identifier("DEV_HYD_GAINS_TUNING".to_owned()),
+            test_p_gain_id: context.get_identifier("DEV_P_GAIN".to_owned()),
+            test_i_gain_id: context.get_identifier("DEV_I_GAIN".to_owned()),
+            test_force_gain_id: context.get_identifier("DEV_FORCE_GAIN".to_owned()),
+
+            test_p_gain: flow_control_proportional_gain,
+            test_i_gain: flow_control_integral_gain,
+            test_force_gain: flow_control_force_gain,
+            is_dev_tuning_active: false,
+
             current_mode: LinearActuatorMode::ClosedCircuitDamping,
             closed_valves_reference_position: init_position,
 
@@ -777,6 +801,11 @@ impl CoreHydraulicForce {
         current_pressure: Pressure,
         speed: Velocity,
     ) -> Force {
+        if self.is_dev_tuning_active {
+            self.pid_controller
+                .set_gains(self.test_p_gain, self.test_i_gain, self.test_force_gain);
+        }
+
         let open_loop_flow_target = self.open_loop_flow(required_position, position_normalized);
 
         let pressure_correction_factor = if self.has_flow_restriction {
@@ -806,6 +835,17 @@ impl HydraulicLocking for CoreHydraulicForce {
 
     fn soft_lock_velocity(&self) -> (AngularVelocity, AngularVelocity) {
         self.soft_lock_velocity
+    }
+}
+impl SimulationElement for CoreHydraulicForce {
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        self.is_dev_tuning_active = reader.read(&self.dev_gains_tuning_enable_id);
+
+        if self.is_dev_tuning_active {
+            self.test_p_gain = reader.read(&self.test_p_gain_id);
+            self.test_i_gain = reader.read(&self.test_i_gain_id);
+            self.test_force_gain = reader.read(&self.test_force_gain_id);
+        }
     }
 }
 impl Debug for CoreHydraulicForce {
@@ -989,6 +1029,7 @@ impl LinearActuator {
             requested_position: Ratio::new::<ratio>(0.),
 
             core_hydraulics: CoreHydraulicForce::new(
+                context,
                 init_position_normalized,
                 active_hydraulic_damping_constant,
                 slow_hydraulic_damping_constant,
@@ -1179,6 +1220,7 @@ impl HydraulicLocking for LinearActuator {
 }
 impl SimulationElement for LinearActuator {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.core_hydraulics.accept(visitor);
         if let Some(eha) = self.electro_hydrostatic_backup.as_mut() {
             eha.accept(visitor);
         };
