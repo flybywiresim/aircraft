@@ -2876,12 +2876,8 @@ mod tests {
     #[test]
     fn nose_gear_door_closes_after_opening_with_pressure() {
         let mut test_bed = SimulationTestBed::new(|context| {
-            let tested_object = cargo_door_assembly(context, true);
-            TestAircraft::new(
-                context,
-                Duration::from_millis(10),
-                nose_gear_door_assembly(),
-            )
+            let tested_object = nose_gear_door_assembly(context);
+            TestAircraft::new(context, Duration::from_millis(10), tested_object)
         });
 
         test_bed.command(|a| a.set_pressures([Pressure::new::<psi>(3000.)]));
@@ -2904,12 +2900,8 @@ mod tests {
     #[test]
     fn left_main_gear_door_drops_when_unlocked() {
         let mut test_bed = SimulationTestBed::new(|context| {
-            let tested_object = cargo_door_assembly(context, true);
-            TestAircraft::new(
-                context,
-                Duration::from_millis(10),
-                main_gear_door_left_assembly(true),
-            )
+            let tested_object = main_gear_door_left_assembly(context, true);
+            TestAircraft::new(context, Duration::from_millis(10), tested_object)
         });
 
         test_bed.command(|a| a.command_closed_circuit_damping_mode(0));
@@ -2922,12 +2914,8 @@ mod tests {
     #[test]
     fn left_main_gear_door_can_open_fully_if_banking_right() {
         let mut test_bed = SimulationTestBed::new(|context| {
-            let tested_object = cargo_door_assembly(context, true);
-            TestAircraft::new(
-                context,
-                Duration::from_millis(10),
-                main_gear_door_left_assembly(true),
-            )
+            let tested_object = main_gear_door_left_assembly(context, true);
+            TestAircraft::new(context, Duration::from_millis(10), tested_object)
         });
 
         test_bed.write_by_name(UpdateContext::PLANE_BANK_KEY, -45.);
@@ -2941,12 +2929,8 @@ mod tests {
     #[test]
     fn left_main_gear_door_opens_with_pressure() {
         let mut test_bed = SimulationTestBed::new(|context| {
-            let tested_object = cargo_door_assembly(context, true);
-            TestAircraft::new(
-                context,
-                Duration::from_millis(10),
-                main_gear_door_left_assembly(true),
-            )
+            let tested_object = main_gear_door_left_assembly(context, true);
+            TestAircraft::new(context, Duration::from_millis(10), tested_object)
         });
 
         test_bed.command(|a| a.set_pressures([Pressure::new::<psi>(3000.)]));
@@ -2960,12 +2944,8 @@ mod tests {
     #[test]
     fn right_main_gear_retracts_with_pressure() {
         let mut test_bed = SimulationTestBed::new(|context| {
-            let tested_object = cargo_door_assembly(context, true);
-            TestAircraft::new(
-                context,
-                Duration::from_millis(10),
-                main_gear_right_assembly(true),
-            )
+            let tested_object = main_gear_right_assembly(context, true);
+            TestAircraft::new(context, Duration::from_millis(10), tested_object)
         });
 
         test_bed.command(|a| a.set_pressures([Pressure::new::<psi>(3000.)]));
@@ -2979,12 +2959,8 @@ mod tests {
     #[test]
     fn right_main_gear_locked_down_at_init() {
         let mut test_bed = SimulationTestBed::new(|context| {
-            let tested_object = cargo_door_assembly(context, true);
-            TestAircraft::new(
-                context,
-                Duration::from_millis(33),
-                main_gear_right_assembly(true),
-            )
+            let tested_object = main_gear_right_assembly(context, true);
+            TestAircraft::new(context, Duration::from_millis(33), tested_object)
         });
 
         assert!(test_bed.query(|a| a.is_locked()));
@@ -2999,12 +2975,8 @@ mod tests {
     #[test]
     fn right_main_gear_locks_up_when_retracted() {
         let mut test_bed = SimulationTestBed::new(|context| {
-            let tested_object = cargo_door_assembly(context, true);
-            TestAircraft::new(
-                context,
-                Duration::from_millis(10),
-                main_gear_right_assembly(true),
-            )
+            let tested_object = main_gear_right_assembly(context, true);
+            TestAircraft::new(context, Duration::from_millis(10), tested_object)
         });
 
         test_bed.command(|a| a.set_pressures([Pressure::new::<psi>(3000.)]));
@@ -3022,12 +2994,8 @@ mod tests {
     #[test]
     fn right_main_gear_locks_down_when_extended_by_gravity() {
         let mut test_bed = SimulationTestBed::new(|context| {
-            let tested_object = cargo_door_assembly(context, true);
-            TestAircraft::new(
-                context,
-                Duration::from_millis(10),
-                main_gear_right_assembly(true),
-            )
+            let tested_object = main_gear_right_assembly(context, true);
+            TestAircraft::new(context, Duration::from_millis(10), tested_object)
         });
 
         // FIRST GEAR UP
@@ -3057,12 +3025,8 @@ mod tests {
     #[test]
     fn left_main_gear_retracts_with_pressure() {
         let mut test_bed = SimulationTestBed::new(|context| {
-            let tested_object = cargo_door_assembly(context, true);
-            TestAircraft::new(
-                context,
-                Duration::from_millis(10),
-                main_gear_left_assembly(true),
-            )
+            let tested_object = main_gear_left_assembly(context, true);
+            TestAircraft::new(context, Duration::from_millis(10), tested_object)
         });
 
         test_bed.command(|a| a.set_pressures([Pressure::new::<psi>(3000.)]));
@@ -3076,12 +3040,8 @@ mod tests {
     #[test]
     fn left_main_gear_retracts_with_limited_pressure() {
         let mut test_bed = SimulationTestBed::new(|context| {
-            let tested_object = cargo_door_assembly(context, true);
-            TestAircraft::new(
-                context,
-                Duration::from_millis(10),
-                main_gear_left_assembly(true),
-            )
+            let tested_object = main_gear_left_assembly(context, true);
+            TestAircraft::new(context, Duration::from_millis(10), tested_object)
         });
 
         test_bed.command(|a| a.set_pressures([Pressure::new::<psi>(1500.)]));
@@ -3095,12 +3055,8 @@ mod tests {
     #[test]
     fn left_main_gear_locked_down_at_init() {
         let mut test_bed = SimulationTestBed::new(|context| {
-            let tested_object = cargo_door_assembly(context, true);
-            TestAircraft::new(
-                context,
-                Duration::from_millis(33),
-                main_gear_left_assembly(true),
-            )
+            let tested_object = main_gear_left_assembly(context, true);
+            TestAircraft::new(context, Duration::from_millis(33), tested_object)
         });
 
         assert!(test_bed.query(|a| a.is_locked()));
@@ -3115,12 +3071,8 @@ mod tests {
     #[test]
     fn left_main_gear_locks_up_when_retracted() {
         let mut test_bed = SimulationTestBed::new(|context| {
-            let tested_object = cargo_door_assembly(context, true);
-            TestAircraft::new(
-                context,
-                Duration::from_millis(10),
-                main_gear_left_assembly(true),
-            )
+            let tested_object = main_gear_left_assembly(context, true);
+            TestAircraft::new(context, Duration::from_millis(10), tested_object)
         });
 
         test_bed.command(|a| a.set_pressures([Pressure::new::<psi>(3000.)]));
@@ -3138,12 +3090,8 @@ mod tests {
     #[test]
     fn left_main_gear_locks_down_when_extended_by_gravity() {
         let mut test_bed = SimulationTestBed::new(|context| {
-            let tested_object = cargo_door_assembly(context, true);
-            TestAircraft::new(
-                context,
-                Duration::from_millis(10),
-                main_gear_left_assembly(true),
-            )
+            let tested_object = main_gear_left_assembly(context, true);
+            TestAircraft::new(context, Duration::from_millis(10), tested_object)
         });
 
         // FIRST GEAR UP
@@ -3173,8 +3121,8 @@ mod tests {
     #[test]
     fn nose_gear_locks_up_when_retracted() {
         let mut test_bed = SimulationTestBed::new(|context| {
-            let tested_object = cargo_door_assembly(context, true);
-            TestAircraft::new(context, Duration::from_millis(10), nose_gear_assembly())
+            let tested_object = nose_gear_assembly(context);
+            TestAircraft::new(context, Duration::from_millis(10), tested_object)
         });
 
         test_bed.command(|a| a.set_pressures([Pressure::new::<psi>(3000.)]));
@@ -3192,8 +3140,8 @@ mod tests {
     #[test]
     fn aileron_initialized_down_stays_down_with_broken_actuator() {
         let mut test_bed = SimulationTestBed::new(|context| {
-            let tested_object = cargo_door_assembly(context, true);
-            TestAircraft::new(context, Duration::from_millis(10), aileron_assembly(true))
+            let tested_object = aileron_assembly(context, true);
+            TestAircraft::new(context, Duration::from_millis(10), tested_object)
         });
 
         test_bed.command(|a| a.command_unlock());
@@ -3207,8 +3155,8 @@ mod tests {
     #[test]
     fn aileron_initialized_down_moves_up_when_commanded() {
         let mut test_bed = SimulationTestBed::new(|context| {
-            let tested_object = cargo_door_assembly(context, true);
-            TestAircraft::new(context, Duration::from_millis(10), aileron_assembly(true))
+            let tested_object = aileron_assembly(context, true);
+            TestAircraft::new(context, Duration::from_millis(10), tested_object)
         });
 
         test_bed.command(|a| a.command_unlock());
@@ -3225,8 +3173,8 @@ mod tests {
     #[test]
     fn aileron_drops_from_middle_pos_in_more_20s_in_closed_circuit_damping() {
         let mut test_bed = SimulationTestBed::new(|context| {
-            let tested_object = cargo_door_assembly(context, true);
-            TestAircraft::new(context, Duration::from_millis(10), aileron_assembly(false))
+            let tested_object = aileron_assembly(context, false);
+            TestAircraft::new(context, Duration::from_millis(10), tested_object)
         });
 
         test_bed.command(|a| a.command_unlock());
@@ -3243,8 +3191,8 @@ mod tests {
     #[test]
     fn aileron_drops_from_middle_pos_and_damping_is_stable() {
         let mut test_bed = SimulationTestBed::new(|context| {
-            let tested_object = cargo_door_assembly(context, true);
-            TestAircraft::new(context, Duration::from_millis(10), aileron_assembly(false))
+            let tested_object = aileron_assembly(context, false);
+            TestAircraft::new(context, Duration::from_millis(10), tested_object)
         });
 
         test_bed.command(|a| a.command_unlock());
@@ -3263,8 +3211,8 @@ mod tests {
     #[test]
     fn aileron_position_control_is_stable() {
         let mut test_bed = SimulationTestBed::new(|context| {
-            let tested_object = cargo_door_assembly(context, true);
-            TestAircraft::new(context, Duration::from_millis(10), aileron_assembly(false))
+            let tested_object = aileron_assembly(context, false);
+            TestAircraft::new(context, Duration::from_millis(10), tested_object)
         });
 
         test_bed.command(|a| a.command_unlock());
@@ -3299,8 +3247,8 @@ mod tests {
     #[test]
     fn aileron_position_control_from_down_to_up_less_0_5s() {
         let mut test_bed = SimulationTestBed::new(|context| {
-            let tested_object = cargo_door_assembly(context, true);
-            TestAircraft::new(context, Duration::from_millis(10), aileron_assembly(false))
+            let tested_object = aileron_assembly(context, false);
+            TestAircraft::new(context, Duration::from_millis(10), tested_object)
         });
 
         test_bed.command(|a| a.command_unlock());
