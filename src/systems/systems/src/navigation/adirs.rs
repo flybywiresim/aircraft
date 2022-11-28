@@ -1264,7 +1264,6 @@ impl InertialReference {
 
             let direction =
                 Rotation2::rotation_between(&self.wind_velocity.output(), &Vector2::y());
-            //wind_direction = (Radians(direction.angle()).normalized() + Degrees(180.)).normalized().in_degrees();
             wind_direction = (Angle::new::<radian>(direction.angle()).normalised()
                 + Angle::HALF_TURN)
                 .normalised()
