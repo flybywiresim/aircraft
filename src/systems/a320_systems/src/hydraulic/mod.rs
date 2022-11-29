@@ -143,8 +143,8 @@ impl A320HydraulicCircuitFactory {
 
     const HYDRAULIC_TARGET_PRESSURE_PSI: f64 = 3000.;
 
-    const PRIORITY_VALVE_PRESSURE_CUTOFF_PSI: f64 = 2000.;
-    const PRIORITY_VALVE_PRESSURE_CUTOFF_BANDWIDTH_PSI: f64 = 500.;
+    const PRIORITY_VALVE_PRESSURE_CUTOFF_PSI: f64 = 1500.;
+    const PRIORITY_VALVE_PRESSURE_OPENED_PSI: f64 = 2000.;
 
     pub fn new_green_circuit(context: &mut InitContext) -> HydraulicCircuit {
         let reservoir = A320HydraulicReservoirFactory::new_green_reservoir(context);
@@ -165,7 +165,7 @@ impl A320HydraulicCircuitFactory {
             Pressure::new::<psi>(Self::HYDRAULIC_TARGET_PRESSURE_PSI),
             PriorityValve::new(
                 Pressure::new::<psi>(Self::PRIORITY_VALVE_PRESSURE_CUTOFF_PSI),
-                Pressure::new::<psi>(Self::PRIORITY_VALVE_PRESSURE_CUTOFF_BANDWIDTH_PSI),
+                Pressure::new::<psi>(Self::PRIORITY_VALVE_PRESSURE_OPENED_PSI),
             ),
         )
     }
@@ -189,7 +189,7 @@ impl A320HydraulicCircuitFactory {
             Pressure::new::<psi>(Self::HYDRAULIC_TARGET_PRESSURE_PSI),
             PriorityValve::new(
                 Pressure::new::<psi>(Self::PRIORITY_VALVE_PRESSURE_CUTOFF_PSI),
-                Pressure::new::<psi>(Self::PRIORITY_VALVE_PRESSURE_CUTOFF_BANDWIDTH_PSI),
+                Pressure::new::<psi>(Self::PRIORITY_VALVE_PRESSURE_OPENED_PSI),
             ),
         )
     }
@@ -213,7 +213,7 @@ impl A320HydraulicCircuitFactory {
             Pressure::new::<psi>(Self::HYDRAULIC_TARGET_PRESSURE_PSI),
             PriorityValve::new(
                 Pressure::new::<psi>(Self::PRIORITY_VALVE_PRESSURE_CUTOFF_PSI),
-                Pressure::new::<psi>(Self::PRIORITY_VALVE_PRESSURE_CUTOFF_BANDWIDTH_PSI),
+                Pressure::new::<psi>(Self::PRIORITY_VALVE_PRESSURE_OPENED_PSI),
             ),
         )
     }

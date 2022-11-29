@@ -1729,8 +1729,8 @@ impl CheckValve {
 pub struct PriorityValve {
     open_ratio: LowPassFilter<Ratio>,
 
-    closing_threshold: Pressure,
-    closing_bandwidth: Pressure,
+    fully_closed_threshold: Pressure,
+    fully_opened_threshold: Pressure,
 
     upstream_pressure: Pressure,
     downstream_pressure: Pressure,
@@ -1738,12 +1738,12 @@ pub struct PriorityValve {
 impl PriorityValve {
     const VALVE_RESPONSE_TIME_CONSTANT: Duration = Duration::from_millis(500);
 
-    pub fn new(closing_threshold: Pressure, closing_bandwidth: Pressure) -> Self {
+    pub fn new(fully_closed_threshold: Pressure, fully_opened_threshold: Pressure) -> Self {
         Self {
             open_ratio: LowPassFilter::<Ratio>::new(Self::VALVE_RESPONSE_TIME_CONSTANT),
 
-            closing_threshold,
-            closing_bandwidth,
+            fully_closed_threshold,
+            fully_opened_threshold,
 
             upstream_pressure: Pressure::default(),
             downstream_pressure: Pressure::default(),
@@ -1766,12 +1766,12 @@ impl PriorityValve {
     }
 
     fn update_open_state(&mut self, context: &UpdateContext) {
-        let opening_ratio = if self.upstream_pressure > self.closing_threshold {
+        let opening_ratio = if self.upstream_pressure > self.fully_opened_threshold {
             Ratio::new::<ratio>(1.)
         } else {
             Ratio::new::<ratio>(
-                ((self.upstream_pressure - self.closing_bandwidth).get::<psi>()
-                    / (self.closing_threshold - self.closing_bandwidth).get::<psi>())
+                ((self.upstream_pressure - self.fully_closed_threshold).get::<psi>()
+                    / (self.fully_opened_threshold - self.fully_closed_threshold).get::<psi>())
                 .max(0.)
                 .min(1.),
             )
@@ -2878,7 +2878,7 @@ mod tests {
     #[test]
     fn priority_valve_init_with_zero_pressures() {
         let test_bed = SimulationTestBed::from(ElementCtorFn(|_| {
-            PriorityValve::new(Pressure::new::<psi>(2000.), Pressure::new::<psi>(500.))
+            PriorityValve::new(Pressure::new::<psi>(1500.), Pressure::new::<psi>(2000.))
         }));
 
         assert!(test_bed.query_element(|e| e.downstream_pressure() == Pressure::new::<psi>(0.)));
@@ -2888,7 +2888,7 @@ mod tests {
     #[test]
     fn priority_valve_opened_with_pressure() {
         let mut test_bed = SimulationTestBed::from(ElementCtorFn(|_| {
-            PriorityValve::new(Pressure::new::<psi>(2000.), Pressure::new::<psi>(500.))
+            PriorityValve::new(Pressure::new::<psi>(1500.), Pressure::new::<psi>(2000.))
         }));
 
         test_bed.set_update_after_power_distribution(|valve, context| {
@@ -2903,11 +2903,11 @@ mod tests {
     #[test]
     fn priority_valve_not_fully_opened_with_lower_pressure() {
         let mut test_bed = SimulationTestBed::from(ElementCtorFn(|_| {
-            PriorityValve::new(Pressure::new::<psi>(2000.), Pressure::new::<psi>(500.))
+            PriorityValve::new(Pressure::new::<psi>(1500.), Pressure::new::<psi>(2000.))
         }));
 
         test_bed.set_update_after_power_distribution(|valve, context| {
-            valve.update(context, Pressure::new::<psi>(1600.))
+            valve.update(context, Pressure::new::<psi>(1800.))
         });
 
         test_bed.run_multiple_frames(Duration::from_secs(2));
@@ -2919,11 +2919,11 @@ mod tests {
     #[test]
     fn priority_valve_closed_with_under_threshold_pressure() {
         let mut test_bed = SimulationTestBed::from(ElementCtorFn(|_| {
-            PriorityValve::new(Pressure::new::<psi>(2000.), Pressure::new::<psi>(500.))
+            PriorityValve::new(Pressure::new::<psi>(1500.), Pressure::new::<psi>(2000.))
         }));
 
         test_bed.set_update_after_power_distribution(|valve, context| {
-            valve.update(context, Pressure::new::<psi>(1000.))
+            valve.update(context, Pressure::new::<psi>(1450.))
         });
 
         test_bed.run_multiple_frames(Duration::from_secs(2));
@@ -3138,8 +3138,8 @@ mod tests {
                 HydraulicCircuit::DEFAULT_LEAK_MEASUREMENT_VALVE_POWERING_BUS,
             )),
             Some(PriorityValve::new(
+                Pressure::new::<psi>(1500.),
                 Pressure::new::<psi>(2000.),
-                Pressure::new::<psi>(500.),
             )),
         )
     }
@@ -3180,7 +3180,7 @@ mod tests {
         );
 
         let priority_valve =
-            PriorityValve::new(Pressure::new::<psi>(2000.), Pressure::new::<psi>(500.));
+            PriorityValve::new(Pressure::new::<psi>(1500.), Pressure::new::<psi>(2000.));
 
         HydraulicCircuit::new(
             context,
