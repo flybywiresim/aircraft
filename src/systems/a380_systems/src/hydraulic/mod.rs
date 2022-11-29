@@ -8776,7 +8776,7 @@ mod tests {
                 .set_left_spoiler_6_elec_backup_active()
                 .run_waiting_for(Duration::from_secs(1));
 
-            assert!(test_bed.get_left_spoiler_position(6).get::<ratio>() > 0.8);
+            assert!(test_bed.get_left_spoiler_position(6).get::<ratio>() > 0.5);
             assert!(test_bed.get_right_spoiler_position(6).get::<ratio>() < 0.1);
 
             test_bed = test_bed
@@ -8784,8 +8784,8 @@ mod tests {
                 .set_right_spoiler_6_elec_backup_active()
                 .run_waiting_for(Duration::from_secs(1));
 
-            assert!(test_bed.get_left_spoiler_position(6).get::<ratio>() > 0.8);
-            assert!(test_bed.get_right_spoiler_position(6).get::<ratio>() > 0.8);
+            assert!(test_bed.get_left_spoiler_position(6).get::<ratio>() > 0.5);
+            assert!(test_bed.get_right_spoiler_position(6).get::<ratio>() > 0.5);
         }
 
         #[test]
