@@ -230,13 +230,26 @@ struct base_prim_out_bus
   base_arinc_429 right_midboard_aileron_command_deg;
   base_arinc_429 left_outboard_aileron_command_deg;
   base_arinc_429 right_outboard_aileron_command_deg;
-  base_arinc_429 left_spoiler_1_2_command_deg;
-  base_arinc_429 right_spoiler_1_2_command_deg;
-  base_arinc_429 left_spoiler_3_5_command_deg;
-  base_arinc_429 right_spoiler_3_5_command_deg;
-  base_arinc_429 left_spoiler_6_8_command_deg;
-  base_arinc_429 right_spoiler_6_8_command_deg;
-  base_arinc_429 elevator_command_deg;
+  base_arinc_429 left_spoiler_1_command_deg;
+  base_arinc_429 right_spoiler_1_command_deg;
+  base_arinc_429 left_spoiler_2_command_deg;
+  base_arinc_429 right_spoiler_2_command_deg;
+  base_arinc_429 left_spoiler_3_command_deg;
+  base_arinc_429 right_spoiler_3_command_deg;
+  base_arinc_429 left_spoiler_4_command_deg;
+  base_arinc_429 right_spoiler_4_command_deg;
+  base_arinc_429 left_spoiler_5_command_deg;
+  base_arinc_429 right_spoiler_5_command_deg;
+  base_arinc_429 left_spoiler_6_command_deg;
+  base_arinc_429 right_spoiler_6_command_deg;
+  base_arinc_429 left_spoiler_7_command_deg;
+  base_arinc_429 right_spoiler_7_command_deg;
+  base_arinc_429 left_spoiler_8_command_deg;
+  base_arinc_429 right_spoiler_8_command_deg;
+  base_arinc_429 left_inboard_elevator_command_deg;
+  base_arinc_429 right_inboard_elevator_command_deg;
+  base_arinc_429 left_outboard_elevator_command_deg;
+  base_arinc_429 right_outboard_elevator_command_deg;
   base_arinc_429 ths_command_deg;
   base_arinc_429 upper_rudder_command_deg;
   base_arinc_429 lower_rudder_command_deg;
@@ -257,6 +270,7 @@ struct base_prim_out_bus
   base_arinc_429 elevator_1_position_deg;
   base_arinc_429 elevator_2_position_deg;
   base_arinc_429 elevator_3_position_deg;
+  base_arinc_429 ths_position_deg;
   base_arinc_429 rudder_status_word;
   base_arinc_429 rudder_1_position_deg;
   base_arinc_429 rudder_2_position_deg;
@@ -319,46 +333,49 @@ struct prim_inputs
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_base_prim_lateral_law_outputs_
-#define DEFINED_TYPEDEF_FOR_base_prim_lateral_law_outputs_
+#ifndef DEFINED_TYPEDEF_FOR_base_prim_lateral_surface_positions_
+#define DEFINED_TYPEDEF_FOR_base_prim_lateral_surface_positions_
 
-struct base_prim_lateral_law_outputs
+struct base_prim_lateral_surface_positions
 {
-  real_T left_inboard_aileron_command_deg;
-  real_T right_inboard_aileron_command_deg;
-  real_T left_midboard_aileron_command_deg;
-  real_T right_midboard_aileron_command_deg;
-  real_T left_outboard_aileron_command_deg;
-  real_T right_outboard_aileron_command_deg;
-  real_T left_spoiler_1_command_deg;
-  real_T right_spoiler_1_command_deg;
-  real_T left_spoiler_2_command_deg;
-  real_T right_spoiler_2_command_deg;
-  real_T left_spoiler_3_command_deg;
-  real_T right_spoiler_3_command_deg;
-  real_T left_spoiler_4_command_deg;
-  real_T right_spoiler_4_command_deg;
-  real_T left_spoiler_5_command_deg;
-  real_T right_spoiler_5_command_deg;
-  real_T left_spoiler_6_command_deg;
-  real_T right_spoiler_6_command_deg;
-  real_T left_spoiler_7_command_deg;
-  real_T right_spoiler_7_command_deg;
-  real_T left_spoiler_8_command_deg;
-  real_T right_spoiler_8_command_deg;
-  real_T upper_rudder_command_deg;
-  real_T lower_rudder_command_deg;
+  real_T left_inboard_aileron_deg;
+  real_T right_inboard_aileron_deg;
+  real_T left_midboard_aileron_deg;
+  real_T right_midboard_aileron_deg;
+  real_T left_outboard_aileron_deg;
+  real_T right_outboard_aileron_deg;
+  real_T left_spoiler_1_deg;
+  real_T right_spoiler_1_deg;
+  real_T left_spoiler_2_deg;
+  real_T right_spoiler_2_deg;
+  real_T left_spoiler_3_deg;
+  real_T right_spoiler_3_deg;
+  real_T left_spoiler_4_deg;
+  real_T right_spoiler_4_deg;
+  real_T left_spoiler_5_deg;
+  real_T right_spoiler_5_deg;
+  real_T left_spoiler_6_deg;
+  real_T right_spoiler_6_deg;
+  real_T left_spoiler_7_deg;
+  real_T right_spoiler_7_deg;
+  real_T left_spoiler_8_deg;
+  real_T right_spoiler_8_deg;
+  real_T upper_rudder_deg;
+  real_T lower_rudder_deg;
 };
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_base_prim_pitch_law_outputs_
-#define DEFINED_TYPEDEF_FOR_base_prim_pitch_law_outputs_
+#ifndef DEFINED_TYPEDEF_FOR_base_prim_pitch_surface_positions_
+#define DEFINED_TYPEDEF_FOR_base_prim_pitch_surface_positions_
 
-struct base_prim_pitch_law_outputs
+struct base_prim_pitch_surface_positions
 {
-  real_T elevator_command_deg;
-  real_T ths_command_deg;
+  real_T left_inboard_elevator_deg;
+  real_T right_inboard_elevator_deg;
+  real_T left_outboard_elevator_deg;
+  real_T right_outboard_elevator_deg;
+  real_T ths_deg;
 };
 
 #endif
@@ -368,8 +385,38 @@ struct base_prim_pitch_law_outputs
 
 struct base_prim_laws_outputs
 {
-  base_prim_lateral_law_outputs lateral_law_outputs;
-  base_prim_pitch_law_outputs pitch_law_outputs;
+  base_prim_lateral_surface_positions lateral_law_outputs;
+  base_prim_pitch_surface_positions pitch_law_outputs;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_prim_surface_status_
+#define DEFINED_TYPEDEF_FOR_base_prim_surface_status_
+
+struct base_prim_surface_status
+{
+  boolean_T left_inboard_aileron_engaged;
+  boolean_T right_inboard_aileron_engaged;
+  boolean_T left_midboard_aileron_engaged;
+  boolean_T right_midboard_aileron_engaged;
+  boolean_T left_outboard_aileron_engaged;
+  boolean_T right_outboard_aileron_engaged;
+  boolean_T spoiler_pair_1_engaged;
+  boolean_T spoiler_pair_2_engaged;
+  boolean_T spoiler_pair_3_engaged;
+  boolean_T spoiler_pair_4_engaged;
+  boolean_T spoiler_pair_5_engaged;
+  boolean_T spoiler_pair_6_engaged;
+  boolean_T spoiler_pair_7_engaged;
+  boolean_T spoiler_pair_8_engaged;
+  boolean_T left_inboard_elevator_engaged;
+  boolean_T right_inboard_elevator_engaged;
+  boolean_T left_outboard_elevator_engaged;
+  boolean_T right_outboard_elevator_engaged;
+  boolean_T ths_engaged;
+  boolean_T upper_rudder_engaged;
+  boolean_T lower_rudder_engaged;
 };
 
 #endif
@@ -424,6 +471,9 @@ struct base_prim_logic_outputs
 {
   boolean_T on_ground;
   boolean_T tracking_mode_on;
+  base_prim_surface_status surface_statuses;
+  base_prim_lateral_surface_positions lateral_surface_positions;
+  base_prim_pitch_surface_positions pitch_surface_positions;
   a380_lateral_efcs_law lateral_law_capability;
   a380_lateral_efcs_law active_lateral_law;
   a380_pitch_efcs_law pitch_law_capability;
@@ -847,10 +897,10 @@ struct struct_2OohiAWrazWy5wDS5iisgF
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_struct_LoojKUtH7OhvwR6a9eDiYC_
-#define DEFINED_TYPEDEF_FOR_struct_LoojKUtH7OhvwR6a9eDiYC_
+#ifndef DEFINED_TYPEDEF_FOR_struct_Tb3yuiM08uQe7QpDsuHA8B_
+#define DEFINED_TYPEDEF_FOR_struct_Tb3yuiM08uQe7QpDsuHA8B_
 
-struct struct_LoojKUtH7OhvwR6a9eDiYC
+struct struct_Tb3yuiM08uQe7QpDsuHA8B
 {
   struct_2OohiAWrazWy5wDS5iisgF left_inboard_aileron_command_deg;
   struct_2OohiAWrazWy5wDS5iisgF right_inboard_aileron_command_deg;
@@ -858,13 +908,26 @@ struct struct_LoojKUtH7OhvwR6a9eDiYC
   struct_2OohiAWrazWy5wDS5iisgF right_midboard_aileron_command_deg;
   struct_2OohiAWrazWy5wDS5iisgF left_outboard_aileron_command_deg;
   struct_2OohiAWrazWy5wDS5iisgF right_outboard_aileron_command_deg;
-  struct_2OohiAWrazWy5wDS5iisgF left_spoiler_1_2_command_deg;
-  struct_2OohiAWrazWy5wDS5iisgF right_spoiler_1_2_command_deg;
-  struct_2OohiAWrazWy5wDS5iisgF left_spoiler_3_5_command_deg;
-  struct_2OohiAWrazWy5wDS5iisgF right_spoiler_3_5_command_deg;
-  struct_2OohiAWrazWy5wDS5iisgF left_spoiler_6_8_command_deg;
-  struct_2OohiAWrazWy5wDS5iisgF right_spoiler_6_8_command_deg;
-  struct_2OohiAWrazWy5wDS5iisgF elevator_command_deg;
+  struct_2OohiAWrazWy5wDS5iisgF left_spoiler_1_command_deg;
+  struct_2OohiAWrazWy5wDS5iisgF right_spoiler_1_command_deg;
+  struct_2OohiAWrazWy5wDS5iisgF left_spoiler_2_command_deg;
+  struct_2OohiAWrazWy5wDS5iisgF right_spoiler_2_command_deg;
+  struct_2OohiAWrazWy5wDS5iisgF left_spoiler_3_command_deg;
+  struct_2OohiAWrazWy5wDS5iisgF right_spoiler_3_command_deg;
+  struct_2OohiAWrazWy5wDS5iisgF left_spoiler_4_command_deg;
+  struct_2OohiAWrazWy5wDS5iisgF right_spoiler_4_command_deg;
+  struct_2OohiAWrazWy5wDS5iisgF left_spoiler_5_command_deg;
+  struct_2OohiAWrazWy5wDS5iisgF right_spoiler_5_command_deg;
+  struct_2OohiAWrazWy5wDS5iisgF left_spoiler_6_command_deg;
+  struct_2OohiAWrazWy5wDS5iisgF right_spoiler_6_command_deg;
+  struct_2OohiAWrazWy5wDS5iisgF left_spoiler_7_command_deg;
+  struct_2OohiAWrazWy5wDS5iisgF right_spoiler_7_command_deg;
+  struct_2OohiAWrazWy5wDS5iisgF left_spoiler_8_command_deg;
+  struct_2OohiAWrazWy5wDS5iisgF right_spoiler_8_command_deg;
+  struct_2OohiAWrazWy5wDS5iisgF left_inboard_elevator_command_deg;
+  struct_2OohiAWrazWy5wDS5iisgF right_inboard_elevator_command_deg;
+  struct_2OohiAWrazWy5wDS5iisgF left_outboard_elevator_command_deg;
+  struct_2OohiAWrazWy5wDS5iisgF right_outboard_elevator_command_deg;
   struct_2OohiAWrazWy5wDS5iisgF ths_command_deg;
   struct_2OohiAWrazWy5wDS5iisgF upper_rudder_command_deg;
   struct_2OohiAWrazWy5wDS5iisgF lower_rudder_command_deg;
@@ -885,6 +948,7 @@ struct struct_LoojKUtH7OhvwR6a9eDiYC
   struct_2OohiAWrazWy5wDS5iisgF elevator_1_position_deg;
   struct_2OohiAWrazWy5wDS5iisgF elevator_2_position_deg;
   struct_2OohiAWrazWy5wDS5iisgF elevator_3_position_deg;
+  struct_2OohiAWrazWy5wDS5iisgF ths_position_deg;
   struct_2OohiAWrazWy5wDS5iisgF rudder_status_word;
   struct_2OohiAWrazWy5wDS5iisgF rudder_1_position_deg;
   struct_2OohiAWrazWy5wDS5iisgF rudder_2_position_deg;
