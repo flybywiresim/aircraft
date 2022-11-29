@@ -405,6 +405,7 @@ struct CoreHydraulicForce {
     max_control_force: LowPassFilter<Force>,
 
     has_flow_restriction: bool,
+    max_working_pressure: Pressure,
 
     locks_position_in_closed_mode: bool,
     is_soft_locked: bool,
@@ -420,6 +421,10 @@ impl CoreHydraulicForce {
 
     const MIN_PRESSURE_TO_EXIT_POSITION_CONTROL_PSI: f64 = 200.;
     const MIN_PRESSURE_TO_ALLOW_POSITION_CONTROL_PSI: f64 = 400.;
+
+    // Threshold to start reducing max possible flow
+    //   ie: 500 value for a max pressure of 3000psi will start reducing flow when below 2500 psi
+    const FLOW_REDUCTION_THRESHOLD_BELOW_MAX_PRESS_PSI: f64 = 500.;
 
     fn new(
         context: &mut InitContext,
@@ -500,6 +505,7 @@ impl CoreHydraulicForce {
                 max_force,
             ),
             has_flow_restriction,
+            max_working_pressure,
 
             locks_position_in_closed_mode,
             is_soft_locked: locks_position_in_closed_mode,
@@ -810,7 +816,13 @@ impl CoreHydraulicForce {
         let open_loop_flow_target = self.open_loop_flow(required_position, position_normalized);
 
         let pressure_correction_factor = if self.has_flow_restriction {
-            (1. / 2500. * current_pressure.get::<psi>().powi(2) * 1. / 2500.).min(1.)
+            (1. / (self.max_working_pressure.get::<psi>()
+                - Self::FLOW_REDUCTION_THRESHOLD_BELOW_MAX_PRESS_PSI)
+                * current_pressure.get::<psi>().powi(2)
+                * 1.
+                / (self.max_working_pressure.get::<psi>()
+                    - Self::FLOW_REDUCTION_THRESHOLD_BELOW_MAX_PRESS_PSI))
+                .min(1.)
         } else {
             1.
         };
@@ -1828,14 +1840,6 @@ impl LinearActuatedRigidBodyOnHingeAxis {
     fn init_min_max_linear_length(&mut self) {
         let length_at_min_angle = self.absolute_length_to_anchor_at_angle(self.min_angle);
         let length_at_max_angle = self.absolute_length_to_anchor_at_angle(self.max_angle);
-
-        println!(
-            "MIN LENGTH m {:.3} MIDDLE LENGTH {:.3}  TRAVEL {:.3}",
-            length_at_max_angle.get::<meter>(),
-            self.absolute_length_to_anchor_at_angle(Angle::new::<radian>(0.))
-                .get::<meter>(),
-            (length_at_min_angle - length_at_max_angle).get::<meter>(),
-        );
 
         self.min_absolute_length_to_anchor = length_at_min_angle.min(length_at_max_angle);
         self.max_absolute_length_to_anchor = length_at_min_angle.max(length_at_max_angle);

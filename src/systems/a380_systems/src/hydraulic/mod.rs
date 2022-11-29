@@ -302,7 +302,7 @@ impl A380AileronFactory {
             Self::FLOW_CONTROL_PROPORTIONAL_GAIN,
             Self::FLOW_CONTROL_INTEGRAL_GAIN,
             Self::FLOW_CONTROL_FORCE_GAIN,
-            false,
+            true,
             false,
             None,
             if let Some(bus) = powered_by {
@@ -479,7 +479,7 @@ impl A380SpoilerFactory {
             Self::FLOW_CONTROL_PROPORTIONAL_GAIN,
             Self::FLOW_CONTROL_INTEGRAL_GAIN,
             Self::FLOW_CONTROL_FORCE_GAIN,
-            false,
+            true,
             true,
             Some((
                 AngularVelocity::new::<radian_per_second>(-10000.),
@@ -642,7 +642,7 @@ impl A380ElevatorFactory {
             Self::FLOW_CONTROL_PROPORTIONAL_GAIN,
             Self::FLOW_CONTROL_INTEGRAL_GAIN,
             Self::FLOW_CONTROL_FORCE_GAIN,
-            false,
+            true,
             false,
             None,
             if let Some(bus) = powered_by {
@@ -828,7 +828,7 @@ impl A380RudderFactory {
             Self::FLOW_CONTROL_PROPORTIONAL_GAIN,
             Self::FLOW_CONTROL_INTEGRAL_GAIN,
             Self::FLOW_CONTROL_FORCE_GAIN,
-            false,
+            true,
             false,
             None,
             Some(ElectroHydrostaticBackup::new(
