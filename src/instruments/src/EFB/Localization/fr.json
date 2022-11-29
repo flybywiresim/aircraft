@@ -532,11 +532,7 @@
       "Title": "Options de simulation",
       "UseCalculatedIlsSignals": "Utiliser des signaux ILS calculés",
       "WheelChocksEnabled": "Cales de roue",
-      "inHg": "inHg",
-      "Side": "Côté",
-      "Captain": "Commandant",
-      "Copilot": "Copilote",
-      "Both": "Synchronisés"
+      "inHg": "inHg"
     },
     "ThrottleConfig": {
       "Apply": "Appliquer",
