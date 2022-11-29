@@ -449,6 +449,7 @@ impl CoreHydraulicForce {
     ) -> Self {
         let max_force = max_working_pressure * bore_side_area;
         let min_force = -max_working_pressure * rod_side_area;
+
         Self {
             dev_gains_tuning_enable_id: context.get_identifier("DEV_HYD_GAINS_TUNING".to_owned()),
             test_p_gain_id: context.get_identifier("DEV_P_GAIN".to_owned()),
@@ -824,6 +825,16 @@ impl CoreHydraulicForce {
             signed_flow.get::<gallon_per_second>(),
             Some(context.delta()),
         ));
+
+        // println!(
+        //     "POS TGT/ACTUAL {:.2}/{:.2} FLOW TGT/ACTUAL {:.2}/{:.2} FORCE / MAX {:.0} / {:.0}",
+        //     required_position.get::<ratio>(),
+        //     position_normalized.get::<ratio>(),
+        //     pressure_corrected_openloop_target.get::<gallon_per_second>(),
+        //     signed_flow.get::<gallon_per_second>(),
+        //     self.last_control_force.get::<newton>(),
+        //     self.max_control_force.output().get::<newton>(),
+        // );
 
         self.last_control_force
     }

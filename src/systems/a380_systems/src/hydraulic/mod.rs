@@ -254,12 +254,12 @@ impl A380CargoDoorFactory {
 
 struct A380AileronFactory {}
 impl A380AileronFactory {
-    const FLOW_CONTROL_PROPORTIONAL_GAIN: f64 = 2.;
-    const FLOW_CONTROL_INTEGRAL_GAIN: f64 = 1.5;
-    const FLOW_CONTROL_FORCE_GAIN: f64 = 500000.;
+    const FLOW_CONTROL_PROPORTIONAL_GAIN: f64 = 5.;
+    const FLOW_CONTROL_INTEGRAL_GAIN: f64 = 4.;
+    const FLOW_CONTROL_FORCE_GAIN: f64 = 150000.;
 
     const MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING: f64 = 3500000.;
-    const MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT: f64 = 25.;
+    const MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT: f64 = 10.;
 
     //TODO should be ACEss 1
     const MIDDLE_PANEL_EHA_BUS: ElectricalBusType = ElectricalBusType::AlternatingCurrentEssential;
@@ -338,8 +338,8 @@ impl A380AileronFactory {
         let cg_offset = Vector3::new(0., 0., -0.5 * size[2]);
         let aero_center = Vector3::new(0., 0., -0.4 * size[2]);
 
-        let control_arm = Vector3::new(0., -0.1, 0.);
-        let anchor = Vector3::new(0., -0.1, 0.33);
+        let control_arm = Vector3::new(0., -0.119, 0.);
+        let anchor = Vector3::new(0., -0.119, 0.33);
 
         let init_position = if init_drooped_down {
             Angle::new::<degree>(-20.)
@@ -355,7 +355,7 @@ impl A380AileronFactory {
             control_arm,
             anchor,
             Angle::new::<degree>(-20.),
-            Angle::new::<degree>(60.),
+            Angle::new::<degree>(50.),
             init_position,
             1.,
             false,
@@ -438,9 +438,9 @@ impl A380AileronFactory {
 
 struct A380SpoilerFactory {}
 impl A380SpoilerFactory {
-    const FLOW_CONTROL_PROPORTIONAL_GAIN: f64 = 0.15;
-    const FLOW_CONTROL_INTEGRAL_GAIN: f64 = 2.;
-    const FLOW_CONTROL_FORCE_GAIN: f64 = 450000.;
+    const FLOW_CONTROL_PROPORTIONAL_GAIN: f64 = 0.4;
+    const FLOW_CONTROL_INTEGRAL_GAIN: f64 = 0.4;
+    const FLOW_CONTROL_FORCE_GAIN: f64 = 50000.;
 
     const MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING: f64 = 400000.;
 
@@ -457,7 +457,7 @@ impl A380SpoilerFactory {
         let actuator_characteristics = LinearActuatorCharacteristics::new(
             Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING / 5.,
             Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING,
-            VolumeRate::new::<gallon_per_second>(0.08),
+            VolumeRate::new::<gallon_per_second>(0.23),
             Ratio::new::<percent>(Self::MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT),
         );
 
@@ -465,8 +465,8 @@ impl A380SpoilerFactory {
             context,
             bounded_linear_length,
             1,
+            Length::new::<meter>(0.09),
             Length::new::<meter>(0.05),
-            Length::new::<meter>(0.),
             actuator_characteristics.max_flow(),
             80000.,
             1500.,
@@ -501,10 +501,10 @@ impl A380SpoilerFactory {
     fn a380_spoiler_body() -> LinearActuatedRigidBodyOnHingeAxis {
         let size = Vector3::new(1.785, 0.1, 0.685);
         let cg_offset = Vector3::new(0., 0., -0.5 * size[2]);
-        let aero_center = Vector3::new(0., 0., -0.4 * size[2]);
+        let aero_center = Vector3::new(0., 0., -0.33 * size[2]);
 
-        let control_arm = Vector3::new(0., -0.067 * size[2], -0.26 * size[2]);
-        let anchor = Vector3::new(0., -0.26 * size[2], 0.26 * size[2]);
+        let control_arm = Vector3::new(0., -0.10 * size[2], -0.26 * size[2]);
+        let anchor = Vector3::new(0., -0.45 * size[2], 0.26 * size[2]);
 
         LinearActuatedRigidBodyOnHingeAxis::new(
             Mass::new::<kilogram>(42.),
@@ -585,7 +585,7 @@ impl A380SpoilerFactory {
             Some(Vector3::new(0., 1., 0.)),
             Some(Vector3::new(0., -0.174, 0.985)),
             Some(Vector3::new(0., 0.985, 0.174)),
-            Ratio::new::<ratio>(1.),
+            Ratio::new::<ratio>(0.9),
         )
     }
 }
@@ -8055,13 +8055,13 @@ mod tests {
                 test_bed
                     .get_left_aileron_panel_position(AileronPanelPosition::Outward,)
                     .get::<ratio>()
-                    > 0.4
+                    > 0.35
             );
             assert!(
                 test_bed
                     .get_left_aileron_panel_position(AileronPanelPosition::Outward,)
                     .get::<ratio>()
-                    < 0.6
+                    < 0.55
             );
         }
 
@@ -8107,13 +8107,13 @@ mod tests {
                 test_bed
                     .get_right_aileron_panel_position(AileronPanelPosition::Outward,)
                     .get::<ratio>()
-                    > 0.4
+                    > 0.35
             );
             assert!(
                 test_bed
                     .get_right_aileron_panel_position(AileronPanelPosition::Outward,)
                     .get::<ratio>()
-                    < 0.6
+                    < 0.55
             );
         }
 
@@ -8159,13 +8159,13 @@ mod tests {
                 test_bed
                     .get_left_aileron_panel_position(AileronPanelPosition::Outward,)
                     .get::<ratio>()
-                    > 0.4
+                    > 0.35
             );
             assert!(
                 test_bed
                     .get_left_aileron_panel_position(AileronPanelPosition::Outward,)
                     .get::<ratio>()
-                    < 0.6
+                    < 0.55
             );
         }
 
@@ -8211,13 +8211,13 @@ mod tests {
                 test_bed
                     .get_right_aileron_panel_position(AileronPanelPosition::Outward,)
                     .get::<ratio>()
-                    > 0.4
+                    > 0.35
             );
             assert!(
                 test_bed
                     .get_right_aileron_panel_position(AileronPanelPosition::Outward,)
                     .get::<ratio>()
-                    < 0.6
+                    < 0.55
             );
         }
 
@@ -8262,13 +8262,13 @@ mod tests {
                 test_bed
                     .get_right_aileron_panel_position(AileronPanelPosition::Middle,)
                     .get::<ratio>()
-                    > 0.4
+                    > 0.35
             );
             assert!(
                 test_bed
                     .get_right_aileron_panel_position(AileronPanelPosition::Middle,)
                     .get::<ratio>()
-                    < 0.6
+                    < 0.55
             );
         }
 
@@ -8313,13 +8313,13 @@ mod tests {
                 test_bed
                     .get_left_aileron_panel_position(AileronPanelPosition::Middle,)
                     .get::<ratio>()
-                    > 0.4
+                    > 0.35
             );
             assert!(
                 test_bed
                     .get_left_aileron_panel_position(AileronPanelPosition::Middle,)
                     .get::<ratio>()
-                    < 0.6
+                    < 0.55
             );
         }
 
@@ -8362,13 +8362,13 @@ mod tests {
                 test_bed
                     .get_left_aileron_panel_position(AileronPanelPosition::Middle,)
                     .get::<ratio>()
-                    > 0.4
+                    > 0.35
             );
             assert!(
                 test_bed
                     .get_left_aileron_panel_position(AileronPanelPosition::Middle,)
                     .get::<ratio>()
-                    < 0.6
+                    < 0.55
             );
         }
 
@@ -8411,13 +8411,13 @@ mod tests {
                 test_bed
                     .get_right_aileron_panel_position(AileronPanelPosition::Middle,)
                     .get::<ratio>()
-                    > 0.4
+                    > 0.35
             );
             assert!(
                 test_bed
                     .get_right_aileron_panel_position(AileronPanelPosition::Middle,)
                     .get::<ratio>()
-                    < 0.6
+                    < 0.55
             );
         }
 
@@ -8463,13 +8463,13 @@ mod tests {
                 test_bed
                     .get_right_aileron_panel_position(AileronPanelPosition::Inward,)
                     .get::<ratio>()
-                    > 0.4
+                    > 0.35
             );
             assert!(
                 test_bed
                     .get_right_aileron_panel_position(AileronPanelPosition::Inward,)
                     .get::<ratio>()
-                    < 0.6
+                    < 0.55
             );
         }
 
@@ -8515,13 +8515,13 @@ mod tests {
                 test_bed
                     .get_left_aileron_panel_position(AileronPanelPosition::Inward,)
                     .get::<ratio>()
-                    > 0.4
+                    > 0.35
             );
             assert!(
                 test_bed
                     .get_left_aileron_panel_position(AileronPanelPosition::Inward,)
                     .get::<ratio>()
-                    < 0.6
+                    < 0.55
             );
         }
 
@@ -8564,13 +8564,13 @@ mod tests {
                 test_bed
                     .get_left_aileron_panel_position(AileronPanelPosition::Inward,)
                     .get::<ratio>()
-                    > 0.4
+                    > 0.35
             );
             assert!(
                 test_bed
                     .get_left_aileron_panel_position(AileronPanelPosition::Inward,)
                     .get::<ratio>()
-                    < 0.6
+                    < 0.55
             );
         }
 
@@ -8613,13 +8613,13 @@ mod tests {
                 test_bed
                     .get_right_aileron_panel_position(AileronPanelPosition::Inward,)
                     .get::<ratio>()
-                    > 0.4
+                    > 0.35
             );
             assert!(
                 test_bed
                     .get_right_aileron_panel_position(AileronPanelPosition::Inward,)
                     .get::<ratio>()
-                    < 0.6
+                    < 0.55
             );
         }
 
