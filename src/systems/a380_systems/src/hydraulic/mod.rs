@@ -46,14 +46,11 @@ use systems::{
     landing_gear::{GearSystemSensors, LandingGearControlInterfaceUnitSet},
     overhead::{AutoOffFaultPushButton, AutoOnFaultPushButton},
     shared::{
-        interpolation,
-        low_pass_filter::LowPassFilter,
-        random_from_range,
-        update_iterator::{FixedStepLoop, MaxStepLoop},
-        AdirsDiscreteOutputs, DelayedFalseLogicGate, DelayedPulseTrueLogicGate,
-        DelayedTrueLogicGate, ElectricalBusType, ElectricalBuses, EngineFirePushButtons, GearWheel,
-        HydraulicColor, LandingGearHandle, LgciuInterface, LgciuWeightOnWheels,
-        ReservoirAirPressure, SectionPressure,
+        interpolation, low_pass_filter::LowPassFilter, random_from_range,
+        update_iterator::MaxStepLoop, AdirsDiscreteOutputs, DelayedFalseLogicGate,
+        DelayedPulseTrueLogicGate, DelayedTrueLogicGate, ElectricalBusType, ElectricalBuses,
+        EngineFirePushButtons, GearWheel, HydraulicColor, LandingGearHandle, LgciuInterface,
+        LgciuWeightOnWheels, ReservoirAirPressure, SectionPressure,
     },
     simulation::{
         InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -1147,9 +1144,7 @@ impl A380GearSystemFactory {
 pub(super) struct A380Hydraulic {
     nose_steering: SteeringActuator,
 
-    core_hydraulic_updater: FixedStepLoop,
-    physics_updater: MaxStepLoop,
-    ultra_fast_physics_updater: MaxStepLoop,
+    core_hydraulic_updater: MaxStepLoop,
 
     brake_steer_computer: A380HydraulicBrakeSteerComputerUnit,
 
@@ -1261,13 +1256,7 @@ impl A380Hydraulic {
     const EDP_CONTROL_POWER_BUS1: ElectricalBusType = ElectricalBusType::DirectCurrentEssential;
 
     // Refresh rate of core hydraulic simulation
-    const HYDRAULIC_SIM_TIME_STEP: Duration = Duration::from_millis(33);
-    // Refresh rate of max fixed step loop for fast physics
-    const HYDRAULIC_SIM_MAX_TIME_STEP_MILLISECONDS: Duration = Duration::from_millis(33);
-    // Refresh rate of max fixed step loop for fastest flight controls physics needing super stability
-    // and fast reacting time
-    const HYDRAULIC_SIM_FLIGHT_CONTROLS_MAX_TIME_STEP_MILLISECONDS: Duration =
-        Duration::from_millis(10);
+    const HYDRAULIC_SIM_TIME_STEP: Duration = Duration::from_millis(10);
 
     pub fn new(context: &mut InitContext) -> A380Hydraulic {
         A380Hydraulic {
@@ -1279,11 +1268,7 @@ impl A380Hydraulic {
                 Ratio::new::<ratio>(0.18),
             ),
 
-            core_hydraulic_updater: FixedStepLoop::new(Self::HYDRAULIC_SIM_TIME_STEP),
-            physics_updater: MaxStepLoop::new(Self::HYDRAULIC_SIM_MAX_TIME_STEP_MILLISECONDS),
-            ultra_fast_physics_updater: MaxStepLoop::new(
-                Self::HYDRAULIC_SIM_FLIGHT_CONTROLS_MAX_TIME_STEP_MILLISECONDS,
-            ),
+            core_hydraulic_updater: MaxStepLoop::new(Self::HYDRAULIC_SIM_TIME_STEP),
 
             brake_steer_computer: A380HydraulicBrakeSteerComputerUnit::new(context),
 
@@ -1554,17 +1539,6 @@ impl A380Hydraulic {
         adirs: &impl AdirsDiscreteOutputs,
     ) {
         self.core_hydraulic_updater.update(context);
-        self.physics_updater.update(context);
-        self.ultra_fast_physics_updater.update(context);
-
-        for cur_time_step in self.physics_updater {
-            self.update_fast_physics(
-                &context.with_delta(cur_time_step),
-                lgcius.lgciu1(),
-                lgcius.lgciu2(),
-                adirs,
-            );
-        }
 
         self.update_with_sim_rate(
             context,
@@ -1576,11 +1550,16 @@ impl A380Hydraulic {
             engines[1],
         );
 
-        for cur_time_step in self.ultra_fast_physics_updater {
-            self.update_ultra_fast_physics(&context.with_delta(cur_time_step), lgcius);
-        }
-
         for cur_time_step in self.core_hydraulic_updater {
+            self.update_fast_physics(
+                &context.with_delta(cur_time_step),
+                lgcius.lgciu1(),
+                lgcius.lgciu2(),
+                adirs,
+            );
+
+            self.update_ultra_fast_physics(&context.with_delta(cur_time_step), lgcius);
+
             self.update_core_hydraulics(
                 &context.with_delta(cur_time_step),
                 engines,
