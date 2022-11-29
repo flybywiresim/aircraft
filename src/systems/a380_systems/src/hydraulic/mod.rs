@@ -117,6 +117,10 @@ impl A380HydraulicCircuitFactory {
     const MIN_PRESS_PRESSURISED_HI_HYST: f64 = 3700.0;
     const HYDRAULIC_TARGET_PRESSURE_PSI: f64 = 5250.;
 
+    // Nitrogen PSI precharge pressure
+    const ACCUMULATOR_GAS_PRE_CHARGE_PSI: f64 = 2612.0;
+    const ACCUMULATOR_MAX_VOLUME_GALLONS: f64 = 0.5;
+
     pub fn new_green_circuit(context: &mut InitContext) -> HydraulicCircuit {
         let reservoir = A380HydraulicReservoirFactory::new_green_reservoir(context);
         HydraulicCircuit::new(
@@ -134,6 +138,8 @@ impl A380HydraulicCircuitFactory {
             false,
             true,
             Pressure::new::<psi>(Self::HYDRAULIC_TARGET_PRESSURE_PSI),
+            Pressure::new::<psi>(Self::ACCUMULATOR_GAS_PRE_CHARGE_PSI),
+            Volume::new::<gallon>(Self::ACCUMULATOR_MAX_VOLUME_GALLONS),
         )
     }
 
@@ -154,6 +160,8 @@ impl A380HydraulicCircuitFactory {
             false,
             false,
             Pressure::new::<psi>(Self::HYDRAULIC_TARGET_PRESSURE_PSI),
+            Pressure::new::<psi>(Self::ACCUMULATOR_GAS_PRE_CHARGE_PSI),
+            Volume::new::<gallon>(Self::ACCUMULATOR_MAX_VOLUME_GALLONS),
         )
     }
 }

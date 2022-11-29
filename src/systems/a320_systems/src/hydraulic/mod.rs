@@ -143,6 +143,10 @@ impl A320HydraulicCircuitFactory {
 
     const HYDRAULIC_TARGET_PRESSURE_PSI: f64 = 3000.;
 
+    // Nitrogen PSI precharge pressure
+    const ACCUMULATOR_GAS_PRE_CHARGE_PSI: f64 = 1885.0;
+    const ACCUMULATOR_MAX_VOLUME_GALLONS: f64 = 0.264;
+
     pub fn new_green_circuit(context: &mut InitContext) -> HydraulicCircuit {
         let reservoir = A320HydraulicReservoirFactory::new_green_reservoir(context);
         HydraulicCircuit::new(
@@ -160,6 +164,8 @@ impl A320HydraulicCircuitFactory {
             false,
             false,
             Pressure::new::<psi>(Self::HYDRAULIC_TARGET_PRESSURE_PSI),
+            Pressure::new::<psi>(Self::ACCUMULATOR_GAS_PRE_CHARGE_PSI),
+            Volume::new::<gallon>(Self::ACCUMULATOR_MAX_VOLUME_GALLONS),
         )
     }
 
@@ -180,6 +186,8 @@ impl A320HydraulicCircuitFactory {
             false,
             false,
             Pressure::new::<psi>(Self::HYDRAULIC_TARGET_PRESSURE_PSI),
+            Pressure::new::<psi>(Self::ACCUMULATOR_GAS_PRE_CHARGE_PSI),
+            Volume::new::<gallon>(Self::ACCUMULATOR_MAX_VOLUME_GALLONS),
         )
     }
 
@@ -200,6 +208,8 @@ impl A320HydraulicCircuitFactory {
             true,
             false,
             Pressure::new::<psi>(Self::HYDRAULIC_TARGET_PRESSURE_PSI),
+            Pressure::new::<psi>(Self::ACCUMULATOR_GAS_PRE_CHARGE_PSI),
+            Volume::new::<gallon>(Self::ACCUMULATOR_MAX_VOLUME_GALLONS),
         )
     }
 }
