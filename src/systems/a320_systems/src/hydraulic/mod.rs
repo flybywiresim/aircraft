@@ -43,8 +43,8 @@ use systems::{
         },
         ElectricPump, EngineDrivenPump, HydraulicCircuit, HydraulicCircuitController,
         HydraulicPressureSensors, PowerTransferUnit, PowerTransferUnitCharacteristics,
-        PowerTransferUnitController, PressureSwitch, PressureSwitchType, PumpController,
-        RamAirTurbine, RamAirTurbineController, Reservoir,
+        PowerTransferUnitController, PressureSwitch, PressureSwitchType, PriorityValve,
+        PumpController, RamAirTurbine, RamAirTurbineController, Reservoir,
     },
     landing_gear::{GearSystemSensors, LandingGearControlInterfaceUnitSet},
     overhead::{
@@ -143,6 +143,9 @@ impl A320HydraulicCircuitFactory {
 
     const HYDRAULIC_TARGET_PRESSURE_PSI: f64 = 3000.;
 
+    const PRIORITY_VALVE_PRESSURE_CUTOFF_PSI: f64 = 2000.;
+    const PRIORITY_VALVE_PRESSURE_CUTOFF_BANDWIDTH_PSI: f64 = 500.;
+
     pub fn new_green_circuit(context: &mut InitContext) -> HydraulicCircuit {
         let reservoir = A320HydraulicReservoirFactory::new_green_reservoir(context);
         HydraulicCircuit::new(
@@ -160,6 +163,10 @@ impl A320HydraulicCircuitFactory {
             false,
             false,
             Pressure::new::<psi>(Self::HYDRAULIC_TARGET_PRESSURE_PSI),
+            PriorityValve::new(
+                Pressure::new::<psi>(Self::PRIORITY_VALVE_PRESSURE_CUTOFF_PSI),
+                Pressure::new::<psi>(Self::PRIORITY_VALVE_PRESSURE_CUTOFF_BANDWIDTH_PSI),
+            ),
         )
     }
 
@@ -180,6 +187,10 @@ impl A320HydraulicCircuitFactory {
             false,
             false,
             Pressure::new::<psi>(Self::HYDRAULIC_TARGET_PRESSURE_PSI),
+            PriorityValve::new(
+                Pressure::new::<psi>(Self::PRIORITY_VALVE_PRESSURE_CUTOFF_PSI),
+                Pressure::new::<psi>(Self::PRIORITY_VALVE_PRESSURE_CUTOFF_BANDWIDTH_PSI),
+            ),
         )
     }
 
@@ -200,6 +211,10 @@ impl A320HydraulicCircuitFactory {
             true,
             false,
             Pressure::new::<psi>(Self::HYDRAULIC_TARGET_PRESSURE_PSI),
+            PriorityValve::new(
+                Pressure::new::<psi>(Self::PRIORITY_VALVE_PRESSURE_CUTOFF_PSI),
+                Pressure::new::<psi>(Self::PRIORITY_VALVE_PRESSURE_CUTOFF_BANDWIDTH_PSI),
+            ),
         )
     }
 }

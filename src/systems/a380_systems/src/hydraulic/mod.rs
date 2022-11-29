@@ -41,7 +41,8 @@ use systems::{
             TrimmableHorizontalStabilizerAssembly,
         },
         ElectricPump, EngineDrivenPump, HydraulicCircuit, HydraulicCircuitController,
-        HydraulicPressureSensors, PressureSwitch, PressureSwitchType, PumpController, Reservoir,
+        HydraulicPressureSensors, PressureSwitch, PressureSwitchType, PriorityValve,
+        PumpController, Reservoir,
     },
     landing_gear::{GearSystemSensors, LandingGearControlInterfaceUnitSet},
     overhead::{AutoOffFaultPushButton, AutoOnFaultPushButton},
@@ -116,8 +117,12 @@ impl A380HydraulicCircuitFactory {
     const MIN_PRESS_PRESSURISED_HI_HYST: f64 = 3700.0;
     const HYDRAULIC_TARGET_PRESSURE_PSI: f64 = 5100.;
 
+    const PRIORITY_VALVE_PRESSURE_CUTOFF_PSI: f64 = 3800.;
+    const PRIORITY_VALVE_PRESSURE_CUTOFF_BANDWIDTH_PSI: f64 = 800.;
+
     pub fn new_green_circuit(context: &mut InitContext) -> HydraulicCircuit {
         let reservoir = A380HydraulicReservoirFactory::new_green_reservoir(context);
+
         HydraulicCircuit::new(
             context,
             HydraulicColor::Green,
@@ -133,6 +138,10 @@ impl A380HydraulicCircuitFactory {
             false,
             true,
             Pressure::new::<psi>(Self::HYDRAULIC_TARGET_PRESSURE_PSI),
+            PriorityValve::new(
+                Pressure::new::<psi>(Self::PRIORITY_VALVE_PRESSURE_CUTOFF_PSI),
+                Pressure::new::<psi>(Self::PRIORITY_VALVE_PRESSURE_CUTOFF_BANDWIDTH_PSI),
+            ),
         )
     }
 
@@ -153,6 +162,10 @@ impl A380HydraulicCircuitFactory {
             false,
             false,
             Pressure::new::<psi>(Self::HYDRAULIC_TARGET_PRESSURE_PSI),
+            PriorityValve::new(
+                Pressure::new::<psi>(Self::PRIORITY_VALVE_PRESSURE_CUTOFF_PSI),
+                Pressure::new::<psi>(Self::PRIORITY_VALVE_PRESSURE_CUTOFF_BANDWIDTH_PSI),
+            ),
         )
     }
 }

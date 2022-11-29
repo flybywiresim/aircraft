@@ -184,7 +184,7 @@ impl HydraulicGearSystem {
             context,
             valves_controller,
             lgciu_controller,
-            main_hydraulic_circuit.pressure(),
+            main_hydraulic_circuit.pressure_downstream_priority_valve(),
         );
 
         let current_pressure = self.hydraulic_supply.gear_system_manifold_pressure();
