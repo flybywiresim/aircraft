@@ -201,6 +201,8 @@ impl AudioControlPanel {
             self.gls.set_volume(other_acp.get_volume_gls());
 
             self.markers.set_volume(other_acp.get_volume_markers());
+        } else {
+            panic!("update_volume is meant to update ACP 2 or 3");
         }
     }
 
@@ -228,6 +230,8 @@ impl AudioControlPanel {
             self.gls.set_receive(other_acp.get_receive_gls());
 
             self.markers.set_receive(other_acp.get_receive_markers());
+        } else {
+            panic!("update_receive is meant to update ACP 2 or 3");
         }
     }
 }
