@@ -57,7 +57,7 @@ export class FutureAirNavigationSystem {
         // Portugal
         'LPPC', 'LPZC', 'LPZD', 'LPZE', 'LPZI', 'LPZN', 'LPZS', 'LPZV', 'LPZW', 'LPZO', 'LPZL',
         // Poland
-        'EPWW', 'EPWU', 'EPWB', 'EPWC', 'EPWD', 'EPWE', 'EPWF', 'EPWG', 'EPWJ', 'EPWK', 'EPWN', 'EPWR', "EPWZ',
+        'EPWW', 'EPWU', 'EPWB', 'EPWC', 'EPWD', 'EPWE', 'EPWF', 'EPWG', 'EPWJ', 'EPWK', 'EPWN', 'EPWR', 'EPWZ',
         // Czech
         'LKAA', 'LKAW', 'LKAN', 'LKAU', 'LKAI',
     ];
