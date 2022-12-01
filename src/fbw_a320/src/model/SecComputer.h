@@ -163,13 +163,6 @@ class SecComputer final
     real_T CompareToConstant4_const_j;
     real_T CompareToConstant13_const;
     real_T CompareToConstant14_const;
-    real_T CompareToConstant10_const;
-    real_T CompareToConstant7_const;
-    real_T CompareToConstant16_const;
-    real_T CompareToConstant17_const;
-    real_T CompareToConstant18_const;
-    real_T CompareToConstant8_const;
-    real_T CompareToConstant9_const;
     real_T CompareToConstant2_const_f;
     real_T CompareToConstant3_const_o;
     real_T CompareToConstant1_const_p;

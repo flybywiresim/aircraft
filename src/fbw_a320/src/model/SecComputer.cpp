@@ -779,38 +779,33 @@ void SecComputer::step()
     SecComputer_MATLABFunction_e(rtb_y_b || (rtb_AND1_h && (rtb_Switch7_c != 0U)),
       SecComputer_P.PulseNode1_isRisingEdge_k, &rtb_y_l, &SecComputer_DWork.sf_MATLABFunction_a);
     rtb_NOT_bl = (SecComputer_U.in.analog_inputs.spd_brk_lever_pos < SecComputer_P.CompareToConstant_const_m);
-    SecComputer_DWork.Delay1_DSTATE_i = (((((SecComputer_U.in.analog_inputs.spd_brk_lever_pos >
-      SecComputer_P.CompareToConstant15_const) || rtb_NOT_bl) && ((SecComputer_U.in.analog_inputs.thr_lever_1_pos <=
-      SecComputer_P.CompareToConstant1_const_l) || (SecComputer_U.in.analog_inputs.thr_lever_2_pos <=
+    rtb_AND1_h = ((((SecComputer_U.in.analog_inputs.spd_brk_lever_pos > SecComputer_P.CompareToConstant15_const) ||
+                    rtb_NOT_bl) && ((SecComputer_U.in.analog_inputs.thr_lever_1_pos <=
+      SecComputer_P.CompareToConstant1_const_l) && (SecComputer_U.in.analog_inputs.thr_lever_2_pos <=
       SecComputer_P.CompareToConstant2_const))) || (((SecComputer_U.in.analog_inputs.thr_lever_1_pos <
       SecComputer_P.CompareToConstant3_const_a) && (SecComputer_U.in.analog_inputs.thr_lever_2_pos <=
       SecComputer_P.CompareToConstant4_const_j)) || ((SecComputer_U.in.analog_inputs.thr_lever_1_pos <=
       SecComputer_P.CompareToConstant13_const) && (SecComputer_U.in.analog_inputs.thr_lever_2_pos <
-      SecComputer_P.CompareToConstant14_const)))) && (rtb_y_l || ((SecComputer_U.in.analog_inputs.wheel_speed_left >=
+      SecComputer_P.CompareToConstant14_const))));
+    SecComputer_DWork.Delay1_DSTATE_i = (rtb_AND1_h && (rtb_y_l || ((SecComputer_U.in.analog_inputs.wheel_speed_left >=
       SecComputer_P.CompareToConstant5_const) && (SecComputer_U.in.analog_inputs.wheel_speed_right >=
       SecComputer_P.CompareToConstant6_const) && SecComputer_DWork.Memory_PreviousInput_n) ||
       SecComputer_DWork.Delay1_DSTATE_i));
     SecComputer_MATLABFunction(&SecComputer_U.in.bus_inputs.lgciu_1_bus.discrete_word_2,
       SecComputer_P.BitfromLabel_bit_g, &rtb_Switch7_c);
-    rtb_AND1_h = (rtb_Switch7_c != 0U);
+    rtb_AND4_a = (rtb_Switch7_c != 0U);
     SecComputer_MATLABFunction(&SecComputer_U.in.bus_inputs.lgciu_2_bus.discrete_word_2,
       SecComputer_P.BitfromLabel2_bit_l, &rtb_Switch7_c);
-    rtb_y_b = (rtb_AND1_h || (rtb_Switch7_c != 0U));
+    rtb_y_b = (rtb_AND4_a || (rtb_Switch7_c != 0U));
     SecComputer_MATLABFunction(&SecComputer_U.in.bus_inputs.lgciu_1_bus.discrete_word_2,
       SecComputer_P.BitfromLabel1_bit_a, &rtb_Switch7_c);
-    rtb_AND1_h = (rtb_Switch7_c != 0U);
+    rtb_AND4_a = (rtb_Switch7_c != 0U);
     SecComputer_MATLABFunction(&SecComputer_U.in.bus_inputs.lgciu_2_bus.discrete_word_2,
       SecComputer_P.BitfromLabel3_bit_m, &rtb_Switch7_c);
-    SecComputer_MATLABFunction_e(rtb_y_b || (rtb_AND1_h || (rtb_Switch7_c != 0U)),
+    rtb_y_am = (rtb_Switch7_c != 0U);
+    SecComputer_MATLABFunction_e(rtb_y_b || (rtb_AND4_a || (rtb_Switch7_c != 0U)),
       SecComputer_P.PulseNode_isRisingEdge_hj, &rtb_y_l, &SecComputer_DWork.sf_MATLABFunction_e3);
-    SecComputer_DWork.Delay_DSTATE_n = (((((SecComputer_U.in.analog_inputs.spd_brk_lever_pos >
-      SecComputer_P.CompareToConstant10_const) || rtb_NOT_bl) && ((SecComputer_U.in.analog_inputs.thr_lever_1_pos <=
-      SecComputer_P.CompareToConstant7_const) && (SecComputer_U.in.analog_inputs.thr_lever_2_pos <=
-      SecComputer_P.CompareToConstant16_const))) || (((SecComputer_U.in.analog_inputs.thr_lever_1_pos <
-      SecComputer_P.CompareToConstant17_const) && (SecComputer_U.in.analog_inputs.thr_lever_2_pos <=
-      SecComputer_P.CompareToConstant18_const)) || ((SecComputer_U.in.analog_inputs.thr_lever_1_pos <=
-      SecComputer_P.CompareToConstant8_const) && (SecComputer_U.in.analog_inputs.thr_lever_2_pos <
-      SecComputer_P.CompareToConstant9_const)))) && (rtb_y_l || SecComputer_DWork.Delay_DSTATE_n));
+    SecComputer_DWork.Delay_DSTATE_n = (rtb_AND1_h && (rtb_y_l || SecComputer_DWork.Delay_DSTATE_n));
     rtb_AND1_h = ((!SecComputer_DWork.Delay1_DSTATE_i) && SecComputer_DWork.Delay_DSTATE_n);
     SecComputer_Y.out.logic.total_sidestick_roll_command = pair1SpdBrkCommand;
     rtb_y_b = rtb_NOT_bl;
