@@ -441,8 +441,8 @@ impl FlapChannel {
         // LGCIU2 to SFCC2
         // Should treat_ext_pwr_as_ground be `false`?
         self.ac_on_gnd = lgciu.left_and_right_gear_compressed(true);
-        self.csu1 = CSUPosition::from(csu.position());
-        self.csu2 = CSUPosition::from(csu.position());
+        self.csu1 = CSUPosition::from(csu.current_position());
+        self.csu2 = CSUPosition::from(csu.current_position());
 
         self.update_cas(adiru);
         self.update_aoa(context, adiru);

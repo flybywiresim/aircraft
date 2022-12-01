@@ -14,36 +14,41 @@ use uom::si::{angle::degree, f64::*, velocity::knot};
 /// A struct to read the handle position
 pub struct CommandSensorUnit {
     handle_position_id: VariableIdentifier,
-    position: CSUPosition,
+    current_position: CSUPosition,
     previous_position: CSUPosition,
+    last_valid_position: CSUPosition,
 }
 impl CommandSensorUnit {
     fn new(context: &mut InitContext) -> Self {
         Self {
             handle_position_id: context.get_identifier("FLAPS_HANDLE_INDEX".to_owned()),
-            position: CSUPosition::Conf0,
+            current_position: CSUPosition::Conf0,
             previous_position: CSUPosition::Conf0,
+            last_valid_position: CSUPosition::Conf0,
         }
     }
 
-    pub fn position(&self) -> CSUPosition {
-        self.position
+    pub fn last_valid_position(&self) -> CSUPosition {
+        self.last_valid_position
     }
 
-    // fn is_valid(self) -> bool {
-    //     // No invalid signals from CSU are simulated
-    //     true
-    // }
+    pub fn current_position(&self) -> CSUPosition {
+        self.current_position
+    }
 
-    fn previous_position(&self) -> CSUPosition {
+    pub fn previous_position(&self) -> CSUPosition {
         self.previous_position
     }
 }
 
 impl SimulationElement for CommandSensorUnit {
     fn read(&mut self, reader: &mut SimulatorReader) {
-        self.previous_position = self.position;
-        self.position = CSUPosition::from(Read::<u8>::read(reader, &self.handle_position_id));
+        let new_position = CSUPosition::from(Read::<u8>::read(reader, &self.handle_position_id));
+        self.previous_position = self.current_position;
+        if CSUPosition::is_valid(new_position) {
+            self.last_valid_position = new_position;
+        }
+        self.current_position = new_position;
     }
 }
 
@@ -97,8 +102,8 @@ impl SlatFlapControlComputer {
     const FLAP_POSITIONING_THRESHOLD: f64 = 6.7; //deg
 
     const EQUAL_ANGLE_DELTA_DEGREE: f64 = 0.177;
-    const HANDLE_ONE_CONF_AIRSPEED_THRESHOLD_KNOTS: f64 = 100.;
-    const CONF1F_TO_CONF1_AIRSPEED_THRESHOLD_KNOTS: f64 = 210.;
+    // const HANDLE_ONE_CONF_AIRSPEED_THRESHOLD_KNOTS: f64 = 100.;
+    // const CONF1F_TO_CONF1_AIRSPEED_THRESHOLD_KNOTS: f64 = 210.;
 
     // const ALPHA_LOCK_ENGAGE_SPEED_KNOTS: f64 = 148.;
     // const ALPHA_LOCK_DISENGAGE_SPEED_KNOTS: f64 = 154.;
@@ -176,34 +181,21 @@ impl SlatFlapControlComputer {
         }
     }
 
-    fn generate_configuration(&self, context: &UpdateContext) -> FlapsConf {
-        match (self.csu_previous_position, self.csu_current_position) {
-            (CSUPosition::Conf0, CSUPosition::Conf1)
-                if context.indicated_airspeed().get::<knot>()
-                    <= Self::HANDLE_ONE_CONF_AIRSPEED_THRESHOLD_KNOTS =>
-            {
-                FlapsConf::Conf1F
-            }
-            (CSUPosition::Conf0, CSUPosition::Conf1) => FlapsConf::Conf1,
-            (CSUPosition::Conf1, CSUPosition::Conf1)
-                if context.indicated_airspeed().get::<knot>()
-                    > Self::CONF1F_TO_CONF1_AIRSPEED_THRESHOLD_KNOTS =>
-            {
-                FlapsConf::Conf1
-            }
-            (CSUPosition::Conf1, CSUPosition::Conf1) => self.flaps_conf,
-            (_, CSUPosition::Conf1)
-                if context.indicated_airspeed().get::<knot>()
-                    <= Self::CONF1F_TO_CONF1_AIRSPEED_THRESHOLD_KNOTS =>
-            {
-                FlapsConf::Conf1F
-            }
-            (_, CSUPosition::Conf1) => FlapsConf::Conf1,
-            (_, CSUPosition::Conf0) if self.alpha_lock_engaged => FlapsConf::Conf1,
-            (_, CSUPosition::Conf0) => FlapsConf::Conf0,
-            (from, to) if from != to => FlapsConf::from(to as u8 + 1),
-            (_, _) => self.flaps_conf,
+    fn generate_flaps_configuration(&self) -> FlapsConf {
+        let flaps_conf_temp = match self.csu_current_position {
+            CSUPosition::Conf0 => FlapsConf::Conf0,
+            CSUPosition::Conf1 => FlapsConf::Conf1,
+            CSUPosition::Conf2 => FlapsConf::Conf2,
+            CSUPosition::Conf3 => FlapsConf::Conf3,
+            CSUPosition::ConfFull => FlapsConf::ConfFull,
+        };
+
+        if self.csu_current_position == CSUPosition::Conf1
+            && self.flaps_demanded_angle != Angle::new::<degree>(0.0)
+        {
+            return FlapsConf::Conf1F;
         }
+        return flaps_conf_temp;
     }
 
     fn calculate_commanded_angle(&mut self) -> Angle {
@@ -297,7 +289,7 @@ impl SlatFlapControlComputer {
         }
     }
 
-    fn generate_flap_configuration(&mut self) -> Angle {
+    fn generate_flap_angle(&mut self) -> Angle {
         let calulated_angle = Self::demanded_flaps_fppu_angle_from_conf(self.csu_current_position);
 
         self.update_flap_relief();
@@ -314,7 +306,7 @@ impl SlatFlapControlComputer {
         return calulated_angle;
     }
 
-    fn generate_slat_configuration(&self) -> Angle {
+    fn generate_slat_angle(&self) -> Angle {
         Self::demanded_slats_fppu_angle_from_conf(self.csu_current_position)
     }
 
@@ -371,12 +363,12 @@ impl SlatFlapControlComputer {
 
     fn update_csu_positions(&mut self, flaps_handle: &CommandSensorUnit) {
         self.csu_previous_position = flaps_handle.previous_position();
-        self.csu_current_position = flaps_handle.position();
+        self.csu_current_position = flaps_handle.current_position();
     }
 
     pub fn update(
         &mut self,
-        context: &UpdateContext,
+        _context: &UpdateContext,
         flaps_handle: &CommandSensorUnit,
         flaps_feedback: &impl FeedbackPositionPickoffUnit,
         slats_feedback: &impl FeedbackPositionPickoffUnit,
@@ -385,10 +377,9 @@ impl SlatFlapControlComputer {
         self.update_csu_positions(flaps_handle);
         self.update_cas(adiru);
 
-        self.flaps_conf = self.generate_configuration(context);
-
-        self.flaps_demanded_angle = self.generate_flap_configuration();
-        self.slats_demanded_angle = self.generate_slat_configuration();
+        self.flaps_demanded_angle = self.generate_flap_angle();
+        self.slats_demanded_angle = self.generate_slat_angle();
+        self.flaps_conf = self.generate_flaps_configuration();
 
         self.flaps_feedback_angle = flaps_feedback.angle();
         self.slats_feedback_angle = slats_feedback.angle();
@@ -1424,7 +1415,7 @@ mod tests {
 
         test_bed = test_bed.set_flaps_handle_position(1).run_one_tick();
 
-        test_bed.test_flap_conf(1, 0., 222.27, FlapsConf::Conf1F, angle_delta);
+        test_bed.test_flap_conf(1, 0., 222.27, FlapsConf::Conf1, angle_delta);
 
         test_bed = test_bed.set_flaps_handle_position(0).run_one_tick();
 

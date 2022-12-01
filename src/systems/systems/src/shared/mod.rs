@@ -140,6 +140,8 @@ impl From<u8> for PCUState {
     }
 }
 
+// There is one more state called Misadjust. It happens when the position detected
+// goes from 0 to FULL (or viceversa) with no intermediate steps
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum CSUPosition {
     Conf0 = 0,
@@ -147,16 +149,44 @@ pub enum CSUPosition {
     Conf2,
     Conf3,
     ConfFull,
+    OutOfDetent,
+    Fault,
 }
 impl From<u8> for CSUPosition {
     fn from(value: u8) -> Self {
+        let u8_to_switch = match value {
+            0 => 0b11000,
+            1 => 0b01100,
+            2 => 0b00110,
+            3 => 0b00011,
+            4 => 0b10001,
+            i => panic!("Invalid CSUPosition still unsupported. CSUPosition {}.", i),
+        };
+
+        // Gray code!
+        match u8_to_switch {
+            0b11000 => CSUPosition::Conf0,
+            0b01000 => CSUPosition::OutOfDetent,
+            0b01100 => CSUPosition::Conf1,
+            0b00100 => CSUPosition::OutOfDetent,
+            0b00110 => CSUPosition::Conf2,
+            0b00010 => CSUPosition::OutOfDetent,
+            0b00011 => CSUPosition::Conf3,
+            0b00001 => CSUPosition::OutOfDetent,
+            0b10001 => CSUPosition::ConfFull,
+            _ => CSUPosition::Fault,
+        }
+    }
+}
+impl CSUPosition {
+    pub fn is_valid(value: CSUPosition) -> bool {
         match value {
-            0 => CSUPosition::Conf0,
-            1 => CSUPosition::Conf1,
-            2 => CSUPosition::Conf2,
-            3 => CSUPosition::Conf3,
-            4 => CSUPosition::ConfFull,
-            i => panic!("Cannot convert from {} to CSUPosition.", i),
+            CSUPosition::Conf0 => true,
+            CSUPosition::Conf1 => true,
+            CSUPosition::Conf2 => true,
+            CSUPosition::Conf3 => true,
+            CSUPosition::ConfFull => true,
+            _ => false,
         }
     }
 }
