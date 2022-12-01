@@ -39,6 +39,14 @@ jobs:
           ./scripts/dev-env/run.sh node ./scripts/install-source.js
           mkdir ./${{ env.BUILD_DIR_NAME }}
           zip -r ./${{ env.BUILD_DIR_NAME }}/${{ env.STABLE_ZIP_NAME }} ./flybywire-aircraft-a320-neo/
+      - name: Upload to Bunny CDN
+        env:
+          BUNNY_BUCKET_PASSWORD: ${{ secrets.BUNNY_BUCKET_PASSWORD }}
+          BUNNY_SECRET_TOKEN: ${{ secrets.BUNNY_SECRET_TOKEN }}
+          BUNNY_BUCKET_DESTINATION: addons/a32nx/stable
+        run: |
+          ./scripts/cdn.sh $BUNNY_BUCKET_DESTINATION ./build-modules
+          ./scripts/cdn.sh $BUNNY_BUCKET_DESTINATION ./${{ env.BUILD_DIR_NAME }}
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -58,14 +66,6 @@ jobs:
           asset_path: ./${{ env.BUILD_DIR_NAME }}/${{ env.STABLE_ZIP_NAME }}
           asset_name: ${{ env.STABLE_ZIP_NAME }}
           asset_content_type: application/zip
-      - name: Upload to Bunny CDN
-        env:
-          BUNNY_BUCKET_PASSWORD: ${{ secrets.BUNNY_BUCKET_PASSWORD }}
-          BUNNY_SECRET_TOKEN: ${{ secrets.BUNNY_SECRET_TOKEN }}
-          BUNNY_BUCKET_DESTINATION: addons/a32nx/stable
-        run: |
-          ./scripts/cdn.sh $BUNNY_BUCKET_DESTINATION ./build-modules
-          ./scripts/cdn.sh $BUNNY_BUCKET_DESTINATION ./${{ env.BUILD_DIR_NAME }}
       - name: Delete old GitHub Pre-Release assets
         uses: mknejp/delete-release-assets@v1
         with:
