@@ -59,7 +59,6 @@ export class LegsProcedure {
       (icao) => icao.trim() !== '', // Icao is not empty
       (icao) => icao[0] !== 'R', // Icao is not runway icao, which is not searchable
       (icao) => icao[0] !== 'A', // Icao is not airport icao, which can be skipped
-      (icao) => icao.substr(1, 2) !== '  ', // Icao is not missing a region code
       (icao) => !this._facilitiesToLoad.has(icao), // Icao is not already being loaded
   ];
 

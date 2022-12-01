@@ -1,7 +1,6 @@
 import React from 'react';
 import { CloudArrowDown, Pin, PinFill } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
-import { usePersistentProperty } from '@instruments/common/persistence';
 import { t } from '../../../translation';
 import {
     addPinnedChart,
@@ -36,8 +35,6 @@ interface LocalFileChartSelectorProps {
 
 export const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartSelectorProps) => {
     const dispatch = useAppDispatch();
-
-    const [simbridgeEnabled] = usePersistentProperty('CONFIG_SIMBRIDGE_ENABLED', 'AUTO ON');
 
     const { chartId, selectedTabIndex } = useAppSelector((state) => state.navigationTab[NavigationTab.LOCAL_FILES]);
     const { pinnedCharts } = useAppSelector((state) => state.navigationTab);
@@ -76,9 +73,6 @@ export const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartS
     };
 
     const getPagesViewable = async (chart: LocalFileChart): Promise<number> => {
-        if (simbridgeEnabled !== 'AUTO ON') {
-            return Promise.reject();
-        }
         if (chart.type === 'PDF') {
             try {
                 return await Viewer.getPDFPageNum(chart.fileName);

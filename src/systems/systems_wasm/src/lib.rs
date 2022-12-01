@@ -77,7 +77,7 @@ impl<'a, 'b> MsfsSimulationBuilder<'a, 'b> {
         builder_func: T,
     ) -> Result<Self, Box<dyn Error>> {
         let variable_registry = &mut self.variable_registry.as_mut().unwrap();
-        let mut builder = MsfsAspectBuilder::new(&mut self.sim_connect, variable_registry);
+        let mut builder = MsfsAspectBuilder::new(self.sim_connect, variable_registry);
         (builder_func)(&mut builder)?;
         self.aspects.push(Box::new(builder.build()));
 

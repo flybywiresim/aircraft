@@ -54,13 +54,9 @@ const trafficToDisplay = (airTraffic, mapParams, tcasMask) => (
         const latLong: Coordinates = { lat: traffic.lat, long: traffic.lon };
         let [x, y] = mapParams.coordinatesToXYy(latLong);
 
-        const bitfield = traffic.bitfield;
-        const vertSpeed = Math.round(bitfield / 10);
-        const intrusionLevel = Math.abs(bitfield % 10);
-
         // TODO FIXME: Full time option installed: For all ranges except in ZOOM ranges, NDRange > 9NM
         if (!MathUtils.pointInPolygon(x, y, tcasMask)) {
-            if (intrusionLevel < TaRaIntrusion.TA) {
+            if (traffic.intrusionLevel < TaRaIntrusion.TA) {
                 traffic.alive = false;
                 return traffic;
             }
@@ -68,10 +64,8 @@ const trafficToDisplay = (airTraffic, mapParams, tcasMask) => (
             if (ret) [x, y] = ret;
         }
         traffic.alive = true;
-        traffic.vertSpeed = vertSpeed;
         traffic.posX = x;
         traffic.posY = y;
-        traffic.intrusionLevel = intrusionLevel as TaRaIntrusion;
         return traffic;
     })
 );

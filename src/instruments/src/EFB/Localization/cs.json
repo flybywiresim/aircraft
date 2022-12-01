@@ -151,6 +151,12 @@
       "BoardingTime": "Čas nastupování",
       "Cargo": "Náklad",
       "Current": "Současné",
+      "DeboardConfirmationBody": "Prosím potvrďte vyložení všech cestujících",
+      "DeboardConfirmationCancel": "Zrušit",
+      "DeboardConfirmationConfirm": "Vyložit",
+      "DeboardConfirmationTitle": "Vyložit všechny cestující?",
+      "EstimatedDurationUnit": "minut",
+      "LoadingTime": "Loading Time",
       "Passengers": "Cestující",
       "Planned": "Plánované",
       "TT": {
@@ -162,7 +168,8 @@
         "MaxZFWCG": "Maximální ZFWCG",
         "PerPaxBagWeight": "Hmotnost zavazadel na cestujícího",
         "PerPaxWeight": "Váha cestujících",
-        "StartBoarding": "Zahájit nastupování"
+        "StartBoarding": "Zahájit nastupování",
+        "StartDeboarding": "Zahájit vystupování"
       },
       "Title": "Náklad",
       "ZFW": "ZFW",
@@ -359,7 +366,7 @@
       "ConfirmationDialogMsg": "Potvrďte prosím načtení přednastaveného stavu.",
       "CurrentProcedureStep": "Aktuální krok v postupu",
       "PleaseConfirmLoadingOfPreset": "Potvrďte prosím načtení přednastaveného stavu.",
-      "Powered": "Powered",
+      "Powered": "Napájeno",
       "ReadyPushback": "Připraveno k vytlačení",
       "ReadyTakeoff": "Připraveno ke vzletu",
       "ReadyTaxi": "Připraveno k pojíždění",
