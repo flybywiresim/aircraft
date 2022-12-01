@@ -160,34 +160,43 @@ impl SlatFlapControlComputer {
     }
 
     // Returns a flap demanded angle in FPPU reference degree (feedback sensor)
-    fn demanded_flaps_fppu_angle_from_conf(handle_conf: CSUPosition) -> Angle {
+    fn demanded_flaps_fppu_angle_from_conf(
+        handle_conf: CSUPosition,
+        last_demanded: Angle,
+    ) -> Angle {
         match handle_conf {
             CSUPosition::Conf0 => Angle::new::<degree>(0.),
             CSUPosition::Conf1 => Angle::new::<degree>(0.),
             CSUPosition::Conf2 => Angle::new::<degree>(145.51),
             CSUPosition::Conf3 => Angle::new::<degree>(168.35),
             CSUPosition::ConfFull => Angle::new::<degree>(251.97),
+            _ => last_demanded,
         }
     }
 
     // Returns a slat demanded angle in FPPU reference degree (feedback sensor)
-    fn demanded_slats_fppu_angle_from_conf(handle_conf: CSUPosition) -> Angle {
+    fn demanded_slats_fppu_angle_from_conf(
+        handle_conf: CSUPosition,
+        last_demanded: Angle,
+    ) -> Angle {
         match handle_conf {
             CSUPosition::Conf0 => Angle::new::<degree>(0.),
             CSUPosition::Conf1 => Angle::new::<degree>(222.27),
             CSUPosition::Conf2 => Angle::new::<degree>(272.27),
             CSUPosition::Conf3 => Angle::new::<degree>(272.27),
             CSUPosition::ConfFull => Angle::new::<degree>(334.16),
+            _ => last_demanded,
         }
     }
 
-    fn generate_flaps_configuration(&self) -> FlapsConf {
-        let flaps_conf_temp = match self.csu_current_position {
+    fn generate_flaps_configuration(&self, flaps_handle: &CommandSensorUnit) -> FlapsConf {
+        let flaps_conf_temp = match flaps_handle.last_valid_position() {
             CSUPosition::Conf0 => FlapsConf::Conf0,
             CSUPosition::Conf1 => FlapsConf::Conf1,
             CSUPosition::Conf2 => FlapsConf::Conf2,
             CSUPosition::Conf3 => FlapsConf::Conf3,
             CSUPosition::ConfFull => FlapsConf::ConfFull,
+            i => panic!("CommandSensorUnit::last_valid_position() should never be invalid! flaps_handle {}.", i as u8)
         };
 
         if self.csu_current_position == CSUPosition::Conf1
@@ -290,7 +299,10 @@ impl SlatFlapControlComputer {
     }
 
     fn generate_flap_angle(&mut self) -> Angle {
-        let calulated_angle = Self::demanded_flaps_fppu_angle_from_conf(self.csu_current_position);
+        let calulated_angle = Self::demanded_flaps_fppu_angle_from_conf(
+            self.csu_current_position,
+            self.flaps_demanded_angle,
+        );
 
         self.update_flap_relief();
         self.update_flap_auto_command();
@@ -307,7 +319,10 @@ impl SlatFlapControlComputer {
     }
 
     fn generate_slat_angle(&self) -> Angle {
-        Self::demanded_slats_fppu_angle_from_conf(self.csu_current_position)
+        Self::demanded_slats_fppu_angle_from_conf(
+            self.csu_current_position,
+            self.slats_demanded_angle,
+        )
     }
 
     fn surface_movement_required(demanded_angle: Angle, feedback_angle: Angle) -> bool {
@@ -379,7 +394,7 @@ impl SlatFlapControlComputer {
 
         self.flaps_demanded_angle = self.generate_flap_angle();
         self.slats_demanded_angle = self.generate_slat_angle();
-        self.flaps_conf = self.generate_flaps_configuration();
+        self.flaps_conf = self.generate_flaps_configuration(flaps_handle);
 
         self.flaps_feedback_angle = flaps_feedback.angle();
         self.slats_feedback_angle = slats_feedback.angle();
