@@ -4,11 +4,11 @@
     "ChangeATISATCSourceButton": "ATIS/ATC forrás módosítása",
     "ConnectHoppieACARS": "Csatlakozás Hoppie ACARS-hoz",
     "NoInformationAvailableForThisFrequency": "Nincs információ erről a frekvenciáról",
-    "SearchPlaceholder": "Search",
+    "SearchPlaceholder": "Keresés",
     "SelectCorrectATISATCSource": "Ez az oldal csak akkor érhető el, ha az IVAO vagy a VATSIM van kiválasztva ATIS/ATC forrásként a beállítások oldalon.",
     "SetActive": "Beállítás aktívként",
     "SetStandby": "Beállítás készenléti állapotba",
-    "ShowAll": "All",
+    "ShowAll": "Összes",
     "ShowApproach": "Approach",
     "ShowAtis": "ATIS",
     "ShowDelivery": "Delivery",
@@ -18,8 +18,8 @@
     "ShowTower": "Tower",
     "Standby": "Készenléti ",
     "TT": {
-      "AtcCallSignSearch": "ATC Call-sign Search",
-      "AtcTypeFilter": "Filter for"
+      "AtcCallSignSearch": "ATC hívójel keresés",
+      "AtcTypeFilter": "Szűrő"
     },
     "Title": "Légiforgalmi irányítás"
   },
@@ -151,6 +151,12 @@
       "BoardingTime": "Beszállási idő",
       "Cargo": "Rakomány",
       "Current": "Jelenlegi",
+      "DeboardConfirmationBody": "Biztos hogy minden utast le szeretnél szállítani?",
+      "DeboardConfirmationCancel": "Mégse",
+      "DeboardConfirmationConfirm": "Leszállítás",
+      "DeboardConfirmationTitle": "Összes utas leszállítása?",
+      "EstimatedDurationUnit": "perc",
+      "LoadingTime": "Loading Time",
       "Passengers": "Utasok",
       "Planned": "Tervezett",
       "TT": {
@@ -162,7 +168,8 @@
         "MaxZFWCG": "Maximális ZFWCG",
         "PerPaxBagWeight": "Egy utasra jutó poggyász súlya",
         "PerPaxWeight": "Egy utas súlya",
-        "StartBoarding": "Beszállás megkezdése"
+        "StartBoarding": "Beszállás megkezdése",
+        "StartDeboarding": "Leszállítás megkezdése"
       },
       "Title": "Rakomány",
       "ZFW": "ZFW",
@@ -196,10 +203,10 @@
     "Altn": "Kitérő reptér",
     "ExitFullscreenMode": "Kilépés teljes képernyős üzemmódból",
     "From": "Induló",
-    "LoadingImage": "Loading Image",
-    "LoadingImageFailed": "Loading Image failed",
-    "LoadingPdf": "Loading PDF",
-    "LoadingPdfFailed": "Loading PDF failed",
+    "LoadingImage": "Kép betöltése…",
+    "LoadingImageFailed": "A kép betöltése sikertelen",
+    "LoadingPdf": "PDF betöltése",
+    "LoadingPdfFailed": "A PDF betöltése sikertelen",
     "LocalFiles": {
       "Both": "Mindkettő",
       "EstablishingConnection": "Kapcsolat létrehozása",
@@ -359,7 +366,7 @@
       "ConfirmationDialogMsg": "Kérem erősítse meg a beállítás betöltését",
       "CurrentProcedureStep": "Aktuális részfolyamat",
       "PleaseConfirmLoadingOfPreset": "Kérem erősítse meg a beállítás betöltését",
-      "Powered": "Powered",
+      "Powered": "Áram alatt",
       "ReadyPushback": "Hátratolásra kész",
       "ReadyTakeoff": "Felszállásra kész",
       "ReadyTaxi": "Gurulásra kész",

@@ -151,6 +151,12 @@
       "BoardingTime": "זמן עלייה למטוס",
       "Cargo": "משא",
       "Current": "נוכחי",
+      "DeboardConfirmationBody": "Please confirm deboarding all passengers",
+      "DeboardConfirmationCancel": "Cancel",
+      "DeboardConfirmationConfirm": "Deboard",
+      "DeboardConfirmationTitle": "Deboard all Passengers?",
+      "EstimatedDurationUnit": "minutes",
+      "LoadingTime": "Loading Time",
       "Passengers": "נוסעים",
       "Planned": "מתוכנן",
       "TT": {
@@ -162,7 +168,8 @@
         "MaxZFWCG": "מרכז כובד של משקל ללא דלק מקסימלי",
         "PerPaxBagWeight": "משקל תיק נוסעים",
         "PerPaxWeight": "משקל נוסע",
-        "StartBoarding": "התחל עליה למטוס"
+        "StartBoarding": "התחל עליה למטוס",
+        "StartDeboarding": "Begin Deboarding"
       },
       "Title": "Payload",
       "ZFW": "משקל ללא דלק",
