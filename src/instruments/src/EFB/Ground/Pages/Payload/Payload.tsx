@@ -1,6 +1,13 @@
 /* eslint-disable max-len */
 import React, { FC, useCallback, useEffect, useMemo, useState } from 'react';
-import { BriefcaseFill, CloudArrowDown, PersonFill, PlayFill, StopCircleFill } from 'react-bootstrap-icons';
+import {
+    ArrowLeftRight,
+    BoxArrowRight,
+    BriefcaseFill,
+    CloudArrowDown,
+    PersonFill,
+    StopCircleFill,
+} from 'react-bootstrap-icons';
 import { useSimVar } from '@instruments/common/simVars';
 import { Units } from '@shared/units';
 import { usePersistentProperty } from '@instruments/common/persistence';
@@ -18,10 +25,12 @@ import Card from '../../../UtilComponents/Card/Card';
 import { SelectGroup, SelectItem } from '../../../UtilComponents/Form/Select';
 import { SeatMapWidget } from './Seating/SeatMapWidget';
 import { isSimbriefDataLoaded } from '../../../Store/features/simBrief';
+import { PromptModal, useModals } from '../../../UtilComponents/Modals/Modals';
 import { useAppSelector } from '../../../Store/store';
 
 export const Payload = () => {
     const { usingMetric } = Units;
+    const { showModal } = useModals();
 
     const massUnitForDisplay = usingMetric ? 'KGS' : 'LBS';
 
@@ -133,7 +142,6 @@ export const Payload = () => {
             const perBagWeight = Units.kilogramToUser(simbriefBagWeight);
             setPaxBagWeight(perBagWeight);
             setPaxWeight(Units.kilogramToUser(simbriefPaxWeight));
-            // TODO: Popup showing that maximum passengers number is incorrect if input is greater than maximum pax count
             setTargetPax(simbriefPax > maxPax ? maxPax : simbriefPax);
             setTargetCargo(simbriefBag, Units.kilogramToUser(simbriefFreight), perBagWeight);
         } else {
@@ -328,6 +336,25 @@ export const Payload = () => {
         ...cargoDesired, ...paxDesired,
         ...desiredFlags, ...stationSize,
     ]);
+
+    const handleDeboarding = () => {
+        if (!boardingStarted) {
+            showModal(
+                <PromptModal
+                    title={`${t('Ground.Payload.DeboardConfirmationTitle')}`}
+                    bodyText={`${t('Ground.Payload.DeboardConfirmationBody')}`}
+                    confirmText={`${t('Ground.Payload.DeboardConfirmationConfirm')}`}
+                    cancelText={`${t('Ground.Payload.DeboardConfirmationCancel')}`}
+                    onConfirm={() => {
+                        setTargetPax(totalPaxDesired < totalPax ? totalPaxDesired : 0);
+                        setTargetCargo(totalPaxDesired < totalPax ? totalPaxDesired : 0, totalCargoDesired < totalCargo ? totalCargoDesired : 0);
+                        setBoardingStarted(true);
+                    }}
+                />,
+            );
+        }
+        setBoardingStarted(false);
+    };
 
     const boardingStatusClass = useMemo(() => {
         if (!boardingStarted) {
@@ -726,15 +753,31 @@ export const Payload = () => {
                                     <TooltipWrapper text={t('Ground.Payload.TT.StartBoarding')}>
                                         <button
                                             type="button"
-                                            className={`flex justify-center rounded-lg items-center ml-auto w-32 h-12 ${boardingStatusClass} bg-current`}
+                                            className={`flex justify-center rounded-lg items-center ml-auto w-24 h-12 
+                                                        ${boardingStatusClass} bg-current`}
                                             onClick={() => setBoardingStarted(!boardingStarted)}
                                         >
-                                            <div className={`${true ? 'text-theme-body' : 'text-theme-highlight'}`}>
-                                                <PlayFill size={32} className={boardingStarted ? 'hidden' : ''} />
+                                            <div className="text-theme-body">
+                                                <ArrowLeftRight size={32} className={boardingStarted ? 'hidden' : ''} />
                                                 <StopCircleFill size={32} className={boardingStarted ? '' : 'hidden'} />
                                             </div>
                                         </button>
                                     </TooltipWrapper>
+
+                                    <TooltipWrapper text={t('Ground.Payload.TT.StartDeboarding')}>
+                                        <button
+                                            type="button"
+                                            className={`flex justify-center items-center ml-1 w-16 h-12 text-theme-highlight bg-current rounded-lg 
+                                                        ${totalPax === 0 && totalCargo === 0 && 'opacity-20 pointer-events-none'}`}
+                                            onClick={() => handleDeboarding()}
+                                        >
+                                            <div className="text-theme-body">
+                                                {' '}
+                                                <BoxArrowRight size={32} className={`${boardingStarted && 'opacity-20 pointer-events-none'} : ''}`} />
+                                            </div>
+                                        </button>
+                                    </TooltipWrapper>
+
                                 </div>
                             </Card>
 
@@ -746,7 +789,9 @@ export const Payload = () => {
                                 && (
                                     <TooltipWrapper text={t('Ground.Payload.TT.FillPayloadFromSimbrief')}>
                                         <div
-                                            className="flex justify-center items-center px-2 h-auto rounded-md rounded-l-none border-2 transition duration-100 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight"
+                                            className={`flex justify-center items-center px-2 h-auto text-theme-body 
+                                                       hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body 
+                                                       rounded-md rounded-l-none border-2 border-theme-highlight transition duration-100`}
                                             onClick={setSimBriefValues}
                                         >
                                             <CloudArrowDown size={26} />
@@ -758,7 +803,9 @@ export const Payload = () => {
                         <div className="flex flex-row mt-4">
                             <Card className="w-full h-full" childrenContainerClassName="flex flex-col w-full h-full">
                                 <div className="flex flex-row justify-between items-center">
-                                    <div className="flex font-medium">Loading Time </div>
+                                    <div className="flex font-medium">
+                                        {t('Ground.Payload.BoardingTime')}
+                                    </div>
 
                                     <SelectGroup>
                                         <SelectItem
