@@ -151,6 +151,12 @@
       "BoardingTime": "Boarding Time",
       "Cargo": "Cargo",
       "Current": "Current",
+      "DeboardConfirmationBody": "Please confirm deboarding all passengers",
+      "DeboardConfirmationCancel": "Cancel",
+      "DeboardConfirmationConfirm": "Deboard",
+      "DeboardConfirmationTitle": "Deboard all Passengers?",
+      "EstimatedDurationUnit": "minutes",
+      "LoadingTime": "Loading Time",
       "Passengers": "Passengers",
       "Planned": "Planned",
       "TT": {
@@ -162,7 +168,8 @@
         "MaxZFWCG": "Maximum ZFWCG",
         "PerPaxBagWeight": "Per Passenger Bag Weight",
         "PerPaxWeight": "Per Passenger Weight",
-        "StartBoarding": "Begin Boarding"
+        "StartBoarding": "Begin Boarding",
+        "StartDeboarding": "Begin Deboarding"
       },
       "Title": "Payload",
       "ZFW": "ZFW",

@@ -151,6 +151,12 @@
       "BoardingTime": "登机需时",
       "Cargo": "货舱",
       "Current": "当前",
+      "DeboardConfirmationBody": "Please confirm deboarding all passengers",
+      "DeboardConfirmationCancel": "Cancel",
+      "DeboardConfirmationConfirm": "Deboard",
+      "DeboardConfirmationTitle": "Deboard all Passengers?",
+      "EstimatedDurationUnit": "minutes",
+      "LoadingTime": "Loading Time",
       "Passengers": "乘客",
       "Planned": "已计划",
       "TT": {
@@ -162,7 +168,8 @@
         "MaxZFWCG": "Maximum ZFWCG",
         "PerPaxBagWeight": "Per Passenger Bag Weight",
         "PerPaxWeight": "Per Passenger Weight",
-        "StartBoarding": "Begin Boarding"
+        "StartBoarding": "Begin Boarding",
+        "StartDeboarding": "Begin Deboarding"
       },
       "Title": "Payload",
       "ZFW": "零油重量",
