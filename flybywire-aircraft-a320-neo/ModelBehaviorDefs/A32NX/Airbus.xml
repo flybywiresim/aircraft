@@ -768,6 +768,7 @@
         <ANIM_DELTA>FALSE</ANIM_DELTA>
         <ANIM_BLENDWEIGHT>1.0</ANIM_BLENDWEIGHT>
         <SIMVAR_GROUP>A</SIMVAR_GROUP>
+        <ADDITIONAL_EVENT_CODE></ADDITIONAL_EVENT_CODE>
     </DefaultTemplateParameters>
     <EditableTemplateParameters>
         <AddParams>
@@ -818,9 +819,15 @@
             <True>
                 <CALLBACKCODE_DEFAULT_IM>
                     (M:Event) 'LeftSingle' scmi 0 == if{
-                       #SIMVAR_INDEX_1# (#SIMVAR_GROUP#:#SIMVAR_NAME#:#SIMVAR_INDEX_1#,#SIMVAR_TYPE#) 0 == (&gt;K:2:#TOGGLE_EVENT#)
-                       #SIMVAR_INDEX_2# (#SIMVAR_GROUP#:#SIMVAR_NAME_2#:#SIMVAR_INDEX_2#,#SIMVAR_TYPE#) 0 == (&gt;K:2:#TOGGLE_EVENT_2#)
-                       #ADDITIONAL_EVENT_CODE#
+                        (#SIMVAR_GROUP#:#SIMVAR_NAME#:#SIMVAR_INDEX_1#,#SIMVAR_TYPE#) 0 == if{
+                            #SIMVAR_INDEX_1# 1 (&gt;K:2:#TOGGLE_EVENT#)
+                            #SIMVAR_INDEX_2# 1 (&gt;K:2:#TOGGLE_EVENT_2#)
+                            #ADDITIONAL_EVENT_CODE#
+                        } els{
+                            #SIMVAR_INDEX_1# 0 (&gt;K:2:#TOGGLE_EVENT#)
+                            #SIMVAR_INDEX_2# 0 (&gt;K:2:#TOGGLE_EVENT_2#)
+                            #ADDITIONAL_EVENT_CODE#
+                        }
                     }
                     (M:Event) 'WheelUp'    scmi 0 == if{ (#SIMVAR_GROUP#:#SIMVAR_NAME#:#SIMVAR_INDEX_1#,#SIMVAR_TYPE#) 0 == if{
                        #SIMVAR_INDEX_1# 1 (&gt;K:2:#TOGGLE_EVENT#)
