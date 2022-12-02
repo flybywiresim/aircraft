@@ -1,19 +1,20 @@
-import React, { useState, useEffect, useRef } from 'react';
+// Copyright (c) 2022 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
+import React, { useEffect, useRef, useState } from 'react';
 import { Power, Wifi, WifiOff } from 'react-bootstrap-icons';
 import { useSimVar } from '@instruments/common/simVars';
-import { usePersistentProperty, usePersistentNumberProperty } from '@instruments/common/persistence';
+import { usePersistentNumberProperty, usePersistentProperty } from '@instruments/common/persistence';
 import { useLongPress } from 'use-long-press';
 import { useHistory } from 'react-router-dom';
 import { useInterval } from '@flybywiresim/react-components';
 import { t } from '../translation';
 import { TooltipWrapper } from '../UtilComponents/TooltipWrapper';
-import { usePower, PowerStates } from '../Efb';
-
+import { PowerStates, usePower } from '../Efb';
 import { BatteryStatus } from './BatteryStatus';
 import { useAppSelector } from '../Store/store';
 import { initialState } from '../Store/features/simBrief';
-
-import { Health } from '../../../../simbridge-client/src';
+import { ClientState } from '../../../../simbridge-client/src';
 
 interface StatusBarProps {
     batteryLevel: number;
@@ -27,7 +28,6 @@ export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
     const [monthOfYear] = useSimVar('E:ZULU MONTH OF YEAR', 'number');
     const [dayOfMonth] = useSimVar('E:ZULU DAY OF MONTH', 'number');
     const [showStatusBarFlightProgress] = usePersistentNumberProperty('EFB_SHOW_STATUSBAR_FLIGHTPROGRESS', 1);
-    const [simbridgeEnabled] = usePersistentProperty('CONFIG_SIMBRIDGE_ENABLED', 'AUTO ON');
 
     const history = useHistory();
 
@@ -93,28 +93,11 @@ export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
     const [shutoffBarPercent, setShutoffBarPercent] = useState(0);
     const shutoffTimerRef = useRef<NodeJS.Timer | null>(null);
 
-    const setConnectedState = async () => {
-        if (simbridgeEnabled !== 'AUTO ON') {
-            setSimBridgeConnected(false);
-            return;
-        }
-        try {
-            const health = await Health.getHealth();
-            if (health) {
-                setSimBridgeConnected(true);
-            } else {
-                setSimBridgeConnected(false);
-            }
-        } catch (_) {
-            setSimBridgeConnected(false);
-        }
-    };
-
     const [simBridgeConnected, setSimBridgeConnected] = useState(false);
 
     useInterval(() => {
-        setConnectedState();
-    }, 15_000);
+        setSimBridgeConnected(ClientState.getInstance().isAvailable());
+    }, 1_000);
 
     const longPressPowerButton = useLongPress(() => {}, {
         threshold: 100_000,
@@ -140,7 +123,7 @@ export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
     }, [shutoffBarPercent]);
 
     useEffect(() => {
-        setConnectedState();
+        setSimBridgeConnected(ClientState.getInstance().isAvailable());
 
         const interval = setInterval(() => {
             setShowSchedTimes((old) => !old);
