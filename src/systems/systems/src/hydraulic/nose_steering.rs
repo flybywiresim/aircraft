@@ -155,7 +155,10 @@ impl SteeringActuator {
         pushback_tug: &impl Pushback,
     ) {
         if !pushback_tug.is_nose_wheel_steering_pin_inserted() {
-            self.update_max_speed(context, section_pressure.pressure());
+            self.update_max_speed(
+                context,
+                section_pressure.pressure_downstream_priority_valve(),
+            );
 
             let limited_requested_angle = steering_controller
                 .requested_position()

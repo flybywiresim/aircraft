@@ -346,7 +346,8 @@ impl PowerTransferUnit {
         loop_right_section: &impl SectionPressure,
     ) {
         let delta_p = if self.is_enabled {
-            loop_left_section.pressure() - loop_right_section.pressure()
+            loop_left_section.pressure_downstream_priority_valve()
+                - loop_right_section.pressure_downstream_priority_valve()
         } else {
             Pressure::new::<psi>(0.)
         };
@@ -364,8 +365,8 @@ impl PowerTransferUnit {
 
         let new_displacement = if !self.control_valve_opened {
             self.calc_equilibrium_displacement(
-                loop_left_section.pressure(),
-                loop_right_section.pressure(),
+                loop_left_section.pressure_downstream_priority_valve(),
+                loop_right_section.pressure_downstream_priority_valve(),
             )
         } else {
             Volume::new::<cubic_inch>(interpolation(
@@ -418,12 +419,12 @@ impl PowerTransferUnit {
         loop_right_section: &impl SectionPressure,
     ) {
         let left_pressure = if self.is_enabled {
-            loop_left_section.pressure()
+            loop_left_section.pressure_downstream_priority_valve()
         } else {
             Pressure::new::<psi>(0.)
         };
         let right_pressure = if self.is_enabled {
-            loop_right_section.pressure()
+            loop_right_section.pressure_downstream_priority_valve()
         } else {
             Pressure::new::<psi>(0.)
         };
