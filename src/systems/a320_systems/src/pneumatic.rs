@@ -3664,6 +3664,37 @@ mod tests {
             assert!(right_flow_rate >= 327.0 - 1.);
             assert!(right_flow_rate <= 327.0 + 1.);
         }
+
+        #[test]
+        fn wing_anti_ice_selected_with_bleeds_unpressurised() {
+            let altitude = Length::new::<foot>(500.);
+
+            let mut test_bed = test_bed_with()
+                .in_isa_atmosphere(altitude)
+                .wing_anti_ice_push_button(WingAntiIcePushButtonMode::On)
+                .and_stabilize();
+            test_bed.set_lgciu_on_ground(true);
+
+            assert!(test_bed.left_valve_closed());
+            assert!(test_bed.right_valve_closed());
+            assert!(test_bed.wing_anti_ice_system_selected());
+            assert!(test_bed.wing_anti_ice_system_on());
+            assert!(test_bed.wing_anti_ice_has_fault());
+
+            // 31 secs from WAI ON
+            for _ in 0..1950 {
+                test_bed.run_with_delta(Duration::from_millis(16));
+            }
+            // According to the schematics, the relay starts counting
+            // regardless of the pressurisation
+            assert!(test_bed.valve_controller_timer() == Duration::from_secs(30));
+            test_bed = test_bed
+                .wing_anti_ice_push_button(WingAntiIcePushButtonMode::Off)
+                .and_stabilize();
+            assert!(!test_bed.wing_anti_ice_system_selected());
+            assert!(!test_bed.wing_anti_ice_system_on());
+            assert!(!test_bed.wing_anti_ice_has_fault());
+        }
     }
 
     mod overhead {

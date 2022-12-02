@@ -89,7 +89,7 @@ export class LandingSystem extends DisplayComponent<{ bus: EventBus, instrument:
                         <MarkerBeaconIndicator bus={this.props.bus} />
                     </g>
 
-                    <path ref={this.gsReferenceLine} class="Yellow Fill" d="m115.52 80.067v1.5119h-8.9706v-1.5119z" />
+                    <path ref={this.gsReferenceLine} class="Yellow Fill" d="m 114.84887,80.06669 v 1.51188 h -8.43284 v -1.51188 z" />
                 </g>
                 <g id="DeviationGroup" ref={this.deviationGroup} style="display: none">
                     <g id="LateralDeviationGroup" ref={this.ldevRef} style="display: none">
@@ -99,7 +99,7 @@ export class LandingSystem extends DisplayComponent<{ bus: EventBus, instrument:
                         <VDevIndicator bus={this.props.bus} />
                     </g>
                 </g>
-                <path ref={this.gsReferenceLine} class="Yellow Fill" d="m115.52 80.067v1.5119h-8.9706v-1.5119z" />
+                <path ref={this.gsReferenceLine} class="Yellow Fill" d="m 114.84887,80.06669 v 1.51188 h -8.43284 v -1.51188 z" />
             </>
         );
     }
@@ -272,7 +272,7 @@ class LocalizerIndicator extends DisplayComponent<{bus: EventBus, instrument: Ba
                         d="m65.129 130.51 3.7776 2.5198 3.7776-2.5198-3.7776-2.5198z"
                     />
                 </g>
-                <path id="LocalizerNeutralLine" class="Yellow Fill" d="m68.098 134.5v-8.0635h1.5119v8.0635z" />
+                <path id="LocalizerNeutralLine" class="Yellow Fill" d="m 68.14059,133.69116 v -6.35451 h 1.531629 v 6.35451 z" />
             </g>
         );
     }
@@ -387,15 +387,15 @@ class VDevIndicator extends DisplayComponent<{bus: EventBus}> {
 
     render(): VNode {
         return (
-            <g id="VertDevSymbolsGroup" style="display: none">
-                <text class="FontSmall AlignRight Green" x="95.022" y="43.126">V/DEV</text>
+            <g id="VertDevSymbolsGroup">
+                <text class="FontSmallest AlignRight Green" x="96.410" y="46.145">V/DEV</text>
                 <path class="NormalStroke White" d="m108.7 65.704h2.0147" />
                 <path class="NormalStroke White" d="m108.7 50.585h2.0147" />
                 <path class="NormalStroke White" d="m108.7 111.06h2.0147" />
                 <path class="NormalStroke White" d="m108.7 95.942h2.0147" />
-                <path id="VDevSymbolLower" ref={this.VDevSymbolLower} class="NormalStroke Green" d="m107.19 111.06v2.0159h5.0368v-2.0159" />
-                <path id="VDevSymbolUpper" ref={this.VDevSymbolUpper} class="NormalStroke Green" d="m107.19 50.585v-2.0159h5.0368v2.0159" />
-                <path id="VDevSymbol" ref={this.VDevSymbol} class="NormalStroke Green" d="m112.22 78.807h-5.0368v4.0318h5.0368v-2.0159z" />
+                <path id="VDevSymbolLower" ref={this.VDevSymbolLower} class="NormalStroke Green" d="m 106.58482,111.06072 v 2.00569 h 6.2384 v -2.00569" />
+                <path id="VDevSymbolUpper" ref={this.VDevSymbolUpper} class="NormalStroke Green" d="m 106.58482,50.584541 v -2.005689 h 6.2384 v 2.005689" />
+                <path id="VDevSymbol" ref={this.VDevSymbol} class="NormalStroke Green" d="m 112.83172,78.62553 h -6.25541 v 2.197103 2.197106 h 6.25541 v -2.197106 z" />
             </g>
         );
     }
@@ -436,15 +436,15 @@ class LDevIndicator extends DisplayComponent<{bus: EventBus}> {
     render(): VNode {
         return (
             <g id="LatDeviationSymbolsGroup">
-                <text class="FontSmall AlignRight Green" x="30.888" y="122.639">L/DEV</text>
+                <text class="FontSmallest AlignRight Green" x="31.578" y="125.392">L/DEV</text>
                 <path class="NormalStroke White" d="m38.686 129.51v2.0158" />
                 <path class="NormalStroke White" d="m53.796 129.51v2.0158" />
                 <path class="NormalStroke White" d="m84.017 129.51v2.0158" />
                 <path class="NormalStroke White" d="m99.127 129.51v2.0158" />
-                <path id="LDevSymbolLeft" ref={this.LDevSymbolLeft} class="NormalStroke Green" d="m38.686 127.99h-2.0147v5.0397h2.0147" />
-                <path id="LDevSymbolRight" ref={this.LDevSymbolRight} class="NormalStroke Green" d="m99.127 127.99h2.0147v5.0397h-2.0147" />
-                <path id="LDevSymbol" ref={this.LDevSymbol} class="NormalStroke Green" d="m66.892 127.99v5.0397h4.0294v-5.0397h-2.0147z" />
-                <path id="LDevNeutralLine" class="Yellow Fill" d="m68.098 134.5v-8.0635h1.5119v8.0635z" />
+                <path id="LDevSymbolLeft" ref={this.LDevSymbolLeft} class="NormalStroke Green" d="m 38.68595,127.35727 h -2.003935 v 6.31326 h 2.003935" />
+                <path id="LDevSymbolRight" ref={this.LDevSymbolRight} class="NormalStroke Green" d="m 99.126865,127.35727 h 2.003925 v 6.31326 h -2.003925" />
+                <path id="LDevSymbol" ref={this.LDevSymbol} class="NormalStroke Green" d="m 66.693251,127.36221 v 6.30339 h 2.213153 2.213153 v -6.30339 h -2.213153 z" />
+                <path id="LDevNeutralLine" class="Yellow Fill" d="m 68.14059,133.69116 v -6.35451 h 1.531629 v 6.35451 z" />
             </g>
         );
     }

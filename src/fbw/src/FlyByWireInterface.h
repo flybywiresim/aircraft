@@ -8,7 +8,6 @@
 #include "AutopilotStateMachine.h"
 #include "Autothrust.h"
 #include "CalculatedRadioReceiver.h"
-#include "ElevatorTrimHandler.h"
 #include "EngineData.h"
 #include "FlightDataRecorder.h"
 #include "InterpolatingLookupTable.h"
@@ -249,8 +248,6 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFmgcFlightPhase;
   std::unique_ptr<LocalVariable> idFmgcV2;
   std::unique_ptr<LocalVariable> idFmgcV_APP;
-  std::unique_ptr<LocalVariable> idFmgcV_LS;
-  std::unique_ptr<LocalVariable> idFmgcV_MAX;
   std::unique_ptr<LocalVariable> idFmgcAltitudeConstraint;
   std::unique_ptr<LocalVariable> idFmgcThrustReductionAltitude;
   std::unique_ptr<LocalVariable> idFmgcThrustReductionAltitudeGoAround;
@@ -349,8 +346,6 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idSpoilersHandlePosition;
   std::shared_ptr<SpoilersHandler> spoilersHandler;
 
-  std::shared_ptr<ElevatorTrimHandler> elevatorTrimHandler;
-
   std::unique_ptr<LocalVariable> idRadioReceiverUsageEnabled;
   std::unique_ptr<LocalVariable> idRadioReceiverLocalizerValid;
   std::unique_ptr<LocalVariable> idRadioReceiverLocalizerDeviation;
@@ -369,6 +364,8 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idIsisLsActive;
 
   std::unique_ptr<LocalVariable> idWingAntiIce;
+
+  std::unique_ptr<LocalVariable> idFmGrossWeight;
 
   // RA bus inputs
   std::unique_ptr<LocalVariable> idRadioAltimeterHeight[2];

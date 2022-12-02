@@ -151,6 +151,12 @@
       "BoardingTime": "Boarding-Dauer",
       "Cargo": "Fracht",
       "Current": "Aktuell",
+      "DeboardConfirmationBody": "Bitte bestätigen Sie das Aussteigen aller Passagiere",
+      "DeboardConfirmationCancel": "Abbrechen",
+      "DeboardConfirmationConfirm": "Aussteigen",
+      "DeboardConfirmationTitle": "Alle Passagiere aussteigen?",
+      "EstimatedDurationUnit": "Minuten",
+      "LoadingTime": "Ladezeit",
       "Passengers": "Passagiere",
       "Planned": "Geplant",
       "TT": {
@@ -162,7 +168,8 @@
         "MaxZFWCG": "Maximum ZFWCG",
         "PerPaxBagWeight": "Gepäckgewicht per Passagier",
         "PerPaxWeight": "Gewicht pro Passagier",
-        "StartBoarding": "Boarding starten"
+        "StartBoarding": "Einsteigen starten",
+        "StartDeboarding": "Aussteigen starten"
       },
       "Title": "Nutzlast",
       "ZFW": "ZFW",

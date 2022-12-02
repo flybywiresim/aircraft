@@ -15,6 +15,7 @@
   - [Engine and FADEC System](#engine-and-fadec-system)
   - [Air Conditioning / Pressurisation / Ventilation](#air-conditioning--pressurisation--ventilation)
   - [Pneumatic](#pneumatic)
+  - [Autoflight (ATA 22)](#autoflight-ata-22)
   - [Flaps / Slats (ATA 27)](#flaps--slats-ata-27)
   - [Flight Controls (ATA 27)](#flight-controls-ata-27)
   - [Landing Gear (ATA 32)](#landing-gear-ata-32)
@@ -2587,6 +2588,89 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - High Pressure warning in the right wing anti ice valve
     - Bool
 
+## Autoflight (ATA 22)
+
+- - A32NX_FAC_{number}_PUSHBUTTON_PRESSED
+    - Boolean
+
+- A32NX_FAC_{number}_HEALTHY
+    - If the FAC {number} is healthy.
+    - Boolean
+
+- A32NX_FAC_{number}_SIDESLIP_TARGET
+    - The sideslip target in case of engine out.
+    - Arinc429<Degrees>
+
+- A32NX_FAC_{number}_DISCRETE_WORD_2
+    - Arinc429<Discrete>
+    - | Bit |            Description            |
+      |:---:|:---------------------------------:|
+      | 11  | Yaw Damper Own Engaged            |
+      | 12  | Yaw Damper Opp Engaged            |
+      | 13  | Rudder Trim Own Engaged           |
+      | 14  | Rudder Trim Opp Engaged           |
+      | 15  | Rudder Travel Lim Own Engaged     |
+      | 16  | Rudder Travel Lim Opp Engaged     |
+
+- A32NX_FAC_{number}_ESTIMATED_SIDESLIP
+    - The current Sideslip, estimated by the FAC.
+    - Arinc429<Degree>
+
+- A32NX_FAC_{number}_V_ALPHA_LIM
+    - The V_ls.
+    - Arinc429<Knots>
+
+- A32NX_FAC_{number}_V_LS
+    - The 1g stall speed Vs1g.
+    - Arinc429<Knots>
+
+- A32NX_FAC_{number}_V_STALL_1G
+    - The 1g stall speed Vs1g.
+    - Arinc429<Knots>
+
+- A32NX_FAC_{number}_V_ALPHA_PROT
+    - The V_alpha_prot.
+    - Arinc429<Knots>
+
+- A32NX_FAC_{number}_V_STALL_WARN
+    - The V_sw.
+    - Arinc429<Knots>
+
+- A32NX_FAC_{number}_SPEED_TREND
+    - The V_c trend.
+    - Arinc429<Knots>
+
+- A32NX_FAC_{number}_V_3
+    - The V_3 / F-Speed.
+    - Arinc429<Knots>
+
+- A32NX_FAC_{number}_V_3
+    - The V_4 / S-Speed.
+    - Arinc429<Knots>
+
+- A32NX_FAC_{number}_V_MAN
+    - The V_man / GD-Speed.
+    - Arinc429<Knots>
+
+- A32NX_FAC_{number}_V_MAX
+    - The V_max.
+    - Arinc429<Knots>
+
+- A32NX_FAC_{number}_V_FE_NEXT
+    - The V_fe_next.
+    - Arinc429<Knots>
+
+- A32NX_FAC_{number}_DISCRETE_WORD_5
+    - Arinc429<Discrete>
+    - | Bit |            Description            |
+      |:---:|:---------------------------------:|
+      | 16  | LGCIU Own Valid                   |
+      | 17  | All LGCIU Lost                    |
+      | 18  | Left Main Gear Pressed            |
+      | 19  | Right Main Gear Pressed           |
+      | 20  | Main Gear Out                     |
+      | 29  | Alpha Floor Condition             |
+
 ## Flaps / Slats (ATA 27)
 
 - A32NX_SFCC_SLAT_FLAP_SYSTEM_STATUS_WORD
@@ -2849,13 +2933,6 @@ In the variables below, {number} should be replaced with one item in the set: { 
 
 - A32NX_SEC_{number}_GROUND_SPOILER_OUT
     - If the SEC {number} indicates that it's ground spoilers are deployed.
-    - Boolean
-
-- A32NX_FAC_{number}_PUSHBUTTON_PRESSED
-    - Boolean
-
-- A32NX_FAC_{number}_HEALTHY
-    - If the FAC {number} is healthy.
     - Boolean
 
 - A32NX_{side}_{surface}_{system}_SERVO_SOLENOID_ENERGIZED
