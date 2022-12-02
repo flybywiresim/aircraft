@@ -62,4 +62,3 @@ wasm-ld \
   -lc++ -lc++abi \
   ${DIR}/obj/*.o \
   -o $OUTPUT
-
