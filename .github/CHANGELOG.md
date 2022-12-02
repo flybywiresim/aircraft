@@ -5,10 +5,6 @@
 <!-- Use the following format below -->
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 
-## 0.10.0
-
-1. [ENGINE] Refactor FADEC code for A32NX & A380X - @Taz5150 (TazX [Z+2]#0405)
-
 ## 0.9.0
 
 1. [MODEL] Add Wheel Chocks and GSE Safety Cones - @bouveng (Johan Bouveng)
