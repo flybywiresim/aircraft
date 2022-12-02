@@ -24,7 +24,7 @@ export const SimOptionsPage = () => {
     const [, setRadioReceiverUsageSimVar] = useSimVar('L:A32NX_RADIO_RECEIVER_USAGE_ENABLED', 'number', 0);
     const [wheelChocksEnabled, setWheelChocksEnabled] = usePersistentNumberProperty('MODEL_WHEELCHOCKS_ENABLED', 1);
     const [conesEnabled, setConesEnabled] = usePersistentNumberProperty('MODEL_CONES_ENABLED', 1);
-    const [sidePlaying, setSidePlaying] = usePersistentNumberProperty('SIDE_PLAYING', 2);
+    const [sideControlling, setSideControlling] = usePersistentNumberProperty('SIDE_CONTROLLING', 2);
 
     const defaultBaroButtons: ButtonType[] = [
         { name: t('Settings.SimOptions.Auto'), setting: 'AUTO' },
@@ -38,7 +38,7 @@ export const SimOptionsPage = () => {
         { name: t('Settings.SimOptions.Save'), setting: 'SAVE' },
     ];
 
-    const defaultSideButtons: ButtonType[] = [
+    const defaultCockpitSeatUsedToControlButtons: ButtonType[] = [
         { name: t('Settings.SimOptions.Captain'), setting: 'Captain', index: 0 },
         { name: t('Settings.SimOptions.Copilot'), setting: 'Copilot', index: 1 },
         { name: t('Settings.SimOptions.Both'), setting: 'Both', index: 2 },
@@ -149,16 +149,16 @@ export const SimOptionsPage = () => {
                         </button>
                     </SettingItem>
 
-                    <SettingItem name={t('Settings.SimOptions.Side')}>
+                    <SettingItem name={t('Settings.SimOptions.CockpitSeatUsedToControl')}>
                         <SelectGroup>
-                            {defaultSideButtons.map((button) => (
+                            {defaultCockpitSeatUsedToControlButtons.map((button) => (
                                 <SelectItem
                                     onSelect={() => {
                                         if (button.index !== undefined) {
-                                            setSidePlaying(button.index);
+                                            setSideControlling(button.index);
                                         }
                                     }}
-                                    selected={sidePlaying === button.index}
+                                    selected={sideControlling === button.index}
                                 >
                                     {button.name}
                                 </SelectItem>

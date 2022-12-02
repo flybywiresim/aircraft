@@ -539,8 +539,8 @@
       "UseCalculatedIlsSignals": "Use Calculated ILS Signals",
       "WheelChocksEnabled": "Wheel Chocks",
       "inHg": "inHg",
-      "Side": "Side",
-      "Both": "Synchronized",
+      "CockpitSeatUsedToControl": "Cockpit seat used to control",
+      "Both": "Both",
       "Captain": "Captain",
       "Copilot": "Copilot"
     },

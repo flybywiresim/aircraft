@@ -31,7 +31,7 @@ const settingsToSync: Map<string, SimVar> = new Map([
     ['MODEL_SATCOM_ENABLED', ['L:A32NX_SATCOM_ENABLED', 'bool', '0']],
     ['CONFIG_PILOT_AVATAR_VISIBLE', ['L:A32NX_PILOT_AVATAR_VISIBLE_0', 'bool', '0']],
     ['CONFIG_FIRST_OFFICER_AVATAR_VISIBLE', ['L:A32NX_PILOT_AVATAR_VISIBLE_1', 'bool', '0']],
-    ['SIDE_PLAYING', ['L:A32NX_SIDE_PLAYING', 'number', '2']],
+    ['SIDE_CONTROLLING', ['L:A32NX_SIDE_CONTROLLING', 'number', '2']],
 ]);
 
 export function readSettingsFromPersistentStorage() {

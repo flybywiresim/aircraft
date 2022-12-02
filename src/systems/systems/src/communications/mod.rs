@@ -4,7 +4,7 @@ pub mod receiver;
 use crate::{
     communications::audio::AudioControlPanel,
     simulation::{
-        InitContext, Read, Reader, SidePlaying, SimulationElement, SimulationElementVisitor,
+        InitContext, Read, Reader, SideControlling, SimulationElement, SimulationElementVisitor,
         SimulatorReader, SimulatorWriter, UpdateContext, VariableIdentifier, Write, Writer,
     },
 };
@@ -253,7 +253,7 @@ impl Communications {
      * and it's update within the Behaviors
      */
     pub fn update(&mut self, context: &UpdateContext) {
-        let chosen_acp: &AudioControlPanel = match self.guess_acp(&context.side_playing()) {
+        let chosen_acp: &AudioControlPanel = match self.guess_acp(&context.side_controlling()) {
             AcpChosen::ACP1 => &(self.acp1),
             AcpChosen::ACP2 => &(self.acp2),
             AcpChosen::ACP3 => &(self.acp3),
@@ -269,14 +269,14 @@ impl Communications {
                 TransmitType::COM2
             };
 
-            match context.side_playing() {
-                SidePlaying::CAPTAIN => {
+            match context.side_controlling() {
+                SideControlling::CAPTAIN => {
                     self.pilot_transmit = type_transmit;
                 }
-                SidePlaying::FO => {
+                SideControlling::FO => {
                     self.copilot_transmit = type_transmit;
                 }
-                SidePlaying::SYNC => {
+                SideControlling::BOTH => {
                     self.pilot_transmit = type_transmit;
                     self.copilot_transmit = type_transmit;
                 }
@@ -327,7 +327,7 @@ impl Communications {
 
         // Update ACP 2/3 with ACP1 as ACP1 is the preffered one
         // when both sides are synchronised
-        if context.side_playing() == SidePlaying::SYNC {
+        if context.side_controlling() == SideControlling::BOTH {
             self.acp2.update_volume(&self.acp1);
             self.acp3.update_volume(&self.acp1);
 
@@ -341,25 +341,25 @@ impl Communications {
      * according to AudioSwitchingKnob position and the side
      * the player is playing on
      */
-    fn guess_acp(&self, side_playing: &SidePlaying) -> AcpChosen {
+    fn guess_acp(&self, side_controlling: &SideControlling) -> AcpChosen {
         let mut chosen_acp = AcpChosen::ACP1;
 
         // If the sides are sync, let's choose ACP1 as it doewn't matter
-        if !matches!(side_playing, SidePlaying::SYNC) {
+        if !matches!(side_controlling, SideControlling::BOTH) {
             if self.audio_switching_knob != AudioSwitchingKnobPosition::NORM {
                 chosen_acp = AcpChosen::ACP3;
 
                 if self.audio_switching_knob == AudioSwitchingKnobPosition::CAPTAIN {
-                    if matches!(side_playing, SidePlaying::FO) {
+                    if matches!(side_controlling, SideControlling::FO) {
                         chosen_acp = AcpChosen::ACP2;
                     }
                 } else {
-                    if matches!(side_playing, SidePlaying::CAPTAIN) {
+                    if matches!(side_controlling, SideControlling::CAPTAIN) {
                         chosen_acp = AcpChosen::ACP1;
                     }
                 }
             } else {
-                if matches!(side_playing, SidePlaying::FO) {
+                if matches!(side_controlling, SideControlling::FO) {
                     chosen_acp = AcpChosen::ACP2;
                 }
             }
@@ -713,7 +713,7 @@ mod communications_tests {
         //13831281
         test_bed.write_by_name("ACP1_VHF1_VOLUME", 50);
         test_bed.write_by_name("AUDIOSWITCHING_KNOB", 1);
-        test_bed.write_by_name("SIDE_PLAYING", 1);
+        test_bed.write_by_name("SIDE_CONTROLLING", 1);
 
         test_bed.run();
 

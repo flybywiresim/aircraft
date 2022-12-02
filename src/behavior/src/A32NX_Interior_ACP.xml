@@ -404,7 +404,7 @@
                             #TRANSMIT_ID# (&gt;L:A32NX_ACP#ID#_TRANSMIT_CHANNEL)
                         }
 
-                        (L:A32NX_SIDE_PLAYING, number) 2 == if{
+                        (L:A32NX_SIDE_CONTROLLING, number) 2 == if{
                             (L:A32NX_ACP#ID#_TRANSMIT_CHANNEL) (&gt;L:A32NX_ACP1_TRANSMIT_CHANNEL)
                         }
                     }
@@ -414,7 +414,7 @@
                 <!-- Green light -->
                 <SEQ1_EMISSIVE_CODE>
                     #SEQ1_POWERED# if{
-                        (L:A32NX_SIDE_PLAYING, number) 2 == if{
+                        (L:A32NX_SIDE_CONTROLLING, number) 2 == if{
                             (L:A32NX_ACP1_TRANSMIT_CHANNEL) #TRANSMIT_ID# == (L:A32NX_OVHD_INTLT_ANN) 0 == or #EMISSIVE_DIM# *
                         } els{
                             (L:A32NX_ACP#ID#_TRANSMIT_CHANNEL) #TRANSMIT_ID# == (L:A32NX_OVHD_INTLT_ANN) 0 == or #EMISSIVE_DIM# *
@@ -424,7 +424,7 @@
                     <!-- Button name light (for example CALL or MECH)-->
                 <SEQ2_EMISSIVE_CODE>
                     #SEQ1_POWERED# if{
-                        (L:A32NX_SIDE_PLAYING, number) 2 == if{
+                        (L:A32NX_SIDE_CONTROLLING, number) 2 == if{
                             (L:A32NX_ACP1_TRANSMIT_CHANNEL) #TRANSMIT_ID# == (L:A32NX_OVHD_INTLT_ANN) 0 == or #EMISSIVE_DIM# *
                         } els{
                             (L:A32NX_ACP#ID#_TRANSMIT_CHANNEL) #TRANSMIT_ID# == (L:A32NX_OVHD_INTLT_ANN) 0 == or #EMISSIVE_DIM# *
@@ -488,7 +488,7 @@
                         increment = #VOLUME_INCREMENT_HARD, number#;
                     }
 
-                    if (L:A32NX_SIDE_PLAYING, number) == 2 {
+                    if (L:A32NX_SIDE_CONTROLLING, number) == 2 {
                         alias var = (L:A32NX_ACP1_#FREQ_ID#_VOLUME, number);
                         var = (var + increment).min(100);
                     } else {
@@ -503,7 +503,7 @@
                         increment = #VOLUME_INCREMENT_HARD, number#;
                     }
 
-                    if (L:A32NX_SIDE_PLAYING, number) == 2 {
+                    if (L:A32NX_SIDE_CONTROLLING, number) == 2 {
                         alias var = (L:A32NX_ACP1_#FREQ_ID#_VOLUME, number);
                         var = (var - increment).max(0);
                     } else {
@@ -515,7 +515,7 @@
                 <ANIM_NAME_PUSH>#ANIM_NAME_SWITCH#</ANIM_NAME_PUSH>
                 <LEFT_SINGLE_CODE type="rnp">
                     if #SEQ1_POWERED, bool# {
-                        if (L:A32NX_SIDE_PLAYING, number) == 2 {
+                        if (L:A32NX_SIDE_CONTROLLING, number) == 2 {
                             (L:A32NX_ACP1_#FREQ_ID#_KNOB_VOLUME_DOWN, bool) = !(L:A32NX_ACP1_#FREQ_ID#_KNOB_VOLUME_DOWN, bool);
                         } else {
                             (L:A32NX_ACP#ID#_#FREQ_ID#_KNOB_VOLUME_DOWN, bool) = !(L:A32NX_ACP#ID#_#FREQ_ID#_KNOB_VOLUME_DOWN, bool);

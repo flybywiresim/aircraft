@@ -23,20 +23,20 @@ pub use update_context::*;
 pub mod test;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
-pub enum SidePlaying {
+pub enum SideControlling {
     CAPTAIN,
     FO,
-    SYNC,
+    BOTH,
 }
 
-read_write_enum!(SidePlaying);
+read_write_enum!(SideControlling);
 
-impl From<f64> for SidePlaying {
+impl From<f64> for SideControlling {
     fn from(value: f64) -> Self {
         match value as u8 {
-            0 => SidePlaying::CAPTAIN,
-            1 => SidePlaying::FO,
-            _ => SidePlaying::SYNC,
+            0 => SideControlling::CAPTAIN,
+            1 => SideControlling::FO,
+            _ => SideControlling::BOTH,
         }
     }
 }

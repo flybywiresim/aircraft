@@ -427,7 +427,7 @@ mod tests {
         electrical::Electricity,
         pneumatic::{DefaultValve, PneumaticContainer, PneumaticPipe},
         shared::{ControllerSignal, InternationalStandardAtmosphere, MachNumber},
-        simulation::{test::TestVariableRegistry, InitContext, SidePlaying},
+        simulation::{test::TestVariableRegistry, InitContext, SideControlling},
     };
 
     use std::time::Duration;
@@ -494,7 +494,7 @@ mod tests {
             Angle::new::<radian>(0.),
             Angle::new::<radian>(0.),
             MachNumber(0.),
-            SidePlaying::SYNC,
+            SideControlling::BOTH,
         )
     }
 
