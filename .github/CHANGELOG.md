@@ -31,6 +31,7 @@
 1. [SFCC] Add SFCC bus outputs - @lukecologne (luke)
 1. [EWD] Use FPPU angles for flaps/slats display - @lukecologne (luke)
 1. [FMGC] Basic RNP at or below 0.3 support - @tracernz (Mike)
+1. [ND] Add TERR ON ND peaks mode map visualization - @Sven [de en] (Sven Czarnian)
 1. [SD] Improve F/CTL and WHEEL SD pages visuals - @lukecologne (luke)
 1. [MCDU] Added formatter to improve text alignment and ease integration - @derl30n (Leon)
 1. [EFB] Fix default unit to match UI and other consumers - @tracernz (Mike)
@@ -69,6 +70,7 @@
 1. [PFD] Added option to sync FD/LS buttons between CPT and FO - @Eagle941 (Joe)
 1. [EFB] Add automatic loading of a lighting preset - @SpiritZephyr (Ben)
 1. [COND] Connect Air Conditioning System to Electrical System - @mjuhe (Miquel Juhe)
+1. [HYD] Default discrete of failed ADIRs impacts gear safety valve correctly - @Crocket63 (crocket)
 1. [ADDON] Simbridge Integration - @lucky38i (Alex)
 1. [SD] Visual and functional improvements/fixes to the HYD SD page - @lukecologne (luke)
 1. [HYD] Added optional auxiliary hydraulic section in core hydraulic circuits - @Crocket63
@@ -87,6 +89,20 @@
 1. [LIGHTS] Increased max brightness of cockpit displays - @frankkopp (Frank Kopp)
 1. [EFB] Improved Aircraft Presets procedures - @frankkopp (Frank Kopp)
 1. [FMGC] Make DES SPD LIM available prior to descent - @tracernz (Mike)
+1. [LIGHTS] Redone cockpit emissives panels and ambient lighting -@FinalLightNL (FinalLight)
+1. [FMGC] Rework f-pln departure page - @tracernz (Mike)
+1. [MCDU] Support coroute loading and viewing - @lucky38i (Alex)
+1. [HYD] Fixed autobrake controller tuning - @Crocket63 (crocket)
+1. [ENGINE] Improved engine primary parameters performance (EGT & Fuel Flow) - @Taz5150 (TazX [Z+2]#0405)
+1. [ENGINE] Fix Engine Flex Calculations - @Taz5150 (TazX [Z+2]#0405)
+1. [FLIGHTMODEL] Flight Model update - @donstim (donbikes#4084)
+1. [HYD] Fix incorrect gain in down pitch commands - @Crocket63 (crocket)
+1. [PFD] Improve appearance of L/DEV and V/DEV scales - @tracernz (Mike)
+1. [HYD] Implemented Electro Hydrostatic actuators - @Crocket63 (crocket)
+1. [MISC] Change 2 way overhead switches to be also controllable with mouse wheel up/down @patsta32 (Pat)
+1. [FAC] Move Speedscale computation to FAC - @lukecologne (luke)
+1. [EFB] Added deboarding button to flyPad Payload - @frankkopp (Frank Kopp)
+1. [EFB] Improved simbridge-client connection handling - @frankkopp (Frank Kopp)
 
 ## 0.8.0
 

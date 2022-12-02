@@ -11,16 +11,14 @@
 #include "fmt/include/fmt/core.h"
 #include "zfstream.h"
 
-using namespace std;
-
 // IMPORTANT: this constant needs to increased with every interface change
 const uint64_t INTERFACE_VERSION = 24;
 
 int main(int argc, char* argv[]) {
   // variables for command line parameters
-  string inFilePath;
-  string outFilePath;
-  string delimiter = ",";
+  std::string inFilePath;
+  std::string outFilePath;
+  std::string delimiter = ",";
   bool noCompression = false;
   bool printStructSize = false;
   bool printGetFileInterfaceVersion = false;
@@ -39,7 +37,7 @@ int main(int argc, char* argv[]) {
   // parse command line
   try {
     args.parse(argc, argv);
-  } catch (runtime_error const& e) {
+  } catch (std::runtime_error const& e) {
     fmt::print("{}\n", e.what());
     return -1;
   }
@@ -47,7 +45,7 @@ int main(int argc, char* argv[]) {
   // print help
   if (oPrintHelp) {
     args.printHelp();
-    cout << endl;
+    std::cout << std::endl;
     return 0;
   }
 
@@ -56,7 +54,7 @@ int main(int argc, char* argv[]) {
     fmt::print("Input file parameter missing!\n");
     return 1;
   }
-  if (!filesystem::exists(inFilePath)) {
+  if (!std::filesystem::exists(inFilePath)) {
     fmt::print("Input file does not exist!\n");
     return 1;
   }
@@ -66,11 +64,11 @@ int main(int argc, char* argv[]) {
   }
 
   // create input stream
-  istream* in;
+  std::unique_ptr<std::istream> in;
   if (!noCompression) {
-    in = new gzifstream(inFilePath.c_str());
+    in = std::make_unique<gzifstream>(inFilePath.c_str());
   } else {
-    in = new ifstream(inFilePath.c_str(), ios::in | ios::binary);
+    in = std::make_unique<std::ifstream>(inFilePath.c_str(), std::ios::in | std::ios::binary);
   }
 
   // check if stream is ok
@@ -85,7 +83,7 @@ int main(int argc, char* argv[]) {
 
   // print file version if requested and return
   if (printGetFileInterfaceVersion) {
-    cout << fileFormatVersion << endl;
+    std::cout << fileFormatVersion << std::endl;
     return 0;
   } else if (INTERFACE_VERSION != fileFormatVersion) {
     fmt::print("ERROR: mismatch between converter and file version (expected {}, got {})\n", INTERFACE_VERSION, fileFormatVersion);
@@ -97,9 +95,9 @@ int main(int argc, char* argv[]) {
              delimiter);
 
   // output stream
-  ofstream out;
+  std::ofstream out;
   // open the output file
-  out.open(outFilePath, ios::out | ios::trunc);
+  out.open(outFilePath, std::ios::out | std::ios::trunc);
   // check if file is open
   if (!out.is_open()) {
     fmt::print("Failed to create output file!\n");

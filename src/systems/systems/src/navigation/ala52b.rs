@@ -61,13 +61,14 @@ impl Ala52BTransceiverPair {
     /// Returns the height over ground of the physical transmitter antenna.
     fn transmitter_height_over_ground(&self) -> Length {
         let vertical_offset = self.pitch.sin() * self.transmitter.z();
-        self.alt_above_ground + vertical_offset - self.transmitter.y()
+        (self.alt_above_ground + vertical_offset - self.transmitter.y())
+            .max(Length::new::<foot>(0.))
     }
 
     /// Returns the height over ground of the physical receiver antenna.
     fn receiver_height_over_ground(&self) -> Length {
         let vertical_offset = self.pitch.sin() * self.receiver.z();
-        self.alt_above_ground + vertical_offset - self.receiver.y()
+        (self.alt_above_ground + vertical_offset - self.receiver.y()).max(Length::new::<foot>(0.))
     }
 
     /// Returns the direct distance between the antennas (usually along the aircraft's fuselage)
@@ -159,7 +160,7 @@ impl SimulationElement for Ala52BTransceiverPair {
 /// This enum describes the possible pin settings that the ALA-52B can be configured with. They are
 /// used to calibrate the Radio Altimeter for the length of the cables on the aircraft. It appears
 /// that A320s usually use the 57 feet setting.
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Ala52BAircraftInstallationDelay {
     FortyFeet,
     FiftySevenFeet,

@@ -585,7 +585,7 @@ export class FlightPlanManager {
 
         if (origin) {
             const originInfos = origin.infos as AirportInfo;
-            if (originInfos.departures !== undefined && currentFlightPlan.procedureDetails.departureIndex !== -1) {
+            if (originInfos.departures !== undefined && currentFlightPlan.procedureDetails.departureIndex >= 0) {
                 return originInfos.departures[currentFlightPlan.procedureDetails.departureIndex];
             }
         }
@@ -602,7 +602,7 @@ export class FlightPlanManager {
 
         if (origin) {
             const originInfos = origin.infos as AirportInfo;
-            if (originInfos.departures !== undefined && currentFlightPlan.procedureDetails.departureIndex !== -1) {
+            if (originInfos.departures !== undefined && currentFlightPlan.procedureDetails.departureIndex >= 0) {
                 return originInfos.departures[currentFlightPlan.procedureDetails.departureIndex].name;
             }
         }
@@ -619,7 +619,7 @@ export class FlightPlanManager {
 
         if (destination) {
             const originInfos = destination.infos as AirportInfo;
-            if (originInfos.arrivals !== undefined && currentFlightPlan.procedureDetails.arrivalIndex !== -1) {
+            if (originInfos.arrivals !== undefined && currentFlightPlan.procedureDetails.arrivalIndex >= 0) {
                 return originInfos.arrivals[currentFlightPlan.procedureDetails.arrivalIndex];
             }
         }
@@ -636,7 +636,7 @@ export class FlightPlanManager {
 
         if (destination) {
             const originInfos = destination.infos as AirportInfo;
-            if (originInfos.approaches !== undefined && currentFlightPlan.procedureDetails.approachIndex !== -1) {
+            if (originInfos.approaches !== undefined && currentFlightPlan.procedureDetails.approachIndex >= 0) {
                 return originInfos.approaches[currentFlightPlan.procedureDetails.approachIndex];
             }
         }
@@ -1109,7 +1109,7 @@ export class FlightPlanManager {
     public getOriginRunwayIndex(): number {
         const currentFlightPlan = this._flightPlans[this._currentFlightPlanIndex];
 
-        if (currentFlightPlan.procedureDetails.originRunwayIndex !== -1 && currentFlightPlan.originAirfield) {
+        if (currentFlightPlan.procedureDetails.originRunwayIndex >= 0 && currentFlightPlan.originAirfield) {
             return currentFlightPlan.procedureDetails.originRunwayIndex;
         }
         return -1;
@@ -1120,7 +1120,7 @@ export class FlightPlanManager {
      */
     public getOriginRunway(): OneWayRunway {
         const runwayIndex = this.getOriginRunwayIndex();
-        if (runwayIndex !== -1) {
+        if (runwayIndex >= 0) {
             return this.getOrigin().infos.oneWayRunways[runwayIndex];
         }
         return undefined;
@@ -1219,8 +1219,8 @@ export class FlightPlanManager {
         const currentFlightPlan = this._flightPlans[this._currentFlightPlanIndex];
 
         if (currentFlightPlan.hasOrigin
-            && currentFlightPlan.procedureDetails.departureRunwayIndex !== -1
-            && currentFlightPlan.procedureDetails.departureIndex !== -1
+            && currentFlightPlan.procedureDetails.departureRunwayIndex >= 0
+            && currentFlightPlan.procedureDetails.departureIndex >= 0
             && currentFlightPlan.originAirfield
         ) {
 
@@ -1291,7 +1291,7 @@ export class FlightPlanManager {
      */
     public getArrivalProcIndex(): number {
         const currentFlightPlan = this._flightPlans[this._currentFlightPlanIndex];
-        if (currentFlightPlan.hasDestination && currentFlightPlan.procedureDetails.arrivalIndex !== -1) {
+        if (currentFlightPlan.hasDestination && currentFlightPlan.procedureDetails.arrivalIndex >= 0) {
             return currentFlightPlan.procedureDetails.arrivalIndex;
         }
 
@@ -1450,7 +1450,7 @@ export class FlightPlanManager {
     public async setDestinationRunwayIndexFromApproach() {
         const currentFlightPlan = this._flightPlans[this._currentFlightPlanIndex];
 
-        if (currentFlightPlan.hasDestination && currentFlightPlan.procedureDetails.approachIndex !== -1) {
+        if (currentFlightPlan.hasDestination && currentFlightPlan.procedureDetails.approachIndex >= 0) {
             console.error('Destination runway index is -1 with valid STAR');
             const approach = (currentFlightPlan.destinationAirfield.infos as AirportInfo).approaches[currentFlightPlan.procedureDetails.approachIndex];
             const destRunways = (currentFlightPlan.destinationAirfield.infos as AirportInfo).oneWayRunways;
@@ -1496,7 +1496,7 @@ export class FlightPlanManager {
      */
     public isLoadedApproach(forceSimVarCall = false): boolean {
         const currentFlightPlan = this._flightPlans[this._currentFlightPlanIndex];
-        return currentFlightPlan.procedureDetails.approachIndex !== -1;
+        return currentFlightPlan.procedureDetails.approachIndex >= 0;
     }
 
     /**
@@ -1546,7 +1546,7 @@ export class FlightPlanManager {
      */
     public getApproach(flightPlanIndex = this._currentFlightPlanIndex): RawApproach {
         const currentFlightPlan = this._flightPlans[flightPlanIndex];
-        if (currentFlightPlan.hasDestination && currentFlightPlan.procedureDetails.approachIndex !== -1) {
+        if (currentFlightPlan.hasDestination && currentFlightPlan.procedureDetails.approachIndex >= 0) {
             return (currentFlightPlan.destinationAirfield.infos as AirportInfo).approaches[currentFlightPlan.procedureDetails.approachIndex];
         }
 
@@ -1581,7 +1581,7 @@ export class FlightPlanManager {
         const flightPlan = this._flightPlans[flightPlanIndex];
 
         const runwayIndex = this.getDestinationRunwayIndex(flightPlanIndex);
-        if (runwayIndex !== -1) {
+        if (runwayIndex >= 0) {
             return (flightPlan.destinationAirfield.infos as AirportInfo).oneWayRunways[runwayIndex];
         }
         return undefined;
@@ -1593,11 +1593,11 @@ export class FlightPlanManager {
     public getDestinationRunwayIndex(flightPlanIndex = this._currentFlightPlanIndex): number {
         const flightPlan = this._flightPlans[flightPlanIndex];
 
-        if (flightPlan.procedureDetails.destinationRunwayIndex !== -1 && flightPlan.destinationAirfield) {
+        if (flightPlan.procedureDetails.destinationRunwayIndex >= 0 && flightPlan.destinationAirfield) {
             return flightPlan.procedureDetails.destinationRunwayIndex;
         }
 
-        if (flightPlan.hasDestination && flightPlan.procedureDetails.approachIndex !== -1) {
+        if (flightPlan.hasDestination && flightPlan.procedureDetails.approachIndex >= 0) {
             console.error('Destination runway index is -1 with valid STAR');
             const approach = (flightPlan.destinationAirfield.infos as AirportInfo).approaches[flightPlan.procedureDetails.approachIndex];
             const runways = (flightPlan.destinationAirfield.infos as AirportInfo).oneWayRunways;

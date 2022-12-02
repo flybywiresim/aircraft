@@ -13,6 +13,7 @@ interface BuildInfo {
     sha: string;
     actor: string;
     eventName: string;
+    prettyReleaseName: string;
 }
 
 interface BuildInfoEntryProps {
@@ -70,6 +71,7 @@ export const AboutPage = () => {
             sha: json.sha,
             actor: json.actor,
             eventName: json.event_name,
+            prettyReleaseName: json.pretty_release_name,
         }));
     }, []);
 
@@ -110,6 +112,7 @@ export const AboutPage = () => {
                         <BuildInfoEntry title="Ref" value={buildInfo?.ref} />
                         <BuildInfoEntry title="SHA" value={buildInfo?.sha} underline={8} />
                         <BuildInfoEntry title="Event Name" value={buildInfo?.eventName} />
+                        <BuildInfoEntry title="Pretty Release Name" value={buildInfo?.prettyReleaseName} />
                         {sentryEnabled === SentryConsentState.Given && (
                             <BuildInfoEntry title="Sentry Session ID" value={sessionId} />
                         )}

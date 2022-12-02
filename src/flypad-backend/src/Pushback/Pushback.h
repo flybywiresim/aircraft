@@ -17,9 +17,12 @@
 
 class InertialDampener;
 
-using namespace std;
-
+#ifdef __cpp_lib_math_constants
+#include <numbers>
+constexpr double PI = std::numbers::pi;
+#else
 constexpr double PI = 3.14159265358979323846;
+#endif
 
 /**
  * Class for handling aircraft presets.
