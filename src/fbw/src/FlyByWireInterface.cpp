@@ -297,10 +297,10 @@ void FlyByWireInterface::setupLocalVariables() {
   idFdrEvent = std::make_unique<LocalVariable>("A32NX_DFDR_EVENT_ON");
 
   // register L variables for the sidestick
-  idSideStickPositionX = make_unique<LocalVariable>("A32NX_SIDESTICK_POSITION_X");
-  idSideStickPositionY = make_unique<LocalVariable>("A32NX_SIDESTICK_POSITION_Y");
-  idRudderPedalPosition = make_unique<LocalVariable>("A32NX_RUDDER_PEDAL_POSITION");
-  idAutopilotNosewheelDemand = make_unique<LocalVariable>("A32NX_AUTOPILOT_NOSEWHEEL_DEMAND");
+  idSideStickPositionX = std::make_unique<LocalVariable>("A32NX_SIDESTICK_POSITION_X");
+  idSideStickPositionY = std::make_unique<LocalVariable>("A32NX_SIDESTICK_POSITION_Y");
+  idRudderPedalPosition = std::make_unique<LocalVariable>("A32NX_RUDDER_PEDAL_POSITION");
+  idAutopilotNosewheelDemand = std::make_unique<LocalVariable>("A32NX_AUTOPILOT_NOSEWHEEL_DEMAND");
 
   // register L variable for custom fly-by-wire interface
   idFmaLateralMode = std::make_unique<LocalVariable>("A32NX_FMA_LATERAL_MODE");
@@ -468,12 +468,12 @@ void FlyByWireInterface::setupLocalVariables() {
   idSpoilersArmed = std::make_unique<LocalVariable>("A32NX_SPOILERS_ARMED");
   idSpoilersHandlePosition = std::make_unique<LocalVariable>("A32NX_SPOILERS_HANDLE_POSITION");
 
-  idRadioReceiverUsageEnabled = make_unique<LocalVariable>("A32NX_RADIO_RECEIVER_USAGE_ENABLED");
-  idRadioReceiverLocalizerValid = make_unique<LocalVariable>("A32NX_RADIO_RECEIVER_LOC_IS_VALID");
-  idRadioReceiverLocalizerDeviation = make_unique<LocalVariable>("A32NX_RADIO_RECEIVER_LOC_DEVIATION");
-  idRadioReceiverLocalizerDistance = make_unique<LocalVariable>("A32NX_RADIO_RECEIVER_LOC_DISTANCE");
-  idRadioReceiverGlideSlopeValid = make_unique<LocalVariable>("A32NX_RADIO_RECEIVER_GS_IS_VALID");
-  idRadioReceiverGlideSlopeDeviation = make_unique<LocalVariable>("A32NX_RADIO_RECEIVER_GS_DEVIATION");
+  idRadioReceiverUsageEnabled = std::make_unique<LocalVariable>("A32NX_RADIO_RECEIVER_USAGE_ENABLED");
+  idRadioReceiverLocalizerValid = std::make_unique<LocalVariable>("A32NX_RADIO_RECEIVER_LOC_IS_VALID");
+  idRadioReceiverLocalizerDeviation = std::make_unique<LocalVariable>("A32NX_RADIO_RECEIVER_LOC_DEVIATION");
+  idRadioReceiverLocalizerDistance = std::make_unique<LocalVariable>("A32NX_RADIO_RECEIVER_LOC_DISTANCE");
+  idRadioReceiverGlideSlopeValid = std::make_unique<LocalVariable>("A32NX_RADIO_RECEIVER_GS_IS_VALID");
+  idRadioReceiverGlideSlopeDeviation = std::make_unique<LocalVariable>("A32NX_RADIO_RECEIVER_GS_DEVIATION");
 
   idRealisticTillerEnabled = std::make_unique<LocalVariable>("A32NX_REALISTIC_TILLER_ENABLED");
   idTillerHandlePosition = std::make_unique<LocalVariable>("A32NX_TILLER_HANDLE_POSITION");
@@ -602,35 +602,35 @@ void FlyByWireInterface::setupLocalVariables() {
     idFacPushbuttonPressed[i] = std::make_unique<LocalVariable>("A32NX_FAC_" + idString + "_PUSHBUTTON_PRESSED");
     idFacHealthy[i] = std::make_unique<LocalVariable>("A32NX_FAC_" + idString + "_HEALTHY");
 
-    idFacDiscreteWord1[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_DISCRETE_WORD_1");
-    idFacGammaA[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_GAMMA_A");
-    idFacGammaT[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_GAMMA_T");
-    idFacWeight[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_WEIGHT");
-    idFacCenterOfGravity[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_CENTER_OF_GRAVITY");
-    idFacSideslipTarget[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_SIDESLIP_TARGET");
-    idFacSlatAngle[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_SLATS_ANGLE");
-    idFacFlapAngle[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_FLAPS_ANGLE");
-    idFacDiscreteWord2[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_DISCRETE_WORD_2");
-    idFacRudderTravelLimitCommand[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_RUDDER_TRAVEL_LIMIT_COMMAND");
-    idFacDeltaRYawDamperVoted[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_DELTA_R_YAW_DAMPER");
-    idFacEstimatedSideslip[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_ESTIMATED_SIDESLIP");
-    idFacVAlphaLim[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_V_ALPHA_LIM");
-    idFacVLs[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_V_LS");
-    idFacVStall[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_V_STALL_1G");
-    idFacVAlphaProt[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_V_ALPHA_PROT");
-    idFacVStallWarn[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_V_STALL_WARN");
-    idFacSpeedTrend[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_SPEED_TREND");
-    idFacV3[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_V_3");
-    idFacV4[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_V_4");
-    idFacVMan[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_V_MAN");
-    idFacVMax[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_V_MAX");
-    idFacVFeNext[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_V_FE_NEXT");
-    idFacDiscreteWord3[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_DISCRETE_WORD_3");
-    idFacDiscreteWord4[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_DISCRETE_WORD_4");
-    idFacDiscreteWord5[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_DISCRETE_WORD_5");
-    idFacDeltaRRudderTrim[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_DELTA_R_RUDDER_TRIM");
-    idFacRudderTrimPos[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_RUDDER_TRIM_POS");
-    idFacRudderTravelLimitReset[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_RTL_EMER_RESET");
+    idFacDiscreteWord1[i] = std::make_unique<LocalVariable>("A32NX_FAC_" + idString + "_DISCRETE_WORD_1");
+    idFacGammaA[i] = std::make_unique<LocalVariable>("A32NX_FAC_" + idString + "_GAMMA_A");
+    idFacGammaT[i] = std::make_unique<LocalVariable>("A32NX_FAC_" + idString + "_GAMMA_T");
+    idFacWeight[i] = std::make_unique<LocalVariable>("A32NX_FAC_" + idString + "_WEIGHT");
+    idFacCenterOfGravity[i] = std::make_unique<LocalVariable>("A32NX_FAC_" + idString + "_CENTER_OF_GRAVITY");
+    idFacSideslipTarget[i] = std::make_unique<LocalVariable>("A32NX_FAC_" + idString + "_SIDESLIP_TARGET");
+    idFacSlatAngle[i] = std::make_unique<LocalVariable>("A32NX_FAC_" + idString + "_SLATS_ANGLE");
+    idFacFlapAngle[i] = std::make_unique<LocalVariable>("A32NX_FAC_" + idString + "_FLAPS_ANGLE");
+    idFacDiscreteWord2[i] = std::make_unique<LocalVariable>("A32NX_FAC_" + idString + "_DISCRETE_WORD_2");
+    idFacRudderTravelLimitCommand[i] = std::make_unique<LocalVariable>("A32NX_FAC_" + idString + "_RUDDER_TRAVEL_LIMIT_COMMAND");
+    idFacDeltaRYawDamperVoted[i] = std::make_unique<LocalVariable>("A32NX_FAC_" + idString + "_DELTA_R_YAW_DAMPER");
+    idFacEstimatedSideslip[i] = std::make_unique<LocalVariable>("A32NX_FAC_" + idString + "_ESTIMATED_SIDESLIP");
+    idFacVAlphaLim[i] = std::make_unique<LocalVariable>("A32NX_FAC_" + idString + "_V_ALPHA_LIM");
+    idFacVLs[i] = std::make_unique<LocalVariable>("A32NX_FAC_" + idString + "_V_LS");
+    idFacVStall[i] = std::make_unique<LocalVariable>("A32NX_FAC_" + idString + "_V_STALL_1G");
+    idFacVAlphaProt[i] = std::make_unique<LocalVariable>("A32NX_FAC_" + idString + "_V_ALPHA_PROT");
+    idFacVStallWarn[i] = std::make_unique<LocalVariable>("A32NX_FAC_" + idString + "_V_STALL_WARN");
+    idFacSpeedTrend[i] = std::make_unique<LocalVariable>("A32NX_FAC_" + idString + "_SPEED_TREND");
+    idFacV3[i] = std::make_unique<LocalVariable>("A32NX_FAC_" + idString + "_V_3");
+    idFacV4[i] = std::make_unique<LocalVariable>("A32NX_FAC_" + idString + "_V_4");
+    idFacVMan[i] = std::make_unique<LocalVariable>("A32NX_FAC_" + idString + "_V_MAN");
+    idFacVMax[i] = std::make_unique<LocalVariable>("A32NX_FAC_" + idString + "_V_MAX");
+    idFacVFeNext[i] = std::make_unique<LocalVariable>("A32NX_FAC_" + idString + "_V_FE_NEXT");
+    idFacDiscreteWord3[i] = std::make_unique<LocalVariable>("A32NX_FAC_" + idString + "_DISCRETE_WORD_3");
+    idFacDiscreteWord4[i] = std::make_unique<LocalVariable>("A32NX_FAC_" + idString + "_DISCRETE_WORD_4");
+    idFacDiscreteWord5[i] = std::make_unique<LocalVariable>("A32NX_FAC_" + idString + "_DISCRETE_WORD_5");
+    idFacDeltaRRudderTrim[i] = std::make_unique<LocalVariable>("A32NX_FAC_" + idString + "_DELTA_R_RUDDER_TRIM");
+    idFacRudderTrimPos[i] = std::make_unique<LocalVariable>("A32NX_FAC_" + idString + "_RUDDER_TRIM_POS");
+    idFacRudderTravelLimitReset[i] = std::make_unique<LocalVariable>("A32NX_FAC_" + idString + "_RTL_EMER_RESET");
   }
 
   for (int i = 0; i < 2; i++) {
@@ -696,13 +696,13 @@ void FlyByWireInterface::setupLocalVariables() {
   idLeftElevatorPosition = std::make_unique<LocalVariable>("A32NX_HYD_ELEVATOR_LEFT_DEFLECTION");
   idRightElevatorPosition = std::make_unique<LocalVariable>("A32NX_HYD_ELEVATOR_RIGHT_DEFLECTION");
 
-  idRudderTrimPosition = make_unique<LocalVariable>("A32NX_HYD_RUDDER_TRIM_FEEDBACK_ANGLE");
-  idRudderTravelLimiterPosition = make_unique<LocalVariable>("A32NX_HYD_RUDDER_LIMITER_FEEDBACK_ANGLE");
+  idRudderTrimPosition = std::make_unique<LocalVariable>("A32NX_HYD_RUDDER_TRIM_FEEDBACK_ANGLE");
+  idRudderTravelLimiterPosition = std::make_unique<LocalVariable>("A32NX_HYD_RUDDER_LIMITER_FEEDBACK_ANGLE");
 
-  idElecDcBus2Powered = make_unique<LocalVariable>("A32NX_ELEC_DC_2_BUS_IS_POWERED");
-  idElecDcEssShedBusPowered = make_unique<LocalVariable>("A32NX_ELEC_DC_ESS_SHED_BUS_IS_POWERED");
-  idElecDcEssBusPowered = make_unique<LocalVariable>("A32NX_ELEC_DC_ESS_BUS_IS_POWERED");
-  idElecBat1HotBusPowered = make_unique<LocalVariable>("A32NX_ELEC_DC_HOT_1_BUS_IS_POWERED");
+  idElecDcBus2Powered = std::make_unique<LocalVariable>("A32NX_ELEC_DC_2_BUS_IS_POWERED");
+  idElecDcEssShedBusPowered = std::make_unique<LocalVariable>("A32NX_ELEC_DC_ESS_SHED_BUS_IS_POWERED");
+  idElecDcEssBusPowered = std::make_unique<LocalVariable>("A32NX_ELEC_DC_ESS_BUS_IS_POWERED");
+  idElecBat1HotBusPowered = std::make_unique<LocalVariable>("A32NX_ELEC_DC_HOT_1_BUS_IS_POWERED");
 
   idHydYellowSystemPressure = std::make_unique<LocalVariable>("A32NX_HYD_YELLOW_SYSTEM_1_SECTION_PRESSURE");
   idHydGreenSystemPressure = std::make_unique<LocalVariable>("A32NX_HYD_GREEN_SYSTEM_1_SECTION_PRESSURE");
