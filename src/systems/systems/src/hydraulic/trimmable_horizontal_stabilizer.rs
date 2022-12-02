@@ -15,6 +15,7 @@ use crate::simulation::{
 
 use crate::shared::{
     interpolation, low_pass_filter::LowPassFilter, ElectricalBusType, ElectricalBuses,
+    TrimmableHorizontalStabilizer,
 };
 
 use super::linear_actuator::Actuator;
@@ -583,7 +584,7 @@ impl TrimmableHorizontalStabilizerAssembly {
         self.pitch_trim_actuator.position_normalized()
     }
 
-    pub fn actual_trim_angle(&self) -> Angle {
+    fn trim_angle(&self) -> Angle {
         self.ths_hydraulics.actual_deflection()
     }
 
@@ -600,6 +601,11 @@ impl SimulationElement for TrimmableHorizontalStabilizerAssembly {
         self.pitch_trim_actuator.accept(visitor);
         self.trim_wheel.accept(visitor);
         self.ths_hydraulics.accept(visitor);
+    }
+}
+impl TrimmableHorizontalStabilizer for TrimmableHorizontalStabilizerAssembly {
+    fn trim_angle(&self) -> Angle {
+        self.trim_angle()
     }
 }
 
