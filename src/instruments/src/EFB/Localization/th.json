@@ -151,6 +151,12 @@
       "BoardingTime": "เวลาเรียกขึ้นเครื่อง",
       "Cargo": "คาร์โก้",
       "Current": "ปัจจุบัน",
+      "DeboardConfirmationBody": "Please confirm deboarding all passengers",
+      "DeboardConfirmationCancel": "Cancel",
+      "DeboardConfirmationConfirm": "Deboard",
+      "DeboardConfirmationTitle": "Deboard all Passengers?",
+      "EstimatedDurationUnit": "minutes",
+      "LoadingTime": "Loading Time",
       "Passengers": "ผู้โดยสาร",
       "Planned": "ที่วางแผนไว้",
       "TT": {
@@ -162,7 +168,8 @@
         "MaxZFWCG": "จำนวน ZFWCG สูงสุด",
         "PerPaxBagWeight": "น้ำหนักสัมภาระของผู้โดยสารต่อคน",
         "PerPaxWeight": "น้ำหนักผู้โดยสารต่อคน",
-        "StartBoarding": "เริ่มการเรียกขึ้นเครื่อง"
+        "StartBoarding": "เริ่มการเรียกขึ้นเครื่อง",
+        "StartDeboarding": "Begin Deboarding"
       },
       "Title": "น้ำหนักบรรทุก",
       "ZFW": "ZFW",

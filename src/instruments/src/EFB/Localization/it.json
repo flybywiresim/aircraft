@@ -151,6 +151,12 @@
       "BoardingTime": "Durata Imbarco",
       "Cargo": "Carico",
       "Current": "Corrente",
+      "DeboardConfirmationBody": "Conferma lo sbarco di tutti i passeggeri",
+      "DeboardConfirmationCancel": "Annulla",
+      "DeboardConfirmationConfirm": "Sbarca",
+      "DeboardConfirmationTitle": "Sbarcare tutti i Passeggeri?",
+      "EstimatedDurationUnit": "minuti",
+      "LoadingTime": "Loading Time",
       "Passengers": "Passeggeri",
       "Planned": "Pianificato",
       "TT": {
@@ -162,7 +168,8 @@
         "MaxZFWCG": "ZFWCG Massimo",
         "PerPaxBagWeight": "Peso Bagaglio per Passeggero",
         "PerPaxWeight": "Peso per Passeggero",
-        "StartBoarding": "Inizia Imbarco"
+        "StartBoarding": "Inizia Imbarco",
+        "StartDeboarding": "Comincia Sbarco"
       },
       "Title": "Payload",
       "ZFW": "ZFW",
