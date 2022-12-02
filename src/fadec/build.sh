@@ -40,6 +40,7 @@ clang++ \
   -I "${MSFS_SDK}/WASM/include" \
   -I "${MSFS_SDK}/SimConnect SDK/include" \
   -I "${DIR}/../fbw/src/inih" \
+  -I "${DIR}/common" \
   "${DIR}/a320_fadec/src/FadecGauge.cpp"
 
 # restore directory
