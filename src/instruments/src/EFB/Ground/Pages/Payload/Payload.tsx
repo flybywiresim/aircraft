@@ -16,7 +16,7 @@ import { useBitFlags } from '@instruments/common/bitFlags';
 import { round } from 'lodash';
 import { CargoWidget } from './Seating/CargoWidget';
 import { ChartWidget } from './Chart/ChartWidget';
-import { PaxStationInfo, CargoStationInfo } from './Seating/Constants';
+import { CargoStationInfo, PaxStationInfo } from './Seating/Constants';
 import { t } from '../../../translation';
 import { TooltipWrapper } from '../../../UtilComponents/TooltipWrapper';
 import { SimpleInput } from '../../../UtilComponents/Form/SimpleInput/SimpleInput';
@@ -357,32 +357,26 @@ export const Payload = () => {
     };
 
     // TODO: Rework A32NX_Boarding to make boardingRateMultiplier obsolete. (msDelay)
-    const calculateBoardingTime = () => {
-        let estimatedTimeSeconds = 0;
-        let estimatedPaxBoardingSeconds = 0;
-        let estimatedCargoLoadingSeconds = 0;
-        const boardingRateMultiplier = 5;
+    const calculateBoardingTime = useMemo(() => {
+        // factors taken from flybywire-aircraft-a320-neo/html_ui/Pages/A32NX_Core/A32NX_Boarding.js line 175+
+        let boardingRateMultiplier = 0;
+        if (boardingRate === 'REAL') {
+            boardingRateMultiplier = 5;
+        } else if (boardingRate === 'FAST') {
+            boardingRateMultiplier = 1;
+        }
+
+        // value taken from flybywire-aircraft-a320-neo/html_ui/Pages/A32NX_Core/A32NX_Boarding.js line 210
+        const cargoWeightPerWeightStep = 60;
+
         const differentialPax = Math.abs(totalPaxDesired - totalPax);
         const differentialCargo = Math.abs(totalCargoDesired - totalCargo);
 
-        if (boardingRate === 'REAL') {
-            estimatedPaxBoardingSeconds += differentialPax * boardingRateMultiplier;
-            estimatedCargoLoadingSeconds += (differentialCargo / 60) * boardingRateMultiplier;
-        } else if (boardingRate === 'FAST') {
-            estimatedPaxBoardingSeconds += differentialPax;
-            estimatedCargoLoadingSeconds += (differentialCargo / 60);
-        }
+        const estimatedPaxBoardingSeconds = differentialPax * boardingRateMultiplier;
+        const estimatedCargoLoadingSeconds = (differentialCargo / cargoWeightPerWeightStep) * boardingRateMultiplier;
 
-        if (estimatedPaxBoardingSeconds > estimatedCargoLoadingSeconds) {
-            const differentialLoadingTime = Math.abs(estimatedPaxBoardingSeconds - estimatedCargoLoadingSeconds);
-            estimatedTimeSeconds = estimatedPaxBoardingSeconds + differentialLoadingTime;
-        } else {
-            const differentialLoadingTime = Math.abs(estimatedCargoLoadingSeconds - estimatedPaxBoardingSeconds);
-            estimatedTimeSeconds = estimatedCargoLoadingSeconds + differentialLoadingTime;
-        }
-
-        return Math.round(estimatedTimeSeconds / 60);
-    };
+        return Math.max(estimatedPaxBoardingSeconds, estimatedCargoLoadingSeconds);
+    }, [totalPaxDesired, totalPax, totalCargoDesired, totalCargo, boardingRate]);
 
     const boardingStatusClass = useMemo(() => {
         if (!boardingStarted) {
@@ -602,6 +596,13 @@ export const Payload = () => {
         paxWeight, paxBagWeight,
         emptyWeight,
     ]);
+
+    const remainingTimeString = () => {
+        const minutes = Math.round(calculateBoardingTime / 60);
+        const seconds = calculateBoardingTime % 60;
+        const padding = seconds < 10 ? '0' : '';
+        return `${minutes}:${padding}${seconds.toFixed(0)} ${t('Ground.Payload.EstimatedDurationUnit')}`;
+    };
 
     return (
         <div>
@@ -835,7 +836,7 @@ export const Payload = () => {
                                         {t('Ground.Payload.BoardingTime')}
                                         <span className="flex relative flex-row items-center ml-2 text-sm font-light">
                                             (
-                                            {`${calculateBoardingTime()} ${t('Ground.Payload.EstimatedDurationUnit')}`}
+                                            {remainingTimeString()}
                                             )
                                         </span>
                                     </div>
