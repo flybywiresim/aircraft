@@ -1431,6 +1431,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - 0 is CAPT, 1 is NORM, 2 is F/O
 
 - A32NX_ADIRS_ADIRU_{number}_STATE
+    - TODO delete
     - Enum
     - The Inertial Reference alignment state.
       Description | Value
@@ -1440,6 +1441,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
       Aligned | 2
 
 - A32NX_ADIRS_REMAINING_IR_ALIGNMENT_TIME
+    - TODO delete
     - Seconds
     - The remaining alignment duration. Zero seconds when the system is aligned or the system is not aligning.
 
@@ -1493,7 +1495,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
 
 - A32NX_ADIRS_IR_{number}_HEADING
     - Arinc429Word<Degrees>
-    - The inertial heading of the aircraft.
+    - The magnetic heading of the aircraft (true in polar region).
 
 - A32NX_ADIRS_IR_{number}_TRUE_HEADING
     - Arinc429Word<Degrees>
@@ -1501,7 +1503,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
 
 - A32NX_ADIRS_IR_{number}_TRACK
     - Arinc429Word<Degrees>
-    - The inertial track of the aircraft.
+    - The magnetic track of the aircraft (true in polar region).
 
 - A32NX_ADIRS_IR_{number}_TRUE_TRACK
     - Arinc429Word<Degrees>
@@ -1586,6 +1588,10 @@ In the variables below, {number} should be replaced with one item in the set: { 
 - A32NX_ADIRS_IR_{number}_ROLL_ATT_RATE
     - Arinc429Word<Degrees per second>
     - The roll rate (φ^dot) of the aircraft
+
+- A32NX_ADIRS_IR_{number}_MAINT_WORD
+    - Arinc429Word<flags>
+    - TODO flag table
 
 - A32NX_ADIRS_USES_GPS_AS_PRIMARY
     - Bool

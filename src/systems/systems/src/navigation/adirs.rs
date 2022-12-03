@@ -12,6 +12,7 @@ use crate::{
     },
 };
 use nalgebra::{Rotation2, Vector2};
+use bitflags::bitflags;
 use std::{fmt::Display, time::Duration};
 use uom::si::acceleration::meter_per_second_squared;
 use uom::si::{
@@ -931,6 +932,35 @@ impl From<f64> for AlignTime {
     }
 }
 
+bitflags! {
+    #[derive(Default)]
+    struct IrMaintFlags: u32 {
+        const AlignmentNotReady = 0b0000000000000000001;
+        const RevAttMode = 0b0000000000000000010;
+        const NavMode = 0b0000000000000000100;
+        const ValidSetHeading = 0b0000000000000001000;
+        const AttitudeInvalid = 0b0000000000000010000;
+        const DcFail = 0b0000000000000100000;
+        const OnDc = 0b0000000000001000000;
+        const AdrFault = 0b0000000000010000000;
+        const IrFault = 0b0000000000100000000;
+        const DcFailOnDc = 0b0000000001000000000;
+        const AlignFault = 0b0000000010000000000;
+        const NoIrsInitial = 0b0000000100000000000;
+        const ExcessMotionError = 0b0000001000000000000;
+        const AdrIrFault = 0b0000010000000000000;
+        const ExtremeLatitude = 0b0000100000000000000;
+        const Align710Minutes = 0b0111000000000000000;
+        const Align6Minutes = 0b0110000000000000000;
+        const Align5Minutes = 0b0101000000000000000;
+        const Align4Minutes = 0b0100000000000000000;
+        const Align3Minutes = 0b0011000000000000000;
+        const Align2Minutes = 0b0010000000000000000;
+        const Align1Minutes = 0b0001000000000000000;
+        const ComputedLatitudeMiscompare = 0b1000000000000000000;
+    }
+}
+
 struct InertialReference {
     number: usize,
     is_on: bool,
@@ -940,6 +970,7 @@ struct InertialReference {
     ir_fault_flash_duration: Option<Duration>,
     remaining_attitude_initialisation_duration: Option<Duration>,
     wind_velocity: LowPassFilter<Vector2<f64>>,
+    extreme_latitude: bool,
 
     pitch: AdirsData<Angle>,
     roll: AdirsData<Angle>,
@@ -970,6 +1001,7 @@ struct InertialReference {
     wind_direction_bnr: AdirsData<Angle>,
     latitude: AdirsData<Angle>,
     longitude: AdirsData<Angle>,
+    maint_word: AdirsData<u32>,
 }
 impl InertialReference {
     const FAST_ALIGNMENT_TIME_IN_SECS: f64 = 90.;
@@ -1000,6 +1032,7 @@ impl InertialReference {
     const WIND_SPEED_BNR: &'static str = "WIND_SPEED_BNR";
     const LATITUDE: &'static str = "LATITUDE";
     const LONGITUDE: &'static str = "LONGITUDE";
+    const MAINT_WORD: &'static str = "MAINT_WORD";
     const MINIMUM_TRUE_AIRSPEED_FOR_WIND_DETERMINATION_KNOTS: f64 = 100.;
     const MINIMUM_GROUND_SPEED_FOR_TRACK_KNOTS: f64 = 50.;
 
@@ -1016,6 +1049,7 @@ impl InertialReference {
             // Start fully initialised.
             remaining_attitude_initialisation_duration: Some(Duration::from_secs(0)),
             wind_velocity: LowPassFilter::new(Self::WIND_VELOCITY_TIME_CONSTANT),
+            extreme_latitude: false,
 
             pitch: AdirsData::new_ir(context, number, Self::PITCH),
             roll: AdirsData::new_ir(context, number, Self::ROLL),
@@ -1042,6 +1076,8 @@ impl InertialReference {
             wind_speed_bnr: AdirsData::new_ir(context, number, Self::WIND_SPEED_BNR),
             latitude: AdirsData::new_ir(context, number, Self::LATITUDE),
             longitude: AdirsData::new_ir(context, number, Self::LONGITUDE),
+            /// label 270
+            maint_word: AdirsData::new_ir(context, number, Self::MAINT_WORD),
         }
     }
 
@@ -1064,9 +1100,11 @@ impl InertialReference {
             simulator_data,
         );
 
+        self.update_latitude(simulator_data);
         self.update_attitude_values(context, simulator_data);
         self.update_heading_values(overhead, simulator_data);
         self.update_non_attitude_values(context, true_airspeed_source, overhead, simulator_data);
+        self.update_maint_word(context, overhead);
     }
 
     fn update_fault_flash_duration(
@@ -1116,6 +1154,19 @@ impl InertialReference {
             },
             InertialReferenceMode::Off | InertialReferenceMode::Attitude => None,
         };
+    }
+
+    fn update_latitude(&mut self, simulator_data: AdirsSimulatorData) {
+        let latitude = simulator_data.latitude.get::<degree>();
+        let longitude = simulator_data.longitude.get::<degree>();
+
+        let hysteresis_sign = if self.extreme_latitude { 1. } else { -1. };
+
+        self.extreme_latitude = !((-60. + hysteresis_sign * 0.5) <= latitude
+            && (latitude <= (73. - hysteresis_sign * 0.5)
+                || (latitude <= (82. - hysteresis_sign * 0.5)
+                    && (longitude <= (-120. - hysteresis_sign * 2.5)
+                        || longitude >= (-90. + hysteresis_sign * 2.5)))))
     }
 
     fn update_attitude_values(
@@ -1171,8 +1222,28 @@ impl InertialReference {
         overhead: &AirDataInertialReferenceSystemOverheadPanel,
         simulator_data: AdirsSimulatorData,
     ) {
-        let ssm = if self.is_on
+        // TODO BNR labels (that most things use) are actually +/- 180
+
+        // TODO tests for when should be mag or true in mag labels
+
+        let heading_available = self.is_on
             && (self.is_fully_aligned()
+                || (overhead.mode_of(self.number) == InertialReferenceMode::Navigation
+                    && self
+                        .remaining_align_duration
+                        .map_or(false, |duration| duration.as_secs() < 120)));
+
+        let true_heading_ssm = if heading_available {
+            SignStatus::NormalOperation
+        } else {
+            SignStatus::NoComputedData
+        };
+        self.true_heading
+            .set_value(simulator_data.true_heading, true_heading_ssm);
+
+        // TODO in ATT mode NCD until heading initialised on MCDU
+        let magnetic_heading_ssm = if self.is_on
+            && (heading_available
                 || (overhead.mode_of(self.number) == InertialReferenceMode::Attitude
                     && self.is_attitude_aligned()))
         {
@@ -1180,22 +1251,14 @@ impl InertialReference {
         } else {
             SignStatus::NoComputedData
         };
-
-        let true_heading_ssm = if self.is_on
-            && (self.is_fully_aligned()
-                || (overhead.mode_of(self.number) == InertialReferenceMode::Navigation
-                    && self
-                        .remaining_align_duration
-                        .map_or(false, |duration| duration.as_secs() < 120)))
-        {
-            SignStatus::NormalOperation
-        } else {
-            SignStatus::NoComputedData
-        };
-
-        self.true_heading
-            .set_value(simulator_data.true_heading, true_heading_ssm);
-        self.heading.set_value(simulator_data.heading, ssm);
+        self.heading.set_value(
+            if self.has_magnetic_data() {
+                simulator_data.heading
+            } else {
+                simulator_data.true_heading
+            },
+            magnetic_heading_ssm,
+        );
     }
 
     fn update_wind_velocity(
@@ -1315,9 +1378,17 @@ impl InertialReference {
 
         self.track.set_value(
             if ground_speed_above_minimum_threshold {
-                simulator_data.track
+                if self.has_magnetic_data() {
+                    simulator_data.track
+                } else {
+                    simulator_data.true_track
+                }
             } else {
-                simulator_data.heading
+                if self.has_magnetic_data() {
+                    simulator_data.heading
+                } else {
+                    simulator_data.true_heading
+                }
             },
             ssm,
         );
@@ -1365,6 +1436,103 @@ impl InertialReference {
         self.update_wind_velocity(context, true_airspeed_source, overhead, simulator_data);
     }
 
+    fn update_maint_word(
+        &mut self,
+        context: &UpdateContext,
+        overhead: &AirDataInertialReferenceSystemOverheadPanel,
+    ) {
+        // TODO check status of these during mode transitions (first need to implement mode FSM)
+        let mut maint_word: IrMaintFlags = IrMaintFlags::default();
+
+        if !self.is_on {
+            // FIXME should be no transmission (can we just do this at a higher level...)
+            self.maint_word
+                .set_value(maint_word.bits(), SignStatus::FailureWarning);
+            return;
+        }
+
+        if !self.is_fully_aligned() {
+            maint_word |= IrMaintFlags::AlignmentNotReady
+        }
+
+        if overhead.mode_of(self.number) == InertialReferenceMode::Attitude {
+            maint_word |= IrMaintFlags::RevAttMode;
+        }
+
+        if self.is_fully_aligned() {
+            maint_word |= IrMaintFlags::NavMode;
+        }
+
+        // TODO request heading setting in att mode if not set
+
+        // TODO attitude invalid fault
+
+        // TODO dc < 18 V
+
+        // TODO on DC (re-implement ON BAT light properly at the same time)
+
+        // TODO ADR input data fault
+
+        // TODO unimportant nav fault
+
+        // TODO DC fault during DC operation last power up
+
+        // TODO align fault
+
+        // TODO No IRS initial pos
+
+        // TODO excess motion during align
+
+        // TODO ADR data not received or parity error
+
+        if self.extreme_latitude {
+            maint_word |= IrMaintFlags::ExtremeLatitude;
+        }
+
+        if self.is_aligning() {
+            if self
+                .remaining_align_duration()
+                .map_or(false, |duration| duration.as_secs() <= 60)
+            {
+                maint_word |= IrMaintFlags::Align1Minutes;
+            } else if self
+                .remaining_align_duration()
+                .map_or(false, |duration| duration.as_secs() <= 120)
+            {
+                maint_word |= IrMaintFlags::Align2Minutes;
+            } else if self
+                .remaining_align_duration()
+                .map_or(false, |duration| duration.as_secs() <= 180)
+            {
+                maint_word |= IrMaintFlags::Align3Minutes;
+            } else if self
+                .remaining_align_duration()
+                .map_or(false, |duration| duration.as_secs() <= 240)
+            {
+                maint_word |= IrMaintFlags::Align4Minutes;
+            } else if self
+                .remaining_align_duration()
+                .map_or(false, |duration| duration.as_secs() <= 300)
+            {
+                maint_word |= IrMaintFlags::Align5Minutes;
+            } else if self
+                .remaining_align_duration()
+                .map_or(false, |duration| duration.as_secs() <= 360)
+            {
+                maint_word |= IrMaintFlags::Align6Minutes;
+            } else {
+                maint_word |= IrMaintFlags::Align710Minutes;
+            }
+        }
+
+        // TODO sin/cos test discrepancy
+
+        self.maint_word
+            .set_value(maint_word.bits(), SignStatus::NormalOperation);
+
+        // TODO tests!
+    }
+
     fn alignment_starting(&self, selected_mode: InertialReferenceMode) -> bool {
         selected_mode != InertialReferenceMode::Off
             && self.remaining_attitude_initialisation_duration.is_none()
@@ -1404,6 +1572,10 @@ impl InertialReference {
     fn has_fault(&self) -> bool {
         self.ir_fault_flash_duration.is_some()
     }
+
+    fn has_magnetic_data(&self) -> bool {
+        !self.extreme_latitude
+    }
 }
 impl SimulationElement for InertialReference {
     fn write(&self, writer: &mut SimulatorWriter) {
@@ -1442,6 +1614,7 @@ impl SimulationElement for InertialReference {
         self.wind_speed_bnr.write_to(writer);
         self.latitude.write_to(writer);
         self.longitude.write_to(writer);
+        self.maint_word.write_to(writer);
     }
 }
 impl GroundSpeed for InertialReference {
