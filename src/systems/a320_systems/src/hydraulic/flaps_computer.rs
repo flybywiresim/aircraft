@@ -8,10 +8,7 @@ use systems::{
     },
 };
 
-use std::{
-    panic,
-    time::{Duration, Instant},
-};
+use std::{panic, time::Duration};
 use uom::si::{angle::degree, f64::*, velocity::knot};
 
 /// A struct to read the handle position
@@ -20,7 +17,7 @@ pub struct CommandSensorUnit {
     current_position: CSUPosition,
     previous_position: CSUPosition,
     last_valid_position: CSUPosition,
-    last_valid_time: Instant,
+    last_valid_time: Duration,
 }
 impl CommandSensorUnit {
     fn new(context: &mut InitContext) -> Self {
@@ -29,7 +26,7 @@ impl CommandSensorUnit {
             current_position: CSUPosition::Conf0,
             previous_position: CSUPosition::Conf0,
             last_valid_position: CSUPosition::Conf0,
-            last_valid_time: Instant::now(),
+            last_valid_time: Duration::ZERO,
         }
     }
 
@@ -37,9 +34,9 @@ impl CommandSensorUnit {
         self.last_valid_position
     }
 
-    #[allow(dead_code)]
+    #[cfg(test)]
     pub fn time_since_last_valid_position(&self) -> Duration {
-        self.last_valid_time.elapsed()
+        self.last_valid_time
     }
 
     pub fn current_position(&self) -> CSUPosition {
@@ -48,6 +45,10 @@ impl CommandSensorUnit {
 
     pub fn previous_position(&self) -> CSUPosition {
         self.previous_position
+    }
+
+    pub fn update(&mut self, context: &UpdateContext) {
+        self.last_valid_time += context.delta();
     }
 }
 
@@ -62,7 +63,7 @@ impl SimulationElement for CommandSensorUnit {
         let new_position = CSUPosition::from(Read::<u8>::read(reader, &self.handle_position_id));
         if CSUPosition::is_valid(new_position) {
             self.last_valid_position = new_position;
-            self.last_valid_time = Instant::now();
+            self.last_valid_time = Duration::ZERO;
         }
         self.current_position = new_position;
     }
@@ -496,6 +497,7 @@ impl SlatFlapControlComputer {
         slats_feedback: &impl FeedbackPositionPickoffUnit,
         adiru: &impl AirDataSource,
     ) {
+        _context.simulation_time();
         self.update_cas(adiru);
 
         self.flaps_demanded_angle = self.generate_flap_angle(flaps_handle);
@@ -745,6 +747,7 @@ impl SlatFlapComplex {
         slats_feedback: &impl FeedbackPositionPickoffUnit,
         adiru: &impl AirDataSource,
     ) {
+        self.flaps_handle.update(context);
         self.sfcc[0].update(
             context,
             &self.flaps_handle,
@@ -1086,6 +1089,18 @@ mod tests {
             self.query(|a| a.slat_flap_complex.flaps_handle.previous_position())
         }
 
+        fn get_csu_last_valid_position(&self) -> CSUPosition {
+            self.query(|a| a.slat_flap_complex.flaps_handle.last_valid_position())
+        }
+
+        fn get_csu_time_since_last_valid_position(&self) -> Duration {
+            self.query(|a| {
+                a.slat_flap_complex
+                    .flaps_handle
+                    .time_since_last_valid_position()
+            })
+        }
+
         fn get_flaps_conf(&self) -> FlapsConf {
             self.query(|a| a.slat_flap_complex.sfcc[0].flaps_conf)
         }
@@ -1165,24 +1180,81 @@ mod tests {
 
         test_bed = test_bed.set_flaps_handle_position(0).run_one_tick();
         assert_eq!(test_bed.get_csu_current_position(), CSUPosition::Conf0);
+        assert_eq!(test_bed.get_csu_last_valid_position(), CSUPosition::Conf0);
 
         test_bed = test_bed.set_flaps_handle_position(1).run_one_tick();
         assert_eq!(test_bed.get_csu_previous_position(), CSUPosition::Conf0);
         assert_eq!(test_bed.get_csu_current_position(), CSUPosition::Conf1);
+        assert_eq!(test_bed.get_csu_last_valid_position(), CSUPosition::Conf1);
 
         test_bed = test_bed.set_flaps_handle_position(2).run_one_tick();
         assert_eq!(test_bed.get_csu_previous_position(), CSUPosition::Conf1);
         assert_eq!(test_bed.get_csu_current_position(), CSUPosition::Conf2);
+        assert_eq!(test_bed.get_csu_last_valid_position(), CSUPosition::Conf2);
 
         test_bed = test_bed.set_flaps_handle_position(3).run_one_tick();
         assert_eq!(test_bed.get_csu_previous_position(), CSUPosition::Conf2);
         assert_eq!(test_bed.get_csu_current_position(), CSUPosition::Conf3);
+        assert_eq!(test_bed.get_csu_last_valid_position(), CSUPosition::Conf3);
 
         test_bed = test_bed.set_flaps_handle_position(4).run_one_tick();
         assert_eq!(test_bed.get_csu_previous_position(), CSUPosition::Conf3);
         assert_eq!(test_bed.get_csu_current_position(), CSUPosition::ConfFull);
+        assert_eq!(
+            test_bed.get_csu_last_valid_position(),
+            CSUPosition::ConfFull
+        );
+        assert!(
+            test_bed
+                .get_csu_time_since_last_valid_position()
+                .as_millis()
+                <= 100
+        );
 
-        // make some time elapse and check last_valid_time
+        test_bed = test_bed.set_flaps_handle_position(255).run_one_tick();
+        assert_eq!(test_bed.get_csu_previous_position(), CSUPosition::ConfFull);
+        assert_eq!(
+            test_bed.get_csu_current_position(),
+            CSUPosition::OutOfDetent
+        );
+        assert_eq!(
+            test_bed.get_csu_last_valid_position(),
+            CSUPosition::ConfFull
+        );
+
+        test_bed = test_bed.run_waiting_for(Duration::from_secs(1));
+        assert_eq!(
+            test_bed.get_csu_previous_position(),
+            CSUPosition::OutOfDetent
+        );
+        assert_eq!(
+            test_bed.get_csu_current_position(),
+            CSUPosition::OutOfDetent
+        );
+        assert_eq!(
+            test_bed.get_csu_last_valid_position(),
+            CSUPosition::ConfFull
+        );
+        assert!(
+            test_bed
+                .get_csu_time_since_last_valid_position()
+                .as_secs_f32()
+                >= 1.0
+        );
+
+        test_bed = test_bed.set_flaps_handle_position(3).run_one_tick();
+        assert_eq!(
+            test_bed.get_csu_previous_position(),
+            CSUPosition::OutOfDetent
+        );
+        assert_eq!(test_bed.get_csu_current_position(), CSUPosition::Conf3);
+        assert_eq!(test_bed.get_csu_last_valid_position(), CSUPosition::Conf3);
+        assert!(
+            test_bed
+                .get_csu_time_since_last_valid_position()
+                .as_millis()
+                <= 100
+        );
     }
 
     #[test]
