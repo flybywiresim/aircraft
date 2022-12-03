@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { ArrowReturnRight } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
-import { usePersistentProperty } from '@instruments/common/persistence';
 import { t } from '../../../translation';
 import { LocalFileChart, LocalFileChartSelector, LocalFileOrganizedCharts } from './LocalFileChartSelector';
 import { ScrollableContainer } from '../../../UtilComponents/ScrollableContainer';
@@ -20,7 +19,6 @@ interface LocalFileCharts {
 
 export const LocalFileChartUI = () => {
     const dispatch = useAppDispatch();
-    const [simbridgeEnabled] = usePersistentProperty('CONFIG_SIMBRIDGE_ENABLED', 'AUTO ON');
     const [statusBarInfo, setStatusBarInfo] = useState('');
     const [icaoAndNameDisagree, setIcaoAndNameDisagree] = useState(false);
     const [charts, setCharts] = useState<LocalFileCharts>({
@@ -85,10 +83,6 @@ export const LocalFileChartUI = () => {
     const getLocalFileChartList = async (searchQuery: string): Promise<LocalFileCharts> => {
         const pdfs: LocalFileChart[] = [];
         const images: LocalFileChart[] = [];
-
-        if (simbridgeEnabled !== 'AUTO ON') {
-            return { images, pdfs }; // No need to search if simbridge is not enabled
-        }
 
         try {
             // IMAGE or BOTH

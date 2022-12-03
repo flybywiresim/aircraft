@@ -4,9 +4,32 @@ class CDUInitPage {
         mcdu.page.Current = mcdu.page.InitPageA;
         mcdu.pageRedrawCallback = () => CDUInitPage.ShowPage1(mcdu);
         mcdu.activeSystem = 'FMGC';
+        mcdu.coRoute.routes = [];
+
+        const haveFlightPlan = mcdu.flightPlanManager.getPersistentOrigin()
+            && mcdu.flightPlanManager.getDestination();
 
         const fromTo = new Column(23, "____|____", Column.amber, Column.right);
-        const coRoute = new Column(0, "__________", Column.amber);
+        const [coRouteAction, coRouteText, coRouteColor] = new CDU_SingleValueField(
+            mcdu,
+            "string",
+            mcdu.coRoute.routeNumber,
+            {
+                emptyValue: haveFlightPlan ? "" : "__________[color]amber",
+                suffix: "[color]cyan",
+                maxLength: 10,
+            },
+            async (value) => {
+                await mcdu.updateCoRoute(value, (result) => {
+                    if (result) {
+                        CDUInitPage.ShowPage1(mcdu);
+                    } else {
+                        scratchpadCallback();
+                    }
+                });
+            }
+        ).getFieldAsColumnParameters();
+
         const [flightNoAction, flightNoText, flightNoColor] = new CDU_SingleValueField(mcdu,
             "string",
             mcdu.flightNumber,
@@ -50,9 +73,6 @@ class CDUInitPage {
         if (mcdu.flightPlanManager.getPersistentOrigin() && mcdu.flightPlanManager.getPersistentOrigin().ident) {
             if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
                 fromTo.update(mcdu.flightPlanManager.getPersistentOrigin().ident + "/" + mcdu.flightPlanManager.getDestination().ident, Column.cyan);
-                if (coRoute.raw.includes("__________")) {
-                    coRoute.text = "";
-                }
 
                 // If an active SimBrief OFP matches the FP, hide the request option
                 // This allows loading a new OFP via INIT/REVIEW loading a different orig/dest to the current one
@@ -149,18 +169,7 @@ class CDUInitPage {
             }
         }
 
-        if (mcdu.coRoute) {
-            coRoute.update(mcdu.coRoute, Column.cyan);
-        }
-        mcdu.onLeftInput[0] = (value, scratchpadCallback) => {
-            mcdu.updateCoRoute(value, (result) => {
-                if (result) {
-                    CDUInitPage.ShowPage1(mcdu);
-                } else {
-                    scratchpadCallback();
-                }
-            });
-        };
+        mcdu.onLeftInput[0] = coRouteAction;
 
         if (mcdu.tropo) {
             tropo.update("" + mcdu.tropo, Column.big);
@@ -192,7 +201,9 @@ class CDUInitPage {
                 });
             } else if (mcdu.flightPlanManager.getPersistentOrigin() && mcdu.flightPlanManager.getPersistentOrigin().ident) {
                 if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
-                    CDUAvailableFlightPlanPage.ShowPage(mcdu);
+                    mcdu.getCoRouteList(mcdu).then(() => {
+                        CDUAvailableFlightPlanPage.ShowPage(mcdu);
+                    });
                 }
             }
         };
@@ -249,7 +260,7 @@ class CDUInitPage {
                 new Column(21, "FROM/TO", Column.right)
             ],
             [
-                coRoute,
+                new Column(0, coRouteText, coRouteColor),
                 fromTo
             ],
             [

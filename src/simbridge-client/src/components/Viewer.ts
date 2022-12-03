@@ -1,4 +1,8 @@
+// Copyright (c) 2022 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
 import { getSimBridgeUrl } from '../common';
+import { ClientState } from './ClientState';
 
 /**
  * Class pertaining to retrieving static files for general viewing from SimBridge
@@ -11,6 +15,9 @@ export class Viewer {
      * @returns a Blob
      */
     public static async getPDFPage(filename: string, pageNumber: number): Promise<Blob> {
+        if (!ClientState.getInstance().isAvailable()) {
+            throw new Error('SimBridge is not connected.');
+        }
         if (filename || pageNumber) {
             const response = await fetch(`${getSimBridgeUrl()}/api/v1/utility/pdf?filename=${filename}&pagenumber=${pageNumber}`);
             if (response.ok) {
@@ -40,6 +47,9 @@ export class Viewer {
      * @returns A number
      */
     public static async getPDFPageNum(filename: string): Promise<number> {
+        if (!ClientState.getInstance().isAvailable()) {
+            throw new Error('SimBridge is not connected.');
+        }
         if (filename) {
             const response = await fetch(`${getSimBridgeUrl()}/api/v1/utility/pdf/numpages?filename=${filename}`);
             if (response.ok) {
@@ -55,6 +65,9 @@ export class Viewer {
      * @returns an Array of strings
      */
     public static async getPDFList(): Promise<string[]> {
+        if (!ClientState.getInstance().isAvailable()) {
+            throw new Error('SimBridge is not connected.');
+        }
         const response = await fetch(`${getSimBridgeUrl()}/api/v1/utility/pdf/list`);
         if (response.ok) {
             return response.json();
@@ -68,6 +81,9 @@ export class Viewer {
      * @returns A Blob
      */
     public static async getImage(filename: string): Promise<Blob> {
+        if (!ClientState.getInstance().isAvailable()) {
+            throw new Error('SimBridge is not connected.');
+        }
         if (filename) {
             const response = await fetch(`${getSimBridgeUrl()}/api/v1/utility/image?filename=${filename}`);
             if (response.ok) {
@@ -95,6 +111,9 @@ export class Viewer {
      * @returns an Array of strings
      */
     public static async getImageList(): Promise<string[]> {
+        if (!ClientState.getInstance().isAvailable()) {
+            throw new Error('SimBridge is not connected.');
+        }
         const response = await fetch(`${getSimBridgeUrl()}/api/v1/utility/image/list`);
         if (response.ok) {
             return response.json();

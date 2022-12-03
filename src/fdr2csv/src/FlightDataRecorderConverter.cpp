@@ -3,9 +3,7 @@
 #include "fmt/include/fmt/core.h"
 #include "fmt/include/fmt/ostream.h"
 
-using namespace std;
-
-void FlightDataRecorderConverter::writeHeader(ofstream& out, const string& delimiter) {
+void FlightDataRecorderConverter::writeHeader(std::ofstream& out, const std::string& delimiter) {
   fmt::print(out, "ap_sm.time.dt{}", delimiter);
   fmt::print(out, "ap_sm.time.simulation_time{}", delimiter);
   fmt::print(out, "ap_sm.data.aircraft_position.lat{}", delimiter);
@@ -473,8 +471,8 @@ void FlightDataRecorderConverter::writeHeader(ofstream& out, const string& delim
   fmt::print(out, "\n");
 }
 
-void FlightDataRecorderConverter::writeStruct(ofstream& out,
-                                              const string& delimiter,
+void FlightDataRecorderConverter::writeStruct(std::ofstream& out,
+                                              const std::string& delimiter,
                                               const ap_sm_output& ap_sm,
                                               const ap_raw_output& ap_law,
                                               const athr_out& athr,

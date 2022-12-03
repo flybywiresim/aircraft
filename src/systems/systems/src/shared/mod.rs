@@ -258,14 +258,14 @@ pub trait LgciuInterface:
 {
 }
 
-#[derive(Copy, Clone, PartialEq, Debug)]
+#[derive(Copy, Clone, PartialEq, Eq, Debug)]
 #[repr(usize)]
 pub enum LgciuId {
     Lgciu1 = 0,
     Lgciu2 = 1,
 }
 
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 pub enum ProximityDetectorId {
     UplockGearNose1,
     UplockGearNose2,
@@ -294,7 +294,7 @@ pub enum ProximityDetectorId {
     DownlockDoorRight2,
 }
 
-#[derive(Clone, Copy, PartialEq, Debug)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub enum GearActuatorId {
     GearNose,
     GearDoorNose,
@@ -370,7 +370,7 @@ pub trait SectionPressure {
     fn is_pressure_switch_pressurised(&self) -> bool;
 }
 
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum HydraulicColor {
     Green,
     Blue,

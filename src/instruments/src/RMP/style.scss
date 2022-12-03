@@ -1,4 +1,4 @@
-$colour-main: hsl(31, 69%, 35%);
+$colour-main: hsl(40, 100%, 50%);
 
 :root {
   background-color: black;
@@ -27,6 +27,8 @@ $colour-main: hsl(31, 69%, 35%);
 
 .rmp-svg {
   background-color: hsl(31, 69%, 6%);
+  background-color: hsl(55, 82%, 2%);
+  box-shadow: inset 0px 0px 110px -20px rgba(255,175,0,0.5);
   /* TODO: Remove opacity when SAI/ISIS/CLOCK/BAT/ATC/RMP/RUD TRIM is split and not share the same emissive/mesh */
   opacity: 0.5;
 }

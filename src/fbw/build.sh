@@ -55,6 +55,7 @@ clang \
 clang++ \
   -c \
   ${CLANG_ARGS} \
+  -std=c++20 \
   -Wno-unused-command-line-argument \
   -Wno-ignored-attributes \
   -Wno-macro-redefined \
@@ -114,6 +115,7 @@ clang++ \
   "${DIR}/src/model/look1_binlxpw.cpp" \
   "${DIR}/src/model/look2_binlcpw.cpp" \
   "${DIR}/src/model/look2_binlxpw.cpp" \
+  "${DIR}/src/model/look2_pbinlxpw.cpp" \
   "${DIR}/src/model/mod_mvZvttxs.cpp" \
   "${DIR}/src/model/MultiWordIor.cpp" \
   "${DIR}/src/model/rt_modd.cpp" \
@@ -121,7 +123,6 @@ clang++ \
   "${DIR}/src/model/uMultiWord2Double.cpp" \
   -I "${DIR}/src/zlib" \
   "${DIR}/src/zlib/zfstream.cc" \
-  "${DIR}/src/ElevatorTrimHandler.cpp" \
   "${DIR}/src/FlyByWireInterface.cpp" \
   "${DIR}/src/FlightDataRecorder.cpp" \
   "${DIR}/src/Arinc429.cpp" \

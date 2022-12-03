@@ -1828,15 +1828,16 @@
            inkscape:label="VertDevSymbolsGroup">
           <text
              xml:space="preserve"
-             style="font-size:5px;line-height:1.25;font-family:'FBW Display-EIS';-inkscape-font-specification:'FBW Display-EIS';text-align:end;text-anchor:end;stroke-width:0.264583"
-             x="111.09086"
-             y="46.931065"
-             id="text1342"><tspan
+             style="font-size:4.99995px;line-height:1.25;font-family:'FBW Display-EIS';-inkscape-font-specification:'FBW Display-EIS';text-align:end;letter-spacing:0px;text-anchor:end;stroke-width:0.26458"
+             x="111.93977"
+             y="47.694107"
+             id="text1342"
+             transform="scale(0.99998929,1.0000107)"><tspan
                sodipodi:role="line"
                id="tspan1340"
-               x="111.09086"
-               y="46.931065"
-               style="font-size:5px;stroke-width:0.264583"
+               x="111.93977"
+               y="47.694107"
+               style="font-size:4.99995px;stroke-width:0.26458"
                rotate="0 0 0 0 0 0">V/DEV</tspan></text>
           <path
              d="m 108.69667,65.703588 h 2.0147"
@@ -1855,20 +1856,20 @@
              style="fill:none;stroke:#000000;stroke-width:0.185208;stroke-miterlimit:4;stroke-dasharray:none"
              id="path1564" />
           <path
-             d="m 107.18564,50.584541 v -2.015884 h 5.03675 v 2.015884"
-             style="fill:none;stroke:#000000;stroke-width:0.185208;stroke-miterlimit:4;stroke-dasharray:none"
+             d="m 106.58482,50.584541 v -2.005689 h 6.2384 v 2.005689"
+             style="fill:none;stroke:#000000;stroke-width:0.205599;stroke-miterlimit:4;stroke-dasharray:none"
              id="VDevSymbolUpper"
              sodipodi:nodetypes="cccc"
              inkscape:label="VDevSymbolUpper" />
           <path
-             d="m 107.18564,111.06072 v 2.01589 h 5.03675 v -2.01589"
-             style="fill:none;stroke:#000000;stroke-width:0.185208;stroke-miterlimit:4;stroke-dasharray:none"
+             d="m 106.58482,111.06072 v 2.00569 h 6.2384 v -2.00569"
+             style="fill:none;stroke:#000000;stroke-width:0.205599;stroke-miterlimit:4;stroke-dasharray:none"
              id="VDevSymbolLower"
              sodipodi:nodetypes="cccc"
              inkscape:label="VDevSymbolLower" />
           <path
-             d="m 112.22239,78.80675 h -5.03675 v 2.015883 2.015886 h 5.03675 v -2.015886 z"
-             style="fill:none;stroke:#000000;stroke-width:0.185208;stroke-miterlimit:4;stroke-dasharray:none"
+             d="m 112.83172,78.62553 h -6.25541 v 2.197103 2.197106 h 6.25541 v -2.197106 z"
+             style="fill:none;stroke:#000000;stroke-width:0.188998;stroke-miterlimit:4;stroke-dasharray:none"
              id="VDevSymbol"
              sodipodi:nodetypes="ccccccc"
              inkscape:label="VDevSymbol" />
@@ -1878,16 +1879,17 @@
            inkscape:label="LatDeviationSymbolsGroup">
           <text
              xml:space="preserve"
-             style="font-size:5px;line-height:1.25;font-family:'FBW Display-EIS';-inkscape-font-specification:'FBW Display-EIS';text-align:end;text-anchor:end;stroke-width:0.264583"
-             x="47.00602"
-             y="126.47193"
+             style="font-size:4.5px;line-height:1.25;font-family:'FBW Display-EIS';-inkscape-font-specification:'FBW Display-EIS';text-align:end;letter-spacing:0px;text-anchor:end;stroke-width:0.264583"
+             x="45.552608"
+             y="126.5618"
              id="text1348"><tspan
                sodipodi:role="line"
                id="tspan1346"
-               x="47.00602"
-               y="126.47193"
-               style="font-size:5px;stroke-width:0.264583"
-               rotate="0 0 0 0 0 0">L/DEV</tspan></text>
+               x="45.552608"
+               y="126.5618"
+               style="font-size:4.5px;stroke-width:0.264583"
+               rotate="0 0 0 0 0 0"
+               dx="0">L/DEV</tspan></text>
           <path
              d="m 38.68595,129.50598 v 2.01585"
              style="fill:none;stroke:#000000;stroke-width:0.185208;stroke-miterlimit:4;stroke-dasharray:none"
@@ -1905,28 +1907,28 @@
              style="fill:none;stroke:#000000;stroke-width:0.185208;stroke-miterlimit:4;stroke-dasharray:none"
              id="path1810" />
           <path
-             d="m 38.68595,127.99407 h -2.0147 v 5.03967 h 2.0147"
-             style="fill:none;stroke:#000000;stroke-width:0.185208;stroke-miterlimit:4;stroke-dasharray:none"
+             d="m 38.68595,127.35727 h -2.003935 v 6.31326 h 2.003935"
+             style="fill:none;stroke:#000000;stroke-width:0.206739;stroke-miterlimit:4;stroke-dasharray:none"
              id="LDevSymbolLeft"
              sodipodi:nodetypes="cccc"
              inkscape:label="LDevSymbolLeft" />
           <path
-             d="m 99.126865,127.99407 h 2.014695 v 5.03967 h -2.014695"
-             style="fill:none;stroke:#000000;stroke-width:0.185208;stroke-miterlimit:4;stroke-dasharray:none"
+             d="m 99.126865,127.35727 h 2.003925 v 6.31326 h -2.003925"
+             style="fill:none;stroke:#000000;stroke-width:0.206739;stroke-miterlimit:4;stroke-dasharray:none"
              id="LDevSymbolRight"
              sodipodi:nodetypes="cccc"
              inkscape:label="LDevSymbolRight" />
           <path
-             d="m 66.891708,127.99407 v 5.03967 h 2.014697 2.014697 v -5.03967 h -2.014697 z"
-             style="fill:none;stroke:#000000;stroke-width:0.185208;stroke-miterlimit:4;stroke-dasharray:none"
+             d="m 66.693251,127.36221 v 6.30339 h 2.213153 2.213153 v -6.30339 h -2.213153 z"
+             style="display:inline;fill:none;stroke:#000000;stroke-width:0.217095;stroke-miterlimit:4;stroke-dasharray:none"
              id="LDevSymbol"
              sodipodi:nodetypes="ccccccc"
              inkscape:label="LDevSymbol" />
         </g>
       </g>
       <path
-         d="m 68.098011,134.49524 v -8.06349 h 1.511905 v 8.06349 z"
-         style="fill:none;stroke:#000000;stroke-width:0.185208;stroke-miterlimit:4;stroke-dasharray:none"
+         d="m 68.14059,133.69116 v -6.35451 h 1.531629 v 6.35451 z"
+         style="display:inline;fill:none;stroke:#000000;stroke-width:0.165484;stroke-miterlimit:4;stroke-dasharray:none"
          id="LocalizerNeutralLine"
          sodipodi:nodetypes="ccccc"
          inkscape:label="LocalizerNeutralLine" />
@@ -1992,8 +1994,8 @@
          id="FixedAircraftReference"
          inkscape:label="FixedAircraftReference">
         <path
-           d="m 115.52142,80.06669 v 1.51188 h -8.97063 v -1.51188 z"
-           style="fill:none;stroke:#000000;stroke-width:0.185208;stroke-miterlimit:4;stroke-dasharray:none"
+           d="m 114.84887,80.06669 v 1.51188 h -8.43284 v -1.51188 z"
+           style="display:inline;fill:none;stroke:#000000;stroke-width:0.179571;stroke-miterlimit:4;stroke-dasharray:none"
            id="path940"
            sodipodi:nodetypes="ccccc" />
         <path
