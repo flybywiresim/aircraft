@@ -8,7 +8,10 @@ use systems::{
     },
 };
 
-use std::panic;
+use std::{
+    panic,
+    time::{Duration, Instant},
+};
 use uom::si::{angle::degree, f64::*, velocity::knot};
 
 /// A struct to read the handle position
@@ -17,7 +20,7 @@ pub struct CommandSensorUnit {
     current_position: CSUPosition,
     previous_position: CSUPosition,
     last_valid_position: CSUPosition,
-    // last_valid_time: Duration,
+    last_valid_time: Instant,
 }
 impl CommandSensorUnit {
     fn new(context: &mut InitContext) -> Self {
@@ -26,7 +29,7 @@ impl CommandSensorUnit {
             current_position: CSUPosition::Conf0,
             previous_position: CSUPosition::Conf0,
             last_valid_position: CSUPosition::Conf0,
-            // last_valid_time: Duration::from_millis(0),
+            last_valid_time: Instant::now(),
         }
     }
 
@@ -34,22 +37,32 @@ impl CommandSensorUnit {
         self.last_valid_position
     }
 
+    #[allow(dead_code)]
+    pub fn time_since_last_valid_position(&self) -> Duration {
+        self.last_valid_time.elapsed()
+    }
+
     pub fn current_position(&self) -> CSUPosition {
         self.current_position
     }
 
-    #[allow(dead_code)]
     pub fn previous_position(&self) -> CSUPosition {
         self.previous_position
     }
 }
 
+// Currently the FLAPS_HANDLE_INDEX backend doesn't support OutOfDetent position
+// because it's mapped between 0 to 4. Changing the mapping of FLAPS_HANDLE_INDEX
+// has significant repercussions over all the systems which read it. However, for
+// completeness of the CSUPosition enum I included the OutOfDetent position.
 impl SimulationElement for CommandSensorUnit {
     fn read(&mut self, reader: &mut SimulatorReader) {
-        let new_position = CSUPosition::from(Read::<u8>::read(reader, &self.handle_position_id));
         self.previous_position = self.current_position;
+
+        let new_position = CSUPosition::from(Read::<u8>::read(reader, &self.handle_position_id));
         if CSUPosition::is_valid(new_position) {
             self.last_valid_position = new_position;
+            self.last_valid_time = Instant::now();
         }
         self.current_position = new_position;
     }
@@ -1036,10 +1049,10 @@ mod tests {
             self
         }
 
-        fn set_alpha(mut self, alpha: f64) -> Self {
-            self.write_by_name("INCIDENCE ALPHA", alpha);
-            self
-        }
+        // fn set_alpha(mut self, alpha: f64) -> Self {
+        //     self.write_by_name("INCIDENCE ALPHA", alpha);
+        //     self
+        // }
 
         fn get_flaps_demanded_angle(&self) -> f64 {
             self.query(|a| {
@@ -1057,13 +1070,21 @@ mod tests {
             })
         }
 
-        fn is_alpha_lock_engaged(&self) -> bool {
-            self.query(|a| a.slat_flap_complex.sfcc[0].alpha_lock_engaged)
-        }
+        // fn is_alpha_lock_engaged(&self) -> bool {
+        //     self.query(|a| a.slat_flap_complex.sfcc[0].alpha_lock_engaged)
+        // }
 
         // fn is_alpha_lock_engaged_speed(&self) -> bool {
         //     self.query(|a| a.slat_flap_complex.sfcc[0].alpha_lock_engaged_speed)
         // }
+
+        fn get_csu_current_position(&self) -> CSUPosition {
+            self.query(|a| a.slat_flap_complex.flaps_handle.current_position())
+        }
+
+        fn get_csu_previous_position(&self) -> CSUPosition {
+            self.query(|a| a.slat_flap_complex.flaps_handle.previous_position())
+        }
 
         fn get_flaps_conf(&self) -> FlapsConf {
             self.query(|a| a.slat_flap_complex.sfcc[0].flaps_conf)
@@ -1115,6 +1136,12 @@ mod tests {
     fn flaps_simvars() {
         let test_bed = test_bed_with().run_one_tick();
 
+        assert!(test_bed.contains_variable_with_name("SFCC_SLAT_FLAP_COMPONENT_STATUS_WORD"));
+        assert!(test_bed.contains_variable_with_name("SFCC_SLAT_FLAP_SYSTEM_STATUS_WORD"));
+        assert!(test_bed.contains_variable_with_name("SFCC_SLAT_FLAP_ACTUAL_POSITION_WORD"));
+        assert!(test_bed.contains_variable_with_name("SFCC_SLAT_ACTUAL_POSITION_WORD"));
+        assert!(test_bed.contains_variable_with_name("SFCC_FLAP_ACTUAL_POSITION_WORD"));
+
         assert!(test_bed.contains_variable_with_name("LEFT_FLAPS_ANGLE"));
         assert!(test_bed.contains_variable_with_name("RIGHT_FLAPS_ANGLE"));
         assert!(test_bed.contains_variable_with_name("LEFT_FLAPS_POSITION_PERCENT"));
@@ -1127,6 +1154,35 @@ mod tests {
 
         assert!(test_bed.contains_variable_with_name("FLAPS_CONF_INDEX"));
         assert!(test_bed.contains_variable_with_name("ALPHA_LOCK_ENGAGED"));
+
+        assert!(test_bed.contains_variable_with_name("SLATS_FPPU_ANGLE"));
+        assert!(test_bed.contains_variable_with_name("FLAPS_FPPU_ANGLE"));
+    }
+
+    #[test]
+    fn flaps_test_command_sensor_unit() {
+        let mut test_bed = test_bed_with().run_one_tick();
+
+        test_bed = test_bed.set_flaps_handle_position(0).run_one_tick();
+        assert_eq!(test_bed.get_csu_current_position(), CSUPosition::Conf0);
+
+        test_bed = test_bed.set_flaps_handle_position(1).run_one_tick();
+        assert_eq!(test_bed.get_csu_previous_position(), CSUPosition::Conf0);
+        assert_eq!(test_bed.get_csu_current_position(), CSUPosition::Conf1);
+
+        test_bed = test_bed.set_flaps_handle_position(2).run_one_tick();
+        assert_eq!(test_bed.get_csu_previous_position(), CSUPosition::Conf1);
+        assert_eq!(test_bed.get_csu_current_position(), CSUPosition::Conf2);
+
+        test_bed = test_bed.set_flaps_handle_position(3).run_one_tick();
+        assert_eq!(test_bed.get_csu_previous_position(), CSUPosition::Conf2);
+        assert_eq!(test_bed.get_csu_current_position(), CSUPosition::Conf3);
+
+        test_bed = test_bed.set_flaps_handle_position(4).run_one_tick();
+        assert_eq!(test_bed.get_csu_previous_position(), CSUPosition::Conf3);
+        assert_eq!(test_bed.get_csu_current_position(), CSUPosition::ConfFull);
+
+        // make some time elapse and check last_valid_time
     }
 
     #[test]
@@ -1156,6 +1212,7 @@ mod tests {
         assert!((test_bed.get_flaps_demanded_angle() - 251.97).abs() <= angle_delta);
     }
 
+    /*
     #[ignore]
     #[test]
     fn flaps_test_alpha_lock() {
@@ -1253,6 +1310,7 @@ mod tests {
             .run_one_tick();
         assert!(!test_bed.is_alpha_lock_engaged());
     }
+    */
 
     #[test]
     fn flaps_test_correct_bus_output_clean_config() {

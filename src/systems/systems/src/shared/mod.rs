@@ -152,6 +152,18 @@ pub enum CSUPosition {
     OutOfDetent,
     Fault,
 }
+impl CSUPosition {
+    pub fn is_valid(value: CSUPosition) -> bool {
+        match value {
+            CSUPosition::Conf0 => true,
+            CSUPosition::Conf1 => true,
+            CSUPosition::Conf2 => true,
+            CSUPosition::Conf3 => true,
+            CSUPosition::ConfFull => true,
+            _ => false,
+        }
+    }
+}
 impl From<u8> for CSUPosition {
     fn from(value: u8) -> Self {
         let u8_to_switch = match value {
@@ -175,18 +187,6 @@ impl From<u8> for CSUPosition {
             0b00001 => CSUPosition::OutOfDetent,
             0b10001 => CSUPosition::ConfFull,
             _ => CSUPosition::Fault,
-        }
-    }
-}
-impl CSUPosition {
-    pub fn is_valid(value: CSUPosition) -> bool {
-        match value {
-            CSUPosition::Conf0 => true,
-            CSUPosition::Conf1 => true,
-            CSUPosition::Conf2 => true,
-            CSUPosition::Conf3 => true,
-            CSUPosition::ConfFull => true,
-            _ => false,
         }
     }
 }
@@ -1403,5 +1403,21 @@ mod average_tests {
 
         let average: Pressure = iterator.iter().average();
         assert_eq!(average, Pressure::new::<hectopascal>(200.));
+    }
+}
+
+#[cfg(test)]
+mod csu_position_tests {
+    use super::*;
+
+    #[test]
+    fn csu_position_is_valid_checks() {
+        assert!(CSUPosition::is_valid(CSUPosition::Conf0));
+        assert!(CSUPosition::is_valid(CSUPosition::Conf1));
+        assert!(CSUPosition::is_valid(CSUPosition::Conf2));
+        assert!(CSUPosition::is_valid(CSUPosition::Conf3));
+        assert!(CSUPosition::is_valid(CSUPosition::ConfFull));
+        assert!(!CSUPosition::is_valid(CSUPosition::OutOfDetent));
+        assert!(!CSUPosition::is_valid(CSUPosition::Fault));
     }
 }
