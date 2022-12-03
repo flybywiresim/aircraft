@@ -1211,7 +1211,7 @@ mod tests {
                 <= 100
         );
 
-        test_bed = test_bed.set_flaps_handle_position(255).run_one_tick();
+        test_bed = test_bed.set_flaps_handle_position(254).run_one_tick();
         assert_eq!(test_bed.get_csu_previous_position(), CSUPosition::ConfFull);
         assert_eq!(
             test_bed.get_csu_current_position(),

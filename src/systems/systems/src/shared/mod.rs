@@ -172,7 +172,7 @@ impl From<u8> for CSUPosition {
             2 => 0b00110,
             3 => 0b00011,
             4 => 0b10001,
-            255 => 0b00001, // Could have been any u8 leading to OutOfDetent
+            254 => 0b00001, // It could have been any number leading to OutOfDetent
             i => panic!("Invalid CSUPosition still unsupported. CSUPosition {}.", i),
         };
 
