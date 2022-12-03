@@ -1,7 +1,10 @@
 use crate::systems::shared::arinc429::{Arinc429Word, SignStatus};
 
 use systems::{
-    shared::{AirDataSource, CSUPosition, FeedbackPositionPickoffUnit, FlapsConf},
+    shared::{
+        AirDataSource, CSUPosition, ElectricalBusType, ElectricalBuses,
+        FeedbackPositionPickoffUnit, FlapsConf,
+    },
     simulation::{
         InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
         SimulatorWriter, UpdateContext, VariableIdentifier, Write,
@@ -80,6 +83,9 @@ struct SlatFlapControlComputer {
     flap_actual_position_word_id: VariableIdentifier,
     alpha_lock_engaged_id: VariableIdentifier,
 
+    powered_by: ElectricalBusType,
+    is_powered: bool,
+
     flap_auto_command_active: bool,
     auto_command_angle: Angle,
 
@@ -123,7 +129,7 @@ impl SlatFlapControlComputer {
     // const ALPHA_LOCK_ENGAGE_ALPHA_DEGREES: f64 = 8.6;
     // const ALPHA_LOCK_DISENGAGE_ALPHA_DEGREES: f64 = 7.6;
 
-    fn new(context: &mut InitContext) -> Self {
+    fn new(context: &mut InitContext, powered_by: ElectricalBusType) -> Self {
         Self {
             flaps_conf_index_id: context.get_identifier("FLAPS_CONF_INDEX".to_owned()),
             slats_fppu_angle_id: context.get_identifier("SLATS_FPPU_ANGLE".to_owned()),
@@ -139,6 +145,9 @@ impl SlatFlapControlComputer {
             flap_actual_position_word_id: context
                 .get_identifier("SFCC_FLAP_ACTUAL_POSITION_WORD".to_owned()),
             alpha_lock_engaged_id: context.get_identifier("ALPHA_LOCK_ENGAGED".to_owned()),
+
+            powered_by: powered_by,
+            is_powered: false,
 
             flap_auto_command_active: false,
             auto_command_angle: Angle::new::<degree>(0.),
@@ -497,7 +506,10 @@ impl SlatFlapControlComputer {
         slats_feedback: &impl FeedbackPositionPickoffUnit,
         adiru: &impl AirDataSource,
     ) {
-        _context.simulation_time();
+        if !self.is_powered {
+            return;
+        }
+
         self.update_cas(adiru);
 
         self.flaps_demanded_angle = self.generate_flap_angle(flaps_handle);
@@ -511,6 +523,10 @@ impl SlatFlapControlComputer {
     fn slat_flap_component_status_word(&self) -> Arinc429Word<u32> {
         let mut word = Arinc429Word::new(0, SignStatus::NormalOperation);
 
+        if !self.is_powered {
+            return word;
+        }
+
         // LABEL 45
 
         //TBD
@@ -520,6 +536,10 @@ impl SlatFlapControlComputer {
 
     fn slat_flap_system_status_word(&self) -> Arinc429Word<u32> {
         let mut word = Arinc429Word::new(0, SignStatus::NormalOperation);
+
+        if !self.is_powered {
+            return word;
+        }
 
         // LABEL 46
 
@@ -589,6 +609,10 @@ impl SlatFlapControlComputer {
     fn slat_flap_actual_position_word(&self) -> Arinc429Word<u32> {
         let mut word = Arinc429Word::new(0, SignStatus::NormalOperation);
 
+        if !self.is_powered {
+            return word;
+        }
+
         word.set_bit(11, true);
         word.set_bit(
             12,
@@ -649,6 +673,10 @@ impl SlatFlapControlComputer {
     }
 
     fn slat_actual_position_word(&self) -> Arinc429Word<f64> {
+        if !self.is_powered {
+            return Arinc429Word::new(0., SignStatus::NormalOperation);
+        }
+
         Arinc429Word::new(
             self.slats_feedback_angle.get::<degree>(),
             SignStatus::NormalOperation,
@@ -656,6 +684,10 @@ impl SlatFlapControlComputer {
     }
 
     fn flap_actual_position_word(&self) -> Arinc429Word<f64> {
+        if !self.is_powered {
+            return Arinc429Word::new(0., SignStatus::NormalOperation);
+        }
+
         Arinc429Word::new(
             self.flaps_feedback_angle.get::<degree>(),
             SignStatus::NormalOperation,
@@ -666,7 +698,6 @@ impl SlatFlapControlComputer {
 trait SlatFlapLane {
     fn signal_demanded_angle(&self, surface_type: &str) -> Option<Angle>;
 }
-
 impl SlatFlapLane for SlatFlapControlComputer {
     fn signal_demanded_angle(&self, surface_type: &str) -> Option<Angle> {
         match surface_type {
@@ -693,6 +724,16 @@ impl SlatFlapLane for SlatFlapControlComputer {
 }
 
 impl SimulationElement for SlatFlapControlComputer {
+    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
+        if self.is_powered != buses.is_powered(self.powered_by) {
+            // Measure power loss duration
+            // if flaps_handle.last_valid_position() != CSUPosition::Conf1 {
+            //     self.flap_auto_command_active = false;
+            // }
+        }
+        self.is_powered = buses.is_powered(self.powered_by);
+    }
+
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.flaps_conf_index_id, self.flaps_conf as u8);
 
@@ -733,8 +774,8 @@ impl SlatFlapComplex {
     pub fn new(context: &mut InitContext) -> Self {
         Self {
             sfcc: [
-                SlatFlapControlComputer::new(context),
-                SlatFlapControlComputer::new(context),
+                SlatFlapControlComputer::new(context, ElectricalBusType::DirectCurrentEssential),
+                SlatFlapControlComputer::new(context, ElectricalBusType::DirectCurrent(2)),
             ],
             flaps_handle: CommandSensorUnit::new(context),
         }
@@ -785,9 +826,13 @@ impl SimulationElement for SlatFlapComplex {
 mod tests {
     use super::*;
     use std::time::Duration;
-    use systems::simulation::{
-        test::{ReadByName, SimulationTestBed, TestBed, WriteByName},
-        Aircraft,
+    use systems::{
+        electrical::{test::TestElectricitySource, ElectricalBus, Electricity},
+        shared::PotentialOrigin,
+        simulation::{
+            test::{ReadByName, SimulationTestBed, TestBed, WriteByName},
+            Aircraft,
+        },
     };
 
     use uom::si::{angular_velocity::degree_per_second, pressure::psi};
@@ -918,6 +963,13 @@ mod tests {
         slat_gear: SlatFlapGear,
         slat_flap_complex: SlatFlapComplex,
 
+        powered_source: TestElectricitySource,
+        dc_2_bus: ElectricalBus,
+        dc_ess_bus: ElectricalBus,
+
+        is_dc_2_powered: bool,
+        is_dc_ess_powered: bool,
+
         green_pressure: Pressure,
         blue_pressure: Pressure,
         yellow_pressure: Pressure,
@@ -949,14 +1001,48 @@ mod tests {
 
                 slat_flap_complex: SlatFlapComplex::new(context),
 
+                powered_source: TestElectricitySource::powered(
+                    context,
+                    PotentialOrigin::EngineGenerator(1),
+                ),
+                dc_2_bus: ElectricalBus::new(context, ElectricalBusType::DirectCurrent(2)),
+                dc_ess_bus: ElectricalBus::new(context, ElectricalBusType::DirectCurrentEssential),
+
+                is_dc_2_powered: true,
+                is_dc_ess_powered: true,
+
                 green_pressure: Pressure::new::<psi>(0.),
                 blue_pressure: Pressure::new::<psi>(0.),
                 yellow_pressure: Pressure::new::<psi>(0.),
             }
         }
+
+        fn set_dc_2_bus_power(&mut self, is_powered: bool) {
+            self.is_dc_2_powered = is_powered;
+        }
+
+        fn set_dc_ess_bus_power(&mut self, is_powered: bool) {
+            self.is_dc_ess_powered = is_powered;
+        }
     }
 
     impl Aircraft for A320FlapsTestAircraft {
+        fn update_before_power_distribution(
+            &mut self,
+            _context: &UpdateContext,
+            electricity: &mut Electricity,
+        ) {
+            electricity.supplied_by(&self.powered_source);
+
+            if self.is_dc_2_powered {
+                electricity.flow(&self.powered_source, &self.dc_2_bus);
+            }
+
+            if self.is_dc_ess_powered {
+                electricity.flow(&self.powered_source, &self.dc_ess_bus);
+            }
+        }
+
         fn update_after_power_distribution(&mut self, context: &UpdateContext) {
             self.adirus.update(context);
             self.slat_flap_complex
@@ -1012,6 +1098,18 @@ mod tests {
 
         fn run_waiting_for(mut self, delta: Duration) -> Self {
             self.test_bed.run_multiple_frames(delta);
+            self
+        }
+
+        fn set_dc_2_bus_power(mut self, is_powered: bool) -> Self {
+            self.command(|a| a.set_dc_2_bus_power(is_powered));
+
+            self
+        }
+
+        fn set_dc_ess_bus_power(mut self, is_powered: bool) -> Self {
+            self.command(|a| a.set_dc_ess_bus_power(is_powered));
+
             self
         }
 
@@ -1176,7 +1274,7 @@ mod tests {
 
     #[test]
     fn flaps_test_command_sensor_unit() {
-        let mut test_bed = test_bed_with().run_one_tick();
+        let mut test_bed = test_bed_with().set_indicated_airspeed(0.).run_one_tick();
 
         test_bed = test_bed.set_flaps_handle_position(0).run_one_tick();
         assert_eq!(test_bed.get_csu_current_position(), CSUPosition::Conf0);
@@ -1223,6 +1321,8 @@ mod tests {
         );
 
         test_bed = test_bed.run_waiting_for(Duration::from_secs(1));
+        assert_eq!(test_bed.get_flaps_demanded_angle(), 251.97);
+        assert_eq!(test_bed.get_slats_demanded_angle(), 334.16);
         assert_eq!(
             test_bed.get_csu_previous_position(),
             CSUPosition::OutOfDetent
@@ -1239,7 +1339,7 @@ mod tests {
             test_bed
                 .get_csu_time_since_last_valid_position()
                 .as_secs_f32()
-                >= 1.0
+                >= 0.9
         );
 
         test_bed = test_bed.set_flaps_handle_position(3).run_one_tick();
