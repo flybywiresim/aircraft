@@ -520,9 +520,10 @@
     "SimOptions": {
       "Active": "有効",
       "Auto": "自動",
-      "Both": "同期",
+      "Both": "両方",
       "Calibrate": "調整",
       "Captain": "機長",
+      "CockpitSeatUsedToControl": "操縦に使用するコックピットシート",
       "ConesEnabled": "セーフティコーン",
       "Copilot": "副操縦士",
       "DefaultBarometerUnit": "デフォルトの気圧計単位",
