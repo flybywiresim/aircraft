@@ -271,76 +271,106 @@ impl SlatFlapControlComputer {
         let kts_100 = Velocity::new::<knot>(100.);
         let kts_210 = Velocity::new::<knot>(210.);
 
-        // NORMAL OPS
+        // The match can be shortened by a convoluted if statement however
+        // I believe it would make debugging and understanding the state machine harder
         match (self.cas1, self.cas2) {
             (Some(cas1), Some(cas2)) if cas1 <= kts_100 && cas2 <= kts_100 => {
-                println!("GO 1");
                 self.auto_command_angle = plus_f
             }
             (Some(cas1), Some(cas2)) if cas1 >= kts_210 && cas2 >= kts_210 => {
-                println!("GO 2");
                 self.auto_command_angle = no_flaps
             }
-            (Some(cas1), Some(cas2))
+            (Some(cas1), _)
                 if flaps_handle.previous_position() == CSUPosition::Conf0
                     && flaps_handle.current_position() == CSUPosition::Conf1
                     && Self::below_enlarged_target_range(self.flaps_feedback_angle, plus_f)
-                    && (cas1 > kts_100 || cas2 > kts_100) =>
+                    && cas1 > kts_100 =>
             {
-                println!("GO 3");
                 self.auto_command_angle = no_flaps
             }
-            (Some(cas1), Some(cas2))
+            (_, Some(cas2))
+                if flaps_handle.previous_position() == CSUPosition::Conf0
+                    && flaps_handle.current_position() == CSUPosition::Conf1
+                    && Self::below_enlarged_target_range(self.flaps_feedback_angle, plus_f)
+                    && cas2 > kts_100 =>
+            {
+                self.auto_command_angle = no_flaps
+            }
+            (Some(cas1), _)
                 if (flaps_handle.previous_position() == CSUPosition::Conf2
                     || flaps_handle.previous_position() == CSUPosition::Conf3
                     || flaps_handle.previous_position() == CSUPosition::ConfFull)
                     && flaps_handle.current_position() == CSUPosition::Conf1
                     && !Self::in_enlarged_target_range(self.flaps_feedback_angle, no_flaps)
-                    && (cas1 < kts_210 || cas2 < kts_210) =>
+                    && cas1 < kts_210 =>
             {
-                println!("GO 4");
                 self.auto_command_angle = plus_f
             }
-            (Some(cas1), Some(cas2))
+            (_, Some(cas2))
+                if (flaps_handle.previous_position() == CSUPosition::Conf2
+                    || flaps_handle.previous_position() == CSUPosition::Conf3
+                    || flaps_handle.previous_position() == CSUPosition::ConfFull)
+                    && flaps_handle.current_position() == CSUPosition::Conf1
+                    && !Self::in_enlarged_target_range(self.flaps_feedback_angle, no_flaps)
+                    && cas2 < kts_210 =>
+            {
+                self.auto_command_angle = plus_f
+            }
+            (Some(cas1), _)
                 if (flaps_handle.previous_position() == CSUPosition::Conf2
                     || flaps_handle.previous_position() == CSUPosition::Conf3
                     || flaps_handle.previous_position() == CSUPosition::ConfFull)
                     && flaps_handle.current_position() == CSUPosition::Conf1
                     && Self::in_enlarged_target_range(self.flaps_feedback_angle, no_flaps)
-                    && (cas1 > kts_100 || cas2 > kts_100) =>
+                    && cas1 > kts_100 =>
             {
-                println!("GO 5");
                 self.auto_command_angle = no_flaps
             }
-            (Some(cas1), Some(cas2))
+            (_, Some(cas2))
+                if (flaps_handle.previous_position() == CSUPosition::Conf2
+                    || flaps_handle.previous_position() == CSUPosition::Conf3
+                    || flaps_handle.previous_position() == CSUPosition::ConfFull)
+                    && flaps_handle.current_position() == CSUPosition::Conf1
+                    && Self::in_enlarged_target_range(self.flaps_feedback_angle, no_flaps)
+                    && cas2 > kts_100 =>
+            {
+                self.auto_command_angle = no_flaps
+            }
+            (Some(cas1), _)
                 if flaps_handle.previous_position() == CSUPosition::Conf0
                     && flaps_handle.current_position() == CSUPosition::Conf1
                     && Self::in_or_above_enlarged_target_range(
                         self.flaps_feedback_angle,
                         plus_f,
                     )
-                    && (cas1 < kts_210 || cas2 < kts_210) =>
+                    && cas1 < kts_210 =>
             {
-                println!("GO 6");
+                self.auto_command_angle = plus_f
+            }
+            (_, Some(cas2))
+                if flaps_handle.previous_position() == CSUPosition::Conf0
+                    && flaps_handle.current_position() == CSUPosition::Conf1
+                    && Self::in_or_above_enlarged_target_range(
+                        self.flaps_feedback_angle,
+                        plus_f,
+                    )
+                    && cas2 < kts_210 =>
+            {
                 self.auto_command_angle = plus_f
             }
             // If these are moved at the top, then the other cases are never hit
-            // They can be simplified in a single case statement but it would
-            // make checking of behaviour harder
+            // They can be simplified in a single case statement but for clarity
+            // they are fully explicit
             (Some(cas1), _) if cas1 > kts_100 && cas1 < kts_210 => {
-                println!("GO 7");
                 self.auto_command_angle = self.auto_command_angle
             }
             (_, Some(cas2)) if cas2 > kts_100 && cas2 < kts_210 => {
-                println!("GO 8");
                 self.auto_command_angle = self.auto_command_angle
             }
             (Some(cas1), Some(cas2)) if cas1 <= kts_100 && cas2 >= kts_210 => {
-                println!("GO 9");
                 self.auto_command_angle = self.auto_command_angle
             }
             (Some(cas1), Some(cas2)) if cas1 >= kts_210 && cas2 <= kts_100 => {
-                println!("GO 10");
                 self.auto_command_angle = self.auto_command_angle
             }
             (None, None)
@@ -355,39 +385,13 @@ impl SlatFlapControlComputer {
             {
                 self.auto_command_angle = self.auto_command_angle
             }
+            // If this panic is reached, it means a condition has been forgotten!
             (_, _) => panic!(
                 "Missing case update_flap_auto_command! {} {}.",
                 self.cas1.unwrap().get::<knot>(),
                 self.cas2.unwrap().get::<knot>()
             ),
         }
-
-        // if self.cas1_valid && self.cas2_valid {
-        //     if self.cas1 <= kts_100 && self.cas2 <= kts_100 {
-        //         // 1+F
-        //         self.auto_command_angle = plus_f;
-        //     }
-
-        //     if self.cas1 >= kts_210 && self.cas2 >= kts_210 {
-        //         // 0
-        //         self.auto_command_angle = no_flaps;
-        //     }
-        // } else if self.cas1_valid || self.cas2_valid {
-        //     if self.cas <= kts_100 {
-        //         // 1+F
-        //         self.auto_command_angle = plus_f;
-        //     }
-
-        //     if self.cas >= kts_210 {
-        //         // 0
-        //         self.auto_command_angle = no_flaps;
-        //     }
-        // }
-
-        // if !self.flap_auto_command_active && !self.cas_valid {
-        //     // 1+F
-        //     self.auto_command_angle = plus_f;
-        // }
     }
 
     fn generate_flap_angle(&mut self, flaps_handle: &CommandSensorUnit) -> Angle {
@@ -1025,19 +1029,8 @@ mod tests {
             conf: FlapsConf,
             angle_delta: f64,
         ) {
-            println!("HANDLE {}\t CONF {}", handle_pos, conf as u8);
             assert_eq!(self.read_flaps_handle_position(), handle_pos);
-            println!(
-                "FLAPS_DMD WANTED {}\t FOUND {}",
-                flaps_demanded_angle,
-                self.get_flaps_demanded_angle()
-            );
             assert!((self.get_flaps_demanded_angle() - flaps_demanded_angle).abs() < angle_delta);
-            println!(
-                "SLATS_DMD WANTED {}\tFOUND {}",
-                slats_demanded_angle,
-                self.get_slats_demanded_angle()
-            );
             assert!((self.get_slats_demanded_angle() - slats_demanded_angle).abs() < angle_delta);
             assert_eq!(self.get_flaps_conf(), conf);
         }
