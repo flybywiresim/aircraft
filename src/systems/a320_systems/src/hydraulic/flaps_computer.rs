@@ -85,6 +85,7 @@ struct SlatFlapControlComputer {
 
     powered_by: ElectricalBusType,
     is_powered: bool,
+    recovered_power: bool,
 
     flap_auto_command_active: bool,
     auto_command_angle: Angle,
@@ -148,6 +149,7 @@ impl SlatFlapControlComputer {
 
             powered_by: powered_by,
             is_powered: false,
+            recovered_power: false,
 
             flap_auto_command_active: false,
             auto_command_angle: Angle::new::<degree>(0.),
@@ -289,7 +291,6 @@ impl SlatFlapControlComputer {
             self.flap_auto_command_active = false;
             return;
         }
-        self.flap_auto_command_active = true;
 
         let no_flaps = Angle::new::<degree>(0.0);
         let plus_f = Angle::new::<degree>(120.21);
@@ -399,6 +400,7 @@ impl SlatFlapControlComputer {
             (Some(cas1), Some(cas2)) if cas1 >= kts_210 && cas2 <= kts_100 => {
                 self.auto_command_angle = self.auto_command_angle
             }
+            (None, None) if !self.flap_auto_command_active => self.auto_command_angle = plus_f,
             (None, None)
                 if flaps_handle.previous_position() != CSUPosition::Conf1
                     && flaps_handle.current_position() == CSUPosition::Conf1 =>
@@ -418,6 +420,7 @@ impl SlatFlapControlComputer {
                 self.cas2.unwrap().get::<knot>()
             ),
         }
+        self.flap_auto_command_active = true;
     }
 
     fn generate_flap_angle(&mut self, flaps_handle: &CommandSensorUnit) -> Angle {
@@ -498,6 +501,84 @@ impl SlatFlapControlComputer {
     //     }
     // }
 
+    pub fn powerup_reset(&mut self, flaps_handle: &CommandSensorUnit) {
+        // Auto Command restart
+        if flaps_handle.last_valid_position() != CSUPosition::Conf1 {
+            self.flap_auto_command_active = false;
+            return;
+        }
+
+        let no_flaps = Angle::new::<degree>(0.0);
+        let plus_f = Angle::new::<degree>(120.21);
+
+        let kts_100 = Velocity::new::<knot>(100.);
+        let kts_210 = Velocity::new::<knot>(210.);
+
+        // The match can be shortened by a convoluted if statement however
+        // I believe it would make debugging and understanding the state machine harder
+        match (self.cas1, self.cas2) {
+            (Some(cas1), Some(cas2))
+                if ((cas1 <= kts_100 && cas2 >= kts_210)
+                    || (cas1 >= kts_210 && cas2 <= kts_100))
+                    && Self::in_enlarged_target_range(self.flaps_feedback_angle, no_flaps) =>
+            {
+                self.auto_command_angle = no_flaps
+            }
+            (Some(cas1), Some(cas2))
+                if ((cas1 <= kts_100 && cas2 >= kts_210)
+                    || (cas1 >= kts_210 && cas2 <= kts_100))
+                    && Self::in_or_above_enlarged_target_range(
+                        self.flaps_feedback_angle,
+                        plus_f,
+                    ) =>
+            {
+                self.auto_command_angle = plus_f
+            }
+            (Some(cas1), _)
+                if cas1 > kts_100
+                    && cas1 < kts_210
+                    && Self::in_or_above_enlarged_target_range(
+                        self.flaps_feedback_angle,
+                        plus_f,
+                    ) =>
+            {
+                self.auto_command_angle = plus_f
+            }
+            (_, Some(cas2))
+                if cas2 > kts_100
+                    && cas2 < kts_210
+                    && Self::in_or_above_enlarged_target_range(
+                        self.flaps_feedback_angle,
+                        plus_f,
+                    ) =>
+            {
+                self.auto_command_angle = plus_f
+            }
+            (Some(cas1), _)
+                if cas1 > kts_100
+                    && cas1 < kts_210
+                    && Self::in_enlarged_target_range(self.flaps_feedback_angle, no_flaps) =>
+            {
+                self.auto_command_angle = no_flaps
+            }
+            (_, Some(cas2))
+                if cas2 > kts_100
+                    && cas2 < kts_210
+                    && Self::in_enlarged_target_range(self.flaps_feedback_angle, no_flaps) =>
+            {
+                self.auto_command_angle = no_flaps
+            }
+            (None, None) => self.auto_command_angle = plus_f,
+            // If this panic is reached, it means a condition has been forgotten!
+            (_, _) => panic!(
+                "Missing case update_flap_auto_command! {} {}.",
+                self.cas1.unwrap().get::<knot>(),
+                self.cas2.unwrap().get::<knot>()
+            ),
+        }
+        self.flap_auto_command_active = true;
+    }
+
     pub fn update(
         &mut self,
         _context: &UpdateContext,
@@ -508,6 +589,11 @@ impl SlatFlapControlComputer {
     ) {
         if !self.is_powered {
             return;
+        }
+
+        if self.recovered_power {
+            self.powerup_reset(flaps_handle);
+            self.recovered_power = false;
         }
 
         self.update_cas(adiru);
@@ -521,11 +607,11 @@ impl SlatFlapControlComputer {
     }
 
     fn slat_flap_component_status_word(&self) -> Arinc429Word<u32> {
-        let mut word = Arinc429Word::new(0, SignStatus::NormalOperation);
-
         if !self.is_powered {
-            return word;
+            return Arinc429Word::new(0, SignStatus::NoComputedData);
         }
+
+        let mut word = Arinc429Word::new(0, SignStatus::NormalOperation);
 
         // LABEL 45
 
@@ -535,11 +621,11 @@ impl SlatFlapControlComputer {
     }
 
     fn slat_flap_system_status_word(&self) -> Arinc429Word<u32> {
-        let mut word = Arinc429Word::new(0, SignStatus::NormalOperation);
-
         if !self.is_powered {
-            return word;
+            return Arinc429Word::new(0, SignStatus::NoComputedData);
         }
+
+        let mut word = Arinc429Word::new(0, SignStatus::NormalOperation);
 
         // LABEL 46
 
@@ -607,11 +693,11 @@ impl SlatFlapControlComputer {
     }
 
     fn slat_flap_actual_position_word(&self) -> Arinc429Word<u32> {
-        let mut word = Arinc429Word::new(0, SignStatus::NormalOperation);
-
         if !self.is_powered {
-            return word;
+            return Arinc429Word::new(0, SignStatus::NoComputedData);
         }
+
+        let mut word = Arinc429Word::new(0, SignStatus::NormalOperation);
 
         word.set_bit(11, true);
         word.set_bit(
@@ -674,7 +760,7 @@ impl SlatFlapControlComputer {
 
     fn slat_actual_position_word(&self) -> Arinc429Word<f64> {
         if !self.is_powered {
-            return Arinc429Word::new(0., SignStatus::NormalOperation);
+            return Arinc429Word::new(0., SignStatus::NoComputedData);
         }
 
         Arinc429Word::new(
@@ -685,7 +771,7 @@ impl SlatFlapControlComputer {
 
     fn flap_actual_position_word(&self) -> Arinc429Word<f64> {
         if !self.is_powered {
-            return Arinc429Word::new(0., SignStatus::NormalOperation);
+            return Arinc429Word::new(0., SignStatus::NoComputedData);
         }
 
         Arinc429Word::new(
@@ -726,10 +812,7 @@ impl SlatFlapLane for SlatFlapControlComputer {
 impl SimulationElement for SlatFlapControlComputer {
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
         if self.is_powered != buses.is_powered(self.powered_by) {
-            // Measure power loss duration
-            // if flaps_handle.last_valid_position() != CSUPosition::Conf1 {
-            //     self.flap_auto_command_active = false;
-            // }
+            self.recovered_power = !self.is_powered;
         }
         self.is_powered = buses.is_powered(self.powered_by);
     }
@@ -1017,13 +1100,13 @@ mod tests {
             }
         }
 
-        fn set_dc_2_bus_power(&mut self, is_powered: bool) {
-            self.is_dc_2_powered = is_powered;
-        }
+        // fn set_dc_2_bus_power(&mut self, is_powered: bool) {
+        //     self.is_dc_2_powered = is_powered;
+        // }
 
-        fn set_dc_ess_bus_power(&mut self, is_powered: bool) {
-            self.is_dc_ess_powered = is_powered;
-        }
+        // fn set_dc_ess_bus_power(&mut self, is_powered: bool) {
+        //     self.is_dc_ess_powered = is_powered;
+        // }
     }
 
     impl Aircraft for A320FlapsTestAircraft {
@@ -1101,17 +1184,17 @@ mod tests {
             self
         }
 
-        fn set_dc_2_bus_power(mut self, is_powered: bool) -> Self {
-            self.command(|a| a.set_dc_2_bus_power(is_powered));
+        // fn set_dc_2_bus_power(mut self, is_powered: bool) -> Self {
+        //     self.command(|a| a.set_dc_2_bus_power(is_powered));
 
-            self
-        }
+        //     self
+        // }
 
-        fn set_dc_ess_bus_power(mut self, is_powered: bool) -> Self {
-            self.command(|a| a.set_dc_ess_bus_power(is_powered));
+        // fn set_dc_ess_bus_power(mut self, is_powered: bool) -> Self {
+        //     self.command(|a| a.set_dc_ess_bus_power(is_powered));
 
-            self
-        }
+        //     self
+        // }
 
         fn set_flaps_handle_position(mut self, pos: u8) -> Self {
             self.write_by_name("FLAPS_HANDLE_INDEX", pos as f64);
