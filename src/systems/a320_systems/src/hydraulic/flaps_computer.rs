@@ -1673,11 +1673,7 @@ mod tests {
             .set_green_hyd_pressure()
             .set_yellow_hyd_pressure()
             .set_blue_hyd_pressure()
-            .set_indicated_airspeed(200.);
-        //.set_flaps_handle_position(0)
-        //.run_waiting_for(Duration::from_secs(5));
-        println!("Flaps {}", test_bed.get_flaps_fppu_feedback());
-        test_bed = test_bed
+            .set_indicated_airspeed(200.)
             .set_flaps_handle_position(1)
             .run_waiting_for(Duration::from_secs(5));
 
