@@ -540,6 +540,13 @@ impl SlatFlapControlComputer {
     // }
 
     pub fn powerup_reset(&mut self, flaps_handle: &CommandSensorUnit) {
+        println!("powerup_reset");
+        println!(
+            "flaps_handle PREV {:?}\tCURR {:?}\tLAST {:?}",
+            flaps_handle.previous_position(),
+            flaps_handle.current_position(),
+            flaps_handle.last_valid_position()
+        );
         // Auto Command restart
         if flaps_handle.last_valid_position() != CSUPosition::Conf1 {
             self.flap_auto_command_active = false;
@@ -557,6 +564,7 @@ impl SlatFlapControlComputer {
                         self.conf1_flaps,
                     ) =>
             {
+                println!("START 1");
                 self.auto_command_angle = self.conf1_flaps
             }
             (Some(cas1), Some(cas2))
@@ -567,6 +575,7 @@ impl SlatFlapControlComputer {
                         self.conf1f_flaps,
                     ) =>
             {
+                println!("START 2");
                 self.auto_command_angle = self.conf1f_flaps
             }
             (Some(cas1), _)
@@ -577,6 +586,7 @@ impl SlatFlapControlComputer {
                         self.conf1f_flaps,
                     ) =>
             {
+                println!("START 3");
                 self.auto_command_angle = self.conf1f_flaps
             }
             (_, Some(cas2))
@@ -587,6 +597,7 @@ impl SlatFlapControlComputer {
                         self.conf1f_flaps,
                     ) =>
             {
+                println!("START 4");
                 self.auto_command_angle = self.conf1f_flaps
             }
             (Some(cas1), _)
@@ -597,6 +608,7 @@ impl SlatFlapControlComputer {
                         self.conf1_flaps,
                     ) =>
             {
+                println!("START 5");
                 self.auto_command_angle = self.conf1_flaps
             }
             (_, Some(cas2))
@@ -607,15 +619,18 @@ impl SlatFlapControlComputer {
                         self.conf1_flaps,
                     ) =>
             {
+                println!("START 6");
                 self.auto_command_angle = self.conf1_flaps
             }
-            (None, None) => self.auto_command_angle = self.conf1f_flaps,
+            (None, None) => {
+                println!("START 7");
+                self.auto_command_angle = self.conf1f_flaps
+            }
             // If this panic is reached, it means a condition has been forgotten!
-            (_, _) => panic!(
-                "Missing case update_flap_auto_command! {} {}.",
-                self.cas1.unwrap().get::<knot>(),
-                self.cas2.unwrap().get::<knot>()
-            ),
+            (_, _) => {
+                println!("START 8");
+                self.auto_command_angle = self.auto_command_angle // Should it be conf1 or conf1f?
+            }
         }
         self.flap_auto_command_active = true;
     }
@@ -632,12 +647,13 @@ impl SlatFlapControlComputer {
             return;
         }
 
+        // CAS read before starting any SFCC logic to prevent reading None
+        self.update_cas(adiru);
+
         if self.recovered_power {
             self.powerup_reset(flaps_handle);
             self.recovered_power = false;
         }
-
-        self.update_cas(adiru);
 
         self.flaps_demanded_angle = self.generate_flap_angle(flaps_handle);
         self.slats_demanded_angle = self.generate_slat_angle(flaps_handle);
@@ -1657,14 +1673,15 @@ mod tests {
             .set_green_hyd_pressure()
             .set_yellow_hyd_pressure()
             .set_blue_hyd_pressure()
-            .set_indicated_airspeed(200.)
-            .set_flaps_handle_position(0)
-            .run_waiting_for(Duration::from_secs(5));
-
+            .set_indicated_airspeed(200.);
+        //.set_flaps_handle_position(0)
+        //.run_waiting_for(Duration::from_secs(5));
+        println!("Flaps {}", test_bed.get_flaps_fppu_feedback());
         test_bed = test_bed
             .set_flaps_handle_position(1)
             .run_waiting_for(Duration::from_secs(5));
 
+        println!("Flaps {}", test_bed.get_flaps_fppu_feedback());
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1);
         assert!(!test_bed.read_slat_flap_system_status_word().get_bit(17));
         assert!(test_bed.read_slat_flap_system_status_word().get_bit(18));
@@ -2074,7 +2091,7 @@ mod tests {
             .set_indicated_airspeed(110.)
             .set_flaps_handle_position(1)
             .run_waiting_for(Duration::from_secs(20));
-        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1F);
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1);
 
         test_bed = test_bed
             .set_flaps_handle_position(3)
@@ -2085,6 +2102,13 @@ mod tests {
             .set_flaps_handle_position(1)
             .run_waiting_for(Duration::from_secs(20));
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1F);
+
+        test_bed = test_bed_with()
+            .set_green_hyd_pressure()
+            .set_indicated_airspeed(110.)
+            .set_flaps_handle_position(1)
+            .run_waiting_for(Duration::from_secs(20));
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1);
 
         test_bed = test_bed
             .set_flaps_handle_position(4)
@@ -2109,6 +2133,13 @@ mod tests {
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf3);
 
         test_bed = test_bed
+            .set_flaps_handle_position(1)
+            .run_waiting_for(Duration::from_secs(20));
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1);
+
+        test_bed = test_bed_with()
+            .set_green_hyd_pressure()
+            .set_indicated_airspeed(220.)
             .set_flaps_handle_position(1)
             .run_waiting_for(Duration::from_secs(20));
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1);
