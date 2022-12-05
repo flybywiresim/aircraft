@@ -2,6 +2,7 @@ import { A320Failure, FailuresConsumer } from '@flybywiresim/failures';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { ClockEvents, ComponentProps, DisplayComponent, EventBus, FSComponent, Subject, VNode } from 'msfssdk';
 import { Arinc429Word } from '@shared/arinc429';
+import { DisplayManagementComputerEvents } from 'instruments/src/PFD/shared/DisplayManagementComputer';
 import { LagFilter } from './PFDUtils';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { DisplayUnit } from './shared/displayUnit';
@@ -54,9 +55,9 @@ export class PFDComponent extends DisplayComponent<PFDProps> {
 
         this.failuresConsumer.register(getDisplayIndex() === 1 ? A320Failure.LeftPfdDisplay : A320Failure.RightPfdDisplay);
 
-        const sub = this.props.bus.getSubscriber<Arinc429Values & ClockEvents>();
+        const sub = this.props.bus.getSubscriber<Arinc429Values & ClockEvents & DisplayManagementComputerEvents>();
 
-        sub.on('headingAr').handle((h) => {
+        sub.on('heading').handle((h) => {
             if (this.headingFailed.get() !== h.isNormalOperation()) {
                 this.headingFailed.set(!h.isNormalOperation());
             }

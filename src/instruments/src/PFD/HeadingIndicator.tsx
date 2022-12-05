@@ -1,4 +1,5 @@
 import { DisplayComponent, EventBus, FSComponent, HEvent, Subject, Subscribable, VNode } from 'msfssdk';
+import { DisplayManagementComputerEvents } from 'instruments/src/PFD/shared/DisplayManagementComputer';
 import { HorizontalTape } from './HorizontalTape';
 import { getSmallestAngle } from './PFDUtils';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
@@ -60,9 +61,9 @@ export class HeadingOfftape extends DisplayComponent<{ bus: EventBus, failed: Su
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values & HEvent>();
+        const sub = this.props.bus.getSubscriber<DisplayManagementComputerEvents & PFDSimvars & Arinc429Values & HEvent>();
 
-        sub.on('headingAr').handle((h) => {
+        sub.on('heading').handle((h) => {
             this.heading.set(h.value);
 
             if (h.isNormalOperation()) {
@@ -99,6 +100,7 @@ export class HeadingOfftape extends DisplayComponent<{ bus: EventBus, failed: Su
                     <QFUIndicator heading={this.heading} ILSCourse={this.ILSCourse} lsPressed={this.lsPressed} />
                     <path class="Fill Yellow" d="m69.61 147.31h-1.5119v-8.0635h1.5119z" />
                     <GroundTrackBug bus={this.props.bus} heading={this.heading} />
+                    <TrueFlag bus={this.props.bus} />
                 </g>
             </>
         );
@@ -207,9 +209,9 @@ class GroundTrackBug extends DisplayComponent<GroundTrackBugProps> {
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<Arinc429Values>();
+        const sub = this.props.bus.getSubscriber<DisplayManagementComputerEvents>();
 
-        sub.on('groundTrackAr').handle((groundTrack) => {
+        sub.on('track').handle((groundTrack) => {
             //  if (groundTrack.isNormalOperation()) {
             const offset = getSmallestAngle(groundTrack.value, this.props.heading.get()) * DistanceSpacing / ValueSpacing;
             this.trackIndicator.instance.style.display = 'inline';
@@ -335,6 +337,30 @@ class QFUIndicator extends DisplayComponent<{ ILSCourse: Subscribable<number>, h
                     <path class="BlackFill NormalStroke White" d="m26.094 156.18v-6.5516h12.088v6.5516z" />
                     <text id="ILSCourseTextLeft" class="FontMedium MiddleAlign Magenta" x="32.406616" y="155.22305">{this.text}</text>
                 </g>
+            </g>
+        );
+    }
+}
+
+interface TrueFlagProps {
+    bus: EventBus;
+}
+
+class TrueFlag extends DisplayComponent<TrueFlagProps> {
+    private trueRefActive = Subject.create(false);
+
+    /** @inheritdoc */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    onAfterRender(node: VNode): void {
+        this.props.bus.getSubscriber<DisplayManagementComputerEvents>().on('trueRefActive').whenChanged().handle((v) => this.trueRefActive.set(v));
+    }
+
+    /** @inheritdoc */
+    render(): VNode {
+        return (
+            <g id="TrueRefFlag" visibility={this.trueRefActive ? 'visible' : 'hidden'}>
+                <rect x="62.439" y="134.468" width="12.935" height="4.575" class="Cyan NormalStroke" />
+                <text x="68.9065" y="137.008" text-anchor="middle" alignment-baseline="middle" class="FontSmallest Cyan">TRUE</text>
             </g>
         );
     }
