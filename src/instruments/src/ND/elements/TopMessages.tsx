@@ -36,7 +36,7 @@ type TrueFlagProps = {
 
 const TrueFlag: React.FC<TrueFlagProps> = ({ xOffset = 0, box }) => (
     <>
-        <rect x={-30 + xOffset} width={60} y={-20} height={22} className="Cyan" strokeWidth={1.5} visibility={box ? 'visible' : 'hidden'} />
+        <rect x={-30 + xOffset} width={60} y={-20} height={22} className="Cyan" strokeWidth={1.5} visibility={box ? 'inherit' : 'hidden'} />
         <text x={xOffset} fontSize={22} className="Cyan" textAnchor="middle">TRUE</text>
     </>
 );
