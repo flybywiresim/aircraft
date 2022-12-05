@@ -9,6 +9,8 @@ export enum NavAidMode {
     VOR,
 }
 
+// TODO true ref
+
 export type RadioNavInfoProps = { index: 1 | 2, side: EfisSide }
 
 const TuningModeIndicator: React.FC<{ index: 1 | 2, frequency: number }> = ({ index, frequency }) => {
