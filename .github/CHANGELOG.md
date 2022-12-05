@@ -8,7 +8,7 @@
 ## 0.10.0
 
 1. [ADIRU] Implemented wind speed computation from TAS/GS/HDG - @tracernz (Mike)
-1. [HYD] Faster Core hydraulics solver - @Crocket63 (crocket)
+1. [HYD] Faster core hydraulics solver - @Crocket63 (crocket)
 
 ## 0.9.0
 
