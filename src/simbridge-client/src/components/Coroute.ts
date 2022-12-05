@@ -1,5 +1,9 @@
-import { getSimBridgeUrl } from '../common';
+// Copyright (c) 2022 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
+import { fetchWithTimeout, getSimBridgeUrl } from '../common';
 import { CoRouteDto } from '../Coroute/coroute';
+import { ClientState } from './ClientState';
 
 type coRouteCall = {
     success: boolean,
@@ -16,8 +20,11 @@ export class CompanyRoute {
      * @returns Returns the CoRoute DTO
      */
     public static async getCoRoute(route: String): Promise<coRouteCall> {
+        if (!ClientState.getInstance().isAvailable()) {
+            throw new Error('SimBridge is not connected.');
+        }
         if (route) {
-            const response = await fetch(`${getSimBridgeUrl()}/api/v1/coroute?rteNum=${route}`);
+            const response = await fetchWithTimeout(`${getSimBridgeUrl()}/api/v1/coroute?rteNum=${route}`);
             if (response.ok) {
                 return {
                     success: true,
@@ -40,8 +47,11 @@ export class CompanyRoute {
      * @returns Returns a list of CoRoute DTOs
      */
     public static async getRouteList(origin: String, dest: String): Promise<coRouteCall> {
+        if (!ClientState.getInstance().isAvailable()) {
+            throw new Error('SimBridge is not connected.');
+        }
         if (origin && dest) {
-            const response = await fetch(`${getSimBridgeUrl()}/api/v1/coroute/list?origin=${origin}&destination=${dest}`);
+            const response = await fetchWithTimeout(`${getSimBridgeUrl()}/api/v1/coroute/list?origin=${origin}&destination=${dest}`);
             if (response.ok) {
                 const filteredData = (await response.json() as CoRouteDto[]).filter((value) => value.name.length < 10);
                 return {

@@ -151,6 +151,12 @@
       "BoardingTime": "승객 탑승 시간",
       "Cargo": "수화물",
       "Current": "현재",
+      "DeboardConfirmationBody": "모든 승객을 하차합니다. 확인해주세요",
+      "DeboardConfirmationCancel": "취소",
+      "DeboardConfirmationConfirm": "하차",
+      "DeboardConfirmationTitle": "모든 승객을 하차시키겠습니까?",
+      "EstimatedDurationUnit": "분",
+      "LoadingTime": "탑승 시간",
       "Passengers": "승객",
       "Planned": "계획",
       "TT": {
@@ -162,7 +168,8 @@
         "MaxZFWCG": "최대 ZFWCG",
         "PerPaxBagWeight": "승객 화물당 무게",
         "PerPaxWeight": "승객당 무게",
-        "StartBoarding": "탑승 시작"
+        "StartBoarding": "탑승 시작",
+        "StartDeboarding": "하차 시작"
       },
       "Title": "Payload",
       "ZFW": "ZFW",
@@ -359,7 +366,7 @@
       "ConfirmationDialogMsg": "불러오려는 프리셋을 확인해주세요",
       "CurrentProcedureStep": "현재 절차 단계",
       "PleaseConfirmLoadingOfPreset": "불러오려는 프리셋을 확인해주세요",
-      "Powered": "Powered",
+      "Powered": "전원 공급됨",
       "ReadyPushback": "푸시백 준비",
       "ReadyTakeoff": "이륙 준비",
       "ReadyTaxi": "지상활주 준비",

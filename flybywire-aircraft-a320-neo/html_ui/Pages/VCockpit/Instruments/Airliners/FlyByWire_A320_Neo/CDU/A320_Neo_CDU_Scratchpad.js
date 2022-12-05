@@ -17,6 +17,7 @@ class ScratchpadDisplay {
 
 class ScratchpadDataLink {
     constructor(mcdu, displayUnit) {
+        this.guid = `SP-${Utils.generateGUID()}`;
         this._text = "";
         this._message = {};
         this._status = 0;
