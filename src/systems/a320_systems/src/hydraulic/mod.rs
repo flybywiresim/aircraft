@@ -51,15 +51,13 @@ use systems::{
         AutoOffFaultPushButton, AutoOnFaultPushButton, MomentaryOnPushButton, MomentaryPushButton,
     },
     shared::{
-        interpolation,
-        low_pass_filter::LowPassFilter,
-        random_from_normal_distribution, random_from_range,
-        update_iterator::{FixedStepLoop, MaxStepLoop},
-        AdirsDiscreteOutputs, DelayedFalseLogicGate, DelayedPulseTrueLogicGate,
-        DelayedTrueLogicGate, ElectricalBusType, ElectricalBuses, EmergencyElectricalRatPushButton,
-        EmergencyElectricalState, EmergencyGeneratorPower, EngineFirePushButtons, GearWheel,
-        HydraulicColor, HydraulicGeneratorControlUnit, LandingGearHandle, LgciuInterface,
-        LgciuWeightOnWheels, ReservoirAirPressure, SectionPressure,
+        interpolation, low_pass_filter::LowPassFilter, random_from_normal_distribution,
+        random_from_range, update_iterator::MaxStepLoop, AdirsDiscreteOutputs,
+        DelayedFalseLogicGate, DelayedPulseTrueLogicGate, DelayedTrueLogicGate, ElectricalBusType,
+        ElectricalBuses, EmergencyElectricalRatPushButton, EmergencyElectricalState,
+        EmergencyGeneratorPower, EngineFirePushButtons, GearWheel, HydraulicColor,
+        HydraulicGeneratorControlUnit, LandingGearHandle, LgciuInterface, LgciuWeightOnWheels,
+        ReservoirAirPressure, SectionPressure,
     },
     simulation::{
         InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -10139,7 +10137,7 @@ mod tests {
                 .set_cold_dark_inputs()
                 .start_eng1(Ratio::new::<percent>(80.))
                 .start_eng2(Ratio::new::<percent>(80.))
-                .run_waiting_for(Duration::from_millis(500));
+                .run_waiting_for(Duration::from_millis(1000));
 
             assert!(!test_bed.ptu_has_fault());
             assert!(!test_bed.green_edp_has_fault());
