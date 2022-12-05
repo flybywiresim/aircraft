@@ -108,7 +108,7 @@ pub struct PressureSwitch {
     sensor_type: PressureSwitchType,
 }
 impl PressureSwitch {
-    const PRESSURE_DYNAMIC_TIME_CONSTANT: Duration = Duration::from_millis(300);
+    const PRESSURE_DYNAMIC_TIME_CONSTANT: Duration = Duration::from_millis(200);
 
     pub fn new(
         high_threshold: Pressure,
