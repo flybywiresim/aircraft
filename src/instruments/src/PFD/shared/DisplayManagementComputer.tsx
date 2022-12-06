@@ -29,7 +29,10 @@ export class DisplayManagementComputer {
     init(): void {
         const pub = this.bus.getPublisher<DisplayManagementComputerEvents>();
 
-        this.trueRefActive.sub((v) => pub.pub('trueRefActive', v), true);
+        this.trueRefActive.sub((v) => {
+            pub.pub('trueRefActive', v);
+            this.handleHeading();
+        }, true);
 
         const sub = this.bus.getSubscriber<Arinc429Values & PFDSimvars>();
 
@@ -54,13 +57,12 @@ export class DisplayManagementComputer {
         // and the ADIRU must not be in ATT reversion mode
         const trueRequested = this.irMaintWord.get().getBitValueOr(15, false) || this.trueRefPb.get();
         this.trueRefActive.set(trueRequested && !this.irMaintWord.get().getBitValueOr(2, false));
-        this.handleHeading();
     }
 
     private handleHeading(): void {
         const pub = this.bus.getPublisher<DisplayManagementComputerEvents>();
 
-        pub.pub('heading', this.trueRefActive ? this.trueHeading.get() : this.magHeading.get());
-        pub.pub('track', this.trueRefActive ? this.trueTrack.get() : this.magTrack.get());
+        pub.pub('heading', this.trueRefActive.get() ? this.trueHeading.get() : this.magHeading.get());
+        pub.pub('track', this.trueRefActive.get() ? this.trueTrack.get() : this.magTrack.get());
     }
 }

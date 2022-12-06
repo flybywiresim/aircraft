@@ -347,18 +347,36 @@ interface TrueFlagProps {
 }
 
 class TrueFlag extends DisplayComponent<TrueFlagProps> {
-    private trueRefActive = Subject.create(false);
+    private readonly trueRefActive = Subject.create(false);
+
+    private readonly slatsExtended = Subject.create(false);
+
+    private readonly slatsExtendedWithTrue = Subject.create(false);
+
+    private readonly trueFlagRef = FSComponent.createRef<SVGGElement>();
 
     /** @inheritdoc */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     onAfterRender(node: VNode): void {
         this.props.bus.getSubscriber<DisplayManagementComputerEvents>().on('trueRefActive').whenChanged().handle((v) => this.trueRefActive.set(v));
+        // FIXME this should be 127-11 from FWC
+        this.props.bus.getSubscriber<PFDSimvars>().on('slatPosLeft').withPrecision(0.25).handle((v) => this.slatsExtended.set(v > 0.4));
+
+        this.trueRefActive.sub((trueRef) => this.trueFlagRef.instance.classList.toggle('HiddenElement', !trueRef), true);
+
+        this.trueRefActive.sub(this.handleSlatsTrue.bind(this));
+        this.slatsExtended.sub(this.handleSlatsTrue.bind(this));
+        this.slatsExtendedWithTrue.sub((flash) => this.trueFlagRef.instance.classList.toggle('Blink10Seconds', flash));
+    }
+
+    private handleSlatsTrue(): void {
+        this.slatsExtendedWithTrue.set(this.trueRefActive.get() && this.slatsExtended.get());
     }
 
     /** @inheritdoc */
     render(): VNode {
         return (
-            <g id="TrueRefFlag" visibility={this.trueRefActive ? 'visible' : 'hidden'}>
+            <g id="TrueRefFlag" ref={this.trueFlagRef}>
                 <rect x="62.439" y="134.468" width="12.935" height="4.575" class="Cyan NormalStroke" />
                 <text x="68.9065" y="137.008" text-anchor="middle" alignment-baseline="middle" class="FontSmallest Cyan">TRUE</text>
             </g>

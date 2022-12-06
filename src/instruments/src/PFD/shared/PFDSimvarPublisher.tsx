@@ -146,6 +146,7 @@ export interface PFDSimvars {
     irMaintWordRaw: number;
     trueHeadingRaw: number;
     trueTrackRaw: number;
+    slatPosLeft: number;
   }
 
 export enum PFDVars {
@@ -293,6 +294,7 @@ export enum PFDVars {
     irMaintWordRaw = 'L:A32NX_ADIRS_IR_1_MAINT_WORD',
     trueHeadingRaw = 'L:A32NX_ADIRS_IR_1_TRUE_HEADING',
     trueTrackRaw = 'L:A32NX_ADIRS_IR_1_TRUE_TRACK',
+    slatPosLeft = 'L:A32NX_LEFT_SLATS_ANGLE',
   }
 
 /** A publisher to poll and publish nav/com simvars. */
@@ -442,6 +444,7 @@ export class PFDSimvarPublisher extends SimVarPublisher<PFDSimvars> {
         ['irMaintWordRaw', { name: PFDVars.irMaintWordRaw, type: SimVarValueType.Number }],
         ['trueHeadingRaw', { name: PFDVars.trueHeadingRaw, type: SimVarValueType.Number }],
         ['trueTrackRaw', { name: PFDVars.trueTrackRaw, type: SimVarValueType.Number }],
+        ['slatPosLeft', { name: PFDVars.slatPosLeft, type: SimVarValueType.Number }],
     ])
 
     public constructor(bus: EventBus) {
