@@ -8,6 +8,7 @@
 ## 0.10.0
 
 1. [ADIRU] Implemented wind speed computation from TAS/GS/HDG - @tracernz (Mike)
+2. [FLIGHTMODEL] Reduced flap induced drag - @donstim (donbikes#4084)
 
 ## 0.9.0
 
