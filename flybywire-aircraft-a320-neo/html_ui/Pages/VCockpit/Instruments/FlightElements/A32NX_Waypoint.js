@@ -508,7 +508,9 @@ class AirportInfo extends WayPointInfo {
                 approach.transitions = [];
                 for (let i = 0; i < approachData.transitions.length; i++) {
                     const transition = new Transition();
-                    transition.name = approachData.transitions[i].legs[0].fixIcao.substr(7, 5);
+                    transition.name = approachData.transitions[i].name.trim().length > 0
+                        ? approachData.transitions[i].name
+                        : WayPoint.formatIdentFromIcao(approachData.transitions[i].legs[0].fixIcao);
                     transition.waypoints = [];
                     for (let j = 0; j < approachData.transitions[i].legs.length; j++) {
                         const wp = new WayPoint(this.instrument);
@@ -592,7 +594,9 @@ class AirportInfo extends WayPointInfo {
             }
             for (let j = 0; j < this.departures[i].enRouteTransitions.length; j++) {
                 const legsCount = this.departures[i].enRouteTransitions[j].legs.length;
-                this.departures[i].enRouteTransitions[j].name = this.departures[i].enRouteTransitions[j].legs[legsCount - 1].fixIcao.substr(7, 5);
+                this.departures[i].enRouteTransitions[j].name = this.departures[i].enRouteTransitions[j].name.trim().length > 0
+                    ? this.departures[i].enRouteTransitions[j].name
+                    : WayPoint.formatIdentFromIcao(this.departures[i].enRouteTransitions[j].legs[legsCount - 1].fixIcao);
             }
         }
         this.arrivals = data.arrivals;
@@ -612,7 +616,9 @@ class AirportInfo extends WayPointInfo {
                 }
             }
             for (let j = 0; j < this.arrivals[i].enRouteTransitions.length; j++) {
-                this.arrivals[i].enRouteTransitions[j].name = this.arrivals[i].enRouteTransitions[j].legs[0].fixIcao.substr(7, 5);
+                this.arrivals[i].enRouteTransitions[j].name = this.arrivals[i].enRouteTransitions[j].name.trim().length > 0
+                    ? this.arrivals[i].enRouteTransitions[j].name
+                    : WayPoint.formatIdentFromIcao(this.arrivals[i].enRouteTransitions[j].legs[0].fixIcao);
             }
         }
     }
