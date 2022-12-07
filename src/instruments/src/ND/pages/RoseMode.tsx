@@ -24,9 +24,10 @@ export interface RoseModeProps {
     side: EfisSide,
     ppos: LatLongData,
     mapHidden: boolean,
+    trueRef: boolean,
 }
 
-export const RoseMode: FC<RoseModeProps> = ({ symbols, adirsAlign, rangeSetting, mode, side, ppos, mapHidden }) => {
+export const RoseMode: FC<RoseModeProps> = ({ symbols, adirsAlign, rangeSetting, mode, side, ppos, mapHidden, trueRef }) => {
     const magHeading = useArinc429Var('L:A32NX_ADIRS_IR_1_HEADING');
     const magTrack = useArinc429Var('L:A32NX_ADIRS_IR_1_TRACK');
     const trueHeading = useArinc429Var('L:A32NX_ADIRS_IR_1_TRUE_HEADING');
@@ -37,9 +38,6 @@ export const RoseMode: FC<RoseModeProps> = ({ symbols, adirsAlign, rangeSetting,
     const [lsDisplayed] = useSimVar(`L:BTN_LS_${side === 'L' ? 1 : 2}_FILTER_ACTIVE`, 'bool'); // TODO rename simvar
     const [fmaLatMode] = useSimVar('L:A32NX_FMA_LATERAL_MODE', 'enum', 200);
     const [armedLateralBitmask] = useSimVar('L:A32NX_FMA_LATERAL_ARMED', 'enum', 200);
-    const irMaint = useArinc429Var('L:A32NX_ADIRS_IR_1_MAINT_WORD');
-    const [trueRefPb] = useSimVar('L:A32NX_PUSH_TRUE_REF', 'bool');
-    const [trueRef, setTrueRef] = useState(false);
 
     const heading = Number(MathUtils.fastToFixed((trueRef ? trueHeading.value : magHeading.value), 2));
     const track = Number(MathUtils.fastToFixed((trueRef ? trueTrack.value : magTrack.value), 2));
@@ -54,10 +52,6 @@ export const RoseMode: FC<RoseModeProps> = ({ symbols, adirsAlign, rangeSetting,
     useEffect(() => {
         mapParams.compute(ppos, rangeSetting / 2, 250, trueHeading.value);
     }, [ppos.lat, ppos.long, trueHeading.value, rangeSetting].map((n) => MathUtils.fastToFixed(n, 6)));
-
-    useEffect(() => {
-        setTrueRef((irMaint.getBitValueOr(15, false) || trueRefPb) && !irMaint.getBitValueOr(2, false));
-    }, [irMaint.value, trueRefPb]);
 
     if (adirsAlign) {
         return (
@@ -88,8 +82,8 @@ export const RoseMode: FC<RoseModeProps> = ({ symbols, adirsAlign, rangeSetting,
                             )}
                         </g>
                     )}
-                    <RadioNeedle index={1} side={side} displayMode={mode} centreHeight={384} />
-                    <RadioNeedle index={2} side={side} displayMode={mode} centreHeight={384} />
+                    <RadioNeedle index={1} side={side} displayMode={mode} centreHeight={384} trueRef={trueRef} />
+                    <RadioNeedle index={2} side={side} displayMode={mode} centreHeight={384} trueRef={trueRef} />
                 </g>
 
                 { mode === Mode.ROSE_VOR && <VorCaptureOverlay heading={heading} side={side} /> }
