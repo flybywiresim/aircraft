@@ -1517,11 +1517,23 @@ In the variables below, {number} should be replaced with one item in the set: { 
 
 - A32NX_ADIRS_IR_{number}_WIND_DIRECTION
     - Arinc429Word<Degrees>
-    - The direction of the wind.
+    - [0, 359.9]
+    - The direction of the wind relative to true north.
 
-- A32NX_ADIRS_IR_{number}_WIND_VELOCITY
+- A32NX_ADIRS_IR_{number}_WIND_DIRECTION_BNR
     - Arinc429Word<Degrees>
-    - The velocity of the wind.
+    - [-180, 180]
+    - The direction of the wind relative to true north.
+
+- A32NX_ADIRS_IR_{number}_WIND_SPEED
+    - Arinc429Word<Knots>
+    - [0, 255]
+    - The speed of the wind.
+
+- A32NX_ADIRS_IR_{number}_WIND_SPEED_BNR
+    - Arinc429Word<Knots>
+    - [0, 255]
+    - The speed of the wind.
 
 - A32NX_ADIRS_IR_{number}_LATITUDE
     - Arinc429Word<Degrees>

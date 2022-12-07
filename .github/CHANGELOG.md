@@ -5,6 +5,11 @@
 <!-- Use the following format below -->
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 
+## 0.10.0
+
+1. [ADIRU] Implemented wind speed computation from TAS/GS/HDG - @tracernz (Mike)
+1. [FMGC] Show proper transition names and final approach slope from AAU1 - @tracernz (Mike)
+
 ## 0.9.0
 
 1. [MODEL] Add Wheel Chocks and GSE Safety Cones - @bouveng (Johan Bouveng)
