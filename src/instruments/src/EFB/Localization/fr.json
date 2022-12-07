@@ -366,7 +366,7 @@
       "ConfirmationDialogMsg": "Veuillez confirmer le chargement du préréglage.",
       "CurrentProcedureStep": "Étape de procédure en cours",
       "PleaseConfirmLoadingOfPreset": "Veuillez confirmer le chargement du préréglage.",
-      "Powered": "En route",
+      "Powered": "Moteurs en route",
       "ReadyPushback": "Prêt pour le repoussage",
       "ReadyTakeoff": "Prêt pour le décollage",
       "ReadyTaxi": "Prêt pour le roulage",
@@ -520,7 +520,7 @@
     "SimOptions": {
       "Active": "Actif",
       "Auto": "Auto",
-      "Both": "Synchronized",
+      "Both": "Synchronisé",
       "Calibrate": "Calibrer",
       "Captain": "Commandant",
       "CockpitSeatUsedToControl": "Siège utilisé pour contrôler les instruments",
