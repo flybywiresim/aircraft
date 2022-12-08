@@ -838,16 +838,6 @@ impl CoreHydraulicForce {
             Some(context.delta()),
         ));
 
-        // println!(
-        //     "POS TGT/ACTUAL {:.2}/{:.2} FLOW TGT/ACTUAL {:.2}/{:.2} FORCE / MAX {:.0} / {:.0}",
-        //     required_position.get::<ratio>(),
-        //     position_normalized.get::<ratio>(),
-        //     pressure_corrected_openloop_target.get::<gallon_per_second>(),
-        //     signed_flow.get::<gallon_per_second>(),
-        //     self.last_control_force.get::<newton>(),
-        //     self.max_control_force.output().get::<newton>(),
-        // );
-
         self.last_control_force
     }
 }
