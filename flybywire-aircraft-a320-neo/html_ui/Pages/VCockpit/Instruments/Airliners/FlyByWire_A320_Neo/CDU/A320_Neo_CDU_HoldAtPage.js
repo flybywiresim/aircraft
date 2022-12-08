@@ -126,7 +126,7 @@ class CDUHoldAtPage {
         // change time or distance
         mcdu.onLeftInput[2] = (value, scratchpadCallback) => {
             const m = value.match(/^(([0-9]{0,1}(\.[0-9])?)\/?|\/([0-9]{0,2}(\.[0-9])?))$/);
-            if (m === null) {
+            if (m === null || m[0].length === 0 || m[0] === '/') {
                 mcdu.setScratchpadMessage(NXSystemMessages.formatError);
                 scratchpadCallback();
                 return;
