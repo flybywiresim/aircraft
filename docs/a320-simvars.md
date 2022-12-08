@@ -1594,8 +1594,13 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - TODO flag table
 
 - A32NX_ADIRS_USES_GPS_AS_PRIMARY
+    - TODO delete (this is an FM function, not ADIRU)
     - Bool
     - Whether or not the GPS is used as the primary means of navigation/position determination.
+
+- A32NX_PUSH_TRUE_REF
+    - Bool
+    - True reference pushbutton status
 
 ## Radio Receivers
 
