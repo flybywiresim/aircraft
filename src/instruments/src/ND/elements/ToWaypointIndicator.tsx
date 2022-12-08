@@ -58,7 +58,7 @@ export const ToWaypointIndicator: FC<ToWaypointIndicatorProps> = memo(({ side, t
             {bearing && bearing !== -1 && Number.isFinite(bearing) && (
                 <>
                     <text x={54} y={0} fontSize={25} className="Green" textAnchor="end">{(Math.round(trueRef ? trueBearing : bearing)).toString().padStart(3, '0')}</text>
-                    <text x={73} y={trueRef ? 0 : 2} fontSize={25} className="Cyan" textAnchor="end">{trueRef ? 'T' : '°'}</text>
+                    <text x={73} y={trueRef ? -3 : 2} fontSize={trueRef ? 21 : 25} className="Cyan" textAnchor="end">{trueRef ? 'T' : '°'}</text>
                 </>
             )}
 

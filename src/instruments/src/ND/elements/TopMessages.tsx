@@ -65,7 +65,7 @@ export const TopMessages: React.FC<TopMessagesProps> = ({ side, ppos, trueTrack,
             <Layer x={384} y={28} visibility={apprMsg === null ? 'hidden' : 'visible'}>
                 <text x={0} y={0} fontSize={25} className="Green" textAnchor="middle">{apprMsg ?? ''}</text>
             </Layer>
-            <Layer x={384} y={56} visibility={trueRef ? 'visible' : 'hidden'}>
+            <Layer x={384} y={apprMsg === null ? 36 : 56} visibility={trueRef ? 'visible' : 'hidden'}>
                 <TrueFlag xOffset={apprMsg === null && gridTrack !== null ? -40 : 0} box={apprMsg === null} />
                 <Layer x={0} y={0} visibility={apprMsg === null && gridTrack !== null ? 'inherit' : 'hidden'}>
                     <GridTrack gridTrack={gridTrack ?? 0} />
