@@ -61,8 +61,8 @@ node_modules
 !igniter.config.mjs
 .igniter
 /src/fdr2csv/*.exe
-/src/a320_fbw/obj/
-/src/a380_fbw/obj/
+/src/fbw_a320/obj/
+/src/fbw_a380/obj/
 /src/fdr2csv/build/
 /src/presets/obj/
 /src/flypad-backend/obj/
