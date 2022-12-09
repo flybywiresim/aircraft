@@ -8,6 +8,8 @@
 ## 0.10.0
 
 1. [ADIRU] Implemented wind speed computation from TAS/GS/HDG - @tracernz (Mike)
+1. [FMGC] Show proper transition names and final approach slope from AAU1 - @tracernz (Mike)
+1. [FMGC] Don't accept blank input or / for hold distance - @tracernz (Mike)
 1. [HYD] Faster core hydraulics solver - @Crocket63 (crocket)
 
 ## 0.9.0
