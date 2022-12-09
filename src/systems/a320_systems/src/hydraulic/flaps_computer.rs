@@ -101,10 +101,14 @@ struct SlatFlapControlComputer {
     kts_210: Velocity,
 
     cas: Option<Velocity>,
+    previous_cas: Option<Velocity>,
+    last_valid_cas: Option<Velocity>,
     cas1: Option<Velocity>,
     cas2: Option<Velocity>,
+
     flap_relief_active: bool,
     flap_relief_engaged: bool,
+    flap_relief_command_angle: Angle,
 
     flaps_demanded_angle: Angle,
     slats_demanded_angle: Angle,
@@ -172,11 +176,14 @@ impl SlatFlapControlComputer {
             kts_210: Velocity::new::<knot>(Self::KNOTS_210),
 
             cas: None,
+            previous_cas: None,
+            last_valid_cas: None,
             cas1: None,
             cas2: None,
 
             flap_relief_active: false,
             flap_relief_engaged: false,
+            flap_relief_command_angle: Angle::new::<degree>(0.),
 
             flaps_demanded_angle: Angle::new::<degree>(0.),
             slats_demanded_angle: Angle::new::<degree>(0.),
@@ -254,39 +261,67 @@ impl SlatFlapControlComputer {
         return flaps_conf_temp;
     }
 
-    fn calculate_commanded_angle(&mut self) -> Angle {
+    fn calculate_commanded_angle(&mut self, flaps_handle: &CommandSensorUnit) -> Angle {
         match self.cas {
-            Some(cas) => {
-                if cas >= self.relief_speed {
-                    return self.relief_angle;
-                }
-
-                if cas < self.restore_speed {
-                    return self.restore_angle;
-                }
-
-                // To review hysteresis
-                return self.restore_angle;
+            Some(cas)
+                if self.flap_relief_active
+                    && cas < self.relief_speed
+                    && cas >= self.restore_speed
+                    && self.last_valid_cas.unwrap() >= self.relief_speed
+                    && self.previous_cas.is_none() =>
+            {
+                self.relief_angle
             }
+            Some(cas)
+                if self.flap_relief_active
+                    && cas < self.relief_speed
+                    && cas >= self.restore_speed
+                    && self.last_valid_cas.unwrap() < self.relief_speed
+                    && self.previous_cas.is_none() =>
+            {
+                self.restore_angle
+            }
+            Some(cas) if cas >= self.relief_speed => self.relief_angle,
+            Some(cas) if cas < self.restore_speed => self.restore_angle,
+            Some(cas)
+                if (!self.flap_relief_active
+                    || flaps_handle.previous_position() == CSUPosition::OutOfDetent
+                    || flaps_handle.previous_position() == CSUPosition::Fault)
+                    && cas >= self.restore_speed
+                    && cas < self.relief_speed =>
+            {
+                self.restore_angle
+            }
+            Some(_) => self.flap_relief_command_angle,
             None => self.restore_angle,
         }
     }
 
     fn update_flap_relief(&mut self, flaps_handle: &CommandSensorUnit) {
-        if flaps_handle.current_position() != CSUPosition::ConfFull {
+        if flaps_handle.last_valid_position() != CSUPosition::ConfFull {
             self.flap_relief_active = false;
             self.flap_relief_engaged = false;
             return;
         }
 
-        self.flap_relief_active = true;
-        self.flap_relief_engaged = (self.calculate_commanded_angle() == self.relief_angle)
+        if flaps_handle.current_position() == CSUPosition::OutOfDetent {
+            return;
+        }
+
+        self.flap_relief_command_angle = self.calculate_commanded_angle(flaps_handle);
+        self.flap_relief_engaged = self.flap_relief_command_angle == self.relief_angle
             && self.flaps_feedback_angle >= (self.relief_angle - self.positioning_threshold);
+        self.flap_relief_active = true;
     }
 
     fn update_cas(&mut self, adiru: &impl AirDataSource) {
         self.cas1 = adiru.computed_airspeed(1).normal_value();
         self.cas2 = adiru.computed_airspeed(2).normal_value();
+
+        if self.cas.is_some() {
+            self.last_valid_cas = self.cas;
+        }
+        self.previous_cas = self.cas;
 
         // No connection with ADIRU3
         match (self.cas1, self.cas2) {
@@ -471,7 +506,7 @@ impl SlatFlapControlComputer {
         self.update_flap_auto_command(flaps_handle);
 
         if self.flap_relief_active {
-            return self.calculate_commanded_angle();
+            return self.flap_relief_command_angle;
         }
 
         if self.flap_auto_command_active {
@@ -550,89 +585,102 @@ impl SlatFlapControlComputer {
         // Auto Command restart
         if flaps_handle.last_valid_position() != CSUPosition::Conf1 {
             self.flap_auto_command_active = false;
-            return;
+        } else {
+            // The match can be shortened by a convoluted if statement however
+            // I believe it would make debugging and understanding the state machine harder
+            match (self.cas1, self.cas2) {
+                (Some(cas1), Some(cas2))
+                    if ((cas1 <= self.kts_100 && cas2 >= self.kts_210)
+                        || (cas1 >= self.kts_210 && cas2 <= self.kts_100))
+                        && Self::in_enlarged_target_range(
+                            self.flaps_feedback_angle,
+                            self.conf1_flaps,
+                        ) =>
+                {
+                    println!("START 1");
+                    self.auto_command_angle = self.conf1_flaps
+                }
+                (Some(cas1), Some(cas2))
+                    if ((cas1 <= self.kts_100 && cas2 >= self.kts_210)
+                        || (cas1 >= self.kts_210 && cas2 <= self.kts_100))
+                        && Self::in_or_above_enlarged_target_range(
+                            self.flaps_feedback_angle,
+                            self.conf1f_flaps,
+                        ) =>
+                {
+                    println!("START 2");
+                    self.auto_command_angle = self.conf1f_flaps
+                }
+                (Some(cas1), _)
+                    if cas1 > self.kts_100
+                        && cas1 < self.kts_210
+                        && Self::in_or_above_enlarged_target_range(
+                            self.flaps_feedback_angle,
+                            self.conf1f_flaps,
+                        ) =>
+                {
+                    println!("START 3");
+                    self.auto_command_angle = self.conf1f_flaps
+                }
+                (_, Some(cas2))
+                    if cas2 > self.kts_100
+                        && cas2 < self.kts_210
+                        && Self::in_or_above_enlarged_target_range(
+                            self.flaps_feedback_angle,
+                            self.conf1f_flaps,
+                        ) =>
+                {
+                    println!("START 4");
+                    self.auto_command_angle = self.conf1f_flaps
+                }
+                (Some(cas1), _)
+                    if cas1 > self.kts_100
+                        && cas1 < self.kts_210
+                        && Self::in_enlarged_target_range(
+                            self.flaps_feedback_angle,
+                            self.conf1_flaps,
+                        ) =>
+                {
+                    println!("START 5");
+                    self.auto_command_angle = self.conf1_flaps
+                }
+                (_, Some(cas2))
+                    if cas2 > self.kts_100
+                        && cas2 < self.kts_210
+                        && Self::in_enlarged_target_range(
+                            self.flaps_feedback_angle,
+                            self.conf1_flaps,
+                        ) =>
+                {
+                    println!("START 6");
+                    self.auto_command_angle = self.conf1_flaps
+                }
+                (None, None) => {
+                    println!("START 7");
+                    self.auto_command_angle = self.conf1f_flaps
+                }
+                // If this panic is reached, it means a condition has been forgotten!
+                (_, _) => {
+                    println!("START 8");
+                    self.auto_command_angle = self.auto_command_angle // Should it be conf1 or conf1f?
+                }
+            }
+            self.flap_auto_command_active = true;
         }
 
-        // The match can be shortened by a convoluted if statement however
-        // I believe it would make debugging and understanding the state machine harder
-        match (self.cas1, self.cas2) {
-            (Some(cas1), Some(cas2))
-                if ((cas1 <= self.kts_100 && cas2 >= self.kts_210)
-                    || (cas1 >= self.kts_210 && cas2 <= self.kts_100))
-                    && Self::in_enlarged_target_range(
-                        self.flaps_feedback_angle,
-                        self.conf1_flaps,
-                    ) =>
-            {
-                println!("START 1");
-                self.auto_command_angle = self.conf1_flaps
+        if flaps_handle.last_valid_position() != CSUPosition::ConfFull {
+            self.flap_relief_active = false;
+            self.flap_relief_engaged = false;
+        } else {
+            match self.cas {
+                Some(cas) if cas < self.relief_speed => {
+                    self.flap_relief_command_angle = self.restore_angle
+                }
+                Some(_) => self.flap_relief_command_angle = self.relief_angle,
+                None => self.flap_relief_command_angle = self.restore_angle,
             }
-            (Some(cas1), Some(cas2))
-                if ((cas1 <= self.kts_100 && cas2 >= self.kts_210)
-                    || (cas1 >= self.kts_210 && cas2 <= self.kts_100))
-                    && Self::in_or_above_enlarged_target_range(
-                        self.flaps_feedback_angle,
-                        self.conf1f_flaps,
-                    ) =>
-            {
-                println!("START 2");
-                self.auto_command_angle = self.conf1f_flaps
-            }
-            (Some(cas1), _)
-                if cas1 > self.kts_100
-                    && cas1 < self.kts_210
-                    && Self::in_or_above_enlarged_target_range(
-                        self.flaps_feedback_angle,
-                        self.conf1f_flaps,
-                    ) =>
-            {
-                println!("START 3");
-                self.auto_command_angle = self.conf1f_flaps
-            }
-            (_, Some(cas2))
-                if cas2 > self.kts_100
-                    && cas2 < self.kts_210
-                    && Self::in_or_above_enlarged_target_range(
-                        self.flaps_feedback_angle,
-                        self.conf1f_flaps,
-                    ) =>
-            {
-                println!("START 4");
-                self.auto_command_angle = self.conf1f_flaps
-            }
-            (Some(cas1), _)
-                if cas1 > self.kts_100
-                    && cas1 < self.kts_210
-                    && Self::in_enlarged_target_range(
-                        self.flaps_feedback_angle,
-                        self.conf1_flaps,
-                    ) =>
-            {
-                println!("START 5");
-                self.auto_command_angle = self.conf1_flaps
-            }
-            (_, Some(cas2))
-                if cas2 > self.kts_100
-                    && cas2 < self.kts_210
-                    && Self::in_enlarged_target_range(
-                        self.flaps_feedback_angle,
-                        self.conf1_flaps,
-                    ) =>
-            {
-                println!("START 6");
-                self.auto_command_angle = self.conf1_flaps
-            }
-            (None, None) => {
-                println!("START 7");
-                self.auto_command_angle = self.conf1f_flaps
-            }
-            // If this panic is reached, it means a condition has been forgotten!
-            (_, _) => {
-                println!("START 8");
-                self.auto_command_angle = self.auto_command_angle // Should it be conf1 or conf1f?
-            }
+            self.flap_relief_active = true;
         }
-        self.flap_auto_command_active = true;
     }
 
     pub fn update(
