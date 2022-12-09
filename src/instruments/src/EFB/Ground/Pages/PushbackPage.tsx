@@ -102,6 +102,7 @@ export const PushbackPage = () => {
                         bodyText={`${t('Pushback.DisableSystemMessageBody')}`}
                         onConfirm={() => {
                             releaseTug();
+                            setPushbackSystemEnabled(0);
                         }}
                     />,
                 );
@@ -130,10 +131,6 @@ export const PushbackPage = () => {
     };
 
     const handlePause = () => {
-        if (!pushbackPaused) {
-            setCmdHdgFactor(0);
-            setCmdSpdFactor(0);
-        }
         setPushbackPaused(!pushbackPaused);
     };
 
@@ -170,10 +167,20 @@ export const PushbackPage = () => {
                     hideProgressBar: true,
                     closeButton: false,
                 });
+                setCmdHdgFactor(0);
+                setCmdSpdFactor(0);
                 setPushbackPaused(() => true);
             }
         });
     }, []);
+
+    // called when the pushback paused state changes
+    useEffect(() => {
+        if (pushbackPaused) {
+            setCmdHdgFactor(0);
+            setCmdSpdFactor(0);
+        }
+    }, [pushbackPaused]);
 
     // Update commanded heading from rudder input
     useEffect(() => {
