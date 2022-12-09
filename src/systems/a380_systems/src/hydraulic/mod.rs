@@ -7584,27 +7584,6 @@ mod tests {
         }
 
         #[test]
-        fn low_air_press_fault_causes_ptu_fault() {
-            let mut test_bed = test_bed_on_ground_with()
-                .engines_off()
-                .on_the_ground()
-                .set_cold_dark_inputs()
-                .start_eng1(Ratio::new::<percent>(80.))
-                .start_eng2(Ratio::new::<percent>(80.))
-                .run_waiting_for(Duration::from_millis(500));
-
-            assert!(!test_bed.green_edp_has_fault());
-            assert!(!test_bed.yellow_edp_has_fault());
-
-            test_bed = test_bed
-                .air_press_low()
-                .run_waiting_for(Duration::from_secs_f64(10.));
-
-            assert!(test_bed.green_edp_has_fault());
-            assert!(test_bed.yellow_edp_has_fault());
-        }
-
-        #[test]
         fn ailerons_are_dropped_down_in_cold_and_dark() {
             let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
