@@ -310,14 +310,12 @@ impl A380AileronFactory {
             true,
             false,
             None,
-            if let Some(bus) = powered_by {
-                Some(ElectroHydrostaticBackup::new(
+            powered_by.map(|bus| {
+                ElectroHydrostaticBackup::new(
                     bus,
                     ElectroHydrostaticActuatorType::ElectroHydrostaticActuator,
-                ))
-            } else {
-                None
-            },
+                )
+            }),
             Pressure::new::<psi>(A380HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
         )
     }
@@ -490,14 +488,12 @@ impl A380SpoilerFactory {
                 AngularVelocity::new::<radian_per_second>(-10000.),
                 AngularVelocity::new::<radian_per_second>(0.),
             )),
-            if let Some(bus) = powered_by {
-                Some(ElectroHydrostaticBackup::new(
+            powered_by.map(|bus| {
+                ElectroHydrostaticBackup::new(
                     bus,
                     ElectroHydrostaticActuatorType::ElectricalBackupHydraulicActuator,
-                ))
-            } else {
-                None
-            },
+                )
+            }),
             Pressure::new::<psi>(A380HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
         )
     }
@@ -650,14 +646,12 @@ impl A380ElevatorFactory {
             true,
             false,
             None,
-            if let Some(bus) = powered_by {
-                Some(ElectroHydrostaticBackup::new(
+            powered_by.map(|bus| {
+                ElectroHydrostaticBackup::new(
                     bus,
                     ElectroHydrostaticActuatorType::ElectroHydrostaticActuator,
-                ))
-            } else {
-                None
-            },
+                )
+            }),
             Pressure::new::<psi>(A380HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
         )
     }
@@ -7145,11 +7139,11 @@ mod tests {
                     / 3.
             }
 
-            fn get_left_elevator_position(&mut self) -> Ratio {
+            fn _get_left_elevator_position(&mut self) -> Ratio {
                 Ratio::new::<ratio>(self.read_by_name("HYD_ELEV_LEFT_DEFLECTION"))
             }
 
-            fn get_mean_right_spoilers_position(&mut self) -> Ratio {
+            fn _get_mean_right_spoilers_position(&mut self) -> Ratio {
                 (Ratio::new::<ratio>(self.read_by_name("HYD_SPOILER_1_RIGHT_DEFLECTION"))
                     + Ratio::new::<ratio>(self.read_by_name("HYD_SPOILER_2_RIGHT_DEFLECTION"))
                     + Ratio::new::<ratio>(self.read_by_name("HYD_SPOILER_3_RIGHT_DEFLECTION"))
@@ -7187,11 +7181,11 @@ mod tests {
                 )
             }
 
-            fn get_right_elevator_position(&mut self) -> Ratio {
+            fn _get_right_elevator_position(&mut self) -> Ratio {
                 Ratio::new::<ratio>(self.read_by_name("HYD_ELEV_RIGHT_DEFLECTION"))
             }
 
-            fn get_rudder_position(&mut self) -> Ratio {
+            fn _get_rudder_position(&mut self) -> Ratio {
                 Ratio::new::<ratio>(self.read_by_name("HYD_RUD_DEFLECTION"))
             }
 
@@ -7841,7 +7835,7 @@ mod tests {
                 self
             }
 
-            fn set_left_spoiler_in(mut self, panel_id: usize) -> Self {
+            fn _set_left_spoiler_in(mut self, panel_id: usize) -> Self {
                 self.write_by_name(
                     format!("LEFT_SPOILER_{}_COMMANDED_POSITION", panel_id).as_str(),
                     0.,
@@ -7849,7 +7843,7 @@ mod tests {
                 self
             }
 
-            fn set_right_spoiler_in(mut self, panel_id: usize) -> Self {
+            fn _set_right_spoiler_in(mut self, panel_id: usize) -> Self {
                 self.write_by_name(
                     format!("RIGHT_SPOILER_{}_COMMANDED_POSITION", panel_id).as_str(),
                     0.,
@@ -7869,15 +7863,15 @@ mod tests {
                 self
             }
 
-            fn set_right_spoilers_in(mut self) -> Self {
-                self = self.set_right_spoiler_in(1);
-                self = self.set_right_spoiler_in(2);
-                self = self.set_right_spoiler_in(3);
-                self = self.set_right_spoiler_in(4);
-                self = self.set_right_spoiler_in(5);
-                self = self.set_right_spoiler_in(6);
-                self = self.set_right_spoiler_in(7);
-                self = self.set_right_spoiler_in(8);
+            fn _set_right_spoilers_in(mut self) -> Self {
+                self = self._set_right_spoiler_in(1);
+                self = self._set_right_spoiler_in(2);
+                self = self._set_right_spoiler_in(3);
+                self = self._set_right_spoiler_in(4);
+                self = self._set_right_spoiler_in(5);
+                self = self._set_right_spoiler_in(6);
+                self = self._set_right_spoiler_in(7);
+                self = self._set_right_spoiler_in(8);
                 self
             }
 
@@ -7893,15 +7887,15 @@ mod tests {
                 self
             }
 
-            fn set_left_spoilers_in(mut self) -> Self {
-                self = self.set_left_spoiler_in(1);
-                self = self.set_left_spoiler_in(2);
-                self = self.set_left_spoiler_in(3);
-                self = self.set_left_spoiler_in(4);
-                self = self.set_left_spoiler_in(5);
-                self = self.set_left_spoiler_in(6);
-                self = self.set_left_spoiler_in(7);
-                self = self.set_left_spoiler_in(8);
+            fn _set_left_spoilers_in(mut self) -> Self {
+                self = self._set_left_spoiler_in(1);
+                self = self._set_left_spoiler_in(2);
+                self = self._set_left_spoiler_in(3);
+                self = self._set_left_spoiler_in(4);
+                self = self._set_left_spoiler_in(5);
+                self = self._set_left_spoiler_in(6);
+                self = self._set_left_spoiler_in(7);
+                self = self._set_left_spoiler_in(8);
                 self
             }
 
@@ -8767,7 +8761,7 @@ mod tests {
             assert!(!test_bed.is_green_pressure_switch_pressurised());
             assert!(!test_bed.is_yellow_pressure_switch_pressurised());
 
-            assert!(test_bed.get_mean_right_spoilers_position().get::<ratio>() < 0.01);
+            assert!(test_bed._get_mean_right_spoilers_position().get::<ratio>() < 0.01);
 
             assert!(test_bed.get_mean_left_spoilers_position().get::<ratio>() < 0.01);
 
