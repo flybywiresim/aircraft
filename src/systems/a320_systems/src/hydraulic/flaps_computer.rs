@@ -86,6 +86,8 @@ struct SlatFlapControlComputer {
     powered_by: ElectricalBusType,
     is_powered: bool,
     recovered_power: bool,
+    transparency_time: Duration,
+    power_off_length: Duration,
 
     flap_auto_command_active: bool,
     auto_command_angle: Angle,
@@ -136,6 +138,8 @@ impl SlatFlapControlComputer {
     const KNOTS_100: f64 = 100.;
     const KNOTS_210: f64 = 210.;
 
+    const SFCC_TRANSPARENCY_TIME: u64 = 200; //ms
+
     // const ALPHA_LOCK_ENGAGE_SPEED_KNOTS: f64 = 148.;
     // const ALPHA_LOCK_DISENGAGE_SPEED_KNOTS: f64 = 154.;
     // const ALPHA_LOCK_ENGAGE_ALPHA_DEGREES: f64 = 8.6;
@@ -161,6 +165,8 @@ impl SlatFlapControlComputer {
             powered_by: powered_by,
             is_powered: false,
             recovered_power: false,
+            transparency_time: Duration::from_millis(Self::SFCC_TRANSPARENCY_TIME),
+            power_off_length: Duration::ZERO,
 
             flap_auto_command_active: false,
             auto_command_angle: Angle::new::<degree>(0.),
@@ -685,21 +691,25 @@ impl SlatFlapControlComputer {
 
     pub fn update(
         &mut self,
-        _context: &UpdateContext,
+        context: &UpdateContext,
         flaps_handle: &CommandSensorUnit,
         flaps_feedback: &impl FeedbackPositionPickoffUnit,
         slats_feedback: &impl FeedbackPositionPickoffUnit,
         adiru: &impl AirDataSource,
     ) {
         if !self.is_powered {
+            self.power_off_length += context.delta();
             return;
         }
 
-        // CAS read before starting any SFCC logic to prevent reading None
+        // CAS read before starting any SFCC logic to prevent reading None or using old data
         self.update_cas(adiru);
 
         if self.recovered_power {
-            self.powerup_reset(flaps_handle);
+            if self.power_off_length > self.transparency_time {
+                self.powerup_reset(flaps_handle);
+            }
+            self.power_off_length = Duration::ZERO;
             self.recovered_power = false;
         }
 
