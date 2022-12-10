@@ -203,6 +203,11 @@ impl SlatFlapControlComputer {
         }
     }
 
+    #[cfg(test)]
+    pub fn get_power_off_duration(&self) -> Duration {
+        self.power_off_length
+    }
+
     fn below_enlarged_target_range(flaps_position: Angle, target_position: Angle) -> bool {
         let tolerance = Angle::new::<degree>(Self::ENLARGED_TARGET_THRESHOLD_DEGREE);
         flaps_position < target_position - tolerance
@@ -964,6 +969,8 @@ impl SlatFlapLane for SlatFlapControlComputer {
 impl SimulationElement for SlatFlapControlComputer {
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
         if self.is_powered != buses.is_powered(self.powered_by) {
+            // If is_powered returns TRUE and the previous is FALSE,
+            // it means we have just restored the power
             self.recovered_power = !self.is_powered;
         }
         self.is_powered = buses.is_powered(self.powered_by);
@@ -1252,13 +1259,13 @@ mod tests {
             }
         }
 
-        // fn set_dc_2_bus_power(&mut self, is_powered: bool) {
-        //     self.is_dc_2_powered = is_powered;
-        // }
+        fn set_dc_2_bus_power(&mut self, is_powered: bool) {
+            self.is_dc_2_powered = is_powered;
+        }
 
-        // fn set_dc_ess_bus_power(&mut self, is_powered: bool) {
-        //     self.is_dc_ess_powered = is_powered;
-        // }
+        fn set_dc_ess_bus_power(&mut self, is_powered: bool) {
+            self.is_dc_ess_powered = is_powered;
+        }
     }
 
     impl Aircraft for A320FlapsTestAircraft {
@@ -1336,17 +1343,17 @@ mod tests {
             self
         }
 
-        // fn set_dc_2_bus_power(mut self, is_powered: bool) -> Self {
-        //     self.command(|a| a.set_dc_2_bus_power(is_powered));
+        fn set_dc_2_bus_power(mut self, is_powered: bool) -> Self {
+            self.command(|a| a.set_dc_2_bus_power(is_powered));
 
-        //     self
-        // }
+            self
+        }
 
-        // fn set_dc_ess_bus_power(mut self, is_powered: bool) -> Self {
-        //     self.command(|a| a.set_dc_ess_bus_power(is_powered));
+        fn set_dc_ess_bus_power(mut self, is_powered: bool) -> Self {
+            self.command(|a| a.set_dc_ess_bus_power(is_powered));
 
-        //     self
-        // }
+            self
+        }
 
         fn set_flaps_handle_position(mut self, pos: u8) -> Self {
             self.write_by_name("FLAPS_HANDLE_INDEX", pos as f64);
@@ -1413,6 +1420,10 @@ mod tests {
         // fn is_alpha_lock_engaged_speed(&self) -> bool {
         //     self.query(|a| a.slat_flap_complex.sfcc[0].alpha_lock_engaged_speed)
         // }
+
+        fn get_power_off_duration(&self) -> Duration {
+            self.query(|a| a.slat_flap_complex.sfcc[0].get_power_off_duration())
+        }
 
         fn get_csu_current_position(&self) -> CSUPosition {
             self.query(|a| a.slat_flap_complex.flaps_handle.current_position())
@@ -1590,6 +1601,23 @@ mod tests {
                 .as_millis()
                 <= 100
         );
+    }
+
+    #[test]
+    fn flaps_test_transparency_time() {
+        let mut test_bed = test_bed_with()
+            .set_dc_ess_bus_power(false)
+            .set_dc_2_bus_power(false)
+            .run_waiting_for(Duration::from_secs(3));
+
+        assert!(test_bed.get_power_off_duration() > Duration::from_secs_f32(2.9));
+
+        test_bed = test_bed
+            .set_dc_ess_bus_power(true)
+            .set_dc_2_bus_power(true)
+            .run_waiting_for(Duration::from_secs(3));
+
+        assert_eq!(test_bed.get_power_off_duration(), Duration::ZERO);
     }
 
     #[test]
