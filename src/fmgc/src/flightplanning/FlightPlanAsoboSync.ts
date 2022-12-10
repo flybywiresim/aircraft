@@ -46,7 +46,7 @@ export class FlightPlanAsoboSync {
                 setTimeout(() => {
                     Coherent.call('GET_FLIGHTPLAN').then(async (data: Record<string, any>) => {
                         console.log('COHERENT GET_FLIGHTPLAN received:');
-                        console.log('Data from MSFS:', data);
+                        console.log('Data from MSFS flight plan:', data);
 
                         const { isDirectTo } = data;
 
@@ -91,7 +91,9 @@ export class FlightPlanAsoboSync {
                                     // are not in the correct order
                                     // eslint-disable-next-line no-await-in-loop
                                     await fpln.addWaypoint(wpt.icao, Infinity,
-                                        () => console.log(`[FP LOAD] Adding [${wpt.icao}]... SUCCESS`))
+                                        () => {
+                                            // console.log(`[FP LOAD] Adding [${wpt.icao}]... SUCCESS`);
+                                        })
                                         .catch(console.error);
                                 }
                             }
@@ -99,14 +101,14 @@ export class FlightPlanAsoboSync {
                             // set departure
                             //  rwy index
                             await fpln.setDepartureRunwayIndex(data.departureRunwayIndex)
-                                .then(() => console.log(`[FP LOAD] Setting Departure Runway ${data.departureRunwayIndex} ... SUCCESS`))
+                                // .then(() => console.log(`[FP LOAD] Setting Departure Runway ${data.departureRunwayIndex} ... SUCCESS`))
                                 .catch((e) => {
                                     console.error(`[FP LOAD] Setting Departure Runway ${data.departureRunwayIndex} ... FAILED`);
                                     console.error(e);
                                 });
                             // proc index
                             await fpln.setDepartureProcIndex(data.departureProcIndex)
-                                .then(() => console.log(`[FP LOAD] Setting Departure Procedure  ${data.departureProcIndex} ... SUCCESS`))
+                                // .then(() => console.log(`[FP LOAD] Setting Departure Procedure  ${data.departureProcIndex} ... SUCCESS`))
                                 .catch((e) => {
                                     console.error(`[FP LOAD] Setting Departure Procedure ${data.departureProcIndex} ... FAILED`);
                                     console.error(e);
@@ -114,14 +116,14 @@ export class FlightPlanAsoboSync {
                             // origin runway
                             if (data.originRunwayIndex !== -1) {
                                 await fpln.setOriginRunwayIndex(data.originRunwayIndex)
-                                    .then(() => console.log(`[FP LOAD] Setting Origin  ${data.originRunwayIndex} ... SUCCESS`))
+                                    // .then(() => console.log(`[FP LOAD] Setting Origin  ${data.originRunwayIndex} ... SUCCESS`))
                                     .catch((e) => {
                                         console.error(`[FP LOAD] Setting Origin ${data.originRunwayIndex} ... FAILED`);
                                         console.error(e);
                                     });
                             } else if (data.departureRunwayIndex !== -1 && data.departureProcIndex !== -1) {
                                 await fpln.setOriginRunwayIndexFromDeparture()
-                                    .then(() => console.log(`[FP LOAD] Setting Origin using ${data.departureProcIndex}/${data.departureRunwayIndex}... SUCCESS`))
+                                    // .then(() => console.log(`[FP LOAD] Setting Origin using ${data.departureProcIndex}/${data.departureRunwayIndex}... SUCCESS`))
                                     .catch((e) => {
                                         console.error(`[FP LOAD] Setting Origin using ${data.departureProcIndex}/${data.departureRunwayIndex} ... FAILED`);
                                         console.error(e);
@@ -129,7 +131,7 @@ export class FlightPlanAsoboSync {
                             }
                             //  enroutetrans index
                             await fpln.setDepartureEnRouteTransitionIndex(data.departureEnRouteTransitionIndex)
-                                .then(() => console.log(`[FP LOAD] Setting Departure En Route Transition ${data.departureEnRouteTransitionIndex} ... SUCCESS`))
+                                // .then(() => console.log(`[FP LOAD] Setting Departure En Route Transition ${data.departureEnRouteTransitionIndex} ... SUCCESS`))
                                 .catch((e) => {
                                     console.error(`[FP LOAD] Setting Departure En Route Transition ${data.departureEnRouteTransitionIndex} ... FAILED`);
                                     console.error(e);
@@ -137,21 +139,21 @@ export class FlightPlanAsoboSync {
                             // set approach
                             //  rwy index
                             await fpln.setArrivalRunwayIndex(data.arrivalRunwayIndex)
-                                .then(() => console.log(`[FP LOAD] Setting Arrival Runway ${data.arrivalRunwayIndex} ... SUCCESS`))
+                                // .then(() => console.log(`[FP LOAD] Setting Arrival Runway ${data.arrivalRunwayIndex} ... SUCCESS`))
                                 .catch((e) => {
                                     console.error(`[FP LOAD] Setting Arrival Runway ${data.arrivalRunwayIndex} ... FAILED`);
                                     console.error(e);
                                 });
                             //  approach index
                             await fpln.setApproachIndex(data.approachIndex)
-                                .then(() => console.log(`[FP LOAD] Setting Approach ${data.approachIndex} ... SUCCESS`))
+                                // .then(() => console.log(`[FP LOAD] Setting Approach ${data.approachIndex} ... SUCCESS`))
                                 .catch((e) => {
                                     console.error(`[FP LOAD] Setting Approach ${data.approachIndex} ... FAILED`);
                                     console.error(e);
                                 });
                             //  approachtrans index
                             await fpln.setApproachTransitionIndex(data.approachTransitionIndex)
-                                .then(() => console.log(`[FP LOAD] Setting Approach Transition ${data.approachTransitionIndex} ... SUCCESS`))
+                                // .then(() => console.log(`[FP LOAD] Setting Approach Transition ${data.approachTransitionIndex} ... SUCCESS`))
                                 .catch((e) => {
                                     console.error(`[FP LOAD] Setting Approach Transition ${data.approachTransitionIndex} ... FAILED`);
                                     console.error(e);
@@ -160,21 +162,21 @@ export class FlightPlanAsoboSync {
                             // set arrival
                             //  arrivalproc index
                             await fpln.setArrivalProcIndex(data.arrivalProcIndex)
-                                .then(() => console.log(`[FP LOAD] Setting Arrival Procedure ${data.arrivalProcIndex} ... SUCCESS`))
+                                // .then(() => console.log(`[FP LOAD] Setting Arrival Procedure ${data.arrivalProcIndex} ... SUCCESS`))
                                 .catch((e) => {
                                     console.error(`[FP LOAD] Setting Arrival Procedure ${data.arrivalProcIndex} ... FAILED`);
                                     console.error(e);
                                 });
                             //  arrivaltrans index
                             await fpln.setArrivalEnRouteTransitionIndex(data.arrivalEnRouteTransitionIndex)
-                                .then(() => console.log(`[FP LOAD] Setting En Route Transition ${data.arrivalEnRouteTransitionIndex} ... SUCCESS`))
+                                // .then(() => console.log(`[FP LOAD] Setting En Route Transition ${data.arrivalEnRouteTransitionIndex} ... SUCCESS`))
                                 .catch((e) => {
                                     console.error(`[FP LOAD] Setting En Route Transition ${data.arrivalEnRouteTransitionIndex} ... FAILED`);
                                     console.error(e);
                                 });
 
                             await fpln.setDestinationRunwayIndexFromApproach()
-                                .then(() => console.log(`[FP LOAD] Setting Destination Runway using ${data.approachIndex} ... SUCCESS`))
+                                // .then(() => console.log(`[FP LOAD] Setting Destination Runway using ${data.approachIndex} ... SUCCESS`))
                                 .catch((e) => {
                                     console.error(`[FP LOAD] Setting Destination Runway using ${data.approachIndex} ... FAILED`);
                                     console.error(e);
@@ -186,12 +188,12 @@ export class FlightPlanAsoboSync {
 
                             // Potential CTD source?
                             Coherent.call('SET_ACTIVE_WAYPOINT_INDEX', 0)
-                                .catch((e) => console.error('[FP LOAD] Error when setting Active WP'));
+                                .catch((e) => console.error('[FP LOAD] Error when setting Active WP', e));
                             Coherent.call('RECOMPUTE_ACTIVE_WAYPOINT_INDEX')
-                                .catch((e) => console.error('[FP LOAD] Error when recomputing Active WP'));
+                                .catch((e) => console.error('[FP LOAD] Error when recomputing Active WP', e));
                             resolve();
 
-                            console.debug('Resulting flight plan: ', fpln);
+                            console.log('Resulting aircraft flight plan: ', fpln);
                         }
                     }).catch(console.error);
                 }, 500);
