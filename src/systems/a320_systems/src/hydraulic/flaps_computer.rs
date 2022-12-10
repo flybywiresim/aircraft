@@ -734,6 +734,24 @@ impl SlatFlapControlComputer {
         return false;
     }
 
+    fn get_bit_29_component_status_word(&self) -> bool {
+        if self.flap_auto_command_active && self.auto_command_angle == self.conf1_flaps {
+            if !Self::in_enlarged_target_range(self.flaps_feedback_angle, self.conf1_flaps) {
+                return true;
+            } else if Self::in_enlarged_target_range(self.flaps_feedback_angle, self.conf1f_flaps) {
+                return false;
+            }
+        }
+        return false;
+    }
+
+    fn get_bit_28_component_status_word(&self) -> bool {
+        if self.flap_auto_command_active && self.cas.is_none() {
+            return true;
+        }
+        return false;
+    }
+
     fn slat_flap_component_status_word(&self) -> Arinc429Word<u32> {
         if !self.is_powered {
             return Arinc429Word::new(0, SignStatus::NoComputedData);
@@ -744,6 +762,12 @@ impl SlatFlapControlComputer {
         // LABEL 45
 
         //TBD
+
+        // Flap Auto Command Fail
+        word.set_bit(28, self.get_bit_28_component_status_word());
+
+        // Flap Auto Command Engaged
+        word.set_bit(29, self.get_bit_29_component_status_word());
 
         word
     }
