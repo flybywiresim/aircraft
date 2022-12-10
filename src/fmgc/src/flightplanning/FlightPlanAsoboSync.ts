@@ -83,7 +83,11 @@ export class FlightPlanAsoboSync {
                             for (let i = 0; i < enroute.length - 1; i++) {
                                 const wpt = enroute[i];
                                 if (wpt.icao.trim() !== '') {
-                                    fpln.addWaypoint(wpt.icao, Infinity, () => console.log(`[FP LOAD] Adding [${wpt.icao}]... SUCCESS`)).catch(console.error);
+                                    // Without the 'await' the order of import is undefined and the flight plan waypoints
+                                    // are not in the correct order
+                                    // eslint-disable-next-line no-await-in-loop
+                                    await fpln.addWaypoint(wpt.icao, Infinity,
+                                        () => console.log(`[FP LOAD] Adding [${wpt.icao}]... SUCCESS`)).catch(console.error);
                                 }
                             }
 
