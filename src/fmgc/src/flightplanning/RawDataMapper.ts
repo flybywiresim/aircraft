@@ -53,16 +53,28 @@ export class RawDataMapper {
 
             info.approaches = facility.approaches;
             info.approaches.forEach((approach) => approach.name = normaliseApproachName(approach.name));
-            info.approaches.forEach((approach) => approach.transitions.forEach((trans) => trans.name.trim().length === 0 && (trans.name = WayPoint.formatIdentFromIcao(trans.legs[0].fixIcao))));
+            info.approaches.forEach(
+                (approach) => approach.transitions.forEach(
+                    (trans) => trans.name.trim().length === 0 && (trans.name = WayPoint.formatIdentFromIcao(trans.legs[0].fixIcao)),
+                ),
+            );
             info.approaches.forEach((approach) => approach.runway = approach.runway.trim());
 
             info.departures = facility.departures;
             info.departures.forEach((departure) => departure.runwayTransitions.forEach((trans) => trans.name = RawDataMapper.generateRunwayTransitionName(trans)));
-            info.departures.forEach((departure) => departure.enRouteTransitions.forEach((trans) => trans.name.trim().length === 0 && (trans.name = RawDataMapper.generateDepartureEnRouteTransitionName(trans))));
+            info.departures.forEach(
+                (departure) => departure.enRouteTransitions.forEach(
+                    (trans) => trans.name.trim().length === 0 && (trans.name = RawDataMapper.generateDepartureEnRouteTransitionName(trans)),
+                ),
+            );
 
             info.arrivals = facility.arrivals;
             info.arrivals.forEach((arrival) => arrival.runwayTransitions.forEach((trans) => trans.name = RawDataMapper.generateRunwayTransitionName(trans)));
-            info.arrivals.forEach((arrival) => arrival.enRouteTransitions.forEach((trans) => trans.name.trim().length === 0 && (trans.name = RawDataMapper.generateArrivalTransitionName(trans))));
+            info.arrivals.forEach(
+                (arrival) => arrival.enRouteTransitions.forEach(
+                    (trans) => trans.name.trim().length === 0 && (trans.name = RawDataMapper.generateArrivalTransitionName(trans)),
+                ),
+            );
 
             info.runways = facility.runways;
 
@@ -142,6 +154,8 @@ export class RawDataMapper {
             break;
         case 3:
             name += 'C';
+            break;
+        default:
             break;
         }
 
