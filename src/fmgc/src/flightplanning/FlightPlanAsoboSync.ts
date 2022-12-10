@@ -78,9 +78,10 @@ export class FlightPlanAsoboSync {
 
                             const enrouteStart = (data.departureWaypointsSize === -1) ? 1 : data.departureWaypointsSize;
                             // Find out first approach waypoint, - 1 to skip destination
-                            const enrouteEnd = data.waypoints.length - ((data.arrivalWaypointsSize === -1) ? 1 : data.arrivalWaypointsSize) - 1;
-                            const enroute = data.waypoints.slice(enrouteStart, enrouteEnd - 1);
-                            for (let i = 0; i < enroute.length - 1; i++) {
+                            const enrouteEnd = data.waypoints.length - ((data.arrivalWaypointsSize === -1) ? 0 : data.arrivalWaypointsSize) - 1;
+                            const enroute = data.waypoints.slice(enrouteStart, enrouteEnd);
+
+                            for (let i = 0; i < enroute.length; i++) {
                                 const wpt = enroute[i];
                                 if (wpt.icao.trim() !== '') {
                                     // Without the 'await' the order of import is undefined and the flight plan waypoints
