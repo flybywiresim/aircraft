@@ -191,7 +191,7 @@ export class FlightPlanAsoboSync {
                                 .catch((e) => console.error('[FP LOAD] Error when recomputing Active WP'));
                             resolve();
 
-                            console.debug('Resulting fLight plan: ', fpln);
+                            console.debug('Resulting flight plan: ', fpln);
                         }
                     }).catch(console.error);
                 }, 500);
