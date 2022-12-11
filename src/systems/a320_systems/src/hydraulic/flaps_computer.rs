@@ -2,7 +2,7 @@ use crate::systems::shared::arinc429::{Arinc429Word, SignStatus};
 
 use systems::{
     shared::{
-        AirDataSource, CSUPosition, ElectricalBusType, ElectricalBuses,
+        AirDataSource, CSUPosition, ConsumePower, ElectricalBusType, ElectricalBuses,
         FeedbackPositionPickoffUnit, FlapsConf,
     },
     simulation::{
@@ -12,7 +12,7 @@ use systems::{
 };
 
 use std::{panic, time::Duration};
-use uom::si::{angle::degree, f64::*, velocity::knot};
+use uom::si::{angle::degree, f64::*, power::watt, velocity::knot};
 
 /// A struct to read the handle position
 pub struct CommandSensorUnit {
@@ -84,6 +84,7 @@ struct SlatFlapControlComputer {
     alpha_lock_engaged_id: VariableIdentifier,
 
     powered_by: ElectricalBusType,
+    consumed_power: Power,
     is_powered: bool,
     recovered_power: bool,
     transparency_time: Duration,
@@ -139,6 +140,7 @@ impl SlatFlapControlComputer {
     const KNOTS_210: f64 = 210.;
 
     const SFCC_TRANSPARENCY_TIME: u64 = 200; //ms
+    const MAX_POWER_CONSUMPTION_WATT: f64 = 90.; //W
 
     // const ALPHA_LOCK_ENGAGE_SPEED_KNOTS: f64 = 148.;
     // const ALPHA_LOCK_DISENGAGE_SPEED_KNOTS: f64 = 154.;
@@ -163,6 +165,7 @@ impl SlatFlapControlComputer {
             alpha_lock_engaged_id: context.get_identifier("ALPHA_LOCK_ENGAGED".to_owned()),
 
             powered_by: powered_by,
+            consumed_power: Power::new::<watt>(Self::MAX_POWER_CONSUMPTION_WATT),
             is_powered: false,
             recovered_power: false,
             transparency_time: Duration::from_millis(Self::SFCC_TRANSPARENCY_TIME),
@@ -206,6 +209,11 @@ impl SlatFlapControlComputer {
     #[cfg(test)]
     pub fn get_power_off_duration(&self) -> Duration {
         self.power_off_length
+    }
+
+    #[cfg(test)]
+    pub fn get_recovered_power(&self) -> bool {
+        self.recovered_power
     }
 
     fn below_enlarged_target_range(flaps_position: Angle, target_position: Angle) -> bool {
@@ -711,6 +719,7 @@ impl SlatFlapControlComputer {
         self.update_cas(adiru);
 
         if self.recovered_power {
+            println!("RECOVERED!");
             if self.power_off_length > self.transparency_time {
                 self.powerup_reset(flaps_handle);
             }
@@ -972,8 +981,15 @@ impl SimulationElement for SlatFlapControlComputer {
             // If is_powered returns TRUE and the previous is FALSE,
             // it means we have just restored the power
             self.recovered_power = !self.is_powered;
+            println!("recovered_power {}", self.recovered_power);
         }
         self.is_powered = buses.is_powered(self.powered_by);
+    }
+
+    fn consume_power<T: ConsumePower>(&mut self, _: &UpdateContext, consumption: &mut T) {
+        // Further analysis can be carried out to estimate more accurately
+        // the instantaneous power cosumption
+        consumption.consume_from_bus(self.powered_by, self.consumed_power);
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
@@ -1372,6 +1388,18 @@ mod tests {
             self.read_by_name("SFCC_SLAT_FLAP_ACTUAL_POSITION_WORD")
         }
 
+        fn read_slat_flap_component_status_word(&mut self) -> Arinc429Word<u32> {
+            self.read_by_name("SFCC_SLAT_FLAP_COMPONENT_STATUS_WORD")
+        }
+
+        fn read_slat_actual_position_word(&mut self) -> Arinc429Word<u32> {
+            self.read_by_name("SFCC_SLAT_ACTUAL_POSITION_WORD")
+        }
+
+        fn read_flap_actual_position_word(&mut self) -> Arinc429Word<u32> {
+            self.read_by_name("SFCC_FLAP_ACTUAL_POSITION_WORD")
+        }
+
         fn set_indicated_airspeed(mut self, indicated_airspeed: f64) -> Self {
             self.write_by_name("AIRSPEED INDICATED", indicated_airspeed);
             self
@@ -1423,6 +1451,10 @@ mod tests {
 
         fn get_power_off_duration(&self) -> Duration {
             self.query(|a| a.slat_flap_complex.sfcc[0].get_power_off_duration())
+        }
+
+        fn get_recovered_power(&self) -> bool {
+            self.query(|a| a.slat_flap_complex.sfcc[0].get_recovered_power())
         }
 
         fn get_csu_current_position(&self) -> CSUPosition {
@@ -1605,19 +1637,52 @@ mod tests {
 
     #[test]
     fn flaps_test_transparency_time() {
+        println!("POWER OFF");
         let mut test_bed = test_bed_with()
             .set_dc_ess_bus_power(false)
             .set_dc_2_bus_power(false)
             .run_waiting_for(Duration::from_secs(3));
+        assert!(!test_bed.get_recovered_power());
+        assert!(test_bed.get_power_off_duration() > Duration::from_secs_f32(2.8));
+        assert!(test_bed
+            .read_slat_flap_system_status_word()
+            .is_no_computed_data());
+        assert!(test_bed
+            .read_slat_flap_actual_position_word()
+            .is_no_computed_data());
+        assert!(test_bed
+            .read_slat_flap_component_status_word()
+            .is_no_computed_data());
+        assert!(test_bed
+            .read_slat_actual_position_word()
+            .is_no_computed_data());
+        assert!(test_bed
+            .read_flap_actual_position_word()
+            .is_no_computed_data());
 
-        assert!(test_bed.get_power_off_duration() > Duration::from_secs_f32(2.9));
-
+        println!("POWER ON");
         test_bed = test_bed
             .set_dc_ess_bus_power(true)
             .set_dc_2_bus_power(true)
-            .run_waiting_for(Duration::from_secs(3));
-
+            .run_one_tick();
+        // Not possible to check that recovered_power is true for one frame
+        assert!(!test_bed.get_recovered_power());
         assert_eq!(test_bed.get_power_off_duration(), Duration::ZERO);
+        assert!(test_bed
+            .read_slat_flap_system_status_word()
+            .is_normal_operation());
+        assert!(test_bed
+            .read_slat_flap_actual_position_word()
+            .is_normal_operation());
+        assert!(test_bed
+            .read_slat_flap_component_status_word()
+            .is_normal_operation());
+        assert!(test_bed
+            .read_slat_actual_position_word()
+            .is_normal_operation());
+        assert!(test_bed
+            .read_flap_actual_position_word()
+            .is_normal_operation());
     }
 
     #[test]
