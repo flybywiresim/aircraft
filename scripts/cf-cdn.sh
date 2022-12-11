@@ -1,7 +1,7 @@
 #!/bin/bash
 
 CDN_URL="flybywirecdn.com"
-CDN_PURGE_LINK="https://flybywirecdn/api/purgeCache?url=http://flybywirecdn.com"
+CDN_PURGE_LINK="https://flybywirecdn.com/purgeCache?url=http://flybywirecdn.com"
 CDN_DIR=${1:-"addons/a32nx/test-3"}
 LOCAL_DIR=${2:-"./build-modules"}
 
