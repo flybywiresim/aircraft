@@ -21,6 +21,7 @@
   - [Landing Gear (ATA 32)](#landing-gear-ata-32)
   - [ATC (ATA 34)](#atc-ata-34)
   - [Radio Altimeter (ATA 34)](#radio-altimeter-ata-34)
+  - [Electronic Flight Bag ATA 46](#electronic-flight-bag--ata-46-)
 
 ## Uncategorized
 
@@ -3322,3 +3323,28 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - {number}
         - 0
         - 1
+
+## Electronic Flight Bag (ATA 46)
+
+- A32NX_PUSHBACK_SYSTEM_ENABLED
+    - Boolean
+    - Read/Write
+    - Whether the pushback system is enabled
+    - Further conditions are "Pushback Tug Attached" and "Aircraft On Ground" otherwise the system 
+      has no impact on the aircraft
+
+- A32NX_PUSHBACK_SPD_FACTOR
+    - Number
+    - Read/Write
+    - Determines the speed of the pushback tug from -100% to 100% 
+    - {number}
+        - -1.0
+        - 1.0
+
+- A32NX_PUSHBACK_HDG_FACTOR
+    - Number
+    - Read/Write
+    - Determines the heading of the pushback tug from max left (-1.0) to right (1.0) 
+    - {number}
+        - -1.0
+        - 1.0
