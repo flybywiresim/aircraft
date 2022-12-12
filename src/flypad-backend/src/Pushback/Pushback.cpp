@@ -77,7 +77,7 @@ void Pushback::onUpdate(double deltaTime) {
     movementCounterRotAccel -= 0.5;
   }
   else if (inertiaSpeed < 0) {
-    movementCounterRotAccel += 0.5;
+    movementCounterRotAccel += 1.0;
   }
   else {
     movementCounterRotAccel = 0.0;
