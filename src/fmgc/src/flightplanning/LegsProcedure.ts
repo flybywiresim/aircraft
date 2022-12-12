@@ -231,7 +231,7 @@ export class LegsProcedure {
                   mappedLeg.speedConstraint = currentLeg.speedRestriction;
                   mappedLeg.turnDirection = currentLeg.turnDirection;
 
-                  const recNavaid: RawVor | RawNdb | undefined = this._facilities.get(currentLeg.originIcao);
+                  const recNavaid: RawVor | RawNdb | undefined = this._facilities.get(currentLeg.originIcao) as RawVor | RawNdb | undefined;
 
                   mappedLeg.additionalData.legType = currentLeg.type;
                   mappedLeg.additionalData.overfly = currentLeg.flyOver;
@@ -266,7 +266,7 @@ export class LegsProcedure {
 
     // magnetic tracks to/from a VOR always use VOR station declination
     if (currentLeg.fixIcao.charAt(0) === 'V') {
-      const vor: RawVor = this._facilities.get(currentLeg.fixIcao);
+      const vor: RawVor = this.getLoadedFacility(currentLeg.fixIcao) as RawVor;
       if (!vor || vor.magneticVariation === undefined) {
         console.warn('Leg coded incorrectly (missing vor fix or station declination)', currentLeg, vor);
         return this.airportMagVar;
@@ -279,7 +279,7 @@ export class LegsProcedure {
       // find a leg with the reference navaid for the procedure
       for (let i = this._legs.length - 1; i >= 0; i--) {
         if (this._legs[i].originIcao.trim().length > 0) {
-          const recNavaid: RawVor = this._facilities.get(currentLeg.originIcao);
+          const recNavaid: RawVor = this.getLoadedFacility(currentLeg.originIcao) as RawVor;
           if (recNavaid && recNavaid.magneticVariation !== undefined) {
             return 360 - recNavaid.magneticVariation;
           }
@@ -298,7 +298,7 @@ export class LegsProcedure {
     }
 
     if (useStationDeclination) {
-      const recNavaid: RawVor = this._facilities.get(currentLeg.originIcao);
+      const recNavaid: RawVor = this.getLoadedFacility(currentLeg.originIcao) as RawVor;
       if (!recNavaid || recNavaid.magneticVariation === undefined) {
         console.warn('Leg coded incorrectly (missing recommended navaid or station declination)', currentLeg, recNavaid);
         return this.airportMagVar;
@@ -308,6 +308,14 @@ export class LegsProcedure {
 
     // for all other terminal procedure legs we use airport magnetic variation
     return this.airportMagVar;
+  }
+
+  private getLoadedFacility(icao: string): RawFacility {
+    const facility = this._facilities.get(icao);
+    if (!facility) {
+        throw new Error(`Failed to load facility: ${icao}`);
+    }
+    return facility;
   }
 
   private getFacfIndex(): number {
@@ -329,7 +337,7 @@ export class LegsProcedure {
    * @returns The mapped leg.
    */
   public mapHeadingUntilDistanceFromOrigin(leg: RawProcedureLeg, prevLeg: WayPoint): WayPoint {
-      const origin = this._facilities.get(leg.originIcao);
+      const origin = this.getLoadedFacility(leg.originIcao);
       const originIdent = origin.icao.substring(7, 12).trim();
 
       const bearingToOrigin = Avionics.Utils.computeGreatCircleHeading(prevLeg.infos.coordinates, new LatLongAlt(origin.lat, origin.lon));
@@ -368,7 +376,7 @@ export class LegsProcedure {
    * @returns The mapped leg.
    */
   public mapBearingAndDistanceFromOrigin(leg: RawProcedureLeg): WayPoint {
-    const origin = this._facilities.get(leg.fixIcao);
+    const origin = this.getLoadedFacility(leg.fixIcao);
     const originIdent = origin.icao.substring(7, 12).trim();
     const course = leg.trueDegrees ? leg.course : A32NX_Util.magneticToTrue(leg.course, Facilities.getMagVar(origin.lat, origin.lon));
     // this is the leg length for FC, and the DME distance for FD
@@ -377,7 +385,7 @@ export class LegsProcedure {
     let termPoint;
     let legLength;
     if (leg.type === LegType.FD) {
-        const recNavaid = this._facilities.get(leg.originIcao);
+        const recNavaid = this.getLoadedFacility(leg.originIcao);
         termPoint = firstSmallCircleIntersection(
             { lat: recNavaid.lat, long: recNavaid.lon },
             refDistance,
@@ -412,7 +420,7 @@ export class LegsProcedure {
           return this.mapExactFix(leg);
       }
 
-      const origin = this._facilities.get(leg.originIcao);
+      const origin = this.getLoadedFacility(leg.originIcao);
       const originIdent = origin.icao.substring(7, 12).trim();
 
       const course = leg.course + GeoMath.getMagvar(prevLeg.infos.coordinates.lat, prevLeg.infos.coordinates.long);
@@ -446,7 +454,7 @@ export class LegsProcedure {
    * @returns The mapped leg.
    */
   public mapHeadingUntilRadialCrossing(leg: RawProcedureLeg, prevLeg: WayPoint) {
-      const origin = this._facilities.get(leg.originIcao);
+      const origin = this.getLoadedFacility(leg.originIcao);
       const originCoordinates = new LatLongAlt(origin.lat, origin.lon);
 
       const originToCoordinates = Avionics.Utils.computeGreatCircleHeading(originCoordinates, prevLeg.infos.coordinates);
@@ -519,12 +527,12 @@ export class LegsProcedure {
    * @returns The mapped leg.
    */
   public mapExactFix(leg: RawProcedureLeg): WayPoint {
-      const facility = this._facilities.get(leg.fixIcao);
+      const facility = this.getLoadedFacility(leg.fixIcao);
       return RawDataMapper.toWaypoint(facility, this._instrument);
   }
 
   public mapArcToFix(leg: RawProcedureLeg, prevLeg: WayPoint): WayPoint {
-      const toFix = this._facilities.get(leg.fixIcao);
+      const toFix = this.getLoadedFacility(leg.fixIcao);
 
       const waypoint = RawDataMapper.toWaypoint(toFix, this._instrument);
 
@@ -532,10 +540,10 @@ export class LegsProcedure {
   }
 
   public mapRadiusToFix(leg: RawProcedureLeg): WayPoint {
-      const arcCentreFix = this._facilities.get(leg.arcCenterFixIcao);
+      const arcCentreFix = this.getLoadedFacility(leg.arcCenterFixIcao);
       const arcCenterCoordinates = new LatLongAlt(arcCentreFix.lat, arcCentreFix.lon, 0);
 
-      const toFix = this._facilities.get(leg.fixIcao);
+      const toFix = this.getLoadedFacility(leg.fixIcao);
       const toCoordinates = new LatLongAlt(toFix.lat, toFix.lon, 0);
 
       const radius = Avionics.Utils.computeGreatCircleDistance(arcCenterCoordinates, toCoordinates);
@@ -548,7 +556,7 @@ export class LegsProcedure {
   }
 
   public mapHold(leg: RawProcedureLeg): WayPoint {
-      const facility = this._facilities.get(leg.fixIcao);
+      const facility = this.getLoadedFacility(leg.fixIcao);
       const waypoint = RawDataMapper.toWaypoint(facility, this._instrument);
 
       const magVar = Facilities.getMagVar(facility.lat, facility.lon);
