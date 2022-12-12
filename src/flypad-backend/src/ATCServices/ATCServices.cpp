@@ -3,6 +3,8 @@
 #define SELCAL_LIGHT_TIME_MS 300
 #define FLASHING_LIGHTS_TIMEOUT_MS 60000
 
+using Milliseconds = std::chrono::milliseconds;
+
 ATCServices::ATCServices(HANDLE hSimConnect) : _hSimConnect(hSimConnect) {}
 
 void ATCServices::initialize() {
@@ -52,6 +54,7 @@ void ATCServices::onUpdate(INT64 volumeCOM1, INT64 volumeCOM2) {
 
   if (this->new_data_available) {
     this->new_data_available = false;
+    this->_baseTime = std::chrono::system_clock::now();
 
     this->_selcalActive = _data.selcal;
 
@@ -88,13 +91,14 @@ void ATCServices::onUpdate(INT64 volumeCOM1, INT64 volumeCOM2) {
     bool update = false;
 
     auto now = std::chrono::system_clock::now();
-    auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(now - this->_previousTime).count();
 
-    if (get_named_variable_value(_selcalResetLVar) == 0 && diff < FLASHING_LIGHTS_TIMEOUT_MS) {
+    // Reset everything if RESET is pressed OR if 60 seconds have passed (FCOM compliant)
+    if (get_named_variable_value(_selcalResetLVar) == 0 &&
+        std::chrono::duration_cast<Milliseconds>(now - this->_baseTime).count() < FLASHING_LIGHTS_TIMEOUT_MS) {
       if (this->_selcalActive) {
         // Makes the push button blink every SELCAL_LIGHT_TIME_MS
         // It sets the BLINK_ID (foundable in the XML behaviors) then 0 to make it blink
-        if (diff >= SELCAL_LIGHT_TIME_MS) {
+        if (std::chrono::duration_cast<Milliseconds>(now - this->_previousTime).count() >= SELCAL_LIGHT_TIME_MS) {
           set_named_variable_value(_selcalLVar, get_named_variable_value(_selcalLVar) == this->_selcalActive ? 0 : this->_selcalActive);
           this->_previousTime = now;
         }

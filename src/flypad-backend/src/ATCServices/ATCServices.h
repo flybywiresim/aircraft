@@ -36,7 +36,8 @@ class ATCServices {
 
   ATCServicesData _data;
 
-  std::chrono::system_clock::time_point _previousTime = std::chrono::system_clock::now();
+  std::chrono::system_clock::time_point _baseTime = std::chrono::system_clock::now();
+  std::chrono::system_clock::time_point _previousTime = _baseTime;
 
   inline bool setATCServicesDataVPILOT(bool loaded, bool selcalActive) const {
     ATCServicesDataVPILOT output{loaded, selcalActive};
