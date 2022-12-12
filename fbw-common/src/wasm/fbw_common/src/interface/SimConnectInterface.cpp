@@ -106,16 +106,6 @@ void SimConnectInterface::processClientData(const SIMCONNECT_RECV_CLIENT_DATA* d
     case DataDefinition::FBW_SIMBRIDGE_TERRONND_MAXIMUM_ELEVATION_MODE:
       std::cout << "Max mode " << std::to_string(data->dwData) << std::endl;
       break;
-    /* case ClientData::FBW_SIMBRIDGE_TERRONND_THRESHOLDS:
-      this->thresholds = *((TerrOnNdThresholds*)&data->dwData);
-
-      std::cout << "Image dimension: " << std::to_string(this->thresholds.imageWidth) << "x" << this->thresholds.imageHeight << std::endl;
-      std::cout << "Lower elevation: " << std::to_string(this->thresholds.lowerThreshold)
-                << ", mode: " << std::to_string(this->thresholds.lowerThresholdMode) << std::endl;
-      std::cout << "Upper elevation: " << std::to_string(this->thresholds.upperThreshold)
-                << ", mode: " << std::to_string(this->thresholds.upperThresholdMode) << std::endl;
-
-      return; */
     default:
       std::cout << "TERR ON ND: Unknown request ID in SimConnect connection: " << std::to_string(data->dwRequestID) << std::endl;
       return;
