@@ -13,7 +13,7 @@ __attribute__((export_name("terronnd_gauge_callback"))) extern "C" bool terronnd
   switch (service_id) {
     case PANEL_SERVICE_PRE_INSTALL: {
       // connect to sim connect
-      return simconnect.connect();
+      return simconnect.connect(static_cast<sGaugeInstallData*>(pData)->strParameters);
     };
 
     case PANEL_SERVICE_PRE_DRAW: {
