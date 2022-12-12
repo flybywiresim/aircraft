@@ -202,7 +202,6 @@ export class ManagedFlightPlan {
     private computeWaypointEta(distance: number, preComputedTime? :number) {
         const eta = preComputedTime ?? this.computeWaypointTime(distance);
         const utcTime = SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
-        // console.log(`BRUHEGG: ${utcTime}, BRUHHH #2: ${eta}`);
         return eta + utcTime;
     }
 

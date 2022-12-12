@@ -287,7 +287,7 @@ export class FlightPlanAsoboSync {
                     this.fpChecksum = plan.checksum;
                 }
                 Coherent.call('RECOMPUTE_ACTIVE_WAYPOINT_INDEX')
-                    .then(() => console.log('[FP SAVE] Setting Active Waypoint... SUCCESS'))
+                    // .then(() => console.log('[FP SAVE] Setting Active Waypoint... SUCCESS'))
                     .catch((e) => console.log('[FP SAVE] Setting Active Waypoint... FAILED: ', e));
             }));
         });
