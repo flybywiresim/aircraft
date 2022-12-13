@@ -1150,10 +1150,6 @@ export class ManagedFlightPlan {
 
             const procedure = new LegsProcedure(legs, this.getWaypoint(_startIndex - 1), this._parentInstrument, airportMagVar, this.procedureDetails.approachType, legAnnotations);
 
-            if (runway) {
-                procedure.calculateApproachData(runway);
-            }
-
             let waypointIndex = _startIndex;
             // console.log('MFP: buildApproach - ADDING WAYPOINTS ------------------------');
             while (procedure.hasNext()) {

@@ -3,11 +3,16 @@
 
 import { EfisSide } from '@shared/NavigationDisplay';
 import { getSimBridgeUrl } from '../common';
+import { ClientState } from './ClientState';
 
 export class Terrain {
     private static endpointsAvailable: boolean = false;
 
     public static async mapdataAvailable(): Promise<boolean> {
+        if (!ClientState.getInstance().isAvailable()) {
+            Terrain.endpointsAvailable = false;
+            return false;
+        }
         return fetch(`${getSimBridgeUrl()}/api/v1/terrain/available`).then((response) => {
             Terrain.endpointsAvailable = response.ok;
             return response.ok;

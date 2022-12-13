@@ -28,7 +28,7 @@ body:
         "actor": "Benjozork",
         "event_name": "manual"
       }
-    description: Please paste the contents from the build_info.json (located inside main aircraft folder) into the field.
+    description: Please paste the contents from the a32nx_build_info.json (located inside main aircraft folder) into the field.
     render: json
   validations:
     required: true
