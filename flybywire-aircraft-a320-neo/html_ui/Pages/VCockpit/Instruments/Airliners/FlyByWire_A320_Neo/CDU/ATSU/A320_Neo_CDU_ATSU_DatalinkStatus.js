@@ -20,39 +20,28 @@ class CDUAtsuDatalinkStatus {
             vhf3Mode = "ATC/AOC";
         }
 
+        let satComAvail = 'SATCOM : {small}NOT INSTALLED{end}';
+        let satComMode = '';
         if (NXDataStore.get('MODEL_SATCOM_ENABLED') === '1') {
-            mcdu.setTemplate([
-                ["DATALINK STATUS"],
-                [""],
-                ["VHF3 : {green}DLK AVAIL{end}"],
-                [`\xa0\xa0\xa0\xa0\xa0\xa0\xa0${vhf3Mode}`],
-                ["SATCOM : {green}DLK AVAIL{end}"],
-                [`\xa0\xa0\xa0\xa0\xa0\xa0\xa0  AOC ONLY`],
-                ["HF : {small}NOT INSTALLED{end}"],
-                [""],
-                [""],
-                [""],
-                [""],
-                [""],
-                ["<RETURN", "PRINT*[color]cyan"]
-            ]);
-        } else {
-            mcdu.setTemplate([
-                ["DATALINK STATUS"],
-                [""],
-                ["VHF3 : {green}DLK AVAIL{end}"],
-                [`\xa0\xa0\xa0\xa0\xa0\xa0\xa0${vhf3Mode}`],
-                ["SATCOM : {small}NOT INSTALLED{end}"],
-                [""],
-                ["HF : {small}NOT INSTALLED{end}"],
-                [""],
-                [""],
-                [""],
-                [""],
-                [""],
-                ["<RETURN", "PRINT*[color]cyan"]
-            ]);
+            satComAvail = 'SATCOM : {green}DLK AVAIL{end}';
+            satComMode = '  AOC ONLY';
         }
+
+        mcdu.setTemplate([
+            ["DATALINK STATUS"],
+            [""],
+            ["VHF3 : {green}DLK AVAIL{end}"],
+            [`\xa0\xa0\xa0\xa0\xa0\xa0\xa0${vhf3Mode}`],
+            [`${satComAvail}`],
+            [`\xa0\xa0\xa0\xa0\xa0\xa0\xa0${satComMode}`],
+            ["HF : {small}NOT INSTALLED{end}"],
+            [""],
+            [""],
+            [""],
+            [""],
+            [""],
+            ["<RETURN", "PRINT*[color]cyan"]
+        ]);
 
         mcdu.leftInputDelay[5] = () => {
             return mcdu.getDelaySwitchPage();
