@@ -5298,11 +5298,10 @@ impl SimulationElement for RudderSystemHydraulicController {
     }
 
     fn read(&mut self, reader: &mut SimulatorReader) {
-        let rudder_position_pedal_demand: f64 = reader.read(&self.rudder_pedal_control_input_id);
+        let rudder_position_pedal_demand: Angle = reader.read(&self.rudder_pedal_control_input_id);
 
-        self.rudder_position_requested = Angle::new::<degree>(
-            rudder_position_pedal_demand * Self::RUDDER_MAX_TRAVEL_DEGREES / 2. / 100.,
-        )
+        self.rudder_position_requested =
+            rudder_position_pedal_demand * (Self::RUDDER_MAX_TRAVEL_DEGREES / 2. / 100.);
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
