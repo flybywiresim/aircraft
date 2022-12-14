@@ -23,8 +23,8 @@ class CDUAtsuDatalinkStatus {
         let satComAvail = 'SATCOM : {small}NOT INSTALLED{end}';
         let satComMode = '';
         if (NXDataStore.get('MODEL_SATCOM_ENABLED') === '1') {
-            satComAvail = 'SATCOM : {green}DLK AVAIL{end}';
-            satComMode = '  AOC ONLY';
+            satComAvail = 'SATCOM : {small}DLK NOT AVAIL{end}';
+            satComMode = '';
         }
 
         mcdu.setTemplate([
