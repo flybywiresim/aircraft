@@ -5066,8 +5066,7 @@ impl SimulationElement for A320RudderTrimTravelLimiterController {
 
         // Trim commands from FBW is negative for right positive for left, opposite convention in hydraulics
         if self.component_type == RudderComponent::Trim {
-            self.commanded_position[0] = -self.commanded_position[0];
-            self.commanded_position[1] = -self.commanded_position[1];
+            self.commanded_position = self.commanded_position.map(|p| -p);
         }
 
         self.active_mode[0] = reader.read(&self.id_active_mode_1);
