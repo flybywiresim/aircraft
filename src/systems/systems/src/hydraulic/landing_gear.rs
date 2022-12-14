@@ -1284,13 +1284,13 @@ mod tests {
     fn door_assembly_init_uplocked() {
         let mut test_bed = SimulationTestBed::new(|_| {
             TestSingleGearAircraft::new(
-                Duration::from_millis(33),
+                Duration::from_millis(10),
                 main_gear_door_right_assembly(),
                 main_gear_right_assembly(true),
             )
         });
 
-        test_bed.run_with_delta(Duration::from_millis(33));
+        test_bed.run_with_delta(Duration::from_millis(10));
 
         assert!(test_bed.query(|a| a.door_assembly.is_locked()));
         assert!(
@@ -1302,13 +1302,13 @@ mod tests {
     fn door_uplocked_gives_correct_proximity_sensor_state() {
         let mut test_bed = SimulationTestBed::new(|_| {
             TestSingleGearAircraft::new(
-                Duration::from_millis(33),
+                Duration::from_millis(10),
                 main_gear_door_right_assembly(),
                 main_gear_right_assembly(true),
             )
         });
 
-        test_bed.run_with_delta(Duration::from_millis(33));
+        test_bed.run_with_delta(Duration::from_millis(10));
 
         assert!(
             test_bed.query(|a| a.door_assembly.position_normalized()) == Ratio::new::<ratio>(0.)
@@ -1325,13 +1325,13 @@ mod tests {
     fn door_opens_gear_stays_down_and_locked() {
         let mut test_bed = SimulationTestBed::new(|_| {
             TestSingleGearAircraft::new(
-                Duration::from_millis(33),
+                Duration::from_millis(10),
                 main_gear_door_right_assembly(),
                 main_gear_right_assembly(true),
             )
         });
 
-        test_bed.run_with_delta(Duration::from_millis(33));
+        test_bed.run_with_delta(Duration::from_millis(10));
         assert!(test_bed.query(|a| a.is_door_sensor_uplock(LgciuId::Lgciu1)));
         assert!(test_bed.query(|a| a.is_door_sensor_uplock(LgciuId::Lgciu2)));
 
@@ -1343,7 +1343,7 @@ mod tests {
     fn no_unlocking_from_door_uplock_without_pressure() {
         let mut test_bed = SimulationTestBed::new(|_| {
             TestSingleGearAircraft::new(
-                Duration::from_millis(33),
+                Duration::from_millis(10),
                 main_gear_door_right_assembly(),
                 main_gear_right_assembly(true),
             )
@@ -1361,12 +1361,12 @@ mod tests {
     fn full_retract_extend_cycle() {
         let mut test_bed = SimulationTestBed::new(|_| {
             TestSingleGearAircraft::new(
-                Duration::from_millis(33),
+                Duration::from_millis(10),
                 main_gear_door_right_assembly(),
                 main_gear_right_assembly(true),
             )
         });
-        test_bed.run_with_delta(Duration::from_millis(33));
+        test_bed.run_with_delta(Duration::from_millis(10));
 
         println!("RETRACT -- > DOOR OPENING");
         test_bed.command(|a| a.command_doors_opening());

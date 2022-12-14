@@ -2376,7 +2376,7 @@ mod tests {
         let mut test_bed = SimulationTestBed::new(|context| {
             TestAircraft::new(
                 context,
-                Duration::from_millis(33),
+                Duration::from_millis(10),
                 cargo_door_assembly(true),
             )
         });
@@ -2393,7 +2393,7 @@ mod tests {
         let mut test_bed = SimulationTestBed::new(|context| {
             TestAircraft::new(
                 context,
-                Duration::from_millis(33),
+                Duration::from_millis(10),
                 cargo_door_assembly(true),
             )
         });
@@ -2415,7 +2415,7 @@ mod tests {
         let mut test_bed = SimulationTestBed::new(|context| {
             TestAircraft::new(
                 context,
-                Duration::from_millis(33),
+                Duration::from_millis(10),
                 cargo_door_assembly(true),
             )
         });
@@ -2441,7 +2441,7 @@ mod tests {
         let mut test_bed = SimulationTestBed::new(|context| {
             TestAircraft::new(
                 context,
-                Duration::from_millis(33),
+                Duration::from_millis(10),
                 cargo_door_assembly(true),
             )
         });
@@ -2467,7 +2467,7 @@ mod tests {
         let mut test_bed = SimulationTestBed::new(|context| {
             TestAircraft::new(
                 context,
-                Duration::from_millis(33),
+                Duration::from_millis(10),
                 cargo_door_assembly(true),
             )
         });
@@ -2494,7 +2494,7 @@ mod tests {
         let mut test_bed = SimulationTestBed::new(|context| {
             TestAircraft::new(
                 context,
-                Duration::from_millis(33),
+                Duration::from_millis(10),
                 cargo_door_assembly(true),
             )
         });
@@ -2521,7 +2521,7 @@ mod tests {
         let mut test_bed = SimulationTestBed::new(|context| {
             TestAircraft::new(
                 context,
-                Duration::from_millis(33),
+                Duration::from_millis(10),
                 cargo_door_assembly(true),
             )
         });
@@ -2541,7 +2541,7 @@ mod tests {
         let mut test_bed = SimulationTestBed::new(|context| {
             TestAircraft::new(
                 context,
-                Duration::from_millis(33),
+                Duration::from_millis(10),
                 cargo_door_assembly(true),
             )
         });
@@ -2570,7 +2570,7 @@ mod tests {
         let mut test_bed = SimulationTestBed::new(|context| {
             TestAircraft::new(
                 context,
-                Duration::from_millis(33),
+                Duration::from_millis(10),
                 cargo_door_assembly(false),
             )
         });
@@ -2592,7 +2592,7 @@ mod tests {
         let mut test_bed = SimulationTestBed::new(|context| {
             TestAircraft::new(
                 context,
-                Duration::from_millis(33),
+                Duration::from_millis(10),
                 cargo_door_assembly(true),
             )
         });
@@ -2617,7 +2617,7 @@ mod tests {
         let mut test_bed = SimulationTestBed::new(|context| {
             TestAircraft::new(
                 context,
-                Duration::from_millis(33),
+                Duration::from_millis(10),
                 cargo_door_assembly(true),
             )
         });
@@ -2649,7 +2649,7 @@ mod tests {
         let mut test_bed = SimulationTestBed::new(|context| {
             TestAircraft::new(
                 context,
-                Duration::from_millis(33),
+                Duration::from_millis(10),
                 cargo_door_assembly(true),
             )
         });
@@ -2691,7 +2691,7 @@ mod tests {
         let mut test_bed = SimulationTestBed::new(|context| {
             TestAircraft::new(
                 context,
-                Duration::from_millis(33),
+                Duration::from_millis(10),
                 cargo_door_assembly(true),
             )
         });
@@ -2897,7 +2897,7 @@ mod tests {
         let mut test_bed = SimulationTestBed::new(|context| {
             TestAircraft::new(
                 context,
-                Duration::from_millis(33),
+                Duration::from_millis(10),
                 main_gear_right_assembly(true),
             )
         });
@@ -3008,7 +3008,7 @@ mod tests {
         let mut test_bed = SimulationTestBed::new(|context| {
             TestAircraft::new(
                 context,
-                Duration::from_millis(33),
+                Duration::from_millis(10),
                 main_gear_left_assembly(true),
             )
         });

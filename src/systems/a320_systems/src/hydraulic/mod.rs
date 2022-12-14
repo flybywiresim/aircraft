@@ -9568,31 +9568,6 @@ mod tests {
         }
 
         #[test]
-        fn yellow_epump_can_deploy_flaps_and_slats() {
-            let mut test_bed = test_bed_on_ground_with()
-                .engines_off()
-                .on_the_ground()
-                .set_cold_dark_inputs()
-                .run_one_tick();
-
-            test_bed = test_bed
-                .set_yellow_e_pump(false)
-                .run_waiting_for(Duration::from_secs(10));
-
-            // Yellow epump working
-            assert!(test_bed.is_yellow_pressure_switch_pressurised());
-
-            test_bed = test_bed
-                .set_flaps_handle_position(4)
-                .run_waiting_for(Duration::from_secs(80));
-
-            assert!(test_bed.get_flaps_left_position_percent() > 99.);
-            assert!(test_bed.get_flaps_right_position_percent() > 99.);
-            assert!(test_bed.get_slats_left_position_percent() > 99.);
-            assert!(test_bed.get_slats_right_position_percent() > 99.);
-        }
-
-        #[test]
         fn yellow_epump_can_deploy_flaps_and_slats_on_worst_case_ptu() {
             let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
