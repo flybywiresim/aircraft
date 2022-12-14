@@ -37,5 +37,4 @@ if (!filePrefixArg) {
 
 const write = (file) => writeFileSync(file, JSON.stringify(object, null, 4));
 
-write(`build_info.json`);
 write(`${filePrefixArg}_build_info.json`);
