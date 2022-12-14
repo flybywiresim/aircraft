@@ -88,7 +88,7 @@ class A32NX_BrakeTemp {
         const currentBrakeFanState = SimVar.GetSimVarValue("L:A32NX_BRAKE_FAN", "Bool");
         const brakeFanButtonIsPressed = SimVar.GetSimVarValue("L:A32NX_BRAKE_FAN_BTN_PRESSED", "Bool");
         // if the fan button is pressed down and the left main gear is down and locked, the fan is on
-        const brakeFanIsOn = brakeFanButtonIsPressed && (GearLeftPosition == 1);
+        const brakeFanIsOn = brakeFanButtonIsPressed && (GearLeftPosition == 100);
         let fanMultiplier = 1;
         let fanDifferentialFactor = 1;
         if (brakeFanIsOn) {
