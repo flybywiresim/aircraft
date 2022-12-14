@@ -576,6 +576,7 @@ mod tests {
     use crate::shared::{update_iterator::FixedStepLoop, PotentialOrigin};
     use crate::simulation::test::{ReadByName, SimulationTestBed, TestBed};
     use crate::simulation::{Aircraft, SimulationElement};
+    use ntest::assert_about_eq;
     use std::time::Duration;
 
     struct TestPositionController {
@@ -820,7 +821,7 @@ mod tests {
         test_bed.run_with_delta(Duration::from_millis(34000));
 
         let trim_deflection: Angle = test_bed.read_by_name("HYD_RUDDER_TRIM_FEEDBACK_ANGLE");
-        assert!((trim_deflection.get::<degree>() - -15.).abs() < 0.1);
+        assert_about_eq!(trim_deflection.get::<degree>(), -15., 0.1);
     }
 
     #[test]
@@ -836,7 +837,7 @@ mod tests {
         test_bed.run_with_delta(Duration::from_millis(2000));
 
         let trim_deflection: Angle = test_bed.read_by_name("HYD_RUDDER_TRIM_FEEDBACK_ANGLE");
-        assert!((trim_deflection.get::<degree>() - 1.).abs() < 0.1);
+        assert_about_eq!(trim_deflection.get::<degree>(), 1., 0.1);
 
         test_bed.command(|a| {
             a.set_trim_demand(
@@ -847,7 +848,7 @@ mod tests {
         test_bed.run_with_delta(Duration::from_millis(2000));
 
         let trim_deflection: Angle = test_bed.read_by_name("HYD_RUDDER_TRIM_FEEDBACK_ANGLE");
-        assert!((trim_deflection.get::<degree>() - 2.).abs() < 0.1);
+        assert_about_eq!(trim_deflection.get::<degree>(), 2., 0.1);
     }
 
     #[test]
@@ -864,10 +865,10 @@ mod tests {
         test_bed.run_with_delta(Duration::from_millis(4000));
 
         let trim_deflection: Angle = test_bed.read_by_name("HYD_RUDDER_TRIM_FEEDBACK_ANGLE");
-        assert!((trim_deflection.get::<degree>() - 3.).abs() < 0.1);
+        assert_about_eq!(trim_deflection.get::<degree>(), 3., 0.1);
 
         let final_rudder_deflection: Angle = test_bed.query(|a| a.final_rudder_demand());
-        assert!((final_rudder_deflection.get::<degree>() - 8.).abs() < 0.1);
+        assert_about_eq!(final_rudder_deflection.get::<degree>(), 8., 0.1);
     }
 
     #[test]
@@ -890,10 +891,10 @@ mod tests {
         test_bed.run_with_delta(Duration::from_millis(30000));
 
         let trim_deflection: Angle = test_bed.read_by_name("HYD_RUDDER_TRIM_FEEDBACK_ANGLE");
-        assert!((trim_deflection.get::<degree>() - 3.).abs() < 0.1);
+        assert_about_eq!(trim_deflection.get::<degree>(), 3., 0.1);
 
         let final_rudder_deflection: Angle = test_bed.query(|a| a.final_rudder_demand());
-        assert!((final_rudder_deflection.get::<degree>() - 3.5).abs() < 0.1);
+        assert_about_eq!(final_rudder_deflection.get::<degree>(), 3.5, 0.1);
     }
 
     #[test]
@@ -916,10 +917,10 @@ mod tests {
         test_bed.run_with_delta(Duration::from_millis(30000));
 
         let trim_deflection: Angle = test_bed.read_by_name("HYD_RUDDER_TRIM_FEEDBACK_ANGLE");
-        assert!((trim_deflection.get::<degree>() - -3.).abs() < 0.1);
+        assert_about_eq!(trim_deflection.get::<degree>(), -3., 0.1);
 
         let final_rudder_deflection: Angle = test_bed.query(|a| a.final_rudder_demand());
-        assert!((final_rudder_deflection.get::<degree>() - -3.5).abs() < 0.1);
+        assert_about_eq!(final_rudder_deflection.get::<degree>(), -3.5, 0.1);
     }
 
     #[test]
@@ -1051,7 +1052,7 @@ mod tests {
         test_bed.run_with_delta(Duration::from_millis(6000));
 
         let final_rudder_deflection: Angle = test_bed.query(|a| a.final_rudder_demand());
-        assert!((final_rudder_deflection.get::<degree>() - 5.).abs() < 0.1);
+        assert_about_eq!(final_rudder_deflection.get::<degree>(), 5., 0.1);
     }
 
     #[test]
@@ -1071,7 +1072,7 @@ mod tests {
         test_bed.run_with_delta(Duration::from_millis(10000));
 
         let final_rudder_deflection: Angle = test_bed.query(|a| a.final_rudder_demand());
-        assert!((final_rudder_deflection.get::<degree>() - 15.).abs() < 0.1);
+        assert_about_eq!(final_rudder_deflection.get::<degree>(), 15., 0.1);
 
         test_bed
             .command(|a| a.set_hyd_pressure([Pressure::new::<psi>(0.), Pressure::new::<psi>(0.)]));
@@ -1085,7 +1086,7 @@ mod tests {
         test_bed.run_with_delta(Duration::from_millis(20000));
 
         let final_rudder_deflection: Angle = test_bed.query(|a| a.final_rudder_demand());
-        assert!((final_rudder_deflection.get::<degree>() - 0.).abs() < 0.1);
+        assert!(final_rudder_deflection.get::<degree>().abs() < 0.1);
     }
 
     #[test]
@@ -1105,7 +1106,7 @@ mod tests {
         test_bed.run_with_delta(Duration::from_millis(10000));
 
         let final_rudder_deflection: Angle = test_bed.query(|a| a.final_rudder_demand());
-        assert!((final_rudder_deflection.get::<degree>() - 15.).abs() < 0.1);
+        assert_about_eq!(final_rudder_deflection.get::<degree>(), 15., 0.1);
 
         test_bed.command(|a| {
             a.set_yaw_damper_states(
@@ -1117,7 +1118,7 @@ mod tests {
         test_bed.run_with_delta(Duration::from_millis(20000));
 
         let final_rudder_deflection: Angle = test_bed.query(|a| a.final_rudder_demand());
-        assert!((final_rudder_deflection.get::<degree>() - 0.).abs() < 0.1);
+        assert!(final_rudder_deflection.get::<degree>().abs() < 0.1);
     }
 
     #[test]
