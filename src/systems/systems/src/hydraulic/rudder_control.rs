@@ -196,8 +196,8 @@ impl Actuator for YawDamperActuator {
     }
 
     fn reset_volumes(&mut self) {
-        self.total_volume_to_reservoir = Volume::new::<gallon>(0.);
-        self.total_volume_to_actuator = Volume::new::<gallon>(0.);
+        self.total_volume_to_reservoir = Volume::default();
+        self.total_volume_to_actuator = Volume::default();
     }
 }
 
