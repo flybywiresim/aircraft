@@ -16,7 +16,7 @@ use std::time::Duration;
 /// Electric motor can run when demanded active and powered by main supply,
 ///    or directly when using second emergency power supply
 struct ElecMotor {
-    powered_by: ElectricalBusType,
+    powered_by_main: ElectricalBusType,
     powered_by_when_emergency: ElectricalBusType,
 
     is_powered: bool,
@@ -27,10 +27,13 @@ struct ElecMotor {
     target_angle: Angle,
 }
 impl ElecMotor {
-    fn new(powered_by: [ElectricalBusType; 2]) -> Self {
+    fn new(
+        powered_by_main: ElectricalBusType,
+        powered_by_when_emergency: ElectricalBusType,
+    ) -> Self {
         Self {
-            powered_by: powered_by[0],
-            powered_by_when_emergency: powered_by[1],
+            powered_by_main,
+            powered_by_when_emergency,
 
             is_powered: false,
             is_emergency_powered: false,
@@ -64,7 +67,7 @@ impl ElecMotor {
 }
 impl SimulationElement for ElecMotor {
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
-        self.is_powered = buses.is_powered(self.powered_by);
+        self.is_powered = buses.is_powered(self.powered_by_main);
         self.is_emergency_powered = buses.is_powered(self.powered_by_when_emergency);
     }
 }
@@ -276,15 +279,17 @@ impl AngularPositioningWithDualElecMotors {
         max_angle: Angle,
         min_angle: Angle,
         init_angle: Angle,
-        motor1_powered_by: [ElectricalBusType; 2],
-        motor2_powered_by: [ElectricalBusType; 2],
+        motor1_powered_by_main: ElectricalBusType,
+        motor1_powered_by_emergency: ElectricalBusType,
+        motor2_powered_by_main: ElectricalBusType,
+        motor2_powered_by_emergency: ElectricalBusType,
     ) -> Self {
         Self {
             angle: init_angle,
             speed: LowPassFilter::new(Self::SPEED_FILTER_TIME_CONST),
             motors: [
-                ElecMotor::new(motor1_powered_by),
-                ElecMotor::new(motor2_powered_by),
+                ElecMotor::new(motor1_powered_by_main, motor1_powered_by_emergency),
+                ElecMotor::new(motor2_powered_by_main, motor2_powered_by_emergency),
             ],
 
             last_delta_angle: init_angle,
@@ -399,8 +404,10 @@ impl RudderTrimActuator {
                 Angle::new::<degree>(Self::MAX_ANGLE_DEG),
                 Angle::new::<degree>(Self::MIN_ANGLE_DEG),
                 Angle::default(),
-                [Self::MOTOR1_POWER_BUS, Self::MOTOR1_POWER_BUS],
-                [Self::MOTOR2_POWER_BUS, Self::MOTOR2_POWER_BUS],
+                Self::MOTOR1_POWER_BUS,
+                Self::MOTOR1_POWER_BUS,
+                Self::MOTOR2_POWER_BUS,
+                Self::MOTOR2_POWER_BUS,
             ),
         }
     }
@@ -452,8 +459,10 @@ impl RudderTravelLimiter {
                 Angle::new::<degree>(Self::MAX_ANGLE_DEG),
                 Angle::new::<degree>(Self::MIN_ANGLE_DEG),
                 Angle::new::<degree>(Self::MAX_ANGLE_DEG),
-                [Self::MOTOR1_POWER_BUS, Self::MOTOR1_EMERGENCY_POWER_BUS],
-                [Self::MOTOR2_POWER_BUS, Self::MOTOR2_EMERGENCY_POWER_BUS],
+                Self::MOTOR1_POWER_BUS,
+                Self::MOTOR1_EMERGENCY_POWER_BUS,
+                Self::MOTOR2_POWER_BUS,
+                Self::MOTOR2_EMERGENCY_POWER_BUS,
             ),
         }
     }
