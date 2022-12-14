@@ -175,7 +175,7 @@ class CDUAvailableDeparturesPage {
                             mcdu.onRightInput[i + 1] = () => {
                                 mcdu.setDepartureTransitionIndex(transIndex, () => {
                                     CDUAvailableDeparturesPage.ShowPage(mcdu, airport, pageCurrent, true);
-                                }).catch(console.error);
+                                });
                             };
                         }
                     }

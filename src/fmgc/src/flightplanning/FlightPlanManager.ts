@@ -1058,12 +1058,12 @@ export class FlightPlanManager {
      * @param flightPlanIndex The index of the flight plan to get the waypoint from. If omitted, will get from the current flight plan.
      * @param considerApproachWaypoints Whether or not to consider approach waypoints.
      */
-    public getWaypoint(index: number, flightPlanIndex = NaN, considerApproachWaypoints = false): WayPoint {
+    public getWaypoint(index: number, flightPlanIndex = NaN, considerApproachWaypoints = false): WayPoint | undefined {
         if (isNaN(flightPlanIndex)) {
             flightPlanIndex = this._currentFlightPlanIndex;
         }
 
-        return this._flightPlans[flightPlanIndex].getWaypoint(index);
+        return this._flightPlans[flightPlanIndex]?.getWaypoint(index);
     }
 
     /**
@@ -1076,7 +1076,7 @@ export class FlightPlanManager {
             flightPlanIndex = this._currentFlightPlanIndex;
         }
 
-        return this._flightPlans[flightPlanIndex].nonApproachWaypoints;
+        return this._flightPlans[flightPlanIndex]?.nonApproachWaypoints ?? [];
     }
 
     /**
