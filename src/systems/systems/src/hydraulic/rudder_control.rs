@@ -147,7 +147,7 @@ impl YawDamperActuator {
             pressure.get::<psi>() / Self::REFERENCE_HYD_PRESS_FOR_MAX_SPEED_PSI;
 
         self.angle.set_time_constant(Duration::from_secs_f64(
-            Self::POSITION_FILTER_TIME_CONSTANT.as_secs_f64() * 1. / pressure_speed_ratio,
+            Self::POSITION_FILTER_TIME_CONSTANT.as_secs_f64() / pressure_speed_ratio,
         ));
     }
 
