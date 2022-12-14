@@ -5280,11 +5280,11 @@ impl RudderSystemHydraulicController {
     }
 
     fn green_actuator(&mut self) -> &mut impl Actuator {
-        self.rudder_mechanical_assembly.green_actuator()
+        self.rudder_mechanical_assembly.yaw_damper_green_actuator()
     }
 
     fn yellow_actuator(&mut self) -> &mut impl Actuator {
-        self.rudder_mechanical_assembly.yellow_actuator()
+        self.rudder_mechanical_assembly.yaw_damper_yellow_actuator()
     }
 }
 impl SimulationElement for RudderSystemHydraulicController {

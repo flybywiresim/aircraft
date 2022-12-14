@@ -539,11 +539,11 @@ impl RudderMechanicalControl {
             .min(self.travel_limiter.max());
     }
 
-    pub fn green_actuator(&mut self) -> &mut impl Actuator {
+    pub fn yaw_damper_green_actuator(&mut self) -> &mut impl Actuator {
         self.yaw_damper.green_actuator()
     }
 
-    pub fn yellow_actuator(&mut self) -> &mut impl Actuator {
+    pub fn yaw_damper_yellow_actuator(&mut self) -> &mut impl Actuator {
         self.yaw_damper.yellow_actuator()
     }
 
