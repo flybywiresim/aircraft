@@ -5212,15 +5212,15 @@ impl RudderSystemHydraulicController {
         blue_pressure: &impl SectionPressure,
         yellow_pressure: &impl SectionPressure,
     ) {
-        if green_pressure.pressure_downstream_leak_valve().get::<psi>()
+        self.green_press_control_avail  = if green_pressure.pressure_downstream_leak_valve().get::<psi>()
             > Self::MIN_PRESSURE_HI_HYST_FOR_ACTIVE_CONTROL_PSI
         {
-            self.green_press_control_avail = true;
+            true
         } else if green_pressure.pressure_downstream_leak_valve().get::<psi>()
             < Self::MIN_PRESSURE_LO_HYST_FOR_ACTIVE_CONTROL_PSI
         {
-            self.green_press_control_avail = false;
-        }
+            false
+        };
 
         if blue_pressure.pressure_downstream_leak_valve().get::<psi>()
             > Self::MIN_PRESSURE_HI_HYST_FOR_ACTIVE_CONTROL_PSI
