@@ -809,7 +809,7 @@ mod tests {
         test_bed.run_with_delta(Duration::from_millis(17000));
 
         let trim_deflection: Angle = test_bed.read_by_name("HYD_RUDDER_TRIM_FEEDBACK_ANGLE");
-        assert!((trim_deflection.get::<degree>() - 15.).abs() < 0.1);
+        assert_about_eq!(trim_deflection.get::<degree>(), 15., 0.1);
 
         test_bed.command(|a| {
             a.set_trim_demand(
