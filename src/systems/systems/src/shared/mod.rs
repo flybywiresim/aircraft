@@ -1437,6 +1437,8 @@ mod csu_position_tests {
         assert!(CSUPosition::is_valid(CSUPosition::ConfFull));
         assert!(!CSUPosition::is_valid(CSUPosition::OutOfDetent));
         assert!(!CSUPosition::is_valid(CSUPosition::Fault));
+    }
+}
 
 #[cfg(test)]
 mod height_over_ground {
