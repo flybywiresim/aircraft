@@ -151,6 +151,12 @@
       "BoardingTime": "Laipinimo trukmė",
       "Cargo": "Krovinys",
       "Current": "Esamas",
+      "DeboardConfirmationBody": "Please confirm deboarding all passengers",
+      "DeboardConfirmationCancel": "Cancel",
+      "DeboardConfirmationConfirm": "Deboard",
+      "DeboardConfirmationTitle": "Deboard all Passengers?",
+      "EstimatedDurationUnit": "minutes",
+      "LoadingTime": "Loading Time",
       "Passengers": "Keleiviai",
       "Planned": "Suplanuotas",
       "TT": {
@@ -162,7 +168,8 @@
         "MaxZFWCG": "Maximalus ZFWCG",
         "PerPaxBagWeight": "Keleivio bagažo svoris",
         "PerPaxWeight": "Keleivio svoris",
-        "StartBoarding": "Pradėti laipinimą"
+        "StartBoarding": "Pradėti laipinimą",
+        "StartDeboarding": "Begin Deboarding"
       },
       "Title": "Krovinys",
       "ZFW": "ZFW",

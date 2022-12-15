@@ -95,7 +95,6 @@ export class NearbyFacilities {
             loadCall = 'LOAD_INTERSECTIONS';
             break;
         default:
-            console.warn('Unknown session', result.sessionId);
             return;
         }
 

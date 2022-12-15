@@ -271,6 +271,8 @@ class CDUFlightPlanPage {
                 }
                 distance = distance.toString();
 
+                const gp = wp.additionalData.verticalAngle ? `${wp.additionalData.verticalAngle.toFixed(1)}°` : undefined;
+
                 let speedConstraint = "---";
                 if (wp.speedConstraint > 10 && ident !== "MANUAL") {
                     speedConstraint = `{magenta}*{end}${wp.speedConstraint.toFixed(0)}`;
@@ -419,6 +421,7 @@ class CDUFlightPlanPage {
                     ident: ident,
                     color: color,
                     distance: distance,
+                    gp,
                     spdColor: spdColor,
                     speedConstraint: speedConstraint,
                     altColor: altColor,
@@ -782,10 +785,11 @@ function renderFixTableHeader(isFlying) {
 }
 
 function renderFixHeader(rowObj, showNm = false, showDist = true, showFix = true) {
-    const { fixAnnotation, color, distance, bearingTrack } = rowObj;
+    const { fixAnnotation, color, distance, gp, bearingTrack } = rowObj;
+    const distUnit = showNm && !gp;
     return [
         `${(showFix) ? fixAnnotation.padEnd(7, "\xa0").padStart(8, "\xa0") : ""}`,
-        `${ showDist ? (showNm ? distance + "NM" : distance) : ''}${'\xa0'.repeat(showNm ? 3 : 5)}[color]${color}`,
+        `${ showDist ? (distUnit ? distance + "NM" : distance) : ''}{white}${(gp ? gp : '').padStart(distUnit ? 3 : 5, '\xa0')}{end}[color]${color}`,
         `{${color}}${bearingTrack}{end}\xa0`,
     ];
 }
