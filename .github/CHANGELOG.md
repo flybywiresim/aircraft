@@ -5,6 +5,14 @@
 <!-- Use the following format below -->
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 
+## 0.10.0
+
+1. [ADIRU] Implemented wind speed computation from TAS/GS/HDG - @tracernz (Mike)
+1. [FMGC] Show proper transition names and final approach slope from AAU1 - @tracernz (Mike)
+1. [FMGC] Don't accept blank input or / for hold distance - @tracernz (Mike)
+1. [ATSU] Fix LSK6L not returning to ATSU DATALINK page in ATC MENU - @BravoMike99 (Bruno_pt99#5802)
+1. [RMP] RMPs navigation backup - Julian Sebline (Julian Sebline#8476 on Discord)
+
 ## 0.9.0
 
 1. [MODEL] Add Wheel Chocks and GSE Safety Cones - @bouveng (Johan Bouveng)
@@ -31,6 +39,7 @@
 1. [SFCC] Add SFCC bus outputs - @lukecologne (luke)
 1. [EWD] Use FPPU angles for flaps/slats display - @lukecologne (luke)
 1. [FMGC] Basic RNP at or below 0.3 support - @tracernz (Mike)
+1. [ND] Add TERR ON ND peaks mode map visualization - @Sven [de en] (Sven Czarnian)
 1. [SD] Improve F/CTL and WHEEL SD pages visuals - @lukecologne (luke)
 1. [MCDU] Added formatter to improve text alignment and ease integration - @derl30n (Leon)
 1. [EFB] Fix default unit to match UI and other consumers - @tracernz (Mike)
@@ -96,7 +105,13 @@
 1. [ENGINE] Fix Engine Flex Calculations - @Taz5150 (TazX [Z+2]#0405)
 1. [FLIGHTMODEL] Flight Model update - @donstim (donbikes#4084)
 1. [HYD] Fix incorrect gain in down pitch commands - @Crocket63 (crocket)
-1. [RMP] RMPs navigation backup - Julian Sebline (Julian Sebline#8476 on Discord)
+1. [PFD] Improve appearance of L/DEV and V/DEV scales - @tracernz (Mike)
+1. [HYD] Implemented Electro Hydrostatic actuators - @Crocket63 (crocket)
+1. [MISC] Change 2 way overhead switches to be also controllable with mouse wheel up/down @patsta32 (Pat)
+1. [FAC] Move Speedscale computation to FAC - @lukecologne (luke)
+1. [EFB] Added deboarding button to flyPad Payload - @frankkopp (Frank Kopp)
+1. [EFB] Improved simbridge-client connection handling - @frankkopp (Frank Kopp)
+1. [HYD] Tilting gear mechanism - @Crocket63 (crocket)
 
 ## 0.8.0
 

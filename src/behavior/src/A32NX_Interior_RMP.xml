@@ -10,20 +10,18 @@
         <Component ID="RMP_TOGGLE_SWITCH_#SIDE#" Node="SWITCH_RADIO#SIDE#_1">
             <UseTemplate Name="FBW_Anim_Interactions">
                 <ANIM_TYPE>SWITCH</ANIM_TYPE>
-                <ANIM_TEMPLATE>ASOBO_GT_Switch_Code</ANIM_TEMPLATE>
-                <ANIM_LENGTH>100</ANIM_LENGTH>
-                <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
-                <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+                <ANIM_TEMPLATE>FBW_Switch_LeftClick_MouseWheel</ANIM_TEMPLATE>
                 <ANIM_NAME>SWITCH_RADIO#SIDE#_1</ANIM_NAME>
-                <WWISE_EVENT_1>lswitch</WWISE_EVENT_1>
-                <WWISE_EVENT_2>lswitch</WWISE_EVENT_2>
+                <NODE_ID>SWITCH_RADIO#SIDE#_1</NODE_ID>
+                <PART_ID>RMP_TOGGLE_SWITCH_#SIDE#</PART_ID>
+                <TOGGLE_EVENT>A32NX_RMP_#SIDE#_TOGGLE_SWITCH</TOGGLE_EVENT>
+                <SIMVAR_NAME>A32NX_RMP_#SIDE#_TOGGLE_SWITCH</SIMVAR_NAME>
+                <ADDITIONAL_EVENT_CODE>(&gt;H:A32NX_RMP_#SIDE#_TOGGLE_SWITCH)</ADDITIONAL_EVENT_CODE>
+                <SIMVAR_GROUP>L</SIMVAR_GROUP>
                 <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.RADIO_SELECT_TURN_RMP_ON</ANIMTIP_0>
                 <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.RADIO_SELECT_TURN_RMP_OFF</ANIMTIP_1>
-                <ANIM_CODE>(L:A32NX_RMP_#SIDE#_TOGGLE_SWITCH, number) 100 *</ANIM_CODE>
-                <LEFT_SINGLE_CODE>
-                    (L:A32NX_RMP_#SIDE#_TOGGLE_SWITCH, bool) ! (>L:A32NX_RMP_#SIDE#_TOGGLE_SWITCH, bool)
-                    (>H:A32NX_RMP_#SIDE#_TOGGLE_SWITCH)
-                </LEFT_SINGLE_CODE>
+                <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+                <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
             </UseTemplate>
         </Component>
 

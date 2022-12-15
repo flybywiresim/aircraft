@@ -29,7 +29,7 @@
     "editor.formatOnSave": true
   },
   "[rust]": {
-    "editor.defaultFormatter": "matklad.rust-analyzer",
+    "editor.defaultFormatter": "rust-lang.rust-analyzer",
     "editor.formatOnSave": true
   },
   "editor.codeActionsOnSave": {
@@ -142,7 +142,8 @@
     "xutility": "cpp",
     "queue": "cpp",
     "__functional_03": "cpp",
-    "memory_resource": "cpp"
+    "memory_resource": "cpp",
+    "numbers": "cpp"
   },
   "typescript.preferences.quoteStyle": "single",
   "typescript.preferences.importModuleSpecifier": "non-relative"

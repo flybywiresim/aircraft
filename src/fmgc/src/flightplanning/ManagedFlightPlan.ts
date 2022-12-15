@@ -385,6 +385,12 @@ export class ManagedFlightPlan {
             this.procedureDetails.approachIndex = -1;
             this.procedureDetails.approachTransitionIndex = -1;
 
+            const previousWp = this.waypoints[this.waypoints.length - 2];
+            if (previousWp) {
+                previousWp.endsInDiscontinuity = true;
+                previousWp.discontinuityCanBeCleared = true;
+            }
+
             this.reflowSegments();
             this.reflowDistances();
         } else {
@@ -1143,10 +1149,6 @@ export class ManagedFlightPlan {
             const runway: OneWayRunway | null = this.getDestinationRunway();
 
             const procedure = new LegsProcedure(legs, this.getWaypoint(_startIndex - 1), this._parentInstrument, airportMagVar, this.procedureDetails.approachType, legAnnotations);
-
-            if (runway) {
-                procedure.calculateApproachData(runway);
-            }
 
             let waypointIndex = _startIndex;
             // console.log('MFP: buildApproach - ADDING WAYPOINTS ------------------------');

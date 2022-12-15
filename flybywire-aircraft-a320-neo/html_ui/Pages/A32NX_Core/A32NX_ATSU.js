@@ -120,14 +120,12 @@ const insertUplink = (mcdu) => {
         callsign
     } = mcdu.simbrief;
 
-    const fromTo = `${originIcao}/${destinationIcao}`;
-
     mcdu.setScratchpadMessage(NXSystemMessages.uplinkInsertInProg);
 
     /**
      * AOC ACT F-PLN UPLINK
      */
-    mcdu.tryUpdateFromTo(fromTo, async (result) => {
+    mcdu.setFromTo(originIcao, destinationIcao).then(async (result) => {
         if (result) {
             CDUPerformancePage.UpdateThrRedAccFromOrigin(mcdu);
             CDUPerformancePage.UpdateEngOutAccFromOrigin(mcdu);
@@ -149,6 +147,12 @@ const insertUplink = (mcdu) => {
             if (mcdu.page.Current === mcdu.page.InitPageA) {
                 CDUInitPage.ShowPage1(mcdu);
             }
+        }
+    }).catch((e) => {
+        if (e instanceof McduMessage) {
+            mcdu.setScratchpadMessage(e);
+        } else {
+            console.warn(e);
         }
     });
     mcdu.updateFlightNo(callsign, (result) => {
@@ -235,7 +239,7 @@ const insertCoRoute = async (mcdu) => {
 
     const fromTo = `${originIcao}/${destinationIcao}`;
 
-    mcdu.tryUpdateFromTo(fromTo, async (result) => {
+    mcdu.setFromTo(originIcao, destinationIcao).then(async (result) => {
         if (result) {
             CDUPerformancePage.UpdateThrRedAccFromOrigin(mcdu);
             CDUPerformancePage.UpdateEngOutAccFromOrigin(mcdu);
@@ -248,6 +252,12 @@ const insertCoRoute = async (mcdu) => {
             if (mcdu.page.Current === mcdu.page.InitPageA) {
                 CDUInitPage.ShowPage1(mcdu);
             }
+        }
+    }).catch((e) => {
+        if (e instanceof McduMessage) {
+            mcdu.setScratchpadMessage(e);
+        } else {
+            console.warn(e);
         }
     });
 };

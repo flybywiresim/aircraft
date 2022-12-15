@@ -132,9 +132,9 @@
 
         <UseTemplate Name="FBW_AIRLINER_SubNodes_Setter_Template">
             <TEMPLATE_TO_CALL>ASOBO_GT_Push_Button_Airliner</TEMPLATE_TO_CALL>
-            <LEFT_SINGLE_CODE>(&gt;H:A320_Neo_MFD_BTN_TERRONND_#ID#)</LEFT_SINGLE_CODE>
+            <LEFT_SINGLE_CODE>(L:A32NX_EFIS_TERR_#ID#_ACTIVE) ! (&gt;L:A32NX_EFIS_TERR_#ID#_ACTIVE)</LEFT_SINGLE_CODE>
             <SEQ1_EMISSIVE_CODE>0</SEQ1_EMISSIVE_CODE>
-            <SEQ2_EMISSIVE_CODE>(L:BTN_TERRONND_#ID#_ACTIVE)</SEQ2_EMISSIVE_CODE>
+            <SEQ2_EMISSIVE_CODE>(L:A32NX_EFIS_TERR_#ID#_ACTIVE)</SEQ2_EMISSIVE_CODE>
         </UseTemplate>
     </Template>
 
@@ -758,6 +758,128 @@
                 </False>
             </Condition>
         </Component>
+    </Template>
+
+    <Template Name = "FBW_Switch_LeftClick_MouseWheel">
+    <DefaultTemplateParameters>
+        <ANIM_GUID/>
+        <ANIM_WRAP>FALSE</ANIM_WRAP>
+        <SIMVAR_TYPE>bool</SIMVAR_TYPE>
+        <ANIM_DELTA>FALSE</ANIM_DELTA>
+        <ANIM_BLENDWEIGHT>1.0</ANIM_BLENDWEIGHT>
+        <SIMVAR_GROUP>A</SIMVAR_GROUP>
+        <ADDITIONAL_EVENT_CODE></ADDITIONAL_EVENT_CODE>
+    </DefaultTemplateParameters>
+    <EditableTemplateParameters>
+        <AddParams>
+            <ANIM_NAME/>
+            <SIMVAR_TYPE/>
+            <TOGGLE_EVENT/>
+            <TOGGLE_EVENT_2/>
+            <SIMVAR_INDEX_1/>
+            <SIMVAR_INDEX_2/>
+            <SIMVAR_NAME/>
+            <SIMVAR_NAME_2/>
+            <SIMVAR_GROUP/>
+            <ADDITIONAL_EVENT_CODE/>
+        </AddParams>
+    </EditableTemplateParameters>
+     <Component ID="#NODE_ID#" Node="#NODE_ID#">
+      <UseTemplate Name="ASOBO_GT_Anim_Code">
+        <ANIM_NAME>#ANIM_NAME#</ANIM_NAME>
+        <PART_ID>#PART_ID#</PART_ID>
+        <ANIM_LENGTH>100</ANIM_LENGTH>
+         <Condition NotEmpty="SIMVAR_INDEX_1">
+            <True>
+                  <ANIM_CODE>(#SIMVAR_GROUP#:#SIMVAR_NAME#:#SIMVAR_INDEX_1#,#SIMVAR_TYPE#) 100 * </ANIM_CODE>
+            </True>
+            <False>
+                 <ANIM_CODE> (#SIMVAR_GROUP#:#SIMVAR_NAME#,#SIMVAR_TYPE#) 100 * </ANIM_CODE>
+            </False>
+        </Condition>
+        <ANIM_LAG>600</ANIM_LAG>
+        </UseTemplate>
+       <UseTemplate Name="ASOBO_GT_AnimTriggers_2SoundEvents">
+            <WWISE_EVENT_1>lswitch</WWISE_EVENT_1>
+            <WWISE_EVENT_2>lswitch</WWISE_EVENT_2>
+          <ANIM_NAME>#ANIM_NAME#</ANIM_NAME>
+       </UseTemplate>
+        <UseTemplate Name="ASOBO_GT_MouseRect">
+        <Condition NotEmpty="SIMVAR_INDEX_1">
+            <True>
+                <TOOLTIPID>%((#SIMVAR_GROUP#:#SIMVAR_NAME#:#SIMVAR_INDEX_1#,#SIMVAR_TYPE#))%{if}#ANIMTIP_1#%{else}#ANIMTIP_0#%{end}</TOOLTIPID>
+            </True>
+            <False>
+              <TOOLTIPID>%((#SIMVAR_GROUP#:#SIMVAR_NAME#,#SIMVAR_TYPE#))%{if}#ANIMTIP_1#%{else}#ANIMTIP_0#%{end}</TOOLTIPID>
+            </False>
+        </Condition>
+        <CURSOR>Hand</CURSOR>
+        <MOUSEFLAGS_DEFAULT_IM>LeftSingle+WheelUp+WheelDown</MOUSEFLAGS_DEFAULT_IM>
+         <Condition NotEmpty="SIMVAR_INDEX_1">
+            <True>
+                <CALLBACKCODE_DEFAULT_IM>
+                    (M:Event) 'LeftSingle' scmi 0 == if{
+                        (#SIMVAR_GROUP#:#SIMVAR_NAME#:#SIMVAR_INDEX_1#,#SIMVAR_TYPE#) 0 == if{
+                            #SIMVAR_INDEX_1# 1 (&gt;K:2:#TOGGLE_EVENT#)
+                            #SIMVAR_INDEX_2# 1 (&gt;K:2:#TOGGLE_EVENT_2#)
+                            #ADDITIONAL_EVENT_CODE#
+                        } els{
+                            #SIMVAR_INDEX_1# 0 (&gt;K:2:#TOGGLE_EVENT#)
+                            #SIMVAR_INDEX_2# 0 (&gt;K:2:#TOGGLE_EVENT_2#)
+                            #ADDITIONAL_EVENT_CODE#
+                        }
+                    }
+                    (M:Event) 'WheelUp'    scmi 0 == if{ (#SIMVAR_GROUP#:#SIMVAR_NAME#:#SIMVAR_INDEX_1#,#SIMVAR_TYPE#) 0 == if{
+                       #SIMVAR_INDEX_1# 1 (&gt;K:2:#TOGGLE_EVENT#)
+                       #SIMVAR_INDEX_2# 1 (&gt;K:2:#TOGGLE_EVENT_2#)
+                       #ADDITIONAL_EVENT_CODE#
+                     } }
+                    (M:Event) 'WheelDown'  scmi 0 == if{ (#SIMVAR_GROUP#:#SIMVAR_NAME#:#SIMVAR_INDEX_1#,#SIMVAR_TYPE#) 0 != if{
+                       #SIMVAR_INDEX_1# 0 (&gt;K:2:#TOGGLE_EVENT#)
+                       #SIMVAR_INDEX_2# 0 (&gt;K:2:#TOGGLE_EVENT_2#)
+                       #ADDITIONAL_EVENT_CODE#
+                     } }
+                </CALLBACKCODE_DEFAULT_IM>
+            </True>
+            <False>
+                <Condition Check="SIMVAR_GROUP" Match="L">
+                 <True>
+                    <CALLBACKCODE_DEFAULT_IM>
+                        (M:Event) 'LeftSingle' scmi 0 == if{
+                            (#SIMVAR_GROUP#:#SIMVAR_NAME#,#SIMVAR_TYPE#) 0 == (&gt;L:#TOGGLE_EVENT#)
+                            #ADDITIONAL_EVENT_CODE#
+                        }
+                        (M:Event) 'WheelUp'    scmi 0 == if{ (#SIMVAR_GROUP#:#SIMVAR_NAME#,#SIMVAR_TYPE#) 0 == if{
+                            1 (&gt;L:#TOGGLE_EVENT#)
+                            #ADDITIONAL_EVENT_CODE#
+                        } }
+                        (M:Event) 'WheelDown'  scmi 0 == if{ (#SIMVAR_GROUP#:#SIMVAR_NAME#,#SIMVAR_TYPE#) 0 != if{
+                            0 (&gt;L:#TOGGLE_EVENT#)
+                            #ADDITIONAL_EVENT_CODE#
+                        } }
+                    </CALLBACKCODE_DEFAULT_IM>
+                 </True>
+                  <False>
+                    <CALLBACKCODE_DEFAULT_IM>
+                        (M:Event) 'LeftSingle' scmi 0 == if{
+                            (#SIMVAR_GROUP#:#SIMVAR_NAME#,#SIMVAR_TYPE#) 0 == (&gt;K:#TOGGLE_EVENT#)
+                            #ADDITIONAL_EVENT_CODE#
+                        }
+                        (M:Event) 'WheelUp'    scmi 0 == if{ (#SIMVAR_GROUP#:#SIMVAR_NAME#,#SIMVAR_TYPE#) 0 == if{
+                            1 (&gt;K:#TOGGLE_EVENT#)
+                            #ADDITIONAL_EVENT_CODE#
+                        } }
+                        (M:Event) 'WheelDown'  scmi 0 == if{ (#SIMVAR_GROUP#:#SIMVAR_NAME#,#SIMVAR_TYPE#) 0 != if{
+                            0 (&gt;K:#TOGGLE_EVENT#)
+                            #ADDITIONAL_EVENT_CODE#
+                        } }
+                    </CALLBACKCODE_DEFAULT_IM>
+                 </False>
+                 </Condition>
+            </False>
+            </Condition>
+    </UseTemplate>
+    </Component>
     </Template>
 
     <!-- Copy of A32NX_GT_Switch_Dummy -->

@@ -4,6 +4,7 @@ use crate::{
     simulation::UpdateContext,
 };
 
+use nalgebra::Vector3;
 use num_derive::FromPrimitive;
 use std::{cell::Ref, fmt::Display, time::Duration};
 use uom::si::{
@@ -113,14 +114,14 @@ pub trait LgciuInterface:
 {
 }
 
-#[derive(Copy, Clone, PartialEq, Debug)]
+#[derive(Copy, Clone, PartialEq, Eq, Debug)]
 #[repr(usize)]
 pub enum LgciuId {
     Lgciu1 = 0,
     Lgciu2 = 1,
 }
 
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 pub enum ProximityDetectorId {
     UplockGearNose1,
     UplockGearNose2,
@@ -149,7 +150,7 @@ pub enum ProximityDetectorId {
     DownlockDoorRight2,
 }
 
-#[derive(Clone, Copy, PartialEq, Debug)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub enum GearActuatorId {
     GearNose,
     GearDoorNose,
@@ -220,7 +221,7 @@ pub trait SectionPressure {
     fn is_pressure_switch_pressurised(&self) -> bool;
 }
 
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum HydraulicColor {
     Green,
     Blue,
@@ -564,6 +565,21 @@ pub fn from_bool(value: bool) -> f64 {
 
 pub fn to_bool(value: f64) -> bool {
     (value - 1.).abs() < f64::EPSILON
+}
+
+/// Returns the height over the ground of any point of the plane considering its current attitude
+/// Offset parameter is the position of the point in plane reference with respect to datum reference point
+/// X positive from left to right
+/// Y positive from down to up
+/// Z positive from aft to front
+pub fn height_over_ground(
+    context: &UpdateContext,
+    offset_from_plane_reference: Vector3<f64>,
+) -> Length {
+    let offset_including_plane_rotation = context.attitude().pitch_rotation_transform()
+        * (context.attitude().bank_rotation_transform().inverse() * offset_from_plane_reference);
+
+    Length::new::<meter>(offset_including_plane_rotation[1]) + context.plane_height_over_ground()
 }
 
 pub struct InternationalStandardAtmosphere;
@@ -1070,6 +1086,7 @@ mod delayed_pulse_true_logic_gate_tests {
         assert!(!test_bed.query(|a| a.gate_output()));
     }
 }
+
 #[cfg(test)]
 mod interpolation_tests {
     use super::*;
@@ -1253,5 +1270,197 @@ mod average_tests {
 
         let average: Pressure = iterator.iter().average();
         assert_eq!(average, Pressure::new::<hectopascal>(200.));
+    }
+}
+
+#[cfg(test)]
+mod height_over_ground {
+    use super::*;
+
+    use crate::simulation::{
+        test::{ElementCtorFn, SimulationTestBed, WriteByName},
+        SimulationElement,
+    };
+    use uom::si::angle::degree;
+
+    use ntest::assert_about_eq;
+
+    #[derive(Default)]
+    struct DummyObject {}
+    impl DummyObject {}
+    impl SimulationElement for DummyObject {}
+
+    #[test]
+    fn at_zero_altitude_zero_reference_default_attitude() {
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|_| DummyObject::default()))
+            .with_update_after_power_distribution(|_, context| {
+                assert!(height_over_ground(context, Vector3::new(0., 0., 0.)).get::<meter>() == 0.);
+                assert!(
+                    height_over_ground(context, Vector3::new(0., 10., 0.)).get::<meter>() == 10.
+                );
+                assert!(
+                    height_over_ground(context, Vector3::new(0., -10., 0.)).get::<meter>() == -10.
+                );
+
+                assert!(
+                    height_over_ground(context, Vector3::new(-10., 0., 0.)).get::<meter>() == 0.
+                );
+                assert!(
+                    height_over_ground(context, Vector3::new(10., -10., 0.)).get::<meter>() == -10.
+                );
+
+                assert!(
+                    height_over_ground(context, Vector3::new(-10., 0., 10.)).get::<meter>() == 0.
+                );
+                assert!(
+                    height_over_ground(context, Vector3::new(10., -10., -10.)).get::<meter>()
+                        == -10.
+                );
+            });
+
+        test_bed.run_with_delta(Duration::from_secs(0));
+    }
+
+    #[test]
+    fn at_10_altitude_with_default_attitude() {
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|_| DummyObject::default()))
+            .with_update_after_power_distribution(|_, context| {
+                assert_about_eq!(
+                    height_over_ground(context, Vector3::new(0., 0., 0.)).get::<meter>(),
+                    10.
+                );
+                assert_about_eq!(
+                    height_over_ground(context, Vector3::new(0., 10., 0.)).get::<meter>(),
+                    20.
+                );
+                assert_about_eq!(
+                    height_over_ground(context, Vector3::new(0., -10., 0.)).get::<meter>(),
+                    0.
+                );
+            });
+
+        test_bed.write_by_name("PLANE ALT ABOVE GROUND", Length::new::<meter>(10.));
+
+        test_bed.run_with_delta(Duration::from_secs(0));
+    }
+
+    #[test]
+    fn at_10_altitude_with_45_right_bank_attitude() {
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|_| DummyObject::default()))
+            .with_update_after_power_distribution(|_, context| {
+                assert_about_eq!(
+                    height_over_ground(context, Vector3::new(0., 0., 0.)).get::<meter>(),
+                    10.
+                );
+                assert!(height_over_ground(context, Vector3::new(5., 0., 0.)).get::<meter>() < 8.);
+                assert!(
+                    height_over_ground(context, Vector3::new(-5., 0., 0.)).get::<meter>() > 12.
+                );
+                assert_about_eq!(
+                    height_over_ground(context, Vector3::new(0., 0., -10.)).get::<meter>(),
+                    10.
+                );
+                assert_about_eq!(
+                    height_over_ground(context, Vector3::new(0., 0., 10.)).get::<meter>(),
+                    10.
+                );
+                assert!(height_over_ground(context, Vector3::new(0., 5., 0.)).get::<meter>() < 15.);
+            });
+
+        // MSFS bank right is negative angle
+        test_bed.write_by_name("PLANE BANK DEGREES", Angle::new::<degree>(-45.));
+        test_bed.write_by_name("PLANE ALT ABOVE GROUND", Length::new::<meter>(10.));
+
+        test_bed.run_with_delta(Duration::from_secs(0));
+    }
+
+    #[test]
+    fn at_10_altitude_with_45_left_bank_attitude() {
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|_| DummyObject::default()))
+            .with_update_after_power_distribution(|_, context| {
+                assert_about_eq!(
+                    height_over_ground(context, Vector3::new(0., 0., 0.)).get::<meter>(),
+                    10.
+                );
+                assert!(height_over_ground(context, Vector3::new(5., 0., 0.)).get::<meter>() > 12.);
+                assert!(height_over_ground(context, Vector3::new(-5., 0., 0.)).get::<meter>() < 8.);
+                assert_about_eq!(
+                    height_over_ground(context, Vector3::new(0., 0., -10.)).get::<meter>(),
+                    10.
+                );
+                assert_about_eq!(
+                    height_over_ground(context, Vector3::new(0., 0., 10.)).get::<meter>(),
+                    10.
+                );
+                assert!(height_over_ground(context, Vector3::new(0., 5., 0.)).get::<meter>() < 15.);
+            });
+
+        // MSFS bank right is negative angle
+        test_bed.write_by_name("PLANE BANK DEGREES", Angle::new::<degree>(45.));
+        test_bed.write_by_name("PLANE ALT ABOVE GROUND", Length::new::<meter>(10.));
+
+        test_bed.run_with_delta(Duration::from_secs(0));
+    }
+
+    #[test]
+    fn at_10_altitude_with_45_up_pitch_attitude() {
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|_| DummyObject::default()))
+            .with_update_after_power_distribution(|_, context| {
+                assert_about_eq!(
+                    height_over_ground(context, Vector3::new(0., 0., 0.)).get::<meter>(),
+                    10.
+                );
+                assert_about_eq!(
+                    height_over_ground(context, Vector3::new(5., 0., 0.)).get::<meter>(),
+                    10.
+                );
+                assert_about_eq!(
+                    height_over_ground(context, Vector3::new(-5., 0., 0.)).get::<meter>(),
+                    10.
+                );
+                assert!(
+                    height_over_ground(context, Vector3::new(0., 0., -10.)).get::<meter>() < 8.
+                );
+                assert!(
+                    height_over_ground(context, Vector3::new(0., 0., 10.)).get::<meter>() > 12.
+                );
+                assert!(height_over_ground(context, Vector3::new(0., 5., 0.)).get::<meter>() < 15.);
+            });
+
+        // MSFS bank right is negative angle
+        test_bed.write_by_name("PLANE PITCH DEGREES", Angle::new::<degree>(-45.));
+        test_bed.write_by_name("PLANE ALT ABOVE GROUND", Length::new::<meter>(10.));
+
+        test_bed.run_with_delta(Duration::from_secs(0));
+    }
+
+    #[test]
+    fn at_10_altitude_with_45_down_pitch_attitude() {
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|_| DummyObject::default()))
+            .with_update_after_power_distribution(|_, context| {
+                assert_about_eq!(
+                    height_over_ground(context, Vector3::new(0., 0., 0.)).get::<meter>(),
+                    10.
+                );
+                assert_about_eq!(
+                    height_over_ground(context, Vector3::new(5., 0., 0.)).get::<meter>(),
+                    10.
+                );
+                assert_about_eq!(
+                    height_over_ground(context, Vector3::new(-5., 0., 0.)).get::<meter>(),
+                    10.
+                );
+                assert!(
+                    height_over_ground(context, Vector3::new(0., 0., -10.)).get::<meter>() > 12.
+                );
+                assert!(height_over_ground(context, Vector3::new(0., 0., 10.)).get::<meter>() < 8.);
+                assert!(height_over_ground(context, Vector3::new(0., 5., 0.)).get::<meter>() < 15.);
+            });
+
+        // MSFS bank right is negative angle
+        test_bed.write_by_name("PLANE PITCH DEGREES", Angle::new::<degree>(45.));
+        test_bed.write_by_name("PLANE ALT ABOVE GROUND", Length::new::<meter>(10.));
+
+        test_bed.run_with_delta(Duration::from_secs(0));
     }
 }

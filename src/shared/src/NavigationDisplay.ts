@@ -129,9 +129,8 @@ export interface NdTraffic {
     lat: number;
     lon: number;
     relativeAlt: number;
-    bitfield: number;
-    vertSpeed?: number;
-    intrusionLevel?: number;
+    vertSpeed: number;
+    intrusionLevel: number;
     posX?: number;
     posY?: number;
     // debug
