@@ -1,5 +1,6 @@
 use crate::{
-    shared::AverageExt,
+    air_conditioning::PackFlow,
+    shared::{AverageExt, CabinTemperature},
     simulation::{
         InitContext, SimulationElement, SimulatorWriter, UpdateContext, VariableIdentifier, Write,
     },
@@ -8,11 +9,15 @@ use crate::{
 use super::CabinPressure;
 
 use uom::si::{
+    area::square_meter,
     f64::*,
+    mass_density::kilogram_per_cubic_meter,
+    mass_rate::kilogram_per_second,
     pressure::{hectopascal, pascal},
     ratio::{percent, ratio},
+    thermodynamic_temperature::kelvin,
     velocity::{foot_per_minute, meter_per_second},
-    volume_rate::cubic_meter_per_second,
+    volume::cubic_meter,
 };
 
 use bounded_vec_deque::BoundedVecDeque;
@@ -28,10 +33,17 @@ pub struct CabinPressureSimulation {
     safety_valve_open_amount: Ratio,
     z_coefficient: f64,
     flow_coefficient: f64,
-    cabin_flow_in: VolumeRate,
-    cabin_flow_out: VolumeRate,
+    cabin_flow_in: MassRate,
+    cabin_flow_out: MassRate,
     cabin_vs: Velocity,
     cabin_pressure: Pressure,
+    cabin_air_density: MassDensity,
+
+    //Aircraft dependant constants
+    cabin_volume: Volume,
+    cabin_leakage_area: Area,
+    outflow_valve_size: Area,
+    safety_valve_size: Area,
 }
 
 impl CabinPressureSimulation {
@@ -39,16 +51,14 @@ impl CabinPressureSimulation {
     const R: f64 = 287.058; // Specific gas constant for air - m2/s2/K
     const GAMMA: f64 = 1.4; // Rate of specific heats for air
     const G: f64 = 9.80665; // Gravity - m/s2
-    const T_0: f64 = 288.2; // ISA standard temperature - K
 
-    // Aircraft constants
-    const RHO: f64 = 1.225; // Cabin air density - Kg/m3
-    const AREA_LEAKAGE: f64 = 0.0003; // m2
-    const CABIN_VOLUME: f64 = 400.; // m3
-    const OFV_SIZE: f64 = 0.03; // m2
-    const SAFETY_VALVE_SIZE: f64 = 0.02; //m2
-
-    pub fn new(context: &mut InitContext) -> Self {
+    pub fn new(
+        context: &mut InitContext,
+        cabin_volume: Volume,
+        cabin_leakage_area: Area,
+        outflow_valve_size: Area,
+        safety_valve_size: Area,
+    ) -> Self {
         Self {
             cabin_vs_id: context.get_identifier("PRESS_CABIN_VS".to_owned()),
             cabin_delta_pressure_id: context
@@ -64,10 +74,16 @@ impl CabinPressureSimulation {
             safety_valve_open_amount: Ratio::new::<percent>(0.),
             z_coefficient: 0.0011,
             flow_coefficient: 1.,
-            cabin_flow_in: VolumeRate::new::<cubic_meter_per_second>(0.),
-            cabin_flow_out: VolumeRate::new::<cubic_meter_per_second>(0.),
+            cabin_flow_in: MassRate::new::<kilogram_per_second>(0.),
+            cabin_flow_out: MassRate::new::<kilogram_per_second>(0.),
             cabin_vs: Velocity::new::<meter_per_second>(0.),
             cabin_pressure: Pressure::new::<hectopascal>(1013.25),
+            cabin_air_density: MassDensity::new::<kilogram_per_cubic_meter>(1.225),
+
+            cabin_volume,
+            cabin_leakage_area,
+            outflow_valve_size,
+            safety_valve_size,
         }
     }
 
@@ -76,22 +92,29 @@ impl CabinPressureSimulation {
         context: &UpdateContext,
         outflow_valve_open_amount: Ratio,
         safety_valve_open_amount: Ratio,
-        packs_are_on: bool,
+        pack_flow: &impl PackFlow,
         lgciu_gear_compressed: bool,
         should_open_outflow_valve: bool,
+        cabin_temperature: &impl CabinTemperature,
     ) {
         if !self.initialized {
             self.cabin_pressure = self.initialize_cabin_pressure(context, lgciu_gear_compressed);
             self.initialized = true;
         }
+        let average_temperature: ThermodynamicTemperature =
+            cabin_temperature.cabin_temperature().iter().average();
+        self.cabin_air_density = MassDensity::new::<kilogram_per_cubic_meter>(
+            self.cabin_pressure.get::<pascal>()
+                / (CabinPressureSimulation::R * average_temperature.get::<kelvin>()),
+        );
         self.exterior_pressure = self.exterior_pressure_low_pass_filter(context);
         self.z_coefficient = self.calculate_z();
         self.flow_coefficient = self.calculate_flow_coefficient(should_open_outflow_valve);
         self.outflow_valve_open_amount = outflow_valve_open_amount;
         self.safety_valve_open_amount = safety_valve_open_amount;
-        self.cabin_flow_in = self.calculate_cabin_flow_in(packs_are_on, context);
+        self.cabin_flow_in = pack_flow.pack_flow();
         self.cabin_flow_out = self.calculate_cabin_flow_out();
-        self.cabin_vs = self.calculate_cabin_vs();
+        self.cabin_vs = self.calculate_cabin_vs(average_temperature);
         self.cabin_pressure = self.calculate_cabin_pressure(context);
     }
 
@@ -162,53 +185,27 @@ impl CabinPressureSimulation {
         }
     }
 
-    fn calculate_cabin_flow_in(&self, packs_are_on: bool, context: &UpdateContext) -> VolumeRate {
-        // Placeholder until Air Con system is simulated
-        const INTERNAL_FLOW_RATE_CHANGE: f64 = 0.2;
-        // Equivalent to 0.25kg of air per minute per passenger
-        const FLOW_RATE_WITH_PACKS_ON: f64 = 0.6;
-
-        let rate_of_change_for_delta = INTERNAL_FLOW_RATE_CHANGE * context.delta_as_secs_f64();
-
-        if packs_are_on {
-            if VolumeRate::new::<cubic_meter_per_second>(FLOW_RATE_WITH_PACKS_ON)
-                > self.cabin_flow_in
-            {
-                self.cabin_flow_in
-                    + VolumeRate::new::<cubic_meter_per_second>(rate_of_change_for_delta.min(
-                        FLOW_RATE_WITH_PACKS_ON
-                            - self.cabin_flow_in.get::<cubic_meter_per_second>(),
-                    ))
-            } else {
-                VolumeRate::new::<cubic_meter_per_second>(FLOW_RATE_WITH_PACKS_ON)
-            }
-        } else if self.cabin_flow_in > VolumeRate::new::<cubic_meter_per_second>(0.) {
-            self.cabin_flow_in
-                - VolumeRate::new::<cubic_meter_per_second>(
-                    rate_of_change_for_delta
-                        .min(self.cabin_flow_in.get::<cubic_meter_per_second>()),
-                )
-        } else {
-            VolumeRate::new::<cubic_meter_per_second>(0.)
-        }
-    }
-
-    fn calculate_cabin_flow_out(&self) -> VolumeRate {
-        let area_leakage = Self::AREA_LEAKAGE
-            + Self::SAFETY_VALVE_SIZE * self.safety_valve_open_amount.get::<ratio>();
-        VolumeRate::new::<cubic_meter_per_second>(
-            self.flow_coefficient * area_leakage * self.base_airflow_calculation(),
+    fn calculate_cabin_flow_out(&self) -> MassRate {
+        let area_leakage = self.cabin_leakage_area
+            + self.safety_valve_size * self.safety_valve_open_amount.get::<ratio>();
+        MassRate::new::<kilogram_per_second>(
+            self.flow_coefficient
+                * area_leakage.get::<square_meter>()
+                * self.base_airflow_calculation(),
         )
     }
 
-    fn calculate_cabin_vs(&self) -> Velocity {
+    fn calculate_cabin_vs(&self, cabin_temperature: ThermodynamicTemperature) -> Velocity {
         let vertical_speed = (self.outflow_valve_open_amount.get::<ratio>()
-            * Self::OFV_SIZE
+            * self.outflow_valve_size.get::<square_meter>()
             * self.flow_coefficient
             * self.base_airflow_calculation()
-            - self.cabin_flow_in.get::<cubic_meter_per_second>()
-            + self.cabin_flow_out.get::<cubic_meter_per_second>())
-            / ((Self::RHO * Self::G * Self::CABIN_VOLUME) / (Self::R * Self::T_0));
+            - self.cabin_flow_in.get::<kilogram_per_second>()
+            + self.cabin_flow_out.get::<kilogram_per_second>())
+            / ((self.cabin_air_density.get::<kilogram_per_cubic_meter>()
+                * Self::G
+                * self.cabin_volume.get::<cubic_meter>())
+                / (Self::R * cabin_temperature.get::<kelvin>()));
         Velocity::new::<meter_per_second>(vertical_speed)
     }
 
@@ -224,7 +221,7 @@ impl CabinPressureSimulation {
 
     fn base_airflow_calculation(&self) -> f64 {
         ((2. * (Self::GAMMA / (Self::GAMMA - 1.))
-            * Self::RHO
+            * self.cabin_air_density.get::<kilogram_per_cubic_meter>()
             * self.cabin_pressure.get::<pascal>()
             * self.z_coefficient)
             .abs())
@@ -247,7 +244,7 @@ impl CabinPressureSimulation {
         self.flow_coefficient
     }
 
-    pub(super) fn cabin_flow_properties(&self) -> [VolumeRate; 2] {
+    pub(super) fn cabin_flow_properties(&self) -> [MassRate; 2] {
         [self.cabin_flow_in, self.cabin_flow_out]
     }
 }

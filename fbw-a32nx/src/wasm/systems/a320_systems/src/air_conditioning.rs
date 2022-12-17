@@ -26,8 +26,8 @@ use systems::{
 
 use std::time::Duration;
 use uom::si::{
-    f64::*, length::foot, mass_rate::kilogram_per_second, pressure::hectopascal, ratio::percent,
-    velocity::knot, volume::cubic_meter,
+    area::square_meter, f64::*, length::foot, mass_rate::kilogram_per_second,
+    pressure::hectopascal, ratio::percent, velocity::knot, volume::cubic_meter,
 };
 
 pub(super) struct A320AirConditioning {
@@ -89,8 +89,14 @@ impl A320AirConditioning {
             &self.a320_air_conditioning_system,
             &self.a320_pressurization_system,
         );
-        self.a320_pressurization_system
-            .update(context, pressurization_overhead, engines, lgciu)
+        self.a320_pressurization_system.update(
+            context,
+            pressurization_overhead,
+            engines,
+            lgciu,
+            &self.a320_air_conditioning_system,
+            &self.a320_cabin,
+        );
     }
 
     pub fn mix_packs_air_update(&mut self, pack_container: &mut [impl PneumaticContainer; 2]) {
@@ -123,6 +129,9 @@ impl A320Cabin {
     // TODO: Improve volume according to specs
     const A320_CABIN_VOLUME_CUBIC_METER: f64 = 200.; // m3
     const A320_COCKPIT_VOLUME_CUBIC_METER: f64 = 10.; // m3
+    const A320_CABIN_LEAKAGE_AREA: f64 = 0.0003; // m2
+    const A320_OUTFLOW_VALVE_SIZE: f64 = 0.03; // m2
+    const A320_SAFETY_VALVE_SIZE: f64 = 0.02; //m2
 
     fn new(context: &mut InitContext) -> Self {
         Self {
@@ -216,15 +225,38 @@ impl A320PressurizationSystem {
             active_cpc_sys_id: context.get_identifier("PRESS_ACTIVE_CPC_SYS".to_owned()),
 
             cpc: [
-                CabinPressureController::new(context),
-                CabinPressureController::new(context),
+                CabinPressureController::new(
+                    context,
+                    Volume::new::<cubic_meter>(
+                        A320Cabin::A320_CABIN_VOLUME_CUBIC_METER
+                            + A320Cabin::A320_COCKPIT_VOLUME_CUBIC_METER,
+                    ),
+                    Area::new::<square_meter>(A320Cabin::A320_OUTFLOW_VALVE_SIZE),
+                ),
+                CabinPressureController::new(
+                    context,
+                    Volume::new::<cubic_meter>(
+                        A320Cabin::A320_CABIN_VOLUME_CUBIC_METER
+                            + A320Cabin::A320_COCKPIT_VOLUME_CUBIC_METER,
+                    ),
+                    Area::new::<square_meter>(A320Cabin::A320_OUTFLOW_VALVE_SIZE),
+                ),
             ],
             outflow_valve: [PressureValve::new_outflow_valve(); 1],
             safety_valve: PressureValve::new_safety_valve(),
             residual_pressure_controller: ResidualPressureController::new(),
             active_system: active,
 
-            cabin_pressure_simulation: CabinPressureSimulation::new(context),
+            cabin_pressure_simulation: CabinPressureSimulation::new(
+                context,
+                Volume::new::<cubic_meter>(
+                    A320Cabin::A320_CABIN_VOLUME_CUBIC_METER
+                        + A320Cabin::A320_COCKPIT_VOLUME_CUBIC_METER,
+                ),
+                Area::new::<square_meter>(A320Cabin::A320_CABIN_LEAKAGE_AREA),
+                Area::new::<square_meter>(A320Cabin::A320_OUTFLOW_VALVE_SIZE),
+                Area::new::<square_meter>(A320Cabin::A320_SAFETY_VALVE_SIZE),
+            ),
         }
     }
 
@@ -234,6 +266,8 @@ impl A320PressurizationSystem {
         press_overhead: &A320PressurizationOverheadPanel,
         engines: [&impl EngineCorrectedN1; 2],
         lgciu: [&impl LgciuWeightOnWheels; 2],
+        pack_flow: &impl PackFlow,
+        cabin_temperature: &impl CabinTemperature,
     ) {
         let lgciu_gears_compressed = lgciu
             .iter()
@@ -248,6 +282,7 @@ impl A320PressurizationSystem {
                 &self.cabin_pressure_simulation, // replace with cabin data
                 &self.outflow_valve[0],
                 &self.safety_valve,
+                cabin_temperature,
             );
         }
 
@@ -275,15 +310,15 @@ impl A320PressurizationSystem {
         self.safety_valve
             .update(context, &self.cpc[self.active_system - 1]);
 
-        // move to air con
         self.cabin_pressure_simulation.update(
             context,
             self.outflow_valve[0].open_amount(),
             self.safety_valve.open_amount(),
-            true, //packs_are_on
+            pack_flow,
             lgciu_gears_compressed,
             self.cpc[self.active_system - 1].should_open_outflow_valve()
                 && !press_overhead.is_in_man_mode(),
+            cabin_temperature,
         );
 
         self.switch_active_system();

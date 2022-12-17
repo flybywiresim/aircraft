@@ -1,5 +1,8 @@
 use crate::{
-    shared::{ControllerSignal, EngineCorrectedN1, PressurizationOverheadShared},
+    shared::{
+        AverageExt, CabinTemperature, ControllerSignal, EngineCorrectedN1,
+        PressurizationOverheadShared,
+    },
     simulation::{
         InitContext, Read, SimulationElement, SimulatorReader, SimulatorWriter, UpdateContext,
         VariableIdentifier, Write,
@@ -13,12 +16,15 @@ use super::{
 
 use std::time::Duration;
 use uom::si::{
+    area::square_meter,
     f64::*,
     length::{foot, meter},
+    mass_rate::kilogram_per_second,
     pressure::{hectopascal, pascal, psi},
     ratio::{percent, ratio},
+    thermodynamic_temperature::kelvin,
     velocity::{foot_per_minute, knot, meter_per_second},
-    volume_rate::cubic_meter_per_second,
+    volume::cubic_meter,
 };
 
 pub struct CabinPressureController {
@@ -52,6 +58,9 @@ pub struct CabinPressureController {
     is_in_man_mode: bool,
     man_mode_duration: Duration,
     manual_to_auto_switch: bool,
+    cabin_volume: Volume,
+    cabin_temperature: ThermodynamicTemperature,
+    outflow_valve_size: Area,
 }
 
 impl CabinPressureController {
@@ -62,11 +71,6 @@ impl CabinPressureController {
     const T_0: f64 = 288.2; // ISA standard temperature - K
     const L: f64 = -0.00651; // Adiabatic lapse rate - K/m
 
-    // Aircraft constants
-    const RHO: f64 = 1.225; // Cabin air density - Kg/m3
-    const CABIN_VOLUME: f64 = 400.; // m3
-    const OFV_SIZE: f64 = 0.03; // m2
-
     // Vertical speed constraints
     const MAX_CLIMB_RATE: f64 = 750.;
     const MAX_CLIMB_RATE_IN_DESCENT: f64 = 500.;
@@ -75,7 +79,7 @@ impl CabinPressureController {
     const TAKEOFF_RATE: f64 = -400.;
     const DEPRESS_RATE: f64 = 500.;
 
-    pub fn new(context: &mut InitContext) -> Self {
+    pub fn new(context: &mut InitContext, cabin_volume: Volume, outflow_valve_size: Area) -> Self {
         Self {
             cabin_altitude_id: context.get_identifier("PRESS_CABIN_ALTITUDE".to_owned()),
             fwc_excess_cabin_altitude_id: context.get_identifier("PRESS_EXCESS_CAB_ALT".to_owned()),
@@ -111,6 +115,9 @@ impl CabinPressureController {
             is_in_man_mode: false,
             man_mode_duration: Duration::from_secs(0),
             manual_to_auto_switch: false,
+            cabin_volume,
+            cabin_temperature: ThermodynamicTemperature::new::<kelvin>(297.15), // 24C
+            outflow_valve_size,
         }
     }
 
@@ -123,10 +130,12 @@ impl CabinPressureController {
         cabin_simulation: &impl CabinPressure,
         outflow_valve: &PressureValve,
         safety_valve: &PressureValve,
+        cabin_temperature: &impl CabinTemperature,
     ) {
         self.exterior_pressure = cabin_simulation.exterior_pressure();
         self.exterior_vertical_speed = context.vertical_speed();
         self.cabin_pressure = cabin_simulation.cabin_pressure();
+        self.cabin_temperature = cabin_temperature.cabin_temperature().iter().average();
 
         if !press_overhead.ldg_elev_is_auto() {
             self.landing_elevation = Length::new::<foot>(press_overhead.ldg_elev_knob_value())
@@ -353,25 +362,30 @@ impl OutflowValveActuator for CabinPressureController {
         // 18th International Congress of Mechanical Engineering
         // November 6-11, 2005, Ouro Preto, MG
 
+        // Cabin air density (kg/m3)
+        let cabin_air_density = self.cabin_pressure.get::<pascal>()
+            / (CabinPressureController::R * self.cabin_temperature.get::<kelvin>());
+
         // Outflow valve target open area
         let ofv_area = (cabin_pressure_simulation.cabin_flow_properties()[0]
-            .get::<cubic_meter_per_second>()
-            - cabin_pressure_simulation.cabin_flow_properties()[1].get::<cubic_meter_per_second>()
-            + ((CabinPressureController::RHO
+            .get::<kilogram_per_second>()
+            - cabin_pressure_simulation.cabin_flow_properties()[1].get::<kilogram_per_second>()
+            + ((cabin_air_density
                 * CabinPressureController::G
-                * CabinPressureController::CABIN_VOLUME)
-                / (CabinPressureController::R * CabinPressureController::T_0))
+                * self.cabin_volume.get::<cubic_meter>())
+                / (CabinPressureController::R * self.cabin_temperature.get::<kelvin>()))
                 * self.cabin_target_vs.get::<meter_per_second>())
             / (cabin_pressure_simulation.flow_coefficient()
                 * ((2.
                     * (CabinPressureController::GAMMA / (CabinPressureController::GAMMA - 1.))
-                    * CabinPressureController::RHO
+                    * cabin_air_density
                     * self.cabin_pressure.get::<pascal>()
                     * cabin_pressure_simulation.z_coefficient())
                 .abs())
                 .sqrt());
 
-        let ofv_open_ratio = Ratio::new::<ratio>(ofv_area / CabinPressureController::OFV_SIZE);
+        let ofv_open_ratio =
+            Ratio::new::<ratio>(ofv_area / self.outflow_valve_size.get::<square_meter>());
 
         if press_overhead.is_in_man_mode() {
             self.outflow_valve_open_amount
@@ -919,9 +933,28 @@ mod tests {
         }
     }
 
+    struct TestCabin {
+        cabin_temperature: ThermodynamicTemperature,
+    }
+
+    impl TestCabin {
+        fn new() -> Self {
+            Self {
+                cabin_temperature: ThermodynamicTemperature::new::<kelvin>(297.15),
+            }
+        }
+    }
+
+    impl CabinTemperature for TestCabin {
+        fn cabin_temperature(&self) -> Vec<ThermodynamicTemperature> {
+            vec![self.cabin_temperature]
+        }
+    }
+
     struct TestAircraft {
         cpc: CabinPressureController,
         cabin_simulation: CabinPressureSimulation,
+        cabin_temperature: TestCabin,
         outflow_valve: PressureValve,
         safety_valve: PressureValve,
         press_overhead: TestPressurizationOverheadPanel,
@@ -933,8 +966,19 @@ mod tests {
     impl TestAircraft {
         fn new(context: &mut InitContext) -> Self {
             let mut test_aircraft = Self {
-                cpc: CabinPressureController::new(context),
-                cabin_simulation: CabinPressureSimulation::new(context),
+                cpc: CabinPressureController::new(
+                    context,
+                    Volume::new::<cubic_meter>(210.),
+                    Area::new::<square_meter>(0.03),
+                ),
+                cabin_simulation: CabinPressureSimulation::new(
+                    context,
+                    Volume::new::<cubic_meter>(210.),
+                    Area::new::<square_meter>(0.0003),
+                    Area::new::<square_meter>(0.03),
+                    Area::new::<square_meter>(0.02),
+                ),
+                cabin_temperature: TestCabin::new(),
                 outflow_valve: PressureValve::new_outflow_valve(),
                 safety_valve: PressureValve::new_safety_valve(),
                 press_overhead: TestPressurizationOverheadPanel::new(context),
@@ -1013,6 +1057,7 @@ mod tests {
                 &self.cabin_simulation,
                 &self.outflow_valve,
                 &self.safety_valve,
+                &self.cabin_temperature,
             );
         }
     }

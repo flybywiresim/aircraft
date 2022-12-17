@@ -93,6 +93,10 @@ impl<const ROWS: usize> CabinZone<ROWS> {
     pub fn update_number_of_passengers(&mut self, passengers: u8) {
         self.passengers = passengers;
     }
+
+    pub fn zone_air_temperature(&self) -> ThermodynamicTemperature {
+        self.zone_air.zone_air_temperature()
+    }
 }
 
 impl<const ROWS: usize> CabinTemperature for CabinZone<ROWS> {
@@ -122,7 +126,7 @@ impl<const ROWS: usize> SimulationElement for CabinZone<ROWS> {
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(&self.zone_identifier, self.zone_air.zone_air_temperature());
+        writer.write(&self.zone_identifier, self.zone_air_temperature());
     }
 }
 
