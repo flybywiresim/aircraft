@@ -341,6 +341,10 @@ impl A380Pneumatic {
         self.yellow_hydraulic_reservoir_with_valve
             .change_spatial_volume(yellow_hydraulic_reservoir.available_volume());
     }
+
+    pub fn packs(&mut self) -> &mut [PackComplex; 2] {
+        &mut self.packs
+    }
 }
 impl PneumaticBleed for A380Pneumatic {
     fn apu_bleed_is_on(&self) -> bool {
@@ -1159,7 +1163,7 @@ impl SimulationElement for FullAuthorityDigitalEngineControl {
 }
 
 /// A struct to hold all the pack related components
-struct PackComplex {
+pub struct PackComplex {
     engine_number: usize,
     pack_flow_valve_id: VariableIdentifier,
     pack_flow_valve_flow_rate_id: VariableIdentifier,
@@ -1340,7 +1344,6 @@ mod tests {
             CrossBleedValveSelectorMode, EngineState, PneumaticContainer, PneumaticValveSignal,
             TargetPressureTemperatureSignal,
         },
-        pressurization::PressurizationOverheadPanel,
         shared::{
             ApuBleedAirValveSignal, CabinAir, CabinTemperature, ControllerSignal,
             ElectricalBusType, ElectricalBuses, EmergencyElectricalState, EngineBleedPushbutton,
@@ -1366,6 +1369,8 @@ mod tests {
         velocity::knot,
     };
 
+    use crate::air_conditioning::A380PressurizationOverheadPanel;
+
     use super::{A380Pneumatic, A380PneumaticOverheadPanel};
 
     struct TestAirConditioning {
@@ -1374,7 +1379,7 @@ mod tests {
 
         adirs: TestAdirs,
         pressurization: TestPressurization,
-        pressurization_overhead: PressurizationOverheadPanel,
+        pressurization_overhead: A380PressurizationOverheadPanel,
     }
     impl TestAirConditioning {
         fn new(context: &mut InitContext) -> Self {
@@ -1393,7 +1398,7 @@ mod tests {
 
                 adirs: TestAdirs::new(),
                 pressurization: TestPressurization::new(),
-                pressurization_overhead: PressurizationOverheadPanel::new(context),
+                pressurization_overhead: A380PressurizationOverheadPanel::new(context),
             }
         }
         fn update(

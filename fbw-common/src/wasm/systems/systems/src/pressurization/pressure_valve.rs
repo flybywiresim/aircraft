@@ -1,17 +1,20 @@
-use crate::{shared::ControllerSignal, simulation::UpdateContext};
+use crate::{
+    shared::{ControllerSignal, PressurizationOverheadShared},
+    simulation::UpdateContext,
+};
 
-use super::{CabinPressureSimulation, OutflowValveActuator, PressurizationOverheadPanel};
+use super::{CabinPressureSimulation, OutflowValveActuator};
 
 use std::time::Duration;
 use uom::si::{f64::*, ratio::percent};
 
-pub(super) enum PressureValveSignal {
+pub enum PressureValveSignal {
     Open,
     Close,
     Neutral,
 }
 
-pub(super) struct PressureValve {
+pub struct PressureValve {
     open_amount: Ratio,
     target_open: Ratio,
     full_travel_time: Duration,
@@ -79,7 +82,7 @@ impl PressureValve {
     pub fn calculate_outflow_valve_position<T: OutflowValveActuator>(
         &mut self,
         actuator: &T,
-        press_overhead: &PressurizationOverheadPanel,
+        press_overhead: &impl PressurizationOverheadShared,
         cabin_pressure_simulation: &CabinPressureSimulation,
     ) {
         self.target_open =
@@ -171,7 +174,7 @@ mod pressure_valve_tests {
     impl OutflowValveActuator for TestValveActuator {
         fn target_valve_position(
             &self,
-            _: &PressurizationOverheadPanel,
+            _: &impl PressurizationOverheadShared,
             _: &CabinPressureSimulation,
         ) -> Ratio {
             self.target_valve_position

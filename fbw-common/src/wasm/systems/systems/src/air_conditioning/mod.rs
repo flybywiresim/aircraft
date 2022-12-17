@@ -9,11 +9,11 @@ use crate::{
         valve::{DefaultValve, PneumaticExhaust},
         ControllablePneumaticValve, PneumaticContainer, PneumaticPipe,
     },
-    pressurization::PressurizationOverheadPanel,
     shared::{
         AverageExt, CabinAir, CabinTemperature, ConsumePower, ControllerSignal, ElectricalBusType,
         ElectricalBuses, EngineBleedPushbutton, EngineCorrectedN1, EngineFirePushButtons,
         EngineStartState, GroundSpeed, LgciuWeightOnWheels, PackFlowValveState, PneumaticBleed,
+        PressurizationOverheadShared,
     },
     simulation::{
         InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -124,7 +124,7 @@ impl<const ZONES: usize, const FANS: usize> AirConditioningSystem<ZONES, FANS> {
         pneumatic: &(impl EngineStartState + PackFlowValveState + PneumaticBleed),
         pneumatic_overhead: &impl EngineBleedPushbutton,
         pressurization: &impl CabinAir,
-        pressurization_overhead: &PressurizationOverheadPanel,
+        pressurization_overhead: &impl PressurizationOverheadShared,
         lgciu: [&impl LgciuWeightOnWheels; 2],
     ) {
         self.acsc.update(

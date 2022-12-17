@@ -1,11 +1,14 @@
 use crate::{
-    shared::{ControllerSignal, EngineCorrectedN1},
-    simulation::UpdateContext,
+    shared::{ControllerSignal, EngineCorrectedN1, PressurizationOverheadShared},
+    simulation::{
+        InitContext, Read, SimulationElement, SimulatorReader, SimulatorWriter, UpdateContext,
+        VariableIdentifier, Write,
+    },
 };
 
 use super::{
     CabinPressure, CabinPressureSimulation, OutflowValveActuator, PressureValve,
-    PressureValveSignal, PressurizationOverheadPanel,
+    PressureValveSignal,
 };
 
 use std::time::Duration;
@@ -18,7 +21,19 @@ use uom::si::{
     volume_rate::cubic_meter_per_second,
 };
 
-pub(super) struct CabinPressureController {
+pub struct CabinPressureController {
+    cabin_altitude_id: VariableIdentifier,
+    fwc_excess_cabin_altitude_id: VariableIdentifier,
+    fwc_excess_residual_pressure_id: VariableIdentifier,
+    fwc_low_diff_pressure_id: VariableIdentifier,
+    outflow_valve_open_percentage_id: VariableIdentifier,
+    safety_valve_open_percentage_id: VariableIdentifier,
+
+    auto_landing_elevation_id: VariableIdentifier,
+    departure_elevation_id: VariableIdentifier,
+    sea_level_pressure_id: VariableIdentifier,
+    destination_qnh_id: VariableIdentifier,
+
     pressure_schedule_manager: Option<PressureScheduleManager>,
     exterior_pressure: Pressure,
     exterior_vertical_speed: Velocity,
@@ -29,6 +44,14 @@ pub(super) struct CabinPressureController {
     cabin_target_vs: Velocity,
     outflow_valve_open_amount: Ratio,
     safety_valve_open_amount: Ratio,
+
+    landing_elevation: Length,
+    departure_elevation: Length,
+    sea_level_pressure: Pressure,
+    destination_qnh: Pressure,
+    is_in_man_mode: bool,
+    man_mode_duration: Duration,
+    manual_to_auto_switch: bool,
 }
 
 impl CabinPressureController {
@@ -52,8 +75,24 @@ impl CabinPressureController {
     const TAKEOFF_RATE: f64 = -400.;
     const DEPRESS_RATE: f64 = 500.;
 
-    pub(super) fn new() -> Self {
+    pub fn new(context: &mut InitContext) -> Self {
         Self {
+            cabin_altitude_id: context.get_identifier("PRESS_CABIN_ALTITUDE".to_owned()),
+            fwc_excess_cabin_altitude_id: context.get_identifier("PRESS_EXCESS_CAB_ALT".to_owned()),
+            fwc_excess_residual_pressure_id: context
+                .get_identifier("PRESS_EXCESS_RESIDUAL_PR".to_owned()),
+            fwc_low_diff_pressure_id: context.get_identifier("PRESS_LOW_DIFF_PR".to_owned()),
+            outflow_valve_open_percentage_id: context
+                .get_identifier("PRESS_OUTFLOW_VALVE_OPEN_PERCENTAGE".to_owned()),
+            safety_valve_open_percentage_id: context
+                .get_identifier("PRESS_SAFETY_VALVE_OPEN_PERCENTAGE".to_owned()),
+
+            auto_landing_elevation_id: context
+                .get_identifier("PRESS_AUTO_LANDING_ELEVATION".to_owned()),
+            departure_elevation_id: context.get_identifier("DEPARTURE_ELEVATION".to_owned()),
+            sea_level_pressure_id: context.get_identifier("SEA LEVEL PRESSURE".to_owned()),
+            destination_qnh_id: context.get_identifier("DESTINATION_QNH".to_owned()),
+
             pressure_schedule_manager: Some(PressureScheduleManager::new()),
             exterior_pressure: Pressure::new::<hectopascal>(1013.25),
             exterior_vertical_speed: Velocity::new::<foot_per_minute>(0.),
@@ -64,18 +103,23 @@ impl CabinPressureController {
             cabin_target_vs: Velocity::new::<meter_per_second>(0.),
             outflow_valve_open_amount: Ratio::new::<percent>(100.),
             safety_valve_open_amount: Ratio::new::<percent>(0.),
+
+            landing_elevation: Length::new::<foot>(0.),
+            departure_elevation: Length::new::<foot>(0.),
+            sea_level_pressure: Pressure::new::<hectopascal>(1013.25),
+            destination_qnh: Pressure::new::<hectopascal>(0.),
+            is_in_man_mode: false,
+            man_mode_duration: Duration::from_secs(0),
+            manual_to_auto_switch: false,
         }
     }
 
-    pub(super) fn update(
+    pub fn update(
         &mut self,
         context: &UpdateContext,
         engines: [&impl EngineCorrectedN1; 2],
-        landing_elevation: Length,
-        departure_elevation: Length,
-        sea_level_pressure: Pressure,
-        destination_qnh: Pressure,
         lgciu_gears_compressed: bool,
+        press_overhead: &impl PressurizationOverheadShared,
         cabin_simulation: &impl CabinPressure,
         outflow_valve: &PressureValve,
         safety_valve: &PressureValve,
@@ -83,8 +127,10 @@ impl CabinPressureController {
         self.exterior_pressure = cabin_simulation.exterior_pressure();
         self.exterior_vertical_speed = context.vertical_speed();
         self.cabin_pressure = cabin_simulation.cabin_pressure();
-        self.landing_elev = landing_elevation;
-        self.departure_elev = departure_elevation;
+
+        if !press_overhead.ldg_elev_is_auto() {
+            self.landing_elevation = Length::new::<foot>(press_overhead.ldg_elev_knob_value())
+        }
 
         if let Some(manager) = self.pressure_schedule_manager.take() {
             self.pressure_schedule_manager =
@@ -92,10 +138,21 @@ impl CabinPressureController {
         }
 
         self.cabin_target_vs = self.calculate_cabin_target_vs(context);
-        self.cabin_alt = self.calculate_cabin_altitude(sea_level_pressure, destination_qnh);
+        self.cabin_alt = self.calculate_cabin_altitude();
 
         self.outflow_valve_open_amount = outflow_valve.open_amount();
         self.safety_valve_open_amount = safety_valve.open_amount();
+
+        if self.is_in_man_mode && press_overhead.is_in_man_mode() {
+            self.man_mode_duration += context.delta();
+        } else if self.is_in_man_mode && !press_overhead.is_in_man_mode() {
+            if self.man_mode_duration > Duration::from_secs(10) {
+                self.manual_to_auto_switch = true;
+            }
+            self.man_mode_duration = Duration::from_secs(0)
+        }
+
+        self.is_in_man_mode = press_overhead.is_in_man_mode();
     }
 
     fn calculate_cabin_target_vs(&mut self, context: &UpdateContext) -> Velocity {
@@ -186,11 +243,7 @@ impl CabinPressureController {
         self.cabin_alt - self.landing_elev
     }
 
-    fn calculate_cabin_altitude(
-        &self,
-        sea_level_pressure: Pressure,
-        destination_qnh: Pressure,
-    ) -> Length {
+    fn calculate_cabin_altitude(&self) -> Length {
         let p = self.cabin_pressure;
 
         // Based on local QNH when below 5000ft from departure or arrival airport, ISA when above
@@ -202,10 +255,10 @@ impl CabinPressureController {
             .abs()
             < 5000.
         {
-            if destination_qnh > Pressure::new::<hectopascal>(0.) {
-                destination_qnh
-            } else if sea_level_pressure > Pressure::new::<hectopascal>(0.) {
-                sea_level_pressure
+            if self.destination_qnh > Pressure::new::<hectopascal>(0.) {
+                self.destination_qnh
+            } else if self.sea_level_pressure > Pressure::new::<hectopascal>(0.) {
+                self.sea_level_pressure
             } else {
                 Pressure::new::<hectopascal>(1013.25)
             }
@@ -213,9 +266,9 @@ impl CabinPressureController {
             .get::<foot>()
             .abs()
             < 5000.
-            && sea_level_pressure > Pressure::new::<hectopascal>(0.)
+            && self.sea_level_pressure > Pressure::new::<hectopascal>(0.)
         {
-            sea_level_pressure
+            self.sea_level_pressure
         } else {
             Pressure::new::<hectopascal>(1013.25)
         };
@@ -241,19 +294,23 @@ impl CabinPressureController {
         self.cabin_alt
     }
 
-    pub(super) fn should_switch_cpc(&self) -> bool {
+    pub fn should_switch_cpc(&mut self) -> bool {
+        if self.manual_to_auto_switch {
+            self.manual_to_auto_switch = false;
+            return true;
+        }
         self.pressure_schedule_manager
             .as_ref()
             .map_or(false, |manager| manager.should_switch_cpc())
     }
 
-    pub(super) fn should_open_outflow_valve(&self) -> bool {
+    pub fn should_open_outflow_valve(&self) -> bool {
         self.pressure_schedule_manager
             .as_ref()
             .map_or(false, |manager| manager.should_open_outflow_valve())
     }
 
-    pub(super) fn reset_cpc_switch(&mut self) {
+    pub fn reset_cpc_switch(&mut self) {
         if let Some(manager) = self.pressure_schedule_manager.as_mut() {
             manager.reset_cpc_switch();
         }
@@ -287,7 +344,7 @@ impl CabinPressureController {
 impl OutflowValveActuator for CabinPressureController {
     fn target_valve_position(
         &self,
-        press_overhead: &PressurizationOverheadPanel,
+        press_overhead: &impl PressurizationOverheadShared,
         cabin_pressure_simulation: &CabinPressureSimulation,
     ) -> Ratio {
         // Calculation extracted from:
@@ -318,7 +375,7 @@ impl OutflowValveActuator for CabinPressureController {
 
         if press_overhead.is_in_man_mode() {
             self.outflow_valve_open_amount
-        } else if press_overhead.ditching.is_on() {
+        } else if press_overhead.ditching_is_on() {
             Ratio::new::<percent>(0.)
         } else if ofv_open_ratio >= Ratio::new::<percent>(100.)
             || (self.is_ground() && self.should_open_outflow_valve())
@@ -354,6 +411,37 @@ impl ControllerSignal<PressureValveSignal> for CabinPressureController {
         } else {
             Some(PressureValveSignal::Neutral)
         }
+    }
+}
+
+impl SimulationElement for CabinPressureController {
+    fn write(&self, writer: &mut SimulatorWriter) {
+        // Add check for active cpc only
+        writer.write(&self.cabin_altitude_id, self.cabin_altitude());
+        writer.write(
+            &self.outflow_valve_open_percentage_id,
+            self.outflow_valve_open_amount,
+        );
+        writer.write(
+            &self.safety_valve_open_percentage_id,
+            self.safety_valve_open_amount,
+        );
+
+        // FWC warning signals
+        writer.write(&self.fwc_excess_cabin_altitude_id, self.is_excessive_alt());
+        writer.write(
+            &self.fwc_excess_residual_pressure_id,
+            self.is_excessive_residual_pressure(),
+        );
+        writer.write(&self.fwc_low_diff_pressure_id, self.is_low_diff_pressure());
+    }
+
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        self.landing_elevation = reader.read(&self.auto_landing_elevation_id);
+        self.departure_elevation = reader.read(&self.departure_elevation_id);
+        self.sea_level_pressure =
+            Pressure::new::<hectopascal>(reader.read(&self.sea_level_pressure_id));
+        self.destination_qnh = Pressure::new::<hectopascal>(reader.read(&self.destination_qnh_id));
     }
 }
 
@@ -685,18 +773,21 @@ impl PressureSchedule<Abort> {
 transition!(ClimbInternal, Abort);
 
 #[cfg(test)]
-mod pressure_schedule_manager_tests {
+mod tests {
     use super::*;
-    use crate::simulation::{Aircraft, InitContext, SimulationElement};
+    use crate::simulation::{Aircraft, InitContext, SimulationElement, SimulationElementVisitor};
     use crate::{
-        shared::EngineCorrectedN1,
-        simulation::test::{SimulationTestBed, TestBed},
+        overhead::{AutoManFaultPushButton, NormalOnPushButton, SpringLoadedSwitch, ValueKnob},
+        shared::{EngineCorrectedN1, LgciuWeightOnWheels},
+        simulation::{
+            test::{SimulationTestBed, TestBed},
+            UpdateContext,
+        },
     };
 
     use std::time::Duration;
     use uom::si::{
         length::foot,
-        pressure::hectopascal,
         ratio::percent,
         velocity::{foot_per_minute, knot},
     };
@@ -721,35 +812,150 @@ mod pressure_schedule_manager_tests {
         }
     }
 
+    struct TestLgciu {
+        compressed: bool,
+    }
+    impl TestLgciu {
+        fn new(compressed: bool) -> Self {
+            Self { compressed }
+        }
+
+        fn set_on_ground(&mut self, on_ground: bool) {
+            self.compressed = on_ground;
+        }
+    }
+
+    impl LgciuWeightOnWheels for TestLgciu {
+        fn left_and_right_gear_compressed(&self, _treat_ext_pwr_as_ground: bool) -> bool {
+            self.compressed
+        }
+        fn right_gear_compressed(&self, _treat_ext_pwr_as_ground: bool) -> bool {
+            true
+        }
+        fn right_gear_extended(&self, _treat_ext_pwr_as_ground: bool) -> bool {
+            false
+        }
+        fn left_gear_compressed(&self, _treat_ext_pwr_as_ground: bool) -> bool {
+            true
+        }
+        fn left_gear_extended(&self, _treat_ext_pwr_as_ground: bool) -> bool {
+            false
+        }
+        fn left_and_right_gear_extended(&self, _treat_ext_pwr_as_ground: bool) -> bool {
+            false
+        }
+        fn nose_gear_compressed(&self, _treat_ext_pwr_as_ground: bool) -> bool {
+            true
+        }
+        fn nose_gear_extended(&self, _treat_ext_pwr_as_ground: bool) -> bool {
+            false
+        }
+    }
+
+    struct TestPressurizationOverheadPanel {
+        mode_sel: AutoManFaultPushButton,
+        man_vs_ctl_switch: SpringLoadedSwitch,
+        ldg_elev_knob: ValueKnob,
+        ditching: NormalOnPushButton,
+    }
+
+    impl TestPressurizationOverheadPanel {
+        pub fn new(context: &mut InitContext) -> Self {
+            Self {
+                mode_sel: AutoManFaultPushButton::new_auto(context, "PRESS_MODE_SEL"),
+                man_vs_ctl_switch: SpringLoadedSwitch::new(context, "PRESS_MAN_VS_CTL"),
+                ldg_elev_knob: ValueKnob::new_with_value(context, "PRESS_LDG_ELEV", -2000.),
+                ditching: NormalOnPushButton::new_normal(context, "PRESS_DITCHING"),
+            }
+        }
+
+        fn man_vs_switch_position(&self) -> usize {
+            self.man_vs_ctl_switch.position()
+        }
+    }
+
+    impl SimulationElement for TestPressurizationOverheadPanel {
+        fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+            self.mode_sel.accept(visitor);
+            self.man_vs_ctl_switch.accept(visitor);
+            self.ldg_elev_knob.accept(visitor);
+            self.ditching.accept(visitor);
+
+            visitor.visit(self);
+        }
+    }
+
+    impl ControllerSignal<PressureValveSignal> for TestPressurizationOverheadPanel {
+        fn signal(&self) -> Option<PressureValveSignal> {
+            if !self.is_in_man_mode() {
+                None
+            } else {
+                match self.man_vs_switch_position() {
+                    0 => Some(PressureValveSignal::Open),
+                    1 => Some(PressureValveSignal::Neutral),
+                    2 => Some(PressureValveSignal::Close),
+                    _ => panic!("Could not convert manual vertical speed switch position '{}' to pressure valve signal.", self.man_vs_switch_position()),
+                }
+            }
+        }
+    }
+
+    impl PressurizationOverheadShared for TestPressurizationOverheadPanel {
+        fn is_in_man_mode(&self) -> bool {
+            !self.mode_sel.is_auto()
+        }
+
+        fn ditching_is_on(&self) -> bool {
+            self.ditching.is_on()
+        }
+
+        fn ldg_elev_is_auto(&self) -> bool {
+            let margin = 100.;
+            (self.ldg_elev_knob.value() + 2000.).abs() < margin
+        }
+
+        fn ldg_elev_knob_value(&self) -> f64 {
+            self.ldg_elev_knob.value()
+        }
+    }
+
     struct TestAircraft {
         cpc: CabinPressureController,
         cabin_simulation: CabinPressureSimulation,
         outflow_valve: PressureValve,
         safety_valve: PressureValve,
-        press_overhead: PressurizationOverheadPanel,
+        press_overhead: TestPressurizationOverheadPanel,
         engine_1: TestEngine,
         engine_2: TestEngine,
-        lgciu_gears_compressed: bool,
+        lgciu1: TestLgciu,
+        lgciu2: TestLgciu,
     }
     impl TestAircraft {
         fn new(context: &mut InitContext) -> Self {
             let mut test_aircraft = Self {
-                cpc: CabinPressureController::new(),
-                cabin_simulation: CabinPressureSimulation::new(),
+                cpc: CabinPressureController::new(context),
+                cabin_simulation: CabinPressureSimulation::new(context),
                 outflow_valve: PressureValve::new_outflow_valve(),
                 safety_valve: PressureValve::new_safety_valve(),
-                press_overhead: PressurizationOverheadPanel::new(context),
+                press_overhead: TestPressurizationOverheadPanel::new(context),
                 engine_1: TestEngine::new(Ratio::new::<percent>(0.)),
                 engine_2: TestEngine::new(Ratio::new::<percent>(0.)),
-                lgciu_gears_compressed: false,
+                lgciu1: TestLgciu::new(false),
+                lgciu2: TestLgciu::new(false),
             };
             test_aircraft.cpc.outflow_valve_open_amount = Ratio::new::<percent>(50.);
+            test_aircraft.set_engine_n1(Ratio::new::<percent>(30.));
             test_aircraft
         }
 
         fn set_engine_n1(&mut self, n: Ratio) {
             self.engine_1.set_engine_n1(n);
             self.engine_2.set_engine_n1(n)
+        }
+
+        fn set_on_ground(&mut self, on_ground: bool) {
+            self.lgciu1.set_on_ground(on_ground);
+            self.lgciu2.set_on_ground(on_ground);
         }
 
         fn is_ground(&self) -> bool {
@@ -793,29 +999,31 @@ mod pressure_schedule_manager_tests {
                 Some(PressureScheduleManager::Abort(_))
             )
         }
-
-        fn set_on_ground(&mut self, on_ground: bool) {
-            self.lgciu_gears_compressed = on_ground;
-        }
     }
     impl Aircraft for TestAircraft {
         fn update_after_power_distribution(&mut self, context: &UpdateContext) {
+            let lgciu_gears_compressed = self.lgciu1.left_and_right_gear_compressed(true)
+                && self.lgciu2.left_and_right_gear_compressed(true);
+
             self.cpc.update(
                 context,
                 [&self.engine_1, &self.engine_2],
-                Length::new::<meter>(0.),
-                Length::new::<meter>(0.),
-                Pressure::new::<hectopascal>(1013.),
-                Pressure::new::<hectopascal>(1013.),
-                self.lgciu_gears_compressed,
+                lgciu_gears_compressed,
+                &self.press_overhead,
                 &self.cabin_simulation,
                 &self.outflow_valve,
                 &self.safety_valve,
             );
-            self.outflow_valve.update(context, &self.press_overhead);
         }
     }
-    impl SimulationElement for TestAircraft {}
+    impl SimulationElement for TestAircraft {
+        fn accept<V: SimulationElementVisitor>(&mut self, visitor: &mut V) {
+            self.cpc.accept(visitor);
+            self.press_overhead.accept(visitor);
+
+            visitor.visit(self);
+        }
+    }
 
     #[test]
     fn schedule_starts_on_ground() {

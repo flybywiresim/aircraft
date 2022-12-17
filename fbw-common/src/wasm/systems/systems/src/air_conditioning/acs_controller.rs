@@ -1,10 +1,10 @@
 use crate::{
     pneumatic::{EngineModeSelector, EngineState, PneumaticValveSignal},
-    pressurization::PressurizationOverheadPanel,
     shared::{
         pid::PidController, CabinAir, CabinTemperature, ControllerSignal, ElectricalBusType,
         ElectricalBuses, EngineBleedPushbutton, EngineCorrectedN1, EngineFirePushButtons,
         EngineStartState, GroundSpeed, LgciuWeightOnWheels, PackFlowValveState, PneumaticBleed,
+        PressurizationOverheadShared,
     },
     simulation::{
         InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
@@ -87,7 +87,7 @@ impl<const ZONES: usize> AirConditioningSystemController<ZONES> {
         pneumatic: &(impl EngineStartState + PackFlowValveState + PneumaticBleed),
         pneumatic_overhead: &impl EngineBleedPushbutton,
         pressurization: &impl CabinAir,
-        pressurization_overhead: &PressurizationOverheadPanel,
+        pressurization_overhead: &impl PressurizationOverheadShared,
         lgciu: [&impl LgciuWeightOnWheels; 2],
         trim_air_system: &TrimAirSystem<ZONES>,
     ) {
@@ -708,7 +708,7 @@ impl<const ZONES: usize> PackFlowController<ZONES> {
         pneumatic: &(impl EngineStartState + PackFlowValveState + PneumaticBleed),
         pneumatic_overhead: &impl EngineBleedPushbutton,
         pressurization: &impl CabinAir,
-        pressurization_overhead: &PressurizationOverheadPanel,
+        pressurization_overhead: &impl PressurizationOverheadShared,
         operation_mode: ACSCActiveComputer,
     ) {
         // TODO: Add overheat protection
@@ -803,7 +803,7 @@ impl<const ZONES: usize> PackFlowController<ZONES> {
         &mut self,
         acs_overhead: &AirConditioningSystemOverhead<ZONES>,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
-        pressurization_overhead: &PressurizationOverheadPanel,
+        pressurization_overhead: &impl PressurizationOverheadShared,
         pneumatic: &(impl PneumaticBleed + EngineStartState),
     ) -> bool {
         match Pack::from(self.id + 1) {
@@ -1090,7 +1090,10 @@ mod acs_controller_tests {
             cabin_air::CabinZone, Air, AirConditioningPack, CabinFan, MixerUnit, OutletAir,
         },
         electrical::{test::TestElectricitySource, ElectricalBus, Electricity},
-        overhead::AutoOffFaultPushButton,
+        overhead::{
+            AutoManFaultPushButton, AutoOffFaultPushButton, NormalOnPushButton, SpringLoadedSwitch,
+            ValueKnob,
+        },
         pneumatic::{
             valve::{DefaultValve, PneumaticExhaust},
             ControllablePneumaticValve, EngineModeSelector, PneumaticContainer, PneumaticPipe,
@@ -1256,6 +1259,54 @@ mod acs_controller_tests {
             self.engine_2_bleed.accept(visitor);
 
             visitor.visit(self);
+        }
+    }
+
+    struct TestPressurizationOverheadPanel {
+        mode_sel: AutoManFaultPushButton,
+        man_vs_ctl_switch: SpringLoadedSwitch,
+        ldg_elev_knob: ValueKnob,
+        ditching: NormalOnPushButton,
+    }
+
+    impl TestPressurizationOverheadPanel {
+        pub fn new(context: &mut InitContext) -> Self {
+            Self {
+                mode_sel: AutoManFaultPushButton::new_auto(context, "PRESS_MODE_SEL"),
+                man_vs_ctl_switch: SpringLoadedSwitch::new(context, "PRESS_MAN_VS_CTL"),
+                ldg_elev_knob: ValueKnob::new_with_value(context, "PRESS_LDG_ELEV", -2000.),
+                ditching: NormalOnPushButton::new_normal(context, "PRESS_DITCHING"),
+            }
+        }
+    }
+
+    impl SimulationElement for TestPressurizationOverheadPanel {
+        fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+            self.mode_sel.accept(visitor);
+            self.man_vs_ctl_switch.accept(visitor);
+            self.ldg_elev_knob.accept(visitor);
+            self.ditching.accept(visitor);
+
+            visitor.visit(self);
+        }
+    }
+
+    impl PressurizationOverheadShared for TestPressurizationOverheadPanel {
+        fn is_in_man_mode(&self) -> bool {
+            !self.mode_sel.is_auto()
+        }
+
+        fn ditching_is_on(&self) -> bool {
+            self.ditching.is_on()
+        }
+
+        fn ldg_elev_is_auto(&self) -> bool {
+            let margin = 100.;
+            (self.ldg_elev_knob.value() + 2000.).abs() < margin
+        }
+
+        fn ldg_elev_knob_value(&self) -> f64 {
+            self.ldg_elev_knob.value()
         }
     }
 
@@ -1653,7 +1704,7 @@ mod acs_controller_tests {
         pneumatic: TestPneumatic,
         pneumatic_overhead: TestPneumaticOverhead,
         pressurization: TestPressurization,
-        pressurization_overhead: PressurizationOverheadPanel,
+        pressurization_overhead: TestPressurizationOverheadPanel,
         lgciu1: TestLgciu,
         lgciu2: TestLgciu,
         test_cabin: TestCabin,
@@ -1695,7 +1746,7 @@ mod acs_controller_tests {
                 pneumatic: TestPneumatic::new(context),
                 pneumatic_overhead: TestPneumaticOverhead::new(context),
                 pressurization: TestPressurization::new(),
-                pressurization_overhead: PressurizationOverheadPanel::new(context),
+                pressurization_overhead: TestPressurizationOverheadPanel::new(context),
                 lgciu1: TestLgciu::new(false),
                 lgciu2: TestLgciu::new(false),
                 test_cabin: TestCabin::new(context),

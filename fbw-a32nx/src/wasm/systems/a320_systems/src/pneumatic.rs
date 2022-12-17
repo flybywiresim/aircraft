@@ -1366,7 +1366,6 @@ mod tests {
             CrossBleedValveSelectorMode, EngineState, PneumaticContainer, PneumaticValveSignal,
             TargetPressureTemperatureSignal, WingAntiIcePushButtonMode,
         },
-        pressurization::PressurizationOverheadPanel,
         shared::{
             ApuBleedAirValveSignal, CabinAir, CabinTemperature, ControllerSignal,
             ElectricalBusType, ElectricalBuses, EmergencyElectricalState, EngineBleedPushbutton,
@@ -1392,6 +1391,8 @@ mod tests {
         velocity::knot,
     };
 
+    use crate::air_conditioning::A320PressurizationOverheadPanel;
+
     use super::{A320Pneumatic, A320PneumaticOverheadPanel};
 
     struct TestAirConditioning {
@@ -1400,7 +1401,7 @@ mod tests {
 
         adirs: TestAdirs,
         pressurization: TestPressurization,
-        pressurization_overhead: PressurizationOverheadPanel,
+        pressurization_overhead: A320PressurizationOverheadPanel,
     }
     impl TestAirConditioning {
         fn new(context: &mut InitContext) -> Self {
@@ -1419,7 +1420,7 @@ mod tests {
 
                 adirs: TestAdirs::new(),
                 pressurization: TestPressurization::new(),
-                pressurization_overhead: PressurizationOverheadPanel::new(context),
+                pressurization_overhead: A320PressurizationOverheadPanel::new(context),
             }
         }
         fn update(

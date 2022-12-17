@@ -1,4 +1,9 @@
-use crate::{shared::AverageExt, simulation::UpdateContext};
+use crate::{
+    shared::AverageExt,
+    simulation::{
+        InitContext, SimulationElement, SimulatorWriter, UpdateContext, VariableIdentifier, Write,
+    },
+};
 
 use super::CabinPressure;
 
@@ -6,13 +11,16 @@ use uom::si::{
     f64::*,
     pressure::{hectopascal, pascal},
     ratio::{percent, ratio},
-    velocity::meter_per_second,
+    velocity::{foot_per_minute, meter_per_second},
     volume_rate::cubic_meter_per_second,
 };
 
 use bounded_vec_deque::BoundedVecDeque;
 
-pub(crate) struct CabinPressureSimulation {
+pub struct CabinPressureSimulation {
+    cabin_vs_id: VariableIdentifier,
+    cabin_delta_pressure_id: VariableIdentifier,
+
     initialized: bool,
     previous_exterior_pressure: BoundedVecDeque<Pressure>,
     exterior_pressure: Pressure,
@@ -40,8 +48,12 @@ impl CabinPressureSimulation {
     const OFV_SIZE: f64 = 0.03; // m2
     const SAFETY_VALVE_SIZE: f64 = 0.02; //m2
 
-    pub(super) fn new() -> Self {
+    pub fn new(context: &mut InitContext) -> Self {
         Self {
+            cabin_vs_id: context.get_identifier("PRESS_CABIN_VS".to_owned()),
+            cabin_delta_pressure_id: context
+                .get_identifier("PRESS_CABIN_DELTA_PRESSURE".to_owned()),
+
             initialized: false,
             previous_exterior_pressure: BoundedVecDeque::from_iter(
                 vec![Pressure::new::<hectopascal>(1013.25); 20],
@@ -59,7 +71,7 @@ impl CabinPressureSimulation {
         }
     }
 
-    pub(super) fn update(
+    pub fn update(
         &mut self,
         context: &UpdateContext,
         outflow_valve_open_amount: Ratio,
@@ -223,7 +235,7 @@ impl CabinPressureSimulation {
         self.cabin_vs
     }
 
-    pub(super) fn cabin_delta_p(&self) -> Pressure {
+    pub fn cabin_delta_p(&self) -> Pressure {
         self.cabin_pressure - self.exterior_pressure
     }
 
@@ -247,5 +259,12 @@ impl CabinPressure for CabinPressureSimulation {
 
     fn cabin_pressure(&self) -> Pressure {
         self.cabin_pressure
+    }
+}
+
+impl SimulationElement for CabinPressureSimulation {
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(&self.cabin_vs_id, self.cabin_vs().get::<foot_per_minute>());
+        writer.write(&self.cabin_delta_pressure_id, self.cabin_delta_p());
     }
 }
