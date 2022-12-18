@@ -73,12 +73,15 @@ export class BuildInfo {
                 commit,
             };
         }
-        throw new Error('Version is not in the correct format');
+        throw new Error('Invalid version format');
     }
 
     /**
      * Compare two version strings. Returns 1 if v1 is newer, -1 if v2 is newer and 0 if they are equal.
+     * Throws an error if the version strings are not in the correct format (^v?(\d+)\.(\d+)\.(\d+).*$).
+     *
      * TODO: Use semver package. semver package did not work for some reason. This is a temporary solution.
+     *
      * @param v1
      * @param v2
      */
@@ -96,7 +99,7 @@ export class BuildInfo {
             minor1 = parseInt(matchBuildInfo[2], 10);
             patch1 = parseInt(matchBuildInfo[3], 10);
         } else {
-            throw new Error('Version 1 is not in the correct format');
+            throw new Error('Invalid version format');
         }
         const matchReleaseInfo = v2.match(/^v?(\d+)\.(\d+)\.(\d+).*$/);
         if (matchReleaseInfo) {
@@ -104,7 +107,7 @@ export class BuildInfo {
             minor2 = parseInt(matchReleaseInfo[2], 10);
             patch2 = parseInt(matchReleaseInfo[3], 10);
         } else {
-            throw new Error('Version 2 is not in the correct format');
+            throw new Error('Invalid version format');
         }
 
         if (major1 > major2) {
