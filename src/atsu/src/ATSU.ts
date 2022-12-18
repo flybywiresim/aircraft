@@ -326,10 +326,12 @@ export class Atsu {
     }
 
     public vhfDatalinkMode() {
-        let mode = DatalinkModeCode.Aoc;
+        let mode = DatalinkModeCode.None;
 
         if (SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') === 1) {
             mode = DatalinkModeCode.AtcAoc;
+        } else {
+            mode = DatalinkModeCode.Aoc;
         }
 
         return mode;
@@ -339,7 +341,7 @@ export class Atsu {
         return DatalinkStatusCode.DlkNotAvail;
     }
 
-    public satcomDatalinkMode(){
+    public satcomDatalinkMode() {
         return DatalinkModeCode.None;
     }
 
