@@ -2,6 +2,7 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 import { FmgcFlightPhase } from '@shared/flightphase';
+import { DatalinkModeCode, DatalinkStatusCode } from '@atsu/DatalinkStatusCodes';
 import { CpdlcMessage } from './messages/CpdlcMessage';
 import { Datalink } from './com/Datalink';
 import { AtsuStatusCodes } from './AtsuStatusCodes';
@@ -318,5 +319,35 @@ export class Atsu {
 
     public targetFlightState() {
         return this.flightStateObserver.FcuSettings;
+    }
+
+    public vhfDatalinkStatus() {
+        return DatalinkStatusCode.DlkAvail;
+    }
+
+    public vhfDatalinkMode() {
+        let mode = DatalinkModeCode.Aoc;
+
+        if (SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') === 1) {
+            mode = DatalinkModeCode.AtcAoc;
+        }
+
+        return mode;
+    }
+
+    public satcomDatalinkStatus() {
+        return DatalinkStatusCode.DlkNotAvail;
+    }
+
+    public satcomDatalinkMode(){
+        return DatalinkModeCode.None;
+    }
+
+    public hfDatalinkStatus() {
+        return DatalinkStatusCode.NotInstalled;
+    }
+
+    public hfDatalinkMode() {
+        return DatalinkModeCode.None;
     }
 }
