@@ -221,8 +221,8 @@ const Efb = () => {
                     console.log(`New version available: ${versionInfo.version} ==> ${releaseInfo[0].name}`);
                     showVersionPopup('', versionInfo.version, releaseInfo[0].name);
                 } else {
-                    // If the users version is equal or newer than latest release then check if
-                    // the edition is Development or Experimental and if the commit is not older than
+                    // If the users version is equal or newer than the latest release then check if
+                    // the edition is Development or Experimental and if the commit is older than
                     // {maxAge} days after the latest release
 
                     const maxAge = 3;
