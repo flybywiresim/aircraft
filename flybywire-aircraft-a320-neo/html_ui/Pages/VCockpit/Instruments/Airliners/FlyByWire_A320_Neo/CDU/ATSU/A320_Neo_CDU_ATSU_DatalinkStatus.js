@@ -15,11 +15,6 @@ class CDUAtsuDatalinkStatus {
         };
         SimVar.SetSimVarValue("L:FMC_UPDATE_CURRENT_PAGE", "number", 1);
 
-        let vhf3Mode = "AOC ONLY";
-        if (SimVar.GetSimVarValue("L:A32NX_HOPPIE_ACTIVE", "number") === 1) {
-            vhf3Mode = "ATC/AOC";
-        }
-
         let satComAvail = 'SATCOM : {small}NOT INSTALLED{end}';
         let satComMode = '';
         if (NXDataStore.get('MODEL_SATCOM_ENABLED') === '1') {
@@ -30,11 +25,11 @@ class CDUAtsuDatalinkStatus {
         mcdu.setTemplate([
             ["DATALINK STATUS"],
             [""],
-            ["VHF3 : {green}DLK AVAIL{end}"],
-            [`\xa0\xa0\xa0\xa0\xa0\xa0\xa0${vhf3Mode}`],
-            [`${satComAvail}`],
-            [`\xa0\xa0\xa0\xa0\xa0\xa0\xa0${satComMode}`],
-            ["HF : {small}NOT INSTALLED{end}"],
+            [`VHF3 : ${mcdu.atsu.vhfDatalinkStatus()}`],
+            [`\xa0\xa0\xa0\xa0\xa0\xa0\xa0${mcdu.atsu.vhfDatalinkMode()}`],
+            [`SATCOM : ${mcdu.atsu.satcomDatalinkStatus()}`],
+            [`\xa0\xa0\xa0\xa0\xa0\xa0\xa0${mcdu.atsu.satcomDatalinkMode()}`],
+            [`HF : ${mcdu.atsu.hfDatalinkStatus()}`],
             [""],
             [""],
             [""],
