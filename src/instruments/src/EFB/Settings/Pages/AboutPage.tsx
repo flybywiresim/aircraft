@@ -95,7 +95,7 @@ export const AboutPage = () => {
                         <BuildInfoEntry title="Aircraft Version" value={buildInfo?.version} />
                         <BuildInfoEntry title="Built" value={buildInfo?.built} />
                         <BuildInfoEntry title="Ref" value={buildInfo?.ref} />
-                        <BuildInfoEntry title="SHA" value={buildInfo?.sha} underline={8} />
+                        <BuildInfoEntry title="SHA" value={buildInfo?.sha} underline={7} />
                         <BuildInfoEntry title="Event Name" value={buildInfo?.eventName} />
                         <BuildInfoEntry title="Pretty Release Name" value={buildInfo?.prettyReleaseName} />
                         {sentryEnabled === SentryConsentState.Given && (
