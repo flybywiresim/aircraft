@@ -10,7 +10,7 @@ import { useInteractionEvent } from '@instruments/common/hooks';
 import { usePersistentNumberProperty, usePersistentProperty } from '@instruments/common/persistence';
 
 import { Battery } from 'react-bootstrap-icons';
-import { ToastContainer, toast } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
 import { distanceTo } from 'msfs-geo';
 import { PopUp } from '@shared/popup';
 import { CommitInfo, GitVersions, ReleaseInfo } from '@flybywiresim/api-client';
@@ -170,11 +170,13 @@ const Efb = () => {
     const showVersionPopup = (branchName, currentVersion, releaseVersion) => {
         const popup = new PopUp();
         popup.showInformation(
-            'NEW AIRCRAFT VERSION AVAILABLE',
-            `<div style="font-size: 150%; text-align: center;">You are using version <strong>${currentVersion}</strong>.<br/> 
-                                 Latest ${branchName} version is <strong>${releaseVersion}</strong>.<br/>
-                                 Please update your aircraft with the FlyByWire Installer.</div>`,
-            'big',
+            'NEW VERSION AVAILABLE',
+            `<div style="font-size: 100%; text-align: left;">
+                     You are using version:<br/><strong>${currentVersion}</strong>.<br/><br/> 
+                     Latest ${branchName} version is:<br /><strong>${releaseVersion}</strong>.<br/><br/>
+                     Please update your aircraft with the FlyByWire Installer.
+                     </div>`,
+            'normal',
             () => {},
         );
     };
@@ -195,10 +197,10 @@ const Efb = () => {
 
         // only run if we have all the information we need
         if (buildInfo && releaseInfo && newestCommit && newestExpCommit) {
-            console.debug(`Current aircraft version: ${buildInfo.version}`);
-            console.debug('Latest Released Version: ', releaseInfo[0].name);
-            console.debug('Newest Commit: ', newestCommit.sha);
-            console.debug('Newest Experimental Commit: ', newestExpCommit.sha);
+            // console.debug(`Current aircraft version: ${buildInfo.version}`);
+            // console.debug('Latest Released Version: ', releaseInfo[0].name);
+            // console.debug('Newest Commit: ', newestCommit.sha);
+            // console.debug('Newest Experimental Commit: ', newestExpCommit.sha);
 
             try {
                 const versionInfo = BuildInfo.getVersionInfo(buildInfo.version);
@@ -231,10 +233,9 @@ const Efb = () => {
                         // Development
                         console.debug(`branch "${branchName}" version detected!`);
                         if (versionInfo.commit !== newestCommit.sha) {
-                            const timestampCommit: Date = newestCommit.timestamp;
-                            if (addDays(timestampCommit, maxAge) < timestampAircraft) {
-                                const currentVersionStr = `${versionInfo.version}-${versionInfo.branch}.${versionInfo.commit} (timestamp: ${timestampAircraft.toUTCString()})`;
-                                const releaseVersionStr = `${versionInfo.version}-${versionInfo.branch}.${newestCommit.shortSha} (timestamp: ${timestampCommit.toUTCString()})`;
+                            if (addDays(newestCommit.timestamp, maxAge) < timestampAircraft) {
+                                const currentVersionStr = `${versionInfo.version}-${versionInfo.branch}.${versionInfo.commit} (${timestampAircraft.toUTCString()})`;
+                                const releaseVersionStr = `${versionInfo.version}-${versionInfo.branch}.${newestCommit.shortSha} (${newestCommit.timestamp.toUTCString()})`;
                                 console.log(`New commit available: ${currentVersionStr} ==> ${releaseVersionStr}`);
                                 showVersionPopup(branchName, currentVersionStr, releaseVersionStr);
                             }
@@ -243,10 +244,9 @@ const Efb = () => {
                         // Experimental
                         console.debug(`branch "${branchName}" version detected!`);
                         if (versionInfo.commit !== newestExpCommit.sha) {
-                            const timestampExpCommit: Date = newestExpCommit.timestamp;
-                            if (addDays(timestampExpCommit, maxAge) < timestampAircraft) {
+                            if (addDays(newestExpCommit.timestamp, maxAge) < timestampAircraft) {
                                 const currentVersionStr = `${versionInfo.version}-${versionInfo.branch}.${versionInfo.commit} (timestamp: ${timestampAircraft.toUTCString()})`;
-                                const releaseVersionStr = `${versionInfo.version}-${versionInfo.branch}.${newestExpCommit.shortSha} (timestamp: ${timestampExpCommit.toUTCString()})`;
+                                const releaseVersionStr = `${versionInfo.version}-${versionInfo.branch}.${newestExpCommit.shortSha} (timestamp: ${newestExpCommit.timestamp.toUTCString()})`;
                                 console.log(`New commit available: ${currentVersionStr} ==> ${releaseVersionStr}`);
                                 showVersionPopup(branchName, currentVersionStr, releaseVersionStr);
                             }
