@@ -172,8 +172,8 @@ const Efb = () => {
         popup.showInformation(
             'NEW VERSION AVAILABLE',
             `<div style="font-size: 100%; text-align: left;">
-                     You are using version:<br/><strong>${currentVersion}</strong>.<br/><br/> 
-                     Latest ${branchName} version is:<br /><strong>${releaseVersion}</strong>.<br/><br/>
+                     You are using ${branchName} version:<br/><strong>${currentVersion}</strong><br/><br/> 
+                     Latest ${branchName} version is:<br /><strong>${releaseVersion}</strong><br/><br/>
                      Please update your aircraft with the FlyByWire Installer.
                      </div>`,
             'normal',
@@ -181,7 +181,7 @@ const Efb = () => {
         );
     };
 
-    // Adds a given number of ays to a given Date
+    // Adds a given number of days to a given Date
     const addDays = (date: Date, days): Date => {
         const result = new Date(date);
         result.setDate(date.getDate() + days);
@@ -197,6 +197,8 @@ const Efb = () => {
 
         // only run if we have all the information we need
         if (buildInfo && releaseInfo && newestCommit && newestExpCommit) {
+            console.log('Checking aircraft version');
+
             // console.debug(`Current aircraft version: ${buildInfo.version}`);
             // console.debug('Latest Released Version: ', releaseInfo[0].name);
             // console.debug('Newest Commit: ', newestCommit.sha);
@@ -217,10 +219,10 @@ const Efb = () => {
                 // If the users version is older than the latest release show notification
                 if (BuildInfo.versionCompare(versionInfo.version, releaseInfo[0].name) < 0) {
                     console.log(`New version available: ${versionInfo.version} ==> ${releaseInfo[0].name}`);
-                    showVersionPopup(branchName, versionInfo.version, releaseInfo[0].name);
+                    showVersionPopup('', versionInfo.version, releaseInfo[0].name);
                 } else {
                     // If the users version is equal or newer than latest release then check if
-                    // the edition is Development or Experimental and if the commit is not than
+                    // the edition is Development or Experimental and if the commit is not older than
                     // {maxAge} days after the latest release
 
                     const maxAge = 3;
@@ -228,10 +230,10 @@ const Efb = () => {
 
                     if (versionInfo.branch.includes('rel')) {
                         // Stable
-                        console.debug('Stable version detected!');
+                        // console.debug('Stable version detected!');
                     } else if ((branchName === 'Development')) {
                         // Development
-                        console.debug(`branch "${branchName}" version detected!`);
+                        // console.debug(`branch "${branchName}" version detected!`);
                         if (versionInfo.commit !== newestCommit.sha) {
                             if (addDays(newestCommit.timestamp, maxAge) < timestampAircraft) {
                                 const currentVersionStr = `${versionInfo.version}-${versionInfo.branch}.${versionInfo.commit} (${timestampAircraft.toUTCString()})`;
@@ -242,7 +244,7 @@ const Efb = () => {
                         }
                     } else if ((branchName === 'Experimental')) {
                         // Experimental
-                        console.debug(`branch "${branchName}" version detected!`);
+                        // console.debug(`branch "${branchName}" version detected!`);
                         if (versionInfo.commit !== newestExpCommit.sha) {
                             if (addDays(newestExpCommit.timestamp, maxAge) < timestampAircraft) {
                                 const currentVersionStr = `${versionInfo.version}-${versionInfo.branch}.${versionInfo.commit} (timestamp: ${timestampAircraft.toUTCString()})`;
@@ -253,7 +255,7 @@ const Efb = () => {
                         }
                     } else {
                         // PR or any local build - no further version check
-                        console.debug(`branch "${branchName}" version detected!`);
+                        // console.debug(`branch "${branchName}" version detected!`);
                     }
                 }
 
