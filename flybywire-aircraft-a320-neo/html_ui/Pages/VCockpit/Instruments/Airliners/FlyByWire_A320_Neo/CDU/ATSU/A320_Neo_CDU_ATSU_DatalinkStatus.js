@@ -15,13 +15,6 @@ class CDUAtsuDatalinkStatus {
         };
         SimVar.SetSimVarValue("L:FMC_UPDATE_CURRENT_PAGE", "number", 1);
 
-        let satComAvail = 'SATCOM : {small}NOT INSTALLED{end}';
-        let satComMode = '';
-        if (NXDataStore.get('MODEL_SATCOM_ENABLED') === '1') {
-            satComAvail = 'SATCOM : {small}DLK NOT AVAIL{end}';
-            satComMode = '';
-        }
-
         mcdu.setTemplate([
             ["DATALINK STATUS"],
             [""],
