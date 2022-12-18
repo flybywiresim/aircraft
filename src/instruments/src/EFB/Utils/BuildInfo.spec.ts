@@ -8,29 +8,29 @@ describe('BuildInfo.getVersionInfo()', () => {
         expect(() => BuildInfo.getVersionInfo('v0.0.0master.00000000')).toThrow();
         expect(() => BuildInfo.getVersionInfo('v0.0.0-master.012345678')).toThrow();
         expect(() => BuildInfo.getVersionInfo('v0.0-master.01234567')).toThrow();
-        expect(() => BuildInfo.getVersionInfo('version0.0.0-master.01234567')).toThrow();
+        expect(() => BuildInfo.getVersionInfo('version0.0.0-master.0123456')).toThrow();
     });
     it('should not throw error on well formed version info strings.', () => {
-        expect(() => BuildInfo.getVersionInfo('v0.0.0-master.00000000')).not.toThrow();
-        expect(() => BuildInfo.getVersionInfo('0.10.0-version-selfcheck.9e483278')).not.toThrow();
-        expect(() => BuildInfo.getVersionInfo('v0.10.0-version-selfcheck.9e483278')).not.toThrow();
+        expect(() => BuildInfo.getVersionInfo('v0.0.0-master.0000000')).not.toThrow();
+        expect(() => BuildInfo.getVersionInfo('0.10.0-version-selfcheck.9e48327')).not.toThrow();
+        expect(() => BuildInfo.getVersionInfo('v0.10.0-version-selfcheck.9e48327')).not.toThrow();
     });
     it('should return correct version info.', () => {
-        expect(BuildInfo.getVersionInfo('v0.0.0-master.00000000')).toStrictEqual({
+        expect(BuildInfo.getVersionInfo('v0.0.0-master.0000000')).toStrictEqual({
             version: '0.0.0',
             major: 0,
             minor: 0,
             patch: 0,
             branch: 'master',
-            commit: '00000000',
+            commit: '0000000',
         });
-        expect(BuildInfo.getVersionInfo('v0.10.0-version-selfcheck.9e483278')).toStrictEqual({
+        expect(BuildInfo.getVersionInfo('v0.10.0-version-selfcheck.9e48327')).toStrictEqual({
             version: '0.10.0',
             major: 0,
             minor: 10,
             patch: 0,
             branch: 'version-selfcheck',
-            commit: '9e483278',
+            commit: '9e48327',
         });
     });
 });
