@@ -34,7 +34,7 @@ export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
     const [timeDisplayed] = usePersistentProperty('EFB_TIME_DISPLAYED', 'utc');
     const [timeFormat] = usePersistentProperty('EFB_TIME_FORMAT', '24');
 
-    const outdatedVersionFlag = useSimVar('L:A32NX_OUTDATED_VERSION', 'boolean', 200);
+    const [outdatedVersionFlag] = useSimVar('L:A32NX_OUTDATED_VERSION', 'boolean', 500);
 
     const power = usePower();
 
