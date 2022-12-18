@@ -33,7 +33,7 @@ if (edition === 'stable') {
     preFix = `${GIT_BRANCH}`;
 }
 
-const VERSION = require('../package.json').version + `-${preFix}` + `.${GIT_COMMIT_SHA}`;
+const VERSION = 'v' + require('../package.json').version + `-${preFix}` + `.${GIT_COMMIT_SHA}`;
 
 const object = {
     built: GITHUB_BUILT,
