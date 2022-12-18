@@ -7,7 +7,7 @@ const GITHUB_ACTOR = process.env['GITHUB_ACTOR'] ?? evaluate('git log -1 --prett
 const GITHUB_EVENT_NAME = process.env['GITHUB_EVENT_NAME'] ?? 'manual';
 const GITHUB_REF = process.env['GITHUB_REF'] ?? evaluate('git show-ref HEAD').replace(/.+\//, '');
 const GITHUB_SHA = process.env['GITHUB_SHA'] ?? evaluate('git show-ref -s HEAD');
-const GIT_COMMIT_SHA = GITHUB_SHA.substring(0, 9);
+const GIT_COMMIT_SHA = GITHUB_SHA.substring(0, 8);
 const GITHUB_RELEASE_PRETTY_NAME = (require('./pretty-release-name'))();
 const GITHUB_BUILT = evaluate('date -u -Iseconds');
 
