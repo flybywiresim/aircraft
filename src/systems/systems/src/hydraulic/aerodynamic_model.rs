@@ -7,6 +7,7 @@ use uom::si::{
 
 use crate::{shared::interpolation, simulation::UpdateContext};
 
+#[derive(Clone, Copy, PartialEq)]
 pub struct AerodynamicModel {
     max_drag_normal: Vector3<f64>,
     lift_axis: Vector3<f64>,
