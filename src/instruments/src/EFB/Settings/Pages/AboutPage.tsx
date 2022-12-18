@@ -6,15 +6,7 @@ import { SettingsPage } from '../Settings';
 // @ts-ignore
 import FbwTail from '../../Assets/FBW-Tail.svg';
 import { t } from '../../translation';
-
-interface BuildInfo {
-    built: string;
-    ref: string;
-    sha: string;
-    actor: string;
-    eventName: string;
-    prettyReleaseName: string;
-}
+import { BuildInfo, BuildInfoData } from '../../Utils/BuildInfoData';
 
 interface BuildInfoEntryProps {
     title: string;
@@ -52,7 +44,7 @@ const BuildInfoEntry = ({ title, value, underline = 0 }: BuildInfoEntryProps) =>
 };
 
 export const AboutPage = () => {
-    const [buildInfo, setBuildInfo] = useState<BuildInfo | undefined>(undefined);
+    const [buildInfo, setBuildInfo] = useState<BuildInfoData | undefined>(undefined);
     const [sessionId] = usePersistentProperty('A32NX_SENTRY_SESSION_ID');
     const [version, setVersion] = useSessionStorage('SIM_VERSION', '');
     const [sentryEnabled] = usePersistentProperty(SENTRY_CONSENT_KEY, SentryConsentState.Refused);
@@ -64,15 +56,7 @@ export const AboutPage = () => {
 
     useEffect(() => {
         listener.on('SetGamercardInfo', onSetPlayerData, null);
-
-        fetch('/VFS/a32nx_build_info.json').then((response) => response.json()).then((json) => setBuildInfo({
-            built: json.built,
-            ref: json.ref,
-            sha: json.sha,
-            actor: json.actor,
-            eventName: json.event_name,
-            prettyReleaseName: json.pretty_release_name,
-        }));
+        BuildInfo.getBuildInfo().then((info) => setBuildInfo(info));
     }, []);
 
     useEffect(() => {
@@ -108,6 +92,7 @@ export const AboutPage = () => {
                     <h1 className="font-bold">Build Info</h1>
                     <div className="mt-4">
                         <BuildInfoEntry title="Sim Version" value={version} />
+                        <BuildInfoEntry title="Aircraft Version" value={buildInfo?.version} />
                         <BuildInfoEntry title="Built" value={buildInfo?.built} />
                         <BuildInfoEntry title="Ref" value={buildInfo?.ref} />
                         <BuildInfoEntry title="SHA" value={buildInfo?.sha} underline={8} />

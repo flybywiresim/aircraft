@@ -11,6 +11,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import { usePersistentNumberProperty, usePersistentProperty } from '@instruments/common/persistence';
 import { distanceTo } from 'msfs-geo';
 import useInterval from '@instruments/common/useInterval';
+import { GitVersions, ReleaseInfo } from '@flybywiresim/api-client';
 import { Tooltip } from './UtilComponents/TooltipWrapper';
 import { AlertModal, ModalContainer, useModals } from './UtilComponents/Modals/Modals';
 import NavigraphClient, { NavigraphContext } from './ChartsApi/Navigraph';
@@ -39,6 +40,8 @@ import { setFlightPlanProgress } from './Store/features/flightProgress';
 import { Checklists, setAutomaticItemStates } from './Checklists/Checklists';
 import { CHECKLISTS } from './Checklists/Lists';
 import { setChecklistItems } from './Store/features/checklists';
+import { BuildInfo, BuildInfoData } from './Utils/BuildInfoData';
+import { use } from 'i18next';
 
 const BATTERY_DURATION_CHARGE_MIN = 180;
 const BATTERY_DURATION_DISCHARGE_MIN = 540;
@@ -117,8 +120,44 @@ const Efb = () => {
 
     const history = useHistory();
 
+    const [buildInfo, setBuildInfo] = useState<BuildInfoData | undefined>(undefined);
+    const [releaseInfo, setReleaseInfo] = useState<ReleaseInfo[] | undefined>(undefined);
+
+    // version check
+    const checkAircraftVersion = () => {
+        console.log('Checking aircraft version...');
+
+        GitVersions.getReleases(
+            'flybywiresim',
+            'a32nx',
+            false,
+            0,
+            1,
+        ).then((releases) => {
+            setReleaseInfo(releases);
+        }).catch((error) => {
+            console.error('Checking latest released version failed: ', error);
+        });
+
+        BuildInfo.getBuildInfo().then((buildInfo: BuildInfoData) => {
+            setBuildInfo(buildInfo);
+        }).catch((error) => {
+            console.error('Checking current aircraft version failed: ', error);
+        });
+    };
+
+    useEffect(() => {
+        if (releaseInfo) {
+            console.log('Latest Released Version: ', releaseInfo[0].name);
+        }
+        if (buildInfo) {
+            console.log('Current Aircraft Version: ', buildInfo);
+        }
+    }, [buildInfo, releaseInfo]);
+
     useEffect(() => {
         document.documentElement.classList.add(`theme-${theme}`, 'animationsEnabled');
+        checkAircraftVersion();
     }, []);
 
     useEffect(() => {
