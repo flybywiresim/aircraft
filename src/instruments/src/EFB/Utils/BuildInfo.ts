@@ -95,7 +95,6 @@ export class BuildInfo {
             major1 = parseInt(matchBuildInfo[1], 10);
             minor1 = parseInt(matchBuildInfo[2], 10);
             patch1 = parseInt(matchBuildInfo[3], 10);
-            console.debug(`Version 1 (parsed): ${major1} ${minor1} ${patch1}`);
         } else {
             throw new Error('Version 1 is not in the correct format');
         }
@@ -104,7 +103,6 @@ export class BuildInfo {
             major2 = parseInt(matchReleaseInfo[1], 10);
             minor2 = parseInt(matchReleaseInfo[2], 10);
             patch2 = parseInt(matchReleaseInfo[3], 10);
-            console.debug(`Version 2 (parsed): ${major2} ${minor2} ${patch2}`);
         } else {
             throw new Error('Version 2 is not in the correct format');
         }
