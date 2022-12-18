@@ -175,7 +175,7 @@ const Efb = () => {
             `<div style="font-size: 100%; text-align: left;">
                      You are using ${branchName} version:<br/><strong>${currentVersion}</strong><br/><br/> 
                      Latest ${branchName} version is:<br /><strong>${releaseVersion}</strong><br/><br/>
-                     Please update your aircraft with the FlyByWire Installer.
+                     Please update your aircraft using the FlyByWire Installer.
                      </div>`,
             'normal',
             () => {},
