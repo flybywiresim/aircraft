@@ -3,16 +3,20 @@
 
 import React, { useEffect, useState } from 'react';
 
+import useInterval from '@instruments/common/useInterval';
 import { Redirect, Route, Switch, useHistory } from 'react-router-dom';
 import { useSimVar } from '@instruments/common/simVars';
 import { useInteractionEvent } from '@instruments/common/hooks';
+import { usePersistentNumberProperty, usePersistentProperty } from '@instruments/common/persistence';
+
 import { Battery } from 'react-bootstrap-icons';
 import { ToastContainer, toast } from 'react-toastify';
-import { usePersistentNumberProperty, usePersistentProperty } from '@instruments/common/persistence';
 import { distanceTo } from 'msfs-geo';
-import useInterval from '@instruments/common/useInterval';
-import { GitVersions, ReleaseInfo } from '@flybywiresim/api-client';
+import { PopUp } from '@shared/popup';
+import { CommitInfo, GitVersions, ReleaseInfo } from '@flybywiresim/api-client';
+import { BuildInfo } from './Utils/BuildInfo';
 import { Tooltip } from './UtilComponents/TooltipWrapper';
+import { FbwLogo } from './UtilComponents/FbwLogo';
 import { AlertModal, ModalContainer, useModals } from './UtilComponents/Modals/Modals';
 import NavigraphClient, { NavigraphContext } from './ChartsApi/Navigraph';
 import 'react-toastify/dist/ReactToastify.css';
@@ -20,7 +24,6 @@ import './toast.css';
 
 import { StatusBar } from './StatusBar/StatusBar';
 import { ToolBar } from './ToolBar/ToolBar';
-
 import { Dashboard } from './Dashboard/Dashboard';
 import { Dispatch } from './Dispatch/Dispatch';
 import { Ground } from './Ground/Ground';
@@ -32,16 +35,11 @@ import { Failures } from './Failures/Failures';
 import { Presets } from './Presets/Presets';
 
 import { clearEfbState, useAppDispatch, useAppSelector } from './Store/store';
-
 import { fetchSimbriefDataAction, isSimbriefDataLoaded } from './Store/features/simBrief';
-
-import { FbwLogo } from './UtilComponents/FbwLogo';
 import { setFlightPlanProgress } from './Store/features/flightProgress';
 import { Checklists, setAutomaticItemStates } from './Checklists/Checklists';
 import { CHECKLISTS } from './Checklists/Lists';
 import { setChecklistItems } from './Store/features/checklists';
-import { BuildInfo, BuildInfoData } from './Utils/BuildInfoData';
-import { use } from 'i18next';
 
 const BATTERY_DURATION_CHARGE_MIN = 180;
 const BATTERY_DURATION_DISCHARGE_MIN = 540;
@@ -120,13 +118,15 @@ const Efb = () => {
 
     const history = useHistory();
 
-    const [buildInfo, setBuildInfo] = useState<BuildInfoData | undefined>(undefined);
+    // Aircraft Version check variables
+    const [versionChecked, setVersionChecked] = useState(false);
+    const [buildInfo, setBuildInfo] = useState<BuildInfo | undefined>(undefined);
     const [releaseInfo, setReleaseInfo] = useState<ReleaseInfo[] | undefined>(undefined);
+    const [newestCommit, setNewestCommit] = useState<CommitInfo | undefined>(undefined);
+    const [newestExpCommit, setNewestExpCommit] = useState<CommitInfo | undefined>(undefined);
 
-    // version check
+    // Retrieves the various versions from the current aircraft and github
     const checkAircraftVersion = () => {
-        console.log('Checking aircraft version...');
-
         GitVersions.getReleases(
             'flybywiresim',
             'a32nx',
@@ -139,21 +139,130 @@ const Efb = () => {
             console.error('Checking latest released version failed: ', error);
         });
 
-        BuildInfo.getBuildInfo().then((buildInfo: BuildInfoData) => {
+        GitVersions.getNewestCommit(
+            'flybywiresim',
+            'a32nx',
+            'master',
+        ).then((releases) => {
+            setNewestCommit(releases);
+        }).catch((error) => {
+            console.error('Checking newest commit failed: ', error);
+        });
+
+        GitVersions.getNewestCommit(
+            'flybywiresim',
+            'a32nx',
+            'experimental',
+        ).then((releases) => {
+            setNewestExpCommit(releases);
+        }).catch((error) => {
+            console.error('Checking newest experimental commit failed: ', error);
+        });
+
+        BuildInfo.getBuildInfo().then((buildInfo: BuildInfo) => {
             setBuildInfo(buildInfo);
         }).catch((error) => {
             console.error('Checking current aircraft version failed: ', error);
         });
     };
 
+    // Show a version info modal if the aircraft version is outdated
+    const showVersionPopup = (branchName, currentVersion, releaseVersion) => {
+        const popup = new PopUp();
+        popup.showInformation(
+            'NEW AIRCRAFT VERSION AVAILABLE',
+            `<div style="font-size: 150%; text-align: center;">You are using version <strong>${currentVersion}</strong>.<br/> 
+                                 Latest ${branchName} version is <strong>${releaseVersion}</strong>.<br/>
+                                 Please update your aircraft with the FlyByWire Installer.</div>`,
+            'big',
+            () => {},
+        );
+    };
+
+    // Adds a given number of ays to a given Date
+    const addDays = (date: Date, days): Date => {
+        const result = new Date(date);
+        result.setDate(date.getDate() + days);
+        return result;
+    };
+
+    // Called when aircraft and github version information is available/changes
     useEffect(() => {
-        if (releaseInfo) {
-            console.log('Latest Released Version: ', releaseInfo[0].name);
+        // only check once per session
+        if (versionChecked) {
+            return;
         }
-        if (buildInfo) {
-            console.log('Current Aircraft Version: ', buildInfo);
+
+        // only run if we have all the information we need
+        if (buildInfo && releaseInfo && newestCommit && newestExpCommit) {
+            console.debug(`Current aircraft version: ${buildInfo.version}`);
+            console.debug('Latest Released Version: ', releaseInfo[0].name);
+            console.debug('Newest Commit: ', newestCommit.sha);
+            console.debug('Newest Experimental Commit: ', newestExpCommit.sha);
+
+            try {
+                const versionInfo = BuildInfo.getVersionInfo(buildInfo.version);
+
+                // Set branchName to the long versions of the aircraft edition names
+                let branchName = versionInfo.branch;
+                switch (versionInfo.branch) {
+                case 'rel': branchName = 'Stable'; break;
+                case 'dev': branchName = 'Development'; break;
+                case 'exp': branchName = 'Experimental'; break;
+                default: break;
+                }
+
+                // If the users version is older than the latest release show notification
+                if (BuildInfo.versionCompare(versionInfo.version, releaseInfo[0].name) < 0) {
+                    console.log(`New version available: ${versionInfo.version} ==> ${releaseInfo[0].name}`);
+                    showVersionPopup(branchName, versionInfo.version, releaseInfo[0].name);
+                } else {
+                    // If the users version is equal or newer than latest release then check if
+                    // the edition is Development or Experimental and if the commit is not than
+                    // {maxAge} days after the latest release
+
+                    const maxAge = 3;
+                    const timestampAircraft: Date = new Date(buildInfo.built);
+
+                    if (versionInfo.branch.includes('rel')) {
+                        // Stable
+                        console.debug('Stable version detected!');
+                    } else if ((branchName === 'Development')) {
+                        // Development
+                        console.debug(`branch "${branchName}" version detected!`);
+                        if (versionInfo.commit !== newestCommit.sha) {
+                            const timestampCommit: Date = newestCommit.timestamp;
+                            if (addDays(timestampCommit, maxAge) < timestampAircraft) {
+                                const currentVersionStr = `${versionInfo.version}-${versionInfo.branch}.${versionInfo.commit} (timestamp: ${timestampAircraft.toUTCString()})`;
+                                const releaseVersionStr = `${versionInfo.version}-${versionInfo.branch}.${newestCommit.shortSha} (timestamp: ${timestampCommit.toUTCString()})`;
+                                console.log(`New commit available: ${currentVersionStr} ==> ${releaseVersionStr}`);
+                                showVersionPopup(branchName, currentVersionStr, releaseVersionStr);
+                            }
+                        }
+                    } else if ((branchName === 'Experimental')) {
+                        // Experimental
+                        console.debug(`branch "${branchName}" version detected!`);
+                        if (versionInfo.commit !== newestExpCommit.sha) {
+                            const timestampExpCommit: Date = newestExpCommit.timestamp;
+                            if (addDays(timestampExpCommit, maxAge) < timestampAircraft) {
+                                const currentVersionStr = `${versionInfo.version}-${versionInfo.branch}.${versionInfo.commit} (timestamp: ${timestampAircraft.toUTCString()})`;
+                                const releaseVersionStr = `${versionInfo.version}-${versionInfo.branch}.${newestExpCommit.shortSha} (timestamp: ${timestampExpCommit.toUTCString()})`;
+                                console.log(`New commit available: ${currentVersionStr} ==> ${releaseVersionStr}`);
+                                showVersionPopup(branchName, currentVersionStr, releaseVersionStr);
+                            }
+                        }
+                    } else {
+                        // PR or any local build - no further version check
+                        console.debug(`branch "${branchName}" version detected!`);
+                    }
+                }
+
+                setVersionChecked(true);
+            } catch (error) {
+                console.error('Version comparison failed: ', error);
+            }
         }
-    }, [buildInfo, releaseInfo]);
+    }, [buildInfo, releaseInfo, newestCommit, newestExpCommit]);
 
     useEffect(() => {
         document.documentElement.classList.add(`theme-${theme}`, 'animationsEnabled');
