@@ -7,8 +7,33 @@ const GITHUB_ACTOR = process.env['GITHUB_ACTOR'] ?? evaluate('git log -1 --prett
 const GITHUB_EVENT_NAME = process.env['GITHUB_EVENT_NAME'] ?? 'manual';
 const GITHUB_REF = process.env['GITHUB_REF'] ?? evaluate('git show-ref HEAD').replace(/.+\//, '');
 const GITHUB_SHA = process.env['GITHUB_SHA'] ?? evaluate('git show-ref -s HEAD');
+const GIT_COMMIT_SHA = GITHUB_SHA.substring(0, 9);
 const GITHUB_RELEASE_PRETTY_NAME = (require('./pretty-release-name'))();
 const GITHUB_BUILT = evaluate('date -u -Iseconds');
+
+const isPullRequest = process.env.GITHUB_REF && process.env.GITHUB_REF.startsWith('refs/pull/');
+let GIT_BRANCH;
+if (isPullRequest) {
+    GIT_BRANCH = process.env.GITHUB_REF.match('^refs/pull/([0-9]+)/.*$')[1];
+} else {
+    GIT_BRANCH = process.env.GITHUB_REF_NAME
+        ? process.env.GITHUB_REF_NAME
+        : evaluate('git rev-parse --abbrev-ref HEAD');
+}
+const edition = require('../package.json').edition;
+
+let preFix;
+if (edition === 'stable') {
+    preFix = 'rel';
+} else if (GIT_BRANCH === 'master') {
+    preFix = 'dev';
+} else if (GIT_BRANCH === 'experimental') {
+    preFix = 'exp';
+} else {
+    preFix = `${GIT_BRANCH}`;
+}
+
+const VERSION = require('../package.json').version + `-${preFix}` + `.${GIT_COMMIT_SHA}`;
 
 const object = {
     built: GITHUB_BUILT,
@@ -17,6 +42,7 @@ const object = {
     actor: GITHUB_ACTOR,
     event_name: GITHUB_EVENT_NAME ?? 'manual',
     pretty_release_name: GITHUB_RELEASE_PRETTY_NAME,
+    version: VERSION,
 };
 
 const outDirArg = process.argv[2];
