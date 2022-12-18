@@ -1,16 +1,17 @@
 //  Copyright (c) 2022 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-export enum DatalinkStatusCodes {
-    DlkAvail = 1,
-    DlkNotAvail = 2,
-    Inop = -1,
-    NotInstalled = 0
+export enum DatalinkStatusCode {
+    DlkAvail = '{green}DLK AVAIL{end}',
+    DlkNotAvail = '{small}DLK NOT AVAIL{end}',
+    Inop = '{red}INOP{end}',
+    NotInstalled = '{small}NOT INSTALLED{end}'
 
 }
 
-export enum DatalinkModeCodes {
-    AtcAoc = 1,
-    Aoc = 0,
-    Atc = 2
+export enum DatalinkModeCode {
+    AtcAoc = 'ATC/AOC',
+    Aoc = 'AOC',
+    Atc = 'ATC',
+    None = ''
 }
