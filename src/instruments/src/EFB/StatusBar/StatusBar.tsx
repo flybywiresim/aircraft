@@ -152,11 +152,9 @@ export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
 
             <p>{`${dayName} ${monthName} ${dayOfMonth}`}</p>
 
-            {outdatedVersionFlag && (
-                <div className="flex overflow-hidden absolute left-48 justify-center items-center w-96 h-10 text-utility-red">
-                    OUTDATED AIRCRAFT VERSION
-                </div>
-            )}
+            <div className="flex overflow-hidden absolute left-48 justify-center items-center w-96 h-10 text-utility-red">
+                {outdatedVersionFlag ? 'OUTDATED AIRCRAFT VERSION' : ''}
+            </div>
 
             <div className="flex absolute inset-x-0 flex-row justify-center items-center mx-auto space-x-4 w-min">
                 {(timeDisplayed === 'utc' || timeDisplayed === 'both') && (
