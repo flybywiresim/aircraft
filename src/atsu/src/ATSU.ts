@@ -1,20 +1,20 @@
 //  Copyright (c) 2022 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import {FmgcFlightPhase} from '@shared/flightphase';
-import {DatalinkModeCode, DatalinkStatusCode} from '@atsu/DatalinkStatusCodes';
-import {CpdlcMessage} from './messages/CpdlcMessage';
-import {Datalink} from './com/Datalink';
-import {AtsuStatusCodes} from './AtsuStatusCodes';
-import {Atc} from './ATC';
-import {Aoc} from './AOC';
-import {AtsuMessage, AtsuMessageSerializationFormat} from './messages/AtsuMessage';
-import {AtsuTimestamp} from './messages/AtsuTimestamp';
-import {FlightStateObserver} from './components/FlightStateObserver';
-import {CpdlcMessagesDownlink} from './messages/CpdlcMessageElements';
-import {coordinateToString, timestampToString} from './Common';
-import {InputValidation} from './InputValidation';
-import {ATS623} from './components/ATS623';
+import { FmgcFlightPhase } from '@shared/flightphase';
+import { DatalinkModeCode, DatalinkStatusCode } from '@atsu/DatalinkStatusCodes';
+import { CpdlcMessage } from './messages/CpdlcMessage';
+import { Datalink } from './com/Datalink';
+import { AtsuStatusCodes } from './AtsuStatusCodes';
+import { Atc } from './ATC';
+import { Aoc } from './AOC';
+import { AtsuMessage, AtsuMessageSerializationFormat } from './messages/AtsuMessage';
+import { AtsuTimestamp } from './messages/AtsuTimestamp';
+import { FlightStateObserver } from './components/FlightStateObserver';
+import { CpdlcMessagesDownlink } from './messages/CpdlcMessageElements';
+import { coordinateToString, timestampToString } from './Common';
+import { InputValidation } from './InputValidation';
+import { ATS623 } from './components/ATS623';
 
 /**
  * Defines the ATSU
