@@ -1047,7 +1047,7 @@ impl HydraulicCircuit {
     pub fn update(
         &mut self,
         context: &UpdateContext,
-        main_section_pumps: &mut Vec<&mut dyn HeatingPressureSource>,
+        main_section_pumps: &mut [&mut dyn HeatingPressureSource],
         system_section_pump: Option<&mut impl HeatingPressureSource>,
         auxiliary_section_pump: Option<&mut impl HeatingPressureSource>,
         ptu: Option<&PowerTransferUnit>,
@@ -1055,7 +1055,7 @@ impl HydraulicCircuit {
         reservoir_pressure: Pressure,
     ) {
         let mut any_pump_is_overheating = false;
-        for pump in main_section_pumps.as_slice() {
+        for pump in main_section_pumps.iter() {
             if pump.flow().get::<gallon_per_second>() > 0.01 && pump.is_overheating() {
                 any_pump_is_overheating = true;
             }
