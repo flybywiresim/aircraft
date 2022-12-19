@@ -15,6 +15,7 @@ use crate::simulation::{
 
 use crate::shared::{
     interpolation, low_pass_filter::LowPassFilter, ElectricalBusType, ElectricalBuses,
+    TrimmableHorizontalStabilizer,
 };
 
 use super::linear_actuator::Actuator;
@@ -583,6 +584,10 @@ impl TrimmableHorizontalStabilizerAssembly {
         self.pitch_trim_actuator.position_normalized()
     }
 
+    fn trim_angle(&self) -> Angle {
+        self.ths_hydraulics.actual_deflection()
+    }
+
     pub fn left_motor(&mut self) -> &mut impl Actuator {
         self.ths_hydraulics.left_motor()
     }
@@ -596,6 +601,11 @@ impl SimulationElement for TrimmableHorizontalStabilizerAssembly {
         self.pitch_trim_actuator.accept(visitor);
         self.trim_wheel.accept(visitor);
         self.ths_hydraulics.accept(visitor);
+    }
+}
+impl TrimmableHorizontalStabilizer for TrimmableHorizontalStabilizerAssembly {
+    fn trim_angle(&self) -> Angle {
+        self.trim_angle()
     }
 }
 
@@ -708,6 +718,10 @@ impl TrimmableHorizontalStabilizerHydraulics {
 
     pub fn right_motor(&mut self) -> &mut impl Actuator {
         &mut self.hydraulic_motors[1]
+    }
+
+    fn actual_deflection(&self) -> Angle {
+        self.actual_deflection
     }
 }
 impl SimulationElement for TrimmableHorizontalStabilizerHydraulics {
