@@ -143,6 +143,10 @@ impl A320HydraulicCircuitFactory {
 
     const HYDRAULIC_TARGET_PRESSURE_PSI: f64 = 3000.;
 
+    // Nitrogen PSI precharge pressure
+    const ACCUMULATOR_GAS_PRE_CHARGE_PSI: f64 = 1885.0;
+    const ACCUMULATOR_MAX_VOLUME_GALLONS: f64 = 0.264;
+
     pub fn new_green_circuit(context: &mut InitContext) -> HydraulicCircuit {
         let reservoir = A320HydraulicReservoirFactory::new_green_reservoir(context);
         HydraulicCircuit::new(
@@ -160,6 +164,8 @@ impl A320HydraulicCircuitFactory {
             false,
             false,
             Pressure::new::<psi>(Self::HYDRAULIC_TARGET_PRESSURE_PSI),
+            Pressure::new::<psi>(Self::ACCUMULATOR_GAS_PRE_CHARGE_PSI),
+            Volume::new::<gallon>(Self::ACCUMULATOR_MAX_VOLUME_GALLONS),
         )
     }
 
@@ -180,6 +186,8 @@ impl A320HydraulicCircuitFactory {
             false,
             false,
             Pressure::new::<psi>(Self::HYDRAULIC_TARGET_PRESSURE_PSI),
+            Pressure::new::<psi>(Self::ACCUMULATOR_GAS_PRE_CHARGE_PSI),
+            Volume::new::<gallon>(Self::ACCUMULATOR_MAX_VOLUME_GALLONS),
         )
     }
 
@@ -200,6 +208,8 @@ impl A320HydraulicCircuitFactory {
             true,
             false,
             Pressure::new::<psi>(Self::HYDRAULIC_TARGET_PRESSURE_PSI),
+            Pressure::new::<psi>(Self::ACCUMULATOR_GAS_PRE_CHARGE_PSI),
+            Volume::new::<gallon>(Self::ACCUMULATOR_MAX_VOLUME_GALLONS),
         )
     }
 }
@@ -211,9 +221,11 @@ impl A320CargoDoorFactory {
     const FLOW_CONTROL_FORCE_GAIN: f64 = 200000.;
 
     fn a320_cargo_door_actuator(
+        context: &mut InitContext,
         bounded_linear_length: &impl BoundedLinearLength,
     ) -> LinearActuator {
         LinearActuator::new(
+            context,
             bounded_linear_length,
             2,
             Length::new::<meter>(0.04422),
@@ -234,6 +246,7 @@ impl A320CargoDoorFactory {
             false,
             None,
             None,
+            Pressure::new::<psi>(A320HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
         )
     }
 
@@ -264,14 +277,14 @@ impl A320CargoDoorFactory {
 
     /// Builds a cargo door assembly consisting of the door physical rigid body and the hydraulic actuator connected
     /// to it
-    fn a320_cargo_door_assembly() -> HydraulicLinearActuatorAssembly<1> {
+    fn a320_cargo_door_assembly(context: &mut InitContext) -> HydraulicLinearActuatorAssembly<1> {
         let cargo_door_body = Self::a320_cargo_door_body(true);
-        let cargo_door_actuator = Self::a320_cargo_door_actuator(&cargo_door_body);
+        let cargo_door_actuator = Self::a320_cargo_door_actuator(context, &cargo_door_body);
         HydraulicLinearActuatorAssembly::new([cargo_door_actuator], cargo_door_body)
     }
 
     fn new_a320_cargo_door(context: &mut InitContext, id: &str) -> CargoDoor {
-        let assembly = Self::a320_cargo_door_assembly();
+        let assembly = Self::a320_cargo_door_assembly(context);
         CargoDoor::new(
             context,
             id,
@@ -301,7 +314,10 @@ impl A320AileronFactory {
     const MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING: f64 = 3500000.;
     const MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT: f64 = 1.;
 
-    fn a320_aileron_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
+    fn a320_aileron_actuator(
+        context: &mut InitContext,
+        bounded_linear_length: &impl BoundedLinearLength,
+    ) -> LinearActuator {
         let actuator_characteristics = LinearActuatorCharacteristics::new(
             Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING / 3.,
             Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING,
@@ -315,6 +331,7 @@ impl A320AileronFactory {
         // This gives piston diameter of 0.0537878 meters
         // We use 0 as rod diameter as this is a symmetrical actuator so same surface each side
         LinearActuator::new(
+            context,
             bounded_linear_length,
             1,
             Length::new::<meter>(0.0537878),
@@ -335,6 +352,7 @@ impl A320AileronFactory {
             false,
             None,
             None,
+            Pressure::new::<psi>(A320HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
         )
     }
 
@@ -373,11 +391,14 @@ impl A320AileronFactory {
 
     /// Builds an aileron assembly consisting of the aileron physical rigid body and two hydraulic actuators connected
     /// to it
-    fn a320_aileron_assembly(init_drooped_down: bool) -> HydraulicLinearActuatorAssembly<2> {
+    fn a320_aileron_assembly(
+        context: &mut InitContext,
+        init_drooped_down: bool,
+    ) -> HydraulicLinearActuatorAssembly<2> {
         let aileron_body = Self::a320_aileron_body(init_drooped_down);
 
-        let aileron_actuator_outward = Self::a320_aileron_actuator(&aileron_body);
-        let aileron_actuator_inward = Self::a320_aileron_actuator(&aileron_body);
+        let aileron_actuator_outward = Self::a320_aileron_actuator(context, &aileron_body);
+        let aileron_actuator_inward = Self::a320_aileron_actuator(context, &aileron_body);
 
         HydraulicLinearActuatorAssembly::new(
             [aileron_actuator_outward, aileron_actuator_inward],
@@ -387,7 +408,7 @@ impl A320AileronFactory {
 
     fn new_aileron(context: &mut InitContext, id: ActuatorSide) -> AileronAssembly {
         let init_drooped_down = !context.is_in_flight();
-        let assembly = Self::a320_aileron_assembly(init_drooped_down);
+        let assembly = Self::a320_aileron_assembly(context, init_drooped_down);
         AileronAssembly::new(context, id, assembly, Self::new_a320_aileron_aero_model())
     }
 
@@ -416,7 +437,10 @@ impl A320SpoilerFactory {
 
     const MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT: f64 = 3.;
 
-    fn a320_spoiler_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
+    fn a320_spoiler_actuator(
+        context: &mut InitContext,
+        bounded_linear_length: &impl BoundedLinearLength,
+    ) -> LinearActuator {
         let actuator_characteristics = LinearActuatorCharacteristics::new(
             Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING / 5.,
             Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING,
@@ -425,6 +449,7 @@ impl A320SpoilerFactory {
         );
 
         LinearActuator::new(
+            context,
             bounded_linear_length,
             1,
             Length::new::<meter>(0.03),
@@ -448,6 +473,7 @@ impl A320SpoilerFactory {
                 AngularVelocity::new::<radian_per_second>(0.),
             )),
             None,
+            Pressure::new::<psi>(A320HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
         )
     }
 
@@ -477,10 +503,10 @@ impl A320SpoilerFactory {
     }
 
     /// Builds a spoiler assembly consisting of the spoiler physical rigid body and one hydraulic actuator
-    fn a320_spoiler_assembly() -> HydraulicLinearActuatorAssembly<1> {
+    fn a320_spoiler_assembly(context: &mut InitContext) -> HydraulicLinearActuatorAssembly<1> {
         let spoiler_body = Self::a320_spoiler_body();
 
-        let spoiler_actuator = Self::a320_spoiler_actuator(&spoiler_body);
+        let spoiler_actuator = Self::a320_spoiler_actuator(context, &spoiler_body);
 
         HydraulicLinearActuatorAssembly::new([spoiler_actuator], spoiler_body)
     }
@@ -511,7 +537,7 @@ impl A320SpoilerFactory {
         id: ActuatorSide,
         id_number: usize,
     ) -> SpoilerElement {
-        let assembly = Self::a320_spoiler_assembly();
+        let assembly = Self::a320_spoiler_assembly(context);
         SpoilerElement::new(
             context,
             id,
@@ -546,7 +572,10 @@ impl A320ElevatorFactory {
     const MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING: f64 = 15000000.;
     const MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT: f64 = 1.;
 
-    fn a320_elevator_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
+    fn a320_elevator_actuator(
+        context: &mut InitContext,
+        bounded_linear_length: &impl BoundedLinearLength,
+    ) -> LinearActuator {
         let actuator_characteristics = LinearActuatorCharacteristics::new(
             Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING / 5.,
             Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING,
@@ -555,6 +584,7 @@ impl A320ElevatorFactory {
         );
 
         LinearActuator::new(
+            context,
             bounded_linear_length,
             1,
             Length::new::<meter>(0.0407),
@@ -575,6 +605,7 @@ impl A320ElevatorFactory {
             false,
             None,
             None,
+            Pressure::new::<psi>(A320HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
         )
     }
 
@@ -611,11 +642,14 @@ impl A320ElevatorFactory {
 
     /// Builds an aileron assembly consisting of the aileron physical rigid body and two hydraulic actuators connected
     /// to it
-    fn a320_elevator_assembly(init_drooped_down: bool) -> HydraulicLinearActuatorAssembly<2> {
+    fn a320_elevator_assembly(
+        context: &mut InitContext,
+        init_drooped_down: bool,
+    ) -> HydraulicLinearActuatorAssembly<2> {
         let elevator_body = Self::a320_elevator_body(init_drooped_down);
 
-        let elevator_actuator_outboard = Self::a320_elevator_actuator(&elevator_body);
-        let elevator_actuator_inbord = Self::a320_elevator_actuator(&elevator_body);
+        let elevator_actuator_outboard = Self::a320_elevator_actuator(context, &elevator_body);
+        let elevator_actuator_inbord = Self::a320_elevator_actuator(context, &elevator_body);
 
         HydraulicLinearActuatorAssembly::new(
             [elevator_actuator_outboard, elevator_actuator_inbord],
@@ -625,7 +659,7 @@ impl A320ElevatorFactory {
 
     fn new_elevator(context: &mut InitContext, id: ActuatorSide) -> ElevatorAssembly {
         let init_drooped_down = !context.is_in_flight();
-        let assembly = Self::a320_elevator_assembly(init_drooped_down);
+        let assembly = Self::a320_elevator_assembly(context, init_drooped_down);
         ElevatorAssembly::new(context, id, assembly, Self::new_a320_elevator_aero_model())
     }
 
@@ -650,7 +684,10 @@ impl A320RudderFactory {
     const MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING: f64 = 1000000.;
     const MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT: f64 = 1.;
 
-    fn a320_rudder_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
+    fn a320_rudder_actuator(
+        context: &mut InitContext,
+        bounded_linear_length: &impl BoundedLinearLength,
+    ) -> LinearActuator {
         let actuator_characteristics = LinearActuatorCharacteristics::new(
             Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING / 4.,
             Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING,
@@ -659,6 +696,7 @@ impl A320RudderFactory {
         );
 
         LinearActuator::new(
+            context,
             bounded_linear_length,
             1,
             Length::new::<meter>(0.06),
@@ -679,6 +717,7 @@ impl A320RudderFactory {
             false,
             None,
             None,
+            Pressure::new::<psi>(A320HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
         )
     }
 
@@ -715,12 +754,15 @@ impl A320RudderFactory {
 
     /// Builds an aileron assembly consisting of the aileron physical rigid body and two hydraulic actuators connected
     /// to it
-    fn a320_rudder_assembly(init_at_center: bool) -> HydraulicLinearActuatorAssembly<3> {
+    fn a320_rudder_assembly(
+        context: &mut InitContext,
+        init_at_center: bool,
+    ) -> HydraulicLinearActuatorAssembly<3> {
         let rudder_body = Self::a320_rudder_body(init_at_center);
 
-        let rudder_actuator_green = Self::a320_rudder_actuator(&rudder_body);
-        let rudder_actuator_blue = Self::a320_rudder_actuator(&rudder_body);
-        let rudder_actuator_yellow = Self::a320_rudder_actuator(&rudder_body);
+        let rudder_actuator_green = Self::a320_rudder_actuator(context, &rudder_body);
+        let rudder_actuator_blue = Self::a320_rudder_actuator(context, &rudder_body);
+        let rudder_actuator_yellow = Self::a320_rudder_actuator(context, &rudder_body);
 
         HydraulicLinearActuatorAssembly::new(
             [
@@ -737,7 +779,7 @@ impl A320RudderFactory {
             || context.start_state() == StartState::Runway
             || context.is_in_flight();
 
-        let assembly = Self::a320_rudder_assembly(init_at_center);
+        let assembly = Self::a320_rudder_assembly(context, init_at_center);
         RudderAssembly::new(context, assembly, Self::new_a320_rudder_aero_model())
     }
 
@@ -788,6 +830,7 @@ impl A320GearDoorFactory {
     }
 
     fn a320_nose_gear_door_actuator(
+        context: &mut InitContext,
         bounded_linear_length: &impl BoundedLinearLength,
     ) -> LinearActuator {
         const FLOW_CONTROL_INTEGRAL_GAIN: f64 = 5.;
@@ -805,6 +848,7 @@ impl A320GearDoorFactory {
         );
 
         LinearActuator::new(
+            context,
             bounded_linear_length,
             1,
             Length::new::<meter>(0.0378),
@@ -825,10 +869,12 @@ impl A320GearDoorFactory {
             false,
             None,
             None,
+            Pressure::new::<psi>(A320HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
         )
     }
 
     fn a320_main_gear_door_actuator(
+        context: &mut InitContext,
         bounded_linear_length: &impl BoundedLinearLength,
     ) -> LinearActuator {
         const FLOW_CONTROL_INTEGRAL_GAIN: f64 = 5.;
@@ -846,6 +892,7 @@ impl A320GearDoorFactory {
         );
 
         LinearActuator::new(
+            context,
             bounded_linear_length,
             1,
             Length::new::<meter>(0.055),
@@ -866,6 +913,7 @@ impl A320GearDoorFactory {
             false,
             None,
             None,
+            Pressure::new::<psi>(A320HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
         )
     }
 
@@ -938,16 +986,19 @@ impl A320GearDoorFactory {
         )
     }
 
-    fn a320_gear_door_assembly(wheel_id: GearWheel) -> HydraulicLinearActuatorAssembly<1> {
+    fn a320_gear_door_assembly(
+        context: &mut InitContext,
+        wheel_id: GearWheel,
+    ) -> HydraulicLinearActuatorAssembly<1> {
         let gear_door_body = match wheel_id {
             GearWheel::NOSE => Self::a320_nose_gear_door_body(),
             GearWheel::LEFT => Self::a320_left_gear_door_body(),
             GearWheel::RIGHT => Self::a320_right_gear_door_body(),
         };
         let gear_door_actuator = match wheel_id {
-            GearWheel::NOSE => Self::a320_nose_gear_door_actuator(&gear_door_body),
+            GearWheel::NOSE => Self::a320_nose_gear_door_actuator(context, &gear_door_body),
             GearWheel::LEFT | GearWheel::RIGHT => {
-                Self::a320_main_gear_door_actuator(&gear_door_body)
+                Self::a320_main_gear_door_actuator(context, &gear_door_body)
             }
         };
 
@@ -987,7 +1038,10 @@ impl A320GearFactory {
         )
     }
 
-    fn a320_nose_gear_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
+    fn a320_nose_gear_actuator(
+        context: &mut InitContext,
+        bounded_linear_length: &impl BoundedLinearLength,
+    ) -> LinearActuator {
         const FLOW_CONTROL_INTEGRAL_GAIN: f64 = 5.;
         const FLOW_CONTROL_PROPORTIONAL_GAIN: f64 = 0.3;
         const FLOW_CONTROL_FORCE_GAIN: f64 = 250000.;
@@ -1003,6 +1057,7 @@ impl A320GearFactory {
         );
 
         LinearActuator::new(
+            context,
             bounded_linear_length,
             1,
             Length::new::<meter>(0.0792),
@@ -1023,10 +1078,14 @@ impl A320GearFactory {
             false,
             None,
             None,
+            Pressure::new::<psi>(A320HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
         )
     }
 
-    fn a320_main_gear_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
+    fn a320_main_gear_actuator(
+        context: &mut InitContext,
+        bounded_linear_length: &impl BoundedLinearLength,
+    ) -> LinearActuator {
         const FLOW_CONTROL_INTEGRAL_GAIN: f64 = 5.0;
         const FLOW_CONTROL_PROPORTIONAL_GAIN: f64 = 0.3;
         const FLOW_CONTROL_FORCE_GAIN: f64 = 250000.;
@@ -1042,6 +1101,7 @@ impl A320GearFactory {
         );
 
         LinearActuator::new(
+            context,
             bounded_linear_length,
             1,
             Length::new::<meter>(0.145),
@@ -1062,6 +1122,7 @@ impl A320GearFactory {
             false,
             None,
             None,
+            Pressure::new::<psi>(A320HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
         )
     }
 
@@ -1147,6 +1208,7 @@ impl A320GearFactory {
     }
 
     fn a320_gear_assembly(
+        context: &mut InitContext,
         wheel_id: GearWheel,
         init_downlocked: bool,
     ) -> HydraulicLinearActuatorAssembly<1> {
@@ -1159,9 +1221,11 @@ impl A320GearFactory {
         };
 
         let gear_actuator = match wheel_id {
-            GearWheel::NOSE => Self::a320_nose_gear_actuator(&gear_body),
+            GearWheel::NOSE => Self::a320_nose_gear_actuator(context, &gear_body),
 
-            GearWheel::LEFT | GearWheel::RIGHT => Self::a320_main_gear_actuator(&gear_body),
+            GearWheel::LEFT | GearWheel::RIGHT => {
+                Self::a320_main_gear_actuator(context, &gear_body)
+            }
         };
 
         HydraulicLinearActuatorAssembly::new([gear_actuator], gear_body)
@@ -1173,14 +1237,25 @@ impl A320GearSystemFactory {
     fn a320_gear_system(context: &mut InitContext) -> HydraulicGearSystem {
         let init_downlocked = context.start_gear_down();
 
+        let nose_door = A320GearDoorFactory::a320_gear_door_assembly(context, GearWheel::NOSE);
+        let left_door = A320GearDoorFactory::a320_gear_door_assembly(context, GearWheel::LEFT);
+        let right_door = A320GearDoorFactory::a320_gear_door_assembly(context, GearWheel::RIGHT);
+
+        let nose_gear =
+            A320GearFactory::a320_gear_assembly(context, GearWheel::NOSE, init_downlocked);
+        let left_gear =
+            A320GearFactory::a320_gear_assembly(context, GearWheel::LEFT, init_downlocked);
+        let right_gear =
+            A320GearFactory::a320_gear_assembly(context, GearWheel::RIGHT, init_downlocked);
+
         HydraulicGearSystem::new(
             context,
-            A320GearDoorFactory::a320_gear_door_assembly(GearWheel::NOSE),
-            A320GearDoorFactory::a320_gear_door_assembly(GearWheel::LEFT),
-            A320GearDoorFactory::a320_gear_door_assembly(GearWheel::RIGHT),
-            A320GearFactory::a320_gear_assembly(GearWheel::NOSE, init_downlocked),
-            A320GearFactory::a320_gear_assembly(GearWheel::LEFT, init_downlocked),
-            A320GearFactory::a320_gear_assembly(GearWheel::RIGHT, init_downlocked),
+            nose_door,
+            left_door,
+            right_door,
+            nose_gear,
+            left_gear,
+            right_gear,
             A320GearDoorFactory::a320_left_gear_door_aerodynamics(),
             A320GearDoorFactory::a320_right_gear_door_aerodynamics(),
             A320GearDoorFactory::a320_nose_gear_door_aerodynamics(),

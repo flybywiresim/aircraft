@@ -17,16 +17,26 @@ pub(super) fn rudder(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Erro
 
     builder.map(
         ExecuteOn::PostTick,
-        Variable::aspect("HYD_RUD_DEFLECTION"),
-        |value| 100. * (value * 2. - 1.),
-        Variable::named("HYD_RUDDER_DEFLECTION"),
+        Variable::aspect("HYD_UPPER_RUD_DEFLECTION"),
+        |value| (value * 2. - 1.),
+        Variable::named("HYD_UPPER_RUDDER_DEFLECTION"),
+    );
+
+    builder.map(
+        ExecuteOn::PostTick,
+        Variable::aspect("HYD_LOWER_RUD_DEFLECTION"),
+        |value| (value * 2. - 1.),
+        Variable::named("HYD_LOWER_RUDDER_DEFLECTION"),
     );
 
     // AILERON POSITION FEEDBACK TO SIM
-    builder.map(
+    builder.map_many(
         ExecuteOn::PostTick,
-        Variable::aspect("HYD_RUD_DEFLECTION"),
-        |value| value * 2. - 1.,
+        vec![
+            Variable::named("HYD_UPPER_RUDDER_DEFLECTION"),
+            Variable::named("HYD_LOWER_RUDDER_DEFLECTION"),
+        ],
+        |values| (values[1] + values[0]) / 2.,
         Variable::aspect("HYD_FINAL_RUDDER_FEEDBACK"),
     );
 
