@@ -3002,7 +3002,7 @@ mod tests {
         }
 
         fn nominal() -> Self {
-            Self { is_hot: true }
+            Self { is_hot: false }
         }
     }
     impl HeatingElement for TestFluid {
