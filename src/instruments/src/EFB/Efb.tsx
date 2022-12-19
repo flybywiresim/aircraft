@@ -124,7 +124,7 @@ const Efb = () => {
     const [releaseInfo, setReleaseInfo] = useState<ReleaseInfo[] | undefined>(undefined);
     const [newestCommit, setNewestCommit] = useState<CommitInfo | undefined>(undefined);
     const [newestExpCommit, setNewestExpCommit] = useState<CommitInfo | undefined>(undefined);
-    const [, setOutdatedVersionFlag] = useSimVar('L:A32NX_OUTDATED_VERSION', 'boolean', 200);
+    const [outdatedVersionFlag, setOutdatedVersionFlag] = useSimVar('L:A32NX_OUTDATED_VERSION', 'boolean', 200);
 
     // Retrieves the various versions from the current aircraft and github
     const checkAircraftVersion = () => {
@@ -194,11 +194,13 @@ const Efb = () => {
                 default: break;
                 }
 
+                let outdated = false;
+
                 // If the users version is older than the latest release show notification
                 if (BuildInfo.versionCompare(versionInfo.version, releaseInfo[0].name) < 0) {
                     console.log(`New version available: ${versionInfo.version} ==> ${releaseInfo[0].name}`);
                     showVersionPopup('', versionInfo.version, releaseInfo[0].name);
-                    setOutdatedVersionFlag(true);
+                    outdated = true;
                 } else {
                     // If the users version is equal or newer than the latest release then check if
                     // the edition is Development or Experimental and if the commit is older than
@@ -219,7 +221,7 @@ const Efb = () => {
                                 const releaseVersionStr = `${versionInfo.version}-${versionInfo.branch}.${newestCommit.shortSha} (${newestCommit.timestamp.toUTCString()})`;
                                 console.log(`New commit available: ${currentVersionStr} ==> ${releaseVersionStr}`);
                                 showVersionPopup(branchName, currentVersionStr, releaseVersionStr);
-                                setOutdatedVersionFlag(true);
+                                outdated = true;
                             }
                         }
                     } else if ((branchName === 'Experimental')) {
@@ -231,13 +233,19 @@ const Efb = () => {
                                 const releaseVersionStr = `${versionInfo.version}-${versionInfo.branch}.${newestExpCommit.shortSha} (timestamp: ${newestExpCommit.timestamp.toUTCString()})`;
                                 console.log(`New commit available: ${currentVersionStr} ==> ${releaseVersionStr}`);
                                 showVersionPopup(branchName, currentVersionStr, releaseVersionStr);
-                                setOutdatedVersionFlag(true);
+                                outdated = true;
                             }
                         }
                     } else {
                         // PR or any local build - no further version check
                         // console.debug(`branch "${branchName}" version detected!`);
                     }
+                }
+
+                if (outdated) {
+                    setOutdatedVersionFlag(true);
+                } else {
+                    console.log('Aircraft version ok');
                 }
 
                 setVersionChecked(true);
