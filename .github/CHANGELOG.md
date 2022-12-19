@@ -11,6 +11,7 @@
 1. [FMGC] Show proper transition names and final approach slope from AAU1 - @tracernz (Mike)
 1. [FMGC] Don't accept blank input or / for hold distance - @tracernz (Mike)
 1. [ATSU] Fix LSK6L not returning to ATSU DATALINK page in ATC MENU - @BravoMike99 (Bruno_pt99#5802)
+1. [HYD] Simple temperature simulation - @Crocket63 (crocket)
 
 ## 0.9.0
 
@@ -105,7 +106,6 @@
 1. [FLIGHTMODEL] Flight Model update - @donstim (donbikes#4084)
 1. [HYD] Fix incorrect gain in down pitch commands - @Crocket63 (crocket)
 1. [PFD] Improve appearance of L/DEV and V/DEV scales - @tracernz (Mike)
-1. [HYD] Simple temperature simulation - @Crocket63 (crocket)
 1. [HYD] Implemented Electro Hydrostatic actuators - @Crocket63 (crocket)
 1. [MISC] Change 2 way overhead switches to be also controllable with mouse wheel up/down @patsta32 (Pat)
 1. [FAC] Move Speedscale computation to FAC - @lukecologne (luke)
