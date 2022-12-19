@@ -178,7 +178,7 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idSideStickPositionX;
   std::unique_ptr<LocalVariable> idSideStickPositionY;
   std::unique_ptr<LocalVariable> idRudderPedalPosition;
-  std::unique_ptr<LocalVariable> idRudderPedalAnimationPosition;
+
   std::unique_ptr<LocalVariable> idAutopilotNosewheelDemand;
 
   std::unique_ptr<LocalVariable> idFmaLateralMode;
@@ -345,8 +345,6 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idSpoilersArmed;
   std::unique_ptr<LocalVariable> idSpoilersHandlePosition;
   std::shared_ptr<SpoilersHandler> spoilersHandler;
-
-  std::unique_ptr<LocalVariable> idRudderPosition;
 
   std::unique_ptr<LocalVariable> idRadioReceiverUsageEnabled;
   std::unique_ptr<LocalVariable> idRadioReceiverLocalizerValid;
@@ -529,11 +527,16 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFacDiscreteWord5[2];
   std::unique_ptr<LocalVariable> idFacDeltaRRudderTrim[2];
   std::unique_ptr<LocalVariable> idFacRudderTrimPos[2];
+  std::unique_ptr<LocalVariable> idFacRudderTravelLimitReset[2];
 
   std::unique_ptr<LocalVariable> idLeftAileronPosition;
   std::unique_ptr<LocalVariable> idRightAileronPosition;
   std::unique_ptr<LocalVariable> idLeftElevatorPosition;
   std::unique_ptr<LocalVariable> idRightElevatorPosition;
+
+  std::unique_ptr<LocalVariable> idRudderTrimPosition;
+  std::unique_ptr<LocalVariable> idRudderTravelLimiterPosition;
+
   std::unique_ptr<LocalVariable> idLeftSpoilerPosition[5];
   std::unique_ptr<LocalVariable> idRightSpoilerPosition[5];
 

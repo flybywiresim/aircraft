@@ -170,6 +170,7 @@ impl LowPressureAccumulator {
     const STDEV_ACCUMULATOR_PRESSURE_PSI: f64 = 200.;
 
     const MAX_ACCUMULATOR_PRESSURE_PSI: f64 = 1300.;
+    const MAX_ACCUMULATOR_PRESSURE_THRESHOLD_FOR_REFILL_FLOW_PSI: f64 = 50.;
 
     const PRESSURE_TIME_CONSTANT: Duration = Duration::from_millis(1000);
 
@@ -184,11 +185,10 @@ impl LowPressureAccumulator {
         Self {
             pressure: LowPassFilter::<Pressure>::new_with_init_value(
                 Self::PRESSURE_TIME_CONSTANT,
-                Pressure::new::<psi>(
-                    init_pressure_psi
-                        .max(0.)
-                        .min(Self::MAX_ACCUMULATOR_PRESSURE_PSI),
-                ),
+                Pressure::new::<psi>(init_pressure_psi.max(0.).min(
+                    Self::MAX_ACCUMULATOR_PRESSURE_PSI
+                        - Self::MAX_ACCUMULATOR_PRESSURE_THRESHOLD_FOR_REFILL_FLOW_PSI,
+                )),
             ),
             total_volume_to_actuator: Volume::default(),
         }
@@ -212,7 +212,11 @@ impl LowPressureAccumulator {
             .max(Pressure::new::<psi>(0.));
 
         let refill_flow_present = controller.should_open_refill_valve()
-            && (new_pressure - Pressure::new::<psi>(50.)) > self.pressure.output();
+            && (new_pressure
+                - Pressure::new::<psi>(
+                    Self::MAX_ACCUMULATOR_PRESSURE_THRESHOLD_FOR_REFILL_FLOW_PSI,
+                ))
+                >= self.pressure.output();
 
         self.update_flow(context, refill_flow_present);
 
@@ -3847,7 +3851,7 @@ mod tests {
         test_bed.run_with_delta(Duration::from_secs_f64(1.));
 
         assert!(test_bed.query(|a| a.accumulator_pressure(0)) > accumulator_press_init);
-        assert!(test_bed.query(|a| a.actuator_used_volume(0).get::<gallon>()) >= 0.01);
+        assert!(test_bed.query(|a| a.actuator_used_volume(0).get::<gallon>()) >= 0.0001);
     }
 
     #[test]

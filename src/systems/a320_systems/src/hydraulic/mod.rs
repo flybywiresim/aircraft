@@ -1,6 +1,7 @@
 use nalgebra::Vector3;
 
-use std::time::Duration;
+use std::{fmt::Display, time::Duration};
+
 use uom::si::{
     acceleration::meter_per_second_squared,
     angle::{degree, radian},
@@ -17,6 +18,7 @@ use uom::si::{
 };
 
 use systems::{
+    accept_iterable,
     engine::Engine,
     hydraulic::{
         aerodynamic_model::AerodynamicModel,
@@ -37,6 +39,9 @@ use systems::{
             SteeringRatioToAngle,
         },
         pumps::PumpCharacteristics,
+        rudder_control::{
+            AngularPositioningController, RudderMechanicalControl, YawDamperActuatorController,
+        },
         trimmable_horizontal_stabilizer::{
             ManualPitchTrimController, PitchTrimActuatorController,
             TrimmableHorizontalStabilizerAssembly,
@@ -1474,7 +1479,7 @@ pub(super) struct A320Hydraulic {
     left_elevator: ElevatorAssembly,
     right_elevator: ElevatorAssembly,
 
-    fac_computer: RudderSystemHydraulicController,
+    rudder_mechanical_assembly: RudderSystemHydraulicController,
     rudder: RudderAssembly,
 
     left_spoilers: SpoilerGroup,
@@ -1732,7 +1737,7 @@ impl A320Hydraulic {
             left_elevator: A320ElevatorFactory::new_elevator(context, ActuatorSide::Left),
             right_elevator: A320ElevatorFactory::new_elevator(context, ActuatorSide::Right),
 
-            fac_computer: RudderSystemHydraulicController::new(context),
+            rudder_mechanical_assembly: RudderSystemHydraulicController::new(context),
             rudder: A320RudderFactory::new_rudder(context),
 
             left_spoilers: A320SpoilerFactory::new_a320_spoiler_group(context, ActuatorSide::Left),
@@ -1942,7 +1947,7 @@ impl A320Hydraulic {
 
         self.rudder.update(
             context,
-            self.fac_computer.rudder_controllers(),
+            self.rudder_mechanical_assembly.rudder_controllers(),
             self.green_circuit.system_section(),
             self.blue_circuit.system_section(),
             self.yellow_circuit.system_section(),
@@ -2123,7 +2128,8 @@ impl A320Hydraulic {
         self.slats_flaps_complex
             .update(context, &self.flap_system, &self.slat_system);
 
-        self.fac_computer.update(
+        self.rudder_mechanical_assembly.update(
+            context,
             self.green_circuit.system_section(),
             self.blue_circuit.system_section(),
             self.yellow_circuit.system_section(),
@@ -2177,6 +2183,9 @@ impl A320Hydraulic {
 
         self.green_circuit
             .update_system_actuator_volumes(self.trim_assembly.left_motor());
+
+        self.green_circuit
+            .update_system_actuator_volumes(self.rudder_mechanical_assembly.green_actuator());
     }
 
     fn update_yellow_actuators_volume(&mut self) {
@@ -2215,6 +2224,9 @@ impl A320Hydraulic {
 
         self.yellow_circuit
             .update_system_actuator_volumes(self.trim_assembly.right_motor());
+
+        self.yellow_circuit
+            .update_system_actuator_volumes(self.rudder_mechanical_assembly.yellow_actuator());
     }
 
     fn update_blue_actuators_volume(&mut self) {
@@ -2522,7 +2534,7 @@ impl SimulationElement for A320Hydraulic {
         self.left_elevator.accept(visitor);
         self.right_elevator.accept(visitor);
 
-        self.fac_computer.accept(visitor);
+        self.rudder_mechanical_assembly.accept(visitor);
         self.rudder.accept(visitor);
 
         self.left_spoilers.accept(visitor);
@@ -5009,29 +5021,193 @@ impl SimulationElement for ElevatorSystemHydraulicController {
     }
 }
 
-struct RudderSystemHydraulicController {
-    requested_rudder_position_id: VariableIdentifier,
+struct A320YawDamperController {
+    id_position_request: VariableIdentifier,
+    id_energized: VariableIdentifier,
 
-    rudder_position_requested: Ratio,
+    angle_demand: Angle,
+    is_solenoid_energized: bool,
+}
+impl A320YawDamperController {
+    fn new(context: &mut InitContext, hyd_circuit: HydraulicColor) -> Self {
+        Self {
+            id_position_request: context
+                .get_identifier(format!("YAW_DAMPER_{}_COMMANDED_POSITION", hyd_circuit))
+                .to_owned(),
+            id_energized: context
+                .get_identifier(format!(
+                    "YAW_DAMPER_{}_SERVO_SOLENOID_ENERGIZED",
+                    hyd_circuit
+                ))
+                .to_owned(),
+
+            angle_demand: Angle::default(),
+            is_solenoid_energized: false,
+        }
+    }
+}
+impl YawDamperActuatorController for A320YawDamperController {
+    fn is_solenoid_energized(&self) -> bool {
+        self.is_solenoid_energized
+    }
+
+    fn angle_request(&self) -> Angle {
+        // Reversing angle as FBW negative is right, whereas in systems negative is left
+        -self.angle_demand
+    }
+}
+impl SimulationElement for A320YawDamperController {
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        self.is_solenoid_energized = reader.read(&self.id_energized);
+        self.angle_demand = reader.read(&self.id_position_request);
+    }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq)]
+enum RudderComponent {
+    Limiter,
+    Trim,
+}
+impl Display for RudderComponent {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Limiter => write!(f, "TRAVEL_LIM"),
+            Self::Trim => write!(f, "TRIM"),
+        }
+    }
+}
+
+struct A320RudderTrimTravelLimiterController {
+    id_active_mode_1: VariableIdentifier,
+    id_active_mode_2: VariableIdentifier,
+    id_commanded_position_1: VariableIdentifier,
+    id_commanded_position_2: VariableIdentifier,
+
+    id_emergency_reset_1: Option<VariableIdentifier>,
+    id_emergency_reset_2: Option<VariableIdentifier>,
+
+    commanded_position: [Angle; 2],
+    active_mode: [bool; 2],
+    is_emergency_reset: bool,
+
+    component_type: RudderComponent,
+}
+impl A320RudderTrimTravelLimiterController {
+    fn new(context: &mut InitContext, component_type: RudderComponent) -> Self {
+        Self {
+            id_active_mode_1: context
+                .get_identifier(format!("RUDDER_{}_1_ACTIVE_MODE_COMMANDED", component_type)),
+            id_active_mode_2: context
+                .get_identifier(format!("RUDDER_{}_2_ACTIVE_MODE_COMMANDED", component_type)),
+            id_commanded_position_1: context
+                .get_identifier(format!("RUDDER_{}_1_COMMANDED_POSITION", component_type)),
+            id_commanded_position_2: context
+                .get_identifier(format!("RUDDER_{}_2_COMMANDED_POSITION", component_type)),
+
+            id_emergency_reset_1: if component_type == RudderComponent::Limiter {
+                Some(context.get_identifier("FAC_1_RTL_EMER_RESET".to_owned()))
+            } else {
+                None
+            },
+            id_emergency_reset_2: if component_type == RudderComponent::Limiter {
+                Some(context.get_identifier("FAC_2_RTL_EMER_RESET".to_owned()))
+            } else {
+                None
+            },
+
+            commanded_position: [Angle::default(); 2],
+            active_mode: [false; 2],
+            is_emergency_reset: false,
+
+            component_type,
+        }
+    }
+}
+impl AngularPositioningController for A320RudderTrimTravelLimiterController {
+    fn commanded_position(&self) -> [Angle; 2] {
+        self.commanded_position
+    }
+
+    fn energised_motor(&self) -> [bool; 2] {
+        self.active_mode
+    }
+
+    fn emergency_reset_active(&self) -> bool {
+        self.is_emergency_reset
+    }
+}
+impl SimulationElement for A320RudderTrimTravelLimiterController {
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        self.commanded_position[0] = reader.read(&self.id_commanded_position_1);
+        self.commanded_position[1] = reader.read(&self.id_commanded_position_2);
+
+        // Trim commands from FBW is negative for right positive for left, opposite convention in hydraulics
+        if self.component_type == RudderComponent::Trim {
+            self.commanded_position = self.commanded_position.map(|p| -p);
+        }
+
+        self.active_mode[0] = reader.read(&self.id_active_mode_1);
+        self.active_mode[1] = reader.read(&self.id_active_mode_2);
+
+        // Only limiter has an emergency reset system
+        if self.component_type == RudderComponent::Limiter {
+            self.is_emergency_reset = reader.read(&self.id_emergency_reset_1.unwrap())
+                || reader.read(&self.id_emergency_reset_2.unwrap());
+        }
+    }
+}
+
+struct RudderSystemHydraulicController {
+    rudder_pedal_control_input_id: VariableIdentifier,
+    rudder_pedal_position_id: VariableIdentifier,
+
+    rudder_position_requested: Angle,
+
+    yaw_damper_control: [A320YawDamperController; 2],
+    trim_control: A320RudderTrimTravelLimiterController,
+    travel_limiter_control: A320RudderTrimTravelLimiterController,
+
+    rudder_mechanical_assembly: RudderMechanicalControl,
+
+    green_press_control_avail: bool,
+    blue_press_control_avail: bool,
+    yellow_press_control_avail: bool,
 
     rudder_controllers: [AileronController; 3],
-
-    is_powered: bool,
 }
 impl RudderSystemHydraulicController {
-    //TODO hot busses of FAC to check
-    const ALL_POWER_BUSES: [ElectricalBusType; 4] = [
-        ElectricalBusType::DirectCurrentEssential,
-        ElectricalBusType::DirectCurrent(2),
-        ElectricalBusType::DirectCurrentHot(1),
-        ElectricalBusType::DirectCurrentHot(2),
-    ];
+    const RUDDER_MAX_TRAVEL_DEGREES: f64 = 50.;
+
+    const MIN_PRESSURE_LO_HYST_FOR_ACTIVE_CONTROL_PSI: f64 = 700.;
+    const MIN_PRESSURE_HI_HYST_FOR_ACTIVE_CONTROL_PSI: f64 = 1200.;
 
     fn new(context: &mut InitContext) -> Self {
         Self {
-            requested_rudder_position_id: context.get_identifier("HYD_RUDDER_DEMAND".to_owned()),
+            rudder_pedal_control_input_id: context
+                .get_identifier("RUDDER_PEDAL_POSITION".to_owned()),
+            rudder_pedal_position_id: context
+                .get_identifier("RUDDER_PEDAL_ANIMATION_POSITION".to_owned()),
 
-            rudder_position_requested: Ratio::default(),
+            rudder_position_requested: Angle::default(),
+
+            yaw_damper_control: [
+                A320YawDamperController::new(context, HydraulicColor::Green),
+                A320YawDamperController::new(context, HydraulicColor::Yellow),
+            ],
+            trim_control: A320RudderTrimTravelLimiterController::new(
+                context,
+                RudderComponent::Trim,
+            ),
+            travel_limiter_control: A320RudderTrimTravelLimiterController::new(
+                context,
+                RudderComponent::Limiter,
+            ),
+
+            rudder_mechanical_assembly: RudderMechanicalControl::new(context),
+
+            green_press_control_avail: false,
+            blue_press_control_avail: false,
+            yellow_press_control_avail: false,
 
             // Controllers are in [ Green circuit, Blue circuit, Yellow circuit] order
             rudder_controllers: [
@@ -5039,14 +5215,25 @@ impl RudderSystemHydraulicController {
                 AileronController::new(),
                 AileronController::new(),
             ],
-
-            is_powered: false,
         }
     }
 
+    fn ratio_demand_from_angle_demand(&self) -> Ratio {
+        Ratio::new::<ratio>(
+            (self
+                .rudder_mechanical_assembly
+                .final_actuators_input()
+                .get::<degree>()
+                + Self::RUDDER_MAX_TRAVEL_DEGREES / 2.)
+                / Self::RUDDER_MAX_TRAVEL_DEGREES,
+        )
+    }
+
     fn update_rudder_requested_position(&mut self) {
+        let final_ratio_demand = self.ratio_demand_from_angle_demand();
+
         for controller in &mut self.rudder_controllers {
-            controller.set_requested_position(self.rudder_position_requested);
+            controller.set_requested_position(final_ratio_demand);
         }
     }
 
@@ -5056,13 +5243,8 @@ impl RudderSystemHydraulicController {
         }
     }
 
-    fn set_rudder_position_control(
-        &mut self,
-        green_circuit_available: bool,
-        blue_circuit_available: bool,
-        yellow_circuit_available: bool,
-    ) {
-        if green_circuit_available {
+    fn set_rudder_position_control(&mut self) {
+        if self.green_press_control_avail {
             self.rudder_controllers[RudderActuatorPosition::Green as usize]
                 .set_mode(LinearActuatorMode::PositionControl);
         } else {
@@ -5070,7 +5252,7 @@ impl RudderSystemHydraulicController {
                 .set_mode(LinearActuatorMode::ActiveDamping);
         }
 
-        if blue_circuit_available {
+        if self.blue_press_control_avail {
             self.rudder_controllers[RudderActuatorPosition::Blue as usize]
                 .set_mode(LinearActuatorMode::PositionControl);
         } else {
@@ -5078,7 +5260,7 @@ impl RudderSystemHydraulicController {
                 .set_mode(LinearActuatorMode::ActiveDamping);
         }
 
-        if yellow_circuit_available {
+        if self.yellow_press_control_avail {
             self.rudder_controllers[RudderActuatorPosition::Yellow as usize]
                 .set_mode(LinearActuatorMode::PositionControl);
         } else {
@@ -5087,48 +5269,85 @@ impl RudderSystemHydraulicController {
         }
     }
 
-    fn update_rudder(
-        &mut self,
-        green_circuit_available: bool,
-        blue_circuit_available: bool,
-        yellow_circuit_available: bool,
-    ) {
-        let no_hydraulics =
-            !green_circuit_available && !blue_circuit_available && !yellow_circuit_available;
-
-        if self.is_powered && !no_hydraulics {
-            self.set_rudder_position_control(
-                green_circuit_available,
-                blue_circuit_available,
-                yellow_circuit_available,
-            );
+    fn update_rudder_control_state(&mut self) {
+        if self.any_hyd_available() {
+            self.set_rudder_position_control();
         } else {
             self.set_rudder_no_position_control();
         }
     }
 
-    fn update(
+    fn any_hyd_available(&self) -> bool {
+        self.green_press_control_avail
+            || self.blue_press_control_avail
+            || self.yellow_press_control_avail
+    }
+
+    fn update_pressure_availability(
         &mut self,
         green_pressure: &impl SectionPressure,
         blue_pressure: &impl SectionPressure,
         yellow_pressure: &impl SectionPressure,
     ) {
-        self.update_rudder_requested_position();
+        if green_pressure.pressure_downstream_leak_valve().get::<psi>()
+            > Self::MIN_PRESSURE_HI_HYST_FOR_ACTIVE_CONTROL_PSI
+        {
+            self.green_press_control_avail = true;
+        } else if green_pressure.pressure_downstream_leak_valve().get::<psi>()
+            < Self::MIN_PRESSURE_LO_HYST_FOR_ACTIVE_CONTROL_PSI
+        {
+            self.green_press_control_avail = false;
+        }
 
-        let blue_circuit_available =
-            blue_pressure.pressure_downstream_leak_valve().get::<psi>() > 1500.;
-        let green_circuit_available =
-            green_pressure.pressure_downstream_leak_valve().get::<psi>() > 1500.;
-        let yellow_circuit_available = yellow_pressure
+        if blue_pressure.pressure_downstream_leak_valve().get::<psi>()
+            > Self::MIN_PRESSURE_HI_HYST_FOR_ACTIVE_CONTROL_PSI
+        {
+            self.blue_press_control_avail = true;
+        } else if blue_pressure.pressure_downstream_leak_valve().get::<psi>()
+            < Self::MIN_PRESSURE_LO_HYST_FOR_ACTIVE_CONTROL_PSI
+        {
+            self.blue_press_control_avail = false;
+        }
+
+        if yellow_pressure
             .pressure_downstream_leak_valve()
             .get::<psi>()
-            > 1500.;
+            > Self::MIN_PRESSURE_HI_HYST_FOR_ACTIVE_CONTROL_PSI
+        {
+            self.yellow_press_control_avail = true;
+        } else if yellow_pressure
+            .pressure_downstream_leak_valve()
+            .get::<psi>()
+            < Self::MIN_PRESSURE_LO_HYST_FOR_ACTIVE_CONTROL_PSI
+        {
+            self.yellow_press_control_avail = false;
+        }
+    }
 
-        self.update_rudder(
-            green_circuit_available,
-            blue_circuit_available,
-            yellow_circuit_available,
+    fn update(
+        &mut self,
+        context: &UpdateContext,
+        green_pressure: &impl SectionPressure,
+        blue_pressure: &impl SectionPressure,
+        yellow_pressure: &impl SectionPressure,
+    ) {
+        self.update_pressure_availability(green_pressure, blue_pressure, yellow_pressure);
+
+        self.update_rudder_requested_position();
+
+        self.rudder_mechanical_assembly.update(
+            context,
+            self.rudder_position_requested,
+            &self.trim_control,
+            &self.travel_limiter_control,
+            &self.yaw_damper_control,
+            [
+                green_pressure.pressure_downstream_leak_valve(),
+                yellow_pressure.pressure_downstream_leak_valve(),
+            ],
         );
+
+        self.update_rudder_control_state();
     }
 
     fn rudder_controllers(
@@ -5136,15 +5355,40 @@ impl RudderSystemHydraulicController {
     ) -> &[impl HydraulicAssemblyController + HydraulicLocking + ElectroHydrostaticPowered] {
         &self.rudder_controllers[..]
     }
-}
-impl SimulationElement for RudderSystemHydraulicController {
-    fn read(&mut self, reader: &mut SimulatorReader) {
-        self.rudder_position_requested =
-            Ratio::new::<ratio>(reader.read(&self.requested_rudder_position_id));
+
+    fn green_actuator(&mut self) -> &mut impl Actuator {
+        self.rudder_mechanical_assembly.yaw_damper_green_actuator()
     }
 
-    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
-        self.is_powered = buses.any_is_powered(&Self::ALL_POWER_BUSES);
+    fn yellow_actuator(&mut self) -> &mut impl Actuator {
+        self.rudder_mechanical_assembly.yaw_damper_yellow_actuator()
+    }
+}
+impl SimulationElement for RudderSystemHydraulicController {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        accept_iterable!(self.yaw_damper_control, visitor);
+        self.trim_control.accept(visitor);
+        self.travel_limiter_control.accept(visitor);
+        self.rudder_mechanical_assembly.accept(visitor);
+
+        visitor.visit(self);
+    }
+
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        let rudder_position_pedal_demand: Angle = reader.read(&self.rudder_pedal_control_input_id);
+
+        self.rudder_position_requested =
+            rudder_position_pedal_demand * (Self::RUDDER_MAX_TRAVEL_DEGREES / 2. / 100.);
+    }
+
+    fn write(&self, writer: &mut SimulatorWriter) {
+        let pedal_position = self
+            .rudder_mechanical_assembly
+            .pedal_position()
+            .get::<degree>()
+            * 100.
+            / (Self::RUDDER_MAX_TRAVEL_DEGREES / 2.);
+        writer.write(&self.rudder_pedal_position_id, pedal_position);
     }
 }
 
@@ -9675,31 +9919,6 @@ mod tests {
 
             assert!(test_bed.is_flaps_moving());
             assert!(test_bed.is_slats_moving());
-        }
-
-        #[test]
-        fn yellow_epump_can_deploy_flaps_and_slats() {
-            let mut test_bed = test_bed_on_ground_with()
-                .engines_off()
-                .on_the_ground()
-                .set_cold_dark_inputs()
-                .run_one_tick();
-
-            test_bed = test_bed
-                .set_yellow_e_pump(false)
-                .run_waiting_for(Duration::from_secs(10));
-
-            // Yellow epump working
-            assert!(test_bed.is_yellow_pressure_switch_pressurised());
-
-            test_bed = test_bed
-                .set_flaps_handle_position(4)
-                .run_waiting_for(Duration::from_secs(80));
-
-            assert!(test_bed.get_flaps_left_position_percent() > 99.);
-            assert!(test_bed.get_flaps_right_position_percent() > 99.);
-            assert!(test_bed.get_slats_left_position_percent() > 99.);
-            assert!(test_bed.get_slats_right_position_percent() > 99.);
         }
 
         #[test]
