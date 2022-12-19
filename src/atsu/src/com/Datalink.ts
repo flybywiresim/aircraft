@@ -188,15 +188,10 @@ export class Datalink {
     }
 
     public vhfDatalinkMode() {
-        let mode = DatalinkModeCode.None;
-
         if (SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') === 1) {
-            mode = DatalinkModeCode.AtcAoc;
-        } else {
-            mode = DatalinkModeCode.Aoc;
+            return DatalinkModeCode.AtcAoc;
         }
-
-        return mode;
+        return DatalinkModeCode.Aoc;
     }
 
     public satcomDatalinkStatus() {
