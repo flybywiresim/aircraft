@@ -57,7 +57,8 @@ export class FutureAirNavigationSystem {
         // Portugal
         'LPPC', 'LPZC', 'LPZD', 'LPZE', 'LPZI', 'LPZN', 'LPZS', 'LPZW', 'LPWU', 'LPNU', 'LPCU',
         'LPYP', 'LPYL', 'LPYT', 'LPYF', 'LPYM',
-        // Poland (currently no CPDLC)
+        // Poland
+        'EPWW', 'EPWU', 'EPWB', 'EPWC', 'EPWD', 'EPWE', 'EPWF', 'EPWG', 'EPWJ', 'EPWK', 'EPWN', 'EPWR', 'EPWZ',
         // Czech
         'LKAA', 'LKAW', 'LKAN', 'LKAU', 'LKAI',
     ];

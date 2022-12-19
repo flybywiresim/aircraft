@@ -189,6 +189,8 @@ declare global {
         trueDegrees: boolean;
         turnDirection: TurnDirection;
         type: LegType;
+        /** glide path angle + 360 */
+        verticalAngle?: number;
         __Type: 'JS_Leg';
     }
 
