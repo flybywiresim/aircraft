@@ -12,8 +12,7 @@ import { usePersistentNumberProperty, usePersistentProperty } from '@instruments
 import { Battery } from 'react-bootstrap-icons';
 import { toast, ToastContainer } from 'react-toastify';
 import { distanceTo } from 'msfs-geo';
-import { CommitInfo, GitVersions, ReleaseInfo } from '@flybywiresim/api-client';
-import { AircraftVersionChecker, BuildInfo } from './Utils/AircraftVersionChecker';
+import { AircraftVersionChecker } from './Utils/AircraftVersionChecker';
 import { Tooltip } from './UtilComponents/TooltipWrapper';
 import { FbwLogo } from './UtilComponents/FbwLogo';
 import { AlertModal, ModalContainer, useModals } from './UtilComponents/Modals/Modals';
@@ -119,48 +118,14 @@ const Efb = () => {
 
     // Aircraft Version check variables
     const [versionChecked, setVersionChecked] = useState(false);
-    const [buildInfo, setBuildInfo] = useState<BuildInfo | undefined>(undefined);
-    const [releaseInfo, setReleaseInfo] = useState<ReleaseInfo[] | undefined>(undefined);
-    const [newestCommit, setNewestCommit] = useState<CommitInfo | undefined>(undefined);
-    const [newestExpCommit, setNewestExpCommit] = useState<CommitInfo | undefined>(undefined);
     const [, setOutdatedVersionFlag] = useSimVar('L:A32NX_OUTDATED_VERSION', 'boolean', 200);
-
-    // Retrieves the various versions from the current aircraft and github
-    const checkAircraftVersion = () => {
-        GitVersions.getReleases('flybywiresim', 'a32nx', false, 0, 1)
-            .then((releases) => setReleaseInfo(releases))
-            .catch((error) => console.error('Checking latest released version failed: ', error));
-
-        GitVersions.getNewestCommit('flybywiresim', 'a32nx', 'master')
-            .then((releases) => setNewestCommit(releases))
-            .catch((error) => console.error('Checking newest commit failed: ', error));
-
-        GitVersions.getNewestCommit('flybywiresim', 'a32nx', 'experimental')
-            .then((releases) => setNewestExpCommit(releases))
-            .catch((error) => console.error('Checking newest experimental commit failed: ', error));
-
-        AircraftVersionChecker.getBuildInfo().then((buildInfo: BuildInfo) => setBuildInfo(buildInfo))
-            .catch((error) => console.error('Checking current aircraft version failed: ', error));
-    };
-
-    // Called when aircraft and github version information is available/changes
-    useEffect(() => {
-        // only check once per session
-        if (versionChecked) {
-            return;
-        }
-
-        // only run if we have all the information we need
-        if (buildInfo && releaseInfo && newestCommit && newestExpCommit) {
-            const done = AircraftVersionChecker.checkVersion(buildInfo, releaseInfo, newestCommit, newestExpCommit);
-            setVersionChecked(done);
-        }
-    }, [buildInfo, releaseInfo, newestCommit, newestExpCommit]);
 
     useEffect(() => {
         document.documentElement.classList.add(`theme-${theme}`, 'animationsEnabled');
         setOutdatedVersionFlag(false);
-        checkAircraftVersion();
+        if (!versionChecked) {
+            AircraftVersionChecker.checkVersion().then((done) => setVersionChecked(done));
+        }
     }, []);
 
     useEffect(() => {

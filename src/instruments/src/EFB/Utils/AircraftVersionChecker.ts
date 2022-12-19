@@ -2,13 +2,13 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import Compare from 'semver/functions/compare';
-import { CommitInfo, ReleaseInfo } from '@flybywiresim/api-client';
+import { CommitInfo, GitVersions, ReleaseInfo } from '@flybywiresim/api-client';
 import { PopUp } from '@shared/popup';
 
 /**
  * Contains the {type}_build_info.json file's information in a structured way.
  */
-export interface BuildInfo {
+interface BuildInfo {
     built: string;
     ref: string;
     sha: string;
@@ -21,7 +21,7 @@ export interface BuildInfo {
 /**
  * Structure of the version info.
  */
-export interface VersionInfoData {
+interface VersionInfoData {
     version: string
     major: number;
     minor: number;
@@ -35,10 +35,114 @@ export interface VersionInfoData {
  *  published GitHub version
  */
 export class AircraftVersionChecker {
+    private static releaseInfo: ReleaseInfo[];
+
+    private static newestCommit: CommitInfo;
+
+    private static newestExpCommit: CommitInfo;
+
+    private static buildInfo: BuildInfo;
+
+    /**
+     * Checks if the aircraft version is outdated and shows a popup if it is.
+     * @returns true if the aircraft version has been checked, false if no check has been commenced.
+     */
+    public static async checkVersion(): Promise<boolean> {
+        console.log('Checking aircraft version');
+
+        await this.initialize();
+
+        if (!(this.buildInfo && this.releaseInfo && this.newestCommit && this.newestExpCommit)) {
+            console.error('Not all version information available. Skipping version check.');
+            return false;
+        }
+
+        try {
+            let outdated = false;
+            const versionInfo = this.getVersionInfo(this.buildInfo.version);
+
+            // Set branchName to the long versions of the aircraft edition names
+            let branchName = versionInfo.branch;
+            switch (versionInfo.branch) {
+            case 'rel': branchName = 'Stable'; break;
+            case 'dev': branchName = 'Development'; break;
+            case 'exp': branchName = 'Experimental'; break;
+            default: break;
+            }
+
+            // If the users version is older than the latest release show notification
+            if (this.versionCompare(versionInfo.version, this.releaseInfo[0].name) < 0) {
+                console.log(`New version available: ${versionInfo.version} ==> ${this.releaseInfo[0].name}`);
+                this.showVersionPopup('', versionInfo.version, this.releaseInfo[0].name);
+                outdated = true;
+            } else {
+                // If the users version is equal or newer than the latest release then check if
+                // the edition is Development or Experimental and if the commit is older than
+                // {maxAge} days after the latest release
+
+                const maxAge = 3;
+                const timestampAircraft: Date = new Date(this.buildInfo.built);
+
+                if (versionInfo.branch.includes('rel')) {
+                    // Stable
+                    // console.debug('Stable version detected!');
+                } else if ((branchName === 'Development')) {
+                    // Development
+                    // console.debug(`branch "${branchName}" version detected - checking sha: ${versionInfo.commit} against ${newestCommit.shortSha}`);
+                    if (versionInfo.commit !== this.newestCommit.shortSha) {
+                        if (this.addDays(this.newestCommit.timestamp, maxAge) < timestampAircraft) {
+                            const currentVersionStr = `${versionInfo.version}-${versionInfo.branch}.${versionInfo.commit} (${timestampAircraft.toUTCString()})`;
+                            const releaseVersionStr = `${versionInfo.version}-${versionInfo.branch}.${this.newestCommit.shortSha} (${this.newestCommit.timestamp.toUTCString()})`;
+                            console.log(`New commit available: ${currentVersionStr} ==> ${releaseVersionStr}`);
+                            this.showVersionPopup(branchName, currentVersionStr, releaseVersionStr);
+                            outdated = true;
+                        }
+                    }
+                } else if ((branchName === 'Experimental')) {
+                    // Experimental
+                    // console.debug(`branch "${branchName}" version detected - checking sha: ${versionInfo.commit} against ${newestCommit.shortSha}`);
+                    if (versionInfo.commit !== this.newestExpCommit.shortSha) {
+                        if (this.addDays(this.newestExpCommit.timestamp, maxAge) < timestampAircraft) {
+                            const currentVersionStr = `${versionInfo.version}-${versionInfo.branch}.${versionInfo.commit} (timestamp: ${timestampAircraft.toUTCString()})`;
+                            // eslint-disable-next-line max-len
+                            const releaseVersionStr = `${versionInfo.version}-${versionInfo.branch}.${this.newestExpCommit.shortSha} (timestamp: ${this.newestExpCommit.timestamp.toUTCString()})`;
+                            console.log(`New commit available: ${currentVersionStr} ==> ${releaseVersionStr}`);
+                            this.showVersionPopup(branchName, currentVersionStr, releaseVersionStr);
+                            outdated = true;
+                        }
+                    }
+                }
+            }
+
+            if (outdated) {
+                this.setOutdatedVersionFlag(true);
+            } else {
+                console.log('Aircraft version ok');
+            }
+
+            return true;
+        } catch (error) {
+            console.error('Version comparison failed: ', error);
+        }
+        return false;
+    }
+
+    /**
+     * Retrieves the various versions from the current aircraft and GitHub
+     *
+     * @private
+     */
+    private static async initialize() {
+        this.releaseInfo = await GitVersions.getReleases('flybywiresim', 'a32nx', false, 0, 1);
+        this.newestCommit = await GitVersions.getNewestCommit('flybywiresim', 'a32nx', 'master');
+        this.newestExpCommit = await GitVersions.getNewestCommit('flybywiresim', 'a32nx', 'experimental');
+        this.buildInfo = await AircraftVersionChecker.getBuildInfo();
+    }
+
     /**
     * Reads the a32nx_build_info.json file and returns the data a BuildInfo object.
     */
-    public static async getBuildInfo(): Promise<BuildInfo> {
+    private static async getBuildInfo(): Promise<BuildInfo> {
         let buildInfo;
         await fetch('/VFS/a32nx_build_info.json').then((response) => {
             response.json().then((json) => {
@@ -61,7 +165,7 @@ export class AircraftVersionChecker {
      * @param versionString as provided by the a32nx_build_info.json file.
      * @throws Error if the version string is not in the correct format.
      */
-    public static getVersionInfo(versionString: string): VersionInfoData {
+    private static getVersionInfo(versionString: string): VersionInfoData {
         const matchBuildInfo = versionString.match(/^v?((\d+)\.(\d+)\.(\d+))-(.*)\.(.{7})$/);
         if (matchBuildInfo) {
             const version = matchBuildInfo[1];
@@ -80,99 +184,6 @@ export class AircraftVersionChecker {
             };
         }
         throw new Error('Invalid version format');
-    }
-
-    /**
-     * Checks if the aircraft version is outdated and shows a popup if it is.
-     * @param buildInfo
-     * @param releaseInfo
-     * @param newestCommit
-     * @param newestExpCommit
-     * @returns true if the aircraft version has been checked, false if no check has been commenced.
-     */
-    public static checkVersion(
-        buildInfo: BuildInfo,
-        releaseInfo: ReleaseInfo[],
-        newestCommit: CommitInfo,
-        newestExpCommit: CommitInfo,
-    ): boolean {
-        console.log('Checking aircraft version');
-
-        // console.debug(`Current aircraft version: ${buildInfo.version}`);
-        // console.debug('Latest Released Version: ', releaseInfo[0].name);
-        // console.debug('Newest Commit: ', newestCommit.sha);
-        // console.debug('Newest Experimental Commit: ', newestExpCommit.sha);
-
-        try {
-            let outdated = false;
-            const versionInfo = this.getVersionInfo(buildInfo.version);
-
-            // Set branchName to the long versions of the aircraft edition names
-            let branchName = versionInfo.branch;
-            switch (versionInfo.branch) {
-            case 'rel': branchName = 'Stable'; break;
-            case 'dev': branchName = 'Development'; break;
-            case 'exp': branchName = 'Experimental'; break;
-            default: break;
-            }
-
-            // If the users version is older than the latest release show notification
-            if (this.versionCompare(versionInfo.version, releaseInfo[0].name) < 0) {
-                console.log(`New version available: ${versionInfo.version} ==> ${releaseInfo[0].name}`);
-                this.showVersionPopup('', versionInfo.version, releaseInfo[0].name);
-                outdated = true;
-            } else {
-                // If the users version is equal or newer than the latest release then check if
-                // the edition is Development or Experimental and if the commit is older than
-                // {maxAge} days after the latest release
-
-                const maxAge = 3;
-                const timestampAircraft: Date = new Date(buildInfo.built);
-
-                if (versionInfo.branch.includes('rel')) {
-                    // Stable
-                    // console.debug('Stable version detected!');
-                } else if ((branchName === 'Development')) {
-                    // Development
-                    // console.debug(`branch "${branchName}" version detected - checking sha: ${versionInfo.commit} against ${newestCommit.shortSha}`);
-                    if (versionInfo.commit !== newestCommit.shortSha) {
-                        if (this.addDays(newestCommit.timestamp, maxAge) < timestampAircraft) {
-                            const currentVersionStr = `${versionInfo.version}-${versionInfo.branch}.${versionInfo.commit} (${timestampAircraft.toUTCString()})`;
-                            const releaseVersionStr = `${versionInfo.version}-${versionInfo.branch}.${newestCommit.shortSha} (${newestCommit.timestamp.toUTCString()})`;
-                            console.log(`New commit available: ${currentVersionStr} ==> ${releaseVersionStr}`);
-                            this.showVersionPopup(branchName, currentVersionStr, releaseVersionStr);
-                            outdated = true;
-                        }
-                    }
-                } else if ((branchName === 'Experimental')) {
-                    // Experimental
-                    // console.debug(`branch "${branchName}" version detected - checking sha: ${versionInfo.commit} against ${newestCommit.shortSha}`);
-                    if (versionInfo.commit !== newestExpCommit.shortSha) {
-                        if (this.addDays(newestExpCommit.timestamp, maxAge) < timestampAircraft) {
-                            const currentVersionStr = `${versionInfo.version}-${versionInfo.branch}.${versionInfo.commit} (timestamp: ${timestampAircraft.toUTCString()})`;
-                            const releaseVersionStr = `${versionInfo.version}-${versionInfo.branch}.${newestExpCommit.shortSha} (timestamp: ${newestExpCommit.timestamp.toUTCString()})`;
-                            console.log(`New commit available: ${currentVersionStr} ==> ${releaseVersionStr}`);
-                            this.showVersionPopup(branchName, currentVersionStr, releaseVersionStr);
-                            outdated = true;
-                        }
-                    }
-                } else {
-                    // PR or any local build - no further version check
-                    // console.debug(`branch "${branchName}" version detected!`);
-                }
-            }
-
-            if (outdated) {
-                this.setOutdatedVersionFlag(true);
-            } else {
-                console.log('Aircraft version ok');
-            }
-
-            return true;
-        } catch (error) {
-            console.error('Version comparison failed: ', error);
-        }
-        return false;
     }
 
     /**
