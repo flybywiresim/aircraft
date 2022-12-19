@@ -86,12 +86,12 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
             FailureType::EnginePumpOverheat(AirbusEngineDrivenPumpId::Green),
         ),
         (
-            29_011,
-            FailureType::EnginePumpOverheat(AirbusEngineDrivenPumpId::Yellow),
-        ),
-        (
             29_010,
             FailureType::ElecPumpOverheat(AirbusElectricPumpId::Blue),
+        ),
+        (
+            29_011,
+            FailureType::EnginePumpOverheat(AirbusEngineDrivenPumpId::Yellow),
         ),
         (
             29_012,
