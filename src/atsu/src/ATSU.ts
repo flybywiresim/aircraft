@@ -320,36 +320,4 @@ export class Atsu {
     public targetFlightState() {
         return this.flightStateObserver.FcuSettings;
     }
-
-    public vhfDatalinkStatus() {
-        return DatalinkStatusCode.DlkAvail;
-    }
-
-    public vhfDatalinkMode() {
-        let mode = DatalinkModeCode.None;
-
-        if (SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') === 1) {
-            mode = DatalinkModeCode.AtcAoc;
-        } else {
-            mode = DatalinkModeCode.Aoc;
-        }
-
-        return mode;
-    }
-
-    public satcomDatalinkStatus() {
-        return DatalinkStatusCode.DlkNotAvail;
-    }
-
-    public satcomDatalinkMode() {
-        return DatalinkModeCode.None;
-    }
-
-    public hfDatalinkStatus() {
-        return DatalinkStatusCode.NotInstalled;
-    }
-
-    public hfDatalinkMode() {
-        return DatalinkModeCode.None;
-    }
 }

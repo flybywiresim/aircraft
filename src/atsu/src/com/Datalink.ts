@@ -1,6 +1,7 @@
 //  Copyright (c) 2021 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
+import { DatalinkModeCode, DatalinkStatusCode } from '@atsu/DatalinkStatusCodes';
 import { AtsuStatusCodes } from '../AtsuStatusCodes';
 import { Atsu } from '../ATSU';
 import { CpdlcMessage } from '../messages/CpdlcMessage';
@@ -180,5 +181,37 @@ export class Datalink {
                 }
             }, timeout);
         });
+    }
+
+    public vhfDatalinkStatus() {
+        return DatalinkStatusCode.DlkAvail;
+    }
+
+    public vhfDatalinkMode() {
+        let mode = DatalinkModeCode.None;
+
+        if (SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') === 1) {
+            mode = DatalinkModeCode.AtcAoc;
+        } else {
+            mode = DatalinkModeCode.Aoc;
+        }
+
+        return mode;
+    }
+
+    public satcomDatalinkStatus() {
+        return DatalinkStatusCode.DlkNotAvail;
+    }
+
+    public satcomDatalinkMode() {
+        return DatalinkModeCode.None;
+    }
+
+    public hfDatalinkStatus() {
+        return DatalinkStatusCode.NotInstalled;
+    }
+
+    public hfDatalinkMode() {
+        return DatalinkModeCode.None;
     }
 }
