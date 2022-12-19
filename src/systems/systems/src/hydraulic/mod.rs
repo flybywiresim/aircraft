@@ -1073,11 +1073,7 @@ impl HydraulicCircuit {
             }
         }
 
-        let ptu_overheats_fluid = if let Some(ptu) = ptu.as_ref() {
-            ptu.is_overheating() && ptu.is_rotating()
-        } else {
-            false
-        };
+        let ptu_overheats_fluid = ptu.map_or(false, |p| p.is_overheating() && p.is_rotating());
 
         self.fluid
             .update(context, ptu_overheats_fluid || any_pump_is_overheating);
