@@ -30,6 +30,11 @@ class FacComputer final
     boolean_T pY_not_empty;
   };
 
+  struct rtDW_RateLimiter_FacComputer_d_T {
+    real_T pY;
+    boolean_T pY_not_empty;
+  };
+
   struct rtDW_MATLABFunction_FacComputer_f_T {
     real_T timeSinceCondition;
     boolean_T output;
@@ -38,28 +43,26 @@ class FacComputer final
   struct D_Work_FacComputer_T {
     real_T Delay_DSTATE;
     real_T Delay_DSTATE_d;
-    real_T Delay1_DSTATE;
-    real_T Delay2_DSTATE;
     real_T Delay_DSTATE_dc;
-    real_T Delay_DSTATE_m;
-    real_T Delay_DSTATE_k;
     real_T pY;
     real_T pU;
-    real_T pY_n;
     real_T takeoff_config;
     real_T sAlphaFloor;
     uint32_T m_bpIndex[2];
     uint8_T is_active_c15_FacComputer;
     uint8_T is_c15_FacComputer;
     boolean_T Memory_PreviousInput;
+    boolean_T icLoad;
     boolean_T pY_not_empty;
     boolean_T pU_not_empty;
     boolean_T previousInput;
     boolean_T previousInput_not_empty;
-    boolean_T pY_not_empty_l;
     boolean_T Runtime_MODE;
     rtDW_MATLABFunction_FacComputer_f_T sf_MATLABFunction_ax;
     rtDW_MATLABFunction_FacComputer_f_T sf_MATLABFunction_p4;
+    rtDW_RateLimiter_FacComputer_d_T sf_RateLimiter_fu;
+    rtDW_RateLimiter_FacComputer_d_T sf_RateLimiter_b;
+    rtDW_RateLimiter_FacComputer_d_T sf_RateLimiter_p;
     rtDW_RateLimiter_FacComputer_b_T sf_RateLimiter_g0;
     rtDW_RateLimiter_FacComputer_b_T sf_RateLimiter_g;
     rtDW_RateLimiter_FacComputer_b_T sf_RateLimiter_f;
@@ -106,10 +109,6 @@ class FacComputer final
     real_T RateLimiterGenericVariableTs_InitialCondition;
     real_T DiscreteDerivativeVariableTs_InitialCondition_l;
     real_T RateLimiterGenericVariableTs_InitialCondition_o;
-    real_T DiscreteTimeIntegratorVariableTs_InitialCondition;
-    real_T RateLimiterDynamicEqualVariableTs_InitialCondition;
-    real_T RateLimiterDynamicEqualVariableTs_InitialCondition_a;
-    real_T RateLimiterVariableTs_InitialCondition;
     real_T DiscreteTimeIntegratorVariableTs_LowerLimit;
     real_T DiscreteTimeIntegratorVariableTs_UpperLimit;
     real_T BitfromLabel1_bit;
@@ -169,7 +168,6 @@ class FacComputer final
     real_T CompareToConstant_const_k;
     real_T CompareToConstant_const_i;
     real_T CompareToConstant1_const_i;
-    real_T CompareToConstant_const_kb;
     real_T RateLimiterGenericVariableTs1_lo;
     real_T RateLimiterGenericVariableTs1_lo_n;
     real_T RateLimiterGenericVariableTs4_lo;
@@ -178,7 +176,9 @@ class FacComputer final
     real_T RateLimiterGenericVariableTs1_lo_f;
     real_T RateLimiterGenericVariableTs_lo;
     real_T RateLimiterGenericVariableTs_lo_e;
-    real_T RateLimiterVariableTs_lo;
+    real_T RateLimiterGenericVariableTs_lo_p;
+    real_T RateLimiterGenericVariableTs_lo_f;
+    real_T RateLimiterGenericVariableTs_lo_pn;
     real_T ConfirmNode_timeDelay;
     real_T ConfirmNode_timeDelay_l;
     real_T RateLimiterGenericVariableTs1_up;
@@ -189,7 +189,9 @@ class FacComputer final
     real_T RateLimiterGenericVariableTs1_up_d;
     real_T RateLimiterGenericVariableTs_up;
     real_T RateLimiterGenericVariableTs_up_g;
-    real_T RateLimiterVariableTs_up;
+    real_T RateLimiterGenericVariableTs_up_e;
+    real_T RateLimiterGenericVariableTs_up_a;
+    real_T RateLimiterGenericVariableTs_up_c;
     SignStatusMatrix EnumeratedConstant1_Value;
     SignStatusMatrix EnumeratedConstant2_Value;
     SignStatusMatrix EnumeratedConstant_Value;
@@ -209,19 +211,15 @@ class FacComputer final
     real_T Constant3_Value;
     real_T Constant1_Value;
     real_T Constant_Value_l;
-    real_T uDLookupTable_tableData[7];
-    real_T uDLookupTable_bp01Data[7];
-    real_T Saturation_UpperSat;
-    real_T Saturation_LowerSat;
     real_T Constant1_Value_m;
     real_T Gain2_Gain;
+    real_T Constant_Value_g;
     real_T Gain_Gain;
-    real_T Gain_Gain_p;
     real_T Saturation1_UpperSat;
     real_T Saturation1_LowerSat;
     real_T Gain_Gain_h;
-    real_T Saturation_UpperSat_a;
-    real_T Saturation_LowerSat_l;
+    real_T Saturation_UpperSat;
+    real_T Saturation_LowerSat;
     real_T Gain5_Gain;
     real_T Saturation1_UpperSat_o;
     real_T Saturation1_LowerSat_n;
@@ -246,8 +244,8 @@ class FacComputer final
     real_T uDLookupTable2_bp01Data[6];
     real_T Saturation_UpperSat_o;
     real_T Saturation_LowerSat_b;
-    real_T uDLookupTable_tableData_g[2];
-    real_T uDLookupTable_bp01Data_b[2];
+    real_T uDLookupTable_tableData[2];
+    real_T uDLookupTable_bp01Data[2];
     real_T Gain_Gain_km;
     real_T Saturation2_UpperSat;
     real_T Saturation2_LowerSat;
@@ -280,18 +278,13 @@ class FacComputer final
     real_T Saturation_UpperSat_j;
     real_T Saturation_LowerSat_c;
     real_T Gain_Gain_j;
-    real_T Delay1_InitialCondition;
-    real_T Gain1_Gain_p;
     real_T Saturation_UpperSat_e;
-    real_T Saturation_LowerSat_i;
-    real_T Delay2_InitialCondition;
-    real_T Constant_Value_b;
-    real_T Gain_Gain_b;
-    real_T Saturation_UpperSat_ew;
     real_T Saturation_LowerSat_o;
-    real_T Constant_Value_kt;
-    real_T Gain_Gain_m;
-    real_T Constant_Value_bu;
+    real_T uDLookupTable_tableData_j[7];
+    real_T uDLookupTable_bp01Data_i[7];
+    real_T Saturation_UpperSat_g;
+    real_T Saturation_LowerSat_f;
+    real_T Constant_Value_b;
     real_T Switch7_Threshold;
     real_T Switch6_Threshold;
     real32_T Gain4_Gain;
@@ -372,6 +365,9 @@ class FacComputer final
   static void FacComputer_RateLimiter_f(real_T rtu_u, real_T rtu_up, real_T rtu_lo, real_T rtu_Ts, real_T rtu_init,
     boolean_T rtu_reset, real_T *rty_Y, rtDW_RateLimiter_FacComputer_b_T *localDW);
   static void FacComputer_MATLABFunction_l(const base_arinc_429 *rtu_u, boolean_T *rty_y);
+  static void FacComputer_RateLimiter_ot_Reset(rtDW_RateLimiter_FacComputer_d_T *localDW);
+  static void FacComputer_RateLimiter_p(real_T rtu_u, real_T rtu_up, real_T rtu_lo, real_T rtu_Ts, real_T rtu_init,
+    boolean_T rtu_reset, real_T *rty_Y, rtDW_RateLimiter_FacComputer_d_T *localDW);
   static void FacComputer_MATLABFunction_i_Reset(rtDW_MATLABFunction_FacComputer_f_T *localDW);
   static void FacComputer_MATLABFunction_p(boolean_T rtu_u, real_T rtu_Ts, boolean_T rtu_isRisingEdge, real_T
     rtu_timeDelay, boolean_T *rty_y, rtDW_MATLABFunction_FacComputer_f_T *localDW);
