@@ -59,7 +59,7 @@ use systems::{
         DelayedTrueLogicGate, ElectricalBusType, ElectricalBuses, EmergencyElectricalRatPushButton,
         EmergencyElectricalState, EmergencyGeneratorPower, EngineFirePushButtons, GearWheel,
         HydraulicColor, HydraulicGeneratorControlUnit, LandingGearHandle, LgciuInterface,
-        LgciuWeightOnWheels, ReservoirAirPressure, SectionPressure,
+        LgciuWeightOnWheels, ReservoirAirPressure, SectionPressure, TrimmableHorizontalStabilizer,
     },
     simulation::{
         InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -1929,6 +1929,7 @@ impl A320Hydraulic {
             self.elevator_system_controller.left_controllers(),
             self.blue_circuit.system_section(),
             self.green_circuit.system_section(),
+            &self.trim_assembly,
         );
 
         self.right_elevator.update(
@@ -1936,6 +1937,7 @@ impl A320Hydraulic {
             self.elevator_system_controller.right_controllers(),
             self.blue_circuit.system_section(),
             self.yellow_circuit.system_section(),
+            &self.trim_assembly,
         );
 
         self.rudder.update(
@@ -5277,7 +5279,10 @@ impl ElevatorAssembly {
               + ElectroHydrostaticPowered],
         current_pressure_outward: &impl SectionPressure,
         current_pressure_inward: &impl SectionPressure,
+        ths: &impl TrimmableHorizontalStabilizer,
     ) {
+        self.hydraulic_assembly.set_trim_offset(ths.trim_angle());
+
         self.aerodynamic_model
             .update_body(context, self.hydraulic_assembly.body());
         self.hydraulic_assembly.update(

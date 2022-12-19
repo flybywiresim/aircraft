@@ -109,6 +109,10 @@ pub trait LandingGearHandle {
     fn gear_handle_baulk_locked(&self) -> bool;
 }
 
+pub trait TrimmableHorizontalStabilizer {
+    fn trim_angle(&self) -> Angle;
+}
+
 pub trait LgciuInterface:
     LgciuWeightOnWheels + LgciuGearExtension + LgciuDoorPosition + LgciuGearControl + LandingGearHandle
 {
