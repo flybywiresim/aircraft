@@ -128,43 +128,20 @@ const Efb = () => {
 
     // Retrieves the various versions from the current aircraft and github
     const checkAircraftVersion = () => {
-        GitVersions.getReleases(
-            'flybywiresim',
-            'a32nx',
-            false,
-            0,
-            1,
-        ).then((releases) => {
-            setReleaseInfo(releases);
-        }).catch((error) => {
-            console.error('Checking latest released version failed: ', error);
-        });
+        GitVersions.getReleases('flybywiresim', 'a32nx', false, 0, 1)
+            .then((releases) => setReleaseInfo(releases))
+            .catch((error) => console.error('Checking latest released version failed: ', error));
 
-        GitVersions.getNewestCommit(
-            'flybywiresim',
-            'a32nx',
-            'master',
-        ).then((releases) => {
-            setNewestCommit(releases);
-        }).catch((error) => {
-            console.error('Checking newest commit failed: ', error);
-        });
+        GitVersions.getNewestCommit('flybywiresim', 'a32nx', 'master')
+            .then((releases) => setNewestCommit(releases))
+            .catch((error) => console.error('Checking newest commit failed: ', error));
 
-        GitVersions.getNewestCommit(
-            'flybywiresim',
-            'a32nx',
-            'experimental',
-        ).then((releases) => {
-            setNewestExpCommit(releases);
-        }).catch((error) => {
-            console.error('Checking newest experimental commit failed: ', error);
-        });
+        GitVersions.getNewestCommit('flybywiresim', 'a32nx', 'experimental')
+            .then((releases) => setNewestExpCommit(releases))
+            .catch((error) => console.error('Checking newest experimental commit failed: ', error));
 
-        BuildInfo.getBuildInfo().then((buildInfo: BuildInfo) => {
-            setBuildInfo(buildInfo);
-        }).catch((error) => {
-            console.error('Checking current aircraft version failed: ', error);
-        });
+        BuildInfo.getBuildInfo().then((buildInfo: BuildInfo) => setBuildInfo(buildInfo))
+            .catch((error) => console.error('Checking current aircraft version failed: ', error));
     };
 
     // Show a version info modal if the aircraft version is outdated
