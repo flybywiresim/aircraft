@@ -49,10 +49,11 @@ use systems::{
     overhead::{AutoOffFaultPushButton, AutoOnFaultPushButton},
     shared::{
         interpolation, low_pass_filter::LowPassFilter, random_from_range,
-        update_iterator::MaxStepLoop, AdirsDiscreteOutputs, DelayedFalseLogicGate,
-        DelayedPulseTrueLogicGate, DelayedTrueLogicGate, ElectricalBusType, ElectricalBuses,
-        EngineFirePushButtons, GearWheel, HydraulicColor, LandingGearHandle, LgciuInterface,
-        LgciuWeightOnWheels, ReservoirAirPressure, SectionPressure,
+        update_iterator::MaxStepLoop, AdirsDiscreteOutputs, AirbusElectricPumpId,
+        AirbusEngineDrivenPumpId, DelayedFalseLogicGate, DelayedPulseTrueLogicGate,
+        DelayedTrueLogicGate, ElectricalBusType, ElectricalBuses, EngineFirePushButtons, GearWheel,
+        HydraulicColor, LandingGearHandle, LgciuInterface, LgciuWeightOnWheels,
+        ReservoirAirPressure, SectionPressure,
     },
     simulation::{
         InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
