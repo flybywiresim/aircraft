@@ -22,6 +22,7 @@ clang \
   -c \
   -Wno-unused-command-line-argument \
   -Wno-implicit-function-declaration \
+  -Wno-deprecated-non-prototype \
   --sysroot "${MSFS_SDK}/WASM/wasi-sysroot" \
   -target wasm32-unknown-wasi \
   -flto \
