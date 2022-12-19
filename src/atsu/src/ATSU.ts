@@ -336,20 +336,4 @@ export class Atsu {
 
         return mode;
     }
-
-    public satcomDatalinkStatus() {
-        return DatalinkStatusCode.DlkNotAvail;
-    }
-
-    public satcomDatalinkMode() {
-        return DatalinkModeCode.None;
-    }
-
-    public hfDatalinkStatus() {
-        return DatalinkStatusCode.NotInstalled;
-    }
-
-    public hfDatalinkMode() {
-        return DatalinkModeCode.None;
-    }
 }
