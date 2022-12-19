@@ -37,6 +37,7 @@ pub mod landing_gear;
 pub mod linear_actuator;
 pub mod nose_steering;
 pub mod pumps;
+pub mod rudder_control;
 pub mod trimmable_horizontal_stabilizer;
 
 /// Indicates the pressure sensors info of an hydraulic circuit at different locations
