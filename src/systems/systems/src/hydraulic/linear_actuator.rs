@@ -3301,11 +3301,8 @@ mod tests {
     #[test]
     fn aileron_initialized_down_goes_neutral_when_trimmed_90_degrees_down() {
         let mut test_bed = SimulationTestBed::new(|context| {
-            TestAircraft::new(
-                context,
-                Duration::from_millis(10),
-                aileron_assembly(context, true),
-            )
+            let tested_object = aileron_assembly(context, true);
+            TestAircraft::new(context, Duration::from_millis(10), tested_object)
         });
 
         test_bed.command(|a| a.command_unlock());
