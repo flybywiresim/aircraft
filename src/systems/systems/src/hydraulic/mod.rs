@@ -260,7 +260,7 @@ impl HeatingProperties {
     }
 
     /// When overheating, provides a ratio of the heating severity
-    ///   Above OVERHEATING_THRESHOLD it will rise from 0 to 1, while always 0 under the threshold
+    /// Above OVERHEATING_THRESHOLD it will rise from 0 to 1, while always 0 under the threshold
     fn overheat_ratio(&self) -> Ratio {
         Ratio::new::<ratio>(
             ((self.heat_factor.output().get::<ratio>() - Self::OVERHEATING_THRESHOLD) * 1.
