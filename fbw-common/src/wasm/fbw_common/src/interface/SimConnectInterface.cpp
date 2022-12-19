@@ -111,6 +111,7 @@ void SimConnectInterface::processClientData(const SIMCONNECT_RECV_CLIENT_DATA* d
       }
       std::memcpy(&this->frameBuffer.data()[this->receivedFrameDataBytes], (std::uint8_t*)data->dwData, copySize);
       this->receivedFrameDataBytes += copySize;
+      break;
     }
     default:
       std::cout << "TERR ON ND: Unknown request ID in SimConnect connection: " << std::to_string(data->dwRequestID) << std::endl;
