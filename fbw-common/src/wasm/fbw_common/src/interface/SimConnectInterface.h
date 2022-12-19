@@ -3,7 +3,9 @@
 #include <MSFS/Legacy/gauges.h>
 #include <SimConnect.h>
 
+#include <cstdint>
 #include <string>
+#include <vector>
 
 #include "SimConnectData.h"
 
@@ -14,26 +16,24 @@ class SimConnectInterface {
   bool update();
 
  private:
-  enum DataDefinition {
-    FBW_SIMBRIDGE_TERRONND_FRAME_WIDTH = 1000,
-    FBW_SIMBRIDGE_TERRONND_FRAME_HEIGHT = 1001,
-    FBW_SIMBRIDGE_TERRONND_MINIMUM_ELEVATION = 1002,
-    FBW_SIMBRIDGE_TERRONND_MINIMUM_ELEVATION_MODE = 1003,
-    FBW_SIMBRIDGE_TERRONND_MAXIMUM_ELEVATION = 1004,
-    FBW_SIMBRIDGE_TERRONND_MAXIMUM_ELEVATION_MODE = 1005,
+  enum ClientData : SIMCONNECT_CLIENT_DATA_ID {
+    METADATA = 0,
+    FRAMEDATA = 1,
   };
 
-  enum ClientData {
-    FBW_SIMBRIDGE_TERRONND_THRESHOLDS = 1000,
-    FBW_SIMBRIDGE_TERRONND_FRAME = 1001,
+  enum DataDefinition : SIMCONNECT_CLIENT_DATA_DEFINITION_ID {
+    METADATA_AREA = 0,
+    FRAMEDATA_AREA = 1,
   };
 
   bool isConnected = false;
-  HANDLE hSimConnect = NULL;
-  TerrOnNdThresholds thresholds;
+  HANDLE hSimConnect = 0;
+  TerrOnNdMetadata metadata;
+  std::vector<std::uint8_t> frameBuffer;
+  std::size_t receivedFrameDataBytes;
 
-  bool prepareTerrOnNdThresholdDataDefinition();
-  bool prepareTerrOnNdImageDataDefinition();
+  bool prepareTerrOnNdMetadataDefinition(const std::string& side);
+  bool prepareTerrOnNdFrameDataDefinition(const std::string& side);
   void processClientData(const SIMCONNECT_RECV_CLIENT_DATA* data);
   void processDispatchMessage(SIMCONNECT_RECV* pData, DWORD* cbData);
   bool readData();
