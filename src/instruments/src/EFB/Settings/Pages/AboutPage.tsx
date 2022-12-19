@@ -6,7 +6,7 @@ import { SettingsPage } from '../Settings';
 // @ts-ignore
 import FbwTail from '../../Assets/FBW-Tail.svg';
 import { t } from '../../translation';
-import { BuildInfo } from '../../Utils/BuildInfo';
+import { AircraftVersionChecker, BuildInfo } from '../../Utils/AircraftVersionChecker';
 
 interface BuildInfoEntryProps {
     title: string;
@@ -56,7 +56,7 @@ export const AboutPage = () => {
 
     useEffect(() => {
         listener.on('SetGamercardInfo', onSetPlayerData, null);
-        BuildInfo.getBuildInfo().then((info) => setBuildInfo(info));
+        AircraftVersionChecker.getBuildInfo().then((info) => setBuildInfo(info));
     }, []);
 
     useEffect(() => {
