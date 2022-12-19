@@ -496,15 +496,14 @@ mod tests {
     use super::*;
 
     use std::time::Duration;
-    use uom::si::angle::degree;
-
-    use uom::si::pressure::psi;
+    use uom::si::{angle::degree, pressure::psi};
 
     use crate::shared::update_iterator::FixedStepLoop;
 
-    use crate::simulation::{Aircraft, SimulationElement, SimulationElementVisitor, UpdateContext};
-
-    use crate::simulation::test::{SimulationTestBed, TestBed};
+    use crate::simulation::{
+        test::{SimulationTestBed, TestBed},
+        Aircraft, SimulationElement, SimulationElementVisitor, UpdateContext,
+    };
 
     const MAX_CIRCUIT_PRESSURE_PSI: f64 = 3000.;
 
