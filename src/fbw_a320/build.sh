@@ -2,6 +2,7 @@
 
 # get directory of this script relative to root
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+COMMON_DIR="${DIR}/../fbw_common"
 
 OUTPUT="${DIR}/../../flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/fbw.wasm"
 
@@ -36,20 +37,20 @@ clang \
   -fvisibility=hidden \
   -O3 \
   -I "${MSFS_SDK}/WASM/include" \
-  -I "${DIR}/src/zlib" \
-  "${DIR}/src/zlib/adler32.c" \
-  "${DIR}/src/zlib/crc32.c" \
-  "${DIR}/src/zlib/deflate.c" \
-  "${DIR}/src/zlib/gzclose.c" \
-  "${DIR}/src/zlib/gzlib.c" \
-  "${DIR}/src/zlib/gzread.c" \
-  "${DIR}/src/zlib/gzwrite.c" \
-  "${DIR}/src/zlib/infback.c" \
-  "${DIR}/src/zlib/inffast.c" \
-  "${DIR}/src/zlib/inflate.c" \
-  "${DIR}/src/zlib/inftrees.c" \
-  "${DIR}/src/zlib/trees.c" \
-  "${DIR}/src/zlib/zutil.c"
+  -I "${COMMON_DIR}/src/zlib" \
+  "${COMMON_DIR}/src/zlib/adler32.c" \
+  "${COMMON_DIR}/src/zlib/crc32.c" \
+  "${COMMON_DIR}/src/zlib/deflate.c" \
+  "${COMMON_DIR}/src/zlib/gzclose.c" \
+  "${COMMON_DIR}/src/zlib/gzlib.c" \
+  "${COMMON_DIR}/src/zlib/gzread.c" \
+  "${COMMON_DIR}/src/zlib/gzwrite.c" \
+  "${COMMON_DIR}/src/zlib/infback.c" \
+  "${COMMON_DIR}/src/zlib/inffast.c" \
+  "${COMMON_DIR}/src/zlib/inflate.c" \
+  "${COMMON_DIR}/src/zlib/inftrees.c" \
+  "${COMMON_DIR}/src/zlib/trees.c" \
+  "${COMMON_DIR}/src/zlib/zutil.c"
 
 # compile c++ code
 clang++ \
@@ -74,7 +75,8 @@ clang++ \
   -O3 \
   -I "${MSFS_SDK}/WASM/include" \
   -I "${MSFS_SDK}/SimConnect SDK/include" \
-  -I "${DIR}/src/inih" \
+  -I "${COMMON_DIR}/src" \
+  -I "${COMMON_DIR}/src/inih" \
   -I "${DIR}/src/interface" \
   "${DIR}/src/interface/SimConnectInterface.cpp" \
   -I "${DIR}/src/busStructures" \
@@ -121,16 +123,16 @@ clang++ \
   "${DIR}/src/model/rt_modd.cpp" \
   "${DIR}/src/model/rt_remd.cpp" \
   "${DIR}/src/model/uMultiWord2Double.cpp" \
-  -I "${DIR}/src/zlib" \
-  "${DIR}/src/zlib/zfstream.cc" \
+  -I "${COMMON_DIR}/src/zlib" \
+  "${COMMON_DIR}/src/zlib/zfstream.cc" \
   "${DIR}/src/FlyByWireInterface.cpp" \
   "${DIR}/src/FlightDataRecorder.cpp" \
   "${DIR}/src/Arinc429.cpp" \
   "${DIR}/src/Arinc429Utils.cpp" \
-  "${DIR}/src/LocalVariable.cpp" \
-  "${DIR}/src/InterpolatingLookupTable.cpp" \
+  "${COMMON_DIR}/src/LocalVariable.cpp" \
+  "${COMMON_DIR}/src/InterpolatingLookupTable.cpp" \
   "${DIR}/src/SpoilersHandler.cpp" \
-  "${DIR}/src/ThrottleAxisMapping.cpp" \
+  "${COMMON_DIR}/src/ThrottleAxisMapping.cpp" \
   "${DIR}/src/CalculatedRadioReceiver.cpp" \
   "${DIR}/src/main.cpp" \
 

@@ -751,11 +751,6 @@ impl HydraulicCircuit {
 
     const FLUID_BULK_MODULUS_PASCAL: f64 = 1450000000.0;
 
-    // Nitrogen PSI precharge pressure
-    const ACCUMULATOR_GAS_PRE_CHARGE_PSI: f64 = 1885.0;
-
-    const ACCUMULATOR_MAX_VOLUME_GALLONS: f64 = 0.264;
-
     // TODO firevalves are actually powered by a sub-bus (401PP DC ESS)
     const DEFAULT_FIRE_VALVE_POWERING_BUS: ElectricalBusType =
         ElectricalBusType::DirectCurrentEssential;
@@ -782,6 +777,8 @@ impl HydraulicCircuit {
         has_auxiliary_section: bool,
 
         circuit_target_pressure: Pressure,
+        system_accumulator_precharge: Pressure,
+        system_accumulator_volume: Volume,
     ) -> Self {
         assert!(number_of_pump_sections > 0);
 
@@ -837,8 +834,8 @@ impl HydraulicCircuit {
                 system_section_volume * priming_volume,
                 system_section_volume,
                 Some(Accumulator::new(
-                    Pressure::new::<psi>(Self::ACCUMULATOR_GAS_PRE_CHARGE_PSI),
-                    Volume::new::<gallon>(Self::ACCUMULATOR_MAX_VOLUME_GALLONS),
+                    system_accumulator_precharge,
+                    system_accumulator_volume,
                     Volume::new::<gallon>(0.),
                     false,
                     circuit_target_pressure,
@@ -3048,6 +3045,8 @@ mod tests {
             false,
             false,
             Pressure::new::<psi>(3000.),
+            Pressure::new::<psi>(1885.),
+            Volume::new::<gallon>(0.264),
         )
     }
 
