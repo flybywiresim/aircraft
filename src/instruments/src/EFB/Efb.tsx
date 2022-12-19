@@ -214,8 +214,8 @@ const Efb = () => {
                         // console.debug('Stable version detected!');
                     } else if ((branchName === 'Development')) {
                         // Development
-                        // console.debug(`branch "${branchName}" version detected!`);
-                        if (versionInfo.commit !== newestCommit.sha) {
+                        // console.debug(`branch "${branchName}" version detected - checking sha: ${versionInfo.commit} against ${newestCommit.shortSha}`);
+                        if (versionInfo.commit !== newestCommit.shortSha) {
                             if (addDays(newestCommit.timestamp, maxAge) < timestampAircraft) {
                                 const currentVersionStr = `${versionInfo.version}-${versionInfo.branch}.${versionInfo.commit} (${timestampAircraft.toUTCString()})`;
                                 const releaseVersionStr = `${versionInfo.version}-${versionInfo.branch}.${newestCommit.shortSha} (${newestCommit.timestamp.toUTCString()})`;
@@ -226,8 +226,8 @@ const Efb = () => {
                         }
                     } else if ((branchName === 'Experimental')) {
                         // Experimental
-                        // console.debug(`branch "${branchName}" version detected!`);
-                        if (versionInfo.commit !== newestExpCommit.sha) {
+                        // console.debug(`branch "${branchName}" version detected - checking sha: ${versionInfo.commit} against ${newestCommit.shortSha}`);
+                        if (versionInfo.commit !== newestExpCommit.shortSha) {
                             if (addDays(newestExpCommit.timestamp, maxAge) < timestampAircraft) {
                                 const currentVersionStr = `${versionInfo.version}-${versionInfo.branch}.${versionInfo.commit} (timestamp: ${timestampAircraft.toUTCString()})`;
                                 const releaseVersionStr = `${versionInfo.version}-${versionInfo.branch}.${newestExpCommit.shortSha} (timestamp: ${newestExpCommit.timestamp.toUTCString()})`;
