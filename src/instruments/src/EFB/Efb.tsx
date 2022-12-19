@@ -13,7 +13,7 @@ import { Battery } from 'react-bootstrap-icons';
 import { toast, ToastContainer } from 'react-toastify';
 import { distanceTo } from 'msfs-geo';
 import { CommitInfo, GitVersions, ReleaseInfo } from '@flybywiresim/api-client';
-import { AircraftVersionChecker } from './Utils/AircraftVersionChecker';
+import { AircraftVersionChecker, BuildInfo } from './Utils/AircraftVersionChecker';
 import { Tooltip } from './UtilComponents/TooltipWrapper';
 import { FbwLogo } from './UtilComponents/FbwLogo';
 import { AlertModal, ModalContainer, useModals } from './UtilComponents/Modals/Modals';
@@ -119,7 +119,7 @@ const Efb = () => {
 
     // Aircraft Version check variables
     const [versionChecked, setVersionChecked] = useState(false);
-    const [buildInfo, setBuildInfo] = useState<AircraftVersionChecker | undefined>(undefined);
+    const [buildInfo, setBuildInfo] = useState<BuildInfo | undefined>(undefined);
     const [releaseInfo, setReleaseInfo] = useState<ReleaseInfo[] | undefined>(undefined);
     const [newestCommit, setNewestCommit] = useState<CommitInfo | undefined>(undefined);
     const [newestExpCommit, setNewestExpCommit] = useState<CommitInfo | undefined>(undefined);
@@ -139,7 +139,7 @@ const Efb = () => {
             .then((releases) => setNewestExpCommit(releases))
             .catch((error) => console.error('Checking newest experimental commit failed: ', error));
 
-        AircraftVersionChecker.getBuildInfo().then((buildInfo: AircraftVersionChecker) => setBuildInfo(buildInfo))
+        AircraftVersionChecker.getBuildInfo().then((buildInfo: BuildInfo) => setBuildInfo(buildInfo))
             .catch((error) => console.error('Checking current aircraft version failed: ', error));
     };
 
@@ -152,7 +152,7 @@ const Efb = () => {
 
         // only run if we have all the information we need
         if (buildInfo && releaseInfo && newestCommit && newestExpCommit) {
-            const done:boolean = AircraftVersionChecker.checkVersion(buildInfo, releaseInfo, newestCommit, newestExpCommit);
+            const done = AircraftVersionChecker.checkVersion(buildInfo, releaseInfo, newestCommit, newestExpCommit);
             setVersionChecked(done);
         }
     }, [buildInfo, releaseInfo, newestCommit, newestExpCommit]);
