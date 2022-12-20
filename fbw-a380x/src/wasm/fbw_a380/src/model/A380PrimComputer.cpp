@@ -2950,8 +2950,8 @@ void A380PrimComputer::step()
       rtb_handleIndex = A380PrimComputer_B.laws.pitch_law_outputs.left_outboard_elevator_deg;
       rtb_Y = A380PrimComputer_B.laws.pitch_law_outputs.left_inboard_elevator_deg;
       rtb_left_spoiler_3_deg = A380PrimComputer_B.laws.pitch_law_outputs.right_outboard_elevator_deg;
-      rtb_eta_deg_dv = A380PrimComputer_B.laws.lateral_law_outputs.lower_rudder_deg;
-      rtb_xi_spoiler_deg_b = A380PrimComputer_B.laws.lateral_law_outputs.upper_rudder_deg;
+      rtb_eta_deg_dv = A380PrimComputer_B.laws.lateral_law_outputs.upper_rudder_deg;
+      rtb_xi_spoiler_deg_b = A380PrimComputer_B.laws.lateral_law_outputs.lower_rudder_deg;
       rtb_eta_trim_limit_lo_d = A380PrimComputer_B.laws.lateral_law_outputs.left_inboard_aileron_deg;
       rtb_rightAileron1Command = A380PrimComputer_B.laws.lateral_law_outputs.right_inboard_aileron_deg;
       rtb_leftAileron2Command = A380PrimComputer_B.laws.lateral_law_outputs.left_midboard_aileron_deg;
