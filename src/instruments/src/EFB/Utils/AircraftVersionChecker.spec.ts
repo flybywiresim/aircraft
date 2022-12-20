@@ -3,7 +3,7 @@
 
 import { AircraftVersionChecker } from './AircraftVersionChecker';
 
-describe('BuildInfo.getVersionInfo()', () => {
+describe('AircraftVersionChecker.getVersionInfo()', () => {
     it('should throw error on malformed version info strings.', () => {
         expect(() => AircraftVersionChecker.getVersionInfo('v0.0.0master.00000000')).toThrow();
         expect(() => AircraftVersionChecker.getVersionInfo('v0.0.0-master.012345678')).toThrow();
