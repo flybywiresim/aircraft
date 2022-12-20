@@ -8,7 +8,7 @@ import { PopUp } from '@shared/popup';
 /**
  * Contains the {type}_build_info.json file's information in a structured way.
  */
-interface BuildInfo {
+export interface BuildInfo {
     built: string;
     ref: string;
     sha: string;
@@ -21,7 +21,7 @@ interface BuildInfo {
 /**
  * Structure of the version info.
  */
-interface VersionInfoData {
+export interface VersionInfoData {
     version: string
     major: number;
     minor: number;
@@ -52,6 +52,7 @@ export class AircraftVersionChecker {
 
         await this.initialize();
 
+        // assert all version info is available
         if (!(this.buildInfo && this.releaseInfo && this.newestCommit && this.newestExpCommit)) {
             console.error('Not all version information available. Skipping version check.');
             return false;
@@ -142,11 +143,13 @@ export class AircraftVersionChecker {
     /**
     * Reads the a32nx_build_info.json file and returns the data a BuildInfo object.
     */
-    private static async getBuildInfo(): Promise<BuildInfo> {
-        let buildInfo;
+    public static async getBuildInfo(): Promise<BuildInfo> {
+        if (this.buildInfo) {
+            return this.buildInfo;
+        }
         await fetch('/VFS/a32nx_build_info.json').then((response) => {
             response.json().then((json) => {
-                buildInfo = ({
+                this.buildInfo = ({
                     built: json.built,
                     ref: json.ref,
                     sha: json.sha,
@@ -157,7 +160,7 @@ export class AircraftVersionChecker {
                 });
             });
         });
-        return buildInfo;
+        return this.buildInfo;
     }
 
     /**
@@ -165,7 +168,7 @@ export class AircraftVersionChecker {
      * @param versionString as provided by the a32nx_build_info.json file.
      * @throws Error if the version string is not in the correct format.
      */
-    private static getVersionInfo(versionString: string): VersionInfoData {
+    public static getVersionInfo(versionString: string): VersionInfoData {
         const matchBuildInfo = versionString.match(/^v?((\d+)\.(\d+)\.(\d+))-(.*)\.(.{7})$/);
         if (matchBuildInfo) {
             const version = matchBuildInfo[1];
