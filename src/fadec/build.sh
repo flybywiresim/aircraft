@@ -17,7 +17,7 @@ set -ex
 mkdir -p "${DIR}/obj"
 pushd "${DIR}/obj"
 
-# compile c++ code
+# compile c++ code for the A32NX
 clang++ \
   -c \
   ${CLANG_ARGS} \
@@ -41,7 +41,8 @@ clang++ \
   -I "${MSFS_SDK}/WASM/include" \
   -I "${MSFS_SDK}/SimConnect SDK/include" \
   -I "${DIR}/../fbw_common/src/inih" \
-  "${DIR}/src/FadecGauge.cpp"
+  -I "${DIR}/common" \
+  "${DIR}/a320_fadec/src/FadecGauge.cpp"
 
 # restore directory
 popd
