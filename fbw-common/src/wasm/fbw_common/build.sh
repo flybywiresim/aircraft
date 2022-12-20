@@ -42,6 +42,7 @@ clang++ \
   -I "${MSFS_SDK}/WASM/include" \
   -I "${MSFS_SDK}/SimConnect SDK/include" \
   "${DIR}/src/main.cpp" \
+  "${DIR}/src/nanovg/nanovg.cpp" \
   "${DIR}/src/interface/SimConnectInterface.cpp" \
 
 # restore directory
