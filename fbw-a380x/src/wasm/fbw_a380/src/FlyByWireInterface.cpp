@@ -1280,8 +1280,8 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
 
     thsPosition = idThsPosition->get();
 
-    rudder1Position = idLowerRudderPosition->get();
-    rudder2Position = idUpperRudderPosition->get();
+    rudder1Position = idUpperRudderPosition->get();
+    rudder2Position = idLowerRudderPosition->get();
 
     ra1Bus = raBusOutputs[0];
     ra2Bus = raBusOutputs[2];
@@ -1376,7 +1376,7 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
   prims[primIndex].modelInputs.in.analog_inputs.left_spoiler_pos_deg = -50. * leftSpoilerPosition;
   prims[primIndex].modelInputs.in.analog_inputs.right_spoiler_pos_deg = -50. * rightSpoilerPosition;
   prims[primIndex].modelInputs.in.analog_inputs.rudder_1_pos_deg = -30. * rudder1Position;
-  prims[primIndex].modelInputs.in.analog_inputs.rudder_2_pos_deg = -30. * rudder1Position;
+  prims[primIndex].modelInputs.in.analog_inputs.rudder_2_pos_deg = -30. * rudder2Position;
   prims[primIndex].modelInputs.in.analog_inputs.rudder_pedal_pos = -simInput.inputs[2];
   prims[primIndex].modelInputs.in.analog_inputs.yellow_hyd_pressure_psi = idHydYellowSystemPressure->get();
   prims[primIndex].modelInputs.in.analog_inputs.green_hyd_pressure_psi = idHydGreenSystemPressure->get();
