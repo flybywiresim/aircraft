@@ -4,7 +4,8 @@
 
 import Compare from 'semver/functions/compare';
 import { CommitInfo, GitVersions, ReleaseInfo } from '@flybywiresim/api-client';
-import { PopUp } from '@shared/popup';
+// jest in test-js.sh requires relative path  can't handle "@shared" alias
+import { PopUp } from '../../../../shared/src/PopUp';
 
 /**
  * Contains the a32nx_build_info.json file's information in a structured way.
