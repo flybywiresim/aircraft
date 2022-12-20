@@ -205,7 +205,6 @@ class EngineControl {
       engineState = engineState + 10;
       simPaused = true;
     } else if (deltaTimeDiff == 0 && engineState >= 10) {
-      engineState = engineState;
       simPaused = true;
     } else {
       simPaused = false;
