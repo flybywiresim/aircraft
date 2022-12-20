@@ -689,9 +689,9 @@ class A380SecComputer final
     rtDW_MATLABFunction_A380SecComputer_k_T sf_MATLABFunction_j2;
     rtDW_MATLABFunction_A380SecComputer_k_T sf_MATLABFunction_g2;
     rtDW_MATLABFunction_A380SecComputer_km_T sf_MATLABFunction_br;
-    rtDW_MATLABFunction_A380SecComputer_km_T sf_MATLABFunction_j;
-    rtDW_MATLABFunction_A380SecComputer_k_T sf_MATLABFunction_g;
-    rtDW_MATLABFunction_A380SecComputer_k_T sf_MATLABFunction_c;
+    rtDW_MATLABFunction_A380SecComputer_km_T sf_MATLABFunction_jg;
+    rtDW_MATLABFunction_A380SecComputer_k_T sf_MATLABFunction_gf;
+    rtDW_MATLABFunction_A380SecComputer_k_T sf_MATLABFunction_cj;
     rtDW_RateLimiter_A380SecComputer_o_T sf_RateLimiter_cd;
     rtDW_RateLimiter_A380SecComputer_o_T sf_RateLimiter_p0;
     rtDW_RateLimiter_A380SecComputer_o_T sf_RateLimiter_c;
@@ -725,6 +725,47 @@ class A380SecComputer final
     real_T BitfromLabel6_bit;
     real_T BitfromLabel7_bit;
     real_T BitfromLabel1_bit;
+    real_T BitfromLabel1_bit_g;
+    real_T BitfromLabel2_bit;
+    real_T BitfromLabel3_bit;
+    real_T BitfromLabel4_bit;
+    real_T BitfromLabel5_bit;
+    real_T BitfromLabel6_bit_d;
+    real_T BitfromLabel7_bit_j;
+    real_T BitfromLabel8_bit;
+    real_T BitfromLabel9_bit;
+    real_T BitfromLabel10_bit;
+    real_T BitfromLabel1_bit_j;
+    real_T BitfromLabel2_bit_i;
+    real_T BitfromLabel3_bit_i;
+    real_T BitfromLabel4_bit_e;
+    real_T BitfromLabel6_bit_l;
+    real_T BitfromLabel7_bit_b;
+    real_T BitfromLabel8_bit_d;
+    real_T BitfromLabel9_bit_g;
+    real_T BitfromLabel5_bit_e;
+    real_T BitfromLabel10_bit_g;
+    real_T BitfromLabel11_bit;
+    real_T BitfromLabel12_bit;
+    real_T BitfromLabel13_bit;
+    real_T BitfromLabel1_bit_f;
+    real_T BitfromLabel2_bit_a;
+    real_T BitfromLabel3_bit_j;
+    real_T BitfromLabel1_bit_o;
+    real_T BitfromLabel2_bit_p;
+    real_T BitfromLabel10_bit_i;
+    real_T BitfromLabel8_bit_m;
+    real_T BitfromLabel11_bit_l;
+    real_T BitfromLabel12_bit_b;
+    real_T BitfromLabel9_bit_o;
+    real_T BitfromLabel15_bit;
+    real_T BitfromLabel13_bit_o;
+    real_T BitfromLabel14_bit;
+    real_T BitfromLabel3_bit_o;
+    real_T BitfromLabel4_bit_a;
+    real_T BitfromLabel5_bit_c;
+    real_T BitfromLabel6_bit_h;
+    real_T BitfromLabel7_bit_i;
     real_T BitfromLabel_bit;
     real_T BitfromLabel1_bit_d;
     real_T CompareToConstant1_const;
@@ -835,10 +876,6 @@ class A380SecComputer final
     real32_T Gain4_Gain;
     boolean_T Constant1_Value_b;
     boolean_T Constant_Value_a;
-    boolean_T Constant_Value_f;
-    boolean_T Constant_Value_pl;
-    boolean_T Constant_Value_i;
-    boolean_T Constant_Value_h;
     boolean_T Delay_InitialCondition;
     boolean_T Delay1_InitialCondition;
     boolean_T Constant7_Value_h;
@@ -884,11 +921,11 @@ class A380SecComputer final
   static void A380SecComputer_RateLimiter_e(real_T rtu_u, real_T rtu_up, real_T rtu_lo, real_T rtu_Ts, real_T rtu_init,
     boolean_T rtu_reset, real_T *rty_Y, rtDW_RateLimiter_A380SecComputer_o_T *localDW);
   static void A380SecComputer_MATLABFunction(const base_arinc_429 *rtu_u, boolean_T *rty_y);
-  static void A380SecComputer_MATLABFunction_i(const base_arinc_429 *rtu_u, real_T rtu_bit, uint32_T *rty_y);
-  static void A380SecComputer_MATLABFunction_g_Reset(rtDW_MATLABFunction_A380SecComputer_k_T *localDW);
-  static void A380SecComputer_MATLABFunction_c(boolean_T rtu_u, real_T rtu_Ts, boolean_T rtu_isRisingEdge, real_T
+  static void A380SecComputer_MATLABFunction_c(const base_arinc_429 *rtu_u, real_T rtu_bit, uint32_T *rty_y);
+  static void A380SecComputer_MATLABFunction_js_Reset(rtDW_MATLABFunction_A380SecComputer_k_T *localDW);
+  static void A380SecComputer_MATLABFunction_cj(boolean_T rtu_u, real_T rtu_Ts, boolean_T rtu_isRisingEdge, real_T
     rtu_timeDelay, boolean_T *rty_y, rtDW_MATLABFunction_A380SecComputer_k_T *localDW);
-  static void A380SecComputer_MATLABFunction_j_Reset(rtDW_MATLABFunction_A380SecComputer_km_T *localDW);
+  static void A380SecComputer_MATLABFunction_j2_Reset(rtDW_MATLABFunction_A380SecComputer_km_T *localDW);
   static void A380SecComputer_MATLABFunction_j(real_T rtu_u, real_T rtu_highTrigger, real_T rtu_lowTrigger, boolean_T
     *rty_y, rtDW_MATLABFunction_A380SecComputer_km_T *localDW);
   static void A380SecComputer_MATLABFunction_f_Reset(rtDW_MATLABFunction_A380SecComputer_b_T *localDW);
