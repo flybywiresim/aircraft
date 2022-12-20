@@ -17,43 +17,6 @@ set -ex
 mkdir -p "${DIR}/obj"
 pushd "${DIR}/obj"
 
-# compile c code
-clang \
-  -c \
-  -Wno-unused-command-line-argument \
-  -Wno-implicit-function-declaration \
-  -Wno-deprecated-non-prototype \
-  --sysroot "${MSFS_SDK}/WASM/wasi-sysroot" \
-  -target wasm32-unknown-wasi \
-  -flto \
-  -D_MSFS_WASM=1 \
-  -D__wasi__ \
-  -D_LIBCPP_HAS_NO_THREADS \
-  -D_WINDLL \
-  -D_MBCS \
-  -mthread-model single \
-  -fno-exceptions \
-  -fms-extensions \
-  -fvisibility=hidden \
-  -O3 \
-  -I "${MSFS_SDK}/WASM/include" \
-  -I "${DIR}/src/zlib" \
-  -I "${DIR}/src/spng" \
-  "${DIR}/src/zlib/adler32.c" \
-  "${DIR}/src/zlib/crc32.c" \
-  "${DIR}/src/zlib/deflate.c" \
-  "${DIR}/src/zlib/gzclose.c" \
-  "${DIR}/src/zlib/gzlib.c" \
-  "${DIR}/src/zlib/gzread.c" \
-  "${DIR}/src/zlib/gzwrite.c" \
-  "${DIR}/src/zlib/infback.c" \
-  "${DIR}/src/zlib/inffast.c" \
-  "${DIR}/src/zlib/inflate.c" \
-  "${DIR}/src/zlib/inftrees.c" \
-  "${DIR}/src/zlib/trees.c" \
-  "${DIR}/src/zlib/zutil.c" \
-  "${DIR}/src/spng/spng.c"
-
 # compile c++ code
 clang++ \
   -c \
