@@ -2879,25 +2879,30 @@ void SimConnectInterface::simConnectProcessClientData(const SIMCONNECT_RECV_CLIE
       clientDataPrimBusOutputs = *((base_prim_out_bus*)&data->dwData);
       return;
 
-      //     case ClientData::SEC_DISCRETE_OUTPUTS:
-      //       // store aircraft data
-      //       clientDataSecDiscreteOutputs = *((base_sec_discrete_outputs*)&data->dwData);
-      //       return;
-      //
-      //     case ClientData::SEC_ANALOG_OUTPUTS:
-      //       // store aircraft data
-      //       clientDataSecAnalogOutputs = *((base_sec_analog_outputs*)&data->dwData);
-      //       return;
-      //
-      //     case ClientData::SEC_1_BUS_OUTPUT:
-      //       // store aircraft data
-      //       clientDataSecBusOutputs = *((base_sec_out_bus*)&data->dwData);
-      //       return;
-      //
-      //    case ClientData::SEC_2_BUS_OUTPUT:
-      //      // store aircraft data
-      //      clientDataSecBusOutputs = *((base_sec_out_bus*)&data->dwData);
-      //      return;
+    case ClientData::SEC_DISCRETE_OUTPUTS:
+      // store aircraft data
+      clientDataSecDiscreteOutputs = *((base_sec_discrete_outputs*)&data->dwData);
+      return;
+
+    case ClientData::SEC_ANALOG_OUTPUTS:
+      // store aircraft data
+      clientDataSecAnalogOutputs = *((base_sec_analog_outputs*)&data->dwData);
+      return;
+
+    case ClientData::SEC_1_BUS_OUTPUT:
+      // store aircraft data
+      clientDataSecBusOutputs = *((base_sec_out_bus*)&data->dwData);
+      return;
+
+    case ClientData::SEC_2_BUS_OUTPUT:
+      // store aircraft data
+      clientDataSecBusOutputs = *((base_sec_out_bus*)&data->dwData);
+      return;
+
+    case ClientData::SEC_3_BUS_OUTPUT:
+      // store aircraft data
+      clientDataSecBusOutputs = *((base_sec_out_bus*)&data->dwData);
+      return;
 
     case ClientData::FAC_DISCRETE_OUTPUTS:
       // store aircraft data
