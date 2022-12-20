@@ -116,15 +116,10 @@ const Efb = () => {
 
     const history = useHistory();
 
-    // Aircraft Version check variables
-    const [versionChecked, setVersionChecked] = useState(false);
-    const [, setOutdatedVersionFlag] = useSimVar('L:A32NX_OUTDATED_VERSION', 'boolean', 200);
-
     useEffect(() => {
         document.documentElement.classList.add(`theme-${theme}`, 'animationsEnabled');
-        setOutdatedVersionFlag(false);
-        if (!versionChecked) {
-            AircraftVersionChecker.checkVersion().then((done) => setVersionChecked(done));
+        if (!AircraftVersionChecker.isVersionChecked) {
+            AircraftVersionChecker.checkVersion();
         }
     }, []);
 

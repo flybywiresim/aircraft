@@ -35,6 +35,8 @@ export interface VersionInfoData {
  *  published GitHub version
  */
 export class AircraftVersionChecker {
+    private static versionChecked = false;
+
     private static releaseInfo: ReleaseInfo[];
 
     private static newestCommit: CommitInfo;
@@ -49,6 +51,10 @@ export class AircraftVersionChecker {
      */
     public static async checkVersion(): Promise<boolean> {
         console.log('Checking aircraft version');
+
+        // reset previous check data
+        this.versionChecked = false;
+        this.setOutdatedVersionFlag(false);
 
         await this.initialize();
 
@@ -120,6 +126,8 @@ export class AircraftVersionChecker {
             } else {
                 console.log('Aircraft version ok');
             }
+
+            this.versionChecked = true;
 
             return true;
         } catch (error) {
@@ -244,5 +252,13 @@ export class AircraftVersionChecker {
      */
     private static setOutdatedVersionFlag(b: boolean) {
         SimVar.SetSimVarValue('L:A32NX_OUTDATED_VERSION', 'Bool', b ? 1 : 0);
+    }
+
+    /**
+     * Returns true if at least one valid version check has been done. This can be called before
+     * calling checkVersion to avoid checking multiple times.
+     */
+    public static get isVersionChecked(): boolean {
+        return this.versionChecked;
     }
 }
