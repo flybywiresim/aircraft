@@ -1304,21 +1304,21 @@ bool SimConnectInterface::setClientDataPrimBusInput(base_prim_out_bus output, in
   return sendClientData(ClientData::PRIM_1_BUS_OUTPUT + primIndex, sizeof(output), &output);
 }
 
-// bool SimConnectInterface::setClientDataSecDiscretes(base_sec_discrete_inputs output) {
-//   return sendClientData(ClientData::SEC_DISCRETE_INPUTS, sizeof(output), &output);
-// }
-//
-// bool SimConnectInterface::setClientDataSecAnalog(base_sec_analog_inputs output) {
-//   return sendClientData(ClientData::SEC_ANALOG_INPUTS, sizeof(output), &output);
-// }
-//
-// bool SimConnectInterface::setClientDataSecBus(base_sec_out_bus output, int secIndex) {
-//   if (secIndex < 2) {
-//     return sendClientData(ClientData::SEC_1_BUS_OUTPUT + secIndex, sizeof(output), &output);
-//   } else {
-//     return false;
-//   }
-// }
+bool SimConnectInterface::setClientDataSecDiscretes(base_sec_discrete_inputs output) {
+  return sendClientData(ClientData::SEC_DISCRETE_INPUTS, sizeof(output), &output);
+}
+
+bool SimConnectInterface::setClientDataSecAnalog(base_sec_analog_inputs output) {
+  return sendClientData(ClientData::SEC_ANALOG_INPUTS, sizeof(output), &output);
+}
+
+bool SimConnectInterface::setClientDataSecBus(base_sec_out_bus output, int secIndex) {
+  if (secIndex < 2) {
+    return sendClientData(ClientData::SEC_1_BUS_OUTPUT + secIndex, sizeof(output), &output);
+  } else {
+    return false;
+  }
+}
 
 bool SimConnectInterface::setClientDataFacDiscretes(base_fac_discrete_inputs output) {
   return sendClientData(ClientData::FAC_DISCRETE_INPUTS, sizeof(output), &output);
@@ -1344,17 +1344,17 @@ base_prim_out_bus SimConnectInterface::getClientDataPrimBusOutput() {
   return clientDataPrimBusOutputs;
 }
 
-// base_sec_discrete_outputs SimConnectInterface::getClientDataSecDiscretesOutput() {
-//   return clientDataSecDiscreteOutputs;
-// }
-//
-// base_sec_analog_outputs SimConnectInterface::getClientDataSecAnalogsOutput() {
-//   return clientDataSecAnalogOutputs;
-// }
-//
-// base_sec_out_bus SimConnectInterface::getClientDataSecBusOutput() {
-//   return clientDataSecBusOutputs;
-// }
+base_sec_discrete_outputs SimConnectInterface::getClientDataSecDiscretesOutput() {
+  return clientDataSecDiscreteOutputs;
+}
+
+base_sec_analog_outputs SimConnectInterface::getClientDataSecAnalogsOutput() {
+  return clientDataSecAnalogOutputs;
+}
+
+base_sec_out_bus SimConnectInterface::getClientDataSecBusOutput() {
+  return clientDataSecBusOutputs;
+}
 
 base_fac_discrete_outputs SimConnectInterface::getClientDataFacDiscretesOutput() {
   return clientDataFacDiscreteOutputs;
