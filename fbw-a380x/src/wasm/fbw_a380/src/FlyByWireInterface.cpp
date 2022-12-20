@@ -1831,23 +1831,39 @@ bool FlyByWireInterface::updateFac(double sampleTime, int facIndex) {
 }
 
 bool FlyByWireInterface::updateServoSolenoidStatus() {
-  idLeftInboardAileronSolenoidEnergized[0]->set(primsDiscreteOutputs[0].left_aileron_1_active_mode);
-  idLeftInboardAileronCommandedPosition[0]->set(primsAnalogOutputs[0].left_aileron_1_pos_order_deg);
-  idLeftInboardAileronSolenoidEnergized[1]->set(primsDiscreteOutputs[1].left_aileron_2_active_mode);
-  idLeftInboardAileronCommandedPosition[1]->set(primsAnalogOutputs[1].left_aileron_2_pos_order_deg);
-  idRightInboardAileronSolenoidEnergized[0]->set(primsDiscreteOutputs[0].right_aileron_1_active_mode);
-  idRightInboardAileronCommandedPosition[0]->set(primsAnalogOutputs[0].right_aileron_1_pos_order_deg);
-  idRightInboardAileronSolenoidEnergized[1]->set(primsDiscreteOutputs[1].right_aileron_2_active_mode);
-  idRightInboardAileronCommandedPosition[1]->set(primsAnalogOutputs[1].right_aileron_2_pos_order_deg);
+  idLeftInboardAileronSolenoidEnergized[0]->set(primsDiscreteOutputs[0].left_aileron_1_active_mode ||
+                                                secsDiscreteOutputs[0].left_aileron_1_active_mode);
+  idLeftInboardAileronCommandedPosition[0]->set(primsAnalogOutputs[0].left_aileron_1_pos_order_deg +
+                                                secsAnalogOutputs[0].left_aileron_1_pos_order_deg);
+  idLeftInboardAileronSolenoidEnergized[1]->set(primsDiscreteOutputs[1].left_aileron_2_active_mode ||
+                                                secsDiscreteOutputs[1].left_aileron_2_active_mode);
+  idLeftInboardAileronCommandedPosition[1]->set(primsAnalogOutputs[1].left_aileron_2_pos_order_deg +
+                                                secsAnalogOutputs[1].left_aileron_2_pos_order_deg);
+  idRightInboardAileronSolenoidEnergized[0]->set(primsDiscreteOutputs[0].right_aileron_1_active_mode ||
+                                                 secsDiscreteOutputs[0].right_aileron_1_active_mode);
+  idRightInboardAileronCommandedPosition[0]->set(primsAnalogOutputs[0].right_aileron_1_pos_order_deg +
+                                                 secsAnalogOutputs[0].right_aileron_1_pos_order_deg);
+  idRightInboardAileronSolenoidEnergized[1]->set(primsDiscreteOutputs[1].right_aileron_2_active_mode ||
+                                                 secsDiscreteOutputs[1].right_aileron_2_active_mode);
+  idRightInboardAileronCommandedPosition[1]->set(primsAnalogOutputs[1].right_aileron_2_pos_order_deg +
+                                                 secsAnalogOutputs[1].right_aileron_2_pos_order_deg);
 
-  idLeftMidboardAileronSolenoidEnergized[0]->set(primsDiscreteOutputs[2].left_aileron_1_active_mode);
-  idLeftMidboardAileronCommandedPosition[0]->set(primsAnalogOutputs[2].left_aileron_1_pos_order_deg);
-  idLeftMidboardAileronSolenoidEnergized[1]->set(primsDiscreteOutputs[0].left_aileron_2_active_mode);
-  idLeftMidboardAileronCommandedPosition[1]->set(primsAnalogOutputs[0].left_aileron_2_pos_order_deg);
-  idRightMidboardAileronSolenoidEnergized[0]->set(primsDiscreteOutputs[2].right_aileron_1_active_mode);
-  idRightMidboardAileronCommandedPosition[0]->set(primsAnalogOutputs[2].right_aileron_1_pos_order_deg);
-  idRightMidboardAileronSolenoidEnergized[1]->set(primsDiscreteOutputs[0].right_aileron_2_active_mode);
-  idRightMidboardAileronCommandedPosition[1]->set(primsAnalogOutputs[0].right_aileron_2_pos_order_deg);
+  idLeftMidboardAileronSolenoidEnergized[0]->set(primsDiscreteOutputs[2].left_aileron_1_active_mode ||
+                                                 secsDiscreteOutputs[2].left_aileron_1_active_mode);
+  idLeftMidboardAileronCommandedPosition[0]->set(primsAnalogOutputs[2].left_aileron_1_pos_order_deg +
+                                                 secsAnalogOutputs[2].left_aileron_1_pos_order_deg);
+  idLeftMidboardAileronSolenoidEnergized[1]->set(primsDiscreteOutputs[0].left_aileron_2_active_mode ||
+                                                 secsDiscreteOutputs[0].left_aileron_2_active_mode);
+  idLeftMidboardAileronCommandedPosition[1]->set(primsAnalogOutputs[0].left_aileron_2_pos_order_deg +
+                                                 secsAnalogOutputs[0].left_aileron_2_pos_order_deg);
+  idRightMidboardAileronSolenoidEnergized[0]->set(primsDiscreteOutputs[2].right_aileron_1_active_mode ||
+                                                  secsDiscreteOutputs[2].right_aileron_1_active_mode);
+  idRightMidboardAileronCommandedPosition[0]->set(primsAnalogOutputs[2].right_aileron_1_pos_order_deg +
+                                                  secsAnalogOutputs[2].right_aileron_1_pos_order_deg);
+  idRightMidboardAileronSolenoidEnergized[1]->set(primsDiscreteOutputs[0].right_aileron_2_active_mode ||
+                                                  secsDiscreteOutputs[0].right_aileron_2_active_mode);
+  idRightMidboardAileronCommandedPosition[1]->set(primsAnalogOutputs[0].right_aileron_2_pos_order_deg +
+                                                  secsAnalogOutputs[0].right_aileron_2_pos_order_deg);
 
   idLeftOutboardAileronSolenoidEnergized[0]->set(primsDiscreteOutputs[1].left_aileron_1_active_mode);
   idLeftOutboardAileronCommandedPosition[0]->set(primsAnalogOutputs[1].left_aileron_1_pos_order_deg);
@@ -1858,12 +1874,12 @@ bool FlyByWireInterface::updateServoSolenoidStatus() {
   idRightOutboardAileronSolenoidEnergized[1]->set(primsDiscreteOutputs[2].right_aileron_2_active_mode);
   idRightOutboardAileronCommandedPosition[1]->set(primsAnalogOutputs[2].right_aileron_2_pos_order_deg);
 
-  idLeftSpoilerCommandedPosition[0]->set(0);
-  idRightSpoilerCommandedPosition[0]->set(0);
-  idLeftSpoilerCommandedPosition[1]->set(0);
-  idRightSpoilerCommandedPosition[1]->set(0);
-  idLeftSpoilerCommandedPosition[2]->set(0);
-  idRightSpoilerCommandedPosition[2]->set(0);
+  idLeftSpoilerCommandedPosition[0]->set(-secsAnalogOutputs[2].left_spoiler_1_pos_order_deg);
+  idRightSpoilerCommandedPosition[0]->set(-secsAnalogOutputs[2].right_spoiler_1_pos_order_deg);
+  idLeftSpoilerCommandedPosition[1]->set(-secsAnalogOutputs[1].left_spoiler_1_pos_order_deg);
+  idRightSpoilerCommandedPosition[1]->set(-secsAnalogOutputs[1].right_spoiler_1_pos_order_deg);
+  idLeftSpoilerCommandedPosition[2]->set(-secsAnalogOutputs[0].left_spoiler_1_pos_order_deg);
+  idRightSpoilerCommandedPosition[2]->set(-secsAnalogOutputs[0].right_spoiler_1_pos_order_deg);
   idLeftSpoilerCommandedPosition[3]->set(-primsAnalogOutputs[2].left_spoiler_pos_order_deg);
   idRightSpoilerCommandedPosition[3]->set(-primsAnalogOutputs[2].right_spoiler_pos_order_deg);
   idLeftSpoilerCommandedPosition[4]->set(-primsAnalogOutputs[1].left_spoiler_pos_order_deg);
@@ -1872,54 +1888,76 @@ bool FlyByWireInterface::updateServoSolenoidStatus() {
   idLeftSpoilerCommandedPosition[5]->set(-primsAnalogOutputs[0].left_spoiler_pos_order_deg);
   idRightSpoiler6EbhaElectronicEnable->set(primsDiscreteOutputs[0].right_spoiler_electronic_module_enable);
   idRightSpoilerCommandedPosition[5]->set(-primsAnalogOutputs[0].right_spoiler_pos_order_deg);
-  idLeftSpoilerCommandedPosition[6]->set(0);
-  idRightSpoilerCommandedPosition[6]->set(0);
-  idLeftSpoilerCommandedPosition[7]->set(0);
-  idRightSpoilerCommandedPosition[7]->set(0);
+  idLeftSpoilerCommandedPosition[6]->set(-secsAnalogOutputs[1].left_spoiler_2_pos_order_deg);
+  idRightSpoilerCommandedPosition[6]->set(-secsAnalogOutputs[1].right_spoiler_2_pos_order_deg);
+  idLeftSpoilerCommandedPosition[7]->set(-secsAnalogOutputs[2].left_spoiler_2_pos_order_deg);
+  idRightSpoilerCommandedPosition[7]->set(-secsAnalogOutputs[2].right_spoiler_2_pos_order_deg);
 
-  idLeftInboardElevatorSolenoidEnergized[0]->set(primsDiscreteOutputs[2].elevator_1_active_mode);
-  idLeftInboardElevatorCommandedPosition[0]->set(primsAnalogOutputs[2].elevator_1_pos_order_deg);
-  idLeftInboardElevatorSolenoidEnergized[1]->set(primsDiscreteOutputs[0].elevator_2_active_mode);
-  idLeftInboardElevatorCommandedPosition[1]->set(primsAnalogOutputs[0].elevator_2_pos_order_deg);
-  idRightInboardElevatorSolenoidEnergized[0]->set(primsDiscreteOutputs[2].elevator_2_active_mode);
-  idRightInboardElevatorCommandedPosition[0]->set(primsAnalogOutputs[2].elevator_2_pos_order_deg);
-  idRightInboardElevatorSolenoidEnergized[1]->set(primsDiscreteOutputs[1].elevator_3_active_mode);
-  idRightInboardElevatorCommandedPosition[1]->set(primsAnalogOutputs[1].elevator_3_pos_order_deg);
+  idLeftInboardElevatorSolenoidEnergized[0]->set(primsDiscreteOutputs[2].elevator_1_active_mode ||
+                                                 secsDiscreteOutputs[2].elevator_1_active_mode);
+  idLeftInboardElevatorCommandedPosition[0]->set(primsAnalogOutputs[2].elevator_1_pos_order_deg +
+                                                 secsAnalogOutputs[2].elevator_1_pos_order_deg);
+  idLeftInboardElevatorSolenoidEnergized[1]->set(primsDiscreteOutputs[0].elevator_2_active_mode ||
+                                                 secsDiscreteOutputs[0].elevator_2_active_mode);
+  idLeftInboardElevatorCommandedPosition[1]->set(primsAnalogOutputs[0].elevator_2_pos_order_deg +
+                                                 secsAnalogOutputs[0].elevator_2_pos_order_deg);
+  idRightInboardElevatorSolenoidEnergized[0]->set(primsDiscreteOutputs[2].elevator_2_active_mode ||
+                                                  secsDiscreteOutputs[2].elevator_2_active_mode);
+  idRightInboardElevatorCommandedPosition[0]->set(primsAnalogOutputs[2].elevator_2_pos_order_deg +
+                                                  secsAnalogOutputs[2].elevator_2_pos_order_deg);
+  idRightInboardElevatorSolenoidEnergized[1]->set(primsDiscreteOutputs[1].elevator_3_active_mode ||
+                                                  secsDiscreteOutputs[1].elevator_3_active_mode);
+  idRightInboardElevatorCommandedPosition[1]->set(primsAnalogOutputs[1].elevator_3_pos_order_deg +
+                                                  secsAnalogOutputs[1].elevator_3_pos_order_deg);
 
-  idLeftOutboardElevatorSolenoidEnergized[0]->set(primsDiscreteOutputs[0].elevator_1_active_mode);
-  idLeftOutboardElevatorCommandedPosition[0]->set(primsAnalogOutputs[0].elevator_1_pos_order_deg);
-  idLeftOutboardElevatorSolenoidEnergized[1]->set(primsDiscreteOutputs[1].elevator_2_active_mode);
-  idLeftOutboardElevatorCommandedPosition[1]->set(primsAnalogOutputs[1].elevator_2_pos_order_deg);
-  idRightOutboardElevatorSolenoidEnergized[0]->set(primsDiscreteOutputs[1].elevator_1_active_mode);
-  idRightOutboardElevatorCommandedPosition[0]->set(primsAnalogOutputs[1].elevator_1_pos_order_deg);
-  idRightOutboardElevatorSolenoidEnergized[1]->set(primsDiscreteOutputs[0].elevator_3_active_mode);
-  idRightOutboardElevatorCommandedPosition[1]->set(primsAnalogOutputs[0].elevator_3_pos_order_deg);
+  idLeftOutboardElevatorSolenoidEnergized[0]->set(primsDiscreteOutputs[0].elevator_1_active_mode ||
+                                                  secsDiscreteOutputs[0].elevator_1_active_mode);
+  idLeftOutboardElevatorCommandedPosition[0]->set(primsAnalogOutputs[0].elevator_1_pos_order_deg +
+                                                  secsAnalogOutputs[0].elevator_1_pos_order_deg);
+  idLeftOutboardElevatorSolenoidEnergized[1]->set(primsDiscreteOutputs[1].elevator_2_active_mode ||
+                                                  secsDiscreteOutputs[1].elevator_2_active_mode);
+  idLeftOutboardElevatorCommandedPosition[1]->set(primsAnalogOutputs[1].elevator_2_pos_order_deg +
+                                                  secsAnalogOutputs[1].elevator_2_pos_order_deg);
+  idRightOutboardElevatorSolenoidEnergized[0]->set(primsDiscreteOutputs[1].elevator_1_active_mode ||
+                                                   secsDiscreteOutputs[1].elevator_1_active_mode);
+  idRightOutboardElevatorCommandedPosition[0]->set(primsAnalogOutputs[1].elevator_1_pos_order_deg +
+                                                   secsAnalogOutputs[1].elevator_1_pos_order_deg);
+  idRightOutboardElevatorSolenoidEnergized[1]->set(primsDiscreteOutputs[0].elevator_3_active_mode ||
+                                                   secsDiscreteOutputs[0].elevator_3_active_mode);
+  idRightOutboardElevatorCommandedPosition[1]->set(primsAnalogOutputs[0].elevator_3_pos_order_deg +
+                                                   secsAnalogOutputs[0].elevator_3_pos_order_deg);
 
-  idTHSSolenoidEnergized[0]->set(primsDiscreteOutputs[2].ths_active_mode);
-  idTHSCommandedPosition[0]->set(primsAnalogOutputs[2].ths_pos_order_deg);
-  idTHSSolenoidEnergized[1]->set(primsDiscreteOutputs[0].ths_active_mode);
-  idTHSCommandedPosition[1]->set(primsAnalogOutputs[0].ths_pos_order_deg);
+  idTHSSolenoidEnergized[0]->set(primsDiscreteOutputs[2].ths_active_mode || secsDiscreteOutputs[2].ths_active_mode);
+  idTHSCommandedPosition[0]->set(primsAnalogOutputs[2].ths_pos_order_deg + secsAnalogOutputs[2].ths_pos_order_deg);
+  idTHSSolenoidEnergized[1]->set(primsDiscreteOutputs[0].ths_active_mode || secsDiscreteOutputs[0].ths_active_mode);
+  idTHSCommandedPosition[1]->set(primsAnalogOutputs[0].ths_pos_order_deg + secsAnalogOutputs[0].ths_pos_order_deg);
 
-  idUpperRudderHydraulicModeSolenoidEnergized[0]->set(primsDiscreteOutputs[0].rudder_1_hydraulic_active_mode);
-  idUpperRudderElectricModeSolenoidEnergized[0]->set(primsDiscreteOutputs[0].rudder_1_electric_active_mode);
-  idUpperRudderCommandedPosition[0]->set(primsAnalogOutputs[0].rudder_1_pos_order_deg);
-  idUpperRudderHydraulicModeSolenoidEnergized[1]->set(primsDiscreteOutputs[1].rudder_1_hydraulic_active_mode);
-  idUpperRudderElectricModeSolenoidEnergized[1]->set(primsDiscreteOutputs[1].rudder_1_electric_active_mode);
-  idUpperRudderCommandedPosition[1]->set(primsAnalogOutputs[1].rudder_1_pos_order_deg);
+  idUpperRudderHydraulicModeSolenoidEnergized[0]->set(primsDiscreteOutputs[0].rudder_1_hydraulic_active_mode ||
+                                                      secsDiscreteOutputs[0].rudder_1_hydraulic_active_mode);
+  idUpperRudderElectricModeSolenoidEnergized[0]->set(primsDiscreteOutputs[0].rudder_1_electric_active_mode ||
+                                                     secsDiscreteOutputs[0].rudder_1_electric_active_mode);
+  idUpperRudderCommandedPosition[0]->set(primsAnalogOutputs[0].rudder_1_pos_order_deg + secsAnalogOutputs[0].rudder_1_pos_order_deg);
+  idUpperRudderHydraulicModeSolenoidEnergized[1]->set(primsDiscreteOutputs[1].rudder_1_hydraulic_active_mode ||
+                                                      secsDiscreteOutputs[1].rudder_1_hydraulic_active_mode);
+  idUpperRudderElectricModeSolenoidEnergized[1]->set(primsDiscreteOutputs[1].rudder_1_electric_active_mode ||
+                                                     secsDiscreteOutputs[1].rudder_1_electric_active_mode);
+  idUpperRudderCommandedPosition[1]->set(primsAnalogOutputs[1].rudder_1_pos_order_deg + secsAnalogOutputs[1].rudder_1_pos_order_deg);
 
-  idLowerRudderHydraulicModeSolenoidEnergized[0]->set(primsDiscreteOutputs[0].rudder_2_hydraulic_active_mode);
-  idLowerRudderElectricModeSolenoidEnergized[0]->set(primsDiscreteOutputs[0].rudder_2_electric_active_mode);
-  idLowerRudderCommandedPosition[0]->set(primsAnalogOutputs[0].rudder_2_pos_order_deg);
-  idLowerRudderHydraulicModeSolenoidEnergized[1]->set(primsDiscreteOutputs[2].rudder_1_hydraulic_active_mode);
-  idLowerRudderElectricModeSolenoidEnergized[1]->set(primsDiscreteOutputs[2].rudder_1_electric_active_mode);
-  idLowerRudderCommandedPosition[1]->set(primsAnalogOutputs[2].rudder_1_pos_order_deg);
+  idLowerRudderHydraulicModeSolenoidEnergized[0]->set(primsDiscreteOutputs[0].rudder_2_hydraulic_active_mode ||
+                                                      secsDiscreteOutputs[0].rudder_2_hydraulic_active_mode);
+  idLowerRudderElectricModeSolenoidEnergized[0]->set(primsDiscreteOutputs[0].rudder_2_electric_active_mode ||
+                                                     secsDiscreteOutputs[0].rudder_2_electric_active_mode);
+  idLowerRudderCommandedPosition[0]->set(primsAnalogOutputs[0].rudder_2_pos_order_deg + secsAnalogOutputs[0].rudder_2_pos_order_deg);
+  idLowerRudderHydraulicModeSolenoidEnergized[1]->set(primsDiscreteOutputs[2].rudder_1_hydraulic_active_mode ||
+                                                      secsDiscreteOutputs[2].rudder_1_hydraulic_active_mode);
+  idLowerRudderElectricModeSolenoidEnergized[1]->set(primsDiscreteOutputs[2].rudder_1_electric_active_mode ||
+                                                     secsDiscreteOutputs[2].rudder_1_electric_active_mode);
+  idLowerRudderCommandedPosition[1]->set(primsAnalogOutputs[2].rudder_1_pos_order_deg + secsAnalogOutputs[2].rudder_1_pos_order_deg);
 
-  for (int i = 0; i < 2; i++) {
-    std::string idString = std::to_string(i + 1);
-
-    idRudderTrimActiveModeCommanded[i]->set(0);
-    idRudderTrimCommandedPosition[i]->set(0);
-  }
+  idRudderTrimActiveModeCommanded[0]->set(secsDiscreteOutputs[0].rudder_trim_active_mode);
+  idRudderTrimCommandedPosition[0]->set(secsAnalogOutputs[0].rudder_trim_pos_order_deg);
+  idRudderTrimActiveModeCommanded[1]->set(secsDiscreteOutputs[2].rudder_trim_active_mode);
+  idRudderTrimCommandedPosition[1]->set(secsAnalogOutputs[2].rudder_trim_pos_order_deg);
 
   double totalSpoilersLeftDeflection = idLeftSpoilerPosition[0]->get() + idLeftSpoilerPosition[1]->get() + idLeftSpoilerPosition[2]->get() +
                                        idLeftSpoilerPosition[3]->get() + idLeftSpoilerPosition[4]->get();
