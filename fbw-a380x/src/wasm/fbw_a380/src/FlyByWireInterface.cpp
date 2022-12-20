@@ -1451,7 +1451,7 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
     primsBusOutputs[primIndex] = prims[primIndex].getBusOutputs();
   }
 
-  if ((primDisabled != -1 && primIndex != primDisabled) || secDisabled != -1 || facDisabled != -1) {
+  if ((primDisabled != -1 && primIndex != primDisabled) || secDisabled != -1) {
     simConnectInterface.setClientDataPrimBusInput(primsBusOutputs[primIndex], primIndex);
   }
 
@@ -1643,7 +1643,7 @@ bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
     secsBusOutputs[secIndex] = secs[secIndex].getBusOutputs();
   }
 
-  if (primDisabled != -1 && secIndex < 2) {
+  if ((secDisabled != -1 && secIndex != secDisabled) || primDisabled != -1) {
     simConnectInterface.setClientDataSecBus(secsBusOutputs[secIndex], secIndex);
   }
 
