@@ -225,22 +225,8 @@ impl A380PressurizationSystem {
             active_cpc_sys_id: context.get_identifier("PRESS_ACTIVE_CPC_SYS".to_owned()),
 
             cpc: [
-                CabinPressureController::new(
-                    context,
-                    Volume::new::<cubic_meter>(
-                        A380Cabin::A380_CABIN_VOLUME_CUBIC_METER
-                            + A380Cabin::A380_COCKPIT_VOLUME_CUBIC_METER,
-                    ),
-                    Area::new::<square_meter>(A380Cabin::A380_OUTFLOW_VALVE_SIZE),
-                ),
-                CabinPressureController::new(
-                    context,
-                    Volume::new::<cubic_meter>(
-                        A380Cabin::A380_CABIN_VOLUME_CUBIC_METER
-                            + A380Cabin::A380_COCKPIT_VOLUME_CUBIC_METER,
-                    ),
-                    Area::new::<square_meter>(A380Cabin::A380_OUTFLOW_VALVE_SIZE),
-                ),
+                CabinPressureController::new(context),
+                CabinPressureController::new(context),
             ],
             outflow_valve: [PressureValve::new_outflow_valve(); 1],
             safety_valve: PressureValve::new_safety_valve(),

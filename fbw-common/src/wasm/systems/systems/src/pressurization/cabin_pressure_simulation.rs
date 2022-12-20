@@ -112,8 +112,9 @@ impl CabinPressureSimulation {
         self.flow_coefficient = self.calculate_flow_coefficient(should_open_outflow_valve);
         self.outflow_valve_open_amount = outflow_valve_open_amount;
         self.safety_valve_open_amount = safety_valve_open_amount;
-        self.cabin_flow_in = pack_flow.pack_flow();
+        self.cabin_flow_in = self.calculate_cabin_flow_in(context, pack_flow.pack_flow());
         self.cabin_flow_out = self.calculate_cabin_flow_out();
+
         self.cabin_vs = self.calculate_cabin_vs(average_temperature);
         self.cabin_pressure = self.calculate_cabin_pressure(context);
     }
@@ -128,6 +129,8 @@ impl CabinPressureSimulation {
         } else {
             // Formula to simulate pressure start state if starting in flight
             let ambient_pressure: f64 = context.ambient_pressure().get::<hectopascal>();
+            self.previous_exterior_pressure =
+                BoundedVecDeque::from_iter(vec![context.ambient_pressure(); 20], 20);
             Pressure::new::<hectopascal>(
                 -0.0002 * ambient_pressure.powf(2.) + 0.5463 * ambient_pressure + 658.85,
             )
@@ -185,6 +188,23 @@ impl CabinPressureSimulation {
         }
     }
 
+    fn calculate_cabin_flow_in(&self, context: &UpdateContext, flow_in: MassRate) -> MassRate {
+        // Placeholder until packs are modelled to prevent sudden changes in flow
+        const INTERNAL_FLOW_RATE_CHANGE: f64 = 0.1;
+
+        let rate_of_change_for_delta = MassRate::new::<kilogram_per_second>(
+            INTERNAL_FLOW_RATE_CHANGE * context.delta_as_secs_f64(),
+        );
+
+        if flow_in > self.cabin_flow_in {
+            self.cabin_flow_in + rate_of_change_for_delta.min(flow_in - self.cabin_flow_in)
+        } else if flow_in < self.cabin_flow_in {
+            self.cabin_flow_in - rate_of_change_for_delta.min(self.cabin_flow_in - flow_in)
+        } else {
+            flow_in
+        }
+    }
+
     fn calculate_cabin_flow_out(&self) -> MassRate {
         let area_leakage = self.cabin_leakage_area
             + self.safety_valve_size * self.safety_valve_open_amount.get::<ratio>();
@@ -228,24 +248,12 @@ impl CabinPressureSimulation {
         .sqrt()
     }
 
-    pub(super) fn cabin_vs(&self) -> Velocity {
+    pub fn cabin_vs(&self) -> Velocity {
         self.cabin_vs
     }
 
     pub fn cabin_delta_p(&self) -> Pressure {
         self.cabin_pressure - self.exterior_pressure
-    }
-
-    pub(super) fn z_coefficient(&self) -> f64 {
-        self.z_coefficient
-    }
-
-    pub(super) fn flow_coefficient(&self) -> f64 {
-        self.flow_coefficient
-    }
-
-    pub(super) fn cabin_flow_properties(&self) -> [MassRate; 2] {
-        [self.cabin_flow_in, self.cabin_flow_out]
     }
 }
 
@@ -256,6 +264,10 @@ impl CabinPressure for CabinPressureSimulation {
 
     fn cabin_pressure(&self) -> Pressure {
         self.cabin_pressure
+    }
+
+    fn vertical_speed(&self) -> Velocity {
+        self.cabin_vs
     }
 }
 

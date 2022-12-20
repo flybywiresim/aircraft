@@ -1,6 +1,6 @@
 use crate::{
     shared::{
-        AverageExt, CabinTemperature, ControllerSignal, EngineCorrectedN1,
+        pid::PidController, AverageExt, CabinTemperature, ControllerSignal, EngineCorrectedN1,
         PressurizationOverheadShared,
     },
     simulation::{
@@ -10,21 +10,18 @@ use crate::{
 };
 
 use super::{
-    CabinPressure, CabinPressureSimulation, OutflowValveActuator, PressureValve,
-    PressureValveSignal,
+    CabinPressure, CabinPressureSimulation, OutflowValveActuator, OutflowValveSignal,
+    PressureValve, PressureValveSignal,
 };
 
 use std::time::Duration;
 use uom::si::{
-    area::square_meter,
     f64::*,
     length::{foot, meter},
-    mass_rate::kilogram_per_second,
-    pressure::{hectopascal, pascal, psi},
+    pressure::{hectopascal, psi},
     ratio::{percent, ratio},
     thermodynamic_temperature::kelvin,
     velocity::{foot_per_minute, knot, meter_per_second},
-    volume::cubic_meter,
 };
 
 pub struct CabinPressureController {
@@ -41,6 +38,7 @@ pub struct CabinPressureController {
     destination_qnh_id: VariableIdentifier,
 
     pressure_schedule_manager: Option<PressureScheduleManager>,
+    outflow_valve_controller: OutflowValveController,
     exterior_pressure: Pressure,
     exterior_vertical_speed: Velocity,
     cabin_pressure: Pressure,
@@ -58,15 +56,12 @@ pub struct CabinPressureController {
     is_in_man_mode: bool,
     man_mode_duration: Duration,
     manual_to_auto_switch: bool,
-    cabin_volume: Volume,
     cabin_temperature: ThermodynamicTemperature,
-    outflow_valve_size: Area,
 }
 
 impl CabinPressureController {
     // Atmospheric constants
     const R: f64 = 287.058; // Specific gas constant for air - m2/s2/K
-    const GAMMA: f64 = 1.4; // Rate of specific heats for air
     const G: f64 = 9.80665; // Gravity - m/s2
     const T_0: f64 = 288.2; // ISA standard temperature - K
     const L: f64 = -0.00651; // Adiabatic lapse rate - K/m
@@ -79,7 +74,7 @@ impl CabinPressureController {
     const TAKEOFF_RATE: f64 = -400.;
     const DEPRESS_RATE: f64 = 500.;
 
-    pub fn new(context: &mut InitContext, cabin_volume: Volume, outflow_valve_size: Area) -> Self {
+    pub fn new(context: &mut InitContext) -> Self {
         Self {
             cabin_altitude_id: context.get_identifier("PRESS_CABIN_ALTITUDE".to_owned()),
             fwc_excess_cabin_altitude_id: context.get_identifier("PRESS_EXCESS_CAB_ALT".to_owned()),
@@ -98,6 +93,7 @@ impl CabinPressureController {
             destination_qnh_id: context.get_identifier("DESTINATION_QNH".to_owned()),
 
             pressure_schedule_manager: Some(PressureScheduleManager::new()),
+            outflow_valve_controller: OutflowValveController::new(),
             exterior_pressure: Pressure::new::<hectopascal>(1013.25),
             exterior_vertical_speed: Velocity::new::<foot_per_minute>(0.),
             cabin_pressure: Pressure::new::<hectopascal>(1013.25),
@@ -115,9 +111,7 @@ impl CabinPressureController {
             is_in_man_mode: false,
             man_mode_duration: Duration::from_secs(0),
             manual_to_auto_switch: false,
-            cabin_volume,
             cabin_temperature: ThermodynamicTemperature::new::<kelvin>(297.15), // 24C
-            outflow_valve_size,
         }
     }
 
@@ -148,6 +142,15 @@ impl CabinPressureController {
 
         self.cabin_target_vs = self.calculate_cabin_target_vs(context);
         self.cabin_alt = self.calculate_cabin_altitude();
+
+        self.outflow_valve_controller.update(
+            context,
+            cabin_simulation,
+            self.cabin_target_vs,
+            press_overhead,
+            self.is_ground() || !(self.cabin_altitude() > Length::new::<foot>(15000.)),
+            self.is_ground() && self.should_open_outflow_valve(),
+        );
 
         self.outflow_valve_open_amount = outflow_valve.open_amount();
         self.safety_valve_open_amount = safety_valve.open_amount();
@@ -253,8 +256,6 @@ impl CabinPressureController {
     }
 
     fn calculate_cabin_altitude(&self) -> Length {
-        let p = self.cabin_pressure;
-
         // Based on local QNH when below 5000ft from departure or arrival airport, ISA when above
         let p_0 = if matches!(
             self.pressure_schedule_manager,
@@ -282,7 +283,7 @@ impl CabinPressureController {
             Pressure::new::<hectopascal>(1013.25)
         };
 
-        let pressure_ratio = (p / p_0).get::<ratio>();
+        let pressure_ratio = (self.cabin_pressure / p_0).get::<ratio>();
 
         // Hydrostatic equation with linear temp changes and constant R, g
         let altitude: f64 = ((CabinPressureController::T_0
@@ -299,7 +300,7 @@ impl CabinPressureController {
         self.cabin_pressure - self.exterior_pressure
     }
 
-    pub(super) fn cabin_altitude(&self) -> Length {
+    pub fn cabin_altitude(&self) -> Length {
         self.cabin_alt
     }
 
@@ -320,6 +321,7 @@ impl CabinPressureController {
     }
 
     pub fn reset_cpc_switch(&mut self) {
+        self.manual_to_auto_switch = false;
         if let Some(manager) = self.pressure_schedule_manager.as_mut() {
             manager.reset_cpc_switch();
         }
@@ -348,59 +350,21 @@ impl CabinPressureController {
             && self.cabin_alt > (self.landing_elev + Length::new::<foot>(1500.))
             && self.exterior_vertical_speed < Velocity::new::<foot_per_minute>(-500.)
     }
+
+    pub fn landing_elevation(&self) -> Length {
+        self.landing_elevation
+    }
 }
 
 impl OutflowValveActuator for CabinPressureController {
     fn target_valve_position(
         &self,
-        press_overhead: &impl PressurizationOverheadShared,
-        cabin_pressure_simulation: &CabinPressureSimulation,
+        _press_overhead: &impl PressurizationOverheadShared,
+        _cabin_pressure_simulation: &CabinPressureSimulation,
     ) -> Ratio {
-        // Calculation extracted from:
-        // F. Y. Kurokawa, C. Regina de Andrade and E. L. Zaparoli
-        // DETERMINATION OF THE OUTFLOW VALVE OPENING AREA OF THE AIRCRAFT CABIN PRESSURIZATION SYSTEM
-        // 18th International Congress of Mechanical Engineering
-        // November 6-11, 2005, Ouro Preto, MG
-
-        // Cabin air density (kg/m3)
-        let cabin_air_density = self.cabin_pressure.get::<pascal>()
-            / (CabinPressureController::R * self.cabin_temperature.get::<kelvin>());
-
-        // Outflow valve target open area
-        let ofv_area = (cabin_pressure_simulation.cabin_flow_properties()[0]
-            .get::<kilogram_per_second>()
-            - cabin_pressure_simulation.cabin_flow_properties()[1].get::<kilogram_per_second>()
-            + ((cabin_air_density
-                * CabinPressureController::G
-                * self.cabin_volume.get::<cubic_meter>())
-                / (CabinPressureController::R * self.cabin_temperature.get::<kelvin>()))
-                * self.cabin_target_vs.get::<meter_per_second>())
-            / (cabin_pressure_simulation.flow_coefficient()
-                * ((2.
-                    * (CabinPressureController::GAMMA / (CabinPressureController::GAMMA - 1.))
-                    * cabin_air_density
-                    * self.cabin_pressure.get::<pascal>()
-                    * cabin_pressure_simulation.z_coefficient())
-                .abs())
-                .sqrt());
-
-        let ofv_open_ratio =
-            Ratio::new::<ratio>(ofv_area / self.outflow_valve_size.get::<square_meter>());
-
-        if press_overhead.is_in_man_mode() {
-            self.outflow_valve_open_amount
-        } else if press_overhead.ditching_is_on() {
-            Ratio::new::<percent>(0.)
-        } else if ofv_open_ratio >= Ratio::new::<percent>(100.)
-            || (self.is_ground() && self.should_open_outflow_valve())
-        {
-            Ratio::new::<percent>(100.)
-        } else if ofv_open_ratio <= Ratio::new::<percent>(0.)
-            || self.cabin_altitude() > Length::new::<foot>(15000.)
-        {
-            Ratio::new::<percent>(0.)
-        } else {
-            ofv_open_ratio
+        match self.outflow_valve_controller.signal() {
+            Some(signal) => signal.target_open_amount(),
+            None => self.outflow_valve_open_amount,
         }
     }
 }
@@ -456,6 +420,67 @@ impl SimulationElement for CabinPressureController {
         self.sea_level_pressure =
             Pressure::new::<hectopascal>(reader.read(&self.sea_level_pressure_id));
         self.destination_qnh = Pressure::new::<hectopascal>(reader.read(&self.destination_qnh_id));
+    }
+}
+
+struct OutflowValveController {
+    is_in_man_mode: bool,
+    open_allowed: bool,
+    should_open: bool,
+    pid: PidController,
+}
+
+impl OutflowValveController {
+    fn new() -> Self {
+        Self {
+            //TODO: add ID for multiple OFV
+            is_in_man_mode: false,
+            open_allowed: true,
+            should_open: true,
+            pid: PidController::new(0.0001, 9.5, 0., 0., 100., 0., 1.),
+        }
+    }
+
+    fn update(
+        &mut self,
+        context: &UpdateContext,
+        cabin_pressure: &impl CabinPressure,
+        cabin_target_vs: Velocity,
+        press_overhead: &impl PressurizationOverheadShared,
+        open_allowed: bool,
+        should_open_ofv: bool,
+    ) {
+        self.is_in_man_mode = press_overhead.is_in_man_mode();
+        self.open_allowed = open_allowed && !press_overhead.ditching_is_on();
+        self.should_open = should_open_ofv && self.open_allowed;
+
+        if self.open_allowed {
+            self.pid
+                .change_setpoint(cabin_target_vs.get::<meter_per_second>());
+            self.pid.next_control_output(
+                cabin_pressure.vertical_speed().get::<meter_per_second>(),
+                Some(context.delta()),
+            );
+        } else {
+            self.pid.reset();
+        }
+    }
+}
+
+impl ControllerSignal<OutflowValveSignal> for OutflowValveController {
+    fn signal(&self) -> Option<OutflowValveSignal> {
+        if self.is_in_man_mode {
+            None
+        } else {
+            let target_open: Ratio = Ratio::new::<percent>(self.pid.output());
+            if !self.open_allowed {
+                Some(OutflowValveSignal::new_closed())
+            } else if self.should_open {
+                Some(OutflowValveSignal::new_open())
+            } else {
+                Some(OutflowValveSignal::new(target_open))
+            }
+        }
     }
 }
 
@@ -579,6 +604,7 @@ impl Ground {
 
 impl PressureSchedule<Ground> {
     const OUTFLOW_VALVE_OPENS_AFTER_SECS: u64 = 55;
+    const CPC_SWITCHES_AFTER_SECS: u64 = 70;
 
     fn with_open_outflow_valve() -> Self {
         Self {
@@ -616,7 +642,8 @@ impl PressureSchedule<Ground> {
     }
 
     fn should_switch_cpc(self: PressureSchedule<Ground>) -> bool {
-        self.timer > Duration::from_secs(70) && self.pressure_schedule.cpc_switch_reset
+        self.timer > Duration::from_secs(Self::CPC_SWITCHES_AFTER_SECS)
+            && self.pressure_schedule.cpc_switch_reset
     }
 
     fn reset_cpc_switch(&mut self) {
@@ -800,6 +827,8 @@ mod tests {
     };
 
     use std::time::Duration;
+    use uom::si::area::square_meter;
+    use uom::si::volume::cubic_meter;
     use uom::si::{
         length::foot,
         ratio::percent,
@@ -966,11 +995,7 @@ mod tests {
     impl TestAircraft {
         fn new(context: &mut InitContext) -> Self {
             let mut test_aircraft = Self {
-                cpc: CabinPressureController::new(
-                    context,
-                    Volume::new::<cubic_meter>(210.),
-                    Area::new::<square_meter>(0.03),
-                ),
+                cpc: CabinPressureController::new(context),
                 cabin_simulation: CabinPressureSimulation::new(
                     context,
                     Volume::new::<cubic_meter>(210.),
