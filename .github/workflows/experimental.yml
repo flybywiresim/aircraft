@@ -56,7 +56,6 @@ jobs:
           CDN_BUCKET_DESTINATION: addons/a32nx/experimental
         run: |
           ./scripts/cf-cdn.sh $CDN_BUCKET_DESTINATION ./build-modules
-          ./scripts/cf-cdn.sh $CDN_BUCKET_DESTINATION ./${{ env.BUILD_DIR_NAME }}
       - name: Delete old GitHub Pre-Release assets
         uses: mknejp/delete-release-assets@v1
         with:
