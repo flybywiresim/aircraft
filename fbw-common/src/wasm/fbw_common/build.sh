@@ -30,6 +30,7 @@ clang++ \
   -flto \
   -D_MSFS_WASM=1 \
   -D__wasi__ \
+  -D_LIBCC_NO_EXCEPTIONS \
   -D_LIBCPP_HAS_NO_THREADS \
   -D_WINDLL \
   -D_MBCS \
@@ -40,8 +41,6 @@ clang++ \
   -O3 \
   -I "${MSFS_SDK}/WASM/include" \
   -I "${MSFS_SDK}/SimConnect SDK/include" \
-  -I "${DIR}/src/spng" \
-  -I "${DIR}/src/zlib" \
   "${DIR}/src/main.cpp" \
   "${DIR}/src/interface/SimConnectInterface.cpp" \
 
