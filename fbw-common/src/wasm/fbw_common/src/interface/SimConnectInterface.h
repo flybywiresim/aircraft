@@ -14,6 +14,10 @@ class SimConnectInterface {
   bool connect(const std::string& side);
   void disconnect();
   bool update();
+  bool receivedFrameData() const;
+  const TerrOnNdMetadata& metadata() const;
+  const std::vector<std::uint8_t>& frameData() const;
+  void processedFrame();
 
  private:
   enum ClientData : SIMCONNECT_CLIENT_DATA_ID {
@@ -28,7 +32,7 @@ class SimConnectInterface {
 
   bool isConnected = false;
   HANDLE hSimConnect = 0;
-  TerrOnNdMetadata metadata;
+  TerrOnNdMetadata frameMetadata;
   std::vector<std::uint8_t> frameBuffer;
   std::size_t receivedFrameDataBytes;
 

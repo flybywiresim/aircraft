@@ -87,29 +87,20 @@ bool SimConnectInterface::prepareTerrOnNdFrameDataDefinition(const std::string& 
   return SUCCEEDED(result);
 }
 
-static void __logMetadata(const TerrOnNdMetadata& thresholds) {
-  std::cout << "TERR ON ND: Width " << std::to_string(thresholds.imageWidth) << " Height " << std::to_string(thresholds.imageHeight)
-            << std::endl;
-  std::cout << "TERR ON ND: Min " << std::to_string(thresholds.lowerThreshold) << " Mode " << std::to_string(thresholds.lowerThresholdMode)
-            << std::endl;
-  std::cout << "TERR ON ND: Max " << std::to_string(thresholds.upperThreshold) << " Mode " << std::to_string(thresholds.upperThresholdMode)
-            << std::endl;
-  std::cout << "TERR ON ND: Frame size " << std::to_string(thresholds.frameByteCount) << std::endl;
-}
-
 void SimConnectInterface::processClientData(const SIMCONNECT_RECV_CLIENT_DATA* data) {
   switch (data->dwRequestID) {
     case ClientData::METADATA:
-      this->metadata = *((TerrOnNdMetadata*)&data->dwData);
-      this->frameBuffer.reserve(this->metadata.frameByteCount);
+      this->frameMetadata = *((TerrOnNdMetadata*)&data->dwData);
+      // TODO write some simvars for the thresholds
+      this->frameBuffer.reserve(this->frameMetadata.frameByteCount);
       this->receivedFrameDataBytes = 0;
       break;
     case ClientData::FRAMEDATA: {
-      std::size_t copySize = this->metadata.frameByteCount - this->receivedFrameDataBytes;
+      std::size_t copySize = this->frameMetadata.frameByteCount - this->receivedFrameDataBytes;
       if (copySize > SIMCONNECT_CLIENTDATA_MAX_SIZE) {
         copySize = SIMCONNECT_CLIENTDATA_MAX_SIZE;
       }
-      std::memcpy(&this->frameBuffer.data()[this->receivedFrameDataBytes], (std::uint8_t*)data->dwData, copySize);
+      std::memcpy(&(this->frameBuffer.data()[this->receivedFrameDataBytes]), &data->dwData, copySize);
       this->receivedFrameDataBytes += copySize;
       break;
     }
@@ -117,8 +108,6 @@ void SimConnectInterface::processClientData(const SIMCONNECT_RECV_CLIENT_DATA* d
       std::cout << "TERR ON ND: Unknown request ID in SimConnect connection: " << std::to_string(data->dwRequestID) << std::endl;
       return;
   }
-
-  __logMetadata(this->metadata);
 }
 
 void SimConnectInterface::processDispatchMessage(SIMCONNECT_RECV* pData, DWORD* cbData) {
@@ -159,4 +148,20 @@ bool SimConnectInterface::readData() {
   }
 
   return true;
+}
+
+bool SimConnectInterface::receivedFrameData() const {
+  return this->receivedFrameDataBytes > 0 && this->receivedFrameDataBytes >= this->frameMetadata.frameByteCount;
+}
+
+const TerrOnNdMetadata& SimConnectInterface::metadata() const {
+  return this->frameMetadata;
+}
+
+const std::vector<std::uint8_t>& SimConnectInterface::frameData() const {
+  return this->frameBuffer;
+}
+
+void SimConnectInterface::processedFrame() {
+  this->receivedFrameDataBytes = 0;
 }
