@@ -12,7 +12,7 @@
 
 #include "../model/A380PrimComputer_types.h"
 #include "../model/FacComputer_types.h"
-//#include "../model/SecComputer_types.h"
+// #include "../model/SecComputer_types.h"
 
 class SimConnectInterface {
  public:
@@ -299,7 +299,7 @@ class SimConnectInterface {
   bool getLoggingThrottlesEnabled();
 
   // remove when aileron events can be processed via SimConnect
-  static void processKeyEvent(ID32 event, UINT32 evdata, PVOID userdata);
+  static void processKeyEvent(ID32 event, UINT32 evdata0, UINT32 evdata1, UINT32 evdata2, UINT32 evdata3, UINT32 evdata4, PVOID userdata);
 
   void updateSimulationRateLimits(double minSimulationRate, double maxSimulationRate);
 
