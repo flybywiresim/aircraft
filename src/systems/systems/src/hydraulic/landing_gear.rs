@@ -1283,11 +1283,12 @@ mod tests {
     #[test]
     fn door_assembly_init_uplocked() {
         let mut test_bed = SimulationTestBed::new(|context| {
+            let gear_door = main_gear_door_right_assembly(context);
+
             TestSingleGearAircraft::new(
                 Duration::from_millis(10),
-                main_gear_door_right_assembly(),
-                main_gear_right_assembly(true),
-
+                gear_door,
+                main_gear_right_assembly(context, true),
             )
         });
 
@@ -1302,11 +1303,12 @@ mod tests {
     #[test]
     fn door_uplocked_gives_correct_proximity_sensor_state() {
         let mut test_bed = SimulationTestBed::new(|context| {
+            let gear_door = main_gear_door_right_assembly(context);
+
             TestSingleGearAircraft::new(
                 Duration::from_millis(10),
-                main_gear_door_right_assembly(),
-                main_gear_right_assembly(true),
-
+                gear_door,
+                main_gear_right_assembly(context, true),
             )
         });
 
@@ -1326,11 +1328,12 @@ mod tests {
     #[test]
     fn door_opens_gear_stays_down_and_locked() {
         let mut test_bed = SimulationTestBed::new(|context| {
+            let gear_door = main_gear_door_right_assembly(context);
+
             TestSingleGearAircraft::new(
                 Duration::from_millis(10),
-                main_gear_door_right_assembly(),
-                main_gear_right_assembly(true),
-
+                gear_door,
+                main_gear_right_assembly(context, true),
             )
         });
 
@@ -1345,10 +1348,12 @@ mod tests {
     #[test]
     fn no_unlocking_from_door_uplock_without_pressure() {
         let mut test_bed = SimulationTestBed::new(|context| {
+            let gear_door = main_gear_door_right_assembly(context);
+
             TestSingleGearAircraft::new(
                 Duration::from_millis(10),
-                main_gear_door_right_assembly(),
-                main_gear_right_assembly(true),
+                gear_door,
+                main_gear_right_assembly(context, true),
             )
         });
         test_bed.command(|a| a.set_pressure(Pressure::new::<psi>(10.)));
@@ -1363,10 +1368,12 @@ mod tests {
     #[test]
     fn full_retract_extend_cycle() {
         let mut test_bed = SimulationTestBed::new(|context| {
+            let gear_door = main_gear_door_right_assembly(context);
+
             TestSingleGearAircraft::new(
                 Duration::from_millis(10),
-                main_gear_door_right_assembly(),
-                main_gear_right_assembly(true),
+                gear_door,
+                main_gear_right_assembly(context, true),
             )
         });
         test_bed.run_with_delta(Duration::from_millis(10));

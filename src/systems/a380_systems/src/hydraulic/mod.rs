@@ -1889,9 +1889,7 @@ impl A380Hydraulic {
         );
 
         for cur_time_step in self.core_hydraulic_updater {
-
             self.update_physics(&context.with_delta(cur_time_step), lgcius, adirs);
-
 
             self.update_core_hydraulics(
                 &context.with_delta(cur_time_step),
