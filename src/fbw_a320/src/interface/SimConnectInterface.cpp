@@ -77,7 +77,7 @@ bool SimConnectInterface::connect(bool clientDataEnabled,
     }
     // register key event handler
     // remove when aileron events can be processed via SimConnect
-    register_key_event_handler(static_cast<GAUGE_KEY_EVENT_HANDLER>(processKeyEvent), NULL);
+    register_key_event_handler_EX1(static_cast<GAUGE_KEY_EVENT_HANDLER_EX1>(processKeyEvent), NULL);
     // send initial event to FCU to force HDG mode
     execute_calculator_code("(>H:A320_Neo_FCU_HDG_PULL)", nullptr, nullptr, nullptr);
     // success
@@ -91,7 +91,7 @@ void SimConnectInterface::disconnect() {
   if (isConnected) {
     // unregister key event handler
     // remove when aileron events can be processed via SimConnect
-    unregister_key_event_handler(static_cast<GAUGE_KEY_EVENT_HANDLER>(processKeyEvent), NULL);
+    unregister_key_event_handler_EX1(static_cast<GAUGE_KEY_EVENT_HANDLER_EX1>(processKeyEvent), NULL);
     // info message
     std::cout << "WASM: Disconnecting..." << std::endl;
     // close connection
@@ -1387,7 +1387,13 @@ bool SimConnectInterface::getLoggingThrottlesEnabled() {
 }
 
 // remove when aileron events can be processed via SimConnect (which also allows to mask the events)
-void SimConnectInterface::processKeyEvent(ID32 event, UINT32 evdata, PVOID userdata) {
+void SimConnectInterface::processKeyEvent(ID32 event,
+                                          UINT32 evdata0,
+                                          UINT32 evdata1,
+                                          UINT32 evdata2,
+                                          UINT32 evdata3,
+                                          UINT32 evdata4,
+                                          PVOID userdata) {
   switch (event) {
     case KEY_AILERON_LEFT: {
       simInput.inputs[AXIS_AILERONS_SET] = std::fmin(1.0, simInput.inputs[AXIS_AILERONS_SET] + flightControlsKeyChangeAileron);
@@ -1448,7 +1454,8 @@ void SimConnectInterface::simConnectProcessDispatchMessage(SIMCONNECT_RECV* pDat
     case SIMCONNECT_RECV_ID_EXCEPTION:
       // exception
       std::cout << "WASM: Exception in SimConnect connection: ";
-      std::cout << getSimConnectExceptionString(static_cast<SIMCONNECT_EXCEPTION>(static_cast<SIMCONNECT_RECV_EXCEPTION*>(pData)->dwException));
+      std::cout << getSimConnectExceptionString(
+          static_cast<SIMCONNECT_EXCEPTION>(static_cast<SIMCONNECT_RECV_EXCEPTION*>(pData)->dwException));
       std::cout << std::endl;
       break;
 
