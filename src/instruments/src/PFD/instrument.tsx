@@ -128,6 +128,7 @@ class A32NX_PFD extends BaseInstrument {
         this.simVarPublisher.subscribe('transAltAppr');
 
         this.simVarPublisher.subscribe('magTrackRaw');
+        this.simVarPublisher.subscribe('selectedHeading');
         this.simVarPublisher.subscribe('showSelectedHeading');
         this.simVarPublisher.subscribe('altConstraint');
         this.simVarPublisher.subscribe('trkFpaActive');

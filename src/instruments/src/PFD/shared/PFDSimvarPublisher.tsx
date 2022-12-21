@@ -60,6 +60,7 @@ export interface PFDSimvars {
     transAlt: number;
     transAltAppr: number;
     magTrackRaw: number;
+    selectedHeading: number;
     showSelectedHeading: number;
     altConstraint: number;
     trkFpaActive: boolean;
@@ -209,6 +210,7 @@ export enum PFDVars {
     transAlt = 'L:AIRLINER_TRANS_ALT',
     transAltAppr = 'L:AIRLINER_APPR_TRANS_ALT',
     magTrackRaw = 'L:A32NX_ADIRS_IR_1_TRACK',
+    selectedHeading = 'L:A32NX_FCU_HEADING_SELECTED',
     showSelectedHeading = 'L:A320_FCU_SHOW_SELECTED_HEADING',
     altConstraint = 'L:A32NX_FG_ALTITUDE_CONSTRAINT',
     trkFpaActive = 'L:A32NX_TRK_FPA_MODE_ACTIVE',
@@ -359,6 +361,7 @@ export class PFDSimvarPublisher extends SimVarPublisher<PFDSimvars> {
         ['transAlt', { name: PFDVars.transAlt, type: SimVarValueType.Number }],
         ['transAltAppr', { name: PFDVars.transAltAppr, type: SimVarValueType.Number }],
         ['magTrackRaw', { name: PFDVars.magTrackRaw, type: SimVarValueType.Number }],
+        ['selectedHeading', { name: PFDVars.selectedHeading, type: SimVarValueType.Degree }],
         ['showSelectedHeading', { name: PFDVars.showSelectedHeading, type: SimVarValueType.Number }],
         ['altConstraint', { name: PFDVars.altConstraint, type: SimVarValueType.Feet }],
         ['trkFpaActive', { name: PFDVars.trkFpaActive, type: SimVarValueType.Bool }],
