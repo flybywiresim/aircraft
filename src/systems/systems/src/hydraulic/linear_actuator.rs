@@ -316,6 +316,10 @@ impl ElectroHydrostaticBackup {
     fn accumulator_pressure(&self) -> Pressure {
         self.accumulator.pressure()
     }
+
+    fn is_electrical_mode_active(&self) -> bool {
+        self.pump.is_active()
+    }
 }
 impl SimulationElement for ElectroHydrostaticBackup {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
@@ -1163,17 +1167,26 @@ impl LinearActuator {
             -volume_to_actuator
         } / context.delta_as_time();
 
-        // If actuator is in active control, it can use fluid from its input port
-        // Else it will only return fluid to reservoir or take fluid from reservoir
-        //
-        // Note on assymetric actuators, in extension direction, return to reservoir can be negative,
-        //   meaning actuator takes fluid in the return circuit to be able to move.
-        // This is a shortcut as it shouldn't directly take from reservoir but from return circuit
-        if self.core_hydraulics.mode() == LinearActuatorMode::PositionControl {
-            self.total_volume_to_actuator += volume_to_actuator;
-            self.total_volume_to_reservoir += volume_to_reservoir;
-        } else {
-            self.total_volume_to_reservoir += volume_to_reservoir - volume_to_actuator;
+        let eha_backup_mode_active = self.electro_hydrostatic_backup.is_some()
+            && self
+                .electro_hydrostatic_backup
+                .unwrap()
+                .is_electrical_mode_active();
+
+        // If eha mode, we don't want to use any fluid from the circuit when actuator moves, else we compute correct volumes
+        if !eha_backup_mode_active {
+            // If actuator is in active control, it can use fluid from its input port
+            // Else it will only return fluid to reservoir or take fluid from reservoir
+            //
+            // Note on assymetric actuators, in extension direction, return to reservoir can be negative,
+            //   meaning actuator takes fluid in the return circuit to be able to move.
+            // This is a shortcut as it shouldn't directly take from reservoir but from return circuit
+            if self.core_hydraulics.mode() == LinearActuatorMode::PositionControl {
+                self.total_volume_to_actuator += volume_to_actuator;
+                self.total_volume_to_reservoir += volume_to_reservoir;
+            } else {
+                self.total_volume_to_reservoir += volume_to_reservoir - volume_to_actuator;
+            }
         }
     }
 
