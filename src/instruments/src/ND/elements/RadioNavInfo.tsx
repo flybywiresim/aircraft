@@ -32,6 +32,7 @@ const VorInfo: React.FC<{index: 1 | 2, trueRef: boolean, mode: Mode }> = ({ inde
     const [vorHasDme] = useSimVar(`NAV HAS DME:${index}`, 'bool');
     const [dmeDistance] = useSimVar(`NAV DME:${index}`, 'nautical miles');
     const [vorAvailable] = useSimVar(`NAV HAS NAV:${index}`, 'boolean');
+    // FIXME should be database magvar, not just when received
     const [stationDeclination] = useSimVar(`NAV MAGVAR:${index}`, 'degrees');
     const [stationLocation] = useSimVar(`NAV VOR LATLONALT:${index}`, 'latlonalt');
     const [stationRefTrue, setStationRefTrue] = useState(false);
@@ -93,9 +94,9 @@ const VorInfo: React.FC<{index: 1 | 2, trueRef: boolean, mode: Mode }> = ({ inde
             {(vorAvailable || vorHasDme) && vorFrequency > 1 && (
                 <>
                     <text x={x} y={722} fontSize={24} className="White">{vorIdent}</text>
-                    <text x={index === 2 ? x - 52 : x + 69} y={692} fontSize={18} className="Magenta" visibility={corrected ? 'inherit' : 'hidden'}>CORR</text>
-                    <text x={index === 2 ? x - 52 : x + 81} y={692} fontSize={18} className="Amber" visibility={magWarning ? 'inherit' : 'hidden'}>MAG</text>
-                    <text x={index === 2 ? x - 52 : x + 69} y={692} fontSize={18} className="Amber" visibility={trueWarning ? 'inherit' : 'hidden'}>TRUE</text>
+                    <text x={index === 2 ? x - 54 : x + 61} y={692} fontSize={20} className="Magenta" visibility={corrected ? 'inherit' : 'hidden'}>CORR</text>
+                    <text x={index === 2 ? x - 54 : x + 73} y={692} fontSize={20} className="Amber" visibility={magWarning ? 'inherit' : 'hidden'}>MAG</text>
+                    <text x={index === 2 ? x - 54 : x + 61} y={692} fontSize={20} className="Amber" visibility={trueWarning ? 'inherit' : 'hidden'}>TRUE</text>
                 </>
             )}
             {!(vorAvailable || vorHasDme) && vorFrequency > 1 && (

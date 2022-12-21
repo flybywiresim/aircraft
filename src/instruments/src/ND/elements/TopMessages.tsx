@@ -18,13 +18,16 @@ type GridTrackProps = {
 
 const GridTrack: React.FC<GridTrackProps> = ({ gridTrack }) => (
     <>
-        <rect x={0} width={87} y={-20} height={22} className="White" strokeWidth={1.5} />
-        <text x={44} fontSize={22} textAnchor="middle">
+        <rect x={0} width={94} y={-20} height={23} className="White" strokeWidth={1.5} />
+        <text x={45} fontSize={22} textAnchor="middle">
             <tspan className="Green">
                 ◇
                 {gridTrack?.toFixed(0).padStart(3, '0') ?? ''}
             </tspan>
-            <tspan className="Cyan">°G</tspan>
+            <tspan className="Cyan">
+                <tspan dx="-5" dy="8" fontSize={28}>°</tspan>
+                <tspan dy="-8">G</tspan>
+            </tspan>
         </text>
     </>
 );
@@ -36,8 +39,8 @@ type TrueFlagProps = {
 
 const TrueFlag: React.FC<TrueFlagProps> = ({ xOffset = 0, box }) => (
     <>
-        <rect x={-30 + xOffset} width={60} y={-20} height={22} className="Cyan" strokeWidth={1.5} visibility={box ? 'inherit' : 'hidden'} />
-        <text x={xOffset} fontSize={22} className="Cyan" textAnchor="middle">TRUE</text>
+        <rect x={-30 + xOffset} width={68} y={-20} height={23} className="Cyan" strokeWidth={1.5} visibility={box ? 'inherit' : 'hidden'} />
+        <text x={4 + xOffset} fontSize={22} className="Cyan" textAnchor="middle">TRUE</text>
     </>
 );
 
@@ -66,7 +69,7 @@ export const TopMessages: React.FC<TopMessagesProps> = ({ side, ppos, trueTrack,
                 <text x={0} y={0} fontSize={25} className="Green" textAnchor="middle">{apprMsg ?? ''}</text>
             </Layer>
             <Layer x={384} y={apprMsg === null ? 36 : 56} visibility={trueRef ? 'visible' : 'hidden'}>
-                <TrueFlag xOffset={apprMsg === null && gridTrack !== null ? -40 : 0} box={apprMsg === null} />
+                <TrueFlag xOffset={apprMsg === null && gridTrack !== null ? -54 : 0} box={apprMsg === null} />
                 <Layer x={0} y={0} visibility={apprMsg === null && gridTrack !== null ? 'inherit' : 'hidden'}>
                     <GridTrack gridTrack={gridTrack ?? 0} />
                 </Layer>
