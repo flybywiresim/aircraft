@@ -6,11 +6,9 @@
                 "${MSFS_SDK}/WASM/include",
                 "${MSFS_SDK}/WASM/wasi-sysroot/include",
                 "${MSFS_SDK}/SimConnect SDK/include",
-                "${workspaceFolder}/src/fbw/src",
-                "${workspaceFolder}/src/fbw/src/inih",
-                "${workspaceFolder}/src/fbw/src/interface",
-                "${workspaceFolder}/src/fbw/src/model",
-                "${workspaceFolder}/src/fbw/src/zlib"
+                "${workspaceFolder}/src/fbw_common/src/**",
+                "${workspaceFolder}/src/fbw_a320/src/**",
+                "${workspaceFolder}/src/fbw_a380/src/**"
               ],
             "defines": [
                 "_MSFS_WASM=1",
