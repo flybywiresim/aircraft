@@ -1312,11 +1312,7 @@ bool SimConnectInterface::setClientDataSecAnalog(base_sec_analog_inputs output) 
 }
 
 bool SimConnectInterface::setClientDataSecBus(base_sec_out_bus output, int secIndex) {
-  if (secIndex < 2) {
-    return sendClientData(ClientData::SEC_1_BUS_OUTPUT + secIndex, sizeof(output), &output);
-  } else {
-    return false;
-  }
+  return sendClientData(ClientData::SEC_1_BUS_OUTPUT + secIndex, sizeof(output), &output);
 }
 
 bool SimConnectInterface::setClientDataFacDiscretes(base_fac_discrete_inputs output) {
