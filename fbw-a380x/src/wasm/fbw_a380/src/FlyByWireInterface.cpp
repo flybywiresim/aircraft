@@ -1422,9 +1422,9 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
     prims[primIndex].modelInputs.in.bus_inputs.prim_y_bus = primsBusOutputs[1];
   }
 
-  prims[primIndex].modelInputs.in.bus_inputs.sec_1_bus = {};
-  prims[primIndex].modelInputs.in.bus_inputs.sec_2_bus = {};
-  prims[primIndex].modelInputs.in.bus_inputs.sec_3_bus = {};
+  prims[primIndex].modelInputs.in.bus_inputs.sec_1_bus = secsBusOutputs[0];
+  prims[primIndex].modelInputs.in.bus_inputs.sec_2_bus = secsBusOutputs[1];
+  prims[primIndex].modelInputs.in.bus_inputs.sec_3_bus = secsBusOutputs[2];
 
   if (primIndex == primDisabled) {
     simConnectInterface.setClientDataPrimDiscretes(prims[primIndex].modelInputs.in.discrete_inputs);
