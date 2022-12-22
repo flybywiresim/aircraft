@@ -11279,6 +11279,34 @@ mod tests {
         }
 
         #[test]
+        fn green_edp_off_do_not_causes_ptu_overheat_if_ptu_on_and_cycling_gear() {
+            let mut test_bed = test_bed_in_flight_with()
+                .set_cold_dark_inputs()
+                .with_worst_case_ptu()
+                .in_flight()
+                .set_green_ed_pump(false)
+                .run_waiting_for(Duration::from_secs_f64(1.));
+
+            test_bed = test_bed
+                .set_gear_lever_down()
+                .run_waiting_for(Duration::from_secs_f64(35.));
+
+            assert!(!test_bed.ptu_has_fault());
+
+            test_bed = test_bed
+                .set_gear_lever_up()
+                .run_waiting_for(Duration::from_secs_f64(35.));
+
+            assert!(!test_bed.ptu_has_fault());
+
+            test_bed = test_bed
+                .set_gear_lever_down()
+                .run_waiting_for(Duration::from_secs_f64(35.));
+
+            assert!(!test_bed.ptu_has_fault());
+        }
+
+        #[test]
         fn empty_yellow_reservoir_causes_green_overheat_if_ptu_on() {
             let mut test_bed = test_bed_in_flight_with()
                 .set_cold_dark_inputs()

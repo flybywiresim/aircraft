@@ -375,6 +375,9 @@ impl PowerTransferUnit {
 
     const MAX_SPEED_BEFORE_HEATING_UP_RPM: f64 = 2000.;
 
+    // We consider that ptu can't overheat if there's enough pressure on both side (it's cooled by hyd fluid)
+    const MIN_PRESSURE_ALLOWING_PTU_HEATING_UP_RPM: f64 = 500.;
+
     pub fn new(
         context: &mut InitContext,
         characteristics: &impl PowerTransferUnitCharacteristics,
@@ -471,7 +474,11 @@ impl PowerTransferUnit {
         self.heat_state.update(
             context,
             self.shaft_speed.get::<revolution_per_minute>().abs()
-                > Self::MAX_SPEED_BEFORE_HEATING_UP_RPM,
+                > Self::MAX_SPEED_BEFORE_HEATING_UP_RPM
+                && (loop_left_section.pressure().get::<psi>()
+                    < Self::MIN_PRESSURE_ALLOWING_PTU_HEATING_UP_RPM
+                    || loop_right_section.pressure().get::<psi>()
+                        < Self::MIN_PRESSURE_ALLOWING_PTU_HEATING_UP_RPM),
         );
     }
 
