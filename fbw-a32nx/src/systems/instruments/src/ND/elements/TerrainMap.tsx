@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { useArinc429Var } from '@instruments/common/arinc429';
 import { useUpdate } from '@instruments/common/hooks';
 import { useSimVar } from '@instruments/common/simVars';
 import { Arinc429SignStatusMatrix } from '@shared/arinc429';
@@ -10,40 +9,6 @@ const MAP_TRANSITION_FRAMERATE = 15;
 const MAP_TRANSITION_DURATION = 1.5;
 const RERENDER_TIMEOUT = 500;
 const METRES_TO_NAUTICAL_MILES = 1852;
-
-export interface TerrainMapProviderProps {
-    side: EfisSide,
-}
-
-export const TerrainMapProvider: React.FC<TerrainMapProviderProps> = ({ side }) => {
-    const arincLat = useArinc429Var('L:A32NX_ADIRS_IR_1_LATITUDE', 1_000);
-    const arincLong = useArinc429Var('L:A32NX_ADIRS_IR_1_LONGITUDE', 1_000);
-    const [verticalSpeed] = useSimVar('VERTICAL SPEED', 'feet per second', 1_000);
-    const [trueHeading] = useSimVar('PLANE HEADING DEGREES TRUE', 'degrees', 1_000);
-    const [altitude] = useSimVar('PLANE ALTITUDE', 'feet', 1_000);
-
-    const [timer, setTimer] = useState<number | undefined>(500);
-
-    useUpdate((deltaTime) => {
-        if (timer !== undefined) {
-            if (timer > 0) {
-                setTimer(Math.max(timer - (deltaTime), 0));
-            } else if (arincLat.isNormalOperation() && arincLong.isNormalOperation()) {
-                setTimer(undefined);
-                Terrain.mapdataAvailable().then((available) => {
-                    if (available === true && side === 'L') {
-                        Terrain.setCurrentPosition(arincLat.value, arincLong.value, trueHeading, Math.round(altitude), Math.round(verticalSpeed * 60.0)).catch((_ex) => {});
-                    }
-                    setTimer(500);
-                }).catch((e) => {
-                    console.error(e);
-                });
-            }
-        }
-    });
-
-    return <></>;
-};
 
 interface TerrainMapTransitionProps {
     x: number,
