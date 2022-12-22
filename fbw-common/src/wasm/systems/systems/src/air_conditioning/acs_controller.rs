@@ -687,7 +687,7 @@ impl<const ZONES: usize> PackFlowController<ZONES> {
             should_open_fcv: false,
             pack_flow: MassRate::new::<kilogram_per_second>(0.),
             pack_flow_demand: MassRate::new::<kilogram_per_second>(0.),
-            pid: PidController::new(0.01, 1.5, 0., 0., 1., 0., 1.),
+            pid: PidController::new(0.01, 0.8, 0., 0., 1., 0., 1.),
             operation_mode: ACSCActiveComputer::None,
 
             fcv_timer_open: Duration::from_secs(0),
@@ -3550,7 +3550,7 @@ mod acs_controller_tests {
                 .command_fwd_selected_temperature(ThermodynamicTemperature::new::<degree_celsius>(
                     22.,
                 ))
-                .iterate(500);
+                .iterate(200);
 
             let initial_open = test_bed.trim_air_valves_open_amount();
 

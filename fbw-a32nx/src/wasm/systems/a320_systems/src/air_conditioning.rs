@@ -1769,11 +1769,12 @@ mod tests {
                 .with()
                 .ambient_pressure_of(Pressure::new::<hectopascal>(465.67))
                 .iterate(40)
-                .memorize_cabin_pressure()
                 .then()
                 .command_ditching_pb_on()
                 .command_packs_on_off(false)
-                .iterate(10);
+                .iterate(50)
+                .memorize_cabin_pressure()
+                .iterate(50);
 
             assert!(test_bed.cabin_pressure() < test_bed.initial_pressure());
         }
