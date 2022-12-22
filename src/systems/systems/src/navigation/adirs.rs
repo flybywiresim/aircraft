@@ -1489,41 +1489,19 @@ impl InertialReference {
             maint_word |= IrMaintFlags::EXTREME_LATITUDE;
         }
 
-        if self.is_aligning() {
-            if self
-                .remaining_align_duration()
-                .map_or(false, |duration| duration.as_secs() <= 60)
-            {
-                maint_word |= IrMaintFlags::ALIGN_1_MINUTES;
-            } else if self
-                .remaining_align_duration()
-                .map_or(false, |duration| duration.as_secs() <= 120)
-            {
-                maint_word |= IrMaintFlags::ALIGN_2_MINUTES;
-            } else if self
-                .remaining_align_duration()
-                .map_or(false, |duration| duration.as_secs() <= 180)
-            {
-                maint_word |= IrMaintFlags::ALIGN_3_MINUTES;
-            } else if self
-                .remaining_align_duration()
-                .map_or(false, |duration| duration.as_secs() <= 240)
-            {
-                maint_word |= IrMaintFlags::ALIGN_4_MINUTES;
-            } else if self
-                .remaining_align_duration()
-                .map_or(false, |duration| duration.as_secs() <= 300)
-            {
-                maint_word |= IrMaintFlags::ALIGN_5_MINUTES;
-            } else if self
-                .remaining_align_duration()
-                .map_or(false, |duration| duration.as_secs() <= 360)
-            {
-                maint_word |= IrMaintFlags::ALIGN_6_MINUTES;
-            } else {
-                maint_word |= IrMaintFlags::ALIGN_7_10_MINUTES;
-            }
-        }
+        maint_word |= match self
+            .remaining_align_duration()
+            .map(|duration| duration.as_secs())
+        {
+            Some(1..=60) => IrMaintFlags::ALIGN_1_MINUTES,
+            Some(61..=120) => IrMaintFlags::ALIGN_2_MINUTES,
+            Some(121..=180) => IrMaintFlags::ALIGN_3_MINUTES,
+            Some(181..=240) => IrMaintFlags::ALIGN_4_MINUTES,
+            Some(241..=300) => IrMaintFlags::ALIGN_5_MINUTES,
+            Some(301..=360) => IrMaintFlags::ALIGN_6_MINUTES,
+            Some(361..) => IrMaintFlags::ALIGN_7_10_MINUTES,
+            Some(0) | None => IrMaintFlags::default(),
+        };
 
         // TODO sin/cos test discrepancy
 
@@ -2318,7 +2296,6 @@ mod tests {
 
         fn assert_ir_heading_data_available(&mut self, available: bool, adiru_number: usize) {
             assert_eq!(self.heading(adiru_number).is_normal_operation(), available);
-            // assert_eq!(self.true_heading(adiru_number).is_normal_operation(), available);
         }
 
         fn assert_ir_non_attitude_data_available(&mut self, available: bool, adiru_number: usize) {
