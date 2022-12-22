@@ -1585,18 +1585,18 @@ bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
 
   if (secIndex == 0) {
     secs[secIndex].modelInputs.in.bus_inputs.adr_1_bus = adrBusOutputs[0];
-    secs[secIndex].modelInputs.in.bus_inputs.adr_2_bus = adrBusOutputs[2];
-    secs[secIndex].modelInputs.in.bus_inputs.ir_1_bus = irBusOutputs[0];
-    secs[secIndex].modelInputs.in.bus_inputs.ir_2_bus = irBusOutputs[2];
-  } else if (secIndex == 1) {
-    secs[secIndex].modelInputs.in.bus_inputs.adr_1_bus = adrBusOutputs[0];
     secs[secIndex].modelInputs.in.bus_inputs.adr_2_bus = adrBusOutputs[1];
     secs[secIndex].modelInputs.in.bus_inputs.ir_1_bus = irBusOutputs[0];
     secs[secIndex].modelInputs.in.bus_inputs.ir_2_bus = irBusOutputs[1];
-  } else if (secIndex == 2) {
+  } else if (secIndex == 1) {
     secs[secIndex].modelInputs.in.bus_inputs.adr_1_bus = adrBusOutputs[1];
     secs[secIndex].modelInputs.in.bus_inputs.adr_2_bus = adrBusOutputs[2];
     secs[secIndex].modelInputs.in.bus_inputs.ir_1_bus = irBusOutputs[1];
+    secs[secIndex].modelInputs.in.bus_inputs.ir_2_bus = irBusOutputs[2];
+  } else if (secIndex == 2) {
+    secs[secIndex].modelInputs.in.bus_inputs.adr_1_bus = adrBusOutputs[0];
+    secs[secIndex].modelInputs.in.bus_inputs.adr_2_bus = adrBusOutputs[2];
+    secs[secIndex].modelInputs.in.bus_inputs.ir_1_bus = irBusOutputs[0];
     secs[secIndex].modelInputs.in.bus_inputs.ir_2_bus = irBusOutputs[2];
   }
 
