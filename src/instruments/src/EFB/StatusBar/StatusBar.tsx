@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import React, { useEffect, useRef, useState } from 'react';
-import { Power, Wifi, WifiOff } from 'react-bootstrap-icons';
+import { BrightnessHigh, Power, Wifi, WifiOff } from 'react-bootstrap-icons';
 import { useSimVar } from '@instruments/common/simVars';
 import { usePersistentNumberProperty, usePersistentProperty } from '@instruments/common/persistence';
 import { useLongPress } from 'use-long-press';
@@ -15,6 +15,7 @@ import { BatteryStatus } from './BatteryStatus';
 import { useAppSelector } from '../Store/store';
 import { initialState } from '../Store/features/simBrief';
 import { ClientState } from '../../../../simbridge-client/src';
+import { BrightnessControl } from './BrightnessControl';
 
 interface StatusBarProps {
     batteryLevel: number;
@@ -149,6 +150,7 @@ export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
             />
 
             <p>{`${dayName} ${monthName} ${dayOfMonth}`}</p>
+
             <div className="flex absolute inset-x-0 flex-row justify-center items-center mx-auto space-x-4 w-min">
                 {(timeDisplayed === 'utc' || timeDisplayed === 'both') && (
                     <p>{getZuluFormattedTime(currentUTC)}</p>
@@ -160,10 +162,12 @@ export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
                     <p>{getLocalFormattedTime(currentLocalTime)}</p>
                 )}
             </div>
-            <div className="flex items-center space-x-8">
+
+            <div className="flex items-center space-x-4">
+
                 {(!!showStatusBarFlightProgress && (data !== initialState.data)) && (
                     <div
-                        className="flex overflow-hidden flex-row items-center space-x-4 h-10"
+                        className="flex overflow-hidden flex-row items-center pr-10 space-x-4 h-10"
                         onClick={() => setShowSchedTimes((old) => !old)}
                     >
                         <div className={`${showSchedTimes ? '-translate-y-1/4' : 'translate-y-1/4'} transform transition text-right duration-100 flex flex-col space-y-1`}>
@@ -180,6 +184,8 @@ export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
                         </div>
                     </div>
                 )}
+
+                <BrightnessControl />
 
                 <TooltipWrapper text={simBridgeConnected ? t('StatusBar.TT.ConnectedToLocalApi') : t('StatusBar.TT.DisconnectedFromLocalApi')}>
                     {simBridgeConnected ? (

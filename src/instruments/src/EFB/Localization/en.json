@@ -612,7 +612,8 @@
     "TT": {
       "ConnectedToLocalApi": "Connected to SimBridge",
       "DisconnectedFromLocalApi": "Disconnected from SimBridge",
-      "TurnOffOrShutdownEfb": "Turn off or Shutdown EFB"
+      "TurnOffOrShutdownEfb": "Turn off or Shutdown EFB",
+      "Brightness": "Click to change Brightness"
     },
     "Thu": "Thu",
     "Tue": "Tue",
