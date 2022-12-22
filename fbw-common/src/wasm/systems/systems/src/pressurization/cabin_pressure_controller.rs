@@ -11,7 +11,7 @@ use crate::{
 
 use super::{
     CabinPressure, CabinPressureSimulation, OutflowValveActuator, OutflowValveSignal,
-    PressureValve, PressureValveSignal,
+    PressureValve, PressureValveSignal, PressurizationConstants,
 };
 
 use std::time::Duration;
@@ -24,7 +24,15 @@ use uom::si::{
     velocity::{foot_per_minute, knot, meter_per_second},
 };
 
-pub struct CabinPressureController {
+struct Constants<C: PressurizationConstants>(C);
+
+impl<C: PressurizationConstants> Constants<C> {
+    pub fn new(constants: C) -> Constants<C> {
+        Constants(constants)
+    }
+}
+
+pub struct CabinPressureController<C: PressurizationConstants> {
     cabin_altitude_id: VariableIdentifier,
     fwc_excess_cabin_altitude_id: VariableIdentifier,
     fwc_excess_residual_pressure_id: VariableIdentifier,
@@ -57,24 +65,18 @@ pub struct CabinPressureController {
     man_mode_duration: Duration,
     manual_to_auto_switch: bool,
     cabin_temperature: ThermodynamicTemperature,
+
+    _constants: Constants<C>,
 }
 
-impl CabinPressureController {
+impl<C: PressurizationConstants> CabinPressureController<C> {
     // Atmospheric constants
     const R: f64 = 287.058; // Specific gas constant for air - m2/s2/K
     const G: f64 = 9.80665; // Gravity - m/s2
     const T_0: f64 = 288.2; // ISA standard temperature - K
     const L: f64 = -0.00651; // Adiabatic lapse rate - K/m
 
-    // Vertical speed constraints
-    const MAX_CLIMB_RATE: f64 = 750.;
-    const MAX_CLIMB_RATE_IN_DESCENT: f64 = 500.;
-    const MAX_DESCENT_RATE: f64 = -750.;
-    const MAX_ABORT_DESCENT_RATE: f64 = -500.;
-    const TAKEOFF_RATE: f64 = -400.;
-    const DEPRESS_RATE: f64 = 500.;
-
-    pub fn new(context: &mut InitContext) -> Self {
+    pub fn new(context: &mut InitContext, aircraft: C) -> Self {
         Self {
             cabin_altitude_id: context.get_identifier("PRESS_CABIN_ALTITUDE".to_owned()),
             fwc_excess_cabin_altitude_id: context.get_identifier("PRESS_EXCESS_CAB_ALT".to_owned()),
@@ -112,6 +114,8 @@ impl CabinPressureController {
             man_mode_duration: Duration::from_secs(0),
             manual_to_auto_switch: false,
             cabin_temperature: ThermodynamicTemperature::new::<kelvin>(297.15), // 24C
+
+            _constants: Constants::new(aircraft),
         }
     }
 
@@ -173,35 +177,33 @@ impl CabinPressureController {
         match self.pressure_schedule_manager {
             Some(PressureScheduleManager::Ground(_)) => {
                 if self.cabin_delta_p() > error_margin {
-                    Velocity::new::<foot_per_minute>(Self::DEPRESS_RATE)
+                    Velocity::new::<foot_per_minute>(C::DEPRESS_RATE)
                 } else if self.cabin_delta_p() < -error_margin {
-                    Velocity::new::<foot_per_minute>(-Self::DEPRESS_RATE)
+                    Velocity::new::<foot_per_minute>(-C::DEPRESS_RATE)
                 } else {
                     Velocity::new::<foot_per_minute>(0.)
                 }
             }
             Some(PressureScheduleManager::TakeOff(_)) => {
-                if self.cabin_delta_p() < Pressure::new::<psi>(0.1) {
-                    Velocity::new::<foot_per_minute>(Self::TAKEOFF_RATE)
+                if self.cabin_delta_p() < Pressure::new::<psi>(C::MAX_TAKEOFF_DELTA_P) {
+                    Velocity::new::<foot_per_minute>(C::TAKEOFF_RATE)
                 } else {
                     Velocity::new::<foot_per_minute>(0.)
                 }
             }
             Some(PressureScheduleManager::ClimbInternal(_)) => {
-                const DELTA_PRESSURE_LIMIT: f64 = 8.06; // PSI
-                const CABIN_ALTITUDE_LIMIT: f64 = 8050.; // Feet
-
                 // Formula based on empirical graphs and tables to simulate climb schedule as per the real aircraft
                 let target_vs = Velocity::new::<foot_per_minute>(
                     self.exterior_vertical_speed.get::<foot_per_minute>()
                         * (0.00000525 * context.indicated_altitude().get::<foot>() + 0.09),
                 );
-                if self.cabin_delta_p() >= Pressure::new::<psi>(DELTA_PRESSURE_LIMIT) {
-                    Velocity::new::<foot_per_minute>(Self::MAX_CLIMB_RATE)
-                } else if self.cabin_altitude() >= Length::new::<foot>(CABIN_ALTITUDE_LIMIT) {
+                if self.cabin_delta_p() >= Pressure::new::<psi>(C::MAX_CLIMB_DELTA_P) {
+                    Velocity::new::<foot_per_minute>(C::MAX_CLIMB_RATE)
+                } else if self.cabin_altitude() >= Length::new::<foot>(C::MAX_CLIMB_CABIN_ALTITUDE)
+                {
                     Velocity::new::<foot_per_minute>(0.)
-                } else if target_vs <= Velocity::new::<foot_per_minute>(Self::MAX_DESCENT_RATE) {
-                    Velocity::new::<foot_per_minute>(Self::MAX_DESCENT_RATE)
+                } else if target_vs <= Velocity::new::<foot_per_minute>(C::MAX_DESCENT_RATE) {
+                    Velocity::new::<foot_per_minute>(C::MAX_DESCENT_RATE)
                 } else {
                     target_vs
                 }
@@ -216,12 +218,12 @@ impl CabinPressureController {
                 );
                 if ext_diff_with_ldg_elev <= 0. {
                     Velocity::new::<foot_per_minute>(0.)
-                } else if target_vs <= Velocity::new::<foot_per_minute>(Self::MAX_DESCENT_RATE) {
-                    Velocity::new::<foot_per_minute>(Self::MAX_DESCENT_RATE)
+                } else if target_vs <= Velocity::new::<foot_per_minute>(C::MAX_DESCENT_RATE) {
+                    Velocity::new::<foot_per_minute>(C::MAX_DESCENT_RATE)
                 } else if target_vs
-                    >= Velocity::new::<foot_per_minute>(Self::MAX_CLIMB_RATE_IN_DESCENT)
+                    >= Velocity::new::<foot_per_minute>(C::MAX_CLIMB_RATE_IN_DESCENT)
                 {
-                    Velocity::new::<foot_per_minute>(Self::MAX_CLIMB_RATE_IN_DESCENT)
+                    Velocity::new::<foot_per_minute>(C::MAX_CLIMB_RATE_IN_DESCENT)
                 } else {
                     target_vs
                 }
@@ -233,7 +235,7 @@ impl CabinPressureController {
                 if self.cabin_altitude()
                     > self.departure_elev - Length::new::<foot>(TARGET_LANDING_ALT_DIFF)
                 {
-                    Velocity::new::<foot_per_minute>(Self::MAX_ABORT_DESCENT_RATE)
+                    Velocity::new::<foot_per_minute>(C::MAX_ABORT_DESCENT_RATE)
                 } else {
                     Velocity::new::<foot_per_minute>(0.)
                 }
@@ -286,13 +288,9 @@ impl CabinPressureController {
         let pressure_ratio = (self.cabin_pressure / p_0).get::<ratio>();
 
         // Hydrostatic equation with linear temp changes and constant R, g
-        let altitude: f64 = ((CabinPressureController::T_0
-            / pressure_ratio.powf(
-                (CabinPressureController::L * CabinPressureController::R)
-                    / CabinPressureController::G,
-            ))
-            - CabinPressureController::T_0)
-            / CabinPressureController::L;
+        let altitude: f64 = ((Self::T_0 / pressure_ratio.powf((Self::L * Self::R) / Self::G))
+            - Self::T_0)
+            / Self::L;
         Length::new::<meter>(altitude)
     }
 
@@ -336,17 +334,17 @@ impl CabinPressureController {
 
     // FWC warning signals
     pub(super) fn is_excessive_alt(&self) -> bool {
-        self.cabin_alt > Length::new::<foot>(9550.)
+        self.cabin_alt > Length::new::<foot>(C::EXCESSIVE_ALT_WARNING)
             && self.cabin_alt > (self.departure_elev + Length::new::<foot>(1000.))
             && self.cabin_alt > (self.landing_elev + Length::new::<foot>(1000.))
     }
 
     pub(super) fn is_excessive_residual_pressure(&self) -> bool {
-        self.cabin_delta_p() > Pressure::new::<psi>(0.03)
+        self.cabin_delta_p() > Pressure::new::<psi>(C::EXCESSIVE_RESIDUAL_PRESSURE_WARNING)
     }
 
     pub(super) fn is_low_diff_pressure(&self) -> bool {
-        self.cabin_delta_p() < Pressure::new::<psi>(1.45)
+        self.cabin_delta_p() < Pressure::new::<psi>(C::LOW_DIFFERENTIAL_PRESSURE_WARNING)
             && self.cabin_alt > (self.landing_elev + Length::new::<foot>(1500.))
             && self.exterior_vertical_speed < Velocity::new::<foot_per_minute>(-500.)
     }
@@ -356,7 +354,7 @@ impl CabinPressureController {
     }
 }
 
-impl OutflowValveActuator for CabinPressureController {
+impl<C: PressurizationConstants> OutflowValveActuator for CabinPressureController<C> {
     fn target_valve_position(
         &self,
         _press_overhead: &impl PressurizationOverheadShared,
@@ -370,7 +368,9 @@ impl OutflowValveActuator for CabinPressureController {
 }
 
 // Safety valve signal
-impl ControllerSignal<PressureValveSignal> for CabinPressureController {
+impl<C: PressurizationConstants> ControllerSignal<PressureValveSignal>
+    for CabinPressureController<C>
+{
     fn signal(&self) -> Option<PressureValveSignal> {
         if self.cabin_delta_p() > Pressure::new::<psi>(8.1) {
             if self.cabin_delta_p() > Pressure::new::<psi>(8.6) {
@@ -392,7 +392,7 @@ impl ControllerSignal<PressureValveSignal> for CabinPressureController {
     }
 }
 
-impl SimulationElement for CabinPressureController {
+impl<C: PressurizationConstants> SimulationElement for CabinPressureController<C> {
     fn write(&self, writer: &mut SimulatorWriter) {
         // Add check for active cpc only
         writer.write(&self.cabin_altitude_id, self.cabin_altitude());
@@ -437,7 +437,7 @@ impl OutflowValveController {
             is_in_man_mode: false,
             open_allowed: true,
             should_open: true,
-            pid: PidController::new(0.0001, 9.5, 0., 0., 100., 0., 1.),
+            pid: PidController::new(0.0001, 7.5, 0., 0., 100., 0., 1.),
         }
     }
 
@@ -980,8 +980,27 @@ mod tests {
         }
     }
 
+    struct TestConstants;
+
+    impl PressurizationConstants for TestConstants {
+        const MAX_CLIMB_RATE: f64 = 750.; // fpm
+        const MAX_CLIMB_RATE_IN_DESCENT: f64 = 500.; // fpm
+        const MAX_DESCENT_RATE: f64 = -750.; // fpm
+        const MAX_ABORT_DESCENT_RATE: f64 = -500.; //fpm
+        const MAX_TAKEOFF_DELTA_P: f64 = 0.1; // PSI
+        const MAX_CLIMB_DELTA_P: f64 = 8.06; // PSI
+        const MAX_CLIMB_CABIN_ALTITUDE: f64 = 8050.; // feet
+        const MAX_SAFETY_DELTA_P: f64 = 8.1; // PSI
+        const MIN_SAFETY_DELTA_P: f64 = -0.5; // PSI
+        const TAKEOFF_RATE: f64 = -400.;
+        const DEPRESS_RATE: f64 = 500.;
+        const EXCESSIVE_ALT_WARNING: f64 = 9550.; // feet
+        const EXCESSIVE_RESIDUAL_PRESSURE_WARNING: f64 = 0.03; // PSI
+        const LOW_DIFFERENTIAL_PRESSURE_WARNING: f64 = 1.45; // PSI
+    }
+
     struct TestAircraft {
-        cpc: CabinPressureController,
+        cpc: CabinPressureController<TestConstants>,
         cabin_simulation: CabinPressureSimulation,
         cabin_temperature: TestCabin,
         outflow_valve: PressureValve,
@@ -995,7 +1014,7 @@ mod tests {
     impl TestAircraft {
         fn new(context: &mut InitContext) -> Self {
             let mut test_aircraft = Self {
-                cpc: CabinPressureController::new(context),
+                cpc: CabinPressureController::new(context, TestConstants),
                 cabin_simulation: CabinPressureSimulation::new(
                     context,
                     Volume::new::<cubic_meter>(210.),

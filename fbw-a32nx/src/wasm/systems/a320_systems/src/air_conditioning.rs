@@ -11,7 +11,7 @@ use systems::{
         cabin_pressure_controller::CabinPressureController,
         cabin_pressure_simulation::CabinPressureSimulation,
         pressure_valve::{PressureValve, PressureValveSignal},
-        CabinPressure,
+        CabinPressure, PressurizationConstants,
     },
     shared::{
         random_number, update_iterator::MaxStepLoop, CabinAir, CabinTemperature, ControllerSignal,
@@ -138,9 +138,10 @@ struct A320Cabin {
 }
 
 impl A320Cabin {
-    // TODO: Improve volume according to specs
-    const A320_CABIN_VOLUME_CUBIC_METER: f64 = 200.; // m3
-    const A320_COCKPIT_VOLUME_CUBIC_METER: f64 = 10.; // m3
+    // Volume data from A320 AIRCRAFT CHARACTERISTICS - AIRPORT AND MAINTENANCE PLANNING
+    const A320_CABIN_VOLUME_CUBIC_METER: f64 = 139.; // m3
+    const A320_COCKPIT_VOLUME_CUBIC_METER: f64 = 9.; // m3
+    const A320_PRESSURIZED_FUSELAGE_VOLUME_CUBIC_METER: f64 = 330.; // m3
     const A320_CABIN_LEAKAGE_AREA: f64 = 0.0003; // m2
     const A320_OUTFLOW_VALVE_SIZE: f64 = 0.05; // m2
     const A320_SAFETY_VALVE_SIZE: f64 = 0.02; //m2
@@ -216,7 +217,7 @@ impl SimulationElement for A320Cabin {
 struct A320PressurizationSystem {
     active_cpc_sys_id: VariableIdentifier,
 
-    cpc: [CabinPressureController; 2],
+    cpc: [CabinPressureController<A320PressurizationConstants>; 2],
     outflow_valve: [PressureValve; 1], // Array to prepare for more than 1 outflow valve in A380
     safety_valve: PressureValve,
     residual_pressure_controller: ResidualPressureController,
@@ -237,8 +238,8 @@ impl A320PressurizationSystem {
             active_cpc_sys_id: context.get_identifier("PRESS_ACTIVE_CPC_SYS".to_owned()),
 
             cpc: [
-                CabinPressureController::new(context),
-                CabinPressureController::new(context),
+                CabinPressureController::new(context, A320PressurizationConstants),
+                CabinPressureController::new(context, A320PressurizationConstants),
             ],
             outflow_valve: [PressureValve::new_outflow_valve(); 1],
             safety_valve: PressureValve::new_safety_valve(),
@@ -247,9 +248,7 @@ impl A320PressurizationSystem {
 
             cabin_pressure_simulation: CabinPressureSimulation::new(
                 context,
-                Volume::new::<cubic_meter>(
-                    A320Cabin::A320_CABIN_VOLUME_CUBIC_METER * 2., // TODO
-                ),
+                Volume::new::<cubic_meter>(A320Cabin::A320_PRESSURIZED_FUSELAGE_VOLUME_CUBIC_METER),
                 Area::new::<square_meter>(A320Cabin::A320_CABIN_LEAKAGE_AREA),
                 Area::new::<square_meter>(A320Cabin::A320_OUTFLOW_VALVE_SIZE),
                 Area::new::<square_meter>(A320Cabin::A320_SAFETY_VALVE_SIZE),
@@ -336,9 +335,6 @@ impl A320PressurizationSystem {
                 controller.reset_cpc_switch()
             }
         }
-        // self.cpc.iter_mut().filter(|controller| controller.should_switch_cpc()).for_each(|controller| {
-        //     controller.reset_cpc_switch();
-        // });
     }
 }
 
@@ -363,6 +359,25 @@ impl SimulationElement for A320PressurizationSystem {
 
         visitor.visit(self);
     }
+}
+
+struct A320PressurizationConstants;
+
+impl PressurizationConstants for A320PressurizationConstants {
+    const MAX_CLIMB_RATE: f64 = 750.; // fpm
+    const MAX_CLIMB_RATE_IN_DESCENT: f64 = 500.; // fpm
+    const MAX_DESCENT_RATE: f64 = -750.; // fpm
+    const MAX_ABORT_DESCENT_RATE: f64 = -500.; //fpm
+    const MAX_TAKEOFF_DELTA_P: f64 = 0.1; // PSI
+    const MAX_CLIMB_DELTA_P: f64 = 8.06; // PSI
+    const MAX_CLIMB_CABIN_ALTITUDE: f64 = 8050.; // feet
+    const MAX_SAFETY_DELTA_P: f64 = 8.1; // PSI
+    const MIN_SAFETY_DELTA_P: f64 = -0.5; // PSI
+    const TAKEOFF_RATE: f64 = -400.;
+    const DEPRESS_RATE: f64 = 500.;
+    const EXCESSIVE_ALT_WARNING: f64 = 9550.; // feet
+    const EXCESSIVE_RESIDUAL_PRESSURE_WARNING: f64 = 0.03; // PSI
+    const LOW_DIFFERENTIAL_PRESSURE_WARNING: f64 = 1.45; // PSI
 }
 
 pub struct A320PressurizationOverheadPanel {
