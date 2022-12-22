@@ -316,6 +316,10 @@ impl ElectroHydrostaticBackup {
     fn accumulator_pressure(&self) -> Pressure {
         self.accumulator.pressure()
     }
+
+    fn is_electrical_mode_active(&self) -> bool {
+        self.pump.is_active()
+    }
 }
 impl SimulationElement for ElectroHydrostaticBackup {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
@@ -1163,18 +1167,26 @@ impl LinearActuator {
             -volume_to_actuator
         } / context.delta_as_time();
 
-        // If actuator is in active control, it can use fluid from its input port
-        // Else it will only return fluid to reservoir or take fluid from reservoir
-        //
-        // Note on assymetric actuators, in extension direction, return to reservoir can be negative,
-        //   meaning actuator takes fluid in the return circuit to be able to move.
-        // This is a shortcut as it shouldn't directly take from reservoir but from return circuit
-        if self.core_hydraulics.mode() == LinearActuatorMode::PositionControl {
-            self.total_volume_to_actuator += volume_to_actuator;
-            self.total_volume_to_reservoir += volume_to_reservoir;
-        } else {
-            self.total_volume_to_reservoir += volume_to_reservoir - volume_to_actuator;
+        // If eha mode, we don't want to use any fluid from the circuit when actuator moves, else we compute correct volumes
+        if !self.eha_backup_is_active() {
+            // If actuator is in active control, it can use fluid from its input port
+            // Else it will only return fluid to reservoir or take fluid from reservoir
+            //
+            // Note on assymetric actuators, in extension direction, return to reservoir can be negative,
+            //   meaning actuator takes fluid in the return circuit to be able to move.
+            // This is a shortcut as it shouldn't directly take from reservoir but from return circuit
+            if self.core_hydraulics.mode() == LinearActuatorMode::PositionControl {
+                self.total_volume_to_actuator += volume_to_actuator;
+                self.total_volume_to_reservoir += volume_to_reservoir;
+            } else {
+                self.total_volume_to_reservoir += volume_to_reservoir - volume_to_actuator;
+            }
         }
+    }
+
+    fn eha_backup_is_active(&self) -> bool {
+        self.electro_hydrostatic_backup
+            .map_or(false, |eha| eha.is_electrical_mode_active())
     }
 
     pub fn set_position_target(&mut self, target_position: Ratio) {
@@ -2218,7 +2230,7 @@ mod tests {
                 self.hydraulic_assembly.linear_actuators[0]
                     .force()
                     .get::<newton>(),
-                (self.hydraulic_assembly.linear_actuators[0].used_volume() - self.hydraulic_assembly.linear_actuators[0].reservoir_return()).get::<gallon>()
+                self.hydraulic_assembly.linear_actuators[0].used_volume().get::<gallon>()
             );
         }
 
@@ -3782,6 +3794,31 @@ mod tests {
                 .query(|a| a.current_power_consumption())
                 .get::<watt>()
                 > 150.
+        );
+    }
+
+    #[test]
+    fn electro_hydrostatic_actuator_do_not_use_hydraulic_flow_when_moving() {
+        let mut test_bed = SimulationTestBed::new(|context| {
+            let tested_object = spoiler_assembly(context, true);
+            TestAircraft::new(context, Duration::from_millis(10), tested_object)
+        });
+
+        test_bed.command(|a| a.command_unlock());
+        test_bed.command(|a| a.set_pressures([Pressure::new::<psi>(0.)]));
+
+        assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.01));
+
+        test_bed.command(|a| a.set_ac_1_power(true));
+        test_bed.command(|a| a.command_electro_backup(true, 0));
+        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(1.), 0));
+        test_bed.run_with_delta(Duration::from_secs_f64(0.2));
+
+        assert!(
+            test_bed
+                .query(|a| a.actuator_used_volume(0))
+                .get::<gallon>()
+                < 0.00001
         );
     }
 
