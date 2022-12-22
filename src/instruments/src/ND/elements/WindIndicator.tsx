@@ -1,36 +1,39 @@
 import React, { FC } from 'react';
 import { Layer } from '@instruments/common/utils';
-import { Arinc429Word, useArinc429Var } from '@instruments/common/arinc429';
+import { useArinc429Var } from '@instruments/common/arinc429';
+import { Arinc429Word } from '@shared/arinc429';
 import { AdirsTasDrivenIndicatorProps } from '../index';
 
 const mod = (x: number, n: number) => x - Math.floor(x / n) * n;
 
 export const WindIndicator: FC<AdirsTasDrivenIndicatorProps> = ({ irs }) => {
-    const windDirection: Arinc429Word = useArinc429Var(`L:A32NX_ADIRS_IR_${irs}_WIND_DIRECTION`, 500);
-    const windVelocity: Arinc429Word = useArinc429Var(`L:A32NX_ADIRS_IR_${irs}_WIND_VELOCITY`, 500);
-    const planeHeading: Arinc429Word = useArinc429Var(`L:A32NX_ADIRS_IR_${irs}_HEADING`, 500);
+    const windDirection: Arinc429Word = useArinc429Var(`L:A32NX_ADIRS_IR_${irs}_WIND_DIRECTION_BNR`, 500);
+    const windSpeed: Arinc429Word = useArinc429Var(`L:A32NX_ADIRS_IR_${irs}_WIND_SPEED_BNR`, 500);
+    const planeHeading: Arinc429Word = useArinc429Var(`L:A32NX_ADIRS_IR_${irs}_TRUE_HEADING`, 500);
+
+    const windDirection360 = windDirection.value < 0 ? windDirection.value + 360 : windDirection.value;
 
     let windDirectionText: string;
-    let windVelocityText: string;
+    let windSpeedText: string;
     let windArrowShow: boolean = false;
-    if (!windVelocity.isNormalOperation() || !windDirection.isNormalOperation()) {
+    if (windSpeed.isFailureWarning() || windDirection.isFailureWarning()) {
         windDirectionText = '';
-        windVelocityText = '';
+        windSpeedText = '';
         windArrowShow = false;
-    } else if (windVelocity.value < 0.00001) {
+    } else if (windSpeed.isNoComputedData() || windDirection.isNoComputedData()) {
         windDirectionText = '---';
-        windVelocityText = '---';
+        windSpeedText = '---';
     } else {
-        windDirectionText = Math.round(windDirection.value).toString().padStart(3, '0');
-        windVelocityText = Math.round(windVelocity.value).toString();
-        if (windVelocity.value >= 2) {
+        windDirectionText = Math.round(windDirection360).toString().padStart(3, '0');
+        windSpeedText = Math.round(windSpeed.value).toString();
+        if (windSpeed.value >= 2) {
             windArrowShow = true;
         }
     }
 
     let rotation;
     if (planeHeading.isNormalOperation() && windDirection.isNormalOperation()) {
-        rotation = mod(Math.round(windDirection.value) - Math.round(planeHeading.value) + 180, 360);
+        rotation = mod(Math.round(windDirection360) - Math.round(planeHeading.value) + 180, 360);
     }
     return (
         <Layer x={17} y={56}>
@@ -39,7 +42,7 @@ export const WindIndicator: FC<AdirsTasDrivenIndicatorProps> = ({ irs }) => {
             </text>
             <text x={30} y={0} fontSize={22} className="White">/</text>
             <text x={48} y={0} fontSize={22} className="Green">
-                {windVelocityText}
+                {windSpeedText}
             </text>
             {windArrowShow && (
                 <path

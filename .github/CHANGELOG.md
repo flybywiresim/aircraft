@@ -5,6 +5,16 @@
 <!-- Use the following format below -->
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 
+## 0.10.0
+
+1. [ADIRU] Implemented wind speed computation from TAS/GS/HDG - @tracernz (Mike)
+1. [FMGC] Show proper transition names and final approach slope from AAU1 - @tracernz (Mike)
+1. [FMGC] Don't accept blank input or / for hold distance - @tracernz (Mike)
+1. [ATSU] Fix LSK6L not returning to ATSU DATALINK page in ATC MENU - @BravoMike99 (Bruno_pt99#5802)
+1. [HYD] Trimmable physical assemblies - @Crocket63 (crocket)
+1. [HYD] Simulation of the rudder mechanical assembly and yaw dampers - @Crocket63 (crocket)
+1. [FLIGHTMODEL] Reduced flap induced drag - @donstim (donbikes#4084)
+
 ## 0.9.0
 
 1. [MODEL] Add Wheel Chocks and GSE Safety Cones - @bouveng (Johan Bouveng)
@@ -103,6 +113,7 @@
 1. [FAC] Move Speedscale computation to FAC - @lukecologne (luke)
 1. [EFB] Added deboarding button to flyPad Payload - @frankkopp (Frank Kopp)
 1. [EFB] Improved simbridge-client connection handling - @frankkopp (Frank Kopp)
+1. [HYD] Tilting gear mechanism - @Crocket63 (crocket)
 
 ## 0.8.0
 

@@ -45,6 +45,10 @@ where
         self.filtered_output
     }
 
+    pub fn set_time_constant(&mut self, time_constant: Duration) {
+        self.time_constant = time_constant;
+    }
+
     pub fn reset(&mut self, reset_value: T) {
         self.filtered_output = reset_value;
     }

@@ -14,7 +14,7 @@ upload () {
 
     # Try to upload the file up to MAX_RETRY times before failing
     counter=0
-    until curl --fail -X PUT -H "AccessKey: $BUNNY_BUCKET_PASSWORD" --data-binary "@$1" "$DEST"
+    until curl --fail -X PUT -H "AccessKey: $BUNNY_BUCKET_PASSWORD" -T "$1" "$DEST"
     do
         sleep 1
         [[ counter -eq $MAX_RETRY ]] && echo "Failed to upload file '$1'" >&2 && exit 1

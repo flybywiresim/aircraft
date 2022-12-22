@@ -1517,11 +1517,23 @@ In the variables below, {number} should be replaced with one item in the set: { 
 
 - A32NX_ADIRS_IR_{number}_WIND_DIRECTION
     - Arinc429Word<Degrees>
-    - The direction of the wind.
+    - [0, 359.9]
+    - The direction of the wind relative to true north.
 
-- A32NX_ADIRS_IR_{number}_WIND_VELOCITY
+- A32NX_ADIRS_IR_{number}_WIND_DIRECTION_BNR
     - Arinc429Word<Degrees>
-    - The velocity of the wind.
+    - [-180, 180]
+    - The direction of the wind relative to true north.
+
+- A32NX_ADIRS_IR_{number}_WIND_SPEED
+    - Arinc429Word<Knots>
+    - [0, 255]
+    - The speed of the wind.
+
+- A32NX_ADIRS_IR_{number}_WIND_SPEED_BNR
+    - Arinc429Word<Knots>
+    - [0, 255]
+    - The speed of the wind.
 
 - A32NX_ADIRS_IR_{number}_LATITUDE
     - Arinc429Word<Degrees>
@@ -3000,6 +3012,10 @@ In the variables below, {number} should be replaced with one item in the set: { 
         - 1
         - 2
 
+- A32NX_HYD_RUDDER_TRIM_FEEDBACK_ANGLE
+    - Degree
+    - Rudder trim unit position feedback
+
 - A32NX_RUDDER_TRAVEL_LIM_{number}_ACTIVE_MODE_COMMANDED
     - Boolean
     - RTL electric motor {number} is commanded active
@@ -3013,6 +3029,10 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - {number}
         - 1
         - 2
+
+- A32NX_HYD_RUDDER_LIMITER_FEEDBACK_ANGLE
+    - Degree
+    - Rudder travel limiter unit position feedback
 
 - A32NX_THS_{number}_ACTIVE_MODE_COMMANDED
     - Boolean
@@ -3087,15 +3107,6 @@ In the variables below, {number} should be replaced with one item in the set: { 
 - A32NX_HYD_TRIM_WHEEL_PERCENT
     - Percent
     - Trim wheel position in percent
-
-- A32NX_RUDDER_DEFLECTION_DEMAND
-    - Number
-    - Provides the rudder position demand to hydraulics
-      Value | Meaning
-      --- | ---
-      -1.0 | full left
-      0.0 | neutral
-      1.0 | full right
 
 ## Landing Gear (ATA 32)
 

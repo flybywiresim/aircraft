@@ -41,6 +41,7 @@ export const normaliseApproachName = (name: string): string => {
     if (!appr) {
         return name;
     }
-    const suffix = appr.designator ? `-${appr.designator}` : '';
-    return `${appr.type.replace('RNAV', 'RNV')}${Avionics.Utils.formatRunway(appr.runway)}${suffix}`;
+    const runway = Avionics.Utils.formatRunway(appr.runway);
+    const suffix = appr.designator ? `${runway.length > 2 ? '' : '-'}${appr.designator}` : '';
+    return `${appr.type.replace('RNAV', 'RNV')}${runway}${suffix}`;
 };

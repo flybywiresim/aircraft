@@ -8,35 +8,82 @@ use msfs::sim_connect;
 use msfs::{sim_connect::SimConnect, sim_connect::SIMCONNECT_OBJECT_ID_USER};
 
 pub(super) fn ailerons(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>> {
-    // Inputs from FBW becomes the aileron position demand for hydraulic system
-    // MSFS uses [-1;1] ranges, and Left aileron UP is -1 while right aileron UP is 1
-    // Systems use [0;1], 1 is UP
-    builder.map(
-        ExecuteOn::PreTick,
-        Variable::named("AILERON_LEFT_DEFLECTION_DEMAND"),
-        |value| (-value + 1.) / 2.,
-        Variable::aspect("HYD_AILERON_LEFT_DEMAND"),
-    );
-    builder.map(
-        ExecuteOn::PreTick,
-        Variable::named("AILERON_RIGHT_DEFLECTION_DEMAND"),
-        |value| (value + 1.) / 2.,
-        Variable::aspect("HYD_AILERON_RIGHT_DEMAND"),
-    );
+    const MIN_ACTUAL_DEFLECTION_ANGLE: f64 = 20.;
+    const MAX_ACTUAL_DEFLECTION_ANGLE: f64 = 30.;
 
     // Aileron positions returned by hydraulic system are converted to MSFS format
     // It means we just invert left side direction and do [0;1] -> [-1;1]
     builder.map(
         ExecuteOn::PostTick,
-        Variable::aspect("HYD_AIL_LEFT_DEFLECTION"),
-        |value| -1. * (value * 2. - 1.),
-        Variable::named("HYD_AILERON_LEFT_DEFLECTION"),
+        Variable::aspect("HYD_AIL_LEFT_OUTWARD_DEFLECTION"),
+        |value| {
+            -1. * hyd_deflection_to_msfs_deflection(
+                value,
+                MIN_ACTUAL_DEFLECTION_ANGLE,
+                MAX_ACTUAL_DEFLECTION_ANGLE,
+            )
+        },
+        Variable::named("HYD_AILERON_LEFT_OUTWARD_DEFLECTION"),
     );
     builder.map(
         ExecuteOn::PostTick,
-        Variable::aspect("HYD_AIL_RIGHT_DEFLECTION"),
-        |value| (value * 2. - 1.),
-        Variable::named("HYD_AILERON_RIGHT_DEFLECTION"),
+        Variable::aspect("HYD_AIL_RIGHT_OUTWARD_DEFLECTION"),
+        |value| {
+            hyd_deflection_to_msfs_deflection(
+                value,
+                MIN_ACTUAL_DEFLECTION_ANGLE,
+                MAX_ACTUAL_DEFLECTION_ANGLE,
+            )
+        },
+        Variable::named("HYD_AILERON_RIGHT_OUTWARD_DEFLECTION"),
+    );
+    builder.map(
+        ExecuteOn::PostTick,
+        Variable::aspect("HYD_AIL_LEFT_MIDDLE_DEFLECTION"),
+        |value| {
+            -1. * hyd_deflection_to_msfs_deflection(
+                value,
+                MIN_ACTUAL_DEFLECTION_ANGLE,
+                MAX_ACTUAL_DEFLECTION_ANGLE,
+            )
+        },
+        Variable::named("HYD_AILERON_LEFT_MIDDLE_DEFLECTION"),
+    );
+    builder.map(
+        ExecuteOn::PostTick,
+        Variable::aspect("HYD_AIL_RIGHT_MIDDLE_DEFLECTION"),
+        |value| {
+            hyd_deflection_to_msfs_deflection(
+                value,
+                MIN_ACTUAL_DEFLECTION_ANGLE,
+                MAX_ACTUAL_DEFLECTION_ANGLE,
+            )
+        },
+        Variable::named("HYD_AILERON_RIGHT_MIDDLE_DEFLECTION"),
+    );
+    builder.map(
+        ExecuteOn::PostTick,
+        Variable::aspect("HYD_AIL_LEFT_INWARD_DEFLECTION"),
+        |value| {
+            -1. * hyd_deflection_to_msfs_deflection(
+                value,
+                MIN_ACTUAL_DEFLECTION_ANGLE,
+                MAX_ACTUAL_DEFLECTION_ANGLE,
+            )
+        },
+        Variable::named("HYD_AILERON_LEFT_INWARD_DEFLECTION"),
+    );
+    builder.map(
+        ExecuteOn::PostTick,
+        Variable::aspect("HYD_AIL_RIGHT_INWARD_DEFLECTION"),
+        |value| {
+            hyd_deflection_to_msfs_deflection(
+                value,
+                MIN_ACTUAL_DEFLECTION_ANGLE,
+                MAX_ACTUAL_DEFLECTION_ANGLE,
+            )
+        },
+        Variable::named("HYD_AILERON_RIGHT_INWARD_DEFLECTION"),
     );
 
     // AILERON POSITION FEEDBACK TO SIM
@@ -45,8 +92,12 @@ pub(super) fn ailerons(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Er
     builder.map_many(
         ExecuteOn::PostTick,
         vec![
-            Variable::aspect("HYD_AIL_LEFT_DEFLECTION"),
-            Variable::aspect("HYD_AIL_RIGHT_DEFLECTION"),
+            Variable::aspect("HYD_AIL_LEFT_OUTWARD_DEFLECTION"),
+            Variable::aspect("HYD_AIL_LEFT_MIDDLE_DEFLECTION"),
+            Variable::aspect("HYD_AIL_LEFT_INWARD_DEFLECTION"),
+            Variable::aspect("HYD_AIL_RIGHT_OUTWARD_DEFLECTION"),
+            Variable::aspect("HYD_AIL_RIGHT_MIDDLE_DEFLECTION"),
+            Variable::aspect("HYD_AIL_RIGHT_INWARD_DEFLECTION"),
             Variable::aspect("HYD_ELEV_LEFT_DEFLECTION"),
             Variable::aspect("HYD_ELEV_RIGHT_DEFLECTION"),
             Variable::named("HYD_SPOILERS_LEFT_DEFLECTION"),
@@ -54,12 +105,14 @@ pub(super) fn ailerons(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Er
         ],
         |values| {
             const SPOILER_ROLL_COEFF: f64 = 0.5;
-            const AILERON_ROLL_COEFF: f64 = 0.7;
+            const AILERON_ROLL_COEFF: f64 = 1.;
             const ELEVATOR_ROLL_COEFF: f64 = 0.2;
 
-            let elevator_roll_component = ELEVATOR_ROLL_COEFF * (values[3] - values[2]);
-            let aileron_roll_asymetry = AILERON_ROLL_COEFF * (values[1] - values[0]);
-            let spoiler_roll_asymetry = SPOILER_ROLL_COEFF * (values[5] - values[4]);
+            let elevator_roll_component = ELEVATOR_ROLL_COEFF * (values[7] - values[6]);
+            let aileron_roll_asymetry = AILERON_ROLL_COEFF
+                * ((values[3] + values[4] + values[5]) - (values[0] + values[1] + values[2]))
+                / 3.;
+            let spoiler_roll_asymetry = SPOILER_ROLL_COEFF * (values[8] - values[9]);
 
             aileron_roll_asymetry + spoiler_roll_asymetry + elevator_roll_component
         },
@@ -93,4 +146,17 @@ impl VariablesToObject for RollSimOutput {
     }
 
     set_data_on_sim_object!();
+}
+
+fn hyd_deflection_to_msfs_deflection(
+    hyd_deflection: f64,
+    min_actual_angle: f64,
+    max_actual_angle: f64,
+) -> f64 {
+    let elevator_range = max_actual_angle + min_actual_angle;
+
+    let angle_zero_offset = hyd_deflection * elevator_range;
+    let surface_angle = angle_zero_offset - min_actual_angle;
+
+    surface_angle / max_actual_angle
 }

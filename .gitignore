@@ -8,7 +8,6 @@
 /flybywire-aircraft-a320-neo/layout.json
 /flybywire-aircraft-a320-neo/manifest.json
 /flybywire-aircraft-a320-neo/a32nx_build_info.json
-/flybywire-aircraft-a320-neo/build_info.json
 /flybywire-aircraft-a320-neo/html_ui/JS/atsu/
 /flybywire-aircraft-a320-neo/html_ui/JS/fmgc/
 /flybywire-aircraft-a320-neo/html_ui/JS/sentry-client/
@@ -61,7 +60,8 @@ node_modules
 !igniter.config.mjs
 .igniter
 /src/fdr2csv/*.exe
-/src/fbw/obj/
+/src/fbw_a320/obj/
+/src/fbw_a380/obj/
 /src/fdr2csv/build/
 /src/presets/obj/
 /src/flypad-backend/obj/
