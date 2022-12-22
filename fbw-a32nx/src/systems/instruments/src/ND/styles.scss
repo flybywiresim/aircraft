@@ -20,8 +20,12 @@
   position: absolute;
   width: 768px;
   height: 768px;
-  background: $display-background;
+  background: transparent;
   font-family: "Ecam", monospace !important;
+}
+
+.nd-inverted-map-area {
+  background: $display-background;
 }
 
 .GtLayer {
