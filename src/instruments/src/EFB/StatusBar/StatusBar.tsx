@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import React, { useEffect, useRef, useState } from 'react';
-import { BrightnessHigh, Power, Wifi, WifiOff } from 'react-bootstrap-icons';
+import { Power, Wifi, WifiOff } from 'react-bootstrap-icons';
 import { useSimVar } from '@instruments/common/simVars';
 import { usePersistentNumberProperty, usePersistentProperty } from '@instruments/common/persistence';
 import { useLongPress } from 'use-long-press';
