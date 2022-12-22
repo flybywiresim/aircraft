@@ -768,6 +768,7 @@ class A380SecComputer final
     real_T BitfromLabel5_bit_c;
     real_T BitfromLabel6_bit_h;
     real_T BitfromLabel7_bit_i;
+    real_T BitfromLabel9_bit_m;
     real_T BitfromLabel_bit;
     real_T BitfromLabel1_bit_d;
     real_T CompareToConstant1_const;

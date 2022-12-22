@@ -449,6 +449,8 @@ struct base_sec_logic_outputs
   boolean_T rudder_2_electric_mode_avail;
   boolean_T rudder_2_hydraulic_mode_engaged;
   boolean_T rudder_2_electric_mode_engaged;
+  boolean_T rudder_trim_avail;
+  boolean_T rudder_trim_engaged;
   boolean_T aileron_droop_active;
   boolean_T is_yellow_hydraulic_power_avail;
   boolean_T is_green_hydraulic_power_avail;
@@ -587,10 +589,10 @@ struct pitch_direct_input
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_struct_x7KMrvIZ2ZM7LjpFSR8we_
-#define DEFINED_TYPEDEF_FOR_struct_x7KMrvIZ2ZM7LjpFSR8we_
+#ifndef DEFINED_TYPEDEF_FOR_struct_6VfXUKTenMAzoBANFhRdsG_
+#define DEFINED_TYPEDEF_FOR_struct_6VfXUKTenMAzoBANFhRdsG_
 
-struct struct_x7KMrvIZ2ZM7LjpFSR8we
+struct struct_6VfXUKTenMAzoBANFhRdsG
 {
   boolean_T on_ground;
   boolean_T tracking_mode_on;
@@ -629,6 +631,8 @@ struct struct_x7KMrvIZ2ZM7LjpFSR8we
   boolean_T rudder_2_electric_mode_avail;
   boolean_T rudder_2_hydraulic_mode_engaged;
   boolean_T rudder_2_electric_mode_engaged;
+  boolean_T rudder_trim_avail;
+  boolean_T rudder_trim_engaged;
   boolean_T aileron_droop_active;
   boolean_T is_yellow_hydraulic_power_avail;
   boolean_T is_green_hydraulic_power_avail;

@@ -157,6 +157,8 @@ A380SecComputer::Parameters_A380SecComputer_T A380SecComputer::A380SecComputer_P
 
   13.0,
 
+  28.0,
+
   19.0,
 
   19.0,
@@ -1891,6 +1893,8 @@ A380SecComputer::Parameters_A380SecComputer_T A380SecComputer::A380SecComputer_P
       false,
       false,
       false,
+      false,
+      false,
       0.0,
       0.0,
       false,
@@ -2218,6 +2222,8 @@ A380SecComputer::Parameters_A380SecComputer_T A380SecComputer::A380SecComputer_P
     0,
     a380_lateral_efcs_law::None,
     a380_pitch_efcs_law::None,
+    false,
+    false,
     false,
     false,
     false,
