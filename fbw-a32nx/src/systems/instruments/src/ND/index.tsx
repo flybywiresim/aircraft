@@ -19,7 +19,6 @@ import { PlanMode } from './pages/PlanMode';
 import { RoseMode } from './pages/RoseMode';
 import './styles.scss';
 import { LnavStatus } from './elements/LnavStatus';
-import { TerrainMapProvider } from './elements/TerrainMap';
 
 const NavigationDisplay: React.FC = () => {
     const [displayIndex] = useState(() => {
@@ -111,7 +110,6 @@ const NavigationDisplay: React.FC = () => {
             electricitySimvar={displayIndex === 1 ? 'L:A32NX_ELEC_AC_ESS_BUS_IS_POWERED' : 'L:A32NX_ELEC_AC_2_BUS_IS_POWERED'}
             potentiometerIndex={displayIndex === 1 ? 89 : 91}
         >
-            <TerrainMapProvider side={side} />
             <FlightPlanProvider>
                 <svg className="nd-svg" version="1.1" viewBox="0 0 768 768">
                     <SpeedIndicator adrs={airDataReferenceSource} irs={inertialReferenceSource} />
