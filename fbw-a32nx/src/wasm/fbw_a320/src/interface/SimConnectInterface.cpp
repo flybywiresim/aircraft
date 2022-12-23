@@ -1552,36 +1552,59 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
     }
 
     case Events::RUDDER_AXIS_MINUS: {
+      double tmpValue = 0;
       if (this->disableXboxCompatibilityRudderPlusMinus) {
         // normal axis
-        simInput.inputs[AXIS_RUDDER_SET] = +1.0 * ((static_cast<long>(event->dwData) + 16384.0) / 32768.0);
+        tmpValue = +1.0 * ((static_cast<long>(event->dwData) + 16384.0) / 32768.0);
       } else {
         // xbox controller
-        simInput.inputs[AXIS_RUDDER_SET] = +1.0 * (static_cast<long>(event->dwData) / 16384.0);
+        tmpValue = +1.0 * (static_cast<long>(event->dwData) / 16384.0);
       }
+
+      // This allows using two independent axis for rudder which are mapped to RUDDER AXIS LEFT and RUDDER AXIS RIGHT
+      // As it might be incompatible with some controllers, it is configurable
+      if (this->enableRudder2AxisMode) {
+        rudderLeftAxis = -tmpValue;
+        tmpValue = (rudderRightAxis - rudderLeftAxis) / 2.0;
+      }
+
+      simInput.inputs[AXIS_RUDDER_SET] = tmpValue;
       if (loggingFlightControlsEnabled) {
         std::cout << "WASM: RUDDER_AXIS_MINUS: ";
         std::cout << static_cast<long>(event->dwData);
         std::cout << " -> ";
         std::cout << simInput.inputs[AXIS_RUDDER_SET];
+        std::cout << " (left: " << rudderLeftAxis << ", right: " << rudderRightAxis << ")";
         std::cout << std::endl;
       }
       break;
     }
 
     case Events::RUDDER_AXIS_PLUS: {
+      double tmpValue = 0;
+
       if (this->disableXboxCompatibilityRudderPlusMinus) {
         // normal axis
-        simInput.inputs[AXIS_RUDDER_SET] = -1.0 * ((static_cast<long>(event->dwData) + 16384.0) / 32768.0);
+        tmpValue = -1.0 * ((static_cast<long>(event->dwData) + 16384.0) / 32768.0);
       } else {
         // xbox controller
-        simInput.inputs[AXIS_RUDDER_SET] = -1.0 * (static_cast<long>(event->dwData) / 16384.0);
+        tmpValue = -1.0 * (static_cast<long>(event->dwData) / 16384.0);
       }
+
+      // This allows using two independent axis for rudder which are mapped to RUDDER AXIS LEFT and RUDDER AXIS RIGHT
+      // As it might be incompatible with some controllers, it is configurable
+      if (this->enableRudder2AxisMode) {
+        rudderRightAxis = tmpValue;
+        tmpValue = (rudderRightAxis - rudderLeftAxis) / 2.0;
+      }
+
+      simInput.inputs[AXIS_RUDDER_SET] = tmpValue;
       if (loggingFlightControlsEnabled) {
         std::cout << "WASM: RUDDER_AXIS_PLUS: ";
         std::cout << static_cast<long>(event->dwData);
         std::cout << " -> ";
         std::cout << simInput.inputs[AXIS_RUDDER_SET];
+        std::cout << " (left: " << rudderLeftAxis << ", right: " << rudderRightAxis << ")";
         std::cout << std::endl;
       }
       break;
