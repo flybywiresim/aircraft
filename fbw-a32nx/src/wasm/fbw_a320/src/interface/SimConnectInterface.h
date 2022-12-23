@@ -194,6 +194,7 @@ class SimConnectInterface {
                double keyChangeElevator,
                double keyChangeRudder,
                bool disableXboxCompatibilityRudderPlusMinus,
+               bool enableRudder2AxisMode,
                double minSimulationRate,
                double maxSimulationRate,
                bool limitSimulationRateByPerformance);

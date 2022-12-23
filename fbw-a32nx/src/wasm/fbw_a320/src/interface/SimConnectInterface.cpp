@@ -24,6 +24,7 @@ bool SimConnectInterface::connect(bool clientDataEnabled,
                                   double keyChangeElevator,
                                   double keyChangeRudder,
                                   bool disableXboxCompatibilityRudderPlusMinus,
+                                  bool enableRudder2AxisMode,
                                   double minSimulationRate,
                                   double maxSimulationRate,
                                   bool limitSimulationRateByPerformance) {
@@ -56,6 +57,7 @@ bool SimConnectInterface::connect(bool clientDataEnabled,
     flightControlsKeyChangeRudder = keyChangeRudder;
     // store if XBOX compatibility should be disabled for rudder axis plus/minus
     this->disableXboxCompatibilityRudderPlusMinus = disableXboxCompatibilityRudderPlusMinus;
+    this->enableRudder2AxisMode = enableRudder2AxisMode;
     // register local variables
     idFcuEventSetSPEED = std::make_unique<LocalVariable>("A320_Neo_FCU_SPEED_SET_DATA");
     idFcuEventSetHDG = std::make_unique<LocalVariable>("A320_Neo_FCU_HDG_SET_DATA");
@@ -1582,7 +1584,6 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
 
     case Events::RUDDER_AXIS_PLUS: {
       double tmpValue = 0;
-
       if (this->disableXboxCompatibilityRudderPlusMinus) {
         // normal axis
         tmpValue = -1.0 * ((static_cast<long>(event->dwData) + 16384.0) / 32768.0);
