@@ -1567,7 +1567,7 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
       // As it might be incompatible with some controllers, it is configurable
       if (this->enableRudder2AxisMode) {
         rudderLeftAxis = tmpValue;
-        tmpValue = (rudderRightAxis + rudderLeftAxis) / 2.0;
+        tmpValue = -1 * ((rudderRightAxis - rudderLeftAxis) / 2.0);
       }
 
       simInput.inputs[AXIS_RUDDER_SET] = tmpValue;
@@ -1597,8 +1597,8 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
       // This allows using two independent axis for rudder which are mapped to RUDDER AXIS LEFT and RUDDER AXIS RIGHT
       // As it might be incompatible with some controllers, it is configurable
       if (this->enableRudder2AxisMode) {
-        rudderRightAxis = tmpValue;
-        tmpValue = (rudderRightAxis - rudderLeftAxis) / 2.0;
+        rudderRightAxis = -tmpValue;
+        tmpValue = -1 * ((rudderRightAxis - rudderLeftAxis) / 2.0);
       }
 
       simInput.inputs[AXIS_RUDDER_SET] = tmpValue;
