@@ -397,7 +397,7 @@ class SimConnectInterface {
   // Therefore we need to store the last value of each axis to allow calculating these in event handlers.
   bool enableRudder2AxisMode = false;
   double rudderLeftAxis = -1;
-  double rudderRightAxis = 1;
+  double rudderRightAxis = -1;
 
   std::unique_ptr<LocalVariable> idFcuEventSetSPEED;
   std::unique_ptr<LocalVariable> idFcuEventSetHDG;

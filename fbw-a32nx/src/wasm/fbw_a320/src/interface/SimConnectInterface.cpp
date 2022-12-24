@@ -1566,8 +1566,8 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
       // This allows using two independent axis for rudder which are mapped to RUDDER AXIS LEFT and RUDDER AXIS RIGHT
       // As it might be incompatible with some controllers, it is configurable
       if (this->enableRudder2AxisMode) {
-        rudderLeftAxis = -tmpValue;
-        tmpValue = (rudderRightAxis - rudderLeftAxis) / 2.0;
+        rudderLeftAxis = tmpValue;
+        tmpValue = (rudderRightAxis + rudderLeftAxis) / 2.0;
       }
 
       simInput.inputs[AXIS_RUDDER_SET] = tmpValue;
@@ -1576,7 +1576,9 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
         std::cout << static_cast<long>(event->dwData);
         std::cout << " -> ";
         std::cout << simInput.inputs[AXIS_RUDDER_SET];
-        std::cout << " (left: " << rudderLeftAxis << ", right: " << rudderRightAxis << ")";
+        if (this->enableRudder2AxisMode) {
+          std::cout << " (left: " << rudderLeftAxis << ", right: " << rudderRightAxis << ")";
+        }
         std::cout << std::endl;
       }
       break;
@@ -1605,7 +1607,9 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
         std::cout << static_cast<long>(event->dwData);
         std::cout << " -> ";
         std::cout << simInput.inputs[AXIS_RUDDER_SET];
-        std::cout << " (left: " << rudderLeftAxis << ", right: " << rudderRightAxis << ")";
+        if (this->enableRudder2AxisMode) {
+          std::cout << " (left: " << rudderLeftAxis << ", right: " << rudderRightAxis << ")";
+        }
         std::cout << std::endl;
       }
       break;
