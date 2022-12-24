@@ -70,66 +70,19 @@ export class AircraftVersionChecker {
         }
 
         try {
-            let outdated = false;
             const versionInfo = this.getVersionInfo(this.buildInfo.version);
-
-            // Set branchName to the long versions of the aircraft edition names
-            let branchName = versionInfo.branch;
-            switch (versionInfo.branch) {
-            case 'rel': branchName = 'Stable'; break;
-            case 'dev': branchName = 'Development'; break;
-            case 'exp': branchName = 'Experimental'; break;
-            default: break;
-            }
-
-            // If the user's version is older than the latest release show notification
-            if (this.versionCompare(versionInfo.version, this.releaseInfo[0].name) < 0) {
-                console.log(`New version available: ${versionInfo.version} ==> ${this.releaseInfo[0].name}`);
-                this.showVersionPopup('', versionInfo.version, this.releaseInfo[0].name);
-                outdated = true;
-            } else {
-                // If the user's version is equal or newer than the latest release then check if
-                // the edition is Development or Experimental and if the commit is older than
-                // {maxAge} days after the latest release to show notification
-
-                const maxAge = 3;
-                const timestampAircraft: Date = new Date(this.buildInfo.built);
-
-                // Development or Experimental need additional check for commit hash and age
-                if ((branchName === 'Development')
-                    && (versionInfo.commit !== this.newestCommit.shortSha)
-                    && (this.addDays(this.newestCommit.timestamp, maxAge) < timestampAircraft)
-                ) {
-                    const currentVersionStr = `${versionInfo.version}-${versionInfo.branch}.${versionInfo.commit} (${timestampAircraft.toUTCString()})`;
-                    const releaseVersionStr = `${versionInfo.version}-${versionInfo.branch}.${this.newestCommit.shortSha} (${this.newestCommit.timestamp.toUTCString()})`;
-                    console.log(`New commit available: ${currentVersionStr} ==> ${releaseVersionStr}`);
-                    this.showVersionPopup(branchName, currentVersionStr, releaseVersionStr);
-                    outdated = true;
-                } else if ((branchName === 'Experimental')
-                    && (versionInfo.commit !== this.newestExpCommit.shortSha)
-                    && (this.addDays(this.newestExpCommit.timestamp, maxAge) < timestampAircraft)
-                ) {
-                    const currentVersionStr = `${versionInfo.version}-${versionInfo.branch}.${versionInfo.commit} (${timestampAircraft.toUTCString()})`;
-                    const releaseVersionStr = `${versionInfo.version}-${versionInfo.branch}.${this.newestExpCommit.shortSha} (${this.newestExpCommit.timestamp.toUTCString()})`;
-                    console.log(`New commit available: ${currentVersionStr} ==> ${releaseVersionStr}`);
-                    this.showVersionPopup(branchName, currentVersionStr, releaseVersionStr);
-                    outdated = true;
-                }
-            }
-
-            if (outdated) {
+            if (this.checkOutdated(versionInfo)) {
                 this.setOutdatedVersionFlag(true);
+                console.log('Aircraft version outdated');
             } else {
                 console.log('Aircraft version ok');
             }
-
             this.versionChecked = true;
-
-            return true;
         } catch (error) {
             console.error('Version comparison failed: ', error);
         }
-        return false;
+
+        return this.versionChecked;
     }
 
     /**
@@ -161,6 +114,8 @@ export class AircraftVersionChecker {
 
     /**
      * Parses the version string and returns the version info as VersionInfoData object.
+     * Note: public because of jest test
+     *
      * @param versionString as provided by the a32nx_build_info.json file.
      * @throws Error if the version string is not in the correct format.
      */
@@ -198,18 +153,47 @@ export class AircraftVersionChecker {
     }
 
     /**
-     * Compare two version strings. Returns 1 if v1 is newer, -1 if v2 is newer and 0 if they are equal.
-     * Throws an error if the version strings are not in the correct format (^v?(\d+)\.(\d+)\.(\d+).*$).
-     * Uses semver.compare() to compare the version strings.
-     * See https://github.com/npm/node-semver
+     * Checks if the given version is outdated and shows a notification if it is.
      *
-     * @param v1
-     * @param v2
-     * @returns v1 is newer: 1, v2 is newer: -1, equal: 0
+     * @param versionInfo
+     * @returns true if the version is outdated, false otherwise.
      * @private
      */
-    private static versionCompare(v1: string, v2: string): number {
-        return Compare(v1, v2);
+    private static checkOutdated(versionInfo: VersionInfoData): boolean {
+        // Set branchName to the long versions of the aircraft edition names
+        const branchName = this.getBranchName(versionInfo);
+
+        // Check if main version is outdated
+        if (Compare(versionInfo.version, this.releaseInfo[0].name) < 0) {
+            console.log(`New version available: ${versionInfo.version} ==> ${this.releaseInfo[0].name}`);
+            this.showVersionPopup('', versionInfo.version, this.releaseInfo[0].name);
+            return true;
+        }
+
+        // If the user's version is equal or newer than the latest release then check if
+        // the edition is Development or Experimental and if the commit is older than
+        // {maxAge} days after the latest release to show notification
+
+        const maxAge = 3;
+        const timestampAircraft: Date = new Date(this.buildInfo.built);
+
+        if ((branchName === 'Development')
+            && (versionInfo.commit !== this.newestCommit.shortSha)
+            && (this.addDays(this.newestCommit.timestamp, maxAge) < timestampAircraft)
+        ) {
+            this.showNotification(versionInfo, timestampAircraft, branchName, this.newestCommit);
+            return true;
+        }
+
+        if ((branchName === 'Experimental')
+            && (versionInfo.commit !== this.newestExpCommit.shortSha)
+            && (this.addDays(this.newestExpCommit.timestamp, maxAge) < timestampAircraft)
+        ) {
+            this.showNotification(versionInfo, timestampAircraft, branchName, this.newestExpCommit);
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -223,6 +207,41 @@ export class AircraftVersionChecker {
         const result = new Date(date);
         result.setDate(date.getDate() + days);
         return result;
+    }
+
+    /**
+     * Returns the branch name of the aircraft edition based on the version info.
+     *
+     * @param versionInfo
+     * @private
+     */
+    private static getBranchName(versionInfo: VersionInfoData): string {
+        switch (versionInfo.branch) {
+        case 'rel':
+            return 'Stable';
+        case 'dev':
+            return 'Development';
+        case 'exp':
+            return 'Experimental';
+        default:
+            return versionInfo.branch;
+        }
+    }
+
+    /**
+     * Displays a popup with the version information.
+     *
+     * @param versionInfo
+     * @param timestampAircraft
+     * @param branchName
+     * @param commitInfo
+     * @private
+     */
+    private static showNotification(versionInfo: VersionInfoData, timestampAircraft: Date, branchName: string, commitInfo: CommitInfo) {
+        const currentVersionStr = `${versionInfo.version}-${versionInfo.branch}.${versionInfo.commit} (${timestampAircraft.toUTCString()})`;
+        const releaseVersionStr = `${versionInfo.version}-${versionInfo.branch}.${commitInfo.shortSha} (${commitInfo.timestamp.toUTCString()})`;
+        console.log(`New commit available: ${currentVersionStr} ==> ${releaseVersionStr}`);
+        this.showVersionPopup(branchName, currentVersionStr, releaseVersionStr);
     }
 
     /**
