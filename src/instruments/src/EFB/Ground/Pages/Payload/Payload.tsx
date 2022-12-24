@@ -356,7 +356,6 @@ export const Payload = () => {
         setBoardingStarted(false);
     };
 
-    // TODO: Rework A32NX_Boarding to make boardingRateMultiplier obsolete. (msDelay)
     const calculateBoardingTime = useMemo(() => {
         // factors taken from flybywire-aircraft-a320-neo/html_ui/Pages/A32NX_Core/A32NX_Boarding.js line 175+
         let boardingRateMultiplier = 0;
