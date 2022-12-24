@@ -72,8 +72,8 @@ use systems::{
     },
 };
 
-mod flaps_computer;
-use flaps_computer::SlatFlapComplex;
+mod sfcc_computer;
+use sfcc_computer::SlatFlapComplex;
 
 mod sfcc;
 

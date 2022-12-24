@@ -746,54 +746,7 @@ impl SlatFlapControlComputer {
         );
     }
 
-    // fn alpha_lock_check(&mut self, context: &UpdateContext, flaps_handle: &CommandSensorUnit) {
-    //     let airspeed: Velocity = context.indicated_airspeed();
-    //     let alpha: Angle = context.alpha();
-
-    //     match self.alpha_lock_engaged_speed {
-    //         true => {
-    //             if airspeed.get::<knot>() > Self::ALPHA_LOCK_DISENGAGE_SPEED_KNOTS {
-    //                 self.alpha_lock_engaged_speed = false;
-    //             }
-    //         }
-    //         false => {
-    //             if airspeed.get::<knot>() < Self::ALPHA_LOCK_ENGAGE_SPEED_KNOTS {
-    //                 self.alpha_lock_engaged_speed = true;
-    //             }
-    //         }
-    //     }
-
-    //     match self.alpha_lock_engaged_alpha {
-    //         true => {
-    //             if alpha.get::<degree>() < Self::ALPHA_LOCK_DISENGAGE_ALPHA_DEGREES {
-    //                 self.alpha_lock_engaged_alpha = false;
-    //             }
-    //         }
-    //         false => {
-    //             if alpha.get::<degree>() > Self::ALPHA_LOCK_ENGAGE_ALPHA_DEGREES {
-    //                 self.alpha_lock_engaged_alpha = true;
-    //             }
-    //         }
-    //     }
-
-    //     match self.alpha_lock_engaged {
-    //         false => {
-    //             if (self.alpha_lock_engaged_alpha || self.alpha_lock_engaged_speed)
-    //                 && flaps_handle.position() != CSUPosition::Conf0
-    //                 && !(context.is_on_ground() && airspeed.get::<knot>() < 60.)
-    //             {
-    //                 self.alpha_lock_engaged = true;
-    //             }
-    //         }
-
-    //         true => {
-    //             self.alpha_lock_engaged =
-    //                 self.alpha_lock_engaged_speed || self.alpha_lock_engaged_alpha
-    //         }
-    //     }
-    // }
-
-    pub fn powerup_reset(&mut self, flaps_handle: &CommandSensorUnit) {
+    fn powerup_reset(&mut self, flaps_handle: &CommandSensorUnit) {
         println!("powerup_reset");
         println!(
             "flaps_handle PREV {:?}\tCURR {:?}\tLAST {:?}",

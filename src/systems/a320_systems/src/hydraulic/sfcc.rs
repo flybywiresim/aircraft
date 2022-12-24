@@ -7,7 +7,7 @@ use systems::{
     simulation::{InitContext, SimulationElement, UpdateContext},
 };
 
-use crate::hydraulic::flaps_computer::CommandSensorUnit;
+use crate::hydraulic::sfcc_computer::CommandSensorUnit;
 use crate::systems::shared::arinc429::SignStatus;
 
 use uom::si::{
