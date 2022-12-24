@@ -24,6 +24,7 @@ bool SimConnectInterface::connect(bool clientDataEnabled,
                                   double keyChangeElevator,
                                   double keyChangeRudder,
                                   bool disableXboxCompatibilityRudderPlusMinus,
+                                  bool enableRudder2AxisMode,
                                   double minSimulationRate,
                                   double maxSimulationRate,
                                   bool limitSimulationRateByPerformance) {
@@ -56,6 +57,7 @@ bool SimConnectInterface::connect(bool clientDataEnabled,
     flightControlsKeyChangeRudder = keyChangeRudder;
     // store if XBOX compatibility should be disabled for rudder axis plus/minus
     this->disableXboxCompatibilityRudderPlusMinus = disableXboxCompatibilityRudderPlusMinus;
+    this->enableRudder2AxisMode = enableRudder2AxisMode;
     // register local variables
     idFcuEventSetSPEED = std::make_unique<LocalVariable>("A320_Neo_FCU_SPEED_SET_DATA");
     idFcuEventSetHDG = std::make_unique<LocalVariable>("A320_Neo_FCU_HDG_SET_DATA");
@@ -1572,36 +1574,62 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
     }
 
     case Events::RUDDER_AXIS_MINUS: {
+      double tmpValue = 0;
       if (this->disableXboxCompatibilityRudderPlusMinus) {
         // normal axis
-        simInput.inputs[AXIS_RUDDER_SET] = +1.0 * ((static_cast<long>(event->dwData) + 16384.0) / 32768.0);
+        tmpValue = +1.0 * ((static_cast<long>(event->dwData) + 16384.0) / 32768.0);
       } else {
         // xbox controller
-        simInput.inputs[AXIS_RUDDER_SET] = +1.0 * (static_cast<long>(event->dwData) / 16384.0);
+        tmpValue = +1.0 * (static_cast<long>(event->dwData) / 16384.0);
       }
+
+      // This allows using two independent axis for rudder which are mapped to RUDDER AXIS LEFT and RUDDER AXIS RIGHT
+      // As it might be incompatible with some controllers, it is configurable
+      if (this->enableRudder2AxisMode) {
+        rudderLeftAxis = tmpValue;
+        tmpValue = -1 * ((rudderRightAxis - rudderLeftAxis) / 2.0);
+      }
+
+      simInput.inputs[AXIS_RUDDER_SET] = tmpValue;
       if (loggingFlightControlsEnabled) {
         std::cout << "WASM: RUDDER_AXIS_MINUS: ";
         std::cout << static_cast<long>(event->dwData);
         std::cout << " -> ";
         std::cout << simInput.inputs[AXIS_RUDDER_SET];
+        if (this->enableRudder2AxisMode) {
+          std::cout << " (left: " << rudderLeftAxis << ", right: " << rudderRightAxis << ")";
+        }
         std::cout << std::endl;
       }
       break;
     }
 
     case Events::RUDDER_AXIS_PLUS: {
+      double tmpValue = 0;
       if (this->disableXboxCompatibilityRudderPlusMinus) {
         // normal axis
-        simInput.inputs[AXIS_RUDDER_SET] = -1.0 * ((static_cast<long>(event->dwData) + 16384.0) / 32768.0);
+        tmpValue = -1.0 * ((static_cast<long>(event->dwData) + 16384.0) / 32768.0);
       } else {
         // xbox controller
-        simInput.inputs[AXIS_RUDDER_SET] = -1.0 * (static_cast<long>(event->dwData) / 16384.0);
+        tmpValue = -1.0 * (static_cast<long>(event->dwData) / 16384.0);
       }
+
+      // This allows using two independent axis for rudder which are mapped to RUDDER AXIS LEFT and RUDDER AXIS RIGHT
+      // As it might be incompatible with some controllers, it is configurable
+      if (this->enableRudder2AxisMode) {
+        rudderRightAxis = -tmpValue;
+        tmpValue = -1 * ((rudderRightAxis - rudderLeftAxis) / 2.0);
+      }
+
+      simInput.inputs[AXIS_RUDDER_SET] = tmpValue;
       if (loggingFlightControlsEnabled) {
         std::cout << "WASM: RUDDER_AXIS_PLUS: ";
         std::cout << static_cast<long>(event->dwData);
         std::cout << " -> ";
         std::cout << simInput.inputs[AXIS_RUDDER_SET];
+        if (this->enableRudder2AxisMode) {
+          std::cout << " (left: " << rudderLeftAxis << ", right: " << rudderRightAxis << ")";
+        }
         std::cout << std::endl;
       }
       break;
