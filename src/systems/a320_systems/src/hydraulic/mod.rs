@@ -2129,8 +2129,14 @@ impl A320Hydraulic {
             self.yellow_circuit.system_section(),
         );
 
-        self.slats_flaps_complex
-            .update(context, &self.flap_system, &self.slat_system, adiru);
+        self.slats_flaps_complex.update(
+            context,
+            &self.flap_system,
+            &self.slat_system,
+            adiru,
+            lgciu1,
+            lgciu2,
+        );
 
         self.rudder_mechanical_assembly.update(
             context,
