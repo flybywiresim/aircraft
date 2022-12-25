@@ -23,8 +23,7 @@ struct SlatFlapControlComputer {
     slat_channel: SlatsChannel,
 
     flaps_conf_index_id: VariableIdentifier,
-    slats_fppu_angle_id: VariableIdentifier,
-    flaps_fppu_angle_id: VariableIdentifier,
+
     slat_flap_component_status_word_id: VariableIdentifier,
     slat_flap_system_status_word_id: VariableIdentifier,
     slat_flap_actual_position_word_id: VariableIdentifier,
@@ -64,8 +63,7 @@ impl SlatFlapControlComputer {
             slat_channel: SlatsChannel::new(context),
 
             flaps_conf_index_id: context.get_identifier("FLAPS_CONF_INDEX".to_owned()),
-            slats_fppu_angle_id: context.get_identifier("SLATS_FPPU_ANGLE".to_owned()),
-            flaps_fppu_angle_id: context.get_identifier("FLAPS_FPPU_ANGLE".to_owned()),
+
             slat_flap_component_status_word_id: context
                 .get_identifier("SFCC_SLAT_FLAP_COMPONENT_STATUS_WORD".to_owned()),
             slat_flap_system_status_word_id: context
@@ -226,9 +224,13 @@ impl SlatFlapControlComputer {
         self.flaps_conf = self.generate_flaps_configuration(flaps_handle);
     }
 
+    fn empty_arinc_word<T: Copy>(value: T) -> Arinc429Word<T> {
+        return Arinc429Word::new(value, SignStatus::NoComputedData);
+    }
+
     fn slat_flap_component_status_word(&self) -> Arinc429Word<u32> {
         if !self.is_powered {
-            return Arinc429Word::new(0, SignStatus::NoComputedData);
+            return Self::empty_arinc_word(0);
         }
 
         let mut word = Arinc429Word::new(0, SignStatus::NormalOperation);
@@ -252,7 +254,7 @@ impl SlatFlapControlComputer {
 
     fn slat_flap_system_status_word(&self) -> Arinc429Word<u32> {
         if !self.is_powered {
-            return Arinc429Word::new(0, SignStatus::NoComputedData);
+            return Self::empty_arinc_word(0);
         }
 
         let mut word = Arinc429Word::new(0, SignStatus::NormalOperation);
@@ -324,7 +326,7 @@ impl SlatFlapControlComputer {
 
     fn slat_flap_actual_position_word(&self) -> Arinc429Word<u32> {
         if !self.is_powered {
-            return Arinc429Word::new(0, SignStatus::NoComputedData);
+            return Self::empty_arinc_word(0);
         }
 
         let mut word = Arinc429Word::new(0, SignStatus::NormalOperation);
@@ -390,7 +392,7 @@ impl SlatFlapControlComputer {
 
     fn slat_actual_position_word(&self) -> Arinc429Word<f64> {
         if !self.is_powered {
-            return Arinc429Word::new(0., SignStatus::NoComputedData);
+            return Self::empty_arinc_word(0.);
         }
 
         Arinc429Word::new(
@@ -401,7 +403,7 @@ impl SlatFlapControlComputer {
 
     fn flap_actual_position_word(&self) -> Arinc429Word<f64> {
         if !self.is_powered {
-            return Arinc429Word::new(0., SignStatus::NoComputedData);
+            return Self::empty_arinc_word(0.);
         }
 
         Arinc429Word::new(
@@ -442,6 +444,7 @@ impl SlatFlapLane for SlatFlapControlComputer {
 impl SimulationElement for SlatFlapControlComputer {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.slat_channel.accept(visitor);
+        self.flap_channel.accept(visitor);
         visitor.visit(self);
     }
 
@@ -463,15 +466,6 @@ impl SimulationElement for SlatFlapControlComputer {
 
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.flaps_conf_index_id, self.flaps_conf as u8);
-
-        writer.write(
-            &self.slats_fppu_angle_id,
-            self.slat_channel.get_slat_feedback_angle(),
-        );
-        writer.write(
-            &self.flaps_fppu_angle_id,
-            self.flap_channel.get_flap_feedback_angle(),
-        );
 
         writer.write(
             &self.slat_flap_component_status_word_id,

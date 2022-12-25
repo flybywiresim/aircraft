@@ -1,13 +1,17 @@
 use systems::{
     hydraulic::command_sensor_unit::{CommandSensorUnit, FlapsHandle},
     shared::{CSUPosition, FeedbackPositionPickoffUnit},
-    simulation::{InitContext, UpdateContext},
+    simulation::{
+        InitContext, SimulationElement, SimulatorWriter, UpdateContext, VariableIdentifier, Write,
+    },
 };
 
 use std::panic;
 use uom::si::{angle::degree, f64::*, velocity::knot};
 
 pub struct FlapsChannel {
+    flaps_fppu_angle_id: VariableIdentifier,
+
     flap_auto_command_active: bool,
     auto_command_angle: Angle,
 
@@ -43,8 +47,10 @@ impl FlapsChannel {
     const KNOTS_100: f64 = 100.;
     const KNOTS_210: f64 = 210.;
 
-    pub fn new(_context: &mut InitContext) -> Self {
+    pub fn new(context: &mut InitContext) -> Self {
         Self {
+            flaps_fppu_angle_id: context.get_identifier("FLAPS_FPPU_ANGLE".to_owned()),
+
             flap_auto_command_active: false,
             auto_command_angle: Angle::new::<degree>(0.),
 
@@ -537,5 +543,10 @@ impl FlapsChannel {
             return true;
         }
         return false;
+    }
+}
+impl SimulationElement for FlapsChannel {
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(&self.flaps_fppu_angle_id, self.flaps_feedback_angle);
     }
 }
