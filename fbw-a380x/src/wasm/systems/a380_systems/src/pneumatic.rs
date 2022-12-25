@@ -138,8 +138,8 @@ impl A380Pneumatic {
             apu_bleed_air_valve_open_id: context
                 .get_identifier("APU_BLEED_AIR_VALVE_OPEN".to_owned()),
             core_processing_input_output_module_a: CoreProcessingInputoutputModuleA::new(
-                ElectricalBusType::AlternatingCurrent(1),
-            ), // TODO: Correct bus
+                ElectricalBusType::DirectCurrentEssential, // TTM 2
+            ),
             engine_systems: [
                 EngineBleedAirSystem::new(context, 1, ElectricalBusType::DirectCurrent(1)),
                 EngineBleedAirSystem::new(context, 2, ElectricalBusType::DirectCurrent(1)),
@@ -239,7 +239,8 @@ impl A380Pneumatic {
         );
 
         for cross_bleed_valve in self.cross_bleed_valves.iter_mut() {
-            // TODO: Where does this signal come from?
+            // TODO: See TTM 3. There is a relay system that connects the 4 CPIOM units (PADS application) to the 3 crossbleed valves and the APU isolation valve
+            // TLDR: CPIOM-A1+A2 control left xbleed and APU isolation valve, CPIOM-A3+A4 control center and right xbleed valve
             cross_bleed_valve
                 .update_open_amount(&self.core_processing_input_output_module_a.units[0])
         }
@@ -272,12 +273,16 @@ impl A380Pneumatic {
             engine_1_system,
         );
 
+        // Hydraulic reservoir pressurization.
+        // G+Y are pressurized through a pipe that is shared between engine 1 and engine 4 systems (downstream the bleed valve)
+        // G+Y are also pressurized very directly:
+        // Green is pressurized from upstream engine 1 HP valve
+        // Yellow is pressurized from upstream engine 4 HP valve
         self.hydraulic_reservoir_bleed_air_valves[0].update_move_fluid(
             context,
             engine_1_system,
             &mut self.hydraulic_reservoir_bleed_air_pipe,
         );
-
         self.hydraulic_reservoir_bleed_air_valves[1].update_move_fluid(
             context,
             engine_4_system,
@@ -3083,6 +3088,21 @@ mod tests {
 
         assert!(!test_bed.precooler_inlet_pressure(1).is_nan());
         assert!(!test_bed.precooler_inlet_pressure(2).is_nan());
+    }
+
+    #[test]
+    fn engine_3_and_4() {
+        let mut test_bed = test_bed_with()
+            .idle_eng1()
+            .idle_eng2()
+            .idle_eng3()
+            .idle_eng4()
+            .mach_number(MachNumber(0.))
+            .both_packs_auto()
+            .and_stabilize();
+
+        assert!(test_bed.ip_pressure(3) > Pressure::new::<psi>(14.7));
+        assert!(test_bed.ip_pressure(4) > Pressure::new::<psi>(14.7));
     }
 
     mod overhead {
