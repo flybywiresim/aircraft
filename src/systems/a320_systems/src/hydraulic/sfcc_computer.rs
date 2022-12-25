@@ -49,11 +49,6 @@ struct SlatFlapControlComputer {
     aoa1: Option<Angle>,
     aoa2: Option<Angle>,
 
-    // flaps_demanded_angle: Angle,
-    // slats_demanded_angle: Angle,
-
-    // flaps_feedback_angle: Angle,
-    // slats_feedback_angle: Angle,
     flaps_conf: FlapsConf,
 }
 
@@ -100,10 +95,6 @@ impl SlatFlapControlComputer {
             aoa1: None,
             aoa2: None,
 
-            // flaps_demanded_angle: Angle::new::<degree>(0.),
-            // slats_demanded_angle: Angle::new::<degree>(0.),
-            // flaps_feedback_angle: Angle::new::<degree>(0.),
-            // slats_feedback_angle: Angle::new::<degree>(0.),
             flaps_conf: FlapsConf::Conf0,
         }
     }
@@ -222,7 +213,6 @@ impl SlatFlapControlComputer {
             self.previous_cas_min,
             self.last_valid_cas_min,
         );
-        // self.flaps_demanded_angle = self.flap_channel.get_flap_demanded_angle();
 
         self.slat_channel.update(
             context,
@@ -232,12 +222,8 @@ impl SlatFlapControlComputer {
             self.aoa,
             self.cas_max,
         );
-        // self.slats_demanded_angle = self.slat_channel.get_slat_demanded_angle();
 
         self.flaps_conf = self.generate_flaps_configuration(flaps_handle);
-
-        // self.flaps_feedback_angle = flaps_feedback.angle();
-        // self.slats_feedback_angle = slats_feedback.angle();
     }
 
     fn slat_flap_component_status_word(&self) -> Arinc429Word<u32> {
