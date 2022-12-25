@@ -1,0 +1,120 @@
+{
+    "specs": {
+        "payload-type": 1,
+        "payload-name": "DAL 3-class",
+        "prefix": "A32NX",
+        "emptyPosition": -8.75,
+        "macSize": 13.454,
+        "leMacZ": -5.386,
+        "weights": {
+            "maxZfw": 64300,
+            "minZfw": 42500
+        },
+        "pax": {
+            "defaultPaxWeight": 80,
+            "defaultBagWeight": 15,
+            "minPaxWeight": 10,
+            "maxPaxWeight": 250,
+            "minBagWeight": 1,
+            "maxBagWeight": 250
+        },
+        "class-weight-modifier": {
+            "FIRSTCLASS": 95,
+            "COMFORTPLUS": 8,
+            "PREFERRED": 0,
+            "ECO": 0
+        }
+    },
+    "colors": {
+        "1": "4F0147",
+        "2": "119DA4",
+        "3": "19647E"
+    },
+    "payload-seatmap": {
+        "section-1": {
+            "name": "FIRSTCLASS",
+            "rows": 4,
+            "cols": 4,
+            "seat-img": {
+                "len": 19.2,
+                "wid": 24.4,
+                "padX": 28,
+                "padY": 0,
+                "imageX": 25.4,
+                "imageY": 24.4,
+                "color": 3
+            }
+        },
+        "section-2": {
+            "name": "COMFORTPLUS",
+            "rows": 6,
+            "cols": 3,
+            "seat-img": {
+                "len": 19.2,
+                "wid": 19.2,
+                "padX": 16,
+                "padY": 0,
+                "imageX": 25.4,
+                "imageY": 19.2,
+                "color": 2
+            }
+        },
+        "section-3": {
+            "name": "PREFERRED",
+            "rows": 6,
+            "cols": 2,
+            "seat-img": {
+                "len": 19.2,
+                "wid": 19.2,
+                "padX": 20,
+                "padY": 0,
+                "imageX": 19.2,
+                "imageY": 19.2,
+                "color": 1
+            }
+        },
+        "section-4": {
+            "name": "ECO",
+            "rows": 6,
+            "cols": 7,
+            "seat-img": {
+                "len": 19.2,
+                "wid": 19.2,
+                "padX": 13,
+                "padY": 0,
+                "imageX": 19.2,
+                "imageY": 19.2,
+                "color": 1
+            }
+        },
+        "section-5": {
+            "name": "ECO",
+            "rows": 6,
+            "cols": 10,
+            "seat-img": {
+                "len": 19.2,
+                "wid": 19.2,
+                "padX": 13,
+                "padY": 0,
+                "imageX": 19.2,
+                "imageY": 19.2,
+                "color": 1
+            }
+        },
+        "section-6": {
+            "name": "ECO",
+            "aisle-side": "RIGHT",
+            "rows": 3,
+            "cols": 1,
+            "seat-img": {
+                "len": 19.2,
+                "wid": 19.2,
+                "padX": 13,
+                "padY": 0,
+                "imageX": 19.2,
+                "imageY": 19.2,
+                "color": 1
+            }
+        }
+    }
+}
