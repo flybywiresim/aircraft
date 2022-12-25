@@ -56,7 +56,6 @@ export const PushbackPage = () => {
     const [parkingBrakeEngaged, setParkingBrakeEngaged] = useSimVar('L:A32NX_PARK_BRAKE_LEVER_POS', 'Bool', 250);
     const [nwStrgDisc] = useSimVar('L:A32NX_HYD_NW_STRG_DISC_ECAM_MEMO', 'Bool', 250);
 
-    const [pushbackPaused, setPushbackPaused] = useSimVar('L:A32NX_PUSHBACK_PAUSED', 'bool', 250);
     const [tugCmdHdgFactor, setCmdHdgFactor] = useSimVar('L:A32NX_PUSHBACK_HDG_FACTOR', 'number', 100);
     const [tugCmdSpdFactor, setCmdSpdFactor] = useSimVar('L:A32NX_PUSHBACK_SPD_FACTOR', 'number', 100);
 
@@ -70,8 +69,6 @@ export const PushbackPage = () => {
     // Required so these can be used inside the useEffect return callback
     const pushBackAttachedRef = useRef(pushbackAttached);
     pushBackAttachedRef.current = pushbackAttached;
-    const pushbackPausedRef = useRef(pushbackPaused);
-    pushbackPausedRef.current = pushbackPaused;
 
     const pushbackUIAvailable: boolean = simOnGround;
     const tugInTransit: boolean = pushbackAttached !== nwStrgDisc;
@@ -129,19 +126,13 @@ export const PushbackPage = () => {
         callTug();
     };
 
-    const handlePause = () => {
-        if (!pushbackPaused) {
-            setCmdHdgFactor(0);
-            setCmdSpdFactor(0);
-        }
-        setPushbackPaused(!pushbackPaused);
+    const stopMovement = () => {
+        setCmdHdgFactor(0);
+        setCmdSpdFactor(0);
     };
 
     const handleTugSpeed = (speed: number) => {
         setCmdSpdFactor(MathUtils.clamp(speed, -1, 1));
-        if (speed) {
-            setPushbackPaused(false);
-        }
     };
 
     const handleTugDirectionLeft = () => {
@@ -159,18 +150,18 @@ export const PushbackPage = () => {
     // called once when loading and unloading the page
     useEffect(() => {
         // when loading the page
-        setPushbackPaused(true);
+        stopMovement();
 
         // when unloading the page
         // !obs: as with setInterval no access to current local variable values
         return (() => {
-            if (pushBackAttachedRef.current && !pushbackPausedRef.current) {
+            if (pushBackAttachedRef.current) {
                 toast.info(t('Pushback.LeavePageMessage'), {
                     autoClose: 750,
                     hideProgressBar: true,
                     closeButton: false,
                 });
-                setPushbackPaused(() => true);
+                stopMovement();
             }
         });
     }, []);
@@ -198,7 +189,6 @@ export const PushbackPage = () => {
             setCmdSpdFactor(0);
             return;
         }
-        setPushbackPaused(false);
         setCmdSpdFactor(-elevatorPosition);
     }, [elevatorPosition]);
 
@@ -220,10 +210,6 @@ export const PushbackPage = () => {
                 deltaTime:
                 {' '}
                 {updateDeltaTime.toFixed(4)}
-                <br />
-                pushbackPaused:
-                {' '}
-                {pushbackPaused ? 1 : 0}
                 <br />
                 pushBackWait:
                 {' '}
@@ -522,18 +508,18 @@ export const PushbackPage = () => {
                         {/* Pause/Moving Button */}
                         <div className="w-full">
                             <p className="text-center">
-                                {pushbackPaused ? t('Pushback.Halt') : t('Pushback.Moving')}
+                                {tugCmdSpdFactor !== 0 ? t('Pushback.Moving') : t('Pushback.Halt')}
                             </p>
                             <TooltipWrapper text={t('Pushback.TT.PausePushback')}>
                                 <button
                                     type="button"
-                                    onClick={handlePause}
+                                    onClick={stopMovement}
                                     className="flex justify-center items-center w-full h-20 hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100"
                                 >
-                                    {pushbackPaused ? (
-                                        <PlayCircleFill size={40} />
-                                    ) : (
+                                    {tugCmdSpdFactor !== 0 ? (
                                         <PauseCircleFill size={40} />
+                                    ) : (
+                                        <PlayCircleFill size={40} />
                                     )}
                                 </button>
                             </TooltipWrapper>
