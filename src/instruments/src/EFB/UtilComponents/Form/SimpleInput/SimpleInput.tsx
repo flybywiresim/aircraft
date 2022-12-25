@@ -25,7 +25,7 @@ interface SimpleInputProps {
 }
 
 export const SimpleInput = (props: PropsWithChildren<SimpleInputProps>) => {
-    const [guid] = useState(`SI-${Utils.generateGUID()}`);
+    const [guid] = useState(uuidv4());
 
     const [displayValue, setDisplayValue] = useState(props.value?.toString() ?? '');
     const [focused, setFocused] = useState(false);
