@@ -1,6 +1,7 @@
 use crate::systems::shared::arinc429::{Arinc429Word, SignStatus};
 
 use systems::{
+    hydraulic::command_sensor_unit::{CommandSensorUnit, FlapsHandle},
     shared::{
         AirDataSource, CSUPosition, ConsumePower, ElectricalBusType, ElectricalBuses,
         FeedbackPositionPickoffUnit, FlapsConf, LgciuWeightOnWheels,
@@ -11,68 +12,16 @@ use systems::{
     },
 };
 
+use crate::hydraulic::flaps_channel::FlapsChannel;
+use crate::hydraulic::slats_channel::SlatsChannel;
+
 use std::{panic, time::Duration};
 use uom::si::{angle::degree, f64::*, power::watt, velocity::knot};
 
-/// A struct to read the handle position
-pub struct CommandSensorUnit {
-    handle_position_id: VariableIdentifier,
-    current_position: CSUPosition,
-    previous_position: CSUPosition,
-    last_valid_position: CSUPosition,
-    last_valid_time: Duration,
-}
-impl CommandSensorUnit {
-    fn new(context: &mut InitContext) -> Self {
-        Self {
-            handle_position_id: context.get_identifier("FLAPS_HANDLE_INDEX".to_owned()),
-            current_position: CSUPosition::Conf0,
-            previous_position: CSUPosition::Conf0,
-            last_valid_position: CSUPosition::Conf0,
-            last_valid_time: Duration::ZERO,
-        }
-    }
-
-    pub fn last_valid_position(&self) -> CSUPosition {
-        self.last_valid_position
-    }
-
-    #[cfg(test)]
-    pub fn time_since_last_valid_position(&self) -> Duration {
-        self.last_valid_time
-    }
-
-    pub fn current_position(&self) -> CSUPosition {
-        self.current_position
-    }
-
-    pub fn previous_position(&self) -> CSUPosition {
-        self.previous_position
-    }
-
-    pub fn update(&mut self, context: &UpdateContext) {
-        self.last_valid_time += context.delta();
-    }
-}
-
-// Currently the FLAPS_HANDLE_INDEX backend doesn't support OutOfDetent position
-// because it's mapped between 0 to 4. Changing the mapping of FLAPS_HANDLE_INDEX
-// has significant repercussions over all the systems which read it. However, for
-// completeness of the CSUPosition enum I included the OutOfDetent position.
-impl SimulationElement for CommandSensorUnit {
-    fn read(&mut self, reader: &mut SimulatorReader) {
-        self.previous_position = self.current_position;
-
-        let new_position = CSUPosition::from(Read::<u8>::read(reader, &self.handle_position_id));
-        if CSUPosition::is_valid(new_position) {
-            self.last_valid_position = new_position;
-            self.last_valid_time = Duration::ZERO;
-        }
-        self.current_position = new_position;
-    }
-}
-
 struct SlatFlapControlComputer {
+    flap_channel: FlapsChannel,
+    slat_channel: SlatsChannel,
+
     flaps_conf_index_id: VariableIdentifier,
     slats_fppu_angle_id: VariableIdentifier,
     flaps_fppu_angle_id: VariableIdentifier,
@@ -81,7 +30,6 @@ struct SlatFlapControlComputer {
     slat_flap_actual_position_word_id: VariableIdentifier,
     slat_actual_position_word_id: VariableIdentifier,
     flap_actual_position_word_id: VariableIdentifier,
-    slat_lock_engaged_id: VariableIdentifier,
 
     powered_by: ElectricalBusType,
     consumed_power: Power,
@@ -90,23 +38,10 @@ struct SlatFlapControlComputer {
     transparency_time: Duration,
     power_off_length: Duration,
 
-    flap_auto_command_active: bool,
-    auto_command_angle: Angle,
-
-    restore_angle: Angle,
-    relief_angle: Angle,
-    relief_speed: Velocity,
-    restore_speed: Velocity,
-    positioning_threshold: Angle,
-    conf1_flaps: Angle,
-    conf1f_flaps: Angle,
-    kts_100: Velocity,
-    kts_210: Velocity,
-
     cas_min: Option<Velocity>,
     cas_max: Option<Velocity>,
     previous_cas_min: Option<Velocity>,
-    last_valid_cas_min: Option<Velocity>,
+    last_valid_cas_min: Velocity,
     cas1: Option<Velocity>,
     cas2: Option<Velocity>,
 
@@ -114,56 +49,26 @@ struct SlatFlapControlComputer {
     aoa1: Option<Angle>,
     aoa2: Option<Angle>,
 
-    flap_relief_active: bool,
-    flap_relief_engaged: bool,
-    flap_relief_command_angle: Angle,
-
     flaps_demanded_angle: Angle,
     slats_demanded_angle: Angle,
+
     flaps_feedback_angle: Angle,
     slats_feedback_angle: Angle,
-    flaps_conf: FlapsConf,
 
-    kts_60: Velocity,
-    conf1_slats: Angle,
-    slat_retraction_inhibited: bool,
-    // slat_lock_active: bool,
-    slat_lock_command_angle: Angle,
-    slat_lock_low_cas: Velocity,
-    slat_lock_high_cas: Velocity,
-    slat_lock_low_aoa: Angle,
-    slat_lock_high_aoa: Angle,
-    slat_alpha_lock_engaged: bool,
-    slat_baulk_engaged: bool,
+    flaps_conf: FlapsConf,
 }
 
 impl SlatFlapControlComputer {
-    const FLAP_RELIEF_FPPU_ANGLE: f64 = 231.23; //deg
-    const FLAP_RESTORE_FPPU_ANGLE: f64 = 251.97; //deg
-    const FLAP_RELIEF_SPEED: f64 = 175.; //kts
-    const FLAP_RESTORE_SPEED: f64 = 170.; //kts
-
-    const FLAP_POSITIONING_THRESHOLD: f64 = 6.7; //deg
-    const ENLARGED_TARGET_THRESHOLD_DEGREE: f64 = 0.8; //deg
     const EQUAL_ANGLE_DELTA_DEGREE: f64 = 0.177;
-
-    const CONF1_FLAPS_DEGREES: f64 = 0.;
-    const CONF1F_FLAPS_DEGREES: f64 = 120.21;
-    const KNOTS_100: f64 = 100.;
-    const KNOTS_210: f64 = 210.;
 
     const SFCC_TRANSPARENCY_TIME: u64 = 200; //ms
     const MAX_POWER_CONSUMPTION_WATT: f64 = 90.; //W
 
-    const CONF1_SLATS_DEGREES: f64 = 222.27; //deg
-    const SLAT_LOCK_ACTIVE_SPEED_KNOTS: f64 = 60.; //kts
-    const SLAT_LOCK_LOW_SPEED_KNOTS: f64 = 148.; //deg
-    const SLAT_LOCK_HIGH_SPEED_KNOTS: f64 = 154.; //deg
-    const SLAT_LOCK_LOW_ALPHA_DEGREES: f64 = 8.5; //deg
-    const SLAT_LOCK_HIGH_ALPHA_DEGREES: f64 = 7.6; //deg
-
     fn new(context: &mut InitContext, powered_by: ElectricalBusType) -> Self {
         Self {
+            flap_channel: FlapsChannel::new(context),
+            slat_channel: SlatsChannel::new(context),
+
             flaps_conf_index_id: context.get_identifier("FLAPS_CONF_INDEX".to_owned()),
             slats_fppu_angle_id: context.get_identifier("SLATS_FPPU_ANGLE".to_owned()),
             flaps_fppu_angle_id: context.get_identifier("FLAPS_FPPU_ANGLE".to_owned()),
@@ -177,7 +82,6 @@ impl SlatFlapControlComputer {
                 .get_identifier("SFCC_SLAT_ACTUAL_POSITION_WORD".to_owned()),
             flap_actual_position_word_id: context
                 .get_identifier("SFCC_FLAP_ACTUAL_POSITION_WORD".to_owned()),
-            slat_lock_engaged_id: context.get_identifier("ALPHA_LOCK_ENGAGED".to_owned()),
 
             powered_by: powered_by,
             consumed_power: Power::new::<watt>(Self::MAX_POWER_CONSUMPTION_WATT),
@@ -186,23 +90,10 @@ impl SlatFlapControlComputer {
             transparency_time: Duration::from_millis(Self::SFCC_TRANSPARENCY_TIME),
             power_off_length: Duration::ZERO,
 
-            flap_auto_command_active: false,
-            auto_command_angle: Angle::new::<degree>(0.),
-
-            restore_angle: Angle::new::<degree>(Self::FLAP_RESTORE_FPPU_ANGLE),
-            relief_angle: Angle::new::<degree>(Self::FLAP_RELIEF_FPPU_ANGLE),
-            relief_speed: Velocity::new::<knot>(Self::FLAP_RELIEF_SPEED),
-            restore_speed: Velocity::new::<knot>(Self::FLAP_RESTORE_SPEED),
-            positioning_threshold: Angle::new::<degree>(Self::FLAP_POSITIONING_THRESHOLD),
-            conf1_flaps: Angle::new::<degree>(Self::CONF1_FLAPS_DEGREES),
-            conf1f_flaps: Angle::new::<degree>(Self::CONF1F_FLAPS_DEGREES),
-            kts_100: Velocity::new::<knot>(Self::KNOTS_100),
-            kts_210: Velocity::new::<knot>(Self::KNOTS_210),
-
             cas_min: None,
             cas_max: None,
             previous_cas_min: None,
-            last_valid_cas_min: None,
+            last_valid_cas_min: Velocity::new::<knot>(0.),
             cas1: None,
             cas2: None,
 
@@ -210,27 +101,11 @@ impl SlatFlapControlComputer {
             aoa1: None,
             aoa2: None,
 
-            flap_relief_active: false,
-            flap_relief_engaged: false,
-            flap_relief_command_angle: Angle::new::<degree>(0.),
-
             flaps_demanded_angle: Angle::new::<degree>(0.),
             slats_demanded_angle: Angle::new::<degree>(0.),
             flaps_feedback_angle: Angle::new::<degree>(0.),
             slats_feedback_angle: Angle::new::<degree>(0.),
             flaps_conf: FlapsConf::Conf0,
-
-            // slat_lock_active: false,
-            kts_60: Velocity::new::<knot>(Self::SLAT_LOCK_ACTIVE_SPEED_KNOTS),
-            conf1_slats: Angle::new::<degree>(Self::CONF1_SLATS_DEGREES),
-            slat_retraction_inhibited: false,
-            slat_lock_command_angle: Angle::new::<degree>(0.),
-            slat_lock_low_cas: Velocity::new::<knot>(Self::SLAT_LOCK_LOW_SPEED_KNOTS),
-            slat_lock_high_cas: Velocity::new::<knot>(Self::SLAT_LOCK_HIGH_SPEED_KNOTS),
-            slat_lock_low_aoa: Angle::new::<degree>(Self::SLAT_LOCK_LOW_ALPHA_DEGREES),
-            slat_lock_high_aoa: Angle::new::<degree>(Self::SLAT_LOCK_HIGH_ALPHA_DEGREES),
-            slat_alpha_lock_engaged: false,
-            slat_baulk_engaged: false,
         }
     }
 
@@ -244,53 +119,7 @@ impl SlatFlapControlComputer {
         self.recovered_power
     }
 
-    fn below_enlarged_target_range(position: Angle, target_position: Angle) -> bool {
-        let tolerance = Angle::new::<degree>(Self::ENLARGED_TARGET_THRESHOLD_DEGREE);
-        position < target_position - tolerance
-    }
-
-    fn in_enlarged_target_range(position: Angle, target_position: Angle) -> bool {
-        let tolerance = Angle::new::<degree>(Self::ENLARGED_TARGET_THRESHOLD_DEGREE);
-        position > target_position - tolerance && position < target_position + tolerance
-    }
-
-    fn in_or_above_enlarged_target_range(position: Angle, target_position: Angle) -> bool {
-        let tolerance = Angle::new::<degree>(Self::ENLARGED_TARGET_THRESHOLD_DEGREE);
-        Self::in_enlarged_target_range(position, target_position)
-            || position >= target_position + tolerance
-    }
-
-    // Returns a flap demanded angle in FPPU reference degree (feedback sensor)
-    fn demanded_flaps_fppu_angle_from_conf(
-        handle_conf: CSUPosition,
-        last_demanded: Angle,
-    ) -> Angle {
-        match handle_conf {
-            CSUPosition::Conf0 => Angle::new::<degree>(0.),
-            CSUPosition::Conf1 => Angle::new::<degree>(0.),
-            CSUPosition::Conf2 => Angle::new::<degree>(145.51),
-            CSUPosition::Conf3 => Angle::new::<degree>(168.35),
-            CSUPosition::ConfFull => Angle::new::<degree>(251.97),
-            _ => last_demanded,
-        }
-    }
-
-    // Returns a slat demanded angle in FPPU reference degree (feedback sensor)
-    fn demanded_slats_fppu_angle_from_conf(
-        handle_conf: CSUPosition,
-        last_demanded: Angle,
-    ) -> Angle {
-        match handle_conf {
-            CSUPosition::Conf0 => Angle::new::<degree>(0.),
-            CSUPosition::Conf1 => Angle::new::<degree>(222.27),
-            CSUPosition::Conf2 => Angle::new::<degree>(272.27),
-            CSUPosition::Conf3 => Angle::new::<degree>(272.27),
-            CSUPosition::ConfFull => Angle::new::<degree>(334.16),
-            _ => last_demanded,
-        }
-    }
-
-    fn generate_flaps_configuration(&self, flaps_handle: &CommandSensorUnit) -> FlapsConf {
+    fn generate_flaps_configuration(&self, flaps_handle: &impl FlapsHandle) -> FlapsConf {
         let flaps_conf_temp = match flaps_handle.last_valid_position() {
             CSUPosition::Conf0 => FlapsConf::Conf0,
             CSUPosition::Conf1 => FlapsConf::Conf1,
@@ -306,64 +135,11 @@ impl SlatFlapControlComputer {
             return FlapsConf::Conf1F;
         }
 
-        if self.slat_retraction_inhibited {
+        if self.slat_channel.is_slat_retraction_inhibited() {
             return FlapsConf::Conf1;
         }
 
         return flaps_conf_temp;
-    }
-
-    fn calculate_commanded_angle(&mut self, flaps_handle: &CommandSensorUnit) -> Angle {
-        match self.cas_min {
-            Some(cas)
-                if self.flap_relief_active
-                    && cas < self.relief_speed
-                    && cas >= self.restore_speed
-                    && self.last_valid_cas_min.unwrap() >= self.relief_speed
-                    && self.previous_cas_min.is_none() =>
-            {
-                self.relief_angle
-            }
-            Some(cas)
-                if self.flap_relief_active
-                    && cas < self.relief_speed
-                    && cas >= self.restore_speed
-                    && self.last_valid_cas_min.unwrap() < self.relief_speed
-                    && self.previous_cas_min.is_none() =>
-            {
-                self.restore_angle
-            }
-            Some(cas) if cas >= self.relief_speed => self.relief_angle,
-            Some(cas) if cas < self.restore_speed => self.restore_angle,
-            Some(cas)
-                if (!self.flap_relief_active
-                    || flaps_handle.previous_position() == CSUPosition::OutOfDetent
-                    || flaps_handle.previous_position() == CSUPosition::Fault)
-                    && cas >= self.restore_speed
-                    && cas < self.relief_speed =>
-            {
-                self.restore_angle
-            }
-            Some(_) => self.flap_relief_command_angle,
-            None => self.restore_angle,
-        }
-    }
-
-    fn update_flap_relief(&mut self, flaps_handle: &CommandSensorUnit) {
-        if flaps_handle.last_valid_position() != CSUPosition::ConfFull {
-            self.flap_relief_active = false;
-            self.flap_relief_engaged = false;
-            return;
-        }
-
-        if flaps_handle.current_position() == CSUPosition::OutOfDetent {
-            return;
-        }
-
-        self.flap_relief_command_angle = self.calculate_commanded_angle(flaps_handle);
-        self.flap_relief_engaged = self.flap_relief_command_angle == self.relief_angle
-            && self.flaps_feedback_angle >= (self.relief_angle - self.positioning_threshold);
-        self.flap_relief_active = true;
     }
 
     fn update_cas(&mut self, adiru: &impl AirDataSource) {
@@ -371,7 +147,7 @@ impl SlatFlapControlComputer {
         self.cas2 = adiru.computed_airspeed(2).normal_value();
 
         if self.cas_min.is_some() {
-            self.last_valid_cas_min = self.cas_min;
+            self.last_valid_cas_min = self.cas_min.unwrap();
         }
         self.previous_cas_min = self.cas_min;
 
@@ -400,459 +176,8 @@ impl SlatFlapControlComputer {
         }
     }
 
-    fn update_flap_auto_command(&mut self, flaps_handle: &CommandSensorUnit) {
-        if flaps_handle.last_valid_position() != CSUPosition::Conf1 {
-            self.flap_auto_command_active = false;
-            return;
-        }
-
-        // The match can be shortened by a convoluted if statement however
-        // I believe it would make debugging and understanding the state machine harder
-        match (self.cas1, self.cas2) {
-            (Some(cas1), Some(cas2)) if cas1 <= self.kts_100 && cas2 <= self.kts_100 => {
-                println!("GO 1");
-                self.auto_command_angle = self.conf1f_flaps
-            }
-            (Some(cas1), Some(cas2)) if cas1 >= self.kts_210 && cas2 >= self.kts_210 => {
-                println!("GO 2");
-                self.auto_command_angle = self.conf1_flaps
-            }
-            (Some(cas1), _)
-                if flaps_handle.previous_position() == CSUPosition::Conf0
-                    && flaps_handle.current_position() == CSUPosition::Conf1
-                    && Self::below_enlarged_target_range(
-                        self.flaps_feedback_angle,
-                        self.conf1f_flaps,
-                    )
-                    && cas1 > self.kts_100
-                    && !self.flap_auto_command_active =>
-            {
-                println!("GO 3");
-                self.auto_command_angle = self.conf1_flaps
-            }
-            (_, Some(cas2))
-                if flaps_handle.previous_position() == CSUPosition::Conf0
-                    && flaps_handle.current_position() == CSUPosition::Conf1
-                    && Self::below_enlarged_target_range(
-                        self.flaps_feedback_angle,
-                        self.conf1f_flaps,
-                    )
-                    && cas2 > self.kts_100
-                    && !self.flap_auto_command_active =>
-            {
-                println!("GO 4");
-                self.auto_command_angle = self.conf1_flaps
-            }
-            (Some(cas1), _)
-                if (flaps_handle.previous_position() == CSUPosition::Conf2
-                    || flaps_handle.previous_position() == CSUPosition::Conf3
-                    || flaps_handle.previous_position() == CSUPosition::ConfFull)
-                    && flaps_handle.current_position() == CSUPosition::Conf1
-                    && !Self::in_enlarged_target_range(
-                        self.flaps_feedback_angle,
-                        self.conf1_flaps,
-                    )
-                    && cas1 < self.kts_210
-                    && !self.flap_auto_command_active =>
-            {
-                println!("GO 5");
-                self.auto_command_angle = self.conf1f_flaps
-            }
-            (_, Some(cas2))
-                if (flaps_handle.previous_position() == CSUPosition::Conf2
-                    || flaps_handle.previous_position() == CSUPosition::Conf3
-                    || flaps_handle.previous_position() == CSUPosition::ConfFull)
-                    && flaps_handle.current_position() == CSUPosition::Conf1
-                    && !Self::in_enlarged_target_range(
-                        self.flaps_feedback_angle,
-                        self.conf1_flaps,
-                    )
-                    && cas2 < self.kts_210
-                    && !self.flap_auto_command_active =>
-            {
-                println!("GO 6");
-                self.auto_command_angle = self.conf1f_flaps
-            }
-            (Some(cas1), _)
-                if (flaps_handle.previous_position() == CSUPosition::Conf2
-                    || flaps_handle.previous_position() == CSUPosition::Conf3
-                    || flaps_handle.previous_position() == CSUPosition::ConfFull)
-                    && flaps_handle.current_position() == CSUPosition::Conf1
-                    && Self::in_enlarged_target_range(
-                        self.flaps_feedback_angle,
-                        self.conf1_flaps,
-                    )
-                    && cas1 > self.kts_100
-                    && !self.flap_auto_command_active =>
-            {
-                println!("GO 7");
-                self.auto_command_angle = self.conf1_flaps
-            }
-            (_, Some(cas2))
-                if (flaps_handle.previous_position() == CSUPosition::Conf2
-                    || flaps_handle.previous_position() == CSUPosition::Conf3
-                    || flaps_handle.previous_position() == CSUPosition::ConfFull)
-                    && flaps_handle.current_position() == CSUPosition::Conf1
-                    && Self::in_enlarged_target_range(
-                        self.flaps_feedback_angle,
-                        self.conf1_flaps,
-                    )
-                    && cas2 > self.kts_100
-                    && !self.flap_auto_command_active =>
-            {
-                println!("GO 8");
-                self.auto_command_angle = self.conf1_flaps
-            }
-            (Some(cas1), _)
-                if flaps_handle.previous_position() == CSUPosition::Conf0
-                    && flaps_handle.current_position() == CSUPosition::Conf1
-                    && Self::in_or_above_enlarged_target_range(
-                        self.flaps_feedback_angle,
-                        self.conf1f_flaps,
-                    )
-                    && cas1 < self.kts_210
-                    && !self.flap_auto_command_active =>
-            {
-                println!("GO 9");
-                self.auto_command_angle = self.conf1f_flaps
-            }
-            (_, Some(cas2))
-                if flaps_handle.previous_position() == CSUPosition::Conf0
-                    && flaps_handle.current_position() == CSUPosition::Conf1
-                    && Self::in_or_above_enlarged_target_range(
-                        self.flaps_feedback_angle,
-                        self.conf1f_flaps,
-                    )
-                    && cas2 < self.kts_210
-                    && !self.flap_auto_command_active =>
-            {
-                println!("GO 10");
-                self.auto_command_angle = self.conf1f_flaps
-            }
-            // If these are moved at the top, then the other cases are never hit
-            // They can be simplified in a single case statement but for clarity
-            // they are fully explicit
-            (Some(cas1), _) if cas1 > self.kts_100 && cas1 < self.kts_210 => {
-                println!("GO 11");
-                self.auto_command_angle = self.auto_command_angle
-            }
-            (_, Some(cas2)) if cas2 > self.kts_100 && cas2 < self.kts_210 => {
-                println!("GO 12");
-                self.auto_command_angle = self.auto_command_angle
-            }
-            (Some(cas1), Some(cas2))
-                if (cas1 <= self.kts_100 && cas2 >= self.kts_210)
-                    || (cas1 >= self.kts_210 && cas2 <= self.kts_100) =>
-            {
-                println!("GO 13");
-                self.auto_command_angle = self.auto_command_angle
-            }
-            (None, None) if !self.flap_auto_command_active => {
-                self.auto_command_angle = self.conf1f_flaps
-            }
-            (None, None) if self.flap_auto_command_active => {
-                println!("GO 14");
-                self.auto_command_angle = self.auto_command_angle
-            }
-            // If this panic is reached, it means a condition has been forgotten!
-            (_, _) => panic!(
-                "Missing case update_flap_auto_command! {} {}.",
-                self.cas1.unwrap().get::<knot>(),
-                self.cas2.unwrap().get::<knot>()
-            ),
-        }
-        self.flap_auto_command_active = true;
-    }
-
-    fn generate_flap_angle(&mut self, flaps_handle: &CommandSensorUnit) -> Angle {
-        let calulated_angle = Self::demanded_flaps_fppu_angle_from_conf(
-            flaps_handle.current_position(),
-            self.flaps_demanded_angle,
-        );
-
-        self.update_flap_relief(flaps_handle);
-        self.update_flap_auto_command(flaps_handle);
-
-        if self.flap_relief_active {
-            return self.flap_relief_command_angle;
-        }
-
-        if self.flap_auto_command_active {
-            return self.auto_command_angle;
-        }
-
-        return calulated_angle;
-    }
-
-    fn generate_slat_angle(
-        &mut self,
-        flaps_handle: &CommandSensorUnit,
-        lgciu: &impl LgciuWeightOnWheels,
-    ) -> Angle {
-        self.update_slat_alpha_lock(lgciu, flaps_handle);
-        self.update_slat_baulk(lgciu, flaps_handle);
-
-        self.slat_retraction_inhibited = self.slat_alpha_lock_engaged || self.slat_baulk_engaged;
-
-        if self.slat_retraction_inhibited {
-            return self.slat_lock_command_angle;
-        }
-
-        Self::demanded_slats_fppu_angle_from_conf(
-            flaps_handle.current_position(),
-            self.slats_demanded_angle,
-        )
-    }
-
     fn surface_movement_required(demanded_angle: Angle, feedback_angle: Angle) -> bool {
         (demanded_angle - feedback_angle).get::<degree>().abs() > Self::EQUAL_ANGLE_DELTA_DEGREE
-    }
-
-    fn update_slat_alpha_lock(
-        &mut self,
-        lgciu: &impl LgciuWeightOnWheels,
-        flaps_handle: &CommandSensorUnit,
-    ) {
-        if !(self.cas_max.unwrap_or_default() >= self.kts_60
-            || lgciu.left_and_right_gear_extended(false))
-        {
-            println!("Exiting update_slat_lock");
-            // self.slat_retraction_inhibited = false;
-            self.slat_alpha_lock_engaged = false;
-            return;
-        }
-
-        match self.aoa {
-            Some(aoa)
-                if aoa > self.slat_lock_high_aoa
-                    && flaps_handle.current_position() == CSUPosition::Conf0
-                    && Self::in_or_above_enlarged_target_range(
-                        self.slats_feedback_angle,
-                        self.conf1_slats,
-                    ) =>
-            {
-                println!("S2");
-                self.slat_alpha_lock_engaged = true;
-                // self.slat_retraction_inhibited = true;
-            }
-            Some(_) if flaps_handle.current_position() == CSUPosition::OutOfDetent => {
-                println!("S3");
-                self.slat_alpha_lock_engaged = self.slat_alpha_lock_engaged;
-                // self.slat_retraction_inhibited = self.slat_retraction_inhibited
-            }
-            Some(aoa)
-                if aoa < self.slat_lock_low_aoa
-                    && flaps_handle.current_position() == CSUPosition::Conf0 && self.slat_alpha_lock_engaged =>
-            {
-                println!("S4");
-                self.slat_alpha_lock_engaged = false;
-                // self.slat_retraction_inhibited = false;
-            }
-            None if flaps_handle.last_valid_position() == CSUPosition::Conf0 => {
-                println!("S6");
-                self.slat_alpha_lock_engaged = false;
-                // self.slat_retraction_inhibited = false
-            }
-            // Verify if it shall be false or true!
-            _ => {
-                println!("S8");
-                self.slat_alpha_lock_engaged = false;
-                // self.slat_retraction_inhibited = false
-            }
-            // panic!(
-            //     "Missing case update_slat_lock! {} {}.",
-            //     self.cas_max.unwrap().get::<knot>(),
-            //     self.aoa.unwrap().get::<degree>()
-            // ),
-        }
-
-        if self.slat_alpha_lock_engaged {
-            self.slat_lock_command_angle = self.conf1_slats
-        }
-
-        println!(
-            "CAS_MAX {}\tAOA {}",
-            self.cas_max.unwrap_or_default().get::<knot>(),
-            self.aoa.unwrap_or_default().get::<degree>()
-        );
-    }
-
-    fn update_slat_baulk(
-        &mut self,
-        lgciu: &impl LgciuWeightOnWheels,
-        flaps_handle: &CommandSensorUnit,
-    ) {
-        if !(self.cas_max.unwrap_or_default() >= self.kts_60
-            || lgciu.left_and_right_gear_extended(false))
-        {
-            println!("Exiting update_slat_lock");
-            // self.slat_retraction_inhibited = false;
-            self.slat_baulk_engaged = false;
-            return;
-        }
-
-        match self.cas_max {
-            Some(cas)
-                if cas < self.slat_lock_low_cas
-                    && flaps_handle.current_position() == CSUPosition::Conf0
-                    && Self::in_or_above_enlarged_target_range(
-                        self.slats_feedback_angle,
-                        self.conf1_slats,
-                    ) =>
-            {
-                println!("S9");
-                self.slat_baulk_engaged = true;
-                // self.slat_retraction_inhibited = true;
-            }
-            Some(_) if flaps_handle.current_position() == CSUPosition::OutOfDetent => {
-                println!("S10");
-                self.slat_baulk_engaged = self.slat_baulk_engaged;
-                // self.slat_retraction_inhibited = self.slat_retraction_inhibited
-            }
-            Some(cas)
-                if cas > self.slat_lock_high_cas
-                    && flaps_handle.current_position() == CSUPosition::Conf0 && self.slat_baulk_engaged =>
-            {
-                println!("S11");
-                self.slat_baulk_engaged = false;
-                // self.slat_retraction_inhibited = false
-            }
-            None if flaps_handle.last_valid_position() == CSUPosition::Conf0 => {
-                println!("S12");
-                self.slat_baulk_engaged = false;
-                // self.slat_retraction_inhibited = false
-            }
-            // Verify if it shall be false or true!
-            _ => {
-                println!("S13");
-                self.slat_baulk_engaged = false;
-                // self.slat_retraction_inhibited = false
-            }
-            // panic!(
-            //     "Missing case update_slat_lock! {} {}.",
-            //     self.cas_max.unwrap().get::<knot>(),
-            //     self.aoa.unwrap().get::<degree>()
-            // ),
-        }
-
-        if self.slat_baulk_engaged {
-            self.slat_lock_command_angle = self.conf1_slats
-        }
-
-        println!(
-            "CAS_MAX {}\tAOA {}",
-            self.cas_max.unwrap_or_default().get::<knot>(),
-            self.aoa.unwrap_or_default().get::<degree>()
-        );
-    }
-
-    fn powerup_reset(&mut self, flaps_handle: &CommandSensorUnit) {
-        println!("powerup_reset");
-        println!(
-            "flaps_handle PREV {:?}\tCURR {:?}\tLAST {:?}",
-            flaps_handle.previous_position(),
-            flaps_handle.current_position(),
-            flaps_handle.last_valid_position()
-        );
-        // Auto Command restart
-        if flaps_handle.last_valid_position() != CSUPosition::Conf1 {
-            self.flap_auto_command_active = false;
-        } else {
-            // The match can be shortened by a convoluted if statement however
-            // I believe it would make debugging and understanding the state machine harder
-            match (self.cas1, self.cas2) {
-                (Some(cas1), Some(cas2))
-                    if ((cas1 <= self.kts_100 && cas2 >= self.kts_210)
-                        || (cas1 >= self.kts_210 && cas2 <= self.kts_100))
-                        && Self::in_enlarged_target_range(
-                            self.flaps_feedback_angle,
-                            self.conf1_flaps,
-                        ) =>
-                {
-                    println!("START 1");
-                    self.auto_command_angle = self.conf1_flaps
-                }
-                (Some(cas1), Some(cas2))
-                    if ((cas1 <= self.kts_100 && cas2 >= self.kts_210)
-                        || (cas1 >= self.kts_210 && cas2 <= self.kts_100))
-                        && Self::in_or_above_enlarged_target_range(
-                            self.flaps_feedback_angle,
-                            self.conf1f_flaps,
-                        ) =>
-                {
-                    println!("START 2");
-                    self.auto_command_angle = self.conf1f_flaps
-                }
-                (Some(cas1), _)
-                    if cas1 > self.kts_100
-                        && cas1 < self.kts_210
-                        && Self::in_or_above_enlarged_target_range(
-                            self.flaps_feedback_angle,
-                            self.conf1f_flaps,
-                        ) =>
-                {
-                    println!("START 3");
-                    self.auto_command_angle = self.conf1f_flaps
-                }
-                (_, Some(cas2))
-                    if cas2 > self.kts_100
-                        && cas2 < self.kts_210
-                        && Self::in_or_above_enlarged_target_range(
-                            self.flaps_feedback_angle,
-                            self.conf1f_flaps,
-                        ) =>
-                {
-                    println!("START 4");
-                    self.auto_command_angle = self.conf1f_flaps
-                }
-                (Some(cas1), _)
-                    if cas1 > self.kts_100
-                        && cas1 < self.kts_210
-                        && Self::in_enlarged_target_range(
-                            self.flaps_feedback_angle,
-                            self.conf1_flaps,
-                        ) =>
-                {
-                    println!("START 5");
-                    self.auto_command_angle = self.conf1_flaps
-                }
-                (_, Some(cas2))
-                    if cas2 > self.kts_100
-                        && cas2 < self.kts_210
-                        && Self::in_enlarged_target_range(
-                            self.flaps_feedback_angle,
-                            self.conf1_flaps,
-                        ) =>
-                {
-                    println!("START 6");
-                    self.auto_command_angle = self.conf1_flaps
-                }
-                (None, None) => {
-                    println!("START 7");
-                    self.auto_command_angle = self.conf1f_flaps
-                }
-                // If this panic is reached, it means a condition has been forgotten!
-                (_, _) => {
-                    println!("START 8");
-                    self.auto_command_angle = self.auto_command_angle // Should it be conf1 or conf1f?
-                }
-            }
-            self.flap_auto_command_active = true;
-        }
-
-        if flaps_handle.last_valid_position() != CSUPosition::ConfFull {
-            self.flap_relief_active = false;
-            self.flap_relief_engaged = false;
-        } else {
-            match self.cas_min {
-                Some(cas) if cas < self.relief_speed => {
-                    self.flap_relief_command_angle = self.restore_angle
-                }
-                Some(_) => self.flap_relief_command_angle = self.relief_angle,
-                None => self.flap_relief_command_angle = self.restore_angle,
-            }
-            self.flap_relief_active = true;
-        }
     }
 
     pub fn update(
@@ -876,49 +201,44 @@ impl SlatFlapControlComputer {
         if self.recovered_power {
             println!("RECOVERED!");
             if self.power_off_length > self.transparency_time {
-                self.powerup_reset(flaps_handle);
+                self.flap_channel.powerup_reset(
+                    flaps_handle,
+                    self.flaps_feedback_angle,
+                    self.cas1,
+                    self.cas2,
+                    self.cas_min,
+                );
             }
             self.power_off_length = Duration::ZERO;
             self.recovered_power = false;
         }
 
-        self.flaps_demanded_angle = self.generate_flap_angle(flaps_handle);
-        self.slats_demanded_angle = self.generate_slat_angle(flaps_handle, lgciu);
+        self.flap_channel.update(
+            context,
+            flaps_handle,
+            self.flaps_feedback_angle,
+            self.cas1,
+            self.cas2,
+            self.cas_min,
+            self.previous_cas_min,
+            self.last_valid_cas_min,
+        );
+        self.flaps_demanded_angle = self.flap_channel.get_flap_demanded_angle();
+
+        self.slat_channel.update(
+            context,
+            flaps_handle,
+            self.slats_feedback_angle,
+            lgciu,
+            self.aoa,
+            self.cas_max,
+        );
+        self.slats_demanded_angle = self.slat_channel.get_slat_demanded_angle();
+
         self.flaps_conf = self.generate_flaps_configuration(flaps_handle);
 
         self.flaps_feedback_angle = flaps_feedback.angle();
         self.slats_feedback_angle = slats_feedback.angle();
-    }
-
-    fn get_bit_26_system_status_word(&self) -> bool {
-        if self.flap_auto_command_active && self.auto_command_angle == self.conf1_flaps {
-            if Self::in_enlarged_target_range(self.flaps_feedback_angle, self.conf1f_flaps)
-            // Check flaps movement
-            {
-                return false;
-            }
-            return true;
-        }
-
-        return false;
-    }
-
-    fn get_bit_29_component_status_word(&self) -> bool {
-        if self.flap_auto_command_active && self.auto_command_angle == self.conf1_flaps {
-            if !Self::in_enlarged_target_range(self.flaps_feedback_angle, self.conf1_flaps) {
-                return true;
-            } else if Self::in_enlarged_target_range(self.flaps_feedback_angle, self.conf1f_flaps) {
-                return false;
-            }
-        }
-        return false;
-    }
-
-    fn get_bit_28_component_status_word(&self) -> bool {
-        if self.flap_auto_command_active && self.cas_min.is_none() {
-            return true;
-        }
-        return false;
     }
 
     fn slat_flap_component_status_word(&self) -> Arinc429Word<u32> {
@@ -933,10 +253,18 @@ impl SlatFlapControlComputer {
         //TBD
 
         // Flap Auto Command Fail
-        word.set_bit(28, self.get_bit_28_component_status_word());
+        word.set_bit(
+            28,
+            self.flap_channel
+                .get_bit_28_component_status_word(self.cas_min),
+        );
 
         // Flap Auto Command Engaged
-        word.set_bit(29, self.get_bit_29_component_status_word());
+        word.set_bit(
+            29,
+            self.flap_channel
+                .get_bit_29_component_status_word(self.flaps_feedback_angle),
+        );
 
         word
     }
@@ -987,7 +315,7 @@ impl SlatFlapControlComputer {
         word.set_bit(21, self.flaps_conf == FlapsConf::ConfFull);
 
         // Flap Relief Engaged
-        word.set_bit(22, self.flap_relief_engaged);
+        word.set_bit(22, self.flap_channel.is_flap_relief_engaged());
 
         // Flap Attach Failure
         word.set_bit(23, false);
@@ -999,7 +327,11 @@ impl SlatFlapControlComputer {
         word.set_bit(25, false);
 
         // Flap Auto Command Engaged
-        word.set_bit(26, self.get_bit_26_system_status_word());
+        word.set_bit(
+            26,
+            self.flap_channel
+                .get_bit_26_system_status_word(self.flaps_feedback_angle),
+        );
 
         // CSU Position Out-of-Detent > 10sec
         word.set_bit(27, false);
@@ -1131,6 +463,11 @@ impl SlatFlapLane for SlatFlapControlComputer {
 }
 
 impl SimulationElement for SlatFlapControlComputer {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.slat_channel.accept(visitor);
+        visitor.visit(self);
+    }
+
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
         if self.is_powered != buses.is_powered(self.powered_by) {
             // If is_powered returns TRUE and the previous is FALSE,
@@ -1173,8 +510,6 @@ impl SimulationElement for SlatFlapControlComputer {
             &self.flap_actual_position_word_id,
             self.flap_actual_position_word(),
         );
-
-        writer.write(&self.slat_lock_engaged_id, self.slat_retraction_inhibited);
     }
 }
 
@@ -1653,7 +988,11 @@ mod tests {
         }
 
         fn is_slat_retraction_inhibited(&self) -> bool {
-            self.query(|a| a.slat_flap_complex.sfcc[0].slat_retraction_inhibited)
+            self.query(|a| {
+                a.slat_flap_complex.sfcc[0]
+                    .slat_channel
+                    .is_slat_retraction_inhibited()
+            })
         }
 
         // fn is_alpha_lock_engaged_speed(&self) -> bool {
@@ -1666,26 +1005,6 @@ mod tests {
 
         fn get_recovered_power(&self) -> bool {
             self.query(|a| a.slat_flap_complex.sfcc[0].get_recovered_power())
-        }
-
-        fn get_csu_current_position(&self) -> CSUPosition {
-            self.query(|a| a.slat_flap_complex.flaps_handle.current_position())
-        }
-
-        fn get_csu_previous_position(&self) -> CSUPosition {
-            self.query(|a| a.slat_flap_complex.flaps_handle.previous_position())
-        }
-
-        fn get_csu_last_valid_position(&self) -> CSUPosition {
-            self.query(|a| a.slat_flap_complex.flaps_handle.last_valid_position())
-        }
-
-        fn get_csu_time_since_last_valid_position(&self) -> Duration {
-            self.query(|a| {
-                a.slat_flap_complex
-                    .flaps_handle
-                    .time_since_last_valid_position()
-            })
         }
 
         fn get_flaps_conf(&self) -> FlapsConf {
@@ -1759,91 +1078,6 @@ mod tests {
 
         assert!(test_bed.contains_variable_with_name("SLATS_FPPU_ANGLE"));
         assert!(test_bed.contains_variable_with_name("FLAPS_FPPU_ANGLE"));
-    }
-
-    #[test]
-    fn flaps_test_command_sensor_unit() {
-        let mut test_bed = test_bed_with().set_indicated_airspeed(0.).run_one_tick();
-
-        test_bed = test_bed.set_flaps_handle_position(0).run_one_tick();
-        assert_eq!(test_bed.get_csu_current_position(), CSUPosition::Conf0);
-        assert_eq!(test_bed.get_csu_last_valid_position(), CSUPosition::Conf0);
-
-        test_bed = test_bed.set_flaps_handle_position(1).run_one_tick();
-        assert_eq!(test_bed.get_csu_previous_position(), CSUPosition::Conf0);
-        assert_eq!(test_bed.get_csu_current_position(), CSUPosition::Conf1);
-        assert_eq!(test_bed.get_csu_last_valid_position(), CSUPosition::Conf1);
-
-        test_bed = test_bed.set_flaps_handle_position(2).run_one_tick();
-        assert_eq!(test_bed.get_csu_previous_position(), CSUPosition::Conf1);
-        assert_eq!(test_bed.get_csu_current_position(), CSUPosition::Conf2);
-        assert_eq!(test_bed.get_csu_last_valid_position(), CSUPosition::Conf2);
-
-        test_bed = test_bed.set_flaps_handle_position(3).run_one_tick();
-        assert_eq!(test_bed.get_csu_previous_position(), CSUPosition::Conf2);
-        assert_eq!(test_bed.get_csu_current_position(), CSUPosition::Conf3);
-        assert_eq!(test_bed.get_csu_last_valid_position(), CSUPosition::Conf3);
-
-        test_bed = test_bed.set_flaps_handle_position(4).run_one_tick();
-        assert_eq!(test_bed.get_csu_previous_position(), CSUPosition::Conf3);
-        assert_eq!(test_bed.get_csu_current_position(), CSUPosition::ConfFull);
-        assert_eq!(
-            test_bed.get_csu_last_valid_position(),
-            CSUPosition::ConfFull
-        );
-        assert!(
-            test_bed
-                .get_csu_time_since_last_valid_position()
-                .as_millis()
-                <= 100
-        );
-
-        test_bed = test_bed.set_flaps_handle_position(254).run_one_tick();
-        assert_eq!(test_bed.get_csu_previous_position(), CSUPosition::ConfFull);
-        assert_eq!(
-            test_bed.get_csu_current_position(),
-            CSUPosition::OutOfDetent
-        );
-        assert_eq!(
-            test_bed.get_csu_last_valid_position(),
-            CSUPosition::ConfFull
-        );
-
-        test_bed = test_bed.run_waiting_for(Duration::from_secs(1));
-        assert_eq!(test_bed.get_flaps_demanded_angle(), 251.97);
-        assert_eq!(test_bed.get_slats_demanded_angle(), 334.16);
-        assert_eq!(
-            test_bed.get_csu_previous_position(),
-            CSUPosition::OutOfDetent
-        );
-        assert_eq!(
-            test_bed.get_csu_current_position(),
-            CSUPosition::OutOfDetent
-        );
-        assert_eq!(
-            test_bed.get_csu_last_valid_position(),
-            CSUPosition::ConfFull
-        );
-        assert!(
-            test_bed
-                .get_csu_time_since_last_valid_position()
-                .as_secs_f32()
-                >= 0.9
-        );
-
-        test_bed = test_bed.set_flaps_handle_position(3).run_one_tick();
-        assert_eq!(
-            test_bed.get_csu_previous_position(),
-            CSUPosition::OutOfDetent
-        );
-        assert_eq!(test_bed.get_csu_current_position(), CSUPosition::Conf3);
-        assert_eq!(test_bed.get_csu_last_valid_position(), CSUPosition::Conf3);
-        assert!(
-            test_bed
-                .get_csu_time_since_last_valid_position()
-                .as_millis()
-                <= 100
-        );
     }
 
     #[test]
