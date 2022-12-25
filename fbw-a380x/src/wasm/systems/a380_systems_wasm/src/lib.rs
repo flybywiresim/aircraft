@@ -209,8 +209,12 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("TRAILING EDGE FLAPS RIGHT PERCENT", "Percent", 0)?
     .provides_aircraft_variable("TURB ENG CORRECTED N1", "Percent", 1)?
     .provides_aircraft_variable("TURB ENG CORRECTED N1", "Percent", 2)?
+    .provides_aircraft_variable("TURB ENG CORRECTED N1", "Percent", 3)?
+    .provides_aircraft_variable("TURB ENG CORRECTED N1", "Percent", 4)?
     .provides_aircraft_variable("TURB ENG CORRECTED N2", "Percent", 1)?
     .provides_aircraft_variable("TURB ENG CORRECTED N2", "Percent", 2)?
+    .provides_aircraft_variable("TURB ENG CORRECTED N2", "Percent", 3)?
+    .provides_aircraft_variable("TURB ENG CORRECTED N2", "Percent", 4)?
     .provides_aircraft_variable("TURB ENG IGNITION SWITCH EX1", "Enum", 1)?
     .provides_aircraft_variable("UNLIMITED FUEL", "Bool", 0)?
     .provides_aircraft_variable("VELOCITY BODY X", "feet per second", 0)?
