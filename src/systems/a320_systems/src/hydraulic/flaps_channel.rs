@@ -1,6 +1,6 @@
 use systems::{
     hydraulic::command_sensor_unit::{CommandSensorUnit, FlapsHandle},
-    shared::CSUPosition,
+    shared::{CSUPosition, FeedbackPositionPickoffUnit},
     simulation::{InitContext, UpdateContext},
 };
 
@@ -26,6 +26,7 @@ pub struct FlapsChannel {
     flap_relief_command_angle: Angle,
 
     flaps_demanded_angle: Angle,
+    flaps_feedback_angle: Angle,
 }
 
 impl FlapsChannel {
@@ -62,6 +63,7 @@ impl FlapsChannel {
             flap_relief_command_angle: Angle::new::<degree>(0.),
 
             flaps_demanded_angle: Angle::new::<degree>(0.),
+            flaps_feedback_angle: Angle::new::<degree>(0.),
         }
     }
 
@@ -141,7 +143,6 @@ impl FlapsChannel {
     fn update_flap_relief(
         &mut self,
         flaps_handle: &impl FlapsHandle,
-        flaps_feedback_angle: Angle,
         cas: Option<Velocity>,
         previous_cas: Option<Velocity>,
         last_valid_cas: Velocity,
@@ -159,14 +160,13 @@ impl FlapsChannel {
         self.flap_relief_command_angle =
             self.calculate_commanded_angle(flaps_handle, cas, previous_cas, last_valid_cas);
         self.flap_relief_engaged = self.flap_relief_command_angle == self.relief_angle
-            && flaps_feedback_angle >= (self.relief_angle - self.positioning_threshold);
+            && self.flaps_feedback_angle >= (self.relief_angle - self.positioning_threshold);
         self.flap_relief_active = true;
     }
 
     fn update_flap_auto_command(
         &mut self,
         flaps_handle: &impl FlapsHandle,
-        flaps_feedback_angle: Angle,
         cas1: Option<Velocity>,
         cas2: Option<Velocity>,
     ) {
@@ -190,7 +190,7 @@ impl FlapsChannel {
                 if flaps_handle.previous_position() == CSUPosition::Conf0
                     && flaps_handle.current_position() == CSUPosition::Conf1
                     && Self::below_enlarged_target_range(
-                        flaps_feedback_angle,
+                        self.flaps_feedback_angle,
                         self.conf1f_flaps,
                     )
                     && cas1 > self.kts_100
@@ -203,7 +203,7 @@ impl FlapsChannel {
                 if flaps_handle.previous_position() == CSUPosition::Conf0
                     && flaps_handle.current_position() == CSUPosition::Conf1
                     && Self::below_enlarged_target_range(
-                        flaps_feedback_angle,
+                        self.flaps_feedback_angle,
                         self.conf1f_flaps,
                     )
                     && cas2 > self.kts_100
@@ -217,7 +217,10 @@ impl FlapsChannel {
                     || flaps_handle.previous_position() == CSUPosition::Conf3
                     || flaps_handle.previous_position() == CSUPosition::ConfFull)
                     && flaps_handle.current_position() == CSUPosition::Conf1
-                    && !Self::in_enlarged_target_range(flaps_feedback_angle, self.conf1_flaps)
+                    && !Self::in_enlarged_target_range(
+                        self.flaps_feedback_angle,
+                        self.conf1_flaps,
+                    )
                     && cas1 < self.kts_210
                     && !self.flap_auto_command_active =>
             {
@@ -229,7 +232,10 @@ impl FlapsChannel {
                     || flaps_handle.previous_position() == CSUPosition::Conf3
                     || flaps_handle.previous_position() == CSUPosition::ConfFull)
                     && flaps_handle.current_position() == CSUPosition::Conf1
-                    && !Self::in_enlarged_target_range(flaps_feedback_angle, self.conf1_flaps)
+                    && !Self::in_enlarged_target_range(
+                        self.flaps_feedback_angle,
+                        self.conf1_flaps,
+                    )
                     && cas2 < self.kts_210
                     && !self.flap_auto_command_active =>
             {
@@ -241,7 +247,10 @@ impl FlapsChannel {
                     || flaps_handle.previous_position() == CSUPosition::Conf3
                     || flaps_handle.previous_position() == CSUPosition::ConfFull)
                     && flaps_handle.current_position() == CSUPosition::Conf1
-                    && Self::in_enlarged_target_range(flaps_feedback_angle, self.conf1_flaps)
+                    && Self::in_enlarged_target_range(
+                        self.flaps_feedback_angle,
+                        self.conf1_flaps,
+                    )
                     && cas1 > self.kts_100
                     && !self.flap_auto_command_active =>
             {
@@ -253,7 +262,10 @@ impl FlapsChannel {
                     || flaps_handle.previous_position() == CSUPosition::Conf3
                     || flaps_handle.previous_position() == CSUPosition::ConfFull)
                     && flaps_handle.current_position() == CSUPosition::Conf1
-                    && Self::in_enlarged_target_range(flaps_feedback_angle, self.conf1_flaps)
+                    && Self::in_enlarged_target_range(
+                        self.flaps_feedback_angle,
+                        self.conf1_flaps,
+                    )
                     && cas2 > self.kts_100
                     && !self.flap_auto_command_active =>
             {
@@ -264,7 +276,7 @@ impl FlapsChannel {
                 if flaps_handle.previous_position() == CSUPosition::Conf0
                     && flaps_handle.current_position() == CSUPosition::Conf1
                     && Self::in_or_above_enlarged_target_range(
-                        flaps_feedback_angle,
+                        self.flaps_feedback_angle,
                         self.conf1f_flaps,
                     )
                     && cas1 < self.kts_210
@@ -277,7 +289,7 @@ impl FlapsChannel {
                 if flaps_handle.previous_position() == CSUPosition::Conf0
                     && flaps_handle.current_position() == CSUPosition::Conf1
                     && Self::in_or_above_enlarged_target_range(
-                        flaps_feedback_angle,
+                        self.flaps_feedback_angle,
                         self.conf1f_flaps,
                     )
                     && cas2 < self.kts_210
@@ -324,7 +336,6 @@ impl FlapsChannel {
     fn generate_flap_angle(
         &mut self,
         flaps_handle: &impl FlapsHandle,
-        flaps_feedback_angle: Angle,
         cas1: Option<Velocity>,
         cas2: Option<Velocity>,
         cas: Option<Velocity>,
@@ -336,14 +347,8 @@ impl FlapsChannel {
             self.flaps_demanded_angle,
         );
 
-        self.update_flap_relief(
-            flaps_handle,
-            flaps_feedback_angle,
-            cas,
-            previous_cas,
-            last_valid_cas,
-        );
-        self.update_flap_auto_command(flaps_handle, flaps_feedback_angle, cas1, cas2);
+        self.update_flap_relief(flaps_handle, cas, previous_cas, last_valid_cas);
+        self.update_flap_auto_command(flaps_handle, cas1, cas2);
 
         if self.flap_relief_active {
             return self.flap_relief_command_angle;
@@ -359,11 +364,13 @@ impl FlapsChannel {
     pub fn powerup_reset(
         &mut self,
         flaps_handle: &impl FlapsHandle,
-        flaps_feedback_angle: Angle,
+        flaps_feedback_angle: &impl FeedbackPositionPickoffUnit,
         cas1: Option<Velocity>,
         cas2: Option<Velocity>,
         cas: Option<Velocity>,
     ) {
+        self.flaps_feedback_angle = flaps_feedback_angle.angle();
+
         println!("powerup_reset");
         println!(
             "flaps_handle PREV {:?}\tCURR {:?}\tLAST {:?}",
@@ -382,7 +389,7 @@ impl FlapsChannel {
                     if ((cas1 <= self.kts_100 && cas2 >= self.kts_210)
                         || (cas1 >= self.kts_210 && cas2 <= self.kts_100))
                         && Self::in_enlarged_target_range(
-                            flaps_feedback_angle,
+                            self.flaps_feedback_angle,
                             self.conf1_flaps,
                         ) =>
                 {
@@ -393,7 +400,7 @@ impl FlapsChannel {
                     if ((cas1 <= self.kts_100 && cas2 >= self.kts_210)
                         || (cas1 >= self.kts_210 && cas2 <= self.kts_100))
                         && Self::in_or_above_enlarged_target_range(
-                            flaps_feedback_angle,
+                            self.flaps_feedback_angle,
                             self.conf1f_flaps,
                         ) =>
                 {
@@ -404,7 +411,7 @@ impl FlapsChannel {
                     if cas1 > self.kts_100
                         && cas1 < self.kts_210
                         && Self::in_or_above_enlarged_target_range(
-                            flaps_feedback_angle,
+                            self.flaps_feedback_angle,
                             self.conf1f_flaps,
                         ) =>
                 {
@@ -415,7 +422,7 @@ impl FlapsChannel {
                     if cas2 > self.kts_100
                         && cas2 < self.kts_210
                         && Self::in_or_above_enlarged_target_range(
-                            flaps_feedback_angle,
+                            self.flaps_feedback_angle,
                             self.conf1f_flaps,
                         ) =>
                 {
@@ -426,7 +433,7 @@ impl FlapsChannel {
                     if cas1 > self.kts_100
                         && cas1 < self.kts_210
                         && Self::in_enlarged_target_range(
-                            flaps_feedback_angle,
+                            self.flaps_feedback_angle,
                             self.conf1_flaps,
                         ) =>
                 {
@@ -437,7 +444,7 @@ impl FlapsChannel {
                     if cas2 > self.kts_100
                         && cas2 < self.kts_210
                         && Self::in_enlarged_target_range(
-                            flaps_feedback_angle,
+                            self.flaps_feedback_angle,
                             self.conf1_flaps,
                         ) =>
                 {
@@ -476,35 +483,34 @@ impl FlapsChannel {
         &mut self,
         _context: &UpdateContext,
         flaps_handle: &CommandSensorUnit,
-        flaps_feedback_angle: Angle,
+        flaps_feedback_angle: &impl FeedbackPositionPickoffUnit,
         cas1: Option<Velocity>,
         cas2: Option<Velocity>,
         cas: Option<Velocity>,
         previous_cas: Option<Velocity>,
         last_valid_cas: Velocity,
     ) {
-        self.flaps_demanded_angle = self.generate_flap_angle(
-            flaps_handle,
-            flaps_feedback_angle,
-            cas1,
-            cas2,
-            cas,
-            previous_cas,
-            last_valid_cas,
-        );
+        self.flaps_feedback_angle = flaps_feedback_angle.angle();
+
+        self.flaps_demanded_angle =
+            self.generate_flap_angle(flaps_handle, cas1, cas2, cas, previous_cas, last_valid_cas);
     }
 
     pub fn get_flap_demanded_angle(&self) -> Angle {
         self.flaps_demanded_angle
     }
 
+    pub fn get_flap_feedback_angle(&self) -> Angle {
+        self.flaps_feedback_angle
+    }
+
     pub fn is_flap_relief_engaged(&self) -> bool {
         self.flap_relief_engaged
     }
 
-    pub fn get_bit_26_system_status_word(&self, flaps_feedback_angle: Angle) -> bool {
+    pub fn get_bit_26_system_status_word(&self) -> bool {
         if self.flap_auto_command_active && self.auto_command_angle == self.conf1_flaps {
-            if Self::in_enlarged_target_range(flaps_feedback_angle, self.conf1f_flaps)
+            if Self::in_enlarged_target_range(self.flaps_feedback_angle, self.conf1f_flaps)
             // Check flaps movement
             {
                 return false;
@@ -515,11 +521,11 @@ impl FlapsChannel {
         return false;
     }
 
-    pub fn get_bit_29_component_status_word(&self, flaps_feedback_angle: Angle) -> bool {
+    pub fn get_bit_29_component_status_word(&self) -> bool {
         if self.flap_auto_command_active && self.auto_command_angle == self.conf1_flaps {
-            if !Self::in_enlarged_target_range(flaps_feedback_angle, self.conf1_flaps) {
+            if !Self::in_enlarged_target_range(self.flaps_feedback_angle, self.conf1_flaps) {
                 return true;
-            } else if Self::in_enlarged_target_range(flaps_feedback_angle, self.conf1f_flaps) {
+            } else if Self::in_enlarged_target_range(self.flaps_feedback_angle, self.conf1f_flaps) {
                 return false;
             }
         }

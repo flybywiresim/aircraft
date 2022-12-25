@@ -1,6 +1,6 @@
 use systems::{
     hydraulic::command_sensor_unit::FlapsHandle,
-    shared::{CSUPosition, LgciuWeightOnWheels},
+    shared::{CSUPosition, FeedbackPositionPickoffUnit, LgciuWeightOnWheels},
     simulation::{
         InitContext, SimulationElement, SimulatorWriter, UpdateContext, VariableIdentifier, Write,
     },
@@ -10,8 +10,6 @@ use uom::si::{angle::degree, f64::*, velocity::knot};
 
 pub struct SlatsChannel {
     slat_lock_engaged_id: VariableIdentifier,
-
-    slats_demanded_angle: Angle,
 
     kts_60: Velocity,
     conf1_slats: Angle,
@@ -24,6 +22,9 @@ pub struct SlatsChannel {
     slat_lock_high_aoa: Angle,
     slat_alpha_lock_engaged: bool,
     slat_baulk_engaged: bool,
+
+    slats_demanded_angle: Angle,
+    slats_feedback_angle: Angle,
 }
 
 impl SlatsChannel {
@@ -40,8 +41,6 @@ impl SlatsChannel {
         Self {
             slat_lock_engaged_id: context.get_identifier("ALPHA_LOCK_ENGAGED".to_owned()),
 
-            slats_demanded_angle: Angle::new::<degree>(0.),
-
             // slat_lock_active: false,
             kts_60: Velocity::new::<knot>(Self::SLAT_LOCK_ACTIVE_SPEED_KNOTS),
             conf1_slats: Angle::new::<degree>(Self::CONF1_SLATS_DEGREES),
@@ -53,6 +52,9 @@ impl SlatsChannel {
             slat_lock_high_aoa: Angle::new::<degree>(Self::SLAT_LOCK_HIGH_ALPHA_DEGREES),
             slat_alpha_lock_engaged: false,
             slat_baulk_engaged: false,
+
+            slats_demanded_angle: Angle::new::<degree>(0.),
+            slats_feedback_angle: Angle::new::<degree>(0.),
         }
     }
 
@@ -85,13 +87,12 @@ impl SlatsChannel {
     fn generate_slat_angle(
         &mut self,
         flaps_handle: &impl FlapsHandle,
-        slats_feedback_angle: Angle,
         lgciu: &impl LgciuWeightOnWheels,
         aoa: Option<Angle>,
         cas: Option<Velocity>,
     ) -> Angle {
-        self.update_slat_alpha_lock(lgciu, flaps_handle, slats_feedback_angle, aoa, cas);
-        self.update_slat_baulk(lgciu, flaps_handle, slats_feedback_angle, aoa, cas);
+        self.update_slat_alpha_lock(lgciu, flaps_handle, aoa, cas);
+        self.update_slat_baulk(lgciu, flaps_handle, aoa, cas);
 
         self.slat_retraction_inhibited = self.slat_alpha_lock_engaged || self.slat_baulk_engaged;
 
@@ -109,7 +110,6 @@ impl SlatsChannel {
         &mut self,
         lgciu: &impl LgciuWeightOnWheels,
         flaps_handle: &impl FlapsHandle,
-        slats_feedback_angle: Angle,
         aoa: Option<Angle>,
         cas: Option<Velocity>,
     ) {
@@ -125,7 +125,7 @@ impl SlatsChannel {
                 if aoa > self.slat_lock_high_aoa
                     && flaps_handle.current_position() == CSUPosition::Conf0
                     && Self::in_or_above_enlarged_target_range(
-                        slats_feedback_angle,
+                        self.slats_feedback_angle,
                         self.conf1_slats,
                     ) =>
             {
@@ -179,7 +179,6 @@ impl SlatsChannel {
         &mut self,
         lgciu: &impl LgciuWeightOnWheels,
         flaps_handle: &impl FlapsHandle,
-        slats_feedback_angle: Angle,
         aoa: Option<Angle>,
         cas: Option<Velocity>,
     ) {
@@ -195,7 +194,7 @@ impl SlatsChannel {
                 if cas < self.slat_lock_low_cas
                     && flaps_handle.current_position() == CSUPosition::Conf0
                     && Self::in_or_above_enlarged_target_range(
-                        slats_feedback_angle,
+                        self.slats_feedback_angle,
                         self.conf1_slats,
                     ) =>
             {
@@ -249,17 +248,22 @@ impl SlatsChannel {
         &mut self,
         _context: &UpdateContext,
         flaps_handle: &impl FlapsHandle,
-        slats_feedback_angle: Angle,
+        slats_feedback_angle: &impl FeedbackPositionPickoffUnit,
         lgciu: &impl LgciuWeightOnWheels,
         aoa: Option<Angle>,
         cas: Option<Velocity>,
     ) {
-        self.slats_demanded_angle =
-            self.generate_slat_angle(flaps_handle, slats_feedback_angle, lgciu, aoa, cas);
+        self.slats_feedback_angle = slats_feedback_angle.angle();
+
+        self.slats_demanded_angle = self.generate_slat_angle(flaps_handle, lgciu, aoa, cas);
     }
 
     pub fn get_slat_demanded_angle(&self) -> Angle {
         self.slats_demanded_angle
+    }
+
+    pub fn get_slat_feedback_angle(&self) -> Angle {
+        self.slats_feedback_angle
     }
 
     pub fn is_slat_retraction_inhibited(&self) -> bool {
