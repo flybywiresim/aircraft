@@ -30,7 +30,16 @@ export class ClientState {
      * to update the state which can be retrieved with isAvailable().
      */
     private constructor() {
-        this.simbridgeConnect = NXDataStore.get('CONFIG_SIMBRIDGE_ENABLED', 'AUTO ON');
+        // subscribe to the SimBridge Enabled setting to be notified when it changes
+        NXDataStore.getAndSubscribe('CONFIG_SIMBRIDGE_ENABLED', (key, value) => {
+            console.log(`[SimBridge-Client] SimBridge Enabled setting changed to: ${value}`);
+            this.simbridgeConnect = value;
+            if (this.simbridgeConnect === 'AUTO ON') {
+                this.connectionAttemptCounter = 0;
+                this.checkServerAvailability();
+            }
+        }, 'AUTO ON');
+
         // reset the setting if not permanent off
         if (this.simbridgeConnect !== 'PERM OFF') {
             NXDataStore.set('CONFIG_SIMBRIDGE_ENABLED', 'AUTO ON');
@@ -67,8 +76,8 @@ export class ClientState {
     private checkServerAvailability() {
         // Check the SimBridge Enabled setting (set in the flyPad EFB)
         // If the setting is not AUTO ON, then the client is not available
-        this.simbridgeConnect = NXDataStore.get('CONFIG_SIMBRIDGE_ENABLED', 'AUTO ON');
         if (this.simbridgeConnect !== 'AUTO ON') {
+            this.connectionAttemptCounter = 0;
             this.available = false;
             return;
         }
