@@ -18,10 +18,11 @@ export const QuickControls = () => {
     const [brightness] = useSimVar('L:A32NX_EFB_BRIGHTNESS', 'number', 500);
     const [usingAutobrightness] = usePersistentNumberProperty('EFB_USING_AUTOBRIGHTNESS', 0);
     const [autoOSK, setAutoOSK] = usePersistentNumberProperty('EFB_AUTO_OSK', 0);
+    const [pilotAvatar, setPilotAvatar] = usePersistentNumberProperty('CONFIG_PILOT_AVATAR_VISIBLE', 0);
+    const [firstOfficerAvatar, setFirstOfficerAvatar] = usePersistentNumberProperty('CONFIG_FIRST_OFFICER_AVATAR_VISIBLE', 0);
 
     const [adirsAlignTimeSimVar, setAdirsAlignTimeSimVar] = useSimVar('L:A32NX_CONFIG_ADIRS_IR_ALIGN_TIME', 'Enum', Number.MAX_SAFE_INTEGER);
     const [boardingRate, setBoardingRate] = usePersistentProperty('CONFIG_BOARDING_RATE', 'REAL');
-
     const [, setSimbridgeEnabled] = usePersistentProperty('CONFIG_SIMBRIDGE_ENABLED', 'AUTO ON');
 
     // To prevent keyboard input (esp. END key for external view) to change
@@ -96,7 +97,15 @@ export const QuickControls = () => {
                                 <Toggle value={!!autoOSK} onToggle={(value) => setAutoOSK(value ? 1 : 0)} />
                             </SettingItem>
 
-                            <h1>Quick Actions</h1>
+                            <SettingItem name={t('Settings.Realism.PilotAvatar')}>
+                                <Toggle value={!!pilotAvatar} onToggle={(value) => setPilotAvatar(value ? 1 : 0)} />
+                            </SettingItem>
+
+                            <SettingItem name={t('Settings.Realism.FirstOfficerAvatar')}>
+                                <Toggle value={!!firstOfficerAvatar} onToggle={(value) => setFirstOfficerAvatar(value ? 1 : 0)} />
+                            </SettingItem>
+
+                            <h1 className="mt-12">Quick Actions</h1>
                             <hr />
 
                             <div className="flex flex-row justify-between mt-8">
