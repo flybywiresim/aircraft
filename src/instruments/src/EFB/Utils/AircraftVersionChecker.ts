@@ -185,7 +185,7 @@ export class AircraftVersionChecker {
 
         if ((branchName === KnowBranchNames.dev)
             && (versionInfo.commit !== this.newestCommit.shortSha)
-            && (this.addDays(this.newestCommit.timestamp, maxAge) < timestampAircraft)
+            && (this.addDays(timestampAircraft, maxAge) < this.newestCommit.timestamp)
         ) {
             this.showNotification(versionInfo, timestampAircraft, branchName, this.newestCommit);
             return true;
@@ -193,7 +193,7 @@ export class AircraftVersionChecker {
 
         if ((branchName === KnowBranchNames.exp)
             && (versionInfo.commit !== this.newestExpCommit.shortSha)
-            && (this.addDays(this.newestExpCommit.timestamp, maxAge) < timestampAircraft)
+            && (this.addDays(timestampAircraft, maxAge) < this.newestExpCommit.timestamp)
         ) {
             this.showNotification(versionInfo, timestampAircraft, branchName, this.newestExpCommit);
             return true;
