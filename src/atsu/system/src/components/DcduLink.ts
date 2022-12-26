@@ -1,11 +1,11 @@
 //  Copyright (c) 2022 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { Atc } from '../ATC';
+import { AtsuMessage, AtsuMessageDirection } from '@atsu/common/messages/AtsuMessage';
+import { AtsuStatusCodes } from '@atsu/common/AtsuStatusCodes';
+import { CpdlcMessage } from '@atsu/common/messages/CpdlcMessage';
 import { Atsu } from '../ATSU';
-import { AtsuMessage, AtsuMessageDirection } from '../messages/AtsuMessage';
-import { AtsuStatusCodes } from '../AtsuStatusCodes';
-import { CpdlcMessage } from '../messages/CpdlcMessage';
+import { Atc } from '../ATC';
 import { UplinkMessageStateMachine } from './UplinkMessageStateMachine';
 
 export enum DcduStatusMessage {

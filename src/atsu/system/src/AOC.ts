@@ -1,10 +1,10 @@
 //  Copyright (c) 2022 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { AtsuStatusCodes } from './AtsuStatusCodes';
-import { AtsuMessageDirection, AtsuMessage, AtsuMessageType } from './messages/AtsuMessage';
-import { WeatherMessage } from './messages/WeatherMessage';
-import { AtisType } from './messages/AtisMessage';
+import { AtsuStatusCodes } from '@atsu/common/AtsuStatusCodes';
+import { AtsuMessageDirection, AtsuMessage, AtsuMessageType } from '@atsu/common/messages/AtsuMessage';
+import { WeatherMessage } from '@atsu/common/messages/WeatherMessage';
+import { AtisType } from '@atsu/common/messages/AtisMessage';
 import { Datalink } from './com/Datalink';
 
 /**

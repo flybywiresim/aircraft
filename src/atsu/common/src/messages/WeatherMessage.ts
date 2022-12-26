@@ -2,7 +2,7 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 import { AtsuMessageType, AtsuMessageDirection, AtsuMessageSerializationFormat, AtsuMessage } from './AtsuMessage';
-import { wordWrap } from '../Common';
+import { wordWrap } from '../components/Convert';
 
 /**
  * Defines the general weather message format

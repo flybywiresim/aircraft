@@ -1,17 +1,17 @@
 //  Copyright (c) 2022 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { InputValidation } from './InputValidation';
-import { AtsuStatusCodes } from './AtsuStatusCodes';
-import { AtisMessage, AtisType } from './messages/AtisMessage';
-import { AtsuTimestamp } from './messages/AtsuTimestamp';
-import { AtsuMessageComStatus, AtsuMessage, AtsuMessageType, AtsuMessageDirection } from './messages/AtsuMessage';
-import { CpdlcMessagesDownlink, CpdlcMessageExpectedResponseType } from './messages/CpdlcMessageElements';
-import { CpdlcMessage } from './messages/CpdlcMessage';
-import { Datalink } from './com/Datalink';
+import { InputValidation } from '@atsu/common/components/InputValidation';
+import { AtsuStatusCodes } from '@atsu/common/AtsuStatusCodes';
+import { AtisMessage, AtisType } from '@atsu/common/messages/AtisMessage';
+import { AtsuTimestamp } from '@atsu/common/messages/AtsuTimestamp';
+import { AtsuMessageComStatus, AtsuMessage, AtsuMessageType, AtsuMessageDirection } from '@atsu/common/messages/AtsuMessage';
+import { CpdlcMessagesDownlink, CpdlcMessageExpectedResponseType } from '@atsu/common/messages/CpdlcMessageElements';
+import { CpdlcMessage } from '@atsu/common/messages/CpdlcMessage';
+import { FansMode, FutureAirNavigationSystem } from '@atsu/common/com/FutureAirNavigationSystem';
 import { Atsu } from './ATSU';
+import { Datalink } from './com/Datalink';
 import { DcduStatusMessage, DcduLink } from './components/DcduLink';
-import { FansMode, FutureAirNavigationSystem } from './com/FutureAirNavigationSystem';
 import { UplinkMessageStateMachine } from './components/UplinkMessageStateMachine';
 import { UplinkMessageMonitoring } from './components/UplinkMessageMonitoring';
 

@@ -1,8 +1,8 @@
-import { coordinateToString, timestampToString } from '../Common';
-import { InputValidation } from '../InputValidation';
-import { CpdlcMessagesDownlink } from '../messages/CpdlcMessageElements';
+import { coordinateToString, timestampToString } from '@atsu/common/components/Convert';
+import { InputValidation } from '@atsu/common/components/InputValidation';
+import { CpdlcMessagesDownlink } from '@atsu/common/messages/CpdlcMessageElements';
+import { CpdlcMessage } from '@atsu/common/messages/CpdlcMessage';
 import { Atsu } from '../ATSU';
-import { CpdlcMessage } from '../messages/CpdlcMessage';
 
 export class UplinkMessageInterpretation {
     private static NonAutomaticClosingMessage: string[] = [

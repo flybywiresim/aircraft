@@ -1,10 +1,10 @@
 //  Copyright (c) 2022 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { AtsuStatusCodes } from './AtsuStatusCodes';
-import { FansMode } from './com/FutureAirNavigationSystem';
-import { InputValidationFansA } from './components/InputValidationFansA';
-import { InputValidationFansB } from './components/InputValidationFansB';
+import { AtsuStatusCodes } from '../AtsuStatusCodes';
+import { FansMode } from '../com/FutureAirNavigationSystem';
+import { InputValidationFansA } from './InputValidationFansA';
+import { InputValidationFansB } from './InputValidationFansB';
 
 export enum InputWaypointType {
     Invalid,

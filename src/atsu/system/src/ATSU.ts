@@ -2,18 +2,18 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 import { FmgcFlightPhase } from '@shared/flightphase';
-import { CpdlcMessage } from './messages/CpdlcMessage';
-import { Datalink } from './com/Datalink';
-import { AtsuStatusCodes } from './AtsuStatusCodes';
-import { Atc } from './ATC';
+import { CpdlcMessage } from '@atsu/common/messages/CpdlcMessage';
+import { AtsuStatusCodes } from '@atsu/common/AtsuStatusCodes';
+import { AtsuMessage, AtsuMessageSerializationFormat } from '@atsu/common/messages/AtsuMessage';
+import { AtsuTimestamp } from '@atsu/common/messages/AtsuTimestamp';
+import { CpdlcMessagesDownlink } from '@atsu/common/messages/CpdlcMessageElements';
+import { coordinateToString, timestampToString } from '@atsu/common/components/Convert';
+import { InputValidation } from '@atsu/common/components/InputValidation';
 import { Aoc } from './AOC';
-import { AtsuMessage, AtsuMessageSerializationFormat } from './messages/AtsuMessage';
-import { AtsuTimestamp } from './messages/AtsuTimestamp';
-import { FlightStateObserver } from './components/FlightStateObserver';
-import { CpdlcMessagesDownlink } from './messages/CpdlcMessageElements';
-import { coordinateToString, timestampToString } from './Common';
-import { InputValidation } from './InputValidation';
+import { Atc } from './ATC';
+import { Datalink } from './com/Datalink';
 import { ATS623 } from './components/ATS623';
+import { FlightStateObserver } from './components/FlightStateObserver';
 
 /**
  * Defines the ATSU

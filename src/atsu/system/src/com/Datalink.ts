@@ -1,15 +1,15 @@
 //  Copyright (c) 2021 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { AtsuStatusCodes } from '../AtsuStatusCodes';
-import { Atsu } from '../ATSU';
-import { CpdlcMessage } from '../messages/CpdlcMessage';
-import { AtsuMessage, AtsuMessageNetwork, AtsuMessageType } from '../messages/AtsuMessage';
-import { AtisMessage, AtisType } from '../messages/AtisMessage';
-import { MetarMessage } from '../messages/MetarMessage';
-import { TafMessage } from '../messages/TafMessage';
+import { AtsuStatusCodes } from '@atsu/common/AtsuStatusCodes';
+import { CpdlcMessage } from '@atsu/common/messages/CpdlcMessage';
+import { AtsuMessage, AtsuMessageNetwork, AtsuMessageType } from '@atsu/common/messages/AtsuMessage';
+import { AtisMessage, AtisType } from '@atsu/common/messages/AtisMessage';
+import { MetarMessage } from '@atsu/common/messages/MetarMessage';
+import { TafMessage } from '@atsu/common/messages/TafMessage';
+import { WeatherMessage } from '@atsu/common/messages/WeatherMessage';
 import { Vdl } from './vhf/VDL';
-import { WeatherMessage } from '../messages/WeatherMessage';
+import { Atsu } from '../ATSU';
 import { HoppieConnector } from './webinterfaces/HoppieConnector';
 import { NXApiConnector } from './webinterfaces/NXApiConnector';
 

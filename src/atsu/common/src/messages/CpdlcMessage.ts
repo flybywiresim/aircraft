@@ -3,7 +3,7 @@
 
 import { AtsuMessageNetwork, AtsuMessageType, AtsuMessageDirection, AtsuMessageSerializationFormat, AtsuMessage } from './AtsuMessage';
 import { CpdlcMessageElement, CpdlcMessagesDownlink, CpdlcMessagesUplink } from './CpdlcMessageElements';
-import { wordWrap } from '../Common';
+import { wordWrap } from '../components/Convert';
 
 export enum CpdlcMessageMonitoringState {
     Ignored = 0,

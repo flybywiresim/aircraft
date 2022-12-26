@@ -3,12 +3,12 @@
 
 import { NXDataStore } from '@shared/persistence';
 import { Hoppie } from '@flybywiresim/api-client';
-import { AtsuStatusCodes } from '../../AtsuStatusCodes';
-import { AtsuMessage, AtsuMessageNetwork, AtsuMessageDirection, AtsuMessageComStatus, AtsuMessageSerializationFormat } from '../../messages/AtsuMessage';
-import { CpdlcMessage } from '../../messages/CpdlcMessage';
-import { CpdlcMessagesUplink, CpdlcMessageElement, CpdlcMessageContent, CpdlcMessageExpectedResponseType } from '../../messages/CpdlcMessageElements';
-import { FreetextMessage } from '../../messages/FreetextMessage';
-import { FansMode } from '../FutureAirNavigationSystem';
+import { AtsuStatusCodes } from '@atsu/common/AtsuStatusCodes';
+import { CpdlcMessage } from '@atsu/common/messages/CpdlcMessage';
+import { FreetextMessage } from '@atsu/common/messages/FreetextMessage';
+import { FansMode } from '@atsu/common/com/FutureAirNavigationSystem';
+import { CpdlcMessagesUplink, CpdlcMessageElement, CpdlcMessageContent, CpdlcMessageExpectedResponseType } from '@atsu/common/messages/CpdlcMessageElements';
+import { AtsuMessage, AtsuMessageNetwork, AtsuMessageDirection, AtsuMessageComStatus, AtsuMessageSerializationFormat } from '@atsu/common/messages/AtsuMessage';
 
 /**
  * Defines the connector to the hoppies network

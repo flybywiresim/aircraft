@@ -1,13 +1,13 @@
 {
-    "extends": "../tsconfig.json",
+    "extends": "../../tsconfig.json",
     "compilerOptions": {
       "moduleResolution": "node",
       "target": "ESNext",
       "noEmit": true,
-      "typeRoots": ["../../typings"]
+      "typeRoots": ["../../../typings"]
     },
     "include": [
       "src/**/*",
-      "../../typings/**/*.d.ts"
+      "../../../typings/**/*.d.ts",
     ]
   }

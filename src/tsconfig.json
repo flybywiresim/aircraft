@@ -7,7 +7,7 @@
     "paths": {
       "@shared/*": ["./shared/src/*"],
       "@instruments/common/*": ["./instruments/src/Common/*"],
-      "@atsu/*": ["./atsu/src/*"],
+      "@atsu/common/*": ["./atsu/common/src/*"],
       "@fmgc/*": ["./fmgc/src/*"],
       "@flybywiresim/failures": ["failures"],
       "@tcas/*": ["./tcas/src/*"],

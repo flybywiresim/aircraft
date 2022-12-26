@@ -1,10 +1,10 @@
-import { FansMode } from '../com/FutureAirNavigationSystem';
+import { FansMode } from '@atsu/common/com/FutureAirNavigationSystem';
+import { AtsuMessage } from '@atsu/common/messages/AtsuMessage';
+import { CpdlcMessage } from '@atsu/common/messages/CpdlcMessage';
+import { CpdlcMessageExpectedResponseType, CpdlcMessagesUplink } from '@atsu/common/messages/CpdlcMessageElements';
+import { DclMessage } from '@atsu/common/messages/DclMessage';
+import { OclMessage } from '@atsu/common/messages/OclMessage';
 import { Atsu } from '../ATSU';
-import { AtsuMessage } from '../messages/AtsuMessage';
-import { CpdlcMessage } from '../messages/CpdlcMessage';
-import { CpdlcMessageExpectedResponseType, CpdlcMessagesUplink } from '../messages/CpdlcMessageElements';
-import { DclMessage } from '../messages/DclMessage';
-import { OclMessage } from '../messages/OclMessage';
 
 // TODO reset internal states if flight state changes
 

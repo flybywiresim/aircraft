@@ -34,7 +34,10 @@ export default new TaskOfTasks('a32nx', [
                 )
             ],
             true),
-        new ExecTask('atsu','npm run build:atsu', ['src/atsu', 'flybywire-aircraft-a320-neo/html_ui/JS/atsu']),
+        new TaskOfTasks('atsu', [
+            new ExecTask('common','npm run build:atsu-common', ['src/atsu/common', 'flybywire-aircraft-a320-neo/html_ui/JS/atsu']),
+            new ExecTask('system','npm run build:atsu-system', ['src/atsu/system', 'flybywire-aircraft-a320-neo/html_ui/JS/atsu']),
+        ]),
         new ExecTask('sentry-client','npm run build:sentry-client', ['src/sentry-client', 'flybywire-aircraft-a320-neo/html_ui/JS/sentry-client']),
         new ExecTask('failures','npm run build:failures', ['src/failures', 'flybywire-aircraft-a320-neo/html_ui/JS/generated/failures.js']),
         new ExecTask('behavior','node src/behavior/build.js', ['src/behavior', 'flybywire-aircraft-a320-neo/ModelBehaviorDefs/A32NX/generated']),

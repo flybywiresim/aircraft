@@ -2,7 +2,7 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 import { AtsuStatusCodes } from '../AtsuStatusCodes';
-import { InputValidation } from '../InputValidation';
+import { InputValidation } from '../components/InputValidation';
 import { FansMode } from '../com/FutureAirNavigationSystem';
 
 export enum CpdlcMessageExpectedResponseType {

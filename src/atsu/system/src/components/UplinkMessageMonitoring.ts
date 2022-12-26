@@ -1,6 +1,6 @@
+import { CpdlcMessage } from '@atsu/common/messages/CpdlcMessage';
+import { AtsuMessageComStatus } from '@atsu/common/messages/AtsuMessage';
 import { Atsu } from '../ATSU';
-import { CpdlcMessage } from '../messages/CpdlcMessage';
-import { AtsuMessageComStatus } from '../messages/AtsuMessage';
 
 export abstract class UplinkMonitor {
     private static positionMonitoringMessageIds = ['UM22', 'UM25', 'UM65', 'UM77', 'UM83', 'UM84', 'UM97', 'UM118', 'UM121', 'UM130'];

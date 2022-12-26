@@ -3,7 +3,7 @@
 
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { MathUtils } from '@shared/MathUtils';
-import { AtsuMessage, AtsuMessageSerializationFormat } from '../../messages/AtsuMessage';
+import { AtsuMessage, AtsuMessageSerializationFormat } from '@atsu/common/messages/AtsuMessage';
 import { DatalinkProviders, OwnAircraft, MaxSearchRange } from './Common';
 import { Vhf } from './VHF';
 
