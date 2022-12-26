@@ -20,7 +20,7 @@ export const BingMap: React.FC<BingMapProps> = ({ configFolder, mapId, range = D
         const svgMapConfig = new SvgMapConfig();
 
         svgMapConfig.load(configFolder, () => {
-            console.log(`[ReactBingMap (${mapId})] NetBingMap config loaded`);
+            // console.log(`[ReactBingMap (${mapId})] NetBingMap config loaded`);
             if (!mapRef.current) return;
 
             svgMapConfig.generateBingMap(mapRef.current);
