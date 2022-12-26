@@ -30,7 +30,8 @@ export class ClientState {
      * to update the state which can be retrieved with isAvailable().
      */
     private constructor() {
-        // subscribe to the SimBridge Enabled setting to be notified when it changes
+        // Subscribe to the SimBridge Enabled setting to be notified when it changes. Otherwise, we would
+        // only be able to check each check interval (5sec)
         NXDataStore.getAndSubscribe('CONFIG_SIMBRIDGE_ENABLED', (key, value) => {
             console.log(`[SimBridge-Client] SimBridge Enabled setting changed to: ${value}`);
             this.simbridgeConnect = value;
