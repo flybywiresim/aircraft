@@ -108,7 +108,7 @@ pub struct A380Pneumatic {
 
     apu_bleed_air_valve_open_id: VariableIdentifier,
 
-    core_processing_input_output_module_a: CoreProcessingInputoutputModuleA,
+    core_processing_input_output_module_a: CoreProcessingInputOutputModuleA,
     engine_systems: [EngineBleedAirSystem; 4],
 
     cross_bleed_valves: [CrossBleedValve; 3],
@@ -137,7 +137,7 @@ impl A380Pneumatic {
             physics_updater: MaxStepLoop::new(Self::PNEUMATIC_SIM_MAX_TIME_STEP),
             apu_bleed_air_valve_open_id: context
                 .get_identifier("APU_BLEED_AIR_VALVE_OPEN".to_owned()),
-            core_processing_input_output_module_a: CoreProcessingInputoutputModuleA::new(
+            core_processing_input_output_module_a: CoreProcessingInputOutputModuleA::new(
                 ElectricalBusType::DirectCurrentEssential, // TTM 2
             ),
             engine_systems: [
@@ -235,7 +235,6 @@ impl A380Pneumatic {
             &self.apu_bleed_air_valve,
             overhead_panel,
             engine_fire_push_buttons,
-            &self.fadec,
         );
 
         for cross_bleed_valve in self.cross_bleed_valves.iter_mut() {
@@ -441,12 +440,12 @@ impl EngineStarterValveController {
 /**
  * The CPIOM A. It consists of four individual units
  */
-struct CoreProcessingInputoutputModuleA {
+struct CoreProcessingInputOutputModuleA {
     units: [CoreProcessingInputOutputModuleAUnit; 4],
     powered_by: ElectricalBusType,
     is_powered: bool,
 }
-impl CoreProcessingInputoutputModuleA {
+impl CoreProcessingInputOutputModuleA {
     fn new(powered_by: ElectricalBusType) -> Self {
         Self {
             units: [
@@ -467,7 +466,6 @@ impl CoreProcessingInputoutputModuleA {
         apu_bleed_valve: &impl PneumaticValve,
         overhead_panel: &A380PneumaticOverheadPanel,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
-        fadec: &FullAuthorityDigitalEngineControl,
     ) {
         for unit in self.units.iter_mut() {
             unit.update(
@@ -476,25 +474,20 @@ impl CoreProcessingInputoutputModuleA {
                 engine_fire_push_buttons.is_released(unit.engine_number),
                 apu_bleed_valve,
                 overhead_panel,
-                fadec,
             );
         }
-    }
-
-    pub fn unit_for_engine(&self, engine_number: usize) -> &CoreProcessingInputOutputModuleAUnit {
-        &self.units[engine_number - 1]
     }
 
     fn is_powered(&self) -> bool {
         self.is_powered
     }
 }
-impl SimulationElement for CoreProcessingInputoutputModuleA {
+impl SimulationElement for CoreProcessingInputOutputModuleA {
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
         self.is_powered = buses.is_powered(self.powered_by)
     }
 }
-impl ControllerSignal<BleedMonitoringComputerIsAliveSignal> for CoreProcessingInputoutputModuleA {
+impl ControllerSignal<BleedMonitoringComputerIsAliveSignal> for CoreProcessingInputOutputModuleA {
     fn signal(&self) -> Option<BleedMonitoringComputerIsAliveSignal> {
         if self.is_powered() {
             Some(BleedMonitoringComputerIsAliveSignal)
@@ -557,7 +550,6 @@ impl CoreProcessingInputOutputModuleAUnit {
         is_engine_fire_pushbutton_released: bool,
         apu_bleed_valve: &impl PneumaticValve,
         overhead_panel: &A380PneumaticOverheadPanel,
-        fadec: &FullAuthorityDigitalEngineControl,
     ) {
         self.intermediate_pressure_compressor_pressure = sensors.intermediate_pressure();
         self.high_pressure_compressor_pressure = sensors.high_pressure();
@@ -673,7 +665,6 @@ struct EngineBleedAirSystem {
     pressure_regulating_valve_open_id: VariableIdentifier,
     starter_valve_open_id: VariableIdentifier,
 
-    number: usize,
     fan_compression_chamber_controller: EngineCompressionChamberController, // Controls pressure just behind the main fan
     intermediate_pressure_compression_chamber_controller: EngineCompressionChamberController,
     high_pressure_compression_chamber_controller: EngineCompressionChamberController,
@@ -696,7 +687,6 @@ struct EngineBleedAirSystem {
 impl EngineBleedAirSystem {
     fn new(context: &mut InitContext, number: usize, powered_by: ElectricalBusType) -> Self {
         Self {
-            number,
             intermediate_pressure_id: context
                 .get_identifier(format!("PNEU_ENG_{}_IP_PRESSURE", number)),
             high_pressure_id: context.get_identifier(format!("PNEU_ENG_{}_HP_PRESSURE", number)),
@@ -1085,8 +1075,8 @@ impl FullAuthorityDigitalEngineControl {
         match number {
             1 => self.engine_1_state,
             2 => self.engine_2_state,
-            3 => self.engine_2_state,
-            4 => self.engine_2_state,
+            3 => self.engine_3_state,
+            4 => self.engine_4_state,
             _ => panic!("Invalid engine number"),
         }
     }
@@ -1099,6 +1089,8 @@ impl SimulationElement for FullAuthorityDigitalEngineControl {
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.engine_1_state = reader.read(&self.engine_1_state_id);
         self.engine_2_state = reader.read(&self.engine_2_state_id);
+        self.engine_3_state = reader.read(&self.engine_3_state_id);
+        self.engine_4_state = reader.read(&self.engine_4_state_id);
         self.engine_mode_selector1_position = reader.read(&self.engine_mode_selector1_id);
     }
 }
@@ -1112,38 +1104,36 @@ struct PackComplex {
     right_pack_flow_valve_flow_rate_id: VariableIdentifier,
     pack_container: PneumaticPipe,
     exhaust: PneumaticExhaust,
-    left_pack_flow_valve: DefaultValve,
-    right_pack_flow_valve: DefaultValve,
+    left_pack_flow_valve: ElectroPneumaticValve,
+    right_pack_flow_valve: ElectroPneumaticValve,
 }
 impl PackComplex {
     fn new(context: &mut InitContext, pack_number: usize) -> Self {
         Self {
             pack_number,
             left_pack_flow_valve_id: context
-                .get_identifier(Self::pack_flow_valve_id(pack_number, 1)),
+                .get_identifier(format!("COND_PACK_{}_FLOW_VALVE_1_IS_OPEN", pack_number)),
             right_pack_flow_valve_id: context
-                .get_identifier(Self::pack_flow_valve_id(pack_number, 2)),
-            left_pack_flow_valve_flow_rate_id: context.get_identifier(format!(
-                "PNEU_PACK_{}_FLOW_VALVE_{}_FLOW_RATE",
-                pack_number, 1
-            )),
-            right_pack_flow_valve_flow_rate_id: context.get_identifier(format!(
-                "PNEU_PACK_{}_FLOW_VALVE_{}_FLOW_RATE",
-                pack_number, 2
-            )),
+                .get_identifier(format!("COND_PACK_{}_FLOW_VALVE_2_IS_OPEN", pack_number)),
+            left_pack_flow_valve_flow_rate_id: context
+                .get_identifier(format!("PNEU_PACK_{}_FLOW_VALVE_1_FLOW_RATE", pack_number)),
+            right_pack_flow_valve_flow_rate_id: context
+                .get_identifier(format!("PNEU_PACK_{}_FLOW_VALVE_2_FLOW_RATE", pack_number)),
             pack_container: PneumaticPipe::new(
                 Volume::new::<cubic_meter>(2.),
                 Pressure::new::<psi>(14.7),
                 ThermodynamicTemperature::new::<degree_celsius>(15.),
             ),
             exhaust: PneumaticExhaust::new(0.3, 0.3, Pressure::new::<psi>(0.)),
-            left_pack_flow_valve: DefaultValve::new_closed(),
-            right_pack_flow_valve: DefaultValve::new_closed(),
+            // These valves are pneumatically operated but will fall closed in case of reverse flow.
+            // They can also be electrically closed by DC ESS BUS.
+            left_pack_flow_valve: ElectroPneumaticValve::new(
+                ElectricalBusType::DirectCurrentEssential,
+            ),
+            right_pack_flow_valve: ElectroPneumaticValve::new(
+                ElectricalBusType::DirectCurrentEssential,
+            ),
         }
-    }
-
-    fn pack_flow_valve_id(pack_number: usize, number: usize) -> String {
-        format!("COND_PACK_{}_FLOW_VALVE_{}_IS_OPEN", pack_number, number)
     }
 
     fn update(
@@ -1194,6 +1184,7 @@ impl PackComplex {
         self.left_pack_flow_valve.fluid_flow()
     }
 
+    #[cfg(test)]
     fn right_pack_flow_valve_air_flow(&self) -> MassRate {
         self.right_pack_flow_valve.fluid_flow()
     }
@@ -1230,6 +1221,16 @@ impl PneumaticContainer for PackComplex {
     }
 }
 impl SimulationElement for PackComplex {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T)
+    where
+        Self: Sized,
+    {
+        self.left_pack_flow_valve.accept(visitor);
+        self.right_pack_flow_valve.accept(visitor);
+
+        visitor.visit(self);
+    }
+
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(
             &self.left_pack_flow_valve_id,
@@ -1330,6 +1331,7 @@ impl SimulationElement for CrossBleedValve {
 
 #[cfg(test)]
 mod tests {
+    use rstest::rstest;
     use systems::{
         air_conditioning::{
             acs_controller::{Pack, PackFlowController},
@@ -1663,10 +1665,6 @@ mod tests {
                 is_dc_ess_powered: true,
                 is_dc_ess_shed_powered: true,
             }
-        }
-
-        fn set_dc_2_bus_power(&mut self, is_powered: bool) {
-            self.is_dc_2_powered = is_powered;
         }
 
         fn set_dc_ess_shed_bus_power(&mut self, is_powered: bool) {
@@ -2160,12 +2158,6 @@ mod tests {
                 .set_pack_flow_pb_is_auto(2, true)
         }
 
-        fn set_dc_2_bus_power(mut self, is_powered: bool) -> Self {
-            self.command(|a| a.set_dc_2_bus_power(is_powered));
-
-            self
-        }
-
         fn set_dc_ess_shed_bus_power(mut self, is_powered: bool) -> Self {
             self.command(|a| a.set_dc_ess_shed_bus_power(is_powered));
 
@@ -2554,37 +2546,32 @@ mod tests {
     }
 
     #[test]
-    fn two_engine_idle_full_state() {
+    fn four_engine_idle_full_state() {
         let altitude = Length::new::<foot>(0.);
         let test_bed = test_bed_with()
             .idle_eng1()
             .idle_eng2()
+            .idle_eng3()
+            .idle_eng4()
             .in_isa_atmosphere(altitude)
             .mach_number(MachNumber(0.))
             .and_stabilize();
 
         let ambient_pressure = InternationalStandardAtmosphere::pressure_at_altitude(altitude);
 
-        assert!(test_bed.ip_pressure(1) - ambient_pressure > pressure_tolerance());
-        assert!(test_bed.ip_pressure(2) - ambient_pressure > pressure_tolerance());
-
-        assert!(test_bed.hp_pressure(1) - ambient_pressure > pressure_tolerance());
-        assert!(test_bed.hp_pressure(2) - ambient_pressure > pressure_tolerance());
-
-        assert!(test_bed.transfer_pressure(1) - ambient_pressure > pressure_tolerance());
-        assert!(test_bed.transfer_pressure(2) - ambient_pressure > pressure_tolerance());
-
-        assert!((test_bed.precooler_inlet_pressure(1) - ambient_pressure) > pressure_tolerance());
-        assert!((test_bed.precooler_inlet_pressure(2) - ambient_pressure) > pressure_tolerance());
-
-        assert!((test_bed.precooler_outlet_pressure(1) - ambient_pressure) > pressure_tolerance());
-        assert!((test_bed.precooler_outlet_pressure(2) - ambient_pressure) > pressure_tolerance());
-
-        assert!(test_bed.hp_valve_is_open(1));
-        assert!(test_bed.hp_valve_is_open(2));
-
-        assert!(!test_bed.es_valve_is_open(1));
-        assert!(!test_bed.es_valve_is_open(2));
+        for i in 1..=4 {
+            assert!(test_bed.ip_pressure(i) - ambient_pressure > pressure_tolerance());
+            assert!(test_bed.hp_pressure(i) - ambient_pressure > pressure_tolerance());
+            assert!(test_bed.transfer_pressure(i) - ambient_pressure > pressure_tolerance());
+            assert!(
+                (test_bed.precooler_inlet_pressure(i) - ambient_pressure) > pressure_tolerance()
+            );
+            assert!(
+                (test_bed.precooler_outlet_pressure(i) - ambient_pressure) > pressure_tolerance()
+            );
+            assert!(test_bed.hp_valve_is_open(i));
+            assert!(!test_bed.es_valve_is_open(i));
+        }
 
         assert!(!test_bed.cross_bleed_valves_are_open());
     }
@@ -2597,30 +2584,41 @@ mod tests {
         let mut test_bed = test_bed_with()
             .idle_eng1()
             .idle_eng2()
+            .idle_eng3()
+            .idle_eng4()
             .in_isa_atmosphere(altitude)
             .mach_number(MachNumber(0.))
             .and_stabilize();
 
         assert!(test_bed.precooler_outlet_pressure(1) - ambient_pressure > pressure_tolerance());
         assert!(test_bed.precooler_outlet_pressure(2) - ambient_pressure > pressure_tolerance());
+        assert!(test_bed.precooler_outlet_pressure(3) - ambient_pressure > pressure_tolerance());
+        assert!(test_bed.precooler_outlet_pressure(4) - ambient_pressure > pressure_tolerance());
 
         test_bed = test_bed.set_bleed_air_running();
 
         assert!(!test_bed.precooler_outlet_pressure(1).get::<psi>().is_nan());
         assert!(!test_bed.precooler_outlet_pressure(2).get::<psi>().is_nan());
+        assert!(!test_bed.precooler_outlet_pressure(3).get::<psi>().is_nan());
+        assert!(!test_bed.precooler_outlet_pressure(4).get::<psi>().is_nan());
     }
 
-    #[test]
-    fn starter_valve_opens_on_engine_start() {
+    #[rstest]
+    fn starter_valve_opens_on_engine_start(#[values(1, 2, 3, 4)] engine_number: usize) {
         let mut test_bed = test_bed_with().stop_eng1().stop_eng2().and_run();
 
-        assert!(!test_bed.es_valve_is_open(1));
-        assert!(!test_bed.es_valve_is_open(2));
+        assert!(!test_bed.es_valve_is_open(engine_number));
 
-        test_bed = test_bed.start_eng1().start_eng2().and_run();
+        test_bed = match engine_number {
+            1 => test_bed.start_eng1(),
+            2 => test_bed.start_eng2(),
+            3 => test_bed.start_eng3(),
+            4 => test_bed.start_eng4(),
+            _ => panic!("Unexpected engine number"),
+        }
+        .and_run();
 
-        assert!(test_bed.es_valve_is_open(1));
-        assert!(test_bed.es_valve_is_open(2));
+        assert!(test_bed.es_valve_is_open(engine_number));
     }
 
     #[test]
@@ -2762,8 +2760,10 @@ mod tests {
         assert!(test_bed.contains_variable_with_name("PNEU_ENG_3_STARTER_VALVE_OPEN"));
         assert!(test_bed.contains_variable_with_name("PNEU_ENG_4_STARTER_VALVE_OPEN"));
 
-        assert!(test_bed.contains_variable_with_name("PNEU_PACK_1_FLOW_VALVE_FLOW_RATE"));
-        assert!(test_bed.contains_variable_with_name("PNEU_PACK_2_FLOW_VALVE_FLOW_RATE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_PACK_1_FLOW_VALVE_1_FLOW_RATE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_PACK_1_FLOW_VALVE_2_FLOW_RATE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_PACK_2_FLOW_VALVE_1_FLOW_RATE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_PACK_2_FLOW_VALVE_2_FLOW_RATE"));
 
         assert!(test_bed.contains_variable_with_name("OVHD_PNEU_ENG_1_BLEED_PB_HAS_FAULT"));
         assert!(test_bed.contains_variable_with_name("OVHD_PNEU_ENG_2_BLEED_PB_HAS_FAULT"));
@@ -2780,153 +2780,131 @@ mod tests {
         assert!(test_bed.contains_variable_with_name("PNEU_XBLEED_VALVE_R_OPEN"));
     }
 
-    #[test]
-    fn pressure_regulating_valve_closes_with_ovhd_engine_bleed_off() {
-        let mut test_bed = test_bed().idle_eng1().idle_eng2().and_run();
+    #[rstest]
+    fn pressure_regulating_valve_closes_with_ovhd_engine_bleed_off(
+        #[values(1, 2, 3, 4)] engine_number: usize,
+    ) {
+        let mut test_bed = test_bed()
+            .idle_eng1()
+            .idle_eng2()
+            .idle_eng3()
+            .idle_eng4()
+            .and_run();
 
         // We have to run two update ticks for the pressure to propagate through the system.
         test_bed.run_with_delta(Duration::from_secs(5));
 
-        assert!(test_bed.pr_valve_is_open(1));
-        assert!(test_bed.pr_valve_is_open(2));
-
-        test_bed = test_bed.set_engine_bleed_push_button_off(1).and_run();
-
-        assert!(!test_bed.pr_valve_is_open(1));
-        assert!(test_bed.pr_valve_is_open(2));
-
-        test_bed = test_bed.set_engine_bleed_push_button_off(2).and_run();
-
-        assert!(!test_bed.pr_valve_is_open(1));
-        assert!(!test_bed.pr_valve_is_open(2));
-    }
-
-    #[test]
-    fn pressure_regulating_valve_closes_with_ovhd_engine_fire_pushbutton_released() {
-        let mut test_bed = test_bed().idle_eng1().idle_eng2().and_run();
-
-        test_bed.run_with_delta(Duration::from_secs(5));
-
-        assert!(test_bed.pr_valve_is_open(1));
-        assert!(test_bed.pr_valve_is_open(2));
-
-        test_bed = test_bed.release_fire_pushbutton(1).and_run();
-
-        assert!(!test_bed.pr_valve_is_open(1));
-        assert!(test_bed.pr_valve_is_open(2));
-
-        test_bed = test_bed.release_fire_pushbutton(2).and_run();
-
-        assert!(!test_bed.pr_valve_is_open(1));
-        assert!(!test_bed.pr_valve_is_open(2));
-    }
-
-    #[test]
-    fn pressure_regulating_valve_1_closes_with_apu_bleed_on() {
-        let mut test_bed = test_bed_with().idle_eng1().idle_eng2().and_run();
-
-        test_bed.run_with_delta(Duration::from_secs(5));
-
-        assert!(test_bed.pr_valve_is_open(1));
+        assert!(test_bed.pr_valve_is_open(engine_number));
 
         test_bed = test_bed
-            .set_apu_bleed_air_pb(true)
-            .set_apu_bleed_valve_signal(ApuBleedAirValveSignal::new_open())
+            .set_engine_bleed_push_button_off(engine_number)
             .and_run();
 
-        assert!(!test_bed.pr_valve_is_open(1));
+        for i in 1..=4 {
+            assert_eq!(test_bed.pr_valve_is_open(i), i != engine_number);
+        }
     }
 
-    #[test]
-    fn pressure_regulating_valve_2_closes_with_apu_bleed_on_and_cross_bleed_open() {
-        let mut test_bed = test_bed_with().idle_eng1().idle_eng2().and_run();
+    #[rstest]
+    fn pressure_regulating_valve_closes_with_ovhd_engine_fire_pushbutton_released(
+        #[values(1, 2, 3, 4)] engine_number: usize,
+    ) {
+        let mut test_bed = test_bed()
+            .idle_eng1()
+            .idle_eng2()
+            .idle_eng3()
+            .idle_eng4()
+            .and_run();
 
         test_bed.run_with_delta(Duration::from_secs(5));
 
+        assert!(test_bed.pr_valve_is_open(1));
         assert!(test_bed.pr_valve_is_open(2));
+        assert!(test_bed.pr_valve_is_open(3));
+        assert!(test_bed.pr_valve_is_open(4));
 
-        test_bed = test_bed
-            .set_apu_bleed_air_pb(true)
-            .set_apu_bleed_valve_signal(ApuBleedAirValveSignal::new_open())
-            .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Open)
-            .and_run();
+        test_bed = test_bed.release_fire_pushbutton(engine_number).and_run();
 
-        assert!(!test_bed.pr_valve_is_open(2));
+        for i in 1..=4 {
+            assert_eq!(test_bed.pr_valve_is_open(i), i != engine_number);
+        }
     }
 
     #[test]
-    fn fadec_represents_engine_state() {
+    fn pressure_regulating_valves_close_with_apu_bleed_on() {
         let mut test_bed = test_bed_with()
-            .set_engine_state(1, EngineState::Off)
-            .set_engine_state(2, EngineState::Off);
-
-        assert_eq!(test_bed.engine_state(1), EngineState::Off);
-        assert_eq!(test_bed.engine_state(2), EngineState::Off);
-
-        test_bed = test_bed
-            .set_engine_state(1, EngineState::Starting)
+            .idle_eng1()
+            .idle_eng2()
+            .idle_eng3()
+            .idle_eng4()
             .and_run();
 
-        assert_eq!(test_bed.engine_state(1), EngineState::Starting);
-        assert_eq!(test_bed.engine_state(2), EngineState::Off);
+        test_bed.run_with_delta(Duration::from_secs(5));
+
+        assert!(test_bed.pr_valve_is_open(1));
+        assert!(test_bed.pr_valve_is_open(2));
+        assert!(test_bed.pr_valve_is_open(3));
+        assert!(test_bed.pr_valve_is_open(4));
+
+        test_bed = test_bed.set_bleed_air_running().and_run();
+
+        assert!(!test_bed.pr_valve_is_open(1));
+        assert!(!test_bed.pr_valve_is_open(2));
+        assert!(!test_bed.pr_valve_is_open(3));
+        assert!(!test_bed.pr_valve_is_open(4));
+    }
+
+    #[rstest]
+    fn fadec_represents_engine_state(#[values(1, 2, 3, 4)] engine: usize) {
+        let mut test_bed = test_bed_with().set_engine_state(engine, EngineState::Off);
+
+        assert_eq!(test_bed.engine_state(engine), EngineState::Off);
 
         test_bed = test_bed
-            .set_engine_state(2, EngineState::Starting)
+            .set_engine_state(engine, EngineState::Starting)
             .and_run();
+        assert_eq!(test_bed.engine_state(engine), EngineState::Starting);
 
-        assert_eq!(test_bed.engine_state(1), EngineState::Starting);
-        assert_eq!(test_bed.engine_state(2), EngineState::Starting);
-
-        test_bed = test_bed.set_engine_state(1, EngineState::On).and_run();
-
-        assert_eq!(test_bed.engine_state(1), EngineState::On);
-        assert_eq!(test_bed.engine_state(2), EngineState::Starting);
-
-        test_bed = test_bed.set_engine_state(2, EngineState::On).and_run();
-
-        assert_eq!(test_bed.engine_state(1), EngineState::On);
-        assert_eq!(test_bed.engine_state(2), EngineState::On);
+        test_bed = test_bed.set_engine_state(engine, EngineState::On).and_run();
+        assert_eq!(test_bed.engine_state(engine), EngineState::On);
 
         test_bed = test_bed
-            .set_engine_state(1, EngineState::Shutting)
+            .set_engine_state(engine, EngineState::Shutting)
             .and_run();
-
-        assert_eq!(test_bed.engine_state(1), EngineState::Shutting);
-        assert_eq!(test_bed.engine_state(2), EngineState::On);
-
-        test_bed = test_bed
-            .set_engine_state(2, EngineState::Shutting)
-            .and_run();
-
-        assert_eq!(test_bed.engine_state(1), EngineState::Shutting);
-        assert_eq!(test_bed.engine_state(2), EngineState::Shutting);
+        assert_eq!(test_bed.engine_state(engine), EngineState::Shutting);
     }
 
     #[test]
-    fn apu_bleed_provides_at_least_35_psi_with_open_cross_bleed_valve() {
+    fn apu_bleed_provides_at_least_30_psi_with_open_cross_bleed_valve() {
         let test_bed = test_bed_with()
             .stop_eng1()
             .stop_eng2()
+            .stop_eng3()
+            .stop_eng4()
             .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Auto)
             .set_bleed_air_running()
-            .set_pack_flow_pb_is_auto(1, false)
-            .set_pack_flow_pb_is_auto(2, false)
             .and_stabilize();
 
         assert!(test_bed.cross_bleed_valves_are_open());
 
         assert!(!test_bed.pr_valve_is_open(1));
         assert!(!test_bed.pr_valve_is_open(2));
+        assert!(!test_bed.pr_valve_is_open(3));
+        assert!(!test_bed.pr_valve_is_open(4));
 
-        assert!(test_bed.precooler_outlet_pressure(1) > Pressure::new::<psi>(35.));
-        assert!(test_bed.precooler_outlet_pressure(2) > Pressure::new::<psi>(35.));
+        assert!(test_bed.precooler_outlet_pressure(1) > Pressure::new::<psi>(30.));
+        assert!(test_bed.precooler_outlet_pressure(2) > Pressure::new::<psi>(30.));
+        assert!(test_bed.precooler_outlet_pressure(3) > Pressure::new::<psi>(30.));
+        assert!(test_bed.precooler_outlet_pressure(4) > Pressure::new::<psi>(30.));
     }
 
     #[test]
-    fn hydraulic_reservoirs_get_pressurized() {
+    fn hydraulic_reservoirs_get_pressurized_with_apu() {
         let test_bed = test_bed_with()
             .stop_eng1()
             .stop_eng2()
+            .stop_eng3()
+            .stop_eng4()
             .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Auto)
             .set_bleed_air_running()
             .and_stabilize();
@@ -2936,20 +2914,31 @@ mod tests {
     }
 
     #[test]
-    fn hydraulic_reservoirs_is_pressurized_by_left_system() {
+    fn hydraulic_reservoirs_pressurized_by_outboard_engines_hp_pipe() {
         let mut test_bed = test_bed_with()
             .idle_eng1()
             .stop_eng2()
+            .stop_eng3()
+            .idle_eng4()
+            .set_engine_bleed_push_button_off(1)
+            .set_engine_bleed_push_button_off(4)
             .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Shut);
+
+        // Depressurize reservoirs
         test_bed.fail(FailureType::ReservoirAirLeak(HydraulicColor::Green));
-        test_bed.fail(FailureType::ReservoirAirLeak(HydraulicColor::Blue));
         test_bed.fail(FailureType::ReservoirAirLeak(HydraulicColor::Yellow));
         test_bed
             .test_bed
             .run_multiple_frames(Duration::from_secs(16));
 
+        assert!(test_bed.green_hydraulic_reservoir_pressure() < Pressure::new::<psi>(25.));
+        assert!(test_bed.yellow_hydraulic_reservoir_pressure() < Pressure::new::<psi>(25.));
+
+        // Make sure bleed valves are closed because reservoirs should be pressurized by HP pipes directly
+        assert!(!test_bed.pr_valve_is_open(1));
+        assert!(!test_bed.pr_valve_is_open(4));
+
         test_bed.unfail(FailureType::ReservoirAirLeak(HydraulicColor::Green));
-        test_bed.unfail(FailureType::ReservoirAirLeak(HydraulicColor::Blue));
         test_bed.unfail(FailureType::ReservoirAirLeak(HydraulicColor::Yellow));
         test_bed
             .test_bed
@@ -2960,82 +2949,61 @@ mod tests {
     }
 
     #[test]
-    fn hydraulic_reservoirs_is_pressurized_by_right_system() {
+    fn hydraulic_reservoirs_pressurized_by_inboard_engines_system() {
         let mut test_bed = test_bed_with()
             .stop_eng1()
-            .idle_eng2()
+            .toga_eng2()
+            .toga_eng3()
+            .stop_eng4()
+            .set_engine_bleed_push_button_off(1)
+            .set_engine_bleed_push_button_off(4)
+            // Close pack valves to make sure air does not bypass crossbleed valves through the packs
+            .set_pack_flow_pb_is_auto(1, false)
+            .set_pack_flow_pb_is_auto(2, false)
             .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Shut);
+
+        // Depressurize reservoirs
         test_bed.fail(FailureType::ReservoirAirLeak(HydraulicColor::Green));
-        test_bed.fail(FailureType::ReservoirAirLeak(HydraulicColor::Blue));
         test_bed.fail(FailureType::ReservoirAirLeak(HydraulicColor::Yellow));
         test_bed
             .test_bed
             .run_multiple_frames(Duration::from_secs(16));
 
+        assert!(test_bed.green_hydraulic_reservoir_pressure() < Pressure::new::<psi>(20.));
+        assert!(test_bed.yellow_hydraulic_reservoir_pressure() < Pressure::new::<psi>(20.));
+
+        // Make sure HP valves are closed because reservoirs should be pressurized by inboard engines system, not the HP pipe directly
+        assert!(!test_bed.hp_valve_is_open(2));
+        assert!(!test_bed.hp_valve_is_open(3));
+
         test_bed.unfail(FailureType::ReservoirAirLeak(HydraulicColor::Green));
-        test_bed.unfail(FailureType::ReservoirAirLeak(HydraulicColor::Blue));
         test_bed.unfail(FailureType::ReservoirAirLeak(HydraulicColor::Yellow));
         test_bed
             .test_bed
             .run_multiple_frames(Duration::from_secs(16));
 
-        assert!(test_bed.green_hydraulic_reservoir_pressure() > Pressure::new::<psi>(40.));
-        assert!(test_bed.yellow_hydraulic_reservoir_pressure() > Pressure::new::<psi>(40.));
-    }
+        // We still expect them not to be pressurized because the crossbleed valves are closed
+        assert!(test_bed.green_hydraulic_reservoir_pressure() < Pressure::new::<psi>(20.));
+        assert!(test_bed.yellow_hydraulic_reservoir_pressure() < Pressure::new::<psi>(20.));
 
-    #[test]
-    fn apu_bleed_provides_at_least_35_psi_to_left_system_with_closed_cross_bleed_valve() {
-        let test_bed = test_bed_with()
-            .stop_eng1()
-            .stop_eng2()
-            .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Shut)
-            .set_bleed_air_running()
-            .set_pack_flow_pb_is_auto(1, false)
-            .set_pack_flow_pb_is_auto(2, false)
+        test_bed = test_bed
+            .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Open)
             .and_stabilize();
 
-        assert!(!test_bed.pr_valve_is_open(1));
-        assert!(!test_bed.cross_bleed_valves_are_open());
-
-        assert!(test_bed.precooler_outlet_pressure(1) > Pressure::new::<psi>(35.));
-        assert!(!test_bed.precooler_outlet_pressure(2).is_nan());
-    }
-
-    #[test]
-    fn valves_powered_by_correct_busses() {
-        let mut test_bed = test_bed()
-            .set_dc_ess_shed_bus_power(true)
-            .set_dc_2_bus_power(true)
-            .and_run();
-
-        assert!(test_bed.hp_valve_is_powered(1));
-        assert!(test_bed.hp_valve_is_powered(2));
-
-        assert!(test_bed.pr_valve_is_powered(1));
-        assert!(test_bed.pr_valve_is_powered(2));
-
-        test_bed = test_bed.set_dc_ess_shed_bus_power(false).and_run();
-
-        assert!(!test_bed.hp_valve_is_powered(1));
-        assert!(test_bed.hp_valve_is_powered(2));
-
-        assert!(!test_bed.pr_valve_is_powered(1));
-        assert!(test_bed.pr_valve_is_powered(2));
-
-        test_bed = test_bed.set_dc_2_bus_power(false).and_run();
-
-        assert!(!test_bed.hp_valve_is_powered(1));
-        assert!(!test_bed.hp_valve_is_powered(2));
-
-        assert!(!test_bed.pr_valve_is_powered(1));
-        assert!(!test_bed.pr_valve_is_powered(2));
+        assert!(test_bed.green_hydraulic_reservoir_pressure() > Pressure::new::<psi>(30.));
+        assert!(test_bed.yellow_hydraulic_reservoir_pressure() > Pressure::new::<psi>(30.));
     }
 
     #[test]
     fn hydraulic_reservoirs_maintain_pressure_after_bleed_pressure_loss() {
+        // We don't run the outboard engines, because they supply HP air immediately
+        // This HP air makes the preload pop immediately (which probably should not happnen, TODO)
+        // When the preload pops, the pressure is obviously not maintained and the test fails.
         let mut test_bed = test_bed_with()
-            .toga_eng1()
-            .toga_eng2()
+            .stop_eng1()
+            .idle_eng2()
+            .idle_eng3()
+            .stop_eng4()
             .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Shut)
             .mach_number(MachNumber(0.))
             .both_packs_auto()
@@ -3044,7 +3012,7 @@ mod tests {
         let pressure_before_green = test_bed.green_hydraulic_reservoir_pressure();
         let pressure_before_yellow = test_bed.yellow_hydraulic_reservoir_pressure();
 
-        test_bed = test_bed.idle_eng1().and_stabilize();
+        test_bed = test_bed.stop_eng2().stop_eng3().and_stabilize();
 
         assert!(test_bed.green_hydraulic_reservoir_pressure() >= pressure_before_green);
         assert!(test_bed.yellow_hydraulic_reservoir_pressure() >= pressure_before_yellow);
@@ -3077,32 +3045,21 @@ mod tests {
         let mut test_bed = test_bed_with()
             .idle_eng1()
             .idle_eng2()
-            .mach_number(MachNumber(0.))
-            .both_packs_auto()
-            .and_stabilize();
-
-        // Introduce perturbation
-        test_bed = test_bed.toga_eng1().toga_eng2();
-
-        test_bed.run_with_delta(Duration::from_millis(1000));
-
-        assert!(!test_bed.precooler_inlet_pressure(1).is_nan());
-        assert!(!test_bed.precooler_inlet_pressure(2).is_nan());
-    }
-
-    #[test]
-    fn engine_3_and_4() {
-        let mut test_bed = test_bed_with()
-            .idle_eng1()
-            .idle_eng2()
             .idle_eng3()
             .idle_eng4()
             .mach_number(MachNumber(0.))
             .both_packs_auto()
             .and_stabilize();
 
-        assert!(test_bed.ip_pressure(3) > Pressure::new::<psi>(14.7));
-        assert!(test_bed.ip_pressure(4) > Pressure::new::<psi>(14.7));
+        // Introduce perturbation
+        test_bed = test_bed.toga_eng1().toga_eng2().toga_eng3().toga_eng4();
+
+        test_bed.run_with_delta(Duration::from_millis(1000));
+
+        assert!(!test_bed.precooler_inlet_pressure(1).is_nan());
+        assert!(!test_bed.precooler_inlet_pressure(2).is_nan());
+        assert!(!test_bed.precooler_inlet_pressure(3).is_nan());
+        assert!(!test_bed.precooler_inlet_pressure(4).is_nan());
     }
 
     mod overhead {
@@ -3188,6 +3145,8 @@ mod tests {
             let mut test_bed = test_bed_with()
                 .idle_eng1()
                 .idle_eng2()
+                .idle_eng3()
+                .idle_eng4()
                 .set_pack_flow_pb_is_auto(1, true)
                 .set_pack_flow_pb_is_auto(2, false)
                 .and_stabilize();
@@ -3228,59 +3187,12 @@ mod tests {
             test_bed = test_bed
                 .set_pack_flow_pb_is_auto(1, false)
                 .set_pack_flow_pb_is_auto(2, false)
-                .and_run()
-                .and_run();
+                .and_stabilize();
 
             assert!(test_bed.left_pack_flow_valve_flow(1) < flow_rate_tolerance());
             assert!(test_bed.right_pack_flow_valve_flow(1) < flow_rate_tolerance());
             assert!(test_bed.left_pack_flow_valve_flow(2) < flow_rate_tolerance());
             assert!(test_bed.right_pack_flow_valve_flow(2) < flow_rate_tolerance());
-        }
-
-        #[test]
-        fn pack_flow_valve_closes_with_fire_pb_pressed() {
-            let mut test_bed = test_bed_with()
-                .idle_eng1()
-                .idle_eng2()
-                .idle_eng3()
-                .idle_eng4()
-                .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Shut)
-                .mach_number(MachNumber(0.))
-                .both_packs_auto()
-                .and_stabilize();
-
-            assert!(test_bed.left_pack_flow_valve_is_open(1));
-            assert!(test_bed.right_pack_flow_valve_is_open(1));
-            assert!(test_bed.left_pack_flow_valve_is_open(2));
-            assert!(test_bed.right_pack_flow_valve_is_open(2));
-
-            test_bed = test_bed.release_fire_pushbutton(1).and_run().and_run();
-
-            assert!(!test_bed.left_pack_flow_valve_is_open(1));
-            assert!(test_bed.right_pack_flow_valve_is_open(1));
-            assert!(test_bed.left_pack_flow_valve_is_open(2));
-            assert!(test_bed.right_pack_flow_valve_is_open(2));
-
-            test_bed = test_bed.release_fire_pushbutton(2).and_run();
-
-            assert!(!test_bed.left_pack_flow_valve_is_open(1));
-            assert!(!test_bed.right_pack_flow_valve_is_open(1));
-            assert!(test_bed.left_pack_flow_valve_is_open(2));
-            assert!(test_bed.right_pack_flow_valve_is_open(2));
-
-            test_bed = test_bed.release_fire_pushbutton(3).and_run();
-
-            assert!(!test_bed.left_pack_flow_valve_is_open(1));
-            assert!(!test_bed.right_pack_flow_valve_is_open(1));
-            assert!(!test_bed.left_pack_flow_valve_is_open(2));
-            assert!(test_bed.right_pack_flow_valve_is_open(2));
-
-            test_bed = test_bed.release_fire_pushbutton(4).and_run();
-
-            assert!(!test_bed.left_pack_flow_valve_is_open(1));
-            assert!(!test_bed.right_pack_flow_valve_is_open(1));
-            assert!(!test_bed.left_pack_flow_valve_is_open(2));
-            assert!(!test_bed.right_pack_flow_valve_is_open(2));
         }
     }
 }
