@@ -1,0 +1,70 @@
+<!-- Copyright (c) 2022 FlyByWire Simulations -->
+<!-- SPDX-License-Identifier: GPL-3.0 -->
+
+<ModelBehaviors>
+    <!-- ELAC switches -->
+    <Template Name="FBW_AIRBUS_Push_ELAC_Template">
+        <UseTemplate Name="FBW_Push_Toggle">
+            <Switch Param="ID">
+                <Case Value="1">
+                    <NODE_ID>PUSH_OVHD_FLTCTL_ELAC</NODE_ID>
+                </Case>
+                <Default>
+                    <NODE_ID>PUSH_OVHD_FLTCTL_ELAC#ID#</NODE_ID>
+                </Default>
+            </Switch>
+            <LEFT_SINGLE_CODE>(L:A32NX_ELAC_#ID#_PUSHBUTTON_PRESSED, Bool) ! (&gt;L:A32NX_ELAC_#ID#_PUSHBUTTON_PRESSED, Bool)</LEFT_SINGLE_CODE>
+            <DOWN_CODE>(L:A32NX_ELAC_#ID#_PUSHBUTTON_PRESSED, Bool)</DOWN_CODE>
+
+            <SEQ1_CODE>(L:A32NX_ELAC_#ID#_DIGITAL_OP_VALIDATED, Bool) ! (L:A32NX_ELAC_#ID#_PUSHBUTTON_PRESSED, Bool) and</SEQ1_CODE>
+            <SEQ2_CODE>(L:A32NX_ELAC_#ID#_PUSHBUTTON_PRESSED, Bool) !</SEQ2_CODE>
+            <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+
+            <TOOLTIPID>%((L:A32NX_ELAC_#ID#_PUSHBUTTON_PRESSED, Bool) !)%{if}TT:COCKPIT.TOOLTIPS.ELAC#ID#_TURN_ON%{else}TT:COCKPIT.TOOLTIPS.ELAC#ID#_TURN_OFF%{end}</TOOLTIPID>
+        </UseTemplate>
+    </Template>
+
+    <!-- SEC switches -->
+    <Template Name="FBW_AIRBUS_Push_SEC_Template">
+        <UseTemplate Name="FBW_Push_Toggle">
+            <Switch Param="ID">
+                <Case Value="1">
+                    <NODE_ID>PUSH_OVHD_FLTCTL_SEC</NODE_ID>
+                </Case>
+                <Default>
+                    <NODE_ID>PUSH_OVHD_FLTCTL_SEC#ID#</NODE_ID>
+                </Default>
+            </Switch>
+            <LEFT_SINGLE_CODE>(L:A32NX_SEC_#ID#_PUSHBUTTON_PRESSED, Bool) ! (&gt;L:A32NX_SEC_#ID#_PUSHBUTTON_PRESSED, Bool)</LEFT_SINGLE_CODE>
+            <DOWN_CODE>(L:A32NX_SEC_#ID#_PUSHBUTTON_PRESSED, Bool)</DOWN_CODE>
+
+            <SEQ1_CODE>(L:A32NX_SEC_#ID#_FAULT_LIGHT_ON, Bool) (L:A32NX_SEC_#ID#_PUSHBUTTON_PRESSED, Bool) and</SEQ1_CODE>
+            <SEQ2_CODE>(L:A32NX_SEC_#ID#_PUSHBUTTON_PRESSED, Bool) !</SEQ2_CODE>
+            <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+
+            <TOOLTIPID>%((L:A32NX_SEC_#ID#_PUSHBUTTON_PRESSED, Bool) !)%{if}TT:COCKPIT.TOOLTIPS.SEC#ID#_TURN_ON%{else}TT:COCKPIT.TOOLTIPS.SEC#ID#_TURN_OFF%{end}</TOOLTIPID>
+        </UseTemplate>
+    </Template>
+
+    <!-- FAC switches -->
+    <Template Name="FBW_AIRBUS_Push_FAC_Template">
+        <UseTemplate Name="FBW_Push_Toggle">
+            <Switch Param="ID">
+                <Case Value="1">
+                    <NODE_ID>PUSH_OVHD_FLTCTL_FAC</NODE_ID>
+                </Case>
+                <Default>
+                    <NODE_ID>PUSH_OVHD_FLTCTL_FAC#ID#</NODE_ID>
+                </Default>
+            </Switch>
+            <LEFT_SINGLE_CODE>(L:A32NX_FAC_#ID#_PUSHBUTTON_PRESSED, Bool) ! (&gt;L:A32NX_FAC_#ID#_PUSHBUTTON_PRESSED, Bool)</LEFT_SINGLE_CODE>
+            <DOWN_CODE>(L:A32NX_FAC_#ID#_PUSHBUTTON_PRESSED, Bool)</DOWN_CODE>
+
+            <SEQ1_CODE>(L:A32NX_FAC_#ID#_HEALTHY, Bool) ! (L:A32NX_FAC_#ID#_PUSHBUTTON_PRESSED, Bool) and</SEQ1_CODE>
+            <SEQ2_CODE>(L:A32NX_FAC_#ID#_PUSHBUTTON_PRESSED, Bool) !</SEQ2_CODE>
+            <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+
+            <TOOLTIPID>%((L:A32NX_FAC_#ID#_PUSHBUTTON_PRESSED, Bool) !)%{if}TT:COCKPIT.TOOLTIPS.FAC#ID#_TURN_ON%{else}TT:COCKPIT.TOOLTIPS.FAC#ID#_TURN_OFF%{end}</TOOLTIPID>
+        </UseTemplate>
+    </Template>
+</ModelBehaviors>

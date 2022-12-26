@@ -1,0 +1,127 @@
+<!-- Copyright (c) 2022 FlyByWire Simulations -->
+<!-- SPDX-License-Identifier: GPL-3.0 -->
+
+<PlaneHTMLConfig>
+
+  <SoundSourceNode>AS1000_MFD</SoundSourceNode>
+
+  <Instrument>
+    <Name>A320_Neo_PFD</Name>
+    <SyntheticVision>True</SyntheticVision>
+    <Electric>
+		<Simvar name="CIRCUIT ON:52" unit="Boolean"/>
+    </Electric>
+  </Instrument>
+
+  <Instrument>
+    <Name>A320_Neo_Clock</Name>
+    <Electric>
+      <Simvar name="CIRCUIT ON:52" unit="Boolean"/>
+    </Electric>
+  </Instrument>
+
+  <Instrument>
+    <Name>A320_Neo_SAI</Name>
+    <Electric>
+      <Simvar name="CIRCUIT ON:79" unit="Boolean"/>
+    </Electric>
+  </Instrument>
+
+  <Instrument>
+    <Name>A320_Neo_MFD</Name>
+    <Electric>
+		<Simvar name="CIRCUIT ON:53" unit="Boolean"/>
+    </Electric>
+  </Instrument>
+
+  <Instrument>
+    <Name>A320_Neo_EICAS_1</Name>
+    <Electric>
+		<Simvar name="CIRCUIT ON:54" unit="Boolean"/>
+    </Electric>
+  </Instrument>
+
+  <Instrument>
+    <Name>A320_Neo_EICAS_2</Name>
+    <Electric>
+		<Simvar name="CIRCUIT ON:55" unit="Boolean"/>
+    </Electric>
+  </Instrument>
+
+  <Instrument>
+    <Name>A320_Neo_CDU</Name>
+    <Electric>
+		<Simvar name="CIRCUIT ON:56" unit="Boolean"/>
+    </Electric>
+		<AlwaysUpdate>True</AlwaysUpdate>
+  </Instrument>
+
+  <Instrument>
+    <Name>A320_Neo_FCU</Name>
+    <Electric>
+		<Simvar name="CIRCUIT ON:57" unit="Boolean"/>
+    </Electric>
+		<AlwaysUpdate>True</AlwaysUpdate>
+  </Instrument>
+
+  <Instrument>
+    <Name>A320_Neo_BAT</Name>
+    <Electric>
+      <Simvar name="CIRCUIT ON:52" unit="Boolean"/>
+    </Electric>
+  </Instrument>
+
+  <Instrument>
+    <Name>A320_Neo_FDW</Name>
+    <Electric>
+      <Simvar name="CIRCUIT ON:52" unit="Boolean"/>
+    </Electric>
+  </Instrument>
+
+  <Instrument>
+    <Name>A320_Neo_RTPI</Name>
+    <Electric>
+      <Simvar name="CIRCUIT ON:52" unit="Boolean"/>
+    </Electric>
+  </Instrument>
+
+  <Instrument>
+    <Name>A320_Neo_ATC</Name>
+    <Electric>
+      <Simvar name="CIRCUIT ON:52" unit="Boolean"/>
+    </Electric>
+  </Instrument>
+
+	<!-- Annunciations -->
+
+	<Annunciations>
+
+		<Annunciation>
+		  <Type>Warning</Type>
+		  <Text>MASTER WARNING</Text>
+		  <Condition>
+			<Simvar name="L:A32NX_MASTER_WARNING" unit="Bool"/>
+		  </Condition>
+		</Annunciation>
+
+		<Annunciation>
+		  <Type>Caution</Type>
+		  <Text>MASTER CAUTION</Text>
+		  <Condition>
+			<Simvar name="L:A32NX_MASTER_CAUTION" unit="Bool"/>
+		  </Condition>
+		</Annunciation>
+
+  	</Annunciations>
+	<!-- Voices Alerts -->
+
+	<VoicesAlerts>
+		<Alert>
+			<Type>Warning</Type>
+			<SoundEvent>aural_stall</SoundEvent>
+			<Condition>
+				<Simvar name="L:A32NX_STALL_WARNING" unit="Bool"/>
+			</Condition>
+		</Alert>
+	</VoicesAlerts>
+</PlaneHTMLConfig>

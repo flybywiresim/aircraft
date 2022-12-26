@@ -12,7 +12,7 @@ if [ "${GITHUB_ACTIONS}" == "true" ]; then
 fi
 
 # run build
-npx igniter "$@"
+time npx igniter "$@"
 
 # restore ownership (when run as github action)
 if [ "${GITHUB_ACTIONS}" == "true" ]; then
