@@ -7,8 +7,6 @@ import { useSimVar } from '../../../Common/simVars';
 import { EcamPage } from '../../Common/EcamPage';
 import { SvgGroup } from '../../Common/SvgGroup';
 
-// setIsEcamPage('elec_page');
-
 const maxStaleness = 300;
 
 export const ElecPage = () => {
@@ -515,5 +513,3 @@ const Wire = ({ d, amber }: WireProps) => {
     const classes = classNames({ Green: !amber }, { Amber: amber });
     return <path className={classes} d={d} />;
 };
-
-render(<ElecPage />);

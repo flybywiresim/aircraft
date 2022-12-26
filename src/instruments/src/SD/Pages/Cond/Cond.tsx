@@ -6,8 +6,6 @@ import Valve from './Valve';
 
 import '../../Common/CommonStyles.scss';
 
-// setIsEcamPage('cond_page');
-
 export const CondPage = () => {
     // Disaply trim valve position for each zone
     const gaugeOffset = -43; // Gauges range is from -43 degree to +43 degree
@@ -104,5 +102,3 @@ const CondUnit = ({ title, selectedTemp, cabinTemp, trimTemp, x, y, offset, hotA
         </SvgGroup>
     );
 };
-
-render(<CondPage />);

@@ -145,7 +145,6 @@ export const StatusArea = () => {
         <div id="StatusArea">
             <svg viewBox="0 0 600 150" xmlns="http://www.w3.org/2000/svg">
                 <g>
-
                     <path className="sd-status-line" d="M 0   40 h 600" />
                     <path className="sd-status-line" d="M 200 40 v 125" />
                     <path className="sd-status-line" d="M 400 40 v 125" />
@@ -241,7 +240,6 @@ export const StatusArea = () => {
                             <Text warning x={392} y={64} alignEnd>{loadFactorText}</Text>
                         </g>
                     )}
-
                 </g>
             </svg>
         </div>

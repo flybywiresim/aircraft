@@ -1,5 +1,4 @@
 import React, { FC } from 'react';
-import { render } from '@instruments/common/index';
 import { useSimVar } from '@instruments/common/simVars';
 import { PageTitle } from '../../Common/PageTitle';
 import { EcamPage } from '../../Common/EcamPage';
@@ -99,5 +98,3 @@ export const BleedPage: FC = () => {
         </EcamPage>
     );
 };
-
-render(<BleedPage />);

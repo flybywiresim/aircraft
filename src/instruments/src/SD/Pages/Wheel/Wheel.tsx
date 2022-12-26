@@ -1,5 +1,4 @@
 import React from 'react';
-import { render } from '@instruments/common/index';
 import { useSimVar } from '@instruments/common/simVars';
 import { useArinc429Var } from '@instruments/common/arinc429';
 import { Arinc429Word } from '@shared/arinc429';
@@ -495,5 +494,3 @@ const Wheels = ({ x, y, left, right }: WheelsProps) => {
         </SvgGroup>
     );
 };
-
-render(<WheelPage />);

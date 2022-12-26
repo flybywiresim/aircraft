@@ -3,8 +3,6 @@ import React from 'react';
 import { render } from '@instruments/common/index';
 import { useSimVar } from '../../../Common/simVars';
 
-// setIsEcamPage('door_page');
-
 export const DoorPage = () => {
     const [cabin] = useSimVar('INTERACTIVE POINT OPEN:0', 'percent', 1000);
     const [catering] = useSimVar('INTERACTIVE POINT OPEN:3', 'percent', 1000);
@@ -86,5 +84,3 @@ export const DoorPage = () => {
         </>
     );
 };
-
-render(<DoorPage />);

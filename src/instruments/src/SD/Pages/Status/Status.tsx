@@ -19,5 +19,3 @@ export const StatusPage: FC = () => (
 
     </EcamPage>
 );
-
-render(<StatusPage />);

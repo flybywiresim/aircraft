@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { render } from '@instruments/common/index';
 import { useSimVar } from '@instruments/common/simVars';
 import { useArinc429Var } from '@instruments/common/arinc429';
 import { usePersistentProperty } from '../../../Common/persistence';
@@ -355,5 +354,3 @@ const Pump = ({ x, y, onBus = 'DC_ESS', pumpNumber, centreTank, tankQuantity }: 
         </g>
     );
 };
-
-render(<FuelPage />);

@@ -24,8 +24,8 @@ const Idle = () => {
         <div id="Mainframe">
             <svg className="sd-svg" viewBox="0 0 600 600">
                 <PagesContainer />
-
             </svg>
+
             <StatusArea />
         </div>
     );

@@ -1,5 +1,4 @@
 import React, { FC, useState, useEffect, memo } from 'react';
-import { render } from '@instruments/common/index';
 import { GaugeComponent, GaugeMarkerComponent, splitDecimals } from '@instruments/common/gauges';
 import { Triangle } from '../../Common/Shapes';
 import { PageTitle } from '../../Common/PageTitle';
@@ -558,5 +557,3 @@ const OverboardOutletComponent: FC<OverboardOutletComponentType> = ({ validSDAC,
         </>
     );
 };
-
-render(<PressPage />);

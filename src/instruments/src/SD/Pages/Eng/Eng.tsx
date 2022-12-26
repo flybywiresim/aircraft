@@ -1,6 +1,5 @@
 import React, { FC, useState, useEffect } from 'react';
 import { render } from '@instruments/common/index';
-import { setIsEcamPage } from '@instruments/common/defaults';
 import { Arc, Needle } from '@instruments/common/gauges';
 import { usePersistentProperty } from '@instruments/common/persistence';
 import { useSimVar } from '@instruments/common/simVars';
@@ -9,8 +8,6 @@ import { EcamPage } from '../../Common/EcamPage';
 import { SvgGroup } from '../../Common/SvgGroup';
 
 import './Eng.scss';
-
-/* setIsEcamPage('eng_page'); */
 
 export const EngPage: FC = () => {
     const [weightUnit] = usePersistentProperty('CONFIG_USING_METRIC_UNIT', '1');
@@ -351,5 +348,3 @@ const EngineColumn = ({ x, y, engineNumber }: ComponentPositionProps) => {
         </SvgGroup>
     );
 };
-
-render(<EngPage />);

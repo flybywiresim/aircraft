@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { useArinc429Var } from '@instruments/common/arinc429';
-import { render } from '@instruments/common/index';
 import { useSimVar } from '@instruments/common/simVars';
 import { GaugeComponent, GaugeMarkerComponent } from '@instruments/common/gauges';
 import { PageTitle } from '../../Common/PageTitle';
@@ -496,5 +495,3 @@ const ApuMemos = ({ x, y } : ComponentPositionProps) => {
         </>
     );
 };
-
-render(<ApuPage />);

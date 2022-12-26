@@ -7,8 +7,6 @@ import { fuelForDisplay } from '../../Common/FuelFunctions';
 
 import './Crz.scss';
 
-// setIsEcamPage('crz_page');
-
 export const CrzPage = () => (
     <>
         <svg id="crz-page" viewBox="0 0 600 600" style={{ marginTop: '-60px' }} xmlns="http://www.w3.org/2000/svg">
@@ -231,5 +229,3 @@ export const CondComponent = () => {
         </>
     );
 };
-
-render(<CrzPage />);
