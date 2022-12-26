@@ -253,6 +253,7 @@ const Efb = () => {
         } else {
             setPowerState(PowerStates.LOADED);
         }
+        return (<></>);
     };
 
     useInteractionEvent('A32NX_EFB_POWER', () => {
