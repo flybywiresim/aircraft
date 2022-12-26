@@ -15,7 +15,7 @@ import { BatteryStatus } from './BatteryStatus';
 import { useAppSelector } from '../Store/store';
 import { initialState } from '../Store/features/simBrief';
 import { ClientState } from '../../../../simbridge-client/src';
-import { QuickSettings } from './QuickSettings';
+import { QuickControls } from './QuickControls';
 
 interface StatusBarProps {
     batteryLevel: number;
@@ -194,7 +194,7 @@ export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
                     </div>
                 )}
 
-                <QuickSettings />
+                <QuickControls />
 
                 <TooltipWrapper text={simBridgeConnected ? t('StatusBar.TT.ConnectedToLocalApi') : t('StatusBar.TT.DisconnectedFromLocalApi')}>
                     {simBridgeConnected ? (
