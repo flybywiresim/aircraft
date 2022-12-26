@@ -33,6 +33,12 @@ export interface VersionInfoData {
     commit: string;
 }
 
+export enum KnowBranchNames {
+    rel = 'Stable',
+    dev = 'Development',
+    exp = 'Experimental',
+}
+
 /**
  *  Provides functions to the check the version of the aircraft against the
  *  published GitHub version
@@ -161,7 +167,7 @@ export class AircraftVersionChecker {
      */
     private static checkOutdated(versionInfo: VersionInfoData): boolean {
         // Set branchName to the long versions of the aircraft edition names
-        const branchName = this.getBranchName(versionInfo);
+        const branchName = KnowBranchNames[versionInfo.branch] || versionInfo.branch;
 
         // Check if main version is outdated
         if (Compare(versionInfo.version, this.releaseInfo[0].name) < 0) {
@@ -207,25 +213,6 @@ export class AircraftVersionChecker {
         const result = new Date(date);
         result.setDate(date.getDate() + days);
         return result;
-    }
-
-    /**
-     * Returns the branch name of the aircraft edition based on the version info.
-     *
-     * @param versionInfo
-     * @private
-     */
-    private static getBranchName(versionInfo: VersionInfoData): string {
-        switch (versionInfo.branch) {
-        case 'rel':
-            return 'Stable';
-        case 'dev':
-            return 'Development';
-        case 'exp':
-            return 'Experimental';
-        default:
-            return versionInfo.branch;
-        }
     }
 
     /**
