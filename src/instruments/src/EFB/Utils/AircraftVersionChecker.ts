@@ -183,7 +183,7 @@ export class AircraftVersionChecker {
         const maxAge = 3;
         const timestampAircraft: Date = new Date(this.buildInfo.built);
 
-        if ((branchName === 'Development')
+        if ((branchName === KnowBranchNames.dev)
             && (versionInfo.commit !== this.newestCommit.shortSha)
             && (this.addDays(this.newestCommit.timestamp, maxAge) < timestampAircraft)
         ) {
@@ -191,7 +191,7 @@ export class AircraftVersionChecker {
             return true;
         }
 
-        if ((branchName === 'Experimental')
+        if ((branchName === KnowBranchNames.exp)
             && (versionInfo.commit !== this.newestExpCommit.shortSha)
             && (this.addDays(this.newestExpCommit.timestamp, maxAge) < timestampAircraft)
         ) {
