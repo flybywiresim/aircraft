@@ -12,7 +12,6 @@ import { usePersistentNumberProperty, usePersistentProperty } from '@instruments
 import { Battery } from 'react-bootstrap-icons';
 import { toast, ToastContainer } from 'react-toastify';
 import { distanceTo } from 'msfs-geo';
-import { AircraftVersionChecker } from './Utils/AircraftVersionChecker';
 import { Tooltip } from './UtilComponents/TooltipWrapper';
 import { FbwLogo } from './UtilComponents/FbwLogo';
 import { AlertModal, ModalContainer, useModals } from './UtilComponents/Modals/Modals';
@@ -118,9 +117,6 @@ const Efb = () => {
 
     useEffect(() => {
         document.documentElement.classList.add(`theme-${theme}`, 'animationsEnabled');
-        if (!AircraftVersionChecker.isVersionChecked) {
-            AircraftVersionChecker.checkVersion();
-        }
     }, []);
 
     useEffect(() => {
@@ -245,7 +241,6 @@ const Efb = () => {
     const offToLoaded = () => {
         const shouldWait = powerState === PowerStates.SHUTOFF || powerState === PowerStates.EMPTY;
         setPowerState(PowerStates.LOADING);
-
         if (shouldWait) {
             setTimeout(() => {
                 setPowerState(PowerStates.LOADED);
