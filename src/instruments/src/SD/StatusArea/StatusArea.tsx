@@ -74,7 +74,8 @@ export const StatusArea = () => {
     });
 
     useEffect(() => {
-        const isInStdMode = Simplane.getPressureSelectedMode(Aircraft.A320_NEO) === 'STD';
+        const baroMode = SimVar.GetSimVarValue('L:XMLVAR_Baro1_Mode', 'number');
+        const isInStdMode = baroMode !== 0 && baroMode !== 1;
         // As ISA relates to SAT, we cannot present ISA when SAT is unavailable. We might want to move this into
         // Rust ADIRS code itself.
         const isaShouldBeVisible = isInStdMode && isa.isNormalOperation() && sat.isNormalOperation();
