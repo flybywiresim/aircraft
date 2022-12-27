@@ -8,7 +8,7 @@ import { Atsu } from '../ATSU';
 import { Atc } from '../ATC';
 import { UplinkMessageStateMachine } from './UplinkMessageStateMachine';
 
-export enum DcduStatusMessage {
+export enum MailboxStatusMessage {
     NoMessage = -1,
     AnswerRequired = 0,
     CommunicationFault,
@@ -46,7 +46,7 @@ export enum DcduStatusMessage {
     WaitFmData
 }
 
-class DcduMessage {
+class MailboxMessage {
     public MessageId: number = 0;
 
     public Station: string = '';
@@ -57,13 +57,13 @@ class DcduMessage {
 
     public PriorityMessage = false;
 
-    public Status: DcduStatusMessage = DcduStatusMessage.NoMessage;
+    public Status: MailboxStatusMessage = MailboxStatusMessage.NoMessage;
 
     public Direction: AtsuMessageDirection = null;
 }
 
-export class DcduLink {
-    private static MaxDcduFileSize = 5;
+export class MailboxBus {
+    private static MaxMailboxFileSize = 5;
 
     private listener = RegisterViewListener('JS_LISTENER_SIMVARS', null, true);
 
@@ -71,21 +71,21 @@ export class DcduLink {
 
     private atc: Atc = null;
 
-    private downlinkMessages: (DcduMessage[])[] = [];
+    private downlinkMessages: (MailboxMessage[])[] = [];
 
-    private uplinkMessages: (DcduMessage[])[] = [];
+    private uplinkMessages: (MailboxMessage[])[] = [];
 
-    private bufferedDownlinkMessages: (DcduMessage[])[] = [];
+    private bufferedDownlinkMessages: (MailboxMessage[])[] = [];
 
-    private bufferedUplinkMessages: (DcduMessage[])[] = [];
+    private bufferedUplinkMessages: (MailboxMessage[])[] = [];
 
-    private lastClosedMessage: [DcduMessage[], number] = null;
+    private lastClosedMessage: [MailboxMessage[], number] = null;
 
     private atcMsgWatchdogInterval: NodeJS.Timer = null;
 
     private atcRingInterval: NodeJS.Timer = null;
 
-    private closeMessage(messages: (DcduMessage[])[], backlog: (DcduMessage[])[], uid: number, uplink: boolean): boolean {
+    private closeMessage(messages: (MailboxMessage[])[], backlog: (MailboxMessage[])[], uid: number, uplink: boolean): boolean {
         const idx = messages.findIndex((elem) => elem[0].MessageId === uid);
         if (idx !== -1) {
             // validate that message exists in the queue
@@ -101,7 +101,7 @@ export class DcduLink {
             }
 
             // add buffered messages
-            while (backlog.length !== 0 && messages.length !== DcduLink.MaxDcduFileSize) {
+            while (backlog.length !== 0 && messages.length !== MailboxBus.MaxMailboxFileSize) {
                 const bufferedBlock = backlog.shift();
                 const dcduMessages = [];
                 messages.push([]);
@@ -208,11 +208,11 @@ export class DcduLink {
         Coherent.on('A32NX_ATSU_PRINT_MESSAGE', (uid: number) => {
             const message = this.atc.messages().find((element) => element.UniqueMessageID === uid);
             if (message !== undefined) {
-                this.updateDcduStatusMessage(uid, DcduStatusMessage.Printing);
+                this.updateMailboxStatusMessage(uid, MailboxStatusMessage.Printing);
                 this.atsu.printMessage(message);
                 setTimeout(() => {
-                    if (this.currentDcduStatusMessage(uid) === DcduStatusMessage.Printing) {
-                        this.updateDcduStatusMessage(uid, DcduStatusMessage.NoMessage);
+                    if (this.currentMailboxStatusMessage(uid) === MailboxStatusMessage.Printing) {
+                        this.updateMailboxStatusMessage(uid, MailboxStatusMessage.NoMessage);
                     }
                 }, 4500);
             }
@@ -238,12 +238,12 @@ export class DcduLink {
 
         Coherent.on('A32NX_ATSU_DCDU_MESSAGE_RECALL', () => {
             if (!this.lastClosedMessage) {
-                this.listener.triggerToAllSubscribers('A32NX_DCDU_SYSTEM_ATSU_STATUS', DcduStatusMessage.RecallEmpty);
+                this.listener.triggerToAllSubscribers('A32NX_DCDU_SYSTEM_ATSU_STATUS', MailboxStatusMessage.RecallEmpty);
             } else {
                 const currentStamp = new Date().getTime();
                 // timed out after five minutes
                 if (currentStamp - this.lastClosedMessage[1] > 300000) {
-                    this.listener.triggerToAllSubscribers('A32NX_DCDU_SYSTEM_ATSU_STATUS', DcduStatusMessage.RecallEmpty);
+                    this.listener.triggerToAllSubscribers('A32NX_DCDU_SYSTEM_ATSU_STATUS', MailboxStatusMessage.RecallEmpty);
                     this.lastClosedMessage = undefined;
                 } else {
                     const messages : CpdlcMessage[] = [];
@@ -262,7 +262,7 @@ export class DcduLink {
                     } else {
                         this.uplinkMessages.push(this.lastClosedMessage[0]);
                     }
-                    this.updateDcduStatusMessage(messages[0].UniqueMessageID, DcduStatusMessage.RecallMode);
+                    this.updateMailboxStatusMessage(messages[0].UniqueMessageID, MailboxStatusMessage.RecallMode);
                 }
             }
         });
@@ -369,9 +369,9 @@ export class DcduLink {
             return;
         }
 
-        const dcduBlocks: DcduMessage[] = [];
+        const dcduBlocks: MailboxMessage[] = [];
         messages.forEach((message) => {
-            const block = new DcduMessage();
+            const block = new MailboxMessage();
             block.MessageId = message.UniqueMessageID;
             block.MessageRead = message.Direction === AtsuMessageDirection.Downlink;
             block.Station = message.Station;
@@ -380,9 +380,9 @@ export class DcduLink {
             dcduBlocks.push(block);
         });
 
-        if (dcduBlocks[0].Direction === AtsuMessageDirection.Downlink && this.downlinkMessages.length < DcduLink.MaxDcduFileSize) {
+        if (dcduBlocks[0].Direction === AtsuMessageDirection.Downlink && this.downlinkMessages.length < MailboxBus.MaxMailboxFileSize) {
             this.downlinkMessages.push(dcduBlocks);
-        } else if (dcduBlocks[0].Direction === AtsuMessageDirection.Uplink && this.uplinkMessages.length < DcduLink.MaxDcduFileSize) {
+        } else if (dcduBlocks[0].Direction === AtsuMessageDirection.Uplink && this.uplinkMessages.length < MailboxBus.MaxMailboxFileSize) {
             this.uplinkMessages.push(dcduBlocks);
             SimVar.SetSimVarValue('L:A32NX_DCDU_ATC_MSG_WAITING', 'boolean', 1);
             SimVar.SetSimVarValue('L:A32NX_DCDU_ATC_MSG_ACK', 'number', 0);
@@ -390,11 +390,11 @@ export class DcduLink {
         } else {
             if (dcduBlocks[0].Direction === AtsuMessageDirection.Downlink) {
                 this.bufferedDownlinkMessages.push(dcduBlocks);
-                this.listener.triggerToAllSubscribers('A32NX_DCDU_SYSTEM_ATSU_STATUS', DcduStatusMessage.MaximumDownlinkMessages);
+                this.listener.triggerToAllSubscribers('A32NX_DCDU_SYSTEM_ATSU_STATUS', MailboxStatusMessage.MaximumDownlinkMessages);
                 this.atsu.publishAtsuStatusCode(AtsuStatusCodes.DcduFull);
             } else {
                 this.bufferedUplinkMessages.push(dcduBlocks);
-                this.listener.triggerToAllSubscribers('A32NX_DCDU_SYSTEM_ATSU_STATUS', DcduStatusMessage.AnswerRequired);
+                this.listener.triggerToAllSubscribers('A32NX_DCDU_SYSTEM_ATSU_STATUS', MailboxStatusMessage.AnswerRequired);
             }
             return;
         }
@@ -462,7 +462,7 @@ export class DcduLink {
         }
     }
 
-    public updateDcduStatusMessage(uid: number, status: DcduStatusMessage): void {
+    public updateMailboxStatusMessage(uid: number, status: MailboxStatusMessage): void {
         // the assumption is that the first message in the block is the UID for the complete block
         const uplinkIdx = this.uplinkMessages.findIndex((elem) => elem[0].MessageId === uid);
         if (uplinkIdx !== -1) {
@@ -478,7 +478,7 @@ export class DcduLink {
         }
     }
 
-    public currentDcduStatusMessage(uid: number): DcduStatusMessage {
+    public currentMailboxStatusMessage(uid: number): MailboxStatusMessage {
         let idx = this.uplinkMessages.findIndex((elem) => elem[0].MessageId === uid);
         if (idx !== -1) {
             return this.uplinkMessages[idx][0].Status;
@@ -489,7 +489,7 @@ export class DcduLink {
             return this.downlinkMessages[idx][0].Status;
         }
 
-        return DcduStatusMessage.NoMessage;
+        return MailboxStatusMessage.NoMessage;
     }
 
     public openMessagesForStation(station: string): boolean {

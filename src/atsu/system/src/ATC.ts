@@ -11,7 +11,7 @@ import { CpdlcMessage } from '@atsu/common/messages/CpdlcMessage';
 import { FansMode, FutureAirNavigationSystem } from '@atsu/common/com/FutureAirNavigationSystem';
 import { Atsu } from './ATSU';
 import { Datalink } from './com/Datalink';
-import { DcduStatusMessage, DcduLink } from './components/DcduLink';
+import { MailboxStatusMessage, MailboxBus } from './components/MailboxBus';
 import { UplinkMessageStateMachine } from './components/UplinkMessageStateMachine';
 import { UplinkMessageMonitoring } from './components/UplinkMessageMonitoring';
 
@@ -23,7 +23,7 @@ export class Atc {
 
     private datalink: Datalink = null;
 
-    private dcduLink: DcduLink = null;
+    private mailboxBus: MailboxBus = null;
 
     private handoverInterval: NodeJS.Timer = null;
 
@@ -56,7 +56,7 @@ export class Atc {
     constructor(parent: Atsu, datalink: Datalink) {
         this.parent = parent;
         this.datalink = datalink;
-        this.dcduLink = new DcduLink(parent, this);
+        this.mailboxBus = new MailboxBus(parent, this);
         this.messageMonitoring = new UplinkMessageMonitoring(parent);
 
         setInterval(() => {
@@ -65,7 +65,7 @@ export class Atc {
                 const message = this.messageQueue.find((element) => id === element.UniqueMessageID);
                 if (message) {
                     UplinkMessageStateMachine.update(this.parent, message, false, true);
-                    this.dcduLink.update(message, true);
+                    this.mailboxBus.update(message, true);
                 }
             });
         }, 5000);
@@ -100,7 +100,7 @@ export class Atc {
         this.currentAtc = '';
         this.nextAtc = '';
         this.notificationTime = 0;
-        this.dcduLink.setAtcLogonMessage('');
+        this.mailboxBus.setAtcLogonMessage('');
     }
 
     public async logon(station: string): Promise<AtsuStatusCodes> {
@@ -127,7 +127,7 @@ export class Atc {
 
         this.nextAtc = station;
         this.parent.registerMessages([message]);
-        this.dcduLink.setAtcLogonMessage(`NEXT ATC: ${station}`);
+        this.mailboxBus.setAtcLogonMessage(`NEXT ATC: ${station}`);
         this.notificationTime = SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
 
         // check if the logon was successful within five minutes
@@ -155,7 +155,7 @@ export class Atc {
         return new Promise((resolve, _reject) => {
             // add an interval to check if all messages are answered or sent to ATC
             this.handoverInterval = setInterval(() => {
-                if (!this.dcduLink.openMessagesForStation(this.currentAtc)) {
+                if (!this.mailboxBus.openMessagesForStation(this.currentAtc)) {
                     clearInterval(this.handoverInterval);
                     this.handoverInterval = null;
 
@@ -207,7 +207,7 @@ export class Atc {
         }
 
         return this.logoffWithoutReset().then((error) => {
-            this.dcduLink.setAtcLogonMessage('');
+            this.mailboxBus.setAtcLogonMessage('');
             this.currentFansMode = FansMode.FansNone;
             this.currentAtc = '';
             this.nextAtc = '';
@@ -245,8 +245,8 @@ export class Atc {
 
             message.Response = responseMsg;
             message.Response.ComStatus = AtsuMessageComStatus.Sending;
-            this.dcduLink.updateDcduStatusMessage(message.UniqueMessageID, DcduStatusMessage.Sending);
-            this.dcduLink.update(message);
+            this.mailboxBus.updateMailboxStatusMessage(message.UniqueMessageID, MailboxStatusMessage.Sending);
+            this.mailboxBus.update(message);
 
             if (this.parent.modificationMessage?.UniqueMessageID === uid) {
                 this.parent.modificationMessage = null;
@@ -256,17 +256,17 @@ export class Atc {
                 this.datalink.sendMessage(message.Response, false).then((code) => {
                     if (code === AtsuStatusCodes.Ok) {
                         message.Response.ComStatus = AtsuMessageComStatus.Sent;
-                        this.dcduLink.updateDcduStatusMessage(message.UniqueMessageID, DcduStatusMessage.Sent);
+                        this.mailboxBus.updateMailboxStatusMessage(message.UniqueMessageID, MailboxStatusMessage.Sent);
                         setTimeout(() => {
-                            if (this.dcduLink.currentDcduStatusMessage(message.UniqueMessageID) === DcduStatusMessage.Sent) {
-                                this.dcduLink.updateDcduStatusMessage(message.UniqueMessageID, DcduStatusMessage.NoMessage);
+                            if (this.mailboxBus.currentMailboxStatusMessage(message.UniqueMessageID) === MailboxStatusMessage.Sent) {
+                                this.mailboxBus.updateMailboxStatusMessage(message.UniqueMessageID, MailboxStatusMessage.NoMessage);
                             }
                         }, 5000);
                     } else {
                         message.Response.ComStatus = AtsuMessageComStatus.Failed;
-                        this.dcduLink.updateDcduStatusMessage(message.UniqueMessageID, DcduStatusMessage.SendFailed);
+                        this.mailboxBus.updateMailboxStatusMessage(message.UniqueMessageID, MailboxStatusMessage.SendFailed);
                     }
-                    this.dcduLink.update(message);
+                    this.mailboxBus.update(message);
                 });
             }
         }
@@ -284,23 +284,23 @@ export class Atc {
                 message.Response.CurrentTransmissionId = ++this.cpdlcMessageId;
             }
             message.Response.ComStatus = AtsuMessageComStatus.Sending;
-            this.dcduLink.updateDcduStatusMessage(message.UniqueMessageID, DcduStatusMessage.Sending);
-            this.dcduLink.update(message);
+            this.mailboxBus.updateMailboxStatusMessage(message.UniqueMessageID, MailboxStatusMessage.Sending);
+            this.mailboxBus.update(message);
 
             this.datalink.sendMessage(message.Response, false).then((code) => {
                 if (code === AtsuStatusCodes.Ok) {
                     message.Response.ComStatus = AtsuMessageComStatus.Sent;
-                    this.dcduLink.updateDcduStatusMessage(message.UniqueMessageID, DcduStatusMessage.Sent);
+                    this.mailboxBus.updateMailboxStatusMessage(message.UniqueMessageID, MailboxStatusMessage.Sent);
                     setTimeout(() => {
-                        if (this.dcduLink.currentDcduStatusMessage(message.UniqueMessageID) === DcduStatusMessage.Sent) {
-                            this.dcduLink.updateDcduStatusMessage(message.UniqueMessageID, DcduStatusMessage.NoMessage);
+                        if (this.mailboxBus.currentMailboxStatusMessage(message.UniqueMessageID) === MailboxStatusMessage.Sent) {
+                            this.mailboxBus.updateMailboxStatusMessage(message.UniqueMessageID, MailboxStatusMessage.NoMessage);
                         }
                     }, 5000);
                 } else {
                     message.Response.ComStatus = AtsuMessageComStatus.Failed;
-                    this.dcduLink.updateDcduStatusMessage(message.UniqueMessageID, DcduStatusMessage.SendFailed);
+                    this.mailboxBus.updateMailboxStatusMessage(message.UniqueMessageID, MailboxStatusMessage.SendFailed);
                 }
-                this.dcduLink.update(message);
+                this.mailboxBus.update(message);
             });
 
             if (this.parent.modificationMessage?.UniqueMessageID === uid) {
@@ -323,8 +323,8 @@ export class Atc {
 
         message.ComStatus = AtsuMessageComStatus.Sending;
         if ((message as CpdlcMessage).DcduRelevantMessage) {
-            this.dcduLink.updateDcduStatusMessage(message.UniqueMessageID, DcduStatusMessage.Sending);
-            this.dcduLink.update(message as CpdlcMessage);
+            this.mailboxBus.updateMailboxStatusMessage(message.UniqueMessageID, MailboxStatusMessage.Sending);
+            this.mailboxBus.update(message as CpdlcMessage);
         }
 
         if (this.parent.modificationMessage?.UniqueMessageID === message.UniqueMessageID) {
@@ -339,13 +339,13 @@ export class Atc {
             }
 
             if ((message as CpdlcMessage).DcduRelevantMessage) {
-                this.dcduLink.update(message as CpdlcMessage);
+                this.mailboxBus.update(message as CpdlcMessage);
 
-                this.dcduLink.updateDcduStatusMessage(message.UniqueMessageID, code === AtsuStatusCodes.Ok ? DcduStatusMessage.Sent : DcduStatusMessage.SendFailed);
+                this.mailboxBus.updateMailboxStatusMessage(message.UniqueMessageID, code === AtsuStatusCodes.Ok ? MailboxStatusMessage.Sent : MailboxStatusMessage.SendFailed);
                 if (code === AtsuStatusCodes.Ok) {
                     setTimeout(() => {
-                        if (this.dcduLink.currentDcduStatusMessage(message.UniqueMessageID) === DcduStatusMessage.Sent) {
-                            this.dcduLink.updateDcduStatusMessage(message.UniqueMessageID, DcduStatusMessage.NoMessage);
+                        if (this.mailboxBus.currentMailboxStatusMessage(message.UniqueMessageID) === MailboxStatusMessage.Sent) {
+                            this.mailboxBus.updateMailboxStatusMessage(message.UniqueMessageID, MailboxStatusMessage.NoMessage);
                         }
                     }, 5000);
                 }
@@ -380,14 +380,14 @@ export class Atc {
         const index = this.messageQueue.findIndex((element) => element.UniqueMessageID === uid);
         if (index !== -1) {
             this.messageQueue.splice(index, 1);
-            this.dcduLink.dequeue(uid);
+            this.mailboxBus.dequeue(uid);
         }
         return index !== -1;
     }
 
     public cleanupMessages(): void {
         this.messageQueue = [];
-        this.dcduLink.reset();
+        this.mailboxBus.reset();
         this.atisMessages = new Map();
     }
 
@@ -397,7 +397,7 @@ export class Atc {
             if (request.Content[0]?.TypeId === 'UM9999') {
                 request.DcduRelevantMessage = false;
                 if (this.currentAtc !== '') {
-                    this.dcduLink.setAtcLogonMessage(request.Message);
+                    this.mailboxBus.setAtcLogonMessage(request.Message);
                 }
                 return true;
             }
@@ -405,7 +405,7 @@ export class Atc {
             // received a logoff message
             if (request.Content[0]?.TypeId === 'UM9995') {
                 request.DcduRelevantMessage = false;
-                this.dcduLink.setAtcLogonMessage('');
+                this.mailboxBus.setAtcLogonMessage('');
                 this.currentAtc = '';
                 return true;
             }
@@ -413,7 +413,7 @@ export class Atc {
             // received a service terminated message
             if (request.Message.includes('TERMINATED')) {
                 request.DcduRelevantMessage = false;
-                this.dcduLink.setAtcLogonMessage('');
+                this.mailboxBus.setAtcLogonMessage('');
                 this.currentAtc = '';
                 return true;
             }
@@ -436,7 +436,7 @@ export class Atc {
                 // logon accepted by ATC
                 if (response.Content[0]?.TypeId === 'UM9997') {
                     response.DcduRelevantMessage = false;
-                    this.dcduLink.setAtcLogonMessage(`CURRENT ATC UNIT @${this.nextAtc}@ CTL`);
+                    this.mailboxBus.setAtcLogonMessage(`CURRENT ATC UNIT @${this.nextAtc}@ CTL`);
                     this.currentFansMode = FutureAirNavigationSystem.currentFansMode(this.nextAtc);
                     InputValidation.FANS = this.currentFansMode;
                     this.currentAtc = this.nextAtc;
@@ -447,7 +447,7 @@ export class Atc {
                 // logon rejected
                 if (response.Content[0]?.TypeId === 'UM9996' || response.Content[0]?.TypeId === 'UM0') {
                     response.DcduRelevantMessage = false;
-                    this.dcduLink.setAtcLogonMessage('');
+                    this.mailboxBus.setAtcLogonMessage('');
                     this.currentAtc = '';
                     this.nextAtc = '';
                     return true;
@@ -502,7 +502,7 @@ export class Atc {
         });
 
         if (messages.length !== 0 && (messages[0] as CpdlcMessage).DcduRelevantMessage) {
-            this.dcduLink.enqueue(messages);
+            this.mailboxBus.enqueue(messages);
         }
     }
 
@@ -514,7 +514,7 @@ export class Atc {
             }
 
             this.messageQueue[index] = message;
-            this.dcduLink.update(message);
+            this.mailboxBus.update(message);
         }
     }
 
