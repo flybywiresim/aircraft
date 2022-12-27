@@ -10,8 +10,8 @@ use systems::hydraulic::*;
 use systems::{
     electrical::{test::TestElectricitySource, ElectricalBus, Electricity},
     shared::{
-        update_iterator::FixedStepLoop, ElectricalBusType, HydraulicColor, PotentialOrigin,
-        ReservoirAirPressure,
+        update_iterator::FixedStepLoop, AirbusElectricPumpId, AirbusEngineDrivenPumpId,
+        ElectricalBusType, HydraulicColor, PotentialOrigin, ReservoirAirPressure,
     },
     simulation::{
         test::{SimulationTestBed, TestBed},
@@ -358,7 +358,7 @@ fn hydraulic_loop(context: &mut InitContext, loop_color: HydraulicColor) -> Hydr
 fn electric_pump(context: &mut InitContext) -> ElectricPump {
     ElectricPump::new(
         context,
-        "DEFAULT",
+        AirbusElectricPumpId::Green,
         ElectricalBusType::AlternatingCurrentGndFltService,
         ElectricCurrent::new::<ampere>(45.),
         PumpCharacteristics::a320_electric_pump(),
@@ -366,7 +366,11 @@ fn electric_pump(context: &mut InitContext) -> ElectricPump {
 }
 
 fn _engine_driven_pump(context: &mut InitContext) -> EngineDrivenPump {
-    EngineDrivenPump::new(context, "DEFAULT", PumpCharacteristics::a320_edp())
+    EngineDrivenPump::new(
+        context,
+        AirbusEngineDrivenPumpId::Green,
+        PumpCharacteristics::a320_edp(),
+    )
 }
 
 struct A320TestPneumatics {

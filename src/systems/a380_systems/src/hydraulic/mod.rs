@@ -49,10 +49,11 @@ use systems::{
     overhead::{AutoOffFaultPushButton, AutoOnFaultPushButton},
     shared::{
         interpolation, low_pass_filter::LowPassFilter, random_from_range,
-        update_iterator::MaxStepLoop, AdirsDiscreteOutputs, DelayedFalseLogicGate,
-        DelayedPulseTrueLogicGate, DelayedTrueLogicGate, ElectricalBusType, ElectricalBuses,
-        EngineFirePushButtons, GearWheel, HydraulicColor, LandingGearHandle, LgciuInterface,
-        LgciuWeightOnWheels, ReservoirAirPressure, SectionPressure,
+        update_iterator::MaxStepLoop, AdirsDiscreteOutputs, AirbusElectricPumpId,
+        AirbusEngineDrivenPumpId, DelayedFalseLogicGate, DelayedPulseTrueLogicGate,
+        DelayedTrueLogicGate, ElectricalBusType, ElectricalBuses, EngineFirePushButtons, GearWheel,
+        HydraulicColor, LandingGearHandle, LgciuInterface, LgciuWeightOnWheels,
+        ReservoirAirPressure, SectionPressure,
     },
     simulation::{
         InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -1615,7 +1616,7 @@ impl A380Hydraulic {
 
             engine_driven_pump_1a: EngineDrivenPump::new(
                 context,
-                "GREEN_1A",
+                AirbusEngineDrivenPumpId::Edp1a,
                 PumpCharacteristics::a380_edp(),
             ),
             engine_driven_pump_1a_controller: A380EngineDrivenPumpController::new(
@@ -1626,7 +1627,7 @@ impl A380Hydraulic {
 
             engine_driven_pump_2a: EngineDrivenPump::new(
                 context,
-                "GREEN_2A",
+                AirbusEngineDrivenPumpId::Edp2a,
                 PumpCharacteristics::a380_edp(),
             ),
             engine_driven_pump_2a_controller: A380EngineDrivenPumpController::new(
@@ -1637,7 +1638,7 @@ impl A380Hydraulic {
 
             engine_driven_pump_3a: EngineDrivenPump::new(
                 context,
-                "YELLOW_3A",
+                AirbusEngineDrivenPumpId::Edp3a,
                 PumpCharacteristics::a380_edp(),
             ),
             engine_driven_pump_3a_controller: A380EngineDrivenPumpController::new(
@@ -1648,7 +1649,7 @@ impl A380Hydraulic {
 
             engine_driven_pump_4a: EngineDrivenPump::new(
                 context,
-                "YELLOW_4A",
+                AirbusEngineDrivenPumpId::Edp4a,
                 PumpCharacteristics::a380_edp(),
             ),
             engine_driven_pump_4a_controller: A380EngineDrivenPumpController::new(
@@ -1659,7 +1660,7 @@ impl A380Hydraulic {
 
             engine_driven_pump_1b: EngineDrivenPump::new(
                 context,
-                "GREEN_1B",
+                AirbusEngineDrivenPumpId::Edp1b,
                 PumpCharacteristics::a380_edp(),
             ),
             engine_driven_pump_1b_controller: A380EngineDrivenPumpController::new(
@@ -1670,7 +1671,7 @@ impl A380Hydraulic {
 
             engine_driven_pump_2b: EngineDrivenPump::new(
                 context,
-                "GREEN_2B",
+                AirbusEngineDrivenPumpId::Edp2b,
                 PumpCharacteristics::a380_edp(),
             ),
             engine_driven_pump_2b_controller: A380EngineDrivenPumpController::new(
@@ -1681,7 +1682,7 @@ impl A380Hydraulic {
 
             engine_driven_pump_3b: EngineDrivenPump::new(
                 context,
-                "YELLOW_3B",
+                AirbusEngineDrivenPumpId::Edp3b,
                 PumpCharacteristics::a380_edp(),
             ),
             engine_driven_pump_3b_controller: A380EngineDrivenPumpController::new(
@@ -1692,7 +1693,7 @@ impl A380Hydraulic {
 
             engine_driven_pump_4b: EngineDrivenPump::new(
                 context,
-                "YELLOW_4B",
+                AirbusEngineDrivenPumpId::Edp4b,
                 PumpCharacteristics::a380_edp(),
             ),
             engine_driven_pump_4b_controller: A380EngineDrivenPumpController::new(
@@ -1703,7 +1704,7 @@ impl A380Hydraulic {
 
             yellow_electric_pump_a: ElectricPump::new(
                 context,
-                "YELLOW_A",
+                AirbusElectricPumpId::YellowA,
                 Self::YELLOW_ELEC_PUMP_SUPPLY_POWER_BUS,
                 ElectricCurrent::new::<ampere>(Self::ELECTRIC_PUMP_MAX_CURRENT_AMPERE),
                 PumpCharacteristics::a380_electric_pump(),
@@ -1717,7 +1718,7 @@ impl A380Hydraulic {
 
             yellow_electric_pump_b: ElectricPump::new(
                 context,
-                "YELLOW_B",
+                AirbusElectricPumpId::YellowB,
                 Self::YELLOW_ELEC_PUMP_SUPPLY_POWER_BUS,
                 ElectricCurrent::new::<ampere>(Self::ELECTRIC_PUMP_MAX_CURRENT_AMPERE),
                 PumpCharacteristics::a380_electric_pump(),
@@ -1731,7 +1732,7 @@ impl A380Hydraulic {
 
             green_electric_pump_a: ElectricPump::new(
                 context,
-                "GREEN_A",
+                AirbusElectricPumpId::GreenA,
                 Self::YELLOW_ELEC_PUMP_SUPPLY_POWER_BUS,
                 ElectricCurrent::new::<ampere>(Self::ELECTRIC_PUMP_MAX_CURRENT_AMPERE),
                 PumpCharacteristics::a380_electric_pump(),
@@ -1745,7 +1746,7 @@ impl A380Hydraulic {
 
             green_electric_pump_b: ElectricPump::new(
                 context,
-                "GREEN_B",
+                AirbusElectricPumpId::GreenB,
                 Self::YELLOW_ELEC_PUMP_SUPPLY_POWER_BUS,
                 ElectricCurrent::new::<ampere>(Self::ELECTRIC_PUMP_MAX_CURRENT_AMPERE),
                 PumpCharacteristics::a380_electric_pump(),
