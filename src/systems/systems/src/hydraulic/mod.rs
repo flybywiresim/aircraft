@@ -4,10 +4,11 @@ use crate::hydraulic::{
     electrical_pump_physics::ElectricalPumpPhysics, pumps::PumpCharacteristics,
 };
 use crate::pneumatic::PressurizeableReservoir;
+
 use crate::shared::{
     interpolation, low_pass_filter::LowPassFilter, random_from_normal_distribution,
-    random_from_range, DelayedTrueLogicGate, ElectricalBusType, ElectricalBuses, HydraulicColor,
-    SectionPressure,
+    random_from_range, AirbusElectricPumpId, AirbusEngineDrivenPumpId, DelayedTrueLogicGate,
+    ElectricalBusType, ElectricalBuses, HydraulicColor, SectionPressure,
 };
 use crate::simulation::{
     InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -75,14 +76,47 @@ pub trait PressureSource {
 
 pub struct Fluid {
     current_bulk: Pressure,
+    heat_state: HeatingProperties,
 }
 impl Fluid {
+    const HEATING_TIME_CONSTANT_MEAN_S: f64 = 40.;
+    const HEATING_TIME_CONSTANT_STD_S: f64 = 10.;
+
+    const COOLING_TIME_CONSTANT: Duration = Duration::from_secs(60 * 3);
+    const DAMAGE_TIME_CONSTANT: Duration = Duration::from_secs(60 * 3);
+
     pub fn new(bulk: Pressure) -> Self {
-        Self { current_bulk: bulk }
+        Self {
+            current_bulk: bulk,
+            heat_state: HeatingProperties::new(
+                Duration::from_secs_f64(
+                    random_from_normal_distribution(
+                        Self::HEATING_TIME_CONSTANT_MEAN_S,
+                        Self::HEATING_TIME_CONSTANT_STD_S,
+                    )
+                    .max(10.),
+                ),
+                Self::COOLING_TIME_CONSTANT,
+                Self::DAMAGE_TIME_CONSTANT,
+            ),
+        }
     }
 
     pub fn bulk_mod(&self) -> Pressure {
         self.current_bulk
+    }
+
+    fn update(&mut self, context: &UpdateContext, is_heating: bool) {
+        self.heat_state.update(context, is_heating);
+    }
+}
+impl HeatingElement for Fluid {
+    fn is_overheating(&self) -> bool {
+        self.heat_state.is_overheating()
+    }
+
+    fn is_damaged(&self) -> bool {
+        self.heat_state.is_damaged()
     }
 }
 
@@ -174,6 +208,80 @@ impl LevelSwitch {
     }
 }
 
+pub trait HeatingElement {
+    fn is_overheating(&self) -> bool {
+        false
+    }
+    fn is_damaged(&self) -> bool {
+        false
+    }
+}
+
+pub trait HeatingPressureSource: PressureSource + HeatingElement {}
+
+pub struct HeatingProperties {
+    is_overheating: bool,
+    is_damaged_by_heat: bool,
+
+    damaging_time: DelayedTrueLogicGate,
+
+    heat_factor: LowPassFilter<Ratio>,
+    heat_time: Duration,
+    cool_time: Duration,
+}
+impl HeatingProperties {
+    const OVERHEATING_THRESHOLD: f64 = 0.5;
+
+    fn new(heat_time: Duration, cool_time: Duration, damage_time: Duration) -> Self {
+        Self {
+            is_overheating: false,
+            is_damaged_by_heat: false,
+            damaging_time: DelayedTrueLogicGate::new(damage_time),
+            heat_factor: LowPassFilter::new(heat_time),
+            heat_time,
+            cool_time,
+        }
+    }
+
+    fn update(&mut self, context: &UpdateContext, is_heating: bool) {
+        if is_heating {
+            self.heat_factor.set_time_constant(self.heat_time);
+            self.heat_factor
+                .update(context.delta(), Ratio::new::<ratio>(1.));
+        } else {
+            self.heat_factor.set_time_constant(self.cool_time);
+            self.heat_factor
+                .update(context.delta(), Ratio::new::<ratio>(0.));
+        };
+
+        self.is_overheating =
+            self.heat_factor.output().get::<ratio>() > Self::OVERHEATING_THRESHOLD;
+
+        self.damaging_time.update(context, self.is_overheating);
+        self.is_damaged_by_heat = self.is_damaged_by_heat || self.damaging_time.output();
+    }
+
+    /// When overheating, provides a ratio of the heating severity
+    /// Above OVERHEATING_THRESHOLD it will rise from 0 to 1, while always 0 under the threshold
+    fn overheat_ratio(&self) -> Ratio {
+        Ratio::new::<ratio>(
+            ((self.heat_factor.output().get::<ratio>() - Self::OVERHEATING_THRESHOLD)
+                / (1. - Self::OVERHEATING_THRESHOLD))
+                .max(0.)
+                .min(1.),
+        )
+    }
+}
+impl HeatingElement for HeatingProperties {
+    fn is_overheating(&self) -> bool {
+        self.is_overheating
+    }
+
+    fn is_damaged(&self) -> bool {
+        self.is_damaged_by_heat
+    }
+}
+
 pub trait PowerTransferUnitController {
     fn should_enable(&self) -> bool;
 }
@@ -224,6 +332,8 @@ pub struct PowerTransferUnit {
     has_stopped_since_last_write: bool,
 
     efficiency: Ratio,
+
+    heat_state: HeatingProperties,
 }
 impl PowerTransferUnit {
     const MIN_SPEED_SIMULATION_RPM: f64 = 50.;
@@ -257,6 +367,16 @@ impl PowerTransferUnit {
     const DELAY_TO_DECLARE_CONTINUOUS: Duration = Duration::from_millis(1500);
     const THRESHOLD_DELTA_TO_DECLARE_CONTINUOUS_RPM: f64 = 400.;
     const DURATION_BEFORE_CAPTURING_BARK_STRENGTH_SPEED: Duration = Duration::from_millis(133);
+
+    const HEATING_TIME_CONSTANT_MEAN_S: f64 = 20.;
+    const HEATING_TIME_CONSTANT_STD_S: f64 = 5.;
+    const COOLING_TIME_CONSTANT: Duration = Duration::from_secs(60 * 3);
+    const DAMAGE_TIME_CONSTANT: Duration = Duration::from_secs(60 * 3);
+
+    const MAX_SPEED_BEFORE_HEATING_UP_RPM: f64 = 2000.;
+
+    // We consider that ptu can't overheat if there's enough pressure on both side (it's cooled by hyd fluid)
+    const MIN_PRESSURE_ALLOWING_PTU_HEATING_UP_RPM: f64 = 500.;
 
     pub fn new(
         context: &mut InitContext,
@@ -304,6 +424,18 @@ impl PowerTransferUnit {
             has_stopped_since_last_write: false,
 
             efficiency: characteristics.efficiency(),
+
+            heat_state: HeatingProperties::new(
+                Duration::from_secs_f64(
+                    random_from_normal_distribution(
+                        Self::HEATING_TIME_CONSTANT_MEAN_S,
+                        Self::HEATING_TIME_CONSTANT_STD_S,
+                    )
+                    .max(10.),
+                ),
+                Self::COOLING_TIME_CONSTANT,
+                Self::DAMAGE_TIME_CONSTANT,
+            ),
         }
     }
 
@@ -338,6 +470,16 @@ impl PowerTransferUnit {
         self.update_continuous_state(context);
         self.capture_bark_strength();
         self.update_flows();
+
+        self.heat_state.update(
+            context,
+            self.shaft_speed.get::<revolution_per_minute>().abs()
+                > Self::MAX_SPEED_BEFORE_HEATING_UP_RPM
+                && (loop_left_section.pressure().get::<psi>()
+                    < Self::MIN_PRESSURE_ALLOWING_PTU_HEATING_UP_RPM
+                    || loop_right_section.pressure().get::<psi>()
+                        < Self::MIN_PRESSURE_ALLOWING_PTU_HEATING_UP_RPM),
+        );
     }
 
     fn update_displacement(
@@ -432,12 +574,16 @@ impl PowerTransferUnit {
         let left_side_torque = -Self::calc_generated_torque(left_pressure, self.left_displacement);
         let right_side_torque =
             Self::calc_generated_torque(right_pressure, self.right_displacement.output());
+
         let friction_torque = Torque::new::<newton_meter>(
             Self::SHAFT_FRICTION * -self.shaft_speed.get::<radian_per_second>(),
         );
+
         let total_torque = friction_torque + left_side_torque + right_side_torque;
 
-        if self.is_rotating() || total_torque.abs().get::<newton_meter>() > Self::BREAKOUT_TORQUE_NM
+        if !self.heat_state.is_damaged()
+            && (self.is_rotating()
+                || total_torque.abs().get::<newton_meter>() > Self::BREAKOUT_TORQUE_NM)
         {
             let acc = total_torque.get::<newton_meter>() / Self::SHAFT_INERTIA;
             self.shaft_speed +=
@@ -592,6 +738,15 @@ impl SimulationElement for PowerTransferUnit {
         // As read/write can happen slower than ptu update, if we had ptu stopping between two writes
         // we ensure here to reset the flag indicating we missed a stop
         self.has_stopped_since_last_write = false;
+    }
+}
+impl HeatingElement for PowerTransferUnit {
+    fn is_overheating(&self) -> bool {
+        self.heat_state.is_overheating()
+    }
+
+    fn is_damaged(&self) -> bool {
+        self.heat_state.is_damaged()
     }
 }
 
@@ -871,7 +1026,6 @@ impl HydraulicCircuit {
             } else {
                 None
             },
-
             pump_sections_check_valves: pump_to_system_check_valves,
             pump_section_routed_to_auxiliary_section: pump_section_to_auxiliary,
             fluid: Fluid::new(Pressure::new::<pascal>(Self::FLUID_BULK_MODULUS_PASCAL)),
@@ -899,14 +1053,39 @@ impl HydraulicCircuit {
     pub fn update(
         &mut self,
         context: &UpdateContext,
-        main_section_pumps: &mut [&mut dyn PressureSource],
-        system_section_pump: Option<&mut impl PressureSource>,
-        auxiliary_section_pump: Option<&mut impl PressureSource>,
+        main_section_pumps: &mut [&mut dyn HeatingPressureSource],
+        system_section_pump: Option<&mut impl HeatingPressureSource>,
+        auxiliary_section_pump: Option<&mut impl HeatingPressureSource>,
         ptu: Option<&PowerTransferUnit>,
         controller: &impl HydraulicCircuitController,
         reservoir_pressure: Pressure,
     ) {
-        self.reservoir.update(context, reservoir_pressure);
+        let mut any_pump_is_overheating = false;
+        for pump in main_section_pumps.iter() {
+            if pump.flow().get::<gallon_per_second>() > 0.01 && pump.is_overheating() {
+                any_pump_is_overheating = true;
+            }
+        }
+
+        if let Some(pump) = system_section_pump.as_ref() {
+            if pump.flow().get::<gallon_per_second>() > 0.01 && pump.is_overheating() {
+                any_pump_is_overheating = true;
+            }
+        }
+
+        if let Some(pump) = auxiliary_section_pump.as_ref() {
+            if pump.flow().get::<gallon_per_second>() > 0.01 && pump.is_overheating() {
+                any_pump_is_overheating = true;
+            }
+        }
+
+        let ptu_overheats_fluid = ptu.map_or(false, |p| p.is_overheating() && p.is_rotating());
+
+        self.fluid
+            .update(context, ptu_overheats_fluid || any_pump_is_overheating);
+
+        self.reservoir
+            .update(context, reservoir_pressure, &self.fluid);
 
         self.update_shutoff_valves(controller);
         self.update_leak_measurement_valves(context, controller);
@@ -974,9 +1153,9 @@ impl HydraulicCircuit {
     fn update_pumps(
         &mut self,
         context: &UpdateContext,
-        main_section_pumps: &mut [&mut dyn PressureSource],
-        system_section_pump: Option<&mut impl PressureSource>,
-        auxiliary_section_pump: Option<&mut impl PressureSource>,
+        main_section_pumps: &mut [&mut dyn HeatingPressureSource],
+        system_section_pump: Option<&mut impl HeatingPressureSource>,
+        auxiliary_section_pump: Option<&mut impl HeatingPressureSource>,
     ) {
         for (pump_index, section) in self.pump_sections.iter_mut().enumerate() {
             section.update_pump_state(context, main_section_pumps[pump_index], &mut self.reservoir);
@@ -1026,9 +1205,9 @@ impl HydraulicCircuit {
 
     fn update_maximum_pumping_capacities(
         &mut self,
-        main_section_pumps: &mut [&mut dyn PressureSource],
-        system_section_pump: &Option<&mut impl PressureSource>,
-        auxiliary_section_pump: &Option<&mut impl PressureSource>,
+        main_section_pumps: &mut [&mut dyn HeatingPressureSource],
+        system_section_pump: &Option<&mut impl HeatingPressureSource>,
+        auxiliary_section_pump: &Option<&mut impl HeatingPressureSource>,
     ) {
         for (pump_index, section) in self.pump_sections.iter_mut().enumerate() {
             section.update_maximum_pumping_capacity(main_section_pumps[pump_index]);
@@ -1419,7 +1598,7 @@ impl Section {
         self.total_actuator_consumed_volume = Volume::new::<gallon>(0.);
     }
 
-    pub fn update_maximum_pumping_capacity(&mut self, pump: &dyn PressureSource) {
+    pub fn update_maximum_pumping_capacity(&mut self, pump: &dyn HeatingPressureSource) {
         self.max_pumpable_volume = if self.fire_valve_is_open() {
             pump.delta_vol_max()
         } else {
@@ -1440,7 +1619,7 @@ impl Section {
     pub fn update_pump_state(
         &mut self,
         context: &UpdateContext,
-        pump: &mut dyn PressureSource,
+        pump: &mut dyn HeatingPressureSource,
         reservoir: &mut Reservoir,
     ) {
         // Final volume target to reach target pressure is:
@@ -1941,6 +2120,7 @@ pub struct Reservoir {
     level_id: VariableIdentifier,
     low_level_id: VariableIdentifier,
     low_air_press_id: VariableIdentifier,
+    overheating_id: VariableIdentifier,
 
     max_capacity: Volume,
     max_gaugeable: Volume,
@@ -1956,6 +2136,11 @@ pub struct Reservoir {
     return_failure: Failure,
 
     fluid_physics: FluidPhysics,
+
+    heat_state: HeatingProperties,
+
+    total_return_flow: VolumeRate,
+    total_return_volume: Volume,
 }
 impl Reservoir {
     const MIN_USABLE_VOLUME_GAL: f64 = 0.2;
@@ -1964,6 +2149,11 @@ impl Reservoir {
 
     // Part of the fluid lost instead of returning to reservoir
     const RETURN_FAILURE_LEAK_RATIO: f64 = 0.1;
+
+    const HEATING_TIME_CONSTANT_MEAN_S: f64 = 30.;
+    const HEATING_TIME_CONSTANT_STD_S: f64 = 5.;
+    const COOLING_TIME_CONSTANT: Duration = Duration::from_secs(60 * 3);
+    const DAMAGE_TIME_CONSTANT: Duration = Duration::from_secs(60 * 5);
 
     pub fn new(
         context: &mut InitContext,
@@ -1980,6 +2170,7 @@ impl Reservoir {
                 .get_identifier(format!("HYD_{}_RESERVOIR_LEVEL_IS_LOW", hyd_loop_id)),
             low_air_press_id: context
                 .get_identifier(format!("HYD_{}_RESERVOIR_AIR_PRESSURE_IS_LOW", hyd_loop_id)),
+            overheating_id: context.get_identifier(format!("HYD_{}_RESERVOIR_OVHT", hyd_loop_id)),
 
             max_capacity,
             max_gaugeable,
@@ -1991,11 +2182,33 @@ impl Reservoir {
             air_pressure_switches,
             level_switch: LevelSwitch::new(low_level_threshold),
             fluid_physics: FluidPhysics::new(),
+
+            heat_state: HeatingProperties::new(
+                Duration::from_secs_f64(
+                    random_from_normal_distribution(
+                        Self::HEATING_TIME_CONSTANT_MEAN_S,
+                        Self::HEATING_TIME_CONSTANT_STD_S,
+                    )
+                    .max(10.),
+                ),
+                Self::COOLING_TIME_CONSTANT,
+                Self::DAMAGE_TIME_CONSTANT,
+            ),
+            total_return_flow: VolumeRate::default(),
+            total_return_volume: Volume::default(),
         }
     }
 
-    fn update(&mut self, context: &UpdateContext, air_pressure: Pressure) {
+    fn update(
+        &mut self,
+        context: &UpdateContext,
+        air_pressure: Pressure,
+        fluid: &impl HeatingElement,
+    ) {
         self.air_pressure = air_pressure;
+
+        self.update_return_flow(context);
+        self.update_heat(context, fluid);
 
         self.fluid_physics.update(context);
 
@@ -2007,6 +2220,17 @@ impl Reservoir {
         self.update_pressure_switches(context);
 
         self.update_leak_failure(context);
+    }
+
+    fn update_return_flow(&mut self, context: &UpdateContext) {
+        self.total_return_flow = self.total_return_volume / context.delta_as_time();
+        self.total_return_volume = Volume::default();
+    }
+
+    fn update_heat(&mut self, context: &UpdateContext, fluid: &impl HeatingElement) {
+        let has_fluid_return = self.total_return_flow.get::<gallon_per_second>() > 0.01;
+        self.heat_state
+            .update(context, has_fluid_return && fluid.is_overheating())
     }
 
     fn update_leak_failure(&mut self, context: &UpdateContext) {
@@ -2058,6 +2282,8 @@ impl Reservoir {
         };
 
         self.current_level = (self.current_level + volume_actually_returned).min(self.max_capacity);
+
+        self.total_return_volume += volume_actually_returned;
     }
 
     fn fluid_level_real(&self) -> Volume {
@@ -2104,11 +2330,21 @@ impl SimulationElement for Reservoir {
         writer.write(&self.level_id, self.fluid_level_from_gauge());
         writer.write(&self.low_level_id, self.is_low_level());
         writer.write(&self.low_air_press_id, self.is_low_air_pressure());
+        writer.write(&self.overheating_id, self.is_overheating());
     }
 }
 impl PressurizeableReservoir for Reservoir {
     fn available_volume(&self) -> Volume {
         self.max_capacity - self.fluid_level_real()
+    }
+}
+impl HeatingElement for Reservoir {
+    fn is_damaged(&self) -> bool {
+        self.heat_state.is_damaged()
+    }
+
+    fn is_overheating(&self) -> bool {
+        self.heat_state.is_overheating()
     }
 }
 
@@ -2180,8 +2416,10 @@ impl Pump {
 
     fn update_cavitation(&mut self, reservoir: &Reservoir) {
         self.cavitation_efficiency = if !reservoir.is_empty() {
-            self.pump_characteristics
-                .cavitation_efficiency(reservoir.air_pressure())
+            self.pump_characteristics.cavitation_efficiency(
+                reservoir.air_pressure(),
+                reservoir.heat_state.overheat_ratio(),
+            )
         } else {
             Ratio::new::<ratio>(0.)
         };
@@ -2279,13 +2517,14 @@ impl PressureSource for Pump {
 
 pub struct ElectricPump {
     cavitation_id: VariableIdentifier,
+    overheat_id: VariableIdentifier,
     pump: Pump,
     pump_physics: ElectricalPumpPhysics,
 }
 impl ElectricPump {
     pub fn new(
         context: &mut InitContext,
-        id: &str,
+        id: AirbusElectricPumpId,
         bus_type: ElectricalBusType,
         max_current: ElectricCurrent,
         pump_characteristics: PumpCharacteristics,
@@ -2293,6 +2532,7 @@ impl ElectricPump {
         let regulated_speed = pump_characteristics.regulated_speed();
         Self {
             cavitation_id: context.get_identifier(format!("HYD_{}_EPUMP_CAVITATION", id)),
+            overheat_id: context.get_identifier(format!("HYD_{}_EPUMP_OVHT", id)),
             pump: Pump::new(pump_characteristics),
             pump_physics: ElectricalPumpPhysics::new(
                 context,
@@ -2376,8 +2616,19 @@ impl SimulationElement for ElectricPump {
             &self.cavitation_id,
             self.cavitation_efficiency().get::<ratio>(),
         );
+        writer.write(&self.overheat_id, self.is_overheating());
     }
 }
+impl HeatingElement for ElectricPump {
+    fn is_damaged(&self) -> bool {
+        self.pump_physics.is_damaged()
+    }
+
+    fn is_overheating(&self) -> bool {
+        self.pump_physics.is_overheating()
+    }
+}
+impl HeatingPressureSource for ElectricPump {}
 
 pub struct EngineDrivenPump {
     active_id: VariableIdentifier,
@@ -2385,11 +2636,22 @@ pub struct EngineDrivenPump {
     is_active: bool,
     speed: AngularVelocity,
     pump: Pump,
+
+    overheat_failure: Failure,
+    heat_state: HeatingProperties,
 }
 impl EngineDrivenPump {
+    const HEATING_TIME_CONSTANT_MEAN_S: f64 = 30.;
+    const HEATING_TIME_CONSTANT_STD_S: f64 = 5.;
+
+    const COOLING_TIME_CONSTANT: Duration = Duration::from_secs(60 * 2);
+    const DAMAGE_TIME_CONSTANT: Duration = Duration::from_secs(60 * 2);
+
+    const MIN_SPEED_TO_REPORT_HEATING_RPM: f64 = 200.;
+
     pub fn new(
         context: &mut InitContext,
-        id: &str,
+        id: AirbusEngineDrivenPumpId,
         pump_characteristics: PumpCharacteristics,
     ) -> Self {
         Self {
@@ -2397,6 +2659,18 @@ impl EngineDrivenPump {
             is_active: false,
             speed: AngularVelocity::new::<revolution_per_minute>(0.),
             pump: Pump::new(pump_characteristics),
+            overheat_failure: Failure::new(FailureType::EnginePumpOverheat(id)),
+            heat_state: HeatingProperties::new(
+                Duration::from_secs_f64(
+                    random_from_normal_distribution(
+                        Self::HEATING_TIME_CONSTANT_MEAN_S,
+                        Self::HEATING_TIME_CONSTANT_STD_S,
+                    )
+                    .max(10.),
+                ),
+                Self::COOLING_TIME_CONSTANT,
+                Self::DAMAGE_TIME_CONSTANT,
+            ),
         }
     }
 
@@ -2408,9 +2682,22 @@ impl EngineDrivenPump {
         pump_speed: AngularVelocity,
         controller: &impl PumpController,
     ) {
-        self.speed = pump_speed;
+        self.heat_state.update(
+            context,
+            self.overheat_failure.is_active()
+                && pump_speed.get::<revolution_per_minute>()
+                    > Self::MIN_SPEED_TO_REPORT_HEATING_RPM,
+        );
+
+        self.speed = if !self.is_damaged() {
+            pump_speed
+        } else {
+            AngularVelocity::default()
+        };
+
         self.pump
-            .update(context, section, reservoir, pump_speed, controller);
+            .update(context, section, reservoir, self.speed, controller);
+
         self.is_active = controller.should_pressurise();
     }
 }
@@ -2443,10 +2730,25 @@ impl PressureSource for EngineDrivenPump {
     }
 }
 impl SimulationElement for EngineDrivenPump {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.overheat_failure.accept(visitor);
+        visitor.visit(self);
+    }
+
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.active_id, self.is_active);
     }
 }
+impl HeatingElement for EngineDrivenPump {
+    fn is_damaged(&self) -> bool {
+        self.heat_state.is_damaged()
+    }
+
+    fn is_overheating(&self) -> bool {
+        self.heat_state.is_overheating()
+    }
+}
+impl HeatingPressureSource for EngineDrivenPump {}
 
 struct WindTurbine {
     rpm_id: VariableIdentifier,
@@ -2682,6 +2984,8 @@ impl SimulationElement for RamAirTurbine {
         writer.write(&self.stow_position_id, self.position);
     }
 }
+impl HeatingElement for RamAirTurbine {}
+impl HeatingPressureSource for RamAirTurbine {}
 
 #[cfg(test)]
 mod tests {
@@ -2694,6 +2998,24 @@ mod tests {
     use uom::si::{f64::*, pressure::psi, ratio::percent, volume::gallon};
 
     use super::*;
+
+    struct TestFluid {
+        is_hot: bool,
+    }
+    impl TestFluid {
+        fn overheat() -> Self {
+            Self { is_hot: true }
+        }
+
+        fn nominal() -> Self {
+            Self { is_hot: false }
+        }
+    }
+    impl HeatingElement for TestFluid {
+        fn is_overheating(&self) -> bool {
+            self.is_hot
+        }
+    }
 
     #[test]
     fn section_writes_its_state() {
@@ -2820,7 +3142,7 @@ mod tests {
         }));
 
         test_bed.set_update_after_power_distribution(|reservoir, context| {
-            reservoir.update(context, Pressure::new::<psi>(50.))
+            reservoir.update(context, Pressure::new::<psi>(50.), &TestFluid::nominal())
         });
 
         test_bed.fail(FailureType::ReservoirLeak(HydraulicColor::Green));
@@ -2843,7 +3165,7 @@ mod tests {
         }));
 
         test_bed.set_update_after_power_distribution(|reservoir, context| {
-            reservoir.update(context, Pressure::new::<psi>(50.))
+            reservoir.update(context, Pressure::new::<psi>(50.), &TestFluid::nominal())
         });
 
         test_bed.fail(FailureType::ReservoirLeak(HydraulicColor::Green));
@@ -2866,7 +3188,7 @@ mod tests {
         }));
 
         test_bed.set_update_after_power_distribution(|reservoir, context| {
-            reservoir.update(context, Pressure::new::<psi>(50.))
+            reservoir.update(context, Pressure::new::<psi>(50.), &TestFluid::nominal())
         });
 
         let is_low: bool = test_bed.read_by_name("HYD_GREEN_RESERVOIR_LEVEL_IS_LOW");
@@ -2892,7 +3214,7 @@ mod tests {
         }));
 
         test_bed.set_update_after_power_distribution(|reservoir, context| {
-            reservoir.update(context, Pressure::new::<psi>(50.))
+            reservoir.update(context, Pressure::new::<psi>(50.), &TestFluid::nominal())
         });
 
         test_bed.run_multiple_frames(Duration::from_secs(2));
@@ -2919,7 +3241,7 @@ mod tests {
             )
         }))
         .with_update_after_power_distribution(|el, context| {
-            el.update(context, Pressure::new::<psi>(50.))
+            el.update(context, Pressure::new::<psi>(50.), &TestFluid::nominal())
         });
 
         test_bed.write_by_name("PLANE BANK DEGREES", 180.);
@@ -2960,6 +3282,58 @@ mod tests {
                 .command_element(|r| r.try_take_volume(Volume::new::<gallon>(1.)).get::<gallon>()),
             1.
         );
+    }
+
+    #[test]
+    fn reservoir_receiving_heating_fluid_overheats() {
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            reservoir(
+                context,
+                HydraulicColor::Green,
+                Volume::new::<gallon>(5.),
+                Volume::new::<gallon>(2.),
+                Volume::new::<gallon>(0.5),
+            )
+        }));
+
+        test_bed.set_update_after_power_distribution(|reservoir, context| {
+            reservoir.update(context, Pressure::new::<psi>(50.), &TestFluid::overheat());
+
+            reservoir.try_take_volume(Volume::new::<gallon>(0.10));
+
+            reservoir.add_return_volume(Volume::new::<gallon>(0.10));
+        });
+
+        test_bed.run_multiple_frames(Duration::from_secs_f64(
+            Reservoir::HEATING_TIME_CONSTANT_MEAN_S + 4. * Reservoir::HEATING_TIME_CONSTANT_STD_S,
+        ));
+
+        let is_overheating: bool = test_bed.read_by_name("HYD_GREEN_RESERVOIR_OVHT");
+        assert!(is_overheating);
+    }
+
+    #[test]
+    fn reservoir_receiving_zero_flow_of_heating_fluid_do_not_overheat() {
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            reservoir(
+                context,
+                HydraulicColor::Green,
+                Volume::new::<gallon>(5.),
+                Volume::new::<gallon>(2.),
+                Volume::new::<gallon>(0.5),
+            )
+        }));
+
+        test_bed.set_update_after_power_distribution(|reservoir, context| {
+            reservoir.update(context, Pressure::new::<psi>(50.), &TestFluid::overheat());
+        });
+
+        test_bed.run_multiple_frames(Duration::from_secs_f64(
+            Reservoir::HEATING_TIME_CONSTANT_MEAN_S + 4. * Reservoir::HEATING_TIME_CONSTANT_STD_S,
+        ));
+
+        let is_overheating: bool = test_bed.read_by_name("HYD_GREEN_RESERVOIR_OVHT");
+        assert!(!is_overheating);
     }
 
     fn section(
@@ -3051,7 +3425,11 @@ mod tests {
     }
 
     fn engine_driven_pump(context: &mut InitContext) -> EngineDrivenPump {
-        EngineDrivenPump::new(context, "DEFAULT", PumpCharacteristics::a320_edp())
+        EngineDrivenPump::new(
+            context,
+            AirbusEngineDrivenPumpId::Green,
+            PumpCharacteristics::a320_edp(),
+        )
     }
 
     #[cfg(test)]
