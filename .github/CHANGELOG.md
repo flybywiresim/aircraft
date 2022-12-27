@@ -11,6 +11,10 @@
 1. [FMGC] Show proper transition names and final approach slope from AAU1 - @tracernz (Mike)
 1. [FMGC] Don't accept blank input or / for hold distance - @tracernz (Mike)
 1. [ATSU] Fix LSK6L not returning to ATSU DATALINK page in ATC MENU - @BravoMike99 (Bruno_pt99#5802)
+1. [HYD] Trimmable physical assemblies - @Crocket63 (crocket)
+1. [HYD] Simulation of the rudder mechanical assembly and yaw dampers - @Crocket63 (crocket)
+1. [FLIGHTMODEL] Reduced flap induced drag - @donstim (donbikes#4084)
+1. [EFB] Fix and improve pushback system and add API documentation - @frankkopp (Frank Kopp)
 
 ## 0.9.0
 
