@@ -103,7 +103,7 @@ export class MailboxBus {
             // add buffered messages
             while (backlog.length !== 0 && messages.length !== MailboxBus.MaxMailboxFileSize) {
                 const bufferedBlock = backlog.shift();
-                const dcduMessages = [];
+                const mailboxMessages = [];
                 messages.push([]);
 
                 bufferedBlock.forEach((data) => {
@@ -117,12 +117,12 @@ export class MailboxBus {
                         }
 
                         if ((message as CpdlcMessage).MailboxRelevantMessage) {
-                            dcduMessages.push(message);
+                            mailboxMessages.push(message);
                         }
                     }
                 });
 
-                if (dcduMessages.length !== 0) {
+                if (mailboxMessages.length !== 0) {
                     this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', dcduMessages);
                 }
             }
