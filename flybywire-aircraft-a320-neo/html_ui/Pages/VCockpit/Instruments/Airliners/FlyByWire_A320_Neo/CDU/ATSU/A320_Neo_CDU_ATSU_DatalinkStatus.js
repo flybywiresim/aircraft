@@ -22,80 +22,26 @@ class CDUAtsuDatalinkStatus {
         const hfStatusCode = mcdu.atsu.getDatalinkStatus('hf');
         const hfModeCode = mcdu.atsu.getDatalinkMode('hf');
 
-        let vhfStatus, satcomStatus, hfStatus;
-        let vhfMode, satcomMode, hfMode;
+        const statusCodeToString = {
+            [-1]: '{red}INOP{end}',
+            [0]: '{small}NOT INSTALLED{end}',
+            [1]: '{small}DLK NOT AVAIL{end}',
+            [2]: '{green}DLK AVAIL{end}'
+        };
 
-        if (vhfStatusCode === -1) {
-            vhfStatus = '{red}INOP{end}';
-        } else if (vhfStatusCode === 0) {
-            vhfStatus = '{small}NOT INSTALLED{end}';
-        } else if (vhfStatusCode === 1) {
-            vhfStatus = '{small}DLK NOT AVAIL{end}';
-        } else if (vhfStatusCode === 2) {
-            vhfStatus = '{green}DLK AVAIL{end}';
-        } else {
-            vhfStatus = 'ERROR';
-        }
+        const modeCodeToString = {
+            [1]: 'ATC/AOC',
+            [2]: 'AOC ONLY',
+            [3]: 'ATC ONLY',
+            [0]: ' '
+        };
 
-        if (vhfModeCode === 1) {
-            vhfMode = 'ATC/AOC';
-        } else if (vhfModeCode === 2) {
-            vhfMode = 'AOC';
-        } else if (vhfModeCode === 3) {
-            vhfMode = 'ATC';
-        } else if (vhfModeCode === 0) {
-            vhfMode = '';
-        } else {
-            vhfMode = 'ERROR';
-        }
-
-        if (satcomStatusCode === -1) {
-            satcomStatus = '{red}INOP{end}';
-        } else if (satcomStatusCode === 0) {
-            satcomStatus = '{small}NOT INSTALLED{end}';
-        } else if (satcomStatusCode === 1) {
-            satcomStatus = '{small}DLK NOT AVAL{end}';
-        } else if (satcomStatusCode === 2) {
-            satcomStatus = '{green}DLK AVAIL{end}';
-        } else {
-            satcomStatus = 'ERROR';
-        }
-
-        if (satcomModeCode === 1) {
-            satcomMode = 'ATC/AOC';
-        } else if (satcomModeCode === 2) {
-            satcomMode = 'AOC';
-        } else if (satcomModeCode === 3) {
-            satcomMode = 'ATC';
-        } else if (satcomModeCode === 0) {
-            satcomMode = '';
-        } else {
-            satcomMode = 'ERROR';
-        }
-
-        if (hfStatusCode === -1) {
-            hfStatus = '{red}INOP{end}';
-        } else if (hfStatusCode === 0) {
-            hfStatus = '{small}NOT INSTALLED{end}';
-        } else if (hfStatusCode === 1) {
-            hfStatus = '{small}NOT INSTALLED{end}';
-        } else if (hfStatusCode === 2) {
-            hfStatus = '{green}DLK AVAIL{end}';
-        } else {
-            hfStatus = 'ERROR';
-        }
-
-        if (hfModeCode === 1) {
-            hfMode = 'ATC/AOC';
-        } else if (hfModeCode === 2) {
-            hfMode = 'AOC';
-        } else if (hfModeCode === 3) {
-            hfMode = 'ATC';
-        } else if (hfModeCode === 0) {
-            hfMode = '';
-        } else {
-            hfMode = 'ERROR';
-        }
+        const vhfStatus = statusCodeToString[vhfStatusCode] || 'ERROR';
+        const vhfMode = modeCodeToString[vhfModeCode] || 'ERROR';
+        const satcomStatus = statusCodeToString[satcomStatusCode] || 'ERROR';
+        const satcomMode = modeCodeToString[satcomModeCode] || 'ERROR';
+        const hfStatus = statusCodeToString[hfStatusCode] || 'ERROR';
+        const hfMode = modeCodeToString[hfModeCode] || 'ERROR';
 
         mcdu.setTemplate([
             ["DATALINK STATUS"],
@@ -103,9 +49,9 @@ class CDUAtsuDatalinkStatus {
             [`VHF3 : ${vhfStatus}`],
             [`\xa0\xa0\xa0\xa0\xa0\xa0\xa0${vhfMode}`],
             [`SATCOM : ${satcomStatus}`],
-            [`\xa0\xa0\xa0\xa0\xa0\xa0\xa0${satcomMode}`],
+            [`\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0${satcomMode}`],
             [`HF : ${hfStatus}`],
-            [`\xa0\xa0\xa0\xa0\xa0\xa0\xa0${hfMode}`],
+            [`\xa0\xa0\xa0\xa0\xa0${hfMode}`],
             [""],
             [""],
             [""],
@@ -131,6 +77,7 @@ class CDUAtsuDatalinkStatus {
                 `VHF3 : ${vhfStatus}`,
                 `\xa0\xa0\xa0\xa0\xa0\xa0\xa0${vhfMode}`,
                 `SATCOM : ${satcomStatus}`,
+                `\xa0\xa0\xa0\xa0\xa0\xa0\xa0${satcomMode}`,
                 `HF : ${hfStatus}`,
                 `\xa0\xa0\xa0\xa0\xa0\xa0\xa0${hfMode}`,
             ];
