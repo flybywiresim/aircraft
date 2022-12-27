@@ -40,24 +40,24 @@ export class CpdlcMessage extends AtsuMessage {
         this.Direction = AtsuMessageDirection.Downlink;
     }
 
-    public deserialize(jsonData: any): void {
+    public deserialize(jsonData: Record<string, unknown>): void {
         super.deserialize(jsonData);
 
-        jsonData.Content.forEach((element) => {
+        (jsonData.Content as CpdlcMessageElement[]).forEach((element) => {
             const entry = new CpdlcMessageElement('');
             entry.deserialize(element);
             this.Content.push(entry);
         });
         if (jsonData.Response) {
             this.Response = new CpdlcMessage();
-            this.Response.deserialize(jsonData.Response);
+            this.Response.deserialize(jsonData.Response as Record<string, unknown>);
         }
-        this.CurrentTransmissionId = jsonData.CurrentTransmissionId;
-        this.PreviousTransmissionId = jsonData.PreviousTransmissionId;
-        this.DcduRelevantMessage = jsonData.DcduRelevantMessage;
-        this.CloseAutomatically = jsonData.CloseAutomatically;
-        this.MessageMonitoring = jsonData.MessageMonitoring;
-        this.SemanticResponseRequired = jsonData.SemanticResponseRequired;
+        this.CurrentTransmissionId = jsonData.CurrentTransmissionId as number;
+        this.PreviousTransmissionId = jsonData.PreviousTransmissionId as number;
+        this.DcduRelevantMessage = jsonData.DcduRelevantMessage as boolean;
+        this.CloseAutomatically = jsonData.CloseAutomatically as boolean;
+        this.MessageMonitoring = jsonData.MessageMonitoring as CpdlcMessageMonitoringState;
+        this.SemanticResponseRequired = jsonData.SemanticResponseRequired as boolean;
     }
 
     protected serializeContent(format: AtsuMessageSerializationFormat, template: string, element: CpdlcMessageElement): string {

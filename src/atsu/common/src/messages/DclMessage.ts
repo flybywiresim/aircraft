@@ -56,16 +56,16 @@ export class DclMessage extends CpdlcMessage {
     }
 
     // used to deserialize event data
-    public deserialize(jsonData: any): void {
+    public deserialize(jsonData: Record<string, unknown>): void {
         super.deserialize(jsonData);
 
-        this.Callsign = jsonData.Callsign;
-        this.Origin = jsonData.Origin;
-        this.Destination = jsonData.Destination;
-        this.AcType = jsonData.AcType;
-        this.Gate = jsonData.Gate;
-        this.Atis = jsonData.Atis;
-        this.Freetext = jsonData.Freetext;
+        this.Callsign = jsonData.Callsign as string;
+        this.Origin = jsonData.Origin as string;
+        this.Destination = jsonData.Destination as string;
+        this.AcType = jsonData.AcType as string;
+        this.Gate = jsonData.Gate as string;
+        this.Atis = jsonData.Atis as string;
+        this.Freetext = jsonData.Freetext as string[];
     }
 }
 

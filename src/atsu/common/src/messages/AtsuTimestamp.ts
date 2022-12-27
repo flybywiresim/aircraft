@@ -15,11 +15,11 @@ export class AtsuTimestamp {
 
     public Seconds: number = SimVar.GetSimVarValue('E:ZULU TIME', 'seconds');
 
-    public deserialize(jsonData) {
-        this.Year = jsonData.Year;
-        this.Month = jsonData.Month;
-        this.Day = jsonData.Day;
-        this.Seconds = jsonData.Seconds;
+    public deserialize(jsonData: Record<string, unknown>) {
+        this.Year = jsonData.Year as number;
+        this.Month = jsonData.Month as number;
+        this.Day = jsonData.Day as number;
+        this.Seconds = jsonData.Seconds as number;
     }
 
     public dcduTimestamp(): string {

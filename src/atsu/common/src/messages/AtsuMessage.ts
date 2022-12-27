@@ -69,17 +69,17 @@ export class AtsuMessage {
 
     // used to deserialize event data
     public deserialize(jsonData: Record<string, unknown>) {
-        this.Network = jsonData.Network;
-        this.UniqueMessageID = jsonData.UniqueMessageID;
+        this.Network = jsonData.Network as AtsuMessageNetwork;
+        this.UniqueMessageID = jsonData.UniqueMessageID as number;
         if (jsonData.Timestamp) {
             this.Timestamp = new AtsuTimestamp();
             this.Timestamp.deserialize(jsonData.Timestamp);
         }
-        this.Station = jsonData.Station;
-        this.ComStatus = jsonData.ComStatus;
-        this.Type = jsonData.Type;
-        this.Direction = jsonData.Direction;
-        this.Confirmed = jsonData.Confirmed;
-        this.Message = jsonData.Message;
+        this.Station = jsonData.Station as string;
+        this.ComStatus = jsonData.ComStatus as AtsuMessageComStatus;
+        this.Type = jsonData.Type as AtsuMessageType;
+        this.Direction = jsonData.Direction as AtsuMessageDirection;
+        this.Confirmed = jsonData.Confirmed as boolean;
+        this.Message = jsonData.Message as string;
     }
 }
