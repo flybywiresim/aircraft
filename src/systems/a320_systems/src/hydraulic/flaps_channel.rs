@@ -9,6 +9,8 @@ use systems::{
 use std::panic;
 use uom::si::{angle::degree, f64::*, velocity::knot};
 
+use crate::hydraulic::SlatFlapControlComputerMisc;
+
 pub struct FlapsChannel {
     flaps_fppu_angle_id: VariableIdentifier,
 
@@ -40,7 +42,6 @@ impl FlapsChannel {
     const FLAP_RESTORE_SPEED: f64 = 170.; //kts
 
     const FLAP_POSITIONING_THRESHOLD: f64 = 6.7; //deg
-    const ENLARGED_TARGET_THRESHOLD_DEGREE: f64 = 0.8; //deg
 
     const CONF1_FLAPS_DEGREES: f64 = 0.;
     const CONF1F_FLAPS_DEGREES: f64 = 120.21;
@@ -71,22 +72,6 @@ impl FlapsChannel {
             flaps_demanded_angle: Angle::new::<degree>(0.),
             flaps_feedback_angle: Angle::new::<degree>(0.),
         }
-    }
-
-    fn below_enlarged_target_range(position: Angle, target_position: Angle) -> bool {
-        let tolerance = Angle::new::<degree>(Self::ENLARGED_TARGET_THRESHOLD_DEGREE);
-        position < target_position - tolerance
-    }
-
-    fn in_enlarged_target_range(position: Angle, target_position: Angle) -> bool {
-        let tolerance = Angle::new::<degree>(Self::ENLARGED_TARGET_THRESHOLD_DEGREE);
-        position > target_position - tolerance && position < target_position + tolerance
-    }
-
-    fn in_or_above_enlarged_target_range(position: Angle, target_position: Angle) -> bool {
-        let tolerance = Angle::new::<degree>(Self::ENLARGED_TARGET_THRESHOLD_DEGREE);
-        Self::in_enlarged_target_range(position, target_position)
-            || position >= target_position + tolerance
     }
 
     // Returns a flap demanded angle in FPPU reference degree (feedback sensor)
@@ -195,7 +180,7 @@ impl FlapsChannel {
             (Some(cas1), _)
                 if flaps_handle.previous_position() == CSUPosition::Conf0
                     && flaps_handle.current_position() == CSUPosition::Conf1
-                    && Self::below_enlarged_target_range(
+                    && SlatFlapControlComputerMisc::below_enlarged_target_range(
                         self.flaps_feedback_angle,
                         self.conf1f_flaps,
                     )
@@ -208,7 +193,7 @@ impl FlapsChannel {
             (_, Some(cas2))
                 if flaps_handle.previous_position() == CSUPosition::Conf0
                     && flaps_handle.current_position() == CSUPosition::Conf1
-                    && Self::below_enlarged_target_range(
+                    && SlatFlapControlComputerMisc::below_enlarged_target_range(
                         self.flaps_feedback_angle,
                         self.conf1f_flaps,
                     )
@@ -223,7 +208,7 @@ impl FlapsChannel {
                     || flaps_handle.previous_position() == CSUPosition::Conf3
                     || flaps_handle.previous_position() == CSUPosition::ConfFull)
                     && flaps_handle.current_position() == CSUPosition::Conf1
-                    && !Self::in_enlarged_target_range(
+                    && !SlatFlapControlComputerMisc::in_enlarged_target_range(
                         self.flaps_feedback_angle,
                         self.conf1_flaps,
                     )
@@ -238,7 +223,7 @@ impl FlapsChannel {
                     || flaps_handle.previous_position() == CSUPosition::Conf3
                     || flaps_handle.previous_position() == CSUPosition::ConfFull)
                     && flaps_handle.current_position() == CSUPosition::Conf1
-                    && !Self::in_enlarged_target_range(
+                    && !SlatFlapControlComputerMisc::in_enlarged_target_range(
                         self.flaps_feedback_angle,
                         self.conf1_flaps,
                     )
@@ -253,7 +238,7 @@ impl FlapsChannel {
                     || flaps_handle.previous_position() == CSUPosition::Conf3
                     || flaps_handle.previous_position() == CSUPosition::ConfFull)
                     && flaps_handle.current_position() == CSUPosition::Conf1
-                    && Self::in_enlarged_target_range(
+                    && SlatFlapControlComputerMisc::in_enlarged_target_range(
                         self.flaps_feedback_angle,
                         self.conf1_flaps,
                     )
@@ -268,7 +253,7 @@ impl FlapsChannel {
                     || flaps_handle.previous_position() == CSUPosition::Conf3
                     || flaps_handle.previous_position() == CSUPosition::ConfFull)
                     && flaps_handle.current_position() == CSUPosition::Conf1
-                    && Self::in_enlarged_target_range(
+                    && SlatFlapControlComputerMisc::in_enlarged_target_range(
                         self.flaps_feedback_angle,
                         self.conf1_flaps,
                     )
@@ -281,7 +266,7 @@ impl FlapsChannel {
             (Some(cas1), _)
                 if flaps_handle.previous_position() == CSUPosition::Conf0
                     && flaps_handle.current_position() == CSUPosition::Conf1
-                    && Self::in_or_above_enlarged_target_range(
+                    && SlatFlapControlComputerMisc::in_or_above_enlarged_target_range(
                         self.flaps_feedback_angle,
                         self.conf1f_flaps,
                     )
@@ -294,7 +279,7 @@ impl FlapsChannel {
             (_, Some(cas2))
                 if flaps_handle.previous_position() == CSUPosition::Conf0
                     && flaps_handle.current_position() == CSUPosition::Conf1
-                    && Self::in_or_above_enlarged_target_range(
+                    && SlatFlapControlComputerMisc::in_or_above_enlarged_target_range(
                         self.flaps_feedback_angle,
                         self.conf1f_flaps,
                     )
@@ -394,7 +379,7 @@ impl FlapsChannel {
                 (Some(cas1), Some(cas2))
                     if ((cas1 <= self.kts_100 && cas2 >= self.kts_210)
                         || (cas1 >= self.kts_210 && cas2 <= self.kts_100))
-                        && Self::in_enlarged_target_range(
+                        && SlatFlapControlComputerMisc::in_enlarged_target_range(
                             self.flaps_feedback_angle,
                             self.conf1_flaps,
                         ) =>
@@ -405,7 +390,7 @@ impl FlapsChannel {
                 (Some(cas1), Some(cas2))
                     if ((cas1 <= self.kts_100 && cas2 >= self.kts_210)
                         || (cas1 >= self.kts_210 && cas2 <= self.kts_100))
-                        && Self::in_or_above_enlarged_target_range(
+                        && SlatFlapControlComputerMisc::in_or_above_enlarged_target_range(
                             self.flaps_feedback_angle,
                             self.conf1f_flaps,
                         ) =>
@@ -416,7 +401,7 @@ impl FlapsChannel {
                 (Some(cas1), _)
                     if cas1 > self.kts_100
                         && cas1 < self.kts_210
-                        && Self::in_or_above_enlarged_target_range(
+                        && SlatFlapControlComputerMisc::in_or_above_enlarged_target_range(
                             self.flaps_feedback_angle,
                             self.conf1f_flaps,
                         ) =>
@@ -427,7 +412,7 @@ impl FlapsChannel {
                 (_, Some(cas2))
                     if cas2 > self.kts_100
                         && cas2 < self.kts_210
-                        && Self::in_or_above_enlarged_target_range(
+                        && SlatFlapControlComputerMisc::in_or_above_enlarged_target_range(
                             self.flaps_feedback_angle,
                             self.conf1f_flaps,
                         ) =>
@@ -438,7 +423,7 @@ impl FlapsChannel {
                 (Some(cas1), _)
                     if cas1 > self.kts_100
                         && cas1 < self.kts_210
-                        && Self::in_enlarged_target_range(
+                        && SlatFlapControlComputerMisc::in_enlarged_target_range(
                             self.flaps_feedback_angle,
                             self.conf1_flaps,
                         ) =>
@@ -449,7 +434,7 @@ impl FlapsChannel {
                 (_, Some(cas2))
                     if cas2 > self.kts_100
                         && cas2 < self.kts_210
-                        && Self::in_enlarged_target_range(
+                        && SlatFlapControlComputerMisc::in_enlarged_target_range(
                             self.flaps_feedback_angle,
                             self.conf1_flaps,
                         ) =>
@@ -516,7 +501,10 @@ impl FlapsChannel {
 
     pub fn get_bit_26_system_status_word(&self) -> bool {
         if self.flap_auto_command_active && self.auto_command_angle == self.conf1_flaps {
-            if Self::in_enlarged_target_range(self.flaps_feedback_angle, self.conf1f_flaps)
+            if SlatFlapControlComputerMisc::in_enlarged_target_range(
+                self.flaps_feedback_angle,
+                self.conf1f_flaps,
+            )
             // Check flaps movement
             {
                 return false;
@@ -529,9 +517,15 @@ impl FlapsChannel {
 
     pub fn get_bit_29_component_status_word(&self) -> bool {
         if self.flap_auto_command_active && self.auto_command_angle == self.conf1_flaps {
-            if !Self::in_enlarged_target_range(self.flaps_feedback_angle, self.conf1_flaps) {
+            if !SlatFlapControlComputerMisc::in_enlarged_target_range(
+                self.flaps_feedback_angle,
+                self.conf1_flaps,
+            ) {
                 return true;
-            } else if Self::in_enlarged_target_range(self.flaps_feedback_angle, self.conf1f_flaps) {
+            } else if SlatFlapControlComputerMisc::in_enlarged_target_range(
+                self.flaps_feedback_angle,
+                self.conf1f_flaps,
+            ) {
                 return false;
             }
         }

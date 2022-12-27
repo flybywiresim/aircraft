@@ -8,6 +8,8 @@ use systems::{
 
 use uom::si::{angle::degree, f64::*, velocity::knot};
 
+use crate::hydraulic::SlatFlapControlComputerMisc;
+
 pub struct SlatsChannel {
     slats_fppu_angle_id: VariableIdentifier,
     slat_lock_engaged_id: VariableIdentifier,
@@ -29,8 +31,6 @@ pub struct SlatsChannel {
 }
 
 impl SlatsChannel {
-    const ENLARGED_TARGET_THRESHOLD_DEGREE: f64 = 0.8; //deg
-
     const CONF1_SLATS_DEGREES: f64 = 222.27; //deg
     const SLAT_LOCK_ACTIVE_SPEED_KNOTS: f64 = 60.; //kts
     const SLAT_LOCK_LOW_SPEED_KNOTS: f64 = 148.; //deg
@@ -58,17 +58,6 @@ impl SlatsChannel {
             slats_demanded_angle: Angle::new::<degree>(0.),
             slats_feedback_angle: Angle::new::<degree>(0.),
         }
-    }
-
-    fn in_enlarged_target_range(position: Angle, target_position: Angle) -> bool {
-        let tolerance = Angle::new::<degree>(Self::ENLARGED_TARGET_THRESHOLD_DEGREE);
-        position > target_position - tolerance && position < target_position + tolerance
-    }
-
-    fn in_or_above_enlarged_target_range(position: Angle, target_position: Angle) -> bool {
-        let tolerance = Angle::new::<degree>(Self::ENLARGED_TARGET_THRESHOLD_DEGREE);
-        Self::in_enlarged_target_range(position, target_position)
-            || position >= target_position + tolerance
     }
 
     // Returns a slat demanded angle in FPPU reference degree (feedback sensor)
@@ -126,7 +115,7 @@ impl SlatsChannel {
             Some(aoa)
                 if aoa > self.slat_lock_high_aoa
                     && flaps_handle.current_position() == CSUPosition::Conf0
-                    && Self::in_or_above_enlarged_target_range(
+                    && SlatFlapControlComputerMisc::in_or_above_enlarged_target_range(
                         self.slats_feedback_angle,
                         self.conf1_slats,
                     ) =>
@@ -195,7 +184,7 @@ impl SlatsChannel {
             Some(cas)
                 if cas < self.slat_lock_low_cas
                     && flaps_handle.current_position() == CSUPosition::Conf0
-                    && Self::in_or_above_enlarged_target_range(
+                    && SlatFlapControlComputerMisc::in_or_above_enlarged_target_range(
                         self.slats_feedback_angle,
                         self.conf1_slats,
                     ) =>
@@ -244,6 +233,39 @@ impl SlatsChannel {
             cas.unwrap_or_default().get::<knot>(),
             aoa.unwrap_or_default().get::<degree>()
         );
+    }
+
+    pub fn powerup_reset(
+        &mut self,
+        flaps_handle: &impl FlapsHandle,
+        slats_feedback_angle: &impl FeedbackPositionPickoffUnit,
+        aoa: Option<Angle>,
+        cas: Option<Velocity>,
+    ) {
+        self.slats_feedback_angle = slats_feedback_angle.angle();
+
+        println!("powerup_reset");
+
+        if flaps_handle.current_position() != CSUPosition::Conf0 {
+            self.slat_baulk_engaged = false;
+            self.slat_alpha_lock_engaged = false;
+            return;
+        }
+
+        match (cas, aoa) {
+            (Some(cas), Some(aoa))
+                if aoa < self.slat_lock_high_aoa && cas > self.slat_lock_low_cas =>
+            {
+                self.slat_baulk_engaged = false;
+                self.slat_alpha_lock_engaged = false;
+            }
+            // Should slat retraction inhibit be done at powerup_reset before
+            // the update function is run?
+            (_, _) => {
+                self.slat_baulk_engaged = false;
+                self.slat_alpha_lock_engaged = false;
+            }
+        }
     }
 
     pub fn update(

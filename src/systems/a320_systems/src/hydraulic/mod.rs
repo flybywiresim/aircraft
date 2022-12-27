@@ -74,6 +74,7 @@ use systems::{
 
 mod sfcc_computer;
 use sfcc_computer::SlatFlapComplex;
+use sfcc_computer::SlatFlapControlComputerMisc;
 
 mod flaps_channel;
 mod slats_channel;

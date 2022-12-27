@@ -18,6 +18,27 @@ use crate::hydraulic::slats_channel::SlatsChannel;
 use std::{panic, time::Duration};
 use uom::si::{angle::degree, f64::*, power::watt, velocity::knot};
 
+pub struct SlatFlapControlComputerMisc {}
+impl SlatFlapControlComputerMisc {
+    const ENLARGED_TARGET_THRESHOLD_DEGREE: f64 = 0.8; //deg
+
+    pub fn below_enlarged_target_range(position: Angle, target_position: Angle) -> bool {
+        let tolerance = Angle::new::<degree>(Self::ENLARGED_TARGET_THRESHOLD_DEGREE);
+        position < target_position - tolerance
+    }
+
+    pub fn in_enlarged_target_range(position: Angle, target_position: Angle) -> bool {
+        let tolerance = Angle::new::<degree>(Self::ENLARGED_TARGET_THRESHOLD_DEGREE);
+        position > target_position - tolerance && position < target_position + tolerance
+    }
+
+    pub fn in_or_above_enlarged_target_range(position: Angle, target_position: Angle) -> bool {
+        let tolerance = Angle::new::<degree>(Self::ENLARGED_TARGET_THRESHOLD_DEGREE);
+        Self::in_enlarged_target_range(position, target_position)
+            || position >= target_position + tolerance
+    }
+}
+
 struct SlatFlapControlComputer {
     flap_channel: FlapsChannel,
     slat_channel: SlatsChannel,
@@ -195,6 +216,13 @@ impl SlatFlapControlComputer {
                     self.cas1,
                     self.cas2,
                     self.cas_min,
+                );
+
+                self.slat_channel.powerup_reset(
+                    flaps_handle,
+                    slats_feedback,
+                    self.aoa,
+                    self.cas_max,
                 );
             }
             self.power_off_length = Duration::ZERO;
