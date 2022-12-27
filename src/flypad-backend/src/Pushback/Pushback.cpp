@@ -71,13 +71,13 @@ void Pushback::onUpdate(double deltaTime) {
 
   // As we might use the elevator for taxiing we compensate for wind to avoid
   // the aircraft lifting any gears.
-  const FLOAT64 windCounterRotAccel = getWindVelBodyZ() / 1000.0;
+  const FLOAT64 windCounterRotAccel = getWindVelBodyZ() / 2000.0;
   FLOAT64 movementCounterRotAccel = windCounterRotAccel;
   if (inertiaSpeed > 0) {
-    movementCounterRotAccel -= 1.1;
+    movementCounterRotAccel -= 0.5;
   }
   else if (inertiaSpeed < 0) {
-    movementCounterRotAccel += 2.0;
+    movementCounterRotAccel += 1.0;
   }
   else {
     movementCounterRotAccel = 0.0;

@@ -145,10 +145,6 @@ const Rudder = ({ x, y }: ComponentPositionProps) => {
     const [rudderDeflectionState] = useSimVar('L:A32NX_HYD_RUDDER_DEFLECTION', 'Percent', 50);
     const rudderAngle = -rudderDeflectionState * 25 / 100;
 
-    // Rudder trim
-    const [rudderTrimState] = useSimVar('RUDDER TRIM PCT', 'percent over 100', 100);
-    const rudderTrimAngle = -rudderTrimState * 20;
-
     const hydraulics = useHydraulics();
     const hydraulicAvailableClass = hydraulics.G.available || hydraulics.B.available || hydraulics.Y.available ? 'GreenLine' : 'AmberLine';
 
@@ -168,7 +164,7 @@ const Rudder = ({ x, y }: ComponentPositionProps) => {
 
             <RudderTravelLimit />
 
-            <g id="rudderCursor" transform={`rotate(${rudderAngle + rudderTrimAngle} 0 26)`}>
+            <g id="rudderCursor" transform={`rotate(${rudderAngle} 0 26)`}>
                 <path id="rudderCircle" className={hydraulicAvailableClass} d="M -9 93 A 9 9 0 0 1 9 93" />
                 <path id="rudderTail" className={hydraulicAvailableClass} d="M-9 93 l9 57 l9,-57" />
             </g>
