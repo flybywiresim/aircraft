@@ -2,6 +2,7 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 import { DatalinkModeCode, DatalinkStatusCode } from '@atsu/DatalinkStatusCodes';
+import { NXDataStore } from '@shared/persistence';
 import { AtsuStatusCodes } from '../AtsuStatusCodes';
 import { Atsu } from '../ATSU';
 import { CpdlcMessage } from '../messages/CpdlcMessage';
@@ -195,7 +196,10 @@ export class Datalink {
     }
 
     public satcomDatalinkStatus() {
-        return DatalinkStatusCode.DlkNotAvail;
+        if (NXDataStore.get('MODEL_SATCOM_ENABLED') === '1') {
+            return DatalinkStatusCode.DlkNotAvail;
+        }
+        return DatalinkStatusCode.NotInstalled;
     }
 
     public satcomDatalinkMode() {
