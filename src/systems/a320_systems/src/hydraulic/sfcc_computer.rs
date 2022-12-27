@@ -78,7 +78,7 @@ impl SlatFlapControlComputer {
     const SFCC_TRANSPARENCY_TIME: u64 = 200; //ms
     const MAX_POWER_CONSUMPTION_WATT: f64 = 90.; //W
 
-    fn new(context: &mut InitContext, powered_by: ElectricalBusType) -> Self {
+    fn new(context: &mut InitContext, number: usize, powered_by: ElectricalBusType) -> Self {
         Self {
             flap_channel: FlapsChannel::new(context),
             slat_channel: SlatsChannel::new(context),
@@ -86,15 +86,15 @@ impl SlatFlapControlComputer {
             flaps_conf_index_id: context.get_identifier("FLAPS_CONF_INDEX".to_owned()),
 
             slat_flap_component_status_word_id: context
-                .get_identifier("SFCC_SLAT_FLAP_COMPONENT_STATUS_WORD".to_owned()),
+                .get_identifier(format!("SFCC_{}_SLAT_FLAP_COMPONENT_STATUS_WORD", number)),
             slat_flap_system_status_word_id: context
-                .get_identifier("SFCC_SLAT_FLAP_SYSTEM_STATUS_WORD".to_owned()),
+                .get_identifier(format!("SFCC_{}_SLAT_FLAP_SYSTEM_STATUS_WORD", number)),
             slat_flap_actual_position_word_id: context
-                .get_identifier("SFCC_SLAT_FLAP_ACTUAL_POSITION_WORD".to_owned()),
+                .get_identifier(format!("SFCC_{}_SLAT_FLAP_ACTUAL_POSITION_WORD", number)),
             slat_actual_position_word_id: context
-                .get_identifier("SFCC_SLAT_ACTUAL_POSITION_WORD".to_owned()),
+                .get_identifier(format!("SFCC_{}_SLAT_ACTUAL_POSITION_WORD", number)),
             flap_actual_position_word_id: context
-                .get_identifier("SFCC_FLAP_ACTUAL_POSITION_WORD".to_owned()),
+                .get_identifier(format!("SFCC_{}_FLAP_ACTUAL_POSITION_WORD", number)),
 
             powered_by: powered_by,
             consumed_power: Power::new::<watt>(Self::MAX_POWER_CONSUMPTION_WATT),
@@ -527,8 +527,8 @@ impl SlatFlapComplex {
     pub fn new(context: &mut InitContext) -> Self {
         Self {
             sfcc: [
-                SlatFlapControlComputer::new(context, ElectricalBusType::DirectCurrentEssential),
-                SlatFlapControlComputer::new(context, ElectricalBusType::DirectCurrent(2)),
+                SlatFlapControlComputer::new(context, 1, ElectricalBusType::DirectCurrentEssential),
+                SlatFlapControlComputer::new(context, 2, ElectricalBusType::DirectCurrent(2)),
             ],
             flaps_handle: CommandSensorUnit::new(context),
         }
@@ -926,24 +926,24 @@ mod tests {
             self.read_by_name("FLAPS_HANDLE_INDEX")
         }
 
-        fn read_slat_flap_system_status_word(&mut self) -> Arinc429Word<u32> {
-            self.read_by_name("SFCC_SLAT_FLAP_SYSTEM_STATUS_WORD")
+        fn read_slat_flap_system_status_word(&mut self, number: usize) -> Arinc429Word<u32> {
+            self.read_by_name(&format!("SFCC_{}_SLAT_FLAP_SYSTEM_STATUS_WORD", number))
         }
 
-        fn read_slat_flap_actual_position_word(&mut self) -> Arinc429Word<u32> {
-            self.read_by_name("SFCC_SLAT_FLAP_ACTUAL_POSITION_WORD")
+        fn read_slat_flap_actual_position_word(&mut self, number: usize) -> Arinc429Word<u32> {
+            self.read_by_name(&format!("SFCC_{}_SLAT_FLAP_ACTUAL_POSITION_WORD", number))
         }
 
-        fn read_slat_flap_component_status_word(&mut self) -> Arinc429Word<u32> {
-            self.read_by_name("SFCC_SLAT_FLAP_COMPONENT_STATUS_WORD")
+        fn read_slat_flap_component_status_word(&mut self, number: usize) -> Arinc429Word<u32> {
+            self.read_by_name(&format!("SFCC_{}_SLAT_FLAP_COMPONENT_STATUS_WORD", number))
         }
 
-        fn read_slat_actual_position_word(&mut self) -> Arinc429Word<u32> {
-            self.read_by_name("SFCC_SLAT_ACTUAL_POSITION_WORD")
+        fn read_slat_actual_position_word(&mut self, number: usize) -> Arinc429Word<u32> {
+            self.read_by_name(&format!("SFCC_{}_SLAT_ACTUAL_POSITION_WORD", number))
         }
 
-        fn read_flap_actual_position_word(&mut self) -> Arinc429Word<u32> {
-            self.read_by_name("SFCC_FLAP_ACTUAL_POSITION_WORD")
+        fn read_flap_actual_position_word(&mut self, number: usize) -> Arinc429Word<u32> {
+            self.read_by_name(&format!("SFCC_{}_FLAP_ACTUAL_POSITION_WORD", number))
         }
 
         fn set_indicated_airspeed(mut self, indicated_airspeed: f64) -> Self {
@@ -1064,11 +1064,17 @@ mod tests {
     fn flaps_simvars() {
         let test_bed = test_bed_with().run_one_tick();
 
-        assert!(test_bed.contains_variable_with_name("SFCC_SLAT_FLAP_COMPONENT_STATUS_WORD"));
-        assert!(test_bed.contains_variable_with_name("SFCC_SLAT_FLAP_SYSTEM_STATUS_WORD"));
-        assert!(test_bed.contains_variable_with_name("SFCC_SLAT_FLAP_ACTUAL_POSITION_WORD"));
-        assert!(test_bed.contains_variable_with_name("SFCC_SLAT_ACTUAL_POSITION_WORD"));
-        assert!(test_bed.contains_variable_with_name("SFCC_FLAP_ACTUAL_POSITION_WORD"));
+        assert!(test_bed.contains_variable_with_name("SFCC_1_SLAT_FLAP_COMPONENT_STATUS_WORD"));
+        assert!(test_bed.contains_variable_with_name("SFCC_1_SLAT_FLAP_SYSTEM_STATUS_WORD"));
+        assert!(test_bed.contains_variable_with_name("SFCC_1_SLAT_FLAP_ACTUAL_POSITION_WORD"));
+        assert!(test_bed.contains_variable_with_name("SFCC_1_SLAT_ACTUAL_POSITION_WORD"));
+        assert!(test_bed.contains_variable_with_name("SFCC_1_FLAP_ACTUAL_POSITION_WORD"));
+
+        assert!(test_bed.contains_variable_with_name("SFCC_2_SLAT_FLAP_COMPONENT_STATUS_WORD"));
+        assert!(test_bed.contains_variable_with_name("SFCC_2_SLAT_FLAP_SYSTEM_STATUS_WORD"));
+        assert!(test_bed.contains_variable_with_name("SFCC_2_SLAT_FLAP_ACTUAL_POSITION_WORD"));
+        assert!(test_bed.contains_variable_with_name("SFCC_2_SLAT_ACTUAL_POSITION_WORD"));
+        assert!(test_bed.contains_variable_with_name("SFCC_2_FLAP_ACTUAL_POSITION_WORD"));
 
         assert!(test_bed.contains_variable_with_name("LEFT_FLAPS_ANGLE"));
         assert!(test_bed.contains_variable_with_name("RIGHT_FLAPS_ANGLE"));
@@ -1097,19 +1103,19 @@ mod tests {
         assert!(!test_bed.get_recovered_power());
         assert!(test_bed.get_power_off_duration() > Duration::from_secs_f32(2.8));
         assert!(test_bed
-            .read_slat_flap_system_status_word()
+            .read_slat_flap_system_status_word(1)
             .is_no_computed_data());
         assert!(test_bed
-            .read_slat_flap_actual_position_word()
+            .read_slat_flap_actual_position_word(1)
             .is_no_computed_data());
         assert!(test_bed
-            .read_slat_flap_component_status_word()
+            .read_slat_flap_component_status_word(1)
             .is_no_computed_data());
         assert!(test_bed
-            .read_slat_actual_position_word()
+            .read_slat_actual_position_word(1)
             .is_no_computed_data());
         assert!(test_bed
-            .read_flap_actual_position_word()
+            .read_flap_actual_position_word(1)
             .is_no_computed_data());
 
         println!("POWER ON");
@@ -1121,19 +1127,19 @@ mod tests {
         assert!(!test_bed.get_recovered_power());
         assert_eq!(test_bed.get_power_off_duration(), Duration::ZERO);
         assert!(test_bed
-            .read_slat_flap_system_status_word()
+            .read_slat_flap_system_status_word(1)
             .is_normal_operation());
         assert!(test_bed
-            .read_slat_flap_actual_position_word()
+            .read_slat_flap_actual_position_word(1)
             .is_normal_operation());
         assert!(test_bed
-            .read_slat_flap_component_status_word()
+            .read_slat_flap_component_status_word(1)
             .is_normal_operation());
         assert!(test_bed
-            .read_slat_actual_position_word()
+            .read_slat_actual_position_word(1)
             .is_normal_operation());
         assert!(test_bed
-            .read_flap_actual_position_word()
+            .read_flap_actual_position_word(1)
             .is_normal_operation());
     }
 
@@ -1299,24 +1305,24 @@ mod tests {
             .set_flaps_handle_position(0)
             .run_one_tick();
 
-        assert!(test_bed.read_slat_flap_system_status_word().get_bit(17));
-        assert!(!test_bed.read_slat_flap_system_status_word().get_bit(18));
-        assert!(!test_bed.read_slat_flap_system_status_word().get_bit(19));
-        assert!(!test_bed.read_slat_flap_system_status_word().get_bit(20));
-        assert!(!test_bed.read_slat_flap_system_status_word().get_bit(21));
-        assert!(!test_bed.read_slat_flap_system_status_word().get_bit(26));
+        assert!(test_bed.read_slat_flap_system_status_word(1).get_bit(17));
+        assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(18));
+        assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(19));
+        assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(20));
+        assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(21));
+        assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(26));
 
         test_bed = test_bed.run_waiting_for(Duration::from_secs(10));
 
-        assert!(test_bed.read_slat_flap_actual_position_word().get_bit(12));
-        assert!(!test_bed.read_slat_flap_actual_position_word().get_bit(13));
-        assert!(!test_bed.read_slat_flap_actual_position_word().get_bit(14));
-        assert!(!test_bed.read_slat_flap_actual_position_word().get_bit(15));
-        assert!(test_bed.read_slat_flap_actual_position_word().get_bit(19));
-        assert!(!test_bed.read_slat_flap_actual_position_word().get_bit(20));
-        assert!(!test_bed.read_slat_flap_actual_position_word().get_bit(21));
-        assert!(!test_bed.read_slat_flap_actual_position_word().get_bit(22));
-        assert!(!test_bed.read_slat_flap_actual_position_word().get_bit(23));
+        assert!(test_bed.read_slat_flap_actual_position_word(1).get_bit(12));
+        assert!(!test_bed.read_slat_flap_actual_position_word(1).get_bit(13));
+        assert!(!test_bed.read_slat_flap_actual_position_word(1).get_bit(14));
+        assert!(!test_bed.read_slat_flap_actual_position_word(1).get_bit(15));
+        assert!(test_bed.read_slat_flap_actual_position_word(1).get_bit(19));
+        assert!(!test_bed.read_slat_flap_actual_position_word(1).get_bit(20));
+        assert!(!test_bed.read_slat_flap_actual_position_word(1).get_bit(21));
+        assert!(!test_bed.read_slat_flap_actual_position_word(1).get_bit(22));
+        assert!(!test_bed.read_slat_flap_actual_position_word(1).get_bit(23));
     }
 
     #[test]
@@ -1331,24 +1337,24 @@ mod tests {
 
         println!("Flaps {}", test_bed.get_flaps_fppu_feedback());
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1);
-        assert!(!test_bed.read_slat_flap_system_status_word().get_bit(17));
-        assert!(test_bed.read_slat_flap_system_status_word().get_bit(18));
-        assert!(!test_bed.read_slat_flap_system_status_word().get_bit(19));
-        assert!(!test_bed.read_slat_flap_system_status_word().get_bit(20));
-        assert!(!test_bed.read_slat_flap_system_status_word().get_bit(21));
-        assert!(test_bed.read_slat_flap_system_status_word().get_bit(26));
+        assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(17));
+        assert!(test_bed.read_slat_flap_system_status_word(1).get_bit(18));
+        assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(19));
+        assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(20));
+        assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(21));
+        assert!(test_bed.read_slat_flap_system_status_word(1).get_bit(26));
 
         test_bed = test_bed.run_waiting_for(Duration::from_secs(31));
 
-        assert!(!test_bed.read_slat_flap_actual_position_word().get_bit(12));
-        assert!(test_bed.read_slat_flap_actual_position_word().get_bit(13));
-        assert!(!test_bed.read_slat_flap_actual_position_word().get_bit(14));
-        assert!(!test_bed.read_slat_flap_actual_position_word().get_bit(15));
-        assert!(test_bed.read_slat_flap_actual_position_word().get_bit(19));
-        assert!(!test_bed.read_slat_flap_actual_position_word().get_bit(20));
-        assert!(!test_bed.read_slat_flap_actual_position_word().get_bit(21));
-        assert!(!test_bed.read_slat_flap_actual_position_word().get_bit(22));
-        assert!(!test_bed.read_slat_flap_actual_position_word().get_bit(23));
+        assert!(!test_bed.read_slat_flap_actual_position_word(1).get_bit(12));
+        assert!(test_bed.read_slat_flap_actual_position_word(1).get_bit(13));
+        assert!(!test_bed.read_slat_flap_actual_position_word(1).get_bit(14));
+        assert!(!test_bed.read_slat_flap_actual_position_word(1).get_bit(15));
+        assert!(test_bed.read_slat_flap_actual_position_word(1).get_bit(19));
+        assert!(!test_bed.read_slat_flap_actual_position_word(1).get_bit(20));
+        assert!(!test_bed.read_slat_flap_actual_position_word(1).get_bit(21));
+        assert!(!test_bed.read_slat_flap_actual_position_word(1).get_bit(22));
+        assert!(!test_bed.read_slat_flap_actual_position_word(1).get_bit(23));
     }
 
     #[test]
@@ -1361,24 +1367,24 @@ mod tests {
             .set_flaps_handle_position(1)
             .run_one_tick();
 
-        assert!(!test_bed.read_slat_flap_system_status_word().get_bit(17));
-        assert!(test_bed.read_slat_flap_system_status_word().get_bit(18));
-        assert!(!test_bed.read_slat_flap_system_status_word().get_bit(19));
-        assert!(!test_bed.read_slat_flap_system_status_word().get_bit(20));
-        assert!(!test_bed.read_slat_flap_system_status_word().get_bit(21));
-        assert!(!test_bed.read_slat_flap_system_status_word().get_bit(26));
+        assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(17));
+        assert!(test_bed.read_slat_flap_system_status_word(1).get_bit(18));
+        assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(19));
+        assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(20));
+        assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(21));
+        assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(26));
 
         test_bed = test_bed.run_waiting_for(Duration::from_secs(31));
 
-        assert!(!test_bed.read_slat_flap_actual_position_word().get_bit(12));
-        assert!(test_bed.read_slat_flap_actual_position_word().get_bit(13));
-        assert!(!test_bed.read_slat_flap_actual_position_word().get_bit(14));
-        assert!(!test_bed.read_slat_flap_actual_position_word().get_bit(15));
-        assert!(!test_bed.read_slat_flap_actual_position_word().get_bit(19));
-        assert!(!test_bed.read_slat_flap_actual_position_word().get_bit(20));
-        assert!(!test_bed.read_slat_flap_actual_position_word().get_bit(21));
-        assert!(!test_bed.read_slat_flap_actual_position_word().get_bit(22));
-        assert!(!test_bed.read_slat_flap_actual_position_word().get_bit(23));
+        assert!(!test_bed.read_slat_flap_actual_position_word(1).get_bit(12));
+        assert!(test_bed.read_slat_flap_actual_position_word(1).get_bit(13));
+        assert!(!test_bed.read_slat_flap_actual_position_word(1).get_bit(14));
+        assert!(!test_bed.read_slat_flap_actual_position_word(1).get_bit(15));
+        assert!(!test_bed.read_slat_flap_actual_position_word(1).get_bit(19));
+        assert!(!test_bed.read_slat_flap_actual_position_word(1).get_bit(20));
+        assert!(!test_bed.read_slat_flap_actual_position_word(1).get_bit(21));
+        assert!(!test_bed.read_slat_flap_actual_position_word(1).get_bit(22));
+        assert!(!test_bed.read_slat_flap_actual_position_word(1).get_bit(23));
     }
 
     #[test]
@@ -1391,24 +1397,24 @@ mod tests {
             .set_flaps_handle_position(2)
             .run_one_tick();
 
-        assert!(!test_bed.read_slat_flap_system_status_word().get_bit(17));
-        assert!(!test_bed.read_slat_flap_system_status_word().get_bit(18));
-        assert!(test_bed.read_slat_flap_system_status_word().get_bit(19));
-        assert!(!test_bed.read_slat_flap_system_status_word().get_bit(20));
-        assert!(!test_bed.read_slat_flap_system_status_word().get_bit(21));
-        assert!(!test_bed.read_slat_flap_system_status_word().get_bit(26));
+        assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(17));
+        assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(18));
+        assert!(test_bed.read_slat_flap_system_status_word(1).get_bit(19));
+        assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(20));
+        assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(21));
+        assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(26));
 
         test_bed = test_bed.run_waiting_for(Duration::from_secs(31));
 
-        assert!(!test_bed.read_slat_flap_actual_position_word().get_bit(12));
-        assert!(test_bed.read_slat_flap_actual_position_word().get_bit(13));
-        assert!(!test_bed.read_slat_flap_actual_position_word().get_bit(14));
-        assert!(!test_bed.read_slat_flap_actual_position_word().get_bit(15));
-        assert!(!test_bed.read_slat_flap_actual_position_word().get_bit(19));
-        assert!(test_bed.read_slat_flap_actual_position_word().get_bit(20));
-        assert!(!test_bed.read_slat_flap_actual_position_word().get_bit(21));
-        assert!(!test_bed.read_slat_flap_actual_position_word().get_bit(22));
-        assert!(!test_bed.read_slat_flap_actual_position_word().get_bit(23));
+        assert!(!test_bed.read_slat_flap_actual_position_word(1).get_bit(12));
+        assert!(test_bed.read_slat_flap_actual_position_word(1).get_bit(13));
+        assert!(!test_bed.read_slat_flap_actual_position_word(1).get_bit(14));
+        assert!(!test_bed.read_slat_flap_actual_position_word(1).get_bit(15));
+        assert!(!test_bed.read_slat_flap_actual_position_word(1).get_bit(19));
+        assert!(test_bed.read_slat_flap_actual_position_word(1).get_bit(20));
+        assert!(!test_bed.read_slat_flap_actual_position_word(1).get_bit(21));
+        assert!(!test_bed.read_slat_flap_actual_position_word(1).get_bit(22));
+        assert!(!test_bed.read_slat_flap_actual_position_word(1).get_bit(23));
     }
 
     #[test]
@@ -1421,24 +1427,24 @@ mod tests {
             .set_flaps_handle_position(3)
             .run_one_tick();
 
-        assert!(!test_bed.read_slat_flap_system_status_word().get_bit(17));
-        assert!(!test_bed.read_slat_flap_system_status_word().get_bit(18));
-        assert!(!test_bed.read_slat_flap_system_status_word().get_bit(19));
-        assert!(test_bed.read_slat_flap_system_status_word().get_bit(20));
-        assert!(!test_bed.read_slat_flap_system_status_word().get_bit(21));
-        assert!(!test_bed.read_slat_flap_system_status_word().get_bit(26));
+        assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(17));
+        assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(18));
+        assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(19));
+        assert!(test_bed.read_slat_flap_system_status_word(1).get_bit(20));
+        assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(21));
+        assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(26));
 
         test_bed = test_bed.run_waiting_for(Duration::from_secs(31));
 
-        assert!(!test_bed.read_slat_flap_actual_position_word().get_bit(12));
-        assert!(test_bed.read_slat_flap_actual_position_word().get_bit(13));
-        assert!(!test_bed.read_slat_flap_actual_position_word().get_bit(14));
-        assert!(!test_bed.read_slat_flap_actual_position_word().get_bit(15));
-        assert!(!test_bed.read_slat_flap_actual_position_word().get_bit(19));
-        assert!(test_bed.read_slat_flap_actual_position_word().get_bit(20));
-        assert!(test_bed.read_slat_flap_actual_position_word().get_bit(21));
-        assert!(!test_bed.read_slat_flap_actual_position_word().get_bit(22));
-        assert!(!test_bed.read_slat_flap_actual_position_word().get_bit(23));
+        assert!(!test_bed.read_slat_flap_actual_position_word(1).get_bit(12));
+        assert!(test_bed.read_slat_flap_actual_position_word(1).get_bit(13));
+        assert!(!test_bed.read_slat_flap_actual_position_word(1).get_bit(14));
+        assert!(!test_bed.read_slat_flap_actual_position_word(1).get_bit(15));
+        assert!(!test_bed.read_slat_flap_actual_position_word(1).get_bit(19));
+        assert!(test_bed.read_slat_flap_actual_position_word(1).get_bit(20));
+        assert!(test_bed.read_slat_flap_actual_position_word(1).get_bit(21));
+        assert!(!test_bed.read_slat_flap_actual_position_word(1).get_bit(22));
+        assert!(!test_bed.read_slat_flap_actual_position_word(1).get_bit(23));
     }
 
     #[test]
@@ -1451,24 +1457,24 @@ mod tests {
             .set_flaps_handle_position(4)
             .run_one_tick();
 
-        assert!(!test_bed.read_slat_flap_system_status_word().get_bit(17));
-        assert!(!test_bed.read_slat_flap_system_status_word().get_bit(18));
-        assert!(!test_bed.read_slat_flap_system_status_word().get_bit(19));
-        assert!(!test_bed.read_slat_flap_system_status_word().get_bit(20));
-        assert!(test_bed.read_slat_flap_system_status_word().get_bit(21));
-        assert!(!test_bed.read_slat_flap_system_status_word().get_bit(26));
+        assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(17));
+        assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(18));
+        assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(19));
+        assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(20));
+        assert!(test_bed.read_slat_flap_system_status_word(1).get_bit(21));
+        assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(26));
 
         test_bed = test_bed.run_waiting_for(Duration::from_secs(45));
 
-        assert!(!test_bed.read_slat_flap_actual_position_word().get_bit(12));
-        assert!(test_bed.read_slat_flap_actual_position_word().get_bit(13));
-        assert!(test_bed.read_slat_flap_actual_position_word().get_bit(14));
-        assert!(test_bed.read_slat_flap_actual_position_word().get_bit(15));
-        assert!(!test_bed.read_slat_flap_actual_position_word().get_bit(19));
-        assert!(test_bed.read_slat_flap_actual_position_word().get_bit(20));
-        assert!(test_bed.read_slat_flap_actual_position_word().get_bit(21));
-        assert!(test_bed.read_slat_flap_actual_position_word().get_bit(22));
-        assert!(test_bed.read_slat_flap_actual_position_word().get_bit(23));
+        assert!(!test_bed.read_slat_flap_actual_position_word(1).get_bit(12));
+        assert!(test_bed.read_slat_flap_actual_position_word(1).get_bit(13));
+        assert!(test_bed.read_slat_flap_actual_position_word(1).get_bit(14));
+        assert!(test_bed.read_slat_flap_actual_position_word(1).get_bit(15));
+        assert!(!test_bed.read_slat_flap_actual_position_word(1).get_bit(19));
+        assert!(test_bed.read_slat_flap_actual_position_word(1).get_bit(20));
+        assert!(test_bed.read_slat_flap_actual_position_word(1).get_bit(21));
+        assert!(test_bed.read_slat_flap_actual_position_word(1).get_bit(22));
+        assert!(test_bed.read_slat_flap_actual_position_word(1).get_bit(23));
     }
 
     // Tests flaps configuration and angles for regular
