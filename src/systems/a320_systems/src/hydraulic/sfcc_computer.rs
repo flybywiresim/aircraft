@@ -332,10 +332,10 @@ impl SlatFlapControlComputer {
         word.set_bit(23, false);
 
         // Slat Alpha Lock Engaged
-        word.set_bit(24, false);
+        word.set_bit(24, self.slat_channel.is_slat_alpha_lock_active());
 
         // Slat Baulk Engaged
-        word.set_bit(25, false);
+        word.set_bit(25, self.slat_channel.is_slat_baulk_active());
 
         // Flap Auto Command Engaged
         word.set_bit(26, self.flap_channel.get_bit_26_system_status_word());

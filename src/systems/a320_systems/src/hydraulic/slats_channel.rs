@@ -106,7 +106,6 @@ impl SlatsChannel {
     ) {
         if !(cas.unwrap_or_default() >= self.kts_60 || lgciu.left_and_right_gear_extended(false)) {
             println!("Exiting update_slat_lock");
-            // self.slat_retraction_inhibited = false;
             self.slat_alpha_lock_engaged = false;
             return;
         }
@@ -122,12 +121,10 @@ impl SlatsChannel {
             {
                 println!("S2");
                 self.slat_alpha_lock_engaged = true;
-                // self.slat_retraction_inhibited = true;
             }
             Some(_) if flaps_handle.current_position() == CSUPosition::OutOfDetent => {
                 println!("S3");
                 self.slat_alpha_lock_engaged = self.slat_alpha_lock_engaged;
-                // self.slat_retraction_inhibited = self.slat_retraction_inhibited
             }
             Some(aoa)
                 if aoa < self.slat_lock_low_aoa
@@ -135,18 +132,15 @@ impl SlatsChannel {
             {
                 println!("S4");
                 self.slat_alpha_lock_engaged = false;
-                // self.slat_retraction_inhibited = false;
             }
             None if flaps_handle.last_valid_position() == CSUPosition::Conf0 => {
                 println!("S6");
                 self.slat_alpha_lock_engaged = false;
-                // self.slat_retraction_inhibited = false
             }
             // Verify if it shall be false or true!
             _ => {
                 println!("S8");
                 self.slat_alpha_lock_engaged = false;
-                // self.slat_retraction_inhibited = false
             }
             // panic!(
             //     "Missing case update_slat_lock! {} {}.",
@@ -175,7 +169,6 @@ impl SlatsChannel {
     ) {
         if !(cas.unwrap_or_default() >= self.kts_60 || lgciu.left_and_right_gear_extended(false)) {
             println!("Exiting update_slat_lock");
-            // self.slat_retraction_inhibited = false;
             self.slat_baulk_engaged = false;
             return;
         }
@@ -191,12 +184,10 @@ impl SlatsChannel {
             {
                 println!("S9");
                 self.slat_baulk_engaged = true;
-                // self.slat_retraction_inhibited = true;
             }
             Some(_) if flaps_handle.current_position() == CSUPosition::OutOfDetent => {
                 println!("S10");
                 self.slat_baulk_engaged = self.slat_baulk_engaged;
-                // self.slat_retraction_inhibited = self.slat_retraction_inhibited
             }
             Some(cas)
                 if cas > self.slat_lock_high_cas
@@ -204,18 +195,15 @@ impl SlatsChannel {
             {
                 println!("S11");
                 self.slat_baulk_engaged = false;
-                // self.slat_retraction_inhibited = false
             }
             None if flaps_handle.last_valid_position() == CSUPosition::Conf0 => {
                 println!("S12");
                 self.slat_baulk_engaged = false;
-                // self.slat_retraction_inhibited = false
             }
             // Verify if it shall be false or true!
             _ => {
                 println!("S13");
                 self.slat_baulk_engaged = false;
-                // self.slat_retraction_inhibited = false
             }
             // panic!(
             //     "Missing case update_slat_lock! {} {}.",
@@ -292,6 +280,14 @@ impl SlatsChannel {
 
     pub fn is_slat_retraction_inhibited(&self) -> bool {
         self.slat_retraction_inhibited
+    }
+
+    pub fn is_slat_alpha_lock_active(&self) -> bool {
+        self.slat_alpha_lock_engaged
+    }
+
+    pub fn is_slat_baulk_active(&self) -> bool {
+        self.slat_baulk_engaged
     }
 }
 impl SimulationElement for SlatsChannel {
