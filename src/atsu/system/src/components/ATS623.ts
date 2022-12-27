@@ -29,7 +29,7 @@ export class ATS623 {
         if (message instanceof CpdlcMessage) {
             const cpdlc = message as CpdlcMessage;
             // allow only freetext messages
-            return cpdlc.Content.TypeId === 'UM183' || cpdlc.Content.TypeId === 'UM169';
+            return cpdlc.Content[0].TypeId === 'UM183' || cpdlc.Content[0].TypeId === 'UM169';
         }
 
         return true;
@@ -55,12 +55,12 @@ export class ATS623 {
                 (processedMessage as CpdlcMessage).DcduRelevantMessage = true;
                 (processedMessage as CpdlcMessage).PreviousTransmissionId = this.clearanceRequest.CurrentTransmissionId;
                 if (this.atsu.atc.fansMode() === FansMode.FansA) {
-                    (processedMessage as CpdlcMessage).Content = CpdlcMessagesUplink.UM169[1].deepCopy();
+                    (processedMessage as CpdlcMessage).Content = [CpdlcMessagesUplink.UM169[1].deepCopy()];
                 } else {
-                    (processedMessage as CpdlcMessage).Content = CpdlcMessagesUplink.UM183[1].deepCopy();
+                    (processedMessage as CpdlcMessage).Content = [CpdlcMessagesUplink.UM183[1].deepCopy()];
                 }
-                (processedMessage as CpdlcMessage).Content.Content[0].Value = message.Message;
-                (processedMessage as CpdlcMessage).Content.ExpectedResponse = CpdlcMessageExpectedResponseType.No;
+                (processedMessage as CpdlcMessage).Content[0].Content[0].Value = message.Message;
+                (processedMessage as CpdlcMessage).Content[0].ExpectedResponse = CpdlcMessageExpectedResponseType.No;
             }
 
             if (message instanceof DclMessage || message instanceof OclMessage) {
@@ -72,8 +72,8 @@ export class ATS623 {
                 // expect some clearance with TO DEST or SQWK/SQUAWK/SQK XXXX -> stop ATS run
                 const regex = new RegExp(`.*TO @?(${this.atsu.destinationWaypoint().ident}){1}@?.*(SQWK|SQUAWK){1}.*`);
                 if (regex.test(processedMessage.Message)) {
-                    if ((processedMessage as CpdlcMessage).Content.ExpectedResponse === CpdlcMessageExpectedResponseType.No) {
-                        (processedMessage as CpdlcMessage).Content.ExpectedResponse = CpdlcMessageExpectedResponseType.Roger;
+                    if ((processedMessage as CpdlcMessage).Content[0].ExpectedResponse === CpdlcMessageExpectedResponseType.No) {
+                        (processedMessage as CpdlcMessage).Content[0].ExpectedResponse = CpdlcMessageExpectedResponseType.Roger;
                     }
                     this.clearanceRequest = null;
                 } else if (/.*VIA TELEX.*/.test(processedMessage.Message)) {
@@ -86,8 +86,8 @@ export class ATS623 {
                 // oceanic clearance with CLRD TO -> stop ATS run
                 const regex = new RegExp(`.*TO @?(${this.atsu.destinationWaypoint().ident}){1}@?`);
                 if (regex.test(processedMessage.Message)) {
-                    if ((processedMessage as CpdlcMessage).Content.ExpectedResponse === CpdlcMessageExpectedResponseType.No) {
-                        (processedMessage as CpdlcMessage).Content.ExpectedResponse = CpdlcMessageExpectedResponseType.Roger;
+                    if ((processedMessage as CpdlcMessage).Content[0].ExpectedResponse === CpdlcMessageExpectedResponseType.No) {
+                        (processedMessage as CpdlcMessage).Content[0].ExpectedResponse = CpdlcMessageExpectedResponseType.Roger;
                     }
                     this.clearanceRequest = null;
                 }

@@ -25,7 +25,7 @@ export class Atc {
 
     private dcduLink: DcduLink = null;
 
-    private handoverInterval: number = 0;
+    private handoverInterval: NodeJS.Timer = null;
 
     private handoverOngoing = false;
 
@@ -41,7 +41,7 @@ export class Atc {
 
     private printAtisReport = false;
 
-    private atisAutoUpdateIcaos: [string, AtisType, number][] = [];
+    private atisAutoUpdateIcaos: [string, AtisType, NodeJS.Timer][] = [];
 
     private atisMessages: Map<string, [number, AtisMessage[]]> = new Map();
 
@@ -201,9 +201,9 @@ export class Atc {
 
     public async logoff(): Promise<AtsuStatusCodes> {
         // abort a handover run
-        if (this.handoverInterval !== undefined) {
+        if (this.handoverInterval !== null) {
             clearInterval(this.handoverInterval);
-            this.handoverInterval = undefined;
+            this.handoverInterval = null;
         }
 
         return this.logoffWithoutReset().then((error) => {

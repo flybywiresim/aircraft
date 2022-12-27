@@ -81,9 +81,9 @@ export class DcduLink {
 
     private lastClosedMessage: [DcduMessage[], number] = null;
 
-    private atcMsgWatchdogInterval: number = null;
+    private atcMsgWatchdogInterval: NodeJS.Timer = null;
 
-    private atcRingInterval: number = null;
+    private atcRingInterval: NodeJS.Timer = null;
 
     private closeMessage(messages: (DcduMessage[])[], backlog: (DcduMessage[])[], uid: number, uplink: boolean): boolean {
         const idx = messages.findIndex((elem) => elem[0].MessageId === uid);
