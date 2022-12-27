@@ -34,7 +34,7 @@ const Idle = () => {
 render(
     <DisplayUnit
         electricitySimvar="L:A32NX_ELEC_AC_2_BUS_IS_POWERED"
-        potentiometerIndex={91}
+        potentiometerIndex={93}
     >
         <Idle />
     </DisplayUnit>,
