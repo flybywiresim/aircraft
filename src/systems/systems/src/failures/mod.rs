@@ -1,4 +1,7 @@
-use crate::shared::{GearActuatorId, HydraulicColor, LgciuId, ProximityDetectorId};
+use crate::shared::{
+    AirbusElectricPumpId, AirbusEngineDrivenPumpId, GearActuatorId, HydraulicColor, LgciuId,
+    ProximityDetectorId,
+};
 use crate::simulation::SimulationElement;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -7,6 +10,8 @@ pub enum FailureType {
     ReservoirLeak(HydraulicColor),
     ReservoirAirLeak(HydraulicColor),
     ReservoirReturnLeak(HydraulicColor),
+    EnginePumpOverheat(AirbusEngineDrivenPumpId),
+    ElecPumpOverheat(AirbusElectricPumpId),
     LgciuPowerSupply(LgciuId),
     LgciuInternalError(LgciuId),
     GearProxSensorDamage(ProximityDetectorId),
