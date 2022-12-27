@@ -25,7 +25,7 @@ export class CpdlcMessage extends AtsuMessage {
 
     public PreviousTransmissionId = -1;
 
-    public DcduRelevantMessage = true;
+    public MailboxRelevantMessage = true;
 
     public CloseAutomatically = true;
 
@@ -54,7 +54,7 @@ export class CpdlcMessage extends AtsuMessage {
         }
         this.CurrentTransmissionId = jsonData.CurrentTransmissionId as number;
         this.PreviousTransmissionId = jsonData.PreviousTransmissionId as number;
-        this.DcduRelevantMessage = jsonData.DcduRelevantMessage as boolean;
+        this.MailboxRelevantMessage = jsonData.MailboxRelevantMessage as boolean;
         this.CloseAutomatically = jsonData.CloseAutomatically as boolean;
         this.MessageMonitoring = jsonData.MessageMonitoring as CpdlcMessageMonitoringState;
         this.SemanticResponseRequired = jsonData.SemanticResponseRequired as boolean;

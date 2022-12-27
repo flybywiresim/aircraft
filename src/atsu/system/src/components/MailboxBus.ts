@@ -116,7 +116,7 @@ export class MailboxBus {
                             this.setupIntervals();
                         }
 
-                        if ((message as CpdlcMessage).DcduRelevantMessage) {
+                        if ((message as CpdlcMessage).MailboxRelevantMessage) {
                             dcduMessages.push(message);
                         }
                     }
