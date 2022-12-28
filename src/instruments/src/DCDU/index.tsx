@@ -1,12 +1,12 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import { useCoherentEvent, useInteractionEvents } from '@instruments/common/hooks';
-import { AtsuMessageComStatus, AtsuMessageDirection, AtsuMessageType } from '@atsu/messages/AtsuMessage';
-import { CpdlcMessage, CpdlcMessageMonitoringState } from '@atsu/messages/CpdlcMessage';
-import { CpdlcMessageExpectedResponseType } from '@atsu/messages/CpdlcMessageElements';
-import { DclMessage } from '@atsu/messages/DclMessage';
-import { OclMessage } from '@atsu/messages/OclMessage';
-import { DcduStatusMessage } from '@atsu/components/DcduLink';
+import { AtsuMessageComStatus, AtsuMessageDirection, AtsuMessageType } from '@atsu/common/messages/AtsuMessage';
+import { CpdlcMessage, CpdlcMessageMonitoringState } from '@atsu/common/messages/CpdlcMessage';
+import { CpdlcMessageExpectedResponseType } from '@atsu/common/messages/CpdlcMessageElements';
+import { DclMessage } from '@atsu/common/messages/DclMessage';
+import { OclMessage } from '@atsu/common/messages/OclMessage';
+import { MailboxStatusMessage } from '@atsu/common/databus/Mailbox';
 import { SemanticResponseButtons } from './elements/SemanticResponseButtons';
 import { OutputButtons } from './elements/OutputButtons';
 import { AffirmNegativeButtons } from './elements/AffirmNegativeButtons';
@@ -40,7 +40,7 @@ export class DcduMessageBlock {
 
     public response: number = -1;
 
-    public statusMessage: DcduStatusMessage = DcduStatusMessage.NoMessage;
+    public statusMessage: MailboxStatusMessage = MailboxStatusMessage.NoMessage;
 
     public messageVisible: boolean = false;
 
@@ -64,7 +64,7 @@ const DCDU: React.FC = () => {
     const [isColdAndDark] = useSimVar('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool', 200);
     const [state, setState] = useState((isColdAndDark) ? DcduState.Off : DcduState.On);
     const [events] = useState(RegisterViewListener('JS_LISTENER_SIMVARS', undefined, true));
-    const [systemStatusMessage, setSystemStatusMessage] = useState(DcduStatusMessage.NoMessage);
+    const [systemStatusMessage, setSystemStatusMessage] = useState(MailboxStatusMessage.NoMessage);
     const [systemStatusTimer, setSystemStatusTimer] = useState<number | null>(null);
     const [screenTimeout, setScreenTimeout] = useState<NodeJS.Timeout | null>(null);
     const [messages, setMessages] = useState(new Map<number, DcduMessageBlock>());
@@ -73,7 +73,7 @@ const DCDU: React.FC = () => {
 
     messagesRef.current = messages;
 
-    const updateSystemStatusMessage = (status: DcduStatusMessage) => {
+    const updateSystemStatusMessage = (status: MailboxStatusMessage) => {
         setSystemStatusMessage(status);
         setSystemStatusTimer(5000);
     };
@@ -124,7 +124,7 @@ const DCDU: React.FC = () => {
 
         const message = messagesRef.current.get(uid);
         if (message) {
-            message.statusMessage = DcduStatusMessage.McduForModification;
+            message.statusMessage = MailboxStatusMessage.McduForModification;
             events.triggerToAllSubscribers('A32NX_ATSU_DCDU_MESSAGE_READ', uid);
             events.triggerToAllSubscribers('A32NX_ATSU_DCDU_MESSAGE_MODIFY_RESPONSE', uid);
         }
@@ -145,7 +145,7 @@ const DCDU: React.FC = () => {
         events.triggerToAllSubscribers('A32NX_ATSU_DCDU_MESSAGE_CLOSED', uid);
 
         if (index !== -1) {
-            setSystemStatusMessage(DcduStatusMessage.NoMessage);
+            setSystemStatusMessage(MailboxStatusMessage.NoMessage);
             setSystemStatusTimer(null);
 
             // update the map
@@ -185,10 +185,10 @@ const DCDU: React.FC = () => {
         const index = sortedMessages.findIndex((element) => element.messageVisible);
 
         if (index <= 0) {
-            setSystemStatusMessage(DcduStatusMessage.NoMoreMessages);
+            setSystemStatusMessage(MailboxStatusMessage.NoMoreMessages);
             setSystemStatusTimer(DcduSystemStatusDuration);
         } else {
-            setSystemStatusMessage(DcduStatusMessage.NoMessage);
+            setSystemStatusMessage(MailboxStatusMessage.NoMessage);
             setSystemStatusTimer(null);
 
             const oldMessage = messagesRef.current.get(sortedMessages[index].messages[0].UniqueMessageID);
@@ -209,10 +209,10 @@ const DCDU: React.FC = () => {
         const index = sortedMessages.findIndex((element) => element.messageVisible);
 
         if (index + 1 >= sortedMessages.length) {
-            setSystemStatusMessage(DcduStatusMessage.NoMoreMessages);
+            setSystemStatusMessage(MailboxStatusMessage.NoMoreMessages);
             setSystemStatusTimer(DcduSystemStatusDuration);
         } else {
-            setSystemStatusMessage(DcduStatusMessage.NoMessage);
+            setSystemStatusMessage(MailboxStatusMessage.NoMessage);
             setSystemStatusTimer(null);
 
             const oldMessage = messagesRef.current.get(sortedMessages[index].messages[0].UniqueMessageID);
@@ -239,7 +239,7 @@ const DCDU: React.FC = () => {
     useCoherentEvent('A32NX_DCDU_RESET', () => {
         setMessages(new Map<number, DcduMessageBlock>());
         setAtcMessage('');
-        setSystemStatusMessage(DcduStatusMessage.NoMessage);
+        setSystemStatusMessage(MailboxStatusMessage.NoMessage);
         setSystemStatusTimer(null);
     });
 
@@ -277,20 +277,20 @@ const DCDU: React.FC = () => {
                 // update the communication states and response
                 dcduBlock.messages = cpdlcMessages;
 
-                if (dcduBlock.statusMessage === DcduStatusMessage.NoMessage) {
+                if (dcduBlock.statusMessage === MailboxStatusMessage.NoMessage) {
                     if (cpdlcMessages[0].MessageMonitoring === CpdlcMessageMonitoringState.Monitoring) {
-                        dcduBlock.statusMessage = DcduStatusMessage.Monitoring;
+                        dcduBlock.statusMessage = MailboxStatusMessage.Monitoring;
                     } else if (cpdlcMessages[0].MessageMonitoring === CpdlcMessageMonitoringState.Cancelled) {
-                        dcduBlock.statusMessage = DcduStatusMessage.MonitoringCancelled;
+                        dcduBlock.statusMessage = MailboxStatusMessage.MonitoringCancelled;
                     }
-                } else if (dcduBlock.statusMessage === DcduStatusMessage.Monitoring) {
+                } else if (dcduBlock.statusMessage === MailboxStatusMessage.Monitoring) {
                     if (cpdlcMessages[0].MessageMonitoring === CpdlcMessageMonitoringState.Cancelled) {
-                        dcduBlock.statusMessage = DcduStatusMessage.MonitoringCancelled;
+                        dcduBlock.statusMessage = MailboxStatusMessage.MonitoringCancelled;
                     } else if (cpdlcMessages[0].MessageMonitoring !== CpdlcMessageMonitoringState.Monitoring) {
-                        dcduBlock.statusMessage = DcduStatusMessage.NoMessage;
+                        dcduBlock.statusMessage = MailboxStatusMessage.NoMessage;
                     }
                 } else if (cpdlcMessages[0].MessageMonitoring === CpdlcMessageMonitoringState.Finished) {
-                    dcduBlock.statusMessage = DcduStatusMessage.NoMessage;
+                    dcduBlock.statusMessage = MailboxStatusMessage.NoMessage;
                 }
 
                 // response sent
@@ -302,9 +302,9 @@ const DCDU: React.FC = () => {
                 message.messages = cpdlcMessages;
                 message.timestamp = new Date().getTime();
                 if (cpdlcMessages[0].MessageMonitoring === CpdlcMessageMonitoringState.Monitoring) {
-                    message.statusMessage = DcduStatusMessage.Monitoring;
+                    message.statusMessage = MailboxStatusMessage.Monitoring;
                 } else if (cpdlcMessages[0].MessageMonitoring === CpdlcMessageMonitoringState.Cancelled) {
-                    message.statusMessage = DcduStatusMessage.MonitoringCancelled;
+                    message.statusMessage = MailboxStatusMessage.MonitoringCancelled;
                 }
                 newMessageMap.set(cpdlcMessages[0].UniqueMessageID, message);
             }
@@ -314,14 +314,14 @@ const DCDU: React.FC = () => {
                 const dcduBlock = newMessageMap.get(cpdlcMessages[0].UniqueMessageID);
                 if (dcduBlock) {
                     dcduBlock.semanticResponseIncomplete = false;
-                    if (dcduBlock.statusMessage === DcduStatusMessage.NoFmData || dcduBlock.statusMessage === DcduStatusMessage.McduForModification) {
-                        dcduBlock.statusMessage = DcduStatusMessage.NoMessage;
+                    if (dcduBlock.statusMessage === MailboxStatusMessage.NoFmData || dcduBlock.statusMessage === MailboxStatusMessage.McduForModification) {
+                        dcduBlock.statusMessage = MailboxStatusMessage.NoMessage;
                     }
 
                     for (const entry of cpdlcMessages[0].Response.Content[0].Content) {
                         if (entry.Value === '') {
                             dcduBlock.semanticResponseIncomplete = true;
-                            dcduBlock.statusMessage = DcduStatusMessage.NoFmData;
+                            dcduBlock.statusMessage = MailboxStatusMessage.NoFmData;
                             break;
                         }
                     }
@@ -344,11 +344,11 @@ const DCDU: React.FC = () => {
     useCoherentEvent('A32NX_DCDU_ATC_LOGON_MSG', (message: string) => {
         setAtcMessage(message);
     });
-    useCoherentEvent('A32NX_DCDU_SYSTEM_ATSU_STATUS', (status: DcduStatusMessage) => {
+    useCoherentEvent('A32NX_DCDU_SYSTEM_ATSU_STATUS', (status: MailboxStatusMessage) => {
         setSystemStatusMessage(status);
         setSystemStatusTimer(5000);
     });
-    useCoherentEvent('A32NX_DCDU_MSG_ATSU_STATUS', (uid: number, status: DcduStatusMessage) => {
+    useCoherentEvent('A32NX_DCDU_MSG_ATSU_STATUS', (uid: number, status: MailboxStatusMessage) => {
         if (!messagesRef.current) {
             return;
         }
@@ -356,11 +356,11 @@ const DCDU: React.FC = () => {
         const dcduBlock = messagesRef.current.get(uid);
         if (dcduBlock !== undefined) {
             dcduBlock.statusMessage = status;
-            if (status === DcduStatusMessage.NoMessage) {
+            if (status === MailboxStatusMessage.NoMessage) {
                 if (dcduBlock.messages[0].MessageMonitoring === CpdlcMessageMonitoringState.Monitoring) {
-                    dcduBlock.statusMessage = DcduStatusMessage.Monitoring;
+                    dcduBlock.statusMessage = MailboxStatusMessage.Monitoring;
                 } else if (dcduBlock.messages[0].MessageMonitoring === CpdlcMessageMonitoringState.Cancelled) {
-                    dcduBlock.statusMessage = DcduStatusMessage.MonitoringCancelled;
+                    dcduBlock.statusMessage = MailboxStatusMessage.MonitoringCancelled;
                 }
             }
             setMessages(new Map<number, DcduMessageBlock>(messagesRef.current));
@@ -401,7 +401,7 @@ const DCDU: React.FC = () => {
             if (systemStatusTimer > 0) {
                 setSystemStatusTimer(systemStatusTimer - deltaTime);
             } else {
-                setSystemStatusMessage(DcduStatusMessage.NoMessage);
+                setSystemStatusMessage(MailboxStatusMessage.NoMessage);
                 setSystemStatusTimer(null);
             }
         }
@@ -437,7 +437,7 @@ const DCDU: React.FC = () => {
     let messageReadComplete: boolean = true;
     let visibleMessagesSemanticResponseIncomplete: boolean = false;
     let visibleMessages: CpdlcMessage[] | undefined = undefined;
-    let visibleMessageStatus: DcduStatusMessage = DcduStatusMessage.NoMessage;
+    let visibleMessageStatus: MailboxStatusMessage = MailboxStatusMessage.NoMessage;
     let response: number = -1;
     if (state === DcduState.On && messages.size !== 0) {
         const arrMessages = sortedMessageArray(messagesRef.current);
@@ -455,16 +455,16 @@ const DCDU: React.FC = () => {
         let noUrgentMessage = true;
         arrMessages.forEach((message) => {
             if (message.messages[0].Content[0]?.Urgent && !message.messageVisible) {
-                if (systemStatusMessage !== DcduStatusMessage.PriorityMessage) {
-                    setSystemStatusMessage(DcduStatusMessage.PriorityMessage);
+                if (systemStatusMessage !== MailboxStatusMessage.PriorityMessage) {
+                    setSystemStatusMessage(MailboxStatusMessage.PriorityMessage);
                     setSystemStatusTimer(-1);
                 }
                 noUrgentMessage = false;
             }
         });
 
-        if (noUrgentMessage && systemStatusMessage === DcduStatusMessage.PriorityMessage) {
-            setSystemStatusMessage(DcduStatusMessage.NoMessage);
+        if (noUrgentMessage && systemStatusMessage === MailboxStatusMessage.PriorityMessage) {
+            setSystemStatusMessage(MailboxStatusMessage.NoMessage);
         }
     }
 
@@ -569,7 +569,7 @@ const DCDU: React.FC = () => {
                         <SemanticResponseButtons
                             message={visibleMessages[0]}
                             reachedEndOfMessage={messageReadComplete}
-                            messageUnderModification={visibleMessageStatus === DcduStatusMessage.McduForModification || visibleMessageStatus === DcduStatusMessage.McduForText}
+                            messageUnderModification={visibleMessageStatus === MailboxStatusMessage.McduForModification || visibleMessageStatus === MailboxStatusMessage.McduForText}
                             dataIncomplete={visibleMessagesSemanticResponseIncomplete}
                             invertResponse={invertResponse}
                             modifyResponse={modifyResponse}
