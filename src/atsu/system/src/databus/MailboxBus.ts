@@ -11,7 +11,7 @@ import { CpdlcMessage } from '@atsu/common/messages/CpdlcMessage';
 import { EventBus, EventSubscriber, Publisher } from 'msfssdk';
 import { Atsu } from '../ATSU';
 import { Atc } from '../ATC';
-import { UplinkMessageStateMachine } from './UplinkMessageStateMachine';
+import { UplinkMessageStateMachine } from '../components/UplinkMessageStateMachine';
 
 class MailboxMessage {
     public MessageId: number = 0;

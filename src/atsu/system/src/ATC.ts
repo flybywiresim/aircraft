@@ -12,7 +12,7 @@ import { CpdlcMessage } from '@atsu/common/messages/CpdlcMessage';
 import { FansMode, FutureAirNavigationSystem } from '@atsu/common/com/FutureAirNavigationSystem';
 import { Atsu } from './ATSU';
 import { Datalink } from './com/Datalink';
-import { MailboxBus } from './components/MailboxBus';
+import { MailboxBus } from './databus/MailboxBus';
 import { UplinkMessageStateMachine } from './components/UplinkMessageStateMachine';
 import { UplinkMessageMonitoring } from './components/UplinkMessageMonitoring';
 
