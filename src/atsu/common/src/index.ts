@@ -1,4 +1,5 @@
 import { AtsuStatusCodes } from './AtsuStatusCodes';
+import { MailboxStatusMessage } from './databus/Mailbox';
 import { FreetextMessage } from './messages/FreetextMessage';
 import {
     AtsuMessage,
@@ -44,6 +45,7 @@ export {
     CpdlcMessagesDownlink,
     FreetextMessage,
     WeatherMessage,
+    MailboxStatusMessage,
     MetarMessage,
     TafMessage,
     AtisMessage,

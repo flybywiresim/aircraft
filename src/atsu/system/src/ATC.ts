@@ -12,7 +12,7 @@ import { CpdlcMessage } from '@atsu/common/messages/CpdlcMessage';
 import { FansMode, FutureAirNavigationSystem } from '@atsu/common/com/FutureAirNavigationSystem';
 import { Atsu } from './ATSU';
 import { Datalink } from './com/Datalink';
-import { MailboxStatusMessage, MailboxBus } from './components/MailboxBus';
+import { MailboxBus } from './components/MailboxBus';
 import { UplinkMessageStateMachine } from './components/UplinkMessageStateMachine';
 import { UplinkMessageMonitoring } from './components/UplinkMessageMonitoring';
 
@@ -246,7 +246,7 @@ export class Atc {
 
             message.Response = responseMsg;
             message.Response.ComStatus = AtsuMessageComStatus.Sending;
-            this.mailboxBus.updateMailboxStatusMessage(message.UniqueMessageID, MailboxStatusMessage.Sending);
+            this.mailboxBus.updateMessageStatus(message.UniqueMessageID, MailboxStatusMessage.Sending);
             this.mailboxBus.update(message);
 
             if (this.parent.modificationMessage?.UniqueMessageID === uid) {
@@ -257,15 +257,15 @@ export class Atc {
                 this.datalink.sendMessage(message.Response, false).then((code) => {
                     if (code === AtsuStatusCodes.Ok) {
                         message.Response.ComStatus = AtsuMessageComStatus.Sent;
-                        this.mailboxBus.updateMailboxStatusMessage(message.UniqueMessageID, MailboxStatusMessage.Sent);
+                        this.mailboxBus.updateMessageStatus(message.UniqueMessageID, MailboxStatusMessage.Sent);
                         setTimeout(() => {
-                            if (this.mailboxBus.currentMailboxStatusMessage(message.UniqueMessageID) === MailboxStatusMessage.Sent) {
-                                this.mailboxBus.updateMailboxStatusMessage(message.UniqueMessageID, MailboxStatusMessage.NoMessage);
+                            if (this.mailboxBus.currentMessageStatus(message.UniqueMessageID) === MailboxStatusMessage.Sent) {
+                                this.mailboxBus.updateMessageStatus(message.UniqueMessageID, MailboxStatusMessage.NoMessage);
                             }
                         }, 5000);
                     } else {
                         message.Response.ComStatus = AtsuMessageComStatus.Failed;
-                        this.mailboxBus.updateMailboxStatusMessage(message.UniqueMessageID, MailboxStatusMessage.SendFailed);
+                        this.mailboxBus.updateMessageStatus(message.UniqueMessageID, MailboxStatusMessage.SendFailed);
                     }
                     this.mailboxBus.update(message);
                 });
@@ -285,21 +285,21 @@ export class Atc {
                 message.Response.CurrentTransmissionId = ++this.cpdlcMessageId;
             }
             message.Response.ComStatus = AtsuMessageComStatus.Sending;
-            this.mailboxBus.updateMailboxStatusMessage(message.UniqueMessageID, MailboxStatusMessage.Sending);
+            this.mailboxBus.updateMessageStatus(message.UniqueMessageID, MailboxStatusMessage.Sending);
             this.mailboxBus.update(message);
 
             this.datalink.sendMessage(message.Response, false).then((code) => {
                 if (code === AtsuStatusCodes.Ok) {
                     message.Response.ComStatus = AtsuMessageComStatus.Sent;
-                    this.mailboxBus.updateMailboxStatusMessage(message.UniqueMessageID, MailboxStatusMessage.Sent);
+                    this.mailboxBus.updateMessageStatus(message.UniqueMessageID, MailboxStatusMessage.Sent);
                     setTimeout(() => {
-                        if (this.mailboxBus.currentMailboxStatusMessage(message.UniqueMessageID) === MailboxStatusMessage.Sent) {
-                            this.mailboxBus.updateMailboxStatusMessage(message.UniqueMessageID, MailboxStatusMessage.NoMessage);
+                        if (this.mailboxBus.currentMessageStatus(message.UniqueMessageID) === MailboxStatusMessage.Sent) {
+                            this.mailboxBus.updateMessageStatus(message.UniqueMessageID, MailboxStatusMessage.NoMessage);
                         }
                     }, 5000);
                 } else {
                     message.Response.ComStatus = AtsuMessageComStatus.Failed;
-                    this.mailboxBus.updateMailboxStatusMessage(message.UniqueMessageID, MailboxStatusMessage.SendFailed);
+                    this.mailboxBus.updateMessageStatus(message.UniqueMessageID, MailboxStatusMessage.SendFailed);
                 }
                 this.mailboxBus.update(message);
             });
@@ -324,7 +324,7 @@ export class Atc {
 
         message.ComStatus = AtsuMessageComStatus.Sending;
         if ((message as CpdlcMessage).MailboxRelevantMessage) {
-            this.mailboxBus.updateMailboxStatusMessage(message.UniqueMessageID, MailboxStatusMessage.Sending);
+            this.mailboxBus.updateMessageStatus(message.UniqueMessageID, MailboxStatusMessage.Sending);
             this.mailboxBus.update(message as CpdlcMessage);
         }
 
@@ -342,11 +342,11 @@ export class Atc {
             if ((message as CpdlcMessage).MailboxRelevantMessage) {
                 this.mailboxBus.update(message as CpdlcMessage);
 
-                this.mailboxBus.updateMailboxStatusMessage(message.UniqueMessageID, code === AtsuStatusCodes.Ok ? MailboxStatusMessage.Sent : MailboxStatusMessage.SendFailed);
+                this.mailboxBus.updateMessageStatus(message.UniqueMessageID, code === AtsuStatusCodes.Ok ? MailboxStatusMessage.Sent : MailboxStatusMessage.SendFailed);
                 if (code === AtsuStatusCodes.Ok) {
                     setTimeout(() => {
-                        if (this.mailboxBus.currentMailboxStatusMessage(message.UniqueMessageID) === MailboxStatusMessage.Sent) {
-                            this.mailboxBus.updateMailboxStatusMessage(message.UniqueMessageID, MailboxStatusMessage.NoMessage);
+                        if (this.mailboxBus.currentMessageStatus(message.UniqueMessageID) === MailboxStatusMessage.Sent) {
+                            this.mailboxBus.updateMessageStatus(message.UniqueMessageID, MailboxStatusMessage.NoMessage);
                         }
                     }, 5000);
                 }

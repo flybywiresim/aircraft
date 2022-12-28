@@ -3,48 +3,13 @@
 
 import { AtsuMessage, AtsuMessageDirection } from '@atsu/common/messages/AtsuMessage';
 import { AtsuStatusCodes } from '@atsu/common/AtsuStatusCodes';
+import {
+    MailboxStatusMessage,
+} from '@atsu/common/databus/Mailbox';
 import { CpdlcMessage } from '@atsu/common/messages/CpdlcMessage';
 import { Atsu } from '../ATSU';
 import { Atc } from '../ATC';
 import { UplinkMessageStateMachine } from './UplinkMessageStateMachine';
-
-export enum MailboxStatusMessage {
-    NoMessage = -1,
-    AnswerRequired = 0,
-    CommunicationFault,
-    CommunicationNotAvailable,
-    CommunicationNotInitialized,
-    MaximumDownlinkMessages,
-    LinkLost,
-    FlightplanLoadFailed,
-    FlightplanLoadPartial,
-    FlightplanLoadingUnavailable,
-    MonitoringFailed,
-    MonitoringLost,
-    MonitoringUnavailable,
-    NoAtcReply,
-    OverflowClosed,
-    PrintFailed,
-    PriorityMessage,
-    SendFailed = 16,
-    FlightplanLoadSecondary,
-    FlightplanLoadingSecondary,
-    McduForText,
-    McduForModification,
-    MonitoringCancelled,
-    Monitoring,
-    NoFmData,
-    NoMoreMessages,
-    NoMorePages,
-    PartialFmgsData,
-    Printing,
-    RecallMode,
-    RecallEmpty,
-    Reminder,
-    Sending,
-    Sent,
-    WaitFmData
-}
 
 class MailboxMessage {
     public MessageId: number = 0;
@@ -211,7 +176,7 @@ export class MailboxBus {
                 this.updateMailboxStatusMessage(uid, MailboxStatusMessage.Printing);
                 this.atsu.printMessage(message);
                 setTimeout(() => {
-                    if (this.currentMailboxStatusMessage(uid) === MailboxStatusMessage.Printing) {
+                    if (this.currentMessageStatus(uid) === MailboxStatusMessage.Printing) {
                         this.updateMailboxStatusMessage(uid, MailboxStatusMessage.NoMessage);
                     }
                 }, 4500);
@@ -262,7 +227,7 @@ export class MailboxBus {
                     } else {
                         this.uplinkMessages.push(this.lastClosedMessage[0]);
                     }
-                    this.updateMailboxStatusMessage(messages[0].UniqueMessageID, MailboxStatusMessage.RecallMode);
+                    this.updateMessageStatus(messages[0].UniqueMessageID, MailboxStatusMessage.RecallMode);
                 }
             }
         });
@@ -462,7 +427,7 @@ export class MailboxBus {
         }
     }
 
-    public updateMailboxStatusMessage(uid: number, status: MailboxStatusMessage): void {
+    public updateMessageStatus(uid: number, status: MailboxStatusMessage): void {
         // the assumption is that the first message in the block is the UID for the complete block
         const uplinkIdx = this.uplinkMessages.findIndex((elem) => elem[0].MessageId === uid);
         if (uplinkIdx !== -1) {
@@ -478,7 +443,7 @@ export class MailboxBus {
         }
     }
 
-    public currentMailboxStatusMessage(uid: number): MailboxStatusMessage {
+    public currentMessageStatus(uid: number): MailboxStatusMessage {
         let idx = this.uplinkMessages.findIndex((elem) => elem[0].MessageId === uid);
         if (idx !== -1) {
             return this.uplinkMessages[idx][0].Status;
