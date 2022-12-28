@@ -4,9 +4,11 @@
 import { AtsuMessage, AtsuMessageDirection } from '@atsu/common/messages/AtsuMessage';
 import { AtsuStatusCodes } from '@atsu/common/AtsuStatusCodes';
 import {
+    AtsuMailboxMessages,
     MailboxStatusMessage,
 } from '@atsu/common/databus/Mailbox';
 import { CpdlcMessage } from '@atsu/common/messages/CpdlcMessage';
+import { EventBus, EventSubscriber, Publisher } from 'msfssdk';
 import { Atsu } from '../ATSU';
 import { Atc } from '../ATC';
 import { UplinkMessageStateMachine } from './UplinkMessageStateMachine';
@@ -30,7 +32,11 @@ class MailboxMessage {
 export class MailboxBus {
     private static MaxMailboxFileSize = 5;
 
-    private listener = RegisterViewListener('JS_LISTENER_SIMVARS', null, true);
+    private mailboxBus: EventBus = new EventBus();
+
+    private mailboxPublisher: Publisher<AtsuMailboxMessages> = null;
+
+    private mailboxSubscriber: EventSubscriber<AtsuMailboxMessages> = null;
 
     private atsu: Atsu = null;
 
@@ -88,7 +94,7 @@ export class MailboxBus {
                 });
 
                 if (mailboxMessages.length !== 0) {
-                    this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', dcduMessages);
+                    this.mailboxPublisher.pub('messages', mailboxMessages);
                 }
             }
         }
@@ -100,7 +106,10 @@ export class MailboxBus {
         this.atsu = atsu;
         this.atc = atc;
 
-        Coherent.on('A32NX_ATSU_DELETE_MESSAGE', (uid: number) => {
+        this.mailboxPublisher = this.mailboxBus.getPublisher<AtsuMailboxMessages>();
+        this.mailboxSubscriber = this.mailboxBus.getSubscriber<AtsuMailboxMessages>();
+
+        this.mailboxSubscriber.on('deleteMessage').handle((uid: number) => {
             let idx = this.uplinkMessages.findIndex((elem) => elem[0].MessageId === uid);
             if (idx > -1) {
                 this.uplinkMessages[idx].forEach((message) => {
@@ -116,18 +125,18 @@ export class MailboxBus {
             }
         });
 
-        Coherent.on('A32NX_ATSU_SEND_RESPONSE', (uid: number, response: number) => {
-            const idx = this.uplinkMessages.findIndex((elem) => elem[0].MessageId === uid);
+        this.mailboxSubscriber.on('uplinkResponse').handle((data: { uid: number; responseId: number }) => {
+            const idx = this.uplinkMessages.findIndex((elem) => elem[0].MessageId === data.uid);
             if (idx > -1) {
                 // iterate in reverse order to ensure that the "identification" message is the last message in the queue
                 // ensures that the DCDU-status change to SENT is done after every message is sent
                 this.uplinkMessages[idx].slice().reverse().forEach((message) => {
-                    this.atc.sendResponse(message.MessageId, response);
+                    this.atc.sendResponse(message.MessageId, data.responseId);
                 });
             }
         });
 
-        Coherent.on('A32NX_ATSU_SEND_MESSAGE', (uid: number) => {
+        this.mailboxSubscriber.on('downlinkTransmit').handle((uid: number) => {
             let idx = this.downlinkMessages.findIndex((elem) => elem[0].MessageId === uid);
             if (idx > -1) {
                 // iterate in reverse order to ensure that the "identification" message is the last message in the queue
@@ -160,7 +169,7 @@ export class MailboxBus {
             }
         });
 
-        Coherent.on('A32NX_ATSU_DCDU_MESSAGE_MODIFY_RESPONSE', (uid: number) => {
+        this.mailboxSubscriber.on('modifyMessage').handle((uid: number) => {
             const idx = this.uplinkMessages.findIndex((elem) => elem[0].MessageId === uid);
             if (idx > -1) {
                 const message = this.atc.messages().find((element) => element.UniqueMessageID === uid);
@@ -170,45 +179,45 @@ export class MailboxBus {
             }
         });
 
-        Coherent.on('A32NX_ATSU_PRINT_MESSAGE', (uid: number) => {
+        this.mailboxSubscriber.on('printMessage').handle((uid: number) => {
             const message = this.atc.messages().find((element) => element.UniqueMessageID === uid);
             if (message !== undefined) {
-                this.updateMailboxStatusMessage(uid, MailboxStatusMessage.Printing);
+                this.mailboxPublisher.pub('systemStatus', MailboxStatusMessage.Printing);
                 this.atsu.printMessage(message);
                 setTimeout(() => {
                     if (this.currentMessageStatus(uid) === MailboxStatusMessage.Printing) {
-                        this.updateMailboxStatusMessage(uid, MailboxStatusMessage.NoMessage);
+                        this.mailboxPublisher.pub('systemStatus', MailboxStatusMessage.NoMessage);
                     }
                 }, 4500);
             }
         });
 
-        Coherent.on('A32NX_ATSU_DCDU_MESSAGE_CLOSED', (uid: number) => {
+        this.mailboxSubscriber.on('closeMessage').handle((uid: number) => {
             if (!this.closeMessage(this.uplinkMessages, this.bufferedUplinkMessages, uid, true)) {
                 this.closeMessage(this.downlinkMessages, this.bufferedDownlinkMessages, uid, false);
             }
         });
 
-        Coherent.on('A32NX_ATSU_DCDU_MESSAGE_MONITORING', (uid: number) => {
+        this.mailboxSubscriber.on('updateMessageMonitoring').handle((uid: number) => {
             const message = this.atc.messages().find((element) => element.UniqueMessageID === uid);
             UplinkMessageStateMachine.update(this.atsu, message as CpdlcMessage, true, true);
             this.update(message as CpdlcMessage);
         });
 
-        Coherent.on('A32NX_ATSU_DCDU_MESSAGE_STOP_MONITORING', (uid: number) => {
+        this.mailboxSubscriber.on('stopMessageMonitoring').handle((uid: number) => {
             const message = this.atc.messages().find((element) => element.UniqueMessageID === uid);
             UplinkMessageStateMachine.update(this.atsu, message as CpdlcMessage, true, false);
             this.update(message as CpdlcMessage);
         });
 
-        Coherent.on('A32NX_ATSU_DCDU_MESSAGE_RECALL', () => {
+        this.mailboxSubscriber.on('recallMessage').handle(() => {
             if (!this.lastClosedMessage) {
-                this.listener.triggerToAllSubscribers('A32NX_DCDU_SYSTEM_ATSU_STATUS', MailboxStatusMessage.RecallEmpty);
+                this.mailboxPublisher.pub('systemStatus', MailboxStatusMessage.RecallEmpty);
             } else {
                 const currentStamp = new Date().getTime();
                 // timed out after five minutes
                 if (currentStamp - this.lastClosedMessage[1] > 300000) {
-                    this.listener.triggerToAllSubscribers('A32NX_DCDU_SYSTEM_ATSU_STATUS', MailboxStatusMessage.RecallEmpty);
+                    this.mailboxPublisher.pub('systemStatus', MailboxStatusMessage.RecallEmpty);
                     this.lastClosedMessage = undefined;
                 } else {
                     const messages : CpdlcMessage[] = [];
@@ -221,7 +230,7 @@ export class MailboxBus {
                     });
 
                     messages[0].CloseAutomatically = false;
-                    this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', messages);
+                    this.mailboxPublisher.pub('messages', messages);
                     if (this.lastClosedMessage[0][0].Direction === AtsuMessageDirection.Downlink) {
                         this.downlinkMessages.push(this.lastClosedMessage[0]);
                     } else {
@@ -232,7 +241,7 @@ export class MailboxBus {
             }
         });
 
-        Coherent.on('A32NX_ATSU_DCDU_MESSAGE_READ', (uid: number) => {
+        this.mailboxSubscriber.on('readMessage').handle((uid: number) => {
             const idx = this.uplinkMessages.findIndex((elem) => elem[0].MessageId === uid);
             if (idx !== -1) {
                 this.uplinkMessages[idx][0].MessageRead = true;
@@ -240,11 +249,11 @@ export class MailboxBus {
             }
         });
 
-        Coherent.on('A32NX_ATSU_DCDU_MESSAGE_INVERT_SEMANTIC_RESPONSE', (uid: number) => {
+        this.mailboxSubscriber.on('invertSemanticResponse').handle((uid: number) => {
             const message = this.atc.messages().find((element) => element.UniqueMessageID === uid);
             if (message !== undefined) {
                 UplinkMessageStateMachine.update(this.atsu, message as CpdlcMessage, true, false);
-                this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', [message]);
+                this.mailboxPublisher.pub('messages', [message as CpdlcMessage]);
             }
         });
     }
@@ -322,11 +331,11 @@ export class MailboxBus {
     }
 
     public reset() {
-        this.listener.triggerToAllSubscribers('A32NX_DCDU_RESET');
+        this.mailboxPublisher.pub('resetSystem', true);
     }
 
     public setAtcLogonMessage(message: string) {
-        this.listener.triggerToAllSubscribers('A32NX_DCDU_ATC_LOGON_MSG', message);
+        this.mailboxPublisher.pub('logonMessage', message);
     }
 
     public enqueue(messages: AtsuMessage[]) {
@@ -355,16 +364,16 @@ export class MailboxBus {
         } else {
             if (dcduBlocks[0].Direction === AtsuMessageDirection.Downlink) {
                 this.bufferedDownlinkMessages.push(dcduBlocks);
-                this.listener.triggerToAllSubscribers('A32NX_DCDU_SYSTEM_ATSU_STATUS', MailboxStatusMessage.MaximumDownlinkMessages);
+                this.mailboxPublisher.pub('systemStatus', MailboxStatusMessage.MaximumDownlinkMessages);
                 this.atsu.publishAtsuStatusCode(AtsuStatusCodes.DcduFull);
             } else {
                 this.bufferedUplinkMessages.push(dcduBlocks);
-                this.listener.triggerToAllSubscribers('A32NX_DCDU_SYSTEM_ATSU_STATUS', MailboxStatusMessage.AnswerRequired);
+                this.mailboxPublisher.pub('systemStatus', MailboxStatusMessage.AnswerRequired);
             }
             return;
         }
 
-        this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', messages);
+        this.mailboxPublisher.pub('messages', messages as CpdlcMessage[]);
     }
 
     public update(message: CpdlcMessage, insertIfNeeded: boolean = false) {
@@ -386,7 +395,7 @@ export class MailboxBus {
                 }
             });
 
-            this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', messages);
+            this.mailboxPublisher.pub('messages', messages as CpdlcMessage[]);
             return;
         }
 
@@ -405,7 +414,7 @@ export class MailboxBus {
             });
             messages[0] = message;
 
-            this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', messages);
+            this.mailboxPublisher.pub('messages', messages as CpdlcMessage[]);
             return;
         }
 
@@ -418,11 +427,11 @@ export class MailboxBus {
         // the assumption is that the first message in the block is the UID for the complete block
         let idx = this.uplinkMessages.findIndex((elem) => elem[0].MessageId === uid);
         if (idx !== -1) {
-            this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG_DELETE_UID', uid);
+            this.mailboxPublisher.pub('deleteMessage', uid);
         } else {
             idx = this.downlinkMessages.findIndex((elem) => elem[0].MessageId === uid);
             if (idx !== -1) {
-                this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG_DELETE_UID', uid);
+                this.mailboxPublisher.pub('deleteMessage', uid);
             }
         }
     }
@@ -432,14 +441,14 @@ export class MailboxBus {
         const uplinkIdx = this.uplinkMessages.findIndex((elem) => elem[0].MessageId === uid);
         if (uplinkIdx !== -1) {
             this.uplinkMessages[uplinkIdx][0].Status = status;
-            this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG_ATSU_STATUS', uid, status);
+            this.mailboxPublisher.pub('messageStatus', { uid, status });
             return;
         }
 
         const downlinkIdx = this.downlinkMessages.findIndex((elem) => elem[0].MessageId === uid);
         if (downlinkIdx !== -1) {
             this.downlinkMessages[downlinkIdx][0].Status = status;
-            this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG_ATSU_STATUS', uid, status);
+            this.mailboxPublisher.pub('messageStatus', { uid, status });
         }
     }
 
