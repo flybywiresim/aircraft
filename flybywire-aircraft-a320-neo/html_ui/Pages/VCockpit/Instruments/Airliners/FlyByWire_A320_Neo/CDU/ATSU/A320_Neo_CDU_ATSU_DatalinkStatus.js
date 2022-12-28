@@ -77,9 +77,9 @@ class CDUAtsuDatalinkStatus {
                 `VHF3 : ${vhfStatus}`,
                 `\xa0\xa0\xa0\xa0\xa0\xa0\xa0${vhfMode}`,
                 `SATCOM : ${satcomStatus}`,
-                `\xa0\xa0\xa0\xa0\xa0\xa0\xa0${satcomMode}`,
+                `\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0${satcomMode}`,
                 `HF : ${hfStatus}`,
-                `\xa0\xa0\xa0\xa0\xa0\xa0\xa0${hfMode}`,
+                `\xa0\xa0\xa0\xa0\xa0${hfMode}`,
             ];
             mcdu.printPage(lines);
         };
