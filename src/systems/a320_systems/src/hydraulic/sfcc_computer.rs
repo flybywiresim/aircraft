@@ -51,6 +51,12 @@ struct SlatFlapControlComputer {
     slat_actual_position_word_id: VariableIdentifier,
     flap_actual_position_word_id: VariableIdentifier,
 
+    slat_flap_component_status_word: Arinc429Word<u32>,
+    slat_flap_system_status_word: Arinc429Word<u32>,
+    slat_flap_actual_position_word: Arinc429Word<u32>,
+    slat_actual_position_word: Arinc429Word<f64>,
+    flap_actual_position_word: Arinc429Word<f64>,
+
     powered_by: ElectricalBusType,
     consumed_power: Power,
     is_powered: bool,
@@ -95,6 +101,12 @@ impl SlatFlapControlComputer {
                 .get_identifier(format!("SFCC_{}_SLAT_ACTUAL_POSITION_WORD", number)),
             flap_actual_position_word_id: context
                 .get_identifier(format!("SFCC_{}_FLAP_ACTUAL_POSITION_WORD", number)),
+
+            slat_flap_component_status_word: Self::empty_arinc_word(0),
+            slat_flap_system_status_word: Self::empty_arinc_word(0),
+            slat_flap_actual_position_word: Self::empty_arinc_word(0),
+            slat_actual_position_word: Self::empty_arinc_word(0.),
+            flap_actual_position_word: Self::empty_arinc_word(0.),
 
             powered_by: powered_by,
             consumed_power: Power::new::<watt>(Self::MAX_POWER_CONSUMPTION_WATT),
@@ -189,6 +201,14 @@ impl SlatFlapControlComputer {
         (demanded_angle - feedback_angle).get::<degree>().abs() > Self::EQUAL_ANGLE_DELTA_DEGREE
     }
 
+    fn reset_arinc_words(&mut self) {
+        self.slat_flap_component_status_word = Self::empty_arinc_word(0);
+        self.slat_flap_system_status_word = Self::empty_arinc_word(0);
+        self.slat_flap_actual_position_word = Self::empty_arinc_word(0);
+        self.slat_actual_position_word = Self::empty_arinc_word(0.);
+        self.flap_actual_position_word = Self::empty_arinc_word(0.);
+    }
+
     pub fn update(
         &mut self,
         context: &UpdateContext,
@@ -199,9 +219,16 @@ impl SlatFlapControlComputer {
         lgciu: &impl LgciuWeightOnWheels,
     ) {
         if !self.is_powered {
+            self.reset_arinc_words();
             self.power_off_length += context.delta();
             return;
         }
+
+        self.slat_flap_system_status_word = self.update_slat_flap_system_status_word(flaps_handle);
+        self.slat_flap_component_status_word = self.update_slat_flap_component_status_word();
+        self.slat_flap_actual_position_word = self.update_slat_flap_actual_position_word();
+        self.slat_actual_position_word = self.update_slat_actual_position_word();
+        self.flap_actual_position_word = self.update_flap_actual_position_word();
 
         // CAS read before starting any SFCC logic to prevent reading None or using old data
         self.update_cas(adiru);
@@ -256,11 +283,7 @@ impl SlatFlapControlComputer {
         return Arinc429Word::new(value, SignStatus::NoComputedData);
     }
 
-    fn slat_flap_component_status_word(&self) -> Arinc429Word<u32> {
-        if !self.is_powered {
-            return Self::empty_arinc_word(0);
-        }
-
+    fn update_slat_flap_component_status_word(&self) -> Arinc429Word<u32> {
         let mut word = Arinc429Word::new(0, SignStatus::NormalOperation);
 
         // LABEL 45
@@ -280,10 +303,11 @@ impl SlatFlapControlComputer {
         word
     }
 
-    fn slat_flap_system_status_word(&self) -> Arinc429Word<u32> {
-        if !self.is_powered {
-            return Self::empty_arinc_word(0);
-        }
+    fn update_slat_flap_system_status_word(
+        &self,
+        flaps_handle: &CommandSensorUnit,
+    ) -> Arinc429Word<u32> {
+        let csu_position = flaps_handle.current_position();
 
         let mut word = Arinc429Word::new(0, SignStatus::NormalOperation);
 
@@ -308,22 +332,19 @@ impl SlatFlapControlComputer {
         word.set_bit(16, false);
 
         // CSU Position 0
-        word.set_bit(17, self.flaps_conf == FlapsConf::Conf0);
+        word.set_bit(17, csu_position == CSUPosition::Conf0);
 
         // CSU Position 1
-        word.set_bit(
-            18,
-            self.flaps_conf == FlapsConf::Conf1 || self.flaps_conf == FlapsConf::Conf1F,
-        );
+        word.set_bit(18, csu_position == CSUPosition::Conf1);
 
         // CSU Position 2
-        word.set_bit(19, self.flaps_conf == FlapsConf::Conf2);
+        word.set_bit(19, csu_position == CSUPosition::Conf2);
 
         // CSU Position 3
-        word.set_bit(20, self.flaps_conf == FlapsConf::Conf3);
+        word.set_bit(20, csu_position == CSUPosition::Conf3);
 
         // CSU Position Full
-        word.set_bit(21, self.flaps_conf == FlapsConf::ConfFull);
+        word.set_bit(21, csu_position == CSUPosition::ConfFull);
 
         // Flap Relief Engaged
         word.set_bit(22, self.flap_channel.is_flap_relief_engaged());
@@ -341,7 +362,11 @@ impl SlatFlapControlComputer {
         word.set_bit(26, self.flap_channel.get_bit_26_system_status_word());
 
         // CSU Position Out-of-Detent > 10sec
-        word.set_bit(27, false);
+        word.set_bit(
+            27,
+            flaps_handle.current_position() == CSUPosition::OutOfDetent
+                && flaps_handle.time_since_last_valid_position() >= Duration::from_secs(10),
+        );
 
         // Slat Data Valid
         word.set_bit(28, true);
@@ -352,10 +377,8 @@ impl SlatFlapControlComputer {
         word
     }
 
-    fn slat_flap_actual_position_word(&self) -> Arinc429Word<u32> {
-        if !self.is_powered {
-            return Self::empty_arinc_word(0);
-        }
+    fn update_slat_flap_actual_position_word(&self) -> Arinc429Word<u32> {
+        // LABEL 47
 
         let mut word = Arinc429Word::new(0, SignStatus::NormalOperation);
 
@@ -418,10 +441,8 @@ impl SlatFlapControlComputer {
         word
     }
 
-    fn slat_actual_position_word(&self) -> Arinc429Word<f64> {
-        if !self.is_powered {
-            return Self::empty_arinc_word(0.);
-        }
+    fn update_slat_actual_position_word(&self) -> Arinc429Word<f64> {
+        // LABEL 127
 
         Arinc429Word::new(
             self.slat_channel.get_slat_feedback_angle().get::<degree>(),
@@ -429,15 +450,33 @@ impl SlatFlapControlComputer {
         )
     }
 
-    fn flap_actual_position_word(&self) -> Arinc429Word<f64> {
-        if !self.is_powered {
-            return Self::empty_arinc_word(0.);
-        }
+    fn update_flap_actual_position_word(&self) -> Arinc429Word<f64> {
+        // LABEL 137
 
         Arinc429Word::new(
             self.flap_channel.get_flap_feedback_angle().get::<degree>(),
             SignStatus::NormalOperation,
         )
+    }
+
+    fn get_slat_flap_system_status_word(&self) -> Arinc429Word<u32> {
+        return self.slat_flap_system_status_word;
+    }
+
+    fn get_slat_flap_component_status_word(&self) -> Arinc429Word<u32> {
+        return self.slat_flap_component_status_word;
+    }
+
+    fn get_slat_flap_actual_position_word(&self) -> Arinc429Word<u32> {
+        return self.slat_flap_actual_position_word;
+    }
+
+    fn get_slat_actual_position_word(&self) -> Arinc429Word<f64> {
+        return self.slat_actual_position_word;
+    }
+
+    fn get_flap_actual_position_word(&self) -> Arinc429Word<f64> {
+        return self.flap_actual_position_word;
     }
 }
 
@@ -497,23 +536,23 @@ impl SimulationElement for SlatFlapControlComputer {
 
         writer.write(
             &self.slat_flap_component_status_word_id,
-            self.slat_flap_component_status_word(),
+            self.get_slat_flap_component_status_word(),
         );
         writer.write(
             &self.slat_flap_system_status_word_id,
-            self.slat_flap_system_status_word(),
+            self.get_slat_flap_system_status_word(),
         );
         writer.write(
             &self.slat_flap_actual_position_word_id,
-            self.slat_flap_actual_position_word(),
+            self.get_slat_flap_actual_position_word(),
         );
         writer.write(
             &self.slat_actual_position_word_id,
-            self.slat_actual_position_word(),
+            self.get_slat_actual_position_word(),
         );
         writer.write(
             &self.flap_actual_position_word_id,
-            self.flap_actual_position_word(),
+            self.get_flap_actual_position_word(),
         );
     }
 }

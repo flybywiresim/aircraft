@@ -533,10 +533,7 @@ impl FlapsChannel {
     }
 
     pub fn get_bit_28_component_status_word(&self, cas: Option<Velocity>) -> bool {
-        if self.flap_auto_command_active && cas.is_none() {
-            return true;
-        }
-        return false;
+        return self.flap_auto_command_active && cas.is_none();
     }
 }
 impl SimulationElement for FlapsChannel {
