@@ -1,8 +1,8 @@
 import { CpdlcMessage, CpdlcMessageMonitoringState } from '@atsu/common/messages/CpdlcMessage';
 import { AtsuMessageComStatus } from '@atsu/common/messages/AtsuMessage';
 import { Atsu } from '../ATSU';
-import { UplinkMonitor } from './UplinkMessageMonitoring';
-import { UplinkMessageInterpretation } from './UplinkMessageInterpretation';
+import { UplinkMonitor } from '../../../common/src/components/UplinkMonitor';
+import { UplinkMessageInterpretation } from '../../../common/src/components/UplinkMessageInterpretation';
 
 export class UplinkMessageStateMachine {
     public static initialize(atsu: Atsu, message: CpdlcMessage): void {

@@ -1,17 +1,6 @@
+import { Waypoint } from '@atsu/common/types/Waypoint';
 import { FlightPlanManager } from '@shared/flightplan';
 import { Atsu } from '../ATSU';
-
-export class Waypoint {
-    public ident: string = '';
-
-    public altitude: number = 0;
-
-    public utc: number = 0;
-
-    constructor(ident: string) {
-        this.ident = ident;
-    }
-}
 
 export class FlightStateObserver {
     public LastWaypoint: Waypoint | undefined = undefined;

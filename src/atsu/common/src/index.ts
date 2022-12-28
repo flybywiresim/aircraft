@@ -27,6 +27,9 @@ import { OclMessage } from './messages/OclMessage';
 import { InputValidation, InputWaypointType } from './components/InputValidation';
 import { FansMode } from './com/FutureAirNavigationSystem';
 import { coordinateToString } from './components/Convert';
+import { UplinkMessageInterpretation } from './components/UplinkMessageInterpretation';
+import { UplinkMonitor } from './components/UplinkMonitor';
+import { Waypoint } from './types/Waypoint';
 
 export {
     AtsuStatusCodes,
@@ -56,4 +59,7 @@ export {
     InputValidation,
     InputWaypointType,
     coordinateToString,
+    UplinkMessageInterpretation,
+    UplinkMonitor,
+    Waypoint,
 };

@@ -2,7 +2,7 @@ import { coordinateToString, timestampToString } from '@atsu/common/components/C
 import { InputValidation } from '@atsu/common/components/InputValidation';
 import { CpdlcMessagesDownlink } from '@atsu/common/messages/CpdlcMessageElements';
 import { CpdlcMessage } from '@atsu/common/messages/CpdlcMessage';
-import { Atsu } from '../ATSU';
+import { Atsu } from '../../../system/src/ATSU';
 
 export class UplinkMessageInterpretation {
     private static NonAutomaticClosingMessage: string[] = [
