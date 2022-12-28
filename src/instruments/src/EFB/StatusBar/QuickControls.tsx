@@ -3,6 +3,7 @@
 
 import React, { useRef, useState } from 'react';
 import {
+    BrightnessHigh,
     BrightnessHighFill,
     Compass,
     Gear,
@@ -29,7 +30,7 @@ export const QuickControls = () => {
 
     const [brightnessSetting, setBrightnessSetting] = usePersistentNumberProperty('EFB_BRIGHTNESS', 0);
     const [brightness] = useSimVar('L:A32NX_EFB_BRIGHTNESS', 'number', 500);
-    const [usingAutobrightness] = usePersistentNumberProperty('EFB_USING_AUTOBRIGHTNESS', 0);
+    const [usingAutobrightness, setUsingAutobrightness] = usePersistentNumberProperty('EFB_USING_AUTOBRIGHTNESS', 0);
     const [autoOSK, setAutoOSK] = usePersistentNumberProperty('EFB_AUTO_OSK', 0);
 
     const [adirsAlignTimeSimVar, setAdirsAlignTimeSimVar] = useSimVar('L:A32NX_CONFIG_ADIRS_IR_ALIGN_TIME', 'Enum', Number.MAX_SAFE_INTEGER);
@@ -44,6 +45,10 @@ export const QuickControls = () => {
     // onAfterChange={() => sliderRef.current.blur()}
     // in the Slider component props.
     const brightnessSliderRef = useRef<any>(null);
+
+    const handleAutoBrightness = () => {
+        setUsingAutobrightness(usingAutobrightness ? 0 : 1);
+    };
 
     const handleSleep = () => {
         history.push('/');
@@ -120,13 +125,11 @@ export const QuickControls = () => {
 
     return (
         <>
-            {!usingAutobrightness && (
-                <TooltipWrapper text={t('StatusBar.TT.QuickControls')}>
-                    <div onClick={() => setShowQuickControlsPane((old) => !old)}>
-                        <Gear size={26} />
-                    </div>
-                </TooltipWrapper>
-            )}
+            <TooltipWrapper text={t('StatusBar.TT.QuickControls')}>
+                <div onClick={() => setShowQuickControlsPane((old) => !old)}>
+                    <Gear size={26} />
+                </div>
+            </TooltipWrapper>
             {showQuickControlsPane
                 && (
                     <>
@@ -141,6 +144,17 @@ export const QuickControls = () => {
                                 <div className="absolute left-0 ml-6 text-4xl">
                                     Quick Settings
                                 </div>
+                                <TooltipWrapper text={t('QuickControls.TT.Settings')}>
+                                    <button
+                                        type="button"
+                                        onClick={handleSettings}
+                                        className={`flex justify-center items-center ml-4 text-theme-text hover:text-theme-body
+                                                   bg-theme-body hover:bg-theme-highlight rounded-md transition duration-100`}
+                                        style={{ width: '80px', height: '50px' }}
+                                    >
+                                        <Gear size={20} />
+                                    </button>
+                                </TooltipWrapper>
                                 <TooltipWrapper text={t('QuickControls.TT.Sleep')}>
                                     <button
                                         type="button"
@@ -234,36 +248,41 @@ export const QuickControls = () => {
                             </div>
 
                             <div className="flex flex-row justify-between items-center">
-                                <TooltipWrapper text={t('QuickControls.TT.Brightness')}>
-                                    <div className="flex flex-row mr-4 w-[80px] text-theme-text">
-                                        <BrightnessHighFill size={24} />
-                                        <span className="ml-2 pointer-events-none text-inherit">
-                                            {`${brightnessSetting}%`}
-                                        </span>
-                                    </div>
-                                    <div>
-                                        <Slider
-                                            ref={brightnessSliderRef}
-                                            value={usingAutobrightness ? brightness : brightnessSetting}
-                                            onChange={setBrightnessSetting}
-                                            onAfterChange={() => brightnessSliderRef.current && brightnessSliderRef.current.blur()}
-                                            className="rounded-md"
-                                            style={{ width: '380px', height: '50px', padding: '0' }}
-                                            trackStyle={{ backgroundColor: 'var(--color-text)', height: '50px' }}
-                                            railStyle={{ backgroundColor: 'var(--color-body)', height: '50px' }}
-                                            handleStyle={{ top: '13px', height: '0px', width: '0px' }}
-                                        />
-                                    </div>
-                                </TooltipWrapper>
-                                <TooltipWrapper text={t('QuickControls.TT.Settings')}>
+                                <div className={`flex flex-row items-center ${usingAutobrightness && 'opacity-30'}`}>
+                                    <TooltipWrapper text={t('QuickControls.TT.Brightness')}>
+                                        <div className="flex flex-row mr-4 w-[80px] text-theme-text">
+                                            <BrightnessHighFill size={24} />
+                                            <span className="ml-2 pointer-events-none text-inherit">
+                                                {`${usingAutobrightness ? brightness.toFixed(0) : brightnessSetting}%`}
+                                            </span>
+                                        </div>
+                                        <div>
+                                            <Slider
+                                                disabled={usingAutobrightness === 1}
+                                                ref={brightnessSliderRef}
+                                                value={usingAutobrightness ? brightness : brightnessSetting}
+                                                min={1}
+                                                max={100}
+                                                onChange={setBrightnessSetting}
+                                                onAfterChange={() => brightnessSliderRef.current && brightnessSliderRef.current.blur()}
+                                                className="rounded-md"
+                                                style={{ width: '380px', height: '50px', padding: '0' }}
+                                                trackStyle={{ backgroundColor: 'var(--color-text)', height: '50px' }}
+                                                railStyle={{ backgroundColor: 'var(--color-body)', height: '50px' }}
+                                                handleStyle={{ top: '13px', height: '0px', width: '0px' }}
+                                            />
+                                        </div>
+                                    </TooltipWrapper>
+                                </div>
+                                <TooltipWrapper text={t('QuickControls.TT.AutoBrightness')}>
                                     <button
                                         type="button"
-                                        onClick={handleSettings}
-                                        className="flex justify-center items-center ml-4 text-theme-text hover:text-theme-body
-                                                   bg-theme-body hover:bg-theme-highlight rounded-md transition duration-100"
+                                        onClick={handleAutoBrightness}
+                                        className={`flex justify-center items-center ml-4 text-theme-text hover:text-theme-body
+                                                   bg-theme-body hover:bg-theme-highlight rounded-md transition duration-100 ${usingAutobrightness === 1 ? 'bg-utility-green' : ''}`}
                                         style={{ width: '80px', height: '50px' }}
                                     >
-                                        <Gear size={20} />
+                                        <BrightnessHigh size={20} />
                                     </button>
                                 </TooltipWrapper>
                             </div>
