@@ -24,6 +24,13 @@ import { TooltipWrapper } from '../UtilComponents/TooltipWrapper';
 import { PowerStates, usePower } from '../Efb';
 import { ClientState } from '../../../../simbridge-client/src';
 
+const enum SimBridgeState {
+    OFF = 'OFF',
+    OFFLINE = 'OFFLINE',
+    CONNECTING = 'CONNECTING',
+    CONNECTED = 'CONNECTED',
+}
+
 export const QuickControls = () => {
     const history = useHistory();
     const power = usePower();
@@ -84,33 +91,29 @@ export const QuickControls = () => {
         setSimbridgeEnabled('AUTO ON');
     };
 
+    const determineSimBridgeState = (): SimBridgeState => {
+        if (simBridgeConnected) return SimBridgeState.CONNECTED;
+        if (!simBridgeConnected && simBridgeEnabled === 'AUTO OFF') return SimBridgeState.OFFLINE;
+        if (!simBridgeConnected && simBridgeEnabled === 'AUTO ON') return SimBridgeState.CONNECTING;
+        return SimBridgeState.OFF;
+    };
+
     const simBridgeButtonStyle = ():string => {
-        if (simBridgeConnected) {
-            return 'bg-utility-green';
+        switch (determineSimBridgeState()) {
+        case SimBridgeState.CONNECTED: return 'bg-utility-green';
+        case SimBridgeState.CONNECTING: return 'bg-utility-amber';
+        case SimBridgeState.OFFLINE: return 'bg-utility-red';
+        default: return '';
         }
-        if (!simBridgeConnected && simBridgeEnabled === 'AUTO OFF') {
-            return 'bg-utility-red';
-        }
-        if (!simBridgeConnected && simBridgeEnabled === 'AUTO ON') {
-            return 'bg-utility-amber';
-        }
-        return '';
     };
 
     const simBridgeButtonStateString = ():string => {
-        if (simBridgeConnected) {
-            return 'Connected';
+        switch (determineSimBridgeState()) {
+        case SimBridgeState.CONNECTED: return t('QuickControls.SimBridgeConnected');
+        case SimBridgeState.CONNECTING: return t('QuickControls.SimBridgeConnecting');
+        case SimBridgeState.OFFLINE: return t('QuickControls.SimBridgeOffline');
+        default: return t('QuickControls.SimBridgeOff');
         }
-        if (simBridgeEnabled === 'PERM OFF') {
-            return 'Off';
-        }
-        if (!simBridgeConnected && simBridgeEnabled === 'AUTO OFF') {
-            return 'Not Available';
-        }
-        if (!simBridgeConnected && simBridgeEnabled === 'AUTO ON') {
-            return 'Connecting...';
-        }
-        return '';
     };
 
     const handleSettings = () => {
@@ -133,7 +136,6 @@ export const QuickControls = () => {
             {showQuickControlsPane
                 && (
                     <>
-                        {/* quick settings pane */}
                         <div
                             className="absolute z-10 py-6 px-6 bg-theme-accent rounded-md border border-theme-secondary transition duration-100"
                             style={{ top: '40px', right: '50px', width: '620px', height: '320px' }}
