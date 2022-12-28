@@ -100,9 +100,9 @@ export const QuickControls = () => {
 
     const simBridgeButtonStyle = ():string => {
         switch (determineSimBridgeState()) {
-        case SimBridgeState.CONNECTED: return 'bg-utility-green';
-        case SimBridgeState.CONNECTING: return 'bg-utility-amber';
-        case SimBridgeState.OFFLINE: return 'bg-utility-red';
+        case SimBridgeState.CONNECTED: return 'bg-utility-green text-theme-body';
+        case SimBridgeState.CONNECTING: return 'bg-utility-amber text-theme-body';
+        case SimBridgeState.OFFLINE: return 'bg-utility-red text-theme-body';
         default: return '';
         }
     };
@@ -154,7 +154,7 @@ export const QuickControls = () => {
                                                    bg-theme-body hover:border-4 hover:border-theme-highlight rounded-md transition duration-100`}
                                         style={{ width: '80px', height: '50px' }}
                                     >
-                                        <Gear size={20} />
+                                        <Gear size={24} />
                                     </button>
                                 </TooltipWrapper>
                                 <TooltipWrapper text={t('QuickControls.TT.Sleep')}>
@@ -176,7 +176,7 @@ export const QuickControls = () => {
                                                bg-theme-body hover:border-4 hover:border-theme-highlight rounded-md transition duration-100"
                                         style={{ width: '80px', height: '50px' }}
                                     >
-                                        <Power size={20} />
+                                        <Power size={24} />
                                     </button>
                                 </TooltipWrapper>
                             </div>
@@ -252,7 +252,7 @@ export const QuickControls = () => {
                             <div className="flex flex-row justify-between items-center">
                                 <div className={`flex flex-row items-center ${usingAutobrightness && 'opacity-30'}`}>
                                     <TooltipWrapper text={t('QuickControls.TT.Brightness')}>
-                                        <div className="flex flex-row mr-4 w-[80px] text-theme-text">
+                                        <div className="flex flex-row items-center mr-4 w-[80px] text-theme-text">
                                             <BrightnessHighFill size={24} />
                                             <span className="ml-2 pointer-events-none text-inherit">
                                                 {`${usingAutobrightness ? brightness.toFixed(0) : brightnessSetting}%`}
@@ -282,10 +282,10 @@ export const QuickControls = () => {
                                         onClick={handleAutoBrightness}
                                         className={`flex justify-center items-center ml-4 text-theme-text 
                                                     bg-theme-body hover:border-4 hover:border-theme-highlight rounded-md 
-                                                    transition duration-100 ${usingAutobrightness === 1 ? 'bg-utility-green' : ''}`}
+                                                    transition duration-100 ${usingAutobrightness === 1 ? 'bg-utility-green text-theme-body' : ''}`}
                                         style={{ width: '80px', height: '50px' }}
                                     >
-                                        <BrightnessHigh size={20} />
+                                        <BrightnessHigh size={24} />
                                     </button>
                                 </TooltipWrapper>
                             </div>
