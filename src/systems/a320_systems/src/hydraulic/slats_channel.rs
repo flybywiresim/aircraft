@@ -1,6 +1,6 @@
 use systems::{
     hydraulic::command_sensor_unit::FlapsHandle,
-    shared::{CSUPosition, FeedbackPositionPickoffUnit, LgciuWeightOnWheels},
+    shared::{CSUPosition, LgciuWeightOnWheels, PositionPickoffUnit},
     simulation::{
         InitContext, SimulationElement, SimulatorWriter, UpdateContext, VariableIdentifier, Write,
     },
@@ -226,11 +226,11 @@ impl SlatsChannel {
     pub fn powerup_reset(
         &mut self,
         flaps_handle: &impl FlapsHandle,
-        slats_feedback_angle: &impl FeedbackPositionPickoffUnit,
+        slats_feedback_angle: &impl PositionPickoffUnit,
         aoa: Option<Angle>,
         cas: Option<Velocity>,
     ) {
-        self.slats_feedback_angle = slats_feedback_angle.angle();
+        self.slats_feedback_angle = slats_feedback_angle.fppu_angle();
 
         println!("powerup_reset");
 
@@ -260,12 +260,12 @@ impl SlatsChannel {
         &mut self,
         _context: &UpdateContext,
         flaps_handle: &impl FlapsHandle,
-        slats_feedback_angle: &impl FeedbackPositionPickoffUnit,
+        slats_feedback_angle: &impl PositionPickoffUnit,
         lgciu: &impl LgciuWeightOnWheels,
         aoa: Option<Angle>,
         cas: Option<Velocity>,
     ) {
-        self.slats_feedback_angle = slats_feedback_angle.angle();
+        self.slats_feedback_angle = slats_feedback_angle.fppu_angle();
 
         self.slats_demanded_angle = self.generate_slat_angle(flaps_handle, lgciu, aoa, cas);
     }

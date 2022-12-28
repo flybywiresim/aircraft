@@ -1,6 +1,6 @@
 use super::linear_actuator::Actuator;
 use crate::shared::{
-    interpolation, low_pass_filter::LowPassFilter, FeedbackPositionPickoffUnit, SectionPressure,
+    interpolation, low_pass_filter::LowPassFilter, PositionPickoffUnit, SectionPressure,
 };
 use crate::simulation::{
     InitContext, SimulationElement, SimulatorWriter, UpdateContext, VariableIdentifier, Write,
@@ -489,8 +489,17 @@ impl SimulationElement for FlapSlatAssembly {
         writer.write(&self.is_moving_id, self.is_surface_moving());
     }
 }
-impl FeedbackPositionPickoffUnit for FlapSlatAssembly {
-    fn angle(&self) -> Angle {
+impl PositionPickoffUnit for FlapSlatAssembly {
+    fn fppu_angle(&self) -> Angle {
+        self.position_feedback()
+    }
+    fn appu_left_angle(&self) -> Angle {
+        self.position_feedback()
+    }
+    fn appu_right_angle(&self) -> Angle {
+        self.position_feedback()
+    }
+    fn ippu_angle(&self) -> Angle {
         self.position_feedback()
     }
 }

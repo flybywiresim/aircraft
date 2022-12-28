@@ -91,12 +91,15 @@ pub trait PowerControlUnit {
     fn pob_deenergise(&self);
 }
 
-pub trait FeedbackPositionPickoffUnit {
-    fn angle(&self) -> Angle;
+pub trait PositionPickoffUnit {
+    fn fppu_angle(&self) -> Angle;
+    fn appu_left_angle(&self) -> Angle;
+    fn appu_right_angle(&self) -> Angle;
+    fn ippu_angle(&self) -> Angle;
 }
 
 pub trait SfccChannel {
-    fn receive_signal_fppu(&mut self, feedback: &impl FeedbackPositionPickoffUnit);
+    fn receive_signal_fppu(&mut self, feedback: &impl PositionPickoffUnit);
     fn send_signal_to_motors(&self) -> (Option<ChannelCommand>, Option<ChannelCommand>);
     fn generate_configuration(
         &self,

@@ -63,6 +63,7 @@ impl FlapsHandle for CommandSensorUnit {
 // completeness of the CSUPosition enum I included the OutOfDetent position.
 impl SimulationElement for CommandSensorUnit {
     fn read(&mut self, reader: &mut SimulatorReader) {
+        println!("Reading!...");
         self.previous_position = self.current_position;
 
         let new_position = CSUPosition::from(Read::<u8>::read(reader, &self.handle_position_id));
@@ -177,7 +178,10 @@ mod tests {
 
     #[test]
     fn flaps_simvars() {
-        let test_bed = test_bed_with().run_one_tick();
+        let mut test_bed = test_bed_with().run_one_tick();
+
+        // Need to call set_flaps_handle_position to register the variable
+        test_bed = test_bed.set_flaps_handle_position(4).run_one_tick();
         assert!(test_bed.contains_variable_with_name("FLAPS_HANDLE_INDEX"));
     }
 

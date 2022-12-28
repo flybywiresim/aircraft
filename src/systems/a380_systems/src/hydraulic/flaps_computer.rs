@@ -1,5 +1,5 @@
 use crate::systems::shared::arinc429::{Arinc429Word, SignStatus};
-use systems::shared::FeedbackPositionPickoffUnit;
+use systems::shared::PositionPickoffUnit;
 
 use systems::simulation::{
     InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -173,15 +173,15 @@ impl SlatFlapControlComputer {
         &mut self,
         context: &UpdateContext,
         flaps_handle: &FlapsHandle,
-        flaps_feedback: &impl FeedbackPositionPickoffUnit,
-        slats_feedback: &impl FeedbackPositionPickoffUnit,
+        flaps_feedback: &impl PositionPickoffUnit,
+        slats_feedback: &impl PositionPickoffUnit,
     ) {
         self.flaps_conf = self.generate_configuration(flaps_handle, context);
 
         self.flaps_demanded_angle = Self::demanded_flaps_fppu_angle_from_conf(self.flaps_conf);
         self.slats_demanded_angle = Self::demanded_slats_fppu_angle_from_conf(self.flaps_conf);
-        self.flaps_feedback_angle = flaps_feedback.angle();
-        self.slats_feedback_angle = slats_feedback.angle();
+        self.flaps_feedback_angle = flaps_feedback.fppu_angle();
+        self.slats_feedback_angle = slats_feedback.fppu_angle();
     }
 
     fn slat_flap_system_status_word(&self) -> Arinc429Word<u32> {
@@ -361,8 +361,8 @@ impl SlatFlapComplex {
     pub fn update(
         &mut self,
         context: &UpdateContext,
-        flaps_feedback: &impl FeedbackPositionPickoffUnit,
-        slats_feedback: &impl FeedbackPositionPickoffUnit,
+        flaps_feedback: &impl PositionPickoffUnit,
+        slats_feedback: &impl PositionPickoffUnit,
     ) {
         self.sfcc
             .update(context, &self.flaps_handle, flaps_feedback, slats_feedback);
@@ -405,8 +405,8 @@ mod tests {
         right_position_angle_id: VariableIdentifier,
         surface_type: String,
     }
-    impl FeedbackPositionPickoffUnit for SlatFlapGear {
-        fn angle(&self) -> Angle {
+    impl PositionPickoffUnit for SlatFlapGear {
+        fn fppu_angle(&self) -> Angle {
             self.current_angle
         }
     }
@@ -450,9 +450,9 @@ mod tests {
                 || hydraulic_pressure_right_side.get::<psi>() > 1500.
             {
                 if let Some(demanded_angle) = sfcc.signal_demanded_angle(&self.surface_type) {
-                    let actual_minus_target_ffpu = demanded_angle - self.angle();
+                    let actual_minus_target_ffpu = demanded_angle - self.fppu_angle();
 
-                    let fppu_angle = self.angle();
+                    let fppu_angle = self.fppu_angle();
 
                     if actual_minus_target_ffpu.get::<degree>().abs() > Self::ANGLE_DELTA_DEGREE {
                         self.current_angle += Angle::new::<degree>(
@@ -462,7 +462,7 @@ mod tests {
                         );
                         self.current_angle = self.current_angle.max(Angle::new::<degree>(0.));
 
-                        let new_ffpu_angle = self.angle();
+                        let new_ffpu_angle = self.fppu_angle();
                         // If demand was crossed between two frames: fixing to demand
                         if new_ffpu_angle > demanded_angle && fppu_angle < demanded_angle
                             || new_ffpu_angle < demanded_angle && fppu_angle > demanded_angle
@@ -652,11 +652,11 @@ mod tests {
         }
 
         fn get_flaps_fppu_feedback(&self) -> f64 {
-            self.query(|a| a.flap_gear.angle().get::<degree>())
+            self.query(|a| a.flap_gear.fppu_angle().get::<degree>())
         }
 
         fn get_slats_fppu_feedback(&self) -> f64 {
-            self.query(|a| a.slat_gear.angle().get::<degree>())
+            self.query(|a| a.slat_gear.fppu_angle().get::<degree>())
         }
 
         fn test_flap_conf(

@@ -2106,6 +2106,7 @@ impl A320Hydraulic {
             &self.pushback_tug,
         );
 
+        // Commented out because doubled?
         // self.slats_flaps_complex
         //     .update(context, &self.flap_system, &self.slat_system);
 

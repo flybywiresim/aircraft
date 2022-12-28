@@ -1,6 +1,6 @@
 use systems::{
     hydraulic::command_sensor_unit::{CommandSensorUnit, FlapsHandle},
-    shared::{CSUPosition, FeedbackPositionPickoffUnit},
+    shared::{CSUPosition, PositionPickoffUnit},
     simulation::{
         InitContext, SimulationElement, SimulatorWriter, UpdateContext, VariableIdentifier, Write,
     },
@@ -355,12 +355,12 @@ impl FlapsChannel {
     pub fn powerup_reset(
         &mut self,
         flaps_handle: &impl FlapsHandle,
-        flaps_feedback_angle: &impl FeedbackPositionPickoffUnit,
+        flaps_feedback_angle: &impl PositionPickoffUnit,
         cas1: Option<Velocity>,
         cas2: Option<Velocity>,
         cas: Option<Velocity>,
     ) {
-        self.flaps_feedback_angle = flaps_feedback_angle.angle();
+        self.flaps_feedback_angle = flaps_feedback_angle.fppu_angle();
 
         println!("powerup_reset");
         println!(
@@ -474,14 +474,14 @@ impl FlapsChannel {
         &mut self,
         _context: &UpdateContext,
         flaps_handle: &CommandSensorUnit,
-        flaps_feedback_angle: &impl FeedbackPositionPickoffUnit,
+        flaps_feedback_angle: &impl PositionPickoffUnit,
         cas1: Option<Velocity>,
         cas2: Option<Velocity>,
         cas: Option<Velocity>,
         previous_cas: Option<Velocity>,
         last_valid_cas: Velocity,
     ) {
-        self.flaps_feedback_angle = flaps_feedback_angle.angle();
+        self.flaps_feedback_angle = flaps_feedback_angle.fppu_angle();
 
         self.flaps_demanded_angle =
             self.generate_flap_angle(flaps_handle, cas1, cas2, cas, previous_cas, last_valid_cas);
