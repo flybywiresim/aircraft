@@ -27,8 +27,6 @@ export const QuickControls = () => {
     const history = useHistory();
     const power = usePower();
 
-    const [showQuickControlsPane, setShowQuickControlsPane] = useState(true);
-
     const [brightnessSetting, setBrightnessSetting] = usePersistentNumberProperty('EFB_BRIGHTNESS', 0);
     const [brightness] = useSimVar('L:A32NX_EFB_BRIGHTNESS', 'number', 500);
     const [usingAutobrightness] = usePersistentNumberProperty('EFB_USING_AUTOBRIGHTNESS', 0);
@@ -38,6 +36,7 @@ export const QuickControls = () => {
     const [boardingRate, setBoardingRate] = usePersistentProperty('CONFIG_BOARDING_RATE', 'REAL');
     const [simBridgeEnabled, setSimbridgeEnabled] = usePersistentProperty('CONFIG_SIMBRIDGE_ENABLED', 'AUTO ON');
 
+    const [showQuickControlsPane, setShowQuickControlsPane] = useState(false);
     const [simBridgeConnected, setSimBridgeConnected] = useState(false);
 
     // To prevent keyboard input (esp. END key for external view) to change
@@ -128,14 +127,14 @@ export const QuickControls = () => {
                     </div>
                 </TooltipWrapper>
             )}
-            {(showQuickControlsPane)
+            {showQuickControlsPane
                 && (
                     <>
                         {/* quick settings pane */}
                         <div
                             className="absolute z-10 py-6 px-6 bg-theme-accent rounded-md border border-theme-secondary transition duration-100"
                             style={{ top: '40px', right: '50px', width: '620px', height: '320px' }}
-                            // onMouseLeave={() => setShowQuickControlsPane(false)}
+                            onMouseLeave={() => setShowQuickControlsPane(false)}
                         >
 
                             <div className="flex flex-row justify-end items-center mb-8">
