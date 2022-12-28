@@ -809,6 +809,14 @@
         - BLUE
         - YELLOW
 
+- A32NX_HYD_{loop_name}_RESERVOIR_OVHT
+    - Boolean
+    - Reservoir of {loop_name} hydraulic circuit is overheating
+    - {loop_name}
+        - GREEN
+        - BLUE
+        - YELLOW
+
 - A32NX_HYD_{loop_name}_EDPUMP_ACTIVE
     - Bool
     - Engine driven pump of {loop_name} hydraulic circuit is active
@@ -884,6 +892,13 @@
 - A32NX_HYD_{loop_name}_EPUMP_LOW_PRESS
     - Bool
     - Electric pump of {loop_name} hydraulic circuit is active but pressure is too low
+    - {loop_name}
+        - BLUE
+        - YELLOW
+
+- A32NX_HYD_{loop_name}_EPUMP_OVHT
+    - Bool
+    - Electric pump of {loop_name} hydraulic circuit is overheating
     - {loop_name}
         - BLUE
         - YELLOW
