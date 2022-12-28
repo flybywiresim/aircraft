@@ -252,7 +252,7 @@ export const QuickControls = () => {
                                             style={{ width: '380px', height: '50px', padding: '0' }}
                                             trackStyle={{ backgroundColor: 'var(--color-text)', height: '50px' }}
                                             railStyle={{ backgroundColor: 'var(--color-body)', height: '50px' }}
-                                            handleStyle={{ borderColor: 'transparent', backgroundColor: 'transparent', top: '13px', height: '40px', width: '10px' }}
+                                            handleStyle={{ top: '13px', height: '0px', width: '0px' }}
                                         />
                                     </div>
                                 </TooltipWrapper>
