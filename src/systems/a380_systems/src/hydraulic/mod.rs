@@ -18,6 +18,7 @@ use uom::si::{
 
 use systems::{
     accept_iterable,
+    engine::engine_wing_flex::EngineFlexPhysics,
     engine::Engine,
     hydraulic::{
         aerodynamic_model::AerodynamicModel,
@@ -1477,6 +1478,11 @@ impl A380GearSystemFactory {
 }
 
 pub(super) struct A380Hydraulic {
+    eng1_flex: EngineFlexPhysics,
+    eng2_flex: EngineFlexPhysics,
+    eng3_flex: EngineFlexPhysics,
+    eng4_flex: EngineFlexPhysics,
+
     nose_steering: SteeringActuator,
 
     core_hydraulic_updater: MaxStepLoop,
@@ -1597,6 +1603,10 @@ impl A380Hydraulic {
 
     pub fn new(context: &mut InitContext) -> A380Hydraulic {
         A380Hydraulic {
+            eng1_flex: EngineFlexPhysics::new(context, 1),
+            eng2_flex: EngineFlexPhysics::new(context, 2),
+            eng3_flex: EngineFlexPhysics::new(context, 3),
+            eng4_flex: EngineFlexPhysics::new(context, 4),
             nose_steering: SteeringActuator::new(
                 context,
                 Angle::new::<degree>(75.),
@@ -2088,6 +2098,13 @@ impl A380Hydraulic {
         lgciu2: &impl LgciuInterface,
         adirs: &impl AdirsDiscreteOutputs,
     ) {
+        self.eng1_flex.update(context);
+        self.eng2_flex.update(context);
+        self.eng3_flex.update(context);
+        self.eng4_flex.update(context);
+
+        println!("FLEX ENG: {:?}", self.eng1_flex);
+
         self.forward_cargo_door.update(
             context,
             &self.forward_cargo_door_controller,
@@ -2725,6 +2742,11 @@ impl A380Hydraulic {
 }
 impl SimulationElement for A380Hydraulic {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.eng1_flex.accept(visitor);
+        self.eng2_flex.accept(visitor);
+        self.eng3_flex.accept(visitor);
+        self.eng4_flex.accept(visitor);
+
         self.engine_driven_pump_1a.accept(visitor);
         self.engine_driven_pump_1a_controller.accept(visitor);
 

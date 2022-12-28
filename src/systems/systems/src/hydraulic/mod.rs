@@ -1953,18 +1953,18 @@ impl SimulationElement for LeakMeasurementValve {
     }
 }
 
-struct SpringPhysics {
+pub struct SpringPhysics {
     last_length: f64,
 }
 impl SpringPhysics {
     const SPRING_K_CONSTANT: f64 = 5000.;
     const SPRING_DAMPING_CONSTANT: f64 = 500.;
 
-    fn default() -> Self {
+    pub fn default() -> Self {
         Self { last_length: 0. }
     }
 
-    fn update_force(
+    pub fn update_force(
         &mut self,
         context: &UpdateContext,
         position1: Vector3<f64>,
