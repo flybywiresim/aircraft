@@ -145,7 +145,7 @@ export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
     }, []);
 
     return (
-        <div className="flex fixed z-40 justify-between items-center px-6 w-full h-10 text-lg font-medium leading-none text-theme-text bg-theme-statusbar">
+        <div className="flex fixed z-30 justify-between items-center px-6 w-full h-10 text-lg font-medium leading-none text-theme-text bg-theme-statusbar">
             <div
                 className="absolute inset-x-0 bottom-0 h-0.5 bg-theme-highlight"
                 style={{ width: `${shutoffBarPercent}%`, transition: 'width 0.5s ease' }}

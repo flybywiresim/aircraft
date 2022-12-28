@@ -37,6 +37,7 @@ import { setFlightPlanProgress } from './Store/features/flightProgress';
 import { Checklists, setAutomaticItemStates } from './Checklists/Checklists';
 import { CHECKLISTS } from './Checklists/Lists';
 import { setChecklistItems } from './Store/features/checklists';
+import { FlyPadPage } from './Settings/Pages/FlyPadPage';
 
 const BATTERY_DURATION_CHARGE_MIN = 180;
 const BATTERY_DURATION_DISCHARGE_MIN = 540;
@@ -356,9 +357,10 @@ const Efb = () => {
                                     <Route path="/navigation" component={Navigation} />
                                     <Route path="/atc" component={ATC} />
                                     <Route path="/failures" component={Failures} />
-                                    <Route path="/settings" component={Settings} />
                                     <Route path="/checklists" component={Checklists} />
                                     <Route path="/presets" component={Presets} />
+                                    <Route path="/settings" component={Settings} />
+                                    <Route path="/settings/flypad" component={FlyPadPage} />
                                 </Switch>
                             </div>
                         </div>

@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 // Copyright (c) 2022 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
@@ -35,10 +36,8 @@ export class ClientState {
         NXDataStore.getAndSubscribe('CONFIG_SIMBRIDGE_ENABLED', (key, value) => {
             console.log(`[SimBridge-Client] SimBridge Enabled setting changed to: ${value}`);
             this.simbridgeConnect = value;
-            if (this.simbridgeConnect === 'AUTO ON') {
-                this.connectionAttemptCounter = 0;
-                this.checkServerAvailability();
-            }
+            this.connectionAttemptCounter = 0;
+            this.checkServerAvailability();
         }, 'AUTO ON');
 
         // reset the setting if not permanent off
