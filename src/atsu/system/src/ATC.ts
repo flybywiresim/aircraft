@@ -3,6 +3,7 @@
 
 import { InputValidation } from '@atsu/common/components/InputValidation';
 import { AtsuStatusCodes } from '@atsu/common/AtsuStatusCodes';
+import { MailboxStatusMessage } from '@atsu/common/databus/Mailbox';
 import { AtisMessage, AtisType } from '@atsu/common/messages/AtisMessage';
 import { AtsuTimestamp } from '@atsu/common/messages/AtsuTimestamp';
 import { AtsuMessageComStatus, AtsuMessage, AtsuMessageType, AtsuMessageDirection } from '@atsu/common/messages/AtsuMessage';
@@ -123,7 +124,7 @@ export class Atc {
         message.Content.push(CpdlcMessagesDownlink.DM9998[1]);
         message.ComStatus = AtsuMessageComStatus.Sending;
         message.Message = 'REQUEST LOGON';
-        message.DcduRelevantMessage = false;
+        message.MailboxRelevantMessage = false;
 
         this.nextAtc = station;
         this.parent.registerMessages([message]);
@@ -191,7 +192,7 @@ export class Atc {
         message.Direction = AtsuMessageDirection.Downlink;
         message.Content.push(CpdlcMessagesDownlink.DM9999[1]);
         message.ComStatus = AtsuMessageComStatus.Sending;
-        message.DcduRelevantMessage = false;
+        message.MailboxRelevantMessage = false;
 
         this.maxUplinkDelay = -1;
         this.parent.registerMessages([message]);
@@ -322,7 +323,7 @@ export class Atc {
         }
 
         message.ComStatus = AtsuMessageComStatus.Sending;
-        if ((message as CpdlcMessage).DcduRelevantMessage) {
+        if ((message as CpdlcMessage).MailboxRelevantMessage) {
             this.mailboxBus.updateMailboxStatusMessage(message.UniqueMessageID, MailboxStatusMessage.Sending);
             this.mailboxBus.update(message as CpdlcMessage);
         }
@@ -338,7 +339,7 @@ export class Atc {
                 message.ComStatus = AtsuMessageComStatus.Failed;
             }
 
-            if ((message as CpdlcMessage).DcduRelevantMessage) {
+            if ((message as CpdlcMessage).MailboxRelevantMessage) {
                 this.mailboxBus.update(message as CpdlcMessage);
 
                 this.mailboxBus.updateMailboxStatusMessage(message.UniqueMessageID, code === AtsuStatusCodes.Ok ? MailboxStatusMessage.Sent : MailboxStatusMessage.SendFailed);
@@ -395,7 +396,7 @@ export class Atc {
         if (request.Content[0]?.ExpectedResponse === CpdlcMessageExpectedResponseType.NotRequired && response === undefined) {
             // received the station message for the DCDU
             if (request.Content[0]?.TypeId === 'UM9999') {
-                request.DcduRelevantMessage = false;
+                request.MailboxRelevantMessage = false;
                 if (this.currentAtc !== '') {
                     this.mailboxBus.setAtcLogonMessage(request.Message);
                 }
@@ -404,7 +405,7 @@ export class Atc {
 
             // received a logoff message
             if (request.Content[0]?.TypeId === 'UM9995') {
-                request.DcduRelevantMessage = false;
+                request.MailboxRelevantMessage = false;
                 this.mailboxBus.setAtcLogonMessage('');
                 this.currentAtc = '';
                 return true;
@@ -412,7 +413,7 @@ export class Atc {
 
             // received a service terminated message
             if (request.Message.includes('TERMINATED')) {
-                request.DcduRelevantMessage = false;
+                request.MailboxRelevantMessage = false;
                 this.mailboxBus.setAtcLogonMessage('');
                 this.currentAtc = '';
                 return true;
@@ -422,7 +423,7 @@ export class Atc {
             if (request.Content[0]?.TypeId === 'UM9998') {
                 const entries = request.Message.split(' ');
                 if (entries.length >= 2) {
-                    request.DcduRelevantMessage = false;
+                    request.MailboxRelevantMessage = false;
                     const station = entries[1].replace(/@/gi, '');
                     this.handover(station);
                     return true;
@@ -435,7 +436,7 @@ export class Atc {
             if (request.Content[0]?.TypeId === 'DM9998') {
                 // logon accepted by ATC
                 if (response.Content[0]?.TypeId === 'UM9997') {
-                    response.DcduRelevantMessage = false;
+                    response.MailboxRelevantMessage = false;
                     this.mailboxBus.setAtcLogonMessage(`CURRENT ATC UNIT @${this.nextAtc}@ CTL`);
                     this.currentFansMode = FutureAirNavigationSystem.currentFansMode(this.nextAtc);
                     InputValidation.FANS = this.currentFansMode;
@@ -446,7 +447,7 @@ export class Atc {
 
                 // logon rejected
                 if (response.Content[0]?.TypeId === 'UM9996' || response.Content[0]?.TypeId === 'UM0') {
-                    response.DcduRelevantMessage = false;
+                    response.MailboxRelevantMessage = false;
                     this.mailboxBus.setAtcLogonMessage('');
                     this.currentAtc = '';
                     this.nextAtc = '';
@@ -501,7 +502,7 @@ export class Atc {
             }
         });
 
-        if (messages.length !== 0 && (messages[0] as CpdlcMessage).DcduRelevantMessage) {
+        if (messages.length !== 0 && (messages[0] as CpdlcMessage).MailboxRelevantMessage) {
             this.mailboxBus.enqueue(messages);
         }
     }
