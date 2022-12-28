@@ -150,8 +150,8 @@ export const QuickControls = () => {
                                     <button
                                         type="button"
                                         onClick={handleSettings}
-                                        className={`flex justify-center items-center ml-4 text-theme-text hover:text-theme-body
-                                                   bg-theme-body hover:bg-theme-highlight rounded-md transition duration-100`}
+                                        className={`flex justify-center items-center ml-4 text-theme-text 
+                                                   bg-theme-body hover:border-4 hover:border-theme-highlight rounded-md transition duration-100`}
                                         style={{ width: '80px', height: '50px' }}
                                     >
                                         <Gear size={20} />
@@ -161,8 +161,8 @@ export const QuickControls = () => {
                                     <button
                                         type="button"
                                         onClick={handleSleep}
-                                        className="flex justify-center items-center ml-4 text-theme-text hover:text-theme-body
-                                               bg-theme-body hover:bg-theme-highlight rounded-md transition duration-100"
+                                        className="flex justify-center items-center ml-4 text-theme-text
+                                               bg-theme-body hover:border-4 hover:border-theme-highlight rounded-md transition duration-100"
                                         style={{ width: '80px', height: '50px' }}
                                     >
                                         <MoonFill size={20} />
@@ -172,8 +172,8 @@ export const QuickControls = () => {
                                     <button
                                         type="button"
                                         onClick={handlePower}
-                                        className="flex justify-center items-center ml-4 text-theme-text hover:text-theme-body
-                                               bg-theme-body hover:bg-theme-highlight rounded-md transition duration-100"
+                                        className="flex justify-center items-center ml-4 text-theme-text
+                                               bg-theme-body hover:border-4 hover:border-theme-highlight rounded-md transition duration-100"
                                         style={{ width: '80px', height: '50px' }}
                                     >
                                         <Power size={20} />
@@ -186,8 +186,8 @@ export const QuickControls = () => {
                                     <button
                                         type="button"
                                         onClick={handleAlignADIRS}
-                                        className="flex flex-col justify-center items-center text-theme-text hover:text-theme-body
-                                                   bg-theme-body hover:bg-theme-highlight rounded-md transition duration-100"
+                                        className="flex flex-col justify-center items-center text-theme-text
+                                                   bg-theme-body hover:border-4 hover:border-theme-highlight rounded-md transition duration-100"
                                         style={{ width: '130px', height: '100px' }}
                                     >
                                         <Compass size={42} />
@@ -200,8 +200,8 @@ export const QuickControls = () => {
                                     <button
                                         type="button"
                                         onClick={handleInstantBoarding}
-                                        className="flex flex-col justify-center items-center text-theme-text hover:text-theme-body
-                                                   bg-theme-body hover:bg-theme-highlight rounded-md transition duration-100"
+                                        className="flex flex-col justify-center items-center text-theme-text
+                                                   bg-theme-body hover:border-4 hover:border-theme-highlight rounded-md transition duration-100"
                                         style={{ width: '130px', height: '100px' }}
                                     >
                                         <PersonCheck size={42} />
@@ -214,8 +214,8 @@ export const QuickControls = () => {
                                     <button
                                         type="button"
                                         onClick={handleResetSimBridgeConnection}
-                                        className={`flex flex-col justify-center items-center text-theme-text hover:text-theme-body 
-                                                    bg-theme-body hover:bg-theme-highlight rounded-md transition 
+                                        className={`flex flex-col justify-center items-center text-theme-text  
+                                                    bg-theme-body hover:border-4 hover:border-theme-highlight rounded-md transition 
                                                     duration-100 ${(simBridgeButtonStyle())}`}
                                         style={{ width: '130px', height: '100px' }}
                                     >
@@ -236,8 +236,8 @@ export const QuickControls = () => {
                                     <button
                                         type="button"
                                         onClick={() => setAutoOSK(autoOSK === 0 ? 1 : 0)}
-                                        className={`flex flex-col justify-center items-center text-theme-text hover:text-theme-body
-                                                   bg-theme-body hover:bg-theme-highlight rounded-md transition duration-100 ${autoOSK === 1 ? 'bg-utility-green' : ''}`}
+                                        className={`flex flex-col justify-center items-center text-theme-text 
+                                                   bg-theme-body hover:border-4 hover:border-theme-highlight rounded-md transition duration-100 ${autoOSK === 1 ? 'bg-utility-green' : ''}`}
                                         style={{ width: '130px', height: '100px' }}
                                     >
                                         <Keyboard size={42} />
@@ -280,8 +280,9 @@ export const QuickControls = () => {
                                     <button
                                         type="button"
                                         onClick={handleAutoBrightness}
-                                        className={`flex justify-center items-center ml-4 text-theme-text hover:text-theme-body
-                                                   bg-theme-body hover:bg-theme-highlight rounded-md transition duration-100 ${usingAutobrightness === 1 ? 'bg-utility-green' : ''}`}
+                                        className={`flex justify-center items-center ml-4 text-theme-text 
+                                                    bg-theme-body hover:border-4 hover:border-theme-highlight rounded-md 
+                                                    transition duration-100 ${usingAutobrightness === 1 ? 'bg-utility-green' : ''}`}
                                         style={{ width: '80px', height: '50px' }}
                                     >
                                         <BrightnessHigh size={20} />
