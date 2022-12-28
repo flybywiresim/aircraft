@@ -2,7 +2,17 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import React, { useRef, useState } from 'react';
-import { Compass, Gear, Keyboard, MoonFill, PersonCheck, Power, Wifi, WifiOff } from 'react-bootstrap-icons';
+import {
+    BrightnessHighFill,
+    Compass,
+    Gear,
+    Keyboard,
+    MoonFill,
+    PersonCheck,
+    Power,
+    Wifi,
+    WifiOff,
+} from 'react-bootstrap-icons';
 import { usePersistentNumberProperty, usePersistentProperty } from '@instruments/common/persistence';
 import { useSimVar } from '@instruments/common/simVars';
 import Slider from 'rc-slider';
@@ -162,7 +172,7 @@ export const QuickControls = () => {
                                         type="button"
                                         onClick={handleAlignADIRS}
                                         className="flex flex-col justify-center items-center text-theme-text hover:text-theme-body
-                                               bg-theme-body hover:bg-theme-highlight rounded-md transition duration-100"
+                                                   bg-theme-body hover:bg-theme-highlight rounded-md transition duration-100"
                                         style={{ width: '130px', height: '100px' }}
                                     >
                                         <Compass size={42} />
@@ -176,7 +186,7 @@ export const QuickControls = () => {
                                         type="button"
                                         onClick={handleInstantBoarding}
                                         className="flex flex-col justify-center items-center text-theme-text hover:text-theme-body
-                                               bg-theme-body hover:bg-theme-highlight rounded-md transition duration-100"
+                                                   bg-theme-body hover:bg-theme-highlight rounded-md transition duration-100"
                                         style={{ width: '130px', height: '100px' }}
                                     >
                                         <PersonCheck size={42} />
@@ -189,8 +199,8 @@ export const QuickControls = () => {
                                     <button
                                         type="button"
                                         onClick={handleResetSimBridgeConnection}
-                                        className={`flex flex-col justify-center items-center text-theme-text hover:text-theme-
-                                                    body bg-theme-body hover:bg-theme-highlight rounded-md transition 
+                                        className={`flex flex-col justify-center items-center text-theme-text hover:text-theme-body 
+                                                    bg-theme-body hover:bg-theme-highlight rounded-md transition 
                                                     duration-100 ${(simBridgeButtonStyle())}`}
                                         style={{ width: '130px', height: '100px' }}
                                     >
@@ -201,8 +211,8 @@ export const QuickControls = () => {
                                         )}
                                         <div className="mt-1 text-sm text-inherit">
                                             SimBridge
-                                        </div>
-                                        <div className="mt-0 text-sm text-inherit">
+                                            {' '}
+                                            <br />
                                             {simBridgeButtonStateString()}
                                         </div>
                                     </button>
@@ -226,6 +236,12 @@ export const QuickControls = () => {
 
                             <div className="flex flex-row justify-between items-center">
                                 <TooltipWrapper text={t('QuickControls.TT.Brightness')}>
+                                    <div className="flex flex-row mr-4 w-[80px] text-theme-text">
+                                        <BrightnessHighFill size={24} />
+                                        <span className="ml-2 pointer-events-none text-inherit">
+                                            {`${brightnessSetting}%`}
+                                        </span>
+                                    </div>
                                     <div>
                                         <Slider
                                             ref={brightnessSliderRef}
@@ -233,7 +249,7 @@ export const QuickControls = () => {
                                             onChange={setBrightnessSetting}
                                             onAfterChange={() => brightnessSliderRef.current && brightnessSliderRef.current.blur()}
                                             className="rounded-md"
-                                            style={{ width: '480px', height: '50px', padding: '0' }}
+                                            style={{ width: '380px', height: '50px', padding: '0' }}
                                             trackStyle={{ backgroundColor: 'var(--color-text)', height: '50px' }}
                                             railStyle={{ backgroundColor: 'var(--color-body)', height: '50px' }}
                                             handleStyle={{ borderColor: 'transparent', backgroundColor: 'transparent', top: '13px', height: '40px', width: '10px' }}
@@ -245,7 +261,7 @@ export const QuickControls = () => {
                                         type="button"
                                         onClick={handleSettings}
                                         className="flex justify-center items-center ml-4 text-theme-text hover:text-theme-body
-                                               bg-theme-body hover:bg-theme-highlight rounded-md transition duration-100"
+                                                   bg-theme-body hover:bg-theme-highlight rounded-md transition duration-100"
                                         style={{ width: '80px', height: '50px' }}
                                     >
                                         <Gear size={20} />
