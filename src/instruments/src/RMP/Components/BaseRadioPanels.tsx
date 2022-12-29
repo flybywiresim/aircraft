@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useSimVar, useInteractionSimVar } from '@instruments/common/simVars';
 import { useInteractionEvent } from '@instruments/common/hooks';
+import { TransceiverType } from './StandbyFrequency';
 import { VhfRadioPanel } from './VhfRadioPanel';
+import { NavRadioPanel } from './NavRadioPanel';
 import { RadioPanelDisplay } from './RadioPanelDisplay';
 
 interface Props {
@@ -44,21 +46,90 @@ const UnpoweredRadioPanel = () => (
  * Renders appropriate mode sub-component (e.g. VhfRadioPanel).
  */
 const PoweredRadioPanel = (props: Props) => {
+    const [navTransceiverType, setNavTransceiverType] = useState(TransceiverType.RADIO_VHF);
+
+    // Used to turn on the associated led
     const [panelMode, setPanelMode] = useSimVar(`L:A32NX_RMP_${props.side}_SELECTED_MODE`, 'Number', 250);
+    // Used to determine (in the FGMC for instance) if the system is in NAV backup mode. L and R simvars have to be checked
+    const [navButtonPressed, setNavButton] = useSimVar(`L:A32NX_RMP_${props.side}_NAV_BUTTON_SELECTED`, 'boolean', 250);
+    // Used to return to the selected VHF once NAV is pushed again
+    const [previousPanelMode, setPreviousPanelMode] = useState(panelMode);
 
     // Hook radio management panel mode buttons to set panelMode SimVar.
-    useInteractionEvent(`A32NX_RMP_${props.side}_VHF1_BUTTON_PRESSED`, () => setPanelMode(1));
-    useInteractionEvent(`A32NX_RMP_${props.side}_VHF2_BUTTON_PRESSED`, () => setPanelMode(2));
-    useInteractionEvent(`A32NX_RMP_${props.side}_VHF3_BUTTON_PRESSED`, () => setPanelMode(3));
+    useInteractionEvent(`A32NX_RMP_${props.side}_VHF1_BUTTON_PRESSED`, () => {
+        setPanelMode(1);
+        setPreviousPanelMode(1);
+        setNavTransceiverType(TransceiverType.RADIO_VHF);
+    });
+
+    useInteractionEvent(`A32NX_RMP_${props.side}_VHF2_BUTTON_PRESSED`, () => {
+        setPanelMode(2);
+        setPreviousPanelMode(2);
+        setNavTransceiverType(TransceiverType.RADIO_VHF);
+    });
+
+    useInteractionEvent(`A32NX_RMP_${props.side}_VHF3_BUTTON_PRESSED`, () => {
+        setPanelMode(3);
+        setPreviousPanelMode(3);
+        setNavTransceiverType(TransceiverType.RADIO_VHF);
+    });
+
+    useInteractionEvent(`A32NX_RMP_${props.side}_NAV_BUTTON_PRESSED`, () => {
+        if (navButtonPressed) {
+            setPanelMode(previousPanelMode);
+            setNavTransceiverType(TransceiverType.RADIO_VHF);
+        }
+
+        setNavButton(!navButtonPressed);
+    });
+
+    useInteractionEvent(`A32NX_RMP_${props.side}_VOR_BUTTON_PRESSED`, () => {
+        if (navButtonPressed) {
+            setPanelMode(6);
+            setNavTransceiverType(TransceiverType.VOR);
+        }
+    });
+
+    useInteractionEvent(`A32NX_RMP_${props.side}_ILS_BUTTON_PRESSED`, () => {
+        if (navButtonPressed) {
+            setPanelMode(7);
+            setNavTransceiverType(TransceiverType.ILS);
+        }
+    });
+
+    /**
+     * MLS IMPLEMENTED IN THE XML BEHAVIOURS
+     * BUT DISABLED HERE SINCE THERE IS NOT ENOUGH REFERENCES
+     */
+    // useInteractionEvent(`A32NX_RMP_${props.side}_MLS_BUTTON_PRESSED`, () => {
+    //     if (navButtonPressed) {
+    //         setPanelMode(8);
+    //         setNavTransceiverType(TransceiverType.ILS);
+    //     }
+    // });
+
+    useInteractionEvent(`A32NX_RMP_${props.side}_ADF_BUTTON_PRESSED`, () => {
+        if (navButtonPressed) {
+            setPanelMode(9);
+            setNavTransceiverType(TransceiverType.ADF);
+        }
+    });
 
     // This means we're in a VHF communications mode.
-    if (panelMode === 1 || panelMode === 2 || panelMode === 3) return (<VhfRadioPanel side={props.side} transceiver={panelMode} />);
-
-    // If we reach this block, something's gone wrong. We'll just render a broken panel.
-    return (
-        <span>
-            <RadioPanelDisplay value="808.080" />
-            <RadioPanelDisplay value="808.080" />
-        </span>
-    );
+    switch (navTransceiverType) {
+    case TransceiverType.RADIO_VHF:
+        return (<VhfRadioPanel side={props.side} vhf={panelMode} />);
+    case TransceiverType.VOR:
+    case TransceiverType.ILS:
+    case TransceiverType.ADF:
+        return (<NavRadioPanel side={props.side} transceiver={navTransceiverType} />);
+    default:
+        // If we reach this block, something's gone wrong. We'll just render a broken panel.
+        return (
+            <span>
+                <RadioPanelDisplay value="808.080" />
+                <RadioPanelDisplay value="808.080" />
+            </span>
+        );
+    }
 };

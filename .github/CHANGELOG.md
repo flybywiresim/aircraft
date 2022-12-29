@@ -16,6 +16,7 @@
 1. [HYD] Simple temperature simulation - @Crocket63 (crocket)
 1. [FLIGHTMODEL] Reduced flap induced drag - @donstim (donbikes#4084)
 1. [EFB] Fix and improve pushback system and add API documentation - @frankkopp (Frank Kopp)
+1. [RMP] RMPs navigation backup - Julian Sebline (Julian Sebline#8476 on Discord)
 
 ## 0.9.0
 
