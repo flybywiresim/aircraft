@@ -66,6 +66,6 @@ module.exports = {
     output: {
         file: join(root, 'flybywire-aircraft-a320-neo/html_ui/JS/atsu/system.js'),
         format: 'umd',
-        name: 'Atsu-System',
+        name: 'AtsuSystem',
     },
 };
