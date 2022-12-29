@@ -36,7 +36,7 @@ export const QuickControls = () => {
 
     const [adirsAlignTimeSimVar, setAdirsAlignTimeSimVar] = useSimVar('L:A32NX_CONFIG_ADIRS_IR_ALIGN_TIME', 'Enum', Number.MAX_SAFE_INTEGER);
     const [boardingRate, setBoardingRate] = usePersistentProperty('CONFIG_BOARDING_RATE', 'REAL');
-    const [simBridgeEnabled, setSimbridgeEnabled] = usePersistentProperty('CONFIG_SIMBRIDGE_ENABLED', 'AUTO ON');
+    const [, setSimbridgeEnabled] = usePersistentProperty('CONFIG_SIMBRIDGE_ENABLED', 'AUTO ON');
 
     const [showQuickControlsPane, setShowQuickControlsPane] = useState(false);
     const [simBridgeClientState, setSimBridgeClientState] = useState<SimBridgeClientState>(SimBridgeClientState.OFF);
@@ -123,7 +123,7 @@ export const QuickControls = () => {
             {showQuickControlsPane
                 && (
                     <div
-                        className="absolute z-10 py-6 px-6 bg-theme-accent rounded-md border border-theme-secondary transition duration-100"
+                        className="absolute z-40 py-6 px-6 bg-theme-accent rounded-md border border-theme-secondary transition duration-100"
                         style={{ top: '40px', right: '50px', width: '620px', height: '320px' }}
                         onMouseLeave={() => setShowQuickControlsPane(false)}
                     >
