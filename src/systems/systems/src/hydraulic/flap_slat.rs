@@ -114,6 +114,7 @@ pub struct FlapSlatAssembly {
     position_right_percent_id: VariableIdentifier,
     angle_left_id: VariableIdentifier,
     angle_right_id: VariableIdentifier,
+    ippu_angle_id: VariableIdentifier,
     is_moving_id: VariableIdentifier,
 
     // fppu: PositionPickoffUnit,
@@ -171,6 +172,8 @@ impl FlapSlatAssembly {
             angle_left_id: context.get_identifier(format!("LEFT_{}_ANGLE", id)),
             angle_right_id: context.get_identifier(format!("RIGHT_{}_ANGLE", id)),
 
+            ippu_angle_id: context.get_identifier(format!("{}_IPPU_ANGLE", id)),
+
             is_moving_id: context.get_identifier(format!("IS_{}_MOVING", id)),
 
             surface_control_arm_position: Angle::new::<radian>(0.),
@@ -204,7 +207,7 @@ impl FlapSlatAssembly {
         left_pressure: &impl SectionPressure,
         right_pressure: &impl SectionPressure,
     ) {
-        self.update_final_ffpu_angle_request(
+        self.update_final_fppu_angle_request(
             sfcc1_surface_position_request,
             sfcc2_surface_position_request,
         );
@@ -255,7 +258,7 @@ impl FlapSlatAssembly {
             .min(self.synchro_angle_to_surface_angle(self.max_synchro_gear_position));
     }
 
-    fn update_final_ffpu_angle_request(
+    fn update_final_fppu_angle_request(
         &mut self,
         sfcc1_angle_request: Option<Angle>,
         sfcc2_angle_request: Option<Angle>,
@@ -486,6 +489,7 @@ impl SimulationElement for FlapSlatAssembly {
         writer.write(&self.angle_left_id, flaps_surface_angle.get::<degree>());
         writer.write(&self.angle_right_id, flaps_surface_angle.get::<degree>());
 
+        writer.write(&self.ippu_angle_id, self.position_feedback());
         writer.write(&self.is_moving_id, self.is_surface_moving());
     }
 }

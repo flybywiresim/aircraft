@@ -701,23 +701,9 @@ mod tests {
         right_position_percent_id: VariableIdentifier,
         left_position_angle_id: VariableIdentifier,
         right_position_angle_id: VariableIdentifier,
+        ippu_angle_id: VariableIdentifier,
         surface_type: String,
     }
-    impl PositionPickoffUnit for SlatFlapGear {
-        fn fppu_angle(&self) -> Angle {
-            self.current_angle
-        }
-        fn appu_left_angle(&self) -> Angle {
-            self.current_angle
-        }
-        fn appu_right_angle(&self) -> Angle {
-            self.current_angle
-        }
-        fn ippu_angle(&self) -> Angle {
-            self.current_angle
-        }
-    }
-
     impl SlatFlapGear {
         const ANGLE_DELTA_DEGREE: f64 = 0.01;
 
@@ -741,6 +727,8 @@ mod tests {
                     .get_identifier(format!("LEFT_{}_ANGLE", surface_type)),
                 right_position_angle_id: context
                     .get_identifier(format!("RIGHT_{}_ANGLE", surface_type)),
+
+                ippu_angle_id: context.get_identifier(format!("{}_IPPU_ANGLE", surface_type)),
 
                 surface_type: surface_type.to_string(),
             }
@@ -781,6 +769,20 @@ mod tests {
             }
         }
     }
+    impl PositionPickoffUnit for SlatFlapGear {
+        fn fppu_angle(&self) -> Angle {
+            self.current_angle
+        }
+        fn appu_left_angle(&self) -> Angle {
+            self.current_angle
+        }
+        fn appu_right_angle(&self) -> Angle {
+            self.current_angle
+        }
+        fn ippu_angle(&self) -> Angle {
+            self.current_angle
+        }
+    }
     impl SimulationElement for SlatFlapGear {
         fn write(&self, writer: &mut SimulatorWriter) {
             writer.write(
@@ -791,6 +793,7 @@ mod tests {
                 &self.right_position_percent_id,
                 self.current_angle / self.max_angle,
             );
+            writer.write(&self.ippu_angle_id, self.current_angle);
             writer.write(&self.left_position_angle_id, self.current_angle);
             writer.write(&self.right_position_angle_id, self.current_angle);
         }
@@ -1139,6 +1142,8 @@ mod tests {
 
         assert!(test_bed.contains_variable_with_name("SLATS_FPPU_ANGLE"));
         assert!(test_bed.contains_variable_with_name("FLAPS_FPPU_ANGLE"));
+        assert!(test_bed.contains_variable_with_name("SLATS_IPPU_ANGLE"));
+        assert!(test_bed.contains_variable_with_name("FLAPS_IPPU_ANGLE"));
     }
 
     #[test]
