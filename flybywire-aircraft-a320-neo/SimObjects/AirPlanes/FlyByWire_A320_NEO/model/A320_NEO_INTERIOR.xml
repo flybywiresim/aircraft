@@ -840,12 +840,12 @@
                 <TOOLTIPID>%((L:A32NX_BRAKE_FAN_BTN_PRESSED, Bool))%{if}Turn OFF brake fan%{else}Turn ON brake fan%{end}</TOOLTIPID>
             </UseTemplate>
 
-            <UseTemplate Name="FBW_LANDING_GEAR_Gear_Lever_Template">
+            <UseTemplate Name="FBW_HANDLING_Gear_Lever_Template">
                 <ANIM_NAME>lever_landing_gear</ANIM_NAME>
                 <NODE_ID>LEVER_LANDINGGEAR</NODE_ID>
-                <WWISE_EVENT>gearleverclick</WWISE_EVENT>
-                <NO_GEARUP_IF_LOCKED/>
+                <ANIM_LENGTH>3</ANIM_LENGTH>
             </UseTemplate>
+
             <UseTemplate Name="FBW_Airbus_LANDING_GEAR_Light_Template">
                 <NODE_ID>PUSH_AUTOBKR_LDGGEAR_1</NODE_ID>
                 <ID>1</ID>
@@ -1777,7 +1777,7 @@
                 <UseTemplate Name="ASOBO_GT_Update">
                     <FREQUENCY>5</FREQUENCY>
                     <UPDATE_CODE>
-                        (A:GEAR HANDLE POSITION, Bool) (A:GEAR POSITION, percent) 99.9 &gt; and (&gt;O:_ShouldBeConnectedToPowerGrid)
+                        (L:A32NX_LGCIU_2_NOSE_GEAR_DOWNLOCKED, Bool) 1 == (&gt;O:_ShouldBeConnectedToPowerGrid)
                         (O:_ShouldBeConnectedToPowerGrid) sp0
                         2 (&gt;A:BUS LOOKUP INDEX, Number)
                         (A:CIRCUIT CONNECTION ON:17, Bool) l0 != if{ 17 2 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE) }
@@ -1833,7 +1833,7 @@
 
                 <!-- PARK BRK EXT LT -->
                 <UseTemplate Name="FBW_Potentiometer_Toggle">
-                    <TOGGLE_CONDITION>(A:GEAR CENTER POSITION, Percent over 100) 1 == (L:A32NX_PARK_BRAKE_LEVER_POS, bool) 1 == and</TOGGLE_CONDITION>
+                    <TOGGLE_CONDITION>(L:A32NX_GEAR_CENTER_POSITION, Percent over 100) 1 == (L:A32NX_PARK_BRAKE_LEVER_POS, bool) 1 == and</TOGGLE_CONDITION>
                     <TOGGLE_REQUISITE>(L:A32NX_ELEC_DC_GND_FLT_SVC_BUS_IS_POWERED, Bool)</TOGGLE_REQUISITE>
                     <POTENTIOMETER>99</POTENTIOMETER>
                 </UseTemplate>

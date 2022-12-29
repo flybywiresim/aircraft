@@ -1,6 +1,7 @@
 import { usePersistentNumberProperty } from '@instruments/common/persistence';
 import React, { useEffect, useRef, useState, PropsWithChildren } from 'react';
 import { getRootElement } from '@instruments/common/defaults';
+import { v4 as uuidv4 } from 'uuid';
 import { useAppDispatch } from '../../../Store/store';
 import { setOffsetY } from '../../../Store/features/keyboard';
 import { KeyboardWrapper } from '../../KeyboardWrapper';
@@ -24,7 +25,7 @@ interface SimpleInputProps {
 }
 
 export const SimpleInput = (props: PropsWithChildren<SimpleInputProps>) => {
-    const [guid] = useState(`SI-${Utils.generateGUID()}`);
+    const [guid] = useState(uuidv4());
 
     const [displayValue, setDisplayValue] = useState(props.value?.toString() ?? '');
     const [focused, setFocused] = useState(false);

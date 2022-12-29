@@ -21,6 +21,7 @@
   - [Landing Gear (ATA 32)](#landing-gear-ata-32)
   - [ATC (ATA 34)](#atc-ata-34)
   - [Radio Altimeter (ATA 34)](#radio-altimeter-ata-34)
+  - [Electronic Flight Bag ATA 46](#electronic-flight-bag--ata-46-)
 
 ## Uncategorized
 
@@ -848,6 +849,14 @@
         - BLUE
         - YELLOW
 
+- A32NX_HYD_{loop_name}_RESERVOIR_OVHT
+    - Boolean
+    - Reservoir of {loop_name} hydraulic circuit is overheating
+    - {loop_name}
+        - GREEN
+        - BLUE
+        - YELLOW
+
 - A32NX_HYD_{loop_name}_EDPUMP_ACTIVE
     - Bool
     - Engine driven pump of {loop_name} hydraulic circuit is active
@@ -923,6 +932,13 @@
 - A32NX_HYD_{loop_name}_EPUMP_LOW_PRESS
     - Bool
     - Electric pump of {loop_name} hydraulic circuit is active but pressure is too low
+    - {loop_name}
+        - BLUE
+        - YELLOW
+
+- A32NX_HYD_{loop_name}_EPUMP_OVHT
+    - Bool
+    - Electric pump of {loop_name} hydraulic circuit is overheating
     - {loop_name}
         - BLUE
         - YELLOW
@@ -3061,6 +3077,10 @@ In the variables below, {number} should be replaced with one item in the set: { 
         - 1
         - 2
 
+- A32NX_HYD_RUDDER_TRIM_FEEDBACK_ANGLE
+    - Degree
+    - Rudder trim unit position feedback
+
 - A32NX_RUDDER_TRAVEL_LIM_{number}_ACTIVE_MODE_COMMANDED
     - Boolean
     - RTL electric motor {number} is commanded active
@@ -3074,6 +3094,10 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - {number}
         - 1
         - 2
+
+- A32NX_HYD_RUDDER_LIMITER_FEEDBACK_ANGLE
+    - Degree
+    - Rudder travel limiter unit position feedback
 
 - A32NX_THS_{number}_ACTIVE_MODE_COMMANDED
     - Boolean
@@ -3148,15 +3172,6 @@ In the variables below, {number} should be replaced with one item in the set: { 
 - A32NX_HYD_TRIM_WHEEL_PERCENT
     - Percent
     - Trim wheel position in percent
-
-- A32NX_RUDDER_DEFLECTION_DEMAND
-    - Number
-    - Provides the rudder position demand to hydraulics
-      Value | Meaning
-      --- | ---
-      -1.0 | full left
-      0.0 | neutral
-      1.0 | full right
 
 ## Landing Gear (ATA 32)
 
@@ -3274,6 +3289,18 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Indicates the position of the gear emergency extension crank handle from 0 to 300 (3 turns)
     - Percent
 
+- A32NX_GEAR_LEVER_POSITION_REQUEST
+    - Indicates that the pilot tries to move the gear lever (1=down)
+    - Boolean
+
+- A32NX_GEAR_HANDLE_POSITION
+    - Indicates the actual position of the gear handle
+    - Percent over 100
+
+- A32NX_GEAR_HANDLE_HITS_LOCK_SOUND
+    - Indicates that gear lever just hit the baulk lock mechanism
+    - Boolean
+
 ## ATC (ATA 34)
 
 - A32NX_TRANSPONDER_MODE
@@ -3372,3 +3399,28 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - {number}
         - 0
         - 1
+
+## Electronic Flight Bag (ATA 46)
+
+- A32NX_PUSHBACK_SYSTEM_ENABLED
+    - Boolean
+    - Read/Write
+    - Whether the pushback system is enabled
+    - Further conditions are "Pushback Tug Attached" and "Aircraft On Ground" otherwise the system 
+      has no impact on the aircraft
+
+- A32NX_PUSHBACK_SPD_FACTOR
+    - Number
+    - Read/Write
+    - Determines the speed of the pushback tug from -100% to 100% 
+    - {number}
+        - -1.0
+        - 1.0
+
+- A32NX_PUSHBACK_HDG_FACTOR
+    - Number
+    - Read/Write
+    - Determines the heading of the pushback tug from max left (-1.0) to right (1.0) 
+    - {number}
+        - -1.0
+        - 1.0
