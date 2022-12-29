@@ -35,8 +35,6 @@ export class Atsu {
 
     public modificationMessage: CpdlcMessage = null;
 
-    private listener = RegisterViewListener('JS_LISTENER_SIMVARS', null, true);
-
     private mcdu = undefined;
 
     public static createAutomatedPositionReport(atsu: Atsu): CpdlcMessage {
