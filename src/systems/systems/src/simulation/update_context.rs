@@ -159,6 +159,7 @@ pub struct UpdateContext {
     plane_bank_id: VariableIdentifier,
     plane_true_heading_id: VariableIdentifier,
     mach_number_id: VariableIdentifier,
+    plane_height_id: VariableIdentifier,
 
     delta: Delta,
     simulation_time: f64,
@@ -181,6 +182,7 @@ pub struct UpdateContext {
     mach_number: MachNumber,
     air_density: MassDensity,
     true_heading: Angle,
+    plane_height_over_ground: Length,
 }
 impl UpdateContext {
     pub(crate) const IS_READY_KEY: &'static str = "IS_READY";
@@ -205,6 +207,7 @@ impl UpdateContext {
     pub(crate) const LOCAL_LATERAL_SPEED_KEY: &'static str = "VELOCITY BODY X";
     pub(crate) const LOCAL_LONGITUDINAL_SPEED_KEY: &'static str = "VELOCITY BODY Z";
     pub(crate) const LOCAL_VERTICAL_SPEED_KEY: &'static str = "VELOCITY BODY Y";
+    pub(crate) const ALT_ABOVE_GROUND_KEY: &'static str = "PLANE ALT ABOVE GROUND";
 
     // Plane accelerations can become crazy with msfs collision handling.
     // Having such filtering limits high frequencies transients in accelerations used for physics
@@ -256,6 +259,7 @@ impl UpdateContext {
             plane_bank_id: context.get_identifier(Self::PLANE_BANK_KEY.to_owned()),
             plane_true_heading_id: context.get_identifier(Self::TRUE_HEADING_KEY.to_owned()),
             mach_number_id: context.get_identifier(Self::MACH_NUMBER_KEY.to_owned()),
+            plane_height_id: context.get_identifier(Self::ALT_ABOVE_GROUND_KEY.to_owned()),
 
             delta: delta.into(),
             simulation_time,
@@ -296,6 +300,7 @@ impl UpdateContext {
             mach_number,
             air_density: MassDensity::new::<kilogram_per_cubic_meter>(1.22),
             true_heading: Default::default(),
+            plane_height_over_ground: Length::default(),
         }
     }
 
@@ -323,6 +328,7 @@ impl UpdateContext {
             plane_bank_id: context.get_identifier("PLANE BANK DEGREES".to_owned()),
             plane_true_heading_id: context.get_identifier("PLANE HEADING DEGREES TRUE".to_owned()),
             mach_number_id: context.get_identifier("AIRSPEED MACH".to_owned()),
+            plane_height_id: context.get_identifier("PLANE ALT ABOVE GROUND".to_owned()),
 
             delta: Default::default(),
             simulation_time: Default::default(),
@@ -361,6 +367,7 @@ impl UpdateContext {
             mach_number: Default::default(),
             air_density: MassDensity::new::<kilogram_per_cubic_meter>(1.22),
             true_heading: Default::default(),
+            plane_height_over_ground: Length::default(),
         }
     }
 
@@ -413,6 +420,8 @@ impl UpdateContext {
         self.air_density = reader.read(&self.ambient_density_id);
 
         self.true_heading = reader.read(&self.plane_true_heading_id);
+
+        self.plane_height_over_ground = reader.read(&self.plane_height_id);
 
         self.update_relative_wind();
 
@@ -586,6 +595,10 @@ impl UpdateContext {
 
     pub fn true_heading_rotation_transform(&self) -> Rotation3<f64> {
         Rotation3::from_axis_angle(&Vector3::y_axis(), self.true_heading.get::<radian>())
+    }
+
+    pub fn plane_height_over_ground(&self) -> Length {
+        self.plane_height_over_ground
     }
 }
 
