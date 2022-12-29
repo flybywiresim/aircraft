@@ -1,7 +1,7 @@
 // Copyright (c) 2022 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import React, { useRef, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import {
     BrightnessHigh,
     BrightnessHighFill,
@@ -91,30 +91,30 @@ export const QuickControls = () => {
         setSimbridgeEnabled('AUTO ON');
     };
 
-    const determineSimBridgeState = (): SimBridgeState => {
+    const determineSimBridgeState = useMemo<SimBridgeState>((): SimBridgeState => {
         if (simBridgeConnected) return SimBridgeState.CONNECTED;
         if (!simBridgeConnected && simBridgeEnabled === 'AUTO OFF') return SimBridgeState.OFFLINE;
         if (!simBridgeConnected && simBridgeEnabled === 'AUTO ON') return SimBridgeState.CONNECTING;
         return SimBridgeState.OFF;
-    };
+    }, [simBridgeConnected, simBridgeEnabled]);
 
-    const simBridgeButtonStyle = ():string => {
-        switch (determineSimBridgeState()) {
+    const simBridgeButtonStyle = useMemo<string>(():string => {
+        switch (determineSimBridgeState) {
         case SimBridgeState.CONNECTED: return 'bg-utility-green text-theme-body';
         case SimBridgeState.CONNECTING: return 'bg-utility-amber text-theme-body';
         case SimBridgeState.OFFLINE: return 'bg-utility-red text-theme-body';
         default: return '';
         }
-    };
+    }, [determineSimBridgeState]);
 
-    const simBridgeButtonStateString = ():string => {
-        switch (determineSimBridgeState()) {
+    const simBridgeButtonStateString = useMemo<string>(():string => {
+        switch (determineSimBridgeState) {
         case SimBridgeState.CONNECTED: return t('QuickControls.SimBridgeConnected');
         case SimBridgeState.CONNECTING: return t('QuickControls.SimBridgeConnecting');
         case SimBridgeState.OFFLINE: return t('QuickControls.SimBridgeOffline');
         default: return t('QuickControls.SimBridgeOff');
         }
-    };
+    }, [determineSimBridgeState]);
 
     const handleSettings = () => {
         history.push('/settings/flypad');
@@ -216,7 +216,7 @@ export const QuickControls = () => {
                                         onClick={handleResetSimBridgeConnection}
                                         className={`flex flex-col justify-center items-center text-theme-text  
                                                     bg-theme-body hover:border-4 hover:border-theme-highlight rounded-md transition 
-                                                    duration-100 ${(simBridgeButtonStyle())}`}
+                                                    duration-100 ${simBridgeButtonStyle}`}
                                         style={{ width: '130px', height: '100px' }}
                                     >
                                         {simBridgeConnected ? (
@@ -228,7 +228,7 @@ export const QuickControls = () => {
                                             SimBridge
                                             {' '}
                                             <br />
-                                            {simBridgeButtonStateString()}
+                                            {simBridgeButtonStateString}
                                         </div>
                                     </button>
                                 </TooltipWrapper>
