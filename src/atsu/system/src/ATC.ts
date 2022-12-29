@@ -24,7 +24,7 @@ export class Atc {
 
     private datalink: Datalink = null;
 
-    private mailboxBus: MailboxBus = null;
+    public mailboxBus: MailboxBus = null;
 
     private handoverInterval: NodeJS.Timer = null;
 
@@ -394,7 +394,7 @@ export class Atc {
 
     private analyzeMessage(request: CpdlcMessage, response: CpdlcMessage): boolean {
         if (request.Content[0]?.ExpectedResponse === CpdlcMessageExpectedResponseType.NotRequired && response === undefined) {
-            // received the station message for the DCDU
+            // received the station message for the Mailbox
             if (request.Content[0]?.TypeId === 'UM9999') {
                 request.MailboxRelevantMessage = false;
                 if (this.currentAtc !== '') {

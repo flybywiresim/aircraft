@@ -22,7 +22,7 @@ export class AtsuTimestamp {
         this.Seconds = jsonData.Seconds as number;
     }
 
-    public dcduTimestamp(): string {
+    public mailboxTimestamp(): string {
         return `${timestampToString(this.Seconds)}Z`;
     }
 

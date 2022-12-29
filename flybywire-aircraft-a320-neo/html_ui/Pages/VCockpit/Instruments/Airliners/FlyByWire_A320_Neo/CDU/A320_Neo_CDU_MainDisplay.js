@@ -1030,7 +1030,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             case AtsuCommon.AtsuStatusCodes.NoAtc:
                 this.setScratchpadMessage(NXSystemMessages.noAtc);
                 break;
-            case AtsuCommon.AtsuStatusCodes.DcduFull:
+            case AtsuCommon.AtsuStatusCodes.MailboxFull:
                 this.setScratchpadMessage(NXSystemMessages.dcduFileFull);
                 break;
             case AtsuCommon.AtsuStatusCodes.UnknownMessage:

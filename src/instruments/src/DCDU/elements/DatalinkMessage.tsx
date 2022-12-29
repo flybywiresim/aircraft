@@ -53,17 +53,17 @@ export const DatalinkMessage: React.FC<DatalinkMessageProps> = ({ messages, upda
     const watchdogIndices: number[] = [];
     let messageSeperatorLine: number | undefined = undefined;
     if (messages[0].MessageMonitoring === CpdlcMessageMonitoringState.Finished) {
-        content = `_____REMINDER MSG ${messages[0].Timestamp.dcduTimestamp()}\n`;
+        content = `_____REMINDER MSG ${messages[0].Timestamp.mailboxTimestamp()}\n`;
         messageSeperatorLine = 1;
 
         if (messages[0].SemanticResponseRequired) {
-            content += `${messages[0].Response.serialize(AtsuMessageSerializationFormat.DCDU)}\n`;
+            content += `${messages[0].Response.serialize(AtsuMessageSerializationFormat.Mailbox)}\n`;
         } else {
             messages.forEach((message) => {
                 if (message.Content.length === 0 && message.Message !== '') {
                     content += `${message.Message}\n`;
                 } else {
-                    content += `${message.serialize(AtsuMessageSerializationFormat.DCDU)}\n`;
+                    content += `${message.serialize(AtsuMessageSerializationFormat.Mailbox)}\n`;
                 }
             });
         }
@@ -87,7 +87,7 @@ export const DatalinkMessage: React.FC<DatalinkMessageProps> = ({ messages, upda
                     });
                 }
 
-                const text = message.serialize(AtsuMessageSerializationFormat.DCDU);
+                const text = message.serialize(AtsuMessageSerializationFormat.Mailbox);
                 offset += text.split(' ').length;
                 content += `${text}\n`;
             }
@@ -97,7 +97,7 @@ export const DatalinkMessage: React.FC<DatalinkMessageProps> = ({ messages, upda
         if (messages[0].SemanticResponseRequired && messages[0].Response) {
             messageSeperatorLine = content.split('\n').length;
             content += '------------------------------\n';
-            content += `${messages[0].Response.serialize(AtsuMessageSerializationFormat.DCDU)}//\n`;
+            content += `${messages[0].Response.serialize(AtsuMessageSerializationFormat.Mailbox)}//\n`;
         }
     }
 

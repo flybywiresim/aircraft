@@ -168,8 +168,8 @@ export class Atsu {
         && atsu.flightStateObserver.ActiveWaypoint && atsu.flightStateObserver.NextWaypoint) {
             const message = Atsu.createAutomatedPositionReport(atsu);
 
-            // skip the DCDU
-            message.DcduRelevantMessage = false;
+            // skip the Mailbox
+            message.MailboxRelevantMessage = false;
 
             atsu.sendMessage(message);
         }
@@ -236,7 +236,7 @@ export class Atsu {
 
     public removeMessage(uid: number): void {
         if (this.atc.removeMessage(uid) === true) {
-            this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG_DELETE_UID', uid);
+            this.atc.mailboxBus.dequeue(uid);
         } else {
             this.aoc.removeMessage(uid);
         }
@@ -268,7 +268,7 @@ export class Atsu {
         this.mcdu.addNewAtsuMessage(code);
     }
 
-    public modifyDcduMessage(message: CpdlcMessage): void {
+    public modifyMailboxMessage(message: CpdlcMessage): void {
         this.modificationMessage = message;
         this.mcdu.tryToShowAtcModifyPage();
     }

@@ -119,13 +119,13 @@ export const MessageStatus: React.FC<MessageStatusProps> = ({ message, selectedR
     let title = '';
     if (message.MessageMonitoring === CpdlcMessageMonitoringState.Finished) {
         if (message.SemanticResponseRequired) {
-            title = `${message.Response?.Timestamp?.dcduTimestamp()} TO ${message.Response?.Station}`;
+            title = `${message.Response?.Timestamp?.mailboxTimestamp()} TO ${message.Response?.Station}`;
         } else {
-            title = (new AtsuTimestamp()).dcduTimestamp();
+            title = (new AtsuTimestamp()).mailboxTimestamp();
             text = '';
         }
     } else {
-        title = `${message.Timestamp?.dcduTimestamp()} ${message.Direction === AtsuMessageDirection.Downlink ? ' TO ' : ' FROM '} ${message.Station}`;
+        title = `${message.Timestamp?.mailboxTimestamp()} ${message.Direction === AtsuMessageDirection.Downlink ? ' TO ' : ' FROM '} ${message.Station}`;
     }
 
     return (

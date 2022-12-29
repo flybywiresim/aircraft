@@ -10,7 +10,7 @@ export enum AtsuStatusCodes {
     TelexDisabled,
     ComFailed,
     NoAtc,
-    DcduFull,
+    MailboxFull,
     UnknownMessage,
     ProxyError,
     NewAtisReceived,

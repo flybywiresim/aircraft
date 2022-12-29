@@ -37,8 +37,8 @@ export class DclMessage extends CpdlcMessage {
             dclMessage += `AT ${this.Origin}${this.Gate !== '' ? ` STAND ${this.Gate}` : ''} \n`;
             dclMessage += `ATIS ${this.Atis}`;
         } else {
-            if (format !== AtsuMessageSerializationFormat.DCDU) {
-                dclMessage = `${this.Timestamp.dcduTimestamp()} TO ${this.Station}\n`;
+            if (format !== AtsuMessageSerializationFormat.Mailbox) {
+                dclMessage = `${this.Timestamp.mailboxTimestamp()} TO ${this.Station}\n`;
             }
 
             dclMessage += `DEPART REQUEST\n${this.Callsign}\n`;

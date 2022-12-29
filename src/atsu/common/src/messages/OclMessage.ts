@@ -42,8 +42,8 @@ export class OclMessage extends CpdlcMessage {
         // convert to the Hoppie-format
         if (format === AtsuMessageSerializationFormat.Network) {
             oclMessage = `/data2/${this.CurrentTransmissionId}//N/${oclMessage}`;
-        } else if (format !== AtsuMessageSerializationFormat.DCDU) {
-            oclMessage = `${this.Timestamp.dcduTimestamp()} TO ${this.Station}\n${oclMessage}`;
+        } else if (format !== AtsuMessageSerializationFormat.Mailbox) {
+            oclMessage = `${this.Timestamp.mailboxTimestamp()} TO ${this.Station}\n${oclMessage}`;
         }
 
         return oclMessage;

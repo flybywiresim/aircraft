@@ -6,7 +6,7 @@ import { UplinkMessageInterpretation } from '../../../common/src/components/Upli
 
 export class UplinkMessageStateMachine {
     public static initialize(atsu: Atsu, message: CpdlcMessage): void {
-        message.CloseAutomatically = !UplinkMessageInterpretation.MessageRemainsOnDcdu(message);
+        message.CloseAutomatically = !UplinkMessageInterpretation.MessageRemainsOnMailbox(message);
 
         if (UplinkMonitor.relevantMessage(message)) {
             message.MessageMonitoring = CpdlcMessageMonitoringState.Required;

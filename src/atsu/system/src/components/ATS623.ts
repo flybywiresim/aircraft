@@ -52,7 +52,7 @@ export class ATS623 {
                 processedMessage.Network = message.Network;
                 processedMessage.Station = message.Station;
                 processedMessage.Message = message.Message;
-                (processedMessage as CpdlcMessage).DcduRelevantMessage = true;
+                (processedMessage as CpdlcMessage).MailboxRelevantMessage = true;
                 (processedMessage as CpdlcMessage).PreviousTransmissionId = this.clearanceRequest.CurrentTransmissionId;
                 if (this.atsu.atc.fansMode() === FansMode.FansA) {
                     (processedMessage as CpdlcMessage).Content = [CpdlcMessagesUplink.UM169[1].deepCopy()];
@@ -77,8 +77,8 @@ export class ATS623 {
                     }
                     this.clearanceRequest = null;
                 } else if (/.*VIA TELEX.*/.test(processedMessage.Message)) {
-                    // ignore "CLEARANCE DELIVERED VIA TELEX" in the DCDU
-                    (processedMessage as CpdlcMessage).DcduRelevantMessage = false;
+                    // ignore "CLEARANCE DELIVERED VIA TELEX" in the Mailbox
+                    (processedMessage as CpdlcMessage).MailboxRelevantMessage = false;
                 }
             } else if (this.atsu.destinationWaypoint()) {
                 (processedMessage as CpdlcMessage).CloseAutomatically = false;

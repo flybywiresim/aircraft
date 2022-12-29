@@ -36,7 +36,7 @@ export enum AtsuMessageComStatus {
 export enum AtsuMessageSerializationFormat {
     MCDU,
     MCDUMonitored,
-    DCDU,
+    Mailbox,
     Printer,
     Network
 }

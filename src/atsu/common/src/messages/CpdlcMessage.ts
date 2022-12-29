@@ -95,7 +95,7 @@ export class CpdlcMessage extends AtsuMessage {
     }
 
     public serialize(format: AtsuMessageSerializationFormat) {
-        const lineLength = format === AtsuMessageSerializationFormat.DCDU ? 30 : 25;
+        const lineLength = format === AtsuMessageSerializationFormat.Mailbox ? 30 : 25;
         const lines: string[] = [];
         let message: string = '';
 
@@ -115,13 +115,13 @@ export class CpdlcMessage extends AtsuMessage {
 
         if (format === AtsuMessageSerializationFormat.Network) {
             message = `/data2/${this.CurrentTransmissionId}/${this.PreviousTransmissionId !== -1 ? this.PreviousTransmissionId : ''}/${this.Content[0]?.ExpectedResponse}/${lines.join(' ')}`;
-        } else if (format === AtsuMessageSerializationFormat.DCDU) {
+        } else if (format === AtsuMessageSerializationFormat.Mailbox) {
             message = lines.join('\n');
         } else if (format === AtsuMessageSerializationFormat.MCDU || format === AtsuMessageSerializationFormat.MCDUMonitored) {
             if (this.Direction === AtsuMessageDirection.Uplink) {
-                message += `{cyan}${this.Timestamp.dcduTimestamp()} FROM ${this.Station}{end}\n`;
+                message += `{cyan}${this.Timestamp.mailboxTimestamp()} FROM ${this.Station}{end}\n`;
             } else {
-                message += `{cyan}${this.Timestamp.dcduTimestamp()} TO ${this.Station}{end}\n`;
+                message += `{cyan}${this.Timestamp.mailboxTimestamp()} TO ${this.Station}{end}\n`;
             }
 
             lines.forEach((line) => {
@@ -139,7 +139,7 @@ export class CpdlcMessage extends AtsuMessage {
                 message += this.Response.serialize(format);
             }
         } else if (format === AtsuMessageSerializationFormat.Printer) {
-            message += `${this.Timestamp.dcduTimestamp()} ${this.Direction === AtsuMessageDirection.Uplink ? 'FROM' : 'TO'} ${this.Station}}\n`;
+            message += `${this.Timestamp.mailboxTimestamp()} ${this.Direction === AtsuMessageDirection.Uplink ? 'FROM' : 'TO'} ${this.Station}}\n`;
 
             lines.forEach((line) => {
                 line = line.replace(/@/gi, '');

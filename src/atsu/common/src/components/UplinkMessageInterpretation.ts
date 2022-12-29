@@ -50,7 +50,7 @@ export class UplinkMessageInterpretation {
         UM232: { positiveOrNegative: false, modifiable: true, messages: ['DM109'] },
     };
 
-    public static MessageRemainsOnDcdu(message: CpdlcMessage): boolean {
+    public static MessageRemainsOnMailbox(message: CpdlcMessage): boolean {
         return UplinkMessageInterpretation.NonAutomaticClosingMessage.findIndex((elem) => message.Content[0].TypeId === elem) !== -1;
     }
 
