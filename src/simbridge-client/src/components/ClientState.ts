@@ -6,6 +6,20 @@ import { NXDataStore } from '@shared/persistence';
 import { Health } from './Health';
 
 /**
+ * SimBridgeState is one of:
+ * - OFF: SimBridge is deactivated in the EFB
+ * - OFFLINE: SimBridge is activated in the EFB, but the connection to the SimBridge server could not be established
+ * - CONNECTING: SimBridge is activated in the EFB, and the connection to the SimBridge server is being established
+ * - CONNECTED: SimBridge is activated in the EFB and the connection to the SimBridge server is established
+ */
+export const enum SimBridgeClientState {
+    OFF = 'OFF',
+    OFFLINE = 'OFFLINE',
+    CONNECTING = 'CONNECTING',
+    CONNECTED = 'CONNECTED',
+}
+
+/**
  * This class is a singleton that is used to manage the state of the client connection to the
  * SimBridge server. The aim is to prevent simbridge-client services to constantly try to connect
  * to the server when it is not available and therefore creating unnecessary log entries and load.
@@ -18,13 +32,16 @@ export class ClientState {
     private available: boolean = false;
 
     // SimBridge Connect setting
-    private simbridgeConnect: string = 'AUTO ON';
+    private simBridgeEnabledSetting: string = 'AUTO ON';
 
     // counter for failed connection attempts
     private connectionAttemptCounter: number = 0;
 
     // how many times to attempt to connect to the server before giving up
-    private static maxSimBridgeConnectionAttempts: number = 60;
+    private maxSimBridgeConnectionAttempts: number = 60;
+
+    // Indicates the state of the client connection to the SimBridge server
+    private simBridgeState: SimBridgeClientState = SimBridgeClientState.OFF;
 
     /**
      * Private constructor for the singleton. Start checking the server availability regularly
@@ -35,13 +52,13 @@ export class ClientState {
         // only be able to check each check interval (5sec)
         NXDataStore.getAndSubscribe('CONFIG_SIMBRIDGE_ENABLED', (key, value) => {
             console.log(`[SimBridge-Client] SimBridge Enabled setting changed to: ${value}`);
-            this.simbridgeConnect = value;
+            this.simBridgeEnabledSetting = value;
             this.connectionAttemptCounter = 0;
             this.checkServerAvailability();
         }, 'AUTO ON');
 
         // reset the setting if not permanent off
-        if (this.simbridgeConnect !== 'PERM OFF') {
+        if (this.simBridgeEnabledSetting !== 'PERM OFF') {
             NXDataStore.set('CONFIG_SIMBRIDGE_ENABLED', 'AUTO ON');
         }
 
@@ -64,9 +81,43 @@ export class ClientState {
     /**
      * Returns true if the client is available, false otherwise.
      * Availability is checked every 5 seconds.
+     *
+     * @deprecated use getSimBridgeClientState() instead
      */
     public isAvailable(): boolean {
         return this.available;
+    }
+
+    /**
+     * Returns the current state of the client connection to the SimBridge server
+     *
+     * @returns {SimBridgeClientState}
+     */
+    public getSimBridgeClientState(): SimBridgeClientState {
+        return this.simBridgeState;
+    }
+
+    /**
+     * Sets the SimBridgeClientState based on the SimBridge Enabled setting and the availability of the server
+     *
+     * @private
+     */
+    private setSimBridgeState() {
+        if (this.available) {
+            this.simBridgeState = SimBridgeClientState.CONNECTED;
+            return;
+        }
+        switch (this.simBridgeEnabledSetting) {
+        case 'AUTO ON':
+            this.simBridgeState = SimBridgeClientState.CONNECTING;
+            break;
+        case 'AUTO OFF':
+            this.simBridgeState = SimBridgeClientState.OFFLINE;
+            break;
+        default:
+            this.simBridgeState = SimBridgeClientState.OFF;
+        }
+        console.log(`[SimBridge-Client] SimBridge Client State: ${this.simBridgeState}`);
     }
 
     /**
@@ -76,16 +127,17 @@ export class ClientState {
     private checkServerAvailability() {
         // Check the SimBridge Enabled setting (set in the flyPad EFB)
         // If the setting is not AUTO ON, then the client is not available
-        if (this.simbridgeConnect !== 'AUTO ON') {
+        if (this.simBridgeEnabledSetting !== 'AUTO ON') {
             this.connectionAttemptCounter = 0;
             this.available = false;
+            this.setSimBridgeState();
             return;
         }
 
         // After 60 failed connection attempts, give up and set the SimBridge Enabled setting to AUTO OFF to
         // prevent the client from trying to connect to the server again. The user can reset the setting to AUTO ON
         // in the flyPad EFB to try again.
-        if (this.connectionAttemptCounter++ >= ClientState.maxSimBridgeConnectionAttempts) {
+        if (this.connectionAttemptCounter++ >= this.maxSimBridgeConnectionAttempts) {
             NXDataStore.set('CONFIG_SIMBRIDGE_ENABLED', 'AUTO OFF');
             this.connectionAttemptCounter = 0;
         } else {
@@ -101,14 +153,15 @@ export class ClientState {
                     } else {
                         this.available = false;
                         console.log(`[SimBridge-Client] SimBridge is not available. Connection attempt counter: 
-                                    ${this.connectionAttemptCounter} of ${ClientState.maxSimBridgeConnectionAttempts}`);
+                                    ${this.connectionAttemptCounter} of ${this.maxSimBridgeConnectionAttempts}`);
                     }
                 },
             ).catch(() => {
                 this.available = false;
                 console.log(`[SimBridge-Client] SimBridge is not available. Connection attempt counter: 
-                            ${this.connectionAttemptCounter} of ${ClientState.maxSimBridgeConnectionAttempts}`);
+                            ${this.connectionAttemptCounter} of ${this.maxSimBridgeConnectionAttempts}`);
             });
         }
+        this.setSimBridgeState();
     }
 }

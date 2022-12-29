@@ -23,13 +23,7 @@ import { t } from '../translation';
 import { TooltipWrapper } from '../UtilComponents/TooltipWrapper';
 import { PowerStates, usePower } from '../Efb';
 import { ClientState } from '../../../../simbridge-client/src';
-
-const enum SimBridgeState {
-    OFF = 'OFF',
-    OFFLINE = 'OFFLINE',
-    CONNECTING = 'CONNECTING',
-    CONNECTED = 'CONNECTED',
-}
+import { SimBridgeClientState } from '../../../../simbridge-client/src/components/ClientState';
 
 export const QuickControls = () => {
     const history = useHistory();
@@ -45,7 +39,7 @@ export const QuickControls = () => {
     const [simBridgeEnabled, setSimbridgeEnabled] = usePersistentProperty('CONFIG_SIMBRIDGE_ENABLED', 'AUTO ON');
 
     const [showQuickControlsPane, setShowQuickControlsPane] = useState(false);
-    const [simBridgeConnected, setSimBridgeConnected] = useState(false);
+    const [simBridgeClientState, setSimBridgeClientState] = useState<SimBridgeClientState>(SimBridgeClientState.OFF);
 
     // To prevent keyboard input (esp. END key for external view) to change
     // the slider position. This is accomplished by a
@@ -84,37 +78,30 @@ export const QuickControls = () => {
     };
 
     const handleResetSimBridgeConnection = () => {
-        if (simBridgeConnected) {
+        if (simBridgeClientState === SimBridgeClientState.CONNECTED || simBridgeClientState === SimBridgeClientState.CONNECTING) {
             setSimbridgeEnabled('PERM OFF');
             return;
         }
         setSimbridgeEnabled('AUTO ON');
     };
 
-    const simBridgeState = useMemo<SimBridgeState>((): SimBridgeState => {
-        if (simBridgeConnected) return SimBridgeState.CONNECTED;
-        if (!simBridgeConnected && simBridgeEnabled === 'AUTO OFF') return SimBridgeState.OFFLINE;
-        if (!simBridgeConnected && simBridgeEnabled === 'AUTO ON') return SimBridgeState.CONNECTING;
-        return SimBridgeState.OFF;
-    }, [simBridgeConnected, simBridgeEnabled]);
-
     const simBridgeButtonStyle = useMemo<string>(():string => {
-        switch (simBridgeState) {
-        case SimBridgeState.CONNECTED: return 'bg-utility-green text-theme-body';
-        case SimBridgeState.CONNECTING: return 'bg-utility-amber text-theme-body';
-        case SimBridgeState.OFFLINE: return 'bg-utility-red text-theme-body';
+        switch (simBridgeClientState) {
+        case SimBridgeClientState.CONNECTED: return 'bg-utility-green text-theme-body';
+        case SimBridgeClientState.CONNECTING: return 'bg-utility-amber text-theme-body';
+        case SimBridgeClientState.OFFLINE: return 'bg-utility-red text-theme-body';
         default: return '';
         }
-    }, [simBridgeState]);
+    }, [simBridgeClientState]);
 
     const simBridgeButtonStateString = useMemo<string>(():string => {
-        switch (simBridgeState) {
-        case SimBridgeState.CONNECTED: return t('QuickControls.SimBridgeConnected');
-        case SimBridgeState.CONNECTING: return t('QuickControls.SimBridgeConnecting');
-        case SimBridgeState.OFFLINE: return t('QuickControls.SimBridgeOffline');
+        switch (simBridgeClientState) {
+        case SimBridgeClientState.CONNECTED: return t('QuickControls.SimBridgeConnected');
+        case SimBridgeClientState.CONNECTING: return t('QuickControls.SimBridgeConnecting');
+        case SimBridgeClientState.OFFLINE: return t('QuickControls.SimBridgeOffline');
         default: return t('QuickControls.SimBridgeOff');
         }
-    }, [simBridgeState]);
+    }, [simBridgeClientState]);
 
     const handleSettings = () => {
         history.push('/settings/flypad');
@@ -122,7 +109,7 @@ export const QuickControls = () => {
 
     useInterval(() => {
         if (showQuickControlsPane) {
-            setSimBridgeConnected(ClientState.getInstance().isAvailable());
+            setSimBridgeClientState(ClientState.getInstance().getSimBridgeClientState());
         }
     }, 200);
 
@@ -218,7 +205,7 @@ export const QuickControls = () => {
                                                     duration-100 ${simBridgeButtonStyle}`}
                                     style={{ width: '130px', height: '100px' }}
                                 >
-                                    {simBridgeConnected ? (
+                                    {simBridgeClientState === SimBridgeClientState.CONNECTED ? (
                                         <Wifi size={42} />
                                     ) : (
                                         <WifiOff size={42} />
