@@ -1,5 +1,7 @@
 import './style.scss';
 
-window.onload = () => {
+const loadSystems = () => {
     console.log('INITIALIZED TS-SYSTEMS');
 };
+
+loadSystems();
