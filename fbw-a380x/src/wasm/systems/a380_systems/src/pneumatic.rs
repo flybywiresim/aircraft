@@ -200,7 +200,7 @@ impl A380Pneumatic {
         &mut self,
         context: &UpdateContext,
         engines: [&(impl EngineCorrectedN1 + EngineCorrectedN2); 4],
-        overhead_panel: &A380PneumaticOverheadPanel,
+        pneumatic_overhead_panel: &A380PneumaticOverheadPanel,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         apu: &impl ControllerSignal<TargetPressureTemperatureSignal>,
         pack_flow_valve_signals: &impl PackFlowControllers<3, 4>,
@@ -211,7 +211,7 @@ impl A380Pneumatic {
             self.update_physics(
                 &context.with_delta(cur_time_step),
                 engines,
-                overhead_panel,
+                pneumatic_overhead_panel,
                 engine_fire_push_buttons,
                 apu,
                 pack_flow_valve_signals,
@@ -465,7 +465,7 @@ impl CoreProcessingInputOutputModuleA {
         context: &UpdateContext,
         sensors: &[EngineBleedAirSystem; 4],
         apu_bleed_valve: &impl PneumaticValve,
-        overhead_panel: &A380PneumaticOverheadPanel,
+        pneumatic_overhead_panel: &A380PneumaticOverheadPanel,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
     ) {
         for unit in self.units.iter_mut() {
@@ -474,7 +474,7 @@ impl CoreProcessingInputOutputModuleA {
                 &sensors[unit.engine_number - 1],
                 engine_fire_push_buttons.is_released(unit.engine_number),
                 apu_bleed_valve,
-                overhead_panel,
+                pneumatic_overhead_panel,
             );
         }
     }
@@ -509,6 +509,7 @@ struct CoreProcessingInputOutputModuleAUnit {
     is_engine_fire_pushbutton_released: bool,
     is_apu_bleed_valve_open: bool,
     is_apu_bleed_on: bool,
+    is_any_bleed_pushbutton_off: bool,
     high_pressure_valve_pid: PidController,
     pressure_regulating_valve_pid: PidController,
     fan_air_valve_pid: PidController,
@@ -529,6 +530,7 @@ impl CoreProcessingInputOutputModuleAUnit {
             is_engine_fire_pushbutton_released: false,
             is_apu_bleed_valve_open: false,
             is_apu_bleed_on: false,
+            is_any_bleed_pushbutton_off: false,
             high_pressure_valve_pid: PidController::new(0.05, 0.05, 0., 0., 1., 50., 1.),
             pressure_regulating_valve_pid: PidController::new(
                 0.1,
@@ -550,7 +552,7 @@ impl CoreProcessingInputOutputModuleAUnit {
         sensors: &EngineBleedAirSystem,
         is_engine_fire_pushbutton_released: bool,
         apu_bleed_valve: &impl PneumaticValve,
-        overhead_panel: &A380PneumaticOverheadPanel,
+        pneumatic_overhead_panel: &A380PneumaticOverheadPanel,
     ) {
         self.intermediate_pressure_compressor_pressure = sensors.intermediate_pressure();
         self.high_pressure_compressor_pressure = sensors.high_pressure();
@@ -580,13 +582,18 @@ impl CoreProcessingInputOutputModuleAUnit {
         self.engine_starter_valve_is_open = sensors.engine_starter_valve_is_open();
 
         self.is_engine_bleed_pushbutton_auto =
-            overhead_panel.engine_bleed_pb_is_auto(self.engine_number);
+            pneumatic_overhead_panel.engine_bleed_pb_is_auto(self.engine_number);
         self.is_engine_fire_pushbutton_released = is_engine_fire_pushbutton_released;
 
-        self.is_apu_bleed_valve_open = apu_bleed_valve.is_open();
-        self.is_apu_bleed_on = overhead_panel.apu_bleed_is_on();
+        self.is_any_bleed_pushbutton_off = !pneumatic_overhead_panel.engine_bleed_pb_is_auto(1)
+            || !pneumatic_overhead_panel.engine_bleed_pb_is_auto(2)
+            || !pneumatic_overhead_panel.engine_bleed_pb_is_auto(3)
+            || !pneumatic_overhead_panel.engine_bleed_pb_is_auto(4);
 
-        self.cross_bleed_valve_selector = overhead_panel.cross_bleed_mode();
+        self.is_apu_bleed_valve_open = apu_bleed_valve.is_open();
+        self.is_apu_bleed_on = pneumatic_overhead_panel.apu_bleed_is_on();
+
+        self.cross_bleed_valve_selector = pneumatic_overhead_panel.cross_bleed_mode();
     }
 
     fn should_close_pressure_regulating_valve_because_apu_bleed_is_on(&self) -> bool {
@@ -640,7 +647,7 @@ impl ControllerSignal<CrossBleedValveSignal> for CoreProcessingInputOutputModule
                 CrossBleedValveSignalType::Manual,
             )),
             CrossBleedValveSelectorMode::Auto => {
-                if self.is_apu_bleed_valve_open {
+                if self.is_apu_bleed_valve_open || self.is_any_bleed_pushbutton_off {
                     Some(CrossBleedValveSignal::new_open(
                         CrossBleedValveSignalType::Automatic,
                     ))
@@ -2773,6 +2780,25 @@ mod tests {
         assert!(test_bed.cross_bleed_valves_are_open());
     }
 
+    #[rstest]
+    fn cross_bleed_valves_open_with_any_bleed_pb_off(#[values(1, 2, 3, 4)] engine_number: usize) {
+        let mut test_bed = test_bed_with()
+            .idle_eng1()
+            .idle_eng2()
+            .idle_eng3()
+            .idle_eng4()
+            .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Auto)
+            .and_stabilize();
+
+        assert!(!test_bed.cross_bleed_valves_are_open());
+
+        test_bed = test_bed
+            .set_engine_bleed_push_button_off(engine_number)
+            .and_run();
+
+        assert!(test_bed.cross_bleed_valves_are_open());
+    }
+
     #[test]
     fn vars_initialized_properly() {
         let test_bed = test_bed()
@@ -2953,9 +2979,12 @@ mod tests {
         assert!(!test_bed.pr_valve_is_open(4));
     }
 
-    #[test]
-    fn pressure_regulating_valve_regulates_to_40_psig() {
+    #[rstest]
+    fn pressure_regulating_valve_regulates_to_40_psig(
+        #[values(0., 10000., 20000., 30000.)] altitude: f64,
+    ) {
         let test_bed = test_bed()
+            .in_isa_atmosphere(Length::new::<foot>(altitude))
             .idle_eng1()
             .idle_eng2()
             .idle_eng3()
