@@ -1955,13 +1955,16 @@ impl SimulationElement for LeakMeasurementValve {
 
 pub struct SpringPhysics {
     last_length: f64,
+    spring_constant: f64,
+    damping_constant: f64,
 }
 impl SpringPhysics {
-    const SPRING_K_CONSTANT: f64 = 5000.;
-    const SPRING_DAMPING_CONSTANT: f64 = 500.;
-
-    pub fn default() -> Self {
-        Self { last_length: 0. }
+    pub fn new(spring_constant: f64, damping_constant: f64) -> Self {
+        Self {
+            last_length: 0.,
+            spring_constant,
+            damping_constant,
+        }
     }
 
     pub fn update_force(
@@ -1982,12 +1985,17 @@ impl SpringPhysics {
         let spring_vector_normalized = spring_vector.normalize();
         let velocity = (spring_length - self.last_length) / context.delta_as_secs_f64();
 
-        let k_force = spring_length * Self::SPRING_K_CONSTANT;
-        let damping_force = velocity * Self::SPRING_DAMPING_CONSTANT;
+        let k_force = spring_length * self.spring_constant;
+        let damping_force = velocity * self.damping_constant;
 
         self.last_length = spring_length;
 
         (k_force + damping_force) * spring_vector_normalized
+    }
+
+    pub fn set_k_and_damping(&mut self, spring_constant: f64, damping_constant: f64) {
+        self.spring_constant = spring_constant;
+        self.damping_constant = damping_constant;
     }
 }
 
@@ -2006,6 +2014,9 @@ impl FluidPhysics {
     const MEAN_G_TRAP_CAVITY_TIME_DURATION_SECONDS: f64 = 20.;
     const STD_DEV_G_TRAP_CAVITY_TIME_DURATION_SECONDS: f64 = 4.;
 
+    const SPRING_K_CONSTANT: f64 = 5000.;
+    const SPRING_DAMPING_CONSTANT: f64 = 500.;
+
     fn new() -> Self {
         Self {
             reference_point_cg: Vector3::default(),
@@ -2013,7 +2024,7 @@ impl FluidPhysics {
             fluid_cg_speed: Vector3::default(),
 
             virtual_mass: Mass::new::<kilogram>(100.),
-            spring: SpringPhysics::default(),
+            spring: SpringPhysics::new(Self::SPRING_K_CONSTANT, Self::SPRING_DAMPING_CONSTANT),
             anisotropic_damping_constant: Vector3::new(25., 20., 25.),
 
             g_trap_is_empty: DelayedTrueLogicGate::new(Duration::from_secs_f64(

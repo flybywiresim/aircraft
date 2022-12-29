@@ -2103,8 +2103,6 @@ impl A380Hydraulic {
         self.eng3_flex.update(context);
         self.eng4_flex.update(context);
 
-        println!("FLEX ENG: {:?}", self.eng1_flex);
-
         self.forward_cargo_door.update(
             context,
             &self.forward_cargo_door_controller,
