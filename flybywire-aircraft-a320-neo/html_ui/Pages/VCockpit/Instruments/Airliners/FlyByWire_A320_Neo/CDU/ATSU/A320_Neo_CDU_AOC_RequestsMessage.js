@@ -2,7 +2,7 @@ class CDUAocRequestsMessage {
     static ShowPage(mcdu, messages, messageIndex, offset = 0) {
         mcdu.clearDisplay();
         const message = messages[messageIndex];
-        const lines = message.serialize(Atsu.AtsuMessageSerializationFormat.MCDU).split("\n");
+        const lines = message.serialize(AtsuCommon.AtsuMessageSerializationFormat.MCDU).split("\n");
 
         // mark message as read
         mcdu.atsu.messageRead(message.UniqueMessageID);
@@ -30,7 +30,7 @@ class CDUAocRequestsMessage {
         }
 
         let from = message.Station;
-        if (message.Type === Atsu.AtsuMessageType.ATIS) {
+        if (message.Type === AtsuCommon.AtsuMessageType.ATIS) {
             from = message.Reports[0].airport;
         }
 

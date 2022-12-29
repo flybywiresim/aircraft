@@ -52,15 +52,15 @@ class CDUAtcMessagesRecord {
             let headerLeft = "", headerRight = "", contentStart = "";
 
             if (messages.length > (offset + i) && messages[offset + i]) {
-                headerLeft = `${messages[offset + i].Timestamp.dcduTimestamp()} ${messages[offset + i].Direction === Atsu.AtsuMessageDirection.Input ? "FROM" : "TO"} `;
+                headerLeft = `${messages[offset + i].Timestamp.dcduTimestamp()} ${messages[offset + i].Direction === AtsuCommon.AtsuMessageDirection.Input ? "FROM" : "TO"} `;
                 headerLeft += messages[offset + i].Station;
                 headerRight = CDUAtcMessagesRecord.TranslateCpdlcResponse(messages[offset + i].Response);
 
                 // ignore the headline with the station and the timestamp
-                const lines = messages[offset + i].serialize(Atsu.AtsuMessageSerializationFormat.Printer).split("\n");
+                const lines = messages[offset + i].serialize(AtsuCommon.AtsuMessageSerializationFormat.Printer).split("\n");
                 let firstLine = "CPDLC";
                 if (lines.length >= 2) {
-                    firstLine = messages[offset + i].serialize(Atsu.AtsuMessageSerializationFormat.Printer).split("\n")[1];
+                    firstLine = messages[offset + i].serialize(AtsuCommon.AtsuMessageSerializationFormat.Printer).split("\n")[1];
                 }
                 if (firstLine.length <= 24) {
                     contentStart = firstLine;

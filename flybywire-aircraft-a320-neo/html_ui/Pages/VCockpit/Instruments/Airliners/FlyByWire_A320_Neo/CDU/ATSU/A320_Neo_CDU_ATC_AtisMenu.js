@@ -1,10 +1,10 @@
 class CDUAtcAtisMenu {
     static CreateDataBlock(mcdu) {
         const airports = [
-            { icao: "", type: Atsu.AtisType.Departure, requested: false, autoupdate: false },
-            { icao: "", type: Atsu.AtisType.Arrival, requested: false, autoupdate: false },
-            { icao: "", type: Atsu.AtisType.Arrival, requested: false, autoupdate: false },
-            { icao: "", type: Atsu.AtisType.Arrival, requested: false, autoupdate: false }
+            { icao: "", type: AtsuCommon.AtisType.Departure, requested: false, autoupdate: false },
+            { icao: "", type: AtsuCommon.AtisType.Arrival, requested: false, autoupdate: false },
+            { icao: "", type: AtsuCommon.AtisType.Arrival, requested: false, autoupdate: false },
+            { icao: "", type: AtsuCommon.AtisType.Arrival, requested: false, autoupdate: false }
         ];
 
         if (mcdu.flightPlanManager.getPersistentOrigin() && mcdu.flightPlanManager.getPersistentOrigin().ident) {
@@ -27,7 +27,7 @@ class CDUAtcAtisMenu {
         if (!value) {
             const reports = mcdu.atsu.atc.atisReports(airports[idx].icao);
             if (reports.length !== 0) {
-                CDUAtcReportAtis.ShowPage(mcdu, `${airports[idx].icao}/${airports[idx].type === Atsu.AtisType.Departure ? "DEP" : "ARR"}`, reports, 0);
+                CDUAtcReportAtis.ShowPage(mcdu, `${airports[idx].icao}/${airports[idx].type === AtsuCommon.AtisType.Departure ? "DEP" : "ARR"}`, reports, 0);
             }
         } else if (value === FMCMainDisplay.clrValue) {
             airports[idx].icao = "";
@@ -45,9 +45,9 @@ class CDUAtcAtisMenu {
             // validate the ATIS type
             let type = null;
             if (entries[1] === "ARR" || entries[1] === "AR" || entries[1] === "A") {
-                type = Atsu.AtisType.Arrival;
+                type = AtsuCommon.AtisType.Arrival;
             } else if (entries[1] === "DEP" || entries[1] === "DDE" || entries[1] === "D") {
-                type = Atsu.AtisType.Departure;
+                type = AtsuCommon.AtisType.Departure;
             }
             if (type === null) {
                 mcdu.setScratchpadMessage(NXSystemMessages.formatError);
@@ -113,7 +113,7 @@ class CDUAtcAtisMenu {
 
             let right = "SEND*";
             let rightTitle = "REQ\xa0";
-            const left = `{cyan}${prefix}${airport.icao}/${airport.type === Atsu.AtisType.Arrival ? "ARR" : "DEP"}{end}`;
+            const left = `{cyan}${prefix}${airport.icao}/${airport.type === AtsuCommon.AtisType.Arrival ? "ARR" : "DEP"}{end}`;
 
             if (airport.autoupdate) {
                 rightTitle = "UPDATE\xa0";
@@ -137,7 +137,7 @@ class CDUAtcAtisMenu {
             airports[idx].requested = true;
 
             mcdu.atsu.atc.receiveAtis(airports[idx].icao, airports[idx].type).then((code) => {
-                if (code !== Atsu.AtsuStatusCodes.Ok) {
+                if (code !== AtsuCommon.AtsuStatusCodes.Ok) {
                     mcdu.addNewAtsuMessage(code);
                 }
 

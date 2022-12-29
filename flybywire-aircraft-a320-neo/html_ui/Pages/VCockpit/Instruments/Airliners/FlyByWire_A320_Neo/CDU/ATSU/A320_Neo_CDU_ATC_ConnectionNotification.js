@@ -106,7 +106,7 @@ class CDUAtcConnectionNotification {
                 store["atcCenter"] = "";
 
                 mcdu.atsu.isRemoteStationAvailable(value).then((code) => {
-                    if (code !== Atsu.AtsuStatusCodes.Ok) {
+                    if (code !== AtsuCommon.AtsuStatusCodes.Ok) {
                         mcdu.addNewAtsuMessage(code);
                         store["atcCenter"] = "";
                     } else {
@@ -137,7 +137,7 @@ class CDUAtcConnectionNotification {
                 store["loginState"] = 1;
 
                 mcdu.atsu.atc.logon(store["atcCenter"]).then((code) => {
-                    if (code === Atsu.AtsuStatusCodes.Ok) {
+                    if (code === AtsuCommon.AtsuStatusCodes.Ok) {
                         // check if the login was successful
                         const interval = setInterval(() => {
                             if (!mcdu.atsu.atc.logonInProgress()) {

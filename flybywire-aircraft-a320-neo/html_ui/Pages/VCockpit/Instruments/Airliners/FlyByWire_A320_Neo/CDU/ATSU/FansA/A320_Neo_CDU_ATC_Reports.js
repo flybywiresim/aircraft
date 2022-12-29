@@ -11,9 +11,9 @@ class CDUAtcReports {
     }
 
     static CreateRequest(mcdu, type, values = []) {
-        const retval = new Atsu.CpdlcMessage();
+        const retval = new AtsuCommon.CpdlcMessage();
         retval.Station = mcdu.atsu.atc.currentStation();
-        retval.Content.push(Atsu.CpdlcMessagesDownlink[type][1].deepCopy());
+        retval.Content.push(AtsuCommon.CpdlcMessagesDownlink[type][1].deepCopy());
 
         for (let i = 0; i < values.length; ++i) {
             retval.Content[0].Content[i].Value = values[i];
@@ -29,7 +29,7 @@ class CDUAtcReports {
             retval.push(CDUAtcReports.CreateRequest(mcdu, "DM20"));
         }
         if (data.deviating) {
-            const elements = Atsu.InputValidation.expandLateralOffset(data.deviating).split(" ");
+            const elements = AtsuCommon.InputValidation.expandLateralOffset(data.deviating).split(" ");
             retval.push(CDUAtcReports.CreateRequest(mcdu, "DM80", [elements[0], elements[1]]));
         }
 
@@ -93,9 +93,9 @@ class CDUAtcReports {
             if (value === FMCMainDisplay.clrValue) {
                 data.deviating = null;
             } else {
-                const error = Atsu.InputValidation.validateScratchpadOffset(value);
-                if (error === Atsu.AtsuStatusCodes.Ok) {
-                    data.deviating = Atsu.InputValidation.formatScratchpadOffset(value);
+                const error = AtsuCommon.InputValidation.validateScratchpadOffset(value);
+                if (error === AtsuCommon.AtsuStatusCodes.Ok) {
+                    data.deviating = AtsuCommon.InputValidation.formatScratchpadOffset(value);
                 } else {
                     mcdu.addNewAtsuMessage(error);
                 }

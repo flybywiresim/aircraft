@@ -3,7 +3,7 @@ class CDUAtcAtisAutoUpdate {
         if (mcdu.atsu.atc.atisAutoUpdateActive(icao)) {
             mcdu.atsu.atc.deactivateAtisAutoUpdate(icao);
         } else {
-            mcdu.atsu.atc.activateAtisAutoUpdate(icao, Atsu.AtisType.Arrival);
+            mcdu.atsu.atc.activateAtisAutoUpdate(icao, AtsuCommon.AtisType.Arrival);
         }
     }
 

@@ -549,7 +549,7 @@ class FMCMainDisplay extends BaseAirliners {
         this._messageQueue.resetQueue();
 
         // ATSU data
-        this.atsu = new Atsu.Atsu(this);
+        this.atsu = new AtsuSystem.Atsu(this);
 
         // Reset SimVars
         SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", NaN);
@@ -2527,7 +2527,7 @@ class FMCMainDisplay extends BaseAirliners {
         SimVar.SetSimVarValue("ATC FLIGHT NUMBER", "string", flightNo, "FMC").then(() => {
             this.atsu.connectToNetworks(flightNo)
                 .then((code) => {
-                    if (code !== Atsu.AtsuStatusCodes.Ok) {
+                    if (code !== AtsuCommon.AtsuStatusCodes.Ok) {
                         SimVar.SetSimVarValue("L:A32NX_MCDU_FLT_NO_SET", "boolean", 0);
                         this.addNewAtsuMessage(code);
                         this.flightNo = "";

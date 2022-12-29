@@ -25,7 +25,7 @@ class CDUAtcOceanicReq {
     }
 
     static CreateMessage(mcdu, data) {
-        const retval = new Atsu.OclMessage();
+        const retval = new AtsuCommon.OclMessage();
 
         retval.Callsign = data.callsign;
         retval.Destination = mcdu.flightPlanManager.getDestination().ident;

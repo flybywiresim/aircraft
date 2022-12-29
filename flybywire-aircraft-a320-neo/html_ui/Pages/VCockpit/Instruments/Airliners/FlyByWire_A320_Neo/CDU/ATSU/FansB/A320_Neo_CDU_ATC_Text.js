@@ -13,9 +13,9 @@ class CDUAtcTextFansB {
     static CreateMessages(messages, data) {
         let extension = null;
         if (data.performance) {
-            extension = Atsu.CpdlcMessagesDownlink["DM66"][1].deepCopy();
+            extension = AtsuCommon.CpdlcMessagesDownlink["DM66"][1].deepCopy();
         } else if (data.weather) {
-            extension = Atsu.CpdlcMessagesDownlink["DM65"][1].deepCopy();
+            extension = AtsuCommon.CpdlcMessagesDownlink["DM65"][1].deepCopy();
         }
 
         let updated = false;

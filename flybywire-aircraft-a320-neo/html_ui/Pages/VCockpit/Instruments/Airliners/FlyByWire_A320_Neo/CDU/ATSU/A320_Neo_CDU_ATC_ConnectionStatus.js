@@ -62,7 +62,7 @@ class CDUAtcConnectionStatus {
 
                 mcdu.atsu.atc.logoff().then((code) => {
                     store["disconnectInProgress"] = false;
-                    if (code !== Atsu.AtsuStatusCodes.Ok) {
+                    if (code !== AtsuCommon.AtsuStatusCodes.Ok) {
                         store["disconnectAvail"] = true;
                         mcdu.addNewAtsuMessage(code);
                     } else {

@@ -25,7 +25,7 @@ class CDUAocMessagesReceived {
 
             if (messages.length > (offset - i) && messages[offset - i]) {
                 let sender = messages[offset - i].Station;
-                if (messages[offset - i].Type === Atsu.AtsuMessageType.ATIS) {
+                if (messages[offset - i].Type === AtsuCommon.AtsuMessageType.ATIS) {
                     sender = messages[offset - i].Reports[0].airport;
                 }
                 headerLeft += `${messages[offset - i].Timestamp.mcduTimestamp()} FROM ${sender}[color]green`;

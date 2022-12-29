@@ -18,7 +18,7 @@ class CDUAtcDepartReq {
     }
 
     static CreateMessage(store) {
-        const retval = new Atsu.DclMessage();
+        const retval = new AtsuCommon.DclMessage();
 
         retval.Callsign = store.callsign;
         retval.Origin = store.from;
@@ -198,7 +198,7 @@ class CDUAtcDepartReq {
                 store.station = "";
             } else if (/^[A-Z0-9]{4}$/.test(value)) {
                 mcdu.atsu.isRemoteStationAvailable(value).then((code) => {
-                    if (code !== Atsu.AtsuStatusCodes.Ok) {
+                    if (code !== AtsuCommon.AtsuStatusCodes.Ok) {
                         mcdu.addNewAtsuMessage(code);
                     } else {
                         store.station = value;
