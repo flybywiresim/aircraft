@@ -117,7 +117,6 @@ export class ClientState {
         default:
             this.simBridgeState = SimBridgeClientState.OFF;
         }
-        console.log(`[SimBridge-Client] SimBridge Client State: ${this.simBridgeState}`);
     }
 
     /**

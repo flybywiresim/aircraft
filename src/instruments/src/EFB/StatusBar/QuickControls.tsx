@@ -39,7 +39,7 @@ export const QuickControls = () => {
     const [, setSimbridgeEnabled] = usePersistentProperty('CONFIG_SIMBRIDGE_ENABLED', 'AUTO ON');
 
     const [showQuickControlsPane, setShowQuickControlsPane] = useState(false);
-    const [simBridgeClientState, setSimBridgeClientState] = useState<SimBridgeClientState>(SimBridgeClientState.OFF);
+    const [simBridgeClientState, setSimBridgeClientState] = useState<SimBridgeClientState>(ClientState.getInstance().getSimBridgeClientState());
 
     // To prevent keyboard input (esp. END key for external view) to change
     // the slider position. This is accomplished by a
