@@ -91,7 +91,7 @@ export const QuickControls = () => {
         setSimbridgeEnabled('AUTO ON');
     };
 
-    const determineSimBridgeState = useMemo<SimBridgeState>((): SimBridgeState => {
+    const simBridgeState = useMemo<SimBridgeState>((): SimBridgeState => {
         if (simBridgeConnected) return SimBridgeState.CONNECTED;
         if (!simBridgeConnected && simBridgeEnabled === 'AUTO OFF') return SimBridgeState.OFFLINE;
         if (!simBridgeConnected && simBridgeEnabled === 'AUTO ON') return SimBridgeState.CONNECTING;
@@ -99,22 +99,22 @@ export const QuickControls = () => {
     }, [simBridgeConnected, simBridgeEnabled]);
 
     const simBridgeButtonStyle = useMemo<string>(():string => {
-        switch (determineSimBridgeState) {
+        switch (simBridgeState) {
         case SimBridgeState.CONNECTED: return 'bg-utility-green text-theme-body';
         case SimBridgeState.CONNECTING: return 'bg-utility-amber text-theme-body';
         case SimBridgeState.OFFLINE: return 'bg-utility-red text-theme-body';
         default: return '';
         }
-    }, [determineSimBridgeState]);
+    }, [simBridgeState]);
 
     const simBridgeButtonStateString = useMemo<string>(():string => {
-        switch (determineSimBridgeState) {
+        switch (simBridgeState) {
         case SimBridgeState.CONNECTED: return t('QuickControls.SimBridgeConnected');
         case SimBridgeState.CONNECTING: return t('QuickControls.SimBridgeConnecting');
         case SimBridgeState.OFFLINE: return t('QuickControls.SimBridgeOffline');
         default: return t('QuickControls.SimBridgeOff');
         }
-    }, [determineSimBridgeState]);
+    }, [simBridgeState]);
 
     const handleSettings = () => {
         history.push('/settings/flypad');
