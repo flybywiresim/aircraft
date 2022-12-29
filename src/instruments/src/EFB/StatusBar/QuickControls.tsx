@@ -135,163 +135,161 @@ export const QuickControls = () => {
             </TooltipWrapper>
             {showQuickControlsPane
                 && (
-                    <>
-                        <div
-                            className="absolute z-10 py-6 px-6 bg-theme-accent rounded-md border border-theme-secondary transition duration-100"
-                            style={{ top: '40px', right: '50px', width: '620px', height: '320px' }}
-                            onMouseLeave={() => setShowQuickControlsPane(false)}
-                        >
+                    <div
+                        className="absolute z-10 py-6 px-6 bg-theme-accent rounded-md border border-theme-secondary transition duration-100"
+                        style={{ top: '40px', right: '50px', width: '620px', height: '320px' }}
+                        onMouseLeave={() => setShowQuickControlsPane(false)}
+                    >
 
-                            <div className="flex flex-row justify-end items-center mb-8">
-                                <div className="absolute left-0 ml-6 text-4xl">
-                                    Quick Settings
-                                </div>
-                                <TooltipWrapper text={t('QuickControls.TT.Settings')}>
-                                    <button
-                                        type="button"
-                                        onClick={handleSettings}
-                                        className={`flex justify-center items-center ml-4 text-theme-text 
-                                                   bg-theme-body hover:border-4 hover:border-theme-highlight rounded-md transition duration-100`}
-                                        style={{ width: '80px', height: '50px' }}
-                                    >
-                                        <Gear size={24} />
-                                    </button>
-                                </TooltipWrapper>
-                                <TooltipWrapper text={t('QuickControls.TT.Sleep')}>
-                                    <button
-                                        type="button"
-                                        onClick={handleSleep}
-                                        className="flex justify-center items-center ml-4 text-theme-text
-                                               bg-theme-body hover:border-4 hover:border-theme-highlight rounded-md transition duration-100"
-                                        style={{ width: '80px', height: '50px' }}
-                                    >
-                                        <MoonFill size={20} />
-                                    </button>
-                                </TooltipWrapper>
-                                <TooltipWrapper text={t('QuickControls.TT.PowerButton')}>
-                                    <button
-                                        type="button"
-                                        onClick={handlePower}
-                                        className="flex justify-center items-center ml-4 text-theme-text
-                                               bg-theme-body hover:border-4 hover:border-theme-highlight rounded-md transition duration-100"
-                                        style={{ width: '80px', height: '50px' }}
-                                    >
-                                        <Power size={24} />
-                                    </button>
-                                </TooltipWrapper>
+                        <div className="flex flex-row justify-end items-center mb-8">
+                            <div className="absolute left-0 ml-6 text-4xl">
+                                Quick Settings
                             </div>
+                            <TooltipWrapper text={t('QuickControls.TT.Settings')}>
+                                <button
+                                    type="button"
+                                    onClick={handleSettings}
+                                    className={`flex justify-center items-center ml-4 text-theme-text 
+                                                   bg-theme-body hover:border-4 hover:border-theme-highlight rounded-md transition duration-100`}
+                                    style={{ width: '80px', height: '50px' }}
+                                >
+                                    <Gear size={24} />
+                                </button>
+                            </TooltipWrapper>
+                            <TooltipWrapper text={t('QuickControls.TT.Sleep')}>
+                                <button
+                                    type="button"
+                                    onClick={handleSleep}
+                                    className="flex justify-center items-center ml-4 text-theme-text
+                                               bg-theme-body hover:border-4 hover:border-theme-highlight rounded-md transition duration-100"
+                                    style={{ width: '80px', height: '50px' }}
+                                >
+                                    <MoonFill size={20} />
+                                </button>
+                            </TooltipWrapper>
+                            <TooltipWrapper text={t('QuickControls.TT.PowerButton')}>
+                                <button
+                                    type="button"
+                                    onClick={handlePower}
+                                    className="flex justify-center items-center ml-4 text-theme-text
+                                               bg-theme-body hover:border-4 hover:border-theme-highlight rounded-md transition duration-100"
+                                    style={{ width: '80px', height: '50px' }}
+                                >
+                                    <Power size={24} />
+                                </button>
+                            </TooltipWrapper>
+                        </div>
 
-                            <div className="flex flex-row justify-between items-center mb-8">
-                                <TooltipWrapper text={t('QuickControls.TT.AlignAdirs')}>
-                                    <button
-                                        type="button"
-                                        onClick={handleAlignADIRS}
-                                        className="flex flex-col justify-center items-center text-theme-text
+                        <div className="flex flex-row justify-between items-center mb-8">
+                            <TooltipWrapper text={t('QuickControls.TT.AlignAdirs')}>
+                                <button
+                                    type="button"
+                                    onClick={handleAlignADIRS}
+                                    className="flex flex-col justify-center items-center text-theme-text
                                                    bg-theme-body hover:border-4 hover:border-theme-highlight rounded-md transition duration-100"
-                                        style={{ width: '130px', height: '100px' }}
-                                    >
-                                        <Compass size={42} />
-                                        <div className="mt-1 text-sm text-inherit">
-                                            Align ADIRS
-                                        </div>
-                                    </button>
-                                </TooltipWrapper>
-                                <TooltipWrapper text={t('QuickControls.TT.FinishBoarding')}>
-                                    <button
-                                        type="button"
-                                        onClick={handleInstantBoarding}
-                                        className="flex flex-col justify-center items-center text-theme-text
+                                    style={{ width: '130px', height: '100px' }}
+                                >
+                                    <Compass size={42} />
+                                    <div className="mt-1 text-sm text-inherit">
+                                        Align ADIRS
+                                    </div>
+                                </button>
+                            </TooltipWrapper>
+                            <TooltipWrapper text={t('QuickControls.TT.FinishBoarding')}>
+                                <button
+                                    type="button"
+                                    onClick={handleInstantBoarding}
+                                    className="flex flex-col justify-center items-center text-theme-text
                                                    bg-theme-body hover:border-4 hover:border-theme-highlight rounded-md transition duration-100"
-                                        style={{ width: '130px', height: '100px' }}
-                                    >
-                                        <PersonCheck size={42} />
-                                        <div className="mt-1 text-sm text-inherit">
-                                            Finish Boarding
-                                        </div>
-                                    </button>
-                                </TooltipWrapper>
-                                <TooltipWrapper text={t('QuickControls.TT.SimBridge')}>
-                                    <button
-                                        type="button"
-                                        onClick={handleResetSimBridgeConnection}
-                                        className={`flex flex-col justify-center items-center text-theme-text  
+                                    style={{ width: '130px', height: '100px' }}
+                                >
+                                    <PersonCheck size={42} />
+                                    <div className="mt-1 text-sm text-inherit">
+                                        Finish Boarding
+                                    </div>
+                                </button>
+                            </TooltipWrapper>
+                            <TooltipWrapper text={t('QuickControls.TT.SimBridge')}>
+                                <button
+                                    type="button"
+                                    onClick={handleResetSimBridgeConnection}
+                                    className={`flex flex-col justify-center items-center text-theme-text  
                                                     bg-theme-body hover:border-4 hover:border-theme-highlight rounded-md transition 
                                                     duration-100 ${simBridgeButtonStyle}`}
-                                        style={{ width: '130px', height: '100px' }}
-                                    >
-                                        {simBridgeConnected ? (
-                                            <Wifi size={42} />
-                                        ) : (
-                                            <WifiOff size={42} />
-                                        )}
-                                        <div className="mt-1 text-sm text-inherit">
-                                            SimBridge
-                                            {' '}
-                                            <br />
-                                            {simBridgeButtonStateString}
-                                        </div>
-                                    </button>
-                                </TooltipWrapper>
-                                <TooltipWrapper text={t('QuickControls.TT.OnScreenKeyboard')}>
-                                    <button
-                                        type="button"
-                                        onClick={() => setAutoOSK(autoOSK === 0 ? 1 : 0)}
-                                        className={`flex flex-col justify-center items-center text-theme-text 
+                                    style={{ width: '130px', height: '100px' }}
+                                >
+                                    {simBridgeConnected ? (
+                                        <Wifi size={42} />
+                                    ) : (
+                                        <WifiOff size={42} />
+                                    )}
+                                    <div className="mt-1 text-sm text-inherit">
+                                        SimBridge
+                                        {' '}
+                                        <br />
+                                        {simBridgeButtonStateString}
+                                    </div>
+                                </button>
+                            </TooltipWrapper>
+                            <TooltipWrapper text={t('QuickControls.TT.OnScreenKeyboard')}>
+                                <button
+                                    type="button"
+                                    onClick={() => setAutoOSK(autoOSK === 0 ? 1 : 0)}
+                                    className={`flex flex-col justify-center items-center text-theme-text 
                                                    bg-theme-body hover:border-4 hover:border-theme-highlight rounded-md transition duration-100 ${autoOSK === 1 ? 'bg-utility-green' : ''}`}
-                                        style={{ width: '130px', height: '100px' }}
-                                    >
-                                        <Keyboard size={42} />
-                                        <div className="mt-1 text-sm text-inherit">
-                                            Onscreen Keyboard
-                                        </div>
-                                    </button>
-                                </TooltipWrapper>
-
-                            </div>
-
-                            <div className="flex flex-row justify-between items-center">
-                                <div className={`flex flex-row items-center ${usingAutobrightness && 'opacity-30'}`}>
-                                    <TooltipWrapper text={t('QuickControls.TT.Brightness')}>
-                                        <div className="flex flex-row items-center mr-4 w-[80px] text-theme-text">
-                                            <BrightnessHighFill size={24} />
-                                            <span className="ml-2 pointer-events-none text-inherit">
-                                                {`${usingAutobrightness ? brightness.toFixed(0) : brightnessSetting}%`}
-                                            </span>
-                                        </div>
-                                        <div>
-                                            <Slider
-                                                disabled={usingAutobrightness === 1}
-                                                ref={brightnessSliderRef}
-                                                value={usingAutobrightness ? brightness : brightnessSetting}
-                                                min={1}
-                                                max={100}
-                                                onChange={setBrightnessSetting}
-                                                onAfterChange={() => brightnessSliderRef.current && brightnessSliderRef.current.blur()}
-                                                className="rounded-md"
-                                                style={{ width: '380px', height: '50px', padding: '0' }}
-                                                trackStyle={{ backgroundColor: 'var(--color-text)', height: '50px' }}
-                                                railStyle={{ backgroundColor: 'var(--color-body)', height: '50px' }}
-                                                handleStyle={{ top: '13px', height: '0px', width: '0px' }}
-                                            />
-                                        </div>
-                                    </TooltipWrapper>
-                                </div>
-                                <TooltipWrapper text={t('QuickControls.TT.AutoBrightness')}>
-                                    <button
-                                        type="button"
-                                        onClick={handleAutoBrightness}
-                                        className={`flex justify-center items-center ml-4 text-theme-text 
-                                                    bg-theme-body hover:border-4 hover:border-theme-highlight rounded-md 
-                                                    transition duration-100 ${usingAutobrightness === 1 ? 'bg-utility-green text-theme-body' : ''}`}
-                                        style={{ width: '80px', height: '50px' }}
-                                    >
-                                        <BrightnessHigh size={24} />
-                                    </button>
-                                </TooltipWrapper>
-                            </div>
+                                    style={{ width: '130px', height: '100px' }}
+                                >
+                                    <Keyboard size={42} />
+                                    <div className="mt-1 text-sm text-inherit">
+                                        Onscreen Keyboard
+                                    </div>
+                                </button>
+                            </TooltipWrapper>
 
                         </div>
-                    </>
+
+                        <div className="flex flex-row justify-between items-center">
+                            <div className={`flex flex-row items-center ${usingAutobrightness && 'opacity-30'}`}>
+                                <TooltipWrapper text={t('QuickControls.TT.Brightness')}>
+                                    <div className="flex flex-row items-center mr-4 w-[80px] text-theme-text">
+                                        <BrightnessHighFill size={24} />
+                                        <span className="ml-2 pointer-events-none text-inherit">
+                                            {`${usingAutobrightness ? brightness.toFixed(0) : brightnessSetting}%`}
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <Slider
+                                            disabled={usingAutobrightness === 1}
+                                            ref={brightnessSliderRef}
+                                            value={usingAutobrightness ? brightness : brightnessSetting}
+                                            min={1}
+                                            max={100}
+                                            onChange={setBrightnessSetting}
+                                            onAfterChange={() => brightnessSliderRef.current && brightnessSliderRef.current.blur()}
+                                            className="rounded-md"
+                                            style={{ width: '380px', height: '50px', padding: '0' }}
+                                            trackStyle={{ backgroundColor: 'var(--color-text)', height: '50px' }}
+                                            railStyle={{ backgroundColor: 'var(--color-body)', height: '50px' }}
+                                            handleStyle={{ top: '13px', height: '0px', width: '0px' }}
+                                        />
+                                    </div>
+                                </TooltipWrapper>
+                            </div>
+                            <TooltipWrapper text={t('QuickControls.TT.AutoBrightness')}>
+                                <button
+                                    type="button"
+                                    onClick={handleAutoBrightness}
+                                    className={`flex justify-center items-center ml-4 text-theme-text 
+                                                    bg-theme-body hover:border-4 hover:border-theme-highlight rounded-md 
+                                                    transition duration-100 ${usingAutobrightness === 1 ? 'bg-utility-green text-theme-body' : ''}`}
+                                    style={{ width: '80px', height: '50px' }}
+                                >
+                                    <BrightnessHigh size={24} />
+                                </button>
+                            </TooltipWrapper>
+                        </div>
+
+                    </div>
                 )}
         </>
     );
