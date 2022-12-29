@@ -3240,6 +3240,18 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Indicates the position of the gear emergency extension crank handle from 0 to 300 (3 turns)
     - Percent
 
+- A32NX_GEAR_LEVER_POSITION_REQUEST
+    - Indicates that the pilot tries to move the gear lever (1=down)
+    - Boolean
+
+- A32NX_GEAR_HANDLE_POSITION
+    - Indicates the actual position of the gear handle
+    - Percent over 100
+
+- A32NX_GEAR_HANDLE_HITS_LOCK_SOUND
+    - Indicates that gear lever just hit the baulk lock mechanism
+    - Boolean
+
 ## ATC (ATA 34)
 
 - A32NX_TRANSPONDER_MODE
