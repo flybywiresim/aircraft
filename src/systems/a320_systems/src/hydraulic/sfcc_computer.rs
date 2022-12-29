@@ -807,9 +807,9 @@ mod tests {
         adirus: TestAdirus,
         lgciu: TestLgciu,
 
-        flap_gear: SlatFlapGear,
-        slat_gear: SlatFlapGear,
-        slat_flap_complex: SlatFlapComplex,
+        flap_system: SlatFlapGear,
+        slat_system: SlatFlapGear,
+        slats_flaps_complex: SlatFlapComplex,
 
         powered_source: TestElectricitySource,
         dc_2_bus: ElectricalBus,
@@ -832,13 +832,13 @@ mod tests {
                 yellow_hydraulic_pressure_id: context
                     .get_identifier("HYD_YELLOW_PRESSURE".to_owned()),
 
-                flap_gear: SlatFlapGear::new(
+                flap_system: SlatFlapGear::new(
                     context,
                     AngularVelocity::new::<degree_per_second>(7.5),
                     Angle::new::<degree>(251.97),
                     "FLAPS",
                 ),
-                slat_gear: SlatFlapGear::new(
+                slat_system: SlatFlapGear::new(
                     context,
                     AngularVelocity::new::<degree_per_second>(7.5),
                     Angle::new::<degree>(334.16),
@@ -848,7 +848,7 @@ mod tests {
                 adirus: TestAdirus::default(),
                 lgciu: TestLgciu::new(true),
 
-                slat_flap_complex: SlatFlapComplex::new(context),
+                slats_flaps_complex: SlatFlapComplex::new(context),
 
                 powered_source: TestElectricitySource::powered(
                     context,
@@ -894,23 +894,23 @@ mod tests {
 
         fn update_after_power_distribution(&mut self, context: &UpdateContext) {
             self.adirus.update(context);
-            self.slat_flap_complex.update(
+            self.slats_flaps_complex.update(
                 context,
-                &self.flap_gear,
-                &self.slat_gear,
+                &self.flap_system,
+                &self.slat_system,
                 &self.adirus,
                 &self.lgciu,
                 &self.lgciu,
             );
-            self.flap_gear.update(
+            self.flap_system.update(
                 context,
-                &self.slat_flap_complex.sfcc,
+                &self.slats_flaps_complex.sfcc,
                 self.green_pressure,
                 self.yellow_pressure,
             );
-            self.slat_gear.update(
+            self.slat_system.update(
                 context,
-                &self.slat_flap_complex.sfcc,
+                &self.slats_flaps_complex.sfcc,
                 self.blue_pressure,
                 self.green_pressure,
             );
@@ -919,9 +919,9 @@ mod tests {
 
     impl SimulationElement for A320FlapsTestAircraft {
         fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-            self.slat_flap_complex.accept(visitor);
-            self.flap_gear.accept(visitor);
-            self.slat_gear.accept(visitor);
+            self.slats_flaps_complex.accept(visitor);
+            self.flap_system.accept(visitor);
+            self.slat_system.accept(visitor);
             visitor.visit(self);
         }
 
@@ -1029,7 +1029,7 @@ mod tests {
 
         fn get_flaps_demanded_angle(&self) -> f64 {
             self.query(|a| {
-                a.slat_flap_complex.sfcc[0]
+                a.slats_flaps_complex.sfcc[0]
                     .flap_channel
                     .get_flap_demanded_angle()
                     .get::<degree>()
@@ -1038,7 +1038,7 @@ mod tests {
 
         fn get_slats_demanded_angle(&self) -> f64 {
             self.query(|a| {
-                a.slat_flap_complex.sfcc[0]
+                a.slats_flaps_complex.sfcc[0]
                     .slat_channel
                     .get_slat_demanded_angle()
                     .get::<degree>()
@@ -1047,7 +1047,7 @@ mod tests {
 
         fn is_slat_retraction_inhibited(&self) -> bool {
             self.query(|a| {
-                a.slat_flap_complex.sfcc[0]
+                a.slats_flaps_complex.sfcc[0]
                     .slat_channel
                     .is_slat_retraction_inhibited()
             })
@@ -1058,23 +1058,23 @@ mod tests {
         // }
 
         fn get_power_off_duration(&self) -> Duration {
-            self.query(|a| a.slat_flap_complex.sfcc[0].get_power_off_duration())
+            self.query(|a| a.slats_flaps_complex.sfcc[0].get_power_off_duration())
         }
 
         fn get_recovered_power(&self) -> bool {
-            self.query(|a| a.slat_flap_complex.sfcc[0].get_recovered_power())
+            self.query(|a| a.slats_flaps_complex.sfcc[0].get_recovered_power())
         }
 
         fn get_flaps_conf(&self) -> FlapsConf {
-            self.query(|a| a.slat_flap_complex.sfcc[0].flaps_conf)
+            self.query(|a| a.slats_flaps_complex.sfcc[0].flaps_conf)
         }
 
         fn get_flaps_fppu_feedback(&self) -> f64 {
-            self.query(|a| a.flap_gear.fppu_angle().get::<degree>())
+            self.query(|a| a.flap_system.fppu_angle().get::<degree>())
         }
 
         fn get_slats_fppu_feedback(&self) -> f64 {
-            self.query(|a| a.slat_gear.fppu_angle().get::<degree>())
+            self.query(|a| a.slat_system.fppu_angle().get::<degree>())
         }
 
         fn test_flap_conf(
