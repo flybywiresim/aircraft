@@ -956,6 +956,11 @@ mod tests {
             self
         }
 
+        fn run_for_some_time(mut self) -> Self {
+            self.test_bed.run_multiple_frames(Duration::from_secs(50));
+            self
+        }
+
         fn set_dc_2_bus_power(mut self, is_powered: bool) -> Self {
             self.command(|a| a.set_dc_2_bus_power(is_powered));
 
@@ -1203,21 +1208,17 @@ mod tests {
             .set_green_hyd_pressure()
             .set_indicated_airspeed(160.)
             .set_flaps_handle_position(4)
-            .run_waiting_for(Duration::from_secs(20));
+            .run_for_some_time();
 
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::ConfFull);
         assert!((test_bed.get_flaps_demanded_angle() - 251.97).abs() <= angle_delta);
 
-        test_bed = test_bed
-            .set_indicated_airspeed(180.)
-            .run_waiting_for(Duration::from_secs(20));
+        test_bed = test_bed.set_indicated_airspeed(180.).run_for_some_time();
 
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::ConfFull);
         assert!((test_bed.get_flaps_demanded_angle() - 231.23).abs() <= angle_delta);
 
-        test_bed = test_bed
-            .set_indicated_airspeed(165.)
-            .run_waiting_for(Duration::from_secs(20));
+        test_bed = test_bed.set_indicated_airspeed(165.).run_for_some_time();
 
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::ConfFull);
         assert!((test_bed.get_flaps_demanded_angle() - 251.97).abs() <= angle_delta);
@@ -1230,9 +1231,7 @@ mod tests {
             .set_indicated_airspeed(50.)
             .set_alpha(0.);
         test_bed.set_lgciu_on_ground(true);
-        test_bed = test_bed
-            .set_flaps_handle_position(1)
-            .run_waiting_for(Duration::from_secs(20));
+        test_bed = test_bed.set_flaps_handle_position(1).run_for_some_time();
 
         assert!(!test_bed.is_slat_retraction_inhibited());
 
@@ -1247,9 +1246,7 @@ mod tests {
             .set_flaps_handle_position(1);
         test_bed.set_lgciu_on_ground(false);
 
-        test_bed = test_bed
-            .set_alpha(8.7)
-            .run_waiting_for(Duration::from_secs(30));
+        test_bed = test_bed.set_alpha(8.7).run_for_some_time();
         assert!(!test_bed.is_slat_retraction_inhibited());
         assert_eq!(test_bed.get_slats_demanded_angle(), 222.27);
 
@@ -1263,17 +1260,13 @@ mod tests {
         assert_eq!(test_bed.get_slats_demanded_angle(), 222.27);
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1);
 
-        test_bed = test_bed
-            .set_alpha(7.5)
-            .run_waiting_for(Duration::from_secs(30));
+        test_bed = test_bed.set_alpha(7.5).run_for_some_time();
         assert!(!test_bed.is_slat_retraction_inhibited());
         assert_eq!(test_bed.get_slats_demanded_angle(), 0.0);
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf0);
 
         //alpha lock should not work if already at handle pos 0
-        test_bed = test_bed
-            .set_alpha(8.7)
-            .run_waiting_for(Duration::from_secs(30));
+        test_bed = test_bed.set_alpha(8.7).run_for_some_time();
         assert!(!test_bed.is_slat_retraction_inhibited());
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf0);
 
@@ -1284,17 +1277,13 @@ mod tests {
             .set_flaps_handle_position(1);
         test_bed.set_lgciu_on_ground(false);
 
-        test_bed = test_bed
-            .set_indicated_airspeed(145.)
-            .run_waiting_for(Duration::from_secs(30));
+        test_bed = test_bed.set_indicated_airspeed(145.).run_for_some_time();
         assert!(!test_bed.is_slat_retraction_inhibited());
         assert_eq!(test_bed.get_slats_demanded_angle(), 222.27);
         test_bed = test_bed.set_flaps_handle_position(0).run_one_tick();
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1);
 
-        test_bed = test_bed
-            .set_indicated_airspeed(155.)
-            .run_waiting_for(Duration::from_secs(30));
+        test_bed = test_bed.set_indicated_airspeed(155.).run_for_some_time();
         assert!(!test_bed.is_slat_retraction_inhibited());
         assert_eq!(test_bed.get_slats_demanded_angle(), 0.0);
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf0);
@@ -1314,7 +1303,7 @@ mod tests {
         test_bed = test_bed
             .set_indicated_airspeed(130.)
             .set_alpha(9.)
-            .run_waiting_for(Duration::from_secs(30));
+            .run_for_some_time();
         assert_eq!(test_bed.get_slats_demanded_angle(), 222.27);
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1);
         assert!(!test_bed.is_slat_retraction_inhibited());
@@ -1365,8 +1354,6 @@ mod tests {
         assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(21));
         assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(26));
 
-        test_bed = test_bed.run_waiting_for(Duration::from_secs(10));
-
         assert!(test_bed.read_slat_flap_actual_position_word(1).get_bit(12));
         assert!(!test_bed.read_slat_flap_actual_position_word(1).get_bit(13));
         assert!(!test_bed.read_slat_flap_actual_position_word(1).get_bit(14));
@@ -1397,7 +1384,7 @@ mod tests {
         assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(21));
         assert!(test_bed.read_slat_flap_system_status_word(1).get_bit(26));
 
-        test_bed = test_bed.run_waiting_for(Duration::from_secs(31));
+        test_bed = test_bed.run_for_some_time();
 
         assert!(!test_bed.read_slat_flap_actual_position_word(1).get_bit(12));
         assert!(test_bed.read_slat_flap_actual_position_word(1).get_bit(13));
@@ -1427,7 +1414,7 @@ mod tests {
         assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(21));
         assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(26));
 
-        test_bed = test_bed.run_waiting_for(Duration::from_secs(31));
+        test_bed = test_bed.run_for_some_time();
 
         assert!(!test_bed.read_slat_flap_actual_position_word(1).get_bit(12));
         assert!(test_bed.read_slat_flap_actual_position_word(1).get_bit(13));
@@ -1457,7 +1444,7 @@ mod tests {
         assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(21));
         assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(26));
 
-        test_bed = test_bed.run_waiting_for(Duration::from_secs(31));
+        test_bed = test_bed.run_for_some_time();
 
         assert!(!test_bed.read_slat_flap_actual_position_word(1).get_bit(12));
         assert!(test_bed.read_slat_flap_actual_position_word(1).get_bit(13));
@@ -1487,7 +1474,7 @@ mod tests {
         assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(21));
         assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(26));
 
-        test_bed = test_bed.run_waiting_for(Duration::from_secs(31));
+        test_bed = test_bed.run_for_some_time();
 
         assert!(!test_bed.read_slat_flap_actual_position_word(1).get_bit(12));
         assert!(test_bed.read_slat_flap_actual_position_word(1).get_bit(13));
@@ -1517,7 +1504,7 @@ mod tests {
         assert!(test_bed.read_slat_flap_system_status_word(1).get_bit(21));
         assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(26));
 
-        test_bed = test_bed.run_waiting_for(Duration::from_secs(45));
+        test_bed = test_bed.run_for_some_time();
 
         assert!(!test_bed.read_slat_flap_actual_position_word(1).get_bit(12));
         assert!(test_bed.read_slat_flap_actual_position_word(1).get_bit(13));
@@ -1597,7 +1584,7 @@ mod tests {
             .set_green_hyd_pressure()
             .set_indicated_airspeed(150.)
             .set_flaps_handle_position(2)
-            .run_waiting_for(Duration::from_secs(20));
+            .run_for_some_time();
 
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf2);
 
@@ -1775,90 +1762,68 @@ mod tests {
             .set_green_hyd_pressure()
             .set_indicated_airspeed(0.)
             .set_flaps_handle_position(1)
-            .run_waiting_for(Duration::from_secs(20));
+            .run_for_some_time();
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1F);
 
-        test_bed = test_bed
-            .set_flaps_handle_position(3)
-            .run_waiting_for(Duration::from_secs(20));
+        test_bed = test_bed.set_flaps_handle_position(3).run_for_some_time();
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf3);
 
-        test_bed = test_bed
-            .set_flaps_handle_position(1)
-            .run_waiting_for(Duration::from_secs(20));
+        test_bed = test_bed.set_flaps_handle_position(1).run_for_some_time();
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1F);
 
-        test_bed = test_bed
-            .set_flaps_handle_position(4)
-            .run_waiting_for(Duration::from_secs(20));
+        test_bed = test_bed.set_flaps_handle_position(4).run_for_some_time();
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::ConfFull);
 
         test_bed = test_bed_with()
             .set_green_hyd_pressure()
             .set_indicated_airspeed(110.)
             .set_flaps_handle_position(1)
-            .run_waiting_for(Duration::from_secs(20));
+            .run_for_some_time();
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1);
 
-        test_bed = test_bed
-            .set_flaps_handle_position(3)
-            .run_waiting_for(Duration::from_secs(20));
+        test_bed = test_bed.set_flaps_handle_position(3).run_for_some_time();
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf3);
 
-        test_bed = test_bed
-            .set_flaps_handle_position(1)
-            .run_waiting_for(Duration::from_secs(20));
+        test_bed = test_bed.set_flaps_handle_position(1).run_for_some_time();
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1F);
 
         test_bed = test_bed_with()
             .set_green_hyd_pressure()
             .set_indicated_airspeed(110.)
             .set_flaps_handle_position(1)
-            .run_waiting_for(Duration::from_secs(20));
+            .run_for_some_time();
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1);
 
-        test_bed = test_bed
-            .set_flaps_handle_position(4)
-            .run_waiting_for(Duration::from_secs(20));
+        test_bed = test_bed.set_flaps_handle_position(4).run_for_some_time();
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::ConfFull);
 
-        test_bed = test_bed
-            .set_flaps_handle_position(1)
-            .run_waiting_for(Duration::from_secs(20));
+        test_bed = test_bed.set_flaps_handle_position(1).run_for_some_time();
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1F);
 
         test_bed = test_bed_with()
             .set_green_hyd_pressure()
             .set_indicated_airspeed(220.)
             .set_flaps_handle_position(1)
-            .run_waiting_for(Duration::from_secs(20));
+            .run_for_some_time();
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1);
 
-        test_bed = test_bed
-            .set_flaps_handle_position(3)
-            .run_waiting_for(Duration::from_secs(20));
+        test_bed = test_bed.set_flaps_handle_position(3).run_for_some_time();
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf3);
 
-        test_bed = test_bed
-            .set_flaps_handle_position(1)
-            .run_waiting_for(Duration::from_secs(20));
+        test_bed = test_bed.set_flaps_handle_position(1).run_for_some_time();
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1);
 
         test_bed = test_bed_with()
             .set_green_hyd_pressure()
             .set_indicated_airspeed(220.)
             .set_flaps_handle_position(1)
-            .run_waiting_for(Duration::from_secs(20));
+            .run_for_some_time();
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1);
 
-        test_bed = test_bed
-            .set_flaps_handle_position(4)
-            .run_waiting_for(Duration::from_secs(20));
+        test_bed = test_bed.set_flaps_handle_position(4).run_for_some_time();
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::ConfFull);
 
-        test_bed = test_bed
-            .set_flaps_handle_position(1)
-            .run_waiting_for(Duration::from_secs(20));
+        test_bed = test_bed.set_flaps_handle_position(1).run_for_some_time();
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1);
     }
 
@@ -1899,54 +1864,42 @@ mod tests {
             .set_green_hyd_pressure()
             .set_indicated_airspeed(150.)
             .set_flaps_handle_position(3)
-            .run_waiting_for(Duration::from_secs(20));
+            .run_for_some_time();
 
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf3);
 
-        test_bed = test_bed
-            .set_flaps_handle_position(1)
-            .run_waiting_for(Duration::from_secs(20));
+        test_bed = test_bed.set_flaps_handle_position(1).run_for_some_time();
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1F);
 
-        test_bed = test_bed
-            .set_flaps_handle_position(3)
-            .run_waiting_for(Duration::from_secs(20));
+        test_bed = test_bed.set_flaps_handle_position(3).run_for_some_time();
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf3);
 
         test_bed = test_bed_with()
             .set_green_hyd_pressure()
             .set_indicated_airspeed(220.)
             .set_flaps_handle_position(3)
-            .run_waiting_for(Duration::from_secs(20));
+            .run_for_some_time();
 
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf3);
 
-        test_bed = test_bed
-            .set_flaps_handle_position(1)
-            .run_waiting_for(Duration::from_secs(20));
+        test_bed = test_bed.set_flaps_handle_position(1).run_for_some_time();
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1);
 
-        test_bed = test_bed
-            .set_flaps_handle_position(3)
-            .run_waiting_for(Duration::from_secs(20));
+        test_bed = test_bed.set_flaps_handle_position(3).run_for_some_time();
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf3);
 
         test_bed = test_bed_with()
             .set_green_hyd_pressure()
             .set_indicated_airspeed(0.)
             .set_flaps_handle_position(3)
-            .run_waiting_for(Duration::from_secs(20));
+            .run_for_some_time();
 
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf3);
 
-        test_bed = test_bed
-            .set_flaps_handle_position(0)
-            .run_waiting_for(Duration::from_secs(20));
+        test_bed = test_bed.set_flaps_handle_position(0).run_for_some_time();
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf0);
 
-        test_bed = test_bed
-            .set_flaps_handle_position(3)
-            .run_waiting_for(Duration::from_secs(20));
+        test_bed = test_bed.set_flaps_handle_position(3).run_for_some_time();
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf3);
     }
 
@@ -1956,64 +1909,48 @@ mod tests {
             .set_green_hyd_pressure()
             .set_indicated_airspeed(150.)
             .set_flaps_handle_position(4)
-            .run_waiting_for(Duration::from_secs(20));
+            .run_for_some_time();
 
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::ConfFull);
 
-        test_bed = test_bed
-            .set_flaps_handle_position(1)
-            .run_waiting_for(Duration::from_secs(20));
+        test_bed = test_bed.set_flaps_handle_position(1).run_for_some_time();
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1F);
 
-        test_bed = test_bed
-            .set_flaps_handle_position(4)
-            .run_waiting_for(Duration::from_secs(20));
+        test_bed = test_bed.set_flaps_handle_position(4).run_for_some_time();
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::ConfFull);
 
         test_bed = test_bed_with()
             .set_green_hyd_pressure()
             .set_indicated_airspeed(220.)
             .set_flaps_handle_position(4)
-            .run_waiting_for(Duration::from_secs(20));
+            .run_for_some_time();
 
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::ConfFull);
 
-        test_bed = test_bed
-            .set_flaps_handle_position(1)
-            .run_waiting_for(Duration::from_secs(20));
+        test_bed = test_bed.set_flaps_handle_position(1).run_for_some_time();
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1);
 
-        test_bed = test_bed
-            .set_flaps_handle_position(4)
-            .run_waiting_for(Duration::from_secs(20));
+        test_bed = test_bed.set_flaps_handle_position(4).run_for_some_time();
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::ConfFull);
 
         test_bed = test_bed_with()
             .set_green_hyd_pressure()
             .set_indicated_airspeed(0.)
             .set_flaps_handle_position(4)
-            .run_waiting_for(Duration::from_secs(20));
+            .run_for_some_time();
 
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::ConfFull);
 
-        test_bed = test_bed
-            .set_flaps_handle_position(0)
-            .run_waiting_for(Duration::from_secs(20));
+        test_bed = test_bed.set_flaps_handle_position(0).run_for_some_time();
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf0);
 
-        test_bed = test_bed
-            .set_flaps_handle_position(4)
-            .run_waiting_for(Duration::from_secs(20));
+        test_bed = test_bed.set_flaps_handle_position(4).run_for_some_time();
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::ConfFull);
 
-        test_bed = test_bed
-            .set_flaps_handle_position(2)
-            .run_waiting_for(Duration::from_secs(20));
+        test_bed = test_bed.set_flaps_handle_position(2).run_for_some_time();
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf2);
 
-        test_bed = test_bed
-            .set_flaps_handle_position(4)
-            .run_waiting_for(Duration::from_secs(20));
+        test_bed = test_bed.set_flaps_handle_position(4).run_for_some_time();
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::ConfFull);
     }
 
@@ -2028,9 +1965,7 @@ mod tests {
 
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf0);
 
-        test_bed = test_bed
-            .set_flaps_handle_position(1)
-            .run_waiting_for(Duration::from_secs(20));
+        test_bed = test_bed.set_flaps_handle_position(1).run_for_some_time();
 
         assert!(
             (test_bed.get_flaps_fppu_feedback() - test_bed.get_flaps_demanded_angle()).abs()
@@ -2049,9 +1984,7 @@ mod tests {
 
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1F);
 
-        test_bed = test_bed
-            .set_flaps_handle_position(2)
-            .run_waiting_for(Duration::from_secs(20));
+        test_bed = test_bed.set_flaps_handle_position(2).run_for_some_time();
 
         assert!(
             (test_bed.get_flaps_fppu_feedback() - test_bed.get_flaps_demanded_angle()).abs()
@@ -2070,9 +2003,7 @@ mod tests {
 
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf2);
 
-        test_bed = test_bed
-            .set_flaps_handle_position(3)
-            .run_waiting_for(Duration::from_secs(30));
+        test_bed = test_bed.set_flaps_handle_position(3).run_for_some_time();
 
         assert!(
             (test_bed.get_flaps_fppu_feedback() - test_bed.get_flaps_demanded_angle()).abs()
@@ -2087,13 +2018,11 @@ mod tests {
             .set_green_hyd_pressure()
             .set_indicated_airspeed(0.)
             .set_flaps_handle_position(3)
-            .run_waiting_for(Duration::from_secs(20));
+            .run_for_some_time();
 
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf3);
 
-        test_bed = test_bed
-            .set_flaps_handle_position(4)
-            .run_waiting_for(Duration::from_secs(20));
+        test_bed = test_bed.set_flaps_handle_position(4).run_for_some_time();
 
         assert!(
             (test_bed.get_flaps_fppu_feedback() - test_bed.get_flaps_demanded_angle()).abs()
@@ -2112,9 +2041,7 @@ mod tests {
 
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf0);
 
-        test_bed = test_bed
-            .set_flaps_handle_position(1)
-            .run_waiting_for(Duration::from_secs(30));
+        test_bed = test_bed.set_flaps_handle_position(1).run_for_some_time();
 
         assert!(
             (test_bed.get_slats_fppu_feedback() - test_bed.get_slats_demanded_angle()).abs()
@@ -2134,9 +2061,7 @@ mod tests {
 
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf0);
 
-        test_bed = test_bed
-            .set_flaps_handle_position(1)
-            .run_waiting_for(Duration::from_secs(30));
+        test_bed = test_bed.set_flaps_handle_position(1).run_for_some_time();
 
         assert!(
             (test_bed.get_flaps_fppu_feedback() - test_bed.get_flaps_demanded_angle()).abs()
@@ -2159,9 +2084,7 @@ mod tests {
 
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1F);
 
-        test_bed = test_bed
-            .set_flaps_handle_position(2)
-            .run_waiting_for(Duration::from_secs(40));
+        test_bed = test_bed.set_flaps_handle_position(2).run_for_some_time();
 
         assert!(
             (test_bed.get_slats_fppu_feedback() - test_bed.get_slats_demanded_angle()).abs()
@@ -2180,9 +2103,7 @@ mod tests {
 
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf2);
 
-        test_bed = test_bed
-            .set_flaps_handle_position(3)
-            .run_waiting_for(Duration::from_secs(40));
+        test_bed = test_bed.set_flaps_handle_position(3).run_for_some_time();
 
         assert!(
             (test_bed.get_slats_fppu_feedback() - test_bed.get_slats_demanded_angle()).abs()
@@ -2201,9 +2122,7 @@ mod tests {
 
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf3);
 
-        test_bed = test_bed
-            .set_flaps_handle_position(4)
-            .run_waiting_for(Duration::from_secs(50));
+        test_bed = test_bed.set_flaps_handle_position(4).run_for_some_time();
 
         assert!(
             (test_bed.get_slats_fppu_feedback() - test_bed.get_slats_demanded_angle()).abs()
