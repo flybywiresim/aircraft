@@ -117,9 +117,6 @@ pub struct FlapSlatAssembly {
     ippu_angle_id: VariableIdentifier,
     is_moving_id: VariableIdentifier,
 
-    // fppu: PositionPickoffUnit,
-    // ippu: PositionPickoffUnit,
-    // appu: [PositionPickoffUnit;2],
     surface_control_arm_position: Angle,
 
     max_synchro_gear_position: Angle,
@@ -460,12 +457,13 @@ impl FlapSlatAssembly {
 }
 impl SimulationElement for FlapSlatAssembly {
     fn write(&self, writer: &mut SimulatorWriter) {
+        let position_feedback = self.position_feedback().get::<degree>();
         writer.write(
             &self.position_left_percent_id,
             interpolation(
                 &self.synchro_gear_breakpoints,
                 &self.final_surface_angle_carac,
-                self.position_feedback().get::<degree>(),
+                position_feedback,
             ) / interpolation(
                 &self.synchro_gear_breakpoints,
                 &self.final_surface_angle_carac,
@@ -477,22 +475,19 @@ impl SimulationElement for FlapSlatAssembly {
             interpolation(
                 &self.synchro_gear_breakpoints,
                 &self.final_surface_angle_carac,
-                self.position_feedback().get::<degree>(),
+                position_feedback,
             ) / interpolation(
                 &self.synchro_gear_breakpoints,
                 &self.final_surface_angle_carac,
                 self.max_synchro_gear_position.get::<degree>(),
             ) * 100.,
         );
+        writer.write(&self.ippu_angle_id, position_feedback);
 
         let flaps_surface_angle = self.flap_surface_angle();
         writer.write(&self.angle_left_id, flaps_surface_angle.get::<degree>());
         writer.write(&self.angle_right_id, flaps_surface_angle.get::<degree>());
 
-        writer.write(
-            &self.ippu_angle_id,
-            self.position_feedback().get::<degree>(),
-        );
         writer.write(&self.is_moving_id, self.is_surface_moving());
     }
 }
