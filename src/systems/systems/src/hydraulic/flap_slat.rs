@@ -489,7 +489,10 @@ impl SimulationElement for FlapSlatAssembly {
         writer.write(&self.angle_left_id, flaps_surface_angle.get::<degree>());
         writer.write(&self.angle_right_id, flaps_surface_angle.get::<degree>());
 
-        writer.write(&self.ippu_angle_id, self.position_feedback());
+        writer.write(
+            &self.ippu_angle_id,
+            self.position_feedback().get::<degree>(),
+        );
         writer.write(&self.is_moving_id, self.is_surface_moving());
     }
 }

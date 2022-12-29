@@ -22,8 +22,8 @@ const Slats: React.FC<SlatsProps> = ({ x, y }) => {
 
     // Same as above, the IPPU angle should come from the FWCs, or as a backup the FPPU angle from the
     // SDACs/SFFCs can be used.
-    const slatsIppuAngle = useSimVar(`L:A32NX_SLATS_IPPU_ANGLE`, 'number', 300);
-    const flapsIppuAngle = useSimVar(`L:A32NX_FLAPS_IPPU_ANGLE`, 'number', 300);
+    const [slatsIppuAngle] = useSimVar(`L:A32NX_SLATS_IPPU_ANGLE`, 'degrees', 300);
+    const [flapsIppuAngle] = useSimVar(`L:A32NX_FLAPS_IPPU_ANGLE`, 'degrees', 300);
 
     let flapText = '';
     if (cleanConfigSelected) {
