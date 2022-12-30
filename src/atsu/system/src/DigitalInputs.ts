@@ -2,23 +2,13 @@ import { Clock } from '@atsu/common/types';
 import { Arinc429Word } from '@shared/arinc429';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { EventBus, EventSubscriber } from 'msfssdk';
-import { AtcMessageButtonBusTypes, AtcMessageButtonInputBus } from './databus/AtcMessageButtonBus';
-import { ClockInputBus, ClockDataBusTypes } from './databus/ClockBus';
-import { FmgcDataBusTypes, FmgcInputBus } from './databus/FmgcBus';
-import { FwcDataBusTypes, FwcInputBus } from './databus/FwcBus';
-import { TransponderDataBusTypes, TransponderInputBus } from './databus/TransponderBus';
+import { AtcMessageButtonBusTypes } from './databus/AtcMessageButtonBus';
+import { ClockDataBusTypes } from './databus/ClockBus';
+import { FmgcDataBusTypes } from './databus/FmgcBus';
+import { FwcDataBusTypes } from './databus/FwcBus';
+import { TransponderDataBusTypes } from './databus/TransponderBus';
 
 export class DigitalInputs {
-    private atcMessageButton: AtcMessageButtonInputBus = null;
-
-    private clock: ClockInputBus = null;
-
-    private fmgc: FmgcInputBus = null;
-
-    private fwc: FwcInputBus = null;
-
-    private transponder: TransponderInputBus = null;
-
     private subscriber: EventSubscriber<AtcMessageButtonBusTypes & ClockDataBusTypes & FmgcDataBusTypes & FwcDataBusTypes & TransponderDataBusTypes> = null;
 
     public UtcClock: Clock = {
@@ -87,21 +77,9 @@ export class DigitalInputs {
 
     public TransponderCode: number = 2000;
 
-    constructor(private readonly bus: EventBus) {
-        this.atcMessageButton = new AtcMessageButtonInputBus(bus);
-        this.clock = new ClockInputBus(bus);
-        this.fmgc = new FmgcInputBus(bus);
-        this.fwc = new FwcInputBus(bus);
-        this.transponder = new TransponderInputBus(bus);
-    }
+    constructor(private readonly bus: EventBus) { }
 
     public initialize(): void {
-        this.atcMessageButton.initialize();
-        this.clock.initialize();
-        this.fmgc.initialize();
-        this.fwc.initialize();
-        this.transponder.initialize();
-
         this.subscriber = this.bus.getSubscriber<AtcMessageButtonBusTypes & ClockDataBusTypes & FmgcDataBusTypes & FwcDataBusTypes & TransponderDataBusTypes>();
 
         this.subscriber.on('utcYear').handle((year: number) => this.UtcClock.year = year);
