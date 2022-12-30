@@ -1757,13 +1757,6 @@ impl PriorityValve {
         self.update_open_state(context);
 
         self.update_downstream_pressure();
-
-        println!(
-            "PRIORITY INPUT:{:.0} / => {:.2} / Output {:.0}",
-            self.upstream_pressure.get::<psi>(),
-            self.open_ratio.output().get::<ratio>(),
-            self.downstream_pressure().get::<psi>()
-        );
     }
 
     fn update_open_state(&mut self, context: &UpdateContext) {
