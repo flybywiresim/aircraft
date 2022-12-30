@@ -9,11 +9,13 @@ import { AtsuTimestamp } from '@atsu/common/messages/AtsuTimestamp';
 import { CpdlcMessagesDownlink } from '@atsu/common/messages/CpdlcMessageElements';
 import { coordinateToString, timestampToString } from '@atsu/common/components/Convert';
 import { InputValidation } from '@atsu/common/components/InputValidation';
+import { EventBus } from 'msfssdk';
 import { Aoc } from './AOC';
 import { Atc } from './ATC';
 import { Datalink } from './com/Datalink';
 import { ATS623 } from './components/ATS623';
 import { FlightStateObserver } from './components/FlightStateObserver';
+import { DigitalInputs } from './DigitalInputs';
 
 /**
  * Defines the ATSU
@@ -26,6 +28,10 @@ export class Atsu {
     private fltNo: string = '';
 
     private messageCounter = 0;
+
+    private eventBus = new EventBus();
+
+    public digitalInputs = new DigitalInputs(this.eventBus);
 
     private ats623 = new ATS623(this);
 
@@ -87,7 +93,7 @@ export class Atsu {
         extension.Content[0].Value = `PPOS: ${coordinateToString({ lat: atsu.flightStateObserver.PresentPosition.lat, lon: atsu.flightStateObserver.PresentPosition.lon }, false)}`;
         message.Content.push(extension);
         extension = CpdlcMessagesDownlink.DM67[1].deepCopy();
-        extension.Content[0].Value = `AT ${timestampToString(SimVar.GetSimVarValue('E:ZULU TIME', 'seconds'))}Z/${currentAltitude}`;
+        extension.Content[0].Value = `AT ${timestampToString(atsu.digitalInputs.UtcClock.secondsOfDay)}Z/${currentAltitude}`;
         message.Content.push(extension);
 
         if (atsu.flightStateObserver.ActiveWaypoint) {
