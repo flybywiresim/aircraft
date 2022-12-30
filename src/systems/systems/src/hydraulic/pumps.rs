@@ -137,12 +137,15 @@ impl PumpCharacteristics {
         ))
     }
 
-    pub fn cavitation_efficiency(&self, air_pressure: Pressure) -> Ratio {
-        Ratio::new::<ratio>(interpolation(
-            &self.air_pressure_map_breakpoints_psi,
-            &self.cavitation_map_ratio,
-            air_pressure.get::<psi>(),
-        ))
+    pub fn cavitation_efficiency(&self, air_pressure: Pressure, heat_factor: Ratio) -> Ratio {
+        Ratio::new::<ratio>(
+            (1. - heat_factor.get::<ratio>())
+                * interpolation(
+                    &self.air_pressure_map_breakpoints_psi,
+                    &self.cavitation_map_ratio,
+                    air_pressure.get::<psi>(),
+                ),
+        )
     }
 
     pub fn regulated_speed(&self) -> AngularVelocity {

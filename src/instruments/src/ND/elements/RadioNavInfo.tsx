@@ -11,11 +11,11 @@ export enum NavAidMode {
 
 export type RadioNavInfoProps = { index: 1 | 2, side: EfisSide }
 
-const TuningModeIndicator: React.FC<{ index: 1 | 2, frequency: number }> = ({ index, frequency }) => {
-    const [tuningMode] = useSimVar(`L:A32NX_FMGC_RADIONAV_${index}_TUNING_MODE`, 'enum');
+const TuningModeIndicator: React.FC<{ index: 1 | 2 }> = ({ index }) => {
+    const [tuningMode] = useSimVar('L:A32NX_FMGC_RADIONAV_TUNING_MODE', 'enum');
 
     return (
-        frequency > 1 && tuningMode !== TuningMode.Auto && (
+        tuningMode !== TuningMode.Auto && (
             <text x={index === 1 ? 138 : 616} y={720} fontSize={20} textDecoration="underline" fill="#ffffff">{tuningMode === TuningMode.Manual ? 'M' : 'R'}</text>
         ) || null
     );
@@ -81,7 +81,7 @@ const VorInfo: React.FC<{index: 1 | 2}> = ({ index }) => {
                 <text x={dmeDistance > 20 ? x + 46 : x + 58} y={759} fontSize={24} fill="#00ff00" textAnchor="end">{dmeText}</text>
                 <text x={x + 66} y={759} fontSize={20} fill="#00ffff">NM</text>
             </g>
-            <TuningModeIndicator index={index} frequency={vorFrequency} />
+            <TuningModeIndicator index={index} />
         </g>
     );
 };
@@ -108,14 +108,13 @@ const AdfInfo: React.FC<{index: 1 | 2}> = ({ index }) => {
                 ADF
                 {index}
             </text>
-            <text x={x} y={722} fontSize={24} className="Green">{adfAvailable ? adfIdent : adfFrequency.toFixed(0)}</text>
             {adfAvailable && (
                 <text x={x} y={722} fontSize={24} className="Green">{adfIdent}</text>
             )}
-            {!adfAvailable && (
+            {!adfAvailable && adfFrequency > 0 && (
                 <text x={x} y={722} fontSize={24} className="Green">{Math.floor(adfFrequency).toFixed(0)}</text>
             )}
-            <TuningModeIndicator index={index} frequency={adfFrequency} />
+            <TuningModeIndicator index={index} />
         </g>
     );
 };
