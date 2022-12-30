@@ -11302,7 +11302,7 @@ mod tests {
 
             test_bed.fail(FailureType::ReservoirLeak(HydraulicColor::Yellow));
 
-            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(120.));
+            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(150.));
             assert!(test_bed.green_reservoir_has_overheat_fault());
         }
 
