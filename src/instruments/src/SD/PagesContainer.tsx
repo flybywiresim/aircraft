@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { useInteractionEvent, useUpdate } from '@instruments/common/hooks';
+import React, { useState } from 'react';
+import { useUpdate } from '@instruments/common/hooks';
 import { useSimVar } from '@instruments/common/simVars';
 import { useArinc429Var } from '@instruments/common/arinc429';
 import { EngPage } from './Pages/Eng/Eng';
@@ -36,7 +36,7 @@ export const PagesContainer = () => {
 
     const altitude = useArinc429Var('L:A32NX_ADIRS_ADR_1_ALTITUDE', 300);
 
-    const [page, setPage] = useSimVar('L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX', 'number', 300);
+    const [page, setPage] = useSimVar('L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX', 'number', 50);
 
     const checkEnginePage = (deltaTime: number) => {
         const engModeSel = SimVar.GetSimVarValue('L:XMLVAR_ENG_MODE_SEL', 'number');
@@ -69,118 +69,11 @@ export const PagesContainer = () => {
         }
     };
 
-    /* useInteractionEvent('A32NX_SD_PAGE_CHANGED', () => {
-        const page = SimVar.GetSimVarValue('L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX', 'number');
-        if (page !== -1) {
-            setCurrentPage(page);
-        } else {
-            // setPageWhenUnselected(12);
-            // setPage(12);
-            setCurrentPage(pageWhenUnselected);
-        }
-    }); */
-
-    /*     // phase 1
-    useEffect(() => {
-        setCrzCondTimer(60);
-        setPageWhenUnselected(8);
-        // TODO: Emergency Generator Test displays ELEC
-        // Needs system implementation (see A320_NEO_INTERIOR Component ID EMER_ELEC_PWR [LVar: L:A32NX_EMERELECPWR_GEN_TEST])
-        checkApuPage(deltaTime);
-        checkEnginePage(deltaTime);
-    }, [fwcFlightPhase]); */
-
-    useUpdate((deltaTime) => {
-        const prevPage = pageWhenUnselected;
-
-        const newPage = page;
-        if (newPage !== -1) {
-            setCurrentPage(newPage);
-        } else {
-            // setPageWhenUnselected(12);
-            // setPage(12);
-            setCurrentPage(pageWhenUnselected);
-        }
-
-        switch (fwcFlightPhase) {
-        case 10:
-        case 1:
-            setCrzCondTimer(60);
-            setPageWhenUnselected(8);
-            // TODO: Emergency Generator Test displays ELEC
-            // Needs system implementation (see A320_NEO_INTERIOR Component ID EMER_ELEC_PWR [LVar: L:A32NX_EMERELECPWR_GEN_TEST])
-            checkApuPage(deltaTime);
-            checkEnginePage(deltaTime);
-            break;
-        case 2:
-            const sidestickPosX = SimVar.GetSimVarValue('L:A32NX_SIDESTICK_POSITION_X', 'Number');
-            const sidestickPosY = SimVar.GetSimVarValue('L:A32NX_SIDESTICK_POSITION_Y', 'Number');
-            const rudderPos = SimVar.GetSimVarValue('RUDDER PEDAL POSITION', 'Position');
-            const controlsMoved = Math.abs(sidestickPosX) > 0.05 || Math.abs(sidestickPosY) > 0.05 || Math.abs(rudderPos) > 0.2;
-
-            setPageWhenUnselected(9);
-            // When controls are moved > threshold, show FCTL page for 20s
-            if (controlsMoved) {
-                setPageWhenUnselected(10);
-                setEcamFCTLTimer(20);
-            } else if (ecamFCTLTimer >= 0) {
-                setPageWhenUnselected(10);
-                setEcamFCTLTimer((prev) => prev - deltaTime / 1000);
-            }
-            checkApuPage(deltaTime);
-            checkEnginePage(deltaTime);
-            break;
-        case 3:
-        case 4:
-        case 5:
-            setPageWhenUnselected(0);
-            break;
-        case 6:
-        case 7:
-        case 8:
-        case 9:
-            const isGearExtended = SimVar.GetSimVarValue('GEAR TOTAL PCT EXTENDED', 'percent') > 0.95;
-            const ToPowerSet = Math.max(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:1', 'number'),
-                SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:2', 'number')) >= 35 && SimVar.GetSimVarValue('ENG N1 RPM:1', 'Percent') > 15
-                && SimVar.GetSimVarValue('ENG N1 RPM:2', 'Percent') > 15;
-            const spoilerOrFlapsDeployed = SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'number') !== 0 || SimVar.GetSimVarValue('L:A32NX_SPOILERS_HANDLE_POSITION', 'percent') !== 0;
-
-            if (isGearExtended && (altitude.value < 16000)) {
-                setPageWhenUnselected(9);
-                checkApuPage(deltaTime);
-                checkEnginePage(deltaTime);
-                break;
-                // Else check for CRZ
-            }
-
-            if ((spoilerOrFlapsDeployed || ToPowerSet)) {
-                if (crzCondTimer <= 0) {
-                    setPageWhenUnselected(12);
-                    checkApuPage(deltaTime);
-                    checkEnginePage(deltaTime);
-                } else {
-                    setCrzCondTimer((prev) => prev - deltaTime / 1000);
-                }
-            } else if (!spoilerOrFlapsDeployed && !ToPowerSet) {
-                setPageWhenUnselected(12);
-                checkApuPage(deltaTime);
-                checkEnginePage(deltaTime);
-            }
-            break;
-        default:
-            // Sometimes happens when loading in, in which case we have to initialise pageNameWhenUnselected here.
-            setPageWhenUnselected(8);
-            break;
-        }
-
-        // const sFailPage = SimVar.GetSimVarValue('L:A32NX_ECAM_SFAIL', 'Enum');
-
+    const updateCallback = (deltaTime) => {
         if (ecamAllButtonPushed && !prevEcamAllButtonState) { // button press
-            // this.changePage(this.lowerScreenPages[(this.currentPage + 1) % this.lowerScreenPages.length].name);
-            setCurrentPage((prev) => (prev + 1) % 12);
             setPage((prev) => (prev + 1) % 12);
+            setCurrentPage((prev) => (prev + 1) % 12);
             setEcamCycleInterval(setInterval(() => {
-                // this.changePage(this.lowerScreenPages[(this.currentPage + 1) % this.lowerScreenPages.length].name);
                 setCurrentPage((prev) => {
                     setPage((prev + 1) % 12);
                     return (prev + 1) % 12;
@@ -188,58 +81,109 @@ export const PagesContainer = () => {
             }, 1000) as unknown as number);
         } else if (!ecamAllButtonPushed && prevEcamAllButtonState) { // button release
             clearInterval(ecamCycleInterval);
+        } else if (!ecamAllButtonPushed) {
+            const newPage = page;
+            if (newPage !== -1) {
+                setCurrentPage(newPage);
+            } else {
+                setCurrentPage(pageWhenUnselected);
+            }
+
+            switch (fwcFlightPhase) {
+            case 10:
+            case 1:
+                setCrzCondTimer(60);
+                setPageWhenUnselected(8);
+                // TODO: Emergency Generator Test displays ELEC
+                // Needs system implementation (see A320_NEO_INTERIOR Component ID EMER_ELEC_PWR [LVar: L:A32NX_EMERELECPWR_GEN_TEST])
+                checkApuPage(deltaTime);
+                checkEnginePage(deltaTime);
+                break;
+            case 2:
+                const sidestickPosX = SimVar.GetSimVarValue('L:A32NX_SIDESTICK_POSITION_X', 'Number');
+                const sidestickPosY = SimVar.GetSimVarValue('L:A32NX_SIDESTICK_POSITION_Y', 'Number');
+                const rudderPos = SimVar.GetSimVarValue('RUDDER PEDAL POSITION', 'Position');
+                const controlsMoved = Math.abs(sidestickPosX) > 0.05 || Math.abs(sidestickPosY) > 0.05 || Math.abs(rudderPos) > 0.2;
+
+                setPageWhenUnselected(9);
+                // When controls are moved > threshold, show FCTL page for 20s
+                if (controlsMoved) {
+                    setPageWhenUnselected(10);
+                    setEcamFCTLTimer(20);
+                } else if (ecamFCTLTimer >= 0) {
+                    setPageWhenUnselected(10);
+                    setEcamFCTLTimer((prev) => prev - deltaTime / 1000);
+                }
+                checkApuPage(deltaTime);
+                checkEnginePage(deltaTime);
+                break;
+            case 3:
+            case 4:
+            case 5:
+                setPageWhenUnselected(0);
+                break;
+            case 6:
+            case 7:
+            case 8:
+            case 9:
+                const isGearExtended = SimVar.GetSimVarValue('GEAR TOTAL PCT EXTENDED', 'percent') > 0.95;
+                const ToPowerSet = Math.max(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:1', 'number'),
+                    SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:2', 'number')) >= 35 && SimVar.GetSimVarValue('ENG N1 RPM:1', 'Percent') > 15
+                    && SimVar.GetSimVarValue('ENG N1 RPM:2', 'Percent') > 15;
+                const spoilerOrFlapsDeployed = SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'number') !== 0
+                || SimVar.GetSimVarValue('L:A32NX_SPOILERS_HANDLE_POSITION', 'percent') !== 0;
+
+                if (isGearExtended && (altitude.value < 16000)) {
+                    setPageWhenUnselected(9);
+                    checkApuPage(deltaTime);
+                    checkEnginePage(deltaTime);
+                    break;
+                    // Else check for CRZ
+                }
+
+                if ((spoilerOrFlapsDeployed || ToPowerSet)) {
+                    if (crzCondTimer <= 0) {
+                        setPageWhenUnselected(12);
+                        checkApuPage(deltaTime);
+                        checkEnginePage(deltaTime);
+                    } else {
+                        setCrzCondTimer((prev) => prev - deltaTime / 1000);
+                    }
+                } else if (!spoilerOrFlapsDeployed && !ToPowerSet) {
+                    setPageWhenUnselected(12);
+                    checkApuPage(deltaTime);
+                    checkEnginePage(deltaTime);
+                }
+                break;
+            default:
+                // Sometimes happens when loading in, in which case we have to initialise pageNameWhenUnselected here.
+                setPageWhenUnselected(8);
+                break;
+            }
+
+            if (failPage !== -1) {
+                setPageWhenUnselected(failPage);
+
+                // Disable user selected page when new failure detected
+                if (prevFailPage !== failPage) {
+                    setCurrentPage(-1);
+                    setPage(-1);
+                }
+            }
+
+            // switch page when desired page was changed, or new Failure detected
+            if ((pageWhenUnselected !== newPage && page === -1) || (prevFailPage !== failPage)) {
+                setCurrentPage(pageWhenUnselected);
+            }
+
+            setPrevFailPage(failPage);
         }
 
         setPrevEcamAllButtonState(ecamAllButtonPushed);
+    };
 
-        if (failPage !== -1) {
-            setPageWhenUnselected(failPage);
+    useUpdate(updateCallback);
 
-            // Disable user selected page when new failure detected
-            if (prevFailPage !== failPage) {
-                setCurrentPage(-1);
-                setPage(-1);
-
-                // SimVar.SetSimVarValue("L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX", "number", -1);
-            }
-        }
-
-        // switch page when desired page was changed, or new Failure detected
-        if ((pageWhenUnselected !== newPage && page === -1) || (prevFailPage !== failPage)) {
-            setCurrentPage(pageWhenUnselected);
-            // setPage(pageWhenUnselected);
-        }
-
-        setPrevFailPage(failPage);
-    });
-
-    /*  // FIXME I think the comparisons are not needed
-    useEffect(() => {
-        if (failPage !== -1) {
-            setPageWhenUnselected(failPage);
-
-            // Disable user selected page when new failure detected
-            if (prevFailPage !== failPage) {
-                setCurrentPage(-1);
-                setPage(-1);
-
-                // SimVar.SetSimVarValue("L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX", "number", -1);
-            }
-        }
-
-        // switch page when desired page was changed, or new Failure detected
-        if ((pageWhenUnselected !== currentPage && page === -1) || (prevFailPage !== failPage)) {
-            setCurrentPage(pageWhenUnselected);
-            // setPage(pageWhenUnselected);
-        }
-
-        setPrevFailPage(failPage);
-    }, []); */
-
-    /*     useEffect(() => {
-
-    }, [page]);
- */
     const pages = {
         0: <EngPage />,
         1: <BleedPage />,
