@@ -1,2 +1,2 @@
-export * from './FmsBus';
+export * from './Fms';
 export * from './Mailbox';
