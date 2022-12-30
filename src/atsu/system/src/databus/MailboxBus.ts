@@ -288,15 +288,8 @@ export class MailboxBus {
         return interval;
     }
 
-    private atcRingTone() {
-        Coherent.call('PLAY_INSTRUMENT_SOUND', 'cpdlc_ring');
-        // ensure that the timeout is longer than the sound
-        setTimeout(() => SimVar.SetSimVarValue('W:cpdlc_ring', 'boolean', 0), 2000);
-    }
-
     private cleanupNotifications() {
-        SimVar.SetSimVarValue('L:A32NX_DCDU_ATC_MSG_WAITING', 'boolean', 0);
-        SimVar.SetSimVarValue('L:A32NX_DCDU_ATC_MSG_ACK', 'number', 0);
+        this.atsu.digitalOutputs.AtcMessageButtonsBus.resetButton();
 
         if (this.atcMsgWatchdogInterval) {
             clearInterval(this.atcMsgWatchdogInterval);
@@ -313,7 +306,7 @@ export class MailboxBus {
         if (!this.atcMsgWatchdogInterval) {
             // start the watchdog to check the the ATC MSG button
             this.atcMsgWatchdogInterval = setInterval(() => {
-                if (SimVar.GetSimVarValue('L:A32NX_DCDU_ATC_MSG_ACK', 'number') === 1) {
+                if (this.atsu.digitalInputs.AtcMessageButtonPressed) {
                     this.cleanupNotifications();
                 }
             }, 100);
@@ -324,10 +317,10 @@ export class MailboxBus {
         }
 
         // call the first ring tone
-        this.atcRingTone();
+        this.atsu.digitalOutputs.FwcBus.activateAtcRing();
 
         // start the ring tone interval
-        this.atcRingInterval = setInterval(() => this.atcRingTone(), this.estimateRingInterval());
+        this.atcRingInterval = setInterval(() => this.atsu.digitalOutputs.FwcBus.activateAtcRing(), this.estimateRingInterval());
     }
 
     public reset() {
@@ -358,8 +351,7 @@ export class MailboxBus {
             this.downlinkMessages.push(mailboxBlocks);
         } else if (mailboxBlocks[0].Direction === AtsuMessageDirection.Uplink && this.uplinkMessages.length < MailboxBus.MaxMailboxFileSize) {
             this.uplinkMessages.push(mailboxBlocks);
-            SimVar.SetSimVarValue('L:A32NX_DCDU_ATC_MSG_WAITING', 'boolean', 1);
-            SimVar.SetSimVarValue('L:A32NX_DCDU_ATC_MSG_ACK', 'number', 0);
+            this.atsu.digitalOutputs.AtcMessageButtonsBus.activateButton();
             this.setupIntervals();
         } else {
             if (mailboxBlocks[0].Direction === AtsuMessageDirection.Downlink) {
