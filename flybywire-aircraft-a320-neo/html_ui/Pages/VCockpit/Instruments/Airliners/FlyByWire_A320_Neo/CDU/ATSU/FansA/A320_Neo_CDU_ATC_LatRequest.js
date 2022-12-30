@@ -45,7 +45,7 @@ class CDUAtcLatRequestFansA {
             const elements = AtsuCommon.InputValidation.expandLateralOffset(data.offset).split(" ");
 
             if (!data.offsetStart || /$[0-9]{4}Z^/.test(data.offsetStart)) {
-                retval.push(CDUAtcLatRequestFansA.CreateRequest(mcdu, "DM17", [!data.offsetStart ? (new AtsuCommon.AtsuTimestamp()).dcduTimestamp() : data.offsetStart, elements[0], elements[1]]));
+                retval.push(CDUAtcLatRequestFansA.CreateRequest(mcdu, "DM17", [!data.offsetStart ? (new AtsuCommon.AtsuTimestamp()).mailboxTimestamp() : data.offsetStart, elements[0], elements[1]]));
             } else {
                 retval.push(CDUAtcLatRequestFansA.CreateRequest(mcdu, "DM16", [data.offsetStart, elements[0], elements[1]]));
             }

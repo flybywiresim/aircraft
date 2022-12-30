@@ -62,7 +62,7 @@ class CDUAtcMessageMonitoring {
             let headerLeft = "", headerRight = "", contentStart = "";
 
             if (messages.length > (offset + i) && messages[offset + i]) {
-                headerLeft = `${messages[offset + i].Timestamp.dcduTimestamp()} ${messages[offset + i].Direction === AtsuCommon.AtsuMessageDirection.Input ? "FROM" : "TO"} `;
+                headerLeft = `${messages[offset + i].Timestamp.mailboxTimestamp()} ${messages[offset + i].Direction === AtsuCommon.AtsuMessageDirection.Input ? "FROM" : "TO"} `;
                 headerLeft += messages[offset + i].Station;
                 headerRight = CDUAtcMessageMonitoring.TranslateCpdlcResponse(messages[offset + i].Response);
 

@@ -101,7 +101,7 @@ class CDUAtcAtisMenu {
             let prefix = "\xa0";
             let middle = "";
             if (reports.length !== 0) {
-                middle = `\xa0\xa0${reports[0].Information} ${reports[0].Timestamp.dcduTimestamp()}`;
+                middle = `\xa0\xa0${reports[0].Information} ${reports[0].Timestamp.mailboxTimestamp()}`;
                 middle = middle.substring(0, middle.length - 1);
                 prefix = "{white}<{end}";
             }

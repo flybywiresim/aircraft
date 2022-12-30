@@ -98,7 +98,7 @@ class CDUAtcReportAtis {
 
         mcdu.setTemplate([
             [`${title} ATIS`, `${pageCount !== 1 ? currentPage : ""}`, `${pageCount !== 1 ? pageCount : ""}`],
-            [`[b-text]${title.replace("/", " ")}`, `[b-text]${CDUAtcReportAtis.ConvertAtisInformation(messages[messageIndex].Information)} ${messages[messageIndex].Timestamp.dcduTimestamp()}`],
+            [`[b-text]${title.replace("/", " ")}`, `[b-text]${CDUAtcReportAtis.ConvertAtisInformation(messages[messageIndex].Information)} ${messages[messageIndex].Timestamp.mailboxTimestamp()}`],
             [`[s-text]${lines[offset] ? lines[offset] : ""}`],
             [`[b-text]${lines[offset + 1] ? lines[offset + 1] : ""}`],
             [`[s-text]${lines[offset + 2] ? lines[offset + 2] : ""}`],
