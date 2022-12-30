@@ -7,13 +7,13 @@ import { timestampToString } from '../components/Convert';
  * Defines the decoded UTC timestamp
  */
 export class AtsuTimestamp {
-    public Year: number = SimVar.GetSimVarValue('E:ZULU YEAR', 'number');
+    public Year: number = 0;
 
-    public Month: number = SimVar.GetSimVarValue('E:ZULU MONTH OF YEAR', 'number');
+    public Month: number = 0;
 
-    public Day: number = SimVar.GetSimVarValue('E:ZULU DAY OF MONTH', 'number');
+    public Day: number = 0;
 
-    public Seconds: number = SimVar.GetSimVarValue('E:ZULU TIME', 'seconds');
+    public Seconds: number = 0;
 
     public deserialize(jsonData: Record<string, unknown>) {
         this.Year = jsonData.Year as number;
