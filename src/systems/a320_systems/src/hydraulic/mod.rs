@@ -10411,7 +10411,7 @@ mod tests {
                 .set_cold_dark_inputs()
                 .start_eng1(Ratio::new::<percent>(80.))
                 .start_eng2(Ratio::new::<percent>(80.))
-                .run_one_tick();
+                .run_waiting_for(Duration::from_secs_f64(1.));
 
             test_bed = test_bed
                 .set_autopilot_steering_demand(Ratio::new::<ratio>(1.5))
