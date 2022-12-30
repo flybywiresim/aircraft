@@ -9945,7 +9945,7 @@ mod tests {
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
-                .run_waiting_for(Duration::from_secs(1));
+                .run_waiting_for(Duration::from_secs(5));
 
             test_bed = test_bed
                 .set_yellow_e_pump(false)
