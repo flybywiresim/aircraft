@@ -10,7 +10,7 @@ const Markers = {
 
 class CDUFlightPlanPage {
 
-    static ShowPage(mcdu, offset = 0) {
+    static ShowPage(mcdu, forceOffset) {
 
         // INIT
         function addLskAt(index, delay, callback) {
@@ -37,7 +37,7 @@ class CDUFlightPlanPage {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.FlightPlanPage;
         mcdu.returnPageCallback = () => {
-            CDUFlightPlanPage.ShowPage(mcdu, offset);
+            CDUFlightPlanPage.ShowPage(mcdu);
         };
         mcdu.activeSystem = 'FMGC';
         const fpm = mcdu.flightPlanManager;
@@ -45,7 +45,7 @@ class CDUFlightPlanPage {
         // regular update due to showing dynamic data on this page
         mcdu.page.SelfPtr = setTimeout(() => {
             if (mcdu.page.Current === mcdu.page.FlightPlanPage) {
-                CDUFlightPlanPage.ShowPage(mcdu, offset);
+                CDUFlightPlanPage.ShowPage(mcdu);
             }
         }, mcdu.PageTimeout.Medium);
 
@@ -134,8 +134,21 @@ class CDUFlightPlanPage {
             rowsCount = waypointsAndMarkers.length;
         }
 
+        const allowScroll = waypointsAndMarkers.length > 4;
+        if (forceOffset !== undefined) {
+            if (waypointsAndMarkers.length === 0 || !allowScroll) {
+                mcdu.fpOffset = 0;
+            } else if (forceOffset >= 0) {
+                mcdu.fpOffset = forceOffset % waypointsAndMarkers.length;
+            } else {
+                // negative offset go from bottom
+                mcdu.fpOffset = waypointsAndMarkers.length + (forceOffset % waypointsAndMarkers.length);
+            }
+        }
+
         // Only examine first 5 (or less) waypoints/markers
         const scrollWindow = [];
+        const offset = mcdu.fpOffset;
         for (let rowI = 0, winI = offset; rowI < rowsCount; rowI++, winI++) {
             winI = winI % (waypointsAndMarkers.length);
 
@@ -359,14 +372,14 @@ class CDUFlightPlanPage {
                                     }
                                 } else if (value === FMCMainDisplay.clrValue) {
                                     mcdu.removeWaypoint(fpIndex, () => {
-                                        CDUFlightPlanPage.ShowPage(mcdu, offset);
+                                        CDUFlightPlanPage.ShowPage(mcdu);
                                     });
                                 } else if (value.length > 0) {
                                     mcdu.insertWaypoint(value, fpIndex, (success) => {
                                         if (!success) {
                                             scratchpadCallback();
                                         }
-                                        CDUFlightPlanPage.ShowPage(mcdu, offset);
+                                        CDUFlightPlanPage.ShowPage(mcdu);
                                     });
                                 }
                             };
@@ -447,16 +460,16 @@ class CDUFlightPlanPage {
                                     CDULateralRevisionPage.ShowPage(mcdu, wp, fpIndex);
                                     break;
                                 case FMCMainDisplay.clrValue:
-                                    CDUFlightPlanPage.clearWaypoint(mcdu, fpIndex, offset, scratchpadCallback);
+                                    CDUFlightPlanPage.clearWaypoint(mcdu, fpIndex, scratchpadCallback);
                                     break;
                                 case FMCMainDisplay.ovfyValue:
                                     if (wp.additionalData.overfly) {
                                         mcdu.removeWaypointOverfly(fpIndex, () => {
-                                            CDUFlightPlanPage.ShowPage(mcdu, offset);
+                                            CDUFlightPlanPage.ShowPage(mcdu);
                                         }, !fpm.isCurrentFlightPlanTemporary());
                                     } else {
                                         mcdu.addWaypointOverfly(fpIndex, () => {
-                                            CDUFlightPlanPage.ShowPage(mcdu, offset);
+                                            CDUFlightPlanPage.ShowPage(mcdu);
                                         }, !fpm.isCurrentFlightPlanTemporary());
                                     }
                                     break;
@@ -466,7 +479,7 @@ class CDUFlightPlanPage {
                                             if (!success) {
                                                 scratchpadCallback();
                                             }
-                                            CDUFlightPlanPage.ShowPage(mcdu, offset);
+                                            CDUFlightPlanPage.ShowPage(mcdu);
                                         }, !fpm.isCurrentFlightPlanTemporary());
                                     }
                                     break;
@@ -482,7 +495,7 @@ class CDUFlightPlanPage {
                                     if (!success) {
                                         scratchpadCallback();
                                     }
-                                    CDUFlightPlanPage.ShowPage(mcdu, offset);
+                                    CDUFlightPlanPage.ShowPage(mcdu);
                                 }, true);
                             }
                         });
@@ -495,7 +508,7 @@ class CDUFlightPlanPage {
                         } else if (value === FMCMainDisplay.clrValue) {
                             mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
                         } else {
-                            CDUVerticalRevisionPage.setConstraints(mcdu, wp, value, scratchpadCallback, offset);
+                            CDUVerticalRevisionPage.setConstraints(mcdu, wp, value, scratchpadCallback);
                         }
                     });
 
@@ -523,7 +536,7 @@ class CDUFlightPlanPage {
                 addLskAt(rowI, 0, (value, scratchpadCallback) => {
                     if (value === FMCMainDisplay.clrValue) {
                         mcdu.clearDiscontinuity(fpIndex, () => {
-                            CDUFlightPlanPage.ShowPage(mcdu, offset);
+                            CDUFlightPlanPage.ShowPage(mcdu);
                         }, !fpm.isCurrentFlightPlanTemporary());
                         return;
                     }
@@ -532,7 +545,7 @@ class CDUFlightPlanPage {
                         if (!success) {
                             scratchpadCallback();
                         }
-                        CDUFlightPlanPage.ShowPage(mcdu, offset);
+                        CDUFlightPlanPage.ShowPage(mcdu);
                     }, !fpm.isCurrentFlightPlanTemporary());
                 });
             } else if (holdResumeExit) {
@@ -564,7 +577,7 @@ class CDUFlightPlanPage {
 
                 addLskAt(rowI, 0, (value, scratchpadCallback) => {
                     if (value === FMCMainDisplay.clrValue) {
-                        CDUFlightPlanPage.clearWaypoint(mcdu, fpIndex, offset, scratchpadCallback);
+                        CDUFlightPlanPage.clearWaypoint(mcdu, fpIndex, scratchpadCallback);
                         return;
                     }
 
@@ -577,11 +590,11 @@ class CDUFlightPlanPage {
                     if (isActive) {
                         mcdu.fmgcMesssagesListener.triggerToAllSubscribers('A32NX_IMM_EXIT', fpIndex, immExit);
                         setTimeout(() => {
-                            CDUFlightPlanPage.ShowPage(mcdu, offset);
+                            CDUFlightPlanPage.ShowPage(mcdu);
                         }, 500);
                     } else if (decelReached) {
                         fpm.removeWaypoint(fpIndex, true, () => {
-                            CDUFlightPlanPage.ShowPage(mcdu, offset);
+                            CDUFlightPlanPage.ShowPage(mcdu);
                         });
                     }
                     scratchpadCallback();
@@ -662,12 +675,12 @@ class CDUFlightPlanPage {
 
             addLskAt(5, 0, async () => {
                 mcdu.eraseTemporaryFlightPlan(() => {
-                    CDUFlightPlanPage.ShowPage(mcdu, 0);
+                    CDUFlightPlanPage.ShowPage(mcdu);
                 });
             });
             addRskAt(5, 0, async () => {
                 mcdu.insertTemporaryFlightPlan(() => {
-                    CDUFlightPlanPage.ShowPage(mcdu, 0);
+                    CDUFlightPlanPage.ShowPage(mcdu);
                 });
             });
         } else {
@@ -718,35 +731,25 @@ class CDUFlightPlanPage {
         while (scrollText.length < 10) {
             scrollText.push([""]);
         }
-        const allowScroll = waypointsAndMarkers.length > 4;
         if (allowScroll) {
             mcdu.onAirport = () => { // Only called if > 4 waypoints
                 const isOnFlightPlanPage = mcdu.page.Current === mcdu.page.FlightPlanPage;
                 const destinationAirportOffset = waypointsAndMarkers.length - 5;
                 const allowCycleToOriginAirport = mcdu.flightPhaseManager.phase === FmgcFlightPhases.PREFLIGHT;
+                let newOffset;
                 if (offset === destinationAirportOffset && allowCycleToOriginAirport && isOnFlightPlanPage) { // only show origin if still on ground
                     // Go back to top of flight plan page to show origin airport.
-                    offset = 0;
+                    newOffset = 0;
                 } else {
-                    offset = destinationAirportOffset; // if in air only dest is available.
+                    newOffset = destinationAirportOffset; // if in air only dest is available.
                 }
-                CDUFlightPlanPage.ShowPage(mcdu, offset);
+                CDUFlightPlanPage.ShowPage(mcdu, newOffset);
             };
             mcdu.onDown = () => { // on page down decrement the page offset.
-                if (offset > 0) { // if page not on top
-                    offset--;
-                } else { // else go to the bottom
-                    offset = waypointsAndMarkers.length - 1;
-                }
-                CDUFlightPlanPage.ShowPage(mcdu, offset);
+                CDUFlightPlanPage.ShowPage(mcdu, offset - 1);
             };
             mcdu.onUp = () => {
-                if (offset < waypointsAndMarkers.length - 1) { // if page not on bottom
-                    offset++;
-                } else { // else go on top
-                    offset = 0;
-                }
-                CDUFlightPlanPage.ShowPage(mcdu, offset);
+                CDUFlightPlanPage.ShowPage(mcdu, offset + 1);
             };
         }
         mcdu.setArrows(allowScroll, allowScroll, true, true);
@@ -759,7 +762,7 @@ class CDUFlightPlanPage {
         ]);
     }
 
-    static clearWaypoint(mcdu, fpIndex, offset, scratchpadCallback) {
+    static clearWaypoint(mcdu, fpIndex, scratchpadCallback) {
         if (fpIndex <= mcdu.flightPlanManager.getActiveWaypointIndex()) {
             // 22-72-00:67
             // Stop clearing TO or FROM waypoints when NAV is engaged
@@ -771,7 +774,7 @@ class CDUFlightPlanPage {
         }
         // TODO if clear leg before a hold, delete hold too? some other legs like this too..
         mcdu.removeWaypoint(fpIndex, () => {
-            CDUFlightPlanPage.ShowPage(mcdu, offset);
+            CDUFlightPlanPage.ShowPage(mcdu);
         }, !mcdu.flightPlanManager.isCurrentFlightPlanTemporary());
     }
 }

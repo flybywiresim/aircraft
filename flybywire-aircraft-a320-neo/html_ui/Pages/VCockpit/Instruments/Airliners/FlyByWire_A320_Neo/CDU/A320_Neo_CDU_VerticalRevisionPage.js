@@ -354,7 +354,7 @@ class CDUVerticalRevisionPage {
     }
 
     // constraints can be set directly by LSK on f-pln page
-    static setConstraints(mcdu, waypoint, value, scratchpadCallback, offset = 0) {
+    static setConstraints(mcdu, waypoint, value, scratchpadCallback) {
         const matchResult = value.match(/^(([0-9]{1,3})\/?)?(\/([+-])?(((FL)?([0-9]{1,3}))|([0-9]{4,5})))?$/);
         if (matchResult === null) {
             mcdu.setScratchpadMessage(NXSystemMessages.formatError);
@@ -393,14 +393,14 @@ class CDUVerticalRevisionPage {
 
         if (speed !== undefined) {
             mcdu.flightPlanManager.setWaypointSpeed(speed, mcdu.flightPlanManager.indexOfWaypoint(waypoint), () => {
-                CDUFlightPlanPage.ShowPage(mcdu, offset);
+                CDUFlightPlanPage.ShowPage(mcdu);
             }, type === WaypointConstraintType.DES);
         }
 
         if (alt !== undefined) {
             mcdu.flightPlanManager.setLegAltitudeDescription(waypoint, code);
             mcdu.flightPlanManager.setWaypointAltitude(alt, mcdu.flightPlanManager.indexOfWaypoint(waypoint), () => {
-                CDUFlightPlanPage.ShowPage(mcdu, offset);
+                CDUFlightPlanPage.ShowPage(mcdu);
             }, type === WaypointConstraintType.DES);
         }
     }

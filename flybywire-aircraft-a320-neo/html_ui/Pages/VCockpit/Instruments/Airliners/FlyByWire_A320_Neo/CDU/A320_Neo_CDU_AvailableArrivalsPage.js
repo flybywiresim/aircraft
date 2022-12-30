@@ -225,7 +225,7 @@ class CDUAvailableArrivalsPage {
                         mcdu.updateTowerHeadwind();
                         mcdu.updateConstraints();
                         CDUPerformancePage.UpdateThrRedAccFromDestination(mcdu);
-                        CDUFlightPlanPage.ShowPage(mcdu);
+                        CDUFlightPlanPage.ShowPage(mcdu, -5);
                     });
                 };
             } else {
