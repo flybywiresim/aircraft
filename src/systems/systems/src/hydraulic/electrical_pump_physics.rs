@@ -301,7 +301,7 @@ mod tests {
     use crate::electrical::ElectricalBus;
     use crate::electrical::Electricity;
 
-    use crate::shared::{update_iterator::FixedStepLoop, PotentialOrigin};
+    use crate::shared::{update_iterator::MaxStepLoop, PotentialOrigin};
     use crate::simulation::{Aircraft, SimulationElement, SimulationElementVisitor, UpdateContext};
 
     use crate::simulation::test::{SimulationTestBed, TestBed};
@@ -332,7 +332,7 @@ mod tests {
     }
 
     struct TestAircraft {
-        core_hydraulic_updater: FixedStepLoop,
+        core_hydraulic_updater: MaxStepLoop,
 
         pump: ElectricalPumpPhysics,
         hydraulic_section: TestHydraulicSection,
@@ -345,7 +345,7 @@ mod tests {
     impl TestAircraft {
         fn new(context: &mut InitContext) -> Self {
             Self {
-                core_hydraulic_updater: FixedStepLoop::new(Duration::from_millis(33)),
+                core_hydraulic_updater: MaxStepLoop::new(Duration::from_millis(10)),
                 pump: physical_pump(context),
                 hydraulic_section: TestHydraulicSection::default(),
                 current_displacement: Volume::new::<gallon>(0.),
