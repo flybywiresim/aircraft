@@ -1,6 +1,6 @@
 import { Waypoint } from '@atsu/common/types';
 
-export interface FmsDataBusTypes {
+export interface AtsuFmsMessages {
     lastWaypoint: Waypoint;
     activeWaypoint: Waypoint;
     nextWaypoint: Waypoint;
