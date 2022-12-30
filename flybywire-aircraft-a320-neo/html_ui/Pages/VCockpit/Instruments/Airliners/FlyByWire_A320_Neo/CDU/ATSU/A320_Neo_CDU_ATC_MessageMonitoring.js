@@ -67,10 +67,10 @@ class CDUAtcMessageMonitoring {
                 headerRight = CDUAtcMessageMonitoring.TranslateCpdlcResponse(messages[offset + i].Response);
 
                 // ignore the headline with the station and the timestamp
-                const lines = messages[offset + i].serialize(AtsuCommon.AtsuMessageSerializationFormat.MCDUMonitored).split("\n");
+                const lines = messages[offset + i].serialize(AtsuCommon.AtsuMessageSerializationFormat.FmsDisplayMonitored).split("\n");
                 let firstLine = "CPDLC";
                 if (lines.length >= 2) {
-                    firstLine = messages[offset + i].serialize(AtsuCommon.AtsuMessageSerializationFormat.MCDUMonitored).split("\n")[1];
+                    firstLine = messages[offset + i].serialize(AtsuCommon.AtsuMessageSerializationFormat.FmsDisplayMonitored).split("\n")[1];
                 }
                 if (firstLine.length <= 19) {
                     contentStart = firstLine;

@@ -69,7 +69,7 @@ export class CpdlcMessage extends AtsuMessage {
             if (format === AtsuMessageSerializationFormat.Network) {
                 content = `${content.substring(0, idx)}${entry.Value}${content.substring(idx + 2)}`;
             } else if (entry.Value !== '') {
-                if (this.MessageMonitoring === CpdlcMessageMonitoringState.Monitoring && format === AtsuMessageSerializationFormat.MCDUMonitored) {
+                if (this.MessageMonitoring === CpdlcMessageMonitoringState.Monitoring && format === AtsuMessageSerializationFormat.FmsDisplayMonitored) {
                     content = `${content.substring(0, idx)}{magenta}${entry.Value}{end}${content.substring(idx + 2)}`;
                 } else {
                     content = `${content.substring(0, idx)}@${entry.Value}@${content.substring(idx + 2)}`;
@@ -117,7 +117,7 @@ export class CpdlcMessage extends AtsuMessage {
             message = `/data2/${this.CurrentTransmissionId}/${this.PreviousTransmissionId !== -1 ? this.PreviousTransmissionId : ''}/${this.Content[0]?.ExpectedResponse}/${lines.join(' ')}`;
         } else if (format === AtsuMessageSerializationFormat.Mailbox) {
             message = lines.join('\n');
-        } else if (format === AtsuMessageSerializationFormat.MCDU || format === AtsuMessageSerializationFormat.MCDUMonitored) {
+        } else if (format === AtsuMessageSerializationFormat.FmsDisplay || format === AtsuMessageSerializationFormat.FmsDisplayMonitored) {
             if (this.Direction === AtsuMessageDirection.Uplink) {
                 message += `{cyan}${this.Timestamp.mailboxTimestamp()} FROM ${this.Station}{end}\n`;
             } else {
@@ -126,7 +126,7 @@ export class CpdlcMessage extends AtsuMessage {
 
             lines.forEach((line) => {
                 line = line.replace(/@/gi, '');
-                if (format === AtsuMessageSerializationFormat.MCDUMonitored) {
+                if (format === AtsuMessageSerializationFormat.FmsDisplayMonitored) {
                     message += line;
                 } else {
                     message += `{green}${line}{end}\n`;

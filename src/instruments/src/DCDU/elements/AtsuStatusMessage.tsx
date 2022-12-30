@@ -46,9 +46,9 @@ const translateStatusMessage = (status: MailboxStatusMessage) => {
         return 'LOAD SEC OK';
     case MailboxStatusMessage.FlightplanLoadingSecondary:
         return 'LOADING SEC';
-    case MailboxStatusMessage.McduForText:
+    case MailboxStatusMessage.FmsDisplayForText:
         return 'MCDU FOR TEXT';
-    case MailboxStatusMessage.McduForModification:
+    case MailboxStatusMessage.FmsDisplayForModification:
         return 'MCDU FOR MODIF';
     case MailboxStatusMessage.MonitoringCancelled:
         return 'MONIT CNCLD';

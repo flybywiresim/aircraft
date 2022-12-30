@@ -126,7 +126,7 @@ const DCDU: React.FC = () => {
 
         const message = messagesRef.current.get(uid);
         if (message) {
-            message.statusMessage = MailboxStatusMessage.McduForModification;
+            message.statusMessage = MailboxStatusMessage.FmsDisplayForModification;
             publisherRef.current?.pub('readMessage', uid);
             publisherRef.current?.pub('modifyMessage', uid);
         }
@@ -298,7 +298,7 @@ const DCDU: React.FC = () => {
                     const dcduBlock = newMessageMap.get(cpdlcMessages[0].UniqueMessageID);
                     if (dcduBlock) {
                         dcduBlock.semanticResponseIncomplete = false;
-                        if (dcduBlock.statusMessage === MailboxStatusMessage.NoFmData || dcduBlock.statusMessage === MailboxStatusMessage.McduForModification) {
+                        if (dcduBlock.statusMessage === MailboxStatusMessage.NoFmData || dcduBlock.statusMessage === MailboxStatusMessage.FmsDisplayForModification) {
                             dcduBlock.statusMessage = MailboxStatusMessage.NoMessage;
                         }
 
@@ -553,7 +553,9 @@ const DCDU: React.FC = () => {
                         <SemanticResponseButtons
                             message={visibleMessages[0]}
                             reachedEndOfMessage={messageReadComplete}
-                            messageUnderModification={visibleMessageStatus === MailboxStatusMessage.McduForModification || visibleMessageStatus === MailboxStatusMessage.McduForText}
+                            messageUnderModification={
+                                visibleMessageStatus === MailboxStatusMessage.FmsDisplayForModification || visibleMessageStatus === MailboxStatusMessage.FmsDisplayForText
+                            }
                             dataIncomplete={visibleMessagesSemanticResponseIncomplete}
                             invertResponse={invertResponse}
                             modifyResponse={modifyResponse}
