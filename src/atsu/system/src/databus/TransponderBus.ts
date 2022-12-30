@@ -60,6 +60,9 @@ export class TransponderInputBus {
         });
 
         this.simVarPublisher = new TransponderSimvarPublisher(this.bus);
+    }
+
+    public connectedCallback(): void {
         this.simVarPublisher.subscribe('msfsTransponderCode');
     }
 }

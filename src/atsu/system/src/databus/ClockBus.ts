@@ -61,6 +61,9 @@ export class ClockInputBus {
         });
 
         this.simVarPublisher = new ClockSimvarPublisher(this.bus);
+    }
+
+    public connectedCallback(): void {
         this.simVarPublisher.subscribe('msfsUtcYear');
         this.simVarPublisher.subscribe('msfsUtcMonth');
         this.simVarPublisher.subscribe('msfsUtcDayOfMonth');

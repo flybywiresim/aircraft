@@ -34,6 +34,9 @@ export class FwcInputBus {
         subscriber.on('msfsCompanyMessageCount').whenChanged().handle((count: number) => publisher.pub('companyMessageCount', count));
 
         this.simVarPublisher = new FwcSimvarPublisher(this.bus);
+    }
+
+    public connectedCallback(): void {
         this.simVarPublisher.subscribe('msfsCompanyMessageCount');
     }
 }

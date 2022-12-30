@@ -39,6 +39,9 @@ export class AtcMessageButtonInputBus {
         subscriber.on('msfsButtonPressed').whenChanged().handle((pressed: number) => publisher.pub('buttonPressed', pressed !== 0));
 
         this.simVarPublisher = new AtcMessageButtonSimvarPublisher(this.bus);
+    }
+
+    public connectedCallback(): void {
         this.simVarPublisher.subscribe('msfsButtonActive');
         this.simVarPublisher.subscribe('msfsButtonPressed');
     }

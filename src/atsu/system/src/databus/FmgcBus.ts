@@ -153,6 +153,9 @@ export class FmgcInputBus {
         });
 
         this.simVarPublisher = new FmgcSimvarPuplisher(this.bus);
+    }
+
+    public connectedCallback(): void {
         this.simVarPublisher.subscribe('msfsFlightNumber');
         this.simVarPublisher.subscribe('msfsPresentPositionLatitude');
         this.simVarPublisher.subscribe('msfsPresentPositionLongitude');
