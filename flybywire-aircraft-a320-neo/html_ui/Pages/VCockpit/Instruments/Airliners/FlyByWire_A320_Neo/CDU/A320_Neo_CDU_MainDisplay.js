@@ -185,7 +185,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     mcduServerClientEventHandler(event) {
         switch (event.type) {
             case 'open': {
-                console.log(`[MCDU] Websocket connection to SimBridge opened. (${SimBridgeClient.McduServerClient.url})`);
+                console.log(`[MCDU] Websocket connection to SimBridge opened. (${SimBridgeClient.McduServerClient.url()})`);
                 (new NXNotifManager).showNotification({title: "MCDU CONNECTED",
                     message: "A32NX MCDU successfully connected to SimBridge MCDU Server.", timeout: 5000});
                 this.sendToMcduServerClient("mcduConnected");
@@ -193,11 +193,11 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 break;
             }
             case 'close': {
-                console.log(`[MCDU] Websocket connection to SimBridge closed. (${SimBridgeClient.McduServerClient.url})`);
+                console.log(`[MCDU] Websocket connection to SimBridge closed. (${SimBridgeClient.McduServerClient.url()})`);
                 break;
             }
             case 'error': {
-                console.log(`[MCDU] Websocket connection to SimBridge error. (${SimBridgeClient.McduServerClient.url}): ${event.get()}`);
+                console.log(`[MCDU] Websocket connection to SimBridge error. (${SimBridgeClient.McduServerClient.url()}): ${event.get()}`);
                 break;
             }
             case 'message': {

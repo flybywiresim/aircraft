@@ -46,18 +46,21 @@ use systems::{
             ManualPitchTrimController, PitchTrimActuatorController,
             TrimmableHorizontalStabilizerAssembly,
         },
-        ElectricPump, EngineDrivenPump, HydraulicCircuit, HydraulicCircuitController,
-        HydraulicPressureSensors, PowerTransferUnit, PowerTransferUnitCharacteristics,
-        PowerTransferUnitController, PressureSwitch, PressureSwitchType, PumpController,
-        RamAirTurbine, RamAirTurbineController, Reservoir,
+        ElectricPump, EngineDrivenPump, HeatingElement, HydraulicCircuit,
+        HydraulicCircuitController, HydraulicPressureSensors, PowerTransferUnit,
+        PowerTransferUnitCharacteristics, PowerTransferUnitController, PressureSwitch,
+        PressureSwitchType, PumpController, RamAirTurbine, RamAirTurbineController, Reservoir,
     },
     landing_gear::{GearSystemSensors, LandingGearControlInterfaceUnitSet},
     overhead::{
         AutoOffFaultPushButton, AutoOnFaultPushButton, MomentaryOnPushButton, MomentaryPushButton,
     },
     shared::{
-        interpolation, low_pass_filter::LowPassFilter, random_from_normal_distribution,
-        random_from_range, update_iterator::MaxStepLoop, AdirsDiscreteOutputs,
+        interpolation, random_from_normal_distribution,
+        random_from_range, update_iterator::MaxStepLoop, 
+        update_iterator::{ MaxStepLoop},
+        AdirsDiscreteOutputs, AirbusElectricPumpId, AirbusEngineDrivenPumpId,
+
         DelayedFalseLogicGate, DelayedPulseTrueLogicGate, DelayedTrueLogicGate, ElectricalBusType,
         ElectricalBuses, EmergencyElectricalRatPushButton, EmergencyElectricalState,
         EmergencyGeneratorPower, EngineFirePushButtons, GearWheel, HydraulicColor,
@@ -1575,7 +1578,7 @@ impl A320Hydraulic {
 
             engine_driven_pump_1: EngineDrivenPump::new(
                 context,
-                "GREEN",
+                AirbusEngineDrivenPumpId::Green,
                 PumpCharacteristics::a320_edp(),
             ),
             engine_driven_pump_1_controller: A320EngineDrivenPumpController::new(
@@ -1586,7 +1589,7 @@ impl A320Hydraulic {
 
             engine_driven_pump_2: EngineDrivenPump::new(
                 context,
-                "YELLOW",
+                AirbusEngineDrivenPumpId::Yellow,
                 PumpCharacteristics::a320_edp(),
             ),
             engine_driven_pump_2_controller: A320EngineDrivenPumpController::new(
@@ -1600,7 +1603,7 @@ impl A320Hydraulic {
 
             blue_electric_pump: ElectricPump::new(
                 context,
-                "BLUE",
+                AirbusElectricPumpId::Blue,
                 Self::BLUE_ELEC_PUMP_SUPPLY_POWER_BUS,
                 ElectricCurrent::new::<ampere>(Self::ELECTRIC_PUMP_MAX_CURRENT_AMPERE),
                 PumpCharacteristics::a320_electric_pump(),
@@ -1612,7 +1615,7 @@ impl A320Hydraulic {
 
             yellow_electric_pump: ElectricPump::new(
                 context,
-                "YELLOW",
+                AirbusElectricPumpId::Yellow,
                 Self::YELLOW_ELEC_PUMP_SUPPLY_POWER_BUS,
                 ElectricCurrent::new::<ampere>(Self::ELECTRIC_PUMP_MAX_CURRENT_AMPERE),
                 PumpCharacteristics::a320_electric_pump(),
@@ -1812,6 +1815,7 @@ impl A320Hydraulic {
         self.power_transfer_unit_controller
             .has_air_pressure_low_fault()
             || self.power_transfer_unit_controller.has_low_level_fault()
+            || self.power_transfer_unit_controller.has_overheat_fault()
     }
 
     fn green_edp_has_fault(&self) -> bool {
@@ -1821,6 +1825,7 @@ impl A320Hydraulic {
                 .engine_driven_pump_1_controller
                 .has_air_pressure_low_fault()
             || self.engine_driven_pump_1_controller.has_low_level_fault()
+            || self.engine_driven_pump_1_controller.has_overheat_fault()
     }
 
     fn yellow_epump_has_fault(&self) -> bool {
@@ -1830,6 +1835,7 @@ impl A320Hydraulic {
                 .yellow_electric_pump_controller
                 .has_air_pressure_low_fault()
             || self.yellow_electric_pump_controller.has_low_level_fault()
+            || self.yellow_electric_pump_controller.has_overheat_fault()
     }
 
     fn yellow_edp_has_fault(&self) -> bool {
@@ -1839,6 +1845,7 @@ impl A320Hydraulic {
                 .engine_driven_pump_2_controller
                 .has_air_pressure_low_fault()
             || self.engine_driven_pump_2_controller.has_low_level_fault()
+            || self.engine_driven_pump_2_controller.has_overheat_fault()
     }
 
     fn blue_epump_has_fault(&self) -> bool {
@@ -1847,6 +1854,7 @@ impl A320Hydraulic {
                 .blue_electric_pump_controller
                 .has_air_pressure_low_fault()
             || self.blue_electric_pump_controller.has_low_level_fault()
+            || self.blue_electric_pump_controller.has_overheat_fault()
     }
 
     pub fn green_reservoir(&self) -> &Reservoir {
@@ -2308,6 +2316,7 @@ impl A320Hydraulic {
             lgciu1,
             lgciu2,
             self.blue_circuit.reservoir(),
+            &self.blue_electric_pump,
         );
         self.blue_electric_pump.update(
             context,
@@ -2324,6 +2333,7 @@ impl A320Hydraulic {
             &self.aft_cargo_door_controller,
             &self.yellow_circuit,
             self.yellow_circuit.reservoir(),
+            &self.yellow_electric_pump,
         );
         self.yellow_electric_pump.update(
             context,
@@ -2446,6 +2456,7 @@ impl A320Hydraulic {
             > Pressure::new::<psi>(Self::HIGH_PITCH_PTU_SOUND_DELTA_PRESS_THRESHOLD_PSI)
             && is_ptu_rotating
             && !self.ptu_high_pitch_sound_active.output()
+            && !self.power_transfer_unit.is_in_continuous_mode()
     }
 
     pub fn gear_system(&self) -> &impl GearSystemSensors {
@@ -2724,6 +2735,7 @@ struct A320EngineDrivenPumpController {
     has_air_pressure_low_fault: bool,
     has_low_level_fault: bool,
     is_pressure_low: bool,
+    has_overheat_fault: bool,
 }
 impl A320EngineDrivenPumpController {
     fn new(
@@ -2747,6 +2759,8 @@ impl A320EngineDrivenPumpController {
             has_low_level_fault: false,
 
             is_pressure_low: true,
+
+            has_overheat_fault: false,
         }
     }
 
@@ -2814,6 +2828,8 @@ impl A320EngineDrivenPumpController {
         self.update_low_air_pressure(reservoir, overhead_panel);
 
         self.update_low_level(reservoir, overhead_panel);
+
+        self.has_overheat_fault = reservoir.is_overheating();
     }
 
     fn has_pressure_low_fault(&self) -> bool {
@@ -2826,6 +2842,10 @@ impl A320EngineDrivenPumpController {
 
     fn has_low_level_fault(&self) -> bool {
         self.has_low_level_fault
+    }
+
+    fn has_overheat_fault(&self) -> bool {
+        self.has_overheat_fault
     }
 }
 impl PumpController for A320EngineDrivenPumpController {
@@ -2859,6 +2879,7 @@ struct A320BlueElectricPumpController {
     has_air_pressure_low_fault: bool,
     has_low_level_fault: bool,
     is_pressure_low: bool,
+    has_overheat_fault: bool,
 }
 impl A320BlueElectricPumpController {
     fn new(context: &mut InitContext, powered_by: ElectricalBusType) -> Self {
@@ -2874,6 +2895,8 @@ impl A320BlueElectricPumpController {
             has_low_level_fault: false,
 
             is_pressure_low: true,
+
+            has_overheat_fault: false,
         }
     }
 
@@ -2886,6 +2909,7 @@ impl A320BlueElectricPumpController {
         lgciu1: &impl LgciuInterface,
         lgciu2: &impl LgciuInterface,
         reservoir: &Reservoir,
+        elec_pump: &impl HeatingElement,
     ) {
         let mut should_pressurise_if_powered = false;
         if overhead_panel.blue_epump_push_button.is_auto() {
@@ -2916,6 +2940,9 @@ impl A320BlueElectricPumpController {
         self.update_low_air_pressure(reservoir, overhead_panel);
 
         self.update_low_level(reservoir, overhead_panel);
+
+        // Elec pump has temperature sensor so we check also pump overheating state
+        self.has_overheat_fault = elec_pump.is_overheating() || reservoir.is_overheating();
     }
 
     fn update_low_pressure(
@@ -2973,6 +3000,10 @@ impl A320BlueElectricPumpController {
     fn has_low_level_fault(&self) -> bool {
         self.has_low_level_fault
     }
+
+    fn has_overheat_fault(&self) -> bool {
+        self.has_low_level_fault
+    }
 }
 impl PumpController for A320BlueElectricPumpController {
     fn should_pressurise(&self) -> bool {
@@ -3005,6 +3036,8 @@ struct A320YellowElectricPumpController {
     should_pressurise_for_cargo_door_operation: bool,
 
     low_pressure_hystereris: bool,
+
+    has_overheat_fault: bool,
 }
 impl A320YellowElectricPumpController {
     const DURATION_OF_YELLOW_PUMP_ACTIVATION_AFTER_CARGO_DOOR_OPERATION: Duration =
@@ -3037,6 +3070,8 @@ impl A320YellowElectricPumpController {
             should_pressurise_for_cargo_door_operation: false,
 
             low_pressure_hystereris: false,
+
+            has_overheat_fault: false,
         }
     }
 
@@ -3048,6 +3083,7 @@ impl A320YellowElectricPumpController {
         aft_cargo_door_controller: &A320DoorController,
         hydraulic_circuit: &impl HydraulicPressureSensors,
         reservoir: &Reservoir,
+        elec_pump: &impl HeatingElement,
     ) {
         self.update_cargo_door_logic(
             context,
@@ -3065,6 +3101,9 @@ impl A320YellowElectricPumpController {
         self.update_low_air_pressure(reservoir, overhead_panel);
 
         self.update_low_level(reservoir, overhead_panel);
+
+        // Elec pump has temperature sensor so we check also pump overheating state
+        self.has_overheat_fault = elec_pump.is_overheating() || reservoir.is_overheating();
     }
 
     fn update_low_pressure(&mut self, hydraulic_circuit: &impl HydraulicPressureSensors) {
@@ -3142,6 +3181,10 @@ impl A320YellowElectricPumpController {
         self.has_low_level_fault
     }
 
+    fn has_overheat_fault(&self) -> bool {
+        self.has_overheat_fault
+    }
+
     fn should_pressurise_for_cargo_door_operation(&self) -> bool {
         self.should_pressurise_for_cargo_door_operation
     }
@@ -3180,6 +3223,7 @@ struct A320PowerTransferUnitController {
 
     has_air_pressure_low_fault: bool,
     has_low_level_fault: bool,
+    has_overheat_fault: bool,
 }
 impl A320PowerTransferUnitController {
     const DURATION_OF_PTU_INHIBIT_AFTER_CARGO_DOOR_OPERATION: Duration = Duration::from_secs(40);
@@ -3205,6 +3249,7 @@ impl A320PowerTransferUnitController {
 
             has_air_pressure_low_fault: false,
             has_low_level_fault: false,
+            has_overheat_fault: false,
         }
     }
 
@@ -3242,6 +3287,9 @@ impl A320PowerTransferUnitController {
         self.update_low_air_pressure(reservoir_left_side, reservoir_right_side, overhead_panel);
 
         self.update_low_level(reservoir_left_side, reservoir_right_side, overhead_panel);
+
+        self.has_overheat_fault =
+            reservoir_left_side.is_overheating() || reservoir_right_side.is_overheating();
     }
 
     fn update_low_air_pressure(
@@ -3272,6 +3320,10 @@ impl A320PowerTransferUnitController {
 
     fn has_low_level_fault(&self) -> bool {
         self.has_low_level_fault
+    }
+
+    fn has_overheat_fault(&self) -> bool {
+        self.has_overheat_fault
     }
 }
 impl PowerTransferUnitController for A320PowerTransferUnitController {
@@ -6479,6 +6531,14 @@ mod tests {
                 self.read_by_name("OVHD_HYD_EPUMPY_PB_HAS_FAULT")
             }
 
+            fn yellow_reservoir_has_overheat_fault(&mut self) -> bool {
+                self.read_by_name("HYD_YELLOW_RESERVOIR_OVHT")
+            }
+
+            fn green_reservoir_has_overheat_fault(&mut self) -> bool {
+                self.read_by_name("HYD_GREEN_RESERVOIR_OVHT")
+            }
+
             fn ptu_has_fault(&mut self) -> bool {
                 self.read_by_name("OVHD_HYD_PTU_PB_HAS_FAULT")
             }
@@ -7948,6 +8008,7 @@ mod tests {
             let mut test_bed = test_bed_on_ground_with()
                 .on_the_ground()
                 .set_cold_dark_inputs()
+                .with_worst_case_ptu()
                 .set_park_brake(false)
                 .start_eng2(Ratio::new::<percent>(80.))
                 .run_one_tick();
@@ -7960,7 +8021,7 @@ mod tests {
 
             // Yellow pressurised by engine2, green presurised from ptu we expect fault LOW press on EDP1
             assert!(test_bed.is_yellow_pressure_switch_pressurised());
-            assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(2800.));
+            assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(2500.));
             assert!(test_bed.is_green_pressure_switch_pressurised());
             assert!(test_bed.green_pressure() > Pressure::new::<psi>(2300.));
             assert!(test_bed.is_green_edp_press_low());
@@ -11175,6 +11236,109 @@ mod tests {
 
             assert!(test_bed.is_all_gears_really_up());
             assert!(test_bed.is_all_doors_really_up());
+        }
+
+        #[test]
+        fn empty_green_reservoir_causes_yellow_overheat_if_ptu_on() {
+            let mut test_bed = test_bed_in_flight_with()
+                .set_cold_dark_inputs()
+                .in_flight()
+                .run_waiting_for(Duration::from_secs_f64(1.));
+
+            test_bed.fail(FailureType::ReservoirLeak(HydraulicColor::Green));
+
+            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(120.));
+            assert!(test_bed.yellow_reservoir_has_overheat_fault());
+        }
+
+        #[test]
+        fn green_edp_off_do_not_causes_ptu_overheat_if_ptu_on_and_cycling_gear() {
+            let mut test_bed = test_bed_in_flight_with()
+                .set_cold_dark_inputs()
+                .with_worst_case_ptu()
+                .in_flight()
+                .set_green_ed_pump(false)
+                .run_waiting_for(Duration::from_secs_f64(1.));
+
+            test_bed = test_bed
+                .set_gear_lever_down()
+                .run_waiting_for(Duration::from_secs_f64(35.));
+
+            assert!(!test_bed.ptu_has_fault());
+
+            test_bed = test_bed
+                .set_gear_lever_up()
+                .run_waiting_for(Duration::from_secs_f64(35.));
+
+            assert!(!test_bed.ptu_has_fault());
+
+            test_bed = test_bed
+                .set_gear_lever_down()
+                .run_waiting_for(Duration::from_secs_f64(35.));
+
+            assert!(!test_bed.ptu_has_fault());
+        }
+
+        #[test]
+        fn empty_yellow_reservoir_causes_green_overheat_if_ptu_on() {
+            let mut test_bed = test_bed_in_flight_with()
+                .set_cold_dark_inputs()
+                .in_flight()
+                .run_waiting_for(Duration::from_secs_f64(1.));
+
+            test_bed.fail(FailureType::ReservoirLeak(HydraulicColor::Yellow));
+
+            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(120.));
+            assert!(test_bed.green_reservoir_has_overheat_fault());
+        }
+
+        #[test]
+        fn green_edp_overheat_failure_causes_green_reservoir_overheat() {
+            let mut test_bed = test_bed_in_flight_with()
+                .set_cold_dark_inputs()
+                .in_flight()
+                .run_waiting_for(Duration::from_secs_f64(1.));
+
+            test_bed.fail(FailureType::EnginePumpOverheat(
+                AirbusEngineDrivenPumpId::Green,
+            ));
+
+            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(120.));
+            assert!(test_bed.green_reservoir_has_overheat_fault());
+        }
+
+        #[test]
+        fn green_edp_overheat_failure_do_not_causes_green_reservoir_overheat_if_unpressurised() {
+            let mut test_bed = test_bed_in_flight_with()
+                .set_cold_dark_inputs()
+                .in_flight()
+                .run_waiting_for(Duration::from_secs_f64(1.));
+
+            test_bed.fail(FailureType::EnginePumpOverheat(
+                AirbusEngineDrivenPumpId::Green,
+            ));
+
+            test_bed = test_bed
+                .set_green_ed_pump(false)
+                .run_waiting_for(Duration::from_secs_f64(120.));
+            assert!(!test_bed.green_reservoir_has_overheat_fault());
+        }
+
+        #[test]
+        fn yellow_edp_overheat_failure_do_not_causes_yellow_reservoir_overheat_if_unpressurised() {
+            let mut test_bed = test_bed_in_flight_with()
+                .set_cold_dark_inputs()
+                .in_flight()
+                .run_waiting_for(Duration::from_secs_f64(1.));
+
+            test_bed.fail(FailureType::EnginePumpOverheat(
+                AirbusEngineDrivenPumpId::Yellow,
+            ));
+
+            test_bed = test_bed
+                .set_yellow_ed_pump(false)
+                .run_waiting_for(Duration::from_secs_f64(120.));
+            assert!(!test_bed.yellow_reservoir_has_overheat_fault());
         }
     }
 }
