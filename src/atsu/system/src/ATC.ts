@@ -20,7 +20,7 @@ import { UplinkMessageMonitoring } from './components/UplinkMessageMonitoring';
  * Defines the ATC system for CPDLC communication
  */
 export class Atc {
-    private parent: Atsu = null;
+    private atsu: Atsu = null;
 
     private datalink: Datalink = null;
 
@@ -54,18 +54,18 @@ export class Atc {
 
     public messageMonitoring: UplinkMessageMonitoring = null;
 
-    constructor(parent: Atsu, datalink: Datalink) {
-        this.parent = parent;
+    constructor(atsu: Atsu, datalink: Datalink) {
+        this.atsu = atsu;
         this.datalink = datalink;
-        this.mailboxBus = new MailboxBus(parent, this);
-        this.messageMonitoring = new UplinkMessageMonitoring(parent);
+        this.mailboxBus = new MailboxBus(atsu, this);
+        this.messageMonitoring = new UplinkMessageMonitoring(atsu);
 
         setInterval(() => {
             const ids = this.messageMonitoring.checkMessageConditions();
             ids.forEach((id) => {
                 const message = this.messageQueue.find((element) => id === element.UniqueMessageID);
                 if (message) {
-                    UplinkMessageStateMachine.update(this.parent, message, false, true);
+                    UplinkMessageStateMachine.update(this.atsu, message, false, true);
                     this.mailboxBus.update(message, true);
                 }
             });
@@ -127,7 +127,7 @@ export class Atc {
         message.MailboxRelevantMessage = false;
 
         this.nextAtc = station;
-        this.parent.registerMessages([message]);
+        this.atsu.registerMessages([message]);
         this.mailboxBus.setAtcLogonMessage(`NEXT ATC: ${station}`);
         this.notificationTime = SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
 
@@ -195,7 +195,7 @@ export class Atc {
         message.MailboxRelevantMessage = false;
 
         this.maxUplinkDelay = -1;
-        this.parent.registerMessages([message]);
+        this.atsu.registerMessages([message]);
 
         return this.datalink.sendMessage(message, true).then((error) => error);
     }
@@ -249,8 +249,8 @@ export class Atc {
             this.mailboxBus.updateMessageStatus(message.UniqueMessageID, MailboxStatusMessage.Sending);
             this.mailboxBus.update(message);
 
-            if (this.parent.modificationMessage?.UniqueMessageID === uid) {
-                this.parent.modificationMessage = null;
+            if (this.atsu.modificationMessage?.UniqueMessageID === uid) {
+                this.atsu.modificationMessage = null;
             }
 
             if (message.Response !== undefined) {
@@ -304,8 +304,8 @@ export class Atc {
                 this.mailboxBus.update(message);
             });
 
-            if (this.parent.modificationMessage?.UniqueMessageID === uid) {
-                this.parent.modificationMessage = null;
+            if (this.atsu.modificationMessage?.UniqueMessageID === uid) {
+                this.atsu.modificationMessage = null;
             }
         }
     }
@@ -328,8 +328,8 @@ export class Atc {
             this.mailboxBus.update(message as CpdlcMessage);
         }
 
-        if (this.parent.modificationMessage?.UniqueMessageID === message.UniqueMessageID) {
-            this.parent.modificationMessage = null;
+        if (this.atsu.modificationMessage?.UniqueMessageID === message.UniqueMessageID) {
+            this.atsu.modificationMessage = null;
         }
 
         return this.datalink.sendMessage(message, false).then((code) => {
@@ -478,7 +478,7 @@ export class Atc {
 
             // initialize the uplink message
             if (cpdlcMessage.Direction === AtsuMessageDirection.Uplink) {
-                UplinkMessageStateMachine.initialize(this.parent, cpdlcMessage);
+                UplinkMessageStateMachine.initialize(this.atsu, cpdlcMessage);
             }
 
             // search corresponding request, if previous ID is set
@@ -510,8 +510,8 @@ export class Atc {
     public updateMessage(message: CpdlcMessage): void {
         const index = this.messageQueue.findIndex((element) => element.UniqueMessageID === message.UniqueMessageID);
         if (index !== -1) {
-            if (this.parent.modificationMessage?.UniqueMessageID === message.UniqueMessageID) {
-                this.parent.modificationMessage = undefined;
+            if (this.atsu.modificationMessage?.UniqueMessageID === message.UniqueMessageID) {
+                this.atsu.modificationMessage = undefined;
             }
 
             this.messageQueue[index] = message;
@@ -559,7 +559,7 @@ export class Atc {
                 this.atisMessages.get(icao)[0] = atis.Timestamp.Seconds;
 
                 if (this.printAtisReport && printable) {
-                    this.parent.printMessage(atis);
+                    this.atsu.printMessage(atis);
                 }
 
                 return code;
@@ -601,15 +601,15 @@ export class Atc {
         if (this.atisMessages.has(icao)) {
             this.updateAtis(icao, type, false).then((code) => {
                 if (code === AtsuStatusCodes.Ok) {
-                    this.atisMessages.get(icao)[0] = new AtsuTimestamp().Seconds;
+                    this.atisMessages.get(icao)[0] = this.atsu.digitalInputs.UtcClock.secondsOfDay;
                 } else {
-                    this.parent.publishAtsuStatusCode(code);
+                    this.atsu.publishAtsuStatusCode(code);
                 }
             });
         } else {
             this.updateAtis(icao, type, false).then((code) => {
                 if (code !== AtsuStatusCodes.Ok) {
-                    this.parent.publishAtsuStatusCode(code);
+                    this.atsu.publishAtsuStatusCode(code);
                 }
             });
         }
