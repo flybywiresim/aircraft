@@ -29,7 +29,7 @@ import { FansMode } from './com/FutureAirNavigationSystem';
 import { coordinateToString } from './components/Convert';
 import { UplinkMessageInterpretation } from './components/UplinkMessageInterpretation';
 import { UplinkMonitor } from './components/UplinkMonitor';
-import { Waypoint } from './types/Waypoint';
+import { Clock, Waypoint } from './types';
 
 export {
     AtsuStatusCodes,
@@ -61,5 +61,6 @@ export {
     coordinateToString,
     UplinkMessageInterpretation,
     UplinkMonitor,
+    Clock,
     Waypoint,
 };
