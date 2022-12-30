@@ -1282,11 +1282,11 @@ mod tests {
 
     #[test]
     fn door_assembly_init_uplocked() {
-        let mut test_bed = SimulationTestBed::new(|_| {
+        let mut test_bed = SimulationTestBed::new(|context| {
             TestSingleGearAircraft::new(
                 Duration::from_millis(33),
-                main_gear_door_right_assembly(),
-                main_gear_right_assembly(true),
+                main_gear_door_right_assembly(context),
+                main_gear_right_assembly(context, true),
             )
         });
 
@@ -1300,11 +1300,11 @@ mod tests {
 
     #[test]
     fn door_uplocked_gives_correct_proximity_sensor_state() {
-        let mut test_bed = SimulationTestBed::new(|_| {
+        let mut test_bed = SimulationTestBed::new(|context| {
             TestSingleGearAircraft::new(
                 Duration::from_millis(33),
-                main_gear_door_right_assembly(),
-                main_gear_right_assembly(true),
+                main_gear_door_right_assembly(context),
+                main_gear_right_assembly(context, true),
             )
         });
 
@@ -1323,11 +1323,11 @@ mod tests {
 
     #[test]
     fn door_opens_gear_stays_down_and_locked() {
-        let mut test_bed = SimulationTestBed::new(|_| {
+        let mut test_bed = SimulationTestBed::new(|context| {
             TestSingleGearAircraft::new(
                 Duration::from_millis(33),
-                main_gear_door_right_assembly(),
-                main_gear_right_assembly(true),
+                main_gear_door_right_assembly(context),
+                main_gear_right_assembly(context, true),
             )
         });
 
@@ -1341,11 +1341,11 @@ mod tests {
 
     #[test]
     fn no_unlocking_from_door_uplock_without_pressure() {
-        let mut test_bed = SimulationTestBed::new(|_| {
+        let mut test_bed = SimulationTestBed::new(|context| {
             TestSingleGearAircraft::new(
                 Duration::from_millis(33),
-                main_gear_door_right_assembly(),
-                main_gear_right_assembly(true),
+                main_gear_door_right_assembly(context),
+                main_gear_right_assembly(context, true),
             )
         });
         test_bed.command(|a| a.set_pressure(Pressure::new::<psi>(10.)));
@@ -1359,11 +1359,11 @@ mod tests {
 
     #[test]
     fn full_retract_extend_cycle() {
-        let mut test_bed = SimulationTestBed::new(|_| {
+        let mut test_bed = SimulationTestBed::new(|context| {
             TestSingleGearAircraft::new(
                 Duration::from_millis(33),
-                main_gear_door_right_assembly(),
-                main_gear_right_assembly(true),
+                main_gear_door_right_assembly(context),
+                main_gear_right_assembly(context, true),
             )
         });
         test_bed.run_with_delta(Duration::from_millis(33));
@@ -1471,19 +1471,25 @@ mod tests {
         assert!(test_bed.query(|a| a.is_door_sensor_uplock(LgciuId::Lgciu2)));
     }
 
-    fn main_gear_door_right_assembly() -> HydraulicLinearActuatorAssembly<1> {
+    fn main_gear_door_right_assembly(
+        context: &mut InitContext,
+    ) -> HydraulicLinearActuatorAssembly<1> {
         let rigid_body = main_gear_door_right_body(true);
-        let actuator = main_gear_door_actuator(&rigid_body);
+        let actuator = main_gear_door_actuator(context, &rigid_body);
 
         HydraulicLinearActuatorAssembly::new([actuator], rigid_body)
     }
 
-    fn main_gear_door_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
+    fn main_gear_door_actuator(
+        context: &mut InitContext,
+        bounded_linear_length: &impl BoundedLinearLength,
+    ) -> LinearActuator {
         const DEFAULT_I_GAIN: f64 = 5.;
         const DEFAULT_P_GAIN: f64 = 0.05;
         const DEFAULT_FORCE_GAIN: f64 = 200000.;
 
         LinearActuator::new(
+            context,
             bounded_linear_length,
             1,
             Length::new::<meter>(0.055),
@@ -1504,6 +1510,7 @@ mod tests {
             false,
             None,
             None,
+            Pressure::new::<psi>(3000.),
         )
     }
 
@@ -1530,9 +1537,12 @@ mod tests {
         )
     }
 
-    fn main_gear_right_assembly(is_locked: bool) -> HydraulicLinearActuatorAssembly<1> {
+    fn main_gear_right_assembly(
+        context: &mut InitContext,
+        is_locked: bool,
+    ) -> HydraulicLinearActuatorAssembly<1> {
         let rigid_body = main_gear_right_body(is_locked);
-        let actuator = main_gear_actuator(&rigid_body);
+        let actuator = main_gear_actuator(context, &rigid_body);
 
         HydraulicLinearActuatorAssembly::new([actuator], rigid_body)
     }
@@ -1557,12 +1567,16 @@ mod tests {
         )
     }
 
-    fn main_gear_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
+    fn main_gear_actuator(
+        context: &mut InitContext,
+        bounded_linear_length: &impl BoundedLinearLength,
+    ) -> LinearActuator {
         const DEFAULT_I_GAIN: f64 = 5.;
         const DEFAULT_P_GAIN: f64 = 0.05;
         const DEFAULT_FORCE_GAIN: f64 = 200000.;
 
         LinearActuator::new(
+            context,
             bounded_linear_length,
             1,
             Length::new::<meter>(0.145),
@@ -1583,6 +1597,7 @@ mod tests {
             false,
             None,
             None,
+            Pressure::new::<psi>(3000.),
         )
     }
 

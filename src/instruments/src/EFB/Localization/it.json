@@ -27,8 +27,8 @@
     "AreYouSureYouWantToResetAllChecklists": "Sei sicuro di voler ripristinare tutte le checklist?",
     "AreYouSureYouWantToResetChecklists": "Sei sicuro di voler ripristinare tutte le checklist?",
     "ChecklistResetWarning": "Avviso Ripristino Checklist",
-    "MarkChecklistAsComplete": "Segna completamento checklist",
-    "MarkItemAsComplete": "Segna completamento campo",
+    "MarkChecklistAsComplete": "Segna checklist come completata",
+    "MarkItemAsComplete": "Segna campo come completato",
     "ProceedToNextChecklist": "Procedi alla prossima checklist",
     "ResetAll": "Ripristina Tutto",
     "ResetChecklist": "Ripristina Checklist",
@@ -65,7 +65,7 @@
         "NotAvailableShort": "N/D",
         "Raw": "Tecnica",
         "TT": {
-          "SwitchToIconView": "Passa alla Visualizzazione a Icone",
+          "SwitchToIconView": "Passa alla Visualizzazione Icone",
           "SwitchToRawMetarView": "Passa alla Visualizzazione Tecnica del METAR"
         },
         "Temperature": "Temperatura",
@@ -77,7 +77,7 @@
     "YourFlight": {
       "Alternate": "Alternato",
       "AverageWind": "Velocità Vento Media",
-      "CompanyRoute": "Rotta Compagnia",
+      "CompanyRoute": "Rotta della Compagnia",
       "CostIndex": "Cost Index",
       "CruiseAlt": "Alt. Crociera",
       "ImportSimBriefData": "Importa Dati SimBrief",
@@ -98,7 +98,7 @@
       "YouHaveNotYetImportedAnySimBriefData": "Non hai ancora importato alcun dato SimBrief."
     },
     "Overview": {
-      "ActualGW": "GW effettivo",
+      "ActualGW": "GW Effettivo",
       "Engines": "Motori",
       "MMO": "MMO",
       "MRW": "MRW",
@@ -520,8 +520,12 @@
     "SimOptions": {
       "Active": "Attivo",
       "Auto": "Auto",
+      "Both": "Sincronizzato",
       "Calibrate": "Calibra",
+      "Captain": "Comandante",
+      "CockpitSeatUsedToControl": "Posto Cockpit Da Utilizzare",
       "ConesEnabled": "Coni di Sicurezza",
+      "Copilot": "Primo Ufficiale",
       "DefaultBarometerUnit": "Unità Barometro Predefinita",
       "DynamicRegistrationDecal": "Decalco Registrazione Dinamico",
       "EnableSimBridge": "Abilita Connessione SimBridge (Disattivazione automatica dopo 5 minuti in caso di connessione non riuscita)",
@@ -533,6 +537,7 @@
       "None": "No",
       "Off": "Off",
       "Save": "Sì",
+      "Side": "Di Lato",
       "SimBridgePort": "Porta Esterna Server SimBridge",
       "SyncMsfsFlightPlan": "Sincronizza Piano di Volo MSFS",
       "ThrottleDetents": "Posizioni Manetta",

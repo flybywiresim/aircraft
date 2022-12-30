@@ -5,6 +5,20 @@
 <!-- Use the following format below -->
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 
+## 0.10.0
+
+1. [ADIRU] Implemented wind speed computation from TAS/GS/HDG - @tracernz (Mike)
+1. [FMGC] Show proper transition names and final approach slope from AAU1 - @tracernz (Mike)
+1. [FMGC] Don't accept blank input or / for hold distance - @tracernz (Mike)
+1. [ATSU] Fix LSK6L not returning to ATSU DATALINK page in ATC MENU - @BravoMike99 (Bruno_pt99#5802)
+1. [HYD] Trimmable physical assemblies - @Crocket63 (crocket)
+1. [HYD] Simulation of the rudder mechanical assembly and yaw dampers - @Crocket63 (crocket)
+1. [HYD] Simple temperature simulation - @Crocket63 (crocket)
+1. [FLIGHTMODEL] Reduced flap induced drag - @donstim (donbikes#4084)
+1. [EFB] Fix and improve pushback system and add API documentation - @frankkopp (Frank Kopp)
+1. [RMP] RMPs navigation backup - Julian Sebline (Julian Sebline#8476 on Discord)
+1. [SEC] Fix GND SPLR logic, add missing GND SPLR partial extension condition - @lukecologne (luke)
+
 ## 0.9.0
 
 1. [MODEL] Add Wheel Chocks and GSE Safety Cones - @bouveng (Johan Bouveng)
@@ -59,6 +73,7 @@
 1. [FMGC] Fix inbound leg time for holds - @tracernz (Mike)
 1. [MCDU] Improved visuals of Init-A and Init-B page - @derl30n (Leon)
 1. [MODEL] Added new animated gear gravity extension handle- @tyler58546 (tyler58546), @MoreRightRudder (Mike), @Crocket63 (crocket), @Lantarius
+1. [HYD] Custom Lvar for gear lever to fix ground collision bug - @Crocket63 (crocket)
 1. [HYD] Randomised per actuator flow restrictions at plane init - @Crocket63 (crocket)
 1. [MCDU] Hide stored elements on A/C Status when there are none - @tracernz (Mike)
 1. [FMGC] Fix ident for CD legs - @tracernz (Mike)
@@ -103,6 +118,7 @@
 1. [FAC] Move Speedscale computation to FAC - @lukecologne (luke)
 1. [EFB] Added deboarding button to flyPad Payload - @frankkopp (Frank Kopp)
 1. [EFB] Improved simbridge-client connection handling - @frankkopp (Frank Kopp)
+1. [HYD] Tilting gear mechanism - @Crocket63 (crocket)
 1. [HYD] Added priority valves - @Crocket63 (crocket)
 
 ## 0.8.0

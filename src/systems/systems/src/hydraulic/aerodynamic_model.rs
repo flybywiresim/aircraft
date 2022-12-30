@@ -7,6 +7,7 @@ use uom::si::{
 
 use crate::{shared::interpolation, simulation::UpdateContext};
 
+#[derive(Clone, Copy, PartialEq)]
 pub struct AerodynamicModel {
     max_drag_normal: Vector3<f64>,
     lift_axis: Vector3<f64>,
@@ -213,6 +214,7 @@ mod tests {
         size: Vector3<Length>,
         axis_direction: Vector3<f64>,
         angular_position: Angle,
+        global_offset: Angle,
         aero_forces: Vector3<Force>,
     }
     impl TestAerodynamicBody {
@@ -225,12 +227,17 @@ mod tests {
                 size,
                 axis_direction,
                 angular_position: angular_position_init,
+                global_offset: Angle::default(),
                 aero_forces: Vector3::default(),
             }
         }
 
         fn rotate(&mut self, angle: Angle) {
             self.angular_position = angle;
+        }
+
+        fn trim(&mut self, angle: Angle) {
+            self.global_offset = angle;
         }
     }
     impl AerodynamicBody for TestAerodynamicBody {
@@ -241,7 +248,7 @@ mod tests {
         fn rotation_transform(&self) -> Rotation3<f64> {
             Rotation3::from_axis_angle(
                 &Unit::new_normalize(self.axis_direction),
-                self.angular_position.get::<radian>(),
+                self.angular_position.get::<radian>() + self.global_offset.get::<radian>(),
             )
         }
 
@@ -307,6 +314,10 @@ mod tests {
         fn rotate_body(&mut self, angle: Angle) {
             self.aero_body.rotate(angle);
         }
+
+        fn trim_body(&mut self, angle: Angle) {
+            self.aero_body.trim(angle);
+        }
     }
     impl Aircraft for TestAircraft {
         fn update_after_power_distribution(&mut self, context: &UpdateContext) {
@@ -337,6 +348,10 @@ mod tests {
 
         fn rotate_body(&mut self, angle: Angle) {
             self.command(|a| a.rotate_body(angle));
+        }
+
+        fn trim_body(&mut self, angle: Angle) {
+            self.command(|a| a.trim_body(angle));
         }
 
         fn with_ground_air_density(mut self) -> Self {
@@ -482,6 +497,30 @@ mod tests {
             .with_headwind(Velocity::new::<meter_per_second>(10.));
 
         test_bed.rotate_body(Angle::new::<degree>(-10.));
+
+        test_bed.run_without_delta();
+
+        assert!(test_bed.query(|a| a.body_aero_force_magnitude() >= Force::new::<newton>(10.)));
+
+        // Drag force backward
+        assert!(test_bed.query(|a| a.body_aero_force_forward_value() <= Force::new::<newton>(-2.)));
+
+        // Lift force upward
+        assert!(test_bed.query(|a| a.body_aero_force_up_value() > Force::new::<newton>(10.)));
+        assert!(force_almost_equal_zero(
+            test_bed.query(|a| a.body_aero_force_right_value())
+        ));
+    }
+
+    #[test]
+    fn drag_upwind_and_some_lift_upward_if_trimmed_10_degrees_downward() {
+        let body = aileron_body();
+        let aero_model = horizontal_surface_aero(&body);
+
+        let mut test_bed = test_bed(TestAircraft::new(body, aero_model))
+            .with_headwind(Velocity::new::<meter_per_second>(10.));
+
+        test_bed.trim_body(Angle::new::<degree>(-10.));
 
         test_bed.run_without_delta();
 

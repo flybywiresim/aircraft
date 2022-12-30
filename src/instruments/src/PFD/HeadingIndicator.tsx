@@ -312,7 +312,8 @@ class QFUIndicator extends DisplayComponent<{ ILSCourse: Subscribable<number>, h
 
         this.props.lsPressed.sub((ls) => {
             this.lsPressed = ls;
-            if (ls) {
+            // ilsCourse may be negative if tuned via the RMP then back to MCDU
+            if (ls && this.ilsCourse >= 0) {
                 this.qfuContainer.instance.classList.remove('HiddenElement');
             } else {
                 this.qfuContainer.instance.classList.add('HiddenElement');
