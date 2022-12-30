@@ -223,8 +223,17 @@ export class Atsu {
         return this.fltNo;
     }
 
+    private timestampMessage(message:AtsuMessage): void {
+        message.Timestamp.Year = this.digitalInputs.UtcClock.year;
+        message.Timestamp.Month = this.digitalInputs.UtcClock.month;
+        message.Timestamp.Day = this.digitalInputs.UtcClock.dayOfMonth;
+        message.Timestamp.Seconds = this.digitalInputs.UtcClock.secondsOfDay;
+    }
+
     public async sendMessage(message: AtsuMessage): Promise<AtsuStatusCodes> {
         let retval = AtsuStatusCodes.UnknownMessage;
+
+        this.timestampMessage(message);
 
         if (Aoc.isRelevantMessage(message)) {
             retval = await this.aoc.sendMessage(message);
@@ -254,7 +263,7 @@ export class Atsu {
 
         messages.forEach((message) => {
             message.UniqueMessageID = ++this.messageCounter;
-            message.Timestamp = new AtsuTimestamp();
+            this.timestampMessage(message);
         });
 
         if (this.ats623.isRelevantMessage(messages[0])) {
