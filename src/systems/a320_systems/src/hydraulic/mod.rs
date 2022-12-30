@@ -143,8 +143,8 @@ impl A320HydraulicCircuitFactory {
 
     const HYDRAULIC_TARGET_PRESSURE_PSI: f64 = 3000.;
 
-    const PRIORITY_VALVE_PRESSURE_CUTOFF_PSI: f64 = 1500.;
-    const PRIORITY_VALVE_PRESSURE_OPENED_PSI: f64 = 2000.;
+    const PRIORITY_VALVE_PRESSURE_CUTOFF_PSI: f64 = 1780.;
+    const PRIORITY_VALVE_PRESSURE_OPENED_PSI: f64 = 2300.;
 
     pub fn new_green_circuit(context: &mut InitContext) -> HydraulicCircuit {
         let reservoir = A320HydraulicReservoirFactory::new_green_reservoir(context);
