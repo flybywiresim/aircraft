@@ -1,5 +1,6 @@
 use crate::{
     hydraulic::SpringPhysics,
+    shared::random_from_normal_distribution,
     simulation::{
         InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
         SimulatorWriter, UpdateContext, VariableIdentifier, Write,
@@ -20,9 +21,6 @@ pub struct EngineFlexPhysics {
     gain_id: VariableIdentifier,
     xdamp_id: VariableIdentifier,
     ydamp_id: VariableIdentifier,
-    dual_dim_mode_id: VariableIdentifier,
-
-    dual_dim_mode_enable: bool,
 
     reference_point_cg: Vector3<f64>,
     cg_position: Vector3<f64>,
@@ -45,18 +43,22 @@ impl EngineFlexPhysics {
             gain_id: context.get_identifier("TEST_OUT_GAIN".to_owned()),
             xdamp_id: context.get_identifier("TEST_XDAMP".to_owned()),
             ydamp_id: context.get_identifier("TEST_YDAMP".to_owned()),
-            dual_dim_mode_id: context.get_identifier("TEST_DUAL_XZ".to_owned()),
-
-            dual_dim_mode_enable: false,
 
             reference_point_cg: Vector3::default(),
-            cg_position: Vector3::new(0., -0.2, 0.),
+            cg_position: Vector3::default(),
             cg_speed: Vector3::default(),
 
-            virtual_mass: Mass::new::<kilogram>(500.),
-            spring: SpringPhysics::new(50000., 500.),
-            anisotropic_damping_constant: Vector3::new(10., 50., 50.),
-            position_output_gain: 1.,
+            virtual_mass: Mass::new::<kilogram>(random_from_normal_distribution(2000., 100.)),
+            spring: SpringPhysics::new(
+                random_from_normal_distribution(800000., 50000.),
+                random_from_normal_distribution(500., 20.),
+            ),
+            anisotropic_damping_constant: Vector3::new(
+                random_from_normal_distribution(500., 50.),
+                random_from_normal_distribution(500., 50.),
+                random_from_normal_distribution(500., 50.),
+            ),
+            position_output_gain: 90.,
         }
     }
 
@@ -65,8 +67,8 @@ impl EngineFlexPhysics {
     }
 
     fn update_forces(&mut self, context: &UpdateContext) -> Vector3<f64> {
-        let gravity_force = context.acceleration_plane_reference_unfiltered_ms2_vector()
-            * self.virtual_mass.get::<kilogram>();
+        let acceleration_force =
+            context.local_acceleration_without_gravity() * self.virtual_mass.get::<kilogram>();
 
         let spring_force =
             self.spring
@@ -76,7 +78,7 @@ impl EngineFlexPhysics {
             .cg_speed
             .component_mul(&self.anisotropic_damping_constant);
 
-        gravity_force + spring_force + viscosity_damping
+        acceleration_force + spring_force + viscosity_damping
     }
 
     fn update_speed_position(&mut self, context: &UpdateContext) {
@@ -88,20 +90,14 @@ impl EngineFlexPhysics {
     }
 
     fn animation_position(&self) -> f64 {
-        let limited_pos = if self.dual_dim_mode_enable {
-            (self.position_output_gain * (self.cg_position[0] + self.cg_position[2]))
-                .min(1.)
-                .max(-1.)
-        } else {
-            (self.position_output_gain * self.cg_position[0])
-                .min(1.)
-                .max(-1.)
-        };
+        let limited_pos = (self.position_output_gain * (self.cg_position[0] + self.cg_position[1]))
+            .min(1.)
+            .max(-1.);
 
         let final_pos = (limited_pos + 1.) / 2.;
 
         println!(
-            "current cg {:.1}/{:.1}/{:.1} lim {:.1} final {:.1} ",
+            "current cg {:.2}/{:.2}/{:.2} lim {:.2} final {:.1} ",
             self.cg_position[0], self.cg_position[1], self.cg_position[2], limited_pos, final_pos
         );
 
@@ -126,24 +122,21 @@ impl SimulationElement for EngineFlexPhysics {
             self.virtual_mass = Mass::new::<kilogram>(new_mass);
         }
 
-        if new_gain >= 0. {
+        if new_gain > 0. {
             self.position_output_gain = new_gain;
         }
 
         let new_xdamp: f64 = reader.read(&self.xdamp_id);
         let new_ydamp: f64 = reader.read(&self.ydamp_id);
 
-        if new_xdamp >= 0. {
+        if new_xdamp > 0. {
             self.anisotropic_damping_constant[0] = new_xdamp;
         }
 
-        if new_ydamp >= 0. {
+        if new_ydamp > 0. {
             self.anisotropic_damping_constant[1] = new_ydamp;
             self.anisotropic_damping_constant[2] = new_ydamp;
         }
-
-        let mode_ena: f64 = reader.read(&self.dual_dim_mode_id);
-        self.dual_dim_mode_enable = mode_ena > 0.;
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {

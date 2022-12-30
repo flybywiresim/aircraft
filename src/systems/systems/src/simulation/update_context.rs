@@ -557,6 +557,10 @@ impl UpdateContext {
         self.local_acceleration.vert_accel()
     }
 
+    pub fn local_acceleration_without_gravity(&self) -> Vector3<f64> {
+        self.local_acceleration.to_ms2_vector()
+    }
+
     pub fn local_relative_wind(&self) -> Velocity3D {
         self.local_relative_wind
     }
