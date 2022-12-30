@@ -44,7 +44,7 @@ export class AtcMessageButtonInputBus {
     }
 }
 
-export class AtcMessabeButtonOutputBus {
+export class AtcMessageButtonOutputBus {
     private publisher: Publisher<AtcMessageButtonSimvars> = null;
 
     constructor(private readonly bus: EventBus) { }
