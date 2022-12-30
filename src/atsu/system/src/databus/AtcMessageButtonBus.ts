@@ -1,7 +1,7 @@
 import { EventBus, Publisher, SimVarDefinition, SimVarPublisher, SimVarValueType } from 'msfssdk';
 
 interface AtcMessageButtonSimvars {
-    msfsButtonActive: number,
+    msfsButtonActive: boolean,
     msfsButtonPressed: number,
 }
 
@@ -12,7 +12,7 @@ enum AtcMessageButtonSimvarSources {
 
 export class AtcMessageButtonSimvarPublisher extends SimVarPublisher<AtcMessageButtonSimvars> {
     private static simvars = new Map<keyof AtcMessageButtonSimvars, SimVarDefinition>([
-        ['msfsButtonActive', { name: AtcMessageButtonSimvarSources.buttonActive, type: SimVarValueType.Number }],
+        ['msfsButtonActive', { name: AtcMessageButtonSimvarSources.buttonActive, type: SimVarValueType.Bool }],
         ['msfsButtonPressed', { name: AtcMessageButtonSimvarSources.buttonPressed, type: SimVarValueType.Number }],
     ]);
 
@@ -35,7 +35,7 @@ export class AtcMessageButtonInputBus {
         const publisher = this.bus.getPublisher<AtcMessageButtonBusTypes>();
         const subscriber = this.bus.getSubscriber<AtcMessageButtonSimvars>();
 
-        subscriber.on('msfsButtonActive').whenChanged().handle((active: number) => publisher.pub('buttonActive', active !== 0));
+        subscriber.on('msfsButtonActive').whenChanged().handle((active: boolean) => publisher.pub('buttonActive', active));
         subscriber.on('msfsButtonPressed').whenChanged().handle((pressed: number) => publisher.pub('buttonPressed', pressed !== 0));
 
         this.simVarPublisher = new AtcMessageButtonSimvarPublisher(this.bus);
@@ -54,11 +54,11 @@ export class AtcMessabeButtonOutputBus {
     }
 
     public activateButton(): void {
-        this.publisher.pub('msfsButtonActive', 1);
+        this.publisher.pub('msfsButtonActive', true);
     }
 
     public resetButton(): void {
+        this.publisher.pub('msfsButtonActive', false);
         this.publisher.pub('msfsButtonPressed', 0);
-        this.publisher.pub('msfsButtonActive', 0);
     }
 }
