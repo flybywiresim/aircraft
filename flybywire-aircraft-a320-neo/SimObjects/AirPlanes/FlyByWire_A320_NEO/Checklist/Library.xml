@@ -65,7 +65,7 @@
          <Instrument Id="LANDING_GEAR_Lever_Gear" />
          <Test>
             <TestValue>
-               <Val SimVarName="GEAR HANDLE POSITION" Units="Boolean"/>
+               <Val SimVarName="L:A32NX_GEAR_HANDLE_POSITION" Units="Boolean"/>
             </TestValue>
             <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="GEAR_TOGGLE"/>
          </Test>
@@ -1150,7 +1150,7 @@
          <Test>
             <TestValue>
                <Operator OpType="NOT">
-                  <Val SimVarName="GEAR HANDLE POSITION" Units="Boolean"/>
+                  <Val SimVarName="L:A32NX_GEAR_HANDLE_POSITION" Units="Boolean"/>
                </Operator>
             </TestValue>
             <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="GEAR_TOGGLE"/>
@@ -1641,7 +1641,7 @@
          <Instrument Id="LANDING_GEAR_Lever_Gear" />
          <Test>
             <TestValue>
-               <Val SimVarName="GEAR HANDLE POSITION" Units="Boolean"/>
+               <Val SimVarName="L:A32NX_GEAR_HANDLE_POSITION" Units="Boolean"/>
             </TestValue>
             <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="GEAR_TOGGLE"/>
          </Test>
@@ -1841,7 +1841,7 @@
          <Instrument Id="LANDING_GEAR_Lever_Gear" />
          <Test>
             <TestValue>
-               <Val SimVarName="GEAR HANDLE POSITION" Units="Boolean"/>
+               <Val SimVarName="L:A32NX_GEAR_HANDLE_POSITION" Units="Boolean"/>
             </TestValue>
             <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="GEAR_TOGGLE"/>
          </Test>
@@ -2381,7 +2381,7 @@
          <Test>
             <TestValue>
                <Operator OpType="NOT">
-                  <Val SimVarName="GEAR HANDLE POSITION" Units="Boolean"/>
+                  <Val SimVarName="L:A32NX_GEAR_HANDLE_POSITION" Units="Boolean"/>
                </Operator>
             </TestValue>
             <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="GEAR_TOGGLE"/>

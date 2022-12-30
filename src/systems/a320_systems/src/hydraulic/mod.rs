@@ -8036,6 +8036,7 @@ mod tests {
             let mut test_bed = test_bed_on_ground_with()
                 .on_the_ground()
                 .set_cold_dark_inputs()
+                .with_worst_case_ptu()
                 .set_park_brake(false)
                 .start_eng2(Ratio::new::<percent>(80.))
                 .run_one_tick();
@@ -8048,7 +8049,7 @@ mod tests {
 
             // Yellow pressurised by engine2, green presurised from ptu we expect fault LOW press on EDP1
             assert!(test_bed.is_yellow_pressure_switch_pressurised());
-            assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(2800.));
+            assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(2500.));
             assert!(test_bed.is_green_pressure_switch_pressurised());
             assert!(test_bed.green_pressure() > Pressure::new::<psi>(2300.));
             assert!(test_bed.is_green_edp_press_low());
