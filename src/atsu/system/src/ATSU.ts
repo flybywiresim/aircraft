@@ -16,6 +16,7 @@ import { Datalink } from './com/Datalink';
 import { ATS623 } from './components/ATS623';
 import { FlightStateObserver } from './components/FlightStateObserver';
 import { DigitalInputs } from './DigitalInputs';
+import { DigitalOutputs } from './DigitalOutputs';
 
 /**
  * Defines the ATSU
@@ -33,9 +34,11 @@ export class Atsu {
 
     public digitalInputs = new DigitalInputs(this.eventBus);
 
+    public digitalOutputs = new DigitalOutputs(this.eventBus);
+
     private ats623 = new ATS623(this);
 
-    public aoc = new Aoc(this.datalink);
+    public aoc = new Aoc(this.datalink, this.digitalOutputs);
 
     public atc = new Atc(this, this.datalink);
 

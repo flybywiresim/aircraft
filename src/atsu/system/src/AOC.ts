@@ -6,6 +6,8 @@ import { AtsuMessageDirection, AtsuMessage, AtsuMessageType } from '@atsu/common
 import { WeatherMessage } from '@atsu/common/messages/WeatherMessage';
 import { AtisType } from '@atsu/common/messages/AtisMessage';
 import { Datalink } from './com/Datalink';
+import { DigitalOutputs } from './DigitalOutputs';
+import { DigitalInputs } from './DigitalInputs';
 
 /**
  * Defines the AOC
@@ -13,10 +15,15 @@ import { Datalink } from './com/Datalink';
 export class Aoc {
     private datalink: Datalink = null;
 
+    private digitalInputs: DigitalInputs = null;
+
+    private digitalOutputs: DigitalOutputs = null;
+
     private messageQueue: AtsuMessage[] = [];
 
-    constructor(datalink: Datalink) {
+    constructor(datalink: Datalink, digitalOutputs: DigitalOutputs) {
         this.datalink = datalink;
+        this.digitalOutputs = digitalOutputs;
     }
 
     public static isRelevantMessage(message: AtsuMessage): boolean {
@@ -50,8 +57,8 @@ export class Aoc {
         const index = this.messageQueue.findIndex((element) => element.UniqueMessageID === uid);
         if (index !== -1 && this.messageQueue[index].Direction === AtsuMessageDirection.Uplink) {
             if (this.messageQueue[index].Confirmed === false) {
-                const cMsgCnt = SimVar.GetSimVarValue('L:A32NX_COMPANY_MSG_COUNT', 'Number');
-                SimVar.SetSimVarValue('L:A32NX_COMPANY_MSG_COUNT', 'Number', cMsgCnt <= 1 ? 0 : cMsgCnt - 1);
+                const cMsgCnt = this.digitalInputs.CompanyMessageCount;
+                this.digitalOutputs.FwcBus.setCompanyMessageCount(cMsgCnt <= 1 ? 0 : cMsgCnt - 1);
             }
 
             this.messageQueue[index].Confirmed = true;
@@ -81,9 +88,9 @@ export class Aoc {
             this.messageQueue.unshift(message);
 
             if (message.Direction === AtsuMessageDirection.Uplink) {
-            // increase the company message counter
-                const cMsgCnt = SimVar.GetSimVarValue('L:A32NX_COMPANY_MSG_COUNT', 'Number');
-                SimVar.SetSimVarValue('L:A32NX_COMPANY_MSG_COUNT', 'Number', cMsgCnt + 1);
+                // increase the company message counter
+                const cMsgCnt = this.digitalInputs.CompanyMessageCount;
+                this.digitalOutputs.FwcBus.setCompanyMessageCount(cMsgCnt + 1);
             }
         });
     }
