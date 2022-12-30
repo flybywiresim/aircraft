@@ -11,6 +11,7 @@
     "watch:instruments": "rollup -wc src/instruments/buildSrc/simulatorBuild.mjs",
     "build:atsu-common": "rollup -c src/atsu/common/rollup.config.js",
     "build:atsu-system": "rollup -c src/atsu/system/rollup.config.js",
+    "build:atsu-fms-client": "rollup -c src/atsu/fmsclient/rollup.config.js",
     "build:sentry-client": "rollup -c src/sentry-client/rollup.config.js",
     "build:efb-translation": "cd src/instruments/src/EFB/Localization && node build-translation.js",
     "build:fbw": "cd src/fbw && ./build.sh",
