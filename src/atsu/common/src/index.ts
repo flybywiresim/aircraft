@@ -1,6 +1,5 @@
 import { AtsuStatusCodes } from './AtsuStatusCodes';
-import { MailboxStatusMessage } from './databus/Mailbox';
-import { FreetextMessage } from './messages/FreetextMessage';
+import { MailboxStatusMessage } from './databus';
 import {
     AtsuMessage,
     AtsuMessageComStatus,
@@ -8,8 +7,17 @@ import {
     AtsuMessageSerializationFormat,
     AtsuMessageNetwork,
     AtsuMessageType,
-} from './messages/AtsuMessage';
-import { AtsuTimestamp } from './messages/AtsuTimestamp';
+    AtisMessage,
+    AtisType,
+    AtsuTimestamp,
+    CpdlcMessage,
+    DclMessage,
+    FreetextMessage,
+    WeatherMessage,
+    MetarMessage,
+    TafMessage,
+    OclMessage,
+} from './messages';
 import {
     CpdlcMessageExpectedResponseType,
     CpdlcMessageContentType,
@@ -17,13 +25,6 @@ import {
     CpdlcMessageElement,
     CpdlcMessagesDownlink,
 } from './messages/CpdlcMessageElements';
-import { CpdlcMessage } from './messages/CpdlcMessage';
-import { WeatherMessage } from './messages/WeatherMessage';
-import { MetarMessage } from './messages/MetarMessage';
-import { TafMessage } from './messages/TafMessage';
-import { AtisMessage, AtisType } from './messages/AtisMessage';
-import { DclMessage } from './messages/DclMessage';
-import { OclMessage } from './messages/OclMessage';
 import { InputValidation, InputWaypointType } from './components/InputValidation';
 import { FansMode } from './com/FutureAirNavigationSystem';
 import { coordinateToString } from './components/Convert';
