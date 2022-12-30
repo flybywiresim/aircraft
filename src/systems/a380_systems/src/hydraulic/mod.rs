@@ -9776,16 +9776,17 @@ mod tests {
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
-                .run_waiting_for(Duration::from_secs(1));
+                .run_waiting_for(Duration::from_secs(5));
 
             test_bed = test_bed
-                .set_yellow_e_pump_a(true)
+                .start_eng1(Ratio::new::<percent>(80.))
+                .start_eng2(Ratio::new::<percent>(80.))
+                .start_eng3(Ratio::new::<percent>(80.))
+                .start_eng4(Ratio::new::<percent>(80.))
                 .set_flaps_handle_position(4)
                 .run_waiting_for(Duration::from_secs(5));
 
-            // Only yellow press so only flaps can move
             assert!(test_bed.is_flaps_moving());
-            assert!(!test_bed.is_slats_moving());
         }
 
         #[test]
