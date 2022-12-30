@@ -1,5 +1,5 @@
 import { CpdlcMessage } from '../messages/CpdlcMessage';
-import { Waypoint } from '../types/Waypoint';
+import { Clock, Waypoint } from '../types';
 
 export abstract class UplinkMonitor {
     private static positionMonitoringMessageIds = ['UM22', 'UM25', 'UM65', 'UM77', 'UM83', 'UM84', 'UM97', 'UM118', 'UM121', 'UM130'];
@@ -41,7 +41,7 @@ export abstract class UplinkMonitor {
         return null;
     }
 
-    abstract conditionsMet(condition?: Waypoint | number | undefined): boolean;
+    abstract conditionsMet(condition?: Waypoint | Clock | number | undefined): boolean;
 }
 
 class PositionMonitor extends UplinkMonitor {
@@ -52,7 +52,7 @@ class PositionMonitor extends UplinkMonitor {
         this.positionMonitor = message.Content[0]?.Content[0]?.Value;
     }
 
-    public conditionsMet(condition?: Waypoint | number | undefined): boolean {
+    public conditionsMet(condition?: Waypoint | Clock | number | undefined): boolean {
         if (condition instanceof Waypoint) {
             const lastPosition = condition.ident;
             return this.positionMonitor === lastPosition;
@@ -84,12 +84,12 @@ class TimeMonitor extends UplinkMonitor {
         this.timeMonitor = TimeMonitor.extractSeconds(message.Content[0]?.Content[0]?.Value);
     }
 
-    public conditionsMet(): boolean {
-        const currentTime = SimVar.GetSimVarValue('E:ZULU TIME', 'seconds');
-
-        if ((currentTime + this.timeOffset) >= this.timeMonitor) {
-            // avoid errors due to day change (2359 to 0001)
-            return (currentTime - this.timeMonitor) < 30;
+    public conditionsMet(condition?: Waypoint | Clock | number | undefined): boolean {
+        if (condition instanceof Clock) {
+            if ((condition.secondsOfDay + this.timeOffset) >= this.timeMonitor) {
+                // avoid errors due to day change (2359 to 0001)
+                return (condition.secondsOfDay - this.timeMonitor) < 30;
+            }
         }
 
         return false;
@@ -134,7 +134,7 @@ class LevelMonitor extends UplinkMonitor {
         }
     }
 
-    public conditionsMet(condition?: Waypoint | number | undefined): boolean {
+    public conditionsMet(condition?: Waypoint | Clock | number | undefined): boolean {
         if (typeof condition === 'number') {
             if (this.reachingLevel && this.leavingLevel) {
                 if (!this.reachedLevel) {
