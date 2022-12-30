@@ -10345,7 +10345,7 @@ mod tests {
                 .set_yellow_e_pump(false)
                 .start_eng1(Ratio::new::<percent>(80.))
                 .start_eng2(Ratio::new::<percent>(80.))
-                .run_one_tick();
+                .run_waiting_for(Duration::from_secs_f64(1.));
 
             test_bed = test_bed
                 .set_tiller_demand(Ratio::new::<ratio>(1.))
@@ -10416,7 +10416,7 @@ mod tests {
                 .start_eng1(Ratio::new::<percent>(80.))
                 .start_eng2(Ratio::new::<percent>(80.))
                 .set_anti_skid(true)
-                .run_one_tick();
+                .run_waiting_for(Duration::from_secs_f64(1.));
 
             test_bed = test_bed
                 .set_tiller_demand(Ratio::new::<ratio>(1.))
@@ -10967,7 +10967,7 @@ mod tests {
             assert!(test_bed.gear_system_state() == GearSystemState::AllDownLocked);
 
             test_bed = test_bed.set_gear_lever_up();
-            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(80.));
+            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(120.));
 
             assert!(test_bed.gear_system_state() == GearSystemState::AllUpLocked);
         }
