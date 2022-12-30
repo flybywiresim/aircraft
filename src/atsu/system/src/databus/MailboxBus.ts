@@ -129,7 +129,7 @@ export class MailboxBus {
             const idx = this.uplinkMessages.findIndex((elem) => elem[0].MessageId === data.uid);
             if (idx > -1) {
                 // iterate in reverse order to ensure that the "identification" message is the last message in the queue
-                // ensures that the DCDU-status change to SENT is done after every message is sent
+                // ensures that the Mailbox-status change to SENT is done after every message is sent
                 this.uplinkMessages[idx].slice().reverse().forEach((message) => {
                     this.atc.sendResponse(message.MessageId, data.responseId);
                 });
@@ -140,7 +140,7 @@ export class MailboxBus {
             let idx = this.downlinkMessages.findIndex((elem) => elem[0].MessageId === uid);
             if (idx > -1) {
                 // iterate in reverse order to ensure that the "identification" message is the last message in the queue
-                // ensures that the DCDU-status change to SENT is done after every message is sent
+                // ensures that the Mailbox-status change to SENT is done after every message is sent
                 this.downlinkMessages[idx].slice().reverse().forEach((entry) => {
                     const message = this.atc.messages().find((element) => element.UniqueMessageID === entry.MessageId);
                     if (message !== undefined) {
@@ -174,7 +174,7 @@ export class MailboxBus {
             if (idx > -1) {
                 const message = this.atc.messages().find((element) => element.UniqueMessageID === uid);
                 if (message !== undefined) {
-                    this.atsu.modifyDcduMessage(message as CpdlcMessage);
+                    this.atsu.modifyMailboxMessage(message as CpdlcMessage);
                 }
             }
         });
@@ -222,8 +222,8 @@ export class MailboxBus {
                 } else {
                     const messages : CpdlcMessage[] = [];
 
-                    this.lastClosedMessage[0].forEach((dcduMessage) => {
-                        const msg = this.atc.messages().find((elem) => elem.UniqueMessageID === dcduMessage.MessageId);
+                    this.lastClosedMessage[0].forEach((mailboxMessage) => {
+                        const msg = this.atc.messages().find((elem) => elem.UniqueMessageID === mailboxMessage.MessageId);
                         if (msg !== undefined) {
                             messages.push(msg as CpdlcMessage);
                         }
@@ -343,7 +343,7 @@ export class MailboxBus {
             return;
         }
 
-        const dcduBlocks: MailboxMessage[] = [];
+        const mailboxBlocks: MailboxMessage[] = [];
         messages.forEach((message) => {
             const block = new MailboxMessage();
             block.MessageId = message.UniqueMessageID;
@@ -351,23 +351,23 @@ export class MailboxBus {
             block.Station = message.Station;
             block.Direction = message.Direction;
             block.PriorityMessage = (message as CpdlcMessage).Content[0]?.Urgent;
-            dcduBlocks.push(block);
+            mailboxBlocks.push(block);
         });
 
-        if (dcduBlocks[0].Direction === AtsuMessageDirection.Downlink && this.downlinkMessages.length < MailboxBus.MaxMailboxFileSize) {
-            this.downlinkMessages.push(dcduBlocks);
-        } else if (dcduBlocks[0].Direction === AtsuMessageDirection.Uplink && this.uplinkMessages.length < MailboxBus.MaxMailboxFileSize) {
-            this.uplinkMessages.push(dcduBlocks);
+        if (mailboxBlocks[0].Direction === AtsuMessageDirection.Downlink && this.downlinkMessages.length < MailboxBus.MaxMailboxFileSize) {
+            this.downlinkMessages.push(mailboxBlocks);
+        } else if (mailboxBlocks[0].Direction === AtsuMessageDirection.Uplink && this.uplinkMessages.length < MailboxBus.MaxMailboxFileSize) {
+            this.uplinkMessages.push(mailboxBlocks);
             SimVar.SetSimVarValue('L:A32NX_DCDU_ATC_MSG_WAITING', 'boolean', 1);
             SimVar.SetSimVarValue('L:A32NX_DCDU_ATC_MSG_ACK', 'number', 0);
             this.setupIntervals();
         } else {
-            if (dcduBlocks[0].Direction === AtsuMessageDirection.Downlink) {
-                this.bufferedDownlinkMessages.push(dcduBlocks);
+            if (mailboxBlocks[0].Direction === AtsuMessageDirection.Downlink) {
+                this.bufferedDownlinkMessages.push(mailboxBlocks);
                 this.mailboxPublisher.pub('systemStatus', MailboxStatusMessage.MaximumDownlinkMessages);
-                this.atsu.publishAtsuStatusCode(AtsuStatusCodes.DcduFull);
+                this.atsu.publishAtsuStatusCode(AtsuStatusCodes.MailboxFull);
             } else {
-                this.bufferedUplinkMessages.push(dcduBlocks);
+                this.bufferedUplinkMessages.push(mailboxBlocks);
                 this.mailboxPublisher.pub('systemStatus', MailboxStatusMessage.AnswerRequired);
             }
             return;
@@ -384,8 +384,8 @@ export class MailboxBus {
             const messages = [];
 
             // create all messages and overwrite the first because this is the updated
-            this.uplinkMessages[uplinkIdx].forEach((dcduMessage) => {
-                const msg = this.atc.messages().find((elem) => elem.UniqueMessageID === dcduMessage.MessageId);
+            this.uplinkMessages[uplinkIdx].forEach((mailboxMessage) => {
+                const msg = this.atc.messages().find((elem) => elem.UniqueMessageID === mailboxMessage.MessageId);
                 if (msg !== undefined) {
                     if (message.UniqueMessageID !== msg.UniqueMessageID) {
                         messages.push(msg as CpdlcMessage);
@@ -404,8 +404,8 @@ export class MailboxBus {
             const messages = [];
 
             // create all messages and overwrite the first because this is the updated
-            this.downlinkMessages[downlinkIdx].forEach((dcduMessage) => {
-                const msg = this.atc.messages().find((elem) => elem.UniqueMessageID === dcduMessage.MessageId);
+            this.downlinkMessages[downlinkIdx].forEach((mailboxMessage) => {
+                const msg = this.atc.messages().find((elem) => elem.UniqueMessageID === mailboxMessage.MessageId);
                 if (message.UniqueMessageID !== msg.UniqueMessageID) {
                     messages.push(msg as CpdlcMessage);
                 } else {
