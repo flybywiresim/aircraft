@@ -58,23 +58,6 @@ export class UplinkMessageInterpretation {
         return message.Content[0].TypeId === 'UM143' || message.Content[0].TypeId in UplinkMessageInterpretation.SemanticAnswerTable;
     }
 
-    private static getDigitsFromBco16(code: number): number[] {
-        let codeCopy = code;
-        const digits: number[] = [];
-        while (codeCopy > 0) {
-            digits.push(codeCopy % 16);
-            codeCopy = Math.floor(codeCopy / 16);
-        }
-        if (digits.length < 4) {
-            const digitsToAdd = 4 - digits.length;
-            for (let i = 0; i < digitsToAdd; i++) {
-                digits.push(0);
-            }
-        }
-        digits.reverse();
-        return digits;
-    }
-
     private static FillPresentData(atsu: Atsu, message: CpdlcMessage): boolean {
         switch (message.Content[0]?.TypeId) {
         case 'UM132':
@@ -87,8 +70,7 @@ export class UplinkMessageInterpretation {
             message.Response.Content[0].Content[0].Value = InputValidation.formatScratchpadSpeed(atsu.currentFlightState().indicatedAirspeed.toString());
             return true;
         case 'UM144':
-            const squawk = UplinkMessageInterpretation.getDigitsFromBco16(SimVar.GetSimVarValue('TRANSPONDER CODE:1', 'Bco16'));
-            message.Response.Content[0].Content[0].Value = `${squawk[0]}${squawk[1]}${squawk[2]}${squawk[3]}`;
+            message.Response.Content[0].Content[0].Value = String(atsu.digitalInputs.TransponderCode).padStart(4, '0');
             return true;
         case 'UM145':
             message.Response.Content[0].Content[0].Value = atsu.currentFlightState().heading.toString();
