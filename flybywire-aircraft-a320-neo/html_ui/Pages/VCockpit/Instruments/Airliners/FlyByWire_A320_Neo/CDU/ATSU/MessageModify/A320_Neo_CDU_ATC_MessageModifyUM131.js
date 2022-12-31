@@ -72,7 +72,7 @@ class CDUAtcMessageModifyUM131 {
         };
         mcdu.onLeftInput[4] = () => {
             if (CDUAtcMessageModifyUM131.CanUpdateMessage(data)) {
-                mcdu.atsu.atc.updateMessage(message);
+                mcdu.atsu.updateMessage(message);
                 CDUAtcMenu.ShowPage(mcdu);
             }
         };
@@ -107,7 +107,7 @@ class CDUAtcMessageModifyUM131 {
         mcdu.onRightInput[4] = () => {
             if (CDUAtcMessageModifyUM131.CanUpdateMessage(data)) {
                 CDUAtcMessageModifyUM131.UpdateResponseMessage(message, data);
-                if (mcdu.atsu.atc.fansMode() === AtsuCommon.FansMode.FansA) {
+                if (mcdu.atsu.fansMode() === AtsuCommon.FansMode.FansA) {
                     CDUAtcTextFansA.ShowPage1(mcdu, [message]);
                 } else {
                     CDUAtcTextFansB.ShowPage(mcdu, [message]);
@@ -121,7 +121,7 @@ class CDUAtcMessageModifyUM131 {
         mcdu.onRightInput[5] = () => {
             if (CDUAtcMessageModifyUM131.CanUpdateMessage(data)) {
                 CDUAtcMessageModifyUM131.UpdateResponseMessage(message, data);
-                mcdu.atsu.atc.updateMessage(message);
+                mcdu.atsu.updateMessage(message);
                 CDUAtcMenu.ShowPage(mcdu, message);
             }
         };

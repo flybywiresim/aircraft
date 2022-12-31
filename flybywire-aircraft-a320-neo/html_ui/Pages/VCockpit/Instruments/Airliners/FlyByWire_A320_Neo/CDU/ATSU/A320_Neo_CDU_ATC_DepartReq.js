@@ -51,8 +51,8 @@ class CDUAtcDepartReq {
             }
         }
         if (store.firstCall && store.station === "") {
-            if (mcdu.atsu.atc.currentStation() !== "") {
-                store.station = mcdu.atsu.atc.currentStation();
+            if (mcdu.atsu.currentStation() !== "") {
+                store.station = mcdu.atsu.currentStation();
             }
         }
         store.firstCall = false;
@@ -111,7 +111,7 @@ class CDUAtcDepartReq {
         if (store.from !== "" && store.to !== "") {
             fromTo = `{cyan}${store.from}/${store.to}{end}`;
 
-            const atisReports = mcdu.atsu.atc.atisReports(store.from);
+            const atisReports = mcdu.atsu.atisReports(store.from);
             if (atisReports.length !== 0 && atisReports[0].Information !== "") {
                 store.atis = atisReports[0].Information;
                 atis.setValue(store.atis);

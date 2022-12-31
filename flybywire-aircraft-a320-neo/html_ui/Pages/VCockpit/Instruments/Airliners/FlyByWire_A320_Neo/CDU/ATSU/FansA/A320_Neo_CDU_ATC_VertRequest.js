@@ -110,7 +110,7 @@ class CDUAtcVertRequestFansA {
 
     static CreateRequest(mcdu, type, values = []) {
         const retval = new AtsuCommon.CpdlcMessage();
-        retval.Station = mcdu.atsu.atc.currentStation();
+        retval.Station = mcdu.atsu.currentStation();
         retval.Content.push(AtsuCommon.CpdlcMessagesDownlink[type][1].deepCopy());
 
         for (let i = 0; i < values.length; ++i) {
@@ -390,7 +390,7 @@ class CDUAtcVertRequestFansA {
         };
         mcdu.onRightInput[5] = () => {
             if (CDUAtcVertRequestFansA.CanSendData(data)) {
-                if (mcdu.atsu.atc.currentStation() === "") {
+                if (mcdu.atsu.currentStation() === "") {
                     mcdu.setScratchpadMessage(NXSystemMessages.noAtc);
                 } else {
                     const messages = CDUAtcVertRequestFansA.CreateRequests(mcdu, data);
@@ -527,7 +527,7 @@ class CDUAtcVertRequestFansA {
         };
         mcdu.onRightInput[5] = () => {
             if (CDUAtcVertRequestFansA.CanSendData(data)) {
-                if (mcdu.atsu.atc.currentStation() === "") {
+                if (mcdu.atsu.currentStation() === "") {
                     mcdu.setScratchpadMessage(NXSystemMessages.noAtc);
                 } else {
                     const messages = CDUAtcVertRequestFansA.CreateRequests(mcdu, data);

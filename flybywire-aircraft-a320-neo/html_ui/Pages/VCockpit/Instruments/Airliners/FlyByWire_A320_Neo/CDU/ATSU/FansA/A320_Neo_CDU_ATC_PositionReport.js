@@ -127,7 +127,7 @@ class CDUAtcPositionReport {
 
     static CreateReport(mcdu, data) {
         const retval = new AtsuCommon.CpdlcMessage();
-        retval.Station = mcdu.atsu.atc.currentStation();
+        retval.Station = mcdu.atsu.currentStation();
         retval.Content.push(AtsuCommon.CpdlcMessagesDownlink['DM48'][1].deepCopy());
 
         // define the overhead
@@ -578,13 +578,13 @@ class CDUAtcPositionReport {
         };
         mcdu.onRightInput[5] = () => {
             if (CDUAtcPositionReport.CanSendData(data)) {
-                if (mcdu.atsu.atc.currentStation() === "") {
+                if (mcdu.atsu.currentStation() === "") {
                     mcdu.setScratchpadMessage(NXSystemMessages.noAtc);
                 } else {
                     const report = CDUAtcPositionReport.CreateReport(mcdu, data);
                     if (requestMessage) {
                         requestMessage.Response = report;
-                        mcdu.atsu.atc.updateMessage(requestMessage);
+                        mcdu.atsu.updateMessage(requestMessage);
                     } else {
                         mcdu.atsu.registerMessages([report]);
                     }
@@ -769,13 +769,13 @@ class CDUAtcPositionReport {
         };
         mcdu.onRightInput[5] = () => {
             if (CDUAtcPositionReport.CanSendData(data)) {
-                if (mcdu.atsu.atc.currentStation() === "") {
+                if (mcdu.atsu.currentStation() === "") {
                     mcdu.setScratchpadMessage(NXSystemMessages.noAtc);
                 } else {
                     const report = CDUAtcPositionReport.CreateReport(mcdu, data);
                     if (requestMessage) {
                         requestMessage.Response = report;
-                        mcdu.atsu.atc.updateMessage(requestMessage);
+                        mcdu.atsu.updateMessage(requestMessage);
                     } else {
                         mcdu.atsu.registerMessages([report]);
                     }
@@ -1051,13 +1051,13 @@ class CDUAtcPositionReport {
         };
         mcdu.onRightInput[5] = () => {
             if (CDUAtcPositionReport.CanSendData(data)) {
-                if (mcdu.atsu.atc.currentStation() === "") {
+                if (mcdu.atsu.currentStation() === "") {
                     mcdu.setScratchpadMessage(NXSystemMessages.noAtc);
                 } else {
                     const report = CDUAtcPositionReport.CreateReport(mcdu, data);
                     if (requestMessage) {
                         requestMessage.Response = report;
-                        mcdu.atsu.atc.updateMessage(requestMessage);
+                        mcdu.atsu.updateMessage(requestMessage);
                     } else {
                         mcdu.atsu.registerMessages([report]);
                     }

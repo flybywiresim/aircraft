@@ -1,7 +1,7 @@
 class CDUAocMessagesReceived {
     static ShowPage(mcdu, messages = null, page = 0) {
         if (!messages) {
-            messages = mcdu.atsu.aoc.inputMessages();
+            messages = mcdu.atsu.aocInputMessages();
         }
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.AOCRcvdMsgs;

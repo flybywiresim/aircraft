@@ -29,7 +29,7 @@ class CDUAtcMessagesRecord {
         mcdu.page.Current = mcdu.page.ATCMessageRecord;
 
         if (!messages) {
-            messages = mcdu.atsu.atc.messages();
+            messages = mcdu.atsu.messages();
         }
 
         // regular update due to showing dynamic data on this page
@@ -134,7 +134,7 @@ class CDUAtcMessagesRecord {
                 if (!confirmErase) {
                     CDUAtcMessagesRecord.ShowPage(mcdu, messages, offset, true);
                 } else {
-                    mcdu.atsu.atc.cleanupMessages();
+                    mcdu.atsu.cleanupAtcMessages();
                     CDUAtcMessagesRecord.ShowPage(mcdu, null, 0, false);
                 }
             }

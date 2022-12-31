@@ -34,7 +34,7 @@ class CDUAtcTextFansA {
 
         // create the freetext elements
         if (freetextLines.length !== 0) {
-            if (mcdu.atsu.atc.fansMode() === AtsuCommon.FansMode.FansB) {
+            if (mcdu.atsu.fansMode() === AtsuCommon.FansMode.FansB) {
                 freetextElement = AtsuCommon.CpdlcMessagesDownlink["DM98"][1].deepCopy();
             } else {
                 freetextElement = AtsuCommon.CpdlcMessagesDownlink["DM67"][1].deepCopy();
@@ -62,7 +62,7 @@ class CDUAtcTextFansA {
             // the freetext is set (guaranteed due to CanSendData)
             messages.push(new AtsuCommon.CpdlcMessage());
             messages[0].Content.push(freetextElement);
-            messages[0].Station = mcdu.atsu.atc.currentStation();
+            messages[0].Station = mcdu.atsu.currentStation();
             updateFreetext = false;
         }
 
@@ -254,12 +254,12 @@ class CDUAtcTextFansA {
         };
         mcdu.onRightInput[5] = () => {
             if (CDUAtcTextFansA.CanSendData(messages, data)) {
-                if (mcdu.atsu.atc.currentStation() === "") {
+                if (mcdu.atsu.currentStation() === "") {
                     mcdu.setScratchpadMessage(NXSystemMessages.noAtc);
                 } else {
                     const prepMessages = CDUAtcTextFansA.CreateMessages(mcdu, messages, data);
                     if (prepMessages && prepMessages[0].Content[0].TypeId.includes("UM")) {
-                        mcdu.atsu.atc.updateMessage(prepMessages[0]);
+                        mcdu.atsu.updateMessage(prepMessages[0]);
                     } else if (prepMessages) {
                         mcdu.atsu.registerMessages(prepMessages);
                     }
@@ -388,12 +388,12 @@ class CDUAtcTextFansA {
         };
         mcdu.onRightInput[5] = () => {
             if (CDUAtcTextFansA.CanSendData(messages, data)) {
-                if (mcdu.atsu.atc.currentStation() === "") {
+                if (mcdu.atsu.currentStation() === "") {
                     mcdu.setScratchpadMessage(NXSystemMessages.noAtc);
                 } else {
                     const prepMessages = CDUAtcTextFansA.CreateMessages(mcdu, messages, data);
                     if (prepMessages && prepMessages[0].Content[0].TypeId.includes("UM")) {
-                        mcdu.atsu.atc.updateMessage(prepMessages[0]);
+                        mcdu.atsu.updateMessage(prepMessages[0]);
                     } else if (prepMessages) {
                         mcdu.atsu.registerMessages(prepMessages);
                     }

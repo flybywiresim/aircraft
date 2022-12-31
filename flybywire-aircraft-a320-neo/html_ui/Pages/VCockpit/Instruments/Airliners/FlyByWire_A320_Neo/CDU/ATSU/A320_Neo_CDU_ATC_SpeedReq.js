@@ -16,7 +16,7 @@ class CDUAtcSpeedRequest {
 
     static CreateRequest(mcdu, type, values = []) {
         const retval = new AtsuCommon.CpdlcMessage();
-        retval.Station = mcdu.atsu.atc.currentStation();
+        retval.Station = mcdu.atsu.currentStation();
         retval.Content.push(AtsuCommon.CpdlcMessagesDownlink[type][1].deepCopy());
 
         for (let i = 0; i < values.length; ++i) {
@@ -49,7 +49,7 @@ class CDUAtcSpeedRequest {
 
         let speedWhenSmall = "";
         let speedWhen = "";
-        if (mcdu.atsu.atc.fansMode() === AtsuCommon.FansMode.FansA) {
+        if (mcdu.atsu.fansMode() === AtsuCommon.FansMode.FansA) {
             speedWhenSmall = "\xa0WHEN CAN WE EXPECT SPD";
             speedWhen = "[ ][color]cyan";
             if (data.whenSpeed) {
@@ -105,7 +105,7 @@ class CDUAtcSpeedRequest {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[1] = (value) => {
-            if (mcdu.atsu.atc.fansMode() === AtsuCommon.FansMode.FansA) {
+            if (mcdu.atsu.fansMode() === AtsuCommon.FansMode.FansA) {
                 if (value === FMCMainDisplay.clrValue) {
                     data.whenSpeed = null;
                 } else if (value) {
@@ -198,7 +198,7 @@ class CDUAtcSpeedRequest {
         };
         mcdu.onRightInput[5] = () => {
             if (CDUAtcSpeedRequest.CanSendData(data)) {
-                if (mcdu.atsu.atc.currentStation() === "") {
+                if (mcdu.atsu.currentStation() === "") {
                     mcdu.setScratchpadMessage(NXSystemMessages.noAtc);
                 } else {
                     const messages = CDUAtcSpeedRequest.CreateRequests(mcdu, data);

@@ -12,8 +12,8 @@ class CDUAtcConnectionStatus {
         let currentStation = "-----------[color]white";
         let atcDisconnect = "DISCONNECT\xa0[color]cyan";
         if (!store["disconnectInProgress"]) {
-            if (mcdu.atsu.atc.currentStation() !== "") {
-                currentStation = `${mcdu.atsu.atc.currentStation()}[color]green`;
+            if (mcdu.atsu.currentStation() !== "") {
+                currentStation = `${mcdu.atsu.currentStation()}[color]green`;
                 atcDisconnect = "DISCONNECT*[color]cyan";
                 store["disconnectAvail"] = true;
             } else {
@@ -22,8 +22,8 @@ class CDUAtcConnectionStatus {
         }
 
         let nextStation = "-----------";
-        if (mcdu.atsu.atc.nextStation() !== "") {
-            nextStation = `${mcdu.atsu.atc.nextStation()}[color]green`;
+        if (mcdu.atsu.nextStation() !== "") {
+            nextStation = `${mcdu.atsu.nextStation()}[color]green`;
         }
 
         mcdu.setTemplate([
@@ -60,7 +60,7 @@ class CDUAtcConnectionStatus {
                 store["disconnectAvail"] = false;
                 CDUAtcConnectionStatus.ShowPage(mcdu, store);
 
-                mcdu.atsu.atc.logoff().then((code) => {
+                mcdu.atsu.logoff().then((code) => {
                     store["disconnectInProgress"] = false;
                     if (code !== AtsuCommon.AtsuStatusCodes.Ok) {
                         store["disconnectAvail"] = true;

@@ -113,11 +113,11 @@ class CDUAtcTextFansB {
         };
         mcdu.onRightInput[5] = () => {
             if (CDUAtcTextFansB.CanSendData(data)) {
-                if (mcdu.atsu.atc.currentStation() === "") {
+                if (mcdu.atsu.currentStation() === "") {
                     mcdu.setScratchpadMessage(NXSystemMessages.noAtc);
                 } else {
                     if (CDUAtcTextFansB.CreateMessages(mcdu, messages, data)) {
-                        mcdu.atsu.atc.updateMessage(messages[0]);
+                        mcdu.atsu.updateMessage(messages[0]);
                     } else {
                         mcdu.atsu.registerMessages(messages);
                     }

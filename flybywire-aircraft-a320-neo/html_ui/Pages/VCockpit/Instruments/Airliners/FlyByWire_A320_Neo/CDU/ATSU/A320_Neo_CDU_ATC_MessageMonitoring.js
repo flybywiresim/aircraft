@@ -32,7 +32,7 @@ class CDUAtcMessageMonitoring {
         mcdu.page.Current = mcdu.page.ATCMessageMonitoring;
 
         if (!messages) {
-            messages = mcdu.atsu.atc.monitoredMessages();
+            messages = mcdu.atsu.monitoredMessages();
         }
 
         // regular update due to showing dynamic data on this page
@@ -154,7 +154,7 @@ class CDUAtcMessageMonitoring {
         mcdu.onRightInput[5] = () => {
             if (cancelIndex > -1) {
                 AtsuCommon.UplinkMessageStateMachine.update(mcdu.atsu, messages[cancelIndex], false);
-                mcdu.atsu.atc.updateMessage(messages[cancelIndex]);
+                mcdu.atsu.updateMessage(messages[cancelIndex]);
                 CDUAtcMessageMonitoring.ShowPage(mcdu);
             }
         };
