@@ -1,5 +1,5 @@
 import { AtsuFmsMessages, AtsuFmsMessageSyncType } from '@atsu/common/databus';
-import { AtsuStatusCodes, FansMode } from '@atsu/common/index';
+import { AtsuStatusCodes, FansMode, Waypoint } from '@atsu/common/index';
 import {
     AtisMessage,
     AtisType,
@@ -12,6 +12,7 @@ import {
     TafMessage,
     WeatherMessage,
 } from '@atsu/common/messages';
+import { AutopilotData, EnvironmentData, FlightStateData } from '@atsu/common/types';
 import { FlightPhaseManager } from '@fmgc/flightphase';
 import { FlightPlanManager } from '@fmgc/index';
 import { EventBus, EventSubscriber, Publisher } from 'msfssdk';
@@ -46,6 +47,12 @@ export class FmsClient {
 
     private automaticPositionReportIsActive: boolean = false;
 
+    private flightState: FlightStateData;
+
+    private autopilot: AutopilotData;
+
+    private environment: EnvironmentData;
+
     constructor(flightPlanManager: FlightPlanManager, flightPhaseManager: FlightPhaseManager) {
         this.atcStationStatus.mode = FansMode.FansNone;
 
@@ -62,6 +69,9 @@ export class FmsClient {
         this.subscriber.on('atcMessages').handle((messages) => this.atcMessagesBuffer = messages);
         this.subscriber.on('monitoredMessages').handle((messages) => this.atcMonitoredMessages = messages);
         this.subscriber.on('automaticPositionReportActive').handle((active) => this.automaticPositionReportIsActive = active);
+        this.subscriber.on('flightState').handle((state) => this.flightState = state);
+        this.subscriber.on('autopilot').handle((state) => this.autopilot = state);
+        this.subscriber.on('environment').handle((state) => this.environment = state);
 
         this.flightPlan = new FlightPlanSync(this.bus, flightPlanManager, flightPhaseManager);
     }
@@ -350,5 +360,45 @@ export class FmsClient {
                 if (id === requestId) resolve();
             });
         });
+    }
+
+    public lastWaypoint(): Waypoint {
+        if (this.flightPlan.lastWaypoint === null || this.flightPlan.lastWaypoint.ident !== '') {
+            return null;
+        }
+        return this.flightPlan.lastWaypoint;
+    }
+
+    public activeWaypoint(): Waypoint {
+        if (this.flightPlan.activeWaypoint === null || this.flightPlan.activeWaypoint.ident !== '') {
+            return null;
+        }
+        return this.flightPlan.activeWaypoint;
+    }
+
+    public nextWaypoint(): Waypoint {
+        if (this.flightPlan.nextWaypoint === null || this.flightPlan.nextWaypoint.ident !== '') {
+            return null;
+        }
+        return this.flightPlan.nextWaypoint;
+    }
+
+    public destinationWaypoint(): Waypoint {
+        if (this.flightPlan.destination === null || this.flightPlan.destination.ident !== '') {
+            return null;
+        }
+        return this.flightPlan.destination;
+    }
+
+    public currentFlightState(): FlightStateData {
+        return this.flightState;
+    }
+
+    public targetFlightState(): AutopilotData {
+        return this.autopilot;
+    }
+
+    public environmentData(): EnvironmentData {
+        return this.environment;
     }
 }
