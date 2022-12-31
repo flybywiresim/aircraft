@@ -1,7 +1,7 @@
-import './Door.scss';
 import React from 'react';
-import { render } from '@instruments/common/index';
 import { useSimVar } from '../../../Common/simVars';
+
+import './Door.scss';
 
 export const DoorPage = () => {
     const [cabin] = useSimVar('INTERACTIVE POINT OPEN:0', 'percent', 1000);

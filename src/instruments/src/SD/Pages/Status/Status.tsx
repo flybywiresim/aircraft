@@ -1,5 +1,4 @@
 import React, { FC } from 'react';
-import { render } from '@instruments/common/index';
 import { PageTitle } from '../../Common/PageTitle';
 import { EcamPage } from '../../Common/EcamPage';
 import StatusDisplay from './elements/StatusDisplay';

@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { GaugeComponent, GaugeMarkerComponent, splitDecimals } from '@instruments/common/gauges';
-import { render } from '../../../Common';
 import { useSimVar } from '../../../Common/simVars';
 import { usePersistentProperty } from '../../../Common/persistence';
 import { fuelForDisplay } from '../../Common/FuelFunctions';

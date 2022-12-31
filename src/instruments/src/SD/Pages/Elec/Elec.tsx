@@ -1,11 +1,11 @@
-import classNames from 'classnames';
 import React from 'react';
-import './Elec.scss';
-import { render } from '@instruments/common/index';
+import classNames from 'classnames';
 import { PageTitle } from '../../Common/PageTitle';
 import { useSimVar } from '../../../Common/simVars';
 import { EcamPage } from '../../Common/EcamPage';
 import { SvgGroup } from '../../Common/SvgGroup';
+
+import './Elec.scss';
 
 const maxStaleness = 300;
 

@@ -1,5 +1,4 @@
 import React, { FC, useState, useEffect } from 'react';
-import { render } from '@instruments/common/index';
 import { Arc, Needle } from '@instruments/common/gauges';
 import { usePersistentProperty } from '@instruments/common/persistence';
 import { useSimVar } from '@instruments/common/simVars';

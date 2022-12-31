@@ -1,6 +1,5 @@
 import React from 'react';
 import { SvgGroup } from '../../Common/SvgGroup';
-import { render } from '../../../Common';
 import { useSimVar } from '../../../Common/simVars';
 import Valve from './Valve';
 
