@@ -1921,7 +1921,7 @@ pub struct PriorityValve {
     downstream_pressure: Pressure,
 }
 impl PriorityValve {
-    const VALVE_RESPONSE_TIME_CONSTANT: Duration = Duration::from_millis(500);
+    const VALVE_RESPONSE_TIME_CONSTANT: Duration = Duration::from_millis(5);
 
     pub fn new(fully_closed_threshold: Pressure, fully_opened_threshold: Pressure) -> Self {
         Self {
