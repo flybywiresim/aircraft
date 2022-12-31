@@ -21,14 +21,14 @@ export enum AtsuFmsMessageSyncType {
 }
 
 export interface AtsuFmsMessageSync<T> {
-    type: AtsuFmsMessageSyncType,
-    requestId: number,
-    message: T,
+    type: AtsuFmsMessageSyncType;
+    requestId: number;
+    message: T;
 }
 
 export interface AtsuFmsRegisterMessages<T> {
-    requestId: number,
-    messages: T[],
+    requestId: number;
+    messages: T[];
 }
 
 export interface AtsuFmsMessages {
