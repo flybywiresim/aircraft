@@ -13,7 +13,6 @@ import { Aoc } from './AOC';
 import { Atc } from './ATC';
 import { Datalink } from './com/Datalink';
 import { ATS623 } from './components/ATS623';
-import { FlightStateObserver } from './components/FlightStateObserver';
 import { DigitalInputs } from './DigitalInputs';
 import { DigitalOutputs } from './DigitalOutputs';
 
@@ -21,8 +20,6 @@ import { DigitalOutputs } from './DigitalOutputs';
  * Defines the ATSU
  */
 export class Atsu {
-    private flightStateObserver: FlightStateObserver = null;
-
     private datalink = new Datalink(this);
 
     private fltNo: string = '';
@@ -45,121 +42,132 @@ export class Atsu {
 
     private mcdu = undefined;
 
-    public static createAutomatedPositionReport(atsu: Atsu): CpdlcMessage {
+    public createAutomatedPositionReport(): CpdlcMessage {
         const message = new CpdlcMessage();
-        message.Station = atsu.atc.currentStation();
+        message.Station = this.atc.currentStation();
         message.Content.push(CpdlcMessagesDownlink.DM48[1].deepCopy());
 
         let targetAltitude: string = '';
         let passedAltitude: string = '';
         let currentAltitude: string = '';
         if (Simplane.getPressureSelectedMode(Aircraft.A320_NEO) === 'STD') {
-            if (atsu.flightStateObserver.LastWaypoint) {
-                passedAltitude = InputValidation.formatScratchpadAltitude(`FL${Math.round(atsu.flightStateObserver.LastWaypoint.altitude / 100)}`);
+            if (this.digitalInputs.FlightRoute.lastWaypoint) {
+                passedAltitude = InputValidation.formatScratchpadAltitude(`FL${Math.round(this.digitalInputs.FlightRoute.lastWaypoint.altitude / 100)}`);
             } else {
-                passedAltitude = InputValidation.formatScratchpadAltitude(`FL${Math.round(atsu.flightStateObserver.PresentPosition.altitude / 100)}`);
+                passedAltitude = InputValidation.formatScratchpadAltitude(`FL${Math.round(this.digitalInputs.PresentPosition.altitude.value / 100)}`);
             }
-            currentAltitude = InputValidation.formatScratchpadAltitude(`FL${Math.round(atsu.flightStateObserver.PresentPosition.altitude / 100)}`);
-            if (atsu.flightStateObserver.FcuSettings.altitude) {
-                targetAltitude = InputValidation.formatScratchpadAltitude(`FL${Math.round(atsu.flightStateObserver.FcuSettings.altitude / 100)}`);
-            } else {
-                targetAltitude = currentAltitude;
+            currentAltitude = InputValidation.formatScratchpadAltitude(`FL${Math.round(this.digitalInputs.PresentPosition.altitude.value / 100)}`);
+
+            if (this.digitalInputs.AutopilotData.active.isNormalOperation() && this.digitalInputs.AutopilotData.active.value !== 0) {
+                if (this.digitalInputs.AutopilotData.selectedAltitude !== this.digitalInputs.PresentPosition.altitude.value) {
+                    targetAltitude = InputValidation.formatScratchpadAltitude(`FL${Math.round(this.digitalInputs.AutopilotData.selectedAltitude / 100)}`);
+                } else {
+                    targetAltitude = currentAltitude;
+                }
             }
         } else {
-            if (atsu.flightStateObserver.LastWaypoint) {
-                passedAltitude = InputValidation.formatScratchpadAltitude(atsu.flightStateObserver.LastWaypoint.altitude.toString());
+            if (this.digitalInputs.FlightRoute.lastWaypoint) {
+                passedAltitude = InputValidation.formatScratchpadAltitude(this.digitalInputs.FlightRoute.lastWaypoint.altitude.toString());
             } else {
-                passedAltitude = InputValidation.formatScratchpadAltitude(atsu.flightStateObserver.PresentPosition.altitude.toString());
+                passedAltitude = InputValidation.formatScratchpadAltitude(this.digitalInputs.PresentPosition.altitude.value.toString());
             }
-            currentAltitude = InputValidation.formatScratchpadAltitude(atsu.flightStateObserver.PresentPosition.altitude.toString());
-            if (atsu.flightStateObserver.FcuSettings.altitude) {
-                targetAltitude = InputValidation.formatScratchpadAltitude(atsu.flightStateObserver.FcuSettings.altitude.toString());
-            } else {
-                targetAltitude = currentAltitude;
+            currentAltitude = InputValidation.formatScratchpadAltitude(this.digitalInputs.PresentPosition.altitude.value.toString());
+
+            if (this.digitalInputs.AutopilotData.active.isNormalOperation() && this.digitalInputs.AutopilotData.active.value !== 0) {
+                if (this.digitalInputs.AutopilotData.selectedAltitude) {
+                    targetAltitude = InputValidation.formatScratchpadAltitude(this.digitalInputs.AutopilotData.selectedAltitude.toString());
+                } else {
+                    targetAltitude = currentAltitude;
+                }
             }
         }
 
         let extension = null;
-        if (atsu.flightStateObserver.LastWaypoint) {
+        if (this.digitalInputs.FlightRoute.lastWaypoint) {
             // define the overhead
             extension = CpdlcMessagesDownlink.DM67[1].deepCopy();
-            extension.Content[0].Value = `OVHD: ${atsu.flightStateObserver.LastWaypoint.ident}`;
+            extension.Content[0].Value = `OVHD: ${this.digitalInputs.FlightRoute.lastWaypoint.ident}`;
             message.Content.push(extension);
             extension = CpdlcMessagesDownlink.DM67[1].deepCopy();
-            extension.Content[0].Value = `AT ${timestampToString(atsu.flightStateObserver.LastWaypoint.utc)}Z/${passedAltitude}`;
+            extension.Content[0].Value = `AT ${timestampToString(this.digitalInputs.FlightRoute.lastWaypoint.utc)}Z/${passedAltitude}`;
             message.Content.push(extension);
         }
 
         // define the present position
         extension = CpdlcMessagesDownlink.DM67[1].deepCopy();
-        extension.Content[0].Value = `PPOS: ${coordinateToString({ lat: atsu.flightStateObserver.PresentPosition.lat, lon: atsu.flightStateObserver.PresentPosition.lon }, false)}`;
+        extension.Content[0].Value = `PPOS: ${coordinateToString({ lat: this.digitalInputs.PresentPosition.latitude.value, lon: this.digitalInputs.PresentPosition.longitude.value }, false)}`;
         message.Content.push(extension);
         extension = CpdlcMessagesDownlink.DM67[1].deepCopy();
-        extension.Content[0].Value = `AT ${timestampToString(atsu.digitalInputs.UtcClock.secondsOfDay)}Z/${currentAltitude}`;
+        extension.Content[0].Value = `AT ${timestampToString(this.digitalInputs.UtcClock.secondsOfDay)}Z/${currentAltitude}`;
         message.Content.push(extension);
 
-        if (atsu.flightStateObserver.ActiveWaypoint) {
+        if (this.digitalInputs.FlightRoute.activeWaypoint) {
             // define the active position
             extension = CpdlcMessagesDownlink.DM67[1].deepCopy();
-            extension.Content[0].Value = `TO: ${atsu.flightStateObserver.ActiveWaypoint.ident} AT ${timestampToString(atsu.flightStateObserver.ActiveWaypoint.utc)}Z`;
+            extension.Content[0].Value = `TO: ${this.digitalInputs.FlightRoute.activeWaypoint.ident} AT ${timestampToString(this.digitalInputs.FlightRoute.activeWaypoint.utc)}Z`;
             message.Content.push(extension);
         }
 
-        if (atsu.flightStateObserver.NextWaypoint) {
+        if (this.digitalInputs.FlightRoute.nextWaypoint) {
             // define the next position
             extension = CpdlcMessagesDownlink.DM67[1].deepCopy();
-            extension.Content[0].Value = `NEXT: ${atsu.flightStateObserver.NextWaypoint.ident}`;
+            extension.Content[0].Value = `NEXT: ${this.digitalInputs.FlightRoute.nextWaypoint.ident}`;
             message.Content.push(extension);
         }
 
         // define wind and SAT
-        if (atsu.flightStateObserver.EnvironmentData.windDirection && atsu.flightStateObserver.EnvironmentData.windSpeed && atsu.flightStateObserver.EnvironmentData.temperature) {
+        if (this.digitalInputs.MeteoData.windDirection.isNormalOperation()
+            && this.digitalInputs.MeteoData.windSpeed.isNormalOperation()
+            && this.digitalInputs.MeteoData.staticAirTemperature.isNormalOperation()
+        ) {
             extension = CpdlcMessagesDownlink.DM67[1].deepCopy();
-            const windInput = `${atsu.flightStateObserver.EnvironmentData.windDirection}/${atsu.flightStateObserver.EnvironmentData.windSpeed}KT`;
+            const windInput = `${this.digitalInputs.MeteoData.windDirection.value}/${this.digitalInputs.MeteoData.windSpeed.value}KT`;
             extension.Content[0].Value = `WIND: ${InputValidation.formatScratchpadWind(windInput)}`;
-            extension.Content[0].Value = `${extension.Content[0].Value} SAT: ${atsu.flightStateObserver.EnvironmentData.temperature}C`;
+            extension.Content[0].Value = `${extension.Content[0].Value} SAT: ${this.digitalInputs.MeteoData.staticAirTemperature.value}C`;
             message.Content.push(extension);
         }
 
-        if (atsu.destinationWaypoint()) {
+        if (this.digitalInputs.FlightRoute.destination) {
             // define ETA
             extension = CpdlcMessagesDownlink.DM67[1].deepCopy();
-            extension.Content[0].Value = `DEST ETA: ${timestampToString(atsu.destinationWaypoint().utc)}Z`;
+            extension.Content[0].Value = `DEST ETA: ${timestampToString(this.digitalInputs.FlightRoute.destination.utc)}Z`;
             message.Content.push(extension);
         }
 
         // define descending/climbing and VS
-        if (Math.abs(atsu.flightStateObserver.FcuSettings.altitude - atsu.flightStateObserver.PresentPosition.altitude) >= 500) {
-            if (atsu.flightStateObserver.FcuSettings.altitude > atsu.flightStateObserver.PresentPosition.altitude) {
+        if (this.digitalInputs.AutopilotData.active.isNormalOperation() && this.digitalInputs.AutopilotData.active.value !== 0) {
+            if (Math.abs(this.digitalInputs.AutopilotData.selectedAltitude - this.digitalInputs.PresentPosition.altitude.value) >= 500) {
+                if (this.digitalInputs.AutopilotData.selectedAltitude > this.digitalInputs.PresentPosition.altitude.value) {
+                    extension = CpdlcMessagesDownlink.DM67[1].deepCopy();
+                    extension.Content[0].Value = `CLIMBING TO: ${targetAltitude}`;
+                    message.Content.push(extension);
+                } else {
+                    extension = CpdlcMessagesDownlink.DM67[1].deepCopy();
+                    extension.Content[0].Value = `DESCENDING TO: ${targetAltitude}`;
+                    message.Content.push(extension);
+                }
+
                 extension = CpdlcMessagesDownlink.DM67[1].deepCopy();
-                extension.Content[0].Value = `CLIMBING TO: ${targetAltitude}`;
-                message.Content.push(extension);
-            } else {
-                extension = CpdlcMessagesDownlink.DM67[1].deepCopy();
-                extension.Content[0].Value = `DESCENDING TO: ${targetAltitude}`;
+                extension.Content[0].Value = `VS: ${InputValidation.formatScratchpadVerticalSpeed(`${this.digitalInputs.PresentDynamics.verticalSpeed.value}FTM`)}`;
                 message.Content.push(extension);
             }
-
-            extension = CpdlcMessagesDownlink.DM67[1].deepCopy();
-            extension.Content[0].Value = `VS: ${InputValidation.formatScratchpadVerticalSpeed(`${atsu.flightStateObserver.PresentPosition.verticalSpeed}FTM`)}`;
-            message.Content.push(extension);
         }
 
         // define speed
-        const ias = InputValidation.formatScratchpadSpeed(atsu.flightStateObserver.PresentPosition.indicatedAirspeed.toString());
-        const gs = InputValidation.formatScratchpadSpeed(atsu.flightStateObserver.PresentPosition.groundSpeed.toString());
+        const ias = InputValidation.formatScratchpadSpeed(this.digitalInputs.PresentDynamics.computedAirspeed.value.toString());
+        const gs = InputValidation.formatScratchpadSpeed(this.digitalInputs.PresentDynamics.groundSpeed.value.toString());
         extension = CpdlcMessagesDownlink.DM67[1].deepCopy();
         extension.Content[0].Value = `SPD: ${ias} GS: ${gs}`;
         message.Content.push(extension);
 
         // define HDG
-        const hdg = atsu.flightStateObserver.PresentPosition.heading.toString();
+        const hdg = this.digitalInputs.PresentPosition.heading.value.toString();
         extension = CpdlcMessagesDownlink.DM67[1].deepCopy();
         extension.Content[0].Value = `HDG: ${hdg}°TRUE`;
         message.Content.push(extension);
 
         // define track
-        const trk = atsu.flightStateObserver.PresentPosition.track.toString();
+        const trk = this.digitalInputs.PresentPosition.track.value.toString();
         extension = CpdlcMessagesDownlink.DM67[1].deepCopy();
         extension.Content[0].Value = `TRK: ${trk}°`;
         message.Content.push(extension);
@@ -169,20 +177,23 @@ export class Atsu {
         return message;
     }
 
-    private static waypointPassedCallback(atsu: Atsu): void {
-        if (atsu.atc.automaticPositionReportActive() && atsu.atc.currentStation() !== '' && atsu.flightStateObserver.LastWaypoint
-        && atsu.flightStateObserver.ActiveWaypoint && atsu.flightStateObserver.NextWaypoint) {
-            const message = Atsu.createAutomatedPositionReport(atsu);
+    // TODO after a new last is received
+    private waypointPassedCallback(): void {
+        if (this.atc.automaticPositionReportActive() && this.atc.currentStation() !== '' && this.digitalInputs.FlightRoute.lastWaypoint
+            && this.digitalInputs.FlightRoute.activeWaypoint && this.digitalInputs.FlightRoute.nextWaypoint
+        ) {
+            const message = this.createAutomatedPositionReport();
 
             // skip the Mailbox
             message.MailboxRelevantMessage = false;
 
-            atsu.sendMessage(message);
+            this.sendMessage(message);
         }
     }
 
     constructor(mcdu) {
-        this.flightStateObserver = new FlightStateObserver(mcdu, Atsu.waypointPassedCallback);
+        this.digitalInputs.addDataCallback('onRouteData', () => this.waypointPassedCallback);
+
         this.mcdu = mcdu;
     }
 
@@ -309,29 +320,5 @@ export class Atsu {
     public printMessage(message: AtsuMessage): void {
         const text = message.serialize(AtsuMessageSerializationFormat.Printer);
         this.mcdu.printPage(text.split('\n'));
-    }
-
-    public lastWaypoint() {
-        return this.flightStateObserver.LastWaypoint;
-    }
-
-    public activeWaypoint() {
-        return this.flightStateObserver.ActiveWaypoint;
-    }
-
-    public nextWaypoint() {
-        return this.flightStateObserver.NextWaypoint;
-    }
-
-    public destinationWaypoint() {
-        return this.flightStateObserver.Destination;
-    }
-
-    public currentFlightState() {
-        return this.flightStateObserver.PresentPosition;
-    }
-
-    public targetFlightState() {
-        return this.flightStateObserver.FcuSettings;
     }
 }
