@@ -1,5 +1,5 @@
 import { DisplayUnit } from '@instruments/common/displayUnit';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { render } from '@instruments/common/index';
 import { useInteractionEvent } from '@instruments/common/hooks';
 import './style.scss';
@@ -10,6 +10,18 @@ import { StatusArea } from './StatusArea/StatusArea';
 
 const Idle = () => {
     const [inop, setInop] = useState(false);
+
+    const [doorVideoEnabledNow] = useSimVar('L:A32NX_OVHD_COCKPITDOORVIDEO_TOGGLE', 'Bool');
+    const [doorVideoPressedNow] = useSimVar('L:PUSH_DOORPANEL_VIDEO', 'Bool');
+    const [doorVideoVisible, setDoorVideoVisible] = useState(false);
+
+    useEffect(() => {
+        if (doorVideoEnabledNow && doorVideoPressedNow) {
+            setDoorVideoVisible(true);
+        } else {
+            setDoorVideoVisible(false);
+        }
+    }, [doorVideoEnabledNow, doorVideoPressedNow]);
 
     useInteractionEvent('A32NX_DCDU_BTN_INOP', () => {
         if (!inop) {
@@ -25,6 +37,8 @@ const Idle = () => {
             <svg className="sd-svg" viewBox="0 0 600 600">
                 <PagesContainer />
             </svg>
+
+            {doorVideoVisible && (<div id="door-video-wrapper" />)}
 
             <StatusArea />
         </div>
