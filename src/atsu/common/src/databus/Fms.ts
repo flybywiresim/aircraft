@@ -12,7 +12,7 @@ import {
     TafMessage,
     WeatherMessage,
 } from '@atsu/common/messages';
-import { AutopilotData, EnvironmentData, FlightStateData, Waypoint } from '@atsu/common/types';
+import { PositionReportData, Waypoint } from '@atsu/common/types';
 
 export enum AtsuFmsMessageSyncType {
     SendMessage,
@@ -59,6 +59,8 @@ export interface AtsuFmsMessages {
     // expect 'requestSentToGround' response as soon as request is sent and 'atisResponse'/'weatherResponse' as final answer
     requestAtis: { icao: string; type: AtisType; requestId: number };
     requestWeather: { icaos: string[]; requestMetar: boolean; requestId: number };
+    // expect 'positionReport' response
+    requestPositionReport: number;
     // fire & forget messages
     registerAtisMessages: AtsuFmsRegisterMessages<AtisMessage>;
     registerCpdlcMessages: AtsuFmsRegisterMessages<CpdlcMessage>;
@@ -75,6 +77,7 @@ export interface AtsuFmsMessages {
     requestSentToGround: number;
     atisResponse: [AtsuStatusCodes, AtisMessage];
     weatherResponse: [AtsuStatusCodes, WeatherMessage];
+    positionReport: { requestId: number; data: PositionReportData };
 
     // synchronization stream from ATSU to FMS
     atsuStatusCode: AtsuStatusCodes;
@@ -88,7 +91,4 @@ export interface AtsuFmsMessages {
     monitoredMessages: CpdlcMessage[];
     maxUplinkDelay: number;
     automaticPositionReportActive: boolean;
-    flightState: FlightStateData;
-    autopilot: AutopilotData;
-    environment: EnvironmentData;
 }
