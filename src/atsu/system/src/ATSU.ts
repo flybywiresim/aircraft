@@ -38,10 +38,6 @@ export class Atsu {
 
     public atc = new Atc(this, this.datalink);
 
-    public modificationMessage: CpdlcMessage = null;
-
-    private mcdu = undefined;
-
     public createAutomatedPositionReport(): CpdlcMessage {
         const message = new CpdlcMessage();
         message.Station = this.atc.currentStation();
@@ -191,10 +187,8 @@ export class Atsu {
         }
     }
 
-    constructor(mcdu) {
+    constructor() {
         this.digitalInputs.addDataCallback('onRouteData', () => this.waypointPassedCallback);
-
-        this.mcdu = mcdu;
     }
 
     public async connectToNetworks(flightNo: string): Promise<AtsuStatusCodes> {
@@ -214,10 +208,7 @@ export class Atsu {
     }
 
     public flightPhase(): FmgcFlightPhase {
-        if (this.mcdu !== undefined && this.mcdu.flightPhaseManager) {
-            return this.mcdu.flightPhaseManager.phase;
-        }
-        return FmgcFlightPhase.Preflight;
+        return this.digitalInputs.FlightPhase;
     }
 
     public async disconnectFromNetworks(): Promise<AtsuStatusCodes> {
@@ -291,12 +282,11 @@ export class Atsu {
     }
 
     public publishAtsuStatusCode(code: AtsuStatusCodes): void {
-        this.mcdu.addNewAtsuMessage(code);
+        this.digitalOutputs.atsuSystemStatus(code);
     }
 
     public modifyMailboxMessage(message: CpdlcMessage): void {
-        this.modificationMessage = message;
-        this.mcdu.tryToShowAtcModifyPage();
+        this.digitalOutputs.atcMessageModify(message);
     }
 
     public async isRemoteStationAvailable(callsign: string): Promise<AtsuStatusCodes> {
@@ -318,7 +308,6 @@ export class Atsu {
     }
 
     public printMessage(message: AtsuMessage): void {
-        const text = message.serialize(AtsuMessageSerializationFormat.Printer);
-        this.mcdu.printPage(text.split('\n'));
+        this.digitalOutputs.printMessage(message);
     }
 }
