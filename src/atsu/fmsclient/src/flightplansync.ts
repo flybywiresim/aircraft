@@ -9,13 +9,13 @@ import { EventBus, Publisher } from 'msfssdk';
 export class FlightPlanSync {
     private readonly publisher: Publisher<AtsuFmsMessages>;
 
-    public lastWaypoint: Waypoint = null;
+    private lastWaypoint: Waypoint = null;
 
-    public activeWaypoint: Waypoint = null;
+    private activeWaypoint: Waypoint = null;
 
-    public nextWaypoint: Waypoint = null;
+    private nextWaypoint: Waypoint = null;
 
-    public destination: Waypoint = null;
+    private destination: Waypoint = null;
 
     private static findLastWaypoint(flightPlan: ManagedFlightPlan): Waypoint {
         let idx = flightPlan.activeWaypointIndex;

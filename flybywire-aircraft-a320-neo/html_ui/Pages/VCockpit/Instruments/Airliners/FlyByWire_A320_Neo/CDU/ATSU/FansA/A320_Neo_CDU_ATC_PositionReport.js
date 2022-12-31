@@ -13,11 +13,11 @@ class CDUAtcPositionReport {
     }
 
     static FillDataBlock(mcdu, data) {
-        const current = mcdu.atsu.currentFlightState();
-        const target = mcdu.atsu.targetFlightState();
-        const lastWp = mcdu.atsu.lastWaypoint();
-        const activeWp = mcdu.atsu.activeWaypoint();
-        const nextWp = mcdu.atsu.nextWaypoint();
+        const current = data.atsuFlightStateData;
+        const target = data.atsuAutopilotData;
+        const lastWp = data.atsuLastWaypoint;
+        const activeWp = data.atsuActiveWaypoint;
+        const nextWp = data.atsuNextWaypoint;
 
         if (lastWp && !data.passedWaypoint[3]) {
             data.passedWaypoint[0] = lastWp.ident;
@@ -40,13 +40,13 @@ class CDUAtcPositionReport {
         if (nextWp && !data.nextWaypoint[1]) {
             data.nextWaypoint[0] = nextWp.ident;
         }
-        if (mcdu.atsu.destinationWaypoint() && !data.eta[1]) {
-            data.eta[0] = CDUAtcPositionReport.SecondsToString(mcdu.atsu.destinationWaypoint().utc);
+        if (data.atsuDestination && !data.eta[1]) {
+            data.eta[0] = CDUAtcPositionReport.SecondsToString(data.atsuDestination.utc);
         }
 
         if (!data.wind[1]) {
-            const windDirection = mcdu.atsu.environmentData().windDirection;
-            const windSpeed = mcdu.atsu.environmentData().windSpeed;
+            const windDirection = data.atsuEnvironmentData.windDirection;
+            const windSpeed = data.atsuEnvironmentData.windSpeed;
 
             const wind = `${Math.round(windDirection.value)}/${Math.round(windSpeed.value)}`;
             if (AtsuCommon.InputValidation.validateScratchpadWind(wind) === AtsuCommon.AtsuStatusCodes.Ok) {
@@ -54,7 +54,7 @@ class CDUAtcPositionReport {
             }
         }
         if (!data.sat[1]) {
-            const sat = mcdu.atsu.environmentData().temperature;
+            const sat = data.atsuEnvironmentData.temperature;
             if (AtsuCommon.InputValidation.validateScratchpadTemperature(sat.value) === AtsuCommon.AtsuStatusCodes.Ok) {
                 data.sat[0] = Math.round(AtsuCommon.InputValidation.formatScratchpadTemperature(`${sat.value}`));
             }
@@ -75,6 +75,13 @@ class CDUAtcPositionReport {
 
     static CreateDataBlock(mcdu, requestMessage, autoFill) {
         const retval = {
+            atsuFlightStateData: null,
+            atsuAutopilotData: null,
+            atsuEnvironmentData: null,
+            atsuLastWaypoint: null,
+            atsuActiveWaypoint: null,
+            atsuNextWaypoint: null,
+            atsuDestination: null,
             passedWaypoint: [null, null, null, !autoFill],
             activeWaypoint: [null, null, !autoFill],
             nextWaypoint: [null, !autoFill],
@@ -98,7 +105,15 @@ class CDUAtcPositionReport {
         };
 
         if (autoFill === true) {
-            setTimeout(() => {
+            mcdu.atsu.receivePositionReportData().then((data) => {
+                retval.atsuFlightStateData = data.flightState;
+                retval.atsuAutopilotData = data.autopilot;
+                retval.atsuEnvironmentData = data.environment;
+                retval.atsuLastWaypoint = data.lastWaypoint;
+                retval.atsuActiveWaypoint = data.activeWaypoint;
+                retval.atsuNextWaypoint = data.nextWaypoint;
+                retval.atsuDestination = data.destination;
+
                 CDUAtcPositionReport.FillDataBlock(mcdu, retval);
                 if (mcdu.page.Current === mcdu.page.ATCPositionReport1) {
                     CDUAtcPositionReport.ShowPage1(mcdu, requestMessage, retval);
@@ -107,7 +122,7 @@ class CDUAtcPositionReport {
                 } else if (mcdu.page.Current === mcdu.page.ATCPositionReport3) {
                     CDUAtcPositionReport.ShowPage3(mcdu, requestMessage, retval);
                 }
-            }, 1500);
+            });
         }
 
         return retval;
@@ -819,8 +834,8 @@ class CDUAtcPositionReport {
         const descending = ["\xa0DSCENDING TO", "[   ]"];
         const climbing = ["CLBING TO\xa0", "[   ]"];
 
-        const current = mcdu.atsu.currentFlightState();
-        const target = mcdu.atsu.targetFlightState();
+        const current = data.atsuFlightStateData;
+        const target = data.atsuAutopilotData;
         if (target.apActive && target.altitude === current.altitude) {
             descending[0] = descending[1] = "";
             climbing[0] = climbing[1] = "";
@@ -917,8 +932,8 @@ class CDUAtcPositionReport {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[3] = (value) => {
-            const current = mcdu.atsu.currentFlightState();
-            const target = mcdu.atsu.targetFlightState();
+            const current = data.atsuFlightStateData;
+            const target = data.atsuAutopilotData;
 
             if (!target.apActive || (target.apActive && target.altitude !== current.altitude)) {
                 if (value === FMCMainDisplay.clrValue) {
