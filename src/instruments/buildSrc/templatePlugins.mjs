@@ -2,7 +2,7 @@ import { join } from 'path';
 import instrumentTemplate from '@flybywiresim/rollup-plugin-msfs';
 import { Directories } from './directories.mjs';
 
-export function getTemplatePlugin({ name, config, imports = []}) {
+export function getTemplatePlugin({ name, config, imports = [] }) {
     return instrumentTemplate({
         name,
         elementName: `a32nx-${name.toLowerCase()}`,
