@@ -9,9 +9,13 @@ import { EventBus, Publisher } from 'msfssdk';
 export class FlightPlanSync {
     private readonly publisher: Publisher<AtsuFmsMessages>;
 
-    private activeWaypoint: Waypoint = null;
+    public lastWaypoint: Waypoint = null;
 
-    private destination: Waypoint = null;
+    public activeWaypoint: Waypoint = null;
+
+    public nextWaypoint: Waypoint = null;
+
+    public destination: Waypoint = null;
 
     private static findLastWaypoint(flightPlan: ManagedFlightPlan): Waypoint {
         let idx = flightPlan.activeWaypointIndex;
@@ -84,16 +88,16 @@ export class FlightPlanSync {
 
                 const activeWp = activeFlightPlan.activeWaypoint;
                 if (this.activeWaypoint === null || activeWp.ident !== this.activeWaypoint.ident) {
-                    const lastWaypoint = FlightPlanSync.findLastWaypoint(activeFlightPlan);
+                    this.lastWaypoint = FlightPlanSync.findLastWaypoint(activeFlightPlan);
                     this.activeWaypoint = new Waypoint(activeWp.ident);
-                    const nextWaypoint = FlightPlanSync.findNextWaypoint(activeFlightPlan);
-                    if (flightPlanStats !== null && nextWaypoint.ident !== '') {
-                        nextWaypoint.utc = flightPlanStats.get(activeFlightPlan.activeWaypointIndex + 1).etaFromPpos;
+                    this.nextWaypoint = FlightPlanSync.findNextWaypoint(activeFlightPlan);
+                    if (flightPlanStats !== null && this.nextWaypoint.ident !== '') {
+                        this.nextWaypoint.utc = flightPlanStats.get(activeFlightPlan.activeWaypointIndex + 1).etaFromPpos;
                     }
 
-                    this.publisher.pub('lastWaypoint', lastWaypoint);
+                    this.publisher.pub('lastWaypoint', this.lastWaypoint);
                     this.publisher.pub('activeWaypoint', this.activeWaypoint);
-                    this.publisher.pub('nextWaypoint', nextWaypoint);
+                    this.publisher.pub('nextWaypoint', this.nextWaypoint);
                 }
             }
         }, 1000);
