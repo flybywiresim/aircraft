@@ -12,7 +12,7 @@ import {
     TafMessage,
     WeatherMessage,
 } from '@atsu/common/messages';
-import { Waypoint } from '@atsu/common/types';
+import { AutopilotData, EnvironmentData, FlightStateData, Waypoint } from '@atsu/common/types';
 
 export enum AtsuFmsMessageSyncType {
     SendMessage,
@@ -88,4 +88,7 @@ export interface AtsuFmsMessages {
     monitoredMessages: CpdlcMessage[];
     maxUplinkDelay: number;
     automaticPositionReportActive: boolean;
+    flightState: FlightStateData;
+    autopilot: AutopilotData;
+    environment: EnvironmentData;
 }
