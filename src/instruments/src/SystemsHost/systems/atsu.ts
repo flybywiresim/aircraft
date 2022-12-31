@@ -1,4 +1,5 @@
 import { AtcMessageButtonSimvarPublisher, AtcMessageButtonInputBus } from '@atsu/system/databus/AtcMessageButtonBus';
+import { Atsu } from '@atsu/system/ATSU';
 import { ClockSimvarPublisher, ClockInputBus } from '@atsu/system/databus/ClockBus';
 import { FmgcSimvarPuplisher, FmgcInputBus } from '@atsu/system/databus/FmgcBus';
 import { FwcSimvarPublisher, FwcInputBus } from '@atsu/system/databus/FwcBus';
@@ -26,6 +27,8 @@ export class AtsuSystem {
 
     private readonly transponder: TransponderInputBus;
 
+    private readonly atsu: Atsu;
+
     /**
      * "mainmenu" = 0
      * "loading" = 1
@@ -46,6 +49,8 @@ export class AtsuSystem {
         this.fmgc = new FmgcInputBus(this.bus);
         this.fwc = new FwcInputBus(this.bus);
         this.transponder = new TransponderInputBus(this.bus);
+
+        this.atsu = new Atsu();
     }
 
     public connectedCallback(): void {
