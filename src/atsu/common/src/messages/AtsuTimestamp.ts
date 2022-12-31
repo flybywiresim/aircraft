@@ -26,7 +26,7 @@ export class AtsuTimestamp {
         return `${timestampToString(this.Seconds)}Z`;
     }
 
-    public mcduTimestamp(): string {
+    public fmsTimestamp(): string {
         return timestampToString(this.Seconds);
     }
 }

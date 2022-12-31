@@ -28,7 +28,7 @@ class CDUAocMessagesReceived {
                 if (messages[offset - i].Type === AtsuCommon.AtsuMessageType.ATIS) {
                     sender = messages[offset - i].Reports[0].airport;
                 }
-                headerLeft += `${messages[offset - i].Timestamp.mcduTimestamp()} FROM ${sender}[color]green`;
+                headerLeft += `${messages[offset - i].Timestamp.fmsTimestamp()} FROM ${sender}[color]green`;
                 if (!messages[offset - i].Confirmed) {
                     headerRight = "NEW[color]green";
                 }

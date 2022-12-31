@@ -36,7 +36,7 @@ class CDUAocRequestsMessage {
 
         mcdu.setTemplate([
             ["AOC MSG DISPLAY"],
-            [`${message.Timestamp.mcduTimestamp()} FROM ${from}[color]green`, `${messageIndex + 1}/${messages.length}${msgArrows}`],
+            [`${message.Timestamp.fmsTimestamp()} FROM ${from}[color]green`, `${messageIndex + 1}/${messages.length}${msgArrows}`],
             [`{small}${lines[offset] ? lines[offset] : ""}{end}`],
             [`${lines[offset + 1] ? lines[offset + 1] : ""}`],
             [`{small}${lines[offset + 2] ? lines[offset + 2] : ""}{end}`],

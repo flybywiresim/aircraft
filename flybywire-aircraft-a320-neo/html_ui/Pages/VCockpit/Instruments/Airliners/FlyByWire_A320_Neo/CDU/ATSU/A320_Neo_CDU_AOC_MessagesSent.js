@@ -22,7 +22,7 @@ class CDUAocMessagesSent {
         for (let i = 5; i > 0; i--) {
             let header = "";
             if (messages.length > (offset - i) && messages[offset - i]) {
-                header += `${messages[offset - i].Timestamp.mcduTimestamp()} TO ${messages[offset - i].Station}[color]green`;
+                header += `${messages[offset - i].Timestamp.fmsTimestamp()} TO ${messages[offset - i].Station}[color]green`;
             }
             msgTimeHeaders[i] = header;
         }
