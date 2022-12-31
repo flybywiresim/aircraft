@@ -69,6 +69,7 @@ export class FlightPlanSync {
             const activeFlightPlan = this.flightPlanManager.getCurrentFlightPlan();
             const phase = this.flightPhaseManager.phase;
             const isFlying = phase >= FmgcFlightPhase.Takeoff && phase !== FmgcFlightPhase.Done;
+            let updateRoute = false;
 
             if (activeFlightPlan && activeFlightPlan.waypoints.length !== 0) {
                 let flightPlanStats: Map<number, WaypointStats> = null;
@@ -82,8 +83,7 @@ export class FlightPlanSync {
                     if (flightPlanStats !== null) {
                         this.destination.utc = flightPlanStats.get(index).etaFromPpos;
                     }
-
-                    this.publisher.pub('destination', this.destination);
+                    updateRoute = true;
                 }
 
                 const activeWp = activeFlightPlan.activeWaypoint;
@@ -94,10 +94,16 @@ export class FlightPlanSync {
                     if (flightPlanStats !== null && this.nextWaypoint.ident !== '') {
                         this.nextWaypoint.utc = flightPlanStats.get(activeFlightPlan.activeWaypointIndex + 1).etaFromPpos;
                     }
+                    updateRoute = true;
+                }
 
-                    this.publisher.pub('lastWaypoint', this.lastWaypoint);
-                    this.publisher.pub('activeWaypoint', this.activeWaypoint);
-                    this.publisher.pub('nextWaypoint', this.nextWaypoint);
+                if (updateRoute) {
+                    this.publisher.pub('routeData', {
+                        lastWaypoint: this.lastWaypoint.ident !== '' ? this.lastWaypoint : null,
+                        activeWaypoint: this.activeWaypoint.ident !== '' ? this.activeWaypoint : null,
+                        nextWaypoint: this.nextWaypoint.ident !== '' ? this.nextWaypoint : null,
+                        destination: this.destination.ident !== '' ? this.destination : null,
+                    });
                 }
             }
         }, 1000);
