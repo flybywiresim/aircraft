@@ -1,4 +1,5 @@
-import { Clock } from '@atsu/common/types';
+import { AtsuFmsMessages } from '@atsu/common/databus';
+import { Clock, Waypoint } from '@atsu/common/types';
 import { Arinc429Word } from '@shared/arinc429';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { EventBus, EventSubscriber } from 'msfssdk';
@@ -8,8 +9,15 @@ import { FmgcDataBusTypes } from './databus/FmgcBus';
 import { FwcDataBusTypes } from './databus/FwcBus';
 import { TransponderDataBusTypes } from './databus/TransponderBus';
 
+export type InputDataCallbacks = {
+    onAtcButtonPressed: () => void;
+    onRouteData: () => void;
+}
+
 export class DigitalInputs {
-    private subscriber: EventSubscriber<AtcMessageButtonBusTypes & ClockDataBusTypes & FmgcDataBusTypes & FwcDataBusTypes & TransponderDataBusTypes> = null;
+    private subscriber: EventSubscriber<
+        AtcMessageButtonBusTypes & ClockDataBusTypes & FmgcDataBusTypes & FwcDataBusTypes & TransponderDataBusTypes & AtsuFmsMessages
+    > = null;
 
     public UtcClock: Clock = {
         year: 0,
@@ -60,13 +68,17 @@ export class DigitalInputs {
     public AutopilotData: {
         active: Arinc429Word,
         autothrustMode: Arinc429Word,
+        machMode: boolean,
         selectedSpeed: Arinc429Word,
         selectedMach: Arinc429Word,
+        selectedAltitude: number,
     } = {
         active: new Arinc429Word(0),
         autothrustMode: new Arinc429Word(0),
+        machMode: false,
         selectedSpeed: new Arinc429Word(0),
         selectedMach: new Arinc429Word(0),
+        selectedAltitude: 0,
     }
 
     public FlightPhase: FmgcFlightPhase = FmgcFlightPhase.Preflight;
@@ -77,10 +89,27 @@ export class DigitalInputs {
 
     public TransponderCode: number = 2000;
 
+    public FlightRoute: {
+        lastWaypoint: Waypoint,
+        activeWaypoint: Waypoint,
+        nextWaypoint: Waypoint,
+        destination: Waypoint,
+    } = {
+        lastWaypoint: null,
+        activeWaypoint: null,
+        nextWaypoint: null,
+        destination: null,
+    }
+
+    private callbacks: InputDataCallbacks = {
+        onAtcButtonPressed: null,
+        onRouteData: null,
+    }
+
     constructor(private readonly bus: EventBus) { }
 
     public initialize(): void {
-        this.subscriber = this.bus.getSubscriber<AtcMessageButtonBusTypes & ClockDataBusTypes & FmgcDataBusTypes & FwcDataBusTypes & TransponderDataBusTypes>();
+        this.subscriber = this.bus.getSubscriber<AtcMessageButtonBusTypes & ClockDataBusTypes & FmgcDataBusTypes & FwcDataBusTypes & TransponderDataBusTypes & AtsuFmsMessages>();
 
         this.subscriber.on('utcYear').handle((year: number) => this.UtcClock.year = year);
         this.subscriber.on('utcMonth').handle((month: number) => this.UtcClock.month = month);
@@ -90,7 +119,10 @@ export class DigitalInputs {
         this.subscriber.on('utcSecond').handle((second: number) => this.UtcClock.second = second);
         this.subscriber.on('utcSecondsOfDay').handle((seconds: number) => this.UtcClock.secondsOfDay = seconds);
 
-        this.subscriber.on('presentPositionLatitude').handle((latitude: Arinc429Word) => this.PresentPosition.latitude = latitude);
+        this.subscriber.on('presentPositionLatitude').handle((latitude: Arinc429Word) => {
+            this.PresentPosition.latitude = latitude;
+            this.AutopilotData.selectedAltitude = Simplane.getAutoPilotDisplayedAltitudeLockValue();
+        });
         this.subscriber.on('presentPositionLongitude').handle((longitude: Arinc429Word) => this.PresentPosition.longitude = longitude);
         this.subscriber.on('presentAltitude').handle((altitude: Arinc429Word) => this.PresentPosition.altitude = altitude);
         this.subscriber.on('presentHeading').handle((heading: Arinc429Word) => this.PresentPosition.heading = heading);
@@ -106,13 +138,19 @@ export class DigitalInputs {
         this.subscriber.on('staticAirTemperature').handle((staticAirTemperature: Arinc429Word) => this.MeteoData.staticAirTemperature = staticAirTemperature);
 
         this.subscriber.on('autopilotActive').handle((active: Arinc429Word) => this.AutopilotData.active = active);
-        this.subscriber.on('autothrustMode').handle((autothrustMode: Arinc429Word) => this.AutopilotData.autothrustMode = autothrustMode);
+        this.subscriber.on('autothrustMode').handle((autothrustMode: Arinc429Word) => {
+            this.AutopilotData.autothrustMode = autothrustMode;
+            this.AutopilotData.machMode = autothrustMode.isNormalOperation() && autothrustMode.value === 8;
+        });
         this.subscriber.on('autothrustSelectedMach').handle((selectedMach: Arinc429Word) => this.AutopilotData.selectedMach = selectedMach);
         this.subscriber.on('autothrustSelectedKnots').handle((selectedSpeed: Arinc429Word) => this.AutopilotData.selectedSpeed = selectedSpeed);
 
         this.subscriber.on('companyMessageCount').handle((count: number) => this.CompanyMessageCount = count);
 
-        this.subscriber.on('buttonPressed').handle((pressed: boolean) => this.AtcMessageButtonPressed = pressed);
+        this.subscriber.on('buttonPressed').handle((pressed: boolean) => {
+            this.AtcMessageButtonPressed = pressed;
+            if (this.callbacks.onAtcButtonPressed) this.callbacks.onAtcButtonPressed();
+        });
 
         this.subscriber.on('flightPhase').handle((phase: Arinc429Word) => {
             if (phase.isNormalOperation()) {
@@ -123,5 +161,14 @@ export class DigitalInputs {
         });
 
         this.subscriber.on('transponderCode').handle((code: number) => this.TransponderCode = code);
+
+        this.subscriber.on('routeData').handle((route) => {
+            this.FlightRoute = route;
+            if (this.callbacks.onRouteData) this.callbacks.onRouteData();
+        });
+    }
+
+    public addDataCallback<K extends keyof InputDataCallbacks>(event: K, callback: () => void): void {
+        this.callbacks[event] = callback;
     }
 }
