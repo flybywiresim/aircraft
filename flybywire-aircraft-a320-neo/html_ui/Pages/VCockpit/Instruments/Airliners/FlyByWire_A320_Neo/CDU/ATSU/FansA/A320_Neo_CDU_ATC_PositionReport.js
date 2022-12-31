@@ -45,8 +45,8 @@ class CDUAtcPositionReport {
         }
 
         if (!data.wind[1]) {
-            const windDirection = Arinc429Word.fromSimVarValue("L:A32NX_ADIRS_IR_1_WIND_DIRECTION", 500);
-            const windSpeed = Arinc429Word.fromSimVarValue("L:A32NX_ADIRS_IR_1_WIND_SPEED", 500);
+            const windDirection = mcdu.atsu.environmentData().windDirection;
+            const windSpeed = mcdu.atsu.environmentData().windSpeed;
 
             const wind = `${Math.round(windDirection.value)}/${Math.round(windSpeed.value)}`;
             if (AtsuCommon.InputValidation.validateScratchpadWind(wind) === AtsuCommon.AtsuStatusCodes.Ok) {
@@ -54,7 +54,7 @@ class CDUAtcPositionReport {
             }
         }
         if (!data.sat[1]) {
-            const sat = Arinc429Word.fromSimVarValue("L:A32NX_ADIRS_ADR_1_STATIC_AIR_TEMPERATURE", 500);
+            const sat = mcdu.atsu.environmentData().temperature;
             if (AtsuCommon.InputValidation.validateScratchpadTemperature(sat.value) === AtsuCommon.AtsuStatusCodes.Ok) {
                 data.sat[0] = Math.round(AtsuCommon.InputValidation.formatScratchpadTemperature(`${sat.value}`));
             }
