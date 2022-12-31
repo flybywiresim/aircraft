@@ -4,7 +4,7 @@
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { CpdlcMessage } from '@atsu/common/messages/CpdlcMessage';
 import { AtsuStatusCodes } from '@atsu/common/AtsuStatusCodes';
-import { AtsuMessage, AtsuMessageSerializationFormat } from '@atsu/common/messages/AtsuMessage';
+import { AtsuMessage } from '@atsu/common/messages/AtsuMessage';
 import { CpdlcMessagesDownlink } from '@atsu/common/messages/CpdlcMessageElements';
 import { coordinateToString, timestampToString } from '@atsu/common/components/Convert';
 import { InputValidation } from '@atsu/common/components/InputValidation';
