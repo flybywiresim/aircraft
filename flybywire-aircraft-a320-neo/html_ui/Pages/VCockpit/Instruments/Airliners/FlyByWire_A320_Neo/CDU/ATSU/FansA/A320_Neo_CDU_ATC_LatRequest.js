@@ -375,40 +375,39 @@ class CDUAtcLatRequestFansA {
                 if (entries.length !== 0) {
                     const startingPoint = entries.join("/");
 
-                    AtsuCommon.InputValidation.classifyScratchpadWaypointType(mcdu, startingPoint, true).then((type) => {
-                        if (offset || data.offset) {
-                            switch (type[0]) {
-                                case AtsuCommon.InputWaypointType.GeoCoordinate:
-                                case AtsuCommon.InputWaypointType.Place:
+                    const type = AtsuCommon.InputValidation.classifyScratchpadWaypointType(startingPoint, true);
+                    if (offset || data.offset) {
+                        switch (type[0]) {
+                            case AtsuCommon.InputWaypointType.GeoCoordinate:
+                            case AtsuCommon.InputWaypointType.Place:
+                                offsetStart = startingPoint;
+                                break;
+                            case AtsuCommon.InputWaypointType.Timepoint:
+                                if (startingPoint.endsWith("Z")) {
                                     offsetStart = startingPoint;
-                                    break;
-                                case AtsuCommon.InputWaypointType.Timepoint:
-                                    if (startingPoint.endsWith("Z")) {
-                                        offsetStart = startingPoint;
-                                    } else {
-                                        offsetStart = `${startingPoint}Z`;
-                                    }
-                                    break;
-                                default:
-                                    mcdu.addNewAtsuMessage(type[1]);
-                                    offsetStart = null;
-                                    if (updatedOffset) {
-                                        offset = null;
-                                    }
-                                    break;
-                            }
+                                } else {
+                                    offsetStart = `${startingPoint}Z`;
+                                }
+                                break;
+                            default:
+                                mcdu.addNewAtsuMessage(type[1]);
+                                offsetStart = null;
+                                if (updatedOffset) {
+                                    offset = null;
+                                }
+                                break;
                         }
+                    }
 
-                        if (offset || offsetStart) {
-                            const oldOffsetStart = data.offsetStart;
-                            const oldOffset = data.offset;
+                    if (offset || offsetStart) {
+                        const oldOffsetStart = data.offsetStart;
+                        const oldOffset = data.offset;
 
-                            data.offset = offset ? offset : oldOffset;
-                            data.offsetStart = offsetStart ? offsetStart : oldOffsetStart;
-                        }
+                        data.offset = offset ? offset : oldOffset;
+                        data.offsetStart = offsetStart ? offsetStart : oldOffsetStart;
+                    }
 
-                        CDUAtcLatRequestFansA.ShowPage2(mcdu, data);
-                    });
+                    CDUAtcLatRequestFansA.ShowPage2(mcdu, data);
                 } else if (updatedOffset) {
                     if (data.offsetStart) {
                         data.offset = offset;

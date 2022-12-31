@@ -45,55 +45,54 @@ class CDUAtcVertRequestFansA {
             if (entries.length !== 0) {
                 const startingPoint = entries.join("/");
 
-                AtsuCommon.InputValidation.classifyScratchpadWaypointType(mcdu, startingPoint, true).then((type) => {
-                    if (altitude || (data.climb && climbRequest || data.descend && !climbRequest)) {
-                        switch (type[0]) {
-                            case AtsuCommon.InputWaypointType.GeoCoordinate:
-                            case AtsuCommon.InputWaypointType.Place:
+                const type = AtsuCommon.InputValidation.classifyScratchpadWaypointType(startingPoint, true);
+                if (altitude || (data.climb && climbRequest || data.descend && !climbRequest)) {
+                    switch (type[0]) {
+                        case AtsuCommon.InputWaypointType.GeoCoordinate:
+                        case AtsuCommon.InputWaypointType.Place:
+                            start = startingPoint;
+                            break;
+                        case AtsuCommon.InputWaypointType.Timepoint:
+                            if (startingPoint.endsWith("Z")) {
                                 start = startingPoint;
-                                break;
-                            case AtsuCommon.InputWaypointType.Timepoint:
-                                if (startingPoint.endsWith("Z")) {
-                                    start = startingPoint;
-                                } else {
-                                    start = `${startingPoint}Z`;
-                                }
-                                break;
-                            default:
-                                mcdu.addNewAtsuMessage(type[1]);
-                                start = null;
-                                if (updateAlt) {
-                                    altitude = null;
-                                }
-                                break;
-                        }
-                    }
-
-                    if (altitude || start) {
-                        if (altitude && start) {
-                            data.startAt = start;
-                            if (climbRequest) {
-                                data.climbStart = altitude;
                             } else {
-                                data.descendStart = altitude;
+                                start = `${startingPoint}Z`;
                             }
-                        } else if (altitude) {
-                            // update the altitude and keep the start at
-                            const lastStart = data.startAt;
-                            data.startAt = lastStart;
-                            if (climbRequest) {
-                                data.climbStart = altitude;
-                            } else {
-                                data.descendStart = altitude;
+                            break;
+                        default:
+                            mcdu.addNewAtsuMessage(type[1]);
+                            start = null;
+                            if (updateAlt) {
+                                altitude = null;
                             }
-                        } else if (start && (data.climbStart || data.descendStart)) {
-                            // update start at if climb or descend are set
-                            data.startAt = start;
-                        }
+                            break;
                     }
+                }
 
-                    CDUAtcVertRequestFansA.ShowPage2(mcdu, data);
-                });
+                if (altitude || start) {
+                    if (altitude && start) {
+                        data.startAt = start;
+                        if (climbRequest) {
+                            data.climbStart = altitude;
+                        } else {
+                            data.descendStart = altitude;
+                        }
+                    } else if (altitude) {
+                        // update the altitude and keep the start at
+                        const lastStart = data.startAt;
+                        data.startAt = lastStart;
+                        if (climbRequest) {
+                            data.climbStart = altitude;
+                        } else {
+                            data.descendStart = altitude;
+                        }
+                    } else if (start && (data.climbStart || data.descendStart)) {
+                        // update start at if climb or descend are set
+                        data.startAt = start;
+                    }
+                }
+
+                CDUAtcVertRequestFansA.ShowPage2(mcdu, data);
             } else if (updateAlt) {
                 if (climbRequest) {
                     data.climbStart = altitude;

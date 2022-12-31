@@ -112,6 +112,10 @@ export class InputValidation {
         return AtsuStatusCodes.FormatError;
     }
 
+    private static isLatLonFormat(waypoint: string): boolean {
+        return waypoint.match(/^(N|S)?([0-9]{2,4}\.[0-9])(N|S)?\/(E|W)?([0-9]{2,5}\.[0-9])(E|W)?$/) !== null;
+    }
+
     /**
      * Classifies a possible waypoint type of the scratchpad
      * Types:
@@ -119,13 +123,12 @@ export class InputValidation {
      *   -  1 = time
      *   -  2 = place
      *   - -1 = unknonw
-     * @param {FMCMainDisplay} mcdu The current MCDU instance
      * @param {string} waypoint The entered waypoint
      * @param {boolean} allowTime Indicates if time entries are allowed
      * @returns A tuple with the type and null or a NXSystemMessage-entry in case of a failure
      */
-    public static async classifyScratchpadWaypointType(mcdu: any, waypoint: string, allowTime: boolean): Promise<[InputWaypointType, AtsuStatusCodes]> {
-        if (mcdu.isLatLonFormat(waypoint)) {
+    public static classifyScratchpadWaypointType(waypoint: string, allowTime: boolean): [InputWaypointType, AtsuStatusCodes] {
+        if (InputValidation.isLatLonFormat(waypoint)) {
             return [InputWaypointType.GeoCoordinate, AtsuStatusCodes.Ok];
         }
 
@@ -136,12 +139,7 @@ export class InputValidation {
 
         // place formatted
         if (/^[A-Z0-9]{2,7}/.test(waypoint)) {
-            return mcdu.dataManager.GetWaypointsByIdent.bind(mcdu.dataManager)(waypoint).then((waypoints) => {
-                if (waypoints.length !== 0) {
-                    return [InputWaypointType.Place, AtsuStatusCodes.Ok];
-                }
-                return [InputWaypointType.Invalid, AtsuStatusCodes.NotInDatabase];
-            });
+            return [InputWaypointType.Place, AtsuStatusCodes.Ok];
         }
 
         return [InputWaypointType.Invalid, AtsuStatusCodes.FormatError];
