@@ -61,26 +61,47 @@ export class UplinkMessageInterpretation {
     private static FillPresentData(atsu: Atsu, message: CpdlcMessage): boolean {
         switch (message.Content[0]?.TypeId) {
         case 'UM132':
-            message.Response.Content[0].Content[0].Value = coordinateToString({ lat: atsu.currentFlightState().lat, lon: atsu.currentFlightState().lon }, false);
-            return true;
+            if (atsu.digitalInputs.PresentPosition.latitude.isNormalOperation() && atsu.digitalInputs.PresentPosition.longitude.isNormalOperation()) {
+                message.Response.Content[0].Content[0].Value = coordinateToString({
+                    lat: atsu.digitalInputs.PresentPosition.latitude.value,
+                    lon: atsu.digitalInputs.PresentPosition.longitude.value,
+                }, false);
+                return true;
+            }
+            return false;
         case 'UM133':
-            message.Response.Content[0].Content[0].Value = InputValidation.formatScratchpadAltitude(Math.round(atsu.currentFlightState().altitude / 100).toString());
-            return true;
+            if (atsu.digitalInputs.PresentPosition.altitude.isNormalOperation()) {
+                message.Response.Content[0].Content[0].Value = InputValidation.formatScratchpadAltitude(Math.round(atsu.digitalInputs.PresentPosition.altitude.value / 100).toString());
+                return true;
+            }
+            return false;
         case 'UM134':
-            message.Response.Content[0].Content[0].Value = InputValidation.formatScratchpadSpeed(atsu.currentFlightState().indicatedAirspeed.toString());
-            return true;
+            if (atsu.digitalInputs.PresentDynamics.computedAirspeed.isNormalOperation()) {
+                message.Response.Content[0].Content[0].Value = InputValidation.formatScratchpadSpeed(atsu.digitalInputs.PresentDynamics.computedAirspeed.value.toString());
+                return true;
+            }
+            return false;
         case 'UM144':
             message.Response.Content[0].Content[0].Value = String(atsu.digitalInputs.TransponderCode).padStart(4, '0');
             return true;
         case 'UM145':
-            message.Response.Content[0].Content[0].Value = atsu.currentFlightState().heading.toString();
-            return true;
+            if (atsu.digitalInputs.PresentPosition.heading.isNormalOperation()) {
+                message.Response.Content[0].Content[0].Value = InputValidation.formatScratchpadSpeed(atsu.digitalInputs.PresentPosition.heading.value.toString());
+                return true;
+            }
+            return false;
         case 'UM146':
-            message.Response.Content[0].Content[0].Value = atsu.currentFlightState().track.toString();
-            return true;
+            if (atsu.digitalInputs.PresentPosition.track.isNormalOperation()) {
+                message.Response.Content[0].Content[0].Value = InputValidation.formatScratchpadSpeed(atsu.digitalInputs.PresentPosition.track.value.toString());
+                return true;
+            }
+            return false;
         case 'UM228':
-            message.Response.Content[0].Content[0].Value = `${timestampToString(atsu.destinationWaypoint().utc)}Z`;
-            return true;
+            if (atsu.digitalInputs.FlightRoute.destination) {
+                message.Response.Content[0].Content[0].Value = `${timestampToString(atsu.digitalInputs.FlightRoute.destination.utc)}Z`;
+                return true;
+            }
+            return false;
         default:
             return false;
         }
@@ -89,11 +110,22 @@ export class UplinkMessageInterpretation {
     private static FillAssignedData(atsu: Atsu, message: CpdlcMessage): boolean {
         switch (message.Content[0]?.TypeId) {
         case 'UM135':
-            message.Response.Content[0].Content[0].Value = InputValidation.formatScratchpadAltitude(Math.round(atsu.targetFlightState().altitude / 100).toString());
+            message.Response.Content[0].Content[0].Value = InputValidation.formatScratchpadAltitude(Math.round(atsu.digitalInputs.AutopilotData.selectedAltitude / 100).toString());
             return true;
         case 'UM136':
-            message.Response.Content[0].Content[0].Value = InputValidation.formatScratchpadAltitude(atsu.targetFlightState().speed.toString());
-            return true;
+            if (atsu.digitalInputs.AutopilotData.autothrustMode.isNormalOperation() && atsu.digitalInputs.AutopilotData.autothrustMode.value !== 0) {
+                let content = '';
+
+                if (atsu.digitalInputs.AutopilotData.machMode) {
+                    content = InputValidation.formatScratchpadAltitude(atsu.digitalInputs.AutopilotData.selectedMach.value.toString());
+                } else {
+                    content = InputValidation.formatScratchpadAltitude(atsu.digitalInputs.AutopilotData.selectedSpeed.value.toString());
+                }
+
+                message.Response.Content[0].Content[0].Value = content;
+                return true;
+            }
+            return false;
         default:
             return false;
         }
@@ -102,22 +134,32 @@ export class UplinkMessageInterpretation {
     private static FillPositionReportRelatedData(atsu: Atsu, message: CpdlcMessage): boolean {
         switch (message.Content[0]?.TypeId) {
         case 'UM138':
-            if (atsu.lastWaypoint()) message.Response.Content[0].Content[0].Value = `${timestampToString(atsu.lastWaypoint().utc)}Z`;
+            if (atsu.digitalInputs.FlightRoute.lastWaypoint) {
+                message.Response.Content[0].Content[0].Value = `${timestampToString(atsu.digitalInputs.FlightRoute.lastWaypoint.utc)}Z`;
+            }
             return true;
         case 'UM139':
-            if (atsu.lastWaypoint()) message.Response.Content[0].Content[0].Value = atsu.lastWaypoint().ident;
+            if (atsu.digitalInputs.FlightRoute.lastWaypoint) {
+                message.Response.Content[0].Content[0].Value = atsu.digitalInputs.FlightRoute.lastWaypoint.ident;
+            }
             return true;
         case 'UM140':
-            if (atsu.activeWaypoint()) message.Response.Content[0].Content[0].Value = atsu.activeWaypoint().ident;
+            if (atsu.digitalInputs.FlightRoute.activeWaypoint) {
+                message.Response.Content[0].Content[0].Value = atsu.digitalInputs.FlightRoute.activeWaypoint.ident;
+            }
             return true;
         case 'UM141':
-            if (atsu.activeWaypoint()) message.Response.Content[0].Content[0].Value = `${timestampToString(atsu.activeWaypoint().utc)}Z`;
+            if (atsu.digitalInputs.FlightRoute.activeWaypoint) {
+                message.Response.Content[0].Content[0].Value = `${timestampToString(atsu.digitalInputs.FlightRoute.activeWaypoint.utc)}Z`;
+            }
             return true;
         case 'UM142':
-            if (atsu.nextWaypoint()) message.Response.Content[0].Content[0].Value = atsu.nextWaypoint().ident;
+            if (atsu.digitalInputs.FlightRoute.nextWaypoint) {
+                message.Response.Content[0].Content[0].Value = atsu.digitalInputs.FlightRoute.nextWaypoint.ident;
+            }
             return true;
         case 'UM147':
-            message.Response = Atsu.createAutomatedPositionReport(atsu);
+            message.Response = atsu.createAutomatedPositionReport();
             return true;
         case 'UM148':
         case 'UM151':
@@ -128,9 +170,9 @@ export class UplinkMessageInterpretation {
             message.Response.Content[0].Content[1].Value = message.Content[0].Content[1].Value;
             return true;
         case 'UM228':
-            if (atsu.destinationWaypoint()) {
-                message.Response.Content[0].Content[0].Value = atsu.destinationWaypoint().ident;
-                message.Response.Content[0].Content[1].Value = `${timestampToString(atsu.destinationWaypoint().utc)}Z`;
+            if (atsu.digitalInputs.FlightRoute.destination) {
+                message.Response.Content[0].Content[0].Value = atsu.digitalInputs.FlightRoute.destination.ident;
+                message.Response.Content[0].Content[1].Value = `${timestampToString(atsu.digitalInputs.FlightRoute.destination.utc)}Z`;
             }
             return true;
         default:
