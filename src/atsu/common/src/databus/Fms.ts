@@ -17,7 +17,6 @@ import { PositionReportData, Waypoint } from '@atsu/common/types';
 export enum AtsuFmsMessageSyncType {
     SendMessage,
     UpdateMessage,
-    PrintMessage,
 }
 
 export interface AtsuFmsMessageSync<T> {
@@ -80,6 +79,11 @@ export interface AtsuFmsMessages {
     atisResponse: [AtsuStatusCodes, AtisMessage];
     weatherResponse: [AtsuStatusCodes, WeatherMessage];
     positionReport: { requestId: number; data: PositionReportData };
+
+    // requests from ATSU to FMS
+    atsuSystemStatus: AtsuStatusCodes;
+    messageModify: CpdlcMessage;
+    printMessage: AtsuMessage;
 
     // synchronization stream from ATSU to FMS
     atsuStatusCode: AtsuStatusCodes;

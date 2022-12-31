@@ -4,6 +4,7 @@ import {
     AtisMessage,
     AtisType,
     AtsuMessage,
+    AtsuMessageSerializationFormat,
     CpdlcMessage,
     DclMessage,
     FreetextMessage,
@@ -47,8 +48,11 @@ export class FmsClient {
 
     private automaticPositionReportIsActive: boolean = false;
 
-    constructor(flightPlanManager: FlightPlanManager, flightPhaseManager: FlightPhaseManager) {
+    private fms: any = null;
+
+    constructor(fms: any, flightPlanManager: FlightPlanManager, flightPhaseManager: FlightPhaseManager) {
         this.atcStationStatus.mode = FansMode.FansNone;
+        this.fms = fms;
 
         this.bus = new EventBus();
         this.publisher = this.bus.getPublisher<AtsuFmsMessages>();
@@ -137,7 +141,8 @@ export class FmsClient {
     }
 
     public printMessage(message: AtsuMessage): void {
-        this.synchronizeMessage(message, AtsuFmsMessageSyncType.PrintMessage);
+        const text = message.serialize(AtsuMessageSerializationFormat.Printer);
+        this.fms.printPage(text.split('\n'));
     }
 
     public removeMessage(uid: number): void {
