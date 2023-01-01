@@ -236,6 +236,7 @@ export class AircraftVersionChecker {
     private static showVersionPopup(branchName, currentVersion, releaseVersion) {
         const popup = new PopUp();
         popup.showInformation(
+            // TODO: Add localization - requires localization framework to support placeholders
             'NEW VERSION AVAILABLE',
             `<div style="font-size: 100%; text-align: left;">
                      You are using ${branchName} version:<br/><strong>${currentVersion}</strong><br/><br/> 
