@@ -2038,7 +2038,7 @@ class FMCMainDisplay extends BaseAirliners {
             throw NXSystemMessages.notInDatabase;
         }
 
-        this.atsu.atc.resetAtisAutoUpdate();
+        this.atsu.resetAtisAutoUpdate();
 
         return new Promise((resolve, reject) => {
             this.eraseTemporaryFlightPlan(() => {
@@ -2123,14 +2123,14 @@ class FMCMainDisplay extends BaseAirliners {
 
     async tryUpdateAltDestination(altDestIdent) {
         if (altDestIdent === "NONE" || altDestIdent === FMCMainDisplay.clrValue) {
-            this.atsu.atc.resetAtisAutoUpdate();
+            this.atsu.resetAtisAutoUpdate();
             this.altDestination = undefined;
             this._DistanceToAlt = 0;
             return true;
         }
         const airportAltDest = await this.dataManager.GetAirportByIdent(altDestIdent).catch(console.error);
         if (airportAltDest) {
-            this.atsu.atc.resetAtisAutoUpdate();
+            this.atsu.resetAtisAutoUpdate();
             this.altDestination = airportAltDest;
             this.tryUpdateDistanceToAlt();
             return true;

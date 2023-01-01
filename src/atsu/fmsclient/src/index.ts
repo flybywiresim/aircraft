@@ -369,4 +369,8 @@ export class FmsClient {
             });
         });
     }
+
+    public resetAtisAutoUpdate(): void {
+        this.publisher.pub('resetAtisAutoUpdate', true);
+    }
 }

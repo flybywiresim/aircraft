@@ -71,6 +71,7 @@ export interface AtsuFmsMessages {
     messageRead: number;
     removeMessage: number;
     cleanupAtcMessages: boolean;
+    resetAtisAutoUpdate: boolean;
 
     // responses from ATSU to FMS for requests
     genericRequestResponse: number;
