@@ -13,7 +13,6 @@ export abstract class UplinkMonitor {
     public messageId = -1;
 
     constructor(message: CpdlcMessage) {
-        // this.atsu = atsu;
         this.messageId = message.UniqueMessageID;
     }
 
