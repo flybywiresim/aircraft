@@ -405,7 +405,7 @@ impl ReservoirAirPressure for A380Pneumatic {
     }
 
     fn blue_reservoir_pressure(&self) -> Pressure {
-        Pressure::new::<psi>(0.) // TODO: Remove this from the trait. Will have to separate traits between 320 and 380.
+        Pressure::default()
     }
 
     fn yellow_reservoir_pressure(&self) -> Pressure {
@@ -468,10 +468,10 @@ impl CoreProcessingInputOutputModuleA {
         pneumatic_overhead_panel: &A380PneumaticOverheadPanel,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
     ) {
-        for unit in self.units.iter_mut() {
+        for (unit, sensor) in self.units.iter_mut().zip(sensors) {
             unit.update(
                 context,
-                &sensors[unit.engine_number - 1],
+                sensor,
                 engine_fire_push_buttons.is_released(unit.engine_number),
                 apu_bleed_valve,
                 pneumatic_overhead_panel,
@@ -585,10 +585,8 @@ impl CoreProcessingInputOutputModuleAUnit {
             pneumatic_overhead_panel.engine_bleed_pb_is_auto(self.engine_number);
         self.is_engine_fire_pushbutton_released = is_engine_fire_pushbutton_released;
 
-        self.is_any_bleed_pushbutton_off = !pneumatic_overhead_panel.engine_bleed_pb_is_auto(1)
-            || !pneumatic_overhead_panel.engine_bleed_pb_is_auto(2)
-            || !pneumatic_overhead_panel.engine_bleed_pb_is_auto(3)
-            || !pneumatic_overhead_panel.engine_bleed_pb_is_auto(4);
+        self.is_any_bleed_pushbutton_off =
+            (1..=4).any(|e| !pneumatic_overhead_panel.engine_bleed_pb_is_auto(e));
 
         self.is_apu_bleed_valve_open = apu_bleed_valve.is_open();
         self.is_apu_bleed_on = pneumatic_overhead_panel.apu_bleed_is_on();
@@ -1400,6 +1398,7 @@ impl SimulationElement for CrossBleedValve {
 
 #[cfg(test)]
 mod tests {
+    use ntest::assert_about_eq;
     use rstest::rstest;
     use systems::{
         air_conditioning::{
@@ -1639,7 +1638,7 @@ mod tests {
     impl TestEngineFirePushButtons {
         fn new() -> Self {
             Self {
-                is_released: [false, false, false, false],
+                is_released: [false; 4],
             }
         }
 
@@ -2566,49 +2565,66 @@ mod tests {
             .and_stabilize();
 
         for engine_number in 1..=4 {
-            assert!(
-                (test_bed.ip_pressure(engine_number) - ambient_pressure).abs()
-                    < pressure_tolerance()
+            assert_about_eq!(
+                test_bed.ip_pressure(engine_number).get::<psi>(),
+                ambient_pressure.get::<psi>(),
+                pressure_tolerance().get::<psi>()
             );
-            assert!(
-                (test_bed.hp_pressure(engine_number) - ambient_pressure).abs()
-                    < pressure_tolerance()
+            assert_about_eq!(
+                test_bed.hp_pressure(engine_number).get::<psi>(),
+                ambient_pressure.get::<psi>(),
+                pressure_tolerance().get::<psi>(),
             );
-            assert!(
-                (test_bed.transfer_pressure(engine_number) - ambient_pressure).abs()
-                    < pressure_tolerance()
+            assert_about_eq!(
+                test_bed.transfer_pressure(engine_number).get::<psi>(),
+                ambient_pressure.get::<psi>(),
+                pressure_tolerance().get::<psi>()
             );
-            assert!(
-                (test_bed.precooler_inlet_pressure(engine_number) - ambient_pressure).abs()
-                    < pressure_tolerance()
+            assert_about_eq!(
+                test_bed
+                    .precooler_inlet_pressure(engine_number)
+                    .get::<psi>(),
+                ambient_pressure.get::<psi>(),
+                pressure_tolerance().get::<psi>()
             );
-            assert!(
-                (test_bed.precooler_outlet_pressure(engine_number) - ambient_pressure).abs()
-                    < pressure_tolerance()
+            assert_about_eq!(
+                test_bed
+                    .precooler_outlet_pressure(engine_number)
+                    .get::<psi>(),
+                ambient_pressure.get::<psi>(),
+                pressure_tolerance().get::<psi>()
             );
-            assert!(
+            assert_about_eq!(
                 test_bed
                     .intermediate_pressure_transducer_pressure(engine_number)
                     .unwrap()
-                    < pressure_tolerance()
+                    .get::<psi>(),
+                0.,
+                pressure_tolerance().get::<psi>()
             );
-            assert!(
+            assert_about_eq!(
                 test_bed
                     .transfer_pressure_transducer_pressure(engine_number)
                     .unwrap()
-                    < pressure_tolerance()
+                    .get::<psi>(),
+                0.,
+                pressure_tolerance().get::<psi>()
             );
-            assert!(
+            assert_about_eq!(
                 test_bed
                     .regulated_pressure_transducer_pressure(engine_number)
                     .unwrap()
-                    < pressure_tolerance()
+                    .get::<psi>(),
+                0.,
+                pressure_tolerance().get::<psi>()
             );
-            assert!(
+            assert_about_eq!(
                 test_bed
                     .differential_pressure_transducer_pressure(engine_number)
                     .unwrap()
-                    < pressure_tolerance()
+                    .get::<psi>(),
+                0.,
+                pressure_tolerance().get::<psi>()
             );
 
             assert!(!test_bed.hp_valve_is_open(engine_number));
@@ -2633,13 +2649,25 @@ mod tests {
         let ambient_pressure = InternationalStandardAtmosphere::pressure_at_altitude(altitude);
 
         assert!(test_bed.ip_pressure(1) - ambient_pressure > pressure_tolerance());
-        assert!((test_bed.ip_pressure(3) - ambient_pressure).abs() < pressure_tolerance());
+        assert_about_eq!(
+            test_bed.ip_pressure(3).get::<psi>(),
+            ambient_pressure.get::<psi>(),
+            pressure_tolerance().get::<psi>()
+        );
 
         assert!(test_bed.hp_pressure(1) - ambient_pressure > pressure_tolerance());
-        assert!((test_bed.hp_pressure(3) - ambient_pressure).abs() < pressure_tolerance());
+        assert_about_eq!(
+            test_bed.hp_pressure(3).get::<psi>(),
+            ambient_pressure.get::<psi>(),
+            pressure_tolerance().get::<psi>()
+        );
 
         assert!(test_bed.transfer_pressure(1) - ambient_pressure > pressure_tolerance());
-        assert!((test_bed.transfer_pressure(3) - ambient_pressure).abs() < pressure_tolerance());
+        assert_about_eq!(
+            test_bed.transfer_pressure(3).get::<psi>(),
+            ambient_pressure.get::<psi>(),
+            pressure_tolerance().get::<psi>()
+        );
 
         assert!((test_bed.precooler_inlet_pressure(1) - ambient_pressure) > pressure_tolerance());
         assert!(!test_bed.precooler_inlet_pressure(3).is_nan());
@@ -2983,8 +3011,12 @@ mod tests {
     fn pressure_regulating_valve_regulates_to_40_psig(
         #[values(0., 10000., 20000., 30000.)] altitude: f64,
     ) {
+        // Just estimate a realistic Mach number
+        let mach = MachNumber(0.78 * altitude / 30000.);
+
         let test_bed = test_bed()
             .in_isa_atmosphere(Length::new::<foot>(altitude))
+            .mach_number(mach)
             .idle_eng1()
             .idle_eng2()
             .idle_eng3()
@@ -2994,12 +3026,13 @@ mod tests {
             .and_stabilize();
 
         for engine_number in 1..=4 {
-            assert!(
+            assert_about_eq!(
                 test_bed
                     .regulated_pressure_transducer_pressure(engine_number)
                     .unwrap()
-                    - Pressure::new::<psi>(40.)
-                    < pressure_tolerance()
+                    .get::<psi>(),
+                40.,
+                pressure_tolerance().get::<psi>()
             );
         }
     }

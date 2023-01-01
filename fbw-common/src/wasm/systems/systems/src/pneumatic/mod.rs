@@ -797,11 +797,9 @@ impl PressureTransducer {
     }
 
     pub fn update(&mut self, context: &UpdateContext, container: &impl PneumaticContainer) {
-        self.pressure_output = if self.is_powered {
-            Some(container.pressure() - context.ambient_pressure())
-        } else {
-            None
-        };
+        self.pressure_output = self
+            .is_powered
+            .then_some(container.pressure() - context.ambient_pressure());
     }
 }
 impl SimulationElement for PressureTransducer {
@@ -835,11 +833,9 @@ impl DifferentialPressureTransducer {
         upstream: &impl PneumaticContainer,
         downstream: &impl PneumaticContainer,
     ) {
-        self.pressure_output = if self.is_powered {
-            Some(upstream.pressure() - downstream.pressure())
-        } else {
-            None
-        };
+        self.pressure_output = self
+            .is_powered
+            .then_some(upstream.pressure() - downstream.pressure());
     }
 }
 impl SimulationElement for DifferentialPressureTransducer {
