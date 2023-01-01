@@ -249,10 +249,6 @@ export class Atc {
             this.mailboxBus.updateMessageStatus(message.UniqueMessageID, MailboxStatusMessage.Sending);
             this.mailboxBus.update(message);
 
-            if (this.atsu.modificationMessage?.UniqueMessageID === uid) {
-                this.atsu.modificationMessage = null;
-            }
-
             if (message.Response !== undefined) {
                 this.datalink.sendMessage(message.Response, false).then((code) => {
                     if (code === AtsuStatusCodes.Ok) {
@@ -303,10 +299,6 @@ export class Atc {
                 }
                 this.mailboxBus.update(message);
             });
-
-            if (this.atsu.modificationMessage?.UniqueMessageID === uid) {
-                this.atsu.modificationMessage = null;
-            }
         }
     }
 
@@ -326,10 +318,6 @@ export class Atc {
         if ((message as CpdlcMessage).MailboxRelevantMessage) {
             this.mailboxBus.updateMessageStatus(message.UniqueMessageID, MailboxStatusMessage.Sending);
             this.mailboxBus.update(message as CpdlcMessage);
-        }
-
-        if (this.atsu.modificationMessage?.UniqueMessageID === message.UniqueMessageID) {
-            this.atsu.modificationMessage = null;
         }
 
         return this.datalink.sendMessage(message, false).then((code) => {
@@ -510,10 +498,6 @@ export class Atc {
     public updateMessage(message: CpdlcMessage): void {
         const index = this.messageQueue.findIndex((element) => element.UniqueMessageID === message.UniqueMessageID);
         if (index !== -1) {
-            if (this.atsu.modificationMessage?.UniqueMessageID === message.UniqueMessageID) {
-                this.atsu.modificationMessage = undefined;
-            }
-
             this.messageQueue[index] = message;
             this.mailboxBus.update(message);
         }
