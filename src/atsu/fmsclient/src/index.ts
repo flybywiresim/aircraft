@@ -303,6 +303,10 @@ export class FmsClient {
     }
 
     public updateMessage(message: CpdlcMessage): void {
+        if (this.modificationMessage !== null && message.UniqueMessageID === this.modificationMessage.UniqueMessageID) {
+            this.modificationMessage = null;
+        }
+
         this.publisher.pub('synchronizeCpdlcMessage', {
             type: AtsuFmsMessageSyncType.UpdateMessage,
             requestId: this.requestId++,
