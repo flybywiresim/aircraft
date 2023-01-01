@@ -10,6 +10,7 @@
 1. [ADIRU] Implemented wind speed computation from TAS/GS/HDG - @tracernz (Mike)
 1. [FMGC] Show proper transition names and final approach slope from AAU1 - @tracernz (Mike)
 1. [FMGC] Don't accept blank input or / for hold distance - @tracernz (Mike)
+1. [HYD] Faster core hydraulics solver - @Crocket63 (crocket)
 1. [ATSU] Fix LSK6L not returning to ATSU DATALINK page in ATC MENU - @BravoMike99 (Bruno_pt99#5802)
 1. [HYD] Trimmable physical assemblies - @Crocket63 (crocket)
 1. [HYD] Simulation of the rudder mechanical assembly and yaw dampers - @Crocket63 (crocket)
@@ -17,6 +18,8 @@
 1. [FLIGHTMODEL] Reduced flap induced drag - @donstim (donbikes#4084)
 1. [EFB] Fix and improve pushback system and add API documentation - @frankkopp (Frank Kopp)
 1. [RMP] RMPs navigation backup - Julian Sebline (Julian Sebline#8476 on Discord)
+1. [SEC] Fix GND SPLR logic, add missing GND SPLR partial extension condition - @lukecologne (luke)
+1. [FMGC] Improved importing flight plans from MSFS World Map - @frankkopp (Frank Kopp)  
 
 ## 0.9.0
 
