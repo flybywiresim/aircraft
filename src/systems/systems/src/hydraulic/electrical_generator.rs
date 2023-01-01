@@ -364,7 +364,7 @@ impl EmergencyGeneratorPower for TestGenerator {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::shared::update_iterator::FixedStepLoop;
+    use crate::shared::update_iterator::MaxStepLoop;
     use crate::simulation::test::{SimulationTestBed, TestBed};
     use crate::simulation::{Aircraft, SimulationElement, SimulationElementVisitor};
     use std::time::Duration;
@@ -478,7 +478,7 @@ mod tests {
     }
 
     struct TestAircraft {
-        updater_fixed_step: FixedStepLoop,
+        updater_max_step: MaxStepLoop,
 
         gcu: GeneratorControlUnit<9>,
         lgciu: TestLgciuSensors,
@@ -491,7 +491,7 @@ mod tests {
     impl TestAircraft {
         fn new(context: &mut InitContext) -> Self {
             Self {
-                updater_fixed_step: FixedStepLoop::new(Duration::from_millis(33)),
+                updater_max_step: MaxStepLoop::new(Duration::from_millis(10)),
                 gcu: gen_control_unit(),
                 lgciu: TestLgciuSensors::compressed(),
                 rat_man_on: TestRatManOn::not_pressed(),
@@ -524,9 +524,9 @@ mod tests {
     }
     impl Aircraft for TestAircraft {
         fn update_after_power_distribution(&mut self, context: &UpdateContext) {
-            self.updater_fixed_step.update(context);
+            self.updater_max_step.update(context);
 
-            for cur_time_step in &mut self.updater_fixed_step {
+            for cur_time_step in &mut self.updater_max_step {
                 self.gcu.update(
                     &context.with_delta(cur_time_step),
                     &self.emergency_gen,

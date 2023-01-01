@@ -46,6 +46,7 @@ class SecComputer final
     boolean_T Delay1_DSTATE;
     boolean_T Delay1_DSTATE_i;
     boolean_T Delay_DSTATE_n;
+    boolean_T Delay2_DSTATE;
     uint8_T is_active_c30_SecComputer;
     uint8_T is_c30_SecComputer;
     uint8_T is_active_c8_SecComputer;
@@ -163,13 +164,8 @@ class SecComputer final
     real_T CompareToConstant4_const_j;
     real_T CompareToConstant13_const;
     real_T CompareToConstant14_const;
-    real_T CompareToConstant10_const;
     real_T CompareToConstant7_const;
-    real_T CompareToConstant16_const;
-    real_T CompareToConstant17_const;
-    real_T CompareToConstant18_const;
     real_T CompareToConstant8_const;
-    real_T CompareToConstant9_const;
     real_T CompareToConstant2_const_f;
     real_T CompareToConstant3_const_o;
     real_T CompareToConstant1_const_p;
@@ -277,6 +273,7 @@ class SecComputer final
     boolean_T Logic_table_ii[16];
     boolean_T Delay1_InitialCondition_l;
     boolean_T Delay_InitialCondition_j;
+    boolean_T Delay2_InitialCondition;
     boolean_T Constant1_Value_g;
     boolean_T Constant2_Value_n;
     boolean_T Constant8_Value;
