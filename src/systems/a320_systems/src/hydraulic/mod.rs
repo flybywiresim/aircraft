@@ -11338,5 +11338,118 @@ mod tests {
                 .run_waiting_for(Duration::from_secs_f64(120.));
             assert!(!test_bed.yellow_reservoir_has_overheat_fault());
         }
+
+        #[test]
+        fn gear_stays_uplocked_when_door_sensors_fails() {
+            let mut test_bed = test_bed_in_flight_with()
+                .set_cold_dark_inputs()
+                .in_flight()
+                .run_waiting_for(Duration::from_secs_f64(5.));
+
+            assert!(test_bed.gear_system_state() == GearSystemState::AllUpLocked);
+
+            test_bed.fail(FailureType::GearProxSensorDamage(
+                systems::shared::ProximityDetectorId::UplockDoorNose1,
+            ));
+            test_bed.fail(FailureType::GearProxSensorDamage(
+                systems::shared::ProximityDetectorId::UplockDoorNose2,
+            ));
+            test_bed.fail(FailureType::GearProxSensorDamage(
+                systems::shared::ProximityDetectorId::DownlockDoorNose1,
+            ));
+            test_bed.fail(FailureType::GearProxSensorDamage(
+                systems::shared::ProximityDetectorId::DownlockDoorNose2,
+            ));
+
+            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(2.));
+
+            assert!(test_bed.gear_system_state() == GearSystemState::AllUpLocked);
+        }
+
+        #[test]
+        fn gear_stays_uplocked_when_gear_sensors_fails() {
+            let mut test_bed = test_bed_in_flight_with()
+                .set_cold_dark_inputs()
+                .in_flight()
+                .run_waiting_for(Duration::from_secs_f64(5.));
+
+            assert!(test_bed.gear_system_state() == GearSystemState::AllUpLocked);
+
+            test_bed.fail(FailureType::GearProxSensorDamage(
+                systems::shared::ProximityDetectorId::UplockGearNose1,
+            ));
+            test_bed.fail(FailureType::GearProxSensorDamage(
+                systems::shared::ProximityDetectorId::UplockGearNose2,
+            ));
+
+            test_bed.fail(FailureType::GearProxSensorDamage(
+                systems::shared::ProximityDetectorId::DownlockGearNose1,
+            ));
+            test_bed.fail(FailureType::GearProxSensorDamage(
+                systems::shared::ProximityDetectorId::DownlockGearNose2,
+            ));
+
+            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(2.));
+
+            assert!(test_bed.gear_system_state() == GearSystemState::AllUpLocked);
+        }
+
+        #[test]
+        fn gear_stays_downlocked_when_gear_sensors_fails() {
+            let mut test_bed = test_bed_on_ground_with()
+                .set_cold_dark_inputs()
+                .in_flight()
+                .set_gear_lever_down()
+                .run_waiting_for(Duration::from_secs_f64(5.));
+
+            assert!(test_bed.gear_system_state() == GearSystemState::AllDownLocked);
+
+            test_bed.fail(FailureType::GearProxSensorDamage(
+                systems::shared::ProximityDetectorId::DownlockGearNose1,
+            ));
+            test_bed.fail(FailureType::GearProxSensorDamage(
+                systems::shared::ProximityDetectorId::DownlockGearNose2,
+            ));
+
+            test_bed.fail(FailureType::GearProxSensorDamage(
+                systems::shared::ProximityDetectorId::UplockGearNose1,
+            ));
+            test_bed.fail(FailureType::GearProxSensorDamage(
+                systems::shared::ProximityDetectorId::UplockGearNose2,
+            ));
+
+            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(2.));
+
+            assert!(test_bed.gear_system_state() == GearSystemState::AllDownLocked);
+        }
+
+        #[test]
+        fn gear_stays_downlocked_when_door_sensors_fails() {
+            let mut test_bed = test_bed_on_ground_with()
+                .set_cold_dark_inputs()
+                .in_flight()
+                .set_gear_lever_down()
+                .run_waiting_for(Duration::from_secs_f64(5.));
+
+            assert!(test_bed.gear_system_state() == GearSystemState::AllDownLocked);
+
+            test_bed.fail(FailureType::GearProxSensorDamage(
+                systems::shared::ProximityDetectorId::DownlockDoorNose1,
+            ));
+            test_bed.fail(FailureType::GearProxSensorDamage(
+                systems::shared::ProximityDetectorId::DownlockDoorNose2,
+            ));
+
+            test_bed.fail(FailureType::GearProxSensorDamage(
+                systems::shared::ProximityDetectorId::UplockDoorNose1,
+            ));
+            test_bed.fail(FailureType::GearProxSensorDamage(
+                systems::shared::ProximityDetectorId::UplockDoorNose2,
+            ));
+
+            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(2.));
+
+            assert!(test_bed.gear_system_state() == GearSystemState::AllDownLocked);
+        }
     }
 }
