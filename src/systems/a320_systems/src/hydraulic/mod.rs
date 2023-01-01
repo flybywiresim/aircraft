@@ -149,7 +149,7 @@ impl A320HydraulicCircuitFactory {
     const HYDRAULIC_TARGET_PRESSURE_PSI: f64 = 3000.;
 
     const PRIORITY_VALVE_PRESSURE_CUTOFF_PSI: f64 = 1842.;
-    const PRIORITY_VALVE_PRESSURE_OPENED_PSI: f64 = 2031.;
+    const PRIORITY_VALVE_PRESSURE_OPENED_PSI: f64 = 2150.;
 
     // Nitrogen PSI precharge pressure
     const ACCUMULATOR_GAS_PRE_CHARGE_PSI: f64 = 1885.0;
@@ -10937,7 +10937,7 @@ mod tests {
             assert!(test_bed.gear_system_state() == GearSystemState::AllDownLocked);
 
             test_bed = test_bed.set_gear_lever_up();
-            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(120.));
+            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(150.));
 
             assert!(test_bed.gear_system_state() == GearSystemState::AllUpLocked);
         }
