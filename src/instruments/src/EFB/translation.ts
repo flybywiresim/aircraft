@@ -153,6 +153,19 @@ if (process.env.VITE_BUILD) {
     watchLanguageChanges();
 }
 
+function placeholderReplace(translation: string, replacements: Record<string, string>[]): string {
+    let result = translation;
+    console.debug(`replacing placeholders in ${translation} with ${JSON.stringify(replacements)}`);
+    replacements.forEach((replacement: Record<string, string>) => {
+        console.debug(`${JSON.stringify(replacement)}`);
+        const searchValue = `%(${Object.keys(replacement)[0]})`;
+        const replaceValue = Object.values(replacement)[0].toString();
+        console.debug(`replacing ${searchValue} with ${replaceValue} in "${result}"`);
+        result = result.replace(searchValue, replaceValue);
+    });
+    return result;
+}
+
 /**
  * Returns localized string in the currently configured language when provided with
  * correct identifier key.
@@ -160,14 +173,26 @@ if (process.env.VITE_BUILD) {
  * find the key there.
  * If the key is not available in the default language the key itself will be returned.
  *
+ * If a replacement list is provided it will replace the placeholders in the string with the
+ * key as placeholder-text to be search and the value as the string to be put in place.
+ *
+ * Placeholders are defined as follows: %(key)
+ *
+ * E.g. "Hello %(name)" with {name: "John"} will return "Hello John"
+ *
  * Note: Currently all language files are imported and contain all keys so this is redundant
  * but still implemented for future changes.
  * @param key String identifier key
+ * @param replacements list of Records of key value pairs to replace in the string
  * @return translated string in the current language if available, or default
  *         language, or key string
  */
-export function t(key: string): string {
-    return currentLanguageMap.get(key) || defaultLanguage.get(key) || key;
+export function t(key: string, replacements?: Record<string, string>[]): string {
+    const translation = currentLanguageMap.get(key) || defaultLanguage.get(key) || key;
+    if (replacements) {
+        return placeholderReplace(translation, replacements);
+    }
+    return translation;
 }
 
 // Workaround after simvar hook changes - only required on FlyPadPage.tsx from flypad settings
