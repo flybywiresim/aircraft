@@ -1,3 +1,6 @@
+// Copyright (c) 2022 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
 import React, { useEffect, useState } from 'react';
 import { usePersistentProperty, useSessionStorage } from '@instruments/common/persistence';
 import { SentryConsentState, SENTRY_CONSENT_KEY } from '../../../../../sentry-client/src/FbwAircraftSentryClient';
