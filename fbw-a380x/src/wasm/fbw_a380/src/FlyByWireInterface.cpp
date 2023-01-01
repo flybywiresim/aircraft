@@ -1960,12 +1960,14 @@ bool FlyByWireInterface::updateServoSolenoidStatus() {
   idRudderTrimCommandedPosition[1]->set(secsAnalogOutputs[2].rudder_trim_pos_order_deg);
 
   double totalSpoilersLeftDeflection = idLeftSpoilerPosition[0]->get() + idLeftSpoilerPosition[1]->get() + idLeftSpoilerPosition[2]->get() +
-                                       idLeftSpoilerPosition[3]->get() + idLeftSpoilerPosition[4]->get();
+                                       idLeftSpoilerPosition[3]->get() + idLeftSpoilerPosition[4]->get() + idLeftSpoilerPosition[5]->get() +
+                                       idLeftSpoilerPosition[6]->get() + idLeftSpoilerPosition[7]->get();
   double totalSpoilersRightDeflection = idRightSpoilerPosition[0]->get() + idRightSpoilerPosition[1]->get() +
                                         idRightSpoilerPosition[2]->get() + idRightSpoilerPosition[3]->get() +
-                                        idRightSpoilerPosition[4]->get();
-  totalSpoilersLeftDeflection /= 5;
-  totalSpoilersRightDeflection /= 5;
+                                        idRightSpoilerPosition[4]->get() + idRightSpoilerPosition[5]->get() +
+                                        idRightSpoilerPosition[6]->get() + idRightSpoilerPosition[7]->get();
+  totalSpoilersLeftDeflection /= 8;
+  totalSpoilersRightDeflection /= 8;
   double totalSpoilerDeflection = (totalSpoilersLeftDeflection + totalSpoilersRightDeflection) / 2;
   double totalAssymmetricSpoilerDeflection = fabs(totalSpoilersLeftDeflection - totalSpoilersRightDeflection) / 2;
 
