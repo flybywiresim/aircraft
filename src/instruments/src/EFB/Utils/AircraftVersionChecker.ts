@@ -1,7 +1,7 @@
-/* eslint-disable no-console */
 // Copyright (c) 2022 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
+/* eslint-disable no-console */
 import Compare from 'semver/functions/compare';
 import { CommitInfo, GitVersions, ReleaseInfo } from '@flybywiresim/api-client';
 // jest in test-js.sh requires relative path  can't handle "@shared" alias
@@ -128,19 +128,13 @@ export class AircraftVersionChecker {
     public static getVersionInfo(versionString: string): VersionInfoData {
         const matchBuildInfo = versionString.match(/^v?((\d+)\.(\d+)\.(\d+))-(.*)\.(.{7})$/);
         if (matchBuildInfo) {
-            const version = matchBuildInfo[1];
-            const major = parseInt(matchBuildInfo[2], 10);
-            const minor = parseInt(matchBuildInfo[3], 10);
-            const patch = parseInt(matchBuildInfo[4], 10);
-            const branch = matchBuildInfo[5];
-            const commit = matchBuildInfo[6];
             return {
-                version,
-                major,
-                minor,
-                patch,
-                branch,
-                commit,
+                version: matchBuildInfo[1],
+                major: parseInt(matchBuildInfo[2], 10),
+                minor: parseInt(matchBuildInfo[3], 10),
+                patch: parseInt(matchBuildInfo[4], 10),
+                branch: matchBuildInfo[5],
+                commit: matchBuildInfo[6],
             };
         }
         throw new Error('Invalid version format');
