@@ -72,7 +72,7 @@ const QuickSettingsToggle: FC<QuickSettingsToggleProps> = forwardRef<HTMLButtonE
     ),
 );
 
-export const QuickControls = () => {
+export const QuickControlsPane = ({ setShowQuickControlsPane }: {setShowQuickControlsPane: (value: boolean) => void;}) => {
     const history = useHistory();
     const power = usePower();
 
@@ -85,7 +85,6 @@ export const QuickControls = () => {
     const [boardingRate, setBoardingRate] = usePersistentProperty('CONFIG_BOARDING_RATE', 'REAL');
     const [, setSimbridgeEnabled] = usePersistentProperty('CONFIG_SIMBRIDGE_ENABLED', 'AUTO ON');
 
-    const [showQuickControlsPane, setShowQuickControlsPane] = useState(false);
     const [simBridgeClientState, setSimBridgeClientState] = useState<SimBridgeClientState>(ClientState.getInstance().getSimBridgeClientState());
 
     // To prevent keyboard input (esp. END key for external view) to change
@@ -136,7 +135,9 @@ export const QuickControls = () => {
         setSimbridgeEnabled('AUTO ON');
     };
 
-    const handleToggleOsk = () => setAutoOSK(autoOSK === 0 ? 1 : 0);
+    const handleToggleOsk = () => {
+        setAutoOSK(autoOSK === 0 ? 1 : 0);
+    };
 
     const simBridgeButtonStyle = useMemo<string>(():string => {
         switch (simBridgeClientState) {
@@ -149,143 +150,146 @@ export const QuickControls = () => {
 
     const simBridgeButtonStateString = useMemo<string>(():string => {
         switch (simBridgeClientState) {
-        case SimBridgeClientState.CONNECTED: return t('QuickControls.SimBridgeConnected');
-        case SimBridgeClientState.CONNECTING: return t('QuickControls.SimBridgeConnecting');
-        case SimBridgeClientState.OFFLINE: return t('QuickControls.SimBridgeOffline');
-        default: return t('QuickControls.SimBridgeOff');
+        case SimBridgeClientState.CONNECTED: return t('QuickControlsPane.SimBridgeConnected');
+        case SimBridgeClientState.CONNECTING: return t('QuickControlsPane.SimBridgeConnecting');
+        case SimBridgeClientState.OFFLINE: return t('QuickControlsPane.SimBridgeOffline');
+        default: return t('QuickControlsPane.SimBridgeOff');
         }
     }, [simBridgeClientState]);
 
-    const oskButtonStyle = useMemo<string>(
-        ():string => (autoOSK ? 'bg-utility-green text-theme-body' : 'text-theme-text'), [autoOSK],
-    );
+    const oskButtonStyle = useMemo<string>(():string => (autoOSK ? 'bg-utility-green text-theme-body' : 'text-theme-text'), [autoOSK]);
 
     useInterval(() => {
-        if (showQuickControlsPane) {
-            setSimBridgeClientState(ClientState.getInstance().getSimBridgeClientState());
-        }
+        setSimBridgeClientState(ClientState.getInstance().getSimBridgeClientState());
     }, 200);
 
     return (
         <>
-            <TooltipWrapper text={t('StatusBar.TT.QuickControls')}>
+            <div
+                className="absolute z-40 py-6 px-6 bg-theme-accent rounded-md border border-theme-secondary transition duration-100"
+                style={{ top: '40px', right: '50px', width: '620px' }}
+                onMouseLeave={() => setShowQuickControlsPane(false)}
+            >
+
+                <div className="flex flex-row justify-end items-center mb-5">
+                    <span className="mr-auto">
+                        <TooltipWrapper text={t('QuickControlsPane.TT.Settings')}>
+                            <QuickSettingsButton onClick={handleSettings}>
+                                <Gear size={24} />
+                            </QuickSettingsButton>
+                        </TooltipWrapper>
+                    </span>
+
+                    <TooltipWrapper text={t('QuickControlsPane.TT.Sleep')}>
+                        <QuickSettingsButton onClick={handleSleep}>
+                            <MoonFill size={20} />
+                        </QuickSettingsButton>
+                    </TooltipWrapper>
+
+                    <TooltipWrapper text={t('QuickControlsPane.TT.PowerButton')}>
+                        <QuickSettingsButton onClick={handlePower} className="ml-4">
+                            <Power size={24} />
+                        </QuickSettingsButton>
+                    </TooltipWrapper>
+                </div>
+
+                <div className="flex flex-row justify-between items-center mb-8">
+                    <TooltipWrapper text={t('QuickControlsPane.TT.AlignAdirs')}>
+                        <QuickSettingsToggle onClick={handleAlignADIRS} icon={<Compass size={42} />}>
+                            Align ADIRS
+                        </QuickSettingsToggle>
+                    </TooltipWrapper>
+
+                    <TooltipWrapper text={t('QuickControlsPane.TT.FinishBoarding')}>
+                        <QuickSettingsToggle onClick={handleInstantBoarding} icon={<PersonCheck size={42} />}>
+                            Finish Boarding
+                        </QuickSettingsToggle>
+                    </TooltipWrapper>
+
+                    <TooltipWrapper text={t('QuickControlsPane.TT.SimBridge')}>
+                        <QuickSettingsToggle
+                            onClick={handleResetSimBridgeConnection}
+                            icon={
+                                simBridgeClientState === SimBridgeClientState.CONNECTED ? (
+                                    <Wifi size={42} />
+                                ) : (
+                                    <WifiOff size={42} />
+                                )
+                            }
+                            className={simBridgeButtonStyle}
+                        >
+                            SimBridge
+                            {' '}
+                            <br />
+                            {simBridgeButtonStateString}
+                        </QuickSettingsToggle>
+                    </TooltipWrapper>
+
+                    <TooltipWrapper text={t('QuickControlsPane.TT.OnScreenKeyboard')}>
+                        <QuickSettingsToggle onClick={handleToggleOsk} icon={<Keyboard size={42} />} className={oskButtonStyle}>
+                            Onscreen Keyboard
+                        </QuickSettingsToggle>
+                    </TooltipWrapper>
+
+                </div>
+
+                <div className="flex flex-row justify-between items-center">
+                    <div className={`flex flex-row items-center ${usingAutobrightness && 'opacity-30'}`}>
+                        <TooltipWrapper text={t('QuickControlsPane.TT.Brightness')}>
+                            <div className="flex flex-row items-center mr-4 w-[80px] text-theme-text">
+                                <BrightnessHighFill size={24} />
+                                <span className="ml-2 pointer-events-none text-inherit">
+                                    {`${usingAutobrightness ? brightness.toFixed(0) : brightnessSetting}%`}
+                                </span>
+                            </div>
+                            <div>
+                                <Slider
+                                    disabled={usingAutobrightness === 1}
+                                    ref={brightnessSliderRef}
+                                    value={usingAutobrightness ? brightness : brightnessSetting}
+                                    min={1}
+                                    max={100}
+                                    onChange={setBrightnessSetting}
+                                    onAfterChange={() => brightnessSliderRef.current && brightnessSliderRef.current.blur()}
+                                    className="rounded-md"
+                                    style={{ width: '380px', height: '50px', padding: '0' }}
+                                    trackStyle={{ backgroundColor: 'var(--color-highlight)', height: '50px' }}
+                                    railStyle={{ backgroundColor: 'var(--color-body)', height: '50px' }}
+                                    handleStyle={{ top: '13px', height: '0px', width: '0px' }}
+                                />
+                            </div>
+                        </TooltipWrapper>
+                    </div>
+                    <TooltipWrapper text={t('QuickControlsPane.TT.AutoBrightness')}>
+                        <button
+                            type="button"
+                            onClick={handleAutoBrightness}
+                            className={`flex justify-center items-center ml-4 text-theme-text 
+                                                    bg-theme-body hover:border-4 hover:border-theme-highlight rounded-md 
+                                                    transition duration-100 ${usingAutobrightness === 1 ? 'bg-utility-green text-theme-body' : ''}`}
+                            style={{ width: '80px', height: '50px' }}
+                        >
+                            <BrightnessHigh size={24} />
+                        </button>
+                    </TooltipWrapper>
+                </div>
+
+            </div>
+        </>
+    );
+};
+
+export const QuickControls = () => {
+    const [showQuickControlsPane, setShowQuickControlsPane] = useState(false);
+
+    return (
+        <>
+            <TooltipWrapper text={t('StatusBar.TT.QuickControlsPane')}>
                 <div onClick={() => setShowQuickControlsPane((old) => !old)}>
                     <Gear size={26} />
                 </div>
             </TooltipWrapper>
-            {showQuickControlsPane
-                && (
-                    <div
-                        className="absolute z-40 py-6 px-6 bg-theme-accent rounded-md border border-theme-secondary transition duration-100"
-                        style={{ top: '40px', right: '50px', width: '620px' }}
-                        onMouseLeave={() => setShowQuickControlsPane(false)}
-                    >
-
-                        <div className="flex flex-row justify-end items-center mb-5">
-                            <span className="mr-auto">
-                                <TooltipWrapper text={t('QuickControls.TT.Settings')}>
-                                    <QuickSettingsButton onClick={handleSettings}>
-                                        <Gear size={24} />
-                                    </QuickSettingsButton>
-                                </TooltipWrapper>
-                            </span>
-
-                            <TooltipWrapper text={t('QuickControls.TT.Sleep')}>
-                                <QuickSettingsButton onClick={handleSleep}>
-                                    <MoonFill size={20} />
-                                </QuickSettingsButton>
-                            </TooltipWrapper>
-
-                            <TooltipWrapper text={t('QuickControls.TT.PowerButton')}>
-                                <QuickSettingsButton onClick={handlePower} className="ml-4">
-                                    <Power size={24} />
-                                </QuickSettingsButton>
-                            </TooltipWrapper>
-                        </div>
-
-                        <div className="flex flex-row justify-between items-center mb-8">
-                            <TooltipWrapper text={t('QuickControls.TT.AlignAdirs')}>
-                                <QuickSettingsToggle onClick={handleAlignADIRS} icon={<Compass size={42} />}>
-                                    Align ADIRS
-                                </QuickSettingsToggle>
-                            </TooltipWrapper>
-
-                            <TooltipWrapper text={t('QuickControls.TT.FinishBoarding')}>
-                                <QuickSettingsToggle onClick={handleInstantBoarding} icon={<PersonCheck size={42} />}>
-                                    Finish Boarding
-                                </QuickSettingsToggle>
-                            </TooltipWrapper>
-
-                            <TooltipWrapper text={t('QuickControls.TT.SimBridge')}>
-                                <QuickSettingsToggle
-                                    onClick={handleResetSimBridgeConnection}
-                                    icon={
-                                        simBridgeClientState === SimBridgeClientState.CONNECTED ? (
-                                            <Wifi size={42} />
-                                        ) : (
-                                            <WifiOff size={42} />
-                                        )
-                                    }
-                                    className={simBridgeButtonStyle}
-                                >
-                                    SimBridge
-                                    {' '}
-                                    <br />
-                                    {simBridgeButtonStateString}
-                                </QuickSettingsToggle>
-                            </TooltipWrapper>
-
-                            <TooltipWrapper text={t('QuickControls.TT.OnScreenKeyboard')}>
-                                <QuickSettingsToggle onClick={handleToggleOsk} icon={<Keyboard size={42} />} className={oskButtonStyle}>
-                                    Onscreen Keyboard
-                                </QuickSettingsToggle>
-                            </TooltipWrapper>
-
-                        </div>
-
-                        <div className="flex flex-row justify-between items-center">
-                            <div className={`flex flex-row items-center ${usingAutobrightness && 'opacity-30'}`}>
-                                <TooltipWrapper text={t('QuickControls.TT.Brightness')}>
-                                    <div className="flex flex-row items-center mr-4 w-[80px] text-theme-text">
-                                        <BrightnessHighFill size={24} />
-                                        <span className="ml-2 pointer-events-none text-inherit">
-                                            {`${usingAutobrightness ? brightness.toFixed(0) : brightnessSetting}%`}
-                                        </span>
-                                    </div>
-                                    <div>
-                                        <Slider
-                                            disabled={usingAutobrightness === 1}
-                                            ref={brightnessSliderRef}
-                                            value={usingAutobrightness ? brightness : brightnessSetting}
-                                            min={1}
-                                            max={100}
-                                            onChange={setBrightnessSetting}
-                                            onAfterChange={() => brightnessSliderRef.current && brightnessSliderRef.current.blur()}
-                                            className="rounded-md"
-                                            style={{ width: '380px', height: '50px', padding: '0' }}
-                                            trackStyle={{ backgroundColor: 'var(--color-highlight)', height: '50px' }}
-                                            railStyle={{ backgroundColor: 'var(--color-body)', height: '50px' }}
-                                            handleStyle={{ top: '13px', height: '0px', width: '0px' }}
-                                        />
-                                    </div>
-                                </TooltipWrapper>
-                            </div>
-                            <TooltipWrapper text={t('QuickControls.TT.AutoBrightness')}>
-                                <button
-                                    type="button"
-                                    onClick={handleAutoBrightness}
-                                    className={`flex justify-center items-center ml-4 text-theme-text 
-                                                    bg-theme-body hover:border-4 hover:border-theme-highlight rounded-md 
-                                                    transition duration-100 ${usingAutobrightness === 1 ? 'bg-utility-green text-theme-body' : ''}`}
-                                    style={{ width: '80px', height: '50px' }}
-                                >
-                                    <BrightnessHigh size={24} />
-                                </button>
-                            </TooltipWrapper>
-                        </div>
-
-                    </div>
-                )}
+            {showQuickControlsPane && <QuickControlsPane setShowQuickControlsPane={setShowQuickControlsPane} />}
         </>
     );
 };
