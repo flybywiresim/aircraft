@@ -164,13 +164,13 @@ export const QuickControlsPane = ({ setShowQuickControlsPane }: {setShowQuickCon
     }, 200);
 
     return (
-        <>
+        <div>
+            <div className="absolute top-0 left-0 z-30 w-screen h-screen bg-theme-body opacity-70" onMouseDown={() => setShowQuickControlsPane(false)} />
+
             <div
                 className="absolute z-40 py-6 px-6 bg-theme-accent rounded-md border border-theme-secondary transition duration-100"
                 style={{ top: '40px', right: '50px', width: '620px' }}
-                onMouseLeave={() => setShowQuickControlsPane(false)}
             >
-
                 <div className="flex flex-row justify-end items-center mb-5">
                     <span className="mr-auto">
                         <TooltipWrapper text={t('QuickControls.TT.Settings')}>
@@ -276,7 +276,7 @@ export const QuickControlsPane = ({ setShowQuickControlsPane }: {setShowQuickCon
                 </div>
 
             </div>
-        </>
+        </div>
     );
 };
 
@@ -288,9 +288,10 @@ export const QuickControls = () => {
             <TooltipWrapper text={t('StatusBar.TT.QuickControls')}>
                 <div onClick={() => setShowQuickControlsPane((old) => !old)}>
                     <Gear size={26} />
+
+                    {showQuickControlsPane && <QuickControlsPane setShowQuickControlsPane={setShowQuickControlsPane} />}
                 </div>
             </TooltipWrapper>
-            {showQuickControlsPane && <QuickControlsPane setShowQuickControlsPane={setShowQuickControlsPane} />}
         </>
     );
 };
