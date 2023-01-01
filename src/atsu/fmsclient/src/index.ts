@@ -377,4 +377,16 @@ export class FmsClient {
     public resetAtisAutoUpdate(): void {
         this.publisher.pub('resetAtisAutoUpdate', true);
     }
+
+    public connectToNetworks(callsign: string): Promise<AtsuStatusCodes> {
+        return new Promise<AtsuStatusCodes>((resolve, _reject) => {
+            const requestId = this.requestId++;
+            this.publisher.pub('connectToNetworks', { callsign, requestId });
+
+            const subscriber = this.bus.getSubscriber<AtsuFmsMessages>();
+            subscriber.on('requestAtsuStatusCode').handle((response) => {
+                if (response.requestId === requestId) resolve(response.code);
+            });
+        });
+    }
 }

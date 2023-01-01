@@ -51,6 +51,7 @@ export interface AtsuFmsMessages {
     remoteStationAvailable: { station: string; requestId: number };
     atcLogon: { station: string; requestId: number };
     atcLogoff: number;
+    connectToNetworks: { callsign: string; requestId: number };
     // expect 'genericRequestResponse' responses
     activateAtisAutoUpdate: { icao: string; requestId: number };
     deactivateAtisAutoUpdate: { icao: string; requestId: number };
