@@ -22,6 +22,15 @@ use std::time::Duration;
 /// Simple hydraulic motor directly driven with a speed.
 /// Speed is smoothly rising or lowering to simulate transients states
 /// Flow is updated from current motor speed
+// Add POB that holds motor in position when related hydraulic circuit has low pressure
+// Each motor max fluid flow 22.22L/min with pressure relief valve at 220bar.
+// Each valve block contains LVDT to monitor position of valve. Two direction valves and one block valve
+// There are 3 modes: Static/Full Speed/Low Speed
+// With single motor, POB is activated to keep shaft in position. Other motor produces full torque with half speed
+// GREEN valve block and motor are controlled by SFCC1 (flaps)
+// YELLOW controlled by SFCC2 (flaps)
+// BLUE controller by SFCC1 (slats)
+// GREEN controller by SFCC2 (slats)
 pub struct FlapSlatHydraulicMotor {
     speed: LowPassFilter<AngularVelocity>,
     displacement: Volume,
@@ -109,6 +118,11 @@ impl Actuator for FlapSlatHydraulicMotor {
     }
 }
 
+// Add priority valve of 130bar (or 140bar?)
+// Add 4 actuators each wing with torque limiter for flaps
+// Add 10 actuators each wing wing with torque limiter for slats (2 per slat)
+// If torque exceeded, shear pin breaks --> flap surface oscillates -->
+//                     flap disconnect sensor triggered --> flap operation stops
 pub struct FlapSlatAssembly {
     position_left_percent_id: VariableIdentifier,
     position_right_percent_id: VariableIdentifier,
