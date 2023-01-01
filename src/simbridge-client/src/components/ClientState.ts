@@ -1,7 +1,7 @@
-/* eslint-disable no-console */
 // Copyright (c) 2022 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
+/* eslint-disable no-console */
 import { NXDataStore } from '@shared/persistence';
 import { Health } from './Health';
 
@@ -89,7 +89,9 @@ export class ClientState {
     }
 
     /**
-     * Returns the current state of the client connection to the SimBridge server
+     * Returns the current state of the client connection to the SimBridge server.
+     * This returns a cached value that is updated every 5 seconds and does not perform
+     * a health check to the server.
      *
      * @returns {SimBridgeClientState}
      */
