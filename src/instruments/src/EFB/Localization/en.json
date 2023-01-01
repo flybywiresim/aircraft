@@ -149,7 +149,6 @@
     },
     "Payload": {
       "BoardingTime": "Boarding Time",
-      "EstimatedDurationUnit": "minutes",
       "Cargo": "Cargo",
       "Current": "Current",
       "DeboardConfirmationBody": "Please confirm deboarding all passengers",
