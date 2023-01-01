@@ -254,14 +254,14 @@ impl FlapSlatAssembly {
             self.speed = zero_speed;
         }
 
-        // if self.speed > zero_speed
-        //     && self.final_requested_synchro_gear_position < self.position_feedback()
-        //     || self.speed < zero_speed
-        //         && self.final_requested_synchro_gear_position > self.position_feedback()
-        // {
-        //     self.surface_control_arm_position =
-        //         self.synchro_angle_to_surface_angle(self.final_requested_synchro_gear_position);
-        // }
+        if self.speed > zero_speed
+            && self.final_requested_synchro_gear_position < self.position_feedback()
+            || self.speed < zero_speed
+                && self.final_requested_synchro_gear_position > self.position_feedback()
+        {
+            self.surface_control_arm_position =
+                self.synchro_angle_to_surface_angle(self.final_requested_synchro_gear_position);
+        }
 
         self.surface_control_arm_position = self
             .surface_control_arm_position
