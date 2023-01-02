@@ -55,7 +55,7 @@ export interface AtsuFmsMessages {
     atcLogoff: number;
     connectToNetworks: { callsign: string; requestId: number };
     // expect 'genericRequestResponse' responses
-    activateAtisAutoUpdate: { icao: string; requestId: number };
+    activateAtisAutoUpdate: { icao: string; type: AtisType; requestId: number };
     deactivateAtisAutoUpdate: { icao: string; requestId: number };
     togglePrintAtisReportsPrint: number;
     setMaxUplinkDelay: { delay: number; requestId: number };
@@ -66,11 +66,11 @@ export interface AtsuFmsMessages {
     // expect 'positionReport' response
     requestPositionReport: number;
     // fire & forget messages
-    registerAtisMessages: AtsuFmsRegisterMessages<AtisMessage>;
-    registerCpdlcMessages: AtsuFmsRegisterMessages<CpdlcMessage>;
-    registerDclMessages: AtsuFmsRegisterMessages<DclMessage>;
-    registerOclMessages: AtsuFmsRegisterMessages<OclMessage>;
-    registerWeatherMessages: AtsuFmsRegisterMessages<WeatherMessage>;
+    registerAtisMessages: AtisMessage[];
+    registerCpdlcMessages: CpdlcMessage[];
+    registerDclMessages: DclMessage[];
+    registerOclMessages: OclMessage[];
+    registerWeatherMessages: WeatherMessage[];
     messageRead: number;
     removeMessage: number;
     cleanupAtcMessages: boolean;
@@ -80,8 +80,7 @@ export interface AtsuFmsMessages {
     genericRequestResponse: number;
     requestAtsuStatusCode: { requestId: number; code: AtsuStatusCodes };
     requestSentToGround: number;
-    atisResponse: [AtsuStatusCodes, AtisMessage];
-    weatherResponse: [AtsuStatusCodes, WeatherMessage];
+    weatherResponse: { requestId: number; data: [AtsuStatusCodes, WeatherMessage] };
     positionReport: { requestId: number; data: PositionReportData };
 
     // requests from ATSU to FMS

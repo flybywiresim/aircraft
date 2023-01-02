@@ -153,8 +153,8 @@ export class FmsClient {
         this.publisher.pub('removeMessage', uid);
     }
 
-    public receiveAtis(airport: string, type: AtisType, sentCallback: () => void): Promise<[AtsuStatusCodes, AtisMessage]> {
-        return new Promise<[AtsuStatusCodes, AtisMessage]>((resolve, _reject) => {
+    public receiveAtis(airport: string, type: AtisType, sentCallback: () => void): Promise<[AtsuStatusCodes, WeatherMessage]> {
+        return new Promise<[AtsuStatusCodes, WeatherMessage]>((resolve, _reject) => {
             const requestId = this.requestId++;
             this.publisher.pub('requestAtis', { icao: airport, type, requestId });
 
@@ -162,7 +162,9 @@ export class FmsClient {
             subscriber.on('requestSentToGround').handle((id) => {
                 if (id === requestId) sentCallback();
             });
-            subscriber.on('atisResponse').handle((response) => resolve(response));
+            subscriber.on('weatherResponse').handle((response) => {
+                if (response.requestId === requestId) resolve(response.data);
+            });
         });
     }
 
@@ -175,23 +177,23 @@ export class FmsClient {
             subscriber.on('requestSentToGround').handle((id) => {
                 if (id === requestId) sentCallback();
             });
-            subscriber.on('weatherResponse').handle((response) => resolve(response));
+            subscriber.on('weatherResponse').handle((response) => {
+                if (response.requestId === requestId) resolve(response.data);
+            });
         });
     }
 
     public registerMessages(messages: AtsuMessage[]): void {
-        const requestId = this.requestId++;
-
         if (messages[0] instanceof AtisMessage) {
-            this.publisher.pub('registerAtisMessages', { requestId, messages: messages as AtisMessage[] });
+            this.publisher.pub('registerAtisMessages', messages as AtisMessage[]);
         } else if (messages[0] instanceof CpdlcMessage) {
-            this.publisher.pub('registerCpdlcMessages', { requestId, messages: messages as CpdlcMessage[] });
+            this.publisher.pub('registerCpdlcMessages', messages as CpdlcMessage[]);
         } else if (messages[0] instanceof DclMessage) {
-            this.publisher.pub('registerDclMessages', { requestId, messages: messages as DclMessage[] });
+            this.publisher.pub('registerDclMessages', messages as DclMessage[]);
         } else if (messages[0] instanceof OclMessage) {
-            this.publisher.pub('registerOclMessages', { requestId, messages: messages as OclMessage[] });
+            this.publisher.pub('registerOclMessages', messages as OclMessage[]);
         } else if (messages[0] instanceof WeatherMessage) {
-            this.publisher.pub('registerWeatherMessages', { requestId, messages: messages as WeatherMessage[] });
+            this.publisher.pub('registerWeatherMessages', messages as WeatherMessage[]);
         }
     }
 
@@ -211,10 +213,10 @@ export class FmsClient {
         });
     }
 
-    public activateAtisAutoUpdate(icao: string): Promise<void> {
+    public activateAtisAutoUpdate(icao: string, type: AtisType): Promise<void> {
         return new Promise<void>((resolve, _reject) => {
             const requestId = this.requestId++;
-            this.publisher.pub('activateAtisAutoUpdate', { icao, requestId });
+            this.publisher.pub('activateAtisAutoUpdate', { icao, type, requestId });
 
             const subscriber = this.bus.getSubscriber<AtsuFmsMessages>();
             subscriber.on('genericRequestResponse').handle((id) => {
