@@ -32,11 +32,17 @@ export class FmsClient {
 
     private atisAutoUpdates: string[] = [];
 
-    private atcAtisReports: Map<string, AtisMessage[]>;
+    private atcAtisReports: Map<string, AtisMessage[]> = new Map();
 
     private atisReportsPrintActive: boolean = false;
 
-    private atcStationStatus: { current: string; next: string; notificationTime: number; mode: FansMode; logonInProgress: boolean };
+    private atcStationStatus: { current: string; next: string; notificationTime: number; mode: FansMode; logonInProgress: boolean } = {
+        current: '',
+        next: '',
+        notificationTime: 0,
+        mode: FansMode.FansNone,
+        logonInProgress: false,
+    };
 
     private atcMessagesBuffer: CpdlcMessage[] = [];
 
@@ -51,7 +57,6 @@ export class FmsClient {
     private fms: any = null;
 
     constructor(fms: any, flightPlanManager: FlightPlanManager, flightPhaseManager: FlightPhaseManager) {
-        this.atcStationStatus.mode = FansMode.FansNone;
         this.fms = fms;
 
         this.bus = new EventBus();

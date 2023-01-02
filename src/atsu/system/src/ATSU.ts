@@ -21,7 +21,7 @@ import { DigitalOutputs } from './DigitalOutputs';
  * Defines the ATSU
  */
 export class Atsu {
-    public datalink = new Datalink(this);
+    public datalink: Datalink = null;
 
     private fltNo: string = '';
 
@@ -31,11 +31,11 @@ export class Atsu {
 
     public digitalOutputs: DigitalOutputs = null;
 
-    private ats623 = new ATS623(this);
+    private ats623: ATS623 = null;
 
-    public aoc = new Aoc(this);
+    public aoc: Aoc = null;
 
-    public atc = new Atc(this);
+    public atc: Atc = null;
 
     public createAutomatedPositionReport(): CpdlcMessage {
         const message = new CpdlcMessage();
@@ -173,6 +173,7 @@ export class Atsu {
     }
 
     private newRouteReceived(route: FmsRouteData): void {
+        console.log('new route');
         const lastWaypoint = this.digitalInputs.FlightRoute.lastWaypoint;
         const passedWaypoint = route.lastWaypoint !== null && (lastWaypoint === null || lastWaypoint.ident !== route.lastWaypoint.ident);
 
@@ -221,6 +222,11 @@ export class Atsu {
     constructor(digitalInputs: DigitalInputs, digitalOutputs: DigitalOutputs) {
         this.digitalInputs = digitalInputs;
         this.digitalOutputs = digitalOutputs;
+
+        this.datalink = new Datalink(this);
+        this.ats623 = new ATS623(this);
+        this.aoc = new Aoc(this);
+        this.atc = new Atc(this);
 
         // register all input callbacks
         this.digitalInputs.fmsBus.addDataCallback('flightRoute', (route) => this.newRouteReceived(route));
