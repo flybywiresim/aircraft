@@ -42,17 +42,17 @@ export class FlightPhaseManager {
 
     constructor(cids: Cids) {
         this.cids = cids;
-        this.boardingPhase = new BoardingPhase(this);
-        this.pushbackPhase = new PushbackPhase(this);
-        this.taxiBeforeTakeoffPhase = new TaxiBeforeTakeoffPhase(this);
-        this.takeoffAndInitClimbPhase = new TakeoffAndInitialClimbPhase(this);
-        this.finalClimbPhase = new FinalClimbPhase(this);
-        this.cruisePhase = new CruisePhase(this);
-        this.todPhase = new TopOfDescentPhase(this);
-        this.apprPhase = new ApproachPhase(this);
-        this.finalApprAndLandingPhase = new FinalApproachAndLandingPhase(this);
-        this.disembarkationPhase = new DisembarkationPhase(this);
-        this.afterDisembarkationPhase = new AfterDisembarkationPhase(this);
+        this.boardingPhase = new BoardingPhase(this.cids, this);
+        this.pushbackPhase = new PushbackPhase(this.cids, this);
+        this.taxiBeforeTakeoffPhase = new TaxiBeforeTakeoffPhase(this.cids, this);
+        this.takeoffAndInitClimbPhase = new TakeoffAndInitialClimbPhase(this.cids, this);
+        this.finalClimbPhase = new FinalClimbPhase(this.cids, this);
+        this.cruisePhase = new CruisePhase(this.cids, this);
+        this.todPhase = new TopOfDescentPhase(this.cids, this);
+        this.apprPhase = new ApproachPhase(this.cids, this);
+        this.finalApprAndLandingPhase = new FinalApproachAndLandingPhase(this.cids, this);
+        this.disembarkationPhase = new DisembarkationPhase(this.cids, this);
+        this.afterDisembarkationPhase = new AfterDisembarkationPhase(this.cids, this);
     }
 
     public init() {
