@@ -1,18 +1,14 @@
-import { AtsuFmsMessages } from '@atsu/common/databus';
-import { Clock, Waypoint } from '@atsu/common/types';
+import { AtsuFmsMessages, FmsRouteData } from '@atsu/common/databus';
+import { Clock } from '@atsu/common/types';
+import { FmsInputBus } from '@atsu/system/databus/FmsBus';
 import { Arinc429Word } from '@shared/arinc429';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { EventBus, EventSubscriber } from 'msfssdk';
-import { AtcMessageButtonBusTypes } from './databus/AtcMessageButtonBus';
-import { ClockDataBusTypes } from './databus/ClockBus';
-import { FmgcDataBusTypes } from './databus/FmgcBus';
-import { FwcDataBusTypes } from './databus/FwcBus';
-import { TransponderDataBusTypes } from './databus/TransponderBus';
-
-export type InputDataCallbacks = {
-    onAtcButtonPressed: () => void;
-    onRouteData: () => void;
-}
+import { AtcMessageButtonBusTypes, AtcMessageButtonInputBus, AtcMessageButtonSimvarPublisher } from './databus/AtcMessageButtonBus';
+import { ClockDataBusTypes, ClockInputBus, ClockSimvarPublisher } from './databus/ClockBus';
+import { FmgcDataBusTypes, FmgcInputBus, FmgcSimvarPuplisher } from './databus/FmgcBus';
+import { FwcDataBusTypes, FwcInputBus, FwcSimvarPublisher } from './databus/FwcBus';
+import { TransponderDataBusTypes, TransponderInputBus, TransponderSimvarPublisher } from './databus/TransponderBus';
 
 export class DigitalInputs {
     private subscriber: EventSubscriber<
@@ -85,31 +81,66 @@ export class DigitalInputs {
 
     public CompanyMessageCount: number = 0;
 
-    public AtcMessageButtonPressed: boolean = false;
-
     public TransponderCode: number = 2000;
 
-    public FlightRoute: {
-        lastWaypoint: Waypoint,
-        activeWaypoint: Waypoint,
-        nextWaypoint: Waypoint,
-        destination: Waypoint,
-    } = {
+    public FlightRoute: FmsRouteData = {
         lastWaypoint: null,
         activeWaypoint: null,
         nextWaypoint: null,
         destination: null,
     }
 
-    private callbacks: InputDataCallbacks = {
-        onAtcButtonPressed: null,
-        onRouteData: null,
-    }
+    private readonly atcMessageButtonPublisher: AtcMessageButtonSimvarPublisher;
 
-    constructor(private readonly bus: EventBus) { }
+    private readonly clockPublisher: ClockSimvarPublisher;
+
+    private readonly fmgcPublisher: FmgcSimvarPuplisher;
+
+    private readonly fwcPublisher: FwcSimvarPublisher;
+
+    private readonly transponderPublisher: TransponderSimvarPublisher;
+
+    public readonly atcMessageButtonBus: AtcMessageButtonInputBus;
+
+    public readonly clockBus: ClockInputBus;
+
+    public readonly fmgcBus: FmgcInputBus;
+
+    public readonly fwcBus: FwcInputBus;
+
+    public readonly transponderBus: TransponderInputBus;
+
+    public readonly fmsBus: FmsInputBus;
+
+    constructor(private readonly bus: EventBus) {
+        this.atcMessageButtonPublisher = new AtcMessageButtonSimvarPublisher(this.bus);
+        this.clockPublisher = new ClockSimvarPublisher(this.bus);
+        this.fmgcPublisher = new FmgcSimvarPuplisher(this.bus);
+        this.fwcPublisher = new FwcSimvarPublisher(this.bus);
+        this.transponderPublisher = new TransponderSimvarPublisher(this.bus);
+
+        this.atcMessageButtonBus = new AtcMessageButtonInputBus(this.bus);
+        this.clockBus = new ClockInputBus(this.bus);
+        this.fmgcBus = new FmgcInputBus(this.bus);
+        this.fwcBus = new FwcInputBus(this.bus);
+        this.transponderBus = new TransponderInputBus(this.bus);
+        this.fmsBus = new FmsInputBus(this.bus);
+    }
 
     public initialize(): void {
         this.subscriber = this.bus.getSubscriber<AtcMessageButtonBusTypes & ClockDataBusTypes & FmgcDataBusTypes & FwcDataBusTypes & TransponderDataBusTypes & AtsuFmsMessages>();
+        this.atcMessageButtonBus.initialize();
+        this.clockBus.initialize();
+        this.fmgcBus.initialize();
+        this.fwcBus.initialize();
+        this.transponderBus.initialize();
+        this.fmsBus.initialize();
+
+        this.atcMessageButtonBus.connectedCallback();
+        this.clockBus.connectedCallback();
+        this.fmgcBus.connectedCallback();
+        this.fwcBus.connectedCallback();
+        this.transponderBus.connectedCallback();
 
         this.subscriber.on('utcYear').handle((year: number) => this.UtcClock.year = year);
         this.subscriber.on('utcMonth').handle((month: number) => this.UtcClock.month = month);
@@ -147,11 +178,6 @@ export class DigitalInputs {
 
         this.subscriber.on('companyMessageCount').handle((count: number) => this.CompanyMessageCount = count);
 
-        this.subscriber.on('buttonPressed').handle((pressed: boolean) => {
-            this.AtcMessageButtonPressed = pressed;
-            if (this.callbacks.onAtcButtonPressed) this.callbacks.onAtcButtonPressed();
-        });
-
         this.subscriber.on('flightPhase').handle((phase: Arinc429Word) => {
             if (phase.isNormalOperation()) {
                 this.FlightPhase = phase.value as FmgcFlightPhase;
@@ -163,12 +189,24 @@ export class DigitalInputs {
         this.subscriber.on('transponderCode').handle((code: number) => this.TransponderCode = code);
 
         this.subscriber.on('routeData').handle((route) => {
+            this.fmsBus.newRouteDataReceived(route);
             this.FlightRoute = route;
-            if (this.callbacks.onRouteData) this.callbacks.onRouteData();
         });
     }
 
-    public addDataCallback<K extends keyof InputDataCallbacks>(event: K, callback: () => void): void {
-        this.callbacks[event] = callback;
+    public startPublish(): void {
+        this.atcMessageButtonPublisher.startPublish();
+        this.clockPublisher.startPublish();
+        this.fmgcPublisher.startPublish();
+        this.fwcPublisher.startPublish();
+        this.transponderPublisher.startPublish();
+    }
+
+    public update(): void {
+        this.atcMessageButtonPublisher.onUpdate();
+        this.clockPublisher.onUpdate();
+        this.fmgcPublisher.onUpdate();
+        this.fwcPublisher.onUpdate();
+        this.transponderPublisher.onUpdate();
     }
 }

@@ -26,11 +26,9 @@ export class Atsu {
 
     private messageCounter = 0;
 
-    private eventBus = new EventBus();
+    public digitalInputs: DigitalInputs = null;
 
-    public digitalInputs = new DigitalInputs(this.eventBus);
-
-    public digitalOutputs = new DigitalOutputs(this.eventBus);
+    public digitalOutputs: DigitalOutputs = null;
 
     private ats623 = new ATS623(this);
 
@@ -187,8 +185,9 @@ export class Atsu {
         }
     }
 
-    constructor() {
-        this.digitalInputs.addDataCallback('onRouteData', () => this.waypointPassedCallback);
+    constructor(digitalInputs: DigitalInputs, digitalOutputs: DigitalOutputs) {
+        this.digitalInputs = digitalInputs;
+        this.digitalOutputs = digitalOutputs;
     }
 
     public async connectToNetworks(flightNo: string): Promise<AtsuStatusCodes> {
