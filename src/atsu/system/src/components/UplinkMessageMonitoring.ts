@@ -12,11 +12,10 @@ export class UplinkMessageMonitoring {
         this.atsu = atsu;
     }
 
-    public
-
     public monitorMessage(message: CpdlcMessage): boolean {
         if (UplinkMonitor.relevantMessage(message)) {
             this.monitoredMessages.push(UplinkMonitor.createMessageMonitor(message));
+            this.atsu.digitalOutputs.FmsBus.sendMonitoredMessages(this.atsu.atc.monitoredMessages());
             return true;
         }
         return false;
@@ -26,6 +25,7 @@ export class UplinkMessageMonitoring {
         const idx = this.monitoredMessages.findIndex((message) => message.messageId === uid);
         if (idx > -1) {
             this.monitoredMessages.splice(idx, 1);
+            this.atsu.digitalOutputs.FmsBus.sendMonitoredMessages(this.atsu.atc.monitoredMessages());
         }
     }
 
