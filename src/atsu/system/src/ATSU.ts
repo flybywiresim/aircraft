@@ -37,6 +37,10 @@ export class Atsu {
 
     public atc: Atc = null;
 
+    destinationWaypoint(): any {
+        return {};
+    }
+
     public createAutomatedPositionReport(): CpdlcMessage {
         const message = new CpdlcMessage();
         message.Station = this.atc.currentStation();
