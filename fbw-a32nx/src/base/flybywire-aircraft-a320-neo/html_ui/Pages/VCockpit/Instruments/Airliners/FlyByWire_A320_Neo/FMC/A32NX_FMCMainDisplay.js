@@ -6,6 +6,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.fmsUpdateThrottler = new UpdateThrottler(250);
         this._progBrgDistUpdateThrottler = new UpdateThrottler(2000);
         this.ilsUpdateThrottler = new UpdateThrottler(5000);
+        this.cidsUpdateThrottler = new UpdateThrottler(2000);
         this._apCooldown = 500;
         this._radioNavOn = false;
         this._vhf1Frequency = 0;
@@ -209,6 +210,9 @@ class FMCMainDisplay extends BaseAirliners {
         this.managedProfile = undefined;
         this.speedLimitExceeded = undefined;
 
+        // CIDS
+        this.cids = undefined;
+
         this.onAirport = undefined;
     }
 
@@ -317,6 +321,8 @@ class FMCMainDisplay extends BaseAirliners {
         }, 15000);
 
         SimVar.SetSimVarValue('L:A32NX_FM_LS_COURSE', 'number', -1);
+
+        this.cids.init();
     }
 
     initVariables() {
@@ -551,6 +557,9 @@ class FMCMainDisplay extends BaseAirliners {
         // ATSU data
         this.atsu = new Atsu.Atsu(this);
 
+        // CIDS
+        this.cids = new Cids.Cids();
+
         // Reset SimVars
         SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", NaN);
         SimVar.SetSimVarValue("L:AIRLINER_V2_SPEED", "Knots", NaN);
@@ -640,6 +649,10 @@ class FMCMainDisplay extends BaseAirliners {
 
         if (this.efisSymbols) {
             this.efisSymbols.update(_deltaTime);
+        };
+
+        if (this.cidsUpdateThrottler.canUpdate(_deltaTime) !== -1) {
+            this.cids.update();
         }
     }
 
