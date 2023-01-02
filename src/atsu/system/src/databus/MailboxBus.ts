@@ -52,8 +52,6 @@ export class MailboxBus {
 
     private lastClosedMessage: [MailboxMessage[], number] = null;
 
-    private atcMsgWatchdogInterval: NodeJS.Timer = null;
-
     private atcRingInterval: NodeJS.Timer = null;
 
     private closeMessage(messages: (MailboxMessage[])[], backlog: (MailboxMessage[])[], uid: number, uplink: boolean): boolean {
@@ -106,6 +104,7 @@ export class MailboxBus {
         this.atsu = atsu;
         this.atc = atc;
 
+        this.atsu.digitalInputs.atcMessageButtonBus.addDataCallback('onButtonPressed', () => this.cleanupNotifications());
         this.mailboxPublisher = this.mailboxBus.getPublisher<AtsuMailboxMessages>();
         this.mailboxSubscriber = this.mailboxBus.getSubscriber<AtsuMailboxMessages>();
 
@@ -291,11 +290,6 @@ export class MailboxBus {
     private cleanupNotifications() {
         this.atsu.digitalOutputs.AtcMessageButtonsBus.resetButton();
 
-        if (this.atcMsgWatchdogInterval) {
-            clearInterval(this.atcMsgWatchdogInterval);
-            this.atcMsgWatchdogInterval = null;
-        }
-
         if (this.atcRingInterval) {
             clearInterval(this.atcRingInterval);
             this.atcRingInterval = null;
@@ -303,15 +297,6 @@ export class MailboxBus {
     }
 
     private setupIntervals() {
-        if (!this.atcMsgWatchdogInterval) {
-            // start the watchdog to check the the ATC MSG button
-            this.atcMsgWatchdogInterval = setInterval(() => {
-                if (this.atsu.digitalInputs.AtcMessageButtonPressed) {
-                    this.cleanupNotifications();
-                }
-            }, 100);
-        }
-
         if (this.atcRingInterval) {
             clearInterval(this.atcRingInterval);
         }

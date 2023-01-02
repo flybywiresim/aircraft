@@ -1,4 +1,4 @@
-import { EventBus, Publisher, SimVarDefinition, SimVarPublisher, SimVarValueType } from 'msfssdk';
+import { EventBus, EventSubscriber, Publisher, SimVarDefinition, SimVarPublisher, SimVarValueType } from 'msfssdk';
 
 interface AtcMessageButtonSimvars {
     msfsButtonActive: boolean,
@@ -26,17 +26,30 @@ export interface AtcMessageButtonBusTypes {
     buttonPressed: boolean,
 }
 
+export type AtcMessageButtonBusCallbacks = {
+    onButtonPressed: () => void;
+}
+
 export class AtcMessageButtonInputBus {
     private simVarPublisher: AtcMessageButtonSimvarPublisher = null;
+
+    private subscriber: EventSubscriber<AtcMessageButtonSimvars>;
+
+    private buttonActive: boolean = false;
+
+    private callbacks: AtcMessageButtonBusCallbacks = { onButtonPressed: null }
 
     constructor(private readonly bus: EventBus) { }
 
     public initialize(): void {
-        const publisher = this.bus.getPublisher<AtcMessageButtonBusTypes>();
-        const subscriber = this.bus.getSubscriber<AtcMessageButtonSimvars>();
+        this.subscriber = this.bus.getSubscriber<AtcMessageButtonSimvars>();
 
-        subscriber.on('msfsButtonActive').whenChanged().handle((active: boolean) => publisher.pub('buttonActive', active));
-        subscriber.on('msfsButtonPressed').whenChanged().handle((pressed: number) => publisher.pub('buttonPressed', pressed !== 0));
+        this.subscriber.on('msfsButtonActive').whenChanged().handle((active: boolean) => this.buttonActive = active);
+        this.subscriber.on('msfsButtonPressed').whenChanged().handle((pressed: number) => {
+            if (this.buttonActive && pressed && this.callbacks.onButtonPressed !== null) {
+                this.callbacks.onButtonPressed();
+            }
+        });
 
         this.simVarPublisher = new AtcMessageButtonSimvarPublisher(this.bus);
     }
@@ -44,6 +57,10 @@ export class AtcMessageButtonInputBus {
     public connectedCallback(): void {
         this.simVarPublisher.subscribe('msfsButtonActive');
         this.simVarPublisher.subscribe('msfsButtonPressed');
+    }
+
+    public addDataCallback<K extends keyof AtcMessageButtonBusCallbacks>(event: K, callback: () => void): void {
+        this.callbacks[event] = callback;
     }
 }
 
