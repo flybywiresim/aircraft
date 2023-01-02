@@ -100,6 +100,12 @@ export class Cids {
         || -1;
     }
 
+    public cruiseAltitude(): number {
+        const cruiseAltitude = SimVar.GetSimVarValue('L:AIRLINER_CRUISE_ALTITUDE', 'feet');
+
+        return cruiseAltitude;
+    }
+
     public altCrzActive(): boolean {
         const altCrzActive = SimVar.GetSimVarValue('L:A32NX_FMA_CRUISE_ALT_MODE', 'Bool');
 
