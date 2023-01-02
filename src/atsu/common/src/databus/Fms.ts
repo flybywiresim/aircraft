@@ -30,14 +30,16 @@ export interface AtsuFmsRegisterMessages<T> {
     messages: T[];
 }
 
+export interface FmsRouteData {
+    lastWaypoint: Waypoint;
+    activeWaypoint: Waypoint;
+    nextWaypoint: Waypoint;
+    destination: Waypoint;
+}
+
 export interface AtsuFmsMessages {
     // flight plan synchronizations from FMS to ATSU
-    routeData: {
-        lastWaypoint: Waypoint;
-        activeWaypoint: Waypoint;
-        nextWaypoint: Waypoint;
-        destination: Waypoint;
-    }
+    routeData: FmsRouteData;
 
     // requests and synchronizations from FMS to ATSU
     // expect 'requestAtsuStatusCode' responses
