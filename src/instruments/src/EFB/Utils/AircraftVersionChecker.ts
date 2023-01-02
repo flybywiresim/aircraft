@@ -7,6 +7,7 @@ import { CommitInfo, GitVersions, ReleaseInfo } from '@flybywiresim/api-client';
 // jest in test-js.sh requires relative path  can't handle "@shared" alias
 // noinspection ES6PreferShortImport
 import { PopUp } from '../../../../shared/src/popup';
+import { t } from '../translation';
 
 /**
  * Contains the a32nx_build_info.json file's information in a structured way.
@@ -236,13 +237,16 @@ export class AircraftVersionChecker {
     private static showVersionPopup(branchName, currentVersion, releaseVersion) {
         const popup = new PopUp();
         popup.showInformation(
-            // TODO: Add localization - requires localization framework to support placeholders
-            'NEW VERSION AVAILABLE',
+            t('VersionCheck.Title'),
             `<div style="font-size: 100%; text-align: left;">
-                     You are using ${branchName} version:<br/><strong>${currentVersion}</strong><br/><br/> 
-                     Latest ${branchName} version is:<br /><strong>${releaseVersion}</strong><br/><br/>
-                     Please update your aircraft using the FlyByWire Installer.
-                     </div>`,
+                        ${t('VersionCheck.CurrentVersionText', [{ edition: branchName }])}<br>
+                        <strong>${currentVersion}</strong><br><br>
+                                        
+                        ${t('VersionCheck.LatestVersionText', [{ edition: branchName }])}<br>
+                        <strong>${releaseVersion}</strong><br/><br/>
+                        
+                        ${t('VersionCheck.RecommendationText')}
+                    </div>`,
             'normal',
             () => {},
         );
