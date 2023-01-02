@@ -2,7 +2,6 @@ import { Arinc429Word } from '@shared/arinc429';
 import { EventBus, SimVarDefinition, SimVarPublisher, SimVarValueType } from 'msfssdk';
 
 interface FmgcSimvars {
-    msfsFlightNumber: string,
     msfsPresentPositionLatitude: number,
     msfsPresentPositionLongitude: number,
     msfsPresentAltitude: number,
@@ -23,7 +22,6 @@ interface FmgcSimvars {
 }
 
 enum FmgcSimvarSources {
-    flightNumber = 'ATC FLIGHT NUMBER',
     presentPositionLatitude = 'L:A32NX_ADIRS_IR_1_LATITUDE',
     presentPositionLongitude = 'L:A32NX_ADIRS_IR_1_LONGITUDE',
     presentAltitude = 'L:A32NX_ADIRS_ADR_1_ALTITUDE',
@@ -45,7 +43,6 @@ enum FmgcSimvarSources {
 
 export class FmgcSimvarPuplisher extends SimVarPublisher<FmgcSimvars> {
     private static simvars = new Map<keyof FmgcSimvars, SimVarDefinition>([
-        ['msfsFlightNumber', { name: FmgcSimvarSources.flightNumber, type: SimVarValueType.String }],
         ['msfsPresentPositionLatitude', { name: FmgcSimvarSources.presentPositionLatitude, type: SimVarValueType.Number }],
         ['msfsPresentPositionLongitude', { name: FmgcSimvarSources.presentPositionLongitude, type: SimVarValueType.Number }],
         ['msfsPresentAltitude', { name: FmgcSimvarSources.presentAltitude, type: SimVarValueType.Number }],
@@ -99,7 +96,6 @@ export class FmgcInputBus {
         const publisher = this.bus.getPublisher<FmgcDataBusTypes>();
         const subscriber = this.bus.getSubscriber<FmgcSimvars>();
 
-        subscriber.on('msfsFlightNumber').whenChanged().handle((flightNo: string) => publisher.pub('flightNumber', flightNo));
         subscriber.on('msfsPresentPositionLatitude').whenChanged().handle((latitude: number) => {
             publisher.pub('presentPositionLatitude', new Arinc429Word(latitude));
         });
@@ -156,7 +152,6 @@ export class FmgcInputBus {
     }
 
     public connectedCallback(): void {
-        this.simVarPublisher.subscribe('msfsFlightNumber');
         this.simVarPublisher.subscribe('msfsPresentPositionLatitude');
         this.simVarPublisher.subscribe('msfsPresentPositionLongitude');
         this.simVarPublisher.subscribe('msfsPresentAltitude');
