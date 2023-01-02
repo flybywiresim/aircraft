@@ -936,6 +936,9 @@ impl LandingGearControlInterfaceUnit {
             .gear_system_control
             .init_gear_state(&self.sensor_inputs, !self.is_gear_lever_down)
         {
+            //If state ok on init let's compute statemachine outputs
+            self.compute_open_doors_output();
+            self.compute_extend_gears_output();
             LgciuStatus::Ok
         } else {
             LgciuStatus::FailedNoChangeOver
