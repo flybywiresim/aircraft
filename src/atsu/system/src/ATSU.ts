@@ -8,7 +8,8 @@ import { AtsuMessage } from '@atsu/common/messages/AtsuMessage';
 import { CpdlcMessagesDownlink } from '@atsu/common/messages/CpdlcMessageElements';
 import { coordinateToString, timestampToString } from '@atsu/common/components/Convert';
 import { InputValidation } from '@atsu/common/components/InputValidation';
-import { EventBus } from 'msfssdk';
+import { FmsRouteData } from '@atsu/common/databus';
+import { PositionReportData } from '@atsu/common/types';
 import { Aoc } from './AOC';
 import { Atc } from './ATC';
 import { Datalink } from './com/Datalink';
@@ -32,7 +33,7 @@ export class Atsu {
 
     private ats623 = new ATS623(this);
 
-    public aoc = new Aoc(this.datalink, this.digitalOutputs);
+    public aoc = new Aoc(this, this.datalink);
 
     public atc = new Atc(this, this.datalink);
 
@@ -171,11 +172,11 @@ export class Atsu {
         return message;
     }
 
-    // TODO after a new last is received
-    private waypointPassedCallback(): void {
-        if (this.atc.automaticPositionReportActive() && this.atc.currentStation() !== '' && this.digitalInputs.FlightRoute.lastWaypoint
-            && this.digitalInputs.FlightRoute.activeWaypoint && this.digitalInputs.FlightRoute.nextWaypoint
-        ) {
+    private newRouteReceived(route: FmsRouteData): void {
+        const lastWaypoint = this.digitalInputs.FlightRoute.lastWaypoint;
+        const passedWaypoint = route.lastWaypoint !== null && (lastWaypoint === null || lastWaypoint.ident !== route.lastWaypoint.ident);
+
+        if (this.atc.automaticPositionReportActive() && this.atc.currentStation() !== '' && passedWaypoint) {
             const message = this.createAutomatedPositionReport();
 
             // skip the Mailbox
@@ -183,6 +184,38 @@ export class Atsu {
 
             this.sendMessage(message);
         }
+    }
+
+    private createPositionReportData(): PositionReportData {
+        const machMode = this.digitalInputs.AutopilotData.machMode;
+
+        return {
+            flightState: {
+                lat: this.digitalInputs.PresentPosition.latitude.value,
+                lon: this.digitalInputs.PresentPosition.longitude.value,
+                altitude: this.digitalInputs.PresentPosition.altitude.value,
+                heading: this.digitalInputs.PresentPosition.heading.value,
+                track: this.digitalInputs.PresentPosition.track.value,
+                indicatedAirspeed: machMode ? this.digitalInputs.PresentDynamics.mach.value : this.digitalInputs.PresentDynamics.computedAirspeed.value,
+                groundSpeed: this.digitalInputs.PresentDynamics.groundSpeed.value,
+                verticalSpeed: this.digitalInputs.PresentDynamics.verticalSpeed.value,
+            },
+            autopilot: {
+                apActive: this.digitalInputs.AutopilotData.active.value !== 0,
+                speed: machMode ? this.digitalInputs.AutopilotData.selectedMach.value : this.digitalInputs.AutopilotData.selectedSpeed.value,
+                machMode,
+                altitude: this.digitalInputs.AutopilotData.selectedAltitude,
+            },
+            environment: {
+                windDirection: this.digitalInputs.MeteoData.windDirection.value,
+                windSpeed: this.digitalInputs.MeteoData.windSpeed.value,
+                temperature: this.digitalInputs.MeteoData.staticAirTemperature.value,
+            },
+            lastWaypoint: this.digitalInputs.FlightRoute.lastWaypoint,
+            activeWaypoint: this.digitalInputs.FlightRoute.activeWaypoint,
+            nextWaypoint: this.digitalInputs.FlightRoute.nextWaypoint,
+            destination: this.digitalInputs.FlightRoute.destination,
+        };
     }
 
     constructor(digitalInputs: DigitalInputs, digitalOutputs: DigitalOutputs) {
@@ -303,32 +336,18 @@ export class Atsu {
     }
 
     public publishAtsuStatusCode(code: AtsuStatusCodes): void {
-        this.digitalOutputs.atsuSystemStatus(code);
+        this.digitalOutputs.FmsBus.sendAtsuSystemStatus(code);
     }
 
     public modifyMailboxMessage(message: CpdlcMessage): void {
-        this.digitalOutputs.atcMessageModify(message);
+        this.digitalOutputs.FmsBus.sendMessageModify(message);
     }
 
     public async isRemoteStationAvailable(callsign: string): Promise<AtsuStatusCodes> {
         return this.datalink.isStationAvailable(callsign);
     }
 
-    public findMessage(uid: number): AtsuMessage {
-        let message = this.aoc.messages().find((element) => element.UniqueMessageID === uid);
-        if (message !== undefined) {
-            return message;
-        }
-
-        message = this.atc.messages().find((element) => element.UniqueMessageID === uid);
-        if (message !== undefined) {
-            return message;
-        }
-
-        return undefined;
-    }
-
     public printMessage(message: AtsuMessage): void {
-        this.digitalOutputs.printMessage(message);
+        this.digitalOutputs.FmsBus.sendPrintMessage(message);
     }
 }
