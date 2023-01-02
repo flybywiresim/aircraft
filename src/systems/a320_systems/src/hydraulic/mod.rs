@@ -11087,7 +11087,7 @@ mod tests {
         }
 
         #[test]
-        fn gear_gravity_extension_reverted_has_correct_sequence() {
+        fn gear_gravity_extension_reverted_has_correct_sequence_if_gear_lever_stays_up() {
             let mut test_bed = test_bed_in_flight_with()
                 .set_cold_dark_inputs()
                 .with_worst_case_ptu()
@@ -11105,9 +11105,68 @@ mod tests {
 
             test_bed = test_bed
                 .stow_emergency_gear_extension()
+                .run_waiting_for(Duration::from_secs_f64(1.));
+
+            // Here expecing LGCIU to be unresponsive: everything stays down until gear lever command
+            assert!(test_bed.is_all_doors_really_down());
+            assert!(test_bed.is_all_gears_really_down());
+
+            test_bed = test_bed
+                .set_gear_lever_down()
                 .run_waiting_for(Duration::from_secs_f64(5.));
 
+            assert!(test_bed.is_all_doors_really_up());
+            assert!(test_bed.is_all_gears_really_down());
+
             // After 5 seconds we expect gear being retracted and doors still down
+            test_bed = test_bed
+                .set_gear_lever_up()
+                .run_waiting_for(Duration::from_secs_f64(5.));
+            assert!(test_bed.gear_system_state() == GearSystemState::Retracting);
+            assert!(test_bed.is_all_doors_really_down());
+            assert!(!test_bed.is_all_gears_really_down());
+
+            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(15.));
+
+            assert!(test_bed.gear_system_state() == GearSystemState::AllUpLocked);
+            assert!(test_bed.is_all_doors_really_up());
+            assert!(test_bed.is_all_gears_really_up());
+        }
+
+        #[test]
+        fn gear_gravity_extension_reverted_has_correct_sequence_if_gear_lever_down() {
+            let mut test_bed = test_bed_in_flight_with()
+                .set_cold_dark_inputs()
+                .with_worst_case_ptu()
+                .in_flight()
+                .run_one_tick();
+
+            assert!(test_bed.gear_system_state() == GearSystemState::AllUpLocked);
+
+            test_bed = test_bed
+                .turn_emergency_gear_extension_n_turns(1)
+                .set_gear_lever_down()
+                .run_waiting_for(Duration::from_secs_f64(3.));
+
+            test_bed = test_bed
+                .turn_emergency_gear_extension_n_turns(3)
+                .run_waiting_for(Duration::from_secs_f64(35.));
+
+            assert!(test_bed.is_all_doors_really_down());
+            assert!(test_bed.is_all_gears_really_down());
+
+            test_bed = test_bed
+                .stow_emergency_gear_extension()
+                .run_waiting_for(Duration::from_secs_f64(5.));
+
+            // Doors expected to close
+            assert!(test_bed.is_all_doors_really_up());
+            assert!(test_bed.is_all_gears_really_down());
+
+            // After 5 seconds we expect gear being retracted and doors still down
+            test_bed = test_bed
+                .set_gear_lever_up()
+                .run_waiting_for(Duration::from_secs_f64(5.));
             assert!(test_bed.gear_system_state() == GearSystemState::Retracting);
             assert!(test_bed.is_all_doors_really_down());
             assert!(!test_bed.is_all_gears_really_down());
@@ -11363,7 +11422,8 @@ mod tests {
 
             test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(2.));
 
-            assert!(test_bed.gear_system_state() == GearSystemState::AllUpLocked);
+            assert!(test_bed.is_all_doors_really_up());
+            assert!(test_bed.is_all_gears_really_up());
         }
 
         #[test]
@@ -11391,7 +11451,8 @@ mod tests {
 
             test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(2.));
 
-            assert!(test_bed.gear_system_state() == GearSystemState::AllUpLocked);
+            assert!(test_bed.is_all_doors_really_up());
+            assert!(test_bed.is_all_gears_really_up());
         }
 
         #[test]
@@ -11420,7 +11481,8 @@ mod tests {
 
             test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(2.));
 
-            assert!(test_bed.gear_system_state() == GearSystemState::AllDownLocked);
+            assert!(test_bed.is_all_doors_really_up());
+            assert!(test_bed.is_all_gears_really_down());
         }
 
         #[test]
@@ -11447,9 +11509,10 @@ mod tests {
                 systems::shared::ProximityDetectorId::UplockDoorNose2,
             ));
 
-            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(2.));
+            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(0.1));
 
-            assert!(test_bed.gear_system_state() == GearSystemState::AllDownLocked);
+            assert!(test_bed.is_all_doors_really_up());
+            assert!(test_bed.is_all_gears_really_down());
         }
     }
 }
