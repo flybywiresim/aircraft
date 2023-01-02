@@ -59,7 +59,7 @@ export class FmsInputBus {
     private async requestWithStatusResponse<T>(value: T, requestId: number, callback: (value: T) => Promise<AtsuStatusCodes>): Promise<void> {
         if (callback !== null) {
             callback(value).then((code) => {
-                this.publisher.pub('requestAtsuStatusCode', { requestId, code });
+                this.publisher.pub('requestAtsuStatusCode', { requestId, code }, true, false);
             });
         }
     }
@@ -71,21 +71,21 @@ export class FmsInputBus {
             if (this.callbacks.updateMessage !== null) {
                 this.callbacks.updateMessage(data.message);
             }
-            this.publisher.pub('requestAtsuStatusCode', { requestId: data.requestId, code: AtsuStatusCodes.Ok });
+            this.publisher.pub('requestAtsuStatusCode', { requestId: data.requestId, code: AtsuStatusCodes.Ok }, true, false);
         }
     }
 
     private requestWithParameter<T>(value: T, requestId: number, callback: (value: T) => void): void {
         if (callback !== null) {
             callback(value);
-            this.publisher.pub('genericRequestResponse', requestId);
+            this.publisher.pub('genericRequestResponse', requestId, true, false);
         }
     }
 
     private requestWithoutParameter(requestId: number, callback: () => void): void {
         if (callback !== null) {
             callback();
-            this.publisher.pub('genericRequestResponse', requestId);
+            this.publisher.pub('genericRequestResponse', requestId, true, false);
         }
     }
 
