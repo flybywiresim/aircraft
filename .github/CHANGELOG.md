@@ -27,6 +27,7 @@
 1. [FLIGHT MODEL/EFB] Modified empty weight cg and loading station/fuel tank locations - @donstim (donbikes#4084)
 1. [HYD] Fix gear sequence starting when failing prox sensor - @Crocket63 (crocket)
 1. [MISC] Added aircraft version check and uer notification - @frankkopp (Frank Kopp) 
+1. [EFB] Added QuickControls to flyPad StatusBar - @Benjozork (Benjamin Dupont) @frankkopp (Frank Kopp)
 
 ## 0.9.0
 
@@ -1162,3 +1163,4 @@
 1. [DCDU] Fixed MSG- and MSG+ button labels - @tyler58546 (tyler58546)
 1. [ISIS] Fixed issue where ISIS was allowing a bug to be set while in the OFF state - Patrick Macken (@Pat M on
    Discord)
+
