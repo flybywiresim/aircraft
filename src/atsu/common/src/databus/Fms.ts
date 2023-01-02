@@ -89,7 +89,6 @@ export interface AtsuFmsMessages {
     printMessage: AtsuMessage;
 
     // synchronization stream from ATSU to FMS
-    atsuStatusCode: AtsuStatusCodes;
     activeAtisAutoUpdates: string[];
     atcAtisReports: Map<string, AtisMessage[]>;
     printAtisReportsPrint: boolean;
