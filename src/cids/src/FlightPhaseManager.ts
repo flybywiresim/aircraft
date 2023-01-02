@@ -180,7 +180,7 @@ export class FlightPhaseManager {
             console.log('[CIDS/FPM] Detected flight phase 8');
             this.setActiveFlightPhase(this.apprPhase);
         } else if ( // FINAL APPROACH AND LANDING
-            this.cids.gearDown()
+            this.cids.gearDownLocked()
           && SimVar.GetSimVarValue('GPS GROUND SPEED', 'knots') > 80
         ) {
             console.log('[CIDS/FPM] Detected flight phase 9');
