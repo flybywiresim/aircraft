@@ -153,18 +153,15 @@ if (process.env.VITE_BUILD) {
     watchLanguageChanges();
 }
 
-function placeholderReplace(translation: string, replacements: Record<string, string>[]): string {
+const placeholderReplace = (translation: string, replacements: Record<string, string>[]): string => {
     let result = translation;
-    console.debug(`replacing placeholders in ${translation} with ${JSON.stringify(replacements)}`);
     replacements.forEach((replacement: Record<string, string>) => {
-        console.debug(`${JSON.stringify(replacement)}`);
         const searchValue = `%(${Object.keys(replacement)[0]})`;
         const replaceValue = Object.values(replacement)[0].toString();
-        console.debug(`replacing ${searchValue} with ${replaceValue} in "${result}"`);
         result = result.replace(searchValue, replaceValue);
     });
     return result;
-}
+};
 
 /**
  * Returns localized string in the currently configured language when provided with
