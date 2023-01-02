@@ -44,7 +44,6 @@ class SystemsHost extends BaseInstrument {
     }
 
     public Update(): void {
-        console.log('update');
         super.Update();
         if (this.gameState !== 3) {
             const gamestate = this.getGameState();
