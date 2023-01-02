@@ -20,6 +20,7 @@
 1. [RMP] RMPs navigation backup - Julian Sebline (Julian Sebline#8476 on Discord)
 1. [SEC] Fix GND SPLR logic, add missing GND SPLR partial extension condition - @lukecologne (luke)
 1. [FMGC] Improved importing flight plans from MSFS World Map - @frankkopp (Frank Kopp)
+1. [HYD] Fix gear sequence starting when failing prox sensor - @Crocket63 (crocket)
 
 ## 0.9.0
 
@@ -121,7 +122,6 @@
 1. [EFB] Added deboarding button to flyPad Payload - @frankkopp (Frank Kopp)
 1. [EFB] Improved simbridge-client connection handling - @frankkopp (Frank Kopp)
 1. [HYD] Tilting gear mechanism - @Crocket63 (crocket)
-1. [HYD] Fix gear sequence starting when failing prox sensor - @Crocket63 (crocket)
 
 ## 0.8.0
 
