@@ -6,7 +6,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.fmsUpdateThrottler = new UpdateThrottler(250);
         this._progBrgDistUpdateThrottler = new UpdateThrottler(2000);
         this.ilsUpdateThrottler = new UpdateThrottler(5000);
-        this.cidsUpdateThrottler = new UpdateThrottler(2000);
+        this.cidsUpdateThrottler = new UpdateThrottler(100);
         this._apCooldown = 500;
         this._radioNavOn = false;
         this._vhf1Frequency = 0;
