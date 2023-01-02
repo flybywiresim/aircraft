@@ -1277,10 +1277,7 @@ impl GearSystemStateMachine {
         lgciu: &(impl LgciuGearExtension + LgciuDoorPosition),
         gear_handle_position_is_up: bool,
     ) -> bool {
-        let doors_in_transition = !lgciu.all_fully_opened() && !lgciu.all_closed_and_locked();
-        let gears_in_transition = !lgciu.all_down_and_locked() && !lgciu.all_up_and_locked();
-
-        if doors_in_transition && gears_in_transition {
+        if self.doors_in_transition(lgciu) && self.gears_in_transition(lgciu) {
             return false;
         }
 
@@ -1299,10 +1296,7 @@ impl GearSystemStateMachine {
 
     /// Checks if sensors are consistent with current state so we can monitor this continuously
     fn check_gear_state(&mut self, lgciu: &(impl LgciuGearExtension + LgciuDoorPosition)) -> bool {
-        let doors_in_transition = !lgciu.all_fully_opened() && !lgciu.all_closed_and_locked();
-        let gears_in_transition = !lgciu.all_down_and_locked() && !lgciu.all_up_and_locked();
-
-        if doors_in_transition && gears_in_transition {
+        if self.doors_in_transition(lgciu) && self.gears_in_transition(lgciu) {
             return false;
         }
 
@@ -1327,6 +1321,14 @@ impl GearSystemStateMachine {
 
     pub fn state(&self) -> GearSystemState {
         self.gears_state
+    }
+
+    fn doors_in_transition(&self, lgciu: &(impl LgciuGearExtension + LgciuDoorPosition)) -> bool {
+        !lgciu.all_fully_opened() && !lgciu.all_closed_and_locked()
+    }
+
+    fn gears_in_transition(&self, lgciu: &(impl LgciuGearExtension + LgciuDoorPosition)) -> bool {
+        !lgciu.all_down_and_locked() && !lgciu.all_up_and_locked()
     }
 }
 
