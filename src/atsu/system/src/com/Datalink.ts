@@ -24,25 +24,25 @@ export class Datalink {
 
     private firstPollHoppie = true;
 
-    private enqueueReceivedMessages(parent: Atsu, messages: AtsuMessage[]): void {
+    private enqueueReceivedMessages(atsu: Atsu, messages: AtsuMessage[]): void {
         messages.forEach((message) => {
             // ignore empty messages (happens sometimes in CPDLC with buggy ATC software)
             if (message.Message.length !== 0) {
                 const transmissionTime = this.vdl.enqueueInboundMessage(message);
                 setTimeout(() => {
                     this.vdl.dequeueInboundMessage(transmissionTime);
-                    parent.registerMessages([message]);
+                    atsu.registerMessages([message]);
                 }, transmissionTime);
             }
         });
     }
 
-    constructor(parent: Atsu) {
+    constructor(atsu: Atsu) {
         HoppieConnector.activateHoppie();
 
         setInterval(() => {
             if (this.waitedComUpdate <= 30000) {
-                this.vdl.simulateTransmissionTimes(parent.flightPhase());
+                this.vdl.simulateTransmissionTimes(atsu.flightPhase());
                 this.waitedComUpdate = 0;
             } else {
                 this.waitedComUpdate += 5000;
@@ -53,7 +53,7 @@ export class Datalink {
                     if (retval[0] === AtsuStatusCodes.Ok) {
                         // delete all data in the first call (Hoppie stores old data)
                         if (!this.firstPollHoppie) {
-                            this.enqueueReceivedMessages(parent, retval[1]);
+                            this.enqueueReceivedMessages(atsu, retval[1]);
                         }
                         this.firstPollHoppie = false;
                     }
@@ -66,7 +66,7 @@ export class Datalink {
             if (NXApiConnector.pollInterval() <= this.waitedTimeNXApi) {
                 NXApiConnector.poll().then((retval) => {
                     if (retval[0] === AtsuStatusCodes.Ok) {
-                        this.enqueueReceivedMessages(parent, retval[1]);
+                        this.enqueueReceivedMessages(atsu, retval[1]);
                     }
                 });
                 this.waitedTimeNXApi = 0;
