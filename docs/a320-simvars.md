@@ -1431,7 +1431,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - 0 is CAPT, 1 is NORM, 2 is F/O
 
 - A32NX_ADIRS_ADIRU_{number}_STATE
-    - TODO delete
+    - Deprecated: use A32NX_ADIRS_IR_{number}_MAINT_WORD instead.
     - Enum
     - The Inertial Reference alignment state.
       Description | Value
@@ -1441,7 +1441,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
       Aligned | 2
 
 - A32NX_ADIRS_REMAINING_IR_ALIGNMENT_TIME
-    - TODO delete
+    - Deprecated: use A32NX_ADIRS_IR_{number}_MAINT_WORD instead.
     - Seconds
     - The remaining alignment duration. Zero seconds when the system is aligned or the system is not aligning.
 
@@ -1591,10 +1591,35 @@ In the variables below, {number} should be replaced with one item in the set: { 
 
 - A32NX_ADIRS_IR_{number}_MAINT_WORD
     - Arinc429Word<flags>
-    - TODO flag table
+    - Indicates state of the IR
+      Bit | Meaning
+      --- | ---
+        0 | ALIGNMENT_NOT_READY
+        1 | REV_ATT_MODE
+        2 | NAV_MODE
+        3 | VALID_SET_HEADING
+        4 | ATTITUDE_INVALID
+        5 | DC_FAIL
+        6 | ON_DC
+        7 | ADR_FAULT
+        8 | IR_FAULT
+        9 | DC_FAIL_ON_DC
+       10 | ALIGN_FAULT
+       11 | NO_IRS_INITIAL
+       12 | EXCESS_MOTION_ERROR
+       13 | ADR_IR_FAULT
+       14 | EXTREME_LATITUDE
+       15,16,17 | ALIGN_7_10_MINUTES
+       16,17 | ALIGN_6_MINUTES
+       15,17 | ALIGN_5_MINUTES
+       16 | ALIGN_4_MINUTES
+       15,16 | ALIGN_3_MINUTES
+       16 | ALIGN_2_MINUTES
+       15 | ALIGN_1_MINUTES
+       18 | COMPUTED_LATITUDE_MISCOMPARE
 
 - A32NX_ADIRS_USES_GPS_AS_PRIMARY
-    - TODO delete (this is an FM function, not ADIRU)
+    - Deprecated, this is an FM function, not ADIRU
     - Bool
     - Whether or not the GPS is used as the primary means of navigation/position determination.
 
