@@ -65,6 +65,14 @@
 /fbw-common/msfs-avionics-mirror/src/sdk/build
 /fbw-common/msfs-avionics-mirror/src/sdk/build/**
 
+/fbw-ingamepanels-checklist-fix/*
+!/fbw-ingamepanels-checklist-fix/README.md
+!/fbw-ingamepanels-checklist-fix/docs/
+!/fbw-ingamepanels-checklist-fix/docs/**
+!/fbw-ingamepanels-checklist-fix/src/
+!/fbw-ingamepanels-checklist-fix/src/**
+/fbw-ingamepanels-checklist-fix/out
+
 !/scripts/**
 
 !/tools/**
