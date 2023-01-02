@@ -58,6 +58,9 @@ export class FmsClient {
         this.publisher = this.bus.getPublisher<AtsuFmsMessages>();
         this.subscriber = this.bus.getSubscriber<AtsuFmsMessages>();
 
+        this.subscriber.on('atsuSystemStatus').handle((status) => this.fms.addNewAtsuMessage(status));
+        this.subscriber.on('messageModify').handle((message) => this.modificationMessage = message);
+        this.subscriber.on('printMessage').handle((message) => this.printMessage(message));
         this.subscriber.on('activeAtisAutoUpdates').handle((airports) => this.atisAutoUpdates = airports);
         this.subscriber.on('atcAtisReports').handle((reports) => this.atcAtisReports = reports);
         this.subscriber.on('printAtisReportsPrint').handle((active) => this.atisReportsPrintActive = active);
@@ -66,6 +69,7 @@ export class FmsClient {
         this.subscriber.on('aocDownlinkMessages').handle((messages) => this.aocDownlinkMessages = messages);
         this.subscriber.on('atcMessages').handle((messages) => this.atcMessagesBuffer = messages);
         this.subscriber.on('monitoredMessages').handle((messages) => this.atcMonitoredMessages = messages);
+        this.subscriber.on('maxUplinkDelay').handle((delay) => this.maxUplinkDelay = delay);
         this.subscriber.on('automaticPositionReportActive').handle((active) => this.automaticPositionReportIsActive = active);
 
         this.flightPlan = new FlightPlanSync(this.bus, flightPlanManager, flightPhaseManager);
