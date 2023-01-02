@@ -174,54 +174,54 @@ export class FmsOutputBus {
     }
 
     public sendAtsuSystemStatus(status: AtsuStatusCodes): void {
-        this.publisher.pub('atsuSystemStatus', status);
+        this.publisher.pub('atsuSystemStatus', status, true, false);
     }
 
     public sendMessageModify(message: CpdlcMessage): void {
-        this.publisher.pub('messageModify', message);
+        this.publisher.pub('messageModify', message, true, false);
     }
 
     public sendPrintMessage(message: AtsuMessage): void {
-        this.publisher.pub('printMessage', message);
+        this.publisher.pub('printMessage', message, true, false);
     }
 
     public sendActiveAtisAutoUpdates(icaos: string[]): void {
-        this.publisher.pub('activeAtisAutoUpdates', icaos);
+        this.publisher.pub('activeAtisAutoUpdates', icaos, true, false);
     }
 
     public sendAtcAtisReports(reports: Map<string, AtisMessage[]>): void {
-        this.publisher.pub('atcAtisReports', reports);
+        this.publisher.pub('atcAtisReports', reports, true, false);
     }
 
     public sendPrintAtisReportsPrint(active: boolean): void {
-        this.publisher.pub('printAtisReportsPrint', active);
+        this.publisher.pub('printAtisReportsPrint', active, true, false);
     }
 
     public sendAtcConnectionStatus(status: { current: string; next: string; notificationTime: number; mode: FansMode; logonInProgress: boolean }): void {
-        this.publisher.pub('atcStationStatus', status);
+        this.publisher.pub('atcStationStatus', status, true, false);
     }
 
     public sendAocUplinkMessages(messages: AtsuMessage[]): void {
-        this.publisher.pub('aocUplinkMessages', messages);
+        this.publisher.pub('aocUplinkMessages', messages, true, false);
     }
 
     public sendAocDownlinkMessages(messages: AtsuMessage[]): void {
-        this.publisher.pub('aocDownlinkMessages', messages);
+        this.publisher.pub('aocDownlinkMessages', messages, true, false);
     }
 
     public sendAtcMessages(messages: CpdlcMessage[]): void {
-        this.publisher.pub('atcMessages', messages);
+        this.publisher.pub('atcMessages', messages, true, false);
     }
 
     public sendMonitoredMessages(messages: CpdlcMessage[]): void {
-        this.publisher.pub('monitoredMessages', messages);
+        this.publisher.pub('monitoredMessages', messages, true, false);
     }
 
     public sendMaxUplinkDelay(delay: number): void {
-        this.publisher.pub('maxUplinkDelay', delay);
+        this.publisher.pub('maxUplinkDelay', delay, true, false);
     }
 
     public sendAutomaticPositionReportActive(active: boolean): void {
-        this.publisher.pub('automaticPositionReportActive', active);
+        this.publisher.pub('automaticPositionReportActive', active, true, false);
     }
 }

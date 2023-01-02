@@ -51,7 +51,7 @@ export class FwcOutputBus {
     }
 
     public setCompanyMessageCount(count: number): void {
-        this.publisher.pub('msfsCompanyMessageCount', count);
+        this.publisher.pub('msfsCompanyMessageCount', count, true, false);
     }
 
     public activateAtcRing(): void {

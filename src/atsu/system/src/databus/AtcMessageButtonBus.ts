@@ -74,11 +74,11 @@ export class AtcMessageButtonOutputBus {
     }
 
     public activateButton(): void {
-        this.publisher.pub('msfsButtonActive', true);
+        this.publisher.pub('msfsButtonActive', true, true, false);
     }
 
     public resetButton(): void {
-        this.publisher.pub('msfsButtonActive', false);
-        this.publisher.pub('msfsButtonPressed', 0);
+        this.publisher.pub('msfsButtonActive', false, true, false);
+        this.publisher.pub('msfsButtonPressed', 0, true, false);
     }
 }

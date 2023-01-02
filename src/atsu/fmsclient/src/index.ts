@@ -92,43 +92,43 @@ export class FmsClient {
                 type,
                 requestId,
                 message: message as AtisMessage,
-            });
+            }, true, false);
         } else if (message instanceof CpdlcMessage) {
             this.publisher.pub('synchronizeCpdlcMessage', {
                 type,
                 requestId,
                 message: message as CpdlcMessage,
-            });
+            }, true, false);
         } else if (message instanceof DclMessage) {
             this.publisher.pub('synchronizeDclMessage', {
                 type,
                 requestId,
                 message: message as DclMessage,
-            });
+            }, true, false);
         } else if (message instanceof FreetextMessage) {
             this.publisher.pub('synchronizeFreetextMessage', {
                 type,
                 requestId,
                 message: message as FreetextMessage,
-            });
+            }, true, false);
         } else if (message instanceof MetarMessage) {
             this.publisher.pub('synchronizeMetarMessage', {
                 type,
                 requestId,
                 message: message as MetarMessage,
-            });
+            }, true, false);
         } else if (message instanceof OclMessage) {
             this.publisher.pub('synchronizeOclMessage', {
                 type,
                 requestId,
                 message: message as OclMessage,
-            });
+            }, true, false);
         } else if (message instanceof TafMessage) {
             this.publisher.pub('synchronizeTafMessage', {
                 type,
                 requestId,
                 message: message as TafMessage,
-            });
+            }, true, false);
         }
 
         return requestId;
@@ -146,7 +146,7 @@ export class FmsClient {
     }
 
     public messageRead(uid: number): void {
-        this.publisher.pub('messageRead', uid);
+        this.publisher.pub('messageRead', uid, true, false);
     }
 
     public printMessage(message: AtsuMessage): void {
@@ -155,13 +155,13 @@ export class FmsClient {
     }
 
     public removeMessage(uid: number): void {
-        this.publisher.pub('removeMessage', uid);
+        this.publisher.pub('removeMessage', uid, true, false);
     }
 
     public receiveAtis(airport: string, type: AtisType, sentCallback: () => void): Promise<[AtsuStatusCodes, WeatherMessage]> {
         return new Promise<[AtsuStatusCodes, WeatherMessage]>((resolve, _reject) => {
             const requestId = this.requestId++;
-            this.publisher.pub('requestAtis', { icao: airport, type, requestId });
+            this.publisher.pub('requestAtis', { icao: airport, type, requestId }, true, false);
 
             const subscriber = this.bus.getSubscriber<AtsuFmsMessages>();
             subscriber.on('requestSentToGround').handle((id) => {
@@ -176,7 +176,7 @@ export class FmsClient {
     public receiveWeather(requestMetar: boolean, icaos: string[], sentCallback: () => void): Promise<[AtsuStatusCodes, WeatherMessage]> {
         return new Promise<[AtsuStatusCodes, WeatherMessage]>((resolve, _reject) => {
             const requestId = this.requestId++;
-            this.publisher.pub('requestWeather', { icaos, requestMetar, requestId });
+            this.publisher.pub('requestWeather', { icaos, requestMetar, requestId }, true, false);
 
             const subscriber = this.bus.getSubscriber<AtsuFmsMessages>();
             subscriber.on('requestSentToGround').handle((id) => {
@@ -190,15 +190,15 @@ export class FmsClient {
 
     public registerMessages(messages: AtsuMessage[]): void {
         if (messages[0] instanceof AtisMessage) {
-            this.publisher.pub('registerAtisMessages', messages as AtisMessage[]);
+            this.publisher.pub('registerAtisMessages', messages as AtisMessage[], true, false);
         } else if (messages[0] instanceof CpdlcMessage) {
-            this.publisher.pub('registerCpdlcMessages', messages as CpdlcMessage[]);
+            this.publisher.pub('registerCpdlcMessages', messages as CpdlcMessage[], true, false);
         } else if (messages[0] instanceof DclMessage) {
-            this.publisher.pub('registerDclMessages', messages as DclMessage[]);
+            this.publisher.pub('registerDclMessages', messages as DclMessage[], true, false);
         } else if (messages[0] instanceof OclMessage) {
-            this.publisher.pub('registerOclMessages', messages as OclMessage[]);
+            this.publisher.pub('registerOclMessages', messages as OclMessage[], true, false);
         } else if (messages[0] instanceof WeatherMessage) {
-            this.publisher.pub('registerWeatherMessages', messages as WeatherMessage[]);
+            this.publisher.pub('registerWeatherMessages', messages as WeatherMessage[], true, false);
         }
     }
 
@@ -209,7 +209,7 @@ export class FmsClient {
     public deactivateAtisAutoUpdate(icao: string): Promise<void> {
         return new Promise<void>((resolve, _reject) => {
             const requestId = this.requestId++;
-            this.publisher.pub('deactivateAtisAutoUpdate', { icao, requestId });
+            this.publisher.pub('deactivateAtisAutoUpdate', { icao, requestId }, true, false);
 
             const subscriber = this.bus.getSubscriber<AtsuFmsMessages>();
             subscriber.on('genericRequestResponse').handle((id) => {
@@ -221,7 +221,7 @@ export class FmsClient {
     public activateAtisAutoUpdate(icao: string, type: AtisType): Promise<void> {
         return new Promise<void>((resolve, _reject) => {
             const requestId = this.requestId++;
-            this.publisher.pub('activateAtisAutoUpdate', { icao, type, requestId });
+            this.publisher.pub('activateAtisAutoUpdate', { icao, type, requestId }, true, false);
 
             const subscriber = this.bus.getSubscriber<AtsuFmsMessages>();
             subscriber.on('genericRequestResponse').handle((id) => {
@@ -244,7 +244,7 @@ export class FmsClient {
     public togglePrintAtisReports(): Promise<void> {
         return new Promise<void>((resolve, _reject) => {
             const requestId = this.requestId++;
-            this.publisher.pub('togglePrintAtisReportsPrint', requestId);
+            this.publisher.pub('togglePrintAtisReportsPrint', requestId, true, false);
 
             const subscriber = this.bus.getSubscriber<AtsuFmsMessages>();
             subscriber.on('genericRequestResponse').handle((id) => {
@@ -280,7 +280,7 @@ export class FmsClient {
     public logon(callsign: string): Promise<AtsuStatusCodes> {
         return new Promise<AtsuStatusCodes>((resolve, _reject) => {
             const requestId = this.requestId++;
-            this.publisher.pub('atcLogon', { station: callsign, requestId });
+            this.publisher.pub('atcLogon', { station: callsign, requestId }, true, false);
 
             const subscriber = this.bus.getSubscriber<AtsuFmsMessages>();
             subscriber.on('requestAtsuStatusCode').handle((response) => {
@@ -292,7 +292,7 @@ export class FmsClient {
     public logoff(): Promise<AtsuStatusCodes> {
         return new Promise<AtsuStatusCodes>((resolve, _reject) => {
             const requestId = this.requestId++;
-            this.publisher.pub('atcLogoff', requestId);
+            this.publisher.pub('atcLogoff', requestId, true, false);
 
             const subscriber = this.bus.getSubscriber<AtsuFmsMessages>();
             subscriber.on('requestAtsuStatusCode').handle((response) => {
@@ -304,7 +304,7 @@ export class FmsClient {
     public isRemoteStationAvailable(callsign: string): Promise<AtsuStatusCodes> {
         return new Promise<AtsuStatusCodes>((resolve, _reject) => {
             const requestId = this.requestId++;
-            this.publisher.pub('remoteStationAvailable', { station: callsign, requestId });
+            this.publisher.pub('remoteStationAvailable', { station: callsign, requestId }, true, false);
 
             const subscriber = this.bus.getSubscriber<AtsuFmsMessages>();
             subscriber.on('requestAtsuStatusCode').handle((response) => {
@@ -322,7 +322,7 @@ export class FmsClient {
             type: AtsuFmsMessageSyncType.UpdateMessage,
             requestId: this.requestId++,
             message: message as DclMessage,
-        });
+        }, true, false);
     }
 
     public aocInputMessages(): AtsuMessage[] {
@@ -342,13 +342,13 @@ export class FmsClient {
     }
 
     public cleanupAtcMessages(): void {
-        this.publisher.pub('cleanupAtcMessages', true);
+        this.publisher.pub('cleanupAtcMessages', true, true, false);
     }
 
     public setMaxUplinkDelay(delay: number): Promise<void> {
         return new Promise<void>((resolve, _reject) => {
             const requestId = this.requestId++;
-            this.publisher.pub('setMaxUplinkDelay', { delay, requestId });
+            this.publisher.pub('setMaxUplinkDelay', { delay, requestId }, true, false);
 
             const subscriber = this.bus.getSubscriber<AtsuFmsMessages>();
             subscriber.on('genericRequestResponse').handle((id) => {
@@ -364,7 +364,7 @@ export class FmsClient {
     public toggleAutomaticPositionReport(): Promise<void> {
         return new Promise<void>((resolve, _reject) => {
             const requestId = this.requestId++;
-            this.publisher.pub('toggleAutomaticPositionReport', requestId);
+            this.publisher.pub('toggleAutomaticPositionReport', requestId, true, false);
 
             const subscriber = this.bus.getSubscriber<AtsuFmsMessages>();
             subscriber.on('genericRequestResponse').handle((id) => {
@@ -376,7 +376,7 @@ export class FmsClient {
     public receivePositionReportData(): Promise<{ flightState: FlightStateData; autopilot: AutopilotData; environment: EnvironmentData }> {
         return new Promise<{ flightState: FlightStateData; autopilot: AutopilotData; environment: EnvironmentData }>((resolve, _reject) => {
             const requestId = this.requestId++;
-            this.publisher.pub('requestPositionReport', requestId);
+            this.publisher.pub('requestPositionReport', requestId, true, false);
 
             const subscriber = this.bus.getSubscriber<AtsuFmsMessages>();
             subscriber.on('positionReport').handle((response) => {
@@ -386,13 +386,13 @@ export class FmsClient {
     }
 
     public resetAtisAutoUpdate(): void {
-        this.publisher.pub('resetAtisAutoUpdate', true);
+        this.publisher.pub('resetAtisAutoUpdate', true, true, false);
     }
 
     public connectToNetworks(callsign: string): Promise<AtsuStatusCodes> {
         return new Promise<AtsuStatusCodes>((resolve, _reject) => {
             const requestId = this.requestId++;
-            this.publisher.pub('connectToNetworks', { callsign, requestId });
+            this.publisher.pub('connectToNetworks', { callsign, requestId }, true, false);
 
             const subscriber = this.bus.getSubscriber<AtsuFmsMessages>();
             subscriber.on('requestAtsuStatusCode').handle((response) => {

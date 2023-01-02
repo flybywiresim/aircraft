@@ -252,6 +252,7 @@ export class Atsu {
     }
 
     public async connectToNetworks(flightNo: string): Promise<AtsuStatusCodes> {
+        console.log(`connect to ${flightNo}`);
         await this.disconnectFromNetworks();
 
         if (flightNo.length === 0) {
