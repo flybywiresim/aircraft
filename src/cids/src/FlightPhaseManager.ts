@@ -116,100 +116,40 @@ export class FlightPhaseManager {
     }
 
     private initFlightPhase(): void {
-        console.log('[CIDS/FPM] Detecting flight phase...');
-        if ( // BOARDING
-            this.cids.onGround()
-          && SimVar.GetSimVarValue('L:A32NX_IS_STATIONARY', 'bool')
-          && SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:0', 'percent') > 20
-          && this.cids.boardingInProgress()
-        ) {
-            console.log('[CIDS/FPM] Detected flight phase 1');
-            this.setActiveFlightPhase(this.boardingPhase);
-        } else if ( // PUSHBACK
-            SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:0', 'percent') < 20
-          && SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:3', 'percent') < 20
-          && SimVar.GetSimVarValue('L:A32NX_FWD_DOOR_CARGO_LOCKED', 'bool')
-          && this.cids.onGround()
-          && SimVar.GetSimVarValue('L:A32NX_IS_STATIONARY', 'bool')
-          && SimVar.GetSimVarValue('L:A32NX_HYD_NW_STRG_DISC_ECAM_MEMO', 'bool')
-        ) {
-            console.log('[CIDS/FPM] Detected flight phase 2');
-            this.setActiveFlightPhase(this.pushbackPhase);
-        } else if ( // TAXI BEFORE TAKEOFF
-            this.cids.onGround()
-          && SimVar.GetSimVarValue('L:A32NX_3D_THROTTLE_LEVER_POSITION_1', 'Number') < 75
-          && SimVar.GetSimVarValue('L:A32NX_3D_THROTTLE_LEVER_POSITION_2', 'Number') < 75
-          && !SimVar.GetSimVarValue('L:A32NX_IS_STATIONARY', 'bool')
-        ) {
-            console.log('[CIDS/FPM] Detected flight phase 3');
-            this.setActiveFlightPhase(this.taxiBeforeTakeoffPhase);
-        } else if ( // TAKEOFF AND INITIAL CLIMB
-            SimVar.GetSimVarValue('L:A32NX_3D_THROTTLE_LEVER_POSITION_1', 'Number') > 74
-          && SimVar.GetSimVarValue('L:A32NX_3D_THROTTLE_LEVER_POSITION_2', 'Number') > 74
-          && (
-              this.cids.onGround()
-              || SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') < 10000
-          )
-        ) {
-            console.log('[CIDS/FPM] Detected flight phase 4');
-            this.setActiveFlightPhase(this.takeoffAndInitClimbPhase);
-        } else if ( // FINAL CLIMB
-            !this.cids.onGround()
-          && SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') > 10000
-        ) {
-            console.log('[CIDS/FPM] Detected flight phase 5');
-            this.setActiveFlightPhase(this.finalClimbPhase);
-        } else if ( // CRUISE
-            SimVar.GetSimVarValue('L:A32NX_FMA_CRUISE_ALT_MODE', 'bool')
-          && !this.cids.onGround()
-          && !SimVar.GetSimVarValue('CABIN SEATBELTS ALERT SWITCH', 'bool')
-        ) {
-            console.log('[CIDS/FPM] Detected flight phase 6');
-            this.setActiveFlightPhase(this.cruisePhase);
-        } else if ( // TOP OF DESCENT
-            !this.cids.onGround()
-          && SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') < (SimVar.GetSimVarValue('AIRLINER_CRUISE_ALTITUDE', 'feet') - 500)
-          && SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') > 10000
-        ) {
-            console.log('[CIDS/FPM] Detected flight phase 7');
-            this.setActiveFlightPhase(this.todPhase);
-        } else if ( // APPROACH
-            SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') < 10000
-          && !this.cids.onGround()
-        ) {
-            console.log('[CIDS/FPM] Detected flight phase 8');
-            this.setActiveFlightPhase(this.apprPhase);
-        } else if ( // FINAL APPROACH AND LANDING
-            this.cids.gearDownLocked()
-          && SimVar.GetSimVarValue('GPS GROUND SPEED', 'knots') > 80
-        ) {
-            console.log('[CIDS/FPM] Detected flight phase 9');
-            this.setActiveFlightPhase(this.finalApprAndLandingPhase);
-        } else if ( // TAXI AFTER LANDING
-            this.cids.onGround()
-          && SimVar.GetSimVarValue('GPS GROUND SPEED', 'knots') < 80
-          && !SimVar.GetSimVarValue('L:A32NX_IS_STATIONARY', 'bool')
-          && SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:0', 'percent') < 20
-        ) {
-            console.log('[CIDS/FPM] Detected flight phase 10');
-            this.setActiveFlightPhase(this.taxiAfterLandingPhase);
-        } else if ( // DISEMBARKATION
-            this.cids.onGround()
-          && SimVar.GetSimVarValue('L:A32NX_IS_STATIONARY', 'bool')
-          && !SimVar.GetSimVarValue('CABIN SEATBELTS ALERT SWITCH', 'bool')
-          && SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:0', 'percent') > 20
-          && this.cids.deboardingInProgess()
-        ) {
-            console.log('[CIDS/FPM] Detected flight phase 11');
-            this.setActiveFlightPhase(this.disembarkationPhase);
-        } else if ( // AFTER PASSENGER DISEMBARKATION
-            this.cids.onGround()
-          && this.cids.getTotalPax() === 0
-        ) {
-            console.log('[CIDS/FPM] Detected flight phase 12');
+        const startState = SimVar.GetSimVarValue('L:A32NX_START_STATE', 'Enum');
+        switch (startState) {
+        case 1:
             this.setActiveFlightPhase(this.afterDisembarkationPhase);
-        } else {
-            throw new Error('Failed to detect flight phase!');
+            return;
+        case 2:
+            this.setActiveFlightPhase(this.afterDisembarkationPhase);
+            return;
+        case 3:
+        case 4:
+            this.setActiveFlightPhase(this.taxiBeforeTakeoffPhase);
+            return;
+        case 5:
+            if (this.cids.altitude() < 10000) {
+                this.setActiveFlightPhase(this.takeoffAndInitClimbPhase);
+            } else {
+                this.setActiveFlightPhase(this.finalClimbPhase);
+            }
+            return;
+        case 6:
+            this.setActiveFlightPhase(this.cruisePhase);
+            return;
+        case 7:
+            if (this.cids.altitude() > 10000) {
+                this.setActiveFlightPhase(this.todPhase);
+            } else {
+                this.setActiveFlightPhase(this.apprPhase);
+            }
+            return;
+        case 8:
+            this.setActiveFlightPhase(this.finalApprAndLandingPhase);
+            break;
+        default:
+            throw new Error(`[CIDS/FPM] Unknown START_STATE: ${startState}`);
         }
     }
 }
