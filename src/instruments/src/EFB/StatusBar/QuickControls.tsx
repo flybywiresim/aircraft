@@ -150,10 +150,10 @@ export const QuickControlsPane = ({ setShowQuickControlsPane }: {setShowQuickCon
 
     const simBridgeButtonStateString = useMemo<string>(():string => {
         switch (simBridgeClientState) {
-        case SimBridgeClientState.CONNECTED: return t('QuickControlsPane.SimBridgeConnected');
-        case SimBridgeClientState.CONNECTING: return t('QuickControlsPane.SimBridgeConnecting');
-        case SimBridgeClientState.OFFLINE: return t('QuickControlsPane.SimBridgeOffline');
-        default: return t('QuickControlsPane.SimBridgeOff');
+        case SimBridgeClientState.CONNECTED: return t('QuickControls.SimBridgeConnected');
+        case SimBridgeClientState.CONNECTING: return t('QuickControls.SimBridgeConnecting');
+        case SimBridgeClientState.OFFLINE: return t('QuickControls.SimBridgeOffline');
+        default: return t('QuickControls.SimBridgeOff');
         }
     }, [simBridgeClientState]);
 
@@ -173,20 +173,20 @@ export const QuickControlsPane = ({ setShowQuickControlsPane }: {setShowQuickCon
 
                 <div className="flex flex-row justify-end items-center mb-5">
                     <span className="mr-auto">
-                        <TooltipWrapper text={t('QuickControlsPane.TT.Settings')}>
+                        <TooltipWrapper text={t('QuickControls.TT.Settings')}>
                             <QuickSettingsButton onClick={handleSettings}>
                                 <Gear size={24} />
                             </QuickSettingsButton>
                         </TooltipWrapper>
                     </span>
 
-                    <TooltipWrapper text={t('QuickControlsPane.TT.Sleep')}>
+                    <TooltipWrapper text={t('QuickControls.TT.Sleep')}>
                         <QuickSettingsButton onClick={handleSleep}>
                             <MoonFill size={20} />
                         </QuickSettingsButton>
                     </TooltipWrapper>
 
-                    <TooltipWrapper text={t('QuickControlsPane.TT.PowerButton')}>
+                    <TooltipWrapper text={t('QuickControls.TT.PowerButton')}>
                         <QuickSettingsButton onClick={handlePower} className="ml-4">
                             <Power size={24} />
                         </QuickSettingsButton>
@@ -194,19 +194,19 @@ export const QuickControlsPane = ({ setShowQuickControlsPane }: {setShowQuickCon
                 </div>
 
                 <div className="flex flex-row justify-between items-center mb-8">
-                    <TooltipWrapper text={t('QuickControlsPane.TT.AlignAdirs')}>
+                    <TooltipWrapper text={t('QuickControls.TT.AlignAdirs')}>
                         <QuickSettingsToggle onClick={handleAlignADIRS} icon={<Compass size={42} />}>
-                            Align ADIRS
+                            {t('QuickControls.AlignAdirs')}
                         </QuickSettingsToggle>
                     </TooltipWrapper>
 
-                    <TooltipWrapper text={t('QuickControlsPane.TT.FinishBoarding')}>
+                    <TooltipWrapper text={t('QuickControls.TT.FinishBoarding')}>
                         <QuickSettingsToggle onClick={handleInstantBoarding} icon={<PersonCheck size={42} />}>
-                            Finish Boarding
+                            {t('QuickControls.FinishBoarding')}
                         </QuickSettingsToggle>
                     </TooltipWrapper>
 
-                    <TooltipWrapper text={t('QuickControlsPane.TT.SimBridge')}>
+                    <TooltipWrapper text={t('QuickControls.TT.SimBridge')}>
                         <QuickSettingsToggle
                             onClick={handleResetSimBridgeConnection}
                             icon={
@@ -218,16 +218,17 @@ export const QuickControlsPane = ({ setShowQuickControlsPane }: {setShowQuickCon
                             }
                             className={simBridgeButtonStyle}
                         >
-                            SimBridge
+                            {t('QuickControls.SimBridge')}
                             {' '}
                             <br />
                             {simBridgeButtonStateString}
                         </QuickSettingsToggle>
                     </TooltipWrapper>
 
-                    <TooltipWrapper text={t('QuickControlsPane.TT.OnScreenKeyboard')}>
+                    <TooltipWrapper text={t('QuickControls.TT.OnScreenKeyboard')}>
                         <QuickSettingsToggle onClick={handleToggleOsk} icon={<Keyboard size={42} />} className={oskButtonStyle}>
-                            Onscreen Keyboard
+                            {t('QuickControls.OnScreenKeyboard')}
+
                         </QuickSettingsToggle>
                     </TooltipWrapper>
 
@@ -235,7 +236,7 @@ export const QuickControlsPane = ({ setShowQuickControlsPane }: {setShowQuickCon
 
                 <div className="flex flex-row justify-between items-center">
                     <div className={`flex flex-row items-center ${usingAutobrightness && 'opacity-30'}`}>
-                        <TooltipWrapper text={t('QuickControlsPane.TT.Brightness')}>
+                        <TooltipWrapper text={t('QuickControls.TT.Brightness')}>
                             <div className="flex flex-row items-center mr-4 w-[80px] text-theme-text">
                                 <BrightnessHighFill size={24} />
                                 <span className="ml-2 pointer-events-none text-inherit">
@@ -260,7 +261,7 @@ export const QuickControlsPane = ({ setShowQuickControlsPane }: {setShowQuickCon
                             </div>
                         </TooltipWrapper>
                     </div>
-                    <TooltipWrapper text={t('QuickControlsPane.TT.AutoBrightness')}>
+                    <TooltipWrapper text={t('QuickControls.TT.AutoBrightness')}>
                         <button
                             type="button"
                             onClick={handleAutoBrightness}
