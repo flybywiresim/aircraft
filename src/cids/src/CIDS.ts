@@ -19,17 +19,9 @@ export class Cids {
     }
 
     public update(_deltaTime: number): void {
-        console.log('[CIDS] Update started...');
-
-        if (!SimVar.GetSimVarValue('L:A32NX_IS_READY', 'Bool')) {
-            console.log('[CIDS] Aircraft not ready, aborting update.');
-            return;
-        }
-
         if (this.flightPhaseManagerUpdateThrottler.canUpdate(_deltaTime) !== -1) {
             this.flightPhaseManager.update(_deltaTime);
         }
-        console.log('[CIDS] Update complete.');
     }
 
     public onGround(): boolean {
