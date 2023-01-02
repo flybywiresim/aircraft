@@ -149,6 +149,7 @@
     },
     "Payload": {
       "BoardingTime": "Boarding-Dauer",
+      "EstimatedDurationUnit": "minuten",
       "Cargo": "Fracht",
       "Current": "Aktuell",
       "DeboardConfirmationBody": "Bitte bestätigen Sie das Aussteigen aller Passagiere",
