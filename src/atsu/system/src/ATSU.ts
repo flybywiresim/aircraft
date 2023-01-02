@@ -188,6 +188,28 @@ export class Atsu {
     constructor(digitalInputs: DigitalInputs, digitalOutputs: DigitalOutputs) {
         this.digitalInputs = digitalInputs;
         this.digitalOutputs = digitalOutputs;
+
+        // register all input callbacks
+        this.digitalInputs.fmsBus.addDataCallback('flightRoute', (route) => this.newRouteReceived(route));
+        this.digitalInputs.fmsBus.addDataCallback('sendMessage', (message) => this.sendMessage(message));
+        this.digitalInputs.fmsBus.addDataCallback('updateMessage', (message) => this.atc.updateMessage(message as CpdlcMessage));
+        this.digitalInputs.fmsBus.addDataCallback('remoteStationAvailable', (station) => this.isRemoteStationAvailable(station));
+        this.digitalInputs.fmsBus.addDataCallback('atcLogon', (station) => this.atc.logon(station));
+        this.digitalInputs.fmsBus.addDataCallback('atcLogoff', () => this.atc.logoff());
+        this.digitalInputs.fmsBus.addDataCallback('connectToNetworks', (callsign) => this.connectToNetworks(callsign));
+        this.digitalInputs.fmsBus.addDataCallback('activateAtisAutoUpdate', (data) => this.atc.activateAtisAutoUpdate(data));
+        this.digitalInputs.fmsBus.addDataCallback('deactivateAtisAutoUpdate', (icao) => this.atc.deactivateAtisAutoUpdate(icao));
+        this.digitalInputs.fmsBus.addDataCallback('togglePrintAtisReportsPrint', () => this.atc.togglePrintAtisReports());
+        this.digitalInputs.fmsBus.addDataCallback('setMaxUplinkDelay', (delay) => this.atc.setMaxUplinkDelay(delay));
+        this.digitalInputs.fmsBus.addDataCallback('toggleAutomaticPositionReport', () => this.atc.toggleAutomaticPositionReportActive());
+        this.digitalInputs.fmsBus.addDataCallback('requestAtis', (icao, type, sentCallback) => this.aoc.receiveAtis(icao, type, sentCallback));
+        this.digitalInputs.fmsBus.addDataCallback('requestWeather', (icaos, requestMetar, sentCallback) => this.aoc.receiveWeather(requestMetar, icaos, sentCallback));
+        this.digitalInputs.fmsBus.addDataCallback('positionReportData', () => this.createPositionReportData());
+        this.digitalInputs.fmsBus.addDataCallback('registerMessages', (messages) => this.registerMessages(messages));
+        this.digitalInputs.fmsBus.addDataCallback('messageRead', (uid) => this.messageRead(uid));
+        this.digitalInputs.fmsBus.addDataCallback('removeMessage', (uid) => this.removeMessage(uid));
+        this.digitalInputs.fmsBus.addDataCallback('cleanupAtcMessages', () => this.atc.cleanupMessages());
+        this.digitalInputs.fmsBus.addDataCallback('resetAtisAutoUpdate', () => this.atc.resetAtisAutoUpdate());
     }
 
     public async connectToNetworks(flightNo: string): Promise<AtsuStatusCodes> {
