@@ -1026,6 +1026,11 @@ impl LandingGearControlInterfaceUnit {
             // Label 23
             let mut word = Arinc429Word::new(0, SignStatus::NormalOperation);
 
+            // Total movement of flap interconnecting struct is 18mm each direction.
+            // With flaps rigged, flap interconnecting struct is extended 2.2mm.
+            // Differential movement between flaps is 14.5mm. If more than 15mm,
+            // sensors send signal
+
             // LH Flap attachment failure
             word.set_bit(21, false);
 

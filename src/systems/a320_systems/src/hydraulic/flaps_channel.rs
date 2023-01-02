@@ -10,7 +10,7 @@ use std::panic;
 use uom::si::{angle::degree, f64::*, velocity::knot};
 
 use crate::hydraulic::SlatFlapControlComputerMisc;
-
+// APPUs must agree within 0.45 deg. At position 0 the APPU/FPPU must agree within 0.9 deg, otherwise the APPU/FPPU must agree within 1.3 deg.
 pub struct FlapsChannel {
     flaps_fppu_angle_id: VariableIdentifier,
 

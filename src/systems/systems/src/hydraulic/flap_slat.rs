@@ -44,8 +44,6 @@ impl FlapSlatHydraulicMotor {
     // Simulates rpm transients.
     const LOW_PASS_RPM_TRANSIENT_TIME_CONSTANT: Duration = Duration::from_millis(300);
 
-    const MIN_MOTOR_RPM: f64 = 20.;
-
     // Corrective factor to adjust final flow consumption to tune the model
     const FLOW_CORRECTION_FACTOR: f64 = 0.6;
 
@@ -64,11 +62,6 @@ impl FlapSlatHydraulicMotor {
     fn update_speed(&mut self, context: &UpdateContext, speed: AngularVelocity) {
         // Low pass filter to simulate motors spool up and down. Will ease pressure impact on transients
         self.speed.update(context.delta(), speed);
-
-        // Forcing 0 speed at low speed to avoid endless spool down due to low pass filter
-        if self.speed.output().get::<revolution_per_minute>().abs() < Self::MIN_MOTOR_RPM {
-            self.speed.reset(AngularVelocity::default());
-        }
     }
 
     fn update_flow(&mut self, context: &UpdateContext) {
@@ -116,6 +109,8 @@ impl Actuator for FlapSlatHydraulicMotor {
 // Add 10 actuators each wing wing with torque limiter for slats (2 per slat)
 // If torque exceeded, shear pin breaks --> flap surface oscillates -->
 //                     flap disconnect sensor triggered --> flap operation stops
+// The LVDT is used to provide the actual value of the hydraulic pressure which
+// is proportional to motor speed --> have a valve that opens proportionally
 pub struct FlapSlatAssembly {
     position_left_percent_id: VariableIdentifier,
     position_right_percent_id: VariableIdentifier,
@@ -150,9 +145,10 @@ impl FlapSlatAssembly {
         Duration::from_millis(300);
     const BRAKE_PRESSURE_MIN_TO_ALLOW_MOVEMENT_PSI: f64 = 500.;
 
-    const ANGLE_THRESHOLD_FOR_REDUCED_SPEED_DEGREES: f64 = 6.69;
+    const POSITIONING_THRESHOLD_DEG: f64 = 6.7;
     const ANGULAR_SPEED_LIMIT_FACTOR_WHEN_APROACHING_POSITION: f64 = 0.5;
     const MIN_ANGULAR_SPEED_TO_REPORT_MOVING: f64 = 0.01;
+    const TARGET_THRESHOLD_DEG: f64 = 0.18;
 
     pub fn new(
         context: &mut InitContext,
@@ -313,7 +309,10 @@ impl FlapSlatAssembly {
         let mut new_theoretical_max_speed =
             new_theoretical_max_speed_left_side + new_theoretical_max_speed_right_side;
 
-        if self.is_approaching_requested_position(self.final_requested_synchro_gear_position) {
+        if self.has_reached_requested_position(self.final_requested_synchro_gear_position) {
+            new_theoretical_max_speed = AngularVelocity::new::<radian_per_second>(0.);
+        } else if self.is_approaching_requested_position(self.final_requested_synchro_gear_position)
+        {
             new_theoretical_max_speed *= Self::ANGULAR_SPEED_LIMIT_FACTOR_WHEN_APROACHING_POSITION;
         }
 
@@ -401,10 +400,15 @@ impl FlapSlatAssembly {
     fn is_approaching_requested_position(&self, synchro_gear_angle_request: Angle) -> bool {
         self.speed.get::<radian_per_second>() > 0.
             && synchro_gear_angle_request - self.position_feedback()
-                < Angle::new::<degree>(Self::ANGLE_THRESHOLD_FOR_REDUCED_SPEED_DEGREES)
+                < Angle::new::<degree>(Self::POSITIONING_THRESHOLD_DEG)
             || self.speed.get::<radian_per_second>() < 0.
                 && self.position_feedback() - synchro_gear_angle_request
-                    < Angle::new::<degree>(Self::ANGLE_THRESHOLD_FOR_REDUCED_SPEED_DEGREES)
+                    < Angle::new::<degree>(Self::POSITIONING_THRESHOLD_DEG)
+    }
+
+    fn has_reached_requested_position(&self, synchro_gear_angle_request: Angle) -> bool {
+        (synchro_gear_angle_request - self.position_feedback()).abs()
+            < Angle::new::<degree>(Self::TARGET_THRESHOLD_DEG)
     }
 
     pub fn position_feedback(&self) -> Angle {
