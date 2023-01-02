@@ -6,6 +6,7 @@ use crate::simulation::{
     InitContext, SimulationElement, SimulatorWriter, UpdateContext, VariableIdentifier, Write,
 };
 
+use uom::si::volume_rate::cubic_inch_per_minute;
 use uom::si::{
     angle::{degree, radian},
     angular_velocity::{radian_per_second, revolution_per_minute},
@@ -14,7 +15,7 @@ use uom::si::{
     ratio::ratio,
     torque::pound_force_inch,
     volume::{cubic_inch, gallon},
-    volume_rate::{gallon_per_minute, gallon_per_second},
+    volume_rate::gallon_per_second,
 };
 
 use std::time::Duration;
@@ -65,35 +66,27 @@ impl FlapSlatHydraulicMotor {
         self.speed.update(context.delta(), speed);
 
         // Forcing 0 speed at low speed to avoid endless spool down due to low pass filter
-        if self.speed.output().get::<revolution_per_minute>() < Self::MIN_MOTOR_RPM
-            && self.speed.output().get::<revolution_per_minute>() > -Self::MIN_MOTOR_RPM
-        {
+        if self.speed.output().get::<revolution_per_minute>().abs() < Self::MIN_MOTOR_RPM {
             self.speed.reset(AngularVelocity::default());
         }
     }
 
     fn update_flow(&mut self, context: &UpdateContext) {
-        self.current_flow = VolumeRate::new::<gallon_per_minute>(
+        self.current_flow = VolumeRate::new::<cubic_inch_per_minute>(
             Self::FLOW_CORRECTION_FACTOR
                 * self.speed().get::<revolution_per_minute>().abs()
-                * self.displacement.get::<cubic_inch>()
-                / 231.,
+                * self.displacement.get::<cubic_inch>(),
         );
 
         self.total_volume_to_actuator += self.current_flow * context.delta_as_time();
         self.total_volume_returned_to_reservoir += self.current_flow * context.delta_as_time();
     }
 
-    fn torque(&self, pressure: Pressure) -> Torque {
+    fn get_available_torque(&self, pressure: Pressure) -> Torque {
         Torque::new::<pound_force_inch>(
             pressure.get::<psi>() * self.displacement.get::<cubic_inch>()
                 / (2. * std::f64::consts::PI),
         )
-    }
-
-    fn reset_accumulators(&mut self) {
-        self.total_volume_to_actuator = Volume::new::<gallon>(0.);
-        self.total_volume_returned_to_reservoir = Volume::new::<gallon>(0.);
     }
 
     fn speed(&self) -> AngularVelocity {
@@ -233,7 +226,7 @@ impl FlapSlatAssembly {
 
         self.update_speed_and_position(context);
 
-        self.update_motors_speed(left_pressure.pressure(), right_pressure.pressure(), context);
+        self.update_motors_speed(context, left_pressure.pressure(), right_pressure.pressure());
 
         self.update_motors_flow(context);
     }
@@ -348,9 +341,9 @@ impl FlapSlatAssembly {
 
     fn update_motors_speed(
         &mut self,
+        context: &UpdateContext,
         left_pressure: Pressure,
         right_pressure: Pressure,
-        context: &UpdateContext,
     ) {
         let torque_shaft_speed = AngularVelocity::new::<radian_per_second>(
             self.speed.get::<radian_per_second>() * self.surface_gear_ratio.get::<ratio>(),
@@ -360,43 +353,44 @@ impl FlapSlatAssembly {
             if left_pressure.get::<psi>() < Self::BRAKE_PRESSURE_MIN_TO_ALLOW_MOVEMENT_PSI {
                 Torque::new::<pound_force_inch>(0.)
             } else {
-                self.left_motor.torque(left_pressure)
+                self.left_motor.get_available_torque(left_pressure)
             };
 
         let right_torque =
             if right_pressure.get::<psi>() < Self::BRAKE_PRESSURE_MIN_TO_ALLOW_MOVEMENT_PSI {
                 Torque::new::<pound_force_inch>(0.)
             } else {
-                self.right_motor.torque(right_pressure)
+                self.right_motor.get_available_torque(right_pressure)
             };
 
         let total_motor_torque = left_torque + right_torque;
 
-        let mut left_torque_ratio = Ratio::new::<ratio>(0.);
-        let mut right_torque_ratio = Ratio::new::<ratio>(0.);
-
-        if total_motor_torque.get::<pound_force_inch>() > 0.001 {
-            left_torque_ratio = left_torque / total_motor_torque;
-            right_torque_ratio = right_torque / total_motor_torque;
+        if total_motor_torque.get::<pound_force_inch>() <= 0.001 {
+            self.left_motor
+                .update_speed(context, AngularVelocity::new::<radian_per_second>(0.));
+            self.right_motor
+                .update_speed(context, AngularVelocity::new::<radian_per_second>(0.));
+            return;
         }
 
-        self.left_motor.update_speed(
-            context,
-            AngularVelocity::new::<radian_per_second>(
-                torque_shaft_speed.get::<radian_per_second>()
-                    * left_torque_ratio.get::<ratio>()
-                    * self.gearbox_ratio.get::<ratio>(),
-            ),
-        );
+        let left_torque_ratio = left_torque / total_motor_torque;
+        let right_torque_ratio = right_torque / total_motor_torque;
 
-        self.right_motor.update_speed(
-            context,
-            AngularVelocity::new::<radian_per_second>(
-                torque_shaft_speed.get::<radian_per_second>()
-                    * right_torque_ratio.get::<ratio>()
-                    * self.gearbox_ratio.get::<ratio>(),
-            ),
+        let left_motor_demanded_speed = AngularVelocity::new::<radian_per_second>(
+            torque_shaft_speed.get::<radian_per_second>()
+                * left_torque_ratio.get::<ratio>()
+                * self.gearbox_ratio.get::<ratio>(),
         );
+        self.left_motor
+            .update_speed(context, left_motor_demanded_speed);
+
+        let right_motor_demanded_speed = AngularVelocity::new::<radian_per_second>(
+            torque_shaft_speed.get::<radian_per_second>()
+                * right_torque_ratio.get::<ratio>()
+                * self.gearbox_ratio.get::<ratio>(),
+        );
+        self.right_motor
+            .update_speed(context, right_motor_demanded_speed);
     }
 
     fn update_motors_flow(&mut self, context: &UpdateContext) {
@@ -456,13 +450,12 @@ impl FlapSlatAssembly {
         ))
     }
 
-    // Reset of accumulators will be moved to Actuator trait in other hydraulic overhaul PR
     pub fn reset_left_accumulators(&mut self) {
-        self.left_motor.reset_accumulators();
+        self.left_motor.reset_volumes();
     }
 
     pub fn reset_right_accumulators(&mut self) {
-        self.right_motor.reset_accumulators();
+        self.right_motor.reset_volumes();
     }
 
     fn is_surface_moving(&self) -> bool {
@@ -525,6 +518,7 @@ mod tests {
     use super::*;
 
     use std::time::Duration;
+    use uom::si::volume_rate::gallon_per_minute;
     use uom::si::{angle::degree, pressure::psi};
 
     use crate::shared::update_iterator::MaxStepLoop;
