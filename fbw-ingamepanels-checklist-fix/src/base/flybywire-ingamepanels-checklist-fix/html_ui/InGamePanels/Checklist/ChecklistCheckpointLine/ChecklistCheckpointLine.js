@@ -315,7 +315,6 @@ class ChecklistCheckpointLineGroupElement extends ChecklistCheckpointLineElement
         super.SetData(_oData);
         for (let i = 0; i < _oData.aChildren.length; i++) {
             let oCheckpoint = this.createCheckpointElement(_oData.aChildren[i]);
-            oCheckpoint.SetData(_oData.aChildren[i]);
             this.aChildren.push(oCheckpoint);
         }
     }
