@@ -4,9 +4,7 @@
 /* eslint-disable no-console */
 import Compare from 'semver/functions/compare';
 import { CommitInfo, GitVersions, ReleaseInfo } from '@flybywiresim/api-client';
-// jest in test-js.sh requires relative path  can't handle "@shared" alias
-// noinspection ES6PreferShortImport
-import { PopUp } from '../../../../shared/src/popup';
+import { PopUp } from '@shared/popup';
 import { t } from '../translation';
 
 /**
