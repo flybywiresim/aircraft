@@ -22,6 +22,7 @@
   - [Landing Gear (ATA 32)](#landing-gear-ata-32)
   - [ATC (ATA 34)](#atc-ata-34)
   - [Radio Altimeter (ATA 34)](#radio-altimeter-ata-34)
+  - [CIDS (ATA 44)](#cids-ata-44)
   - [Electronic Flight Bag (ATA 46)](#electronic-flight-bag-ata-46)
 
 ## Uncategorized
@@ -3518,6 +3519,45 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - {number}
         - 0
         - 1
+
+## CIDS (ATA 44)
+- A32NX_CIDS_FLIGHT_PHASE
+  - Enum
+  - Holds the current CIDS flight phase.
+  - Possible transitions
+    - `1 -> 2`
+    - `1 -> 3`
+    - `2 -> 3`
+    - `3 -> 4`
+    - `3 -> 11` (returning to gate)
+    - `4 -> 5`
+    - `4 -> 11` (returning to gate)
+    - `5 -> 6`
+    - `6 -> 7`
+    - `6 -> 8`
+    - `7 -> 8`
+    - `8 -> 9`
+    - `9 -> 10`
+    - `10 -> 11`
+    - `11 -> 12`
+    - `12 -> 1`
+    - `12 -> 2`
+    - `12 -> 3`
+
+| State | Value | Conditions
+|-------|-------| ----------
+| 1 | BOARDING | - A/C stationary <br> - DOOR 1L OPEN <br> - Boarding in progress |
+| 2 | PUSHBACK | - A/C stationary <br> - All A/C doors closed <br> - NW STRG pin inserted |
+| 3 | TAXI BEFORE TAKEOFF | - A/C on ground <br> - GS > 0 <br> - All A/C doors closed <br> - THR LVR not in FLEX/MCT or TOGA |
+| 4 | TAKEOFF AND INITIAL CLIMB | - THR LVR FLEX/MCT or TOGA <br> - ALT < 10 000 ft  |
+| 5 | FINAL CLIMB | - ALT > 10 000 ft |
+| 6 | CRUISE | - ALT CRZ is active |
+| 7 | TOP OF DESCENT | - ALT < (CRZ FL - 500 ft) <br> - ALT > 10 000 ft |
+| 8 | APPROACH | - ALT < 10 000 ft <br> - LDG GEAR **not** DOWN |
+| 9 | FINAL APPROACH AND LANDING | - LDG GEAR DOWN <br> - GS > 80 kts |
+| 10 | TAXI AFTER LANDING | - A/C on ground <br> - GS < 80 kts |
+| 11 | DISEMBARKATION | - A/C stationary <br> - SEAT BELTS OFF <br> - DOOR 1L OPEN <br> - Deboarding in progress |
+| 12 | AFTER PASSENGER DISEMBARKATION | - Deboarding completed |
 
 ## Electronic Flight Bag (ATA 46)
 
