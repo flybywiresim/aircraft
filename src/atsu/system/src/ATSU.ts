@@ -21,7 +21,7 @@ import { DigitalOutputs } from './DigitalOutputs';
  * Defines the ATSU
  */
 export class Atsu {
-    private datalink = new Datalink(this);
+    public datalink = new Datalink(this);
 
     private fltNo: string = '';
 
@@ -33,9 +33,9 @@ export class Atsu {
 
     private ats623 = new ATS623(this);
 
-    public aoc = new Aoc(this, this.datalink);
+    public aoc = new Aoc(this);
 
-    public atc = new Atc(this, this.datalink);
+    public atc = new Atc(this);
 
     public createAutomatedPositionReport(): CpdlcMessage {
         const message = new CpdlcMessage();

@@ -22,8 +22,6 @@ import { UplinkMessageMonitoring } from './components/UplinkMessageMonitoring';
 export class Atc {
     private atsu: Atsu = null;
 
-    private datalink: Datalink = null;
-
     public mailboxBus: MailboxBus = null;
 
     private handoverInterval: NodeJS.Timer = null;
@@ -54,9 +52,8 @@ export class Atc {
 
     public messageMonitoring: UplinkMessageMonitoring = null;
 
-    constructor(atsu: Atsu, datalink: Datalink) {
+    constructor(atsu: Atsu) {
         this.atsu = atsu;
-        this.datalink = datalink;
         this.mailboxBus = new MailboxBus(atsu, this);
         this.messageMonitoring = new UplinkMessageMonitoring(atsu);
 
@@ -152,7 +149,7 @@ export class Atc {
             }
         }, 300000);
 
-        return this.datalink.sendMessage(message, false);
+        return this.atsu.datalink.sendMessage(message, false);
     }
 
     private async handover(station: string): Promise<AtsuStatusCodes> {
@@ -205,7 +202,7 @@ export class Atc {
         this.atsu.digitalOutputs.FmsBus.sendMaxUplinkDelay(this.maxUplinkDelay);
         this.atsu.registerMessages([message]);
 
-        return this.datalink.sendMessage(message, true).then((error) => error);
+        return this.atsu.datalink.sendMessage(message, true).then((error) => error);
     }
 
     public async logoff(): Promise<AtsuStatusCodes> {
@@ -255,7 +252,7 @@ export class Atc {
             this.mailboxBus.update(message);
 
             if (message.Response !== undefined) {
-                this.datalink.sendMessage(message.Response, false).then((code) => {
+                this.atsu.datalink.sendMessage(message.Response, false).then((code) => {
                     if (code === AtsuStatusCodes.Ok) {
                         message.Response.ComStatus = AtsuMessageComStatus.Sent;
                         this.mailboxBus.updateMessageStatus(message.UniqueMessageID, MailboxStatusMessage.Sent);
@@ -292,7 +289,7 @@ export class Atc {
             this.mailboxBus.updateMessageStatus(message.UniqueMessageID, MailboxStatusMessage.Sending);
             this.mailboxBus.update(message);
 
-            this.datalink.sendMessage(message.Response, false).then((code) => {
+            this.atsu.datalink.sendMessage(message.Response, false).then((code) => {
                 if (code === AtsuStatusCodes.Ok) {
                     message.Response.ComStatus = AtsuMessageComStatus.Sent;
                     this.mailboxBus.updateMessageStatus(message.UniqueMessageID, MailboxStatusMessage.Sent);
@@ -330,7 +327,7 @@ export class Atc {
             this.mailboxBus.update(message as CpdlcMessage);
         }
 
-        return this.datalink.sendMessage(message, false).then((code) => {
+        return this.atsu.datalink.sendMessage(message, false).then((code) => {
             if (code === AtsuStatusCodes.Ok) {
                 message.ComStatus = AtsuMessageComStatus.Sent;
             } else {
@@ -529,7 +526,7 @@ export class Atc {
     }
 
     private async updateAtis(icao: string, type: AtisType, overwrite: boolean): Promise<AtsuStatusCodes> {
-        return this.datalink.receiveAtis(icao, type, () => { }).then((retval) => {
+        return this.atsu.datalink.receiveAtis(icao, type, () => { }).then((retval) => {
             if (retval[0] === AtsuStatusCodes.Ok) {
                 let code = AtsuStatusCodes.Ok;
                 const atis = retval[1] as AtisMessage;

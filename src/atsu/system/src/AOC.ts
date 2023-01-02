@@ -5,7 +5,6 @@ import { AtsuStatusCodes } from '@atsu/common/AtsuStatusCodes';
 import { AtsuMessageDirection, AtsuMessage, AtsuMessageType } from '@atsu/common/messages/AtsuMessage';
 import { WeatherMessage } from '@atsu/common/messages/WeatherMessage';
 import { AtisType } from '@atsu/common/messages/AtisMessage';
-import { Datalink } from './com/Datalink';
 import { Atsu } from './ATSU';
 
 /**
@@ -14,15 +13,12 @@ import { Atsu } from './ATSU';
 export class Aoc {
     private atsu: Atsu = null;
 
-    private datalink: Datalink = null;
-
     private messageQueueUplink: AtsuMessage[] = [];
 
     private messageQueueDownlink: AtsuMessage[] = [];
 
-    constructor(atsu: Atsu, datalink: Datalink) {
+    constructor(atsu: Atsu) {
         this.atsu = atsu;
-        this.datalink = datalink;
     }
 
     public static isRelevantMessage(message: AtsuMessage): boolean {
@@ -31,7 +27,7 @@ export class Aoc {
 
     public async sendMessage(message: AtsuMessage): Promise<AtsuStatusCodes> {
         if (Aoc.isRelevantMessage(message)) {
-            return this.datalink.sendMessage(message, false);
+            return this.atsu.datalink.sendMessage(message, false);
         }
         return AtsuStatusCodes.UnknownMessage;
     }
@@ -53,11 +49,11 @@ export class Aoc {
     }
 
     public async receiveWeather(requestMetar: boolean, icaos: string[], sentCallback: () => void): Promise<[AtsuStatusCodes, WeatherMessage]> {
-        return this.datalink.receiveWeather(requestMetar, icaos, sentCallback);
+        return this.atsu.datalink.receiveWeather(requestMetar, icaos, sentCallback);
     }
 
     public async receiveAtis(icao: string, type: AtisType, sentCallback: () => void): Promise<[AtsuStatusCodes, WeatherMessage]> {
-        return this.datalink.receiveAtis(icao, type, sentCallback);
+        return this.atsu.datalink.receiveAtis(icao, type, sentCallback);
     }
 
     public messageRead(uid: number): boolean {
