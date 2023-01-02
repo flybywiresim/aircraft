@@ -5,15 +5,16 @@ export class TaxiAfterLandingPhase extends FlightPhase {
    * Tries to transition to `DISEMBARKATION` phase.
    */
     public tryTransition(): void {
-        if (
-            this.flightPhaseManager.cids.onGround()
-      && SimVar.GetSimVarValue('L:A32NX_IS_STATIONARY', 'bool')
-      && !SimVar.GetSimVarValue('CABIN SEATBELTS ALERT SWITCH', 'bool')
-      && SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:0', 'percent') > 20
-      && this.flightPhaseManager.cids.deboardingInProgess()
-        ) {
+        if (this.flightPhaseManager.taxiAfterLandingPhase.testConditions()) {
             super.sendNewFlightPhaseToManager(this.flightPhaseManager.disembarkationPhase);
         }
+    }
+
+    public testConditions(): boolean {
+        return (
+            this.cids.onGround()
+            && this.cids.groundSpeed() < 80
+        );
     }
 
     public getValue(): number {

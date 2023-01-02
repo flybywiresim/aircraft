@@ -17,6 +17,15 @@ export class TaxiBeforeTakeoffPhase extends FlightPhase {
         }
     }
 
+    public testConditions(): boolean {
+        return (
+            !this.cids.isStationary()
+            && this.cids.onGround()
+            && this.cids.thrustLever1Position() < 75
+            && this.cids.thrustLever2Position() < 75
+        );
+    }
+
     public getValue(): number {
         return 3;
     }
