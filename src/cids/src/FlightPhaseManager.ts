@@ -58,29 +58,23 @@ export class FlightPhaseManager {
     public init() {
         console.log('[CIDS/FPM] Initialization started...');
 
-        console.log('[CIDS/FPM] Initializing flight phase...');
         this.initFlightPhase();
-        console.log(`[CIDS/FPM] Flight phase initialization complete. Active flight phase: ${this.getActiveFlightPhase().getValue()}`);
+        console.log('[CIDS/FPM] Flight phase initialization complete.');
 
         console.log('[CIDS/FPM] Initialization complete.');
     }
 
     public update(_deltaTime: number): void {
-        console.log('[CIDS/FPM] Update started...');
-
-        console.log('[CIDS/FPM Trying to transition flight phase...');
         const prevPhase = this.getActiveFlightPhase();
         this.getActiveFlightPhase().tryTransition();
         const newPhase = this.getActiveFlightPhase();
-        if (prevPhase.getValue() === newPhase.getValue()) {
-            console.log(`[CIDS/FPM] Transition failed -> keeping flight phase ${newPhase.getValue()}`);
-        } else {
-            console.log(`[CIDS/FPM Transition succeeded -> ${prevPhase.getValue()} => ${newPhase.getValue()}]`);
-        }
+        console.log(`[CIDS/FPM] Flight phase transitioned: ${prevPhase.getValue()} => ${newPhase.getValue()}]`);
     }
 
+    // eslint-disable-next-line consistent-return
     public getActiveFlightPhase(): FlightPhase {
         const flightPhaseValue = SimVar.GetSimVarValue('L:A32NX_CIDS_FLIGHT_PHASE', 'Enum');
+        // eslint-disable-next-line default-case
         switch (flightPhaseValue) {
         case 1:
             return this.boardingPhase;
@@ -106,21 +100,19 @@ export class FlightPhaseManager {
             return this.disembarkationPhase;
         case 12:
             return this.afterDisembarkationPhase;
-        default:
-            throw new Error(`Invalid CIDS flight phase (${flightPhaseValue}) detected.`);
         }
     }
 
-    public async setActiveFlightPhase(flightPhase: FlightPhase): Promise<void> {
-        await SimVar.SetSimVarValue('L:A32NX_CIDS_FLIGHT_PHASE', 'Enum', flightPhase.getValue());
+    public setActiveFlightPhase(flightPhase: FlightPhase): void {
+        SimVar.SetSimVarValue('L:A32NX_CIDS_FLIGHT_PHASE', 'Enum', flightPhase.getValue());
     }
 
     private initFlightPhase(): void {
+        console.log('[CIDS/FPM] Initializing flight phase...');
+
         const startState = SimVar.GetSimVarValue('L:A32NX_START_STATE', 'Enum');
         switch (startState) {
         case 1:
-            this.setActiveFlightPhase(this.afterDisembarkationPhase);
-            return;
         case 2:
             this.setActiveFlightPhase(this.afterDisembarkationPhase);
             return;
@@ -149,7 +141,8 @@ export class FlightPhaseManager {
             this.setActiveFlightPhase(this.finalApprAndLandingPhase);
             break;
         default:
-            throw new Error(`[CIDS/FPM] Unknown START_STATE: ${startState}`);
+            console.error(`[CIDS/FPM] Found unknown value '${startState}' for A32NX_START_STATE.\nSee src/cids/src/FlightPhaseManager.ts#initFlightPhase().`);
+            break;
         }
     }
 }
