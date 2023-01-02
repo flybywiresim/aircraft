@@ -20,6 +20,7 @@
 1. [RMP] RMPs navigation backup - Julian Sebline (Julian Sebline#8476 on Discord)
 1. [SEC] Fix GND SPLR logic, add missing GND SPLR partial extension condition - @lukecologne (luke)
 1. [FMGC] Improved importing flight plans from MSFS World Map - @frankkopp (Frank Kopp)  
+1. [EFB] Added boarding time indication to Payload page - @ChristianLutzCL (Christian Lutz) @frankkopp (Frank Kopp)
 
 ## 0.9.0
 
@@ -1155,3 +1156,4 @@
 1. [DCDU] Fixed MSG- and MSG+ button labels - @tyler58546 (tyler58546)
 1. [ISIS] Fixed issue where ISIS was allowing a bug to be set while in the OFF state - Patrick Macken (@Pat M on
    Discord)
+1. [EFB] Added estimated boarding time to Payload screen - @ChristianLutzCL (Christian Lutz)
