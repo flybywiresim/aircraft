@@ -3,8 +3,12 @@ import { FlightPhaseManager } from './FlightPhaseManager';
 export class Cids {
     private readonly flightPhaseManager: FlightPhaseManager;
 
+    // eslint-disable-next-line camelcase
+    private readonly flightPhaseManagerUpdateThrottler: A32NX_Util.UpdateThrottler;
+
     constructor() {
         this.flightPhaseManager = new FlightPhaseManager(this);
+        this.flightPhaseManagerUpdateThrottler = new A32NX_Util.UpdateThrottler(1500);
     }
 
     public init(): void {
@@ -21,7 +25,9 @@ export class Cids {
             return;
         }
 
-        this.flightPhaseManager.update(_deltaTime);
+        if (this.flightPhaseManagerUpdateThrottler.canUpdate(_deltaTime) !== -1) {
+            this.flightPhaseManager.update(_deltaTime);
+        }
         console.log('[CIDS] Update complete.');
     }
 
