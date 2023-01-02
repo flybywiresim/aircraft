@@ -46,7 +46,7 @@ export class Atc {
 
     private atisMessages: Map<string, [number, AtisMessage[]]> = new Map();
 
-    public maxUplinkDelay: number = -1;
+    private maxUplinkDelay: number = -1;
 
     private currentFansMode: FansMode = FansMode.FansNone;
 
@@ -81,19 +81,21 @@ export class Atc {
         }
     }
 
+    private sendAtcStationStatus(): void {
+        this.atsu.digitalOutputs.FmsBus.sendAtcConnectionStatus({
+            current: this.currentAtc,
+            next: this.nextAtc,
+            notificationTime: this.notificationTime,
+            mode: this.currentFansMode,
+            logonInProgress: this.logonInProgress(),
+        });
+    }
+
     public currentStation(): string {
         return this.currentAtc;
     }
 
-    public nextStation(): string {
-        return this.nextAtc;
-    }
-
-    public nextStationNotificationTime(): number {
-        return this.notificationTime;
-    }
-
-    public logonInProgress(): boolean {
+    private logonInProgress(): boolean {
         return this.nextAtc !== '';
     }
 
@@ -101,7 +103,10 @@ export class Atc {
         this.currentAtc = '';
         this.nextAtc = '';
         this.notificationTime = 0;
+        this.currentFansMode = FansMode.FansNone;
         this.mailboxBus.setAtcLogonMessage('');
+
+        this.sendAtcStationStatus();
     }
 
     public async logon(station: string): Promise<AtsuStatusCodes> {
@@ -129,7 +134,9 @@ export class Atc {
         this.nextAtc = station;
         this.atsu.registerMessages([message]);
         this.mailboxBus.setAtcLogonMessage(`NEXT ATC: ${station}`);
-        this.notificationTime = SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
+        this.notificationTime = this.atsu.digitalInputs.UtcClock.secondsOfDay;
+
+        this.sendAtcStationStatus();
 
         // check if the logon was successful within five minutes
         setTimeout(() => {
@@ -195,6 +202,7 @@ export class Atc {
         message.MailboxRelevantMessage = false;
 
         this.maxUplinkDelay = -1;
+        this.atsu.digitalOutputs.FmsBus.sendMaxUplinkDelay(this.maxUplinkDelay);
         this.atsu.registerMessages([message]);
 
         return this.datalink.sendMessage(message, true).then((error) => error);
@@ -208,10 +216,7 @@ export class Atc {
         }
 
         return this.logoffWithoutReset().then((error) => {
-            this.mailboxBus.setAtcLogonMessage('');
-            this.currentFansMode = FansMode.FansNone;
-            this.currentAtc = '';
-            this.nextAtc = '';
+            this.resetLogon();
             return error;
         });
     }
@@ -263,7 +268,10 @@ export class Atc {
                         message.Response.ComStatus = AtsuMessageComStatus.Failed;
                         this.mailboxBus.updateMessageStatus(message.UniqueMessageID, MailboxStatusMessage.SendFailed);
                     }
+
+                    // update the peripherical devices
                     this.mailboxBus.update(message);
+                    this.atsu.digitalOutputs.FmsBus.sendAtcMessages(this.messageQueue);
                 });
             }
         }
@@ -298,6 +306,8 @@ export class Atc {
                     this.mailboxBus.updateMessageStatus(message.UniqueMessageID, MailboxStatusMessage.SendFailed);
                 }
                 this.mailboxBus.update(message);
+
+                this.atsu.digitalOutputs.FmsBus.sendAtcMessages(this.messageQueue);
             });
         }
     }
@@ -340,6 +350,11 @@ export class Atc {
                 }
             }
 
+            // update the internal list
+            if (this.messageQueue.findIndex((element) => element.UniqueMessageID === message.UniqueMessageID) !== -1) {
+                this.atsu.digitalOutputs.FmsBus.sendAtcMessages(this.messageQueue);
+            }
+
             return code;
         });
     }
@@ -348,8 +363,8 @@ export class Atc {
         return this.messageQueue;
     }
 
-    public monitoredMessages(): AtsuMessage[] {
-        const retval: AtsuMessage[] = [];
+    public monitoredMessages(): CpdlcMessage[] {
+        const retval: CpdlcMessage[] = [];
 
         this.messageMonitoring.monitoredMessageIds().forEach((id) => {
             const message = this.messageQueue.find((elem) => elem.UniqueMessageID === id);
@@ -370,14 +385,23 @@ export class Atc {
         if (index !== -1) {
             this.messageQueue.splice(index, 1);
             this.mailboxBus.dequeue(uid);
+            this.atsu.digitalOutputs.FmsBus.sendAtcMessages(this.messageQueue);
         }
         return index !== -1;
+    }
+
+    private sendAtisReports(): void {
+        const reports: Map<string, AtisMessage[]> = new Map();
+        this.atisMessages.forEach((data, icao) => reports.set(icao, data[1]));
+        this.atsu.digitalOutputs.FmsBus.sendAtcAtisReports(reports);
     }
 
     public cleanupMessages(): void {
         this.messageQueue = [];
         this.mailboxBus.reset();
         this.atisMessages = new Map();
+        this.sendAtisReports();
+        this.atsu.digitalOutputs.FmsBus.sendAtcMessages(this.messageQueue);
     }
 
     private analyzeMessage(request: CpdlcMessage, response: CpdlcMessage): boolean {
@@ -391,19 +415,10 @@ export class Atc {
                 return true;
             }
 
-            // received a logoff message
-            if (request.Content[0]?.TypeId === 'UM9995') {
+            // received a logoff message or service terminated message
+            if (request.Content[0]?.TypeId === 'UM9995' || request.Message.includes('TERMINATED')) {
                 request.MailboxRelevantMessage = false;
-                this.mailboxBus.setAtcLogonMessage('');
-                this.currentAtc = '';
-                return true;
-            }
-
-            // received a service terminated message
-            if (request.Message.includes('TERMINATED')) {
-                request.MailboxRelevantMessage = false;
-                this.mailboxBus.setAtcLogonMessage('');
-                this.currentAtc = '';
+                this.resetLogon();
                 return true;
             }
 
@@ -430,21 +445,19 @@ export class Atc {
                     InputValidation.FANS = this.currentFansMode;
                     this.currentAtc = this.nextAtc;
                     this.nextAtc = '';
+                    this.sendAtcStationStatus();
                     return true;
                 }
 
                 // logon rejected
                 if (response.Content[0]?.TypeId === 'UM9996' || response.Content[0]?.TypeId === 'UM0') {
                     response.MailboxRelevantMessage = false;
-                    this.mailboxBus.setAtcLogonMessage('');
-                    this.currentAtc = '';
-                    this.nextAtc = '';
+                    this.resetLogon();
                     return true;
                 }
             }
         }
 
-        // TODO later analyze requests by ATC
         return false;
     }
 
@@ -488,6 +501,8 @@ export class Atc {
                 this.messageQueue.unshift(cpdlcMessage);
                 this.analyzeMessage(cpdlcMessage, undefined);
             }
+
+            this.atsu.digitalOutputs.FmsBus.sendAtcMessages(this.messageQueue);
         });
 
         if (messages.length !== 0 && (messages[0] as CpdlcMessage).MailboxRelevantMessage) {
@@ -507,6 +522,7 @@ export class Atc {
         const index = this.messageQueue.findIndex((element) => element.UniqueMessageID === uid);
         if (index !== -1 && this.messageQueue[index].Direction === AtsuMessageDirection.Uplink) {
             this.messageQueue[index].Confirmed = true;
+            this.atsu.digitalOutputs.FmsBus.sendAtcMessages(this.messageQueue);
         }
 
         return index !== -1;
@@ -525,22 +541,30 @@ export class Atc {
                     return AtsuStatusCodes.NoAtisReceived;
                 }
 
+                let resynchronizeFms = false;
+
                 if (this.atisMessages.get(icao) !== undefined) {
                     if (this.atisMessages.get(icao)[1][0].Information !== atis.Information) {
                         this.atisMessages.get(icao)[1].unshift(atis);
                         code = AtsuStatusCodes.NewAtisReceived;
+                        resynchronizeFms = true;
                         printable = true;
                     } else if (overwrite) {
                         this.atisMessages.get(icao)[1][0] = atis;
                         code = AtsuStatusCodes.NewAtisReceived;
+                        resynchronizeFms = true;
                     }
                 } else {
                     this.atisMessages.set(icao, [atis.Timestamp.Seconds, [atis]]);
                     code = AtsuStatusCodes.NewAtisReceived;
+                    resynchronizeFms = true;
                     printable = true;
                 }
 
                 this.atisMessages.get(icao)[0] = atis.Timestamp.Seconds;
+                if (resynchronizeFms) {
+                    this.sendAtisReports();
+                }
 
                 if (this.printAtisReport && printable) {
                     this.atsu.printMessage(atis);
@@ -555,6 +579,7 @@ export class Atc {
 
     public togglePrintAtisReports() {
         this.printAtisReport = !this.printAtisReport;
+        this.atsu.digitalOutputs.FmsBus.sendPrintAtisReportsPrint(this.printAtisReport);
     }
 
     public printAtisReportsPrint(): boolean {
@@ -565,16 +590,10 @@ export class Atc {
         return this.updateAtis(icao, type, true);
     }
 
-    public atisReports(icao: string): AtisMessage[] {
-        if (this.atisMessages.has(icao)) {
-            return this.atisMessages.get(icao)[1];
-        }
-        return [];
-    }
-
     public resetAtisAutoUpdate() {
         this.atisAutoUpdateIcaos.forEach((elem) => clearInterval(elem[2]));
         this.atisAutoUpdateIcaos = [];
+        this.atsu.digitalOutputs.FmsBus.sendActiveAtisAutoUpdates([]);
     }
 
     public atisAutoUpdateActive(icao: string): boolean {
@@ -599,10 +618,14 @@ export class Atc {
         }
     }
 
-    public activateAtisAutoUpdate(icao: string, type: AtisType): void {
-        if (this.atisAutoUpdateIcaos.find((elem) => elem[0] === icao) === undefined) {
-            const updater = setInterval(() => this.automaticAtisUpdater(icao, type), 60000);
-            this.atisAutoUpdateIcaos.push([icao, type, updater]);
+    public activateAtisAutoUpdate(data: { icao: string; type: AtisType }): void {
+        if (this.atisAutoUpdateIcaos.find((elem) => elem[0] === data.icao) === undefined) {
+            const updater = setInterval(() => this.automaticAtisUpdater(data.icao, data.type), 60000);
+            this.atisAutoUpdateIcaos.push([data.icao, data.type, updater]);
+
+            const icaos: string[] = [];
+            this.atisAutoUpdateIcaos.forEach((airport) => icaos.push(airport[0]));
+            this.atsu.digitalOutputs.FmsBus.sendActiveAtisAutoUpdates(icaos);
         }
     }
 
@@ -611,6 +634,10 @@ export class Atc {
         if (idx >= 0) {
             clearInterval(this.atisAutoUpdateIcaos[idx][2]);
             this.atisAutoUpdateIcaos.splice(idx, 1);
+
+            const icaos: string[] = [];
+            this.atisAutoUpdateIcaos.forEach((airport) => icaos.push(airport[0]));
+            this.atsu.digitalOutputs.FmsBus.sendActiveAtisAutoUpdates(icaos);
         }
     }
 
@@ -624,5 +651,11 @@ export class Atc {
 
     public toggleAutomaticPositionReportActive(): void {
         this.automaticPositionReport = !this.automaticPositionReport;
+        this.atsu.digitalOutputs.FmsBus.sendAutomaticPositionReportActive(this.automaticPositionReport);
+    }
+
+    public setMaxUplinkDelay(delay: number): void {
+        this.maxUplinkDelay = delay;
+        this.atsu.digitalOutputs.FmsBus.sendMaxUplinkDelay(this.maxUplinkDelay);
     }
 }
