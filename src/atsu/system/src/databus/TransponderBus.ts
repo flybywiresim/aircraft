@@ -1,4 +1,4 @@
-import { EventBus, SimVarDefinition, SimVarPublisher, SimVarValueType } from 'msfssdk';
+import { EventBus, EventSubscriber, Publisher, SimVarDefinition, SimVarPublisher, SimVarValueType } from 'msfssdk';
 
 interface TransponderSimvars {
     msfsTransponderCode: number,
@@ -25,6 +25,10 @@ export interface TransponderDataBusTypes {
 export class TransponderInputBus {
     private simVarPublisher: TransponderSimvarPublisher = null;
 
+    private publisher: Publisher<TransponderDataBusTypes> = null;
+
+    private subscriber: EventSubscriber<TransponderSimvars> = null;
+
     constructor(private readonly bus: EventBus) { }
 
     private static getDigitsFromBco16(code: number): number[] {
@@ -45,10 +49,10 @@ export class TransponderInputBus {
     }
 
     public initialize(): void {
-        const publisher = this.bus.getPublisher<TransponderDataBusTypes>();
-        const subscriber = this.bus.getSubscriber<TransponderSimvars>();
+        this.publisher = this.bus.getPublisher<TransponderDataBusTypes>();
+        this.subscriber = this.bus.getSubscriber<TransponderSimvars>();
 
-        subscriber.on('msfsTransponderCode').whenChanged().handle((code: number) => {
+        this.subscriber.on('msfsTransponderCode').whenChanged().handle((code: number) => {
             const digits = TransponderInputBus.getDigitsFromBco16(code);
             let squawk = 0;
 
@@ -56,7 +60,7 @@ export class TransponderInputBus {
                 squawk = squawk * 10 + digit;
             });
 
-            publisher.pub('transponderCode', squawk);
+            this.publisher.pub('transponderCode', squawk);
         });
 
         this.simVarPublisher = new TransponderSimvarPublisher(this.bus);

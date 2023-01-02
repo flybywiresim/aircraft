@@ -1,4 +1,4 @@
-import { EventBus, Publisher, SimVarDefinition, SimVarPublisher, SimVarValueType } from 'msfssdk';
+import { EventBus, EventSubscriber, Publisher, SimVarDefinition, SimVarPublisher, SimVarValueType } from 'msfssdk';
 
 interface FwcSimvars {
     msfsCompanyMessageCount: number,
@@ -25,13 +25,17 @@ export interface FwcDataBusTypes {
 export class FwcInputBus {
     private simVarPublisher: FwcSimvarPublisher = null;
 
+    private publisher: Publisher<FwcDataBusTypes> = null;
+
+    private subscriber: EventSubscriber<FwcSimvars> = null;
+
     constructor(private readonly bus: EventBus) { }
 
     public initialize(): void {
-        const publisher = this.bus.getPublisher<FwcDataBusTypes>();
-        const subscriber = this.bus.getSubscriber<FwcSimvars>();
+        this.publisher = this.bus.getPublisher<FwcDataBusTypes>();
+        this.subscriber = this.bus.getSubscriber<FwcSimvars>();
 
-        subscriber.on('msfsCompanyMessageCount').whenChanged().handle((count: number) => publisher.pub('companyMessageCount', count));
+        this.subscriber.on('msfsCompanyMessageCount').whenChanged().handle((count: number) => this.publisher.pub('companyMessageCount', count));
 
         this.simVarPublisher = new FwcSimvarPublisher(this.bus);
     }

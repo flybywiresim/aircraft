@@ -1,4 +1,4 @@
-import { EventBus, SimVarDefinition, SimVarPublisher, SimVarValueType } from 'msfssdk';
+import { EventBus, EventSubscriber, Publisher, SimVarDefinition, SimVarPublisher, SimVarValueType } from 'msfssdk';
 
 interface ClockSimvars {
     msfsUtcYear: number,
@@ -40,24 +40,28 @@ export interface ClockDataBusTypes {
 export class ClockInputBus {
     private simVarPublisher: ClockSimvarPublisher = null;
 
+    private subscriber: EventSubscriber<ClockSimvars> = null;
+
+    private publisher: Publisher<ClockDataBusTypes> = null;
+
     constructor(private readonly bus: EventBus) { }
 
     public initialize(): void {
-        const publisher = this.bus.getPublisher<ClockDataBusTypes>();
-        const subscriber = this.bus.getSubscriber<ClockSimvars>();
+        this.publisher = this.bus.getPublisher<ClockDataBusTypes>();
+        this.subscriber = this.bus.getSubscriber<ClockSimvars>();
 
-        subscriber.on('msfsUtcYear').whenChanged().handle((year: number) => publisher.pub('utcYear', year));
-        subscriber.on('msfsUtcMonth').whenChanged().handle((month: number) => publisher.pub('utcMonth', month));
-        subscriber.on('msfsUtcDayOfMonth').whenChanged().handle((day: number) => publisher.pub('utcDayOfMonth', day));
-        subscriber.on('msfsUtcSeconds').whenChanged().handle((seconds: number) => {
+        this.subscriber.on('msfsUtcYear').whenChanged().handle((year: number) => this.publisher.pub('utcYear', year));
+        this.subscriber.on('msfsUtcMonth').whenChanged().handle((month: number) => this.publisher.pub('utcMonth', month));
+        this.subscriber.on('msfsUtcDayOfMonth').whenChanged().handle((day: number) => this.publisher.pub('utcDayOfMonth', day));
+        this.subscriber.on('msfsUtcSeconds').whenChanged().handle((seconds: number) => {
             const hours = Math.floor(seconds / 3600);
             const minutes = Math.floor(seconds / 60) % 60;
             const secondsOfMinute = Math.floor(seconds) - hours * 3600 + minutes * 60;
 
-            publisher.pub('utcHour', hours);
-            publisher.pub('utcMinute', minutes);
-            publisher.pub('utcSecond', secondsOfMinute);
-            publisher.pub('utcSecondsOfDay', seconds);
+            this.publisher.pub('utcHour', hours);
+            this.publisher.pub('utcMinute', minutes);
+            this.publisher.pub('utcSecond', secondsOfMinute);
+            this.publisher.pub('utcSecondsOfDay', seconds);
         });
 
         this.simVarPublisher = new ClockSimvarPublisher(this.bus);
