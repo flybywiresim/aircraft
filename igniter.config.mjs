@@ -31,6 +31,10 @@ export default new TaskOfTasks('a32nx', [
                 new ExecTask('pfd',
                     'npm run build:pfd',
                     ['src/instruments/src/PFD','flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/PFD']
+                ),
+                new ExecTask('SystemsHost',
+                    'npm run build:systemshost',
+                    ['src/instruments/src/SystemsHost','flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/SystemsHost']
                 )
             ],
             true),
