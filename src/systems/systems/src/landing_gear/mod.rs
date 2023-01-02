@@ -504,12 +504,6 @@ impl LandingGearControlInterfaceUnitSet {
         gear_system_sensors: &impl GearSystemSensors,
         external_power_available: bool,
     ) {
-        println!(
-            "COORD LGCIU MASTER IS {:?}  1/2 status: {:?}/{:?}",
-            self.coordinator.active_lgciu_id(),
-            self.lgcius[LgciuId::Lgciu1 as usize].status(),
-            self.lgcius[LgciuId::Lgciu2 as usize].status()
-        );
         self.coordinator.update(
             [
                 self.lgcius[LgciuId::Lgciu1 as usize].status(),
@@ -745,8 +739,6 @@ pub struct LandingGearControlInterfaceUnit {
 
     is_active_computer_previous_state: bool,
 
-    lgciu_id: u8,
-
     should_open_doors: bool,
     should_extend_gears: bool,
 }
@@ -811,8 +803,6 @@ impl LandingGearControlInterfaceUnit {
             internal_error_failure: Failure::new(FailureType::LgciuInternalError(lgciu_id)),
 
             is_active_computer_previous_state: lgciu_id == LgciuId::Lgciu1,
-
-            lgciu_id: lgciu_number(lgciu_id),
 
             should_open_doors: false,
             should_extend_gears: context.start_gear_down(),
