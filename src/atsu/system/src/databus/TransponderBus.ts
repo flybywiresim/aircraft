@@ -33,37 +33,13 @@ export class TransponderInputBus {
         this.simVarPublisher = new TransponderSimvarPublisher(this.bus);
     }
 
-    private static getDigitsFromBco16(code: number): number {
-        let codeCopy = code;
-        const digits: number[] = [];
-        while (codeCopy > 0) {
-            digits.push(codeCopy % 16);
-            codeCopy = Math.floor(codeCopy / 16);
-        }
-        if (digits.length < 4) {
-            const digitsToAdd = 4 - digits.length;
-            for (let i = 0; i < digitsToAdd; i++) {
-                digits.push(0);
-            }
-        }
-        digits.reverse();
-
-        let squawk = 0;
-        digits.forEach((digit) => {
-            squawk = squawk * 10 + digit;
-        });
-
-        return squawk;
-    }
-
     public initialize(): void {
         this.publisher = this.bus.getPublisher<TransponderDataBusTypes>();
         this.subscriber = this.bus.getSubscriber<TransponderSimvars>();
 
         this.subscriber.on('msfsTransponderCode').whenChanged().handle((code: number) => {
-            const squawk = TransponderInputBus.getDigitsFromBco16(code);
-            console.log(`Received transponder: ${squawk}`);
-            this.publisher.pub('transponderCode', squawk, true, false);
+            console.log(`Received transponder: ${code}`);
+            this.publisher.pub('transponderCode', code, true, false);
         });
     }
 
