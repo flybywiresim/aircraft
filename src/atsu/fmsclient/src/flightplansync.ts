@@ -103,7 +103,7 @@ export class FlightPlanSync {
                         activeWaypoint: this.activeWaypoint.ident !== '' ? this.activeWaypoint : null,
                         nextWaypoint: this.nextWaypoint.ident !== '' ? this.nextWaypoint : null,
                         destination: this.destination.ident !== '' ? this.destination : null,
-                    });
+                    }, true, false);
                 }
             }
         }, 1000);
