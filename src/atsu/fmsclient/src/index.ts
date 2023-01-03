@@ -119,7 +119,7 @@ export class FmsClient {
         this.subscriber.on('weatherResponse').handle((response) => {
             this.weatherResponseCallbacks.every((callback, index) => {
                 if (callback(response.data, response.requestId)) {
-                    this.requestSentToGroundCallbacks.splice(index, 1);
+                    this.weatherResponseCallbacks.splice(index, 1);
                     return false;
                 }
                 return true;
@@ -128,7 +128,7 @@ export class FmsClient {
         this.subscriber.on('positionReport').handle((response) => {
             this.positionReportDataCallbacks.every((callback, index) => {
                 if (callback(response.data, response.requestId)) {
-                    this.requestSentToGroundCallbacks.splice(index, 1);
+                    this.positionReportDataCallbacks.splice(index, 1);
                     return false;
                 }
                 return true;
