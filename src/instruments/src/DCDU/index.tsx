@@ -104,20 +104,20 @@ const DCDU: React.FC = () => {
 
         const entry = updateMap.get(uid);
         if (entry !== undefined) {
-            publisherRef.current?.pub('readMessage', uid);
+            publisherRef.current?.pub('readMessage', uid, true, false);
             entry.response = response;
         }
 
         setMessages(updateMap);
     };
 
-    const deleteMessage = (uid: number) => publisherRef.current?.pub('deleteMessage', uid);
-    const sendMessage = (uid: number) => publisherRef.current?.pub('downlinkTransmit', uid);
-    const sendResponse = (uid: number, responseId: number) => publisherRef.current?.pub('uplinkResponse', { uid, responseId });
+    const deleteMessage = (uid: number) => publisherRef.current?.pub('deleteMessage', uid, true, false);
+    const sendMessage = (uid: number) => publisherRef.current?.pub('downlinkTransmit', uid, true, false);
+    const sendResponse = (uid: number, responseId: number) => publisherRef.current?.pub('uplinkResponse', { uid, responseId }, true, false);
 
     // functions to handle the internal queue
     const invertResponse = (uid: number) => {
-        publisherRef.current?.pub('invertSemanticResponse', uid);
+        publisherRef.current?.pub('invertSemanticResponse', uid, true, false);
     };
     const modifyResponse = (uid: number) => {
         if (!messagesRef.current) {
@@ -127,14 +127,14 @@ const DCDU: React.FC = () => {
         const message = messagesRef.current.get(uid);
         if (message) {
             message.statusMessage = MailboxStatusMessage.FmsDisplayForModification;
-            publisherRef.current?.pub('readMessage', uid);
-            publisherRef.current?.pub('modifyMessage', uid);
+            publisherRef.current?.pub('readMessage', uid, true, false);
+            publisherRef.current?.pub('modifyMessage', uid, true, false);
         }
 
         setMessages(new Map<number, DcduMessageBlock>(messagesRef.current));
     };
     const recallMessage = () => {
-        publisherRef.current?.pub('recallMessage', true);
+        publisherRef.current?.pub('recallMessage', true, true, false);
     };
     const closeMessage = (uid: number) => {
         if (!messagesRef.current) {
@@ -144,7 +144,7 @@ const DCDU: React.FC = () => {
         const sortedMessages = sortedMessageArray(messagesRef.current);
         const index = sortedMessages.findIndex((element) => element.messages[0].UniqueMessageID === uid);
 
-        publisherRef.current?.pub('closeMessage', uid);
+        publisherRef.current?.pub('closeMessage', uid, true, false);
 
         if (index !== -1) {
             setSystemStatusMessage(MailboxStatusMessage.NoMessage);
@@ -170,8 +170,8 @@ const DCDU: React.FC = () => {
             setMessages(updatedMap);
         }
     };
-    const monitorMessage = (uid: number) => publisherRef.current?.pub('updateMessageMonitoring', uid);
-    const stopMessageMonitoring = (uid: number) => publisherRef.current?.pub('stopMessageMonitoring', uid);
+    const monitorMessage = (uid: number) => publisherRef.current?.pub('updateMessageMonitoring', uid, true, false);
+    const stopMessageMonitoring = (uid: number) => publisherRef.current?.pub('stopMessageMonitoring', uid, true, false);
 
     // the message scroll button handling
     useInteractionEvents(['A32NX_DCDU_BTN_MPL_MS0MINUS', 'A32NX_DCDU_BTN_MPR_MS0MINUS'], () => {
@@ -230,7 +230,7 @@ const DCDU: React.FC = () => {
         const sortedMessages = sortedMessageArray(messagesRef.current);
         const index = sortedMessages.findIndex((element) => element.messageVisible);
         if (index !== -1) {
-            publisherRef.current?.pub('printMessage', sortedMessages[index].messages[0].UniqueMessageID);
+            publisherRef.current?.pub('printMessage', sortedMessages[index].messages[0].UniqueMessageID, true, false);
         }
     });
 
