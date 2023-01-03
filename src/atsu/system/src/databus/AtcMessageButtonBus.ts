@@ -1,4 +1,4 @@
-import { EventBus, EventSubscriber, Publisher, SimVarDefinition, SimVarPublisher, SimVarValueType } from 'msfssdk';
+import { EventBus, EventSubscriber, SimVarDefinition, SimVarPublisher, SimVarValueType } from 'msfssdk';
 
 interface AtcMessageButtonSimvars {
     msfsButtonActive: boolean,
@@ -48,9 +48,13 @@ export class AtcMessageButtonInputBus {
 
         this.subscriber.on('msfsButtonActive').whenChanged().handle((active: boolean) => this.buttonActive = active);
         this.subscriber.on('msfsButtonPressed').whenChanged().handle((pressed: number) => {
-            console.log('ATC BTN PRESSED');
-            if (this.buttonActive && pressed && this.callbacks.onButtonPressed !== null) {
-                this.callbacks.onButtonPressed();
+            if (pressed) {
+                console.log('ATC BTN PRESSED');
+                if (this.buttonActive && this.callbacks.onButtonPressed !== null) {
+                    this.callbacks.onButtonPressed();
+                }
+
+                SimVar.SetSimVarValue(AtcMessageButtonSimvarSources.buttonPressed, 'Number', 0);
             }
         });
     }
@@ -74,20 +78,14 @@ export class AtcMessageButtonInputBus {
 }
 
 export class AtcMessageButtonOutputBus {
-    private publisher: Publisher<AtcMessageButtonSimvars> = null;
-
     constructor(private readonly bus: EventBus) { }
 
-    public initialize(): void {
-        this.publisher = this.bus.getPublisher<AtcMessageButtonSimvars>();
-    }
-
     public activateButton(): void {
-        this.publisher.pub('msfsButtonActive', true, true, false);
+        SimVar.SetSimVarValue(AtcMessageButtonSimvarSources.buttonActive, 'Bool', true);
     }
 
     public resetButton(): void {
-        this.publisher.pub('msfsButtonActive', false, true, false);
-        this.publisher.pub('msfsButtonPressed', 0, true, false);
+        SimVar.SetSimVarValue(AtcMessageButtonSimvarSources.buttonActive, 'Bool', false);
+        SimVar.SetSimVarValue(AtcMessageButtonSimvarSources.buttonPressed, 'Number', 0);
     }
 }
