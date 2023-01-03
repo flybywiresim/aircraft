@@ -156,7 +156,7 @@ if (process.env.VITE_BUILD) {
 const placeholderReplace = (translation: string, replacements: Record<string, string>[]): string => {
     let result = translation;
     replacements.forEach((replacement: Record<string, string>) => {
-        const searchValue = `%(${Object.keys(replacement)[0]})`;
+        const searchValue = `$${Object.keys(replacement)[0]}`;
         const replaceValue = Object.values(replacement)[0].toString();
         result = result.replace(searchValue, replaceValue);
     });
