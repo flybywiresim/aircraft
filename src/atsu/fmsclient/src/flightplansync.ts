@@ -51,10 +51,10 @@ export class FlightPlanSync {
     }
 
     private static findNextWaypoint(flightPlan: ManagedFlightPlan, flightPlanStats: Map<number, WaypointStats>): Waypoint {
-        let idx = flightPlan.activeWaypointIndex;
-        while (idx >= 0) {
+        let idx = flightPlan.activeWaypointIndex + 1;
+        while (idx < flightPlan.waypoints.length) {
             const wp = flightPlan.getWaypoint(idx);
-            if (wp && wp.waypointReachedAt !== 0) {
+            if (wp) {
                 return {
                     ident: wp.ident,
                     altitude: wp.legAltitude1,
@@ -62,7 +62,7 @@ export class FlightPlanSync {
                 };
             }
 
-            idx -= 1;
+            idx += 1;
         }
 
         return { ident: '', altitude: 0, utc: 0 };
