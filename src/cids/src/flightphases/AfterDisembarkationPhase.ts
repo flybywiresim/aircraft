@@ -9,7 +9,7 @@ export class AfterDisembarkationPhase extends FlightPhase {
             this.sendNewFlightPhaseToManager(this.flightPhaseManager.boardingPhase);
         } else if (this.flightPhaseManager.pushbackPhase.testConditions()) {
             this.sendNewFlightPhaseToManager(this.flightPhaseManager.pushbackPhase);
-        } else if (this.flightPhaseManager.takeoffAndInitClimbPhase.testConditions()) {
+        } else if (this.flightPhaseManager.taxiBeforeTakeoffPhase.testConditions()) {
             this.sendNewFlightPhaseToManager(this.flightPhaseManager.taxiBeforeTakeoffPhase);
         }
     }
