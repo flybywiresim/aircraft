@@ -4,11 +4,11 @@ import { FmsInputBus } from '@atsu/system/databus/FmsBus';
 import { Arinc429Word } from '@shared/arinc429';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { EventBus, EventSubscriber } from 'msfssdk';
-import { AtcMessageButtonBusTypes, AtcMessageButtonInputBus, AtcMessageButtonSimvarPublisher } from './databus/AtcMessageButtonBus';
-import { ClockDataBusTypes, ClockInputBus, ClockSimvarPublisher } from './databus/ClockBus';
-import { FmgcDataBusTypes, FmgcInputBus, FmgcSimvarPuplisher } from './databus/FmgcBus';
-import { FwcDataBusTypes, FwcInputBus, FwcSimvarPublisher } from './databus/FwcBus';
-import { TransponderDataBusTypes, TransponderInputBus, TransponderSimvarPublisher } from './databus/TransponderBus';
+import { AtcMessageButtonBusTypes, AtcMessageButtonInputBus } from './databus/AtcMessageButtonBus';
+import { ClockDataBusTypes, ClockInputBus } from './databus/ClockBus';
+import { FmgcDataBusTypes, FmgcInputBus } from './databus/FmgcBus';
+import { FwcDataBusTypes, FwcInputBus } from './databus/FwcBus';
+import { TransponderDataBusTypes, TransponderInputBus } from './databus/TransponderBus';
 
 export class DigitalInputs {
     private subscriber: EventSubscriber<
