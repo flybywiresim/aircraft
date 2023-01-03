@@ -128,7 +128,7 @@ export class Atc {
         message.MailboxRelevantMessage = false;
 
         this.nextAtc = station;
-        this.atsu.registerMessages([message], true);
+        this.atsu.registerMessages([message]);
         this.mailboxBus.setAtcLogonMessage(`NEXT ATC: ${station}`);
         this.notificationTime = this.atsu.digitalInputs.UtcClock.secondsOfDay;
 
@@ -199,7 +199,7 @@ export class Atc {
 
         this.maxUplinkDelay = -1;
         this.atsu.digitalOutputs.FmsBus.sendMaxUplinkDelay(this.maxUplinkDelay);
-        this.atsu.registerMessages([message], true);
+        this.atsu.registerMessages([message]);
 
         return this.atsu.datalink.sendMessage(message, true).then((error) => error);
     }
@@ -267,7 +267,7 @@ export class Atc {
 
                     // update the peripherical devices
                     this.mailboxBus.update(message);
-                    this.atsu.digitalOutputs.FmsBus.resynchronizeCpdlcMessage(message);
+                    this.atsu.digitalOutputs.FmsBus.resynchronizeAtcMessage(message);
                 });
             }
         }
@@ -303,7 +303,7 @@ export class Atc {
                 }
                 this.mailboxBus.update(message);
 
-                this.atsu.digitalOutputs.FmsBus.resynchronizeCpdlcMessage(message);
+                this.atsu.digitalOutputs.FmsBus.resynchronizeAtcMessage(message);
             });
         }
     }
@@ -348,7 +348,7 @@ export class Atc {
 
             // update the internal list
             if (this.messageQueue.findIndex((element) => element.UniqueMessageID === message.UniqueMessageID) !== -1) {
-                this.atsu.digitalOutputs.FmsBus.resynchronizeCpdlcMessage(message as CpdlcMessage);
+                this.atsu.digitalOutputs.FmsBus.resynchronizeAtcMessage(message as CpdlcMessage);
             }
 
             return code;
@@ -487,7 +487,7 @@ export class Atc {
                                 element.Response = cpdlcMessage;
                                 this.analyzeMessage(element, cpdlcMessage);
                                 // update the old message with the new answer
-                                this.atsu.digitalOutputs.FmsBus.resynchronizeCpdlcMessage(element);
+                                this.atsu.digitalOutputs.FmsBus.resynchronizeAtcMessage(element);
                                 break;
                             }
                             element = element.Response;
@@ -497,7 +497,7 @@ export class Atc {
             } else {
                 this.messageQueue.unshift(cpdlcMessage);
                 this.analyzeMessage(cpdlcMessage, undefined);
-                this.atsu.digitalOutputs.FmsBus.resynchronizeCpdlcMessage(cpdlcMessage);
+                this.atsu.digitalOutputs.FmsBus.resynchronizeAtcMessage(cpdlcMessage);
             }
         });
 
@@ -518,7 +518,7 @@ export class Atc {
         const index = this.messageQueue.findIndex((element) => element.UniqueMessageID === uid);
         if (index !== -1 && this.messageQueue[index].Direction === AtsuMessageDirection.Uplink) {
             this.messageQueue[index].Confirmed = true;
-            this.atsu.digitalOutputs.FmsBus.resynchronizeCpdlcMessage(this.messageQueue[index]);
+            this.atsu.digitalOutputs.FmsBus.resynchronizeAtcMessage(this.messageQueue[index]);
         }
 
         return index !== -1;

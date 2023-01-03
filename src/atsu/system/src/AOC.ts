@@ -2,8 +2,7 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 import { AtsuStatusCodes } from '@atsu/common/AtsuStatusCodes';
-import { AtsuMessageDirection, AtsuMessage, AtsuMessageType } from '@atsu/common/messages/AtsuMessage';
-import { WeatherMessage } from '@atsu/common/messages/WeatherMessage';
+import { AtsuMessageDirection, AtsuMessage, AtsuMessageType, WeatherMessage } from '@atsu/common/messages';
 import { AtisType } from '@atsu/common/messages/AtisMessage';
 import { Atsu } from './ATSU';
 
@@ -65,6 +64,7 @@ export class Aoc {
             }
 
             this.messageQueueUplink[index].Confirmed = true;
+            this.atsu.digitalOutputs.FmsBus.resynchronizeAocMessage(this.messageQueueUplink[index]);
         }
 
         return index !== -1;
@@ -78,13 +78,10 @@ export class Aoc {
         return this.messageQueueUplink;
     }
 
-    public insertMessages(messages: AtsuMessage[], synchronizeWithFms: boolean): void {
+    public insertMessages(messages: AtsuMessage[]): void {
         messages.forEach((message) => {
             if (message.Direction === AtsuMessageDirection.Uplink) {
                 this.messageQueueUplink.unshift(message);
-                if (synchronizeWithFms) {
-                    this.atsu.digitalOutputs.FmsBus.resynchronizeFreetextMessage(message);
-                }
 
                 // increase the company message counter
                 const cMsgCnt = this.atsu.digitalInputs.CompanyMessageCount;
@@ -92,6 +89,8 @@ export class Aoc {
             } else {
                 this.messageQueueDownlink.unshift(message);
             }
+
+            this.atsu.digitalOutputs.FmsBus.resynchronizeAocMessage(message);
         });
     }
 }

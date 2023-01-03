@@ -80,7 +80,10 @@ export interface AtsuFmsMessages {
     maxUplinkDelay: number;
     automaticPositionReportActive: boolean;
 
+    resynchronizeAocWeatherMessage: WeatherMessage;
     resynchronizeFreetextMessage: FreetextMessage;
-    resynchronizeCpdlcMessage: CpdlcMessage
+    resynchronizeCpdlcMessage: CpdlcMessage;
+    resynchronizeDclMessage: DclMessage;
+    resynchronizeOclMessage: OclMessage;
     deleteMessage: number;
 }

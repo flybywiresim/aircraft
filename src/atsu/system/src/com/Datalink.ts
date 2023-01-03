@@ -31,7 +31,7 @@ export class Datalink {
                 const transmissionTime = this.vdl.enqueueInboundMessage(message);
                 setTimeout(() => {
                     this.vdl.dequeueInboundMessage(transmissionTime);
-                    atsu.registerMessages([message], true);
+                    atsu.registerMessages([message]);
                 }, transmissionTime);
             }
         });

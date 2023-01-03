@@ -1,7 +1,7 @@
 import { AtsuStatusCodes } from '@atsu/common/AtsuStatusCodes';
 import { AtsuFmsMessages, FmsRouteData } from '@atsu/common/databus';
 import { FansMode } from '@atsu/common/index';
-import { AtisMessage, AtisType, AtsuMessage, CpdlcMessage, FreetextMessage, WeatherMessage } from '@atsu/common/messages';
+import { AtisMessage, AtisType, AtsuMessage, AtsuMessageType, CpdlcMessage, DclMessage, FreetextMessage, OclMessage, WeatherMessage } from '@atsu/common/messages';
 import { PositionReportData } from '@atsu/common/types';
 import { EventBus, EventSubscriber, Publisher } from 'msfssdk';
 
@@ -211,14 +211,24 @@ export class FmsOutputBus {
     }
 
     public deleteMessage(uid: number): void {
-        this.publisher.pub('deleteMessage', uid);
+        this.publisher.pub('deleteMessage', uid, true, false);
     }
 
-    public resynchronizeFreetextMessage(message: FreetextMessage): void {
-        this.publisher.pub('resynchronizeFreetextMessage', message);
+    public resynchronizeAocMessage(message: AtsuMessage): void {
+        if (message.Type === AtsuMessageType.Freetext) {
+            this.publisher.pub('resynchronizeFreetextMessage', message as FreetextMessage, true, false);
+        } else {
+            this.publisher.pub('resynchronizeAocWeatherMessage', message as WeatherMessage, true, false);
+        }
     }
 
-    public resynchronizeCpdlcMessage(message: CpdlcMessage): void {
-        this.publisher.pub('resynchronizeCpdlcMessage', message);
+    public resynchronizeAtcMessage(message: CpdlcMessage): void {
+        if (message.Type === AtsuMessageType.DCL) {
+            this.publisher.pub('resynchronizeDclMessage', message as DclMessage, true, false);
+        } else if (message.Type === AtsuMessageType.OCL) {
+            this.publisher.pub('resynchronizeOclMessage', message as OclMessage, true, false);
+        } else {
+            this.publisher.pub('resynchronizeCpdlcMessage', message, true, false);
+        }
     }
 }
