@@ -6,23 +6,23 @@ export class TakeoffAndInitialClimbPhase extends FlightPhase {
    */
     public tryTransition(): void {
         if (this.flightPhaseManager.finalClimbPhase.testConditions()) {
-            super.sendNewFlightPhaseToManager(this.flightPhaseManager.finalClimbPhase);
+            this.sendNewFlightPhaseToManager(this.flightPhaseManager.finalClimbPhase);
         } else if (this.flightPhaseManager.cruisePhase.testConditions()) {
-            super.sendNewFlightPhaseToManager(this.flightPhaseManager.cruisePhase); // Should the cruising altitude be lower than 10 000 ft this will transition to CRUISE.
+            this.sendNewFlightPhaseToManager(this.flightPhaseManager.cruisePhase); // Should the cruising altitude be lower than 10 000 ft this will transition to CRUISE.
         } else if (this.flightPhaseManager.disembarkationPhase.testConditions()) { // In case of returning to the gate this will transition to the disembarkation phase for deboarding.
-            super.sendNewFlightPhaseToManager(this.flightPhaseManager.disembarkationPhase);
+            this.sendNewFlightPhaseToManager(this.flightPhaseManager.disembarkationPhase);
         }
     }
 
     public testConditions(): boolean {
         return (
             (
-                this.cids.thrustLever1Position() > 74
-                && this.cids.thrustLever2Position() > 74
+                this.flightPhaseManager.cids.thrustLever1Position() > 74
+                && this.flightPhaseManager.cids.thrustLever2Position() > 74
             )
             && (
-                this.cids.onGround()
-                || this.cids.altitude() < 10000
+                this.flightPhaseManager.cids.onGround()
+                || this.flightPhaseManager.cids.altitude() < 10000
             )
         );
     }

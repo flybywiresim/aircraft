@@ -6,18 +6,18 @@ export class CruisePhase extends FlightPhase {
    */
     public tryTransition(): void {
         if (this.flightPhaseManager.todPhase.testConditions()) {
-            super.sendNewFlightPhaseToManager(this.flightPhaseManager.todPhase);
+            this.sendNewFlightPhaseToManager(this.flightPhaseManager.todPhase);
         } else if (this.flightPhaseManager.apprPhase.testConditions()) {
-            super.sendNewFlightPhaseToManager(this.flightPhaseManager.apprPhase);
+            this.sendNewFlightPhaseToManager(this.flightPhaseManager.apprPhase);
         }
     }
 
     public testConditions(): boolean {
         return (
-            this.cids.altCrzActive()
+            this.flightPhaseManager.cids.altCrzActive()
             || (
-                this.cids.altitude() > (this.cids.cruiseAltitude() - 500)
-                && this.cids.altitude() < (this.cids.cruiseAltitude() + 500)
+                this.flightPhaseManager.cids.altitude() > (this.flightPhaseManager.cids.cruiseAltitude() - 500)
+                && this.flightPhaseManager.cids.altitude() < (this.flightPhaseManager.cids.cruiseAltitude() + 500)
             )
         );
     }

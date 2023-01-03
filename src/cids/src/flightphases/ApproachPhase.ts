@@ -6,15 +6,15 @@ export class ApproachPhase extends FlightPhase {
      */
     public tryTransition(): void {
         if (this.flightPhaseManager.finalApprAndLandingPhase.testConditions()) {
-            super.sendNewFlightPhaseToManager(this.flightPhaseManager.finalApprAndLandingPhase);
+            this.sendNewFlightPhaseToManager(this.flightPhaseManager.finalApprAndLandingPhase);
         }
     }
 
     public testConditions(): boolean {
         return (
-            this.cids.altitude() < 10000
-            && !this.cids.gearDownLocked()
-            && this.cids.radioAltitude() > 1000
+            this.flightPhaseManager.cids.altitude() < 10000
+            && !this.flightPhaseManager.cids.gearDownLocked()
+            && this.flightPhaseManager.cids.radioAltitude() > 1000
         );
     }
 

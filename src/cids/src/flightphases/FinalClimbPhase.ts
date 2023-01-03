@@ -6,14 +6,14 @@ export class FinalClimbPhase extends FlightPhase {
    */
     public tryTransition(): void {
         if (this.flightPhaseManager.cruisePhase.testConditions()) {
-            super.sendNewFlightPhaseToManager(this.flightPhaseManager.cruisePhase);
+            this.sendNewFlightPhaseToManager(this.flightPhaseManager.cruisePhase);
         }
     }
 
     public testConditions(): boolean {
         return (
-            this.cids.altitude() > 10000
-            && this.cids.altitude() < this.cids.cruiseAltitude()
+            this.flightPhaseManager.cids.altitude() > 10000
+            && this.flightPhaseManager.cids.altitude() < this.flightPhaseManager.cids.cruiseAltitude()
         );
     }
 

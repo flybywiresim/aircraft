@@ -1,13 +1,9 @@
-import { Cids } from 'cids/src/CIDS';
 import { FlightPhaseManager } from '../FlightPhaseManager';
 
 export abstract class FlightPhase {
-  protected readonly cids: Cids;
-
   protected readonly flightPhaseManager: FlightPhaseManager;
 
-  constructor(cids: Cids, flightPhaseManager: FlightPhaseManager) {
-      this.cids = cids;
+  constructor(flightPhaseManager: FlightPhaseManager) {
       this.flightPhaseManager = flightPhaseManager;
   }
 

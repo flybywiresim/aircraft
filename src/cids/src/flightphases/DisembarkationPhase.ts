@@ -6,16 +6,16 @@ export class DisembarkationPhase extends FlightPhase {
    */
     public tryTransition(): void {
         if (this.flightPhaseManager.afterDisembarkationPhase.testConditions()) {
-            super.sendNewFlightPhaseToManager(this.flightPhaseManager.afterDisembarkationPhase);
+            this.sendNewFlightPhaseToManager(this.flightPhaseManager.afterDisembarkationPhase);
         }
     }
 
     public testConditions(): boolean {
         return (
-            this.cids.onGround()
-            && this.cids.isStationary()
-            && this.cids.door1LPercentOpen() === 100
-            && this.cids.deboardingInProgess()
+            this.flightPhaseManager.cids.onGround()
+            && this.flightPhaseManager.cids.isStationary()
+            && this.flightPhaseManager.cids.door1LPercentOpen() === 100
+            && this.flightPhaseManager.cids.deboardingInProgess()
         );
     }
 

@@ -6,14 +6,14 @@ export class FinalApproachAndLandingPhase extends FlightPhase {
      */
     public tryTransition(): void {
         if (this.flightPhaseManager.taxiAfterLandingPhase.testConditions()) {
-            super.sendNewFlightPhaseToManager(this.flightPhaseManager.taxiAfterLandingPhase);
+            this.sendNewFlightPhaseToManager(this.flightPhaseManager.taxiAfterLandingPhase);
         }
     }
 
     public testConditions(): boolean {
         return (
-            this.cids.gearDownLocked()
-            && this.cids.groundSpeed() >= 80
+            this.flightPhaseManager.cids.gearDownLocked()
+            && this.flightPhaseManager.cids.groundSpeed() >= 80
         );
     }
 
