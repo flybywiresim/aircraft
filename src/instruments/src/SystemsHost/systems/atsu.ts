@@ -26,7 +26,6 @@ export class AtsuSystem {
 
     public connectedCallback(): void {
         this.digitalInputs.initialize();
-        this.digitalOutputs.initialize();
         this.digitalInputs.connectedCallback();
     }
 

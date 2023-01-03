@@ -15,8 +15,4 @@ export class DigitalOutputs {
         this.FwcBus = new FwcOutputBus(this.bus);
         this.FmsBus = new FmsOutputBus(this.bus);
     }
-
-    public initialize(): void {
-        this.AtcMessageButtonsBus.initialize();
-    }
 }
