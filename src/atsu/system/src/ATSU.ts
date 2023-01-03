@@ -233,7 +233,7 @@ export class Atsu {
         this.atc = new Atc(this);
 
         // register all input callbacks
-        this.digitalInputs.fmsBus.addDataCallback('flightRoute', (route) => this.newRouteReceived(route));
+        this.digitalInputs.fmsBus.addDataCallback('routeData', (route) => this.newRouteReceived(route));
         this.digitalInputs.fmsBus.addDataCallback('sendMessage', (message) => this.sendMessage(message));
         this.digitalInputs.fmsBus.addDataCallback('updateMessage', (message) => this.atc.updateMessage(message as CpdlcMessage));
         this.digitalInputs.fmsBus.addDataCallback('remoteStationAvailable', (station) => this.isRemoteStationAvailable(station));

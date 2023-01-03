@@ -6,7 +6,7 @@ import { PositionReportData } from '@atsu/common/types';
 import { EventBus, EventSubscriber, Publisher } from 'msfssdk';
 
 export type FmsBusCallbacks = {
-    flightRoute: (route: FmsRouteData) => void;
+    routeData: (route: FmsRouteData) => void;
     sendMessage: (message: AtsuMessage) => Promise<AtsuStatusCodes>;
     updateMessage: (message: AtsuMessage) => void;
     remoteStationAvailable: (station: string) => Promise<AtsuStatusCodes>;
@@ -34,7 +34,7 @@ export class FmsInputBus {
     private readonly publisher: Publisher<AtsuFmsMessages>;
 
     private callbacks: FmsBusCallbacks = {
-        flightRoute: null,
+        routeData: null,
         sendMessage: null,
         updateMessage: null,
         remoteStationAvailable: null,
@@ -160,8 +160,8 @@ export class FmsInputBus {
     }
 
     public newRouteDataReceived(route: FmsRouteData): void {
-        if (this.callbacks.flightRoute !== null) {
-            this.callbacks.flightRoute(route);
+        if (this.callbacks.routeData !== null) {
+            this.callbacks.routeData(route);
         }
     }
 }
