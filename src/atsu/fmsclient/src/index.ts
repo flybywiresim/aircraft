@@ -17,12 +17,12 @@ import { AutopilotData, EnvironmentData, FlightStateData, PositionReportData } f
 import { FlightPhaseManager } from '@fmgc/flightphase';
 import { FlightPlanManager } from '@fmgc/index';
 import { EventBus, EventSubscriber, Publisher } from 'msfssdk';
-import { FlightPlanSync } from './flightplansync';
+import { FlightPlanSynchronization } from './FlightPlanSynchronization';
 
 export class FmsClient {
     private readonly bus: EventBus;
 
-    private readonly flightPlan: FlightPlanSync;
+    private readonly flightPlan: FlightPlanSynchronization;
 
     private readonly publisher: Publisher<AtsuFmsMessages>;
 
@@ -135,7 +135,7 @@ export class FmsClient {
             });
         });
 
-        this.flightPlan = new FlightPlanSync(this.bus, flightPlanManager, flightPhaseManager);
+        this.flightPlan = new FlightPlanSynchronization(this.bus, flightPlanManager, flightPhaseManager);
     }
 
     public maxUplinkDelay: number = -1;

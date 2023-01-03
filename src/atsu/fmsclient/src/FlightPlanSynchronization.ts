@@ -7,7 +7,7 @@ import { Arinc429Word } from '@shared/arinc429';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { EventBus, Publisher } from 'msfssdk';
 
-export class FlightPlanSync {
+export class FlightPlanSynchronization {
     private readonly publisher: Publisher<AtsuFmsMessages>;
 
     private originIdent: string = '';
@@ -115,10 +115,10 @@ export class FlightPlanSync {
                 }
 
                 const origin = activeFlightPlan.originAirfield;
-                const lastWaypoint = FlightPlanSync.findLastWaypoint(activeFlightPlan);
-                const activeWaypoint = FlightPlanSync.findActiveWaypoint(activeFlightPlan, flightPlanStats);
-                const nextWaypoint = FlightPlanSync.findNextWaypoint(activeFlightPlan, flightPlanStats);
-                const destination = FlightPlanSync.findDestinationWaypoint(activeFlightPlan, flightPlanStats);
+                const lastWaypoint = FlightPlanSynchronization.findLastWaypoint(activeFlightPlan);
+                const activeWaypoint = FlightPlanSynchronization.findActiveWaypoint(activeFlightPlan, flightPlanStats);
+                const nextWaypoint = FlightPlanSynchronization.findNextWaypoint(activeFlightPlan, flightPlanStats);
+                const destination = FlightPlanSynchronization.findDestinationWaypoint(activeFlightPlan, flightPlanStats);
 
                 if (origin) {
                     if (origin.ident !== this.originIdent || destination.ident !== this.destination.ident) {
