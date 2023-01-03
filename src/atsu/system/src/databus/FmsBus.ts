@@ -1,5 +1,5 @@
 import { AtsuStatusCodes } from '@atsu/common/AtsuStatusCodes';
-import { AtsuFmsMessages, AtsuFmsMessageSyncType, FmsRouteData } from '@atsu/common/databus';
+import { AtsuFmsMessages, FmsRouteData } from '@atsu/common/databus';
 import { FansMode } from '@atsu/common/index';
 import { AtisMessage, AtisType, AtsuMessage, CpdlcMessage, WeatherMessage } from '@atsu/common/messages';
 import { PositionReportData } from '@atsu/common/types';
@@ -64,17 +64,6 @@ export class FmsInputBus {
         }
     }
 
-    private async synchronizeMessage<T extends AtsuMessage>(data: { message: T; type: AtsuFmsMessageSyncType; requestId: number }): Promise<void> {
-        if (data.type === AtsuFmsMessageSyncType.SendMessage) {
-            this.requestWithStatusResponse(data.message, data.requestId, this.callbacks.sendMessage);
-        } else if (data.type === AtsuFmsMessageSyncType.UpdateMessage) {
-            if (this.callbacks.updateMessage !== null) {
-                this.callbacks.updateMessage(data.message);
-            }
-            this.publisher.pub('requestAtsuStatusCode', { requestId: data.requestId, code: AtsuStatusCodes.Ok }, true, false);
-        }
-    }
-
     private requestWithParameter<T>(value: T, requestId: number, callback: (value: T) => void): void {
         if (callback !== null) {
             callback(value);
@@ -103,13 +92,13 @@ export class FmsInputBus {
     }
 
     public initialize(): void {
-        this.subscriber.on('synchronizeAtisMessage').handle((data) => this.synchronizeMessage(data));
-        this.subscriber.on('synchronizeCpdlcMessage').handle((data) => this.synchronizeMessage(data));
-        this.subscriber.on('synchronizeDclMessage').handle((data) => this.synchronizeMessage(data));
-        this.subscriber.on('synchronizeFreetextMessage').handle((data) => this.synchronizeMessage(data));
-        this.subscriber.on('synchronizeMetarMessage').handle((data) => this.synchronizeMessage(data));
-        this.subscriber.on('synchronizeOclMessage').handle((data) => this.synchronizeMessage(data));
-        this.subscriber.on('synchronizeTafMessage').handle((data) => this.synchronizeMessage(data));
+        this.subscriber.on('sendFreetextMessage').handle((data) => {
+            if (this.callbacks.sendMessage !== null) {
+                this.callbacks.sendMessage(data.message).then((code) => {
+                    this.publisher.pub('requestAtsuStatusCode', { requestId: data.requestId, code }, true, false);
+                });
+            }
+        });
         this.subscriber.on('remoteStationAvailable').handle((data) => this.requestWithStatusResponse(data.station, data.requestId, this.callbacks.remoteStationAvailable));
         this.subscriber.on('atcLogon').handle((data) => this.requestWithStatusResponse(data.station, data.requestId, this.callbacks.atcLogon));
         this.subscriber.on('atcLogoff').handle((data) => {

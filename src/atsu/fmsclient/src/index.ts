@@ -1,16 +1,16 @@
-import { AtsuFmsMessages, AtsuFmsMessageSyncType } from '@atsu/common/databus';
-import { AtsuStatusCodes, FansMode } from '@atsu/common/index';
+import { AtsuFmsMessages } from '@atsu/common/databus';
+import { AtsuStatusCodes } from '@atsu/common/AtsuStatusCodes';
+import { FansMode } from '@atsu/common/com/FutureAirNavigationSystem';
 import {
     AtisMessage,
     AtisType,
     AtsuMessage,
     AtsuMessageSerializationFormat,
+    AtsuMessageType,
     CpdlcMessage,
     DclMessage,
     FreetextMessage,
-    MetarMessage,
     OclMessage,
-    TafMessage,
     WeatherMessage,
 } from '@atsu/common/messages';
 import { AutopilotData, EnvironmentData, FlightStateData, PositionReportData } from '@atsu/common/types';
@@ -142,59 +142,10 @@ export class FmsClient {
 
     public modificationMessage: CpdlcMessage = null;
 
-    private synchronizeMessage(message: AtsuMessage, type: AtsuFmsMessageSyncType): number {
-        const requestId = this.requestId++;
-
-        if (message instanceof AtisMessage) {
-            this.publisher.pub('synchronizeAtisMessage', {
-                type,
-                requestId,
-                message: message as AtisMessage,
-            }, true, false);
-        } else if (message instanceof CpdlcMessage) {
-            this.publisher.pub('synchronizeCpdlcMessage', {
-                type,
-                requestId,
-                message: message as CpdlcMessage,
-            }, true, false);
-        } else if (message instanceof DclMessage) {
-            this.publisher.pub('synchronizeDclMessage', {
-                type,
-                requestId,
-                message: message as DclMessage,
-            }, true, false);
-        } else if (message instanceof FreetextMessage) {
-            this.publisher.pub('synchronizeFreetextMessage', {
-                type,
-                requestId,
-                message: message as FreetextMessage,
-            }, true, false);
-        } else if (message instanceof MetarMessage) {
-            this.publisher.pub('synchronizeMetarMessage', {
-                type,
-                requestId,
-                message: message as MetarMessage,
-            }, true, false);
-        } else if (message instanceof OclMessage) {
-            this.publisher.pub('synchronizeOclMessage', {
-                type,
-                requestId,
-                message: message as OclMessage,
-            }, true, false);
-        } else if (message instanceof TafMessage) {
-            this.publisher.pub('synchronizeTafMessage', {
-                type,
-                requestId,
-                message: message as TafMessage,
-            }, true, false);
-        }
-
-        return requestId;
-    }
-
     public sendMessage(message: AtsuMessage): Promise<AtsuStatusCodes> {
         return new Promise<AtsuStatusCodes>((resolve, _reject) => {
-            const requestId = this.synchronizeMessage(message, AtsuFmsMessageSyncType.SendMessage);
+            const requestId = this.requestId++;
+            this.publisher.pub('sendFreetextMessage', { message: message as FreetextMessage, requestId }, true, false);
             this.requestAtsuStatusCodeCallbacks.push((code: AtsuStatusCodes, id: number) => {
                 if (id === requestId) resolve(code);
                 return id === requestId;
@@ -248,15 +199,15 @@ export class FmsClient {
     }
 
     public registerMessages(messages: AtsuMessage[]): void {
-        if (messages[0] instanceof AtisMessage) {
+        if (messages[0].Type === AtsuMessageType.ATIS) {
             this.publisher.pub('registerAtisMessages', messages as AtisMessage[], true, false);
-        } else if (messages[0] instanceof CpdlcMessage) {
+        } else if (messages[0].Type === AtsuMessageType.CPDLC) {
             this.publisher.pub('registerCpdlcMessages', messages as CpdlcMessage[], true, false);
-        } else if (messages[0] instanceof DclMessage) {
+        } else if (messages[0].Type === AtsuMessageType.DCL) {
             this.publisher.pub('registerDclMessages', messages as DclMessage[], true, false);
-        } else if (messages[0] instanceof OclMessage) {
+        } else if (messages[0].Type === AtsuMessageType.OCL) {
             this.publisher.pub('registerOclMessages', messages as OclMessage[], true, false);
-        } else if (messages[0] instanceof WeatherMessage) {
+        } else if (messages[0].Type === AtsuMessageType.METAR || messages[0].Type === AtsuMessageType.TAF) {
             this.publisher.pub('registerWeatherMessages', messages as WeatherMessage[], true, false);
         }
     }

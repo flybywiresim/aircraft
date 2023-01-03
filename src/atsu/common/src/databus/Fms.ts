@@ -7,23 +7,10 @@ import {
     CpdlcMessage,
     DclMessage,
     FreetextMessage,
-    MetarMessage,
     OclMessage,
-    TafMessage,
     WeatherMessage,
 } from '@atsu/common/messages';
 import { PositionReportData, Waypoint } from '@atsu/common/types';
-
-export enum AtsuFmsMessageSyncType {
-    SendMessage,
-    UpdateMessage,
-}
-
-export interface AtsuFmsMessageSync<T> {
-    type: AtsuFmsMessageSyncType;
-    requestId: number;
-    message: T;
-}
 
 export interface AtsuFmsRegisterMessages<T> {
     requestId: number;
@@ -43,13 +30,7 @@ export interface AtsuFmsMessages {
 
     // requests and synchronizations from FMS to ATSU
     // expect 'requestAtsuStatusCode' responses
-    synchronizeAtisMessage: AtsuFmsMessageSync<AtisMessage>;
-    synchronizeCpdlcMessage: AtsuFmsMessageSync<CpdlcMessage>;
-    synchronizeDclMessage: AtsuFmsMessageSync<DclMessage>;
-    synchronizeFreetextMessage: AtsuFmsMessageSync<FreetextMessage>;
-    synchronizeMetarMessage: AtsuFmsMessageSync<MetarMessage>;
-    synchronizeOclMessage: AtsuFmsMessageSync<OclMessage>;
-    synchronizeTafMessage: AtsuFmsMessageSync<TafMessage>;
+    sendFreetextMessage: { message: FreetextMessage; requestId: number };
     remoteStationAvailable: { station: string; requestId: number };
     atcLogon: { station: string; requestId: number };
     atcLogoff: number;
