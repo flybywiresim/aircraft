@@ -10,13 +10,15 @@ import { EventBus, Publisher } from 'msfssdk';
 export class FlightPlanSync {
     private readonly publisher: Publisher<AtsuFmsMessages>;
 
-    private lastWaypoint: Waypoint = null;
+    private originIdent: string = '';
 
-    private activeWaypoint: Waypoint = null;
+    private lastWaypoint: Waypoint = { ident: '', altitude: 0, utc: 0 };
 
-    private nextWaypoint: Waypoint = null;
+    private activeWaypoint: Waypoint = { ident: '', altitude: 0, utc: 0 };
 
-    private destination: Waypoint = null;
+    private nextWaypoint: Waypoint = { ident: '', altitude: 0, utc: 0 };
+
+    private destination: Waypoint = { ident: '', altitude: 0, utc: 0 };
 
     private static findLastWaypoint(flightPlan: ManagedFlightPlan): Waypoint {
         let idx = flightPlan.activeWaypointIndex;
@@ -25,37 +27,62 @@ export class FlightPlanSync {
             if (wp && wp.waypointReachedAt !== 0) {
                 return {
                     ident: wp.ident,
+                    altitude: wp.legAltitude1,
                     utc: wp.waypointReachedAt,
-                    altitude: -1,
                 };
             }
 
             idx -= 1;
         }
 
-        return {
-            ident: '',
-            utc: -1,
-            altitude: -1,
-        };
+        return { ident: '', altitude: 0, utc: 0 };
     }
 
-    private static findNextWaypoint(flightPlan: ManagedFlightPlan): Waypoint {
-        const next = flightPlan.getWaypoint(flightPlan.activeWaypointIndex + 1);
-
-        if (next) {
+    private static findActiveWaypoint(flightPlan: ManagedFlightPlan, flightPlanStats: Map<number, WaypointStats>): Waypoint {
+        if (flightPlan.activeWaypoint) {
             return {
-                ident: next.ident,
-                utc: -1,
-                altitude: -1,
+                ident: flightPlan.activeWaypoint.ident,
+                altitude: flightPlan.activeWaypoint.legAltitude1,
+                utc: flightPlanStats !== null ? flightPlanStats.get(flightPlan.activeWaypointIndex).etaFromPpos : -1,
             };
         }
 
-        return {
-            ident: '',
-            utc: -1,
-            altitude: -1,
-        };
+        return { ident: '', altitude: 0, utc: 0 };
+    }
+
+    private static findNextWaypoint(flightPlan: ManagedFlightPlan, flightPlanStats: Map<number, WaypointStats>): Waypoint {
+        let idx = flightPlan.activeWaypointIndex;
+        while (idx >= 0) {
+            const wp = flightPlan.getWaypoint(idx);
+            if (wp && wp.waypointReachedAt !== 0) {
+                return {
+                    ident: wp.ident,
+                    altitude: wp.legAltitude1,
+                    utc: flightPlanStats !== null ? flightPlanStats.get(idx).etaFromPpos : -1,
+                };
+            }
+
+            idx -= 1;
+        }
+
+        return { ident: '', altitude: 0, utc: 0 };
+    }
+
+    private static findDestinationWaypoint(flightPlan: ManagedFlightPlan, flightPlanStats: Map<number, WaypointStats>): Waypoint {
+        let idx = flightPlan.activeWaypointIndex;
+        while (idx < flightPlan.waypoints.length) {
+            const wp = flightPlan.getWaypoint(idx);
+            if (wp && wp.ident === flightPlan.destinationAirfield.ident) {
+                return {
+                    ident: wp.ident,
+                    altitude: wp.legAltitude1,
+                    utc: flightPlanStats !== null ? flightPlanStats.get(idx).etaFromPpos : -1,
+                };
+            }
+            idx += 1;
+        }
+
+        return { ident: '', altitude: 0, utc: 0 };
     }
 
     constructor(
@@ -70,7 +97,6 @@ export class FlightPlanSync {
             const activeFlightPlan = this.flightPlanManager.getCurrentFlightPlan();
             const phase = this.flightPhaseManager.phase;
             const isFlying = phase >= FmgcFlightPhase.Takeoff && phase !== FmgcFlightPhase.Done;
-            let updateRoute = false;
 
             if (activeFlightPlan && activeFlightPlan.waypoints.length !== 0) {
                 let flightPlanStats: Map<number, WaypointStats> = null;
@@ -88,33 +114,34 @@ export class FlightPlanSync {
                     }
                 }
 
-                if (this.destination === null || activeFlightPlan.destinationAirfield.ident !== this.destination.ident) {
-                    const index = activeFlightPlan.destinationIndex;
-                    this.destination = new Waypoint(activeFlightPlan.getWaypoint(index));
-                    if (flightPlanStats !== null) {
-                        this.destination.utc = flightPlanStats.get(index).etaFromPpos;
-                    }
-                    updateRoute = true;
-                }
+                const origin = activeFlightPlan.originAirfield;
+                const lastWaypoint = FlightPlanSync.findLastWaypoint(activeFlightPlan);
+                const activeWaypoint = FlightPlanSync.findActiveWaypoint(activeFlightPlan, flightPlanStats);
+                const nextWaypoint = FlightPlanSync.findNextWaypoint(activeFlightPlan, flightPlanStats);
+                const destination = FlightPlanSync.findDestinationWaypoint(activeFlightPlan, flightPlanStats);
 
-                const activeWp = activeFlightPlan.activeWaypoint;
-                if (this.activeWaypoint === null || activeWp.ident !== this.activeWaypoint.ident) {
-                    this.lastWaypoint = FlightPlanSync.findLastWaypoint(activeFlightPlan);
-                    this.activeWaypoint = new Waypoint(activeWp.ident);
-                    this.nextWaypoint = FlightPlanSync.findNextWaypoint(activeFlightPlan);
-                    if (flightPlanStats !== null && this.nextWaypoint.ident !== '') {
-                        this.nextWaypoint.utc = flightPlanStats.get(activeFlightPlan.activeWaypointIndex + 1).etaFromPpos;
+                if (origin) {
+                    if (origin.ident !== this.originIdent || destination.ident !== this.destination.ident) {
+                        // new route entered -> reset ATIS updater
+                        this.publisher.pub('resetAtisAutoUpdate', true, true, false);
                     }
-                    updateRoute = true;
-                }
 
-                if (updateRoute) {
-                    this.publisher.pub('routeData', {
-                        lastWaypoint: this.lastWaypoint.ident !== '' ? this.lastWaypoint : null,
-                        activeWaypoint: this.activeWaypoint.ident !== '' ? this.activeWaypoint : null,
-                        nextWaypoint: this.nextWaypoint.ident !== '' ? this.nextWaypoint : null,
-                        destination: this.destination.ident !== '' ? this.destination : null,
-                    }, true, false);
+                    // check if we need to update the route data
+                    const updateRoute = this.lastWaypoint.ident !== lastWaypoint.ident
+                        || this.activeWaypoint.ident !== activeWaypoint.ident
+                        || this.nextWaypoint.ident !== nextWaypoint.ident
+                        || this.destination.ident !== destination.ident
+                        || Math.abs(this.activeWaypoint.utc - activeWaypoint.utc) >= 60
+                        || Math.abs(this.nextWaypoint.utc - nextWaypoint.utc) >= 60;
+
+                    if (updateRoute) {
+                        this.publisher.pub('routeData', {
+                            lastWaypoint,
+                            activeWaypoint,
+                            nextWaypoint,
+                            destination,
+                        }, true, false);
+                    }
                 }
             }
         }, 1000);
