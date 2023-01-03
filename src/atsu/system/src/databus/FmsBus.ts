@@ -138,6 +138,7 @@ export class FmsInputBus {
         this.subscriber.on('registerDclMessages').handle((data) => this.fireAndForgetWithParameter(data, this.callbacks.registerMessages));
         this.subscriber.on('registerOclMessages').handle((data) => this.fireAndForgetWithParameter(data, this.callbacks.registerMessages));
         this.subscriber.on('registerWeatherMessages').handle((data) => this.fireAndForgetWithParameter(data, this.callbacks.registerMessages));
+        this.subscriber.on('updateMessage').handle((data) => this.fireAndForgetWithParameter(data, this.callbacks.updateMessage));
         this.subscriber.on('messageRead').handle((data) => this.fireAndForgetWithParameter(data, this.callbacks.messageRead));
         this.subscriber.on('removeMessage').handle((data) => this.fireAndForgetWithParameter(data, this.callbacks.removeMessage));
         this.subscriber.on('cleanupAtcMessages').handle(() => this.fireAndForgetWithoutParameter(this.callbacks.cleanupAtcMessages));

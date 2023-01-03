@@ -322,11 +322,7 @@ export class FmsClient {
             this.modificationMessage = null;
         }
 
-        this.publisher.pub('synchronizeCpdlcMessage', {
-            type: AtsuFmsMessageSyncType.UpdateMessage,
-            requestId: this.requestId++,
-            message: message as DclMessage,
-        }, true, false);
+        this.publisher.pub('updateMessage', message, true, false);
     }
 
     public aocInputMessages(): AtsuMessage[] {

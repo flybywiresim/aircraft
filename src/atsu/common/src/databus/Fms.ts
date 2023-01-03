@@ -52,6 +52,7 @@ export interface AtsuFmsMessages {
     registerDclMessages: DclMessage[];
     registerOclMessages: OclMessage[];
     registerWeatherMessages: WeatherMessage[];
+    updateMessage: CpdlcMessage;
     messageRead: number;
     removeMessage: number;
     cleanupAtcMessages: boolean;
