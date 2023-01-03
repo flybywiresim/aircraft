@@ -5,7 +5,7 @@ import { usePersistentProperty } from '@instruments/common/persistence';
 
 import { Hoppie } from '@flybywiresim/api-client';
 import { toast } from 'react-toastify';
-import { HoppieConnector } from '@atsu/com/webinterfaces/HoppieConnector';
+import { HoppieConnector } from '@atsu/system/com/webinterfaces/HoppieConnector';
 import { t } from '../../translation';
 import { useModals, PromptModal } from '../../UtilComponents/Modals/Modals';
 import { Toggle } from '../../UtilComponents/Form/Toggle';
