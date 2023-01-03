@@ -115,7 +115,7 @@ export class FmsInputBus {
         this.subscriber.on('atcLogoff').handle((data) => {
             if (this.callbacks.atcLogoff !== null) {
                 this.callbacks.atcLogoff().then((code) => {
-                    this.publisher.pub('requestAtsuStatusCode', { requestId: data, code });
+                    this.publisher.pub('requestAtsuStatusCode', { requestId: data, code }, true, false);
                 });
             }
         });
@@ -127,21 +127,21 @@ export class FmsInputBus {
         this.subscriber.on('toggleAutomaticPositionReport').handle((data) => this.requestWithoutParameter(data, this.callbacks.toggleAutomaticPositionReport));
         this.subscriber.on('requestAtis').handle((data) => {
             if (this.callbacks.requestAtis !== null) {
-                this.callbacks.requestAtis(data.icao, data.type, () => this.publisher.pub('requestSentToGround', data.requestId)).then((response) => {
-                    this.publisher.pub('weatherResponse', { requestId: data.requestId, data: response });
+                this.callbacks.requestAtis(data.icao, data.type, () => this.publisher.pub('requestSentToGround', data.requestId, true, false)).then((response) => {
+                    this.publisher.pub('weatherResponse', { requestId: data.requestId, data: response }, true, false);
                 });
             }
         });
         this.subscriber.on('requestWeather').handle((data) => {
             if (this.callbacks.requestWeather !== null) {
-                this.callbacks.requestWeather(data.icaos, data.requestMetar, () => this.publisher.pub('requestSentToGround', data.requestId)).then((response) => {
-                    this.publisher.pub('weatherResponse', { requestId: data.requestId, data: response });
+                this.callbacks.requestWeather(data.icaos, data.requestMetar, () => this.publisher.pub('requestSentToGround', data.requestId, true, false)).then((response) => {
+                    this.publisher.pub('weatherResponse', { requestId: data.requestId, data: response }, true, false);
                 });
             }
         });
         this.subscriber.on('requestPositionReport').handle((data) => {
             if (this.callbacks.positionReportData !== null) {
-                this.publisher.pub('positionReport', { requestId: data, data: this.callbacks.positionReportData() });
+                this.publisher.pub('positionReport', { requestId: data, data: this.callbacks.positionReportData() }, true, false);
             }
         });
         this.subscriber.on('registerAtisMessages').handle((data) => this.fireAndForgetWithParameter(data, this.callbacks.registerMessages));
