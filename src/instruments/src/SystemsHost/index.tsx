@@ -45,15 +45,17 @@ class SystemsHost extends BaseInstrument {
 
     public Update(): void {
         super.Update();
+
         if (this.gameState !== 3) {
             const gamestate = this.getGameState();
             if (gamestate === 3) {
                 this.hEventPublisher.startPublish();
+                this.atsu.startPublish();
             }
             this.gameState = gamestate;
         }
 
-        this.atsu.Update(this.gameState);
+        this.atsu.update();
     }
 }
 

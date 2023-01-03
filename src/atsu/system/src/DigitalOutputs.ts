@@ -18,6 +18,5 @@ export class DigitalOutputs {
 
     public initialize(): void {
         this.AtcMessageButtonsBus.initialize();
-        this.FwcBus.initialize();
     }
 }

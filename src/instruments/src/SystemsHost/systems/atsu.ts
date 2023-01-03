@@ -27,16 +27,14 @@ export class AtsuSystem {
     public connectedCallback(): void {
         this.digitalInputs.initialize();
         this.digitalOutputs.initialize();
+        this.digitalInputs.connectedCallback();
     }
 
-    public Update(nextGameState: number): void {
-        if (this.gameState !== 3) {
-            if (nextGameState === 3) {
-                this.digitalInputs.startPublish();
-            }
-            this.gameState = nextGameState;
-        } else {
-            this.digitalInputs.update();
-        }
+    public startPublish(): void {
+        this.digitalInputs.startPublish();
+    }
+
+    public update(): void {
+        this.digitalInputs.update();
     }
 }

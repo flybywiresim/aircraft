@@ -44,7 +44,9 @@ export class ClockInputBus {
 
     private publisher: Publisher<ClockDataBusTypes> = null;
 
-    constructor(private readonly bus: EventBus) { }
+    constructor(private readonly bus: EventBus) {
+        this.simVarPublisher = new ClockSimvarPublisher(this.bus);
+    }
 
     public initialize(): void {
         this.publisher = this.bus.getPublisher<ClockDataBusTypes>();
@@ -63,8 +65,6 @@ export class ClockInputBus {
             this.publisher.pub('utcSecond', secondsOfMinute);
             this.publisher.pub('utcSecondsOfDay', seconds);
         });
-
-        this.simVarPublisher = new ClockSimvarPublisher(this.bus);
     }
 
     public connectedCallback(): void {
@@ -72,5 +72,13 @@ export class ClockInputBus {
         this.simVarPublisher.subscribe('msfsUtcMonth');
         this.simVarPublisher.subscribe('msfsUtcDayOfMonth');
         this.simVarPublisher.subscribe('msfsUtcSeconds');
+    }
+
+    public startPublish(): void {
+        this.simVarPublisher.startPublish();
+    }
+
+    public update(): void {
+        this.simVarPublisher.onUpdate();
     }
 }

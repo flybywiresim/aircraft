@@ -94,13 +94,15 @@ export class FmgcInputBus {
 
     private subscriber: EventSubscriber<FmgcSimvars> = null;
 
-    constructor(private readonly bus: EventBus) { }
+    constructor(private readonly bus: EventBus) {
+        this.simVarPublisher = new FmgcSimvarPuplisher(this.bus);
+    }
 
     public initialize(): void {
         this.subscriber = this.bus.getSubscriber<FmgcSimvars>();
         this.publisher = this.bus.getPublisher<FmgcDataBusTypes>();
 
-        this.subscriber.on('msfsPresentPositionLatitude').handle((latitude: number) => {
+        this.subscriber.on('msfsPresentPositionLatitude').whenChanged().handle((latitude: number) => {
             this.publisher.pub('presentPositionLatitude', new Arinc429Word(latitude));
         });
         this.subscriber.on('msfsPresentPositionLongitude').whenChanged().handle((longitude: number) => {
@@ -173,5 +175,13 @@ export class FmgcInputBus {
         this.simVarPublisher.subscribe('msfsWindSpeed');
         this.simVarPublisher.subscribe('msfsStaticAirTemperature');
         this.simVarPublisher.subscribe('msfsFlightPhase');
+    }
+
+    public startPublish(): void {
+        this.simVarPublisher.startPublish();
+    }
+
+    public update(): void {
+        this.simVarPublisher.onUpdate();
     }
 }

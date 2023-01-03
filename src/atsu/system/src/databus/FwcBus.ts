@@ -29,33 +29,35 @@ export class FwcInputBus {
 
     private subscriber: EventSubscriber<FwcSimvars> = null;
 
-    constructor(private readonly bus: EventBus) { }
+    constructor(private readonly bus: EventBus) {
+        this.simVarPublisher = new FwcSimvarPublisher(this.bus);
+    }
 
     public initialize(): void {
         this.publisher = this.bus.getPublisher<FwcDataBusTypes>();
         this.subscriber = this.bus.getSubscriber<FwcSimvars>();
 
-        this.subscriber.on('msfsCompanyMessageCount').whenChanged().handle((count: number) => this.publisher.pub('companyMessageCount', count));
-
-        this.simVarPublisher = new FwcSimvarPublisher(this.bus);
+        this.subscriber.on('msfsCompanyMessageCount').whenChanged().handle((count: number) => this.publisher.pub('companyMessageCount', count, true, false));
     }
 
     public connectedCallback(): void {
         this.simVarPublisher.subscribe('msfsCompanyMessageCount');
     }
+
+    public startPublish(): void {
+        this.simVarPublisher.startPublish();
+    }
+
+    public update(): void {
+        this.simVarPublisher.onUpdate();
+    }
 }
 
 export class FwcOutputBus {
-    private publisher: Publisher<FwcSimvars> = null;
-
     constructor(private readonly bus: EventBus) { }
 
-    public initialize(): void {
-        this.publisher = this.bus.getPublisher<FwcSimvars>();
-    }
-
     public setCompanyMessageCount(count: number): void {
-        this.publisher.pub('msfsCompanyMessageCount', count, true, false);
+        SimVar.SetSimVarValue(FwcSimvarSources.companyMessageCount, 'number', count);
     }
 
     public activateAtcRing(): void {

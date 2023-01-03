@@ -39,19 +39,20 @@ export class AtcMessageButtonInputBus {
 
     private callbacks: AtcMessageButtonBusCallbacks = { onButtonPressed: null }
 
-    constructor(private readonly bus: EventBus) { }
+    constructor(private readonly bus: EventBus) {
+        this.simVarPublisher = new AtcMessageButtonSimvarPublisher(this.bus);
+    }
 
     public initialize(): void {
         this.subscriber = this.bus.getSubscriber<AtcMessageButtonSimvars>();
 
         this.subscriber.on('msfsButtonActive').whenChanged().handle((active: boolean) => this.buttonActive = active);
         this.subscriber.on('msfsButtonPressed').whenChanged().handle((pressed: number) => {
+            console.log('ATC BTN PRESSED');
             if (this.buttonActive && pressed && this.callbacks.onButtonPressed !== null) {
                 this.callbacks.onButtonPressed();
             }
         });
-
-        this.simVarPublisher = new AtcMessageButtonSimvarPublisher(this.bus);
     }
 
     public connectedCallback(): void {
@@ -61,6 +62,14 @@ export class AtcMessageButtonInputBus {
 
     public addDataCallback<K extends keyof AtcMessageButtonBusCallbacks>(event: K, callback: () => void): void {
         this.callbacks[event] = callback;
+    }
+
+    public startPublish(): void {
+        this.simVarPublisher.startPublish();
+    }
+
+    public update(): void {
+        this.simVarPublisher.onUpdate();
     }
 }
 

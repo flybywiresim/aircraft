@@ -90,16 +90,6 @@ export class DigitalInputs {
         destination: null,
     }
 
-    private readonly atcMessageButtonPublisher: AtcMessageButtonSimvarPublisher;
-
-    private readonly clockPublisher: ClockSimvarPublisher;
-
-    private readonly fmgcPublisher: FmgcSimvarPuplisher;
-
-    private readonly fwcPublisher: FwcSimvarPublisher;
-
-    private readonly transponderPublisher: TransponderSimvarPublisher;
-
     public readonly atcMessageButtonBus: AtcMessageButtonInputBus;
 
     public readonly clockBus: ClockInputBus;
@@ -113,12 +103,6 @@ export class DigitalInputs {
     public readonly fmsBus: FmsInputBus;
 
     constructor(private readonly bus: EventBus) {
-        this.atcMessageButtonPublisher = new AtcMessageButtonSimvarPublisher(this.bus);
-        this.clockPublisher = new ClockSimvarPublisher(this.bus);
-        this.fmgcPublisher = new FmgcSimvarPuplisher(this.bus);
-        this.fwcPublisher = new FwcSimvarPublisher(this.bus);
-        this.transponderPublisher = new TransponderSimvarPublisher(this.bus);
-
         this.atcMessageButtonBus = new AtcMessageButtonInputBus(this.bus);
         this.clockBus = new ClockInputBus(this.bus);
         this.fmgcBus = new FmgcInputBus(this.bus);
@@ -128,7 +112,6 @@ export class DigitalInputs {
     }
 
     public initialize(): void {
-        this.subscriber = this.bus.getSubscriber<AtcMessageButtonBusTypes & ClockDataBusTypes & FmgcDataBusTypes & FwcDataBusTypes & TransponderDataBusTypes & AtsuFmsMessages>();
         this.atcMessageButtonBus.initialize();
         this.clockBus.initialize();
         this.fmgcBus.initialize();
@@ -136,6 +119,10 @@ export class DigitalInputs {
         this.transponderBus.initialize();
         this.fmsBus.initialize();
 
+        this.subscriber = this.bus.getSubscriber<AtcMessageButtonBusTypes & ClockDataBusTypes & FmgcDataBusTypes & FwcDataBusTypes & TransponderDataBusTypes & AtsuFmsMessages>();
+    }
+
+    public connectedCallback(): void {
         this.atcMessageButtonBus.connectedCallback();
         this.clockBus.connectedCallback();
         this.fmgcBus.connectedCallback();
@@ -195,18 +182,18 @@ export class DigitalInputs {
     }
 
     public startPublish(): void {
-        this.atcMessageButtonPublisher.startPublish();
-        this.clockPublisher.startPublish();
-        this.fmgcPublisher.startPublish();
-        this.fwcPublisher.startPublish();
-        this.transponderPublisher.startPublish();
+        this.atcMessageButtonBus.startPublish();
+        this.clockBus.startPublish();
+        this.fmgcBus.startPublish();
+        this.fwcBus.startPublish();
+        this.transponderBus.startPublish();
     }
 
     public update(): void {
-        this.atcMessageButtonPublisher.onUpdate();
-        this.clockPublisher.onUpdate();
-        this.fmgcPublisher.onUpdate();
-        this.fwcPublisher.onUpdate();
-        this.transponderPublisher.onUpdate();
+        this.atcMessageButtonBus.update();
+        this.clockBus.update();
+        this.fmgcBus.update();
+        this.fwcBus.update();
+        this.transponderBus.update();
     }
 }
