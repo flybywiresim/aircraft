@@ -6,14 +6,14 @@ export class TopOfDescentPhase extends FlightPhase {
    */
     public tryTransition(): void {
         if (this.flightPhaseManager.apprPhase.testConditions()) {
-            super.sendNewFlightPhaseToManager(this.flightPhaseManager.apprPhase);
+            this.sendNewFlightPhaseToManager(this.flightPhaseManager.apprPhase);
         }
     }
 
     public testConditions(): boolean {
         return (
-            this.cids.altitude() > 10000
-            && this.cids.altitude() <= (this.cids.cruiseAltitude() - 700)
+            this.flightPhaseManager.cids.altitude() > 10000
+            && this.flightPhaseManager.cids.altitude() <= (this.flightPhaseManager.cids.cruiseAltitude() - 700)
         );
     }
 

@@ -6,14 +6,14 @@ export class TaxiAfterLandingPhase extends FlightPhase {
    */
     public tryTransition(): void {
         if (this.flightPhaseManager.taxiAfterLandingPhase.testConditions()) {
-            super.sendNewFlightPhaseToManager(this.flightPhaseManager.disembarkationPhase);
+            this.sendNewFlightPhaseToManager(this.flightPhaseManager.disembarkationPhase);
         }
     }
 
     public testConditions(): boolean {
         return (
-            this.cids.onGround()
-            && this.cids.groundSpeed() < 80
+            this.flightPhaseManager.cids.onGround()
+            && this.flightPhaseManager.cids.groundSpeed() < 80
         );
     }
 

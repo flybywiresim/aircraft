@@ -6,18 +6,18 @@ export class BoardingPhase extends FlightPhase {
    */
     public tryTransition(): void {
         if (this.flightPhaseManager.pushbackPhase.testConditions()) {
-            super.sendNewFlightPhaseToManager(this.flightPhaseManager.pushbackPhase);
+            this.sendNewFlightPhaseToManager(this.flightPhaseManager.pushbackPhase);
         } else if (this.flightPhaseManager.taxiBeforeTakeoffPhase.testConditions()) {
-            super.sendNewFlightPhaseToManager(this.flightPhaseManager.taxiBeforeTakeoffPhase);
+            this.sendNewFlightPhaseToManager(this.flightPhaseManager.taxiBeforeTakeoffPhase);
         }
     }
 
     public testConditions(): boolean {
         return (
-            this.cids.onGround()
-            && this.cids.isStationary()
-            && this.cids.door1LPercentOpen() === 100
-            && this.cids.boardingInProgress()
+            this.flightPhaseManager.cids.onGround()
+            && this.flightPhaseManager.cids.isStationary()
+            && this.flightPhaseManager.cids.door1LPercentOpen() === 100
+            && this.flightPhaseManager.cids.boardingInProgress()
         );
     }
 

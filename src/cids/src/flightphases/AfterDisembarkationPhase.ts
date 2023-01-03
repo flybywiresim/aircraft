@@ -6,16 +6,16 @@ export class AfterDisembarkationPhase extends FlightPhase {
      */
     public tryTransition(): void {
         if (this.flightPhaseManager.boardingPhase.testConditions()) {
-            super.sendNewFlightPhaseToManager(this.flightPhaseManager.boardingPhase);
+            this.sendNewFlightPhaseToManager(this.flightPhaseManager.boardingPhase);
         } else if (this.flightPhaseManager.pushbackPhase.testConditions()) {
-            super.sendNewFlightPhaseToManager(this.flightPhaseManager.pushbackPhase);
+            this.sendNewFlightPhaseToManager(this.flightPhaseManager.pushbackPhase);
         } else if (this.flightPhaseManager.takeoffAndInitClimbPhase.testConditions()) {
-            super.sendNewFlightPhaseToManager(this.flightPhaseManager.taxiBeforeTakeoffPhase);
+            this.sendNewFlightPhaseToManager(this.flightPhaseManager.taxiBeforeTakeoffPhase);
         }
     }
 
     public testConditions(): boolean {
-        return this.cids.getTotalPax() === 0;
+        return this.flightPhaseManager.cids.getTotalPax() === 0;
     }
 
     public getValue(): number {

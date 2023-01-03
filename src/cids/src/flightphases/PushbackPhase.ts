@@ -6,16 +6,16 @@ export class PushbackPhase extends FlightPhase {
    */
     public tryTransition(): void {
         if (this.flightPhaseManager.taxiBeforeTakeoffPhase.testConditions()) {
-            super.sendNewFlightPhaseToManager(this.flightPhaseManager.taxiBeforeTakeoffPhase);
+            this.sendNewFlightPhaseToManager(this.flightPhaseManager.taxiBeforeTakeoffPhase);
         }
     }
 
     public testConditions(): boolean {
         return (
-            this.cids.onGround()
-            && this.cids.isStationary()
-            && this.cids.allDoorsClosedLocked()
-            && this.cids.nwStrgPinInserted()
+            this.flightPhaseManager.cids.onGround()
+            && this.flightPhaseManager.cids.isStationary()
+            && this.flightPhaseManager.cids.allDoorsClosedLocked()
+            && this.flightPhaseManager.cids.nwStrgPinInserted()
         );
     }
 
