@@ -1,7 +1,7 @@
 import { AtsuStatusCodes } from '@atsu/common/AtsuStatusCodes';
 import { AtsuFmsMessages, FmsRouteData } from '@atsu/common/databus';
 import { FansMode } from '@atsu/common/index';
-import { AtisMessage, AtisType, AtsuMessage, CpdlcMessage, WeatherMessage } from '@atsu/common/messages';
+import { AtisMessage, AtisType, AtsuMessage, CpdlcMessage, FreetextMessage, WeatherMessage } from '@atsu/common/messages';
 import { PositionReportData } from '@atsu/common/types';
 import { EventBus, EventSubscriber, Publisher } from 'msfssdk';
 
@@ -198,18 +198,6 @@ export class FmsOutputBus {
         this.publisher.pub('atcStationStatus', status, true, false);
     }
 
-    public sendAocUplinkMessages(messages: AtsuMessage[]): void {
-        this.publisher.pub('aocUplinkMessages', messages, true, false);
-    }
-
-    public sendAocDownlinkMessages(messages: AtsuMessage[]): void {
-        this.publisher.pub('aocDownlinkMessages', messages, true, false);
-    }
-
-    public sendAtcMessages(messages: CpdlcMessage[]): void {
-        this.publisher.pub('atcMessages', messages, true, false);
-    }
-
     public sendMonitoredMessages(messages: CpdlcMessage[]): void {
         this.publisher.pub('monitoredMessages', messages, true, false);
     }
@@ -220,5 +208,17 @@ export class FmsOutputBus {
 
     public sendAutomaticPositionReportActive(active: boolean): void {
         this.publisher.pub('automaticPositionReportActive', active, true, false);
+    }
+
+    public deleteMessage(uid: number): void {
+        this.publisher.pub('deleteMessage', uid);
+    }
+
+    public resynchronizeFreetextMessage(message: FreetextMessage): void {
+        this.publisher.pub('resynchronizeFreetextMessage', message);
+    }
+
+    public resynchronizeCpdlcMessage(message: CpdlcMessage): void {
+        this.publisher.pub('resynchronizeCpdlcMessage', message);
     }
 }

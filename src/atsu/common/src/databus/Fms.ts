@@ -76,10 +76,11 @@ export interface AtsuFmsMessages {
     atcAtisReports: Map<string, AtisMessage[]>;
     printAtisReportsPrint: boolean;
     atcStationStatus: { current: string; next: string; notificationTime: number; mode: FansMode; logonInProgress: boolean };
-    aocUplinkMessages: AtsuMessage[];
-    aocDownlinkMessages: AtsuMessage[];
-    atcMessages: CpdlcMessage[];
     monitoredMessages: CpdlcMessage[];
     maxUplinkDelay: number;
     automaticPositionReportActive: boolean;
+
+    resynchronizeFreetextMessage: FreetextMessage;
+    resynchronizeCpdlcMessage: CpdlcMessage
+    deleteMessage: number;
 }

@@ -81,9 +81,6 @@ export class FmsClient {
         this.subscriber.on('atcAtisReports').handle((reports) => this.atcAtisReports = reports);
         this.subscriber.on('printAtisReportsPrint').handle((active) => this.atisReportsPrintActive = active);
         this.subscriber.on('atcStationStatus').handle((status) => this.atcStationStatus = status);
-        this.subscriber.on('aocUplinkMessages').handle((messages) => this.aocUplinkMessages = messages);
-        this.subscriber.on('aocDownlinkMessages').handle((messages) => this.aocDownlinkMessages = messages);
-        this.subscriber.on('atcMessages').handle((messages) => this.atcMessagesBuffer = messages);
         this.subscriber.on('monitoredMessages').handle((messages) => this.atcMonitoredMessages = messages);
         this.subscriber.on('maxUplinkDelay').handle((delay) => this.maxUplinkDelay = delay);
         this.subscriber.on('automaticPositionReportActive').handle((active) => this.automaticPositionReportIsActive = active);

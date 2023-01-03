@@ -36,12 +36,12 @@ export class Aoc {
         let index = this.messageQueueUplink.findIndex((element) => element.UniqueMessageID === uid);
         if (index !== -1) {
             this.messageQueueUplink.splice(index, 1);
-            this.atsu.digitalOutputs.FmsBus.sendAocUplinkMessages(this.messageQueueUplink);
+            this.atsu.digitalOutputs.FmsBus.deleteMessage(uid);
         } else {
             index = this.messageQueueDownlink.findIndex((element) => element.UniqueMessageID === uid);
             if (index !== -1) {
                 this.messageQueueDownlink.splice(index, 1);
-                this.atsu.digitalOutputs.FmsBus.sendAocDownlinkMessages(this.messageQueueDownlink);
+                this.atsu.digitalOutputs.FmsBus.deleteMessage(uid);
             }
         }
 
@@ -65,7 +65,6 @@ export class Aoc {
             }
 
             this.messageQueueUplink[index].Confirmed = true;
-            this.atsu.digitalOutputs.FmsBus.sendAocUplinkMessages(this.messageQueueUplink);
         }
 
         return index !== -1;
@@ -79,18 +78,19 @@ export class Aoc {
         return this.messageQueueUplink;
     }
 
-    public insertMessages(messages: AtsuMessage[]): void {
+    public insertMessages(messages: AtsuMessage[], synchronizeWithFms: boolean): void {
         messages.forEach((message) => {
             if (message.Direction === AtsuMessageDirection.Uplink) {
                 this.messageQueueUplink.unshift(message);
-                this.atsu.digitalOutputs.FmsBus.sendAocUplinkMessages(messages);
+                if (synchronizeWithFms) {
+                    this.atsu.digitalOutputs.FmsBus.resynchronizeFreetextMessage(message);
+                }
 
                 // increase the company message counter
                 const cMsgCnt = this.atsu.digitalInputs.CompanyMessageCount;
                 this.atsu.digitalOutputs.FwcBus.setCompanyMessageCount(cMsgCnt + 1);
             } else {
                 this.messageQueueDownlink.unshift(message);
-                this.atsu.digitalOutputs.FmsBus.sendAocDownlinkMessages(messages);
             }
         });
     }
