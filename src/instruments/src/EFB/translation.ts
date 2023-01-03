@@ -174,9 +174,9 @@ const placeholderReplace = (translation: string, replacements: Record<string, st
  * If a replacement list is provided it will replace the placeholders in the string with the
  * key as placeholder-text to be search and the value as the string to be put in place.
  *
- * Placeholders are defined as follows: %(key)
+ * Placeholders are defined as follows: $key
  *
- * E.g. "Hello %(name)" with {name: "John"} will return "Hello John"
+ * E.g. "Hello $name" with {name: "John"} will return "Hello John"
  *
  * Note: Currently all language files are imported and contain all keys so this is redundant
  * but still implemented for future changes.
