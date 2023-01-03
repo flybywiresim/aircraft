@@ -18,7 +18,8 @@ export type FmsBusCallbacks = {
     togglePrintAtisReportsPrint: () => void;
     setMaxUplinkDelay: (delay: number) => void;
     toggleAutomaticPositionReport: () => void;
-    requestAtis: (icao: string, type: AtisType, sentCallback: () => void) => Promise<[AtsuStatusCodes, WeatherMessage]>;
+    requestAocAtis: (icao: string, type: AtisType, sentCallback: () => void) => Promise<[AtsuStatusCodes, WeatherMessage]>;
+    requestAtcAtis: (icao: string, type: AtisType) => Promise<AtsuStatusCodes>;
     requestWeather: (icaos: string[], requestMetar: boolean, sentCallback: () => void) => Promise<[AtsuStatusCodes, WeatherMessage]>;
     positionReportData: () => PositionReportData;
     registerMessages: (messages: AtsuMessage[]) => void;
@@ -46,7 +47,8 @@ export class FmsInputBus {
         togglePrintAtisReportsPrint: null,
         setMaxUplinkDelay: null,
         toggleAutomaticPositionReport: null,
-        requestAtis: null,
+        requestAocAtis: null,
+        requestAtcAtis: null,
         requestWeather: null,
         positionReportData: null,
         registerMessages: null,
@@ -114,11 +116,16 @@ export class FmsInputBus {
         this.subscriber.on('togglePrintAtisReportsPrint').handle((data) => this.requestWithoutParameter(data, this.callbacks.togglePrintAtisReportsPrint));
         this.subscriber.on('setMaxUplinkDelay').handle((data) => this.requestWithParameter(data.delay, data.requestId, this.callbacks.setMaxUplinkDelay));
         this.subscriber.on('toggleAutomaticPositionReport').handle((data) => this.requestWithoutParameter(data, this.callbacks.toggleAutomaticPositionReport));
-        this.subscriber.on('requestAtis').handle((data) => {
-            if (this.callbacks.requestAtis !== null) {
-                this.callbacks.requestAtis(data.icao, data.type, () => this.publisher.pub('requestSentToGround', data.requestId, true, false)).then((response) => {
+        this.subscriber.on('requestAocAtis').handle((data) => {
+            if (this.callbacks.requestAocAtis !== null) {
+                this.callbacks.requestAocAtis(data.icao, data.type, () => this.publisher.pub('requestSentToGround', data.requestId, true, false)).then((response) => {
                     this.publisher.pub('weatherResponse', { requestId: data.requestId, data: response }, true, false);
                 });
+            }
+        });
+        this.subscriber.on('requestAtcAtis').handle((data) => {
+            if (this.callbacks.requestAtcAtis !== null) {
+                this.callbacks.requestAtcAtis(data.icao, data.type).then((code) => this.publisher.pub('requestAtsuStatusCode', { code, requestId: data.requestId }, true, false));
             }
         });
         this.subscriber.on('requestWeather').handle((data) => {

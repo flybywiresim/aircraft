@@ -35,6 +35,7 @@ export interface AtsuFmsMessages {
     atcLogon: { station: string; requestId: number };
     atcLogoff: number;
     connectToNetworks: { callsign: string; requestId: number };
+    requestAtcAtis: { icao: string; type: AtisType; requestId: number };
     // expect 'genericRequestResponse' responses
     activateAtisAutoUpdate: { icao: string; type: AtisType; requestId: number };
     deactivateAtisAutoUpdate: { icao: string; requestId: number };
@@ -42,7 +43,7 @@ export interface AtsuFmsMessages {
     setMaxUplinkDelay: { delay: number; requestId: number };
     toggleAutomaticPositionReport: number;
     // expect 'requestSentToGround' response as soon as request is sent and 'atisResponse'/'weatherResponse' as final answer
-    requestAtis: { icao: string; type: AtisType; requestId: number };
+    requestAocAtis: { icao: string; type: AtisType; requestId: number };
     requestWeather: { icaos: string[]; requestMetar: boolean; requestId: number };
     // expect 'positionReport' response
     requestPositionReport: number;

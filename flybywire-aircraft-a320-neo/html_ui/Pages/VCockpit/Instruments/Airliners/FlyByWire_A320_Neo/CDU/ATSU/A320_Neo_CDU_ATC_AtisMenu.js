@@ -133,14 +133,12 @@ class CDUAtcAtisMenu {
     }
 
     static RequestAtis(mcdu, airports, idx, updateAtisPrintInProgress) {
-        const onRequestSent = () => { };
-
         if (airports[idx].icao !== "" && !airports[idx].requested) {
             airports[idx].requested = true;
 
-            mcdu.atsu.receiveAtis(airports[idx].icao, airports[idx].type, onRequestSent).then((response) => {
-                if (response[0] !== AtsuCommon.AtsuStatusCodes.Ok) {
-                    mcdu.addNewAtsuMessage(response[0]);
+            mcdu.atsu.receiveAtcAtis(airports[idx].icao, airports[idx].type).then((response) => {
+                if (response !== AtsuCommon.AtsuStatusCodes.Ok) {
+                    mcdu.addNewAtsuMessage(response);
                 }
 
                 airports[idx].requested = false;

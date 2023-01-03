@@ -166,16 +166,28 @@ export class FmsClient {
         this.publisher.pub('removeMessage', uid, true, false);
     }
 
-    public receiveAtis(airport: string, type: AtisType, sentCallback: () => void): Promise<[AtsuStatusCodes, WeatherMessage]> {
+    public receiveAocAtis(airport: string, type: AtisType, sentCallback: () => void): Promise<[AtsuStatusCodes, WeatherMessage]> {
         return new Promise<[AtsuStatusCodes, WeatherMessage]>((resolve, _reject) => {
             const requestId = this.requestId++;
-            this.publisher.pub('requestAtis', { icao: airport, type, requestId }, true, false);
+            this.publisher.pub('requestAocAtis', { icao: airport, type, requestId }, true, false);
 
             this.requestSentToGroundCallbacks.push((id: number) => {
                 if (id === requestId) sentCallback();
                 return id === requestId;
             });
             this.weatherResponseCallbacks.push((response: [AtsuStatusCodes, WeatherMessage], id: number) => {
+                if (id === requestId) resolve(response);
+                return id === requestId;
+            });
+        });
+    }
+
+    public receiveAtcAtis(airport: string, type: AtisType): Promise<AtsuStatusCodes> {
+        return new Promise<AtsuStatusCodes>((resolve, _reject) => {
+            const requestId = this.requestId++;
+            this.publisher.pub('requestAtcAtis', { icao: airport, type, requestId }, true, false);
+
+            this.requestAtsuStatusCodeCallbacks.push((response: AtsuStatusCodes, id: number) => {
                 if (id === requestId) resolve(response);
                 return id === requestId;
             });

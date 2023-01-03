@@ -244,7 +244,8 @@ export class Atsu {
         this.digitalInputs.fmsBus.addDataCallback('togglePrintAtisReportsPrint', () => this.atc.togglePrintAtisReports());
         this.digitalInputs.fmsBus.addDataCallback('setMaxUplinkDelay', (delay) => this.atc.setMaxUplinkDelay(delay));
         this.digitalInputs.fmsBus.addDataCallback('toggleAutomaticPositionReport', () => this.atc.toggleAutomaticPositionReportActive());
-        this.digitalInputs.fmsBus.addDataCallback('requestAtis', (icao, type, sentCallback) => this.aoc.receiveAtis(icao, type, sentCallback));
+        this.digitalInputs.fmsBus.addDataCallback('requestAocAtis', (icao, type, sentCallback) => this.aoc.receiveAtis(icao, type, sentCallback));
+        this.digitalInputs.fmsBus.addDataCallback('requestAtcAtis', (icao, type) => this.atc.receiveAtis(icao, type));
         this.digitalInputs.fmsBus.addDataCallback('requestWeather', (icaos, requestMetar, sentCallback) => this.aoc.receiveWeather(requestMetar, icaos, sentCallback));
         this.digitalInputs.fmsBus.addDataCallback('positionReportData', () => this.createPositionReportData());
         this.digitalInputs.fmsBus.addDataCallback('registerMessages', (messages) => this.registerMessages(messages));
