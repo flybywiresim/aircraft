@@ -177,7 +177,6 @@ export class Atsu {
     }
 
     private newRouteReceived(route: FmsRouteData): void {
-        console.log('new route');
         const lastWaypoint = this.digitalInputs.FlightRoute.lastWaypoint;
         const passedWaypoint = route.lastWaypoint !== null && (lastWaypoint === null || lastWaypoint.ident !== route.lastWaypoint.ident);
 

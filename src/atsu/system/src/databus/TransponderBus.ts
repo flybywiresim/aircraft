@@ -38,7 +38,6 @@ export class TransponderInputBus {
         this.subscriber = this.bus.getSubscriber<TransponderSimvars>();
 
         this.subscriber.on('msfsTransponderCode').whenChanged().handle((code: number) => {
-            console.log(`Received transponder: ${code}`);
             this.publisher.pub('transponderCode', code, true, false);
         });
     }
