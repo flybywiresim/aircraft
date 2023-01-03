@@ -652,7 +652,7 @@ class FMCMainDisplay extends BaseAirliners {
         };
 
         if (this.cidsUpdateThrottler.canUpdate(_deltaTime) !== -1) {
-            this.cids.update();
+            this.cids.update(_deltaTime);
         }
     }
 
