@@ -3,6 +3,7 @@ import { Waypoint } from '@atsu/common/types';
 import { FlightPhaseManager } from '@fmgc/flightphase';
 import { WaypointStats } from '@fmgc/flightplanning/data/flightplan';
 import { FlightPlanManager, ManagedFlightPlan } from '@fmgc/wtsdk';
+import { Arinc429Word } from '@shared/arinc429';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { EventBus, Publisher } from 'msfssdk';
 
@@ -74,7 +75,17 @@ export class FlightPlanSync {
             if (activeFlightPlan && activeFlightPlan.waypoints.length !== 0) {
                 let flightPlanStats: Map<number, WaypointStats> = null;
                 if (isFlying) {
-                    flightPlanStats = activeFlightPlan.computeWaypointStatistics(ppos);
+                    const latitude = new Arinc429Word(SimVar.GetSimVarValue('L:A32NX_ADIRS_IR_1_LATITUDE', 'number'));
+                    const longitude = new Arinc429Word(SimVar.GetSimVarValue('L:A32NX_ADIRS_IR_1_LONGITUDE', 'number'));
+
+                    if (latitude.isNormalOperation() && longitude.isNormalOperation()) {
+                        const ppos = {
+                            lat: latitude.value,
+                            long: longitude.value,
+                        };
+
+                        flightPlanStats = activeFlightPlan.computeWaypointStatistics(ppos);
+                    }
                 }
 
                 if (this.destination === null || activeFlightPlan.destinationAirfield.ident !== this.destination.ident) {
