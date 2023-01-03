@@ -13,7 +13,7 @@ import {
     TafMessage,
     WeatherMessage,
 } from '@atsu/common/messages';
-import { AutopilotData, EnvironmentData, FlightStateData } from '@atsu/common/types';
+import { AutopilotData, EnvironmentData, FlightStateData, PositionReportData } from '@atsu/common/types';
 import { FlightPhaseManager } from '@fmgc/flightphase';
 import { FlightPlanManager } from '@fmgc/index';
 import { EventBus, EventSubscriber, Publisher } from 'msfssdk';
@@ -29,6 +29,16 @@ export class FmsClient {
     private readonly subscriber: EventSubscriber<AtsuFmsMessages>;
 
     private requestId: number = 0;
+
+    private genericRequestResponseCallbacks: ((requestId: number) => boolean)[] = [];
+
+    private requestAtsuStatusCodeCallbacks: ((code: AtsuStatusCodes, requestId: number) => boolean)[] = [];
+
+    private requestSentToGroundCallbacks: ((requestId: number) => boolean)[] = [];
+
+    private weatherResponseCallbacks: ((response: [AtsuStatusCodes, WeatherMessage], requestId: number) => boolean)[] = [];
+
+    private positionReportDataCallbacks: ((response: PositionReportData, requestId: number) => boolean)[] = [];
 
     private atisAutoUpdates: string[] = [];
 
@@ -63,6 +73,7 @@ export class FmsClient {
         this.publisher = this.bus.getPublisher<AtsuFmsMessages>();
         this.subscriber = this.bus.getSubscriber<AtsuFmsMessages>();
 
+        // register the streaming handlers
         this.subscriber.on('atsuSystemStatus').handle((status) => this.fms.addNewAtsuMessage(status));
         this.subscriber.on('messageModify').handle((message) => this.modificationMessage = message);
         this.subscriber.on('printMessage').handle((message) => this.printMessage(message));
@@ -76,6 +87,53 @@ export class FmsClient {
         this.subscriber.on('monitoredMessages').handle((messages) => this.atcMonitoredMessages = messages);
         this.subscriber.on('maxUplinkDelay').handle((delay) => this.maxUplinkDelay = delay);
         this.subscriber.on('automaticPositionReportActive').handle((active) => this.automaticPositionReportIsActive = active);
+
+        // register the response handlers
+        this.subscriber.on('genericRequestResponse').handle((response) => {
+            this.genericRequestResponseCallbacks.every((callback, index) => {
+                if (callback(response)) {
+                    this.genericRequestResponseCallbacks.splice(index, 1);
+                    return false;
+                }
+                return true;
+            });
+        });
+        this.subscriber.on('requestAtsuStatusCode').handle((response) => {
+            this.requestAtsuStatusCodeCallbacks.every((callback, index) => {
+                if (callback(response.code, response.requestId)) {
+                    this.requestAtsuStatusCodeCallbacks.splice(index, 1);
+                    return false;
+                }
+                return true;
+            });
+        });
+        this.subscriber.on('requestSentToGround').handle((response) => {
+            this.requestSentToGroundCallbacks.every((callback, index) => {
+                if (callback(response)) {
+                    this.requestSentToGroundCallbacks.splice(index, 1);
+                    return false;
+                }
+                return true;
+            });
+        });
+        this.subscriber.on('weatherResponse').handle((response) => {
+            this.weatherResponseCallbacks.every((callback, index) => {
+                if (callback(response.data, response.requestId)) {
+                    this.requestSentToGroundCallbacks.splice(index, 1);
+                    return false;
+                }
+                return true;
+            });
+        });
+        this.subscriber.on('positionReport').handle((response) => {
+            this.positionReportDataCallbacks.every((callback, index) => {
+                if (callback(response.data, response.requestId)) {
+                    this.requestSentToGroundCallbacks.splice(index, 1);
+                    return false;
+                }
+                return true;
+            });
+        });
 
         this.flightPlan = new FlightPlanSync(this.bus, flightPlanManager, flightPhaseManager);
     }
@@ -137,10 +195,9 @@ export class FmsClient {
     public sendMessage(message: AtsuMessage): Promise<AtsuStatusCodes> {
         return new Promise<AtsuStatusCodes>((resolve, _reject) => {
             const requestId = this.synchronizeMessage(message, AtsuFmsMessageSyncType.SendMessage);
-
-            const subscriber = this.bus.getSubscriber<AtsuFmsMessages>();
-            subscriber.on('requestAtsuStatusCode').handle((response) => {
-                if (response.requestId === requestId) resolve(response.code);
+            this.requestAtsuStatusCodeCallbacks.push((code: AtsuStatusCodes, id: number) => {
+                if (id === requestId) resolve(code);
+                return id === requestId;
             });
         });
     }
@@ -163,12 +220,13 @@ export class FmsClient {
             const requestId = this.requestId++;
             this.publisher.pub('requestAtis', { icao: airport, type, requestId }, true, false);
 
-            const subscriber = this.bus.getSubscriber<AtsuFmsMessages>();
-            subscriber.on('requestSentToGround').handle((id) => {
+            this.requestSentToGroundCallbacks.push((id: number) => {
                 if (id === requestId) sentCallback();
+                return id === requestId;
             });
-            subscriber.on('weatherResponse').handle((response) => {
-                if (response.requestId === requestId) resolve(response.data);
+            this.weatherResponseCallbacks.push((response: [AtsuStatusCodes, WeatherMessage], id: number) => {
+                if (id === requestId) resolve(response);
+                return id === requestId;
             });
         });
     }
@@ -178,12 +236,13 @@ export class FmsClient {
             const requestId = this.requestId++;
             this.publisher.pub('requestWeather', { icaos, requestMetar, requestId }, true, false);
 
-            const subscriber = this.bus.getSubscriber<AtsuFmsMessages>();
-            subscriber.on('requestSentToGround').handle((id) => {
+            this.requestSentToGroundCallbacks.push((id: number) => {
                 if (id === requestId) sentCallback();
+                return id === requestId;
             });
-            subscriber.on('weatherResponse').handle((response) => {
-                if (response.requestId === requestId) resolve(response.data);
+            this.weatherResponseCallbacks.push((response: [AtsuStatusCodes, WeatherMessage], id: number) => {
+                if (id === requestId) resolve(response);
+                return id === requestId;
             });
         });
     }
@@ -210,10 +269,9 @@ export class FmsClient {
         return new Promise<void>((resolve, _reject) => {
             const requestId = this.requestId++;
             this.publisher.pub('deactivateAtisAutoUpdate', { icao, requestId }, true, false);
-
-            const subscriber = this.bus.getSubscriber<AtsuFmsMessages>();
-            subscriber.on('genericRequestResponse').handle((id) => {
+            this.genericRequestResponseCallbacks.push((id: number) => {
                 if (id === requestId) resolve();
+                return id === requestId;
             });
         });
     }
@@ -222,10 +280,9 @@ export class FmsClient {
         return new Promise<void>((resolve, _reject) => {
             const requestId = this.requestId++;
             this.publisher.pub('activateAtisAutoUpdate', { icao, type, requestId }, true, false);
-
-            const subscriber = this.bus.getSubscriber<AtsuFmsMessages>();
-            subscriber.on('genericRequestResponse').handle((id) => {
+            this.genericRequestResponseCallbacks.push((id: number) => {
                 if (id === requestId) resolve();
+                return id === requestId;
             });
         });
     }
@@ -245,10 +302,9 @@ export class FmsClient {
         return new Promise<void>((resolve, _reject) => {
             const requestId = this.requestId++;
             this.publisher.pub('togglePrintAtisReportsPrint', requestId, true, false);
-
-            const subscriber = this.bus.getSubscriber<AtsuFmsMessages>();
-            subscriber.on('genericRequestResponse').handle((id) => {
+            this.genericRequestResponseCallbacks.push((id: number) => {
                 if (id === requestId) resolve();
+                return id === requestId;
             });
         });
     }
@@ -281,10 +337,9 @@ export class FmsClient {
         return new Promise<AtsuStatusCodes>((resolve, _reject) => {
             const requestId = this.requestId++;
             this.publisher.pub('atcLogon', { station: callsign, requestId }, true, false);
-
-            const subscriber = this.bus.getSubscriber<AtsuFmsMessages>();
-            subscriber.on('requestAtsuStatusCode').handle((response) => {
-                if (response.requestId === requestId) resolve(response.code);
+            this.requestAtsuStatusCodeCallbacks.push((code: AtsuStatusCodes, id: number) => {
+                if (id === requestId) resolve(code);
+                return id === requestId;
             });
         });
     }
@@ -293,10 +348,9 @@ export class FmsClient {
         return new Promise<AtsuStatusCodes>((resolve, _reject) => {
             const requestId = this.requestId++;
             this.publisher.pub('atcLogoff', requestId, true, false);
-
-            const subscriber = this.bus.getSubscriber<AtsuFmsMessages>();
-            subscriber.on('requestAtsuStatusCode').handle((response) => {
-                if (response.requestId === requestId) resolve(response.code);
+            this.requestAtsuStatusCodeCallbacks.push((code: AtsuStatusCodes, id: number) => {
+                if (id === requestId) resolve(code);
+                return id === requestId;
             });
         });
     }
@@ -305,10 +359,9 @@ export class FmsClient {
         return new Promise<AtsuStatusCodes>((resolve, _reject) => {
             const requestId = this.requestId++;
             this.publisher.pub('remoteStationAvailable', { station: callsign, requestId }, true, false);
-
-            const subscriber = this.bus.getSubscriber<AtsuFmsMessages>();
-            subscriber.on('requestAtsuStatusCode').handle((response) => {
-                if (response.requestId === requestId) resolve(response.code);
+            this.requestAtsuStatusCodeCallbacks.push((code: AtsuStatusCodes, id: number) => {
+                if (id === requestId) resolve(code);
+                return id === requestId;
             });
         });
     }
@@ -349,10 +402,9 @@ export class FmsClient {
         return new Promise<void>((resolve, _reject) => {
             const requestId = this.requestId++;
             this.publisher.pub('setMaxUplinkDelay', { delay, requestId }, true, false);
-
-            const subscriber = this.bus.getSubscriber<AtsuFmsMessages>();
-            subscriber.on('genericRequestResponse').handle((id) => {
+            this.genericRequestResponseCallbacks.push((id: number) => {
                 if (id === requestId) resolve();
+                return id === requestId;
             });
         });
     }
@@ -365,10 +417,9 @@ export class FmsClient {
         return new Promise<void>((resolve, _reject) => {
             const requestId = this.requestId++;
             this.publisher.pub('toggleAutomaticPositionReport', requestId, true, false);
-
-            const subscriber = this.bus.getSubscriber<AtsuFmsMessages>();
-            subscriber.on('genericRequestResponse').handle((id) => {
+            this.genericRequestResponseCallbacks.push((id: number) => {
                 if (id === requestId) resolve();
+                return id === requestId;
             });
         });
     }
@@ -377,10 +428,9 @@ export class FmsClient {
         return new Promise<{ flightState: FlightStateData; autopilot: AutopilotData; environment: EnvironmentData }>((resolve, _reject) => {
             const requestId = this.requestId++;
             this.publisher.pub('requestPositionReport', requestId, true, false);
-
-            const subscriber = this.bus.getSubscriber<AtsuFmsMessages>();
-            subscriber.on('positionReport').handle((response) => {
-                if (response.requestId === requestId) resolve(response.data);
+            this.positionReportDataCallbacks.push((response: PositionReportData, id: number) => {
+                if (id === requestId) resolve(response);
+                return id === requestId;
             });
         });
     }
@@ -393,10 +443,9 @@ export class FmsClient {
         return new Promise<AtsuStatusCodes>((resolve, _reject) => {
             const requestId = this.requestId++;
             this.publisher.pub('connectToNetworks', { callsign, requestId }, true, false);
-
-            const subscriber = this.bus.getSubscriber<AtsuFmsMessages>();
-            subscriber.on('requestAtsuStatusCode').handle((response) => {
-                if (response.requestId === requestId) resolve(response.code);
+            this.requestAtsuStatusCodeCallbacks.push((code: AtsuStatusCodes, id: number) => {
+                if (id === requestId) resolve(code);
+                return id === requestId;
             });
         });
     }
