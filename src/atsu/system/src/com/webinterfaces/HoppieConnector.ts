@@ -374,7 +374,6 @@ export class HoppieConnector {
 
             return [AtsuStatusCodes.Ok, retval];
         } catch (_err) {
-            console.log('ERROR IN POLL');
             return [AtsuStatusCodes.NoHoppieConnection, []];
         }
     }
