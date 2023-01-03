@@ -5,7 +5,7 @@ export class TaxiAfterLandingPhase extends FlightPhase {
    * Tries to transition to `DISEMBARKATION` phase.
    */
     public tryTransition(): void {
-        if (this.flightPhaseManager.taxiAfterLandingPhase.testConditions()) {
+        if (this.flightPhaseManager.disembarkationPhase.testConditions()) {
             this.sendNewFlightPhaseToManager(this.flightPhaseManager.disembarkationPhase);
         }
     }

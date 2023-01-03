@@ -22,7 +22,7 @@ export class FlightPhaseManager {
 
     public readonly taxiBeforeTakeoffPhase: TaxiBeforeTakeoffPhase;
 
-    public readonly takeoffAndInitClimbPhase: TakeoffAndInitialClimbPhase;
+    public readonly takeoffAndInitialClimbPhase: TakeoffAndInitialClimbPhase;
 
     public readonly finalClimbPhase: FinalClimbPhase;
 
@@ -42,17 +42,17 @@ export class FlightPhaseManager {
 
     constructor(cids: Cids) {
         this.cids = cids;
-        this.boardingPhase = new BoardingPhase(this.cids, this);
-        this.pushbackPhase = new PushbackPhase(this.cids, this);
-        this.taxiBeforeTakeoffPhase = new TaxiBeforeTakeoffPhase(this.cids, this);
-        this.takeoffAndInitClimbPhase = new TakeoffAndInitialClimbPhase(this.cids, this);
-        this.finalClimbPhase = new FinalClimbPhase(this.cids, this);
-        this.cruisePhase = new CruisePhase(this.cids, this);
-        this.todPhase = new TopOfDescentPhase(this.cids, this);
-        this.apprPhase = new ApproachPhase(this.cids, this);
-        this.finalApprAndLandingPhase = new FinalApproachAndLandingPhase(this.cids, this);
-        this.disembarkationPhase = new DisembarkationPhase(this.cids, this);
-        this.afterDisembarkationPhase = new AfterDisembarkationPhase(this.cids, this);
+        this.boardingPhase = new BoardingPhase(this);
+        this.pushbackPhase = new PushbackPhase(this);
+        this.taxiBeforeTakeoffPhase = new TaxiBeforeTakeoffPhase(this);
+        this.takeoffAndInitialClimbPhase = new TakeoffAndInitialClimbPhase(this);
+        this.finalClimbPhase = new FinalClimbPhase(this);
+        this.cruisePhase = new CruisePhase(this);
+        this.todPhase = new TopOfDescentPhase(this);
+        this.apprPhase = new ApproachPhase(this);
+        this.finalApprAndLandingPhase = new FinalApproachAndLandingPhase(this);
+        this.disembarkationPhase = new DisembarkationPhase(this);
+        this.afterDisembarkationPhase = new AfterDisembarkationPhase(this);
     }
 
     public init() {
@@ -64,11 +64,8 @@ export class FlightPhaseManager {
         console.log('[CIDS/FPM] Initialization complete.');
     }
 
-    public update(_deltaTime: number): void {
-        const prevPhase = this.getActiveFlightPhase();
+    public update(): void {
         this.getActiveFlightPhase().tryTransition();
-        const newPhase = this.getActiveFlightPhase();
-        console.log(`[CIDS/FPM] Flight phase transitioned: ${prevPhase.getValue()} => ${newPhase.getValue()}]`);
     }
 
     // eslint-disable-next-line consistent-return
@@ -83,7 +80,7 @@ export class FlightPhaseManager {
         case 3:
             return this.taxiBeforeTakeoffPhase;
         case 4:
-            return this.takeoffAndInitClimbPhase;
+            return this.takeoffAndInitialClimbPhase;
         case 5:
             return this.finalClimbPhase;
         case 6:
@@ -103,8 +100,10 @@ export class FlightPhaseManager {
         }
     }
 
-    public setActiveFlightPhase(flightPhase: FlightPhase): void {
-        SimVar.SetSimVarValue('L:A32NX_CIDS_FLIGHT_PHASE', 'Enum', flightPhase.getValue());
+    public async setActiveFlightPhase(flightPhase: FlightPhase): Promise<void> {
+        const prevPhase = this.getActiveFlightPhase();
+        await SimVar.SetSimVarValue('L:A32NX_CIDS_FLIGHT_PHASE', 'Enum', flightPhase.getValue());
+        console.log(`[CIDS] Flight phase: ${prevPhase.getValue()} => ${flightPhase}`);
     }
 
     private initFlightPhase(): void {
@@ -122,7 +121,7 @@ export class FlightPhaseManager {
             return;
         case 5:
             if (this.cids.altitude() < 10000) {
-                this.setActiveFlightPhase(this.takeoffAndInitClimbPhase);
+                this.setActiveFlightPhase(this.takeoffAndInitialClimbPhase);
             } else {
                 this.setActiveFlightPhase(this.finalClimbPhase);
             }
