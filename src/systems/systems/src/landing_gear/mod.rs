@@ -1307,7 +1307,7 @@ impl GearSystemStateMachine {
             GearSystemState::AllDownLocked => {
                 lgciu.all_down_and_locked() && lgciu.all_closed_and_locked()
             }
-            _ => true,
+            GearSystemState::Extending | GearSystemState::Retracting => true,
         }
     }
 
