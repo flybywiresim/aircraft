@@ -1,3 +1,4 @@
+import { DclMessage, OclMessage } from '@atsu/common/messages';
 import { CpdlcMessage } from '../messages/CpdlcMessage';
 
 export enum MailboxStatusMessage {
@@ -51,7 +52,9 @@ export interface AtsuMailboxMessages {
     downlinkTransmit: number;
     modifyMessage: number;
     printMessage: number;
-    messages: CpdlcMessage[];
+    cpdlcMessages: CpdlcMessage[];
+    dclMessages: DclMessage[];
+    oclMessages: OclMessage[];
     logonMessage: string;
     systemStatus: MailboxStatusMessage;
     messageStatus: { uid: number; status: MailboxStatusMessage };

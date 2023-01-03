@@ -1,14 +1,20 @@
 //  Copyright (c) 2022 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { AtsuMessage, AtsuMessageDirection } from '@atsu/common/messages/AtsuMessage';
 import { AtsuStatusCodes } from '@atsu/common/AtsuStatusCodes';
 import {
     AtsuMailboxMessages,
     MailboxStatusMessage,
 } from '@atsu/common/databus/Mailbox';
-import { CpdlcMessage } from '@atsu/common/messages/CpdlcMessage';
 import { EventBus, EventSubscriber, Publisher } from 'msfssdk';
+import {
+    AtsuMessage,
+    AtsuMessageDirection,
+    AtsuMessageType,
+    CpdlcMessage,
+    DclMessage,
+    OclMessage,
+} from '@atsu/common/messages';
 import { Atsu } from '../ATSU';
 import { Atc } from '../ATC';
 import { UplinkMessageStateMachine } from '../components/UplinkMessageStateMachine';
@@ -54,6 +60,24 @@ export class MailboxBus {
 
     private atcRingInterval: NodeJS.Timer = null;
 
+    private uploadMessagesToMailbox(messages: CpdlcMessage[]): void {
+        if (messages.length !== 0) {
+            switch (messages[0].Type) {
+            case AtsuMessageType.CPDLC:
+                this.mailboxPublisher.pub('cpdlcMessages', messages, true, false);
+                break;
+            case AtsuMessageType.DCL:
+                this.mailboxPublisher.pub('dclMessages', messages as DclMessage[], true, false);
+                break;
+            case AtsuMessageType.OCL:
+                this.mailboxPublisher.pub('oclMessages', messages as OclMessage[], true, false);
+                break;
+            default:
+                break;
+            }
+        }
+    }
+
     private closeMessage(messages: (MailboxMessage[])[], backlog: (MailboxMessage[])[], uid: number, uplink: boolean): boolean {
         const idx = messages.findIndex((elem) => elem[0].MessageId === uid);
         if (idx !== -1) {
@@ -92,7 +116,7 @@ export class MailboxBus {
                 });
 
                 if (mailboxMessages.length !== 0) {
-                    this.mailboxPublisher.pub('messages', mailboxMessages, true, false);
+                    this.uploadMessagesToMailbox(mailboxMessages);
                 }
             }
         }
@@ -229,7 +253,7 @@ export class MailboxBus {
                     });
 
                     messages[0].CloseAutomatically = false;
-                    this.mailboxPublisher.pub('messages', messages, true, false);
+                    this.uploadMessagesToMailbox(messages);
                     if (this.lastClosedMessage[0][0].Direction === AtsuMessageDirection.Downlink) {
                         this.downlinkMessages.push(this.lastClosedMessage[0]);
                     } else {
@@ -252,7 +276,7 @@ export class MailboxBus {
             const message = this.atc.messages().find((element) => element.UniqueMessageID === uid);
             if (message !== undefined) {
                 UplinkMessageStateMachine.update(this.atsu, message as CpdlcMessage, true, false);
-                this.mailboxPublisher.pub('messages', [message as CpdlcMessage], true, false);
+                this.uploadMessagesToMailbox([message as CpdlcMessage]);
             }
         });
     }
@@ -350,7 +374,7 @@ export class MailboxBus {
             return;
         }
 
-        this.mailboxPublisher.pub('messages', messages as CpdlcMessage[], true, false);
+        this.uploadMessagesToMailbox(messages as CpdlcMessage[]);
     }
 
     public update(message: CpdlcMessage, insertIfNeeded: boolean = false) {
@@ -372,7 +396,7 @@ export class MailboxBus {
                 }
             });
 
-            this.mailboxPublisher.pub('messages', messages as CpdlcMessage[], true, false);
+            this.uploadMessagesToMailbox(messages as CpdlcMessage[]);
             return;
         }
 
@@ -391,7 +415,7 @@ export class MailboxBus {
             });
             messages[0] = message;
 
-            this.mailboxPublisher.pub('messages', messages as CpdlcMessage[], true, false);
+            this.uploadMessagesToMailbox(messages as CpdlcMessage[]);
             return;
         }
 

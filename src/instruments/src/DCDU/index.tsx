@@ -2,9 +2,15 @@ import React, { useEffect, useState, useRef } from 'react';
 import { EventBus, Publisher, EventSubscriber } from 'msfssdk';
 import { useSimVar } from '@instruments/common/simVars';
 import { useInteractionEvents } from '@instruments/common/hooks';
-import { AtsuMessageComStatus, AtsuMessageDirection } from '@atsu/common/messages/AtsuMessage';
-import { CpdlcMessage, CpdlcMessageMonitoringState } from '@atsu/common/messages/CpdlcMessage';
-import { CpdlcMessageExpectedResponseType } from '@atsu/common/messages/CpdlcMessageElements';
+import {
+    AtsuMessageComStatus,
+    AtsuMessageDirection,
+    DclMessage,
+    OclMessage,
+    CpdlcMessage,
+    CpdlcMessageMonitoringState,
+    CpdlcMessageExpectedResponseType,
+} from '@atsu/common/messages';
 import { AtsuMailboxMessages, MailboxStatusMessage } from '@atsu/common/databus/Mailbox';
 import { SemanticResponseButtons } from './elements/SemanticResponseButtons';
 import { OutputButtons } from './elements/OutputButtons';
@@ -248,7 +254,7 @@ const DCDU: React.FC = () => {
             setSystemStatusTimer(null);
         });
 
-        newSubscriber.on('messages').handle((cpdlcMessages: CpdlcMessage[]) => {
+        const handleIncomingMessages = (cpdlcMessages: CpdlcMessage[]): void => {
             if (!messagesRef.current) {
                 return;
             }
@@ -321,8 +327,11 @@ const DCDU: React.FC = () => {
 
                 setMessages(newMessageMap);
             }
-        });
+        };
 
+        newSubscriber.on('cpdlcMessages').handle((messages: CpdlcMessage[]) => handleIncomingMessages(messages));
+        newSubscriber.on('dclMessages').handle((messages: DclMessage[]) => handleIncomingMessages(messages));
+        newSubscriber.on('oclMessages').handle((messages: OclMessage[]) => handleIncomingMessages(messages));
         newSubscriber.on('deleteMessage').handle((uid: number) => closeMessage(uid));
         newSubscriber.on('logonMessage').handle((message: string) => setAtcMessage(message));
         newSubscriber.on('systemStatus').handle((status: MailboxStatusMessage) => {
