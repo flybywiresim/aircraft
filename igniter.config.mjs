@@ -31,10 +31,6 @@ export default new TaskOfTasks('a32nx', [
                 new ExecTask('pfd',
                     'npm run build:pfd',
                     ['src/instruments/src/PFD','flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/PFD']
-                ),
-                new ExecTask('SystemsHost',
-                    'npm run build:systemshost',
-                    ['src/instruments/src/SystemsHost','flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/SystemsHost']
                 )
             ],
             true),
@@ -43,6 +39,7 @@ export default new TaskOfTasks('a32nx', [
             new ExecTask('system','npm run build:atsu-system', ['src/atsu/system', 'flybywire-aircraft-a320-neo/html_ui/JS/atsu/system.js']),
             new ExecTask('fmsclient','npm run build:atsu-fms-client', ['src/atsu/fmsclient', 'flybywire-aircraft-a320-neo/html_ui/JS/atsu/fmsclient.js']),
         ]),
+        new ExecTask('systems-host', 'npm run build:systems-host', ['src/systems-host','flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/SystemsHost']),
         new ExecTask('sentry-client','npm run build:sentry-client', ['src/sentry-client', 'flybywire-aircraft-a320-neo/html_ui/JS/sentry-client']),
         new ExecTask('failures','npm run build:failures', ['src/failures', 'flybywire-aircraft-a320-neo/html_ui/JS/generated/failures.js']),
         new ExecTask('behavior','node src/behavior/build.js', ['src/behavior', 'flybywire-aircraft-a320-neo/ModelBehaviorDefs/A32NX/generated']),

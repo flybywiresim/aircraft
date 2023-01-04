@@ -10,7 +10,7 @@ const { join } = require('path');
 export default {
     input: join(__dirname, 'index.tsx'),
     output: {
-        dir: '../../../../flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/SystemsHost',
+        dir: '../../flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/SystemsHost',
         format: 'es',
     },
     plugins: [
