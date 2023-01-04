@@ -1,6 +1,13 @@
 import { CpdlcMessage } from '../messages/CpdlcMessage';
 import { Clock, Waypoint } from '../types';
 
+export enum UplinkMonitorType {
+    Unknown = -1,
+    Time = 0,
+    Altitude = 1,
+    Position = 2,
+}
+
 export abstract class UplinkMonitor {
     private static positionMonitoringMessageIds = ['UM22', 'UM25', 'UM65', 'UM77', 'UM83', 'UM84', 'UM97', 'UM118', 'UM121', 'UM130'];
 
@@ -8,7 +15,7 @@ export abstract class UplinkMonitor {
 
     private static levelMonitoringMessageIds = ['UM78', 'UM128', 'UM129', 'UM130', 'UM175', 'UM180'];
 
-    // protected atsu: Atsu = null;
+    public type: UplinkMonitorType
 
     public messageId = -1;
 
@@ -40,7 +47,7 @@ export abstract class UplinkMonitor {
         return null;
     }
 
-    abstract conditionsMet(condition?: Waypoint | Clock | number | undefined): boolean;
+    abstract conditionsMet(condition: Waypoint | Clock | number): boolean;
 }
 
 class PositionMonitor extends UplinkMonitor {
@@ -48,10 +55,11 @@ class PositionMonitor extends UplinkMonitor {
 
     constructor(message: CpdlcMessage) {
         super(message);
+        this.type = UplinkMonitorType.Position;
         this.positionMonitor = message.Content[0]?.Content[0]?.Value;
     }
 
-    public conditionsMet(condition?: Waypoint | Clock | number | undefined): boolean {
+    public conditionsMet(condition: Waypoint | Clock | number): boolean {
         if (condition instanceof Waypoint) {
             const lastPosition = condition.ident;
             return this.positionMonitor === lastPosition;
@@ -77,13 +85,15 @@ class TimeMonitor extends UplinkMonitor {
 
     constructor(message: CpdlcMessage) {
         super(message);
+        this.type = UplinkMonitorType.Time;
+
         if (TimeMonitor.deferredMessageIDs.findIndex((id) => id === message.Content[0]?.TypeId) !== -1) {
             this.timeOffset = 30;
         }
         this.timeMonitor = TimeMonitor.extractSeconds(message.Content[0]?.Content[0]?.Value);
     }
 
-    public conditionsMet(condition?: Waypoint | Clock | number | undefined): boolean {
+    public conditionsMet(condition: Waypoint | Clock | number): boolean {
         if (condition instanceof Clock) {
             if ((condition.secondsOfDay + this.timeOffset) >= this.timeMonitor) {
                 // avoid errors due to day change (2359 to 0001)
@@ -118,6 +128,7 @@ class LevelMonitor extends UplinkMonitor {
 
     constructor(message: CpdlcMessage) {
         super(message);
+        this.type = UplinkMonitorType.Altitude;
 
         this.lowerLevel = LevelMonitor.extractAltitude(message.Content[0]?.Content[0]?.Value);
         if (message.Content[0]?.TypeId === 'UM180') {
@@ -133,7 +144,7 @@ class LevelMonitor extends UplinkMonitor {
         }
     }
 
-    public conditionsMet(condition?: Waypoint | Clock | number | undefined): boolean {
+    public conditionsMet(condition: Waypoint | Clock | number): boolean {
         if (typeof condition === 'number') {
             if (this.reachingLevel && this.leavingLevel) {
                 if (!this.reachedLevel) {
