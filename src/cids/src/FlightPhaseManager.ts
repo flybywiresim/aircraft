@@ -103,7 +103,7 @@ export class FlightPhaseManager {
     public async setActiveFlightPhase(flightPhase: FlightPhase): Promise<void> {
         const prevPhase = this.getActiveFlightPhase();
         await SimVar.SetSimVarValue('L:A32NX_CIDS_FLIGHT_PHASE', 'Enum', flightPhase.getValue());
-        console.log(`[CIDS] Flight phase: ${prevPhase.getValue()} => ${flightPhase}`);
+        console.log(`[CIDS] Flight phase: ${prevPhase.getValue()} => ${flightPhase.getValue()}`);
     }
 
     private initFlightPhase(): void {
@@ -113,31 +113,39 @@ export class FlightPhaseManager {
         switch (startState) {
         case 1:
         case 2:
-            this.setActiveFlightPhase(this.afterDisembarkationPhase);
+            SimVar.SetSimVarValue('L:A32NX_CIDS_FLIGHT_PHASE', 'Enum', this.afterDisembarkationPhase.getValue())
+                .then(() => console.log(`[CIDS/FPM] Flight phase: ${this.afterDisembarkationPhase.getValue()}`));
             return;
         case 3:
         case 4:
-            this.setActiveFlightPhase(this.taxiBeforeTakeoffPhase);
+            SimVar.SetSimVarValue('L:A32NX_CIDS_FLIGHT_PHASE', 'Enum', this.taxiBeforeTakeoffPhase.getValue())
+                .then(() => console.log(`[CIDS/FPM] Flight phase: ${this.taxiBeforeTakeoffPhase.getValue()}`));
             return;
         case 5:
             if (this.cids.altitude() < 10000) {
-                this.setActiveFlightPhase(this.takeoffAndInitialClimbPhase);
+                SimVar.SetSimVarValue('L:A32NX_CIDS_FLIGHT_PHASE', 'Enum', this.takeoffAndInitialClimbPhase.getValue())
+                    .then(() => console.log(`[CIDS/FPM] Flight phase: ${this.takeoffAndInitialClimbPhase.getValue()}`));
             } else {
-                this.setActiveFlightPhase(this.finalClimbPhase);
+                SimVar.SetSimVarValue('L:A32NX_CIDS_FLIGHT_PHASE', 'Enum', this.finalClimbPhase.getValue())
+                    .then(() => console.log(`[CIDS/FPM] Flight phase: ${this.finalClimbPhase.getValue()}`));
             }
             return;
         case 6:
-            this.setActiveFlightPhase(this.cruisePhase);
+            SimVar.SetSimVarValue('L:A32NX_CIDS_FLIGHT_PHASE', 'Enum', this.cruisePhase.getValue())
+                .then(() => console.log(`[CIDS/FPM] Flight phase: ${this.cruisePhase.getValue()}`));
             return;
         case 7:
             if (this.cids.altitude() > 10000) {
-                this.setActiveFlightPhase(this.todPhase);
+                SimVar.SetSimVarValue('L:A32NX_CIDS_FLIGHT_PHASE', 'Enum', this.todPhase.getValue())
+                    .then(() => console.log(`[CIDS/FPM] Flight phase: ${this.todPhase.getValue()}`));
             } else {
-                this.setActiveFlightPhase(this.apprPhase);
+                SimVar.SetSimVarValue('L:A32NX_CIDS_FLIGHT_PHASE', 'Enum', this.apprPhase.getValue())
+                    .then(() => console.log(`[CIDS/FPM] Flight phase: ${this.apprPhase.getValue()}`));
             }
             return;
         case 8:
-            this.setActiveFlightPhase(this.finalApprAndLandingPhase);
+            SimVar.SetSimVarValue('L:A32NX_CIDS_FLIGHT_PHASE', 'Enum', this.finalApprAndLandingPhase.getValue())
+                .then(() => console.log(`[CIDS/FPM] Flight phase: ${this.finalApprAndLandingPhase.getValue()}`));
             break;
         default:
             console.error(`[CIDS/FPM] Found unknown value '${startState}' for A32NX_START_STATE.\nSee src/cids/src/FlightPhaseManager.ts#initFlightPhase().`);
