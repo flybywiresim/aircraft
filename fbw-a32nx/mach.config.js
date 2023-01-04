@@ -21,10 +21,10 @@ module.exports = {
     ],
     instruments: [
         msfsAvionicsInstrument('PFD'),
+        msfsAvionicsInstrument('EWD'),
         msfsAvionicsInstrument('Clock'),
 
         reactInstrument('ND', ['/JS/A32NX_Util.js']),
-        reactInstrument('EWD'),
         reactInstrument('SD'),
         reactInstrument('DCDU'),
         reactInstrument('RTPI'),
