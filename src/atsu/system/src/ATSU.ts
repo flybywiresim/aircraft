@@ -288,7 +288,7 @@ export class Atsu {
         return this.fltNo;
     }
 
-    private timestampMessage(message:AtsuMessage): void {
+    public timestampMessage(message: AtsuMessage): void {
         message.Timestamp.Year = this.digitalInputs.UtcClock.year;
         message.Timestamp.Month = this.digitalInputs.UtcClock.month;
         message.Timestamp.Day = this.digitalInputs.UtcClock.dayOfMonth;

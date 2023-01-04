@@ -531,9 +531,11 @@ export class Atc {
         return this.atsu.datalink.receiveAtis(icao, type, () => { }).then((retval) => {
             if (retval[0] === AtsuStatusCodes.Ok) {
                 let code = AtsuStatusCodes.Ok;
+
                 const atis = retval[1] as AtisMessage;
-                atis.Timestamp = new AtsuTimestamp();
+                this.atsu.timestampMessage(atis);
                 atis.parseInformation();
+
                 let printable = false;
 
                 if (atis.Information === '') {
