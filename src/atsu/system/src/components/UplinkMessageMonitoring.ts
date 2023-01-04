@@ -47,9 +47,18 @@ export class UplinkMessageMonitoring {
     public checkMessageConditions(): number[] {
         const ids = [];
 
+        const currentTime = this.atsu.digitalInputs.UtcClock;
+        const currentAltitude = this.atsu.digitalInputs.PresentPosition.altitude.value;
+        const currentWaypoint = this.atsu.digitalInputs.FlightRoute.lastWaypoint;
+
         let idx = this.monitoredMessages.length - 1;
         while (idx >= 0) {
-            if (this.monitoredMessages[idx].conditionsMet()) {
+            const monitorInstance = this.monitoredMessages[idx];
+            let conditionMet = monitorInstance.conditionsMet(currentTime);
+            conditionMet ||= monitorInstance.conditionsMet(currentAltitude);
+            conditionMet ||= monitorInstance.conditionsMet(currentWaypoint);
+
+            if (conditionMet) {
                 const message = this.findAtcMessage(this.monitoredMessages[idx].messageId);
                 if (message !== undefined && message.Response?.ComStatus === AtsuMessageComStatus.Sent) {
                     ids.push(this.monitoredMessages[idx].messageId);

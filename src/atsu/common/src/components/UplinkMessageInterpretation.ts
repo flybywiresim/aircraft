@@ -77,7 +77,7 @@ export class UplinkMessageInterpretation {
             return false;
         case 'UM134':
             if (atsu.digitalInputs.PresentDynamics.computedAirspeed.isNormalOperation()) {
-                message.Response.Content[0].Content[0].Value = InputValidation.formatScratchpadSpeed(atsu.digitalInputs.PresentDynamics.computedAirspeed.value.toString());
+                message.Response.Content[0].Content[0].Value = InputValidation.formatScratchpadSpeed(Math.round(atsu.digitalInputs.PresentDynamics.computedAirspeed.value).toString());
                 return true;
             }
             return false;
@@ -86,13 +86,13 @@ export class UplinkMessageInterpretation {
             return true;
         case 'UM145':
             if (atsu.digitalInputs.PresentPosition.heading.isNormalOperation()) {
-                message.Response.Content[0].Content[0].Value = InputValidation.formatScratchpadSpeed(atsu.digitalInputs.PresentPosition.heading.value.toString());
+                message.Response.Content[0].Content[0].Value = InputValidation.formatScratchpadSpeed(Math.round(atsu.digitalInputs.PresentPosition.heading.value).toString());
                 return true;
             }
             return false;
         case 'UM146':
             if (atsu.digitalInputs.PresentPosition.track.isNormalOperation()) {
-                message.Response.Content[0].Content[0].Value = InputValidation.formatScratchpadSpeed(atsu.digitalInputs.PresentPosition.track.value.toString());
+                message.Response.Content[0].Content[0].Value = InputValidation.formatScratchpadSpeed(Math.round(atsu.digitalInputs.PresentPosition.track.value).toString());
                 return true;
             }
             return false;
@@ -110,7 +110,7 @@ export class UplinkMessageInterpretation {
     private static FillAssignedData(atsu: Atsu, message: CpdlcMessage): boolean {
         switch (message.Content[0]?.TypeId) {
         case 'UM135':
-            message.Response.Content[0].Content[0].Value = InputValidation.formatScratchpadAltitude(Math.round(atsu.digitalInputs.AutopilotData.selectedAltitude / 100).toString());
+            message.Response.Content[0].Content[0].Value = InputValidation.formatScratchpadAltitude(Math.round(Math.round(atsu.digitalInputs.AutopilotData.selectedAltitude) / 100).toString());
             return true;
         case 'UM136':
             if (atsu.digitalInputs.AutopilotData.autothrustMode.isNormalOperation() && atsu.digitalInputs.AutopilotData.autothrustMode.value !== 0) {
@@ -119,7 +119,7 @@ export class UplinkMessageInterpretation {
                 if (atsu.digitalInputs.AutopilotData.machMode) {
                     content = InputValidation.formatScratchpadAltitude(atsu.digitalInputs.AutopilotData.selectedMach.value.toString());
                 } else {
-                    content = InputValidation.formatScratchpadAltitude(atsu.digitalInputs.AutopilotData.selectedSpeed.value.toString());
+                    content = InputValidation.formatScratchpadAltitude(Math.round(atsu.digitalInputs.AutopilotData.selectedSpeed.value).toString());
                 }
 
                 message.Response.Content[0].Content[0].Value = content;
