@@ -120,9 +120,11 @@ export const MessageStatus: React.FC<MessageStatusProps> = ({ message, selectedR
     if (message.MessageMonitoring === CpdlcMessageMonitoringState.Finished) {
         if (message.SemanticResponseRequired) {
             title = `${message.Response?.Timestamp?.mailboxTimestamp()} TO ${message.Response?.Station}`;
-        } else {
-            title = (new AtsuTimestamp()).mailboxTimestamp();
+        } else if (message.ReminderTimestamp !== null) {
+            title = message.ReminderTimestamp.mailboxTimestamp();
             text = '';
+        } else {
+            title = '----Z';
         }
     } else {
         title = `${message.Timestamp?.mailboxTimestamp()} ${message.Direction === AtsuMessageDirection.Downlink ? ' TO ' : ' FROM '} ${message.Station}`;

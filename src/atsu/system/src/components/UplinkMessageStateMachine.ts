@@ -1,5 +1,6 @@
 import { CpdlcMessage, CpdlcMessageMonitoringState } from '@atsu/common/messages/CpdlcMessage';
 import { AtsuMessageComStatus } from '@atsu/common/messages/AtsuMessage';
+import { AtsuTimestamp } from '@atsu/common/messages';
 import { Atsu } from '../ATSU';
 import { UplinkMonitor } from '../../../common/src/components/UplinkMonitor';
 import { UplinkMessageInterpretation } from '../../../common/src/components/UplinkMessageInterpretation';
@@ -27,6 +28,7 @@ export class UplinkMessageStateMachine {
                 atsu.atc.messageMonitoring.monitorMessage(message);
             } else if (!uiEvent && message.MessageMonitoring === CpdlcMessageMonitoringState.Monitoring) {
                 message.MessageMonitoring = CpdlcMessageMonitoringState.Finished;
+                message.ReminderTimestamp = AtsuTimestamp.fromClock(atsu.digitalInputs.UtcClock);
                 message.SemanticResponseRequired = UplinkMessageInterpretation.SemanticAnswerRequired(message);
             }
         } else if (message.MessageMonitoring === CpdlcMessageMonitoringState.Monitoring) {

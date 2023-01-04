@@ -1,6 +1,7 @@
 //  Copyright (c) 2021 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
+import { AtsuTimestamp } from '@atsu/common/messages/AtsuTimestamp';
 import { AtsuMessageNetwork, AtsuMessageType, AtsuMessageDirection, AtsuMessageSerializationFormat, AtsuMessage } from './AtsuMessage';
 import { CpdlcMessageElement, CpdlcMessagesDownlink, CpdlcMessagesUplink } from './CpdlcMessageElements';
 import { wordWrap } from '../components/Convert';
@@ -33,6 +34,8 @@ export class CpdlcMessage extends AtsuMessage {
 
     public SemanticResponseRequired = false;
 
+    public ReminderTimestamp: AtsuTimestamp = null;
+
     constructor() {
         super();
         this.Type = AtsuMessageType.CPDLC;
@@ -58,6 +61,10 @@ export class CpdlcMessage extends AtsuMessage {
         this.CloseAutomatically = jsonData.CloseAutomatically as boolean;
         this.MessageMonitoring = jsonData.MessageMonitoring as CpdlcMessageMonitoringState;
         this.SemanticResponseRequired = jsonData.SemanticResponseRequired as boolean;
+        if (jsonData.ReminderTimestamp) {
+            this.ReminderTimestamp = new AtsuTimestamp();
+            this.ReminderTimestamp.deserialize(jsonData.ReminderTimestamp as Record<string, unknown>);
+        }
     }
 
     protected serializeContent(format: AtsuMessageSerializationFormat, template: string, element: CpdlcMessageElement): string {
