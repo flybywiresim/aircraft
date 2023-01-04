@@ -1,5 +1,5 @@
 import { AtsuFmsMessages } from '@atsu/common/databus';
-import { AtisMessage, AtsuMessage, AtsuMessageDirection, CpdlcMessage } from '@atsu/common/messages';
+import { AtisMessage, AtsuMessage, AtsuMessageDirection, Conversion, CpdlcMessage } from '@atsu/common/messages';
 import { EventSubscriber } from 'msfssdk';
 
 export class MessageStorage {
@@ -54,13 +54,21 @@ export class MessageStorage {
     }
 
     constructor(private readonly subscriber: EventSubscriber<AtsuFmsMessages>) {
-        this.subscriber.on('atcAtisReports').handle((reports) => this.atisReports = reports);
+        this.subscriber.on('atcAtisReports').handle((reports) => {
+            this.atisReports = new Map();
+
+            reports.forEach((messages, icao) => {
+                const atisMessages: AtisMessage[] = [];
+                messages.forEach((message) => atisMessages.push(Conversion.messageDataToMessage(message)));
+                this.atisReports.set(icao, atisMessages);
+            });
+        });
         this.subscriber.on('monitoredMessages').handle((messages) => this.atcMonitoredMessages = messages);
-        this.subscriber.on('resynchronizeAocWeatherMessage').handle((message) => this.resynchronizeAocMessage(message));
-        this.subscriber.on('resynchronizeFreetextMessage').handle((message) => this.resynchronizeAocMessage(message));
-        this.subscriber.on('resynchronizeCpdlcMessage').handle((message) => this.resynchronizeAtcMessage(message));
-        this.subscriber.on('resynchronizeDclMessage').handle((message) => this.resynchronizeAtcMessage(message));
-        this.subscriber.on('resynchronizeOclMessage').handle((message) => this.resynchronizeAtcMessage(message));
+        this.subscriber.on('resynchronizeAocWeatherMessage').handle((message) => this.resynchronizeAocMessage(Conversion.messageDataToMessage(message)));
+        this.subscriber.on('resynchronizeFreetextMessage').handle((message) => this.resynchronizeAocMessage(Conversion.messageDataToMessage(message)));
+        this.subscriber.on('resynchronizeCpdlcMessage').handle((message) => this.resynchronizeAtcMessage(Conversion.messageDataToMessage(message)));
+        this.subscriber.on('resynchronizeDclMessage').handle((message) => this.resynchronizeAtcMessage(Conversion.messageDataToMessage(message)));
+        this.subscriber.on('resynchronizeOclMessage').handle((message) => this.resynchronizeAtcMessage(Conversion.messageDataToMessage(message)));
         this.subscriber.on('deleteMessage').handle((uid) => this.deleteMessage(uid));
     }
 }

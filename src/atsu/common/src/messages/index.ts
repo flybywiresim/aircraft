@@ -3,6 +3,7 @@ export * from './AtsuMessage';
 export * from './AtsuTimestamp';
 export * from './CpdlcMessage';
 export * from './CpdlcMessageElements';
+export * from './Conversion';
 export * from './DclMessage';
 export * from './FreetextMessage';
 export * from './MetarMessage';

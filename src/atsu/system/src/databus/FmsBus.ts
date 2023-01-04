@@ -1,7 +1,7 @@
 import { AtsuStatusCodes } from '@atsu/common/AtsuStatusCodes';
 import { AtsuFmsMessages, FmsRouteData } from '@atsu/common/databus';
 import { FansMode } from '@atsu/common/index';
-import { AtisMessage, AtisType, AtsuMessage, AtsuMessageType, CpdlcMessage, DclMessage, FreetextMessage, OclMessage, WeatherMessage } from '@atsu/common/messages';
+import { AtisMessage, AtisType, AtsuMessage, AtsuMessageType, Conversion, CpdlcMessage, DclMessage, FreetextMessage, OclMessage, WeatherMessage } from '@atsu/common/messages';
 import { PositionReportData } from '@atsu/common/types';
 import { EventBus, EventSubscriber, Publisher } from 'msfssdk';
 
@@ -88,6 +88,14 @@ export class FmsInputBus {
         if (callback !== null) callback();
     }
 
+    private static enhanceReceivedMessages<T extends AtsuMessage>(messages: T[]): T[] {
+        const enhancedMessages = [];
+
+        messages.forEach((message) => enhancedMessages.push(Conversion.messageDataToMessage(message)));
+
+        return enhancedMessages;
+    }
+
     constructor(private readonly bus: EventBus) {
         this.subscriber = this.bus.getSubscriber<AtsuFmsMessages>();
         this.publisher = this.bus.getPublisher<AtsuFmsMessages>();
@@ -96,7 +104,7 @@ export class FmsInputBus {
     public initialize(): void {
         this.subscriber.on('sendFreetextMessage').handle((data) => {
             if (this.callbacks.sendMessage !== null) {
-                this.callbacks.sendMessage(data.message).then((code) => {
+                this.callbacks.sendMessage(Conversion.messageDataToMessage(data.message)).then((code) => {
                     this.publisher.pub('requestAtsuStatusCode', { requestId: data.requestId, code }, true, false);
                 });
             }
@@ -140,12 +148,12 @@ export class FmsInputBus {
                 this.publisher.pub('positionReport', { requestId: data, data: this.callbacks.positionReportData() }, true, false);
             }
         });
-        this.subscriber.on('registerAtisMessages').handle((data) => this.fireAndForgetWithParameter(data, this.callbacks.registerMessages));
-        this.subscriber.on('registerCpdlcMessages').handle((data) => this.fireAndForgetWithParameter(data, this.callbacks.registerMessages));
-        this.subscriber.on('registerDclMessages').handle((data) => this.fireAndForgetWithParameter(data, this.callbacks.registerMessages));
-        this.subscriber.on('registerOclMessages').handle((data) => this.fireAndForgetWithParameter(data, this.callbacks.registerMessages));
-        this.subscriber.on('registerWeatherMessages').handle((data) => this.fireAndForgetWithParameter(data, this.callbacks.registerMessages));
-        this.subscriber.on('updateMessage').handle((data) => this.fireAndForgetWithParameter(data, this.callbacks.updateMessage));
+        this.subscriber.on('registerAtisMessages').handle((data) => this.fireAndForgetWithParameter(FmsInputBus.enhanceReceivedMessages(data), this.callbacks.registerMessages));
+        this.subscriber.on('registerCpdlcMessages').handle((data) => this.fireAndForgetWithParameter(FmsInputBus.enhanceReceivedMessages(data), this.callbacks.registerMessages));
+        this.subscriber.on('registerDclMessages').handle((data) => this.fireAndForgetWithParameter(FmsInputBus.enhanceReceivedMessages(data), this.callbacks.registerMessages));
+        this.subscriber.on('registerOclMessages').handle((data) => this.fireAndForgetWithParameter(FmsInputBus.enhanceReceivedMessages(data), this.callbacks.registerMessages));
+        this.subscriber.on('registerWeatherMessages').handle((data) => this.fireAndForgetWithParameter(FmsInputBus.enhanceReceivedMessages(data), this.callbacks.registerMessages));
+        this.subscriber.on('updateMessage').handle((data) => this.fireAndForgetWithParameter(Conversion.messageDataToMessage(data), this.callbacks.updateMessage));
         this.subscriber.on('messageRead').handle((data) => this.fireAndForgetWithParameter(data, this.callbacks.messageRead));
         this.subscriber.on('removeMessage').handle((data) => this.fireAndForgetWithParameter(data, this.callbacks.removeMessage));
         this.subscriber.on('cleanupAtcMessages').handle(() => this.fireAndForgetWithoutParameter(this.callbacks.cleanupAtcMessages));
