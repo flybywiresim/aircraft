@@ -393,6 +393,7 @@ export class Atc {
     }
 
     public cleanupMessages(): void {
+        this.messageQueue.forEach((message) => this.atsu.digitalOutputs.FmsBus.deleteMessage(message.UniqueMessageID));
         this.messageQueue = [];
         this.mailboxBus.reset();
         this.atisMessages = new Map();
