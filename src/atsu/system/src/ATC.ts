@@ -533,7 +533,7 @@ export class Atc {
                 let code = AtsuStatusCodes.Ok;
 
                 const atis = retval[1] as AtisMessage;
-                this.atsu.timestampMessage(atis);
+                atis.Timestamp = AtsuTimestamp.fromClock(this.atsu.digitalInputs.UtcClock);
                 atis.parseInformation();
 
                 let printable = false;

@@ -10,6 +10,7 @@ import { coordinateToString, timestampToString } from '@atsu/common/components/C
 import { InputValidation } from '@atsu/common/components/InputValidation';
 import { FmsRouteData } from '@atsu/common/databus';
 import { PositionReportData } from '@atsu/common/types';
+import { AtsuTimestamp } from '@atsu/common/messages';
 import { Aoc } from './AOC';
 import { Atc } from './ATC';
 import { Datalink } from './com/Datalink';
@@ -288,17 +289,10 @@ export class Atsu {
         return this.fltNo;
     }
 
-    public timestampMessage(message: AtsuMessage): void {
-        message.Timestamp.Year = this.digitalInputs.UtcClock.year;
-        message.Timestamp.Month = this.digitalInputs.UtcClock.month;
-        message.Timestamp.Day = this.digitalInputs.UtcClock.dayOfMonth;
-        message.Timestamp.Seconds = this.digitalInputs.UtcClock.secondsOfDay;
-    }
-
     public async sendMessage(message: AtsuMessage): Promise<AtsuStatusCodes> {
         let retval = AtsuStatusCodes.UnknownMessage;
 
-        this.timestampMessage(message);
+        message.Timestamp = AtsuTimestamp.fromClock(this.digitalInputs.UtcClock);
 
         if (Aoc.isRelevantMessage(message)) {
             retval = await this.aoc.sendMessage(message);
@@ -328,7 +322,7 @@ export class Atsu {
 
         messages.forEach((message) => {
             message.UniqueMessageID = ++this.messageCounter;
-            this.timestampMessage(message);
+            message.Timestamp = AtsuTimestamp.fromClock(this.digitalInputs.UtcClock);
         });
 
         if (this.ats623.isRelevantMessage(messages[0])) {
