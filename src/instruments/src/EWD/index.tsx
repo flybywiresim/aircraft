@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { DisplayUnit } from '@instruments/common/displayUnit';
 import { render } from '../Common';
 import UpperDisplay from './elements/UpperDisplay';
@@ -27,7 +27,6 @@ export const EWD: React.FC = () => (
             <ADV x={483} y={530} active={false} />
             <DownArrow x={481} y={736} active={false} />
             <PseudoFWC />
-            {/* sd */}
         </svg>
     </DisplayUnit>
 );
