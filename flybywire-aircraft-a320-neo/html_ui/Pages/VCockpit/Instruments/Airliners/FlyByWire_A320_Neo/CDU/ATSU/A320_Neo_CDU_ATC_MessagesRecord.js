@@ -29,7 +29,7 @@ class CDUAtcMessagesRecord {
         mcdu.page.Current = mcdu.page.ATCMessageRecord;
 
         if (!messages) {
-            messages = mcdu.atsu.messages();
+            messages = mcdu.atsu.atcMessages();
         }
 
         // regular update due to showing dynamic data on this page
