@@ -197,12 +197,12 @@ export class Atsu {
             flightState: {
                 lat: this.digitalInputs.PresentPosition.latitude.value,
                 lon: this.digitalInputs.PresentPosition.longitude.value,
-                altitude: this.digitalInputs.PresentPosition.altitude.value,
-                heading: this.digitalInputs.PresentPosition.heading.value,
-                track: this.digitalInputs.PresentPosition.track.value,
-                indicatedAirspeed: machMode ? this.digitalInputs.PresentDynamics.mach.value : this.digitalInputs.PresentDynamics.computedAirspeed.value,
-                groundSpeed: this.digitalInputs.PresentDynamics.groundSpeed.value,
-                verticalSpeed: this.digitalInputs.PresentDynamics.verticalSpeed.value,
+                altitude: Math.round(this.digitalInputs.PresentPosition.altitude.value),
+                heading: Math.round(this.digitalInputs.PresentPosition.heading.value),
+                track: Math.round(this.digitalInputs.PresentPosition.track.value),
+                indicatedAirspeed: machMode ? this.digitalInputs.PresentDynamics.mach.value : Math.round(this.digitalInputs.PresentDynamics.computedAirspeed.value),
+                groundSpeed: Math.round(this.digitalInputs.PresentDynamics.groundSpeed.value),
+                verticalSpeed: Math.round(this.digitalInputs.PresentDynamics.verticalSpeed.value),
             },
             autopilot: {
                 apActive: this.digitalInputs.AutopilotData.active.value !== 0,
