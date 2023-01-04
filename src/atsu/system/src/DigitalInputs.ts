@@ -1,5 +1,5 @@
 import { AtsuFmsMessages, FmsRouteData } from '@atsu/common/databus';
-import { Clock } from '@atsu/common/types';
+import { Clock, Waypoint } from '@atsu/common/types';
 import { FmsInputBus } from '@atsu/system/databus/FmsBus';
 import { Arinc429Word } from '@shared/arinc429';
 import { FmgcFlightPhase } from '@shared/flightphase';
@@ -15,15 +15,7 @@ export class DigitalInputs {
         AtcMessageButtonBusTypes & ClockDataBusTypes & FmgcDataBusTypes & FwcDataBusTypes & TransponderDataBusTypes & AtsuFmsMessages
     > = null;
 
-    public UtcClock: Clock = {
-        year: 0,
-        month: 0,
-        dayOfMonth: 0,
-        hour: 0,
-        minute: 0,
-        second: 0,
-        secondsOfDay: 0,
-    };
+    public UtcClock: Clock = new Clock();
 
     public PresentPosition: {
         latitude: Arinc429Word,
@@ -122,6 +114,14 @@ export class DigitalInputs {
         this.subscriber = this.bus.getSubscriber<AtcMessageButtonBusTypes & ClockDataBusTypes & FmgcDataBusTypes & FwcDataBusTypes & TransponderDataBusTypes & AtsuFmsMessages>();
     }
 
+    // needed to enhance structure by functions that are lost during the event-transmission
+    private static enhanceWaypoint(waypoint: Waypoint): Waypoint {
+        const retval = new Waypoint(waypoint.ident);
+        retval.altitude = waypoint.altitude;
+        retval.utc = waypoint.utc;
+        return retval;
+    }
+
     public connectedCallback(): void {
         this.atcMessageButtonBus.connectedCallback();
         this.clockBus.connectedCallback();
@@ -177,7 +177,24 @@ export class DigitalInputs {
 
         this.subscriber.on('routeData').handle((route) => {
             this.fmsBus.newRouteDataReceived(route);
-            this.FlightRoute = route;
+
+            this.FlightRoute.lastWaypoint = null;
+            this.FlightRoute.activeWaypoint = null;
+            this.FlightRoute.nextWaypoint = null;
+            this.FlightRoute.destination = null;
+
+            if (route.lastWaypoint !== null) {
+                this.FlightRoute.lastWaypoint = DigitalInputs.enhanceWaypoint(route.lastWaypoint);
+            }
+            if (route.activeWaypoint !== null) {
+                this.FlightRoute.activeWaypoint = DigitalInputs.enhanceWaypoint(route.activeWaypoint);
+            }
+            if (route.nextWaypoint !== null) {
+                this.FlightRoute.nextWaypoint = DigitalInputs.enhanceWaypoint(route.nextWaypoint);
+            }
+            if (route.destination !== null) {
+                this.FlightRoute.destination = DigitalInputs.enhanceWaypoint(route.destination);
+            }
         });
     }
 
