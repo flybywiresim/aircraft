@@ -1,6 +1,7 @@
 //  Copyright (c) 2022 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
+import { Clock } from '../types';
 import { timestampToString } from '../components/Convert';
 
 /**
@@ -30,5 +31,14 @@ export class AtsuTimestamp {
 
     public fmsTimestamp(): string {
         return timestampToString(this.Seconds);
+    }
+
+    public static fromClock(clock: Clock): AtsuTimestamp {
+        const timestamp = new AtsuTimestamp();
+        timestamp.Year = clock.year;
+        timestamp.Month = clock.month;
+        timestamp.Day = clock.dayOfMonth;
+        timestamp.Seconds = clock.secondsOfDay;
+        return timestamp;
     }
 }
