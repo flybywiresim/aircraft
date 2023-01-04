@@ -19,7 +19,6 @@ export const RealismPage = () => {
     const [dmcSelfTestTime, setDmcSelfTestTime] = usePersistentProperty('CONFIG_SELF_TEST_TIME', '12');
     const [mcduInput, setMcduInput] = usePersistentProperty('MCDU_KB_INPUT', 'DISABLED');
     const [mcduTimeout, setMcduTimeout] = usePersistentProperty('CONFIG_MCDU_KB_TIMEOUT', '60');
-    const [boardingRate, setBoardingRate] = usePersistentProperty('CONFIG_BOARDING_RATE', 'REAL');
     const [realisticTiller, setRealisticTiller] = usePersistentNumberProperty('REALISTIC_TILLER_ENABLED', 0);
     const [homeCockpit, setHomeCockpit] = usePersistentProperty('HOME_COCKPIT_ENABLED', '0');
     const [autoFillChecklists, setAutoFillChecklists] = usePersistentNumberProperty('EFB_AUTOFILL_CHECKLISTS', 0);
@@ -37,12 +36,6 @@ export const RealismPage = () => {
         { name: t('Settings.Instant'), setting: '0' },
         { name: t('Settings.Fast'), setting: '5' },
         { name: t('Settings.Real'), setting: '12' },
-    ];
-
-    const boardingRateButtons: ButtonType[] = [
-        { name: t('Settings.Instant'), setting: 'INSTANT' },
-        { name: t('Settings.Fast'), setting: 'FAST' },
-        { name: t('Settings.Real'), setting: 'REAL' },
     ];
 
     return (
@@ -69,19 +62,6 @@ export const RealismPage = () => {
                         <SelectItem
                             onSelect={() => setDmcSelfTestTime(button.setting)}
                             selected={dmcSelfTestTime === button.setting}
-                        >
-                            {button.name}
-                        </SelectItem>
-                    ))}
-                </SelectGroup>
-            </SettingItem>
-
-            <SettingItem name={t('Settings.Realism.BoardingTime')}>
-                <SelectGroup>
-                    {boardingRateButtons.map((button) => (
-                        <SelectItem
-                            onSelect={() => setBoardingRate(button.setting)}
-                            selected={boardingRate === button.setting}
                         >
                             {button.name}
                         </SelectItem>
