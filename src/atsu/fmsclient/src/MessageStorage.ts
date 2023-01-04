@@ -57,10 +57,13 @@ export class MessageStorage {
         this.subscriber.on('atcAtisReports').handle((reports) => {
             this.atisReports = new Map();
 
-            reports.forEach((messages, icao) => {
-                const atisMessages: AtisMessage[] = [];
-                messages.forEach((message) => atisMessages.push(Conversion.messageDataToMessage(message)));
-                this.atisReports.set(icao, atisMessages);
+            reports.forEach((message) => {
+                const enhancedMessage = Conversion.messageDataToMessage(message);
+                if (this.atisReports.has(enhancedMessage.Reports[0].airport)) {
+                    this.atisReports.get(enhancedMessage.Reports[0].airport).push(enhancedMessage);
+                } else {
+                    this.atisReports.set(enhancedMessage.Reports[0].airport, [enhancedMessage]);
+                }
             });
         });
         this.subscriber.on('monitoredMessages').handle((messages) => this.atcMonitoredMessages = messages);

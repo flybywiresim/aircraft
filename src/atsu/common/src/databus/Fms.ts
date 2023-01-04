@@ -73,7 +73,7 @@ export interface AtsuFmsMessages {
 
     // synchronization stream from ATSU to FMS
     activeAtisAutoUpdates: string[];
-    atcAtisReports: Map<string, AtisMessage[]>;
+    atcAtisReports: AtisMessage[];
     printAtisReportsPrint: boolean;
     atcStationStatus: { current: string; next: string; notificationTime: number; mode: FansMode; logonInProgress: boolean };
     monitoredMessages: CpdlcMessage[];

@@ -387,8 +387,10 @@ export class Atc {
     }
 
     private sendAtisReports(): void {
-        const reports: Map<string, AtisMessage[]> = new Map();
-        this.atisMessages.forEach((data, icao) => reports.set(icao, data[1]));
+        let reports: AtisMessage[] = [];
+        this.atisMessages.forEach((data) => {
+            reports = reports.concat(...data[1]);
+        });
         this.atsu.digitalOutputs.FmsBus.sendAtcAtisReports(reports);
     }
 

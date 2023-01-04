@@ -194,7 +194,7 @@ export class FmsOutputBus {
         this.publisher.pub('activeAtisAutoUpdates', icaos, true, false);
     }
 
-    public sendAtcAtisReports(reports: Map<string, AtisMessage[]>): void {
+    public sendAtcAtisReports(reports: AtisMessage[]): void {
         this.publisher.pub('atcAtisReports', reports, true, false);
     }
 
