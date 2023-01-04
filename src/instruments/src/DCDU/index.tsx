@@ -10,6 +10,7 @@ import {
     CpdlcMessage,
     CpdlcMessageMonitoringState,
     CpdlcMessageExpectedResponseType,
+    Conversion,
 } from '@atsu/common/messages';
 import { AtsuMailboxMessages, MailboxStatusMessage } from '@atsu/common/databus/Mailbox';
 import { SemanticResponseButtons } from './elements/SemanticResponseButtons';
@@ -259,56 +260,59 @@ const DCDU: React.FC = () => {
                 return;
             }
 
-            if (cpdlcMessages.length !== 0) {
+            const enhancedMessages: CpdlcMessage[] = [];
+            cpdlcMessages.forEach((message) => enhancedMessages.push(Conversion.messageDataToMessage(message)));
+
+            if (enhancedMessages.length !== 0) {
                 const newMessageMap = new Map<number, DcduMessageBlock>(messagesRef.current);
-                const dcduBlock = newMessageMap.get(cpdlcMessages[0].UniqueMessageID);
+                const dcduBlock = newMessageMap.get(enhancedMessages[0].UniqueMessageID);
 
                 if (dcduBlock !== undefined) {
                     // update the communication states and response
-                    dcduBlock.messages = cpdlcMessages;
+                    dcduBlock.messages = enhancedMessages;
 
                     if (dcduBlock.statusMessage === MailboxStatusMessage.NoMessage) {
-                        if (cpdlcMessages[0].MessageMonitoring === CpdlcMessageMonitoringState.Monitoring) {
+                        if (enhancedMessages[0].MessageMonitoring === CpdlcMessageMonitoringState.Monitoring) {
                             dcduBlock.statusMessage = MailboxStatusMessage.Monitoring;
-                        } else if (cpdlcMessages[0].MessageMonitoring === CpdlcMessageMonitoringState.Cancelled) {
+                        } else if (enhancedMessages[0].MessageMonitoring === CpdlcMessageMonitoringState.Cancelled) {
                             dcduBlock.statusMessage = MailboxStatusMessage.MonitoringCancelled;
                         }
                     } else if (dcduBlock.statusMessage === MailboxStatusMessage.Monitoring) {
-                        if (cpdlcMessages[0].MessageMonitoring === CpdlcMessageMonitoringState.Cancelled) {
+                        if (enhancedMessages[0].MessageMonitoring === CpdlcMessageMonitoringState.Cancelled) {
                             dcduBlock.statusMessage = MailboxStatusMessage.MonitoringCancelled;
-                        } else if (cpdlcMessages[0].MessageMonitoring !== CpdlcMessageMonitoringState.Monitoring) {
+                        } else if (enhancedMessages[0].MessageMonitoring !== CpdlcMessageMonitoringState.Monitoring) {
                             dcduBlock.statusMessage = MailboxStatusMessage.NoMessage;
                         }
-                    } else if (cpdlcMessages[0].MessageMonitoring === CpdlcMessageMonitoringState.Finished) {
+                    } else if (enhancedMessages[0].MessageMonitoring === CpdlcMessageMonitoringState.Finished) {
                         dcduBlock.statusMessage = MailboxStatusMessage.NoMessage;
                     }
 
                     // response sent
-                    if (cpdlcMessages[0].Response?.ComStatus === AtsuMessageComStatus.Sent) {
+                    if (enhancedMessages[0].Response?.ComStatus === AtsuMessageComStatus.Sent) {
                         dcduBlock.response = -1;
                     }
                 } else {
                     const message = new DcduMessageBlock();
-                    message.messages = cpdlcMessages;
+                    message.messages = enhancedMessages;
                     message.timestamp = new Date().getTime();
-                    if (cpdlcMessages[0].MessageMonitoring === CpdlcMessageMonitoringState.Monitoring) {
+                    if (enhancedMessages[0].MessageMonitoring === CpdlcMessageMonitoringState.Monitoring) {
                         message.statusMessage = MailboxStatusMessage.Monitoring;
-                    } else if (cpdlcMessages[0].MessageMonitoring === CpdlcMessageMonitoringState.Cancelled) {
+                    } else if (enhancedMessages[0].MessageMonitoring === CpdlcMessageMonitoringState.Cancelled) {
                         message.statusMessage = MailboxStatusMessage.MonitoringCancelled;
                     }
-                    newMessageMap.set(cpdlcMessages[0].UniqueMessageID, message);
+                    newMessageMap.set(enhancedMessages[0].UniqueMessageID, message);
                 }
 
                 // check if we have a semantic response and all data is available
-                if (cpdlcMessages[0].SemanticResponseRequired && cpdlcMessages[0].Response && cpdlcMessages[0].Response.Content) {
-                    const dcduBlock = newMessageMap.get(cpdlcMessages[0].UniqueMessageID);
+                if (enhancedMessages[0].SemanticResponseRequired && enhancedMessages[0].Response && enhancedMessages[0].Response.Content) {
+                    const dcduBlock = newMessageMap.get(enhancedMessages[0].UniqueMessageID);
                     if (dcduBlock) {
                         dcduBlock.semanticResponseIncomplete = false;
                         if (dcduBlock.statusMessage === MailboxStatusMessage.NoFmData || dcduBlock.statusMessage === MailboxStatusMessage.FmsDisplayForModification) {
                             dcduBlock.statusMessage = MailboxStatusMessage.NoMessage;
                         }
 
-                        for (const entry of cpdlcMessages[0].Response.Content[0].Content) {
+                        for (const entry of enhancedMessages[0].Response.Content[0].Content) {
                             if (entry.Value === '') {
                                 dcduBlock.semanticResponseIncomplete = true;
                                 dcduBlock.statusMessage = MailboxStatusMessage.NoFmData;
@@ -319,7 +323,7 @@ const DCDU: React.FC = () => {
                 }
 
                 if (newMessageMap.size === 1) {
-                    const message = newMessageMap.get(cpdlcMessages[0].UniqueMessageID);
+                    const message = newMessageMap.get(enhancedMessages[0].UniqueMessageID);
                     if (message) {
                         message.messageVisible = true;
                     }
