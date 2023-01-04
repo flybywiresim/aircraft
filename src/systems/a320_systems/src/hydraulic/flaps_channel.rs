@@ -166,11 +166,11 @@ impl FlapsChannel {
         // I believe it would make debugging and understanding the state machine harder
         match (cas1, cas2) {
             (Some(cas1), Some(cas2)) if cas1 <= self.kts_100 && cas2 <= self.kts_100 => {
-                println!("GO 1");
+                dprintln!("GO 1");
                 self.auto_command_angle = self.conf1f_flaps
             }
             (Some(cas1), Some(cas2)) if cas1 >= self.kts_210 && cas2 >= self.kts_210 => {
-                println!("GO 2");
+                dprintln!("GO 2");
                 self.auto_command_angle = self.conf1_flaps
             }
             (Some(cas1), _)
@@ -183,7 +183,7 @@ impl FlapsChannel {
                     && cas1 > self.kts_100
                     && !self.flap_auto_command_active =>
             {
-                println!("GO 3");
+                dprintln!("GO 3");
                 self.auto_command_angle = self.conf1_flaps
             }
             (_, Some(cas2))
@@ -196,7 +196,7 @@ impl FlapsChannel {
                     && cas2 > self.kts_100
                     && !self.flap_auto_command_active =>
             {
-                println!("GO 4");
+                dprintln!("GO 4");
                 self.auto_command_angle = self.conf1_flaps
             }
             (Some(cas1), _)
@@ -211,7 +211,7 @@ impl FlapsChannel {
                     && cas1 < self.kts_210
                     && !self.flap_auto_command_active =>
             {
-                println!("GO 5");
+                dprintln!("GO 5");
                 self.auto_command_angle = self.conf1f_flaps
             }
             (_, Some(cas2))
@@ -226,7 +226,7 @@ impl FlapsChannel {
                     && cas2 < self.kts_210
                     && !self.flap_auto_command_active =>
             {
-                println!("GO 6");
+                dprintln!("GO 6");
                 self.auto_command_angle = self.conf1f_flaps
             }
             (Some(cas1), _)
@@ -241,7 +241,7 @@ impl FlapsChannel {
                     && cas1 > self.kts_100
                     && !self.flap_auto_command_active =>
             {
-                println!("GO 7");
+                dprintln!("GO 7");
                 self.auto_command_angle = self.conf1_flaps
             }
             (_, Some(cas2))
@@ -256,7 +256,7 @@ impl FlapsChannel {
                     && cas2 > self.kts_100
                     && !self.flap_auto_command_active =>
             {
-                println!("GO 8");
+                dprintln!("GO 8");
                 self.auto_command_angle = self.conf1_flaps
             }
             (Some(cas1), _)
@@ -269,7 +269,7 @@ impl FlapsChannel {
                     && cas1 < self.kts_210
                     && !self.flap_auto_command_active =>
             {
-                println!("GO 9");
+                dprintln!("GO 9");
                 self.auto_command_angle = self.conf1f_flaps
             }
             (_, Some(cas2))
@@ -282,32 +282,32 @@ impl FlapsChannel {
                     && cas2 < self.kts_210
                     && !self.flap_auto_command_active =>
             {
-                println!("GO 10");
+                dprintln!("GO 10");
                 self.auto_command_angle = self.conf1f_flaps
             }
             // If these are moved at the top, then the other cases are never hit
             // They can be simplified in a single case statement but for clarity
             // they are fully explicit
             (Some(cas1), _) if cas1 > self.kts_100 && cas1 < self.kts_210 => {
-                println!("GO 11");
+                dprintln!("GO 11");
                 self.auto_command_angle = self.auto_command_angle
             }
             (_, Some(cas2)) if cas2 > self.kts_100 && cas2 < self.kts_210 => {
-                println!("GO 12");
+                dprintln!("GO 12");
                 self.auto_command_angle = self.auto_command_angle
             }
             (Some(cas1), Some(cas2))
                 if (cas1 <= self.kts_100 && cas2 >= self.kts_210)
                     || (cas1 >= self.kts_210 && cas2 <= self.kts_100) =>
             {
-                println!("GO 13");
+                dprintln!("GO 13");
                 self.auto_command_angle = self.auto_command_angle
             }
             (None, None) if !self.flap_auto_command_active => {
                 self.auto_command_angle = self.conf1f_flaps
             }
             (None, None) if self.flap_auto_command_active => {
-                println!("GO 14");
+                dprintln!("GO 14");
                 self.auto_command_angle = self.auto_command_angle
             }
             // If this panic is reached, it means a condition has been forgotten!
@@ -358,8 +358,8 @@ impl FlapsChannel {
     ) {
         self.flaps_feedback_angle = flaps_feedback_angle.fppu_angle();
 
-        println!("powerup_reset");
-        println!(
+        dprintln!("powerup_reset");
+        dprintln!(
             "flaps_handle PREV {:?}\tCURR {:?}\tLAST {:?}",
             flaps_handle.previous_position(),
             flaps_handle.current_position(),
@@ -380,7 +380,7 @@ impl FlapsChannel {
                             self.conf1_flaps,
                         ) =>
                 {
-                    println!("START 1");
+                    dprintln!("START 1");
                     self.auto_command_angle = self.conf1_flaps
                 }
                 (Some(cas1), Some(cas2))
@@ -391,7 +391,7 @@ impl FlapsChannel {
                             self.conf1f_flaps,
                         ) =>
                 {
-                    println!("START 2");
+                    dprintln!("START 2");
                     self.auto_command_angle = self.conf1f_flaps
                 }
                 (Some(cas1), _)
@@ -402,7 +402,7 @@ impl FlapsChannel {
                             self.conf1f_flaps,
                         ) =>
                 {
-                    println!("START 3");
+                    dprintln!("START 3");
                     self.auto_command_angle = self.conf1f_flaps
                 }
                 (_, Some(cas2))
@@ -413,7 +413,7 @@ impl FlapsChannel {
                             self.conf1f_flaps,
                         ) =>
                 {
-                    println!("START 4");
+                    dprintln!("START 4");
                     self.auto_command_angle = self.conf1f_flaps
                 }
                 (Some(cas1), _)
@@ -424,7 +424,7 @@ impl FlapsChannel {
                             self.conf1_flaps,
                         ) =>
                 {
-                    println!("START 5");
+                    dprintln!("START 5");
                     self.auto_command_angle = self.conf1_flaps
                 }
                 (_, Some(cas2))
@@ -435,16 +435,16 @@ impl FlapsChannel {
                             self.conf1_flaps,
                         ) =>
                 {
-                    println!("START 6");
+                    dprintln!("START 6");
                     self.auto_command_angle = self.conf1_flaps
                 }
                 (None, None) => {
-                    println!("START 7");
+                    dprintln!("START 7");
                     self.auto_command_angle = self.conf1f_flaps
                 }
                 // If this panic is reached, it means a condition has been forgotten!
                 (_, _) => {
-                    println!("START 8");
+                    dprintln!("START 8");
                     self.auto_command_angle = self.auto_command_angle // Should it be conf1 or conf1f?
                 }
             }
