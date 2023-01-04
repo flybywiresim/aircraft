@@ -12,8 +12,6 @@ use uom::si::{angle::degree, f64::*, velocity::knot};
 use crate::hydraulic::SlatFlapControlComputerMisc;
 // APPUs must agree within 0.45 deg. At position 0 the APPU/FPPU must agree within 0.9 deg, otherwise the APPU/FPPU must agree within 1.3 deg.
 pub struct FlapsChannel {
-    flaps_fppu_angle_id: VariableIdentifier,
-
     flap_auto_command_active: bool,
     auto_command_angle: Angle,
 
@@ -48,10 +46,8 @@ impl FlapsChannel {
     const KNOTS_100: f64 = 100.;
     const KNOTS_210: f64 = 210.;
 
-    pub fn new(context: &mut InitContext) -> Self {
+    pub fn new(_context: &mut InitContext) -> Self {
         Self {
-            flaps_fppu_angle_id: context.get_identifier("FLAPS_FPPU_ANGLE".to_owned()),
-
             flap_auto_command_active: false,
             auto_command_angle: Angle::new::<degree>(0.),
 
@@ -537,7 +533,5 @@ impl FlapsChannel {
     }
 }
 impl SimulationElement for FlapsChannel {
-    fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(&self.flaps_fppu_angle_id, self.flaps_feedback_angle);
-    }
+    fn write(&self, _writer: &mut SimulatorWriter) {}
 }

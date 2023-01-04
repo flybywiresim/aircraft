@@ -11,7 +11,6 @@ use uom::si::{angle::degree, f64::*, velocity::knot};
 use crate::hydraulic::SlatFlapControlComputerMisc;
 
 pub struct SlatsChannel {
-    slats_fppu_angle_id: VariableIdentifier,
     slat_lock_engaged_id: VariableIdentifier,
 
     kts_60: Velocity,
@@ -40,7 +39,6 @@ impl SlatsChannel {
 
     pub fn new(context: &mut InitContext) -> Self {
         Self {
-            slats_fppu_angle_id: context.get_identifier("SLATS_FPPU_ANGLE".to_owned()),
             slat_lock_engaged_id: context.get_identifier("ALPHA_LOCK_ENGAGED".to_owned()),
 
             // slat_lock_active: false,
@@ -292,8 +290,6 @@ impl SlatsChannel {
 }
 impl SimulationElement for SlatsChannel {
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(&self.slats_fppu_angle_id, self.slats_feedback_angle);
-
         writer.write(&self.slat_lock_engaged_id, self.slat_retraction_inhibited);
     }
 }

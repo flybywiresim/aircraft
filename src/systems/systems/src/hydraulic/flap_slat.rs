@@ -6,6 +6,7 @@ use crate::simulation::{
     InitContext, SimulationElement, SimulatorWriter, UpdateContext, VariableIdentifier, Write,
 };
 
+use uom::si::angular_velocity::degree_per_second;
 use uom::si::volume_rate::cubic_inch_per_minute;
 use uom::si::{
     angle::{degree, radian},
@@ -117,6 +118,7 @@ pub struct FlapSlatAssembly {
     angle_left_id: VariableIdentifier,
     angle_right_id: VariableIdentifier,
     ippu_angle_id: VariableIdentifier,
+    fppu_angle_id: VariableIdentifier,
     is_moving_id: VariableIdentifier,
 
     surface_control_arm_position: Angle,
@@ -147,7 +149,7 @@ impl FlapSlatAssembly {
 
     const POSITIONING_THRESHOLD_DEG: f64 = 6.7;
     const ANGULAR_SPEED_LIMIT_FACTOR_WHEN_APROACHING_POSITION: f64 = 0.5;
-    const MIN_ANGULAR_SPEED_TO_REPORT_MOVING: f64 = 0.01;
+    const SYSTEM_JAM_SPEED_DEG_PER_SEC: f64 = 0.31;
     const TARGET_THRESHOLD_DEG: f64 = 0.18;
 
     pub fn new(
@@ -173,6 +175,7 @@ impl FlapSlatAssembly {
             angle_right_id: context.get_identifier(format!("RIGHT_{}_ANGLE", id)),
 
             ippu_angle_id: context.get_identifier(format!("{}_IPPU_ANGLE", id)),
+            fppu_angle_id: context.get_identifier(format!("{}_FPPU_ANGLE", id)),
 
             is_moving_id: context.get_identifier(format!("IS_{}_MOVING", id)),
 
@@ -309,10 +312,15 @@ impl FlapSlatAssembly {
         let mut new_theoretical_max_speed =
             new_theoretical_max_speed_left_side + new_theoretical_max_speed_right_side;
 
-        if self.has_reached_requested_position(self.final_requested_synchro_gear_position) {
+        if self.is_within_limits(
+            self.final_requested_synchro_gear_position,
+            Self::TARGET_THRESHOLD_DEG,
+        ) {
             new_theoretical_max_speed = AngularVelocity::new::<radian_per_second>(0.);
-        } else if self.is_approaching_requested_position(self.final_requested_synchro_gear_position)
-        {
+        } else if self.is_within_limits(
+            self.final_requested_synchro_gear_position,
+            Self::POSITIONING_THRESHOLD_DEG,
+        ) {
             new_theoretical_max_speed *= Self::ANGULAR_SPEED_LIMIT_FACTOR_WHEN_APROACHING_POSITION;
         }
 
@@ -397,21 +405,15 @@ impl FlapSlatAssembly {
         self.left_motor.update_flow(context);
     }
 
-    fn is_approaching_requested_position(&self, synchro_gear_angle_request: Angle) -> bool {
+    fn is_within_limits(&self, synchro_gear_angle_request: Angle, limits: f64) -> bool {
         self.speed.get::<radian_per_second>() > 0.
-            && synchro_gear_angle_request - self.position_feedback()
-                < Angle::new::<degree>(Self::POSITIONING_THRESHOLD_DEG)
+            && synchro_gear_angle_request - self.position_feedback() < Angle::new::<degree>(limits)
             || self.speed.get::<radian_per_second>() < 0.
                 && self.position_feedback() - synchro_gear_angle_request
-                    < Angle::new::<degree>(Self::POSITIONING_THRESHOLD_DEG)
+                    < Angle::new::<degree>(limits)
     }
 
-    fn has_reached_requested_position(&self, synchro_gear_angle_request: Angle) -> bool {
-        (synchro_gear_angle_request - self.position_feedback()).abs()
-            < Angle::new::<degree>(Self::TARGET_THRESHOLD_DEG)
-    }
-
-    pub fn position_feedback(&self) -> Angle {
+    fn position_feedback(&self) -> Angle {
         self.surface_control_arm_position * self.surface_to_synchro_gear_ratio.get::<ratio>()
     }
 
@@ -463,7 +465,7 @@ impl FlapSlatAssembly {
     }
 
     fn is_surface_moving(&self) -> bool {
-        self.speed.abs().get::<radian_per_second>() > Self::MIN_ANGULAR_SPEED_TO_REPORT_MOVING
+        self.speed.abs().get::<degree_per_second>() > Self::SYSTEM_JAM_SPEED_DEG_PER_SEC
     }
 }
 impl SimulationElement for FlapSlatAssembly {
@@ -494,6 +496,7 @@ impl SimulationElement for FlapSlatAssembly {
             ) * 100.,
         );
         writer.write(&self.ippu_angle_id, position_feedback);
+        writer.write(&self.fppu_angle_id, position_feedback);
 
         let flaps_surface_angle = self.flap_surface_angle();
         writer.write(&self.angle_left_id, flaps_surface_angle.get::<degree>());

@@ -702,6 +702,7 @@ mod tests {
         left_position_angle_id: VariableIdentifier,
         right_position_angle_id: VariableIdentifier,
         ippu_angle_id: VariableIdentifier,
+        fppu_angle_id: VariableIdentifier,
         surface_type: String,
     }
     impl SlatFlapGear {
@@ -729,6 +730,7 @@ mod tests {
                     .get_identifier(format!("RIGHT_{}_ANGLE", surface_type)),
 
                 ippu_angle_id: context.get_identifier(format!("{}_IPPU_ANGLE", surface_type)),
+                fppu_angle_id: context.get_identifier(format!("{}_FPPU_ANGLE", surface_type)),
 
                 surface_type: surface_type.to_string(),
             }
@@ -794,6 +796,7 @@ mod tests {
                 self.current_angle / self.max_angle,
             );
             writer.write(&self.ippu_angle_id, self.current_angle);
+            writer.write(&self.fppu_angle_id, self.current_angle);
             writer.write(&self.left_position_angle_id, self.current_angle);
             writer.write(&self.right_position_angle_id, self.current_angle);
         }
