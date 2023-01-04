@@ -49,7 +49,6 @@ export class AtcMessageButtonInputBus {
         this.subscriber.on('msfsButtonActive').whenChanged().handle((active: boolean) => this.buttonActive = active);
         this.subscriber.on('msfsButtonPressed').whenChanged().handle((pressed: number) => {
             if (pressed) {
-                console.log('ATC BTN PRESSED');
                 if (this.buttonActive && this.callbacks.onButtonPressed !== null) {
                     this.callbacks.onButtonPressed();
                 }

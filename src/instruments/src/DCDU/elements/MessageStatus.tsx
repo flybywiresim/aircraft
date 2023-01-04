@@ -1,6 +1,5 @@
 import React from 'react';
 import { AtsuMessageComStatus, AtsuMessageDirection } from '@atsu/common/messages/AtsuMessage';
-import { AtsuTimestamp } from '@atsu/common/messages/AtsuTimestamp';
 import { CpdlcMessageExpectedResponseType, CpdlcMessagesDownlink } from '@atsu/common/messages/CpdlcMessageElements';
 import { CpdlcMessage, CpdlcMessageMonitoringState } from '@atsu/common/messages/CpdlcMessage';
 import { Checkerboard } from './Checkerboard';
