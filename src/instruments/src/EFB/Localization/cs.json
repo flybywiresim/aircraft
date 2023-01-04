@@ -448,6 +448,28 @@
     "TugSpeed": "Rychlost vytlačení",
     "UseControllerInput": "Používat vstup z ovladače"
   },
+  "QuickControls": {
+    "AlignAdirs": "Zarovnat ADIRS",
+    "FinishBoarding": "Dokončit nástup",
+    "OnScreenKeyboard": "Klávesnice na obrazovce",
+    "SimBridge": "SimBridge",
+    "SimBridgeConnected": "připojen",
+    "SimBridgeConnecting": "Připojování…",
+    "SimBridgeOff": "vypnutý",
+    "SimBridgeOffline": "nedostupný",
+    "TT": {
+      "AlignAdirs": "Okamžité zarovnání ADIRS",
+      "AutoBrightness": "Zapnutí/vypnutí automatického jasu",
+      "Brightness": "Nastavení jasu flyPad",
+      "FinishBoarding": "Okamžité dokončení nástupu (boardingu)",
+      "OnScreenKeyboard": "Zapnutí/vypnutí klávesnice na obrazovce",
+      "PowerButton": "Vypnout",
+      "Settings": "Přejít na stránku Nastavení flyPad",
+      "SimBridge": "Ovládání připojení SimBridge",
+      "Sleep": "Uspat"
+    },
+    "Title": "Rychlé ovládání"
+  },
   "Settings": {
     "About": {
       "Title": "O zařízení"
@@ -610,12 +632,21 @@
     "Sep": "Zář",
     "Sun": "Ne",
     "TT": {
+      "Brightness": "Click to change Brightness",
       "ConnectedToLocalApi": "Připojeno k SimBridge",
       "DisconnectedFromLocalApi": "Odpojeno od SimBridge",
+      "QuickControls": "Kliknutím otevřete rychlé ovládání",
       "TurnOffOrShutdownEfb": "Uspat nebo vypnout EFB"
     },
     "Thu": "Čt",
     "Tue": "Út",
     "Wed": "St"
+  },
+  "VersionCheck": {
+    "CurrentVersionText": "Používáte $edition edici s verzí:",
+    "LatestVersionText": "Poslední $edition verze je:",
+    "RecommendationText": "Aktualizujte prosím své letadlo pomocí instalátoru FlyByWire.",
+    "StatusBarWarning": "Zastaralá verze letadla",
+    "Title": "Je dostupná nová verze"
   }
 }
