@@ -103,7 +103,7 @@ impl SlatsChannel {
         cas: Option<Velocity>,
     ) {
         if !(cas.unwrap_or_default() >= self.kts_60 || lgciu.left_and_right_gear_extended(false)) {
-            dprintln!("Exiting update_slat_lock");
+            println!("Exiting update_slat_lock");
             self.slat_alpha_lock_engaged = false;
             return;
         }
@@ -117,27 +117,27 @@ impl SlatsChannel {
                         self.conf1_slats,
                     ) =>
             {
-                dprintln!("S2");
+                println!("S2");
                 self.slat_alpha_lock_engaged = true;
             }
             Some(_) if flaps_handle.current_position() == CSUPosition::OutOfDetent => {
-                dprintln!("S3");
+                println!("S3");
                 self.slat_alpha_lock_engaged = self.slat_alpha_lock_engaged;
             }
             Some(aoa)
                 if aoa < self.slat_lock_low_aoa
                     && flaps_handle.current_position() == CSUPosition::Conf0 && self.slat_alpha_lock_engaged =>
             {
-                dprintln!("S4");
+                println!("S4");
                 self.slat_alpha_lock_engaged = false;
             }
             None if flaps_handle.last_valid_position() == CSUPosition::Conf0 => {
-                dprintln!("S6");
+                println!("S6");
                 self.slat_alpha_lock_engaged = false;
             }
             // Verify if it shall be false or true!
             _ => {
-                dprintln!("S8");
+                println!("S8");
                 self.slat_alpha_lock_engaged = false;
             }
             // panic!(
@@ -151,7 +151,7 @@ impl SlatsChannel {
             self.slat_lock_command_angle = self.conf1_slats
         }
 
-        dprintln!(
+        println!(
             "CAS_MAX {}\tAOA {}",
             cas.unwrap_or_default().get::<knot>(),
             aoa.unwrap_or_default().get::<degree>()
@@ -166,7 +166,7 @@ impl SlatsChannel {
         cas: Option<Velocity>,
     ) {
         if !(cas.unwrap_or_default() >= self.kts_60 || lgciu.left_and_right_gear_extended(false)) {
-            dprintln!("Exiting update_slat_lock");
+            println!("Exiting update_slat_lock");
             self.slat_baulk_engaged = false;
             return;
         }
@@ -180,27 +180,27 @@ impl SlatsChannel {
                         self.conf1_slats,
                     ) =>
             {
-                dprintln!("S9");
+                println!("S9");
                 self.slat_baulk_engaged = true;
             }
             Some(_) if flaps_handle.current_position() == CSUPosition::OutOfDetent => {
-                dprintln!("S10");
+                println!("S10");
                 self.slat_baulk_engaged = self.slat_baulk_engaged;
             }
             Some(cas)
                 if cas > self.slat_lock_high_cas
                     && flaps_handle.current_position() == CSUPosition::Conf0 && self.slat_baulk_engaged =>
             {
-                dprintln!("S11");
+                println!("S11");
                 self.slat_baulk_engaged = false;
             }
             None if flaps_handle.last_valid_position() == CSUPosition::Conf0 => {
-                dprintln!("S12");
+                println!("S12");
                 self.slat_baulk_engaged = false;
             }
             // Verify if it shall be false or true!
             _ => {
-                dprintln!("S13");
+                println!("S13");
                 self.slat_baulk_engaged = false;
             }
             // panic!(
@@ -214,7 +214,7 @@ impl SlatsChannel {
             self.slat_lock_command_angle = self.conf1_slats
         }
 
-        dprintln!(
+        println!(
             "CAS_MAX {}\tAOA {}",
             cas.unwrap_or_default().get::<knot>(),
             aoa.unwrap_or_default().get::<degree>()
@@ -230,7 +230,7 @@ impl SlatsChannel {
     ) {
         self.slats_feedback_angle = slats_feedback_angle.fppu_angle();
 
-        dprintln!("powerup_reset");
+        println!("powerup_reset");
 
         if flaps_handle.current_position() != CSUPosition::Conf0 {
             self.slat_baulk_engaged = false;

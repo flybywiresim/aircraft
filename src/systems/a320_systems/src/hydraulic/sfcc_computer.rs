@@ -235,7 +235,7 @@ impl SlatFlapControlComputer {
         self.update_aoa(adiru);
 
         if self.recovered_power {
-            dprintln!("RECOVERED!");
+            println!("RECOVERED!");
             if self.power_off_length > self.transparency_time {
                 self.flap_channel.powerup_reset(
                     flaps_handle,
@@ -520,7 +520,7 @@ impl SimulationElement for SlatFlapControlComputer {
             // If is_powered returns TRUE and the previous is FALSE,
             // it means we have just restored the power
             self.recovered_power = !self.is_powered;
-            dprintln!("recovered_power {}", self.recovered_power);
+            println!("recovered_power {}", self.recovered_power);
         }
         self.is_powered = buses.is_powered(self.powered_by);
     }
@@ -1156,7 +1156,7 @@ mod tests {
 
     #[test]
     fn flaps_test_transparency_time() {
-        dprintln!("POWER OFF");
+        println!("POWER OFF");
         let mut test_bed = test_bed_with()
             .set_dc_ess_bus_power(false)
             .set_dc_2_bus_power(false)
@@ -1179,7 +1179,7 @@ mod tests {
             .read_flap_actual_position_word(1)
             .is_no_computed_data());
 
-        dprintln!("POWER ON");
+        println!("POWER ON");
         test_bed = test_bed
             .set_dc_ess_bus_power(true)
             .set_dc_2_bus_power(true)
@@ -1378,7 +1378,7 @@ mod tests {
             .set_flaps_handle_position(1)
             .run_waiting_for(Duration::from_secs(5));
 
-        dprintln!("Flaps {}", test_bed.get_flaps_fppu_feedback());
+        println!("Flaps {}", test_bed.get_flaps_fppu_feedback());
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1);
         assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(17));
         assert!(test_bed.read_slat_flap_system_status_word(1).get_bit(18));
