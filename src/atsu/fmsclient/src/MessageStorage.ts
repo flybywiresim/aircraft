@@ -66,7 +66,10 @@ export class MessageStorage {
                 }
             });
         });
-        this.subscriber.on('monitoredMessages').handle((messages) => this.atcMonitoredMessages = messages);
+        this.subscriber.on('monitoredMessages').handle((messages) => {
+            this.atcMonitoredMessages = [];
+            messages.forEach((message) => this.atcMonitoredMessages.push(Conversion.messageDataToMessage(message)));
+        });
         this.subscriber.on('resynchronizeAocWeatherMessage').handle((message) => this.resynchronizeAocMessage(Conversion.messageDataToMessage(message)));
         this.subscriber.on('resynchronizeFreetextMessage').handle((message) => this.resynchronizeAocMessage(Conversion.messageDataToMessage(message)));
         this.subscriber.on('resynchronizeCpdlcMessage').handle((message) => this.resynchronizeAtcMessage(Conversion.messageDataToMessage(message)));
