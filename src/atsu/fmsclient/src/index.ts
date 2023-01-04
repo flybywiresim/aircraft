@@ -18,9 +18,12 @@ import { FlightPhaseManager } from '@fmgc/flightphase';
 import { FlightPlanManager } from '@fmgc/index';
 import { EventBus, EventSubscriber, Publisher } from 'msfssdk';
 import { FlightPlanSynchronization } from './FlightPlanSynchronization';
+import { MessageStorage } from './MessageStorage';
 
 export class FmsClient {
     private readonly bus: EventBus;
+
+    private readonly messageStorage: MessageStorage;
 
     private readonly flightPlan: FlightPlanSynchronization;
 
@@ -42,8 +45,6 @@ export class FmsClient {
 
     private atisAutoUpdates: string[] = [];
 
-    private atcAtisReports: Map<string, AtisMessage[]> = new Map();
-
     private atisReportsPrintActive: boolean = false;
 
     private atcStationStatus: { current: string; next: string; notificationTime: number; mode: FansMode; logonInProgress: boolean } = {
@@ -54,34 +55,26 @@ export class FmsClient {
         logonInProgress: false,
     };
 
-    private atcMessagesBuffer: CpdlcMessage[] = [];
-
-    private atcMonitoredMessages: CpdlcMessage[] = [];
-
-    private aocUplinkMessages: AtsuMessage[] = [];
-
-    private aocDownlinkMessages: AtsuMessage[] = [];
-
     private automaticPositionReportIsActive: boolean = false;
 
     private fms: any = null;
 
     constructor(fms: any, flightPlanManager: FlightPlanManager, flightPhaseManager: FlightPhaseManager) {
-        this.fms = fms;
-
         this.bus = new EventBus();
         this.publisher = this.bus.getPublisher<AtsuFmsMessages>();
         this.subscriber = this.bus.getSubscriber<AtsuFmsMessages>();
+
+        this.fms = fms;
+        this.flightPlan = new FlightPlanSynchronization(this.bus, flightPlanManager, flightPhaseManager);
+        this.messageStorage = new MessageStorage(this.subscriber);
 
         // register the streaming handlers
         this.subscriber.on('atsuSystemStatus').handle((status) => this.fms.addNewAtsuMessage(status));
         this.subscriber.on('messageModify').handle((message) => this.modificationMessage = message);
         this.subscriber.on('printMessage').handle((message) => this.printMessage(message));
         this.subscriber.on('activeAtisAutoUpdates').handle((airports) => this.atisAutoUpdates = airports);
-        this.subscriber.on('atcAtisReports').handle((reports) => this.atcAtisReports = reports);
         this.subscriber.on('printAtisReportsPrint').handle((active) => this.atisReportsPrintActive = active);
         this.subscriber.on('atcStationStatus').handle((status) => this.atcStationStatus = status);
-        this.subscriber.on('monitoredMessages').handle((messages) => this.atcMonitoredMessages = messages);
         this.subscriber.on('maxUplinkDelay').handle((delay) => this.maxUplinkDelay = delay);
         this.subscriber.on('automaticPositionReportActive').handle((active) => this.automaticPositionReportIsActive = active);
 
@@ -131,8 +124,6 @@ export class FmsClient {
                 return true;
             });
         });
-
-        this.flightPlan = new FlightPlanSynchronization(this.bus, flightPlanManager, flightPhaseManager);
     }
 
     public maxUplinkDelay: number = -1;
@@ -248,8 +239,8 @@ export class FmsClient {
     }
 
     public atisReports(icao: string): AtisMessage[] {
-        if (this.atcAtisReports.has(icao)) {
-            return this.atcAtisReports.get(icao);
+        if (this.messageStorage.atisReports.has(icao)) {
+            return this.messageStorage.atisReports.get(icao);
         }
         return [];
     }
@@ -335,19 +326,19 @@ export class FmsClient {
     }
 
     public aocInputMessages(): AtsuMessage[] {
-        return this.aocUplinkMessages;
+        return this.messageStorage.aocUplinkMessages;
     }
 
     public aocOutputMessages(): AtsuMessage[] {
-        return this.aocDownlinkMessages;
+        return this.messageStorage.aocDownlinkMessages;
     }
 
     public atcMessages(): CpdlcMessage[] {
-        return this.atcMessagesBuffer;
+        return this.messageStorage.atcMessagesBuffer;
     }
 
     public monitoredMessages(): CpdlcMessage[] {
-        return this.atcMonitoredMessages;
+        return this.messageStorage.atcMonitoredMessages;
     }
 
     public cleanupAtcMessages(): void {
