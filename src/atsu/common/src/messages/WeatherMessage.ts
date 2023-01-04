@@ -8,7 +8,7 @@ import { wordWrap } from '../components/Convert';
  * Defines the general weather message format
  */
 export class WeatherMessage extends AtsuMessage {
-    public Reports = [];
+    public Reports: { airport: string; report: string }[] = [];
 
     constructor() {
         super();
@@ -60,5 +60,12 @@ export class WeatherMessage extends AtsuMessage {
         }
 
         return message;
+    }
+
+    public deserialize(jsonData: Record<string, unknown>): void {
+        super.deserialize(jsonData);
+        (jsonData.Reports as { airport: string; report: string; }[]).forEach((report) => {
+            this.Reports.push({ airport: report.airport, report: report.report });
+        });
     }
 }

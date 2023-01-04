@@ -68,7 +68,7 @@ export class AtsuMessage {
     }
 
     // used to deserialize event data
-    public deserialize(jsonData: Record<string, unknown>) {
+    public deserialize(jsonData: Record<string, unknown> | AtsuMessage) {
         this.Network = jsonData.Network as AtsuMessageNetwork;
         this.UniqueMessageID = jsonData.UniqueMessageID as number;
         if (jsonData.Timestamp) {
