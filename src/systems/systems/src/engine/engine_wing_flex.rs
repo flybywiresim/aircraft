@@ -1,9 +1,12 @@
+use std::time::Duration;
+
 use crate::{
     hydraulic::SpringPhysics,
     shared::random_from_normal_distribution,
+    shared::update_iterator::MaxStepLoop,
     simulation::{
-        InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
-        SimulatorWriter, UpdateContext, VariableIdentifier, Write,
+        InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
+        SimulatorWriter, StartState, UpdateContext, VariableIdentifier, Write,
     },
 };
 
@@ -150,5 +153,42 @@ impl Debug for EngineFlexPhysics {
             "\nEngine Flex=> CG [{:.2};{:.2};{:.2}]",
             self.cg_position[0], self.cg_position[1], self.cg_position[2]
         )
+    }
+}
+
+pub struct EnginesFlexiblePhysics<const N: usize> {
+    engines_flex_updater: MaxStepLoop,
+    engines_flex: Vec<EngineFlexPhysics>,
+}
+impl<const N: usize> EnginesFlexiblePhysics<N> {
+    const ENGINES_FLEX_SIM_TIME_STEP: Duration = Duration::from_millis(10);
+
+    pub fn new(context: &mut InitContext) -> Self {
+        let mut all_engines: Vec<EngineFlexPhysics> = vec![];
+        for engine_number in 1..=N {
+            all_engines.push(EngineFlexPhysics::new(context, engine_number));
+        }
+
+        Self {
+            engines_flex_updater: MaxStepLoop::new(Self::ENGINES_FLEX_SIM_TIME_STEP),
+            engines_flex: all_engines,
+        }
+    }
+
+    pub fn update(&mut self, context: &UpdateContext) {
+        self.engines_flex_updater.update(context);
+
+        for cur_time_step in self.engines_flex_updater {
+            for engine_flex in &mut self.engines_flex {
+                engine_flex.update(&context.with_delta(cur_time_step));
+            }
+        }
+    }
+}
+impl SimulationElement for EnginesFlexiblePhysics<4> {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        accept_iterable!(self.engines_flex, visitor);
+
+        visitor.visit(self);
     }
 }

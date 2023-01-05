@@ -28,6 +28,7 @@ use systems::{
         AuxiliaryPowerUnitFireOverheadPanel, AuxiliaryPowerUnitOverheadPanel,
     },
     electrical::{Electricity, ElectricitySource, ExternalPowerSource},
+    engine::engine_wing_flex::EnginesFlexiblePhysics,
     engine::{leap_engine::LeapEngine, EngineFireOverheadPanel},
     hydraulic::brake_circuit::AutobrakePanel,
     landing_gear::{LandingGear, LandingGearControlInterfaceUnitSet},
@@ -67,6 +68,7 @@ pub struct A380 {
     pressurization_overhead: PressurizationOverheadPanel,
     pneumatic: A380Pneumatic,
     radio_altimeters: A380RadioAltimeters,
+    engines_flex_physics: EnginesFlexiblePhysics<4>,
 }
 impl A380 {
     pub fn new(context: &mut InitContext) -> A380 {
@@ -108,6 +110,7 @@ impl A380 {
             pressurization_overhead: PressurizationOverheadPanel::new(context),
             pneumatic: A380Pneumatic::new(context),
             radio_altimeters: A380RadioAltimeters::new(context),
+            engines_flex_physics: EnginesFlexiblePhysics::new(context),
         }
     }
 }
@@ -218,6 +221,8 @@ impl Aircraft for A380 {
             &self.pressurization_overhead,
             [self.lgcius.lgciu1(), self.lgcius.lgciu2()],
         );
+
+        self.engines_flex_physics.update(context);
     }
 }
 impl SimulationElement for A380 {
@@ -249,6 +254,7 @@ impl SimulationElement for A380 {
         self.pressurization.accept(visitor);
         self.pressurization_overhead.accept(visitor);
         self.pneumatic.accept(visitor);
+        self.engines_flex_physics.accept(visitor);
 
         visitor.visit(self);
     }
