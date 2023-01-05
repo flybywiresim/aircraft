@@ -19,7 +19,7 @@
 1. [EFB] Fix and improve pushback system and add API documentation - @frankkopp (Frank Kopp)
 1. [RMP] RMPs navigation backup - Julian Sebline (Julian Sebline#8476 on Discord)
 1. [SEC] Fix GND SPLR logic, add missing GND SPLR partial extension condition - @lukecologne (luke)
-1. [FMGC] Improved importing flight plans from MSFS World Map - @frankkopp (Frank Kopp)  
+1. [FMGC] Improved importing flight plans from MSFS World Map - @frankkopp (Frank Kopp)
 1. [EFB] Added boarding time indication to Payload page - @ChristianLutzCL (Christian Lutz) @frankkopp (Frank Kopp)
 
 ## 0.9.0
@@ -1157,3 +1157,4 @@
 1. [ISIS] Fixed issue where ISIS was allowing a bug to be set while in the OFF state - Patrick Macken (@Pat M on
    Discord)
 1. [EFB] Added estimated boarding time to Payload screen - @ChristianLutzCL (Christian Lutz)
+1. [EFB] Removed redundant boarding rate setting from Realism Settings screen - @MicahBCode (Mischa Binder)
