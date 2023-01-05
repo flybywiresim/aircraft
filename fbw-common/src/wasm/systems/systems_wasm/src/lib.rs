@@ -1,6 +1,5 @@
 #[macro_use]
 pub mod aspects;
-pub mod simbridge;
 mod electrical;
 mod failures;
 mod msfs;
