@@ -285,7 +285,7 @@ export const QuickControls = () => {
 
     return (
         <>
-            <TooltipWrapper text={t('StatusBar.TT.QuickControlsPane')}>
+            <TooltipWrapper text={t('StatusBar.TT.QuickControls')}>
                 <div onClick={() => setShowQuickControlsPane((old) => !old)}>
                     <Gear size={26} />
                 </div>

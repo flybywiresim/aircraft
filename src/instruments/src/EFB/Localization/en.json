@@ -642,9 +642,7 @@
       "ConnectedToLocalApi": "Connected to SimBridge",
       "DisconnectedFromLocalApi": "Disconnected from SimBridge",
       "QuickControls": "Click to open Quick Controls",
-      "TurnOffOrShutdownEfb": "Turn off or Shutdown EFB",
-      "Brightness": "Click to change Brightness",
-      "QuickControls": "Click to open Quick Controls"
+      "TurnOffOrShutdownEfb": "Turn off or Shutdown EFB"
     },
     "Thu": "Thu",
     "Tue": "Tue",
