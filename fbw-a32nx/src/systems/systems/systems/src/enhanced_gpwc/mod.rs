@@ -9,7 +9,7 @@ use crate::{
         ElectricalBuses,
         LgciuGearExtension,
     },
-    simulation::{InitContext, Read, SimulationElement, SimulationElementVisitor, VariableIdentifier, SimulatorReader},
+    simulation::{InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader, SimulatorWriter, VariableIdentifier, Write},
 };
 use uom::si::{
     angle::degree,
@@ -37,6 +37,12 @@ pub struct EnhancedGPWC {
     navigation_display_range_lookup: Vec<Length>,
     navigation_displays: [NavigationDisplay; 2],
     gear_is_down: bool,
+    // output variables of the EGPWC
+    egpwc_destination_longitude_id: VariableIdentifier,
+    egpwc_destination_latitude_id: VariableIdentifier,
+    egpwc_present_latitude_id: VariableIdentifier,
+    egpwc_present_longitude_id: VariableIdentifier,
+    egpwc_gear_is_down_id: VariableIdentifier,
 }
 
 impl EnhancedGPWC {
@@ -67,6 +73,11 @@ impl EnhancedGPWC {
                 NavigationDisplay::new(context, "R", potentiometer_fo),
             ],
             gear_is_down: true,
+            egpwc_destination_longitude_id: context.get_identifier("EGPWC_DEST_LAT".to_owned()),
+            egpwc_destination_latitude_id: context.get_identifier("EGPWC_DEST_LONG".to_owned()),
+            egpwc_present_latitude_id: context.get_identifier("EGPWC_PRESENT_LAT".to_owned()),
+            egpwc_present_longitude_id: context.get_identifier("EGPWC_PRESENT_LONG".to_owned()),
+            egpwc_gear_is_down_id: context.get_identifier("EGPWC_GEAR_IS_DOWN".to_owned()),
         }
     }
 
@@ -121,6 +132,30 @@ impl SimulationElement for EnhancedGPWC {
 
         self.destination_longitude = Arinc429Word::new(Angle::new::<degree>(destination_long), SignStatus::from(destination_long_ssm));
         self.destination_latitude = Arinc429Word::new(Angle::new::<degree>(destination_lat), SignStatus::from(destination_lat_ssm));
+    }
+
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write_arinc429(
+            &self.egpwc_destination_longitude_id,
+            self.destination_longitude.value(),
+            self.destination_longitude.ssm(),
+        );
+        writer.write_arinc429(
+            &self.egpwc_destination_latitude_id,
+            self.destination_latitude.value(),
+            self.destination_latitude.ssm(),
+        );
+        writer.write_arinc429(
+            &self.egpwc_present_latitude_id,
+            self.longitude.value(),
+            self.longitude.ssm(),
+        );
+        writer.write_arinc429(
+            &self.egpwc_present_longitude_id,
+            self.longitude.value(),
+            self.longitude.ssm(),
+        );
+        writer.write(&self.egpwc_gear_is_down_id, self.gear_is_down);
     }
 
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
