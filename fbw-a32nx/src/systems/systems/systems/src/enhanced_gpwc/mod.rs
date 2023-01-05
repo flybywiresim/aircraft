@@ -99,35 +99,7 @@ impl EnhancedGPWC {
 
         self.navigation_displays
             .iter_mut()
-            .for_each(|display| display.update(&self.navigation_display_range_lookup, self.adiru_data_valid));
-    }
-
-    pub fn is_powered(&self) -> bool {
-        self.is_powered
-    }
-
-    pub fn latitude(&self) -> Angle {
-        self.latitude
-    }
-
-    pub fn longitude(&self) -> Angle {
-        self.longitude
-    }
-
-    pub fn altitude(&self) -> Length {
-        self.altitude
-    }
-
-    pub fn vertical_speed(&self) -> Velocity {
-        self.vertical_speed
-    }
-
-    pub fn destination_longitude(&self) -> Arinc429Word<Angle> {
-        self.destination_longitude
-    }
-
-    pub fn destination_latitude(&self) -> Arinc429Word<Angle> {
-        self.destination_latitude
+            .for_each(|display| display.update(&self.navigation_display_range_lookup, adirs_output.is_fully_aligned(1)));
     }
 }
 

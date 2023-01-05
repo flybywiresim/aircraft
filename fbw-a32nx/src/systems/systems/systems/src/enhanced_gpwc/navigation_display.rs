@@ -49,22 +49,6 @@ impl NavigationDisplay {
         self.range = range_lookup[self.range_knob_position];
         self.terrain_on_nd_active = adiru_data_valid && self.terrain_on_nd_pb_active;
     }
-
-    pub fn terrain_on_nd_active(&self) -> bool {
-        self.terrain_on_nd_active
-    }
-
-    pub fn selected_range(&self) -> Length {
-        self.range
-    }
-
-    pub fn selected_mode(&self) -> u8 {
-        self.mode
-    }
-
-    pub fn terrain_on_nd_potentiometer(&self) -> Ratio {
-        self.potentiometer
-    }
 }
 
 impl SimulationElement for NavigationDisplay {
