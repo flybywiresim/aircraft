@@ -1157,4 +1157,4 @@
 1. [ISIS] Fixed issue where ISIS was allowing a bug to be set while in the OFF state - Patrick Macken (@Pat M on
    Discord)
 1. [EFB] Added estimated boarding time to Payload screen - @ChristianLutzCL (Christian Lutz)
-1. [EFB] Removed redundant boarding rate setting from Realism Settings screen - @MicahBCode (Mischa Binder)
+1. [EFB] Removed redundant boarding rate setting from Realism settings screen - @MicahBCode (Mischa Binder)
