@@ -217,6 +217,15 @@ pub trait PackFlowValveState {
     fn pack_flow_valve_air_flow(&self, pack_id: usize) -> MassRate;
 }
 
+pub trait AdirsMeasurementOutputs {
+    fn is_fully_aligned(&self, adiru_number: usize) -> bool;
+    fn latitude(&self, adiru_number: usize) -> Angle;
+    fn longitude(&self, adiru_number: usize) -> Angle;
+    fn heading(&self, adiru_number: usize) -> Angle;
+    fn vertical_speed(&self, adiru_number: usize) -> Velocity;
+    fn altitude(&self, adiru_number: usize) -> Length;
+}
+
 pub trait GroundSpeed {
     fn ground_speed(&self) -> Velocity;
 }

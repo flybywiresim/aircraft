@@ -4,7 +4,7 @@ use crate::{
     shared::{
         arinc429::{Arinc429Word, SignStatus},
         low_pass_filter::LowPassFilter,
-        AdirsDiscreteOutputs, GroundSpeed, MachNumber,
+        AdirsDiscreteOutputs, AdirsMeasurementOutputs, GroundSpeed, MachNumber,
     },
     simulation::{
         Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -454,6 +454,31 @@ impl AdirsDiscreteOutputs for AirDataInertialReferenceSystem {
         self.adirus[adiru_number - 1].low_speed_warning_4_260kts()
     }
 }
+impl AdirsMeasurementOutputs for AirDataInertialReferenceSystem {
+    fn is_fully_aligned(&self, adiru_number: usize) -> bool {
+        self.adirus[adiru_number - 1].is_fully_aligned()
+    }
+
+    fn latitude(&self, adiru_number: usize) -> Angle {
+        self.adirus[adiru_number - 1].latitude()
+    }
+
+    fn longitude(&self, adiru_number: usize) -> Angle {
+        self.adirus[adiru_number - 1].longitude()
+    }
+
+    fn heading(&self, adiru_number: usize) -> Angle {
+        self.adirus[adiru_number - 1].heading()
+    }
+
+    fn vertical_speed(&self, adiru_number: usize) -> Velocity {
+        self.adirus[adiru_number - 1].vertical_speed()
+    }
+
+    fn altitude(&self, adiru_number: usize) -> Length {
+        self.adirus[adiru_number - 1].altitude()
+    }
+}
 
 struct AirDataInertialReferenceUnit {
     state_id: VariableIdentifier,
@@ -579,6 +604,26 @@ impl AirDataInertialReferenceUnit {
 
     fn low_speed_warning_4_260kts(&self) -> bool {
         self.low_speed_warning_4_260kts
+    }
+
+    fn latitude(&self) -> Angle {
+        self.ir.latitude()
+    }
+
+    fn longitude(&self) -> Angle {
+        self.ir.longitude()
+    }
+
+    fn heading(&self) -> Angle {
+        self.ir.heading()
+    }
+
+    fn vertical_speed(&self) -> Velocity {
+        self.ir.vertical_speed()
+    }
+
+    fn altitude(&self) -> Length {
+        self.adr.altitude()
     }
 }
 impl SimulationElement for AirDataInertialReferenceUnit {
@@ -889,6 +934,10 @@ impl AirDataReference {
 
     fn computed_airspeed_raw(&self) -> Velocity {
         self.computed_airspeed.value()
+    }
+
+    fn altitude(&self) -> Length {
+        self.altitude.value()
     }
 }
 impl TrueAirspeedSource for AirDataReference {
@@ -1561,6 +1610,22 @@ impl InertialReference {
 
     fn has_magnetic_data(&self) -> bool {
         !self.extreme_latitude
+    }
+
+    fn latitude(&self) -> Angle {
+        self.latitude.value()
+    }
+
+    fn longitude(&self) -> Angle {
+        self.longitude.value()
+    }
+
+    fn heading(&self) -> Angle {
+        self.heading.value()
+    }
+
+    fn vertical_speed(&self) -> Velocity {
+        Velocity::new::<foot_per_minute>(self.vertical_speed.value())
     }
 }
 impl SimulationElement for InertialReference {
