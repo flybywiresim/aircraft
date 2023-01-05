@@ -1,15 +1,21 @@
-use crate::shared::arinc429::Arinc429Word;
 use uom::si::{
-    f64::{Angle, Length, Velocity, Ratio},
+    f64::{Length, Ratio},
     length::{nautical_mile},
     ratio::{percent},
 };
 
+pub trait NavigationDisplay {
+    fn terrain_display_active(&self) -> bool;
+    fn display_range(&self) -> Length;
+    fn display_mode(&self) -> u8;
+    fn display_potentiometer(&self) -> Ratio;
+}
+
 pub struct Terrain {
-    pub terrain_display_active: bool,
-    pub efis_nd_range: Length,
-    pub efis_nd_mode: u8,
-    pub potentiometer: Ratio,
+    terrain_display_active: bool,
+    efis_nd_range: Length,
+    efis_nd_mode: u8,
+    potentiometer: Ratio,
 }
 
 impl Terrain {
@@ -24,22 +30,30 @@ impl Terrain {
 
     pub fn update(
         &mut self,
-        latitude: Arinc429Word<Angle>,
-        longitude: Arinc429Word<Angle>,
-        altitude: Arinc429Word<Length>,
-        vertical_speed: Arinc429Word<Velocity>,
+        adiru_data_valid: bool,
         terrain_pb_active: bool,
         efis_nd_range: Length,
         efis_nd_mode: u8,
         potentiometer: Ratio,
     ) {
-        self.terrain_display_active = terrain_pb_active && latitude.is_normal_operation();
-        self.terrain_display_active = self.terrain_display_active && altitude.is_normal_operation() && longitude.is_normal_operation();
         // ND mode 4 is PLAN everything below is ROSE or ARC
-        self.terrain_display_active = self.terrain_display_active && vertical_speed.is_normal_operation() && efis_nd_mode < 4;
-
+        self.terrain_display_active = terrain_pb_active && adiru_data_valid && efis_nd_mode < 4;
         self.efis_nd_range = efis_nd_range;
         self.efis_nd_mode = efis_nd_mode;
         self.potentiometer = potentiometer;
+    }
+}
+impl NavigationDisplay for Terrain {
+    fn terrain_display_active(&self) -> bool {
+        self.terrain_display_active
+    }
+    fn display_range(&self) -> Length {
+        self.efis_nd_range
+    }
+    fn display_mode(&self) -> u8 {
+        self.efis_nd_mode
+    }
+    fn display_potentiometer(&self) -> Ratio {
+        self.potentiometer
     }
 }

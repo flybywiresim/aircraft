@@ -1,27 +1,14 @@
 use std::vec::Vec;
 use crate::{
     simulation::{InitContext, Read, SimulationElement, SimulatorReader, VariableIdentifier},
-    shared::arinc429::{Arinc429Word, SignStatus},
 };
 use uom::si::{
-    angle::degree,
-    f64::{Angle, Length, Velocity, Ratio},
-    length::{foot, nautical_mile},
+    f64::{Length,  Ratio},
+    length::{nautical_mile},
     ratio::{percent},
-    velocity::foot_per_minute,
 };
 
 pub struct InputData {
-    adirs_latitude_id: VariableIdentifier,
-    pub adirs_latitude: Arinc429Word<Angle>,
-    adirs_longitude_id: VariableIdentifier,
-    pub adirs_longitude: Arinc429Word<Angle>,
-    adirs_heading_id: VariableIdentifier,
-    pub adirs_heading: Arinc429Word<Angle>,
-    adirs_altitude_id: VariableIdentifier,
-    pub adirs_altitude: Arinc429Word<Length>,
-    adirs_vertical_speed_id: VariableIdentifier,
-    pub adirs_vertical_speed: Arinc429Word<Velocity>,
     fcu_capt_range_knob_id: VariableIdentifier,
     pub fcu_capt_range: Length,
     fcu_fo_range_knob_id: VariableIdentifier,
@@ -49,16 +36,6 @@ impl InputData {
         range_look_up: Vec<Length>,
     ) -> Self {
         InputData {
-            adirs_latitude_id: context.get_identifier("ADIRS_IR_1_LATITUDE".to_owned()),
-            adirs_latitude: Arinc429Word::new(Angle::new::<degree>(0.0), SignStatus::FailureWarning),
-            adirs_longitude_id: context.get_identifier("ADIRS_IR_1_LONGITUDE".to_owned()),
-            adirs_longitude: Arinc429Word::new(Angle::new::<degree>(0.0), SignStatus::FailureWarning),
-            adirs_heading_id: context.get_identifier("ADIRS_IR_1_HEADING".to_owned()),
-            adirs_heading: Arinc429Word::new(Angle::new::<degree>(0.0), SignStatus::FailureWarning),
-            adirs_altitude_id: context.get_identifier("ADIRS_ADR_1_ALTITUDE".to_owned()),
-            adirs_altitude: Arinc429Word::new(Length::new::<foot>(0.0), SignStatus::FailureWarning),
-            adirs_vertical_speed_id: context.get_identifier("ADIRS_ADR_1_BAROMETRIC_VERTICAL_SPEED".to_owned()),
-            adirs_vertical_speed: Arinc429Word::new(Velocity::new::<foot_per_minute>(0.0), SignStatus::FailureWarning),
             fcu_capt_range_knob_id: context.get_identifier("EFIS_L_ND_RANGE".to_owned()),
             fcu_capt_range: Length::new::<nautical_mile>(0.0),
             fcu_fo_range_knob_id: context.get_identifier("EFIS_R_ND_RANGE".to_owned()),
@@ -82,12 +59,6 @@ impl InputData {
 
 impl SimulationElement for InputData {
     fn read(&mut self, reader: &mut SimulatorReader) {
-        self.adirs_latitude = reader.read_arinc429(&self.adirs_latitude_id);
-        self.adirs_longitude = reader.read_arinc429(&self.adirs_longitude_id);
-        self.adirs_heading = reader.read_arinc429(&self.adirs_heading_id);
-        self.adirs_altitude = reader.read_arinc429(&self.adirs_altitude_id);
-        self.adirs_vertical_speed = reader.read_arinc429(&self.adirs_vertical_speed_id);
-
         let capt_range_knob: usize = reader.read(&self.fcu_capt_range_knob_id);
         self.fcu_capt_range = self.range_look_up_table[capt_range_knob];
         let fo_range_knob: usize = reader.read(&self.fcu_fo_range_knob_id);
