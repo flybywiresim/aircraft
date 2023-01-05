@@ -70,7 +70,7 @@ impl EnhancedGPWC {
 
         self.navigation_displays
             .iter_mut()
-            .for_each(|display| display.update(&self.navigation_display_range_lookup));
+            .for_each(|display| display.update(&self.navigation_display_range_lookup, self.adiru_data_valid));
     }
 
     pub fn latitude(&self) -> Angle {

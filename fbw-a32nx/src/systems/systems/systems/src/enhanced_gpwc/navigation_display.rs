@@ -16,6 +16,7 @@ pub struct NavigationDisplay {
     mode: u8,
     terrain_on_nd_pb_id: VariableIdentifier,
     terrain_on_nd_pb_active: bool,
+    terrain_on_nd_active: bool,
     potentiometer_id: VariableIdentifier,
     potentiometer: Ratio,
 }
@@ -34,13 +35,19 @@ impl NavigationDisplay {
             mode: 0,
             terrain_on_nd_pb_id: context.get_identifier(format!("EFIS_TERR_{}_ACTIVE", side)),
             terrain_on_nd_pb_active: false,
+            terrain_on_nd_active: false,
             potentiometer_id: context.get_identifier(format!("LIGHT POTENTIOMETER:{}", potentiometer)),
             potentiometer: Ratio::new::<percent>(100.0),
         }
     }
 
-    pub fn update(&mut self, range_lookup: &Vec<Length>) {
-        self.range = range_lookup[self.range_knob_position]
+    pub fn update(
+        &mut self,
+        range_lookup: &Vec<Length>,
+        adiru_data_valid: bool,
+    ) {
+        self.range = range_lookup[self.range_knob_position];
+        self.terrain_on_nd_active = adiru_data_valid && self.terrain_on_nd_pb_active;
     }
 }
 
