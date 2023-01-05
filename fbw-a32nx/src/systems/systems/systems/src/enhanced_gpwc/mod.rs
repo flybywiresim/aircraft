@@ -29,12 +29,11 @@ pub struct EnhancedGPWC {
     fm1_destination_latitude_id: VariableIdentifier,
     destination_longitude: Arinc429Word<Angle>,
     destination_latitude: Arinc429Word<Angle>,
-    adiru_data_valid: bool,
-    latitude: Angle,
-    longitude: Angle,
-    altitude: Length,
-    heading: Angle,
-    vertical_speed: Velocity,
+    latitude: Arinc429Word<Angle>,
+    longitude: Arinc429Word<Angle>,
+    altitude: Arinc429Word<Length>,
+    heading: Arinc429Word<Angle>,
+    vertical_speed: Arinc429Word<Velocity>,
     navigation_display_range_lookup: Vec<Length>,
     navigation_displays: [NavigationDisplay; 2],
     gear_is_down: bool,
@@ -57,12 +56,11 @@ impl EnhancedGPWC {
             fm1_destination_latitude_id: context.get_identifier("FM1_DEST_LAT".to_owned()),
             destination_longitude: Arinc429Word::new(Angle::new::<degree>(0.0), SignStatus::FailureWarning),
             destination_latitude: Arinc429Word::new(Angle::new::<degree>(0.0), SignStatus::FailureWarning),
-            adiru_data_valid: false,
-            latitude: Angle::new::<degree>(0.0),
-            longitude: Angle::new::<degree>(0.0),
-            altitude: Length::new::<foot>(0.0),
-            heading: Angle::new::<degree>(0.0),
-            vertical_speed: Velocity::new::<foot_per_minute>(0.0),
+            latitude: Arinc429Word::new(Angle::new::<degree>(0.0), SignStatus::FailureWarning),
+            longitude: Arinc429Word::new(Angle::new::<degree>(0.0), SignStatus::FailureWarning),
+            altitude: Arinc429Word::new(Length::new::<foot>(0.0), SignStatus::FailureWarning),
+            heading: Arinc429Word::new(Angle::new::<degree>(0.0), SignStatus::FailureWarning),
+            vertical_speed: Arinc429Word::new(Velocity::new::<foot_per_minute>(0.0), SignStatus::FailureWarning),
             navigation_display_range_lookup: range_lookup,
             navigation_displays: [
                 NavigationDisplay::new(context, "L", potentiometer_capt),
@@ -81,12 +79,19 @@ impl EnhancedGPWC {
          *   - implement logic as soon as GPS sensor is available
          */
 
-        self.adiru_data_valid = adirs_output.is_fully_aligned(1);
-        self.latitude = adirs_output.latitude(1);
-        self.longitude = adirs_output.longitude(1);
-        self.altitude = adirs_output.altitude(1);
-        self.heading = adirs_output.heading(1);
-        self.vertical_speed = adirs_output.vertical_speed(1);
+        if adirs_output.is_fully_aligned(1) && self.is_powered {
+            self.latitude = Arinc429Word::new(adirs_output.latitude(1), SignStatus::NormalOperation);
+            self.longitude = Arinc429Word::new(adirs_output.longitude(1), SignStatus::NormalOperation);
+            self.altitude = Arinc429Word::new(adirs_output.altitude(1), SignStatus::NormalOperation);
+            self.heading = Arinc429Word::new(adirs_output.heading(1), SignStatus::NormalOperation);
+            self.vertical_speed = Arinc429Word::new(adirs_output.vertical_speed(1), SignStatus::NormalOperation);
+        } else {
+            self.latitude = Arinc429Word::new(Angle::new::<degree>(0.0), SignStatus::FailureWarning);
+            self.longitude = Arinc429Word::new(Angle::new::<degree>(0.0), SignStatus::FailureWarning);
+            self.altitude = Arinc429Word::new(Length::new::<foot>(0.0), SignStatus::FailureWarning);
+            self.heading = Arinc429Word::new(Angle::new::<degree>(0.0), SignStatus::FailureWarning);
+            self.vertical_speed = Arinc429Word::new(Velocity::new::<foot_per_minute>(0.0), SignStatus::FailureWarning);
+        }
     }
 
     pub fn update(
