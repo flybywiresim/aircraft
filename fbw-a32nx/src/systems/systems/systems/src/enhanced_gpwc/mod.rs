@@ -15,7 +15,6 @@ use uom::si::{
 };
 
 pub mod navigation_display;
-// pub mod terrain;
 
 pub struct EnhancedGPWC {
     fm1_destination_longitude_ssm_id: VariableIdentifier,
@@ -127,7 +126,6 @@ impl SimulationElement for EnhancedGPWC {
         self.navigation_displays
             .iter_mut()
             .for_each(|display| display.accept(visitor));
-        // self.input_data.accept(visitor);
         visitor.visit(self);
     }
 }
