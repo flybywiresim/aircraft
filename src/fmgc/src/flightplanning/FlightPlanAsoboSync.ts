@@ -45,142 +45,159 @@ export class FlightPlanAsoboSync {
                 Coherent.call('LOAD_CURRENT_ATC_FLIGHTPLAN').catch(console.error);
                 setTimeout(() => {
                     Coherent.call('GET_FLIGHTPLAN').then(async (data: Record<string, any>) => {
-                        console.log('COHERENT GET_FLIGHTPLAN received');
-                        const { isDirectTo } = data;
+                        console.log('COHERENT GET_FLIGHTPLAN received:');
+                        console.log('Data from MSFS flight plan:', data);
 
+                        // Purpose unclear
                         // TODO: talk to matt about dirto
-                        if (!isDirectTo) {
-                            // TODO FIXME: better handling of mid-air spawning and syncing fpln
-                            if (data.waypoints.length === 0 || data.waypoints[0].icao[0] !== 'A') {
-                                fpln.resumeSync();
-                                resolve();
-                                return;
-                            }
+                        const { isDirectTo } = data;
+                        if (isDirectTo) {
+                            return;
+                        }
 
-                            await fpln._parentInstrument.facilityLoader.getFacilityRaw(data.waypoints[0].icao, 10000).catch((e) => {
-                                console.error('[FP LOAD] Error getting first wp data');
+                        // Mid air flight plan loading not yet supported - return if first waypoint is not an airport
+                        // TODO FIXME: better handling of mid-air spawning and syncing fpln
+                        if (data.waypoints.length === 0 || data.waypoints[0].icao[0] !== 'A') {
+                            fpln.resumeSync();
+                            resolve();
+                            return;
+                        }
+
+                        // result dismissed - why??
+                        // assumption: counter timeout issues when reading facility from MSFS?
+                        await fpln._parentInstrument.facilityLoader.getFacilityRaw(data.waypoints[0].icao, 10000).catch((e) => {
+                            console.error('[FP LOAD] Error getting first wp data');
+                            console.error(e);
+                        });
+
+                        // set origin
+                        await fpln.setOrigin(data.waypoints[0].icao).catch((e) => {
+                            console.error('[FP LOAD] Error setting origin');
+                            console.error(e);
+                        });
+
+                        // set dest
+                        await fpln.setDestination(data.waypoints[data.waypoints.length - 1].icao).catch((e) => {
+                            console.error('[FP LOAD] Error setting Destination');
+                            console.error(e);
+                        });
+
+                        // set route
+                        const enrouteStart = (data.departureWaypointsSize === -1) ? 1 : data.departureWaypointsSize;
+                        // Find out first approach waypoint, - 1 to skip destination
+                        const enrouteEnd = data.waypoints.length - ((data.arrivalWaypointsSize === -1) ? 0 : data.arrivalWaypointsSize) - 1;
+                        const enroute = data.waypoints.slice(enrouteStart, enrouteEnd);
+
+                        for (let i = 0; i < enroute.length; i++) {
+                            const wpt = enroute[i];
+                            if (wpt.icao.trim() !== '') {
+                                // Without the 'await' the order of import is undefined and the flight plan waypoints
+                                // are not in the correct order
+                                // eslint-disable-next-line no-await-in-loop
+                                await fpln.addWaypoint(wpt.icao, Infinity,
+                                    () => {
+                                        // console.log(`[FP LOAD] Adding [${wpt.icao}]... SUCCESS`);
+                                    })
+                                    .catch(console.error);
+                            }
+                        }
+
+                        // set departure
+                        //  rwy index
+                        await fpln.setDepartureRunwayIndex(data.departureRunwayIndex)
+                        // .then(() => console.log(`[FP LOAD] Setting Departure Runway ${data.departureRunwayIndex} ... SUCCESS`))
+                            .catch((e) => {
+                                console.error(`[FP LOAD] Setting Departure Runway ${data.departureRunwayIndex} ... FAILED`);
                                 console.error(e);
                             });
-
-                            // set origin
-                            await fpln.setOrigin(data.waypoints[0].icao).catch((e) => {
-                                console.error('[FP LOAD] Error setting origin');
+                        // proc index
+                        await fpln.setDepartureProcIndex(data.departureProcIndex)
+                        // .then(() => console.log(`[FP LOAD] Setting Departure Procedure  ${data.departureProcIndex} ... SUCCESS`))
+                            .catch((e) => {
+                                console.error(`[FP LOAD] Setting Departure Procedure ${data.departureProcIndex} ... FAILED`);
                                 console.error(e);
                             });
-
-                            // set dest
-                            await fpln.setDestination(data.waypoints[data.waypoints.length - 1].icao).catch((e) => {
-                                console.error('[FP LOAD] Error setting Destination');
+                        // origin runway
+                        if (data.originRunwayIndex !== -1) {
+                            await fpln.setOriginRunwayIndex(data.originRunwayIndex)
+                            // .then(() => console.log(`[FP LOAD] Setting Origin  ${data.originRunwayIndex} ... SUCCESS`))
+                                .catch((e) => {
+                                    console.error(`[FP LOAD] Setting Origin ${data.originRunwayIndex} ... FAILED`);
+                                    console.error(e);
+                                });
+                        } else if (data.departureRunwayIndex !== -1 && data.departureProcIndex !== -1) {
+                            await fpln.setOriginRunwayIndexFromDeparture()
+                            // .then(() => console.log(`[FP LOAD] Setting Origin using ${data.departureProcIndex}/${data.departureRunwayIndex}... SUCCESS`))
+                                .catch((e) => {
+                                    console.error(`[FP LOAD] Setting Origin using ${data.departureProcIndex}/${data.departureRunwayIndex} ... FAILED`);
+                                    console.error(e);
+                                });
+                        }
+                        //  enroutetrans index
+                        await fpln.setDepartureEnRouteTransitionIndex(data.departureEnRouteTransitionIndex)
+                        // .then(() => console.log(`[FP LOAD] Setting Departure En Route Transition ${data.departureEnRouteTransitionIndex} ... SUCCESS`))
+                            .catch((e) => {
+                                console.error(`[FP LOAD] Setting Departure En Route Transition ${data.departureEnRouteTransitionIndex} ... FAILED`);
                                 console.error(e);
                             });
-
-                            // set route
-
-                            const enrouteStart = (data.departureWaypointsSize === -1) ? 1 : data.departureWaypointsSize;
-                            // Find out first approach waypoint, - 1 to skip destination
-                            const enrouteEnd = data.waypoints.length - ((data.arrivalWaypointsSize === -1) ? 1 : data.arrivalWaypointsSize) - 1;
-                            const enroute = data.waypoints.slice(enrouteStart, enrouteEnd - 1);
-                            for (let i = 0; i < enroute.length - 1; i++) {
-                                const wpt = enroute[i];
-                                if (wpt.icao.trim() !== '') {
-                                    fpln.addWaypoint(wpt.icao, Infinity, () => console.log(`[FP LOAD] Adding [${wpt.icao}]... SUCCESS`)).catch(console.error);
-                                }
-                            }
-
-                            // set departure
-                            //  rwy index
-                            await fpln.setDepartureRunwayIndex(data.departureRunwayIndex)
-                                // .then(() => console.log(`[FP LOAD] Setting Departure Runway ${data.departureRunwayIndex} ... SUCCESS`))
-                                .catch((e) => {
-                                    console.error(`[FP LOAD] Setting Departure Runway ${data.departureRunwayIndex} ... FAILED`);
-                                    console.error(e);
-                                });
-                            // proc index
-                            await fpln.setDepartureProcIndex(data.departureProcIndex)
-                                // .then(() => console.log(`[FP LOAD] Setting Departure Procedure  ${data.departureProcIndex} ... SUCCESS`))
-                                .catch((e) => {
-                                    console.error(`[FP LOAD] Setting Departure Procedure ${data.departureProcIndex} ... FAILED`);
-                                    console.error(e);
-                                });
-                            // origin runway
-                            if (data.originRunwayIndex !== -1) {
-                                await fpln.setOriginRunwayIndex(data.originRunwayIndex)
-                                    // .then(() => console.log(`[FP LOAD] Setting Origin  ${data.originRunwayIndex} ... SUCCESS`))
-                                    .catch((e) => {
-                                        console.error(`[FP LOAD] Setting Origin ${data.originRunwayIndex} ... FAILED`);
-                                        console.error(e);
-                                    });
-                            } else if (data.departureRunwayIndex !== -1 && data.departureProcIndex !== -1) {
-                              await fpln.setOriginRunwayIndexFromDeparture()
-                              // .then(() => console.log(`[FP LOAD] Setting Origin using ${data.departureProcIndex}/${data.departureRunwayIndex}... SUCCESS`))
-                                .catch((e) => {
-                                  console.error(`[FP LOAD] Setting Origin using ${data.departureProcIndex}/${data.departureRunwayIndex} ... FAILED`);
-                                  console.error(e);
-                              });
-                            }
-                            //  enroutetrans index
-                            await fpln.setDepartureEnRouteTransitionIndex(data.departureEnRouteTransitionIndex)
-                                // .then(() => console.log(`[FP LOAD] Setting Departure En Route Transition ${data.departureEnRouteTransitionIndex} ... SUCCESS`))
-                                .catch((e) => {
-                                    console.error(`[FP LOAD] Setting Departure En Route Transition ${data.departureEnRouteTransitionIndex} ... FAILED`);
-                                    console.error(e);
-                                });
-                             // set approach
-                            //  rwy index
-                            await fpln.setArrivalRunwayIndex(data.arrivalRunwayIndex)
-                            // .then(() => console.log(`[FP LOAD] Setting Arrival Runway ${data.arrivalRunwayIndex} ... SUCCESS`))
+                        // set approach
+                        //  rwy index
+                        await fpln.setArrivalRunwayIndex(data.arrivalRunwayIndex)
+                        // .then(() => console.log(`[FP LOAD] Setting Arrival Runway ${data.arrivalRunwayIndex} ... SUCCESS`))
                             .catch((e) => {
                                 console.error(`[FP LOAD] Setting Arrival Runway ${data.arrivalRunwayIndex} ... FAILED`);
                                 console.error(e);
                             });
-                            //  approach index
-                            await fpln.setApproachIndex(data.approachIndex)
-                                // .then(() => console.log(`[FP LOAD] Setting Approach ${data.approachIndex} ... SUCCESS`))
-                                .catch((e) => {
-                                    console.error(`[FP LOAD] Setting Approach ${data.approachIndex} ... FAILED`);
-                                    console.error(e);
-                                });
-                            //  approachtrans index
-                            await fpln.setApproachTransitionIndex(data.approachTransitionIndex)
-                                // .then(() => console.log(`[FP LOAD] Setting Approach Transition ${data.approachTransitionIndex} ... SUCCESS`))
-                                .catch((e) => {
-                                    console.error(`[FP LOAD] Setting Approach Transition ${data.approachTransitionIndex} ... FAILED`);
-                                    console.error(e);
-                                });
+                        //  approach index
+                        await fpln.setApproachIndex(data.approachIndex)
+                        // .then(() => console.log(`[FP LOAD] Setting Approach ${data.approachIndex} ... SUCCESS`))
+                            .catch((e) => {
+                                console.error(`[FP LOAD] Setting Approach ${data.approachIndex} ... FAILED`);
+                                console.error(e);
+                            });
+                        //  approachtrans index
+                        await fpln.setApproachTransitionIndex(data.approachTransitionIndex)
+                        // .then(() => console.log(`[FP LOAD] Setting Approach Transition ${data.approachTransitionIndex} ... SUCCESS`))
+                            .catch((e) => {
+                                console.error(`[FP LOAD] Setting Approach Transition ${data.approachTransitionIndex} ... FAILED`);
+                                console.error(e);
+                            });
 
-                            // set arrival
-                            //  arrivalproc index
-                            await fpln.setArrivalProcIndex(data.arrivalProcIndex)
-                                // .then(() => console.log(`[FP LOAD] Setting Arrival Procedure ${data.arrivalProcIndex} ... SUCCESS`))
-                                .catch((e) => {
-                                    console.error(`[FP LOAD] Setting Arrival Procedure ${data.arrivalProcIndex} ... FAILED`);
-                                    console.error(e);
-                                });
-                            //  arrivaltrans index
-                            await fpln.setArrivalEnRouteTransitionIndex(data.arrivalEnRouteTransitionIndex)
-                                // .then(() => console.log(`[FP LOAD] Setting En Route Transition ${data.arrivalEnRouteTransitionIndex} ... SUCCESS`))
-                                .catch((e) => {
-                                    console.error(`[FP LOAD] Setting En Route Transition ${data.arrivalEnRouteTransitionIndex} ... FAILED`);
-                                    console.error(e);
-                                });
+                        // set arrival
+                        //  arrivalproc index
+                        await fpln.setArrivalProcIndex(data.arrivalProcIndex)
+                        // .then(() => console.log(`[FP LOAD] Setting Arrival Procedure ${data.arrivalProcIndex} ... SUCCESS`))
+                            .catch((e) => {
+                                console.error(`[FP LOAD] Setting Arrival Procedure ${data.arrivalProcIndex} ... FAILED`);
+                                console.error(e);
+                            });
+                        //  arrivaltrans index
+                        await fpln.setArrivalEnRouteTransitionIndex(data.arrivalEnRouteTransitionIndex)
+                        // .then(() => console.log(`[FP LOAD] Setting En Route Transition ${data.arrivalEnRouteTransitionIndex} ... SUCCESS`))
+                            .catch((e) => {
+                                console.error(`[FP LOAD] Setting En Route Transition ${data.arrivalEnRouteTransitionIndex} ... FAILED`);
+                                console.error(e);
+                            });
 
-                            await fpln.setDestinationRunwayIndexFromApproach()
-                            // .then(() => console.log(`[FP LOAD] Setting Destination Runway using ${data.approachIndex} ... SUCCESS`))
+                        await fpln.setDestinationRunwayIndexFromApproach()
+                        // .then(() => console.log(`[FP LOAD] Setting Destination Runway using ${data.approachIndex} ... SUCCESS`))
                             .catch((e) => {
                                 console.error(`[FP LOAD] Setting Destination Runway using ${data.approachIndex} ... FAILED`);
                                 console.error(e);
                             });
 
-                            fpln.resumeSync();
+                        fpln.resumeSync();
 
-                            this.fpChecksum = fpln.getCurrentFlightPlan().checksum;
-                            // Potential CTD source?
-                            Coherent.call('SET_ACTIVE_WAYPOINT_INDEX', 0)
-                                .catch((e) => console.error('[FP LOAD] Error when setting Active WP'));
-                            Coherent.call('RECOMPUTE_ACTIVE_WAYPOINT_INDEX')
-                                .catch((e) => console.error('[FP LOAD] Error when recomputing Active WP'));
-                            resolve();
-                        }
+                        this.fpChecksum = fpln.getCurrentFlightPlan().checksum;
+
+                        // Potential CTD source?
+                        Coherent.call('SET_ACTIVE_WAYPOINT_INDEX', 0)
+                            .catch((e) => console.error('[FP LOAD] Error when setting Active WP', e));
+                        Coherent.call('RECOMPUTE_ACTIVE_WAYPOINT_INDEX')
+                            .catch((e) => console.error('[FP LOAD] Error when recomputing Active WP', e));
+                        resolve();
+
+                        console.log('Resulting aircraft flight plan: ', fpln);
                     }).catch(console.error);
                 }, 500);
             }, 200);
@@ -270,8 +287,8 @@ export class FlightPlanAsoboSync {
                     this.fpChecksum = plan.checksum;
                 }
                 Coherent.call('RECOMPUTE_ACTIVE_WAYPOINT_INDEX')
-                    .catch((e) => console.log('[FP SAVE] Setting Active Waypoint... FAILED'))
-                    .then(() => console.log('[FP SAVE] Setting Active Waypoint... SUCCESS'));
+                    // .then(() => console.log('[FP SAVE] Setting Active Waypoint... SUCCESS'))
+                    .catch((e) => console.log('[FP SAVE] Setting Active Waypoint... FAILED: ', e));
             }));
         });
     }

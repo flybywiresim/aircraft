@@ -10,12 +10,17 @@
 1. [ADIRU] Implemented wind speed computation from TAS/GS/HDG - @tracernz (Mike)
 1. [FMGC] Show proper transition names and final approach slope from AAU1 - @tracernz (Mike)
 1. [FMGC] Don't accept blank input or / for hold distance - @tracernz (Mike)
+1. [HYD] Faster core hydraulics solver - @Crocket63 (crocket)
 1. [ATSU] Fix LSK6L not returning to ATSU DATALINK page in ATC MENU - @BravoMike99 (Bruno_pt99#5802)
 1. [HYD] Trimmable physical assemblies - @Crocket63 (crocket)
 1. [HYD] Simulation of the rudder mechanical assembly and yaw dampers - @Crocket63 (crocket)
 1. [HYD] Simple temperature simulation - @Crocket63 (crocket)
 1. [FLIGHTMODEL] Reduced flap induced drag - @donstim (donbikes#4084)
 1. [EFB] Fix and improve pushback system and add API documentation - @frankkopp (Frank Kopp)
+1. [RMP] RMPs navigation backup - Julian Sebline (Julian Sebline#8476 on Discord)
+1. [SEC] Fix GND SPLR logic, add missing GND SPLR partial extension condition - @lukecologne (luke)
+1. [FMGC] Improved importing flight plans from MSFS World Map - @frankkopp (Frank Kopp)  
+1. [EFB] Added boarding time indication to Payload page - @ChristianLutzCL (Christian Lutz) @frankkopp (Frank Kopp)
 
 ## 0.9.0
 
@@ -71,6 +76,7 @@
 1. [FMGC] Fix inbound leg time for holds - @tracernz (Mike)
 1. [MCDU] Improved visuals of Init-A and Init-B page - @derl30n (Leon)
 1. [MODEL] Added new animated gear gravity extension handle- @tyler58546 (tyler58546), @MoreRightRudder (Mike), @Crocket63 (crocket), @Lantarius
+1. [HYD] Custom Lvar for gear lever to fix ground collision bug - @Crocket63 (crocket)
 1. [HYD] Randomised per actuator flow restrictions at plane init - @Crocket63 (crocket)
 1. [MCDU] Hide stored elements on A/C Status when there are none - @tracernz (Mike)
 1. [FMGC] Fix ident for CD legs - @tracernz (Mike)
@@ -1150,3 +1156,4 @@
 1. [DCDU] Fixed MSG- and MSG+ button labels - @tyler58546 (tyler58546)
 1. [ISIS] Fixed issue where ISIS was allowing a bug to be set while in the OFF state - Patrick Macken (@Pat M on
    Discord)
+1. [EFB] Added estimated boarding time to Payload screen - @ChristianLutzCL (Christian Lutz)

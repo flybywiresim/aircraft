@@ -138,9 +138,13 @@ pub struct PressureSwitch {
     high_hysteresis_threshold: Pressure,
     low_hysteresis_threshold: Pressure,
 
+    current_pressure_filtered: LowPassFilter<Pressure>,
+
     sensor_type: PressureSwitchType,
 }
 impl PressureSwitch {
+    const PRESSURE_DYNAMIC_TIME_CONSTANT: Duration = Duration::from_millis(200);
+
     pub fn new(
         high_threshold: Pressure,
         low_threshold: Pressure,
@@ -150,6 +154,7 @@ impl PressureSwitch {
             state_is_pressurised: false,
             high_hysteresis_threshold: high_threshold,
             low_hysteresis_threshold: low_threshold,
+            current_pressure_filtered: LowPassFilter::new(Self::PRESSURE_DYNAMIC_TIME_CONSTANT),
             sensor_type,
         }
     }
@@ -159,10 +164,12 @@ impl PressureSwitch {
             PressureSwitchType::Relative => current_pressure - context.ambient_pressure(),
             PressureSwitchType::Absolute => current_pressure,
         };
+        self.current_pressure_filtered
+            .update(context.delta(), pressure_measured);
 
-        if pressure_measured <= self.low_hysteresis_threshold {
+        if self.current_pressure_filtered.output() <= self.low_hysteresis_threshold {
             self.state_is_pressurised = false;
-        } else if pressure_measured >= self.high_hysteresis_threshold {
+        } else if self.current_pressure_filtered.output() >= self.high_hysteresis_threshold {
             self.state_is_pressurised = true;
         }
     }
