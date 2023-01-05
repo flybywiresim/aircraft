@@ -233,7 +233,7 @@ impl Aircraft for A320 {
             [self.lgcius.lgciu1(), self.lgcius.lgciu2()],
         );
 
-        self.enhanced_gpwc.update(&self.adirs);
+        self.enhanced_gpwc.update(&self.adirs, &self.lgcius);
     }
 }
 impl SimulationElement for A320 {

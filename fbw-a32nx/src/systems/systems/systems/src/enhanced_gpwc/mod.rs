@@ -1,9 +1,11 @@
 use std::vec::Vec;
 use crate::{
     enhanced_gpwc::navigation_display::NavigationDisplay,
+    landing_gear::LandingGearControlInterfaceUnitSet,
     shared::{
         arinc429::{Arinc429Word, SignStatus},
         AdirsMeasurementOutputs,
+        LgciuGearExtension,
     },
     simulation::{InitContext, Read, SimulationElement, SimulationElementVisitor, VariableIdentifier, SimulatorReader},
 };
@@ -31,6 +33,7 @@ pub struct EnhancedGPWC {
     vertical_speed: Velocity,
     navigation_display_range_lookup: Vec<Length>,
     navigation_displays: [NavigationDisplay; 2],
+    gear_is_down: bool,
 }
 
 impl EnhancedGPWC {
@@ -58,6 +61,7 @@ impl EnhancedGPWC {
                 NavigationDisplay::new(context, "L", potentiometer_capt),
                 NavigationDisplay::new(context, "R", potentiometer_fo),
             ],
+            gear_is_down: true,
         }
     }
 
@@ -78,8 +82,13 @@ impl EnhancedGPWC {
         self.vertical_speed = adirs_output.vertical_speed(1);
     }
 
-    pub fn update(&mut self, adirs_output: &impl AdirsMeasurementOutputs) {
+    pub fn update(
+        &mut self,
+        adirs_output: &impl AdirsMeasurementOutputs,
+        lgcius: &LandingGearControlInterfaceUnitSet,
+    ) {
         self.update_position_data(adirs_output);
+        self.gear_is_down = lgcius.lgciu1().main_down_and_locked();
 
         self.navigation_displays
             .iter_mut()
