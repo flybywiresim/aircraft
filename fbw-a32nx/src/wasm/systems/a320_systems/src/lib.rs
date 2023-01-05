@@ -111,14 +111,20 @@ impl A320 {
             pressurization_overhead: PressurizationOverheadPanel::new(context),
             pneumatic: A320Pneumatic::new(context),
             radio_altimeters: A320RadioAltimeters::new(context),
-            enhanced_gpwc: EnhancedGPWC::new(context, 94, 95, Vec::from([
-                Length::new::<nautical_mile>(10.0),
-                Length::new::<nautical_mile>(20.0),
-                Length::new::<nautical_mile>(40.0),
-                Length::new::<nautical_mile>(80.0),
-                Length::new::<nautical_mile>(160.0),
-                Length::new::<nautical_mile>(320.0),
-            ])),
+            enhanced_gpwc: EnhancedGPWC::new(
+                context,
+                ElectricalBusType::DirectCurrent(1),
+                94,
+                95,
+                Vec::from([
+                    Length::new::<nautical_mile>(10.0),
+                    Length::new::<nautical_mile>(20.0),
+                    Length::new::<nautical_mile>(40.0),
+                    Length::new::<nautical_mile>(80.0),
+                    Length::new::<nautical_mile>(160.0),
+                    Length::new::<nautical_mile>(320.0),
+                ])
+            ),
         }
     }
 }

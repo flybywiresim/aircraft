@@ -5,6 +5,8 @@ use crate::{
     shared::{
         arinc429::{Arinc429Word, SignStatus},
         AdirsMeasurementOutputs,
+        ElectricalBusType,
+        ElectricalBuses,
         LgciuGearExtension,
     },
     simulation::{InitContext, Read, SimulationElement, SimulationElementVisitor, VariableIdentifier, SimulatorReader},
@@ -19,6 +21,8 @@ use uom::si::{
 pub mod navigation_display;
 
 pub struct EnhancedGPWC {
+    powered_by: ElectricalBusType,
+    is_powered: bool,
     fm1_destination_longitude_ssm_id: VariableIdentifier,
     fm1_destination_longitude_id: VariableIdentifier,
     fm1_destination_latitude_ssm_id: VariableIdentifier,
@@ -39,11 +43,14 @@ pub struct EnhancedGPWC {
 impl EnhancedGPWC {
     pub fn new(
         context: &mut InitContext,
+        powered_by: ElectricalBusType,
         potentiometer_capt: u32,
         potentiometer_fo: u32,
         range_lookup: Vec<Length>,
     ) -> Self {
         EnhancedGPWC {
+            powered_by,
+            is_powered: false,
             fm1_destination_longitude_ssm_id: context.get_identifier("FM1_DEST_LONG_SSM".to_owned()),
             fm1_destination_longitude_id: context.get_identifier("FM1_DEST_LONG".to_owned()),
             fm1_destination_latitude_ssm_id: context.get_identifier("FM1_DEST_LAT_SSM".to_owned()),
@@ -95,6 +102,10 @@ impl EnhancedGPWC {
             .for_each(|display| display.update(&self.navigation_display_range_lookup, self.adiru_data_valid));
     }
 
+    pub fn is_powered(&self) -> bool {
+        self.is_powered
+    }
+
     pub fn latitude(&self) -> Angle {
         self.latitude
     }
@@ -121,6 +132,10 @@ impl EnhancedGPWC {
 }
 
 impl SimulationElement for EnhancedGPWC {
+    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
+        self.is_powered = buses.is_powered(self.powered_by)
+    }
+
     fn read(&mut self, reader: &mut SimulatorReader) {
         let destination_long: f64 = reader.read(&self.fm1_destination_longitude_id);
         let destination_lat: f64 = reader.read(&self.fm1_destination_latitude_id);
