@@ -1,11 +1,10 @@
 use std::vec::Vec;
 use crate::{
+    enhanced_gpwc::navigation_display::NavigationDisplay,
     shared::AdirsMeasurementOutputs,
     simulation::{InitContext, SimulationElement, SimulationElementVisitor},
 };
-
-use crate::enhanced_gpwc::terrain::Terrain;
-use self::input_data::InputData;
+// use self::navigation_display::NavigationDisplay;
 use uom::si::{
     angle::degree,
     f64::{Angle, Length, Velocity},
@@ -13,19 +12,18 @@ use uom::si::{
     velocity::foot_per_minute,
 };
 
-pub mod input_data;
-pub mod terrain;
+pub mod navigation_display;
+// pub mod terrain;
 
 pub struct EnhancedGPWC {
-    input_data: InputData,
     adiru_data_valid: bool,
     latitude: Angle,
     longitude: Angle,
     altitude: Length,
     heading: Angle,
     vertical_speed: Velocity,
-    terrain_nd_left: Terrain,
-    terrain_nd_right: Terrain,
+    navigation_display_range_lookup: Vec<Length>,
+    navigation_displays: [NavigationDisplay; 2],
 }
 
 impl EnhancedGPWC {
@@ -33,18 +31,20 @@ impl EnhancedGPWC {
         context: &mut InitContext,
         potentiometer_capt: u32,
         potentiometer_fo: u32,
-        range_look_up: Vec<Length>,
+        range_lookup: Vec<Length>,
     ) -> Self {
         EnhancedGPWC {
-            input_data: InputData::new(context, potentiometer_capt, potentiometer_fo, range_look_up),
             adiru_data_valid: false,
             latitude: Angle::new::<degree>(0.0),
             longitude: Angle::new::<degree>(0.0),
             altitude: Length::new::<foot>(0.0),
             heading: Angle::new::<degree>(0.0),
             vertical_speed: Velocity::new::<foot_per_minute>(0.0),
-            terrain_nd_left: Terrain::new(),
-            terrain_nd_right: Terrain::new(),
+            navigation_display_range_lookup: range_lookup,
+            navigation_displays: [
+                NavigationDisplay::new(context, "L", potentiometer_capt),
+                NavigationDisplay::new(context, "R", potentiometer_fo),
+            ],
         }
     }
 
@@ -68,21 +68,9 @@ impl EnhancedGPWC {
     pub fn update(&mut self, adirs_output: &impl AdirsMeasurementOutputs) {
         self.update_position_data(adirs_output);
 
-        self.terrain_nd_left.update(
-            self.adiru_data_valid,
-            self.input_data.terrain_pb_capt_active,
-            self.input_data.fcu_capt_range,
-            self.input_data.efis_capt_nd_mode,
-            self.input_data.nd_terrain_potentiometer_capt,
-        );
-
-        self.terrain_nd_right.update(
-            self.adiru_data_valid,
-            self.input_data.terrain_pb_fo_active,
-            self.input_data.fcu_fo_range,
-            self.input_data.efis_fo_nd_mode,
-            self.input_data.nd_terrain_potentiometer_fo,
-        );
+        self.navigation_displays
+            .iter_mut()
+            .for_each(|display| display.update(&self.navigation_display_range_lookup));
     }
 
     pub fn latitude(&self) -> Angle {
@@ -104,7 +92,10 @@ impl EnhancedGPWC {
 
 impl SimulationElement for EnhancedGPWC {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        self.input_data.accept(visitor);
+        self.navigation_displays
+            .iter_mut()
+            .for_each(|display| display.accept(visitor));
+        // self.input_data.accept(visitor);
         visitor.visit(self);
     }
 }
