@@ -1,6 +1,6 @@
 use std::vec::Vec;
 use crate::{
-    simulation::{InitContext, Read, SimulationElement, SimulatorReader, VariableIdentifier},
+    simulation::{InitContext, Read, SimulationElement, SimulatorReader, SimulatorWriter, VariableIdentifier, Write},
 };
 use uom::si::{
     f64::{Length,  Ratio},
@@ -19,6 +19,11 @@ pub struct NavigationDisplay {
     terrain_on_nd_active: bool,
     potentiometer_id: VariableIdentifier,
     potentiometer: Ratio,
+    // output variables of the display
+    egpwc_nd_range_id: VariableIdentifier,
+    egpwc_nd_mode_id: VariableIdentifier,
+    egpwc_nd_terrain_active_id: VariableIdentifier,
+    egpwc_nd_terrain_brightness_id: VariableIdentifier,
 }
 
 impl NavigationDisplay {
@@ -38,6 +43,10 @@ impl NavigationDisplay {
             terrain_on_nd_active: false,
             potentiometer_id: context.get_identifier(format!("LIGHT POTENTIOMETER:{}", potentiometer)),
             potentiometer: Ratio::new::<percent>(100.0),
+            egpwc_nd_range_id: context.get_identifier(format!("EGPWC_ND_{}_RANGE", side)),
+            egpwc_nd_mode_id: context.get_identifier(format!("EGPWC_ND_{}_MODE", side)),
+            egpwc_nd_terrain_active_id: context.get_identifier(format!("EGPWC_ND_{}_TERRAIN_ACTIVE", side)),
+            egpwc_nd_terrain_brightness_id: context.get_identifier(format!("EGPWC_ND_{}_TERRAIN_BRIGHTNESS", side)),
         }
     }
 
@@ -57,5 +66,12 @@ impl SimulationElement for NavigationDisplay {
         self.mode = reader.read(&self.mode_id);
         self.terrain_on_nd_pb_active = reader.read(&self.terrain_on_nd_pb_id);
         self.potentiometer = Ratio::new::<percent>(reader.read(&self.potentiometer_id));
+    }
+
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(&self.egpwc_nd_range_id, self.range);
+        writer.write(&self.egpwc_nd_mode_id, self.mode);
+        writer.write(&self.egpwc_nd_terrain_active_id, self.terrain_on_nd_active);
+        writer.write(&self.egpwc_nd_terrain_brightness_id, self.potentiometer);
     }
 }
