@@ -448,6 +448,28 @@
     "TugSpeed": "Velocità Tug",
     "UseControllerInput": "Usa Input Controller"
   },
+  "QuickControls": {
+    "AlignAdirs": "Allinea ADIRS",
+    "FinishBoarding": "Termina Imbarco",
+    "OnScreenKeyboard": "Tastiera su Schermo",
+    "SimBridge": "SimBridge",
+    "SimBridgeConnected": "Connesso",
+    "SimBridgeConnecting": "Connessione in corso...",
+    "SimBridgeOff": "Spento",
+    "SimBridgeOffline": "Non Disponibile",
+    "TT": {
+      "AlignAdirs": "Allinea ADIRS istantaneamente",
+      "AutoBrightness": "Attiva/disattiva la Luminosità Automatica",
+      "Brightness": "Imposta la luminosità del flyPad",
+      "FinishBoarding": "Completa l'imbarco istantaneamente",
+      "OnScreenKeyboard": "Attiva/disattiva la tastiera su schermo",
+      "PowerButton": "Spegni",
+      "Settings": "Vai alla pagina delle impostazioni del flyPad",
+      "SimBridge": "Controlla la connessione SimBridge",
+      "Sleep": "Pausa"
+    },
+    "Title": "Controlli Rapidi"
+  },
   "Settings": {
     "About": {
       "Title": "Informazioni"
@@ -610,12 +632,21 @@
     "Sep": "Set",
     "Sun": "Dom",
     "TT": {
+      "Brightness": "Click to change Brightness",
       "ConnectedToLocalApi": "Connesso a SimBridge",
       "DisconnectedFromLocalApi": "Disconnesso da SimBridge",
+      "QuickControls": "Clicca per aprire i Controlli Rapidi",
       "TurnOffOrShutdownEfb": "Spegni o Arresta EFB"
     },
     "Thu": "Gio",
     "Tue": "Mar",
     "Wed": "Mer"
+  },
+  "VersionCheck": {
+    "CurrentVersionText": "Stai utilizzando l'edizione $edition con la versione:",
+    "LatestVersionText": "L'ultima versione $edition è",
+    "RecommendationText": "Prego aggiorna il tuo aeromobile tramite l'installer FlyByWire",
+    "StatusBarWarning": "Versione Aeromobile Obsoleta",
+    "Title": "Nuova Versione Disponibile"
   }
 }
