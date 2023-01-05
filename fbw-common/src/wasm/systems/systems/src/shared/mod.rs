@@ -102,6 +102,10 @@ pub trait LgciuWeightOnWheels {
 pub trait LgciuGearExtension {
     fn all_down_and_locked(&self) -> bool;
     fn all_up_and_locked(&self) -> bool;
+    fn main_down_and_locked(&self) -> bool;
+    fn main_up_and_locked(&self) -> bool;
+    fn nose_down_and_locked(&self) -> bool;
+    fn nose_up_and_locked(&self) -> bool;
 }
 
 pub trait LgciuDoorPosition {
