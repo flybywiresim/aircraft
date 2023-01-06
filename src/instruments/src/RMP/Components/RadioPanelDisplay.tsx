@@ -15,7 +15,17 @@ const TEXT_DATA_MODE_VHF3 = 'DATA';
  * @param frequency The given frequency number in Hz.
  * @returns The formated frequency string in 123.456
  */
-const formatFrequency = (frequency: number): string => (frequency / 1000000).toFixed(3).padEnd(7, '0');
+const formatFrequency = (frequency: number): string => {
+    // VHF COM, VOR, ILS
+    if (frequency >= 108000000) {
+        return (frequency / 1000000).toFixed(3).padEnd(7, '0');
+    }
+
+    // HF HERE
+
+    // ADF
+    return (frequency / 1000).toFixed(1);
+};
 
 /**
  * Radio management panel seven-segment frequency/course display.
@@ -33,18 +43,16 @@ export function RadioPanelDisplay(props: Props) {
                 8.8.8.8.8.8
             </text>
         );
-    } else if (props.value > 0) {
-        let value = '';
-        // If the passed value prop is a number, we'll use formatFrequency to get string format.
-        if (typeof props.value === 'number') {
-            value = formatFrequency(props.value);
-        } else {
-            value = props.value;
-        }
-
+    } else if ((typeof props.value === 'string')) {
         content = (
             <text x="100%" y="52%">
-                {value}
+                {props.value}
+            </text>
+        );
+    } else if (props.value > 0) {
+        content = (
+            <text x="100%" y="52%">
+                {formatFrequency(props.value)}
             </text>
         );
     } else {

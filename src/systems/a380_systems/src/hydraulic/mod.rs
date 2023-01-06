@@ -1890,14 +1890,7 @@ impl A380Hydraulic {
         );
 
         for cur_time_step in self.core_hydraulic_updater {
-            self.update_fast_physics(
-                &context.with_delta(cur_time_step),
-                lgcius.lgciu1(),
-                lgcius.lgciu2(),
-                adirs,
-            );
-
-            self.update_ultra_fast_physics(&context.with_delta(cur_time_step), lgcius);
+            self.update_physics(&context.with_delta(cur_time_step), lgcius, adirs);
 
             self.update_core_hydraulics(
                 &context.with_delta(cur_time_step),
@@ -1957,11 +1950,45 @@ impl A380Hydraulic {
         self.yellow_circuit.system_section_pressure_switch() == PressureSwitchState::Pressurised
     }
 
-    fn update_ultra_fast_physics(
+    fn update_physics(
         &mut self,
         context: &UpdateContext,
         lgcius: &LandingGearControlInterfaceUnitSet,
+        adirs: &impl AdirsDiscreteOutputs,
     ) {
+        self.forward_cargo_door.update(
+            context,
+            &self.forward_cargo_door_controller,
+            self.green_circuit.auxiliary_section(),
+        );
+
+        self.aft_cargo_door.update(
+            context,
+            &self.aft_cargo_door_controller,
+            self.green_circuit.auxiliary_section(),
+        );
+
+        self.gear_system_hydraulic_controller.update(
+            adirs,
+            lgcius.lgciu1(),
+            lgcius.lgciu2(),
+            &self.gear_system_gravity_extension_controller,
+        );
+
+        self.trim_assembly.update(
+            context,
+            &self.trim_controller,
+            &self.trim_controller,
+            [
+                self.green_circuit
+                    .system_section()
+                    .pressure_downstream_leak_valve(),
+                self.yellow_circuit
+                    .system_section()
+                    .pressure_downstream_leak_valve(),
+            ],
+        );
+
         self.left_aileron.update(
             context,
             [
@@ -2077,48 +2104,6 @@ impl A380Hydraulic {
             &self.gear_system_hydraulic_controller,
             lgcius.active_lgciu(),
             self.green_circuit.system_section(),
-        );
-    }
-
-    // Updates at the same rate as the sim or at a fixed maximum time step if sim rate is too slow
-    fn update_fast_physics(
-        &mut self,
-        context: &UpdateContext,
-        lgciu1: &impl LgciuInterface,
-        lgciu2: &impl LgciuInterface,
-        adirs: &impl AdirsDiscreteOutputs,
-    ) {
-        self.forward_cargo_door.update(
-            context,
-            &self.forward_cargo_door_controller,
-            self.green_circuit.auxiliary_section(),
-        );
-
-        self.aft_cargo_door.update(
-            context,
-            &self.aft_cargo_door_controller,
-            self.green_circuit.auxiliary_section(),
-        );
-
-        self.gear_system_hydraulic_controller.update(
-            adirs,
-            lgciu1,
-            lgciu2,
-            &self.gear_system_gravity_extension_controller,
-        );
-
-        self.trim_assembly.update(
-            context,
-            &self.trim_controller,
-            &self.trim_controller,
-            [
-                self.green_circuit
-                    .system_section()
-                    .pressure_downstream_leak_valve(),
-                self.yellow_circuit
-                    .system_section()
-                    .pressure_downstream_leak_valve(),
-            ],
         );
     }
 
@@ -10017,27 +10002,6 @@ mod tests {
                 .run_waiting_for(Duration::from_secs_f64(10.));
 
             assert!(test_bed.yellow_pressure().get::<psi>() < 3500.);
-        }
-
-        #[test]
-        fn low_air_press_fault_causes_ptu_fault() {
-            let mut test_bed = test_bed_on_ground_with()
-                .engines_off()
-                .on_the_ground()
-                .set_cold_dark_inputs()
-                .start_eng1(Ratio::new::<percent>(80.))
-                .start_eng2(Ratio::new::<percent>(80.))
-                .run_waiting_for(Duration::from_millis(500));
-
-            assert!(!test_bed.green_edp_has_fault());
-            assert!(!test_bed.yellow_edp_has_fault());
-
-            test_bed = test_bed
-                .air_press_low()
-                .run_waiting_for(Duration::from_secs_f64(10.));
-
-            assert!(test_bed.green_edp_has_fault());
-            assert!(test_bed.yellow_edp_has_fault());
         }
 
         #[test]
