@@ -18,13 +18,13 @@ use std::fmt::Debug;
 pub struct EngineFlexPhysics {
     x_position_id: VariableIdentifier,
 
-    k_const_id: VariableIdentifier,
-    damp_const_id: VariableIdentifier,
+    spring_const_id: VariableIdentifier,
+    damping_const_id: VariableIdentifier,
     mass_id: VariableIdentifier,
-    gain_id: VariableIdentifier,
-    xdamp_id: VariableIdentifier,
-    ydamp_id: VariableIdentifier,
-    dev_enable_id: VariableIdentifier,
+    output_gain_id: VariableIdentifier,
+    lateral_damping_id: VariableIdentifier,
+    vertical_damping_id: VariableIdentifier,
+    dev_mode_enable_id: VariableIdentifier,
 
     reference_point_cg: Vector3<f64>,
     cg_position: Vector3<f64>,
@@ -41,13 +41,13 @@ impl EngineFlexPhysics {
         Self {
             x_position_id: context
                 .get_identifier(format!("ENGINE_{}_WOBBLE_X_POSITION", engine_number)),
-            k_const_id: context.get_identifier("ENGINE_WOBBLE_DEV_K_CONST".to_owned()),
-            damp_const_id: context.get_identifier("ENGINE_WOBBLE_DEV_DAMP_CONST".to_owned()),
+            spring_const_id: context.get_identifier("ENGINE_WOBBLE_DEV_K_CONST".to_owned()),
+            damping_const_id: context.get_identifier("ENGINE_WOBBLE_DEV_DAMP_CONST".to_owned()),
             mass_id: context.get_identifier("ENGINE_WOBBLE_DEV_MASS".to_owned()),
-            gain_id: context.get_identifier("ENGINE_WOBBLE_DEV_OUT_GAIN".to_owned()),
-            xdamp_id: context.get_identifier("ENGINE_WOBBLE_DEV_XDAMP".to_owned()),
-            ydamp_id: context.get_identifier("ENGINE_WOBBLE_DEV_YDAMP".to_owned()),
-            dev_enable_id: context.get_identifier("ENGINE_WOBBLE_DEV_ENABLE".to_owned()),
+            output_gain_id: context.get_identifier("ENGINE_WOBBLE_DEV_OUT_GAIN".to_owned()),
+            lateral_damping_id: context.get_identifier("ENGINE_WOBBLE_DEV_XDAMP".to_owned()),
+            vertical_damping_id: context.get_identifier("ENGINE_WOBBLE_DEV_YDAMP".to_owned()),
+            dev_mode_enable_id: context.get_identifier("ENGINE_WOBBLE_DEV_ENABLE".to_owned()),
 
             reference_point_cg: Vector3::default(),
             cg_position: Vector3::default(),
@@ -104,20 +104,20 @@ impl EngineFlexPhysics {
 }
 impl SimulationElement for EngineFlexPhysics {
     fn read(&mut self, reader: &mut SimulatorReader) {
-        let activate_dev_mode: f64 = reader.read(&self.dev_enable_id);
+        let activate_dev_mode: f64 = reader.read(&self.dev_mode_enable_id);
 
         if activate_dev_mode > 0. {
             self.spring.set_k_and_damping(
-                reader.read(&self.k_const_id),
-                reader.read(&self.damp_const_id),
+                reader.read(&self.spring_const_id),
+                reader.read(&self.damping_const_id),
             );
             self.virtual_mass = reader.read(&self.mass_id);
-            self.position_output_gain = reader.read(&self.gain_id);
-            self.anisotropic_damping_constant[0] = reader.read(&self.xdamp_id);
-            self.anisotropic_damping_constant[1] = reader.read(&self.ydamp_id);
+            self.position_output_gain = reader.read(&self.output_gain_id);
+            self.anisotropic_damping_constant[0] = reader.read(&self.lateral_damping_id);
+            self.anisotropic_damping_constant[1] = reader.read(&self.vertical_damping_id);
 
             // Z dimension not really used we use same param as Y damping
-            self.anisotropic_damping_constant[2] = reader.read(&self.ydamp_id);
+            self.anisotropic_damping_constant[2] = reader.read(&self.vertical_damping_id);
         }
     }
 
