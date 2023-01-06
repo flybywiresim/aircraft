@@ -1,6 +1,6 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { EventBus, DisplayComponent, FSComponent, VNode } from 'msfssdk';
-import { EWDSimvars } from './shared/EWDSimvarPublisher';
+import { AFloor } from './AFloor';
 import { PacksNaiWai } from './PacksNaiWai';
 
 interface UpperDisplayProps {
@@ -14,6 +14,7 @@ export class UpperDisplay extends DisplayComponent<UpperDisplayProps> {
     render(): VNode {
         return (
             <>
+                <AFloor bus={this.props.bus} />
                 <PacksNaiWai bus={this.props.bus} />
             </>
         );
