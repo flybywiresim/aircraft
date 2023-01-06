@@ -14,7 +14,7 @@ use crate::{
 use uom::si::{
     angle::degree,
     f64::{Angle, Length, Velocity},
-    length::{foot},
+    length::foot,
     velocity::foot_per_minute,
 };
 
