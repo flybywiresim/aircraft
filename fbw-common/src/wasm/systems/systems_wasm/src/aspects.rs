@@ -161,6 +161,16 @@ impl<'a, 'b> MsfsAspectBuilder<'a, 'b> {
             .push((Reduce::new(inputs, init, func, output).into(), execute_on));
     }
 
+    /// Write a set of variables to a client data area.
+    pub fn variables_to_clientdata(&mut self, instance: Box<dyn VariablesToClientData>) {
+        let variables = self.variables.register_many(&instance.variables());
+
+        self.actions.push((
+            ToClientData::new(instance, variables).into(),
+            ExecuteOn::PostTick,
+        ));
+    }
+
     /// Write a set of variables to an object.
     pub fn variables_to_object(&mut self, instance: Box<dyn VariablesToObject>) {
         let variables = self.variables.register_many(&instance.variables());
@@ -342,6 +352,7 @@ enum VariableAction {
     Map,
     MapMany,
     Reduce,
+    ToClientData,
     ToObject,
     ToEvent,
     OnChange,
@@ -508,6 +519,47 @@ impl ObjectWrite {
 impl Default for ObjectWrite {
     fn default() -> Self {
         Self::ToSim
+    }
+}
+
+/// Write function provides the output to know if the client data area will be written to sim or not
+pub trait VariablesToClientData {
+    fn variables(&self) -> Vec<Variable>;
+    fn write(&mut self, values: Vec<f64>) -> ObjectWrite;
+    fn set_client_data(&mut self, sim_connect: &mut SimConnect) -> Result<(), Box<dyn Error>>;
+}
+
+struct ToClientData {
+    target_object: Box<dyn VariablesToClientData>,
+    variables: Vec<VariableIdentifier>,
+}
+
+impl ToClientData {
+    fn new(target_object: Box<dyn VariablesToClientData>, variables: Vec<VariableIdentifier>) -> Self {
+        Self {
+            target_object,
+            variables,
+        }
+    }
+}
+
+impl ExecutableVariableAction for ToClientData {
+    fn execute(
+        &mut self,
+        sim_connect: &mut SimConnect,
+        variables: &mut MsfsVariableRegistry,
+    ) -> Result<(), Box<dyn Error>> {
+        let values: Vec<f64> = self
+            .variables
+            .iter()
+            .map(|variable_identifier| variables.read(variable_identifier))
+            .collect();
+
+        if self.target_object.write(values) == ObjectWrite::ToSim {
+            self.target_object.set_client_data(sim_connect)?;
+        }
+
+        Ok(())
     }
 }
 
