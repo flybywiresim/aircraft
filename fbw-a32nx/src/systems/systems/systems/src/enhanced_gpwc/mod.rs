@@ -147,8 +147,8 @@ impl SimulationElement for EnhancedGPWC {
         );
         writer.write_arinc429(
             &self.egpwc_present_latitude_id,
-            self.longitude.value().get::<degree>(),
-            self.longitude.ssm(),
+            self.latitude.value().get::<degree>(),
+            self.latitude.ssm(),
         );
         writer.write_arinc429(
             &self.egpwc_present_longitude_id,
