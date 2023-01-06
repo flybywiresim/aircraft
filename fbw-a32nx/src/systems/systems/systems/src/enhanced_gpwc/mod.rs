@@ -137,22 +137,22 @@ impl SimulationElement for EnhancedGPWC {
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write_arinc429(
             &self.egpwc_destination_longitude_id,
-            self.destination_longitude.value(),
+            self.destination_longitude.value().get::<degree>(),
             self.destination_longitude.ssm(),
         );
         writer.write_arinc429(
             &self.egpwc_destination_latitude_id,
-            self.destination_latitude.value(),
+            self.destination_latitude.value().get::<degree>(),
             self.destination_latitude.ssm(),
         );
         writer.write_arinc429(
             &self.egpwc_present_latitude_id,
-            self.longitude.value(),
+            self.longitude.value().get::<degree>(),
             self.longitude.ssm(),
         );
         writer.write_arinc429(
             &self.egpwc_present_longitude_id,
-            self.longitude.value(),
+            self.longitude.value().get::<degree>(),
             self.longitude.ssm(),
         );
         writer.write(&self.egpwc_gear_is_down_id, self.gear_is_down);
