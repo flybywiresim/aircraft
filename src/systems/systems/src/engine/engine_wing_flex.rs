@@ -5,12 +5,12 @@ use crate::{
     shared::random_from_normal_distribution,
     shared::update_iterator::MaxStepLoop,
     simulation::{
-        InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
-        SimulatorWriter, StartState, UpdateContext, VariableIdentifier, Write,
+        InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
+        SimulatorWriter, UpdateContext, VariableIdentifier, Write,
     },
 };
 
-use uom::si::{f64::*, mass::kilogram, ratio::ratio};
+use uom::si::{f64::*, mass::kilogram};
 
 use nalgebra::Vector3;
 use std::fmt::Debug;
@@ -24,6 +24,7 @@ pub struct EngineFlexPhysics {
     gain_id: VariableIdentifier,
     xdamp_id: VariableIdentifier,
     ydamp_id: VariableIdentifier,
+    dev_enable_id: VariableIdentifier,
 
     reference_point_cg: Vector3<f64>,
     cg_position: Vector3<f64>,
@@ -40,12 +41,13 @@ impl EngineFlexPhysics {
         Self {
             x_position_id: context
                 .get_identifier(format!("ENGINE_{}_WOBBLE_X_POSITION", engine_number)),
-            k_const_id: context.get_identifier("TEST_K_CONST".to_owned()),
-            damp_const_id: context.get_identifier("TEST_DAMP_CONST".to_owned()),
-            mass_id: context.get_identifier("TEST_MASS".to_owned()),
-            gain_id: context.get_identifier("TEST_OUT_GAIN".to_owned()),
-            xdamp_id: context.get_identifier("TEST_XDAMP".to_owned()),
-            ydamp_id: context.get_identifier("TEST_YDAMP".to_owned()),
+            k_const_id: context.get_identifier("ENGINE_WOBBLE_DEV_K_CONST".to_owned()),
+            damp_const_id: context.get_identifier("ENGINE_WOBBLE_DEV_DAMP_CONST".to_owned()),
+            mass_id: context.get_identifier("ENGINE_WOBBLE_DEV_MASS".to_owned()),
+            gain_id: context.get_identifier("ENGINE_WOBBLE_DEV_OUT_GAIN".to_owned()),
+            xdamp_id: context.get_identifier("ENGINE_WOBBLE_DEV_XDAMP".to_owned()),
+            ydamp_id: context.get_identifier("ENGINE_WOBBLE_DEV_YDAMP".to_owned()),
+            dev_enable_id: context.get_identifier("ENGINE_WOBBLE_DEV_ENABLE".to_owned()),
 
             reference_point_cg: Vector3::default(),
             cg_position: Vector3::default(),
@@ -97,48 +99,25 @@ impl EngineFlexPhysics {
             .min(1.)
             .max(-1.);
 
-        let final_pos = (limited_pos + 1.) / 2.;
-
-        println!(
-            "current cg {:.2}/{:.2}/{:.2} lim {:.2} final {:.1} ",
-            self.cg_position[0], self.cg_position[1], self.cg_position[2], limited_pos, final_pos
-        );
-
-        final_pos
+        (limited_pos + 1.) / 2.
     }
 }
 impl SimulationElement for EngineFlexPhysics {
     fn read(&mut self, reader: &mut SimulatorReader) {
-        let new_k = reader.read(&self.k_const_id);
+        let activate_dev_mode: f64 = reader.read(&self.dev_enable_id);
 
-        let new_damp = reader.read(&self.damp_const_id);
+        if activate_dev_mode > 0. {
+            self.spring.set_k_and_damping(
+                reader.read(&self.k_const_id),
+                reader.read(&self.damp_const_id),
+            );
+            self.virtual_mass = reader.read(&self.mass_id);
+            self.position_output_gain = reader.read(&self.gain_id);
+            self.anisotropic_damping_constant[0] = reader.read(&self.xdamp_id);
+            self.anisotropic_damping_constant[1] = reader.read(&self.ydamp_id);
 
-        let new_mass: f64 = reader.read(&self.mass_id);
-
-        let new_gain: f64 = reader.read(&self.gain_id);
-
-        if new_k > 0. || new_damp > 0. {
-            self.spring.set_k_and_damping(new_k, new_damp);
-        }
-
-        if new_mass > 0. {
-            self.virtual_mass = Mass::new::<kilogram>(new_mass);
-        }
-
-        if new_gain > 0. {
-            self.position_output_gain = new_gain;
-        }
-
-        let new_xdamp: f64 = reader.read(&self.xdamp_id);
-        let new_ydamp: f64 = reader.read(&self.ydamp_id);
-
-        if new_xdamp > 0. {
-            self.anisotropic_damping_constant[0] = new_xdamp;
-        }
-
-        if new_ydamp > 0. {
-            self.anisotropic_damping_constant[1] = new_ydamp;
-            self.anisotropic_damping_constant[2] = new_ydamp;
+            // Z dimension not really used we use same param as Y damping
+            self.anisotropic_damping_constant[2] = reader.read(&self.ydamp_id);
         }
     }
 
@@ -151,7 +130,9 @@ impl Debug for EngineFlexPhysics {
         write!(
             f,
             "\nEngine Flex=> CG [{:.2};{:.2};{:.2}]",
-            self.cg_position[0], self.cg_position[1], self.cg_position[2]
+            self.cg_position[0] * self.position_output_gain,
+            self.cg_position[1] * self.position_output_gain,
+            self.cg_position[2] * self.position_output_gain
         )
     }
 }
@@ -190,5 +171,107 @@ impl SimulationElement for EnginesFlexiblePhysics<4> {
         accept_iterable!(self.engines_flex, visitor);
 
         visitor.visit(self);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    use crate::simulation::{
+        test::{ReadByName, SimulationTestBed, TestBed, WriteByName},
+        Aircraft, InitContext, SimulationElement, SimulationElementVisitor, UpdateContext,
+    };
+
+    use ntest::assert_about_eq;
+    use std::time::Duration;
+
+    struct EngineFlexTestAircraft {
+        engines_flex: EnginesFlexiblePhysics<4>,
+    }
+    impl EngineFlexTestAircraft {
+        fn new(context: &mut InitContext) -> Self {
+            Self {
+                engines_flex: EnginesFlexiblePhysics::new(context),
+            }
+        }
+
+        fn update(&mut self, context: &UpdateContext) {
+            self.engines_flex.update(context);
+        }
+    }
+    impl Aircraft for EngineFlexTestAircraft {
+        fn update_after_power_distribution(&mut self, context: &UpdateContext) {
+            self.update(context);
+        }
+    }
+    impl SimulationElement for EngineFlexTestAircraft {
+        fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+            self.engines_flex.accept(visitor);
+            visitor.visit(self);
+        }
+    }
+
+    fn show_animation_positions(test_bed: &mut SimulationTestBed<EngineFlexTestAircraft>) {
+        let engine_1_position: f64 = test_bed.read_by_name("ENGINE_1_WOBBLE_X_POSITION");
+        let engine_2_position: f64 = test_bed.read_by_name("ENGINE_2_WOBBLE_X_POSITION");
+        let engine_3_position: f64 = test_bed.read_by_name("ENGINE_3_WOBBLE_X_POSITION");
+        let engine_4_position: f64 = test_bed.read_by_name("ENGINE_4_WOBBLE_X_POSITION");
+
+        println!(
+            "E1 {:.2} E2 {:.2} E3 {:.2} E4 {:.2}",
+            engine_1_position, engine_2_position, engine_3_position, engine_4_position
+        );
+    }
+
+    #[test]
+    fn check_init_positions_are_zero_point_five() {
+        let mut test_bed = SimulationTestBed::new(EngineFlexTestAircraft::new);
+
+        test_bed.run();
+
+        let engine_1_position: f64 = test_bed.read_by_name("ENGINE_1_WOBBLE_X_POSITION");
+        let engine_2_position: f64 = test_bed.read_by_name("ENGINE_2_WOBBLE_X_POSITION");
+        let engine_3_position: f64 = test_bed.read_by_name("ENGINE_3_WOBBLE_X_POSITION");
+        let engine_4_position: f64 = test_bed.read_by_name("ENGINE_4_WOBBLE_X_POSITION");
+
+        assert_about_eq!(engine_1_position, 0.5);
+        assert_about_eq!(engine_2_position, 0.5);
+        assert_about_eq!(engine_3_position, 0.5);
+        assert_about_eq!(engine_4_position, 0.5);
+    }
+
+    // Following test is ignored because it's hard to set static boundaries to desired results
+    // Tuning is better done visually using dev mode to edit physical properties
+    #[test]
+    #[ignore]
+    fn check_engines_move_in_light_turbulances() {
+        let mut test_bed = SimulationTestBed::new(EngineFlexTestAircraft::new);
+
+        for _ in 0..500 {
+            test_bed.write_by_name("ACCELERATION BODY X", 5.);
+            test_bed.run_with_delta(Duration::from_secs_f64(0.5));
+            show_animation_positions(&mut test_bed);
+            test_bed.write_by_name("ACCELERATION BODY X", -5.);
+            test_bed.run_with_delta(Duration::from_secs_f64(0.5));
+            show_animation_positions(&mut test_bed);
+        }
+    }
+
+    // Following test is ignored because it's hard to set static boundaries to desired results
+    // Tuning is better done visually using dev mode to edit physical properties
+    #[test]
+    #[ignore]
+    fn check_engines_move_in_strong_turbulances() {
+        let mut test_bed = SimulationTestBed::new(EngineFlexTestAircraft::new);
+
+        for _ in 0..500 {
+            test_bed.write_by_name("ACCELERATION BODY X", 15.);
+            test_bed.run_with_delta(Duration::from_secs_f64(0.5));
+            show_animation_positions(&mut test_bed);
+            test_bed.write_by_name("ACCELERATION BODY X", -15.);
+            test_bed.run_with_delta(Duration::from_secs_f64(0.5));
+            show_animation_positions(&mut test_bed);
+        }
     }
 }
