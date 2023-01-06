@@ -41,6 +41,20 @@ class A32NX_EWD extends BaseInstrument {
 
         this.simVarPublisher.subscribe('acEssBus');
         this.simVarPublisher.subscribe('ewdPotentiometer');
+        this.simVarPublisher.subscribe('autoThrustMode');
+        this.simVarPublisher.subscribe('packs1Supplying');
+        this.simVarPublisher.subscribe('packs2Supplying');
+        this.simVarPublisher.subscribe('engine1AntiIce');
+        this.simVarPublisher.subscribe('engine1State');
+        this.simVarPublisher.subscribe('engine2AntiIce');
+        this.simVarPublisher.subscribe('engine2State');
+        this.simVarPublisher.subscribe('wingAntiIce');
+        this.simVarPublisher.subscribe('apuBleedPressure');
+        this.simVarPublisher.subscribe('left1LandingGear');
+        this.simVarPublisher.subscribe('right1LandingGear');
+        this.simVarPublisher.subscribe('throttle1Position');
+        this.simVarPublisher.subscribe('throttle2Position');
+        this.simVarPublisher.subscribe('fwcFlightPhase');
 
         FSComponent.render(<EWDComponent bus={this.bus} instrument={this} />, document.getElementById('EWD_CONTENT'));
     }
