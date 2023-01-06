@@ -45,8 +45,10 @@ class A32NX_EWD extends BaseInstrument {
         this.simVarPublisher.subscribe('packs1Supplying');
         this.simVarPublisher.subscribe('packs2Supplying');
         this.simVarPublisher.subscribe('engine1AntiIce');
+        this.simVarPublisher.subscribe('engine1N1');
         this.simVarPublisher.subscribe('engine1State');
         this.simVarPublisher.subscribe('engine2AntiIce');
+        this.simVarPublisher.subscribe('engine2N1');
         this.simVarPublisher.subscribe('engine2State');
         this.simVarPublisher.subscribe('wingAntiIce');
         this.simVarPublisher.subscribe('apuBleedPressure');
@@ -55,6 +57,7 @@ class A32NX_EWD extends BaseInstrument {
         this.simVarPublisher.subscribe('throttle1Position');
         this.simVarPublisher.subscribe('throttle2Position');
         this.simVarPublisher.subscribe('fwcFlightPhase');
+        this.simVarPublisher.subscribe('idleN1');
 
         FSComponent.render(<EWDComponent bus={this.bus} instrument={this} />, document.getElementById('EWD_CONTENT'));
     }
