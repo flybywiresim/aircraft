@@ -21,7 +21,7 @@
 1. [SEC] Fix GND SPLR logic, add missing GND SPLR partial extension condition - @lukecologne (luke)
 1. [FMGC] Improved importing flight plans from MSFS World Map - @frankkopp (Frank Kopp)  
 1. [EFB] Added boarding time indication to Payload page - @ChristianLutzCL (Christian Lutz) @frankkopp (Frank Kopp)
-1. [FLIGHT MODEL] Modified empty weight cg and loading stations - @donstim (donbikes#4084)
+1. [FLIGHT MODEL/EFB] Modified empty weight cg and loading station/fuel tank locations - @donstim (donbikes#4084)
 
 ## 0.9.0
 
