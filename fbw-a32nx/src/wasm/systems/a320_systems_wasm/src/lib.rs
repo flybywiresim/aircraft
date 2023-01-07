@@ -285,12 +285,12 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
         );
 
         builder.copy(
-            Variable::aircraft("LIGHT POTENTIOMETER:94", "percent over 100", 0),
-            Variable::aspect("ND_L_TERR_ON_ND_POTENTIOMETER",)
+            Variable::aircraft("LIGHT POTENTIOMETER", "percent over 100", 94),
+            Variable::aspect("ND_L_TERR_ON_ND_POTENTIOMETER"),
         );
         builder.copy(
-            Variable::aircraft("LIGHT POTENTIOMETER:95", "percent over 100", 0),
-            Variable::aspect("ND_R_TERR_ON_ND_POTENTIOMETER",)
+            Variable::aircraft("LIGHT POTENTIOMETER", "percent over 100", 95),
+            Variable::aspect("ND_R_TERR_ON_ND_POTENTIOMETER"),
         );
 
         builder.map(
