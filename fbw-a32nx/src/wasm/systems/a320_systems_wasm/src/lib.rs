@@ -2,7 +2,6 @@ mod ailerons;
 mod autobrakes;
 mod brakes;
 mod elevators;
-mod enhanced_gpwc;
 mod flaps;
 mod gear;
 mod nose_wheel_steering;
@@ -15,7 +14,6 @@ use ailerons::ailerons;
 use autobrakes::autobrakes;
 use brakes::brakes;
 use elevators::elevators;
-use enhanced_gpwc::enhanced_gpwc;
 use flaps::flaps;
 use gear::gear;
 use nose_wheel_steering::nose_wheel_steering;
@@ -314,7 +312,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .with_aspect(rudder)?
     .with_aspect(gear)?
     .with_aspect(trimmable_horizontal_stabilizer)?
-    .with_aspect(enhanced_gpwc)?
+    .with_enhanced_gpwc()?
     .build(A320::new)?;
 
     while let Some(event) = gauge.next_event().await {

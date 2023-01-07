@@ -1,6 +1,7 @@
 #[macro_use]
 pub mod aspects;
 mod electrical;
+mod enhanced_gpwc;
 mod failures;
 mod msfs;
 
@@ -11,6 +12,7 @@ use ::msfs::legacy::{AircraftVariable, NamedVariable};
 
 use crate::aspects::{Aspect, ExecuteOn, MsfsAspectBuilder};
 use crate::electrical::{auxiliary_power_unit, electrical_buses};
+use crate::enhanced_gpwc::enhanced_gpwc;
 use ::msfs::{
     sim_connect::{data_definition, Period, SimConnect, SimConnectRecv, SIMCONNECT_OBJECT_ID_USER},
     sys, MSFSEvent,
@@ -105,6 +107,10 @@ impl<'a, 'b> MsfsSimulationBuilder<'a, 'b> {
             is_available_variable,
             fuel_valve_number,
         ))
+    }
+
+    pub fn with_enhanced_gpwc(self) -> Result<Self, Box<dyn Error>> {
+        self.with_aspect(enhanced_gpwc)
     }
 
     pub fn with_failures(mut self, failures: Vec<(u64, FailureType)>) -> Self {
