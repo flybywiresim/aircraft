@@ -15,6 +15,8 @@ use uom::si::{f64::*, mass::kilogram};
 use nalgebra::Vector3;
 use std::fmt::Debug;
 
+/// Solves a basic mass connected to a static point through a spring damper system
+/// Mass center of gravity position reacting to external accelerations is then used to model engine wobbling movement
 pub struct EngineFlexPhysics {
     x_position_id: VariableIdentifier,
 
@@ -35,6 +37,8 @@ pub struct EngineFlexPhysics {
     anisotropic_damping_constant: Vector3<f64>,
 
     position_output_gain: f64,
+
+    animation_position: f64,
 }
 impl EngineFlexPhysics {
     pub fn new(context: &mut InitContext, engine_number: usize) -> Self {
@@ -64,11 +68,15 @@ impl EngineFlexPhysics {
                 random_from_normal_distribution(500., 50.),
             ),
             position_output_gain: 90.,
+
+            animation_position: 0.5,
         }
     }
 
     pub fn update(&mut self, context: &UpdateContext) {
         self.update_speed_position(context);
+
+        self.update_animation_position();
     }
 
     fn update_forces(&mut self, context: &UpdateContext) -> Vector3<f64> {
@@ -94,12 +102,12 @@ impl EngineFlexPhysics {
         self.cg_position += self.cg_speed * context.delta_as_secs_f64();
     }
 
-    fn animation_position(&self) -> f64 {
+    fn update_animation_position(&mut self) {
         let limited_pos = (self.position_output_gain * (self.cg_position[0] + self.cg_position[1]))
             .min(1.)
             .max(-1.);
 
-        (limited_pos + 1.) / 2.
+        self.animation_position = (limited_pos + 1.) / 2.;
     }
 }
 impl SimulationElement for EngineFlexPhysics {
@@ -122,7 +130,7 @@ impl SimulationElement for EngineFlexPhysics {
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(&self.x_position_id, self.animation_position());
+        writer.write(&self.x_position_id, self.animation_position);
     }
 }
 impl Debug for EngineFlexPhysics {
