@@ -26,7 +26,7 @@ export class AtsuTimestamp {
             retval.Seconds = jsonData.Seconds as number;
         }
 
-        return null;
+        return retval;
     }
 
     public mailboxTimestamp(): string {
