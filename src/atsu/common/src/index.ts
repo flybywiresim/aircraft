@@ -12,7 +12,8 @@ import { FansMode } from './com/FutureAirNavigationSystem';
 import { coordinateToString } from './components/Convert';
 import { UplinkMessageInterpretation } from './components/UplinkMessageInterpretation';
 import { UplinkMonitor } from './components/UplinkMonitor';
-import { Clock, Waypoint } from './types';
+import { Clock } from './types';
+import { Waypoint } from './types/Waypoint';
 
 export * from './messages';
 export {

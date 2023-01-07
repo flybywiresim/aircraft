@@ -1,5 +1,6 @@
 import { CpdlcMessage } from '../messages/CpdlcMessage';
-import { Clock, Waypoint } from '../types';
+import { Clock } from '../types';
+import { Waypoint } from '../types/Waypoint';
 
 export enum UplinkMonitorType {
     Unknown = -1,
@@ -60,7 +61,7 @@ class PositionMonitor extends UplinkMonitor {
     }
 
     public conditionsMet(condition: Waypoint | Clock | number): boolean {
-        if (condition instanceof Waypoint) {
+        if (typeof condition !== 'number' && 'ident' in condition) {
             const lastPosition = condition.ident;
             return this.positionMonitor === lastPosition;
         }

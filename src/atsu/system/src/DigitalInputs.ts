@@ -114,14 +114,6 @@ export class DigitalInputs {
         this.subscriber = this.bus.getSubscriber<AtcMessageButtonBusTypes & ClockDataBusTypes & FmgcDataBusTypes & FwcDataBusTypes & TransponderDataBusTypes & AtsuFmsMessages>();
     }
 
-    // needed to enhance structure by functions that are lost during the event-transmission
-    private static enhanceWaypoint(waypoint: Waypoint): Waypoint {
-        const retval = new Waypoint(waypoint.ident);
-        retval.altitude = waypoint.altitude;
-        retval.utc = waypoint.utc;
-        return retval;
-    }
-
     public connectedCallback(): void {
         this.atcMessageButtonBus.connectedCallback();
         this.clockBus.connectedCallback();
@@ -184,16 +176,16 @@ export class DigitalInputs {
             this.FlightRoute.destination = null;
 
             if (route.lastWaypoint !== null) {
-                this.FlightRoute.lastWaypoint = DigitalInputs.enhanceWaypoint(route.lastWaypoint);
+                this.FlightRoute.lastWaypoint = route.lastWaypoint;
             }
             if (route.activeWaypoint !== null) {
-                this.FlightRoute.activeWaypoint = DigitalInputs.enhanceWaypoint(route.activeWaypoint);
+                this.FlightRoute.activeWaypoint = route.activeWaypoint;
             }
             if (route.nextWaypoint !== null) {
-                this.FlightRoute.nextWaypoint = DigitalInputs.enhanceWaypoint(route.nextWaypoint);
+                this.FlightRoute.nextWaypoint = route.nextWaypoint;
             }
             if (route.destination !== null) {
-                this.FlightRoute.destination = DigitalInputs.enhanceWaypoint(route.destination);
+                this.FlightRoute.destination = route.destination;
             }
         });
     }
