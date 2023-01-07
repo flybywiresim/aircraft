@@ -149,7 +149,7 @@ impl A320HydraulicCircuitFactory {
     const HYDRAULIC_TARGET_PRESSURE_PSI: f64 = 3000.;
 
     const PRIORITY_VALVE_PRESSURE_CUTOFF_PSI: f64 = 1842.;
-    const PRIORITY_VALVE_PRESSURE_OPENED_PSI: f64 = 2150.;
+    const PRIORITY_VALVE_PRESSURE_OPENED_PSI: f64 = 2300.;
 
     // Nitrogen PSI precharge pressure
     const ACCUMULATOR_GAS_PRE_CHARGE_PSI: f64 = 1885.0;
