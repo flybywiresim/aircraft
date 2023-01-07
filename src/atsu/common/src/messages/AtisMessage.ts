@@ -46,8 +46,12 @@ export class AtisMessage extends WeatherMessage {
         });
     }
 
-    public deserialize(jsonData: Record<string, unknown>) {
-        super.deserialize(jsonData);
-        this.Information = jsonData.Information as string;
+    public static deserialize(jsonData: Record<string, unknown> | AtisMessage): AtisMessage {
+        const retval = new AtisMessage();
+
+        WeatherMessage.deserialize(jsonData, retval);
+        retval.Information = jsonData.Information as string;
+
+        return retval;
     }
 }

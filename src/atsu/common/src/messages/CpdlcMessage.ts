@@ -43,28 +43,26 @@ export class CpdlcMessage extends AtsuMessage {
         this.Direction = AtsuMessageDirection.Downlink;
     }
 
-    public deserialize(jsonData: Record<string, unknown>): void {
-        super.deserialize(jsonData);
+    public static deserialize(jsonData: Record<string, unknown> | CpdlcMessage, message: CpdlcMessage = null): CpdlcMessage {
+        if (message === null) message = new CpdlcMessage();
 
-        (jsonData.Content as CpdlcMessageElement[]).forEach((element) => {
-            const entry = new CpdlcMessageElement('');
-            entry.deserialize(element);
-            this.Content.push(entry);
-        });
+        AtsuMessage.deserialize(jsonData, message);
+
+        (jsonData.Content as CpdlcMessageElement[]).forEach((element) => message.Content.push(CpdlcMessageElement.deserialize(element)));
         if (jsonData.Response) {
-            this.Response = new CpdlcMessage();
-            this.Response.deserialize(jsonData.Response as Record<string, unknown>);
+            message.Response = CpdlcMessage.deserialize(jsonData.Response as Record<string, unknown>);
         }
-        this.CurrentTransmissionId = jsonData.CurrentTransmissionId as number;
-        this.PreviousTransmissionId = jsonData.PreviousTransmissionId as number;
-        this.MailboxRelevantMessage = jsonData.MailboxRelevantMessage as boolean;
-        this.CloseAutomatically = jsonData.CloseAutomatically as boolean;
-        this.MessageMonitoring = jsonData.MessageMonitoring as CpdlcMessageMonitoringState;
-        this.SemanticResponseRequired = jsonData.SemanticResponseRequired as boolean;
+        message.CurrentTransmissionId = jsonData.CurrentTransmissionId as number;
+        message.PreviousTransmissionId = jsonData.PreviousTransmissionId as number;
+        message.MailboxRelevantMessage = jsonData.MailboxRelevantMessage as boolean;
+        message.CloseAutomatically = jsonData.CloseAutomatically as boolean;
+        message.MessageMonitoring = jsonData.MessageMonitoring as CpdlcMessageMonitoringState;
+        message.SemanticResponseRequired = jsonData.SemanticResponseRequired as boolean;
         if (jsonData.ReminderTimestamp) {
-            this.ReminderTimestamp = new AtsuTimestamp();
-            this.ReminderTimestamp.deserialize(jsonData.ReminderTimestamp as Record<string, unknown>);
+            message.ReminderTimestamp = AtsuTimestamp.deserialize(jsonData.ReminderTimestamp as Record<string, unknown>);
         }
+
+        return message;
     }
 
     protected serializeContent(format: AtsuMessageSerializationFormat, template: string, element: CpdlcMessageElement): string {

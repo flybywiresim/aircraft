@@ -50,16 +50,19 @@ export class OclMessage extends CpdlcMessage {
     }
 
     // used to deserialize event data
-    public deserialize(jsonData: Record<string, unknown>): void {
-        super.deserialize(jsonData);
+    public static deserialize(jsonData: Record<string, unknown> | OclMessage): OclMessage {
+        const retval = new OclMessage();
 
-        this.Callsign = jsonData.Callsign as string;
-        this.Destination = jsonData.Destination as string;
-        this.EntryPoint = jsonData.EntryPoint as string;
-        this.EntryTime = jsonData.EntryTime as string;
-        this.RequestedMach = jsonData.RequestedMach as string;
-        this.RequestedFlightlevel = jsonData.RequestedFlightlevel as string;
-        this.Freetext = jsonData.Freetext as string[];
+        CpdlcMessage.deserialize(jsonData, retval);
+        retval.Callsign = jsonData.Callsign as string;
+        retval.Destination = jsonData.Destination as string;
+        retval.EntryPoint = jsonData.EntryPoint as string;
+        retval.EntryTime = jsonData.EntryTime as string;
+        retval.RequestedMach = jsonData.RequestedMach as string;
+        retval.RequestedFlightlevel = jsonData.RequestedFlightlevel as string;
+        retval.Freetext = jsonData.Freetext as string[];
+
+        return retval;
     }
 }
 

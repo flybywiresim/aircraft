@@ -116,12 +116,16 @@ export abstract class CpdlcMessageContent {
         }
     }
 
-    public deserialize(jsonData: any): void {
-        this.Type = jsonData.Type;
-        this.IndexStart = jsonData.IndexStart;
-        this.IndexEnd = jsonData.IndexEnd;
-        this.Value = jsonData.Value;
-        this.Monitoring = jsonData.Monitoring;
+    public static deserialize(jsonData: any): CpdlcMessageContent {
+        const retval = CpdlcMessageContent.createInstance(jsonData.Type);
+
+        retval.Type = jsonData.Type;
+        retval.IndexStart = jsonData.IndexStart;
+        retval.IndexEnd = jsonData.IndexEnd;
+        retval.Value = jsonData.Value;
+        retval.Monitoring = jsonData.Monitoring;
+
+        return retval;
     }
 }
 
@@ -551,17 +555,18 @@ export class CpdlcMessageElement {
         return instance;
     }
 
-    public deserialize(jsonData: any): void {
-        this.TypeId = jsonData.TypeId;
-        this.FansModes = jsonData.FansModes;
-        this.Urgent = jsonData.Urgent;
+    public static deserialize(jsonData: any): CpdlcMessageElement {
+        const retval = new CpdlcMessageElement(jsonData.TypeId);
 
-        jsonData.Content.forEach((entry) => {
-            this.Content.push(CpdlcMessageContent.createInstance(entry.Type));
-            this.Content[this.Content.length - 1].deserialize(entry);
-        });
+        retval.TypeId = jsonData.TypeId;
+        retval.FansModes = jsonData.FansModes;
+        retval.Urgent = jsonData.Urgent;
 
-        this.ExpectedResponse = jsonData.ExpectedResponse;
+        jsonData.Content.forEach((entry) => retval.Content.push(CpdlcMessageContent.deserialize(entry)));
+
+        retval.ExpectedResponse = jsonData.ExpectedResponse;
+
+        return retval;
     }
 }
 

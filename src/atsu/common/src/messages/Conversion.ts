@@ -8,36 +8,24 @@ import { OclMessage } from './OclMessage';
 import { TafMessage } from './TafMessage';
 
 export class Conversion {
-    public static messageDataToMessage<T extends AtsuMessage>(data: T): T {
-        let message = null;
-
+    public static messageDataToMessage(data: AtsuMessage | Record<string, unknown>): AtsuMessage {
         switch (data.Type as AtsuMessageType) {
         case AtsuMessageType.ATIS:
-            message = new AtisMessage();
-            break;
+            return AtisMessage.deserialize(data as AtisMessage);
         case AtsuMessageType.CPDLC:
-            message = new CpdlcMessage();
-            break;
+            return CpdlcMessage.deserialize(data as CpdlcMessage);
         case AtsuMessageType.DCL:
-            message = new DclMessage();
-            break;
+            return DclMessage.deserialize(data as DclMessage);
         case AtsuMessageType.Freetext:
-            message = new FreetextMessage();
-            break;
+            return FreetextMessage.deserialize(data as FreetextMessage);
         case AtsuMessageType.METAR:
-            message = new MetarMessage();
-            break;
+            return MetarMessage.deserialize(data as MetarMessage);
         case AtsuMessageType.OCL:
-            message = new OclMessage();
-            break;
+            return OclMessage.deserialize(data as OclMessage);
         case AtsuMessageType.TAF:
-            message = new TafMessage();
-            break;
+            return TafMessage.deserialize(data as TafMessage);
         default:
-            break;
+            return null;
         }
-
-        message.deserialize(data);
-        return message;
     }
 }

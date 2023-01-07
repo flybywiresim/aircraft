@@ -261,7 +261,7 @@ const DCDU: React.FC = () => {
             }
 
             const enhancedMessages: CpdlcMessage[] = [];
-            cpdlcMessages.forEach((message) => enhancedMessages.push(Conversion.messageDataToMessage(message)));
+            cpdlcMessages.forEach((message) => enhancedMessages.push(Conversion.messageDataToMessage(message) as CpdlcMessage));
 
             if (enhancedMessages.length !== 0) {
                 const newMessageMap = new Map<number, DcduMessageBlock>(messagesRef.current);

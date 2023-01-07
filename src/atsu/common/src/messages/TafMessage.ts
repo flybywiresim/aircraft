@@ -14,4 +14,10 @@ export class TafMessage extends WeatherMessage {
         this.Type = AtsuMessageType.TAF;
         this.Station = NXDataStore.get('CONFIG_TAF_SRC', 'MSFS');
     }
+
+    public static deserialize(jsonData: TafMessage | Record<string, unknown>): TafMessage {
+        const retval = new TafMessage();
+        WeatherMessage.deserialize(jsonData, retval);
+        return retval;
+    }
 }

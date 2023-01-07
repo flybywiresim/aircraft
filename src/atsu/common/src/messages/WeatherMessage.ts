@@ -62,10 +62,14 @@ export class WeatherMessage extends AtsuMessage {
         return message;
     }
 
-    public deserialize(jsonData: Record<string, unknown>): void {
-        super.deserialize(jsonData);
+    public static deserialize(jsonData: Record<string, unknown> | WeatherMessage, message: WeatherMessage = null): WeatherMessage {
+        if (message === null) message = new WeatherMessage();
+
+        AtsuMessage.deserialize(jsonData, message);
         (jsonData.Reports as { airport: string; report: string; }[]).forEach((report) => {
-            this.Reports.push({ airport: report.airport, report: report.report });
+            message.Reports.push({ airport: report.airport, report: report.report });
         });
+
+        return message;
     }
 }

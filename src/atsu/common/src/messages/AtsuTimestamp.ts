@@ -16,13 +16,17 @@ export class AtsuTimestamp {
 
     public Seconds: number = 0;
 
-    public deserialize(jsonData: Record<string, unknown>) {
+    public static deserialize(jsonData: Record<string, unknown>): AtsuTimestamp {
+        const retval = new AtsuTimestamp();
+
         if (jsonData !== null) {
-            this.Year = jsonData.Year as number;
-            this.Month = jsonData.Month as number;
-            this.Day = jsonData.Day as number;
-            this.Seconds = jsonData.Seconds as number;
+            retval.Year = jsonData.Year as number;
+            retval.Month = jsonData.Month as number;
+            retval.Day = jsonData.Day as number;
+            retval.Seconds = jsonData.Seconds as number;
         }
+
+        return null;
     }
 
     public mailboxTimestamp(): string {
