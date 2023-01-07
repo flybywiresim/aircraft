@@ -65,8 +65,6 @@ export class Idle extends DisplayComponent<IdleProps> {
                 }, 10 * 1000);
             } else if (!showIdle) {
                 clearTimeout(this.flashTimer);
-            } else {
-                this.textClass.set('Large Center Green');
             }
         });
     }
