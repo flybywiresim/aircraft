@@ -1,4 +1,5 @@
 import { Clock, EventBus, FSComponent } from 'msfssdk';
+import { ArincValueProvider } from './shared/ArincValueProvider';
 import { EWDComponent } from './EWD';
 import { EWDSimvarPublisher } from './shared/EWDSimvarPublisher';
 
@@ -8,6 +9,8 @@ class A32NX_EWD extends BaseInstrument {
     private bus: EventBus;
 
     private simVarPublisher: EWDSimvarPublisher;
+
+    private readonly arincProvider: ArincValueProvider;
 
     private readonly clock: Clock;
 
@@ -23,6 +26,7 @@ class A32NX_EWD extends BaseInstrument {
         super();
         this.bus = new EventBus();
         this.simVarPublisher = new EWDSimvarPublisher(this.bus);
+        this.arincProvider = new ArincValueProvider(this.bus);
         this.clock = new Clock(this.bus);
     }
 
@@ -37,17 +41,22 @@ class A32NX_EWD extends BaseInstrument {
     public connectedCallback(): void {
         super.connectedCallback();
 
+        this.arincProvider.init();
         this.clock.init();
 
         this.simVarPublisher.subscribe('acEssBus');
         this.simVarPublisher.subscribe('ewdPotentiometer');
+        this.simVarPublisher.subscribe('autoThrustLimit');
+        this.simVarPublisher.subscribe('autoThrustLimitType');
         this.simVarPublisher.subscribe('autoThrustMode');
         this.simVarPublisher.subscribe('packs1Supplying');
         this.simVarPublisher.subscribe('packs2Supplying');
         this.simVarPublisher.subscribe('engine1AntiIce');
+        this.simVarPublisher.subscribe('engine1Fadec');
         this.simVarPublisher.subscribe('engine1N1');
         this.simVarPublisher.subscribe('engine1State');
         this.simVarPublisher.subscribe('engine2AntiIce');
+        this.simVarPublisher.subscribe('engine2Fadec');
         this.simVarPublisher.subscribe('engine2N1');
         this.simVarPublisher.subscribe('engine2State');
         this.simVarPublisher.subscribe('wingAntiIce');
@@ -58,6 +67,8 @@ class A32NX_EWD extends BaseInstrument {
         this.simVarPublisher.subscribe('throttle2Position');
         this.simVarPublisher.subscribe('fwcFlightPhase');
         this.simVarPublisher.subscribe('idleN1');
+        this.simVarPublisher.subscribe('flexTemp');
+        this.simVarPublisher.subscribe('satRaw');
 
         FSComponent.render(<EWDComponent bus={this.bus} instrument={this} />, document.getElementById('EWD_CONTENT'));
     }

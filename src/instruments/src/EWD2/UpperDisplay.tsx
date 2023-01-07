@@ -2,6 +2,7 @@
 import { EventBus, DisplayComponent, FSComponent, VNode } from 'msfssdk';
 import { AFloor } from './AFloor';
 import { Idle } from './Idle';
+import { N1Idle } from './N1Idle';
 import { PacksNaiWai } from './PacksNaiWai';
 
 interface UpperDisplayProps {
@@ -17,6 +18,7 @@ export class UpperDisplay extends DisplayComponent<UpperDisplayProps> {
             <>
                 <AFloor bus={this.props.bus} />
                 <Idle bus={this.props.bus} />
+                <N1Idle bus={this.props.bus} />
                 <PacksNaiWai bus={this.props.bus} />
             </>
         );
