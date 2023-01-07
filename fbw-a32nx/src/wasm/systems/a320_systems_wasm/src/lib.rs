@@ -286,6 +286,15 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
             Variable::aspect("BUTTON_OVHD_ANTI_ICE_WING_POSITION"),
         );
 
+        builder.copy(
+            Variable::aircraft("LIGHT POTENTIOMETER:94", "percent over 100", 0),
+            Variable::aspect("ND_L_TERR_ON_ND_POTENTIOMETER",)
+        );
+        builder.copy(
+            Variable::aircraft("LIGHT POTENTIOMETER:95", "percent over 100", 0),
+            Variable::aspect("ND_R_TERR_ON_ND_POTENTIOMETER",)
+        );
+
         builder.map(
             ExecuteOn::PreTick,
             Variable::aircraft("INTERACTIVE POINT OPEN", "Position", 5),

@@ -21,16 +21,13 @@ pub struct NavigationDisplay {
     potentiometer: Ratio,
     // output variables of the display
     egpwc_nd_range_id: VariableIdentifier,
-    egpwc_nd_mode_id: VariableIdentifier,
     egpwc_nd_terrain_active_id: VariableIdentifier,
-    egpwc_nd_terrain_brightness_id: VariableIdentifier,
 }
 
 impl NavigationDisplay {
     pub fn new(
         context: &mut InitContext,
         side: &str,
-        potentiometer: u32,
     ) -> Self {
         NavigationDisplay {
             range_knob_id: context.get_identifier(format!("EFIS_{}_ND_RANGE", side)),
@@ -41,12 +38,10 @@ impl NavigationDisplay {
             terrain_on_nd_pb_id: context.get_identifier(format!("EFIS_TERR_{}_ACTIVE", side)),
             terrain_on_nd_pb_active: false,
             terrain_on_nd_active: false,
-            potentiometer_id: context.get_identifier(format!("LIGHT POTENTIOMETER:{}", potentiometer)),
+            potentiometer_id: context.get_identifier(format!("ND_{}_TERR_ON_ND_POTENTIOMETER", side)),
             potentiometer: Ratio::new::<percent>(100.0),
             egpwc_nd_range_id: context.get_identifier(format!("EGPWC_ND_{}_RANGE", side)),
-            egpwc_nd_mode_id: context.get_identifier(format!("EGPWC_ND_{}_MODE", side)),
             egpwc_nd_terrain_active_id: context.get_identifier(format!("EGPWC_ND_{}_TERRAIN_ACTIVE", side)),
-            egpwc_nd_terrain_brightness_id: context.get_identifier(format!("EGPWC_ND_{}_TERRAIN_BRIGHTNESS", side)),
         }
     }
 
@@ -69,9 +64,7 @@ impl SimulationElement for NavigationDisplay {
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(&self.egpwc_nd_range_id, self.range);
-        writer.write(&self.egpwc_nd_mode_id, self.mode);
+        writer.write(&self.egpwc_nd_range_id, self.range.get::<nautical_mile>());
         writer.write(&self.egpwc_nd_terrain_active_id, self.terrain_on_nd_active);
-        writer.write(&self.egpwc_nd_terrain_brightness_id, self.potentiometer);
     }
 }

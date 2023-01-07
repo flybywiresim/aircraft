@@ -114,8 +114,6 @@ impl A320 {
             enhanced_gpwc: EnhancedGPWC::new(
                 context,
                 ElectricalBusType::DirectCurrent(1),
-                94,
-                95,
                 Vec::from([
                     Length::new::<nautical_mile>(10.0),
                     Length::new::<nautical_mile>(20.0),

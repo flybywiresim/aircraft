@@ -49,8 +49,6 @@ impl EnhancedGPWC {
     pub fn new(
         context: &mut InitContext,
         powered_by: ElectricalBusType,
-        potentiometer_capt: u32,
-        potentiometer_fo: u32,
         range_lookup: Vec<Length>,
     ) -> Self {
         EnhancedGPWC {
@@ -69,8 +67,8 @@ impl EnhancedGPWC {
             vertical_speed: Arinc429Word::new(Velocity::new::<foot_per_minute>(0.0), SignStatus::FailureWarning),
             navigation_display_range_lookup: range_lookup,
             navigation_displays: [
-                NavigationDisplay::new(context, "L", potentiometer_capt),
-                NavigationDisplay::new(context, "R", potentiometer_fo),
+                NavigationDisplay::new(context, "L"),
+                NavigationDisplay::new(context, "R"),
             ],
             gear_is_down: true,
             egpwc_destination_longitude_id: context.get_identifier("EGPWC_DEST_LAT".to_owned()),
