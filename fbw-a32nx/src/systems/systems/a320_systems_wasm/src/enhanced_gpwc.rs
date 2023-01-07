@@ -38,7 +38,11 @@ struct AircraftStatus {
     nd_capt_range: u16,
     nd_capt_mode: u8,
     nd_capt_terrain_active: u8,
-    nd_capt_terrain_brightness: u8,
+    nd_capt_terrain_brightness: f32,
+    nd_fo_range: u16,
+    nd_fo_mode: u8,
+    nd_fo_terrain_active: u8,
+    nd_fo_terrain_brightness: f32,
 }
 
 impl AircraftStatus {
@@ -57,7 +61,11 @@ impl AircraftStatus {
             nd_capt_range: 0,
             nd_capt_mode: 0,
             nd_capt_terrain_active: 0,
-            nd_capt_terrain_brightness: 0,
+            nd_capt_terrain_brightness: 0.0,
+            nd_fo_range: 0,
+            nd_fo_mode: 0,
+            nd_fo_terrain_active: 0,
+            nd_fo_terrain_brightness: 0.0,
         }
     }
 }
@@ -97,6 +105,10 @@ impl VariablesToClientData for AircraftStatusClientDataArea {
             Variable::named("EFIS_L_ND_MODE"),
             Variable::named("EGPWC_ND_L_TERRAIN_ACTIVE"),
             Variable::named("ND_L_TERR_ON_ND_POTENTIOMETER"),
+            Variable::named("EGPWC_ND_R_RANGE"),
+            Variable::named("EFIS_R_ND_MODE"),
+            Variable::named("EGPWC_ND_R_TERRAIN_ACTIVE"),
+            Variable::named("ND_R_TERR_ON_ND_POTENTIOMETER"),
         ]
     }
 
@@ -132,7 +144,11 @@ impl VariablesToClientData for AircraftStatusClientDataArea {
         self.data.nd_capt_range = values[8] as u16;
         self.data.nd_capt_mode = values[9] as u8;
         self.data.nd_capt_terrain_active = values[10] as u8;
-        self.data.nd_capt_terrain_brightness = values[11] as u8;
+        self.data.nd_capt_terrain_brightness = values[11] as f32;
+        self.data.nd_fo_range = values[12] as u16;
+        self.data.nd_fo_mode = values[13] as u8;
+        self.data.nd_fo_terrain_active = values[14] as u8;
+        self.data.nd_fo_terrain_brightness = values[15] as f32;
 
         println!("--------------------------------");
         println!("EGPWC: {}", self.data.adiru_data_valid);
