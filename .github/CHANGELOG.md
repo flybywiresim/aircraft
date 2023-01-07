@@ -21,6 +21,7 @@
 1. [SEC] Fix GND SPLR logic, add missing GND SPLR partial extension condition - @lukecologne (luke)
 1. [FMGC] Improved importing flight plans from MSFS World Map - @frankkopp (Frank Kopp)
 1. [EFB] Added boarding time indication to Payload page - @ChristianLutzCL (Christian Lutz) @frankkopp (Frank Kopp)
+1. [EFB] Show correct runway numbers in landing calculator's runway widget when heading is between 0-5 degrees - @2hwk (2Cas#1022)
 1. [HYD] Realistic randomized yellow accumulator starting state - @Crocket63 (crocket)
 
 ## 0.9.0
