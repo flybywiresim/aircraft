@@ -362,6 +362,11 @@ const DCDU: React.FC = () => {
         });
 
         setSubscriber(newSubscriber);
+
+        // remove the subscriber to avoid memory leaks
+        return () => {
+            setSubscriber(null);
+        };
     }, []);
 
     useUpdate((deltaTime) => {
