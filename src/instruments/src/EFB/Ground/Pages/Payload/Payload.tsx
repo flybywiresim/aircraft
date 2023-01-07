@@ -10,7 +10,7 @@ import {
 } from 'react-bootstrap-icons';
 import { useSimVar } from '@instruments/common/simVars';
 import { Units } from '@shared/units';
-import { usePersistentProperty } from '@instruments/common/persistence';
+import { usePersistentNumberProperty, usePersistentProperty } from '@instruments/common/persistence';
 import { BitFlags } from '@shared/bitFlags';
 import { useBitFlags } from '@instruments/common/bitFlags';
 import { round } from 'lodash';
@@ -137,6 +137,12 @@ export const Payload = () => {
     const simbriefBag = parseInt(useAppSelector((state) => state.simbrief.data.weights.bagCount));
     const simbriefFreight = parseInt(useAppSelector((state) => state.simbrief.data.weights.freight));
 
+    // GSX
+    const [gsxPayloadSyncEnabled] = usePersistentNumberProperty('GSX_PAYLOAD_SYNC', 0);
+    const [_, setGsxNumPassengers] = useSimVar('L:FSDT_GSX_NUMPASSENGERS', 'Number');
+    const [gsxBoardingState] = useSimVar('L:FSDT_GSX_BOARDING_STATE', 'Number');
+    const [gsxDeBoardingState] = useSimVar('L:FSDT_GSX_DEBOARDING _STATE', 'Number');
+
     const setSimBriefValues = () => {
         if (simbriefUnits === 'kgs') {
             const perBagWeight = Units.kilogramToUser(simbriefBagWeight);
@@ -221,6 +227,8 @@ export const Payload = () => {
 
     const setTargetPax = useCallback((numOfPax: number) => {
         if (!stationSize || numOfPax === totalPaxDesired || numOfPax > maxPax || numOfPax < 0) return;
+
+        setGsxNumPassengers(numOfPax);
 
         let paxRemaining = numOfPax;
 
@@ -519,6 +527,36 @@ export const Payload = () => {
     }, [boardingStarted]);
 
     useEffect(() => {
+        console.log(`GSX Boarding State ${gsxBoardingState}`);
+        if (gsxPayloadSyncEnabled === 1) {
+            switch (gsxBoardingState) {
+            case 4:
+            case 5:
+                setBoardingStarted(true);
+                break;
+            default:
+                setBoardingStarted(false);
+                break;
+            }
+        }
+    }, [gsxBoardingState]);
+
+    useEffect(() => {
+        console.log(`GSX Boarding State ${gsxBoardingState}`);
+        if (gsxPayloadSyncEnabled === 1) {
+            switch (gsxDeBoardingState) {
+            case 4:
+            case 5:
+                setBoardingStarted(true);
+                break;
+            default:
+                setBoardingStarted(false);
+                break;
+            }
+        }
+    }, [gsxDeBoardingState]);
+
+    useEffect(() => {
         const centerTankMoment = -6;
         const innerTankMoment = -8;
         const outerTankMoment = -13;
@@ -618,7 +656,7 @@ export const Payload = () => {
                                 <table className="w-full">
                                     <thead className="w-full border-b">
                                         <tr className="py-2">
-                                            <th scope="col" colSpan={2} className="py-2 px-4 w-full font-medium text-center text-md">
+                                            <th scope="col" colSpan={2} className="py-2 px-4 w-full font-medium text-center text-md" hidden={boardingStarted}>
                                                 {t('Ground.Payload.Planned')}
                                             </th>
                                             <th scope="col" className="py-2 px-4 w-full font-medium text-center text-md">
@@ -636,7 +674,7 @@ export const Payload = () => {
                                             </td>
                                             <td>
                                                 <TooltipWrapper text={`${t('Ground.Payload.TT.MaxPassengers')} ${maxPax}`}>
-                                                    <div className="px-4 font-light whitespace-nowrap text-md">
+                                                    <div className="px-4 font-light whitespace-nowrap text-md" hidden={boardingStarted}>
                                                         <PayloadValueInput
                                                             min={0}
                                                             max={maxPax > 0 ? maxPax : 999}
@@ -663,7 +701,7 @@ export const Payload = () => {
                                             </td>
                                             <td>
                                                 <TooltipWrapper text={`${t('Ground.Payload.TT.MaxCargo')} ${maxCargo.toFixed(0)} ${massUnitForDisplay}`}>
-                                                    <div className="px-4 font-light whitespace-nowrap text-md">
+                                                    <div className="px-4 font-light whitespace-nowrap text-md" hidden={boardingStarted}>
                                                         <PayloadValueInput
                                                             min={0}
                                                             max={maxCargo > 0 ? Math.round(maxCargo) : 99999}
@@ -689,7 +727,7 @@ export const Payload = () => {
                                             </td>
                                             <td>
                                                 <TooltipWrapper text={`${t('Ground.Payload.TT.MaxZFW')} ${Units.kilogramToUser(Loadsheet.specs.weights.maxZfw).toFixed(0)} ${usingMetric ? 'kg' : 'lb'}`}>
-                                                    <div className="px-4 font-light whitespace-nowrap text-md">
+                                                    <div className="px-4 font-light whitespace-nowrap text-md" hidden={boardingStarted}>
                                                         <PayloadValueInput
                                                             min={Math.round(emptyWeight)}
                                                             max={Math.round(Units.kilogramToUser(Loadsheet.specs.weights.maxZfw))}
@@ -777,35 +815,37 @@ export const Payload = () => {
                                             <div className="absolute top-2 right-3 text-lg text-gray-400">{usingMetric ? 'KG' : 'LB'}</div>
                                         </div>
                                     </TooltipWrapper>
-
-                                    <TooltipWrapper text={t('Ground.Payload.TT.StartBoarding')}>
-                                        <button
-                                            type="button"
-                                            className={`flex justify-center rounded-lg items-center ml-auto w-24 h-12
+                                    {gsxPayloadSyncEnabled !== 1 && (
+                                        <>
+                                            <TooltipWrapper text={t('Ground.Payload.TT.StartBoarding')}>
+                                                <button
+                                                    type="button"
+                                                    className={`flex justify-center rounded-lg items-center ml-auto w-24 h-12
                                                         ${boardingStatusClass} bg-current`}
-                                            onClick={() => setBoardingStarted(!boardingStarted)}
-                                        >
-                                            <div className="text-theme-body">
-                                                <ArrowLeftRight size={32} className={boardingStarted ? 'hidden' : ''} />
-                                                <StopCircleFill size={32} className={boardingStarted ? '' : 'hidden'} />
-                                            </div>
-                                        </button>
-                                    </TooltipWrapper>
+                                                    onClick={() => setBoardingStarted(!boardingStarted)}
+                                                >
+                                                    <div className="text-theme-body">
+                                                        <ArrowLeftRight size={32} className={boardingStarted ? 'hidden' : ''} />
+                                                        <StopCircleFill size={32} className={boardingStarted ? '' : 'hidden'} />
+                                                    </div>
+                                                </button>
+                                            </TooltipWrapper>
 
-                                    <TooltipWrapper text={t('Ground.Payload.TT.StartDeboarding')}>
-                                        <button
-                                            type="button"
-                                            className={`flex justify-center items-center ml-1 w-16 h-12 text-theme-highlight bg-current rounded-lg
+                                            <TooltipWrapper text={t('Ground.Payload.TT.StartDeboarding')}>
+                                                <button
+                                                    type="button"
+                                                    className={`flex justify-center items-center ml-1 w-16 h-12 text-theme-highlight bg-current rounded-lg
                                                         ${totalPax === 0 && totalCargo === 0 && 'opacity-20 pointer-events-none'}`}
-                                            onClick={() => handleDeboarding()}
-                                        >
-                                            <div className="text-theme-body">
-                                                {' '}
-                                                <BoxArrowRight size={32} className={`${boardingStarted && 'opacity-20 pointer-events-none'} : ''}`} />
-                                            </div>
-                                        </button>
-                                    </TooltipWrapper>
-
+                                                    onClick={() => handleDeboarding()}
+                                                >
+                                                    <div className="text-theme-body">
+                                                        {' '}
+                                                        <BoxArrowRight size={32} className={`${boardingStarted && 'opacity-20 pointer-events-none'} : ''}`} />
+                                                    </div>
+                                                </button>
+                                            </TooltipWrapper>
+                                        </>
+                                    )}
                                 </div>
                             </Card>
 
@@ -827,58 +867,59 @@ export const Payload = () => {
                                     </TooltipWrapper>
                                 )}
                         </div>
+                        {(gsxPayloadSyncEnabled !== 1) && (
+                            <div className="flex flex-row mt-4">
+                                <Card className="w-full h-full" childrenContainerClassName="flex flex-col w-full h-full">
+                                    <div className="flex flex-row justify-between items-center">
+                                        <div className="flex font-medium">
+                                            {t('Ground.Payload.BoardingTime')}
+                                            <span className="flex relative flex-row items-center ml-2 text-sm font-light">
+                                                (
+                                                {remainingTimeString()}
+                                                )
+                                            </span>
+                                        </div>
 
-                        <div className="flex flex-row mt-4">
-                            <Card className="w-full h-full" childrenContainerClassName="flex flex-col w-full h-full">
-                                <div className="flex flex-row justify-between items-center">
-                                    <div className="flex font-medium">
-                                        {t('Ground.Payload.BoardingTime')}
-                                        <span className="flex relative flex-row items-center ml-2 text-sm font-light">
-                                            (
-                                            {remainingTimeString()}
-                                            )
-                                        </span>
-                                    </div>
+                                        <SelectGroup>
+                                            <SelectItem
+                                                selected={boardingRate === 'INSTANT'}
+                                                onSelect={() => setBoardingRate('INSTANT')}
+                                            >
+                                                {t('Settings.Instant')}
+                                            </SelectItem>
 
-                                    <SelectGroup>
-                                        <SelectItem
-                                            selected={boardingRate === 'INSTANT'}
-                                            onSelect={() => setBoardingRate('INSTANT')}
-                                        >
-                                            {t('Settings.Instant')}
-                                        </SelectItem>
+                                            <TooltipWrapper text={`${!coldAndDark ? t('Ground.Fuel.TT.AircraftMustBeColdAndDarkToChangeRefuelTimes') : ''}`}>
+                                                <div>
+                                                    <SelectItem
+                                                        className={`${!coldAndDark && 'opacity-20'}`}
+                                                        selected={boardingRate === 'FAST'}
+                                                        disabled={!coldAndDark}
+                                                        onSelect={() => setBoardingRate('FAST')}
+                                                    >
+                                                        {t('Settings.Fast')}
+                                                    </SelectItem>
+                                                </div>
+                                            </TooltipWrapper>
 
-                                        <TooltipWrapper text={`${!coldAndDark ? t('Ground.Fuel.TT.AircraftMustBeColdAndDarkToChangeRefuelTimes') : ''}`}>
                                             <div>
                                                 <SelectItem
                                                     className={`${!coldAndDark && 'opacity-20'}`}
-                                                    selected={boardingRate === 'FAST'}
+                                                    selected={boardingRate === 'REAL'}
                                                     disabled={!coldAndDark}
-                                                    onSelect={() => setBoardingRate('FAST')}
+                                                    onSelect={() => setBoardingRate('REAL')}
                                                 >
-                                                    {t('Settings.Fast')}
+                                                    {t('Settings.Real')}
                                                 </SelectItem>
                                             </div>
-                                        </TooltipWrapper>
+                                        </SelectGroup>
+                                    </div>
+                                </Card>
 
-                                        <div>
-                                            <SelectItem
-                                                className={`${!coldAndDark && 'opacity-20'}`}
-                                                selected={boardingRate === 'REAL'}
-                                                disabled={!coldAndDark}
-                                                onSelect={() => setBoardingRate('REAL')}
-                                            >
-                                                {t('Settings.Real')}
-                                            </SelectItem>
-                                        </div>
-                                    </SelectGroup>
-                                </div>
-                            </Card>
-
-                            {/* <Card className="h-full w-fit" childrenContainerClassName="h-full w-fit rounded-r-none"> */}
-                            {/* */}
-                            {/* </Card> */}
-                        </div>
+                                {/* <Card className="h-full w-fit" childrenContainerClassName="h-full w-fit rounded-r-none"> */}
+                                {/* */}
+                                {/* </Card> */}
+                            </div>
+                        )}
                     </div>
                     <div className="border border-theme-accent col-1">
                         <ChartWidget

@@ -92,7 +92,7 @@ export const FuelPage = () => {
     const [ROutCurrent] = useSimVar('FUEL TANK RIGHT AUX QUANTITY', 'Gallons', 1_000);
 
     // GSX
-    const [gsxFuelSyncEnabled] = usePersistentNumberProperty('A32NX_GSX_FUEL_SYNC', 0);
+    const [gsxFuelSyncEnabled] = usePersistentNumberProperty('GSX_FUEL_SYNC', 0);
     const [gsxFuelHoseConnected] = useSimVar('L:FSDT_GSX_FUELHOSE_CONNECTED', 'Number');
 
     const { units } = useAppSelector((state) => state.simbrief.data);

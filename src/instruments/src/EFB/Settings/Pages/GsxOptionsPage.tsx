@@ -5,9 +5,9 @@ import { SettingItem, SettingsPage } from '../Settings';
 import { t } from '../../translation';
 
 export const GsxOptionsPage = () => {
-    const [gsxFuelSyncEnabled, setGsxFuelSyncEnabled] = usePersistentNumberProperty('A32NX_GSX_FUEL_SYNC', 0);
-    const [gsxBoardSyncEnabled, setGsxBoardSyncEnabled] = usePersistentNumberProperty('A32NX_GSX_BOARD_SYNC', 0);
-    const [gsxDeIceSyncEnabled, setGsxDeIceSyncEnabled] = usePersistentNumberProperty('A32NX_GSX_DE_ICE_SYNC', 0);
+    const [gsxFuelSyncEnabled, setGsxFuelSyncEnabled] = usePersistentNumberProperty('GSX_FUEL_SYNC', 0);
+    const [gsxPayloadSyncEnabled, setGsxPayloadSyncEnabled] = usePersistentNumberProperty('GSX_PAYLOAD_SYNC', 0);
+    const [gsxDeIceSyncEnabled, setGsxDeIceSyncEnabled] = usePersistentNumberProperty('GSX_DE_ICE_SYNC', 0);
 
     return (
         <>
@@ -20,11 +20,11 @@ export const GsxOptionsPage = () => {
                         }}
                     />
                 </SettingItem>
-                <SettingItem name={t('Settings.GsxOptions.GsxBoardEnabled')}>
+                <SettingItem name={t('Settings.GsxOptions.GsxPayloadEnabled')}>
                     <Toggle
-                        value={gsxBoardSyncEnabled === 1}
+                        value={gsxPayloadSyncEnabled === 1}
                         onToggle={(value) => {
-                            setGsxBoardSyncEnabled(value ? 1 : 0);
+                            setGsxPayloadSyncEnabled(value ? 1 : 0);
                         }}
                     />
                 </SettingItem>

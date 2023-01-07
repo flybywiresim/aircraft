@@ -571,7 +571,7 @@
     "GsxOptions": {
       "Title": "GSX Options",
       "GsxFuelEnabled": "Fuel Sync",
-      "GsxBoardEnabled": "Boarding Sync",
+      "GsxPayloadEnabled": "Payload Sync",
       "GsxDeIceEnabled": "De-Ice Sync"
     },
     "ThrottleConfig": {
