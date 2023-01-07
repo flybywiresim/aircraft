@@ -1,19 +1,13 @@
 export class Clock {
-    public year: number;
-
-    public month: number;
-
-    public dayOfMonth: number;
-
-    public hour: number;
-
-    public minute: number;
-
-    public second: number;
-
-    public secondsOfDay: number;
-
-    constructor() {
+    constructor(
+        public year: number,
+        public month: number,
+        public dayOfMonth: number,
+        public hour: number,
+        public minute: number,
+        public second: number,
+        public secondsOfDay: number,
+    ) {
         this.year = 0;
         this.month = 0;
         this.dayOfMonth = 0;
