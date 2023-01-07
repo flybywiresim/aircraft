@@ -20,7 +20,18 @@ use uom::si::{
 
 pub mod navigation_display;
 
+pub enum AircraftType {
+    A32NX,
+    A380X,
+}
+
+enum TerrainOnNdRenderinMode {
+    ArcMode = 0,
+    VerticalMode = 1,
+}
+
 pub struct EnhancedGPWC {
+    aircraft_type: AircraftType,
     powered_by: ElectricalBusType,
     is_powered: bool,
     fm1_destination_longitude_ssm_id: VariableIdentifier,
@@ -43,15 +54,18 @@ pub struct EnhancedGPWC {
     egpwc_present_latitude_id: VariableIdentifier,
     egpwc_present_longitude_id: VariableIdentifier,
     egpwc_gear_is_down_id: VariableIdentifier,
+    egpwc_terrain_on_nd_rendering_mode_id: VariableIdentifier,
 }
 
 impl EnhancedGPWC {
     pub fn new(
         context: &mut InitContext,
+        aircraft: AircraftType,
         powered_by: ElectricalBusType,
         range_lookup: Vec<Length>,
     ) -> Self {
         EnhancedGPWC {
+            aircraft_type: aircraft,
             powered_by,
             is_powered: false,
             fm1_destination_longitude_ssm_id: context.get_identifier("FM1_DEST_LONG_SSM".to_owned()),
@@ -76,6 +90,7 @@ impl EnhancedGPWC {
             egpwc_present_latitude_id: context.get_identifier("EGPWC_PRESENT_LAT".to_owned()),
             egpwc_present_longitude_id: context.get_identifier("EGPWC_PRESENT_LONG".to_owned()),
             egpwc_gear_is_down_id: context.get_identifier("EGPWC_GEAR_IS_DOWN".to_owned()),
+            egpwc_terrain_on_nd_rendering_mode_id: context.get_identifier("EGPWC_TERR_ON_ND_RENDERING_MODE".to_owned()),
         }
     }
 
@@ -154,6 +169,11 @@ impl SimulationElement for EnhancedGPWC {
             self.longitude.ssm(),
         );
         writer.write(&self.egpwc_gear_is_down_id, self.gear_is_down);
+
+        match self.aircraft_type {
+            AircraftType::A32NX => writer.write(&self.egpwc_terrain_on_nd_rendering_mode_id, TerrainOnNdRenderinMode::ArcMode as u8),
+            AircraftType::A380X => writer.write(&self.egpwc_terrain_on_nd_rendering_mode_id, TerrainOnNdRenderinMode::VerticalMode as u8),
+        }
     }
 
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {

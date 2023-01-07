@@ -21,7 +21,7 @@ use hydraulic::{A320Hydraulic, A320HydraulicOverheadPanel};
 use navigation::A320RadioAltimeters;
 use power_consumption::A320PowerConsumption;
 use std::vec::Vec;
-use systems::enhanced_gpwc::EnhancedGPWC;
+use systems::enhanced_gpwc::{AircraftType, EnhancedGPWC};
 use systems::simulation::InitContext;
 use uom::si::{
     f64::Length,
@@ -113,6 +113,7 @@ impl A320 {
             radio_altimeters: A320RadioAltimeters::new(context),
             enhanced_gpwc: EnhancedGPWC::new(
                 context,
+                AircraftType::A32NX,
                 ElectricalBusType::DirectCurrent(1),
                 Vec::from([
                     Length::new::<nautical_mile>(10.0),
