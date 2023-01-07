@@ -13,9 +13,9 @@ import { coordinateToString } from './components/Convert';
 import { UplinkMessageInterpretation } from './components/UplinkMessageInterpretation';
 import { UplinkMonitor } from './components/UplinkMonitor';
 import { Clock } from './types';
-import { Waypoint } from './types/Waypoint';
 
 export * from './messages';
+export * from './types/Waypoint';
 export {
     AtsuStatusCodes,
     CpdlcMessageExpectedResponseType,
@@ -31,5 +31,4 @@ export {
     UplinkMessageInterpretation,
     UplinkMonitor,
     Clock,
-    Waypoint,
 };
