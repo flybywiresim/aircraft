@@ -1,24 +1,6 @@
 import { AtsuStatusCodes } from './AtsuStatusCodes';
 import { MailboxStatusMessage } from './databus';
 import {
-    AtsuMessage,
-    AtsuMessageComStatus,
-    AtsuMessageDirection,
-    AtsuMessageSerializationFormat,
-    AtsuMessageNetwork,
-    AtsuMessageType,
-    AtisMessage,
-    AtisType,
-    AtsuTimestamp,
-    CpdlcMessage,
-    DclMessage,
-    FreetextMessage,
-    WeatherMessage,
-    MetarMessage,
-    TafMessage,
-    OclMessage,
-} from './messages';
-import {
     CpdlcMessageExpectedResponseType,
     CpdlcMessageContentType,
     CpdlcMessageContent,
@@ -32,30 +14,15 @@ import { UplinkMessageInterpretation } from './components/UplinkMessageInterpret
 import { UplinkMonitor } from './components/UplinkMonitor';
 import { Clock, Waypoint } from './types';
 
+export * from './messages';
 export {
     AtsuStatusCodes,
-    AtsuMessage,
-    AtsuMessageComStatus,
-    AtsuMessageDirection,
-    AtsuMessageNetwork,
-    AtsuMessageSerializationFormat,
-    AtsuMessageType,
-    AtsuTimestamp,
-    CpdlcMessage,
     CpdlcMessageExpectedResponseType,
     CpdlcMessageContent,
     CpdlcMessageElement,
     CpdlcMessageContentType,
     CpdlcMessagesDownlink,
-    FreetextMessage,
-    WeatherMessage,
     MailboxStatusMessage,
-    MetarMessage,
-    TafMessage,
-    AtisMessage,
-    AtisType,
-    DclMessage,
-    OclMessage,
     FansMode,
     InputValidation,
     InputWaypointType,
