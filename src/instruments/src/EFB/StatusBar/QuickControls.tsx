@@ -164,7 +164,7 @@ export const QuickControlsPane = ({ setShowQuickControlsPane }: {setShowQuickCon
     }, 200);
 
     return (
-        <div>
+        <>
             <div className="absolute top-0 left-0 z-30 w-screen h-screen bg-theme-body opacity-70" onMouseDown={() => setShowQuickControlsPane(false)} />
 
             <div
@@ -276,7 +276,7 @@ export const QuickControlsPane = ({ setShowQuickControlsPane }: {setShowQuickCon
                 </div>
 
             </div>
-        </div>
+        </>
     );
 };
 
