@@ -26,6 +26,36 @@ export interface FmsRouteData {
 }
 
 export interface AtsuFmsMessages {
+    // responses from ATSU to FMS for requests
+    genericRequestResponse: number;
+    requestAtsuStatusCode: { requestId: number; code: AtsuStatusCodes };
+    requestSentToGround: number;
+    weatherResponse: { requestId: number; data: [AtsuStatusCodes, WeatherMessage] };
+    positionReport: { requestId: number; data: PositionReportData };
+
+    // requests from ATSU to FMS
+    atsuSystemStatus: AtsuStatusCodes;
+    messageModify: CpdlcMessage;
+    printMessage: AtsuMessage;
+
+    // synchronization stream from ATSU to FMS
+    activeAtisAutoUpdates: string[];
+    atcAtisReports: AtisMessage[];
+    printAtisReportsPrint: boolean;
+    atcStationStatus: { current: string; next: string; notificationTime: number; mode: FansMode; logonInProgress: boolean };
+    monitoredMessages: CpdlcMessage[];
+    maxUplinkDelay: number;
+    automaticPositionReportActive: boolean;
+
+    resynchronizeAocWeatherMessage: WeatherMessage;
+    resynchronizeFreetextMessage: FreetextMessage;
+    resynchronizeCpdlcMessage: CpdlcMessage;
+    resynchronizeDclMessage: DclMessage;
+    resynchronizeOclMessage: OclMessage;
+    deleteMessage: number;
+}
+
+export interface FmsAtsuMessages {
     // flight plan synchronizations from FMS to ATSU
     routeData: FmsRouteData;
 
@@ -59,32 +89,4 @@ export interface AtsuFmsMessages {
     removeMessage: number;
     cleanupAtcMessages: boolean;
     resetAtisAutoUpdate: boolean;
-
-    // responses from ATSU to FMS for requests
-    genericRequestResponse: number;
-    requestAtsuStatusCode: { requestId: number; code: AtsuStatusCodes };
-    requestSentToGround: number;
-    weatherResponse: { requestId: number; data: [AtsuStatusCodes, WeatherMessage] };
-    positionReport: { requestId: number; data: PositionReportData };
-
-    // requests from ATSU to FMS
-    atsuSystemStatus: AtsuStatusCodes;
-    messageModify: CpdlcMessage;
-    printMessage: AtsuMessage;
-
-    // synchronization stream from ATSU to FMS
-    activeAtisAutoUpdates: string[];
-    atcAtisReports: AtisMessage[];
-    printAtisReportsPrint: boolean;
-    atcStationStatus: { current: string; next: string; notificationTime: number; mode: FansMode; logonInProgress: boolean };
-    monitoredMessages: CpdlcMessage[];
-    maxUplinkDelay: number;
-    automaticPositionReportActive: boolean;
-
-    resynchronizeAocWeatherMessage: WeatherMessage;
-    resynchronizeFreetextMessage: FreetextMessage;
-    resynchronizeCpdlcMessage: CpdlcMessage;
-    resynchronizeDclMessage: DclMessage;
-    resynchronizeOclMessage: OclMessage;
-    deleteMessage: number;
 }

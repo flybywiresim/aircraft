@@ -1,5 +1,5 @@
 import { AtsuStatusCodes } from '@atsu/common/AtsuStatusCodes';
-import { AtsuFmsMessages, FmsRouteData } from '@atsu/common/databus';
+import { AtsuFmsMessages, FmsAtsuMessages, FmsRouteData } from '@atsu/common/databus';
 import { FansMode } from '@atsu/common/index';
 import { AtisMessage, AtisType, AtsuMessage, AtsuMessageType, Conversion, CpdlcMessage, DclMessage, FreetextMessage, OclMessage, WeatherMessage } from '@atsu/common/messages';
 import { PositionReportData } from '@atsu/common/types';
@@ -30,7 +30,7 @@ export type FmsBusCallbacks = {
 }
 
 export class FmsInputBus {
-    private readonly subscriber: EventSubscriber<AtsuFmsMessages>;
+    private readonly subscriber: EventSubscriber<FmsAtsuMessages>;
 
     private readonly publisher: Publisher<AtsuFmsMessages>;
 
@@ -97,7 +97,7 @@ export class FmsInputBus {
     }
 
     constructor(private readonly bus: EventBus) {
-        this.subscriber = this.bus.getSubscriber<AtsuFmsMessages>();
+        this.subscriber = this.bus.getSubscriber<FmsAtsuMessages>();
         this.publisher = this.bus.getPublisher<AtsuFmsMessages>();
     }
 

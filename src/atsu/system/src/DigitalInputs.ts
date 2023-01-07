@@ -1,4 +1,4 @@
-import { AtsuFmsMessages, FmsRouteData } from '@atsu/common/databus';
+import { FmsAtsuMessages, FmsRouteData } from '@atsu/common/databus';
 import { Clock } from '@atsu/common/types';
 import { FmsInputBus } from '@atsu/system/databus/FmsBus';
 import { Arinc429Word } from '@shared/arinc429';
@@ -12,7 +12,7 @@ import { TransponderDataBusTypes, TransponderInputBus } from './databus/Transpon
 
 export class DigitalInputs {
     private subscriber: EventSubscriber<
-        AtcMessageButtonBusTypes & ClockDataBusTypes & FmgcDataBusTypes & FwcDataBusTypes & TransponderDataBusTypes & AtsuFmsMessages
+        AtcMessageButtonBusTypes & ClockDataBusTypes & FmgcDataBusTypes & FwcDataBusTypes & TransponderDataBusTypes & FmsAtsuMessages
     > = null;
 
     public UtcClock: Clock = new Clock(0, 0, 0, 0, 0, 0, 0);
@@ -111,7 +111,7 @@ export class DigitalInputs {
         this.transponderBus.initialize();
         this.fmsBus.initialize();
 
-        this.subscriber = this.bus.getSubscriber<AtcMessageButtonBusTypes & ClockDataBusTypes & FmgcDataBusTypes & FwcDataBusTypes & TransponderDataBusTypes & AtsuFmsMessages>();
+        this.subscriber = this.bus.getSubscriber<AtcMessageButtonBusTypes & ClockDataBusTypes & FmgcDataBusTypes & FwcDataBusTypes & TransponderDataBusTypes & FmsAtsuMessages>();
     }
 
     public connectedCallback(): void {

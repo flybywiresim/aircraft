@@ -1,4 +1,4 @@
-import { AtsuFmsMessages } from '@atsu/common/databus';
+import { AtsuFmsMessages, FmsAtsuMessages } from '@atsu/common/databus';
 import { AtsuStatusCodes } from '@atsu/common/AtsuStatusCodes';
 import { FansMode } from '@atsu/common/com/FutureAirNavigationSystem';
 import {
@@ -27,7 +27,7 @@ export class FmsClient {
 
     private readonly flightPlan: FlightPlanSynchronization;
 
-    private readonly publisher: Publisher<AtsuFmsMessages>;
+    private readonly publisher: Publisher<FmsAtsuMessages>;
 
     private readonly subscriber: EventSubscriber<AtsuFmsMessages>;
 
@@ -61,7 +61,7 @@ export class FmsClient {
 
     constructor(fms: any, flightPlanManager: FlightPlanManager, flightPhaseManager: FlightPhaseManager) {
         this.bus = new EventBus();
-        this.publisher = this.bus.getPublisher<AtsuFmsMessages>();
+        this.publisher = this.bus.getPublisher<FmsAtsuMessages>();
         this.subscriber = this.bus.getSubscriber<AtsuFmsMessages>();
 
         this.fms = fms;
