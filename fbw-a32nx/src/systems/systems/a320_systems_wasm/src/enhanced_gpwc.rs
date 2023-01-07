@@ -154,18 +154,6 @@ impl VariablesToClientData for AircraftStatusClientDataArea {
         self.data.nd_fo_terrain_brightness = values[15] as f32;
         self.data.terrain_on_nd_rendering_mode = values[16] as u8;
 
-        println!("--------------------------------");
-        println!("EGPWC: {}", self.data.adiru_data_valid);
-        println!("EGPWC: {}", self.data.latitude);
-        println!("EGPWC: {}", self.data.longitude);
-        println!("EGPWC: {}", self.data.altitude);
-        println!("EGPWC: {}", self.data.heading);
-        println!("EGPWC: {}", self.data.vertical_speed);
-        println!("EGPWC: {}", self.data.gear_down);
-        println!("EGPWC: {}", self.data.destination_valid);
-        println!("EGPWC: {}", self.data.destination_latitude);
-        println!("EGPWC: {}", self.data.destination_longitude);
-
         ObjectWrite::default()
     }
 
