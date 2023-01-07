@@ -145,14 +145,11 @@ impl<const N: usize> EnginesFlexiblePhysics<N> {
     const ENGINES_FLEX_SIM_TIME_STEP: Duration = Duration::from_millis(10);
 
     pub fn new(context: &mut InitContext) -> Self {
-        let mut all_engines: Vec<EngineFlexPhysics> = vec![];
-        for engine_number in 1..=N {
-            all_engines.push(EngineFlexPhysics::new(context, engine_number));
-        }
-
         Self {
             engines_flex_updater: MaxStepLoop::new(Self::ENGINES_FLEX_SIM_TIME_STEP),
-            engines_flex: all_engines,
+            engines_flex: (1..=N)
+                .map(|engine_number| EngineFlexPhysics::new(context, engine_number))
+                .collect(),
         }
     }
 
