@@ -134,9 +134,7 @@ pub struct BrakeCircuit {
 
     pressure_limitation: Pressure,
 
-    /// Brake accumulator variables. Accumulator can have 0 volume if no accumulator
-    has_accumulator: bool,
-    accumulator: Accumulator,
+    accumulator: Option<Accumulator>,
 
     /// Common vars to all actuators: will be used by the calling loop to know what is used
     /// and what comes back to  reservoir at each iteration
@@ -147,8 +145,6 @@ pub struct BrakeCircuit {
     accumulator_fluid_pressure_sensor_filter: LowPassFilter<Pressure>,
 }
 impl BrakeCircuit {
-    const ACCUMULATOR_GAS_PRE_CHARGE: f64 = 1000.0; // Nitrogen PSI
-
     // Filtered using time constant low pass: new_val = old_val + (new_val - old_val)* (1 - e^(-dt/TCONST))
     // Time constant of the filter used to measure brake circuit pressure
     const ACC_PRESSURE_SENSOR_FILTER_TIMECONST: Duration = Duration::from_millis(100);
@@ -156,16 +152,9 @@ impl BrakeCircuit {
     pub fn new(
         context: &mut InitContext,
         id: &str,
-        accumulator_volume: Volume,
-        accumulator_fluid_volume_at_init: Volume,
+        accumulator: Option<Accumulator>,
         total_displacement: Volume,
-        circuit_target_pressure: Pressure,
     ) -> BrakeCircuit {
-        let mut has_accu = true;
-        if accumulator_volume <= Volume::new::<gallon>(0.) {
-            has_accu = false;
-        }
-
         BrakeCircuit {
             left_press_id: context.get_identifier(format!("HYD_BRAKE_{}_LEFT_PRESS", id)),
             right_press_id: context.get_identifier(format!("HYD_BRAKE_{}_RIGHT_PRESS", id)),
@@ -180,14 +169,7 @@ impl BrakeCircuit {
             demanded_brake_position_right: Ratio::new::<ratio>(0.0),
             pressure_applied_right: Pressure::new::<psi>(0.0),
             pressure_limitation: Pressure::new::<psi>(5000.0),
-            has_accumulator: has_accu,
-            accumulator: Accumulator::new(
-                Pressure::new::<psi>(Self::ACCUMULATOR_GAS_PRE_CHARGE),
-                accumulator_volume,
-                accumulator_fluid_volume_at_init,
-                true,
-                circuit_target_pressure,
-            ),
+            accumulator,
             total_volume_to_actuator: Volume::new::<gallon>(0.),
             total_volume_to_reservoir: Volume::new::<gallon>(0.),
 
@@ -207,21 +189,24 @@ impl BrakeCircuit {
         self.update_demands(brake_circuit_controller);
 
         // The pressure available in brakes is the one of accumulator only if accumulator has fluid
-        let actual_pressure_available =
-            if self.accumulator.fluid_volume() > Volume::new::<gallon>(0.) {
-                self.accumulator.raw_gas_press()
+        let actual_pressure_available = if let Some(accumulator) = &mut self.accumulator {
+            if accumulator.fluid_volume() > Volume::default() {
+                accumulator.raw_gas_press()
             } else {
                 section.pressure()
-            };
+            }
+        } else {
+            section.pressure()
+        };
 
         self.update_brake_actuators(context, actual_pressure_available);
 
         let delta_vol =
             self.left_brake_actuator.used_volume() + self.right_brake_actuator.used_volume();
 
-        if self.has_accumulator {
+        if let Some(accumulator) = &mut self.accumulator {
             let mut volume_into_accumulator = Volume::new::<gallon>(0.);
-            self.accumulator.update(
+            accumulator.update(
                 context,
                 &mut volume_into_accumulator,
                 section.pressure(),
@@ -232,7 +217,7 @@ impl BrakeCircuit {
             self.total_volume_to_actuator += volume_into_accumulator.abs();
 
             if delta_vol > Volume::new::<gallon>(0.) {
-                let volume_from_acc = self.accumulator.get_delta_vol(delta_vol);
+                let volume_from_acc = accumulator.get_delta_vol(delta_vol);
                 let remaining_vol_after_accumulator_empty = delta_vol - volume_from_acc;
                 self.total_volume_to_actuator += remaining_vol_after_accumulator_empty;
             }
@@ -263,7 +248,11 @@ impl BrakeCircuit {
     }
 
     pub fn accumulator_fluid_volume(&self) -> Volume {
-        self.accumulator.fluid_volume()
+        if let Some(accumulator) = &self.accumulator {
+            accumulator.fluid_volume()
+        } else {
+            Volume::default()
+        }
     }
 
     fn update_demands(&mut self, brake_circuit_controller: &impl BrakeCircuitController) {
@@ -305,6 +294,24 @@ impl BrakeCircuit {
     fn accumulator_pressure(&self) -> Pressure {
         self.accumulator_fluid_pressure_sensor_filter.output()
     }
+
+    #[cfg(test)]
+    fn accumulator_total_volume(&self) -> Volume {
+        if let Some(accumulator) = &self.accumulator {
+            accumulator.total_volume()
+        } else {
+            Volume::default()
+        }
+    }
+
+    #[cfg(test)]
+    fn accumulator_gas_volume(&self) -> Volume {
+        if let Some(accumulator) = &self.accumulator {
+            accumulator.gas_volume()
+        } else {
+            Volume::default()
+        }
+    }
 }
 impl Actuator for BrakeCircuit {
     fn used_volume(&self) -> Volume {
@@ -324,7 +331,7 @@ impl SimulationElement for BrakeCircuit {
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.left_press_id, self.left_brake_pressure());
         writer.write(&self.right_press_id, self.right_brake_pressure());
-        if self.has_accumulator {
+        if self.accumulator.is_some() {
             writer.write(&self.acc_press_id, self.accumulator_pressure());
         }
     }
@@ -725,10 +732,14 @@ mod tests {
             BrakeCircuit::new(
                 context,
                 "altn",
-                init_max_vol,
-                Volume::new::<gallon>(0.0),
+                Some(Accumulator::new(
+                    Pressure::new::<psi>(1000.),
+                    init_max_vol,
+                    Volume::default(),
+                    true,
+                    Pressure::new::<psi>(3000.),
+                )),
                 Volume::new::<gallon>(0.1),
-                Pressure::new::<psi>(3000.),
             )
         }));
 
@@ -736,11 +747,11 @@ mod tests {
             |e| e.left_brake_pressure() + e.right_brake_pressure() < Pressure::new::<psi>(10.0)
         ));
 
-        assert!(test_bed.query_element(|e| e.accumulator.total_volume == init_max_vol));
+        assert!(test_bed.query_element(|e| e.accumulator_total_volume() == init_max_vol));
         assert!(
-            test_bed.query_element(|e| e.accumulator.fluid_volume() == Volume::new::<gallon>(0.0))
+            test_bed.query_element(|e| e.accumulator_fluid_volume() == Volume::new::<gallon>(0.0))
         );
-        assert!(test_bed.query_element(|e| e.accumulator.gas_volume == init_max_vol));
+        assert!(test_bed.query_element(|e| e.accumulator_gas_volume() == init_max_vol));
     }
 
     #[test]
@@ -750,19 +761,23 @@ mod tests {
             BrakeCircuit::new(
                 context,
                 "altn",
-                init_max_vol,
-                init_max_vol / 2.0,
+                Some(Accumulator::new(
+                    Pressure::new::<psi>(1000.),
+                    init_max_vol,
+                    init_max_vol / 2.,
+                    true,
+                    Pressure::new::<psi>(3000.),
+                )),
                 Volume::new::<gallon>(0.1),
-                Pressure::new::<psi>(3000.),
             )
         }));
 
         assert!(test_bed.query_element(
             |e| e.left_brake_pressure() + e.right_brake_pressure() < Pressure::new::<psi>(10.0)
         ));
-        assert!(test_bed.query_element(|e| e.accumulator.total_volume == init_max_vol));
-        assert!(test_bed.query_element(|e| e.accumulator.fluid_volume() == init_max_vol / 2.0));
-        assert!(test_bed.query_element(|e| e.accumulator.gas_volume < init_max_vol));
+        assert!(test_bed.query_element(|e| e.accumulator_total_volume() == init_max_vol));
+        assert!(test_bed.query_element(|e| e.accumulator_fluid_volume() == init_max_vol / 2.0));
+        assert!(test_bed.query_element(|e| e.accumulator_gas_volume() < init_max_vol));
     }
 
     #[test]
@@ -863,10 +878,14 @@ mod tests {
         BrakeCircuit::new(
             context,
             "TestBrakes",
-            init_max_vol,
-            init_max_vol / 2.0,
+            Some(Accumulator::new(
+                Pressure::new::<psi>(1000.),
+                init_max_vol,
+                init_max_vol / 2.,
+                true,
+                Pressure::new::<psi>(3000.),
+            )),
             Volume::new::<gallon>(0.1),
-            Pressure::new::<psi>(3000.),
         )
     }
 

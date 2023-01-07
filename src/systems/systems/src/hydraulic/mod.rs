@@ -784,7 +784,7 @@ impl Accumulator {
     // Higher gain enables faster flow transient but brings instability.
     const DELTA_PRESSURE_CHARACTERISTICS: f64 = 0.009;
 
-    fn new(
+    pub fn new(
         gas_precharge: Pressure,
         total_volume: Volume,
         fluid_vol_at_init: Volume,
@@ -880,6 +880,16 @@ impl Accumulator {
 
     fn raw_gas_press(&self) -> Pressure {
         self.gas_pressure
+    }
+
+    #[cfg(test)]
+    fn total_volume(&self) -> Volume {
+        self.total_volume
+    }
+
+    #[cfg(test)]
+    fn gas_volume(&self) -> Volume {
+        self.gas_volume
     }
 }
 

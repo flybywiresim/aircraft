@@ -46,7 +46,7 @@ use systems::{
             ManualPitchTrimController, PitchTrimActuatorController,
             TrimmableHorizontalStabilizerAssembly,
         },
-        ElectricPump, EngineDrivenPump, HeatingElement, HydraulicCircuit,
+        Accumulator, ElectricPump, EngineDrivenPump, HeatingElement, HydraulicCircuit,
         HydraulicCircuitController, HydraulicPressureSensors, PowerTransferUnit,
         PowerTransferUnitCharacteristics, PowerTransferUnitController, PressureSwitch,
         PressureSwitchType, PumpController, RamAirTurbine, RamAirTurbineController, Reservoir,
@@ -1537,6 +1537,8 @@ impl A320Hydraulic {
     const RAT_CONTROL_SOLENOID2_POWER_BUS: ElectricalBusType =
         ElectricalBusType::DirectCurrentHot(2);
 
+    const ALTERNATE_BRAKE_ACCUMULATOR_GAS_PRE_CHARGE: f64 = 1000.0; // Nitrogen PSI
+
     // Refresh rate of core hydraulic simulation
     const HYDRAULIC_SIM_TIME_STEP: Duration = Duration::from_millis(10);
 
@@ -1644,10 +1646,8 @@ impl A320Hydraulic {
             braking_circuit_norm: BrakeCircuit::new(
                 context,
                 "NORM",
-                Volume::new::<gallon>(0.),
-                Volume::new::<gallon>(0.),
+                None,
                 Volume::new::<gallon>(0.13),
-                Pressure::new::<psi>(A320HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
             ),
 
             // Alternate brakes accumulator in real A320 is 1.5 gal capacity.
@@ -1656,10 +1656,16 @@ impl A320Hydraulic {
             braking_circuit_altn: BrakeCircuit::new(
                 context,
                 "ALTN",
-                Volume::new::<gallon>(1.0),
-                Volume::new::<gallon>(0.4),
+                Some(Accumulator::new(
+                    Pressure::new::<psi>(Self::ALTERNATE_BRAKE_ACCUMULATOR_GAS_PRE_CHARGE),
+                    Volume::new::<gallon>(1.0),
+                    Volume::new::<gallon>(0.4),
+                    true,
+                    Pressure::new::<psi>(
+                        A320HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI,
+                    ),
+                )),
                 Volume::new::<gallon>(0.13),
-                Pressure::new::<psi>(A320HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
             ),
 
             braking_force: A320BrakingForce::new(context),
