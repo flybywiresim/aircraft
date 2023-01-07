@@ -23,8 +23,8 @@ use systems::{
     hydraulic::{
         aerodynamic_model::AerodynamicModel,
         brake_circuit::{
-            AutobrakeDecelerationGovernor, AutobrakeMode, AutobrakePanel, BrakeCircuit,
-            BrakeCircuitController,
+            AutobrakeDecelerationGovernor, AutobrakeMode, AutobrakePanel,
+            BrakeAccumulatorCharacteristics, BrakeCircuit, BrakeCircuitController,
         },
         electrical_generator::{GeneratorControlUnit, HydraulicGeneratorMotor},
         flap_slat::FlapSlatAssembly,
@@ -1543,6 +1543,13 @@ impl A320Hydraulic {
     const HYDRAULIC_SIM_TIME_STEP: Duration = Duration::from_millis(10);
 
     pub(super) fn new(context: &mut InitContext) -> A320Hydraulic {
+        let brake_accumulator_charac = BrakeAccumulatorCharacteristics::new(
+            Volume::new::<gallon>(1.0),
+            Pressure::new::<psi>(Self::ALTERNATE_BRAKE_ACCUMULATOR_GAS_PRE_CHARGE),
+            Pressure::new::<psi>(A320HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
+            Ratio::new::<ratio>(0.01),
+        );
+
         A320Hydraulic {
             hyd_ptu_ecam_memo_id: context.get_identifier("HYD_PTU_ON_ECAM_MEMO".to_owned()),
             ptu_high_pitch_sound_id: context.get_identifier("HYD_PTU_HIGH_PITCH_SOUND".to_owned()),
@@ -1657,13 +1664,11 @@ impl A320Hydraulic {
                 context,
                 "ALTN",
                 Some(Accumulator::new(
-                    Pressure::new::<psi>(Self::ALTERNATE_BRAKE_ACCUMULATOR_GAS_PRE_CHARGE),
-                    Volume::new::<gallon>(1.0),
-                    Volume::new::<gallon>(0.4),
+                    brake_accumulator_charac.gas_precharge(),
+                    brake_accumulator_charac.total_volume(),
+                    brake_accumulator_charac.volume_at_init(),
                     true,
-                    Pressure::new::<psi>(
-                        A320HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI,
-                    ),
+                    brake_accumulator_charac.target_pressure(),
                 )),
                 Volume::new::<gallon>(0.13),
             ),

@@ -1,7 +1,7 @@
 use crate::{
     overhead::PressSingleSignalButton,
     shared::low_pass_filter::LowPassFilter,
-    shared::pid::PidController,
+    shared::{pid::PidController, random_from_normal_distribution, random_from_range},
     simulation::{
         SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext, Write,
     },
@@ -198,6 +198,8 @@ impl BrakeCircuit {
         } else {
             section.pressure()
         };
+
+        println!("PRESS BRAKE {:.0}", actual_pressure_available.get::<psi>());
 
         self.update_brake_actuators(context, actual_pressure_available);
 
@@ -500,6 +502,65 @@ impl AutobrakeDecelerationGovernor {
 impl Default for AutobrakeDecelerationGovernor {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+pub struct BrakeAccumulatorCharacteristics {
+    total_volume: Volume,
+    gas_precharge: Pressure,
+    target_pressure: Pressure,
+    volume_at_init: Volume,
+}
+impl BrakeAccumulatorCharacteristics {
+    // 1/20 would mean standard deviation is "full accumulator volume / 20"
+    const STANDARD_DEVIATION_RATIO_FROM_FULL_INIT_VOLUME: f64 = 1. / 20.;
+
+    pub fn new(
+        total_volume: Volume,
+        gas_precharge: Pressure,
+        target_pressure: Pressure,
+        empty_after_maintenance_probability: Ratio,
+    ) -> Self {
+        let is_empty =
+            random_from_range(0., 1.) < empty_after_maintenance_probability.get::<ratio>();
+
+        let init_volume_for_target_pressure =
+            total_volume - (gas_precharge * total_volume) / target_pressure;
+
+        // We take a normal distribution with mean as the full volume, and standard deviation a fraction of full volume
+        let volume_at_init = if !is_empty {
+            Volume::new::<gallon>(random_from_normal_distribution(
+                init_volume_for_target_pressure.get::<gallon>(),
+                init_volume_for_target_pressure.get::<gallon>()
+                    * Self::STANDARD_DEVIATION_RATIO_FROM_FULL_INIT_VOLUME,
+            ))
+            .min(init_volume_for_target_pressure)
+        } else {
+            Volume::default()
+        };
+
+        Self {
+            total_volume,
+            gas_precharge,
+            target_pressure,
+            volume_at_init,
+        }
+    }
+
+    pub fn total_volume(&self) -> Volume {
+        self.total_volume
+    }
+
+    pub fn volume_at_init(&self) -> Volume {
+        self.volume_at_init
+    }
+
+    pub fn gas_precharge(&self) -> Pressure {
+        self.gas_precharge
+    }
+
+    pub fn target_pressure(&self) -> Pressure {
+        self.target_pressure
     }
 }
 
