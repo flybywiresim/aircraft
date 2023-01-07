@@ -46,18 +46,28 @@ class A32NX_EWD extends BaseInstrument {
 
         this.simVarPublisher.subscribe('acEssBus');
         this.simVarPublisher.subscribe('ewdPotentiometer');
+        this.simVarPublisher.subscribe('autoThrustCommand1');
+        this.simVarPublisher.subscribe('autoThrustCommand2');
         this.simVarPublisher.subscribe('autoThrustLimit');
+        this.simVarPublisher.subscribe('autoThrustLimitToga');
         this.simVarPublisher.subscribe('autoThrustLimitType');
         this.simVarPublisher.subscribe('autoThrustMode');
+        this.simVarPublisher.subscribe('autoThrustStatus');
+        this.simVarPublisher.subscribe('autoThrustTLA1');
+        this.simVarPublisher.subscribe('autoThrustTLA2');
         this.simVarPublisher.subscribe('packs1Supplying');
         this.simVarPublisher.subscribe('packs2Supplying');
         this.simVarPublisher.subscribe('engine1AntiIce');
         this.simVarPublisher.subscribe('engine1Fadec');
         this.simVarPublisher.subscribe('engine1N1');
+        this.simVarPublisher.subscribe('engine1Reverse');
+        this.simVarPublisher.subscribe('engine1ReverseNozzle');
         this.simVarPublisher.subscribe('engine1State');
         this.simVarPublisher.subscribe('engine2AntiIce');
         this.simVarPublisher.subscribe('engine2Fadec');
         this.simVarPublisher.subscribe('engine2N1');
+        this.simVarPublisher.subscribe('engine2Reverse');
+        this.simVarPublisher.subscribe('engine2ReverseNozzle');
         this.simVarPublisher.subscribe('engine2State');
         this.simVarPublisher.subscribe('wingAntiIce');
         this.simVarPublisher.subscribe('apuBleedPressure');
