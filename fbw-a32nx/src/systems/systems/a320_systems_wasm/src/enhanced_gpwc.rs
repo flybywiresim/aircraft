@@ -43,6 +43,7 @@ struct AircraftStatus {
     nd_fo_mode: u8,
     nd_fo_terrain_active: u8,
     nd_fo_terrain_brightness: f32,
+    terrain_on_nd_rendering_mode: u8,
 }
 
 impl AircraftStatus {
@@ -66,6 +67,7 @@ impl AircraftStatus {
             nd_fo_mode: 0,
             nd_fo_terrain_active: 0,
             nd_fo_terrain_brightness: 0.0,
+            terrain_on_nd_rendering_mode: 0,
         }
     }
 }
@@ -109,6 +111,7 @@ impl VariablesToClientData for AircraftStatusClientDataArea {
             Variable::named("EFIS_R_ND_MODE"),
             Variable::named("EGPWC_ND_R_TERRAIN_ACTIVE"),
             Variable::named("ND_R_TERR_ON_ND_POTENTIOMETER"),
+            Variable::named("EGPWC_TERR_ON_ND_RENDERING_MODE"),
         ]
     }
 
@@ -149,6 +152,7 @@ impl VariablesToClientData for AircraftStatusClientDataArea {
         self.data.nd_fo_mode = values[13] as u8;
         self.data.nd_fo_terrain_active = values[14] as u8;
         self.data.nd_fo_terrain_brightness = values[15] as f32;
+        self.data.terrain_on_nd_rendering_mode = values[16] as u8;
 
         println!("--------------------------------");
         println!("EGPWC: {}", self.data.adiru_data_valid);
