@@ -10,7 +10,8 @@ import {
     OclMessage,
     WeatherMessage,
 } from '@atsu/common/messages';
-import { PositionReportData, Waypoint } from '@atsu/common/types';
+import { PositionReportData } from '@atsu/common/types';
+import { Waypoint } from '@atsu/common/index';
 
 export interface AtsuFmsRegisterMessages<T> {
     requestId: number;

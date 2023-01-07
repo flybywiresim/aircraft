@@ -1,5 +1,5 @@
 import { AtsuFmsMessages } from '@atsu/common/databus';
-import { Waypoint } from '@atsu/common/types';
+import { Waypoint } from '@atsu/common/index';
 import { FlightPhaseManager } from '@fmgc/flightphase';
 import { WaypointStats } from '@fmgc/flightplanning/data/flightplan';
 import { FlightPlanManager, ManagedFlightPlan } from '@fmgc/wtsdk';
