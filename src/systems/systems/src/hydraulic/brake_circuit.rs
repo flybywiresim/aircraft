@@ -199,8 +199,6 @@ impl BrakeCircuit {
             section.pressure()
         };
 
-        println!("PRESS BRAKE {:.0}", actual_pressure_available.get::<psi>());
-
         self.update_brake_actuators(context, actual_pressure_available);
 
         let delta_vol =
