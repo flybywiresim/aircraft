@@ -568,6 +568,12 @@
       "WheelChocksEnabled": "Wheel Chocks",
       "inHg": "inHg"
     },
+    "GsxOptions": {
+      "Title": "GSX Options",
+      "GsxFuelEnabled": "Fuel Sync",
+      "GsxBoardEnabled": "Boarding Sync",
+      "GsxDeIceEnabled": "De-Ice Sync"
+    },
     "ThrottleConfig": {
       "Apply": "Apply",
       "AreYouSureThatYouWantToResetYourCurrentThrottleConfigurationToTheirDefaultStates": "Are you sure that you want to reset your current throttle configuration settings to their default states? This action is irreversible.",
