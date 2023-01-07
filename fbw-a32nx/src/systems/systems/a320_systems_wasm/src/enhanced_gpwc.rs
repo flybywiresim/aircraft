@@ -35,6 +35,10 @@ struct AircraftStatus {
     destination_valid: u8,
     destination_latitude: f32,
     destination_longitude: f32,
+    nd_capt_range: u16,
+    nd_capt_mode: u8,
+    nd_capt_terrain_active: u8,
+    nd_capt_terrain_brightness: u8,
 }
 
 impl AircraftStatus {
@@ -50,6 +54,10 @@ impl AircraftStatus {
             destination_valid: 0,
             destination_latitude: 0.0,
             destination_longitude: 0.0,
+            nd_capt_range: 0,
+            nd_capt_mode: 0,
+            nd_capt_terrain_active: 0,
+            nd_capt_terrain_brightness: 0,
         }
     }
 }
@@ -85,6 +93,10 @@ impl VariablesToClientData for AircraftStatusClientDataArea {
             Variable::named("ADIRS_IR_1_TRUE_HEADING"),
             Variable::named("ADIRS_ADR_1_BAROMETRIC_VERTICAL_SPEED"),
             Variable::named("EGPWC_GEAR_IS_DOWN"),
+            Variable::named("EGPWC_ND_L_RANGE"),
+            Variable::named("EFIS_L_ND_MODE"),
+            Variable::named("EGPWC_ND_L_TERRAIN_ACTIVE"),
+            Variable::named("ND_L_TERR_ON_ND_POTENTIOMETER"),
         ]
     }
 
@@ -116,6 +128,11 @@ impl VariablesToClientData for AircraftStatusClientDataArea {
         }
         self.data.destination_latitude = destination_latitude.value().get::<degree>() as f32;
         self.data.destination_longitude = destination_longitude.value().get::<degree>() as f32;
+
+        self.data.nd_capt_range = values[8] as u16;
+        self.data.nd_capt_mode = values[9] as u8;
+        self.data.nd_capt_terrain_active = values[10] as u8;
+        self.data.nd_capt_terrain_brightness = values[11] as u8;
 
         println!("--------------------------------");
         println!("EGPWC: {}", self.data.adiru_data_valid);
