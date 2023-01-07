@@ -1,5 +1,5 @@
 import { AtsuFmsMessages, FmsRouteData } from '@atsu/common/databus';
-import { Clock, Waypoint } from '@atsu/common/types';
+import { Clock } from '@atsu/common/types';
 import { FmsInputBus } from '@atsu/system/databus/FmsBus';
 import { Arinc429Word } from '@shared/arinc429';
 import { FmgcFlightPhase } from '@shared/flightphase';
@@ -15,7 +15,7 @@ export class DigitalInputs {
         AtcMessageButtonBusTypes & ClockDataBusTypes & FmgcDataBusTypes & FwcDataBusTypes & TransponderDataBusTypes & AtsuFmsMessages
     > = null;
 
-    public UtcClock: Clock = new Clock();
+    public UtcClock: Clock = new Clock(0, 0, 0, 0, 0, 0, 0);
 
     public PresentPosition: {
         latitude: Arinc429Word,
