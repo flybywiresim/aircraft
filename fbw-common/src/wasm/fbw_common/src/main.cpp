@@ -7,6 +7,7 @@
 #include <iostream>
 #include <map>
 
+#include "config.h"
 #include "interface/SimConnectInterface.h"
 #include "main.h"
 
@@ -15,14 +16,18 @@ SimConnectInterface simconnect;
 std::map<FsContext, NVGcontext*> renderContext;
 int decodedImage = 0;
 
-__attribute__((export_name("terronnd_gauge_callback"))) extern "C" bool terronnd_gauge_callback(FsContext ctx,
-                                                                                                int service_id,
-                                                                                                void* pData) {
+#if BUILD_SIDE_CAPT
+__attribute__((export_name("terronnd_left_gauge_callback")))
+#elif BUILD_SIDE_FO
+__attribute__((export_name("terronnd_right_gauge_callback")))
+#endif
+extern "C" bool
+terronnd_gauge_callback(FsContext ctx, int service_id, void* pData) {
   // print event type
   switch (service_id) {
     case PANEL_SERVICE_PRE_INSTALL: {
       // connect to sim connect
-      return simconnect.connect(static_cast<sGaugeInstallData*>(pData)->strParameters);
+      return simconnect.connect();
     };
     case PANEL_SERVICE_POST_INSTALL: {
       NVGparams params;

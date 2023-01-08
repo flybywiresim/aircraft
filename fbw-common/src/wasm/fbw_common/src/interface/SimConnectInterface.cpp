@@ -2,27 +2,40 @@
 #include <iostream>
 #include <string>
 
+#include "../config.h"
+#include "../types/Arinc429.h"
 #include "SimConnectData.h"
 #include "SimConnectInterface.h"
 
-static const std::string ConnectionNameLeft = "FBW_SIMBRIDGE_TERRONND_LEFT";
-static const std::string ConnectionNameRight = "FBW_SIMBRIDGE_TERRONND_RIGHT";
-static const std::string MetadataNameLeft = "FBW_SIMBRIDGE_TERRONND_METADATA_LEFT";
-static const std::string MetadataNameRight = "FBW_SIMBRIDGE_TERRONND_METADATA_RIGHT";
-static const std::string FrameDataNameLeft = "FBW_SIMBRIDGE_TERRONND_FRAME_DATA_LEFT";
-static const std::string FrameDataNameRight = "FBW_SIMBRIDGE_TERRONND_FRAME_DATA_RIGHT";
+// code to get the LVar values from the sim
+static const char* calculationCodeDestLat = "(L:" FBW_LVAR_NAME("EGPWC_DEST_LAT") ", number)";
+static const char* calculationCodeDestLong = "(L:" FBW_LVAR_NAME("EGPWC_DEST_LONG") ", number)";
+static const char* calculationCodePresentLat = "(L:" FBW_LVAR_NAME("EGPWC_PRESENT_LAT") ", number)";
+static const char* calculationCodePresentLong = "(L:" FBW_LVAR_NAME("EGPWC_PRESENT_LONG") ", number)";
+static const char* calculationCodeAltitude = "(L:" FBW_LVAR_NAME("ADIRS_ADR_1_ALTITUDE") ", number)";
+static const char* calculationCodeHeading = "(L:" FBW_LVAR_NAME("ADIRS_IR_1_TRUE_HEADING") ", number)";
+static const char* calculationCodeVerticalSpeed = "(L:" FBW_LVAR_NAME("ADIRS_IR_1_VERTICAL_SPEED") ", number)";
+static const char* calculationCodeGearIsDown = "(L:" FBW_LVAR_NAME("EGPWC_GEAR_IS_DOWN") ", number)";
+static const char* calculationCodeLeftNdRange = "(L:" FBW_LVAR_NAME("EGPWC_ND_L_RANGE") ", number)";
+static const char* calculationCodeLeftNdMode = "(L:" FBW_LVAR_NAME("EFIS_L_ND_MODE") ", number)";
+static const char* calculationCodeLeftTerrOnNdActive = "(L:" FBW_LVAR_NAME("EGPWC_ND_L_TERRAIN_ACTIVE") ", number)";
+static const char* calculationCodeRightNdRange = "(L:" FBW_LVAR_NAME("EGPWC_ND_R_RANGE") ", number)";
+static const char* calculationCodeRightNdMode = "(L:" FBW_LVAR_NAME("EFIS_R_ND_MODE") ", number)";
+static const char* calculationCodeRightTerrOnNdActive = "(L:" FBW_LVAR_NAME("EGPWC_ND_R_TERRAIN_ACTIVE") ", number)";
 
-bool SimConnectInterface::connect(const std::string& side) {
-  const std::string& connectionName = side == "l" ? ConnectionNameLeft : ConnectionNameRight;
-  std::cout << "TERR ON ND: Connecting as " << connectionName << "..." << std::endl;
-  HRESULT result = SimConnect_Open(&this->hSimConnect, connectionName.c_str(), nullptr, 0, 0, 0);
+bool SimConnectInterface::connect() {
+  std::cout << "TERR ON ND: Connecting as " << ConnectionName << "..." << std::endl;
+  HRESULT result = SimConnect_Open(&this->hSimConnect, ConnectionName.c_str(), nullptr, 0, 0, 0);
 
   if (S_OK == result) {
     this->isConnected = true;
+    this->lastSendTime = std::chrono::system_clock::now();
+
     std::cout << "TERR ON ND: Connected" << std::endl;
 
-    bool prepareResult = this->prepareTerrOnNdMetadataDefinition(side);
-    prepareResult &= this->prepareTerrOnNdFrameDataDefinition(side);
+    bool prepareResult = this->prepareTerrOnNdMetadataDefinition();
+    prepareResult &= this->prepareTerrOnNdFrameDataDefinition();
+    prepareResult &= this->prepareSimObjectData();
 
     if (!prepareResult) {
       std::cout << "TERR ON ND: Unable to prepare data definitions" << std::endl;
@@ -46,16 +59,26 @@ void SimConnectInterface::disconnect() {
 }
 
 bool SimConnectInterface::update() {
-  return this->readData();
+  return this->readData() && this->updateSimbridge();
 }
 
-bool SimConnectInterface::prepareTerrOnNdMetadataDefinition(const std::string& side) {
+bool SimConnectInterface::prepareSimObjectData() {
+  HRESULT result = S_OK;
+
+  if (SendSimulatorData) {
+    result = SimConnect_AddToDataDefinition(this->hSimConnect, SimObjectData::AIRCRAFT_STATUS, LightPotentiometerName.c_str(),
+                                            "percent over 100");
+    result &= SimConnect_RequestDataOnSimObject(this->hSimConnect, SimObjectData::AIRCRAFT_STATUS, SimObjectData::AIRCRAFT_STATUS,
+                                                SIMCONNECT_OBJECT_ID_USER, SIMCONNECT_PERIOD_VISUAL_FRAME);
+  }
+
+  return SUCCEEDED(result);
+}
+
+bool SimConnectInterface::prepareTerrOnNdMetadataDefinition() {
   HRESULT result;
-
-  const std::string& mapName = side == "l" ? MetadataNameLeft : MetadataNameRight;
-
-  std::cout << "TERR ON ND: Map client data name to " << mapName << std::endl;
-  result = SimConnect_MapClientDataNameToID(this->hSimConnect, mapName.c_str(), ClientData::METADATA);
+  std::cout << "TERR ON ND: Map client data name to " << MetadataName << std::endl;
+  result = SimConnect_MapClientDataNameToID(this->hSimConnect, MetadataName.c_str(), ClientData::METADATA);
 
   std::cout << "TERR ON ND: Add client data definition" << std::endl;
   result &= SimConnect_AddToClientDataDefinition(this->hSimConnect, DataDefinition::METADATA_AREA, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
@@ -68,13 +91,11 @@ bool SimConnectInterface::prepareTerrOnNdMetadataDefinition(const std::string& s
   return SUCCEEDED(result);
 }
 
-bool SimConnectInterface::prepareTerrOnNdFrameDataDefinition(const std::string& side) {
+bool SimConnectInterface::prepareTerrOnNdFrameDataDefinition() {
   HRESULT result;
 
-  const std::string& mapName = side == "l" ? FrameDataNameLeft : FrameDataNameRight;
-
-  std::cout << "TERR ON ND: Map client data name to " << mapName << std::endl;
-  result = SimConnect_MapClientDataNameToID(this->hSimConnect, mapName.c_str(), ClientData::FRAMEDATA);
+  std::cout << "TERR ON ND: Map client data name to " << FrameDataName << std::endl;
+  result = SimConnect_MapClientDataNameToID(this->hSimConnect, FrameDataName.c_str(), ClientData::FRAMEDATA);
 
   std::cout << "TERR ON ND: Add client data definition" << std::endl;
   result &= SimConnect_AddToClientDataDefinition(this->hSimConnect, DataDefinition::FRAMEDATA_AREA, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
@@ -110,6 +131,18 @@ void SimConnectInterface::processClientData(const SIMCONNECT_RECV_CLIENT_DATA* d
   }
 }
 
+void SimConnectInterface::processSimObjectData(const SIMCONNECT_RECV_SIMOBJECT_DATA* data) {
+  switch (data->dwRequestID) {
+    case SimObjectData::AIRCRAFT_STATUS:
+      this->lightPotentiometer = *((double*)&data->dwData);
+      return;
+    default:
+      std::cout << "WASM: Unknown request id in SimConnect connection: ";
+      std::cout << data->dwRequestID << std::endl;
+      return;
+  }
+}
+
 void SimConnectInterface::processDispatchMessage(SIMCONNECT_RECV* pData, DWORD* cbData) {
   switch (static_cast<SIMCONNECT_RECV_ID>(pData->dwID)) {
     case SIMCONNECT_RECV_ID_OPEN:
@@ -121,6 +154,9 @@ void SimConnectInterface::processDispatchMessage(SIMCONNECT_RECV* pData, DWORD* 
       break;
     case SIMCONNECT_RECV_ID_CLIENT_DATA:
       this->processClientData(static_cast<SIMCONNECT_RECV_CLIENT_DATA*>(pData));
+      break;
+    case SIMCONNECT_RECV_ID_SIMOBJECT_DATA:
+      this->processSimObjectData(static_cast<SIMCONNECT_RECV_SIMOBJECT_DATA*>(pData));
       break;
     case SIMCONNECT_RECV_ID_EXCEPTION:
       std::cout << "TERR ON ND: Exception in SimConnect connection" << std::endl;
@@ -135,6 +171,31 @@ void SimConnectInterface::processDispatchMessage(SIMCONNECT_RECV* pData, DWORD* 
   }
 }
 
+Arinc429NumericWord SimConnectInterface::readArinc429Numeric(const char* code) {
+  Arinc429NumericWord data;
+  double value = SimConnectInterface::readSimVar<double>(code);
+  data.setFromSimVar(value);
+  return data;
+}
+
+bool SimConnectInterface::readSimVarData() {
+  this->aircraftStatus.destinationLatitude = SimConnectInterface::readArinc429Numeric(calculationCodeDestLat);
+  this->aircraftStatus.destinationLongitude = SimConnectInterface::readArinc429Numeric(calculationCodeDestLong);
+  this->aircraftStatus.presentLatitude = SimConnectInterface::readArinc429Numeric(calculationCodePresentLat);
+  this->aircraftStatus.presentLongitude = SimConnectInterface::readArinc429Numeric(calculationCodePresentLong);
+  this->aircraftStatus.altitude = SimConnectInterface::readArinc429Numeric(calculationCodeAltitude);
+  this->aircraftStatus.heading = SimConnectInterface::readArinc429Numeric(calculationCodeHeading);
+  this->aircraftStatus.verticalSpeed = SimConnectInterface::readArinc429Numeric(calculationCodeVerticalSpeed);
+  this->aircraftStatus.gearIsDown = SimConnectInterface::readSimVar<std::uint8_t>(calculationCodeGearIsDown) != 0;
+  this->aircraftStatus.ndRangeCapt = SimConnectInterface::readSimVar<std::uint16_t>(calculationCodeLeftNdRange);
+  this->aircraftStatus.ndModeCapt = SimConnectInterface::readSimVar<std::uint8_t>(calculationCodeLeftNdMode);
+  this->aircraftStatus.ndTerrainOnNdActiveCapt = SimConnectInterface::readSimVar<std::uint8_t>(calculationCodeLeftTerrOnNdActive) != 0;
+  this->aircraftStatus.ndRangeFO = SimConnectInterface::readSimVar<std::uint16_t>(calculationCodeRightNdRange);
+  this->aircraftStatus.ndModeFO = SimConnectInterface::readSimVar<std::uint8_t>(calculationCodeRightNdRange);
+  this->aircraftStatus.ndTerrainOnNdActiveFO = SimConnectInterface::readSimVar<std::uint8_t>(calculationCodeRightTerrOnNdActive) != 0;
+  return true;
+}
+
 bool SimConnectInterface::readData() {
   if (!this->isConnected) {
     return false;
@@ -145,6 +206,39 @@ bool SimConnectInterface::readData() {
 
   while (SUCCEEDED(SimConnect_GetNextDispatch(this->hSimConnect, &pData, &cbData))) {
     this->processDispatchMessage(pData, &cbData);
+  }
+
+  return true;
+}
+
+bool SimConnectInterface::updateSimbridge() {
+  if (!SendSimulatorData)
+    return true;
+
+  // send the data only every 500 milliseconds
+  if (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - this->lastSendTime).count() >= 100) {
+    this->readSimVarData();
+
+    struct AircraftStatusData clientData;
+    clientData.adiruValid = this->aircraftStatus.presentLatitude.isNo() && this->aircraftStatus.presentLongitude.isNo();
+    clientData.latitude = this->aircraftStatus.presentLatitude.value();
+    clientData.longitude = this->aircraftStatus.presentLongitude.value();
+    clientData.altitude = static_cast<std::int16_t>(this->aircraftStatus.altitude.value());
+    clientData.heading = static_cast<std::int16_t>(this->aircraftStatus.heading.value());
+    clientData.verticalSpeed = static_cast<std::int16_t>(this->aircraftStatus.verticalSpeed.value());
+    clientData.gearIsDown = static_cast<std::uint8_t>(this->aircraftStatus.gearIsDown);
+    clientData.destinationValid = this->aircraftStatus.destinationLatitude.isNo() && this->aircraftStatus.destinationLongitude.isNo();
+    clientData.destinationLatitude = this->aircraftStatus.destinationLatitude.value();
+    clientData.destinationLongitude = this->aircraftStatus.destinationLongitude.value();
+    clientData.ndRangeCapt = this->aircraftStatus.ndRangeCapt;
+    clientData.ndModeCapt = this->aircraftStatus.ndModeCapt;
+    clientData.ndTerrainOnNdActiveCapt = static_cast<std::uint8_t>(this->aircraftStatus.ndTerrainOnNdActiveCapt);
+    clientData.ndRangeFO = this->aircraftStatus.ndRangeFO;
+    clientData.ndModeFO = this->aircraftStatus.ndModeFO;
+    clientData.ndTerrainOnNdActiveFO = static_cast<std::uint8_t>(this->aircraftStatus.ndTerrainOnNdActiveFO);
+    clientData.ndTerrainOnNdRenderingMode = static_cast<std::uint8_t>(RenderingMode);
+
+    this->lastSendTime = std::chrono::system_clock::now();
   }
 
   return true;
