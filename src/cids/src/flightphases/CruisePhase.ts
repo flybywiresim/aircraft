@@ -39,10 +39,6 @@ export class CruisePhase extends FlightPhase {
     public testConditions(): boolean {
         return (
             this.flightPhaseManager.cids.altCrzActive()
-            || (
-                this.flightPhaseManager.cids.altitude() > (this.flightPhaseManager.cids.cruiseAltitude() - 500)
-                && this.flightPhaseManager.cids.altitude() < (this.flightPhaseManager.cids.cruiseAltitude() + 500)
-            )
         );
     }
 
