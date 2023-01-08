@@ -27,13 +27,15 @@ class SimConnectInterface {
   };
 
   enum ClientData : SIMCONNECT_CLIENT_DATA_ID {
-    METADATA = 0,
-    FRAMEDATA = 1,
+    AIRCRAFT_STATUS = 0,
+    METADATA = 1,
+    FRAMEDATA = 2,
   };
 
   enum DataDefinition : SIMCONNECT_CLIENT_DATA_DEFINITION_ID {
-    METADATA_AREA = 0,
-    FRAMEDATA_AREA = 1,
+    AIRCRAFT_STATUS_AREA = 0,
+    METADATA_AREA = 1,
+    FRAMEDATA_AREA = 2,
   };
 
   bool isConnected = false;
@@ -53,6 +55,7 @@ class SimConnectInterface {
   }
 
   bool prepareSimObjectData();
+  bool prepareAircraftStatusDefinition();
   bool prepareTerrOnNdMetadataDefinition();
   bool prepareTerrOnNdFrameDataDefinition();
   void processClientData(const SIMCONNECT_RECV_CLIENT_DATA* data);
@@ -60,6 +63,7 @@ class SimConnectInterface {
   void processDispatchMessage(SIMCONNECT_RECV* pData, DWORD* cbData);
   static Arinc429NumericWord readArinc429Numeric(const char* code);
   bool readSimVarData();
+  bool sendAircraftStatus();
   bool updateSimbridge();
   bool readData();
 };

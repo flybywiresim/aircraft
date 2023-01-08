@@ -25,21 +25,19 @@ struct AircraftStatusData {
   std::uint8_t adiruValid;
   float latitude;
   float longitude;
-  std::int16_t altitude;
+  std::int32_t altitude;
   std::int16_t heading;
   std::int16_t verticalSpeed;
   std::uint8_t gearIsDown;
   std::uint8_t destinationValid;
   float destinationLatitude;
   float destinationLongitude;
-  std::int16_t ndRangeCapt;
+  std::uint16_t ndRangeCapt;
   std::uint8_t ndModeCapt;
   std::uint8_t ndTerrainOnNdActiveCapt;
-  float ndTerrainOnNdPotentiometerCapt;
-  std::int16_t ndRangeFO;
+  std::uint16_t ndRangeFO;
   std::uint8_t ndModeFO;
   std::uint8_t ndTerrainOnNdActiveFO;
-  float ndTerrainOnNdPotentiometerFO;
   std::uint8_t ndTerrainOnNdRenderingMode;
 } __attribute__((packed));
 

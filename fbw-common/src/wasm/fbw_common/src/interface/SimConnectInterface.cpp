@@ -36,6 +36,7 @@ bool SimConnectInterface::connect() {
     bool prepareResult = this->prepareTerrOnNdMetadataDefinition();
     prepareResult &= this->prepareTerrOnNdFrameDataDefinition();
     prepareResult &= this->prepareSimObjectData();
+    prepareResult &= this->prepareAircraftStatusDefinition();
 
     if (!prepareResult) {
       std::cout << "TERR ON ND: Unable to prepare data definitions" << std::endl;
@@ -51,6 +52,11 @@ bool SimConnectInterface::connect() {
 
 void SimConnectInterface::disconnect() {
   if (this->isConnected) {
+    // reset the rendering
+    this->aircraftStatus.ndTerrainOnNdActiveCapt = false;
+    this->aircraftStatus.ndTerrainOnNdActiveFO = false;
+    this->sendAircraftStatus();
+
     SimConnect_Close(this->hSimConnect);
     this->isConnected = false;
     this->hSimConnect = 0;
@@ -60,6 +66,25 @@ void SimConnectInterface::disconnect() {
 
 bool SimConnectInterface::update() {
   return this->readData() && this->updateSimbridge();
+}
+
+bool SimConnectInterface::prepareAircraftStatusDefinition() {
+  HRESULT result = S_OK;
+
+  if (SendSimulatorData) {
+    std::cout << "TERR ON ND: Map client data name to FBW_SIMBRIDGE_EGPWC_AIRCRAFT_STATUS " << sizeof(AircraftStatusData) << std::endl;
+    result = SimConnect_MapClientDataNameToID(this->hSimConnect, "FBW_SIMBRIDGE_EGPWC_AIRCRAFT_STATUS", ClientData::AIRCRAFT_STATUS);
+
+    std::cout << "TERR ON ND: Add client data definition" << std::endl;
+    result &= SimConnect_AddToClientDataDefinition(this->hSimConnect, DataDefinition::AIRCRAFT_STATUS_AREA,
+                                                   SIMCONNECT_CLIENTDATAOFFSET_AUTO, sizeof(AircraftStatusData));
+
+    std::cout << "TERR ON ND: Allocate client data area" << std::endl;
+    result &= SimConnect_CreateClientData(this->hSimConnect, ClientData::AIRCRAFT_STATUS, sizeof(AircraftStatusData),
+                                          SIMCONNECT_CREATE_CLIENT_DATA_FLAG_READ_ONLY);
+  }
+
+  return SUCCEEDED(result);
 }
 
 bool SimConnectInterface::prepareSimObjectData() {
@@ -77,6 +102,7 @@ bool SimConnectInterface::prepareSimObjectData() {
 
 bool SimConnectInterface::prepareTerrOnNdMetadataDefinition() {
   HRESULT result;
+
   std::cout << "TERR ON ND: Map client data name to " << MetadataName << std::endl;
   result = SimConnect_MapClientDataNameToID(this->hSimConnect, MetadataName.c_str(), ClientData::METADATA);
 
@@ -211,6 +237,33 @@ bool SimConnectInterface::readData() {
   return true;
 }
 
+bool SimConnectInterface::sendAircraftStatus() {
+  struct AircraftStatusData clientData;
+
+  clientData.adiruValid = this->aircraftStatus.presentLatitude.isNo() && this->aircraftStatus.presentLongitude.isNo();
+  clientData.latitude = this->aircraftStatus.presentLatitude.value();
+  clientData.longitude = this->aircraftStatus.presentLongitude.value();
+  clientData.altitude = static_cast<std::int32_t>(this->aircraftStatus.altitude.value());
+  clientData.heading = static_cast<std::int16_t>(this->aircraftStatus.heading.value());
+  clientData.verticalSpeed = static_cast<std::int16_t>(this->aircraftStatus.verticalSpeed.value());
+  clientData.gearIsDown = static_cast<std::uint8_t>(this->aircraftStatus.gearIsDown);
+  clientData.destinationValid = this->aircraftStatus.destinationLatitude.isNo() && this->aircraftStatus.destinationLongitude.isNo();
+  clientData.destinationLatitude = this->aircraftStatus.destinationLatitude.value();
+  clientData.destinationLongitude = this->aircraftStatus.destinationLongitude.value();
+  clientData.ndRangeCapt = this->aircraftStatus.ndRangeCapt;
+  clientData.ndModeCapt = this->aircraftStatus.ndModeCapt;
+  clientData.ndTerrainOnNdActiveCapt = static_cast<std::uint8_t>(this->aircraftStatus.ndTerrainOnNdActiveCapt);
+  clientData.ndRangeFO = this->aircraftStatus.ndRangeFO;
+  clientData.ndModeFO = this->aircraftStatus.ndModeFO;
+  clientData.ndTerrainOnNdActiveFO = static_cast<std::uint8_t>(this->aircraftStatus.ndTerrainOnNdActiveFO);
+  clientData.ndTerrainOnNdRenderingMode = static_cast<std::uint8_t>(RenderingMode);
+
+  HRESULT result = SimConnect_SetClientData(this->hSimConnect, ClientData::AIRCRAFT_STATUS, DataDefinition::AIRCRAFT_STATUS_AREA,
+                                            SIMCONNECT_CLIENT_DATA_SET_FLAG_DEFAULT, 0, sizeof(AircraftStatusData), &clientData);
+
+  return SUCCEEDED(result);
+}
+
 bool SimConnectInterface::updateSimbridge() {
   if (!SendSimulatorData)
     return true;
@@ -219,24 +272,9 @@ bool SimConnectInterface::updateSimbridge() {
   if (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - this->lastSendTime).count() >= 100) {
     this->readSimVarData();
 
-    struct AircraftStatusData clientData;
-    clientData.adiruValid = this->aircraftStatus.presentLatitude.isNo() && this->aircraftStatus.presentLongitude.isNo();
-    clientData.latitude = this->aircraftStatus.presentLatitude.value();
-    clientData.longitude = this->aircraftStatus.presentLongitude.value();
-    clientData.altitude = static_cast<std::int16_t>(this->aircraftStatus.altitude.value());
-    clientData.heading = static_cast<std::int16_t>(this->aircraftStatus.heading.value());
-    clientData.verticalSpeed = static_cast<std::int16_t>(this->aircraftStatus.verticalSpeed.value());
-    clientData.gearIsDown = static_cast<std::uint8_t>(this->aircraftStatus.gearIsDown);
-    clientData.destinationValid = this->aircraftStatus.destinationLatitude.isNo() && this->aircraftStatus.destinationLongitude.isNo();
-    clientData.destinationLatitude = this->aircraftStatus.destinationLatitude.value();
-    clientData.destinationLongitude = this->aircraftStatus.destinationLongitude.value();
-    clientData.ndRangeCapt = this->aircraftStatus.ndRangeCapt;
-    clientData.ndModeCapt = this->aircraftStatus.ndModeCapt;
-    clientData.ndTerrainOnNdActiveCapt = static_cast<std::uint8_t>(this->aircraftStatus.ndTerrainOnNdActiveCapt);
-    clientData.ndRangeFO = this->aircraftStatus.ndRangeFO;
-    clientData.ndModeFO = this->aircraftStatus.ndModeFO;
-    clientData.ndTerrainOnNdActiveFO = static_cast<std::uint8_t>(this->aircraftStatus.ndTerrainOnNdActiveFO);
-    clientData.ndTerrainOnNdRenderingMode = static_cast<std::uint8_t>(RenderingMode);
+    if (!this->sendAircraftStatus()) {
+      std::cout << "TERR ON ND: Unable to send the aircraft status" << std::endl;
+    }
 
     this->lastSendTime = std::chrono::system_clock::now();
   }
