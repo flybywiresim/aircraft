@@ -365,6 +365,7 @@ const DCDU: React.FC = () => {
 
         // remove the subscriber to avoid memory leaks
         return () => {
+            // TODO reset also all internal subscriber references as soon as the new MSFS SDK is in place
             setSubscriber(null);
         };
     }, []);
