@@ -19,6 +19,7 @@ export type EWDSimvars = {
     engine1EGT: number;
     engine1Fadec: boolean;
     engine1N1: number;
+    engine1N2: number;
     engine1Reverse: boolean;
     engine1ReverseNozzle: number;
     engine1State: number;
@@ -26,6 +27,7 @@ export type EWDSimvars = {
     engine2EGT: number;
     engine2Fadec: boolean;
     engine2N1: number;
+    engine2N2: number;
     engine2Reverse: boolean;
     engine2ReverseNozzle: number;
     engine2State: number;
@@ -60,6 +62,7 @@ export enum EWDVars {
     engine1EGT = 'L:A32NX_ENGINE_EGT:1',
     engine1Fadec = 'L:A32NX_FADEC_POWERED_ENG1',
     engine1N1 = 'L:A32NX_ENGINE_N1:1',
+    engine1N2 = 'L:A32NX_ENGINE_N2:1',
     engine1Reverse = 'L:A32NX_AUTOTHRUST_REVERSE:1',
     engine1ReverseNozzle = 'A:TURB ENG REVERSE NOZZLE PERCENT:1',
     engine1State = 'L:A32NX_ENGINE_STATE:1',
@@ -67,6 +70,7 @@ export enum EWDVars {
     engine2EGT = 'L:A32NX_ENGINE_EGT:2',
     engine2Fadec = 'L:A32NX_FADEC_POWERED_ENG2',
     engine2N1 = 'L:A32NX_ENGINE_N1:2',
+    engine2N2 = 'L:A32NX_ENGINE_N2:2',
     engine2Reverse = 'L:A32NX_AUTOTHRUST_REVERSE:2',
     engine2ReverseNozzle = 'A:TURB ENG REVERSE NOZZLE PERCENT:2',
     engine2State = 'L:A32NX_ENGINE_STATE:2',
@@ -102,6 +106,7 @@ export class EWDSimvarPublisher extends SimVarPublisher<EWDSimvars> {
         ['engine1EGT', { name: EWDVars.engine1EGT, type: SimVarValueType.Number }],
         ['engine1Fadec', { name: EWDVars.engine1Fadec, type: SimVarValueType.Bool }],
         ['engine1N1', { name: EWDVars.engine1N1, type: SimVarValueType.Number }],
+        ['engine1N2', { name: EWDVars.engine1N2, type: SimVarValueType.Number }],
         ['engine1Reverse', { name: EWDVars.engine1Reverse, type: SimVarValueType.Bool }],
         ['engine1ReverseNozzle', { name: EWDVars.engine1ReverseNozzle, type: SimVarValueType.Number }],
         ['engine1State', { name: EWDVars.engine1State, type: SimVarValueType.Enum }],
@@ -109,6 +114,7 @@ export class EWDSimvarPublisher extends SimVarPublisher<EWDSimvars> {
         ['engine2EGT', { name: EWDVars.engine2EGT, type: SimVarValueType.Number }],
         ['engine2Fadec', { name: EWDVars.engine2Fadec, type: SimVarValueType.Bool }],
         ['engine2N1', { name: EWDVars.engine2N1, type: SimVarValueType.Number }],
+        ['engine2N2', { name: EWDVars.engine2N2, type: SimVarValueType.Number }],
         ['engine2Reverse', { name: EWDVars.engine2Reverse, type: SimVarValueType.Bool }],
         ['engine2ReverseNozzle', { name: EWDVars.engine2ReverseNozzle, type: SimVarValueType.Number }],
         ['engine2State', { name: EWDVars.engine2State, type: SimVarValueType.Enum }],
