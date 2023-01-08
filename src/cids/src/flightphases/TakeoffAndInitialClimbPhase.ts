@@ -1,24 +1,48 @@
+import { FlightPhaseManager } from 'cids/src/FlightPhaseManager';
 import { FlightPhase } from './FlightPhase';
 
+/**
+ * Possible next flight phases:
+ * 1. FINAL CLIMB
+ * 2. CRUISE PHASE
+ * 3. FINAL APPROACH AND LANDING
+ * 4. DISEMBARKATION
+ */
 export class TakeoffAndInitialClimbPhase extends FlightPhase {
-    /**
-   * Tries to transition to `FINAL CLIMB`, CRUISE or `DISEMBARKATION` phase.
-   */
+    private nextFlightPhases: FlightPhase[];
+
+    private isInit: boolean;
+
+    constructor(flightPhaseManager: FlightPhaseManager) {
+        super(flightPhaseManager);
+        this.isInit = false;
+    }
+
+    public init(...flightPhases: FlightPhase[]) {
+        this.nextFlightPhases = flightPhases;
+        this.isInit = true;
+    }
+
     public tryTransition(): void {
-        if (this.flightPhaseManager.finalClimbPhase.testConditions()) {
-            this.sendNewFlightPhaseToManager(this.flightPhaseManager.finalClimbPhase);
-        } else if (this.flightPhaseManager.cruisePhase.testConditions()) {
-            this.sendNewFlightPhaseToManager(this.flightPhaseManager.cruisePhase); // Should the cruising altitude be lower than 10 000 ft this will transition to CRUISE.
-        } else if (this.flightPhaseManager.disembarkationPhase.testConditions()) { // In case of returning to the gate this will transition to the disembarkation phase for deboarding.
-            this.sendNewFlightPhaseToManager(this.flightPhaseManager.disembarkationPhase);
+        if (!this.isInit) {
+            console.error(`[CIDS/FP${this.getValue()}] Not initialized! Aborting transition attempt!`);
+            return;
         }
+
+        this.nextFlightPhases.forEach((current) => {
+            console.log(`Attempting to transition to FP${current.getValue()}.`);
+            if (current.testConditions()) {
+                console.log(`Sending FP${current.getValue()} to manager`);
+                this.sendNewFlightPhaseToManager(current);
+            }
+        });
     }
 
     public testConditions(): boolean {
         return (
             (
-                this.flightPhaseManager.cids.thrustLever1Position() > 74
-                && this.flightPhaseManager.cids.thrustLever2Position() > 74
+                this.flightPhaseManager.cids.thrustLever1Position() >= 75
+                && this.flightPhaseManager.cids.thrustLever2Position() >= 75
             )
             && (
                 this.flightPhaseManager.cids.onGround()

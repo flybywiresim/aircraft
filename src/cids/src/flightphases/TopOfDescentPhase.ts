@@ -1,19 +1,56 @@
+import { FlightPhaseManager } from 'cids/src/FlightPhaseManager';
 import { FlightPhase } from './FlightPhase';
 
+/**
+ * Possible next flight phases:
+ * 1. APPROACH
+ */
 export class TopOfDescentPhase extends FlightPhase {
-    /**
-   * Tries to transition to `APPROACH` phase.
-   */
+    private nextFlightPhases: FlightPhase[];
+
+    private isInit: boolean;
+
+    constructor(flightPhaseManager: FlightPhaseManager) {
+        super(flightPhaseManager);
+        this.isInit = false;
+    }
+
+    public init(...flightPhases: FlightPhase[]) {
+        this.nextFlightPhases = flightPhases;
+        this.isInit = true;
+    }
+
     public tryTransition(): void {
-        if (this.flightPhaseManager.apprPhase.testConditions()) {
-            this.sendNewFlightPhaseToManager(this.flightPhaseManager.apprPhase);
+        if (!this.isInit) {
+            console.error(`[CIDS/FP${this.getValue()}] Not initialized! Aborting transition attempt!`);
+            return;
         }
+
+        this.nextFlightPhases.forEach((current) => {
+            console.log(`Attempting to transition to FP${current.getValue()}.`);
+            if (current.testConditions()) {
+                console.log(`Sending FP${current.getValue()} to manager.`);
+                this.sendNewFlightPhaseToManager(current);
+            }
+        });
     }
 
     public testConditions(): boolean {
         return (
-            this.flightPhaseManager.cids.altitude() > 10000
-            && this.flightPhaseManager.cids.altitude() <= (this.flightPhaseManager.cids.cruiseAltitude() - 700)
+            (
+                this.flightPhaseManager.cids.fmaVerticalMode() === 13 // OP DES
+              || (
+                  this.flightPhaseManager.cids.fmaVerticalMode() === 14 // VS
+                && this.flightPhaseManager.cids.vsSelected() < 0
+              )
+              || (
+                  this.flightPhaseManager.cids.fmaVerticalMode() === 15 // FPA
+                && this.flightPhaseManager.cids.fpaSelected() < 0
+              )
+              || this.flightPhaseManager.cids.fmaVerticalMode() === 23 // DES
+            )
+            && this.flightPhaseManager.cids.fcuSelectedAlt() < 20000
+            && this.flightPhaseManager.cids.altitude() > 10000
         );
     }
 

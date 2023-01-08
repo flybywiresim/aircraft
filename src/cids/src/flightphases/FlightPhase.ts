@@ -11,6 +11,8 @@ export abstract class FlightPhase {
       this.flightPhaseManager.setActiveFlightPhase(flightPhase);
   }
 
+  abstract init(...flightPhases: FlightPhase[]): void;
+
   abstract tryTransition(): void;
 
   abstract testConditions(): boolean;

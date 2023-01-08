@@ -1,21 +1,47 @@
+import { FlightPhaseManager } from 'cids/src/FlightPhaseManager';
 import { FlightPhase } from './FlightPhase';
 
+/**
+ * Possible next flight phases:
+ * 1. BOARDING
+ * 2. PUSHBACK
+ * 3. TAXI BEFORE TAKEOFF
+ */
 export class AfterDisembarkationPhase extends FlightPhase {
-    /**
-     * Tries to transition to `BOARDING`, `PUSHBACK` or `TAXI BEFORE TAKEOFF`.
-     */
+    private nextFlightPhases: FlightPhase[];
+
+    private isInit: boolean;
+
+    constructor(flightPhaseManager: FlightPhaseManager) {
+        super(flightPhaseManager);
+        this.isInit = false;
+    }
+
+    public init(...flightPhases: FlightPhase[]) {
+        this.nextFlightPhases = flightPhases;
+        this.isInit = true;
+    }
+
     public tryTransition(): void {
-        if (this.flightPhaseManager.boardingPhase.testConditions()) {
-            this.sendNewFlightPhaseToManager(this.flightPhaseManager.boardingPhase);
-        } else if (this.flightPhaseManager.pushbackPhase.testConditions()) {
-            this.sendNewFlightPhaseToManager(this.flightPhaseManager.pushbackPhase);
-        } else if (this.flightPhaseManager.taxiBeforeTakeoffPhase.testConditions()) {
-            this.sendNewFlightPhaseToManager(this.flightPhaseManager.taxiBeforeTakeoffPhase);
+        if (!this.isInit) {
+            console.error(`[CIDS/FP${this.getValue()}] Not initialized! Aborting transition attempt!`);
+            return;
         }
+
+        this.nextFlightPhases.forEach((current) => {
+            console.log(`Attempting FP${current.getValue()}`);
+            if (current.testConditions()) {
+                console.log(`Sending FP${current.getValue()} to manager`);
+                this.sendNewFlightPhaseToManager(current);
+            }
+        });
     }
 
     public testConditions(): boolean {
-        return this.flightPhaseManager.cids.getTotalPax() === 0;
+        return (
+            this.flightPhaseManager.cids.getTotalPax() === 0
+            && this.flightPhaseManager.cids.isStationary()
+        );
     }
 
     public getValue(): number {
