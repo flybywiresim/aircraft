@@ -91,9 +91,11 @@ bool SimConnectInterface::prepareSimObjectData() {
   HRESULT result = S_OK;
 
   if (SendSimulatorData) {
-    result = SimConnect_AddToDataDefinition(this->hSimConnect, SimObjectData::LIGHT_POTENTIOMETER, LightPotentiometerName.c_str(),
-                                            "percent over 100");
-    result &= SimConnect_RequestDataOnSimObject(this->hSimConnect, SimObjectData::LIGHT_POTENTIOMETER, SimObjectData::LIGHT_POTENTIOMETER,
+    result = SimConnect_AddToDataDefinition(this->hSimConnect, SimObjectData::SIMULATOR_DATA, "PLANE LATITUDE", "degrees");
+    result &= SimConnect_AddToDataDefinition(this->hSimConnect, SimObjectData::SIMULATOR_DATA, "PLANE LONGITUDE", "degrees");
+    result &= SimConnect_AddToDataDefinition(this->hSimConnect, SimObjectData::SIMULATOR_DATA, LightPotentiometerName.c_str(),
+                                             "percent over 100");
+    result &= SimConnect_RequestDataOnSimObject(this->hSimConnect, SimObjectData::SIMULATOR_DATA, SimObjectData::SIMULATOR_DATA,
                                                 SIMCONNECT_OBJECT_ID_USER, SIMCONNECT_PERIOD_VISUAL_FRAME);
   }
 
@@ -159,8 +161,8 @@ void SimConnectInterface::processClientData(const SIMCONNECT_RECV_CLIENT_DATA* d
 
 void SimConnectInterface::processSimObjectData(const SIMCONNECT_RECV_SIMOBJECT_DATA* data) {
   switch (data->dwRequestID) {
-    case SimObjectData::LIGHT_POTENTIOMETER:
-      this->lightPotentiometer = *((double*)&data->dwData);
+    case SimObjectData::SIMULATOR_DATA:
+      this->simulatorData = *((NativeSimulatorData*)&data->dwData);
       return;
     default:
       std::cout << "WASM: Unknown request id in SimConnect connection: ";
@@ -259,6 +261,8 @@ bool SimConnectInterface::sendAircraftStatus() {
   clientData.ndModeFO = this->aircraftStatus.ndModeFO;
   clientData.ndTerrainOnNdActiveFO = static_cast<std::uint8_t>(this->aircraftStatus.ndTerrainOnNdActiveFO);
   clientData.ndTerrainOnNdRenderingMode = static_cast<std::uint8_t>(RenderingMode);
+  clientData.groundTruthLatitude = this->simulatorData.latitude;
+  clientData.groundTruthLongitude = this->simulatorData.longitude;
 
   HRESULT result = SimConnect_SetClientData(this->hSimConnect, ClientData::AIRCRAFT_STATUS, DataDefinition::AIRCRAFT_STATUS_AREA,
                                             SIMCONNECT_CLIENT_DATA_SET_FLAG_DEFAULT, 0, sizeof(AircraftStatusData), &clientData);

@@ -23,7 +23,7 @@ class SimConnectInterface {
 
  private:
   enum SimObjectData : SIMCONNECT_DATA_DEFINITION_ID {
-    LIGHT_POTENTIOMETER = 0,
+    SIMULATOR_DATA = 0,
   };
 
   enum ClientData : SIMCONNECT_CLIENT_DATA_ID {
@@ -41,7 +41,7 @@ class SimConnectInterface {
   bool isConnected = false;
   HANDLE hSimConnect = 0;
   EgpwcSimulatorData aircraftStatus;
-  double lightPotentiometer = 0.0;
+  NativeSimulatorData simulatorData;
   TerrOnNdMetadata frameMetadata;
   std::vector<std::uint8_t> frameBuffer;
   std::size_t receivedFrameDataBytes;

@@ -4,6 +4,12 @@
 
 #include "../types/Arinc429.h"
 
+struct NativeSimulatorData {
+  float latitude;
+  float longitude;
+  float potentiometer;
+} __attribute__((packed));
+
 struct EgpwcSimulatorData {
   Arinc429NumericWord destinationLatitude;
   Arinc429NumericWord destinationLongitude;
@@ -39,6 +45,8 @@ struct AircraftStatusData {
   std::uint8_t ndModeFO;
   std::uint8_t ndTerrainOnNdActiveFO;
   std::uint8_t ndTerrainOnNdRenderingMode;
+  float groundTruthLatitude;
+  float groundTruthLongitude;
 } __attribute__((packed));
 
 enum TerrOnNdThresholdMode : std::uint8_t { PEAKS_MODE = 0, WARNING = 1, CAUTION = 2 };
