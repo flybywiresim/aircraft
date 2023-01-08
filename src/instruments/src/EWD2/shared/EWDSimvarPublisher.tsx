@@ -18,6 +18,7 @@ export type EWDSimvars = {
     engine1AntiIce: boolean;
     engine1EGT: number;
     engine1Fadec: boolean;
+    engine1FF: number;
     engine1N1: number;
     engine1N2: number;
     engine1Reverse: boolean;
@@ -26,6 +27,7 @@ export type EWDSimvars = {
     engine2AntiIce: boolean;
     engine2EGT: number;
     engine2Fadec: boolean;
+    engine2FF: number;
     engine2N1: number;
     engine2N2: number;
     engine2Reverse: boolean;
@@ -61,6 +63,7 @@ export enum EWDVars {
     engine1AntiIce = 'L:XMLVAR_Momentary_PUSH_OVHD_ANTIICE_ENG1_Pressed',
     engine1EGT = 'L:A32NX_ENGINE_EGT:1',
     engine1Fadec = 'L:A32NX_FADEC_POWERED_ENG1',
+    engine1FF = 'L:A32NX_ENGINE_FF:1',
     engine1N1 = 'L:A32NX_ENGINE_N1:1',
     engine1N2 = 'L:A32NX_ENGINE_N2:1',
     engine1Reverse = 'L:A32NX_AUTOTHRUST_REVERSE:1',
@@ -69,6 +72,7 @@ export enum EWDVars {
     engine2AntiIce = 'L:XMLVAR_Momentary_PUSH_OVHD_ANTIICE_ENG2_Pressed',
     engine2EGT = 'L:A32NX_ENGINE_EGT:2',
     engine2Fadec = 'L:A32NX_FADEC_POWERED_ENG2',
+    engine2FF = 'L:A32NX_ENGINE_FF:2',
     engine2N1 = 'L:A32NX_ENGINE_N1:2',
     engine2N2 = 'L:A32NX_ENGINE_N2:2',
     engine2Reverse = 'L:A32NX_AUTOTHRUST_REVERSE:2',
@@ -105,6 +109,7 @@ export class EWDSimvarPublisher extends SimVarPublisher<EWDSimvars> {
         ['engine1AntiIce', { name: EWDVars.engine1AntiIce, type: SimVarValueType.Bool }],
         ['engine1EGT', { name: EWDVars.engine1EGT, type: SimVarValueType.Number }],
         ['engine1Fadec', { name: EWDVars.engine1Fadec, type: SimVarValueType.Bool }],
+        ['engine1FF', { name: EWDVars.engine1FF, type: SimVarValueType.Bool }],
         ['engine1N1', { name: EWDVars.engine1N1, type: SimVarValueType.Number }],
         ['engine1N2', { name: EWDVars.engine1N2, type: SimVarValueType.Number }],
         ['engine1Reverse', { name: EWDVars.engine1Reverse, type: SimVarValueType.Bool }],
@@ -113,6 +118,7 @@ export class EWDSimvarPublisher extends SimVarPublisher<EWDSimvars> {
         ['engine2AntiIce', { name: EWDVars.engine2AntiIce, type: SimVarValueType.Bool }],
         ['engine2EGT', { name: EWDVars.engine2EGT, type: SimVarValueType.Number }],
         ['engine2Fadec', { name: EWDVars.engine2Fadec, type: SimVarValueType.Bool }],
+        ['engine2FF', { name: EWDVars.engine2FF, type: SimVarValueType.Bool }],
         ['engine2N1', { name: EWDVars.engine2N1, type: SimVarValueType.Number }],
         ['engine2N2', { name: EWDVars.engine2N2, type: SimVarValueType.Number }],
         ['engine2Reverse', { name: EWDVars.engine2Reverse, type: SimVarValueType.Bool }],

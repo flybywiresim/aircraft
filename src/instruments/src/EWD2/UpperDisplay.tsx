@@ -1,7 +1,10 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { EventBus, DisplayComponent, FSComponent, VNode } from 'msfssdk';
+import { EventBus, DisplayComponent, FSComponent, Subject, VNode } from 'msfssdk';
+import { Units } from '@shared/units';
+import { NXDataStore } from '@shared/persistence';
 import { AFloor } from './AFloor';
 import { EGT } from './EGT';
+import { FF } from './FF';
 import { Idle } from './Idle';
 import { Layer } from '../MsfsAvionicsCommon/Layer';
 import { N1 } from './N1';
@@ -13,8 +16,14 @@ interface UpperDisplayProps {
     bus: EventBus;
 }
 export class UpperDisplay extends DisplayComponent<UpperDisplayProps> {
+    private usingMetric = Subject.create(false);
+
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
+
+        NXDataStore.getAndSubscribe('CONFIG_USING_METRIC_UNIT', ((_k, v) => {
+            this.usingMetric.set(v === '1');
+        }));
     }
 
     render(): VNode {
@@ -46,6 +55,18 @@ export class UpperDisplay extends DisplayComponent<UpperDisplayProps> {
                     <text class="Medium Center Cyan" x={385} y={53}>%</text>
                     <line class="Separator" x1={311} y1={37} x2={343} y2={28} strokeLinecap="round" />
                     <line class="Separator" x1={424} y1={28} x2={456} y2={37} strokeLinecap="round" />
+                </Layer>
+
+                <Layer x={0} y={380}>
+                    <FF bus={this.props.bus} engine={1} x={273} y={0} metric={this.usingMetric} />
+                    <FF bus={this.props.bus} engine={2} x={576} y={0} metric={this.usingMetric} />
+                    <text class="Large Center" x={386} y={-10}>FF</text>
+                    <text class="Standard Center Cyan" x={385} y={10}>
+                        {this.usingMetric.map((m) => (m ? 'KG' : 'LBS'))}
+                        /H
+                    </text>
+                    <line class="Separator" x1={311} y1={-11} x2={343} y2={-20} strokeLinecap="round" />
+                    <line class="Separator" x1={424} y1={-20} x2={456} y2={-11} strokeLinecap="round" />
                 </Layer>
             </>
         );
