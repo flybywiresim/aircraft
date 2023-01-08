@@ -47,6 +47,20 @@ export type EWDSimvars = {
     slatsFlapsStatusRaw: number;
     slatsPositionRaw: number;
     flapsPositionRaw: number;
+    ewdLowerLeft1: number;
+    ewdLowerLeft2: number;
+    ewdLowerLeft3: number;
+    ewdLowerLeft4: number;
+    ewdLowerLeft5: number;
+    ewdLowerLeft6: number;
+    ewdLowerLeft7: number;
+    ewdLowerRight1: number;
+    ewdLowerRight2: number;
+    ewdLowerRight3: number;
+    ewdLowerRight4: number;
+    ewdLowerRight5: number;
+    ewdLowerRight6: number;
+    ewdLowerRight7: number;
 }
 
 export enum EWDVars {
@@ -96,6 +110,20 @@ export enum EWDVars {
     slatsFlapsStatusRaw = 'L:A32NX_SFCC_SLAT_FLAP_SYSTEM_STATUS_WORD',
     slatsPositionRaw = 'L:A32NX_SFCC_SLAT_ACTUAL_POSITION_WORD',
     flapsPositionRaw = 'L:A32NX_SFCC_FLAP_ACTUAL_POSITION_WORD',
+    ewdLowerLeft1 = 'L:A32NX_EWD_LOWER_LEFT_LINE_1',
+    ewdLowerLeft2 = 'L:A32NX_EWD_LOWER_LEFT_LINE_2',
+    ewdLowerLeft3 = 'L:A32NX_EWD_LOWER_LEFT_LINE_3',
+    ewdLowerLeft4 = 'L:A32NX_EWD_LOWER_LEFT_LINE_4',
+    ewdLowerLeft5 = 'L:A32NX_EWD_LOWER_LEFT_LINE_5',
+    ewdLowerLeft6 = 'L:A32NX_EWD_LOWER_LEFT_LINE_6',
+    ewdLowerLeft7 = 'L:A32NX_EWD_LOWER_LEFT_LINE_7',
+    ewdLowerRight1 = 'L:A32NX_EWD_LOWER_RIGHT_LINE_1',
+    ewdLowerRight2 = 'L:A32NX_EWD_LOWER_RIGHT_LINE_2',
+    ewdLowerRight3 = 'L:A32NX_EWD_LOWER_RIGHT_LINE_3',
+    ewdLowerRight4 = 'L:A32NX_EWD_LOWER_RIGHT_LINE_4',
+    ewdLowerRight5 = 'L:A32NX_EWD_LOWER_RIGHT_LINE_5',
+    ewdLowerRight6 = 'L:A32NX_EWD_LOWER_RIGHT_LINE_6',
+    ewdLowerRight7 = 'L:A32NX_EWD_LOWER_RIGHT_LINE_7',
 }
 
 export class EWDSimvarPublisher extends SimVarPublisher<EWDSimvars> {
@@ -146,6 +174,20 @@ export class EWDSimvarPublisher extends SimVarPublisher<EWDSimvars> {
         ['slatsFlapsStatusRaw', { name: EWDVars.slatsFlapsStatusRaw, type: SimVarValueType.Number }],
         ['slatsPositionRaw', { name: EWDVars.slatsPositionRaw, type: SimVarValueType.Number }],
         ['flapsPositionRaw', { name: EWDVars.flapsPositionRaw, type: SimVarValueType.Number }],
+        ['ewdLowerLeft1', { name: EWDVars.ewdLowerLeft1, type: SimVarValueType.Number }],
+        ['ewdLowerLeft2', { name: EWDVars.ewdLowerLeft2, type: SimVarValueType.Number }],
+        ['ewdLowerLeft3', { name: EWDVars.ewdLowerLeft3, type: SimVarValueType.Number }],
+        ['ewdLowerLeft4', { name: EWDVars.ewdLowerLeft4, type: SimVarValueType.Number }],
+        ['ewdLowerLeft5', { name: EWDVars.ewdLowerLeft5, type: SimVarValueType.Number }],
+        ['ewdLowerLeft6', { name: EWDVars.ewdLowerLeft6, type: SimVarValueType.Number }],
+        ['ewdLowerLeft7', { name: EWDVars.ewdLowerLeft7, type: SimVarValueType.Number }],
+        ['ewdLowerRight1', { name: EWDVars.ewdLowerRight1, type: SimVarValueType.Number }],
+        ['ewdLowerRight2', { name: EWDVars.ewdLowerRight2, type: SimVarValueType.Number }],
+        ['ewdLowerRight3', { name: EWDVars.ewdLowerRight3, type: SimVarValueType.Number }],
+        ['ewdLowerRight4', { name: EWDVars.ewdLowerRight4, type: SimVarValueType.Number }],
+        ['ewdLowerRight5', { name: EWDVars.ewdLowerRight5, type: SimVarValueType.Number }],
+        ['ewdLowerRight6', { name: EWDVars.ewdLowerRight6, type: SimVarValueType.Number }],
+        ['ewdLowerRight7', { name: EWDVars.ewdLowerRight7, type: SimVarValueType.Number }],
     ])
 
     public constructor(bus: EventBus) {

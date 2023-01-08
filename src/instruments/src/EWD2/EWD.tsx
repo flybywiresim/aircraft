@@ -3,6 +3,8 @@ import { ClockEvents, ComponentProps, DisplayComponent, EventBus, FSComponent, S
 import { DisplayUnit } from '../MsfsAvionicsCommon/displayUnit';
 import { EWDSimvars } from './shared/EWDSimvarPublisher';
 import { UpperDisplay } from './UpperDisplay';
+import { LowerLeftDisplay } from './LowerLeftDisplay';
+import { LowerRightDisplay } from './LowerRightDisplay';
 
 import './style.scss';
 
@@ -36,8 +38,9 @@ export class EWDComponent extends DisplayComponent<EWDProps> {
                     <UpperDisplay bus={this.props.bus} />
                     <line class="Separator" x1="4" y1="520" x2="444" y2="520" strokeLinecap="round" />
                     <line class="Separator" x1="522" y1="520" x2="764" y2="520" strokeLinecap="round" />
-
+                    <LowerLeftDisplay bus={this.props.bus} />
                     <line class="Separator" x1="484" y1="540" x2="484" y2="730" strokeLinecap="round" />
+                    <LowerRightDisplay bus={this.props.bus} />
                 </svg>
             </DisplayUnit>
         );

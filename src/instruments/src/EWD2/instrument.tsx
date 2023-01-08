@@ -46,6 +46,7 @@ class A32NX_EWD extends BaseInstrument {
 
         this.simVarPublisher.subscribe('acEssBus');
         this.simVarPublisher.subscribe('ewdPotentiometer');
+
         this.simVarPublisher.subscribe('autoThrustCommand1');
         this.simVarPublisher.subscribe('autoThrustCommand2');
         this.simVarPublisher.subscribe('autoThrustLimit');
@@ -56,8 +57,13 @@ class A32NX_EWD extends BaseInstrument {
         this.simVarPublisher.subscribe('autoThrustTLA1');
         this.simVarPublisher.subscribe('autoThrustTLA2');
         this.simVarPublisher.subscribe('autoThrustWarningToga');
+        this.simVarPublisher.subscribe('throttle1Position');
+        this.simVarPublisher.subscribe('throttle2Position');
+
+        this.simVarPublisher.subscribe('apuBleedPressure');
         this.simVarPublisher.subscribe('packs1Supplying');
         this.simVarPublisher.subscribe('packs2Supplying');
+
         this.simVarPublisher.subscribe('engine1AntiIce');
         this.simVarPublisher.subscribe('engine1EGT');
         this.simVarPublisher.subscribe('engine1Fadec');
@@ -67,6 +73,7 @@ class A32NX_EWD extends BaseInstrument {
         this.simVarPublisher.subscribe('engine1Reverse');
         this.simVarPublisher.subscribe('engine1ReverseNozzle');
         this.simVarPublisher.subscribe('engine1State');
+
         this.simVarPublisher.subscribe('engine2AntiIce');
         this.simVarPublisher.subscribe('engine2EGT');
         this.simVarPublisher.subscribe('engine2Fadec');
@@ -76,20 +83,34 @@ class A32NX_EWD extends BaseInstrument {
         this.simVarPublisher.subscribe('engine2Reverse');
         this.simVarPublisher.subscribe('engine2ReverseNozzle');
         this.simVarPublisher.subscribe('engine2State');
-        this.simVarPublisher.subscribe('wingAntiIce');
-        this.simVarPublisher.subscribe('apuBleedPressure');
-        this.simVarPublisher.subscribe('left1LandingGear');
-        this.simVarPublisher.subscribe('right1LandingGear');
-        this.simVarPublisher.subscribe('throttle1Position');
-        this.simVarPublisher.subscribe('throttle2Position');
+
+        this.simVarPublisher.subscribe('ewdLowerLeft1');
+        this.simVarPublisher.subscribe('ewdLowerLeft2');
+        this.simVarPublisher.subscribe('ewdLowerLeft3');
+        this.simVarPublisher.subscribe('ewdLowerLeft4');
+        this.simVarPublisher.subscribe('ewdLowerLeft5');
+        this.simVarPublisher.subscribe('ewdLowerLeft6');
+        this.simVarPublisher.subscribe('ewdLowerLeft7');
+        this.simVarPublisher.subscribe('ewdLowerRight1');
+        this.simVarPublisher.subscribe('ewdLowerRight2');
+        this.simVarPublisher.subscribe('ewdLowerRight3');
+        this.simVarPublisher.subscribe('ewdLowerRight4');
+        this.simVarPublisher.subscribe('ewdLowerRight5');
+        this.simVarPublisher.subscribe('ewdLowerRight6');
+        this.simVarPublisher.subscribe('ewdLowerRight7');
+
+        this.simVarPublisher.subscribe('flexTemp');
         this.simVarPublisher.subscribe('fwcFlightPhase');
         this.simVarPublisher.subscribe('idleN1');
-        this.simVarPublisher.subscribe('flexTemp');
-        this.simVarPublisher.subscribe('satRaw');
+        this.simVarPublisher.subscribe('left1LandingGear');
+        this.simVarPublisher.subscribe('right1LandingGear');
         this.simVarPublisher.subscribe('totalFuel');
+        this.simVarPublisher.subscribe('wingAntiIce');
+
+        this.simVarPublisher.subscribe('flapsPositionRaw');
+        this.simVarPublisher.subscribe('satRaw');
         this.simVarPublisher.subscribe('slatsFlapsStatusRaw');
         this.simVarPublisher.subscribe('slatsPositionRaw');
-        this.simVarPublisher.subscribe('flapsPositionRaw');
 
         FSComponent.render(<EWDComponent bus={this.bus} instrument={this} />, document.getElementById('EWD_CONTENT'));
     }
