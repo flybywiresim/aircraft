@@ -5,9 +5,9 @@
 #include "../types/Arinc429.h"
 
 struct NativeSimulatorData {
-  float latitude;
-  float longitude;
-  float potentiometer;
+  double latitude;
+  double longitude;
+  double potentiometer;
 } __attribute__((packed));
 
 struct EgpwcSimulatorData {

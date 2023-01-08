@@ -262,8 +262,8 @@ bool SimConnectInterface::sendAircraftStatus() {
   clientData.ndModeFO = this->aircraftStatus.ndModeFO;
   clientData.ndTerrainOnNdActiveFO = static_cast<std::uint8_t>(this->aircraftStatus.ndTerrainOnNdActiveFO);
   clientData.ndTerrainOnNdRenderingMode = static_cast<std::uint8_t>(RenderingMode);
-  clientData.groundTruthLatitude = this->simulatorData.latitude;
-  clientData.groundTruthLongitude = this->simulatorData.longitude;
+  clientData.groundTruthLatitude = static_cast<float>(this->simulatorData.latitude);
+  clientData.groundTruthLongitude = static_cast<float>(this->simulatorData.longitude);
 
   HRESULT result = SimConnect_SetClientData(this->hSimConnect, ClientData::AIRCRAFT_STATUS, DataDefinition::AIRCRAFT_STATUS_AREA,
                                             SIMCONNECT_CLIENT_DATA_SET_FLAG_DEFAULT, 0, sizeof(AircraftStatusData), &clientData);
