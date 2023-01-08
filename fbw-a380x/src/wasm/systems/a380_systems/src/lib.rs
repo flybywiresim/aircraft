@@ -23,7 +23,7 @@ use hydraulic::{A380Hydraulic, A380HydraulicOverheadPanel};
 use navigation::A380RadioAltimeters;
 use power_consumption::A380PowerConsumption;
 use std::vec::Vec;
-use systems::enhanced_gpwc::{AircraftType, EnhancedGPWC};
+use systems::enhanced_gpwc::EnhancedGPWC;
 use systems::simulation::InitContext;
 use uom::si::{
     f64::Length,

@@ -1,7 +1,6 @@
 #[macro_use]
 pub mod aspects;
 mod electrical;
-mod enhanced_gpwc;
 mod failures;
 mod msfs;
 
@@ -12,7 +11,6 @@ use ::msfs::legacy::{AircraftVariable, NamedVariable};
 
 use crate::aspects::{Aspect, ExecuteOn, MsfsAspectBuilder};
 use crate::electrical::{auxiliary_power_unit, electrical_buses};
-use crate::enhanced_gpwc::enhanced_gpwc;
 use ::msfs::{
     sim_connect::{data_definition, Period, SimConnect, SimConnectRecv, SIMCONNECT_OBJECT_ID_USER},
     sys, MSFSEvent,

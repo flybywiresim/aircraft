@@ -21,7 +21,7 @@ use hydraulic::{A320Hydraulic, A320HydraulicOverheadPanel};
 use navigation::A320RadioAltimeters;
 use power_consumption::A320PowerConsumption;
 use std::vec::Vec;
-use systems::enhanced_gpwc::{AircraftType, EnhancedGPWC};
+use systems::enhanced_gpwc::EnhancedGPWC;
 use systems::simulation::InitContext;
 use uom::si::{
     f64::Length,
