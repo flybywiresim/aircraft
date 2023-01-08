@@ -23,7 +23,7 @@ class SimConnectInterface {
 
  private:
   enum SimObjectData : SIMCONNECT_DATA_DEFINITION_ID {
-    AIRCRAFT_STATUS = 0,
+    LIGHT_POTENTIOMETER = 0,
   };
 
   enum ClientData : SIMCONNECT_CLIENT_DATA_ID {

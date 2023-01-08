@@ -66,9 +66,9 @@ bool SimConnectInterface::prepareSimObjectData() {
   HRESULT result = S_OK;
 
   if (SendSimulatorData) {
-    result = SimConnect_AddToDataDefinition(this->hSimConnect, SimObjectData::AIRCRAFT_STATUS, LightPotentiometerName.c_str(),
+    result = SimConnect_AddToDataDefinition(this->hSimConnect, SimObjectData::LIGHT_POTENTIOMETER, LightPotentiometerName.c_str(),
                                             "percent over 100");
-    result &= SimConnect_RequestDataOnSimObject(this->hSimConnect, SimObjectData::AIRCRAFT_STATUS, SimObjectData::AIRCRAFT_STATUS,
+    result &= SimConnect_RequestDataOnSimObject(this->hSimConnect, SimObjectData::LIGHT_POTENTIOMETER, SimObjectData::LIGHT_POTENTIOMETER,
                                                 SIMCONNECT_OBJECT_ID_USER, SIMCONNECT_PERIOD_VISUAL_FRAME);
   }
 
@@ -133,7 +133,7 @@ void SimConnectInterface::processClientData(const SIMCONNECT_RECV_CLIENT_DATA* d
 
 void SimConnectInterface::processSimObjectData(const SIMCONNECT_RECV_SIMOBJECT_DATA* data) {
   switch (data->dwRequestID) {
-    case SimObjectData::AIRCRAFT_STATUS:
+    case SimObjectData::LIGHT_POTENTIOMETER:
       this->lightPotentiometer = *((double*)&data->dwData);
       return;
     default:
