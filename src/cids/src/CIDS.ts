@@ -30,8 +30,6 @@ export class Cids {
             const get = SimVar.GetSimVarValue;
             set('L:A32NX_CIDS_ON_GROUND', 'Bool', this.onGround());
             set('L:A32NX_CIDS_IS_STATIONARY', 'Bool', this.isStationary());
-            set('L:A32NX_CIDS_DOOR_1_L_STATE', 'percent', this.door1LPercentOpen());
-            set('L:A32NX_CIDS_FWD_DOOR_CARGO_LOCKED', 'Bool', this.fwdDoorCargoLocked());
             set('L:A32NX_CIDS_ALL_DOORS_CLOSED_LOCKED', 'Bool', this.allDoorsClosedLocked());
             set('L:A32NX_CIDS_NW_STRG_PIN_INSERTED', 'Bool', this.nwStrgPinInserted());
             set('L:A32NX_CIDS_THR_LVR_1_POSITION', 'number', this.thrustLever1Position());
@@ -66,28 +64,10 @@ export class Cids {
         return isStationary;
     }
 
-    public door1LPercentOpen(): number {
-        const door1LState = SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:0', 'percent');
-
-        return door1LState;
-    }
-
-    public door3RPercentOpen(): number {
-        const door3RState = SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:3', 'percent');
-
-        return door3RState;
-    }
-
-    public fwdDoorCargoLocked(): boolean {
-        const fwdDoorCargoLocked = SimVar.GetSimVarValue('L:A32NX_FWD_DOOR_CARGO_LOCKED', 'Bool');
-
-        return fwdDoorCargoLocked;
-    }
-
     public allDoorsClosedLocked(): boolean {
-        const allDoorsClosedLocked = this.door1LPercentOpen() < 20
-        && this.door3RPercentOpen() < 20
-        && this.fwdDoorCargoLocked();
+        const allDoorsClosedLocked = SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:0', 'percent') < 20
+        && SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:3', 'percent') < 20
+        && SimVar.GetSimVarValue('L:A32NX_FWD_DOOR_CARGO_LOCKED', 'Bool');
 
         return allDoorsClosedLocked;
     }
