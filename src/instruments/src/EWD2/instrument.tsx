@@ -86,6 +86,7 @@ class A32NX_EWD extends BaseInstrument {
         this.simVarPublisher.subscribe('idleN1');
         this.simVarPublisher.subscribe('flexTemp');
         this.simVarPublisher.subscribe('satRaw');
+        this.simVarPublisher.subscribe('totalFuel');
 
         FSComponent.render(<EWDComponent bus={this.bus} instrument={this} />, document.getElementById('EWD_CONTENT'));
     }

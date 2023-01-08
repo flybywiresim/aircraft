@@ -43,6 +43,7 @@ export type EWDSimvars = {
     idleN1: number;
     flexTemp: number;
     satRaw: number;
+    totalFuel: number;
 }
 
 export enum EWDVars {
@@ -88,6 +89,7 @@ export enum EWDVars {
     idleN1 = 'L:A32NX_ENGINE_IDLE_N1',
     flexTemp = 'L:AIRLINER_TO_FLEX_TEMP',
     satRaw = 'L:A32NX_ADIRS_ADR_1_STATIC_AIR_TEMPERATURE',
+    totalFuel = 'FUEL TOTAL QUANTITY WEIGHT',
 }
 
 export class EWDSimvarPublisher extends SimVarPublisher<EWDSimvars> {
@@ -134,6 +136,7 @@ export class EWDSimvarPublisher extends SimVarPublisher<EWDSimvars> {
         ['idleN1', { name: EWDVars.idleN1, type: SimVarValueType.Number }],
         ['flexTemp', { name: EWDVars.flexTemp, type: SimVarValueType.Number }],
         ['satRaw', { name: EWDVars.satRaw, type: SimVarValueType.Number }],
+        ['totalFuel', { name: EWDVars.totalFuel, type: SimVarValueType.Number }],
     ])
 
     public constructor(bus: EventBus) {

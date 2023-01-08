@@ -1,10 +1,10 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { EventBus, DisplayComponent, FSComponent, Subject, VNode } from 'msfssdk';
-import { Units } from '@shared/units';
 import { NXDataStore } from '@shared/persistence';
 import { AFloor } from './AFloor';
 import { EGT } from './EGT';
 import { FF } from './FF';
+import { FOB } from './FOB';
 import { Idle } from './Idle';
 import { Layer } from '../MsfsAvionicsCommon/Layer';
 import { N1 } from './N1';
@@ -68,6 +68,8 @@ export class UpperDisplay extends DisplayComponent<UpperDisplayProps> {
                     <line class="Separator" x1={311} y1={-11} x2={343} y2={-20} strokeLinecap="round" />
                     <line class="Separator" x1={424} y1={-20} x2={456} y2={-11} strokeLinecap="round" />
                 </Layer>
+
+                <FOB bus={this.props.bus} x={40} y={490} metric={this.usingMetric} />
             </>
         );
     }
