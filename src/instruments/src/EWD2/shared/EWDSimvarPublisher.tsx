@@ -44,6 +44,9 @@ export type EWDSimvars = {
     flexTemp: number;
     satRaw: number;
     totalFuel: number;
+    slatsFlapsStatusRaw: number;
+    slatsPositionRaw: number;
+    flapsPositionRaw: number;
 }
 
 export enum EWDVars {
@@ -90,6 +93,9 @@ export enum EWDVars {
     flexTemp = 'L:AIRLINER_TO_FLEX_TEMP',
     satRaw = 'L:A32NX_ADIRS_ADR_1_STATIC_AIR_TEMPERATURE',
     totalFuel = 'FUEL TOTAL QUANTITY WEIGHT',
+    slatsFlapsStatusRaw = 'L:A32NX_SFCC_SLAT_FLAP_SYSTEM_STATUS_WORD',
+    slatsPositionRaw = 'L:A32NX_SFCC_SLAT_ACTUAL_POSITION_WORD',
+    flapsPositionRaw = 'L:A32NX_SFCC_FLAP_ACTUAL_POSITION_WORD',
 }
 
 export class EWDSimvarPublisher extends SimVarPublisher<EWDSimvars> {
@@ -137,6 +143,9 @@ export class EWDSimvarPublisher extends SimVarPublisher<EWDSimvars> {
         ['flexTemp', { name: EWDVars.flexTemp, type: SimVarValueType.Number }],
         ['satRaw', { name: EWDVars.satRaw, type: SimVarValueType.Number }],
         ['totalFuel', { name: EWDVars.totalFuel, type: SimVarValueType.Number }],
+        ['slatsFlapsStatusRaw', { name: EWDVars.slatsFlapsStatusRaw, type: SimVarValueType.Number }],
+        ['slatsPositionRaw', { name: EWDVars.slatsPositionRaw, type: SimVarValueType.Number }],
+        ['flapsPositionRaw', { name: EWDVars.flapsPositionRaw, type: SimVarValueType.Number }],
     ])
 
     public constructor(bus: EventBus) {

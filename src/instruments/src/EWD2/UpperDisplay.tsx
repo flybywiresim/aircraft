@@ -11,6 +11,7 @@ import { N1 } from './N1';
 import { N2 } from './N2';
 import { N1Idle } from './N1Idle';
 import { PacksNaiWai } from './PacksNaiWai';
+import { Slats } from './Slats';
 
 interface UpperDisplayProps {
     bus: EventBus;
@@ -70,6 +71,8 @@ export class UpperDisplay extends DisplayComponent<UpperDisplayProps> {
                 </Layer>
 
                 <FOB bus={this.props.bus} x={40} y={490} metric={this.usingMetric} />
+
+                <Slats bus={this.props.bus} />
             </>
         );
     }
