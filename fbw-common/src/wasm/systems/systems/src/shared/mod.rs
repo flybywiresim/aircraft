@@ -176,13 +176,18 @@ pub trait EngineUncorrectedN2 {
     fn uncorrected_n2(&self) -> Ratio;
 }
 
-pub trait CabinAir {
+pub trait CabinAltitude {
     fn altitude(&self) -> Length;
-    fn pressure(&self) -> Pressure;
 }
 
-pub trait CabinTemperature {
+pub trait CabinSimulation {
     fn cabin_temperature(&self) -> Vec<ThermodynamicTemperature>;
+    fn exterior_pressure(&self) -> Pressure {
+        Pressure::new::<hectopascal>(1013.25)
+    }
+    fn cabin_pressure(&self) -> Pressure {
+        Pressure::new::<hectopascal>(1013.25)
+    }
 }
 
 pub trait PressurizationOverheadShared {

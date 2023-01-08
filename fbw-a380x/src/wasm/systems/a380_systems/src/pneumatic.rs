@@ -1345,7 +1345,7 @@ mod tests {
             TargetPressureTemperatureSignal,
         },
         shared::{
-            ApuBleedAirValveSignal, CabinAir, CabinTemperature, ControllerSignal,
+            ApuBleedAirValveSignal, CabinAltitude, CabinSimulation, ControllerSignal,
             ElectricalBusType, ElectricalBuses, EmergencyElectricalState, EngineBleedPushbutton,
             EngineCorrectedN1, EngineFirePushButtons, EngineStartState, GroundSpeed,
             HydraulicColor, InternationalStandardAtmosphere, LgciuWeightOnWheels, MachNumber,
@@ -1360,13 +1360,8 @@ mod tests {
     use std::{fs, fs::File, time::Duration};
 
     use uom::si::{
-        f64::*,
-        length::foot,
-        mass_rate::kilogram_per_second,
-        pressure::{pascal, psi},
-        ratio::ratio,
-        thermodynamic_temperature::degree_celsius,
-        velocity::knot,
+        f64::*, length::foot, mass_rate::kilogram_per_second, pressure::psi, ratio::ratio,
+        thermodynamic_temperature::degree_celsius, velocity::knot,
     };
 
     use crate::air_conditioning::A380PressurizationOverheadPanel;
@@ -1444,7 +1439,7 @@ mod tests {
             Self {}
         }
     }
-    impl CabinTemperature for TestCabin {
+    impl CabinSimulation for TestCabin {
         fn cabin_temperature(&self) -> Vec<ThermodynamicTemperature> {
             vec![ThermodynamicTemperature::new::<degree_celsius>(24.); 3]
         }
@@ -1466,23 +1461,16 @@ mod tests {
         }
     }
 
-    struct TestPressurization {
-        cabin_pressure: Pressure,
-    }
+    struct TestPressurization {}
+
     impl TestPressurization {
         fn new() -> Self {
-            Self {
-                cabin_pressure: Pressure::new::<pascal>(101315.),
-            }
+            Self {}
         }
     }
-    impl CabinAir for TestPressurization {
+    impl CabinAltitude for TestPressurization {
         fn altitude(&self) -> Length {
             Length::new::<foot>(0.)
-        }
-
-        fn pressure(&self) -> Pressure {
-            self.cabin_pressure
         }
     }
 

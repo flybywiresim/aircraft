@@ -10,10 +10,10 @@ use crate::{
         ControllablePneumaticValve, PneumaticContainer, PneumaticPipe,
     },
     shared::{
-        AverageExt, CabinAir, CabinTemperature, ConsumePower, ControllerSignal, ElectricalBusType,
-        ElectricalBuses, EngineBleedPushbutton, EngineCorrectedN1, EngineFirePushButtons,
-        EngineStartState, GroundSpeed, LgciuWeightOnWheels, PackFlowValveState, PneumaticBleed,
-        PressurizationOverheadShared,
+        AverageExt, CabinAltitude, CabinSimulation, ConsumePower, ControllerSignal,
+        ElectricalBusType, ElectricalBuses, EngineBleedPushbutton, EngineCorrectedN1,
+        EngineFirePushButtons, EngineStartState, GroundSpeed, LgciuWeightOnWheels,
+        PackFlowValveState, PneumaticBleed, PressurizationOverheadShared,
     },
     simulation::{
         InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -26,6 +26,7 @@ use std::{convert::TryInto, fmt::Display};
 use uom::si::{
     f64::*,
     mass::kilogram,
+    mass_density::kilogram_per_cubic_meter,
     mass_rate::kilogram_per_second,
     power::watt,
     pressure::{hectopascal, pascal, psi},
@@ -49,7 +50,7 @@ pub trait PackFlowControllers<const ZONES: usize> {
     fn pack_flow_controller(&self, pack_id: Pack) -> PackFlowController<ZONES>;
 }
 
-trait OutletAir {
+pub trait OutletAir {
     fn outlet_air(&self) -> Air;
 }
 
@@ -118,12 +119,12 @@ impl<const ZONES: usize, const FANS: usize> AirConditioningSystem<ZONES, FANS> {
         &mut self,
         context: &UpdateContext,
         adirs: &impl GroundSpeed,
-        cabin_temperature: &impl CabinTemperature,
+        cabin_simulation: &impl CabinSimulation,
         engines: [&impl EngineCorrectedN1; 2],
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         pneumatic: &(impl EngineStartState + PackFlowValveState + PneumaticBleed),
         pneumatic_overhead: &impl EngineBleedPushbutton,
-        pressurization: &impl CabinAir,
+        pressurization: &impl CabinAltitude,
         pressurization_overhead: &impl PressurizationOverheadShared,
         lgciu: [&impl LgciuWeightOnWheels; 2],
     ) {
@@ -131,7 +132,7 @@ impl<const ZONES: usize, const FANS: usize> AirConditioningSystem<ZONES, FANS> {
             context,
             adirs,
             &self.acs_overhead,
-            cabin_temperature,
+            cabin_simulation,
             engines,
             engine_fire_push_buttons,
             pneumatic,
@@ -146,11 +147,7 @@ impl<const ZONES: usize, const FANS: usize> AirConditioningSystem<ZONES, FANS> {
             .set_pack_pushbutton_fault(self.acsc.pack_fault_determination(pneumatic));
 
         for fan in self.cabin_fans.iter_mut() {
-            fan.update(
-                cabin_temperature,
-                &self.acsc.cabin_fans_controller(),
-                pressurization,
-            )
+            fan.update(cabin_simulation, &self.acsc.cabin_fans_controller())
         }
 
         let pack_flow: [MassRate; 2] = [
@@ -169,7 +166,7 @@ impl<const ZONES: usize, const FANS: usize> AirConditioningSystem<ZONES, FANS> {
         self.mixer_unit.update(mixer_intakes);
 
         self.trim_air_system
-            .update(context, &self.mixer_unit, &self.acsc)
+            .update(context, &self.mixer_unit, &self.acsc);
     }
 
     pub fn mix_packs_air_update(&mut self, pack_container: &mut [impl PneumaticContainer; 2]) {
@@ -194,6 +191,17 @@ impl<const ZONES: usize, const FANS: usize> PackFlowControllers<ZONES>
 {
     fn pack_flow_controller(&self, pack_id: Pack) -> PackFlowController<ZONES> {
         self.acsc.pack_flow_controller(pack_id)
+    }
+}
+
+impl<const ZONES: usize, const FANS: usize> OutletAir for AirConditioningSystem<ZONES, FANS> {
+    fn outlet_air(&self) -> Air {
+        let mut outlet_air = Air::new();
+        outlet_air.set_flow_rate(self.pack_flow());
+        outlet_air.set_pressure(self.trim_air_system.trim_air_outlet_pressure());
+        outlet_air.set_temperature(self.duct_temperature().iter().average());
+
+        outlet_air
     }
 }
 
@@ -342,24 +350,25 @@ impl CabinFan {
 
     fn update(
         &mut self,
-        cabin_temperature: &impl CabinTemperature,
+        cabin_simulation: &impl CabinSimulation,
         controller: &impl ControllerSignal<CabinFansSignal>,
-        pressurization: &impl CabinAir,
     ) {
         // We take a temperature average. In reality more air would come from the cabin than the cockpit
         // This is an aproximation but it shouldn't incur much error
         self.outlet_air
-            .set_temperature(cabin_temperature.cabin_temperature().iter().average());
+            .set_temperature(cabin_simulation.cabin_temperature().iter().average());
 
         if !self.is_powered || !matches!(controller.signal(), Some(CabinFansSignal::On)) {
             self.is_on = false;
-            self.outlet_air.set_pressure(pressurization.pressure());
+            self.outlet_air
+                .set_pressure(cabin_simulation.cabin_pressure());
             self.outlet_air
                 .set_flow_rate(MassRate::new::<kilogram_per_second>(0.));
         } else {
             self.is_on = true;
             self.outlet_air.set_pressure(
-                pressurization.pressure() + Pressure::new::<hectopascal>(Self::PRESSURE_RISE_HPA),
+                cabin_simulation.cabin_pressure()
+                    + Pressure::new::<hectopascal>(Self::PRESSURE_RISE_HPA),
             );
             self.outlet_air
                 .set_flow_rate(self.mass_flow_calculation() * Self::FAN_EFFICIENCY);
@@ -602,6 +611,15 @@ impl<const ZONES: usize> TrimAirSystem<ZONES> {
         );
     }
 
+    fn trim_air_outlet_pressure(&self) -> Pressure {
+        self.trim_air_mixers
+            .iter()
+            .map(|tam| tam.outlet_air.pressure())
+            .collect::<Vec<Pressure>>()
+            .iter()
+            .average()
+    }
+
     #[cfg(test)]
     fn trim_air_valves_open_amount(&self) -> [Ratio; ZONES] {
         self.trim_air_valves
@@ -718,6 +736,7 @@ impl Air {
     const MU: f64 = 1.6328e-5; // Viscosity kg/(m*s)
     const K: f64 = 0.022991; // Thermal conductivity - W/(m*C)
     const PRANDT_NUMBER: f64 = 0.677725;
+    const GAMMA: f64 = 1.4; // Rate of specific heats for air
 
     pub fn new() -> Self {
         Self {
@@ -749,6 +768,12 @@ impl Air {
 
     pub fn flow_rate(&self) -> MassRate {
         self.flow_rate
+    }
+
+    pub fn density(&self) -> MassDensity {
+        MassDensity::new::<kilogram_per_cubic_meter>(
+            self.pressure.get::<pascal>() / (Self::R * self.temperature.get::<kelvin>()),
+        )
     }
 }
 

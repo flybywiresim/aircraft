@@ -1,9 +1,6 @@
-use crate::{
-    shared::{ControllerSignal, PressurizationOverheadShared},
-    simulation::UpdateContext,
-};
+use crate::{shared::ControllerSignal, simulation::UpdateContext};
 
-use super::{CabinPressureSimulation, OutflowValveActuator};
+use super::OutflowValveActuator;
 
 use std::time::Duration;
 use uom::si::{f64::*, ratio::percent};
@@ -79,14 +76,8 @@ impl PressureValve {
         }
     }
 
-    pub fn calculate_outflow_valve_position<T: OutflowValveActuator>(
-        &mut self,
-        actuator: &T,
-        press_overhead: &impl PressurizationOverheadShared,
-        cabin_pressure_simulation: &CabinPressureSimulation,
-    ) {
-        self.target_open =
-            actuator.target_valve_position(press_overhead, cabin_pressure_simulation);
+    pub fn calculate_outflow_valve_position<T: OutflowValveActuator>(&mut self, actuator: &T) {
+        self.target_open = actuator.target_valve_position();
     }
 
     fn get_valve_change_for_delta(&self, context: &UpdateContext) -> f64 {
@@ -172,11 +163,7 @@ mod pressure_valve_tests {
         }
     }
     impl OutflowValveActuator for TestValveActuator {
-        fn target_valve_position(
-            &self,
-            _: &impl PressurizationOverheadShared,
-            _: &CabinPressureSimulation,
-        ) -> Ratio {
+        fn target_valve_position(&self) -> Ratio {
             self.target_valve_position
         }
     }

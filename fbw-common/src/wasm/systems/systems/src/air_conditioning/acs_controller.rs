@@ -1,7 +1,7 @@
 use crate::{
     pneumatic::{EngineModeSelector, EngineState, PneumaticValveSignal},
     shared::{
-        pid::PidController, CabinAir, CabinTemperature, ControllerSignal, ElectricalBusType,
+        pid::PidController, CabinAltitude, CabinSimulation, ControllerSignal, ElectricalBusType,
         ElectricalBuses, EngineBleedPushbutton, EngineCorrectedN1, EngineFirePushButtons,
         EngineStartState, GroundSpeed, LgciuWeightOnWheels, PackFlowValveState, PneumaticBleed,
         PressurizationOverheadShared,
@@ -81,12 +81,12 @@ impl<const ZONES: usize> AirConditioningSystemController<ZONES> {
         context: &UpdateContext,
         adirs: &impl GroundSpeed,
         acs_overhead: &AirConditioningSystemOverhead<ZONES>,
-        cabin_temperature: &impl CabinTemperature,
+        cabin_temperature: &impl CabinSimulation,
         engines: [&impl EngineCorrectedN1; 2],
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         pneumatic: &(impl EngineStartState + PackFlowValveState + PneumaticBleed),
         pneumatic_overhead: &impl EngineBleedPushbutton,
-        pressurization: &impl CabinAir,
+        pressurization: &impl CabinAltitude,
         pressurization_overhead: &impl PressurizationOverheadShared,
         lgciu: [&impl LgciuWeightOnWheels; 2],
         trim_air_system: &TrimAirSystem<ZONES>,
@@ -496,7 +496,7 @@ impl<const ZONES: usize> ZoneController<ZONES> {
         context: &UpdateContext,
         acs_overhead: &AirConditioningSystemOverhead<ZONES>,
         zone_measured_temperature: ThermodynamicTemperature,
-        pressurization: &impl CabinAir,
+        pressurization: &impl CabinAltitude,
         operation_mode: &ACSCActiveComputer,
     ) {
         self.zone_selected_temperature = if matches!(operation_mode, ACSCActiveComputer::Secondary)
@@ -524,7 +524,7 @@ impl<const ZONES: usize> ZoneController<ZONES> {
     fn calculate_duct_temp_demand(
         &mut self,
         context: &UpdateContext,
-        pressurization: &impl CabinAir,
+        pressurization: &impl CabinAltitude,
         zone_measured_temperature: ThermodynamicTemperature,
     ) -> ThermodynamicTemperature {
         let altitude_correction: f64 =
@@ -707,7 +707,7 @@ impl<const ZONES: usize> PackFlowController<ZONES> {
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         pneumatic: &(impl EngineStartState + PackFlowValveState + PneumaticBleed),
         pneumatic_overhead: &impl EngineBleedPushbutton,
-        pressurization: &impl CabinAir,
+        pressurization: &impl CabinAltitude,
         pressurization_overhead: &impl PressurizationOverheadShared,
         operation_mode: ACSCActiveComputer,
     ) {
@@ -791,7 +791,7 @@ impl<const ZONES: usize> PackFlowController<ZONES> {
         }
     }
 
-    fn absolute_flow_calculation(&self, pressurization: &impl CabinAir) -> MassRate {
+    fn absolute_flow_calculation(&self, pressurization: &impl CabinAltitude) -> MassRate {
         MassRate::new::<kilogram_per_second>(
             self.flow_demand.get::<ratio>()
                 * (Self::FLOW_CONSTANT_XCAB * pressurization.altitude().get::<foot>()
@@ -1087,7 +1087,7 @@ mod acs_controller_tests {
     use super::*;
     use crate::{
         air_conditioning::{
-            cabin_air::CabinZone, Air, AirConditioningPack, CabinFan, MixerUnit, OutletAir,
+            cabin_air::CabinAirSimulation, Air, AirConditioningPack, CabinFan, MixerUnit, OutletAir,
         },
         electrical::{test::TestElectricitySource, ElectricalBus, Electricity},
         overhead::{
@@ -1099,7 +1099,8 @@ mod acs_controller_tests {
             ControllablePneumaticValve, EngineModeSelector, PneumaticContainer, PneumaticPipe,
             Precooler,
         },
-        shared::{EngineBleedPushbutton, PneumaticValve, PotentialOrigin},
+        pressurization::PressurizationConstants,
+        shared::{AverageExt, EngineBleedPushbutton, PneumaticValve, PotentialOrigin},
         simulation::{
             test::{ReadByName, SimulationTestBed, TestBed, WriteByName},
             Aircraft, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -1107,8 +1108,8 @@ mod acs_controller_tests {
         },
     };
     use uom::si::{
-        length::foot, pressure::hectopascal, pressure::psi,
-        thermodynamic_temperature::degree_celsius, velocity::knot, volume::cubic_meter,
+        length::foot, pressure::psi, thermodynamic_temperature::degree_celsius, velocity::knot,
+        volume::cubic_meter,
     };
 
     struct TestAdirs {
@@ -1164,13 +1165,9 @@ mod acs_controller_tests {
             self.cabin_altitude = altitude;
         }
     }
-    impl CabinAir for TestPressurization {
+    impl CabinAltitude for TestPressurization {
         fn altitude(&self) -> Length {
             self.cabin_altitude
-        }
-
-        fn pressure(&self) -> Pressure {
-            Pressure::new::<hectopascal>(1013.15)
         }
     }
 
@@ -1180,6 +1177,10 @@ mod acs_controller_tests {
     impl TestLgciu {
         fn new(compressed: bool) -> Self {
             Self { compressed }
+        }
+
+        fn compressed(&self) -> bool {
+            self.compressed
         }
 
         fn set_on_ground(&mut self, on_ground: bool) {
@@ -1607,99 +1608,157 @@ mod acs_controller_tests {
         }
     }
 
-    struct TestCabin {
-        cockpit: CabinZone<2>,
-        passenger_cabin: CabinZone<2>,
-        measured_temperature: Vec<ThermodynamicTemperature>,
+    struct TestAirConditioningSystem {
+        duct_temperature: Vec<ThermodynamicTemperature>,
+        outlet_air: Air,
     }
 
-    impl TestCabin {
+    impl TestAirConditioningSystem {
+        fn new() -> Self {
+            Self {
+                duct_temperature: vec![ThermodynamicTemperature::new::<degree_celsius>(24.); 2],
+                outlet_air: Air::new(),
+            }
+        }
+
+        fn update(
+            &mut self,
+            duct_temperature: Vec<ThermodynamicTemperature>,
+            pack_flow: MassRate,
+            trim_air_pressure: Pressure,
+        ) {
+            self.duct_temperature = duct_temperature;
+            self.outlet_air.set_flow_rate(pack_flow);
+            self.outlet_air.set_pressure(trim_air_pressure);
+            self.outlet_air
+                .set_temperature(self.duct_temperature.iter().average());
+        }
+
+        fn duct_temperature(&self) -> Vec<ThermodynamicTemperature> {
+            self.duct_temperature.to_vec()
+        }
+    }
+
+    impl DuctTemperature for TestAirConditioningSystem {
+        fn duct_temperature(&self) -> Vec<ThermodynamicTemperature> {
+            self.duct_temperature()
+        }
+    }
+
+    impl OutletAir for TestAirConditioningSystem {
+        fn outlet_air(&self) -> Air {
+            self.outlet_air
+        }
+    }
+
+    struct TestCabinAirSimulation {
+        cabin_air_simulation: CabinAirSimulation<TestConstants, 2>,
+        test_cabin_temperature: Option<Vec<ThermodynamicTemperature>>,
+    }
+
+    impl TestCabinAirSimulation {
         fn new(context: &mut InitContext) -> Self {
             Self {
-                cockpit: CabinZone::new(
+                cabin_air_simulation: CabinAirSimulation::new(
                     context,
-                    ZoneType::Cockpit,
-                    Volume::new::<cubic_meter>(60.),
-                    2,
-                    None,
+                    TestConstants,
+                    &[ZoneType::Cockpit, ZoneType::Cabin(1)],
                 ),
-                passenger_cabin: CabinZone::new(
-                    context,
-                    ZoneType::Cabin(1),
-                    Volume::new::<cubic_meter>(400.),
-                    0,
-                    Some([(1, 6), (7, 13)]),
-                ),
-                measured_temperature: vec![
-                    ThermodynamicTemperature::new::<degree_celsius>(24.),
-                    ThermodynamicTemperature::new::<degree_celsius>(24.),
-                ],
+                test_cabin_temperature: None,
             }
         }
 
         fn update(
             &mut self,
             context: &UpdateContext,
-            duct_temperature: &impl DuctTemperature,
-            pack_flow: &impl PackFlow,
-            pressurization: &impl CabinAir,
+            air_conditioning_system: &(impl OutletAir + DuctTemperature),
+            outflow_valve_open_amount: Ratio,
+            safety_valve_open_amount: Ratio,
+            lgciu_gear_compressed: bool,
+            should_open_outflow_valve: bool,
+            passengers: [u8; 2],
         ) {
-            let flow_rate_per_cubic_meter: MassRate = MassRate::new::<kilogram_per_second>(
-                pack_flow.pack_flow().get::<kilogram_per_second>() / (460.),
-            );
-            self.cockpit.update(
+            self.cabin_air_simulation.update(
                 context,
-                duct_temperature,
-                flow_rate_per_cubic_meter,
-                pressurization,
+                air_conditioning_system,
+                outflow_valve_open_amount,
+                safety_valve_open_amount,
+                lgciu_gear_compressed,
+                should_open_outflow_valve,
+                passengers,
+                0,
             );
-            self.passenger_cabin.update(
-                context,
-                duct_temperature,
-                flow_rate_per_cubic_meter,
-                pressurization,
-            );
-            self.measured_temperature[0] = self.cockpit.cabin_temperature()[0];
-            self.measured_temperature[1] = self.passenger_cabin.cabin_temperature()[0];
         }
 
-        fn update_number_of_passengers(&mut self, number_of_passengers: u8) {
-            self.passenger_cabin
-                .update_number_of_passengers(number_of_passengers);
-        }
-
-        fn set_measured_temperature(
-            &mut self,
-            new_measured_temperature: Vec<ThermodynamicTemperature>,
-        ) {
-            self.measured_temperature = new_measured_temperature;
+        fn set_measured_temperature(&mut self, temperature: Vec<ThermodynamicTemperature>) {
+            self.test_cabin_temperature = Some(temperature);
         }
     }
 
-    impl CabinTemperature for TestCabin {
+    impl CabinSimulation for TestCabinAirSimulation {
         fn cabin_temperature(&self) -> Vec<ThermodynamicTemperature> {
-            self.measured_temperature.clone()
+            if let Some(t) = &self.test_cabin_temperature {
+                t.to_vec()
+            } else {
+                self.cabin_air_simulation.cabin_temperature()
+            }
+        }
+
+        fn exterior_pressure(&self) -> Pressure {
+            self.cabin_air_simulation.exterior_pressure()
+        }
+
+        fn cabin_pressure(&self) -> Pressure {
+            self.cabin_air_simulation.cabin_pressure()
         }
     }
 
-    impl SimulationElement for TestCabin {
+    impl SimulationElement for TestCabinAirSimulation {
         fn accept<V: SimulationElementVisitor>(&mut self, visitor: &mut V) {
-            self.cockpit.accept(visitor);
-            self.passenger_cabin.accept(visitor);
+            self.cabin_air_simulation.accept(visitor);
 
             visitor.visit(self);
         }
+    }
+
+    #[derive(Clone, Copy)]
+    struct TestConstants;
+
+    impl PressurizationConstants for TestConstants {
+        const CABIN_VOLUME_CUBIC_METER: f64 = 139.; // m3
+        const COCKPIT_VOLUME_CUBIC_METER: f64 = 9.; // m3
+        const PRESSURIZED_FUSELAGE_VOLUME_CUBIC_METER: f64 = 330.; // m3
+        const CABIN_LEAKAGE_AREA: f64 = 0.0003; // m2
+        const OUTFLOW_VALVE_SIZE: f64 = 0.05; // m2
+        const SAFETY_VALVE_SIZE: f64 = 0.02; //m2
+
+        const MAX_CLIMB_RATE: f64 = 750.; // fpm
+        const MAX_CLIMB_RATE_IN_DESCENT: f64 = 500.; // fpm
+        const MAX_DESCENT_RATE: f64 = -750.; // fpm
+        const MAX_ABORT_DESCENT_RATE: f64 = -500.; //fpm
+        const MAX_TAKEOFF_DELTA_P: f64 = 0.1; // PSI
+        const MAX_CLIMB_DELTA_P: f64 = 8.06; // PSI
+        const MAX_CLIMB_CABIN_ALTITUDE: f64 = 8050.; // feet
+        const MAX_SAFETY_DELTA_P: f64 = 8.1; // PSI
+        const MIN_SAFETY_DELTA_P: f64 = -0.5; // PSI
+        const TAKEOFF_RATE: f64 = -400.;
+        const DEPRESS_RATE: f64 = 500.;
+        const EXCESSIVE_ALT_WARNING: f64 = 9550.; // feet
+        const EXCESSIVE_RESIDUAL_PRESSURE_WARNING: f64 = 0.03; // PSI
+        const LOW_DIFFERENTIAL_PRESSURE_WARNING: f64 = 1.45; // PSI
     }
 
     struct TestAircraft {
         acsc: AirConditioningSystemController<2>,
         acs_overhead: AirConditioningSystemOverhead<2>,
         adirs: TestAdirs,
+        air_conditioning_system: TestAirConditioningSystem,
         cabin_fans: [CabinFan; 2],
         engine_1: TestEngine,
         engine_2: TestEngine,
         engine_fire_push_buttons: TestEngineFirePushButtons,
         mixer_unit: MixerUnit<2>,
+        number_of_passengers: u8,
         packs: [AirConditioningPack; 2],
         pneumatic: TestPneumatic,
         pneumatic_overhead: TestPneumaticOverhead,
@@ -1707,7 +1766,8 @@ mod acs_controller_tests {
         pressurization_overhead: TestPressurizationOverheadPanel,
         lgciu1: TestLgciu,
         lgciu2: TestLgciu,
-        test_cabin: TestCabin,
+        cabin_air_simulation: TestCabinAirSimulation,
+        // test_cabin: TestCabin,
         trim_air_system: TrimAirSystem<2>,
         powered_dc_source_1: TestElectricitySource,
         powered_ac_source_1: TestElectricitySource,
@@ -1737,11 +1797,13 @@ mod acs_controller_tests {
                 ),
                 acs_overhead: AirConditioningSystemOverhead::new(context, &cabin_zones),
                 adirs: TestAdirs::new(),
+                air_conditioning_system: TestAirConditioningSystem::new(),
                 cabin_fans: [CabinFan::new(ElectricalBusType::AlternatingCurrent(1)); 2],
                 engine_1: TestEngine::new(Ratio::new::<percent>(0.)),
                 engine_2: TestEngine::new(Ratio::new::<percent>(0.)),
                 engine_fire_push_buttons: TestEngineFirePushButtons::new(),
                 mixer_unit: MixerUnit::new(&cabin_zones),
+                number_of_passengers: 0,
                 packs: [AirConditioningPack::new(), AirConditioningPack::new()],
                 pneumatic: TestPneumatic::new(context),
                 pneumatic_overhead: TestPneumaticOverhead::new(context),
@@ -1749,7 +1811,8 @@ mod acs_controller_tests {
                 pressurization_overhead: TestPressurizationOverheadPanel::new(context),
                 lgciu1: TestLgciu::new(false),
                 lgciu2: TestLgciu::new(false),
-                test_cabin: TestCabin::new(context),
+                cabin_air_simulation: TestCabinAirSimulation::new(context),
+                // test_cabin: TestCabin::new(context),
                 trim_air_system: TrimAirSystem::new(
                     context,
                     &[ZoneType::Cockpit, ZoneType::Cabin(1)],
@@ -1790,6 +1853,10 @@ mod acs_controller_tests {
             self.engine_1.set_engine_n1(n);
         }
 
+        fn set_passengers(&mut self, passengers: u8) {
+            self.number_of_passengers = passengers;
+        }
+
         fn set_on_ground(&mut self, on_ground: bool) {
             self.lgciu1.set_on_ground(on_ground);
             self.lgciu2.set_on_ground(on_ground);
@@ -1811,7 +1878,7 @@ mod acs_controller_tests {
             &mut self,
             new_measured_temperature: Vec<ThermodynamicTemperature>,
         ) {
-            self.test_cabin
+            self.cabin_air_simulation
                 .set_measured_temperature(new_measured_temperature);
         }
 
@@ -1864,11 +1931,13 @@ mod acs_controller_tests {
         }
 
         fn update_after_power_distribution(&mut self, context: &UpdateContext) {
+            let lgciu_gears_compressed = self.lgciu1.compressed() & self.lgciu2.compressed();
+
             self.acsc.update(
                 context,
                 &self.adirs,
                 &self.acs_overhead,
-                &self.test_cabin,
+                &self.cabin_air_simulation,
                 [&self.engine_1, &self.engine_2],
                 &self.engine_fire_push_buttons,
                 &self.pneumatic,
@@ -1882,11 +1951,15 @@ mod acs_controller_tests {
                 .update(context, &self.acsc, [&self.engine_1, &self.engine_2]);
             self.trim_air_system
                 .mix_packs_air_update(self.pneumatic.packs());
-            self.test_cabin.update(
+
+            self.cabin_air_simulation.update(
                 context,
-                &self.trim_air_system,
-                &self.acsc,
-                &self.pressurization,
+                &self.air_conditioning_system,
+                Ratio::new::<percent>(10.),
+                Ratio::new::<percent>(0.),
+                lgciu_gears_compressed,
+                true,
+                [0, self.number_of_passengers / 2],
             );
 
             let pack_flow: [MassRate; 2] = [
@@ -1899,9 +1972,8 @@ mod acs_controller_tests {
             }
             for fan in self.cabin_fans.iter_mut() {
                 fan.update(
-                    &self.test_cabin,
+                    &self.cabin_air_simulation,
                     &self.acsc.cabin_fans_controller(),
-                    &self.pressurization,
                 );
             }
             let mut mixer_intakes: Vec<&dyn OutletAir> = vec![&self.packs[0], &self.packs[1]];
@@ -1915,13 +1987,19 @@ mod acs_controller_tests {
 
             self.acs_overhead
                 .set_pack_pushbutton_fault(self.acsc.pack_fault_determination(&self.pneumatic));
+
+            self.air_conditioning_system.update(
+                self.trim_air_system.duct_temperature(),
+                self.acsc.individual_pack_flow(Pack(1)) + self.acsc.individual_pack_flow(Pack(2)),
+                self.trim_air_system.trim_air_outlet_pressure(),
+            );
         }
     }
     impl SimulationElement for TestAircraft {
         fn accept<V: SimulationElementVisitor>(&mut self, visitor: &mut V) {
             self.acsc.accept(visitor);
             self.acs_overhead.accept(visitor);
-            self.test_cabin.accept(visitor);
+            self.cabin_air_simulation.accept(visitor);
             self.pneumatic.accept(visitor);
             self.pressurization_overhead.accept(visitor);
             accept_iterable!(self.cabin_fans, visitor);
@@ -1941,9 +2019,9 @@ mod acs_controller_tests {
             test_bed.command_ground_speed(Velocity::new::<knot>(0.));
             test_bed.set_indicated_altitude(Length::new::<foot>(0.));
             test_bed.set_ambient_temperature(ThermodynamicTemperature::new::<degree_celsius>(24.));
-            test_bed.command_measured_temperature(
-                [ThermodynamicTemperature::new::<degree_celsius>(24.); 2],
-            );
+            // test_bed.command_measured_temperature(
+            //     [ThermodynamicTemperature::new::<degree_celsius>(24.); 2],
+            // );
             test_bed.command_pax_quantity(0);
             test_bed.command_pack_flow_selector_position(1);
 
@@ -2165,7 +2243,7 @@ mod acs_controller_tests {
         fn command_pax_quantity(&mut self, pax_quantity: u8) {
             self.write_by_name(&format!("PAX_TOTAL_ROWS_{}_{}", 1, 6), pax_quantity / 2);
             self.write_by_name(&format!("PAX_TOTAL_ROWS_{}_{}", 7, 13), pax_quantity / 2);
-            self.command(|a| a.test_cabin.update_number_of_passengers(pax_quantity));
+            self.command(|a| a.set_passengers(pax_quantity));
         }
 
         fn command_cabin_altitude(&mut self, altitude: Length) {
@@ -2674,13 +2752,13 @@ mod acs_controller_tests {
                 .command_selected_temperature(
                     [ThermodynamicTemperature::new::<degree_celsius>(26.); 2],
                 )
-                .iterate(1000);
+                .iterate(100);
 
             let mut previous_temp = test_bed.duct_demand_temperature()[1];
             test_bed.run();
             let initial_temp_diff = test_bed.duct_demand_temperature()[1].get::<degree_celsius>()
                 - previous_temp.get::<degree_celsius>();
-            test_bed = test_bed.iterate(1000);
+            test_bed = test_bed.iterate(100);
             previous_temp = test_bed.duct_demand_temperature()[1];
             test_bed.run();
             let final_temp_diff = test_bed.duct_demand_temperature()[1].get::<degree_celsius>()
@@ -2700,12 +2778,12 @@ mod acs_controller_tests {
                 .command_selected_temperature(
                     [ThermodynamicTemperature::new::<degree_celsius>(24.); 2],
                 )
-                .iterate_with_delta(200, Duration::from_secs(10));
+                .iterate(1000);
 
             let initial_temperature = test_bed.duct_temperature()[1];
 
             test_bed.command_cabin_altitude(Length::new::<foot>(30000.));
-            test_bed = test_bed.iterate_with_delta(100, Duration::from_secs(10));
+            test_bed = test_bed.iterate(1000);
 
             assert!(test_bed.duct_temperature()[1] > initial_temperature);
         }
@@ -3438,7 +3516,7 @@ mod acs_controller_tests {
                     .temperature()
                     .get::<degree_celsius>()
                     - test_bed.duct_demand_temperature()[1].get::<degree_celsius>())
-                    > 5.
+                    > 4.
             )
         }
 

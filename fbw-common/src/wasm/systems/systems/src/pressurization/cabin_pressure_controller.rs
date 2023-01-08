@@ -1,6 +1,6 @@
 use crate::{
     shared::{
-        pid::PidController, AverageExt, CabinTemperature, ControllerSignal, EngineCorrectedN1,
+        pid::PidController, AverageExt, CabinSimulation, ControllerSignal, EngineCorrectedN1,
         PressurizationOverheadShared,
     },
     simulation::{
@@ -10,8 +10,8 @@ use crate::{
 };
 
 use super::{
-    CabinPressure, CabinPressureSimulation, OutflowValveActuator, OutflowValveSignal,
-    PressureValve, PressureValveSignal, PressurizationConstants,
+    OutflowValveActuator, OutflowValveSignal, PressureValve, PressureValveSignal,
+    PressurizationConstants,
 };
 
 use std::time::Duration;
@@ -34,6 +34,8 @@ impl<C: PressurizationConstants> Constants<C> {
 
 pub struct CabinPressureController<C: PressurizationConstants> {
     cabin_altitude_id: VariableIdentifier,
+    cabin_vs_id: VariableIdentifier,
+    cabin_delta_pressure_id: VariableIdentifier,
     fwc_excess_cabin_altitude_id: VariableIdentifier,
     fwc_excess_residual_pressure_id: VariableIdentifier,
     fwc_low_diff_pressure_id: VariableIdentifier,
@@ -51,6 +53,7 @@ pub struct CabinPressureController<C: PressurizationConstants> {
     exterior_vertical_speed: Velocity,
     cabin_pressure: Pressure,
     cabin_alt: Length,
+    cabin_vertical_speed: Velocity,
     departure_elev: Length,
     landing_elev: Length,
     cabin_target_vs: Velocity,
@@ -79,6 +82,9 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
     pub fn new(context: &mut InitContext, aircraft: C) -> Self {
         Self {
             cabin_altitude_id: context.get_identifier("PRESS_CABIN_ALTITUDE".to_owned()),
+            cabin_vs_id: context.get_identifier("PRESS_CABIN_VS".to_owned()),
+            cabin_delta_pressure_id: context
+                .get_identifier("PRESS_CABIN_DELTA_PRESSURE".to_owned()),
             fwc_excess_cabin_altitude_id: context.get_identifier("PRESS_EXCESS_CAB_ALT".to_owned()),
             fwc_excess_residual_pressure_id: context
                 .get_identifier("PRESS_EXCESS_RESIDUAL_PR".to_owned()),
@@ -100,6 +106,7 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
             exterior_vertical_speed: Velocity::new::<foot_per_minute>(0.),
             cabin_pressure: Pressure::new::<hectopascal>(1013.25),
             cabin_alt: Length::new::<meter>(0.),
+            cabin_vertical_speed: Velocity::new::<foot_per_minute>(0.),
             departure_elev: Length::new::<foot>(-5000.),
             landing_elev: Length::new::<meter>(0.),
             cabin_target_vs: Velocity::new::<meter_per_second>(0.),
@@ -125,15 +132,14 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
         engines: [&impl EngineCorrectedN1; 2],
         lgciu_gears_compressed: bool,
         press_overhead: &impl PressurizationOverheadShared,
-        cabin_simulation: &impl CabinPressure,
+        cabin_simulation: &impl CabinSimulation,
         outflow_valve: &PressureValve,
         safety_valve: &PressureValve,
-        cabin_temperature: &impl CabinTemperature,
     ) {
         self.exterior_pressure = cabin_simulation.exterior_pressure();
         self.exterior_vertical_speed = context.vertical_speed();
         self.cabin_pressure = cabin_simulation.cabin_pressure();
-        self.cabin_temperature = cabin_temperature.cabin_temperature().iter().average();
+        self.cabin_temperature = cabin_simulation.cabin_temperature().iter().average();
 
         if !press_overhead.ldg_elev_is_auto() {
             self.landing_elevation = Length::new::<foot>(press_overhead.ldg_elev_knob_value())
@@ -144,12 +150,15 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
                 Some(manager.update(context, engines, lgciu_gears_compressed));
         }
 
+        let new_cabin_alt = self.calculate_cabin_altitude();
+
         self.cabin_target_vs = self.calculate_cabin_target_vs(context);
-        self.cabin_alt = self.calculate_cabin_altitude();
+        self.cabin_vertical_speed = self.calculate_vertical_speed(context, new_cabin_alt);
+        self.cabin_alt = new_cabin_alt;
 
         self.outflow_valve_controller.update(
             context,
-            cabin_simulation,
+            self.cabin_vertical_speed,
             self.cabin_target_vs,
             press_overhead,
             self.is_ground() || !(self.cabin_altitude() > Length::new::<foot>(15000.)),
@@ -257,6 +266,13 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
         self.cabin_alt - self.landing_elev
     }
 
+    fn calculate_vertical_speed(&self, context: &UpdateContext, new_cabin_alt: Length) -> Velocity {
+        // Distance over time :)
+        let speed_meter_second = (new_cabin_alt.get::<meter>() - self.cabin_alt.get::<meter>())
+            / context.delta_as_secs_f64();
+        Velocity::new::<meter_per_second>(speed_meter_second)
+    }
+
     fn calculate_cabin_altitude(&self) -> Length {
         // Based on local QNH when below 5000ft from departure or arrival airport, ISA when above
         let p_0 = if matches!(
@@ -294,7 +310,7 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
         Length::new::<meter>(altitude)
     }
 
-    fn cabin_delta_p(&self) -> Pressure {
+    pub fn cabin_delta_p(&self) -> Pressure {
         self.cabin_pressure - self.exterior_pressure
     }
 
@@ -332,6 +348,10 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
         )
     }
 
+    pub fn cabin_vertical_speed(&self) -> Velocity {
+        self.cabin_vertical_speed
+    }
+
     // FWC warning signals
     pub(super) fn is_excessive_alt(&self) -> bool {
         self.cabin_alt > Length::new::<foot>(C::EXCESSIVE_ALT_WARNING)
@@ -355,11 +375,7 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
 }
 
 impl<C: PressurizationConstants> OutflowValveActuator for CabinPressureController<C> {
-    fn target_valve_position(
-        &self,
-        _press_overhead: &impl PressurizationOverheadShared,
-        _cabin_pressure_simulation: &CabinPressureSimulation,
-    ) -> Ratio {
+    fn target_valve_position(&self) -> Ratio {
         match self.outflow_valve_controller.signal() {
             Some(signal) => signal.target_open_amount(),
             None => self.outflow_valve_open_amount,
@@ -404,6 +420,11 @@ impl<C: PressurizationConstants> SimulationElement for CabinPressureController<C
             &self.safety_valve_open_percentage_id,
             self.safety_valve_open_amount,
         );
+        writer.write(
+            &self.cabin_vs_id,
+            self.cabin_vertical_speed.get::<foot_per_minute>(),
+        );
+        writer.write(&self.cabin_delta_pressure_id, self.cabin_delta_p());
 
         // FWC warning signals
         writer.write(&self.fwc_excess_cabin_altitude_id, self.is_excessive_alt());
@@ -444,7 +465,7 @@ impl OutflowValveController {
     fn update(
         &mut self,
         context: &UpdateContext,
-        cabin_pressure: &impl CabinPressure,
+        cabin_vertical_speed: Velocity,
         cabin_target_vs: Velocity,
         press_overhead: &impl PressurizationOverheadShared,
         open_allowed: bool,
@@ -458,7 +479,7 @@ impl OutflowValveController {
             self.pid
                 .change_setpoint(cabin_target_vs.get::<meter_per_second>());
             self.pid.next_control_output(
-                cabin_pressure.vertical_speed().get::<meter_per_second>(),
+                cabin_vertical_speed.get::<meter_per_second>(),
                 Some(context.delta()),
             );
         } else {
@@ -816,6 +837,10 @@ transition!(ClimbInternal, Abort);
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::air_conditioning::{
+        cabin_air::CabinAirSimulation,
+        {Air, DuctTemperature, OutletAir, PackFlow, ZoneType},
+    };
     use crate::simulation::{Aircraft, InitContext, SimulationElement, SimulationElementVisitor};
     use crate::{
         overhead::{AutoManFaultPushButton, NormalOnPushButton, SpringLoadedSwitch, ValueKnob},
@@ -827,13 +852,56 @@ mod tests {
     };
 
     use std::time::Duration;
-    use uom::si::area::square_meter;
-    use uom::si::volume::cubic_meter;
     use uom::si::{
         length::foot,
+        mass_rate::kilogram_per_second,
         ratio::percent,
+        thermodynamic_temperature::degree_celsius,
         velocity::{foot_per_minute, knot},
     };
+
+    struct TestAirConditioningSystem {
+        duct_demand_temperature: ThermodynamicTemperature,
+        pack_flow: MassRate,
+    }
+
+    impl TestAirConditioningSystem {
+        fn new() -> Self {
+            Self {
+                duct_demand_temperature: ThermodynamicTemperature::new::<degree_celsius>(24.),
+                pack_flow: MassRate::new::<kilogram_per_second>(0.),
+            }
+        }
+    }
+
+    impl DuctTemperature for TestAirConditioningSystem {
+        fn duct_temperature(&self) -> Vec<ThermodynamicTemperature> {
+            let mut duct_temperature: Vec<ThermodynamicTemperature> = Vec::new();
+            // We push a 2 len element to simulate the cockpit so the indices match the final model
+            let mut cabin_duct_temperatures = vec![
+                ThermodynamicTemperature::new::<degree_celsius>(24.),
+                self.duct_demand_temperature,
+                self.duct_demand_temperature,
+            ];
+            duct_temperature.append(&mut cabin_duct_temperatures);
+            duct_temperature
+        }
+    }
+
+    impl PackFlow for TestAirConditioningSystem {
+        fn pack_flow(&self) -> MassRate {
+            self.pack_flow
+        }
+    }
+
+    impl OutletAir for TestAirConditioningSystem {
+        fn outlet_air(&self) -> Air {
+            let mut outlet_air = Air::new();
+            outlet_air.set_flow_rate(self.pack_flow);
+            outlet_air.set_pressure(Pressure::new::<psi>(16.));
+            outlet_air
+        }
+    }
 
     struct TestEngine {
         corrected_n1: Ratio,
@@ -962,27 +1030,17 @@ mod tests {
         }
     }
 
-    struct TestCabin {
-        cabin_temperature: ThermodynamicTemperature,
-    }
-
-    impl TestCabin {
-        fn new() -> Self {
-            Self {
-                cabin_temperature: ThermodynamicTemperature::new::<kelvin>(297.15),
-            }
-        }
-    }
-
-    impl CabinTemperature for TestCabin {
-        fn cabin_temperature(&self) -> Vec<ThermodynamicTemperature> {
-            vec![self.cabin_temperature]
-        }
-    }
-
+    #[derive(Clone, Copy)]
     struct TestConstants;
 
     impl PressurizationConstants for TestConstants {
+        const CABIN_VOLUME_CUBIC_METER: f64 = 139.; // m3
+        const COCKPIT_VOLUME_CUBIC_METER: f64 = 9.; // m3
+        const PRESSURIZED_FUSELAGE_VOLUME_CUBIC_METER: f64 = 330.; // m3
+        const CABIN_LEAKAGE_AREA: f64 = 0.0003; // m2
+        const OUTFLOW_VALVE_SIZE: f64 = 0.05; // m2
+        const SAFETY_VALVE_SIZE: f64 = 0.02; //m2
+
         const MAX_CLIMB_RATE: f64 = 750.; // fpm
         const MAX_CLIMB_RATE_IN_DESCENT: f64 = 500.; // fpm
         const MAX_DESCENT_RATE: f64 = -750.; // fpm
@@ -1000,9 +1058,9 @@ mod tests {
     }
 
     struct TestAircraft {
+        air_conditioning_system: TestAirConditioningSystem,
         cpc: CabinPressureController<TestConstants>,
-        cabin_simulation: CabinPressureSimulation,
-        cabin_temperature: TestCabin,
+        cabin_air_simulation: CabinAirSimulation<TestConstants, 3>,
         outflow_valve: PressureValve,
         safety_valve: PressureValve,
         press_overhead: TestPressurizationOverheadPanel,
@@ -1014,15 +1072,13 @@ mod tests {
     impl TestAircraft {
         fn new(context: &mut InitContext) -> Self {
             let mut test_aircraft = Self {
+                air_conditioning_system: TestAirConditioningSystem::new(),
                 cpc: CabinPressureController::new(context, TestConstants),
-                cabin_simulation: CabinPressureSimulation::new(
+                cabin_air_simulation: CabinAirSimulation::new(
                     context,
-                    Volume::new::<cubic_meter>(210.),
-                    Area::new::<square_meter>(0.0003),
-                    Area::new::<square_meter>(0.03),
-                    Area::new::<square_meter>(0.02),
+                    TestConstants,
+                    &[ZoneType::Cockpit, ZoneType::Cabin(1), ZoneType::Cabin(2)],
                 ),
-                cabin_temperature: TestCabin::new(),
                 outflow_valve: PressureValve::new_outflow_valve(),
                 safety_valve: PressureValve::new_safety_valve(),
                 press_overhead: TestPressurizationOverheadPanel::new(context),
@@ -1093,15 +1149,24 @@ mod tests {
             let lgciu_gears_compressed = self.lgciu1.left_and_right_gear_compressed(true)
                 && self.lgciu2.left_and_right_gear_compressed(true);
 
+            self.cabin_air_simulation.update(
+                context,
+                &self.air_conditioning_system,
+                self.outflow_valve.open_amount(),
+                self.safety_valve.open_amount(),
+                lgciu_gears_compressed,
+                self.cpc.should_open_outflow_valve(),
+                [2, 50, 50],
+                0,
+            );
             self.cpc.update(
                 context,
                 [&self.engine_1, &self.engine_2],
                 lgciu_gears_compressed,
                 &self.press_overhead,
-                &self.cabin_simulation,
+                &self.cabin_air_simulation,
                 &self.outflow_valve,
                 &self.safety_valve,
-                &self.cabin_temperature,
             );
         }
     }

@@ -1,20 +1,11 @@
-use self::{
-    cabin_pressure_simulation::CabinPressureSimulation,
-    pressure_valve::{PressureValve, PressureValveSignal},
-};
-use crate::shared::PressurizationOverheadShared;
+use self::pressure_valve::{PressureValve, PressureValveSignal};
 
 use uom::si::{f64::*, ratio::percent};
 pub mod cabin_pressure_controller;
-pub mod cabin_pressure_simulation;
 pub mod pressure_valve;
 
 pub trait OutflowValveActuator {
-    fn target_valve_position(
-        &self,
-        press_overhead: &impl PressurizationOverheadShared,
-        cabin_pressure_simulation: &CabinPressureSimulation,
-    ) -> Ratio;
+    fn target_valve_position(&self) -> Ratio;
 }
 
 pub struct OutflowValveSignal {
@@ -42,10 +33,16 @@ impl OutflowValveSignal {
 pub trait CabinPressure {
     fn exterior_pressure(&self) -> Pressure;
     fn cabin_pressure(&self) -> Pressure;
-    fn vertical_speed(&self) -> Velocity;
 }
 
 pub trait PressurizationConstants {
+    const CABIN_VOLUME_CUBIC_METER: f64;
+    const COCKPIT_VOLUME_CUBIC_METER: f64;
+    const PRESSURIZED_FUSELAGE_VOLUME_CUBIC_METER: f64;
+    const CABIN_LEAKAGE_AREA: f64;
+    const OUTFLOW_VALVE_SIZE: f64;
+    const SAFETY_VALVE_SIZE: f64;
+
     const MAX_CLIMB_RATE: f64;
     const MAX_CLIMB_RATE_IN_DESCENT: f64;
     const MAX_DESCENT_RATE: f64;
