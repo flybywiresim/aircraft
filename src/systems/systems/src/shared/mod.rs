@@ -14,7 +14,7 @@ use uom::si::{
     thermodynamic_temperature::{degree_celsius, kelvin},
 };
 
-pub mod liter_per_minute;
+pub mod litre_per_minute;
 pub mod low_pass_filter;
 pub mod newton_per_square_millimeter;
 pub mod pid;

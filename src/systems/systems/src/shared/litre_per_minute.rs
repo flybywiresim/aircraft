@@ -2,7 +2,7 @@ unit! {
     system: uom::si;
     quantity: uom::si::volume_rate;
 
-    @liter_per_minute: prefix!(milli) / 60.; "L/min", "liter per minute", "liters per minute";
+    @litre_per_minute: prefix!(milli) / 60.; "L/min", "litre per minute", "litre per minute";
 }
 
 #[cfg(test)]
@@ -12,9 +12,9 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_liter_per_minute() {
+    fn test_litre_per_minute() {
         let flow = VolumeRate::new::<liter_per_second>(1.);
 
-        assert_eq!(flow.get::<liter_per_minute>(), 60.);
+        assert_eq!(flow.get::<litre_per_minute>(), 60.);
     }
 }
