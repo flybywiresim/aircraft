@@ -3546,18 +3546,18 @@ In the variables below, {number} should be replaced with one item in the set: { 
 
 | State | Value | Conditions
 |-------|-------| ----------
-| 1 | BOARDING | - A/C stationary <br> - Boarding in progress |
-| 2 | PUSHBACK | - A/C stationary <br> - All A/C doors closed <br> - NW STRG pin inserted |
+| 1 | BOARDING | - A/C on ground <br> - A/C stationary <br> - Boarding in progress |
+| 2 | PUSHBACK | - A/C on ground <br> - A/C stationary <br> - All A/C doors closed <br> - NW STRG pin inserted |
 | 3 | TAXI BEFORE TAKEOFF | - A/C on ground <br> - GS > 0 <br> - All A/C doors closed <br> - THR LVR not in FLEX/MCT or TOGA |
 | 4 | TAKEOFF AND INITIAL CLIMB | - THR LVR FLEX/MCT or TOGA <br> - ALT < 10 000 ft  |
-| 5 | FINAL CLIMB | - ALT > 10 000 ft |
+| 5 | FINAL CLIMB | - ALT > 10 000 ft <br> - ALT < CRZ ALT <br> - ALT CRZ not active |
 | 6 | CRUISE | - ALT CRZ is active |
-| 7 | TOP OF DESCENT | - ALT < (CRZ FL - 500 ft) <br> - ALT > 10 000 ft |
-| 8 | APPROACH | - ALT < 10 000 ft <br> - LDG GEAR **not** DOWN |
-| 9 | FINAL APPROACH AND LANDING | - LDG GEAR DOWN <br> - GS > 80 kts |
+| 7 | TOP OF DESCENT | - FCU selected ALT < 20 000 ft <br> - ALT > 10 000 ft <br> **and** <br> ( <br>&emsp;- OP DES active <br>&emsp;**or** <br>&emsp;- DES active <br>&emsp;**or** <br>&emsp;- VS active **and** VS selected < 0 fpm <br>&emsp;**or** <br>&emsp;- FPA active **and** FPA selected < 0° <br>) |
+| 8 | APPROACH | - ALT <= 10 000 ft <br> - LDG GEAR **not** DOWN |
+| 9 | FINAL APPROACH AND LANDING | - LDG GEAR DOWN <br> - GS >= 80 kts |
 | 10 | TAXI AFTER LANDING | - A/C on ground <br> - GS < 80 kts |
-| 11 | DISEMBARKATION | - A/C stationary <br> - SEAT BELTS OFF <br> - Deboarding in progress |
-| 12 | AFTER PASSENGER DISEMBARKATION | - Deboarding completed |
+| 11 | DISEMBARKATION | - A/C on ground <br> - A/C stationary <br> - Deboarding in progress |
+| 12 | AFTER PASSENGER DISEMBARKATION | - Total PAX on board == 0 <br> - A/C stationary |
 
 ## Electronic Flight Bag (ATA 46)
 
