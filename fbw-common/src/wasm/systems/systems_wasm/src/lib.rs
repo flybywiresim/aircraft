@@ -109,10 +109,6 @@ impl<'a, 'b> MsfsSimulationBuilder<'a, 'b> {
         ))
     }
 
-    pub fn with_enhanced_gpwc(self) -> Result<Self, Box<dyn Error>> {
-        self.with_aspect(enhanced_gpwc)
-    }
-
     pub fn with_failures(mut self, failures: Vec<(u64, FailureType)>) -> Self {
         let mut f = Failures::new(
             NamedVariable::from(&format!("{}{}", &self.key_prefix, "FAILURE_ACTIVATE")),

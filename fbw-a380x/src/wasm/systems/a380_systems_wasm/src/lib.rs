@@ -294,7 +294,6 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .with_aspect(rudder)?
     .with_aspect(gear)?
     .with_aspect(trimmable_horizontal_stabilizer)?
-    with_enhanced_gpwc()?
     .build(A380::new)?;
 
     while let Some(event) = gauge.next_event().await {

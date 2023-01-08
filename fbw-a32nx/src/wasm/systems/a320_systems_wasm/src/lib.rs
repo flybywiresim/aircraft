@@ -284,15 +284,6 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
             Variable::aspect("BUTTON_OVHD_ANTI_ICE_WING_POSITION"),
         );
 
-        builder.copy(
-            Variable::aircraft("LIGHT POTENTIOMETER", "percent over 100", 94),
-            Variable::aspect("ND_L_TERR_ON_ND_POTENTIOMETER"),
-        );
-        builder.copy(
-            Variable::aircraft("LIGHT POTENTIOMETER", "percent over 100", 95),
-            Variable::aspect("ND_R_TERR_ON_ND_POTENTIOMETER"),
-        );
-
         builder.map(
             ExecuteOn::PreTick,
             Variable::aircraft("INTERACTIVE POINT OPEN", "Position", 5),
@@ -312,7 +303,6 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .with_aspect(rudder)?
     .with_aspect(gear)?
     .with_aspect(trimmable_horizontal_stabilizer)?
-    .with_enhanced_gpwc()?
     .build(A320::new)?;
 
     while let Some(event) = gauge.next_event().await {
