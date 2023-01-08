@@ -513,6 +513,8 @@ impl BrakeAccumulatorCharacteristics {
     // 1/20 would mean standard deviation is "full accumulator volume / 20"
     const STANDARD_DEVIATION_RATIO_FROM_FULL_INIT_VOLUME: f64 = 1. / 20.;
 
+    const STANDARD_DEVIATION_FOR_GAS_PRE_CHARGE_DISTRIBUTION_PSI: f64 = 20.;
+
     pub fn new(
         total_volume: Volume,
         gas_precharge: Pressure,
@@ -522,11 +524,17 @@ impl BrakeAccumulatorCharacteristics {
         let is_empty =
             random_from_range(0., 1.) < empty_after_maintenance_probability.get::<ratio>();
 
+        let actual_gas_precharge_randomized =
+            Pressure::new::<psi>(random_from_normal_distribution(
+                gas_precharge.get::<psi>(),
+                Self::STANDARD_DEVIATION_FOR_GAS_PRE_CHARGE_DISTRIBUTION_PSI,
+            ));
+
         let init_volume_for_target_pressure =
-            total_volume - (gas_precharge * total_volume) / target_pressure;
+            total_volume - (actual_gas_precharge_randomized * total_volume) / target_pressure;
 
         // We take a normal distribution with mean as the full volume, and standard deviation a fraction of full volume
-        let volume_at_init = if !is_empty {
+        let volume_at_init_randomized = if !is_empty {
             Volume::new::<gallon>(random_from_normal_distribution(
                 init_volume_for_target_pressure.get::<gallon>(),
                 init_volume_for_target_pressure.get::<gallon>()
@@ -539,9 +547,9 @@ impl BrakeAccumulatorCharacteristics {
 
         Self {
             total_volume,
-            gas_precharge,
+            gas_precharge: actual_gas_precharge_randomized,
             target_pressure,
-            volume_at_init,
+            volume_at_init: volume_at_init_randomized,
         }
     }
 
