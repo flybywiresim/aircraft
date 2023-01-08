@@ -1,15 +1,39 @@
+import { FlightPhaseManager } from 'cids/src/FlightPhaseManager';
 import { FlightPhase } from './FlightPhase';
 
+/**
+ * Possible next flight phases:
+ * 1. TOP OF DESCENT
+ * 2. APPROACH
+ */
 export class CruisePhase extends FlightPhase {
-    /**
-   * Tries to transition to `TOP OF DESCENT` or `APPROACH` phase.
-   */
+    private nextFlightPhases: FlightPhase[];
+
+    private isInit: boolean;
+
+    constructor(flightPhaseManager: FlightPhaseManager) {
+        super(flightPhaseManager);
+        this.isInit = false;
+    }
+
+    public init(...flightPhases: FlightPhase[]) {
+        this.nextFlightPhases = flightPhases;
+        this.isInit = true;
+    }
+
     public tryTransition(): void {
-        if (this.flightPhaseManager.todPhase.testConditions()) {
-            this.sendNewFlightPhaseToManager(this.flightPhaseManager.todPhase);
-        } else if (this.flightPhaseManager.apprPhase.testConditions()) {
-            this.sendNewFlightPhaseToManager(this.flightPhaseManager.apprPhase);
+        if (!this.isInit) {
+            console.error(`[CIDS/FP${this.getValue()}] Not initialized! Aborting transition attempt!`);
+            return;
         }
+
+        this.nextFlightPhases.forEach((current) => {
+            console.log(`Attempting to transition to FP${current.getValue()}.`);
+            if (current.testConditions()) {
+                console.log(`Sending FP${current} to manager.`);
+                this.sendNewFlightPhaseToManager(current);
+            }
+        });
     }
 
     public testConditions(): boolean {
