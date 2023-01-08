@@ -25,8 +25,10 @@ class A32NX_Boarding {
         const payloadConstruct = new A32NX_PayloadConstructor();
         this.paxStations = payloadConstruct.paxStations;
         this.cargoStations = payloadConstruct.cargoStations;
-        this.passengersLeftToFill = 0;
-        this.prevBoarded = 0;
+
+        // GSX Helpers
+        this.passengersLeftToFillOrEmpty = 0;
+        this.prevBoardedOrDeboarded = 0;
     }
 
     async init() {
@@ -100,33 +102,70 @@ class A32NX_Boarding {
         const gsxPayloadSyncEnabled = NXDataStore.get("GSX_PAYLOAD_SYNC", 0);
 
         if (gsxPayloadSyncEnabled === '1') {
-            const GsxBoardingTotal = SimVar.GetSimVarValue("L:FSDT_GSX_NUMPASSENGERS_BOARDING_TOTAL", "Number");
             const gsxBoardState = Math.round(SimVar.GetSimVarValue("L:FSDT_GSX_BOARDING_STATE", "Number"));
             const gsxDeBoardState = Math.round(SimVar.GetSimVarValue("L:FSDT_GSX_DEBOARDING_STATE", "Number"));
 
-            this.passengersLeftToFill = GsxBoardingTotal - this.prevBoarded;
+            // Just in-case payload menu isn't open on EFB, if Deboard requested set pax and cargo target to 0
+            if (gsxDeBoardState === 4) {
+                for (const paxStation of Object.values(this.paxStations).reverse()) {
+                    SimVar.SetSimVarValue(`L:${paxStation.simVar}_DESIRED`, "Number", parseInt(0));
+                }
 
-            // Stations Logic
-            /*
-                This aims to use the number of passengers boarded by GSX to fill each station, filling each station's desired pax, then moving to the next station
-            */
-            if (this.isGsxBoarding(gsxBoardState, gsxDeBoardState)) {
+                for (const loadStation of Object.values(this.cargoStations)) {
+                    SimVar.SetSimVarValue(`L:${loadStation.simVar}_DESIRED`, "Number", parseInt(0));
+                }
+            }
+
+            if (gsxBoardState === 5) {
+                const gsxBoardingTotal = SimVar.GetSimVarValue("L:FSDT_GSX_NUMPASSENGERS_BOARDING_TOTAL", "Number");
+                this.passengersLeftToFillOrEmpty = gsxBoardingTotal - this.prevBoardedOrDeboarded;
+
+                // Passenger boarding, boards each station subsequently
                 for (const paxStation of Object.values(this.paxStations).reverse()) {
                     const stationCurrentPax = SimVar.GetSimVarValue(`L:${paxStation.simVar}`, "Number");
                     const stationCurrentPaxTarget = SimVar.GetSimVarValue(`L:${paxStation.simVar}_DESIRED`, "Number");
-                    if (this.passengersLeftToFill <= 0) {
+                    if (this.passengersLeftToFillOrEmpty <= 0) {
                         break;
                     }
 
+                    const loadAmount = Math.min(this.passengersLeftToFillOrEmpty, paxStation.seats);
                     if (stationCurrentPax < stationCurrentPaxTarget) {
-                        this.fillPaxStation(paxStation, stationCurrentPax + Math.min(this.passengersLeftToFill, paxStation.seats));
-                        this.passengersLeftToFill -= Math.min(this.passengersLeftToFill, paxStation.seats);
+                        this.fillPaxStation(paxStation, stationCurrentPax + loadAmount);
+                        this.passengersLeftToFillOrEmpty -= loadAmount;
                     }
                 }
-                this.prevBoarded = GsxBoardingTotal;
+                this.prevBoardedOrDeboarded = gsxBoardingTotal;
+
+                const gsxCargoPercentage = SimVar.GetSimVarValue("L:FSDT_GSX_BOARDING_CARGO_PERCENT", "Number");
+                for (const loadStation of Object.values(this.cargoStations)) {
+                    const stationCurrentLoadTarget = SimVar.GetSimVarValue(`L:${loadStation.simVar}_DESIRED`, "Number");
+
+                    const loadAmount = stationCurrentLoadTarget * (gsxCargoPercentage / 100);
+                    this.fillCargoStation(loadStation, loadAmount);
+                }
             }
-            // TODO Handle Deboarding as-well as Cargo
+
+            if (gsxDeBoardState === 5) {
+                const gsxDeBoardingTotal = SimVar.GetSimVarValue("L:FSDT_GSX_NUMPASSENGERS_DEBOARDING_TOTAL", "Number");
+                this.passengersLeftToFillOrEmpty = gsxDeBoardingTotal - this.prevBoardedOrDeboarded;
+
+                for (const paxStation of Object.values(this.paxStations).reverse()) {
+                    const stationCurrentPax = SimVar.GetSimVarValue(`L:${paxStation.simVar}`, "Number");
+                    const stationCurrentPaxTarget = SimVar.GetSimVarValue(`L:${paxStation.simVar}_DESIRED`, "Number");
+                    if (this.passengersLeftToFillOrEmpty <= 0) {
+                        break;
+                    }
+
+                    if (stationCurrentPax > stationCurrentPaxTarget) {
+                        this.fillPaxStation(paxStation, stationCurrentPax - Math.min(this.passengersLeftToFillOrEmpty, paxStation.seats));
+                        this.passengersLeftToFillOrEmpty -= Math.min(this.passengersLeftToFillOrEmpty, paxStation.seats);
+                    }
+                }
+                this.prevBoardedOrDeboarded = gsxDeBoardingTotal;
+            }
+
             this.loadPaxPayload();
+            this.loadCargoPayload();
 
         } else {
             if (!boardingStartedByUser) {
