@@ -12,15 +12,18 @@ export type EWDSimvars = {
     autoThrustStatus: number;
     autoThrustTLA1: number;
     autoThrustTLA2: number;
+    autoThrustWarningToga: boolean;
     packs1Supplying: boolean;
     packs2Supplying: boolean;
     engine1AntiIce: boolean;
+    engine1EGT: number;
     engine1Fadec: boolean;
     engine1N1: number;
     engine1Reverse: boolean;
     engine1ReverseNozzle: number;
     engine1State: number;
     engine2AntiIce: boolean;
+    engine2EGT: number;
     engine2Fadec: boolean;
     engine2N1: number;
     engine2Reverse: boolean;
@@ -50,15 +53,18 @@ export enum EWDVars {
     autoThrustStatus = 'L:A32NX_AUTOTHRUST_STATUS',
     autoThrustTLA1 = 'L:A32NX_AUTOTHRUST_TLA_N1:1',
     autoThrustTLA2 = 'L:A32NX_AUTOTHRUST_TLA_N1:2',
+    autoThrustWarningToga = 'L:A32NX_AUTOTHRUST_THRUST_LEVER_WARNING_TOGA',
     packs1Supplying = 'L:A32NX_COND_PACK_FLOW_VALVE_1_IS_OPEN',
     packs2Supplying = 'L:A32NX_COND_PACK_FLOW_VALVE_2_IS_OPEN',
     engine1AntiIce = 'L:XMLVAR_Momentary_PUSH_OVHD_ANTIICE_ENG1_Pressed',
+    engine1EGT = 'L:A32NX_ENGINE_EGT:1',
     engine1Fadec = 'L:A32NX_FADEC_POWERED_ENG1',
     engine1N1 = 'L:A32NX_ENGINE_N1:1',
     engine1Reverse = 'L:A32NX_AUTOTHRUST_REVERSE:1',
     engine1ReverseNozzle = 'A:TURB ENG REVERSE NOZZLE PERCENT:1',
     engine1State = 'L:A32NX_ENGINE_STATE:1',
     engine2AntiIce = 'L:XMLVAR_Momentary_PUSH_OVHD_ANTIICE_ENG2_Pressed',
+    engine2EGT = 'L:A32NX_ENGINE_EGT:2',
     engine2Fadec = 'L:A32NX_FADEC_POWERED_ENG2',
     engine2N1 = 'L:A32NX_ENGINE_N1:2',
     engine2Reverse = 'L:A32NX_AUTOTHRUST_REVERSE:2',
@@ -89,15 +95,18 @@ export class EWDSimvarPublisher extends SimVarPublisher<EWDSimvars> {
         ['autoThrustStatus', { name: EWDVars.autoThrustStatus, type: SimVarValueType.Enum }],
         ['autoThrustTLA1', { name: EWDVars.autoThrustTLA1, type: SimVarValueType.Number }],
         ['autoThrustTLA2', { name: EWDVars.autoThrustTLA2, type: SimVarValueType.Number }],
+        ['autoThrustWarningToga', { name: EWDVars.autoThrustWarningToga, type: SimVarValueType.Bool }],
         ['packs1Supplying', { name: EWDVars.packs1Supplying, type: SimVarValueType.Bool }],
         ['packs2Supplying', { name: EWDVars.packs2Supplying, type: SimVarValueType.Bool }],
         ['engine1AntiIce', { name: EWDVars.engine1AntiIce, type: SimVarValueType.Bool }],
+        ['engine1EGT', { name: EWDVars.engine1EGT, type: SimVarValueType.Number }],
         ['engine1Fadec', { name: EWDVars.engine1Fadec, type: SimVarValueType.Bool }],
         ['engine1N1', { name: EWDVars.engine1N1, type: SimVarValueType.Number }],
         ['engine1Reverse', { name: EWDVars.engine1Reverse, type: SimVarValueType.Bool }],
         ['engine1ReverseNozzle', { name: EWDVars.engine1ReverseNozzle, type: SimVarValueType.Number }],
         ['engine1State', { name: EWDVars.engine1State, type: SimVarValueType.Enum }],
         ['engine2AntiIce', { name: EWDVars.engine2AntiIce, type: SimVarValueType.Bool }],
+        ['engine2EGT', { name: EWDVars.engine2EGT, type: SimVarValueType.Number }],
         ['engine2Fadec', { name: EWDVars.engine2Fadec, type: SimVarValueType.Bool }],
         ['engine2N1', { name: EWDVars.engine2N1, type: SimVarValueType.Number }],
         ['engine2Reverse', { name: EWDVars.engine2Reverse, type: SimVarValueType.Bool }],

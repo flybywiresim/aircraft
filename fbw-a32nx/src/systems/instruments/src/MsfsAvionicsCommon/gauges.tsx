@@ -58,7 +58,7 @@ interface GaugeMarkerComponentProps {
     radius: number;
     startAngle: Subscribable<number>;
     endAngle: Subscribable<number>;
-    class: string;
+    class: string | Subscribable<string>;
     textClass?: string;
     useCentralAlignmentBaseline?: boolean;
     showValue?: boolean;

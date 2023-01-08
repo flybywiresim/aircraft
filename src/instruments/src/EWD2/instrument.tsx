@@ -55,15 +55,18 @@ class A32NX_EWD extends BaseInstrument {
         this.simVarPublisher.subscribe('autoThrustStatus');
         this.simVarPublisher.subscribe('autoThrustTLA1');
         this.simVarPublisher.subscribe('autoThrustTLA2');
+        this.simVarPublisher.subscribe('autoThrustWarningToga');
         this.simVarPublisher.subscribe('packs1Supplying');
         this.simVarPublisher.subscribe('packs2Supplying');
         this.simVarPublisher.subscribe('engine1AntiIce');
+        this.simVarPublisher.subscribe('engine1EGT');
         this.simVarPublisher.subscribe('engine1Fadec');
         this.simVarPublisher.subscribe('engine1N1');
         this.simVarPublisher.subscribe('engine1Reverse');
         this.simVarPublisher.subscribe('engine1ReverseNozzle');
         this.simVarPublisher.subscribe('engine1State');
         this.simVarPublisher.subscribe('engine2AntiIce');
+        this.simVarPublisher.subscribe('engine2EGT');
         this.simVarPublisher.subscribe('engine2Fadec');
         this.simVarPublisher.subscribe('engine2N1');
         this.simVarPublisher.subscribe('engine2Reverse');
