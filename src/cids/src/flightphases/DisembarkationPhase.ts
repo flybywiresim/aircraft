@@ -39,7 +39,6 @@ export class DisembarkationPhase extends FlightPhase {
         return (
             this.flightPhaseManager.cids.onGround()
             && this.flightPhaseManager.cids.isStationary()
-            && this.flightPhaseManager.cids.door1LPercentOpen() === 100
             && this.flightPhaseManager.cids.deboardingInProgess()
         );
     }

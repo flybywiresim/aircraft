@@ -3546,7 +3546,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
 
 | State | Value | Conditions
 |-------|-------| ----------
-| 1 | BOARDING | - A/C stationary <br> - DOOR 1L OPEN <br> - Boarding in progress |
+| 1 | BOARDING | - A/C stationary <br> - Boarding in progress |
 | 2 | PUSHBACK | - A/C stationary <br> - All A/C doors closed <br> - NW STRG pin inserted |
 | 3 | TAXI BEFORE TAKEOFF | - A/C on ground <br> - GS > 0 <br> - All A/C doors closed <br> - THR LVR not in FLEX/MCT or TOGA |
 | 4 | TAKEOFF AND INITIAL CLIMB | - THR LVR FLEX/MCT or TOGA <br> - ALT < 10 000 ft  |
@@ -3556,7 +3556,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
 | 8 | APPROACH | - ALT < 10 000 ft <br> - LDG GEAR **not** DOWN |
 | 9 | FINAL APPROACH AND LANDING | - LDG GEAR DOWN <br> - GS > 80 kts |
 | 10 | TAXI AFTER LANDING | - A/C on ground <br> - GS < 80 kts |
-| 11 | DISEMBARKATION | - A/C stationary <br> - SEAT BELTS OFF <br> - DOOR 1L OPEN <br> - Deboarding in progress |
+| 11 | DISEMBARKATION | - A/C stationary <br> - SEAT BELTS OFF <br> - Deboarding in progress |
 | 12 | AFTER PASSENGER DISEMBARKATION | - Deboarding completed |
 
 ## Electronic Flight Bag (ATA 46)
