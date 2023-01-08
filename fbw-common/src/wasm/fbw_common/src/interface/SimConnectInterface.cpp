@@ -151,6 +151,7 @@ void SimConnectInterface::processClientData(const SIMCONNECT_RECV_CLIENT_DATA* d
       }
       std::memcpy(&(this->frameBuffer.data()[this->receivedFrameDataBytes]), &data->dwData, copySize);
       this->receivedFrameDataBytes += copySize;
+
       break;
     }
     default:
