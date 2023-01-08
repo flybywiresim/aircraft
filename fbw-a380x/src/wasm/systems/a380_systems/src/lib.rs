@@ -129,7 +129,6 @@ impl A380 {
 =======
             enhanced_gpwc: EnhancedGPWC::new(
                 context,
-                AircraftType::A380X,
                 ElectricalBusType::DirectCurrent(1),
                 Vec::from([
                     Length::new::<nautical_mile>(10.0),

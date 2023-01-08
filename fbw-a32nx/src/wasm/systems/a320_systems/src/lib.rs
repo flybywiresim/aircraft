@@ -113,7 +113,6 @@ impl A320 {
             radio_altimeters: A320RadioAltimeters::new(context),
             enhanced_gpwc: EnhancedGPWC::new(
                 context,
-                AircraftType::A32NX,
                 ElectricalBusType::DirectCurrent(1),
                 Vec::from([
                     Length::new::<nautical_mile>(10.0),
