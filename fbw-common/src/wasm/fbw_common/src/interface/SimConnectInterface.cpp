@@ -240,7 +240,9 @@ bool SimConnectInterface::readData() {
 bool SimConnectInterface::sendAircraftStatus() {
   struct AircraftStatusData clientData;
 
-  clientData.adiruValid = this->aircraftStatus.presentLatitude.isNo() && this->aircraftStatus.presentLongitude.isNo();
+  clientData.adiruValid = this->aircraftStatus.presentLatitude.isNo() && this->aircraftStatus.presentLongitude.isNo() &&
+                          this->aircraftStatus.altitude.isNo() && this->aircraftStatus.heading.isNo() &&
+                          this->aircraftStatus.verticalSpeed.isNo();
   clientData.latitude = this->aircraftStatus.presentLatitude.value();
   clientData.longitude = this->aircraftStatus.presentLongitude.value();
   clientData.altitude = static_cast<std::int32_t>(this->aircraftStatus.altitude.value());
