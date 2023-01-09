@@ -22,6 +22,7 @@ export class FinalApproachAndLandingPhase extends FlightPhase {
     public testConditions(): boolean {
         return (
             this.flightPhaseManager.cids.gearDownLocked()
+            && this.flightPhaseManager.cids.vs() < 0
             && this.flightPhaseManager.cids.groundSpeed() >= 80
         );
     }
