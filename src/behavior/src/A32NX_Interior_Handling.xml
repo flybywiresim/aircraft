@@ -104,7 +104,7 @@
             <DRAG_SPEED>30</DRAG_SPEED>
             <POSITION_TYPE>O</POSITION_TYPE>
             <POSITION_VAR>Position</POSITION_VAR>
-            <EVENT_SPEED Process="True">16383 10 /</EVENT_SPEED>
+            <EVENT_SPEED Process="Float">16383 10 /</EVENT_SPEED>
             <TOOLTIPID>TT:COCKPIT.TOOLTIPS.SPEEDBRAKE_LEVER</TOOLTIPID>
         </DefaultTemplateParameters>
         <OverrideTemplateParameters>
