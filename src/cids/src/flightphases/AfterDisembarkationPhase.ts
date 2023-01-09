@@ -15,9 +15,7 @@ export class AfterDisembarkationPhase extends FlightPhase {
 
     public tryTransition(): void {
         this.nextFlightPhases.forEach((current) => {
-            console.log(`Attempting FP${current.getValue()}`);
             if (current.testConditions()) {
-                console.log(`Sending FP${current.getValue()} to manager`);
                 this.sendNewFlightPhaseToManager(current);
             }
         });
@@ -25,7 +23,7 @@ export class AfterDisembarkationPhase extends FlightPhase {
 
     public testConditions(): boolean {
         return (
-            this.flightPhaseManager.cids.getTotalPax() === 0
+            this.flightPhaseManager.cids.totalPax() === 0
             && this.flightPhaseManager.cids.isStationary()
         );
     }

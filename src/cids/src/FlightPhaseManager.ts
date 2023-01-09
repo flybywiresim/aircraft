@@ -62,8 +62,6 @@ export class FlightPhaseManager {
         this.initFlightPhases();
 
         this.initActiveFlightPhase();
-
-        console.log('[CIDS/FPM] Initialization complete.');
     }
 
     public update(): void {
@@ -124,7 +122,6 @@ export class FlightPhaseManager {
         this.taxiAfterLandingPhase.init(this.disembarkationPhase, this.afterDisembarkationPhase);
         this.disembarkationPhase.init(this.afterDisembarkationPhase);
         this.afterDisembarkationPhase.init(this.boardingPhase, this.pushbackPhase, this.taxiBeforeTakeoffPhase);
-        console.log('[CIDS/FPM] Flight phases initialized.');
     }
 
     private initActiveFlightPhase(): void {
@@ -171,6 +168,5 @@ export class FlightPhaseManager {
             console.error(`[CIDS/FPM] Found unknown value '${startState}' for A32NX_START_STATE.\nSee src/cids/src/FlightPhaseManager.ts#initActiveFlightPhase().`);
             break;
         }
-        console.log('[CIDS/FPM] Flight phase initialization complete.');
     }
 }
