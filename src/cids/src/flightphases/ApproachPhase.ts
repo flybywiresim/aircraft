@@ -13,9 +13,7 @@ export class ApproachPhase extends FlightPhase {
 
     public tryTransition(): void {
         this.nextFlightPhases.forEach((current) => {
-            console.log(`Attempting to transition to FP${current.getValue()}`);
             if (current.testConditions()) {
-                console.log(`Sending FP${current.getValue()} to manager`);
                 this.sendNewFlightPhaseToManager(current);
             }
         });

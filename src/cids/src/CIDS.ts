@@ -17,7 +17,6 @@ export class Cids {
     public init(): void {
         console.log('[CIDS] Initializing CIDS...');
         this.flightPhaseManager.init();
-        console.log('[CIDS] Initialition complete.');
     }
 
     public update(_deltaTime: number): void {
@@ -27,7 +26,6 @@ export class Cids {
 
         if (Cids.DEBUG) {
             const set = SimVar.SetSimVarValue;
-            const get = SimVar.GetSimVarValue;
             set('L:A32NX_CIDS_ON_GROUND', 'Bool', this.onGround());
             set('L:A32NX_CIDS_IS_STATIONARY', 'Bool', this.isStationary());
             set('L:A32NX_CIDS_ALL_DOORS_CLOSED_LOCKED', 'Bool', this.allDoorsClosedLocked());
@@ -35,8 +33,9 @@ export class Cids {
             set('L:A32NX_CIDS_THR_LVR_1_POSITION', 'number', this.thrustLever1Position());
             set('L:A32NX_CIDS_THR_LVR_2_POSITION', 'number', this.thrustLever2Position());
             set('L:A32NX_CIDS_ALTITUDE', 'number', this.altitude());
-            set('L:A32NX_CIDS_FPA_SELECTED', 'degrees', get('L:A32NX_AUTOPILOT_FPA_SELECTED', 'degrees'));
-            set('L:A32NX_CIDS_VS_SELECTED', 'feet per minute', get('L:A32NX_AUTOPILOT_VS_SELECTED', 'feet per minute'));
+            set('L:A32NX_CIDS_ALT_SELECTED', 'feet', this.fcuSelectedAlt());
+            set('L:A32NX_CIDS_FPA_SELECTED', 'degrees', this.fpaSelected());
+            set('L:A32NX_CIDS_VS_SELECTED', 'feet per minute', this.vsSelected());
             set('L:A32NX_CIDS_CRUISE_ALTITUDE', 'number', this.cruiseAltitude());
             set('L:A32NX_CIDS_ALT_CRZ_ACTIVE', 'Bool', this.altCrzActive());
             set('L:A32NX_CIDS_RA', 'number', this.radioAltitude());
@@ -44,11 +43,9 @@ export class Cids {
             set('L:A32NX_CIDS_GEAR_DOWN_LOCKED', 'Bool', this.gearDownLocked());
             set('L:A32NX_CIDS_BOARDING_IN_PROGESS', 'Bool', this.boardingInProgress());
             set('L:A32NX_CIDS_DEBOARDING_IN_PROGRESS', 'Bool', this.deboardingInProgess());
-            set('L:A32NX_CIDS_TOTAL_PAX', 'number', this.getTotalPax());
-            set('L:A32NX_CIDS_TOTAL_PAX_DESIRED', 'number', this.getTotalPaxDesired());
+            set('L:A32NX_CIDS_TOTAL_PAX', 'number', this.totalPax());
+            set('L:A32NX_CIDS_TOTAL_PAX_DESIRED', 'number', this.totalPaxDesired());
         }
-
-        console.log('[CIDS] Update complete.');
     }
 
     public onGround(): boolean {
@@ -172,19 +169,19 @@ export class Cids {
 
     public boardingInProgress(): boolean {
         const boardingInProgress = SimVar.GetSimVarValue('L:A32NX_BOARDING_STARTED_BY_USR', 'Number') === 1
-                                    && this.getTotalPaxDesired() > this.getTotalPax();
+                                    && this.totalPaxDesired() > this.totalPax();
 
         return boardingInProgress;
     }
 
     public deboardingInProgess(): boolean {
         const deboardingInProgess = SimVar.GetSimVarValue('L:A32NX_BOARDING_STARTED_BY_USR', 'Number') === 1
-                                    && this.getTotalPaxDesired() < this.getTotalPax();
+                                    && this.totalPaxDesired() < this.totalPax();
 
         return deboardingInProgess;
     }
 
-    public getTotalPax(): number {
+    public totalPax(): number {
         return (
             SimVar.GetSimVarValue('L:A32NX_PAX_TOTAL_ROWS_1_6', 'Number')
           + SimVar.GetSimVarValue('L:A32NX_PAX_TOTAL_ROWS_7_13', 'Number')
@@ -193,7 +190,7 @@ export class Cids {
         );
     }
 
-    public getTotalPaxDesired(): number {
+    public totalPaxDesired(): number {
         return (
             SimVar.GetSimVarValue('L:A32NX_PAX_TOTAL_ROWS_1_6_DESIRED', 'Number')
           + SimVar.GetSimVarValue('L:A32NX_PAX_TOTAL_ROWS_7_13_DESIRED', 'Number')
