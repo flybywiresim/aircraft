@@ -56,35 +56,27 @@ export class Cids {
     }
 
     public isStationary(): boolean {
-        const isStationary = SimVar.GetSimVarValue('L:A32NX_IS_STATIONARY', 'Bool');
-
-        return isStationary;
+        return SimVar.GetSimVarValue('L:A32NX_IS_STATIONARY', 'Bool');
     }
 
     public allDoorsClosedLocked(): boolean {
-        const allDoorsClosedLocked = SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:0', 'percent') < 20
-        && SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:3', 'percent') < 20
-        && SimVar.GetSimVarValue('L:A32NX_FWD_DOOR_CARGO_LOCKED', 'Bool');
-
-        return allDoorsClosedLocked;
+        return (
+            SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:0', 'percent') < 20
+            && SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:3', 'percent') < 20
+            && SimVar.GetSimVarValue('L:A32NX_FWD_DOOR_CARGO_LOCKED', 'Bool')
+        );
     }
 
     public nwStrgPinInserted(): boolean {
-        const nwStrgPinInserted = SimVar.GetSimVarValue('L:A32NX_HYD_NW_STRG_DISC_ECAM_MEMO', 'Bool');
-
-        return nwStrgPinInserted;
+        return SimVar.GetSimVarValue('L:A32NX_HYD_NW_STRG_DISC_ECAM_MEMO', 'Bool');
     }
 
     public thrustLever1Position(): number {
-        const thrustLever1Position = SimVar.GetSimVarValue('L:A32NX_3D_THROTTLE_LEVER_POSITION_1', 'number');
-
-        return thrustLever1Position;
+        return SimVar.GetSimVarValue('L:A32NX_3D_THROTTLE_LEVER_POSITION_1', 'number');
     }
 
     public thrustLever2Position(): number {
-        const thrustLever2Position = SimVar.GetSimVarValue('L:A32NX_3D_THROTTLE_LEVER_POSITION_2', 'number');
-
-        return thrustLever2Position;
+        return SimVar.GetSimVarValue('L:A32NX_3D_THROTTLE_LEVER_POSITION_2', 'number');
     }
 
     public altitude(): number {
@@ -99,39 +91,27 @@ export class Cids {
     }
 
     public fcuSelectedAlt(): number {
-        const fcuSelectedAlt = Simplane.getAutoPilotDisplayedAltitudeLockValue('feet');
-
-        return fcuSelectedAlt;
+        return Simplane.getAutoPilotDisplayedAltitudeLockValue('feet');
     }
 
     public fpaSelected(): number {
-        const fpaSelected = SimVar.GetSimVarValue('L:A32NX_AUTOPILOT_FPA_SELECTED', 'degrees');
-
-        return fpaSelected;
+        return SimVar.GetSimVarValue('L:A32NX_AUTOPILOT_FPA_SELECTED', 'degrees');
     }
 
     public vsSelected(): number {
-        const vsSelected = SimVar.GetSimVarValue('L:A32NX_AUTOPILOT_VS_SELECTED', 'feet per minute');
-
-        return vsSelected;
+        return SimVar.GetSimVarValue('L:A32NX_AUTOPILOT_VS_SELECTED', 'feet per minute');
     }
 
     public cruiseAltitude(): number {
-        const cruiseAltitude = SimVar.GetSimVarValue('L:AIRLINER_CRUISE_ALTITUDE', 'number');
-
-        return cruiseAltitude;
+        return SimVar.GetSimVarValue('L:AIRLINER_CRUISE_ALTITUDE', 'number');
     }
 
     public fmaVerticalMode(): number {
-        const fmaVerticalMode = SimVar.GetSimVarValue('L:A32NX_FMA_VERTICAL_MODE', 'Enum');
-
-        return fmaVerticalMode;
+        return SimVar.GetSimVarValue('L:A32NX_FMA_VERTICAL_MODE', 'Enum');
     }
 
     public altCrzActive(): boolean {
-        const altCrzActive = SimVar.GetSimVarValue('L:A32NX_FMA_CRUISE_ALT_MODE', 'Bool');
-
-        return altCrzActive;
+        return SimVar.GetSimVarValue('L:A32NX_FMA_CRUISE_ALT_MODE', 'Bool');
     }
 
     public radioAltitude(): number {
@@ -168,17 +148,17 @@ export class Cids {
     }
 
     public boardingInProgress(): boolean {
-        const boardingInProgress = SimVar.GetSimVarValue('L:A32NX_BOARDING_STARTED_BY_USR', 'Number') === 1
-                                    && this.totalPaxDesired() > this.totalPax();
-
-        return boardingInProgress;
+        return (
+            SimVar.GetSimVarValue('L:A32NX_BOARDING_STARTED_BY_USR', 'Number') === 1
+            && this.totalPaxDesired() > this.totalPax()
+        );
     }
 
     public deboardingInProgess(): boolean {
-        const deboardingInProgess = SimVar.GetSimVarValue('L:A32NX_BOARDING_STARTED_BY_USR', 'Number') === 1
-                                    && this.totalPaxDesired() < this.totalPax();
-
-        return deboardingInProgess;
+        return (
+            SimVar.GetSimVarValue('L:A32NX_BOARDING_STARTED_BY_USR', 'Number') === 1
+            && this.totalPaxDesired() < this.totalPax()
+        );
     }
 
     public totalPax(): number {
