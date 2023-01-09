@@ -86,7 +86,8 @@ void Pushback::onUpdate(double deltaTime) {
 
   // K:KEY_TUG_HEADING expects an unsigned integer scaling 360° to 0 to 2^32-1 (0xffffffff / 360)
   static const int32_t headingToInt32 = 0xffffffff / 360;
-  const auto convertedComputedHeading = static_cast<int32_t >(static_cast<uint32_t>(computedHdg * headingToInt32));
+  const auto convertedComputedHeading =
+    static_cast<int32_t>(static_cast<uint32_t>(computedHdg * headingToInt32));
 
   // send K:KEY_TUG_HEADING event
   HRESULT result = SimConnect_TransmitClientEvent(
@@ -130,3 +131,4 @@ void Pushback::shutdown() {
   isInitialized = false;
   std::cout << "FLYPAD_BACKEND (Pushback): Pushback shutdown" << std::endl;
 }
+

@@ -1,6 +1,3 @@
-# This CMakeLists.txt file is used only for syntax highlighting and navigating
-# through the code in an IDE. It is not used for building the project.
-
 cmake_minimum_required(VERSION 3.19)
 project(flybywire-a32nx-fadec)
 
@@ -14,12 +11,13 @@ include_directories("${MSFS_SDK}/WASM/wasi-sysroot/include")
 include_directories("${MSFS_SDK}/SimConnect SDK/include")
 
 include_directories(
-        ./src
-        ${FBW_ROOT}/fbw-common/src/wasm/fadec_common/src
-        ${FBW_ROOT}/fbw-common/src/wasm/fbw_common/src
+        common
+        fadec/a320_fadec/src
+        fadec/a380_fadec/src
         ${FBW_ROOT}/fbw-common/src/wasm/fbw_common/src/inih
 )
 
 add_executable(flybywire-a32nx-fadec
-        ./src/FadecGauge.cpp
+        a320_fadec/src/FadecGauge.cpp
+        a380_fadec/src/FadecGauge.cpp
 )

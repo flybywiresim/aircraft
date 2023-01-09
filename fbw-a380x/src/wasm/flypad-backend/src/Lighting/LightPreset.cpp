@@ -11,7 +11,10 @@ void LightPreset::initialize() {
   std::cout << "FLYPAD_BACKEND: LightPresets initialized" << std::endl;
 }
 
-void LightPreset::onUpdate(__attribute__((unused)) double deltaTime) {
+void LightPreset::onUpdate(double deltaTime) {
+  // DEBUG
+  return;
+
   if (!isInitialized) {
     return;
   }

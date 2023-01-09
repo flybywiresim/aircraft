@@ -10,18 +10,18 @@ include_directories("${MSFS_SDK}/WASM/include")
 include_directories("${MSFS_SDK}/WASM/wasi-sysroot/include")
 include_directories("${MSFS_SDK}/SimConnect SDK/include")
 
-include_directories(
-        ./src
-        ./src/Aircraft
-        ./src/Lighting
-        ./src/Pushback
-        ${FBW_ROOT}/fbw-common/src/wasm/fbw_common/src/inih
-)
+include_directories(src)
+include_directories(src/inih)
+include_directories(src/Aircraft)
+include_directories(src/Lighting)
+include_directories(src/Pushback)
+#include_directories(src/ThirdParty)
 
-add_executable(flybywire-a380x-flypad-backend
-        ./src/FlyPadBackend.cpp
-        ./src/Aircraft/AircraftPreset.cpp
-        ./src/Lighting/LightPreset.cpp
-        ./src/Pushback/Pushback.cpp
-        ./src/Pushback/InertialDampener.cpp
+add_executable(flybywire-a32nx-flypad-backend
+        src/FlyPadBackend.cpp
+        src/Aircraft/AircraftPreset.cpp
+        src/Lighting/LightPreset.cpp
+        src/Pushback/Pushback.cpp
+        src/Pushback/InertialDampener.cpp
+#        src/ThirdParty/ThirdParty.cpp
 )
