@@ -46,7 +46,7 @@ interface RunwayNumberProps {
 }
 
 const RunwayNumber = ({ heading }: RunwayNumberProps) => {
-    const displayedHeading = heading === 360 || heading === 0 ? 360 : heading! % 360;
+    const displayedHeading = (heading! % 360 < 5) ? 360 : heading! % 360;
 
     return (
         <div className="mx-auto w-min text-4xl font-bold text-white">
