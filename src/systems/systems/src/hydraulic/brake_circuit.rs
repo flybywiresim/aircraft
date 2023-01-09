@@ -1,7 +1,9 @@
 use crate::{
     overhead::PressSingleSignalButton,
     shared::low_pass_filter::LowPassFilter,
-    shared::{pid::PidController, random_from_normal_distribution, random_from_range},
+    shared::{
+        pid::PidController, random_from_normal_distribution, random_from_range, HydraulicColor,
+    },
     simulation::{
         SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext, Write,
     },
@@ -16,6 +18,7 @@ use uom::si::{
 use super::linear_actuator::Actuator;
 use super::Accumulator;
 use super::SectionPressure;
+use crate::failures::{Failure, FailureType};
 use crate::simulation::{InitContext, VariableIdentifier};
 
 struct BrakeActuator {
@@ -143,18 +146,28 @@ pub struct BrakeCircuit {
 
     /// Fluid pressure in brake circuit filtered for cockpit gauges
     accumulator_fluid_pressure_sensor_filter: LowPassFilter<Pressure>,
+
+    leak_failure: Failure,
+    accu_gas_precharge_failure: Option<Failure>,
 }
 impl BrakeCircuit {
     // Filtered using time constant low pass: new_val = old_val + (new_val - old_val)* (1 - e^(-dt/TCONST))
     // Time constant of the filter used to measure brake circuit pressure
     const ACC_PRESSURE_SENSOR_FILTER_TIMECONST: Duration = Duration::from_millis(100);
 
+    const ACCUMULATOR_GAS_FAILURE_LEAKING_GRADIENT_PSI_PER_S: f64 = 50.;
+
+    const BRAKE_LEAK_FAILURE_LEAKING_FLOW_GAL_PER_S: f64 = 0.1;
+
     pub fn new(
         context: &mut InitContext,
         id: &str,
+        hyd_loop_id: HydraulicColor,
         accumulator: Option<Accumulator>,
         total_displacement: Volume,
     ) -> BrakeCircuit {
+        let has_accumulator = accumulator.is_some();
+
         BrakeCircuit {
             left_press_id: context.get_identifier(format!("HYD_BRAKE_{}_LEFT_PRESS", id)),
             right_press_id: context.get_identifier(format!("HYD_BRAKE_{}_RIGHT_PRESS", id)),
@@ -177,6 +190,12 @@ impl BrakeCircuit {
             accumulator_fluid_pressure_sensor_filter: LowPassFilter::<Pressure>::new(
                 Self::ACC_PRESSURE_SENSOR_FILTER_TIMECONST,
             ),
+            leak_failure: Failure::new(FailureType::BrakeHydraulicLeak(hyd_loop_id)),
+            accu_gas_precharge_failure: if has_accumulator {
+                Some(Failure::new(FailureType::BrakeAccumulatorGasLeak))
+            } else {
+                None
+            },
         }
     }
 
@@ -237,6 +256,47 @@ impl BrakeCircuit {
 
         self.accumulator_fluid_pressure_sensor_filter
             .update(context.delta(), actual_pressure_available);
+
+        self.update_failures(context, section);
+    }
+
+    fn update_failures(&mut self, context: &UpdateContext, section: &impl SectionPressure) {
+        if let Some(precharge_failure) = &mut self.accu_gas_precharge_failure {
+            if precharge_failure.is_active() {
+                if let Some(accumulator) = &mut self.accumulator {
+                    let current_pre_charge_pressure_in_accumulator =
+                        accumulator.gas_precharge_pressure();
+
+                    let new_pressure_after_leak = (current_pre_charge_pressure_in_accumulator
+                        - Pressure::new::<psi>(
+                            context.delta_as_secs_f64()
+                                * Self::ACCUMULATOR_GAS_FAILURE_LEAKING_GRADIENT_PSI_PER_S,
+                        ))
+                    .max(Pressure::new::<psi>(50.));
+
+                    accumulator.set_gas_precharge_pressure(new_pressure_after_leak);
+                }
+            } else {
+                // TODO This is more a maintenance action than stoping the leak failure here as we refil gas pressure if failure is off.
+                if let Some(accumulator) = &mut self.accumulator {
+                    accumulator.reset_gas_precharge_pressure_to_nominal();
+                }
+            }
+        }
+
+        if self.leak_failure.is_active() {
+            let leak_volume = if section.pressure_downstream_leak_valve()
+                > Pressure::new::<psi>(200.)
+            {
+                Volume::new::<gallon>(
+                    Self::BRAKE_LEAK_FAILURE_LEAKING_FLOW_GAL_PER_S * context.delta_as_secs_f64(),
+                )
+            } else {
+                Volume::default()
+            };
+
+            self.total_volume_to_actuator += leak_volume;
+        }
     }
 
     pub fn left_brake_pressure(&self) -> Pressure {
@@ -328,6 +388,16 @@ impl Actuator for BrakeCircuit {
     }
 }
 impl SimulationElement for BrakeCircuit {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.leak_failure.accept(visitor);
+
+        if let Some(accu_failure) = &mut self.accu_gas_precharge_failure {
+            accu_failure.accept(visitor);
+        }
+
+        visitor.visit(self);
+    }
+
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.left_press_id, self.left_brake_pressure());
         writer.write(&self.right_press_id, self.right_brake_pressure());
@@ -799,6 +869,7 @@ mod tests {
             BrakeCircuit::new(
                 context,
                 "altn",
+                HydraulicColor::Yellow,
                 Some(Accumulator::new(
                     Pressure::new::<psi>(1000.),
                     init_max_vol,
@@ -828,6 +899,7 @@ mod tests {
             BrakeCircuit::new(
                 context,
                 "altn",
+                HydraulicColor::Yellow,
                 Some(Accumulator::new(
                     Pressure::new::<psi>(1000.),
                     init_max_vol,
@@ -945,6 +1017,7 @@ mod tests {
         BrakeCircuit::new(
             context,
             "TestBrakes",
+            HydraulicColor::Yellow,
             Some(Accumulator::new(
                 Pressure::new::<psi>(1000.),
                 init_max_vol,

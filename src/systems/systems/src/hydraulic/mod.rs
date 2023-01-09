@@ -767,7 +767,8 @@ pub trait HydraulicCircuitController {
 
 pub struct Accumulator {
     total_volume: Volume,
-    gas_init_precharge: Pressure,
+    current_gas_init_precharge: Pressure, // Current precharge as it can be changed by leaks for example
+    gas_nominal_init_precharge: Pressure, // Original precharge used at plane init
     gas_pressure: Pressure,
     gas_volume: Volume,
     fluid_volume: Volume,
@@ -795,11 +796,13 @@ impl Accumulator {
         let limited_volume = fluid_vol_at_init.min(total_volume * 0.9);
 
         // If we don't start with empty accumulator we need to init pressure too
-        let gas_press_at_init = gas_precharge * total_volume / (total_volume - limited_volume);
+        let gas_press_at_init =
+            Self::gas_pressure_from_gas_precharge(gas_precharge, total_volume, limited_volume);
 
         Self {
             total_volume,
-            gas_init_precharge: gas_precharge,
+            current_gas_init_precharge: gas_precharge,
+            gas_nominal_init_precharge: gas_precharge,
             gas_pressure: gas_press_at_init,
             gas_volume: (total_volume - limited_volume),
             fluid_volume: limited_volume,
@@ -839,7 +842,8 @@ impl Accumulator {
             *delta_vol += volume_from_acc;
         } else if accumulator_delta_press.get::<psi>() < 0.0 {
             let fluid_volume_to_reach_equilibrium = self.total_volume
-                - ((self.gas_init_precharge * self.total_volume) / self.circuit_target_pressure);
+                - ((self.current_gas_init_precharge * self.total_volume)
+                    / self.circuit_target_pressure);
 
             let max_delta_vol = fluid_volume_to_reach_equilibrium - self.fluid_volume;
             let volume_to_acc = delta_vol
@@ -854,8 +858,8 @@ impl Accumulator {
         }
 
         self.current_flow = self.current_delta_vol / context.delta_as_time();
-        self.gas_pressure =
-            (self.gas_init_precharge * self.total_volume) / (self.total_volume - self.fluid_volume);
+        self.gas_pressure = (self.current_gas_init_precharge * self.total_volume)
+            / (self.total_volume - self.fluid_volume);
     }
 
     fn get_delta_vol(&mut self, required_delta_vol: Volume) -> Volume {
@@ -866,7 +870,7 @@ impl Accumulator {
                 self.fluid_volume -= volume_from_acc;
                 self.gas_volume += volume_from_acc;
 
-                self.gas_pressure = self.gas_init_precharge * self.total_volume
+                self.gas_pressure = self.current_gas_init_precharge * self.total_volume
                     / (self.total_volume - self.fluid_volume);
             }
         }
@@ -880,6 +884,32 @@ impl Accumulator {
 
     fn raw_gas_press(&self) -> Pressure {
         self.gas_pressure
+    }
+
+    fn set_gas_precharge_pressure(&mut self, new_pressure: Pressure) {
+        self.current_gas_init_precharge = new_pressure;
+        self.gas_pressure = Self::gas_pressure_from_gas_precharge(
+            self.current_gas_init_precharge,
+            self.total_volume,
+            self.fluid_volume,
+        );
+    }
+
+    fn gas_precharge_pressure(&mut self) -> Pressure {
+        self.current_gas_init_precharge
+    }
+
+    fn reset_gas_precharge_pressure_to_nominal(&mut self) {
+        self.fluid_volume = Volume::default();
+        self.set_gas_precharge_pressure(self.gas_nominal_init_precharge);
+    }
+
+    fn gas_pressure_from_gas_precharge(
+        gas_precharge: Pressure,
+        total_volume: Volume,
+        current_volume: Volume,
+    ) -> Pressure {
+        gas_precharge * total_volume / (total_volume - current_volume)
     }
 
     #[cfg(test)]

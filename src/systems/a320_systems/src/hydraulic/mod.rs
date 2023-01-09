@@ -1653,6 +1653,7 @@ impl A320Hydraulic {
             braking_circuit_norm: BrakeCircuit::new(
                 context,
                 "NORM",
+                HydraulicColor::Green,
                 None,
                 Volume::new::<gallon>(0.13),
             ),
@@ -1663,6 +1664,7 @@ impl A320Hydraulic {
             braking_circuit_altn: BrakeCircuit::new(
                 context,
                 "ALTN",
+                HydraulicColor::Yellow,
                 Some(Accumulator::new(
                     brake_accumulator_charac.gas_precharge(),
                     brake_accumulator_charac.total_volume(),
