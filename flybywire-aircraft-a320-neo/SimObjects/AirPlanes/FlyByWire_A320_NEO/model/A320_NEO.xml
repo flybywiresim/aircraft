@@ -530,7 +530,7 @@
                 <FREQUENCY>10</FREQUENCY>
                 <UPDATE_CODE>
                     (A:SURFACE RELATIVE GROUND SPEED, feet per second) 0.1 &gt; ! (&gt;L:A32NX_IS_STATIONARY, bool)
-                    (A:SIM ON GROUND, bool) (L:A32NX_ENGINE_N1:1, Number) 3.5 &lt; and (L:A32NX_ENGINE_N1:2, Number) 3.5 &lt; and (L:A32NX_HYD_NW_STRG_DISC_ECAM_MEMO, bool) 0 == and (A:LIGHT BEACON ON, bool) 0 == and (&gt;L:A32NX_GND_EQP_IS_VISIBLE, bool)
+                    (A:SIM ON GROUND, bool) (L:A32NX_ENGINE_N1:1, Number) 3.5 &lt; and (L:A32NX_ENGINE_N1:2, Number) 3.5 &lt; and (L:A32NX_HYD_NW_STRG_DISC_ECAM_MEMO, bool) 0 == and (A:LIGHT BEACON, bool) 0 == and (&gt;L:A32NX_GND_EQP_IS_VISIBLE, bool)
                 </UPDATE_CODE>
             </UseTemplate>
 
