@@ -11,7 +11,7 @@ export class Cids {
 
     constructor() {
         this.flightPhaseManager = new FlightPhaseManager(this);
-        this.flightPhaseManagerUpdateThrottler = new A32NX_Util.UpdateThrottler(2000);
+        this.flightPhaseManagerUpdateThrottler = new A32NX_Util.UpdateThrottler(2000); // eslint-disable-line camelcase
     }
 
     public init(): void {
