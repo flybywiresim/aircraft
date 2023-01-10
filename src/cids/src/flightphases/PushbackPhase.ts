@@ -14,13 +14,13 @@ export class PushbackPhase extends FlightPhase {
 
     public tryTransition(): void {
         this.nextFlightPhases.forEach((current) => {
-            if (current.testConditions()) {
+            if (current.shouldActivate()) {
                 this.sendNewFlightPhaseToManager(current);
             }
         });
     }
 
-    public testConditions(): boolean {
+    public shouldActivate(): boolean {
         return (
             this.flightPhaseManager.cids.onGround()
             && this.flightPhaseManager.cids.isStationary()

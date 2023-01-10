@@ -13,13 +13,13 @@ export class ApproachPhase extends FlightPhase {
 
     public tryTransition(): void {
         this.nextFlightPhases.forEach((current) => {
-            if (current.testConditions()) {
+            if (current.shouldActivate()) {
                 this.sendNewFlightPhaseToManager(current);
             }
         });
     }
 
-    public testConditions(): boolean {
+    public shouldActivate(): boolean {
         return (
             this.flightPhaseManager.cids.altitude() <= 10000
             && !this.flightPhaseManager.cids.gearDownLocked()
