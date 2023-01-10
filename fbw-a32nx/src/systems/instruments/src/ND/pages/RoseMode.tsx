@@ -206,9 +206,9 @@ const RoseModeOverlayDefs = memo(() => (
             <path d="M45,155 L282,155 a250,250 0 0 1 204,0 L723,155 L723,562 L648,562 L591,625 L591,768 L174,768 L174,683 L122,625 L45,625 L45,155" />
         </clipPath>
         {/* inverted map overlays for terrain map in WASM module  */}
-        <path name="rose-mode-bottom-left-map-area" d="M45,625 L122,625 L174,683 L174,768 L0,768 L0,0 L45,0L45,625" className="nd-inverted-map-area" />
-        <path name="rose-mode-bottom-right-map-area" d="M591,768 L591,626 L648,562 L723,562 L723,0 L768,0 L768,768 L591,769" className="nd-inverted-map-area" />
-        <path name="rose-mode-top-map-area" d="M45,0 L45,155, L282,155 a250,250 0 0 1 204,0 L723,155 L723,0 L45,0" className="nd-inverted-map-area" />
+        <path name="rose-mode-bottom-left-map-area" d="M45,625 L122,625 L174,683 L174,768 L0,768 L0,0 L45,0L45,625" className="nd-inverted-map-area" fill="rgb(4,4,5)" />
+        <path name="rose-mode-bottom-right-map-area" d="M591,768 L591,626 L648,562 L723,562 L723,0 L768,0 L768,768 L591,769" className="nd-inverted-map-area" fill="rgb(4,4,5)" />
+        <path name="rose-mode-top-map-area" d="M45,0 L45,155, L282,155 a250,250 0 0 1 204,0 L723,155 L723,0 L45,0" className="nd-inverted-map-area" fill="rgb(4,4,5)" />
     </>
 ));
 
