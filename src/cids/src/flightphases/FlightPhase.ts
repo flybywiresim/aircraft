@@ -15,7 +15,7 @@ export abstract class FlightPhase {
 
   abstract tryTransition(): void;
 
-  abstract testConditions(): boolean;
+  abstract shouldActivate(): boolean;
 
   abstract getValue(): number;
 }
