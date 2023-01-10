@@ -28,12 +28,14 @@ static constexpr bool SendSimulatorData = false;
 
 #ifdef BUILD_A32NX
 static constexpr TerrainRenderingMode RenderingMode = TerrainRenderingMode::ArcMode;
+static constexpr std::uint8_t NavigationDisplayArcModeId = 3;
 
 // macro to create the full SimVar name
 #define FBW_LVAR_NAME(NAME) "A32NX_" NAME
 
 #elif BUILD_A380X
 static constexpr TerrainRenderingMode RenderingMode = TerrainRenderingMode::VerticalMode;
+static constexpr std::uint8_t NavigationDisplayArcModeId = 3;
 
 // TODO change prefix as soon as we switched
 // macro to create the full SimVar name
@@ -41,6 +43,7 @@ static constexpr TerrainRenderingMode RenderingMode = TerrainRenderingMode::Vert
 
 #else
 static constexpr TerrainRenderingMode RenderingMode = TerrainRenderingMode::ArcMode;
+static constexpr std::uint8_t NavigationDisplayArcModeId = 3;
 #define FBW_LVAR_NAME(NAME) ""
 #error "Unknown aircraft build type"
 #endif
