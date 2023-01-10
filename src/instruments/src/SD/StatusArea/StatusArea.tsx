@@ -1,11 +1,3 @@
-/**
- * WARNING
- *
- * CODE IN THIS FILE IS OLD. THIS STATUS AREA WAS UNUSED AND THE ORIGINAL ASOBO
- * STATUS AREA WAS EXTENDED FURTHER. WHEN STARTING TO USE THIS COMPONENT. PLEASE
- * PORT ANY FUNCTIONALITY FOUND ON THE ORIGINAL STATUS AREA.
- */
-
 import './StatusArea.scss';
 import React, { useEffect, useState } from 'react';
 import { useGlobalVar, useSimVar } from '@instruments/common/simVars';
@@ -21,7 +13,7 @@ export const StatusArea = () => {
 
     const [gwDisplayedUnit, setGwDisplayedUnit] = useState('kg');
 
-    const zulu = useGlobalVar('ZULU TIME', 'seconds', 60000);
+    const zulu = useGlobalVar('ZULU TIME', 'seconds', 10000);
 
     const [airDataSwitch] = useSimVar('L:A32NX_AIR_DATA_SWITCHING_KNOB', 'enum', 200);
     const [attHdgSwitch] = useSimVar('L:A32NX_ATT_HDG_SWITCHING_KNOB', 'enum', 200);
@@ -80,19 +72,7 @@ export const StatusArea = () => {
         // Rust ADIRS code itself.
         const isaShouldBeVisible = isInStdMode && isa.isNormalOperation() && sat.isNormalOperation();
         setIsaVisible(isaShouldBeVisible);
-        // this.isaContainer.setAttribute('visibility', isaShouldBeVisible ? 'visible' : 'hidden');
-
-        // this.setValueOnTemperatureElement(Math.round(isa.value), this.isaText);
     }, [isa, sat]);
-
-    /*   let tat = Math.round(useSimVar('TOTAL AIR TEMPERATURE', 'celsius', 6000)[0]);
-    if (tat > 99 || tat < -99) {
-        tat = tat > 99 ? 99 : -99;
-    }
-    let sat = Math.round(useSimVar('AMBIENT TEMPERATURE', 'celsius', 6000)[0]);
-    if (sat > 99 || sat < -99) {
-        sat = sat > 99 ? 99 : -99;
-    } */
 
     const satPrefix = sat.value > 0 ? '+' : '';
     const tatPrefix = tat.value > 0 ? '+' : '';
@@ -119,27 +99,13 @@ export const StatusArea = () => {
         const payloadWeight = getPayloadWeight(gwUnit, payloadCount);
         const gw = Math.round(NXUnits.kgToUser(emptyWeight + fuelWeight + payloadWeight));
 
-        // if ((gw != this.currentGW) || (this.isOneEngineRunning != isOneEngineRunning) || _force) {
-        //  this.currentGW = gw;
-        // this.isOneEngineRunning = isOneEngineRunning;
-
         if (eng1Running || eng2Running && gw != null) {
             // Lower EICAS displays GW in increments of 100
             setGwDisplayedValue((Math.floor(gw / 100) * 100).toString());
-            /*  this.gwValue.classList.add('Value');
-            this.gwValue.classList.remove('Cyan');
-            this.gwValue.textContent = (Math.floor(gw / 100) * 100).toString(); */
         } else {
             setGwDisplayedValue('--');
         }
         setGwDisplayedUnit(gwUnit);
-
-        /*    if (gwUnit != this.currentGwUnit) {
-            this.currentGwUnit = gwUnit;
-            if (this.gwUnit != null) {
-                this.gwUnit.textContent = gwUnit;
-            }
-        } */
     });
 
     return (
