@@ -42,6 +42,7 @@ terronnd_gauge_callback(FsContext ctx, int service_id, void* pData) {
 
       renderer.update(ctx, simconnect.currentNdMode(), simconnect.terrainMapActive());
       renderer.render((sGaugeDrawData*)pData, ctx);
+      simconnect.writeLVars();
 
       return retval;
     };

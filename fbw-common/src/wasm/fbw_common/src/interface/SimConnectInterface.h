@@ -22,6 +22,7 @@ class SimConnectInterface {
   bool terrainMapActive() const;
   std::uint8_t currentNdMode() const;
   void processedFrame();
+  void writeLVars() const;
 
  private:
   enum SimObjectData : SIMCONNECT_DATA_DEFINITION_ID {

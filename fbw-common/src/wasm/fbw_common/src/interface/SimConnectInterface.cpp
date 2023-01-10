@@ -23,6 +23,16 @@ static const char* calculationCodeRightNdRange = "(L:" FBW_LVAR_NAME("EGPWC_ND_R
 static const char* calculationCodeRightNdMode = "(L:" FBW_LVAR_NAME("EFIS_R_ND_MODE") ", number)";
 static const char* calculationCodeRightTerrOnNdActive = "(L:" FBW_LVAR_NAME("EGPWC_ND_R_TERRAIN_ACTIVE") ", number)";
 
+// code to write the LVar values
+static const char* calculationCodeLeftMinimumElevation = " (>L:" FBW_LVAR_NAME("EGPWC_ND_L_TERRAIN_MIN_ELEVATION") ", number)";
+static const char* calculationCodeLeftMinimumElevationMode = " (>L:" FBW_LVAR_NAME("EGPWC_ND_L_TERRAIN_MIN_ELEVATION_MODE") ", number)";
+static const char* calculationCodeLeftMaximumElevation = " (>L:" FBW_LVAR_NAME("EGPWC_ND_L_TERRAIN_MAX_ELEVATION") ", number)";
+static const char* calculationCodeLeftMaximumElevationMode = " (>L:" FBW_LVAR_NAME("EGPWC_ND_L_TERRAIN_MAX_ELEVATION_MODE") ", number)";
+static const char* calculationCodeRightMinimumElevation = " (>L:" FBW_LVAR_NAME("EGPWC_ND_R_TERRAIN_MIN_ELEVATION") ", number)";
+static const char* calculationCodeRightMinimumElevationMode = " (>L:" FBW_LVAR_NAME("EGPWC_ND_R_TERRAIN_MIN_ELEVATION_MODE") ", number)";
+static const char* calculationCodeRightMaximumElevation = " (>L:" FBW_LVAR_NAME("EGPWC_ND_R_TERRAIN_MAX_ELEVATION") ", number)";
+static const char* calculationCodeRightMaximumElevationMode = " (>L:" FBW_LVAR_NAME("EGPWC_ND_R_TERRAIN_MAX_ELEVATION_MODE") ", number)";
+
 bool SimConnectInterface::connect() {
   std::cout << "TERR ON ND: Connecting as " << ConnectionName << "..." << std::endl;
   HRESULT result = SimConnect_Open(&this->hSimConnect, ConnectionName.c_str(), nullptr, 0, 0, 0);
@@ -140,7 +150,6 @@ void SimConnectInterface::processClientData(const SIMCONNECT_RECV_CLIENT_DATA* d
   switch (data->dwRequestID) {
     case ClientData::METADATA:
       this->frameMetadata = *((TerrOnNdMetadata*)&data->dwData);
-      // TODO write some simvars for the thresholds
       this->frameBuffer.reserve(this->frameMetadata.frameByteCount);
       this->receivedFrameDataBytes = 0;
       break;
@@ -320,5 +329,29 @@ std::uint8_t SimConnectInterface::currentNdMode() const {
   return this->aircraftStatus.ndModeCapt;
 #else
   return this->aircraftStatus.ndModeFO;
+#endif
+}
+
+void SimConnectInterface::writeLVars() const {
+  std::string command;
+
+#ifdef BUILD_SIDE_CAPT
+  command = std::to_string(this->frameMetadata.lowerThreshold) + calculationCodeLeftMinimumElevation;
+  execute_calculator_code(command.c_str(), nullptr, nullptr, nullptr);
+  command = std::to_string(this->frameMetadata.lowerThresholdMode) + calculationCodeLeftMinimumElevationMode;
+  execute_calculator_code(command.c_str(), nullptr, nullptr, nullptr);
+  command = std::to_string(this->frameMetadata.upperThreshold) + calculationCodeLeftMaximumElevation;
+  execute_calculator_code(command.c_str(), nullptr, nullptr, nullptr);
+  command = std::to_string(this->frameMetadata.upperThresholdMode) + calculationCodeLeftMaximumElevationMode;
+  execute_calculator_code(command.c_str(), nullptr, nullptr, nullptr);
+#else
+  command = std::to_string(this->frameMetadata.lowerThreshold) + calculationCodeRightMinimumElevation;
+  execute_calculator_code(command.c_str(), nullptr, nullptr, nullptr);
+  command = std::to_string(this->frameMetadata.lowerThresholdMode) + calculationCodeRightMinimumElevationMode;
+  execute_calculator_code(command.c_str(), nullptr, nullptr, nullptr);
+  command = std::to_string(this->frameMetadata.upperThreshold) + calculationCodeRightMaximumElevation;
+  execute_calculator_code(command.c_str(), nullptr, nullptr, nullptr);
+  command = std::to_string(this->frameMetadata.upperThresholdMode) + calculationCodeRightMaximumElevationMode;
+  execute_calculator_code(command.c_str(), nullptr, nullptr, nullptr);
 #endif
 }
