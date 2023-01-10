@@ -256,11 +256,13 @@ bool SimConnectInterface::sendAircraftStatus() {
   clientData.destinationLatitude = this->aircraftStatus.destinationLatitude.value();
   clientData.destinationLongitude = this->aircraftStatus.destinationLongitude.value();
   clientData.ndRangeCapt = this->aircraftStatus.ndRangeCapt;
-  clientData.ndModeCapt = this->aircraftStatus.ndModeCapt;
-  clientData.ndTerrainOnNdActiveCapt = static_cast<std::uint8_t>(this->aircraftStatus.ndTerrainOnNdActiveCapt);
+  clientData.ndArcModeCapt = this->aircraftStatus.ndModeCapt == NavigationDisplayArcModeId;
+  clientData.ndTerrainOnNdActiveCapt =
+      static_cast<std::uint8_t>(this->aircraftStatus.ndTerrainOnNdActiveCapt) && this->aircraftStatus.ndModeCapt != 4;
   clientData.ndRangeFO = this->aircraftStatus.ndRangeFO;
-  clientData.ndModeFO = this->aircraftStatus.ndModeFO;
-  clientData.ndTerrainOnNdActiveFO = static_cast<std::uint8_t>(this->aircraftStatus.ndTerrainOnNdActiveFO);
+  clientData.ndArcModeFO = this->aircraftStatus.ndModeFO == NavigationDisplayArcModeId;
+  clientData.ndTerrainOnNdActiveFO =
+      static_cast<std::uint8_t>(this->aircraftStatus.ndTerrainOnNdActiveFO) && this->aircraftStatus.ndModeFO != 4;
   clientData.ndTerrainOnNdRenderingMode = static_cast<std::uint8_t>(RenderingMode);
   clientData.groundTruthLatitude = static_cast<float>(this->simulatorData.latitude);
   clientData.groundTruthLongitude = static_cast<float>(this->simulatorData.longitude);

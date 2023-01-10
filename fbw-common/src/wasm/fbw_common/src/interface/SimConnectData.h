@@ -39,10 +39,10 @@ struct AircraftStatusData {
   float destinationLatitude;
   float destinationLongitude;
   std::uint16_t ndRangeCapt;
-  std::uint8_t ndModeCapt;
+  std::uint8_t ndArcModeCapt;
   std::uint8_t ndTerrainOnNdActiveCapt;
   std::uint16_t ndRangeFO;
-  std::uint8_t ndModeFO;
+  std::uint8_t ndArcModeFO;
   std::uint8_t ndTerrainOnNdActiveFO;
   std::uint8_t ndTerrainOnNdRenderingMode;
   float groundTruthLatitude;
