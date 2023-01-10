@@ -33,7 +33,6 @@ export class Cids {
             set('L:A32NX_CIDS_THR_LVR_1_POSITION', 'number', this.thrustLever1Position());
             set('L:A32NX_CIDS_THR_LVR_2_POSITION', 'number', this.thrustLever2Position());
             set('L:A32NX_CIDS_ALTITUDE', 'number', this.altitude());
-            set('L:A32NX_CIDS_VS', 'number', this.vs());
             set('L:A32NX_CIDS_ALT_SELECTED', 'feet', this.fcuSelectedAlt());
             set('L:A32NX_CIDS_FPA_SELECTED', 'degrees', this.fpaSelected());
             set('L:A32NX_CIDS_VS_SELECTED', 'feet per minute', this.vsSelected());
@@ -80,6 +79,14 @@ export class Cids {
         return SimVar.GetSimVarValue('L:A32NX_3D_THROTTLE_LEVER_POSITION_2', 'number');
     }
 
+    public flapsPosition(): Arinc429Word {
+        return new Arinc429Word(SimVar.GetSimVarValue('L:A32NX_SFCC_SLAT_FLAP_ACTUAL_POSITION_WORD', 'number'));
+    }
+
+    public gpwsConf3(): boolean {
+        return SimVar.GetSimVarValue('L:A32NX_GPWS_FLAP_OFF', 'Bool');
+    }
+
     public altitude(): number {
         const alt1 = new Arinc429Word(SimVar.GetSimVarValue('L:A32NX_ADIRS_ADR_1_ALTITUDE', 'Number'));
         const alt2 = new Arinc429Word(SimVar.GetSimVarValue('L:A32NX_ADIRS_ADR_2_ALTITUDE', 'Number'));
@@ -88,17 +95,6 @@ export class Cids {
         return alt1.isNormalOperation() && alt1.value
         || alt2.isNormalOperation() && alt2.value
         || alt3.isNormalOperation() && alt3.value
-        || -1;
-    }
-
-    public vs(): number {
-        const vs1 = new Arinc429Word(SimVar.GetSimVarValue('L:A32NX_ADIRS_ADR_1_BAROMETRIC_VERTICAL_SPEED', 'number'));
-        const vs2 = new Arinc429Word(SimVar.GetSimVarValue('L:A32NX_ADIRS_ADR_2_BAROMETRIC_VERTICAL_SPEED', 'number'));
-        const vs3 = new Arinc429Word(SimVar.GetSimVarValue('L:A32NX_ADIRS_ADR_3_BAROMETRIC_VERTICAL_SPEED', 'number'));
-
-        return vs1.isNormalOperation() && vs1.value
-        || vs2.isNormalOperation() && vs2.value
-        || vs3.isNormalOperation() && vs3.value
         || -1;
     }
 

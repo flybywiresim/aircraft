@@ -22,7 +22,14 @@ export class FinalApproachAndLandingPhase extends FlightPhase {
     public testConditions(): boolean {
         return (
             this.flightPhaseManager.cids.gearDownLocked()
-            && this.flightPhaseManager.cids.vs() < 0
+            && this.flightPhaseManager.cids.flapsPosition().getBitValue(18)
+            && (
+                (
+                    this.flightPhaseManager.cids.flapsPosition().getBitValue(22)
+                    && this.flightPhaseManager.cids.gpwsConf3()
+                )
+                || this.flightPhaseManager.cids.flapsPosition().getBitValue(23)
+            )
             && this.flightPhaseManager.cids.groundSpeed() >= 80
         );
     }
