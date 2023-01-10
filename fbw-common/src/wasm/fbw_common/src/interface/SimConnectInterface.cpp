@@ -306,3 +306,19 @@ const std::vector<std::uint8_t>& SimConnectInterface::frameData() const {
 void SimConnectInterface::processedFrame() {
   this->receivedFrameDataBytes = 0;
 }
+
+bool SimConnectInterface::terrainMapActive() const {
+#ifdef BUILD_SIDE_CAPT
+  return this->aircraftStatus.ndTerrainOnNdActiveCapt;
+#else
+  return this->aircraftStatus.ndTerrainOnNdActiveFO;
+#endif
+}
+
+std::uint8_t SimConnectInterface::currentNdMode() const {
+#ifdef BUILD_SIDE_CAPT
+  return this->aircraftStatus.ndModeCapt;
+#else
+  return this->aircraftStatus.ndModeFO;
+#endif
+}

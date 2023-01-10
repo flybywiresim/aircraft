@@ -19,6 +19,8 @@ class SimConnectInterface {
   bool receivedFrameData() const;
   const TerrOnNdMetadata& metadata() const;
   const std::vector<std::uint8_t>& frameData() const;
+  bool terrainMapActive() const;
+  std::uint8_t currentNdMode() const;
   void processedFrame();
 
  private:
