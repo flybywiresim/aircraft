@@ -1,60 +1,54 @@
-#include <MSFS/Legacy/gauges.h>
 #include <MSFS/MSFS.h>
-#include <MSFS/Render/nanovg.h>
-#include <MSFS/Render/stb_image.h>
+#include <algorithm>
+#include <memory>
+#include <string>
 
-#include <chrono>
-#include <iostream>
-#include <map>
-
-#include "config.h"
-#include "interface/SimConnectInterface.h"
 #include "main.h"
-#include "maprenderer.h"
+#include "navigationdisplay/collection.h"
+#include "simconnect/connection.hpp"
 
-SimConnectInterface simconnect;
-MapRenderer renderer;
+std::shared_ptr<navigationdisplay::Collection> displays;
+simconnect::Connection connection;
 
-#if BUILD_SIDE_CAPT
-__attribute__((export_name("terronnd_left_gauge_callback")))
-#elif BUILD_SIDE_FO
-__attribute__((export_name("terronnd_right_gauge_callback")))
-#endif
-extern "C" bool
-terronnd_gauge_callback(FsContext ctx, int service_id, void* pData) {
-  // print event type
+extern "C" {
+MSFS_CALLBACK bool terronnd_gauge_callback(FsContext ctx, int service_id, void* pData) {
+  std::cout << "TERR ON ND: TESTING TESTING" << std::endl;
   switch (service_id) {
     case PANEL_SERVICE_PRE_INSTALL: {
-      // connect to sim connect
-      return simconnect.connect();
-    };
-    case PANEL_SERVICE_POST_INSTALL: {
-      renderer.initialize(ctx);
-      break;
-    }
-    case PANEL_SERVICE_PRE_DRAW: {
-      const bool retval = simconnect.update();
+      bool connected = connection.connect("FBW_TERRONND_CONNECTION");
+      if (connected) {
+        sGaugeInstallData* installData = (sGaugeInstallData*)pData;
 
-      if (simconnect.receivedFrameData()) {
-        renderer.newMap(ctx, simconnect.frameData(), simconnect.metadata().frameByteCount);
-        simconnect.processedFrame();
+        if (displays == nullptr) {
+          displays = std::shared_ptr<navigationdisplay::Collection>(
+              new navigationdisplay::Collection(connection, installData->iSizeX, installData->iSizeY));
+        }
+
+        std::string parameter = std::string(installData->strParameters);
+        std::transform(parameter.begin(), parameter.end(), parameter.begin(), ::toupper);
+
+        if (parameter.length() != 0) {
+          displays->registerDisplay(static_cast<navigationdisplay::DisplaySide>(parameter[0]), ctx, connection);
+        }
+      }
+      return connected;
+    }
+    case PANEL_SERVICE_POST_INSTALL:
+      break;
+    case PANEL_SERVICE_PRE_DRAW:
+      if (!connection.readData()) {
+        return false;
       }
 
-      renderer.update(ctx, simconnect.currentNdMode(), simconnect.terrainMapActive());
-      renderer.render((sGaugeDrawData*)pData, ctx);
-      simconnect.writeLVars();
-
-      return retval;
-    };
-
+      displays->updateDisplay(ctx);
+      displays->renderDisplay((sGaugeDrawData*)pData, ctx);
+      break;
     case PANEL_SERVICE_PRE_KILL: {
-      // disconnect sim connect
-      simconnect.disconnect();
-      renderer.destroy(ctx);
+      connection.disconnect();
       break;
     }
   }
 
-  // success
   return true;
+}
 }
