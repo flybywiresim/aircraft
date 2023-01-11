@@ -32,6 +32,9 @@ export class Cids {
             set('L:A32NX_CIDS_NW_STRG_PIN_INSERTED', 'Bool', this.nwStrgPinInserted());
             set('L:A32NX_CIDS_THR_LVR_1_POSITION', 'number', this.thrustLever1Position());
             set('L:A32NX_CIDS_THR_LVR_2_POSITION', 'number', this.thrustLever2Position());
+            set('L:A32NX_CIDS_GPWS_FLAP_3', 'Bool', this.gpwsConf3());
+            set('L:A32NX_CIDS_FLAPS_3', 'number', this.flapsPosition().getBitValue(22));
+            set('L:A32NX_CIDS_FLAPS_FULL', 'number', this.flapsPosition().getBitValue(23));
             set('L:A32NX_CIDS_ALTITUDE', 'number', this.altitude());
             set('L:A32NX_CIDS_ALT_SELECTED', 'feet', this.fcuSelectedAlt());
             set('L:A32NX_CIDS_FPA_SELECTED', 'degrees', this.fpaSelected());
