@@ -4,39 +4,49 @@ import { IconPlane } from '@tabler/icons';
 import { CloudArrowDown } from 'react-bootstrap-icons';
 import { usePersistentProperty } from '@instruments/common/persistence';
 import { toast } from 'react-toastify';
-import { fetchSimbriefFlightplansAction, isSimbriefFlightplansLoaded, fetchSimbriefDataAction, isSimbriefDataLoaded } from '../../Store/features/simBrief';
+import { fetchSimbriefFlightplansAction, isSimbriefFlightplansLoaded, fetchSimbriefDataAction, fetchSimbriefDataActionNew, isSimbriefDataLoaded } from '../../Store/features/simBrief';
 import { useAppSelector, useAppDispatch } from '../../Store/store';
 
 import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
 import { t } from '../../translation';
 
-interface InformationEntryProps {
-    title: string;
-    info: string;
+interface SimbriefFlightplanProps {
+    fetchData: (_:number) => void;
+    requestId: number;
 }
 
-const InformationEntry = ({ title, info }: InformationEntryProps) => (
-    <div className="flex flex-col items-center w-full justify-content">
-        <h3 className="font-light text-center">{title}</h3>
-        <h2 className="font-bold">{info}</h2>
+const SimBriefFlightplan = ({ fetchData, requestId }: SimbriefFlightplanProps) => (
+    <div className="flex w-full">
+        <div className="flex flex-col w-full">
+            Yolo
+        </div>
+        <button
+            type="button"
+            onClick={() => fetchData(requestId)}
+            className="flex justify-center items-center p-2 space-x-4 w-full rounded-md border-2 transition duration-100 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight"
+        >
+            <p className="text-current">{t('Dashboard.YourFlight.ImportSimBriefData')}</p>
+        </button>
     </div>
 );
 
-interface SimbriefFlightplansOverlayProps {
+interface SimbriefFlightplansProps {
     simbriefDataLoaded: boolean;
     simbriefDataPending: boolean;
     simbriefFlightplansLoaded: boolean;
     fetchFlightplans: () => void;
+    fetchData: (_:number) => void;
 }
 
-const SimBriefFlightplansOverlay = ({ simbriefDataLoaded, simbriefDataPending, simbriefFlightplansLoaded, fetchFlightplans }: SimbriefFlightplansOverlayProps) => (
-    <div className={`absolute inset-0 transition duration-200 bg-theme-body ${simbriefFlightplansLoaded || simbriefDataLoaded ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+const SimBriefFlightplans = ({ simbriefDataLoaded, simbriefDataPending, simbriefFlightplansLoaded, fetchFlightplans, fetchData }: SimbriefFlightplansProps) => {
+    const { flightplans } = useAppSelector((state) => state.simbrief);
+    return (
         <h1 className="flex justify-center items-center w-full h-full">
             {simbriefDataPending ? (
                 <CloudArrowDown className="animate-bounce" size={40} />
             ) : (
                 <>
-                    {!simbriefDataLoaded && (
+                    {!simbriefDataLoaded && !simbriefFlightplansLoaded && (
                         <div className="space-y-4">
                             <h1
                                 className="text-center"
@@ -55,17 +65,35 @@ const SimBriefFlightplansOverlay = ({ simbriefDataLoaded, simbriefDataPending, s
                             </button>
                         </div>
                     )}
+                    {simbriefFlightplansLoaded && (
+                        <ScrollableContainer height={51}>
+                            {flightplans.map((flightplan) => <SimBriefFlightplan fetchData={fetchData} requestId={flightplan.requestId} />)}
+                        </ScrollableContainer>
+                    )}
                 </>
             )}
         </h1>
+    );
+};
+
+interface InformationEntryProps {
+    title: string;
+    info: string;
+}
+
+const InformationEntry = ({ title, info }: InformationEntryProps) => (
+    <div className="flex flex-col items-center w-full justify-content">
+        <h3 className="font-light text-center">{title}</h3>
+        <h2 className="font-bold">{info}</h2>
     </div>
 );
 
-export const FlightWidget = () => {
-    const { data } = useAppSelector((state) => state.simbrief);
-    const [simbriefDataPending, setSimbriefDataPending] = useState(false);
-    const [simbriefUserId] = usePersistentProperty('CONFIG_SIMBRIEF_USERID');
+interface ActiveFlightProps {
+    fetchData: () => void;
+}
 
+const ActiveFlight = ({ fetchData }: ActiveFlightProps) => {
+    const { data } = useAppSelector((state) => state.simbrief);
     const {
         schedIn,
         schedOut,
@@ -78,17 +106,13 @@ export const FlightWidget = () => {
         departingAirport,
         departingIata,
         departingName,
-        airline,
         route,
-        flightNum,
         altIcao,
         costInd,
         arrivingRunway,
         departingRunway,
     } = data;
     const { flightPlanProgress } = useAppSelector((state) => state.flightProgress);
-
-    const dispatch = useAppDispatch();
 
     const sta = new Date(parseInt(schedIn) * 1000);
     const schedInParsed = `${sta.getUTCHours().toString().padStart(2, '0')}${sta.getUTCMinutes().toString().padStart(2, '0')}Z`;
@@ -105,6 +129,104 @@ export const FlightWidget = () => {
     const eZfw = Math.round(eZfwUnround) / 10;
     const estimatedZfw = `${eZfw}`;
 
+    return (
+        <div className="flex flex-col justify-between h-full">
+            <div className="space-y-8">
+                <div className="flex flex-row justify-between">
+                    <div>
+                        <h1 className="text-4xl font-bold">{departingAirport}</h1>
+                        <p className="w-52 text-sm">{departingName}</p>
+                    </div>
+                    <div>
+                        <h1 className="text-4xl font-bold text-right">{arrivingAirport}</h1>
+                        <p className="w-52 text-sm text-right">{arrivingName}</p>
+                    </div>
+                </div>
+                <div>
+                    <div className="flex flex-row items-center w-full">
+                        <p className={`font-body ${flightPlanProgress > 1 ? 'text-theme-highlight' : 'text-theme-text'}`}>
+                            {schedOutParsed}
+                        </p>
+                        <div className="flex relative flex-row mx-6 w-full h-1">
+                            <div className="absolute inset-x-0 border-b-4 border-dashed border-theme-text" />
+
+                            <div className="relative w-full bg-theme-highlight" style={{ width: `${flightPlanProgress}%` }}>
+                                {!!flightPlanProgress && (
+                                    <IconPlane
+                                        className="absolute right-0 transform translate-x-1/2 -translate-y-1/2 fill-current text-theme-highlight"
+                                        size={50}
+                                        strokeLinejoin="miter"
+                                    />
+                                )}
+                            </div>
+                        </div>
+                        <p className={`text-right font-body ${Math.round(flightPlanProgress) >= 98 ? 'text-theme-highlight' : 'text-theme-text'}`}>
+                            {schedInParsed}
+                        </p>
+                    </div>
+                </div>
+                <div>
+                    <div className="flex flex-row justify-around mb-4">
+                        <InformationEntry title={t('Dashboard.YourFlight.Alternate')} info={altIcao ?? 'NONE'} />
+                        <div className="my-auto mx-4 w-1 h-8 bg-theme-accent" />
+                        <InformationEntry title={t('Dashboard.YourFlight.CompanyRoute')} info={departingIata + arrivingIata} />
+                        <div className="my-auto mx-4 w-1 h-8 bg-theme-accent" />
+                        <InformationEntry title={t('Dashboard.YourFlight.ZFW')} info={estimatedZfw} />
+                    </div>
+                    <div className="my-auto w-full h-0.5 bg-theme-accent" />
+                    <div className="flex flex-row justify-around mt-4">
+                        <InformationEntry title={t('Dashboard.YourFlight.CostIndex')} info={costInd} />
+                        <div className="my-auto mx-4 w-1 h-8 bg-theme-accent" />
+                        <InformationEntry title={t('Dashboard.YourFlight.AverageWind')} info={avgWind} />
+                        <div className="my-auto mx-4 w-1 h-8 bg-theme-accent" />
+                        <InformationEntry title={t('Dashboard.YourFlight.CruiseAlt')} info={crzAlt} />
+                    </div>
+                </div>
+                <div>
+                    <h5 className="mb-2 text-2xl font-bold">{t('Dashboard.YourFlight.Route')}</h5>
+                    <ScrollableContainer height={15}>
+                        <p className="font-mono text-2xl">
+                            <span className="text-2xl text-theme-highlight">
+                                {departingAirport}
+                                /
+                                {departingRunway}
+                            </span>
+                            {' '}
+                            {route}
+                            {' '}
+                            <span className="text-2xl text-theme-highlight">
+                                {arrivingAirport}
+                                /
+                                {arrivingRunway}
+                            </span>
+                        </p>
+                    </ScrollableContainer>
+                </div>
+            </div>
+            <button
+                type="button"
+                onClick={fetchData}
+                className="flex justify-center items-center p-2 space-x-4 w-full rounded-lg border-2 transition duration-100 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight"
+            >
+                <CloudArrowDown size={26} />
+                <p className="text-current">{t('Dashboard.YourFlight.ImportSimBriefData')}</p>
+            </button>
+        </div>
+    );
+};
+
+export const FlightWidget = () => {
+    const { data } = useAppSelector((state) => state.simbrief);
+    const [simbriefDataPending, setSimbriefDataPending] = useState(false);
+    const [simbriefUserId] = usePersistentProperty('CONFIG_SIMBRIEF_USERID');
+
+    const {
+        airline,
+        flightNum,
+    } = data;
+
+    const dispatch = useAppDispatch();
+
     const fetchFlightplans = async () => {
         setSimbriefDataPending(true);
 
@@ -117,6 +239,18 @@ export const FlightWidget = () => {
         }
 
         setSimbriefDataPending(false);
+    };
+
+    const fetchDataNew = async (requestId: number) => {
+        setSimbriefDataPending(true);
+
+        try {
+            const action = await fetchSimbriefDataActionNew(requestId);
+
+            dispatch(action);
+        } catch (e) {
+            toast.error(e.message);
+        }
     };
 
     const fetchData = async () => {
@@ -151,95 +285,21 @@ export const FlightWidget = () => {
                 )}
             </div>
             <div className="overflow-hidden relative p-6 w-full rounded-lg border-2 h-content-section-reduced border-theme-accent">
-                <div className="flex flex-col justify-between h-full">
-                    <div className="space-y-8">
-                        <div className="flex flex-row justify-between">
-                            <div>
-                                <h1 className="text-4xl font-bold">{departingAirport}</h1>
-                                <p className="w-52 text-sm">{departingName}</p>
-                            </div>
-                            <div>
-                                <h1 className="text-4xl font-bold text-right">{arrivingAirport}</h1>
-                                <p className="w-52 text-sm text-right">{arrivingName}</p>
-                            </div>
-                        </div>
-                        <div>
-                            <div className="flex flex-row items-center w-full">
-                                <p className={`font-body ${flightPlanProgress > 1 ? 'text-theme-highlight' : 'text-theme-text'}`}>
-                                    {schedOutParsed}
-                                </p>
-                                <div className="flex relative flex-row mx-6 w-full h-1">
-                                    <div className="absolute inset-x-0 border-b-4 border-dashed border-theme-text" />
-
-                                    <div className="relative w-full bg-theme-highlight" style={{ width: `${flightPlanProgress}%` }}>
-                                        {!!flightPlanProgress && (
-                                            <IconPlane
-                                                className="absolute right-0 transform translate-x-1/2 -translate-y-1/2 fill-current text-theme-highlight"
-                                                size={50}
-                                                strokeLinejoin="miter"
-                                            />
-                                        )}
-                                    </div>
-                                </div>
-                                <p className={`text-right font-body ${Math.round(flightPlanProgress) >= 98 ? 'text-theme-highlight' : 'text-theme-text'}`}>
-                                    {schedInParsed}
-                                </p>
-                            </div>
-                        </div>
-                        <div>
-                            <div className="flex flex-row justify-around mb-4">
-                                <InformationEntry title={t('Dashboard.YourFlight.Alternate')} info={altIcao ?? 'NONE'} />
-                                <div className="my-auto mx-4 w-1 h-8 bg-theme-accent" />
-                                <InformationEntry title={t('Dashboard.YourFlight.CompanyRoute')} info={departingIata + arrivingIata} />
-                                <div className="my-auto mx-4 w-1 h-8 bg-theme-accent" />
-                                <InformationEntry title={t('Dashboard.YourFlight.ZFW')} info={estimatedZfw} />
-                            </div>
-                            <div className="my-auto w-full h-0.5 bg-theme-accent" />
-                            <div className="flex flex-row justify-around mt-4">
-                                <InformationEntry title={t('Dashboard.YourFlight.CostIndex')} info={costInd} />
-                                <div className="my-auto mx-4 w-1 h-8 bg-theme-accent" />
-                                <InformationEntry title={t('Dashboard.YourFlight.AverageWind')} info={avgWind} />
-                                <div className="my-auto mx-4 w-1 h-8 bg-theme-accent" />
-                                <InformationEntry title={t('Dashboard.YourFlight.CruiseAlt')} info={crzAlt} />
-                            </div>
-                        </div>
-                        <div>
-                            <h5 className="mb-2 text-2xl font-bold">{t('Dashboard.YourFlight.Route')}</h5>
-                            <ScrollableContainer height={15}>
-                                <p className="font-mono text-2xl">
-                                    <span className="text-2xl text-theme-highlight">
-                                        {departingAirport}
-                                        /
-                                        {departingRunway}
-                                    </span>
-                                    {' '}
-                                    {route}
-                                    {' '}
-                                    <span className="text-2xl text-theme-highlight">
-                                        {arrivingAirport}
-                                        /
-                                        {arrivingRunway}
-                                    </span>
-                                </p>
-                            </ScrollableContainer>
-                        </div>
-                    </div>
-                    <button
-                        type="button"
-                        onClick={fetchData}
-                        className="flex justify-center items-center p-2 space-x-4 w-full rounded-lg border-2 transition duration-100 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight"
-                    >
-                        <CloudArrowDown size={26} />
-                        <p className="text-current">{t('Dashboard.YourFlight.ImportSimBriefData')}</p>
-                    </button>
-                </div>
-
-                <SimBriefFlightplansOverlay
-                    simbriefDataLoaded={simbriefDataLoaded}
-                    simbriefDataPending={simbriefDataPending}
-                    simbriefFlightplansLoaded={simbriefFlightplansLoaded}
-                    fetchFlightplans={fetchData}
-                />
+                {
+                    simbriefDataLoaded ? (
+                        <ActiveFlight
+                            fetchData={fetchData}
+                        />
+                    ) : (
+                        <SimBriefFlightplans
+                            simbriefDataLoaded={simbriefDataLoaded}
+                            simbriefDataPending={simbriefDataPending}
+                            simbriefFlightplansLoaded={simbriefFlightplansLoaded}
+                            fetchFlightplans={fetchFlightplans}
+                            fetchData={fetchDataNew}
+                        />
+                    )
+                }
             </div>
         </div>
     );
