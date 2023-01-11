@@ -23,6 +23,7 @@
 1. [EFB] Added boarding time indication to Payload page - @ChristianLutzCL (Christian Lutz) @frankkopp (Frank Kopp)
 1. [EFB] Show correct runway numbers in landing calculator's runway widget when heading is between 0-5 degrees - @2hwk (2Cas#1022)
 1. [ADIRU/ND/PFD] Initial support for polar navigation - @tracernz (Mike)
+1. [FLIGHTMODEL] Update gear drag - @donstim (donbikes#4084)
 
 ## 0.9.0
 
