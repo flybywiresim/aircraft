@@ -16,11 +16,14 @@ export class AdirsValueProvider {
             this.pfdSimvar.updateSimVarSource('vsInert', { name: `L:A32NX_ADIRS_IR_${inertialSource}_VERTICAL_SPEED`, type: SimVarValueType.Number });
             this.pfdSimvar.updateSimVarSource('pitch', { name: `L:A32NX_ADIRS_IR_${inertialSource}_PITCH`, type: SimVarValueType.Number });
             this.pfdSimvar.updateSimVarSource('roll', { name: `L:A32NX_ADIRS_IR_${inertialSource}_ROLL`, type: SimVarValueType.Number });
-            this.pfdSimvar.updateSimVarSource('heading', { name: `L:A32NX_ADIRS_IR_${inertialSource}_HEADING`, type: SimVarValueType.Number });
-            this.pfdSimvar.updateSimVarSource('groundTrack', { name: `L:A32NX_ADIRS_IR_${inertialSource}_TRACK`, type: SimVarValueType.Number });
+            this.pfdSimvar.updateSimVarSource('magHeadingRaw', { name: `L:A32NX_ADIRS_IR_${inertialSource}_HEADING`, type: SimVarValueType.Number });
+            this.pfdSimvar.updateSimVarSource('magTrackRaw', { name: `L:A32NX_ADIRS_IR_${inertialSource}_TRACK`, type: SimVarValueType.Number });
             this.pfdSimvar.updateSimVarSource('fpaRaw', { name: `L:A32NX_ADIRS_IR_${inertialSource}_FLIGHT_PATH_ANGLE`, type: SimVarValueType.Number });
             this.pfdSimvar.updateSimVarSource('daRaw', { name: `L:A32NX_ADIRS_IR_${inertialSource}_DRIFT_ANGLE`, type: SimVarValueType.Number });
             this.pfdSimvar.updateSimVarSource('latAccRaw', { name: `L:A32NX_ADIRS_IR_${inertialSource}_BODY_LATERAL_ACC`, type: SimVarValueType.Number });
+            this.pfdSimvar.updateSimVarSource('irMaintWordRaw', { name: `L:A32NX_ADIRS_IR_${inertialSource}_MAINT_WORD`, type: SimVarValueType.Number });
+            this.pfdSimvar.updateSimVarSource('trueHeadingRaw', { name: `L:A32NX_ADIRS_IR_${inertialSource}_TRUE_HEADING`, type: SimVarValueType.Number });
+            this.pfdSimvar.updateSimVarSource('trueTrackRaw', { name: `L:A32NX_ADIRS_IR_${inertialSource}_TRUE_TRACK`, type: SimVarValueType.Number });
         });
 
         sub.on('airKnob').whenChanged().handle((a) => {
