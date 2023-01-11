@@ -4,7 +4,7 @@ import { IconPlane } from '@tabler/icons';
 import { CloudArrowDown } from 'react-bootstrap-icons';
 import { usePersistentProperty } from '@instruments/common/persistence';
 import { toast } from 'react-toastify';
-import { fetchSimbriefDataAction, isSimbriefDataLoaded } from '../../Store/features/simBrief';
+import { fetchSimbriefFlightplansAction, isSimbriefFlightplansLoaded, fetchSimbriefDataAction, isSimbriefDataLoaded } from '../../Store/features/simBrief';
 import { useAppSelector, useAppDispatch } from '../../Store/store';
 
 import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
@@ -22,14 +22,15 @@ const InformationEntry = ({ title, info }: InformationEntryProps) => (
     </div>
 );
 
-interface NoSimBriefDataOverlayProps {
+interface SimbriefFlightplansOverlayProps {
     simbriefDataLoaded: boolean;
     simbriefDataPending: boolean;
-    fetchData: () => void;
+    simbriefFlightplansLoaded: boolean;
+    fetchFlightplans: () => void;
 }
 
-const NoSimBriefDataOverlay = ({ simbriefDataLoaded, simbriefDataPending, fetchData }: NoSimBriefDataOverlayProps) => (
-    <div className={`absolute inset-0 transition duration-200 bg-theme-body ${simbriefDataLoaded ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+const SimBriefFlightplansOverlay = ({ simbriefDataLoaded, simbriefDataPending, simbriefFlightplansLoaded, fetchFlightplans }: SimbriefFlightplansOverlayProps) => (
+    <div className={`absolute inset-0 transition duration-200 bg-theme-body ${simbriefFlightplansLoaded || simbriefDataLoaded ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
         <h1 className="flex justify-center items-center w-full h-full">
             {simbriefDataPending ? (
                 <CloudArrowDown className="animate-bounce" size={40} />
@@ -46,7 +47,7 @@ const NoSimBriefDataOverlay = ({ simbriefDataLoaded, simbriefDataPending, fetchD
 
                             <button
                                 type="button"
-                                onClick={fetchData}
+                                onClick={fetchFlightplans}
                                 className="flex justify-center items-center p-2 space-x-4 w-full rounded-md border-2 transition duration-100 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight"
                             >
                                 <CloudArrowDown size={26} />
@@ -104,6 +105,20 @@ export const FlightWidget = () => {
     const eZfw = Math.round(eZfwUnround) / 10;
     const estimatedZfw = `${eZfw}`;
 
+    const fetchFlightplans = async () => {
+        setSimbriefDataPending(true);
+
+        try {
+            const action = await fetchSimbriefFlightplansAction();
+
+            dispatch(action);
+        } catch (e) {
+            toast.error(e.message);
+        }
+
+        setSimbriefDataPending(false);
+    };
+
     const fetchData = async () => {
         setSimbriefDataPending(true);
 
@@ -119,6 +134,7 @@ export const FlightWidget = () => {
     };
 
     const simbriefDataLoaded = isSimbriefDataLoaded();
+    const simbriefFlightplansLoaded = isSimbriefFlightplansLoaded();
 
     return (
         <div className="w-1/2">
@@ -218,10 +234,11 @@ export const FlightWidget = () => {
                     </button>
                 </div>
 
-                <NoSimBriefDataOverlay
+                <SimBriefFlightplansOverlay
                     simbriefDataLoaded={simbriefDataLoaded}
                     simbriefDataPending={simbriefDataPending}
-                    fetchData={fetchData}
+                    simbriefFlightplansLoaded={simbriefFlightplansLoaded}
+                    fetchFlightplans={fetchData}
                 />
             </div>
         </div>
