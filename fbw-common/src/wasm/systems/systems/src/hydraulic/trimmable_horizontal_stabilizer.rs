@@ -4,7 +4,7 @@ use uom::si::{
     f64::*,
     pressure::psi,
     ratio::ratio,
-    volume::gallon,
+    volume::{cubic_inch, gallon},
     volume_rate::gallon_per_minute,
 };
 
@@ -210,6 +210,9 @@ impl SimulationElement for ElectricDriveMotor {
 #[derive(Clone, Copy)]
 struct HydraulicDriveMotor {
     max_speed: AngularVelocity,
+    max_speed_hyd_pressure: Pressure,
+    displacement: Volume,
+
     motor: DriveMotor,
 
     total_volume_to_actuator: Volume,
@@ -217,19 +220,20 @@ struct HydraulicDriveMotor {
 }
 impl HydraulicDriveMotor {
     const FLOW_CONSTANT_RPM_CUBIC_INCH_TO_GPM: f64 = 231.;
-    const DISPLACEMENT_CUBIC_INCH: f64 = 0.4;
-
-    // Hyd pressure at which motor has its max speed
-    const MAX_SPEED_HYD_PRESSURE_PSI: f64 = 3000.;
 
     fn new(
         max_speed: AngularVelocity,
+        max_speed_hyd_pressure: Pressure,
+        displacement: Volume,
 
         speed_error_breakpoint: [f64; 7],
         speed_regulation_coef_map: [f64; 7],
     ) -> Self {
         Self {
             max_speed,
+            max_speed_hyd_pressure,
+            displacement,
+
             motor: DriveMotor::new(max_speed, speed_error_breakpoint, speed_regulation_coef_map),
 
             total_volume_to_actuator: Volume::default(),
@@ -263,9 +267,10 @@ impl HydraulicDriveMotor {
     }
 
     fn current_max_speed_from_hydraulic_pressure(&self, pressure: Pressure) -> AngularVelocity {
-        let pressure_coefficient = (pressure.get::<psi>() / Self::MAX_SPEED_HYD_PRESSURE_PSI)
-            .min(1.)
-            .max(0.);
+        let pressure_coefficient = (pressure.get::<psi>()
+            / self.max_speed_hyd_pressure.get::<psi>())
+        .min(1.)
+        .max(0.);
 
         self.max_speed * pressure_coefficient
     }
@@ -276,7 +281,7 @@ impl HydraulicDriveMotor {
 
     fn flow(&self) -> VolumeRate {
         VolumeRate::new::<gallon_per_minute>(
-            self.speed().get::<revolution_per_minute>() * Self::DISPLACEMENT_CUBIC_INCH
+            self.speed().get::<revolution_per_minute>() * self.displacement.get::<cubic_inch>()
                 / Self::FLOW_CONSTANT_RPM_CUBIC_INCH_TO_GPM,
         )
     }
@@ -553,6 +558,10 @@ impl TrimmableHorizontalStabilizerAssembly {
                 context,
                 min_ths_deflection,
                 ths_deflection_range,
+                AngularVelocity::new::<revolution_per_minute>(2500.),
+                Pressure::new::<psi>(3000.),
+                Volume::new::<cubic_inch>(0.4),
+                0.000085,
             ),
         }
     }
@@ -619,6 +628,7 @@ struct TrimmableHorizontalStabilizerHydraulics {
     min_deflection: Angle,
     max_deflection: Angle,
     deflection_range: Angle,
+    motor_to_ths_gearing_ratio: f64,
 
     is_at_max_up_spool_valve: bool,
     is_at_max_down_spool_valve: bool,
@@ -628,16 +638,23 @@ impl TrimmableHorizontalStabilizerHydraulics {
         [-50., -0.5, -0.1, 0., 0.1, 0.5, 50.];
     const HYDRAULIC_MOTOR_SPEED_REGULATION_COEF_MAP: [f64; 7] = [-1., -1., -0.6, 0., 0.6, 1., 1.];
 
-    // Gain to convert hyd motor speed to ths deflection speed
-    const HYD_MOTOR_SPEED_TO_THS_DEFLECTION_SPEED_GAIN: f64 = 0.000085;
-
     const MAX_DEFLECTION_FOR_FULL_OPEN_SPOOL_VALVE_DEGREES: f64 = 0.4;
 
-    pub fn new(context: &mut InitContext, min_deflection: Angle, deflection_range: Angle) -> Self {
+    pub fn new(
+        context: &mut InitContext,
+        min_deflection: Angle,
+        deflection_range: Angle,
+        motor_max_speed: AngularVelocity,
+        motor_max_speed_hyd_pressure: Pressure,
+        motor_displacement: Volume,
+        motor_to_ths_gearing_ratio: f64,
+    ) -> Self {
         Self {
             deflection_id: context.get_identifier("HYD_FINAL_THS_DEFLECTION".to_owned()),
             hydraulic_motors: [HydraulicDriveMotor::new(
-                AngularVelocity::new::<revolution_per_minute>(2500.),
+                motor_max_speed,
+                motor_max_speed_hyd_pressure,
+                motor_displacement,
                 Self::HYDRAULIC_MOTOR_POSITION_ERROR_BREAKPOINT,
                 Self::HYDRAULIC_MOTOR_SPEED_REGULATION_COEF_MAP,
             ); 2],
@@ -647,6 +664,7 @@ impl TrimmableHorizontalStabilizerHydraulics {
             min_deflection,
             max_deflection: min_deflection + deflection_range,
             deflection_range,
+            motor_to_ths_gearing_ratio,
 
             is_at_max_up_spool_valve: false,
             is_at_max_down_spool_valve: false,
@@ -683,7 +701,7 @@ impl TrimmableHorizontalStabilizerHydraulics {
         let mut sum_of_speeds = AngularVelocity::default();
 
         for motor in self.hydraulic_motors {
-            sum_of_speeds += motor.speed() * Self::HYD_MOTOR_SPEED_TO_THS_DEFLECTION_SPEED_GAIN;
+            sum_of_speeds += motor.speed() * self.motor_to_ths_gearing_ratio;
         }
 
         self.speed = sum_of_speeds;
