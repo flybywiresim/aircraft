@@ -1,6 +1,9 @@
 use systems::{
-    hydraulic::command_sensor_unit::{CommandSensorUnit, FlapsHandle},
-    shared::{CSUPosition, PositionPickoffUnit},
+    hydraulic::{
+        command_sensor_unit::{CommandSensorUnit, FlapsHandle},
+        flap_slat::SolenoidStatus,
+    },
+    shared::{CSUPosition, PositionPickoffUnit, PowerControlUnitInterface},
     simulation::{
         InitContext, SimulationElement, SimulatorWriter, UpdateContext, VariableIdentifier, Write,
     },
@@ -10,7 +13,9 @@ use std::panic;
 use uom::si::{angle::degree, f64::*, velocity::knot};
 
 use crate::hydraulic::SlatFlapControlComputerMisc;
+
 // APPUs must agree within 0.45 deg. At position 0 the APPU/FPPU must agree within 0.9 deg, otherwise the APPU/FPPU must agree within 1.3 deg.
+#[derive(Copy, Clone)]
 pub struct FlapsChannel {
     flap_auto_command_active: bool,
     auto_command_angle: Angle,
@@ -530,6 +535,39 @@ impl FlapsChannel {
 
     pub fn get_bit_28_component_status_word(&self, cas: Option<Velocity>) -> bool {
         return self.flap_auto_command_active && cas.is_none();
+    }
+}
+impl PowerControlUnitInterface for FlapsChannel {
+    // Full driving sequence will be implemented
+    // Return DeEnergised when no power
+    fn retract_energise(&self) -> SolenoidStatus {
+        if SlatFlapControlComputerMisc::above_target_range(
+            self.flaps_feedback_angle,
+            self.get_flap_demanded_angle(),
+        ) {
+            return SolenoidStatus::Energised;
+        }
+        return SolenoidStatus::DeEnergised;
+    }
+
+    fn extend_energise(&self) -> SolenoidStatus {
+        if SlatFlapControlComputerMisc::below_target_range(
+            self.flaps_feedback_angle,
+            self.get_flap_demanded_angle(),
+        ) {
+            return SolenoidStatus::Energised;
+        }
+        return SolenoidStatus::DeEnergised;
+    }
+
+    fn pob_energise(&self) -> SolenoidStatus {
+        if SlatFlapControlComputerMisc::in_target_range(
+            self.flaps_feedback_angle,
+            self.get_flap_demanded_angle(),
+        ) {
+            return SolenoidStatus::DeEnergised;
+        }
+        return SolenoidStatus::Energised;
     }
 }
 impl SimulationElement for FlapsChannel {

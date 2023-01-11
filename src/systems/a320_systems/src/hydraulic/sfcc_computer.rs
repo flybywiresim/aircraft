@@ -4,7 +4,7 @@ use systems::{
     hydraulic::command_sensor_unit::{CommandSensorUnit, FlapsHandle},
     shared::{
         AirDataSource, CSUPosition, ConsumePower, ElectricalBusType, ElectricalBuses, FlapsConf,
-        LgciuWeightOnWheels, PositionPickoffUnit,
+        LgciuWeightOnWheels, PositionPickoffUnit, PowerControlUnitInterface, SFCCChannel,
     },
     simulation::{
         InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -21,6 +21,7 @@ use uom::si::{angle::degree, f64::*, power::watt, velocity::knot};
 pub struct SlatFlapControlComputerMisc {}
 impl SlatFlapControlComputerMisc {
     const ENLARGED_TARGET_THRESHOLD_DEGREE: f64 = 0.8; //deg
+    const TARGET_THRESHOLD_DEGREE: f64 = 0.18;
 
     pub fn below_enlarged_target_range(position: Angle, target_position: Angle) -> bool {
         let tolerance = Angle::new::<degree>(Self::ENLARGED_TARGET_THRESHOLD_DEGREE);
@@ -36,6 +37,21 @@ impl SlatFlapControlComputerMisc {
         let tolerance = Angle::new::<degree>(Self::ENLARGED_TARGET_THRESHOLD_DEGREE);
         Self::in_enlarged_target_range(position, target_position)
             || position >= target_position + tolerance
+    }
+
+    pub fn in_target_range(position: Angle, target_position: Angle) -> bool {
+        let tolerance = Angle::new::<degree>(Self::TARGET_THRESHOLD_DEGREE);
+        (target_position - position).abs() <= tolerance
+    }
+
+    pub fn above_target_range(position: Angle, target_position: Angle) -> bool {
+        let tolerance = Angle::new::<degree>(Self::TARGET_THRESHOLD_DEGREE);
+        position > target_position + tolerance
+    }
+
+    pub fn below_target_range(position: Angle, target_position: Angle) -> bool {
+        let tolerance = Angle::new::<degree>(Self::TARGET_THRESHOLD_DEGREE);
+        position < target_position - tolerance
     }
 }
 
@@ -79,8 +95,6 @@ struct SlatFlapControlComputer {
 }
 
 impl SlatFlapControlComputer {
-    const EQUAL_ANGLE_DELTA_DEGREE: f64 = 0.177;
-
     const SFCC_TRANSPARENCY_TIME: u64 = 200; //ms
     const MAX_POWER_CONSUMPTION_WATT: f64 = 90.; //W
 
@@ -195,10 +209,6 @@ impl SlatFlapControlComputer {
             (None, Some(aoa2)) => self.aoa = Some(aoa2),
             (None, None) => self.aoa = None,
         }
-    }
-
-    fn surface_movement_required(demanded_angle: Angle, feedback_angle: Angle) -> bool {
-        (demanded_angle - feedback_angle).get::<degree>().abs() > Self::EQUAL_ANGLE_DELTA_DEGREE
     }
 
     fn reset_arinc_words(&mut self) {
@@ -481,30 +491,29 @@ impl SlatFlapControlComputer {
 }
 
 trait SlatFlapLane {
-    fn signal_demanded_angle(&self, surface_type: &str) -> Option<Angle>;
+    fn signal_flaps_demanded_angle(&self) -> Option<Angle>;
+    fn signal_slats_demanded_angle(&self) -> Option<Angle>;
 }
 impl SlatFlapLane for SlatFlapControlComputer {
-    fn signal_demanded_angle(&self, surface_type: &str) -> Option<Angle> {
-        match surface_type {
-            "FLAPS"
-                if Self::surface_movement_required(
-                    self.flap_channel.get_flap_demanded_angle(),
-                    self.flap_channel.get_flap_feedback_angle(),
-                ) =>
-            {
-                Some(self.flap_channel.get_flap_demanded_angle())
-            }
-            "SLATS"
-                if Self::surface_movement_required(
-                    self.slat_channel.get_slat_demanded_angle(),
-                    self.slat_channel.get_slat_feedback_angle(),
-                ) =>
-            {
-                Some(self.slat_channel.get_slat_demanded_angle())
-            }
-            "FLAPS" | "SLATS" => None,
-            _ => panic!("Not a valid slat/flap surface"),
+    fn signal_flaps_demanded_angle(&self) -> Option<Angle> {
+        let is_demanded_position_reached = SlatFlapControlComputerMisc::in_target_range(
+            self.flap_channel.get_flap_demanded_angle(),
+            self.flap_channel.get_flap_feedback_angle(),
+        );
+        if !is_demanded_position_reached {
+            return Some(self.flap_channel.get_flap_demanded_angle());
         }
+        return None;
+    }
+    fn signal_slats_demanded_angle(&self) -> Option<Angle> {
+        let is_demanded_position_reached = SlatFlapControlComputerMisc::in_target_range(
+            self.slat_channel.get_slat_demanded_angle(),
+            self.slat_channel.get_slat_feedback_angle(),
+        );
+        if !is_demanded_position_reached {
+            return Some(self.slat_channel.get_slat_demanded_angle());
+        }
+        return None;
     }
 }
 
@@ -602,11 +611,22 @@ impl SlatFlapComplex {
     }
 
     pub fn flap_demand(&self, n: usize) -> Option<Angle> {
-        self.sfcc[n].signal_demanded_angle("FLAPS")
+        self.sfcc[n].signal_flaps_demanded_angle()
     }
 
     pub fn slat_demand(&self, n: usize) -> Option<Angle> {
-        self.sfcc[n].signal_demanded_angle("SLATS")
+        self.sfcc[n].signal_slats_demanded_angle()
+    }
+
+    pub fn get_pcu_solenoids_commands(
+        &self,
+        n: usize,
+        id: SFCCChannel,
+    ) -> Box<dyn PowerControlUnitInterface> {
+        return match id {
+            SFCCChannel::FlapChannel => Box::new(self.sfcc[n].flap_channel),
+            SFCCChannel::SlatChannel => Box::new(self.sfcc[n].slat_channel),
+        };
     }
 }
 impl SimulationElement for SlatFlapComplex {
@@ -736,6 +756,14 @@ mod tests {
             }
         }
 
+        fn get_demanded_angle(&self, sfcc: &impl SlatFlapLane) -> Option<Angle> {
+            match self.surface_type.as_str() {
+                "FLAPS" => sfcc.signal_flaps_demanded_angle(),
+                "SLATS" => sfcc.signal_slats_demanded_angle(),
+                _ => panic!("Not a valid slat/flap surface"),
+            }
+        }
+
         fn update(
             &mut self,
             context: &UpdateContext,
@@ -746,7 +774,7 @@ mod tests {
             if hydraulic_pressure_left_side.get::<psi>() > 1500.
                 || hydraulic_pressure_right_side.get::<psi>() > 1500.
             {
-                if let Some(demanded_angle) = sfcc[0].signal_demanded_angle(&self.surface_type) {
+                if let Some(demanded_angle) = self.get_demanded_angle(&sfcc[0]) {
                     let actual_minus_target_ffpu = demanded_angle - self.fppu_angle();
 
                     let fppu_angle = self.fppu_angle();

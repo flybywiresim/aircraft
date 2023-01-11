@@ -1,6 +1,6 @@
 use systems::{
-    hydraulic::command_sensor_unit::FlapsHandle,
-    shared::{CSUPosition, LgciuWeightOnWheels, PositionPickoffUnit},
+    hydraulic::{command_sensor_unit::FlapsHandle, flap_slat::SolenoidStatus},
+    shared::{CSUPosition, LgciuWeightOnWheels, PositionPickoffUnit, PowerControlUnitInterface},
     simulation::{
         InitContext, SimulationElement, SimulatorWriter, UpdateContext, VariableIdentifier, Write,
     },
@@ -10,6 +10,7 @@ use uom::si::{angle::degree, f64::*, velocity::knot};
 
 use crate::hydraulic::SlatFlapControlComputerMisc;
 
+#[derive(Copy, Clone)]
 pub struct SlatsChannel {
     slat_lock_engaged_id: VariableIdentifier,
 
@@ -286,6 +287,39 @@ impl SlatsChannel {
 
     pub fn is_slat_baulk_active(&self) -> bool {
         self.slat_baulk_engaged
+    }
+}
+impl PowerControlUnitInterface for SlatsChannel {
+    // Full driving sequence will be implemented
+    // Return DeEnergised when no power
+    fn retract_energise(&self) -> SolenoidStatus {
+        if SlatFlapControlComputerMisc::above_target_range(
+            self.slats_feedback_angle,
+            self.get_slat_demanded_angle(),
+        ) {
+            return SolenoidStatus::Energised;
+        }
+        return SolenoidStatus::DeEnergised;
+    }
+
+    fn extend_energise(&self) -> SolenoidStatus {
+        if SlatFlapControlComputerMisc::below_target_range(
+            self.slats_feedback_angle,
+            self.get_slat_demanded_angle(),
+        ) {
+            return SolenoidStatus::Energised;
+        }
+        return SolenoidStatus::DeEnergised;
+    }
+
+    fn pob_energise(&self) -> SolenoidStatus {
+        if SlatFlapControlComputerMisc::in_target_range(
+            self.slats_feedback_angle,
+            self.get_slat_demanded_angle(),
+        ) {
+            return SolenoidStatus::DeEnergised;
+        }
+        return SolenoidStatus::Energised;
     }
 }
 impl SimulationElement for SlatsChannel {

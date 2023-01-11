@@ -1,5 +1,6 @@
 use crate::{
     electrical::{ElectricalElement, ElectricitySource, Potential},
+    hydraulic::flap_slat::SolenoidStatus,
     pneumatic::{EngineModeSelector, EngineState, PneumaticValveSignal},
     simulation::UpdateContext,
 };
@@ -82,15 +83,12 @@ pub trait WingTipBrake {
     fn get_angle(&self) -> Angle;
 }
 
-pub trait PowerControlUnit {
-    fn retract_energise(&self);
-    fn retract_deenergise(&self);
+pub trait PowerControlUnitInterface {
+    fn retract_energise(&self) -> SolenoidStatus;
 
-    fn extend_energise(&self);
-    fn extend_deenergise(&self);
+    fn extend_energise(&self) -> SolenoidStatus;
 
-    fn pob_energise(&self);
-    fn pob_deenergise(&self);
+    fn pob_energise(&self) -> SolenoidStatus;
 }
 
 pub trait PositionPickoffUnit {
@@ -141,9 +139,15 @@ impl From<u8> for PCUState {
             0b011 => PCUState::Decel,
             0b111 => PCUState::LowSpeed,
             0b010 => PCUState::GetPositionThreshold,
-            i => panic!("Cannot convert from {} to SFCCStates.", i),
+            i => panic!("Cannot convert from {} to PCUState.", i),
         }
     }
+}
+
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub enum SFCCChannel {
+    FlapChannel,
+    SlatChannel,
 }
 
 // There is one more state called Misadjust. It happens when the position detected
