@@ -45,7 +45,6 @@ void DisplayBase::render(sGaugeDrawData* pDrawData, FsContext context) {
       nvgRect(this->_context, 0.0f, 0.0f, static_cast<float>(pDrawData->winWidth), static_cast<float>(pDrawData->winHeight));
       nvgFill(this->_context);
     } else {
-      std::cout << "TERR ON ND: Render frame" << std::endl;
       // draw the image
       nvgBeginPath(this->_context);
       NVGpaint imagePaint =

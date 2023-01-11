@@ -83,8 +83,6 @@ class Display : public DisplayBase {
       this->_frameBuffer.reserve(this->_frameBufferSize);
       this->_receivedFrameData = 0;
 
-      std::cout << "TERR ON ND: Received threshold data: " << this->_frameBufferSize << std::endl;
-
       this->_ndThresholdData->template value<NdMinElevation>() = this->_thresholds->data().lowerThreshold;
       this->_ndThresholdData->template value<NdMinElevationMode>() = this->_thresholds->data().lowerThresholdMode;
       this->_ndThresholdData->template value<NdMaxElevation>() = this->_thresholds->data().upperThreshold;
