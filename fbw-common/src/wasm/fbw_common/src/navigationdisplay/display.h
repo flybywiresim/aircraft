@@ -62,17 +62,21 @@ class Display : public DisplayBase {
  private:
   std::shared_ptr<simconnect::LVarObject<NdMinElevation, NdMinElevationMode, NdMaxElevation, NdMaxElevationMode>> _ndThresholdData;
 
+  void resetNavigationDisplayData() {
+    this->_ndThresholdData->template value<NdMinElevation>() = -1;
+    this->_ndThresholdData->template value<NdMinElevationMode>() = 0;
+    this->_ndThresholdData->template value<NdMaxElevation>() = -1;
+    this->_ndThresholdData->template value<NdMaxElevationMode>() = 0;
+    this->_ndThresholdData->writeValues();
+  }
+
  public:
   Display(simconnect::Connection& connection, DisplaySide side, FsContext context, std::uint32_t pixelWidth, std::uint32_t pixelHeight)
       : DisplayBase(side, context, pixelWidth, pixelHeight), _ndThresholdData(nullptr) {
     this->_ndThresholdData = connection.lvarObject<NdMinElevation, NdMinElevationMode, NdMaxElevation, NdMaxElevationMode>();
 
     // write initial values to avoid invalid drawings
-    this->_ndThresholdData->template value<NdMinElevation>() = -1;
-    this->_ndThresholdData->template value<NdMinElevationMode>() = 0;
-    this->_ndThresholdData->template value<NdMaxElevation>() = -1;
-    this->_ndThresholdData->template value<NdMaxElevationMode>() = 0;
-    this->_ndThresholdData->writeValues();
+    this->resetNavigationDisplayData();
 
     this->_thresholds = connection.clientDataArea<types::ThresholdData>();
     this->_thresholds->defineArea(side == DisplaySide::Left ? ThresholdsLeftName : ThresholdsRightName);
@@ -114,11 +118,20 @@ class Display : public DisplayBase {
   }
 
   void update(const DisplayBase::NdConfiguration& config) override {
-    if (!config.terrainActive) {
-      this->destroyImage();
-    }
+    bool oldArcMode = this->_configuration.mode == NavigationDisplayArcModeId;
+    bool oldRoseMode = this->_configuration.mode == NavigationDisplayRoseLsModeId ||
+                       this->_configuration.mode == NavigationDisplayRoseVorModeId ||
+                       this->_configuration.mode == NavigationDisplayRoseNavModeId;
+    bool newArcMode = config.mode == NavigationDisplayArcModeId;
+    bool newRoseMode = config.mode == NavigationDisplayRoseLsModeId || config.mode == NavigationDisplayRoseVorModeId ||
+                       config.mode == NavigationDisplayRoseNavModeId;
 
     this->_configuration = config;
+
+    if (!config.terrainActive || oldArcMode != newArcMode || oldRoseMode != newRoseMode || !newRoseMode && !newArcMode) {
+      this->resetNavigationDisplayData();
+      this->destroyImage();
+    }
   }
 };
 

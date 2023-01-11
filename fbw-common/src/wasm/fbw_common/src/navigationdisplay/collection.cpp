@@ -112,17 +112,25 @@ void Collection::updateDisplay(FsContext context) {
     this->_simconnectAircraftStatus->data().destinationLatitude = this->_egpwcData.destinationLatitude.value();
     this->_simconnectAircraftStatus->data().destinationLongitude = this->_egpwcData.destinationLongitude.value();
 
+    bool arcMode = this->_configurationLeft.mode == NavigationDisplayArcModeId;
+    bool terrainMapMode = this->_configurationLeft.mode == NavigationDisplayRoseLsModeId ||
+                          this->_configurationLeft.mode == NavigationDisplayRoseVorModeId ||
+                          this->_configurationLeft.mode == NavigationDisplayRoseNavModeId || arcMode;
     this->_simconnectAircraftStatus->data().ndRangeCapt =
         static_cast<std::uint16_t>(this->_configurationLeft.range.convert(types::nauticmile));
     this->_simconnectAircraftStatus->data().ndArcModeCapt = this->_configurationLeft.mode == NavigationDisplayArcModeId;
     this->_simconnectAircraftStatus->data().ndTerrainOnNdActiveCapt =
-        static_cast<std::uint8_t>(this->_configurationLeft.terrainActive) && this->_configurationLeft.mode != 4;
+        static_cast<std::uint8_t>(this->_configurationLeft.terrainActive && terrainMapMode);
 
+    arcMode = this->_configurationRight.mode == NavigationDisplayArcModeId;
+    terrainMapMode = this->_configurationRight.mode == NavigationDisplayRoseLsModeId ||
+                     this->_configurationRight.mode == NavigationDisplayRoseVorModeId ||
+                     this->_configurationRight.mode == NavigationDisplayRoseNavModeId || arcMode;
     this->_simconnectAircraftStatus->data().ndRangeFO =
         static_cast<std::uint16_t>(this->_configurationRight.range.convert(types::nauticmile));
     this->_simconnectAircraftStatus->data().ndArcModeFO = this->_configurationRight.mode == NavigationDisplayArcModeId;
     this->_simconnectAircraftStatus->data().ndTerrainOnNdActiveFO =
-        static_cast<std::uint8_t>(this->_configurationRight.terrainActive) && this->_configurationRight.mode != 4;
+        static_cast<std::uint8_t>(this->_configurationRight.terrainActive && terrainMapMode);
 
     this->_simconnectAircraftStatus->data().groundTruthLatitude = this->_groundTruth.latitude.convert(types::degree);
     this->_simconnectAircraftStatus->data().groundTruthLongitude = this->_groundTruth.longitude.convert(types::degree);

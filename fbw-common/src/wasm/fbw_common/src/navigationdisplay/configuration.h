@@ -33,6 +33,9 @@ static constexpr std::string_view EfisNdRightMode = "EFIS_R_ND_MODE";
 static const std::string LightPotentiometerLeftName = "LIGHT POTENTIOMETER:94";
 static const std::string LightPotentiometerRightName = "LIGHT POTENTIOMETER:95";
 
+static constexpr std::uint8_t NavigationDisplayRoseLsModeId = 0;
+static constexpr std::uint8_t NavigationDisplayRoseVorModeId = 1;
+static constexpr std::uint8_t NavigationDisplayRoseNavModeId = 2;
 static constexpr std::uint8_t NavigationDisplayArcModeId = 3;
 
 }  // namespace navigationdisplay
