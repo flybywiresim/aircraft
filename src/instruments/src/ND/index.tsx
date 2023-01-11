@@ -98,6 +98,14 @@ const NavigationDisplay: React.FC = () => {
         }
     }, []));
 
+    const irMaint = useArinc429Var('L:A32NX_ADIRS_IR_1_MAINT_WORD');
+    const [trueRefPb] = useSimVar('L:A32NX_PUSH_TRUE_REF', 'bool');
+    const [trueRef, setTrueRef] = useState(false);
+
+    useEffect(() => {
+        setTrueRef((irMaint.getBitValueOr(15, false) || trueRefPb) && !irMaint.getBitValueOr(2, false));
+    }, [irMaint.value, trueRefPb]);
+
     return (
         <DisplayUnit
             electricitySimvar={displayIndex === 1 ? 'L:A32NX_ELEC_AC_ESS_BUS_IS_POWERED' : 'L:A32NX_ELEC_AC_2_BUS_IS_POWERED'}
@@ -131,6 +139,7 @@ const NavigationDisplay: React.FC = () => {
                             side={side}
                             ppos={ppos}
                             mapHidden={modeChangeShown || rangeChangeShown}
+                            trueRef={trueRef}
                         />
                     )}
                     {(modeIndex === Mode.ROSE_ILS || modeIndex === Mode.ROSE_VOR || modeIndex === Mode.ROSE_NAV)
@@ -143,6 +152,7 @@ const NavigationDisplay: React.FC = () => {
                             ppos={ppos}
                             mode={modeIndex}
                             mapHidden={modeChangeShown || rangeChangeShown}
+                            trueRef={trueRef}
                         />
                     )}
 
@@ -151,8 +161,8 @@ const NavigationDisplay: React.FC = () => {
                     <NavigationDisplayMessages adirsAlign={adirsAlign} mode={modeIndex} modeChangeShown={modeChangeShown} rangeChangeShown={rangeChangeShown} />
                     {(adirsAlign && modeIndex !== Mode.PLAN) && (
                         <>
-                            <RadioNavInfo index={1} side={side} />
-                            <RadioNavInfo index={2} side={side} />
+                            <RadioNavInfo index={1} side={side} trueRef={trueRef} mode={modeIndex} />
+                            <RadioNavInfo index={2} side={side} trueRef={trueRef} mode={modeIndex} />
                         </>
                     )}
                     <TcasWxrMessages modeIndex={modeIndex} />

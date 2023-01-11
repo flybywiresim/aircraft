@@ -1,14 +1,10 @@
 import React, { FC } from 'react';
-import { render } from '@instruments/common/index';
-import { setIsEcamPage } from '@instruments/common/defaults';
 import { PageTitle } from '../../Common/PageTitle';
 import { EcamPage } from '../../Common/EcamPage';
 import StatusDisplay from './elements/StatusDisplay';
 import DownArrow from './elements/DownArrow';
 
 import './Status.scss';
-
-setIsEcamPage('status_page');
 
 export const StatusPage: FC = () => (
     <EcamPage name="main-status">
@@ -22,5 +18,3 @@ export const StatusPage: FC = () => (
 
     </EcamPage>
 );
-
-render(<StatusPage />);
