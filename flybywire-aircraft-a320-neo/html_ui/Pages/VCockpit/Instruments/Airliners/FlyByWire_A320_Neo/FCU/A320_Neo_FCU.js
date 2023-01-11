@@ -517,6 +517,7 @@ class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
         super(...arguments);
         this.backToIdleTimeout = 45000;
         this.inSelection = false;
+        this.trueRef = false;
 
         this._rotaryEncoderCurrentSpeed = 1;
         this._rotaryEncoderMaximumSpeed = 5;
@@ -574,11 +575,13 @@ class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
     }
 
     getCurrentHeading() {
-        return ((Math.round(SimVar.GetSimVarValue("PLANE HEADING DEGREES MAGNETIC", "degree")) % 360) + 360) % 360;
+        const heading = SimVar.GetSimVarValue(this.trueRef ? "PLANE HEADING DEGREES TRUE" : "PLANE HEADING DEGREES MAGNETIC", "degree");
+        return ((Math.round(heading) % 360) + 360) % 360;
     }
 
     getCurrentTrack() {
-        return ((Math.round(SimVar.GetSimVarValue("GPS GROUND MAGNETIC TRACK", "degree")) % 360) + 360) % 360;
+        const track = SimVar.GetSimVarValue(this.trueRef ? "GPS GROUND TRUE TRACK" : "GPS GROUND MAGNETIC TRACK", "degree");
+        return ((Math.round(track) % 360) + 360) % 360;
     }
 
     onPush() {
@@ -621,8 +624,11 @@ class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
         const isManagedArmed = this.isManagedModeArmed(lateralArmed);
         const showSelectedValue = (this.isSelectedValueActive || this.inSelection || this.isPreselectionModeActive);
 
-        const isHeadingSync = SimVar.GetSimVarValue("L:A32NX_FCU_HEADING_SYNC", "Number");
+        this.trueRef = SimVar.GetSimVarValue('L:A32NX_FMGC_TRUE_REF', 'boolean');
+
+        const isHeadingSync = SimVar.GetSimVarValue("L:A32NX_FCU_HEADING_SYNC", "Number") || SimVar.GetSimVarValue("L:A32NX_FM_HEADING_SYNC", "boolean");
         if (!this.wasHeadingSync && isHeadingSync) {
+            console.log('Sync heading', this.selectedValue);
             if (isTRKMode) {
                 this.selectedValue = this.getCurrentTrack();
             } else {
@@ -630,6 +636,7 @@ class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
             }
             this.isSelectedValueActive = true;
             this.onRotate();
+            SimVar.SetSimVarValue("L:A32NX_FM_HEADING_SYNC", "boolean", false);
         }
         this.wasHeadingSync = isHeadingSync;
 
@@ -679,10 +686,19 @@ class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
                     }
                 }
             }
+
+            // ugly hack because the FG doesn't understand true heading
+            // FIXME teach the FG about true/mag
+            const correctedHeading = this.trueRef ? (_value - SimVar.GetSimVarValue('MAGVAR', 'degree')) % 360 : _value;
+
             SimVar.SetSimVarValue("L:A320_FCU_SHOW_SELECTED_HEADING", "number", _showSelectedHeading == true ? 1 : 0);
             if (_value !== this.currentValue) {
-                SimVar.SetSimVarValue("L:A32NX_AUTOPILOT_HEADING_SELECTED", "Degrees", _value);
-                Coherent.call("HEADING_BUG_SET", 1, Math.max(0, _value)).catch(console.error);
+                SimVar.SetSimVarValue("L:A32NX_FCU_HEADING_SELECTED", "Degrees", _value);
+                SimVar.SetSimVarValue("L:A32NX_AUTOPILOT_HEADING_SELECTED", "Degrees", correctedHeading);
+                Coherent.call("HEADING_BUG_SET", 1, Math.max(0, correctedHeading)).catch(console.error);
+            } else if (this.trueRef) {
+                SimVar.SetSimVarValue("L:A32NX_AUTOPILOT_HEADING_SELECTED", "Degrees", correctedHeading);
+                Coherent.call("HEADING_BUG_SET", 1, Math.max(0, correctedHeading)).catch(console.error);
             }
             this.isActive = _isActive;
             this.isManagedActive = _isManagedActive;

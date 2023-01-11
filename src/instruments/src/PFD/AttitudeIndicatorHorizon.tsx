@@ -1,6 +1,7 @@
 import { ClockEvents, DisplayComponent, EventBus, FSComponent, Subject, Subscribable, VNode } from 'msfssdk';
 import { Arinc429Word } from '@shared/arinc429';
 
+import { DisplayManagementComputerEvents } from 'instruments/src/PFD/shared/DisplayManagementComputer';
 import {
     calculateHorizonOffsetFromPitch,
     calculateVerticalOffsetFromRoll,
@@ -10,7 +11,6 @@ import {
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HorizontalTape } from './HorizontalTape';
-import { SimplaneValues } from './shared/SimplaneValueProvider';
 import { getDisplayIndex } from './PFD';
 
 const DisplayRange = 35;
@@ -44,7 +44,7 @@ class HeadingBug extends DisplayComponent<{bus: EventBus, isCaptainSide: boolean
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<PFDSimvars & SimplaneValues & Arinc429Values>();
+        const sub = this.props.bus.getSubscriber<DisplayManagementComputerEvents & PFDSimvars & Arinc429Values>();
 
         sub.on('selectedHeading').whenChanged().handle((s) => {
             this.selectedHeading = s;
@@ -53,7 +53,7 @@ class HeadingBug extends DisplayComponent<{bus: EventBus, isCaptainSide: boolean
             }
         });
 
-        sub.on('headingAr').handle((h) => {
+        sub.on('heading').handle((h) => {
             this.heading = h;
             if (this.isActive) {
                 this.calculateAndSetOffset();
