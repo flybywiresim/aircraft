@@ -1,3 +1,8 @@
+export interface ISimbriefFlightplan {
+    requestId: number,
+    generatedAt: Date
+}
+
 export interface ISimbriefData {
     origin: IAirportInfo,
     destination: IAirportInfo,

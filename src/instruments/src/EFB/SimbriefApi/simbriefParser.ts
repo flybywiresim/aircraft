@@ -1,5 +1,6 @@
-import { ISimbriefData } from './simbriefInterface';
+import { ISimbriefFlightplan, ISimbriefData } from './simbriefInterface';
 
+const simbriefApiUrlV2 = new URL('https://api.simbrief.com/v2');
 const simbriefApiUrl = new URL('https://www.simbrief.com/api/xml.fetcher.php');
 const simbriefApiParams = simbriefApiUrl.searchParams;
 
@@ -7,6 +8,21 @@ const getRequestData: RequestInit = {
     headers: { Accept: 'application/json' },
     method: 'GET',
 };
+
+export const getSimbriefFlightplans = (): Promise<ISimbriefFlightplan[]> => (
+    fetch(`${simbriefApiUrlV2.toString()}/flightplans`, getRequestData)
+        .then((res) => {
+            if (!res.ok) {
+                return res.json().then((json) => Promise.reject(new Error(json.message)));
+            }
+            return res.json().then((json) => {
+                if (json.length === 0) {
+                    return Promise.reject(new Error('No Flightplans available!'));
+                }
+                return json.map((flightplan) => simbriefFlightplanParser(flightplan));
+            });
+        })
+);
 
 export const getSimbriefData = (simbriefUserId: string): Promise<ISimbriefData> => {
     simbriefApiParams.append('userid', simbriefUserId);
@@ -21,6 +37,13 @@ export const getSimbriefData = (simbriefUserId: string): Promise<ISimbriefData> 
             return res.json().then((json) => simbriefDataParser(json));
         });
 };
+
+const simbriefFlightplanParser = (simbriefFlightplanJson: any): ISimbriefFlightplan => (
+    {
+        requestId: parseInt(simbriefFlightplanJson.request_id),
+        generatedAt: new Date(simbriefFlightplanJson.generated_time),
+    }
+);
 
 const simbriefDataParser = (simbriefJson: any): ISimbriefData => {
     const { general } = simbriefJson;
