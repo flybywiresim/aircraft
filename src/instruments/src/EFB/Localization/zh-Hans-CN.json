@@ -448,6 +448,28 @@
     "TugSpeed": "后推速度",
     "UseControllerInput": "Use Controller Input"
   },
+  "QuickControls": {
+    "AlignAdirs": "Align ADIRS",
+    "FinishBoarding": "Finish Boarding",
+    "OnScreenKeyboard": "OnScreen Keyboard",
+    "SimBridge": "SimBridge",
+    "SimBridgeConnected": "Connected",
+    "SimBridgeConnecting": "Connecting...",
+    "SimBridgeOff": "Off",
+    "SimBridgeOffline": "Not Available",
+    "TT": {
+      "AlignAdirs": "Instantly align ADIRS",
+      "AutoBrightness": "Turn Auto Brightness On/Off",
+      "Brightness": "Set flyPad brightness",
+      "FinishBoarding": "Instantly finish boarding",
+      "OnScreenKeyboard": "Turn OnScreen Keyboard On/Off",
+      "PowerButton": "Power Off",
+      "Settings": "Go to flyPad Settings page",
+      "SimBridge": "Control SimBridge Connection",
+      "Sleep": "Standby"
+    },
+    "Title": "Quick Controls"
+  },
   "Settings": {
     "About": {
       "Title": "相关"
@@ -520,8 +542,12 @@
     "SimOptions": {
       "Active": "启用",
       "Auto": "自动",
+      "Both": "Synchronized",
       "Calibrate": "校准",
+      "Captain": "Captain",
+      "CockpitSeatUsedToControl": "Cockpit Seat Used To Control",
       "ConesEnabled": "安全锥",
+      "Copilot": "Copilot",
       "DefaultBarometerUnit": "默认气压单位",
       "DynamicRegistrationDecal": "动态注册号喷涂",
       "EnableSimBridge": "启用 MCDU 服务器 (5 分钟之内无连接将自动停用)",
@@ -533,6 +559,7 @@
       "None": "无",
       "Off": "关",
       "Save": "保存",
+      "Side": "Side",
       "SimBridgePort": "MCDU 服务器端口",
       "SyncMsfsFlightPlan": "同步 MSFS 内飞行计划",
       "ThrottleDetents": "油门卡位",
@@ -605,12 +632,21 @@
     "Sep": "九月",
     "Sun": "周日",
     "TT": {
+      "Brightness": "Click to change Brightness",
       "ConnectedToLocalApi": "已连接本地SimBridge",
       "DisconnectedFromLocalApi": "已与SimBridge断开连接",
+      "QuickControls": "Click to open Quick Controls",
       "TurnOffOrShutdownEfb": "关闭电子飞行包 (EFB)"
     },
     "Thu": "周四",
     "Tue": "周二",
     "Wed": "周三"
+  },
+  "VersionCheck": {
+    "CurrentVersionText": "You are using the $edition edition with version:",
+    "LatestVersionText": "Latest $edition version is",
+    "RecommendationText": "Please update your aircraft using the FlyByWire Installer.",
+    "StatusBarWarning": "Outdated Aircraft Version",
+    "Title": "New Version Available"
   }
 }

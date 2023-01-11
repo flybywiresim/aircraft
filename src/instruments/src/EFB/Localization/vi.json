@@ -151,11 +151,11 @@
       "BoardingTime": "Thời gian lên máy bay",
       "Cargo": "Hàng hóa",
       "Current": "Hiện tại",
-      "DeboardConfirmationBody": "Please confirm deboarding all passengers",
+      "DeboardConfirmationBody": "Vui lòng xác nhận cho mọi hành khách xuống tàu",
       "DeboardConfirmationCancel": "Cancel",
-      "DeboardConfirmationConfirm": "Deboard",
-      "DeboardConfirmationTitle": "Deboard all Passengers?",
-      "EstimatedDurationUnit": "minutes",
+      "DeboardConfirmationConfirm": "Cho hành khách xuống máy bay",
+      "DeboardConfirmationTitle": "Cho mọi hành khách xuống tàu?",
+      "EstimatedDurationUnit": "phút",
       "LoadingTime": "Loading Time",
       "Passengers": "Hành khách",
       "Planned": "Đã lên kế hoạch",
@@ -448,6 +448,28 @@
     "TugSpeed": "Tốc độ xe kéo",
     "UseControllerInput": "Sử dụng đầu vào từ bộ điều khiển"
   },
+  "QuickControls": {
+    "AlignAdirs": "Align ADIRS",
+    "FinishBoarding": "Finish Boarding",
+    "OnScreenKeyboard": "OnScreen Keyboard",
+    "SimBridge": "SimBridge",
+    "SimBridgeConnected": "Đã kết nối",
+    "SimBridgeConnecting": "Đang kết nối...",
+    "SimBridgeOff": "Off",
+    "SimBridgeOffline": "Không khả dụng",
+    "TT": {
+      "AlignAdirs": "Căn chỉnh ADIRS ngay lập tức",
+      "AutoBrightness": "Turn Auto Brightness On/Off",
+      "Brightness": "Set flyPad brightness",
+      "FinishBoarding": "Instantly finish boarding",
+      "OnScreenKeyboard": "Turn OnScreen Keyboard On/Off",
+      "PowerButton": "Tắt",
+      "Settings": "Go to flyPad Settings page",
+      "SimBridge": "Control SimBridge Connection",
+      "Sleep": "Standby"
+    },
+    "Title": "Bảng điều khiển nhanh"
+  },
   "Settings": {
     "About": {
       "Title": "Giới thiệu"
@@ -520,8 +542,12 @@
     "SimOptions": {
       "Active": "Hoạt động",
       "Auto": "Tự động",
+      "Both": "Đã đồng bộ hóa",
       "Calibrate": "Hiệu chỉnh",
+      "Captain": "Cơ trưởng",
+      "CockpitSeatUsedToControl": "Cockpit Seat Used To Control",
       "ConesEnabled": "Chóp nón An toàn",
+      "Copilot": "Cơ phó",
       "DefaultBarometerUnit": "Đơn vị áp kế mặc định",
       "DynamicRegistrationDecal": "Đề-can đăng ký động",
       "EnableSimBridge": "Bật kết nối Simbridge (Tự động ngừng kích hoạt sau 5 phút nếu không có kết nối thành công)",
@@ -533,6 +559,7 @@
       "None": "Không",
       "Off": "Tắt",
       "Save": "Lưu",
+      "Side": "Side",
       "SimBridgePort": "Cổng SimBridge bên ngoài",
       "SyncMsfsFlightPlan": "Đồng bộ hóa Kế hoạch chuyến bay của MSFS",
       "ThrottleDetents": "Chốt cần ga",
@@ -605,12 +632,21 @@
     "Sep": "Thg 9",
     "Sun": "CN",
     "TT": {
+      "Brightness": "Click to change Brightness",
       "ConnectedToLocalApi": "Đã được kết nối tới SimBridge",
       "DisconnectedFromLocalApi": "Đã ngắt kết nối khỏi SimBridge",
+      "QuickControls": "Nhấn để mở Bảng Điều khiển Nhanh",
       "TurnOffOrShutdownEfb": "Tắt hoặc Tắt máy EFB"
     },
     "Thu": "Th 5",
     "Tue": "Th 3",
     "Wed": "Th 4"
+  },
+  "VersionCheck": {
+    "CurrentVersionText": "You are using the $edition edition with version:",
+    "LatestVersionText": "Latest $edition version is",
+    "RecommendationText": "Please update your aircraft using the FlyByWire Installer.",
+    "StatusBarWarning": "Outdated Aircraft Version",
+    "Title": "New Version Available"
   }
 }

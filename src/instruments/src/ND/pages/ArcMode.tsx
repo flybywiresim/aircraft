@@ -2,14 +2,14 @@ import React, { memo, useEffect, useState } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import { getSmallestAngle } from '@instruments/common/utils';
 import { MathUtils } from '@shared/MathUtils';
-import { LatLongData } from '@typings/fs-base-ui/html_ui/JS/Types';
 import { RangeSetting, Mode, EfisSide, NdSymbol } from '@shared/NavigationDisplay';
 import { ArmedLateralMode, isArmed, LateralMode } from '@shared/autopilot';
+import { useArinc429Var } from '@instruments/common/arinc429';
+import { TopMessages } from '../elements/TopMessages';
 import { FlightPlan } from '../elements/FlightPlan';
 import { MapParameters } from '../utils/MapParameters';
 import { RadioNeedle } from '../elements/RadioNeedles';
 import { ToWaypointIndicator } from '../elements/ToWaypointIndicator';
-import { ApproachMessage } from '../elements/ApproachMessage';
 import { CrossTrack } from '../elements/CrossTrack';
 import { TrackLine } from '../elements/TrackLine';
 import { Traffic } from '../elements/Traffic';
@@ -22,39 +22,35 @@ export interface ArcModeProps {
     side: EfisSide,
     ppos: LatLongData,
     mapHidden: boolean,
+    trueRef: boolean,
 }
 
-export const ArcMode: React.FC<ArcModeProps> = ({ symbols, adirsAlign, rangeSetting, side, ppos, mapHidden }) => {
-    const [magHeading] = useSimVar('PLANE HEADING DEGREES MAGNETIC', 'degrees');
-    const [magTrack] = useSimVar('GPS GROUND MAGNETIC TRACK', 'degrees');
-    const [trueHeading] = useSimVar('PLANE HEADING DEGREES TRUE', 'degrees');
+export const ArcMode: React.FC<ArcModeProps> = ({ symbols, adirsAlign, rangeSetting, side, ppos, mapHidden, trueRef }) => {
+    // TODO arinc var selector
+    const magHeading = useArinc429Var('L:A32NX_ADIRS_IR_1_HEADING');
+    const magTrack = useArinc429Var('L:A32NX_ADIRS_IR_1_TRACK');
+    const trueHeading = useArinc429Var('L:A32NX_ADIRS_IR_1_TRUE_HEADING');
+    const trueTrack = useArinc429Var('L:A32NX_ADIRS_IR_1_TRUE_TRACK');
     const [tcasMode] = useSimVar('L:A32NX_SWITCH_TCAS_Position', 'number');
-    const [selectedHeading] = useSimVar('L:A32NX_AUTOPILOT_HEADING_SELECTED', 'degrees');
+    const [selectedHeading] = useSimVar('L:A32NX_FCU_HEADING_SELECTED', 'degrees');
     const [lsCourse] = useSimVar('L:A32NX_FM_LS_COURSE', 'number');
     const [lsDisplayed] = useSimVar(`L:BTN_LS_${side === 'L' ? 1 : 2}_FILTER_ACTIVE`, 'bool'); // TODO rename simvar
     const [fmaLatMode] = useSimVar('L:A32NX_FMA_LATERAL_MODE', 'enum', 200);
     const [armedLateralBitmask] = useSimVar('L:A32NX_FMA_LATERAL_ARMED', 'enum', 200);
-    const [groundSpeed] = useSimVar('GPS GROUND SPEED', 'Meters per second', 200);
 
-    const heading = Number(MathUtils.fastToFixed(magHeading, 2));
-    let track = Number(MathUtils.fastToFixed(magTrack, 2));
-
-    // Workaround for bug with gps ground track simvar
-    if (groundSpeed < 40) {
-        track = (0.025 * groundSpeed + 0.00005) * track + (1 - (0.025 * groundSpeed + 0.00005)) * heading;
-        track = Number(MathUtils.fastToFixed(track, 2));
-    }
+    const heading = Number(MathUtils.fastToFixed((trueRef ? trueHeading.value : magHeading.value), 2));
+    const track = Number(MathUtils.fastToFixed((trueRef ? trueTrack.value : magTrack.value), 2));
 
     const [mapParams] = useState(() => {
         const params = new MapParameters();
-        params.compute(ppos, rangeSetting, 492, trueHeading);
+        params.compute(ppos, rangeSetting, 492, trueHeading.value);
 
         return params;
     });
 
     useEffect(() => {
-        mapParams.compute(ppos, rangeSetting, 492, trueHeading);
-    }, [ppos.lat, ppos.long, trueHeading, rangeSetting].map((n) => MathUtils.fastToFixed(n, 6)));
+        mapParams.compute(ppos, rangeSetting, 492, trueHeading.value);
+    }, [ppos.lat, ppos.long, trueHeading.value, rangeSetting].map((n) => MathUtils.fastToFixed(n, 6)));
 
     if (adirsAlign) {
         return (
@@ -85,13 +81,13 @@ export const ArcMode: React.FC<ArcModeProps> = ({ symbols, adirsAlign, rangeSett
                             <TrackLine x={384} y={620} heading={heading} track={track} />
                         )}
                     </g>
-                    <RadioNeedle index={1} side={side} displayMode={Mode.ARC} centreHeight={620} />
-                    <RadioNeedle index={2} side={side} displayMode={Mode.ARC} centreHeight={620} />
+                    <RadioNeedle index={1} side={side} displayMode={Mode.ARC} centreHeight={620} trueRef={trueRef} />
+                    <RadioNeedle index={2} side={side} displayMode={Mode.ARC} centreHeight={620} trueRef={trueRef} />
                 </g>
 
-                <ToWaypointIndicator side={side} />
+                <ToWaypointIndicator side={side} trueRef={trueRef} />
 
-                <ApproachMessage side={side} />
+                <TopMessages side={side} ppos={ppos} trueTrack={trueTrack} trueRef={trueRef} />
                 <TrackBug heading={heading} track={track} />
                 { lsDisplayed && <LsCourseBug heading={heading} lsCourse={lsCourse} /> }
                 <SelectedHeadingBug heading={heading} selected={selectedHeading} />

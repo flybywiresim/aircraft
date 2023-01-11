@@ -448,6 +448,28 @@
     "TugSpeed": "Römorkör Hızı",
     "UseControllerInput": "Use Controller Input"
   },
+  "QuickControls": {
+    "AlignAdirs": "Align ADIRS",
+    "FinishBoarding": "Finish Boarding",
+    "OnScreenKeyboard": "OnScreen Keyboard",
+    "SimBridge": "SimBridge",
+    "SimBridgeConnected": "Connected",
+    "SimBridgeConnecting": "Connecting...",
+    "SimBridgeOff": "Off",
+    "SimBridgeOffline": "Not Available",
+    "TT": {
+      "AlignAdirs": "Instantly align ADIRS",
+      "AutoBrightness": "Turn Auto Brightness On/Off",
+      "Brightness": "Set flyPad brightness",
+      "FinishBoarding": "Instantly finish boarding",
+      "OnScreenKeyboard": "Turn OnScreen Keyboard On/Off",
+      "PowerButton": "Power Off",
+      "Settings": "Go to flyPad Settings page",
+      "SimBridge": "Control SimBridge Connection",
+      "Sleep": "Standby"
+    },
+    "Title": "Quick Controls"
+  },
   "Settings": {
     "About": {
       "Title": "Hakkında"
@@ -520,8 +542,12 @@
     "SimOptions": {
       "Active": "Etkin",
       "Auto": "Otomatik",
+      "Both": "Synchronized",
       "Calibrate": "Kalibrasyon",
+      "Captain": "Captain",
+      "CockpitSeatUsedToControl": "Cockpit Seat Used To Control",
       "ConesEnabled": "Emniyet Konileri",
+      "Copilot": "Copilot",
       "DefaultBarometerUnit": "Varsayılan Barometre Birimi",
       "DynamicRegistrationDecal": "Dinamik Kayıt Çıkartması",
       "EnableSimBridge": "SimBridge Bağlantısını Etkinleştir (Başarılı bir bağlantı yoksa 5 dakika sonra otomatik olarak devre dışı bırakılır)",
@@ -533,6 +559,7 @@
       "None": "Hiçbiri",
       "Off": "Kapalı",
       "Save": "Kaydet",
+      "Side": "Side",
       "SimBridgePort": "Harici SimBridge Bağlantı Noktası",
       "SyncMsfsFlightPlan": "MSFS Uçuş Planını Eşitle",
       "ThrottleDetents": "Gaz Mandalları",
@@ -605,12 +632,21 @@
     "Sep": "Eyl",
     "Sun": "Paz",
     "TT": {
+      "Brightness": "Click to change Brightness",
       "ConnectedToLocalApi": "SimBridge’e Bağlandı",
       "DisconnectedFromLocalApi": "SimBridge Bağlantısı Kesildi",
+      "QuickControls": "Click to open Quick Controls",
       "TurnOffOrShutdownEfb": "EFB'yi Kapatın"
     },
     "Thu": "Per",
     "Tue": "Sal",
     "Wed": "Çar"
+  },
+  "VersionCheck": {
+    "CurrentVersionText": "You are using the $edition edition with version:",
+    "LatestVersionText": "Latest $edition version is",
+    "RecommendationText": "Please update your aircraft using the FlyByWire Installer.",
+    "StatusBarWarning": "Outdated Aircraft Version",
+    "Title": "New Version Available"
   }
 }

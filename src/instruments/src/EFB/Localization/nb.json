@@ -448,6 +448,28 @@
     "TugSpeed": "pushbacktraktor-hastighet",
     "UseControllerInput": "Bruk Controller Input"
   },
+  "QuickControls": {
+    "AlignAdirs": "Align ADIRS",
+    "FinishBoarding": "Finish Boarding",
+    "OnScreenKeyboard": "OnScreen Keyboard",
+    "SimBridge": "SimBridge",
+    "SimBridgeConnected": "Connected",
+    "SimBridgeConnecting": "Connecting...",
+    "SimBridgeOff": "Off",
+    "SimBridgeOffline": "Not Available",
+    "TT": {
+      "AlignAdirs": "Instantly align ADIRS",
+      "AutoBrightness": "Turn Auto Brightness On/Off",
+      "Brightness": "Set flyPad brightness",
+      "FinishBoarding": "Instantly finish boarding",
+      "OnScreenKeyboard": "Turn OnScreen Keyboard On/Off",
+      "PowerButton": "Power Off",
+      "Settings": "Go to flyPad Settings page",
+      "SimBridge": "Control SimBridge Connection",
+      "Sleep": "Standby"
+    },
+    "Title": "Quick Controls"
+  },
   "Settings": {
     "About": {
       "Title": "Om"
@@ -520,8 +542,12 @@
     "SimOptions": {
       "Active": "Aktiv",
       "Auto": "Automatisk",
+      "Both": "Synchronized",
       "Calibrate": "Kalibrer",
+      "Captain": "Captain",
+      "CockpitSeatUsedToControl": "Cockpit Seat Used To Control",
       "ConesEnabled": "Sikkerhet kjegler",
+      "Copilot": "Copilot",
       "DefaultBarometerUnit": "Standard Barometerenhet",
       "DynamicRegistrationDecal": "Dynamisk registreringsdekal",
       "EnableSimBridge": "Aktiver SimBridge servertilkobling (Deaktiveres automatisk etter 5 minutter hvis tilkoblingen ikke er vellykket)",
@@ -533,6 +559,7 @@
       "None": "Ingen",
       "Off": "Av",
       "Save": "Lagre",
+      "Side": "Side",
       "SimBridgePort": "Ekstern SimBridge-port",
       "SyncMsfsFlightPlan": "Synkroniser MSFS-flyplan",
       "ThrottleDetents": "Gassperrer",
@@ -605,12 +632,21 @@
     "Sep": "sep.",
     "Sun": "søn.",
     "TT": {
+      "Brightness": "Click to change Brightness",
       "ConnectedToLocalApi": "Koblet til SimBridge",
       "DisconnectedFromLocalApi": "Frakoblet SimBridge",
+      "QuickControls": "Click to open Quick Controls",
       "TurnOffOrShutdownEfb": "Lås eller skru av EFB"
     },
     "Thu": "tor.",
     "Tue": "tir.",
     "Wed": "ons."
+  },
+  "VersionCheck": {
+    "CurrentVersionText": "You are using the $edition edition with version:",
+    "LatestVersionText": "Latest $edition version is",
+    "RecommendationText": "Please update your aircraft using the FlyByWire Installer.",
+    "StatusBarWarning": "Outdated Aircraft Version",
+    "Title": "New Version Available"
   }
 }

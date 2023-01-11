@@ -65,7 +65,7 @@ class A32NX_LocalVarUpdater {
     }
 
     _noSmokingMemoSelector() {
-        const gearPercent = SimVar.GetSimVarValue("GEAR CENTER POSITION", "Percent");
+        const gearPercent = SimVar.GetSimVarValue("L:A32NX_GEAR_CENTER_POSITION", "Percent");
         const noSmokingSwitch = SimVar.GetSimVarValue("L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_Position", "Position");
 
         // Switch is ON

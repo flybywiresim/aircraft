@@ -8,7 +8,7 @@ export interface PFDSimvars {
     potentiometerFo: number;
     pitch: number;
     roll: number;
-    heading: number;
+    magHeadingRaw: number;
     altitude: number;
     speed: number;
     noseGearCompressed: boolean;
@@ -59,15 +59,15 @@ export interface PFDSimvars {
     flapHandleIndex: number;
     transAlt: number;
     transAltAppr: number;
-    groundTrack: number;
+    magTrackRaw: number;
+    selectedHeading: number;
     showSelectedHeading: number;
     altConstraint: number;
     trkFpaActive: boolean;
     aoa: number;
-    groundHeadingTrue: number;
-    groundTrackTrue: number;
     selectedFpa: number;
     ilsCourse: number;
+    ilsRMPTuned: boolean;
     metricAltToggle: boolean;
     tla1: number;
     tla2: number;
@@ -144,6 +144,11 @@ export interface PFDSimvars {
     fac2EstimatedBetaRaw: number;
     fac1BetaTargetRaw: number;
     fac2BetaTargetRaw: number;
+    trueRefPushbutton: number;
+    irMaintWordRaw: number;
+    trueHeadingRaw: number;
+    trueTrackRaw: number;
+    slatPosLeft: number;
   }
 
 export enum PFDVars {
@@ -154,7 +159,7 @@ export enum PFDVars {
     potentiometerFo = 'LIGHT POTENTIOMETER:90',
     pitch = 'L:A32NX_ADIRS_IR_1_PITCH',
     roll = 'L:A32NX_ADIRS_IR_1_ROLL',
-    heading = 'L:A32NX_ADIRS_IR_1_HEADING',
+    magHeadingRaw = 'L:A32NX_ADIRS_IR_1_HEADING',
     altitude = 'L:A32NX_ADIRS_ADR_1_ALTITUDE',
     speed = 'L:A32NX_ADIRS_ADR_1_COMPUTED_AIRSPEED',
     noseGearCompressed = 'L:A32NX_LGCIU_1_NOSE_GEAR_COMPRESSED',
@@ -205,15 +210,15 @@ export enum PFDVars {
     flapHandleIndex = 'L:A32NX_FLAPS_HANDLE_INDEX',
     transAlt = 'L:AIRLINER_TRANS_ALT',
     transAltAppr = 'L:AIRLINER_APPR_TRANS_ALT',
-    groundTrack = 'L:A32NX_ADIRS_IR_1_TRACK',
+    magTrackRaw = 'L:A32NX_ADIRS_IR_1_TRACK',
+    selectedHeading = 'L:A32NX_FCU_HEADING_SELECTED',
     showSelectedHeading = 'L:A320_FCU_SHOW_SELECTED_HEADING',
     altConstraint = 'L:A32NX_FG_ALTITUDE_CONSTRAINT',
     trkFpaActive = 'L:A32NX_TRK_FPA_MODE_ACTIVE',
     aoa = 'INCIDENCE ALPHA',
-    groundHeadingTrue = 'GPS GROUND TRUE HEADING',
-    groundTrackTrue = 'GPS GROUND TRUE TRACK',
     selectedFpa = 'L:A32NX_AUTOPILOT_FPA_SELECTED',
     ilsCourse = 'L:A32NX_FM_LS_COURSE',
+    ilsRMPTuned = 'L:A32NX_RMP_ILS_TUNED',
     metricAltToggle = 'L:A32NX_METRIC_ALT_TOGGLE',
     tla1='L:A32NX_AUTOTHRUST_TLA:1',
     tla2='L:A32NX_AUTOTHRUST_TLA:2',
@@ -289,6 +294,11 @@ export enum PFDVars {
     fac2EstimatedBetaRaw = 'L:A32NX_FAC_2_ESTIMATED_SIDESLIP',
     fac1BetaTargetRaw = 'L:A32NX_FAC_1_SIDESLIP_TARGET',
     fac2BetaTargetRaw = 'L:A32NX_FAC_2_SIDESLIP_TARGET',
+    trueRefPushbutton = 'L:A32NX_PUSH_TRUE_REF',
+    irMaintWordRaw = 'L:A32NX_ADIRS_IR_1_MAINT_WORD',
+    trueHeadingRaw = 'L:A32NX_ADIRS_IR_1_TRUE_HEADING',
+    trueTrackRaw = 'L:A32NX_ADIRS_IR_1_TRUE_TRACK',
+    slatPosLeft = 'L:A32NX_LEFT_SLATS_ANGLE',
   }
 
 /** A publisher to poll and publish nav/com simvars. */
@@ -301,7 +311,7 @@ export class PFDSimvarPublisher extends SimVarPublisher<PFDSimvars> {
         ['potentiometerFo', { name: PFDVars.potentiometerFo, type: SimVarValueType.Number }],
         ['pitch', { name: PFDVars.pitch, type: SimVarValueType.Number }],
         ['roll', { name: PFDVars.roll, type: SimVarValueType.Number }],
-        ['heading', { name: PFDVars.heading, type: SimVarValueType.Number }],
+        ['magHeadingRaw', { name: PFDVars.magHeadingRaw, type: SimVarValueType.Number }],
         ['altitude', { name: PFDVars.altitude, type: SimVarValueType.Number }],
         ['speed', { name: PFDVars.speed, type: SimVarValueType.Number }],
         ['noseGearCompressed', { name: PFDVars.noseGearCompressed, type: SimVarValueType.Bool }],
@@ -352,15 +362,15 @@ export class PFDSimvarPublisher extends SimVarPublisher<PFDSimvars> {
         ['flapHandleIndex', { name: PFDVars.flapHandleIndex, type: SimVarValueType.Number }],
         ['transAlt', { name: PFDVars.transAlt, type: SimVarValueType.Number }],
         ['transAltAppr', { name: PFDVars.transAltAppr, type: SimVarValueType.Number }],
-        ['groundTrack', { name: PFDVars.groundTrack, type: SimVarValueType.Number }],
+        ['magTrackRaw', { name: PFDVars.magTrackRaw, type: SimVarValueType.Number }],
+        ['selectedHeading', { name: PFDVars.selectedHeading, type: SimVarValueType.Degree }],
         ['showSelectedHeading', { name: PFDVars.showSelectedHeading, type: SimVarValueType.Number }],
         ['altConstraint', { name: PFDVars.altConstraint, type: SimVarValueType.Feet }],
         ['trkFpaActive', { name: PFDVars.trkFpaActive, type: SimVarValueType.Bool }],
         ['aoa', { name: PFDVars.aoa, type: SimVarValueType.Degree }],
-        ['groundHeadingTrue', { name: PFDVars.groundHeadingTrue, type: SimVarValueType.Degree }],
-        ['groundTrackTrue', { name: PFDVars.groundTrackTrue, type: SimVarValueType.Degree }],
         ['selectedFpa', { name: PFDVars.selectedFpa, type: SimVarValueType.Degree }],
         ['ilsCourse', { name: PFDVars.ilsCourse, type: SimVarValueType.Number }],
+        ['ilsRMPTuned', { name: PFDVars.ilsRMPTuned, type: SimVarValueType.Bool }],
         ['metricAltToggle', { name: PFDVars.metricAltToggle, type: SimVarValueType.Bool }],
         ['tla1', { name: PFDVars.tla1, type: SimVarValueType.Number }],
         ['tla2', { name: PFDVars.tla2, type: SimVarValueType.Number }],
@@ -436,6 +446,11 @@ export class PFDSimvarPublisher extends SimVarPublisher<PFDSimvars> {
         ['fac2EstimatedBetaRaw', { name: PFDVars.fac2EstimatedBetaRaw, type: SimVarValueType.Number }],
         ['fac1BetaTargetRaw', { name: PFDVars.fac1BetaTargetRaw, type: SimVarValueType.Number }],
         ['fac2BetaTargetRaw', { name: PFDVars.fac2BetaTargetRaw, type: SimVarValueType.Number }],
+        ['trueRefPushbutton', { name: PFDVars.trueRefPushbutton, type: SimVarValueType.Bool }],
+        ['irMaintWordRaw', { name: PFDVars.irMaintWordRaw, type: SimVarValueType.Number }],
+        ['trueHeadingRaw', { name: PFDVars.trueHeadingRaw, type: SimVarValueType.Number }],
+        ['trueTrackRaw', { name: PFDVars.trueTrackRaw, type: SimVarValueType.Number }],
+        ['slatPosLeft', { name: PFDVars.slatPosLeft, type: SimVarValueType.Number }],
     ])
 
     public constructor(bus: EventBus) {

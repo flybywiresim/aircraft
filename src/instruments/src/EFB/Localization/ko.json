@@ -448,6 +448,28 @@
     "TugSpeed": "터그 속도",
     "UseControllerInput": "컨트롤러 입력 사용"
   },
+  "QuickControls": {
+    "AlignAdirs": "ADIRS 정렬",
+    "FinishBoarding": "Finish Boarding",
+    "OnScreenKeyboard": "온스크린 키보드",
+    "SimBridge": "SimBridge",
+    "SimBridgeConnected": "연결됨",
+    "SimBridgeConnecting": "연결 중…",
+    "SimBridgeOff": "끄기",
+    "SimBridgeOffline": "사용 불가",
+    "TT": {
+      "AlignAdirs": "ADIRS 즉시 정렬",
+      "AutoBrightness": "자동 밝기 켜기/끄기",
+      "Brightness": "flyPad 밝기 조절",
+      "FinishBoarding": "탑승 즉시 완료",
+      "OnScreenKeyboard": "온스크린 키보드 켜기/끄기",
+      "PowerButton": "전원 끄기",
+      "Settings": "flyPad 설정 페이지로 이동",
+      "SimBridge": "SimBridge 연결 제어",
+      "Sleep": "대기"
+    },
+    "Title": "빠른 설정"
+  },
   "Settings": {
     "About": {
       "Title": "정보"
@@ -520,8 +542,12 @@
     "SimOptions": {
       "Active": "활성",
       "Auto": "자동",
+      "Both": "동기화",
       "Calibrate": "보정",
+      "Captain": "기장",
+      "CockpitSeatUsedToControl": "조종에 사용할 좌석",
       "ConesEnabled": "안전콘",
+      "Copilot": "부기장",
       "DefaultBarometerUnit": "기본 기압 단위",
       "DynamicRegistrationDecal": "다이나믹 등록 데칼",
       "EnableSimBridge": "SimBridge 연결 활성화 (5분동안 연결 실패 시 자동으로 비활성화)",
@@ -533,6 +559,7 @@
       "None": "없음",
       "Off": "끄기",
       "Save": "저장",
+      "Side": "위치",
       "SimBridgePort": "외부 SimBridge 포트",
       "SyncMsfsFlightPlan": "MSFS 비행계획 동기화",
       "ThrottleDetents": "쓰로틀 단계",
@@ -605,12 +632,21 @@
     "Sep": "9월",
     "Sun": "일",
     "TT": {
+      "Brightness": "Click to change Brightness",
       "ConnectedToLocalApi": "SimBridge와 연결됨",
       "DisconnectedFromLocalApi": "SimBridge 연결 끊김",
+      "QuickControls": "클릭하여 빠른 설정 열기",
       "TurnOffOrShutdownEfb": "EFB 끄기 또는 종료"
     },
     "Thu": "목",
     "Tue": "화",
     "Wed": "수"
+  },
+  "VersionCheck": {
+    "CurrentVersionText": "You are using the $edition edition with version:",
+    "LatestVersionText": "Latest $edition version is",
+    "RecommendationText": "Please update your aircraft using the FlyByWire Installer.",
+    "StatusBarWarning": "Outdated Aircraft Version",
+    "Title": "새로운 버전 사용 가능"
   }
 }

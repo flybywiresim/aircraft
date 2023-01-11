@@ -448,6 +448,28 @@
     "TugSpeed": "Tug Speed",
     "UseControllerInput": "Use Controller Input"
   },
+  "QuickControls": {
+    "AlignAdirs": "Align ADIRS",
+    "FinishBoarding": "Finish Boarding",
+    "OnScreenKeyboard": "OnScreen Keyboard",
+    "SimBridge": "SimBridge",
+    "SimBridgeConnected": "Connected",
+    "SimBridgeConnecting": "Connecting...",
+    "SimBridgeOff": "Off",
+    "SimBridgeOffline": "Not Available",
+    "TT": {
+      "AlignAdirs": "Instantly align ADIRS",
+      "AutoBrightness": "Turn Auto Brightness On/Off",
+      "Brightness": "Set flyPad brightness",
+      "FinishBoarding": "Instantly finish boarding",
+      "OnScreenKeyboard": "Turn OnScreen Keyboard On/Off",
+      "PowerButton": "Power Off",
+      "Settings": "Go to flyPad Settings page",
+      "SimBridge": "Control SimBridge Connection",
+      "Sleep": "Standby"
+    },
+    "Title": "Quick Controls"
+  },
   "Settings": {
     "About": {
       "Title": "About"
@@ -520,8 +542,12 @@
     "SimOptions": {
       "Active": "Active",
       "Auto": "Auto",
+      "Both": "Synchronized",
       "Calibrate": "Calibrate",
+      "Captain": "Captain",
+      "CockpitSeatUsedToControl": "Cockpit Seat Used To Control",
       "ConesEnabled": "Safety Cones",
+      "Copilot": "Copilot",
       "DefaultBarometerUnit": "Default Barometer Unit",
       "DynamicRegistrationDecal": "Dynamic Registration Decal",
       "EnableSimBridge": "Enable MCDU Server Connection (Auto deactivates after 5 minutes if no successful connection)",
@@ -533,6 +559,7 @@
       "None": "None",
       "Off": "Off",
       "Save": "Save",
+      "Side": "Side",
       "SimBridgePort": "External MCDU Server Port",
       "SyncMsfsFlightPlan": "Sync MSFS Flight Plan",
       "ThrottleDetents": "Throttle Detents",
@@ -605,12 +632,21 @@
     "Sep": "Sep",
     "Sun": "Sun",
     "TT": {
+      "Brightness": "Click to change Brightness",
       "ConnectedToLocalApi": "Connected to Local API",
       "DisconnectedFromLocalApi": "Disconnected from Local API",
+      "QuickControls": "Click to open Quick Controls",
       "TurnOffOrShutdownEfb": "Turn off or Shutdown EFB"
     },
     "Thu": "Thu",
     "Tue": "Tue",
     "Wed": "Wed"
+  },
+  "VersionCheck": {
+    "CurrentVersionText": "You are using the $edition edition with version:",
+    "LatestVersionText": "Latest $edition version is",
+    "RecommendationText": "Please update your aircraft using the FlyByWire Installer.",
+    "StatusBarWarning": "Outdated Aircraft Version",
+    "Title": "New Version Available"
   }
 }

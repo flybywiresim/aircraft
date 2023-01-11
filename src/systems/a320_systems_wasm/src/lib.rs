@@ -22,7 +22,8 @@ use spoilers::spoilers;
 use std::error::Error;
 use systems::failures::FailureType;
 use systems::shared::{
-    ElectricalBusType, GearActuatorId, HydraulicColor, LgciuId, ProximityDetectorId,
+    AirbusElectricPumpId, AirbusEngineDrivenPumpId, ElectricalBusType, GearActuatorId,
+    HydraulicColor, LgciuId, ProximityDetectorId,
 };
 use systems_wasm::aspects::ExecuteOn;
 use systems_wasm::{MsfsSimulationBuilder, Variable};
@@ -79,6 +80,22 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
         (
             29_008,
             FailureType::ReservoirReturnLeak(HydraulicColor::Yellow),
+        ),
+        (
+            29_009,
+            FailureType::EnginePumpOverheat(AirbusEngineDrivenPumpId::Green),
+        ),
+        (
+            29_010,
+            FailureType::ElecPumpOverheat(AirbusElectricPumpId::Blue),
+        ),
+        (
+            29_011,
+            FailureType::EnginePumpOverheat(AirbusEngineDrivenPumpId::Yellow),
+        ),
+        (
+            29_012,
+            FailureType::ElecPumpOverheat(AirbusElectricPumpId::Yellow),
         ),
         (32_000, FailureType::LgciuPowerSupply(LgciuId::Lgciu1)),
         (32_001, FailureType::LgciuPowerSupply(LgciuId::Lgciu2)),
@@ -190,6 +207,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("INDICATED ALTITUDE", "Feet", 0)?
     .provides_aircraft_variable("INTERACTIVE POINT OPEN:0", "Percent", 0)?
     .provides_aircraft_variable("INTERACTIVE POINT OPEN:3", "Percent", 0)?
+    .provides_aircraft_variable("LIGHT BEACON", "Bool", 0)?
     .provides_aircraft_variable("LIGHT BEACON ON", "Bool", 0)?
     .provides_aircraft_variable("PLANE ALT ABOVE GROUND", "Feet", 0)?
     .provides_aircraft_variable("PLANE PITCH DEGREES", "Degrees", 0)?

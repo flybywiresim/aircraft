@@ -498,7 +498,7 @@ mod tests {
     use std::time::Duration;
     use uom::si::{angle::degree, pressure::psi};
 
-    use crate::shared::update_iterator::FixedStepLoop;
+    use crate::shared::update_iterator::MaxStepLoop;
 
     use crate::simulation::{
         test::{SimulationTestBed, TestBed},
@@ -531,7 +531,7 @@ mod tests {
     }
 
     struct TestAircraft {
-        core_hydraulic_updater: FixedStepLoop,
+        core_hydraulic_updater: MaxStepLoop,
 
         flaps_slats: FlapSlatAssembly,
 
@@ -544,7 +544,7 @@ mod tests {
     impl TestAircraft {
         fn new(context: &mut InitContext, max_speed: AngularVelocity) -> Self {
             Self {
-                core_hydraulic_updater: FixedStepLoop::new(Duration::from_millis(33)),
+                core_hydraulic_updater: MaxStepLoop::new(Duration::from_millis(10)),
                 flaps_slats: flap_system(context, max_speed),
                 left_motor_angle_request: None,
                 right_motor_angle_request: None,

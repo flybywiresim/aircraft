@@ -151,11 +151,11 @@
       "BoardingTime": "זמן עלייה למטוס",
       "Cargo": "משא",
       "Current": "נוכחי",
-      "DeboardConfirmationBody": "Please confirm deboarding all passengers",
-      "DeboardConfirmationCancel": "Cancel",
-      "DeboardConfirmationConfirm": "Deboard",
-      "DeboardConfirmationTitle": "Deboard all Passengers?",
-      "EstimatedDurationUnit": "minutes",
+      "DeboardConfirmationBody": "אנא אשר הורדת כל הנוסעים",
+      "DeboardConfirmationCancel": "בטל",
+      "DeboardConfirmationConfirm": "הורד נוסעים",
+      "DeboardConfirmationTitle": "האם להוריד את כל הנוסעים?",
+      "EstimatedDurationUnit": "דקות",
       "LoadingTime": "Loading Time",
       "Passengers": "נוסעים",
       "Planned": "מתוכנן",
@@ -169,7 +169,7 @@
         "PerPaxBagWeight": "משקל תיק נוסעים",
         "PerPaxWeight": "משקל נוסע",
         "StartBoarding": "התחל עליה למטוס",
-        "StartDeboarding": "Begin Deboarding"
+        "StartDeboarding": "התחל הורדת נוסעים"
       },
       "Title": "Payload",
       "ZFW": "משקל ללא דלק",
@@ -366,7 +366,7 @@
       "ConfirmationDialogMsg": "אנא אשר טעינת תבנית שמורה",
       "CurrentProcedureStep": "צעד הפעולה הנוכחי",
       "PleaseConfirmLoadingOfPreset": "אנא אשר טעינת תבנית שמורה",
-      "Powered": "Powered",
+      "Powered": "מחובר למתח",
       "ReadyPushback": "מוכן לדחיפה",
       "ReadyTakeoff": "מוכן להמריא",
       "ReadyTaxi": "מוכן להסעה",
@@ -448,6 +448,28 @@
     "TugSpeed": "מהירות הגרירה",
     "UseControllerInput": "השתמש בקלט בקר"
   },
+  "QuickControls": {
+    "AlignAdirs": "Align ADIRS",
+    "FinishBoarding": "Finish Boarding",
+    "OnScreenKeyboard": "OnScreen Keyboard",
+    "SimBridge": "SimBridge",
+    "SimBridgeConnected": "Connected",
+    "SimBridgeConnecting": "Connecting...",
+    "SimBridgeOff": "Off",
+    "SimBridgeOffline": "Not Available",
+    "TT": {
+      "AlignAdirs": "Instantly align ADIRS",
+      "AutoBrightness": "Turn Auto Brightness On/Off",
+      "Brightness": "Set flyPad brightness",
+      "FinishBoarding": "Instantly finish boarding",
+      "OnScreenKeyboard": "Turn OnScreen Keyboard On/Off",
+      "PowerButton": "Power Off",
+      "Settings": "Go to flyPad Settings page",
+      "SimBridge": "Control SimBridge Connection",
+      "Sleep": "Standby"
+    },
+    "Title": "Quick Controls"
+  },
   "Settings": {
     "About": {
       "Title": "אודות"
@@ -520,8 +542,12 @@
     "SimOptions": {
       "Active": "פעיל",
       "Auto": "אוטומטי",
+      "Both": "Synchronized",
       "Calibrate": "ויסות",
+      "Captain": "Captain",
+      "CockpitSeatUsedToControl": "Cockpit Seat Used To Control",
       "ConesEnabled": "קונוס בטיחות",
+      "Copilot": "Copilot",
       "DefaultBarometerUnit": "יחידת ברומטר ברירת מחדל",
       "DynamicRegistrationDecal": "דִינָמִי מדבקת רישום",
       "EnableSimBridge": "אפשר חיבור Simbridge (נכבה אוטומטית לאחר חמש דקות אם לא היה חיבור מוצלח)",
@@ -533,6 +559,7 @@
       "None": "ללא",
       "Off": "כבוי",
       "Save": "שמור",
+      "Side": "Side",
       "SimBridgePort": "פורט SimBridge חיצוני",
       "SyncMsfsFlightPlan": "סנכרן את תוכנית הטיסה מ-MSFS",
       "ThrottleDetents": "מעצורי מצערת",
@@ -605,12 +632,21 @@
     "Sep": "ספטמבר",
     "Sun": "ראשון",
     "TT": {
+      "Brightness": "Click to change Brightness",
       "ConnectedToLocalApi": "מחובר ל-SimBridge",
       "DisconnectedFromLocalApi": "מנותק מ-SimBridge",
+      "QuickControls": "Click to open Quick Controls",
       "TurnOffOrShutdownEfb": "כיבוי EFB"
     },
     "Thu": "חמישי",
     "Tue": "שלישי",
     "Wed": "רביעי"
+  },
+  "VersionCheck": {
+    "CurrentVersionText": "You are using the $edition edition with version:",
+    "LatestVersionText": "Latest $edition version is",
+    "RecommendationText": "Please update your aircraft using the FlyByWire Installer.",
+    "StatusBarWarning": "Outdated Aircraft Version",
+    "Title": "New Version Available"
   }
 }

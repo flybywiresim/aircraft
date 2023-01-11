@@ -944,6 +944,7 @@ dependencies = [
 name = "systems"
 version = "0.1.0"
 dependencies = [
+ "bitflags",
  "bounded-vec-deque",
  "fxhash",
  "nalgebra",

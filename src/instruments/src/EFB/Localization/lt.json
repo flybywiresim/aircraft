@@ -151,11 +151,11 @@
       "BoardingTime": "Laipinimo trukmė",
       "Cargo": "Krovinys",
       "Current": "Esamas",
-      "DeboardConfirmationBody": "Please confirm deboarding all passengers",
-      "DeboardConfirmationCancel": "Cancel",
-      "DeboardConfirmationConfirm": "Deboard",
-      "DeboardConfirmationTitle": "Deboard all Passengers?",
-      "EstimatedDurationUnit": "minutes",
+      "DeboardConfirmationBody": "Prašome patvirtinti visų keleivių išlaipinimą",
+      "DeboardConfirmationCancel": "Atšaukti",
+      "DeboardConfirmationConfirm": "Išlaipinimas",
+      "DeboardConfirmationTitle": "Išlaipinti visus keleivius?",
+      "EstimatedDurationUnit": "minutės",
       "LoadingTime": "Loading Time",
       "Passengers": "Keleiviai",
       "Planned": "Suplanuotas",
@@ -169,7 +169,7 @@
         "PerPaxBagWeight": "Keleivio bagažo svoris",
         "PerPaxWeight": "Keleivio svoris",
         "StartBoarding": "Pradėti laipinimą",
-        "StartDeboarding": "Begin Deboarding"
+        "StartDeboarding": "Pradėti išlaipinimą"
       },
       "Title": "Krovinys",
       "ZFW": "ZFW",
@@ -366,7 +366,7 @@
       "ConfirmationDialogMsg": "Patvirtinkite išankstinio nustatymo įkėlimą.",
       "CurrentProcedureStep": "Dabartinis procedūros žingsnis",
       "PleaseConfirmLoadingOfPreset": "Patvirtinkite išankstinio nustatymo įkėlimą.",
-      "Powered": "Powered",
+      "Powered": "Maitinamas",
       "ReadyPushback": "Paruoštas išstumimui",
       "ReadyTakeoff": "Paruoštas pakilimui",
       "ReadyTaxi": "Paruoštas riedėjimui",
@@ -438,7 +438,7 @@
       "SliderSpeed": "Pasirinkite norimą greitį",
       "SystemEnabledOff": "Paspauskite norint įjungti išstumimo sistemą.",
       "SystemEnabledOn": "Paspauskite norint pilnai išjungti išstumimo sistemą.",
-      "UseControllerInput": "Turn controller input from rudder and elevator on/off",
+      "UseControllerInput": "Pakeisti valdiklio valdymą iš krypties į aukščio vairo įjungimą/išjungimą",
       "ZoomIn": "Priartinti",
       "ZoomOut": "Nutolinti"
     },
@@ -447,6 +447,28 @@
     "TugInTransit": "Laukiama vilkiko",
     "TugSpeed": "Vilkiko greitis",
     "UseControllerInput": "Naudoti valdiklį"
+  },
+  "QuickControls": {
+    "AlignAdirs": "Align ADIRS",
+    "FinishBoarding": "Finish Boarding",
+    "OnScreenKeyboard": "OnScreen Keyboard",
+    "SimBridge": "SimBridge",
+    "SimBridgeConnected": "Connected",
+    "SimBridgeConnecting": "Connecting...",
+    "SimBridgeOff": "Off",
+    "SimBridgeOffline": "Not Available",
+    "TT": {
+      "AlignAdirs": "Instantly align ADIRS",
+      "AutoBrightness": "Turn Auto Brightness On/Off",
+      "Brightness": "Set flyPad brightness",
+      "FinishBoarding": "Instantly finish boarding",
+      "OnScreenKeyboard": "Turn OnScreen Keyboard On/Off",
+      "PowerButton": "Power Off",
+      "Settings": "Go to flyPad Settings page",
+      "SimBridge": "Control SimBridge Connection",
+      "Sleep": "Standby"
+    },
+    "Title": "Quick Controls"
   },
   "Settings": {
     "About": {
@@ -520,8 +542,12 @@
     "SimOptions": {
       "Active": "Aktyvus",
       "Auto": "Automatinis",
+      "Both": "Sinchronizuotas",
       "Calibrate": "Kalibruoti",
+      "Captain": "Kapitonas",
+      "CockpitSeatUsedToControl": "Kabinos sėdynė, naudojama valdyti",
       "ConesEnabled": "Saugumo kūgiai",
+      "Copilot": "Antrasis pilotas",
       "DefaultBarometerUnit": "Numatyti barometro vienetai",
       "DynamicRegistrationDecal": "Dinaminis registracijos lipdukas",
       "EnableSimBridge": "Įjungti SimBridge prisijungimą (automatiškai išjungiama po 5 minučių, jei nepavyksta prisijungti)",
@@ -533,6 +559,7 @@
       "None": "Nėra",
       "Off": "Išjungta",
       "Save": "Išsaugoti",
+      "Side": "Side",
       "SimBridgePort": "Išorinis SimBridge serverio port",
       "SyncMsfsFlightPlan": "Sinchronizuoti MSFS Skrydžio Planą",
       "ThrottleDetents": "Droselio detentai",
@@ -605,12 +632,21 @@
     "Sep": "Rgs",
     "Sun": "Sek",
     "TT": {
+      "Brightness": "Click to change Brightness",
       "ConnectedToLocalApi": "Prisijungta prie SimBridge",
       "DisconnectedFromLocalApi": "Atsijungta nuo SimBridge",
+      "QuickControls": "Click to open Quick Controls",
       "TurnOffOrShutdownEfb": "Išjunkite EFB"
     },
     "Thu": "Ket",
     "Tue": "Ant",
     "Wed": "Tre"
+  },
+  "VersionCheck": {
+    "CurrentVersionText": "You are using the $edition edition with version:",
+    "LatestVersionText": "Latest $edition version is",
+    "RecommendationText": "Please update your aircraft using the FlyByWire Installer.",
+    "StatusBarWarning": "Outdated Aircraft Version",
+    "Title": "New Version Available"
   }
 }

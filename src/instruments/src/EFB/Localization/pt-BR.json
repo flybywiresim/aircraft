@@ -448,6 +448,28 @@
     "TugSpeed": "Velocidade do rebocador",
     "UseControllerInput": "Use Controller Input"
   },
+  "QuickControls": {
+    "AlignAdirs": "Align ADIRS",
+    "FinishBoarding": "Finish Boarding",
+    "OnScreenKeyboard": "OnScreen Keyboard",
+    "SimBridge": "SimBridge",
+    "SimBridgeConnected": "Connected",
+    "SimBridgeConnecting": "Connecting...",
+    "SimBridgeOff": "Off",
+    "SimBridgeOffline": "Not Available",
+    "TT": {
+      "AlignAdirs": "Instantly align ADIRS",
+      "AutoBrightness": "Turn Auto Brightness On/Off",
+      "Brightness": "Set flyPad brightness",
+      "FinishBoarding": "Instantly finish boarding",
+      "OnScreenKeyboard": "Turn OnScreen Keyboard On/Off",
+      "PowerButton": "Power Off",
+      "Settings": "Go to flyPad Settings page",
+      "SimBridge": "Control SimBridge Connection",
+      "Sleep": "Standby"
+    },
+    "Title": "Quick Controls"
+  },
   "Settings": {
     "About": {
       "Title": "Sobre"
@@ -520,8 +542,12 @@
     "SimOptions": {
       "Active": "Ativo",
       "Auto": "Automático",
+      "Both": "Synchronized",
       "Calibrate": "Calibrar",
+      "Captain": "Captain",
+      "CockpitSeatUsedToControl": "Cockpit Seat Used To Control",
       "ConesEnabled": "Safety Cones",
+      "Copilot": "Copilot",
       "DefaultBarometerUnit": "Unidade padrão do barômetro",
       "DynamicRegistrationDecal": "Registro dinâmico do decalque",
       "EnableSimBridge": "Ativar conexão com o servidor MCDU (desativa automaticamente após 5 minutos se não houver conexão bem-sucedida)",
@@ -533,6 +559,7 @@
       "None": "Nenhum",
       "Off": "Desativado",
       "Save": "Salvar",
+      "Side": "Side",
       "SimBridgePort": "Porta externa de servidor MCDU",
       "SyncMsfsFlightPlan": "Sincronizar plano de voo do MSFS",
       "ThrottleDetents": "Manetes de potência",
@@ -605,12 +632,21 @@
     "Sep": "Set",
     "Sun": "Dom",
     "TT": {
+      "Brightness": "Click to change Brightness",
       "ConnectedToLocalApi": "Conectado à API local",
       "DisconnectedFromLocalApi": "Desconectado da API local",
+      "QuickControls": "Click to open Quick Controls",
       "TurnOffOrShutdownEfb": "Desligar ou reiniciar o EFB"
     },
     "Thu": "Qui",
     "Tue": "Ter",
     "Wed": "Qua"
+  },
+  "VersionCheck": {
+    "CurrentVersionText": "You are using the $edition edition with version:",
+    "LatestVersionText": "Latest $edition version is",
+    "RecommendationText": "Please update your aircraft using the FlyByWire Installer.",
+    "StatusBarWarning": "Outdated Aircraft Version",
+    "Title": "New Version Available"
   }
 }

@@ -422,10 +422,10 @@ struct LandingGearControlCoordinator {
     previous_gear_handle_is_down: bool,
 }
 impl LandingGearControlCoordinator {
-    fn new() -> Self {
+    fn new(context: &mut InitContext) -> Self {
         Self {
             active_lgciu_id: LgciuId::Lgciu1,
-            previous_gear_handle_is_down: true,
+            previous_gear_handle_is_down: context.start_gear_down(),
         }
     }
 
@@ -488,7 +488,7 @@ impl LandingGearControlInterfaceUnitSet {
     ) -> Self {
         Self {
             gear_handle_baulk_lock_id: context.get_identifier("GEAR_LEVER_LOCKED".to_owned()),
-            coordinator: LandingGearControlCoordinator::new(),
+            coordinator: LandingGearControlCoordinator::new(context),
             lgcius: [
                 LandingGearControlInterfaceUnit::new(context, LgciuId::Lgciu1, lgciu1_powered_by),
                 LandingGearControlInterfaceUnit::new(context, LgciuId::Lgciu2, lgciu2_powered_by),
@@ -530,6 +530,7 @@ impl LandingGearControlInterfaceUnitSet {
         );
 
         self.gear_handle_unit.update(
+            context,
             &self.lgcius[LgciuId::Lgciu1 as usize],
             &self.lgcius[LgciuId::Lgciu2 as usize],
         );
@@ -585,11 +586,22 @@ impl LandingGearHandle for LandingGearControlInterfaceUnitSet {
 struct LandingGearHandleUnit {
     gear_handle_real_position_id: VariableIdentifier,
     gear_handle_position_requested_id: VariableIdentifier,
+    gear_handle_hits_lock_sound_id: VariableIdentifier,
 
-    is_lever_down: bool,
     lever_should_lock_down: bool,
+
+    lever_position: Ratio,
+    lever_commanded_down: bool,
+
+    lever_just_hit_lock_sound: bool,
 }
 impl LandingGearHandleUnit {
+    const GEAR_LEVER_SPEED_PERCENT_PER_S: f64 = 180.;
+
+    const GEAR_LEVER_MAX_LOCK_POSITION: f64 = 0.95;
+
+    const GEAR_LEVER_UP_DOWN_DETECTION_POSITION: f64 = 0.5;
+
     fn new(context: &mut InitContext) -> Self {
         let init_gear_down = context.start_gear_down();
 
@@ -597,20 +609,71 @@ impl LandingGearHandleUnit {
             gear_handle_real_position_id: context.get_identifier("GEAR_HANDLE_POSITION".to_owned()),
             gear_handle_position_requested_id: context
                 .get_identifier("GEAR_LEVER_POSITION_REQUEST".to_owned()),
+            gear_handle_hits_lock_sound_id: context
+                .get_identifier("GEAR_HANDLE_HITS_LOCK_SOUND".to_owned()),
 
-            is_lever_down: init_gear_down,
             lever_should_lock_down: init_gear_down,
+
+            lever_position: if init_gear_down {
+                Ratio::new::<ratio>(1.)
+            } else {
+                Ratio::new::<ratio>(0.)
+            },
+
+            lever_commanded_down: init_gear_down,
+
+            lever_just_hit_lock_sound: false,
         }
     }
 
-    fn update(&mut self, lgciu1: &impl LandingGearHandle, lgciu2: &impl LandingGearHandle) {
+    fn update(
+        &mut self,
+        context: &UpdateContext,
+        lgciu1: &impl LandingGearHandle,
+        lgciu2: &impl LandingGearHandle,
+    ) {
         self.lever_should_lock_down =
-            lgciu1.gear_handle_baulk_locked() && lgciu2.gear_handle_baulk_locked()
+            lgciu1.gear_handle_baulk_locked() && lgciu2.gear_handle_baulk_locked();
+
+        self.update_position(context);
+    }
+
+    fn update_position(&mut self, context: &UpdateContext) {
+        let previous_position = self.lever_position;
+
+        if self.lever_commanded_down {
+            self.lever_position += Ratio::new::<percent>(
+                Self::GEAR_LEVER_SPEED_PERCENT_PER_S * context.delta_as_secs_f64(),
+            );
+        } else {
+            let could_hit_lock_mechanism_after_update = self.lever_position.get::<ratio>()
+                >= Self::GEAR_LEVER_MAX_LOCK_POSITION
+                && self.lever_should_lock_down;
+
+            self.lever_position -= Ratio::new::<percent>(
+                Self::GEAR_LEVER_SPEED_PERCENT_PER_S * context.delta_as_secs_f64(),
+            );
+
+            if could_hit_lock_mechanism_after_update {
+                self.lever_position = self
+                    .lever_position
+                    .max(Ratio::new::<ratio>(Self::GEAR_LEVER_MAX_LOCK_POSITION));
+            }
+        }
+
+        self.lever_position = self
+            .lever_position
+            .max(Ratio::new::<ratio>(0.))
+            .min(Ratio::new::<ratio>(1.));
+
+        self.lever_just_hit_lock_sound = previous_position.get::<ratio>()
+            > Self::GEAR_LEVER_MAX_LOCK_POSITION
+            && self.lever_position == Ratio::new::<ratio>(Self::GEAR_LEVER_MAX_LOCK_POSITION);
     }
 }
 impl LandingGearHandle for LandingGearHandleUnit {
     fn gear_handle_is_down(&self) -> bool {
-        self.is_lever_down
+        self.lever_position.get::<ratio>() >= Self::GEAR_LEVER_UP_DOWN_DETECTION_POSITION
     }
 
     fn gear_handle_baulk_locked(&self) -> bool {
@@ -619,16 +682,20 @@ impl LandingGearHandle for LandingGearHandleUnit {
 }
 impl SimulationElement for LandingGearHandleUnit {
     fn read(&mut self, reader: &mut SimulatorReader) {
-        let lever_down_raw: bool = reader.read(&self.gear_handle_position_requested_id);
-
-        self.is_lever_down = lever_down_raw || (self.lever_should_lock_down && self.is_lever_down);
+        let lever_down_req_raw: bool = reader.read(&self.gear_handle_position_requested_id);
+        self.lever_commanded_down = lever_down_req_raw;
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(&self.gear_handle_real_position_id, self.is_lever_down);
+        writer.write(
+            &self.gear_handle_real_position_id,
+            self.lever_position.get::<ratio>(),
+        );
 
-        // Aligning request on demand so in sim position is always consistent with system state
-        writer.write(&self.gear_handle_position_requested_id, self.is_lever_down);
+        writer.write(
+            &self.gear_handle_hits_lock_sound_id,
+            self.lever_just_hit_lock_sound,
+        );
     }
 }
 
@@ -1385,21 +1452,25 @@ mod tests {
 
         fn in_flight(mut self) -> Self {
             self.set_on_ground(false);
+            self = self.set_gear_handle_up();
             self
         }
 
         fn on_the_ground(mut self) -> Self {
             self.set_on_ground(true);
+            self = self.set_gear_handle_down();
             self
         }
 
         fn set_gear_handle_up(mut self) -> Self {
             self.write_by_name("GEAR_LEVER_POSITION_REQUEST", 0.);
+            self.run_with_delta(Duration::from_millis(1000));
             self
         }
 
         fn set_gear_handle_down(mut self) -> Self {
             self.write_by_name("GEAR_LEVER_POSITION_REQUEST", 1.);
+            self.run_with_delta(Duration::from_millis(1000));
             self
         }
 
@@ -1408,7 +1479,12 @@ mod tests {
         }
 
         fn is_gear_handle_down(&mut self) -> bool {
-            self.read_by_name("GEAR_HANDLE_POSITION")
+            let lever_pos: f64 = self.read_by_name("GEAR_HANDLE_POSITION");
+            lever_pos >= 0.90
+        }
+
+        fn is_gear_lever_lock_makes_sound(&mut self) -> bool {
+            self.read_by_name("GEAR_HANDLE_HITS_LOCK_SOUND")
         }
 
         fn fail_hyd_pressure(&mut self) {
@@ -1488,28 +1564,38 @@ mod tests {
     }
 
     #[test]
+    fn gear_lever_locked_makes_locked_sound_once_when_trying_up() {
+        let mut test_bed = test_bed_on_ground_with().on_the_ground().run_one_tick();
+
+        assert!(test_bed.is_gear_handle_lock_down_active());
+        assert!(test_bed.is_gear_handle_down());
+        assert!(!test_bed.is_gear_lever_lock_makes_sound());
+
+        test_bed = test_bed.on_the_ground().set_gear_handle_up();
+
+        assert!(test_bed.is_gear_lever_lock_makes_sound());
+
+        // Make sure next ticks sound doesn't play anymore
+        test_bed = test_bed.run_one_tick();
+        assert!(!test_bed.is_gear_lever_lock_makes_sound());
+
+        test_bed = test_bed.run_one_tick();
+        assert!(!test_bed.is_gear_lever_lock_makes_sound());
+    }
+
+    #[test]
     fn gear_lever_up_and_locked_can_go_down_but_not_up() {
         let mut test_bed = test_bed_in_flight_with().in_flight().run_one_tick();
-
-        test_bed = test_bed.set_gear_handle_up().run_one_tick();
 
         assert!(!test_bed.is_gear_handle_lock_down_active());
         assert!(!test_bed.is_gear_handle_down());
 
-        test_bed = test_bed.on_the_ground().set_gear_handle_up().run_one_tick();
-
-        assert!(test_bed.is_gear_handle_lock_down_active());
-        assert!(!test_bed.is_gear_handle_down());
-
-        test_bed = test_bed
-            .on_the_ground()
-            .set_gear_handle_down()
-            .run_one_tick();
+        test_bed = test_bed.on_the_ground().set_gear_handle_down();
 
         assert!(test_bed.is_gear_handle_lock_down_active());
         assert!(test_bed.is_gear_handle_down());
 
-        test_bed = test_bed.on_the_ground().set_gear_handle_up().run_one_tick();
+        test_bed = test_bed.on_the_ground().set_gear_handle_up();
 
         assert!(test_bed.is_gear_handle_lock_down_active());
         assert!(test_bed.is_gear_handle_down());
@@ -1521,8 +1607,6 @@ mod tests {
             .in_flight()
             .set_gear_handle_down()
             .run_one_tick();
-
-        test_bed = test_bed.run_one_tick();
 
         assert!(!test_bed.is_gear_handle_lock_down_active());
         assert!(test_bed.is_gear_handle_down());
@@ -1537,7 +1621,10 @@ mod tests {
 
     #[test]
     fn gear_up_when_lever_up_down_when_lever_down() {
-        let mut test_bed = test_bed_in_flight_with().in_flight().set_gear_handle_down();
+        let mut test_bed = test_bed_in_flight_with()
+            .in_flight()
+            .set_gear_handle_down()
+            .run_one_tick();
 
         for _ in 0..2 {
             test_bed.run_without_delta();
@@ -1546,7 +1633,7 @@ mod tests {
         assert!(test_bed.query(|a| a.lgcius.gear_system_state()) == GearSystemState::AllDownLocked);
 
         println!("GEAR UP!!");
-        test_bed = test_bed.set_gear_handle_up();
+        test_bed = test_bed.set_gear_handle_up().run_one_tick();
 
         for _ in 0..30 {
             test_bed.run_without_delta();
@@ -1555,7 +1642,8 @@ mod tests {
         assert!(test_bed.query(|a| a.lgcius.gear_system_state()) == GearSystemState::AllUpLocked);
 
         // Gear DOWN
-        test_bed = test_bed.set_gear_handle_down();
+        test_bed = test_bed.set_gear_handle_down().run_one_tick();
+
         for _ in 0..30 {
             test_bed.run_without_delta();
         }
@@ -1573,12 +1661,15 @@ mod tests {
         assert!(test_bed.query(|a| a.lgcius.active_lgciu_id()) == LgciuId::Lgciu1);
 
         test_bed = test_bed.set_gear_handle_up().run_one_tick();
+
         assert!(test_bed.query(|a| a.lgcius.active_lgciu_id()) == LgciuId::Lgciu2);
 
         test_bed = test_bed.set_gear_handle_down().run_one_tick();
+
         assert!(test_bed.query(|a| a.lgcius.active_lgciu_id()) == LgciuId::Lgciu2);
 
         test_bed = test_bed.set_gear_handle_up().run_one_tick();
+
         assert!(test_bed.query(|a| a.lgcius.active_lgciu_id()) == LgciuId::Lgciu1);
     }
 

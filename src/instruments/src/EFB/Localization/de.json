@@ -448,6 +448,28 @@
     "TugSpeed": "Schleppgeschwindigkeit",
     "UseControllerInput": "Controller-Eingabe verwenden"
   },
+  "QuickControls": {
+    "AlignAdirs": "ADIRS ausrichten",
+    "FinishBoarding": "Einsteigen abschließen",
+    "OnScreenKeyboard": "Bildschirmtastatur",
+    "SimBridge": "SimBridge",
+    "SimBridgeConnected": "Verbunden",
+    "SimBridgeConnecting": "Verbinden...",
+    "SimBridgeOff": "Aus",
+    "SimBridgeOffline": "Nicht verfügbar",
+    "TT": {
+      "AlignAdirs": "ADIRS sofort ausrichten",
+      "AutoBrightness": "Automatische Helligkeit ein-/ausschalten",
+      "Brightness": "Stellen Sie die flyPad-Helligkeit ein",
+      "FinishBoarding": "Boarding sofort abschließen",
+      "OnScreenKeyboard": "Bildschirmtastatur ein-/ausschalten",
+      "PowerButton": "Ausschalten",
+      "Settings": "Gehe zu flyPad-Einstellungen",
+      "SimBridge": "SimBridge-Verbindung steuern",
+      "Sleep": "Bereitschaft"
+    },
+    "Title": "Schnelleinstellungen"
+  },
   "Settings": {
     "About": {
       "Title": "Über"
@@ -520,8 +542,12 @@
     "SimOptions": {
       "Active": "Aktiv",
       "Auto": "Auto",
+      "Both": "Synchronisiert",
       "Calibrate": "Kalibrieren",
+      "Captain": "Kapitän",
+      "CockpitSeatUsedToControl": "Zur Steuerung verwendete Cockpitseite",
       "ConesEnabled": "Sicherheitskegel",
+      "Copilot": "Copilot",
       "DefaultBarometerUnit": "Standard Barometer-Einheit",
       "DynamicRegistrationDecal": "Flugzeugkennzeichen dynamisch darstellen",
       "EnableSimBridge": "SimBridge Serververbindung aktivieren (Wird nach 5 Minuten automatisch deaktiviert, wenn keine Verbindung zustande kommt)",
@@ -533,6 +559,7 @@
       "None": "Aus",
       "Off": "Aus",
       "Save": "Zurückspeichern bei Änderung",
+      "Side": "Seite",
       "SimBridgePort": "Externer SimBridge-Port",
       "SyncMsfsFlightPlan": "MSFS-Flugplan-Synchronisation",
       "ThrottleDetents": "Schubhebelkalibrierung",
@@ -605,12 +632,21 @@
     "Sep": "Sep",
     "Sun": "So",
     "TT": {
+      "Brightness": "Click to change Brightness",
       "ConnectedToLocalApi": "Mit SimBridge verbunden",
       "DisconnectedFromLocalApi": "Keine Verbindung zur SimBridge",
+      "QuickControls": "Klick für Schnelleinstellungen",
       "TurnOffOrShutdownEfb": "EFB ausschalten oder herunterfahren"
     },
     "Thu": "Do",
     "Tue": "Di",
     "Wed": "Mi"
+  },
+  "VersionCheck": {
+    "CurrentVersionText": "Momentan wird die $edition Edition in dieser Version genutzt:",
+    "LatestVersionText": "Die aktuell verfügbare $edition Version ist:",
+    "RecommendationText": "Bitte mit Hilfe des FlyByWire-Installer die neueste Version installieren.",
+    "StatusBarWarning": "Neue A32NX Version verfügbar",
+    "Title": "Neue Version verfügbar"
   }
 }

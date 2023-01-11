@@ -1,3 +1,4 @@
+import { DisplayManagementComputer } from 'instruments/src/PFD/shared/DisplayManagementComputer';
 import { Clock, FSComponent, EventBus, HEventPublisher } from 'msfssdk';
 import { PFDComponent } from './PFD';
 import { AdirsValueProvider } from './shared/AdirsValueProvider';
@@ -22,6 +23,8 @@ class A32NX_PFD extends BaseInstrument {
 
     private readonly adirsValueProvider: AdirsValueProvider;
 
+    private readonly displayManagementComputer: DisplayManagementComputer;
+
     /**
      * "mainmenu" = 0
      * "loading" = 1
@@ -39,6 +42,7 @@ class A32NX_PFD extends BaseInstrument {
         this.simplaneValueProvider = new SimplaneValueProvider(this.bus);
         this.clock = new Clock(this.bus);
         this.adirsValueProvider = new AdirsValueProvider(this.bus, this.simVarPublisher);
+        this.displayManagementComputer = new DisplayManagementComputer(this.bus);
     }
 
     get templateID(): string {
@@ -58,6 +62,7 @@ class A32NX_PFD extends BaseInstrument {
 
         this.arincProvider.init();
         this.clock.init();
+        this.displayManagementComputer.init();
 
         this.simVarPublisher.subscribe('elec');
         this.simVarPublisher.subscribe('elecFo');
@@ -67,7 +72,7 @@ class A32NX_PFD extends BaseInstrument {
         this.simVarPublisher.subscribe('potentiometerFo');
         this.simVarPublisher.subscribe('pitch');
         this.simVarPublisher.subscribe('roll');
-        this.simVarPublisher.subscribe('heading');
+        this.simVarPublisher.subscribe('magHeadingRaw');
         this.simVarPublisher.subscribe('altitude');
         this.simVarPublisher.subscribe('speed');
         this.simVarPublisher.subscribe('noseGearCompressed');
@@ -122,17 +127,17 @@ class A32NX_PFD extends BaseInstrument {
         this.simVarPublisher.subscribe('transAlt');
         this.simVarPublisher.subscribe('transAltAppr');
 
-        this.simVarPublisher.subscribe('groundTrack');
+        this.simVarPublisher.subscribe('magTrackRaw');
+        this.simVarPublisher.subscribe('selectedHeading');
         this.simVarPublisher.subscribe('showSelectedHeading');
         this.simVarPublisher.subscribe('altConstraint');
         this.simVarPublisher.subscribe('trkFpaActive');
         this.simVarPublisher.subscribe('aoa');
-        this.simVarPublisher.subscribe('groundHeadingTrue');
-        this.simVarPublisher.subscribe('groundTrackTrue');
 
         this.simVarPublisher.subscribe('selectedFpa');
         this.simVarPublisher.subscribe('targetSpeedManaged');
         this.simVarPublisher.subscribe('ilsCourse');
+        this.simVarPublisher.subscribe('ilsRMPTuned');
         this.simVarPublisher.subscribe('tla1');
         this.simVarPublisher.subscribe('tla2');
         this.simVarPublisher.subscribe('metricAltToggle');
@@ -214,6 +219,11 @@ class A32NX_PFD extends BaseInstrument {
         this.simVarPublisher.subscribe('fac2EstimatedBetaRaw');
         this.simVarPublisher.subscribe('fac1BetaTargetRaw');
         this.simVarPublisher.subscribe('fac2BetaTargetRaw');
+        this.simVarPublisher.subscribe('trueRefPushbutton');
+        this.simVarPublisher.subscribe('irMaintWordRaw');
+        this.simVarPublisher.subscribe('trueHeadingRaw');
+        this.simVarPublisher.subscribe('trueTrackRaw');
+        this.simVarPublisher.subscribe('slatPosLeft');
 
         FSComponent.render(<PFDComponent bus={this.bus} instrument={this} />, document.getElementById('PFD_CONTENT'));
     }

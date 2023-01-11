@@ -448,6 +448,28 @@
     "TugSpeed": "Kecepatan Tug",
     "UseControllerInput": "Use Controller Input"
   },
+  "QuickControls": {
+    "AlignAdirs": "Align ADIRS",
+    "FinishBoarding": "Finish Boarding",
+    "OnScreenKeyboard": "OnScreen Keyboard",
+    "SimBridge": "SimBridge",
+    "SimBridgeConnected": "Connected",
+    "SimBridgeConnecting": "Connecting...",
+    "SimBridgeOff": "Off",
+    "SimBridgeOffline": "Not Available",
+    "TT": {
+      "AlignAdirs": "Instantly align ADIRS",
+      "AutoBrightness": "Turn Auto Brightness On/Off",
+      "Brightness": "Set flyPad brightness",
+      "FinishBoarding": "Instantly finish boarding",
+      "OnScreenKeyboard": "Turn OnScreen Keyboard On/Off",
+      "PowerButton": "Power Off",
+      "Settings": "Go to flyPad Settings page",
+      "SimBridge": "Control SimBridge Connection",
+      "Sleep": "Standby"
+    },
+    "Title": "Quick Controls"
+  },
   "Settings": {
     "About": {
       "Title": "Tentang"
@@ -520,8 +542,12 @@
     "SimOptions": {
       "Active": "Aktif",
       "Auto": "Otomatis",
+      "Both": "Synchronized",
       "Calibrate": "Kalibrasi",
+      "Captain": "Captain",
+      "CockpitSeatUsedToControl": "Cockpit Seat Used To Control",
       "ConesEnabled": "Safety Cones",
+      "Copilot": "Copilot",
       "DefaultBarometerUnit": "Standar Satuan Barometer",
       "DynamicRegistrationDecal": "Nomor Registrasi Pesawat",
       "EnableSimBridge": "Aktifkan Koneksi Server MCDU (Otomatis dinonaktifkan setelah 5 menit jika tidak ada koneksi yang berhasil)",
@@ -533,6 +559,7 @@
       "None": "Tidak ada",
       "Off": "Mati",
       "Save": "Simpan",
+      "Side": "Side",
       "SimBridgePort": "Port Server MCDU Eksternal",
       "SyncMsfsFlightPlan": "Sinkronkan dengan Flight Plan MSFS",
       "ThrottleDetents": "Penahan Throttle",
@@ -605,12 +632,21 @@
     "Sep": "Sep",
     "Sun": "Ming",
     "TT": {
+      "Brightness": "Click to change Brightness",
       "ConnectedToLocalApi": "Terhubung ke API Lokal",
       "DisconnectedFromLocalApi": "Terputus dari API Lokal",
+      "QuickControls": "Click to open Quick Controls",
       "TurnOffOrShutdownEfb": "Matikan EFB"
     },
     "Thu": "Kam",
     "Tue": "Sel",
     "Wed": "Rab"
+  },
+  "VersionCheck": {
+    "CurrentVersionText": "You are using the $edition edition with version:",
+    "LatestVersionText": "Latest $edition version is",
+    "RecommendationText": "Please update your aircraft using the FlyByWire Installer.",
+    "StatusBarWarning": "Outdated Aircraft Version",
+    "Title": "New Version Available"
   }
 }

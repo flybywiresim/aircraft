@@ -448,6 +448,28 @@
     "TugSpeed": "ความเร็วลากจูง",
     "UseControllerInput": "Use Controller Input"
   },
+  "QuickControls": {
+    "AlignAdirs": "Align ADIRS",
+    "FinishBoarding": "Finish Boarding",
+    "OnScreenKeyboard": "OnScreen Keyboard",
+    "SimBridge": "SimBridge",
+    "SimBridgeConnected": "Connected",
+    "SimBridgeConnecting": "Connecting...",
+    "SimBridgeOff": "Off",
+    "SimBridgeOffline": "Not Available",
+    "TT": {
+      "AlignAdirs": "Instantly align ADIRS",
+      "AutoBrightness": "Turn Auto Brightness On/Off",
+      "Brightness": "Set flyPad brightness",
+      "FinishBoarding": "Instantly finish boarding",
+      "OnScreenKeyboard": "Turn OnScreen Keyboard On/Off",
+      "PowerButton": "Power Off",
+      "Settings": "Go to flyPad Settings page",
+      "SimBridge": "Control SimBridge Connection",
+      "Sleep": "Standby"
+    },
+    "Title": "Quick Controls"
+  },
   "Settings": {
     "About": {
       "Title": "เกี่ยวกับ"
@@ -520,8 +542,12 @@
     "SimOptions": {
       "Active": "ใช้งานอยู่",
       "Auto": "อัตโนมัติ",
+      "Both": "Synchronized",
       "Calibrate": "Calibrate",
+      "Captain": "Captain",
+      "CockpitSeatUsedToControl": "Cockpit Seat Used To Control",
       "ConesEnabled": "กรวยนิรภัย",
+      "Copilot": "Copilot",
       "DefaultBarometerUnit": "หน่วย Barometer เริ่มต้น",
       "DynamicRegistrationDecal": "ทะเบียนเครื่องบินแบบไดนามิก",
       "EnableSimBridge": "เปิดใช้งานการเชื่อมต่อ SimBridge (ปิดการทำงานหลังจาก 5 นาทีอัตโนมัติ หากไม่มีการเชื่อมต่อที่สำเร็จ)",
@@ -533,6 +559,7 @@
       "None": "ไม่มี",
       "Off": "ปิด",
       "Save": "บันทึก",
+      "Side": "Side",
       "SimBridgePort": "พอร์ต SimBridge ภายนอก",
       "SyncMsfsFlightPlan": "ซิงค์แผนการบิน MSFS",
       "ThrottleDetents": "Throttle Detents",
@@ -605,12 +632,21 @@
     "Sep": "ก.ย.",
     "Sun": "อา.",
     "TT": {
+      "Brightness": "Click to change Brightness",
       "ConnectedToLocalApi": "เชื่อมต่อกับ API ภายในเครื่อง",
       "DisconnectedFromLocalApi": "ตัดการเชื่อมต่อจาก API ภายในเครื่อง",
+      "QuickControls": "Click to open Quick Controls",
       "TurnOffOrShutdownEfb": "ปิดเครื่อง EFB"
     },
     "Thu": "พฤ.",
     "Tue": "อ.",
     "Wed": "พ."
+  },
+  "VersionCheck": {
+    "CurrentVersionText": "You are using the $edition edition with version:",
+    "LatestVersionText": "Latest $edition version is",
+    "RecommendationText": "Please update your aircraft using the FlyByWire Installer.",
+    "StatusBarWarning": "Outdated Aircraft Version",
+    "Title": "New Version Available"
   }
 }

@@ -740,7 +740,7 @@ mod tests {
     use crate::electrical::Electricity;
 
     use super::*;
-    use crate::shared::{update_iterator::FixedStepLoop, PotentialOrigin};
+    use crate::shared::{update_iterator::MaxStepLoop, PotentialOrigin};
     use crate::simulation::test::{ReadByName, SimulationTestBed, TestBed};
     use crate::simulation::{Aircraft, SimulationElement};
     use std::time::Duration;
@@ -818,7 +818,7 @@ mod tests {
     }
 
     struct TestAircraft {
-        updater_fixed_step: FixedStepLoop,
+        updater_max_step: MaxStepLoop,
 
         elec_trim_control: TestElecTrimControl,
         manual_trim_control: TestManualTrimControl,
@@ -836,7 +836,7 @@ mod tests {
     impl TestAircraft {
         fn new(context: &mut InitContext) -> Self {
             Self {
-                updater_fixed_step: FixedStepLoop::new(Duration::from_millis(33)),
+                updater_max_step: MaxStepLoop::new(Duration::from_millis(10)),
                 elec_trim_control: TestElecTrimControl::inactive_control(),
                 manual_trim_control: TestManualTrimControl::without_manual_input(),
                 trim_assembly: TrimmableHorizontalStabilizerAssembly::new(
@@ -916,9 +916,9 @@ mod tests {
         }
 
         fn update_after_power_distribution(&mut self, context: &UpdateContext) {
-            self.updater_fixed_step.update(context);
+            self.updater_max_step.update(context);
 
-            for cur_time_step in &mut self.updater_fixed_step {
+            for cur_time_step in &mut self.updater_max_step {
                 self.trim_assembly.update(
                     &context.with_delta(cur_time_step),
                     &self.elec_trim_control,

@@ -448,6 +448,28 @@
     "TugSpeed": "Vontatás sebessége",
     "UseControllerInput": "Használja a vezérlő bemenetét"
   },
+  "QuickControls": {
+    "AlignAdirs": "ADIRS beállítása",
+    "FinishBoarding": "Beszállítás befejezése",
+    "OnScreenKeyboard": "Képernyőn megjelenő billentyűzet",
+    "SimBridge": "SimBridge",
+    "SimBridgeConnected": "Csatlakozva",
+    "SimBridgeConnecting": "Csatlakozás…",
+    "SimBridgeOff": "Ki",
+    "SimBridgeOffline": "Nem elérhető",
+    "TT": {
+      "AlignAdirs": "ADIRS azonnali kapcsolódás",
+      "AutoBrightness": "Automatikus fényerő be/ki ",
+      "Brightness": "flyPad fényerejének beállítása",
+      "FinishBoarding": "Beszállítás azonnali befejezése",
+      "OnScreenKeyboard": "Kijelző billentyűzet be/ki",
+      "PowerButton": "Kikapcsolás",
+      "Settings": "flyPad beállítások oldal megnyitása",
+      "SimBridge": "SimBridge kapcsolat kezelése",
+      "Sleep": "Készenlét"
+    },
+    "Title": "Gyors beállítások"
+  },
   "Settings": {
     "About": {
       "Title": "Névjegy"
@@ -520,8 +542,12 @@
     "SimOptions": {
       "Active": "Aktív",
       "Auto": "Automatikus",
+      "Both": "Szinkronizálva",
       "Calibrate": "Kalibrálás",
+      "Captain": "Kapitány",
+      "CockpitSeatUsedToControl": "Kabin ülés az irányításhoz",
       "ConesEnabled": "Biztonsági bóják",
+      "Copilot": "másodpilóta",
       "DefaultBarometerUnit": "Alap barométer mértékegység",
       "DynamicRegistrationDecal": "Dinamikus regisztrációs matrica",
       "EnableSimBridge": "SimBridge Csatlakozás engedélyezése (Automatikus kikapcsolás 5 perc után, ha nincs sikeres kapcsolat)",
@@ -533,6 +559,7 @@
       "None": "Nincs",
       "Off": "Ki",
       "Save": "Mentés",
+      "Side": "Side",
       "SimBridgePort": "Külső SimBridge port",
       "SyncMsfsFlightPlan": "MSFS Repülési terv szinkronizálása",
       "ThrottleDetents": "Gázkar állások",
@@ -605,12 +632,21 @@
     "Sep": "Szept.",
     "Sun": "Va",
     "TT": {
+      "Brightness": "Click to change Brightness",
       "ConnectedToLocalApi": "Csatlakozva a SimBridge-hez",
       "DisconnectedFromLocalApi": "Lecsatlakozva a SimBridge-ről",
+      "QuickControls": "Kattints a gyors beállítások megnyitásához",
       "TurnOffOrShutdownEfb": "EFB leállítása vagy kikapcsolása"
     },
     "Thu": "Csüt",
     "Tue": "Ke",
     "Wed": "Sze"
+  },
+  "VersionCheck": {
+    "CurrentVersionText": "Jelenleg a $edition kiadást használod a következő verzióval:",
+    "LatestVersionText": "Legutolsó $edition kiadás:",
+    "RecommendationText": "Frissítse a repülőgépet a FlyByWire telepítő segítségével",
+    "StatusBarWarning": "Elavult repülőgép verzió",
+    "Title": "Új verzió elérhető"
   }
 }

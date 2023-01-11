@@ -448,6 +448,28 @@
     "TugSpeed": "推機速度",
     "UseControllerInput": "Use Controller Input"
   },
+  "QuickControls": {
+    "AlignAdirs": "Align ADIRS",
+    "FinishBoarding": "Finish Boarding",
+    "OnScreenKeyboard": "OnScreen Keyboard",
+    "SimBridge": "SimBridge",
+    "SimBridgeConnected": "Connected",
+    "SimBridgeConnecting": "Connecting...",
+    "SimBridgeOff": "Off",
+    "SimBridgeOffline": "Not Available",
+    "TT": {
+      "AlignAdirs": "Instantly align ADIRS",
+      "AutoBrightness": "Turn Auto Brightness On/Off",
+      "Brightness": "Set flyPad brightness",
+      "FinishBoarding": "Instantly finish boarding",
+      "OnScreenKeyboard": "Turn OnScreen Keyboard On/Off",
+      "PowerButton": "Power Off",
+      "Settings": "Go to flyPad Settings page",
+      "SimBridge": "Control SimBridge Connection",
+      "Sleep": "Standby"
+    },
+    "Title": "Quick Controls"
+  },
   "Settings": {
     "About": {
       "Title": "相關"
@@ -520,8 +542,12 @@
     "SimOptions": {
       "Active": "使用中",
       "Auto": "自動",
+      "Both": "Synchronized",
       "Calibrate": "校準",
+      "Captain": "Captain",
+      "CockpitSeatUsedToControl": "Cockpit Seat Used To Control",
       "ConesEnabled": "Safety Cones",
+      "Copilot": "Copilot",
       "DefaultBarometerUnit": "默認氣壓單位",
       "DynamicRegistrationDecal": "動態註冊號噴塗",
       "EnableSimBridge": "啟用 MCDU 伺服器 (5 分鐘之內無連接將自動停用)",
@@ -533,6 +559,7 @@
       "None": "無",
       "Off": "關",
       "Save": "儲存",
+      "Side": "Side",
       "SimBridgePort": "外部 MCDU 服務器端口",
       "SyncMsfsFlightPlan": "同步 MSFS 飛行計劃",
       "ThrottleDetents": "油門卡位",
@@ -605,12 +632,21 @@
     "Sep": "Sep",
     "Sun": "Sun",
     "TT": {
+      "Brightness": "Click to change Brightness",
       "ConnectedToLocalApi": "Connected to Local API",
       "DisconnectedFromLocalApi": "Disconnected from Local API",
+      "QuickControls": "Click to open Quick Controls",
       "TurnOffOrShutdownEfb": "Turn off or Shutdown EFB"
     },
     "Thu": "Thu",
     "Tue": "Tue",
     "Wed": "Wed"
+  },
+  "VersionCheck": {
+    "CurrentVersionText": "You are using the $edition edition with version:",
+    "LatestVersionText": "Latest $edition version is",
+    "RecommendationText": "Please update your aircraft using the FlyByWire Installer.",
+    "StatusBarWarning": "Outdated Aircraft Version",
+    "Title": "New Version Available"
   }
 }

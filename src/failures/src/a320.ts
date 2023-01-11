@@ -13,6 +13,7 @@ export const A320Failure = Object.freeze({
     Sec3Failure: 27004,
     Fcdc1Failure: 27005,
     Fcdc2Failure: 27006,
+
     GreenReservoirLeak: 29000,
     BlueReservoirLeak: 29001,
     YellowReservoirLeak: 29002,
@@ -22,6 +23,11 @@ export const A320Failure = Object.freeze({
     GreenReservoirReturnLeak: 29006,
     BlueReservoirReturnLeak: 29007,
     YellowReservoirReturnLeak: 29008,
+    GreenEdpOverheat: 29009,
+    BlueEpumpOverheat: 29010,
+    YellowEdpOverheat: 29011,
+    YellowEpumpOverheat: 29012,
+
     LeftPfdDisplay: 31000,
     RightPfdDisplay: 31001,
 
