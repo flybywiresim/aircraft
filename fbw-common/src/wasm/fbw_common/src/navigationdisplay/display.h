@@ -52,7 +52,6 @@ class DisplayBase {
   DisplayBase(DisplaySide side, FsContext context, std::uint32_t pixelWidth, std::uint32_t pixelHeight);
 
   void destroyImage();
-  void updatePotentiomenterBlend();
 };
 
 template <std::string_view const& NdMinElevation,
@@ -119,11 +118,6 @@ class Display : public DisplayBase {
   void update(const DisplayBase::NdConfiguration& config) override {
     if (!config.terrainActive) {
       this->destroyImage();
-    }
-
-    if (config.potentiometer != this->_configuration.potentiometer) {
-      this->_configuration.potentiometer = config.potentiometer;
-      this->updatePotentiomenterBlend();
     }
 
     this->_configuration = config;
