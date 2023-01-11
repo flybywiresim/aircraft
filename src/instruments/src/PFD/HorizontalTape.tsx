@@ -1,3 +1,4 @@
+import { DisplayManagementComputerEvents } from 'instruments/src/PFD/shared/DisplayManagementComputer';
 import { EventBus, DisplayComponent, FSComponent, NodeReference, VNode, Subscribable } from 'msfssdk';
 import { Arinc429Values } from './shared/ArincValueProvider';
 
@@ -118,14 +119,14 @@ export class HorizontalTape extends DisplayComponent<HorizontalTapeProps> {
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const pf = this.props.bus.getSubscriber<Arinc429Values>();
+        const pf = this.props.bus.getSubscriber<Arinc429Values & DisplayManagementComputerEvents>();
 
         this.props.yOffset?.sub((yOffset) => {
             this.yOffset = yOffset;
             this.refElement.instance.style.transform = `translate3d(${this.tapeOffset}px, ${yOffset}px, 0px)`;
         });
 
-        pf.on('headingAr').handle((newVal) => {
+        pf.on('heading').handle((newVal) => {
             const multiplier = 100;
             const currentValueAtPrecision = Math.round(newVal.value * multiplier) / multiplier;
             const tapeOffset = -currentValueAtPrecision % 10 * this.props.distanceSpacing / this.props.valueSpacing;
