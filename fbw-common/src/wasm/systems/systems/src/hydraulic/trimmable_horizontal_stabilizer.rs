@@ -410,7 +410,7 @@ impl PitchTrimActuator {
         context: &UpdateContext,
         electric_controller: &impl PitchTrimActuatorController,
         manual_controller: &impl ManualPitchTrimController,
-        ths_hydraulic_assembly: &TrimmableHorizontalStabilizerHydraulics,
+        ths_hydraulic_assembly: &TrimmableHorizontalStabilizerActuator,
     ) {
         self.update_clutches_state(electric_controller);
         self.update_motors(context, electric_controller, ths_hydraulic_assembly);
@@ -434,7 +434,7 @@ impl PitchTrimActuator {
     fn update_speed_and_override(
         &mut self,
         manual_controller: &impl ManualPitchTrimController,
-        ths_hydraulic_assembly: &TrimmableHorizontalStabilizerHydraulics,
+        ths_hydraulic_assembly: &TrimmableHorizontalStabilizerActuator,
     ) {
         let elec_drive_speed = self.elec_motor_drive_total_speed();
 
@@ -480,7 +480,7 @@ impl PitchTrimActuator {
         &mut self,
         context: &UpdateContext,
         controller: &impl PitchTrimActuatorController,
-        ths_hydraulic_assembly: &TrimmableHorizontalStabilizerHydraulics,
+        ths_hydraulic_assembly: &TrimmableHorizontalStabilizerActuator,
     ) {
         for (motor_index, motor) in self.electric_motors.iter_mut().enumerate() {
             motor.set_active_state(controller.energised_motor()[motor_index]);
@@ -522,7 +522,7 @@ impl SimulationElement for PitchTrimActuator {
 pub struct TrimmableHorizontalStabilizerAssembly {
     pitch_trim_actuator: PitchTrimActuator,
     trim_wheel: TrimWheels,
-    ths_hydraulics: TrimmableHorizontalStabilizerHydraulics,
+    ths_hydraulics: TrimmableHorizontalStabilizerActuator,
 }
 impl TrimmableHorizontalStabilizerAssembly {
     pub fn new(
@@ -554,7 +554,7 @@ impl TrimmableHorizontalStabilizerAssembly {
                 min_trim_wheel_angle,
                 total_trim_wheel_range_angle,
             ),
-            ths_hydraulics: TrimmableHorizontalStabilizerHydraulics::new(
+            ths_hydraulics: TrimmableHorizontalStabilizerActuator::new(
                 context,
                 min_ths_deflection,
                 ths_deflection_range,
@@ -618,7 +618,7 @@ impl TrimmableHorizontalStabilizer for TrimmableHorizontalStabilizerAssembly {
     }
 }
 
-struct TrimmableHorizontalStabilizerHydraulics {
+struct TrimmableHorizontalStabilizerActuator {
     deflection_id: VariableIdentifier,
     hydraulic_motors: [HydraulicDriveMotor; 2],
 
@@ -633,7 +633,7 @@ struct TrimmableHorizontalStabilizerHydraulics {
     is_at_max_up_spool_valve: bool,
     is_at_max_down_spool_valve: bool,
 }
-impl TrimmableHorizontalStabilizerHydraulics {
+impl TrimmableHorizontalStabilizerActuator {
     const HYDRAULIC_MOTOR_POSITION_ERROR_BREAKPOINT: [f64; 7] =
         [-50., -0.5, -0.1, 0., 0.1, 0.5, 50.];
     const HYDRAULIC_MOTOR_SPEED_REGULATION_COEF_MAP: [f64; 7] = [-1., -1., -0.6, 0., 0.6, 1., 1.];
@@ -742,7 +742,7 @@ impl TrimmableHorizontalStabilizerHydraulics {
         self.actual_deflection
     }
 }
-impl SimulationElement for TrimmableHorizontalStabilizerHydraulics {
+impl SimulationElement for TrimmableHorizontalStabilizerActuator {
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.deflection_id, self.actual_deflection.get::<degree>());
     }
