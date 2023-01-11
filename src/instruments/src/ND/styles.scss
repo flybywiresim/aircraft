@@ -49,7 +49,9 @@ text.Magenta {
 }
 
 .Cyan text,
-text.Cyan {
+text.Cyan,
+.Cyan tspan,
+tspan.Cyan {
   fill: $display-cyan;
   stroke: none;
 }
@@ -86,7 +88,9 @@ text.White {
 }
 
 .Green text,
-text.Green {
+text.Green,
+.Green tspan,
+tspan.Green {
   fill: $display-green;
   stroke: none;
 }

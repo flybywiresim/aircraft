@@ -5,11 +5,12 @@ import { MathUtils } from '@shared/MathUtils';
 import { TuningMode } from '@fmgc/radionav';
 import { Mode, EfisSide, NdSymbol } from '@shared/NavigationDisplay';
 import { ArmedLateralMode, isArmed, LateralMode } from '@shared/autopilot';
+import { useArinc429Var } from '@instruments/common/arinc429';
+import { TopMessages } from '../elements/TopMessages';
 import { ToWaypointIndicator } from '../elements/ToWaypointIndicator';
 import { FlightPlan } from '../elements/FlightPlan';
 import { MapParameters } from '../utils/MapParameters';
 import { RadioNeedle } from '../elements/RadioNeedles';
-import { ApproachMessage } from '../elements/ApproachMessage';
 import { CrossTrack } from '../elements/CrossTrack';
 import { TrackLine } from '../elements/TrackLine';
 import { Traffic } from '../elements/Traffic';
@@ -23,38 +24,34 @@ export interface RoseModeProps {
     side: EfisSide,
     ppos: LatLongData,
     mapHidden: boolean,
+    trueRef: boolean,
 }
 
-export const RoseMode: FC<RoseModeProps> = ({ symbols, adirsAlign, rangeSetting, mode, side, ppos, mapHidden }) => {
-    const [magHeading] = useSimVar('PLANE HEADING DEGREES MAGNETIC', 'degrees');
-    const [magTrack] = useSimVar('GPS GROUND MAGNETIC TRACK', 'degrees');
-    const [trueHeading] = useSimVar('PLANE HEADING DEGREES TRUE', 'degrees');
+export const RoseMode: FC<RoseModeProps> = ({ symbols, adirsAlign, rangeSetting, mode, side, ppos, mapHidden, trueRef }) => {
+    const magHeading = useArinc429Var('L:A32NX_ADIRS_IR_1_HEADING');
+    const magTrack = useArinc429Var('L:A32NX_ADIRS_IR_1_TRACK');
+    const trueHeading = useArinc429Var('L:A32NX_ADIRS_IR_1_TRUE_HEADING');
+    const trueTrack = useArinc429Var('L:A32NX_ADIRS_IR_1_TRUE_TRACK');
     const [tcasMode] = useSimVar('L:A32NX_SWITCH_TCAS_Position', 'number');
-    const [selectedHeading] = useSimVar('L:A32NX_AUTOPILOT_HEADING_SELECTED', 'degrees');
+    const [selectedHeading] = useSimVar('L:A32NX_FCU_HEADING_SELECTED', 'degrees');
     const [lsCourse] = useSimVar('L:A32NX_FM_LS_COURSE', 'number');
     const [lsDisplayed] = useSimVar(`L:BTN_LS_${side === 'L' ? 1 : 2}_FILTER_ACTIVE`, 'bool'); // TODO rename simvar
     const [fmaLatMode] = useSimVar('L:A32NX_FMA_LATERAL_MODE', 'enum', 200);
     const [armedLateralBitmask] = useSimVar('L:A32NX_FMA_LATERAL_ARMED', 'enum', 200);
-    const [groundSpeed] = useSimVar('GPS GROUND SPEED', 'Meters per second', 200);
 
-    const heading = Math.round(Number(MathUtils.fastToFixed(magHeading, 1)) * 1000) / 1000;
-    let track = Math.round(Number(MathUtils.fastToFixed(magTrack, 1)) * 1000) / 1000;
-
-    // Workaround for bug with gps ground track simvar
-    if (groundSpeed < 40) {
-        track = (0.025 * groundSpeed + 0.00005) * track + (1 - (0.025 * groundSpeed + 0.00005)) * heading;
-    }
+    const heading = Number(MathUtils.fastToFixed((trueRef ? trueHeading.value : magHeading.value), 2));
+    const track = Number(MathUtils.fastToFixed((trueRef ? trueTrack.value : magTrack.value), 2));
 
     const [mapParams] = useState(() => {
         const params = new MapParameters();
-        params.compute(ppos, rangeSetting / 2, 250, trueHeading);
+        params.compute(ppos, rangeSetting / 2, 250, trueHeading.value);
 
         return params;
     });
 
     useEffect(() => {
-        mapParams.compute(ppos, rangeSetting / 2, 250, trueHeading);
-    }, [ppos.lat, ppos.long, trueHeading, rangeSetting].map((n) => MathUtils.fastToFixed(n, 6)));
+        mapParams.compute(ppos, rangeSetting / 2, 250, trueHeading.value);
+    }, [ppos.lat, ppos.long, trueHeading.value, rangeSetting].map((n) => MathUtils.fastToFixed(n, 6)));
 
     if (adirsAlign) {
         return (
@@ -85,19 +82,19 @@ export const RoseMode: FC<RoseModeProps> = ({ symbols, adirsAlign, rangeSetting,
                             )}
                         </g>
                     )}
-                    <RadioNeedle index={1} side={side} displayMode={mode} centreHeight={384} />
-                    <RadioNeedle index={2} side={side} displayMode={mode} centreHeight={384} />
+                    <RadioNeedle index={1} side={side} displayMode={mode} centreHeight={384} trueRef={trueRef} />
+                    <RadioNeedle index={2} side={side} displayMode={mode} centreHeight={384} trueRef={trueRef} />
                 </g>
 
-                { mode === Mode.ROSE_VOR && <VorCaptureOverlay heading={magHeading} side={side} /> }
+                { mode === Mode.ROSE_VOR && <VorCaptureOverlay heading={heading} side={side} /> }
 
-                { mode === Mode.ROSE_ILS && <IlsCaptureOverlay heading={magHeading} _side={side} /> }
+                { mode === Mode.ROSE_ILS && <IlsCaptureOverlay heading={heading} _side={side} /> }
 
-                { mode === Mode.ROSE_NAV && <ToWaypointIndicator side={side} /> }
+                { mode === Mode.ROSE_NAV && <ToWaypointIndicator side={side} trueRef={trueRef} /> }
                 { mode === Mode.ROSE_VOR && <VorInfo side={side} /> }
                 { mode === Mode.ROSE_ILS && <IlsInfo /> }
 
-                <ApproachMessage side={side} />
+                <TopMessages side={side} ppos={ppos} trueTrack={trueTrack} trueRef={trueRef} />
                 <TrackBug heading={heading} track={track} />
                 { mode === Mode.ROSE_NAV && lsDisplayed && <LsCourseBug heading={heading} lsCourse={lsCourse} /> }
                 <SelectedHeadingBug heading={heading} selected={selectedHeading} />
@@ -548,6 +545,7 @@ const MapFailOverlay: FC<Pick<OverlayProps, 'rangeSetting'>> = memo(({ rangeSett
     </>
 ));
 
+// TODO true ref
 const VorCaptureOverlay: React.FC<{
     heading: number,
     side: EfisSide,
@@ -628,6 +626,7 @@ const VorCaptureOverlay: React.FC<{
     );
 };
 
+// TODO true ref
 const IlsCaptureOverlay: React.FC<{
     heading: number,
     _side: EfisSide,
@@ -713,6 +712,7 @@ const TrackBug: React.FC<{heading: number, track: number}> = memo(({ heading, tr
     );
 });
 
+// TODO true ref
 const LsCourseBug: React.FC<{heading: number, lsCourse: number}> = ({ heading, lsCourse }) => {
     if (lsCourse < 0) {
         return null;

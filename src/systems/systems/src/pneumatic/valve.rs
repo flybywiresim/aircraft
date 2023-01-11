@@ -432,8 +432,12 @@ mod tests {
 
     use std::time::Duration;
     use uom::si::{
-        acceleration::foot_per_second_squared, angle::radian, length::foot,
-        mass_rate::kilogram_per_second, thermodynamic_temperature::degree_celsius, velocity::knot,
+        acceleration::foot_per_second_squared,
+        angle::{degree, radian},
+        length::foot,
+        mass_rate::kilogram_per_second,
+        thermodynamic_temperature::degree_celsius,
+        velocity::knot,
         volume::cubic_meter,
     };
 
@@ -494,6 +498,7 @@ mod tests {
             Angle::new::<radian>(0.),
             Angle::new::<radian>(0.),
             MachNumber(0.),
+            Angle::new::<degree>(0.),
         )
     }
 

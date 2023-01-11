@@ -11,6 +11,7 @@ use crate::{
         SimulatorWriter, UpdateContext, Write, Writer,
     },
 };
+use bitflags::bitflags;
 use nalgebra::{Rotation2, Vector2};
 use std::{fmt::Display, time::Duration};
 use uom::si::acceleration::meter_per_second_squared;
@@ -931,6 +932,35 @@ impl From<f64> for AlignTime {
     }
 }
 
+bitflags! {
+    #[derive(Default)]
+    struct IrMaintFlags: u32 {
+        const ALIGNMENT_NOT_READY = 0b0000000000000000001;
+        const REV_ATT_MODE = 0b0000000000000000010;
+        const NAV_MODE = 0b0000000000000000100;
+        const VALID_SET_HEADING = 0b0000000000000001000;
+        const ATTITUDE_INVALID = 0b0000000000000010000;
+        const DC_FAIL = 0b0000000000000100000;
+        const ON_DC = 0b0000000000001000000;
+        const ADR_FAULT = 0b0000000000010000000;
+        const IR_FAULT = 0b0000000000100000000;
+        const DC_FAIL_ON_DC = 0b0000000001000000000;
+        const ALIGN_FAULT = 0b0000000010000000000;
+        const NO_IRS_INITIAL = 0b0000000100000000000;
+        const EXCESS_MOTION_ERROR = 0b0000001000000000000;
+        const ADR_IR_FAULT = 0b0000010000000000000;
+        const EXTREME_LATITUDE = 0b0000100000000000000;
+        const ALIGN_7_10_MINUTES = 0b0111000000000000000;
+        const ALIGN_6_MINUTES = 0b0110000000000000000;
+        const ALIGN_5_MINUTES = 0b0101000000000000000;
+        const ALIGN_4_MINUTES = 0b0100000000000000000;
+        const ALIGN_3_MINUTES = 0b0011000000000000000;
+        const ALIGN_2_MINUTES = 0b0010000000000000000;
+        const ALIGN_1_MINUTES = 0b0001000000000000000;
+        const COMPUTED_LATITUDE_MISCOMPARE = 0b1000000000000000000;
+    }
+}
+
 struct InertialReference {
     number: usize,
     is_on: bool,
@@ -940,6 +970,7 @@ struct InertialReference {
     ir_fault_flash_duration: Option<Duration>,
     remaining_attitude_initialisation_duration: Option<Duration>,
     wind_velocity: LowPassFilter<Vector2<f64>>,
+    extreme_latitude: bool,
 
     pitch: AdirsData<Angle>,
     roll: AdirsData<Angle>,
@@ -970,6 +1001,7 @@ struct InertialReference {
     wind_direction_bnr: AdirsData<Angle>,
     latitude: AdirsData<Angle>,
     longitude: AdirsData<Angle>,
+    maint_word: AdirsData<u32>,
 }
 impl InertialReference {
     const FAST_ALIGNMENT_TIME_IN_SECS: f64 = 90.;
@@ -1000,6 +1032,7 @@ impl InertialReference {
     const WIND_SPEED_BNR: &'static str = "WIND_SPEED_BNR";
     const LATITUDE: &'static str = "LATITUDE";
     const LONGITUDE: &'static str = "LONGITUDE";
+    const MAINT_WORD: &'static str = "MAINT_WORD";
     const MINIMUM_TRUE_AIRSPEED_FOR_WIND_DETERMINATION_KNOTS: f64 = 100.;
     const MINIMUM_GROUND_SPEED_FOR_TRACK_KNOTS: f64 = 50.;
 
@@ -1016,6 +1049,7 @@ impl InertialReference {
             // Start fully initialised.
             remaining_attitude_initialisation_duration: Some(Duration::from_secs(0)),
             wind_velocity: LowPassFilter::new(Self::WIND_VELOCITY_TIME_CONSTANT),
+            extreme_latitude: false,
 
             pitch: AdirsData::new_ir(context, number, Self::PITCH),
             roll: AdirsData::new_ir(context, number, Self::ROLL),
@@ -1042,6 +1076,8 @@ impl InertialReference {
             wind_speed_bnr: AdirsData::new_ir(context, number, Self::WIND_SPEED_BNR),
             latitude: AdirsData::new_ir(context, number, Self::LATITUDE),
             longitude: AdirsData::new_ir(context, number, Self::LONGITUDE),
+            /// label 270
+            maint_word: AdirsData::new_ir(context, number, Self::MAINT_WORD),
         }
     }
 
@@ -1064,9 +1100,11 @@ impl InertialReference {
             simulator_data,
         );
 
+        self.update_latitude(simulator_data);
         self.update_attitude_values(context, simulator_data);
         self.update_heading_values(overhead, simulator_data);
         self.update_non_attitude_values(context, true_airspeed_source, overhead, simulator_data);
+        self.update_maint_word(overhead);
     }
 
     fn update_fault_flash_duration(
@@ -1116,6 +1154,19 @@ impl InertialReference {
             },
             InertialReferenceMode::Off | InertialReferenceMode::Attitude => None,
         };
+    }
+
+    fn update_latitude(&mut self, simulator_data: AdirsSimulatorData) {
+        let latitude = simulator_data.latitude.get::<degree>();
+        let longitude = simulator_data.longitude.get::<degree>();
+
+        let hysteresis_sign = if self.extreme_latitude { 1. } else { -1. };
+
+        self.extreme_latitude = !((-60. + hysteresis_sign * 0.5) <= latitude
+            && (latitude <= (73. - hysteresis_sign * 0.5)
+                || (latitude <= (82. - hysteresis_sign * 0.5)
+                    && (longitude <= (-120. - hysteresis_sign * 2.5)
+                        || longitude >= (-90. + hysteresis_sign * 2.5)))))
     }
 
     fn update_attitude_values(
@@ -1171,8 +1222,28 @@ impl InertialReference {
         overhead: &AirDataInertialReferenceSystemOverheadPanel,
         simulator_data: AdirsSimulatorData,
     ) {
-        let ssm = if self.is_on
+        // TODO BNR labels (that most things use) are actually +/- 180
+
+        // TODO tests for when should be mag or true in mag labels
+
+        let heading_available = self.is_on
             && (self.is_fully_aligned()
+                || (overhead.mode_of(self.number) == InertialReferenceMode::Navigation
+                    && self
+                        .remaining_align_duration
+                        .map_or(false, |duration| duration.as_secs() < 120)));
+
+        let true_heading_ssm = if heading_available {
+            SignStatus::NormalOperation
+        } else {
+            SignStatus::NoComputedData
+        };
+        self.true_heading
+            .set_value(simulator_data.true_heading, true_heading_ssm);
+
+        // TODO in ATT mode NCD until heading initialised on MCDU
+        let magnetic_heading_ssm = if self.is_on
+            && (heading_available
                 || (overhead.mode_of(self.number) == InertialReferenceMode::Attitude
                     && self.is_attitude_aligned()))
         {
@@ -1180,22 +1251,14 @@ impl InertialReference {
         } else {
             SignStatus::NoComputedData
         };
-
-        let true_heading_ssm = if self.is_on
-            && (self.is_fully_aligned()
-                || (overhead.mode_of(self.number) == InertialReferenceMode::Navigation
-                    && self
-                        .remaining_align_duration
-                        .map_or(false, |duration| duration.as_secs() < 120)))
-        {
-            SignStatus::NormalOperation
-        } else {
-            SignStatus::NoComputedData
-        };
-
-        self.true_heading
-            .set_value(simulator_data.true_heading, true_heading_ssm);
-        self.heading.set_value(simulator_data.heading, ssm);
+        self.heading.set_value(
+            if self.has_magnetic_data() {
+                simulator_data.heading
+            } else {
+                simulator_data.true_heading
+            },
+            magnetic_heading_ssm,
+        );
     }
 
     fn update_wind_velocity(
@@ -1313,11 +1376,23 @@ impl InertialReference {
         let ground_speed_above_minimum_threshold = simulator_data.ground_speed
             >= Velocity::new::<knot>(Self::MINIMUM_GROUND_SPEED_FOR_TRACK_KNOTS);
 
+        let track = if self.has_magnetic_data() {
+            simulator_data.track
+        } else {
+            simulator_data.true_track
+        };
+
+        let heading = if self.has_magnetic_data() {
+            simulator_data.heading
+        } else {
+            simulator_data.true_heading
+        };
+
         self.track.set_value(
             if ground_speed_above_minimum_threshold {
-                simulator_data.track
+                track
             } else {
-                simulator_data.heading
+                heading
             },
             ssm,
         );
@@ -1365,6 +1440,77 @@ impl InertialReference {
         self.update_wind_velocity(context, true_airspeed_source, overhead, simulator_data);
     }
 
+    fn update_maint_word(&mut self, overhead: &AirDataInertialReferenceSystemOverheadPanel) {
+        // TODO check status of these during mode transitions (first need to implement mode FSM)
+        let mut maint_word: IrMaintFlags = IrMaintFlags::default();
+
+        if !self.is_on {
+            // FIXME should be no transmission (can we just do this at a higher level...)
+            self.maint_word
+                .set_value(maint_word.bits(), SignStatus::FailureWarning);
+            return;
+        }
+
+        if !self.is_fully_aligned() {
+            maint_word |= IrMaintFlags::ALIGNMENT_NOT_READY;
+        }
+
+        if overhead.mode_of(self.number) == InertialReferenceMode::Attitude {
+            maint_word |= IrMaintFlags::REV_ATT_MODE;
+        }
+
+        if self.is_fully_aligned() {
+            maint_word |= IrMaintFlags::NAV_MODE;
+        }
+
+        // TODO request heading setting in att mode if not set
+
+        // TODO attitude invalid fault
+
+        // TODO dc < 18 V
+
+        // TODO on DC (re-implement ON BAT light properly at the same time)
+
+        // TODO ADR input data fault
+
+        // TODO unimportant nav fault
+
+        // TODO DC fault during DC operation last power up
+
+        // TODO align fault
+
+        // TODO No IRS initial pos
+
+        // TODO excess motion during align
+
+        // TODO ADR data not received or parity error
+
+        if self.extreme_latitude {
+            maint_word |= IrMaintFlags::EXTREME_LATITUDE;
+        }
+
+        maint_word |= match self
+            .remaining_align_duration()
+            .map(|duration| duration.as_secs())
+        {
+            Some(1..=60) => IrMaintFlags::ALIGN_1_MINUTES,
+            Some(61..=120) => IrMaintFlags::ALIGN_2_MINUTES,
+            Some(121..=180) => IrMaintFlags::ALIGN_3_MINUTES,
+            Some(181..=240) => IrMaintFlags::ALIGN_4_MINUTES,
+            Some(241..=300) => IrMaintFlags::ALIGN_5_MINUTES,
+            Some(301..=360) => IrMaintFlags::ALIGN_6_MINUTES,
+            Some(361..) => IrMaintFlags::ALIGN_7_10_MINUTES,
+            Some(0) | None => IrMaintFlags::default(),
+        };
+
+        // TODO sin/cos test discrepancy
+
+        self.maint_word
+            .set_value(maint_word.bits(), SignStatus::NormalOperation);
+
+        // TODO tests!
+    }
+
     fn alignment_starting(&self, selected_mode: InertialReferenceMode) -> bool {
         selected_mode != InertialReferenceMode::Off
             && self.remaining_attitude_initialisation_duration.is_none()
@@ -1404,6 +1550,10 @@ impl InertialReference {
     fn has_fault(&self) -> bool {
         self.ir_fault_flash_duration.is_some()
     }
+
+    fn has_magnetic_data(&self) -> bool {
+        !self.extreme_latitude
+    }
 }
 impl SimulationElement for InertialReference {
     fn write(&self, writer: &mut SimulatorWriter) {
@@ -1442,6 +1592,7 @@ impl SimulationElement for InertialReference {
         self.wind_speed_bnr.write_to(writer);
         self.latitude.write_to(writer);
         self.longitude.write_to(writer);
+        self.maint_word.write_to(writer);
     }
 }
 impl GroundSpeed for InertialReference {
@@ -2084,6 +2235,14 @@ mod tests {
             ))
         }
 
+        fn maint_word(&mut self, adiru_number: usize) -> Arinc429Word<u32> {
+            self.read_arinc429_by_name(&output_data_id(
+                OutputDataType::Ir,
+                adiru_number,
+                InertialReference::MAINT_WORD,
+            ))
+        }
+
         fn uses_gps_as_primary(&mut self) -> bool {
             self.read_by_name(AirDataInertialReferenceSystem::USES_GPS_AS_PRIMARY_KEY)
         }
@@ -2303,6 +2462,11 @@ mod tests {
         test_bed.run();
 
         assert!(test_bed.is_aligned(adiru_number));
+        let maint_word_flags = IrMaintFlags::from_bits(test_bed.maint_word(adiru_number).value());
+        assert_eq!(
+            maint_word_flags.unwrap() & IrMaintFlags::NAV_MODE,
+            IrMaintFlags::NAV_MODE
+        );
     }
 
     #[rstest]
@@ -2319,6 +2483,11 @@ mod tests {
 
         assert!(!test_bed.is_aligned(adiru_number));
         assert!(!test_bed.is_aligning(adiru_number));
+        let maint_word_flags = IrMaintFlags::from_bits(test_bed.maint_word(adiru_number).value());
+        assert_eq!(
+            maint_word_flags.unwrap() & IrMaintFlags::ALIGNMENT_NOT_READY,
+            IrMaintFlags::ALIGNMENT_NOT_READY
+        );
     }
 
     #[rstest]
@@ -2336,6 +2505,11 @@ mod tests {
         test_bed.run_with_delta(Duration::from_secs(0));
 
         assert!(test_bed.is_aligned(adiru_number));
+        let maint_word_flags = IrMaintFlags::from_bits(test_bed.maint_word(adiru_number).value());
+        assert_eq!(
+            maint_word_flags.unwrap() & IrMaintFlags::NAV_MODE,
+            IrMaintFlags::NAV_MODE
+        );
     }
 
     #[rstest]
@@ -2357,9 +2531,19 @@ mod tests {
             InertialReference::FAST_ALIGNMENT_TIME_IN_SECS - 1.,
         ));
         assert!(test_bed.is_aligning(adiru_number));
+        let maint_word_flags = IrMaintFlags::from_bits(test_bed.maint_word(adiru_number).value());
+        assert_eq!(
+            maint_word_flags.unwrap() & IrMaintFlags::ALIGNMENT_NOT_READY,
+            IrMaintFlags::ALIGNMENT_NOT_READY
+        );
 
         test_bed.run_with_delta(Duration::from_secs(1));
         assert!(test_bed.is_aligned(adiru_number));
+        let maint_word_flags = IrMaintFlags::from_bits(test_bed.maint_word(adiru_number).value());
+        assert_eq!(
+            maint_word_flags.unwrap() & IrMaintFlags::NAV_MODE,
+            IrMaintFlags::NAV_MODE
+        );
     }
 
     #[rstest]
@@ -2896,8 +3080,7 @@ mod tests {
                 .ir_mode_selector_set_to(adiru_number, InertialReferenceMode::Navigation);
 
             while test_bed.align_state(adiru_number) != AlignState::Aligned {
-                // As the attitude data will become available at some point, we're not checking it here.
-                test_bed.assert_ir_heading_data_available(false, adiru_number);
+                // As the attitude and heading data will become available at some point, we're not checking it here.
                 test_bed.assert_ir_non_attitude_data_available(false, adiru_number);
                 test_bed.run();
             }
@@ -2991,6 +3174,13 @@ mod tests {
             test_bed.run_with_delta(Duration::from_millis(1));
             test_bed.assert_ir_attitude_data_available(true, adiru_number);
             test_bed.assert_ir_heading_data_available(true, adiru_number);
+
+            let maint_word_flags =
+                IrMaintFlags::from_bits(test_bed.maint_word(adiru_number).value());
+            assert_eq!(
+                maint_word_flags.unwrap() & IrMaintFlags::REV_ATT_MODE,
+                IrMaintFlags::REV_ATT_MODE
+            );
         }
 
         #[rstest]
@@ -3221,6 +3411,106 @@ mod tests {
         #[case(1)]
         #[case(2)]
         #[case(3)]
+        fn magnetic_heading_is_supplied_and_equal_to_true_heading_when_in_polar_region(
+            #[case] adiru_number: usize,
+        ) {
+            let true_heading = Angle::new::<degree>(160.);
+            let mag_heading = Angle::new::<degree>(142.);
+            let polar_latitude = Angle::new::<degree>(83.);
+
+            let mut test_bed = all_adirus_aligned_test_bed_with()
+                .true_heading_of(true_heading)
+                .heading_of(mag_heading)
+                .latitude_of(polar_latitude);
+            test_bed.run();
+
+            assert!(test_bed.true_heading(adiru_number).is_normal_operation());
+            assert!(test_bed.heading(adiru_number).is_normal_operation());
+            assert_about_eq!(
+                test_bed.true_heading(adiru_number).value().get::<degree>(),
+                test_bed.heading(adiru_number).value().get::<degree>()
+            );
+        }
+
+        #[rstest]
+        #[case(1)]
+        #[case(2)]
+        #[case(3)]
+        fn magnetic_heading_is_supplied_and_not_equal_to_true_heading_when_left_polar_region(
+            #[case] adiru_number: usize,
+        ) {
+            let true_heading = Angle::new::<degree>(160.);
+            let mag_heading = Angle::new::<degree>(142.);
+            let polar_latitude = Angle::new::<degree>(83.);
+            let non_polar_latitude = Angle::new::<degree>(80.);
+
+            let mut test_bed = all_adirus_aligned_test_bed_with()
+                .true_heading_of(true_heading)
+                .heading_of(mag_heading)
+                .latitude_of(polar_latitude);
+            test_bed.run();
+
+            test_bed.set_latitude(non_polar_latitude);
+            test_bed.run();
+
+            assert!(test_bed.true_heading(adiru_number).is_normal_operation());
+            assert!(test_bed.heading(adiru_number).is_normal_operation());
+            assert_about_eq!(
+                test_bed.true_heading(adiru_number).value().get::<degree>(),
+                true_heading.get::<degree>()
+            );
+            assert_about_eq!(
+                test_bed.heading(adiru_number).value().get::<degree>(),
+                mag_heading.get::<degree>()
+            );
+        }
+
+        #[rstest]
+        #[case(1)]
+        #[case(2)]
+        #[case(3)]
+        fn extreme_latitude_flag_is_set_in_polar_region(#[case] adiru_number: usize) {
+            let polar_latitude = Angle::new::<degree>(83.);
+
+            let mut test_bed = all_adirus_aligned_test_bed_with().latitude_of(polar_latitude);
+            test_bed.run();
+
+            assert!(test_bed.maint_word(adiru_number).is_normal_operation());
+            let maint_word_flags =
+                IrMaintFlags::from_bits(test_bed.maint_word(adiru_number).value());
+            assert_eq!(
+                maint_word_flags.unwrap() & IrMaintFlags::EXTREME_LATITUDE,
+                IrMaintFlags::EXTREME_LATITUDE
+            );
+        }
+
+        #[rstest]
+        #[case(1)]
+        #[case(2)]
+        #[case(3)]
+        fn extreme_latitude_flag_is_unset_when_left_polar_region(#[case] adiru_number: usize) {
+            let polar_latitude = Angle::new::<degree>(83.);
+            let non_polar_latitude = Angle::new::<degree>(80.);
+
+            let mut test_bed = all_adirus_aligned_test_bed_with().latitude_of(polar_latitude);
+            test_bed.run();
+
+            test_bed.set_latitude(non_polar_latitude);
+            test_bed.run();
+
+            assert!(test_bed.maint_word(adiru_number).is_normal_operation());
+            let maint_word_flags =
+                IrMaintFlags::from_bits(test_bed.maint_word(adiru_number).value());
+            assert_eq!(
+                maint_word_flags.unwrap() & IrMaintFlags::EXTREME_LATITUDE,
+                IrMaintFlags::default()
+            );
+        }
+
+        #[rstest]
+        #[case(1)]
+        #[case(2)]
+        #[case(3)]
         fn track_is_supplied_when_ground_speed_greater_than_or_equal_to_50_knots(
             #[case] adiru_number: usize,
         ) {
@@ -3294,6 +3584,64 @@ mod tests {
             assert_eq!(
                 test_bed.true_track(adiru_number).normal_value().unwrap(),
                 angle
+            );
+        }
+
+        #[rstest]
+        #[case(1)]
+        #[case(2)]
+        #[case(3)]
+        fn magnetic_track_is_supplied_and_equal_to_true_track_when_in_polar_region(
+            #[case] adiru_number: usize,
+        ) {
+            let true_track = Angle::new::<degree>(160.);
+            let mag_track = Angle::new::<degree>(142.);
+            let polar_latitude = Angle::new::<degree>(83.);
+
+            let mut test_bed = all_adirus_aligned_test_bed_with()
+                .true_track_of(true_track)
+                .track_of(mag_track)
+                .latitude_of(polar_latitude);
+            test_bed.run();
+
+            assert!(test_bed.true_track(adiru_number).is_normal_operation());
+            assert!(test_bed.track(adiru_number).is_normal_operation());
+            assert_about_eq!(
+                test_bed.true_track(adiru_number).value().get::<degree>(),
+                test_bed.track(adiru_number).value().get::<degree>()
+            );
+        }
+
+        #[rstest]
+        #[case(1)]
+        #[case(2)]
+        #[case(3)]
+        fn magnetic_track_is_supplied_and_not_equal_to_true_track_when_left_polar_region(
+            #[case] adiru_number: usize,
+        ) {
+            let true_track = Angle::new::<degree>(160.);
+            let mag_track = Angle::new::<degree>(142.);
+            let polar_latitude = Angle::new::<degree>(83.);
+            let non_polar_latitude = Angle::new::<degree>(80.);
+
+            let mut test_bed = all_adirus_aligned_test_bed_with()
+                .true_heading_of(true_track)
+                .heading_of(mag_track)
+                .latitude_of(polar_latitude);
+            test_bed.run();
+
+            test_bed.set_latitude(non_polar_latitude);
+            test_bed.run();
+
+            assert!(test_bed.true_track(adiru_number).is_normal_operation());
+            assert!(test_bed.track(adiru_number).is_normal_operation());
+            assert_about_eq!(
+                test_bed.true_track(adiru_number).value().get::<degree>(),
+                true_track.get::<degree>()
+            );
+            assert_about_eq!(
+                test_bed.track(adiru_number).value().get::<degree>(),
+                mag_track.get::<degree>()
             );
         }
 

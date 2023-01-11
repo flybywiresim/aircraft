@@ -1,13 +1,9 @@
 import React from 'react';
 import { SvgGroup } from '../../Common/SvgGroup';
-import { render } from '../../../Common';
-import { setIsEcamPage } from '../../../Common/defaults';
 import { useSimVar } from '../../../Common/simVars';
 import Valve from './Valve';
 
 import '../../Common/CommonStyles.scss';
-
-setIsEcamPage('cond_page');
 
 export const CondPage = () => {
     // Disaply trim valve position for each zone
@@ -105,5 +101,3 @@ const CondUnit = ({ title, selectedTemp, cabinTemp, trimTemp, x, y, offset, hotA
         </SvgGroup>
     );
 };
-
-render(<CondPage />);
