@@ -1,8 +1,13 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { getSimbriefData } from '../../SimbriefApi';
+import { getSimbriefFlightplans, getSimbriefData } from '../../SimbriefApi';
 import { IFuel, IWeights } from '../../SimbriefApi/simbriefInterface';
 
 import { store, RootState } from '../store';
+
+export interface SimbriefFlightplan {
+    requestId: number,
+    generatedAt: Date
+}
 
 export interface SimbriefData {
     departingAirport: string;
@@ -46,7 +51,8 @@ export interface SimbriefData {
     costInd: string;
 }
 
-export const initialState: {data: SimbriefData} = {
+export const initialState: {flightplans: SimbriefFlightplan[], data: SimbriefData} = {
+    flightplans: [],
     data: {
         airline: '',
         flightNum: '',
@@ -124,8 +130,16 @@ export const simbriefSlice = createSlice({
         setSimbriefData: (state, action: PayloadAction<SimbriefData>) => {
             state.data = action.payload;
         },
+        setSimbriefFlightplans: (state, action: PayloadAction<SimbriefFlightplan[]>) => {
+            state.flightplans = action.payload;
+        },
     },
 });
+
+export async function fetchSimbriefFlightplansAction(): Promise<PayloadAction<SimbriefFlightplan[]>> {
+    const returnedSimbriefFlightplans = await getSimbriefFlightplans();
+    return setSimbriefFlightplans(returnedSimbriefFlightplans);
+}
 
 export async function fetchSimbriefDataAction(simbriefUserId: string): Promise<PayloadAction<SimbriefData>> {
     const returnedSimbriefData = await getSimbriefData(simbriefUserId);
@@ -210,8 +224,10 @@ export async function fetchSimbriefDataAction(simbriefUserId: string): Promise<P
 /**
  * @returns Whether or not the SimBrief data has been altered from its original state
  */
-export const isSimbriefDataLoaded = (): boolean => JSON.stringify((store.getState() as RootState).simbrief) !== JSON.stringify(initialState);
+export const isSimbriefDataLoaded = (): boolean => JSON.stringify((store.getState() as RootState).simbrief.data) !== JSON.stringify(initialState.data);
 
-export const { setSimbriefData } = simbriefSlice.actions;
+export const isSimbriefFlightplansLoaded = (): boolean => JSON.stringify((store.getState() as RootState).simbrief.flightplans) !== JSON.stringify(initialState.flightplans);
+
+export const { setSimbriefFlightplans, setSimbriefData } = simbriefSlice.actions;
 
 export default simbriefSlice.reducer;
