@@ -104,8 +104,10 @@ class Display : public DisplayBase {
         copySize = SIMCONNECT_CLIENTDATA_MAX_SIZE;
       }
 
-      std::memcpy(&(this->_frameBuffer.data()[this->_receivedFrameData]), &this->_frameData->data().data, copySize);
-      this->_receivedFrameData += copySize;
+      if (this->_frameBuffer.capacity() >= this->_receivedFrameData + copySize) {
+        std::memcpy(&(this->_frameBuffer.data()[this->_receivedFrameData]), &this->_frameData->data().data, copySize);
+        this->_receivedFrameData += copySize;
+      }
 
       if (this->_receivedFrameData >= this->_frameBufferSize) {
         this->destroyImage();
