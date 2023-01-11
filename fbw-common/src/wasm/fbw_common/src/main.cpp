@@ -12,7 +12,6 @@ simconnect::Connection connection;
 
 extern "C" {
 MSFS_CALLBACK bool terronnd_gauge_callback(FsContext ctx, int service_id, void* pData) {
-  std::cout << "TERR ON ND: TESTING TESTING" << std::endl;
   switch (service_id) {
     case PANEL_SERVICE_PRE_INSTALL: {
       bool connected = connection.connect("FBW_TERRONND_CONNECTION");
