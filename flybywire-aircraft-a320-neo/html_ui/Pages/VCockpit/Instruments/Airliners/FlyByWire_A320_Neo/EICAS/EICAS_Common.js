@@ -47,9 +47,9 @@ class EICASCommonDisplay extends Airliners.EICASTemplateElement {
         const airDataReferenceSource = this.getStatusAirDataReferenceSource();
         const inertialReferenceSource = this.getStatusInertialReferenceSource();
         const sat = Arinc429Word.fromSimVarValue(`L:A32NX_ADIRS_ADR_${airDataReferenceSource}_STATIC_AIR_TEMPERATURE`);
-        this.refreshTAT(Arinc429Word.fromSimVarValue(`L:A32NX_ADIRS_ADR_${airDataReferenceSource}_TOTAL_AIR_TEMPERATURE`));
+        /*  this.refreshTAT(Arinc429Word.fromSimVarValue(`L:A32NX_ADIRS_ADR_${airDataReferenceSource}_TOTAL_AIR_TEMPERATURE`));
         this.refreshSAT(sat);
-        this.refreshISA(Arinc429Word.fromSimVarValue(`L:A32NX_ADIRS_ADR_${airDataReferenceSource}_INTERNATIONAL_STANDARD_ATMOSPHERE_DELTA`), sat);
+        this.refreshISA(Arinc429Word.fromSimVarValue(`L:A32NX_ADIRS_ADR_${airDataReferenceSource}_INTERNATIONAL_STANDARD_ATMOSPHERE_DELTA`), sat); */
 
         this.refreshClock();
         this.refreshLoadFactor(_deltaTime, Arinc429Word.fromSimVarValue(`L:A32NX_ADIRS_IR_${inertialReferenceSource}_BODY_NORMAL_ACC`));

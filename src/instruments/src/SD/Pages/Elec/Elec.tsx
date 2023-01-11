@@ -1,15 +1,11 @@
-import classNames from 'classnames';
 import React from 'react';
-import { render } from '@instruments/common/index';
+import classNames from 'classnames';
 import { PageTitle } from '../../Common/PageTitle';
-import { setIsEcamPage } from '../../../Common/defaults';
 import { useSimVar } from '../../../Common/simVars';
 import { EcamPage } from '../../Common/EcamPage';
 import { SvgGroup } from '../../Common/SvgGroup';
 
 import './Elec.scss';
-
-setIsEcamPage('elec_page');
 
 const maxStaleness = 300;
 
@@ -517,5 +513,3 @@ const Wire = ({ d, amber }: WireProps) => {
     const classes = classNames({ Green: !amber }, { Amber: amber });
     return <path className={classes} d={d} />;
 };
-
-render(<ElecPage />);

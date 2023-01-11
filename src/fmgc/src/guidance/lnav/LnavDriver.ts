@@ -411,8 +411,9 @@ export class LnavDriver implements GuidanceComponent {
     private updateEfisData(activeLeg: Leg, gs: Knots) {
         const termination = activeLeg instanceof XFLeg ? activeLeg.fix.infos.coordinates : activeLeg.getPathEndPoint();
 
+        const efisTrueBearing = termination ? Avionics.Utils.computeGreatCircleHeading(this.ppos, termination) : -1;
         const efisBearing = termination ? A32NX_Util.trueToMagnetic(
-            Avionics.Utils.computeGreatCircleHeading(this.ppos, termination),
+            efisTrueBearing,
             Facilities.getMagVar(this.ppos.lat, this.ppos.long),
         ) : -1;
 
@@ -423,10 +424,12 @@ export class LnavDriver implements GuidanceComponent {
         // FIXME should be NCD if no FM position
 
         SimVar.SetSimVarValue('L:A32NX_EFIS_L_TO_WPT_BEARING', 'Degrees', efisBearing);
+        SimVar.SetSimVarValue('L:A32NX_EFIS_L_TO_WPT_TRUE_BEARING', 'Degrees', efisTrueBearing);
         SimVar.SetSimVarValue('L:A32NX_EFIS_L_TO_WPT_DISTANCE', 'Number', efisDistance);
         SimVar.SetSimVarValue('L:A32NX_EFIS_L_TO_WPT_ETA', 'Seconds', efisEta);
 
         SimVar.SetSimVarValue('L:A32NX_EFIS_R_TO_WPT_BEARING', 'Degrees', efisBearing);
+        SimVar.SetSimVarValue('L:A32NX_EFIS_R_TO_WPT_TRUE_BEARING', 'Degrees', efisTrueBearing);
         SimVar.SetSimVarValue('L:A32NX_EFIS_R_TO_WPT_DISTANCE', 'Number', efisDistance);
         SimVar.SetSimVarValue('L:A32NX_EFIS_R_TO_WPT_ETA', 'Seconds', efisEta);
     }
@@ -481,7 +484,7 @@ export class LnavDriver implements GuidanceComponent {
         if (lateralModel === LateralMode.NAV) {
             // Set HDG (current heading)
             SimVar.SetSimVarValue('H:A320_Neo_FCU_HDG_PULL', 'number', 0);
-            SimVar.SetSimVarValue('L:A32NX_AUTOPILOT_HEADING_SELECTED', 'number', Simplane.getHeadingMagnetic());
+            SimVar.SetSimVarValue('L:A32NX_FM_HEADING_SYNC', 'boolean', true);
             reverted = true;
         }
 
