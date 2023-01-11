@@ -7,10 +7,9 @@ OUTPUT="${DIR}/../../flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_
 
 if [ "$1" == "--debug" ]; then
   CLANG_ARGS="-g"
-#else
-  #WASMLD_ARGS="--strip-debug"
+else
+  WASMLD_ARGS="--strip-debug"
 fi
-CLANG_ARGS="-g"
 
 set -ex
 
