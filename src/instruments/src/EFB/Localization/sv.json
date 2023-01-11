@@ -448,6 +448,28 @@
     "TugSpeed": "Dragarhastighet",
     "UseControllerInput": "Använda spelkontrollen som indata"
   },
+  "QuickControls": {
+    "AlignAdirs": "Justera ADIRS",
+    "FinishBoarding": "Avsluta Boarding",
+    "OnScreenKeyboard": "Skärmtangentbord",
+    "SimBridge": "SimBridge",
+    "SimBridgeConnected": "Ansluten",
+    "SimBridgeConnecting": "Ansluter...",
+    "SimBridgeOff": "Av",
+    "SimBridgeOffline": "Ej tillgänglig",
+    "TT": {
+      "AlignAdirs": "Justera ADIRS direkt",
+      "AutoBrightness": "Slå på/av automatisk ljusstyrka",
+      "Brightness": "Ställ in flyPad-ljusstyrka",
+      "FinishBoarding": "Avsluta ombordstigningen omedelbart",
+      "OnScreenKeyboard": "Slå på/av skärmtangentbordet",
+      "PowerButton": "Stäng av",
+      "Settings": "Gå till flyPad inställningar",
+      "SimBridge": "Styr SimBridge-anslutning",
+      "Sleep": "Standby"
+    },
+    "Title": "Snabbinställningar"
+  },
   "Settings": {
     "About": {
       "Title": "Om"
@@ -520,8 +542,12 @@
     "SimOptions": {
       "Active": "Aktiv",
       "Auto": "Auto",
+      "Both": "Synkroniserad",
       "Calibrate": "Kalibrera",
+      "Captain": "Captain",
+      "CockpitSeatUsedToControl": "Cockpit stol som används för att styra",
       "ConesEnabled": "Säkerhetskoner",
+      "Copilot": "Copilot",
       "DefaultBarometerUnit": "Standardbarometerenhet",
       "DynamicRegistrationDecal": "Dynamisk registreringsdekal",
       "EnableSimBridge": "Aktivera SimBridge-serveranslutning (inaktiveras automatiskt efter 5 minuter om anslutningen inte lyckas).",
@@ -533,6 +559,7 @@
       "None": "Ingen",
       "Off": "Av",
       "Save": "Spara",
+      "Side": "Side",
       "SimBridgePort": "Extern SimBridge-port",
       "SyncMsfsFlightPlan": "Synkronisera MSFS-färdplan",
       "ThrottleDetents": "Kalibrering av tryckspaken",
@@ -605,12 +632,21 @@
     "Sep": "Sep",
     "Sun": "Sön",
     "TT": {
+      "Brightness": "Click to change Brightness",
       "ConnectedToLocalApi": "Ansluten till SimBridge",
       "DisconnectedFromLocalApi": "Avklopplad från SimBridge",
+      "QuickControls": "Klicka för att öppna snabbinställningar",
       "TurnOffOrShutdownEfb": "Stäng av EFB"
     },
     "Thu": "Tor",
     "Tue": "Tis",
     "Wed": "Ons"
+  },
+  "VersionCheck": {
+    "CurrentVersionText": "Du använder $edition utgåvan med version:",
+    "LatestVersionText": "Senaste $edition versionen är",
+    "RecommendationText": "Vänligen uppdatera ditt flygplan via FlyByWire Installatören.",
+    "StatusBarWarning": "Inaktuell Flygplansversion",
+    "Title": "Ny version tillgänglig"
   }
 }

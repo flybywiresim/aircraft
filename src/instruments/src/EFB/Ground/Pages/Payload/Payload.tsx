@@ -16,7 +16,7 @@ import { useBitFlags } from '@instruments/common/bitFlags';
 import { round } from 'lodash';
 import { CargoWidget } from './Seating/CargoWidget';
 import { ChartWidget } from './Chart/ChartWidget';
-import { PaxStationInfo, CargoStationInfo } from './Seating/Constants';
+import { CargoStationInfo, PaxStationInfo } from './Seating/Constants';
 import { t } from '../../../translation';
 import { TooltipWrapper } from '../../../UtilComponents/TooltipWrapper';
 import { SimpleInput } from '../../../UtilComponents/Form/SimpleInput/SimpleInput';
@@ -356,6 +356,27 @@ export const Payload = () => {
         setBoardingStarted(false);
     };
 
+    const calculateBoardingTime = useMemo(() => {
+        // factors taken from flybywire-aircraft-a320-neo/html_ui/Pages/A32NX_Core/A32NX_Boarding.js line 175+
+        let boardingRateMultiplier = 0;
+        if (boardingRate === 'REAL') {
+            boardingRateMultiplier = 5;
+        } else if (boardingRate === 'FAST') {
+            boardingRateMultiplier = 1;
+        }
+
+        // value taken from flybywire-aircraft-a320-neo/html_ui/Pages/A32NX_Core/A32NX_Boarding.js line 210
+        const cargoWeightPerWeightStep = 60;
+
+        const differentialPax = Math.abs(totalPaxDesired - totalPax);
+        const differentialCargo = Math.abs(totalCargoDesired - totalCargo);
+
+        const estimatedPaxBoardingSeconds = differentialPax * boardingRateMultiplier;
+        const estimatedCargoLoadingSeconds = (differentialCargo / cargoWeightPerWeightStep) * boardingRateMultiplier;
+
+        return Math.max(estimatedPaxBoardingSeconds, estimatedCargoLoadingSeconds);
+    }, [totalPaxDesired, totalPax, totalCargoDesired, totalCargo, boardingRate]);
+
     const boardingStatusClass = useMemo(() => {
         if (!boardingStarted) {
             return 'text-theme-highlight';
@@ -575,6 +596,13 @@ export const Payload = () => {
         emptyWeight,
     ]);
 
+    const remainingTimeString = () => {
+        const minutes = Math.round(calculateBoardingTime / 60);
+        const seconds = calculateBoardingTime % 60;
+        const padding = seconds < 10 ? '0' : '';
+        return `${minutes}:${padding}${seconds.toFixed(0)} ${t('Ground.Payload.EstimatedDurationUnit')}`;
+    };
+
     return (
         <div>
             <div className="relative h-content-section-reduced">
@@ -753,7 +781,7 @@ export const Payload = () => {
                                     <TooltipWrapper text={t('Ground.Payload.TT.StartBoarding')}>
                                         <button
                                             type="button"
-                                            className={`flex justify-center rounded-lg items-center ml-auto w-24 h-12 
+                                            className={`flex justify-center rounded-lg items-center ml-auto w-24 h-12
                                                         ${boardingStatusClass} bg-current`}
                                             onClick={() => setBoardingStarted(!boardingStarted)}
                                         >
@@ -767,7 +795,7 @@ export const Payload = () => {
                                     <TooltipWrapper text={t('Ground.Payload.TT.StartDeboarding')}>
                                         <button
                                             type="button"
-                                            className={`flex justify-center items-center ml-1 w-16 h-12 text-theme-highlight bg-current rounded-lg 
+                                            className={`flex justify-center items-center ml-1 w-16 h-12 text-theme-highlight bg-current rounded-lg
                                                         ${totalPax === 0 && totalCargo === 0 && 'opacity-20 pointer-events-none'}`}
                                             onClick={() => handleDeboarding()}
                                         >
@@ -789,8 +817,8 @@ export const Payload = () => {
                                 && (
                                     <TooltipWrapper text={t('Ground.Payload.TT.FillPayloadFromSimbrief')}>
                                         <div
-                                            className={`flex justify-center items-center px-2 h-auto text-theme-body 
-                                                       hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body 
+                                            className={`flex justify-center items-center px-2 h-auto text-theme-body
+                                                       hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body
                                                        rounded-md rounded-l-none border-2 border-theme-highlight transition duration-100`}
                                             onClick={setSimBriefValues}
                                         >
@@ -805,6 +833,11 @@ export const Payload = () => {
                                 <div className="flex flex-row justify-between items-center">
                                     <div className="flex font-medium">
                                         {t('Ground.Payload.BoardingTime')}
+                                        <span className="flex relative flex-row items-center ml-2 text-sm font-light">
+                                            (
+                                            {remainingTimeString()}
+                                            )
+                                        </span>
                                     </div>
 
                                     <SelectGroup>

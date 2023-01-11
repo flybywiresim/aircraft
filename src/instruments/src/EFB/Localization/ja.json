@@ -438,7 +438,7 @@
       "SliderSpeed": "任意の牽引速度",
       "SystemEnabledOff": "クリックすると、プッシュバックシステムがオンになります。",
       "SystemEnabledOn": "クリックすると、プッシュバックシステムが完全にオフになります。",
-      "UseControllerInput": "ラダーとエレベーターで旋回操作の入力 有効/無効",
+      "UseControllerInput": "ラダーとエレベーターで旋回操作の入力 オン/オフ",
       "ZoomIn": "拡大",
       "ZoomOut": "縮小"
     },
@@ -447,6 +447,28 @@
     "TugInTransit": "牽引車/ピンの取り外しを準備中",
     "TugSpeed": "牽引速度",
     "UseControllerInput": "操作の入力を使用"
+  },
+  "QuickControls": {
+    "AlignAdirs": "ADIRSの調整完了",
+    "FinishBoarding": "搭乗を完了",
+    "OnScreenKeyboard": "オンスクリーンキーボード",
+    "SimBridge": "SimBridge",
+    "SimBridgeConnected": "接続完了",
+    "SimBridgeConnecting": "接続中…",
+    "SimBridgeOff": "オフ",
+    "SimBridgeOffline": "利用不可",
+    "TT": {
+      "AlignAdirs": "直ちにADIRSの調整を完了する",
+      "AutoBrightness": "明るさ自動調節 オン/オフ",
+      "Brightness": "flyPadの明るさを設定",
+      "FinishBoarding": "直ちに搭乗を完了する",
+      "OnScreenKeyboard": "オンスクリーンキーボード オン/オフ",
+      "PowerButton": "電源を切る",
+      "Settings": "flyPadの設定ページに移動",
+      "SimBridge": "SimBridge接続の制御",
+      "Sleep": "スタンバイ"
+    },
+    "Title": "クイックコントロール"
   },
   "Settings": {
     "About": {
@@ -520,8 +542,12 @@
     "SimOptions": {
       "Active": "有効",
       "Auto": "自動",
+      "Both": "両方",
       "Calibrate": "調整",
+      "Captain": "機長",
+      "CockpitSeatUsedToControl": "操縦に使用するコックピットシート",
       "ConesEnabled": "セーフティコーン",
+      "Copilot": "副操縦士",
       "DefaultBarometerUnit": "デフォルトの気圧計単位",
       "DynamicRegistrationDecal": "登録番号デカールの表示",
       "EnableSimBridge": "SimBridge接続の有効化(接続が成功しなかった場合、5分後に自動的に非有効化)",
@@ -533,6 +559,7 @@
       "None": "なし",
       "Off": "オフ",
       "Save": "保存",
+      "Side": "Side",
       "SimBridgePort": "外部SimBridgeサーバーポート",
       "SyncMsfsFlightPlan": "MSFSのフライトプランと同期",
       "ThrottleDetents": "スロットルディテント",
@@ -605,12 +632,21 @@
     "Sep": "9月",
     "Sun": "(日)",
     "TT": {
+      "Brightness": "Click to change Brightness",
       "ConnectedToLocalApi": "SimBridgeに接続中",
       "DisconnectedFromLocalApi": "SimBridgeから切断されました",
+      "QuickControls": "クリックしてクイックコントロールを開く",
       "TurnOffOrShutdownEfb": "EFBを消灯、またはシャットダウンする"
     },
     "Thu": "(木)",
     "Tue": "(火)",
     "Wed": "(水)"
+  },
+  "VersionCheck": {
+    "CurrentVersionText": "現在使用している $edition エディションのバージョン",
+    "LatestVersionText": "最新の $edition バージョン",
+    "RecommendationText": "FlyByWire Installerで機体を更新してください。",
+    "StatusBarWarning": "古い機体バージョン",
+    "Title": "新しいバージョンが利用可能"
   }
 }

@@ -1,10 +1,7 @@
-import './Door.scss';
 import React from 'react';
-import { render } from '@instruments/common/index';
-import { setIsEcamPage } from '../../../Common/defaults';
 import { useSimVar } from '../../../Common/simVars';
 
-setIsEcamPage('door_page');
+import './Door.scss';
 
 export const DoorPage = () => {
     const [cabin] = useSimVar('INTERACTIVE POINT OPEN:0', 'percent', 1000);
@@ -87,5 +84,3 @@ export const DoorPage = () => {
         </>
     );
 };
-
-render(<DoorPage />);

@@ -448,6 +448,28 @@
     "TugSpeed": "Hitrost vlačilca",
     "UseControllerInput": "Use Controller Input"
   },
+  "QuickControls": {
+    "AlignAdirs": "Align ADIRS",
+    "FinishBoarding": "Finish Boarding",
+    "OnScreenKeyboard": "OnScreen Keyboard",
+    "SimBridge": "SimBridge",
+    "SimBridgeConnected": "Connected",
+    "SimBridgeConnecting": "Connecting...",
+    "SimBridgeOff": "Off",
+    "SimBridgeOffline": "Not Available",
+    "TT": {
+      "AlignAdirs": "Instantly align ADIRS",
+      "AutoBrightness": "Turn Auto Brightness On/Off",
+      "Brightness": "Set flyPad brightness",
+      "FinishBoarding": "Instantly finish boarding",
+      "OnScreenKeyboard": "Turn OnScreen Keyboard On/Off",
+      "PowerButton": "Power Off",
+      "Settings": "Go to flyPad Settings page",
+      "SimBridge": "Control SimBridge Connection",
+      "Sleep": "Standby"
+    },
+    "Title": "Quick Controls"
+  },
   "Settings": {
     "About": {
       "Title": "Vizitka"
@@ -520,8 +542,12 @@
     "SimOptions": {
       "Active": "Aktivno",
       "Auto": "Samodejno",
+      "Both": "Synchronized",
       "Calibrate": "Kalibracija",
+      "Captain": "Captain",
+      "CockpitSeatUsedToControl": "Cockpit Seat Used To Control",
       "ConesEnabled": "Varnostni stožci",
+      "Copilot": "Copilot",
       "DefaultBarometerUnit": "Privzeta barometrična enota",
       "DynamicRegistrationDecal": "Dinamična registrska nalepka",
       "EnableSimBridge": "Omogoči povezavo s strežnikom MCDU (samodejna deaktivacija po 5 minutah, če ni uspešne povezave)",
@@ -533,6 +559,7 @@
       "None": "Brez",
       "Off": "Izklopljeno",
       "Save": "Shrani",
+      "Side": "Side",
       "SimBridgePort": "Zunanji SimBridge Port",
       "SyncMsfsFlightPlan": "Sinhroniziraj z MSFS načrtom leta",
       "ThrottleDetents": "Odkloni plinske ročke",
@@ -605,12 +632,21 @@
     "Sep": "Sep",
     "Sun": "Ned",
     "TT": {
+      "Brightness": "Click to change Brightness",
       "ConnectedToLocalApi": "Povezan na lokalni API",
       "DisconnectedFromLocalApi": "Odklopljen iz lokalnega API",
+      "QuickControls": "Click to open Quick Controls",
       "TurnOffOrShutdownEfb": "Izklopi ali zaustavi EFB"
     },
     "Thu": "Čet",
     "Tue": "Tor",
     "Wed": "Sre"
+  },
+  "VersionCheck": {
+    "CurrentVersionText": "You are using the $edition edition with version:",
+    "LatestVersionText": "Latest $edition version is",
+    "RecommendationText": "Please update your aircraft using the FlyByWire Installer.",
+    "StatusBarWarning": "Outdated Aircraft Version",
+    "Title": "New Version Available"
   }
 }

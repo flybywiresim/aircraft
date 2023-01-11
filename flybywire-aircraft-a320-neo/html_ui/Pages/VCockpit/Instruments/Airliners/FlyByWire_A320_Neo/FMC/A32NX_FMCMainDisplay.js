@@ -182,6 +182,8 @@ class FMCMainDisplay extends BaseAirliners {
         this.efisSymbols = undefined;
         this.groundTempAuto = undefined;
         this.groundTempPilot = undefined;
+        this.backupNavTuning = false;
+        this.manualNavTuning = false;
         /**
          * Landing elevation in feet MSL.
          * This is the destination runway threshold elevation, or airport elevation if runway is not selected.
@@ -582,6 +584,8 @@ class FMCMainDisplay extends BaseAirliners {
 
     onUpdate(_deltaTime) {
         super.onUpdate(_deltaTime);
+
+        this.navRadioManager.update(_deltaTime, this.manualNavTuning, this.backupNavTuning);
 
         this.flightPlanManager.update(_deltaTime);
         const flightPlanChanged = this.flightPlanManager.currentFlightPlanVersion !== this.lastFlightPlanVersion;
@@ -1270,6 +1274,31 @@ class FMCMainDisplay extends BaseAirliners {
             if (!!curState !== gpsDriven) {
                 SimVar.SetSimVarValue("K:TOGGLE_GPS_DRIVES_NAV1", "Bool", 0);
             }
+        }
+
+        this.backupNavTuning = SimVar.GetSimVarValue("L:A32NX_RMP_L_NAV_BUTTON_SELECTED", "Bool")
+            || SimVar.GetSimVarValue("L:A32NX_RMP_R_NAV_BUTTON_SELECTED", "Bool");
+
+        // Cannot be manual if RMP tuned. It erases everything
+        if (this.backupNavTuning && this.manualNavTuning) {
+            this.vor1IdIsPilotEntered = false;
+            this.vor1FreqIsPilotEntered = false;
+            this.vor2IdIsPilotEntered = false;
+            this.vor2FreqIsPilotEntered = false;
+            this._ilsFrequencyPilotEntered = false;
+            this._ilsIdentPilotEntered = false;
+            this.adf1IdIsPilotEntered = false;
+            this.adf1FreqIsPilotEntered = false;
+            this.adf2IdIsPilotEntered = false;
+            this.adf2FreqIsPilotEntered = false;
+
+            this.manualNavTuning = false;
+        } else {
+            this.manualNavTuning = this.vor1IdIsPilotEntered || this.vor1FreqIsPilotEntered ||
+                    this.vor2IdIsPilotEntered || this.vor2FreqIsPilotEntered ||
+                    this._ilsFrequencyPilotEntered || this._ilsIdentPilotEntered ||
+                    this.adf1IdIsPilotEntered || this.adf1FreqIsPilotEntered ||
+                    this.adf2IdIsPilotEntered || this.adf2FreqIsPilotEntered;
         }
     }
 
@@ -2379,6 +2408,13 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     async updateIls() {
+        if (this.backupNavTuning) {
+            if (this.ilsAutoTuned) {
+                this.clearAutotunedIls();
+            }
+            return;
+        }
+
         await this.updateIlsCourse();
 
         if (this.flightPhaseManager.phase > FmgcFlightPhases.TAKEOFF) {
@@ -2447,11 +2483,13 @@ class FMCMainDisplay extends BaseAirliners {
         } else if (this.ilsFrequency > 0 && SimVar.GetSimVarValue('L:A32NX_RADIO_RECEIVER_LOC_IS_VALID', 'number') === 1) {
             course = SimVar.GetSimVarValue('NAV LOCALIZER:3', 'degrees');
         }
+        SimVar.SetSimVarValue('L:A32NX_RMP_ILS_TUNED', 'boolean', false);
+
         return SimVar.SetSimVarValue('L:A32NX_FM_LS_COURSE', 'number', course);
     }
 
     isRunwayLsMismatched() {
-        if (!this.ilsAutoTuned || this.flightPhaseManager.phase === FmgcFlightPhases.DONE) {
+        if (this.backupNavTuning || !this.ilsAutoTuned || this.flightPhaseManager.phase === FmgcFlightPhases.DONE) {
             return false;
         }
 
@@ -2459,7 +2497,7 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     isRunwayLsCourseMismatched() {
-        if (!this.ilsAutoTuned || this.ilsCourse === undefined) {
+        if (this.backupNavTuning || !this.ilsAutoTuned || this.ilsCourse === undefined) {
             return false;
         }
 
@@ -3924,7 +3962,12 @@ class FMCMainDisplay extends BaseAirliners {
         }
     }
 
-    setIlsFrequency(s, callback) {
+    setIlsFrequency(s, navpushbutton, callback) {
+        if (navpushbutton) {
+            this.setScratchpadMessage(NXSystemMessages.notAllowed);
+            return callback(false);
+        }
+
         if (s === FMCMainDisplay.clrValue) {
             if (!this._ilsIdentPilotEntered && !this._ilsFrequencyPilotEntered) {
                 this.setScratchpadMessage(NXSystemMessages.notAllowed);
@@ -3998,8 +4041,9 @@ class FMCMainDisplay extends BaseAirliners {
         }
     }
 
-    setLsCourse(s, callback) {
-        if (!this.ilsAutoTuned && !this._ilsFrequencyPilotEntered && !this._ilsIdentPilotEntered) {
+    setLsCourse(s, navpushbutton, callback) {
+        if ((!this.ilsAutoTuned && !this._ilsFrequencyPilotEntered && !this._ilsIdentPilotEntered) ||
+                navpushbutton) {
             this.setScratchpadMessage(NXSystemMessages.notAllowed);
             return callback(false);
         }
@@ -4061,6 +4105,10 @@ class FMCMainDisplay extends BaseAirliners {
                 }
             }
             {
+                if (_boot) {
+                    // Because by default, it's set to a frequency beyond operational range
+                    this.radioNav.setILSStandbyFrequency(1, 108.9);
+                }
                 if (Math.abs(this.radioNav.getVORActiveFrequency(1) - this.vor1Frequency) > 0.005) {
                     this.radioNav.setVORActiveFrequency(1, this.vor1Frequency);
                 }
@@ -4081,18 +4129,13 @@ class FMCMainDisplay extends BaseAirliners {
                 }
             }
             {
-                if (_boot) {
-                    this.adf1Frequency = this.radioNav.getADFActiveFrequency(1);
-                    this.adf2Frequency = this.radioNav.getADFActiveFrequency(2);
-                } else {
-                    if (Math.abs(this.radioNav.getADFActiveFrequency(1) - this.adf1Frequency) > 0.005) {
-                        SimVar.SetSimVarValue("K:ADF_COMPLETE_SET", "Frequency ADF BCD32", Avionics.Utils.make_adf_bcd32(this.adf1Frequency * 1000)).then(() => {
-                        });
-                    }
-                    if (Math.abs(this.radioNav.getADFActiveFrequency(2) - this.adf2Frequency) > 0.005) {
-                        SimVar.SetSimVarValue("K:ADF2_COMPLETE_SET", "Frequency ADF BCD32", Avionics.Utils.make_adf_bcd32(this.adf2Frequency * 1000)).then(() => {
-                        });
-                    }
+                if (Math.abs(this.radioNav.getADFActiveFrequency(1) - this.adf1Frequency) > 0.005) {
+                    SimVar.SetSimVarValue("K:ADF_COMPLETE_SET", "Frequency ADF BCD32", Avionics.Utils.make_adf_bcd32(this.adf1Frequency * 1000)).then(() => {
+                    });
+                }
+                if (Math.abs(this.radioNav.getADFActiveFrequency(2) - this.adf2Frequency) > 0.005) {
+                    SimVar.SetSimVarValue("K:ADF2_COMPLETE_SET", "Frequency ADF BCD32", Avionics.Utils.make_adf_bcd32(this.adf2Frequency * 1000)).then(() => {
+                    });
                 }
             }
             {

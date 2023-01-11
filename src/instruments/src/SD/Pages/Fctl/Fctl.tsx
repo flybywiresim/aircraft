@@ -1,8 +1,6 @@
 import React from 'react';
-import { render } from '@instruments/common/index';
 import { useArinc429Var } from '@instruments/common/arinc429';
 import { Arinc429Word } from '@shared/arinc429';
-import { setIsEcamPage } from '../../../Common/defaults';
 import { useSimVar } from '../../../Common/simVars';
 import { SvgGroup } from '../../Common/SvgGroup';
 import { HydraulicsProvider, useHydraulics } from '../../Common/HydraulicsProvider';
@@ -13,8 +11,6 @@ import { ComponentSidePositionProps } from '../../Common/ComponentSidePositionPr
 import { Spoilers } from '../../Common/Spoilers';
 
 import '../../Common/CommonStyles.scss';
-
-setIsEcamPage('fctl_page');
 
 interface HydraulicSystemPairProps {
     leftHydraulicSystem: HydraulicSystem,
@@ -432,10 +428,9 @@ const ElevatorAxis = ({ x, y, side }: ComponentPositionProps & ComponentSidePosi
 interface ServoControlIndicatorProps extends ComponentPositionProps {
     servoFailed: boolean,
 }
+
 const ServoControlIndicator = ({ x, y, servoFailed }: ServoControlIndicatorProps) => (
     <SvgGroup x={x} y={y}>
         <path visibility={servoFailed ? 'visible' : 'hidden'} className="AmberLine" d="m 1 29 l 23 0 l 0 -32 l -23 0" />
     </SvgGroup>
 );
-
-render(<FctlPage />);

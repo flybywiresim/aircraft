@@ -1,13 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { render } from '@instruments/common/index';
 import { useSimVar } from '@instruments/common/simVars';
-import { setIsEcamPage } from '@instruments/common/defaults';
 import { SvgGroup } from '../../Common/SvgGroup';
 import { Triangle } from '../../Common/Shapes';
 
 import '../../Common/CommonStyles.scss';
-
-setIsEcamPage('hyd_page');
 
 const litersPerGallon = 3.79;
 
@@ -43,6 +39,8 @@ export const HydPage = () => {
     const [yellowFireValve] = useSimVar('L:A32NX_HYD_YELLOW_PUMP_1_FIRE_VALVE_OPENED', 'boolean', 500);
 
     const [ACBus1IsPowered] = useSimVar('L:A32NX_ELEC_AC_1_BUS_IS_POWERED', 'bool', 1000);
+
+    const [blueElecPumpOvht] = useSimVar('L:A32NX_HYD_BLUE_EPUMP_OVHT', 'bool', 1000);
 
     const [engine1Running, setEngine1Running] = useState(false);
     const [engine2Running, setEngine2Running] = useState(false);
@@ -110,6 +108,13 @@ export const HydPage = () => {
                     y={384}
                 >
                     ELEC
+                </text>
+                <text
+                    className={blueElecPumpOvht ? 'Large Amber' : 'Hide'}
+                    x={420}
+                    y={414}
+                >
+                    OVHT
                 </text>
 
                 <YellowElecPump pumpPushbuttonOn={yellowElectricPumpStatus} pressure={yellowPressure} enginePumpPressureLowSwitch={!yellowPumpPressurisedSwitch} />
@@ -255,6 +260,10 @@ const HydReservoir = ({ system, x, y, lowLevel } : HydReservoirProps) => {
 
     const [lowAirPress] = useSimVar(`L:A32NX_HYD_${system}_RESERVOIR_AIR_PRESSURE_IS_LOW`, 'boolean', 1000);
 
+    // The overheat indication should be computed by the EIS itself from the numerical temperature value,
+    // by applying a hysteresis logic. For now, we just use a boolean from the hydraulics directly.
+    const [overheat] = useSimVar(`L:A32NX_HYD_${system}_RESERVOIR_OVHT`, 'boolean', 1000);
+
     const fluidLevelInLitres = fluidLevel * litersPerGallon;
 
     const values = levels[system];
@@ -282,6 +291,10 @@ const HydReservoir = ({ system, x, y, lowLevel } : HydReservoirProps) => {
 
             <text className={lowAirPress ? 'Large Amber' : 'Hide'} x={12} y={-72}>LO AIR</text>
             <text className={lowAirPress ? 'Large Amber' : 'Hide'} x={12} y={-45}>PRESS</text>
+
+            { /* Not sure about the exact placement, have to wait for an IRL ref */ }
+            <text className={overheat ? 'Large Amber' : 'Hide'} x={20} y={-5}>OVHT</text>
+
         </SvgGroup>
     );
 };
@@ -294,6 +307,8 @@ type YellowElecPumpProps = {
 
 const YellowElecPump = ({ pumpPushbuttonOn, pressure, enginePumpPressureLowSwitch }: YellowElecPumpProps) => {
     const [ACBus2IsPowered] = useSimVar('L:A32NX_ELEC_AC_2_BUS_IS_POWERED', 'bool', 1000);
+
+    const [yellowElecPumpOvht] = useSimVar('L:A32NX_HYD_YELLOW_EPUMP_OVHT', 'bool', 1000);
 
     let elecHorizontalLineFormat: string;
     let verticalLineFormat: string;
@@ -325,6 +340,13 @@ const YellowElecPump = ({ pumpPushbuttonOn, pressure, enginePumpPressureLowSwitc
                 y={292}
             >
                 ELEC
+            </text>
+            <text
+                className={yellowElecPumpOvht ? 'Large Amber' : 'Hide'}
+                x={676}
+                y={322}
+            >
+                OVHT
             </text>
             <Triangle x={642} y={283} scale={4 / 3} colour={elecTriangleColour} fill={elecTriangleFill} orientation={-90} />
             <line className={elecHorizontalLineFormat} x1={631} y1={283} x2={642} y2={283} />
@@ -452,5 +474,3 @@ const PTU = ({ x, y, yellowPressure, greenPressure, yellowPumpLowPressure, green
         </SvgGroup>
     );
 };
-
-render(<HydPage />);

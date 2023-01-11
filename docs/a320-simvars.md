@@ -21,6 +21,7 @@
   - [Landing Gear (ATA 32)](#landing-gear-ata-32)
   - [ATC (ATA 34)](#atc-ata-34)
   - [Radio Altimeter (ATA 34)](#radio-altimeter-ata-34)
+  - [Electronic Flight Bag ATA 46](#electronic-flight-bag--ata-46-)
 
 ## Uncategorized
 
@@ -391,6 +392,10 @@
     - Number
     - The current mode of the right radio management panel.
 
+- A32NX_RMP_{L,R}_NAV_BUTTON_SELECTED
+    - Bool
+    - Whether the NAV push button on the corresponding RMP is pushed or not.
+
 - A32NX_RMP_L_VHF2_STANDBY
     - Hz
     - The VHF 2 standby frequency for the left RMP.
@@ -406,6 +411,42 @@
 - A32NX_RMP_R_VHF3_STANDBY
     - Hz
     - The VHF 3 standby frequency for the right RMP.
+
+- A32NX_RMP_{L,R}_SAVED_ACTIVE_FREQUENCY_VOR
+    - Hz
+    - The VOR active frequency that is saved for display for the left/right RMP.
+
+- A32NX_RMP_{L,R}_SAVED_ACTIVE_FREQUENCY_ILS
+    - Hz
+    - The ILS active frequency that is saved for display for the left/right RMP.
+
+- A32NX_RMP_{L,R}_SAVED_ACTIVE_FREQUENCY_ADF
+    - Hz
+    - The ADF active frequency that is saved for display for the left/right RMP.
+   
+- A32NX_RMP_{L,R}_SAVED_STANDBY_FREQUENCY_VOR
+    - Hz
+    - The VOR standby frequency that is saved for display for the left/right RMP.
+
+- A32NX_RMP_{L,R}_SAVED_STANDBY_FREQUENCY_ILS
+    - Hz
+    - The ILS standby frequency that is saved for display for the left/right RMP.
+
+- A32NX_RMP_{L,R}_SAVED_STANDBY_FREQUENCY_ADF
+    - Hz
+    - The ADF standby frequency that is saved for display for the left/right RMP.
+
+- A32NX_RMP_{L,R}_SAVED_COURSE_VOR
+    - Number
+    - The VOR course tuned via the left/right RMP
+
+- A32NX_RMP_{L,R}_SAVED_COURSE_ILS
+    - Number
+    - The ILS course tuned via the left/right RMP
+
+- A32NX_RMP_ILS_TUNED
+    - Bool
+    - If the ILS is tuned via the RMP
 
 - A32NX_TO_CONFIG_FLAPS_ENTERED
     - Bool
@@ -808,6 +849,14 @@
         - BLUE
         - YELLOW
 
+- A32NX_HYD_{loop_name}_RESERVOIR_OVHT
+    - Boolean
+    - Reservoir of {loop_name} hydraulic circuit is overheating
+    - {loop_name}
+        - GREEN
+        - BLUE
+        - YELLOW
+
 - A32NX_HYD_{loop_name}_EDPUMP_ACTIVE
     - Bool
     - Engine driven pump of {loop_name} hydraulic circuit is active
@@ -883,6 +932,13 @@
 - A32NX_HYD_{loop_name}_EPUMP_LOW_PRESS
     - Bool
     - Electric pump of {loop_name} hydraulic circuit is active but pressure is too low
+    - {loop_name}
+        - BLUE
+        - YELLOW
+
+- A32NX_HYD_{loop_name}_EPUMP_OVHT
+    - Bool
+    - Electric pump of {loop_name} hydraulic circuit is overheating
     - {loop_name}
         - BLUE
         - YELLOW
@@ -1030,6 +1086,15 @@
       APPROACH | 5
       GOAROUND | 6
       DONE | 7
+
+- A32NX_FMGC_RADIONAV_TUNING_MODE
+    - Enum
+    - Hold the FMGCs current tuning mode
+      Value | Meaning
+      --- | ---
+      0 | AUTO
+      1 | MANUAL
+      2 | REMOTE VIA RMPs
 
 - A32NX_FLAPS_HANDLE_INDEX
     - Number
@@ -3260,6 +3325,18 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Indicates the position of the gear emergency extension crank handle from 0 to 300 (3 turns)
     - Percent
 
+- A32NX_GEAR_LEVER_POSITION_REQUEST
+    - Indicates that the pilot tries to move the gear lever (1=down)
+    - Boolean
+
+- A32NX_GEAR_HANDLE_POSITION
+    - Indicates the actual position of the gear handle
+    - Percent over 100
+
+- A32NX_GEAR_HANDLE_HITS_LOCK_SOUND
+    - Indicates that gear lever just hit the baulk lock mechanism
+    - Boolean
+
 ## ATC (ATA 34)
 
 - A32NX_TRANSPONDER_MODE
@@ -3358,3 +3435,28 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - {number}
         - 0
         - 1
+
+## Electronic Flight Bag (ATA 46)
+
+- A32NX_PUSHBACK_SYSTEM_ENABLED
+    - Boolean
+    - Read/Write
+    - Whether the pushback system is enabled
+    - Further conditions are "Pushback Tug Attached" and "Aircraft On Ground" otherwise the system 
+      has no impact on the aircraft
+
+- A32NX_PUSHBACK_SPD_FACTOR
+    - Number
+    - Read/Write
+    - Determines the speed of the pushback tug from -100% to 100% 
+    - {number}
+        - -1.0
+        - 1.0
+
+- A32NX_PUSHBACK_HDG_FACTOR
+    - Number
+    - Read/Write
+    - Determines the heading of the pushback tug from max left (-1.0) to right (1.0) 
+    - {number}
+        - -1.0
+        - 1.0

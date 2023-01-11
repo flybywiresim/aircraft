@@ -1,14 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { GaugeComponent, GaugeMarkerComponent, splitDecimals } from '@instruments/common/gauges';
-import { render } from '../../../Common';
-import { setIsEcamPage } from '../../../Common/defaults';
 import { useSimVar } from '../../../Common/simVars';
 import { usePersistentProperty } from '../../../Common/persistence';
 import { fuelForDisplay } from '../../Common/FuelFunctions';
 
 import './Crz.scss';
-
-setIsEcamPage('crz_page');
 
 export const CrzPage = () => (
     <>
@@ -232,5 +228,3 @@ export const CondComponent = () => {
         </>
     );
 };
-
-render(<CrzPage />);

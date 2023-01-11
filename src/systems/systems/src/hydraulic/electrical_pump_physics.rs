@@ -6,17 +6,23 @@ use uom::si::{
     f64::*,
     power::watt,
     pressure::psi,
+    ratio::ratio,
     torque::{newton_meter, pound_force_inch},
     volume::cubic_inch,
 };
 
-use crate::hydraulic::SectionPressure;
+use crate::hydraulic::{HeatingElement, HeatingProperties, SectionPressure};
 use crate::shared::{
-    low_pass_filter::LowPassFilter, pid::PidController, ConsumePower, ElectricalBusType,
-    ElectricalBuses,
+    low_pass_filter::LowPassFilter, pid::PidController, random_from_normal_distribution,
+    ConsumePower, ElectricalBusType, ElectricalBuses,
 };
 use crate::simulation::{
-    InitContext, SimulationElement, SimulatorWriter, UpdateContext, VariableIdentifier, Write,
+    InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
+    VariableIdentifier, Write,
+};
+use crate::{
+    failures::{Failure, FailureType},
+    shared::AirbusElectricPumpId,
 };
 
 use std::time::Duration;
@@ -43,6 +49,9 @@ pub(super) struct ElectricalPumpPhysics {
     current_controller: PidController,
 
     displacement_filtered: LowPassFilter<Volume>,
+
+    overheat_failure: Failure,
+    heat_state: HeatingProperties,
 }
 impl ElectricalPumpPhysics {
     const DEFAULT_INERTIA: f64 = 0.011;
@@ -60,9 +69,17 @@ impl ElectricalPumpPhysics {
     const DEFAULT_P_GAIN: f64 = 0.1;
     const DEFAULT_I_GAIN: f64 = 0.45;
 
+    const HEATING_TIME_CONSTANT_MEAN_S: f64 = 30.;
+    const HEATING_TIME_CONSTANT_STD_S: f64 = 5.;
+
+    const COOLING_TIME_CONSTANT: Duration = Duration::from_secs(60 * 2);
+    const DAMAGE_TIME_CONSTANT: Duration = Duration::from_secs(60 * 2);
+
+    const MIN_SPEED_TO_REPORT_ACTIVE_RPM: f64 = 10.;
+
     pub fn new(
         context: &mut InitContext,
-        id: &str,
+        id: AirbusElectricPumpId,
         bus_type: ElectricalBusType,
         max_current: ElectricCurrent,
         regulated_speed: AngularVelocity,
@@ -97,6 +114,18 @@ impl ElectricalPumpPhysics {
             displacement_filtered: LowPassFilter::<Volume>::new(
                 Self::SPEED_DISPLACEMENT_FILTER_TIME_CONSTANT,
             ),
+            overheat_failure: Failure::new(FailureType::ElecPumpOverheat(id)),
+            heat_state: HeatingProperties::new(
+                Duration::from_secs_f64(
+                    random_from_normal_distribution(
+                        Self::HEATING_TIME_CONSTANT_MEAN_S,
+                        Self::HEATING_TIME_CONSTANT_STD_S,
+                    )
+                    .max(10.),
+                ),
+                Self::COOLING_TIME_CONSTANT,
+                Self::DAMAGE_TIME_CONSTANT,
+            ),
         }
     }
 
@@ -106,6 +135,11 @@ impl ElectricalPumpPhysics {
         section: &impl SectionPressure,
         current_displacement: Volume,
     ) {
+        self.heat_state.update(
+            context,
+            self.overheat_failure.is_active() && self.speed().get::<revolution_per_minute>() > 100.,
+        );
+
         self.displacement_filtered
             .update(context.delta(), current_displacement);
 
@@ -155,11 +189,20 @@ impl ElectricalPumpPhysics {
             Torque::new::<newton_meter>(Self::DEFAULT_RESISTANT_TORQUE_WHEN_OFF_NEWTON_METER)
         };
 
-        self.resistant_torque = pumping_torque + dynamic_friction_torque;
+        let overheat_resistant_torque_factor = if !self.heat_state.is_overheating() {
+            1.
+        } else if !self.heat_state.is_damaged() {
+            50. * self.heat_state.overheat_ratio().get::<ratio>()
+        } else {
+            100.
+        };
+
+        self.resistant_torque =
+            pumping_torque + dynamic_friction_torque * overheat_resistant_torque_factor;
     }
 
     fn update_current_control(&mut self, context: &UpdateContext) {
-        self.output_current = if self.pump_should_run() {
+        self.output_current = if self.pump_should_run() && !self.is_damaged() {
             ElectricCurrent::new::<ampere>(self.current_controller.next_control_output(
                 self.speed_raw.get::<revolution_per_minute>(),
                 Some(context.delta()),
@@ -187,7 +230,7 @@ impl ElectricalPumpPhysics {
 
         self.update_electrical_power_consumption();
 
-        if self.pump_should_run() {
+        if self.pump_should_run() && !self.is_damaged() {
             if self.speed_raw.get::<revolution_per_minute>() < 5.
                 && self.output_current.get::<ampere>() > 0.
             {
@@ -217,8 +260,18 @@ impl ElectricalPumpPhysics {
     }
 }
 impl SimulationElement for ElectricalPumpPhysics {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.overheat_failure.accept(visitor);
+        visitor.visit(self);
+    }
+
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(&self.active_id, self.is_active);
+        writer.write(
+            &self.active_id,
+            self.is_active
+                && self.speed().get::<revolution_per_minute>()
+                    > Self::MIN_SPEED_TO_REPORT_ACTIVE_RPM,
+        );
         writer.write(&self.rpm_id, self.speed());
     }
 
@@ -231,6 +284,15 @@ impl SimulationElement for ElectricalPumpPhysics {
         consumption.consume_from_bus(self.powered_by, self.consumed_power);
     }
 }
+impl HeatingElement for ElectricalPumpPhysics {
+    fn is_damaged(&self) -> bool {
+        self.heat_state.is_damaged()
+    }
+
+    fn is_overheating(&self) -> bool {
+        self.heat_state.is_overheating()
+    }
+}
 
 #[cfg(test)]
 mod tests {
@@ -239,7 +301,7 @@ mod tests {
     use crate::electrical::ElectricalBus;
     use crate::electrical::Electricity;
 
-    use crate::shared::{update_iterator::FixedStepLoop, PotentialOrigin};
+    use crate::shared::{update_iterator::MaxStepLoop, PotentialOrigin};
     use crate::simulation::{Aircraft, SimulationElement, SimulationElementVisitor, UpdateContext};
 
     use crate::simulation::test::{SimulationTestBed, TestBed};
@@ -270,7 +332,7 @@ mod tests {
     }
 
     struct TestAircraft {
-        core_hydraulic_updater: FixedStepLoop,
+        core_hydraulic_updater: MaxStepLoop,
 
         pump: ElectricalPumpPhysics,
         hydraulic_section: TestHydraulicSection,
@@ -283,7 +345,7 @@ mod tests {
     impl TestAircraft {
         fn new(context: &mut InitContext) -> Self {
             Self {
-                core_hydraulic_updater: FixedStepLoop::new(Duration::from_millis(33)),
+                core_hydraulic_updater: MaxStepLoop::new(Duration::from_millis(10)),
                 pump: physical_pump(context),
                 hydraulic_section: TestHydraulicSection::default(),
                 current_displacement: Volume::new::<gallon>(0.),
@@ -437,10 +499,45 @@ mod tests {
         );
     }
 
+    #[test]
+    fn pump_with_overheat_failure_overheats_and_fails() {
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
+
+        test_bed.command(|a| a.set_ac_1_power(true));
+        test_bed.command(|a| a.pump.set_active(true));
+        test_bed.command(|a| a.set_current_displacement(Volume::new::<cubic_inch>(0.)));
+        test_bed.command(|a| a.set_current_pressure(Pressure::new::<psi>(3000.)));
+
+        test_bed.run_with_delta(Duration::from_secs_f64(1.));
+
+        assert!(
+            test_bed.query(|a| a.pump.speed())
+                >= AngularVelocity::new::<revolution_per_minute>(7000.)
+        );
+
+        test_bed.fail(FailureType::ElecPumpOverheat(AirbusElectricPumpId::Yellow));
+
+        test_bed.run_with_delta(Duration::from_secs_f64(
+            ElectricalPumpPhysics::HEATING_TIME_CONSTANT_MEAN_S
+                + 4. * ElectricalPumpPhysics::HEATING_TIME_CONSTANT_STD_S,
+        ));
+
+        assert!(test_bed.query(|a| a.pump.is_overheating()));
+
+        test_bed.run_with_delta(ElectricalPumpPhysics::DAMAGE_TIME_CONSTANT);
+
+        assert!(test_bed.query(|a| a.pump.is_damaged()));
+
+        assert!(
+            test_bed.query(|a| a.pump.speed())
+                <= AngularVelocity::new::<revolution_per_minute>(100.)
+        );
+    }
+
     fn physical_pump(context: &mut InitContext) -> ElectricalPumpPhysics {
         ElectricalPumpPhysics::new(
             context,
-            "YELLOW",
+            AirbusElectricPumpId::Yellow,
             ElectricalBusType::AlternatingCurrent(1),
             ElectricCurrent::new::<ampere>(45.),
             AngularVelocity::new::<revolution_per_minute>(7600.),

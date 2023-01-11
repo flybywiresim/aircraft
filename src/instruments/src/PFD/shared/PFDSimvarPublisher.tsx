@@ -67,6 +67,7 @@ export interface PFDSimvars {
     aoa: number;
     selectedFpa: number;
     ilsCourse: number;
+    ilsRMPTuned: boolean;
     metricAltToggle: boolean;
     tla1: number;
     tla2: number;
@@ -217,6 +218,7 @@ export enum PFDVars {
     aoa = 'INCIDENCE ALPHA',
     selectedFpa = 'L:A32NX_AUTOPILOT_FPA_SELECTED',
     ilsCourse = 'L:A32NX_FM_LS_COURSE',
+    ilsRMPTuned = 'L:A32NX_RMP_ILS_TUNED',
     metricAltToggle = 'L:A32NX_METRIC_ALT_TOGGLE',
     tla1='L:A32NX_AUTOTHRUST_TLA:1',
     tla2='L:A32NX_AUTOTHRUST_TLA:2',
@@ -368,6 +370,7 @@ export class PFDSimvarPublisher extends SimVarPublisher<PFDSimvars> {
         ['aoa', { name: PFDVars.aoa, type: SimVarValueType.Degree }],
         ['selectedFpa', { name: PFDVars.selectedFpa, type: SimVarValueType.Degree }],
         ['ilsCourse', { name: PFDVars.ilsCourse, type: SimVarValueType.Number }],
+        ['ilsRMPTuned', { name: PFDVars.ilsRMPTuned, type: SimVarValueType.Bool }],
         ['metricAltToggle', { name: PFDVars.metricAltToggle, type: SimVarValueType.Bool }],
         ['tla1', { name: PFDVars.tla1, type: SimVarValueType.Number }],
         ['tla2', { name: PFDVars.tla2, type: SimVarValueType.Number }],

@@ -448,6 +448,28 @@
     "TugSpeed": "سرعة الدفع ",
     "UseControllerInput": "Use Controller Input"
   },
+  "QuickControls": {
+    "AlignAdirs": "Align ADIRS",
+    "FinishBoarding": "Finish Boarding",
+    "OnScreenKeyboard": "OnScreen Keyboard",
+    "SimBridge": "SimBridge",
+    "SimBridgeConnected": "Connected",
+    "SimBridgeConnecting": "Connecting...",
+    "SimBridgeOff": "Off",
+    "SimBridgeOffline": "Not Available",
+    "TT": {
+      "AlignAdirs": "Instantly align ADIRS",
+      "AutoBrightness": "Turn Auto Brightness On/Off",
+      "Brightness": "Set flyPad brightness",
+      "FinishBoarding": "Instantly finish boarding",
+      "OnScreenKeyboard": "Turn OnScreen Keyboard On/Off",
+      "PowerButton": "Power Off",
+      "Settings": "Go to flyPad Settings page",
+      "SimBridge": "Control SimBridge Connection",
+      "Sleep": "Standby"
+    },
+    "Title": "Quick Controls"
+  },
   "Settings": {
     "About": {
       "Title": "حول"
@@ -520,8 +542,12 @@
     "SimOptions": {
       "Active": "نشط",
       "Auto": "تلقائي",
+      "Both": "Synchronized",
       "Calibrate": "تعيّر ",
+      "Captain": "Captain",
+      "CockpitSeatUsedToControl": "Cockpit Seat Used To Control",
       "ConesEnabled": "اقماع الامان",
+      "Copilot": "Copilot",
       "DefaultBarometerUnit": "وحدة البارومتر الافتراضية",
       "DynamicRegistrationDecal": "ملصق تسجيل ديناميكي",
       "EnableSimBridge": "تمكين اتصال خادم MCDU (إلغاء التنشيط التلقائي بعد 5 دقائق إذا لم يكن هناك اتصال ناجح)",
@@ -533,6 +559,7 @@
       "None": "لا شيء",
       "Off": "إيقاف",
       "Save": "حفظ",
+      "Side": "Side",
       "SimBridgePort": "منفذ خادم MCDU خارجي",
       "SyncMsfsFlightPlan": "مزامنة خطة رحلة MSFS",
       "ThrottleDetents": "محددات دفة تحكم النفاث ",
@@ -605,12 +632,21 @@
     "Sep": "سبتمبر",
     "Sun": "الأحد",
     "TT": {
+      "Brightness": "Click to change Brightness",
       "ConnectedToLocalApi": "متصل بواجهة برمجة التطبيقات المحلية",
       "DisconnectedFromLocalApi": "قطع الاتصال من API المحلية",
+      "QuickControls": "Click to open Quick Controls",
       "TurnOffOrShutdownEfb": "إطفاء او اغلاق الEFB"
     },
     "Thu": "الخميس",
     "Tue": "الثلاثاء",
     "Wed": "الأربعاء"
+  },
+  "VersionCheck": {
+    "CurrentVersionText": "You are using the $edition edition with version:",
+    "LatestVersionText": "Latest $edition version is",
+    "RecommendationText": "Please update your aircraft using the FlyByWire Installer.",
+    "StatusBarWarning": "Outdated Aircraft Version",
+    "Title": "New Version Available"
   }
 }

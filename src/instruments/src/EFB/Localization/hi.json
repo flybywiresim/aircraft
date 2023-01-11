@@ -448,6 +448,28 @@
     "TugSpeed": "टग की स्पीड",
     "UseControllerInput": "कंट्रोलर इनपुट का इस्तेमाल करें"
   },
+  "QuickControls": {
+    "AlignAdirs": "Align ADIRS",
+    "FinishBoarding": "Finish Boarding",
+    "OnScreenKeyboard": "OnScreen Keyboard",
+    "SimBridge": "SimBridge",
+    "SimBridgeConnected": "Connected",
+    "SimBridgeConnecting": "Connecting...",
+    "SimBridgeOff": "Off",
+    "SimBridgeOffline": "Not Available",
+    "TT": {
+      "AlignAdirs": "Instantly align ADIRS",
+      "AutoBrightness": "Turn Auto Brightness On/Off",
+      "Brightness": "Set flyPad brightness",
+      "FinishBoarding": "Instantly finish boarding",
+      "OnScreenKeyboard": "Turn OnScreen Keyboard On/Off",
+      "PowerButton": "Power Off",
+      "Settings": "Go to flyPad Settings page",
+      "SimBridge": "Control SimBridge Connection",
+      "Sleep": "Standby"
+    },
+    "Title": "Quick Controls"
+  },
   "Settings": {
     "About": {
       "Title": "बारे में"
@@ -520,8 +542,12 @@
     "SimOptions": {
       "Active": "सक्रिय",
       "Auto": "ऑटो",
+      "Both": "Synchronized",
       "Calibrate": "कैलिब्रेट",
+      "Captain": "Captain",
+      "CockpitSeatUsedToControl": "Cockpit Seat Used To Control",
       "ConesEnabled": "सुरक्षा कोन",
+      "Copilot": "Copilot",
       "DefaultBarometerUnit": "डिफ़ॉल्ट बैरोमीटर यूनिट",
       "DynamicRegistrationDecal": "डायनामिक रजिस्ट्रेशन डिकल",
       "EnableSimBridge": "SimBridge कनेक्शन सक्षम करें (यदि कोई सफल कनेक्शन नहीं है तो 5 मिनट के बाद ऑटो निष्क्रिय हो जाता है)",
@@ -533,6 +559,7 @@
       "None": "कोई नहीं",
       "Off": "बंद",
       "Save": "सहेजें",
+      "Side": "Side",
       "SimBridgePort": "बाहरी सिमब्रिज पोर्ट",
       "SyncMsfsFlightPlan": "MSFS उड़ान योजना सिंक करें",
       "ThrottleDetents": "थ्रॉटल डिटेंट्स",
@@ -605,12 +632,21 @@
     "Sep": "सितम्बर",
     "Sun": "रविवार",
     "TT": {
+      "Brightness": "Click to change Brightness",
       "ConnectedToLocalApi": "SimBridge से जुड़ा",
       "DisconnectedFromLocalApi": "सिमब्रिज से डिस्कनेक्ट किया गया",
+      "QuickControls": "Click to open Quick Controls",
       "TurnOffOrShutdownEfb": "EFB बंद करें"
     },
     "Thu": "गुरुवार",
     "Tue": "मंगलवार",
     "Wed": "बुधवार"
+  },
+  "VersionCheck": {
+    "CurrentVersionText": "You are using the $edition edition with version:",
+    "LatestVersionText": "Latest $edition version is",
+    "RecommendationText": "Please update your aircraft using the FlyByWire Installer.",
+    "StatusBarWarning": "Outdated Aircraft Version",
+    "Title": "New Version Available"
   }
 }
