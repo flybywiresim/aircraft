@@ -47,8 +47,8 @@ void DisplayBase::render(sGaugeDrawData* pDrawData, FsContext context) {
     } else {
       // draw the image
       nvgBeginPath(this->_context);
-      NVGpaint imagePaint =
-          nvgImagePattern(this->_context, 0.0f, 0.0f, pDrawData->winWidth, pDrawData->winHeight, 0.0, this->_nanovgImage, 1.0);
+      NVGpaint imagePaint = nvgImagePattern(this->_context, 0.0f, 0.0f, pDrawData->winWidth, pDrawData->winHeight, 0.0, this->_nanovgImage,
+                                            this->_configuration.potentiometer);
       nvgRect(this->_context, 0.0f, 0.0f, pDrawData->winWidth, pDrawData->winHeight);
       nvgFillPaint(this->_context, imagePaint);
       nvgFill(this->_context);
