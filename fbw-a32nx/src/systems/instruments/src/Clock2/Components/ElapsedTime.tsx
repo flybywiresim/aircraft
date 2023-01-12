@@ -1,5 +1,5 @@
 import { ComponentProps, DisplayComponent, EventBus, FSComponent, Subject, VNode } from 'msfssdk';
-import { debouncedTimeDelta } from './Chrono';
+import { debouncedTimeDelta } from '../shared/Utils';
 import { ClockSimvars } from '../shared/ClockSimvarPublisher';
 
 const getDisplayString = (seconds: number | null, running: boolean, ltsTest: boolean) : string => {

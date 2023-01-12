@@ -1,4 +1,5 @@
 import { ComponentProps, DisplayComponent, EventBus, FSComponent, HEvent, Subject, VNode } from 'msfssdk';
+import { debouncedTimeDelta } from '../shared/Utils';
 import { ClockSimvars } from '../shared/ClockSimvarPublisher';
 
 interface ChronoProps extends ComponentProps {
@@ -14,19 +15,6 @@ const getDisplayString = (seconds: number | null, running: boolean, ltsTest: boo
         return `${Math.floor(Math.min(seconds, 5999) / 60).toString().padStart(2, '0')}${running ? ':' : ' '}${(Math.floor(Math.min(seconds, 5999) % 60)).toString().padStart(2, '0')}`;
     }
     return '';
-};
-
-/**
- * Computes time delta out of absolute env time and previous
- * time debounced on time shift.
- */
-export const debouncedTimeDelta = (
-    absTimeSeconds: number,
-    prevTimeSeconds: number,
-): number => {
-    const diff = Math.max(absTimeSeconds - prevTimeSeconds, 0);
-    // 60s detects forward time-shift
-    return diff < 60 ? diff : 0;
 };
 
 export class Chrono extends DisplayComponent<ChronoProps> {
