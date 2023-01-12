@@ -62,7 +62,6 @@ export class Chrono extends DisplayComponent<ChronoProps> {
 
         const hEventsSub = this.props.bus.getSubscriber<HEvent>();
         hEventsSub.on('hEvent').handle((eventName) => {
-            console.log(eventName);
             switch (eventName) {
             case 'A32NX_CHRONO_RST':
                 if (this.dcEssIsPowered) {
