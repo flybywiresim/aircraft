@@ -22,6 +22,8 @@ clang++ \
   -c \
   ${CLANG_ARGS} \
   -std=c++20 \
+  -Wall \
+  -Wextra \
   -Wno-unused-command-line-argument \
   -Wno-ignored-attributes \
   -Wno-macro-redefined \
@@ -38,7 +40,7 @@ clang++ \
   -fno-exceptions \
   -fms-extensions \
   -fvisibility=hidden \
-  -O3 \
+  -O2 \
   -I "${MSFS_SDK}/WASM/include" \
   -I "${MSFS_SDK}/SimConnect SDK/include" \
   "${DIR}/src/main.cpp" \
@@ -64,7 +66,7 @@ wasm-ld \
   --export-table \
   --gc-sections \
   ${WASMLD_ARGS} \
-  -O3 --lto-O3 \
+  -O2 --lto-O2 \
   -lc++ -lc++abi \
   ${DIR}/obj/*.o \
   -o $OUTPUT
