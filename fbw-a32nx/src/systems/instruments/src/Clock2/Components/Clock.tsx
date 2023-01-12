@@ -22,6 +22,8 @@ export class Clock extends DisplayComponent<ClockProps> {
 
     private readonly ltsTest = Subject.create(false);
 
+    private readonly dcHot1IsPowered = Subject.create(true);
+
     private readonly dateMode = Subject.create(false);
 
     private readonly currentUTC = Subject.create(0);
@@ -29,10 +31,19 @@ export class Clock extends DisplayComponent<ClockProps> {
     private readonly currentDate = Subject.create({ dayOfMonth: 1, monthOfYear: 1, year: 1970 });
 
     private updateClockText(): void {
+        if (!this.dcHot1IsPowered.get()) {
+            this.clockTextBig.set('');
+            this.clockTextSmall.set('');
+            return;
+        }
+
         if (this.ltsTest.get()) {
             this.clockTextBig.set('88:88');
             this.clockTextSmall.set('88');
-        } else if (!this.dateMode.get()) {
+            return;
+        }
+
+        if (!this.dateMode.get()) {
             const displayTime = secondsToDisplay(this.currentUTC.get());
             this.clockTextBig.set(`${displayTime[0].toString().padStart(2, '0')}:${displayTime[1].toString().padStart(2, '0')}`);
             this.clockTextSmall.set(displayTime[2].toString().padStart(2, '0'));
@@ -47,6 +58,8 @@ export class Clock extends DisplayComponent<ClockProps> {
 
         const sub = this.props.bus.getSubscriber<ClockSimvars>();
         sub.on('ltsTest').whenChanged().handle((ltsTest) => this.ltsTest.set(ltsTest === 0));
+
+        sub.on('dcHot1IsPowered').whenChanged().handle((dcHot1IsPowered) => this.dcHot1IsPowered.set(dcHot1IsPowered));
 
         sub.on('currentUTC').atFrequency(5).handle((currentUTC) => this.currentUTC.set(currentUTC));
         sub.on('dayOfMonth').atFrequency(1).handle((dayOfMonth) => this.currentDate.set({ ...this.currentDate.get(), dayOfMonth }));
@@ -65,6 +78,7 @@ export class Clock extends DisplayComponent<ClockProps> {
 
         [
             this.ltsTest,
+            this.dcHot1IsPowered,
             this.dateMode,
             this.currentUTC,
         ].forEach((attr) => attr.sub(() => this.updateClockText()));
