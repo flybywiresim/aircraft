@@ -40,7 +40,13 @@ class A32NX_Clock extends BaseInstrument {
 
         this.simVarPublisher.subscribe('ltsTest');
         this.simVarPublisher.subscribe('dcEssIsPowered');
+        this.simVarPublisher.subscribe('dcHot1IsPowered');
         this.simVarPublisher.subscribe('absTime');
+
+        this.simVarPublisher.subscribe('currentUTC');
+        this.simVarPublisher.subscribe('dayOfMonth');
+        this.simVarPublisher.subscribe('monthOfYear');
+        this.simVarPublisher.subscribe('year');
 
         FSComponent.render(<ClockRoot bus={this.bus} />, document.getElementById('Clock_CONTENT'));
     }
