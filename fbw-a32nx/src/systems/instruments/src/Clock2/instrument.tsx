@@ -1,10 +1,12 @@
-import { EventBus, FSComponent } from 'msfssdk';
+import { EventBus, FSComponent, HEventPublisher } from 'msfssdk';
 import { ClockSimvarPublisher } from 'instruments/src/Clock2/shared/ClockSimvarPublisher';
 import { ClockRoot } from './Clock';
 
 // eslint-disable-next-line camelcase
 class A32NX_Clock extends BaseInstrument {
     private bus: EventBus;
+
+    private readonly hEventPublisher: HEventPublisher;
 
     private simVarPublisher: ClockSimvarPublisher;
 
@@ -20,14 +22,21 @@ class A32NX_Clock extends BaseInstrument {
         super();
         this.bus = new EventBus();
         this.simVarPublisher = new ClockSimvarPublisher(this.bus);
+        this.hEventPublisher = new HEventPublisher(this.bus);
     }
 
     get templateID(): string {
         return 'A32NX_Clock';
     }
 
+    public onInteractionEvent(args: string[]): void {
+        this.hEventPublisher.dispatchHEvent(args[0]);
+    }
+
     public connectedCallback(): void {
         super.connectedCallback();
+
+        this.hEventPublisher.startPublish();
 
         this.simVarPublisher.subscribe('ltsTest');
 
