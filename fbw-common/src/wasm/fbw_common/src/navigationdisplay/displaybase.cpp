@@ -40,8 +40,8 @@ void DisplayBase::render(sGaugeDrawData* pDrawData) {
     return;
   }
 
-  const float ratio = pDrawData->fbWidth / pDrawData->fbHeight;
-  nvgBeginFrame(this->_context, pDrawData->winWidth, pDrawData->winHeight, ratio);
+  const float ratio = static_cast<float>(pDrawData->fbWidth) / static_cast<float>(pDrawData->fbHeight);
+  nvgBeginFrame(this->_context, static_cast<float>(pDrawData->winWidth), static_cast<float>(pDrawData->winHeight), ratio);
   {
     // fill the background
     if (this->_nanovgImage == 0 || helper::Math::almostEqual(this->_configuration.potentiometer, 0.0f)) {
@@ -52,9 +52,10 @@ void DisplayBase::render(sGaugeDrawData* pDrawData) {
     } else {
       // draw the image
       nvgBeginPath(this->_context);
-      NVGpaint imagePaint = nvgImagePattern(this->_context, 0.0f, 0.0f, pDrawData->winWidth, pDrawData->winHeight, 0.0, this->_nanovgImage,
-                                            this->_configuration.potentiometer);
-      nvgRect(this->_context, 0.0f, 0.0f, pDrawData->winWidth, pDrawData->winHeight);
+      NVGpaint imagePaint =
+          nvgImagePattern(this->_context, 0.0f, 0.0f, static_cast<float>(pDrawData->winWidth), static_cast<float>(pDrawData->winHeight),
+                          0.0, this->_nanovgImage, this->_configuration.potentiometer);
+      nvgRect(this->_context, 0.0f, 0.0f, static_cast<float>(pDrawData->winWidth), static_cast<float>(pDrawData->winHeight));
       nvgFillPaint(this->_context, imagePaint);
       nvgFill(this->_context);
     }

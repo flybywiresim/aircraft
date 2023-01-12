@@ -1,6 +1,11 @@
 #pragma once
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-function"
+#pragma clang diagnostic ignored "-Wundef"
+#pragma clang diagnostic ignored "-Wsign-conversion"
 #include <MSFS/Legacy/gauges.h>
+#pragma clang diagnostic pop
 #include <cstdint>
 #include <list>
 #include <map>
@@ -26,7 +31,7 @@ class Connection {
   void updateLVarObjects();
   void processSimObjectData(const SIMCONNECT_RECV_SIMOBJECT_DATA* data);
   void processClientData(const SIMCONNECT_RECV_CLIENT_DATA* data);
-  void processDispatchMessage(SIMCONNECT_RECV* pData, DWORD* cbData);
+  void processDispatchMessage(SIMCONNECT_RECV* pData);
 
  public:
   Connection();

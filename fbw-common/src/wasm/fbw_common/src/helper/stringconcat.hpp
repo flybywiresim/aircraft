@@ -9,16 +9,16 @@ template <std::string_view const&... Strings>
 struct StringConcat {
   static constexpr auto impl() {
     constexpr std::size_t length = (Strings.size() + ... + 0);
-    std::array<char, length + 1> arr{};
+    std::array<char, length + 1> localArr{};
 
-    auto append = [i = 0, &arr](auto const& str) mutable {
+    auto append = [i = 0, &localArr](auto const& str) mutable {
       for (auto c : str)
-        arr[i++] = c;
+        localArr[static_cast<std::size_t>(i++)] = c;
     };
     (append(Strings), ...);
-    arr[length] = 0;
+    localArr[length] = 0;
 
-    return arr;
+    return localArr;
   }
 
   static constexpr auto arr = impl();

@@ -1,7 +1,9 @@
 #pragma once
 
-#include <MSFS/Legacy/gauges.h>
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wsign-conversion"
 #include <SimConnect.h>
+#pragma clang diagnostic pop
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
@@ -26,7 +28,7 @@ class SimObjectBase : public base::Changeable {
   virtual void receivedData(void* data) = 0;
 
  public:
-  virtual ~SimObjectBase() {}
+  virtual ~SimObjectBase() override {}
   SimObjectBase(const SimObjectBase&) = delete;
 
   SimObjectBase& operator=(const SimObjectBase&) = delete;

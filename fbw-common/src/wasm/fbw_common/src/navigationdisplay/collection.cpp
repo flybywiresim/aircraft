@@ -2,10 +2,8 @@
 
 using namespace navigationdisplay;
 
-Collection::Collection(simconnect::Connection& connection, std::uint32_t pixelWidth, std::uint32_t pixelHeight)
-    : _pixelWidth(pixelWidth),
-      _pixelHeight(pixelHeight),
-      _displays(),
+Collection::Collection(simconnect::Connection& connection)
+    : _displays(),
       _groundTruth(),
       _egpwcData(),
       _configurationLeft(),
@@ -41,11 +39,11 @@ Collection::Collection(simconnect::Connection& connection, std::uint32_t pixelWi
                                                  EfisNdRightMode, EgpwcTerrOnNdRightActive>();
   this->_ndConfiguration->setUpdateCycleTime(200 * types::millisecond);
   this->_ndConfiguration->setOnChangeCallback([=]() {
-    this->_configurationLeft.range = this->_ndConfiguration->value<EgpwcNdLeftRange>() * types::nauticmile;
+    this->_configurationLeft.range = static_cast<float>(this->_ndConfiguration->value<EgpwcNdLeftRange>()) * types::nauticmile;
     this->_configurationLeft.mode = static_cast<std::uint8_t>(this->_ndConfiguration->value<EfisNdLeftMode>());
     this->_configurationLeft.terrainActive = static_cast<std::uint8_t>(this->_ndConfiguration->value<EgpwcTerrOnNdLeftActive>()) != 0;
 
-    this->_configurationRight.range = this->_ndConfiguration->value<EgpwcNdRightRange>() * types::nauticmile;
+    this->_configurationRight.range = static_cast<float>(this->_ndConfiguration->value<EgpwcNdRightRange>()) * types::nauticmile;
     this->_configurationRight.mode = static_cast<std::uint8_t>(this->_ndConfiguration->value<EfisNdRightMode>());
     this->_configurationRight.terrainActive = static_cast<std::uint8_t>(this->_ndConfiguration->value<EgpwcTerrOnNdRightActive>()) != 0;
 
@@ -67,8 +65,8 @@ Collection::Collection(simconnect::Connection& connection, std::uint32_t pixelWi
     this->_reconfigureDisplayLeft = true;
     this->_reconfigureDisplayRight = true;
 
-    types::Angle latitude = this->_simulatorData->data().latitude * types::degree;
-    types::Angle longitude = this->_simulatorData->data().longitude * types::degree;
+    types::Angle latitude = static_cast<float>(this->_simulatorData->data().latitude) * types::degree;
+    types::Angle longitude = static_cast<float>(this->_simulatorData->data().longitude) * types::degree;
     if (latitude != this->_groundTruth.latitude || longitude != this->_groundTruth.longitude) {
       this->_groundTruth.latitude = latitude;
       this->_groundTruth.longitude = longitude;
@@ -105,9 +103,9 @@ void Collection::updateDisplay(FsContext context) {
                                                          this->_egpwcData.heading.isNo() && this->_egpwcData.verticalSpeed.isNo();
     this->_simconnectAircraftStatus->data().latitude = this->_egpwcData.presentLatitude.value();
     this->_simconnectAircraftStatus->data().longitude = this->_egpwcData.presentLongitude.value();
-    this->_simconnectAircraftStatus->data().altitude = this->_egpwcData.altitude.value();
-    this->_simconnectAircraftStatus->data().heading = this->_egpwcData.heading.value();
-    this->_simconnectAircraftStatus->data().verticalSpeed = this->_egpwcData.verticalSpeed.value();
+    this->_simconnectAircraftStatus->data().altitude = static_cast<std::int32_t>(this->_egpwcData.altitude.value());
+    this->_simconnectAircraftStatus->data().heading = static_cast<std::int16_t>(this->_egpwcData.heading.value());
+    this->_simconnectAircraftStatus->data().verticalSpeed = static_cast<std::int16_t>(this->_egpwcData.verticalSpeed.value());
     this->_simconnectAircraftStatus->data().gearIsDown = static_cast<std::uint8_t>(this->_egpwcData.gearIsDown);
 
     this->_simconnectAircraftStatus->data().destinationValid =

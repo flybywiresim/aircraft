@@ -1,6 +1,9 @@
 #pragma once
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-function"
 #include <MSFS/MSFS_Core.h>
+#pragma clang diagnostic pop
 #include <map>
 #include <memory>
 
@@ -28,8 +31,6 @@ class Collection {
     types::Angle longitude;
   };
 
-  std::uint32_t _pixelWidth;
-  std::uint32_t _pixelHeight;
   std::map<FsContext, std::shared_ptr<DisplayBase>> _displays;
   GroundTruthPosition _groundTruth;
   EgpwcData _egpwcData;
@@ -62,7 +63,7 @@ class Collection {
   std::shared_ptr<simconnect::ClientDataArea<types::AircraftStatusData>> _simconnectAircraftStatus;
 
  public:
-  Collection(simconnect::Connection& connection, std::uint32_t pixelWidth, std::uint32_t pixelHeight);
+  Collection(simconnect::Connection& connection);
   Collection(const Collection&) = delete;
   ~Collection();
 

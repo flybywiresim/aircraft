@@ -1,4 +1,7 @@
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-function"
 #include <MSFS/MSFS.h>
+#pragma clang diagnostic pop
 #include <algorithm>
 #include <memory>
 #include <string>
@@ -19,8 +22,7 @@ MSFS_CALLBACK bool terronnd_gauge_callback(FsContext ctx, int service_id, void* 
         sGaugeInstallData* installData = (sGaugeInstallData*)pData;
 
         if (displays == nullptr) {
-          displays = std::shared_ptr<navigationdisplay::Collection>(
-              new navigationdisplay::Collection(connection, installData->iSizeX, installData->iSizeY));
+          displays = std::shared_ptr<navigationdisplay::Collection>(new navigationdisplay::Collection(connection));
         }
 
         std::string parameter = std::string(installData->strParameters);

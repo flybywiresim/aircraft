@@ -59,7 +59,7 @@ void Connection::processClientData(const SIMCONNECT_RECV_CLIENT_DATA* data) {
   }
 }
 
-void Connection::processDispatchMessage(SIMCONNECT_RECV* pData, DWORD* cbData) {
+void Connection::processDispatchMessage(SIMCONNECT_RECV* pData) {
   switch (static_cast<SIMCONNECT_RECV_ID>(pData->dwID)) {
     case SIMCONNECT_RECV_ID_OPEN:
       std::cout << "TERR ON ND: SimConnect connection established" << std::endl;
@@ -106,7 +106,7 @@ bool Connection::readData() {
   SIMCONNECT_RECV* pData;
 
   while (SUCCEEDED(SimConnect_GetNextDispatch(this->_connection, &pData, &cbData))) {
-    this->processDispatchMessage(pData, &cbData);
+    this->processDispatchMessage(pData);
   }
 
   this->updateLVarObjects();

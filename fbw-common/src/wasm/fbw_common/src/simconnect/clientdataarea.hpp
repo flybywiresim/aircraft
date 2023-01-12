@@ -1,7 +1,10 @@
 #pragma once
 
-#include <MSFS/Legacy/gauges.h>
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wsign-conversion"
+#pragma clang diagnostic ignored "-Wundef"
 #include <SimConnect.h>
+#pragma clang diagnostic pop
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
@@ -32,7 +35,7 @@ class ClientDataAreaBase : public base::Changeable {
   virtual void receivedData(void* data) = 0;
 
  public:
-  virtual ~ClientDataAreaBase() {}
+  virtual ~ClientDataAreaBase() override {}
 
   void setAlwaysChanges(bool alwaysChanges) { this->_alwaysChanges = alwaysChanges; }
 

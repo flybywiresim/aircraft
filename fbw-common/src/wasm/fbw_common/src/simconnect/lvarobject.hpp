@@ -1,6 +1,9 @@
 #pragma once
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wsign-conversion"
 #include <SimConnect.h>
+#pragma clang diagnostic pop
 #include <chrono>
 #include <cstddef>
 #include <string_view>
@@ -31,7 +34,8 @@ class LVarObjectBase : public base::Changeable {
       return false;
     }
 
-    types::Time dt = std::chrono::duration_cast<std::chrono::milliseconds>(now - this->_lastUpdateTime).count() * types::millisecond;
+    types::Time dt =
+        static_cast<float>(std::chrono::duration_cast<std::chrono::milliseconds>(now - this->_lastUpdateTime).count()) * types::millisecond;
     return dt >= this->_updateCycleTime;
   }
 
@@ -44,7 +48,7 @@ class LVarObjectBase : public base::Changeable {
 
  public:
   LVarObjectBase(const LVarObjectBase&) = delete;
-  virtual ~LVarObjectBase() {}
+  virtual ~LVarObjectBase() override {}
 
   LVarObjectBase& operator=(const LVarObjectBase&) = delete;
 

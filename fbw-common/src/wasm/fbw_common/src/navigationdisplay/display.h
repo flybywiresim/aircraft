@@ -1,7 +1,12 @@
 #pragma once
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-function"
+#pragma clang diagnostic ignored "-Wunused-parameter"
+#pragma clang diagnostic ignored "-Wsign-conversion"
 #include <MSFS/Legacy/gauges.h>
 #include <MSFS/Render/nanovg.h>
+#pragma clang diagnostic pop
 #include <cstdint>
 #include <string_view>
 #include <vector>
@@ -113,7 +118,7 @@ class Display : public DisplayBase {
 
       if (this->_receivedFrameData >= this->_frameBufferSize && this->_context != nullptr) {
         this->destroyImage();
-        this->_nanovgImage = nvgCreateImageMem(this->_context, 0, this->_frameBuffer.data(), this->_frameBufferSize);
+        this->_nanovgImage = nvgCreateImageMem(this->_context, 0, this->_frameBuffer.data(), static_cast<int>(this->_frameBufferSize));
         if (this->_nanovgImage == 0) {
           std::cerr << "TERR ON ND: Unable to decode the image from the stream" << std::endl;
         }
@@ -136,7 +141,7 @@ class Display : public DisplayBase {
 
     this->_configuration = config;
 
-    if (!config.terrainActive || oldArcMode != newArcMode || oldRoseMode != newRoseMode || !newRoseMode && !newArcMode) {
+    if (!config.terrainActive || oldArcMode != newArcMode || oldRoseMode != newRoseMode || (!newRoseMode && !newArcMode)) {
       this->resetNavigationDisplayData();
       this->destroyImage();
     }
