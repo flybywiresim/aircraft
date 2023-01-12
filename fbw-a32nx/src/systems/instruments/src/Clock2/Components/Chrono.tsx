@@ -50,6 +50,13 @@ export class Chrono extends DisplayComponent<ChronoProps> {
             this.ltsTest.set(ltsTest === 0);
         });
 
+        sub.on('dcHot1IsPowered').whenChanged().handle((dcHot1IsPowered) => {
+            if (!dcHot1IsPowered) {
+                this.running.set(false);
+                this.elapsedTime.set(null);
+            }
+        });
+
         sub.on('dcEssIsPowered').whenChanged().handle((dcEssIsPowered) => this.dcEssIsPowered = dcEssIsPowered);
 
         sub.on('absTime').atFrequency(5).handle((absTime) => {
