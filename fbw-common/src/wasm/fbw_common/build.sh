@@ -35,7 +35,6 @@ clang++ \
   -Wconversion \
   --sysroot "${MSFS_SDK}/WASM/wasi-sysroot" \
   -target wasm32-unknown-wasi \
-  -flto \
   -D_MSFS_WASM=1 \
   -D__wasi__ \
   -D_LIBCC_NO_EXCEPTIONS \
@@ -74,7 +73,7 @@ wasm-ld \
   --export-table \
   --gc-sections \
   ${WASMLD_ARGS} \
-  -O2 --lto-O2 \
+  -O2 \
   -lc++ -lc++abi \
   ${DIR}/obj/*.o \
   -o $OUTPUT
