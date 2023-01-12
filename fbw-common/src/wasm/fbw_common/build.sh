@@ -22,11 +22,17 @@ clang++ \
   -c \
   ${CLANG_ARGS} \
   -std=c++20 \
+  -W \
   -Wall \
   -Wextra \
+  -Wc++20-compat \
   -Wno-unused-command-line-argument \
   -Wno-ignored-attributes \
   -Wno-macro-redefined \
+  -Wshadow \
+  -Wdouble-promotion \
+  -Wundef \
+  -Wconversion \
   --sysroot "${MSFS_SDK}/WASM/wasi-sysroot" \
   -target wasm32-unknown-wasi \
   -flto \
@@ -40,6 +46,8 @@ clang++ \
   -fno-exceptions \
   -fms-extensions \
   -fvisibility=hidden \
+  -fno-common \
+  -fstack-usage \
   -O2 \
   -I "${MSFS_SDK}/WASM/include" \
   -I "${MSFS_SDK}/SimConnect SDK/include" \
