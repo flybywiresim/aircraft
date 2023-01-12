@@ -1,9 +1,8 @@
-import { ComponentProps, DisplayComponent, EventBus, FSComponent, HEvent, Subject, Subscribable, VNode } from 'msfssdk';
+import { ComponentProps, DisplayComponent, EventBus, FSComponent, HEvent, Subject, VNode } from 'msfssdk';
 import { ClockSimvars } from '../shared/ClockSimvarPublisher';
 
 interface ChronoProps extends ComponentProps {
     bus: EventBus;
-    ltsTest: Subscribable<boolean>
 }
 
 const getDisplayString = (seconds: number | null, running: boolean, ltsTest: boolean) : string => {
@@ -37,6 +36,8 @@ export class Chrono extends DisplayComponent<ChronoProps> {
 
     private readonly running = Subject.create(false);
 
+    private readonly ltsTest = Subject.create(false);
+
     private dcEssIsPowered: boolean;
 
     private prevTime: number;
@@ -45,6 +46,10 @@ export class Chrono extends DisplayComponent<ChronoProps> {
         super.onAfterRender(node);
 
         const sub = this.props.bus.getSubscriber<ClockSimvars>();
+        sub.on('ltsTest').whenChanged().handle((ltsTest) => {
+            this.ltsTest.set(ltsTest === 0);
+        });
+
         sub.on('dcEssIsPowered').whenChanged().handle((dcEssIsPowered) => this.dcEssIsPowered = dcEssIsPowered);
 
         sub.on('absTime').atFrequency(5).handle((absTime) => {
@@ -82,8 +87,8 @@ export class Chrono extends DisplayComponent<ChronoProps> {
         [
             this.elapsedTime,
             this.running,
-            this.props.ltsTest,
-        ].forEach((attr) => attr.sub(() => this.chronoText.set(getDisplayString(this.elapsedTime.get(), this.running.get(), this.props.ltsTest.get()))));
+            this.ltsTest,
+        ].forEach((attr) => attr.sub(() => this.chronoText.set(getDisplayString(this.elapsedTime.get(), this.running.get(), this.ltsTest.get()))));
     }
 
     public render(): VNode {
