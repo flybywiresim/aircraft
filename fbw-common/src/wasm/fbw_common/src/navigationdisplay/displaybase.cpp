@@ -39,7 +39,7 @@ void DisplayBase::render(sGaugeDrawData* pDrawData, FsContext context) {
   nvgBeginFrame(this->_context, pDrawData->winWidth, pDrawData->winHeight, ratio);
   {
     // fill the background
-    if (this->_nanovgImage == 0) {
+    if (this->_nanovgImage == 0 || helper::Math::almostEqual(this->_configuration.potentiometer, 0.0f)) {
       nvgFillColor(this->_context, nvgRGBA(4, 4, 5, 255));
       nvgBeginPath(this->_context);
       nvgRect(this->_context, 0.0f, 0.0f, static_cast<float>(pDrawData->winWidth), static_cast<float>(pDrawData->winHeight));
