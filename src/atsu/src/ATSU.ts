@@ -319,4 +319,30 @@ export class Atsu {
     public targetFlightState() {
         return this.flightStateObserver.FcuSettings;
     }
+
+    public getDatalinkStatus(value: string) {
+        switch (value) {
+        case 'vhf':
+            return this.datalink.vhfDatalinkStatus();
+        case 'satcom':
+            return this.datalink.satcomDatalinkStatus();
+        case 'hf':
+            return this.datalink.hfDatalinkStatus();
+        default:
+            return 99;
+        }
+    }
+
+    public getDatalinkMode(value: string) {
+        switch (value) {
+        case 'vhf':
+            return this.datalink.vhfDatalinkMode();
+        case 'satcom':
+            return this.datalink.satcomDatalinkMode();
+        case 'hf':
+            return this.datalink.hfDatalinkMode();
+        default:
+            return 99;
+        }
+    }
 }
