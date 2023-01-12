@@ -1,5 +1,5 @@
 import { EventBus, FSComponent, HEventPublisher } from 'msfssdk';
-import { ClockSimvarPublisher } from 'instruments/src/Clock2/shared/ClockSimvarPublisher';
+import { ClockSimvarPublisher } from './shared/ClockSimvarPublisher';
 import { ClockRoot } from './Clock';
 
 // eslint-disable-next-line camelcase

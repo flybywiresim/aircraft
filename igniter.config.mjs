@@ -67,7 +67,7 @@ export default new TaskOfTasks("all", [
                 [
                     ...getInstrumentsIgniterTasks(),
                     new ExecTask("PFD", "npm run build-a32nx:pfd", ["fbw-a32nx/src/systems/instruments/src/PFD", "fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/PFD"]),
-                    new ExecTask("Clock", "npm run build-a32nx:clock", ["fbw-a32nx/src/systems/instruments/src/Clock2", "fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/Clock"])
+                    new ExecTask("Clock", "npm run build-a32nx:clock", ["fbw-a32nx/src/systems/instruments/src/Clock", "fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/Clock"])
                 ],
                 true)
         ], true),
