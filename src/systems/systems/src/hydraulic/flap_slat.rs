@@ -1,4 +1,10 @@
 use super::linear_actuator::Actuator;
+use crate::shared::PowerControlUnitInterface;
+use crate::shared::{
+    litre_per_minute::litre_per_minute, newton_per_square_millimeter::newton_per_square_millimeter,
+};
+// use crate::shared::pid::PidController;
+// use crate::shared::ControlValveCommand;
 use crate::shared::{
     interpolation, low_pass_filter::LowPassFilter, PositionPickoffUnit, SectionPressure,
 };
@@ -7,7 +13,7 @@ use crate::simulation::{
 };
 
 use uom::si::angular_velocity::degree_per_second;
-use uom::si::volume_rate::cubic_inch_per_minute;
+use uom::si::volume_rate::{cubic_inch_per_minute, gallon_per_minute};
 use uom::si::{
     angle::{degree, radian},
     angular_velocity::{radian_per_second, revolution_per_minute},
@@ -20,6 +26,463 @@ use uom::si::{
 };
 
 use std::time::Duration;
+
+pub trait HydraulicValve {
+    fn get_flow(&self) -> VolumeRate;
+}
+
+pub struct PressureMaintainingValve<const N: usize> {
+    valve_ratio: Ratio,
+    flow: VolumeRate,
+    motor_flow_breakpoints: [f64; N], //         [0.,  1.5,  3.,  6.,  18.,  19., 22.22] L/min
+    hydraulic_pressure_breakpoints: [f64; N], // [3.3, 3.3, 15., 16.2, 17.8, 20., 22.] N/mm2
+
+    total_volume_to_actuator: Volume,
+    total_volume_returned_to_reservoir: Volume,
+}
+impl<const N: usize> PressureMaintainingValve<N> {
+    pub fn new(
+        // motor_flow_breakpoints: [VolumeRate; N],
+        // hydraulic_pressure_breakpoints: [Pressure; N],
+        motor_flow_breakpoints: [f64; N],
+        hydraulic_pressure_breakpoints: [f64; N],
+    ) -> Self {
+        Self {
+            valve_ratio: Ratio::default(),
+            flow: VolumeRate::default(),
+            // motor_flow_breakpoints: motor_flow_breakpoints.map(|x| x.get::<litre_per_minute>()),
+            // hydraulic_pressure_breakpoints: hydraulic_pressure_breakpoints
+            //     .map(|x| x.get::<newton_per_square_millimeter>()),
+            motor_flow_breakpoints,
+            hydraulic_pressure_breakpoints,
+            total_volume_to_actuator: Volume::default(),
+            total_volume_returned_to_reservoir: Volume::default(),
+        }
+    }
+
+    // pub fn change_gain(&mut self, gain: f64) {
+    //     self.pid.set_gains(0.002, 0., gain);
+    // }
+
+    pub fn update(&mut self, context: &UpdateContext, pressure: Pressure) {
+        let fluid_pressure = pressure.get::<newton_per_square_millimeter>();
+
+        // Add interpolation for fluid temperature
+        let flow_f64 = interpolation(
+            &self.hydraulic_pressure_breakpoints,
+            &self.motor_flow_breakpoints,
+            fluid_pressure,
+        );
+
+        // Calculate valve_ratio
+        self.flow = VolumeRate::new::<litre_per_minute>(flow_f64);
+
+        self.total_volume_to_actuator += self.flow * context.delta_as_time();
+        self.total_volume_returned_to_reservoir += self.flow * context.delta_as_time();
+    }
+
+    pub fn get_valve_position(&self) -> Ratio {
+        self.valve_ratio
+    }
+}
+impl<const N: usize> HydraulicValve for PressureMaintainingValve<N> {
+    fn get_flow(&self) -> VolumeRate {
+        self.flow
+    }
+}
+impl<const N: usize> Actuator for PressureMaintainingValve<N> {
+    fn used_volume(&self) -> Volume {
+        self.total_volume_to_actuator
+    }
+    fn reservoir_return(&self) -> Volume {
+        self.total_volume_returned_to_reservoir
+    }
+    fn reset_volumes(&mut self) {
+        self.total_volume_returned_to_reservoir = Volume::new::<gallon>(0.);
+        self.total_volume_to_actuator = Volume::new::<gallon>(0.);
+    }
+}
+
+pub struct HydraulicMotor {
+    speed: AngularVelocity,
+    position: Angle,
+    motor_displacement: Volume,
+    motor_efficiency: Ratio,
+}
+impl HydraulicMotor {
+    pub fn new(motor_displacement: Volume, motor_efficiency: Ratio) -> Self {
+        Self {
+            speed: AngularVelocity::default(),
+            position: Angle::default(),
+            motor_displacement,
+            motor_efficiency,
+        }
+    }
+
+    fn calculate_speed(
+        &mut self,
+        valve: &impl HydraulicValve,
+        pob_status: BrakeStatus,
+    ) -> AngularVelocity {
+        match pob_status {
+            BrakeStatus::Locked => return AngularVelocity::default(),
+            BrakeStatus::Unlocked => {
+                let correction_factor = self.motor_efficiency.get::<ratio>();
+                let displacement = self.motor_displacement.get::<cubic_inch>();
+                let flow = valve.get_flow().get::<gallon_per_minute>();
+                return AngularVelocity::new::<revolution_per_minute>(
+                    correction_factor * flow * 231. / displacement,
+                );
+            }
+        }
+    }
+
+    fn update_speed_and_position(
+        &mut self,
+        context: &UpdateContext,
+        calculated_speed: AngularVelocity,
+        retract_solenoid: SolenoidStatus,
+        extend_solenoid: SolenoidStatus,
+    ) {
+        match (retract_solenoid, extend_solenoid) {
+            (SolenoidStatus::Energised, SolenoidStatus::DeEnergised) => {
+                let time_f64 = context.delta_as_secs_f64();
+                let speed_f64 = calculated_speed.get::<radian_per_second>();
+                self.position -= Angle::new::<radian>(time_f64 * speed_f64);
+                self.speed = -calculated_speed;
+            }
+            (SolenoidStatus::DeEnergised, SolenoidStatus::Energised) => {
+                let time_f64 = context.delta_as_secs_f64();
+                let speed_f64 = calculated_speed.get::<radian_per_second>();
+                self.position += Angle::new::<radian>(time_f64 * speed_f64);
+                self.speed = calculated_speed;
+            }
+            (SolenoidStatus::Energised, SolenoidStatus::Energised) => {
+                // Should never be here, yet!
+                println!("retract_solenoid and extend_solenoid energised!");
+                self.position = self.position;
+                self.speed = AngularVelocity::default();
+            }
+            (SolenoidStatus::DeEnergised, SolenoidStatus::DeEnergised) => {
+                println!("retract_solenoid and extend_solenoid de-energised!");
+                self.position = self.position;
+                self.speed = AngularVelocity::default();
+            }
+        }
+    }
+
+    pub fn get_motor_speed(&self) -> AngularVelocity {
+        self.speed
+    }
+
+    pub fn get_motor_position(&self) -> Angle {
+        self.position
+    }
+
+    pub fn update(
+        &mut self,
+        context: &UpdateContext,
+        valve: &impl HydraulicValve,
+        retract_solenoid: SolenoidStatus,
+        extend_solenoid: SolenoidStatus,
+        pob_status: BrakeStatus,
+    ) {
+        let calculated_speed = self.calculate_speed(valve, pob_status);
+        self.update_speed_and_position(
+            context,
+            calculated_speed,
+            retract_solenoid,
+            extend_solenoid,
+        );
+    }
+}
+
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub enum BrakeStatus {
+    Locked,   // Nothing moving, brakes are holding the motor
+    Unlocked, // Hyd motor is free to rotate
+}
+pub struct PressureOffBrake {
+    pressure_required_to_unlock: Pressure,
+    position: BrakeStatus,
+}
+impl PressureOffBrake {
+    pub fn new(pressure_required_to_unlock: Pressure) -> Self {
+        Self {
+            pressure_required_to_unlock,
+            position: BrakeStatus::Locked,
+        }
+    }
+
+    pub fn get_status(&self) -> BrakeStatus {
+        self.position
+    }
+
+    pub fn update(
+        &mut self,
+        _context: &UpdateContext,
+        pressure: Pressure,
+        solenoid: SolenoidStatus,
+    ) {
+        // Should review logic. Maybe it's better to get the pressure from the flow
+        // after the ValveBlock
+        if pressure >= self.pressure_required_to_unlock && solenoid == SolenoidStatus::Energised {
+            self.position = BrakeStatus::Unlocked;
+        } else {
+            self.position = BrakeStatus::Locked;
+        }
+    }
+}
+
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub enum SolenoidStatus {
+    // Should it be Ratio instead?
+    Energised,
+    DeEnergised,
+}
+pub struct ValveBlock<const N: usize> {
+    control_valve: PressureMaintainingValve<N>,
+    retract_solenoid: SolenoidStatus,
+    extend_solenoid: SolenoidStatus,
+    enable_solenoid: SolenoidStatus, // When de-energised, the brake locks the motor
+}
+impl<const N: usize> ValveBlock<N> {
+    pub fn new(
+        // motor_flow_breakpoints: [VolumeRate; N],
+        // hydraulic_pressure_breakpoints: [Pressure; N],
+        motor_flow_breakpoints: [f64; N],
+        hydraulic_pressure_breakpoints: [f64; N],
+    ) -> Self {
+        Self {
+            control_valve: PressureMaintainingValve::new(
+                motor_flow_breakpoints,
+                hydraulic_pressure_breakpoints,
+            ),
+            retract_solenoid: SolenoidStatus::DeEnergised,
+            extend_solenoid: SolenoidStatus::DeEnergised,
+            enable_solenoid: SolenoidStatus::DeEnergised,
+        }
+    }
+
+    pub fn get_lvdt_position(&self) -> Ratio {
+        self.control_valve.get_valve_position()
+    }
+
+    pub fn get_valve(&self) -> &PressureMaintainingValve<N> {
+        &self.control_valve
+    }
+
+    pub fn get_retract_solenoid(&self) -> SolenoidStatus {
+        self.retract_solenoid
+    }
+
+    pub fn get_extend_solenoid(&self) -> SolenoidStatus {
+        self.extend_solenoid
+    }
+
+    pub fn get_enable_solenoid(&self) -> SolenoidStatus {
+        self.enable_solenoid
+    }
+
+    pub fn update(
+        &mut self,
+        context: &UpdateContext,
+        pressure: Pressure,
+        pcu_commands: Box<dyn PowerControlUnitInterface>,
+    ) {
+        self.retract_solenoid = pcu_commands.retract_energise();
+        self.extend_solenoid = pcu_commands.extend_energise();
+        self.enable_solenoid = pcu_commands.pob_energise();
+        self.control_valve.update(context, pressure);
+    }
+}
+
+pub struct PowerControlUnit<const N: usize> {
+    max_pressure: Pressure,
+    valve_block: ValveBlock<N>,
+    hydraulic_motor: HydraulicMotor,
+    pressure_off_brake: PressureOffBrake,
+}
+impl<const N: usize> PowerControlUnit<N> {
+    pub fn new(
+        max_pressure: Pressure,
+        // motor_flow_breakpoints: [VolumeRate; N],
+        // hydraulic_pressure_breakpoints: [Pressure; N],
+        motor_flow_breakpoints: [f64; N],
+        hydraulic_pressure_breakpoints: [f64; N],
+        motor_displacement: Volume,
+        motor_efficiency: Ratio,
+        minimum_pressure_pob: Pressure,
+    ) -> Self {
+        Self {
+            max_pressure,
+            valve_block: ValveBlock::new(motor_flow_breakpoints, hydraulic_pressure_breakpoints),
+            hydraulic_motor: HydraulicMotor::new(motor_displacement, motor_efficiency),
+            pressure_off_brake: PressureOffBrake::new(minimum_pressure_pob),
+        }
+    }
+
+    pub fn update(
+        &mut self,
+        context: &UpdateContext,
+        pressure: &impl SectionPressure,
+        pcu_commands: Box<dyn PowerControlUnitInterface>,
+    ) {
+        let pressure_relief = pressure.pressure().min(self.max_pressure);
+        self.valve_block
+            .update(context, pressure_relief, pcu_commands);
+
+        let solenoid = self.valve_block.get_enable_solenoid();
+        self.pressure_off_brake
+            .update(context, pressure_relief, solenoid);
+
+        let valve = self.valve_block.get_valve();
+        let retract_solenoid = self.valve_block.get_retract_solenoid();
+        let extend_solenoid = self.valve_block.get_extend_solenoid();
+        let pob_status = self.pressure_off_brake.get_status();
+        self.hydraulic_motor.update(
+            context,
+            valve,
+            retract_solenoid,
+            extend_solenoid,
+            pob_status,
+        );
+    }
+
+    pub fn get_motor_speed(&self) -> AngularVelocity {
+        self.hydraulic_motor.get_motor_speed()
+    }
+
+    pub fn get_motor_position(&self) -> Angle {
+        self.hydraulic_motor.get_motor_position()
+    }
+}
+
+pub struct FlapSlatAssy<const N: usize> {
+    power_control_units: [PowerControlUnit<N>; 2],
+    motor_to_differential_gear_ratio: Ratio,
+    differential_to_intermediate_gear_ratio: Ratio,
+    differential_to_drive_lever_gear_ratio: Ratio,
+    synchro_angle_breakpoints: [f64; 12],
+    surface_position_breakpoints: [f64; 12],
+    differential_gear: Angle,
+    intermediate_gear: Angle,
+    drive_lever: Angle,
+    surface_position: Angle,
+}
+impl<const N: usize> FlapSlatAssy<N> {
+    pub fn new(
+        max_pressure: Pressure,
+        // motor_flow_breakpoints: [VolumeRate; N],
+        // hydraulic_pressure_breakpoints: [Pressure; N],
+        motor_flow_breakpoints: [f64; N],
+        hydraulic_pressure_breakpoints: [f64; N],
+        motor_displacement: Volume,
+        motor_efficiency: Ratio,
+        minimum_pressure_pob: Pressure,
+        motor_to_differential_gear_ratio: Ratio,
+        differential_to_intermediate_gear_ratio: Ratio,
+        differential_to_drive_lever_gear_ratio: Ratio,
+        synchro_angle_breakpoints: [f64; 12],
+        surface_position_breakpoints: [f64; 12],
+    ) -> Self {
+        Self {
+            power_control_units: [
+                PowerControlUnit::new(
+                    max_pressure,
+                    motor_flow_breakpoints,
+                    hydraulic_pressure_breakpoints,
+                    motor_displacement,
+                    motor_efficiency,
+                    minimum_pressure_pob,
+                ),
+                PowerControlUnit::new(
+                    max_pressure,
+                    motor_flow_breakpoints,
+                    hydraulic_pressure_breakpoints,
+                    motor_displacement,
+                    motor_efficiency,
+                    minimum_pressure_pob,
+                ),
+            ],
+            motor_to_differential_gear_ratio,
+            differential_to_intermediate_gear_ratio,
+            differential_to_drive_lever_gear_ratio,
+            differential_gear: Angle::default(),
+            intermediate_gear: Angle::default(),
+            drive_lever: Angle::default(),
+            surface_position: Angle::default(),
+            synchro_angle_breakpoints,
+            surface_position_breakpoints,
+        }
+    }
+
+    fn position_feedback(&self) -> Angle {
+        self.intermediate_gear
+    }
+
+    pub fn update(
+        &mut self,
+        context: &UpdateContext,
+        left_pressure: &impl SectionPressure,
+        right_pressure: &impl SectionPressure,
+        pcu1_commands: Box<dyn PowerControlUnitInterface>,
+        pcu2_commands: Box<dyn PowerControlUnitInterface>,
+    ) {
+        self.power_control_units[0].update(context, left_pressure, pcu1_commands);
+        self.power_control_units[1].update(context, right_pressure, pcu2_commands);
+        println!("----------------------------------");
+        for pcu in self.power_control_units.iter() {
+            // Can't use the motor position directly because motors may not move synchronously
+            // with the differential gear
+            let motor_speed = pcu.get_motor_speed().get::<radian_per_second>();
+            let delta_time = context.delta_as_secs_f64();
+            let motor_delta_position = Angle::new::<radian>(motor_speed * delta_time);
+            self.differential_gear +=
+                motor_delta_position / self.motor_to_differential_gear_ratio.get::<ratio>();
+        }
+        self.intermediate_gear =
+            self.differential_gear / self.differential_to_intermediate_gear_ratio.get::<ratio>();
+        println!(
+            "intermediate_gear {}",
+            self.intermediate_gear.get::<degree>()
+        );
+        self.drive_lever =
+            self.differential_gear / self.differential_to_drive_lever_gear_ratio.get::<ratio>();
+        self.surface_position = Angle::new::<degree>(interpolation(
+            &self.synchro_angle_breakpoints,
+            &self.surface_position_breakpoints,
+            self.position_feedback().get::<degree>(),
+        ));
+        println!("surface_position {}", self.surface_position.get::<degree>());
+    }
+
+    pub fn get_surface_position(&self) -> Angle {
+        self.surface_position
+    }
+
+    pub fn get_drive_lever_angle(&self) -> Angle {
+        self.drive_lever
+    }
+
+    pub fn get_intermediate_gear_angle(&self) -> Angle {
+        self.intermediate_gear
+    }
+}
+impl<const N: usize> PositionPickoffUnit for FlapSlatAssy<N> {
+    fn fppu_angle(&self) -> Angle {
+        self.position_feedback()
+    }
+    fn appu_left_angle(&self) -> Angle {
+        self.position_feedback()
+    }
+    fn appu_right_angle(&self) -> Angle {
+        self.position_feedback()
+    }
+    fn ippu_angle(&self) -> Angle {
+        self.position_feedback()
+    }
+}
 
 /// Simple hydraulic motor directly driven with a speed.
 /// Speed is smoothly rising or lowering to simulate transients states
@@ -105,6 +568,47 @@ impl Actuator for FlapSlatHydraulicMotor {
     }
 }
 
+/*
+const HYDRAULIC_TARGET_PRESSURE_PSI: f64 = 3000.;
+
+y = x * (-0.0444 + x * (0.0013 + (x * -2e-6)))
+const FLAP_FPPU_TO_SURFACE_ANGLE_BREAKPTS: [f64; 12] =
+    [0., 35.66, 69.32, 89.7, 105.29, 120.22, 145.51, 168.35, 189.87, 210.69, 231.25, 251.97];
+const FLAP_FPPU_TO_SURFACE_ANGLE_DEGREES: [f64; 12] =
+    [0.,  0.,    2.5,   5.,    7.5,   10.,    15.,    20.,    25.,    30.,    35.,    40.];
+flap_system: FlapSlatAssembly::new(
+    context,
+    "FLAPS",
+    Volume::new::<cubic_inch>(0.32),
+    AngularVelocity::new::<radian_per_second>(0.13),
+    Angle::new::<degree>(251.97), - REMOVED
+    Ratio::new::<ratio>(140.),
+    Ratio::new::<ratio>(16.632),
+    Ratio::new::<ratio>(314.98),
+    Self::FLAP_FPPU_TO_SURFACE_ANGLE_BREAKPTS,
+    Self::FLAP_FPPU_TO_SURFACE_ANGLE_DEGREES,
+    Pressure::new::<psi>(A320HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
+),
+
+const SLAT_FPPU_TO_SURFACE_ANGLE_BREAKPTS: [f64; 12] =
+    [0., 66.83, 167.08, 222.27, 272.27, 334.16, 334.16, 334.16, 334.16, 334.16, 334.16, 334.16];
+const SLAT_FPPU_TO_SURFACE_ANGLE_DEGREES: [f64; 12] =
+    [0.,  5.4,   13.5,   18.,    22.,    27.,    27.,    27.,    27.,    27.,    27.,    27.];
+slat_system: FlapSlatAssembly::new(
+    context,
+    "SLATS",
+    Volume::new::<cubic_inch>(0.32),
+    AngularVelocity::new::<radian_per_second>(0.13),
+    Angle::new::<degree>(334.16), - REMOVED
+    Ratio::new::<ratio>(140.),
+    Ratio::new::<ratio>(16.632),
+    Ratio::new::<ratio>(314.98),
+    Self::SLAT_FPPU_TO_SURFACE_ANGLE_BREAKPTS,
+    Self::SLAT_FPPU_TO_SURFACE_ANGLE_DEGREES,
+    Pressure::new::<psi>(A320HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
+),
+*/
+
 // Add priority valve of 130bar (or 140bar?)
 // Add 4 actuators each wing with torque limiter for flaps
 // Add 10 actuators each wing wing with torque limiter for slats (2 per slat)
@@ -121,24 +625,24 @@ pub struct FlapSlatAssembly {
     fppu_angle_id: VariableIdentifier,
     is_moving_id: VariableIdentifier,
 
-    surface_control_arm_position: Angle,
+    drive_lever_position: Angle,
 
-    max_synchro_gear_position: Angle,
-    final_requested_synchro_gear_position: Angle, // Requested flaps/slats position from SFCC 1 or 2
+    demanded_synchro_angle: Angle, // Requested flaps/slats position from SFCC 1 or 2
 
     speed: AngularVelocity,
     current_max_speed: LowPassFilter<AngularVelocity>,
     full_pressure_max_speed: AngularVelocity,
 
-    gearbox_ratio: Ratio,
-    surface_to_synchro_gear_ratio: Ratio,
+    differential_gearbox_ratio: Ratio,
+    drive_lever_to_synchro_gear_ratio: Ratio,
     surface_gear_ratio: Ratio,
 
     left_motor: FlapSlatHydraulicMotor,
     right_motor: FlapSlatHydraulicMotor,
 
-    synchro_gear_breakpoints: [f64; 12],
-    final_surface_angle_carac: [f64; 12],
+    synchro_angle_breakpoints: [f64; 12],
+    surface_angle_breakpoints: [f64; 12],
+    max_synchro_angle: Angle,
 
     circuit_target_pressure: Pressure,
 }
@@ -156,13 +660,12 @@ impl FlapSlatAssembly {
         context: &mut InitContext,
         id: &str,
         motor_displacement: Volume,
-        full_pressure_max_speed: AngularVelocity,
-        max_synchro_gear_position: Angle,
-        synchro_gear_ratio: Ratio,
-        gearbox_ratio: Ratio,
-        surface_gear_ratio: Ratio,
-        synchro_gear_breakpoints: [f64; 12],
-        final_surface_angle_carac: [f64; 12],
+        full_pressure_max_speed: AngularVelocity, // AngularVelocity::new::<radian_per_second>(0.13),
+        intermediate_gearbox_ratio: Ratio, // Ratio::new::<ratio>(140.), --> 140 input shaft revolutions to give 1 revolution of synchro (i.e. 360 deg). 97.98 revs for 251.97 FPPU
+        differential_gearbox_ratio: Ratio, // Ratio::new::<ratio>(16.632), --> The ratio of each motor to the differential gearbox
+        surface_gear_ratio: Ratio, //         Ratio::new::<ratio>(314.98), --> 112 deg of drive lever correspond to 314.98 rev
+        synchro_angle_breakpoints: [f64; 12], //  [0., 35.66, 69.32, 89.7, 105.29, 120.22, 145.51, 168.35, 189.87, 210.69, 231.25, 251.97];
+        surface_angle_breakpoints: [f64; 12], //  [0.,  0.,    2.5,   5.,    7.5,   10.,    15.,    20.,    25.,    30.,    35.,    40.];
         circuit_target_pressure: Pressure,
     ) -> Self {
         Self {
@@ -179,27 +682,39 @@ impl FlapSlatAssembly {
 
             is_moving_id: context.get_identifier(format!("IS_{}_MOVING", id)),
 
-            surface_control_arm_position: Angle::new::<radian>(0.),
-            max_synchro_gear_position,
-            final_requested_synchro_gear_position: Angle::new::<radian>(0.),
+            drive_lever_position: Angle::new::<radian>(0.), //
+            demanded_synchro_angle: Angle::new::<radian>(0.),
             speed: AngularVelocity::new::<radian_per_second>(0.),
             current_max_speed: LowPassFilter::<AngularVelocity>::new(
                 Self::LOW_PASS_FILTER_SURFACE_POSITION_TRANSIENT_TIME_CONSTANT,
             ),
             full_pressure_max_speed,
-            gearbox_ratio,
-            surface_to_synchro_gear_ratio: surface_gear_ratio / synchro_gear_ratio,
-            surface_gear_ratio,
+            differential_gearbox_ratio,
+            drive_lever_to_synchro_gear_ratio: surface_gear_ratio / intermediate_gearbox_ratio, // 2.2498 = 251.97 / 112
+            surface_gear_ratio, // 140 * 251.97 / 112
             left_motor: FlapSlatHydraulicMotor::new(motor_displacement),
             right_motor: FlapSlatHydraulicMotor::new(motor_displacement),
-            synchro_gear_breakpoints,
-            final_surface_angle_carac,
+            synchro_angle_breakpoints,
+            surface_angle_breakpoints,
+            max_synchro_angle: Angle::new::<degree>(*synchro_angle_breakpoints.last().unwrap()),
             circuit_target_pressure,
         }
     }
 
-    fn synchro_angle_to_surface_angle(&self, synchro_gear_angle: Angle) -> Angle {
-        synchro_gear_angle / self.surface_to_synchro_gear_ratio.get::<ratio>()
+    pub fn get_drive_lever_angle(&self) -> Angle {
+        //self.position_feedback() / self.surface_to_synchro_gear_ratio.get::<ratio>()
+        self.drive_lever_position // From 0 to 112 deg. Does it correspond to 35 or 40 deg of flaps? Is it valid for slats?
+    }
+
+    pub fn get_intermediate_gear_angle(&self) -> Angle {
+        let intermediate_gear_ratio = self.surface_gear_ratio.get::<ratio>()
+            / self.drive_lever_to_synchro_gear_ratio.get::<ratio>();
+        let fppu_angle = self.position_feedback();
+        return intermediate_gear_ratio * fppu_angle;
+    }
+
+    fn synchro_to_drive_lever_angle(&self, synchro: Angle) -> Angle {
+        synchro / self.drive_lever_to_synchro_gear_ratio.get::<ratio>()
     }
 
     pub fn update(
@@ -232,13 +747,13 @@ impl FlapSlatAssembly {
 
     fn update_speed_and_position(&mut self, context: &UpdateContext) {
         let zero_speed = AngularVelocity::new::<radian_per_second>(0.);
-        if self.final_requested_synchro_gear_position > self.position_feedback() {
-            self.surface_control_arm_position += Angle::new::<radian>(
+        if self.demanded_synchro_angle > self.position_feedback() {
+            self.drive_lever_position += Angle::new::<radian>(
                 self.max_speed().get::<radian_per_second>() * context.delta_as_secs_f64(),
             );
             self.speed = self.max_speed();
-        } else if self.final_requested_synchro_gear_position < self.position_feedback() {
-            self.surface_control_arm_position -= Angle::new::<radian>(
+        } else if self.demanded_synchro_angle < self.position_feedback() {
+            self.drive_lever_position -= Angle::new::<radian>(
                 self.max_speed().get::<radian_per_second>() * context.delta_as_secs_f64(),
             );
             self.speed = -self.max_speed();
@@ -246,19 +761,17 @@ impl FlapSlatAssembly {
             self.speed = zero_speed;
         }
 
-        if self.speed > zero_speed
-            && self.final_requested_synchro_gear_position < self.position_feedback()
-            || self.speed < zero_speed
-                && self.final_requested_synchro_gear_position > self.position_feedback()
+        if self.speed > zero_speed && self.demanded_synchro_angle < self.position_feedback()
+            || self.speed < zero_speed && self.demanded_synchro_angle > self.position_feedback()
         {
-            self.surface_control_arm_position =
-                self.synchro_angle_to_surface_angle(self.final_requested_synchro_gear_position);
+            self.drive_lever_position =
+                self.synchro_to_drive_lever_angle(self.demanded_synchro_angle);
         }
 
-        self.surface_control_arm_position = self
-            .surface_control_arm_position
+        self.drive_lever_position = self
+            .drive_lever_position
             .max(Angle::new::<radian>(0.))
-            .min(self.synchro_angle_to_surface_angle(self.max_synchro_gear_position));
+            .min(self.synchro_to_drive_lever_angle(self.max_synchro_angle));
     }
 
     fn update_final_fppu_angle_request(
@@ -267,9 +780,9 @@ impl FlapSlatAssembly {
         sfcc2_angle_request: Option<Angle>,
     ) {
         if let Some(sfcc1_angle) = sfcc1_angle_request {
-            self.final_requested_synchro_gear_position = sfcc1_angle;
+            self.demanded_synchro_angle = sfcc1_angle;
         } else if let Some(sfcc2_angle) = sfcc2_angle_request {
-            self.final_requested_synchro_gear_position = sfcc2_angle;
+            self.demanded_synchro_angle = sfcc2_angle;
         }
     }
 
@@ -312,15 +825,11 @@ impl FlapSlatAssembly {
         let mut new_theoretical_max_speed =
             new_theoretical_max_speed_left_side + new_theoretical_max_speed_right_side;
 
-        if self.is_within_limits(
-            self.final_requested_synchro_gear_position,
-            Self::TARGET_THRESHOLD_DEG,
-        ) {
+        if self.is_within_limits(self.demanded_synchro_angle, Self::TARGET_THRESHOLD_DEG) {
             new_theoretical_max_speed = AngularVelocity::new::<radian_per_second>(0.);
-        } else if self.is_within_limits(
-            self.final_requested_synchro_gear_position,
-            Self::POSITIONING_THRESHOLD_DEG,
-        ) {
+        } else if self
+            .is_within_limits(self.demanded_synchro_angle, Self::POSITIONING_THRESHOLD_DEG)
+        {
             new_theoretical_max_speed *= Self::ANGULAR_SPEED_LIMIT_FACTOR_WHEN_APROACHING_POSITION;
         }
 
@@ -386,7 +895,7 @@ impl FlapSlatAssembly {
         let left_motor_demanded_speed = AngularVelocity::new::<radian_per_second>(
             torque_shaft_speed.get::<radian_per_second>()
                 * left_torque_ratio.get::<ratio>()
-                * self.gearbox_ratio.get::<ratio>(),
+                * self.differential_gearbox_ratio.get::<ratio>(),
         );
         self.left_motor
             .update_speed(context, left_motor_demanded_speed);
@@ -394,7 +903,7 @@ impl FlapSlatAssembly {
         let right_motor_demanded_speed = AngularVelocity::new::<radian_per_second>(
             torque_shaft_speed.get::<radian_per_second>()
                 * right_torque_ratio.get::<ratio>()
-                * self.gearbox_ratio.get::<ratio>(),
+                * self.differential_gearbox_ratio.get::<ratio>(),
         );
         self.right_motor
             .update_speed(context, right_motor_demanded_speed);
@@ -414,7 +923,7 @@ impl FlapSlatAssembly {
     }
 
     fn position_feedback(&self) -> Angle {
-        self.surface_control_arm_position * self.surface_to_synchro_gear_ratio.get::<ratio>()
+        self.drive_lever_position * self.drive_lever_to_synchro_gear_ratio.get::<ratio>()
     }
 
     pub fn left_motor(&mut self) -> &mut impl Actuator {
@@ -438,21 +947,21 @@ impl FlapSlatAssembly {
     }
 
     /// Gets flap surface angle from current Feedback Position Pickup Unit (FPPU) position
-    fn flap_surface_angle(&self) -> Angle {
+    fn fppu_to_surface_angle(&self) -> Angle {
         Angle::new::<degree>(interpolation(
-            &self.synchro_gear_breakpoints,
-            &self.final_surface_angle_carac,
+            &self.synchro_angle_breakpoints,
+            &self.surface_angle_breakpoints,
             self.position_feedback().get::<degree>(),
         ))
     }
 
     #[cfg(test)]
     /// Gets Feedback Position Pickup Unit (FPPU) position from current flap surface angle
-    fn feedback_angle_from_surface_angle(&self, flap_surface_angle: Angle) -> Angle {
+    fn surface_angle_to_fppu(&self, surface_angle: Angle) -> Angle {
         Angle::new::<degree>(interpolation(
-            &self.final_surface_angle_carac,
-            &self.synchro_gear_breakpoints,
-            flap_surface_angle.get::<degree>(),
+            &self.surface_angle_breakpoints,
+            &self.synchro_angle_breakpoints,
+            surface_angle.get::<degree>(),
         ))
     }
 
@@ -470,37 +979,23 @@ impl FlapSlatAssembly {
 }
 impl SimulationElement for FlapSlatAssembly {
     fn write(&self, writer: &mut SimulatorWriter) {
+        let flaps_surface_angle = self.fppu_to_surface_angle().get::<degree>();
+        writer.write(&self.angle_left_id, flaps_surface_angle);
+        writer.write(&self.angle_right_id, flaps_surface_angle);
+
+        let position_percent = flaps_surface_angle
+            / interpolation(
+                &self.synchro_angle_breakpoints,
+                &self.surface_angle_breakpoints,
+                self.max_synchro_angle.get::<degree>(),
+            )
+            * 100.;
+        writer.write(&self.position_left_percent_id, position_percent);
+        writer.write(&self.position_right_percent_id, position_percent);
+
         let position_feedback = self.position_feedback().get::<degree>();
-        writer.write(
-            &self.position_left_percent_id,
-            interpolation(
-                &self.synchro_gear_breakpoints,
-                &self.final_surface_angle_carac,
-                position_feedback,
-            ) / interpolation(
-                &self.synchro_gear_breakpoints,
-                &self.final_surface_angle_carac,
-                self.max_synchro_gear_position.get::<degree>(),
-            ) * 100.,
-        );
-        writer.write(
-            &self.position_right_percent_id,
-            interpolation(
-                &self.synchro_gear_breakpoints,
-                &self.final_surface_angle_carac,
-                position_feedback,
-            ) / interpolation(
-                &self.synchro_gear_breakpoints,
-                &self.final_surface_angle_carac,
-                self.max_synchro_gear_position.get::<degree>(),
-            ) * 100.,
-        );
         writer.write(&self.ippu_angle_id, position_feedback);
         writer.write(&self.fppu_angle_id, position_feedback);
-
-        let flaps_surface_angle = self.flap_surface_angle();
-        writer.write(&self.angle_left_id, flaps_surface_angle.get::<degree>());
-        writer.write(&self.angle_right_id, flaps_surface_angle.get::<degree>());
 
         writer.write(&self.is_moving_id, self.is_surface_moving());
     }
@@ -525,6 +1020,8 @@ mod tests {
     use super::*;
 
     use std::time::Duration;
+    use uom::si::angle::revolution;
+    use uom::si::pressure::bar;
     use uom::si::volume_rate::gallon_per_minute;
     use uom::si::{angle::degree, pressure::psi};
 
@@ -560,8 +1057,86 @@ mod tests {
         }
     }
 
+    fn flap_system(context: &mut InitContext, max_speed: AngularVelocity) -> FlapSlatAssembly {
+        FlapSlatAssembly::new(
+            context,
+            "FLAPS",
+            Volume::new::<cubic_inch>(0.32),
+            max_speed,
+            Ratio::new::<ratio>(140.),
+            Ratio::new::<ratio>(16.632),
+            Ratio::new::<ratio>(314.98),
+            [
+                0., 65., 115., 120.53, 136., 145.5, 152., 165., 168.3, 179., 231.2, 251.97,
+            ],
+            [
+                0., 10.318, 18.2561, 19.134, 21.59, 23.098, 24.13, 26.196, 26.72, 28.42, 36.703,
+                40.,
+            ],
+            Pressure::new::<psi>(MAX_CIRCUIT_PRESSURE_PSI),
+        )
+    }
+
+    #[derive(Copy, Clone)]
+    struct DummyPCU {
+        left_motor_angle_request: Option<Angle>,
+        fppu_angle: Angle,
+    }
+    impl DummyPCU {
+        fn new() -> Self {
+            Self {
+                left_motor_angle_request: None,
+                fppu_angle: Angle::default(),
+            }
+        }
+        pub fn update(&mut self, left_motor_angle_request: Option<Angle>, fppu_angle: Angle) {
+            self.left_motor_angle_request = left_motor_angle_request;
+            self.fppu_angle = fppu_angle;
+        }
+    }
+    impl PowerControlUnitInterface for DummyPCU {
+        // Full driving sequence will be implemented
+        // Return DeEnergised when no power
+        fn retract_energise(&self) -> SolenoidStatus {
+            if self.left_motor_angle_request.is_some() {
+                if self.fppu_angle > self.left_motor_angle_request.unwrap() {
+                    return SolenoidStatus::Energised;
+                }
+            }
+            return SolenoidStatus::DeEnergised;
+        }
+
+        fn extend_energise(&self) -> SolenoidStatus {
+            if self.left_motor_angle_request.is_some() {
+                if self.fppu_angle < self.left_motor_angle_request.unwrap() {
+                    return SolenoidStatus::Energised;
+                }
+            }
+            return SolenoidStatus::DeEnergised;
+        }
+
+        fn pob_energise(&self) -> SolenoidStatus {
+            if self.left_motor_angle_request.is_none() {
+                return SolenoidStatus::DeEnergised;
+            }
+            let tolerance_deg = 0.18;
+            let fppu_f64 = self.fppu_angle.get::<degree>();
+            let demanded_angle_f64 = self.left_motor_angle_request.unwrap().get::<degree>();
+
+            if fppu_f64 > demanded_angle_f64 - tolerance_deg
+                && fppu_f64 < demanded_angle_f64 + tolerance_deg
+            {
+                return SolenoidStatus::DeEnergised;
+            }
+            return SolenoidStatus::Energised;
+        }
+    }
+
     struct TestAircraft {
         core_hydraulic_updater: MaxStepLoop,
+
+        flaps_slats_new: FlapSlatAssy<7>,
+        dummy_pcu: DummyPCU,
 
         flaps_slats: FlapSlatAssembly,
 
@@ -570,6 +1145,7 @@ mod tests {
 
         left_motor_pressure: TestHydraulicSection,
         right_motor_pressure: TestHydraulicSection,
+        // pressure_maintaining_valve: PressureMaintainingValve,
     }
     impl TestAircraft {
         fn new(context: &mut InitContext, max_speed: AngularVelocity) -> Self {
@@ -580,6 +1156,26 @@ mod tests {
                 right_motor_angle_request: None,
                 left_motor_pressure: TestHydraulicSection::default(),
                 right_motor_pressure: TestHydraulicSection::default(),
+                // pressure_maintaining_valve: PressureMaintainingValve::new(),
+                dummy_pcu: DummyPCU::new(),
+                flaps_slats_new: FlapSlatAssy::new(
+                    Pressure::new::<bar>(220.),
+                    [0., 1.5, 3., 6., 18., 19., 22.22],
+                    [3.3, 3.3, 15., 16.2, 17.8, 20., 22.],
+                    Volume::new::<cubic_inch>(0.32),
+                    Ratio::new::<ratio>(0.95),
+                    Pressure::new::<psi>(200.),
+                    Ratio::new::<ratio>(16.632),
+                    Ratio::new::<ratio>(140.),
+                    Ratio::new::<ratio>(314.98),
+                    [
+                        0., 65., 115., 120.53, 136., 145.5, 152., 165., 168.3, 179., 231.2, 251.97,
+                    ],
+                    [
+                        0., 10.318, 18.2561, 19.134, 21.59, 23.098, 24.13, 26.196, 26.72, 28.42,
+                        36.703, 40.,
+                    ],
+                ),
             }
         }
 
@@ -620,7 +1216,21 @@ mod tests {
                     &self.left_motor_pressure,
                     &self.right_motor_pressure,
                 );
+                self.dummy_pcu.update(
+                    self.left_motor_angle_request,
+                    self.flaps_slats_new.fppu_angle(),
+                );
+                self.flaps_slats_new.update(
+                    &context.with_delta(cur_time_step),
+                    &self.left_motor_pressure,
+                    &self.right_motor_pressure,
+                    Box::new(self.dummy_pcu),
+                    Box::new(self.dummy_pcu),
+                );
             }
+
+            // self.pressure_maintaining_valve
+            //     .update(context, &self.left_motor_pressure);
         }
     }
     impl SimulationElement for TestAircraft {
@@ -629,6 +1239,76 @@ mod tests {
 
             visitor.visit(self);
         }
+    }
+
+    #[test]
+    fn flap_slat_new_pcu() {
+        let max_speed = AngularVelocity::new::<radian_per_second>(0.11);
+        let mut test_bed = SimulationTestBed::new(|context| TestAircraft::new(context, max_speed));
+
+        test_bed.command(|a| a.set_angle_request(Some(Angle::new::<degree>(40.))));
+        test_bed.command(|a| {
+            a.set_current_pressure(
+                Pressure::new::<psi>(MAX_CIRCUIT_PRESSURE_PSI),
+                Pressure::new::<psi>(MAX_CIRCUIT_PRESSURE_PSI),
+            )
+        });
+
+        test_bed.run_with_delta(Duration::from_secs(20));
+
+        println!(
+            "FLAPS {:.2}\tFPPU {:.2}\tDRIVE LEVER {:.2}\tINTERMEDIATE GEAR {:.2}",
+            test_bed
+                .query(|a| a.flaps_slats_new.get_surface_position())
+                .get::<degree>(),
+            test_bed
+                .query(|a| a.flaps_slats_new.fppu_angle())
+                .get::<degree>(),
+            test_bed
+                .query(|a| a.flaps_slats_new.get_drive_lever_angle())
+                .get::<degree>(),
+            test_bed
+                .query(|a| a.flaps_slats_new.get_intermediate_gear_angle())
+                .get::<degree>(),
+        );
+    }
+
+    #[test]
+    fn flap_slat_pressure_maintaining_valve() {
+        // let max_speed = AngularVelocity::new::<radian_per_second>(0.11);
+        // let mut test_bed = SimulationTestBed::new(|context| TestAircraft::new(context, max_speed));
+
+        // for gain in (-100..-40).rev() {
+        //     let gain_float = f64::from(gain) * 0.001;
+        //     test_bed.command(|a| a.set_gain(gain_float));
+        //     test_bed.command(|a| a.valve_reset());
+        //     test_bed.command(|a| {
+        //         a.set_current_pressure(Pressure::new::<psi>(580.), Pressure::new::<psi>(580.))
+        //     });
+        //     for _ in 0..20 {
+        //         test_bed.run_with_delta(Duration::from_millis(10));
+        //     }
+        //     let low_pressure_valve_position =
+        //         test_bed.query(|a| a.pressure_maintaining_valve.get_valve_position());
+
+        //     test_bed.command(|a| a.valve_reset());
+        //     test_bed.command(|a| {
+        //         a.set_current_pressure(Pressure::new::<psi>(2030.), Pressure::new::<psi>(2030.))
+        //     });
+        //     for _ in 0..20 {
+        //         test_bed.run_with_delta(Duration::from_millis(10));
+        //     }
+        //     let high_pressure_valve_position =
+        //         test_bed.query(|a| a.pressure_maintaining_valve.get_valve_position());
+
+        //     println!(
+        //         "GAIN {:.4}\tLOW {:.2}\tHIGH {:.2}\tDIFF {:.2}",
+        //         gain_float,
+        //         low_pressure_valve_position.get::<ratio>(),
+        //         high_pressure_valve_position.get::<ratio>(),
+        //         (high_pressure_valve_position - low_pressure_valve_position).get::<ratio>()
+        //     );
+        // }
     }
 
     #[test]
@@ -876,10 +1556,24 @@ mod tests {
 
         test_bed.run_multiple_frames(Duration::from_millis(35000));
 
-        let synchro_gear_angle_request = test_bed.query(|a| {
-            a.flaps_slats
-                .feedback_angle_from_surface_angle(flap_position_request)
-        });
+        let synchro_gear_angle_request =
+            test_bed.query(|a| a.flaps_slats.surface_angle_to_fppu(flap_position_request));
+
+        println!(
+            "FLAPS {:.2}\tFPPU {:.2}\tDRIVE LEVER {:.2}\tINTERMEDIATE GEAR {:.2}",
+            test_bed
+                .query(|a| a.flaps_slats.fppu_to_surface_angle())
+                .get::<degree>(),
+            test_bed
+                .query(|a| a.flaps_slats.position_feedback())
+                .get::<degree>(),
+            test_bed
+                .query(|a| a.flaps_slats.get_drive_lever_angle())
+                .get::<degree>(),
+            test_bed
+                .query(|a| a.flaps_slats.get_intermediate_gear_angle())
+                .get::<revolution>(),
+        );
 
         assert!(
             test_bed.query(|a| a.flaps_slats.position_feedback()) == synchro_gear_angle_request
@@ -905,7 +1599,7 @@ mod tests {
 
             assert!(
                 test_bed.query(|a| a.flaps_slats.position_feedback())
-                    <= test_bed.query(|a| a.flaps_slats.max_synchro_gear_position)
+                    <= test_bed.query(|a| a.flaps_slats.max_synchro_angle)
             );
 
             println!(
@@ -921,7 +1615,7 @@ mod tests {
 
         assert!(
             test_bed.query(|a| a.flaps_slats.position_feedback())
-                == test_bed.query(|a| a.flaps_slats.max_synchro_gear_position)
+                == test_bed.query(|a| a.flaps_slats.max_synchro_angle)
         );
 
         let flap_position_request = Angle::new::<degree>(-8.);
@@ -932,7 +1626,7 @@ mod tests {
 
             assert!(
                 test_bed.query(|a| a.flaps_slats.position_feedback())
-                    <= test_bed.query(|a| a.flaps_slats.max_synchro_gear_position)
+                    <= test_bed.query(|a| a.flaps_slats.max_synchro_angle)
             );
             assert!(
                 test_bed.query(|a| a.flaps_slats.position_feedback()) >= Angle::new::<degree>(0.)
@@ -978,7 +1672,7 @@ mod tests {
 
         assert!(
             test_bed.query(|a| a.flaps_slats.position_feedback())
-                == test_bed.query(|a| a.flaps_slats.max_synchro_gear_position)
+                == test_bed.query(|a| a.flaps_slats.max_synchro_angle)
         );
     }
 
@@ -1028,7 +1722,7 @@ mod tests {
         for _ in 0..150 {
             test_bed.run_with_delta(Duration::from_millis(100));
 
-            let current_flap_angle = test_bed.query(|a| a.flaps_slats.flap_surface_angle());
+            let current_flap_angle = test_bed.query(|a| a.flaps_slats.fppu_to_surface_angle());
 
             if (current_flap_angle - flap_position_request)
                 .abs()
@@ -1043,7 +1737,7 @@ mod tests {
             println!(
                 "Speed {:.2}-> Surface angle {:.2}",
                 test_bed.query(|a| a.flaps_slats.speed.get::<radian_per_second>()),
-                test_bed.query(|a| a.flaps_slats.flap_surface_angle().get::<degree>())
+                test_bed.query(|a| a.flaps_slats.fppu_to_surface_angle().get::<degree>())
             );
         }
     }
@@ -1073,7 +1767,7 @@ mod tests {
         for _ in 0..150 {
             test_bed.run_with_delta(Duration::from_millis(100));
 
-            let current_flap_angle = test_bed.query(|a| a.flaps_slats.flap_surface_angle());
+            let current_flap_angle = test_bed.query(|a| a.flaps_slats.fppu_to_surface_angle());
 
             if (current_flap_angle - flap_position_request)
                 .abs()
@@ -1088,30 +1782,9 @@ mod tests {
             println!(
                 "Speed {:.2}-> Surface angle {:.2}",
                 test_bed.query(|a| a.flaps_slats.speed.get::<radian_per_second>()),
-                test_bed.query(|a| a.flaps_slats.flap_surface_angle().get::<degree>())
+                test_bed.query(|a| a.flaps_slats.fppu_to_surface_angle().get::<degree>())
             );
         }
-    }
-
-    fn flap_system(context: &mut InitContext, max_speed: AngularVelocity) -> FlapSlatAssembly {
-        FlapSlatAssembly::new(
-            context,
-            "FLAPS",
-            Volume::new::<cubic_inch>(0.32),
-            max_speed,
-            Angle::new::<degree>(251.97),
-            Ratio::new::<ratio>(140.),
-            Ratio::new::<ratio>(16.632),
-            Ratio::new::<ratio>(314.98),
-            [
-                0., 65., 115., 120.53, 136., 145.5, 152., 165., 168.3, 179., 231.2, 251.97,
-            ],
-            [
-                0., 10.318, 18.2561, 19.134, 21.59, 23.098, 24.13, 26.196, 26.72, 28.42, 36.703,
-                40.,
-            ],
-            Pressure::new::<psi>(MAX_CIRCUIT_PRESSURE_PSI),
-        )
     }
 
     #[cfg(test)]
