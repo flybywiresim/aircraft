@@ -27,6 +27,9 @@ class SimObjectBase : public base::Changeable {
 
  public:
   virtual ~SimObjectBase() {}
+  SimObjectBase(const SimObjectBase&) = delete;
+
+  SimObjectBase& operator=(const SimObjectBase&) = delete;
 
   bool requestData(SIMCONNECT_PERIOD period) {
     if (*this->_connection == 0) {
@@ -65,6 +68,9 @@ class SimObject : public SimObjectBase {
 
  public:
   virtual ~SimObject<T>() {}
+  SimObject<T>(const SimObject<T>&) = delete;
+
+  SimObject<T>& operator=(const SimObject<T>&) = delete;
 
   void addEntry(const std::string& name, const std::string& unit) { this->_entries.push_back({name, unit}); }
 

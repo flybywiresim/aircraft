@@ -10,6 +10,10 @@ class Changeable {
 
  protected:
   Changeable() : _onChangeCallback() {}
+  Changeable(const Changeable&) = delete;
+  virtual ~Changeable() {}
+
+  Changeable& operator=(const Changeable&) = delete;
 
   void changed() {
     if (this->_onChangeCallback.function != nullptr) {

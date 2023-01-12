@@ -15,10 +15,10 @@ namespace simconnect {
 
 class Connection {
  private:
-  HANDLE _connection = 0;
-  std::uint32_t _lastSimObjectId = 0;
-  std::uint32_t _lastClientDataId = 0;
-  std::uint32_t _lastClientDataDefinitionId = 0;
+  HANDLE _connection;
+  std::uint32_t _lastSimObjectId;
+  std::uint32_t _lastClientDataId;
+  std::uint32_t _lastClientDataDefinitionId;
   std::map<std::uint32_t, std::shared_ptr<SimObjectBase>> _simObjects;
   std::map<std::uint32_t, std::shared_ptr<ClientDataAreaBase>> _clientDataAreas;
   std::list<std::shared_ptr<LVarObjectBase>> _lvarObjects;
@@ -29,6 +29,12 @@ class Connection {
   void processDispatchMessage(SIMCONNECT_RECV* pData, DWORD* cbData);
 
  public:
+  Connection();
+  Connection(const Connection&) = delete;
+  ~Connection();
+
+  Connection& operator=(const Connection&) = delete;
+
   bool connect(const std::string& connectionName);
   void disconnect();
   bool readData();

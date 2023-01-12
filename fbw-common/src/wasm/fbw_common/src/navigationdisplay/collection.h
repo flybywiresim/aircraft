@@ -63,6 +63,11 @@ class Collection {
 
  public:
   Collection(simconnect::Connection& connection, std::uint32_t pixelWidth, std::uint32_t pixelHeight);
+  Collection(const Collection&) = delete;
+  ~Collection();
+
+  Collection& operator=(const Collection&) = delete;
+
   void registerDisplay(DisplaySide side, FsContext context, simconnect::Connection& connection);
   void destroy();
 

@@ -77,14 +77,16 @@ Collection::Collection(simconnect::Connection& connection, std::uint32_t pixelWi
   });
 }
 
+Collection::~Collection() {
+  this->destroy();
+}
+
 void Collection::registerDisplay(DisplaySide side, FsContext context, simconnect::Connection& connection) {
   if (side == DisplaySide::Left) {
-    this->_displays.insert(
-        {context, std::shared_ptr<DisplayBase>(new DisplayLeft(connection, context, this->_pixelWidth, this->_pixelHeight))});
+    this->_displays.insert({context, std::shared_ptr<DisplayBase>(new DisplayLeft(connection, context))});
     std::cout << "TERR ON ND: Created left display" << std::endl;
   } else {
-    this->_displays.insert(
-        {context, std::shared_ptr<DisplayBase>(new DisplayRight(connection, context, this->_pixelWidth, this->_pixelHeight))});
+    this->_displays.insert({context, std::shared_ptr<DisplayBase>(new DisplayRight(connection, context))});
     std::cout << "TERR ON ND: Created right display" << std::endl;
   }
 }
@@ -93,6 +95,7 @@ void Collection::destroy() {
   for (auto display : this->_displays) {
     display.second->destroy();
   }
+  this->_displays.clear();
 }
 
 void Collection::updateDisplay(FsContext context) {
@@ -168,6 +171,6 @@ void Collection::renderDisplay(sGaugeDrawData* pDraw, FsContext context) {
   const auto displayIterator = this->_displays.find(context);
   if (displayIterator != this->_displays.cend()) {
     const auto display = displayIterator->second;
-    display->render(pDraw, context);
+    display->render(pDraw);
   }
 }

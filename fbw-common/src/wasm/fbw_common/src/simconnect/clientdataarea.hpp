@@ -25,6 +25,9 @@ class ClientDataAreaBase : public base::Changeable {
 
   ClientDataAreaBase(HANDLE* connection, std::uint32_t dataId, std::uint32_t definitionId)
       : _connection(connection), _dataId(dataId), _definitionId(definitionId), _alwaysChanges(false) {}
+  ClientDataAreaBase(const ClientDataAreaBase&) = delete;
+
+  ClientDataAreaBase& operator=(const ClientDataAreaBase&) = delete;
 
   virtual void receivedData(void* data) = 0;
 
@@ -54,6 +57,9 @@ class ClientDataArea : public ClientDataAreaBase {
 
   ClientDataArea(HANDLE* connection, std::uint32_t dataId, std::uint32_t definitionId)
       : ClientDataAreaBase(connection, dataId, definitionId), _content() {}
+  ClientDataArea(const ClientDataArea&) = delete;
+
+  ClientDataArea& operator=(const ClientDataArea&) = delete;
 
   void receivedData(void* data) override {
     bool changed = this->_alwaysChanges || std::memcmp(data, &this->_content, sizeof(T)) != 0;

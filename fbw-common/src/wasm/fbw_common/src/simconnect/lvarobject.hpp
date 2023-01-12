@@ -43,7 +43,10 @@ class LVarObjectBase : public base::Changeable {
   virtual void readValues() = 0;
 
  public:
+  LVarObjectBase(const LVarObjectBase&) = delete;
   virtual ~LVarObjectBase() {}
+
+  LVarObjectBase& operator=(const LVarObjectBase&) = delete;
 
   void setUpdateCycleTime(types::Time cycleTime) { this->_updateCycleTime = cycleTime; }
 };
@@ -93,6 +96,13 @@ class LVarObject : public LVarObjectBase {
   }
 
  public:
+  LVarObject()
+      : _entries({{helper::concat<ReadCommandPrefix, Strings, CommandSuffix>, helper::concat<WriteCommandPrefix, Strings, CommandSuffix>,
+                   0.0}...}) {}
+  LVarObject(const LVarObject<Strings...>&) = delete;
+
+  LVarObject<Strings...>& operator=(const LVarObject<Strings...>&) = delete;
+
   template <std::string_view const& Name>
   double& value() {
     return this->_entries[LVarObject<Strings...>::Index<Name, Strings...>::value].value;

@@ -4,6 +4,19 @@
 
 using namespace simconnect;
 
+Connection::Connection()
+    : _connection(0),
+      _lastSimObjectId(0),
+      _lastClientDataId(0),
+      _lastClientDataDefinitionId(0),
+      _simObjects(),
+      _clientDataAreas(),
+      _lvarObjects() {}
+
+Connection::~Connection() {
+  this->disconnect();
+}
+
 bool Connection::connect(const std::string& connectionName) {
   if (this->_connection != 0) {
     return true;
@@ -17,7 +30,14 @@ bool Connection::connect(const std::string& connectionName) {
 void Connection::disconnect() {
   if (this->_connection != 0) {
     SimConnect_Close(this->_connection);
+
     this->_connection = 0;
+    this->_lastSimObjectId = 0;
+    this->_lastClientDataId = 0;
+    this->_lastClientDataDefinitionId = 0;
+    this->_simObjects.clear();
+    this->_clientDataAreas.clear();
+    this->_lvarObjects.clear();
   }
 }
 

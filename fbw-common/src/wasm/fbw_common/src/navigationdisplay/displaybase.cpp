@@ -2,14 +2,14 @@
 
 using namespace navigationdisplay;
 
-DisplayBase::DisplayBase(DisplaySide side, FsContext context, std::uint32_t pixelWidth, std::uint32_t pixelHeight)
+DisplayBase::DisplayBase(DisplaySide side, FsContext context)
     : _side(side),
       _configuration(),
       _frameBuffer(),
       _frameBufferSize(0),
       _receivedFrameData(0),
       _nanovgImage(0),
-      _context(),
+      _context(nullptr),
       _thresholds(nullptr),
       _frameData(nullptr) {
   NVGparams params;
@@ -25,6 +25,7 @@ DisplaySide DisplayBase::side() const {
 void DisplayBase::destroy() {
   this->destroyImage();
   nvgDeleteInternal(this->_context);
+  this->_context = nullptr;
 }
 
 void DisplayBase::destroyImage() {
@@ -34,7 +35,11 @@ void DisplayBase::destroyImage() {
   }
 }
 
-void DisplayBase::render(sGaugeDrawData* pDrawData, FsContext context) {
+void DisplayBase::render(sGaugeDrawData* pDrawData) {
+  if (this->_context == nullptr) {
+    return;
+  }
+
   const float ratio = pDrawData->fbWidth / pDrawData->fbHeight;
   nvgBeginFrame(this->_context, pDrawData->winWidth, pDrawData->winHeight, ratio);
   {

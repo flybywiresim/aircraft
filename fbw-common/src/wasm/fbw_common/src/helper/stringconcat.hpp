@@ -7,7 +7,6 @@ namespace helper {
 
 template <std::string_view const&... Strings>
 struct StringConcat {
- public:
   static constexpr auto impl() {
     constexpr std::size_t length = (Strings.size() + ... + 0);
     std::array<char, length + 1> arr{};

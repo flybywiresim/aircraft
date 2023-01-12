@@ -30,13 +30,16 @@ class DisplayBase {
     float potentiometer;
   };
 
+  DisplayBase(const DisplayBase&) = delete;
   virtual ~DisplayBase() { this->destroy(); }
+
+  DisplayBase& operator=(const DisplayBase&) = delete;
 
   virtual void update(const NdConfiguration& config) = 0;
 
   DisplaySide side() const;
   void destroy();
-  void render(sGaugeDrawData* pDrawData, FsContext context);
+  void render(sGaugeDrawData* pDrawData);
 
  protected:
   DisplaySide _side;
@@ -49,7 +52,7 @@ class DisplayBase {
   std::shared_ptr<simconnect::ClientDataArea<types::ThresholdData>> _thresholds;
   std::shared_ptr<simconnect::ClientDataArea<types::FrameData>> _frameData;
 
-  DisplayBase(DisplaySide side, FsContext context, std::uint32_t pixelWidth, std::uint32_t pixelHeight);
+  DisplayBase(DisplaySide side, FsContext context);
 
   void destroyImage();
 };
@@ -71,8 +74,7 @@ class Display : public DisplayBase {
   }
 
  public:
-  Display(simconnect::Connection& connection, DisplaySide side, FsContext context, std::uint32_t pixelWidth, std::uint32_t pixelHeight)
-      : DisplayBase(side, context, pixelWidth, pixelHeight), _ndThresholdData(nullptr) {
+  Display(simconnect::Connection& connection, DisplaySide side, FsContext context) : DisplayBase(side, context), _ndThresholdData(nullptr) {
     this->_ndThresholdData = connection.lvarObject<NdMinElevation, NdMinElevationMode, NdMaxElevation, NdMaxElevationMode>();
 
     // write initial values to avoid invalid drawings
@@ -109,7 +111,7 @@ class Display : public DisplayBase {
         this->_receivedFrameData += copySize;
       }
 
-      if (this->_receivedFrameData >= this->_frameBufferSize) {
+      if (this->_receivedFrameData >= this->_frameBufferSize && this->_context != nullptr) {
         this->destroyImage();
         this->_nanovgImage = nvgCreateImageMem(this->_context, 0, this->_frameBuffer.data(), this->_frameBufferSize);
         if (this->_nanovgImage == 0) {
@@ -118,6 +120,10 @@ class Display : public DisplayBase {
       }
     });
   }
+  Display(const Display&) = delete;
+  virtual ~Display() {}
+
+  Display& operator=(const Display&) = delete;
 
   void update(const DisplayBase::NdConfiguration& config) override {
     bool oldArcMode = this->_configuration.mode == NavigationDisplayArcModeId;
@@ -139,22 +145,26 @@ class Display : public DisplayBase {
 
 class DisplayLeft : public Display<NdLeftMinElevation, NdLeftMinElevationMode, NdLeftMaxElevation, NdLeftMaxElevationMode> {
  public:
-  DisplayLeft(simconnect::Connection& connection, FsContext context, std::uint32_t pixelWidth, std::uint32_t pixelHeight)
+  DisplayLeft(simconnect::Connection& connection, FsContext context)
       : Display<NdLeftMinElevation, NdLeftMinElevationMode, NdLeftMaxElevation, NdLeftMaxElevationMode>(connection,
                                                                                                         DisplaySide::Left,
-                                                                                                        context,
-                                                                                                        pixelWidth,
-                                                                                                        pixelHeight) {}
+                                                                                                        context) {}
+  DisplayLeft(const DisplayLeft&) = delete;
+  virtual ~DisplayLeft() {}
+
+  DisplayLeft& operator=(const DisplayLeft&) = delete;
 };
 
 class DisplayRight : public Display<NdRightMinElevation, NdRightMinElevationMode, NdRightMaxElevation, NdRightMaxElevationMode> {
  public:
-  DisplayRight(simconnect::Connection& connection, FsContext context, std::uint32_t pixelWidth, std::uint32_t pixelHeight)
+  DisplayRight(simconnect::Connection& connection, FsContext context)
       : Display<NdRightMinElevation, NdRightMinElevationMode, NdRightMaxElevation, NdRightMaxElevationMode>(connection,
                                                                                                             DisplaySide::Right,
-                                                                                                            context,
-                                                                                                            pixelWidth,
-                                                                                                            pixelHeight) {}
+                                                                                                            context) {}
+  DisplayRight(const DisplayRight&) = delete;
+  virtual ~DisplayRight() {}
+
+  DisplayRight& operator=(const DisplayRight&) = delete;
 };
 
 }  // namespace navigationdisplay
