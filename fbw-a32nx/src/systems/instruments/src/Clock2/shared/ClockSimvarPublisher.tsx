@@ -9,6 +9,7 @@ export interface ClockSimvars {
     dayOfMonth: number;
     monthOfYear: number;
     year: number;
+    elapsedKnobPos: number;
 }
 
 export enum ClockVars {
@@ -20,6 +21,7 @@ export enum ClockVars {
     dayOfMonth = 'E:ZULU DAY OF MONTH',
     monthOfYear = 'E:ZULU MONTH OF YEAR',
     year = 'E:ZULU YEAR',
+    elapsedKnobPos = 'L:A32NX_CHRONO_ET_SWITCH_POS',
 }
 
 export class ClockSimvarPublisher extends SimVarPublisher<ClockSimvars> {
@@ -32,6 +34,7 @@ export class ClockSimvarPublisher extends SimVarPublisher<ClockSimvars> {
         ['dayOfMonth', { name: ClockVars.dayOfMonth, type: SimVarValueType.Number }],
         ['monthOfYear', { name: ClockVars.monthOfYear, type: SimVarValueType.Number }],
         ['year', { name: ClockVars.year, type: SimVarValueType.Number }],
+        ['elapsedKnobPos', { name: ClockVars.elapsedKnobPos, type: SimVarValueType.Number }],
     ])
 
     public constructor(bus: EventBus) {

@@ -2,6 +2,7 @@ import { ComponentProps, DisplayComponent, EventBus, FSComponent, VNode } from '
 import { ClockSimvars } from './shared/ClockSimvarPublisher';
 import { Chrono } from './Components/Chrono';
 import { Clock } from './Components/Clock';
+import { ElapsedTime } from './Components/ElapsedTime';
 
 import './style.scss';
 
@@ -33,6 +34,7 @@ export class ClockRoot extends DisplayComponent<ClockProps> {
                 <g ref={this.gElementRef} class="day">
                     <Chrono bus={this.props.bus} />
                     <Clock bus={this.props.bus} />
+                    <ElapsedTime bus={this.props.bus} />
                 </g>
             </svg>
         );

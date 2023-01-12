@@ -48,6 +48,8 @@ class A32NX_Clock extends BaseInstrument {
         this.simVarPublisher.subscribe('monthOfYear');
         this.simVarPublisher.subscribe('year');
 
+        this.simVarPublisher.subscribe('elapsedKnobPos');
+
         FSComponent.render(<ClockRoot bus={this.bus} />, document.getElementById('Clock_CONTENT'));
     }
 
