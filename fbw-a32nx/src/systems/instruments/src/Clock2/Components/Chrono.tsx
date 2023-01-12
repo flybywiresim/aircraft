@@ -5,35 +5,90 @@ interface ChronoProps extends ComponentProps {
     bus: EventBus;
 }
 
-const getDisplayString = (seconds: number | null, running: boolean) : string => (seconds == null ? ''
-    : `${Math.floor(Math.min(seconds, 5999) / 60).toString().padStart(2, '0')}${running ? ':' : ' '}${(Math.floor(Math.min(seconds, 5999) % 60)).toString().padStart(2, '0')}`);
+const getDisplayString = (seconds: number | null, running: boolean, ltsTest: boolean) : string => {
+    if (ltsTest) {
+        return '88:88';
+    }
+
+    if (seconds !== null) {
+        return `${Math.floor(Math.min(seconds, 5999) / 60).toString().padStart(2, '0')}${running ? ':' : ' '}${(Math.floor(Math.min(seconds, 5999) % 60)).toString().padStart(2, '0')}`;
+    }
+    return '';
+};
+
+/**
+ * Computes time delta out of absolute env time and previous
+ * time debounced on time shift.
+ */
+export const debouncedTimeDelta = (
+    absTimeSeconds: number,
+    prevTimeSeconds: number,
+): number => {
+    const diff = Math.max(absTimeSeconds - prevTimeSeconds, 0);
+    // 60s detects forward time-shift
+    return diff < 60 ? diff : 0;
+};
 
 export class Chrono extends DisplayComponent<ChronoProps> {
     private readonly chronoText = Subject.create('');
 
-    constructor(props) {
-        super(props);
+    private readonly elapsedTime = Subject.create(null);
 
-        const hEventsSub = this.props.bus.getSubscriber<HEvent>();
+    private readonly running = Subject.create(false);
 
-        hEventsSub.on('hEvent').handle((eventName) => {
-            if (eventName === 'A32NX_CHRONO_TOGGLE') {
-                // TODO
-            }
-        });
-    }
+    private readonly ltsTest = Subject.create(false);
+
+    private dcEssIsPowered: boolean;
+
+    private prevTime: number;
 
     public onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
         const sub = this.props.bus.getSubscriber<ClockSimvars>();
         sub.on('ltsTest').whenChanged().handle((ltsTest) => {
-            if (ltsTest === 0) {
-                this.chronoText.set('88:88');
-            } else {
-                this.chronoText.set(getDisplayString(10, true));
+            this.ltsTest.set(ltsTest === 0);
+        });
+
+        sub.on('dcEssIsPowered').whenChanged().handle((dcEssIsPowered) => this.dcEssIsPowered = dcEssIsPowered);
+
+        sub.on('absTime').atFrequency(5).handle((absTime) => {
+            if (this.running.get()) {
+                const newElapsedTime = (this.elapsedTime.get() || 0) + debouncedTimeDelta(absTime, this.prevTime);
+                this.elapsedTime.set(newElapsedTime);
+            }
+            this.prevTime = absTime;
+        });
+
+        const hEventsSub = this.props.bus.getSubscriber<HEvent>();
+        hEventsSub.on('hEvent').handle((eventName) => {
+            console.log(eventName);
+            switch (eventName) {
+            case 'A32NX_CHRONO_RST':
+                if (this.dcEssIsPowered) {
+                    if (this.running.get()) {
+                        this.elapsedTime.set(0);
+                    } else {
+                        this.elapsedTime.set(null);
+                    }
+                }
+                break;
+            case 'A32NX_CHRONO_TOGGLE':
+                if (this.dcEssIsPowered) {
+                    this.running.set(!this.running.get());
+                }
+                break;
+            default: break;
             }
         });
+
+        this.elapsedTime.sub((elapsedTime) => SimVar.SetSimVarValue('L:A32NX_CHRONO_ELAPSED_TIME', 'number', elapsedTime ?? -1)); // Simvar ist not nullable, so a -1 placeholder is used
+
+        [
+            this.elapsedTime,
+            this.running,
+            this.ltsTest,
+        ].forEach((attr) => attr.sub(() => this.chronoText.set(getDisplayString(this.elapsedTime.get(), this.running.get(), this.ltsTest.get()))));
     }
 
     public render(): VNode {
