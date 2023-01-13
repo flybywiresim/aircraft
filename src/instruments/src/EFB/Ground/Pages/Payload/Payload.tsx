@@ -32,6 +32,40 @@ export const Payload = () => {
     const { usingMetric } = Units;
     const { showModal } = useModals();
 
+    const pax: number[] = [];
+    const paxDesired: number[] = [];
+    const setPaxDesired: ((newValueOrSetter: any) => void)[] = [];
+    const activeFlags: BitFlags[] = [];
+    const setActiveFlags: ((newValueOrSetter: any) => void)[] = [];
+    const desiredFlags: BitFlags[] = [];
+    const setDesiredFlags: ((newValueOrSetter: any) => void)[] = [];
+
+    const cargo: number[] = [];
+    const cargoDesired: number[] = [];
+    const setCargoDesired: ((newValueOrSetter: any) => void)[] = [];
+
+    Loadsheet.seatMap.forEach((station) => {
+        const [stationPax] = useSimVar(`L:${station.simVar}`, 'Number', 300);
+        pax.push(stationPax);
+        const [stationPaxDesired, setStationPaxDesired] = useSimVar(`L:${station.simVar}_DESIRED`, 'Number', 300);
+        paxDesired.push(stationPaxDesired);
+        setPaxDesired.push(setStationPaxDesired);
+        const [pFlg, setPFlg] = useBitFlags(station.bitFlags);
+        activeFlags.push(pFlg);
+        setActiveFlags.push(setPFlg);
+        const [pFlgDesired, setPFlgDesired] = useBitFlags(`${station.bitFlags}_DESIRED`);
+        desiredFlags.push(pFlgDesired);
+        setDesiredFlags.push(setPFlgDesired);
+    });
+
+    Loadsheet.cargoMap.forEach((station) => {
+        const [stationWeight] = useSimVar(`L:${station.simVar}`, 'Number', 300);
+        cargo.push(stationWeight);
+        const [stationWeightDesired, setStationWeightDesired] = useSimVar(`L:${station.simVar}_DESIRED`, 'Number', 300);
+        cargoDesired.push(stationWeightDesired);
+        setCargoDesired.push(setStationWeightDesired);
+    });
+
     const massUnitForDisplay = usingMetric ? 'KGS' : 'LBS';
 
     const simbriefDataLoaded = isSimbriefDataLoaded();
@@ -44,57 +78,23 @@ export const Payload = () => {
 
     const [emptyWeight] = useSimVar('A:EMPTY WEIGHT', usingMetric ? 'Kilograms' : 'Pounds', 2_000);
 
-    const [paxA] = useSimVar('L:A32NX_PAX_TOTAL_ROWS_1_6', 'Number');
-    const [paxB] = useSimVar('L:A32NX_PAX_TOTAL_ROWS_7_13', 'Number');
-    const [paxC] = useSimVar('L:A32NX_PAX_TOTAL_ROWS_14_21', 'Number');
-    const [paxD] = useSimVar('L:A32NX_PAX_TOTAL_ROWS_22_29', 'Number');
-
-    const pax = [paxA, paxB, paxC, paxD];
-
-    const [paxADesired, setPaxADesired] = useSimVar('L:A32NX_PAX_TOTAL_ROWS_1_6_DESIRED', 'number');
-    const [paxBDesired, setPaxBDesired] = useSimVar('L:A32NX_PAX_TOTAL_ROWS_7_13_DESIRED', 'number');
-    const [paxCDesired, setPaxCDesired] = useSimVar('L:A32NX_PAX_TOTAL_ROWS_14_21_DESIRED', 'number');
-    const [paxDDesired, setPaxDDesired] = useSimVar('L:A32NX_PAX_TOTAL_ROWS_22_29_DESIRED', 'number');
-
     const [stationSize, setStationLen] = useState<number[]>([]);
-    const totalPax = useMemo(() => pax && pax.length > 0 && pax.reduce((a, b) => a + b), [...pax]);
+    const totalPax = useMemo(() => {
+        if (pax && pax.length > 0) {
+            return pax.reduce((a, b) => a + b);
+        }
+        return 0;
+    }, [...pax]);
     const maxPax = useMemo(() => ((stationSize && stationSize.length > 0) ? stationSize.reduce((a, b) => a + b) : -1), [stationSize]);
 
-    const [aFlags, setAFlags] = useBitFlags('PAX_FLAGS_A');
-    const [bFlags, setBFlags] = useBitFlags('PAX_FLAGS_B');
-    const [cFlags, setCFlags] = useBitFlags('PAX_FLAGS_C');
-    const [dFlags, setDFlags] = useBitFlags('PAX_FLAGS_D');
-
-    const paxDesired = [paxADesired, paxBDesired, paxCDesired, paxDDesired];
-    const [setPaxDesired] = useState([setPaxADesired, setPaxBDesired, setPaxCDesired, setPaxDDesired]);
-    const totalPaxDesired = useMemo(() => (paxDesired && paxDesired.length > 0 && paxDesired.reduce((a, b) => parseInt(a) + parseInt(b))), [...paxDesired]);
-
-    const [aFlagsDesired, setAFlagsDesired] = useBitFlags('PAX_FLAGS_A_DESIRED');
-    const [bFlagsDesired, setBFlagsDesired] = useBitFlags('PAX_FLAGS_B_DESIRED');
-    const [cFlagsDesired, setCFlagsDesired] = useBitFlags('PAX_FLAGS_C_DESIRED');
-    const [dFlagsDesired, setDFlagsDesired] = useBitFlags('PAX_FLAGS_D_DESIRED');
-
-    const activeFlags = [aFlags, bFlags, cFlags, dFlags];
-    const desiredFlags = [aFlagsDesired, bFlagsDesired, cFlagsDesired, dFlagsDesired];
-    const setActiveFlags = useMemo(() => [setAFlags, setBFlags, setCFlags, setDFlags], []);
-    const setDesiredFlags = useMemo(() => [setAFlagsDesired, setBFlagsDesired, setCFlagsDesired, setDFlagsDesired], []);
-
+    const totalPaxDesired = useMemo(() => {
+        if (paxDesired && paxDesired.length > 0) {
+            return paxDesired.reduce((a, b) => a + b);
+        }
+        return 0;
+    }, [...paxDesired]);
     const [clicked, setClicked] = useState(false);
 
-    const [fwdBag] = useSimVar('L:A32NX_CARGO_FWD_BAGGAGE_CONTAINER', 'Number', 200);
-    const [aftCont] = useSimVar('L:A32NX_CARGO_AFT_CONTAINER', 'Number', 200);
-    const [aftBag] = useSimVar('L:A32NX_CARGO_AFT_BAGGAGE', 'Number', 200);
-    const [aftBulk] = useSimVar('L:A32NX_CARGO_AFT_BULK_LOOSE', 'Number', 200);
-
-    const cargo = [fwdBag, aftCont, aftBag, aftBulk];
-
-    const [fwdBagDesired, setFwdBagDesired] = useSimVar('L:A32NX_CARGO_FWD_BAGGAGE_CONTAINER_DESIRED', 'Number', 200);
-    const [aftContDesired, setAftContDesired] = useSimVar('L:A32NX_CARGO_AFT_CONTAINER_DESIRED', 'Number', 200);
-    const [aftBagDesired, setAftBagDesired] = useSimVar('L:A32NX_CARGO_AFT_BAGGAGE_DESIRED', 'Number', 200);
-    const [aftBulkDesired, setAftBulkDesired] = useSimVar('L:A32NX_CARGO_AFT_BULK_LOOSE_DESIRED', 'Number', 200);
-
-    const cargoDesired = [fwdBagDesired, aftContDesired, aftBagDesired, aftBulkDesired];
-    const setCargoDesired = useMemo(() => [setFwdBagDesired, setAftContDesired, setAftBagDesired, setAftBulkDesired], []);
     const totalCargoDesired = useMemo(() => ((cargoDesired && cargoDesired.length > 0) ? cargoDesired.reduce((a, b) => parseInt(a) + parseInt(b)) : -1), [...cargoDesired, ...paxDesired]);
 
     const [cargoStationSize, setCargoStationLen] = useState<number[]>([]);
@@ -512,7 +512,7 @@ export const Payload = () => {
     useEffect(() => {
         pax.forEach((stationNumPax: number, stationIndex: number) => {
             // Sync active to desired layout if pax is equal to desired
-            if (stationNumPax === parseInt(paxDesired[stationIndex])) {
+            if (stationNumPax === paxDesired[stationIndex]) {
                 setActiveFlags[stationIndex](desiredFlags[stationIndex]);
             }
         });

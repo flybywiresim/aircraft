@@ -64,7 +64,7 @@ export const SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, a
     const [xYMap, setXYMap] = useState<number[][][]>([]);
 
     const addXOffset = (xOff: number, station: number, row: number) => {
-        let seatType = TYPE.ECO;
+        let seatType = TYPE.NB_ECO;
         xOff += seatMap[station].rows[row].xOffset;
         for (let seat = 0; seat < seatMap[station].rows[row].seats.length; seat++) {
             if (seatType < seatMap[station].rows[row].seats[seat].type) {
