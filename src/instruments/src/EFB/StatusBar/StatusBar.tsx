@@ -5,12 +5,9 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Wifi, WifiOff } from 'react-bootstrap-icons';
 import { useSimVar } from '@instruments/common/simVars';
 import { usePersistentNumberProperty, usePersistentProperty } from '@instruments/common/persistence';
-import { useLongPress } from 'use-long-press';
-import { useHistory } from 'react-router-dom';
 import { useInterval } from '@flybywiresim/react-components';
 import { t } from '../translation';
 import { TooltipWrapper } from '../UtilComponents/TooltipWrapper';
-import { PowerStates, usePower } from '../Efb';
 import { BatteryStatus } from './BatteryStatus';
 import { useAppSelector } from '../Store/store';
 import { initialState } from '../Store/features/simBrief';
@@ -30,14 +27,10 @@ export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
     const [dayOfMonth] = useSimVar('E:ZULU DAY OF MONTH', 'number');
     const [showStatusBarFlightProgress] = usePersistentNumberProperty('EFB_SHOW_STATUSBAR_FLIGHTPROGRESS', 1);
 
-    const history = useHistory();
-
     const [timeDisplayed] = usePersistentProperty('EFB_TIME_DISPLAYED', 'utc');
     const [timeFormat] = usePersistentProperty('EFB_TIME_FORMAT', '24');
 
     const [outdatedVersionFlag] = useSimVar('L:A32NX_OUTDATED_VERSION', 'boolean', 500);
-
-    const power = usePower();
 
     const dayName = [
         t('StatusBar.Sun'),
@@ -93,40 +86,16 @@ export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
         const std = new Date(parseInt(schedOut) * 1000);
         schedOutParsed = `${std.getUTCHours().toString().padStart(2, '0')}${std.getUTCMinutes().toString().padStart(2, '0')}Z`;
     }
-    const [shutoffBarPercent, setShutoffBarPercent] = useState(0);
     const shutoffTimerRef = useRef<NodeJS.Timer | null>(null);
 
     const [simBridgeConnected, setSimBridgeConnected] = useState(false);
 
     useInterval(() => {
-        setSimBridgeConnected(ClientState.getInstance().isAvailable());
+        setSimBridgeConnected(ClientState.getInstance().isConnected());
     }, 1_000);
 
-    // const longPressPowerButton = useLongPress(() => {}, {
-    //     threshold: 100_000,
-    //     onCancel: () => {
-    //         if (shutoffTimerRef.current) {
-    //             clearInterval(shutoffTimerRef.current);
-    //         }
-    //         history.push('/');
-    //         power.setPowerState(PowerStates.STANDBY);
-    //     },
-    //     onStart: () => {
-    //         shutoffTimerRef.current = setInterval(() => {
-    //             setShutoffBarPercent((old) => old + 5);
-    //         }, 100);
-    //     },
-    // });
-
     useEffect(() => {
-        if (shutoffBarPercent >= 120) {
-            history.push('/');
-            power.setPowerState(PowerStates.SHUTOFF);
-        }
-    }, [shutoffBarPercent]);
-
-    useEffect(() => {
-        setSimBridgeConnected(ClientState.getInstance().isAvailable());
+        setSimBridgeConnected(ClientState.getInstance().isConnected());
 
         const interval = setInterval(() => {
             setShowSchedTimes((old) => !old);
@@ -146,11 +115,6 @@ export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
 
     return (
         <div className="flex fixed z-30 justify-between items-center px-6 w-full h-10 text-lg font-medium leading-none text-theme-text bg-theme-statusbar">
-            <div
-                className="absolute inset-x-0 bottom-0 h-0.5 bg-theme-highlight"
-                style={{ width: `${shutoffBarPercent}%`, transition: 'width 0.5s ease' }}
-            />
-
             <p>{`${dayName} ${monthName} ${dayOfMonth}`}</p>
 
             {outdatedVersionFlag ? (

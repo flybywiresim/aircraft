@@ -82,7 +82,7 @@ export class ClientState {
      * Returns true if the client is available, false otherwise.
      * Availability is checked every 5 seconds.
      *
-     * @deprecated use getSimBridgeClientState() instead
+     * @deprecated use getSimBridgeClientState() or isConnected() instead
      */
     public isAvailable(): boolean {
         return this.available;
@@ -97,6 +97,13 @@ export class ClientState {
      */
     public getSimBridgeClientState(): SimBridgeClientState {
         return this.simBridgeState;
+    }
+
+    /**
+     * Returns true if the SimBridgeClientState is CONNECTED
+     */
+    public isConnected(): boolean {
+        return this.simBridgeState === SimBridgeClientState.CONNECTED;
     }
 
     /**
