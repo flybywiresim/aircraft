@@ -25,6 +25,7 @@
 1. [ADIRU/ND/PFD] Initial support for polar navigation - @tracernz (Mike)
 1. [FLIGHTMODEL] Update gear drag - @donstim (donbikes#4084)
 1. [FLIGHT MODEL/EFB] Modified empty weight cg and loading station/fuel tank locations - @donstim (donbikes#4084)
+1. [HYD] Fix gear sequence starting when failing prox sensor - @Crocket63 (crocket)
 
 ## 0.9.0
 
