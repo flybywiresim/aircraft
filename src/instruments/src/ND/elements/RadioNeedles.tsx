@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import { Mode, EfisSide } from '@shared/NavigationDisplay';
 import { NavAidMode } from './RadioNavInfo';
 
-type RadioNavPointerProps = { index: 1 | 2, side: EfisSide, displayMode: Mode, centreHeight: number };
+type RadioNavPointerProps = { index: 1 | 2, side: EfisSide, displayMode: Mode, centreHeight: number, trueRef: boolean };
 
 const AdfNeedle: React.FC<Omit<RadioNavPointerProps, 'side'>> = ({ index, displayMode, centreHeight }) => {
     const [relativeBearing] = useSimVar(`ADF RADIAL:${index}`, 'degrees');
@@ -36,20 +36,28 @@ const AdfNeedle: React.FC<Omit<RadioNavPointerProps, 'side'>> = ({ index, displa
             <path
                 d={paths[index - 1]}
                 strokeWidth={3.7}
-                className="shadow rounded"
+                className="rounded shadow"
             />
             <path
                 d={paths[index - 1]}
                 strokeWidth={3.2}
-                className="Green rounded"
+                className="rounded Green"
             />
         </g>
     );
 };
 
-const VorNeedle: React.FC<Omit<RadioNavPointerProps, 'side'>> = ({ index, displayMode, centreHeight }) => {
+const VorNeedle: React.FC<Omit<RadioNavPointerProps, 'side'>> = ({ index, displayMode, centreHeight, trueRef }) => {
     const [relativeBearing] = useSimVar(`NAV RELATIVE BEARING TO STATION:${index}`, 'degrees');
     const [available] = useSimVar(`NAV HAS NAV:${index}`, 'number');
+    const [isLoc] = useSimVar(`NAV HAS LOCALIZER:${index}`, 'number');
+    const [stationDeclination] = useSimVar(`NAV MAGVAR:${index}`, 'degrees');
+    const [stationLocation] = useSimVar(`NAV VOR LATLONALT:${index}`, 'latlonalt');
+    const [stationRefTrue, setStationRefTrue] = useState(false);
+
+    useEffect(() => {
+        setStationRefTrue(stationLocation.lat > 75 && stationDeclination < Number.EPSILON);
+    }, [stationDeclination, stationLocation.lat]);
 
     let paths: Array<string>;
 
@@ -73,30 +81,30 @@ const VorNeedle: React.FC<Omit<RadioNavPointerProps, 'side'>> = ({ index, displa
         return null;
     }
 
-    return available && (
+    return available && !isLoc && (
         <g transform={`rotate(${relativeBearing} 384 ${centreHeight})`}>
             <path
                 d={paths[index - 1]}
                 strokeWidth={3.7}
-                className="shadow rounded"
+                className="rounded shadow"
             />
             <path
                 d={paths[index - 1]}
                 strokeWidth={3.2}
-                className="White rounded"
+                className={`rounded ${!!(trueRef) !== stationRefTrue ? 'Magenta' : 'White'}`}
             />
         </g>
     );
 };
 
-export const RadioNeedle: React.FC<RadioNavPointerProps> = ({ index, side, displayMode, centreHeight }) => {
+export const RadioNeedle: React.FC<RadioNavPointerProps> = ({ index, side, displayMode, centreHeight, trueRef }) => {
     const [mode] = useSimVar(`L:A32NX_EFIS_${side}_NAVAID_${index}_MODE`, 'enum');
 
     switch (mode) {
     case NavAidMode.ADF:
-        return <AdfNeedle index={index} displayMode={displayMode} centreHeight={centreHeight} />;
+        return <AdfNeedle index={index} displayMode={displayMode} centreHeight={centreHeight} trueRef={trueRef} />;
     case NavAidMode.VOR:
-        return <VorNeedle index={index} displayMode={displayMode} centreHeight={centreHeight} />;
+        return <VorNeedle index={index} displayMode={displayMode} centreHeight={centreHeight} trueRef={trueRef} />;
     case NavAidMode.Off:
     default:
         return null;

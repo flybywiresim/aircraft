@@ -466,12 +466,12 @@
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
             <UseTemplate Name="ASOBO_GT_Push_Button">
                 <ANIM_NAME>#ANIM_NAME_BUTTON#</ANIM_NAME>
-                <LEFT_SINGLE_CODE>
+               <!--  <LEFT_SINGLE_CODE>
                     #GROUP_INDEX# -1 &gt; if{
                         (&gt;H:A32NX_SD_PAGE_CHANGED)
                         #GROUP_INDEX# (&gt;L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX)
                     }
-                </LEFT_SINGLE_CODE>
+                </LEFT_SINGLE_CODE> -->
             </UseTemplate>
         </Component>
 

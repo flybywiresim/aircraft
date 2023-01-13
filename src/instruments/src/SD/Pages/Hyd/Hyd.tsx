@@ -1,13 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { render } from '@instruments/common/index';
 import { useSimVar } from '@instruments/common/simVars';
-import { setIsEcamPage } from '@instruments/common/defaults';
 import { SvgGroup } from '../../Common/SvgGroup';
 import { Triangle } from '../../Common/Shapes';
 
 import '../../Common/CommonStyles.scss';
-
-setIsEcamPage('hyd_page');
 
 const litersPerGallon = 3.79;
 
@@ -478,5 +474,3 @@ const PTU = ({ x, y, yellowPressure, greenPressure, yellowPumpLowPressure, green
         </SvgGroup>
     );
 };
-
-render(<HydPage />);

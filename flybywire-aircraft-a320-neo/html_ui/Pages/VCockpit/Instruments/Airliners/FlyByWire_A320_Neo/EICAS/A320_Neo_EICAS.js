@@ -51,7 +51,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
             }
         }
         this.SwitchToPageName(this.LOWER_SCREEN_GROUP_NAME, pageName);
-        SimVar.SetSimVarValue("L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX", "number", this.currentPage);
+        //SimVar.SetSimVarValue("L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX", "number", this.currentPage);
     }
 
     createLowerScreenPages() {
@@ -234,7 +234,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
             // Disable user selected page when new failure detected
             if (this.PrevFailPage !== sFailPage) {
                 this.currentPage = -1;
-                SimVar.SetSimVarValue("L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX", "number", -1);
+                //SimVar.SetSimVarValue("L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX", "number", -1);
             }
         }
 

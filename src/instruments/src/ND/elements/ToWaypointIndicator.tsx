@@ -6,15 +6,17 @@ import { SimVarString } from '@shared/simvar';
 
 export type ToWaypointIndicatorProps = {
     side: EfisSide,
+    trueRef: boolean,
 }
 
-export const ToWaypointIndicator: FC<ToWaypointIndicatorProps> = memo(({ side }) => {
+export const ToWaypointIndicator: FC<ToWaypointIndicatorProps> = memo(({ side, trueRef }) => {
     // TODO replace with appropriate ARINC 429 labels
 
     const [ident, setIdent] = useState<string | null>(null);
     const [ident0] = useSimVar(`L:A32NX_EFIS_${side}_TO_WPT_IDENT_0`, 'number', 500);
     const [ident1] = useSimVar(`L:A32NX_EFIS_${side}_TO_WPT_IDENT_1`, 'number', 500);
     const [bearing] = useSimVar(`L:A32NX_EFIS_${side}_TO_WPT_BEARING`, 'Degrees');
+    const [trueBearing] = useSimVar(`L:A32NX_EFIS_${side}_TO_WPT_TRUE_BEARING`, 'Degrees');
     const [distance] = useSimVar(`L:A32NX_EFIS_${side}_TO_WPT_DISTANCE`, 'Number');
     const [eta] = useSimVar(`L:A32NX_EFIS_${side}_TO_WPT_ETA`, 'Seconds');
 
@@ -55,8 +57,8 @@ export const ToWaypointIndicator: FC<ToWaypointIndicatorProps> = memo(({ side })
 
             {bearing && bearing !== -1 && Number.isFinite(bearing) && (
                 <>
-                    <text x={54} y={0} fontSize={25} className="Green" textAnchor="end">{(Math.round(bearing)).toString().padStart(3, '0')}</text>
-                    <text x={73} y={2} fontSize={25} className="Cyan" textAnchor="end">&deg;</text>
+                    <text x={54} y={0} fontSize={25} className="Green" textAnchor="end">{(Math.round(trueRef ? trueBearing : bearing)).toString().padStart(3, '0')}</text>
+                    <text x={73} y={trueRef ? -3 : 2} fontSize={trueRef ? 21 : 25} className="Cyan" textAnchor="end">{trueRef ? 'T' : '°'}</text>
                 </>
             )}
 
