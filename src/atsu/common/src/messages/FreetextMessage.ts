@@ -29,7 +29,7 @@ export class FreetextMessage extends AtsuMessage {
         return message;
     }
 
-    public static deserialze(jsonData: Record<string, unknown> | FreetextMessage): FreetextMessage {
+    public static deserialize(jsonData: Record<string, unknown> | FreetextMessage): FreetextMessage {
         const retval = new FreetextMessage();
         AtsuMessage.deserialize(jsonData, retval);
         return retval;
