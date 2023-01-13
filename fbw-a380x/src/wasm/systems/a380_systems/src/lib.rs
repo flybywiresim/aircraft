@@ -25,10 +25,7 @@ use power_consumption::A380PowerConsumption;
 use std::vec::Vec;
 use systems::enhanced_gpwc::EnhancedGPWC;
 use systems::simulation::InitContext;
-use uom::si::{
-    f64::Length,
-    length::nautical_mile,
-};
+use uom::si::{f64::Length, length::nautical_mile};
 
 use systems::{
     apu::{
@@ -138,7 +135,7 @@ impl A380 {
                     Length::new::<nautical_mile>(160.0),
                     Length::new::<nautical_mile>(320.0),
                     Length::new::<nautical_mile>(640.0),
-                ])
+                ]),
             ),
 >>>>>>> 73c9c7949... add the EGPWC to the A380:src/systems/a380_systems/src/lib.rs
         }

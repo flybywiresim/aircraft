@@ -402,22 +402,16 @@ impl LgciuGearExtension for LgciuSensorInputs {
             && self.left_gear_up_and_locked
     }
     fn main_down_and_locked(&self) -> bool {
-        self.is_powered
-            && self.right_gear_down_and_locked
-            && self.left_gear_down_and_locked
+        self.is_powered && self.right_gear_down_and_locked && self.left_gear_down_and_locked
     }
     fn main_up_and_locked(&self) -> bool {
-        self.is_powered
-            && self.right_gear_up_and_locked
-            && self.left_gear_up_and_locked
+        self.is_powered && self.right_gear_up_and_locked && self.left_gear_up_and_locked
     }
     fn nose_down_and_locked(&self) -> bool {
-        self.is_powered
-            && self.nose_gear_down_and_locked
+        self.is_powered && self.nose_gear_down_and_locked
     }
     fn nose_up_and_locked(&self) -> bool {
-        self.is_powered
-            && self.nose_gear_up_and_locked
+        self.is_powered && self.nose_gear_up_and_locked
     }
 }
 impl LgciuDoorPosition for LgciuSensorInputs {

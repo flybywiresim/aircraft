@@ -1,16 +1,16 @@
-use std::vec::Vec;
 use crate::{
     enhanced_gpwc::navigation_display::NavigationDisplay,
     landing_gear::LandingGearControlInterfaceUnitSet,
     shared::{
         arinc429::{Arinc429Word, SignStatus},
-        AdirsMeasurementOutputs,
-        ElectricalBusType,
-        ElectricalBuses,
-        LgciuGearExtension,
+        AdirsMeasurementOutputs, ElectricalBusType, ElectricalBuses, LgciuGearExtension,
     },
-    simulation::{InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader, SimulatorWriter, VariableIdentifier, Write},
+    simulation::{
+        InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
+        SimulatorWriter, VariableIdentifier, Write,
+    },
 };
+use std::vec::Vec;
 use uom::si::{
     angle::degree,
     f64::{Angle, Length, Velocity},
@@ -54,17 +54,27 @@ impl EnhancedGPWC {
         EnhancedGPWC {
             powered_by,
             is_powered: false,
-            fm1_destination_longitude_ssm_id: context.get_identifier("FM1_DEST_LONG_SSM".to_owned()),
+            fm1_destination_longitude_ssm_id: context
+                .get_identifier("FM1_DEST_LONG_SSM".to_owned()),
             fm1_destination_longitude_id: context.get_identifier("FM1_DEST_LONG".to_owned()),
             fm1_destination_latitude_ssm_id: context.get_identifier("FM1_DEST_LAT_SSM".to_owned()),
             fm1_destination_latitude_id: context.get_identifier("FM1_DEST_LAT".to_owned()),
-            destination_longitude: Arinc429Word::new(Angle::new::<degree>(0.0), SignStatus::FailureWarning),
-            destination_latitude: Arinc429Word::new(Angle::new::<degree>(0.0), SignStatus::FailureWarning),
+            destination_longitude: Arinc429Word::new(
+                Angle::new::<degree>(0.0),
+                SignStatus::FailureWarning,
+            ),
+            destination_latitude: Arinc429Word::new(
+                Angle::new::<degree>(0.0),
+                SignStatus::FailureWarning,
+            ),
             latitude: Arinc429Word::new(Angle::new::<degree>(0.0), SignStatus::FailureWarning),
             longitude: Arinc429Word::new(Angle::new::<degree>(0.0), SignStatus::FailureWarning),
             altitude: Arinc429Word::new(Length::new::<foot>(0.0), SignStatus::FailureWarning),
             heading: Arinc429Word::new(Angle::new::<degree>(0.0), SignStatus::FailureWarning),
-            vertical_speed: Arinc429Word::new(Velocity::new::<foot_per_minute>(0.0), SignStatus::FailureWarning),
+            vertical_speed: Arinc429Word::new(
+                Velocity::new::<foot_per_minute>(0.0),
+                SignStatus::FailureWarning,
+            ),
             navigation_display_range_lookup: range_lookup,
             navigation_displays: [
                 NavigationDisplay::new(context, "L"),
@@ -89,17 +99,26 @@ impl EnhancedGPWC {
          */
 
         if adirs_output.is_fully_aligned(1) && self.is_powered {
-            self.latitude = Arinc429Word::new(adirs_output.latitude(1), SignStatus::NormalOperation);
-            self.longitude = Arinc429Word::new(adirs_output.longitude(1), SignStatus::NormalOperation);
-            self.altitude = Arinc429Word::new(adirs_output.altitude(1), SignStatus::NormalOperation);
+            self.latitude =
+                Arinc429Word::new(adirs_output.latitude(1), SignStatus::NormalOperation);
+            self.longitude =
+                Arinc429Word::new(adirs_output.longitude(1), SignStatus::NormalOperation);
+            self.altitude =
+                Arinc429Word::new(adirs_output.altitude(1), SignStatus::NormalOperation);
             self.heading = Arinc429Word::new(adirs_output.heading(1), SignStatus::NormalOperation);
-            self.vertical_speed = Arinc429Word::new(adirs_output.vertical_speed(1), SignStatus::NormalOperation);
+            self.vertical_speed =
+                Arinc429Word::new(adirs_output.vertical_speed(1), SignStatus::NormalOperation);
         } else {
-            self.latitude = Arinc429Word::new(Angle::new::<degree>(0.0), SignStatus::FailureWarning);
-            self.longitude = Arinc429Word::new(Angle::new::<degree>(0.0), SignStatus::FailureWarning);
+            self.latitude =
+                Arinc429Word::new(Angle::new::<degree>(0.0), SignStatus::FailureWarning);
+            self.longitude =
+                Arinc429Word::new(Angle::new::<degree>(0.0), SignStatus::FailureWarning);
             self.altitude = Arinc429Word::new(Length::new::<foot>(0.0), SignStatus::FailureWarning);
             self.heading = Arinc429Word::new(Angle::new::<degree>(0.0), SignStatus::FailureWarning);
-            self.vertical_speed = Arinc429Word::new(Velocity::new::<foot_per_minute>(0.0), SignStatus::FailureWarning);
+            self.vertical_speed = Arinc429Word::new(
+                Velocity::new::<foot_per_minute>(0.0),
+                SignStatus::FailureWarning,
+            );
         }
     }
 
@@ -113,7 +132,12 @@ impl EnhancedGPWC {
 
         self.navigation_displays
             .iter_mut()
-            .for_each(|display| display.update(&self.navigation_display_range_lookup, adirs_output.is_fully_aligned(1)));
+            .for_each(|display| {
+                display.update(
+                    &self.navigation_display_range_lookup,
+                    adirs_output.is_fully_aligned(1),
+                )
+        });
     }
 }
 
@@ -128,8 +152,14 @@ impl SimulationElement for EnhancedGPWC {
         let destination_long_ssm: u32 = reader.read(&self.fm1_destination_longitude_ssm_id);
         let destination_lat_ssm: u32 = reader.read(&self.fm1_destination_latitude_ssm_id);
 
-        self.destination_longitude = Arinc429Word::new(Angle::new::<degree>(destination_long), SignStatus::from(destination_long_ssm));
-        self.destination_latitude = Arinc429Word::new(Angle::new::<degree>(destination_lat), SignStatus::from(destination_lat_ssm));
+        self.destination_longitude = Arinc429Word::new(
+            Angle::new::<degree>(destination_long),
+            SignStatus::from(destination_long_ssm),
+        );
+        self.destination_latitude = Arinc429Word::new(
+            Angle::new::<degree>(destination_lat),
+            SignStatus::from(destination_lat_ssm),
+        );
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {

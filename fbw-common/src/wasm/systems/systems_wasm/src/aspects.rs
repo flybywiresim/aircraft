@@ -535,7 +535,10 @@ struct ToClientData {
 }
 
 impl ToClientData {
-    fn new(target_object: Box<dyn VariablesToClientData>, variables: Vec<VariableIdentifier>) -> Self {
+    fn new(
+        target_object: Box<dyn VariablesToClientData>,
+        variables: Vec<VariableIdentifier>,
+    ) -> Self {
         Self {
             target_object,
             variables,

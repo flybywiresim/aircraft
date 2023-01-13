@@ -23,10 +23,7 @@ use power_consumption::A320PowerConsumption;
 use std::vec::Vec;
 use systems::enhanced_gpwc::EnhancedGPWC;
 use systems::simulation::InitContext;
-use uom::si::{
-    f64::Length,
-    length::nautical_mile,
-};
+use uom::si::{f64::Length, length::nautical_mile};
 
 use systems::{
     apu::{
@@ -121,7 +118,7 @@ impl A320 {
                     Length::new::<nautical_mile>(80.0),
                     Length::new::<nautical_mile>(160.0),
                     Length::new::<nautical_mile>(320.0),
-                ])
+                ]),
             ),
         }
     }

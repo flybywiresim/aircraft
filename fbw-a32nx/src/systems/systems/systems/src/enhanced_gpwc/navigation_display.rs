@@ -1,11 +1,14 @@
-use std::vec::Vec;
 use crate::{
-    simulation::{InitContext, Read, SimulationElement, SimulatorReader, SimulatorWriter, VariableIdentifier, Write},
+    simulation::{
+        InitContext, Read, SimulationElement, SimulatorReader, SimulatorWriter, VariableIdentifier,
+        Write,
+    },
 };
+use std::vec::Vec;
 use uom::si::{
-    f64::{Length,  Ratio},
-    length::{nautical_mile},
-    ratio::{percent},
+    f64::{Length, Ratio},
+    length::nautical_mile,
+    ratio::percent,
 };
 
 pub struct NavigationDisplay {
@@ -25,10 +28,7 @@ pub struct NavigationDisplay {
 }
 
 impl NavigationDisplay {
-    pub fn new(
-        context: &mut InitContext,
-        side: &str,
-    ) -> Self {
+    pub fn new(context: &mut InitContext, side: &str) -> Self {
         NavigationDisplay {
             range_knob_id: context.get_identifier(format!("EFIS_{}_ND_RANGE", side)),
             range_knob_position: 0,
@@ -38,18 +38,16 @@ impl NavigationDisplay {
             terrain_on_nd_pb_id: context.get_identifier(format!("EFIS_TERR_{}_ACTIVE", side)),
             terrain_on_nd_pb_active: false,
             terrain_on_nd_active: false,
-            potentiometer_id: context.get_identifier(format!("ND_{}_TERR_ON_ND_POTENTIOMETER", side)),
+            potentiometer_id: context
+                .get_identifier(format!("ND_{}_TERR_ON_ND_POTENTIOMETER", side)),
             potentiometer: Ratio::new::<percent>(100.0),
             egpwc_nd_range_id: context.get_identifier(format!("EGPWC_ND_{}_RANGE", side)),
-            egpwc_nd_terrain_active_id: context.get_identifier(format!("EGPWC_ND_{}_TERRAIN_ACTIVE", side)),
+            egpwc_nd_terrain_active_id: context
+                .get_identifier(format!("EGPWC_ND_{}_TERRAIN_ACTIVE", side)),
         }
     }
 
-    pub fn update(
-        &mut self,
-        range_lookup: &Vec<Length>,
-        adiru_data_valid: bool,
-    ) {
+    pub fn update(&mut self, range_lookup: &Vec<Length>, adiru_data_valid: bool) {
         self.range = range_lookup[self.range_knob_position];
         self.terrain_on_nd_active = adiru_data_valid && self.terrain_on_nd_pb_active;
     }
