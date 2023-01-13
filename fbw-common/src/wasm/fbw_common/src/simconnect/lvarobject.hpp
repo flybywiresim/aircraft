@@ -59,14 +59,11 @@ template <std::string_view const&... Strings>
 class LVarObject : public LVarObjectBase {
  private:
   struct LVarDefinition {
-    std::string_view readCommand;
-    std::string_view writeCommand;
+    int variableId;
     double value;
   };
 
-  static constexpr std::string_view CommandSuffix = ", number)";
-  static constexpr std::string_view ReadCommandPrefix = "(L:A32NX_";
-  static constexpr std::string_view WriteCommandPrefix = " (>L:A32NX_";
+  static constexpr std::string_view AircraftPrefix = "A32NX_";
 
   template <std::string_view const& T, std::string_view const&... Ts>
   struct Index;
@@ -77,17 +74,13 @@ class LVarObject : public LVarObjectBase {
   template <std::string_view const& T, std::string_view const& U, std::string_view const&... Ts>
   struct Index<T, U, Ts...> : std::integral_constant<std::size_t, 1 + Index<T, Ts...>::value> {};
 
-  std::vector<LVarDefinition> _entries = {
-      {helper::concat<ReadCommandPrefix, Strings, CommandSuffix>, helper::concat<WriteCommandPrefix, Strings, CommandSuffix>, 0.0}...};
+  std::vector<LVarDefinition> _entries;
 
   void readValues() override {
     bool changedValues = false;
 
     for (auto& entry : this->_entries) {
-      std::string command = std::string(entry.readCommand);
-      double value;
-
-      execute_calculator_code(command.c_str(), &value, nullptr, nullptr);
+      double value = get_named_variable_value(entry.variableId);
       if (!helper::Math::almostEqual(value, entry.value)) {
         entry.value = value;
         changedValues = true;
@@ -100,9 +93,7 @@ class LVarObject : public LVarObjectBase {
   }
 
  public:
-  LVarObject()
-      : _entries({{helper::concat<ReadCommandPrefix, Strings, CommandSuffix>, helper::concat<WriteCommandPrefix, Strings, CommandSuffix>,
-                   0.0}...}) {}
+  LVarObject() : _entries({{register_named_variable(std::string(helper::concat<AircraftPrefix, Strings>).c_str()), 0.0}...}) {}
   LVarObject(const LVarObject<Strings...>&) = delete;
 
   LVarObject<Strings...>& operator=(const LVarObject<Strings...>&) = delete;
@@ -119,8 +110,7 @@ class LVarObject : public LVarObjectBase {
 
   void writeValues() {
     for (const auto& entry : std::as_const(this->_entries)) {
-      std::string command = std::to_string(entry.value) + std::string(entry.writeCommand);
-      execute_calculator_code(command.c_str(), nullptr, nullptr, nullptr);
+      set_named_variable_value(entry.variableId, entry.value);
     }
   }
 };
