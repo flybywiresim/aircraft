@@ -1,4 +1,5 @@
 import { AtsuStatusCodes } from '@atsu/common/AtsuStatusCodes';
+import { DatalinkModeCode, DatalinkStatusCode, PositionReportData } from '@atsu/common/types';
 import { FansMode } from '@atsu/common/com/FutureAirNavigationSystem';
 import {
     AtisMessage,
@@ -10,7 +11,7 @@ import {
     OclMessage,
     WeatherMessage,
 } from '@atsu/common/messages';
-import { PositionReportData } from '@atsu/common/types';
+
 import { Waypoint } from '@atsu/common/index';
 
 export interface AtsuFmsRegisterMessages<T> {
@@ -46,6 +47,8 @@ export interface AtsuFmsMessages {
     monitoredMessages: CpdlcMessage[];
     maxUplinkDelay: number;
     automaticPositionReportActive: boolean;
+    datalinkCommunicationStatus: { vhf: DatalinkStatusCode; satellite: DatalinkStatusCode; hf: DatalinkStatusCode };
+    datalinkCommunicationMode: { vhf: DatalinkModeCode; satellite: DatalinkModeCode; hf: DatalinkModeCode };
 
     resynchronizeAocWeatherMessage: WeatherMessage;
     resynchronizeFreetextMessage: FreetextMessage;

@@ -13,7 +13,7 @@ import {
     OclMessage,
     WeatherMessage,
 } from '@atsu/common/messages';
-import { AutopilotData, EnvironmentData, FlightStateData, PositionReportData } from '@atsu/common/types';
+import { AutopilotData, DatalinkModeCode, DatalinkStatusCode, EnvironmentData, FlightStateData, PositionReportData } from '@atsu/common/types';
 import { FlightPhaseManager } from '@fmgc/flightphase';
 import { FlightPlanManager } from '@fmgc/index';
 import { EventBus, EventSubscriber, Publisher } from 'msfssdk';
@@ -59,6 +59,18 @@ export class FmsClient {
 
     private fms: any = null;
 
+    private datalinkStatus: { vhf: DatalinkStatusCode; satellite: DatalinkStatusCode; hf: DatalinkStatusCode } = {
+        vhf: DatalinkStatusCode.NotInstalled,
+        satellite: DatalinkStatusCode.NotInstalled,
+        hf: DatalinkStatusCode.NotInstalled,
+    }
+
+    private datalinkMode: { vhf: DatalinkModeCode; satellite: DatalinkModeCode; hf: DatalinkModeCode } = {
+        vhf: DatalinkModeCode.None,
+        satellite: DatalinkModeCode.None,
+        hf: DatalinkModeCode.None,
+    }
+
     constructor(fms: any, flightPlanManager: FlightPlanManager, flightPhaseManager: FlightPhaseManager) {
         this.bus = new EventBus();
         this.publisher = this.bus.getPublisher<FmsAtsuMessages>();
@@ -77,6 +89,8 @@ export class FmsClient {
         this.subscriber.on('atcStationStatus').handle((status) => this.atcStationStatus = status);
         this.subscriber.on('maxUplinkDelay').handle((delay) => this.maxUplinkDelay = delay);
         this.subscriber.on('automaticPositionReportActive').handle((active) => this.automaticPositionReportIsActive = active);
+        this.subscriber.on('datalinkCommunicationStatus').handle((data) => this.datalinkStatus = data);
+        this.subscriber.on('datalinkCommunicationMode').handle((data) => this.datalinkMode = data);
 
         // register the response handlers
         this.subscriber.on('genericRequestResponse').handle((response) => {
@@ -395,5 +409,31 @@ export class FmsClient {
                 return id === requestId;
             });
         });
+    }
+
+    public getDatalinkStatus(value: string): DatalinkStatusCode {
+        switch (value) {
+        case 'vhf':
+            return this.datalinkStatus.vhf;
+        case 'satcom':
+            return this.datalinkStatus.satellite;
+        case 'hf':
+            return this.datalinkStatus.hf;
+        default:
+            return 99;
+        }
+    }
+
+    public getDatalinkMode(value: string): DatalinkModeCode {
+        switch (value) {
+        case 'vhf':
+            return this.datalinkMode.vhf;
+        case 'satcom':
+            return this.datalinkMode.satellite;
+        case 'hf':
+            return this.datalinkMode.hf;
+        default:
+            return 99;
+        }
     }
 }
