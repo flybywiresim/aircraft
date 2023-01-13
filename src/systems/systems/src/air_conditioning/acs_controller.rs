@@ -1752,8 +1752,8 @@ mod acs_controller_tests {
             for b in 0..station_quantity_b {
                 pax_flag_b ^= 1 << b;
             }
-            self.write_by_name(&format!("PAX_TOTAL_ROWS_A"), pax_flag_a);
-            self.write_by_name(&format!("PAX_TOTAL_ROWS_B"), pax_flag_b);
+            self.write_by_name("PAX_TOTAL_ROWS_A", pax_flag_a);
+            self.write_by_name("PAX_TOTAL_ROWS_B", pax_flag_b);
             self.command(|a| a.test_cabin.update_number_of_passengers(pax_quantity));
         }
 
