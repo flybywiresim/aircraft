@@ -2,7 +2,6 @@ use crate::simulation::{
     InitContext, Read, SimulationElement, SimulatorReader, SimulatorWriter, VariableIdentifier,
     Write,
 };
-use std::vec::Vec;
 use uom::si::{
     f64::{Length, Ratio},
     length::nautical_mile,
