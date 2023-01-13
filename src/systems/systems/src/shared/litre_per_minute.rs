@@ -2,7 +2,7 @@ unit! {
     system: uom::si;
     quantity: uom::si::volume_rate;
 
-    @litre_per_minute: prefix!(milli) / 60.; "L/min", "litre per minute", "litre per minute";
+    @litre_per_minute: prefix!(milli) / 60.; "L/min", "litre per minute", "litres per minute";
 }
 
 #[cfg(test)]
