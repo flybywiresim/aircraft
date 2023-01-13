@@ -286,6 +286,7 @@ impl UpdateContext {
                     Self::PLANE_ACCELERATION_FILTERING_TIME_CONSTANT,
                     Vector3::new(0., -9.8, 0.),
                 ),
+
             world_ambient_wind: Velocity3D::new(
                 Velocity::default(),
                 Velocity::default(),
@@ -562,6 +563,10 @@ impl UpdateContext {
 
     pub fn vert_accel(&self) -> Acceleration {
         self.local_acceleration.vert_accel()
+    }
+
+    pub fn local_acceleration_without_gravity(&self) -> Vector3<f64> {
+        self.local_acceleration.to_ms2_vector()
     }
 
     pub fn local_relative_wind(&self) -> Velocity3D {
