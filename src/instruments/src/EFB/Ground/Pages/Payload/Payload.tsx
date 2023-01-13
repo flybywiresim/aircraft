@@ -32,15 +32,15 @@ export const Payload = () => {
     const { usingMetric } = Units;
     const { showModal } = useModals();
 
-    const [aFlags] = useSeatFlags(`L:${Loadsheet.seatMap[0].bitFlags}`, Loadsheet.seatMap[0].capacity);
-    const [bFlags] = useSeatFlags(`L:${Loadsheet.seatMap[1].bitFlags}`, Loadsheet.seatMap[1].capacity);
-    const [cFlags] = useSeatFlags(`L:${Loadsheet.seatMap[2].bitFlags}`, Loadsheet.seatMap[2].capacity);
-    const [dFlags] = useSeatFlags(`L:${Loadsheet.seatMap[3].bitFlags}`, Loadsheet.seatMap[3].capacity);
+    const [aFlags] = useSeatFlags(`L:${Loadsheet.seatMap[0].simVar}`, Loadsheet.seatMap[0].capacity);
+    const [bFlags] = useSeatFlags(`L:${Loadsheet.seatMap[1].simVar}`, Loadsheet.seatMap[1].capacity);
+    const [cFlags] = useSeatFlags(`L:${Loadsheet.seatMap[2].simVar}`, Loadsheet.seatMap[2].capacity);
+    const [dFlags] = useSeatFlags(`L:${Loadsheet.seatMap[3].simVar}`, Loadsheet.seatMap[3].capacity);
 
-    const [aFlagsDesired, setAFlagsDesired] = useSeatFlags(`L:${Loadsheet.seatMap[0].bitFlags}_DESIRED`, Loadsheet.seatMap[0].capacity);
-    const [bFlagsDesired, setBFlagsDesired] = useSeatFlags(`L:${Loadsheet.seatMap[1].bitFlags}_DESIRED`, Loadsheet.seatMap[1].capacity);
-    const [cFlagsDesired, setCFlagsDesired] = useSeatFlags(`L:${Loadsheet.seatMap[2].bitFlags}_DESIRED`, Loadsheet.seatMap[2].capacity);
-    const [dFlagsDesired, setDFlagsDesired] = useSeatFlags(`L:${Loadsheet.seatMap[3].bitFlags}_DESIRED`, Loadsheet.seatMap[3].capacity);
+    const [aFlagsDesired, setAFlagsDesired] = useSeatFlags(`L:${Loadsheet.seatMap[0].simVar}_DESIRED`, Loadsheet.seatMap[0].capacity);
+    const [bFlagsDesired, setBFlagsDesired] = useSeatFlags(`L:${Loadsheet.seatMap[1].simVar}_DESIRED`, Loadsheet.seatMap[1].capacity);
+    const [cFlagsDesired, setCFlagsDesired] = useSeatFlags(`L:${Loadsheet.seatMap[2].simVar}_DESIRED`, Loadsheet.seatMap[2].capacity);
+    const [dFlagsDesired, setDFlagsDesired] = useSeatFlags(`L:${Loadsheet.seatMap[3].simVar}_DESIRED`, Loadsheet.seatMap[3].capacity);
 
     const activeFlags = useMemo(() => [aFlags, bFlags, cFlags, dFlags], [aFlags, bFlags, cFlags, dFlags]);
     const desiredFlags = useMemo(() => [aFlagsDesired, bFlagsDesired, cFlagsDesired, dFlagsDesired], [aFlagsDesired, bFlagsDesired, cFlagsDesired, dFlagsDesired]);
@@ -210,7 +210,7 @@ export const Payload = () => {
             fillCargo(i, cargoStationSize[i] / maxCargo, loadableCargoWeight);
         }
         fillCargo(0, 1, remainingWeight);
-    }, [...cargoDesired, paxBagWeight, ...cargoStationSize]);
+    }, [maxCargo, ...cargoStationSize, ...cargoMap, ...cargoDesired, paxBagWeight]);
 
     const calculatePaxMoment = useCallback(() => {
         let paxMoment = 0;
