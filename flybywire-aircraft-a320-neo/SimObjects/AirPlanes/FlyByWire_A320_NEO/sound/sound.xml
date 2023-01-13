@@ -2275,9 +2275,6 @@
 
         <Sound WwiseEvent="armdoors" WwiseData="true" NodeName="SOUND_FWD_GALLEY" ConeHeading="180" CancelConeHeadingWhenInside="false" Continuous="true" SimVar="LIGHT BEACON" Index="0" Units="Bool">
             <Range LowerBound="1" />
-            <Requires SimVar="LIGHT BEACON" Index="0" Units="Bool">
-                <Range LowerBound="1" />
-            </Requires>
             <Requires LocalVar="A32NX_CIDS_IS_POWERED">
                 <Range LowerBound="1" />
             </Requires>
@@ -2290,9 +2287,6 @@
 
         <Sound WwiseEvent="safetydemo" WwiseData="true" NodeName="SOUND_FWD_GALLEY" ConeHeading="180" CancelConeHeadingWhenInside="false" Continuous="true" SimVar="LIGHT BEACON" Index="0" Units="Bool">
             <Range LowerBound="1" />
-            <Requires SimVar="LIGHT BEACON" Index="0" Units="Bool">
-                <Range LowerBound="1" />
-            </Requires>
             <Requires LocalVar="A32NX_CIDS_IS_POWERED">
                 <Range LowerBound="1" />
             </Requires>
