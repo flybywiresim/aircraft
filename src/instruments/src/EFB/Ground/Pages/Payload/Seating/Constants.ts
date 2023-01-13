@@ -23,6 +23,7 @@ export interface RowInfo {
 
 export interface PaxStationInfo {
     name: string,
+    capacity: number,
     rows: RowInfo[],
     simVar: string,
     index: number,
