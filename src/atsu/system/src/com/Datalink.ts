@@ -9,6 +9,7 @@ import { AtisMessage, AtisType } from '@atsu/common/messages/AtisMessage';
 import { MetarMessage } from '@atsu/common/messages/MetarMessage';
 import { TafMessage } from '@atsu/common/messages/TafMessage';
 import { WeatherMessage } from '@atsu/common/messages/WeatherMessage';
+import { NXDataStore } from '@shared/persistence';
 import { Vdl } from './vhf/VDL';
 import { Atsu } from '../ATSU';
 import { HoppieConnector } from './webinterfaces/HoppieConnector';
