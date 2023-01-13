@@ -18,6 +18,9 @@
 
 namespace simconnect {
 
+/**
+ * @brief Defines the SimConnect connection with containers for all different data types
+ */
 class Connection {
  private:
   HANDLE _connection;
@@ -40,10 +43,31 @@ class Connection {
 
   Connection& operator=(const Connection&) = delete;
 
+  /**
+   * @brief Connects to the simconnect server
+   * It does not reconnect, if a connection is already established
+   * @param connectionName The connection's name
+   * @return true if the connection is established
+   * @return false if the connection failed
+   */
   bool connect(const std::string& connectionName);
+  /**
+   * @brief Disconnects from the simconnect server
+   */
   void disconnect();
+  /**
+   * @brief Processes the buffered data that is received during to readData calls
+   * The registered areas and objects are automatically update
+   * @return true if data processing was possible
+   * @return false if something failed
+   */
   bool readData();
 
+  /**
+   * @brief Creates an object that handles simulator data
+   * @tparam T The container that describes the simulator object data
+   * @return std::shared_ptr<SimObject<T>> The shared pointer the new SimObject handle
+   */
   template <typename T>
   std::shared_ptr<SimObject<T>> simObject() {
     const auto simObjectId = this->_lastSimObjectId++;
@@ -52,6 +76,11 @@ class Connection {
     return std::dynamic_pointer_cast<SimObject<T>>(newObject);
   }
 
+  /**
+   * @brief Creates an object that handles client data areas
+   * @tparam T The container that describes the client data area
+   * @return std::shared_ptr<ClientDataArea<T>> The shared pointer the new ClientDataArea handle
+   */
   template <typename T>
   std::shared_ptr<ClientDataArea<T>> clientDataArea() {
     const auto clientDataId = this->_lastClientDataId++;
@@ -61,6 +90,12 @@ class Connection {
     return std::dynamic_pointer_cast<ClientDataArea<T>>(newArea);
   }
 
+  /**
+   * @brief Creates an object that handles client data areas
+   * @tparam T The container that describes the client data area
+   * @tparam ChunkSize The number of bytes to communicate
+   * @return std::shared_ptr<ClientDataAreaBuffered<T, ChunkSize>> Shared pointer to the new buffered client data area
+   */
   template <typename T, std::size_t ChunkSize>
   std::shared_ptr<ClientDataAreaBuffered<T, ChunkSize>> clientDataArea() {
     const auto clientDataId = this->_lastClientDataId++;
@@ -70,6 +105,11 @@ class Connection {
     return std::dynamic_pointer_cast<ClientDataAreaBuffered<T, ChunkSize>>(newArea);
   }
 
+  /**
+   * @brief Creates an object to handle named aircraft variables
+   * @tparam Strings The list of variable names
+   * @return std::shared_ptr<LVarObject<Strings...>> Shared pointer to the new variable container
+   */
   template <std::string_view const&... Strings>
   std::shared_ptr<LVarObject<Strings...>> lvarObject() {
     auto newObject = std::shared_ptr<LVarObjectBase>(new LVarObject<Strings...>());

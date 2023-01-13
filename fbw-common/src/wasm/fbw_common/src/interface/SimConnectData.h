@@ -5,6 +5,9 @@
 
 namespace types {
 
+/**
+ * @brief Definition of the simulator object for the collection
+ */
 struct SimulatorData {
   double latitude;
   double longitude;
@@ -12,6 +15,9 @@ struct SimulatorData {
   double potentiometerRight;
 } __attribute__((packed));
 
+/**
+ * @brief Client data area block that is sent to the SimBridge
+ */
 struct AircraftStatusData {
   std::uint8_t adiruValid;
   float latitude;
@@ -36,16 +42,15 @@ struct AircraftStatusData {
 
 enum ThresholdMode : std::uint8_t { PEAKS_MODE = 0, WARNING = 1, CAUTION = 2 };
 
+/**
+ * @brief The threshold data that is received from the SimBridge for a new frame
+ */
 struct ThresholdData {
   std::int16_t lowerThreshold;
   std::uint8_t lowerThresholdMode;
   std::int16_t upperThreshold;
   std::uint8_t upperThresholdMode;
   std::uint32_t frameByteCount;
-} __attribute__((packed));
-
-struct FrameData {
-  std::uint8_t data[SIMCONNECT_CLIENTDATA_MAX_SIZE];
 } __attribute__((packed));
 
 }  // namespace types

@@ -19,6 +19,9 @@ namespace simconnect {
 
 class Connection;
 
+/**
+ * @brief The base class to define the named aircraft objects
+ */
 class LVarObjectBase : public base::Changeable {
   friend Connection;
 
@@ -52,9 +55,18 @@ class LVarObjectBase : public base::Changeable {
 
   LVarObjectBase& operator=(const LVarObjectBase&) = delete;
 
+  /**
+   * @brief Set the Update Cycle Time that is used to check if variables changed
+   * @param cycleTime The time object that needs to pass until variables are read. A negative value disables the updates
+   */
   void setUpdateCycleTime(types::Time cycleTime) { this->_updateCycleTime = cycleTime; }
 };
 
+/**
+ * @brief The named aircraft variable object
+ * The implementation adds automatically the correct prefix (i.e. A32NX_)
+ * @tparam Strings List of variable names that will be handeled in this object
+ */
 template <std::string_view const&... Strings>
 class LVarObject : public LVarObjectBase {
  private:
@@ -93,21 +105,37 @@ class LVarObject : public LVarObjectBase {
   }
 
  public:
+  /**
+   * @brief Construct a new LVarObject object and registered all variable names
+   */
   LVarObject() : _entries({{register_named_variable(std::string(helper::concat<AircraftPrefix, Strings>).c_str()), 0.0}...}) {}
   LVarObject(const LVarObject<Strings...>&) = delete;
 
   LVarObject<Strings...>& operator=(const LVarObject<Strings...>&) = delete;
 
+  /**
+   * @brief Returns the modifiable reference to a specific variable
+   * @tparam Name The name needs to be an element of Strings...
+   * @return double& The reference to the value of Name
+   */
   template <std::string_view const& Name>
   double& value() {
     return this->_entries[LVarObject<Strings...>::Index<Name, Strings...>::value].value;
   }
 
+  /**
+   * @brief Returns the value to a specific variable
+   * @tparam Name The name needs to be an element of Strings...
+   * @return double The value of Name
+   */
   template <std::string_view const& Name>
   double value() const {
     return this->_entries[LVarObject<Strings...>::Index<Name, Strings...>::value].value;
   }
 
+  /**
+   * @brief Writes all values to the simulator
+   */
   void writeValues() {
     for (const auto& entry : std::as_const(this->_entries)) {
       set_named_variable_value(entry.variableId, entry.value);

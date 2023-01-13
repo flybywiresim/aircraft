@@ -7,6 +7,13 @@
 
 namespace types {
 
+/**
+ * @brief Defines SI unit based quantities to validate SI units during compile time
+ * @tparam M Power of mass elements
+ * @tparam L Power of length elements
+ * @tparam T Power of time elements
+ * @tparam A Power of angular elements
+ */
 template <typename M, typename L, typename T, typename A>
 class Quantity {
  private:

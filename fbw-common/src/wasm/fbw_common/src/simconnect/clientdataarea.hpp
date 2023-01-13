@@ -18,6 +18,9 @@ namespace simconnect {
 
 class Connection;
 
+/**
+ * @brief Base class to describe the client data area
+ */
 class ClientDataAreaBase : public base::Changeable {
   friend Connection;
 
@@ -33,13 +36,52 @@ class ClientDataAreaBase : public base::Changeable {
 
   ClientDataAreaBase& operator=(const ClientDataAreaBase&) = delete;
 
+  bool defineClientArea(const std::string& name, std::size_t size) {
+    if (*this->_connection == 0) {
+      return false;
+    }
+
+    HRESULT result = S_OK;
+    result &= SimConnect_MapClientDataNameToID(*this->_connection, name.c_str(), this->_dataId);
+    result &= SimConnect_AddToClientDataDefinition(*this->_connection, this->_definitionId, SIMCONNECT_CLIENTDATAOFFSET_AUTO, size);
+    if (SUCCEEDED(result)) {
+      std::cout << "TERR ON ND: Defined client area: " << name << std::endl;
+    } else {
+      std::cerr << "TERR ON ND: Unable to to create client area: " << name << std::endl;
+    }
+
+    return SUCCEEDED(result);
+  }
+
+  bool allocateClientArea(bool readOnlyForOthers, std::size_t size) {
+    if (*this->_connection == 0) {
+      return false;
+    }
+
+    HRESULT result;
+    result = SimConnect_CreateClientData(
+        *this->_connection, this->_dataId, size,
+        readOnlyForOthers ? SIMCONNECT_CREATE_CLIENT_DATA_FLAG_READ_ONLY : SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
+    return SUCCEEDED(result);
+  }
+
   virtual void receivedData(void* data) = 0;
 
  public:
   virtual ~ClientDataAreaBase() override {}
 
+  /**
+   * @brief Set the Always Changes flag
+   * @param alwaysChanges True if the OnChange callback has to be triggered after every client data receive
+   */
   void setAlwaysChanges(bool alwaysChanges) { this->_alwaysChanges = alwaysChanges; }
 
+  /**
+   * @brief Request a client data area with a defined period
+   * @param period The request period
+   * @return true if the the area is requested
+   * @return false if the request failed
+   */
   bool requestArea(SIMCONNECT_CLIENT_DATA_PERIOD period) {
     if (*this->_connection == 0) {
       return false;
@@ -52,6 +94,10 @@ class ClientDataAreaBase : public base::Changeable {
   }
 };
 
+/**
+ * @brief Defines the client data area of a special type
+ * @tparam T The type that is requested
+ */
 template <typename T>
 class ClientDataArea : public ClientDataAreaBase {
   friend Connection;
@@ -76,35 +122,27 @@ class ClientDataArea : public ClientDataAreaBase {
  public:
   virtual ~ClientDataArea() {}
 
-  bool defineArea(const std::string& name) {
-    if (*this->_connection == 0) {
-      return false;
-    }
+  /**
+   * @brief Defines the client data area
+   * @param name The mapping name
+   * @return true if the area is defined
+   * @return false if the definition failed
+   */
+  bool defineArea(const std::string& name) { return this->defineClientArea(name, sizeof(T)); }
 
-    HRESULT result = S_OK;
-    result &= SimConnect_MapClientDataNameToID(*this->_connection, name.c_str(), this->_dataId);
-    result &= SimConnect_AddToClientDataDefinition(*this->_connection, this->_definitionId, SIMCONNECT_CLIENTDATAOFFSET_AUTO, sizeof(T));
-    if (SUCCEEDED(result)) {
-      std::cout << "TERR ON ND: Defined client area: " << name << std::endl;
-    } else {
-      std::cerr << "TERR ON ND: Unable to to create client area: " << name << std::endl;
-    }
+  /**
+   * @brief Allocates a client data area if data needs to be sent
+   * @param readOnlyForOthers Flag if other connections are only allowed to read this area
+   * @return true if the area is alloced
+   * @return false if the allocation failed
+   */
+  bool allocateArea(bool readOnlyForOthers) { return this->allocateClientArea(readOnlyForOthers, sizeof(T)); }
 
-    return SUCCEEDED(result);
-  }
-
-  bool allocateArea(bool readOnlyForOthers) {
-    if (*this->_connection == 0) {
-      return false;
-    }
-
-    HRESULT result;
-    result = SimConnect_CreateClientData(
-        *this->_connection, this->_dataId, sizeof(T),
-        readOnlyForOthers ? SIMCONNECT_CREATE_CLIENT_DATA_FLAG_READ_ONLY : SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
-    return SUCCEEDED(result);
-  }
-
+  /**
+   * @brief Sets an area object and sends it to the receivers
+   * @return true if the are is send
+   * @return false if the setting failed
+   */
   bool setArea() {
     if (*this->_connection == 0) {
       return false;
@@ -116,11 +154,24 @@ class ClientDataArea : public ClientDataAreaBase {
     return SUCCEEDED(result);
   }
 
+  /**
+   * @brief Returns a modifiable reference to the data container
+   * @return T& Reference to the data container
+   */
   T& data() { return this->_content; }
 
+  /**
+   * @brief Returns a constant reference to the data container
+   * @return std::vector<T>& Reference to the data container
+   */
   const T& data() const { return this->_content; }
 };
 
+/**
+ * @brief Defines a buffer-based client data area (i.e. frame data of terronnd)
+ * @tparam T The element type of one entry in the buffer
+ * @tparam ChunkSize The number bytes that is used for the buffer-based communication
+ */
 template <typename T, std::size_t ChunkSize>
 class ClientDataAreaBuffered : public ClientDataAreaBase {
   friend Connection;
@@ -153,35 +204,27 @@ class ClientDataAreaBuffered : public ClientDataAreaBase {
  public:
   virtual ~ClientDataAreaBuffered() {}
 
-  bool defineArea(const std::string& name) {
-    if (*this->_connection == 0) {
-      return false;
-    }
+  /**
+   * @brief Defines the client data area
+   * @param name The mapping name
+   * @return true if the area is defined
+   * @return false if the definition failed
+   */
+  bool defineArea(const std::string& name) { return this->defineClientArea(name, ChunkSize); }
 
-    HRESULT result = S_OK;
-    result &= SimConnect_MapClientDataNameToID(*this->_connection, name.c_str(), this->_dataId);
-    result &= SimConnect_AddToClientDataDefinition(*this->_connection, this->_definitionId, SIMCONNECT_CLIENTDATAOFFSET_AUTO, ChunkSize);
-    if (SUCCEEDED(result)) {
-      std::cout << "TERR ON ND: Defined client area: " << name << std::endl;
-    } else {
-      std::cerr << "TERR ON ND: Unable to to create client area: " << name << std::endl;
-    }
+  /**
+   * @brief Allocates a client data area if data needs to be sent
+   * @param readOnlyForOthers Flag if other connections are only allowed to read this area
+   * @return true if the area is alloced
+   * @return false if the allocation failed
+   */
+  bool allocateArea(bool readOnlyForOthers) { return this->allocateClientArea(readOnlyForOthers, ChunkSize); }
 
-    return SUCCEEDED(result);
-  }
-
-  bool allocateArea(bool readOnlyForOthers) {
-    if (*this->_connection == 0) {
-      return false;
-    }
-
-    HRESULT result;
-    result = SimConnect_CreateClientData(
-        *this->_connection, this->_dataId, sizeof(T),
-        readOnlyForOthers ? SIMCONNECT_CREATE_CLIENT_DATA_FLAG_READ_ONLY : SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
-    return SUCCEEDED(result);
-  }
-
+  /**
+   * @brief Sets an area object and sends it to the receivers
+   * @return true if the are is send
+   * @return false if the setting failed
+   */
   bool setArea() {
     if (*this->_connection == 0) {
       return false;
@@ -209,14 +252,26 @@ class ClientDataAreaBuffered : public ClientDataAreaBase {
     return SUCCEEDED(result);
   }
 
+  /**
+   * @brief Reserves internal data to receive the data
+   * @param expectedByteCount Number of expected bytes in streaming cases
+   */
   void reserve(std::size_t expectedByteCount) {
     this->_expectedByteCount = expectedByteCount;
     this->_content.reserve(expectedByteCount);
     this->_receivedBytes = 0;
   }
 
+  /**
+   * @brief Returns a modifiable reference to the data container
+   * @return std::vector<T>& Reference to the data container
+   */
   std::vector<T>& data() { return this->_content; }
 
+  /**
+   * @brief Returns a constant reference to the data container
+   * @return std::vector<T>& Reference to the data container
+   */
   const std::vector<T>& data() const { return this->_content; }
 };
 

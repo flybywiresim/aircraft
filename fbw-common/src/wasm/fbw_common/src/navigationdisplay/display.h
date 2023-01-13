@@ -24,8 +24,14 @@
 
 namespace navigationdisplay {
 
+/**
+ * @brief Defines the different display sides
+ */
 enum DisplaySide { Left = 'L', Right = 'R' };
 
+/**
+ * @brief The base class for a display
+ */
 class DisplayBase {
  public:
   struct NdConfiguration {
@@ -60,6 +66,13 @@ class DisplayBase {
   void destroyImage();
 };
 
+/**
+ * @brief Template class with functionality to manage the terrain on ND data
+ * @tparam NdMinElevation Aircraft variable name to define the minimum elevation
+ * @tparam NdMinElevationMode Aircraft variable name to define the minimum elevation mode
+ * @tparam NdMaxElevation Aircraft variable name to define the maximum elevation
+ * @tparam NdMaxElevationMode Aircraft variable name to define the maximum elevation mode
+ */
 template <std::string_view const& NdMinElevation,
           std::string_view const& NdMinElevationMode,
           std::string_view const& NdMaxElevation,
@@ -77,6 +90,17 @@ class Display : public DisplayBase {
   }
 
  public:
+  /**
+   * @brief Construct a new Display object
+   *
+   * Communcation concept to the SimBridge:
+   *  - The threshold data block from the SimBridge contains the number of bytes for a frame
+   *  - The framedata is sent afterwards in chunks of SIMCONNECT_CLIENTDATA_MAX_SIZE bytes per chunk, until the frame is transmitted
+   *
+   * @param connection The connection to SimCommect
+   * @param side The display side
+   * @param context The gauge context
+   */
   Display(simconnect::Connection& connection, DisplaySide side, FsContext context) : DisplayBase(side, context), _ndThresholdData(nullptr) {
     this->_ndThresholdData = connection.lvarObject<NdMinElevation, NdMinElevationMode, NdMaxElevation, NdMaxElevationMode>();
 
@@ -114,6 +138,10 @@ class Display : public DisplayBase {
 
   Display& operator=(const Display&) = delete;
 
+  /**
+   * @brief Updates the configuration of the display and maybe resets the ND image
+   * @param config The new ND configuration instance
+   */
   void update(const DisplayBase::NdConfiguration& config) override {
     bool oldArcMode = this->_configuration.mode == NavigationDisplayArcModeId;
     bool oldRoseMode = this->_configuration.mode == NavigationDisplayRoseLsModeId ||
@@ -132,6 +160,9 @@ class Display : public DisplayBase {
   }
 };
 
+/**
+ * @brief Specialization of the display for the left side
+ */
 class DisplayLeft : public Display<NdLeftMinElevation, NdLeftMinElevationMode, NdLeftMaxElevation, NdLeftMaxElevationMode> {
  public:
   DisplayLeft(simconnect::Connection& connection, FsContext context)
@@ -144,6 +175,9 @@ class DisplayLeft : public Display<NdLeftMinElevation, NdLeftMinElevationMode, N
   DisplayLeft& operator=(const DisplayLeft&) = delete;
 };
 
+/**
+ * @brief Specialization of the display for the right side
+ */
 class DisplayRight : public Display<NdRightMinElevation, NdRightMinElevationMode, NdRightMaxElevation, NdRightMaxElevationMode> {
  public:
   DisplayRight(simconnect::Connection& connection, FsContext context)

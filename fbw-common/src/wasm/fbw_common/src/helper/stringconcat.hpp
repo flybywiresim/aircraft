@@ -5,6 +5,10 @@
 
 namespace helper {
 
+/**
+ * @brief Helper structure to concatenate string_views during compile time to one string_view
+ * @tparam Strings The concatable string_views
+ */
 template <std::string_view const&... Strings>
 struct StringConcat {
   static constexpr auto impl() {
