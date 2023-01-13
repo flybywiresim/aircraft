@@ -7,6 +7,7 @@ use crate::{
     simulation::{SimulationElement, SimulationElementVisitor},
 };
 
+pub mod engine_wing_flex;
 pub mod leap_engine;
 
 pub trait Engine: EngineCorrectedN2 + EngineUncorrectedN2 + EngineCorrectedN1 {
