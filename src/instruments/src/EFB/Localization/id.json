@@ -560,6 +560,7 @@
       "Off": "Mati",
       "Save": "Simpan",
       "Side": "Side",
+      "SimBridgeIp": "External SimBridge IP",
       "SimBridgePort": "Port Server MCDU Eksternal",
       "SyncMsfsFlightPlan": "Sinkronkan dengan Flight Plan MSFS",
       "ThrottleDetents": "Penahan Throttle",

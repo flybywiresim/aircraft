@@ -560,6 +560,7 @@
       "Off": "إيقاف",
       "Save": "حفظ",
       "Side": "Side",
+      "SimBridgeIp": "External SimBridge IP",
       "SimBridgePort": "منفذ خادم MCDU خارجي",
       "SyncMsfsFlightPlan": "مزامنة خطة رحلة MSFS",
       "ThrottleDetents": "محددات دفة تحكم النفاث ",

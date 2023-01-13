@@ -560,6 +560,7 @@
       "Off": "关",
       "Save": "保存",
       "Side": "Side",
+      "SimBridgeIp": "External SimBridge IP",
       "SimBridgePort": "MCDU 服务器端口",
       "SyncMsfsFlightPlan": "同步 MSFS 内飞行计划",
       "ThrottleDetents": "油门卡位",

@@ -560,6 +560,7 @@
       "Off": "Aus",
       "Save": "Zurückspeichern bei Änderung",
       "Side": "Seite",
+      "SimBridgeIp": "Externe SimBridge IP",
       "SimBridgePort": "Externer SimBridge-Port",
       "SyncMsfsFlightPlan": "MSFS-Flugplan-Synchronisation",
       "ThrottleDetents": "Schubhebelkalibrierung",

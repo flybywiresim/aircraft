@@ -560,6 +560,7 @@
       "Off": "Kapalı",
       "Save": "Kaydet",
       "Side": "Side",
+      "SimBridgeIp": "External SimBridge IP",
       "SimBridgePort": "Harici SimBridge Bağlantı Noktası",
       "SyncMsfsFlightPlan": "MSFS Uçuş Planını Eşitle",
       "ThrottleDetents": "Gaz Mandalları",

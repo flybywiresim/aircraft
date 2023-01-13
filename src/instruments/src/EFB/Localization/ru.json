@@ -560,6 +560,7 @@
       "Off": "Откл.",
       "Save": "Сохранить",
       "Side": "Side",
+      "SimBridgeIp": "External SimBridge IP",
       "SimBridgePort": "Порт внешнего сервера MCDU",
       "SyncMsfsFlightPlan": "Синхронизировать план полета MSFS",
       "ThrottleDetents": "Защелки рычагов",

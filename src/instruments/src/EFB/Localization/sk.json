@@ -560,6 +560,7 @@
       "Off": "Vypnuté",
       "Save": "Uložiť",
       "Side": "Side",
+      "SimBridgeIp": "External SimBridge IP",
       "SimBridgePort": "Externý port servera MCDU",
       "SyncMsfsFlightPlan": "Synchronizácia letového plánu MSFS",
       "ThrottleDetents": "Detenty škrtiacej klapky",

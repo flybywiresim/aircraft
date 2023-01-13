@@ -560,6 +560,7 @@
       "Off": "Uit",
       "Save": "Opslaan",
       "Side": "Side",
+      "SimBridgeIp": "External SimBridge IP",
       "SimBridgePort": "Externe MCDU Serverpoort",
       "SyncMsfsFlightPlan": "MSFS-vluchtplan synchroniseren",
       "ThrottleDetents": "Throttle Detents",

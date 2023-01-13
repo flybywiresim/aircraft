@@ -560,6 +560,7 @@
       "Off": "Dezactivată",
       "Save": "Salvează",
       "Side": "Side",
+      "SimBridgeIp": "External SimBridge IP",
       "SimBridgePort": "Poartă exterioară server MCDU",
       "SyncMsfsFlightPlan": "Sincronizare plan de zbor MSFS",
       "ThrottleDetents": "Senzori accelerație",

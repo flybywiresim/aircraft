@@ -560,6 +560,7 @@
       "Off": "Wył.",
       "Save": "Tak",
       "Side": "Side",
+      "SimBridgeIp": "External SimBridge IP",
       "SimBridgePort": "Port Serwera MCDU",
       "SyncMsfsFlightPlan": "Synchronizacja Planu Lotu z MSFS",
       "ThrottleDetents": "Kalibracja Przepustnic",

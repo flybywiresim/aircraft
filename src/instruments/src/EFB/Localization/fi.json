@@ -560,6 +560,7 @@
       "Off": "Pois päältä",
       "Save": "Tallenna",
       "Side": "Puoli",
+      "SimBridgeIp": "External SimBridge IP",
       "SimBridgePort": "Ulkoinen SimBridge palvelinyhteys",
       "SyncMsfsFlightPlan": "Synkronoi MSFS lentosuunnitelma",
       "ThrottleDetents": "Kaasupykälät",

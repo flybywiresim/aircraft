@@ -560,6 +560,7 @@
       "Off": "Av",
       "Save": "Lagre",
       "Side": "Side",
+      "SimBridgeIp": "External SimBridge IP",
       "SimBridgePort": "Ekstern SimBridge-port",
       "SyncMsfsFlightPlan": "Synkroniser MSFS-flyplan",
       "ThrottleDetents": "Gassperrer",

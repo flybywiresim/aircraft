@@ -560,6 +560,7 @@
       "Off": "Απενεργοποιημένο",
       "Save": "Αποθήκευση",
       "Side": "Side",
+      "SimBridgeIp": "External SimBridge IP",
       "SimBridgePort": "Εξωτερική Θύρα Διακομιστή MCDU",
       "SyncMsfsFlightPlan": "Συγχρονισμός του Σχεδίου Πτήσεως MSFS",
       "ThrottleDetents": "Αναστολέας Γκαζιού",

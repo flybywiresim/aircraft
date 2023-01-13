@@ -466,7 +466,7 @@
       "PowerButton": "電源を切る",
       "Settings": "flyPadの設定ページに移動",
       "SimBridge": "SimBridge接続の制御",
-      "Sleep": "スタンバイ"
+      "Sleep": "スリープ"
     },
     "Title": "クイックコントロール"
   },
@@ -560,6 +560,7 @@
       "Off": "オフ",
       "Save": "保存",
       "Side": "Side",
+      "SimBridgeIp": "External SimBridge IP",
       "SimBridgePort": "外部SimBridgeサーバーポート",
       "SyncMsfsFlightPlan": "MSFSのフライトプランと同期",
       "ThrottleDetents": "スロットルディテント",

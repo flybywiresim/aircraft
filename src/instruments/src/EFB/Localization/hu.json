@@ -560,6 +560,7 @@
       "Off": "Ki",
       "Save": "Mentés",
       "Side": "Side",
+      "SimBridgeIp": "External SimBridge IP",
       "SimBridgePort": "Külső SimBridge port",
       "SyncMsfsFlightPlan": "MSFS Repülési terv szinkronizálása",
       "ThrottleDetents": "Gázkar állások",

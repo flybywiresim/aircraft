@@ -560,6 +560,7 @@
       "Off": "Desativado",
       "Save": "Salvar",
       "Side": "Side",
+      "SimBridgeIp": "External SimBridge IP",
       "SimBridgePort": "Porta SimBridge externa",
       "SyncMsfsFlightPlan": "Sincronizar plano de voo do MSFS",
       "ThrottleDetents": "Retentores da Manete",

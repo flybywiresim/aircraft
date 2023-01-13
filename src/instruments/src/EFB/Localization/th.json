@@ -560,6 +560,7 @@
       "Off": "ปิด",
       "Save": "บันทึก",
       "Side": "Side",
+      "SimBridgeIp": "External SimBridge IP",
       "SimBridgePort": "พอร์ต SimBridge ภายนอก",
       "SyncMsfsFlightPlan": "ซิงค์แผนการบิน MSFS",
       "ThrottleDetents": "Throttle Detents",

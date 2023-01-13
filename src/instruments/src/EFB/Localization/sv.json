@@ -560,6 +560,7 @@
       "Off": "Av",
       "Save": "Spara",
       "Side": "Side",
+      "SimBridgeIp": "Extern SimBridge IP",
       "SimBridgePort": "Extern SimBridge-port",
       "SyncMsfsFlightPlan": "Synkronisera MSFS-färdplan",
       "ThrottleDetents": "Kalibrering av tryckspaken",
