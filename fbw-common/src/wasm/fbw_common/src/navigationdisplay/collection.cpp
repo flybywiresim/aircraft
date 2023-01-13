@@ -8,6 +8,7 @@ Collection::Collection(simconnect::Connection& connection)
       _egpwcData(),
       _configurationLeft(),
       _configurationRight(),
+      _lastAircraftStatusTransmission(),
       _sendAircraftStatus(false),
       _reconfigureDisplayLeft(false),
       _reconfigureDisplayRight(false),
@@ -97,7 +98,12 @@ void Collection::destroy() {
 }
 
 void Collection::updateDisplay(FsContext context) {
-  if (this->_sendAircraftStatus) {
+  const auto now = std::chrono::system_clock::now();
+  const auto dt =
+      static_cast<float>(std::chrono::duration_cast<std::chrono::milliseconds>(now - this->_lastAircraftStatusTransmission).count()) *
+      types::millisecond;
+
+  if (this->_sendAircraftStatus && dt >= 100 * types::millisecond) {
     this->_simconnectAircraftStatus->data().adiruValid = this->_egpwcData.presentLatitude.isNo() &&
                                                          this->_egpwcData.presentLongitude.isNo() && this->_egpwcData.altitude.isNo() &&
                                                          this->_egpwcData.heading.isNo() && this->_egpwcData.verticalSpeed.isNo();
@@ -137,6 +143,7 @@ void Collection::updateDisplay(FsContext context) {
     this->_simconnectAircraftStatus->data().groundTruthLongitude = this->_groundTruth.longitude.convert(types::degree);
 
     this->_simconnectAircraftStatus->setArea();
+    this->_lastAircraftStatusTransmission = now;
     this->_sendAircraftStatus = false;
   }
 

@@ -36,6 +36,7 @@ class Collection {
   EgpwcData _egpwcData;
   DisplayBase::NdConfiguration _configurationLeft;
   DisplayBase::NdConfiguration _configurationRight;
+  std::chrono::system_clock::time_point _lastAircraftStatusTransmission;
   bool _sendAircraftStatus;
   bool _reconfigureDisplayLeft;
   bool _reconfigureDisplayRight;
