@@ -3,15 +3,7 @@
 using namespace navigationdisplay;
 
 DisplayBase::DisplayBase(DisplaySide side, FsContext context)
-    : _side(side),
-      _configuration(),
-      _frameBuffer(),
-      _frameBufferSize(0),
-      _receivedFrameData(0),
-      _nanovgImage(0),
-      _context(nullptr),
-      _thresholds(nullptr),
-      _frameData(nullptr) {
+    : _side(side), _configuration(), _frameBufferSize(0), _nanovgImage(0), _context(nullptr), _thresholds(nullptr), _frameData(nullptr) {
   NVGparams params;
   params.userPtr = context;
   params.edgeAntiAlias = false;

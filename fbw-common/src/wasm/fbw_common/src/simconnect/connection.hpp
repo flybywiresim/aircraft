@@ -61,6 +61,15 @@ class Connection {
     return std::dynamic_pointer_cast<ClientDataArea<T>>(newArea);
   }
 
+  template <typename T, std::size_t ChunkSize>
+  std::shared_ptr<ClientDataAreaBuffered<T, ChunkSize>> clientDataArea() {
+    const auto clientDataId = this->_lastClientDataId++;
+    auto newArea = std::shared_ptr<ClientDataAreaBase>(
+        new ClientDataAreaBuffered<T, ChunkSize>(&this->_connection, clientDataId, this->_lastClientDataDefinitionId++));
+    this->_clientDataAreas.insert({clientDataId, newArea});
+    return std::dynamic_pointer_cast<ClientDataAreaBuffered<T, ChunkSize>>(newArea);
+  }
+
   template <std::string_view const&... Strings>
   std::shared_ptr<LVarObject<Strings...>> lvarObject() {
     auto newObject = std::shared_ptr<LVarObjectBase>(new LVarObject<Strings...>());

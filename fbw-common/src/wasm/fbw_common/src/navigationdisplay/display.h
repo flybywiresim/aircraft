@@ -49,13 +49,11 @@ class DisplayBase {
  protected:
   DisplaySide _side;
   NdConfiguration _configuration;
-  std::vector<std::uint8_t> _frameBuffer;
   std::size_t _frameBufferSize;
-  std::size_t _receivedFrameData;
   int _nanovgImage;
   NVGcontext* _context;
   std::shared_ptr<simconnect::ClientDataArea<types::ThresholdData>> _thresholds;
-  std::shared_ptr<simconnect::ClientDataArea<types::FrameData>> _frameData;
+  std::shared_ptr<simconnect::ClientDataAreaBuffered<std::uint8_t, SIMCONNECT_CLIENTDATA_MAX_SIZE>> _frameData;
 
   DisplayBase(DisplaySide side, FsContext context);
 
@@ -85,44 +83,30 @@ class Display : public DisplayBase {
     // write initial values to avoid invalid drawings
     this->resetNavigationDisplayData();
 
+    this->_frameData = connection.clientDataArea<std::uint8_t, SIMCONNECT_CLIENTDATA_MAX_SIZE>();
+    this->_frameData->defineArea(side == DisplaySide::Left ? FrameDataLeftName : FrameDataRightName);
+    this->_frameData->requestArea(SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET);
+    this->_frameData->setOnChangeCallback([=]() {
+      this->destroyImage();
+      this->_nanovgImage = nvgCreateImageMem(this->_context, 0, this->_frameData->data().data(), static_cast<int>(this->_frameBufferSize));
+      if (this->_nanovgImage == 0) {
+        std::cerr << "TERR ON ND: Unable to decode the image from the stream" << std::endl;
+      }
+    });
+
     this->_thresholds = connection.clientDataArea<types::ThresholdData>();
     this->_thresholds->defineArea(side == DisplaySide::Left ? ThresholdsLeftName : ThresholdsRightName);
     this->_thresholds->requestArea(SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET);
     this->_thresholds->setAlwaysChanges(true);
     this->_thresholds->setOnChangeCallback([=]() {
       this->_frameBufferSize = this->_thresholds->data().frameByteCount;
-      this->_frameBuffer.reserve(this->_frameBufferSize);
-      this->_receivedFrameData = 0;
+      this->_frameData->reserve(this->_frameBufferSize);
 
       this->_ndThresholdData->template value<NdMinElevation>() = this->_thresholds->data().lowerThreshold;
       this->_ndThresholdData->template value<NdMinElevationMode>() = this->_thresholds->data().lowerThresholdMode;
       this->_ndThresholdData->template value<NdMaxElevation>() = this->_thresholds->data().upperThreshold;
       this->_ndThresholdData->template value<NdMaxElevationMode>() = this->_thresholds->data().upperThresholdMode;
       this->_ndThresholdData->writeValues();
-    });
-
-    this->_frameData = connection.clientDataArea<types::FrameData>();
-    this->_frameData->defineArea(side == DisplaySide::Left ? FrameDataLeftName : FrameDataRightName);
-    this->_frameData->requestArea(SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET);
-    this->_frameData->setAlwaysChanges(true);
-    this->_frameData->setOnChangeCallback([=]() {
-      std::size_t copySize = this->_frameBufferSize - this->_receivedFrameData;
-      if (copySize > SIMCONNECT_CLIENTDATA_MAX_SIZE) {
-        copySize = SIMCONNECT_CLIENTDATA_MAX_SIZE;
-      }
-
-      if (this->_frameBuffer.capacity() >= this->_receivedFrameData + copySize) {
-        std::memcpy(&(this->_frameBuffer.data()[this->_receivedFrameData]), &this->_frameData->data().data, copySize);
-        this->_receivedFrameData += copySize;
-      }
-
-      if (this->_receivedFrameData >= this->_frameBufferSize && this->_context != nullptr) {
-        this->destroyImage();
-        this->_nanovgImage = nvgCreateImageMem(this->_context, 0, this->_frameBuffer.data(), static_cast<int>(this->_frameBufferSize));
-        if (this->_nanovgImage == 0) {
-          std::cerr << "TERR ON ND: Unable to decode the image from the stream" << std::endl;
-        }
-      }
     });
   }
   Display(const Display&) = delete;
