@@ -43,6 +43,17 @@ export class Datalink {
 
         setInterval(() => {
             if (this.waitedComUpdate <= 30000) {
+                atsu.digitalOutputs.FmsBus.sendDatalinkCommunicationStatus(
+                    this.vhfDatalinkStatus(),
+                    this.satcomDatalinkStatus(),
+                    this.hfDatalinkStatus(),
+                );
+                atsu.digitalOutputs.FmsBus.sendDatalinkCommunicationMode(
+                    this.vhfDatalinkMode(),
+                    this.satcomDatalinkMode(),
+                    this.hfDatalinkMode(),
+                );
+
                 this.vdl.simulateTransmissionTimes(atsu.flightPhase());
                 this.waitedComUpdate = 0;
             } else {

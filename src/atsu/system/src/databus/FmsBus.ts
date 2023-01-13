@@ -2,7 +2,7 @@ import { AtsuStatusCodes } from '@atsu/common/AtsuStatusCodes';
 import { AtsuFmsMessages, FmsAtsuMessages, FmsRouteData } from '@atsu/common/databus';
 import { FansMode } from '@atsu/common/index';
 import { AtisMessage, AtisType, AtsuMessage, AtsuMessageType, Conversion, CpdlcMessage, DclMessage, FreetextMessage, OclMessage, WeatherMessage } from '@atsu/common/messages';
-import { PositionReportData } from '@atsu/common/types';
+import { DatalinkModeCode, DatalinkStatusCode, PositionReportData } from '@atsu/common/types';
 import { EventBus, EventSubscriber, Publisher } from 'msfssdk';
 
 export type FmsBusCallbacks = {
@@ -238,5 +238,13 @@ export class FmsOutputBus {
         } else {
             this.publisher.pub('resynchronizeCpdlcMessage', message, true, false);
         }
+    }
+
+    public sendDatalinkCommunicationStatus(vhf: DatalinkStatusCode, satellite: DatalinkStatusCode, hf: DatalinkStatusCode): void {
+        this.publisher.pub('datalinkCommunicationStatus', { vhf, satellite, hf }, true, false);
+    }
+
+    public sendDatalinkCommunicationMode(vhf: DatalinkModeCode, satellite: DatalinkModeCode, hf: DatalinkModeCode): void {
+        this.publisher.pub('datalinkCommunicationMode', { vhf, satellite, hf }, true, false);
     }
 }
