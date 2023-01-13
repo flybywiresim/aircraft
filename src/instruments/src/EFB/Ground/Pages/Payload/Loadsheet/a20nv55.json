@@ -291,7 +291,6 @@
             "stationIndex": 1,
             "position": 20.0,
             "fill": 0.19,
-            "simVar": "A32NX_PAX_TOTAL_ROWS_1_6",
             "bitFlags": "A32NX_PAX_FLAGS_A"
         },
         {
@@ -611,7 +610,6 @@
             "stationIndex": 2,
             "position": 0.9,
             "fill": 0.25,
-            "simVar": "A32NX_PAX_TOTAL_ROWS_7_13",
             "bitFlags": "A32NX_PAX_FLAGS_B"
         },
         {
@@ -975,7 +973,6 @@
             "stationIndex": 3,
             "position": -17.3,
             "fill": 0.28,
-            "simVar": "A32NX_PAX_TOTAL_ROWS_14_21",
             "bitFlags": "A32NX_PAX_FLAGS_C"
         },
         {
@@ -1339,7 +1336,6 @@
             "index": 3,
             "stationIndex": 4,
             "position": -36.3,
-            "simVar": "A32NX_PAX_TOTAL_ROWS_22_29",
             "bitFlags": "A32NX_PAX_FLAGS_D"
         }
     ],

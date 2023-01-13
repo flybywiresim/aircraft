@@ -527,7 +527,6 @@ class EngineControl {
   /// Updates Engine N1 and N2 with our own algorithm for start-up and shutdown
   /// </summary>
   void updatePrimaryParameters(int engine, double simN1, double simN2) {
-
     if (engine == 1) {
       simVars->setEngine1N1(simN1);
       simVars->setEngine1N2(simN2);
@@ -749,6 +748,15 @@ class EngineControl {
     }
   }
 
+  int getStationCount(int paxStationFlags) {
+    int count = 0;
+    while (paxStationFlags) {
+      count += paxStationFlags & 1;
+      paxStationFlags >>= 1;
+    }
+    return count;
+  }
+
   /// <summary>
   /// FBW Payload checking and UI override function
   /// </summary>
@@ -756,41 +764,30 @@ class EngineControl {
     double fuelWeightGallon = simVars->getFuelWeightGallon();
     double aircraftEmptyWeight = simVars->getEmptyWeight();  // in LBS
     double conversionFactor = simVars->getConversionFactor();
-    double perPaxWeightLbs = simVars->getPerPaxWeight() / conversionFactor;                   // in LBS
-    double aircraftTotalWeight = simVars->getTotalWeight();                                   // in LBS
-    double fuelTotalWeight = simVars->getFuelTotalQuantity() * fuelWeightGallon;              // in LBS
-    double payloadTotalWeight = aircraftTotalWeight - aircraftEmptyWeight - fuelTotalWeight;  // in LBS
-
-    double paxRows1to6Actual = simVars->getPaxRows1to6Actual() * perPaxWeightLbs;                 // in LBS
-    double paxRows7to13Actual = simVars->getPaxRows7to13Actual() * perPaxWeightLbs;               // in LBS
-    double paxRows14to21Actual = simVars->getPaxRows14to21Actual() * perPaxWeightLbs;             // in LBS
-    double paxRows22to29Actual = simVars->getPaxRows22to29Actual() * perPaxWeightLbs;             // in LBS
-    double paxRows1to6Desired = simVars->getPaxRows1to6Desired() * perPaxWeightLbs;               // in LBS
-    double paxRows7to13Desired = simVars->getPaxRows7to13Desired() * perPaxWeightLbs;             // in LBS
-    double paxRows14to21Desired = simVars->getPaxRows14to21Desired() * perPaxWeightLbs;           // in LBS
-    double paxRows22to29Desired = simVars->getPaxRows22to29Desired() * perPaxWeightLbs;           // in LBS
-    double cargoFwdContainerActual = simVars->getCargoFwdContainerActual() / conversionFactor;    // in LBS
-    double cargoAftContainerActual = simVars->getCargoAftContainerActual() / conversionFactor;    // in LBS
-    double cargoAftBaggageActual = simVars->getCargoAftBaggageActual() / conversionFactor;        // in LBS
-    double cargoAftBulkActual = simVars->getCargoAftBulkActual() / conversionFactor;              // in LBS
-    double cargoFwdContainerDesired = simVars->getCargoFwdContainerDesired() / conversionFactor;  // in LBS
-    double cargoAftContainerDesired = simVars->getCargoAftContainerDesired() / conversionFactor;  // in LBS
-    double cargoAftBaggageDesired = simVars->getCargoAftBaggageDesired() / conversionFactor;      // in LBS
-    double cargoAftBulkDesired = simVars->getCargoAftBulkDesired() / conversionFactor;            // in LBS
-    double paxTotalWeightActual = (paxRows1to6Actual + paxRows7to13Actual + paxRows14to21Actual + paxRows22to29Actual);
-    double paxTotalWeightDesired = (paxRows1to6Desired + paxRows7to13Desired + paxRows14to21Desired + paxRows22to29Desired);
+    double perPaxWeightLbs = simVars->getPerPaxWeight() / conversionFactor;                             // in LBS
+    double aircraftTotalWeight = simVars->getTotalWeight();                                             // in LBS
+    double fuelTotalWeight = simVars->getFuelTotalQuantity() * fuelWeightGallon;                        // in LBS
+    double payloadTotalWeight = aircraftTotalWeight - aircraftEmptyWeight - fuelTotalWeight;            // in LBS
+    double paxStationAWeight = getStationCount((int)simVars->getPaxStationAFlags()) * perPaxWeightLbs;  // in LBS
+    double paxStationBWeight = getStationCount((int)simVars->getPaxStationBFlags()) * perPaxWeightLbs;  // in LBS
+    double paxStationCWeight = getStationCount((int)simVars->getPaxStationCFlags()) * perPaxWeightLbs;  // in LBS
+    double paxStationDWeight = getStationCount((int)simVars->getPaxStationDFlags()) * perPaxWeightLbs;  // in LBS
+    double cargoFwdContainerActual = simVars->getCargoFwdContainerActual() / conversionFactor;          // in LBS
+    double cargoAftContainerActual = simVars->getCargoAftContainerActual() / conversionFactor;          // in LBS
+    double cargoAftBaggageActual = simVars->getCargoAftBaggageActual() / conversionFactor;              // in LBS
+    double cargoAftBulkActual = simVars->getCargoAftBulkActual() / conversionFactor;                    // in LBS
+    double paxTotalWeightActual = (paxStationAWeight + paxStationBWeight + paxStationCWeight + paxStationDWeight);
     double cargoTotalWeightActual = (cargoFwdContainerActual + cargoAftContainerActual + cargoAftBaggageActual + cargoAftBulkActual);
-    double cargoTotalWeightDesired = (cargoFwdContainerDesired + cargoAftContainerDesired + cargoAftBaggageDesired + cargoAftBulkDesired);
 
     if (abs(payloadTotalWeight - paxTotalWeightActual + cargoTotalWeightActual) > 5) {
       SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::PayloadStation1, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
-                                    &paxRows1to6Actual);
+                                    &paxStationAWeight);
       SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::PayloadStation2, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
-                                    &paxRows7to13Actual);
+                                    &paxStationBWeight);
       SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::PayloadStation3, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
-                                    &paxRows14to21Actual);
+                                    &paxStationCWeight);
       SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::PayloadStation4, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
-                                    &paxRows22to29Actual);
+                                    &paxStationDWeight);
       SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::PayloadStation5, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
                                     &cargoFwdContainerActual);
       SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::PayloadStation6, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
@@ -832,10 +829,10 @@ class EngineControl {
     double engine4FF = simVars->getEngine4FF();        // KG/H
 
     double fuelWeightGallon = simVars->getFuelWeightGallon();
-    double fuelUsedEngine1 = simVars->getFuelUsedEngine1();    // Kg
+    double fuelUsedEngine1 = simVars->getFuelUsedEngine1();  // Kg
     double fuelUsedEngine2 = simVars->getFuelUsedEngine2();  // Kg
-    double fuelUsedEngine3 = simVars->getFuelUsedEngine3();    // Kg
-    double fuelUsedEngine4 = simVars->getFuelUsedEngine4();    // Kg
+    double fuelUsedEngine3 = simVars->getFuelUsedEngine3();  // Kg
+    double fuelUsedEngine4 = simVars->getFuelUsedEngine4();  // Kg
 
     double fuelLeftPre = simVars->getFuelLeftPre();                                   // LBS
     double fuelRightPre = simVars->getFuelRightPre();                                 // LBS
@@ -1096,7 +1093,7 @@ class EngineControl {
         fuelBurn3 = 0;
         fuelBurn4 = 0;
       }
-      fuelLeft = (fuelLeftPre - (fuelBurn1 * KGS_TO_LBS) - (fuelBurn2 * KGS_TO_LBS)) + xfrAuxLeft + (xfrCenter / 2);  // LBS
+      fuelLeft = (fuelLeftPre - (fuelBurn1 * KGS_TO_LBS) - (fuelBurn2 * KGS_TO_LBS)) + xfrAuxLeft + (xfrCenter / 2);     // LBS
       fuelRight = (fuelRightPre - (fuelBurn3 * KGS_TO_LBS) - (fuelBurn4 * KGS_TO_LBS)) + xfrAuxRight + (xfrCenter / 2);  // LBS
 
       // Checking for Inner Tank overflow - Will be taken off with Rust code
@@ -1119,10 +1116,10 @@ class EngineControl {
       simVars->setEngine2PreFF(engine2FF);
       simVars->setEngine3PreFF(engine3FF);
       simVars->setEngine4PreFF(engine4FF);
-      simVars->setFuelUsedEngine1(fuelUsedEngine1);       // in KG
-      simVars->setFuelUsedEngine2(fuelUsedEngine2);       // in KG
-      simVars->setFuelUsedEngine3(fuelUsedEngine3);       // in KG
-      simVars->setFuelUsedEngine4(fuelUsedEngine4);       // in KG
+      simVars->setFuelUsedEngine1(fuelUsedEngine1);   // in KG
+      simVars->setFuelUsedEngine2(fuelUsedEngine2);   // in KG
+      simVars->setFuelUsedEngine3(fuelUsedEngine3);   // in KG
+      simVars->setFuelUsedEngine4(fuelUsedEngine4);   // in KG
       simVars->setFuelAuxLeftPre(leftAuxQuantity);    // in LBS
       simVars->setFuelAuxRightPre(rightAuxQuantity);  // in LBS
       simVars->setFuelCenterPre(fuelCenter);          // in LBS
@@ -1439,7 +1436,6 @@ class EngineControl {
         simN2Engine4Pre = simN2;
         timer = simVars->getEngine4Timer();
       }
-
 
       switch (int(engineState)) {
         case 2:
