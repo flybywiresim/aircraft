@@ -524,10 +524,20 @@ mod cabin_air_tests {
             self
         }
 
-        fn passengers(mut self, passengers: u8) -> Self {
-            self.write_by_name(&format!("PAX_TOTAL_ROWS_{}_{}", 1, 6), passengers / 2);
-            self.write_by_name(&format!("PAX_TOTAL_ROWS_{}_{}", 7, 13), passengers / 2);
-            self.command(|a| a.set_passengers(passengers));
+        fn passengers(mut self, pax_quantity: u8) -> Self {
+            let mut pax_flag_a: u64 = 0;
+            let mut pax_flag_b: u64 = 0;
+            let station_quantity_a = pax_quantity / 2 + pax_quantity % 2;
+            let station_quantity_b = pax_quantity / 2;
+            for b in 0..station_quantity_a {
+                pax_flag_a ^= 1 << b;
+            }
+            for b in 0..station_quantity_b {
+                pax_flag_b ^= 1 << b;
+            }
+            self.write_by_name("PAX_FLAGS_A", pax_flag_a);
+            self.write_by_name("PAX_FLAGS_B", pax_flag_b);
+            self.command(|a| a.set_passengers(pax_quantity));
             self
         }
 
