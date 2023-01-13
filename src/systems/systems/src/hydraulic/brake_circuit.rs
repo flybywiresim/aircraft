@@ -158,6 +158,7 @@ impl BrakeCircuit {
     const ACCUMULATOR_GAS_FAILURE_LEAKING_GRADIENT_PSI_PER_S: f64 = 50.;
 
     const BRAKE_LEAK_FAILURE_LEAKING_FLOW_GAL_PER_S: f64 = 0.1;
+    const ACCUMULATOR_GAS_FAILURE_MIN_ALLOWED_PRESSURE_PSI: f64 = 50.;
 
     pub fn new(
         context: &mut InitContext,
@@ -272,7 +273,9 @@ impl BrakeCircuit {
                             context.delta_as_secs_f64()
                                 * Self::ACCUMULATOR_GAS_FAILURE_LEAKING_GRADIENT_PSI_PER_S,
                         ))
-                    .max(Pressure::new::<psi>(50.));
+                    .max(Pressure::new::<psi>(
+                        Self::ACCUMULATOR_GAS_FAILURE_MIN_ALLOWED_PRESSURE_PSI,
+                    ));
 
                     accumulator.set_gas_precharge_pressure(new_pressure_after_leak);
                 }
@@ -583,7 +586,9 @@ impl BrakeAccumulatorCharacteristics {
     // 1/20 would mean standard deviation is "full accumulator volume / 20"
     const STANDARD_DEVIATION_RATIO_FROM_FULL_INIT_VOLUME: f64 = 1. / 20.;
 
-    const STANDARD_DEVIATION_FOR_GAS_PRE_CHARGE_DISTRIBUTION_PSI: f64 = 20.;
+    // Real accumulator is considered ok if +/- 50psi from charts
+    // 16 psi std dev would give 99.7% of values inside those 50 expected psi according to normal distribution
+    const STANDARD_DEVIATION_FOR_GAS_PRE_CHARGE_DISTRIBUTION_PSI: f64 = 16.;
 
     pub fn new(
         total_volume: Volume,
