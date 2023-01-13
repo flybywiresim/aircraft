@@ -4114,6 +4114,16 @@
             <CameraTitle>ECAM</CameraTitle>
         </Component>
 
+        <!-- CABIN INTERACTION DATA SYS -->
+        <Component ID="Airbus_CIDS">
+            <UseTemplate Name="ASOBO_GT_Update">
+                <FREQUENCY>1</FREQUENCY>
+                <UPDATE_CODE>
+                    (L:A32NX_ELEC_DC_GND_FLT_SVC_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool) or (&gt;L:A32NX_CIDS_IS_POWERED)
+                </UPDATE_CODE>
+            </UseTemplate>
+        </Component>
+
         <Component ID="Airbus_FDW">
             <DefaultTemplateParameters>
                 <POTENTIOMETER>85</POTENTIOMETER>
