@@ -130,13 +130,11 @@ impl EnhancedGPWC {
         self.update_position_data(adirs_output);
         self.gear_is_down = lgcius.lgciu1().main_down_and_locked();
 
-        self.navigation_displays
-            .iter_mut()
-            .for_each(|display| {
-                display.update(
-                    &self.navigation_display_range_lookup,
-                    adirs_output.is_fully_aligned(1),
-                )
+        self.navigation_displays.iter_mut().for_each(|display| {
+            display.update(
+                &self.navigation_display_range_lookup,
+                adirs_output.is_fully_aligned(1),
+            )
         });
     }
 }

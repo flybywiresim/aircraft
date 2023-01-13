@@ -1,8 +1,6 @@
-use crate::{
-    simulation::{
-        InitContext, Read, SimulationElement, SimulatorReader, SimulatorWriter, VariableIdentifier,
-        Write,
-    },
+use crate::simulation::{
+    InitContext, Read, SimulationElement, SimulatorReader, SimulatorWriter, VariableIdentifier,
+    Write,
 };
 use std::vec::Vec;
 use uom::si::{
