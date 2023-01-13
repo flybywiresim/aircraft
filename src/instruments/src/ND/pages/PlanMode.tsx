@@ -2,6 +2,7 @@ import React, { FC, memo, useEffect, useState } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { EfisSide, NdSymbol } from '@shared/NavigationDisplay';
+import { useArinc429Var } from '@instruments/common/arinc429';
 import { CrossTrack } from '../elements/CrossTrack';
 import { ToWaypointIndicator } from '../elements/ToWaypointIndicator';
 import { FlightPlan } from '../elements/FlightPlan';
@@ -19,14 +20,19 @@ export interface PlanModeProps {
 export const PlanMode: FC<PlanModeProps> = ({ side, symbols, adirsAlign, rangeSetting, ppos, mapHidden }) => {
     const [planCentreLat] = useSimVar('L:A32NX_SELECTED_WAYPOINT_LAT', 'Degrees');
     const [planCentreLong] = useSimVar('L:A32NX_SELECTED_WAYPOINT_LONG', 'Degrees');
-
-    const [trueHeading] = useSimVar('PLANE HEADING DEGREES TRUE', 'degrees');
-
+    const trueHeading = useArinc429Var('L:A32NX_ADIRS_IR_1_TRUE_HEADING');
+    const irMaint = useArinc429Var('L:A32NX_ADIRS_IR_1_MAINT_WORD');
+    const [trueRefPb] = useSimVar('L:A32NX_PUSH_TRUE_REF', 'bool');
+    const [trueRef, setTrueRef] = useState(false);
     const [mapParams] = useState<MapParameters>(new MapParameters());
 
     useEffect(() => {
         mapParams.compute({ lat: planCentreLat, long: planCentreLong }, rangeSetting / 2, 250, 0);
     }, [planCentreLat, planCentreLong, rangeSetting]);
+
+    useEffect(() => {
+        setTrueRef((irMaint.getBitValueOr(15, false) || trueRefPb) && !irMaint.getBitValueOr(2, false));
+    }, [irMaint.value, trueRefPb]);
 
     return (
         <>
@@ -46,10 +52,10 @@ export const PlanMode: FC<PlanModeProps> = ({ side, symbols, adirsAlign, rangeSe
             </g>
 
             {adirsAlign && !mapHidden && mapParams.valid && (
-                <Plane location={ppos} heading={trueHeading} mapParams={mapParams} />
+                <Plane location={ppos} heading={trueHeading.value} mapParams={mapParams} />
             )}
 
-            <ToWaypointIndicator side={side} />
+            <ToWaypointIndicator side={side} trueRef={trueRef} />
 
             <CrossTrack x={44} y={690} side={side} isPlanMode />
         </>
