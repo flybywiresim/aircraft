@@ -43,6 +43,8 @@ class A32NX_Clock extends BaseInstrument {
         this.simVarPublisher.subscribe('dcHot1IsPowered');
         this.simVarPublisher.subscribe('absTime');
 
+        this.simVarPublisher.subscribe('timeOfDay');
+
         this.simVarPublisher.subscribe('currentUTC');
         this.simVarPublisher.subscribe('dayOfMonth');
         this.simVarPublisher.subscribe('monthOfYear');

@@ -5,6 +5,7 @@ export interface ClockSimvars {
     dcEssIsPowered: boolean;
     dcHot1IsPowered: boolean;
     absTime: number;
+    timeOfDay: number;
     currentUTC: number;
     dayOfMonth: number;
     monthOfYear: number;
@@ -17,6 +18,7 @@ export enum ClockVars {
     dcEssIsPowered = 'L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED',
     dcHot1IsPowered = 'L:A32NX_ELEC_DC_HOT_1_BUS_IS_POWERED',
     absTime = 'E:ABSOLUTE TIME',
+    timeOfDay = 'E:TIME OF DAY',
     currentUTC = 'E:ZULU TIME',
     dayOfMonth = 'E:ZULU DAY OF MONTH',
     monthOfYear = 'E:ZULU MONTH OF YEAR',
@@ -30,6 +32,7 @@ export class ClockSimvarPublisher extends SimVarPublisher<ClockSimvars> {
         ['dcEssIsPowered', { name: ClockVars.dcEssIsPowered, type: SimVarValueType.Bool }],
         ['dcHot1IsPowered', { name: ClockVars.dcHot1IsPowered, type: SimVarValueType.Bool }],
         ['absTime', { name: ClockVars.absTime, type: SimVarValueType.Number }],
+        ['timeOfDay', { name: ClockVars.timeOfDay, type: SimVarValueType.Enum }],
         ['currentUTC', { name: ClockVars.currentUTC, type: SimVarValueType.Number }],
         ['dayOfMonth', { name: ClockVars.dayOfMonth, type: SimVarValueType.Number }],
         ['monthOfYear', { name: ClockVars.monthOfYear, type: SimVarValueType.Number }],

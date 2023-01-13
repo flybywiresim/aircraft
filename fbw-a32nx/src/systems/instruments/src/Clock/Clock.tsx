@@ -26,12 +26,22 @@ export class ClockRoot extends DisplayComponent<ClockProps> {
                 this.gElementRef.instance.classList.remove('on');
             }
         });
+
+        sub.on('timeOfDay').whenChanged().handle((timeOfDay) => {
+            if (timeOfDay === 1 || timeOfDay === 2) {
+                this.gElementRef.instance.classList.add('day');
+                this.gElementRef.instance.classList.remove('night');
+            } else {
+                this.gElementRef.instance.classList.add('night');
+                this.gElementRef.instance.classList.remove('day');
+            }
+        });
     }
 
     render(): VNode {
         return (
             <svg version="1.1" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
-                <g ref={this.gElementRef} class="day">
+                <g ref={this.gElementRef}>
                     <Chrono bus={this.props.bus} />
                     <Clock bus={this.props.bus} />
                     <ElapsedTime bus={this.props.bus} />
