@@ -423,7 +423,7 @@
 - A32NX_RMP_{L,R}_SAVED_ACTIVE_FREQUENCY_ADF
     - Hz
     - The ADF active frequency that is saved for display for the left/right RMP.
-   
+
 - A32NX_RMP_{L,R}_SAVED_STANDBY_FREQUENCY_VOR
     - Hz
     - The VOR standby frequency that is saved for display for the left/right RMP.
@@ -1400,23 +1400,28 @@
         - 2
         - 3
 
-- A32NX_PAX_TOTAL_ROWS_{rows}
-    - Number
-    - Indicates the current number of pax in the selected rows
-    - {rows}
-        - 1_6
-        - 7_13
-        - 14_21
-        - 22_29
+- A32NX_BOARDING_STARTED_BY_USR
+    - Bool
+    - Indicates current pax/cargo loading state
 
-- A32NX_PAX_TOTAL_ROWS_{rows}_DESIRED
-    - Number
-    - Indicates the target number of pax in the selected rows
+- A32NX_PAX_FLAGS_{station}
+    - Bitwise
+    - Indicates the current pax in the selected rows (max 53 bits)
+    - Read-Only!
+    - {station}
+        - A
+        - B
+        - C
+        - D
+
+- A32NX_PAX_FLAGS_{station}_DESIRED
+    - Bitwise
+    - Indicates the target number of pax in the selected rows (max 53 bits)
     - {rows}
-        - 1_6
-        - 7_13
-        - 14_21
-        - 22_29
+        - A
+        - B
+        - C
+        - D
 
 - PAYLOAD STATION WEIGHT:{stationIndex}
     - Number (Kilograms)
@@ -3442,13 +3447,13 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Boolean
     - Read/Write
     - Whether the pushback system is enabled
-    - Further conditions are "Pushback Tug Attached" and "Aircraft On Ground" otherwise the system 
+    - Further conditions are "Pushback Tug Attached" and "Aircraft On Ground" otherwise the system
       has no impact on the aircraft
 
 - A32NX_PUSHBACK_SPD_FACTOR
     - Number
     - Read/Write
-    - Determines the speed of the pushback tug from -100% to 100% 
+    - Determines the speed of the pushback tug from -100% to 100%
     - {number}
         - -1.0
         - 1.0
@@ -3456,7 +3461,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
 - A32NX_PUSHBACK_HDG_FACTOR
     - Number
     - Read/Write
-    - Determines the heading of the pushback tug from max left (-1.0) to right (1.0) 
+    - Determines the heading of the pushback tug from max left (-1.0) to right (1.0)
     - {number}
         - -1.0
         - 1.0

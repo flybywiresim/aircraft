@@ -26,7 +26,8 @@
 1. [FLIGHTMODEL] Update gear drag - @donstim (donbikes#4084)
 1. [FLIGHT MODEL/EFB] Modified empty weight cg and loading station/fuel tank locations - @donstim (donbikes#4084)
 1. [HYD] Fix gear sequence starting when failing prox sensor - @Crocket63 (crocket)
-1. [MISC] Added aircraft version check and uer notification - @frankkopp (Frank Kopp) 
+1. [MISC] Added aircraft version check and uer notification - @frankkopp (Frank Kopp)
+1. [EFB] Allow payload page passenger seating to be manipulated by external apps & WASM via LocalVars - @2hwk (2Cas#1022)
 
 ## 0.9.0
 
