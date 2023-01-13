@@ -43,22 +43,22 @@ export class Datalink {
 
         setInterval(() => {
             if (this.waitedComUpdate <= 30000) {
-                atsu.digitalOutputs.FmsBus.sendDatalinkCommunicationStatus(
-                    this.vhfDatalinkStatus(),
-                    this.satcomDatalinkStatus(),
-                    this.hfDatalinkStatus(),
-                );
-                atsu.digitalOutputs.FmsBus.sendDatalinkCommunicationMode(
-                    this.vhfDatalinkMode(),
-                    this.satcomDatalinkMode(),
-                    this.hfDatalinkMode(),
-                );
-
                 this.vdl.simulateTransmissionTimes(atsu.flightPhase());
                 this.waitedComUpdate = 0;
             } else {
                 this.waitedComUpdate += 5000;
             }
+
+            atsu.digitalOutputs.FmsBus.sendDatalinkCommunicationStatus(
+                this.vhfDatalinkStatus(),
+                this.satcomDatalinkStatus(),
+                this.hfDatalinkStatus(),
+            );
+            atsu.digitalOutputs.FmsBus.sendDatalinkCommunicationMode(
+                this.vhfDatalinkMode(),
+                this.satcomDatalinkMode(),
+                this.hfDatalinkMode(),
+            );
 
             if (HoppieConnector.pollInterval() <= this.waitedTimeHoppie) {
                 HoppieConnector.poll().then((retval) => {
