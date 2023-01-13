@@ -1,7 +1,7 @@
 //  Copyright (c) 2021 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { DatalinkModeCode, DatalinkStatusCode } from '@atsu/DatalinkStatusCodes';
+import { DatalinkModeCode, DatalinkStatusCode } from '@atsu/common/types';
 import { AtsuStatusCodes } from '@atsu/common/AtsuStatusCodes';
 import { CpdlcMessage } from '@atsu/common/messages/CpdlcMessage';
 import { AtsuMessage, AtsuMessageNetwork, AtsuMessageType } from '@atsu/common/messages/AtsuMessage';
