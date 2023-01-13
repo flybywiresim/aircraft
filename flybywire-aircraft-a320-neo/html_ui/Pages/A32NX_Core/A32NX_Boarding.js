@@ -49,11 +49,11 @@ class A32NX_Boarding {
 
         if (paxDiff > 0) {
             const fillChoices = station.desiredFlags.getFilledSeatIds()
-                .filter(seatIndex => !station.activeFlags.getFilledSeatIds().includes(seatIndex))
+                .filter(seatIndex => !station.activeFlags.getFilledSeatIds().includes(seatIndex));
             station.activeFlags.fillSeats(Math.abs(paxDiff), fillChoices);
         } else if (paxDiff < 0) {
             const emptyChoices = station.desiredFlags.getEmptySeatIds()
-                .filter(seatIndex => !station.activeFlags.getEmptySeatIds().includes(seatIndex))
+                .filter(seatIndex => !station.activeFlags.getEmptySeatIds().includes(seatIndex));
             station.activeFlags.emptySeats(Math.abs(paxDiff), emptyChoices);
         } else {
             this.shufflePax(station);
