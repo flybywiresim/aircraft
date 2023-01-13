@@ -117,6 +117,8 @@ class SimVars {
   ENUM NacelleAntiIce = get_aircraft_var_enum("ENG ANTI ICE");
   ENUM WingAntiIce = get_aircraft_var_enum("STRUCTURAL DEICE SWITCH");
 
+  ENUM PayloadStationWeights = get_aircraft_var_enum("PAYLOAD STATION WEIGHT");
+
   /// <summary>
   /// Collection of LVars for the A32NX
   /// </summary>
@@ -545,4 +547,5 @@ class SimVars {
   FLOAT64 getAnimDeltaTime() { return aircraft_varget(animDeltaTime, m_Units->Seconds, 0); }
   FLOAT64 getNAI(int index) { return aircraft_varget(NacelleAntiIce, m_Units->Bool, index); }
   FLOAT64 getWAI() { return aircraft_varget(WingAntiIce, m_Units->Bool, 0); }
+  FLOAT64 getPayloadStationWeight(int index) { return aircraft_varget(PayloadStationWeights, m_Units->Pounds, index); }
 };

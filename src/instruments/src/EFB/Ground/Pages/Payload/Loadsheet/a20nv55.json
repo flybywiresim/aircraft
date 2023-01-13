@@ -9,8 +9,8 @@
             "minZfw": 42500
         },
         "pax": {
-            "defaultPaxWeight": 80,
-            "defaultBagWeight": 15,
+            "defaultPaxWeight": 84,
+            "defaultBagWeight": 20,
             "minPaxWeight": 10,
             "maxPaxWeight": 250,
             "minBagWeight": 1,

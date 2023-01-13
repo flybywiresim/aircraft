@@ -748,12 +748,18 @@ class EngineControl {
     }
   }
 
-  int getStationCount(int paxStationFlags) {
+  int getStationCount(long long paxStationFlags) {
     int count = 0;
-    while (paxStationFlags) {
+    int eol = 0;
+    while (paxStationFlags && eol < 64) {
       count += paxStationFlags & 1;
       paxStationFlags >>= 1;
+      eol++;
     }
+    if (eol >= 64) {
+      std::cerr << "ERROR: limit reached" << std::endl;
+    }
+    std::cout << "Count - " << count << std::endl;
     return count;
   }
 
@@ -761,25 +767,25 @@ class EngineControl {
   /// FBW Payload checking and UI override function
   /// </summary>
   void checkPayload() {
+    double conversionFactor = simVars->getConversionFactor();
     double fuelWeightGallon = simVars->getFuelWeightGallon();
     double aircraftEmptyWeight = simVars->getEmptyWeight();  // in LBS
-    double conversionFactor = simVars->getConversionFactor();
-    double perPaxWeightLbs = simVars->getPerPaxWeight() / conversionFactor;                             // in LBS
-    double aircraftTotalWeight = simVars->getTotalWeight();                                             // in LBS
-    double fuelTotalWeight = simVars->getFuelTotalQuantity() * fuelWeightGallon;                        // in LBS
-    double payloadTotalWeight = aircraftTotalWeight - aircraftEmptyWeight - fuelTotalWeight;            // in LBS
-    double paxStationAWeight = getStationCount((int)simVars->getPaxStationAFlags()) * perPaxWeightLbs;  // in LBS
-    double paxStationBWeight = getStationCount((int)simVars->getPaxStationBFlags()) * perPaxWeightLbs;  // in LBS
-    double paxStationCWeight = getStationCount((int)simVars->getPaxStationCFlags()) * perPaxWeightLbs;  // in LBS
-    double paxStationDWeight = getStationCount((int)simVars->getPaxStationDFlags()) * perPaxWeightLbs;  // in LBS
-    double cargoFwdContainerActual = simVars->getCargoFwdContainerActual() / conversionFactor;          // in LBS
-    double cargoAftContainerActual = simVars->getCargoAftContainerActual() / conversionFactor;          // in LBS
-    double cargoAftBaggageActual = simVars->getCargoAftBaggageActual() / conversionFactor;              // in LBS
-    double cargoAftBulkActual = simVars->getCargoAftBulkActual() / conversionFactor;                    // in LBS
+    double perPaxWeightLbs = simVars->getPerPaxWeight() / conversionFactor;
+    double aircraftTotalWeight = simVars->getTotalWeight();                                                          // in LBS
+    double fuelTotalWeight = simVars->getFuelTotalQuantity() * fuelWeightGallon;                                     // in LBS
+    double pilotsWeight = simVars->getPayloadStationWeight(9) + simVars->getPayloadStationWeight(10);                // in LBS
+    double aircraftPayloadTotalWeight = aircraftTotalWeight - aircraftEmptyWeight - fuelTotalWeight - pilotsWeight;  // in LBS
+    double paxStationAWeight = getStationCount((long long)simVars->getPaxStationAFlags()) * perPaxWeightLbs;         // in LBS
+    double paxStationBWeight = getStationCount((long long)simVars->getPaxStationBFlags()) * perPaxWeightLbs;         // in LBS
+    double paxStationCWeight = getStationCount((long long)simVars->getPaxStationCFlags()) * perPaxWeightLbs;         // in LBS
+    double paxStationDWeight = getStationCount((long long)simVars->getPaxStationDFlags()) * perPaxWeightLbs;         // in LBS
+    double cargoFwdContainerActual = simVars->getCargoFwdContainerActual() / conversionFactor;                       // in LBS
+    double cargoAftContainerActual = simVars->getCargoAftContainerActual() / conversionFactor;                       // in LBS
+    double cargoAftBaggageActual = simVars->getCargoAftBaggageActual() / conversionFactor;                           // in LBS
+    double cargoAftBulkActual = simVars->getCargoAftBulkActual() / conversionFactor;                                 // in LBS
     double paxTotalWeightActual = (paxStationAWeight + paxStationBWeight + paxStationCWeight + paxStationDWeight);
     double cargoTotalWeightActual = (cargoFwdContainerActual + cargoAftContainerActual + cargoAftBaggageActual + cargoAftBulkActual);
-
-    if (abs(payloadTotalWeight - paxTotalWeightActual + cargoTotalWeightActual) > 5) {
+    if (abs(aircraftPayloadTotalWeight - paxTotalWeightActual + cargoTotalWeightActual) > 5) {
       SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::PayloadStation1, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
                                     &paxStationAWeight);
       SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::PayloadStation2, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),

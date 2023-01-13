@@ -12,10 +12,12 @@ function airplaneCanBoard() {
 }
 
 function setDefaultWeights(simbriefPaxWeight, simbriefBagWeight) {
-    const perPaxWeight = (simbriefPaxWeight === 0) ? Math.round(NXUnits.kgToUser(84)) : simbriefPaxWeight;
-    const perBagWeight = (simbriefBagWeight === 0) ? Math.round(NXUnits.kgToUser(20)) : simbriefBagWeight;
+    const perPaxWeight = (simbriefPaxWeight === undefined) ? Math.round(NXUnits.kgToUser(84)) : simbriefPaxWeight;
+    const perBagWeight = (simbriefBagWeight === undefined) ? Math.round(NXUnits.kgToUser(20)) : simbriefBagWeight;
     const conversionFactor = (getUserUnit() == "Kilograms") ? 0.4535934 : 1;
+    console.log("Setting A32NX_WB_PER_PAX_WEIGHT to ", perPaxWeight);
     SimVar.SetSimVarValue("L:A32NX_WB_PER_PAX_WEIGHT", "Number", parseInt(perPaxWeight));
+    console.log("Setting A32NX_WB_PER_BAG_WEIGHT to ", perBagWeight);
     SimVar.SetSimVarValue("L:A32NX_WB_PER_BAG_WEIGHT", "Number", parseInt(perBagWeight));
     SimVar.SetSimVarValue("L:A32NX_EFB_UNIT_CONVERSION_FACTOR", "Number", conversionFactor);
 }
@@ -30,6 +32,7 @@ class A32NX_Boarding {
     }
 
     async init() {
+        setDefaultWeights();
         this.loadPaxPayload();
         this.loadCargoZero();
         this.loadCargoPayload();
