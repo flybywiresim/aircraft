@@ -794,7 +794,7 @@ mod tests {
 
     use uom::si::{
         acceleration::foot_per_second_squared,
-        angle::radian,
+        angle::{degree, radian},
         length::foot,
         thermodynamic_temperature::degree_celsius,
         velocity::knot,
@@ -884,6 +884,7 @@ mod tests {
             Angle::new::<radian>(0.),
             Angle::new::<radian>(0.),
             MachNumber(0.),
+            Angle::new::<degree>(0.),
         )
     }
 

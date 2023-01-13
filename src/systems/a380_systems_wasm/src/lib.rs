@@ -191,6 +191,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("INDICATED ALTITUDE", "Feet", 0)?
     .provides_aircraft_variable("INTERACTIVE POINT OPEN:0", "Percent", 0)?
     .provides_aircraft_variable("INTERACTIVE POINT OPEN:3", "Percent", 0)?
+    .provides_aircraft_variable("LIGHT BEACON", "Bool", 0)?
     .provides_aircraft_variable("LIGHT BEACON ON", "Bool", 0)?
     .provides_aircraft_variable("PLANE ALT ABOVE GROUND", "Feet", 0)?
     .provides_aircraft_variable("PLANE PITCH DEGREES", "Degrees", 0)?

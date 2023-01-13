@@ -1,8 +1,8 @@
-@import "../../Common/definitions";
+@import "../Common/definitions.scss";
 
 text.text-unit {
   fill: $display-cyan;
-  font-size: $font-size-large;
+  font-size: 15px;
 }
 
 text.text-value {

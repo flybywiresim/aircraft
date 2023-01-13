@@ -13,7 +13,7 @@
    version="1.1"
    id="svg1876"
    sodipodi:docname="PFD.svg"
-   inkscape:version="1.0.2-2 (e86c870879, 2021-01-15)">
+   inkscape:version="1.0.2 (e86c870879, 2021-01-15, custom)">
   <style
      id="style1190" />
   <metadata
@@ -37,17 +37,17 @@
      guidetolerance="10"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:window-width="1920"
-     inkscape:window-height="1017"
+     inkscape:window-width="3840"
+     inkscape:window-height="2097"
      id="namedview1878"
      showgrid="false"
-     inkscape:zoom="2.2221152"
-     inkscape:cx="180.95724"
-     inkscape:cy="408.57902"
+     inkscape:zoom="25.140364"
+     inkscape:cx="273.24929"
+     inkscape:cy="522.16444"
      inkscape:window-x="-8"
      inkscape:window-y="-8"
      inkscape:window-maximized="1"
-     inkscape:current-layer="LSInfoGroup"
+     inkscape:current-layer="HeadingOfftapeGroup"
      units="mm"
      inkscape:document-rotation="0"
      inkscape:document-units="mm"
@@ -2490,6 +2490,25 @@
              sodipodi:role="line"
              style="font-size:6px;stroke-width:0.185208;stroke-miterlimit:4;stroke-dasharray:none">270</tspan></text>
       </g>
+      <g
+         id="TrueRefFlag">
+        <path
+           d="m 62.594561,134.78189 h 12.62369 v 4.27439 h -12.62369 z"
+           style="fill:none;stroke:#000000;stroke-width:0.185208;stroke-miterlimit:4;stroke-dasharray:none"
+           id="path1440-6"
+           sodipodi:nodetypes="ccccc" />
+        <text
+           xml:space="preserve"
+           style="font-style:normal;font-weight:normal;font-size:5px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+           x="62.758335"
+           y="138.81908"
+           id="text1140"><tspan
+             sodipodi:role="line"
+             id="tspan1138"
+             x="62.758335"
+             y="138.81908"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:5px;font-family:'FBW Display-EIS';-inkscape-font-specification:'FBW Display-EIS';stroke-width:0.264583">TRUE</tspan></text>
+      </g>
     </g>
     <text
        xml:space="preserve"
@@ -2911,6 +2930,12 @@
            y="115.03627"
            style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:6px;font-family:'FBW Display-EIS';-inkscape-font-specification:'FBW Display-EIS';text-align:end;text-anchor:end;stroke-width:0.264583">S</tspan></text>
     </g>
+    <path
+       d="m 62.478333,138.30504 v -0.17929 -3.69361 h 24.403406 v 3.69361 0.17929"
+       style="fill:none;stroke:#000000;stroke-width:0;stroke-miterlimit:4;stroke-dasharray:none"
+       id="HeadingTapeOutline-9"
+       sodipodi:nodetypes="cccccc"
+       inkscape:label="HeadingTapeOutline" />
   </g>
   <desc
      id="desc1874">PFD.dxf - scale = 1.000000, origin = (0.000000, 0.000000), method = file</desc>
