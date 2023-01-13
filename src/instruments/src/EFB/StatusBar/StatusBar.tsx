@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import React, { useEffect, useRef, useState } from 'react';
-import { Power, Wifi, WifiOff } from 'react-bootstrap-icons';
+import { Wifi, WifiOff } from 'react-bootstrap-icons';
 import { useSimVar } from '@instruments/common/simVars';
 import { usePersistentNumberProperty, usePersistentProperty } from '@instruments/common/persistence';
 import { useLongPress } from 'use-long-press';
@@ -102,21 +102,21 @@ export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
         setSimBridgeConnected(ClientState.getInstance().isAvailable());
     }, 1_000);
 
-    const longPressPowerButton = useLongPress(() => {}, {
-        threshold: 100_000,
-        onCancel: () => {
-            if (shutoffTimerRef.current) {
-                clearInterval(shutoffTimerRef.current);
-            }
-            history.push('/');
-            power.setPowerState(PowerStates.STANDBY);
-        },
-        onStart: () => {
-            shutoffTimerRef.current = setInterval(() => {
-                setShutoffBarPercent((old) => old + 5);
-            }, 100);
-        },
-    });
+    // const longPressPowerButton = useLongPress(() => {}, {
+    //     threshold: 100_000,
+    //     onCancel: () => {
+    //         if (shutoffTimerRef.current) {
+    //             clearInterval(shutoffTimerRef.current);
+    //         }
+    //         history.push('/');
+    //         power.setPowerState(PowerStates.STANDBY);
+    //     },
+    //     onStart: () => {
+    //         shutoffTimerRef.current = setInterval(() => {
+    //             setShutoffBarPercent((old) => old + 5);
+    //         }, 100);
+    //     },
+    // });
 
     useEffect(() => {
         if (shutoffBarPercent >= 120) {
