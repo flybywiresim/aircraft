@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useInteractionEvents, useUpdate } from './hooks';
 
-type SimVarSetter = <T extends SimVarValue>(oldValue: T) => T;
+export type SimVarSetter = <T extends SimVarValue>(oldValue: T) => T;
 
 type UnitName = SimVar.SimVarUnit;
-type SimVarValue = number | any;
+export type SimVarValue = number | any;
 
 /**
  * The useSimVar hook provides an easy way to read and write SimVars from React.
