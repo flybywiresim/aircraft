@@ -107,12 +107,16 @@ class SeatFlags extends BitFlags {
     }
 
     isSeatFilled(seatId) {
-        if (seatId > this.totalSeats) { return false; }
+        if (seatId > this.totalSeats) {
+            return false;
+        }
         return this.getBitIndex(seatId);
     }
 
     toggleSeatId(seatId) {
-        if (seatId > this.totalSeats) { return; }
+        if (seatId > this.totalSeats) {
+            return;
+        }
         this.toggleBitIndex(seatId);
     }
 
