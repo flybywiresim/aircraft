@@ -674,6 +674,7 @@ class EngineControl {
   /// <summary>
   /// FBW Payload checking and UI override function
   /// </summary>
+  // TODO: remove from FADEC logic -> rust
   void checkPayload() {
     double conversionFactor = simVars->getConversionFactor();
     double fuelWeightGallon = simVars->getFuelWeightGallon();

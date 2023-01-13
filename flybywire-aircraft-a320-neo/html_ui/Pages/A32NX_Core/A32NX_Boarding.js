@@ -72,10 +72,8 @@ class A32NX_Boarding {
 
         async function fillStation(station, percent, paxToFill) {
             const pax = Math.min(Math.trunc(percent * paxToFill), station.seats);
-            // SeatFlags implementation
             station.activeFlags.setFlags(pax);
             await SimVar.SetSimVarValue(`L:${station.simVar}_DESIRED`, "string", station.activeFlags.toString());
-            // await SimVar.SetSimVarValue(`L:${station.simVar}_DESIRED`, "Number", parseInt(pax));
             paxRemaining -= pax;
         }
 
