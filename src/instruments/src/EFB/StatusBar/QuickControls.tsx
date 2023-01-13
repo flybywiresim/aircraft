@@ -108,7 +108,15 @@ export const QuickControlsPane = ({ setShowQuickControlsPane }: {setShowQuickCon
 
     const handlePower = () => {
         history.push('/');
-        power.setPowerState(PowerStates.SHUTOFF);
+        loadedToOff();
+    };
+
+    const loadedToOff = () => {
+        setShowQuickControlsPane(false);
+        power.setPowerState(PowerStates.LOADING);
+        setTimeout(() => {
+            power.setPowerState(PowerStates.SHUTOFF);
+        }, 1000);
     };
 
     const handleAlignADIRS = () => {

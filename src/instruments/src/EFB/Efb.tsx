@@ -253,11 +253,11 @@ const Efb = () => {
     };
 
     useInteractionEvent('A32NX_EFB_POWER', () => {
-        if (powerState === PowerStates.SHUTOFF) {
+        if (powerState === PowerStates.STANDBY) {
             offToLoaded();
         } else {
             history.push('/');
-            setPowerState(PowerStates.SHUTOFF);
+            setPowerState(PowerStates.STANDBY);
         }
     });
 
