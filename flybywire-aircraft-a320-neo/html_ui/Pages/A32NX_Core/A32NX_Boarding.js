@@ -1,4 +1,5 @@
 /* eslint-disable no-undef */
+// TODO: Deprecate, move boarding backend to WASM
 function airplaneCanBoard() {
     const busDC2 = SimVar.GetSimVarValue("L:A32NX_ELEC_DC_2_BUS_IS_POWERED", "Bool");
     const busDCHot1 = SimVar.GetSimVarValue("L:A32NX_ELEC_DC_HOT_1_BUS_IS_POWERED", "Bool");
@@ -29,41 +30,33 @@ class A32NX_Boarding {
     }
 
     async init() {
-        /*
-        const inDeveloperState = SimVar.GetSimVarValue("L:A32NX_DEVELOPER_STATE", "Bool");
-        if (!inDeveloperState) {
-            // Set default pax (0)
-            await this.setPax(0);
-            this.loadPaxPayload();
-            this.loadCargoZero();
-            this.loadCargoPayload();
-        }
-        */
+        this.loadPaxPayload();
+        this.loadCargoZero();
+        this.loadCargoPayload();
     }
 
-    async fillPaxStation(station, paxToFill) {
-        const pax = Math.min(paxToFill, station.seats);
-        const paxDiff = pax - station.pax;
-        const paxDelta = Math.abs(pax - station.pax);
+    // Shuffle passengers within same station
+    async shufflePax(station) {
+        station.activeFlags.setFlags(station.desiredFlags.toNumber());
+        await SimVar.SetSimVarValue(`L:${station.simVar}`, "string", station.desiredFlags.toString());
+    }
 
-        // bitwise SeatFlags implementation
-        if (paxDiff >= 0) {
-            console.log(`paxDiff positive, filling ${paxToFill} pax`);
-            // TODO FIXME: Fill from desired Flags
-            const toFill = station.desiredFlags.getFilledSeatIds();
-            console.log('toFill', toFill.toString());
-            station.activeFlags.fillSeats(paxDelta, toFill);
-            console.log('active flags', station.activeFlags.toString());
+    async fillPaxStation(station, paxTarget) {
+        const paxDiff = Math.min(paxTarget, station.seats) - station.activeFlags.getTotalFilledSeats();
+
+        if (paxDiff > 0) {
+            const fillChoices = station.desiredFlags.getFilledSeatIds()
+                .filter(seatIndex => !station.activeFlags.getFilledSeatIds().includes(seatIndex))
+            station.activeFlags.fillSeats(Math.abs(paxDiff), fillChoices);
+        } else if (paxDiff < 0) {
+            const emptyChoices = station.desiredFlags.getEmptySeatIds()
+                .filter(seatIndex => !station.activeFlags.getEmptySeatIds().includes(seatIndex))
+            station.activeFlags.emptySeats(Math.abs(paxDiff), emptyChoices);
         } else {
-            console.log('paxDiff negative, emptying');
-            station.activeFlags.emptyFilledSeats(paxDelta);
+            this.shufflePax(station);
         }
-        console.log(`setting L:${station.bitFlags} as ${station.activeFlags.toString()}`);
-        await SimVar.SetSimVarValue(`L:${station.bitFlags}`, "string", station.activeFlags.toString());
-        station.pax = pax;
 
-        // TODO REFACTOR: Change this
-        // await SimVar.SetSimVarValue(`L:${station.simVar}`, "Number", parseInt(pax));
+        await SimVar.SetSimVarValue(`L:${station.simVar}`, "string", station.activeFlags.toString());
     }
 
     async fillCargoStation(station, loadToFill) {
@@ -76,10 +69,9 @@ class A32NX_Boarding {
 
         async function fillStation(station, percent, paxToFill) {
             const pax = Math.min(Math.trunc(percent * paxToFill), station.seats);
-            station.pax = pax;
             // SeatFlags implementation
             station.activeFlags.setFlags(pax);
-            await SimVar.SetSimVarValue(`L:${station.bitFlags}_DESIRED`, "string", station.activeFlags.toString());
+            await SimVar.SetSimVarValue(`L:${station.simVar}_DESIRED`, "string", station.activeFlags.toString());
             // await SimVar.SetSimVarValue(`L:${station.simVar}_DESIRED`, "Number", parseInt(pax));
             paxRemaining -= pax;
         }
@@ -94,7 +86,7 @@ class A32NX_Boarding {
     loadPaxPayload() {
         const PAX_WEIGHT = SimVar.GetSimVarValue("L:A32NX_WB_PER_PAX_WEIGHT", "Number");
         return Promise.all(Object.values(this.paxStations).map(paxStation => {
-            return SimVar.SetSimVarValue(`PAYLOAD STATION WEIGHT:${paxStation.stationIndex}`, getUserUnit(), paxStation.pax * PAX_WEIGHT);
+            return SimVar.SetSimVarValue(`PAYLOAD STATION WEIGHT:${paxStation.stationIndex}`, getUserUnit(), paxStation.activeFlags.getTotalFilledSeats() * PAX_WEIGHT);
         }));
     }
     loadCargoPayload() {
@@ -125,26 +117,20 @@ class A32NX_Boarding {
             return;
         }
 
-        // SeatFlags Implementation
         let currentPax = 0;
         let paxTarget = 0;
         let isAllPaxStationFilled = true;
         Object.values(this.paxStations).map((station) => {
-            station.activeFlags.setFlags(SimVar.GetSimVarValue(`L:${station.bitFlags}`, 'Number'));
+            station.activeFlags.setFlags(SimVar.GetSimVarValue(`L:${station.simVar}`, 'Number'));
             const stationCurrentPax = station.activeFlags.getTotalFilledSeats();
             currentPax += stationCurrentPax;
 
-            station.desiredFlags.setFlags(SimVar.GetSimVarValue(`L:${station.bitFlags}_DESIRED`, 'Number'));
+            station.desiredFlags.setFlags(SimVar.GetSimVarValue(`L:${station.simVar}_DESIRED`, 'Number'));
             const stationCurrentPaxTarget = station.desiredFlags.getTotalFilledSeats();
             paxTarget += stationCurrentPaxTarget;
 
             if (stationCurrentPax !== stationCurrentPaxTarget) {
                 isAllPaxStationFilled = false;
-                /*
-                console.log('not pax filled');
-                console.log('station current passengers', station.name, stationCurrentPax);
-                console.log('station target passengers', station.name, 'target', stationCurrentPaxTarget);
-                */
             }
         });
 
@@ -185,12 +171,6 @@ class A32NX_Boarding {
             // Finish boarding
             this.boardingState = "finished";
 
-            // SeatFlags: Balance pax flags
-            /*
-            station.desiredFlags.setFlags(station.activeFlags.toNumber());
-            await SimVar.SetSimVarValue(`L:${station.bitFlags}_DESIRED`, "string", station.activeFlags.toString());
-            */
-
             await SimVar.SetSimVarValue("L:A32NX_BOARDING_STARTED_BY_USR", "Bool", false);
 
         } else if ((currentPax < paxTarget) || (currentLoad < loadTarget)) {
@@ -202,10 +182,7 @@ class A32NX_Boarding {
         if (boardingRate == 'INSTANT') {
             // Instant
             for (const paxStation of Object.values(this.paxStations)) {
-                // const stationCurrentPaxTarget = SimVar.GetSimVarValue(`L:${paxStation.simVar}_DESIRED`, "Number");
-
-                // TODO: Replace with flags
-                paxStation.desiredFlags.setFlags(SimVar.GetSimVarValue(`L:${paxStation.bitFlags}_DESIRED`, "Number"));
+                paxStation.desiredFlags.setFlags(SimVar.GetSimVarValue(`L:${paxStation.simVar}_DESIRED`, "Number"));
                 const stationCurrentPaxTarget = paxStation.desiredFlags.getTotalFilledSeats();
 
                 await this.fillPaxStation(paxStation, stationCurrentPaxTarget);
@@ -234,15 +211,10 @@ class A32NX_Boarding {
 
             // Stations logic:
             for (const paxStation of Object.values(this.paxStations).reverse()) {
-
-                // TODO REFACTOR: Replace with flags
-                // const stationCurrentPax = SimVar.GetSimVarValue(`L:${paxStation.simVar}`, "Number");
-                // const stationCurrentPaxTarget = SimVar.GetSimVarValue(`L:${paxStation.simVar}_DESIRED`, "Number");
-
-                paxStation.activeFlags.setFlags(SimVar.GetSimVarValue(`L:${paxStation.bitFlags}`, "Number"));
+                paxStation.activeFlags.setFlags(SimVar.GetSimVarValue(`L:${paxStation.simVar}`, "Number"));
                 const stationCurrentPax = paxStation.activeFlags.getTotalFilledSeats();
 
-                paxStation.desiredFlags.setFlags(SimVar.GetSimVarValue(`L:${paxStation.bitFlags}_DESIRED`, "Number"));
+                paxStation.desiredFlags.setFlags(SimVar.GetSimVarValue(`L:${paxStation.simVar}_DESIRED`, "Number"));
                 const stationCurrentPaxTarget = paxStation.desiredFlags.getTotalFilledSeats();
 
                 if (stationCurrentPax < stationCurrentPaxTarget) {
@@ -252,6 +224,8 @@ class A32NX_Boarding {
                     this.fillPaxStation(paxStation, stationCurrentPax - 1);
                     break;
                 } else {
+                    // TODO: Handle shuffling passengers with time delay more gracefully
+                    this.shufflePax(paxStation);
                     continue;
                 }
             }

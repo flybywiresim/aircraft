@@ -118,10 +118,6 @@ export class SeatFlags extends BitFlags {
         this.toggleBitIndex(seatId);
     }
 
-    fillEmptySeats(numFill: number) {
-        this.fillSeats(numFill, this.getEmptySeatIds());
-    }
-
     fillSeats(numFill: number, choices: number[]) {
         for (let i = 0; i < numFill; i++) {
             if (choices.length > 0) {
@@ -132,8 +128,11 @@ export class SeatFlags extends BitFlags {
         }
     }
 
-    emptyFilledSeats(numEmpty: number) {
-        const choices = this.getFilledSeatIds();
+    fillEmptySeats(numFill: number) {
+        this.fillSeats(numFill, this.getEmptySeatIds());
+    }
+
+    emptySeats(numEmpty: number, choices: number[]) {
         for (let i = 0; i < numEmpty; i++) {
             if (choices.length > 0) {
                 const chosen = ~~(Math.random() * choices.length);
@@ -141,6 +140,10 @@ export class SeatFlags extends BitFlags {
                 choices.splice(chosen, 1);
             }
         }
+    }
+
+    emptyFilledSeats(numEmpty: number) {
+        this.emptySeats(numEmpty, this.getFilledSeatIds());
     }
 
     getTotalFilledSeats(): number {
