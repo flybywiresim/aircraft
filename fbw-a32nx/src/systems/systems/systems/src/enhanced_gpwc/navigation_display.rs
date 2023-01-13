@@ -45,7 +45,7 @@ impl NavigationDisplay {
         }
     }
 
-    pub fn update(&mut self, range_lookup: &Vec<Length>, adiru_data_valid: bool) {
+    pub fn update(&mut self, range_lookup: &[Length], adiru_data_valid: bool) {
         self.range = range_lookup[self.range_knob_position];
         self.terrain_on_nd_active = adiru_data_valid && self.terrain_on_nd_pb_active;
     }
