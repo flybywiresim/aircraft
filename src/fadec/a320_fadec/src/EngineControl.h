@@ -668,7 +668,6 @@ class EngineControl {
     if (eol >= 64) {
       std::cerr << "ERROR: limit reached" << std::endl;
     }
-    std::cout << "Count - " << count << std::endl;
     return count;
   }
 
