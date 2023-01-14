@@ -141,7 +141,7 @@ export const Payload = () => {
     const [gsxPayloadSyncEnabled] = usePersistentNumberProperty('GSX_PAYLOAD_SYNC', 0);
     const [_, setGsxNumPassengers] = useSimVar('L:FSDT_GSX_NUMPASSENGERS', 'Number');
     const [gsxBoardingState] = useSimVar('L:FSDT_GSX_BOARDING_STATE', 'Number');
-    const [gsxDeBoardingState] = useSimVar('L:FSDT_GSX_DEBOARDING _STATE', 'Number');
+    const [gsxDeBoardingState] = useSimVar('L:FSDT_GSX_DEBOARDING_STATE', 'Number');
 
     const setSimBriefValues = () => {
         if (simbriefUnits === 'kgs') {
@@ -226,9 +226,9 @@ export const Payload = () => {
     }, [...activeFlags, ...desiredFlags]);
 
     const setTargetPax = useCallback((numOfPax: number) => {
-        if (!stationSize || numOfPax === totalPaxDesired || numOfPax > maxPax || numOfPax < 0) return;
-
         setGsxNumPassengers(numOfPax);
+
+        if (!stationSize || numOfPax === totalPaxDesired || numOfPax > maxPax || numOfPax < 0) return;
 
         let paxRemaining = numOfPax;
 
@@ -527,7 +527,6 @@ export const Payload = () => {
     }, [boardingStarted]);
 
     useEffect(() => {
-        console.log(`GSX Boarding State ${gsxBoardingState}`);
         if (gsxPayloadSyncEnabled === 1) {
             switch (gsxBoardingState) {
             // If boarding has been requested, performed or completed
@@ -537,18 +536,16 @@ export const Payload = () => {
                 setBoardingStarted(true);
                 break;
             default:
-                setBoardingStarted(false);
                 break;
             }
         }
     }, [gsxBoardingState]);
 
     useEffect(() => {
-        console.log(`GSX Boarding State ${gsxBoardingState}`);
         if (gsxPayloadSyncEnabled === 1) {
             switch (gsxDeBoardingState) {
             case 4:
-                // If Deboarding has been triggered, set target pax to 0 for boarding backend
+                // If Deboarding has been requested, set target pax to 0 for boarding backend
                 setTargetPax(0);
                 setTargetCargo(0, 0);
                 setBoardingStarted(true);
@@ -562,7 +559,6 @@ export const Payload = () => {
                 setBoardingStarted(false);
                 break;
             default:
-                setBoardingStarted(false);
                 break;
             }
         }
@@ -686,7 +682,7 @@ export const Payload = () => {
                                             </td>
                                             <td>
                                                 <TooltipWrapper text={`${t('Ground.Payload.TT.MaxPassengers')} ${maxPax}`}>
-                                                    <div className={`px-4 font-light whitespace-nowrap text-md ${boardingStarted ? 'hidden' : ''}`}>
+                                                    <div className={`px-4 font-light whitespace-nowrap text-md ${(gsxPayloadSyncEnabled === 1 && boardingStarted) ? 'hidden' : ''}`}>
                                                         <PayloadValueInput
                                                             min={0}
                                                             max={maxPax > 0 ? maxPax : 999}
@@ -713,7 +709,7 @@ export const Payload = () => {
                                             </td>
                                             <td>
                                                 <TooltipWrapper text={`${t('Ground.Payload.TT.MaxCargo')} ${maxCargo.toFixed(0)} ${massUnitForDisplay}`}>
-                                                    <div className={`px-4 font-light whitespace-nowrap text-md ${boardingStarted ? 'hidden' : ''}`}>
+                                                    <div className={`px-4 font-light whitespace-nowrap text-md ${(gsxPayloadSyncEnabled === 1 && boardingStarted) ? 'hidden' : ''}`}>
                                                         <PayloadValueInput
                                                             min={0}
                                                             max={maxCargo > 0 ? Math.round(maxCargo) : 99999}
@@ -739,7 +735,7 @@ export const Payload = () => {
                                             </td>
                                             <td>
                                                 <TooltipWrapper text={`${t('Ground.Payload.TT.MaxZFW')} ${Units.kilogramToUser(Loadsheet.specs.weights.maxZfw).toFixed(0)} ${usingMetric ? 'kg' : 'lb'}`}>
-                                                    <div className={`px-4 font-light whitespace-nowrap text-md ${boardingStarted ? 'hidden' : ''}`}>
+                                                    <div className={`px-4 font-light whitespace-nowrap text-md ${(gsxPayloadSyncEnabled === 1 && boardingStarted) ? 'hidden' : ''}`}>
                                                         <PayloadValueInput
                                                             min={Math.round(emptyWeight)}
                                                             max={Math.round(Units.kilogramToUser(Loadsheet.specs.weights.maxZfw))}
@@ -763,7 +759,7 @@ export const Payload = () => {
                                             </td>
                                             <td>
                                                 <TooltipWrapper text={`${t('Ground.Payload.TT.MaxZFWCG')} ${40}%`}>
-                                                    <div className={`px-4 font-light whitespace-nowrap text-md ${boardingStarted ? 'hidden' : ''}`}>
+                                                    <div className={`px-4 font-light whitespace-nowrap text-md ${(gsxPayloadSyncEnabled === 1 && boardingStarted) ? 'hidden' : ''}`}>
                                                         {/* TODO FIXME: Setting pax/cargo given desired ZFWCG, ZFW, total pax, total cargo */}
                                                         <div className="py-4 px-3 rounded-md transition">
                                                             {`${zfwDesiredCg.toFixed(2)} %`}
@@ -793,7 +789,7 @@ export const Payload = () => {
 
                                 <div className="flex flex-row justify-start items-center">
                                     <TooltipWrapper text={t('Ground.Payload.TT.PerPaxWeight')}>
-                                        <div className={`flex relative flex-row items-center font-light text-medium ${boardingStarted ? 'hidden' : ''}`}>
+                                        <div className={`flex relative flex-row items-center font-light text-medium ${(gsxPayloadSyncEnabled === 1 && boardingStarted) ? 'hidden' : ''}`}>
                                             <PersonFill size={25} className="mx-3" />
                                             <SimpleInput
                                                 className="w-24"
@@ -811,7 +807,7 @@ export const Payload = () => {
                                     </TooltipWrapper>
 
                                     <TooltipWrapper text={t('Ground.Payload.TT.PerPaxBagWeight')}>
-                                        <div className={`flex relative flex-row items-center ml-4 font-light text-medium ${boardingStarted ? 'hidden' : ''}`}>
+                                        <div className={`flex relative flex-row items-center ml-4 font-light text-medium ${(gsxPayloadSyncEnabled === 1 && boardingStarted) ? 'hidden' : ''}`}>
                                             <BriefcaseFill size={25} className="mx-3" />
                                             <SimpleInput
                                                 className="w-24"

@@ -29,6 +29,7 @@ class A32NX_Boarding {
         // GSX Helpers
         this.passengersLeftToFillOrEmpty = 0;
         this.prevBoardedOrDeboarded = 0;
+        this.prevCargoDeboardedPercentage = 0;
     }
 
     async init() {
@@ -116,6 +117,14 @@ class A32NX_Boarding {
                 }
             }
 
+            // For some reason, GSX doesn't emit 100% cargo boarding percentage, so this is required
+            if (gsxBoardState === 6) {
+                for (const loadStation of Object.values(this.cargoStations)) {
+                    const stationCurrentLoadTarget = SimVar.GetSimVarValue(`L:${loadStation.simVar}_DESIRED`, "Number");
+                    this.fillCargoStation(loadStation, stationCurrentLoadTarget);
+                }
+            }
+
             if (gsxBoardState === 5) {
                 const gsxBoardingTotal = SimVar.GetSimVarValue("L:FSDT_GSX_NUMPASSENGERS_BOARDING_TOTAL", "Number");
                 this.passengersLeftToFillOrEmpty = gsxBoardingTotal - this.prevBoardedOrDeboarded;
@@ -145,6 +154,13 @@ class A32NX_Boarding {
                 }
             }
 
+            // For some reason, GSX doesn't emit 100% cargo boarding percentage, so this is required
+            if (gsxDeBoardState === 6) {
+                for (const loadStation of Object.values(this.cargoStations)) {
+                    this.fillCargoStation(loadStation, 0);
+                }
+            }
+
             if (gsxDeBoardState === 5) {
                 const gsxDeBoardingTotal = SimVar.GetSimVarValue("L:FSDT_GSX_NUMPASSENGERS_DEBOARDING_TOTAL", "Number");
                 this.passengersLeftToFillOrEmpty = gsxDeBoardingTotal - this.prevBoardedOrDeboarded;
@@ -162,6 +178,18 @@ class A32NX_Boarding {
                     }
                 }
                 this.prevBoardedOrDeboarded = gsxDeBoardingTotal;
+
+                const gsxCargoDeBoardPercentage = SimVar.GetSimVarValue("L:FSDT_GSX_DEBOARDING_CARGO_PERCENT", "Number");
+                for (const loadStation of Object.values(this.cargoStations)) {
+                    if (this.prevCargoDeboardedPercentage == gsxCargoDeBoardPercentage) {
+                        break;
+                    }
+                    const stationCurrentLoad = SimVar.GetSimVarValue(`L:${loadStation.simVar}`, "Number");
+
+                    const loadAmount = stationCurrentLoad * ((100 - gsxCargoDeBoardPercentage) / 100);
+                    this.fillCargoStation(loadStation, loadAmount);
+                }
+                this.prevCargoDeboardedPercentage = gsxCargoDeBoardPercentage;
             }
 
             this.loadPaxPayload();

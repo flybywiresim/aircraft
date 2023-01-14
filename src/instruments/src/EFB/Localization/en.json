@@ -568,11 +568,10 @@
       "WheelChocksEnabled": "Wheel Chocks",
       "inHg": "inHg"
     },
-    "GsxOptions": {
-      "Title": "GSX Options",
-      "GsxFuelEnabled": "Fuel Sync",
-      "GsxPayloadEnabled": "Payload Sync",
-      "GsxDeIceEnabled": "De-Ice Sync"
+    "ThirdPartyOptions": {
+      "Title": "3rd Party Options",
+      "GsxFuelEnabled": "GSX Fueling Synchronization",
+      "GsxPayloadEnabled": "GSX Payload Synchronization"
     },
     "ThrottleConfig": {
       "Apply": "Apply",
