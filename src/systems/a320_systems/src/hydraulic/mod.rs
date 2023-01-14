@@ -3847,7 +3847,7 @@ impl A320BrakingForce {
                 .get_identifier("RIGHT_FLAPS_POSITION_PERCENT".to_owned()),
 
             enabled_chocks_id: context.get_identifier("MODEL_WHEELCHOCKS_ENABLED".to_owned()),
-            light_beacon_on_id: context.get_identifier("LIGHT BEACON ON".to_owned()),
+            light_beacon_on_id: context.get_identifier("LIGHT BEACON".to_owned()),
 
             left_braking_force: 0.,
             right_braking_force: 0.,
