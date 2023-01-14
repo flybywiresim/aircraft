@@ -61,17 +61,17 @@ export class FlightModel {
             baseDrag = (0.0168 * Cl ** 3) - (0.0018 * Cl ** 2) - (0.0037 * Cl) + 0.0729;
             break;
         case FlapConf.CONF_3:
-            baseDrag = (0.0132 * Cl ** 3) - (0.0058 * Cl ** 2) + (0.0005 * Cl) + 0.0982;
+            baseDrag = (0.013 * Cl ** 3) - (0.0056 * Cl ** 2) + (0.0005 * Cl) + 0.0902;
             break;
         case FlapConf.CONF_FULL:
-            baseDrag = (0.0077 * Cl ** 3) - (0.0055 * Cl ** 2) - (0.0015 * Cl) + 0.1483;
+            baseDrag = (0.0077 * Cl ** 3) - (0.0056 * Cl ** 2) - (0.001 * Cl) + 0.1405;
             break;
         default:
             break;
         }
 
         const spdBrkIncrement = spdBrkDeflected ? 0.01008 : 0;
-        const gearIncrement = gearExtended ? 0.03 : 0;
+        const gearIncrement = gearExtended ? 0.0372 : 0;
         return baseDrag + spdBrkIncrement + gearIncrement;
     }
 

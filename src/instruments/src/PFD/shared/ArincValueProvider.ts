@@ -7,8 +7,8 @@ export interface Arinc429Values {
     pitchAr: Arinc429Word;
     rollAr: Arinc429Word;
     altitudeAr: Arinc429Word;
-    groundTrackAr: Arinc429Word;
-    headingAr: Arinc429Word;
+    magTrack: Arinc429Word;
+    magHeading: Arinc429Word;
     speedAr: Arinc429Word;
     machAr: Arinc429Word;
     vs: Arinc429Word;
@@ -40,13 +40,16 @@ export interface Arinc429Values {
     vLs: Arinc429Word;
     estimatedBeta: Arinc429Word;
     betaTarget: Arinc429Word;
+    irMaintWord: Arinc429Word;
+    trueHeading: Arinc429Word;
+    trueTrack: Arinc429Word;
 }
 export class ArincValueProvider {
     private roll = new Arinc429Word(0);
 
     private pitch = new Arinc429Word(0);
 
-    private groundTrack = new Arinc429Word(0);
+    private magTrack = new Arinc429Word(0);
 
     private heading = new Arinc429Word(0);
 
@@ -112,13 +115,13 @@ export class ArincValueProvider {
             this.roll = new Arinc429Word(p);
             publisher.pub('rollAr', this.roll);
         });
-        subscriber.on('groundTrack').handle((gt) => {
-            this.groundTrack = new Arinc429Word(gt);
-            publisher.pub('groundTrackAr', this.groundTrack);
+        subscriber.on('magTrackRaw').handle((gt) => {
+            this.magTrack = new Arinc429Word(gt);
+            publisher.pub('magTrack', this.magTrack);
         });
-        subscriber.on('heading').handle((h) => {
+        subscriber.on('magHeadingRaw').handle((h) => {
             this.heading = new Arinc429Word(h);
-            publisher.pub('headingAr', this.heading);
+            publisher.pub('magHeading', this.heading);
         });
 
         subscriber.on('speed').handle((s) => {
@@ -481,6 +484,18 @@ export class ArincValueProvider {
             if (this.facToUse === 2) {
                 publisher.pub('betaTarget', new Arinc429Word(word));
             }
+        });
+
+        subscriber.on('irMaintWordRaw').handle((word) => {
+            publisher.pub('irMaintWord', new Arinc429Word(word));
+        });
+
+        subscriber.on('trueHeadingRaw').handle((word) => {
+            publisher.pub('trueHeading', new Arinc429Word(word));
+        });
+
+        subscriber.on('trueTrackRaw').handle((word) => {
+            publisher.pub('trueTrack', new Arinc429Word(word));
         });
     }
 

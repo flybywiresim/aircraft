@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import { TuningMode } from '@fmgc/radionav';
-import { EfisSide } from '@shared/NavigationDisplay';
+import { EfisSide, Mode } from '@shared/NavigationDisplay';
 
 export enum NavAidMode {
     Off = 0,
@@ -9,7 +9,12 @@ export enum NavAidMode {
     VOR,
 }
 
-export type RadioNavInfoProps = { index: 1 | 2, side: EfisSide }
+export type RadioNavInfoProps = {
+    index: 1 | 2,
+    side: EfisSide,
+    trueRef: boolean,
+    mode: Mode,
+}
 
 const TuningModeIndicator: React.FC<{ index: 1 | 2 }> = ({ index }) => {
     const [tuningMode] = useSimVar('L:A32NX_FMGC_RADIONAV_TUNING_MODE', 'enum');
@@ -21,12 +26,29 @@ const TuningModeIndicator: React.FC<{ index: 1 | 2 }> = ({ index }) => {
     );
 };
 
-const VorInfo: React.FC<{index: 1 | 2}> = ({ index }) => {
+const VorInfo: React.FC<{index: 1 | 2, trueRef: boolean, mode: Mode }> = ({ index, trueRef, mode }) => {
     const [vorIdent] = useSimVar(`NAV IDENT:${index}`, 'string');
     const [vorFrequency] = useSimVar(`NAV ACTIVE FREQUENCY:${index}`, 'megahertz');
     const [vorHasDme] = useSimVar(`NAV HAS DME:${index}`, 'bool');
     const [dmeDistance] = useSimVar(`NAV DME:${index}`, 'nautical miles');
     const [vorAvailable] = useSimVar(`NAV HAS NAV:${index}`, 'boolean');
+    // FIXME should be database magvar, not just when received
+    const [stationDeclination] = useSimVar(`NAV MAGVAR:${index}`, 'degrees');
+    const [stationLocation] = useSimVar(`NAV VOR LATLONALT:${index}`, 'latlonalt');
+    const [stationRefTrue, setStationRefTrue] = useState(false);
+    const [corrected, setCorrected] = useState(false);
+    const [magWarning, setMagWarning] = useState(false);
+    const [trueWarning, setTrueWarning] = useState(false);
+
+    useEffect(() => {
+        setStationRefTrue(stationLocation.lat > 75 && stationDeclination < Number.EPSILON);
+    }, [stationDeclination, stationLocation.lat]);
+
+    useEffect(() => {
+        setCorrected(vorAvailable && !!(trueRef) !== stationRefTrue && mode !== Mode.ROSE_VOR && mode !== Mode.ROSE_ILS);
+        setMagWarning(vorAvailable && !!(trueRef) && !stationRefTrue && (mode === Mode.ROSE_VOR || mode === Mode.ROSE_ILS));
+        setTrueWarning(vorAvailable && !(trueRef) && stationRefTrue && (mode === Mode.ROSE_VOR || mode === Mode.ROSE_ILS));
+    }, [trueRef, stationRefTrue, mode, vorAvailable]);
 
     const x = index === 1 ? 37 : 668;
 
@@ -58,21 +80,24 @@ const VorInfo: React.FC<{index: 1 | 2}> = ({ index }) => {
 
     return (
         <g className="GtLayer">
-            {(vorAvailable && (
-                <path
-                    d={path}
-                    strokeWidth={2}
-                    className="White"
-                    strokeLinejoin="round"
-                    strokeLinecap="round"
-                />
-            ))}
+            <path
+                d={path}
+                strokeWidth={2}
+                className={vorAvailable && !!(trueRef) !== stationRefTrue && (mode === Mode.ARC || mode === Mode.ROSE_NAV) ? 'Magenta' : 'White'}
+                strokeLinejoin="round"
+                strokeLinecap="round"
+            />
             <text x={x} y={692} fontSize={24} className="White">
                 VOR
                 {index}
             </text>
             {(vorAvailable || vorHasDme) && vorFrequency > 1 && (
-                <text x={x} y={722} fontSize={24} className="White">{vorIdent}</text>
+                <>
+                    <text x={x} y={722} fontSize={24} className="White">{vorIdent}</text>
+                    <text x={index === 2 ? x - 54 : x + 61} y={692} fontSize={20} className="Magenta" visibility={corrected ? 'inherit' : 'hidden'}>CORR</text>
+                    <text x={index === 2 ? x - 54 : x + 73} y={692} fontSize={20} className="Amber" visibility={magWarning ? 'inherit' : 'hidden'}>MAG</text>
+                    <text x={index === 2 ? x - 54 : x + 61} y={692} fontSize={20} className="Amber" visibility={trueWarning ? 'inherit' : 'hidden'}>TRUE</text>
+                </>
             )}
             {!(vorAvailable || vorHasDme) && vorFrequency > 1 && (
                 <text x={index === 2 ? x - 26 : x} y={722} fontSize={24} className="White">{freqText}</text>
@@ -119,13 +144,13 @@ const AdfInfo: React.FC<{index: 1 | 2}> = ({ index }) => {
     );
 };
 
-export const RadioNavInfo: React.FC<RadioNavInfoProps> = ({ index, side }) => {
-    const [mode] = useSimVar(`L:A32NX_EFIS_${side}_NAVAID_${index}_MODE`, 'enum');
+export const RadioNavInfo: React.FC<RadioNavInfoProps> = ({ index, side, trueRef, mode }) => {
+    const [navaidMode] = useSimVar(`L:A32NX_EFIS_${side}_NAVAID_${index}_MODE`, 'enum');
 
-    if (mode === NavAidMode.VOR) {
-        return <VorInfo index={index} />;
+    if (navaidMode === NavAidMode.VOR) {
+        return <VorInfo index={index} trueRef={trueRef} mode={mode} />;
     }
-    if (mode === NavAidMode.ADF) {
+    if (navaidMode === NavAidMode.ADF) {
         return <AdfInfo index={index} />;
     }
     return <></>;

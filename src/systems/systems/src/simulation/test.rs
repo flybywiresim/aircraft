@@ -3,6 +3,7 @@ use rand::Rng;
 use std::{cell::Ref, time::Duration};
 use uom::si::{
     acceleration::foot_per_second_squared,
+    angle::degree,
     f64::*,
     length::foot,
     pressure::inch_of_mercury,
@@ -88,6 +89,10 @@ pub trait TestBed {
 
     fn set_lat_acc(&mut self, acc: Acceleration) {
         self.test_bed_mut().set_lat_acceleration(acc);
+    }
+
+    fn set_latitude(&mut self, lat: Angle) {
+        self.test_bed_mut().set_latitude(lat);
     }
 
     fn set_norm_acc(&mut self, acc: Acceleration) {
@@ -402,6 +407,10 @@ impl<T: Aircraft> SimulationTestBed<T> {
             UpdateContext::ACCEL_BODY_X_KEY,
             accel.get::<foot_per_second_squared>(),
         );
+    }
+
+    pub fn set_latitude(&mut self, lat: Angle) {
+        self.write_by_name(UpdateContext::LATITUDE_KEY, lat.get::<degree>());
     }
 
     pub fn set_normal_acceleration(&mut self, accel: Acceleration) {
