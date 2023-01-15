@@ -8,7 +8,6 @@
             "name": "Attach",
             "type": "cppvsdbg",
             "request": "attach",
-            "processName": "FlightSimulator.exe",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",
