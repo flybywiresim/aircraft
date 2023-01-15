@@ -9,10 +9,7 @@ use crate::{
 
 pub struct CursorControlDevice {
     power_supply: PowerSupplyRelay,
-    key_esc: Button,
-    key_kbd: Button,
-    key_navigation_left: Button,
-    key_navigation_right: Button,
+    keys: [Button; 4],
     switch_ccd_id: VariableIdentifier,
     switch_ccd_value: f64,
 }
@@ -26,11 +23,12 @@ impl CursorControlDevice {
     ) -> Self {
         CursorControlDevice {
             power_supply: PowerSupplyRelay::new(primary_power_supply, fallback_power_supply),
-            key_esc: Button::new(context, side, "ESC2"),
-            key_kbd: Button::new(context, side, "KBD"),
-            key_navigation_left: Button::new(context, side, "REWIND"),
-            key_navigation_right: Button::new(context, side, "FORWARD"),
-            // TODO use correct identifier
+            keys: [
+                Button::new(context, side, "ESC2"),
+                Button::new(context, side, "KBD"),
+                Button::new(context, side, "REWIND"),
+                Button::new(context, side, "FORWARD"),
+            ],
             switch_ccd_id: context.get_identifier(format!("KCCU_")),
             switch_ccd_value: 0.0,
         }
@@ -40,10 +38,7 @@ impl CursorControlDevice {
 impl SimulationElement for CursorControlDevice {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.power_supply.accept(visitor);
-        self.key_esc.accept(visitor);
-        self.key_kbd.accept(visitor);
-        self.key_navigation_left.accept(visitor);
-        self.key_navigation_right.accept(visitor);
+        self.keys.iter_mut().for_each(|key| key.accept(visitor));
         visitor.visit(self);
     }
 
