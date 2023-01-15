@@ -14,6 +14,8 @@ pub struct Keyboard {
     keys: [Button; 58],
     switch_kbd_id: VariableIdentifier,
     switch_kbd_value: f64,
+    active_key: usize,
+    key_overflow: bool,
 }
 
 impl Keyboard {
@@ -88,6 +90,24 @@ impl Keyboard {
             // TODO use correct identifier
             switch_kbd_id: context.get_identifier(format!("KCCU_")),
             switch_kbd_value: 0.0,
+            active_key: 0,
+            key_overflow: false,
+        }
+    }
+
+    pub fn update(&mut self) {
+        self.active_key = self.keys.len();
+        self.key_overflow = false;
+
+        if self.switch_kbd_value > 0.0 {
+            for (i, key) in self.keys.iter().enumerate() {
+                if key.button_pressed() {
+                    if self.active_key != self.keys.len() {
+                        self.key_overflow = true;
+                    }
+                    self.active_key = i;
+                }
+            }
         }
     }
 }

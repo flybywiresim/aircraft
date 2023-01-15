@@ -12,6 +12,8 @@ pub struct CursorControlDevice {
     keys: [Button; 4],
     switch_ccd_id: VariableIdentifier,
     switch_ccd_value: f64,
+    active_key: usize,
+    key_overflow: bool,
 }
 
 impl CursorControlDevice {
@@ -31,6 +33,24 @@ impl CursorControlDevice {
             ],
             switch_ccd_id: context.get_identifier(format!("KCCU_")),
             switch_ccd_value: 0.0,
+            active_key: 0,
+            key_overflow: false,
+        }
+    }
+
+    pub fn update(&mut self) {
+        self.active_key = self.keys.len();
+        self.key_overflow = false;
+
+        if self.switch_ccd_value > 0.0 {
+            for (i, key) in self.keys.iter().enumerate() {
+                if key.button_pressed() {
+                    if self.active_key != self.keys.len() {
+                        self.key_overflow = true;
+                    }
+                    self.active_key = i;
+                }
+            }
         }
     }
 }
