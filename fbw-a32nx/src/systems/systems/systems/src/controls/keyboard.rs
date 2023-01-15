@@ -88,8 +88,7 @@ impl Keyboard {
                 Button::new(context, side, "9", 0x0039),
                 Button::new(context, side, "DOT", 0x006e),
             ],
-            // TODO use correct identifier
-            switch_kbd_id: context.get_identifier(format!("KCCU_")),
+            switch_kbd_id: context.get_identifier(format!("KCCU_{}_KBD_ON_OFF", side)),
             switch_kbd_value: 0.0,
             active_keys: Vec::new(),
         }

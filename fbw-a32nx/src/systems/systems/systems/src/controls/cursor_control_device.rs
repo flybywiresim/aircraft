@@ -30,7 +30,7 @@ impl CursorControlDevice {
                 Button::new(context, side, "REWIND", 0x007d),
                 Button::new(context, side, "FORWARD", 0x007e),
             ],
-            switch_ccd_id: context.get_identifier(format!("KCCU_")),
+            switch_ccd_id: context.get_identifier(format!("KCCU_{}_CCD_ON_OFF", side)),
             switch_ccd_value: 0.0,
             active_keys: Vec::new(),
         }
