@@ -1,3 +1,6 @@
+// Copyright (c) 2022 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
 import React, { useEffect, useState } from 'react';
 import { usePersistentProperty, useSessionStorage } from '@instruments/common/persistence';
 import { SentryConsentState, SENTRY_CONSENT_KEY } from '../../../../../sentry-client/src/FbwAircraftSentryClient';
@@ -6,15 +9,7 @@ import { SettingsPage } from '../Settings';
 // @ts-ignore
 import FbwTail from '../../Assets/FBW-Tail.svg';
 import { t } from '../../translation';
-
-interface BuildInfo {
-    built: string;
-    ref: string;
-    sha: string;
-    actor: string;
-    eventName: string;
-    prettyReleaseName: string;
-}
+import { AircraftVersionChecker, BuildInfo } from '../../Utils/AircraftVersionChecker';
 
 interface BuildInfoEntryProps {
     title: string;
@@ -64,15 +59,7 @@ export const AboutPage = () => {
 
     useEffect(() => {
         listener.on('SetGamercardInfo', onSetPlayerData, null);
-
-        fetch('/VFS/a32nx_build_info.json').then((response) => response.json()).then((json) => setBuildInfo({
-            built: json.built,
-            ref: json.ref,
-            sha: json.sha,
-            actor: json.actor,
-            eventName: json.event_name,
-            prettyReleaseName: json.pretty_release_name,
-        }));
+        AircraftVersionChecker.getBuildInfo().then((info) => setBuildInfo(info));
     }, []);
 
     useEffect(() => {
@@ -108,9 +95,10 @@ export const AboutPage = () => {
                     <h1 className="font-bold">Build Info</h1>
                     <div className="mt-4">
                         <BuildInfoEntry title="Sim Version" value={version} />
+                        <BuildInfoEntry title="Aircraft Version" value={buildInfo?.version} />
                         <BuildInfoEntry title="Built" value={buildInfo?.built} />
                         <BuildInfoEntry title="Ref" value={buildInfo?.ref} />
-                        <BuildInfoEntry title="SHA" value={buildInfo?.sha} underline={8} />
+                        <BuildInfoEntry title="SHA" value={buildInfo?.sha} underline={7} />
                         <BuildInfoEntry title="Event Name" value={buildInfo?.eventName} />
                         <BuildInfoEntry title="Pretty Release Name" value={buildInfo?.prettyReleaseName} />
                         {sentryEnabled === SentryConsentState.Given && (

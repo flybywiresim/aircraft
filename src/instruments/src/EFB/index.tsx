@@ -7,6 +7,7 @@ import { usePersistentProperty } from '@instruments/common/persistence';
 import { Provider } from 'react-redux';
 import { render } from '@instruments/common/index';
 import { ErrorBoundary } from 'react-error-boundary';
+import { useSimVar } from '@instruments/common/simVars';
 import { SentryConsentState, SENTRY_CONSENT_KEY } from '../../../sentry-client/src/FbwAircraftSentryClient';
 import { ModalProvider } from './UtilComponents/Modals/Modals';
 import { FailuresOrchestratorProvider } from './failures-orchestrator-provider';
@@ -19,10 +20,21 @@ import { readSettingsFromPersistentStorage } from './Settings/sync';
 import { migrateSettings } from './Settings/Migration';
 import { store } from './Store/store';
 import { Error } from './Assets/Error';
+import { AircraftVersionChecker } from './Utils/AircraftVersionChecker';
 
 const EFBLoad = () => {
+    const [isReady] = useSimVar('L:A32NX_IS_READY', 'Bool', 1000);
     const [, setSessionId] = usePersistentProperty('A32NX_SENTRY_SESSION_ID');
-    useEffect(() => () => setSessionId(''), []);
+
+    useEffect(
+        () => () => setSessionId(''), [],
+    );
+
+    useEffect(() => {
+        if (isReady) {
+            AircraftVersionChecker.checkVersion();
+        }
+    }, [isReady]);
 
     const [err, setErr] = useState(false);
 
@@ -66,7 +78,7 @@ export const ErrorFallback = ({ resetErrorBoundary }: ErrorFallbackProps) => {
                         </>
                     )}
 
-                    <div className="py-4 px-8 w-full rounded-md border-2 transition duration-100 text-theme-body hover:text-utility-red bg-utility-red hover:bg-theme-body border-utility-red" onClick={resetErrorBoundary}>
+                    <div className="py-4 px-8 w-full text-theme-body hover:text-utility-red bg-utility-red hover:bg-theme-body rounded-md border-2 border-utility-red transition duration-100" onClick={resetErrorBoundary}>
                         <h2 className="font-bold text-center text-current">Reset Display</h2>
                     </div>
                 </div>

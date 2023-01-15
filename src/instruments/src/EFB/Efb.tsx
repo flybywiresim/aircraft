@@ -3,15 +3,17 @@
 
 import React, { useEffect, useState } from 'react';
 
+import useInterval from '@instruments/common/useInterval';
 import { Redirect, Route, Switch, useHistory } from 'react-router-dom';
 import { useSimVar } from '@instruments/common/simVars';
 import { useInteractionEvent } from '@instruments/common/hooks';
-import { Battery } from 'react-bootstrap-icons';
-import { ToastContainer, toast } from 'react-toastify';
 import { usePersistentNumberProperty, usePersistentProperty } from '@instruments/common/persistence';
+
+import { Battery } from 'react-bootstrap-icons';
+import { toast, ToastContainer } from 'react-toastify';
 import { distanceTo } from 'msfs-geo';
-import useInterval from '@instruments/common/useInterval';
 import { Tooltip } from './UtilComponents/TooltipWrapper';
+import { FbwLogo } from './UtilComponents/FbwLogo';
 import { AlertModal, ModalContainer, useModals } from './UtilComponents/Modals/Modals';
 import NavigraphClient, { NavigraphContext } from './ChartsApi/Navigraph';
 import 'react-toastify/dist/ReactToastify.css';
@@ -19,7 +21,6 @@ import './toast.css';
 
 import { StatusBar } from './StatusBar/StatusBar';
 import { ToolBar } from './ToolBar/ToolBar';
-
 import { Dashboard } from './Dashboard/Dashboard';
 import { Dispatch } from './Dispatch/Dispatch';
 import { Ground } from './Ground/Ground';
@@ -31,10 +32,7 @@ import { Failures } from './Failures/Failures';
 import { Presets } from './Presets/Presets';
 
 import { clearEfbState, useAppDispatch, useAppSelector } from './Store/store';
-
 import { fetchSimbriefDataAction, isSimbriefDataLoaded } from './Store/features/simBrief';
-
-import { FbwLogo } from './UtilComponents/FbwLogo';
 import { setFlightPlanProgress } from './Store/features/flightProgress';
 import { Checklists, setAutomaticItemStates } from './Checklists/Checklists';
 import { CHECKLISTS } from './Checklists/Lists';
@@ -243,7 +241,6 @@ const Efb = () => {
     const offToLoaded = () => {
         const shouldWait = powerState === PowerStates.SHUTOFF || powerState === PowerStates.EMPTY;
         setPowerState(PowerStates.LOADING);
-
         if (shouldWait) {
             setTimeout(() => {
                 setPowerState(PowerStates.LOADED);
@@ -251,6 +248,7 @@ const Efb = () => {
         } else {
             setPowerState(PowerStates.LOADED);
         }
+        return (<></>);
     };
 
     useInteractionEvent('A32NX_EFB_POWER', () => {
