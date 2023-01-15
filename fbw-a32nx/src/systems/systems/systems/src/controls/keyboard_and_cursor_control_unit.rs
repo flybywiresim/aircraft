@@ -7,12 +7,6 @@ use crate::{
     shared::ElectricalBusType,
 };
 
-pub trait KccuInputComponent {
-    fn key_pressed(&self) -> bool;
-    fn pressed_key_index(&self) -> usize;
-    fn key_overflow(&self) -> bool;
-}
-
 pub struct Button {
     button_id: VariableIdentifier,
     button_value: f64,
