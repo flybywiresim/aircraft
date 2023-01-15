@@ -3,6 +3,8 @@ use crate::{
     simulation::{InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader, VariableIdentifier},
     shared::{ElectricalBusType, ElectricalBuses},
 };
+use std::collections::VecDeque;
+use std::vec::Vec;
 
 pub struct CursorControlDevice {
     power_supply: ElectricalBusType,
@@ -10,8 +12,7 @@ pub struct CursorControlDevice {
     keys: [Button; 4],
     switch_ccd_id: VariableIdentifier,
     switch_ccd_value: f64,
-    active_key: usize,
-    key_overflow: bool,
+    active_keys: Vec<u16>,
 }
 
 impl CursorControlDevice {
@@ -24,44 +25,36 @@ impl CursorControlDevice {
             power_supply: primary_power_supply,
             is_powered: false,
             keys: [
-                Button::new(context, side, "ESC2"),
-                Button::new(context, side, "KBD"),
-                Button::new(context, side, "REWIND"),
-                Button::new(context, side, "FORWARD"),
+                Button::new(context, side, "ESC2", 0x001b),
+                Button::new(context, side, "KBD", 0x007c),
+                Button::new(context, side, "REWIND", 0x007d),
+                Button::new(context, side, "FORWARD", 0x007e),
             ],
             switch_ccd_id: context.get_identifier(format!("KCCU_")),
             switch_ccd_value: 0.0,
-            active_key: 0,
-            key_overflow: false,
+            active_keys: Vec::new(),
         }
     }
 
     pub fn update(&mut self) {
-        self.active_key = self.keys.len();
-        self.key_overflow = false;
+        if self.active_keys.len() != 0 {
+            self.active_keys = Vec::new();
+        }
 
         if self.switch_ccd_value > 0.0 && self.is_powered {
-            for (i, key) in self.keys.iter().enumerate() {
+            self.keys.iter().for_each(|key| {
                 if key.button_pressed() {
-                    if self.active_key != self.keys.len() {
-                        self.key_overflow = true;
-                    }
-                    self.active_key = i;
+                    self.active_keys.push(key.keycode());
                 }
-            }
+            });
         }
     }
 
-    pub fn key_pressed(&self) -> bool {
-        self.active_key != self.keys.len()
-    }
-
-    pub fn pressed_key_index(&self) -> usize {
-        self.active_key
-    }
-
-    pub fn key_overflow(&self) -> bool {
-        self.key_overflow
+    pub fn enqueue_keys(&self, buffer: &mut VecDeque<u16>) {
+        self.active_keys.iter().for_each(|code| {
+            buffer.push_back(code & 0xc0ff);
+            buffer.push_back(code & 0x40ff);
+        });
     }
 }
 
