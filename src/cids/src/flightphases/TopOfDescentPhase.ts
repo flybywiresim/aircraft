@@ -22,19 +22,19 @@ export class TopOfDescentPhase extends FlightPhase {
     public shouldActivate(): boolean {
         return (
             (
-                this.flightPhaseManager.cids.fmaVerticalMode() === 13 // OP DES
+                this.flightPhaseManager.dir.fmaVerticalMode === 13 // OP DES
               || (
-                  this.flightPhaseManager.cids.fmaVerticalMode() === 14 // VS
-                && this.flightPhaseManager.cids.vsSelected() < 0
+                  this.flightPhaseManager.dir.fmaVerticalMode === 14 // VS
+                && this.flightPhaseManager.dir.vsSelected < 0
               )
               || (
-                  this.flightPhaseManager.cids.fmaVerticalMode() === 15 // FPA
-                && this.flightPhaseManager.cids.fpaSelected() < 0
+                  this.flightPhaseManager.dir.fmaVerticalMode === 15 // FPA
+                && this.flightPhaseManager.dir.fpaSelected < 0
               )
-              || this.flightPhaseManager.cids.fmaVerticalMode() === 23 // DES
+              || this.flightPhaseManager.dir.fmaVerticalMode === 23 // DES
             )
-            && this.flightPhaseManager.cids.fcuSelectedAlt() < 20000
-            && this.flightPhaseManager.cids.altitude() > 10000
+            && this.flightPhaseManager.dir.fcuSelectedAlt < 20000
+            && this.flightPhaseManager.dir.altitude > 10000
         );
     }
 

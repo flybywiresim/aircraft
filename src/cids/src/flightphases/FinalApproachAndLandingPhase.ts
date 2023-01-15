@@ -21,16 +21,15 @@ export class FinalApproachAndLandingPhase extends FlightPhase {
 
     public shouldActivate(): boolean {
         return (
-            this.flightPhaseManager.cids.gearDownLocked()
-            && this.flightPhaseManager.cids.flapsPosition().getBitValue(18)
+            this.flightPhaseManager.dir.gearDownLocked
             && (
                 (
-                    this.flightPhaseManager.cids.flapsPosition().getBitValue(22)
-                    && this.flightPhaseManager.cids.gpwsConf3()
+                    this.flightPhaseManager.dir.flapsConfig === 3
+                    && this.flightPhaseManager.dir.gpwsFlap3
                 )
-                || this.flightPhaseManager.cids.flapsPosition().getBitValue(23)
+                || this.flightPhaseManager.dir.flapsConfig === 4
             )
-            && this.flightPhaseManager.cids.groundSpeed() >= 80
+            && this.flightPhaseManager.dir.groundSpeed >= 80
         );
     }
 

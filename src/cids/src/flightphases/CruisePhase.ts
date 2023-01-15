@@ -21,9 +21,7 @@ export class CruisePhase extends FlightPhase {
     }
 
     public shouldActivate(): boolean {
-        return (
-            this.flightPhaseManager.cids.altCrzActive()
-        );
+        return this.flightPhaseManager.dir.altCrzActive;
     }
 
     public getValue(): number {
