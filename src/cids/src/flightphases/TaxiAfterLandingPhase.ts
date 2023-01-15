@@ -22,8 +22,8 @@ export class TaxiAfterLandingPhase extends FlightPhase {
 
     public shouldActivate(): boolean {
         return (
-            this.flightPhaseManager.cids.onGround()
-            && this.flightPhaseManager.cids.groundSpeed() < 80
+            this.flightPhaseManager.dir.onGround
+            && this.flightPhaseManager.dir.groundSpeed < 80
         );
     }
 

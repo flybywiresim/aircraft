@@ -22,10 +22,10 @@ export class PushbackPhase extends FlightPhase {
 
     public shouldActivate(): boolean {
         return (
-            this.flightPhaseManager.cids.onGround()
-            && this.flightPhaseManager.cids.isStationary()
-            && this.flightPhaseManager.cids.allDoorsClosedLocked()
-            && this.flightPhaseManager.cids.nwStrgPinInserted()
+            this.flightPhaseManager.dir.onGround
+            && this.flightPhaseManager.dir.groundSpeed < 1
+            && this.flightPhaseManager.dir.allDoorsClosedLocked
+            && this.flightPhaseManager.dir.nwStrgPinInserted
         );
     }
 

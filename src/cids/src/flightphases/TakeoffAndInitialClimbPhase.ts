@@ -25,12 +25,12 @@ export class TakeoffAndInitialClimbPhase extends FlightPhase {
     public shouldActivate(): boolean {
         return (
             (
-                this.flightPhaseManager.cids.thrustLever1Position() >= 75
-                && this.flightPhaseManager.cids.thrustLever2Position() >= 75
+                this.flightPhaseManager.dir.thrustLever1Position >= 75
+                && this.flightPhaseManager.dir.thrustLever2Position >= 75
             )
             && (
-                this.flightPhaseManager.cids.onGround()
-                || this.flightPhaseManager.cids.altitude() < 10000
+                this.flightPhaseManager.dir.onGround
+                || this.flightPhaseManager.dir.altitude < 10000
             )
         );
     }

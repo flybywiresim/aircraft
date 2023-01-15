@@ -23,8 +23,8 @@ export class AfterDisembarkationPhase extends FlightPhase {
 
     public shouldActivate(): boolean {
         return (
-            this.flightPhaseManager.cids.totalPax() === 0
-            && this.flightPhaseManager.cids.isStationary()
+            this.flightPhaseManager.dir.totalPax === 0
+            && this.flightPhaseManager.dir.groundSpeed < 1
         );
     }
 

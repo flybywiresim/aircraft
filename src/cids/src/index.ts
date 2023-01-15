@@ -1,5 +1,8 @@
-import { Cids } from './CIDS';
-import { FlightPhaseManager } from './FlightPhaseManager';
+import { CidsOrchestrator } from './core/CidsOrchestrator';
+import { DIR1 } from './core/directors/DIR1';
+import { DIR2 } from './core/directors/DIR2';
+import { Director } from './core/directors/Director';
+import { FlightPhaseManager } from './flightphases/FlightPhaseManager';
 import { AfterDisembarkationPhase } from './flightphases/AfterDisembarkationPhase';
 import { ApproachPhase } from './flightphases/ApproachPhase';
 import { BoardingPhase } from './flightphases/BoardingPhase';
@@ -15,7 +18,10 @@ import { TaxiBeforeTakeoffPhase } from './flightphases/TaxiBeforeTakeoffPhase';
 import { TopOfDescentPhase } from './flightphases/TopOfDescentPhase';
 
 export {
-    Cids,
+    CidsOrchestrator,
+    DIR1,
+    DIR2,
+    Director,
     FlightPhaseManager,
     FlightPhase,
     AfterDisembarkationPhase,
