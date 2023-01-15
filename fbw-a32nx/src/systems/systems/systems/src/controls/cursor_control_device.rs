@@ -67,7 +67,6 @@ impl CursorControlDevice {
 
 impl SimulationElement for CursorControlDevice {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        self.power_supply.accept(visitor);
         self.keys.iter_mut().for_each(|key| key.accept(visitor));
         visitor.visit(self);
     }
