@@ -68,10 +68,9 @@ impl KeyboardAndCursorControlUnit {
         primary_source_kbd: ElectricalBusType,
         fallback_source_kbd: ElectricalBusType,
         primary_source_ccd: ElectricalBusType,
-        fallback_source_ccd: ElectricalBusType,
     ) -> Self {
         KeyboardAndCursorControlUnit {
-            ccd: CursorControlDevice::new(context, side, primary_source_ccd, fallback_source_ccd),
+            ccd: CursorControlDevice::new(context, side, primary_source_ccd),
             kbd: Keyboard::new(context, side, primary_source_kbd, fallback_source_kbd),
             keycodes: [
                 0x0100, // ESC

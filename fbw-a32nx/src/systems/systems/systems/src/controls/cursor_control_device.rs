@@ -1,14 +1,12 @@
 use crate::{
-    controls::{
-        keyboard_and_cursor_control_unit::Button,
-        power_supply_relay::PowerSupplyRelay,
-    },
+    controls::keyboard_and_cursor_control_unit::Button,
     simulation::{InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader, VariableIdentifier},
-    shared::ElectricalBusType,
+    shared::{ElectricalBusType, ElectricalBuses},
 };
 
 pub struct CursorControlDevice {
-    power_supply: PowerSupplyRelay,
+    power_supply: ElectricalBusType,
+    is_powered: bool,
     keys: [Button; 4],
     switch_ccd_id: VariableIdentifier,
     switch_ccd_value: f64,
@@ -21,10 +19,10 @@ impl CursorControlDevice {
         context: &mut InitContext,
         side: &str,
         primary_power_supply: ElectricalBusType,
-        fallback_power_supply: ElectricalBusType,
     ) -> Self {
         CursorControlDevice {
-            power_supply: PowerSupplyRelay::new(primary_power_supply, fallback_power_supply),
+            power_supply: primary_power_supply,
+            is_powered: false,
             keys: [
                 Button::new(context, side, "ESC2"),
                 Button::new(context, side, "KBD"),
@@ -42,7 +40,7 @@ impl CursorControlDevice {
         self.active_key = self.keys.len();
         self.key_overflow = false;
 
-        if self.switch_ccd_value > 0.0 {
+        if self.switch_ccd_value > 0.0 && self.is_powered {
             for (i, key) in self.keys.iter().enumerate() {
                 if key.button_pressed() {
                     if self.active_key != self.keys.len() {
@@ -76,5 +74,9 @@ impl SimulationElement for CursorControlDevice {
 
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.switch_ccd_value = reader.read(&self.switch_ccd_id);
+    }
+
+    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
+        self.is_powered = buses.is_powered(self.power_supply);
     }
 }
