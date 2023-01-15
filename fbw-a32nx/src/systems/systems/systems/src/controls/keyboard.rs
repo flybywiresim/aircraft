@@ -1,6 +1,6 @@
 use crate::{
     controls::{
-        keyboard_and_cursor_control_unit::Button,
+        keyboard_and_cursor_control_unit::{Button, KccuInputComponent},
         power_supply_relay::PowerSupplyRelay,
     },
     simulation::{InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader, VariableIdentifier},
@@ -109,6 +109,20 @@ impl Keyboard {
                 }
             }
         }
+    }
+}
+
+impl KccuInputComponent for Keyboard {
+    fn key_pressed(&self) -> bool {
+        self.active_key != self.keys.len()
+    }
+
+    fn pressed_key_index(&self) -> usize {
+        self.active_key
+    }
+
+    fn key_overflow(&self) -> bool {
+        self.key_overflow
     }
 }
 
