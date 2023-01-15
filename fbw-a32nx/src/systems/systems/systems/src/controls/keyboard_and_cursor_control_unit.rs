@@ -152,6 +152,29 @@ impl KeyboardAndCursorControlUnit {
             ],
         }
     }
+
+    pub fn update(&mut self) {
+        self.ccd_last_pressed_key = self.ccd_pressed_key;
+        self.kbd_last_pressed_key = self.kbd_pressed_key;
+        self.ccd_overflow = false;
+        self.kbd_overflow = false;
+
+        if self.ccd.key_pressed() {
+            self.ccd_overflow = self.ccd.key_overflow();
+            self.ccd_pressed_key = self.keycodes[self.ccd.pressed_key_index()];
+        }
+
+        if self.kbd.key_pressed() {
+            self.kbd_overflow = self.kbd.key_overflow();
+
+            // the escape key is mapped to the CCD escape key
+            if self.kbd.pressed_key_index() != 0 {
+                self.kbd_pressed_key = self.keycodes[self.kbd.pressed_key_index() - 1];
+            } else {
+                self.kbd_pressed_key = self.keycodes[0];
+            }
+        }
+    }
 }
 
 impl SimulationElement for KeyboardAndCursorControlUnit {
