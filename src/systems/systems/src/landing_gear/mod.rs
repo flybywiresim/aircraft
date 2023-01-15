@@ -739,6 +739,9 @@ pub struct LandingGearControlInterfaceUnit {
     internal_error_failure: Failure,
 
     is_active_computer_previous_state: bool,
+
+    should_open_doors: bool,
+    should_extend_gears: bool,
 }
 impl LandingGearControlInterfaceUnit {
     const MAX_TRANSITION_DURATION: Duration = Duration::from_secs(30);
@@ -803,6 +806,9 @@ impl LandingGearControlInterfaceUnit {
             internal_error_failure: Failure::new(FailureType::LgciuInternalError(lgciu_id)),
 
             is_active_computer_previous_state: lgciu_id == LgciuId::Lgciu1,
+
+            should_open_doors: false,
+            should_extend_gears: context.start_gear_down(),
         }
     }
 
@@ -839,8 +845,16 @@ impl LandingGearControlInterfaceUnit {
             }
 
             if is_master_computer {
-                self.gear_system_control
-                    .update(&self.sensor_inputs, !self.is_gear_lever_down);
+                self.monitor_gear_state();
+
+                // Only allow statemachine to work if status is OK. If not outputs will be frozen at old value
+                if self.status() == LgciuStatus::Ok {
+                    self.gear_system_control
+                        .update(&self.sensor_inputs, !self.is_gear_lever_down);
+
+                    self.compute_open_doors_output();
+                    self.compute_extend_gears_output();
+                }
             }
         }
 
@@ -915,9 +929,41 @@ impl LandingGearControlInterfaceUnit {
             .gear_system_control
             .init_gear_state(&self.sensor_inputs, !self.is_gear_lever_down)
         {
+            //If state ok on init let's compute statemachine outputs
+            self.compute_open_doors_output();
+            self.compute_extend_gears_output();
             LgciuStatus::Ok
         } else {
             LgciuStatus::FailedNoChangeOver
+        };
+    }
+
+    fn monitor_gear_state(&mut self) {
+        self.status = if self
+            .gear_system_control
+            .check_gear_state(&self.sensor_inputs)
+        {
+            LgciuStatus::Ok
+        } else {
+            LgciuStatus::FailedNoChangeOver
+        };
+    }
+
+    fn compute_open_doors_output(&mut self) {
+        self.should_open_doors = match self.gear_system_control.state() {
+            GearSystemState::AllUpLocked => false,
+            GearSystemState::Retracting => !self.all_up_and_locked(),
+            GearSystemState::Extending => !self.all_down_and_locked(),
+            GearSystemState::AllDownLocked => false,
+        };
+    }
+
+    fn compute_extend_gears_output(&mut self) {
+        self.should_extend_gears = match self.gear_system_control.state() {
+            GearSystemState::AllUpLocked => false,
+            GearSystemState::Retracting => !(self.all_fully_opened() || self.all_up_and_locked()),
+            GearSystemState::Extending => self.all_fully_opened() || self.all_down_and_locked(),
+            GearSystemState::AllDownLocked => true,
         };
     }
 
@@ -1161,26 +1207,21 @@ impl LgciuDoorPosition for LandingGearControlInterfaceUnit {
 }
 impl LgciuGearControl for LandingGearControlInterfaceUnit {
     fn should_open_doors(&self) -> bool {
-        match self.gear_system_control.state() {
-            GearSystemState::AllUpLocked => false,
-            GearSystemState::Retracting => !self.all_up_and_locked(),
-            GearSystemState::Extending => !self.all_down_and_locked(),
-            GearSystemState::AllDownLocked => false,
-        }
+        self.should_open_doors
     }
 
     fn should_extend_gears(&self) -> bool {
-        match self.gear_system_control.state() {
-            GearSystemState::AllUpLocked => false,
-            GearSystemState::Retracting => !(self.all_fully_opened() || self.all_up_and_locked()),
-            GearSystemState::Extending => self.all_fully_opened() || self.all_down_and_locked(),
-            GearSystemState::AllDownLocked => true,
-        }
+        self.should_extend_gears
     }
 
     fn control_active(&self) -> bool {
+        let stop_hyd_control = !self.gear_handle_is_down()
+            && self.gear_system_state() == GearSystemState::AllUpLocked
+            || (self.gear_handle_is_down()
+                && self.gear_system_state() == GearSystemState::AllDownLocked);
+
         match self.status {
-            LgciuStatus::Ok | LgciuStatus::FailedNoChangeOver => true,
+            LgciuStatus::Ok | LgciuStatus::FailedNoChangeOver => !stop_hyd_control,
             LgciuStatus::FailedNotPowered | LgciuStatus::FailedAutoChangeOver => false,
         }
     }
@@ -1229,13 +1270,7 @@ impl GearSystemStateMachine {
                 if !gear_handle_position_is_up {
                     GearSystemState::Extending
                 } else {
-                    // Checking consistency as we should be all uplocked with lever up
-                    if lgciu.all_up_and_locked() && lgciu.all_closed_and_locked() {
-                        self.gears_state
-                    } else {
-                        // Else we are supposed to be all uplocked but we aren't so back to retraction
-                        GearSystemState::Retracting
-                    }
+                    GearSystemState::AllUpLocked
                 }
             }
             GearSystemState::Retracting => {
@@ -1274,10 +1309,7 @@ impl GearSystemStateMachine {
         lgciu: &(impl LgciuGearExtension + LgciuDoorPosition),
         gear_handle_position_is_up: bool,
     ) -> bool {
-        let doors_in_transition = !lgciu.all_fully_opened() && !lgciu.all_closed_and_locked();
-        let gears_in_transition = !lgciu.all_down_and_locked() && !lgciu.all_up_and_locked();
-
-        if doors_in_transition && gears_in_transition {
+        if self.doors_in_transition(lgciu) && self.gears_in_transition(lgciu) {
             return false;
         }
 
@@ -1294,6 +1326,23 @@ impl GearSystemStateMachine {
         true
     }
 
+    /// Checks if sensors are consistent with current state so we can monitor this continuously
+    fn check_gear_state(&mut self, lgciu: &(impl LgciuGearExtension + LgciuDoorPosition)) -> bool {
+        if self.doors_in_transition(lgciu) && self.gears_in_transition(lgciu) {
+            return false;
+        }
+
+        match self.gears_state {
+            GearSystemState::AllUpLocked => {
+                lgciu.all_up_and_locked() && lgciu.all_closed_and_locked()
+            }
+            GearSystemState::AllDownLocked => {
+                lgciu.all_down_and_locked() && lgciu.all_closed_and_locked()
+            }
+            GearSystemState::Extending | GearSystemState::Retracting => true,
+        }
+    }
+
     pub fn update(
         &mut self,
         lgciu: &(impl LgciuGearExtension + LgciuDoorPosition),
@@ -1304,6 +1353,14 @@ impl GearSystemStateMachine {
 
     pub fn state(&self) -> GearSystemState {
         self.gears_state
+    }
+
+    fn doors_in_transition(&self, lgciu: &(impl LgciuGearExtension + LgciuDoorPosition)) -> bool {
+        !lgciu.all_fully_opened() && !lgciu.all_closed_and_locked()
+    }
+
+    fn gears_in_transition(&self, lgciu: &(impl LgciuGearExtension + LgciuDoorPosition)) -> bool {
+        !lgciu.all_down_and_locked() && !lgciu.all_up_and_locked()
     }
 }
 

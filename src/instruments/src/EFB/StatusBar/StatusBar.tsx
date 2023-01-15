@@ -34,6 +34,8 @@ export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
     const [timeDisplayed] = usePersistentProperty('EFB_TIME_DISPLAYED', 'utc');
     const [timeFormat] = usePersistentProperty('EFB_TIME_FORMAT', '24');
 
+    const [outdatedVersionFlag] = useSimVar('L:A32NX_OUTDATED_VERSION', 'boolean', 500);
+
     const power = usePower();
 
     const dayName = [
@@ -149,6 +151,15 @@ export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
             />
 
             <p>{`${dayName} ${monthName} ${dayOfMonth}`}</p>
+
+            {outdatedVersionFlag ? (
+                <div className="flex overflow-hidden absolute left-48 justify-center items-center w-96 h-10 ">
+                    <TooltipWrapper text={t('VersionCheck.TT.StatusBarWarning')}>
+                        <span className="text-utility-red">{t('VersionCheck.StatusBarWarning').toUpperCase()}</span>
+                    </TooltipWrapper>
+                </div>
+            ) : ''}
+
             <div className="flex absolute inset-x-0 flex-row justify-center items-center mx-auto space-x-4 w-min">
                 {(timeDisplayed === 'utc' || timeDisplayed === 'both') && (
                     <p>{getZuluFormattedTime(currentUTC)}</p>
@@ -160,6 +171,7 @@ export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
                     <p>{getLocalFormattedTime(currentLocalTime)}</p>
                 )}
             </div>
+
             <div className="flex items-center space-x-8">
                 {(!!showStatusBarFlightProgress && (data !== initialState.data)) && (
                     <div
