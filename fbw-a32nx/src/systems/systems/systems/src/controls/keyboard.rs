@@ -99,7 +99,7 @@ impl Keyboard {
         self.active_key = self.keys.len();
         self.key_overflow = false;
 
-        if self.switch_kbd_value > 0.0 {
+        if self.switch_kbd_value > 0.0 && self.power_supply.output_is_powered() {
             for (i, key) in self.keys.iter().enumerate() {
                 if key.button_pressed() {
                     if self.active_key != self.keys.len() {
