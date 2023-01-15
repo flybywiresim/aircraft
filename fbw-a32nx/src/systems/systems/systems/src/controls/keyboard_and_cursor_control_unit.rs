@@ -7,6 +7,12 @@ use crate::{
     shared::ElectricalBusType,
 };
 
+pub trait KccuInputComponent {
+    fn key_pressed(&self) -> bool;
+    fn pressed_key_index(&self) -> usize;
+    fn key_overflow(&self) -> bool;
+}
+
 pub struct Button {
     button_id: VariableIdentifier,
     button_value: f64,
@@ -44,6 +50,8 @@ impl SimulationElement for Button {
 pub struct KeyboardAndCursorControlUnit {
     ccd: CursorControlDevice,
     kbd: Keyboard,
+    output_can_bus_1: VariableIdentifier,
+    output_can_bus_2: VariableIdentifier,
 }
 
 impl KeyboardAndCursorControlUnit {
@@ -58,6 +66,8 @@ impl KeyboardAndCursorControlUnit {
         KeyboardAndCursorControlUnit {
             ccd: CursorControlDevice::new(context, side, primary_source_ccd, fallback_source_ccd),
             kbd: Keyboard::new(context, side, primary_source_kbd, fallback_source_kbd),
+            output_can_bus_1: context.get_identifier(format!("KCCU_CAN_BUS_{}_1", side)),
+            output_can_bus_2: context.get_identifier(format!("KCCU_CAN_BUS_{}_2", side)),
         }
     }
 }
