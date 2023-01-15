@@ -27,6 +27,7 @@ use systems::{
         Aps3200ApuGenerator, Aps3200StartMotor, AuxiliaryPowerUnit, AuxiliaryPowerUnitFactory,
         AuxiliaryPowerUnitFireOverheadPanel, AuxiliaryPowerUnitOverheadPanel,
     },
+    controls::KeyboardAndCursorControlUnit,
     electrical::{Electricity, ElectricitySource, ExternalPowerSource},
     engine::engine_wing_flex::EnginesFlexiblePhysics,
     engine::{leap_engine::LeapEngine, EngineFireOverheadPanel},
@@ -69,6 +70,7 @@ pub struct A380 {
     pneumatic: A380Pneumatic,
     radio_altimeters: A380RadioAltimeters,
     engines_flex_physics: EnginesFlexiblePhysics<4>,
+    kccus: [KeyboardAndCursorControlUnit; 2],
 }
 impl A380 {
     pub fn new(context: &mut InitContext) -> A380 {
@@ -111,6 +113,22 @@ impl A380 {
             pneumatic: A380Pneumatic::new(context),
             radio_altimeters: A380RadioAltimeters::new(context),
             engines_flex_physics: EnginesFlexiblePhysics::new(context),
+            kccus: [
+                KeyboardAndCursorControlUnit::new(
+                    context,
+                    'L',
+                    ElectricalBusType::DirectCurrent(1),
+                    ElectricalBusType::DirectCurrentEssential,
+                    ElectricalBusType::DirectCurrentEssential,
+                ),
+                KeyboardAndCursorControlUnit::new(
+                    context,
+                    'R',
+                    ElectricalBusType::DirectCurrent(2),
+                    ElectricalBusType::DirectCurrent(1),
+                    ElectricalBusType::DirectCurrent(2),
+                )
+            ],
         }
     }
 }
@@ -233,6 +251,8 @@ impl Aircraft for A380 {
         );
 
         self.engines_flex_physics.update(context);
+
+        self.kccus.iter_mut().for_each(|kccu| kccu.update());
     }
 }
 impl SimulationElement for A380 {
@@ -265,6 +285,7 @@ impl SimulationElement for A380 {
         self.pressurization_overhead.accept(visitor);
         self.pneumatic.accept(visitor);
         self.engines_flex_physics.accept(visitor);
+        self.kccus.iter().for_each(|kccu| kccu.accept(visitor));
 
         visitor.visit(self);
     }
