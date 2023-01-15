@@ -183,4 +183,26 @@ impl SimulationElement for KeyboardAndCursorControlUnit {
         self.kbd.accept(visitor);
         visitor.visit(self);
     }
+
+    fn write(&self, writer: &mut SimulatorWriter) {
+        if self.ccd_last_pressed_key != self.ccd_pressed_key {
+            if self.ccd_overflow {
+                self.key_overflow_can_buses.iter().for_each(|bus| writer.write(&bus, 0x01));
+            } else {
+                self.key_overflow_can_buses.iter().for_each(|bus| writer.write(&bus, 0x00));
+            }
+
+            self.output_can_buses.iter().for_each(|bus| writer.write(&bus, self.ccd_pressed_key));
+        }
+
+        if self.kbd_last_pressed_key != self.kbd_pressed_key {
+            if self.kbd_overflow {
+                self.key_overflow_can_buses.iter().for_each(|bus| writer.write(&bus, 0x81));
+            } else {
+                self.key_overflow_can_buses.iter().for_each(|bus| writer.write(&bus, 0x00));
+            }
+
+            self.output_can_buses.iter().for_each(|bus| writer.write(&bus, self.kbd_pressed_key));
+        }
+    }
 }
