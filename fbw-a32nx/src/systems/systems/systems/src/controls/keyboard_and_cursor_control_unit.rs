@@ -108,7 +108,7 @@ impl KeyboardAndCursorControlUnit {
 
         // send the new key down messages
         self.ccd.update(&mut self.output_buffer);
-        self.kbd.enqueue_keys(&mut self.output_buffer);
+        self.kbd.update(&mut self.output_buffer);
 
         // check if we have a buffer overrun
         if self.output_buffer.len() >= 16 {

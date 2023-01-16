@@ -94,31 +94,25 @@ impl Keyboard {
         }
     }
 
-    pub fn update(&mut self) {
-        if self.active_keys.len() != 0 {
-            self.active_keys = Vec::new();
-        }
+    pub fn update(&mut self, buffer: &mut VecDeque<u16>) {
+        self.power_supply.update();
 
         if self.switch_kbd_value > 0.0 && self.power_supply.output_is_powered() {
             self.keys.iter().for_each(|key| {
                 if key.button_pressed() {
-                    self.active_keys.push(key.keycode());
+                    let code = key.keycode();
+                    buffer.push_back(code & 0x80ff);
+                    buffer.push_back(code & 0x00ff);
                 }
             });
         }
-    }
-
-    pub fn enqueue_keys(&self, buffer: &mut VecDeque<u16>) {
-        self.active_keys.iter().for_each(|code| {
-            buffer.push_back(code & 0x80ff);
-            buffer.push_back(code & 0x00ff);
-        });
     }
 }
 
 impl SimulationElement for Keyboard {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.keys.iter_mut().for_each(|key| key.accept(visitor));
+        self.power_supply.accept(visitor);
         visitor.visit(self);
     }
 
