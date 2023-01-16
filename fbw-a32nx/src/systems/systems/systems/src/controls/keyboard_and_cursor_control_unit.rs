@@ -127,9 +127,8 @@ impl SimulationElement for KeyboardAndCursorControlUnit {
 
     fn write(&self, writer: &mut SimulatorWriter) {
         let next = self.output_buffer.get(0);
-        self.output_can_buses.iter().for_each(|bus| writer.write(bus, *next.unwrap()));
-        // match next {
-        //     Some(x) => self.output_can_buses.iter().for_each(|bus| writer.write(bus, x)),
-        // }
+        if next.is_some() {
+            self.output_can_buses.iter().for_each(|bus| writer.write(bus, *next.unwrap()));
+        }
     }
 }
