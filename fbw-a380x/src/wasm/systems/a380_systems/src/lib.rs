@@ -27,7 +27,7 @@ use systems::{
         Aps3200ApuGenerator, Aps3200StartMotor, AuxiliaryPowerUnit, AuxiliaryPowerUnitFactory,
         AuxiliaryPowerUnitFireOverheadPanel, AuxiliaryPowerUnitOverheadPanel,
     },
-    controls::KeyboardAndCursorControlUnit,
+    controls::keyboard_and_cursor_control_unit::KeyboardAndCursorControlUnit,
     electrical::{Electricity, ElectricitySource, ExternalPowerSource},
     engine::engine_wing_flex::EnginesFlexiblePhysics,
     engine::{leap_engine::LeapEngine, EngineFireOverheadPanel},
@@ -116,14 +116,14 @@ impl A380 {
             kccus: [
                 KeyboardAndCursorControlUnit::new(
                     context,
-                    'L',
+                    "L",
                     ElectricalBusType::DirectCurrent(1),
                     ElectricalBusType::DirectCurrentEssential,
                     ElectricalBusType::DirectCurrentEssential,
                 ),
                 KeyboardAndCursorControlUnit::new(
                     context,
-                    'R',
+                    "R",
                     ElectricalBusType::DirectCurrent(2),
                     ElectricalBusType::DirectCurrent(1),
                     ElectricalBusType::DirectCurrent(2),
@@ -285,7 +285,7 @@ impl SimulationElement for A380 {
         self.pressurization_overhead.accept(visitor);
         self.pneumatic.accept(visitor);
         self.engines_flex_physics.accept(visitor);
-        self.kccus.iter().for_each(|kccu| kccu.accept(visitor));
+        self.kccus.iter_mut().for_each(|kccu| kccu.accept(visitor));
 
         visitor.visit(self);
     }
