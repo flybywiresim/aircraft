@@ -280,7 +280,7 @@ export class LegsProcedure {
       // find a leg with the reference navaid for the procedure
           for (let i = this._legs.length - 1; i >= 0; i--) {
               if (this._legs[i].originIcao.trim().length > 0) {
-                  const recNavaid: RawVor = this.getLoadedFacility(currentLeg.originIcao) as RawVor;
+                  const recNavaid: RawVor = this.getLoadedFacility(this._legs[i].originIcao) as RawVor;
                   if (recNavaid && recNavaid.magneticVariation !== undefined) {
                       return 360 - recNavaid.magneticVariation;
                   }
