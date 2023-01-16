@@ -96,13 +96,8 @@ export class DIR1 extends Director {
 
         if (CidsOrchestrator.DEBUG) {
             const set = SimVar.SetSimVarValue;
-            const get = SimVar.GetSimVarValue;
             const varname = 'L:A32NX_CIDS_DEBUG_DIR_1';
             set(`${varname}_IS_ACTIVE`, 'Bool', this.isActive);
-            set(`${varname}_LGCIU_1_DISCRETE_1_SSM`, 'number', new Arinc429Word(get(`${varname}_LGCIU_1_SSM`, 'number')).ssm);
-            set(`${varname}_ADIRS_ADR_1_ALTITUDE_SSM`, 'number', new Arinc429Word(get('L:A32NX_ADIRS_ADR_1_ALTITUDE', 'number')).ssm);
-            set(`${varname}_ADIRS_IR_GROUD_SPEED_SSM`, 'number', new Arinc429Word(get('L:A32NX_ADIRS_IR_3_GROUND_SPEED', 'number')).ssm);
-            set(`${varname}_LGCIU_1_DISCRETE_2_SSM`, 'number', new Arinc429Word(get('L:A32NX_LGCIU_1_DISCRETE_WORD_2', 'number')).ssm);
             set(`${varname}_FWC_FLIGHT_PHASE`, 'number', this.fwcFlightPhase);
             set(`${varname}_ON_GROUND`, 'Bool', this.onGround);
             set(`${varname}_ALL_DOORS_CLOSED_LOCKED`, 'Bool', this.allDoorsClosedLocked);
@@ -165,8 +160,8 @@ export class DIR1 extends Director {
         this.nwStrgPinInserted = SimVar.GetSimVarValue('L:A32NX_HYD_NW_STRG_DISC_ECAM_MEMO', 'Bool');
         this.thrustLever1Position = SimVar.GetSimVarValue('L:A32NX_3D_THROTTLE_LEVER_POSITION_1', 'number');
         this.thrustLever2Position = SimVar.GetSimVarValue('L:A32NX_3D_THROTTLE_LEVER_POSITION_2', 'number');
-        this.gpwsFlap3 = SimVar.GetSimVarValue('L:A32NX_GPWS_FLAP_OFF', 'Bool');
-        this.flapsConfig = this.getFlapsConfig();
+        this.gpwsFlap3 = SimVar.GetSimVarValue('L:A32NX_GPWS_FLAPS3', 'Bool');
+        this.flapsConfig = SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'number'); // TODO: This should use ARINC429 once both SFCCs are implemented.
         this.altitude = this.decodeAltitude();
         this.fcuSelectedAlt = Simplane.getAutoPilotDisplayedAltitudeLockValue(); // TODO: This should use ARINC429 once https://github.com/flybywiresim/a32nx/pull/7587 is merged.
         this.fmaVerticalMode = SimVar.GetSimVarValue('L:A32NX_FMA_VERTICAL_MODE', 'Enum');
@@ -261,22 +256,5 @@ export class DIR1 extends Director {
         console.log('onground: calling fail');
         this.fail();
         return false;
-    }
-
-    private getFlapsConfig(): FlapsConfig {
-        const flapConfig = new Arinc429Word(SimVar.GetSimVarValue('L:A32NX_SFCC_SLAT_FLAP_ACTUAL_POSITION_WORD', 'number'));
-
-        if (flapConfig.isNormalOperation() && flapConfig.getBitValue(18)) {
-            if (flapConfig.getBitValue(23)) return 4;
-            if (flapConfig.getBitValue(22)) return 3;
-            if (flapConfig.getBitValue(21)) return 2;
-            if (flapConfig.getBitValue(20)) return 1;
-            if (flapConfig.getBitValue(19)) return 0;
-        }
-        if (flapConfig.isNoComputedData() && (this.fwcFlightPhase === 1 || this.fwcFlightPhase === 10)) return 0;
-
-        console.log('flaps decode: callling fail');
-        this.fail();
-        return 0;
     }
 }
