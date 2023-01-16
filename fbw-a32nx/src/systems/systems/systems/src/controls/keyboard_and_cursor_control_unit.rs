@@ -107,7 +107,7 @@ impl KeyboardAndCursorControlUnit {
         self.output_buffer.pop_front();
 
         // send the new key down messages
-        self.ccd.enqueue_keys(&mut self.output_buffer);
+        self.ccd.update(&mut self.output_buffer);
         self.kbd.enqueue_keys(&mut self.output_buffer);
 
         // check if we have a buffer overrun

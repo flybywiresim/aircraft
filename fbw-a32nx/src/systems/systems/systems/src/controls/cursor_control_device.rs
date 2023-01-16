@@ -36,25 +36,16 @@ impl CursorControlDevice {
         }
     }
 
-    pub fn update(&mut self) {
-        if self.active_keys.len() != 0 {
-            self.active_keys = Vec::new();
-        }
-
+    pub fn update(&self, buffer: &mut VecDeque<u16>) {
         if self.switch_ccd_value > 0.0 && self.is_powered {
             self.keys.iter().for_each(|key| {
                 if key.button_pressed() {
-                    self.active_keys.push(key.keycode());
+                    let code = key.keycode();
+                    buffer.push_back(code & 0xc0ff);
+                    buffer.push_back(code & 0x40ff);
                 }
             });
         }
-    }
-
-    pub fn enqueue_keys(&self, buffer: &mut VecDeque<u16>) {
-        self.active_keys.iter().for_each(|code| {
-            buffer.push_back(code & 0xc0ff);
-            buffer.push_back(code & 0x40ff);
-        });
     }
 }
 
