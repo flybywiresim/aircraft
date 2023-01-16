@@ -9,14 +9,12 @@ use crate::{
     },
 };
 use std::collections::VecDeque;
-use std::vec::Vec;
 
 pub struct Keyboard {
     power_supply: PowerSupplyRelay,
     keys: [Button; 58],
     switch_kbd_id: VariableIdentifier,
     switch_kbd_value: f64,
-    active_keys: Vec<u16>,
 }
 
 impl Keyboard {
@@ -90,7 +88,6 @@ impl Keyboard {
             ],
             switch_kbd_id: context.get_identifier(format!("KCCU_{}_KBD_ON_OFF", side)),
             switch_kbd_value: 0.0,
-            active_keys: Vec::new(),
         }
     }
 
