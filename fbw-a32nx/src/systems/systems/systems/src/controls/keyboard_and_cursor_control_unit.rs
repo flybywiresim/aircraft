@@ -106,7 +106,7 @@ impl KeyboardAndCursorControlUnit {
     pub fn update(&mut self) {
         self.output_buffer.pop_front();
 
-        // send the new key down messages
+        // update the internal states and send the new key down messages
         self.ccd.update(&mut self.output_buffer);
         self.kbd.update(&mut self.output_buffer);
 
