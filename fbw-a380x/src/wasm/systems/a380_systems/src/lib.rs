@@ -27,11 +27,11 @@ use systems::{
         Aps3200ApuGenerator, Aps3200StartMotor, AuxiliaryPowerUnit, AuxiliaryPowerUnitFactory,
         AuxiliaryPowerUnitFireOverheadPanel, AuxiliaryPowerUnitOverheadPanel,
     },
-    controls::keyboard_and_cursor_control_unit::KeyboardAndCursorControlUnit,
     electrical::{Electricity, ElectricitySource, ExternalPowerSource},
     engine::engine_wing_flex::EnginesFlexiblePhysics,
     engine::{leap_engine::LeapEngine, EngineFireOverheadPanel},
     hydraulic::brake_circuit::AutobrakePanel,
+    indicating_recording::controls::keyboard_and_cursor_control_unit::KeyboardAndCursorControlUnit,
     landing_gear::{LandingGear, LandingGearControlInterfaceUnitSet},
     navigation::adirs::{
         AirDataInertialReferenceSystem, AirDataInertialReferenceSystemOverheadPanel,
@@ -127,7 +127,7 @@ impl A380 {
                     ElectricalBusType::DirectCurrent(2),
                     ElectricalBusType::DirectCurrent(1),
                     ElectricalBusType::DirectCurrent(2),
-                )
+                ),
             ],
         }
     }
