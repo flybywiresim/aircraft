@@ -1,6 +1,6 @@
 use crate::{
     indicating_recording::controls::{
-        keyboard_and_cursor_control_unit::Button, power_supply_relay::PowerSupplyRelay,
+        keyboard_cursor_control_unit::Button, power_supply_relay::PowerSupplyRelay,
     },
     shared::ElectricalBusType,
     simulation::{

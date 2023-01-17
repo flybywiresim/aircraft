@@ -1,5 +1,5 @@
 use crate::{
-    indicating_recording::controls::keyboard_and_cursor_control_unit::Button,
+    indicating_recording::controls::keyboard_cursor_control_unit::Button,
     shared::{ElectricalBusType, ElectricalBuses},
     simulation::{
         InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,

@@ -31,7 +31,7 @@ use systems::{
     engine::engine_wing_flex::EnginesFlexiblePhysics,
     engine::{leap_engine::LeapEngine, EngineFireOverheadPanel},
     hydraulic::brake_circuit::AutobrakePanel,
-    indicating_recording::controls::keyboard_and_cursor_control_unit::KeyboardAndCursorControlUnit,
+    indicating_recording::controls::keyboard_cursor_control_unit::KeyboardCursorControlUnit,
     landing_gear::{LandingGear, LandingGearControlInterfaceUnitSet},
     navigation::adirs::{
         AirDataInertialReferenceSystem, AirDataInertialReferenceSystemOverheadPanel,
@@ -70,7 +70,7 @@ pub struct A380 {
     pneumatic: A380Pneumatic,
     radio_altimeters: A380RadioAltimeters,
     engines_flex_physics: EnginesFlexiblePhysics<4>,
-    kccus: [KeyboardAndCursorControlUnit; 2],
+    kccus: [KeyboardCursorControlUnit; 2],
 }
 impl A380 {
     pub fn new(context: &mut InitContext) -> A380 {
@@ -114,14 +114,14 @@ impl A380 {
             radio_altimeters: A380RadioAltimeters::new(context),
             engines_flex_physics: EnginesFlexiblePhysics::new(context),
             kccus: [
-                KeyboardAndCursorControlUnit::new(
+                KeyboardCursorControlUnit::new(
                     context,
                     "L",
                     ElectricalBusType::DirectCurrent(1),
                     ElectricalBusType::DirectCurrentEssential,
                     ElectricalBusType::DirectCurrentEssential,
                 ),
-                KeyboardAndCursorControlUnit::new(
+                KeyboardCursorControlUnit::new(
                     context,
                     "R",
                     ElectricalBusType::DirectCurrent(2),
