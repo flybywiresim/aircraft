@@ -142,6 +142,14 @@ export const Payload = () => {
     const [_, setGsxNumPassengers] = useSimVar('L:FSDT_GSX_NUMPASSENGERS', 'Number');
     const [gsxBoardingState] = useSimVar('L:FSDT_GSX_BOARDING_STATE', 'Number');
     const [gsxDeBoardingState] = useSimVar('L:FSDT_GSX_DEBOARDING_STATE', 'Number');
+    const gsxStates = {
+        AVAILABLE: 1,
+        NOT_AVAILABLE: 2,
+        BYPASSED: 3,
+        REQUESTED: 4,
+        PERFORMING: 5,
+        COMPLETED: 6,
+    };
 
     const setSimBriefValues = () => {
         if (simbriefUnits === 'kgs') {
@@ -530,9 +538,9 @@ export const Payload = () => {
         if (gsxPayloadSyncEnabled === 1) {
             switch (gsxBoardingState) {
             // If boarding has been requested, performed or completed
-            case 4:
-            case 5:
-            case 6:
+            case gsxStates.REQUESTED:
+            case gsxStates.PERFORMING:
+            case gsxStates.COMPLETED:
                 setBoardingStarted(true);
                 break;
             default:
@@ -544,17 +552,17 @@ export const Payload = () => {
     useEffect(() => {
         if (gsxPayloadSyncEnabled === 1) {
             switch (gsxDeBoardingState) {
-            case 4:
+            case gsxStates.REQUESTED:
                 // If Deboarding has been requested, set target pax to 0 for boarding backend
                 setTargetPax(0);
                 setTargetCargo(0, 0);
                 setBoardingStarted(true);
                 break;
-            case 5:
+            case gsxStates.PERFORMING:
                 // If deboarding is being performed
                 setBoardingStarted(true);
                 break;
-            case 6:
+            case gsxStates.COMPLETED:
                 // If deboarding is completed
                 setBoardingStarted(false);
                 break;
