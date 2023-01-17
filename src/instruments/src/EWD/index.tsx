@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { DisplayUnit } from '@instruments/common/displayUnit';
+import { useUpdate } from '@instruments/common/hooks';
 import { render } from '../Common';
 import UpperDisplay from './elements/UpperDisplay';
 import LowerLeftDisplay from './elements/LowerLeftDisplay';
@@ -7,7 +8,7 @@ import LowerRightDisplay from './elements/LowerRightDisplay';
 import STS from './elements/STS';
 import ADV from './elements/ADV';
 import DownArrow from './elements/DownArrow';
-import PseudoFWC from './elements/PseudoFWC';
+import { NewPseudoFWC } from './NewPseudoFWC';
 
 import './style.scss';
 
@@ -16,6 +17,10 @@ export const EWD: React.FC = () => {
         const url = document.getElementsByTagName('a32nx-ewd')[0].getAttribute('url');
         return url ? parseInt(url.substring(url.length - 1), 10) : 0;
     });
+
+    const [pseudoFwc] = useState(() => new NewPseudoFWC());
+
+    useUpdate((deltaTime) => pseudoFwc.onUpdate(deltaTime));
 
     return (
         <DisplayUnit
@@ -32,7 +37,7 @@ export const EWD: React.FC = () => {
                 <STS x={484} y={753} active={false} />
                 <ADV x={483} y={543} active={false} />
                 <DownArrow x={481} y={729} active={false} />
-                <PseudoFWC />
+                {/* <PseudoFWC /> */}
                 {/* sd */}
             </svg>
         </DisplayUnit>
