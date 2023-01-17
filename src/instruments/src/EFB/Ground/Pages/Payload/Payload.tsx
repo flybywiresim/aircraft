@@ -130,6 +130,7 @@ export const Payload = () => {
 
     const totalCurrentGallon = useMemo(() => round(Math.max(LInnCurrent + LOutCurrent + RInnCurrent + ROutCurrent + centerCurrent, 0)), [fuel]);
 
+    const [showSimbriefButton, setShowSimbriefButton] = useState(false);
     const simbriefUnits = useAppSelector((state) => state.simbrief.data.units);
     const simbriefBagWeight = parseInt(useAppSelector((state) => state.simbrief.data.weights.bagWeight));
     const simbriefPaxWeight = parseInt(useAppSelector((state) => state.simbrief.data.weights.passengerWeight));
@@ -573,6 +574,26 @@ export const Payload = () => {
     }, [gsxDeBoardingState]);
 
     useEffect(() => {
+        const simbriefStatus = (simbriefDataLoaded
+            && (
+                simbriefPax !== totalPaxDesired
+                || simbriefFreight + simbriefBag * simbriefBagWeight !== totalCargoDesired
+                || simbriefPaxWeight !== paxWeight
+                || simbriefBagWeight !== paxBagWeight
+            )
+        );
+
+        if (gsxPayloadSyncEnabled === 1) {
+            if (boardingStarted) {
+                setShowSimbriefButton(false);
+            }
+
+            setShowSimbriefButton(simbriefStatus);
+        }
+        setShowSimbriefButton(simbriefStatus);
+    }, [simbriefDataLoaded, boardingStarted, gsxPayloadSyncEnabled]);
+
+    useEffect(() => {
         const centerTankMoment = -4.5;
         const innerTankMoment = -8;
         const outerTankMoment = -17.6;
@@ -865,11 +886,7 @@ export const Payload = () => {
                                 </div>
                             </Card>
 
-                            {simbriefDataLoaded
-                                && (simbriefPax !== totalPaxDesired
-                                    || simbriefFreight + simbriefBag * simbriefBagWeight !== totalCargoDesired
-                                    || simbriefPaxWeight !== paxWeight
-                                    || simbriefBagWeight !== paxBagWeight)
+                            {showSimbriefButton
                                 && (
                                     <TooltipWrapper text={t('Ground.Payload.TT.FillPayloadFromSimbrief')}>
                                         <div
