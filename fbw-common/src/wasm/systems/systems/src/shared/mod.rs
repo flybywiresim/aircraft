@@ -21,6 +21,7 @@ pub mod update_iterator;
 mod random;
 pub use random::*;
 pub mod arinc429;
+pub mod arinc825;
 
 pub trait ReservoirAirPressure {
     fn green_reservoir_pressure(&self) -> Pressure;
