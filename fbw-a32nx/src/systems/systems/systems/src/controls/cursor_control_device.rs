@@ -1,12 +1,15 @@
 use crate::{
     indicating_recording::controls::keyboard_cursor_control_unit::Button,
-    shared::{ElectricalBusType, ElectricalBuses},
+    shared::{
+        arinc825::{Arinc825Word, LogicalCommunicationChannel},
+        can_bus::CanBus,
+        ElectricalBusType, ElectricalBuses,
+    },
     simulation::{
         InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
         VariableIdentifier,
     },
 };
-use std::collections::VecDeque;
 
 pub struct CursorControlDevice {
     power_supply: ElectricalBusType,
@@ -14,12 +17,14 @@ pub struct CursorControlDevice {
     keys: [Button; 4],
     switch_ccd_id: VariableIdentifier,
     switch_ccd_value: f64,
+    function_id: u8,
 }
 
 impl CursorControlDevice {
     pub fn new(
         context: &mut InitContext,
         side: &str,
+        function_id: u8,
         primary_power_supply: ElectricalBusType,
     ) -> Self {
         CursorControlDevice {
@@ -33,16 +38,46 @@ impl CursorControlDevice {
             ],
             switch_ccd_id: context.get_identifier(format!("KCCU_{}_CCD_ON_OFF", side)),
             switch_ccd_value: 0.0,
+            function_id,
         }
     }
 
-    pub fn update(&self, buffer: &mut VecDeque<u16>) {
+    pub fn update(&self, can_buses: &mut [CanBus<2>; 2]) {
         if self.switch_ccd_value > 0.0 && self.is_powered {
             self.keys.iter().for_each(|key| {
                 if key.button_pressed() {
                     let code = key.keycode();
-                    buffer.push_back(code & 0xc0ff);
-                    buffer.push_back(code & 0x40ff);
+
+                    // create the message for the pressed event
+                    let mut pressed_message = Arinc825Word::new(
+                        (code & 0x80ff) as f64,
+                        LogicalCommunicationChannel::NormalOperationChannel,
+                    );
+                    pressed_message.set_source_function_id(self.function_id);
+                    pressed_message.set_local_bus_only(true);
+
+                    let mut released_message = Arinc825Word::new(
+                        (code & 0x00ff) as f64,
+                        LogicalCommunicationChannel::NormalOperationChannel,
+                    );
+                    released_message.set_source_function_id(self.function_id);
+                    released_message.set_local_bus_only(true);
+
+                    can_buses.iter_mut().for_each(|bus| {
+                        if !bus.send_message(pressed_message) || !bus.send_message(released_message)
+                        {
+                            bus.reset_buffer(self.function_id);
+
+                            let mut reset_message = Arinc825Word::new(
+                                0x00e1u16 as f64,
+                                LogicalCommunicationChannel::ExceptionEventChannel,
+                            );
+                            reset_message.set_source_function_id(self.function_id);
+                            reset_message.set_local_bus_only(true);
+
+                            bus.send_message(reset_message);
+                        }
+                    });
                 }
             });
         }

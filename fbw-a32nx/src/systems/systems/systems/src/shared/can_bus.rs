@@ -28,7 +28,7 @@ impl<const N: usize> CanBus<N> {
         Self {
             attached_systems: systems,
             next_transmitting_system: 0,
-            transmission_buffers: (1..=N).map(|system| VecDeque::new()).collect(),
+            transmission_buffers: (1..=N).map(|_| VecDeque::new()).collect(),
             availability_id: context.get_identifier(format!("{}_AVAIL", bus_name)),
             available: false,
             databus_id: context.get_identifier(bus_name.to_owned()),
@@ -50,21 +50,22 @@ impl<const N: usize> CanBus<N> {
 
     pub fn update(&mut self) {
         if self.available {
-            let mut idx = 0;
-            let mut end_idx = self.next_transmitting_system - 1;
+            let mut idx: i32 = 0;
+            let mut end_idx: i32 = (self.next_transmitting_system - 1) as i32;
             if end_idx < 0 {
-                end_idx = N - 1;
+                end_idx = (N - 1) as i32;
             }
 
             // search the next sendable message
             while idx != end_idx {
-                if idx >= N {
+                if idx >= (N as i32) {
                     idx = 0;
                 }
 
-                let message = self.transmission_buffers[idx].get(0);
+                let message = self.transmission_buffers[idx as usize].get(0);
                 if message.is_some() {
-                    self.next_output_message = self.transmission_buffers[idx].pop_front().unwrap();
+                    self.next_output_message =
+                        self.transmission_buffers[idx as usize].pop_front().unwrap();
                     self.next_output_message_valid = true;
                     break;
                 } else {
