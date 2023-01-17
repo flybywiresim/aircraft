@@ -290,6 +290,11 @@ bool SimConnectInterface::prepareSimInputSimConnectDataDefinitions() {
   result &= addInputDataDefinition(hSimConnect, 0, Events::ELEV_DOWN, "ELEV_DOWN", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::ELEV_UP, "ELEV_UP", true);
 
+  result &= addInputDataDefinition(hSimConnect, 0, Events::ELEV_TRIM_DN, "ELEV_TRIM_DN", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::ELEV_TRIM_UP, "ELEV_TRIM_UP", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::ELEVATOR_TRIM_SET, "ELEVATOR_TRIM_SET", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::AXIS_ELEV_TRIM_SET, "AXIS_ELEV_TRIM_SET", true);
+
   result &= addInputDataDefinition(hSimConnect, 0, Events::AP_MASTER, "AP_MASTER", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::AUTOPILOT_OFF, "AUTOPILOT_OFF", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::AUTOPILOT_ON, "AUTOPILOT_ON", true);
@@ -1228,6 +1233,10 @@ SimInputAutopilot SimConnectInterface::getSimInputAutopilot() {
   return simInputAutopilot;
 }
 
+SimInputPitchTrim SimConnectInterface::getSimInputPitchTrim() {
+  return simInputPitchTrim;
+}
+
 SimInputRudderTrim SimConnectInterface::getSimInputRudderTrim() {
   return simInputRudderTrim;
 }
@@ -1251,6 +1260,11 @@ void SimConnectInterface::resetSimInputAutopilot() {
   simInputAutopilot.APPR_push = 0;
   simInputAutopilot.EXPED_push = 0;
   simInputAutopilot.DIR_TO_trigger = 0;
+}
+
+void SimConnectInterface::resetSimInputPitchTrim() {
+  simInputPitchTrim.pitchTrimSwitchUp = false;
+  simInputPitchTrim.pitchTrimSwitchDown = false;
 }
 
 void SimConnectInterface::resetSimInputRudderTrim() {
@@ -1760,6 +1774,46 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
         std::cout << "(no data)";
         std::cout << " -> ";
         std::cout << simInput.inputs[AXIS_ELEVATOR_SET];
+        std::cout << std::endl;
+      }
+      break;
+    }
+
+    case Events::ELEV_TRIM_DN: {
+      simInputPitchTrim.pitchTrimSwitchDown = true;
+      if (loggingFlightControlsEnabled) {
+        std::cout << "WASM: ELEV_TRIM_DN: ";
+        std::cout << "(no data)";
+        std::cout << std::endl;
+      }
+      break;
+    }
+
+    case Events::ELEV_TRIM_UP: {
+      simInputPitchTrim.pitchTrimSwitchUp = true;
+      if (loggingFlightControlsEnabled) {
+        std::cout << "WASM: ELEV_TRIM_UP: ";
+        std::cout << "(no data)";
+        std::cout << std::endl;
+      }
+      break;
+    }
+
+    case Events::ELEVATOR_TRIM_SET: {
+      if (loggingFlightControlsEnabled) {
+        std::cout << "WASM: ELEVATOR_TRIM_SET: ";
+        std::cout << static_cast<long>(event->dwData);
+        std::cout << " (IGNORING)";
+        std::cout << std::endl;
+      }
+      break;
+    }
+
+    case Events::AXIS_ELEV_TRIM_SET: {
+      if (loggingFlightControlsEnabled) {
+        std::cout << "WASM: AXIS_ELEV_TRIM_SET: ";
+        std::cout << static_cast<long>(event->dwData);
+        std::cout << " (IGNORING)";
         std::cout << std::endl;
       }
       break;

@@ -38,6 +38,10 @@ class SimConnectInterface {
     ELEVATOR_SET,
     ELEV_DOWN,
     ELEV_UP,
+    ELEV_TRIM_DN,
+    ELEV_TRIM_UP,
+    ELEVATOR_TRIM_SET,
+    AXIS_ELEV_TRIM_SET,
     AP_MASTER,
     AUTOPILOT_OFF,
     AUTOPILOT_ON,
@@ -233,6 +237,8 @@ class SimConnectInterface {
 
   bool setClientDataLocalVariablesAutothrust(ClientDataLocalVariablesAutothrust output);
 
+  void resetSimInputPitchTrim();
+
   void resetSimInputRudderTrim();
 
   void resetSimInputAutopilot();
@@ -244,6 +250,8 @@ class SimConnectInterface {
   SimInput getSimInput();
 
   SimInputAutopilot getSimInputAutopilot();
+
+  SimInputPitchTrim getSimInputPitchTrim();
 
   SimInputRudderTrim getSimInputRudderTrim();
 
@@ -369,6 +377,7 @@ class SimConnectInterface {
   SimData simData = {};
   // change to non-static when aileron events can be processed via SimConnect
   static SimInput simInput;
+  SimInputPitchTrim simInputPitchTrim = {};
   SimInputRudderTrim simInputRudderTrim = {};
   SimInputAutopilot simInputAutopilot = {};
 

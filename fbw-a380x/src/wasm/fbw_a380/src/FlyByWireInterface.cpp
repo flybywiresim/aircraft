@@ -826,6 +826,8 @@ bool FlyByWireInterface::readDataAndLocalVariables(double sampleTime) {
   // reset input
   simConnectInterface.resetSimInputAutopilot();
 
+  simConnectInterface.resetSimInputPitchTrim();
+
   simConnectInterface.resetSimInputRudderTrim();
 
   // set logging options
@@ -1250,6 +1252,7 @@ bool FlyByWireInterface::updateAdirs(int adirsIndex) {
 bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
   SimData simData = simConnectInterface.getSimData();
   SimInput simInput = simConnectInterface.getSimInput();
+  SimInputPitchTrim pitchTrimInput = simConnectInterface.getSimInputPitchTrim();
 
   double leftAileron1Position;
   double rightAileron1Position;
@@ -1350,8 +1353,8 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
   prims[primIndex].modelInputs.in.discrete_inputs.ir_3_on_fo = false;
   prims[primIndex].modelInputs.in.discrete_inputs.adr_3_on_capt = false;
   prims[primIndex].modelInputs.in.discrete_inputs.adr_3_on_fo = false;
-  prims[primIndex].modelInputs.in.discrete_inputs.pitch_trim_up_pressed = false;
-  prims[primIndex].modelInputs.in.discrete_inputs.pitch_trim_down_pressed = false;
+  prims[primIndex].modelInputs.in.discrete_inputs.pitch_trim_up_pressed = primIndex == 1 ? false : pitchTrimInput.pitchTrimSwitchUp;
+  prims[primIndex].modelInputs.in.discrete_inputs.pitch_trim_down_pressed = primIndex == 1 ? false : pitchTrimInput.pitchTrimSwitchDown;
   prims[primIndex].modelInputs.in.discrete_inputs.green_low_pressure = !idHydGreenPressurised->get();
   prims[primIndex].modelInputs.in.discrete_inputs.yellow_low_pressure = !idHydYellowPressurised->get();
 
@@ -1464,6 +1467,8 @@ bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
   const int oppSecIndex = secIndex == 0 ? 1 : 0;
   SimData simData = simConnectInterface.getSimData();
   SimInput simInput = simConnectInterface.getSimInput();
+  SimInputPitchTrim pitchTrimInput = simConnectInterface.getSimInputPitchTrim();
+  SimInputRudderTrim rudderTrimInput = simConnectInterface.getSimInputRudderTrim();
 
   double leftAileron1Position;
   double rightAileron1Position;
@@ -1554,11 +1559,11 @@ bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
   secs[secIndex].modelInputs.in.discrete_inputs.is_unit_3 = secIndex == 2;
   secs[secIndex].modelInputs.in.discrete_inputs.capt_priority_takeover_pressed = idCaptPriorityButtonPressed->get();
   secs[secIndex].modelInputs.in.discrete_inputs.fo_priority_takeover_pressed = idFoPriorityButtonPressed->get();
-  secs[secIndex].modelInputs.in.discrete_inputs.rudder_trim_left_pressed = false;
-  secs[secIndex].modelInputs.in.discrete_inputs.rudder_trim_right_pressed = false;
-  secs[secIndex].modelInputs.in.discrete_inputs.rudder_trim_reset_pressed = false;
-  secs[secIndex].modelInputs.in.discrete_inputs.pitch_trim_up_pressed = false;
-  secs[secIndex].modelInputs.in.discrete_inputs.pitch_trim_down_pressed = false;
+  secs[secIndex].modelInputs.in.discrete_inputs.rudder_trim_left_pressed = secIndex == 1 ? false : rudderTrimInput.rudderTrimSwitchLeft;
+  secs[secIndex].modelInputs.in.discrete_inputs.rudder_trim_right_pressed = secIndex == 1 ? false : rudderTrimInput.rudderTrimSwitchRight;
+  secs[secIndex].modelInputs.in.discrete_inputs.rudder_trim_reset_pressed = secIndex == 1 ? false : rudderTrimInput.rudderTrimReset;
+  secs[secIndex].modelInputs.in.discrete_inputs.pitch_trim_up_pressed = secIndex == 1 ? false : pitchTrimInput.pitchTrimSwitchUp;
+  secs[secIndex].modelInputs.in.discrete_inputs.pitch_trim_down_pressed = secIndex == 1 ? false : pitchTrimInput.pitchTrimSwitchDown;
   secs[secIndex].modelInputs.in.discrete_inputs.green_low_pressure = !idHydGreenPressurised->get();
   secs[secIndex].modelInputs.in.discrete_inputs.yellow_low_pressure = !idHydYellowPressurised->get();
 
