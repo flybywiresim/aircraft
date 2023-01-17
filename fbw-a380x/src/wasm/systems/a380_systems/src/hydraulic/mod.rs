@@ -5757,8 +5757,8 @@ impl ThsSystemHydraulicController {
 impl SimulationElement for ThsSystemHydraulicController {
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.position_requests_from_fbw = [
-            Angle::new::<degree>(reader.read(&self.ths_green_actuator_position_demand_id)),
-            Angle::new::<degree>(reader.read(&self.ths_yellow_actuator_position_demand_id)),
+            -Angle::new::<degree>(reader.read(&self.ths_green_actuator_position_demand_id)),
+            -Angle::new::<degree>(reader.read(&self.ths_yellow_actuator_position_demand_id)),
         ];
         self.solenoid_energized_from_fbw = [
             reader.read(&self.ths_green_actuator_solenoid_id),
