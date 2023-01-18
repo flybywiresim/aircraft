@@ -214,6 +214,49 @@ mod tests {
     #[case(LogicalCommunicationChannel::UserDefinedChannel)]
     #[case(LogicalCommunicationChannel::TestAndMaintenanceChannel)]
     #[case(LogicalCommunicationChannel::CanBaseFrameMigrationChannel)]
+    fn getter_setter_validation(#[case] expected_lcc: LogicalCommunicationChannel) {
+        let mut rng = rand::thread_rng();
+        let expected_value: f64 = rng.gen_range(0.0..10000.0);
+        let expected_client_fid: u8 = rng.gen_range(0..127);
+        let expected_smt: bool = rng.gen_range(0..1) != 0;
+        let expected_lcl: bool = rng.gen_range(0..1) != 0;
+        let expected_pvt: bool = rng.gen_range(0..1) != 0;
+        let expected_server_fid: u8 = rng.gen_range(0..127);
+        let expected_sid: u8 = rng.gen_range(0..127);
+        let expceted_rci: u8 = rng.gen_range(0..3);
+
+        let mut word = Arinc825Word::new(expected_value, expected_lcc);
+        word.set_client_function_id(expected_client_fid);
+        word.set_service_message_type(expected_smt);
+        word.set_local_bus_only(expected_lcl);
+        word.set_private_data(expected_pvt);
+        word.set_server_function_id(expected_server_fid);
+        word.set_server_id(expected_sid);
+        word.set_redundancy_channel_id(expceted_rci);
+
+        assert!(
+            (word.value - expected_value).abs() < 0.001,
+            "Expected: {}, got: {}",
+            expected_value,
+            word.value
+        );
+        assert_eq!(expected_lcc, word.logical_communication_channel());
+        assert_eq!(expected_client_fid, word.client_function_id());
+        assert_eq!(expected_smt, word.service_message_type());
+        assert_eq!(expected_lcl, word.local_bus_only());
+        assert_eq!(expected_pvt, word.private_data());
+        assert_eq!(expected_server_fid, word.server_function_id());
+        assert_eq!(expected_sid, word.server_id());
+        assert_eq!(expceted_rci, word.redundancy_channel_id());
+    }
+
+    #[rstest]
+    #[case(LogicalCommunicationChannel::ExceptionEventChannel)]
+    #[case(LogicalCommunicationChannel::NormalOperationChannel)]
+    #[case(LogicalCommunicationChannel::NodeServiceChannel)]
+    #[case(LogicalCommunicationChannel::UserDefinedChannel)]
+    #[case(LogicalCommunicationChannel::TestAndMaintenanceChannel)]
+    #[case(LogicalCommunicationChannel::CanBaseFrameMigrationChannel)]
     fn conversion_is_symmetric(#[case] expected_lcc: LogicalCommunicationChannel) {
         let mut rng = rand::thread_rng();
         let expected_value: f64 = rng.gen_range(0.0..10000.0);
@@ -225,7 +268,7 @@ mod tests {
         let expected_sid: u8 = rng.gen_range(0..127);
         let expceted_rci: u8 = rng.gen_range(0..3);
 
-        let word = Arinc825Word::new(expected_value, expected_lcc);
+        let mut word = Arinc825Word::new(expected_value, expected_lcc);
         word.set_client_function_id(expected_client_fid);
         word.set_service_message_type(expected_smt);
         word.set_local_bus_only(expected_lcl);
