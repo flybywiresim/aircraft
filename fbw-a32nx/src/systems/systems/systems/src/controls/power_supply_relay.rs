@@ -17,10 +17,7 @@ pub struct PowerSupplyRelay {
 }
 
 impl PowerSupplyRelay {
-    pub fn new(
-        primary: ElectricalBusType,
-        fallback: ElectricalBusType,
-    ) -> Self {
+    pub fn new(primary: ElectricalBusType, fallback: ElectricalBusType) -> Self {
         PowerSupplyRelay {
             primary,
             fallback,
@@ -51,7 +48,8 @@ impl PowerSupplyRelay {
     }
 
     pub fn output_is_powered(&self) -> bool {
-        (self.switch_connected_to_primary && self.primary_feedback_powered) || (!self.switch_connected_to_primary && self.fallback_powered)
+        (self.switch_connected_to_primary && self.primary_feedback_powered)
+            || (!self.switch_connected_to_primary && self.fallback_powered)
     }
 }
 
