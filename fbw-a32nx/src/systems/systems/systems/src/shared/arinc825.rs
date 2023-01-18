@@ -32,7 +32,7 @@ impl<T: Copy> Arinc825Word<T> {
     }
 
     pub fn set_client_function_id(&mut self, id: u8) {
-        self.status = (self.status & 0xfc07ffff) & ((id as u32) << 19);
+        self.status = (self.status & 0xfc07ffff) | ((id as u32) << 19);
     }
 
     pub fn source_function_id(&self) -> u8 {
@@ -40,7 +40,7 @@ impl<T: Copy> Arinc825Word<T> {
     }
 
     pub fn set_source_function_id(&mut self, id: u8) {
-        self.status = (self.status & 0xfc07ffff) & ((id as u32) << 19);
+        self.status = (self.status & 0xfc07ffff) | ((id as u32) << 19);
     }
 
     pub fn service_message_type(&self) -> bool {
@@ -81,7 +81,7 @@ impl<T: Copy> Arinc825Word<T> {
     }
 
     pub fn set_node_id(&mut self, id: u16) {
-        self.status = (self.status & 0xffff0000) & (id as u32);
+        self.status = (self.status & 0xffff0000) | (id as u32);
     }
 
     pub fn server_function_id(&self) -> u8 {
@@ -89,7 +89,7 @@ impl<T: Copy> Arinc825Word<T> {
     }
 
     pub fn set_server_function_id(&mut self, id: u8) {
-        self.status = (self.status & 0xffff0eff) & ((id as u32) << 9);
+        self.status = (self.status & 0xffff01ff) | ((id as u32) << 9);
     }
 
     pub fn server_id(&self) -> u8 {
@@ -97,7 +97,7 @@ impl<T: Copy> Arinc825Word<T> {
     }
 
     pub fn set_server_id(&mut self, id: u8) {
-        self.status = (self.status & 0xfffff103) & ((id as u32) << 2);
+        self.status = (self.status & 0xfffffe03) | ((id as u32) << 2);
     }
 
     pub fn data_object_code(&self) -> u16 {
@@ -105,7 +105,7 @@ impl<T: Copy> Arinc825Word<T> {
     }
 
     pub fn set_data_object_code(&mut self, code: u16) {
-        self.status = (self.status & 0xffff0003) & ((code as u32) << 2);
+        self.status = (self.status & 0xffff0003) | ((code as u32) << 2);
     }
 
     pub fn redundancy_channel_id(&self) -> u8 {
@@ -113,7 +113,7 @@ impl<T: Copy> Arinc825Word<T> {
     }
 
     pub fn set_redundancy_channel_id(&mut self, channel: u8) {
-        self.status = (self.status & 0xfffffffc) & (channel as u32);
+        self.status = (self.status & 0xfffffffc) | (channel as u32);
     }
 }
 impl From<f64> for Arinc825Word<u32> {
