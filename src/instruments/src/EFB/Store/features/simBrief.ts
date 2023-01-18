@@ -1,8 +1,13 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { getSimbriefData } from '../../SimbriefApi';
+import { getSimbriefFlightplans, getSimbriefData, getSimbriefDataNew } from '../../SimbriefApi';
 import { IFuel, IWeights } from '../../SimbriefApi/simbriefInterface';
 
 import { store, RootState } from '../store';
+
+export interface SimbriefFlightplan {
+    requestId: number,
+    generatedAt: Date
+}
 
 export interface SimbriefData {
     departingAirport: string;
@@ -46,7 +51,8 @@ export interface SimbriefData {
     costInd: string;
 }
 
-export const initialState: {data: SimbriefData} = {
+export const initialState: {flightplans: SimbriefFlightplan[], data: SimbriefData} = {
+    flightplans: [],
     data: {
         airline: '',
         flightNum: '',
@@ -124,8 +130,88 @@ export const simbriefSlice = createSlice({
         setSimbriefData: (state, action: PayloadAction<SimbriefData>) => {
             state.data = action.payload;
         },
+        setSimbriefFlightplans: (state, action: PayloadAction<SimbriefFlightplan[]>) => {
+            state.flightplans = action.payload;
+        },
     },
 });
+
+export async function fetchSimbriefFlightplansAction(): Promise<PayloadAction<SimbriefFlightplan[]>> {
+    const returnedSimbriefFlightplans = await getSimbriefFlightplans();
+    return setSimbriefFlightplans(returnedSimbriefFlightplans);
+}
+
+export async function fetchSimbriefDataActionNew(requestId: number): Promise<PayloadAction<SimbriefData>> {
+    const returnedSimbriefData = await getSimbriefDataNew(requestId);
+    return setSimbriefData({
+        airline: returnedSimbriefData.airline,
+        flightNum: returnedSimbriefData.flightNumber,
+        departingAirport: returnedSimbriefData.origin.icao,
+        departingRunway: returnedSimbriefData.origin.runway,
+        departingIata: returnedSimbriefData.origin.iata,
+        departingName: returnedSimbriefData.origin.name,
+        departingPosLat: returnedSimbriefData.origin.posLat,
+        departingPosLong: returnedSimbriefData.origin.posLong,
+        departingMetar: returnedSimbriefData.origin.metar,
+        arrivingAirport: returnedSimbriefData.destination.icao,
+        arrivingRunway: returnedSimbriefData.destination.runway,
+        arrivingIata: returnedSimbriefData.destination.iata,
+        arrivingName: returnedSimbriefData.destination.name,
+        arrivingPosLat: returnedSimbriefData.destination.posLat,
+        arrivingPosLong: returnedSimbriefData.destination.posLong,
+        arrivingMetar: returnedSimbriefData.destination.metar,
+        aircraftReg: returnedSimbriefData.aircraftReg,
+        flightDistance: returnedSimbriefData.distance,
+        flightETAInSeconds: returnedSimbriefData.flightETAInSeconds,
+        cruiseAltitude: returnedSimbriefData.cruiseAltitude,
+        route: returnedSimbriefData.route,
+        weights: {
+            cargo: returnedSimbriefData.weights.cargo,
+            estLandingWeight: returnedSimbriefData.weights.estLandingWeight,
+            estTakeOffWeight: returnedSimbriefData.weights.estTakeOffWeight,
+            estZeroFuelWeight: returnedSimbriefData.weights.estZeroFuelWeight,
+            maxLandingWeight: returnedSimbriefData.weights.maxLandingWeight,
+            maxTakeOffWeight: returnedSimbriefData.weights.maxTakeOffWeight,
+            maxZeroFuelWeight: returnedSimbriefData.weights.maxZeroFuelWeight,
+            passengerCount: returnedSimbriefData.weights.passengerCount,
+            bagCount: returnedSimbriefData.weights.bagCount,
+            passengerWeight: returnedSimbriefData.weights.passengerWeight,
+            bagWeight: returnedSimbriefData.weights.bagWeight,
+            payload: returnedSimbriefData.weights.payload,
+            freight: returnedSimbriefData.weights.freight,
+        },
+        fuels: {
+            avgFuelFlow: returnedSimbriefData.fuel.avgFuelFlow,
+            contingency: returnedSimbriefData.fuel.contingency,
+            enrouteBurn: returnedSimbriefData.fuel.enrouteBurn,
+            etops: returnedSimbriefData.fuel.etops,
+            extra: returnedSimbriefData.fuel.extra,
+            maxTanks: returnedSimbriefData.fuel.maxTanks,
+            minTakeOff: returnedSimbriefData.fuel.minTakeOff,
+            planLanding: returnedSimbriefData.fuel.planLanding,
+            planRamp: returnedSimbriefData.fuel.planRamp,
+            planTakeOff: returnedSimbriefData.fuel.planTakeOff,
+            reserve: returnedSimbriefData.fuel.reserve,
+            taxi: returnedSimbriefData.fuel.taxi,
+        },
+        weather: {
+            avgWindDir: returnedSimbriefData.weather.avgWindDir.toString(),
+            avgWindSpeed: returnedSimbriefData.weather.avgWindSpeed.toString(),
+        },
+        units: returnedSimbriefData.units,
+        altIcao: returnedSimbriefData.alternate.icao,
+        altIata: returnedSimbriefData.alternate.iata,
+        altBurn: returnedSimbriefData.alternate.burn,
+        tripTime: returnedSimbriefData.times.estTimeEnroute,
+        contFuelTime: returnedSimbriefData.times.contFuelTime,
+        resFuelTime: returnedSimbriefData.times.reserveTime,
+        taxiOutTime: returnedSimbriefData.times.taxiOut,
+        schedOut: returnedSimbriefData.times.schedOut,
+        schedIn: returnedSimbriefData.times.schedIn,
+        loadsheet: returnedSimbriefData.text,
+        costInd: returnedSimbriefData.costIndex,
+    });
+}
 
 export async function fetchSimbriefDataAction(simbriefUserId: string): Promise<PayloadAction<SimbriefData>> {
     const returnedSimbriefData = await getSimbriefData(simbriefUserId);
@@ -210,8 +296,10 @@ export async function fetchSimbriefDataAction(simbriefUserId: string): Promise<P
 /**
  * @returns Whether or not the SimBrief data has been altered from its original state
  */
-export const isSimbriefDataLoaded = (): boolean => JSON.stringify((store.getState() as RootState).simbrief) !== JSON.stringify(initialState);
+export const isSimbriefDataLoaded = (): boolean => JSON.stringify((store.getState() as RootState).simbrief.data) !== JSON.stringify(initialState.data);
 
-export const { setSimbriefData } = simbriefSlice.actions;
+export const isSimbriefFlightplansLoaded = (): boolean => JSON.stringify((store.getState() as RootState).simbrief.flightplans) !== JSON.stringify(initialState.flightplans);
+
+export const { setSimbriefFlightplans, setSimbriefData } = simbriefSlice.actions;
 
 export default simbriefSlice.reducer;
