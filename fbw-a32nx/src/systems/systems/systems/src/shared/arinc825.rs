@@ -181,7 +181,7 @@ impl From<u32> for LogicalCommunicationChannel {
             0b101 => LogicalCommunicationChannel::UserDefinedChannel,
             0b110 => LogicalCommunicationChannel::TestAndMaintenanceChannel,
             0b111 => LogicalCommunicationChannel::CanBaseFrameMigrationChannel,
-            _ => panic!("Unknown SSM value: {}.", value),
+            _ => panic!("Unknown LCC value: {}.", value),
         }
     }
 }
