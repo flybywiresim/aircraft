@@ -60,7 +60,7 @@ impl<T: Copy> Arinc825Word<T> {
     }
 
     pub fn set_local_bus_only(&mut self, local: bool) {
-        self.status = self.status & 0xfffdffff;
+        self.status &= 0xfffdffff;
         if local {
             self.status |= 1 << 17;
         }
@@ -78,11 +78,11 @@ impl<T: Copy> Arinc825Word<T> {
     }
 
     pub fn node_id(&self) -> u16 {
-        (self.status as u16) & 0xffff
+        self.status as u16
     }
 
     pub fn set_node_id(&mut self, id: u16) {
-        self.status = (self.status & 0xffff0000) | ((id & 0xffff) as u32);
+        self.status = (self.status & 0xffff0000) | (id as u32);
     }
 
     pub fn server_function_id(&self) -> u8 {
