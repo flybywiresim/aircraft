@@ -54,7 +54,7 @@ impl A380RadioAltimeters {
             radio_altimeter_3: A380RadioAltimeter::new(
                 context,
                 3,
-                ElectricalBusType::AlternatingCurrent(2),
+                ElectricalBusType::AlternatingCurrentEssential,
                 AntennaInstallation::new(
                     Length::new::<foot>(14.75) - Length::new::<meter>(4.27),
                     Length::new::<meter>(15.90),
