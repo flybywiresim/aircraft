@@ -159,7 +159,7 @@ pub enum LogicalCommunicationChannel {
     CanBaseFrameMigrationChannel,
 }
 
-impl From<LogicalCommunicationChannel> for u64 {
+impl From<LogicalCommunicationChannel> for u32 {
     fn from(value: LogicalCommunicationChannel) -> Self {
         match value {
             LogicalCommunicationChannel::ExceptionEventChannel => 0b000,
