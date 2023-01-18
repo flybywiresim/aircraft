@@ -49,27 +49,18 @@ impl<const N: usize> CanBus<N> {
     }
 
     pub fn update(&mut self) {
+        self.next_output_message_valid = false;
+
         if self.available {
-            let mut idx: i32 = 0;
-            let mut end_idx: i32 = (self.next_transmitting_system - 1) as i32;
-            if end_idx < 0 {
-                end_idx = (N - 1) as i32;
-            }
-
             // search the next sendable message
-            while idx != end_idx {
-                if idx >= (N as i32) {
-                    idx = 0;
-                }
-
+            for x in 0..N {
+                let idx = (self.next_transmitting_system + x) % N;
                 let message = self.transmission_buffers[idx as usize].get(0);
                 if message.is_some() {
                     self.next_output_message =
                         self.transmission_buffers[idx as usize].pop_front().unwrap();
                     self.next_output_message_valid = true;
                     break;
-                } else {
-                    idx += 1;
                 }
             }
 
