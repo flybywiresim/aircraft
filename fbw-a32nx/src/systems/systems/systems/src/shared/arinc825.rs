@@ -294,4 +294,5 @@ mod tests {
         assert_eq!(expected_sid, result.server_id());
         assert_eq!(expceted_rci, result.redundancy_channel_id());
     }
+        assert_eq!(expected_doc, result.data_object_code());
 }
