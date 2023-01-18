@@ -79,7 +79,17 @@ impl A380ControlDisplaySystem {
         }
     }
 
-    pub fn update(&mut self) {}
+    pub fn update(&mut self) {
+        self.kccu_capt.update(&mut self.can_bus_1);
+        self.kccu_fo.update(&mut self.can_bus_2);
+
+        self.can_bus_1.iter_mut().for_each(|bus| {
+            bus.update();
+        });
+        self.can_bus_2.iter_mut().for_each(|bus| {
+            bus.update();
+        });
+    }
 }
 
 impl SimulationElement for A380ControlDisplaySystem {
