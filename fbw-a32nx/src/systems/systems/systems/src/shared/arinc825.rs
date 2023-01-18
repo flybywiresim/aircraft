@@ -5,9 +5,10 @@ pub struct Arinc825Word<T: Copy> {
 }
 impl<T: Copy> Arinc825Word<T> {
     pub fn new(value: T, lcc: LogicalCommunicationChannel) -> Self {
+        let status: u32 = lcc.into();
         Self {
             value,
-            status: (lcc as u32) << 26,
+            status: status << 26,
         }
     }
 
