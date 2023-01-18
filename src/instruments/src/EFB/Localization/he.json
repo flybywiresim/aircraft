@@ -560,6 +560,7 @@
       "Off": "כבוי",
       "Save": "שמור",
       "Side": "Side",
+      "SimBridgeIp": "External SimBridge Host Address",
       "SimBridgePort": "פורט SimBridge חיצוני",
       "SyncMsfsFlightPlan": "סנכרן את תוכנית הטיסה מ-MSFS",
       "ThrottleDetents": "מעצורי מצערת",
@@ -567,6 +568,11 @@
       "UseCalculatedIlsSignals": "השתמש באותות ILS מחושבים",
       "WheelChocksEnabled": "סדים (צ'וקים)",
       "inHg": "inHg"
+    },
+    "ThirdPartyOptions": {
+      "GsxFuelEnabled": "GSX Fueling Synchronization",
+      "GsxPayloadEnabled": "GSX Payload Synchronization",
+      "Title": "3rd Party Options"
     },
     "ThrottleConfig": {
       "Apply": "הפעל",
@@ -647,6 +653,9 @@
     "LatestVersionText": "Latest $edition version is",
     "RecommendationText": "Please update your aircraft using the FlyByWire Installer.",
     "StatusBarWarning": "Outdated Aircraft Version",
+    "TT": {
+      "StatusBarWarning": "Please update your aircraft using the FlyByWire Installer."
+    },
     "Title": "New Version Available"
   }
 }

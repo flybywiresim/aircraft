@@ -560,6 +560,7 @@
       "Off": "Wył.",
       "Save": "Tak",
       "Side": "Side",
+      "SimBridgeIp": "External SimBridge Host Address",
       "SimBridgePort": "Port Serwera MCDU",
       "SyncMsfsFlightPlan": "Synchronizacja Planu Lotu z MSFS",
       "ThrottleDetents": "Kalibracja Przepustnic",
@@ -567,6 +568,11 @@
       "UseCalculatedIlsSignals": "Użyj Wyliczonego Sygnału ILS",
       "WheelChocksEnabled": "Kliny do Kół",
       "inHg": "inHg"
+    },
+    "ThirdPartyOptions": {
+      "GsxFuelEnabled": "GSX Fueling Synchronization",
+      "GsxPayloadEnabled": "GSX Payload Synchronization",
+      "Title": "3rd Party Options"
     },
     "ThrottleConfig": {
       "Apply": "Zastosuj",
@@ -647,6 +653,9 @@
     "LatestVersionText": "Latest $edition version is",
     "RecommendationText": "Please update your aircraft using the FlyByWire Installer.",
     "StatusBarWarning": "Outdated Aircraft Version",
+    "TT": {
+      "StatusBarWarning": "Please update your aircraft using the FlyByWire Installer."
+    },
     "Title": "New Version Available"
   }
 }

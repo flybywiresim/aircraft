@@ -560,6 +560,7 @@
       "Off": "बंद",
       "Save": "सहेजें",
       "Side": "Side",
+      "SimBridgeIp": "External SimBridge Host Address",
       "SimBridgePort": "बाहरी सिमब्रिज पोर्ट",
       "SyncMsfsFlightPlan": "MSFS उड़ान योजना सिंक करें",
       "ThrottleDetents": "थ्रॉटल डिटेंट्स",
@@ -567,6 +568,11 @@
       "UseCalculatedIlsSignals": "परिकलित ILS सिग्नल उपयोग",
       "WheelChocksEnabled": "व्हील चॉक्स",
       "inHg": "इंच बुध धातू"
+    },
+    "ThirdPartyOptions": {
+      "GsxFuelEnabled": "GSX Fueling Synchronization",
+      "GsxPayloadEnabled": "GSX Payload Synchronization",
+      "Title": "3rd Party Options"
     },
     "ThrottleConfig": {
       "Apply": "लागू करें",
@@ -647,6 +653,9 @@
     "LatestVersionText": "Latest $edition version is",
     "RecommendationText": "Please update your aircraft using the FlyByWire Installer.",
     "StatusBarWarning": "Outdated Aircraft Version",
+    "TT": {
+      "StatusBarWarning": "Please update your aircraft using the FlyByWire Installer."
+    },
     "Title": "New Version Available"
   }
 }

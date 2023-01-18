@@ -560,6 +560,7 @@
       "Off": "Vypnuté",
       "Save": "Uložiť",
       "Side": "Side",
+      "SimBridgeIp": "External SimBridge Host Address",
       "SimBridgePort": "Externý port servera MCDU",
       "SyncMsfsFlightPlan": "Synchronizácia letového plánu MSFS",
       "ThrottleDetents": "Detenty škrtiacej klapky",
@@ -567,6 +568,11 @@
       "UseCalculatedIlsSignals": "Použiť vypočítané signály ILS",
       "WheelChocksEnabled": "Wheel Chocks",
       "inHg": "inHg"
+    },
+    "ThirdPartyOptions": {
+      "GsxFuelEnabled": "GSX Fueling Synchronization",
+      "GsxPayloadEnabled": "GSX Payload Synchronization",
+      "Title": "3rd Party Options"
     },
     "ThrottleConfig": {
       "Apply": "Použiť",
@@ -647,6 +653,9 @@
     "LatestVersionText": "Latest $edition version is",
     "RecommendationText": "Please update your aircraft using the FlyByWire Installer.",
     "StatusBarWarning": "Outdated Aircraft Version",
+    "TT": {
+      "StatusBarWarning": "Please update your aircraft using the FlyByWire Installer."
+    },
     "Title": "New Version Available"
   }
 }
