@@ -96,7 +96,7 @@ impl<const N: usize> CanBus<N> {
             }
         }
 
-        return false;
+        false
     }
 
     pub fn reset_buffer(&mut self, function_id: u8) {
