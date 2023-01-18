@@ -560,7 +560,7 @@
       "Off": "Aus",
       "Save": "Zurückspeichern bei Änderung",
       "Side": "Seite",
-      "SimBridgeIp": "Externe SimBridge IP",
+      "SimBridgeIp": "Externe SimBridge Hostadresse",
       "SimBridgePort": "Externer SimBridge-Port",
       "SyncMsfsFlightPlan": "MSFS-Flugplan-Synchronisation",
       "ThrottleDetents": "Schubhebelkalibrierung",
@@ -568,6 +568,11 @@
       "UseCalculatedIlsSignals": "Berechnete ILS-Signale verwenden",
       "WheelChocksEnabled": "Bremskeile",
       "inHg": "inHg"
+    },
+    "ThirdPartyOptions": {
+      "GsxFuelEnabled": "GSX Fueling Synchronization",
+      "GsxPayloadEnabled": "GSX Payload Synchronization",
+      "Title": "3rd Party Options"
     },
     "ThrottleConfig": {
       "Apply": "Anwenden",
@@ -648,6 +653,9 @@
     "LatestVersionText": "Die aktuell verfügbare $edition Version ist:",
     "RecommendationText": "Bitte mit Hilfe des FlyByWire-Installer die neueste Version installieren.",
     "StatusBarWarning": "Neue A32NX Version verfügbar",
+    "TT": {
+      "StatusBarWarning": "Please update your aircraft using the FlyByWire Installer."
+    },
     "Title": "Neue Version verfügbar"
   }
 }

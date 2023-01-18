@@ -560,7 +560,7 @@
       "Off": "끄기",
       "Save": "저장",
       "Side": "위치",
-      "SimBridgeIp": "External SimBridge IP",
+      "SimBridgeIp": "외부 SimBridge 호스트 주소",
       "SimBridgePort": "외부 SimBridge 포트",
       "SyncMsfsFlightPlan": "MSFS 비행계획 동기화",
       "ThrottleDetents": "쓰로틀 단계",
@@ -568,6 +568,11 @@
       "UseCalculatedIlsSignals": "계산된 ILS 신호 사용",
       "WheelChocksEnabled": "휠 초크",
       "inHg": "inHg"
+    },
+    "ThirdPartyOptions": {
+      "GsxFuelEnabled": "GSX 연료 공급 동기화",
+      "GsxPayloadEnabled": "GSX 페이로드 동기화",
+      "Title": "써드 파티 옵션"
     },
     "ThrottleConfig": {
       "Apply": "적용",
@@ -648,6 +653,9 @@
     "LatestVersionText": "$edition의 최신 버전은 다음과 같습니다:",
     "RecommendationText": "FlyByWire 설치관리자로 항공기를 업데이트 해주시기 바랍니다.",
     "StatusBarWarning": "오래된 항공기 버전",
+    "TT": {
+      "StatusBarWarning": "FlyByWire 설치관리자로 항공기를 업데이트 해주시기 바랍니다."
+    },
     "Title": "새로운 버전 사용 가능"
   }
 }
