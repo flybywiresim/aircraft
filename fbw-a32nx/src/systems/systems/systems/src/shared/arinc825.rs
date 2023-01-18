@@ -62,7 +62,7 @@ impl<T: Copy> Arinc825Word<T> {
     pub fn set_local_bus_only(&mut self, local: bool) {
         self.status = self.status & 0xfffdffff;
         if local {
-            self.status &= 1 << 17;
+            self.status |= 1 << 17;
         }
     }
 
@@ -73,7 +73,7 @@ impl<T: Copy> Arinc825Word<T> {
     pub fn set_private_data(&mut self, private: bool) {
         self.status &= 0xfffeffff;
         if private {
-            self.status &= 1 << 16;
+            self.status |= 1 << 16;
         }
     }
 
