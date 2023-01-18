@@ -113,6 +113,7 @@ impl Keyboard {
                     pressed_message.set_source_function_id(self.function_id);
                     pressed_message.set_local_bus_only(true);
 
+                    // create the message for the release event
                     let mut released_message = Arinc825Word::new(
                         (code & 0x00ff) as f64,
                         LogicalCommunicationChannel::NormalOperationChannel,
@@ -123,6 +124,7 @@ impl Keyboard {
                     can_buses.iter_mut().for_each(|bus| {
                         if !bus.send_message(pressed_message) || !bus.send_message(released_message)
                         {
+                            // reset the stack and insert a overrun message
                             bus.reset_buffer(self.function_id);
 
                             let mut reset_message = Arinc825Word::new(

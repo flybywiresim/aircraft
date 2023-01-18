@@ -56,6 +56,7 @@ impl CursorControlDevice {
                     pressed_message.set_source_function_id(self.function_id);
                     pressed_message.set_local_bus_only(true);
 
+                    // create the message for the release event
                     let mut released_message = Arinc825Word::new(
                         (code & 0x00ff) as f64,
                         LogicalCommunicationChannel::NormalOperationChannel,
@@ -68,6 +69,7 @@ impl CursorControlDevice {
                         {
                             bus.reset_buffer(self.function_id);
 
+                            // reset the stack and insert a overrun message
                             let mut reset_message = Arinc825Word::new(
                                 0x00e1u16 as f64,
                                 LogicalCommunicationChannel::ExceptionEventChannel,
