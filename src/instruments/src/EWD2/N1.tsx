@@ -159,7 +159,7 @@ export class N1CommandAndTrend extends DisplayComponent<N1CommandAndTrendProps> 
                 const n1Command = this.n1Command / 10;
                 const n1ActualXY = valueRadianAngleConverter(this.n1Actual, this.props.min, this.props.max, this.endAngle, this.startAngle, true);
                 const n1CommandXY = valueRadianAngleConverter(n1Command, this.props.min, this.props.max, this.endAngle, this.startAngle, true);
-
+                const n1CommandArrow = valueRadianAngleConverter(n1Command, this.props.min, this.props.max, this.endAngle, this.startAngle, false);
                 const n1CommandPlusArrow = valueRadianAngleConverter(
                     n1Command,
                     this.props.min,
@@ -169,26 +169,17 @@ export class N1CommandAndTrend extends DisplayComponent<N1CommandAndTrendProps> 
                     false,
                 );
 
-                const n1CommandArrow = valueRadianAngleConverter(n1Command, this.props.min, this.props.max, this.endAngle, this.startAngle, false);
-                const n1ActualArrowXY = {
-                    x: (n1CommandPlusArrow.x * this.props.radius * 0.50),
-                    y: (n1CommandPlusArrow.y * this.props.radius * 0.50),
-                };
-                const n1CommandArrowXY = {
-                    x: (n1CommandArrow.x * this.props.radius * 0.50), // Based on 20 degree angle and hypotenuse of 0.5
-                    y: (n1CommandArrow.y * this.props.radius * 0.50),
-                };
-
                 this.startAngleTrend.set(this.n1Actual > n1Command ? n1CommandXY.angle : n1ActualXY.angle);
                 this.endAngleTrend.set(this.n1Actual > n1Command ? n1ActualXY.angle : n1CommandXY.angle);
 
                 this.startAngleGauge.set(this.n1Actual > n1Command ? n1CommandXY.angle - 20 : n1CommandXY.angle);
                 this.endAngleGauge.set(this.n1Actual > n1Command ? n1CommandXY.angle : n1CommandXY.angle + 20);
 
-                this.n1CommandStartX.set(n1CommandArrowXY.x);
-                this.n1CommandStartY.set(n1CommandArrowXY.y);
-                this.n1CommandEndX.set(n1ActualArrowXY.x);
-                this.n1CommandEndY.set(n1ActualArrowXY.y);
+                this.n1CommandStartX.set(n1CommandArrow.x * this.props.radius * 0.50);
+                this.n1CommandStartY.set(n1CommandArrow.y * this.props.radius * 0.50);
+
+                this.n1CommandEndX.set(n1CommandPlusArrow.x * this.props.radius * 0.50);
+                this.n1CommandEndY.set(n1CommandPlusArrow.y * this.props.radius * 0.50);
             }
         });
     }
