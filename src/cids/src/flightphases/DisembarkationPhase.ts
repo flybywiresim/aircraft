@@ -21,8 +21,8 @@ export class DisembarkationPhase extends FlightPhase {
 
     public shouldActivate(): boolean {
         return (
-            this.flightPhaseManager.dir.onGround
-            && this.flightPhaseManager.dir.groundSpeed < 1
+            this.flightPhaseManager.dir.memory.onGround
+            && this.flightPhaseManager.dir.memory.groundSpeed < 1
             && this.flightPhaseManager.dir.deboardingInProgress
         );
     }

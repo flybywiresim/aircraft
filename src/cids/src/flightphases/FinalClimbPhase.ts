@@ -22,9 +22,9 @@ export class FinalClimbPhase extends FlightPhase {
 
     public shouldActivate(): boolean {
         return (
-            this.flightPhaseManager.dir.altitude > 10000
-            && this.flightPhaseManager.dir.altitude < this.flightPhaseManager.dir.cruiseAltitude
-            && !this.flightPhaseManager.dir.altCrzActive
+            this.flightPhaseManager.dir.memory.altitude > 10000
+            && this.flightPhaseManager.dir.memory.altitude < this.flightPhaseManager.dir.memory.cruiseAltitude
+            && !this.flightPhaseManager.dir.memory.altCrzActive
         );
     }
 

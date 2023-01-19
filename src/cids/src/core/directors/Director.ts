@@ -1,46 +1,8 @@
-import { FlightPhase } from '../../flightphases/FlightPhase';
+import { CidsOrchestrator } from '../CidsOrchestrator';
+import { DirectorMemory } from './DirectorMemory';
 
 export abstract class Director {
-    abstract isFaulty: boolean;
-
-    /**
-     * Note that a director can be faulty and active at the same time!
-     */
-    abstract isActive: boolean;
-
-    abstract flightPhase: FlightPhase;
-
-    abstract onGround: boolean;
-
-    abstract allDoorsClosedLocked: boolean;
-
-    abstract nwStrgPinInserted: boolean;
-
-    abstract thrustLever1Position: number;
-
-    abstract thrustLever2Position: number;
-
-    abstract gpwsFlap3: boolean;
-
-    abstract flapsConfig: FlapsConfig;
-
-    abstract altitude: number;
-
-    abstract fcuSelectedAlt: number;
-
-    abstract fmaVerticalMode: number;
-
-    abstract fpaSelected: number;
-
-    abstract vsSelected: number;
-
-    abstract cruiseAltitude: number;
-
-    abstract altCrzActive: boolean;
-
-    abstract groundSpeed: number;
-
-    abstract gearDownLocked: boolean;
+    abstract memory: DirectorMemory;
 
     public boardingInProgress: boolean;
 
@@ -63,21 +25,36 @@ export abstract class Director {
 
     abstract update(): void;
 
-    /* eslint-disable no-trailing-spaces */
-    /**
-     * Output computations to simvars. Will only execute if the executing director is active.
-     * @param varName The name of the simvar to output the value to.
-     *
-     * **Note:** The correct prefix `L:A32NX_CIDS_DIR_{number}` is prepended and should be omitted when passing the simvar name to this method!
-     * @param unit The unit of type {@link SimVar.SimVarUnit}.
-     * @param value The value the simvar should hold.
-     * @param force Output regardless of active/failed state.
-     * @param onComplete Callback which is called once the simvar is set (promise has resolved).
-     */
-    abstract output(varName: string, unit: SimVar.SimVarUnit, value: any, onComplete?: () => void, force?: boolean,): void;
-    /* eslint-enable no-trailing-spaces */
+    abstract isFaulty(): boolean;
+
+    abstract isActive(): boolean;
 
     abstract fail(): void;
+
+    /**
+     * Output of each director that filters if computed values should really be output -> aka the director is active and not faulty.
+     * @param varName The simvar to output the value to.
+     * @param unit The unit of type {@link SimVar.SimVarUnit}.
+     * @param value The value the simvar should hold.
+     * @param onComplete Callback which is called once the simvar is set (promise has resolved).
+     * @param force Forces the output to be written regardless of active/faulty state.
+     */
+    public output(varName: string, unit: SimVar.SimVarUnit, value: any, onComplete?: () => void, force = false): void {
+        if (CidsOrchestrator.DEBUG) {
+            console.log('[CIDS/DIR] Received output command. Payload:', { 'SimVar name': varName, 'Unit': unit, 'Value:': value, 'Force': force });
+        }
+
+        if (this.isActive && !this.isFaulty || force) {
+            SimVar.SetSimVarValue(varName, unit, value)
+                .then(onComplete)
+                .catch((error) => console.error(
+                    '[CIDS/DIR] There was an error while writing to output! Error:',
+                    error,
+                    '\rInput:',
+                    { 'SimVar name': varName, 'Unit': unit, 'Value:': value },
+                ));
+        }
+    }
 
     protected isBoardingInProgress(): boolean {
         return (
