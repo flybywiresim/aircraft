@@ -235,14 +235,6 @@ impl AvionicsDataCommunicationNetwork {
             afdx.update();
             update_routing |= afdx.routing_update_required();
         });
-        self.cpio_modules.iter_mut().for_each(|cpiom| {
-            cpiom.update();
-            update_routing |= cpiom.routing_update_required();
-        });
-        self.io_modules.iter_mut().for_each(|iom| {
-            iom.update();
-            update_routing |= iom.routing_update_required();
-        });
 
         if update_routing {
             // TODO create the AFDX_ROUTING_TABLE

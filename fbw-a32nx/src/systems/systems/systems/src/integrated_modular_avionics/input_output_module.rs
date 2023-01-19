@@ -8,44 +8,25 @@ use crate::{
 
 pub struct InputOutputModule {
     power_supply: ElectricalBusType,
-    last_is_powered: bool,
     is_powered: bool,
     available_id: VariableIdentifier,
     failure_indication_id: VariableIdentifier,
-    last_failure_indication: bool,
     failure_indication: bool,
-    routing_update_required: bool,
 }
 
 impl InputOutputModule {
     pub fn new(context: &mut InitContext, name: &str, power_supply: ElectricalBusType) -> Self {
         Self {
             power_supply,
-            last_is_powered: false,
             is_powered: false,
             available_id: context.get_identifier(format!("IOM_{}_AVAIL", name)),
             failure_indication_id: context.get_identifier(format!("IOM_{}_FAILURE", name)),
-            last_failure_indication: false,
             failure_indication: false,
-            routing_update_required: false,
         }
-    }
-
-    pub fn update(&mut self) {
-        // do not recalculate in every step the routing table
-        self.routing_update_required = self.last_is_powered != self.is_powered
-            || self.last_failure_indication != self.failure_indication;
-
-        self.last_failure_indication = self.failure_indication;
-        self.last_is_powered = self.is_powered;
     }
 
     pub fn is_available(&self) -> bool {
         self.is_powered & !self.failure_indication
-    }
-
-    pub fn routing_update_required(&self) -> bool {
-        self.routing_update_required
     }
 }
 
