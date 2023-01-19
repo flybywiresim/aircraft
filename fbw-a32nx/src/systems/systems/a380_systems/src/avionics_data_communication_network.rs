@@ -49,6 +49,7 @@ pub struct AvionicsDataCommunicationNetwork {
     cpio_modules: [CoreProcessingInputOutputModule; 22],
     io_modules: [InputOutputModule; 8],
     routing_tables: [[Vec<RoutingTableEntry>; 16]; 2],
+    publish_routing_table: bool,
 }
 
 impl AvionicsDataCommunicationNetwork {
@@ -391,6 +392,7 @@ impl AvionicsDataCommunicationNetwork {
                     RoutingTableEntry::new(context, 19, 19),
                 ],
             ]],
+            publish_routing_table: false,
         }
     }
 
@@ -416,6 +418,8 @@ impl AvionicsDataCommunicationNetwork {
         if update_second_network {
             // TODO create the AFDX_ROUTING_TABLE
         }
+
+        self.publish_routing_table = update_first_network | update_second_network;
     }
 }
 
@@ -431,5 +435,14 @@ impl SimulationElement for AvionicsDataCommunicationNetwork {
             .iter_mut()
             .for_each(|iom| iom.accept(visitor));
         visitor.visit(self);
+    }
+
+    fn write(&self, writer: &mut SimulatorWriter) {
+        if self.publish_routing_table {
+            // publish the values of the routing matrix
+            self.routing_tables.iter().for_each(|network| {
+                network.iter().for_each(|row| row.iter().for_each(|entry| entry.publish(writer)));
+            });
+        }
     }
 }
