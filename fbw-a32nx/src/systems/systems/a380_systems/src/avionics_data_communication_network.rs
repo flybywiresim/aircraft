@@ -1,15 +1,16 @@
-use crate::{
-    shared::ElectricalBusType,
-    simulation::{
-        InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, Write,
-    },
-    systems::integrated_modular_avionics::{
+use crate::systems::{
+    integrated_modular_avionics::{
         avionics_full_duplex_switch::AvionicsFullDuplexSwitch,
         core_processing_input_output_module::CoreProcessingInputOutputModule,
         input_output_module::InputOutputModule,
     },
+    shared::ElectricalBusType,
+    simulation::{
+        InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter,
+        VariableIdentifier, Write,
+    },
 };
-use std::collections::{HashMap, VecDequeu};
+use std::collections::{HashMap, VecDeque};
 use std::vec::Vec;
 
 struct RoutingTableEntry {
@@ -28,7 +29,7 @@ impl RoutingTableEntry {
                 .get_identifier(format!("AFDX_{}_{}_REACHABLE", lower_id, upper_id)),
             routing_id_2: context
                 .get_identifier(format!("AFDX_{}_{}_REACHABLE", upper_id, lower_id)),
-            reachable: 0,
+            reachable: false,
         }
     }
 
@@ -70,7 +71,7 @@ pub struct AvionicsDataCommunicationNetwork {
     afdx_networks: [HashMap<usize, Vec<usize>>; 2],
     cpio_modules: [CoreProcessingInputOutputModule; 22],
     io_modules: [InputOutputModule; 8],
-    routing_tables: [[Vec<RoutingTableEntry>; 16]; 2],
+    routing_tables: [[Vec<RoutingTableEntry>; 8]; 2],
     publish_routing_table: bool,
 }
 
@@ -417,18 +418,13 @@ impl AvionicsDataCommunicationNetwork {
         }
     }
 
-    fn switches_reachable(
-        &self,
-        network: &HashMap<usize, Vec<usize>>,
-        from: usize,
-        to: usize,
-    ) -> bool {
-        let mut frontier: VecDequeu<usize> = VecDequeu::new();
+    fn switches_reachable(network: &HashMap<usize, Vec<usize>>, from: usize, to: usize) -> bool {
+        let mut frontier: VecDeque<usize> = VecDeque::new();
         let mut visited: Vec<usize> = Vec::new();
 
         visited.resize(network.len(), 0xffff);
         frontier.push_front(from);
-        visit[from] = from;
+        visited[from] = from;
 
         while !frontier.is_empty() {
             let node = frontier.pop_front();
@@ -437,7 +433,7 @@ impl AvionicsDataCommunicationNetwork {
                 return true;
             }
 
-            let neighbors = &network[node.unwrap()];
+            let neighbors = &network[&node.unwrap()];
             for neighbor in neighbors {
                 if visited[*neighbor] == 0xffff {
                     visited[*neighbor] = node.unwrap();
@@ -449,14 +445,14 @@ impl AvionicsDataCommunicationNetwork {
         false
     }
 
-    fn update_routing_table(
-        routing_table: &mut [Vec<RoutingTableEntry>; 16],
-        network: &HashMap<usize, Vec<usize>>,
-        offset: usize,
-    ) {
-        for (y, row) in routing_table.iter_mut().enumerate() {
+    fn update_routing_table(&mut self, network: usize, offset: usize) {
+        for (y, row) in self.routing_tables[network].iter_mut().enumerate() {
             for (x, entry) in row.iter_mut().enumerate() {
-                entry.set_reachable(self.switches_reachable(network, y + offset, x + offset));
+                entry.set_reachable(AvionicsDataCommunicationNetwork::switches_reachable(
+                    &self.afdx_networks[0],
+                    y + offset,
+                    x + offset,
+                ));
             }
         }
     }
@@ -477,11 +473,11 @@ impl AvionicsDataCommunicationNetwork {
         }
 
         if update_first_network {
-            self.update_routing_table(&mut self.routing_tables[0], &self.afdx_networks[0], 0);
+            self.update_routing_table(0, 0);
         }
 
         if update_second_network {
-            self.update_routing_table(&mut self.routing_tables[1], &self.afdx_networks[1], 8);
+            self.update_routing_table(1, 8);
         }
 
         self.publish_routing_table = update_first_network | update_second_network;

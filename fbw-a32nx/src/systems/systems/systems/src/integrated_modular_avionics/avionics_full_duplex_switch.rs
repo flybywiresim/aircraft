@@ -80,6 +80,10 @@ impl AvionicsFullDuplexSwitch {
         self.last_failure_indication = self.failure_indication;
         self.last_is_powered = self.is_powered;
     }
+
+    pub fn routing_update_required(&self) -> bool {
+        self.routing_update_required
+    }
 }
 
 impl SimulationElement for AvionicsFullDuplexSwitch {
