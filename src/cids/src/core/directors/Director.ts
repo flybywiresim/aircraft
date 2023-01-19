@@ -19,7 +19,7 @@ export abstract class Director {
 
     /**
      * This method should not call methods only available when the CIDS is powered as it will run them regardless of the power state.
-     * @param oppositeDirector The second director. E.g. If this method belongs to DIR1, DIR2 will be the opposite director.
+     * @param oppositeDirector The second director. E.g. If this method is an instance of DIR1, DIR2 will be the opposite director.
      */
     abstract init(oppositeDirector: Director): void;
 
@@ -32,11 +32,11 @@ export abstract class Director {
     abstract fail(): void;
 
     /**
-     * Output of each director that filters if computed values should really be output -> aka the director is active and not faulty.
+     * Output of each director which filters if computed values should really be output -> aka the director is active and not faulty.
      * @param varName The simvar to output the value to.
      * @param unit The unit of type {@link SimVar.SimVarUnit}.
      * @param value The value the simvar should hold.
-     * @param onComplete Callback which is called once the simvar is set (promise has resolved).
+     * @param onComplete Callback which is called once the simvar is set.
      * @param force Forces the output to be written regardless of active/faulty state.
      */
     public output(varName: string, unit: SimVar.SimVarUnit, value: any, onComplete?: () => void, force = false): void {
