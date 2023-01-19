@@ -1,6 +1,6 @@
 use crate::{
     shared::ElectricalBusType,
-    simulation::{InitContext, SimulationElement, SimulationElementVisitor},
+    simulation::{InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, Write},
     systems::integrated_modular_avionics::{
         avionics_full_duplex_switch::AvionicsFullDuplexSwitch,
         core_processing_input_output_module::CoreProcessingInputOutputModule,
