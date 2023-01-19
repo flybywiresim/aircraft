@@ -1,18 +1,18 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { ClockEvents, EventBus, DisplayComponent, FSComponent, Subject, VNode } from 'msfssdk';
-import { EWDSimvars } from './shared/EWDSimvarPublisher';
+import { EwdSimvars } from './shared/EwdSimvarPublisher';
 import { GaugeComponent, GaugeMarkerComponent, GaugeMaxComponent } from '../MsfsAvionicsCommon/gauges';
 import { Layer } from '../MsfsAvionicsCommon/Layer';
 
 import './style.scss';
 
-interface EGTProps {
+interface EgtProps {
     bus: EventBus;
     x: number;
     y: number;
     engine: 1 | 2;
 }
-export class EGT extends DisplayComponent<EGTProps> {
+export class Egt extends DisplayComponent<EgtProps> {
     private readonly gaugeStartAngle = Subject.create(270);
 
     private readonly gaugeStartAngleRed = Subject.create(70);
@@ -42,7 +42,7 @@ export class EGT extends DisplayComponent<EGTProps> {
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<ClockEvents & EWDSimvars>();
+        const sub = this.props.bus.getSubscriber<ClockEvents & EwdSimvars>();
 
         sub.on(`engine${this.props.engine}Fadec`).whenChanged().handle((f) => {
             this.inactiveVisibility.set(f ? 'hidden' : 'visible');

@@ -1,18 +1,18 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { ClockEvents, ComponentProps, DisplayComponent, EventBus, FSComponent, Subject, VNode } from 'msfssdk';
 import { DisplayUnit } from '../MsfsAvionicsCommon/displayUnit';
-import { EWDSimvars } from './shared/EWDSimvarPublisher';
+import { EwdSimvars } from './shared/EwdSimvarPublisher';
 import { UpperDisplay } from './UpperDisplay';
 import { LowerLeftDisplay } from './LowerLeftDisplay';
 import { LowerRightDisplay } from './LowerRightDisplay';
 
 import './style.scss';
 
-interface EWDProps extends ComponentProps {
+interface EwdProps extends ComponentProps {
     bus: EventBus;
     instrument: BaseInstrument;
 }
-export class EWDComponent extends DisplayComponent<EWDProps> {
+export class EwdComponent extends DisplayComponent<EwdProps> {
     private acEssBus = Subject.create(false);
 
     private ewdPotentiometer = Subject.create(0);
@@ -20,7 +20,7 @@ export class EWDComponent extends DisplayComponent<EWDProps> {
     public onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<EWDSimvars>();
+        const sub = this.props.bus.getSubscriber<EwdSimvars>();
 
         sub.on('acEssBus').whenChanged().handle((bus) => {
             this.acEssBus.set(bus);

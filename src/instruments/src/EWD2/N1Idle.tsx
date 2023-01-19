@@ -1,7 +1,7 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { ClockEvents, EventBus, DisplayComponent, FSComponent, Subject, VNode } from 'msfssdk';
 import { Arinc429Word } from '@shared/arinc429';
-import { EWDSimvars } from './shared/EWDSimvarPublisher';
+import { EwdSimvars } from './shared/EwdSimvarPublisher';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { Layer } from '../MsfsAvionicsCommon/Layer';
 
@@ -38,7 +38,7 @@ export class N1Idle extends DisplayComponent<N1IdleProps> {
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<Arinc429Values & ClockEvents & EWDSimvars>();
+        const sub = this.props.bus.getSubscriber<Arinc429Values & ClockEvents & EwdSimvars>();
 
         sub.on('engine1Fadec').whenChanged().handle((f) => {
             this.engine1Fadec = f;

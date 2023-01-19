@@ -1,7 +1,7 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { ClockEvents, EventBus, DisplayComponent, FSComponent, Subject, Subscribable, VNode } from 'msfssdk';
 import { Arinc429Values } from './shared/ArincValueProvider';
-import { EWDSimvars } from './shared/EWDSimvarPublisher';
+import { EwdSimvars } from './shared/EwdSimvarPublisher';
 import { Layer } from '../MsfsAvionicsCommon/Layer';
 
 import './style.scss';
@@ -57,7 +57,7 @@ export class Slats extends DisplayComponent<SlatsProps> {
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<Arinc429Values & ClockEvents & EWDSimvars>();
+        const sub = this.props.bus.getSubscriber<Arinc429Values & ClockEvents & EwdSimvars>();
 
         sub.on('slatsFlapsStatus').whenChanged().handle((s) => {
             this.configClean = s.getBitValue(17);

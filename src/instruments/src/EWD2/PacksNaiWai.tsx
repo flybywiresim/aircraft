@@ -1,6 +1,6 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { ClockEvents, EventBus, DisplayComponent, FSComponent, Subject, VNode } from 'msfssdk';
-import { EWDSimvars } from './shared/EWDSimvarPublisher';
+import { EwdSimvars } from './shared/EwdSimvarPublisher';
 
 interface PacksNaiWaiProps {
     bus: EventBus;
@@ -39,7 +39,7 @@ export class PacksNaiWai extends DisplayComponent<PacksNaiWaiProps> {
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<ClockEvents & EWDSimvars>();
+        const sub = this.props.bus.getSubscriber<ClockEvents & EwdSimvars>();
 
         sub.on('fwcFlightPhase').whenChanged().handle((p) => {
             this.fwcFlightPhase = p;

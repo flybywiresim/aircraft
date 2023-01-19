@@ -1,7 +1,7 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { ClockEvents, EventBus, DisplayComponent, FSComponent, Subject, VNode } from 'msfssdk';
 import EWDMessages from '@instruments/common/EWDMessages';
-import { EWDSimvars } from './shared/EWDSimvarPublisher';
+import { EwdSimvars } from './shared/EwdSimvarPublisher';
 import { FormattedFwcText } from './FormattedFwcText';
 
 import './style.scss';
@@ -31,7 +31,7 @@ export class LowerRightDisplay extends DisplayComponent<LowerRightDisplayProps> 
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<ClockEvents & EWDSimvars>();
+        const sub = this.props.bus.getSubscriber<ClockEvents & EwdSimvars>();
 
         sub.on('ewdLowerRight1').whenChanged().handle((m) => {
             this.line1 = padEWDCode(m);

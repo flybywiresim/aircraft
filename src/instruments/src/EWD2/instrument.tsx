@@ -1,14 +1,14 @@
 import { Clock, EventBus, FSComponent } from 'msfssdk';
 import { ArincValueProvider } from './shared/ArincValueProvider';
-import { EWDComponent } from './EWD';
-import { EWDSimvarPublisher } from './shared/EWDSimvarPublisher';
+import { EwdComponent } from './EWD';
+import { EwdSimvarPublisher } from './shared/EwdSimvarPublisher';
 
 import './style.scss';
 
 class A32NX_EWD extends BaseInstrument {
     private bus: EventBus;
 
-    private simVarPublisher: EWDSimvarPublisher;
+    private simVarPublisher: EwdSimvarPublisher;
 
     private readonly arincProvider: ArincValueProvider;
 
@@ -25,7 +25,7 @@ class A32NX_EWD extends BaseInstrument {
     constructor() {
         super();
         this.bus = new EventBus();
-        this.simVarPublisher = new EWDSimvarPublisher(this.bus);
+        this.simVarPublisher = new EwdSimvarPublisher(this.bus);
         this.arincProvider = new ArincValueProvider(this.bus);
         this.clock = new Clock(this.bus);
     }
@@ -112,7 +112,7 @@ class A32NX_EWD extends BaseInstrument {
         this.simVarPublisher.subscribe('slatsFlapsStatusRaw');
         this.simVarPublisher.subscribe('slatsPositionRaw');
 
-        FSComponent.render(<EWDComponent bus={this.bus} instrument={this} />, document.getElementById('EWD_CONTENT'));
+        FSComponent.render(<EwdComponent bus={this.bus} instrument={this} />, document.getElementById('EWD_CONTENT'));
     }
 
     public Update(): void {

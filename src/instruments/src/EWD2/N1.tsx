@@ -1,6 +1,6 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { ClockEvents, EventBus, DisplayComponent, FSComponent, Subject, Subscribable, VNode } from 'msfssdk';
-import { EWDSimvars } from './shared/EWDSimvarPublisher';
+import { EwdSimvars } from './shared/EwdSimvarPublisher';
 import { GaugeComponent, GaugeMarkerComponent, GaugeMaxComponent, ThrottlePositionDonutComponent, valueRadianAngleConverter } from '../MsfsAvionicsCommon/gauges';
 import { Layer } from '../MsfsAvionicsCommon/Layer';
 
@@ -36,7 +36,7 @@ export class AvailRev extends DisplayComponent<AvailRevProps> {
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<ClockEvents & EWDSimvars>();
+        const sub = this.props.bus.getSubscriber<ClockEvents & EwdSimvars>();
 
         sub.on(`engine${this.props.engine}Fadec`).whenChanged().handle((f) => {
             this.fadec = f;
@@ -137,7 +137,7 @@ export class N1CommandAndTrend extends DisplayComponent<N1CommandAndTrendProps> 
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<ClockEvents & EWDSimvars>();
+        const sub = this.props.bus.getSubscriber<ClockEvents & EwdSimvars>();
 
         this.props.gaugeN1.sub((n1) => {
             this.n1Actual = n1;
@@ -270,7 +270,7 @@ export class N1 extends DisplayComponent<N1Props> {
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<EWDSimvars>();
+        const sub = this.props.bus.getSubscriber<EwdSimvars>();
 
         sub.on(`engine${this.props.engine}Fadec`).whenChanged().handle((f) => {
             this.inactiveVisibility.set(f ? 'hidden' : 'visible');

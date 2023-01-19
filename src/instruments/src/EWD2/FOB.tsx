@@ -1,7 +1,7 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { ClockEvents, EventBus, DisplayComponent, FSComponent, Subject, Subscribable, VNode } from 'msfssdk';
 import { fuelForDisplay } from '@instruments/common/fuel';
-import { EWDSimvars } from './shared/EWDSimvarPublisher';
+import { EwdSimvars } from './shared/EwdSimvarPublisher';
 import { Layer } from '../MsfsAvionicsCommon/Layer';
 
 import './style.scss';
@@ -18,7 +18,7 @@ export class FOB extends DisplayComponent<FOBProps> {
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<EWDSimvars>();
+        const sub = this.props.bus.getSubscriber<EwdSimvars>();
 
         sub.on('totalFuel').atFrequency(1).whenChanged().handle((fob) => {
             const metric = this.props.metric.get();

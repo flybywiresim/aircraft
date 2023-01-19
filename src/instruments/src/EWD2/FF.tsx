@@ -1,7 +1,7 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { ClockEvents, EventBus, DisplayComponent, FSComponent, Subject, Subscribable, VNode } from 'msfssdk';
 import { fuelForDisplay } from '@instruments/common/fuel';
-import { EWDSimvars } from './shared/EWDSimvarPublisher';
+import { EwdSimvars } from './shared/EwdSimvarPublisher';
 import { Layer } from '../MsfsAvionicsCommon/Layer';
 
 import './style.scss';
@@ -23,7 +23,7 @@ export class FF extends DisplayComponent<FFProps> {
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<EWDSimvars>();
+        const sub = this.props.bus.getSubscriber<EwdSimvars>();
 
         sub.on(`engine${this.props.engine}Fadec`).whenChanged().handle((f) => {
             this.inactiveVisibility.set(f ? 'hidden' : 'visible');

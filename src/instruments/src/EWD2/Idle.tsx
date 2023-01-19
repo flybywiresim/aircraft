@@ -1,6 +1,6 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { ClockEvents, EventBus, DisplayComponent, FSComponent, Subject, VNode } from 'msfssdk';
-import { EWDSimvars } from './shared/EWDSimvarPublisher';
+import { EwdSimvars } from './shared/EwdSimvarPublisher';
 
 interface IdleProps {
     bus: EventBus;
@@ -27,7 +27,7 @@ export class Idle extends DisplayComponent<IdleProps> {
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<ClockEvents & EWDSimvars>();
+        const sub = this.props.bus.getSubscriber<ClockEvents & EwdSimvars>();
 
         sub.on('engine1N1').whenChanged().handle((n1) => {
             this.engine1N1 = n1;

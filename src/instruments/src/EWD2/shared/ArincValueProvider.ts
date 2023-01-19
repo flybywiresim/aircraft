@@ -1,6 +1,6 @@
 import { EventBus } from 'msfssdk';
 import { Arinc429Word } from '@shared/arinc429';
-import { EWDSimvars } from './EWDSimvarPublisher';
+import { EwdSimvars } from './EwdSimvarPublisher';
 
 export interface Arinc429Values {
     sat: Arinc429Word;
@@ -23,7 +23,7 @@ export class ArincValueProvider {
 
     public init() {
         const publisher = this.bus.getPublisher<Arinc429Values>();
-        const subscriber = this.bus.getSubscriber<EWDSimvars>();
+        const subscriber = this.bus.getSubscriber<EwdSimvars>();
 
         subscriber.on('satRaw').handle((p) => {
             this.sat = new Arinc429Word(p);
