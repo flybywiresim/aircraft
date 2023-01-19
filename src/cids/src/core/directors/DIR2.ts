@@ -1,4 +1,4 @@
-import { DirectorMemory } from 'cids/src/core/directors/DirectorMemory';
+import { DirectorMemory } from './DirectorMemory';
 import { Director } from './Director';
 
 export class DIR2 extends Director {
