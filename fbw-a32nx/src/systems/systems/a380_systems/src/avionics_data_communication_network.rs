@@ -229,14 +229,25 @@ impl AvionicsDataCommunicationNetwork {
     }
 
     pub fn update(&mut self) {
-        let mut update_routing = false;
+        let mut update_first_network = false;
+        let mut update_second_network = false;
 
-        self.afdx_switches.iter_mut().for_each(|afdx| {
+        for (i, afdx) in self.afdx_switches.iter_mut().enumerate() {
             afdx.update();
-            update_routing |= afdx.routing_update_required();
+            if afdx.routing_update_required() {
+                if (i >= 8) {
+                    update_second_network = true;
+                } else {
+                    update_first_network = true;
+                }
+            }
         });
 
-        if update_routing {
+        if update_first_network {
+            // TODO create the AFDX_ROUTING_TABLE
+        }
+
+        if update_second_network {
             // TODO create the AFDX_ROUTING_TABLE
         }
     }
